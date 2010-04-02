@@ -1,0 +1,7 @@
+/* Localized versions of Info.plist keys */
+
+CFBundleName = "Snowglobe";
+
+CFBundleShortVersionString = "Snowglobe version 1.3.0.0";
+CFBundleGetInfoString = "Snowglobe version 1.3.0.0, Copyright 2004-2009 Linden Research, Inc.";
+

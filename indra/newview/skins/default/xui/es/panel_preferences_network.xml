@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel label="Red" name="network">
+	<text length="1" name="text_box" type="string">
+		Ancho de banda máximo:
+	</text>
+	<text length="1" name="text_box2" type="string">
+		kbps (kilobites por segundo)
+	</text>
+	<text name="cache_size_label_l">
+		Tamaño de la caché en disco:
+	</text>
+	<text name="text_box5">
+		MB
+	</text>
+	<button label="Vaciar la caché" label_selected="Limpiar cache" name="clear_cache"/>
+	<text name="cache_location_label">
+		Localización de la caché en el disco:
+	</text>
+	<button label="Elegir" label_selected="Elegir" name="set_cache"/>
+	<button label="Volver" label_selected="Elegir" name="reset_cache"/>
+	<check_box label="Personalizar el puerto de conexión" name="connection_port_enabled"/>
+	<spinner label="Número del puerto:" name="connection_port" width="180" label_width="105"/>
+</panel>
