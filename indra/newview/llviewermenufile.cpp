@@ -1092,3 +1092,43 @@ void init_menu_file()
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
+
+// <edit>
+void NewResourceItemCallback::fire(const LLUUID& new_item_id)
+{
+	LLViewerInventoryItem* new_item = (LLViewerInventoryItem*)gInventory.getItem(new_item_id);
+	if(!new_item) return;
+	LLUUID vfile_id = LLUUID(new_item->getDescription());
+	if(vfile_id.isNull()) return;
+	new_item->setDescription("(No Description)");
+	new_item->updateServer(FALSE);
+	gInventory.updateItem(new_item);
+	gInventory.notifyObservers();
+
+	std::string agent_url;
+	LLSD body;
+	body["item_id"] = new_item_id;
+	
+	if(new_item->getType() == LLAssetType::AT_GESTURE)
+	{
+		agent_url = gAgent.getRegion()->getCapability("UpdateGestureAgentInventory");
+	}
+	else if(new_item->getType() == LLAssetType::AT_LSL_TEXT)
+	{
+		agent_url = gAgent.getRegion()->getCapability("UpdateScriptAgent");
+		body["target"] = "lsl2";
+	}
+	else if(new_item->getType() == LLAssetType::AT_NOTECARD)
+	{
+		agent_url = gAgent.getRegion()->getCapability("UpdateNotecardAgentInventory");
+	}
+	else
+	{
+		return;
+	}
+	
+	if(agent_url.empty()) return;
+	LLHTTPClient::post(agent_url, body,
+	new LLUpdateAgentInventoryResponder(body, vfile_id, new_item->getType()));
+}
+// </edit>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="false" can_resize="false"
+     width="200" height="300" name="inventory_backup_settings" title="Download Options">
+	<check_box bottom_delta="-50" follows="left|top" left="10" name="chk_textures" label="Textures" />
+    <check_box bottom_delta="-20" follows="left|top" left="10" name="chk_sounds" label="Sounds" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_callingcards" label="Calling Cards" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_landmarks" label="Landmarks" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_scripts" label="Scripts" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_wearables" label="Wearables" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_objects" label="Objects" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_notecards" label="Notecards" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_animations" label="Animations" />
+	<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_gestures" label="Gestures" />
+	<!--<check_box bottom_delta="-20" follows="left|top" left="10" name="chk_others" label="Others" />-->
+	<button bottom="10" follows="bottom|left" height="20" label="Next >>"
+		 left="110" width="80" name="next_btn" />
+</floater>

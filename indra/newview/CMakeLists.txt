@@ -64,6 +64,9 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+	dofloaterhex.cpp
+	dohexeditor.cpp
+	doinventorybackup.cpp
     jcfloaterareasearch.cpp
     llagent.cpp
     llagentaccess.cpp
@@ -484,6 +487,9 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+	dofloaterhex.h
+	dohexeditor.h
+	doinventorybackup.h
     jcfloaterareasearch.h
     llagent.h
     llagentaccess.h

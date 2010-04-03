@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="true" height="500" width="400" min_width="310" min_height="200"  
+     name="floater_inventory_backup" title="Inventory Backup">
+	<scroll_list bottom="60" can_resize="true" column_padding="0" draw_heading="true"
+	     follows="left|top|bottom|right" left="10" multi_select="true"
+	     name="item_list" right="-10" search_column="1" top="-25">
+		<column name="type" width="20" />
+		<column dynamicwidth="true" label="Name" name="name" />
+		<column dynamicwidth="true" name="status" label="Status" />
+	</scroll_list>
+
+	<line_editor name="progress_background" bottom="10" top="50" height="20" left="10" right="-10" 
+			  can_resize="true" follows="left|bottom|right" enabled="false" />
+	<line_editor name="progress_foreground" bottom="10" top="50" height="20" left="10" width="0" 
+			  can_resize="true" follows="left|bottom|right" enabled="false"
+			  bg_readonly_color="0.5 0.5 0.5" />
+</floater>

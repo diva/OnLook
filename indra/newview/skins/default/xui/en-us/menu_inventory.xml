@@ -129,6 +129,14 @@
 	     mouse_opaque="true" name="Restore Item" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="restore" />
 	</menu_item_call>
+	<menu bottom_delta="0" color="MenuDefaultBgColor" drop_shadow="true" height="175" left="0"
+	     mouse_opaque="false" name="Open With..." opaque="true" tear_off="false"
+	     width="125">
+		<menu_item_call bottom_delta="-18" height="18" label="Hex Editor" left="0" mouse_opaque="true"
+	     name="Hex Open" width="128">
+			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />
+		</menu_item_call>
+	</menu>
 	<menu_item_call bottom_delta="-18" height="18" label="Open" left="0" mouse_opaque="true"
 	     name="Open" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />

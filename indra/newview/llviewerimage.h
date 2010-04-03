@@ -246,6 +246,12 @@ public:
 	void setLoadedCallback(loaded_callback_func cb,
 						   S32 discard_level, BOOL keep_imageraw, BOOL needs_aux,
 						   void* userdata);
+						   
+// <edit>
+	void setLoadedCallbackNoAux(loaded_callback_func cb,
+								S32 discard_level, BOOL keep_imageraw, BOOL needs_aux,
+								void* userdata);
+// </edit>
 
 	 // ONLY call from LLViewerImageList
 	BOOL createTexture(S32 usename = 0);
@@ -444,5 +450,7 @@ public:
 	static BOOL sFreezeImageScalingDown ;//do not scale down image res if set.
 	static S32 sLLViewerImageCount ;
 };
+
+
 
 #endif

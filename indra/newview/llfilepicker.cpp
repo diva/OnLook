@@ -51,8 +51,11 @@
 LLFilePicker LLFilePicker::sInstance;
 
 #if LL_WINDOWS
-#define SOUND_FILTER L"Sounds (*.wav)\0*.wav\0"
-#define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png\0"
+// <edit/>
+#define SOUND_FILTER L"Sounds (*.wav; *.ogg)\0*.wav;*.ogg\0"
+#define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png; *.jp2; *.j2k; *.j2c)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png;*.jp2;*.j2k;*.j2c\0"
+#define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"
+// <edit/>
 #define ANIM_FILTER L"Animations (*.bvh)\0*.bvh\0"
 #ifdef _CORY_TESTING
 #define GEOMETRY_FILTER L"SL Geometry (*.slg)\0*.slg\0"
@@ -192,6 +195,16 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = RAW_FILTER \
 			L"\0";
 		break;
+	// <edit>
+	case FFLOAD_INVGZ:
+		mOFN.lpstrFilter = INVGZ_FILTER \
+			L"\0";
+		break;
+	case FFLOAD_AO:
+		mOFN.lpstrFilter = AO_FILTER \
+			L"\0";
+		break;
+	// </edit>
 	default:
 		res = FALSE;
 		break;
@@ -451,6 +464,218 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 			L"Compressed Images (*.j2c)\0*.j2c\0" \
 			L"\0";
 		break;
+	// <edit>
+	case FFSAVE_ANIMATN:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.animatn", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"animatn";
+		mOFN.lpstrFilter =
+			L"SL Animations (*.animatn)\0*.animatn\0" \
+			L"\0";
+		break;
+	case FFSAVE_OGG:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.ogg", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"ogg";
+		mOFN.lpstrFilter =
+			L"Ogg (*.ogg)\0*.ogg\0" \
+			L"\0";
+		break;
+	case FFSAVE_NOTECARD:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.notecard", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"notecard";
+		mOFN.lpstrFilter =
+			L"Notecards (*.notecard)\0*.notecard\0" \
+			L"\0";
+		break;
+	case FFSAVE_GESTURE:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.gesture", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"gesture";
+		mOFN.lpstrFilter =
+			L"Gestures (*.gesture)\0*.gesture\0" \
+			L"\0";
+		break;
+	case FFSAVE_LSL:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.lsl", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"lsl";
+		mOFN.lpstrFilter =
+			L"LSL (*.lsl)\0*.lsl\0" \
+			L"\0";
+		break;
+	case FFSAVE_SHAPE:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.shape", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"shape";
+		mOFN.lpstrFilter =
+			L"Shapes (*.shape)\0*.shape\0" \
+			L"\0";
+		break;
+	case FFSAVE_SKIN:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.skin", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"skin";
+		mOFN.lpstrFilter =
+			L"Skins (*.skin)\0*.skin\0" \
+			L"\0";
+		break;
+	case FFSAVE_HAIR:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.hair", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"hair";
+		mOFN.lpstrFilter =
+			L"Hair (*.hair)\0*.hair\0" \
+			L"\0";
+		break;
+	case FFSAVE_EYES:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.eyes", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"eyes";
+		mOFN.lpstrFilter =
+			L"Eyes (*.eyes)\0*.eyes\0" \
+			L"\0";
+		break;
+	case FFSAVE_SHIRT:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.shirt", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"shirt";
+		mOFN.lpstrFilter =
+			L"Shirts (*.shirt)\0*.shirt\0" \
+			L"\0";
+		break;
+	case FFSAVE_PANTS:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.pants", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"pants";
+		mOFN.lpstrFilter =
+			L"Pants (*.pants)\0*.pants\0" \
+			L"\0";
+		break;
+	case FFSAVE_SHOES:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.shoes", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"shoes";
+		mOFN.lpstrFilter =
+			L"Shoes (*.shoes)\0*.shoes\0" \
+			L"\0";
+		break;
+	case FFSAVE_SOCKS:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.socks", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"socks";
+		mOFN.lpstrFilter =
+			L"Socks (*.socks)\0*.socks\0" \
+			L"\0";
+		break;
+	case FFSAVE_JACKET:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.jacket", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"jacket";
+		mOFN.lpstrFilter =
+			L"Jackets (*.jacket)\0*.jacket\0" \
+			L"\0";
+		break;
+	case FFSAVE_GLOVES:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.gloves", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"gloves";
+		mOFN.lpstrFilter =
+			L"Gloves (*.gloves)\0*.gloves\0" \
+			L"\0";
+		break;
+	case FFSAVE_UNDERSHIRT:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.undershirt", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"undershirt";
+		mOFN.lpstrFilter =
+			L"Undershirts (*.undershirt)\0*.undershirt\0" \
+			L"\0";
+		break;
+	case FFSAVE_UNDERPANTS:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.underpants", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"underpants";
+		mOFN.lpstrFilter =
+			L"Underpants (*.underpants)\0*.underpants\0" \
+			L"\0";
+		break;
+	case FFSAVE_SKIRT:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.skirt", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"skirt";
+		mOFN.lpstrFilter =
+			L"Skirts (*.skirt)\0*.skirt\0" \
+			L"\0";
+		break;
+	case FFSAVE_LANDMARK:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.landmark", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"landmark";
+		mOFN.lpstrFilter =
+			L"Landmarks (*.landmark)\0*.landmark\0" \
+			L"\0";
+		break;
+	case FFSAVE_AO:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.ao", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"ao";
+		mOFN.lpstrFilter =
+			L"Animation overrides (*.ao)\0*.ao\0" \
+			L"\0";
+		break;
+	case FFSAVE_INVGZ:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.inv", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L".inv";
+		mOFN.lpstrFilter =
+			L"InvCache (*.inv)\0*.inv\0" \
+			L"\0";
+		break;
+	// </edit>
 	default:
 		return FALSE;
 	}

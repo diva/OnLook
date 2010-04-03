@@ -12637,6 +12637,22 @@
             <integer>250</integer>
             <integer>200</integer>
     </array>
-  </map>
+    </map>
+    <key>FloaterHexRect</key>
+    <map>
+        <key>Comment</key>
+        <string>Rectangle for hex editor floater.</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Rect</string>
+        <key>Value</key>
+        <array>
+            <integer>343</integer>
+            <integer>687</integer>
+            <integer>901</integer>
+            <integer>473</integer>
+        </array>
+    </map>
 </map>
 </llsd>

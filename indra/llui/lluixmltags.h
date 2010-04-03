@@ -127,5 +127,6 @@ const std::string
 	LL_FLYOUT_BUTTON_ITEM_TAG("flyout_button_item"),
 	LL_SIMPLE_TEXT_EDITOR_TAG("simple_text_editor"),
 	LL_RADIO_ITEM_TAG("radio_item"),
-	LL_PROGRESS_BAR_TAG("progress_bar");
+	LL_PROGRESS_BAR_TAG("progress_bar"),
+	DO_HEX_EDITOR_TAG("hex_editor");
 #endif

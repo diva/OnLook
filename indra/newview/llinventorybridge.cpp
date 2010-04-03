@@ -86,6 +86,7 @@
 #include "lluictrlfactory.h"
 #include "llselectmgr.h"
 #include "llfloateropenobject.h"
+#include "dofloaterhex.h"
 
 // Helpers
 // bug in busy count inc/dec right now, logic is complex... do we really need it?
@@ -443,6 +444,8 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id, std::vector<std::str
 			disabled_items.push_back(std::string("Copy Asset UUID"));
 		}
 	}
+	
+	items.push_back(std::string("Open With..."));
 
 	items.push_back(std::string("Copy Separator"));
 
@@ -763,6 +766,13 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 	else if ("restore" == action)
 	{
 		restoreItem();
+	}
+	else if("open hex" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		if(item->getCreatorUUID() != gAgentID) return;
+		DOFloaterHex::show(mUUID);
 	}
 	else if ("copy_uuid" == action)
 	{

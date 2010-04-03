@@ -1320,6 +1320,31 @@ void LLViewerImage::setLoadedCallback( loaded_callback_func loaded_callback,
 	}
 }
 
+// this method is stupid, remove it if at all possible -Day
+void LLViewerImage::setLoadedCallbackNoAux( loaded_callback_func loaded_callback,
+            S32 discard_level, BOOL keep_imageraw, BOOL needs_aux, void* userdata)
+{
+	//
+	// Don't do ANYTHING here, just add it to the global callback list
+	//
+	if (mLoadedCallbackList.empty())
+	{
+		// Put in list to call this->doLoadedCallbacks() periodically
+		gImageList.mCallbackList.insert(this);
+	}
+	
+	LLLoadedCallbackEntry* entryp = new LLLoadedCallbackEntry(loaded_callback, discard_level, keep_imageraw, userdata);
+	mLoadedCallbackList.push_back(entryp);
+	mNeedsAux = needs_aux;
+	
+	if (mNeedsAux && mAuxRawImage.isNull() && getDiscardLevel() >= 0)
+	{
+		// We need aux data, but we've already loaded the image, and it didn't have any
+		llwarns << "No aux data available for callback for image:" << getID() << llendl;
+	}
+}
+// </edit>
+
 bool LLViewerImage::doLoadedCallbacks()
 {
 	if (mNeedsCreateTexture)

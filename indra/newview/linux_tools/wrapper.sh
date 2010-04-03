@@ -7,14 +7,14 @@
 ## - Avoids using any OpenAL audio driver.
 #export LL_BAD_OPENAL_DRIVER=x
 ## - Avoids using any FMOD audio driver.
-#export LL_BAD_FMOD_DRIVER=x
+export LL_BAD_FMOD_DRIVER=x
 
 ## - Avoids using the FMOD ESD audio driver.
 #export LL_BAD_FMOD_ESD=x
 ## - Avoids using the FMOD OSS audio driver.
 #export LL_BAD_FMOD_OSS=x
 ## - Avoids using the FMOD ALSA audio driver.
-export LL_BAD_FMOD_ALSA=x
+#export LL_BAD_FMOD_ALSA=x
 
 ## - Avoids the optional OpenGL extensions which have proven most problematic
 ##   on some hardware.  Disabling this option may cause BETTER PERFORMANCE but
@@ -114,7 +114,7 @@ if [ -n "$LL_TCMALLOC" ]; then
     fi
 fi
 
-export VIEWER_BINARY='inertia-do-not-run-directly'
+export VIEWER_BINARY='snowglobe-do-not-run-directly'
 export SL_ENV='LD_LIBRARY_PATH="`pwd`"/lib:"`pwd`"/app_settings/mozilla-runtime-linux-i686:"${LD_LIBRARY_PATH}"'
 export SL_CMD='$LL_WRAPPER bin/$VIEWER_BINARY'
 export SL_OPT="`cat gridargs.dat` $@"
