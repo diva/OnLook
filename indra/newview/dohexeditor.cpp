@@ -8,6 +8,8 @@
  */
 
 // <edit>
+#include "llviewerprecompiledheaders.h"
+
 #include "linden_common.h"
 #include "dohexeditor.h"
 #include "llfocusmgr.h"
