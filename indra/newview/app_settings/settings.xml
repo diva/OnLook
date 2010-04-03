@@ -12654,5 +12654,16 @@
             <integer>473</integer>
         </array>
     </map>
+    <key>HexEditorColumns</key>
+	<map>
+		<key>Comment</key>
+		<string>Number of columns shown in hex editor</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>U32</string>
+		<key>Value</key>
+		<integer>16</integer>
+	</map>
 </map>
 </llsd>

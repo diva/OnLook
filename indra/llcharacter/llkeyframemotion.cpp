@@ -658,7 +658,15 @@ BOOL LLKeyframeMotion::onActivate()
 	// If the keyframe anim has an associated emote, trigger it. 
 	if( mJointMotionList->mEmoteName.length() > 0 )
 	{
-		mCharacter->startMotion( gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName) );
+		// <edit> crashfix
+		//mCharacter->startMotion( gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName) );
+		LLUUID emo = gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName);
+		
+		if(mCharacter->findMotion(emo) == NULL)
+		{
+			mCharacter->startMotion(emo);
+		}
+		// </edit>
 	}
 
 	mLastLoopedTime = 0.f;
