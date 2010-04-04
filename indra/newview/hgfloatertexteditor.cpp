@@ -121,9 +121,11 @@ void HGFloaterTextEditor::imageCallback(BOOL success,
 
 		U8* src_data = src->getData();
 		S32 size = src->getDataSize();
-		std::vector<U8> new_data;
+		std::string new_data;
 		for(S32 i = 0; i < size; i++)
-			new_data.push_back(src_data[i]);
+			new_data += (char)src_data[i];
+
+		delete[] src_data;
 
 		floater->mEditor->setValue(new_data);
 		floater->mEditor->setVisible(TRUE);
@@ -170,13 +172,13 @@ void HGFloaterTextEditor::assetCallback(LLVFS *vfs,
 
 	file.read((U8*)buffer, size);
 
-	std::vector<U8> new_data;
+	std::string new_data;
 	for(S32 i = 0; i < size; i++)
-		new_data.push_back(buffer[i]);
+		new_data += (char)buffer[i];
 
 	delete[] buffer;
 
-	floater->mEditor->setValue(new_data);
+	floater->mEditor->setValue((LLSD)new_data);
 	floater->mEditor->setVisible(TRUE);
 	floater->childSetText("status_text", std::string(""));
 
@@ -232,12 +234,13 @@ void HGFloaterTextEditor::onClickUpload(void* user_data)
 	transaction_id.generate();
 	LLUUID fake_asset_id = transaction_id.makeAssetID(gAgent.getSecureSessionID());
 
-	std::vector<U8> value = floater->mEditor->getValue();
-	int size = value.size();
+	const char* value = floater->mEditor->getText().c_str();
+	int size = strlen(value);
 	U8* buffer = new U8[size];
 	for(int i = 0; i < size; i++)
-		buffer[i] = value[i];
-	value.clear();
+		buffer[i] = (U8)value[i];
+	
+	delete[] value;
 
 	LLVFile file(gVFS, fake_asset_id, item->getType(), LLVFile::APPEND);
 	file.setMaxSize(size);
@@ -308,12 +311,11 @@ void HGFloaterTextEditor::onClickSave(void* user_data)
 	transaction_id.generate();
 	LLUUID fake_asset_id = transaction_id.makeAssetID(gAgent.getSecureSessionID());
 
-	std::vector<U8> value = floater->mEditor->getValue();
-	int size = value.size();
+	const char* value = floater->mEditor->getText().c_str();
+	int size = strlen(value);
 	U8* buffer = new U8[size];
 	for(int i = 0; i < size; i++)
-		buffer[i] = value[i];
-	value.clear();
+		buffer[i] = (U8)value[i];
 
 	LLVFile file(gVFS, fake_asset_id, item->getType(), LLVFile::APPEND);
 	file.setMaxSize(size);
