@@ -87,6 +87,7 @@
 #include "llselectmgr.h"
 #include "llfloateropenobject.h"
 #include "dofloaterhex.h"
+#include "hgfloatertexteditor.h"
 
 // Helpers
 // bug in busy count inc/dec right now, logic is complex... do we really need it?
@@ -773,6 +774,13 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 		if(!item) return;
 		if(item->getCreatorUUID() != gAgentID) return;
 		DOFloaterHex::show(mUUID);
+	}
+	else if("open text" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		if(item->getCreatorUUID() != gAgentID) return;
+		HGFloaterTextEditor::show(mUUID);
 	}
 	else if ("copy_uuid" == action)
 	{

@@ -136,6 +136,10 @@
 	     name="Hex Open" width="128">
 			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />
 		</menu_item_call>
+		<menu_item_call bottom_delta="-18" height="18" label="Text Editor" left="0" mouse_opaque="true"
+	     name="Open Text" width="128">
+			<on_click filter="" function="Inventory.DoToSelected" userdata="open text" />
+		</menu_item_call>
 	</menu>
 	<menu_item_call bottom_delta="-18" height="18" label="Open" left="0" mouse_opaque="true"
 	     name="Open" width="128">
