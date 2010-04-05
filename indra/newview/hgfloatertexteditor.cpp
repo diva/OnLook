@@ -163,24 +163,27 @@ void HGFloaterTextEditor::assetCallback(LLVFS *vfs,
 	LLVFile file(vfs, asset_uuid, type, LLVFile::READ);
 	S32 size = file.getSize();
 
-	char* buffer = new char[size];
+	std::string new_data("");
+	if(size > 0)
+	{
+		char* buffer = new char[size + 1];
 	if (buffer == NULL)
 	{
 		llerrs << "Memory Allocation Failed" << llendl;
 		return;
 	}
 
-	file.read((U8*)buffer, size);
+		file.read((U8*)buffer, size);
+		buffer[size - 1] = 0;
 
-	std::string new_data;
-	for(S32 i = 0; i < size; i++)
-		new_data += (char)buffer[i];
+		new_data = std::string(buffer);
+		delete[] buffer;
+	}
 
-	delete[] buffer;
 
-	floater->mEditor->setValue((LLSD)new_data);
+	floater->mEditor->setText(LLStringExplicit(new_data));
 	floater->mEditor->setVisible(TRUE);
-	floater->childSetText("status_text", std::string(""));
+	floater->childSetText("status_text", llformat("File Size: %d", size));
 
 	floater->childSetEnabled("upload_btn", true);
 	floater->childSetEnabled("save_btn", false);
@@ -251,7 +254,6 @@ void HGFloaterTextEditor::onClickUpload(void* user_data)
 		LLNotifications::instance().add("ErrorMessage", args);
 		return;
 	}
-	delete[] buffer;
 	
 	LLAssetStorage::LLStoreAssetCallback callback = NULL;
 	void *fake_user_data = NULL;
@@ -326,8 +328,6 @@ void HGFloaterTextEditor::onClickSave(void* user_data)
 		LLNotifications::instance().add("ErrorMessage", args);
 		return;
 	}
-	delete[] buffer;
-
 
 	bool caps = false;
 	std::string url;
