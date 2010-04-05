@@ -1,0 +1,43 @@
+10
+
+dir
+3299
+https://svn.secondlife.com/svn/linden/projects/2009/snowglobe/trunk/libraries
+https://svn.secondlife.com/svn/linden
+
+
+
+2008-07-01T13:30:39.308643Z
+714
+soft.linden
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+a6265765-422e-0410-accc-9fb60e44a920
+
+include
+dir
+
+i686-linux
+dir
+
+universal-darwin
+dir
+
+x86_64-linux
+dir
+
+i686-win32
+dir
+
