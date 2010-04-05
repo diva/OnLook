@@ -100,6 +100,17 @@
 				[FIRST] [LAST]
 			</line_editor>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom_delta="-24" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
+			     mouse_opaque="true" name="key_label" v_pad="0" width="90">
+				Avatar Key:
+			</text>
+			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
+			     border_thickness="1" bottom_delta="0" enabled="false" follows="left|top"
+			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="95"
+			     max_length="48" mouse_opaque="false" name="avatar_key"
+			     text_readonly_color="1, 1, 1, 1" width="260" />
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-44" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
 			     mouse_opaque="true" name="Photo:" v_pad="0" width="70">
@@ -384,17 +395,6 @@ notes.  This person cannot see them, nor can other people.
 			     font="SansSerif" height="256" is_unicode="false" left="10"
 			     max_length="1023" mouse_opaque="true" name="notes edit" width="400"
 			     word_wrap="false" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-24" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
-			     mouse_opaque="true" name="key_label" v_pad="0" width="90">
-				Avatar Key:
-			</text>
-			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
-			     border_thickness="1" bottom_delta="0" enabled="false" follows="left|top"
-			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="95"
-			     max_length="48" mouse_opaque="false" name="avatar_key"
-			     text_readonly_color="1, 1, 1, 1" width="260" />
 		</panel>
 	</tab_container>
 	<button bottom="-483" font="SansSerif" halign="center" height="20" label="OK"
