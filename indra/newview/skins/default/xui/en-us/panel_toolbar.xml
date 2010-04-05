@@ -18,13 +18,13 @@
 	       list_position="above"
 	       width="50" follows="left|right" user_resize="false"/>
     <icon image_name="spacer24.tga" width="2" height="2" follows="left|right" auto_resize="false" color="0,0,0,0"/>
-    <button bottom="0" font="SansSerif" height="24" label="Fly"
-        image_overlay="icn_toolbar_fly.tga" image_overlay_alignment="left"
+    <button bottom="0" font="SansSerif" height="24" label="Radar"
+        image_overlay="icn_toolbar_radar.tga" image_overlay_alignment="left"
                         image_selected="toolbar_btn_selected.tga"
              image_unselected="toolbar_btn_enabled.tga"
              image_disabled="toolbar_btn_disabled.tga" scale_image="true"
-	       label_selected="Stop Flying" left="0" name="fly_btn"
-	       tool_tip="Start flying. Use E/C or PgUp/PgDn to fly up and down."
+	       label_selected="Radar" left="0" name="radar_list_btn"
+	       tool_tip="View a list of nearby avatars."
 	       width="50" follows="left|right" user_resize="false"/>
     <button bottom="0" font="SansSerif" height="24" label="Snapshot" left="0"
              image_overlay="icn_toolbar_snapshot.tga" image_overlay_alignment="left"

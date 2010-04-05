@@ -53,6 +53,7 @@
 #include "llfloaterchatterbox.h"
 #include "llfloaterfriends.h"
 #include "llfloatersnapshot.h"
+#include "llfloateravatarlist.h"
 #include "lltoolmgr.h"
 #include "llui.h"
 #include "llviewermenu.h"
@@ -128,8 +129,8 @@ BOOL LLToolBar::postBuild()
 	childSetAction("appearance_btn", onClickAppearance, this);
 	childSetControlName("appearance_btn", "");
 
-	childSetAction("fly_btn", onClickFly, this);
-	childSetControlName("fly_btn", "FlyBtnState");
+	childSetAction("radar_list_btn", onClickRadarList, this);
+	childSetControlName("radar_list_btn", "RadarListBtnState");
 
 	childSetAction("sit_btn", onClickSit, this);
 	childSetControlName("sit_btn", "SitBtnState");
@@ -446,6 +447,17 @@ void LLToolBar::onClickAppearance(void*)
 	if (gAgent.areWearablesLoaded())
 	{
 		gAgent.changeCameraToCustomizeAvatar();
+	}
+}
+
+// static
+void LLToolBar::onClickRadarList(void*)
+{
+	LLFloaterAvatarList::toggle(0);
+	bool vis = false;
+	if(LLFloaterAvatarList::getInstance())
+	{
+		vis = (bool)LLFloaterAvatarList::getInstance()->getVisible();
 	}
 }
 

@@ -73,12 +73,9 @@ BOOL LLAgent::setLookAt(ELookAtType target_type, LLViewerObject *object, LLVecto
 {
 	if (object && target_type != LOOKAT_TARGET_NONE && gSavedSettings.getBOOL("PrivateLookAt"))
 	{
-		if ((object->getPositionGlobal() - gAgent.getPositionGlobal()).magVec() > 20.0)
-		{
-			target_type = LOOKAT_TARGET_NONE;
-			object = mAvatarObject;
-			position.clearVec();
-		}
+		target_type = LOOKAT_TARGET_NONE;
+		object = mAvatarObject;
+		position.clearVec();
 	}
 
 	if(object && object->isAttachment())
@@ -114,12 +111,9 @@ BOOL LLAgent::setPointAt(EPointAtType target_type, LLViewerObject *object, LLVec
 
 	if (object && target_type != POINTAT_TARGET_NONE && gSavedSettings.getBOOL("PrivateLookAt"))
 	{
-		if ((object->getPositionGlobal() - gAgent.getPositionGlobal()).magVec() > 20.0)
-		{
-			target_type = POINTAT_TARGET_NONE;
-			object = NULL;
-			position.clearVec();
-		}
+		target_type = POINTAT_TARGET_NONE;
+		object = NULL;
+		position.clearVec();
 	}
 
 	if(!mPointAt || mPointAt->isDead())

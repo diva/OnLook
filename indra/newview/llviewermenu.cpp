@@ -4906,9 +4906,16 @@ class LLWorldSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getAvatarObject() && !gAgent.getAvatarObject()->mIsSitting)
+		if (gAgent.getAvatarObject())
 		{
-			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
+			if(!gAgent.getAvatarObject()->mIsSitting)
+			{
+				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
+			} 
+			else 
+			{
+				gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+			}
 		}
 		return true;
 	}
@@ -4918,7 +4925,7 @@ class LLWorldEnableSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = (gAgent.getAvatarObject() && !gAgent.getAvatarObject()->mIsSitting);
+		bool new_value = (gAgent.getAvatarObject());
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
