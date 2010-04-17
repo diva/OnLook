@@ -347,7 +347,7 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		return TRUE;
 	}
 	
-	if (gSavedSettings.getBOOL("RenderAnimateTrees") && gUseLLWind)
+	if (gSavedSettings.getBOOL("RenderAnimateTrees"))
 	{
 		F32 mass_inv; 
 
@@ -390,7 +390,7 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		}
 	} 
 
-	if (!gSavedSettings.getBOOL("RenderAnimateTrees") || !gUseLLWind)
+	if (!gSavedSettings.getBOOL("RenderAnimateTrees"))
 	{
 		if (mReferenceBuffer.isNull())
 		{

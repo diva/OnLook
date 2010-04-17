@@ -54,7 +54,6 @@
 
 
 const F32 CLOUD_DIVERGENCE_COEF = 0.5f; 
-BOOL gUseLLWind;
 
 
 //////////////////////////////////////////////////////////////////////
@@ -105,7 +104,7 @@ void LLWind::init()
 
 void LLWind::decompress(LLBitPack &bitpack, LLGroupHeader *group_headerp)
 {
-	if (!mCloudDensityp || !gUseLLWind)
+	if (!mCloudDensityp)
 	{
 		return;
 	}
@@ -182,200 +181,172 @@ void LLWind::decompress(LLBitPack &bitpack, LLGroupHeader *group_headerp)
 
 LLVector3 LLWind::getAverage()
 {
-	if(gUseLLWind)
+	//  Returns in average_wind the average wind velocity 
+	LLVector3 average(0.0f, 0.0f, 0.0f);	
+	S32 i, grid_count;
+	grid_count = mSize * mSize;
+	for (i = 0; i < grid_count; i++)
 	{
-		//  Returns in average_wind the average wind velocity 
-		LLVector3 average(0.0f, 0.0f, 0.0f);	
-		S32 i, grid_count;
-		grid_count = mSize * mSize;
-		for (i = 0; i < grid_count; i++)
-		{
-			average.mV[VX] += mVelX[i];
-			average.mV[VY] += mVelY[i];
-		}
+		average.mV[VX] += mVelX[i];
+		average.mV[VY] += mVelY[i];
+	}
 
-		average *= 1.f/((F32)(grid_count)) * WIND_SCALE_HACK;
-		return average;
-	}
-	else
-	{
-		return LLVector3(0, 0, 0);
-	}
+	average *= 1.f/((F32)(grid_count)) * WIND_SCALE_HACK;
+	return average;
 }
 
 
 LLVector3 LLWind::getVelocityNoisy(const LLVector3 &pos_region, const F32 dim)
 {
-	if(gUseLLWind)
+	//  Resolve a value, using fractal summing to perturb the returned value 
+	LLVector3 r_val(0,0,0);
+	F32 norm = 1.0f;
+	if (dim == 8)
 	{
-		//  Resolve a value, using fractal summing to perturb the returned value 
-		LLVector3 r_val(0,0,0);
-		F32 norm = 1.0f;
-		if (dim == 8)
-		{
-			norm = 1.875;
-		}
-		else if (dim == 4)
-		{
-			norm = 1.75;
-		}
-		else if (dim == 2)
-		{
-			norm = 1.5;
-		}
+		norm = 1.875;
+	}
+	else if (dim == 4)
+	{
+		norm = 1.75;
+	}
+	else if (dim == 2)
+	{
+		norm = 1.5;
+	}
 
-		F32 temp_dim = dim;
-		while (temp_dim >= 1.0)
-		{
-			LLVector3 pos_region_scaled(pos_region * temp_dim);
-			r_val += getVelocity(pos_region_scaled) * (1.0f/temp_dim);
-			temp_dim /= 2.0;
-		}
-		
-		return r_val * (1.0f/norm) * WIND_SCALE_HACK;
-	}
-	else
+	F32 temp_dim = dim;
+	while (temp_dim >= 1.0)
 	{
-		return LLVector3(0, 0, 0);
+		LLVector3 pos_region_scaled(pos_region * temp_dim);
+		r_val += getVelocity(pos_region_scaled) * (1.0f/temp_dim);
+		temp_dim /= 2.0;
 	}
+	
+	return r_val * (1.0f/norm) * WIND_SCALE_HACK;
 }
 
 
 LLVector3 LLWind::getVelocity(const LLVector3 &pos_region)
 {
-	if(gUseLLWind)
+	llassert(mSize == 16);
+	// Resolves value of wind at a location relative to SW corner of region
+	//  
+	// Returns wind magnitude in X,Y components of vector3
+	LLVector3 r_val;
+	F32 dx,dy;
+	S32 k;
+
+	LLVector3 pos_clamped_region(pos_region);
+	
+	F32 region_width_meters = LLWorld::getInstance()->getRegionWidthInMeters();
+
+	if (pos_clamped_region.mV[VX] < 0.f)
 	{
-		llassert(mSize == 16);
-		// Resolves value of wind at a location relative to SW corner of region
-		//  
-		// Returns wind magnitude in X,Y components of vector3
-		LLVector3 r_val;
-		F32 dx,dy;
-		S32 k;
-
-		LLVector3 pos_clamped_region(pos_region);
-		
-		F32 region_width_meters = LLWorld::getInstance()->getRegionWidthInMeters();
-
-		if (pos_clamped_region.mV[VX] < 0.f)
-		{
-			pos_clamped_region.mV[VX] = 0.f;
-		}
-		else if (pos_clamped_region.mV[VX] >= region_width_meters)
-		{
-			pos_clamped_region.mV[VX] = (F32) fmod(pos_clamped_region.mV[VX], region_width_meters);
-		}
-
-		if (pos_clamped_region.mV[VY] < 0.f)
-		{
-			pos_clamped_region.mV[VY] = 0.f;
-		}
-		else if (pos_clamped_region.mV[VY] >= region_width_meters)
-		{
-			pos_clamped_region.mV[VY] = (F32) fmod(pos_clamped_region.mV[VY], region_width_meters);
-		}
-		
-		
-		S32 i = llfloor(pos_clamped_region.mV[VX] * mSize / region_width_meters);
-		S32 j = llfloor(pos_clamped_region.mV[VY] * mSize / region_width_meters);
-		k = i + j*mSize;
-		dx = ((pos_clamped_region.mV[VX] * mSize / region_width_meters) - (F32) i);
-		dy = ((pos_clamped_region.mV[VY] * mSize / region_width_meters) - (F32) j);
-
-		if ((i < mSize-1) && (j < mSize-1))
-		{
-			//  Interior points, no edges
-			r_val.mV[VX] =  mVelX[k]*(1.0f - dx)*(1.0f - dy) + 
-							mVelX[k + 1]*dx*(1.0f - dy) + 
-							mVelX[k + mSize]*dy*(1.0f - dx) + 
-							mVelX[k + mSize + 1]*dx*dy;
-			r_val.mV[VY] =  mVelY[k]*(1.0f - dx)*(1.0f - dy) + 
-							mVelY[k + 1]*dx*(1.0f - dy) + 
-							mVelY[k + mSize]*dy*(1.0f - dx) + 
-							mVelY[k + mSize + 1]*dx*dy;
-		}
-		else 
-		{
-			r_val.mV[VX] = mVelX[k];
-			r_val.mV[VY] = mVelY[k];
-		}
-
-		r_val.mV[VZ] = 0.f;
-		return r_val * WIND_SCALE_HACK;
+		pos_clamped_region.mV[VX] = 0.f;
 	}
-	else
+	else if (pos_clamped_region.mV[VX] >= region_width_meters)
 	{
-		return LLVector3(0, 0, 0);
+		pos_clamped_region.mV[VX] = (F32) fmod(pos_clamped_region.mV[VX], region_width_meters);
 	}
+
+	if (pos_clamped_region.mV[VY] < 0.f)
+	{
+		pos_clamped_region.mV[VY] = 0.f;
+	}
+	else if (pos_clamped_region.mV[VY] >= region_width_meters)
+	{
+		pos_clamped_region.mV[VY] = (F32) fmod(pos_clamped_region.mV[VY], region_width_meters);
+	}
+	
+	
+	S32 i = llfloor(pos_clamped_region.mV[VX] * mSize / region_width_meters);
+	S32 j = llfloor(pos_clamped_region.mV[VY] * mSize / region_width_meters);
+	k = i + j*mSize;
+	dx = ((pos_clamped_region.mV[VX] * mSize / region_width_meters) - (F32) i);
+	dy = ((pos_clamped_region.mV[VY] * mSize / region_width_meters) - (F32) j);
+
+	if ((i < mSize-1) && (j < mSize-1))
+	{
+		//  Interior points, no edges
+		r_val.mV[VX] =  mVelX[k]*(1.0f - dx)*(1.0f - dy) + 
+						mVelX[k + 1]*dx*(1.0f - dy) + 
+						mVelX[k + mSize]*dy*(1.0f - dx) + 
+						mVelX[k + mSize + 1]*dx*dy;
+		r_val.mV[VY] =  mVelY[k]*(1.0f - dx)*(1.0f - dy) + 
+						mVelY[k + 1]*dx*(1.0f - dy) + 
+						mVelY[k + mSize]*dy*(1.0f - dx) + 
+						mVelY[k + mSize + 1]*dx*dy;
+	}
+	else 
+	{
+		r_val.mV[VX] = mVelX[k];
+		r_val.mV[VY] = mVelY[k];
+	}
+
+	r_val.mV[VZ] = 0.f;
+	return r_val * WIND_SCALE_HACK;
 }
 
 
 LLVector3 LLWind::getCloudVelocity(const LLVector3 &pos_region)
 {
-	if(gUseLLWind)
+	llassert(mSize == 16);
+	// Resolves value of wind at a location relative to SW corner of region
+	//  
+	// Returns wind magnitude in X,Y components of vector3
+	LLVector3 r_val;
+	F32 dx,dy;
+	S32 k;
+
+	LLVector3 pos_clamped_region(pos_region);
+	
+	F32 region_width_meters = LLWorld::getInstance()->getRegionWidthInMeters();
+
+	if (pos_clamped_region.mV[VX] < 0.f)
 	{
-		llassert(mSize == 16);
-		// Resolves value of wind at a location relative to SW corner of region
-		//  
-		// Returns wind magnitude in X,Y components of vector3
-		LLVector3 r_val;
-		F32 dx,dy;
-		S32 k;
-
-		LLVector3 pos_clamped_region(pos_region);
-		
-		F32 region_width_meters = LLWorld::getInstance()->getRegionWidthInMeters();
-
-		if (pos_clamped_region.mV[VX] < 0.f)
-		{
-			pos_clamped_region.mV[VX] = 0.f;
-		}
-		else if (pos_clamped_region.mV[VX] >= region_width_meters)
-		{
-			pos_clamped_region.mV[VX] = (F32) fmod(pos_clamped_region.mV[VX], region_width_meters);
-		}
-
-		if (pos_clamped_region.mV[VY] < 0.f)
-		{
-			pos_clamped_region.mV[VY] = 0.f;
-		}
-		else if (pos_clamped_region.mV[VY] >= region_width_meters)
-		{
-			pos_clamped_region.mV[VY] = (F32) fmod(pos_clamped_region.mV[VY], region_width_meters);
-		}
-		
-		
-		S32 i = llfloor(pos_clamped_region.mV[VX] * mSize / region_width_meters);
-		S32 j = llfloor(pos_clamped_region.mV[VY] * mSize / region_width_meters);
-		k = i + j*mSize;
-		dx = ((pos_clamped_region.mV[VX] * mSize / region_width_meters) - (F32) i);
-		dy = ((pos_clamped_region.mV[VY] * mSize / region_width_meters) - (F32) j);
-
-		if ((i < mSize-1) && (j < mSize-1))
-		{
-			//  Interior points, no edges
-			r_val.mV[VX] =  mCloudVelX[k]*(1.0f - dx)*(1.0f - dy) + 
-							mCloudVelX[k + 1]*dx*(1.0f - dy) + 
-							mCloudVelX[k + mSize]*dy*(1.0f - dx) + 
-							mCloudVelX[k + mSize + 1]*dx*dy;
-			r_val.mV[VY] =  mCloudVelY[k]*(1.0f - dx)*(1.0f - dy) + 
-							mCloudVelY[k + 1]*dx*(1.0f - dy) + 
-							mCloudVelY[k + mSize]*dy*(1.0f - dx) + 
-							mCloudVelY[k + mSize + 1]*dx*dy;
-		}
-		else 
-		{
-			r_val.mV[VX] = mCloudVelX[k];
-			r_val.mV[VY] = mCloudVelY[k];
-		}
-
-		r_val.mV[VZ] = 0.f;
-		return r_val * WIND_SCALE_HACK;
+		pos_clamped_region.mV[VX] = 0.f;
 	}
-	else
+	else if (pos_clamped_region.mV[VX] >= region_width_meters)
 	{
-		return LLVector3(0, 0, 0);
+		pos_clamped_region.mV[VX] = (F32) fmod(pos_clamped_region.mV[VX], region_width_meters);
 	}
+
+	if (pos_clamped_region.mV[VY] < 0.f)
+	{
+		pos_clamped_region.mV[VY] = 0.f;
+	}
+	else if (pos_clamped_region.mV[VY] >= region_width_meters)
+	{
+		pos_clamped_region.mV[VY] = (F32) fmod(pos_clamped_region.mV[VY], region_width_meters);
+	}
+	
+	
+	S32 i = llfloor(pos_clamped_region.mV[VX] * mSize / region_width_meters);
+	S32 j = llfloor(pos_clamped_region.mV[VY] * mSize / region_width_meters);
+	k = i + j*mSize;
+	dx = ((pos_clamped_region.mV[VX] * mSize / region_width_meters) - (F32) i);
+	dy = ((pos_clamped_region.mV[VY] * mSize / region_width_meters) - (F32) j);
+
+	if ((i < mSize-1) && (j < mSize-1))
+	{
+		//  Interior points, no edges
+		r_val.mV[VX] =  mCloudVelX[k]*(1.0f - dx)*(1.0f - dy) + 
+						mCloudVelX[k + 1]*dx*(1.0f - dy) + 
+						mCloudVelX[k + mSize]*dy*(1.0f - dx) + 
+						mCloudVelX[k + mSize + 1]*dx*dy;
+		r_val.mV[VY] =  mCloudVelY[k]*(1.0f - dx)*(1.0f - dy) + 
+						mCloudVelY[k + 1]*dx*(1.0f - dy) + 
+						mCloudVelY[k + mSize]*dy*(1.0f - dx) + 
+						mCloudVelY[k + mSize + 1]*dx*dy;
+	}
+	else 
+	{
+		r_val.mV[VX] = mCloudVelX[k];
+		r_val.mV[VY] = mCloudVelY[k];
+	}
+
+	r_val.mV[VZ] = 0.f;
+	return r_val * WIND_SCALE_HACK;
 }
 
 

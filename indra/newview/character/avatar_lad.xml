@@ -394,17 +394,6 @@
        max_attachment_offset="2.0"
        visible_in_first_person="true" />
        
-    <attachment_point
-       id="128"
-       group="8"
-       name="Jay Griff"
-       joint="mScreen"
-       position="0 0 0"
-       rotation="0 0 0"
-       hud="true"
-       max_attachment_offset="0.0"
-       visible_in_first_person="true" />
-       
     <param
        id="32"
        group="1"
