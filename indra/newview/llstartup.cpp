@@ -191,6 +191,7 @@
 #include "llagentlanguage.h"
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
+#include "llwind.h"
 
 #if LL_WINDOWS
 #include "llwindebug.h"
@@ -2434,6 +2435,7 @@ bool idle_startup()
 	//---------------------------------------------------------------------
 	if (STATE_WORLD_INIT == LLStartUp::getStartupState())
 	{
+		gUseLLWind = gSavedSettings.getBOOL("UseLLWind");
 		set_startup_status(0.40f, LLTrans::getString("LoginInitializingWorld"), gAgent.mMOTD);
 		display_startup();
 		// We should have an agent id by this point.

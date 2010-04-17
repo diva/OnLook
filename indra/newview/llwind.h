@@ -42,6 +42,7 @@ class LLVector3;
 class LLBitPack;
 class LLGroupHeader;
 
+extern BOOL gUseLLWind;
 
 class LLWind  
 {
@@ -58,6 +59,7 @@ public:
 	void setCloudDensityPointer(F32 *densityp);
 
 	void setOriginGlobal(const LLVector3d &origin_global);
+	
 private:
 	S32 mSize;
 	F32 * mVelX;
