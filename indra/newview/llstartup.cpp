@@ -173,6 +173,7 @@
 #include "llvoavatar.h"
 #include "llvoclouds.h"
 #include "llweb.h"
+#include "llwind.h"
 #include "llworld.h"
 #include "llworldmapmessage.h"
 #include "llxfermanager.h"
@@ -212,6 +213,7 @@ std::string SCREEN_LAST_FILENAME = "screen_last.bmp";
 //
 extern S32 gStartImageWidth;
 extern S32 gStartImageHeight;
+extern bool gLLWindEnabled;
 
 //
 // local globals
@@ -2434,6 +2436,9 @@ bool idle_startup()
 	//---------------------------------------------------------------------
 	if (STATE_WORLD_INIT == LLStartUp::getStartupState())
 	{
+		//first of all, let's check if wind should be used
+		gLLWindEnabled = gSavedSettings.getBOOL("WindEnabled");
+		
 		set_startup_status(0.40f, LLTrans::getString("LoginInitializingWorld"), gAgent.mMOTD);
 		display_startup();
 		// We should have an agent id by this point.

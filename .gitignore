@@ -1,5 +1,5 @@
-installed.xml
-bin/
-indra/viewer-*
-vivox-runtime/
-libraries/
+/installed.xml
+/bin/
+/indra/viewer-*
+/indra/newview/vivox-runtime/
+/libraries/

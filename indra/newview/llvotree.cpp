@@ -30,6 +30,8 @@
  * $/LicenseInfo$
  */
 
+//a lot of code in here is pretty bad, tagging it for a rewrite
+
 #include "llviewerprecompiledheaders.h"
 
 #include "llvotree.h"
@@ -347,7 +349,8 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		return TRUE;
 	}
 	
-	if (gSavedSettings.getBOOL("RenderAnimateTrees"))
+	//it's cheaper to check if wind is enabled first
+	if (gLLWindEnabled && gSavedSettings.getBOOL("RenderAnimateTrees"))
 	{
 		F32 mass_inv; 
 
@@ -390,7 +393,7 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		}
 	} 
 
-	if (!gSavedSettings.getBOOL("RenderAnimateTrees"))
+	if (!gLLWindEnabled || !gSavedSettings.getBOOL("RenderAnimateTrees"))
 	{
 		if (mReferenceBuffer.isNull())
 		{
@@ -840,7 +843,7 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 		llassert(index_count == max_indices);
 	}
 
-	if (gSavedSettings.getBOOL("RenderAnimateTrees"))
+	if (gLLWindEnabled || gSavedSettings.getBOOL("RenderAnimateTrees"))
 	{
 		mDrawable->getFace(0)->mVertexBuffer = mReferenceBuffer;
 	}

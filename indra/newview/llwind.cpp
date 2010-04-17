@@ -52,7 +52,7 @@
 #include "llagent.h"
 #include "llworld.h"
 
-
+bool gLLWindEnabled = true;
 const F32 CLOUD_DIVERGENCE_COEF = 0.5f; 
 
 
@@ -84,6 +84,7 @@ LLWind::~LLWind()
 
 void LLWind::init()
 {
+	// Let's leave this enabled for now, I don't want to muck stuff up in case wind is re-enabled
 	// Initialize vector data
 	mVelX = new F32[mSize*mSize];
 	mVelY = new F32[mSize*mSize];
@@ -104,7 +105,7 @@ void LLWind::init()
 
 void LLWind::decompress(LLBitPack &bitpack, LLGroupHeader *group_headerp)
 {
-	if (!mCloudDensityp)
+	if (!mCloudDensityp || !gLLWindEnabled)
 	{
 		return;
 	}
@@ -181,6 +182,10 @@ void LLWind::decompress(LLBitPack &bitpack, LLGroupHeader *group_headerp)
 
 LLVector3 LLWind::getAverage()
 {
+	if(!gLLWindEnabled)
+	{
+		return LLVector3(0.f, 0.f, 0.f);
+	}
 	//  Returns in average_wind the average wind velocity 
 	LLVector3 average(0.0f, 0.0f, 0.0f);	
 	S32 i, grid_count;
@@ -198,6 +203,10 @@ LLVector3 LLWind::getAverage()
 
 LLVector3 LLWind::getVelocityNoisy(const LLVector3 &pos_region, const F32 dim)
 {
+	if(!gLLWindEnabled)
+	{
+		return LLVector3(0.f, 0.f, 0.f);
+	}
 	//  Resolve a value, using fractal summing to perturb the returned value 
 	LLVector3 r_val(0,0,0);
 	F32 norm = 1.0f;
@@ -228,6 +237,10 @@ LLVector3 LLWind::getVelocityNoisy(const LLVector3 &pos_region, const F32 dim)
 
 LLVector3 LLWind::getVelocity(const LLVector3 &pos_region)
 {
+	if(!gLLWindEnabled)
+	{
+		return LLVector3(0.f, 0.f, 0.f);
+	}
 	llassert(mSize == 16);
 	// Resolves value of wind at a location relative to SW corner of region
 	//  
@@ -290,6 +303,10 @@ LLVector3 LLWind::getVelocity(const LLVector3 &pos_region)
 
 LLVector3 LLWind::getCloudVelocity(const LLVector3 &pos_region)
 {
+	if(!gLLWindEnabled)
+	{
+		return LLVector3(0.f, 0.f, 0.f);
+	}
 	llassert(mSize == 16);
 	// Resolves value of wind at a location relative to SW corner of region
 	//  
@@ -349,7 +366,7 @@ LLVector3 LLWind::getCloudVelocity(const LLVector3 &pos_region)
 	return r_val * WIND_SCALE_HACK;
 }
 
-
+//keep the setters for now, in case wind is re-enabled during runtime
 void LLWind::setCloudDensityPointer(F32 *densityp)
 {
 	mCloudDensityp = densityp;
