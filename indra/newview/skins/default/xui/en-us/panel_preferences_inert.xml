@@ -83,6 +83,14 @@
 				</radio_item>
 			</radio_group>
 		</panel>
+		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
+			 follows="left|top|right|bottom" label="Performance" name="Performance">
+			 <check_box bottom_delta="-20" control_name="WindEnabled" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+		    	label="Enable Wind Effects" left="10"
+			    mouse_opaque="true" name="enable_wind" radio_style="false"
+		    	width="400" />
+		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Miscellaneous" name="Miscellaneous">
 			<check_box bottom_delta="-30" control_name="DoubleClickTeleport" enabled="true"

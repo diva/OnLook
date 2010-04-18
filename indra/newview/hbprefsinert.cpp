@@ -38,6 +38,7 @@
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
+#include "llwind.h"
 
 class LLPrefsInertImpl : public LLPanel
 {
@@ -63,6 +64,7 @@ private:
 	BOOL mPreviewAnimInWorld;
 	BOOL mSpeedRez;
 	BOOL mRevokePermsOnStandUp;
+	BOOL mEnableLLWind;
 	U32 mSpeedRezInterval;
 	U32 mLinksForChattingObjects;
 	U32 mTimeFormat;
@@ -111,6 +113,7 @@ void LLPrefsInertImpl::refreshValues()
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 	mLinksForChattingObjects	= gSavedSettings.getU32("LinksForChattingObjects");
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
+	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
 }
 
 void LLPrefsInertImpl::refresh()
@@ -183,6 +186,8 @@ void LLPrefsInertImpl::cancel()
 	gSavedSettings.setU32("SpeedRezInterval",			mSpeedRezInterval);
 	gSavedSettings.setU32("LinksForChattingObjects",	mLinksForChattingObjects);
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		mRevokePermsOnStandUp);
+	gSavedSettings.setBOOL("WindEnabled",				mEnableLLWind);
+	gLLWindEnabled = mEnableLLWind;
 }
 
 void LLPrefsInertImpl::apply()
