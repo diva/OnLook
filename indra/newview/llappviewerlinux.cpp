@@ -49,6 +49,10 @@
 #if LL_LINUX
 # include <dlfcn.h>		// RTLD_LAZY
 # include <execinfo.h>  // backtrace - glibc only
+# include <sys/types.h>
+# include <unistd.h>
+# include <dirent.h>
+# include <boost/algorithm/string.hpp>
 #elif LL_SOLARIS
 # include <sys/types.h>
 # include <unistd.h>
@@ -670,6 +674,7 @@ bool LLAppViewerLinux::beingDebugged()
 					base += 1;
 				}
 				
+				//should valgrind be added here?
 				if (strcmp(base, "gdb") == 0)
 				{
 					debugged = yes;
@@ -727,8 +732,99 @@ std::string LLAppViewerLinux::generateSerialNumber()
 {
 	char serial_md5[MD5HEX_STR_SIZE];
 	serial_md5[0] = 0;
-
+#if LL_SOLARIS
 	// TODO
+#else
+	// I'm going to assume this works on everything but solaris
+	std::string rootDeviceName = "";
+	std::string rootDeviceUUID = "";
+	
+	std::ifstream mountsFile ("/proc/mounts", std::ios_base::in);
+	
+	std::string line;
+	while (getline(mountsFile, line, '\n'))
+	{
+		std::vector<std::string> splitline;
+		boost::split(splitline, line, boost::is_any_of(" "));
+		
+		if(splitline[0] != "rootfs" && splitline[1] == "/")
+		{
+			//bingo!
+			rootDeviceName = splitline[0];
+			splitline.clear();
+			break;
+		}
+		else
+		{
+			splitline.clear();
+		}
+	}
+	
+	mountsFile.close();
 
+	DIR *dp;
+	struct dirent *ep;
+	
+	char targetDir[] = "/dev/disk/by-uuid/";
+	
+	dp = opendir (targetDir);
+	
+	if (dp != NULL)
+	{
+		while ((ep = readdir (dp)))
+		{	
+			if(strcmp(".", ep->d_name) != 0 && strcmp("..", ep->d_name) != 0)
+			{
+				char buf[512];
+				char* targetLink = new char[1024];
+			
+				strcpy(targetLink, targetDir);
+				strcat(targetLink, ep->d_name);
+				
+				int count = readlink(targetLink, buf, sizeof(buf));
+				
+				if (count >= 0)
+				{
+					buf[count] = '\0';
+					
+					std::vector<std::string> splitSymlink;
+					boost::split(splitSymlink, buf, boost::is_any_of("/"));
+					
+					//alright, this is the root partition, print out its uuid
+					if("/dev/" + splitSymlink[splitSymlink.size() - 1] == rootDeviceName)
+					{
+						rootDeviceUUID = ep->d_name;
+						splitSymlink.clear();
+						break;
+					}
+					else
+					{
+						splitSymlink.clear();
+					}
+				}
+			}
+		}
+		
+		(void) closedir (dp);
+	}
+	else
+	{
+		llerrs << "Couldn't open /dev/disk/by-uuid/" << llendl;
+	}
+		
+	if(rootDeviceName != "" && rootDeviceUUID != "")
+	{	
+		LLMD5 md5;
+		md5.update( (unsigned char*)rootDeviceUUID.c_str(), sizeof(char[36]));
+		md5.finalize();
+		md5.hex_digest(serial_md5);
+		
+		llinfos << "Root Device: " << rootDeviceName << "\tUUID: " << rootDeviceUUID << "\tHash: " << serial_md5 << llendl;
+	}
+	else
+	{
+		llinfos << "Could not find root device's UUID" << llendl;
+	}
+#endif
 	return serial_md5;
 }
