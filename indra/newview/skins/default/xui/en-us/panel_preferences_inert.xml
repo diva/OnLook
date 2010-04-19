@@ -90,6 +90,11 @@
 		    	label="Enable Wind Effects" left="10"
 			    mouse_opaque="true" name="enable_wind" radio_style="false"
 		    	width="400" />
+		    <check_box bottom_delta="-20" control_name="CloudsEnabled" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+		    	label="Enable Clouds" left="10"
+			    mouse_opaque="true" name="enable_clouds" radio_style="false"
+		    	width="400" />
 		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Miscellaneous" name="Miscellaneous">

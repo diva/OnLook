@@ -39,6 +39,7 @@
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
 #include "llwind.h"
+#include "pipeline.h"
 
 class LLPrefsInertImpl : public LLPanel
 {
@@ -65,6 +66,8 @@ private:
 	BOOL mSpeedRez;
 	BOOL mRevokePermsOnStandUp;
 	BOOL mEnableLLWind;
+	BOOL mEnableClouds;
+	BOOL mInitialEnableClouds;
 	U32 mSpeedRezInterval;
 	U32 mLinksForChattingObjects;
 	U32 mTimeFormat;
@@ -78,6 +81,8 @@ LLPrefsInertImpl::LLPrefsInertImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_inert.xml");
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
 	refresh();
+	
+	mInitialEnableClouds = mEnableClouds;
 }
 
 //static
@@ -114,6 +119,7 @@ void LLPrefsInertImpl::refreshValues()
 	mLinksForChattingObjects	= gSavedSettings.getU32("LinksForChattingObjects");
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
+	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
 }
 
 void LLPrefsInertImpl::refresh()
@@ -188,6 +194,12 @@ void LLPrefsInertImpl::cancel()
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		mRevokePermsOnStandUp);
 	gSavedSettings.setBOOL("WindEnabled",				mEnableLLWind);
 	gLLWindEnabled = mEnableLLWind;
+	
+	if(mInitialEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
+	{
+		gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);
+		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
+	}
 }
 
 void LLPrefsInertImpl::apply()

@@ -2569,6 +2569,11 @@ bool idle_startup()
 		{
 			LLFloaterBeacons::showInstance();
 		}
+		
+		if (!gSavedSettings.getBOOL("CloudsEnabled") && !gNoRender)
+		{
+			LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
+		}
 
 		if (!gNoRender)
 		{
