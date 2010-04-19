@@ -254,6 +254,10 @@ PFNGLBINDATTRIBLOCATIONARBPROC glBindAttribLocationARB = NULL;
 PFNGLGETACTIVEATTRIBARBPROC glGetActiveAttribARB = NULL;
 PFNGLGETATTRIBLOCATIONARBPROC glGetAttribLocationARB = NULL;
 
+#if LL_WINDOWS
+PFNWGLSWAPINTERVALEXTPROC      wglSwapIntervalEXT = NULL;
+#endif
+
 #if LL_LINUX_NV_GL_HEADERS
 // linux nvidia headers.  these define these differently to mesa's.  ugh.
 PFNGLACTIVETEXTUREARBPROC glActiveTextureARB = NULL;
