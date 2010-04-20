@@ -69,6 +69,11 @@
 #include "llui.h"
 #include "llweb.h"
 
+#if OPENSIM_RULES==1
+#include "llpreview.h"
+#include "llpreviewtexture.h"
+#endif /* OPENSIM_RULES==1 */
+
 extern void handle_buy(void*);
 
 extern BOOL gDebugClicks;
@@ -158,8 +163,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	LLViewerObject *object = mPick.getObject();
 	LLViewerObject *parent = NULL;
 
-#ifdef OPENSIM_RULES
-#warn "DICKS IN MY BUTT"
+#if OPENSIM_RULES==1
 	if(mPick.mKeyMask == MASK_SHIFT)
 	{
 		if(object)
@@ -171,13 +175,34 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 				if(img)
 				{
 					LLUUID image_id = img->getID();
-					LLInventoryBridge::open_texture(image_id, std::string(image_id), true, LLUUID::null ,true);
+					
+					// See if we can bring an exiting preview to the front
+					if( !LLPreview::show( image_id, true ) )
+					{
+						// There isn't one, so make a new preview
+						S32 left, top;
+						gFloaterView->getNewFloaterPosition(&left, &top);
+						LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
+						rect.translate( left - rect.mLeft, top - rect.mTop );
+
+						LLPreviewTexture* preview;
+						preview = new LLPreviewTexture("preview texture",
+														  rect,
+														  image_id.getString(),
+														  image_id,
+														  LLUUID::null,
+														  true);
+						preview->setSourceID(image_id);
+						preview->setFocus(TRUE);
+
+						gFloaterView->adjustToFitScreen(preview, FALSE);
+					}
 				}
 			}
 		}
 		return TRUE;
 	}
-#endif /* OPENSIM_RULES */
+#endif /* OPENSIM_RULES==1 */
 
 	if (mPick.mPickType != LLPickInfo::PICK_LAND)
 	{

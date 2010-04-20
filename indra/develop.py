@@ -80,7 +80,7 @@ class PlatformSetup(object):
     distcc = True
     cmake_opts = []
     word_size = 32
-    opensim_rules = False #whether or not to use rules fit for opensim
+    opensim_rules = 'OFF' #whether or not to use rules fit for opensim
     using_express = False
 
     def __init__(self):
