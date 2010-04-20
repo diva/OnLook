@@ -190,7 +190,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 														  rect,
 														  image_id.getString(),
 														  image_id,
-														  LLUUID::null,
+														  image_id,
 														  true);
 						preview->setSourceID(image_id);
 						preview->setFocus(TRUE);

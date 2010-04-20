@@ -84,6 +84,9 @@
 #include "llselectmgr.h"
 
 #include "llsdserialize.h"
+// <edit>
+#include "llbuildnewviewsscheduler.h"
+// </edit>
 
 static LLRegisterWidget<LLInventoryPanel> r("inventory_panel");
 
@@ -482,16 +485,15 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	init_inventory_actions(this);
 
 	// Controls
+	U32 sort_order = gSavedSettings.getU32("InventorySortOrder");
+	BOOL sort_by_name = ! ( sort_order & LLInventoryFilter::SO_DATE );
+	BOOL sort_folders_by_name = ( sort_order & LLInventoryFilter::SO_FOLDERS_BY_NAME );
+	BOOL sort_system_folders_to_top = ( sort_order & LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP );
 	addBoolControl("Inventory.ShowFilters", FALSE);
-	addBoolControl("Inventory.SortByName", FALSE);
-	addBoolControl("Inventory.SortByDate", TRUE);
-	addBoolControl("Inventory.FoldersAlwaysByName", TRUE);
-	addBoolControl("Inventory.SystemFoldersToTop", TRUE);
-	updateSortControls();
-
-	addBoolControl("Inventory.SearchName", TRUE);
-	addBoolControl("Inventory.SearchDesc", FALSE);
-	addBoolControl("Inventory.SearchCreator", FALSE);
+	addBoolControl("Inventory.SortByName", sort_by_name );
+	addBoolControl("Inventory.SortByDate", ! sort_by_name );
+	addBoolControl("Inventory.FoldersAlwaysByName", sort_folders_by_name );
+	addBoolControl("Inventory.SystemFoldersToTop", sort_system_folders_to_top );
 
 	mSavedFolderState = new LLSaveFolderState();
 	mSavedFolderState->setApply(FALSE);
@@ -505,7 +507,7 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	if (mActivePanel)
 	{
 		// "All Items" is the previous only view, so it gets the InventorySortOrder
-		mActivePanel->setSortOrder(gSavedSettings.getU32(LLInventoryPanel::DEFAULT_SORT_ORDER));
+		mActivePanel->setSortOrder(gSavedSettings.getU32("InventorySortOrder"));
 		mActivePanel->getFilter()->markDefault();
 		mActivePanel->getRootFolder()->applyFunctorRecursively(*mSavedFolderState);
 		mActivePanel->setSelectCallback(onSelectionChange, mActivePanel);
@@ -1248,6 +1250,9 @@ const std::string LLInventoryPanel::DEFAULT_SORT_ORDER = std::string("InventoryS
 const std::string LLInventoryPanel::RECENTITEMS_SORT_ORDER = std::string("RecentItemsSortOrder");
 const std::string LLInventoryPanel::WORNITEMS_SORT_ORDER = std::string("WornItemsSortOrder");
 const std::string LLInventoryPanel::INHERIT_SORT_ORDER = std::string("");
+// <edit>
+std::list<LLInventoryPanel*> LLInventoryPanel::sInstances;
+// </edit>
 
 LLInventoryPanel::LLInventoryPanel(const std::string& name,
 								    const std::string& sort_order_setting,
@@ -1263,6 +1268,9 @@ LLInventoryPanel::LLInventoryPanel(const std::string& name,
 	mAllowMultiSelect(allow_multi_select),
 	mSortOrderSetting(sort_order_setting)
 {
+	// <edit>
+	sInstances.push_back(this);
+	// </edit>
 	setBackgroundColor(gColors.getColor("InventoryBackgroundColor"));
 	setBackgroundVisible(TRUE);
 	setBackgroundOpaque(TRUE);
@@ -1315,6 +1323,10 @@ BOOL LLInventoryPanel::postBuild()
 
 LLInventoryPanel::~LLInventoryPanel()
 {
+	// <edit>
+	sInstances.remove(this);
+	gBuildNewViewsScheduler->cancel(this);
+	// </edit>
 	// should this be a global setting?
 	U32 sort_order = mFolders->getSortOrder();
 	if (mSortOrderSetting != INHERIT_SORT_ORDER)
@@ -1635,7 +1647,9 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 			for(S32 i = 0; i < count; ++i)
 			{
 				LLInventoryCategory* cat = categories->get(i);
-				buildNewViews(cat->getUUID());
+				// <edit>
+				gBuildNewViewsScheduler->addJob(this, cat);
+				// </edit>
 			}
 		}
 		if(items)
@@ -1644,10 +1658,109 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 			for(S32 i = 0; i < count; ++i)
 			{
 				LLInventoryItem* item = items->get(i);
-				buildNewViews(item->getUUID());
+				// <edit>
+				gBuildNewViewsScheduler->addJob(this, item);
+				// </edit>
 			}
 		}
 		mInventory->unlockDirectDescendentArrays(id);
+	}
+}
+// <edit>
+void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
+{
+	LLFolderViewItem* itemp = NULL;
+
+	if (objectp)
+	{		
+		if (objectp->getType() <= LLAssetType::AT_NONE ||
+			objectp->getType() >= LLAssetType::AT_COUNT)
+		{
+			llwarns << "LLInventoryPanel::buildNewViews called with objectp->mType == " 
+				<< ((S32) objectp->getType())
+				<< " (shouldn't happen)" << llendl;
+		}
+		else if (objectp->getType() == LLAssetType::AT_CATEGORY) // build new view for category
+		{
+			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(objectp->getType(),
+													LLInventoryType::IT_CATEGORY,
+													this,
+													objectp->getUUID());
+
+			if (new_listener)
+			{
+				LLFolderViewFolder* folderp = new LLFolderViewFolder(new_listener->getDisplayName(),
+													new_listener->getIcon(),
+													mFolders,
+													new_listener);
+				
+				folderp->setItemSortOrder(mFolders->getSortOrder());
+				itemp = folderp;
+			}
+		}
+		else // build new view for item
+		{
+			LLInventoryItem* item = (LLInventoryItem*)objectp;
+			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(
+				item->getType(),
+				item->getInventoryType(),
+				this,
+				item->getUUID(),
+				item->getFlags());
+			if (new_listener)
+			{
+				itemp = new LLFolderViewItem(new_listener->getDisplayName(),
+												new_listener->getIcon(),
+												new_listener->getCreationDate(),
+												mFolders,
+												new_listener);
+			}
+		}
+
+		LLFolderViewFolder* parent_folder = (LLFolderViewFolder*)mFolders->getItemByID(objectp->getParentUUID());
+
+		if (itemp)
+		{
+			// <edit>
+			itemp->mDelayedDelete = TRUE;
+			// </edit>
+			if (parent_folder)
+			{
+				itemp->addToFolder(parent_folder, mFolders);
+			}
+			else
+			{
+				llwarns << "Couldn't find parent folder for child " << itemp->getLabel() << llendl;
+				delete itemp;
+			}
+		}
+	}
+
+	if (!objectp || (objectp && (objectp->getType() == LLAssetType::AT_CATEGORY)))
+	{
+		LLViewerInventoryCategory::cat_array_t* categories;
+		LLViewerInventoryItem::item_array_t* items;
+
+		mInventory->lockDirectDescendentArrays((objectp != NULL) ? objectp->getUUID() : LLUUID::null, categories, items);
+		if(categories)
+		{
+			S32 count = categories->count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				LLInventoryCategory* cat = categories->get(i);
+				buildNewViews(cat);
+			}
+		}
+		if(items)
+		{
+			S32 count = items->count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				LLInventoryItem* item = items->get(i);
+				buildNewViews(item);
+			}
+		}
+		mInventory->unlockDirectDescendentArrays(objectp->getUUID());
 	}
 }
 
