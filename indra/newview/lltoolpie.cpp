@@ -158,6 +158,27 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	LLViewerObject *object = mPick.getObject();
 	LLViewerObject *parent = NULL;
 
+#ifdef OPENSIM_RULES
+#warn "DICKS IN MY BUTT"
+	if(mPick.mKeyMask == MASK_SHIFT)
+	{
+		if(object)
+		{
+			U8 face = mPick.mObjectFace & 0xff;
+			if(face < object->getNumTEs())
+			{
+				LLViewerImage* img = object->getTEImage(face);
+				if(img)
+				{
+					LLUUID image_id = img->getID();
+					LLInventoryBridge::open_texture(image_id, std::string(image_id), true, LLUUID::null ,true);
+				}
+			}
+		}
+		return TRUE;
+	}
+#endif /* OPENSIM_RULES */
+
 	if (mPick.mPickType != LLPickInfo::PICK_LAND)
 	{
 		LLViewerParcelMgr::getInstance()->deselectLand();

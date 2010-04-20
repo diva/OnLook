@@ -809,7 +809,7 @@ std::string LLAppViewerLinux::generateSerialNumber()
 	}
 	else
 	{
-		llerrs << "Couldn't open /dev/disk/by-uuid/" << llendl;
+		llwarns << "Couldn't open /dev/disk/by-uuid/" << llendl;
 	}
 		
 	if(rootDeviceName != "" && rootDeviceUUID != "")
@@ -823,7 +823,7 @@ std::string LLAppViewerLinux::generateSerialNumber()
 	}
 	else
 	{
-		llinfos << "Could not find root device's UUID" << llendl;
+		llwarns << "Could not find root device's UUID" << llendl;
 	}
 #endif
 	return serial_md5;
