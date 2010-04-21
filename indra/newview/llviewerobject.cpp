@@ -254,6 +254,9 @@ LLViewerObject::~LLViewerObject()
 	{
 		if(iter->second != NULL)
 		{
+			// <edit>
+			// There was a crash here
+			// </edit>
 			delete iter->second->data;
 			delete iter->second;
 		}
@@ -1877,8 +1880,11 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 
 	if ( gShowObjectUpdates )
 	{
-		if (!((mPrimitiveCode == LL_PCODE_LEGACY_AVATAR) && (((LLVOAvatar *) this)->isSelf()))
-			&& mRegionp)
+		// <edit> We want to see updates from our own avatar
+		//if (!((mPrimitiveCode == LL_PCODE_LEGACY_AVATAR) && (((LLVOAvatar *) this)->mIsSelf))
+		//	&& mRegionp)
+		if(mRegionp)
+		// </edit>
 		{
 			LLViewerObject* object = gObjectList.createObjectViewer(LL_PCODE_LEGACY_TEXT_BUBBLE, mRegionp);
 			LLVOTextBubble* bubble = (LLVOTextBubble*) object;
@@ -1929,6 +1935,11 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 
 	if (needs_refresh)
 	{
+		// <edit>
+		if(isChanged(MOVED))	// Update "center" if this or children are selected,
+								// and translate, scale, or rotate occurred on this.
+								// Leave dialog refresh to happen always, as before.
+		// </edit>
 		LLSelectMgr::getInstance()->updateSelectionCenter();
 		dialog_refresh_all();
 	} 
@@ -4076,6 +4087,14 @@ void LLViewerObject::setDebugText(const std::string &utf8text)
 	mText->setDoFade(FALSE);
 	updateText();
 }
+// <edit>
+std::string LLViewerObject::getDebugText()
+{
+	if(mText)
+		return mText->getStringUTF8();
+	return "";
+}
+// </edit>
 
 void LLViewerObject::setIcon(LLViewerImage* icon_image)
 {
@@ -5141,3 +5160,20 @@ void LLViewerObject::resetChildrenPosition(const LLVector3& offset, BOOL simplif
 	return ;
 }
 
+
+// <edit>
+S32 LLViewerObject::getAttachmentPoint()
+{
+	return ((S32)((((U8)mState & AGENT_ATTACH_MASK) >> 4) | (((U8)mState & ~AGENT_ATTACH_MASK) << 4)));
+}
+
+std::string LLViewerObject::getAttachmentPointName()
+{
+	S32 point = getAttachmentPoint();
+	if((point > 0) && (point < 39))
+	{
+		return gAgent.getAvatarObject()->mAttachmentPoints[point]->getName();
+	}
+	return llformat("unsupported point %d", point);
+}
+// </edit>

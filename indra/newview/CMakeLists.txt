@@ -242,6 +242,7 @@ set(viewer_SOURCE_FILES
     llinventoryview.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
+    lllocalinventory.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llsavedlogins.cpp
@@ -668,6 +669,7 @@ set(viewer_HEADER_FILES
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
+    lllocalinventory.h
     lllogchat.h
     llloginhandler.h
     llsavedlogins.h
