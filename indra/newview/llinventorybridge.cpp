@@ -772,14 +772,18 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 	{
 		LLInventoryItem* item = model->getItem(mUUID);
 		if(!item) return;
+#if OPENSIM_RULES!=1
 		if(item->getCreatorUUID() != gAgentID) return;
+#endif /* OPENSIM_RULES!=1 */
 		DOFloaterHex::show(mUUID);
 	}
 	else if("open text" == action)
 	{
 		LLInventoryItem* item = model->getItem(mUUID);
 		if(!item) return;
+#if OPENSIM_RULES!=1
 		if(item->getCreatorUUID() != gAgentID) return;
+#endif /* OPENSIM_RULES!=1 */
 		HGFloaterTextEditor::show(mUUID);
 	}
 	else if ("copy_uuid" == action)
