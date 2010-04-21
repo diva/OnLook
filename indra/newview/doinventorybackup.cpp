@@ -304,9 +304,11 @@ void DOInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 	userdata->item = item;
 	LLViewerImage* imagep;
 	
+#if OPENSIM_RULES!=1
 	//don't be a jerk. (this check probably breaks stuff)
 	if(item->getCreatorUUID() == gAgentID)
 	{
+#endif /* OPENSIM_RULES!=1 */
 		switch(item->getType())
 		{
 		case LLAssetType::AT_TEXTURE:
@@ -338,7 +340,9 @@ void DOInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 			gAssetStorage->getAssetData(item->getAssetUUID(), item->getType(), onAsset, userdata, TRUE);
 			break;
 		}
+#if OPENSIM_RULES!=1
 	}
+#endif /* OPENSIM_RULES!=1 */
 }
 
 // static

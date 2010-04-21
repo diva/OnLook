@@ -3,3 +3,7 @@
 /indra/viewer-*
 /indra/newview/vivox-runtime/
 /libraries/
+*.pyc
+*.orig
+*.rej
+
