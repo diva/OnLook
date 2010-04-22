@@ -283,6 +283,9 @@ public:
 	void getOffObject();
 
 	BOOL isWearingAttachment( const LLUUID& inv_item_id );
+	// <edit> testzone attachpt
+	BOOL isWearingUnsupportedAttachment( const LLUUID& inv_item_id );
+	// </edit>
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
@@ -578,6 +581,10 @@ private:
 	const static LLUUID	sStepSounds[LL_MCODE_END];
 	const static LLUUID	sStepSoundOnLand;
 
+	// <edit>
+	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
+	// </edit>
+
 	// Xml parse tree of avatar config file
 	static LLXmlTree sXMLTree;
 	// Xml parse tree of avatar skeleton file
@@ -678,32 +685,15 @@ protected:
 	S32				getLocalDiscardLevel(LLVOAvatarDefines::ETextureIndex index);
 public:
 	static void updateFreezeCounter(S32 counter = 0 );
-private:
-	static S32 sFreezeCounter;
-	
-	//-----------------------------------------------------------------------------------------------
-	// Avatar skeleton setup.
-	//-----------------------------------------------------------------------------------------------
-private:
-	BOOL loadAvatar();
-	BOOL setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
-	BOOL buildSkeleton(const LLVOAvatarSkeletonInfo *info);
-
-	//-----------------------------------------------------------------------------------------------
-	// Per-avatar information about texture data.
-	// To-do: Move this to private implementation class
-	//-----------------------------------------------------------------------------------------------
-private:
-	struct BakedTextureData
-	{
-		LLUUID			mLastTextureIndex;
-		LLTexLayerSet*	mTexLayerSet;
-		bool			mIsLoaded;
-		bool			mIsUsed;
-		LLVOAvatarDefines::ETextureIndex	mTextureIndex;
-		U32				mMaskTexName;
-		// Stores pointers to the joint meshes that this baked texture deals with
-		std::vector< LLViewerJointMesh * > mMeshes;  // std::vector<LLViewerJointMesh> mJoints[i]->mMeshParts
+// <edit>
+	//bool mNametagSaysIdle;
+	//bool mIdleForever;
+	//LLFrameTimer mIdleTimer;
+	//U32 mIdleMinutes;
+	LLUUID mFocusObject;
+	LLVector3d mFocusVector;
+	//void resetIdleTime();
+// </edit>
 	};
 	typedef std::vector<BakedTextureData> bakedtexturedata_vec_t;
 	bakedtexturedata_vec_t mBakedTextureData;

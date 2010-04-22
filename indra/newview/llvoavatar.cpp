@@ -83,6 +83,11 @@
 #include "llvoiceclient.h"
 #include "llvoicevisualizer.h" // Ventrella
 
+// <edit>
+#include "llfloaterexploreanimations.h"
+//#include "llao.h"
+// </edit>
+
 #if LL_MSVC
 // disable boost::lexical_cast warning
 #pragma warning (disable:4702)
@@ -747,7 +752,14 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNeedsSkin(FALSE),
 	mUpdatePeriod(1),
 	mFullyLoadedInitialized(FALSE),
-	mHasBakedHair( FALSE )
+	mHasBakedHair( FALSE ),
+	// <edit>
+	mNametagSaysIdle(false),
+	mIdleForever(true),
+	mIdleMinutes(0),
+	mFocusObject(LLUUID::null),
+	mFocusVector(LLVector3d::zero)
+	// </edit>
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	//VTResume();  // VTune
@@ -3061,9 +3073,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					new_name = TRUE;
 				}
 				
-				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-				avatar_name_color.setAlpha(alpha);
-				mNameText->setColor(avatar_name_color);
+				}
+				
+				// <edit>
+				//LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+				//avatar_name_color.setAlpha(alpha);
 				
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				mNameText->setUsePixelSize(TRUE);
@@ -3144,6 +3158,108 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				line += lastname->getString();
 				BOOL need_comma = FALSE;
 
+				BOOL need_comma = FALSE;
+
+				// <edit>
+				if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
+				{
+					mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
+					strcat(line, " (Unknown viewer)");
+				}
+				else
+				{
+					std::string uuid_str = getTEImage(TEX_HEAD_BODYPAINT)->getID().asString();
+
+					if(uuid_str == "ccda2b3b-e72c-a112-e126-fee238b67218")
+					{
+						// textures other than head are 4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6
+						mNameText->setColor(LLColor4(0.f, 1.0f, 0.0f));
+						strcat(line, " (Emerald)");
+					}
+					else if(uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
+						strcat(line, " (MoyMix)");
+					}
+					else if(uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
+						strcat(line, " (MoyMix/B)");
+					}
+					else if(uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
+						strcat(line, " (MoyMix/nolife)");
+					}
+					//else if(uuid_str == "abbca853-30ba-49c1-a1e7-2a5b9a70573f")
+					//{
+					//	mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
+					//	strcat(line, " (CryoLife/" + "A)");
+					//}
+					else if(uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
+					{
+						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
+						strcat(line, " (CryoLife)");
+					}
+					else if(uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
+					{
+						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
+						strcat(line, " (Phoxy SL)");
+					}
+					else if(uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
+					{
+						mNameText->setColor(LLColor4(0.7f, 0.7f, 0.7f));
+						strcat(line, " (VLife)");
+					}
+					else if(uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
+					{
+						mNameText->setColor(LLColor4(1.f, 0.0f, 0.0f));
+						strcat(line, " (GridProxy/LordGregGreg)");
+					}
+					else if(uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
+					{
+						mNameText->setColor(LLColor4(1.f, 1.f, 0.0f));
+						strcat(line, " (GridProxy/DayOh)");
+					}
+					else if(uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
+						strcat(line, " (PSL/A)");
+					}
+					else if(uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
+						strcat(line, " (PSL/B)");
+					}
+					else if(uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
+					{
+						mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
+						strcat(line, " (Emerald/GEMINI)");
+					}
+					else if(uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
+					{
+						mNameText->setColor(LLColor4(0.9f, 0.9f, 0.9f));
+						strcat(line, " (GEMINI Bot)");
+					}
+					else if(uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
+					{
+						mNameText->setColor(LLColor4(1.0f, 0.5f, 0.4f));
+						strcat(line, " (tyk3n)");
+					}
+					else if(uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
+					{
+						mNameText->setColor(gColors.getColor( "AvatarNameColor" ));
+						strcat(line, " (NeilLife)");
+					}
+					
+					else
+					{
+						LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+						avatar_name_color.setAlpha(1.f);
+						mNameText->setColor(avatar_name_color);
+					}
+				}
+				// </edit>
 				if (is_away || is_muted || is_busy)
 				{
 					line += " (";
@@ -3301,6 +3417,14 @@ void LLVOAvatar::idleUpdateTractorBeam()
 	{
 		return;
 	}
+
+	// <edit>
+	if(gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+	{
+		return;
+	}
+	// </edit>
+
 	const LLPickInfo& pick = gViewerWindow->getLastPick();
 
 	// No beam for media textures
@@ -4729,6 +4853,9 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mSignaledAnimations.end())
 		{
 			processSingleAnimationStateChange(anim_it->first, FALSE);
+			// <edit>
+			LLFloaterExploreAnimations::stopAnim(getID(), anim_it->first);
+			// </edit>
 			mPlayingAnimations.erase(anim_it++);
 			continue;
 		}
@@ -4744,6 +4871,9 @@ void LLVOAvatar::processAnimationStateChanges()
 		// signaled but not playing, or different sequence id, start motion
 		if (found_anim == mPlayingAnimations.end() || found_anim->second != anim_it->second)
 		{
+			// <edit>
+			LLFloaterExploreAnimations::startAnim(getID(), anim_it->first);
+			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{
 				mPlayingAnimations[anim_it->first] = anim_it->second;
@@ -5986,6 +6116,40 @@ BOOL LLVOAvatar::attachObject(LLViewerObject *viewer_object)
 {
 	LLViewerJointAttachment* attachment = getTargetAttachmentPoint(viewer_object);
 
+	// <edit> testzone attachpt
+	if(!attachment)
+	{
+		S32 attachmentID = ATTACHMENT_ID_FROM_STATE(viewer_object->getState());
+		LLUUID item_id;
+		LLNameValue* item_id_nv = viewer_object->getNVPair("AttachItemID");
+		if( item_id_nv )
+		{
+			const char* s = item_id_nv->getString();
+			if(s)
+				item_id.set(s);
+		}
+		if(!item_id.isNull())
+		{
+			mUnsupportedAttachmentPoints[attachmentID] = item_id;
+			if (viewer_object->isSelected())
+			{
+				LLSelectMgr::getInstance()->updateSelectionCenter();
+				LLSelectMgr::getInstance()->updatePointAt();
+			}
+
+			if (mIsSelf)
+			{
+				updateAttachmentVisibility(gAgent.getCameraMode());
+				
+				// Then make sure the inventory is in sync with the avatar.
+				gInventory.addChangedMask( LLInventoryObserver::LABEL, item_id );
+				gInventory.notifyObservers();
+			}
+		}
+		else
+			llwarns << "No item ID" << llendl;
+	}
+	// </edit>
 	if (!attachment || !attachment->addObject(viewer_object))
 	{
 		return FALSE;
@@ -6096,6 +6260,55 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 		}
 	}
 
+	// <edit> testzone attachpt
+	LLUUID item_id;
+	LLNameValue* item_id_nv = viewer_object->getNVPair("AttachItemID");
+	if( item_id_nv )
+	{
+		const char* s = item_id_nv->getString();
+		if(s)
+			item_id.set(s);
+	}
+	if(!item_id.isNull())
+	{
+		std::map<S32, LLUUID>::iterator iter = mUnsupportedAttachmentPoints.begin();
+		std::map<S32, LLUUID>::iterator end = mUnsupportedAttachmentPoints.end();
+		for( ; iter != end; ++iter)
+		{
+			if((*iter).second == item_id)
+			{
+				mUnsupportedAttachmentPoints.erase((*iter).first);
+				if (mIsSelf)
+				{
+					// the simulator should automatically handle
+					// permission revocation
+
+					stopMotionFromSource(viewer_object->getID());
+					LLFollowCamMgr::setCameraActive(viewer_object->getID(), FALSE);
+
+					LLViewerObject::const_child_list_t& child_list = viewer_object->getChildren();
+					for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
+						 iter != child_list.end(); iter++)
+					{
+						LLViewerObject* child_objectp = *iter;
+						// the simulator should automatically handle
+						// permissions revocation
+
+						stopMotionFromSource(child_objectp->getID());
+						LLFollowCamMgr::setCameraActive(child_objectp->getID(), FALSE);
+					}
+					// Then make sure the inventory is in sync with the avatar.
+					gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
+					gInventory.notifyObservers();
+				}
+				return TRUE;
+			}
+		}
+		llwarns << "Not found" << llendl;
+	}
+	else
+		llwarns << "No item ID" << llendl;
+	// </edit>
 	
 	return FALSE;
 }
@@ -6259,6 +6472,14 @@ BOOL LLVOAvatar::isWearingAttachment( const LLUUID& inv_item_id )
 	return FALSE;
 }
 
+// <edit> testzone attachpt
+BOOL LLVOAvatar::isWearingUnsupportedAttachment( const LLUUID& inv_item_id )
+{
+	std::map<S32, LLUUID>::iterator end = mUnsupportedAttachmentPoints.end();
+	for(std::map<S32, LLUUID>::iterator iter = mUnsupportedAttachmentPoints.begin(); iter != end; ++iter)
+		if((*iter).second == inv_item_id)
+			return TRUE;
+	return FALSE;
 //-----------------------------------------------------------------------------
 // getWornAttachment()
 //-----------------------------------------------------------------------------
@@ -8509,7 +8730,10 @@ void LLVOAvatar::dumpLocalTextures()
 				llinfos << "LocTex " << name << ": "
 						<< "Discard " << image->getDiscardLevel() << ", "
 						<< "(" << image->getWidth() << ", " << image->getHeight() << ") " 
-#if !LL_RELEASE_FOR_DOWNLOAD
+// <edit>
+//#if !LL_RELEASE_FOR_DOWNLOAD
+#if 1
+// </edit>
 					// End users don't get to trivially see avatar texture IDs,
 					// makes textures easier to steal
 						<< image->getID() << " "

@@ -59,6 +59,10 @@
 #include "llviewercontrol.h"
 #include "llvoavatar.h"
 #include "llsdutil.h"
+// <edit>
+#include "llimportobject.h"
+#include "llappviewer.h" // gLostItemsRoot
+// </edit>
 #include <deque>
 
 //#define DIFF_INVENTORY_FILES
@@ -207,6 +211,14 @@ BOOL LLInventoryModel::isObjectDescendentOf(const LLUUID& obj_id,
 	while(obj)
 	{
 		const LLUUID& parent_id = obj->getParentUUID();
+		// <edit>
+		if(parent_id == obj->getUUID())
+		{
+			// infinite loop... same thing as having no parent, hopefully.
+			llwarns << "This shit has itself as parent! " << parent_id.asString() << ", " << obj->getName() << llendl;
+			return FALSE;
+		}
+		// </edit>
 		if( parent_id.isNull() )
 		{
 			return FALSE;
@@ -823,12 +835,14 @@ void LLInventoryModel::deleteObject(const LLUUID& id)
 // folders, items, etc in a fairly efficient manner.
 void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 {
-	EHasChildren children = categoryHasChildren(id);
-	if(children == CHILDREN_NO)
-	{
-		llinfos << "Not purging descendents of " << id << llendl;
-		return;
-	}
+	// <edit> "Deliberately disobeying you" derf derf
+	//EHasChildren children = categoryHasChildren(id);
+	//if(children == CHILDREN_NO)
+	//{
+	//	llinfos << "Not purging descendents of " << id << llendl;
+	//	return;
+	//}
+	// </edit>
 	LLPointer<LLViewerInventoryCategory> cat = getCategory(id);
 	if(cat.notNull())
 	{
@@ -1383,41 +1397,48 @@ void LLInventoryModel::bulkFetch(std::string url)
 		
 		    if (cat)
 		    {
-			    if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
-			    {
-				    LLSD folder_sd;
-				    folder_sd["folder_id"]		= cat->getUUID();
-				    folder_sd["owner_id"]		= cat->getOwnerID();
-				    folder_sd["sort_order"]		= (LLSD::Integer)sort_order;
-				    folder_sd["fetch_folders"]	= TRUE; //(LLSD::Boolean)sFullFetchStarted;
-				    folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
-				    
-					LL_DEBUGS("Inventory") << " fetching "<<cat->getUUID()<<" with cat owner "<<cat->getOwnerID()<<" and agent" << gAgent.getID() << LL_ENDL;
-				    //OGPX if (ALEXANDRIA_LINDEN_ID == cat->getOwnerID())
-					// for OGP it really doesnt make sense to have the decision about whether to fetch
-					// from the library or user cap be determined by a hard coded UUID. 
-					// if it isnt an item that belongs to the agent, then fetch from the library
-					if (gAgent.getID() != cat->getOwnerID()) //if i am not the owner, it must be in the library
-					    body_lib["folders"].append(folder_sd);
-				    else
-					    body["folders"].append(folder_sd);
-				    folder_count++;
-			    }
-			    if (sFullFetchStarted)
-			    {	//Already have this folder but append child folders to list.
-				    // add all children to queue
-				    parent_cat_map_t::iterator cat_it = gInventory.mParentChildCategoryTree.find(cat->getUUID());
-				    if (cat_it != gInventory.mParentChildCategoryTree.end())
-				    {
-					    cat_array_t* child_categories = cat_it->second;
-    
-					    for (S32 child_num = 0; child_num < child_categories->count(); child_num++)
-					    {
-						    sFetchQueue.push_back(child_categories->get(child_num)->getUUID());
-					    }
-				    }
-    
-			    }
+				// <edit> Pre-emptive strike
+				if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gLocalInventoryRoot)))
+				{
+				// </edit>
+					if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
+					{
+						LLSD folder_sd;
+						folder_sd["folder_id"]		= cat->getUUID();
+						folder_sd["owner_id"]		= cat->getOwnerID();
+						folder_sd["sort_order"]		= (LLSD::Integer)sort_order;
+						folder_sd["fetch_folders"]	= TRUE; //(LLSD::Boolean)sFullFetchStarted;
+						folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
+						
+						LL_DEBUGS("Inventory") << " fetching "<<cat->getUUID()<<" with cat owner "<<cat->getOwnerID()<<" and agent" << gAgent.getID() << LL_ENDL;
+						//OGPX if (ALEXANDRIA_LINDEN_ID == cat->getOwnerID())
+						// for OGP it really doesnt make sense to have the decision about whether to fetch
+						// from the library or user cap be determined by a hard coded UUID. 
+						// if it isnt an item that belongs to the agent, then fetch from the library
+						if (gAgent.getID() != cat->getOwnerID()) //if i am not the owner, it must be in the library
+							body_lib["folders"].append(folder_sd);
+						else
+							body["folders"].append(folder_sd);
+						folder_count++;
+					}
+					if (sFullFetchStarted)
+					{	//Already have this folder but append child folders to list.
+						// add all children to queue
+						parent_cat_map_t::iterator cat_it = gInventory.mParentChildCategoryTree.find(cat->getUUID());
+						if (cat_it != gInventory.mParentChildCategoryTree.end())
+						{
+							cat_array_t* child_categories = cat_it->second;
+		
+							for (S32 child_num = 0; child_num < child_categories->count(); child_num++)
+							{
+								sFetchQueue.push_back(child_categories->get(child_num)->getUUID());
+							}
+						}
+		
+					}
+				// <edit>
+				}
+				// </edit>
 		    }
         }
 		sFetchQueue.pop_front();
@@ -1718,7 +1739,10 @@ void LLInventoryModel::addItem(LLViewerInventoryItem* item)
 	if(item)
 	{
 		mItemMap[item->getUUID()] = item;
-		//mInventory[item->getUUID()] = item;
+		// <edit>
+		if(LLXmlImport::sImportInProgress)
+			LLXmlImport::onNewItem(item);
+		// </edit>
 	}
 }
 
@@ -1903,6 +1927,11 @@ bool LLInventoryModel::isCategoryComplete(const LLUUID& cat_id) const
 			return true;
 		}
 	}
+
+	// <edit>
+	if((cat_id == gLocalInventoryRoot) || gInventory.isObjectDescendentOf(cat_id, gLocalInventoryRoot)) return true;
+	// </edit>
+
 	return false;
 }
 
@@ -3457,9 +3486,11 @@ bool LLInventoryCollectFunctor::itemTransferCommonlyAllowed(LLInventoryItem* ite
 
 	switch(item->getType())
 	{
-	case LLAssetType::AT_CALLINGCARD:
-		// not allowed
-		break;
+	{
+	// <edit> I don't even think changing this did anything
+	//case LLAssetType::AT_CALLINGCARD:
+	//	// not allowed
+	//	break;
 		
 	case LLAssetType::AT_OBJECT:
 		my_avatar = gAgent.getAvatarObject();

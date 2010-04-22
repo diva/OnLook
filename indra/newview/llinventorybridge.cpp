@@ -3717,8 +3717,6 @@ std::string LLObjectBridge::getLabelSuffix() const
 	}
 	else
 	{
-	else
-	{
 		// <edit> testzone attachpt
 		if(avatar)
 		{
