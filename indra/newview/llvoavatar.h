@@ -686,6 +686,7 @@ protected:
 public:
 	static void updateFreezeCounter(S32 counter = 0 );
 // <edit>
+public:
 	//bool mNametagSaysIdle;
 	//bool mIdleForever;
 	//LLFrameTimer mIdleTimer;
@@ -694,6 +695,17 @@ public:
 	LLVector3d mFocusVector;
 	//void resetIdleTime();
 // </edit>
+	struct BakedTextureData
+	{
+		LLUUID			mLastTextureIndex;
+		LLTexLayerSet*	mTexLayerSet;
+		bool			mIsLoaded;
+		bool			mIsUsed;
+		LLVOAvatarDefines::ETextureIndex	mTextureIndex;
+		U32				mMaskTexName;
+		// Stores pointers to the joint meshes that this baked texture deals with
+		std::vector< LLViewerJointMesh * > mMeshes;  // std::vector<LLViewerJointMesh> mJoints[i]->mMeshParts
+
 	};
 	typedef std::vector<BakedTextureData> bakedtexturedata_vec_t;
 	bakedtexturedata_vec_t mBakedTextureData;
