@@ -56,6 +56,10 @@
 #include "lltexteditor.h"
 #include "lltextbox.h"
 
+// <edit>
+#include "lldelayeduidelete.h"
+// </edit>
+
 //HACK: this allows you to instantiate LLView from xml with "<view/>" which we don't want
 static LLRegisterWidget<LLView> r("view");
 
@@ -87,7 +91,10 @@ LLView::LLView() :
 	mUseBoundingRect(FALSE),
 	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW)
+	mHoverCursor(UI_CURSOR_ARROW),
+	// <edit>
+	mDelayedDelete(FALSE)
+	// </edit>
 {
 }
 
@@ -105,7 +112,10 @@ LLView::LLView(const std::string& name, BOOL mouse_opaque) :
 	mUseBoundingRect(FALSE),
 	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW)
+	mHoverCursor(UI_CURSOR_ARROW),
+	// <edit>
+	mDelayedDelete(FALSE)
+	// </edit>
 {
 }
 
@@ -127,7 +137,10 @@ LLView::LLView(
 	mUseBoundingRect(FALSE),
 	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW)
+	mHoverCursor(UI_CURSOR_ARROW),
+	// <edit>
+	mDelayedDelete(FALSE)
+	// </edit>
 {
 }
 
@@ -143,7 +156,10 @@ LLView::~LLView()
 		gFocusMgr.removeMouseCaptureWithoutCallback( this );
 	}
 
-	deleteAllChildren();
+	// <edit> TESTZONE DERF
+	//deleteAllChildren();
+	deleteAllChildren(mDelayedDelete);
+	// </edit>
 
 	if (mParentView != NULL)
 	{
@@ -575,8 +591,26 @@ BOOL LLView::focusPrev(LLView::child_list_t & result)
 // delete all children. Override this function if you need to
 // perform any extra clean up such as cached pointers to selected
 // children, etc.
-void LLView::deleteAllChildren()
+// <edit>
+//void LLView::deleteAllChildren()
+void LLView::deleteAllChildren(BOOL delay_delete)
+// </edit>
 {
+	// <edit> TESTZONE DERF
+	if(delay_delete)
+	{
+		child_list_t::iterator end = mChildList.end();
+		for(child_list_t::iterator iter = mChildList.begin(); iter != end; ++iter)
+		{
+			if((*iter)->getParent() == this)
+				(*iter)->mParentView = NULL;
+		}
+		mCtrlOrder.clear();
+		std::list<LLView*> children(mChildList);
+		gDeleteScheduler->addViewDeleteJob(children);
+		return;
+	}
+	// </edit>
 	// clear out the control ordering
 	mCtrlOrder.clear();
 

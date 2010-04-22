@@ -1922,6 +1922,13 @@ BOOL LLFolderBridge::isItemRenameable() const
 
 void LLFolderBridge::restoreItem()
 {
+	// <edit> derf
+	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
+	{
+		llwarns << "scheduled for delayed delete" << llendl;
+		return;
+	}
+	// </edit>
 	LLViewerInventoryCategory* cat;
 	cat = (LLViewerInventoryCategory*)getCategory();
 	if(cat)
@@ -2208,8 +2215,15 @@ void LLFolderBridge::folderOptionsMenu()
 		// Only enable add/replace outfit for non-default folders.
 		if (!is_default_folder)
 		{
-			mItems.push_back(std::string("Add To Outfit"));
-			mItems.push_back(std::string("Replace Outfit"));
+			// <edit> don't allow attaching stuff during attachment import
+			if(!(LLXmlImport::sImportInProgress && LLXmlImport::sImportHasAttachments))
+			{
+			// </edit>
+				mItems.push_back(std::string("Add To Outfit"));
+				mItems.push_back(std::string("Replace Outfit"));
+			// <edit>
+			}
+			// </edit>
 		}
 		mItems.push_back(std::string("Take Off Items"));
 	}
@@ -2233,7 +2247,6 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	// *TODO: Translate
 	lldebugs << "LLFolderBridge::buildContextMenu()" << llendl;
-//	std::vector<std::string> disabled_items;
 //	std::vector<std::string> disabled_items;
 	// <edit> derf
 	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
@@ -2361,6 +2374,13 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 BOOL LLFolderBridge::hasChildren() const
 {
+	// <edit> derf
+	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
+	{
+		llwarns << "scheduled for delayed delete" << llendl;
+		return FALSE;
+	}
+	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLInventoryModel::EHasChildren has_children;
@@ -2430,6 +2450,13 @@ void LLFolderBridge::createNewCategory(void* user_data)
 {
 	LLFolderBridge* bridge = (LLFolderBridge*)user_data;
 	if(!bridge) return;
+	// <edit> derf
+	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), bridge->mInventoryPanel) == LLInventoryPanel::sInstances.end())
+	{
+		llwarns << "scheduled for delayed delete" << llendl;
+		return;
+	}
+	// <edit>
 	LLInventoryPanel* panel = bridge->mInventoryPanel;
 	LLInventoryModel* model = panel->getModel();
 	if(!model) return;
@@ -3872,8 +3899,6 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 								NULL, &attach_label, (void*)attachment));
 						}
 
-						}
-
 						// <edit> derf
 						if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
 						{
@@ -3881,16 +3906,16 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 						}
 						else
 						{
-						// </edit>
-						LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachObject");
+							// </edit>
+							LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachObject");
 
-						if (callback)
-						{
-							new_item->addListener(callback, "on_click", LLSD(attachment->getName()));
+							if (callback)
+							{
+								new_item->addListener(callback, "on_click", LLSD(attachment->getName()));
+							}
+							// <edit> derf
 						}
-						// <edit> derf
-					}
-						// </edit>
+							// </edit>
 					}
 					// <edit>
 					LLMenuItemCallGL *new_item = new LLMenuItemCallGL("Custom...", NULL, NULL);
@@ -4895,6 +4920,7 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 											 (void*)this));*/
 		}
 	}
+
 	hideContextEntries(menu, items, disabled_items);
 }
 

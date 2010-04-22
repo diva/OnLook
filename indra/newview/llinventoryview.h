@@ -79,6 +79,7 @@ public:
 			BOOL allow_multi_select,
 			LLView *parent_view = NULL);
 	~LLInventoryPanel();
+
 	// <edit>
 	static std::list<LLInventoryPanel*> sInstances;
 	// </edit>

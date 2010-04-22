@@ -1622,6 +1622,9 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 
 		if (itemp)
 		{
+			// <edit>
+			itemp->mDelayedDelete = TRUE;
+			// </edit>
 			if (parent_folder)
 			{
 				itemp->addToFolder(parent_folder, mFolders);
