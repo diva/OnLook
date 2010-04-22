@@ -685,6 +685,7 @@ protected:
 public:
 	static void updateFreezeCounter(S32 counter = 0 );
 // <edit>
+
 public:
 	//bool mNametagSaysIdle;
 	//bool mIdleForever;
@@ -694,6 +695,23 @@ public:
 	LLVector3d mFocusVector;
 	//void resetIdleTime();
 // </edit>
+
+private:
+	static S32 sFreezeCounter;
+	
+	//-----------------------------------------------------------------------------------------------
+	// Avatar skeleton setup.
+	//-----------------------------------------------------------------------------------------------
+private:
+	BOOL loadAvatar();
+	BOOL setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
+	BOOL buildSkeleton(const LLVOAvatarSkeletonInfo *info);
+
+	//-----------------------------------------------------------------------------------------------
+	// Per-avatar information about texture data.
+	// To-do: Move this to private implementation class
+	//-----------------------------------------------------------------------------------------------
+
 	struct BakedTextureData
 	{
 		LLUUID			mLastTextureIndex;

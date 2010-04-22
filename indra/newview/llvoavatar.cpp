@@ -223,9 +223,10 @@ public:
 	}
 	BOOL parseXml(LLXmlTreeNode* node);
 	
+	BOOL mIsJoint;
+	
 private:
 	std::string mName;
-	BOOL mIsJoint;
 	LLVector3 mPos;
 	LLVector3 mRot;
 	LLVector3 mScale;
@@ -752,13 +753,13 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNeedsSkin(FALSE),
 	mUpdatePeriod(1),
 	mFullyLoadedInitialized(FALSE),
-	mHasBakedHair( FALSE ),
+	mHasBakedHair( FALSE )
 	// <edit>
-	mNametagSaysIdle(false),
-	mIdleForever(true),
-	mIdleMinutes(0),
-	mFocusObject(LLUUID::null),
-	mFocusVector(LLVector3d::zero)
+//	mNametagSaysIdle(false),
+//	mIdleForever(true),
+//	mIdleMinutes(0),
+//	mFocusObject(LLUUID::null),
+//	mFocusVector(LLVector3d::zero)
 	// </edit>
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
@@ -3071,8 +3072,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					mNameText->setUseBubble(TRUE);
 					sNumVisibleChatBubbles++;
 					new_name = TRUE;
-				}
-				
 				}
 				
 				// <edit>
