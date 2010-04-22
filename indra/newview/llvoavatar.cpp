@@ -6477,9 +6477,14 @@ BOOL LLVOAvatar::isWearingUnsupportedAttachment( const LLUUID& inv_item_id )
 {
 	std::map<S32, LLUUID>::iterator end = mUnsupportedAttachmentPoints.end();
 	for(std::map<S32, LLUUID>::iterator iter = mUnsupportedAttachmentPoints.begin(); iter != end; ++iter)
+	{
 		if((*iter).second == inv_item_id)
+		{
 			return TRUE;
+		}
+	}
 	return FALSE;
+}
 //-----------------------------------------------------------------------------
 // getWornAttachment()
 //-----------------------------------------------------------------------------

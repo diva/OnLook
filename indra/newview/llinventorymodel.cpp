@@ -3486,7 +3486,6 @@ bool LLInventoryCollectFunctor::itemTransferCommonlyAllowed(LLInventoryItem* ite
 
 	switch(item->getType())
 	{
-	{
 	// <edit> I don't even think changing this did anything
 	//case LLAssetType::AT_CALLINGCARD:
 	//	// not allowed

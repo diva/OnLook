@@ -504,6 +504,9 @@ public:
 	typedef std::map<S32, LLViewerJointAttachment*> attachment_map_t;
 	attachment_map_t mAttachmentPoints;
 	std::vector<LLPointer<LLViewerObject> > mPendingAttachment;
+	// <edit>
+	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
+	// </edit>
 
 	//--------------------------------------------------------------------
 	// static preferences that are controlled by user settings/menus
@@ -580,10 +583,6 @@ private:
 	// Global table of sound ids per material, and the ground
 	const static LLUUID	sStepSounds[LL_MCODE_END];
 	const static LLUUID	sStepSoundOnLand;
-
-	// <edit>
-	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
-	// </edit>
 
 	// Xml parse tree of avatar config file
 	static LLXmlTree sXMLTree;
