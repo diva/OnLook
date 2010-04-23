@@ -1250,6 +1250,7 @@ const std::string LLInventoryPanel::DEFAULT_SORT_ORDER = std::string("InventoryS
 const std::string LLInventoryPanel::RECENTITEMS_SORT_ORDER = std::string("RecentItemsSortOrder");
 const std::string LLInventoryPanel::WORNITEMS_SORT_ORDER = std::string("WornItemsSortOrder");
 const std::string LLInventoryPanel::INHERIT_SORT_ORDER = std::string("");
+
 // <edit>
 std::list<LLInventoryPanel*> LLInventoryPanel::sInstances;
 // </edit>
@@ -1669,6 +1670,7 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 		mInventory->unlockDirectDescendentArrays(id);
 	}
 }
+
 // <edit>
 void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
 {
@@ -1766,6 +1768,7 @@ void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
 		mInventory->unlockDirectDescendentArrays(objectp->getUUID());
 	}
 }
+// </edit>
 
 struct LLConfirmPurgeData
 {

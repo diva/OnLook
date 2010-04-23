@@ -86,6 +86,12 @@
 #include "lluictrlfactory.h"
 #include "llselectmgr.h"
 
+// <edit>
+#include "lllocalinventory.h"
+#include "llinventorybackup.h"
+//#include "llcheats.h"
+//#include "llnotecardmagic.h"
+// </edit>
 const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
 const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
 const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)
@@ -112,6 +118,49 @@ bool doToSelected(LLFolderView* folder, std::string action)
 	{	
 		LLInventoryClipboard::instance().reset();
 	}
+	// <edit>
+	if("save_as" == action)
+	{
+		LLInventoryBackup::save(folder);
+		return true;
+	}
+	else if("save_invcache" == action)
+	{
+		LLFilePicker& file_picker = LLFilePicker::instance();
+		if(file_picker.getSaveFile( LLFilePicker::FFSAVE_INVGZ ))
+		{
+			std::string file_name = file_picker.getFirstFile();
+			LLLocalInventory::saveInvCache(file_name, folder);
+		}
+		return true;
+	}
+/*
+	else if("acquire_asset_id" == action)
+	{
+		if(LLCheats::cheatCodes["AcquireAssetID"].entered)
+		{
+			std::set<LLUUID> selected_items_set;
+			folder->getSelectionList(selected_items_set);
+
+			if(selected_items_set.size() > 0)
+			{
+				LLAssetIDAcquirer::acquire(selected_items_set);
+			}
+		}
+		return true;
+	}
+	else if("magic_get" == action)
+	{
+		std::set<LLUUID> selected_items_set;
+		folder->getSelectionList(selected_items_set);
+
+		if(selected_items_set.size() > 0)
+		{
+			LLNotecardMagic::acquire(selected_items_set);
+		}
+	}
+*/
+	// </edit>
 
 	std::set<LLUUID> selected_items;
 	folder->getSelectionList(selected_items);
@@ -462,11 +511,36 @@ class LLDoCreateFloater : public inventory_listener_t
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
 		std::string type = userdata.asString();
+		// <edit>
+		if(type == "pretend")
+		{
+			LLFloaterNewLocalInventory* floater = new LLFloaterNewLocalInventory();
+			floater->center();
+		}
+		else
+		// </edit>
 		do_create(model, mPtr->getPanel(), type);
 		return true;
 	}
 };
 
+// <edit>
+class LLLoadInvCacheFloater : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLInventoryModel* model = mPtr->getPanel()->getModel();
+		if(!model) return false;
+		LLFilePicker& file_picker = LLFilePicker::instance();
+		if(file_picker.getOpenFile( LLFilePicker::FFLOAD_INVGZ ))
+		{
+			std::string file_name = file_picker.getFirstFile();
+			LLLocalInventory::loadInvCache(file_name);
+		}
+		return true;
+	}
+};
+// </edit>
 class LLSetSortBy : public inventory_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -705,6 +779,9 @@ void init_inventory_actions(LLInventoryView *floater)
 	(new LLCloseAllFoldersFloater())->registerListener(floater, "Inventory.CloseAllFolders");
 	(new LLEmptyTrashFloater())->registerListener(floater, "Inventory.EmptyTrash");
 	(new LLDoCreateFloater())->registerListener(floater, "Inventory.DoCreate");
+	// <edit>
+	(new LLLoadInvCacheFloater())->registerListener(floater, "Inventory.LoadInvCache");
+	// </edit>
 
 	(new LLNewWindow())->registerListener(floater, "Inventory.NewWindow");
 	(new LLShowFilters())->registerListener(floater, "Inventory.ShowFilters");

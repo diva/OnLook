@@ -751,7 +751,10 @@ BOOL LLTaskCategoryBridge::renameItem(const std::string& new_name)
 
 BOOL LLTaskCategoryBridge::isItemRemovable()
 {
-	return FALSE;
+	// <edit>
+	//return FALSE;
+	return TRUE;
+	// </edit>
 }
 
 void LLTaskCategoryBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
@@ -822,13 +825,19 @@ BOOL LLTaskCategoryBridge::dragOrDrop(MASK mask, BOOL drop,
 		case DAD_BODYPART:
 		case DAD_ANIMATION:
 		case DAD_GESTURE:
+		// <edit>
+		case DAD_CALLINGCARD:
+		// </edit>
 			// *HACK: In order to resolve SL-22177, we need to block
 			// drags from notecards and objects onto other
 			// objects. uncomment the simpler version when we have
 			// that right.
-			//accept = LLToolDragAndDrop::isInventoryDropAcceptable(object, (LLViewerInventoryItem*)cargo_data);
-			if(LLToolDragAndDrop::isInventoryDropAcceptable(
-				   object, (LLViewerInventoryItem*)cargo_data)
+			accept = LLToolDragAndDrop::isInventoryDropAcceptable(object, (LLViewerInventoryItem*)cargo_data);
+			// <edit> testzone
+			//if(LLToolDragAndDrop::isInventoryDropAcceptable(
+			//	   object, (LLViewerInventoryItem*)cargo_data)
+			if(object->permModify()
+			// </edit>
 			   && (LLToolDragAndDrop::SOURCE_WORLD != LLToolDragAndDrop::getInstance()->getSource())
 			   && (LLToolDragAndDrop::SOURCE_NOTECARD != LLToolDragAndDrop::getInstance()->getSource()))
 			{
@@ -866,7 +875,9 @@ BOOL LLTaskCategoryBridge::dragOrDrop(MASK mask, BOOL drop,
 											  LLToolDragAndDrop::getInstance()->getSourceID());
 			}
 			break;
-		case DAD_CALLINGCARD:
+		// <edit>
+		//case DAD_CALLINGCARD:
+		// </edit>
 		default:
 			break;
 		}

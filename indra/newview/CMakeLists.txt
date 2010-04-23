@@ -238,6 +238,7 @@ set(viewer_SOURCE_FILES
     llimportobject.cpp
     llimview.cpp
     llinventoryactions.cpp
+    llinventorybackup.cpp
     llinventorybridge.cpp
     llinventoryclipboard.cpp
     llinventorymodel.cpp
@@ -666,6 +667,7 @@ set(viewer_HEADER_FILES
     llimpanel.h
     llimportobject.h
     llimview.h
+    llinventorybackup.h
     llinventorybridge.h
     llinventoryclipboard.h
     llinventorymodel.h

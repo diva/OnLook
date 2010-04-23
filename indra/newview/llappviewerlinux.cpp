@@ -734,7 +734,9 @@ std::string LLAppViewerLinux::generateSerialNumber()
 	serial_md5[0] = 0;
 #if LL_SOLARIS
 	// TODO
-#elseif EXPERIMENTAL_SERIAL_NUM
+#else
+//Leave this commented out for now since it could be used to distinguish inertia from other viewers on linux
+/*
 	// I'm going to assume this works on everything but solaris
 	std::string rootDeviceName = "";
 	std::string rootDeviceUUID = "";
@@ -825,6 +827,7 @@ std::string LLAppViewerLinux::generateSerialNumber()
 	{
 		llwarns << "Could not find root device's UUID" << llendl;
 	}
+*/
 #endif
 	return serial_md5;
 }
