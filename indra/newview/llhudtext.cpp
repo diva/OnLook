@@ -691,6 +691,22 @@ void LLHUDText::setDoFade(const BOOL do_fade)
 	mDoFade = do_fade;
 }
 
+// <edit>
+std::string LLHUDText::getStringUTF8()
+{
+	std::string out("");
+	int t = mTextSegments.size();
+	int i = 0;
+	for (std::vector<LLHUDTextSegment>::iterator segment_iter = mTextSegments.begin();
+		 segment_iter != mTextSegments.end(); ++segment_iter )
+	{
+		out.append(wstring_to_utf8str((*segment_iter).getText()));
+		i++;
+		if(i < t) out.append("\n");
+	}
+	return out;
+}
+// </edit>
 void LLHUDText::updateVisibility()
 {
 	if (mSourceObject)

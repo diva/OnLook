@@ -12,7 +12,7 @@
 #include "llselectmgr.h"
 // </stuff for jelly roll>
 
-std::map<LLUUID, std::list<LLAnimHistoryItem*>> LLFloaterExploreAnimations::animHistory;
+std::map< LLUUID, std::list< LLAnimHistoryItem* > > LLFloaterExploreAnimations::animHistory;
 LLFloaterExploreAnimations* LLFloaterExploreAnimations::sInstance;
 
 

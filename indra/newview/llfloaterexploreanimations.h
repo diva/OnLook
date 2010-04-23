@@ -45,7 +45,7 @@ public:
 	static void startAnim(LLUUID avatarid, LLUUID assetid);
 	static void stopAnim(LLUUID avatarid, LLUUID assetid);
 
-	static std::map<LLUUID, std::list<LLAnimHistoryItem*>> animHistory;
+	static std::map< LLUUID, std::list< LLAnimHistoryItem* > > animHistory;
 	static LLFloaterExploreAnimations* sInstance;
 private:
 	static void handleHistoryChange();
