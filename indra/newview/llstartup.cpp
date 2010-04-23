@@ -193,6 +193,14 @@
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
 
+// <edit>
+#include "llpanellogin.h"
+//#include "llfloateravatars.h"
+//#include "llactivation.h"
+//#include "llao.h"
+//#include "llcheats.h"
+// </edit>
+
 #if LL_WINDOWS
 #include "llwindebug.h"
 #include "lldxhardware.h"
@@ -1105,6 +1113,9 @@ bool idle_startup()
             LLSD cmd_line_login = gSavedSettings.getLLSD("UserLoginInfo");
 			firstname = cmd_line_login[0].asString();
 			lastname = cmd_line_login[1].asString();
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 
 			LLMD5 pass((unsigned char*)cmd_line_login[2].asString().c_str());
 			char md5pass[33];               /* Flawfinder: ignore */
@@ -1137,6 +1148,9 @@ bool idle_startup()
 			// a valid grid is selected
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			show_connect_box = true;
 		}
@@ -1319,6 +1333,9 @@ bool idle_startup()
 		{
 			gSavedSettings.setString("FirstName", firstname);
 			gSavedSettings.setString("LastName", lastname);
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 			if (!gSavedSettings.controlExists("RememberLogin")) gSavedSettings.declareBOOL("RememberLogin", false, "Remember login", false);
 			gSavedSettings.setBOOL("RememberLogin", LLPanelLogin::getRememberLogin());
 
@@ -1440,7 +1457,9 @@ bool idle_startup()
 		}
 
 		// Display the startup progress bar.
-		gViewerWindow->setShowProgress(TRUE);
+		// <edit>
+		//gViewerWindow->setShowProgress(TRUE);
+		// </edit>
 		gViewerWindow->setProgressCancelButtonVisible(TRUE, std::string("Quit")); // *TODO: Translate
 
 		// Poke the VFS, which could potentially block for a while if
@@ -2879,6 +2898,19 @@ bool idle_startup()
  			}
  		}
 
+		// <edit> testing adding a local inventory folder...
+		LLViewerInventoryCategory* test_cat = new LLViewerInventoryCategory(gAgent.getID());
+		test_cat->rename(std::string("Pretend Inventory"));
+		LLUUID test_cat_id;
+		test_cat_id.generate();
+		test_cat->setUUID(test_cat_id);
+		gLocalInventoryRoot = test_cat_id;
+		test_cat->setParent(LLUUID::null);
+		test_cat->setPreferredType(LLAssetType::AT_NONE);
+
+		gInventory.addCategory(test_cat);
+		// </edit>
+
 		options.clear();
  		if(LLUserAuth::getInstance()->getOptions("buddy-list", options))
  		{
@@ -3813,7 +3845,10 @@ bool update_dialog_callback(const LLSD& notification, const LLSD& response)
 	// *TODO change userserver to be grid on both viewer and sim, since
 	// userserver no longer exists.
 	query_map["userserver"] = LLViewerLogin::getInstance()->getGridLabel();
-	query_map["channel"] = gSavedSettings.getString("VersionChannelName");
+	// <edit>
+	//query_map["channel"] = gSavedSettings.getString("VersionChannelName");
+	query_map["channel"] = gSavedSettings.getString("SpecifiedChannel");
+	// </edit>
 	// *TODO constantize this guy
 	// *NOTE: This URL is also used in win_setup/lldownloader.cpp
 	LLURI update_url = LLURI::buildHTTP("secondlife.com", 80, "update.php", query_map);

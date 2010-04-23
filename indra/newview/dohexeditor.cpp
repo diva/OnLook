@@ -16,6 +16,7 @@
 #include "llkeyboard.h"
 #include "llclipboard.h"
 #include "llwindow.h" // setCursor
+#include "lllocalinventory.h"
 
 static LLRegisterWidget<DOHexEditor> r("hex_editor");
 

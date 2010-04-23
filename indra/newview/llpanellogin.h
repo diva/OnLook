@@ -158,4 +158,8 @@ private:
 std::string load_password_from_disk(void);
 void save_password_to_disk(const char* hashed_password);
 
+// <edit>
+extern std::string gFullName;
+// </edit>
+
 #endif
