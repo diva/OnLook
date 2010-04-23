@@ -118,7 +118,10 @@ LLFloaterAbout::LLFloaterAbout()
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
 				   LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VIEWER_BUILD,
 				   __DATE__, __TIME__,
-				   gSavedSettings.getString("VersionChannelName").c_str());
+    // <edit>
+	//			   gSavedSettings.getString("VersionChannelName").c_str());
+				   gSavedSettings.getString("SpecifiedChannel").c_str());
+	// </edit>
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, viewer_link_style);
 
@@ -289,7 +292,11 @@ static std::string get_viewer_release_notes_url()
 		<< LL_VERSION_BUILD;
 
 	LLSD query;
-	query["channel"] = gSavedSettings.getString("VersionChannelName");
+	// <edit>
+	//query["channel"] = gSavedSettings.getString("VersionChannelName");
+	query["channel"] = gSavedSettings.getString("SpecifiedChannel");
+	// I think the version below is only numbers..
+	// </edit>
 	query["version"] = version.str();
 
 	std::ostringstream url;

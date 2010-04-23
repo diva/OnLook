@@ -734,7 +734,7 @@ std::string LLAppViewerLinux::generateSerialNumber()
 	serial_md5[0] = 0;
 #if LL_SOLARIS
 	// TODO
-#else
+#elseif EXPERIMENTAL_SERIAL_NUM
 	// I'm going to assume this works on everything but solaris
 	std::string rootDeviceName = "";
 	std::string rootDeviceUUID = "";

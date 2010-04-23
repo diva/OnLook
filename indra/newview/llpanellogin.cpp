@@ -77,6 +77,9 @@
 
 #include "llglheaders.h"
 
+// <edit>
+#include "llappviewer.h"
+// </edit>
 #define USE_VIEWER_AUTH 0
 
 const S32 BLACK_BORDER_HEIGHT = 160;
@@ -103,7 +106,9 @@ public:
 
 LLLoginRefreshHandler gLoginRefreshHandler;
 
-
+// <edit>
+std::string gFullName;
+// </edit>
 
 // helper class that trys to download a URL from a web site and calls a method 
 // on parent class indicating if the web server is working or not
@@ -296,7 +301,10 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 
 	// childSetAction("quit_btn", onClickQuit, this);
 
-	std::string channel = gSavedSettings.getString("VersionChannelName");
+	// <edit>
+	//std::string channel = gSavedSettings.getString("VersionChannelName");
+	std::string channel = gSavedSettings.getString("SpecifiedChannel");
+	// </edit>
 	std::string version = llformat("%d.%d.%d (%d)",
 		LL_VERSION_MAJOR,
 		LL_VERSION_MINOR,
@@ -354,6 +362,11 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	// Initialize visibility (and don't force visibility - use prefs)
 	refreshLocation( false );
 #endif
+
+	// <edit>
+	std::string specified_channel = gSavedSettings.getString("SpecifiedChannel");
+	getChild<LLLineEditor>("channel_edit")->setText(specified_channel);
+	// </edit>
 
 }
 
@@ -921,7 +934,10 @@ void LLPanelLogin::loadLoginPage()
 	std::string version = llformat("%d.%d.%d (%d)",
 						LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VIEWER_BUILD);
 
-	char* curl_channel = curl_escape(gSavedSettings.getString("VersionChannelName").c_str(), 0);
+	// <edit>
+	//char* curl_channel = curl_escape(gSavedSettings.getString("VersionChannelName").c_str(), 0);
+	char* curl_channel = curl_escape(gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
+	// </edit>
 	char* curl_version = curl_escape(version.c_str(), 0);
 
 	oStr << "&channel=" << curl_channel;
@@ -1083,6 +1099,10 @@ void LLPanelLogin::onClickConnect(void *)
 {
 	if (sInstance && sInstance->mCallback)
 	{
+		// <edit> save identity settings for login
+		std::string specified_channel = sInstance->getChild<LLLineEditor>("channel_edit")->getText();
+		gSavedSettings.setString("SpecifiedChannel", specified_channel);
+		// </edit>
 		// tell the responder we're not here anymore
 		if ( gResponsePtr )
 			gResponsePtr->setParent( 0 );
