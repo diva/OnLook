@@ -221,9 +221,9 @@ else (STANDALONE)
       )
 endif (STANDALONE)
 
-if($ENV{OPENSIM_RULES} EQUAL 1)
+if(1 EQUAL 1)
 	add_definitions(-DOPENSIM_RULES=1)
-endif($ENV{OPENSIM_RULES} EQUAL 1)
+endif(1 EQUAL 1)
 
 if(SERVER)
   include_directories(${LIBS_PREBUILT_DIR}/include/havok)

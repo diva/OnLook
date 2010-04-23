@@ -200,10 +200,12 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = INVGZ_FILTER \
 			L"\0";
 		break;
+/*
 	case FFLOAD_AO:
 		mOFN.lpstrFilter = AO_FILTER \
 			L"\0";
 		break;
+*/
 	// </edit>
 	default:
 		res = FALSE;

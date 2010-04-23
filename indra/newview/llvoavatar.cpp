@@ -3157,13 +3157,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				line += lastname->getString();
 				BOOL need_comma = FALSE;
 
-				BOOL need_comma = FALSE;
-
 				// <edit>
 				if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
 				{
 					mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
-					strcat(line, " (Unknown viewer)");
+					line += " (Unknown viewer)";
 				}
 				else
 				{
@@ -3173,22 +3171,22 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					{
 						// textures other than head are 4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6
 						mNameText->setColor(LLColor4(0.f, 1.0f, 0.0f));
-						strcat(line, " (Emerald)");
+						line += " (Emerald)";
 					}
 					else if(uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						strcat(line, " (MoyMix)");
+						line += " (MoyMix)";
 					}
 					else if(uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						strcat(line, " (MoyMix/B)");
+						line += " (MoyMix/B)";
 					}
 					else if(uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						strcat(line, " (MoyMix/nolife)");
+						line += " (MoyMix/nolife)";
 					}
 					//else if(uuid_str == "abbca853-30ba-49c1-a1e7-2a5b9a70573f")
 					//{
@@ -3198,57 +3196,57 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					else if(uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
 					{
 						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
-						strcat(line, " (CryoLife)");
+						line += " (CryoLife)";
 					}
 					else if(uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
 					{
 						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
-						strcat(line, " (Phoxy SL)");
+						line += " (Phoxy SL)";
 					}
 					else if(uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
 					{
 						mNameText->setColor(LLColor4(0.7f, 0.7f, 0.7f));
-						strcat(line, " (VLife)");
+						line += " (VLife)";
 					}
 					else if(uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
 					{
 						mNameText->setColor(LLColor4(1.f, 0.0f, 0.0f));
-						strcat(line, " (GridProxy/LordGregGreg)");
+						line += " (GridProxy/LordGregGreg)";
 					}
 					else if(uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
 					{
 						mNameText->setColor(LLColor4(1.f, 1.f, 0.0f));
-						strcat(line, " (GridProxy/DayOh)");
+						line += " (GridProxy/DayOh)";
 					}
 					else if(uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
-						strcat(line, " (PSL/A)");
+						line += " (PSL/A)";
 					}
 					else if(uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
-						strcat(line, " (PSL/B)");
+						line += " (PSL/B)";
 					}
 					else if(uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
 					{
 						mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
-						strcat(line, " (Emerald/GEMINI)");
+						line += " (Emerald/GEMINI)";
 					}
 					else if(uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
 					{
 						mNameText->setColor(LLColor4(0.9f, 0.9f, 0.9f));
-						strcat(line, " (GEMINI Bot)");
+						line += " (GEMINI Bot)";
 					}
 					else if(uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
 					{
 						mNameText->setColor(LLColor4(1.0f, 0.5f, 0.4f));
-						strcat(line, " (tyk3n)");
+						line += " (tyk3n)";
 					}
 					else if(uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
 					{
 						mNameText->setColor(gColors.getColor( "AvatarNameColor" ));
-						strcat(line, " (NeilLife)");
+						line += " (NeilLife)";
 					}
 					
 					else
