@@ -4,6 +4,9 @@
 #include "llinventorybridge.h"
 #define BUILD_DELAY 0.1f
 #define BUILD_PER_DELAY 512
+
+LLBuildNewViewsScheduler* gBuildNewViewsScheduler;
+
 std::list<LLBuildNewViewsScheduler::job> LLBuildNewViewsScheduler::sJobs;
 LLBuildNewViewsScheduler::LLBuildNewViewsScheduler() : LLEventTimer(BUILD_DELAY)
 {

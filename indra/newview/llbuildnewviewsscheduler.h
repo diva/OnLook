@@ -17,5 +17,5 @@ private:
 	static std::list<job> sJobs;
 	void buildNewViews(LLInventoryPanel* panelp, LLInventoryObject* objectp);
 };
-static LLBuildNewViewsScheduler* gBuildNewViewsScheduler;
+extern LLBuildNewViewsScheduler* gBuildNewViewsScheduler;
 // </edit>

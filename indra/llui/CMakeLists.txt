@@ -30,6 +30,7 @@ set(llui_SOURCE_FILES
     llclipboard.cpp
     llcombobox.cpp
     llctrlselectioninterface.cpp
+    lldelayeduidelete.cpp
     lldraghandle.cpp
     lleditmenuhandler.cpp
     llfloater.cpp
@@ -84,6 +85,7 @@ set(llui_HEADER_FILES
     llclipboard.h
     llcombobox.h
     llctrlselectioninterface.h
+    lldelayeduidelete.h
     lldraghandle.h
     lleditmenuhandler.h
     llfloater.h

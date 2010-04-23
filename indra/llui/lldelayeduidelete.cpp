@@ -3,6 +3,9 @@
 #include "lldelayeduidelete.h"
 #define DELETE_DELAY 0.1f
 #define DELETES_PER_DELAY 512
+
+LLDeleteScheduler* gDeleteScheduler;
+
 std::list<LLDeleteJob*> LLDeleteScheduler::sJobs;
 LLDeleteScheduler::LLDeleteScheduler() : LLEventTimer(DELETE_DELAY)
 {

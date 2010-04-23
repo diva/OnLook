@@ -26,6 +26,6 @@ public:
 private:
 	static std::list<LLDeleteJob*> sJobs;
 };
-static LLDeleteScheduler* gDeleteScheduler;
+extern LLDeleteScheduler* gDeleteScheduler;
 #endif
 // </edit>

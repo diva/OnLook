@@ -64,10 +64,10 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
-	dofloaterhex.cpp
-	dohexeditor.cpp
-	doinventorybackup.cpp
-	hgfloatertexteditor.cpp
+    dofloaterhex.cpp
+    dohexeditor.cpp
+    doinventorybackup.cpp
+    hgfloatertexteditor.cpp
     jcfloaterareasearch.cpp
     llagent.cpp
     llagentaccess.cpp
@@ -81,6 +81,7 @@ set(viewer_SOURCE_FILES
     llaudiosourcevo.cpp
     llbbox.cpp
     llbox.cpp
+    llbuildnewviewsscheduler.cpp
     llcallbacklist.cpp
     llcallingcard.cpp
     llcaphttpsender.cpp
@@ -155,6 +156,7 @@ set(viewer_SOURCE_FILES
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
+    llfloaterexploreanimations.cpp
     llfloaterfriends.cpp
     llfloaterfonttest.cpp
     llfloatergesture.cpp
@@ -490,10 +492,10 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
-	dofloaterhex.h
-	dohexeditor.h
-	doinventorybackup.h
-	hgfloatertexteditor.h
+    dofloaterhex.h
+    dohexeditor.h
+    doinventorybackup.h
+    hgfloatertexteditor.h
     jcfloaterareasearch.h
     llagent.h
     llagentaccess.h
@@ -508,6 +510,7 @@ set(viewer_HEADER_FILES
     llaudiosourcevo.h
     llbbox.h
     llbox.h
+    llbuildnewviewsscheduler.h
     llcallbacklist.h
     llcallingcard.h
     llcaphttpsender.h
@@ -549,6 +552,7 @@ set(viewer_HEADER_FILES
     lleventinfo.h
     lleventnotifier.h
     lleventpoll.h
+    llfloaterexploreanimations.h
     llface.h
     llfasttimerview.h
     llfeaturemanager.h

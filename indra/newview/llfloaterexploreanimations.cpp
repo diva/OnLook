@@ -219,8 +219,8 @@ public:
 // static
 void LLFloaterExploreAnimations::handleHistoryChange()
 {
-	std::map<LLUUID, std::list<LLAnimHistoryItem*>>::iterator av_iter = animHistory.begin();
-	std::map<LLUUID, std::list<LLAnimHistoryItem*>>::iterator av_end = animHistory.end();
+	std::map< LLUUID, std::list< LLAnimHistoryItem* > >::iterator av_iter = animHistory.begin();
+	std::map< LLUUID, std::list< LLAnimHistoryItem* > >::iterator av_end = animHistory.end();
 	for( ; av_iter != av_end; ++av_iter)
 	{
 		std::list<LLAnimHistoryItem*> history = (*av_iter).second;
