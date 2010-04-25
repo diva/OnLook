@@ -194,6 +194,7 @@
         <key>license</key>
         <string>sleepycat</string>
       </map>
+      <!-- Use some of the boost libraries from imprudence because of FUCKING WINDOWS 98 (should probably host this somewhere else in the future) -->
       <key>boost</key>
       <map>
         <key>copyright</key>
@@ -207,23 +208,23 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>bb8552f22769da81593f7d47a51d83d8</string>
+            <string>279834a12a0ed4531fd602594eac8509</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-darwin-20100226.tar.bz2</uri>
+            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.32.0-darwin-20080812.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>d58ac1a8396ac983b67cc3e3541457e3</string>
+            <string>15149b8140d06f9bd1b8672b958c6915</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-linux-20100222a.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/boost-1.36.0-linux-20091128.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>ed53511382d0fd9fec59a9f6544d9672</string>
+            <string>094acc8173faca882ed9532e868d767f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-windows-20091029.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/boost-1.36.0-windows-20091124.tar.bz2</uri>
           </map>
         </map>
       </map>
