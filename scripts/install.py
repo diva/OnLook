@@ -62,6 +62,7 @@ def add_indra_lib_path():
         sys.exit(1)
 
 base_dir = add_indra_lib_path()
+defaultUserAgent = 'Lynx/2.8.6rel.5 libwww-FM/2.14' #pretend to be lynx because github sucks a fat dick
 
 import copy
 import optparse
@@ -132,7 +133,11 @@ class InstallFile(object):
             print "Found matching package:", self.filename
             return
         print "Downloading",self.url,"to local file",self.filename
-        file(self.filename, 'wb').write(urllib2.urlopen(self.url).read())
+        
+        request = urllib2.Request(self.url)
+        request.add_header('User-agent', defaultUserAgent)
+        
+        file(self.filename, 'wb').write(urllib2.urlopen(request).read())
         if self.md5sum and not self._is_md5sum_match():
             raise RuntimeError("Error matching md5 for %s" % self.url)
 
@@ -686,7 +691,9 @@ class SCPOrHTTPHandler(urllib2.BaseHandler):
         url.insert(0, "http://")
         url = ''.join(url)
         print "Using HTTP:",url
-        return urllib2.urlopen(url)
+        request = urllib2.Request(url)
+        request.add_header('User-agent', defaultUserAgent)
+        return urllib2.urlopen(request)
 
     def do_scp(self, remote):
         if not self._dir:
