@@ -62,8 +62,7 @@ if (WINDOWS)
   
   # Are we using the crummy Visual Studio KDU build workaround?
   if (NOT VS_DISABLE_FATAL_WARNINGS)
-	#ESTOY USANDO EL INTERNET
-    #add_definitions(/WX)
+    add_definitions(/WX)
   endif (NOT VS_DISABLE_FATAL_WARNINGS)
 endif (WINDOWS)
 
