@@ -366,9 +366,82 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	// <edit>
 	std::string specified_channel = gSavedSettings.getString("SpecifiedChannel");
 	getChild<LLLineEditor>("channel_edit")->setText(specified_channel);
-	// </edit>
 
+	bool specify_mac = gSavedSettings.getBOOL("SpecifyMAC");
+	bool specify_id0 = gSavedSettings.getBOOL("SpecifyID0");
+	std::string specified_mac = gSavedSettings.getString("SpecifiedMAC");
+	std::string specified_id0 = gSavedSettings.getString("SpecifiedID0");
+
+	// Don't allow specify for empty strings (just in case)
+	if(specified_mac.length() == 0) specify_mac = false;
+	if(specified_id0.length() == 0) specify_id0 = false;
+
+	gSavedSettings.setBOOL("SpecifyMAC", specify_mac);
+	gSavedSettings.setBOOL("SpecifyID0", specify_id0);
+
+	getChild<LLCheckBoxCtrl>("mac_check")->setValue(specify_mac);
+	getChild<LLLineEditor>("mac_edit")->setEnabled(specify_mac);
+	getChild<LLCheckBoxCtrl>("id0_check")->setValue(specify_id0);
+	getChild<LLLineEditor>("id0_edit")->setEnabled(specify_id0);
+
+	fillMAC();
+	fillID0();
+
+	childSetCommitCallback("mac_check", onCheckMAC, this);
+	childSetCommitCallback("id0_check", onCheckID0, this);
+	// </edit>
 }
+
+// <edit>
+void LLPanelLogin::fillMAC()
+{
+	if(gSavedSettings.getBOOL("SpecifyMAC"))
+	{
+		getChild<LLLineEditor>("mac_edit")->setText(gSavedSettings.getString("SpecifiedMAC"));
+	}
+	else
+	{
+		char hashed_mac_string[MD5HEX_STR_SIZE];
+		LLMD5 hashed_mac;
+		hashed_mac.update( gMACAddress, MAC_ADDRESS_BYTES );
+		hashed_mac.finalize();
+		hashed_mac.hex_digest(hashed_mac_string);
+		getChild<LLLineEditor>("mac_edit")->setText(std::string(hashed_mac_string));
+	}
+}
+
+void LLPanelLogin::fillID0()
+{
+	if(gSavedSettings.getBOOL("SpecifyID0"))
+	{
+		getChild<LLLineEditor>("id0_edit")->setText(gSavedSettings.getString("SpecifiedID0"));
+	}
+	else
+	{
+		getChild<LLLineEditor>("id0_edit")->setText(LLAppViewer::instance()->getSerialNumber());
+	}
+}
+
+// static
+void LLPanelLogin::onCheckMAC(LLUICtrl* ctrl, void* userData)
+{
+	LLPanelLogin* panel = (LLPanelLogin*)userData;
+	bool enabled = ((LLCheckBoxCtrl*)ctrl)->getValue();
+	gSavedSettings.setBOOL("SpecifyMAC", enabled);
+	panel->getChild<LLLineEditor>("mac_edit")->setEnabled(enabled);
+	panel->fillMAC();
+}
+
+// static
+void LLPanelLogin::onCheckID0(LLUICtrl* ctrl, void* userData)
+{
+	LLPanelLogin* panel = (LLPanelLogin*)userData;
+	bool enabled = ((LLCheckBoxCtrl*)ctrl)->getValue();
+	gSavedSettings.setBOOL("SpecifyID0", enabled);
+	panel->getChild<LLLineEditor>("id0_edit")->setEnabled(enabled);
+	panel->fillID0();
+}
+// </edit>
 
 void LLPanelLogin::setSiteIsAlive( bool alive )
 {
@@ -1100,6 +1173,20 @@ void LLPanelLogin::onClickConnect(void *)
 	if (sInstance && sInstance->mCallback)
 	{
 		// <edit> save identity settings for login
+		bool specify_mac = sInstance->getChild<LLCheckBoxCtrl>("mac_check")->getValue();
+		bool specify_id0 = sInstance->getChild<LLCheckBoxCtrl>("id0_check")->getValue();
+		gSavedSettings.setBOOL("SpecifyMAC", specify_mac);
+		gSavedSettings.setBOOL("SpecifyID0", specify_id0);
+		if(specify_mac)
+		{
+			std::string specified_mac = sInstance->getChild<LLLineEditor>("mac_edit")->getText();
+			gSavedSettings.setString("SpecifiedMAC", specified_mac);
+		}
+		if(specify_id0)
+		{
+			std::string specified_id0 = sInstance->getChild<LLLineEditor>("id0_edit")->getText();
+			gSavedSettings.setString("SpecifiedID0", specified_id0);
+		}
 		std::string specified_channel = sInstance->getChild<LLLineEditor>("channel_edit")->getText();
 		gSavedSettings.setString("SpecifiedChannel", specified_channel);
 		// </edit>

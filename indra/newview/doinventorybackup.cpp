@@ -144,7 +144,7 @@ void DOFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	std::vector<LLInventoryCategory*>::iterator _cat_end = order->mCats.end();
 	for( ; _cat_iter != _cat_end; ++_cat_iter)
 	{
-		std::string path = filename + "\\" + DOInventoryBackup::getPath(*_cat_iter, order->mCats);
+		std::string path = filename + OS_SEP + DOInventoryBackup::getPath(*_cat_iter, order->mCats);
 		LLFile::mkdir(path);
 	}
 
@@ -481,7 +481,7 @@ std::string DOInventoryBackup::getPath(LLInventoryCategory* cat, std::vector<LLI
 	LLInventoryCategory* parent = model->getCategory(cat->getParentUUID());
 	while(parent && (std::find(cats.begin(), cats.end(), parent) != cats.end()))
 	{
-		path = LLDir::getScrubbedFileName(parent->getName()) + "\\" + path;
+		path = LLDir::getScrubbedFileName(parent->getName()) + OS_SEP + path;
 		parent = model->getCategory(parent->getParentUUID());
 	}
 	return path;
@@ -719,7 +719,7 @@ void DOFloaterInventoryBackup::imageCallback(BOOL success,
 			return;
 		}
 
-		std::string filename = floater->mPath + "\\" + DOInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + "\\" + LLDir::getScrubbedFileName(item->getName());
+		std::string filename = floater->mPath + OS_SEP + DOInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + OS_SEP + LLDir::getScrubbedFileName(item->getName());
 		filename = DOInventoryBackup::getUniqueFilename(filename, DOInventoryBackup::getExtension(item));
 
 		LLPointer<LLImageTGA> image_tga = new LLImageTGA;
@@ -778,7 +778,7 @@ void DOFloaterInventoryBackup::assetCallback(LLVFS *vfs,
 	file.read((U8*)buffer, size);
 
 	// Write it back out...
-	std::string filename = floater->mPath + "\\" + DOInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + "\\" + LLDir::getScrubbedFileName(item->getName());
+	std::string filename = floater->mPath + OS_SEP + DOInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + OS_SEP + LLDir::getScrubbedFileName(item->getName());
 	filename = DOInventoryBackup::getUniqueFilename(filename, DOInventoryBackup::getExtension(item));
 
 	std::ofstream export_file(filename.c_str(), std::ofstream::binary);

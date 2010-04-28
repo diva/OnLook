@@ -80,7 +80,7 @@
 			&lt;Type region name&gt;
 		</combo_item>
 	</combo_box>
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<!--<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="45" drop_shadow_visible="true" follows="right|bottom"
 	     font="SansSerifSmall" font-style="UNDERLINE" h_pad="0" halign="right" height="16"
 	     left="-210" mouse_opaque="true" name="create_new_account_text" v_pad="0" width="200"
@@ -100,5 +100,29 @@
 	     left="-310" mouse_opaque="true" name="channel_text" v_pad="0" width="300"
 	     hover="true" hover_color="50 115 185">
 		[CHANNEL] [VERSION]
+	</text>-->
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
+	     left="800" mouse_opaque="true" name="channel_text" v_pad="0" width="120">
+		Channel:
 	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
+	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
+	     height="20" left_delta="64" max_length="64" mouse_opaque="true"
+	     name="channel_edit" select_all_on_focus_received="true" width="320" />
+	<check_box bottom="31" follows="left|bottom" font="SansSerifSmall" height="16"
+	     initial_value="false" label="MAC:" control_name="SpecifyMAC"
+	     left="800" mouse_opaque="true" name="mac_check" width="138" />
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
+	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
+	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
+	     name="mac_edit" select_all_on_focus_received="true" width="320" enabled="false" />
+	<check_box bottom="8" follows="left|bottom" font="SansSerifSmall" height="16"
+	     initial_value="false" label="ID0:" control_name="SpecifyID0"
+	     left="800" mouse_opaque="true" name="id0_check" width="138" />
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
+	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
+	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
+	     name="id0_edit" select_all_on_focus_received="true" width="320" enabled="false" />
 </panel>

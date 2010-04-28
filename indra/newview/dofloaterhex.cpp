@@ -24,6 +24,7 @@
 #include "llappviewer.h" // gLocalInventoryRoot
 #include "llfloaterperms.h" //get default perms
 
+
 std::list<DOFloaterHex*> DOFloaterHex::sInstances;
 S32 DOFloaterHex::sUploadAmount = 10;
 

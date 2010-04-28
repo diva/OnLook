@@ -40,6 +40,9 @@
 
 class LLUIImage;
 
+// <edit>
+extern std::string gFullName;
+// </edit>
 
 class LLPanelLogin:	
 	public LLPanel,
@@ -114,6 +117,12 @@ private:
 	static void onLoginComboLostFocus(LLFocusableElement* fe, void*);
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
 	static void clearPassword();
+	// <edit>
+	void fillMAC();
+	void fillID0();
+	static void onCheckMAC(LLUICtrl* ctrl, void* userData);
+	static void onCheckID0(LLUICtrl* ctrl, void* userData);
+	// </edit>
 
 public:
 	/**

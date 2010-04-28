@@ -1102,6 +1102,9 @@ bool idle_startup()
 			// We have at least some login information on a SLURL
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 
 			// Show the login screen if we don't have everything
@@ -1133,6 +1136,9 @@ bool idle_startup()
 		{
 			firstname = gSavedSettings.getString("FirstName");
 			lastname = gSavedSettings.getString("LastName");
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 			password = LLStartUp::loadPasswordFromDisk();
 			gSavedSettings.setBOOL("RememberPassword", TRUE);
 			
@@ -1242,6 +1248,9 @@ bool idle_startup()
 			else
 			{
 				LLPanelLogin::setFields(firstname, lastname, password, login_history);
+				// <edit>
+				gFullName = utf8str_tolower(firstname + " " + lastname);
+				// </edit>
 				LLPanelLogin::giveFocus();
 			}
 
@@ -1315,6 +1324,9 @@ bool idle_startup()
 		{
 			firstname = gLoginHandler.getFirstName();
 			lastname = gLoginHandler.getLastName();
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 			web_login_key = gLoginHandler.getWebLoginKey();
 		}
 				
@@ -1684,6 +1696,15 @@ bool idle_startup()
 		hashed_mac.finalize();
 		hashed_mac.hex_digest(hashed_mac_string);
 
+		// <edit>
+		std::string my_mac = std::string(hashed_mac_string);
+		if(gSavedSettings.getBOOL("SpecifyMAC"))
+			my_mac = gSavedSettings.getString("SpecifiedMAC").c_str();
+		std::string my_id0 = LLAppViewer::instance()->getSerialNumber();
+		if(gSavedSettings.getBOOL("SpecifyID0"))
+			my_id0 = gSavedSettings.getString("SpecifiedID0");
+		// </edit>
+
 		LLViewerLogin* vl = LLViewerLogin::getInstance();
 		std::string grid_uri = vl->getCurrentGridURI();
 
@@ -1703,8 +1724,12 @@ bool idle_startup()
 			gAcceptCriticalMessage,
 			gLastExecEvent,
 			requested_options,
-			hashed_mac_string,
-			LLAppViewer::instance()->getSerialNumber());
+		// <edit>
+		//	hashed_mac_string,
+		//	LLAppViewer::instance()->getSerialNumber());
+			my_mac,
+			my_id0);
+		// </edit>
 
 		// reset globals
 		gAcceptTOS = FALSE;
@@ -2170,6 +2195,9 @@ bool idle_startup()
 			if(!text.empty()) lastname.assign(text);
 			gSavedSettings.setString("FirstName", firstname);
 			gSavedSettings.setString("LastName", lastname);
+			// <edit>
+			gFullName = utf8str_tolower(firstname + " " + lastname);
+			// </edit>
 
 			if (gSavedSettings.getBOOL("RememberPassword"))
 			{

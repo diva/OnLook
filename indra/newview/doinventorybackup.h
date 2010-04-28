@@ -11,6 +11,13 @@
 #ifndef DO_DOINVENTORYBACKUP_H
 #define DO_DOINVENTORYBACKUP_H
 
+#if LL_WINDOWS
+#define OS_SEP "\\"
+#else
+#define OS_SEP "/"
+#endif
+
+
 #include "llviewerinventory.h"
 #include "llfolderview.h"
 #include "llfilepicker.h"
