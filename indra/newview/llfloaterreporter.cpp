@@ -85,6 +85,10 @@
 
 #include "llassetuploadresponders.h"
 
+// <edit>
+#include "llviewercontrol.h"
+// </edit>
+
 const U32 INCLUDE_SCREENSHOT  = 0x01 << 0;
 
 //-----------------------------------------------------------------------------
@@ -703,10 +707,10 @@ LLSD LLFloaterReporter::gatherReport()
 
 	if ( mReportType == BUG_REPORT)
 	{
-		summary << short_platform << " V" << gSavedSettings.getInteger("SpecifiedVersionMaj") << "."
-			<< gSavedSettings.getInteger("SpecifiedVersionMin") << "."
-			<< gSavedSettings.getInteger("SpecifiedVersionPatch") << "."
-			<< gSavedSettings.getInteger("SpecifiedVersionBuild")
+		summary << short_platform << " V" << gSavedSettings.getU32("SpecifiedVersionMaj") << "."
+			<< gSavedSettings.getU32("SpecifiedVersionMin") << "."
+			<< gSavedSettings.getU32("SpecifiedVersionPatch") << "."
+			<< gSavedSettings.getU32("SpecifiedVersionBuild")
 			<< " (" << regionp->getName() << ")"
 			<< "[" << category_name << "] "
 			<< "\"" << childGetValue("summary_edit").asString() << "\"";
@@ -724,10 +728,10 @@ LLSD LLFloaterReporter::gatherReport()
 	std::ostringstream details;
 	if (mReportType != BUG_REPORT)
 	{
-		details << "V" << gSavedSettings.getInteger("SpecifiedVersionMaj") << "."	// client version moved to body of email for abuse reports
-			<< gSavedSettings.getInteger("SpecifiedVersionMin") << "."
-			<< gSavedSettings.getInteger("SpecifiedVersionPatch") << "."
-			<< gSavedSettings.getInteger("SpecifiedVersionBuild") << std::endl << std::endl;
+		details << "V" << gSavedSettings.getU32("SpecifiedVersionMaj") << "."	// client version moved to body of email for abuse reports
+			<< gSavedSettings.getU32("SpecifiedVersionMin") << "."
+			<< gSavedSettings.getU32("SpecifiedVersionPatch") << "."
+			<< gSavedSettings.getU32("SpecifiedVersionBuild") << std::endl << std::endl;
 	}
 	std::string object_name = childGetText("object_name");
 	std::string owner_name = childGetText("owner_name");
@@ -748,9 +752,9 @@ LLSD LLFloaterReporter::gatherReport()
 	std::string version_string;
 	version_string = llformat(
 			"%d.%d.%d %s %s %s %s",
-			gSavedSettings.getInteger("SpecifiedVersionMaj"),
-			gSavedSettings.getInteger("SpecifiedVersionMin"),
-			gSavedSettings.getInteger("SpecifiedVersionPatch"),
+			gSavedSettings.getU32("SpecifiedVersionMaj"),
+			gSavedSettings.getU32("SpecifiedVersionMin"),
+			gSavedSettings.getU32("SpecifiedVersionPatch"),
 			platform,
 			gSysCPU.getFamily().c_str(),
 			gGLManager.mGLRenderer.c_str(),

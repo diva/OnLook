@@ -37,6 +37,10 @@
 #include "llui.h"
 #include "llversionviewer.h"
 
+// <edit>
+#include "llviewercontrol.h"
+// </edit>
+
 // These two are concatenated with the language specifiers to form a complete Google Translate URL
 const char* LLTranslate::m_GoogleURL = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=";
 const char* LLTranslate::m_GoogleLangSpec = "&langpair=";
@@ -61,11 +65,11 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 
 //<edit>
     std::string user_agent = llformat("%s %d.%d.%d (%d)",
-            gSavedSettings.getInteger("SpecifiedChannel"),
-            gSavedSettings.getInteger("SpecifiedVersionMaj"),
-            gSavedSettings.getInteger("SpecifiedVersionMin"),
-            gSavedSettings.getInteger("SpecifiedVersionPatch"),
-            gSavedSettings.getInteger("SpecifiedVersionBuild") );
+            gSavedSettings.getString("SpecifiedChannel").c_str(),
+            gSavedSettings.getU32("SpecifiedVersionMaj"),
+            gSavedSettings.getU32("SpecifiedVersionMin"),
+            gSavedSettings.getU32("SpecifiedVersionPatch"),
+            gSavedSettings.getU32("SpecifiedVersionBuild") );
 //</edit>
 
 	if (!m_Header.size())

@@ -260,7 +260,7 @@ std::string LLViewerMedia::getCurrentUserAgent()
 	// http://www.mozilla.org/build/revised-user-agent-strings.html
 	std::ostringstream codec;
 	codec << "SecondLife/";
-	codec << gSavedSettings.getInteger("SpecifiedVersionMaj") << "." << gSavedSettings.getInteger("SpecifiedVersionMin") << "." << gSavedSettings.getInteger("SpecifiedVersionPatch") << "." << gSavedSettings.getInteger("SpecifiedVersionBuild");
+	codec << gSavedSettings.getU32("SpecifiedVersionMaj") << "." << gSavedSettings.getU32("SpecifiedVersionMin") << "." << gSavedSettings.getU32("SpecifiedVersionPatch") << "." << gSavedSettings.getU32("SpecifiedVersionBuild");
 	codec << " (" << channel << "; " << skin_name << " skin)";
 	llinfos << codec.str() << llendl;
 	

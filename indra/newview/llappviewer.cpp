@@ -595,11 +595,12 @@ bool LLAppViewer::init()
 
 	// Build a string representing the current version number.
 	// <edit> meh
-	gCurrentVersion = gSavedSettings.getString("SpecifiedChannel") + " " + 
-	gSavedSettings.getInteger("SpecifiedVersionMaj") + "." + 
-	gSavedSettings.getInteger("SpecifiedVersionMin") + "." + 
-	gSavedSettings.getInteger("SpecifiedVersionPatch") + "." + 
-	gSavedSettings.getInteger("SpecifiedVersionBuild");
+	gCurrentVersion = llformat("%s %d.%d.%d (%d)",
+            gSavedSettings.getString("SpecifiedChannel").c_str(),
+            gSavedSettings.getU32("SpecifiedVersionMaj"),
+            gSavedSettings.getU32("SpecifiedVersionMin"),
+            gSavedSettings.getU32("SpecifiedVersionPatch"),
+            gSavedSettings.getU32("SpecifiedVersionBuild") );
 	// </edit>
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -2318,10 +2319,10 @@ void LLAppViewer::writeSystemInfo()
 	// <edit>
 	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
-	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
-	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
-	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
-	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
 	// </edit>
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
@@ -2357,7 +2358,7 @@ void LLAppViewer::writeSystemInfo()
 	
 	// Dump some debugging info
 	LL_INFOS("SystemInfo") << gSecondLife
-			<< " version " << gSavedSettings.getInteger("SpecifiedVersionMaj") << "." << gSavedSettings.getInteger("SpecifiedVersionMin") << "." << gSavedSettings.getInteger("SpecifiedVersionPatch")
+			<< " version " << gSavedSettings.getU32("SpecifiedVersionMaj") << "." << gSavedSettings.getU32("SpecifiedVersionMin") << "." << gSavedSettings.getU32("SpecifiedVersionPatch")
 			<< LL_ENDL;
 
 	// Dump the local time and time zone
@@ -2419,10 +2420,10 @@ void LLAppViewer::handleViewerCrash()
 	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
-	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
-	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
-	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
 	// </edit>
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
@@ -4084,10 +4085,10 @@ void LLAppViewer::handleLoginComplete()
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
 	// </edit>
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
-	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
-	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
-	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
+	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])

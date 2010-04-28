@@ -906,9 +906,9 @@ bool idle_startup()
 			if(!start_messaging_system(
 				   message_template_path,
 				   port,
-				   gSavedSettings.getInteger("SpecifiedVersionMaj"),
-				   gSavedSettings.getInteger("SpecifiedVersionMin"),
-				   gSavedSettings.getInteger("SpecifiedVersionPatch"),
+				   gSavedSettings.getU32("SpecifiedVersionMaj"),
+				   gSavedSettings.getU32("SpecifiedVersionMin"),
+				   gSavedSettings.getU32("SpecifiedVersionPatch"),
 				   FALSE,
 				   std::string(),
 				   responder,
