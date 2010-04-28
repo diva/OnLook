@@ -906,9 +906,9 @@ bool idle_startup()
 			if(!start_messaging_system(
 				   message_template_path,
 				   port,
-				   LL_VERSION_MAJOR,
-				   LL_VERSION_MINOR,
-				   LL_VERSION_PATCH,
+				   gSavedSettings.getInteger("SpecifiedVersionMaj"),
+				   gSavedSettings.getInteger("SpecifiedVersionMin"),
+				   gSavedSettings.getInteger("SpecifiedVersionPatch"),
 				   FALSE,
 				   std::string(),
 				   responder,

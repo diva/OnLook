@@ -8419,6 +8419,50 @@
 		<key>Value</key>
 		<string>Snowglobe</string>
 	</map>
+	<key>SpecifiedVersionMaj</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Major Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>SpecifiedVersionMin</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Minor Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<integer>4</integer>
+	</map>
+	<key>SpecifiedVersionPatch</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Patch Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>SpecifiedVersionBuild</key>
+	<map>
+		<key>Comment</key>
+		<string>Client's Build Version</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
 	<key>SpecifiedMAC</key>
 	<map>
 		<key>Comment</key>

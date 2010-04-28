@@ -703,10 +703,10 @@ LLSD LLFloaterReporter::gatherReport()
 
 	if ( mReportType == BUG_REPORT)
 	{
-		summary << short_platform << " V" << LL_VERSION_MAJOR << "."
-			<< LL_VERSION_MINOR << "."
-			<< LL_VERSION_PATCH << "."
-			<< LL_VIEWER_BUILD
+		summary << short_platform << " V" << gSavedSettings.getInteger("SpecifiedVersionMaj") << "."
+			<< gSavedSettings.getInteger("SpecifiedVersionMin") << "."
+			<< gSavedSettings.getInteger("SpecifiedVersionPatch") << "."
+			<< gSavedSettings.getInteger("SpecifiedVersionBuild")
 			<< " (" << regionp->getName() << ")"
 			<< "[" << category_name << "] "
 			<< "\"" << childGetValue("summary_edit").asString() << "\"";
@@ -724,10 +724,10 @@ LLSD LLFloaterReporter::gatherReport()
 	std::ostringstream details;
 	if (mReportType != BUG_REPORT)
 	{
-		details << "V" << LL_VERSION_MAJOR << "."								// client version moved to body of email for abuse reports
-			<< LL_VERSION_MINOR << "."
-			<< LL_VERSION_PATCH << "."
-			<< LL_VIEWER_BUILD << std::endl << std::endl;
+		details << "V" << gSavedSettings.getInteger("SpecifiedVersionMaj") << "."	// client version moved to body of email for abuse reports
+			<< gSavedSettings.getInteger("SpecifiedVersionMin") << "."
+			<< gSavedSettings.getInteger("SpecifiedVersionPatch") << "."
+			<< gSavedSettings.getInteger("SpecifiedVersionBuild") << std::endl << std::endl;
 	}
 	std::string object_name = childGetText("object_name");
 	std::string owner_name = childGetText("owner_name");
@@ -748,9 +748,9 @@ LLSD LLFloaterReporter::gatherReport()
 	std::string version_string;
 	version_string = llformat(
 			"%d.%d.%d %s %s %s %s",
-			LL_VERSION_MAJOR,
-			LL_VERSION_MINOR,
-			LL_VERSION_PATCH,
+			gSavedSettings.getInteger("SpecifiedVersionMaj"),
+			gSavedSettings.getInteger("SpecifiedVersionMin"),
+			gSavedSettings.getInteger("SpecifiedVersionPatch"),
 			platform,
 			gSysCPU.getFamily().c_str(),
 			gGLManager.mGLRenderer.c_str(),

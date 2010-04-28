@@ -125,4 +125,11 @@
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
 	     name="id0_edit" select_all_on_focus_received="true" width="320" enabled="false" />
+	     
+	<panel border="true" bottom_delta="0" follows="left|top|right|bottom" height="20"
+	     label="Version" left="1000" name="General" width="270">
+	     
+	     BIDOOF
+	</panel>
+
 </panel>

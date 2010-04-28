@@ -59,12 +59,14 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 	std::string url;
 	getTranslateUrl(url, fromLang, toLang, mesg);
 
+//<edit>
     std::string user_agent = llformat("%s %d.%d.%d (%d)",
-            LL_CHANNEL,
-            LL_VERSION_MAJOR,
-            LL_VERSION_MINOR,
-            LL_VERSION_PATCH,
-            LL_VERSION_BUILD );
+            gSavedSettings.getInteger("SpecifiedChannel"),
+            gSavedSettings.getInteger("SpecifiedVersionMaj"),
+            gSavedSettings.getInteger("SpecifiedVersionMin"),
+            gSavedSettings.getInteger("SpecifiedVersionPatch"),
+            gSavedSettings.getInteger("SpecifiedVersionBuild") );
+//</edit>
 
 	if (!m_Header.size())
 	{

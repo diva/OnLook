@@ -595,17 +595,11 @@ bool LLAppViewer::init()
 
 	// Build a string representing the current version number.
 	// <edit> meh
-	/*
-	// </edit>
-    gCurrentVersion = llformat("%s %d.%d.%d.%d", 
-        gSavedSettings.getString("VersionChannelName").c_str(), 
-        LL_VERSION_MAJOR, 
-        LL_VERSION_MINOR, 
-        LL_VERSION_PATCH, 
-        LL_VERSION_BUILD );
-	// <edit>
-	*/
-	gCurrentVersion = gSavedSettings.getString("SpecifiedChannel");
+	gCurrentVersion = gSavedSettings.getString("SpecifiedChannel") + " " + 
+	gSavedSettings.getInteger("SpecifiedVersionMaj") + "." + 
+	gSavedSettings.getInteger("SpecifiedVersionMin") + "." + 
+	gSavedSettings.getInteger("SpecifiedVersionPatch") + "." + 
+	gSavedSettings.getInteger("SpecifiedVersionBuild");
 	// </edit>
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -2119,8 +2113,9 @@ bool LLAppViewer::initConfiguration()
 
 void LLAppViewer::checkForCrash(void)
 {
-    
-#if LL_SEND_CRASH_REPORTS
+	// <edit> screw sending crash reports
+#if LL_SEND_CRASH_REPORTS && 0
+	// </edit>
 	//*NOTE:Mani The current state of the crash handler has the MacOSX
 	// sending all crash reports as freezes, in order to let 
 	// the MacOSX CrashRepoter generate stacks before spawning the 
@@ -2323,14 +2318,15 @@ void LLAppViewer::writeSystemInfo()
 	// <edit>
 	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
 	// </edit>
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
+	//need to put in something to lie about this stuff
 	gDebugInfo["CPUInfo"]["CPUString"] = gSysCPU.getCPUString();
 	gDebugInfo["CPUInfo"]["CPUFamily"] = gSysCPU.getFamily();
 	gDebugInfo["CPUInfo"]["CPUMhz"] = gSysCPU.getMhz();
@@ -2361,7 +2357,7 @@ void LLAppViewer::writeSystemInfo()
 	
 	// Dump some debugging info
 	LL_INFOS("SystemInfo") << gSecondLife
-			<< " version " << LL_VERSION_MAJOR << "." << LL_VERSION_MINOR << "." << LL_VERSION_PATCH
+			<< " version " << gSavedSettings.getInteger("SpecifiedVersionMaj") << "." << gSavedSettings.getInteger("SpecifiedVersionMin") << "." << gSavedSettings.getInteger("SpecifiedVersionPatch")
 			<< LL_ENDL;
 
 	// Dump the local time and time zone
@@ -2422,12 +2418,12 @@ void LLAppViewer::handleViewerCrash()
 	// <edit>
 	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
-	// </edit>
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
+	// </edit>
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])
@@ -4088,10 +4084,10 @@ void LLAppViewer::handleLoginComplete()
 	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
 	// </edit>
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMaj");
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gSavedSettings.getInteger("SpecifiedVersionMin");
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gSavedSettings.getInteger("SpecifiedVersionPatch");
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gSavedSettings.getInteger("SpecifiedVersionBuild");
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])
