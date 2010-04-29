@@ -104,37 +104,49 @@
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="750" mouse_opaque="true" name="channel_text" v_pad="0" width="120" font_size="small">
+	     left="750" mouse_opaque="true" name="channel_text" v_pad="0" width="120" font_size="Small">
 		Channel:
 	</text>
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="64" mouse_opaque="true"
-	     name="channel_edit" select_all_on_focus_received="true" width="230" font_size="small" />
+	     name="channel_edit" select_all_on_focus_received="true" width="230" font_size="Small" />
 	<check_box bottom="31" follows="left|bottom" font="SansSerifSmall" height="16"
 	     initial_value="false" label="MAC:" control_name="SpecifyMAC"
-	     left="750" mouse_opaque="true" name="mac_check" width="138" font_size="small" />
+	     left="750" mouse_opaque="true" name="mac_check" width="138" font_size="Small" />
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
-	     name="mac_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="small" />
+	     name="mac_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="Small" />
 	<check_box bottom="8" follows="left|bottom" font="SansSerifSmall" height="16"
 	     initial_value="false" label="ID0:" control_name="SpecifyID0"
-	     left="750" mouse_opaque="true" name="id0_check" width="138" font_size="small" />
+	     left="750" mouse_opaque="true" name="id0_check" width="138" font_size="Small" />
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0"
-	     follows="left|bottom" font="SansSerif" font_size="8pt" handle_edit_keys_directly="true"
+	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
-	     name="id0_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="small" />
+	     name="id0_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="Small" />
 	     
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="1100" mouse_opaque="true" name="channel_text" v_pad="0" width="120" font_size="small">
+	     left="1050" mouse_opaque="true" name="channel_text" v_pad="0" width="120" font_size="Small">
 		Version:
 	</text>   
-	<spinner decimal_digits="0" follows="left|bottom" height="16"
-			     increment="1" initial_val="0" label="Maj" label_width="10" left_delta="20"
-			     max_val="512" min_val="0" mouse_opaque="true" name="Ver Maj"
-			     text_enabled_color="110, 15, 15, 255" width="87" font_size="small" />
+	<spinner decimal_digits="0" follows="left|bottom" height="15"
+			     increment="1" initial_val="0" label="Major" label_width="40" left_delta="64" bottom_delta="7"
+			     max_val="512" min_val="0" mouse_opaque="true" name="vermaj_edit" control_edit="SpecifiedVersionMaj"
+			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
+	<spinner decimal_digits="0" follows="left|bottom" height="15"
+			     increment="1" initial_val="0" label="Minor" label_width="40" left_delta="0"
+			     max_val="512" min_val="0" mouse_opaque="true" name="vermin_edit" control_edit="SpecifiedVersionMin"
+			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
+	<spinner decimal_digits="0" follows="left|bottom" height="15"
+			     increment="1" initial_val="0" label="Build" label_width="40" left_delta="0"
+			     max_val="512" min_val="0" mouse_opaque="true" name="verpatch_edit" control_edit="SpecifiedVersionPatch"
+			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
+	<spinner decimal_digits="0" follows="left|bottom" height="15"
+			     increment="1" initial_val="0" label="Patch" label_width="40" left_delta="0"
+			     max_val="512" min_val="0" mouse_opaque="true" name="verbuild_edit" control_edit="SpecifiedVersionBuild"
+			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 
 </panel>

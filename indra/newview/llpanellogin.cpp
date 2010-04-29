@@ -79,6 +79,8 @@
 
 // <edit>
 #include "llappviewer.h"
+#include "llspinctrl.h"
+#include <boost/lexical_cast.hpp>
 // </edit>
 #define USE_VIEWER_AUTH 0
 
@@ -386,6 +388,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 
 	fillMAC();
 	fillID0();
+	fillVer();
 
 	childSetCommitCallback("mac_check", onCheckMAC, this);
 	childSetCommitCallback("id0_check", onCheckID0, this);
@@ -420,6 +423,14 @@ void LLPanelLogin::fillID0()
 	{
 		getChild<LLLineEditor>("id0_edit")->setText(LLAppViewer::instance()->getSerialNumber());
 	}
+}
+
+void LLPanelLogin::fillVer()
+{
+	getChild<LLSpinCtrl>("vermaj_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionMaj"));
+	getChild<LLSpinCtrl>("vermin_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionMin"));
+	getChild<LLSpinCtrl>("verpatch_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionPatch"));
+	getChild<LLSpinCtrl>("verbuild_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionBuild"));
 }
 
 // static

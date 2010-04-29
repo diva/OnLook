@@ -120,6 +120,7 @@ private:
 	// <edit>
 	void fillMAC();
 	void fillID0();
+	void fillVer();
 	static void onCheckMAC(LLUICtrl* ctrl, void* userData);
 	static void onCheckID0(LLUICtrl* ctrl, void* userData);
 	// </edit>
