@@ -29,6 +29,12 @@
              mouse_opaque="true" enabled="true" >
             <on_click function="File.UploadBulk" userdata="" />
         </menu_item_call>
+		<menu_item_call bottom="-86" enabled="true" height="19"
+		     label="Import XML..." left="0" mouse_opaque="true"
+		     name="Import XML" width="243">
+			<on_click function="File.ImportXML" userdata="" />
+			<on_enable function ="File.EnableImportXML" userdata="" />
+		</menu_item_call>
         <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
         <menu_item_call enabled="true" label="Set Default Permissions..." 
 	          mouse_opaque="true" name="perm prefs" >
@@ -731,6 +737,12 @@
 		     name="Save Object Back to Object Contents" width="250">
 			<on_click function="Tools.SaveToObjectInventory" userdata="" />
 			<on_enable function="Tools.EnableSaveToObjectInventory" />
+		</menu_item_call>
+		<menu_item_call bottom="-403" enabled="false" height="19"
+		     label="Admin Delete" left="0" mouse_opaque="true"
+		     name="Admin Delete" width="250" shortcut="control|alt|shift|Del">
+			<on_click function="Tools.AdminDelete" userdata="" />
+			<on_enable function="Tools.EnableAdminDelete" />
 		</menu_item_call>
 		<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator6" width="250" />

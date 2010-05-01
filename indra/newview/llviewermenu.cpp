@@ -3012,6 +3012,38 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 	}
 }
 
+// <edit>
+
+void handle_reopen_with_hex_editor(void*)
+{
+	LLFloater* top = gFloaterView->getFrontmost();
+	if (top)
+	{
+		LLUUID item_id = top->getItemID();
+		if(item_id.notNull())
+		{
+			LLInventoryItem* item = gInventory.getItem(item_id);
+			if(item)
+			{
+				DOFloaterHex::show(item_id);
+			}
+		}
+	}
+}
+
+void handle_close_all_notifications(void*)
+{
+	LLView::child_list_t child_list(*(gNotifyBoxView->getChildList()));
+	for(LLView::child_list_iter_t iter = child_list.begin();
+		iter != child_list.end();
+		iter++)
+	{
+		gNotifyBoxView->removeChild(*iter);
+	}
+}
+
+// </edit>
+
 /*
 class LLHaveCallingcard : public LLInventoryCollectFunctor
 {
