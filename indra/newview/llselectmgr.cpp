@@ -85,6 +85,9 @@
 #include "llvoavatar.h"
 #include "llvovolume.h"
 #include "pipeline.h"
+// <edit>
+#include "llfloaterexport.h"
+// </edit>
 
 #include "llglheaders.h"
 
@@ -1387,6 +1390,9 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 {
 	// First for (no copy) textures and multiple object selection
 	LLViewerInventoryItem* item = gInventory.getItem(imageid);
+	// <edit> fffff
+	/*
+	// </edit>
 	if(item 
 		&& !item->getPermissions().allowOperationBy(PERM_COPY, gAgent.getID())
 		&& (mSelectedObjects->getNumNodes() > 1) )
@@ -1395,6 +1401,9 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 				<< llendl;
 		return;
 	}
+	// <edit>
+	*/
+	// </edit>
 
 	struct f : public LLSelectedTEFunctor
 	{
@@ -1443,11 +1452,19 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 			{
 				object->sendTEUpdate();
 				// 1 particle effect per object				
+				// 1 particle effect per object	
+				// <edit>
+				if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+				{
+				// </edit>
 				LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 				effectp->setSourceObject(gAgent.getAvatarObject());
 				effectp->setTargetObject(object);
 				effectp->setDuration(LL_HUD_DUR_SHORT);
 				effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+				// <edit>
+				}
+				// </edit>
 			}
 			return true;
 		}

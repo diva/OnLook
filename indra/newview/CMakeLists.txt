@@ -156,6 +156,8 @@ set(viewer_SOURCE_FILES
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
+    llfloaterexport.cpp
+    llfloaterexportregion.cpp
     llfloaterexploreanimations.cpp
     llfloaterfriends.cpp
     llfloaterfonttest.cpp
@@ -553,7 +555,6 @@ set(viewer_HEADER_FILES
     lleventinfo.h
     lleventnotifier.h
     lleventpoll.h
-    llfloaterexploreanimations.h
     llface.h
     llfasttimerview.h
     llfeaturemanager.h
@@ -587,6 +588,9 @@ set(viewer_HEADER_FILES
     llfloaterdirectory.h
     llfloatereditui.h
     llfloaterenvsettings.h
+    llfloaterexport.h
+    llfloaterexportregion.h
+    llfloaterexploreanimations.h
     llfloaterevent.h
     llfloaterfonttest.h
     llfloaterfriends.h

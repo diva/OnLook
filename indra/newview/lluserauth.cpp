@@ -487,7 +487,7 @@ BOOL LLUserAuth::getOptions(const std::string& key, options_t& options) const
 	all_options_t::const_iterator it = mOptions.find(key);
 	if(it != mOptions.end())
 	{
-		// found the option set, copyt them onto the container.
+		// found the option set, copy them onto the container.
 		std::back_insert_iterator<options_t> ii(options);
 		std::copy((*it).second.begin(), (*it).second.end(), ii);
 		return TRUE;

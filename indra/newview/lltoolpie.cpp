@@ -69,10 +69,9 @@
 #include "llui.h"
 #include "llweb.h"
 
-#if OPENSIM_RULES==1
-#include "llpreview.h"
-#include "llpreviewtexture.h"
-#endif /* OPENSIM_RULES==1 */
+// <edit>
+#include "lllocalinventory.h"
+// </edit>
 
 extern void handle_buy(void*);
 
@@ -163,7 +162,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 	LLViewerObject *object = mPick.getObject();
 	LLViewerObject *parent = NULL;
 
-#if OPENSIM_RULES==1
+	// <edit>
 	if(mPick.mKeyMask == MASK_SHIFT)
 	{
 		if(object)
@@ -175,34 +174,13 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 				if(img)
 				{
 					LLUUID image_id = img->getID();
-					
-					// See if we can bring an exiting preview to the front
-					if( !LLPreview::show( image_id, true ) )
-					{
-						// There isn't one, so make a new preview
-						S32 left, top;
-						gFloaterView->getNewFloaterPosition(&left, &top);
-						LLRect rect = gSavedSettings.getRect("PreviewTextureRect");
-						rect.translate( left - rect.mLeft, top - rect.mTop );
-
-						LLPreviewTexture* preview;
-						preview = new LLPreviewTexture("preview texture",
-														  rect,
-														  image_id.getString(),
-														  image_id,
-														  image_id,
-														  true);
-						preview->setSourceID(image_id);
-						preview->setFocus(TRUE);
-
-						gFloaterView->adjustToFitScreen(preview, FALSE);
-					}
+					LLLocalInventory::addItem(image_id.asString(), (int)LLAssetType::AT_TEXTURE, image_id, true);
 				}
 			}
 		}
 		return TRUE;
 	}
-#endif /* OPENSIM_RULES==1 */
+	// </edit>
 
 	if (mPick.mPickType != LLPickInfo::PICK_LAND)
 	{
@@ -240,6 +218,9 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 		case CLICK_ACTION_SIT:
 			if ((gAgent.getAvatarObject() != NULL) && (!gAgent.getAvatarObject()->mIsSitting)) // agent not already sitting
 			{
+				// <edit>
+				if(!gSavedSettings.getBOOL("DisableClickSit"))
+				// </edit>
 				handle_sit_or_stand();
 				// put focus in world when sitting on an object
 				gFocusMgr.setKeyboardFocus(NULL);
@@ -374,11 +355,18 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 		gMenuHolder->setParcelSelection(selection);
 		gPieLand->show(x, y, mPieMouseButtonDown);
 
+		// <edit>
+		if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+		{
+		// </edit>
 		// VEFFECT: ShowPie
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
 		effectp->setPositionGlobal(mPick.mPosGlobal);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 		effectp->setDuration(0.25f);
+		// <edit>
+		}
+		// </edit>
 	}
 	else if (mPick.mObjectID == gAgent.getID() )
 	{
@@ -446,6 +434,10 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			
 			gPieObject->show(x, y, mPieMouseButtonDown);
 
+			// <edit>
+			if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+			{
+			// </edit>
 			// VEFFECT: ShowPie object
 			// Don't show when you click on someone else, it freaks them
 			// out.
@@ -453,6 +445,9 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			effectp->setPositionGlobal(mPick.mPosGlobal);
 			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 			effectp->setDuration(0.25f);
+			// <edit>
+			}
+			// </edit>
 		}
 	}
 

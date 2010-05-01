@@ -139,6 +139,9 @@
 #include "llviewerdisplay.h"
 #include "llkeythrottle.h"
 #include "lltranslate.h"
+// <edit>
+#include "llviewernetwork.h"
+// </edit>
 
 #include <boost/tokenizer.hpp>
 
@@ -261,7 +264,10 @@ static LLNotificationFunctorRegistration friendship_offer_callback_reg_nm("Offer
 void give_money(const LLUUID& uuid, LLViewerRegion* region, S32 amount, BOOL is_group,
 				S32 trx_type, const std::string& desc)
 {
-	if(0 == amount || !region) return;
+	// <edit>
+	//if(0 == amount || !region) return;
+	if(!region) return;
+	// </edit>
 	amount = abs(amount);
 	LL_INFOS("Messaging") << "give_money(" << uuid << "," << amount << ")"<< LL_ENDL;
 	if(can_afford_transaction(amount))
@@ -1198,7 +1204,10 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 
 		log_message = "You decline " + mDesc + " from " + mFromName + ".";
 		chat.mText = log_message;
-		if( LLMuteList::getInstance()->isMuted(mFromID ) && ! LLMuteList::getInstance()->isLinden(mFromName) )  // muting for SL-42269
+		// <edit>
+		//if( LLMuteList::getInstance()->isMuted(mFromID ) && ! LLMuteList::getInstance()->isLinden(mFromName) )  // muting for SL-42269
+		if( LLMuteList::getInstance()->isMuted(mFromID) )  // muting for SL-42269
+		// </edit>
 		{
 			chat.mMuted = TRUE;
 		}
@@ -1459,12 +1468,19 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	binary_bucket_size = msg->getSizeFast(_PREHASH_MessageBlock, _PREHASH_BinaryBucket);
 	EInstantMessage dialog = (EInstantMessage)d;
 
+	// <edit>
+	llinfos << "RegionID: " << region_id.asString() << llendl;
+	// </edit>
+
 	BOOL is_busy = gAgent.getBusy();
 	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat);
 	BOOL is_linden = LLMuteList::getInstance()->isLinden(name);
 	BOOL is_owned_by_me = FALSE;
 	
-	chat.mMuted = is_muted && !is_linden;
+	// <edit>
+	//chat.mMuted = is_muted && !is_linden;
+	chat.mMuted = is_muted;
+	// </edit>
 	chat.mFromID = from_id;
 	chat.mFromName = name;
 	chat.mSourceType = (from_id.isNull() || (name == std::string(SYSTEM_FROM))) ? CHAT_SOURCE_SYSTEM : CHAT_SOURCE_AGENT;
@@ -2331,6 +2347,19 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	msg->getUUID("ChatData", "SourceID", from_id);
 	chat.mFromID = from_id;
 	
+	// <edit>
+	// this chatter assignment is moved from below
+	chatter = gObjectList.findObject(from_id);
+	/*
+	if(chatter)
+	{
+		if(chatter->isAvatar())
+		{
+			((LLVOAvatar*)chatter)->resetIdleTime();
+		}
+	}
+	*/
+	// </edit>
 	// Object owner for objects
 	msg->getUUID("ChatData", "OwnerID", owner_id);
 	
@@ -2358,7 +2387,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		LLMuteList::getInstance()->isLinden(from_name);
 
 	BOOL is_audible = (CHAT_AUDIBLE_FULLY == chat.mAudible);
-	chatter = gObjectList.findObject(from_id);
+	// <edit>
+	// because I moved it to above
+	//chatter = gObjectList.findObject(from_id);
+	// </edit>
 	if (chatter)
 	{
 		chat.mPosAgent = chatter->getPositionAgent();
@@ -2528,11 +2560,17 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// F		T		T		T				*			No			No
 		// T		*		*		*				F			Yes			Yes
 
-		chat.mMuted = is_muted && !is_linden;
+		// <edit>
+		//chat.mMuted = is_muted && !is_linden;
+		chat.mMuted = is_muted;
+		// </edit>
 		
 		
 		if (!visible_in_chat_bubble 
-			&& (is_linden || !is_busy || is_owned_by_me))
+		// <edit>
+		//	&& (is_linden || !is_busy || is_owned_by_me))
+			&& (!is_busy || is_owned_by_me))
+		// </edit>
 		{
 			// show on screen and add to history
 			check_translate_chat(mesg, chat, FALSE);
@@ -3159,6 +3197,14 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 	// LBUTTON and ML_LBUTTON so that using the camera (alt-key) doesn't
 	// trigger a control event.
 	U32 control_flags = gAgent.getControlFlags();
+
+	// <edit>
+	if(gSavedSettings.getBOOL("Nimble"))
+	{
+		control_flags |= AGENT_CONTROL_FINISH_ANIM;
+	}
+	// </edit>
+
 	MASK	key_mask = gKeyboard->currentMask(TRUE);
 	if (key_mask & MASK_ALT || key_mask & MASK_CONTROL)
 	{
@@ -3530,7 +3576,10 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 		return;
 	}
 		
+	// <edit>
 	gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global);
+	//gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global, object_id);
+	// </edit>
 }
 
 void process_preload_sound(LLMessageSystem *msg, void **user_data)
