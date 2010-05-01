@@ -35,6 +35,7 @@ $/LicenseInfo$
 
 import sys
 import os.path
+import re
 
 # Look for indra/lib/python in all possible parent directories ...
 # This is an improvement over the setup-path.py method used previously:
@@ -135,7 +136,9 @@ class InstallFile(object):
         print "Downloading",self.url,"to local file",self.filename
         
         request = urllib2.Request(self.url)
-        request.add_header('User-agent', defaultUserAgent)
+        
+        if re.match("/^http:\/\/github.com/", self.url):
+			request.add_header('User-agent', defaultUserAgent)
         
         file(self.filename, 'wb').write(urllib2.urlopen(request).read())
         if self.md5sum and not self._is_md5sum_match():
@@ -692,7 +695,10 @@ class SCPOrHTTPHandler(urllib2.BaseHandler):
         url = ''.join(url)
         print "Using HTTP:",url
         request = urllib2.Request(url)
-        request.add_header('User-agent', defaultUserAgent)
+        
+        if re.match("/^http:\/\/github.com/", self.url):
+			request.add_header('User-agent', defaultUserAgent)
+		
         return urllib2.urlopen(request)
 
     def do_scp(self, remote):
