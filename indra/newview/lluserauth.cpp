@@ -49,6 +49,9 @@
 #include <curl/curl.h>
 #include <xmlrpc-epi/xmlrpc.h>
 
+// <edit>
+#include <boost/lexical_cast.hpp>
+// </edit>
 
 
 // Don't define PLATFORM_STRING for unknown platforms - they need
@@ -134,7 +137,17 @@ void LLUserAuth::authenticate(
 	// <edit>
 	//XMLRPC_VectorAppendString(params, "version", gCurrentVersion.c_str(), 0); // Includes channel name
 	//XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("VersionChannelName").c_str(), 0);
-	XMLRPC_VectorAppendString(params, "version", gSavedSettings.getString("SpecifiedChannel").c_str(), 0); // Includes channel name
+	
+	//WOW NEIL YOU ARE SO AWESOME!!
+	
+	XMLRPC_VectorAppendString(params, "version", std::string(
+		gSavedSettings.getString("SpecifiedChannel") + " " +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionBuild"))
+	).c_str(), 0); // Includes channel name
+	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
 	// </edit>
 	XMLRPC_VectorAppendString(params, "platform", PLATFORM_STRING, 0);
@@ -234,7 +247,17 @@ void LLUserAuth::authenticate(
 	// <edit>
 	//XMLRPC_VectorAppendString(params, "version", gCurrentVersion.c_str(), 0); // Includes channel name
 	//XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("VersionChannelName").c_str(), 0);
-	XMLRPC_VectorAppendString(params, "version", gSavedSettings.getString("SpecifiedChannel").c_str(), 0); // Includes channel name
+	
+	//WOW NEIL YOU ARE SO AWESOME!!
+	
+	XMLRPC_VectorAppendString(params, "version", std::string(
+		gSavedSettings.getString("SpecifiedChannel") + " " +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
+		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionBuild"))
+	).c_str(), 0); // Includes channel name
+	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
 	// </edit>
 	XMLRPC_VectorAppendString(params, "platform", PLATFORM_STRING, 0);
