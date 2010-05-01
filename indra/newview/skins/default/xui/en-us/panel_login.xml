@@ -134,19 +134,19 @@
 	</text>   
 	<spinner decimal_digits="0" follows="left|bottom" height="15"
 			     increment="1" initial_val="0" label="Major" label_width="40" left_delta="64" bottom_delta="7"
-			     max_val="512" min_val="0" mouse_opaque="true" name="vermaj_edit" control_edit="SpecifiedVersionMaj"
+			     max_val="512" min_val="0" mouse_opaque="true" name="vermaj_spin" control_edit="SpecifiedVersionMaj"
 			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 	<spinner decimal_digits="0" follows="left|bottom" height="15"
 			     increment="1" initial_val="0" label="Minor" label_width="40" left_delta="0"
-			     max_val="512" min_val="0" mouse_opaque="true" name="vermin_edit" control_edit="SpecifiedVersionMin"
+			     max_val="512" min_val="0" mouse_opaque="true" name="vermin_spin" control_edit="SpecifiedVersionMin"
 			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 	<spinner decimal_digits="0" follows="left|bottom" height="15"
 			     increment="1" initial_val="0" label="Build" label_width="40" left_delta="0"
-			     max_val="512" min_val="0" mouse_opaque="true" name="verpatch_edit" control_edit="SpecifiedVersionPatch"
+			     max_val="512" min_val="0" mouse_opaque="true" name="verpatch_spin" control_edit="SpecifiedVersionPatch"
 			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 	<spinner decimal_digits="0" follows="left|bottom" height="15"
 			     increment="1" initial_val="0" label="Patch" label_width="40" left_delta="0"
-			     max_val="512" min_val="0" mouse_opaque="true" name="verbuild_edit" control_edit="SpecifiedVersionBuild"
+			     max_val="512" min_val="0" mouse_opaque="true" name="verbuild_spin" control_edit="SpecifiedVersionBuild"
 			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 
 </panel>

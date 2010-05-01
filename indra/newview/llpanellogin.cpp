@@ -427,10 +427,10 @@ void LLPanelLogin::fillID0()
 
 void LLPanelLogin::fillVer()
 {
-	getChild<LLSpinCtrl>("vermaj_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionMaj"));
-	getChild<LLSpinCtrl>("vermin_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionMin"));
-	getChild<LLSpinCtrl>("verpatch_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionPatch"));
-	getChild<LLSpinCtrl>("verbuild_spin")->setValue((S32)gSavedSettings.getU32("SpecifiedVersionBuild"));
+	getChild<LLSpinCtrl>("vermaj_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionMaj"));
+	getChild<LLSpinCtrl>("vermin_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionMin"));
+	getChild<LLSpinCtrl>("verpatch_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionPatch"));
+	getChild<LLSpinCtrl>("verbuild_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionBuild"));
 }
 
 // static
