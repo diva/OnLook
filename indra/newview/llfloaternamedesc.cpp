@@ -71,12 +71,28 @@ const S32 PREF_BUTTON_HEIGHT = 16;
 LLFloaterNameDesc::LLFloaterNameDesc(const std::string& filename )
 	: LLFloater(std::string("Name/Description Floater"))
 {
+	// <edit>
+	mItem = NULL;
+	// </edit>
 	mFilenameAndPath = filename;
 	mFilename = gDirUtilp->getBaseFileName(filename, false);
 	// SL-5521 Maintain capitalization of filename when making the inventory item. JC
 	//LLStringUtil::toLower(mFilename);
 	mIsAudio = FALSE;
 }
+
+// <edit>
+LLFloaterNameDesc::LLFloaterNameDesc(const std::string& filename, void* item )
+	: LLFloater(std::string("Name/Description Floater"))
+{
+	mItem = item;
+	mFilenameAndPath = filename;
+	mFilename = gDirUtilp->getBaseFileName(filename, false);
+	// SL-5521 Maintain capitalization of filename when making the inventory item. JC
+	//LLStringUtil::toLower(mFilename);
+	mIsAudio = FALSE;
+}
+// </edit>
 
 //-----------------------------------------------------------------------------
 // postBuild()
