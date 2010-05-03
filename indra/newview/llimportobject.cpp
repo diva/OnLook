@@ -384,6 +384,7 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 	setFlags(FLAGS_USE_PHYSICS, prim["physical"].asInteger());
 	// Volume params
 	LLVolumeParams volume_params;
+	volume_params.fromLLSD(prim["volume"]);
 	
 	setVolume(volume_params, 0, false);
 	// Extra params
@@ -659,6 +660,8 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 // static
 void LLXmlImport::onNewPrim(LLViewerObject* object)
 {
+	
+	
 	int currPrimIndex = sPrimIndex++;
 	
 	if(currPrimIndex >= (int)sPrims.size())
@@ -882,6 +885,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 			}
 		}
 	}
+	
 	LLFloaterImportProgress::update();
 }
 
