@@ -1032,10 +1032,19 @@ void LLPanelLogin::loadLoginPage()
 
 	// Grid
 	char* curl_grid = curl_escape(LLViewerLogin::getInstance()->getGridLabel().c_str(), 0);
+	if (strcmp(curl_grid, "SecondLife") == 0)
+	{
+		strcpy(curl_grid, "agni");
+	}
+	else if (strcmp(curl_grid, "SecondLife%20Beta") == 0)
+	{
+		strcpy(curl_grid, "aditi");
+	}
 	oStr << "&grid=" << curl_grid;
 	curl_free(curl_grid);
 
 	gViewerWindow->setMenuBackgroundColor(false, !LLViewerLogin::getInstance()->isInProductionGrid());
+	LLViewerLogin::getInstance()->setMenuColor();
 	gLoginMenuBarView->setBackgroundColor(gMenuBarView->getBackgroundColor());
 
 
