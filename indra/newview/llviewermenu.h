@@ -64,10 +64,6 @@ void handle_deselect(void*);
 void handle_delete_object();
 void handle_duplicate(void*);
 void handle_duplicate_in_place(void*);
-// <edit>
-void handle_reopen_with_hex_editor(void*);
-void handle_close_all_notifications(void*);
-// </edit>
 BOOL enable_not_have_card(void *userdata);
 void process_grant_godlike_powers(LLMessageSystem* msg, void**);
 
