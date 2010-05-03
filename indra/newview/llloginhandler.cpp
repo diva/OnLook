@@ -120,7 +120,6 @@ void LLLoginHandler::parse(const LLSD& queryMap)
 	{
 		 grid_choice = GRID_INFO_MOHINI;
 	}
-	}
 	else if (queryMap["grid"].asString() == "yami")
 	{
 		 grid_choice = GRID_INFO_YAMI;
@@ -148,7 +147,7 @@ void LLLoginHandler::parse(const LLSD& queryMap)
 
 	if(grid_choice != GRID_INFO_NONE)
 	{
-		LLViewerLogin::getInstance()->setGridChoice((EGridChoice)grid_choice);
+		LLViewerLogin::getInstance()->setGridChoice((EGridInfo)grid_choice);
 	}
 
 	std::string startLocation = queryMap["location"].asString();
