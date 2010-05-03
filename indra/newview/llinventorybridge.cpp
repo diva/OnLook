@@ -923,24 +923,6 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 	{
 		restoreItem();
 	}
-	else if("open hex" == action)
-	{
-		LLInventoryItem* item = model->getItem(mUUID);
-		if(!item) return;
-#if OPENSIM_RULES!=1
-		if(item->getCreatorUUID() != gAgentID) return;
-#endif /* OPENSIM_RULES!=1 */
-		DOFloaterHex::show(mUUID);
-	}
-	else if("open text" == action)
-	{
-		LLInventoryItem* item = model->getItem(mUUID);
-		if(!item) return;
-#if OPENSIM_RULES!=1
-		if(item->getCreatorUUID() != gAgentID) return;
-#endif /* OPENSIM_RULES!=1 */
-		HGFloaterTextEditor::show(mUUID);
-	}
 	else if ("copy_uuid" == action)
 	{
 		// Single item only
@@ -970,6 +952,100 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 		folder_view_itemp->getListener()->pasteFromClipboard();
 		return;
 	}
+	// <edit>
+	else if("open hex" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		DOFloaterHex::show(mUUID);
+	}
+	else if("open text" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		HGFloaterTextEditor::show(mUUID);
+	}
+	else if ("rez" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+		LLViewerRegion* regionp = gAgent.getRegion();
+		if (!regionp)
+		{
+			llwarns << "Couldn't find region to rez object" << llendl;
+			return;
+		}
+
+		//llinfos << "Rezzing object" << llendl;
+		make_ui_sound("UISndObjectRezIn");
+		
+		if (regionp
+			&& (regionp->getRegionFlags() & REGION_FLAGS_SANDBOX))
+		{
+			LLFirstUse::useSandbox();
+		}
+		
+		BOOL remove_from_inventory = !item->getPermissions().allowCopyBy(gAgent.getID());
+
+		LLVector3 rezpos = gAgent.getPositionAgent() + (gAgent.getAtAxis() * 5.0f);
+		
+		LLMessageSystem* msg = gMessageSystem;
+		msg->newMessageFast(_PREHASH_RezObject);
+		
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID,  gAgent.getID());
+		msg->addUUIDFast(_PREHASH_SessionID,  gAgent.getSessionID());
+		msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+
+		msg->nextBlock("RezData");
+		// if it's being rezzed from task inventory, we need to enable
+		// saving it back into the task inventory.
+		// *FIX: We can probably compress this to a single byte, since I
+		// think folderid == mSourceID. This will be a later
+		// optimization.
+		msg->addUUIDFast(_PREHASH_FromTaskID, LLUUID::null);
+		msg->addU8Fast(_PREHASH_BypassRaycast, (U8)TRUE);
+		msg->addVector3Fast(_PREHASH_RayStart, rezpos);
+		msg->addVector3Fast(_PREHASH_RayEnd, rezpos);
+		msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
+		msg->addBOOLFast(_PREHASH_RayEndIsIntersection, FALSE);
+		msg->addBOOLFast(_PREHASH_RezSelected, true);
+		msg->addBOOLFast(_PREHASH_RemoveItem, remove_from_inventory);
+
+		// deal with permissions slam logic
+		pack_permissions_slam(msg, item->getFlags(), item->getPermissions());
+
+		LLUUID folder_id = item->getParentUUID();
+		msg->nextBlockFast(_PREHASH_InventoryData);
+		item->packMessage(msg);
+
+		msg->sendReliable(regionp->getHost());
+	}
+	else if("reupload" == action)
+	{
+		LLInventoryItem* item = model->getItem(mUUID);
+		if(!item) return;
+
+		LLFilePicker& picker = LLFilePicker::instance();
+		std::string filename;
+
+		switch(item->getType())
+		{
+		case LLAssetType::AT_TEXTURE:
+			if(!picker.getOpenFile(LLFilePicker::FFLOAD_IMAGE))
+				return;
+			filename = picker.getFirstFile();
+			if(!filename.empty())
+			{
+				LLFloaterImagePreview* floaterp = new LLFloaterImagePreview(filename, item);
+				LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_image_preview.xml");
+			}
+			break;
+		default:
+			break;
+		}
+	}
+	// </edit>
 }
 
 void LLItemBridge::selectItem()

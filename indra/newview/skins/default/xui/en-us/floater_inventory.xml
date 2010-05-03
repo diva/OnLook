@@ -56,6 +56,10 @@
 			     name="Empty Trash" width="128">
 				<on_click filter="" function="Inventory.EmptyTrash" userdata="" />
 			</menu_item_call>
+			<menu_item_call bottom_delta="-18" height="18" label="Load InvCache..." left="0" mouse_opaque="true"
+			     name="Load InvCache..." width="128">
+				<on_click filter="" function="Inventory.LoadInvCache" userdata="" />
+			</menu_item_call>
 		</menu>
 		<menu bottom_delta="80" drop_shadow="true" height="121"
 		     label="Create" left="0" mouse_opaque="false" name="Create" opaque="true"
