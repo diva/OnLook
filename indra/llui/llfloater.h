@@ -368,6 +368,9 @@ public:
 	// attempt to close all floaters
 	void			closeAllChildren(bool app_quitting);
 	BOOL			allChildrenClosed();
+	// <edit>
+	void			minimizeAllChildren();
+	// </edit>
 
 	LLFloater* getFrontmost();
 	LLFloater* getBackmost();

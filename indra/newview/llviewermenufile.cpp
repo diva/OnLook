@@ -55,6 +55,14 @@
 #include "llviewerwindow.h"
 #include "llappviewer.h"
 #include "lluploaddialog.h"
+// <edit>
+#include "llselectmgr.h"
+#include "llimportobject.h"
+#include "llfloaterexport.h"
+#include "llassettype.h"
+#include "llinventorytype.h"
+#include "llbvhloader.h"
+// </edit>
 
 
 // linden libraries
@@ -233,6 +241,9 @@ const std::string upload_pick(void* data)
 	
 	//now we check to see
 	//if the file is actually a valid image/sound/etc.
+	// <edit> Screw their checks
+	/*
+	// </edit>
 	if (type == LLFilePicker::FFLOAD_WAV)
 	{
 		// pre-qualify wavs to make sure the format is acceptable
@@ -246,6 +257,9 @@ const std::string upload_pick(void* data)
 			return std::string();
 		}
 	}//end if a wave/sound file
+	// <edit>
+	*/
+	// </edit>
 
 	
 	return filename;
@@ -316,7 +330,12 @@ class LLFileUploadBulk : public view_listener_t
 		LLFilePicker& picker = LLFilePicker::instance();
 		if (picker.getMultipleOpenFiles())
 		{
-			const std::string& filename = picker.getFirstFile();
+			// <edit>
+			//const std::string& filename = picker.getFirstFile();
+			std::string filename;
+			while(!(filename = picker.getNextFile()).empty())
+			{
+			// </edit>
 			std::string name = gDirUtilp->getBaseFileName(filename, true);
 			
 			std::string asset_name = name;
@@ -336,6 +355,8 @@ class LLFileUploadBulk : public view_listener_t
 
 			// *NOTE: Ew, we don't iterate over the file list here,
 			// we handle the next files in upload_done_callback()
+			// </edit> not anymore!
+			}
 		}
 		else
 		{
@@ -344,6 +365,35 @@ class LLFileUploadBulk : public view_listener_t
 		return true;
 	}
 };
+
+// <edit>
+class LLFileImportXML : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLFilePicker& picker = LLFilePicker::instance();
+		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+		{
+			return true;
+		}
+		std::string file_name = picker.getFirstFile();
+		new LLFloaterXmlImportOptions(new LLXmlImportOptions(file_name));
+		return true;
+	}
+};
+
+class LLFileEnableImportXML : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		bool new_value = !LLXmlImport::sImportInProgress;
+
+		// horrendously opaque, this code
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+// </edit>
 
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args) 
 {
@@ -399,6 +449,17 @@ class LLFileCloseAllWindows : public view_listener_t
 	}
 };
 
+// <edit>
+class LLFileMinimizeAllWindows : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		gFloaterView->minimizeAllChildren();
+		return true;
+	}
+};
+// </edit>
+
 class LLFileSaveTexture : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -406,8 +467,20 @@ class LLFileSaveTexture : public view_listener_t
 		LLFloater* top = gFloaterView->getFrontmost();
 		if (top)
 		{
-			top->saveAs();
+			// <edit>
+			if(top->canSaveAs())
+			{
+			// </edit>
+				top->saveAs();
+			// <edit>
+				return true;
+			}
+			// </edit>
 		}
+		// <edit>
+		top = new LLFloaterExport();
+		top->center();
+		// </edit>
 		return true;
 	}
 };
@@ -649,6 +722,13 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			return;
 		}
 	}
+	// <edit>
+	else if(exten == "ogg")
+	{
+		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
+		filename = src_filename;
+	}
+	// </edit>
 	else if(exten == "tmp")	 	
 	{	 	
 		// This is a generic .lin resource file	 	
@@ -768,10 +848,83 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	}
 	else if (exten == "bvh")
 	{
-		error_message = llformat("We do not currently support bulk upload of animation files\n");
-		upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
-		return;
+		// <edit> THE FUCK WE DON'T
+		//error_message = llformat("We do not currently support bulk upload of animation files\n");
+		//upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
+		//return;
+		asset_type = LLAssetType::AT_ANIMATION;
+		S32 file_size;
+		LLAPRFile fp;
+		
+		if(!fp.open(src_filename, LL_APR_RB, LLAPRFile::local, &file_size))
+		{
+			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		char* file_buffer = new char[file_size + 1];
+		if(!fp.read(file_buffer, file_size))
+		{
+			fp.close();
+			delete[] file_buffer;
+			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		LLBVHLoader* loaderp = new LLBVHLoader(file_buffer);
+		if(!loaderp->isInitialized())
+		{
+			fp.close();
+			delete[] file_buffer;
+			args["ERROR_MESSAGE"] = llformat("Couldn't convert file %s to internal animation format\n", src_filename.c_str());
+			LLNotifications::instance().add("ErrorMessage", args);
+			return;
+		}
+		S32 buffer_size = loaderp->getOutputSize();
+		U8* buffer = new U8[buffer_size];
+		LLDataPackerBinaryBuffer dp(buffer, buffer_size);
+		loaderp->serialize(dp);
+		LLAPRFile apr_file;
+		apr_file.open(filename, LL_APR_WB, LLAPRFile::local);
+		apr_file.write(buffer, buffer_size);
+		delete[] file_buffer;
+		delete[] buffer;
+		fp.close();
+		apr_file.close();
+		// </edit>
 	}
+	// <edit>
+	else if (exten == "animatn")
+	{
+		asset_type = LLAssetType::AT_ANIMATION;
+		filename = src_filename;
+	}
+	else if(exten == "jp2" || exten == "j2k" || exten == "j2c")
+	{
+		asset_type = LLAssetType::AT_TEXTURE;
+		filename = src_filename;
+	}
+	else if(exten == "gesture")
+	{
+		asset_type = LLAssetType::AT_GESTURE;
+		filename = src_filename;
+	}
+	else if(exten == "notecard")
+	{
+		asset_type = LLAssetType::AT_NOTECARD;
+		filename = src_filename;
+	}
+	else if(exten == "lsl")
+	{
+		asset_type = LLAssetType::AT_LSL_TEXT;
+		filename = src_filename;
+	}
+	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
+	{
+		asset_type = LLAssetType::AT_CLOTHING;
+		filename = src_filename;
+	}
+	// </edit>
 	else
 	{
 		// Unknown extension
@@ -817,6 +970,27 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		{
 			t_disp_name = src_filename;
 		}
+		// <edit> hack to create scripts and gestures
+		if(exten == "lsl" || exten == "gesture" || exten == "notecard") // added notecard Oct 15 2009
+		{
+			LLInventoryType::EType inv_type = LLInventoryType::IT_GESTURE;
+			if(exten == "lsl") inv_type = LLInventoryType::IT_LSL;
+			else if(exten == "gesture") inv_type = LLInventoryType::IT_GESTURE;
+			else if(exten == "notecard") inv_type = LLInventoryType::IT_NOTECARD;
+			create_inventory_item(	gAgent.getID(),
+									gAgent.getSessionID(),
+									gInventory.findCategoryUUIDForType(asset_type),
+									LLTransactionID::tnull,
+									name,
+									uuid.asString(), // fake asset id, but in vfs
+									asset_type,
+									inv_type,
+									NOT_WEARABLE,
+									PERM_ITEM_UNRESTRICTED,
+									new NewResourceItemCallback);
+		}
+		else
+		// </edit>
 		upload_new_resource(tid, asset_type, name, desc, compression_info, // tid
 				    destination_folder_type, inv_type, next_owner_perms, group_perms, everyone_perms,
 				    display_name, callback, expected_upload_cost, userdata);
@@ -921,6 +1095,9 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 	LLUploadDialog::modalUploadFinished();
 	delete data;
 
+	// <edit>
+	/* 
+	// </edit>
 	// *NOTE: This is a pretty big hack. What this does is check the
 	// file picker if there are any more pending uploads. If so,
 	// upload that file.
@@ -944,6 +1121,9 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 				    expected_upload_cost, // assuming next in a group of uploads is of roughly the same type, i.e. same upload cost
 				    userdata);
 	}
+	// <edit>
+	*/
+	// </edit>
 }
 
 void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_type,
@@ -1080,10 +1260,17 @@ void init_menu_file()
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
+	// <edit>
+	(new LLFileImportXML())->registerListener(gMenuHolder, "File.ImportXML");
+	(new LLFileEnableImportXML())->registerListener(gMenuHolder, "File.EnableImportXML");
+	// </edit>
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
 	(new LLFileEnableCloseWindow())->registerListener(gMenuHolder, "File.EnableCloseWindow");
 	(new LLFileEnableCloseAllWindows())->registerListener(gMenuHolder, "File.EnableCloseAllWindows");
+	// <edit>
+	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
+	// </edit>
 	(new LLFileSaveTexture())->registerListener(gMenuHolder, "File.SaveTexture");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
