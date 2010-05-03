@@ -45,9 +45,6 @@ class LLFloaterNameDesc : public LLFloater
 {
 public:
 	LLFloaterNameDesc(const std::string& filename);
-	// <edit>
-	LLFloaterNameDesc(const std::string& filename, void* item);
-	// </edit>
 	virtual ~LLFloaterNameDesc();
 	virtual BOOL postBuild();
 
@@ -60,10 +57,6 @@ protected:
 
 	std::string		mFilenameAndPath;
 	std::string		mFilename;
-	
-	// <edit>
-	void* mItem;
-	// </edit>
 
 	static void		onBtnOK(void*);
 	static void		onBtnCancel(void*);

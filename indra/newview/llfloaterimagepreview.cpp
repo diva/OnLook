@@ -83,17 +83,6 @@ LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename) :
 	loadImage(mFilenameAndPath);
 }
 
-// <edit>
-LLFloaterImagePreview::LLFloaterImagePreview(const std::string& filename, void* item) : 
-	LLFloaterNameDesc(filename, item)
-{
-	mLastMouseX = 0;
-	mLastMouseY = 0;
-	mImagep = NULL ;
-	loadImage(mFilenameAndPath);
-}
-// </edit>
-
 //-----------------------------------------------------------------------------
 // postBuild()
 //-----------------------------------------------------------------------------
