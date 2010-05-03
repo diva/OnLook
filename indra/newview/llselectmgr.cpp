@@ -1451,7 +1451,6 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 			if (!mItem)
 			{
 				object->sendTEUpdate();
-				// 1 particle effect per object				
 				// 1 particle effect per object	
 				// <edit>
 				if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
@@ -2801,6 +2800,9 @@ bool LLSelectMgr::confirmDelete(const LLSD& notification, const LLSD& response, 
 										  (void*)info,
 										  SEND_ONLY_ROOTS);
 			// VEFFECT: Delete Object - one effect for all deletes
+			// <edit>
+			if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+			// </edit>
 			if (LLSelectMgr::getInstance()->mSelectedObjects->mSelectType != SELECT_TYPE_HUD)
 			{
 				LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);
@@ -4345,6 +4347,9 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 			}
 		}
 
+		// <edit> Send to export floaters
+		LLFloaterExport::receiveObjectProperties(id, name, desc);
+		// </edit>
 
 		// Iterate through nodes at end, since it can be on both the regular AND hover list
 		struct f : public LLSelectedNodeFunctor
@@ -4484,6 +4489,9 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	std::string desc;
 	msg->getStringFast(_PREHASH_ObjectData, _PREHASH_Description, desc);
 
+	// <edit> Send to export floaters
+	LLFloaterExport::receiveObjectProperties(id, name, desc);
+	// </edit>
 	// the reporter widget askes the server for info about picked objects
 	if (request_flags & (COMPLAINT_REPORT_REQUEST | BUG_REPORT_REQUEST))
 	{
@@ -4882,9 +4890,11 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	if (mSelectedObjects->getNumNodes())
 	{
 		LLUUID inspect_item_id = LLFloaterInspect::getSelectedUUID();
-		LLUUID focus_item_id = LLViewerMediaFocus::getInstance()->getSelectedUUID();
-		for (S32 pass = 0; pass < 2; pass++)
-		{
+		
+		// <edit>
+		//for (S32 pass = 0; pass < 2; pass++)
+		//{
+		// </edit>
 			for (LLObjectSelection::iterator iter = mSelectedObjects->begin();
 				 iter != mSelectedObjects->end(); iter++)
 			{
@@ -4896,11 +4906,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 				{
 					continue;
 				}
-				if (objectp->getID() == focus_item_id)
-				{
-					node->renderOneSilhouette(gFocusMgr.getFocusColor());
-				}
-				else if(objectp->getID() == inspect_item_id)
+				if(objectp->getID() == inspect_item_id)
 				{
 					node->renderOneSilhouette(sHighlightInspectColor);
 				}
@@ -4920,7 +4926,9 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 					node->renderOneSilhouette(sSilhouetteChildColor);
 				}
 			}
-		}
+		// <edit>
+		//}
+		// </edit>
 	}
 
 	if (mHighlightedObjects->getNumNodes())
@@ -5800,8 +5808,10 @@ BOOL LLSelectMgr::canSelectObject(LLViewerObject* object)
 	// Can't select land
 	if (object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH) return FALSE;
 
-	ESelectType selection_type = getSelectTypeForObject(object);
-	if (mSelectedObjects->getObjectCount() > 0 && mSelectedObjects->mSelectType != selection_type) return FALSE;
+	// <edit>
+	//ESelectType selection_type = getSelectTypeForObject(object);
+	//if (mSelectedObjects->getObjectCount() > 0 && mSelectedObjects->mSelectType != selection_type) return FALSE;
+	// </edit>
 
 	return TRUE;
 }

@@ -384,7 +384,7 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 	setFlags(FLAGS_USE_PHYSICS, prim["physical"].asInteger());
 	// Volume params
 	LLVolumeParams volume_params;
-	volume_params.fromLLSD(prim["volume"]);
+	
 	setVolume(volume_params, 0, false);
 	// Extra params
 	if(prim.has("flexible"))
@@ -659,7 +659,9 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 // static
 void LLXmlImport::onNewPrim(LLViewerObject* object)
 {
-	if(sPrimIndex >= (int)sPrims.size())
+	int currPrimIndex = sPrimIndex++;
+	
+	if(currPrimIndex >= (int)sPrims.size())
 	{
 		if(sAttachmentsDone >= (int)sPt2attachpos.size())
 		{
@@ -669,7 +671,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		}
 	}
 	
-	LLImportObject* from = sPrims[sPrimIndex];
+	LLImportObject* from = sPrims[currPrimIndex];
 
 	// Flags
 	// trying this first in case it helps when supply is physical...
@@ -735,8 +737,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	// Extra params
 	if(from->isFlexible())
 	{
-		LLFlexibleObjectData* wat = (LLFlexibleObjectData*)from->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE);
-		LLFlexibleObjectData flex = *wat;
+		LLFlexibleObjectData flex = *((LLFlexibleObjectData*)from->getParameterEntry(LLNetworkData::PARAMS_FLEXIBLE));
 		object->setParameterEntry(LLNetworkData::PARAMS_FLEXIBLE, flex, true);
 		object->setParameterEntryInUse(LLNetworkData::PARAMS_FLEXIBLE, TRUE, true);
 		object->parameterChanged(LLNetworkData::PARAMS_FLEXIBLE, true);
@@ -749,8 +750,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	}
 	if (from->getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT))
 	{
-		LLLightParams* wat = (LLLightParams*)from->getParameterEntry(LLNetworkData::PARAMS_LIGHT);
-		LLLightParams light = *wat;
+		LLLightParams light = *((LLLightParams*)from->getParameterEntry(LLNetworkData::PARAMS_LIGHT));
 		object->setParameterEntry(LLNetworkData::PARAMS_LIGHT, light, true);
 		object->setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT, TRUE, true);
 		object->parameterChanged(LLNetworkData::PARAMS_LIGHT, true);
@@ -763,8 +763,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	}
 	if (from->getParameterEntryInUse(LLNetworkData::PARAMS_SCULPT))
 	{
-		LLSculptParams* wat = (LLSculptParams*)from->getParameterEntry(LLNetworkData::PARAMS_SCULPT);
-		LLSculptParams sculpt = *wat;
+		LLSculptParams sculpt = *((LLSculptParams*)from->getParameterEntry(LLNetworkData::PARAMS_SCULPT));
 		object->setParameterEntry(LLNetworkData::PARAMS_SCULPT, sculpt, true);
 		object->setParameterEntryInUse(LLNetworkData::PARAMS_SCULPT, TRUE, true);
 		object->parameterChanged(LLNetworkData::PARAMS_SCULPT, true);
@@ -828,28 +827,6 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
 	gMessageSystem->sendReliable(gAgent.getRegionHost());
 
-	// Test - Position, rotation, and scale, didn't work properly
-	/*
-	gMessageSystem->newMessageFast(_PREHASH_MultipleObjectUpdate);
-	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
-	gMessageSystem->addU8Fast(_PREHASH_Type, 7);
-	htonmemcpy(&data[offset], &(object->getPosition().mV), MVT_LLVector3, 12);
-	offset += 12;
-	LLQuaternion quat = object->getRotation();
-	LLVector3 vec = quat.packToVector3();
-	htonmemcpy(&data[offset], &(vec.mV), MVT_LLQuaternion, 12); 
-	offset += 12;
-	htonmemcpy(&data[offset], &(object->getScale().mV), MVT_LLVector3, 12); 
-	offset += 12;
-	gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
-	gMessageSystem->sendReliable(gAgent.getRegionHost());
-	// end test
-	*/
-
 	// Name
 	if(from->mPrimName != "")
 	{
@@ -862,9 +839,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		gMessageSystem->addStringFast(_PREHASH_Name, from->mPrimName);
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
-	
-	sPrimIndex++;
-	if(sPrimIndex >= (int)sPrims.size())
+	if(currPrimIndex + 1 >= (int)sPrims.size())
 	{
 		if(sId2attachpt.size() == 0)
 		{
