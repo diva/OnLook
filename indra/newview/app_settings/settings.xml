@@ -8507,6 +8507,17 @@
 		<key>Value</key>
 		<integer>1</integer>
 	</map>
+	<key>RenderQualityPerformance</key>
+    <map>
+      <key>Comment</key>
+      <string>Which graphics settings you've chosen</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>RenderReflectionDetail</key>
     <map>
       <key>Comment</key>
