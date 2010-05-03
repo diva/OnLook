@@ -75,6 +75,10 @@
 
 #include "llappviewer.h"
 
+// <edit>
+#include "llimportobject.h"
+// </edit>
+
 extern F32 gMinObjectDistance;
 extern BOOL gAnimateTextures;
 
@@ -544,6 +548,28 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			}
 			processUpdateCore(objectp, user_data, i, update_type, NULL, justCreated);
 		}
+		// <edit>
+		if(justCreated && LLXmlImport::sImportInProgress)
+		{
+			if(objectp)
+			{
+				LLViewerObject* parent = (LLViewerObject*)objectp->getParent();
+				if(parent)
+				{
+					if(parent->getID() == gAgent.getID())
+					{
+						LLXmlImport::onNewAttachment(objectp);
+					}
+				}
+				else if( objectp->permYouOwner()
+					&& (objectp->getPCode() == LLXmlImport::sSupplyParams->getPCode())
+					&& (objectp->getScale() == LLXmlImport::sSupplyParams->getScale()))
+				{
+					LLXmlImport::onNewPrim(objectp);
+				}
+			}
+		}
+		// </edit>
 	}
 
 	LLVOAvatar::cullAvatarsByPixelArea();
