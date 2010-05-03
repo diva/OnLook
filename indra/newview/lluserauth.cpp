@@ -49,10 +49,6 @@
 #include <curl/curl.h>
 #include <xmlrpc-epi/xmlrpc.h>
 
-// <edit>
-#include <boost/lexical_cast.hpp>
-// </edit>
-
 
 // Don't define PLATFORM_STRING for unknown platforms - they need
 // to get added to the login cgi script, so we want this to cause an
@@ -142,10 +138,10 @@ void LLUserAuth::authenticate(
 	
 	XMLRPC_VectorAppendString(params, "version", std::string(
 		gSavedSettings.getString("SpecifiedChannel") + " " +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionBuild"))
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionBuild"))
 	).c_str(), 0); // Includes channel name
 	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
@@ -252,10 +248,10 @@ void LLUserAuth::authenticate(
 	
 	XMLRPC_VectorAppendString(params, "version", std::string(
 		gSavedSettings.getString("SpecifiedChannel") + " " +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
-		boost::lexical_cast<std::string>(gSavedSettings.getU32("SpecifiedVersionBuild"))
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
+		llformat("%d", gSavedSettings.getU32("SpecifiedVersionBuild"))
 	).c_str(), 0); // Includes channel name
 	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
