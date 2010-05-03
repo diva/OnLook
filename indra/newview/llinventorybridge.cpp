@@ -567,6 +567,14 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id, std::vector<std::str
 	//items.push_back(std::string("Magic Get"));
 	//items.push_back(std::string("Rez"));
 	items.push_back(std::string("Open With..."));
+	// for now, disable reupload
+	//if(getInventoryType() == LLInventoryType::IT_ANIMATION)
+	//{
+	//	items.push_back(std::string("Reupload..."));
+	//}
+	items.push_back(std::string("Save As..."));
+	items.push_back(std::string("Save InvCache..."));
+	// </edit>
 
 	items.push_back(std::string("Copy Separator"));
 

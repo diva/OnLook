@@ -3490,7 +3490,8 @@ bool LLInventoryCollectFunctor::itemTransferCommonlyAllowed(LLInventoryItem* ite
 	//case LLAssetType::AT_CALLINGCARD:
 	//	// not allowed
 	//	break;
-		
+	// </edit>
+
 	case LLAssetType::AT_OBJECT:
 		my_avatar = gAgent.getAvatarObject();
 		if(my_avatar && !my_avatar->isWearingAttachment(item->getUUID()))
