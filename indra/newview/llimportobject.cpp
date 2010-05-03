@@ -361,7 +361,7 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 	importIsAttachment = false;
 	mId = id;
 	mParentId = "";
-	mPrimName = "Object";
+	mPrimName = "Primitive";
 	if(prim.has("parent"))
 	{
 		mParentId = prim["parent"].asString();
@@ -668,7 +668,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 			return;
 		}
 	}
-
+	
 	LLImportObject* from = sPrims[sPrimIndex];
 
 	// Flags
