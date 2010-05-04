@@ -173,6 +173,7 @@ set(viewer_SOURCE_FILES
     llfloaterhtmlsimple.cpp
     llfloaterhud.cpp
     llfloaterimagepreview.cpp
+    llfloaterimport.cpp
     llfloaterinspect.cpp
     llfloaterjoystick.cpp
     llfloaterlagmeter.cpp
@@ -606,6 +607,7 @@ set(viewer_HEADER_FILES
     llfloaterhtmlsimple.h
     llfloaterhud.h
     llfloaterimagepreview.h
+    llfloaterimport.h
     llfloaterinspect.h
     llfloaterjoystick.h
     llfloaterlagmeter.h

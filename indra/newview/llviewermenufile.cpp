@@ -57,7 +57,7 @@
 #include "lluploaddialog.h"
 // <edit>
 #include "llselectmgr.h"
-#include "llimportobject.h"
+#include "llfloaterimport.h"
 #include "llfloaterexport.h"
 #include "llassettype.h"
 #include "llinventorytype.h"

@@ -61,7 +61,7 @@
 #include "llsdserialize.h"
 // <edit>
 #include "lllocalinventory.h"
-#include "llimportobject.h"
+#include "llfloaterimport.h"
 #include "llfloaterexport.h"
 #include "llfloaterexploreanimations.h"
 // </edit>
