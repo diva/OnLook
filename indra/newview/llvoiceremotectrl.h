@@ -54,6 +54,7 @@ public:
 	static void onClickPopupBtn(void* user_data);
 	static void onClickVoiceChannel(void* user_data);
 	static void onClickEndCall(void* user_data);
+	static void onClickPosLock(void* user_data);
 
 protected:
 	LLButton* mTalkBtn;

@@ -1116,6 +1116,7 @@ LLVoiceClient::LLVoiceClient()
 	mCommandCookie = 0;
 	mCurrentParcelLocalID = 0;
 	mLoginRetryCount = 0;
+	mPosLocked = false;
 
 	mSpeakerVolume = 0;
 	mMicVolume = 0;
@@ -1148,6 +1149,7 @@ LLVoiceClient::LLVoiceClient()
 	mTuningMicVolumeDirty = true;
 	mTuningSpeakerVolume = 0;
 	mTuningSpeakerVolumeDirty = true;
+	
 					
 	//  gMuteListp isn't set up at this point, so we defer this until later.
 //	gMuteListp->addObserver(&mutelist_listener);
@@ -5158,16 +5160,19 @@ void LLVoiceClient::switchChannel(
 
 void LLVoiceClient::joinSession(sessionState *session)
 {
-	mNextAudioSession = session;
-	
-	if(getState() <= stateNoChannel)
+	if(!mPosLocked)
 	{
-		// We're already set up to join a channel, just needed to fill in the session handle
-	}
-	else
-	{
-		// State machine will come around and rejoin if uri/handle is not empty.
-		sessionTerminate();
+		mNextAudioSession = session;
+		
+		if(getState() <= stateNoChannel)
+		{
+			// We're already set up to join a channel, just needed to fill in the session handle
+		}
+		else
+		{
+			// State machine will come around and rejoin if uri/handle is not empty.
+			sessionTerminate();
+		}
 	}
 }
 
@@ -5182,20 +5187,23 @@ void LLVoiceClient::setSpatialChannel(
 	const std::string &uri,
 	const std::string &credentials)
 {
-	mSpatialSessionURI = uri;
-	mSpatialSessionCredentials = credentials;
-	mAreaVoiceDisabled = mSpatialSessionURI.empty();
+	if(!mPosLocked)
+	{
+		mSpatialSessionURI = uri;
+		mSpatialSessionCredentials = credentials;
+		mAreaVoiceDisabled = mSpatialSessionURI.empty();
 
-	LL_DEBUGS("Voice") << "got spatial channel uri: \"" << uri << "\"" << LL_ENDL;
-	
-	if((mAudioSession && !(mAudioSession->mIsSpatial)) || (mNextAudioSession && !(mNextAudioSession->mIsSpatial)))
-	{
-		// User is in a non-spatial chat or joining a non-spatial chat.  Don't switch channels.
-		LL_INFOS("Voice") << "in non-spatial chat, not switching channels" << LL_ENDL;
-	}
-	else
-	{
-		switchChannel(mSpatialSessionURI, true, false, false, mSpatialSessionCredentials);
+		LL_DEBUGS("Voice") << "got spatial channel uri: \"" << uri << "\"" << LL_ENDL;
+		
+		if((mAudioSession && !(mAudioSession->mIsSpatial)) || (mNextAudioSession && !(mNextAudioSession->mIsSpatial)))
+		{
+			// User is in a non-spatial chat or joining a non-spatial chat.  Don't switch channels.
+			LL_INFOS("Voice") << "in non-spatial chat, not switching channels" << LL_ENDL;
+		}
+		else
+		{
+			switchChannel(mSpatialSessionURI, true, false, false, mSpatialSessionCredentials);
+		}
 	}
 }
 
@@ -5427,20 +5435,23 @@ void LLVoiceClient::declineInvite(std::string &sessionHandle)
 
 void LLVoiceClient::leaveNonSpatialChannel()
 {
-	LL_DEBUGS("Voice") 
-		<< "called in state " << state2string(getState()) 
-		<< LL_ENDL;
-	
-	// Make sure we don't rejoin the current session.	
-	sessionState *oldNextSession = mNextAudioSession;
-	mNextAudioSession = NULL;
-	
-	// Most likely this will still be the current session at this point, but check it anyway.
-	reapSession(oldNextSession);
-	
-	verifySessionState();
-	
-	sessionTerminate();
+	if(!mPosLocked)
+	{
+		LL_DEBUGS("Voice") 
+			<< "called in state " << state2string(getState()) 
+			<< LL_ENDL;
+		
+		// Make sure we don't rejoin the current session.	
+		sessionState *oldNextSession = mNextAudioSession;
+		mNextAudioSession = NULL;
+		
+		// Most likely this will still be the current session at this point, but check it anyway.
+		reapSession(oldNextSession);
+		
+		verifySessionState();
+		
+		sessionTerminate();
+	}
 }
 
 std::string LLVoiceClient::getCurrentChannel()
@@ -5669,7 +5680,7 @@ void LLVoiceClient::enforceTether(void)
 void LLVoiceClient::updatePosition(void)
 {
 	
-	if(gVoiceClient)
+	if(gVoiceClient && !gVoiceClient->getPosLocked())
 	{
 		LLVOAvatar *agent = gAgent.getAvatarObject();
 		LLViewerRegion *region = gAgent.getRegion();
@@ -5708,39 +5719,45 @@ void LLVoiceClient::updatePosition(void)
 
 void LLVoiceClient::setCameraPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot)
 {
-	mCameraRequestedPosition = position;
-	
-	if(mCameraVelocity != velocity)
+	if(!mPosLocked)
 	{
-		mCameraVelocity = velocity;
-		mSpatialCoordsDirty = true;
-	}
-	
-	if(mCameraRot != rot)
-	{
-		mCameraRot = rot;
-		mSpatialCoordsDirty = true;
+		mCameraRequestedPosition = position;
+		
+		if(mCameraVelocity != velocity)
+		{
+			mCameraVelocity = velocity;
+			mSpatialCoordsDirty = true;
+		}
+		
+		if(mCameraRot != rot)
+		{
+			mCameraRot = rot;
+			mSpatialCoordsDirty = true;
+		}
 	}
 }
 
 void LLVoiceClient::setAvatarPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot)
 {
-	if(dist_vec(mAvatarPosition, position) > 0.1)
+	if(!mPosLocked)
 	{
-		mAvatarPosition = position;
-		mSpatialCoordsDirty = true;
-	}
-	
-	if(mAvatarVelocity != velocity)
-	{
-		mAvatarVelocity = velocity;
-		mSpatialCoordsDirty = true;
-	}
-	
-	if(mAvatarRot != rot)
-	{
-		mAvatarRot = rot;
-		mSpatialCoordsDirty = true;
+		if(dist_vec(mAvatarPosition, position) > 0.1)
+		{
+			mAvatarPosition = position;
+			mSpatialCoordsDirty = true;
+		}
+		
+		if(mAvatarVelocity != velocity)
+		{
+			mAvatarVelocity = velocity;
+			mSpatialCoordsDirty = true;
+		}
+		
+		if(mAvatarRot != rot)
+		{
+			mAvatarRot = rot;
+			mSpatialCoordsDirty = true;
+		}
 	}
 }
 
@@ -5761,7 +5778,7 @@ bool LLVoiceClient::channelFromRegion(LLViewerRegion *region, std::string &name)
 
 void LLVoiceClient::leaveChannel(void)
 {
-	if(getState() == stateRunning)
+	if(!mPosLocked && getState() == stateRunning)
 	{
 		LL_DEBUGS("Voice") << "leaving channel for teleport/logout" << LL_ENDL;
 		mChannelName.clear();
@@ -5800,7 +5817,7 @@ void LLVoiceClient::setVoiceEnabled(bool enabled)
 		}
 		else
 		{
-			// Turning voice off looses your current channel -- this makes sure the UI isn't out of sync when you re-enable it.
+			// Turning voice off loses your current channel -- this makes sure the UI isn't out of sync when you re-enable it.
 			LLVoiceChannel::getCurrentVoiceChannel()->deactivate();
 		}
 	}
@@ -5827,6 +5844,16 @@ BOOL LLVoiceClient::lipSyncEnabled()
 	{
 		return FALSE;
 	}
+}
+
+BOOL LLVoiceClient::getPosLocked()
+{
+	return mPosLocked;
+}
+
+void LLVoiceClient::setPosLocked(bool locked)
+{
+	mPosLocked = locked;
 }
 
 void LLVoiceClient::setUsePTT(bool usePTT)
