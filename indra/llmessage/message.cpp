@@ -87,6 +87,11 @@
 #include "v4math.h"
 #include "lltransfertargetvfile.h"
 
+// <edit>
+#include "llrand.h"
+#include "llmessagelog.h"
+// </edit>
+
 // Constants
 //const char* MESSAGE_LOG_FILENAME = "message.log";
 static const F32 CIRCUIT_DUMP_TIMEOUT = 30.f;
@@ -561,6 +566,14 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 		
 		// If you want to dump all received packets into SecondLife.log, uncomment this
 		//dumpPacketToLog();
+		
+ 		// <edit>
+ 		if(mTrueReceiveSize)
+ 		{
+ 			LLMessageLog::log(mLastSender, LLHost(16777343, mPort), buffer, mTrueReceiveSize);
+ 		}
+ 		// </edit>
+
 		
 		if (receive_size < (S32) LL_MINIMUM_VALID_PACKET_SIZE)
 		{
@@ -1553,6 +1566,13 @@ void LLMessageSystem::getCircuitInfo(LLSD& info) const
 {
 	mCircuitInfo.getInfo(info);
 }
+
+// <edit>
+LLCircuit* LLMessageSystem::getCircuit()
+{
+	return &mCircuitInfo;
+}
+// </edit>
 
 // returns whether the given host is on a trusted circuit
 BOOL    LLMessageSystem::getCircuitTrust(const LLHost &host)

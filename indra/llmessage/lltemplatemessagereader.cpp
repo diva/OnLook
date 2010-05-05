@@ -449,7 +449,10 @@ S32 LLTemplateMessageReader::getMessageSize() const
 // Returns template for the message contained in buffer
 BOOL LLTemplateMessageReader::decodeTemplate(  
 		const U8* buffer, S32 buffer_size,  // inputs
-		LLMessageTemplate** msg_template ) // outputs
+		// <edit>
+		//LLMessageTemplate** msg_template ) // outputs
+		LLMessageTemplate** msg_template, BOOL custom)
+		// </edit>
 {
 	const U8* header = buffer + LL_PACKET_ID_SIZE;
 
@@ -491,6 +494,9 @@ BOOL LLTemplateMessageReader::decodeTemplate(
 	}
 	else // bogus packet received (too short)
 	{
+		// <edit>
+		if(!custom)
+		// </edit>
 		llwarns << "Packet with unusable length received (too short): "
 				<< buffer_size << llendl;
 		return(FALSE);
@@ -503,9 +509,16 @@ BOOL LLTemplateMessageReader::decodeTemplate(
 	}
 	else
 	{
+		// <edit>
+		if(!custom)
+		{
+		// </edit>
 		llwarns << "Message #" << std::hex << num << std::dec
 			<< " received but not registered!" << llendl;
 		gMessageSystem->callExceptionFunc(MX_UNREGISTERED_MESSAGE);
+		// <edit>
+		}
+		// </edit>
 		return(FALSE);
 	}
 
@@ -532,7 +545,9 @@ void LLTemplateMessageReader::logRanOffEndOfPacket( const LLHost& host, const S3
 }
 
 // decode a given message
-BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender )
+//BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender )
+BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender, BOOL custom)
+// </edit>
 {
 	llassert( mReceiveSize >= 0 );
 	llassert( mCurrentRMessageTemplate);
@@ -590,6 +605,9 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender 
 		}
 		else
 		{
+			// <edit>
+			if(!custom)
+			// </edit>
 			llerrs << "Unknown block type" << llendl;
 			return FALSE;
 		}
@@ -636,6 +654,9 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender 
 
 					if ((decode_pos + data_size) > mReceiveSize)
 					{
+						// <edit>
+						if(!custom)
+						// </edit>
 						logRanOffEndOfPacket(sender, decode_pos, data_size);
 
 						// default to 0 length variable blocks
@@ -672,6 +693,9 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender 
 					// so, copy data pointer and set data size to fixed size
 					if ((decode_pos + mvci.getSize()) > mReceiveSize)
 					{
+						// <edit>
+						if(!custom)
+						// </edit>
 						logRanOffEndOfPacket(sender, decode_pos, mvci.getSize());
 
 						// default to 0s.
@@ -699,7 +723,10 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender 
 		lldebugs << "Empty message '" << mCurrentRMessageTemplate->mName << "' (no blocks)" << llendl;
 		return FALSE;
 	}
-
+	
+	// <edit>
+	if(!custom)
+	// </edit>
 	{
 		static LLTimer decode_timer;
 
@@ -755,11 +782,18 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender 
 BOOL LLTemplateMessageReader::validateMessage(const U8* buffer, 
 											  S32 buffer_size, 
 											  const LLHost& sender,
-											  bool trusted)
+											  bool trusted,
+											  // <edit>
+											  BOOL custom)
+											  // </edit>)
 {
 	mReceiveSize = buffer_size;
-	BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate );
-	if(valid)
+	// <edit>
+	//BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate );
+	BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate, custom );
+	//if(result)
+	if(valid && !custom)
+	// </edit>
 	{
 		mCurrentRMessageTemplate->mReceiveCount++;
 		//lldebugs << "MessageRecvd:"
@@ -799,11 +833,20 @@ const char* LLTemplateMessageReader::getMessageName() const
 {
 	if (!mCurrentRMessageTemplate)
 	{
-		llwarns << "no mCurrentRMessageTemplate" << llendl;
+		// <edit>
+		//llwarns << "no mCurrentRMessageTemplate" << llendl;
+		// </edit>
 		return "";
 	}
 	return mCurrentRMessageTemplate->mName;
 }
+
+// <edit>
+LLMessageTemplate* LLTemplateMessageReader::getTemplate()
+{
+	return mCurrentRMessageTemplate;
+}
+// </edit>
 
 //virtual 
 bool LLTemplateMessageReader::isTrusted() const

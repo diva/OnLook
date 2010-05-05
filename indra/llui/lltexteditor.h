@@ -301,7 +301,13 @@ protected:
 	BOOL			handleControlKey(const KEY key, const MASK mask);
 	BOOL			handleEditKey(const KEY key, const MASK mask);
 
+	// <edit>
+	public:
+	// </edit>
 	BOOL			hasSelection() const		{ return (mSelectionStart !=mSelectionEnd); }
+	// <edit>
+	protected:
+	// </edit>
 	BOOL			selectionContainsLineBreaks();
 	void			startSelection();
 	void			endSelection();

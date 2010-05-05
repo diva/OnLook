@@ -53,6 +53,9 @@
 #include "llcontrol.h"
 #include "llkeyboard.h"
 #include "llresizebar.h"
+// <edit>
+#include "lllineeditor.h"
+// </edit>
 
 const S32 MIN_COLUMN_WIDTH = 20;
 const S32 LIST_SNAP_PADDING = 5;
@@ -103,6 +106,10 @@ struct SortScrollListItem
 LLScrollListIcon::LLScrollListIcon(LLUIImagePtr icon, S32 width)
 	: LLScrollListCell(width),
 	  mIcon(icon),
+	  // <edit>
+	  mCallback(NULL),
+	  mUserData(NULL),
+	  // </edit>
 	  mColor(LLColor4::white)
 {
 }
@@ -161,6 +168,19 @@ S32	LLScrollListIcon::getWidth() const
 	return LLScrollListCell::getWidth();
 }
 
+// <edit>
+void LLScrollListIcon::setClickCallback(BOOL (*callback)(void*), void* user_data)
+{
+	mCallback = callback;
+	mUserData = user_data;
+}
+
+BOOL LLScrollListIcon::handleClick()
+{
+	if(mCallback) return mCallback(mUserData);
+	return FALSE;
+}
+// </edit>
 
 void LLScrollListIcon::draw(const LLColor4& color, const LLColor4& highlight_color)	 const
 {
@@ -209,6 +229,59 @@ BOOL LLScrollListCheck::handleClick()
 	// don't change selection when clicking on embedded checkbox
 	return TRUE; 
 }
+
+// <edit>
+//
+// LLScrollListLineEditor
+//
+LLScrollListLineEditor::LLScrollListLineEditor(LLLineEditor* line_editor, S32 width)
+{
+	mLineEditor = line_editor;
+	LLRect rect(mLineEditor->getRect());
+	if (width)
+	{
+		
+		rect.mRight = rect.mLeft + width;
+		mLineEditor->setRect(rect);
+		setWidth(width);
+	}
+	else
+	{
+		setWidth(rect.getWidth()); //line_editor->getWidth();
+	}
+}
+
+LLScrollListLineEditor::~LLScrollListLineEditor()
+{
+	delete mLineEditor;
+}
+
+void LLScrollListLineEditor::draw(const LLColor4& color, const LLColor4& highlight_color) const
+{
+	mLineEditor->draw();
+}
+
+BOOL LLScrollListLineEditor::handleClick()
+{ 
+	if (mLineEditor->getEnabled())
+	{
+		mLineEditor->setFocus(TRUE);
+		mLineEditor->selectAll();
+	}
+	// return value changes selection?
+	return FALSE; //TRUE; 
+}
+
+BOOL LLScrollListLineEditor::handleUnicodeChar(llwchar uni_char, BOOL called_from_parent)
+{
+	return TRUE;
+}
+
+BOOL LLScrollListLineEditor::handleUnicodeCharHere(llwchar uni_char )
+{
+	return TRUE;
+}
+// </edit>
 
 //
 // LLScrollListSeparator
@@ -3410,6 +3483,21 @@ LLScrollListItem* LLScrollListCtrl::addElement(const LLSD& value, EAddPosition p
 				columnp->mHeader->setHasResizableElement(TRUE);
 			}
 		}
+		// <edit>
+		else if(type == "line_editor")
+		{
+			LLLineEditor* ctrl = new LLLineEditor(std::string("line_editor"),
+													  LLRect(0, width, width, 0), std::string(""));
+			ctrl->setEnabled(enabled);
+			ctrl->setValue(value);
+			LLScrollListLineEditor* cell = new LLScrollListLineEditor(ctrl,width);
+			if (has_color)
+			{
+				cell->setColor(color);
+			}
+			new_item->setColumn(index, cell);
+		}
+		// </edit>
 		else
 		{
 			LLScrollListText* cell = new LLScrollListText(value.asString(), font, width, font_style, font_alignment, fcolor, TRUE);

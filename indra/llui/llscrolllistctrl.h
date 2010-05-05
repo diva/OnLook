@@ -49,6 +49,9 @@
 #include "llscrollbar.h"
 #include "llresizebar.h"
 #include "lldate.h"
+// <edit>
+#include "lllineeditor.h"
+// </edit>
 
 /*
  * Represents a cell in a scrollable table.
@@ -163,10 +166,18 @@ public:
 	virtual void	setColor(const LLColor4&);
 	virtual BOOL	isText()const { return FALSE; }
 	virtual void	setValue(const LLSD& value);
+	// <edit>
+	void setClickCallback(BOOL (*callback)(void*), void* user_data);
+	virtual BOOL handleClick();
+	// </edit>
 
 private:
 	LLUIImagePtr mIcon;
 	LLColor4 mColor;
+	// <edit>
+	BOOL (*mCallback)(void*);
+	void* mUserData;
+	// </edit>
 };
 
 /*
@@ -192,6 +203,30 @@ public:
 private:
 	LLCheckBoxCtrl* mCheckBox;
 };
+
+// <edit>
+class LLScrollListLineEditor : public LLScrollListCell
+{
+public:
+	LLScrollListLineEditor( LLLineEditor* line_editor, S32 width = 0);
+	/*virtual*/ ~LLScrollListLineEditor();
+	virtual void	draw(const LLColor4& color, const LLColor4& highlight_color) const;
+	virtual S32		getHeight() const			{ return 0; } 
+	virtual const LLSD	getValue() const { return mLineEditor->getValue(); }
+	virtual void	setValue(const LLSD& value) { mLineEditor->setValue(value); }
+	virtual void	onCommit() { mLineEditor->onCommit(); }
+	virtual BOOL	handleClick();
+	virtual BOOL	handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
+	virtual BOOL	handleUnicodeCharHere(llwchar uni_char );
+	virtual void	setEnabled(BOOL enable)		{ mLineEditor->setEnabled(enable); }
+
+	LLLineEditor*	getLineEditor()				{ return mLineEditor; }
+	virtual BOOL	isText() const				{ return FALSE; }
+
+private:
+	LLLineEditor* mLineEditor;
+};
+// </edit>
 
 /*
  * A simple data class describing a column within a scroll list.
@@ -497,6 +532,11 @@ public:
 
 	virtual S32		getScrollPos() const;
 	virtual void	setScrollPos( S32 pos );
+	
+	// <edit>
+	S32 getPageLines() { return mPageLines; }
+	// </edit>
+	
 	S32 getSearchColumn();
 	void			setSearchColumn(S32 column) { mSearchColumn = column; }
 	S32				getColumnIndexFromOffset(S32 x);

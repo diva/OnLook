@@ -101,11 +101,18 @@ public:
 
 	virtual const char* getMessageName() const;
 	virtual S32 getMessageSize() const;
+	
+	// <edit>
+	LLMessageTemplate* getTemplate();
+	// </edit>
 
 	virtual void copyToBuilder(LLMessageBuilder&) const;
 
-	BOOL validateMessage(const U8* buffer, S32 buffer_size, 
-						 const LLHost& sender, bool trusted = false);
+	BOOL validateMessage(const U8* buffer, S32 buffer_size,
+	// <edit>
+	//					 const LLHost& sender);
+						 const LLHost& sender, bool trusted = false, BOOL custom = FALSE);
+	// </edit>
 	BOOL readMessage(const U8* buffer, const LLHost& sender);
 
 	bool isTrusted() const;
@@ -118,11 +125,19 @@ private:
 				 S32 size = 0, S32 blocknum = 0, S32 max_size = S32_MAX);
 
 	BOOL decodeTemplate(const U8* buffer, S32 buffer_size,  // inputs
-						LLMessageTemplate** msg_template ); // outputs
+	// <edit>
+	//					LLMessageTemplate** msg_template ); // outputs
+						LLMessageTemplate** msg_template, BOOL custom = FALSE);
+	// </edit>
 
 	void logRanOffEndOfPacket( const LLHost& host, const S32 where, const S32 wanted );
 
-	BOOL decodeData(const U8* buffer, const LLHost& sender );
+	// <edit>
+	//BOOL decodeData(const U8* buffer, const LLHost& sender );
+public:
+	BOOL decodeData(const U8* buffer, const LLHost& sender, BOOL custom = FALSE);
+private:
+	// </edit>
 
 	S32	mReceiveSize;
 	LLMessageTemplate* mCurrentRMessageTemplate;
