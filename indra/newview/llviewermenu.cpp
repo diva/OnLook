@@ -230,6 +230,9 @@
 
 // <edit>
 #include "dofloaterhex.h"
+#include "hgfloatertexteditor.h"
+#include "llfloatermessagelog.h"
+#include "llfloatermessagebuilder.h"
 // </edit>
 
 using namespace LLVOAvatarDefines;
@@ -394,6 +397,8 @@ void handle_leave_god_mode(void*);
 // <edit>
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
+void handle_open_message_log(void*);
+void handle_open_message_builder(void*);
 // </edit>
 
 BOOL is_inventory_visible( void* user_data );
@@ -1036,6 +1041,9 @@ void init_client_menu(LLMenuGL* menu)
 
 	menu->append(new LLMenuItemCallGL(	"Reopen with Hex Editor", 
 										&handle_reopen_with_hex_editor, NULL));	
+										
+	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
+	menu->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));
 
 	// </edit>
 
@@ -3029,6 +3037,16 @@ void handle_reopen_with_hex_editor(void*)
 			}
 		}
 	}
+}
+
+void handle_open_message_log(void*)
+{
+	LLFloaterMessageLog::show();
+}
+
+void handle_open_message_builder(void*)
+{
+	LLFloaterMessageBuilder::show("");
 }
 
 void handle_close_all_notifications(void*)
