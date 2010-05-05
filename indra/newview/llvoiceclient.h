@@ -175,6 +175,10 @@ static	void updatePosition(void);
 		void setAvatarPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot);
 		bool channelFromRegion(LLViewerRegion *region, std::string &name);
 		void leaveChannel(void);		// call this on logout or teleport begin
+		
+		// This should be called when the code detects we have changed parcels.
+		// It initiates the call to the server that gets the parcel channel.
+		void parcelChanged();
 
 		
 		void setMuteMic(bool muted);		// Use this to mute the local mic (for when the client is minimized, etc), ignoring user PTT state.
@@ -647,10 +651,6 @@ static	void updatePosition(void);
 		std::string mRenderDevice;
 		bool mCaptureDeviceDirty;
 		bool mRenderDeviceDirty;
-		
-		// This should be called when the code detects we have changed parcels.
-		// It initiates the call to the server that gets the parcel channel.
-		void parcelChanged();
 		
 	void switchChannel(std::string uri = std::string(), bool spatial = true, bool no_reconnect = false, bool is_p2p = false, std::string hash = "");
 		void joinSession(sessionState *session);

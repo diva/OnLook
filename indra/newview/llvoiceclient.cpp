@@ -3616,7 +3616,7 @@ void LLVoiceClient::sendFriendsListUpdates()
 							<< "<Request requestId=\"" << mCommandCookie++ << "\" action=\"Account.BuddySet.1\">"
 								<< "<AccountHandle>" << mAccountHandle << "</AccountHandle>"
 								<< "<BuddyURI>" << buddy->mURI << "</BuddyURI>"
-								<< "<DisplayName>" << buddy->mDisplayName << "</DisplayName>"
+								<< "<DisplayName>" << buddy->mDisplayName << "</DisplayName>" 
 								<< "<BuddyData></BuddyData>"	// Without this, SLVoice doesn't seem to parse the command.
 								<< "<GroupID>0</GroupID>"
 							<< "</Request>\n\n\n";	

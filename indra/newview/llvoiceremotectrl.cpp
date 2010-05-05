@@ -252,6 +252,11 @@ void LLVoiceRemoteCtrl::onClickPosLock(void* user_data)
 {
 	gVoiceClient->setPosLocked(!gVoiceClient->getPosLocked());
 	llwarns << gVoiceClient->getPosLocked() << llendl;
+	
+	if(!gVoiceClient->getPosLocked())
+	{
+		gVoiceClient->parcelChanged(); //force it to get a new SIP url based on our actual location
+	}
 }
 
 void LLVoiceRemoteCtrl::onClickSpeakers(void *user_data)
