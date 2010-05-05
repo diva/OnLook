@@ -173,7 +173,6 @@
 	 name="Save InvCache..." width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="save_invcache" />
 	</menu_item_call>
-	<menu_item_separator 
 	<menu_item_separator name="Copy Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Copy" left="0" mouse_opaque="true"
 	     name="Copy" width="128">
