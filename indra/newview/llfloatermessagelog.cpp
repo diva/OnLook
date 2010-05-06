@@ -789,7 +789,7 @@ BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 	args["MESSAGE"] = "This will delete local circuit data.\nDo you want to tell the remote host to close the circuit too?";
 	LLSD payload;
 	payload["netlistitem"] = (int)((void*)itemp); //oh god, this is so very wrong, wonder if there's another way to get LLSD to like pointers
-	LLNotifications::instance().add("GenericAlertYesNoCancel", args, payload, onConfirmCloseCircuit);
+	LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmCloseCircuit);
 	return TRUE;
 }
 // static
@@ -822,7 +822,7 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 		args["MESSAGE"] = "That host had a region associated with it.\nDo you want to clean that up?";
 		LLSD payload;
 		payload["region"] = (int)((void*)regionp);
-		LLNotifications::instance().add("GenericAlertYesNo", args, payload, onConfirmRemoveRegion);
+		LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmRemoveRegion);
 	}
 }
 // static
