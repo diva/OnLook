@@ -795,7 +795,7 @@ BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 // static
 void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 {
-	LLNetListItem* itemp = (LLNetListItem*)((void*)(payload["netlistitem"].asInteger())); //yep...
+	LLNetListItem* itemp = (LLNetListItem*)((void*)((int)payload["netlistitem"].asInteger())); //yep...
 	LLCircuitData* cdp = itemp->mCircuitData;
 	if(!cdp) return;
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(cdp->getHost());
@@ -828,7 +828,7 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 // static
 void LLFloaterMessageLog::onConfirmRemoveRegion(S32 option, LLSD payload)
 {
-	LLViewerRegion* regionp = (LLViewerRegion*)((void*)(payload["region"].asInteger()));
+	LLViewerRegion* regionp = (LLViewerRegion*)((void*)((int)payload["region"].asInteger()));
 	if(option == 0) // yes
 		LLWorld::getInstance()->removeRegion(regionp->getHost());
 }
