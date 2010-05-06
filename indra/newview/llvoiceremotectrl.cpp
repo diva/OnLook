@@ -76,6 +76,10 @@ BOOL LLVoiceRemoteCtrl::postBuild()
 	mTalkLockBtn = getChild<LLButton>("ptt_lock");
 	mTalkLockBtn->setClickedCallback(onBtnLock);
 	mTalkLockBtn->setCallbackUserData(this);
+	
+	mPosLockBtn = getChild<LLButton>("pos_lock_btn");
+	mPosLockBtn->setClickedCallback(onClickPosLock);
+	mPosLockBtn->setCallbackUserData(this);
 
 	mSpeakersBtn = getChild<LLButton>("speakers_btn");
 	mSpeakersBtn->setClickedCallback(onClickSpeakers);
@@ -83,7 +87,6 @@ BOOL LLVoiceRemoteCtrl::postBuild()
 
 	childSetAction("show_channel", onClickPopupBtn, this);
 	childSetAction("end_call_btn", onClickEndCall, this);
-	childSetAction("pos_lock_btn", onClickPosLock, this);
 
 	
 
@@ -100,6 +103,7 @@ void LLVoiceRemoteCtrl::draw()
 	}
 
 	mTalkBtn->setEnabled(voice_active);
+	mPosLockBtn->setEnabled(voice_active);
 	mTalkLockBtn->setEnabled(voice_active);
 
 	// propagate ptt state to button display,
@@ -109,7 +113,9 @@ void LLVoiceRemoteCtrl::draw()
 		mTalkBtn->setToggleState(!gSavedSettings.getBOOL("PTTCurrentlyEnabled") || gVoiceClient->getUserPTTState());
 	}
 	mSpeakersBtn->setToggleState(LLFloaterActiveSpeakers::instanceVisible(LLSD()));
+	mPosLockBtn->setToggleState(gVoiceClient->getPosLocked());
 	mTalkLockBtn->setToggleState(!gSavedSettings.getBOOL("PTTCurrentlyEnabled"));
+	
 
 	std::string talk_blip_image;
 	if (gVoiceClient->getIsSpeaking(gAgent.getID()))
@@ -162,10 +168,6 @@ void LLVoiceRemoteCtrl::draw()
 								&& current_channel
 								&& current_channel->isActive()
 								&& current_channel != LLVoiceChannelProximal::getInstance());
-								
-	childSetEnabled("pos_lock_btn", LLVoiceClient::voiceEnabled() 
-								&& current_channel
-								&& current_channel->isActive());
 
 
 

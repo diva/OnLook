@@ -60,6 +60,7 @@ protected:
 	LLButton* mTalkBtn;
 	LLButton* mTalkLockBtn;
 	LLButton* mSpeakersBtn;
+	LLButton* mPosLockBtn;
 };
 
 #endif // LL_LLVOICEREMOTECTRL_H
