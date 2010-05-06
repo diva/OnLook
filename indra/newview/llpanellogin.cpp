@@ -1205,13 +1205,13 @@ void LLPanelLogin::onClickConnect(void *)
 		std::string specified_channel = sInstance->getChild<LLLineEditor>("channel_edit")->getText();
 		gSavedSettings.setString("SpecifiedChannel", specified_channel);
 		
-		U32 specified_ver_maj = (U32)sInstance->getChild<LLSpinCtrl>("vermaj_spin")->getValue();
+		U32 specified_ver_maj = (U32)sInstance->getChild<LLSpinCtrl>("vermaj_spin")->getValue().asInteger();
 		gSavedSettings.setU32("SpecifiedVersionMaj", specified_ver_maj);
-		U32 specified_ver_min = (U32)sInstance->getChild<LLSpinCtrl>("vermin_spin")->getValue();
+		U32 specified_ver_min = (U32)sInstance->getChild<LLSpinCtrl>("vermin_spin")->getValue().asInteger();
 		gSavedSettings.setU32("SpecifiedVersionMin", specified_ver_min);
-		U32 specified_ver_patch = (U32)sInstance->getChild<LLSpinCtrl>("verpatch_spin")->getValue();
+		U32 specified_ver_patch = (U32)sInstance->getChild<LLSpinCtrl>("verpatch_spin")->getValue().asInteger();
 		gSavedSettings.setU32("SpecifiedVersionPatch", specified_ver_patch);
-		U32 specified_ver_build = (U32)sInstance->getChild<LLSpinCtrl>("verbuild_spin")->getValue();
+		U32 specified_ver_build = (U32)sInstance->getChild<LLSpinCtrl>("verbuild_spin")->getValue().asInteger();
 		gSavedSettings.setU32("SpecifiedVersionBuild", specified_ver_build);
 		
 		// </edit>
