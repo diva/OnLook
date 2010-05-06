@@ -1186,20 +1186,34 @@ void LLPanelLogin::onClickConnect(void *)
 		// <edit> save identity settings for login
 		bool specify_mac = sInstance->getChild<LLCheckBoxCtrl>("mac_check")->getValue();
 		bool specify_id0 = sInstance->getChild<LLCheckBoxCtrl>("id0_check")->getValue();
+		
 		gSavedSettings.setBOOL("SpecifyMAC", specify_mac);
 		gSavedSettings.setBOOL("SpecifyID0", specify_id0);
+		
 		if(specify_mac)
 		{
 			std::string specified_mac = sInstance->getChild<LLLineEditor>("mac_edit")->getText();
 			gSavedSettings.setString("SpecifiedMAC", specified_mac);
 		}
+		
 		if(specify_id0)
 		{
 			std::string specified_id0 = sInstance->getChild<LLLineEditor>("id0_edit")->getText();
 			gSavedSettings.setString("SpecifiedID0", specified_id0);
 		}
+		
 		std::string specified_channel = sInstance->getChild<LLLineEditor>("channel_edit")->getText();
 		gSavedSettings.setString("SpecifiedChannel", specified_channel);
+		
+		U32 specified_ver_maj = (U32)sInstance->getChild<LLSpinCtrl>("vermaj_spin")->getValue();
+		gSavedSettings.setU32("SpecifiedVersionMaj", specified_ver_maj);
+		U32 specified_ver_min = (U32)sInstance->getChild<LLSpinCtrl>("vermin_spin")->getValue();
+		gSavedSettings.setU32("SpecifiedVersionMin", specified_ver_min);
+		U32 specified_ver_patch = (U32)sInstance->getChild<LLSpinCtrl>("verpatch_spin")->getValue();
+		gSavedSettings.setU32("SpecifiedVersionPatch", specified_ver_patch);
+		U32 specified_ver_build = (U32)sInstance->getChild<LLSpinCtrl>("verbuild_spin")->getValue();
+		gSavedSettings.setU32("SpecifiedVersionBuild", specified_ver_build);
+		
 		// </edit>
 		// tell the responder we're not here anymore
 		if ( gResponsePtr )
