@@ -441,7 +441,13 @@ BOOL LLMessageLogFilterApply::tick()
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
 			return TRUE;
 		}
-		LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
+		try
+		{
+			LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
+		} catch (char *str)
+		{
+			llwarns << "DERPADERP" << llendl;
+		}
 		mIter++;
 		mProgress++;
 	}
@@ -619,6 +625,7 @@ void LLFloaterMessageLog::refreshNetList()
 		// Event queue isn't even supported yet... FIXME
 		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(3);
 		icon->setValue("icon_net_close_eventpoll_gray.tga");
+		icon->setClickCallback(NULL, NULL);
 	}
 	if(selected_id.notNull()) scrollp->selectByID(selected_id);
 	if(scroll_pos < scrollp->getItemCount()) scrollp->setScrollPos(scroll_pos);
