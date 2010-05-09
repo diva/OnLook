@@ -796,8 +796,7 @@ BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 // static
 void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 {
-	LLHost myhost = new LLHost(payload["circuittoclose"]);
-	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(myhost);
+	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(LLHost(payload["circuittoclose"]));
 	if(!cdp) return;
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(cdp->getHost());
 	switch(option)
