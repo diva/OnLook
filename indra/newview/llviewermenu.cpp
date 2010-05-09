@@ -2461,11 +2461,15 @@ class LLAvatarDebug : public view_listener_t
 		if( avatar )
 		{
 			avatar->dumpLocalTextures();
+			// <edit> hell no don't tell them about that
+			/*			
 			llinfos << "Dumping temporary asset data to simulator logs for avatar " << avatar->getID() << llendl;
 			std::vector<std::string> strings;
 			strings.push_back(avatar->getID().asString());
 			LLUUID invoice;
 			send_generic_message("dumptempassetdata", strings, invoice);
+			*/
+			// </edit>
 			LLFloaterAvatarTextures::show( avatar->getID() );
 		}
 		return true;
