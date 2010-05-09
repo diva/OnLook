@@ -783,20 +783,20 @@ void LLFloaterMessageLog::onCommitMessageLog(LLUICtrl* ctrl, void* user_data)
 BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 {
 	LLNetListItem* itemp = (LLNetListItem*)user_data;
-	LLCircuitData* cdp = itemp->mCircuitData;
+	LLCircuitData* cdp = (LLCircuitData*)itemp->mCircuitData;
 	if(!cdp) return FALSE;
-	LLHost* circuithost = cdp->getHost();
+	LLHost myhost = cdp->getHost();
 	LLSD args;
 	args["MESSAGE"] = "This will delete local circuit data.\nDo you want to tell the remote host to close the circuit too?";
 	LLSD payload;
-	payload["circuittoclose"] = circuithost->getString(); 
+	payload["circuittoclose"] = myhost.getString(); 
 	LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmCloseCircuit);
 	return TRUE;
 }
 // static
 void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 {
-	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(LLHost(payload["circuittoclose"]));
+	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(LLHost(payload["circuittoclose"].asString()));
 	if(!cdp) return;
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(cdp->getHost());
 	switch(option)
@@ -818,10 +818,11 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 		gMessageSystem->getCircuit()->removeCircuitData(cdp->getHost());
 	if(regionp)
 	{
+		LLHost myhost = regionp->getHost();
 		LLSD args;
 		args["MESSAGE"] = "That host had a region associated with it.\nDo you want to clean that up?";
 		LLSD payload;
-		payload["regionhost"] = regionp->getHost()->getString();
+		payload["regionhost"] = myhost.getString();
 		LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmRemoveRegion);
 	}
 }
@@ -829,7 +830,7 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 void LLFloaterMessageLog::onConfirmRemoveRegion(S32 option, LLSD payload)
 {
 	if(option == 0) // yes
-		LLWorld::getInstance()->removeRegion(LLHost(payload["regionhost"]));
+		LLWorld::getInstance()->removeRegion(LLHost(payload["regionhost"].asString()));
 }
 // static
 void LLFloaterMessageLog::onClickFilterApply(void* user_data)
