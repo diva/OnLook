@@ -821,16 +821,15 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 		LLSD args;
 		args["MESSAGE"] = "That host had a region associated with it.\nDo you want to clean that up?";
 		LLSD payload;
-		payload["region"] = (int)((void*)regionp);
+		payload["regionhost"] = regionp->getHost()->getString();
 		LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmRemoveRegion);
 	}
 }
 // static
 void LLFloaterMessageLog::onConfirmRemoveRegion(S32 option, LLSD payload)
 {
-	LLViewerRegion* regionp = (LLViewerRegion*)((void*)((int)payload["region"].asInteger()));
 	if(option == 0) // yes
-		LLWorld::getInstance()->removeRegion(regionp->getHost());
+		LLWorld::getInstance()->removeRegion(LLHost(payload["regionhost"]));
 }
 // static
 void LLFloaterMessageLog::onClickFilterApply(void* user_data)
