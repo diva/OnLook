@@ -785,18 +785,19 @@ BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 	LLNetListItem* itemp = (LLNetListItem*)user_data;
 	LLCircuitData* cdp = itemp->mCircuitData;
 	if(!cdp) return FALSE;
+	LLHost* circuithost = cdp->getHost();
 	LLSD args;
 	args["MESSAGE"] = "This will delete local circuit data.\nDo you want to tell the remote host to close the circuit too?";
 	LLSD payload;
-	payload["netlistitem"] = (int)((void*)itemp); //oh god, this is so very wrong, wonder if there's another way to get LLSD to like pointers
+	payload["circuittoclose"] = circuithost->getString(); 
 	LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmCloseCircuit);
 	return TRUE;
 }
 // static
 void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 {
-	LLNetListItem* itemp = (LLNetListItem*)((void*)((int)payload["netlistitem"].asInteger())); //yep...
-	LLCircuitData* cdp = itemp->mCircuitData;
+	LLHost myhost = new LLHost(payload["circuittoclose"]);
+	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(myhost);
 	if(!cdp) return;
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(cdp->getHost());
 	switch(option)
