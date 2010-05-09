@@ -1,6 +1,8 @@
 /installed.xml
 /bin/
+/bin-release/
 /bin
+/bin-release
 /indra/viewer-*
 /indra/newview/vivox-runtime/
 /libraries/
