@@ -16,6 +16,7 @@
 #include "llinventorymodel.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
+#include "llviewercontrol.h"
 #include "llfloaterimport.h"
 
 
@@ -103,6 +104,16 @@ void LLXmlImportOptions::init(LLSD llsd)
 		else
 			mChildObjects.push_back(unsorted_objects[i]);
 	}
+	
+	F32 throttle = gSavedSettings.getF32("OutBandwidth");
+	// Gross magical value that is 128kbit/s
+	// Sim appears to drop requests if they come in faster than this. *sigh*
+	if(throttle < 128000.)
+	{
+		gMessageSystem->mPacketRing.setOutBandwidth(128000.0);
+	}
+	gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+	
 }
 
 std::string terse_F32_string( F32 f )
@@ -720,6 +731,18 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, at_localid);
 				gMessageSystem->sendReliable(gAgent.getRegionHost());
 			}
+		}
+		
+		F32 throttle = gSavedSettings.getF32("OutBandwidth");
+		if(throttle != 0.)
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(throttle);
+			gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+		}
+		else
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(0.0);
+			gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
 		}
 	}
 	

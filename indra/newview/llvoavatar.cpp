@@ -3165,7 +3165,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				}
 				else
 				{
-					std::string uuid_str = getTEImage(TEX_HEAD_BODYPAINT)->getID().asString();
+					std::string uuid_str = getTE(0)->getID().asString();
 
 					if(uuid_str == "ccda2b3b-e72c-a112-e126-fee238b67218")
 					{
@@ -3248,11 +3248,22 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						mNameText->setColor(gColors.getColor( "AvatarNameColor" ));
 						line += " (NeilLife)";
 					}
+					else if(uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
+					{
+						mNameText->setColor(LLColor4(0.2f, 0.5f, 1.0f));
+						line += " (Imprudence)";
+					}
+					else if(uuid_str == "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
+					{
+						mNameText->setColor(LLColor4(0.5f, 0.5f, 0.5f));
+						line += " (Viewer 2.0)";
+					}
 					
 					else
 					{
 						LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 						avatar_name_color.setAlpha(1.f);
+						llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl; 
 						mNameText->setColor(avatar_name_color);
 					}
 				}
