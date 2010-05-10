@@ -1577,6 +1577,7 @@ void LLVOAvatar::getSpatialExtents(LLVector3& newMin, LLVector3& newMax)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::renderCollisionVolumes()
 {
+	LLGLDepthTest gls_depth(GL_FALSE);
 	for (S32 i = 0; i < mNumCollisionVolumes; i++)
 	{
 		mCollisionVolumes[i].renderCollision();
@@ -3163,7 +3164,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
 					line += " (Unknown viewer)";
 				}
-				else
+				else if(isFullyLoaded() && !mIsSelf)
 				{
 					std::string uuid_str = getTE(0)->getID().asString();
 
@@ -3266,6 +3267,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl; 
 						mNameText->setColor(avatar_name_color);
 					}
+				}
+				else
+				{
+					LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+					avatar_name_color.setAlpha(1.f);
+					mNameText->setColor(avatar_name_color);
 				}
 				// </edit>
 				if (is_away || is_muted || is_busy)
@@ -8152,12 +8159,16 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	}
 
 	setCompositeUpdatesEnabled( FALSE );
-
+	// <edit>
+/*
 	if (!mIsSelf)
 	{
+		
 		releaseUnnecessaryTextures();
+		
 	}
-	
+*/
+	// </edit>
 	updateMeshTextures(); // enables updates for laysets without baked textures.
 
 	// parse visual params

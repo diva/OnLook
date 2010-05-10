@@ -186,7 +186,7 @@ LLSD LLExportable::asLLSD()
 
 		return llsd;
 	}
-	return NULL;
+	return LLSD();
 }
 
 
