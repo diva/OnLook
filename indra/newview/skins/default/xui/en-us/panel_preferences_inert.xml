@@ -125,6 +125,11 @@
 	    		label="Preview animations on the avatar instead on a dummy before uploading" left="10"
 			    mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
 			    width="400" />
+			<check_box bottom_delta="-20" control_name="BroadcastViewerEffects" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+		    	label="Broadcast Viewer Effects" left="10"
+			    mouse_opaque="true" name="broadcast_viewer_effects" radio_style="false"
+		    	width="400" />
 			<check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	    		label="Do not look at or point to objects (defeats ShowLookAt)" left="10"
@@ -136,7 +141,7 @@
 				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="true"
-			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 	    		label="Save scripts in inventory as Mono scripts instead of LSL2" left="10"
 		    	mouse_opaque="true" name="save_scripts_as_mono_check" radio_style="false"
 			    width="400" />

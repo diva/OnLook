@@ -164,6 +164,8 @@ BOOL	LLPanelObject::postBuild()
 	mComboMaterial = getChild<LLComboBox>("material");
 	childSetCommitCallback("material",onCommitMaterial,this);
 	mComboMaterial->removeall();
+	// <edit>
+	/*
 	// *TODO:translate
 	for (LLMaterialTable::info_list_t::iterator iter = LLMaterialTable::basic.mMaterialInfoList.begin();
 		 iter != LLMaterialTable::basic.mMaterialInfoList.end(); ++iter)
@@ -174,6 +176,12 @@ BOOL	LLPanelObject::postBuild()
 			mComboMaterial->add(minfop->mName);
 		}
 	}
+	*/
+	for(U8 mcode = 0; mcode < 0x10; mcode++)
+	{
+		mComboMaterial->add(LLMaterialTable::basic.getName(mcode));
+	}
+	// </edit>
 	mComboMaterialItemCount = mComboMaterial->getItemCount();
 
 	// Base Type
@@ -362,9 +370,19 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
+	// <edit>
+	// Enables position, size, and rotation textboxes
+	// but they're also editable
+	// No arrow crap though
+	/*
 	BOOL enable_move	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
+	*/
+	BOOL enable_move	= TRUE;
+	BOOL enable_scale	= TRUE;
+	BOOL enable_rotate	= TRUE;
+	// </edit>
 
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
@@ -449,7 +467,15 @@ void LLPanelObject::getState( )
 
 	// BUG? Check for all objects being editable?
 	S32 roots_selected = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
-	BOOL editable = root_objectp->permModify();
+	// <edit>
+	// Makes status and material available
+	// I would like it if they were semi-gray, you could copy the value,
+	// but not editable
+
+	//BOOL editable = root_objectp->permModify();
+	BOOL editable = TRUE;
+
+	// </edit>
 
 	// Select Single Message
 	childSetVisible("select_single", FALSE);
@@ -535,6 +561,8 @@ void LLPanelObject::getState( )
 	{
 		mComboMaterial->setEnabled( TRUE );
 		mLabelMaterial->setEnabled( TRUE );
+		// <edit>
+		/*
 		if (material_code == LL_MCODE_LIGHT)
 		{
 			if (mComboMaterial->getItemCount() == mComboMaterialItemCount)
@@ -552,6 +580,9 @@ void LLPanelObject::getState( )
 			// *TODO:Translate
 			mComboMaterial->setSimple(std::string(LLMaterialTable::basic.getName(material_code)));
 		}
+		*/
+		mComboMaterial->setSimple(std::string(LLMaterialTable::basic.getName(material_code)));
+		// </edit>
 	}
 	else
 	{
@@ -721,8 +752,11 @@ void LLPanelObject::getState( )
 		// Cut interpretation varies based on base object type
 		F32 cut_begin, cut_end, adv_cut_begin, adv_cut_end;
 
-		if ( selected_item == MI_SPHERE || selected_item == MI_TORUS || 
-			 selected_item == MI_TUBE   || selected_item == MI_RING )
+		// <edit>
+		//if ( selected_item == MI_SPHERE || selected_item == MI_TORUS || 
+		//	 selected_item == MI_TUBE   || selected_item == MI_RING )
+		if(!linear_path)
+		// </edit>
 		{
 			cut_begin		= begin_t;
 			cut_end			= end_t;
@@ -746,7 +780,10 @@ void LLPanelObject::getState( )
 		F32 twist		= volume_params.getTwist();
 		F32 twist_begin = volume_params.getTwistBegin();
 		// Check the path type for conversion.
-		if (path == LL_PCODE_PATH_LINE || path == LL_PCODE_PATH_FLEXIBLE)
+		// <edit>
+		//if (path == LL_PCODE_PATH_LINE || path == LL_PCODE_PATH_FLEXIBLE)
+		if(linear_path)
+		// </edit>
 		{
 			twist		*= OBJECT_TWIST_LINEAR_MAX;
 			twist_begin	*= OBJECT_TWIST_LINEAR_MAX;
@@ -839,7 +876,11 @@ void LLPanelObject::getState( )
 	BOOL top_shear_x_visible		= TRUE;
 	BOOL top_shear_y_visible		= TRUE;
 	BOOL twist_visible				= TRUE;
-	BOOL advanced_cut_visible		= FALSE;
+	// <edit>
+	// Enable advanced cut (aka dimple, aka path, aka profile cut) for everything
+	//BOOL advanced_cut_visible		= FALSE;
+	BOOL advanced_cut_visible		= TRUE;
+	// </edit>
 	BOOL taper_visible				= FALSE;
 	BOOL skew_visible				= FALSE;
 	BOOL radius_offset_visible		= FALSE;
@@ -1423,8 +1464,13 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 	F32 begin_s, end_s;
 	F32 begin_t, end_t;
 
-	if (selected_type == MI_SPHERE || selected_type == MI_TORUS || 
-		selected_type == MI_TUBE   || selected_type == MI_RING)
+	// <edit>
+	//if (selected_type == MI_SPHERE || selected_type == MI_TORUS || 
+	//	selected_type == MI_TUBE   || selected_type == MI_RING)
+	BOOL linear_path =  (path == LL_PCODE_PATH_LINE) ||
+						(path == LL_PCODE_PATH_FLEXIBLE);
+	if(!linear_path)
+	// </edit>
 	{
 		begin_s = adv_cut_begin;
 		end_s	= adv_cut_end;
@@ -1695,7 +1741,10 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 	// Clamp the Z height
 	const F32 height = newpos.mV[VZ];
 	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject);
-	const F32 max_height = LLWorld::getInstance()->getRegionMaxHeight();
+	// <edit>
+	//const F32 max_height = LLWorld::getInstance()->getRegionMaxHeight();
+	const F32 max_height = F32(340282346638528859811704183484516925440.0f);
+	// </edit>
 
 	if (!mObject->isAttachment())
 	{

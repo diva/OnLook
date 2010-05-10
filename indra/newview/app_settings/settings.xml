@@ -709,7 +709,7 @@
       <string>http://www.secondlife.com</string>
     </map>
     <key>BlockAvatarAppearanceMessages</key>
-        <map>
+    <map>
         <key>Comment</key>
             <string>Ignore's appearance messages (for simulating Ruth)</string>
         <key>Persist</key>
@@ -718,7 +718,18 @@
             <string>Boolean</string>
         <key>Value</key>
             <integer>0</integer>
-        </map>
+    </map>
+    <key>BroadcastViewerEffects</key>
+    <map>
+      <key>Comment</key>
+      <string>Broadcast Viewer Effects</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>BrowserProxyAddress</key>
     <map>
       <key>Comment</key>
@@ -4240,17 +4251,6 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-    </map>
-    <key>RadarChatKeysChannel</key>
-    <map>
-      <key>Comment</key>
-      <string>Private channel used to broadcast the key of incoming avatars</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>S32</string>
-      <key>Value</key>
-      <integer>-8888888</integer>
     </map>
     <key>FloaterLandRect5</key>
     <map>

@@ -47,6 +47,12 @@
 
 
 #include "llxmltree.h"
+// <edit>
+#include "llresmgr.h"
+#include "llhudrender.h"
+#include "llviewerwindow.h"
+#include "llviewercontrol.h"
+// </edit>
 
 
 BOOL LLHUDEffectLookAt::sDebugLookAt = FALSE;
@@ -498,6 +504,8 @@ void LLHUDEffectLookAt::setSourceObject(LLViewerObject* objectp)
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::render()
 {
+    if (gSavedSettings.getBOOL("PrivateLookAt") &&
+        (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject))) return;
 	if (sDebugLookAt && mSourceObject.notNull())
 	{
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
@@ -521,6 +529,34 @@ void LLHUDEffectLookAt::render()
 			gGL.vertex3f(0.f, 0.f, 1.f);
 		} gGL.end();
 		gGL.popMatrix();
+		// <edit>
+		const std::string text = ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->getFullname();
+		LLVector3 offset = gAgent.getCameraPositionAgent() - target;
+		offset.normalize();
+		LLVector3 shadow_offset = offset * 0.49f;
+		offset *= 0.5f;
+		const LLFontGL* font = LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF);
+		LLGLEnable gl_blend(GL_BLEND);
+		glPushMatrix();
+		gViewerWindow->setupViewport();
+		hud_render_utf8text(text,
+			target + shadow_offset,
+			*font,
+			LLFontGL::NORMAL,
+			-0.5f * font->getWidthF32(text) + 2.0f,
+			-2.0f,
+			LLColor4::black,
+			FALSE);
+		hud_render_utf8text(text,
+			target + offset,
+			*font,
+			LLFontGL::NORMAL,
+			-0.5f * font->getWidthF32(text),
+			0.0f,
+			(*mAttentions)[mTargetType].mColor,
+			FALSE);
+		glPopMatrix();
+		// </edit>
 	}
 }
 

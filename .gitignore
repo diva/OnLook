@@ -9,3 +9,4 @@
 *.pyc
 *.orig
 *.rej
+/edited-files.txt
