@@ -6,6 +6,6 @@
 	<button bottom="-20" height="20" image_overlay="icn_voice-call-end.tga" label=""
 	     left="4" name="end_call_btn" tool_tip="Click to hang up" width="20" />
 	<button bottom="-20" height="20" image_selected="pos_lock_on.tga" image_unselected="pos_lock_off.tga" label=""
-	     left_delta="28" name="pos_lock_btn" tool_tip="Click to lock position" width="20" toggle="true" />
+	     left_delta="28" name="pos_lock_btn" tool_tip="Click to lock position" width="20" toggle="true" scale_image="false" />
 	<panel bottom="13" filename="panel_voice_controls.xml" left="1" />
 </panel>
