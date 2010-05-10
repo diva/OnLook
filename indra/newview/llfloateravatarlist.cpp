@@ -68,12 +68,6 @@ typedef enum e_radar_alert_type
 	ALERT_TYPE_CHATRANGE = 3
 } ERadarAlertType;
 
-void announce(std::string msg)
-{
-	LLChat chat(msg);
-	LLFloaterChat::addChat(chat);
-}
-
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
 {
 	if (gSavedSettings.getBOOL("RadarChatAlerts"))
@@ -111,10 +105,6 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::addChat(chat);
 		}
-	}
-	if (type == ALERT_TYPE_SIM && entering && gSavedSettings.getBOOL("RadarChatKeys"))
-	{
-		announce(key.asString());
 	}
 }
 
@@ -1043,20 +1033,7 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
 
 void LLFloaterAvatarList::onClickSendKeys(void *userdata)
 {
-	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
-	std::map<LLUUID, LLAvatarListEntry>::iterator iter;
-	LLAvatarListEntry *entry;
-
-	if (self->mAvatars.size() == 0)
-		return;
-
-	for (iter = self->mAvatars.begin(); iter != self->mAvatars.end(); iter++)
-	{
-		entry = &iter->second;
-
-		if (!entry->isDead() && entry->isInSim())
-			announce(entry->getID().asString());
-	}
+	//TODO remove
 }
 
 static void send_freeze(const LLUUID& avatar_id, bool freeze)
