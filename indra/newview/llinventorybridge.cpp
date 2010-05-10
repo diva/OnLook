@@ -4011,7 +4011,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					else
 					{
 						LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachCustom");
-						new_item->addListener(callback, "on_click", NULL);
+						new_item->addListener(callback, "on_click", LLSD());
 				}
 					// </edit>
 				}
