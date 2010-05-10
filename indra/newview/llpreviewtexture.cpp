@@ -335,7 +335,10 @@ void LLPreviewTexture::draw()
 // virtual
 BOOL LLPreviewTexture::canSaveAs() const
 {
-	return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	// <edit>
+	//return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	return !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
+	// </edit>
 }
 
 
@@ -361,7 +364,10 @@ void LLPreviewTexture::saveAs()
 	}
 	mLoadingFullImage = TRUE;
 	getWindow()->incBusyCount();
-	mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
+	// <edit>
+	//mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
+	mImage->setLoadedCallbackNoAux( LLPreviewTexture::onFileLoadedForSave, 
+	// </edit>
 								0, TRUE, FALSE, new LLUUID( mItemUUID ) );
 }
 
@@ -424,6 +430,18 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 	}
 }
 
+// <edit>
+// virtual
+LLUUID LLPreviewTexture::getItemID()
+{
+	const LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		return item->getUUID();
+	}
+	return LLUUID::null;
+}
+// </edit>
 
 // It takes a while until we get height and width information.
 // When we receive it, reshape the window accordingly.
