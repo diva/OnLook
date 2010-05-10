@@ -70,17 +70,8 @@ typedef enum e_radar_alert_type
 
 void announce(std::string msg)
 {
-	//llinfos << "Radar broadcasting key: " << key.asString() << " - on channel " << gSavedSettings.getS32("RadarChatKeysChannel") << llendl;
-	gMessageSystem->newMessage("ScriptDialogReply");
-	gMessageSystem->nextBlock("AgentData");
-	gMessageSystem->addUUID("AgentID", gAgent.getID());
-	gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-	gMessageSystem->nextBlock("Data");
-	gMessageSystem->addUUID("ObjectID", gAgent.getID());
-	gMessageSystem->addS32("ChatChannel", gSavedSettings.getS32("RadarChatKeysChannel"));
-	gMessageSystem->addS32("ButtonIndex", 1);
-	gMessageSystem->addString("ButtonLabel", msg);
-	gAgent.sendReliableMessage();
+	LLChat chat(msg);
+	LLFloaterChat::addChat(chat);
 }
 
 void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool entering)
