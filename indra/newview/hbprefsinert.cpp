@@ -68,6 +68,7 @@ private:
 	BOOL mEnableLLWind;
 	BOOL mEnableClouds;
 	BOOL mInitialEnableClouds;
+	BOOL mBroadcastViewerEffects;
 	U32 mSpeedRezInterval;
 	U32 mLinksForChattingObjects;
 	U32 mTimeFormat;
@@ -120,6 +121,7 @@ void LLPrefsInertImpl::refreshValues()
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
 	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
+	mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
 }
 
 void LLPrefsInertImpl::refresh()
@@ -193,6 +195,8 @@ void LLPrefsInertImpl::cancel()
 	gSavedSettings.setU32("LinksForChattingObjects",	mLinksForChattingObjects);
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		mRevokePermsOnStandUp);
 	gSavedSettings.setBOOL("WindEnabled",				mEnableLLWind);
+	gSavedSettings.setBOOL("BroadcastViewerEffects",	mBroadcastViewerEffects);
+	
 	gLLWindEnabled = mEnableLLWind;
 	
 	if(mInitialEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
