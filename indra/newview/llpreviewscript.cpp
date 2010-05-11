@@ -1825,7 +1825,7 @@ void LLLiveLSLEditor::loadAsset(BOOL is_new)
 			LLViewerInventoryItem* item = (LLViewerInventoryItem*)object->getInventoryObject(mItemID);
 			if(item 
 				&& (gAgent.allowOperation(PERM_COPY, item->getPermissions(), GP_OBJECT_MANIPULATE)
-				   || gAgent.isGodlike() || gAgent.allowOperation(PERM_MODIFY, item->getPermissions(), GP_OBJECT_MANIPULATE)))
+				   || gAgent.isGodlike()))
 			{
 				mItem = new LLViewerInventoryItem(item);
 				//llinfos << "asset id " << mItem->getAssetUUID() << llendl;
