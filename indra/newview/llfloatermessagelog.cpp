@@ -132,8 +132,7 @@ LLFloaterMessageLogItem::~LLFloaterMessageLogItem()
 }
 BOOL LLFloaterMessageLogItem::isOutgoing()
 {
-	LLHost local_host = LLHost(16777343, gMessageSystem->getListenPort());
-	return mFromHost == local_host;
+	return mFromHost == LLHost(16777343, gMessageSystem->getListenPort());
 }
 std::string LLFloaterMessageLogItem::getFull(BOOL show_header)
 {
@@ -694,7 +693,6 @@ void LLFloaterMessageLog::conditionalLog(LLFloaterMessageLogItem item)
 	if(std::find(sMessageLogFilter.mNegativeNames.begin(), sMessageLogFilter.mNegativeNames.end(), find_name) != sMessageLogFilter.mNegativeNames.end())
 		return;
 	sFloaterMessageLogItems.push_back(item); // moved from beginning...
-	LLHost local_host = LLHost(16777343, gMessageSystem->getListenPort());
 	BOOL outgoing = item.isOutgoing();
 	std::string net_name("\?\?\?");
 	if(item.mType == LLFloaterMessageLogItem::TEMPLATE)
