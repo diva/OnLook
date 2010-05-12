@@ -427,7 +427,7 @@ S32 receive_packet(int hSocket, char * receiveBuffer)
 BOOL send_packet(int hSocket, const char *sendBuffer, int size, U32 recipient, int nPort)
 {
 	// <edit>
- 	LLMessageLog::log(LLHost(16777343, gMessageSystem->getListenPort()), LLHost(recipient, nPort), (U8*)sendBuffer, size);
+ 	LLMessageLog::log(LLHost("127.0.0.1", 0), LLHost(recipient, nPort), (U8*)sendBuffer, size);
  	// </edit>
 
 	//  Sends a packet to the address set in initNet
@@ -761,7 +761,7 @@ int receive_packet(int hSocket, char * receiveBuffer)
 BOOL send_packet(int hSocket, const char * sendBuffer, int size, U32 recipient, int nPort)
 {
 	// <edit>
- 	LLMessageLog::log(LLHost(16777343, gMessageSystem->getListenPort()), LLHost(recipient, nPort), (U8*)sendBuffer, size);
+	LLMessageLog::log(LLHost("127.0.0.1", 0), LLHost(recipient, nPort), (U8*)sendBuffer, size);
  	// </edit>
 
 	int		ret;
