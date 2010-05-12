@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel bottom="-550" height="500" left="350" name="Panel Avatar" width="430">
-	<tab_container bottom="-500" height="500" left="0" mouse_opaque="false" name="tab"
-	     tab_min_width="50" tab_position="top" width="419">
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="500"
+<panel bottom="-600" height="525" left="350" name="Panel Avatar" width="430">
+	<tab_container bottom="-486" height="490" left="0" mouse_opaque="false" name="tab"
+	     tab_min_width="50" tab_position="top" width="420">
+		<panel border="true" bottom="-580" follows="left|top|right|bottom" height="525"
 		     label="2nd Life" left="1" mouse_opaque="true" name="2nd Life" width="418">
 			<string name="CaptionTextAcctInfo">
 				[ACCTTYPE]
@@ -36,25 +36,36 @@
 			<string name="NotAgeVerified">
 				Not Age-verified
 			</string>
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-32" drop_shadow_visible="true" follows="left|top"
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom="-24" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
+			     mouse_opaque="true" name="Key:" v_pad="0" width="70">
+        Key:
+      </text>
+      <name_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="-24" enabled="false" follows="left|top"
+			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="75"
+			     max_length="254" mouse_opaque="false" name="key_"
+			     width="256" />
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom="-48" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
 			     mouse_opaque="true" name="Name:" v_pad="0" width="70">
-				Name:
-			</text>
-			<name_editor bevel_style="in" border_style="line"
-			     border_thickness="1" bottom="-24" enabled="false" follows="left|top"
+        Name:
+      </text>
+      <name_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="-48" enabled="false" follows="left|top"
 			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="75"
 			     max_length="254" mouse_opaque="false" name="name"
 			     width="180" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-32" drop_shadow_visible="true" follows="left|top"
+			     bottom="-48" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifsmall" h_pad="0" halign="left" height="16" left="279"
 			     mouse_opaque="true" name="online_yes" v_pad="0" width="121">
 				Currently Online
 			</text>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-28" drop_shadow_visible="true" follows="left|top"
+			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="279"
 			     mouse_opaque="true" name="label" v_pad="0" width="121">
 				Born:
@@ -84,7 +95,7 @@
 			     v_pad="0" width="130">
 				Partner:
 			</text>
-			<button bottom_delta="2" follows="left|top" font="SansSerif" halign="center"
+			<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
 			     height="18" label="i" label_selected="i" left_delta="44"
 			     mouse_opaque="true" name="partner_info"
 			     tool_tip="Click to open partner&apos;s profile" width="18" />
@@ -99,38 +110,35 @@
 			     width="121">
 				[FIRST] [LAST]
 			</line_editor>
+			<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+			     height="23" label="" left="40"  bottom="-42" width="24" 
+			 image_selected="icon_avatar_expand.png" 
+			 image_unselected="icon_avatar_expand.png"
+			 image_hover_selected="icon_avatar_expand.png" 
+			 image_hover_unselected="icon_avatar_expand.png"
+			 mouse_opaque="true" 
+			  name="bigimg"/>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-24" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
-			     mouse_opaque="true" name="key_label" v_pad="0" width="90">
-				Avatar Key:
-			</text>
-			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
-			     border_thickness="1" bottom_delta="0" enabled="false" follows="left|top"
-			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="95"
-			     max_length="48" mouse_opaque="false" name="avatar_key"
-			     text_readonly_color="1, 1, 1, 1" width="260" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-44" drop_shadow_visible="true" follows="left|top"
+			     bottom="-68" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
 			     mouse_opaque="true" name="Photo:" v_pad="0" width="70">
 				Photo:
 			</text>
-			<texture_picker allow_no_texture="true" bottom="-179" can_apply_immediately="false"
+			<texture_picker allow_no_texture="true" bottom="-203" can_apply_immediately="false"
 			     default_image_name="None" follows="left|top" height="151" label=""
 			     left="79" mouse_opaque="true" name="img"
 			     tool_tip="Click to choose a picture" width="180" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-183" drop_shadow_visible="true" follows="left|top"
+			     bottom="-207" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
 			     mouse_opaque="true" name="Groups:" v_pad="0" width="70">
 				Groups:
 			</text>
-			<scroll_list background_visible="true" bottom="-258" column_padding="5" draw_border="true"
+			<scroll_list background_visible="true" bottom="-282" column_padding="5" draw_border="true"
 			     follows="left|top" height="90" left="79" mouse_opaque="false"
 			     multi_select="false" name="groups" width="321" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-280" drop_shadow_visible="true" follows="left|top"
+			     bottom="-304" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
 			     mouse_opaque="true" name="About:" v_pad="0" width="70">
 				About:
@@ -141,20 +149,20 @@
 			     mouse_opaque="true" name="(500 chars)" v_pad="0" width="70">
 				(500 chars)
 			</text>
-			<text_editor bottom="-375" embedded_items="false"
+			<text_editor bottom="-399" embedded_items="false"
 			     enabled="true" follows="left|top" font="SansSerifSmall" height="110"
 			     is_unicode="false" left="79" max_length="511" mouse_opaque="true"
 			     name="about" width="321" word_wrap="true" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-403" drop_shadow_visible="true" follows="left|top"
+			     bottom="-427" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="0"
 			     mouse_opaque="true" name="Give item:" v_pad="0" width="75">
 				Give item:
 			</text>
-			<view_border blevel_style="in" border_thickness="0" bottom="-466" follows="left|top"
+			<view_border blevel_style="in" border_thickness="0" bottom="-490" follows="left|top"
 			     height="466" left_delta="4" mouse_opaque="false" name="drop_target_rect"
 			     width="409" />
-			<view_border blevel_style="in" bottom="-403" follows="left|top" height="16" left_delta="75"
+			<view_border blevel_style="in" bottom="-427" follows="left|top" height="16" left_delta="75"
 			     mouse_opaque="false" name="drop_target_rect_vis" width="321" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
@@ -169,30 +177,33 @@
 			     name="allow_publish"
 			     tool_tip="Publish extra profile information such as description and image in Search."
 			     width="130" />
-			<button bottom="-425" follows="left|top" font="SansSerif" halign="center" height="20"
+			<button bottom="-447" follows="left|top" font="SansSerif" halign="center" height="16"
 			     label="?" label_selected="?" left_delta="145" mouse_opaque="true" name="?"
 			     width="20" />
-			<button bottom="-428" font="SansSerif" halign="center" height="20" label="Find on Map"
+			<button bottom="-452" font="SansSerif" halign="center" height="20" label="Find on Map"
 			     label_selected="Find on Map" left="24" mouse_opaque="true"
 			     name="Find on Map" width="100" />
-			<button bottom="-428" font="SansSerif" halign="center" height="20"
+			<button bottom="-452" font="SansSerif" halign="center" height="20"
 			     label="Offer Teleport..." label_selected="Offer Teleport..."
 			     left_delta="102" mouse_opaque="true" name="Offer Teleport..." width="140" />
-			<button bottom="-428" font="SansSerif" halign="center" height="20"
+			<button bottom="-452" font="SansSerif" halign="center" height="20"
 			     label="Add Friend..." label_selected="Add Friend..." left_delta="142"
 			     mouse_opaque="true" name="Add Friend..." width="130" />
-			<button bottom_delta="-24" font="SansSerif" halign="center" height="20" label="Pay..."
+			<button bottom_delta="-70" font="SansSerif" halign="center" height="20" label="Pay..."
 			     label_selected="Pay..." left="24" mouse_opaque="true" name="Pay..."
-			     width="100" />
+			     width="70" />
 			<button bottom_delta="0" font="SansSerif" halign="center" height="20"
 			     label="Instant Message..." label_selected="Instant Message..."
-			     left_delta="102" mouse_opaque="true" name="Instant Message..."
+			     left_delta="71" mouse_opaque="true" name="Instant Message..."
 			     tool_tip="Instant Message (IM)" width="140" />
 			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Mute"
-			     label_selected="Mute" left_delta="142" mouse_opaque="true" name="Mute"
-			     width="130" />
+			     label_selected="Mute" left_delta="141" mouse_opaque="true" name="Mute"
+			     width="60" />
+			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Invite to Group"
+			     label_selected="Invite to Group" left_delta="61" mouse_opaque="true"
+			     name="EmeraldGroupInvite_Button" width="100" />
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="486"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		       label="Web" left="1" mouse_opaque="true" name="WebProfile" width="418">
 		  <line_editor bevel_style="in" border_style="line"
 			     border_thickness="1" bottom_delta="-18" enabled="false" follows="left|top"
@@ -207,11 +218,11 @@
         <flyout_button_item value="home" name="home_item">Home URL</flyout_button_item>
       </flyout_button>
 			<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-			     height="18" label="?" label_selected="?" left_delta="85"
+			     height="18" label="?" label_selected="?" left_delta="80"
 			     mouse_opaque="true" name="web_profile_help" width="18" />
 			<check_box bottom_delta="0" follows="right|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Automatically load web profiles"
-			     left_delta="30" mouse_opaque="true" name="auto_load"
+			     left_delta="90" mouse_opaque="true" name="auto_load"
 			     tool_tip="Automatically load ALL profile webpages without asking first."
 			     width="127" />
 			<web_browser border_visible="false" bottom="-444" follows="top|left|right" height="400"
@@ -220,7 +231,7 @@
 			<text bottom="5" follows="bottom|left|right" left="15" name="status_text" right="-70"
 			     top="25" />
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="486"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		     label="Interests" left="1" mouse_opaque="true" name="Interests" width="418">
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-36" drop_shadow_visible="true" follows="left|top"
@@ -298,7 +309,7 @@
 			     max_length="254" mouse_opaque="true" name="languages_edit"
 			     width="330" />
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="466"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		     label="Picks" left="1" mouse_opaque="true" name="Picks" width="418">
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-20" drop_shadow_visible="true" follows="left|top"
@@ -310,10 +321,16 @@
 			</text>
 			<button bottom_delta="-24" follows="left|top" font="SansSerif" halign="center"
 			     height="20" label="New..." label_selected="New..." left="114"
-			     mouse_opaque="true" name="New..." width="75" />
+			     mouse_opaque="true" name="New..." width="70" />
 			<button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
-			     label="Delete..." label_selected="Delete..." left_delta="79"
-			     mouse_opaque="true" name="Delete..." width="75" />
+			     label="Delete..." label_selected="Delete..." left_delta="74"
+			     mouse_opaque="true" name="Delete..." width="70" />
+      <button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
+     label="Import..." label_selected="Import..." left_delta="74"
+     mouse_opaque="true" name="Import..." width="70" />
+      <button bottom="-44" follows="left|top" font="SansSerif" halign="center" height="20"
+     label="Export..." label_selected="Export..." left_delta="74"
+     mouse_opaque="true" name="Export..." width="70" />
 			<tab_container bottom="-411" follows="left|top" height="363" left="4" mouse_opaque="false"
 			     name="picks tab" tab_position="left" width="412" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -323,7 +340,7 @@
 				Loading...
 			</text>
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="486"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		     label="Classified" left="1" mouse_opaque="true" name="Classified"
 		     width="418">
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -349,8 +366,9 @@
 				Loading...
 			</text>
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="466"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		     label="1st Life" left="1" mouse_opaque="true" name="1st Life" width="418">
+
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-36" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
@@ -361,6 +379,14 @@
 			     default_image_name="None" follows="left|top" height="151" label=""
 			     left="70" mouse_opaque="true" name="img"
 			     tool_tip="Click to choose a picture" width="135" />
+			<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+			     height="23" label="" left="30"  bottom="-42" width="24" 
+			 image_selected="icon_avatar_expand.png" 
+			 image_unselected="icon_avatar_expand.png"
+			 image_hover_selected="icon_avatar_expand.png" 
+			 image_hover_unselected="icon_avatar_expand.png"
+			 mouse_opaque="true" 
+			  name="flbigimg"/>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-203" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="4"
@@ -378,7 +404,7 @@
 			     is_unicode="false" left="70" max_length="254" mouse_opaque="false"
 			     name="about" width="330" word_wrap="true" />
 		</panel>
-		<panel border="true" bottom="-500" follows="left|top|right|bottom" height="486"
+		<panel border="true" bottom="-482" follows="left|top|right|bottom" height="466"
 		     label="My Notes" left="1" mouse_opaque="true" name="My Notes" width="418">
 			<string name="Loading">
 				Loading...
@@ -397,12 +423,12 @@ notes.  This person cannot see them, nor can other people.
 			     word_wrap="false" />
 		</panel>
 	</tab_container>
-	<button bottom="-501" font="SansSerif" halign="center" height="20" label="OK"
-	     label_selected="OK" left="208" mouse_opaque="true" name="OK" width="100" />
-	<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Cancel"
-	     label_selected="Cancel" left_delta="105" mouse_opaque="true" name="Cancel"
+	<button bottom="-482" font="SansSerif" halign="center" height="20" label="OK"
+	     label_selected="OK" left="34" mouse_opaque="true" name="OK" width="100" />
+	<button bottom="-482" font="SansSerif" halign="center" height="20" label="Cancel"
+	     label_selected="Cancel" left_delta="264" mouse_opaque="true" name="Cancel"
 	     width="100" />
-	<button bottom_delta="132" font="SansSerif" halign="center" height="20" label="Kick"
+	<button bottom_delta="135" font="SansSerif" halign="center" height="20" label="Kick"
 	     label_selected="Kick" left="4" mouse_opaque="true" name="Kick" width="72" />
 	<button bottom_delta="-24" font="SansSerif" halign="center" height="20" label="Freeze"
 	     label_selected="Freeze" left="4" mouse_opaque="true" name="Freeze"
