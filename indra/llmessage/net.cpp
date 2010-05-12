@@ -55,11 +55,6 @@
 #include "llhost.h"
 #include "lltimer.h"
 #include "indra_constants.h"
-// <edit>
-#include "llmessagelog.h"
-#include "message.h"
-// </edit>
-
 
 #include "llsocks5.h"
 
@@ -426,9 +421,6 @@ S32 receive_packet(int hSocket, char * receiveBuffer)
 // Returns TRUE on success.
 BOOL send_packet(int hSocket, const char *sendBuffer, int size, U32 recipient, int nPort)
 {
-	// <edit>
- 	LLMessageLog::log(LLHost("127.0.0.1", 0), LLHost(recipient, nPort), (U8*)sendBuffer, size);
- 	// </edit>
 
 	//  Sends a packet to the address set in initNet
 	//  
@@ -760,10 +752,6 @@ int receive_packet(int hSocket, char * receiveBuffer)
 
 BOOL send_packet(int hSocket, const char * sendBuffer, int size, U32 recipient, int nPort)
 {
-	// <edit>
-	LLMessageLog::log(LLHost("127.0.0.1", 0), LLHost(recipient, nPort), (U8*)sendBuffer, size);
- 	// </edit>
-
 	int		ret;
 	BOOL	success;
 	BOOL	resend;

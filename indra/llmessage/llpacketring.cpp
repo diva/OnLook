@@ -50,6 +50,11 @@
 	#include <netinet/in.h>
 #endif
 
+//<edit>
+#include "llmessagelog.h"
+#include "message.h"
+//</edit>
+
 
 ///////////////////////////////////////////////////////////
 LLPacketRing::LLPacketRing () :
@@ -273,7 +278,11 @@ S32 LLPacketRing::receivePacket (S32 socket, char *datap)
 
 BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LLHost host)
 {
+	//<edit>
+	LLMessageLog::log(LLHost("127.0.0.1", gMessageSystem->getListenPort()), host, (U8*)send_buffer, buf_size);
+	//</edit>
 	BOOL status = TRUE;
+	
 	if (!mUseOutThrottle)
 	{
 		return doSendPacket(h_socket, send_buffer, buf_size, host );

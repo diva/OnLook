@@ -441,13 +441,8 @@ BOOL LLMessageLogFilterApply::tick()
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
 			return TRUE;
 		}
-		try
-		{
-			LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
-		} catch (char *str)
-		{
-			llwarns << "DERPADERP" << llendl;
-		}
+		LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
+		
 		mIter++;
 		mProgress++;
 	}
@@ -688,7 +683,7 @@ void LLFloaterMessageLog::onLog(LLMessageLogEntry entry)
 }
 // static
 void LLFloaterMessageLog::conditionalLog(LLFloaterMessageLogItem item)
-{
+{	
 	if(!sBusyApplyingFilter)
 		sInstance->childSetText("log_status_text", llformat("Showing %d messages from %d", sFloaterMessageLogItems.size(), sMessageLogEntries.size()));
 	std::string find_name = item.mName;
