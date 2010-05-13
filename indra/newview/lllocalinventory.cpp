@@ -205,6 +205,12 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		gInventory.accountForUpdate(container_update);
 		gInventory.updateCategory(container);
 		gInventory.notifyObservers();
+		
+		LLInventoryModel::update_map_t orphaned_items_update;
+		++orphaned_items_update[orphaned_items->getParentUUID()];
+		gInventory.accountForUpdate(orphaned_items_update);
+		gInventory.updateCategory(orphaned_items);
+		gInventory.notifyObservers();
 
 		// Add all categories
 		LLInventoryModel::cat_array_t::iterator cat_iter = cats.begin();
