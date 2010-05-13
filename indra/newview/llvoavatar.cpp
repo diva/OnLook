@@ -3265,7 +3265,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					{
 						LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 						avatar_name_color.setAlpha(1.f);
-						llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl; 
+						//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl; 
 						mNameText->setColor(avatar_name_color);
 					}
 				}
