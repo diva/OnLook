@@ -179,6 +179,8 @@ void LLLocalInventory::loadInvCache(std::string filename)
 
 	LLInventoryModel::cat_array_t cats;
 	LLInventoryModel::item_array_t items;
+	LLDynamicArray<LLUUID> cat_uuids;
+	
 	if(LLInventoryModel::loadFromFile(inv_filename, cats, items))
 	{
 		// create a container category for everything
@@ -189,6 +191,15 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		container->setUUID(container_id);
 		container->setParent(gLocalInventoryRoot);
 		container->setPreferredType(LLAssetType::AT_NONE);
+		
+		LLViewerInventoryCategory* orphaned_items = new LLViewerInventoryCategory(gAgent.getID());
+		orphaned_items->rename("Orphaned Items");
+		LLUUID orphaned_items_id;
+		orphaned_items_id.generate();
+		container->setUUID(orphaned_items_id);
+		container->setParent(container->getUUID());
+		container->setPreferredType(LLAssetType::AT_NONE);
+		
 		LLInventoryModel::update_map_t container_update;
 		++container_update[container->getParentUUID()];
 		gInventory.accountForUpdate(container_update);
@@ -197,14 +208,23 @@ void LLLocalInventory::loadInvCache(std::string filename)
 
 		// Add all categories
 		LLInventoryModel::cat_array_t::iterator cat_iter = cats.begin();
+		LLInventoryModel::cat_array_t::iterator cat_uuid_iter = cats.begin();
 		LLInventoryModel::cat_array_t::iterator cat_end = cats.end();
+		
+		//first of all, let's build the list of category UUIDs
+		for(; cat_uuid_iter != cat_end; ++cat_uuid_iter)
+		{
+			cat_uuids.push_back((*cat_uuid_iter)->getUUID());
+		}
+		
 		for(; cat_iter != cat_end; ++cat_iter)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
+			// Yep!
 			if((*cat_iter)->getParentUUID().isNull())
 			{
-				(*cat_iter)->setParent(container_id);
+				(*cat_iter)->setParent(orphaned_items_id);
 			}
 
 			// Avoid conflicts with real inventory...
@@ -223,6 +243,14 @@ void LLLocalInventory::loadInvCache(std::string filename)
 					continue;
 				}
 			}
+			
+			if(std::find(cat_uuids.begin(), cat_uuids.end(), (*cat_iter)->getParentUUID()) == cat_uuids.end())
+			{
+				//oh good jorb, this parent doesn't exist.
+				//just shove it into the "Orphaned" category *sigh*
+				llinfos << "Missing parent for " << (*cat_iter)->getUUID() << llendl;
+				(*cat_iter)->setParent(orphaned_items_id);
+			}
 
 			LLInventoryModel::update_map_t update;
 			++update[(*cat_iter)->getParentUUID()];
@@ -238,9 +266,17 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
+			// Edit: yes.
 			if((*item_iter)->getParentUUID().isNull())
 			{
 				(*item_iter)->setParent(container_id);
+			}
+			
+			if(std::find(cat_uuids.begin(), cat_uuids.end(), (*item_iter)->getParentUUID()) == cat_uuids.end())
+			{
+				//oh good jorb, this parent doesn't exist.
+				//just shove it into the "Orphaned" category *sigh*
+				(*item_iter)->setParent(orphaned_items_id);
 			}
 
 			// Avoid conflicts with real inventory...
@@ -286,6 +322,8 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		args["ERROR_MESSAGE"] = message.str();
 		LLNotifications::instance().add("ErrorMessage", args);
 	}
+	
+	cat_uuids.clear();
 }
 
 //static
