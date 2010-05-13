@@ -223,6 +223,9 @@ void LLLocalInventory::loadInvCache(std::string filename)
 			cat_uuids.push_back((*cat_uuid_iter)->getUUID());
 		}
 		
+		cat_uuids.push_back(orphaned_items_id);
+		cat_uuids.push_back(container_id);
+		
 		for(; cat_iter != cat_end; ++cat_iter)
 		{
 			// Conditionally change its parent
