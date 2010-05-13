@@ -66,7 +66,6 @@ include_directories(
 set(viewer_SOURCE_FILES
     dofloaterhex.cpp
     dohexeditor.cpp
-    doinventorybackup.cpp
     hgfloatertexteditor.cpp
     jcfloaterareasearch.cpp
     llagent.cpp
@@ -500,7 +499,6 @@ set(viewer_HEADER_FILES
 
     dofloaterhex.h
     dohexeditor.h
-    doinventorybackup.h
     hgfloatertexteditor.h
     jcfloaterareasearch.h
     llagent.h

@@ -8,8 +8,8 @@
  */
 
 
-#ifndef HG_HGFLOATERHEX_H
-#define HG_HGFLOATERHEX_H
+#ifndef HG_HGFLOATERTEXT_H
+#define HG_HGFLOATERTEXT_H
 
 #include "llfloater.h"
 #include "lltexteditor.h"

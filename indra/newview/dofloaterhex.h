@@ -1,17 +1,8 @@
-/**
- * @file dofloaterhex.h
- * @brief Hex Editor Floater made by Day
- * @author Day Oh
- * 
- * $LicenseInfo:firstyear=2009&license=WTFPLV2$
- *  
- */
-
 // <edit>
 
 
-#ifndef DO_DOFLOATERHEX_H
-#define DO_DOFLOATERHEX_H
+#ifndef LL_LLFLOATERHEX_H
+#define LL_LLFLOATERHEX_H
 
 #include "llfloater.h"
 #include "dohexeditor.h"

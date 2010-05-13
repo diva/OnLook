@@ -119,15 +119,6 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 		return;
 	}
 
-	// Get filename
-	//LLFilePicker& file_picker = LLFilePicker::instance();
-	//if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_ALL, "New Folder" ) )
-	//{
-	//	// User canceled or we failed to acquire save file.
-	//	return;
-	//}
-	//std::string filename = file_picker.getFirstFile();
-
 	// Get dir name
 	LLDirPicker& picker = LLDirPicker::instance();
 	std::string filename = "New Folder";
@@ -144,7 +135,7 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	std::vector<LLInventoryCategory*>::iterator _cat_end = order->mCats.end();
 	for( ; _cat_iter != _cat_end; ++_cat_iter)
 	{
-		std::string path = filename + "\\" + LLInventoryBackup::getPath(*_cat_iter, order->mCats);
+		std::string path = filename + OS_SEP + LLInventoryBackup::getPath(*_cat_iter, order->mCats);
 		LLFile::mkdir(path);
 	}
 
@@ -302,39 +293,47 @@ void LLInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 	LLInventoryBackup::callbackdata* userdata = new LLInventoryBackup::callbackdata();
 	userdata->floater = floater;
 	userdata->item = item;
-
 	LLViewerImage* imagep;
-	switch(item->getType())
+	
+#if OPENSIM_RULES!=1
+	//don't be a jerk. (this check probably breaks stuff)
+	if(item->getCreatorUUID() == gAgentID)
 	{
-	case LLAssetType::AT_TEXTURE:
-		imagep = gImageList.getImage(item->getAssetUUID(), MIPMAP_TRUE, TRUE);
-		imagep->setLoadedCallbackNoAux( onImage, 0, TRUE, FALSE, userdata );
-		break;
-	case LLAssetType::AT_NOTECARD:
-	case LLAssetType::AT_SCRIPT:
-	case LLAssetType::AT_LSL_TEXT: // normal script download
-	case LLAssetType::AT_LSL_BYTECODE:
-		gAssetStorage->getInvItemAsset(LLHost::invalid,
-										gAgent.getID(),
-										gAgent.getSessionID(),
-										item->getPermissions().getOwner(),
-										LLUUID::null,
-										item->getUUID(),
-										item->getAssetUUID(),
-										item->getType(),
-										onAsset,
-										userdata, // user_data
-										TRUE);
-		break;
-	case LLAssetType::AT_SOUND:
-	case LLAssetType::AT_CLOTHING:
-	case LLAssetType::AT_BODYPART:
-	case LLAssetType::AT_ANIMATION:
-	case LLAssetType::AT_GESTURE:
-	default:
-		gAssetStorage->getAssetData(item->getAssetUUID(), item->getType(), onAsset, userdata, TRUE);
-		break;
+#endif /* OPENSIM_RULES!=1 */
+		switch(item->getType())
+		{
+		case LLAssetType::AT_TEXTURE:
+			imagep = gImageList.getImage(item->getAssetUUID(), MIPMAP_TRUE, TRUE);
+			imagep->setLoadedCallbackNoAux( onImage, 0, TRUE, FALSE, userdata );
+			break;
+		case LLAssetType::AT_NOTECARD:
+		case LLAssetType::AT_SCRIPT:
+		case LLAssetType::AT_LSL_TEXT: // normal script download
+		case LLAssetType::AT_LSL_BYTECODE:
+			gAssetStorage->getInvItemAsset(LLHost::invalid,
+											gAgent.getID(),
+											gAgent.getSessionID(),
+											item->getPermissions().getOwner(),
+											LLUUID::null,
+											item->getUUID(),
+											item->getAssetUUID(),
+											item->getType(),
+											onAsset,
+											userdata, // user_data
+											TRUE);
+			break;
+		case LLAssetType::AT_SOUND:
+		case LLAssetType::AT_CLOTHING:
+		case LLAssetType::AT_BODYPART:
+		case LLAssetType::AT_ANIMATION:
+		case LLAssetType::AT_GESTURE:
+		default:
+			gAssetStorage->getAssetData(item->getAssetUUID(), item->getType(), onAsset, userdata, TRUE);
+			break;
+		}
+#if OPENSIM_RULES!=1
 	}
+#endif /* OPENSIM_RULES!=1 */
 }
 
 // static
@@ -473,7 +472,7 @@ std::string LLInventoryBackup::getPath(LLInventoryCategory* cat, std::vector<LLI
 	LLInventoryCategory* parent = model->getCategory(cat->getParentUUID());
 	while(parent && (std::find(cats.begin(), cats.end(), parent) != cats.end()))
 	{
-		path = LLDir::getScrubbedFileName(parent->getName()) + "\\" + path;
+		path = LLDir::getScrubbedFileName(parent->getName()) + OS_SEP + path;
 		parent = model->getCategory(parent->getParentUUID());
 	}
 	return path;
@@ -711,7 +710,7 @@ void LLFloaterInventoryBackup::imageCallback(BOOL success,
 			return;
 		}
 
-		std::string filename = floater->mPath + "\\" + LLInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + "\\" + LLDir::getScrubbedFileName(item->getName());
+		std::string filename = floater->mPath + OS_SEP + LLInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + OS_SEP + LLDir::getScrubbedFileName(item->getName());
 		filename = LLInventoryBackup::getUniqueFilename(filename, LLInventoryBackup::getExtension(item));
 
 		LLPointer<LLImageTGA> image_tga = new LLImageTGA;
@@ -770,7 +769,7 @@ void LLFloaterInventoryBackup::assetCallback(LLVFS *vfs,
 	file.read((U8*)buffer, size);
 
 	// Write it back out...
-	std::string filename = floater->mPath + "\\" + LLInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + "\\" + LLDir::getScrubbedFileName(item->getName());
+	std::string filename = floater->mPath + OS_SEP + LLInventoryBackup::getPath(gInventory.getCategory(item->getParentUUID()), floater->mCats) + OS_SEP + LLDir::getScrubbedFileName(item->getName());
 	filename = LLInventoryBackup::getUniqueFilename(filename, LLInventoryBackup::getExtension(item));
 
 	std::ofstream export_file(filename.c_str(), std::ofstream::binary);

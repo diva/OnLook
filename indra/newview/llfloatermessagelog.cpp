@@ -440,6 +440,7 @@ BOOL LLMessageLogFilterApply::tick()
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
 			return TRUE;
 		}
+		
 		LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
 		
 		mIter++;
