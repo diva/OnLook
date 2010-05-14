@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
+﻿<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
 <linden_avatar
  version="1.0"
  wearable_definition_version="22">  
@@ -393,7 +393,307 @@
        hud="true"
        max_attachment_offset="2.0"
        visible_in_first_person="true" />
-       
+
+      <attachment_point
+       id="39"
+       group="6"
+       pie_slice="2"
+       name="Chest 2"
+       joint="mChest"
+       position="0.15 0 -0.1"
+       rotation="0 90 90"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="40"
+       group="2"
+       pie_slice="2"
+       name="Skull 2"
+       joint="mHead"
+       position="0 0 0.15"
+       rotation="0 0 90"
+       visible_in_first_person="false" />
+
+      <attachment_point
+       id="41"
+       group="3"
+       pie_slice="3"
+       name="Left Shoulder 2"
+       joint="mCollarLeft"
+       position="0 0 0.08"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="42"
+       group="1"
+       pie_slice="1"
+       name="Right Shoulder 2"
+       joint="mCollarRight"
+       position="0 0 0.08"
+       rotation="0 0 0" 
+	   visible_in_first_person="true"/>
+
+      <attachment_point
+       id="43"
+       group="4"
+       name="Left Hand 2"
+       joint="mWristLeft"
+       position="0 0.08 -0.02"
+       rotation="0 0 0"
+       visible_in_first_person="true"
+       max_attachment_offset="1.5" />
+
+      <attachment_point
+       id="44"
+       group="0"
+       name="Right Hand 2"
+       joint="mWristRight"
+       position="0 -0.08 -0.02"
+       rotation="0 0 0"
+       visible_in_first_person="true"
+       max_attachment_offset="1.5" />
+
+      <attachment_point
+       id="45"
+       group="5"
+       pie_slice="6"
+       name="Left Foot 2"
+       joint="mFootLeft"
+       position="0 0.0 0.0"
+       rotation="0 0 0" 
+	   visible_in_first_person="true"/>
+
+      <attachment_point
+       id="46"
+       group="7"
+       pie_slice="6"
+       name="Right Foot 2"
+       joint="mFootRight"
+       position="0 0.0 0.0"
+       rotation="0 0 0" 
+	   visible_in_first_person="true"/>
+
+      <attachment_point
+       id="47"
+       group="6"
+       pie_slice="7"
+       name="Spine 2"
+       joint="mChest"
+       position="-0.15 0 -0.1"
+       rotation="0 -90 90"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="48"
+       group="6"
+       pie_slice="6"
+       name="Pelvis 2"
+       joint="mPelvis"
+       position="0 0 -0.15"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="49"
+       group="2"
+       pie_slice="6"
+       name="Mouth 2"
+       joint="mHead"
+       position="0.12 0 0.001"
+       rotation="0 0 0" 
+	   visible_in_first_person="false"/>
+
+      <attachment_point
+       id="50"
+       group="2"
+       pie_slice="7"
+       name="Chin 2"
+       joint="mHead"
+       position="0.12 0 -0.04"
+       rotation="0 0 0"
+	   visible_in_first_person="false" />
+
+      <attachment_point
+       id="51"
+       group="2"
+       pie_slice="4"
+       name="Left Ear 2"
+       joint="mHead"
+       position="0.015 0.08 0.017"
+       rotation="0 0 0"
+	   visible_in_first_person="false" />
+
+      <attachment_point
+       id="52"
+       group="2"
+       pie_slice="0"
+       name="Right Ear 2"
+       joint="mHead"
+       position="0.015 -0.08 0.017"
+       rotation="0 0 0"
+	   visible_in_first_person="false" />
+
+      <attachment_point
+       id="53"
+       group="2"
+       pie_slice="3"
+       name="Left Eyeball 2"
+       joint="mEyeLeft"
+       position="0 0 0"
+       rotation="0 0 0" 
+	   visible_in_first_person="false"/>
+
+      <attachment_point
+       id="54"
+       group="2"
+       pie_slice="1"
+       name="Right Eyeball 2"
+       joint="mEyeRight"
+       position="0 0 0"
+       rotation="0 0 0"
+	   visible_in_first_person="false" />
+
+      <attachment_point
+       id="55"
+       group="2"
+       pie_slice="5"
+       name="Nose 2"
+       joint="mHead"
+       position="0.1 0 0.05"
+       rotation="0 0 0" 
+	   visible_in_first_person="false"/>
+
+      <attachment_point
+       id="56"
+       group="1"
+       pie_slice="0"
+       name="R Upper Arm 2"
+       joint="mShoulderRight"
+       position="0.01 -0.13 0.01"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="57"
+       group="1"
+       pie_slice="7"
+       name="R Forearm 2"
+       joint="mElbowRight"
+       position="0 -0.12 0"
+       rotation="0 0 0"
+	   visible_in_first_person="true"/>
+
+      <attachment_point
+       id="58"
+       group="3"
+       pie_slice="4"
+       name="L Upper Arm 2"
+       joint="mShoulderLeft"
+       position="0.01 0.15 -0.01"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="59"
+       group="3"
+       pie_slice="5"
+       name="L Forearm 2"
+       joint="mElbowLeft"
+       position="0 0.113 0"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="60"
+       group="7"
+       pie_slice="1"
+       name="Right Hip 2"
+       joint="mHipRight"
+       position="0 0 0"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="61"
+       group="7"
+       pie_slice="0"
+       name="R Upper Leg 2"
+       joint="mHipRight"
+       position="-0.017 0.041 -0.310"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="62"
+       group="7"
+       pie_slice="7"
+       name="R Lower Leg 2"
+       joint="mKneeRight"
+       position="-0.044 -0.007 -0.262"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="63"
+       group="5"
+       pie_slice="3"
+       name="Left Hip 2"
+       joint="mHipLeft"
+       position="0 0 0"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="64"
+       group="5"
+       pie_slice="4"
+       name="L Upper Leg 2"
+       joint="mHipLeft"
+       position="-0.019 -0.034 -0.310"
+       rotation="0 0 0" 
+	   visible_in_first_person="true"/>
+
+      <attachment_point
+       id="65"
+       group="5"
+       pie_slice="5"
+       name="L Lower Leg 2"
+       joint="mKneeLeft"
+       position="-0.044 -0.007 -0.261"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="66"
+       group="6"
+       pie_slice="5"
+       name="Stomach 2"
+       joint="mPelvis"
+       position="0.092 0.0 0.088"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="67"
+       group="6"
+       pie_slice="3"
+       name="Left Pec 2"
+       joint="mTorso"
+       position="0.104 0.082 0.247"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
+      <attachment_point
+       id="68"
+       group="6"
+       pie_slice="1"
+       name="Right Pec 2"
+       joint="mTorso"
+       position="0.104 -0.082 0.247"
+       rotation="0 0 0"
+	   visible_in_first_person="true" />
+
     <param
        id="32"
        group="1"
@@ -5542,15 +5842,27 @@
       <texture
        local_texture="hair_grain" />
     </layer>
+
+    <layer
+       name="hair texture alpha layer"
+       visibility_mask="TRUE">
+      <texture
+         local_texture="hair_grain" />
+    </layer>
+
+    <layer
+       name="hair alpha"
+       visibility_mask="TRUE">
+      <texture
+         local_texture="hair_alpha" />
+    </layer>
   </layer_set>
   <!-- =========================================================== -->
 
   <layer_set
     body_region="head"
     width="512"
-    height="512"
-	clear_alpha="false"
-    alpha_tga_file="head_alpha.tga">
+    height="512">
 		<layer
 		   name="head bump base"
 		   fixed_color = "128,128,128,255"
@@ -6544,6 +6856,24 @@
          <texture
           local_texture="head_bodypaint" />
       </layer>
+    <layer
+	   name="eyelash alpha"
+	   visibility_mask="TRUE">
+         <texture
+	      tga_file="head_alpha.tga"
+	      file_is_mask="TRUE" />
+    </layer>
+    <layer
+       name="head alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="head_alpha" />
+    </layer>
+    <layer
+       name="head_tattoo">
+         <texture
+          local_texture="head_tattoo" />
+    </layer>
    </layer_set>
 
 <!-- =========================================================== -->
@@ -6657,6 +6987,12 @@
              skip_if_zero="true"
              domain="0.6" />
          </param>
+      </layer>
+
+      <layer
+       name="upper_tattoo">
+         <texture
+          local_texture="upper_tattoo" />
       </layer>
 
       <layer
@@ -7728,6 +8064,14 @@
              domain="0.01" />
          </param>
       </layer>
+
+      <layer
+       name="upper alpha"
+       visibility_mask="TRUE">
+        <texture
+         local_texture="upper_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->
@@ -7841,6 +8185,12 @@
              skip_if_zero="true"
              domain="0.6" />
          </param>
+      </layer>
+
+      <layer
+       name="lower_tattoo">
+         <texture
+          local_texture="lower_tattoo" />
       </layer>
 
       <layer
@@ -8600,6 +8950,14 @@
              domain="0.01" />
          </param>
       </layer>
+
+      <layer
+       name="lower alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="lower_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->
@@ -8619,6 +8977,14 @@
          <texture
           local_texture="eyes_iris" />
       </layer>
+
+      <layer
+       name="eyes alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="eyes_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->

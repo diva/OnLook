@@ -1342,6 +1342,10 @@ void LLTextureCtrl::draw()
 		mTexturep = gImageList.getImageFromFile(mFallbackImageName);
 		mTexturep->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
 	}
+	else	// mImageAssetID == LLUUID::null
+	{
+		mTexturep = NULL;
+	}
 	
 	// Border
 	LLRect border( 0, getRect().getHeight(), getRect().getWidth(), BTN_HEIGHT_SMALL );
