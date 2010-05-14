@@ -9,4 +9,6 @@
 *.pyc
 *.orig
 *.rej
+*.bak
+*~
 /edited-files.txt
