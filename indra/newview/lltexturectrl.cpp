@@ -482,6 +482,8 @@ void LLFloaterTexturePicker::onClose(bool app_quitting)
 BOOL LLFloaterTexturePicker::postBuild()
 {
 	LLFloater::postBuild();
+	
+	childSetValue("texture_uuid", mImageAssetID);
 
 	if (!mLabel.empty())
 	{
@@ -557,7 +559,6 @@ void LLFloaterTexturePicker::draw()
 	childSetEnabled("Select", mActive);
 	childSetEnabled("Pipette", mActive);
 	childSetValue("Pipette", LLToolMgr::getInstance()->getCurrentTool() == LLToolPipette::getInstance());
-	childSetValue("texture_uuid", mImageAssetID);
 
 	//RN: reset search bar to reflect actual search query (all caps, for example)
 	mSearchEdit->setText(mInventoryPanel->getFilterSubString());
@@ -922,6 +923,7 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 
 		self->mNoCopyTextureSelected = FALSE;
 		//<edit>
+		self->childSetValue("texture_uuid", te.getID().asString());
 		/*
 		LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
 

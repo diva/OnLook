@@ -55,7 +55,7 @@
 	     halign="center" height="20" label="Select" label_selected="Select"
 	     left="290" mouse_opaque="true" name="Select" scale_image="true" width="100" />
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="10"
-	     left="8" follows="bottom" font="SansSerif" handle_edit_keys_directly="true"
+	     left="8" follows="bottom" font="SansSerif" handle_edit_keys_directly="false"
 	     height="20" max_length="36" mouse_opaque="true" name="texture_uuid"
 	     select_all_on_focus_received="false" width="230" />
 	<button enabled="true" follows="top|right" font="SansSerif"
