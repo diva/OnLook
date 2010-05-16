@@ -220,6 +220,19 @@ LLAgent gAgent;
 // Statics
 //
 
+// <edit>
+// For MapBlockReply funk 'cause I dunno what I'm doing
+BOOL LLAgent::lure_show = FALSE;
+std::string LLAgent::lure_name;
+LLVector3d LLAgent::lure_posglobal;
+U16 LLAgent::lure_global_x;
+U16 LLAgent::lure_global_y;
+int LLAgent::lure_x;
+int LLAgent::lure_y;
+int LLAgent::lure_z;
+std::string LLAgent::lure_maturity;
+// </edit>
+
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
 std::map<std::string, std::string> LLAgent::sTeleportErrorMessages;
@@ -758,6 +771,10 @@ void LLAgent::movePitch(S32 direction)
 BOOL LLAgent::canFly()
 {
 	if (isGodlike()) return TRUE;
+
+	// <edit>
+	if(gSavedSettings.getBOOL("AlwaysAllowFly")) return TRUE;
+	// </edit>
 
 	LLViewerRegion* regionp = getRegion();
 	if (regionp && regionp->getBlockFly()) return FALSE;
@@ -1867,7 +1884,9 @@ void LLAgent::cameraZoomIn(const F32 fraction)
 
 	if (new_distance > max_distance)
 	{
-		new_distance = max_distance;
+		// <edit> screw cam constraints
+		//new_distance = max_distance;
+		// </edit>
 
 		/*
 		// Unless camera is unlocked

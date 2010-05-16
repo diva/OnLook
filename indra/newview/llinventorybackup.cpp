@@ -295,45 +295,37 @@ void LLInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 	userdata->item = item;
 	LLViewerImage* imagep;
 	
-#if OPENSIM_RULES!=1
-	//don't be a jerk. (this check probably breaks stuff)
-	if(item->getCreatorUUID() == gAgentID)
+	switch(item->getType())
 	{
-#endif /* OPENSIM_RULES!=1 */
-		switch(item->getType())
-		{
-		case LLAssetType::AT_TEXTURE:
-			imagep = gImageList.getImage(item->getAssetUUID(), MIPMAP_TRUE, TRUE);
-			imagep->setLoadedCallbackNoAux( onImage, 0, TRUE, FALSE, userdata );
-			break;
-		case LLAssetType::AT_NOTECARD:
-		case LLAssetType::AT_SCRIPT:
-		case LLAssetType::AT_LSL_TEXT: // normal script download
-		case LLAssetType::AT_LSL_BYTECODE:
-			gAssetStorage->getInvItemAsset(LLHost::invalid,
-											gAgent.getID(),
-											gAgent.getSessionID(),
-											item->getPermissions().getOwner(),
-											LLUUID::null,
-											item->getUUID(),
-											item->getAssetUUID(),
-											item->getType(),
-											onAsset,
-											userdata, // user_data
-											TRUE);
-			break;
-		case LLAssetType::AT_SOUND:
-		case LLAssetType::AT_CLOTHING:
-		case LLAssetType::AT_BODYPART:
-		case LLAssetType::AT_ANIMATION:
-		case LLAssetType::AT_GESTURE:
-		default:
-			gAssetStorage->getAssetData(item->getAssetUUID(), item->getType(), onAsset, userdata, TRUE);
-			break;
-		}
-#if OPENSIM_RULES!=1
+	case LLAssetType::AT_TEXTURE:
+		imagep = gImageList.getImage(item->getAssetUUID(), MIPMAP_TRUE, TRUE);
+		imagep->setLoadedCallbackNoAux( onImage, 0, TRUE, FALSE, userdata );
+		break;
+	case LLAssetType::AT_NOTECARD:
+	case LLAssetType::AT_SCRIPT:
+	case LLAssetType::AT_LSL_TEXT: // normal script download
+	case LLAssetType::AT_LSL_BYTECODE:
+		gAssetStorage->getInvItemAsset(LLHost::invalid,
+										gAgent.getID(),
+										gAgent.getSessionID(),
+										item->getPermissions().getOwner(),
+										LLUUID::null,
+										item->getUUID(),
+										item->getAssetUUID(),
+										item->getType(),
+										onAsset,
+										userdata, // user_data
+										TRUE);
+		break;
+	case LLAssetType::AT_SOUND:
+	case LLAssetType::AT_CLOTHING:
+	case LLAssetType::AT_BODYPART:
+	case LLAssetType::AT_ANIMATION:
+	case LLAssetType::AT_GESTURE:
+	default:
+		gAssetStorage->getAssetData(item->getAssetUUID(), item->getType(), onAsset, userdata, TRUE);
+		break;
 	}
-#endif /* OPENSIM_RULES!=1 */
 }
 
 // static
