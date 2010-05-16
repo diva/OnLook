@@ -222,6 +222,7 @@ LLAgent gAgent;
 
 // <edit>
 // For MapBlockReply funk 'cause I dunno what I'm doing
+/* not *quite* there yet, and I don't want to break head.
 BOOL LLAgent::lure_show = FALSE;
 std::string LLAgent::lure_name;
 LLVector3d LLAgent::lure_posglobal;
@@ -231,6 +232,7 @@ int LLAgent::lure_x;
 int LLAgent::lure_y;
 int LLAgent::lure_z;
 std::string LLAgent::lure_maturity;
+*/
 // </edit>
 
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;

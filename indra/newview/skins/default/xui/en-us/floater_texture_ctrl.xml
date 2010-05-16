@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-516" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="true" can_tear_off="true" enabled="true" height="290"
-     left="478" min_height="290" min_width="410" mouse_opaque="true"
+     can_resize="true" can_tear_off="true" enabled="true" height="310"
+     left="478" min_height="310" min_width="410" mouse_opaque="true"
      name="texture picker" title="Pick: Texture" width="410">
 	<string name="choose_picture">
 		Click to choose a picture
@@ -54,6 +54,10 @@
 	<button bottom="-282" enabled="true" follows="right|bottom" font="SansSerif"
 	     halign="center" height="20" label="Select" label_selected="Select"
 	     left="290" mouse_opaque="true" name="Select" scale_image="true" width="100" />
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-10"
+	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
+	     height="20" max_length="36" mouse_opaque="true"
+	     name="texture_uuid" select_all_on_focus_received="false" width="230" />
 	<string name="pick title">
 		Pick:
 	</string>
