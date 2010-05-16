@@ -114,7 +114,8 @@ LLSD DOHexEditor::getValue() const
 
 void DOHexEditor::setColumns(U8 columns)
 {
-	mColumns = columns;
+	//mColumns = columns;
+	mColumns = llclamp<U8>(llfloor(columns), 8, 64); //clamp this ffs
 	changedLength();
 }
 
@@ -245,14 +246,15 @@ void DOHexEditor::setFocus(BOOL b)
 	LLUICtrl::setFocus(b);
 }
 
-F32 DOHexEditor::getSuggestedWidth()
+F32 DOHexEditor::getSuggestedWidth(U8 cols)
 {
+	cols = cols>1?cols:mColumns;
 	F32 char_width = mGLFont->getWidthF32(".");
 	F32 data_column_width = char_width * 3; // " 00";
 	F32 text_x = mTextRect.mLeft;
 	F32 text_x_data = text_x + (char_width * 10.1f); // "00000000  ", dunno why it's a fraction off
-	F32 text_x_ascii = text_x_data + (data_column_width * mColumns) + (char_width * 2);
-	F32 suggested_width = text_x_ascii + (char_width * mColumns);
+	F32 text_x_ascii = text_x_data + (data_column_width * cols) + (char_width * 2);
+	F32 suggested_width = text_x_ascii + (char_width * cols);
 	suggested_width += mScrollbar->getRect().getWidth();
 	suggested_width += 10.0f;
 	return suggested_width;
@@ -572,12 +574,14 @@ void DOHexEditor::draw()
 
 	BOOL has_focus = gFocusMgr.getKeyboardFocus() == this;
 
-
 	F32 line_height = mGLFont->getLineHeight();
 	F32 char_width = mGLFont->getWidthF32(".");
 	F32 data_column_width = char_width * 3; // " 00";
 	F32 text_x = mTextRect.mLeft;
 	F32 text_x_data = text_x + (char_width * 10.1f); // "00000000  ", dunno why it's a fraction off
+#ifdef COLUMN_SPAN
+	mColumns = (right - char_width * 2 - text_x_data - mScrollbar->getRect().getWidth()) / (char_width * 4); // touch this if you dare...
+#endif
 	F32 text_x_ascii = text_x_data + (data_column_width * mColumns) + (char_width * 2);
 	F32 text_y = (F32)(mTextRect.mTop - line_height);
 

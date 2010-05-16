@@ -11,6 +11,13 @@
 #ifndef DO_DOHEXEDITOR_H
 #define DO_DOHEXEDITOR_H
 
+#define MIN_COLS 8
+#define MAX_COLS 48
+
+#ifndef COLUMN_SPAN
+#define COLUMN_SPAN
+#endif
+
 #include "lluictrl.h"
 #include "llscrollbar.h"
 #include "llviewborder.h"
@@ -26,9 +33,9 @@ public:
 	void setValue(const LLSD& value);
 	LLSD getValue() const;
 	void setColumns(U8 columns);
-	U8 getColumns(U8 columns) { return mColumns; };
+	U8 getColumns() { return mColumns; };
 	U32 getLineCount();
-	F32 getSuggestedWidth();
+	F32 getSuggestedWidth(U8 cols = -1);
 	U32 getProperSelectionStart();
 	U32 getProperSelectionEnd();
 	void reshape(S32 width, S32 height, BOOL called_from_parent);

@@ -31,6 +31,8 @@ public:
 	static void onClickSave(void* user_data);
 	static void onClickUpload(void* user_data);
 	static void onSaveComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
+	static void onCommitColumnCount(LLUICtrl *control, void *user_data);
+	void handleSizing();
 	LLInventoryItem* mItem;
 	DOHexEditor* mEditor;
 	static std::list<DOFloaterHex*> sInstances;

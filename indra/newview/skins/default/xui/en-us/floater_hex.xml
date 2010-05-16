@@ -2,7 +2,12 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="true" height="200" width="580" min_width="580" min_height="128"  
      name="floater_hex" title="Hex Editor" rect_control="FloaterHexRect">
-	<text name="status_text" follows="left|top" left="10" top="-25" height="20">Loading...</text>
+	<text name="status_text" follows="left|top" left="120" top="-25" height="20">Loading...</text>
+	<slider can_edit_text="false" top="-25" control_name="column_count"
+			decimal_digits="3" follows="left|top" height="16" increment="1"
+			initial_val="16" label="Columns" left="10" max_val="48" min_val="8"
+			mouse_opaque="true" name="column_count" show_text="false" value="16"
+			width="100" />
 	<button name="upload_btn" follows="right|top" top="-25" right="-120" width="100" bottom="155" label="[UPLOAD]" enabled="false"/>
 	<button name="save_btn" follows="right|top" top="-25" right="-10" width="100" bottom="155" label="Save" enabled="false"/>
 	<hex_editor name="hex" follows="left|top|right|bottom" left="10" top="-50" right="-10" bottom="10" visible="false"/>
