@@ -67,6 +67,10 @@
 #include "llglheaders.h"
 #include "lluictrlfactory.h"
 #include "lltrans.h"
+// <edit>
+#include "llmenugl.h"
+#include "lllocalinventory.h"
+// </edit>
 
 
 static const S32 CLOSE_BTN_WIDTH = 100;
@@ -152,6 +156,7 @@ public:
 	static void		onBtnSelect( void* userdata );
 	static void		onBtnCancel( void* userdata );
 	static void		onBtnPipette( void* userdata );
+	static void		onBtnUUID( void* userdata );
 	//static void		onBtnRevert( void* userdata );
 	static void		onBtnWhite( void* userdata );
 	static void		onBtnInvisible( void* userdata );
@@ -281,6 +286,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	}
 
 	childSetAction("Pipette", LLFloaterTexturePicker::onBtnPipette,this);
+	childSetAction("ApplyUUID", LLFloaterTexturePicker::onBtnUUID,this);
 	childSetAction("Cancel", LLFloaterTexturePicker::onBtnCancel,this);
 	childSetAction("Select", LLFloaterTexturePicker::onBtnSelect,this);
 
@@ -303,6 +309,7 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id)
 		mNoCopyTextureSelected = FALSE;
 		mIsDirty = TRUE;
 		mImageAssetID = image_id; 
+		/* I'm good, thanks
 		LLUUID item_id = findItemID(mImageAssetID, FALSE);
 		if (item_id.isNull())
 		{
@@ -310,6 +317,7 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id)
 		}
 		else
 		{
+			
 			LLInventoryItem* itemp = gInventory.getItem(image_id);
 			if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
 			{
@@ -319,6 +327,7 @@ void LLFloaterTexturePicker::setImageID(const LLUUID& image_id)
 			}
 			mInventoryPanel->setSelection(item_id, TAKE_FOCUS_NO);
 		}
+		*/
 	}
 }
 
@@ -390,9 +399,11 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		if (mod)  item_perm_mask |= PERM_MODIFY;
 		if (xfer) item_perm_mask |= PERM_TRANSFER;
 		
-		//PermissionMask filter_perm_mask = getFilterPermMask();  Commented out due to no-copy texture loss.
-		PermissionMask filter_perm_mask = mImmediateFilterPermMask;
-		if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+		// <edit>
+		//PermissionMask filter_perm_mask = mImmediateFilterPermMask;
+		//if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+		if(1)
+		// </edit>
 		{
 			if (drop)
 			{
@@ -546,6 +557,7 @@ void LLFloaterTexturePicker::draw()
 	childSetEnabled("Select", mActive);
 	childSetEnabled("Pipette", mActive);
 	childSetValue("Pipette", LLToolMgr::getInstance()->getCurrentTool() == LLToolPipette::getInstance());
+	childSetValue("texture_uuid", mImageAssetID);
 
 	//RN: reset search bar to reflect actual search query (all caps, for example)
 	mSearchEdit->setText(mInventoryPanel->getFilterSubString());
@@ -782,6 +794,23 @@ void LLFloaterTexturePicker::onBtnPipette( void* userdata )
 
 }
 
+// static
+void LLFloaterTexturePicker::onBtnUUID( void* userdata )
+{
+	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
+
+	if ( self)
+	{
+		std::string texture_uuid = self->childGetValue("texture_uuid").asString();
+		if (texture_uuid.length() == 36)
+		{
+			self->setImageID( LLUUID(texture_uuid) );
+			self->mIsDirty = TRUE;
+			self->commitIfImmediateSet();
+		}
+	}
+}
+
 // static 
 void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data)
 {
@@ -882,13 +911,18 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*)data;
 
-	LLUUID inventory_item_id = self->findItemID(te.getID(), TRUE);
-	if (self && inventory_item_id.notNull())
+	//<edit>
+	//LLUUID inventory_item_id = self->findItemID(te.getID(), TRUE);
+	//if (self && inventory_item_id.notNull())
+	if(self)
+	//</edit>
 	{
 		LLToolPipette::getInstance()->setResult(TRUE, "");
 		self->setImageID(te.getID());
 
 		self->mNoCopyTextureSelected = FALSE;
+		//<edit>
+		/*
 		LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
 
 		if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
@@ -896,6 +930,8 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 			// no copy texture
 			self->mNoCopyTextureSelected = TRUE;
 		}
+		*/
+		//</edit>
 		
 		self->commitIfImmediateSet();
 	}
@@ -1412,8 +1448,11 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 	
 //	PermissionMask filter_perm_mask = mCanApplyImmediately ?			commented out due to no-copy texture loss.
 //			mImmediateFilterPermMask : mNonImmediateFilterPermMask;
-	PermissionMask filter_perm_mask = mImmediateFilterPermMask;
-	if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+	// <edit>
+	//PermissionMask filter_perm_mask = mImmediateFilterPermMask;
+	//if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+	if(1)
+	// </edit>
 	{
 		if(mDragCallback)
 		{
