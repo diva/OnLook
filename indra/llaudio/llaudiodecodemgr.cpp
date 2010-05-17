@@ -226,24 +226,21 @@ BOOL LLVorbisDecodeState::initDecode()
 	size_guess += 2048;
 	
 	bool abort_decode = false;
-	
-	if( vi->channels < 1 || vi->channels > LLVORBIS_CLIP_MAX_CHANNELS )
+
+	// This magic value is equivilent to 150MiB of data.
+	// Prevents griffers from utilizin a huge xbox sound the size of god to instafry the viewer
+	if(size_guess >= 157286400)
+	{
+		llwarns << "Bad sound caught by zmagic" << llendl;
+		abort_decode = true;
+	}
+
+	else if( vi->channels < 1 || vi->channels > LLVORBIS_CLIP_MAX_CHANNELS )
 	{
 		abort_decode = true;
 		llwarns << "Bad channel count: " << vi->channels << llendl;
 	}
-	
-	if( (size_t)sample_count > LLVORBIS_CLIP_REJECT_SAMPLES )
-	{
-		abort_decode = true;
-		llwarns << "Illegal sample count: " << sample_count << llendl;
-	}
-	
-	if( size_guess > LLVORBIS_CLIP_REJECT_SIZE )
-	{
-		abort_decode = true;
-		llwarns << "Illegal sample size: " << size_guess << llendl;
-	}
+
 	
 	if( abort_decode )
 	{
