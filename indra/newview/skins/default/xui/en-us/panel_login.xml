@@ -146,7 +146,7 @@
 			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
 	<spinner decimal_digits="0" follows="left|bottom" height="15"
 			     increment="1" initial_val="0" label="Patch" label_width="40" left_delta="0"
-			     max_val="9999" min_val="0" mouse_opaque="true" name="verbuild_spin" control_edit="SpecifiedVersionBuild"
-			     text_enabled_color="110, 15, 15, 255" width="87" font_size="Small" />
+			     max_val="999999" min_val="0" mouse_opaque="true" name="verbuild_spin" control_edit="SpecifiedVersionBuild"
+			     text_enabled_color="110, 15, 15, 255" width="110" font_size="Small" />
 
 </panel>

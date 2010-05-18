@@ -163,14 +163,14 @@ void LLViewerInventoryItem::removeFromServer()
 
 void LLViewerInventoryItem::updateServer(BOOL is_new) const
 {
-	if(!mIsComplete)
+	/*if(!mIsComplete)
 	{
 		// *FIX: deal with this better.
 		// If we're crashing here then the UI is incorrectly enabled.
 		llerrs << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
 		return;
-	}
+	}*/
 	if(gAgent.getID() != mPermissions.getOwner())
 	{
 		// *FIX: deal with this better.
