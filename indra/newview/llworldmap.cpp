@@ -37,6 +37,7 @@
 #include "llworldmapmessage.h"
 #include "message.h"
 #include "llappviewer.h"	// for gPacificDaylightTime
+#include "llcachename.h"	// for gCacheName
 #include "lltracker.h"
 #include "llviewerimage.h"
 #include "llviewerimagelist.h"
@@ -196,6 +197,7 @@ void LLSimInfo::clearItems()
 void LLSimInfo::insertAgentLocation(const LLItemInfo& item) 
 {
 	std::string name = item.getName();
+	
 
 	// Find the last item in the list with a different name and erase them
 	item_info_list_t::iterator lastiter;
@@ -542,7 +544,15 @@ bool LLWorldMap::insertItem(U32 x_world, U32 y_world, std::string& name, LLUUID&
 		}
 		case MAP_ITEM_AGENT_LOCATIONS: // agent locations
 		{
-// 				LL_INFOS("World Map") << "New Location " << new_item.mName << LL_ENDL;
+			/*
+			//<edit> yes, we like to know who it is who's there!
+			std::string avFullName;
+			
+			gCacheName->getFullName(uuid, avFullName);
+			
+ 			LL_INFOS("World Map") << "New Location " << avFullName << LL_ENDL;
+ 			//</edit>
+ 			*/
 			if (extra > 0)
 			{
 				new_item.setCount(extra);
