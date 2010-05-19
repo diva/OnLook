@@ -228,6 +228,15 @@ void LLWorldMapMessage::processMapBlockReply(LLMessageSystem* msg, void**)
 				callback(handle, LLWorldMapMessage::getInstance()->mSLURL, image_id, LLWorldMapMessage::getInstance()->mSLURLTeleport);
 			}
 		}
+		// <edit>
+		if(LLAgent::lure_show)
+		{
+			if((x_regions == LLAgent::lure_global_x) && (y_regions == LLAgent::lure_global_y))
+			{
+				gAgent.onFoundLureDestination();
+			}
+		}
+		// </edit>
 	}
 	// Tell the UI to update itself
 	gFloaterWorldMap->updateSims(found_null_sim);

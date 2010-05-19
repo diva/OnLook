@@ -569,10 +569,15 @@ void LLPreviewGesture::addKeys()
 	LLComboBox* combo = mKeyCombo;
 
 	combo->add( NONE_LABEL );
+
+	// <edit>
+	//define for the lulz
+#define addKey(k) combo->add( LLKeyboard::stringFromKey(k), ADD_BOTTOM );
 	for (KEY key = KEY_F2; key <= KEY_F12; key++)
-	{
-		combo->add( LLKeyboard::stringFromKey(key), ADD_BOTTOM );
-	}
+		addKey(key)
+	for (KEY key = ' '; key <= '~'; key++)
+		addKey(key)
+	// </edit>
 	combo->setCurrentByIndex(0);
 }
 
