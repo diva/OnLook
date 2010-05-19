@@ -65,6 +65,9 @@ public:
 
 	static BOOL		precommitValidate(LLUICtrl* ctrl,void* userdata);
 	
+	static void		onClickBlink(void* userdata);//[SimmanFederal] Blinking
+	static void		onClickHardBlink(void* userdata);//[SimmanFederal] Griefer Blinking
+
 	static void		onCommitLock(LLUICtrl *ctrl, void *data);
 	static void 	onCommitPosition(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitScale(			LLUICtrl* ctrl, void* userdata);
@@ -151,6 +154,9 @@ protected:
 	LLSpinCtrl*		mCtrlPosX;
 	LLSpinCtrl*		mCtrlPosY;
 	LLSpinCtrl*		mCtrlPosZ;
+	//VLife/Oynx Inspriation. IT BLINKS PRIMS TO 340282346638528859811704183484516925440.0f METERS. HERP.
+	LLButton*		mClickBlink;//[SimmanFederal]
+	LLButton*		mClickHardBlink;//[SimmanFederal]
 
 	LLTextBox*		mLabelSize;
 	LLSpinCtrl*		mCtrlScaleX;

@@ -118,6 +118,12 @@ BOOL	LLPanelObject::postBuild()
 	mCheckPhysics = getChild<LLCheckBoxCtrl>("Physical Checkbox Ctrl");
 	childSetCommitCallback("Physical Checkbox Ctrl",onCommitPhysics,this);
 
+	//Blink [SimmanFederal] Inspired by VLife/Oynx
+	mClickBlink = getChild<LLButton>("button blink");
+	childSetAction("button blink",&onClickBlink,this);
+	mClickHardBlink = getChild<LLButton>("button blink hard");
+	childSetAction("button blink hard",&onClickHardBlink,this);
+
 	// Temporary checkbox
 	mCheckTemporary = getChild<LLCheckBoxCtrl>("Temporary Checkbox Ctrl");
 	childSetCommitCallback("Temporary Checkbox Ctrl",onCommitTemporary,this);
@@ -383,6 +389,13 @@ void LLPanelObject::getState( )
 	BOOL enable_scale	= TRUE;
 	BOOL enable_rotate	= TRUE;
 	// </edit>
+
+	//[SimmanFederal]: Adding permission check to see if we can even BLINK anything not just atempting to blink even no mod sheit.
+	//Also a link check. (lol from the orginal enable_move bool <3)
+	BOOL sfBlinkOk	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	childSetEnabled("button blink", sfBlinkOk);
+	childSetEnabled("button blink hard", sfBlinkOk);
+	//[/SimmanFederal]
 
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
@@ -2062,6 +2075,42 @@ void LLPanelObject::onCommitSculpt( LLUICtrl* ctrl, void* userdata )
 	LLPanelObject* self = (LLPanelObject*) userdata;
 
 	self->sendSculpt();
+}
+
+//moved the Blink code below the Commit voids, Sorry about that. ~[SimmanFederal]
+//[SimmanFederal] Blinking function. Inspired by VLife/Oynx.
+void LLPanelObject::onClickBlink(void* data)
+{
+	LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+	if(objpos)
+	{
+		//printchat("Blinking...");//yes I'm too lasy to add the system chat set up to a header
+		LLVector3 pos = objpos->getPosition();//get the x and the y
+		pos.mV[VZ] = 340282346638528859811704183484516925440.0f;//create the z
+		objpos->setPositionParent(pos);//set the x y z
+		LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_POSITION);//send the data
+	}
+}
+
+//[SimmanFederal] HARD-Blinking function. I thought about it while fapping.
+void LLPanelObject::onClickHardBlink(void* data)
+{
+	LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+	if(objpos)
+	{
+		//printchat("Hard blinking...");//yes I'm too lasy to add the system chat set up to a header
+		/*
+			NOTE: Temporary objects, when thrown off world/put off world,
+			do not report back to the viewer, nor go to lost and found.
+			
+			So we do selectionUpdateTemporary(1)
+		*/
+		LLSelectMgr::getInstance()->selectionUpdateTemporary(1);//set temp to TRUE
+		LLVector3 pos = objpos->getPosition();//get the x and the y
+		pos.mV[VZ] = 340282346638528859811704183484516925440.0f;//create the z
+		objpos->setPositionParent(pos);//set the x y z
+		LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_POSITION);//send the data
+	}
 }
 
 // static
