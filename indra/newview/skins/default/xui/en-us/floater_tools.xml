@@ -910,7 +910,10 @@
 				<combo_item name="Cylinder" value="Cylinder">
 					Cylinder
 				</combo_item>
-			</combo_box>
+			</combo_box><!-- [SimmanFederal] Blink Button -->
+      <button bottom="-360" follows="left|top" font="SansSerifSmall" halign="center"
+			     height="20" label="Blink" label_selected="Blink" left="200"
+			     mouse_opaque="true" name="button blink" scale_image="TRUE" width="60" />
 		</panel>
 
 <!-- Features sub-tab -->

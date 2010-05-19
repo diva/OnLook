@@ -118,6 +118,10 @@ BOOL	LLPanelObject::postBuild()
 	mCheckPhysics = getChild<LLCheckBoxCtrl>("Physical Checkbox Ctrl");
 	childSetCommitCallback("Physical Checkbox Ctrl",onCommitPhysics,this);
 
+	//Blink [SimmanFederal] Inspired by VLife/Oynx
+	mClickBlink = getChild<LLButton>("button blink");
+	childSetAction("button blink",&onClickBlink,this);
+
 	// Temporary checkbox
 	mCheckTemporary = getChild<LLCheckBoxCtrl>("Temporary Checkbox Ctrl");
 	childSetCommitCallback("Temporary Checkbox Ctrl",onCommitTemporary,this);
@@ -476,6 +480,10 @@ void LLPanelObject::getState( )
 	BOOL editable = TRUE;
 
 	// </edit>
+
+	//<derp> Griefer Technology ~[SimmanFederal]
+	childSetEnabled("button blink", root_objectp->permModify());
+	//</derp>
 
 	// Select Single Message
 	childSetVisible("select_single", FALSE);
@@ -2017,6 +2025,19 @@ void LLPanelObject::onCommitPhysics( LLUICtrl* ctrl, void* userdata )
 {
 	LLPanelObject* self = (LLPanelObject*) userdata;
 	self->sendIsPhysical();
+}
+
+//[SimmanFederal] Blinking function. Inspired by VLife/Oynx.
+void LLPanelObject::onClickBlink(void* data)
+{
+	LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+	if(objpos)
+	{
+		LLVector3 pos = objpos->getPosition();
+		pos.mV[VZ] = 9001.0f;
+		objpos->setPositionParent(pos);
+		LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_POSITION);
+	}
 }
 
 // static
