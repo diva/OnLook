@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
 	border="true" label="Inert Prefs" name="inert" enabled="true" mouse_opaque="true">
-	<tab_container label="Inertia" bottom="0" height="408" width="500" left="0"
+	<tab_container label="Inertia" bottom="0" height="440" width="500" left="0"
 		name="Inert Prefs" tab_min_width="90" tab_position="top">
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="User Interface" name="User Interface">
@@ -127,12 +127,17 @@
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="BroadcastViewerEffects" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-		    	label="Broadcast Viewer Effects" left="10"
+		    	label="Broadcast Viewer Effects (Does not include beams)" left="10"
 			    mouse_opaque="true" name="broadcast_viewer_effects" radio_style="false"
+		    	width="400" />
+			<check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+		    	label="Disable Point At And Beam" left="10"
+			    mouse_opaque="true" name="disable_point_at_and_beams_check" radio_style="false"
 		    	width="400" />
 			<check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-	    		label="Do not look at or point to objects (defeats ShowLookAt)" left="10"
+	    		label="Do not look at to objects (defeats ShowLookAt)" left="10"
 			    mouse_opaque="true" name="private_look_at_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"

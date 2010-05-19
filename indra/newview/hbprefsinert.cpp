@@ -59,6 +59,7 @@ private:
 	BOOL mDoubleClickTeleport;
 	BOOL mHideNotificationsInChat;
 	BOOL mPlayTypingSound;
+	BOOL mDisablePointAtAndBeam;
 	BOOL mPrivateLookAt;
 	BOOL mFetchInventoryOnLogin;
 	BOOL mSecondsInChatAndIMs;
@@ -111,6 +112,7 @@ void LLPrefsInertImpl::refreshValues()
 	mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
 	mHideNotificationsInChat	= gSavedSettings.getBOOL("HideNotificationsInChat");
 	mPlayTypingSound			= gSavedSettings.getBOOL("PlayTypingSound");
+	mDisablePointAtAndBeam			= gSavedSettings.getBOOL("DisablePointAtAndBeam");
 	mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
 	mSecondsInChatAndIMs		= gSavedSettings.getBOOL("SecondsInChatAndIMs");
 	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
@@ -186,6 +188,7 @@ void LLPrefsInertImpl::cancel()
 	gSavedSettings.setBOOL("DoubleClickTeleport",		mDoubleClickTeleport);
 	gSavedSettings.setBOOL("HideNotificationsInChat",	mHideNotificationsInChat);
 	gSavedSettings.setBOOL("PlayTypingSound",			mPlayTypingSound);
+	gSavedSettings.setBOOL("DisablePointAtAndBeam",			mDisablePointAtAndBeam);
 	gSavedSettings.setBOOL("PrivateLookAt",				mPrivateLookAt);
 	gSavedSettings.setBOOL("FetchInventoryOnLogin",		mFetchInventoryOnLogin);
 	gSavedSettings.setBOOL("SecondsInChatAndIMs",		mSecondsInChatAndIMs);
