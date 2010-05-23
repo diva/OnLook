@@ -3261,7 +3261,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						mNameText->setColor(LLColor4(0.5f, 0.5f, 0.5f));
 						line += " (Viewer 2.0)";
 					}
-					
+					else if(uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
+					{
+						mNameText->setColor(LLColor4(0.65f, 0.93f, 0.14f));
+						line += " (Nano)";
+					}
+
 					else
 					{
 						LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
