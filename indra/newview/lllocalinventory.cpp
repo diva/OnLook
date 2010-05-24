@@ -173,14 +173,8 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		}
 	}
 
-	int conflicting_cat_count = 0;
-	int conflicting_item_count = 0;
-	int conflicting_parent_count = 0;
-
 	LLInventoryModel::cat_array_t cats;
 	LLInventoryModel::item_array_t items;
-	LLDynamicArray<LLUUID> cat_uuids;
-	
 	if(LLInventoryModel::loadFromFile(inv_filename, cats, items))
 	{
 		// create a container category for everything
@@ -191,74 +185,49 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		container->setUUID(container_id);
 		container->setParent(gLocalInventoryRoot);
 		container->setPreferredType(LLAssetType::AT_NONE);
-		
-		LLViewerInventoryCategory* orphaned_items = new LLViewerInventoryCategory(gAgent.getID());
-		orphaned_items->rename("Orphaned Items");
-		LLUUID orphaned_items_id;
-		orphaned_items_id.generate();
-		container->setUUID(orphaned_items_id);
-		container->setParent(container->getUUID());
-		container->setPreferredType(LLAssetType::AT_NONE);
-		
 		LLInventoryModel::update_map_t container_update;
 		++container_update[container->getParentUUID()];
 		gInventory.accountForUpdate(container_update);
 		gInventory.updateCategory(container);
 		gInventory.notifyObservers();
 		
-		LLInventoryModel::update_map_t orphaned_items_update;
-		++orphaned_items_update[orphaned_items->getParentUUID()];
-		gInventory.accountForUpdate(orphaned_items_update);
-		gInventory.updateCategory(orphaned_items);
-		gInventory.notifyObservers();
+		//conflict handling
+		std::map<LLUUID,LLUUID> conflicting_cats;
+		int dropped_cats = 0;
+		int dropped_items = 0;
 
 		// Add all categories
 		LLInventoryModel::cat_array_t::iterator cat_iter = cats.begin();
-		LLInventoryModel::cat_array_t::iterator cat_uuid_iter = cats.begin();
 		LLInventoryModel::cat_array_t::iterator cat_end = cats.end();
-		
-		//first of all, let's build the list of category UUIDs
-		for(; cat_uuid_iter != cat_end; ++cat_uuid_iter)
-		{
-			cat_uuids.push_back((*cat_uuid_iter)->getUUID());
-		}
-		
-		cat_uuids.push_back(orphaned_items_id);
-		cat_uuids.push_back(container_id);
-		
 		for(; cat_iter != cat_end; ++cat_iter)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
-			// Yep!
 			if((*cat_iter)->getParentUUID().isNull())
 			{
-				(*cat_iter)->setParent(orphaned_items_id);
+				(*cat_iter)->setParent(container_id);
 			}
-
-			// Avoid conflicts with real inventory...
-			// If this category already exists, ignore it
-			if(gInventory.getCategory((*cat_iter)->getUUID()))
-			{
-				conflicting_cat_count++;
-				continue;
-			}
-			// If the parent exists and outside of pretend inventory, ignore it
-			if(gInventory.getCategory((*cat_iter)->getParentUUID()))
+			// If the parent exists and outside of pretend inventory, generate a new uuid
+			else if(gInventory.getCategory((*cat_iter)->getParentUUID()))
 			{
 				if(!gInventory.isObjectDescendentOf((*cat_iter)->getParentUUID(), gLocalInventoryRoot))
 				{
-					conflicting_parent_count++;
-					continue;
+					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*cat_iter)->getParentUUID());
+					if(itr == conflicting_cats.end())
+					{
+						dropped_cats++;
+						continue;
+					}
+					(*cat_iter)->setParent(itr->second);
 				}
 			}
-			
-			if(std::find(cat_uuids.begin(), cat_uuids.end(), (*cat_iter)->getParentUUID()) == cat_uuids.end())
+			// If this category already exists, generate a new uuid
+			if(gInventory.getCategory((*cat_iter)->getUUID()))
 			{
-				//oh good jorb, this parent doesn't exist.
-				//just shove it into the "Orphaned" category *sigh*
-				llinfos << "Missing parent for " << (*cat_iter)->getUUID() << llendl;
-				(*cat_iter)->setParent(orphaned_items_id);
+				LLUUID cat_random;
+				cat_random.generate();
+				conflicting_cats[(*cat_iter)->getUUID()] = cat_random;
+				(*cat_iter)->setUUID(cat_random);
 			}
 
 			LLInventoryModel::update_map_t update;
@@ -275,34 +244,31 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
-			// Edit: yes.
 			if((*item_iter)->getParentUUID().isNull())
 			{
 				(*item_iter)->setParent(container_id);
 			}
-			
-			if(std::find(cat_uuids.begin(), cat_uuids.end(), (*item_iter)->getParentUUID()) == cat_uuids.end())
-			{
-				//oh good jorb, this parent doesn't exist.
-				//just shove it into the "Orphaned" category *sigh*
-				(*item_iter)->setParent(orphaned_items_id);
-			}
-
-			// Avoid conflicts with real inventory...
-			// If this item id already exists, ignore it
-			if(gInventory.getItem((*item_iter)->getUUID()))
-			{
-				conflicting_item_count++;
-				continue;
-			}
-			// If the parent exists and outside of pretend inventory, ignore it
-			if(gInventory.getCategory((*item_iter)->getParentUUID()))
+			// If the parent exists and outside of pretend inventory, generate a new uuid
+			else if(gInventory.getCategory((*item_iter)->getParentUUID()))
 			{
 				if(!gInventory.isObjectDescendentOf((*item_iter)->getParentUUID(), gLocalInventoryRoot))
 				{
-					conflicting_parent_count++;
-					continue;
+					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*item_iter)->getParentUUID());
+					if(itr == conflicting_cats.end())
+					{
+						dropped_items++;
+						continue;
+					}
+					(*item_iter)->setParent(itr->second);
 				}
+			}
+			// Avoid conflicts with real inventory...
+			// If this item id already exists, generate a new uuid
+			if(gInventory.getItem((*item_iter)->getUUID()))
+			{
+				LLUUID item_random;
+				item_random.generate();
+				(*item_iter)->setUUID(item_random);
 			}
 			
 			LLInventoryModel::update_map_t update;
@@ -311,6 +277,20 @@ void LLLocalInventory::loadInvCache(std::string filename)
 			gInventory.updateItem(*item_iter);
 			gInventory.notifyObservers();
 		}
+		
+		// Quality time
+		if(dropped_items || dropped_cats)
+		{
+			std::ostringstream message;
+			message << "Some items were ignored due to conflicts:\n\n";
+			if(dropped_cats) message << dropped_cats << " folders\n";
+			if(dropped_items) message << dropped_items << " items\n";
+
+			LLSD args;
+			args["ERROR_MESSAGE"] = message.str();
+			LLNotifications::instance().add("ErrorMessage", args);
+		}
+		conflicting_cats.clear();// srsly dont think this is need but w/e :D
 	}
 
 	// remove temporary unzipped file
@@ -319,20 +299,6 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		LLFile::remove(inv_filename);
 	}
 
-	// Quality time
-	if(conflicting_cat_count || conflicting_item_count || conflicting_parent_count)
-	{
-		std::ostringstream message;
-		message << "Some items were ignored due to conflicts:\n\n";
-		if(conflicting_cat_count) message << conflicting_cat_count << " folders\n";
-		if(conflicting_item_count) message << conflicting_item_count << " items\n";
-		if(conflicting_parent_count) message << conflicting_parent_count << " parents\n";
-		LLSD args;
-		args["ERROR_MESSAGE"] = message.str();
-		LLNotifications::instance().add("ErrorMessage", args);
-	}
-	
-	cat_uuids.clear();
 }
 
 //static
