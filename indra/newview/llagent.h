@@ -1016,5 +1016,8 @@ private:
 };
 
 extern LLAgent gAgent;
-
+// <edit>
+extern LLUUID gReSitTargetID;
+extern LLVector3 gReSitOffset;
+// </edit>
 #endif

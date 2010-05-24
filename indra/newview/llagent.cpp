@@ -217,7 +217,10 @@ const F64 CHAT_AGE_FAST_RATE = 3.0;
 
 // The agent instance.
 LLAgent gAgent;
-
+// <edit>
+LLUUID gReSitTargetID;
+LLVector3 gReSitOffset;
+// </edit>
 //
 // Statics
 //
@@ -3033,7 +3036,9 @@ void LLAgent::endAnimationUpdateUI()
 		// freeze avatar
 		if (mAvatarObject.notNull())
 		{
-			mPauseRequest = mAvatarObject->requestPause();
+			// <edit>
+			//mPauseRequest = mAvatarObject->requestPause();
+			// </edit>
 		}
 	}
 
@@ -4244,7 +4249,9 @@ void LLAgent::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL camera_ani
 		return;
 	}
 
-	setControlFlags(AGENT_CONTROL_STAND_UP); // force stand up
+	// <edit>
+	//setControlFlags(AGENT_CONTROL_STAND_UP); // force stand up
+	// </edit>
 	gViewerWindow->getWindow()->resetBusyCount();
 
 	if (gFaceEditToolset)
@@ -4259,6 +4266,9 @@ void LLAgent::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL camera_ani
 
 	if (camera_animate)
 	{
+		// <edit>
+		if(gSavedSettings.getBOOL("AppearanceCameraMovement"))
+		// </edit>
 		startCameraAnimation();
 	}
 
@@ -4317,6 +4327,14 @@ void LLAgent::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL camera_ani
 	}
 	else
 	{
+		mCameraAnimating = FALSE;
+		endAnimationUpdateUI();
+	}
+
+	// <edit>
+	if(!gSavedSettings.getBOOL("AppearanceCameraMovement"))
+	{
+		//hmm
 		mCameraAnimating = FALSE;
 		endAnimationUpdateUI();
 	}
@@ -6094,7 +6112,10 @@ bool LLAgent::teleportCore(bool is_local)
 	if(TELEPORT_NONE != mTeleportState)
 	{
 		llwarns << "Attempt to teleport when already teleporting." << llendl;
-		return false;
+		// <edit>
+		//return false;
+		teleportCancel();
+		// </edit>
 	}
 
 #if 0
@@ -6132,6 +6153,9 @@ bool LLAgent::teleportCore(bool is_local)
 
 	// Close all pie menus, deselect land, etc.
 	// Don't change the camera until we know teleport succeeded. JC
+	// <edit>
+	if(gAgent.getFocusOnAvatar())
+	// </edit>
 	resetView(FALSE);
 
 	// local logic
@@ -6187,11 +6211,14 @@ void LLAgent::teleportRequest(
 		msg->nextBlockFast(_PREHASH_Info);
 		msg->addU64("RegionHandle", region_handle);
 		msg->addVector3("Position", pos_local);
-		LLVector3 look_at(0,1,0);
-		if (look_at_from_camera)
+		// <edit>
+		//LLVector3 look_at(0,1,0);
+		LLVector3 look_at = LLViewerCamera::getInstance()->getAtAxis();
+		/*if (look_at_from_camera)
 		{
 			look_at = LLViewerCamera::getInstance()->getAtAxis();
-		}
+		}*/
+		// </edit>
 		msg->addVector3("LookAt", look_at);
 		sendReliableMessage();
 	}
@@ -6298,7 +6325,11 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 		msg->addU64Fast(_PREHASH_RegionHandle, region_handle);
 		msg->addVector3Fast(_PREHASH_Position, pos);
 		pos.mV[VX] += 1;
-		msg->addVector3Fast(_PREHASH_LookAt, pos);
+		// <edit>
+		LLVector3 lookat = LLViewerCamera::getInstance()->getAtAxis();
+		//msg->addVector3Fast(_PREHASH_LookAt, pos);
+		msg->addVector3Fast(_PREHASH_LookAt, lookat);
+		// </edit>
 		sendReliableMessage();
 	}
 }

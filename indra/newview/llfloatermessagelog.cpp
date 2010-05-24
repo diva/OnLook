@@ -120,6 +120,8 @@ LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 			for(S32 i = 0; i < mDataSize; i++)
 				mSummary.append(llformat("%02X ", mData[i]));
 		}
+		//lets play cleanup
+		memset(sDecodeBuffer, 0, mDataSize);
 	}
 	else // not template
 	{
@@ -262,13 +264,11 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 		readerp->getS32(block_name, var_name, valueS32, block_num);
 		stream << valueS32;
 		break;
-	/*
-	case MVT_S64:
+	/*case MVT_S64:
 		S64 valueS64;
 		readerp->getS64(block_name, var_name, valueS64, block_num);
 		stream << valueS64;
-		break;
-	*/
+		break;*/
 	case MVT_F32:
 		F32 valueF32;
 		readerp->getF32(block_name, var_name, valueF32, block_num);

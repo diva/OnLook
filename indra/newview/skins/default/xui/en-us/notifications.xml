@@ -6046,7 +6046,7 @@ Grant this request?
    icon="notify.tga"
    name="ScriptDialog"
    type="notify">
-[FIRST] [LAST]&apos;s &apos;[TITLE]&apos;
+[FIRST] [LAST]&apos;s &apos;[TITLE]&apos; (ch[CHANNEL])
 [MESSAGE]
     <form name="form">
       <button
