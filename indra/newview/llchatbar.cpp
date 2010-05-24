@@ -340,11 +340,17 @@ LLWString LLChatBar::stripChannelNumber(const LLWString &mesg, S32* channel)
 	}
 	else if (mesg[0] == '/'
 			 && mesg[1]
-			 && LLStringOps::isDigit(mesg[1]))
+			 && ( LLStringOps::isDigit(mesg[1]) 
+				// <edit>
+				|| mesg[1] == '-' ))
+				// </edit>
 	{
 		// This a special "/20" speak on a channel
 		S32 pos = 0;
-
+		// <edit>
+		if(mesg[1] == '-')
+			pos++;
+		// </edit>
 		// Copy the channel number into a string
 		LLWString channel_string;
 		llwchar c;
@@ -366,6 +372,10 @@ LLWString LLChatBar::stripChannelNumber(const LLWString &mesg, S32* channel)
 		}
 		
 		mLastSpecialChatChannel = strtol(wstring_to_utf8str(channel_string).c_str(), NULL, 10);
+		// <edit>
+		if(mesg[1] == '-')
+			mLastSpecialChatChannel = -mLastSpecialChatChannel;
+		// </edit>
 		*channel = mLastSpecialChatChannel;
 		return mesg.substr(pos, mesg.length() - pos);
 	}
@@ -630,6 +640,10 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 void send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32 channel)
 {
 	LLMessageSystem* msg = gMessageSystem;
+	// <edit>
+	if(channel >= 0)
+	{
+	// </edit>
 	msg->newMessageFast(_PREHASH_ChatFromViewer);
 	msg->nextBlockFast(_PREHASH_AgentData);
 	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
@@ -638,7 +652,21 @@ void send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32
 	msg->addStringFast(_PREHASH_Message, utf8_out_text);
 	msg->addU8Fast(_PREHASH_Type, type);
 	msg->addS32("Channel", channel);
-
+	// <edit>
+	}
+	else
+	{
+		msg->newMessage("ScriptDialogReply");
+		msg->nextBlock("AgentData");
+		msg->addUUID("AgentID", gAgent.getID());
+		msg->addUUID("SessionID", gAgent.getSessionID());
+		msg->nextBlock("Data");
+		msg->addUUID("ObjectID", gAgent.getID());
+		msg->addS32("ChatChannel", channel);
+		msg->addS32("ButtonIndex", 0);
+		msg->addString("ButtonLabel", utf8_out_text);
+	}
+	// </edit>
 	gAgent.sendReliableMessage();
 
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_CHAT_COUNT);
