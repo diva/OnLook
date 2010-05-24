@@ -345,6 +345,10 @@ void LLFloaterExport::addAvatarStuff(LLVOAvatar* avatarp)
 		{
 			exists = true;
 		}
+		else if (type == WT_ALPHA || type == WT_TATTOO) //alpha layers and tattos are unsupported for now
+		{
+			continue;
+		}
 		else
 		{
 			for( S32 te = 0; te < LLVOAvatarDefines::TEX_NUM_INDICES; te++ )
