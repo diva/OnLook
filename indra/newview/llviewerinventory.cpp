@@ -51,6 +51,10 @@
 #include "llpreviewgesture.h"
 #include "llviewerwindow.h"
 
+// <edit>
+#include "llappviewer.h" // gLocalInventoryRoot
+// </edit>
+
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
@@ -99,11 +103,12 @@ LLViewerInventoryItem::LLViewerInventoryItem(const LLViewerInventoryItem* other)
 	LLInventoryItem()
 {
 	copyViewerItem(other);
-	if (!mIsComplete)
-	{
-		llwarns << "LLViewerInventoryItem copy constructor for incomplete item"
-			<< mUUID << llendl;
-	}
+	// <edit>
+	//if (!mIsComplete)
+	//{
+	//	llwarns << "LLViewerInventoryItem copy constructor for incomplete item"
+	//		<< mUUID << llendl;
+	//}
 }
 
 LLViewerInventoryItem::LLViewerInventoryItem(const LLInventoryItem *other) :
@@ -145,6 +150,12 @@ void LLViewerInventoryItem::cloneViewerItem(LLPointer<LLViewerInventoryItem>& ne
 
 void LLViewerInventoryItem::removeFromServer()
 {
+	// <edit> this check is ghetto
+	if((mParentUUID == gLocalInventoryRoot) || (gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot)))
+	{
+		return;
+	}
+	// </edit>
 	llinfos << "Removing inventory item " << mUUID << " from server."
 			<< llendl;
 
@@ -163,19 +174,23 @@ void LLViewerInventoryItem::removeFromServer()
 
 void LLViewerInventoryItem::updateServer(BOOL is_new) const
 {
-	/*if(!mIsComplete)
+	// <edit>
+	//if(gAgent.getID() != mPermissions.getOwner())
+	//{
+	//	// *FIX: deal with this better.
+	//	llwarns << "LLViewerInventoryItem::updateServer() - for unowned item"
+	//			<< llendl;
+	if((mParentUUID == gLocalInventoryRoot) || (gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot)))
+	{
+	// </edit>
+		return;
+	}
+	if(!mIsComplete)
 	{
 		// *FIX: deal with this better.
 		// If we're crashing here then the UI is incorrectly enabled.
-		llerrs << "LLViewerInventoryItem::updateServer() - for incomplete item"
+		llwarns << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
-		return;
-	}*/
-	if(gAgent.getID() != mPermissions.getOwner())
-	{
-		// *FIX: deal with this better.
-		llwarns << "LLViewerInventoryItem::updateServer() - for unowned item"
-				<< llendl;
 		return;
 	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);
@@ -318,6 +333,9 @@ bool LLViewerInventoryItem::exportFileLocal(LLFILE* fp) const
 
 void LLViewerInventoryItem::updateParentOnServer(BOOL restamp) const
 {
+	// <edit>
+	if(gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot)) return;
+	// </edit>
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessageFast(_PREHASH_MoveInventoryItem);
 	msg->nextBlockFast(_PREHASH_AgentData);
@@ -387,6 +405,9 @@ void LLViewerInventoryCategory::copyViewerCategory(const LLViewerInventoryCatego
 
 void LLViewerInventoryCategory::updateParentOnServer(BOOL restamp) const
 {
+	// <edit>
+	if(gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot)) return;
+	// </edit>
 	LLMessageSystem* msg = gMessageSystem;
 	msg->newMessageFast(_PREHASH_MoveInventoryFolder);
 	msg->nextBlockFast(_PREHASH_AgentData);
@@ -448,6 +469,9 @@ void LLViewerInventoryCategory::removeFromServer( void )
 
 bool LLViewerInventoryCategory::fetchDescendents()
 {
+	// <edit>
+	if((mUUID == gLocalInventoryRoot) || (gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot))) return false;
+	// </edit>
 	if((VERSION_UNKNOWN == mVersion)
 	   && mDescendentsRequested.hasExpired())	//Expired check prevents multiple downloads.
 	{

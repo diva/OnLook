@@ -133,6 +133,13 @@ BOOL LLHandMotion::onUpdate(F32 time, U8* joint_mask)
 	mLastTime = time;
 
 	requestedHandPose = (eHandPose *)mCharacter->getAnimationData("Hand Pose");
+	// <edit>
+	if(requestedHandPose && *requestedHandPose >= NUM_HAND_POSES)
+	{
+		llwarns << "requested hand pose >= NUM_HAND_POSES" << llendl;
+		requestedHandPose = &mCurrentPose;
+	}
+	// </edit>
 	// check to see if requested pose has changed
 	if (!requestedHandPose)
 	{

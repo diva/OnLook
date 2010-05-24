@@ -319,8 +319,16 @@ public:
 					child = getChild(i);
 					if (child->isInside(data->getPositionGroup()))
 					{
-						child->insert(data);
-						return false;
+						// <edit>
+						// tempfix, test, shitsux
+						//child->insert(data);
+						if(child->getElementCount() < LL_OCTREE_MAX_CAPACITY)
+						{
+							child->insert(data);
+							return false;
+						}
+						//return false;
+						// </edit>
 					}
 				}
 				

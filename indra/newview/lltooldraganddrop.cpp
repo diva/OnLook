@@ -68,7 +68,9 @@
 #include "llworld.h"
 #include "object_flags.h"
 #include "llimview.h"
-
+// <edit>
+#include "llappviewer.h" // gLocalInventoryRoot
+// </edit>
 
 // MAX ITEMS is based on (sizeof(uuid)+2) * count must be < MTUBYTES
 // or 18 * count < 1200 => count < 1200/18 => 66. I've cut it down a
@@ -383,8 +385,12 @@ LLToolDragAndDrop::dragOrDrop3dImpl LLToolDragAndDrop::sDragAndDrop3d[DAD_COUNT]
 	{
 		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_NONE
 		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_SELF
-		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_AVATAR
-		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_OBJECT
+		// <edit>
+ 		//&LLToolDragAndDrop::dad3dNULL, // Dest: DT_AVATAR
+ 		//&LLToolDragAndDrop::dad3dNULL, // Dest: DT_OBJECT
+ 		&LLToolDragAndDrop::dad3dGiveInventory, // Dest: DT_AVATAR
+ 		&LLToolDragAndDrop::dad3dUpdateInventory, // Dest: DT_OBJECT
+ 		// </edit>
 		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_LAND
 	},
 	//	Source: DAD_LANDMARK
@@ -1143,11 +1149,13 @@ void LLToolDragAndDrop::dropTextureAllFaces(LLViewerObject* hit_obj,
 		return;
 	}
 	LLUUID asset_id = item->getAssetUUID();
-	BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
+	// <edit>
+	/*BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
 	if(!success)
 	{
 		return;
-	}
+	}*/
+	// </edit>
 	LLViewerImage* image = gImageList.getImage(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
 	S32 num_faces = hit_obj->getNumTEs();
@@ -1185,11 +1193,13 @@ void LLToolDragAndDrop::dropTextureOneFace(LLViewerObject* hit_obj,
 		return;
 	}
 	LLUUID asset_id = item->getAssetUUID();
-	BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
+	// <edit>
+	/*BOOL success = handleDropTextureProtections(hit_obj, item, source, src_id);
 	if(!success)
 	{
 		return;
-	}
+	}*/
+	// </edit>
 	// update viewer side image in anticipation of update from simulator
 	LLViewerImage* image = gImageList.getImage(asset_id);
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_EDIT_TEXTURE_COUNT );
@@ -1247,13 +1257,19 @@ void LLToolDragAndDrop::dropScript(LLViewerObject* hit_obj,
 		}
 		hit_obj->saveScript(new_script, active, true);
 		gFloaterTools->dirty();
-
+		// <edit>
+ 		if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+		{
+ 		// </edit>
 		// VEFFECT: SetScript
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 		effectp->setSourceObject(gAgent.getAvatarObject());
 		effectp->setTargetObject(hit_obj);
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+		// <edit>
+		}
+		// </edit>
 	}
 }
 
@@ -1409,14 +1425,19 @@ void LLToolDragAndDrop::dropObject(LLViewerObject* raycast_target,
 		gInventory.deleteObject(item->getUUID());
 		gInventory.notifyObservers();
 	}
-
+	// <edit>
+	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	{
+	// </edit>
 	// VEFFECT: DropObject
 	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 	effectp->setSourceObject(gAgent.getAvatarObject());
 	effectp->setPositionGlobal(mLastHitPos);
 	effectp->setDuration(LL_HUD_DUR_SHORT);
 	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-
+	// <edit>
+	}
+	// </edit>
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_REZ_COUNT);
 }
 
@@ -1472,13 +1493,19 @@ void LLToolDragAndDrop::dropInventory(LLViewerObject* hit_obj,
 		// *FIX: only show this if panel not expanded?
 		gFloaterTools->showPanel(LLFloaterTools::PANEL_CONTENTS);
 	}
-
+	// <edit>
+	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	{
+	// </edit>
 	// VEFFECT: AddToInventory
 	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 	effectp->setSourceObject(gAgent.getAvatarObject());
 	effectp->setTargetObject(hit_obj);
 	effectp->setDuration(LL_HUD_DUR_SHORT);
 	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+	// <edit>
+	}
+	// <edit>
 	gFloaterTools->dirty();
 }
 
@@ -1582,13 +1609,19 @@ void LLToolDragAndDrop::commitGiveInventoryItem(const LLUUID& to_agent,
 		bucket,
 		BUCKET_SIZE);
 	gAgent.sendReliableMessage(); 
-
+	// <edit>
+	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	{
+	// </edit>
 	// VEFFECT: giveInventory
 	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 	effectp->setSourceObject(gAgent.getAvatarObject());
 	effectp->setTargetObject(gObjectList.findObject(to_agent));
 	effectp->setDuration(LL_HUD_DUR_SHORT);
 	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+	// <edit>
+	}
+	// </edit>
 	gFloaterTools->dirty();
 
 	LLMuteList::getInstance()->autoRemove(to_agent, LLMuteList::AR_INVENTORY);
@@ -1799,13 +1832,19 @@ void LLToolDragAndDrop::commitGiveInventoryCategory(const LLUUID& to_agent,
 			bucket_size);
 		gAgent.sendReliableMessage();
 		delete[] bucket;
-
+		// <edit>
+ 		if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+		{
+ 		// </edit>
 		// VEFFECT: giveInventoryCategory
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
 		effectp->setSourceObject(gAgent.getAvatarObject());
 		effectp->setTargetObject(gObjectList.findObject(to_agent));
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+		// <edit>
+		}
+		// </edit>
 		gFloaterTools->dirty();
 
 		LLMuteList::getInstance()->autoRemove(to_agent, LLMuteList::AR_INVENTORY);
@@ -1832,31 +1871,41 @@ BOOL LLToolDragAndDrop::isInventoryGiveAcceptable(LLInventoryItem* item)
 	}
 	BOOL copyable = FALSE;
 	if(item->getPermissions().allowCopyBy(gAgent.getID())) copyable = TRUE;
-
-	LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	
+	// <edit>
+	/*LLVOAvatar* my_avatar = gAgent.getAvatarObject();
 	if(!my_avatar)
 	{
 		return FALSE;
-	}
+	}*/
+	// </edit>
 
+	// <edit>
+	//BOOL acceptable = FALSE;
 	BOOL acceptable = TRUE;
+	// Might also look at what's down below
+	// </edit>
 	switch(item->getType())
 	{
 	case LLAssetType::AT_CALLINGCARD:
 		acceptable = FALSE;
 		break;
 	case LLAssetType::AT_OBJECT:
-		if(my_avatar->isWearingAttachment(item->getUUID()))
+		// <edit>		
+		/*if(my_avatar->isWearingAttachment(item->getUUID()))
 		{
 			acceptable = FALSE;
-		}
+		}*/
+		// </edit>
 		break;
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_CLOTHING:
-		if(!copyable && gAgent.isWearingItem(item->getUUID()))
+		// <edit>		
+		/*if(!copyable && gAgent.isWearingItem(item->getUUID()))
 		{
 			acceptable = FALSE;
-		}
+		}*/
+		// </edit>
 		break;
 	default:
 		break;
@@ -1890,6 +1939,9 @@ BOOL LLToolDragAndDrop::isInventoryGroupGiveAcceptable(LLInventoryItem* item)
 	}
 
 	BOOL acceptable = TRUE;
+	// <edit>
+	/*
+	// </edit>
 	switch(item->getType())
 	{
 	case LLAssetType::AT_CALLINGCARD:
@@ -1904,6 +1956,9 @@ BOOL LLToolDragAndDrop::isInventoryGroupGiveAcceptable(LLInventoryItem* item)
 	default:
 		break;
 	}
+	// <edit>
+	*/
+	// </edit>
 	return acceptable;
 }
 
@@ -1915,7 +1970,10 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	if(!item || !obj) return ACCEPT_NO;
 	// HACK: downcast
 	LLViewerInventoryItem* vitem = (LLViewerInventoryItem*)item;
-	if(!vitem->isComplete()) return ACCEPT_NO;
+	// <edit>
+	//if(!vitem->isComplete()) return ACCEPT_NO;
+	if(!vitem->isComplete() && !(gInventory.isObjectDescendentOf(vitem->getUUID(), gLocalInventoryRoot))) return ACCEPT_NO;
+	// </edit>
 
 	// deny attempts to drop from an object onto itself. This is to
 	// help make sure that drops that are from an object to an object
@@ -1973,7 +2031,10 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	{
 		return ACCEPT_NO_LOCKED;
 	}
-	return ACCEPT_NO;
+	// <edit> allow dropping textures onto objects
+ 	//return ACCEPT_NO;
+ 	return ACCEPT_YES_SINGLE;
+ 	// </edit>
 }
 
 
@@ -2086,11 +2147,13 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 	}
 
 	// must not be already wearing it
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
-	if( !avatar || avatar->isWearingAttachment(item->getUUID()) )
-	{
-		return ACCEPT_NO;
-	}
+	// <edit>
+	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
+	//{
+	//	return ACCEPT_NO;
+	//}
+	// </edit>
 
 	if( drop )
 	{
@@ -2128,12 +2191,13 @@ EAcceptance LLToolDragAndDrop::dad3dRezObjectOnLand(
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
 
-	LLVOAvatar* my_avatar = gAgent.getAvatarObject();
-	if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
-	{
-		return ACCEPT_NO;
-	}
-
+	// <edit>
+	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
+	//{
+	//	return ACCEPT_NO;
+	//}
+	// </edit>
 	EAcceptance accept;
 	BOOL remove_inventory;
 
@@ -2191,11 +2255,13 @@ EAcceptance LLToolDragAndDrop::dad3dRezObjectOnObject(
 	LLViewerInventoryCategory* cat;
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
-	LLVOAvatar* my_avatar = gAgent.getAvatarObject();
-	if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
-	{
-		return ACCEPT_NO;
-	}
+	// <edit>
+	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
+	//{
+	//	return ACCEPT_NO;
+	//}
+	// </edit>
 
 	if((mask & MASK_CONTROL))
 	{
@@ -2299,17 +2365,24 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 {
 	lldebugs << "LLToolDragAndDrop::dad3dTextureObject()" << llendl;
 
+	// <edit>
+	// Fuck this
+
 	// *HACK: In order to resolve SL-22177, we need to block drags
 	// from notecards and objects onto other objects.
-	if((SOURCE_WORLD == mSource) || (SOURCE_NOTECARD == mSource))
-	{
-		return ACCEPT_NO;
-	}
+	//if((SOURCE_WORLD == mSource) || (SOURCE_NOTECARD == mSource))
+	//{
+	//	return ACCEPT_NO;
+	//}
+	// </edit>
 	
 	LLViewerInventoryItem* item;
 	LLViewerInventoryCategory* cat;
 	locateInventory(item, cat);
-	if(!item || !item->isComplete()) return ACCEPT_NO;
+	// <edit>
+	//if(!item || !item->isComplete()) return ACCEPT_NO;
+	if( !item || (!item->isComplete() && !(gInventory.isObjectDescendentOf(item->getUUID(), gLocalInventoryRoot))) ) return ACCEPT_NO;
+	// </edit>
 	EAcceptance rv = willObjectAcceptInventory(obj, item);
 	if((mask & MASK_CONTROL))
 	{
@@ -2319,6 +2392,9 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 		}
 		return rv;
 	}
+	// <edit>
+	/*
+	// </edit>
 	if(!obj->permModify())
 	{
 		return ACCEPT_NO_LOCKED;
@@ -2328,6 +2404,9 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 	{
 		return ACCEPT_NO;
 	}
+	// <edit>
+	*/
+	// </edit>
 
 	if(drop && (ACCEPT_YES_SINGLE <= rv))
 	{
@@ -2755,11 +2834,13 @@ EAcceptance LLToolDragAndDrop::dad3dRezFromObjectOnLand(
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
 
-	if(!gAgent.allowOperation(PERM_COPY, item->getPermissions())
-		|| !item->getPermissions().allowTransferTo(LLUUID::null))
-	{
-		return ACCEPT_NO_LOCKED;
-	}
+	// <edit>
+	//if(!gAgent.allowOperation(PERM_COPY, item->getPermissions())
+	//	|| !item->getPermissions().allowTransferTo(LLUUID::null))
+	//{
+	//	return ACCEPT_NO_LOCKED;
+	//}
+	// </edit>
 	if(drop)
 	{
 		dropObject(obj, TRUE, TRUE, FALSE);
@@ -2789,12 +2870,14 @@ EAcceptance LLToolDragAndDrop::dad3dRezFromObjectOnObject(
 		//}
 		//return rv;
 	}
-	if(!item->getPermissions().allowCopyBy(gAgent.getID(),
-										   gAgent.getGroupID())
-	   || !item->getPermissions().allowTransferTo(LLUUID::null))
-	{
-		return ACCEPT_NO_LOCKED;
-	}
+	// <edit>
+	//if(!item->getPermissions().allowCopyBy(gAgent.getID(),
+	//									   gAgent.getGroupID())
+	//   || !item->getPermissions().allowTransferTo(LLUUID::null))
+	//{
+	//	return ACCEPT_NO_LOCKED;
+	//}
+	// </edit>a
 	if(drop)
 	{
 		dropObject(obj, FALSE, TRUE, FALSE);
