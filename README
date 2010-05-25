@@ -7,18 +7,17 @@ This viewer will likely not interest most users of SL, and aims to include featu
 
 All code written by myself or other committers, unless otherwise specified, is licensed under the WTFPL V2 license. It may be included in any other piece of software without restriction.
 
-
 FAQ
 ===
 
 Why open source? Won't the lindens fix anything interesting that's added in?
------------------------------------------------------------------------
+----------------------------------------------------------------------------
 
 I code for the sport, and it wouldn't be any fun to play against an open net, would it? The lindens are welcome to (actually, I'd expect them to) fix any bugs or exploits exposed in the Inertia source. The open-ness of the project also allows maintainers of similar projects (such as OpenSim) to fix any issues that may affect them as well. The end result is that Inertia is quite similar to the Onyx project, but we value transparency and invite anyone to join.
 
 
 Is there a private version with more features I can purchase?
-----------------------------------------------------------------------
+-------------------------------------------------------------
 
 No. The only "private" version that exists is code that will not be given out to anyone, and this would likely only be for exploits that have the potential to take down the entire grid, or something of similar seriousness. Despite it all, I'm not Neil, and I don't much care about money.
 
