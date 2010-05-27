@@ -20,7 +20,11 @@ LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_hos
 LLMessageLogEntry::~LLMessageLogEntry()
 {
 	// wtf, I'm not supposed to do this?
-	//if(mData && mDataSize) delete[] mData;
+	/*if(mData && mDataSize)
+	{
+		delete[] mData;
+		mData = NULL;
+	}*/
 }
 U32 LLMessageLog::sMaxSize = 4096; // testzone fixme todo boom
 std::deque<LLMessageLogEntry> LLMessageLog::sDeque;

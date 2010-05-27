@@ -26,7 +26,7 @@ LLNetListItem::LLNetListItem(LLUUID id)
 ////////////////////////////////
 // LLFloaterMessageLogItem
 ////////////////////////////////
-U8 LLFloaterMessageLogItem::sDecodeBuffer[8192];
+#define MAX_PACKET_LEN (0x2000)
 LLTemplateMessageReader* LLFloaterMessageLogItem::sTemplateMessageReader = NULL;
 LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 :	LLMessageLogEntry(entry.mType, entry.mFromHost, entry.mToHost, entry.mData, entry.mDataSize)
@@ -41,9 +41,10 @@ LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		memcpy(sDecodeBuffer, mData, decode_len);
-		mFlags = sDecodeBuffer[0];
-		U8* decodep = &(sDecodeBuffer[0]);
+		U8 DecodeBuffer[MAX_PACKET_LEN];
+		memcpy(DecodeBuffer, mData, decode_len);
+		mFlags = DecodeBuffer[0];
+		U8* decodep = &(DecodeBuffer[0]);
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
 		if(decode_len < 7)
 			decode_invalid = TRUE;
@@ -120,8 +121,6 @@ LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 			for(S32 i = 0; i < mDataSize; i++)
 				mSummary.append(llformat("%02X ", mData[i]));
 		}
-		//lets play cleanup
-		memset(sDecodeBuffer, 0, mDataSize);
 	}
 	else // not template
 	{
@@ -143,8 +142,9 @@ std::string LLFloaterMessageLogItem::getFull(BOOL show_header)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		memcpy(sDecodeBuffer, mData, decode_len);
-		U8* decodep = &(sDecodeBuffer[0]);
+		U8 DecodeBuffer[MAX_PACKET_LEN];
+		memcpy(DecodeBuffer, mData, decode_len);
+		U8* decodep = &(DecodeBuffer[0]);
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
 		if(decode_len < 7)
 			decode_invalid = TRUE;
