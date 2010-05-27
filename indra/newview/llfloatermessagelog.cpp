@@ -41,8 +41,8 @@ LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		U8 DecodeBuffer[MAX_PACKET_LEN];
-		memcpy(DecodeBuffer, mData, decode_len);
+		std::vector<U8> DecodeBuffer(MAX_PACKET_LEN,0);
+		DecodeBuffer.assign(mData.begin(),mData.end());
 		mFlags = DecodeBuffer[0];
 		U8* decodep = &(DecodeBuffer[0]);
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
@@ -142,8 +142,8 @@ std::string LLFloaterMessageLogItem::getFull(BOOL show_header)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		U8 DecodeBuffer[MAX_PACKET_LEN];
-		memcpy(DecodeBuffer, mData, decode_len);
+		std::vector<U8> DecodeBuffer(MAX_PACKET_LEN,0);
+		DecodeBuffer.assign(mData.begin(),mData.end());
 		U8* decodep = &(DecodeBuffer[0]);
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
 		if(decode_len < 7)
