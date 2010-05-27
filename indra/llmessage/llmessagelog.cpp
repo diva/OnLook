@@ -9,8 +9,8 @@ LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_hos
 {
 	if(data)
 	{
-		mData.resize(data_size);
-		mData.assign(data,data + data_size);
+		mData.resize(data_size/sizeof(U8));
+		mData.assign(data,data + data_size/sizeof(U8));
 	}
 }
 LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_host, std::vector<U8> data, S32 data_size)

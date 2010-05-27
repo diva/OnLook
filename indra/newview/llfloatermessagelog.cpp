@@ -422,12 +422,15 @@ BOOL LLMessageLogFilterApply::tick()
 {
 	std::deque<LLMessageLogEntry>::iterator end = LLFloaterMessageLog::sMessageLogEntries.end();
 	if(mIter == end || !LLFloaterMessageLog::sInstance)
-		mFinished = TRUE;
-	if(mFinished)
 	{
+		mFinished = TRUE;
 		if(LLFloaterMessageLog::sInstance)
+		{
 			if(LLFloaterMessageLog::sInstance->mMessageLogFilterApply == this)
+			{
 				LLFloaterMessageLog::sInstance->stopApplyingFilter();
+			}
+		}
 		return TRUE;
 	}
 	for(S32 i = 0; i < 256; i++)
@@ -436,8 +439,12 @@ BOOL LLMessageLogFilterApply::tick()
 		{
 			mFinished = TRUE;
 			if(LLFloaterMessageLog::sInstance)
+			{
 				if(LLFloaterMessageLog::sInstance->mMessageLogFilterApply == this)
+				{
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
+				}
+			}
 			return TRUE;
 		}
 		
