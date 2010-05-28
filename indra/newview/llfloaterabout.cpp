@@ -286,11 +286,12 @@ void LLFloaterAbout::show(void*)
 static std::string get_viewer_release_notes_url()
 {
 	std::ostringstream version;
-	version << LL_VERSION_MAJOR << "."
-		<< LL_VERSION_MINOR << "."
-		<< LL_VERSION_PATCH << "."
-		<< LL_VERSION_BUILD;
-
+	// <edit>
+	version << gSavedSettings.getU32("SpecifiedVersionMaj") << "." //LL_VERSION_MAJOR
+		<< gSavedSettings.getU32("SpecifiedVersionMin") << "." //LL_VERSION_MINOR
+		<< gSavedSettings.getU32("SpecifiedVersionPatch") << "." //LL_VERSION_PATCH
+		<< gSavedSettings.getU32("SpecifiedVersionBuild"); //LL_VERSION_BUILD
+	// </edit>
 	LLSD query;
 	// <edit>
 	//query["channel"] = gSavedSettings.getString("VersionChannelName");
