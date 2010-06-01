@@ -716,6 +716,37 @@
 				<combo_item name="Sculpted" value="Sculpted">
 					Sculpted
 				</combo_item>
+
+				<combo_item name="Hemicylinder" value="Hemicylinder">
+					Hemicylinder
+				</combo_item>
+
+				<combo_item name="Spiral Circle" value="Spiral Circle">
+					Spiral Circle
+				</combo_item>
+				<combo_item name="Spiral Square" value="Spiral Square">
+					Spiral Square
+				</combo_item>
+				<combo_item name="Spiral Triangle" value="Spiral Triangle">
+					Spiral Triangle
+				</combo_item>
+				<combo_item name="Spiral Semicircle" value="Spiral Semicircle">
+					Spiral Semicircle
+				</combo_item>
+
+				<combo_item name="Test Cylinder" value="Test Cylinder">
+					Test Cylinder
+				</combo_item>
+				<combo_item name="Test Box" value="Test Box">
+					Test Box
+				</combo_item>
+				<combo_item name="Test Prism" value="Test Prism">
+					Test Prism
+				</combo_item>
+				<combo_item name="Test Hemicylinder" value="Test Hemicylinder">
+					Test Hemicylinder
+				</combo_item>
+
 			</combo_box>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-12" drop_shadow_visible="true" follows="left|top"
