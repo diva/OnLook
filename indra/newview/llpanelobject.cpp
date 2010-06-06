@@ -87,6 +87,19 @@ enum {
 	MI_TUBE,
 	MI_RING,
 	MI_SCULPT,
+	// <edit>
+	MI_HEMICYLINDER,
+
+	MI_SPIRAL_CIRCLE,
+	MI_SPIRAL_SQUARE,
+	MI_SPIRAL_TRIANGLE,
+	MI_SPIRAL_SEMICIRCLE,
+
+	MI_TEST_CYLINDER,
+	MI_TEST_BOX,
+	MI_TEST_PRISM,
+	MI_TEST_HEMICYLINDER,
+	// </edit>
 	MI_NONE,
 	MI_VOLUME_COUNT
 };
@@ -676,10 +689,12 @@ void LLPanelObject::getState( )
 		{
 			selected_item = MI_PRISM;
 		}
-		else if (path == LL_PCODE_PATH_FLEXIBLE) // shouldn't happen
-		{
-			selected_item = MI_CYLINDER; // reasonable default
-		}
+		// <edit> that was messin up my hemicylinder
+		//else if (path == LL_PCODE_PATH_FLEXIBLE) // shouldn't happen
+		//{
+		//	selected_item = MI_CYLINDER; // reasonable default
+		//}
+		// </edit>
 		else if ( path == LL_PCODE_PATH_CIRCLE && profile == LL_PCODE_PROFILE_CIRCLE && scale_y > 0.75f)
 		{
 			selected_item = MI_SPHERE;
@@ -692,11 +707,13 @@ void LLPanelObject::getState( )
 		{
 			selected_item = MI_SPHERE;
 		}
-		else if ( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_CIRCLE )
-		{
-			// Spirals aren't supported.  Make it into a sphere.  JC
-			selected_item = MI_SPHERE;
-		}
+		// <edit> spirals are supported by me
+		//else if ( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_CIRCLE )
+		//{
+		//	// Spirals aren't supported.  Make it into a sphere.  JC
+		//	selected_item = MI_SPHERE;
+		//}
+		// </edit>
 		else if ( path == LL_PCODE_PATH_CIRCLE && profile == LL_PCODE_PROFILE_EQUALTRI )
 		{
 			selected_item = MI_RING;
@@ -705,6 +722,63 @@ void LLPanelObject::getState( )
 		{
 			selected_item = MI_TUBE;
 		}
+		// <edit>
+		else if( linear_path && profile == LL_PCODE_PROFILE_CIRCLE_HALF)
+		{
+			selected_item = MI_HEMICYLINDER;
+		}
+		// Spirals
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_CIRCLE )
+		{
+			selected_item = MI_SPIRAL_CIRCLE;
+		}
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_SQUARE )
+		{
+			selected_item = MI_SPIRAL_SQUARE;
+		}
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_ISOTRI )
+		{
+			selected_item = MI_SPIRAL_TRIANGLE;
+		}
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_EQUALTRI )
+		{
+			selected_item = MI_SPIRAL_TRIANGLE;
+		}
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_RIGHTTRI )
+		{
+			selected_item = MI_SPIRAL_TRIANGLE;
+		}
+		else if( path == LL_PCODE_PATH_CIRCLE2 && profile == LL_PCODE_PROFILE_CIRCLE_HALF )
+		{
+			selected_item = MI_SPIRAL_SEMICIRCLE;
+		}
+		// Test path
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_CIRCLE )
+		{
+			selected_item = MI_TEST_CYLINDER;
+		}
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_SQUARE )
+		{
+			selected_item = MI_TEST_BOX;
+		}
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_ISOTRI )
+		{
+			selected_item = MI_TEST_PRISM;
+		}
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_EQUALTRI )
+		{
+			selected_item = MI_TEST_PRISM;
+		}
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_RIGHTTRI )
+		{
+			selected_item = MI_TEST_PRISM;
+		}
+		else if( path == LL_PCODE_PATH_TEST && profile == LL_PCODE_PROFILE_CIRCLE_HALF )
+		{
+			selected_item = MI_TEST_HEMICYLINDER;
+		}
+
+		// </edit>
 		else
 		{
 			llinfos << "Unknown path " << (S32) path << " profile " << (S32) profile << " in getState" << llendl;
@@ -911,16 +985,46 @@ void LLPanelObject::getState( )
 	switch (selected_item)
 	{
 	case MI_SPHERE:
-		top_size_x_visible		= FALSE;
-		top_size_y_visible		= FALSE;
-		top_shear_x_visible		= FALSE;
-		top_shear_y_visible		= FALSE;
-		//twist_visible			= FALSE;
+		// <edit>
+	case MI_SPIRAL_CIRCLE:
+	case MI_SPIRAL_SQUARE:
+	case MI_SPIRAL_TRIANGLE:
+	case MI_SPIRAL_SEMICIRCLE:
+		//top_size_x_visible		= FALSE;
+		//top_size_y_visible		= FALSE;
+		//top_shear_x_visible		= FALSE;
+		//top_shear_y_visible		= FALSE;
+		//advanced_cut_visible	= TRUE;
+		//advanced_is_dimple		= TRUE;
+		//twist_min				= OBJECT_TWIST_MIN;
+		//twist_max				= OBJECT_TWIST_MAX;
+		//twist_inc				= OBJECT_TWIST_INC;
+		// Just like the others except no radius
+		size_is_hole 			= TRUE;
+		skew_visible			= TRUE;
 		advanced_cut_visible	= TRUE;
-		advanced_is_dimple		= TRUE;
+		taper_visible			= TRUE;
+		radius_offset_visible	= FALSE;
+		revolutions_visible		= TRUE;
 		twist_min				= OBJECT_TWIST_MIN;
 		twist_max				= OBJECT_TWIST_MAX;
 		twist_inc				= OBJECT_TWIST_INC;
+		break;
+	case MI_TEST_BOX:
+	case MI_TEST_CYLINDER:
+	case MI_TEST_PRISM:
+	case MI_TEST_HEMICYLINDER:
+		cut_visible				= FALSE;
+		advanced_cut_visible	= TRUE;
+		taper_visible			= FALSE;
+		radius_offset_visible	= FALSE;
+		revolutions_visible		= FALSE;
+		top_shear_x_visible		= FALSE;
+		top_shear_y_visible		= FALSE;
+		twist_min				= OBJECT_TWIST_MIN;
+		twist_max				= OBJECT_TWIST_MAX;
+		twist_inc				= OBJECT_TWIST_INC;
+		// </edit>
 		break;
 
 	case MI_TORUS:
@@ -979,7 +1083,10 @@ void LLPanelObject::getState( )
 	// Check if we need to change top size/hole size params.
 	switch (selected_item)
 	{
-	case MI_SPHERE:
+	// <edit>
+	//case MI_SPHERE:
+	// Sphere fall through to default: set scale_x min/max, dunno why
+	// </edit>
 	case MI_TORUS:
 	case MI_TUBE:
 	case MI_RING:
@@ -1410,7 +1517,47 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 		profile = LL_PCODE_PROFILE_CIRCLE;
 		path = LL_PCODE_PATH_CIRCLE;
 		break;
-		
+	// <edit>
+	case MI_HEMICYLINDER:
+		profile = LL_PCODE_PROFILE_CIRCLE_HALF;
+		path = LL_PCODE_PATH_LINE;
+		break;
+	// Spirals
+	case MI_SPIRAL_CIRCLE:
+		profile = LL_PCODE_PROFILE_CIRCLE;
+		path = LL_PCODE_PATH_CIRCLE2;
+		break;
+	case MI_SPIRAL_SQUARE:
+		profile = LL_PCODE_PROFILE_SQUARE;
+		path = LL_PCODE_PATH_CIRCLE2;
+		break;
+	case MI_SPIRAL_TRIANGLE:
+		profile = LL_PCODE_PROFILE_EQUALTRI;
+		path = LL_PCODE_PATH_CIRCLE2;
+		break;
+	case MI_SPIRAL_SEMICIRCLE:
+		profile = LL_PCODE_PROFILE_CIRCLE_HALF;
+		path = LL_PCODE_PATH_CIRCLE2;
+		break;
+	// Test path
+	case MI_TEST_CYLINDER:
+		profile = LL_PCODE_PROFILE_CIRCLE;
+		path = LL_PCODE_PATH_TEST;
+		break;
+	case MI_TEST_BOX:
+		profile = LL_PCODE_PROFILE_SQUARE;
+		path = LL_PCODE_PATH_TEST;
+		break;
+	case MI_TEST_PRISM:
+		profile = LL_PCODE_PROFILE_EQUALTRI;
+		path = LL_PCODE_PATH_TEST;
+		break;
+	case MI_TEST_HEMICYLINDER:
+		profile = LL_PCODE_PROFILE_CIRCLE_HALF;
+		path = LL_PCODE_PATH_TEST;
+		break;
+	// </edit>
+
 	default:
 		llwarns << "Unknown base type " << selected_type 
 			<< " in getVolumeParams()" << llendl;
@@ -1537,7 +1684,22 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 	// Scale X,Y
 	F32 scale_x = mSpinScaleX->get();
 	F32 scale_y = mSpinScaleY->get();
-	if ( was_selected_type == MI_BOX || was_selected_type == MI_CYLINDER || was_selected_type == MI_PRISM)
+		// <edit>
+	//if ( was_selected_type == MI_BOX || was_selected_type == MI_CYLINDER || was_selected_type == MI_PRISM)
+	if ( was_selected_type == MI_BOX || was_selected_type == MI_CYLINDER || was_selected_type == MI_PRISM ||
+		was_selected_type == MI_SPHERE ||
+		was_selected_type == MI_HEMICYLINDER ||
+		was_selected_type == MI_SPIRAL_CIRCLE ||
+		was_selected_type == MI_SPIRAL_SQUARE ||
+		was_selected_type == MI_SPIRAL_TRIANGLE ||
+		was_selected_type == MI_SPIRAL_SEMICIRCLE ||
+		was_selected_type == MI_TEST_BOX ||
+		was_selected_type == MI_TEST_PRISM ||
+		was_selected_type == MI_TEST_CYLINDER ||
+		was_selected_type == MI_TEST_HEMICYLINDER
+		)
+	// but why put sphere here if the other circle-paths aren't?
+	// </edit>
 	{
 		scale_x = 1.f - scale_x;
 		scale_y = 1.f - scale_y;
@@ -1559,13 +1721,23 @@ void LLPanelObject::getVolumeParams(LLVolumeParams& volume_params)
 	if ( selected_type == MI_SPHERE )
 	{
 		// Snap values to valid sphere parameters.
-		scale_x			= 1.0f;
-		scale_y			= 1.0f;
-		skew			= 0.0f;
-		taper_x			= 0.0f;
-		taper_y			= 0.0f;
+		// make scale (taper (hole size?)) work for sphere, part 2 of 2
+		//scale_x			= 1.0f;
+		//scale_y			= 1.0f;
+		// </edit>
+		// <edit> testing skew
+		//skew			= 0.0f;
+		// </edit>
+		// <edit>
+		// Make OTHER taper work for sphere
+		//taper_x			= 0.0f;
+		//taper_y			= 0.0f;
+		// </edit>
 		radius_offset	= 0.0f;
-		revolutions		= 1.0f;
+		// <edit>
+		// Revolutions works fine on sphere
+		//revolutions		= 1.0f;
+		// </edit>
 	}
 	else if ( selected_type == MI_TORUS || selected_type == MI_TUBE ||
 			  selected_type == MI_RING )
