@@ -155,7 +155,10 @@ BOOL LLFloaterTOS::postBuild()
 
 	// disable Agree to TOS radio button until the page has fully loaded
 	LLCheckBoxCtrl* tos_agreement = getChild<LLCheckBoxCtrl>("agree_chk");
-	tos_agreement->setEnabled( false );
+	// <edit>
+	// UHHHH NO :>
+	tos_agreement->setEnabled( true );
+	// </edit>
 
 	// hide the SL text widget if we're displaying TOS with using a browser widget.
 	LLTextEditor *editor = getChild<LLTextEditor>("tos_text");
