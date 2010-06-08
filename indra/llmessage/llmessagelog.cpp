@@ -9,17 +9,21 @@ LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_hos
 {
 	if(data)
 	{
-		mData.resize(data_size/sizeof(U8));
-		mData.assign(data,data + data_size/sizeof(U8));
+		mData.resize(data_size);
+		mData.assign(data,data + data_size);
 	}
 }
 LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_host, std::vector<U8> data, S32 data_size)
 :	mType(type),
 	mFromHost(from_host),
 	mToHost(to_host),
-	mDataSize(data_size),
-	mData(data)
+	mDataSize(data_size)
 {
+	if(data.size())
+	{
+		mData.resize(data.size());
+		std::copy(data.begin(),data.end(),mData.begin());
+	}
 }
 LLMessageLogEntry::~LLMessageLogEntry()
 {
