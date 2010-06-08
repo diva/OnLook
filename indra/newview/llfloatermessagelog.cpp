@@ -447,8 +447,10 @@ BOOL LLMessageLogFilterApply::tick()
 			}
 			return TRUE;
 		}
-		
-		LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
+		if((*mIter).mData.size())
+		{
+			LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*mIter)));
+		}
 		
 		mIter++;
 		mProgress++;
