@@ -568,7 +568,7 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 		//dumpPacketToLog();
 		
  		// <edit>
- 		if(mTrueReceiveSize)
+ 		if(mTrueReceiveSize && receive_size > (S32) LL_MINIMUM_VALID_PACKET_SIZE)
  		{
  			LLMessageLog::log(mLastSender, LLHost(16777343, mPort), buffer, mTrueReceiveSize);
  		}

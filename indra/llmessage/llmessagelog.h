@@ -17,13 +17,12 @@ public:
 		HTTP_RESPONSE
 	};
 	LLMessageLogEntry(EType type, LLHost from_host, LLHost to_host, U8* data, S32 data_size);
-	LLMessageLogEntry(EType type, LLHost from_host, LLHost to_host, std::vector<U8> data, S32 data_size);
 	~LLMessageLogEntry();
 	EType mType;
 	LLHost mFromHost;
 	LLHost mToHost;
 	S32 mDataSize;
-	std::vector<U8> mData;
+	U8* mData;
 };
 class LLMessageLog
 {
