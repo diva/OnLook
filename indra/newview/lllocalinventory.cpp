@@ -191,6 +191,21 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		gInventory.updateCategory(container);
 		gInventory.notifyObservers();
 		
+		LLViewerInventoryCategory* orphaned_items = new LLViewerInventoryCategory(gAgent.getID());
+		orphaned_items->rename("Orphaned Items");
+		LLUUID orphaned_items_id;
+
+		orphaned_items_id.generate();
+		orphaned_items->setUUID(orphaned_items_id);
+		orphaned_items->setParent(container->getUUID());
+		orphaned_items->setPreferredType(LLAssetType::AT_NONE);
+		
+		LLInventoryModel::update_map_t orphaned_items_update;
+		++orphaned_items_update[orphaned_items->getParentUUID()];
+		gInventory.accountForUpdate(orphaned_items_update);
+		gInventory.updateCategory(orphaned_items);
+		gInventory.notifyObservers();
+		
 		//conflict handling
 		std::map<LLUUID,LLUUID> conflicting_cats;
 		int dropped_cats = 0;
@@ -220,6 +235,9 @@ void LLLocalInventory::loadInvCache(std::string filename)
 					}
 					(*cat_iter)->setParent(itr->second);
 				}
+			} else {
+				//well balls, this is orphaned.
+				(*cat_iter)->setParent(orphaned_items_id);
 			}
 			// If this category already exists, generate a new uuid
 			if(gInventory.getCategory((*cat_iter)->getUUID()))
@@ -261,6 +279,9 @@ void LLLocalInventory::loadInvCache(std::string filename)
 					}
 					(*item_iter)->setParent(itr->second);
 				}
+			} else {
+				//well balls, this is orphaned.
+				(*item_iter)->setParent(orphaned_items_id);
 			}
 			// Avoid conflicts with real inventory...
 			// If this item id already exists, generate a new uuid
