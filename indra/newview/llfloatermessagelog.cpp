@@ -358,6 +358,8 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 					value[63] = '\0';
 				}
 				stream << value;
+				
+				delete[] value;
 			}
 			else
 			{
@@ -372,9 +374,6 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 		}
 		break;
 	}
-
-	if(value)
-	    delete[] value;
 
 	return stream.str();
 }
