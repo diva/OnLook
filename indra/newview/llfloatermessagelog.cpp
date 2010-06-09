@@ -372,6 +372,10 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 		}
 		break;
 	}
+
+	if(value)
+	    delete[] value;
+
 	return stream.str();
 }
 LLMessageLogFilter::LLMessageLogFilter()
