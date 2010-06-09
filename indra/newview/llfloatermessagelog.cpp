@@ -334,7 +334,6 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 					if(i != (end - 1))
 					{ // don't want null terminator hiding data
 						unreadable = S32_MAX;
-						delete[] value;
 						break;
 					}
 				}
@@ -345,7 +344,6 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 					else
 					{ // never want any wrong characters outside of summary mode
 						unreadable = S32_MAX;
-						delete[] value;
 						break;
 					}
 				}
