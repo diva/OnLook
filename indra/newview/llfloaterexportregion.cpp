@@ -19,8 +19,7 @@
 
 LLFloaterExportRegion* LLFloaterExportRegion::sInstance = NULL;
 
-LLFloaterExportRegion::LLFloaterExportRegion()
-:	LLFloater()
+LLFloaterExportRegion::LLFloaterExportRegion(const LLSD& unused)
 {
 	sInstance = this;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_export.xml");
@@ -54,11 +53,14 @@ void LLFloaterExportRegion::onClickSelectAll(void* user_data)
 	std::vector<LLScrollListItem*> items = list->getAllData();
 	std::vector<LLScrollListItem*>::iterator item_iter = items.begin();
 	std::vector<LLScrollListItem*>::iterator items_end = items.end();
-	bool new_value = !((*item_iter)->getColumn(LIST_CHECKED)->getValue());
-	for( ; item_iter != items_end; ++item_iter)
+	if(items.size())
 	{
-		LLScrollListItem* item = (*item_iter);
-		item->getColumn(LIST_CHECKED)->setValue(new_value);
+		bool new_value = !((*item_iter)->getColumn(LIST_CHECKED)->getValue());
+		for( ; item_iter != items_end; ++item_iter)
+		{
+			LLScrollListItem* item = (*item_iter);
+			item->getColumn(LIST_CHECKED)->setValue(new_value);
+		}
 	}
 }
 

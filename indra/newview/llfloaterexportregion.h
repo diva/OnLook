@@ -7,10 +7,11 @@
 #include "llvoavatar.h"
 
 class LLFloaterExportRegion
-: public LLFloater
+: public LLFloater, public LLFloaterSingleton<LLFloaterExportRegion>
 {
+	friend class LLUISingleton<LLFloaterExportRegion, VisibilityPolicy<LLFloater> >;
 public:
-	LLFloaterExportRegion();
+	LLFloaterExportRegion(const LLSD& unused);
 	BOOL postBuild(void);
 	void updateNamesProgress();
 	void receivePrimName(LLViewerObject* object, std::string name);

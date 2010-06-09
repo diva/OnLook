@@ -233,6 +233,7 @@
 #include "hgfloatertexteditor.h"
 #include "llfloatermessagelog.h"
 #include "llfloatermessagebuilder.h"
+#include "llfloaterexportregion.h"
 // </edit>
 
 using namespace LLVOAvatarDefines;
@@ -5630,6 +5631,10 @@ class LLShowFloater : public view_listener_t
 		else if (floater_name == "areasearch")
 		{
 			JCFloaterAreaSearch::toggle();
+		}
+		else if (floater_name == "export region")
+		{
+			LLFloaterExportRegion::toggleInstance(LLSD());
 		}
 		else if (floater_name == "grid options")
 		{
