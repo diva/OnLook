@@ -369,10 +369,13 @@ std::string LLFloaterMessageLogItem::getString(LLTemplateMessageReader* readerp,
 				if(summary_mode && (size > 8))
 					stream << " ... ";
 			}
-			delete[] value;
 		}
 		break;
 	}
+
+	if(value)
+	    delete[] value;
+
 	return stream.str();
 }
 LLMessageLogFilter::LLMessageLogFilter()

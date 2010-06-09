@@ -99,8 +99,6 @@
 		</combo_item>
 		<combo_item name="Reference" value="Reference">
 			Reference
-<<<<<<<
-=======
 		</combo_item>
 	</combo_box>
 	<check_box bottom="-70" control_name="ScaleUniform" follows="left|top"
@@ -122,9 +120,6 @@
        halign="center" valign="center"
 	     height="20" label="Options..." label_selected="Options..." left_delta="20"
 	     mouse_opaque="true" name="Options..." scale_image="TRUE" width="80" />
->>>>>>>
-		</combo_item>
-	</combo_box>
 	<check_box bottom="-70" control_name="ScaleUniform" follows="left|top"
 	     font="SansSerifSmall" height="16" initial_value="false"
 	     label="Stretch Both Sides" left="143" mouse_opaque="true"
@@ -1028,17 +1023,7 @@
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="180"
 			     mouse_opaque="true" name="color trans" v_pad="0" width="80">
 				Transparency %
-<<<<<<<
 			</text>
-=======
-				Transparency %
-			</text>
-			<spinner bottom_delta="-20" decimal_digits="0" follows="left|top" height="16"
-			     increment="2" initial_val="0" left="180" max_val="100" min_val="0"
-			     mouse_opaque="true" name="ColorTrans" width="80" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-12" drop_shadow_visible="true" follows="left|top"
->>>>>>>
 			<spinner bottom_delta="-20" decimal_digits="0" follows="left|top" height="16"
 			     increment="2" initial_val="0" left="180" max_val="90" min_val="0"
 			     mouse_opaque="true" name="ColorTrans" width="80" />
@@ -1205,22 +1190,8 @@
 			     bottom="-288" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="tex offset" v_pad="0" width="160">
-<<<<<<<
 				Offset
 			</text>
-=======
-			     mouse_opaque="true" name="tex offset" v_pad="0" width="160">
-				Offset
-			</text>
-			<spinner bottom="-308" decimal_digits="3" follows="left|top" height="16" increment="0.05"
-			     initial_val="0" label="Horizontal (U)" label_width="90" left="20"
-			     max_val="1" min_val="-1" mouse_opaque="true" name="TexOffsetU" width="160" />
-			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.05" initial_val="0" label="Vertical (V)" label_width="90"
-			     left="20" max_val="1" min_val="-1" mouse_opaque="true" name="TexOffsetV"
-			     width="160" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
->>>>>>>
 			<spinner bottom="-308" decimal_digits="3" follows="left|top" height="16" increment="0.1"
 			     initial_val="0" label="Horizontal (U)" label_width="90" left="20"
 			     max_val="1" min_val="-1" mouse_opaque="true" name="TexOffsetU" width="160" />
