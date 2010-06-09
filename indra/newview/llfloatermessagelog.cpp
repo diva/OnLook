@@ -41,8 +41,8 @@ LLFloaterMessageLogItem::LLFloaterMessageLogItem(LLMessageLogEntry entry)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		U8 DecodeBuffer[MAX_PACKET_LEN];
-		memcpy(&(DecodeBuffer[0]),mData,decode_len);
+		std::vector<U8> DecodeBuffer(MAX_PACKET_LEN,0);
+		memcpy(&(DecodeBuffer[0]),&(mData[0]),decode_len);
 		U8* decodep = &(DecodeBuffer[0]);
 		mFlags = DecodeBuffer[0];
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
@@ -142,8 +142,8 @@ std::string LLFloaterMessageLogItem::getFull(BOOL show_header)
 	{
 		BOOL decode_invalid = FALSE;
 		S32 decode_len = mDataSize;
-		U8 DecodeBuffer[MAX_PACKET_LEN];
-		memcpy(&(DecodeBuffer[0]),mData,decode_len);
+		std::vector<U8> DecodeBuffer(MAX_PACKET_LEN,0);
+		memcpy(&(DecodeBuffer[0]),&(mData[0]),decode_len);
 		U8* decodep = &(DecodeBuffer[0]);
 		gMessageSystem->zeroCodeExpand(&decodep, &decode_len);
 		if(decode_len < 7)
@@ -416,8 +416,8 @@ LLMessageLogFilterApply::LLMessageLogFilterApply()
 	mProgress(0)
 {
 	//make extra sure we don't invalidate any iterators and reserve a deque exclusively for our use
-	mFilterTempMessages = new std::deque <LLMessageLogEntry>(LLFloaterMessageLog::sMessageLogEntries);
-	mIter = mFilterTempMessages->begin();
+	mFilterTempMessages = LLFloaterMessageLog::sMessageLogEntries;
+	mIter = mFilterTempMessages.begin();
 }
 void LLMessageLogFilterApply::cancel()
 {
@@ -425,7 +425,7 @@ void LLMessageLogFilterApply::cancel()
 }
 BOOL LLMessageLogFilterApply::tick()
 {
-	std::deque<LLMessageLogEntry>::iterator end = mFilterTempMessages->end();
+	std::deque<LLMessageLogEntry>::iterator end = mFilterTempMessages.end();
 	if(mIter == end || !LLFloaterMessageLog::sInstance)
 	{
 		mFinished = TRUE;
@@ -450,8 +450,6 @@ BOOL LLMessageLogFilterApply::tick()
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
 				}
 			}
-
-			delete mFilterTempMessages;
 
 			return TRUE;
 		}
