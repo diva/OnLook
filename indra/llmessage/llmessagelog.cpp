@@ -9,20 +9,8 @@ LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_hos
 {
 	if(data)
 	{
-		mData.resize(data_size);
-		mData.assign(data,data + data_size);
-	}
-}
-LLMessageLogEntry::LLMessageLogEntry(EType type, LLHost from_host, LLHost to_host, std::vector<U8> data, S32 data_size)
-:	mType(type),
-	mFromHost(from_host),
-	mToHost(to_host),
-	mDataSize(data_size)
-{
-	if(data.size())
-	{
-		mData.resize(data.size());
-		std::copy(data.begin(),data.end(),mData.begin());
+		mData = new U8[data_size];
+		memcpy(mData, data, data_size);
 	}
 }
 LLMessageLogEntry::~LLMessageLogEntry()
@@ -44,6 +32,7 @@ void LLMessageLog::setCallback(void (*callback)(LLMessageLogEntry))
 void LLMessageLog::log(LLHost from_host, LLHost to_host, U8* data, S32 data_size)
 {
 	LLMessageLogEntry entry = LLMessageLogEntry(LLMessageLogEntry::TEMPLATE, from_host, to_host, data, data_size);
+	if(!entry.mDataSize || !entry.mData) return;
 	if(sCallback) sCallback(entry);
 	if(!sMaxSize) return;
 	sDeque.push_back(entry);
