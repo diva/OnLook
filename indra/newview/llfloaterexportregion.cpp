@@ -23,6 +23,10 @@ LLFloaterExportRegion::LLFloaterExportRegion(const LLSD& unused)
 {
 	sInstance = this;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_export.xml");
+
+	//populate the list of objects to export
+	//int numOfObjects = gObjectList.getNumObjects();
+
 }
 
 

@@ -46,6 +46,7 @@ public:
 	S32 mProgress;
 	BOOL mFinished;
 private:
+	std::deque<LLMessageLogEntry> *mFilterTempMessages;
 	std::deque<LLMessageLogEntry>::iterator mIter;
 };
 class LLFloaterMessageLog : public LLFloater, public LLEventTimer

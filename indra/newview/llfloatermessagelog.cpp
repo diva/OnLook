@@ -412,7 +412,9 @@ LLMessageLogFilterApply::LLMessageLogFilterApply()
 	mFinished(FALSE),
 	mProgress(0)
 {
-	mIter = LLFloaterMessageLog::sMessageLogEntries.begin();	
+	//make extra sure we don't invalidate any iterators and reserve a deque exclusively for our use
+	mFilterTempMessages = new std::deque <LLMessageLogEntry>(LLFloaterMessageLog::sMessageLogEntries);
+	mIter = mFilterTempMessages->begin();
 }
 void LLMessageLogFilterApply::cancel()
 {
@@ -420,7 +422,7 @@ void LLMessageLogFilterApply::cancel()
 }
 BOOL LLMessageLogFilterApply::tick()
 {
-	std::deque<LLMessageLogEntry>::iterator end = LLFloaterMessageLog::sMessageLogEntries.end();
+	std::deque<LLMessageLogEntry>::iterator end = mFilterTempMessages->end();
 	if(mIter == end || !LLFloaterMessageLog::sInstance)
 	{
 		mFinished = TRUE;
@@ -445,6 +447,9 @@ BOOL LLMessageLogFilterApply::tick()
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
 				}
 			}
+
+			delete mFilterTempMessages;
+
 			return TRUE;
 		}
 
@@ -686,7 +691,9 @@ void LLFloaterMessageLog::onLog(LLMessageLogEntry entry)
 {
 	sMessageLogEntries.push_back(entry);
 	if(!sBusyApplyingFilter)
+	{
 		conditionalLog(LLFloaterMessageLogItem(entry));
+	}
 }
 // static
 void LLFloaterMessageLog::conditionalLog(LLFloaterMessageLogItem item)
