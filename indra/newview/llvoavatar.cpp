@@ -85,7 +85,7 @@
 
 // <edit>
 #include "llfloaterexploreanimations.h"
-//#include "llao.h"
+#include "llao.h"
 // </edit>
 
 #if LL_MSVC
@@ -5034,7 +5034,27 @@ void LLVOAvatar::resetAnimations()
 BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	
+
+	// <edit>
+	if(mIsSelf)
+	{
+		if(gSavedSettings.getBOOL("AO.Enabled"))
+		{
+			if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
+			{
+				// avoid infinite loops!
+				if( (id != LLAO::mOverrides[id])
+				 && (LLAO::mOverrides.find(LLAO::mOverrides[id]) == LLAO::mOverrides.end()) )
+				{
+					//llinfos << "AO: Replacing " << id.asString() << " with " << LLAO::mOverrides[id].asString() << llendl;
+					gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_START);
+					startMotion(LLAO::mOverrides[id], time_offset);
+				}
+			}
+		}
+	}
+	// </edit>
+
 	// start special case female walk for female avatars
 	if (getSex() == SEX_FEMALE)
 	{
@@ -5063,6 +5083,17 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 {
 	if (mIsSelf)
 	{
+		// <edit>
+		if(gSavedSettings.getBOOL("AO.Enabled"))
+		{
+			if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
+			 && (id != LLAO::mOverrides[id]) )
+			{
+				gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_STOP);
+				stopMotion(LLAO::mOverrides[id], stop_immediate);
+			}
+		}
+		// </edit>
 		gAgent.onAnimStop(id);
 	}
 

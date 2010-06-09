@@ -1,5 +1,18 @@
 <llsd>
     <map>
+	<key>AO.Settings</key>
+	 <map>
+	 <key>Comment</key>
+	 	<string>List for animation overrider</string>
+	 <key>Persist</key>
+	 	<integer>1</integer>
+	 <key>Type</key>
+	 	<string>LLSD</string>
+	 <key>Value</key>
+	 <array>
+		<string />
+	 </array>
+	</map>
     <key>BusyModeResponse</key>
         <map>
         <key>Comment</key>

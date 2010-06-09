@@ -197,7 +197,7 @@
 #include "llpanellogin.h"
 //#include "llfloateravatars.h"
 //#include "llactivation.h"
-//#include "llao.h"
+#include "llao.h"
 //#include "llcheats.h"
 // </edit>
 
@@ -1405,7 +1405,10 @@ bool idle_startup()
 
 		std::string user_windlight_days_path_name(gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", ""));
 		LLFile::mkdir(user_windlight_days_path_name.c_str());
-
+		
+		// <edit>
+		LLAO::refresh();
+		// </edit>
 
 		if (show_connect_box)
 		{

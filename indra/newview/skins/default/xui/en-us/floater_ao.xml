@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="false"
+     width="410" height="650"
+     name="AO Editor" title="AO Editor" rect_control="FloaterAORect">
+	<button bottom="-50" halign="center" height="24" label="Load..." left="220" name="btn_load" width="80" />
+	<button bottom="-50" halign="center" height="24" label="Save..." left_delta="90" name="btn_save" width="80" />
+	<text follows="top|left" height="15" left="10" name="text_walking" bottom="-80">
+		Walking:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_walking"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_running" bottom_delta="-25">
+		Running:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_running"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_crouchwalk" bottom_delta="-25">
+		Crouchwalk:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_crouchwalk"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_flying" bottom_delta="-25">
+		Flying:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_flying"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_turn_left" bottom_delta="-25">
+		Turn Left:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_turn_left"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_turn_right" bottom_delta="-25">
+		Turn Right:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_turn_right"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_jumping" bottom_delta="-25">
+		Jumping:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_jumping"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_fly_up" bottom_delta="-25">
+		Fly Up:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_fly_up"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_crouching" bottom_delta="-25">
+		Crouching:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_crouching"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_fly_down" bottom_delta="-25">
+		Fly Down:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_fly_down"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_stand1" bottom_delta="-25">
+		Stand1:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_stand1"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_stand2" bottom_delta="-25">
+		Stand2:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_stand2"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_stand3" bottom_delta="-25">
+		Stand3:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_stand3"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_hover" bottom_delta="-25">
+		Hover:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_hover"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_sitting" bottom_delta="-25">
+		Sitting:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_sitting"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_prejump" bottom_delta="-25">
+		PreJump:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_prejump"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_falling" bottom_delta="-25">
+		Falling:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_falling"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_stride" bottom_delta="-25">
+		Stride:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_stride"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_soft_landing" bottom_delta="-25">
+		Soft Landing:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_soft_landing"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_medium_landing" bottom_delta="-25">
+		Medium Landing:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_medium_landing"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_hard_landing" bottom_delta="-25">
+		Hard Landing:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_hard_landing"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_flying_slow" bottom_delta="-25">
+		Flying Slow:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_flying_slow"
+	     width="300" left="100" bottom_delta="0" />
+	<text follows="top|left" height="15" left="10" name="text_sitting_on_ground" bottom_delta="-25">
+		Sitting on Ground:
+	</text>
+	<line_editor follows="top|left|right" height="19" max_length="36" name="line_sitting_on_ground"
+	     width="300" left="100" bottom_delta="0" />
+</floater>
