@@ -539,6 +539,10 @@
 		     mouse_opaque="true" name="Region/Estate..." width="185">
 			<on_click function="ShowFloater" userdata="about region" />
 		</menu_item_call>
+		<menu_item_call bottom="-308" enabled="true" height="19" label="Export Region" left="0"
+		     mouse_opaque="true" name="Export Region" width="185">
+			<on_click function="ShowFloater" userdata="export region" />
+		</menu_item_call>
 		<menu_item_separator bottom="-316" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator6" width="185" />
 		<menu bottom="-554" create_jump_keys="true" drop_shadow="true" enabled="true"
