@@ -415,9 +415,7 @@ LLMessageLogFilterApply::LLMessageLogFilterApply()
 	mFinished(FALSE),
 	mProgress(0)
 {
-	//make extra sure we don't invalidate any iterators and reserve a deque exclusively for our use
-	mFilterTempMessages = LLFloaterMessageLog::sMessageLogEntries;
-	mIter = mFilterTempMessages.begin();
+	mIter = LLFloaterMessageLog::sMessageLogEntries.begin();
 }
 void LLMessageLogFilterApply::cancel()
 {
@@ -425,7 +423,7 @@ void LLMessageLogFilterApply::cancel()
 }
 BOOL LLMessageLogFilterApply::tick()
 {
-	std::deque<LLMessageLogEntry>::iterator end = mFilterTempMessages.end();
+	std::deque<LLMessageLogEntry>::iterator end = LLFloaterMessageLog::sMessageLogEntries.end();
 	if(mIter == end || !LLFloaterMessageLog::sInstance)
 	{
 		mFinished = TRUE;
@@ -448,6 +446,18 @@ BOOL LLMessageLogFilterApply::tick()
 				if(LLFloaterMessageLog::sInstance->mMessageLogFilterApply == this)
 				{
 					LLFloaterMessageLog::sInstance->stopApplyingFilter();
+
+					//we're done messing with the deque, push all queued items to the main deque
+					std::deque<LLMessageLogEntry>::iterator queueIter = mQueuedMessages.begin();
+					std::deque<LLMessageLogEntry>::iterator queueEnd = mQueuedMessages.end();
+
+					while(queueIter != queueEnd)
+					{
+						LLFloaterMessageLog::sInstance->conditionalLog(LLFloaterMessageLogItem((*queueIter)));
+						++queueIter;
+					}
+
+					mQueuedMessages.clear();
 				}
 			}
 
@@ -690,9 +700,10 @@ void LLFloaterMessageLog::setNetInfoMode(ENetInfoMode mode)
 // static
 void LLFloaterMessageLog::onLog(LLMessageLogEntry entry)
 {
-	sMessageLogEntries.push_back(entry);
+	//don't mess with the queue while a filter's being applied, or face invalid iterators
 	if(!sBusyApplyingFilter)
 	{
+		sMessageLogEntries.push_back(entry);
 		conditionalLog(LLFloaterMessageLogItem(entry));
 	}
 }
