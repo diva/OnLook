@@ -13,17 +13,6 @@
 #include "llfloatermessagebuilder.h"
 #include "llagent.h"
 ////////////////////////////////
-// LLNetListItem
-////////////////////////////////
-LLNetListItem::LLNetListItem(LLUUID id)
-:	mID(id),
-	mAutoName(TRUE),
-	mName("No name"),
-	mPreviousRegionName(""),
-	mCircuitData(NULL)
-{
-}
-////////////////////////////////
 // LLFloaterMessageLogItem
 ////////////////////////////////
 #define MAX_PACKET_LEN (0x2000)
@@ -619,7 +608,7 @@ void LLFloaterMessageLog::refreshNetList()
 		LLSD& text_column = element["columns"][0];
 		text_column["column"] = "text";
 		text_column["value"] = itemp->mName + (itemp->mCircuitData->getHost() == gAgent.getRegionHost() ? " (main)" : "");
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < 2; i++)
 		{
 			LLSD& icon_column = element["columns"][i + 1];
 			icon_column["column"] = llformat("icon%d", i);
@@ -630,18 +619,18 @@ void LLFloaterMessageLog::refreshNetList()
 		BOOL has_live_circuit = itemp->mCircuitData && itemp->mCircuitData->isAlive();
 		if(has_live_circuit)
 		{
-			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(2);
+			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(1);
 			icon->setValue("icon_net_close_circuit.tga");
 			icon->setClickCallback(onClickCloseCircuit, itemp);
 		}
 		else
 		{
-			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(2);
+			LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(1);
 			icon->setValue("icon_net_close_circuit_gray.tga");
 			icon->setClickCallback(NULL, NULL);
 		}
 		// Event queue isn't even supported yet... FIXME
-		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(3);
+		LLScrollListIcon* icon = (LLScrollListIcon*)scroll_itemp->getColumn(2);
 		icon->setValue("icon_net_close_eventpoll_gray.tga");
 		icon->setClickCallback(NULL, NULL);
 	}

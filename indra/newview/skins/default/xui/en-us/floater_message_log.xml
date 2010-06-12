@@ -5,7 +5,6 @@
 		<column dynamicwidth="true" name="text" label="text" />
 		<column name="icon0" label="icon0" width="24" />
 		<column name="icon1" label="icon1" width="24" />
-		<column name="icon2" label="icon2" width="24" />
 	</scroll_list>
 	<button name="filter_choice_btn" follows="left|top" left="10" top="-150" right="-370" bottom="430" label="…"/>
 	<line_editor name="filter_edit" follows="left|top|right" left="30" top="-149" right="-28" bottom="430" max_length="65535"/>

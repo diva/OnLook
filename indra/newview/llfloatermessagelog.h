@@ -2,16 +2,8 @@
 #include "llfloater.h"
 #include "llmessagelog.h"
 #include "lltemplatemessagereader.h"
-class LLNetListItem
-{
-public:
-	LLNetListItem(LLUUID id);
-	LLUUID mID;
-	BOOL mAutoName;
-	std::string mName;
-	std::string mPreviousRegionName;
-	LLCircuitData* mCircuitData;
-};
+#include "llfloatermessagebuilder.h"
+
 class LLFloaterMessageLogItem : public LLMessageLogEntry
 {
 public:

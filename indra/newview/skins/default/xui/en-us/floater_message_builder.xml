@@ -3,9 +3,7 @@
 	<scroll_list column_padding="0" draw_heading="false" follows="left|top|right" left="10" top="-25"
 			  name="net_list" search_column="0" right="-10" bottom="450">
 		<column dynamicwidth="true" name="text" label="text" />
-		<column name="icon0" label="icon0" width="24" />
-		<column name="icon1" label="icon1" width="24" />
-		<column name="icon2" label="icon2" width="24" />
+		<column name="state" label="state" width="24" />
 	</scroll_list>
 	<combo_box name="untrusted_message_combo" allow_text_entry="false" follows="left|top" left="10" top="-150" right="-370" bottom="433" tool_tip="No trust">
 	</combo_box>
