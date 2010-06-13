@@ -529,10 +529,10 @@ LLCircuitData* LLMessageSystem::findCircuit(const LLHost& host,
 }
 
 // Returns TRUE if a valid, on-circuit message has been received.
-BOOL LLMessageSystem::checkMessages( S64 frame_count )
+BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fake_buffer[MAX_BUFFER_SIZE], LLHost fake_host, S32 fake_size )
 {
 	// Pump 
-	BOOL	valid_packet = FALSE;
+	BOOL valid_packet = FALSE;
 	mMessageReader = mTemplateMessageReader;
 
 	LLTransferTargetVFile::updateQueue();
@@ -559,16 +559,25 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 
 		U8* buffer = mTrueReceiveBuffer.buffer;
 
-		mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer.buffer);			
-		receive_size = mTrueReceiveSize;
-		mLastSender = mPacketRing.getLastSender();
-		mLastReceivingIF = mPacketRing.getLastReceivingInterface();
+		if(!faked_message)
+		{
+			mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer.buffer);
+			receive_size = mTrueReceiveSize;
+			mLastSender = mPacketRing.getLastSender();
+			mLastReceivingIF = mPacketRing.getLastReceivingInterface();
+		} else {
+			buffer = fake_buffer; //true my ass.
+			mTrueReceiveSize = fake_size;
+			receive_size = mTrueReceiveSize;
+			mLastSender = fake_host;
+			mLastReceivingIF = mPacketRing.getLastReceivingInterface(); //don't really give two tits about the interface, just leave it
+		}
 		
 		// If you want to dump all received packets into SecondLife.log, uncomment this
 		//dumpPacketToLog();
 		
  		// <edit>
- 		if(mTrueReceiveSize && receive_size > (S32) LL_MINIMUM_VALID_PACKET_SIZE)
+ 		if(mTrueReceiveSize && receive_size > (S32) LL_MINIMUM_VALID_PACKET_SIZE && !faked_message)
  		{
  			LLMessageLog::log(mLastSender, LLHost(16777343, mPort), buffer, mTrueReceiveSize);
  		}
@@ -593,7 +602,7 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 			LLCircuitData* cdp;
 			
 			// note if packet acks are appended.
-			if(buffer[0] & LL_ACK_FLAG)
+			if(buffer[0] & LL_ACK_FLAG && !faked_message)
 			{
 				acks += buffer[--receive_size];
 				true_rcv_size = receive_size;
@@ -625,7 +634,7 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count )
 			// this message came in on if it's valid, and NULL if the
 			// circuit was bogus.
 
-			if(cdp && (acks > 0) && ((S32)(acks * sizeof(TPACKETID)) < (true_rcv_size)))
+			if(cdp && (acks > 0) && ((S32)(acks * sizeof(TPACKETID)) < (true_rcv_size)) && !faked_message)
 			{
 				TPACKETID packet_id;
 				U32 mem_id=0;
