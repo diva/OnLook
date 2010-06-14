@@ -346,7 +346,7 @@ public:
 	bool addCircuitCode(U32 code, const LLUUID& session_id);
 
 	BOOL	poll(F32 seconds); // Number of seconds that we want to block waiting for data, returns if data was received
-	BOOL	checkMessages( S64 frame_count = 0, bool faked_message = false, U8 fake_buffer[MAX_BUFFER_SIZE] = NULL, LLHost fake_host = LLHost(), S32 fake_size = NULL );
+	BOOL	checkMessages( S64 frame_count = 0, bool faked_message = false, U8 fake_buffer[MAX_BUFFER_SIZE] = NULL, LLHost fake_host = LLHost(), S32 fake_size = 0 );
 	void	processAcks();
 
 	BOOL	isMessageFast(const char *msg);
