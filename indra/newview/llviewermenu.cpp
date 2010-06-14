@@ -739,7 +739,44 @@ void init_client_menu(LLMenuGL* menu)
 
 	//menu->append(new LLMenuItemCallGL("Permissions Control", &show_permissions_control));
 	// this is now in the view menu so we don't need it here!
-	
+
+	// <edit>
+	{
+		LLMenuGL* sub = NULL;
+		sub = new LLMenuGL("Useful Features");
+		sub->append(new LLMenuItemCallGL(	"Close All Dialogs", 
+											&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
+
+		sub->append(new LLMenuItemCallGL(	"Reopen with Hex Editor", 
+											&handle_reopen_with_hex_editor, NULL));	
+										
+		sub->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
+		sub->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
+		
+		sub->append(new LLMenuItemCheckGL( "Enable AO",
+										&menu_toggle_control,
+										NULL,
+										&menu_check_control,
+										(void*)"AO.Enabled"));
+		sub->append(new LLMenuItemCallGL(  "Edit AO...",  
+										&handle_edit_ao, NULL));
+		sub->append(new LLMenuItemCheckGL( "Nimble",
+											&menu_toggle_control,
+											NULL,
+											&menu_check_control,
+											(void*)"Nimble"));
+		sub->append(new LLMenuItemCheckGL( "ReSit",
+											&menu_toggle_control,
+											NULL,
+											&menu_check_control,
+											(void*)"ReSit"));
+		//these should always be last in a sub menu
+		sub->createJumpKeys();
+		menu->appendMenu(sub);
+	}
+	menu->appendSeparator();
+	// </edit>
+
 	{
 		// *TODO: Translate
 		LLMenuGL* sub = new LLMenuGL("Consoles");
@@ -1036,43 +1073,6 @@ void init_client_menu(LLMenuGL* menu)
 
 	menu->append(new LLMenuItemCallGL("Leave Admin Status", 
 		&handle_leave_god_mode, NULL, NULL, 'G', MASK_ALT | MASK_SHIFT | MASK_CONTROL));
-
-	// <edit>
-	menu->appendSeparator();
-	{
-		LLMenuGL* sub = NULL;
-		sub = new LLMenuGL("Useful Features");
-		sub->append(new LLMenuItemCallGL(	"Close All Dialogs", 
-											&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-
-		sub->append(new LLMenuItemCallGL(	"Reopen with Hex Editor", 
-											&handle_reopen_with_hex_editor, NULL));	
-										
-		sub->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
-		sub->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
-		
-		sub->append(new LLMenuItemCheckGL( "Enable AO",
-										&menu_toggle_control,
-										NULL,
-										&menu_check_control,
-										(void*)"AO.Enabled"));
-		sub->append(new LLMenuItemCallGL(  "Edit AO...",  
-										&handle_edit_ao, NULL));
-		sub->append(new LLMenuItemCheckGL( "Nimble",
-											&menu_toggle_control,
-											NULL,
-											&menu_check_control,
-											(void*)"Nimble"));
-		sub->append(new LLMenuItemCheckGL( "ReSit",
-											&menu_toggle_control,
-											NULL,
-											&menu_check_control,
-											(void*)"ReSit"));
-		//these should always be last in a sub menu
-		sub->createJumpKeys();
-		menu->appendMenu(sub);
-	}
-	// </edit>
 
 	menu->createJumpKeys();
 }

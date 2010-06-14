@@ -859,7 +859,8 @@ void LLFloaterMessageLog::startApplyingFilter(std::string filter, BOOL force)
 	LLMessageLogFilter new_filter = LLMessageLogFilter();
 	sMessageLogFilterString = filter;
 	new_filter.set(sMessageLogFilterString);
-	childSetText("filter_edit", filter + " ");
+	if(filter.at(filter.length()-1) != ' ')
+		childSetText("filter_edit", filter + " ");
 	if(force
 		|| (new_filter.mNegativeNames != sMessageLogFilter.mNegativeNames)
 		|| (new_filter.mPositiveNames != sMessageLogFilter.mPositiveNames))
