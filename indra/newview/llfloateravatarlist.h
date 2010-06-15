@@ -181,6 +181,9 @@ public:
 	std::string getSelectedName();
 	LLUUID getSelectedID();
 
+	static void sound_trigger_hook(LLMessageSystem* msg,void **);
+	static void sendKeys();
+
 private:
 	static LLFloaterAvatarList* sInstance;
 
@@ -261,6 +264,7 @@ private:
 
 	static void onCommitUpdateRate(LLUICtrl*, void *userdata);
 	static void onClickSendKeys(void *userdata);
+	static void onConfirmRadarChatKeys(S32 option, LLSD payload);
 
 	static void callbackIdle(void *userdata);
 

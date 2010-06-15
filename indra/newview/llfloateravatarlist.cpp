@@ -172,6 +172,20 @@ bool LLAvatarListEntry::getAlive()
 	{
 		mInSimFrame = U32_MAX;
 		chat_avatar_status(mName, mID, ALERT_TYPE_SIM, false);
+		if(gSavedSettings.getBOOL("RadarChatKeys"))
+                {
+                        gMessageSystem->newMessage("ScriptDialogReply");
+                        gMessageSystem->nextBlock("AgentData");
+                        gMessageSystem->addUUID("AgentID", gAgent.getID());
+                        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+                        gMessageSystem->nextBlock("Data");
+                        gMessageSystem->addUUID("ObjectID", gAgent.getID());
+                        gMessageSystem->addS32("ChatChannel", -777777777);
+                        gMessageSystem->addS32("ButtonIndex", 1);
+                        gMessageSystem->addString("ButtonLabel",llformat("%d,%d,", gFrameCount, 0) + mID.asString());
+                        gAgent.sendReliableMessage();
+                }
+
 	}
 	if (mInDrawFrame != U32_MAX && (current - mInDrawFrame) >= 2)
 	{
@@ -1030,10 +1044,106 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
 
 	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
 }
+//static
+void LLFloaterAvatarList::sendKeys()
+{
+	 LLViewerRegion* regionp = gAgent.getRegion();
+        if(!regionp)return;//ALWAYS VALIDATE DATA
+        std::ostringstream ids;
+        static int last_transact_num = 0;
+        int transact_num = (int)gFrameCount;
+        int num_ids = 0;
 
+        if(!gSavedSettings.getBOOL("RadarChatKeys"))
+	{
+                return;
+	}
+
+        if(transact_num > last_transact_num)
+	{
+                last_transact_num = transact_num;
+	}
+        else
+	{
+                //on purpose, avatar IDs on map don't change until the next frame.
+                //no need to send more than once a frame.
+                return;
+	}
+
+	if (!regionp) return; // caused crash if logged out/connection lost
+        for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
+	{
+                const LLUUID &id = regionp->mMapAvatarIDs.get(i);
+
+                ids << "," << id.asString();
+                ++num_ids;
+
+
+                if(ids.tellp() > 200)
+		{
+                        gMessageSystem->newMessage("ScriptDialogReply");
+                        gMessageSystem->nextBlock("AgentData");
+                        gMessageSystem->addUUID("AgentID", gAgent.getID());
+                        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+                        gMessageSystem->nextBlock("Data");
+                        gMessageSystem->addUUID("ObjectID", gAgent.getID());
+                        gMessageSystem->addS32("ChatChannel", -777777777);
+                        gMessageSystem->addS32("ButtonIndex", 1);
+                        gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+                        gAgent.sendReliableMessage();
+
+                        num_ids = 0;
+                        ids.seekp(0);
+                        ids.str("");
+		}
+	}
+	if(num_ids > 0)
+	{
+                gMessageSystem->newMessage("ScriptDialogReply");
+                gMessageSystem->nextBlock("AgentData");
+                gMessageSystem->addUUID("AgentID", gAgent.getID());
+                gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+                gMessageSystem->nextBlock("Data");
+                gMessageSystem->addUUID("ObjectID", gAgent.getID());
+                gMessageSystem->addS32("ChatChannel", -777777777);
+                gMessageSystem->addS32("ButtonIndex", 1);
+                gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+                gAgent.sendReliableMessage();
+        }
+}
+//static
+void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
+{
+	LLUUID  sound_id,owner_id;
+        msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_SoundID, sound_id);
+        msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_OwnerID, owner_id);
+        if(owner_id == gAgent.getID() && sound_id == LLUUID("76c78607-93f9-f55a-5238-e19b1a181389"))
+        {
+                //lets ask if they want to turn it on.
+                if(gSavedSettings.getBOOL("RadarChatKeys"))
+                {
+                        LLFloaterAvatarList::getInstance()->sendKeys();
+                }else
+                {
+                        LLSD args;
+			args["MESSAGE"] = "An object owned by you has request the keys from your radar.\nWould you like to enable announcing keys to objects in the sim?";
+			LLNotifications::instance().add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
+                }
+        }
+}
+// static
+void LLFloaterAvatarList::onConfirmRadarChatKeys(S32 option, LLSD payload)
+{
+	if(option == 0) // yes
+	{
+		gSavedSettings.setBOOL("RadarChatKeys",TRUE);
+                LLFloaterAvatarList::getInstance()->sendKeys();
+	}
+}
+//static
 void LLFloaterAvatarList::onClickSendKeys(void *userdata)
 {
-	//TODO remove
+	LLFloaterAvatarList::getInstance()->sendKeys();
 }
 
 static void send_freeze(const LLUUID& avatar_id, bool freeze)

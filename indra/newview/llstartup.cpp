@@ -725,6 +725,11 @@ void update_texture_fetch()
 	gImageList.updateImages(0.10f);
 }
 
+void hooked_process_sound_trigger(LLMessageSystem *msg, void **)
+{
+	process_sound_trigger(msg,NULL);
+	LLFloaterAvatarList::sound_trigger_hook(msg,NULL);
+}
 
 // Returns false to skip other idle processing. Should only return
 // true when all initialization done.
@@ -3195,7 +3200,7 @@ bool idle_startup()
 		gDisplaySwapBuffers = TRUE;
 
 		LLMessageSystem* msg = gMessageSystem;
-		msg->setHandlerFuncFast(_PREHASH_SoundTrigger,				process_sound_trigger);
+		msg->setHandlerFuncFast(_PREHASH_SoundTrigger,				hooked_process_sound_trigger);
 		msg->setHandlerFuncFast(_PREHASH_PreloadSound,				process_preload_sound);
 		msg->setHandlerFuncFast(_PREHASH_AttachedSound,				process_attached_sound);
 		msg->setHandlerFuncFast(_PREHASH_AttachedSoundGainChange,	process_attached_sound_gain_change);
