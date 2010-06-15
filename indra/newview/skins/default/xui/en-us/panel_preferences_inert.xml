@@ -137,7 +137,7 @@
 		    	width="400" />
 			<check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-	    		label="Do not look at to objects (defeats ShowLookAt)" left="10"
+	    		label="Do not Look At objects (defeats ShowLookAt)" left="10"
 			    mouse_opaque="true" name="private_look_at_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
