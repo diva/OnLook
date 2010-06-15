@@ -102,6 +102,8 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 		}
 		if (chat.mText != "")
 		{
+			chat.mFromName = name;
+			chat.mURL = llformat("secondlife:///app/agent/%s/about",key.asString().c_str());
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::addChat(chat);
 		}

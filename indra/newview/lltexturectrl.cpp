@@ -402,7 +402,6 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		// <edit>
 		//PermissionMask filter_perm_mask = mImmediateFilterPermMask;
 		//if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
-		if(1)
 		// </edit>
 		{
 			if (drop)
@@ -413,10 +412,12 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 
 			*accept = ACCEPT_YES_SINGLE;
 		}
-		else
+		// <edit>
+		/*else
 		{
 			*accept = ACCEPT_NO;
-		}
+		}*/
+		// </edit>
 	}
 	else
 	{
@@ -1256,12 +1257,22 @@ BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 	BOOL handled = LLUICtrl::handleMouseDown( x, y , mask );
 	if( handled )
 	{
-		showPicker(FALSE);
+		// <edit>
+		if( mask & MASK_CONTROL )
+		{
+			LLLocalInventory::addItem(mImageAssetID.asString(), (int)LLAssetType::AT_TEXTURE, mImageAssetID, true);
+		}
+		else
+		{
+		// </edit>
+			showPicker(FALSE);
 
-		//grab textures first...
-		gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE));
-		//...then start full inventory fetch.
-		gInventory.startBackgroundFetch();
+			//grab textures first...
+			gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE));
+			//...then start full inventory fetch.
+			gInventory.startBackgroundFetch();
+		//<edit>
+		}
 	}
 	return handled;
 }
@@ -1453,7 +1464,6 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 	// <edit>
 	//PermissionMask filter_perm_mask = mImmediateFilterPermMask;
 	//if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
-	if(1)
 	// </edit>
 	{
 		if(mDragCallback)
@@ -1465,10 +1475,12 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 			return TRUE;
 		}
 	}
-	else
+	// <edit>
+	/*else
 	{
 		return FALSE;
-	}
+	}*/
+	// </edit>
 }
 
 BOOL LLTextureCtrl::doDrop(LLInventoryItem* item)
