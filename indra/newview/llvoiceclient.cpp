@@ -2568,7 +2568,7 @@ void LLVoiceClient::sessionCreateSendMessage(sessionState *session, bool startAu
 	if(!session->mHash.empty())
 	{
 		stream
-			<< "<Password>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
+			<< "<llfloat>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
 			<< "<PasswordHashAlgorithm>SHA1UserName</PasswordHashAlgorithm>";
 	}
 	
@@ -4842,6 +4842,17 @@ LLVoiceClient::participantState::participantState(const std::string &uri) :
 {
 }
 
+// <edit>
+//static 
+void LLVoiceClient::sessionState::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
+{
+	LLChat chat;
+	chat.mText = "Possible eavesdropping by "+ first +" "+ last +" detected";
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	LLFloaterChat::addChat(chat);
+}
+// </edit>
+
 LLVoiceClient::participantState *LLVoiceClient::sessionState::addParticipant(const std::string &uri)
 {
 	participantState *result = NULL;
@@ -4886,6 +4897,22 @@ LLVoiceClient::participantState *LLVoiceClient::sessionState::addParticipant(con
 
 				if(result->updateMuteState())
 					mVolumeDirty = true;
+				// <edit>
+				if(nameFromsipURI(uri) != gVoiceClient->mAccountName)
+				{
+					// let us check to see if they are actually in the sim
+					LLViewerRegion* regionp = gAgent.getRegion();
+					if(regionp)
+					{
+						if(regionp->mMapAvatarIDs.find(id) == -1)
+						{
+							// They are not in my list of people in my sim, they must be a spy.
+							gCacheName->getName(id, onAvatarNameLookup, NULL);
+						}
+					}
+				}
+				// </edit>
+				
 			}
 			else
 			{

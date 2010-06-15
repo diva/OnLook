@@ -299,6 +299,10 @@ static	void updatePosition(void);
 			sessionState();
 			~sessionState();
 
+			// <edit>
+			static void onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data);
+			// </edit>
+
 			participantState *addParticipant(const std::string &uri);
 			// Note: after removeParticipant returns, the participant* that was passed to it will have been deleted.
 			// Take care not to use the pointer again after that.
