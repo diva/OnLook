@@ -231,7 +231,14 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 	gIdleCallbacks.deleteFunction(LLFloaterAvatarList::callbackIdle);
 	sInstance = NULL;
 }
-
+//static
+void LLFloaterAvatarList::createInstance(bool visible)
+{
+	sInstance = new LLFloaterAvatarList();
+	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
+	if(!visible)
+		sInstance->setVisible(FALSE);
+}
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
@@ -279,8 +286,7 @@ void LLFloaterAvatarList::showInstance()
 	}
 	else
 	{
-		sInstance = new LLFloaterAvatarList();
-		LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
+		createInstance(true);
 	}
 }
 

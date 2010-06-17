@@ -460,9 +460,38 @@ void LLWorldMapView::draw()
 			{
 				mesg = llformat( "%s (%s)", info->getName().c_str(), sStringsMap["offline"].c_str());
 			}
+			// <edit>
+			else if (gSavedSettings.getBOOL("MapShowAgentCount") && gSavedSettings.getBOOL("MapShowPeople"))
+			{
+				// Display the agent count after the region name
+				S32 agent_count = info->getAgentCount();
+				LLViewerRegion *region = gAgent.getRegion();
+
+				if (region && region->getHandle() == handle)
+				{
+					++agent_count; // Bump by 1 if we're in this region
+				}
+
+				if (agent_count > 0)
+				{
+					std::string count = llformat("%d %s", agent_count, agent_count > 1 ? "avatars" : "avatar");
+					font->renderUTF8(
+						count, 0,
+						llfloor(left + 3),
+						llfloor(bottom + 20),
+						LLColor4::white,
+						LLFontGL::LEFT,
+						LLFontGL::BASELINE,
+						LLFontGL::DROP_SHADOW);
+	
+				}	
+				mesg = info->getName() + " (" + info->getShortAccessString() +")";
+			}
+			// </edit>
 			else
 			{
-				mesg = info->getName();
+				// <edit>
+				mesg = info->getName() + " (" + info->getShortAccessString() +")";
 			}
 			if (!mesg.empty())
 			{
@@ -1053,11 +1082,13 @@ BOOL LLWorldMapView::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 
 				if (agent_count == 1)
 				{
-					message += "person";
+					// <edit>
+					message += "agents";
 				}
 				else
 				{
-					message += "people";
+					// <edit>
+					message += "agents";
 				}
 			}
 		}
@@ -1066,11 +1097,14 @@ BOOL LLWorldMapView::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 		// Optionally show region flags
 		std::string region_flags = info->getFlagsString();
 
+		// <edit>
+		// always seems to be zero anyways...
 		if (!region_flags.empty())
 		{
 			msg += '\n';
-			msg += region_flags;
+			msg += "Region Flags: " + region_flags;
 		}
+		// </edit>
 					
 		S32 SLOP = 4;
 		localPointToScreen( 
