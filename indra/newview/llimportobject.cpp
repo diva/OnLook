@@ -274,20 +274,14 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 		mPrimName = prim["name"].asString();
 	}
 }
-
-
-
-BuildingSupply::BuildingSupply() : LLEventTimer(0.1f)
-{
-}
 		
-BOOL BuildingSupply::tick()
+void LLXmlImport::rez_supply()
 {
-	if(LLXmlImport::sImportInProgress && (LLXmlImport::sPrimsNeeded > 0))
+	if(sImportInProgress && sXmlImportOptions && (sPrimsNeeded > 0))
 	{
-		LLXmlImport::sPrimsNeeded--;
+		sPrimsNeeded--;
 		// Need moar prims
-		if(LLXmlImport::sXmlImportOptions->mSupplier == NULL)
+		if(sXmlImportOptions->mSupplier == NULL)
 		{
 			gMessageSystem->newMessageFast(_PREHASH_ObjectAdd);
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
@@ -324,41 +318,31 @@ BOOL BuildingSupply::tick()
 			gMessageSystem->addVector3Fast(_PREHASH_RayEnd, rezpos);
 			gMessageSystem->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
 			gMessageSystem->addU8Fast(_PREHASH_RayEndIsIntersection, 0);
-			gMessageSystem->addVector3Fast(_PREHASH_Scale, LLXmlImport::sSupplyParams->getScale());
+			gMessageSystem->addVector3Fast(_PREHASH_Scale, sSupplyParams->getScale());
 			gMessageSystem->addQuatFast(_PREHASH_Rotation, LLQuaternion::DEFAULT);
 			gMessageSystem->addU8Fast(_PREHASH_State, 0);
 			gMessageSystem->sendReliable(gAgent.getRegionHost());
 		}
 		else // have supplier
 		{
-			try
-			{
-				gMessageSystem->newMessageFast(_PREHASH_ObjectDuplicate);
-				gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-				gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-				gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-				gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
-				gMessageSystem->nextBlockFast(_PREHASH_SharedData);
-				
-				LLVector3 rezpos = gAgent.getPositionAgent() + LLVector3(0.0f, 0.0f, 2.0f);
-				rezpos -= LLXmlImport::sSupplyParams->getPositionRegion();
-				
-				gMessageSystem->addVector3Fast(_PREHASH_Offset, rezpos);
-				gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, 0);
-				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, LLXmlImport::sXmlImportOptions->mSupplier->getLocalID());
-				gMessageSystem->sendReliable(gAgent.getRegionHost());
-			}
-			catch(int)
-			{
-				llwarns << "Abort! Abort!" << llendl;
-				return TRUE;
-			}
+			gMessageSystem->newMessageFast(_PREHASH_ObjectDuplicate);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+			gMessageSystem->nextBlockFast(_PREHASH_SharedData);
+			
+			LLVector3 rezpos = gAgent.getPositionAgent() + LLVector3(0.0f, 0.0f, 2.0f);
+			rezpos -= sSupplyParams->getPositionRegion();
+			
+			gMessageSystem->addVector3Fast(_PREHASH_Offset, rezpos);
+			gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, 0);
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sXmlImportOptions->mSupplier->getLocalID());
+			gMessageSystem->sendReliable(gAgent.getRegionHost());
 		}
 		LLFloaterImportProgress::update();
-		return FALSE;
 	}
-	return TRUE;
 }
 
 
@@ -502,7 +486,7 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
 
-	new BuildingSupply();
+	rez_supply();
 }
 
 // static
@@ -585,6 +569,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	// Volume params
 	LLVolumeParams params = from->getVolume()->getParams();
 	object->setVolume(params, 0, false);
+	object->sendShapeUpdate();
 	// Extra params
 	if(from->isFlexible())
 	{
@@ -633,8 +618,6 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		LLTextureEntry te = *wat;
 		object->setTE(i, te);
 	}
-
-	object->sendShapeUpdate();
 	object->sendTEUpdate();
 	// Flag update is already coming from somewhere
 	//object->updateFlags();
@@ -745,8 +728,8 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 			gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
 		}
 	}
-	
 	LLFloaterImportProgress::update();
+	rez_supply();
 }
 
 // static

@@ -10,13 +10,6 @@
 #include "llfloater.h"
 
 
-class BuildingSupply : public LLEventTimer
-{
-public:
-	BuildingSupply();
-	BOOL tick();
-};
-
 class LLImportWearable
 {
 public:
@@ -68,6 +61,7 @@ public:
 	static void onNewItem(LLViewerInventoryItem* item);
 	static void onNewAttachment(LLViewerObject* object);
 	static void Cancel(void* user_data);
+	static void rez_supply();
 
 	static bool sImportInProgress;
 	static bool sImportHasAttachments;
