@@ -191,6 +191,7 @@ void LLFloaterVFS::commitEdit()
 		gVFS->renameFile(file.mID, file.mType, edited_file.mID, edited_file.mType);
 		mEditID = edited_file.mID;
 	}
+
 	(*iter) = edited_file;
 	refresh();
 }
@@ -210,7 +211,7 @@ void LLFloaterVFS::removeEntry()
 void LLFloaterVFS::setMassEnabled(bool enabled)
 {
 	childSetEnabled("clear_btn", enabled);
-	childSetEnabled("reload_all_btn", false); // DOESN'T WORK
+	childSetEnabled("reload_all_btn", enabled); // SHOULD WORK NOW!
 }
 void LLFloaterVFS::setEditEnabled(bool enabled)
 {
