@@ -77,6 +77,7 @@ public:
 	static int sAttachmentsDone;
 	static std::map<std::string, U32> sId2localid;
 	static std::map<U32, LLVector3> sRootpositions;
+	static std::map<U32, LLQuaternion> sRootrotations;
 	static LLXmlImportOptions* sXmlImportOptions;
 };
 
