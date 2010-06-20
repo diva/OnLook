@@ -95,6 +95,8 @@ void LLFloaterVFS::reloadAll()
 }
 void LLFloaterVFS::reloadEntry(entry file)
 {
+	LLUUID asset_id = file.mID;
+	LLAssetType::EType asset_type = file.mType;
 	gVFS->removeFile(file.mID, file.mType);
 	std::string file_name = file.mFilename;
 	S32 file_size;
@@ -102,7 +104,7 @@ void LLFloaterVFS::reloadEntry(entry file)
 	fp.open(file_name, LL_APR_RB, LLAPRFile::global, &file_size);
 	if(fp.getFileHandle())
 	{
-		LLVFile file(gVFS, file.mFileID, file.mFileType, LLVFile::WRITE);
+		LLVFile file(gVFS, asset_id, asset_type, LLVFile::WRITE);
 		file.setMaxSize(file_size);
 		const S32 buf_size = 65536;
 		U8 copy_buf[buf_size];
@@ -217,7 +219,7 @@ void LLFloaterVFS::setEditEnabled(bool enabled)
 	childSetEnabled("type_combo", false); // DOESN'T WORK
 	childSetEnabled("copy_uuid_btn", enabled);
 	childSetEnabled("item_btn", enabled);
-	childSetEnabled("reload_btn", false); // DOESN'T WORK
+	childSetEnabled("reload_btn", enabled); // WORKS!
 	childSetEnabled("remove_btn", enabled);
 }
 // static
