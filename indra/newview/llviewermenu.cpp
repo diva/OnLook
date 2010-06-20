@@ -2478,8 +2478,8 @@ class LLAvatarEnableDebug : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = gAgent.isGodlike();
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		//bool new_value = gAgent.isGodlike();
+		//gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
 };
