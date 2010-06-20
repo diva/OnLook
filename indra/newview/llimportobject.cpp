@@ -1,3 +1,4 @@
+
 // <edit>
 /** 
  * @file llimportobject.cpp
@@ -35,6 +36,7 @@ int LLXmlImport::sPrimIndex = 0;
 int LLXmlImport::sAttachmentsDone = 0;
 std::map<std::string, U32> LLXmlImport::sId2localid;
 std::map<U32, LLVector3> LLXmlImport::sRootpositions;
+std::map<U32, LLQuaternion> LLXmlImport::sRootrotations;
 LLXmlImportOptions* LLXmlImport::sXmlImportOptions;
 
 LLXmlImportOptions::LLXmlImportOptions(LLXmlImportOptions* options)
@@ -274,20 +276,14 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 		mPrimName = prim["name"].asString();
 	}
 }
-
-
-
-BuildingSupply::BuildingSupply() : LLEventTimer(0.1f)
-{
-}
 		
-BOOL BuildingSupply::tick()
+void LLXmlImport::rez_supply()
 {
-	if(LLXmlImport::sImportInProgress && (LLXmlImport::sPrimsNeeded > 0))
+	if(sImportInProgress && sXmlImportOptions && (sPrimsNeeded > 0))
 	{
-		LLXmlImport::sPrimsNeeded--;
+		sPrimsNeeded--;
 		// Need moar prims
-		if(LLXmlImport::sXmlImportOptions->mSupplier == NULL)
+		if(sXmlImportOptions->mSupplier == NULL)
 		{
 			gMessageSystem->newMessageFast(_PREHASH_ObjectAdd);
 			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
@@ -324,41 +320,31 @@ BOOL BuildingSupply::tick()
 			gMessageSystem->addVector3Fast(_PREHASH_RayEnd, rezpos);
 			gMessageSystem->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
 			gMessageSystem->addU8Fast(_PREHASH_RayEndIsIntersection, 0);
-			gMessageSystem->addVector3Fast(_PREHASH_Scale, LLXmlImport::sSupplyParams->getScale());
+			gMessageSystem->addVector3Fast(_PREHASH_Scale, sSupplyParams->getScale());
 			gMessageSystem->addQuatFast(_PREHASH_Rotation, LLQuaternion::DEFAULT);
 			gMessageSystem->addU8Fast(_PREHASH_State, 0);
 			gMessageSystem->sendReliable(gAgent.getRegionHost());
 		}
 		else // have supplier
 		{
-			try
-			{
-				gMessageSystem->newMessageFast(_PREHASH_ObjectDuplicate);
-				gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-				gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-				gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-				gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
-				gMessageSystem->nextBlockFast(_PREHASH_SharedData);
-				
-				LLVector3 rezpos = gAgent.getPositionAgent() + LLVector3(0.0f, 0.0f, 2.0f);
-				rezpos -= LLXmlImport::sSupplyParams->getPositionRegion();
-				
-				gMessageSystem->addVector3Fast(_PREHASH_Offset, rezpos);
-				gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, 0);
-				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, LLXmlImport::sXmlImportOptions->mSupplier->getLocalID());
-				gMessageSystem->sendReliable(gAgent.getRegionHost());
-			}
-			catch(int)
-			{
-				llwarns << "Abort! Abort!" << llendl;
-				return TRUE;
-			}
+			gMessageSystem->newMessageFast(_PREHASH_ObjectDuplicate);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+			gMessageSystem->nextBlockFast(_PREHASH_SharedData);
+			
+			LLVector3 rezpos = gAgent.getPositionAgent() + LLVector3(0.0f, 0.0f, 2.0f);
+			rezpos -= sSupplyParams->getPositionRegion();
+			
+			gMessageSystem->addVector3Fast(_PREHASH_Offset, rezpos);
+			gMessageSystem->addU32Fast(_PREHASH_DuplicateFlags, 0);
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sXmlImportOptions->mSupplier->getLocalID());
+			gMessageSystem->sendReliable(gAgent.getRegionHost());
 		}
 		LLFloaterImportProgress::update();
-		return FALSE;
 	}
-	return TRUE;
 }
 
 
@@ -502,7 +488,7 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
 
-	new BuildingSupply();
+	rez_supply();
 }
 
 // static
@@ -530,12 +516,13 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	flags = flags & (~FLAGS_USE_PHYSICS);
 	object->setFlags(flags, TRUE);
 	object->setFlags(~flags, FALSE); // Can I improve this lol?
-
-	if(from->mParentId == "")
+	bool root = (from->mParentId == "");
+	if(root)
 	{
 		// this will be a root
 		sId2localid[from->mId] = object->getLocalID();
 		sRootpositions[object->getLocalID()] = from->getPosition();
+		sRootrotations[object->getLocalID()] = from->getRotation();
 		// If it's an attachment, set description
 		if(from->importIsAttachment)
 		{
@@ -551,40 +538,15 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	}
 	else
 	{
-		// Move it to its root before linking
+		//make positions and rotations offset from the root prim.
 		U32 parentlocalid = sId2localid[from->mParentId];
-		LLVector3 rootpos = sRootpositions[parentlocalid];
-		
-		U8 data[256];
-		S32 offset = 0;
-		gMessageSystem->newMessageFast(_PREHASH_MultipleObjectUpdate);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
-		gMessageSystem->addU8Fast(_PREHASH_Type, 5);
-		htonmemcpy(&data[offset], &(rootpos.mV), MVT_LLVector3, 12);
-		offset += 12;
-		htonmemcpy(&data[offset], &(from->getScale().mV), MVT_LLVector3, 12); 
-		offset += 12;
-		gMessageSystem->addBinaryDataFast(_PREHASH_Data, data, offset);
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
-
-		// Link it up
-		gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sId2localid[from->mParentId]);
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
+		from->setPosition((from->getPosition() * sRootrotations[parentlocalid]) + sRootpositions[parentlocalid]);
+		from->setRotation(from->getRotation() * sRootrotations[parentlocalid]);
 	}
 	// Volume params
 	LLVolumeParams params = from->getVolume()->getParams();
 	object->setVolume(params, 0, false);
+	object->sendShapeUpdate();
 	// Extra params
 	if(from->isFlexible())
 	{
@@ -633,8 +595,6 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		LLTextureEntry te = *wat;
 		object->setTE(i, te);
 	}
-
-	object->sendShapeUpdate();
 	object->sendTEUpdate();
 	// Flag update is already coming from somewhere
 	//object->updateFlags();
@@ -690,8 +650,36 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		gMessageSystem->addStringFast(_PREHASH_Name, from->mPrimName);
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
+
+	// Link
+	if(!root)
+	{
+		gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sId2localid[from->mParentId]);
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
+
 	if(currPrimIndex + 1 >= (int)sPrims.size())
 	{
+		// stop the throttle
+		F32 throttle = gSavedSettings.getF32("OutBandwidth");
+		if(throttle != 0.)
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(throttle);
+			gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+		}
+		else
+		{
+			gMessageSystem->mPacketRing.setOutBandwidth(0.0);
+			gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
+		}
+
 		if(sId2attachpt.size() == 0)
 		{
 			sImportInProgress = false;
@@ -732,21 +720,9 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 				gMessageSystem->sendReliable(gAgent.getRegionHost());
 			}
 		}
-		
-		F32 throttle = gSavedSettings.getF32("OutBandwidth");
-		if(throttle != 0.)
-		{
-			gMessageSystem->mPacketRing.setOutBandwidth(throttle);
-			gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
-		}
-		else
-		{
-			gMessageSystem->mPacketRing.setOutBandwidth(0.0);
-			gMessageSystem->mPacketRing.setUseOutThrottle(FALSE);
-		}
 	}
-	
 	LLFloaterImportProgress::update();
+	rez_supply();
 }
 
 // static

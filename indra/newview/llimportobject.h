@@ -10,13 +10,6 @@
 #include "llfloater.h"
 
 
-class BuildingSupply : public LLEventTimer
-{
-public:
-	BuildingSupply();
-	BOOL tick();
-};
-
 class LLImportWearable
 {
 public:
@@ -68,6 +61,7 @@ public:
 	static void onNewItem(LLViewerInventoryItem* item);
 	static void onNewAttachment(LLViewerObject* object);
 	static void Cancel(void* user_data);
+	static void rez_supply();
 
 	static bool sImportInProgress;
 	static bool sImportHasAttachments;
@@ -83,6 +77,7 @@ public:
 	static int sAttachmentsDone;
 	static std::map<std::string, U32> sId2localid;
 	static std::map<U32, LLVector3> sRootpositions;
+	static std::map<U32, LLQuaternion> sRootrotations;
 	static LLXmlImportOptions* sXmlImportOptions;
 };
 
