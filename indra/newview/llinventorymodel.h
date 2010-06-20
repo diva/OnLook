@@ -391,7 +391,7 @@ public:
 	void addCategory(LLViewerInventoryCategory* category);
 	void addItem(LLViewerInventoryItem* item);
 // <edit>
-protected:
+//protected:
 // </edit>
 
 	// Internal method which looks for a category with the specified

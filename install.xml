@@ -221,9 +221,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>2d970742d2601a41c6b7e7aec78c141f</string>
+            <string>ed53511382d0fd9fec59a9f6544d9672</string>
             <key>url</key>
-            <uri>http://github.com/downloads/HazimGazov/Inertia/boost-1.39.0-windows-20100425.tar.bz2</uri>
+            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-windows-20091029.tar.bz2</uri>
           </map>
         </map>
       </map>

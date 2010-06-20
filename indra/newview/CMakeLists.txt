@@ -76,6 +76,7 @@ set(viewer_SOURCE_FILES
     llanimstatelabels.cpp
     llao.cpp
     llappviewer.cpp
+    llassetconverter.cpp
     llassetuploadresponders.cpp
     llassetuploadqueue.cpp
     llaudiosourcevo.cpp
@@ -213,6 +214,7 @@ set(viewer_SOURCE_FILES
     llfloatertos.cpp
     llfloaterurldisplay.cpp
     llfloaterurlentry.cpp
+    llfloatervfs.cpp
     llfloatervoicedevicesettings.cpp
     llfloaterwater.cpp
     llfloaterwindlight.cpp
@@ -511,6 +513,7 @@ set(viewer_HEADER_FILES
     llao.h
     llappearance.h
     llappviewer.h
+    llassetconverter.h
     llassetuploadresponders.h
     llassetuploadqueue.h
     llaudiosourcevo.h
@@ -649,6 +652,7 @@ set(viewer_HEADER_FILES
     llfloatertos.h
     llfloaterurldisplay.h
     llfloaterurlentry.h
+    llfloatervfs.h
     llfloatervoicedevicesettings.h
     llfloaterwater.h
     llfloaterwindlight.h
