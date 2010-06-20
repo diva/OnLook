@@ -1016,8 +1016,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 			mFormatType = GL_UNSIGNED_BYTE;
 			break;
 		  default:
-			//HACKY MCHACK HACK
-			llinfos << "Bad number of components for texture: " << (U32)getComponents() << llendl;
+			LL_DEBUGS("Openjpeg") << "Bad number of components for texture: " << (U32)getComponents() << LL_ENDL;
 			to_create = false;
 		}
 	}

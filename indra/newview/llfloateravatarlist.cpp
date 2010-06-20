@@ -174,20 +174,6 @@ bool LLAvatarListEntry::getAlive()
 	{
 		mInSimFrame = U32_MAX;
 		chat_avatar_status(mName, mID, ALERT_TYPE_SIM, false);
-		if(gSavedSettings.getBOOL("RadarChatKeys"))
-                {
-                        gMessageSystem->newMessage("ScriptDialogReply");
-                        gMessageSystem->nextBlock("AgentData");
-                        gMessageSystem->addUUID("AgentID", gAgent.getID());
-                        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-                        gMessageSystem->nextBlock("Data");
-                        gMessageSystem->addUUID("ObjectID", gAgent.getID());
-                        gMessageSystem->addS32("ChatChannel", -777777777);
-                        gMessageSystem->addS32("ButtonIndex", 1);
-                        gMessageSystem->addString("ButtonLabel",llformat("%d,%d,", gFrameCount, 0) + mID.asString());
-                        gAgent.sendReliableMessage();
-                }
-
 	}
 	if (mInDrawFrame != U32_MAX && (current - mInDrawFrame) >= 2)
 	{
@@ -231,7 +217,14 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 	gIdleCallbacks.deleteFunction(LLFloaterAvatarList::callbackIdle);
 	sInstance = NULL;
 }
-
+//static
+void LLFloaterAvatarList::createInstance(bool visible)
+{
+	sInstance = new LLFloaterAvatarList();
+	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
+	if(!visible)
+		sInstance->setVisible(FALSE);
+}
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
@@ -279,8 +272,7 @@ void LLFloaterAvatarList::showInstance()
 	}
 	else
 	{
-		sInstance = new LLFloaterAvatarList();
-		LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
+		createInstance(true);
 	}
 }
 
@@ -399,6 +391,9 @@ void LLFloaterAvatarList::updateAvatarList()
 
 		size_t i;
 		size_t count = avatar_ids.size();
+		
+		bool announce = gSavedSettings.getBOOL("RadarChatKeys");
+		std::queue<LLUUID> announce_keys;
 
 		for (i = 0; i < count; ++i)
 		{
@@ -469,6 +464,8 @@ void LLFloaterAvatarList::updateAvatarList()
 				{
 					// Avatar not there yet, add it
 					LLAvatarListEntry entry(avid, name, position);
+					if(announce && avatarp->getRegion() == gAgent.getRegion())
+						announce_keys.push(avid);
 					mAvatars[avid] = entry;
 				}
 			}
@@ -508,10 +505,58 @@ void LLFloaterAvatarList::updateAvatarList()
 				else
 				{
 					LLAvatarListEntry entry(avid, name, position);
+					if(announce && gAgent.getRegion()->pointInRegionGlobal(position))
+						announce_keys.push(avid);
 					mAvatars[avid] = entry;
 				}
 			}
 		}
+		//let us send the keys in a more timely fashion
+		if(announce && !announce_keys.empty())
+                {
+			std::ostringstream ids;
+			int transact_num = (int)gFrameCount;
+			int num_ids = 0;
+			while(!announce_keys.empty())
+			{
+				LLUUID id = announce_keys.front();
+				announce_keys.pop();
+
+				ids << "," << id.asString();
+				++num_ids;
+
+				if(ids.tellp() > 200)
+				{
+				        gMessageSystem->newMessage("ScriptDialogReply");
+				        gMessageSystem->nextBlock("AgentData");
+				        gMessageSystem->addUUID("AgentID", gAgent.getID());
+				        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+				        gMessageSystem->nextBlock("Data");
+				        gMessageSystem->addUUID("ObjectID", gAgent.getID());
+				        gMessageSystem->addS32("ChatChannel", -777777777);
+				        gMessageSystem->addS32("ButtonIndex", 1);
+				        gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+				        gAgent.sendReliableMessage();
+
+				        num_ids = 0;
+				        ids.seekp(0);
+				        ids.str("");
+				}
+			}
+			if(num_ids > 0)
+			{
+				gMessageSystem->newMessage("ScriptDialogReply");
+				gMessageSystem->nextBlock("AgentData");
+				gMessageSystem->addUUID("AgentID", gAgent.getID());
+				gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+				gMessageSystem->nextBlock("Data");
+				gMessageSystem->addUUID("ObjectID", gAgent.getID());
+				gMessageSystem->addS32("ChatChannel", -777777777);
+				gMessageSystem->addS32("ButtonIndex", 1);
+				gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+				gAgent.sendReliableMessage();
+			}
+                }
 	}
 	
 //	llinfos << "radar refresh: done" << llendl;

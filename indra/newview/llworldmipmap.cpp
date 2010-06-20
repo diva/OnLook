@@ -36,6 +36,10 @@
 
 #include "llviewerimagelist.h"
 #include "math.h"	// log()
+// <edit>
+#include "llworldmap.h"
+#include "llviewernetwork.h" //for isProductionGrid();
+// </edit>
 
 // Turn this on to output tile stats in the standard output
 #define DEBUG_TILES_STAT 0
@@ -152,7 +156,23 @@ LLPointer<LLViewerImage> LLWorldMipmap::getObjectsTile(U32 grid_x, U32 grid_y, S
 		if (load)
 		{
 			// Load it 
-			LLPointer<LLViewerImage> img = loadObjectsTile(grid_x, grid_y, level);
+			LLPointer<LLViewerImage> img;
+			// <edit>
+			//this is a hack for opensims.
+			if(LLViewerLogin::getInstance()->getGridChoice() < GRID_INFO_OTHER)
+				img = loadObjectsTile(grid_x, grid_y, level);
+			else
+			{
+				LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle(handle);
+				if(info)
+				{
+					img = gImageList.getImage(info->getMapImageID(), MIPMAP_TRUE, FALSE);
+				 	img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP);
+				}
+				else
+				 return NULL;
+			}
+			// </edit>
 			// Insert the image in the map
 			level_mipmap.insert(sublevel_tiles_t::value_type( handle, img ));
 			// Find the element again in the map (it's there now...)

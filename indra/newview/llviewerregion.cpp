@@ -532,16 +532,61 @@ const std::string LLViewerRegion::getSimAccessString() const
 std::string LLViewerRegion::regionFlagsToString(U32 flags)
 {
 	std::string result;
-
 	if (flags & REGION_FLAGS_SANDBOX)
 	{
+		if(!result.empty()) result += ", ";
 		result += "Sandbox";
 	}
 
 	if (flags & REGION_FLAGS_ALLOW_DAMAGE)
 	{
-		result += " Not Safe";
+		if(!result.empty()) result += ", ";
+		result += "Not Safe";
 	}
+	// <edit>
+	//These dont seem to have value anymore.
+	/*if (!(flags & REGION_FLAGS_PUBLIC_ALLOWED))
+	{
+		if(!result.empty()) result += ", ";
+		result += "Private";
+	}
+
+	if (!(flags & REGION_FLAGS_ALLOW_VOICE))
+	{
+		if(!result.empty()) result += ", ";
+		result += "Voice Disabled";
+	}*/
+	if (flags & REGION_FLAGS_ALLOW_LANDMARK)
+	{
+		if(!result.empty()) result += ", ";
+		result += "Create Landmarks";
+	}
+
+	if (flags & REGION_FLAGS_ALLOW_DIRECT_TELEPORT)
+	{
+		if(!result.empty()) result += ", ";
+		result += "Direct Teleport";
+	}
+	
+	if (flags & REGION_FLAGS_DENY_ANONYMOUS)
+	{
+		if(!result.empty()) result += ", ";
+		result += "Payment Info needed";
+	}
+	
+	if (flags & REGION_FLAGS_DENY_AGEUNVERIFIED)
+	{
+		if(!result.empty()) result += ", ";
+		result += "Age Verified";
+	}
+
+	if (flags & REGION_FLAGS_BLOCK_FLY)
+	{
+		if(!result.empty()) result += ", ";
+		result += "No Fly";
+	}
+
+	// </edit>
 
 	return result;
 }

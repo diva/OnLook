@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-380" can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="true" height="350" left="400" min_height="200" min_width="265"
-     mouse_opaque="true" name="avatarpicker" title="Choose Resident" width="265">
+     can_resize="true" height="350" left="400" min_height="200" min_width="375"
+     mouse_opaque="true" name="avatarpicker" title="Choose Resident" width="375">
 
 	<tab_container bottom="30" follows="left|right|top|bottom" height="300" left="4"
-	     name="ResidentChooserTabs" tab_position="top" tab_width="65" width="255">
+	     name="ResidentChooserTabs" tab_position="top" tab_width="65" width="365">
 		<panel name="SearchPanel" label="Search"
 			border="true" bottom="0" height="150" left="6" width="135"
 			mouse_opaque="true">
@@ -71,7 +71,21 @@
            draw_stripes="true" column_padding="5" sort_column="0" mouse_opaque="true"
            background_visible="true" multi_select="false" name="NearMe"  />
     </panel>
-
+    <panel name="KeyPanel" label="By UUID"
+      border="true" bottom="0" height="240" left="6" width="135" mouse_opaque="true">
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+           bottom="-24" drop_shadow_visible="true" follows="left|top"
+           font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+           mouse_opaque="true" name="InstructSelectResident" v_pad="0"
+           width="220">
+        Avatar or Group UUID:
+      </text>
+      <line_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom_delta="-20" enabled="true" follows="left|top"
+			     font="SansSerifSmall" height="16" left="10"
+			     max_length="36" mouse_opaque="true" name="EditUUID"
+			     width="230" />
+    </panel>
 	</tab_container>
 
   <button bottom="6" left="10" follows="left|bottom" font="SansSerif" halign="center"

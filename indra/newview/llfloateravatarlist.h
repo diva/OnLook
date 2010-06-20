@@ -149,7 +149,7 @@ public:
 	/*virtual*/ void onOpen();
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void draw();
-
+	static void createInstance(bool visible);
 	/**
 	 * @brief Toggles interface visibility
 	 * There is only one instance of the avatar scanner at any time.

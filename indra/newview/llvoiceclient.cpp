@@ -4847,7 +4847,10 @@ LLVoiceClient::participantState::participantState(const std::string &uri) :
 void LLVoiceClient::sessionState::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
 {
 	LLChat chat;
-	chat.mText = "Possible eavesdropping by "+ first +" "+ last +" detected";
+	std::string name(first + " " + last);
+	chat.mFromName = name;
+	chat.mURL = llformat("secondlife:///app/agent/%s/about",id.asString().c_str());
+	chat.mText = name+" is possibly eavesdropping in voice."; 
 	chat.mSourceType = CHAT_SOURCE_SYSTEM;
 	LLFloaterChat::addChat(chat);
 }

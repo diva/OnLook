@@ -117,6 +117,8 @@ public:
 
 	inline S32 getNumObjects() { return mObjects.count(); }
 
+	LLDynamicArrayPtr<LLPointer<LLViewerObject> > getObjectMap(){ return mMapObjects; }
+
 	void addToMap(LLViewerObject *objectp);
 	void removeFromMap(LLViewerObject *objectp);
 

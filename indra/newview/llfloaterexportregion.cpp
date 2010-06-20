@@ -23,10 +23,6 @@ LLFloaterExportRegion::LLFloaterExportRegion(const LLSD& unused)
 {
 	sInstance = this;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_export.xml");
-
-	//populate the list of objects to export
-	//int numOfObjects = gObjectList.getNumObjects();
-
 }
 
 
@@ -37,6 +33,177 @@ LLFloaterExportRegion::~LLFloaterExportRegion()
 
 BOOL LLFloaterExportRegion::postBuild(void)
 {
+	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("export_list");
+	
+	
+	LLViewerRegion* objregion = NULL;
+	LLViewerRegion* agentregion = gAgent.getRegion();
+
+	if(!agentregion) return TRUE;
+
+	for (LLDynamicArrayPtr<LLPointer<LLViewerObject> >::iterator iter = gObjectList.getObjectMap().begin();
+		 iter != gObjectList.getObjectMap().end(); iter++)
+	{
+		LLViewerObject* objectp = (*iter);
+		if(!objectp || objectp->isDead()) continue;
+
+		objregion = objectp->getRegion();
+
+		//if(!objregion || objregion->getHandle() != agentregion->getHandle()) continue;
+
+		if(objectp->isAvatar() || objectp->isAttachment()) continue; //we dont want avatars right now...
+
+		if(objectp->isRoot())
+		{
+			std::string objectp_id = llformat("%d", objectp->getLocalID());
+
+			if(list->getItemIndex(objectp->getID()) == -1)
+			{
+				bool is_attachment = false;
+				bool is_root = true;
+				LLViewerObject* parentp = objectp->getSubParent();
+				if(parentp)
+				{
+					if(!parentp->isAvatar())
+					{
+						// parent is a prim I guess
+						is_root = false;
+					}
+					else
+					{
+						// parent is an avatar
+						is_attachment = true;
+						//if(!avatars[parentp]) avatars[parentp] = true;
+					}
+				}
+
+				bool is_prim = true;
+				if(objectp->getPCode() >= LL_PCODE_APP)
+				{
+					is_prim = false;
+				}
+
+				//bool is_avatar = objectp->isAvatar();
+
+			
+				if(is_root && is_prim)
+				{
+					LLSD element;
+					element["id"] = objectp->getID();
+
+					LLSD& check_column = element["columns"][LIST_CHECKED];
+					check_column["column"] = "checked";
+					check_column["type"] = "checkbox";
+					check_column["value"] = true;
+
+					LLSD& type_column = element["columns"][LIST_TYPE];
+					type_column["column"] = "type";
+					type_column["type"] = "icon";
+					type_column["value"] = "inv_item_object.tga";
+
+					LLSD& name_column = element["columns"][LIST_NAME];
+					name_column["column"] = "name";
+					/*if(is_attachment)
+						name_column["value"] = nodep->mName + " (worn on " + utf8str_tolower(objectp->getAttachmentPointName()) + ")";
+					else*/
+						name_column["value"] = "Object";
+
+					LLSD& avatarid_column = element["columns"][LIST_AVATARID];
+					avatarid_column["column"] = "avatarid";
+					if(is_attachment)
+						avatarid_column["value"] = parentp->getID();
+					else
+						avatarid_column["value"] = LLUUID::null;
+
+					LLExportable* exportable = new LLExportable(objectp, "Object", mPrimNameMap);
+					mExportables[objectp->getID()] = exportable->asLLSD();
+
+					list->addElement(element, ADD_BOTTOM);
+
+					addToPrimList(objectp);
+				}//Do we really want avatars in the region exporter?
+				/*
+				else if(is_avatar)
+				{
+					if(!avatars[objectp])
+					{
+						avatars[objectp] = true;
+					}
+				}
+				*/
+			}
+		}
+		U32 localid = objectp->getLocalID();
+		std::string name = "Object";
+		mPrimNameMap[localid] = name;
+		//Let's get names...
+		LLViewerObject::child_list_t child_list = objectp->getChildren();
+		for (LLViewerObject::child_list_t::iterator i = child_list.begin(); i != child_list.end(); ++i)
+		{
+			LLViewerObject* childp = *i;
+
+			LLViewerObject::child_list_t select_list = childp->getChildren();
+			LLViewerObject::child_list_t::iterator select_iter;
+			int block_counter;
+
+			gMessageSystem->newMessageFast(_PREHASH_ObjectSelect);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUID(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, childp->getLocalID());
+			block_counter = 0;
+			for (select_iter = select_list.begin(); select_iter != select_list.end(); ++select_iter)
+			{
+				block_counter++;
+				if(block_counter >= 254)
+				{
+					// start a new message
+					gMessageSystem->sendReliable(childp->getRegion()->getHost());
+					gMessageSystem->newMessageFast(_PREHASH_ObjectSelect);
+					gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+					gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					gMessageSystem->addUUID(_PREHASH_SessionID, gAgent.getSessionID());
+				}
+				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*select_iter)->getLocalID());
+			}
+			gMessageSystem->sendReliable(childp->getRegion()->getHost());
+
+			gMessageSystem->newMessageFast(_PREHASH_ObjectDeselect);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUID(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, childp->getLocalID());
+			block_counter = 0;
+			for (select_iter = select_list.begin(); select_iter != select_list.end(); ++select_iter)
+			{
+				block_counter++;
+				if(block_counter >= 254)
+				{
+					// start a new message
+					gMessageSystem->sendReliable(childp->getRegion()->getHost());
+					gMessageSystem->newMessageFast(_PREHASH_ObjectDeselect);
+					gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+					gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					gMessageSystem->addUUID(_PREHASH_SessionID, gAgent.getSessionID());
+				}
+				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*select_iter)->getLocalID());
+			}
+			gMessageSystem->sendReliable(childp->getRegion()->getHost());
+		}
+	}
+	//Do we really want avatars in the region exporter?
+	/*std::map<LLViewerObject*, bool>::iterator avatar_iter = avatars.begin();
+	std::map<LLViewerObject*, bool>::iterator avatars_end = avatars.end();
+	for( ; avatar_iter != avatars_end; avatar_iter++)
+	{
+		LLViewerObject* avatar = (*avatar_iter).first;
+		addAvatarStuff((LLVOAvatar*)avatar);
+	}*/
+
 	updateNamesProgress();
 
 	childSetAction("select_all_btn", onClickSelectAll, this);

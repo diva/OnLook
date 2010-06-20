@@ -60,7 +60,7 @@ BOOL LLTemplateMessageReader::readMessage(const U8* data,class LLHost const &)
 }
 
 BOOL gValidateMessage = FALSE;
-BOOL LLTemplateMessageReader::validateMessage(const U8*, S32 buffer_size, LLHost const &sender, bool trusted) 
+BOOL LLTemplateMessageReader::validateMessage(const U8*, S32 buffer_size, const LLHost& sender, bool trusted, BOOL custom) 
 { 
 	return gValidateMessage;
 }

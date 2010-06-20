@@ -113,9 +113,13 @@ public:
 	const std::string getName() const { return mName; }
 	const std::string getFlagsString() const { return LLViewerRegion::regionFlagsToString(mRegionFlags); }
 	const std::string getAccessString() const { return LLViewerRegion::accessToString((U8)mAccess); }
+	const std::string getShortAccessString() const { return LLViewerRegion::accessToShortString((U8)mAccess); }
 
 	const S32 getAgentCount() const;				// Compute the total agents count
 	LLPointer<LLViewerImage> getLandForSaleImage();	// Get the overlay image, fetch it if necessary
+	// <edit>
+	//Added this so I could get map images on opensim.
+	const LLUUID getMapImageID() const { return mMapImageID; }
 
 	bool isName(const std::string& name) const;
 	bool isDown() { return (mAccess == SIM_ACCESS_DOWN); }
@@ -159,7 +163,8 @@ private:
 //	F32 mWaterHeight;			// Water height on the region (not actively used)
 
 	// Handling the "land for sale / land for auction" overlay image
-	LLUUID mMapImageID;						// Image ID of the overlay image
+
+	LLUUID mMapImageID;			// Image ID of the overlay image
 	LLPointer<LLViewerImage> mOverlayImage;	// Reference to the overlay image
 
 	// Items for this region
