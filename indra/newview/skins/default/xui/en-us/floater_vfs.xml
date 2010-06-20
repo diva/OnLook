@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="false" width="320" min_width="320" height="300" min_height="300"
+     can_resize="false" width="320" min_width="320" height="320" min_height="320"
      name="floater_vfs" title="Local Assets" rect_control="FloaterVFSRect">
 	<button name="add_btn" follows="left|top" width="100" bottom="-45" left="10" height="20" label="Add..."/>
 	<button name="clear_btn" follows="left|top" width="100" left_delta="100" bottom_delta="0" height="20" label="Clear"/>
 	<button name="reload_all_btn" follows="left|top" width="100" left_delta="100" bottom_delta="0" height="20" label="Reload All"/>
+	<check_box name="create_pretend_item" follows="left|top|bottom" width="100" bottom_delta="-20" left="10" label="Create Pretend Inventory Item" initial_value="true" enabled="true"/>
 	<scroll_list bottom="75" can_resize="true" column_padding="0" draw_heading="true"
 	     follows="left|top|bottom|right" left="10" multi_select="true"
-	     name="file_list" right="-10" search_column="0" top="-50">
+	     name="file_list" right="-10" search_column="0" top="-70">
 		<column dynamicwidth="true" name="name" label="name" />
 		<column name="type" label="type" width="100" />
 	</scroll_list>
