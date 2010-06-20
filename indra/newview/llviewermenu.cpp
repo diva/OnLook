@@ -235,6 +235,7 @@
 #include "llfloatermessagebuilder.h"
 #include "llao.h"
 #include "llfloatervfs.h"
+#include "llfloatervfsexplorer.h"
 #include "llfloaterexportregion.h"
 // </edit>
 
@@ -404,6 +405,7 @@ void handle_open_message_log(void*);
 void handle_open_message_builder(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
+void handle_vfs_explorer(void*);
 // </edit>
 
 BOOL is_inventory_visible( void* user_data );
@@ -757,6 +759,8 @@ void init_client_menu(LLMenuGL* menu)
 
 		sub->append(new LLMenuItemCallGL(	"Local Assets...",
 												&handle_local_assets, NULL));
+		sub->append(new LLMenuItemCallGL(	"VFS Explorer",
+												&handle_vfs_explorer, NULL));
 		
 		sub->append(new LLMenuItemCheckGL( "Enable AO",
 										&menu_toggle_control,
@@ -3092,6 +3096,11 @@ void handle_edit_ao(void*)
 void handle_local_assets(void*)
 {
 	LLFloaterVFS::show();
+}
+
+void handle_vfs_explorer(void*)
+{
+	LLFloaterVFSExplorer::show();
 }
 
 void handle_close_all_notifications(void*)

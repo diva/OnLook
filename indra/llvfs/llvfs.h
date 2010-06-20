@@ -143,10 +143,14 @@ protected:
 	void lockData() { mDataMutex->lock(); }
 	void unlockData() { mDataMutex->unlock(); }	
 	
-protected:
 	LLMutex* mDataMutex;
-	
+
+//<edit>
+public:
 	typedef std::map<LLVFSFileSpecifier, LLVFSFileBlock*> fileblock_map;
+	std::map<LLVFSFileSpecifier, LLVFSFileBlock*> getFileList();
+//</edit>
+protected:
 	fileblock_map mFileBlocks;
 
 	typedef std::multimap<S32, LLVFSBlock*>	blocks_length_map_t;
