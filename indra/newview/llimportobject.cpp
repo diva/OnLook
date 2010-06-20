@@ -652,15 +652,18 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	}
 
 	// Link
-	gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
-	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sId2localid[from->mParentId]);
-	gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-	gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
-	gMessageSystem->sendReliable(gAgent.getRegionHost());
+	if(!root)
+	{
+		gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sId2localid[from->mParentId]);
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
 
 	if(currPrimIndex + 1 >= (int)sPrims.size())
 	{
