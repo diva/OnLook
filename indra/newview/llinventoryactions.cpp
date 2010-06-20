@@ -550,6 +550,18 @@ class LLLoadInvCacheFloater : public inventory_listener_t
 		return true;
 	}
 };
+
+class LLRefreshInvModel : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLInventoryModel* model = mPtr->getPanel()->getModel();
+		if(!model) return false;
+		model->empty();
+		model->startBackgroundFetch();
+		return true;
+	}
+};
 // </edit>
 class LLSetSortBy : public inventory_listener_t
 {

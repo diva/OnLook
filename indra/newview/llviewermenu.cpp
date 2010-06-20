@@ -234,6 +234,7 @@
 #include "llfloatermessagelog.h"
 #include "llfloatermessagebuilder.h"
 #include "llao.h"
+#include "llfloatervfs.h"
 #include "llfloaterexportregion.h"
 // </edit>
 
@@ -402,6 +403,7 @@ void handle_reopen_with_hex_editor(void*);
 void handle_open_message_log(void*);
 void handle_open_message_builder(void*);
 void handle_edit_ao(void*);
+void handle_local_assets(void*);
 // </edit>
 
 BOOL is_inventory_visible( void* user_data );
@@ -752,6 +754,9 @@ void init_client_menu(LLMenuGL* menu)
 										
 		sub->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
 		sub->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
+
+		sub->append(new LLMenuItemCallGL(	"Local Assets...",
+												&handle_local_assets, NULL));
 		
 		sub->append(new LLMenuItemCheckGL( "Enable AO",
 										&menu_toggle_control,
@@ -3082,6 +3087,11 @@ void handle_open_message_builder(void*)
 void handle_edit_ao(void*)
 {
 	LLFloaterAO::show();
+}
+
+void handle_local_assets(void*)
+{
+	LLFloaterVFS::show();
 }
 
 void handle_close_all_notifications(void*)
