@@ -2062,6 +2062,16 @@ void LLVFS::listFiles()
 	unlockData();
 }
 
+std::map<LLVFSFileSpecifier, LLVFSFileBlock*> LLVFS::getFileList()
+{
+	//have to do this so as not to mess with the gods of threading
+	lockData();
+	fileblock_map mFileList = mFileBlocks;
+	unlockData();
+
+	return mFileList;
+}
+
 #include "llapr.h"
 void LLVFS::dumpFiles()
 {

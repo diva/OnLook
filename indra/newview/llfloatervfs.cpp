@@ -3,6 +3,7 @@
 #include "llfloatervfs.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
+#include "llcheckboxctrl.h"
 #include "llfilepicker.h"
 #include "lllocalinventory.h"
 #include "llviewerwindow.h"
@@ -94,6 +95,8 @@ void LLFloaterVFS::reloadAll()
 }
 void LLFloaterVFS::reloadEntry(entry file)
 {
+	LLUUID asset_id = file.mID;
+	LLAssetType::EType asset_type = file.mType;
 	gVFS->removeFile(file.mID, file.mType);
 	std::string file_name = file.mFilename;
 	S32 file_size;
@@ -101,7 +104,7 @@ void LLFloaterVFS::reloadEntry(entry file)
 	fp.open(file_name, LL_APR_RB, LLAPRFile::global, &file_size);
 	if(fp.getFileHandle())
 	{
-		LLVFile file(gVFS, file.mFileID, file.mFileType, LLVFile::WRITE);
+		LLVFile file(gVFS, asset_id, asset_type, LLVFile::WRITE);
 		file.setMaxSize(file_size);
 		const S32 buf_size = 65536;
 		U8 copy_buf[buf_size];
@@ -188,6 +191,7 @@ void LLFloaterVFS::commitEdit()
 		gVFS->renameFile(file.mID, file.mType, edited_file.mID, edited_file.mType);
 		mEditID = edited_file.mID;
 	}
+
 	(*iter) = edited_file;
 	refresh();
 }
@@ -207,7 +211,7 @@ void LLFloaterVFS::removeEntry()
 void LLFloaterVFS::setMassEnabled(bool enabled)
 {
 	childSetEnabled("clear_btn", enabled);
-	childSetEnabled("reload_all_btn", false); // DOESN'T WORK
+	childSetEnabled("reload_all_btn", enabled); // SHOULD WORK NOW!
 }
 void LLFloaterVFS::setEditEnabled(bool enabled)
 {
@@ -216,7 +220,7 @@ void LLFloaterVFS::setEditEnabled(bool enabled)
 	childSetEnabled("type_combo", false); // DOESN'T WORK
 	childSetEnabled("copy_uuid_btn", enabled);
 	childSetEnabled("item_btn", enabled);
-	childSetEnabled("reload_btn", false); // DOESN'T WORK
+	childSetEnabled("reload_btn", enabled); // WORKS!
 	childSetEnabled("remove_btn", enabled);
 }
 // static
@@ -270,6 +274,10 @@ void LLFloaterVFS::onClickAdd(void* user_data)
 		file.mType = asset_type;
 		file.mName = gDirUtilp->getBaseFileName(file_name, true);
 		floaterp->add(file);
+		if(floaterp->getChild<LLCheckBoxCtrl>("create_pretend_item")->get())
+		{
+			LLLocalInventory::addItem(file.mName, (int)file.mType, file.mID, true);
+		}
 	}
 }
 // static
