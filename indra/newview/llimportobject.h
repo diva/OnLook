@@ -8,7 +8,24 @@
 
 #include "llviewerobject.h"
 #include "llfloater.h"
+#include "llvoavatardefines.h"
 
+class LLImportAssetData
+{
+public:
+	LLImportAssetData(std::string infilename,LLUUID inassetid,LLAssetType::EType intype);
+        U32 localid;
+        LLAssetType::EType type;
+        LLInventoryType::EType inv_type;
+	EWearableType wear_type;
+        LLTransactionID tid;
+        LLUUID assetid;
+	LLUUID folderid;
+	LLUUID oldassetid;
+        std::string name;
+        std::string description;
+        std::string filename;
+};
 
 class LLImportWearable
 {
@@ -16,8 +33,10 @@ public:
 	std::string mName;
 	int mType;
 	std::string mData;
-
+	LLSD mOrginalLLSD;
 	LLImportWearable(LLSD sd);
+	std::list<LLUUID> mTextures;
+	void replaceTextures(std::map<LLUUID,LLUUID> textures_replace);
 };
 
 class LLImportObject : public LLViewerObject
@@ -25,7 +44,6 @@ class LLImportObject : public LLViewerObject
 public:
 	//LLImportObject(std::string id, std::string parentId);
 	LLImportObject(std::string id, LLSD prim);
-
 	std::string mId;
 	std::string mParentId;
 	std::string mPrimName;
@@ -33,8 +51,8 @@ public:
 	U32 importAttachPoint;
 	LLVector3 importAttachPos;
 	LLQuaternion importAttachRot;
+	std::list<LLUUID> mTextures;
 };
-
 
 class LLXmlImportOptions
 {
@@ -42,14 +60,19 @@ public:
 	LLXmlImportOptions(LLXmlImportOptions* options);
 	LLXmlImportOptions(std::string filename);
 	LLXmlImportOptions(LLSD llsd);
+	virtual ~LLXmlImportOptions();
+	void clear();
 	void init(LLSD llsd);
 	std::string mName;
 	//LLSD mLLSD;
+	std::string mAssetDir;
+	std::vector<LLImportAssetData*> mAssets;
 	std::vector<LLImportObject*> mRootObjects;
 	std::vector<LLImportObject*> mChildObjects;
 	std::vector<LLImportWearable*> mWearables;
 	BOOL mKeepPosition;
 	LLViewerObject* mSupplier;
+	BOOL mReplaceTexture;
 };
 
 
@@ -62,6 +85,7 @@ public:
 	static void onNewAttachment(LLViewerObject* object);
 	static void Cancel(void* user_data);
 	static void rez_supply();
+	static void finish_init();
 
 	static bool sImportInProgress;
 	static bool sImportHasAttachments;
@@ -79,6 +103,10 @@ public:
 	static std::map<U32, LLVector3> sRootpositions;
 	static std::map<U32, LLQuaternion> sRootrotations;
 	static LLXmlImportOptions* sXmlImportOptions;
+
+	static int sTotalAssets;
+	static int sUploadedAssets;
+	static std::map<LLUUID,LLUUID> sTextureReplace;
 };
 
 #endif

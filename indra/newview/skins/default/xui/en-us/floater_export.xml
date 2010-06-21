@@ -19,6 +19,7 @@
 		 left_delta="66"  name="select_wearables_btn" width="80" />
 
 	<text bottom="25" left="10" width="250" height="20" name="names_progress_text"></text>
+	<check_box bottom="28" left="186" width="250" height="20" name="download_textures" label="Download Textures" initial_value="false"/>
 
 	<button bottom="8" follows="bottom|left" height="20" label="Save As..."
 		 left="10" width="142" name="save_as_btn" />

@@ -801,9 +801,7 @@ void LLUUID::generate()
 #endif
 	if (!has_init) 
 	{
-		// <edit>
-		//if (getNodeID(node_id) <= 0) 
-		// </edit>
+		if (getNodeID(node_id) <= 0) 
 		{
 			get_random_bytes(node_id, 6);
 			/*

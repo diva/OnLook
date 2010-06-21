@@ -16,8 +16,77 @@
 #include "llimportobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
+#include "llwindow.h"
+#include "llviewerimagelist.h"
+#include "lltexturecache.h"
+#include "llimage.h"
+#include "llappviewer.h"
 
 std::vector<LLFloaterExport*> LLFloaterExport::instances;
+
+class CacheReadResponder : public LLTextureCache::ReadResponder
+{
+public:
+CacheReadResponder(const LLUUID& id, LLImageFormatted* image,const std::string& filename)
+: mFormattedImage(image), mID(id)
+{
+	setImage(image);
+	mFilename = filename;
+}
+void setData(U8* data, S32 datasize, S32 imagesize, S32 imageformat, BOOL imagelocal)
+{
+	if(imageformat==IMG_CODEC_TGA && mFormattedImage->getCodec()==IMG_CODEC_J2C)
+	{
+		llwarns<<"Bleh its a tga not saving"<<llendl;
+		mFormattedImage=NULL;
+		mImageSize=0;
+		return;
+	}
+
+	if (mFormattedImage.notNull())
+	{
+		llassert_always(mFormattedImage->getCodec() == imageformat);
+		mFormattedImage->appendData(data, datasize);
+	}
+	else
+	{
+		mFormattedImage = LLImageFormatted::createFromType(imageformat);
+		mFormattedImage->setData(data,datasize);
+	}
+	mImageSize = imagesize;
+	mImageLocal = imagelocal;
+}
+
+virtual void completed(bool success)
+{
+	if(success && (mFormattedImage.notNull()) && mImageSize>0)
+	{
+
+		llinfos << "SUCCESS getting texture "<<mID<< llendl;
+
+		llinfos << "Saving to "<< mFilename<<llendl;
+
+		if(!mFormattedImage->save(mFilename))
+		{
+			llinfos << "FAIL saving texture "<<mID<< llendl;
+		}
+
+	}
+	else
+	{
+		if(!success)
+			llwarns << "FAIL NOT SUCCESSFUL getting texture "<<mID<< llendl;
+		if(mFormattedImage.isNull())
+			llwarns << "FAIL image is NULL "<<mID<< llendl;
+	}
+}
+private:
+	LLPointer<LLImageFormatted> mFormattedImage;
+	LLUUID mID;
+	std::string mFilename;
+};
+
+
 LLExportable::LLExportable(LLViewerObject* object, std::string name, std::map<U32,std::string>& primNameMap)
 :	mObject(object),
 	mType(EXPORTABLE_OBJECT),
@@ -598,88 +667,143 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 	if(sd.size())
 	{
 		std::string default_filename = "untitled";
-
-		// set correct names within llsd
-		LLSD::map_iterator map_iter = sd.beginMap();
-		LLSD::map_iterator map_end = sd.endMap();
-		for( ; map_iter != map_end; ++map_iter)
-		{
-			std::istringstream keystr((*map_iter).first);
-			U32 key;
-			keystr >> key;
-			LLSD item = (*map_iter).second;
-			if(item["type"].asString() == "prim")
-			{
-				std::string name = floater->mPrimNameMap[key];
-				item["name"] = name;
-				// I don't understand C++ :(
-				sd[(*map_iter).first] = item;
-			}
-		}
-
-		// count the number of selected items
-		LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("export_list");
-		std::vector<LLScrollListItem*> items = list->getAllData();
-		int item_count = 0;
-		LLUUID avatarid = (*(items.begin()))->getColumn(LIST_AVATARID)->getValue().asUUID();
-		bool all_same_avatarid = true;
-		std::vector<LLScrollListItem*>::iterator item_iter = items.begin();
-		std::vector<LLScrollListItem*>::iterator items_end = items.end();
-		for( ; item_iter != items_end; ++item_iter)
-		{
-			LLScrollListItem* item = (*item_iter);
-			if(item->getColumn(LIST_CHECKED)->getValue())
-			{
-				item_count++;
-				if(item->getColumn(LIST_AVATARID)->getValue().asUUID() != avatarid)
-				{
-					all_same_avatarid = false;
-				}
-			}
-		}
-
-		if(item_count == 1)
-		{
-			// Exporting one item?  Use its name for the filename.
-			// But make sure it's a root!
-			LLSD target = (*(sd.beginMap())).second;
-			if(target.has("parent"))
-			{
-				std::string parentid = target["parent"].asString();
-				target = sd[parentid];
-			}
-			if(target.has("name"))
-			{
-				if(target["name"].asString().length() > 0)
-				{
-					default_filename = target["name"].asString();
-				}
-			}
-		}
-		else
-		{
-			// Multiple items?
-			// If they're all part of the same avatar, use the avatar's name as filename.
-			if(all_same_avatarid)
-			{
-				std::string fullname;
-				if(gCacheName->getFullName(avatarid, fullname))
-				{
-					default_filename = fullname;
-				}
-			}
-		}
-
 		LLFilePicker& file_picker = LLFilePicker::instance();
 		if(file_picker.getSaveFile( LLFilePicker::FFSAVE_XML, LLDir::getScrubbedFileName(default_filename + ".xml")))
 		{
 			std::string file_name = file_picker.getFirstFile();
+			std::string path = file_name.substr(0,file_name.find_last_of(".")) + "_assets";
+			BOOL download_texture = floater->childGetValue("download_textures");
+			if(download_texture)
+			{
+				if(!LLFile::isdir(path))
+				{
+					LLFile::mkdir(path);
+				}else
+				{
+					U32 response = OSMessageBox("Directory "+path+" already exists, would you like to continue and override files?", "Directory Already Exists", OSMB_YESNO);
+					if(response)
+					{
+						return;
+					}
+				}
+				path.append(gDirUtilp->getDirDelimiter()); //lets add the Delimiter now
+			}
+			// set correct names within llsd and download textures
+			LLSD::map_iterator map_iter = sd.beginMap();
+			LLSD::map_iterator map_end = sd.endMap();
+			std::list<LLUUID> textures;
+
+			for( ; map_iter != map_end; ++map_iter)
+			{
+				std::istringstream keystr((*map_iter).first);
+				U32 key;
+				keystr >> key;
+				LLSD item = (*map_iter).second;
+				if(item["type"].asString() == "prim")
+				{
+					std::string name = floater->mPrimNameMap[key];
+					item["name"] = name;
+					// I don't understand C++ :(
+					sd[(*map_iter).first] = item;
+
+					if(download_texture)
+					{
+						//textures
+						LLSD::array_iterator tex_iter = item["textures"].beginArray();
+						for( ; tex_iter != item["textures"].endArray(); ++tex_iter)
+						{
+							textures.push_back((*tex_iter)["imageid"].asUUID());
+						}
+						if(item.has("sculpt"))
+						{
+							textures.push_back(item["sculpt"]["texture"].asUUID());
+						}
+					}
+				}
+				else if(download_texture && item["type"].asString() == "wearable")
+				{
+					LLSD::map_iterator tex_iter = item["textures"].beginMap();
+					for( ; tex_iter != item["textures"].endMap(); ++tex_iter)
+					{
+						textures.push_back((*tex_iter).second.asUUID());
+					}
+				}
+			}
+			if(download_texture)
+			{
+				textures.unique();
+				while(!textures.empty())
+				{
+					llinfos << "Requesting texture " << textures.front().asString() << llendl;
+					LLViewerImage* img = gImageList.getImage(textures.front(), MIPMAP_TRUE, FALSE);
+		                        img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);
+
+		                        LLImageJ2C * mFormattedImage = new LLImageJ2C;
+					CacheReadResponder* responder = new CacheReadResponder(textures.front(), mFormattedImage,std::string(path + textures.front().asString() + ".j2c"));
+					LLAppViewer::getTextureCache()->readFromCache(textures.front(),LLWorkerThread::PRIORITY_HIGH,0,999999,responder);
+					textures.pop_front();
+				}
+			}
+			// count the number of selected items
+			LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("export_list");
+			std::vector<LLScrollListItem*> items = list->getAllData();
+			int item_count = 0;
+			LLUUID avatarid = (*(items.begin()))->getColumn(LIST_AVATARID)->getValue().asUUID();
+			bool all_same_avatarid = true;
+			std::vector<LLScrollListItem*>::iterator item_iter = items.begin();
+			std::vector<LLScrollListItem*>::iterator items_end = items.end();
+			for( ; item_iter != items_end; ++item_iter)
+			{
+				LLScrollListItem* item = (*item_iter);
+				if(item->getColumn(LIST_CHECKED)->getValue())
+				{
+					item_count++;
+					if(item->getColumn(LIST_AVATARID)->getValue().asUUID() != avatarid)
+					{
+						all_same_avatarid = false;
+					}
+				}
+			}
+
+			if(item_count == 1)
+			{
+				// Exporting one item?  Use its name for the filename.
+				// But make sure it's a root!
+				LLSD target = (*(sd.beginMap())).second;
+				if(target.has("parent"))
+				{
+					std::string parentid = target["parent"].asString();
+					target = sd[parentid];
+				}
+				if(target.has("name"))
+				{
+					if(target["name"].asString().length() > 0)
+					{
+						default_filename = target["name"].asString();
+					}
+				}
+			}
+			else
+			{
+				// Multiple items?
+				// If they're all part of the same avatar, use the avatar's name as filename.
+				if(all_same_avatarid)
+				{
+					std::string fullname;
+					if(gCacheName->getFullName(avatarid, fullname))
+					{
+						default_filename = fullname;
+					}
+				}
+			}
+
 			llofstream export_file(file_name);
 			LLSDSerialize::toPrettyXML(sd, export_file);
 			export_file.close();
 
 			std::string msg = "Saved ";
 			msg.append(file_name);
+			if(download_texture) msg.append(" (Content might take some time to download)");
 			LLChat chat(msg);
 			LLFloaterChat::addChat(chat);
 		}
@@ -693,6 +817,40 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 	}
 	
 	floater->close();
+}
+void LLFloaterExport::onFileLoadedForSave(BOOL success, 
+                                                LLViewerImage *src_vi,
+                                                LLImageRaw* src, 
+                                                LLImageRaw* aux_src, 
+                                                S32 discard_level,
+                                                BOOL final,
+                                                void* userdata)
+{
+	if(!userdata){ llinfos << "NULL POINTER" << llendl; return;}
+        if(final)
+        {
+		std::string *temp = static_cast<std::string*>(userdata);
+		std::string path = *temp;
+                if( success )
+                {
+                        LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
+                        if(!image_j2c->encode(src,0.0))
+                        {
+                                //errorencode
+                                llinfos << "Failed to encode " << path << llendl;
+                        }else if(!image_j2c->save( path ))
+                        {
+                                llinfos << "Failed to write " << path << llendl;
+                                //errorwrite
+                        }else
+                        {
+                                llinfos << "Saved texture " << path << llendl;
+                                //success
+                        }
+                }
+		delete temp;
+        }
+
 }
 
 //static

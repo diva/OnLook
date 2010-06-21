@@ -150,13 +150,13 @@ void LLFloaterXmlImportOptions::onClickOK(void* user_data)
 {
 	LLFloaterXmlImportOptions* floaterp = (LLFloaterXmlImportOptions*)user_data;
 	LLXmlImportOptions* opt = new LLXmlImportOptions(floaterp->mDefaultOptions);
-	opt->mRootObjects.clear();
-	opt->mChildObjects.clear();
-	opt->mWearables.clear();
+	opt->clear();
+	opt->mReplaceTexture = floaterp->childGetValue("upload_textures");
 	LLScrollListCtrl* list = floaterp->getChild<LLScrollListCtrl>("import_list");
 	std::vector<LLScrollListItem*> items = list->getAllData();
 	std::vector<LLScrollListItem*>::iterator item_end = items.end();
 	std::vector<LLImportObject*>::iterator child_end = floaterp->mDefaultOptions->mChildObjects.end();
+	std::list<LLUUID> textures;
 	for(std::vector<LLScrollListItem*>::iterator iter = items.begin(); iter != item_end; ++iter)
 	{
 		if((*iter)->getColumn(LIST_CHECKED)->getValue())
@@ -165,17 +165,47 @@ void LLFloaterXmlImportOptions::onClickOK(void* user_data)
 			if(floaterp->mImportWearableMap.find(id) != floaterp->mImportWearableMap.end())
 			{
 				opt->mWearables.push_back(floaterp->mImportWearableMap[id]);
+				if(opt->mReplaceTexture)
+					std::copy(floaterp->mImportWearableMap[id]->mTextures.begin(),floaterp->mImportWearableMap[id]->mTextures.end(),back_inserter(textures));
 			}
 			else // object
 			{
 				LLImportObject* objectp = floaterp->mImportObjectMap[id];
+
+				if(opt->mReplaceTexture)
+					std::copy(objectp->mTextures.begin(),objectp->mTextures.end(),back_inserter(textures));
+
 				opt->mRootObjects.push_back(objectp);
 				// Add child objects
 				for(std::vector<LLImportObject*>::iterator child_iter = floaterp->mDefaultOptions->mChildObjects.begin();
 					child_iter != child_end; ++child_iter)
 				{
 					if((*child_iter)->mParentId == objectp->mId)
+					{
+						if(opt->mReplaceTexture)
+							std::copy((*child_iter)->mTextures.begin(),(*child_iter)->mTextures.end(),back_inserter(textures));
 						opt->mChildObjects.push_back((*child_iter));
+					}
+				}
+			}
+		}
+	}
+	if(opt->mReplaceTexture)
+	{
+		textures.unique();
+		if(!opt->mAssetDir.empty() && LLFile::isdir(opt->mAssetDir))
+		{
+			opt->mAssetDir.append(gDirUtilp->getDirDelimiter()); //lets add the Delimiter now
+			for(std::list<LLUUID>::iterator itr = textures.begin(); itr != textures.end(); ++itr)
+			{
+				std::string filename = opt->mAssetDir + (*itr).asString() + ".j2c";
+				//llinfos << "Looking texture at " << filename << llendl;
+				if(LLFile::isfile(filename))
+				{
+					//llinfos << "Found texture at " << filename << llendl;
+					LLImportAssetData* data = new LLImportAssetData(filename,(*itr),LLAssetType::AT_TEXTURE);
+
+					opt->mAssets.push_back(data);
 				}
 			}
 		}
@@ -192,16 +222,31 @@ void LLFloaterXmlImportOptions::onClickCancel(void* user_data)
 }
 
 LLFloaterImportProgress::LLFloaterImportProgress() 
-:	LLFloater("ImportProgress", LLRect(0, 100, 400, 0), "Import progress")
+:	LLFloater("ImportProgress", LLRect(0, 130, 400, 0), "Import progress")
 {
-	LLLineEditor* line = new LLLineEditor(
+	LLLineEditor* line;
+	LLViewBorder* border;
+
+	line = new LLLineEditor(
+		std::string("Uploaded"),
+		LLRect(4, 105, 396, 85),
+		std::string("Uploaded Assets"));
+	line->setEnabled(FALSE);
+	addChild(line);
+
+	border = new LLViewBorder(
+		"UploadedBorder",
+		LLRect(4, 104, 395, 85));
+	addChild(border);
+
+	line = new LLLineEditor(
 		std::string("Created"),
 		LLRect(4, 80, 396, 60),
 		std::string("Created prims"));
 	line->setEnabled(FALSE);
 	addChild(line);
 
-	LLViewBorder* border = new LLViewBorder(
+	border = new LLViewBorder(
 		"CreatedBorder",
 		LLRect(4, 79, 395, 60));
 	addChild(border);
@@ -256,6 +301,12 @@ void LLFloaterImportProgress::update()
 	{
 		LLFloaterImportProgress* floater = sInstance;
 
+		int upload_goal = (int)LLXmlImport::sTotalAssets;
+		int upload_done = LLXmlImport::sUploadedAssets;
+		F32 upload_width = F32(390.f / F32(upload_goal));
+		upload_width *= F32(upload_done);
+		bool upload_finished = upload_done >= upload_goal;
+
 		int create_goal = (int)LLXmlImport::sPrims.size();
 		int create_done = create_goal - LLXmlImport::sPrimsNeeded;
 		F32 create_width = F32(390.f / F32(create_goal));
@@ -274,7 +325,7 @@ void LLFloaterImportProgress::update()
 		attach_width *= F32(attach_done);
 		bool attach_finished = attach_done >= attach_goal;
 
-		bool all_finished = create_finished && edit_finished && attach_finished;
+		bool all_finished = upload_finished && create_finished && edit_finished && attach_finished;
 
 		std::string title;
 		title.assign(all_finished ? "Imported " : "Importing ");
@@ -282,16 +333,23 @@ void LLFloaterImportProgress::update()
 		if(!all_finished) title.append("...");
 		floater->setTitle(title);
 
+		std::string uploaded_text = llformat("Uploaded %d/%d assets", S32(upload_done), S32(upload_goal));
 		std::string created_text = llformat("Created %d/%d prims", S32(create_done), S32(create_goal));
 		std::string edited_text = llformat("Finished %d/%d prims", edit_done, edit_goal);
 
-		LLLineEditor* text = floater->getChild<LLLineEditor>("Created");
+		LLLineEditor* text = floater->getChild<LLLineEditor>("Uploaded");
+		text->setText(uploaded_text);
+
+		text = floater->getChild<LLLineEditor>("Created");
 		text->setText(created_text);
 
 		text = floater->getChild<LLLineEditor>("Edited");
 		text->setText(edited_text);
 
-		LLViewBorder* border = floater->getChild<LLViewBorder>("CreatedBorder");
+		LLViewBorder* border = floater->getChild<LLViewBorder>("UploadedBorder");
+		border->setRect(LLRect(4, 104, 4 + upload_width, 85));
+
+		border = floater->getChild<LLViewBorder>("CreatedBorder");
 		border->setRect(LLRect(4, 79, 4 + create_width, 60));
 
 		border = floater->getChild<LLViewBorder>("EditedBorder");

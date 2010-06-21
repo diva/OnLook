@@ -1527,14 +1527,21 @@ bool LLAppViewer::initThreads()
 
 void errorCallback(const std::string &error_string)
 {
-#ifndef LL_RELEASE_FOR_DOWNLOAD
-	OSMessageBox(error_string, "Fatal Error", OSMB_OK);
-#endif
+	static std::string last_message;
+	if(last_message != error_string)
+	{
+		U32 response = OSMessageBox(error_string, "Crash Loop?", OSMB_YESNO);
+		if(response)
+		{
+			last_message = error_string;
+			return;
+		}
 
-	//Set the ErrorActivated global so we know to create a marker file
-	gLLErrorActivated = true;
-	
-	LLError::crashAndLoop(error_string);
+		//Set the ErrorActivated global so we know to create a marker file
+		gLLErrorActivated = true;
+
+		LLError::crashAndLoop(error_string);
+	}
 }
 
 bool LLAppViewer::initLogging()

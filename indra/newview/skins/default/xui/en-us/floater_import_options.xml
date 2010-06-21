@@ -18,6 +18,7 @@
 		 left_delta="66"  name="select_wearables_btn" width="80" />
 
 	<check_box bottom="28" left="10" width="250" height="20" name="keep_position_check" label="Use previous region position" initial_value="false"/>
+	<check_box bottom="28" left="186" width="250" height="20" name="upload_textures" label="Upload Textures" initial_value="false"/>
 
 	<button bottom="8" follows="bottom|left" height="20" label="OK"
 		 left="10" width="142" name="ok_btn" />
