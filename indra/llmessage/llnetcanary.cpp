@@ -4,6 +4,7 @@
 #ifdef _MSC_VER
 #include <winsock2.h>
 static WSADATA trapWSAData;
+#define socklen_t int
 #else
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -79,8 +80,8 @@ LLNetCanary::LLNetCanary(int requested_port)
 
 	// Find out what address we got
 	SOCKADDR_IN socket_address;
-	S32 socket_address_size = sizeof(socket_address);
-	getsockname(hSocket, (SOCKADDR*) &socket_address, (socklen_t *)&socket_address_size);
+	socklen_t socket_address_size = sizeof(socket_address);
+	getsockname(hSocket, (SOCKADDR*) &socket_address, &socket_address_size);
 	mPort = ntohs(socket_address.sin_port);
 	//llinfos << "got port " << mPort << llendl;
 	
