@@ -5915,3 +5915,15 @@ void LLOfferInfo::forceResponse(InventoryOfferResponse response)
 	LLNotifications::instance().forceResponse(params, response);
 }
 
+// <edit> lol
+void spoof_dropped_callback(LLNetCanary::entry entry)
+{
+	if(gSavedSettings.getBOOL("SpoofProtectionAlerts"))
+	{
+		LLSD args;
+		args["[MESSAGE]"] = llformat("A suspicious %s packet was dropped based on your IP Spoofing Protection settings.", entry.name.c_str());
+		LLNotifications::instance().add("SystemMessageTip",args);
+	}
+}
+// </edit>
+

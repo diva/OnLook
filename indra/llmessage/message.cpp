@@ -550,6 +550,76 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 	S32 receive_size = 0;
 	do
 	{
+		// <edit>
+		// Expire old canary entries
+		F64 now = LLTimer::getElapsedSeconds();
+		std::map<U32, LLNetCanary::entry>::iterator canary_entry_iter;
+		std::map<U32, LLNetCanary::entry>::iterator canary_entry_end = mCanaryEntries.end();
+		for( canary_entry_iter = mCanaryEntries.begin();
+			 canary_entry_iter != mCanaryEntries.end(); )
+		{
+			if( ((*canary_entry_iter).second.time + 30.0f) < now)
+			{
+				llinfos << "Expiring ban on " << (*canary_entry_iter).second.name << " message, " << (*canary_entry_iter).second.points << " points" << llendl;
+				mCanaryEntries.erase(canary_entry_iter++);
+			}
+			else
+			{
+				canary_entry_iter++;
+			}
+		}
+		if(!faked_message && mSpoofProtectionLevel > 1)
+		{
+			// Canaries receive
+			std::vector<LLNetCanary*>::iterator canary_iter = mCanaries.begin();
+			std::vector<LLNetCanary*>::iterator canary_end = mCanaries.end();
+			for( ; canary_iter != canary_end; ++canary_iter)
+			{
+				U8* canary_buffer = (*canary_iter)->mBuffer;
+				S32 len = receive_packet((*canary_iter)->mSocket, (char*)canary_buffer);
+				if(len)
+				{
+					//llinfos << "canary received " << len << " bytes on port " << (*canary_iter)->mPort << llendl;
+					zeroCodeExpand(&canary_buffer, &len);
+					if(len < 7) continue; // too short to be an slmsg
+					LLNetCanary::entry entry;
+					entry.message = 0;
+					if(canary_buffer[6] != 0xFF) // High XX
+						entry.message = canary_buffer[6];
+					else if((len >= 8) && (canary_buffer[7] != 0xFF)) // Medium FFXX
+						entry.message = (255 << 8) | canary_buffer[7];
+					else if((len >= 10) && (canary_buffer[7] == 0xFF)) // Low FFFFXXXX
+					{
+						U16	message_id_U16 = 0;
+						memcpy(&message_id_U16, &canary_buffer[8], 2);
+						message_id_U16 = ntohs(message_id_U16);
+						entry.message = 0xFFFF0000 | message_id_U16;
+					}
+					else continue; // not an slmsg
+					
+					if(mCanaryEntries.find(entry.message) == mCanaryEntries.end())
+					{
+						// brand new entry
+						LLMessageTemplate* temp = get_ptr_in_map(mMessageNumbers, entry.message);
+						entry.name = temp ? temp->mName : "Invalid";
+						entry.points = 1;
+						entry.time = now;
+						mCanaryEntries[entry.message] = entry;
+						if(mSpoofProtectionLevel == 2)
+							llinfos << "Temporarily banning a " << entry.name << " message" << llendl;
+					}
+					else
+					{
+						// strike two, three...
+						mCanaryEntries[entry.message].points++;
+						mCanaryEntries[entry.message].time = now;
+						if((mSpoofProtectionLevel > 2) && (mCanaryEntries[entry.message].points == 2))
+							llinfos << "Temporarily banning a " << mCanaryEntries[entry.message].name << " message" << llendl;
+					}
+				}
+			}
+		}
+		// </edit>
 		clearReceiveState();
 		
 		BOOL recv_reliable = FALSE;
@@ -625,6 +695,61 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 			// process the message as normal
 			mIncomingCompressedSize = zeroCodeExpand(&buffer, &receive_size);
 			mCurrentRecvPacketID = ntohl(*((U32*)(&buffer[1])));
+			// <edit>
+			BOOL spoofed_packet = FALSE;
+			if(mSpoofProtectionLevel > 0)
+			{
+				S32 len = receive_size;
+				U32 message = 0;
+				if(buffer[6] != 0xFF) // High XX
+					message = buffer[6];
+				else if((len >= 8) && (buffer[7] != 0xFF)) // Medium FFXX
+					message = (255 << 8) | buffer[7];
+				else if((len >= 10) && (buffer[7] == 0xFF)) // Low FFFFXXXX
+				{
+					U16	message_id_U16 = 0;
+					memcpy(&message_id_U16, &buffer[8], 2);
+					message_id_U16 = ntohs(message_id_U16);
+					message = 0xFFFF0000 | message_id_U16;
+				}
+				if(!mCurrentRecvPacketID)
+				{
+					LL_WARNS("Messaging") << "CODE DONKEY_A" << llendl;
+					if(mSpoofDroppedCallback)
+					{
+						LLNetCanary::entry entry;
+						LLMessageTemplate* temp = get_ptr_in_map(mMessageNumbers, message);
+						entry.name = temp ? temp->mName : "Invalid";
+						entry.message = message;
+						entry.time = now;
+						entry.points = 1;
+						mSpoofDroppedCallback(entry);
+					}
+					spoofed_packet = TRUE;
+					valid_packet = FALSE;
+				}
+				else if((mSpoofProtectionLevel > 1) && (receive_size >= 7))
+				{
+					if(mCanaryEntries.find(message) != mCanaryEntries.end())
+					{
+						if(
+							(mSpoofProtectionLevel == 2) ||
+							(mCanaryEntries[message].points > 1)
+						  )
+						{
+							LL_WARNS("Messaging") << "Dropped probably spoofed " << mCanaryEntries[message].name << " packet, " << mCanaryEntries[message].points << " points" << llendl;
+							if(mSpoofDroppedCallback)
+							{
+								mSpoofDroppedCallback(mCanaryEntries[message]);
+							}
+							spoofed_packet = TRUE;
+							valid_packet = FALSE;
+							break;
+						}
+					}
+				}
+			} // mSpoofProtectionLevel
+			// </edit>
 			host = getSender();
 
 			const bool resetPacketId = true;
@@ -707,6 +832,9 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 			// But we don't want to acknowledge UseCircuitCode until the circuit is
 			// available, which is why the acknowledgement test is done above.  JC
 			bool trusted = cdp && cdp->getTrusted();
+			// <edit>
+			if(!spoofed_packet)
+			// </edit>
 			valid_packet = mTemplateMessageReader->validateMessage(
 				buffer,
 				receive_size,
@@ -1862,7 +1990,11 @@ void	open_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
 	msgsystem->getIPPortFast(_PREHASH_CircuitInfo, _PREHASH_Port, port);
 
 	// By default, OpenCircuit's are untrusted
-	msgsystem->enableCircuit(LLHost(ip, port), FALSE);
+	// <edit>
+//#ifndef LL_RELEASE_FOR_DOWNLOAD
+	llwarns << "OpenCircuit " << LLHost(ip, port) << llendl;
+//#endif
+	// </edit>msgsystem->enableCircuit(LLHost(ip, port), FALSE);
 }
 
 void	close_circuit(LLMessageSystem *msgsystem, void** /*user_data*/)
@@ -2718,6 +2850,9 @@ void end_messaging_system(bool print_summary)
 	LLTransferTargetVFile::updateQueue(true); // shutdown LLTransferTargetVFile
 	if (gMessageSystem)
 	{
+		// <edit>
+		gMessageSystem->stopSpoofProtection();
+		// </edit>
 		gMessageSystem->stopLogging();
 
 		if (print_summary)
@@ -4080,4 +4215,155 @@ const LLHost& LLMessageSystem::getSender() const
 
 LLHTTPRegistration<LLHTTPNodeAdapter<LLTrustedMessageService> >
 	gHTTPRegistrationTrustedMessageWildcard("/trusted-message/<message-name>");
+// <edit>
+void LLMessageSystem::startSpoofProtection(U32 level)
+{
+	if(!mPort)
+	{
+		llwarns << "listen port is 0!!!" << llendl;
+	}
 
+	mSpoofProtectionLevel = level;
+	mCanaries.clear();
+	mCanaryEntries.clear();
+	// Make canaries
+	std::string canary_info("");
+
+	if(mSpoofProtectionLevel > 2) // 3 or greater
+	{
+		// FULL CANARY POWER
+		int rPort = 768 + ll_rand(32);
+		if(mPort < rPort) rPort = mPort - 16;
+		if(rPort < 1) rPort = 1;
+		while(rPort < 65536)
+		{
+			if(rPort != mPort)
+			{
+				LLNetCanary* canary = new LLNetCanary(rPort);
+				if(canary->mGood)
+				{
+					mCanaries.push_back(canary);
+					canary_info.append(llformat(" %d", canary->mPort));
+				}
+				else
+					delete canary;
+			}
+			int dist = llabs(mPort - rPort);
+			if(dist > 4096)
+				rPort += ll_rand(2048) + 2048;
+			else if(dist > 2048)
+				rPort += ll_rand(1024) + 1024;
+			else if(dist > 1024)
+				rPort += ll_rand(512) + 512;
+			else if(dist > 512)
+				rPort += ll_rand(256) + 256;
+			else if(dist > 128)
+				rPort += ll_rand(64) + 64;
+			else if(dist > 16)
+				rPort += ll_rand(8) + 8;
+			else
+				rPort += 4;
+		}
+	}
+	else if(mSpoofProtectionLevel == 2)
+	{
+		// Minimal canaries
+		for(int o = -32; o <= 32; o += 8)
+		{
+			int rPort = mPort + o;
+			if(rPort != mPort)
+			{
+				LLNetCanary* canary = new LLNetCanary(rPort);
+				if(canary->mGood)
+				{
+					mCanaries.push_back(canary);
+					canary_info.append(llformat(" %d", canary->mPort));
+				}
+				else
+					delete canary;
+			}
+		}
+	}
+
+	if(mCanaries.size())
+	{
+		llinfos << "level " << mSpoofProtectionLevel << ", " << mCanaries.size() << " canaries: " << canary_info << llendl;
+	}
+	else
+	{
+		llinfos << "level " << mSpoofProtectionLevel << ", no canaries" << llendl;
+	}
+}
+
+void LLMessageSystem::stopSpoofProtection()
+{
+	llinfos << "cleaning up" << llendl;
+	// Shut down canaries
+	std::vector<LLNetCanary*>::iterator canary_iter = mCanaries.begin();
+	std::vector<LLNetCanary*>::iterator canary_end = mCanaries.end();
+	for( ; canary_iter != canary_end; ++canary_iter)
+	{
+		LLNetCanary* canary = (*canary_iter);
+		delete canary;
+	}
+	mCanaries.clear();
+	// Empty canary entries
+	mCanaryEntries.clear();
+}
+
+void LLMessageSystem::setSpoofDroppedCallback(void (*callback)(LLNetCanary::entry))
+{
+	mSpoofDroppedCallback = callback;
+}
+
+// Copypasta from LLTemplateMessageReader
+BOOL LLMessageSystem::decodeTemplate( const U8* buffer, S32 buffer_size, LLMessageTemplate** msg_template )
+{
+	const U8* header = buffer + LL_PACKET_ID_SIZE;
+	if (buffer_size <= 0) return FALSE;
+	U32 num = 0;
+	if (header[0] != 255)
+	{
+		// high frequency message
+		num = header[0];
+	}
+	else if ((buffer_size >= ((S32) LL_MINIMUM_VALID_PACKET_SIZE + 1)) && (header[1] != 255))
+	{
+		// medium frequency message
+		num = (255 << 8) | header[1];
+	}
+	else if ((buffer_size >= ((S32) LL_MINIMUM_VALID_PACKET_SIZE + 3)) && (header[1] == 255))
+	{
+		// low frequency message
+		U16	message_id_U16 = 0;
+		// I think this check busts the message system.
+		// it appears that if there is a NULL in the message #, it won't copy it....
+		// what was the goal?
+		//if(header[2])
+		memcpy(&message_id_U16, &header[2], 2);
+
+		// dependant on endian-ness:
+		//		U32	temp = (255 << 24) | (255 << 16) | header[2];
+
+		// independant of endian-ness:
+		message_id_U16 = ntohs(message_id_U16);
+		num = 0xFFFF0000 | message_id_U16;
+	}
+	else // bogus packet received (too short)
+	{
+		return(FALSE);
+	}
+
+	LLMessageTemplate* temp = get_ptr_in_map(mMessageNumbers,num);
+	if (temp)
+	{
+		*msg_template = temp;
+	}
+	else
+	{
+		return(FALSE);
+	}
+
+	return(TRUE);
+}
+// </edit

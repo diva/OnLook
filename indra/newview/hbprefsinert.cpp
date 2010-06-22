@@ -74,6 +74,7 @@ private:
 	U32 mLinksForChattingObjects;
 	U32 mTimeFormat;
 	U32 mDateFormat;
+	U32 mSpoofProtectionAtOpen;
 };
 
 
@@ -180,6 +181,7 @@ void LLPrefsInertImpl::refresh()
 	{
 		combo->setCurrentByIndex(mDateFormat);
 	}
+	mSpoofProtectionAtOpen = gSavedSettings.getU32("SpoofProtectionLevel");
 }
 
 void LLPrefsInertImpl::cancel()
@@ -199,7 +201,8 @@ void LLPrefsInertImpl::cancel()
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		mRevokePermsOnStandUp);
 	gSavedSettings.setBOOL("WindEnabled",				mEnableLLWind);
 	gSavedSettings.setBOOL("BroadcastViewerEffects",	mBroadcastViewerEffects);
-	
+	gSavedSettings.setU32("SpoofProtectionLevel",		mSpoofProtectionAtOpen);
+
 	gLLWindEnabled = mEnableLLWind;
 	
 	if(mInitialEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
@@ -261,7 +264,16 @@ void LLPrefsInertImpl::apply()
 	gSavedSettings.setString("ShortTimeFormat",	short_time);
 	gSavedSettings.setString("LongTimeFormat",	long_time);
 	gSavedSettings.setString("TimestampFormat",	timestamp);
-
+	if(gMessageSystem)
+	{
+		U32 new_spoof_protection = gSavedSettings.getU32("SpoofProtectionLevel");
+		if(new_spoof_protection != mSpoofProtectionAtOpen)
+		{
+			mSpoofProtectionAtOpen = new_spoof_protection;
+			gMessageSystem->stopSpoofProtection();
+			gMessageSystem->startSpoofProtection(new_spoof_protection);
+		}
+	}
 	refreshValues();
 }
 
