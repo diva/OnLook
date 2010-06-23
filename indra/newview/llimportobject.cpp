@@ -228,8 +228,8 @@ public:
 			gInventory.notifyObservers();
 			LLXmlImport::sTextureReplace[mData->oldassetid] = content["new_asset"].asUUID();
 		}
-
 		LLXmlImport::sUploadedAssets++;
+		if(!LLXmlImport::sImportInProgress) return;
 		LLFloaterImportProgress::update();
 		if(LLXmlImport::sUploadedAssets < LLXmlImport::sTotalAssets)
 		{
