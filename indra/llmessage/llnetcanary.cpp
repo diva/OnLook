@@ -16,6 +16,13 @@ static WSADATA trapWSAData;
 #include <errno.h>
 #include <fcntl.h>
 
+#if LL_DARWIN
+#ifndef _SOCKLEN_T
+#define _SOCKLEN_T
+typedef int socklen_t;
+#endif
+#endif
+
 extern int errno; //error number
 #define SOCKADDR_IN struct sockaddr_in
 #define SOCKADDR struct sockaddr
