@@ -97,6 +97,7 @@ public:
 	static std::map<std::string, U8> sId2attachpt; // attach points of all attachables
 	static std::map<U8, LLVector3> sPt2attachpos; // positions of all attachables
 	static std::map<U8, LLQuaternion> sPt2attachrot; // rotations of all attachables
+	static std::map<U32, std::queue<U32> > sLinkSets;//Linksets to link.
 	static int sPrimIndex;
 	static int sAttachmentsDone;
 	static std::map<std::string, U32> sId2localid;

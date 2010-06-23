@@ -35,6 +35,7 @@ std::map<std::string, U8> LLXmlImport::sId2attachpt;
 std::map<U8, bool> LLXmlImport::sPt2watch;
 std::map<U8, LLVector3> LLXmlImport::sPt2attachpos;
 std::map<U8, LLQuaternion> LLXmlImport::sPt2attachrot;
+std::map<U32, std::queue<U32> > LLXmlImport::sLinkSets;
 int LLXmlImport::sPrimIndex = 0;
 int LLXmlImport::sAttachmentsDone = 0;
 std::map<std::string, U32> LLXmlImport::sId2localid;
@@ -661,6 +662,8 @@ void LLXmlImport::import(LLXmlImportOptions* import_options)
 	sUploadedAssets = 0;
 	sId2localid.clear();
 	sRootpositions.clear();
+	sRootrotations.clear();
+	sLinkSets.clear();
 
 	LLFloaterImportProgress::show();
 	LLFloaterImportProgress::update();
@@ -788,8 +791,7 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 	flags = flags & (~FLAGS_USE_PHYSICS);
 	object->setFlags(flags, TRUE);
 	object->setFlags(~flags, FALSE); // Can I improve this lol?
-	bool root = (from->mParentId == "");
-	if(root)
+	if(from->mParentId == "")
 	{
 		// this will be a root
 		sId2localid[from->mId] = object->getLocalID();
@@ -814,6 +816,8 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		U32 parentlocalid = sId2localid[from->mParentId];
 		from->setPosition((from->getPosition() * sRootrotations[parentlocalid]) + sRootpositions[parentlocalid]);
 		from->setRotation(from->getRotation() * sRootrotations[parentlocalid]);
+		sLinkSets[parentlocalid].push(object->getLocalID()); //this is here so we dont get 1 prim objects into the linkset queue
+		
 	}
 	// Volume params
 	LLVolumeParams params = from->getVolume()->getParams();
@@ -927,22 +931,44 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 	}
 
-	// Link
-	if(!root)
-	{
-		gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, sId2localid[from->mParentId]);
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, object->getLocalID());
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
-	}
-
 	if(currPrimIndex + 1 >= (int)sPrims.size())
 	{
+		// Link time
+		int packet_len = 0;
+		for(std::map<U32, std::queue<U32> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
+		{
+			std::queue<U32> linkset = (*itr).second;
+			gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+			gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+			gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+			gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*itr).first);//this is the parent prim
+			while(!linkset.empty())
+			{
+				if(packet_len == 254) //if we have 255 objects, using 254 because root counts as 1 too
+				{
+					gMessageSystem->sendReliable(gAgent.getRegionHost());
+					packet_len = 0;
+					gMessageSystem->newMessageFast(_PREHASH_ObjectLink);
+					gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+					gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+					gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+					gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+					gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, (*itr).first);//this is the parent prim
+				}
+				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, linkset.front());
+				linkset.pop();
+				packet_len++;
+			}
+			if(packet_len) //send if it hasnt been yet
+			{
+				gMessageSystem->sendReliable(gAgent.getRegionHost());
+				packet_len = 0;
+			}
+		}
+
 		// stop the throttle
 		F32 throttle = gSavedSettings.getF32("OutBandwidth");
 		if(throttle != 0.)
