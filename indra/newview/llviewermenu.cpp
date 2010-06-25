@@ -940,7 +940,7 @@ void init_client_menu(LLMenuGL* menu)
 	{
 		sub_menu = new LLMenuGL("Interop");
 		sub_menu->append(new LLMenuItemCallGL("Teleport Region...", 
-			&LLFloaterTeleport::show, NULL, NULL, 'R', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
+			&LLFloaterTeleport::show, NULL, NULL));
 		menu->appendMenu(sub_menu);
 	}
 	sub_menu = new LLMenuGL("UI");
@@ -1388,7 +1388,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	menu->append(new LLMenuItemCallGL("Selected Texture Info", handle_selected_texture_info, NULL, NULL, 'T', MASK_CONTROL|MASK_SHIFT|MASK_ALT));
 	//menu->append(new LLMenuItemCallGL("Dump Image List", handle_dump_image_list, NULL, NULL, 'I', MASK_CONTROL|MASK_SHIFT));
 	
-	menu->append(new LLMenuItemToggleGL("Wireframe", &gUseWireframe));
+	menu->append(new LLMenuItemToggleGL("Wireframe", &gUseWireframe, 'R', MASK_CONTROL|MASK_SHIFT));
 
 	LLMenuItemCheckGL* item;
 	item = new LLMenuItemCheckGL("Object-Object Occlusion", menu_toggle_control, NULL, menu_check_control, (void*)"UseOcclusion", 'O', MASK_CONTROL|MASK_SHIFT);
@@ -1490,7 +1490,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	menu->append(new LLMenuItemCheckGL("Show Collision Skeleton",
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
-									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_VOLUME, 'R', MASK_CONTROL|MASK_SHIFT));
+									   (void*)LLPipeline::RENDER_DEBUG_AVATAR_VOLUME, 'R', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
 	menu->append(new LLMenuItemCheckGL("Display Agent Target",
 									   &LLPipeline::toggleRenderDebug, NULL,
 									   &LLPipeline::toggleRenderDebugControl,
