@@ -29,6 +29,7 @@ public:
 	static void onClickCopyUUID(void* user_data);
 	static void onClickRemove(void* user_data);
 	static void onClickReload(void* user_data);
+	static void onClickEditData(void* user_data);
 private:
 	static LLFloaterVFSExplorer* sInstance;
 	static std::map<LLVFSFileSpecifier, LLVFSFileBlock*> sVFSFileMap;

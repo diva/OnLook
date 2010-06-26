@@ -1,4 +1,5 @@
 // <edit>
+//A lot of bad things going on in here, needs a rewrite.
 #include "llviewerprecompiledheaders.h"
 #include "llfloatervfsexplorer.h"
 #include "lluictrlfactory.h"
@@ -9,6 +10,7 @@
 #include "lllocalinventory.h"
 #include "llviewerwindow.h"
 #include "llassetconverter.h"
+#include "dohexeditor.h"
 
 LLFloaterVFSExplorer* LLFloaterVFSExplorer::sInstance;
 std::map<LLVFSFileSpecifier, LLVFSFileBlock*> LLFloaterVFSExplorer::sVFSFileMap;
@@ -67,6 +69,7 @@ void LLFloaterVFSExplorer::refresh()
 void LLFloaterVFSExplorer::reloadAll()
 {
 	//get our magic from gvfs here
+	//this should re-request all assets from the server if possible.
 	refresh();
 }
 void LLFloaterVFSExplorer::setEditID(LLUUID edit_id)
@@ -168,5 +171,17 @@ void LLFloaterVFSExplorer::onClickReload(void* user_data)
 {
 	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
 	floaterp->reloadAll();
+}
+// static
+void LLFloaterVFSExplorer::onClickEditData(void* user_data)
+{
+	LLVFSFileSpecifier file;
+	std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator end = sVFSFileMap.end();
+	for(std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator iter = sVFSFileMap.begin(); iter != end; ++iter)
+	{
+		if((*iter).first.mFileID == mEditID)
+			file = (*iter).first;
+	}
+	DOHexEditor::showVFS(file.mFileID, file.mFileType);
 }
 // </edit>
