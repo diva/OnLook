@@ -31,6 +31,17 @@ DOFloaterHex::DOFloaterHex(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_ty
 :	LLFloater()
 {
 	sInstances.push_back(this);
+	if(vfs)
+	{
+		mVFS = true;
+		mAssetId = item_id;
+		mAssetType = asset_type;
+	} else {
+		mVFS = false;
+		mAssetId = mItem->getAssetUUID();
+		mAssetType = mItem->getType();
+	}
+	llinfos << "Asset ID: " << item_id.asString() << llendl;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_hex.xml");
 }
 
@@ -49,9 +60,6 @@ void DOFloaterHex::show(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_type)
 			DOFloaterHex* floaterp = new DOFloaterHex(item_id);
 			floaterp->setRect(rect);
 
-			floaterp->mVFS = false;
-			floaterp->mAssetId = item->getAssetUUID();
-			floaterp->mAssetType = item->getType();
 			floaterp->mItem = item;
 
 			gFloaterView->adjustToFitScreen(floaterp, FALSE);
@@ -61,12 +69,10 @@ void DOFloaterHex::show(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_type)
 		gFloaterView->getNewFloaterPosition(&left, &top);
 		LLRect rect = gSavedSettings.getRect("FloaterHexRect");
 		rect.translate(left - rect.mLeft, top - rect.mTop);
-		DOFloaterHex* floaterp = new DOFloaterHex(item_id);
+		DOFloaterHex* floaterp = new DOFloaterHex(item_id, true, asset_type);
 		floaterp->setRect(rect);
 
-		floaterp->mVFS = true;
-		floaterp->mAssetId = item_id;
-		floaterp->mAssetType = asset_type;
+		llinfos << "Asset ID: " << item_id.asString() << llendl;
 
 		gFloaterView->adjustToFitScreen(floaterp, FALSE);
 	}
@@ -139,6 +145,7 @@ void DOFloaterHex::imageCallback(BOOL success,
 					BOOL final,
 					void* userdata)
 {
+
 	if(final)
 	{
 		LLInventoryBackup::callbackdata* data = static_cast<LLInventoryBackup::callbackdata*>(userdata);
@@ -179,6 +186,7 @@ void DOFloaterHex::assetCallback(LLVFS *vfs,
 				   LLAssetType::EType type,
 				   void* user_data, S32 status, LLExtStat ext_status)
 {
+
 	LLInventoryBackup::callbackdata* data = static_cast<LLInventoryBackup::callbackdata*>(user_data);
 	DOFloaterHex* floater = (DOFloaterHex*)(data->floater);
 	if(!floater) return;
@@ -259,6 +267,7 @@ void DOFloaterHex::assetCallback(LLVFS *vfs,
 // static
 void DOFloaterHex::onClickUpload(void* user_data)
 {
+
 	DOFloaterHex* floater = (DOFloaterHex*)user_data;
 	LLInventoryItem* item = floater->mItem;
 
@@ -453,28 +462,33 @@ void DOFloaterHex::handleSizing()
 
 void DOFloaterHex::readVFile()
 {
+	if(!mVFS) return;
 	// quick cut paste job
 	// Todo: this doesn't work for static vfs shit
 	LLVFile file(gVFS, mAssetId, mAssetType, LLVFile::READ);
-	S32 size = file.getSize();
-
-	char* buffer = new char[size];
-	if (buffer == NULL)
+	if(file.getVFSThread())
 	{
-		llerrs << "Memory Allocation Failed" << llendl;
-		return;
+		S32 size = file.getSize();
+
+		char* buffer = new char[size];
+		if (buffer == NULL)
+		{
+			llerrs << "Memory Allocation Failed" << llendl;
+			return;
+		}
+
+		file.read((U8*)buffer, size);
+
+		std::vector<U8> new_data;
+		for(S32 i = 0; i < size; i++)
+			new_data.push_back(buffer[i]);
+
+		delete[] buffer;
+
+		mEditor->setValue(new_data);
+		mEditor->setVisible(TRUE);
+
 	}
-
-	file.read((U8*)buffer, size);
-
-	std::vector<U8> new_data;
-	for(S32 i = 0; i < size; i++)
-		new_data.push_back(buffer[i]);
-
-	delete[] buffer;
-
-	mEditor->setValue(new_data);
-	mEditor->setVisible(TRUE);
 
 	childSetText("status_text", std::string("Editing VFile"));
 
