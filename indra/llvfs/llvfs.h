@@ -59,9 +59,24 @@ enum EVFSLock
 	VFSLOCK_COUNT = 3
 };
 
-// internal classes
-class LLVFSBlock;
-class LLVFSFileBlock;
+//<edit>
+//the VFS explorer requires that the class definition of these be available outside of llvfs
+class LLVFSBlock
+{
+public:
+	LLVFSBlock();
+
+	LLVFSBlock(U32 loc, S32 size);
+
+	static bool locationSortPredicate(
+		const LLVFSBlock* lhs,
+		const LLVFSBlock* rhs);
+
+public:
+	U32 mLocation;
+	S32	mLength;		// allocated block size
+};
+
 class LLVFSFileSpecifier
 {
 public:
@@ -74,6 +89,32 @@ public:
 	LLUUID mFileID;
 	LLAssetType::EType mFileType;
 };
+
+class LLVFSFileBlock : public LLVFSBlock, public LLVFSFileSpecifier
+{
+public:
+	LLVFSFileBlock();
+	LLVFSFileBlock(const LLUUID &file_id, LLAssetType::EType file_type, U32 loc = 0, S32 size = 0);
+	void init();
+#ifdef LL_LITTLE_ENDIAN
+	inline void swizzleCopy(void *dst, void *src, int size);
+#else
+	inline U32 swizzle32(U32 x);
+	inline U16 swizzle16(U16 x);
+	inline void swizzleCopy(void *dst, void *src, int size);
+#endif
+	void serialize(U8 *buffer);
+	void deserialize(U8 *buffer, const S32 index_loc);
+	static BOOL insertLRU(LLVFSFileBlock* const& first,
+						  LLVFSFileBlock* const& second);
+	S32  mSize;
+	S32  mIndexLocation; // location of index entry
+	U32  mAccessTime;
+	BOOL mLocks[VFSLOCK_COUNT]; // number of outstanding locks of each type
+
+	static const S32 SERIAL_SIZE;
+};
+//<edit>
 
 class LLVFS
 {

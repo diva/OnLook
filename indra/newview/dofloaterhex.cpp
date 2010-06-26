@@ -473,13 +473,13 @@ void DOFloaterHex::readVFile()
 
 	delete[] buffer;
 
-	floater->mEditor->setValue(new_data);
-	floater->mEditor->setVisible(TRUE);
+	mEditor->setValue(new_data);
+	mEditor->setVisible(TRUE);
 
-	floater->childSetText("status_text", std::string("Editing VFile"));
+	childSetText("status_text", std::string("Editing VFile"));
 
-	floater->childSetEnabled("upload_btn", false);
-	floater->childSetEnabled("save_btn", false);
+	childSetEnabled("upload_btn", false);
+	childSetEnabled("save_btn", false);
 }
 
 // </edit>

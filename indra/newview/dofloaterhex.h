@@ -15,7 +15,7 @@ class DOFloaterHex
 {
 public:
 	DOFloaterHex(LLUUID item_id, BOOL vfs=false, LLAssetType::EType asset_type = LLAssetType::AT_NONE);
-	static void show(LLUUID item_id);
+	static void show(LLUUID item_id, BOOL vfs=false, LLAssetType::EType asset_type = LLAssetType::AT_NONE);
 	BOOL postBuild(void);
 	void close(bool app_quitting);
 	static void imageCallback(BOOL success, 

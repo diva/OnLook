@@ -10,7 +10,7 @@
 #include "lllocalinventory.h"
 #include "llviewerwindow.h"
 #include "llassetconverter.h"
-#include "dohexeditor.h"
+#include "dofloaterhex.h"
 
 LLFloaterVFSExplorer* LLFloaterVFSExplorer::sInstance;
 std::map<LLVFSFileSpecifier, LLVFSFileBlock*> LLFloaterVFSExplorer::sVFSFileMap;
@@ -42,6 +42,7 @@ BOOL LLFloaterVFSExplorer::postBuild()
 	childSetAction("remove_btn", onClickRemove, this);
 	childSetAction("reload_all_btn", onClickReload, this);
 	childSetAction("copy_uuid_btn", onClickCopyUUID, this);
+	childSetAction("edit_data_btn", onClickEditData, this);
 	refresh();
 	return TRUE;
 }
@@ -140,6 +141,7 @@ void LLFloaterVFSExplorer::setEditEnabled(bool enabled)
 	childSetEnabled("name_edit", false);
 	childSetEnabled("id_edit", false);
 	childSetEnabled("type_combo", false);
+	childSetEnabled("edit_data_btn", enabled);
 	childSetEnabled("remove_btn", enabled);
 	childSetEnabled("copy_uuid_btn", enabled);
 }
@@ -175,13 +177,14 @@ void LLFloaterVFSExplorer::onClickReload(void* user_data)
 // static
 void LLFloaterVFSExplorer::onClickEditData(void* user_data)
 {
+	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
 	LLVFSFileSpecifier file;
 	std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator end = sVFSFileMap.end();
 	for(std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator iter = sVFSFileMap.begin(); iter != end; ++iter)
 	{
-		if((*iter).first.mFileID == mEditID)
+		if((*iter).first.mFileID == floaterp->mEditID)
 			file = (*iter).first;
 	}
-	DOHexEditor::showVFS(file.mFileID, file.mFileType);
+	DOFloaterHex::show(file.mFileID, true, file.mFileType);
 }
 // </edit>

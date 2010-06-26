@@ -55,32 +55,25 @@ const S32 BLOCK_LENGTH_INVALID = -1;	// mLength for invalid LLVFSFileBlocks
 LLVFS *gVFS = NULL;
 
 // internal class definitions
-class LLVFSBlock
-{
-public:
-	LLVFSBlock() 
-	{
-		mLocation = 0;
-		mLength = 0;
-	}
-    
-	LLVFSBlock(U32 loc, S32 size)
-	{
-		mLocation = loc;
-		mLength = size;
-	}
-    
-	static bool locationSortPredicate(
-		const LLVFSBlock* lhs,
-		const LLVFSBlock* rhs)
-	{
-		return lhs->mLocation < rhs->mLocation;
-	}
 
-public:
-	U32 mLocation;
-	S32	mLength;		// allocated block size
-};
+LLVFSBlock::LLVFSBlock()
+{
+	mLocation = 0;
+	mLength = 0;
+}
+
+LLVFSBlock::LLVFSBlock(U32 loc, S32 size)
+{
+	mLocation = loc;
+	mLength = size;
+}
+
+bool LLVFSBlock::locationSortPredicate(
+	const LLVFSBlock* lhs,
+	const LLVFSBlock* rhs)
+{
+	return lhs->mLocation < rhs->mLocation;
+}
     
 LLVFSFileSpecifier::LLVFSFileSpecifier()
 :	mFileID(),
@@ -108,117 +101,106 @@ bool LLVFSFileSpecifier::operator==(const LLVFSFileSpecifier &rhs) const
 }
     
     
-class LLVFSFileBlock : public LLVFSBlock, public LLVFSFileSpecifier
+
+LLVFSFileBlock::LLVFSFileBlock() : LLVFSBlock(),  LLVFSFileSpecifier()
 {
-public:
-	LLVFSFileBlock() : LLVFSBlock(), LLVFSFileSpecifier()
-	{
-		init();
-	}
-    
-	LLVFSFileBlock(const LLUUID &file_id, LLAssetType::EType file_type, U32 loc = 0, S32 size = 0)
-		: LLVFSBlock(loc, size), LLVFSFileSpecifier( file_id, file_type )
-	{
-		init();
-	}
+	init();
+}
 
-	void init()
-	{
-		mSize = 0;
-		mIndexLocation = -1;
-		mAccessTime = (U32)time(NULL);
+LLVFSFileBlock::LLVFSFileBlock(const LLUUID &file_id, LLAssetType::EType file_type, U32 loc, S32 size) :
+		LLVFSBlock(loc, size), LLVFSFileSpecifier( file_id, file_type )
+{
+	init();
+}
 
-		for (S32 i = 0; i < (S32)VFSLOCK_COUNT; i++)
-		{
-			mLocks[(EVFSLock)i] = 0;
-		}
-	}
+void LLVFSFileBlock::init()
+{
+	mSize = 0;
+	mIndexLocation = -1;
+	mAccessTime = (U32)time(NULL);
 
-	#ifdef LL_LITTLE_ENDIAN
-	inline void swizzleCopy(void *dst, void *src, int size) { memcpy(dst, src, size); /* Flawfinder: ignore */}
+	for (S32 i = 0; i < (S32)VFSLOCK_COUNT; i++)
+	{
+		mLocks[(EVFSLock)i] = 0;
+	}
+}
 
-	#else
-	
-	inline U32 swizzle32(U32 x)
-	{
-		return(((x >> 24) & 0x000000FF) | ((x >> 8)  & 0x0000FF00) | ((x << 8)  & 0x00FF0000) |((x << 24) & 0xFF000000));
-	}
-	
-	inline U16 swizzle16(U16 x)
-	{
-		return(	((x >> 8)  & 0x000000FF) | ((x << 8)  & 0x0000FF00) );
-	}
-	
-	inline void swizzleCopy(void *dst, void *src, int size) 
-	{
-		if(size == 4)
-		{
-			((U32*)dst)[0] = swizzle32(((U32*)src)[0]); 
-		}
-		else if(size == 2)
-		{
-			((U16*)dst)[0] = swizzle16(((U16*)src)[0]); 
-		}
-		else
-		{
-			// Perhaps this should assert...
-			memcpy(dst, src, size);	/* Flawfinder: ignore */
-		}
-	}
-	
-	#endif
+#ifdef LL_LITTLE_ENDIAN
+void LLVFSFileBlock::swizzleCopy(void *dst, void *src, int size) { memcpy(dst, src, size); /* Flawfinder: ignore */}
 
-	void serialize(U8 *buffer)
+#else
+
+U32 LLVFSFileBlock::swizzle32(U32 x)
+{
+	return(((x >> 24) & 0x000000FF) | ((x >> 8)  & 0x0000FF00) | ((x << 8)  & 0x00FF0000) |((x << 24) & 0xFF000000));
+}
+
+U16 LLVFSFileBlock::swizzle16(U16 x)
+{
+	return(	((x >> 8)  & 0x000000FF) | ((x << 8)  & 0x0000FF00) );
+}
+
+void LLVFSFileBlock::swizzleCopy(void *dst, void *src, int size)
+{
+	if(size == 4)
 	{
-		swizzleCopy(buffer, &mLocation, 4);
-		buffer += 4;
-		swizzleCopy(buffer, &mLength, 4);
-		buffer +=4;
-		swizzleCopy(buffer, &mAccessTime, 4);
-		buffer +=4;
-		memcpy(buffer, &mFileID.mData, 16); /* Flawfinder: ignore */	
-		buffer += 16;
-		S16 temp_type = mFileType;
-		swizzleCopy(buffer, &temp_type, 2);
-		buffer += 2;
-		swizzleCopy(buffer, &mSize, 4);
+		((U32*)dst)[0] = swizzle32(((U32*)src)[0]);
 	}
-    
-	void deserialize(U8 *buffer, const S32 index_loc)
+	else if(size == 2)
 	{
-		mIndexLocation = index_loc;
-    
-		swizzleCopy(&mLocation, buffer, 4);
-		buffer += 4;
-		swizzleCopy(&mLength, buffer, 4);
-		buffer += 4;
-		swizzleCopy(&mAccessTime, buffer, 4);
-		buffer += 4;
-		memcpy(&mFileID.mData, buffer, 16);
-		buffer += 16;
-		S16 temp_type;
-		swizzleCopy(&temp_type, buffer, 2);
-		mFileType = (LLAssetType::EType)temp_type;
-		buffer += 2;
-		swizzleCopy(&mSize, buffer, 4);
+		((U16*)dst)[0] = swizzle16(((U16*)src)[0]);
 	}
-    
-	static BOOL insertLRU(LLVFSFileBlock* const& first,
-						  LLVFSFileBlock* const& second)
+	else
 	{
-		return (first->mAccessTime == second->mAccessTime)
-			? *first < *second
-			: first->mAccessTime < second->mAccessTime;
+		// Perhaps this should assert...
+		memcpy(dst, src, size);	/* Flawfinder: ignore */
 	}
-    
-public:
-	S32  mSize;
-	S32  mIndexLocation; // location of index entry
-	U32  mAccessTime;
-	BOOL mLocks[VFSLOCK_COUNT]; // number of outstanding locks of each type
-    
-	static const S32 SERIAL_SIZE;
-};
+}
+
+#endif
+
+void LLVFSFileBlock::serialize(U8 *buffer)
+{
+	swizzleCopy(buffer, &mLocation, 4);
+	buffer += 4;
+	swizzleCopy(buffer, &mLength, 4);
+	buffer +=4;
+	swizzleCopy(buffer, &mAccessTime, 4);
+	buffer +=4;
+	memcpy(buffer, &mFileID.mData, 16); /* Flawfinder: ignore */
+	buffer += 16;
+	S16 temp_type = mFileType;
+	swizzleCopy(buffer, &temp_type, 2);
+	buffer += 2;
+	swizzleCopy(buffer, &mSize, 4);
+}
+
+void LLVFSFileBlock::deserialize(U8 *buffer, const S32 index_loc)
+{
+	mIndexLocation = index_loc;
+
+	swizzleCopy(&mLocation, buffer, 4);
+	buffer += 4;
+	swizzleCopy(&mLength, buffer, 4);
+	buffer += 4;
+	swizzleCopy(&mAccessTime, buffer, 4);
+	buffer += 4;
+	memcpy(&mFileID.mData, buffer, 16);
+	buffer += 16;
+	S16 temp_type;
+	swizzleCopy(&temp_type, buffer, 2);
+	mFileType = (LLAssetType::EType)temp_type;
+	buffer += 2;
+	swizzleCopy(&mSize, buffer, 4);
+}
+
+BOOL LLVFSFileBlock::insertLRU(LLVFSFileBlock* const& first,
+					  LLVFSFileBlock* const& second)
+{
+	return (first->mAccessTime == second->mAccessTime)
+		? *first < *second
+		: first->mAccessTime < second->mAccessTime;
+}
 
 // Helper structure for doing lru w/ stl... is there a simpler way?
 struct LLVFSFileBlock_less
