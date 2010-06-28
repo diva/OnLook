@@ -46,7 +46,6 @@ DOFloaterHex::DOFloaterHex(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_ty
 		mAssetId = mItem->getAssetUUID();
 		mAssetType = mItem->getType();
 	}
-	//llinfos << "Asset ID: " << item_id.asString() << llendl;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_hex.xml");
 }
 
