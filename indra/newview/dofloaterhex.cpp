@@ -31,17 +31,22 @@ DOFloaterHex::DOFloaterHex(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_ty
 :	LLFloater()
 {
 	sInstances.push_back(this);
+
+	mVFS = vfs;
+
+	//we are editing an asset directly from the VFS
 	if(vfs)
 	{
-		mVFS = true;
 		mAssetId = item_id;
 		mAssetType = asset_type;
+
+	//we are editing an inventory item
 	} else {
-		mVFS = false;
+		mItem = (LLInventoryItem*)gInventory.getItem(item_id);
 		mAssetId = mItem->getAssetUUID();
 		mAssetType = mItem->getType();
 	}
-	llinfos << "Asset ID: " << item_id.asString() << llendl;
+	//llinfos << "Asset ID: " << item_id.asString() << llendl;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_hex.xml");
 }
 
@@ -57,10 +62,9 @@ void DOFloaterHex::show(LLUUID item_id, BOOL vfs, LLAssetType::EType asset_type)
 			gFloaterView->getNewFloaterPosition(&left, &top);
 			LLRect rect = gSavedSettings.getRect("FloaterHexRect");
 			rect.translate(left - rect.mLeft, top - rect.mTop);
+
 			DOFloaterHex* floaterp = new DOFloaterHex(item_id);
 			floaterp->setRect(rect);
-
-			floaterp->mItem = item;
 
 			gFloaterView->adjustToFitScreen(floaterp, FALSE);
 		}
