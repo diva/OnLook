@@ -8,6 +8,9 @@
 #include "lllocalinventory.h"
 #include "llviewerwindow.h"
 #include "llassetconverter.h"
+#include "llviewerimagelist.h"
+#include "llviewerimage.h"
+
 LLFloaterVFS* LLFloaterVFS::sInstance;
 std::list<LLFloaterVFS::entry> LLFloaterVFS::mFiles;
 LLFloaterVFS::LLFloaterVFS()
@@ -201,7 +204,10 @@ void LLFloaterVFS::removeEntry()
 	{
 		if((*iter).mID == mEditID)
 		{
-			gVFS->removeFile((*iter).mID, (*iter).mType);
+			if((*iter).mType == LLAssetType::AT_TEXTURE)
+				gImageList.deleteImage(gImageList.hasImage( (*iter).mID ));
+			else
+				gVFS->removeFile((*iter).mID, (*iter).mType);
 			iter = mFiles.erase(iter);
 		}
 		else ++iter;
@@ -247,13 +253,36 @@ void LLFloaterVFS::onClickAdd(void* user_data)
 		fp.open(temp_filename, LL_APR_RB, LLAPRFile::global, &file_size);
 		if(fp.getFileHandle())
 		{
-			LLVFile file(gVFS, asset_id, asset_type, LLVFile::WRITE);
-			file.setMaxSize(file_size);
-			const S32 buf_size = 65536;
-			U8 copy_buf[buf_size];
-			while ((file_size = fp.read(copy_buf, buf_size)))
-				file.write(copy_buf, file_size);
-			fp.close();
+			if(asset_type == LLAssetType::AT_TEXTURE)
+			{
+				fp.close();
+				//load the texture using built in functions
+				LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C;
+				if( !image_j2c->loadAndValidate( temp_filename ) )
+				{
+					llinfos << "Image: " << file_name << " is corrupt." << llendl;
+					return;
+				}
+				LLPointer<LLImageRaw> image_raw = new LLImageRaw;
+				if( !image_j2c->decode(image_raw,0.0f) )
+				{
+					llinfos << "Image: " << file_name << " is corrupt." << llendl;
+					return;
+				}
+				LLPointer<LLViewerImage> imagep = new LLViewerImage(asset_id);
+				imagep->createGLTexture(0, image_raw, 0, TRUE, LLViewerImageBoostLevel::BOOST_NONE);
+				gImageList.addImage(imagep);
+			}
+			else
+			{
+				LLVFile file(gVFS, asset_id, asset_type, LLVFile::WRITE);
+				file.setMaxSize(file_size);
+				const S32 buf_size = 65536;
+				U8 copy_buf[buf_size];
+				while ((file_size = fp.read(copy_buf, buf_size)))
+					file.write(copy_buf, file_size);
+				fp.close();
+			}
 		}
 		else
 		{
