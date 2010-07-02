@@ -156,7 +156,7 @@ private:
 
 public:
 	S16 mMemType; // debug
-	
+	std::string decodedImageComment; //lol comment decoding haha
 	static BOOL sSizeOverride;
 };
 

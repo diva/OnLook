@@ -88,6 +88,10 @@ public:
 
 	static void updateImpostors();
 
+	// <edit>
+	void getClientTag(std::string& client, LLColor4& color, BOOL useComment = FALSE);
+	// </edit>
+	
 	//--------------------------------------------------------------------
 	// LLViewerObject interface
 	//--------------------------------------------------------------------

@@ -523,6 +523,7 @@ BOOL LLViewerImage::createTexture(S32 usename/*= 0*/)
 		
 		U32 raw_width = mRawImage->getWidth() << mRawDiscardLevel;
 		U32 raw_height = mRawImage->getHeight() << mRawDiscardLevel;
+		decodedComment = mRawImage->decodedImageComment;
 		if( raw_width > MAX_IMAGE_SIZE || raw_height > MAX_IMAGE_SIZE )
 		{
 			llinfos << "Width or height is greater than " << MAX_IMAGE_SIZE << ": (" << raw_width << "," << raw_height << ")" << llendl;

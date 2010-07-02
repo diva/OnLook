@@ -13,6 +13,7 @@
 		<column name="distance" label="Dist." width="48" tool_tip="Distance from your avatar (red=within chat range, yellow=within shout range, green=within draw distance)"/>
 		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
 		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
+		<column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
 	</scroll_list>
 
 	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"

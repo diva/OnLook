@@ -3012,7 +3012,162 @@ void LLVOAvatar::idleUpdateWindEffect()
 		}
 	}
 }
+void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComment)
+{
+	std::string uuid_str = getTE(0)->getID().asString(); //UUID of the head texture
 
+	if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
+	{
+		color = LLColor4(1.f, 1.0f, 1.0f);
+		client = "Unknown viewer";
+	}
+	else if (uuid_str == "ccda2b3b-e72c-a112-e126-fee238b67218")
+	{
+		// textures other than head are 4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6
+		color = LLColor4(0.f, 1.0f, 0.0f);
+		client = "Emerald";
+		
+	}
+	else if (uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
+	{
+		color = LLColor4(1.0f, 0.3f, 0.5f);
+		client = "MoyMix";
+		
+	}
+	else if (uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
+	{
+		color = LLColor4(1.0f, 0.3f, 0.5f);
+		client = "MoyMix/B";
+		
+	}
+	else if (uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
+	{
+		color = LLColor4(1.0f, 0.3f, 0.5f);
+		client = "MoyMix/nolife";
+		
+	}
+	//else if (uuid_str == "abbca853-30ba-49c1-a1e7-2a5b9a70573f")
+	//{
+	//	color = LLColor4(0.5f, 0.75f, 1.0f);
+	//	strcat(line, " (CryoLife/" + "A)");
+	//	
+	//}
+	else if (uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
+	{
+		color = LLColor4(0.5f, 0.75f, 1.0f);
+		client = "CryoLife";
+		
+	}
+	else if (uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
+	{
+		color = LLColor4(0.5f, 0.75f, 1.0f);
+		client = "Phoxy SL";
+		
+	}
+	else if (uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
+	{
+		color = LLColor4(0.7f, 0.7f, 0.7f);
+		client = "VLife";
+		
+	}
+	else if (uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
+	{
+		color = LLColor4(1.f, 0.0f, 0.0f);
+		client = "GridProxy/LordGregGreg";
+		
+	}
+	else if (uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
+	{
+		color = LLColor4(1.f, 1.f, 0.0f);
+		client = "GridProxy/DayOh";
+		
+	}
+	else if (uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
+	{
+		color = LLColor4(1.0f, 0.0f, 1.0f);
+		client = "PSL/A";
+		
+	}
+	else if (uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
+	{
+		color = LLColor4(1.0f, 0.0f, 1.0f);
+		client = "PSL/B";
+		
+	}
+	else if (uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
+	{
+		color = LLColor4(1.f, 1.0f, 1.0f);
+		client = "Emerald/GEMINI";
+		
+	}
+	else if (uuid_str == "e6f9c019-8783-dc3e-b265-41f1510333fc")
+	{
+		color = LLColor4(0.4f,0.4f,0.4f);
+		client = "Onyx";
+		
+	}
+	else if (uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
+	{
+		color = LLColor4(0.9f, 0.9f, 0.9f);
+		client = "GEMINI Bot";
+		
+	}
+	else if (uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
+	{
+		color = LLColor4(1.0f, 0.5f, 0.4f);
+		client = "tyk3n";
+		
+	}
+	else if (uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
+	{
+		color = gColors.getColor( "AvatarNameColor" );
+		client = "NeilLife";
+		
+	}
+	else if (uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
+	{
+		color = LLColor4::purple;
+		client = "Imprudence";
+		
+	}
+	else if (uuid_str == "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
+	{
+		color = LLColor4(0.5f, 0.5f, 0.5f);
+		client = "Viewer 2.0";
+		
+	}
+	else if (uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
+	{
+		color = LLColor4(0.65f, 0.93f, 0.14f);
+		client = "Nano";
+		
+	}
+	else if (uuid_str == "c58fca06-33b3-827d-d81c-a886a631affc")
+	{
+		color = LLColor4(1.0f,0.61176f,0.0f);
+		client = "Whale";
+		
+	}
+	else
+	{
+		color = gColors.getColor( "AvatarNameColor" );
+		color.setAlpha(1.f);
+		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
+	}
+
+	if(useComment)
+	{
+		LLUUID id = getTE(9)->getID();
+		LLPointer<LLViewerImage> image = gImageList.getImage(id);
+		if(image && image->decodedComment.length())
+		{
+			if(client.length())
+				client += " , " + image->decodedComment;
+			else
+				client = image->decodedComment;
+		}
+	}
+}
 void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 {
 	// update chat bubble
@@ -3057,6 +3212,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			new_name = TRUE;
 		}
 
+		// <edit>
+		std::string client;
+		// </edit>
+
 		// First Calculate Alpha
 		// If alpha > 0, create mNameText if necessary, otherwise delete it
 		{
@@ -3096,10 +3255,16 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					new_name = TRUE;
 				}
 				
+				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 				// <edit>
-				//LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-				//avatar_name_color.setAlpha(alpha);
-				
+				if(isFullyLoaded() && !mIsSelf)
+				{
+					getClientTag(client,avatar_name_color);	
+				}
+				// </edit>
+				avatar_name_color.setAlpha(alpha);
+				mNameText->setColor(avatar_name_color);
+
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				mNameText->setUsePixelSize(TRUE);
 				LLVector3 pixel_right_vec;
@@ -3153,7 +3318,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				(!title && !mTitle.empty()) ||
 				(title && mTitle != title->getString()) ||
 				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
-				|| is_appearance != mNameAppearance)
+				|| is_appearance != mNameAppearance
+				|| client.length() ) // <edit>
 			{
 				std::string line;
 				if (!sRenderGroupTitles)
@@ -3179,133 +3345,20 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				line += lastname->getString();
 				BOOL need_comma = FALSE;
 
-				// <edit>
-				if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
-				{
-					mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
-					line += " (Unknown viewer)";
-				}
-				else if(isFullyLoaded() && !mIsSelf)
-				{
-					std::string uuid_str = getTE(0)->getID().asString();
-
-					if(uuid_str == "ccda2b3b-e72c-a112-e126-fee238b67218")
-					{
-						// textures other than head are 4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6
-						mNameText->setColor(LLColor4(0.f, 1.0f, 0.0f));
-						line += " (Emerald)";
-					}
-					else if(uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						line += " (MoyMix)";
-					}
-					else if(uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						line += " (MoyMix/B)";
-					}
-					else if(uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.3f, 0.5f));
-						line += " (MoyMix/nolife)";
-					}
-					//else if(uuid_str == "abbca853-30ba-49c1-a1e7-2a5b9a70573f")
-					//{
-					//	mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
-					//	strcat(line, " (CryoLife/" + "A)");
-					//}
-					else if(uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
-					{
-						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
-						line += " (CryoLife)";
-					}
-					else if(uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
-					{
-						mNameText->setColor(LLColor4(0.5f, 0.75f, 1.0f));
-						line += " (Phoxy SL)";
-					}
-					else if(uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
-					{
-						mNameText->setColor(LLColor4(0.7f, 0.7f, 0.7f));
-						line += " (VLife)";
-					}
-					else if(uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
-					{
-						mNameText->setColor(LLColor4(1.f, 0.0f, 0.0f));
-						line += " (GridProxy/LordGregGreg)";
-					}
-					else if(uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
-					{
-						mNameText->setColor(LLColor4(1.f, 1.f, 0.0f));
-						line += " (GridProxy/DayOh)";
-					}
-					else if(uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
-						line += " (PSL/A)";
-					}
-					else if(uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.0f, 1.0f));
-						line += " (PSL/B)";
-					}
-					else if(uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
-					{
-						mNameText->setColor(LLColor4(1.f, 1.0f, 1.0f));
-						line += " (Emerald/GEMINI)";
-					}
-					else if(uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
-					{
-						mNameText->setColor(LLColor4(0.9f, 0.9f, 0.9f));
-						line += " (GEMINI Bot)";
-					}
-					else if(uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
-					{
-						mNameText->setColor(LLColor4(1.0f, 0.5f, 0.4f));
-						line += " (tyk3n)";
-					}
-					else if(uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
-					{
-						mNameText->setColor(gColors.getColor( "AvatarNameColor" ));
-						line += " (NeilLife)";
-					}
-					else if(uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
-					{
-						mNameText->setColor(LLColor4::purple);
-						line += " (Imprudence)";
-					}
-					else if(uuid_str == "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
-					{
-						mNameText->setColor(LLColor4(0.5f, 0.5f, 0.5f));
-						line += " (Viewer 2.0)";
-					}
-					else if(uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
-					{
-						mNameText->setColor(LLColor4(0.65f, 0.93f, 0.14f));
-						line += " (Nano)";
-					}
-
-					else
-					{
-						LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-						avatar_name_color.setAlpha(1.f);
-						//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl; 
-						mNameText->setColor(avatar_name_color);
-					}
-				}
-				else
-				{
-					LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-					avatar_name_color.setAlpha(1.f);
-					mNameText->setColor(avatar_name_color);
-				}
-				// </edit>
-				if (is_away || is_muted || is_busy)
+				if (client.length() || is_away || is_muted || is_busy)
 				{
 					line += " (";
+					if (client != "")
+					{
+						line += client;
+						need_comma = TRUE;
+					}
 					if (is_away)
 					{
+						if (need_comma)
+						{
+							line += ", ";
+						}
 						line += "Away";
 						need_comma = TRUE;
 					}

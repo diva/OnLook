@@ -123,6 +123,8 @@ private:
 	void fillVer();
 	static void onCheckMAC(LLUICtrl* ctrl, void* userData);
 	static void onCheckID0(LLUICtrl* ctrl, void* userData);
+	static void onClickMACRandom(void* userData);
+	static void onClickID0Random(void* userData);
 	// </edit>
 
 public:
