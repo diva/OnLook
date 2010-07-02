@@ -118,6 +118,9 @@
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
 	     name="mac_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="Small" />
+	<button bottom_delta="0" follows="left|bottom" font="SansSerif" halign="center"
+	     height="20" label="r" left_delta="235" mouse_opaque="true" name="mac_random_btn" scale_image="TRUE"
+	     width="20" />
 	<check_box bottom="8" follows="left|bottom" font="SansSerifSmall" height="16"
 	     initial_value="false" label="ID0:" control_name="SpecifyID0"
 	     left="750" mouse_opaque="true" name="id0_check" width="138" font_size="Small" />
@@ -125,7 +128,10 @@
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
 	     height="20" left_delta="64" max_length="32" mouse_opaque="true"
 	     name="id0_edit" select_all_on_focus_received="true" width="230" enabled="false" font_size="Small" />
-	     
+	<button bottom_delta="0" follows="left|bottom" font="SansSerif" halign="center"
+	     height="20" label="r" left_delta="235" mouse_opaque="true" name="id0_random_btn" scale_image="TRUE"
+	     width="20" />
+
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerif" h_pad="0" halign="left" height="16"

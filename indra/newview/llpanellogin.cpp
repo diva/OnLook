@@ -386,12 +386,17 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	getChild<LLCheckBoxCtrl>("id0_check")->setValue(specify_id0);
 	getChild<LLLineEditor>("id0_edit")->setEnabled(specify_id0);
 
+	childSetEnabled("mac_random_btn",specify_mac);
+	childSetEnabled("id0_random_btn",specify_id0);
+
 	fillMAC();
 	fillID0();
 	fillVer();
 
 	childSetCommitCallback("mac_check", onCheckMAC, this);
 	childSetCommitCallback("id0_check", onCheckID0, this);
+	childSetAction("mac_random_btn", onClickMACRandom, this);
+	childSetAction("id0_random_btn", onClickID0Random, this);
 	// </edit>
 }
 
@@ -440,6 +445,7 @@ void LLPanelLogin::onCheckMAC(LLUICtrl* ctrl, void* userData)
 	bool enabled = ((LLCheckBoxCtrl*)ctrl)->getValue();
 	gSavedSettings.setBOOL("SpecifyMAC", enabled);
 	panel->getChild<LLLineEditor>("mac_edit")->setEnabled(enabled);
+	panel->childSetEnabled("mac_random_btn",enabled);
 	panel->fillMAC();
 }
 
@@ -450,6 +456,44 @@ void LLPanelLogin::onCheckID0(LLUICtrl* ctrl, void* userData)
 	bool enabled = ((LLCheckBoxCtrl*)ctrl)->getValue();
 	gSavedSettings.setBOOL("SpecifyID0", enabled);
 	panel->getChild<LLLineEditor>("id0_edit")->setEnabled(enabled);
+	panel->childSetEnabled("id0_random_btn",enabled);
+	panel->fillID0();
+}
+// static
+void LLPanelLogin::onClickMACRandom(void* userData)
+{
+	LLPanelLogin* panel = (LLPanelLogin*)userData;
+	unsigned char seed[16];		/* Flawfinder: ignore */
+	LLUUID::getNodeID(&seed[0]);
+	seed[6]='U';
+	seed[7]='W';
+	LLUUID::getSystemTime((uuid_time_t *)(&seed[8]));
+
+	char hash_string[MD5HEX_STR_SIZE];
+	LLMD5 hash;
+	hash.update( seed , 16 );
+	hash.finalize();
+	hash.hex_digest(hash_string);
+	gSavedSettings.setString("SpecifiedMAC",std::string(hash_string));
+	panel->fillMAC();
+}
+
+// static
+void LLPanelLogin::onClickID0Random(void* userData)
+{
+	LLPanelLogin* panel = (LLPanelLogin*)userData;
+	unsigned char seed[16];		/* Flawfinder: ignore */
+	LLUUID::getNodeID(&seed[0]);
+	seed[6]='W';
+	seed[7]='U';
+	LLUUID::getSystemTime((uuid_time_t *)(&seed[8]));
+
+	char hash_string[MD5HEX_STR_SIZE];
+	LLMD5 hash;
+	hash.update( seed , 16 );
+	hash.finalize();
+	hash.hex_digest(hash_string);
+	gSavedSettings.setString("SpecifiedID0",std::string(hash_string));
 	panel->fillID0();
 }
 // </edit>
