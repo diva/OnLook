@@ -40,6 +40,7 @@
 #include "llhandmotion.h"
 #include "llcriticaldamp.h"
 
+
 //-----------------------------------------------------------------------------
 // Constants
 //-----------------------------------------------------------------------------
@@ -220,7 +221,7 @@ BOOL LLEditingMotion::onUpdate(F32 time, U8* joint_mask)
 	target = target * target_dist;
 	if (!target.isFinite())
 	{
-		llerrs << "Non finite target in editing motion with target distance of " << target_dist << 
+		llwarns << "Non finite target in editing motion with target distance of " << target_dist << 
 			" and focus point " << focus_pt << " and pointAtPt: " << *pointAtPt << llendl;
 	}
 	

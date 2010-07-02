@@ -178,6 +178,10 @@ public:
 
 	S32 getJointNum() const { return mJointNum; }
 	void setJointNum(S32 joint_num) { mJointNum = joint_num; }
+
+	// <edit>
+	std::string exportString(U32 tabs = 0);
+	// </edit>
 };
 #endif // LL_LLJOINT_H
 
