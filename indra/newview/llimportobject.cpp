@@ -421,7 +421,7 @@ LLImportObject::LLImportObject(std::string id, LLSD prim)
 	importIsAttachment = false;
 	mId = id;
 	mParentId = "";
-	mPrimName = "Primitive";
+	mPrimName = "Object";
 	if(prim.has("parent"))
 	{
 		mParentId = prim["parent"].asString();

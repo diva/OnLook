@@ -526,4 +526,35 @@ void LLJoint::clampRotation(LLQuaternion old_rot, LLQuaternion new_rot)
 //	}
 }
 
+// <edit>
+std::string LLJoint::exportString(U32 tabs)
+{
+	std::string out;
+	for(U32 i = 0; i < tabs; i++) out.append("\t");
+	out.append("<joint ");
+	out.append(llformat("name=\"%s\" ", this->mName.c_str()));
+	LLVector3 position = getPosition();
+	out.append(llformat("pos=\"<%f, %f, %f>\" ", position.mV[0], position.mV[1], position.mV[2]));
+	LLQuaternion rotation = getRotation();
+	out.append(llformat("rot=\"<%f, %f, %f, %f>\" ", rotation.mQ[0], rotation.mQ[1], rotation.mQ[2], rotation.mQ[3]));
+	if(mChildren.empty())
+	{
+		out.append("/>\n");
+	}
+	else
+	{
+		out.append(">\n");
+		int next_tab = tabs + 1;
+		child_list_t::iterator end = mChildren.end();
+		for(child_list_t::iterator iter = mChildren.begin(); iter != end; ++iter)
+		{
+			out.append((*iter)->exportString(next_tab));
+		}
+		for(U32 i = 0; i < tabs; i++) out.append("\t");
+		out.append("</joint>\n");
+	}
+	return out;
+}
+// </edit>
+
 // End

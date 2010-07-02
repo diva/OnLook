@@ -158,6 +158,9 @@ void LLPose::setWeight(F32 weight)
 		iter != mJointMap.end();
 		++iter)
 	{
+		// <edit>
+		// there was a crash here
+		// </edit>
 		iter->second->setWeight(weight);
 	}
 	mWeight = weight;
