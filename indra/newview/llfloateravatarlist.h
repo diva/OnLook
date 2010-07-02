@@ -265,7 +265,7 @@ private:
 
 	static void onCommitUpdateRate(LLUICtrl*, void *userdata);
 	static void onClickSendKeys(void *userdata);
-	static void onConfirmRadarChatKeys(S32 option, LLSD payload);
+	static bool onConfirmRadarChatKeys(const LLSD& notification, const LLSD& response );
 
 	static void callbackIdle(void *userdata);
 

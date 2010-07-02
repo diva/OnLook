@@ -2039,6 +2039,11 @@ BOOL LLFloaterSnapshot::postBuild()
 	sInstance->getRootView()->addChild(previewp);
 	sInstance->getRootView()->addChild(gSnapshotFloaterView);
 
+	// <edit>
+	gSavedSettings.setBOOL("TemporaryUpload",FALSE);
+        childSetValue("temp_check",FALSE);
+	// </edit>
+
 	Impl::sPreviewHandle = previewp->getHandle();
 
 	impl.updateControls(this);

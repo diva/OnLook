@@ -505,8 +505,12 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 				// draw inactive speakers in gray
 				name_cell->setColor(LLColor4::grey4);
 			}
+			else
+			{
+				name_cell->setColor(LLColor4::black);
+			}
 			// <edit>
-			else if(speakerp->mType == LLSpeaker::SPEAKER_AGENT && speakerp->mID != gAgent.getID())
+			if(speakerp->mType == LLSpeaker::SPEAKER_AGENT && speakerp->mID != gAgent.getID())
 			{
 				// let us check to see if they are actually in the sim
 				LLViewerRegion* regionp = gAgent.getRegion();
@@ -519,10 +523,6 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 				}
 			}
 			// </edit>
-			else
-			{
-				name_cell->setColor(LLColor4::black);
-			}
 
 			std::string speaker_name;
 			if (speakerp->mDisplayName.empty())

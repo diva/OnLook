@@ -1203,13 +1203,15 @@ void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
         }
 }
 // static
-void LLFloaterAvatarList::onConfirmRadarChatKeys(S32 option, LLSD payload)
+bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const LLSD& response )
 {
+	S32 option = LLNotification::getSelectedOption(notification, response);
 	if(option == 0) // yes
 	{
 		gSavedSettings.setBOOL("RadarChatKeys",TRUE);
                 LLFloaterAvatarList::getInstance()->sendKeys();
 	}
+	return false;
 }
 //static
 void LLFloaterAvatarList::onClickSendKeys(void *userdata)

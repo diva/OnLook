@@ -148,6 +148,18 @@ No tutorial is currently available.
 
   <notification
    icon="alertmodal.tga"
+   name="GenericAlertYesNoCancel"
+   type="alertmodal">
+[MESSAGE]
+    <usetemplate
+     name="yesnocancelbuttons"
+     notext="No"
+     yestext="Yes"
+     canceltext="Cancel"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="BadInstallation"
    type="alertmodal">
 An error occurred while updating Snowglobe. Please download the latest version from secondlife.com.
