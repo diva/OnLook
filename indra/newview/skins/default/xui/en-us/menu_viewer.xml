@@ -334,7 +334,7 @@
 			<on_check control="ShowMiniMap" />
 		</menu_item_check>
 		<menu_item_check bottom="-273" enabled="true" height="19" label="Radar" left="0"
-		     mouse_opaque="true" name="Radar" shortcut="control|alt|shift|R" width="211">
+		     mouse_opaque="true" name="Radar" shortcut="control|shift|A" width="211">
 			<on_click function="View.ToggleAvatarList" userdata="radar" />
 			<on_check control="ShowRadar" />
 		</menu_item_check>
@@ -349,7 +349,7 @@
 		<menu_item_separator bottom="-300" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator100" width="211" />
 		<menu_item_check bottom="-300" enabled="false" height="20" label="Area Search" left="0"
-		     mouse_opaque="true" name="Area Search" shortcut="control|shift|A" width="155">
+		     mouse_opaque="true" name="Area Search" width="155">
 			<on_click function="ShowFloater" userdata="areasearch" />
 			<on_check function="FloaterVisible" userdata="areasearch" />
 		</menu_item_check>
