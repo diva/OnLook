@@ -221,9 +221,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>eb4a503020a0573e7303f9066109fdcc</string>
+            <string>d631c18f447ff4d413525f3c7d52db42</string>
             <key>url</key>
-            <uri>http://modularsystems.sl/libraries/boost-1.39.0-windows-20100318.tar.bz2</uri>
+            <uri>http://cloud.github.com/downloads/HazimGazov/Inertia/boost-1.39-windows.tar.bz2</uri>
           </map>
         </map>
       </map>
