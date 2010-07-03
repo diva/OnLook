@@ -810,10 +810,11 @@ BOOL LLFloaterMessageLog::onClickCloseCircuit(void* user_data)
 	return TRUE;
 }
 // static
-void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
+bool LLFloaterMessageLog::onConfirmCloseCircuit(const LLSD& notification, const LLSD& response )
 {
-	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(LLHost(payload["circuittoclose"].asString()));
-	if(!cdp) return;
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	LLCircuitData* cdp = gMessageSystem->mCircuitInfo.findCircuit(LLHost(notification["payload"]["circuittoclose"].asString()));
+	if(!cdp) return false;
 	LLViewerRegion* regionp = LLWorld::getInstance()->getRegion(cdp->getHost());
 	switch(option)
 	{
@@ -822,7 +823,7 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 		gMessageSystem->sendReliable(cdp->getHost());
 		break;
 	case 2: // cancel
-		return;
+		return false;
 		break;
 	case 1: // no
 	default:
@@ -841,12 +842,15 @@ void LLFloaterMessageLog::onConfirmCloseCircuit(S32 option, LLSD payload)
 		payload["regionhost"] = myhost.getString();
 		LLNotifications::instance().add("GenericAlertYesCancel", args, payload, onConfirmRemoveRegion);
 	}
+	return false;
 }
 // static
-void LLFloaterMessageLog::onConfirmRemoveRegion(S32 option, LLSD payload)
+bool LLFloaterMessageLog::onConfirmRemoveRegion(const LLSD& notification, const LLSD& response )
 {
+	S32 option = LLNotification::getSelectedOption(notification, response);
 	if(option == 0) // yes
-		LLWorld::getInstance()->removeRegion(LLHost(payload["regionhost"].asString()));
+		LLWorld::getInstance()->removeRegion(LLHost(notification["payload"]["regionhost"].asString()));
+	return false;
 }
 // static
 void LLFloaterMessageLog::onClickFilterApply(void* user_data)

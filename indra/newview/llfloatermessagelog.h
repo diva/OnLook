@@ -61,8 +61,8 @@ public:
 	static void onCommitMessageLog(LLUICtrl* ctrl, void* user_data);
 	static void onCommitFilter(LLUICtrl* ctrl, void* user_data);
 	static BOOL onClickCloseCircuit(void* user_data);
-	static void onConfirmCloseCircuit(S32 option, LLSD payload);
-	static void onConfirmRemoveRegion(S32 option, LLSD payload);
+	static bool onConfirmCloseCircuit(const LLSD& notification, const LLSD& response );
+	static bool onConfirmRemoveRegion(const LLSD& notification, const LLSD& response );
 	static void onClickFilterApply(void* user_data);
 	void startApplyingFilter(std::string filter, BOOL force);
 	void stopApplyingFilter();
