@@ -478,7 +478,7 @@ BOOL LLImageJ2C::validate(U8 *data, U32 file_size)
 	if ( res )
 	{
 		// Check to make sure that this instance has been initialized with data
-		if (!getData() || (0 == getDataSize()))
+		if (!getData() || (getDataSize() < 16))
 		{
 			setLastError("LLImageJ2C uninitialized");
 			res = FALSE;
