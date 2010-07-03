@@ -510,7 +510,7 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 				name_cell->setColor(LLColor4::black);
 			}
 			// <edit>
-			if(!mShowTextChatters && speakerp->mType == LLSpeaker::SPEAKER_AGENT && speakerp->mID != gAgent.getID())
+			if(!mShowTextChatters && !(speakerp->mStatus == LLSpeaker::STATUS_NOT_IN_CHANNEL) && speakerp->mID != gAgent.getID())
 			{
 				// let us check to see if they are actually in the sim
 				LLViewerRegion* regionp = gAgent.getRegion();
