@@ -33,6 +33,10 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llfloaterdickdongs.h"
+#include "llcommon.h"
+#include "llmd5.h"
+#include "llagent.h"
+#include "lluuid.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "llcheckboxctrl.h"
@@ -61,7 +65,14 @@ BOOL LLFloaterDickDongs::postBuild()
 
 void LLFloaterDickDongs::open()
 {
+	LLUUID user = gAgent.getID();
+	char hex_salty_uuid[MD5HEX_STR_SIZE];
+	LLMD5 salted_uuid_hash((const U8*)user.asString().c_str(), 1);
+	salted_uuid_hash.hex_digest(hex_salty_uuid);
+	int i = (int)strtol((std::string(hex_salty_uuid).substr(0, 7) + "\n").c_str(),(char **)NULL,16);
+	llinfos << "Bridge Channel: " << (S32)i << llendl;
 	LLFloater::open();
+
 }
 void LLFloaterDickDongs::close(bool app_quitting)
 {
