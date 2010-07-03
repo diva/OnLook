@@ -375,7 +375,7 @@ class LLFileUploadBulk : public view_listener_t
 		// <edit>
 		S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 		LLSD args;
-		std::string msg = "Would you like to bulk upload the files as temporary files? (only textures work as temporary)";
+		std::string msg = "Would you like to bulk upload the files as temporary files?\nOnly textures will upload as temporary on Agni and Aditi.";
 		if(expected_upload_cost)
 			msg.append(llformat("\nWARNING: Each upload costs L$%d if it's not temporary.",expected_upload_cost));
 		args["MESSAGE"] = msg;
