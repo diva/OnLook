@@ -73,10 +73,10 @@ std::vector<U8> LLJ2cParser::GetNextComment()
 //static
 std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 {
-	LLJ2cParser* parser = new LLJ2cParser(data,data_size);
+	LLJ2cParser parser = LLJ2cParser(data,data_size);
 	while(1)
 	{
-	    std::vector<U8> comment = parser->GetNextComment();
+	    std::vector<U8> comment = parser.GetNextComment();
 	    if (comment.empty()) break; //exit loop
 	    if (comment[1] == 0x00 && comment.size() == 130)
 	    {
@@ -118,12 +118,10 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 		if(i < 4) break;
 		std::string result(payload.begin()+4,payload.begin()+i);
 		//llinfos << "FOUND COMMENT: " << result << llendl;
-		delete parser;
 		return result;
 	    }
 	}
 	//end of loop
-	delete parser;
 	return "";
 }
 // </edit>

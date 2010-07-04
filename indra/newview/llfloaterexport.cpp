@@ -27,10 +27,11 @@ std::vector<LLFloaterExport*> LLFloaterExport::instances;
 class CacheReadResponder : public LLTextureCache::ReadResponder
 {
 public:
-CacheReadResponder(const LLUUID& id, LLImageFormatted* image,const std::string& filename)
-: mFormattedImage(image), mID(id)
+CacheReadResponder(const LLUUID& id, const std::string& filename)
+: mID(id)
 {
-	setImage(image);
+	mFormattedImage = new LLImageJ2C;
+	setImage(mFormattedImage);
 	mFilename = filename;
 }
 void setData(U8* data, S32 datasize, S32 imagesize, S32 imageformat, BOOL imagelocal)
@@ -738,8 +739,7 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 					LLViewerImage* img = gImageList.getImage(textures.front(), MIPMAP_TRUE, FALSE);
 		                        img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);
 
-		                        LLImageJ2C * mFormattedImage = new LLImageJ2C;
-					CacheReadResponder* responder = new CacheReadResponder(textures.front(), mFormattedImage,std::string(path + textures.front().asString() + ".j2c"));
+		                        CacheReadResponder* responder = new CacheReadResponder(textures.front(), std::string(path + textures.front().asString() + ".j2c"));
 					LLAppViewer::getTextureCache()->readFromCache(textures.front(),LLWorkerThread::PRIORITY_HIGH,0,999999,responder);
 					textures.pop_front();
 				}
