@@ -93,16 +93,6 @@ public:
 	static void onClickSelectWearables(void* user_data);
 	static void onClickSaveAs(void* user_data);
 	static void onClickMakeCopy(void* user_data);
-
-	static void onFileLoadedForSave( 
-                                        BOOL success,
-                                        LLViewerImage *src_vi,
-                                        LLImageRaw* src, 
-                                        LLImageRaw* aux_src,
-                                        S32 discard_level, 
-                                        BOOL final,
-                                        void* userdata );
-
 	
 private:
 	virtual ~LLFloaterExport();

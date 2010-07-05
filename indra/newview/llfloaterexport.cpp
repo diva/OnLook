@@ -668,6 +668,60 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 	if(sd.size())
 	{
 		std::string default_filename = "untitled";
+
+		// count the number of selected items
+		LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("export_list");
+		std::vector<LLScrollListItem*> items = list->getAllData();
+		int item_count = 0;
+		LLUUID avatarid = (*(items.begin()))->getColumn(LIST_AVATARID)->getValue().asUUID();
+		bool all_same_avatarid = true;
+		std::vector<LLScrollListItem*>::iterator item_iter = items.begin();
+		std::vector<LLScrollListItem*>::iterator items_end = items.end();
+		for( ; item_iter != items_end; ++item_iter)
+		{
+			LLScrollListItem* item = (*item_iter);
+			if(item->getColumn(LIST_CHECKED)->getValue())
+			{
+				item_count++;
+				if(item->getColumn(LIST_AVATARID)->getValue().asUUID() != avatarid)
+				{
+					all_same_avatarid = false;
+				}
+			}
+		}
+
+		if(item_count == 1)
+		{
+			// Exporting one item?  Use its name for the filename.
+			// But make sure it's a root!
+			LLSD target = (*(sd.beginMap())).second;
+			if(target.has("parent"))
+			{
+				std::string parentid = target["parent"].asString();
+				target = sd[parentid];
+			}
+			if(target.has("name"))
+			{
+				if(target["name"].asString().length() > 0)
+				{
+					default_filename = target["name"].asString();
+				}
+			}
+		}
+		else
+		{
+			// Multiple items?
+			// If they're all part of the same avatar, use the avatar's name as filename.
+			if(all_same_avatarid)
+			{
+				std::string fullname;
+				if(gCacheName->getFullName(avatarid, fullname))
+				{
+					default_filename = fullname;
+				}
+			}
+		}
+
 		LLFilePicker& file_picker = LLFilePicker::instance();
 		if(file_picker.getSaveFile( LLFilePicker::FFSAVE_XML, LLDir::getScrubbedFileName(default_filename + ".xml")))
 		{
@@ -737,63 +791,11 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 				{
 					llinfos << "Requesting texture " << textures.front().asString() << llendl;
 					LLViewerImage* img = gImageList.getImage(textures.front(), MIPMAP_TRUE, FALSE);
-		                        img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);
+		            img->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAX_LEVEL);
 
-		                        CacheReadResponder* responder = new CacheReadResponder(textures.front(), std::string(path + textures.front().asString() + ".j2c"));
+		            CacheReadResponder* responder = new CacheReadResponder(textures.front(), std::string(path + textures.front().asString() + ".j2c"));
 					LLAppViewer::getTextureCache()->readFromCache(textures.front(),LLWorkerThread::PRIORITY_HIGH,0,999999,responder);
 					textures.pop_front();
-				}
-			}
-			// count the number of selected items
-			LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("export_list");
-			std::vector<LLScrollListItem*> items = list->getAllData();
-			int item_count = 0;
-			LLUUID avatarid = (*(items.begin()))->getColumn(LIST_AVATARID)->getValue().asUUID();
-			bool all_same_avatarid = true;
-			std::vector<LLScrollListItem*>::iterator item_iter = items.begin();
-			std::vector<LLScrollListItem*>::iterator items_end = items.end();
-			for( ; item_iter != items_end; ++item_iter)
-			{
-				LLScrollListItem* item = (*item_iter);
-				if(item->getColumn(LIST_CHECKED)->getValue())
-				{
-					item_count++;
-					if(item->getColumn(LIST_AVATARID)->getValue().asUUID() != avatarid)
-					{
-						all_same_avatarid = false;
-					}
-				}
-			}
-
-			if(item_count == 1)
-			{
-				// Exporting one item?  Use its name for the filename.
-				// But make sure it's a root!
-				LLSD target = (*(sd.beginMap())).second;
-				if(target.has("parent"))
-				{
-					std::string parentid = target["parent"].asString();
-					target = sd[parentid];
-				}
-				if(target.has("name"))
-				{
-					if(target["name"].asString().length() > 0)
-					{
-						default_filename = target["name"].asString();
-					}
-				}
-			}
-			else
-			{
-				// Multiple items?
-				// If they're all part of the same avatar, use the avatar's name as filename.
-				if(all_same_avatarid)
-				{
-					std::string fullname;
-					if(gCacheName->getFullName(avatarid, fullname))
-					{
-						default_filename = fullname;
-					}
 				}
 			}
 
@@ -817,40 +819,6 @@ void LLFloaterExport::onClickSaveAs(void* user_data)
 	}
 	
 	floater->close();
-}
-void LLFloaterExport::onFileLoadedForSave(BOOL success, 
-                                                LLViewerImage *src_vi,
-                                                LLImageRaw* src, 
-                                                LLImageRaw* aux_src, 
-                                                S32 discard_level,
-                                                BOOL final,
-                                                void* userdata)
-{
-	if(!userdata){ llinfos << "NULL POINTER" << llendl; return;}
-        if(final)
-        {
-		std::string *temp = static_cast<std::string*>(userdata);
-		std::string path = *temp;
-                if( success )
-                {
-                        LLPointer<LLImageJ2C> image_j2c = new LLImageJ2C();
-                        if(!image_j2c->encode(src,0.0))
-                        {
-                                //errorencode
-                                llinfos << "Failed to encode " << path << llendl;
-                        }else if(!image_j2c->save( path ))
-                        {
-                                llinfos << "Failed to write " << path << llendl;
-                                //errorwrite
-                        }else
-                        {
-                                llinfos << "Saved texture " << path << llendl;
-                                //success
-                        }
-                }
-		delete temp;
-        }
-
 }
 
 //static
