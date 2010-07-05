@@ -7379,6 +7379,13 @@ void handle_debug_avatar_textures(void*)
 	{
 		LLFloaterAvatarTextures::show(objectp->getID());
 	}
+	// <edit?
+	// default to own avatar
+	else
+	{
+		LLFloaterAvatarTextures::show(gAgent.getID());
+	}
+	// </edit>
 }
 
 void handle_grab_texture(void* data)
