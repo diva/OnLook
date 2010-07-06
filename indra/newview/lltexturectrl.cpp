@@ -1139,8 +1139,12 @@ void LLTextureCtrl::setEnabled( BOOL enabled )
 	}
 
 	mCaption->setEnabled( enabled );
-
+	mEnable = enabled;
+	// <edit>
+	/*
 	LLView::setEnabled( enabled );
+	*/
+	// </edit>
 }
 
 void LLTextureCtrl::setValid(BOOL valid )
@@ -1254,28 +1258,33 @@ BOOL LLTextureCtrl::handleHover(S32 x, S32 y, MASK mask)
 
 BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 {
+	// <edit>
+	if(!mEnable) return FALSE;
+
 	BOOL handled = LLUICtrl::handleMouseDown( x, y , mask );
 	if( handled )
 	{
-		// <edit>
-		if( mask & MASK_CONTROL )
-		{
-			LLLocalInventory::addItem(mImageAssetID.asString(), (int)LLAssetType::AT_TEXTURE, mImageAssetID, true);
-		}
-		else
-		{
-		// </edit>
-			showPicker(FALSE);
+		showPicker(FALSE);
 
-			//grab textures first...
-			gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE));
-			//...then start full inventory fetch.
-			gInventory.startBackgroundFetch();
-		//<edit>
-		}
+		//grab textures first...
+		gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE));
+		//...then start full inventory fetch.
+		gInventory.startBackgroundFetch();
 	}
 	return handled;
 }
+
+// <edit>
+BOOL LLTextureCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+	if( mask & MASK_SHIFT )
+	{
+		LLLocalInventory::addItem(mImageAssetID.asString(), (int)LLAssetType::AT_TEXTURE, mImageAssetID, true);
+		return TRUE;
+	}
+	return FALSE;
+}
+// </edit>
 
 void LLTextureCtrl::onFloaterClose()
 {
@@ -1293,8 +1302,8 @@ void LLTextureCtrl::onFloaterClose()
 void LLTextureCtrl::onFloaterCommit(ETexturePickOp op)
 {
 	LLFloaterTexturePicker* floaterp = (LLFloaterTexturePicker*)mFloaterHandle.get();
-
-	if( floaterp && getEnabled())
+	// <edit> mEnable getEnabled()
+	if( floaterp && mEnable)
 	{
 		mDirty = (op != TEXTURE_CANCEL);
 		if( floaterp->isDirty() )
@@ -1327,7 +1336,8 @@ void LLTextureCtrl::setImageAssetID( const LLUUID& asset_id )
 		mImageItemID.setNull();
 		mImageAssetID = asset_id;
 		LLFloaterTexturePicker* floaterp = (LLFloaterTexturePicker*)mFloaterHandle.get();
-		if( floaterp && getEnabled() )
+		// <edit> mEnable getEnabled()
+		if( floaterp && mEnable )
 		{
 			floaterp->setImageID( asset_id );
 			floaterp->setDirty( FALSE );
@@ -1345,8 +1355,9 @@ BOOL LLTextureCtrl::handleDragAndDrop(S32 x, S32 y, MASK mask,
 	// this downcast may be invalid - but if the second test below
 	// returns true, then the cast was valid, and we can perform
 	// the third test without problems.
-	LLInventoryItem* item = (LLInventoryItem*)cargo_data; 
-	if (getEnabled() && (cargo_type == DAD_TEXTURE) && allowDrop(item))
+	LLInventoryItem* item = (LLInventoryItem*)cargo_data;
+	// <edit> mEnable getEnabled()
+	if (mEnable && (cargo_type == DAD_TEXTURE) && allowDrop(item))
 	{
 		if (drop)
 		{

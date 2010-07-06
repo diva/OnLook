@@ -697,7 +697,7 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 			mCurrentRecvPacketID = ntohl(*((U32*)(&buffer[1])));
 			// <edit>
 			BOOL spoofed_packet = FALSE;
-			if(mSpoofProtectionLevel > 0)
+			if(!faked_message && mSpoofProtectionLevel > 0)
 			{
 				S32 len = receive_size;
 				U32 message = 0;

@@ -79,6 +79,9 @@ public:
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
 	virtual BOOL	handleMouseDown(S32 x, S32 y, MASK mask);
+	// <edit>
+	virtual BOOL	handleRightMouseDown(S32 x, S32 y, MASK mask);
+	// </edit>
 	virtual BOOL	handleDragAndDrop(S32 x, S32 y, MASK mask,
 						BOOL drop, EDragAndDropType cargo_type, void *cargo_data,
 						EAcceptance *accept,
@@ -187,6 +190,9 @@ private:
 	BOOL					 mValid;
 	BOOL					 mDirty;
 	BOOL					 mShowLoadingPlaceholder;
+	// <edit>
+	BOOL					 mEnable;
+	// </edit>
 	std::string				 mLoadingPlaceholderString;
 };
 
