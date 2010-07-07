@@ -9,7 +9,12 @@
 	     top="-20">
 		<column dynamicwidth="true" label="Object Name" name="object_name" />
 		<column dynamicwidth="true" label="Owner Name" name="owner_name" />
+    <column dynamicwidth="true" label="Last Owner Name" name="last_owner_name" />
 		<column dynamicwidth="true" label="Creator Name" name="creator_name" />
+    <column label="Faces" name="face_num" width="35" />
+    <column label="Vertices" name="vertex_num" width="35" />
+    <column label="Scripts" name="script_num" width="35" />
+    <column label="Inv Total" name="inv_num" width="35" />
 		<column label="Creation Date" name="creation_date" width="150" />
 	</scroll_list>
 	<button bottom="5" follows="left|bottom" font="SansSerif" halign="center" height="20"

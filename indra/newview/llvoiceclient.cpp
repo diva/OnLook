@@ -75,6 +75,10 @@
 // for MD5 hash
 #include "llmd5.h"
 
+// <edit>
+#include "llworld.h"
+// </edit>
+
 #define USE_SESSION_GROUPS 0
 
 static bool sConnectingToAgni = false;
@@ -4903,16 +4907,24 @@ LLVoiceClient::participantState *LLVoiceClient::sessionState::addParticipant(con
 				// <edit>
 				if(nameFromsipURI(uri) != gVoiceClient->mAccountName)
 				{
-					// let us check to see if they are actually in the sim
-					LLViewerRegion* regionp = gAgent.getRegion();
-					if(regionp)
+					bool found = true;
+					for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
+							iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 					{
-						if(regionp->mMapAvatarIDs.find(id) == -1)
+						LLViewerRegion* regionp = *iter;
+						// let us check to see if they are actually in the sim
+						if(regionp)
 						{
-							// They are not in my list of people in my sim, they must be a spy.
-							gCacheName->getName(id, onAvatarNameLookup, NULL);
+							if(regionp->mMapAvatarIDs.find(id) != -1)
+							{
+								found = true;
+								break;
+							}
 						}
 					}
+					if(!found)
+						// They are not in my list of people in my sims, they must be a spy.
+						gCacheName->getName(id, onAvatarNameLookup, NULL);
 				}
 				// </edit>
 				

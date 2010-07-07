@@ -212,7 +212,7 @@ void LLFloaterInspect::refresh()
 	{
 		LLSelectNode* obj = *iter;
 		LLSD row;
-		std::string owner_name, creator_name, time;
+		std::string owner_name, creator_name, time, last_owner_name;
 
 		if (obj->mCreationDate == 0)
 		{	// Don't have valid information from the server, so skip this one
@@ -223,6 +223,9 @@ void LLFloaterInspect::refresh()
 		timeToFormattedString(timestamp, gSavedSettings.getString("TimestampFormat"), time);
 		gCacheName->getFullName(obj->mPermissions->getOwner(), owner_name);
 		gCacheName->getFullName(obj->mPermissions->getCreator(), creator_name);
+		// <edit>
+		gCacheName->getFullName(obj->mPermissions->getLastOwner(), last_owner_name);
+		// </edit>
 		row["id"] = obj->getObject()->getID();
 		row["columns"][0]["column"] = "object_name";
 		row["columns"][0]["type"] = "text";
@@ -236,15 +239,59 @@ void LLFloaterInspect::refresh()
 		{
 			row["columns"][0]["value"] = obj->mName;
 		}
-		row["columns"][1]["column"] = "owner_name";
-		row["columns"][1]["type"] = "text";
-		row["columns"][1]["value"] = owner_name;
-		row["columns"][2]["column"] = "creator_name";
-		row["columns"][2]["type"] = "text";
-		row["columns"][2]["value"] = creator_name;
-		row["columns"][3]["column"] = "creation_date";
-		row["columns"][3]["type"] = "text";
-		row["columns"][3]["value"] = time;
+		// <edit>
+		int i = 1;
+		row["columns"][i]["column"] = "owner_name";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = owner_name;
+		++i;
+		row["columns"][i]["column"] = "last_owner_name";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = last_owner_name;
+		++i;
+		row["columns"][i]["column"] = "creator_name";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = creator_name;
+		++i;
+		row["columns"][i]["column"] = "face_num";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = llformat("%d",obj->getObject()->getNumFaces());
+		++i;
+		row["columns"][i]["column"] = "vertex_num";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = llformat("%d",obj->getObject()->getNumVertices());
+		++i;
+		// inventory silliness
+		S32 scripts,total_inv;
+		std::map<LLUUID,std::pair<S32,S32> >::iterator itr = mInventoryNums.find(obj->getObject()->getID());
+		if(itr != mInventoryNums.end())
+		{
+			scripts = itr->second.first;
+			total_inv = itr->second.second;
+		}
+		else
+		{
+			scripts = 0;
+			total_inv = 0;
+			if(std::find(mQueue.begin(),mQueue.end(),obj->getObject()->getID()) == mQueue.end())
+			{
+				mQueue.push_back(obj->getObject()->getID());
+				registerVOInventoryListener(obj->getObject(),NULL);
+				requestVOInventory();
+			}
+		}
+		row["columns"][i]["column"] = "script_num";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = llformat("%d",scripts);
+		++i;
+		row["columns"][i]["column"] = "inv_num";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = llformat("%d",total_inv);
+		++i;
+		row["columns"][i]["column"] = "creation_date";
+		row["columns"][i]["type"] = "text";
+		row["columns"][i]["value"] = time;
+		// </edit>
 		mObjectList->addElement(row, ADD_TOP);
 	}
 	if(selected_index > -1 && mObjectList->getItemIndex(selected_uuid) == selected_index)
@@ -258,7 +305,31 @@ void LLFloaterInspect::refresh()
 	onSelectObject(this, NULL);
 	mObjectList->setScrollPos(pos);
 }
-
+// <edit>
+void LLFloaterInspect::inventoryChanged(LLViewerObject* viewer_object,
+											 InventoryObjectList* inv,
+											 S32,
+											 void* q_id)
+{
+	S32 scripts = 0;
+	std::vector<LLUUID>::iterator iter = std::find(mQueue.begin(),mQueue.end(),viewer_object->getID());
+	if (viewer_object && inv && iter != mQueue.end() )
+	{
+		InventoryObjectList::const_iterator it = inv->begin();
+		InventoryObjectList::const_iterator end = inv->end();
+		for ( ; it != end; ++it)
+		{
+			if((*it)->getType() == LLAssetType::AT_LSL_TEXT)
+			{
+				scripts++;
+			}
+		}
+		mInventoryNums[viewer_object->getID()] = std::make_pair(scripts,inv->size());
+		mQueue.erase(iter);
+		mDirty = TRUE;
+	}
+}
+// </edit>
 void LLFloaterInspect::onFocusReceived()
 {
 	LLToolMgr::getInstance()->setTransientTool(LLToolCompInspect::getInstance());
@@ -269,6 +340,9 @@ void LLFloaterInspect::dirty()
 {
 	if(sInstance)
 	{
+		// <edit>
+		sInstance->mInventoryNums.clear();
+		sInstance->mQueue.clear();
 		sInstance->setDirty();
 	}
 }

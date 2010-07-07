@@ -512,15 +512,23 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 			// <edit>
 			if(!mShowTextChatters && !(speakerp->mStatus == LLSpeaker::STATUS_NOT_IN_CHANNEL) && speakerp->mID != gAgent.getID())
 			{
-				// let us check to see if they are actually in the sim
-				LLViewerRegion* regionp = gAgent.getRegion();
-				if(regionp)
+				bool found = false;
+				for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
+						iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 				{
-					if(regionp->mMapAvatarIDs.find(speakerp->mID) == -1)
+					LLViewerRegion* regionp = *iter;
+					// let us check to see if they are actually in the sim
+					if(regionp)
 					{
-						name_cell->setColor(LLColor4::red);
+						if(regionp->mMapAvatarIDs.find(speakerp->mID) != -1)
+						{
+							found = true;
+							break;
+						}
 					}
 				}
+				if(!found)
+					name_cell->setColor(LLColor4::red);
 			}
 			// </edit>
 
