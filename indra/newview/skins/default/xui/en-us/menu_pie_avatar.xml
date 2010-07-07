@@ -44,6 +44,10 @@
 		<menu_item_call enabled="true" label="Debug..." mouse_opaque="true" name="Debug Layers">
 			<on_click function="Avatar.Debug" />
 		</menu_item_call>
+		<menu_item_call enabled="true" hidden="false" label="Anims..." mouse_opaque="true"
+							 name="Anims...">
+			<on_click function="Avatar.Anims" />
+		</menu_item_call>
 		<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
 			<on_click function="Object.Inspect" />
 			<on_enable function="Object.EnableInspect" />

@@ -42,6 +42,12 @@ public:
 	static void onClickOpen(void* data);
 	static void onClickJellyRoll(void* data);
 
+	BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	BOOL handleMouseUp(S32 x, S32 y, MASK mask);
+	BOOL handleHover(S32 x, S32 y, MASK mask);
+	BOOL handleScrollWheel(S32 x, S32 y, S32 clicks); 
+	void onMouseCaptureLost();
+
 	static void startAnim(LLUUID avatarid, LLUUID assetid);
 	static void stopAnim(LLUUID avatarid, LLUUID assetid);
 
@@ -52,6 +58,9 @@ private:
 
 protected:
 	void			draw();
+	LLRect				mPreviewRect;
+	S32					mLastMouseX;
+	S32					mLastMouseY;
 };
 
 #endif

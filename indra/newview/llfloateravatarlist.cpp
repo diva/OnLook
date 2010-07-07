@@ -416,7 +416,8 @@ void LLFloaterAvatarList::updateAvatarList()
 
 				// Skip if avatar is dead(what's that?)
 				// or if the avatar is ourselves.
-				if (avatarp->isDead() || avatarp->isSelf())
+				// or if the avatar is a dummy
+				if (avatarp->isDead() || avatarp->isSelf() || avatarp->mIsDummy)
 				{
 					continue;
 				}

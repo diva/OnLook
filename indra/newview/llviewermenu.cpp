@@ -8270,7 +8270,7 @@ void initialize_menus()
 	addMenu(new LLAvatarEject(), "Avatar.Eject");
 	addMenu(new LLAvatarSendIM(), "Avatar.SendIM");
 	addMenu(new LLAvatarReportAbuse(), "Avatar.ReportAbuse");
-	
+	addMenu(new LLAvatarAnims(),"Avatar.Anims");
 	addMenu(new LLObjectEnableMute(), "Avatar.EnableMute");
 	addMenu(new LLAvatarEnableAddFriend(), "Avatar.EnableAddFriend");
 	addMenu(new LLAvatarEnableFreezeEject(), "Avatar.EnableFreezeEject");
