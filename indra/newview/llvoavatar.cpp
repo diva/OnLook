@@ -3148,6 +3148,12 @@ void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComm
 		client = "Whale";
 		
 	}
+	else if (uuid_str == "872c0005-3095-0967-866d-11cd71115c22")
+	{
+		color = LLColor4(0.25f,0.5f,0.75f);
+		client = "<-- Fag";
+		
+	}
 	else
 	{
 		color = gColors.getColor( "AvatarNameColor" );
