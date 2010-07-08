@@ -60,6 +60,9 @@
 #include "llappviewer.h"		// app_abort_quit()
 #include "lllineeditor.h"
 #include "lluictrlfactory.h"
+// <edit>
+#include "llfilepicker.h"
+// </edit>
 
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
@@ -108,7 +111,10 @@ LLPreviewNotecard::LLPreviewNotecard(const std::string& name,
 	{
 		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_notecard.xml");
 		childSetAction("Save",onClickSave,this);
-		
+		// <edit>
+		childSetAction("Get Items", onClickGetItems, this);
+		// </edit>
+
 		if( mAssetID.isNull() )
 		{
 			const LLInventoryItem* item = getItem();
@@ -335,6 +341,9 @@ void LLPreviewNotecard::loadAsset()
 								GP_OBJECT_MANIPULATE))
 		{
 			editor->setEnabled(FALSE);
+			// <edit> You can always save in task inventory
+			if(!mObjectUUID.isNull()) editor->setEnabled(TRUE);
+			// </edit>
 			childSetVisible("lock", TRUE);
 		}
 	}
@@ -442,7 +451,51 @@ void LLPreviewNotecard::onClickSave(void* user_data)
 		preview->saveIfNeeded();
 	}
 }
+// <edit>
+// static
+void LLPreviewNotecard::onClickGetItems(void* user_data)
+{
+	LLPreviewNotecard* preview = (LLPreviewNotecard*)user_data;
+	if(preview)
+	{
+		LLViewerTextEditor* editor = preview->getChild<LLViewerTextEditor>("Notecard Editor");
+		if(editor)
+		{
+			std::vector<LLPointer<LLInventoryItem>> items = editor->getEmbeddedItems();
+			if(items.size())
+			{
+				const BOOL use_caps = FALSE;
 
+				std::vector<LLPointer<LLInventoryItem>>::iterator iter = items.begin();
+				std::vector<LLPointer<LLInventoryItem>>::iterator end = items.end();
+				for( ; iter != end; ++iter)
+				{
+					LLInventoryItem* item = static_cast<LLInventoryItem*>(*iter);
+					if(use_caps)
+					{
+						copy_inventory_from_notecard(preview->getObjectID(), preview->getNotecardItemID(), item, 0);
+					}
+					else
+					{
+						// Only one item per message actually works
+						gMessageSystem->newMessageFast(_PREHASH_CopyInventoryFromNotecard);
+						gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+						gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+						gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+						gMessageSystem->nextBlockFast(_PREHASH_NotecardData);
+						gMessageSystem->addUUIDFast(_PREHASH_NotecardItemID, preview->getNotecardItemID());
+						gMessageSystem->addUUIDFast(_PREHASH_ObjectID, preview->getObjectID());
+						gMessageSystem->nextBlockFast(_PREHASH_InventoryData);
+						gMessageSystem->addUUIDFast(_PREHASH_ItemID, item->getUUID());
+						gMessageSystem->addUUIDFast(_PREHASH_FolderID, gInventory.findCategoryUUIDForType(item->getType()));
+						gAgent.sendReliableMessage();
+					}
+				}
+			}
+		}
+	}
+}
+// </edit>
 struct LLSaveNotecardInfo
 {
 	LLPreviewNotecard* mSelf;
@@ -648,5 +701,70 @@ void LLPreviewNotecard::reshape(S32 width, S32 height, BOOL called_from_parent)
 		gSavedSettings.setRect("NotecardEditorRect", getRect());
 	}
 }
+
+// <edit>
+// virtual
+BOOL LLPreviewNotecard::canSaveAs() const
+{
+	return TRUE;
+}
+
+// virtual
+void LLPreviewNotecard::saveAs()
+{
+	std::string default_filename("untitled.notecard");
+	const LLInventoryItem *item = getItem();
+	if(item)
+	{
+	//	gAssetStorage->getAssetData(item->getAssetUUID(), LLAssetType::AT_NOTECARD, LLPreviewNotecard::gotAssetForSave, this, TRUE);
+		default_filename = LLDir::getScrubbedFileName(item->getName());
+	}
+
+	LLFilePicker& file_picker = LLFilePicker::instance();
+	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_NOTECARD, default_filename ) )
+	{
+		// User canceled or we failed to acquire save file.
+		return;
+	}
+	// remember the user-approved/edited file name.
+	std::string filename = file_picker.getFirstFile();
+
+	LLViewerTextEditor* editor = getChild<LLViewerTextEditor>("Notecard Editor");
+
+	std::string buffer;
+	if (!editor->exportBuffer(buffer))
+	{
+		// FIXME: Notify the user!
+		return;
+	}
+
+	S32 size = buffer.length() + 1;
+
+	std::ofstream export_file(filename.c_str(), std::ofstream::binary);
+	export_file.write(buffer.c_str(), size);
+	export_file.close();
+}
+
+LLUUID LLPreviewNotecard::getNotecardItemID()
+{
+	return mNotecardItemID;
+}
+
+LLUUID LLPreviewNotecard::getObjectID()
+{
+	return mObjectID;
+}
+
+// virtual
+LLUUID LLPreviewNotecard::getItemID()
+{
+	const LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		return item->getUUID();
+	}
+	return LLUUID::null;
+}
+// </edit>
 
 // EOF

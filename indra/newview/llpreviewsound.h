@@ -44,9 +44,30 @@ public:
 
 	static void playSound( void* userdata );
 	static void auditionSound( void* userdata );
+	// <edit>
+	/*
+	static void makeCopy(void* userdata);
+	static void gotAssetForCopy(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status);
+	static void onSaveCopyComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
+	*/
+	static void playAmbient(void* userdata);
+	static void copyUUID(void* userdata);
+	static void gotAssetForSave(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status);
+	// </edit>
 
 protected:
 	virtual const char *getTitleName() const { return "Sound"; }
+	// <edit>
+	virtual BOOL canSaveAs() const;
+	virtual void saveAs();
+	virtual LLUUID getItemID();
+	// </edit>
 
 };
 

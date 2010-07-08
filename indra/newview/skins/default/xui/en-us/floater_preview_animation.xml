@@ -13,12 +13,24 @@
 	     mouse_opaque="true" name="desc txt" v_pad="0" width="80">
 		Description:
 	</text>
-	<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
+	<!--<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
 	     label="Play in World" label_selected="Stop" left="27" mouse_opaque="true"
 	     name="Anim play btn" scale_image="true"
 	     tool_tip="Play this animation so that others can see it." width="96" />
 	<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
 	     label="Play Locally" label_selected="Stop" left="177" mouse_opaque="true"
 	     name="Anim audition btn" scale_image="true"
+	     tool_tip="Play this animation so that only you can see it." width="96" />-->
+	<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
+	     label="Play in World" label_selected="Stop" left="4" mouse_opaque="true"
+	     name="Anim play btn" scale_image="true"
+	     tool_tip="Play this animation so that others can see it." width="96" />
+	<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
+	     label="Play Locally" label_selected="Stop" left_delta="98" mouse_opaque="true"
+	     name="Anim audition btn" scale_image="true"
 	     tool_tip="Play this animation so that only you can see it." width="96" />
+	<button bottom="-66" enabled="true" font="SansSerif" halign="center" height="19"
+	     label="Copy UUID" label_selected="Copy UUID" left_delta="98" mouse_opaque="true"
+	     name="Anim copy uuid btn" scale_image="true"
+	     tool_tip="Copy asset UUID" width="96" />
 </floater>

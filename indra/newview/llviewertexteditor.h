@@ -97,6 +97,9 @@ public:
 	// should be changed to get a different asset id from the verifier
 	// rather than checking if a re-load is necessary. Phoenix 2007-02-27
 	bool hasEmbeddedInventory();
+	// <edit>
+	std::vector<LLPointer<LLInventoryItem> > getEmbeddedItems();
+	// </edit>
 
 private:
 	// Embedded object operations

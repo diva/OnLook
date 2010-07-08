@@ -84,6 +84,11 @@ public:
 	// asset system. :(
 	void refreshFromInventory();
 
+	// <edit>
+	LLUUID getNotecardItemID();
+	LLUUID getObjectID();
+	virtual LLUUID getItemID();
+	// </edit>
 protected:
 
 	virtual void loadAsset();
@@ -97,6 +102,8 @@ protected:
 							   void* user_data, S32 status, LLExtStat ext_status);
 
 	static void onClickSave(void* data);
+	// <edit>
+	static void onClickGetItems(void* data);
 
 	static void onSaveComplete(const LLUUID& asset_uuid,
 							   void* user_data,
@@ -114,6 +121,11 @@ protected:
 
 	LLUUID mNotecardItemID;
 	LLUUID mObjectID;
+	
+	// <edit>
+	virtual BOOL canSaveAs() const;
+	virtual void saveAs();
+	// </edit>
 };
 
 

@@ -44,6 +44,10 @@
 #include "lllineeditor.h"
 #include "lluictrlfactory.h"
 #include "lluictrlfactory.h"
+// <edit>
+#include "llviewerwindow.h" // for alert
+#include "llappviewer.h" // gStaticVFS
+// </edit>
 
 extern LLAgent gAgent;
 
@@ -54,6 +58,9 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 
 	childSetAction("Anim play btn",playAnim,this);
 	childSetAction("Anim audition btn",auditionAnim,this);
+	// <edit>
+	childSetAction("Anim copy uuid btn", copyAnimID, this);
+	// </edit>
 
 	const LLInventoryItem* item = getItem();
 	
@@ -180,6 +187,242 @@ void LLPreviewAnim::auditionAnim( void *userdata )
 		}
 	}
 }
+
+// <edit>
+// static
+/*
+void LLPreviewAnim::copyAnim(void *userdata)
+{
+	LLPreviewAnim* self = (LLPreviewAnim*) userdata;
+	const LLInventoryItem *item = self->getItem();
+
+	if(item)
+	{
+		// Some animations aren't hosted on the servers
+		// I guess they're in this static vfs thing
+		bool static_vfile = false;
+		LLVFile* anim_file = new LLVFile(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION);
+		if (anim_file && anim_file->getSize())
+		{
+			//S32 anim_file_size = anim_file->getSize();
+			//U8* anim_data = new U8[anim_file_size];
+			//if(anim_file->read(anim_data, anim_file_size))
+			//{
+			//	static_vfile = true;
+			//}
+			static_vfile = true; // for method 2
+			LLPreviewAnim::gotAssetForCopy(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION, self, 0, 0);
+		}
+		delete anim_file;
+		anim_file = NULL;
+		
+		if(!static_vfile)
+		{
+			// Get it from the servers
+			gAssetStorage->getAssetData(item->getAssetUUID(), LLAssetType::AT_ANIMATION, LLPreviewAnim::gotAssetForCopy, self, TRUE);
+		}
+	}
+}
+
+struct LLSaveInfo
+{
+	LLSaveInfo(const LLUUID& item_id, const LLUUID& object_id, const std::string& desc,
+				const LLTransactionID tid)
+		: mItemUUID(item_id), mObjectUUID(object_id), mDesc(desc), mTransactionID(tid)
+	{
+	}
+
+	LLUUID mItemUUID;
+	LLUUID mObjectUUID;
+	std::string mDesc;
+	LLTransactionID mTransactionID;
+};
+
+// static
+void LLPreviewAnim::gotAssetForCopy(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status)
+{
+	LLPreviewAnim* self = (LLPreviewAnim*) user_data;
+	//const LLInventoryItem *item = self->getItem();
+
+	LLVFile file(vfs, asset_uuid, type, LLVFile::READ);
+	S32 size = file.getSize();
+
+	char* buffer = new char[size];
+	if (buffer == NULL)
+	{
+		llerrs << "Memory Allocation Failed" << llendl;
+		return;
+	}
+
+	file.read((U8*)buffer, size);
+
+	// Write it back out...
+
+	LLTransactionID tid;
+	LLAssetID asset_id;
+	tid.generate();
+	asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
+
+	LLVFile ofile(gVFS, asset_id, LLAssetType::AT_ANIMATION, LLVFile::APPEND);
+
+	ofile.setMaxSize(size);
+	ofile.write((U8*)buffer, size);
+
+	// Upload that asset to the database
+	LLSaveInfo* info = new LLSaveInfo(self->mItemUUID, self->mObjectUUID, "animation", tid);
+	gAssetStorage->storeAssetData(tid, LLAssetType::AT_ANIMATION, onSaveCopyComplete, info, FALSE);
+
+	delete[] buffer;
+	buffer = NULL;
+}
+
+// static
+void LLPreviewAnim::onSaveCopyComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status)
+{
+	LLSaveInfo* info = (LLSaveInfo*)user_data;
+
+	if (status == 0)
+	{
+		std::string item_name = "New Animation";
+		std::string item_desc = "";
+		// Saving into user inventory
+		LLViewerInventoryItem* item;
+		item = (LLViewerInventoryItem*)gInventory.getItem(info->mItemUUID);
+		if(item)
+		{
+			item_name = item->getName();
+			item_desc = item->getDescription();
+		}
+		gMessageSystem->newMessageFast(_PREHASH_CreateInventoryItem);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_InventoryBlock);
+		gMessageSystem->addU32Fast(_PREHASH_CallbackID, 0);
+		gMessageSystem->addUUIDFast(_PREHASH_FolderID, LLUUID::null);
+		gMessageSystem->addUUIDFast(_PREHASH_TransactionID, info->mTransactionID);
+		gMessageSystem->addU32Fast(_PREHASH_NextOwnerMask, 2147483647);
+		gMessageSystem->addS8Fast(_PREHASH_Type, LLAssetType::AT_ANIMATION);
+		gMessageSystem->addS8Fast(_PREHASH_InvType, LLInventoryType::IT_ANIMATION);
+		gMessageSystem->addU8Fast(_PREHASH_WearableType, 0);
+		gMessageSystem->addStringFast(_PREHASH_Name, item_name);
+		gMessageSystem->addStringFast(_PREHASH_Description, item_desc);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
+	else
+	{
+		llwarns << "Problem saving animation: " << status << llendl;
+		LLStringUtil::format_map_t args;
+		args["[REASON]"] = std::string(LLAssetStorage::getErrorString(status));
+		gViewerWindow->alertXml("CannotUploadReason",args);
+	}
+}
+*/
+void LLPreviewAnim::copyAnimID(void *userdata)
+{
+	LLPreviewAnim* self = (LLPreviewAnim*) userdata;
+	const LLInventoryItem *item = self->getItem();
+
+	if(item)
+	{
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item->getAssetUUID().asString()));
+	}
+}
+// </edit>
+
+// <edit>
+// virtual
+BOOL LLPreviewAnim::canSaveAs() const
+{
+	return TRUE;
+}
+
+// virtual
+void LLPreviewAnim::saveAs()
+{
+	const LLInventoryItem *item = getItem();
+
+	if(item)
+	{
+		// Some animations aren't hosted on the servers
+		// I guess they're in this static vfs thing
+		bool static_vfile = false;
+		LLVFile* anim_file = new LLVFile(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION);
+		if (anim_file && anim_file->getSize())
+		{
+			//S32 anim_file_size = anim_file->getSize();
+			//U8* anim_data = new U8[anim_file_size];
+			//if(anim_file->read(anim_data, anim_file_size))
+			//{
+			//	static_vfile = true;
+			//}
+			static_vfile = true; // for method 2
+			LLPreviewAnim::gotAssetForSave(gStaticVFS, item->getAssetUUID(), LLAssetType::AT_ANIMATION, this, 0, 0);
+		}
+		delete anim_file;
+		anim_file = NULL;
+
+		if(!static_vfile)
+		{
+			gAssetStorage->getAssetData(item->getAssetUUID(), LLAssetType::AT_ANIMATION, LLPreviewAnim::gotAssetForSave, this, TRUE);
+		}
+	}
+}
+
+// static
+void LLPreviewAnim::gotAssetForSave(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status)
+{
+	LLPreviewAnim* self = (LLPreviewAnim*) user_data;
+	//const LLInventoryItem *item = self->getItem();
+
+	LLVFile file(vfs, asset_uuid, type, LLVFile::READ);
+	S32 size = file.getSize();
+
+	char* buffer = new char[size];
+	if (buffer == NULL)
+	{
+		llerrs << "Memory Allocation Failed" << llendl;
+		return;
+	}
+
+	file.read((U8*)buffer, size);
+
+	// Write it back out...
+
+	LLFilePicker& file_picker = LLFilePicker::instance();
+	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_ANIMATN, LLDir::getScrubbedFileName(self->getItem()->getName())) )
+	{
+		// User canceled or we failed to acquire save file.
+		return;
+	}
+	// remember the user-approved/edited file name.
+	std::string filename = file_picker.getFirstFile();
+
+	std::ofstream export_file(filename.c_str(), std::ofstream::binary);
+	export_file.write(buffer, size);
+	export_file.close();
+	
+	delete[] buffer;
+	buffer = NULL;
+}
+
+// virtual
+LLUUID LLPreviewAnim::getItemID()
+{
+	const LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		return item->getUUID();
+	}
+	return LLUUID::null;
+}
+// </edit>
 
 void LLPreviewAnim::onClose(bool app_quitting)
 {

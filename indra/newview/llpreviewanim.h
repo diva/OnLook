@@ -46,10 +46,30 @@ public:
 
 	static void playAnim( void* userdata );
 	static void auditionAnim( void* userdata );
+	// <edit>
+	/*
+	static void copyAnim(void* userdata);
+	static void gotAssetForCopy(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status);
+	static void onSaveCopyComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status);
+	*/
+	static void gotAssetForSave(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status);
+	static void copyAnimID(void* userdata);
+	// </edit>
 	static void endAnimCallback( void *userdata );
 
 protected:
 	virtual void onClose(bool app_quitting);
+	// <edit>
+	virtual BOOL canSaveAs() const;
+	virtual void saveAs();
+	virtual LLUUID getItemID();
+	// </edit>
 	virtual const char *getTitleName() const { return "Animation"; }
 	
 	LLAnimPauseRequest	mPauseRequest;

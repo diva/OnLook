@@ -97,12 +97,16 @@ unless you add wait steps.
 	     left_delta="0" name="wait_time_check" width="100" />
 	<line_editor bottom_delta="0" follows="top|left" height="20" left_delta="105"
 	     max_length="15" name="wait_time_editor" width="50" />
-	<check_box bottom="7" follows="top|left" height="20" label="Active" left="140"
+	<button bottom_delta="-10" follows="top|left" height="20" left="233"
+	     label="Open" name="open_btn" width="64" />
+	<check_box bottom="7" follows="top|left" height="20" label="Active" left="100"
 	     name="active_check"
 	     tool_tip="Active gestures can be triggered by chatting their trigger phrases or pressing their hot keys.  Gestures usually become inactive when there is a key binding conflict."
 	     width="100" />
-	<button bottom="5" follows="top|left" height="20" label="Preview" left="215"
+	<button bottom="5" follows="top|left" height="20" label="Preview" left_delta="80"
 	     name="preview_btn" width="80" />
 	<button bottom="5" follows="top|left" height="20" label="Save" left_delta="90"
 	     name="save_btn" width="80" />
+	<button bottom="5" follows="top|left" height="20" label="Make Copy" left_delta="90"
+	     name="duplicate_btn" width="80" />
 </floater>
