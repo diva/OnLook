@@ -138,6 +138,7 @@ set(viewer_SOURCE_FILES
     llfloateravatarpicker.cpp
     llfloateravatartextures.cpp
     llfloaterbeacons.cpp
+	llfloaterblacklist.cpp
     llfloaterbuildoptions.cpp
     llfloaterbulkpermission.cpp
     llfloaterbump.cpp
@@ -160,6 +161,7 @@ set(viewer_SOURCE_FILES
     llfloaterexport.cpp
     llfloaterexportregion.cpp
     llfloaterexploreanimations.cpp
+	llfloaterexploresounds.cpp
     llfloaterfriends.cpp
     llfloaterfonttest.cpp
     llfloatergesture.cpp
@@ -577,6 +579,7 @@ set(viewer_HEADER_FILES
     llfloateravatarpicker.h
     llfloateravatartextures.h
     llfloaterbeacons.h
+	llfloaterblacklist.h
     llfloaterbuildoptions.h
     llfloaterbulkpermission.h
     llfloaterbump.h
@@ -598,6 +601,7 @@ set(viewer_HEADER_FILES
     llfloaterexport.h
     llfloaterexportregion.h
     llfloaterexploreanimations.h
+	llfloaterexploresounds.h
     llfloaterevent.h
     llfloaterfonttest.h
     llfloaterfriends.h

@@ -64,6 +64,8 @@
 #include "llfloaterimport.h"
 #include "llfloaterexport.h"
 #include "llfloaterexploreanimations.h"
+#include "llfloaterexploresounds.h"
+#include "llfloaterblacklist.h"
 // </edit>
 #include "lltimer.h"
 #include "llvfile.h"
@@ -406,6 +408,8 @@ void handle_open_message_builder(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
+void handle_sounds_explorer(void*);
+void handle_blacklist(void*);
 // </edit>
 
 BOOL is_inventory_visible( void* user_data );
@@ -761,6 +765,10 @@ void init_client_menu(LLMenuGL* menu)
 												&handle_local_assets, NULL));
 		sub->append(new LLMenuItemCallGL(	"VFS Explorer",
 												&handle_vfs_explorer, NULL));
+		sub->append(new LLMenuItemCallGL(	"Sound Explorer",
+												&handle_sounds_explorer, NULL));
+		sub->append(new LLMenuItemCallGL(	"Asset Blacklist",
+												&handle_blacklist, NULL));
 		
 		sub->append(new LLMenuItemCheckGL( "Enable AO",
 										&menu_toggle_control,
@@ -3101,6 +3109,16 @@ void handle_local_assets(void*)
 void handle_vfs_explorer(void*)
 {
 	LLFloaterVFSExplorer::show();
+}
+
+void handle_sounds_explorer(void*)
+{
+	LLFloaterExploreSounds::toggle();
+}
+
+void handle_blacklist(void*)
+{
+	LLFloaterBlacklist::show();
 }
 
 void handle_close_all_notifications(void*)

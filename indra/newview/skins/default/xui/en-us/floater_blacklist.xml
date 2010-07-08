@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="false" width="320" min_width="320" height="320" min_height="320"
+     name="floater_blacklist" title="Asset Blacklist" rect_control="FloaterVFSRect">
+	<button name="add_btn" follows="left|top" width="100" bottom="-45" left="10" height="20" label="Add..."/>
+	<button name="clear_btn" follows="left|top" width="100" left_delta="100" bottom_delta="0" height="20" label="Clear"/>
+	<line_editor name="id_edit" enable="true" follows="left|bottom|right" bottom_delta="-23" left="10" width="300" height="20"/>
+	<scroll_list bottom="30" can_resize="true" column_padding="0" draw_heading="true"
+	     follows="left|top|bottom|right" left="10" multi_select="true"
+	     name="file_list" right="-10" search_column="0" top="-70">
+		<column dynamicwidth="true" name="asset_id" label="Asset ID" />
+	</scroll_list>
+	<button name="copy_uuid_btn" follows="left|bottom" width="75" bottom_delta="-23" left="10" height="20" label="Copy UUID"/>
+	<button name="remove_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Remove"/>
+	<button name="save_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Save XML"/>
+	<button name="load_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Load XML"/>
+</floater>

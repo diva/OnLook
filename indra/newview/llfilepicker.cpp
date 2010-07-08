@@ -55,6 +55,7 @@ LLFilePicker LLFilePicker::sInstance;
 #define SOUND_FILTER L"Sounds (*.wav; *.ogg)\0*.wav;*.ogg\0"
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png; *.jp2; *.j2k; *.j2c)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png;*.jp2;*.j2k;*.j2c\0"
 #define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"
+#define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist;\0"
 // <edit/>
 #define ANIM_FILTER L"Animations (*.bvh)\0*.bvh\0"
 #ifdef _CORY_TESTING
@@ -206,6 +207,10 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 			L"\0";
 		break;
 */
+	case FFLOAD_BLACKLIST:
+		mOFN.lpstrFilter = BLACKLIST_FILTER \
+			L"\0";
+		break;
 	// </edit>
 	default:
 		res = FALSE;
@@ -675,6 +680,16 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 		mOFN.lpstrDefExt = L".inv";
 		mOFN.lpstrFilter =
 			L"InvCache (*.inv)\0*.inv\0" \
+			L"\0";
+		break;
+	case FFSAVE_BLACKLIST:
+		if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.blacklist", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L".blacklist";
+		mOFN.lpstrFilter =
+			L"Asset Blacklists (*.blacklist)\0*.blacklist\0" \
 			L"\0";
 		break;
 	// </edit>

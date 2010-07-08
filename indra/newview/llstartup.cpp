@@ -198,6 +198,7 @@
 //#include "llfloateravatars.h"
 //#include "llactivation.h"
 #include "llao.h"
+#include "llfloaterblacklist.h"
 //#include "llcheats.h"
 // </edit>
 
@@ -1421,6 +1422,7 @@ bool idle_startup()
 		
 		// <edit>
 		LLAO::refresh();
+		LLFloaterBlacklist::loadFromSave();
 		// </edit>
 
 		if (show_connect_box)

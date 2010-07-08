@@ -4494,6 +4494,66 @@
         <integer>400</integer>
       </array>
     </map>
+	<key>FloaterSoundsRect</key>
+	<map>
+		<key>Comment</key>
+		<string>Rectangle for sounds log floater.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Rect</string>
+		<key>Value</key>
+		<array>
+			<integer>0</integer>
+			<integer>0</integer>
+			<integer>0</integer>
+			<integer>0</integer>
+		</array>
+	</map>
+	<key>FloaterSoundsLogAvatars</key>
+	<map>
+		<key>Comment</key>
+		<string>Show SoundTriggers/gestures played by agents in the log. Also includes collision sounds if enabled</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>FloaterSoundsLogObjects</key>
+	<map>
+		<key>Comment</key>
+		<string>Show sounds played by objects in the log. Also includes collision sounds if enabled</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>FloaterSoundsLogCollisions</key>
+	<map>
+		<key>Comment</key>
+		<string>Don't filter out default collision sounds in the log</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>FloaterSoundsLogRepeats</key>
+	<map>
+		<key>Comment</key>
+		<string>Only show one entry for each unique asset ID in the log</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
     <key>FloaterStatisticsRect</key>
     <map>
       <key>Comment</key>

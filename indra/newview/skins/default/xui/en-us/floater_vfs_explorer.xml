@@ -84,6 +84,7 @@
 		</combo_item>
 	</combo_box>
 	<button name="copy_uuid_btn" follows="left|bottom" width="75" bottom="7" left="10" height="20" label="Copy UUID"/>
+	<button name="item_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Item"/>
 	<button name="remove_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Remove"/>
 	<button name="edit_data_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="View Data"/>
 </floater>

@@ -596,6 +596,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 	if (mState == INIT)
 	{
+		if(gAssetStorage && std::find(gAssetStorage->mBlackListedAsset.begin(),
+			gAssetStorage->mBlackListedAsset.end(),mID) != gAssetStorage->mBlackListedAsset.end())
+		{
+			llinfos << "Blacklisted asset " << mID.asString() << " was trying to be accessed!!!!!!" << llendl; 
+			mState = DONE;
+			return true;
+		}
 		mRequestedDiscard = -1;
 		mLoadedDiscard = -1;
 		mDecodedDiscard = -1;
@@ -606,6 +613,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		mSentRequest = UNSENT;
 		mDecoded  = FALSE;
 		mWritten  = FALSE;
+		// <edit>
+		if(mBuffer)
+		// </edit>
 		delete[] mBuffer;
 		mBuffer = NULL;
 		mBufferSize = 0;

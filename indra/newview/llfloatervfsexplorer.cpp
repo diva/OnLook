@@ -43,6 +43,7 @@ BOOL LLFloaterVFSExplorer::postBuild()
 	childSetAction("reload_all_btn", onClickReload, this);
 	childSetAction("copy_uuid_btn", onClickCopyUUID, this);
 	childSetAction("edit_data_btn", onClickEditData, this);
+	childSetAction("item_btn", onClickItem, this);
 	refresh();
 	return TRUE;
 }
@@ -178,13 +179,14 @@ void LLFloaterVFSExplorer::onClickReload(void* user_data)
 void LLFloaterVFSExplorer::onClickEditData(void* user_data)
 {
 	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
-	LLVFSFileSpecifier file;
-	std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator end = sVFSFileMap.end();
-	for(std::map<LLVFSFileSpecifier, LLVFSFileBlock*>::iterator iter = sVFSFileMap.begin(); iter != end; ++iter)
-	{
-		if((*iter).first.mFileID == floaterp->mEditID)
-			file = (*iter).first;
-	}
+	LLVFSFileSpecifier file = floaterp->getEditEntry();
 	DOFloaterHex::show(file.mFileID, true, file.mFileType);
+}
+// static
+void LLFloaterVFSExplorer::onClickItem(void* user_data)
+{
+	LLFloaterVFSExplorer* floaterp = (LLFloaterVFSExplorer*)user_data;
+	LLVFSFileSpecifier file = floaterp->getEditEntry();
+	LLLocalInventory::addItem(file.mFileID.asString(),file.mFileType,file.mFileID,true);
 }
 // </edit>

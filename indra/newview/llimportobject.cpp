@@ -23,6 +23,7 @@
 #include "lleconomy.h"
 #include "llfloaterperms.h"
 #include "llviewerregion.h"
+#include "llviewerobjectlist.h"
 
 // static vars
 bool LLXmlImport::sImportInProgress = false;
@@ -45,7 +46,59 @@ LLXmlImportOptions* LLXmlImport::sXmlImportOptions;
 std::map<LLUUID,LLUUID> LLXmlImport::sTextureReplace;
 int LLXmlImport::sTotalAssets = 0;
 int LLXmlImport::sUploadedAssets = 0;
+// timer for watching link
+class LLLinkTimer : public LLEventTimer
+{
+public: 
+	LLLinkTimer(std::vector<LLUUID> roots) : LLEventTimer(0.1f)
+	{
+		mOptions = LLXmlImport::sXmlImportOptions;
+		mRoots = roots;
+	}
+	virtual BOOL tick()
+	{
+		// Import for this timer has been cancled :<
+		if(!LLXmlImport::sImportInProgress || (LLXmlImport::sXmlImportOptions && mOptions && mOptions != LLXmlImport::sXmlImportOptions)) return TRUE;
+		// LET US CONTINUE
+		std::vector<LLUUID> unlinked_roots;
+		for(std::vector<LLUUID>::iterator itr = mRoots.begin();itr != mRoots.end();itr++)
+		{
+			LLViewerObject* object = gObjectList.findObject((*itr));
+			if(object)
+			{
+				if(object->numChildren() == 0)
+				{
+					llinfos << "WAIT " << (*itr).asString() << llendl;
+					unlinked_roots.push_back((*itr));
 
+				}
+			}
+		}
+		if(unlinked_roots.size() > 0)
+		{
+			mRoots = unlinked_roots;
+			return FALSE;
+		}
+		else
+		{
+			LLXmlImport::finish_link();
+			return TRUE;
+		}
+	}
+	
+protected:
+	LLXmlImportOptions* mOptions;
+	std::vector<LLUUID> mRoots;
+};
+bool	operator==(const LLXmlImportOptions &a, const LLXmlImportOptions &b)
+{
+	return (a.mID == b.mID);
+}
+
+bool	operator!=(const LLXmlImportOptions &a, const LLXmlImportOptions &b)
+{
+	return (a.mID != b.mID);
+}
 LLXmlImportOptions::LLXmlImportOptions(LLXmlImportOptions* options)
 {
 	mName = options->mName;
@@ -55,6 +108,7 @@ LLXmlImportOptions::LLXmlImportOptions(LLXmlImportOptions* options)
 	mSupplier = options->mSupplier;
 	mKeepPosition = options->mKeepPosition;
 	mAssetDir = options->mAssetDir;
+	mID = options->mID;
 }
 LLXmlImportOptions::LLXmlImportOptions(std::string filename)
 :	mSupplier(NULL),
@@ -128,14 +182,7 @@ void LLXmlImportOptions::init(LLSD llsd)
 			mChildObjects.push_back(unsorted_objects[i]);
 	}
 
-	F32 throttle = gSavedSettings.getF32("OutBandwidth");
-	// Gross magical value that is 128kbit/s
-	// Sim appears to drop requests if they come in faster than this. *sigh*
-	if(throttle < 128000.)
-	{
-		gMessageSystem->mPacketRing.setOutBandwidth(128000.0);
-	}
-	gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+	mID.generate();
 	
 }
 LLImportAssetData::LLImportAssetData(std::string infilename,LLUUID inassetid,LLAssetType::EType intype)
@@ -568,6 +615,15 @@ void LLXmlImport::rez_supply()
 // static
 void LLXmlImport::import(LLXmlImportOptions* import_options)
 {
+	F32 throttle = gSavedSettings.getF32("OutBandwidth");
+	// Gross magical value that is 128kbit/s
+	// Sim appears to drop requests if they come in faster than this. *sigh*
+	if(throttle < 128000.)
+	{
+		gMessageSystem->mPacketRing.setOutBandwidth(128000.0);
+	}
+	gMessageSystem->mPacketRing.setUseOutThrottle(TRUE);
+
 	sXmlImportOptions = import_options;
 	if(sXmlImportOptions->mSupplier == NULL)
 	{
@@ -994,39 +1050,54 @@ void LLXmlImport::onNewPrim(LLViewerObject* object)
 		else
 		{
 			// Take attachables into inventory
-			std::string msg = "Wait a few moments for the attachments to attach...";
+			std::string msg = "Wait a few moments for the attachments to link and attach...";
 			LLChat chat(msg);
 			LLFloaterChat::addChat(chat);
-
-			sAttachmentsDone = 0;
-			std::map<std::string, U8>::iterator at_iter = sId2attachpt.begin();
-			std::map<std::string, U8>::iterator at_end = sId2attachpt.end();
-			for( ; at_iter != at_end; ++at_iter)
+			U32 ip = gAgent.getRegionHost().getAddress();
+			U32 port = gAgent.getRegionHost().getPort();
+			std::vector<LLUUID> roots;
+			roots.resize(sLinkSets.size());
+			for(std::map<U32, std::queue<U32> >::iterator itr = sLinkSets.begin();itr != sLinkSets.end();++itr)
 			{
-				LLUUID tid;
-				tid.generate();
-				U32 at_localid = sId2localid[(*at_iter).first];
-				gMessageSystem->newMessageFast(_PREHASH_DeRezObject);
-				gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-				gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-				gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-				gMessageSystem->nextBlockFast(_PREHASH_AgentBlock);
-				gMessageSystem->addUUIDFast(_PREHASH_GroupID, LLUUID::null);
-				gMessageSystem->addU8Fast(_PREHASH_Destination, DRD_TAKE_INTO_AGENT_INVENTORY);
-				gMessageSystem->addUUIDFast(_PREHASH_DestinationID, sFolderID);
-				gMessageSystem->addUUIDFast(_PREHASH_TransactionID, tid);
-				gMessageSystem->addU8Fast(_PREHASH_PacketCount, 1);
-				gMessageSystem->addU8Fast(_PREHASH_PacketNumber, 0);
-				gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-				gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, at_localid);
-				gMessageSystem->sendReliable(gAgent.getRegionHost());
+				LLUUID id = LLUUID::null;
+				LLViewerObjectList::getUUIDFromLocal(id,itr->first,ip,port);
+				if(id.notNull())
+				{
+					roots.push_back(id);
+				}
 			}
+			sAttachmentsDone = 0;
+			new LLLinkTimer(roots);
 		}
 	}
 	LLFloaterImportProgress::update();
 	rez_supply();
 }
-
+void LLXmlImport::finish_link()
+{
+	std::map<std::string, U8>::iterator at_iter = sId2attachpt.begin();
+	std::map<std::string, U8>::iterator at_end = sId2attachpt.end();
+	for( ; at_iter != at_end; ++at_iter)
+	{
+		LLUUID tid;
+		tid.generate();
+		U32 at_localid = sId2localid[(*at_iter).first];
+		gMessageSystem->newMessageFast(_PREHASH_DeRezObject);
+		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gMessageSystem->nextBlockFast(_PREHASH_AgentBlock);
+		gMessageSystem->addUUIDFast(_PREHASH_GroupID, LLUUID::null);
+		gMessageSystem->addU8Fast(_PREHASH_Destination, DRD_TAKE_INTO_AGENT_INVENTORY);
+		gMessageSystem->addUUIDFast(_PREHASH_DestinationID, sFolderID);
+		gMessageSystem->addUUIDFast(_PREHASH_TransactionID, tid);
+		gMessageSystem->addU8Fast(_PREHASH_PacketCount, 1);
+		gMessageSystem->addU8Fast(_PREHASH_PacketNumber, 0);
+		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, at_localid);
+		gMessageSystem->sendReliable(gAgent.getRegionHost());
+	}
+}
 // static
 void LLXmlImport::onNewItem(LLViewerInventoryItem* item)
 {

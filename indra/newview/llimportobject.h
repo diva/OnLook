@@ -56,6 +56,8 @@ public:
 
 class LLXmlImportOptions
 {
+	friend bool	operator==(const LLXmlImportOptions &a, const LLXmlImportOptions &b);
+	friend bool	operator!=(const LLXmlImportOptions &a, const LLXmlImportOptions &b);
 public:
 	LLXmlImportOptions(LLXmlImportOptions* options);
 	LLXmlImportOptions(std::string filename);
@@ -73,6 +75,8 @@ public:
 	BOOL mKeepPosition;
 	LLViewerObject* mSupplier;
 	BOOL mReplaceTexture;
+protected:
+	LLUUID mID;
 };
 
 
@@ -86,6 +90,7 @@ public:
 	static void Cancel(void* user_data);
 	static void rez_supply();
 	static void finish_init();
+	static void finish_link();
 
 	static bool sImportInProgress;
 	static bool sImportHasAttachments;

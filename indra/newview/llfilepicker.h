@@ -94,6 +94,7 @@ public:
 		// <edit>
 		FFLOAD_INVGZ = 9,
 		FFLOAD_AO = 10,
+		FFLOAD_BLACKLIST = 11
 		// </edit>
 	};
 
@@ -137,6 +138,7 @@ public:
 		FFSAVE_INVGZ = 33,
 		FFSAVE_LANDMARK = 34,
 		FFSAVE_AO = 35,
+		FFSAVE_BLACKLIST = 36,
 		// </edit>
 	};
 
