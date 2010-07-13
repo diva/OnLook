@@ -5097,8 +5097,12 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 	// <edit>
 	if(mIsSelf)
 	{
-		if(gSavedSettings.getBOOL("AO.Enabled"))
+		if(LLAO::isEnabled())
 		{
+			if(LLAO::isStand(id))
+			{
+				LLAO::mTimer->resume();
+			}
 			if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			{
 				// avoid infinite loops!
@@ -5143,8 +5147,13 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 	if (mIsSelf)
 	{
 		// <edit>
-		if(gSavedSettings.getBOOL("AO.Enabled"))
+		if(LLAO::isEnabled())
 		{
+			if(LLAO::isStand(id))
+			{
+				//help the timer get started again
+				LLAO::mTimer->pause();
+			}
 			if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			 && (id != LLAO::mOverrides[id]) )
 			{

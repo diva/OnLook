@@ -6804,37 +6804,6 @@ void menu_toggle_control( void* user_data )
                 // Doubleclick actions - there can be only one
                 gSavedSettings.setBOOL( "DoubleClickAutoPilot", FALSE );
         }
-	// <edit>
-	else if(std::string(static_cast<char*>(user_data)) == "AO.Enabled")
-	{
-		LLVOAvatar* avatarp = gAgent.getAvatarObject();
-		if (avatarp)
-		{
-			for ( LLVOAvatar::AnimIterator anim_it =
-					  avatarp->mPlayingAnimations.begin();
-				  anim_it != avatarp->mPlayingAnimations.end();
-				  anim_it++)
-			{
-				if(LLAO::mOverrides.find(anim_it->first) != LLAO::mOverrides.end())
-				{
-					// this is an override anim
-					if(checked)
-					{
-						// make override stop
-						avatarp->stopMotion(anim_it->first);
-						gAgent.sendAnimationRequest(anim_it->first, ANIM_REQUEST_STOP);
-					}
-					else
-					{
-						// make override start
-						gSavedSettings.setBOOL("AO.Enabled", TRUE);
-						avatarp->startMotion(anim_it->first);
-					}
-				}
-			}
-		}
-	}
-	// </edit>
         gSavedSettings.setBOOL(setting, !checked);
 }
 

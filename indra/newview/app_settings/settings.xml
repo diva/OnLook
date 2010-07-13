@@ -34,6 +34,30 @@
 		<key>Value</key>
 		<integer>0</integer>
 	</map>
+	<key>AO.Period</key>
+	<map>
+		<key>Comment</key>
+		<string>Period when changing stands in seconds</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<integer>20.0</integer>
+	</map>
+	<key>Blacklist.Settings</key>
+	 <map>
+	 <key>Comment</key>
+	 	<string>List for blacklisting assets DO NOT EDIT DIRECTLY use the floater</string>
+	 <key>Persist</key>
+	 	<integer>1</integer>
+	 <key>Type</key>
+	 	<string>LLSD</string>
+	 <key>Value</key>
+	 <array>
+		<string />
+	 </array>
+	</map>
     <key>UserChatColor</key>
         <map>
         <key>Comment</key>

@@ -96,6 +96,7 @@
 #include "llimageworker.h"
 
 // <edit>
+#include "llao.h" //for setting up listener
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
 // </edit>
@@ -687,6 +688,10 @@ bool LLAppViewer::init()
 	settings_to_globals();
 	// Setup settings listeners
 	settings_setup_listeners();
+	// <edit>
+	// Setup AO settings listener
+	LLAO::setup();
+	// </edit>
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 
