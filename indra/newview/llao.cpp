@@ -88,7 +88,7 @@ void LLAO::setup()
 {
 	mEnabled = gSavedSettings.getBOOL("AO.Enabled");
 	mPeriod = gSavedSettings.getF32("AO.Period");
-	if(mEnabled) mTimer = new LLAOStandTimer(mPeriod);
+	mTimer = new LLAOStandTimer(mPeriod);
 	gSavedSettings.getControl("AO.Enabled")->getSignal()->connect(boost::bind(&handleAOEnabledChanged, _1));
 	gSavedSettings.getControl("AO.Period")->getSignal()->connect(boost::bind(&handleAOPeriodChanged, _1));
 }
@@ -133,12 +133,6 @@ bool LLAO::handleAOPeriodChanged(const LLSD& newvalue)
 {
 	F32 value = (F32)newvalue.asReal();
 	mPeriod = value;
-	if(mTimer)
-		delete mTimer;
-	if(mEnabled)
-		mTimer = new LLAOStandTimer(mPeriod);
-	else
-		mTimer = NULL;
 	return true;
 }
 //static
@@ -147,12 +141,6 @@ bool LLAO::handleAOEnabledChanged(const LLSD& newvalue)
 	BOOL value = newvalue.asBoolean();
 	mEnabled = value;
 	runAnims(value);
-	if(mTimer)
-		delete mTimer;
-	if(mEnabled)
-		mTimer = new LLAOStandTimer(mPeriod);
-	else
-		mTimer = NULL;
 	return true;
 }
 //static
