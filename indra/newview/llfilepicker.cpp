@@ -55,7 +55,8 @@ LLFilePicker LLFilePicker::sInstance;
 #define SOUND_FILTER L"Sounds (*.wav; *.ogg)\0*.wav;*.ogg\0"
 #define IMAGE_FILTER L"Images (*.tga; *.bmp; *.jpg; *.jpeg; *.png; *.jp2; *.j2k; *.j2c)\0*.tga;*.bmp;*.jpg;*.jpeg;*.png;*.jp2;*.j2k;*.j2c\0"
 #define INVGZ_FILTER L"Inv cache (*.inv; *.inv.gz)\0*.inv;*.inv.gz\0"
-#define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist;\0"
+#define AO_FILTER L"Animation Override (*.ao)\0*.ao\0"
+#define BLACKLIST_FILTER L"Asset Blacklist (*.blacklist)\0*.blacklist\0"
 // <edit/>
 #define ANIM_FILTER L"Animations (*.bvh)\0*.bvh\0"
 #ifdef _CORY_TESTING
@@ -201,12 +202,12 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 		mOFN.lpstrFilter = INVGZ_FILTER \
 			L"\0";
 		break;
-/*
+
 	case FFLOAD_AO:
 		mOFN.lpstrFilter = AO_FILTER \
 			L"\0";
 		break;
-*/
+
 	case FFLOAD_BLACKLIST:
 		mOFN.lpstrFilter = BLACKLIST_FILTER \
 			L"\0";

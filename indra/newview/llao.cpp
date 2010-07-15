@@ -43,6 +43,7 @@ BOOL LLAOStandTimer::tick()
 					{
 						ao->mStandsCombo->setSimple(LLStringExplicit(LLAO::mStandOverrides.back().asString()));
 					}
+					break;
 				}
 			}
 		}
@@ -118,6 +119,13 @@ void LLAO::runAnims(BOOL enabled)
 				}
 			}
 		}
+		if(mTimer)
+		{
+			if(enabled)
+				mTimer->resume();
+			else
+				mTimer->pause();
+		}
 	}
 }
 //static
@@ -171,17 +179,16 @@ void LLAO::refresh()
 	LLSD::map_iterator sd_end = overrides.endMap();
 	for( ; sd_it != sd_end; sd_it++)
 	{
-		// ignore if override is null key...
-		if(sd_it->second.asUUID().isNull() 
-			// don't allow override to be used as a trigger
-			|| mOverrides.find(sd_it->second.asUUID()) != mOverrides.end())
-			continue;
-
 		if(sd_it->first == "stands")
 			for(LLSD::array_iterator itr = sd_it->second.beginArray();
 				itr != sd_it->second.endArray(); ++itr)
 					//list of listness
 					mStandOverrides.push_back(itr->asUUID());
+		// ignore if override is null key...
+		if(sd_it->second.asUUID().isNull() 
+			// don't allow override to be used as a trigger
+			|| mOverrides.find(sd_it->second.asUUID()) != mOverrides.end())
+			continue;
 		else if(LLAO::isStand(LLUUID(sd_it->first)))
 			//list of listness
 			mStandOverrides.push_back(sd_it->second.asUUID());
