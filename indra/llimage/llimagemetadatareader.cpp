@@ -1,7 +1,7 @@
 // <edit>
 #include "linden_common.h"
 #include "llimagemetadatareader.h"
-
+//#define COMMENT_DEBUGGING
 LLJ2cParser::LLJ2cParser(U8* data,int data_size)
 {
     	if(data && data_size)
@@ -78,6 +78,7 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 	{
 	    std::vector<U8> comment = parser.GetNextComment();
 	    if (comment.empty()) break; //exit loop
+#ifndef COMMENT_DEBUGGING
 	    if (comment[1] == 0x00 && comment.size() == 130)
 	    {
 		//llinfos << "FOUND PAYLOAD" << llendl;
@@ -120,6 +121,10 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 		//llinfos << "FOUND COMMENT: " << result << llendl;
 		return result;
 	    }
+#else
+		std::string result(comment.begin(),comment.end());
+		return result;
+#endif
 	}
 	//end of loop
 	return "";
