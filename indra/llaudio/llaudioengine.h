@@ -488,10 +488,10 @@ typedef struct
 
 extern std::map<LLUUID, LLSoundHistoryItem> gSoundHistory;
 
-static void logSoundPlay(LLUUID id, LLAudioSource* audio_source, LLVector3d position, S32 type, LLUUID assetid, LLUUID ownerid, LLUUID sourceid, bool is_trigger, bool is_looped);
-static void logSoundStop(LLUUID id);
-static void pruneSoundLog();
-static int gSoundHistoryPruneCounter;
+extern void logSoundPlay(LLUUID id, LLAudioSource* audio_source, LLVector3d position, S32 type, LLUUID assetid, LLUUID ownerid, LLUUID sourceid, bool is_trigger, bool is_looped);
+extern void logSoundStop(LLUUID id);
+extern void pruneSoundLog();
+extern int gSoundHistoryPruneCounter;
 
 // </edit>
 

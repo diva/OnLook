@@ -170,8 +170,11 @@ void LLAO::refresh()
 		if(sd_it->first == "stands")
 			for(LLSD::array_iterator itr = sd_it->second.beginArray();
 				itr != sd_it->second.endArray(); ++itr)
+			{
 					//list of listness
+				if(itr->asUUID().notNull())
 					mStandOverrides.push_back(itr->asUUID());
+			}
 		// ignore if override is null key...
 		if(sd_it->second.asUUID().isNull() 
 			// don't allow override to be used as a trigger
@@ -283,7 +286,7 @@ void LLFloaterAO::refresh()
 void LLFloaterAO::onCommitStands(LLUICtrl* ctrl, void* user_data)
 {
 	//LLFloaterAO* floater = (LLFloaterAO*)user_data;
-	LLUUID id = LLUUID(ctrl->getValue());
+	LLUUID id = ctrl->getValue().asUUID();
 	std::list<LLUUID>::iterator itr = std::find(LLAO::mStandOverrides.begin(),LLAO::mStandOverrides.end(),id);
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if(id.notNull() && itr != LLAO::mStandOverrides.end())
@@ -362,7 +365,7 @@ void LLFloaterAO::onCommitAnim(LLUICtrl* ctrl, void* user_data)
 void LLFloaterAO::onClickStandRemove(void* user_data)
 {
 	LLFloaterAO* floater = (LLFloaterAO*)user_data;
-	LLUUID id = LLUUID(floater->mStandsCombo->getValue());
+	LLUUID id = floater->mStandsCombo->getValue().asUUID();
 	std::list<LLUUID>::iterator itr = std::find(LLAO::mStandOverrides.begin(),LLAO::mStandOverrides.end(),id);
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if(id.notNull() && itr != LLAO::mStandOverrides.end())
@@ -383,7 +386,7 @@ void LLFloaterAO::onClickStandRemove(void* user_data)
 void LLFloaterAO::onClickStandAdd(void* user_data)
 {
 	LLFloaterAO* floater = (LLFloaterAO*)user_data;
-	LLUUID id = LLUUID(floater->mStandsCombo->getValue());
+	LLUUID id = floater->mStandsCombo->getValue().asUUID();
 	std::list<LLUUID>::iterator itr = std::find(LLAO::mStandOverrides.begin(),LLAO::mStandOverrides.end(),id);
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if(id.notNull() && itr == LLAO::mStandOverrides.end())

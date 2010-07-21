@@ -3014,8 +3014,57 @@ void LLVOAvatar::idleUpdateWindEffect()
 }
 void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComment)
 {
-	std::string uuid_str = getTE(0)->getID().asString(); //UUID of the head texture
-
+	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
+	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
+	{
+		BOOL res = FALSE;
+		for(int ti = TEX_UPPER_SHIRT; ti < TEX_NUM_INDICES; ti++)
+		{
+			switch((ETextureIndex)ti)
+			{
+				case TEX_HEAD_BODYPAINT:
+				case TEX_UPPER_SHIRT:
+				case TEX_LOWER_PANTS:
+				case TEX_EYES_IRIS:
+				case TEX_HAIR:
+				case TEX_UPPER_BODYPAINT:
+				case TEX_LOWER_BODYPAINT:
+				case TEX_LOWER_SHOES:
+				case TEX_LOWER_SOCKS:
+				case TEX_UPPER_JACKET:
+				case TEX_LOWER_JACKET:
+				case TEX_UPPER_GLOVES:
+				case TEX_UPPER_UNDERSHIRT:
+				case TEX_LOWER_UNDERPANTS:
+				case TEX_SKIRT:
+					if(getTEImage(ti)->getID() != IMG_DEFAULT_AVATAR)
+						res = TRUE;
+					break;
+				default:
+					break;
+			}
+			if(res)
+				break;
+		}
+		if(res)
+		{ 
+			//I found that someone failed at clothing protection
+			if(getTEImage(TEX_EYES_IRIS)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
+			&& getTEImage(TEX_UPPER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
+			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
+			{
+				color = LLColor4(1.f, 1.0f, 1.0f);
+				client = "Unknown viewer";
+			}
+			return;
+		}
+		else
+		{
+			color = LLColor4(0.5f, 0.5f, 0.5f);
+			client = "Viewer 2.0";
+			return;
+		}
+	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
 	{
 		color = LLColor4(1.f, 1.0f, 1.0f);
@@ -3128,12 +3177,6 @@ void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComm
 	{
 		color = LLColor4::purple;
 		client = "Imprudence";
-		
-	}
-	else if (uuid_str == "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
-	{
-		color = LLColor4(0.5f, 0.5f, 0.5f);
-		client = "Viewer 2.0";
 		
 	}
 	else if (uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")

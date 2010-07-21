@@ -258,6 +258,10 @@ protected:
 						   LLViewerObject* object,
 						   const LLTransactionID& tid,
 						   BOOL is_running);
+	// <edit>
+	virtual BOOL canSaveAs() const;
+	virtual void saveAs();
+	// </edit>
 
 	static void onSearchReplace(void* userdata);
 	static void onLoad(void* userdata);

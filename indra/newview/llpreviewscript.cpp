@@ -2611,3 +2611,37 @@ BOOL LLLiveLSLEditor::monoChecked() const
 	}
 	return FALSE;
 }
+
+// <edit>
+// virtual
+BOOL LLLiveLSLEditor::canSaveAs() const
+{
+	return TRUE;
+}
+
+// virtual
+void LLLiveLSLEditor::saveAs()
+{
+	std::string default_filename("untitled.lsl");
+	const LLInventoryItem *item = getItem();
+	if(item)
+	{
+		default_filename = LLDir::getScrubbedFileName(item->getName());
+	}
+
+	LLFilePicker& file_picker = LLFilePicker::instance();
+	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_LSL, default_filename ) )
+	{
+		// User canceled or we failed to acquire save file.
+		return;
+	}
+	// remember the user-approved/edited file name.
+	std::string filename = file_picker.getFirstFile();
+
+	std::string utf8text = mScriptEd->mEditor->getText();
+	LLFILE* fp = LLFile::fopen(filename, "wb");
+	fputs(utf8text.c_str(), fp);
+	fclose(fp);
+	fp = NULL;
+}
+// </edit>
