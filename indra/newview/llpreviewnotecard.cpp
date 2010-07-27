@@ -461,13 +461,13 @@ void LLPreviewNotecard::onClickGetItems(void* user_data)
 		LLViewerTextEditor* editor = preview->getChild<LLViewerTextEditor>("Notecard Editor");
 		if(editor)
 		{
-			std::vector<LLPointer<LLInventoryItem>> items = editor->getEmbeddedItems();
+			std::vector<LLPointer<LLInventoryItem> > items = editor->getEmbeddedItems();
 			if(items.size())
 			{
 				const BOOL use_caps = FALSE;
 
-				std::vector<LLPointer<LLInventoryItem>>::iterator iter = items.begin();
-				std::vector<LLPointer<LLInventoryItem>>::iterator end = items.end();
+				std::vector<LLPointer<LLInventoryItem> >::iterator iter = items.begin();
+				std::vector<LLPointer<LLInventoryItem> >::iterator end = items.end();
 				for( ; iter != end; ++iter)
 				{
 					LLInventoryItem* item = static_cast<LLInventoryItem*>(*iter);
