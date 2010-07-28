@@ -435,7 +435,13 @@ void LLPanelLogin::fillVer()
 	getChild<LLSpinCtrl>("vermaj_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionMaj"));
 	getChild<LLSpinCtrl>("vermin_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionMin"));
 	getChild<LLSpinCtrl>("verpatch_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionPatch"));
+
+	//simple hack to stop bans based on specific versions, 257 is a reasonable upper limit for a build number.
+	if(gSavedSettings.getU32("SpecifiedVersionBuild") == 100000)
+		gSavedSettings.setU32("SpecifiedVersionBuild", ll_rand(257));
+
 	getChild<LLSpinCtrl>("verbuild_spin")->forceSetValue((S32)gSavedSettings.getU32("SpecifiedVersionBuild"));
+
 }
 
 // static
