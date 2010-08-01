@@ -34,6 +34,7 @@
 #define LLLOGINHISTORY_H
 
 #include "llviewernetwork.h"
+#include <string>
 
 class LLSD;
 
@@ -57,7 +58,8 @@ public:
 	 * @param	password	Munged password of PASSWORD_HASH_LENGTH.
 	 */
 	LLSavedLoginEntry(const EGridInfo gridinfo, const std::string& firstname,
-					  const std::string& lastname, const std::string& password);
+					  const std::string& lastname, const std::string& password,
+					  const std::string& macaddress, const std::string& volumeid);
 	/**
 	 * @brief	Returns the display name of the grid ID associated with this entry.
 	 * @return	String containing grid name.
@@ -168,6 +170,38 @@ public:
 	 * @param	value	Munged password suitable for login.
 	 */
 	void setPassword(const std::string& value);
+	/**
+	 * @brief	Returns the MAC address associated with this login entry.
+	 * @return	First name as string.
+	 */
+	const std::string getMACAddress() const
+	{
+		return (mEntry.has("macaddress") ? mEntry.get("macaddress").asString() : std::string());
+	}
+	/**
+	 * @brief	Sets the MAC address associated with this login entry.
+	 * @param	value	String value to set.
+	 */
+	void setMACAddress(std::string& value)
+	{
+		mEntry.insert("macaddress", LLSD(value));
+	}
+	/**
+	 * @brief	Returns the first name associated with this login entry.
+	 * @return	First name as string.
+	 */
+	const std::string getVolumeID() const
+	{
+		return (mEntry.has("volumeid") ? mEntry.get("volumeid").asString() : std::string());
+	}
+	/**
+	 * @brief	Sets the first name associated with this login entry.
+	 * @param	value	String value to set.
+	 */
+	void setVolumeID(std::string& value)
+	{
+		mEntry.insert("volumeid", LLSD(value));
+	}
 	/**
 	 * @brief	Returns the login entry as an LLSD for serialization.
 	 * *return	LLSD containing login entry details.

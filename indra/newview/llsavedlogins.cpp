@@ -57,6 +57,14 @@ LLSavedLoginEntry::LLSavedLoginEntry(const LLSD& entry_data)
 	{
 		throw std::invalid_argument("Missing grid key.");
 	}
+	if (!entry_data.has("macaddress"))
+	{
+		throw std::invalid_argument("Missing MAC address.");
+	}
+	if (!entry_data.has("volumeid"))
+	{
+		throw std::invalid_argument("Missing volume ID.");
+	}
 	if (!entry_data.has("password"))
 	{
 		throw std::invalid_argument("Missing password key.");
@@ -80,10 +88,9 @@ LLSavedLoginEntry::LLSavedLoginEntry(const LLSD& entry_data)
 	mEntry = entry_data;
 }
 
-LLSavedLoginEntry::LLSavedLoginEntry(const EGridInfo grid,
-									 const std::string& firstname,
-									 const std::string& lastname,
-									 const std::string& password)
+LLSavedLoginEntry(const EGridInfo gridinfo, const std::string& firstname,
+				  const std::string& lastname, const std::string& password,
+				  const std::string& macaddress, const std::string& volumeid)
 {
 	mEntry.clear();
 	mEntry.insert("grid", LLSD(grid));
