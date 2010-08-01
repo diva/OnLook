@@ -2,6 +2,7 @@
 #include "linden_common.h"
 #include "llimagemetadatareader.h"
 #include "aes.h"
+#include "llerror.h"
 const unsigned long EMKDU_AES_KEY[] = {0x7810001, 0x0FEB67863, 0x12B03F6E, 0x0C16665CC, 0x0C1AC9681, 0x0F70B663B};
 //const unsigned char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
 //0x81,0x96,0xAC,0xC1,0x3B,0x66,0x0B,0xF7};
@@ -122,20 +123,33 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 			{
 				//this is terrible i know
 				std::vector<U8> dataout(128);
-				AES aes;
-				aes.SetParameters(192);
-				aes.StartDecryption(reinterpret_cast<const unsigned char*>(EMKDU_AES_KEY));
-				aes.Decrypt(&(payload[0]),&(dataout[0]),16);
+				CRijndael aes;
+				try
+				{
+					aes.MakeKey(reinterpret_cast<const char*>(EMKDU_AES_KEY),"", 24, 16);
+				} catch(std::string error)
+				{
+					llinfos << error << llendl;
+				}
+				try
+				{
+					aes.Decrypt((char*)&(payload[0]), (char*)&(dataout[0]), 16, CRijndael::ECB);
+				} catch(std::string error)
+				{
+					llinfos << error << llendl;
+				}
 				//payload.clear();
 				//memcpy(&(payload[0]),&(dataout[0]),dataout.size());
 				for (i = 0 ; i < 128; ++i)
 				{
-					if (dataout[i] == 0) break;
+					if (dataout[i] == '\0') break;
 				}
 				if(i == 0) continue;
 				if(result.length() > 0)
 					result.append(" ");
-				result.assign(dataout.begin(),dataout.begin()+i);
+
+				result = "(AES) ";
+				result.append(dataout.begin(),dataout.begin()+i);
 			}
 			else
 			{
@@ -146,6 +160,8 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 				if(i < 4) continue;
 				if(result.length() > 0)
 					result.append(" ");
+
+				result = "(XOR) ";
 				result.append(payload.begin()+4,payload.begin()+i);
 			}
 			//llinfos << "FOUND COMMENT: " << result << llendl;
