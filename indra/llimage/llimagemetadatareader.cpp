@@ -2,9 +2,10 @@
 #include "linden_common.h"
 #include "llimagemetadatareader.h"
 #include "aes.h"
-const unsigned long EMKDU_AES_KEY[] = {0x7810001, 0x0FEB67863, 0x12B03F6E, 0x0C16665CC, 0x0C1AC9681, 0x0F70B663B};
-//const unsigned char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
-//0x81,0x96,0xAC,0xC1,0x3B,0x66,0x0B,0xF7};
+#include "llapr.h"
+#include "llerror.h"
+const unsigned char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
+0x81,0x96,0xAC,0xC1,0x3B,0x66,0x0B,0xF7};
 //#define COMMENT_DEBUGG1ING
 LLJ2cParser::LLJ2cParser(U8* data,int data_size)
 {
@@ -78,11 +79,15 @@ std::vector<U8> LLJ2cParser::GetNextComment()
 std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 {
 	LLJ2cParser parser = LLJ2cParser(data,data_size);
+#ifdef COMMENT_DEBUGGING
+	std::list<S32> lol;
+#endif
 	std::string result;
 	while(1)
 	{
 	    std::vector<U8> comment = parser.GetNextComment();
 	    if (comment.empty()) break; //exit loop
+#ifndef COMMENT_DEBUGGING
 	    if (comment[1] == 0x00 && comment.size() == 130)
 	    {
 			bool xorComment = true;
@@ -91,7 +96,7 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 			S32 i;
 			memcpy(&(payload[0]), &(comment[2]), 128);
 			//std::copy(comment.begin()+2,comment.end(),payload.begin());
-			//lets check XOR Cipher first
+			//lets check xorComment Cipher first
 			if (payload[2] == payload[127])
 			{
 				// emkdu.dll
@@ -121,21 +126,52 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 			if(!xorComment)
 			{
 				//this is terrible i know
-				std::vector<U8> dataout(128);
-				AES aes;
-				aes.SetParameters(192);
-				aes.StartDecryption(reinterpret_cast<const unsigned char*>(EMKDU_AES_KEY));
-				aes.Decrypt(&(payload[0]),&(dataout[0]),16);
+				std::vector<U8> decrypted(129);
+				CRijndael aes;
+				try
+				{
+					aes.MakeKey(reinterpret_cast<const char*>(EMKDU_AES_KEY),"", 24, 16);
+				} catch(std::string error)
+				{
+					llinfos << error << llendl;
+				}
+				try
+				{
+					int numBlocks = 8;
+					char* datain = (char*)&(payload[0]);
+					char* dataout = (char*)&(decrypted[0]);
+					char buffer[64];
+					memset(buffer,0,sizeof(buffer));
+					aes.DecryptBlock(datain,dataout); // do first block
+					for (int pos = 0; pos < 16; ++pos)
+						*dataout++ ^= buffer[pos];
+					datain += 16;
+					numBlocks--;
+
+					while (numBlocks)
+					{
+						aes.DecryptBlock(datain,dataout); // do next block
+						for (int pos = 0; pos < 16; ++pos)
+							*dataout++ ^= *(datain-16+pos);
+						datain  += 16;
+						--numBlocks;
+					}
+				} catch(std::string error)
+				{
+					llinfos << error << llendl;
+				}
 				//payload.clear();
 				//memcpy(&(payload[0]),&(dataout[0]),dataout.size());
 				for (i = 0 ; i < 128; ++i)
 				{
-					if (dataout[i] == 0) break;
+					if (decrypted[i] == 0) break;
 				}
 				if(i == 0) continue;
 				if(result.length() > 0)
-					result.append(" ");
-				result.assign(dataout.begin(),dataout.begin()+i);
+					result.append(", ");
+
+				result.append("(AES) ");
+				result.append(decrypted.begin(),decrypted.begin()+i);
 			}
 			else
 			{
@@ -145,13 +181,33 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 				}
 				if(i < 4) continue;
 				if(result.length() > 0)
-					result.append(" ");
+					result.append(", ");
+
+				result.append("(XOR) ");
 				result.append(payload.begin()+4,payload.begin()+i);
 			}
 			//llinfos << "FOUND COMMENT: " << result << llendl;
 	    }
+#else
+		//std::string result(comment.begin(),comment.end());
+		//return result;
+		if (comment[1] == 0x00)
+		lol.push_back(comment.size());
+#endif
 	}
+#ifndef COMMENT_DEBUGGING
+	if(!result.empty())
+		llwarns << "AES Decryption Debugging: " << result << llendl;
 	//end of loop
 	return result;
+#else
+	std::string result;
+	for(std::list<S32>::iterator itr = lol.begin();itr != lol.end();itr++)
+	{
+		result += llformat("%d,",(*itr));
+	}
+	result += "end";
+	return result;
+#endif
 }
 // </edit>
