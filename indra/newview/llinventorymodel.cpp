@@ -205,18 +205,29 @@ LLInventoryModel::~LLInventoryModel()
 // This is a convenience function to check if one object has a parent
 // chain up to the category specified by UUID.
 BOOL LLInventoryModel::isObjectDescendentOf(const LLUUID& obj_id,
-											const LLUUID& cat_id)
+											const LLUUID& cat_id,
+											const BOOL break_on_recursion)
 {
 	LLInventoryObject* obj = getObject(obj_id);
+	int depthCounter = 0;
 	while(obj)
 	{
 		const LLUUID& parent_id = obj->getParentUUID();
 		// <edit>
-		if(parent_id == obj->getUUID())
+		if(break_on_recursion)
 		{
-			// infinite loop... same thing as having no parent, hopefully.
-			llwarns << "This shit has itself as parent! " << parent_id.asString() << ", " << obj->getName() << llendl;
-			return FALSE;
+			if(depthCounter++ >= 100)
+			{
+				llwarns << "In way too damn deep, possibly recursive parenting" << llendl;
+				llinfos << obj->getName() << " : " << obj->getUUID() << " : " << parent_id << llendl;
+				return FALSE;
+			}
+			if(parent_id == obj->getUUID())
+			{
+				// infinite loop... same thing as having no parent, hopefully.
+				llwarns << "This shit has itself as parent! " << parent_id.asString() << ", " << obj->getName() << llendl;
+				return FALSE;
+			}
 		}
 		// </edit>
 		if( parent_id.isNull() )
