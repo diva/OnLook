@@ -190,14 +190,14 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		gInventory.accountForUpdate(container_update);
 		gInventory.updateCategory(container);
 		gInventory.notifyObservers();
-		
+
 		LLViewerInventoryCategory* orphaned_items = new LLViewerInventoryCategory(gAgent.getID());
 		orphaned_items->rename("Orphaned Items");
 		LLUUID orphaned_items_id;
 
 		orphaned_items_id.generate();
 		orphaned_items->setUUID(orphaned_items_id);
-		orphaned_items->setParent(container->getUUID());
+		orphaned_items->setParent(container_id);
 		orphaned_items->setPreferredType(LLAssetType::AT_NONE);
 		
 		LLInventoryModel::update_map_t orphaned_items_update;
@@ -218,6 +218,8 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
+
+			//if the parent is null, it goes in the very root of the tree!
 			if((*cat_iter)->getParentUUID().isNull())
 			{
 				(*cat_iter)->setParent(container_id);
@@ -225,7 +227,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 			// If the parent exists and outside of pretend inventory, generate a new uuid
 			else if(gInventory.getCategory((*cat_iter)->getParentUUID()))
 			{
-				if(!gInventory.isObjectDescendentOf((*cat_iter)->getParentUUID(), gLocalInventoryRoot))
+				if(!gInventory.isObjectDescendentOf((*cat_iter)->getParentUUID(), gLocalInventoryRoot, TRUE))
 				{
 					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*cat_iter)->getParentUUID());
 					if(itr == conflicting_cats.end())
@@ -262,14 +264,17 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		{
 			// Conditionally change its parent
 			// Note: Should I search for missing parent id's?
+
+			//if the parent is null, it goes in the very root of the tree!
 			if((*item_iter)->getParentUUID().isNull())
 			{
 				(*item_iter)->setParent(container_id);
 			}
+
 			// If the parent exists and outside of pretend inventory, generate a new uuid
-			else if(gInventory.getCategory((*item_iter)->getParentUUID()))
+			if(gInventory.getCategory((*item_iter)->getParentUUID()))
 			{
-				if(!gInventory.isObjectDescendentOf((*item_iter)->getParentUUID(), gLocalInventoryRoot))
+				if(!gInventory.isObjectDescendentOf((*item_iter)->getParentUUID(), gLocalInventoryRoot, TRUE))
 				{
 					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*item_iter)->getParentUUID());
 					if(itr == conflicting_cats.end())
