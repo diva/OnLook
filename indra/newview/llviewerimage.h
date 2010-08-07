@@ -366,6 +366,7 @@ public:
 	LLFrameTimer mLastReferencedTimer;
 
 	std::string decodedComment;
+	unsigned int commentEncryptionType;
 
 private:
 	LLUUID mID;

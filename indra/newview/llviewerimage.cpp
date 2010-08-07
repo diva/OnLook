@@ -142,7 +142,11 @@ virtual void completed(bool success)
 	{
 
 		//llinfos << "SUCCESS getting texture "<<mID<< llendl;
-		mViewerImage->decodedComment = LLImageMetaDataReader::ExtractEncodedComment(mFormattedImage->getData(),mFormattedImage->getDataSize());
+		mViewerImage->commentEncryptionType = LLImageMetaDataReader::ExtractEncodedComment(
+				mFormattedImage->getData(),
+				mFormattedImage->getDataSize(),
+				mViewerImage->decodedComment
+		);
 		
 	}
 	else
