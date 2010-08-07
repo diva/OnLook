@@ -9,11 +9,12 @@
 		    draw_heading="true" multi_select="true" search_column="1"
 		    tool_tip="Hold shift or control while clicking to select multiple avatars">
 		<column name="marked" label="Mark" width="12" tool_tip="Marked avatars"/>
-		<column name="avatar_name" label="Name" dynamicwidth="true" tool_tip="Hold shift or control while clicking to select multiple avatars"/>
+		<column name="avatar_name" label="Name" width="150" tool_tip="Hold shift or control while clicking to select multiple avatars"/>
 		<column name="distance" label="Dist." width="48" tool_tip="Distance from your avatar (red=within chat range, yellow=within shout range, green=within draw distance)"/>
 		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
 		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
 		<column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
+		<column name="metadata" label="Metadata" width="80" dynamicwidth="true" tool_tip="Extra info we know about the avatar"/>
 	</scroll_list>
 
 	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"

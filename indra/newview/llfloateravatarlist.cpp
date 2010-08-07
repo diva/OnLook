@@ -776,18 +776,27 @@ void LLFloaterAvatarList::refreshAvatarList()
 		
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
+
+		element["columns"][LIST_METADATA]["column"] = "metadata";
+		element["columns"][LIST_METADATA]["type"] = "text";
+
 		LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 		std::string client;
 		LLVOAvatar *avatarp = (LLVOAvatar*)gObjectList.findObject(av_id);
 		if(avatarp)
 		{
-			avatarp->getClientTag(client, avatar_name_color, TRUE);
+			avatarp->getClientInfo(client, avatar_name_color, TRUE);
 			if(client == "")
 			{
 				avatar_name_color = gColors.getColor( "ScrollUnselectedColor" );
 				client = "?";
 			}
 			element["columns"][LIST_CLIENT]["value"] = client.c_str();
+
+			if(avatarp->extraMetadata.length())
+			{
+				element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
+			}
 		}
 		else
 		{

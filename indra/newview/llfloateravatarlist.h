@@ -201,7 +201,8 @@ private:
 		LIST_DISTANCE,
 		LIST_POSITION,
 		LIST_ALTITUDE,
-		LIST_CLIENT
+		LIST_CLIENT,
+		LIST_METADATA
 	};
 
 	typedef void (*avlist_command_t)(const LLUUID &avatar, const std::string &name);
