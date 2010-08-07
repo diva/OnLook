@@ -86,6 +86,7 @@
 // <edit>
 #include "llfloaterexploreanimations.h"
 #include "llao.h"
+#include "llimagemetadatareader.h"
 // </edit>
 
 #if LL_MSVC
@@ -3012,7 +3013,7 @@ void LLVOAvatar::idleUpdateWindEffect()
 		}
 	}
 }
-void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComment)
+void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useComment)
 {
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
@@ -3206,14 +3207,32 @@ void LLVOAvatar::getClientTag(std::string& client, LLColor4& color, BOOL useComm
 
 	if(useComment)
 	{
-		LLUUID id = getTE(9)->getID();
-		LLPointer<LLViewerImage> image = gImageList.getImage(id);
-		if(image && image->decodedComment.length())
+		LLUUID baked_head_id = getTE(9)->getID();
+		LLPointer<LLViewerImage> baked_head_image = gImageList.getImage(baked_head_id);
+		if(baked_head_image && baked_head_image->decodedComment.length())
 		{
 			if(client.length())
-				client += " , " + image->decodedComment;
-			else
-				client = image->decodedComment;
+				client += ", ";
+
+			if(baked_head_image->commentEncryptionType == ENC_EMKDU_V1 || baked_head_image->commentEncryptionType == ENC_ONYXKDU)
+				client += "(XOR) ";
+			else if(baked_head_image->commentEncryptionType == ENC_EMKDU_V2)
+				client += "(AES) ";
+
+			client += baked_head_image->decodedComment;
+		}
+
+		LLPointer<LLViewerImage> baked_eye_image = gImageList.getImage(getTE(11)->getID());
+
+		if(baked_eye_image && !baked_eye_image->decodedComment.empty()
+			&& baked_eye_image->decodedComment != baked_head_image->decodedComment)
+		{
+			if(baked_eye_image->commentEncryptionType == ENC_EMKDU_V1 || baked_eye_image->commentEncryptionType == ENC_ONYXKDU)
+				extraMetadata = "(XOR) ";
+			else if(baked_eye_image->commentEncryptionType == ENC_EMKDU_V2)
+				extraMetadata = "(AES) ";
+
+			extraMetadata += baked_eye_image->decodedComment;
 		}
 	}
 }
@@ -3308,7 +3327,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				// <edit>
 				if(isFullyLoaded() && !mIsSelf)
 				{
-					getClientTag(client,avatar_name_color);	
+					getClientInfo(client,avatar_name_color);
 				}
 				// </edit>
 				avatar_name_color.setAlpha(alpha);

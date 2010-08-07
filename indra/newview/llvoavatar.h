@@ -89,7 +89,8 @@ public:
 	static void updateImpostors();
 
 	// <edit>
-	void getClientTag(std::string& client, LLColor4& color, BOOL useComment = FALSE);
+	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
+	std::string extraMetadata;
 	// </edit>
 	
 	//--------------------------------------------------------------------
