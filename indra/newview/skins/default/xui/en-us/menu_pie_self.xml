@@ -71,9 +71,9 @@
 			<on_enable function="Self.EnableRemoveAllAttachments" />
 		</menu_item_call>
 	</pie_menu>
-	<menu_item_call enabled="true" label="Sit Here" name="Self Sit">
-		<on_click function="Self.SitOrStand" userdata="" />
-		<on_enable function="Self.EnableSitOrStand" userdata="Sit Here,Stand Up" />
+	<menu_item_call enabled="true" hidden="false" label="Anims..." mouse_opaque="true"
+						 name="Anims...">
+		<on_click function="Avatar.Anims" />
 	</menu_item_call>
 	<menu_item_separator />
 	<menu_item_call enabled="true" label="Gestures..." name="Gestures...">
