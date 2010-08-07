@@ -4,7 +4,7 @@
 #include "aes.h"
 #include "llapr.h"
 #include "llerror.h"
-const unsigned char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
+const char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
 0x81,0x96,0xAC,0xC1,0x3B,0x66,0x0B,0xF7};
 //#define COMMENT_DEBUGG1ING
 LLJ2cParser::LLJ2cParser(U8* data,int data_size)
@@ -75,19 +75,33 @@ std::vector<U8> LLJ2cParser::GetNextComment()
 	return content;
 }
 
+//flow of control in this method is shit, gotta fix this... possibly return a vector or map instead of a string -HG
+
+/*
+  Notes:
+
+  For anyone debugging this method, if a comment is not being decoded properly and you know encryption is being used,
+  the easiest thing to do is to create an LLAPRFile handle inside this method and write the contents of data to a file.
+  Normally the comment is going to be up near the header, just have a look at it in a hex editor.
+
+  It's generally going to be a string of 130 bytes preceeded by a null.
+*/
+
 //static
-std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
+unsigned int LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size, std::string& output)
 {
 	LLJ2cParser parser = LLJ2cParser(data,data_size);
-#ifdef COMMENT_DEBUGGING
-	std::list<S32> lol;
-#endif
-	std::string result;
+
+	std::string decodedComment;
+
+	//not supported yet, but why the hell not?
+	unsigned int result = ENC_NONE;
+
 	while(1)
 	{
 	    std::vector<U8> comment = parser.GetNextComment();
 	    if (comment.empty()) break; //exit loop
-#ifndef COMMENT_DEBUGGING
+
 	    if (comment[1] == 0x00 && comment.size() == 130)
 	    {
 			bool xorComment = true;
@@ -107,6 +121,7 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 					payload[i + 2] ^= payload[0];
 					payload[i + 3] ^= payload[2];
 				}
+				result = ENC_EMKDU_V1;
 			}
 			else if (payload[3] == payload[127])
 			{
@@ -118,6 +133,7 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 					payload[i + 2] ^= payload[1];
 					payload[i + 3] ^= payload[3];
 				}
+				result = ENC_ONYXKDU;
 			}
 			else
 			{
@@ -130,7 +146,7 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 				CRijndael aes;
 				try
 				{
-					aes.MakeKey(reinterpret_cast<const char*>(EMKDU_AES_KEY),"", 24, 16);
+					aes.MakeKey(EMKDU_AES_KEY,"", 24, 16);
 				} catch(std::string error)
 				{
 					llinfos << error << llendl;
@@ -167,11 +183,13 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 					if (decrypted[i] == 0) break;
 				}
 				if(i == 0) continue;
-				if(result.length() > 0)
-					result.append(", ");
+				if(decodedComment.length() > 0)
+					decodedComment.append(", ");
 
-				result.append("(AES) ");
-				result.append(decrypted.begin(),decrypted.begin()+i);
+				//the way it's being done now, you can only specify the encryption type for the last comment.
+				//need to switch to a map<std::string, unsigned int> or a vector for output.
+				result = ENC_EMKDU_V2;
+				decodedComment.append(decrypted.begin(),decrypted.begin()+i);
 			}
 			else
 			{
@@ -180,34 +198,16 @@ std::string LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size)
 					if (payload[i] == 0) break;
 				}
 				if(i < 4) continue;
-				if(result.length() > 0)
-					result.append(", ");
+				if(decodedComment.length() > 0)
+					decodedComment.append(", ");
 
-				result.append("(XOR) ");
-				result.append(payload.begin()+4,payload.begin()+i);
+				decodedComment.append(payload.begin()+4,payload.begin()+i);
 			}
 			//llinfos << "FOUND COMMENT: " << result << llendl;
 	    }
-#else
-		//std::string result(comment.begin(),comment.end());
-		//return result;
-		if (comment[1] == 0x00)
-		lol.push_back(comment.size());
-#endif
 	}
-#ifndef COMMENT_DEBUGGING
-	if(!result.empty())
-		llwarns << "AES Decryption Debugging: " << result << llendl;
 	//end of loop
+	output = decodedComment;
 	return result;
-#else
-	std::string result;
-	for(std::list<S32>::iterator itr = lol.begin();itr != lol.end();itr++)
-	{
-		result += llformat("%d,",(*itr));
-	}
-	result += "end";
-	return result;
-#endif
 }
 // </edit>
