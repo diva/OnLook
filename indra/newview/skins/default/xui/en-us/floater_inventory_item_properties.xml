@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="false" height="320" min_height="100" min_width="100"
+     can_resize="false" height="470" min_height="100" min_width="100"
      name="item properties" rect_control="PropertiesRect"
      title="Inventory Item Properties" width="350">
 	<icon bottom="-21" follows="top|right" height="16" image_name="icon_lock.tga"
@@ -167,6 +167,84 @@
 	     enabled="true" follows="left|top|right" font="SansSerifSmall" height="16"
 	     is_unicode="false" left_delta="56" max_length="25" mouse_opaque="true"
 	     name="EditPrice" width="242" />
+
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-25"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelItemID" v_pad="0" width="78">
+		ItemID:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditItemID" width="252" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-15"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelFolderID" v_pad="0" width="78">
+		FolderID:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditFolderID" width="252" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-15"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelGroup" v_pad="0" width="78">
+		Group:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditGroup" width="252" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-15"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelAssetID" v_pad="0" width="78">
+		AssetID:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditAssetID" width="252" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-15"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelType" v_pad="0" width="78">
+		Type:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditType" width="100" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="4" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left_delta="102"
+	     mouse_opaque="true" name="LabelInvType" v_pad="0" width="78">
+		InvType:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left_delta="50" max_length="127" mouse_opaque="true"
+	     name="EditInvType" width="100" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-15"  drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+	     mouse_opaque="true" name="LabelFlags" v_pad="0" width="78">
+		Flags:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-4" 
+	     enabled="false" follows="left|top|right" font="SansSerifSmall" height="16"
+	     is_unicode="false" left="88" max_length="127" mouse_opaque="true"
+	     name="EditFlags" width="100" />
+	<button name="more_btn" left="260" width="80" bottom="10" height="20" label="More &gt;&gt;"/>
+	<button name="less_btn" left="260" width="80" bottom="10" height="20" label="&lt;&lt; Less" visible="false"/>
+	
+	<text_editor name="item_text" font="SansSerifSmall" left="350" top="-25" width="440" bottom="40" max_length="65536" type="string" ignore_tab="false" word_wrap="false" visible="false"/>
+	<button name="copy_btn" left="620" width="80" bottom="10" height="20" label="Copy" visible="false"/>
+	<button name="update_btn" left="710" width="80" bottom="10" height="20" label="Update" visible="false"/>
+	
 	<string name="unknown">
 		(unknown)
 	</string>

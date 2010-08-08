@@ -59,6 +59,10 @@
 
 #include "lluictrlfactory.h"
 
+// <edit>
+#include "llclipboard.h"
+// </edit>
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPropertiesObserver
@@ -156,6 +160,9 @@ LLFloaterProperties::LLFloaterProperties(const std::string& name, const LLRect& 
 	mItemID(item_id),
 	mObjectID(object_id),
 	mDirty(TRUE)
+	// <edit>
+	, mExpanded(FALSE)
+	// </edit>
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_inventory_item_properties.xml");
 
@@ -194,6 +201,13 @@ LLFloaterProperties::LLFloaterProperties(const std::string& name, const LLRect& 
 	childSetCommitCallback("RadioSaleType",&onCommitSaleType, this);
 	// "Price" label for edit
 	childSetCommitCallback("EditPrice",&onCommitSaleInfo, this);
+	// <edit>
+	childSetAction("more_btn", &onClickMore, this);
+	childSetAction("less_btn", &onClickLess, this);
+	childSetAction("copy_btn", &onClickCopy, this);
+	childSetAction("update_btn", &onClickUpdate, this);
+	setExpanded(mExpanded);
+	// </edit>
 	// The UI has been built, now fill in all the values
 	refresh();
 }
@@ -280,6 +294,28 @@ void LLFloaterProperties::draw()
 
 void LLFloaterProperties::refreshFromItem(LLInventoryItem* item)
 {
+	// <edit>
+	childSetText("EditItemID", item->getUUID().asString());
+	childSetText("EditFolderID", item->getParentUUID().asString());
+	childSetText("EditGroup", item->getPermissions().getGroup().asString());
+	childSetText("EditAssetID", item->getAssetUUID().asString());
+
+	std::string type_str = LLAssetType::lookup(item->getType());
+	if(type_str.c_str() == NULL) type_str = llformat("%d", item->getType());
+	childSetText("EditType", type_str);
+	
+	std::string invtype_str = LLInventoryType::lookup(item->getInventoryType());
+	if(invtype_str.c_str() == NULL) invtype_str = llformat("%d", item->getInventoryType());
+	childSetText("EditInvType", invtype_str);
+	childSetText("EditFlags", llformat("%d", item->getFlags()));
+
+	std::ostringstream strm;
+	item->exportLegacyStream(strm, TRUE);
+	std::string str(strm.str());
+	LLStringUtil::replaceTabsWithSpaces(str, 4);
+	childSetText("item_text", str);
+	// </edit>
+
 	////////////////////////
 	// PERMISSIONS LOOKUP //
 	////////////////////////
@@ -944,12 +980,161 @@ void LLFloaterProperties::closeByID(const LLUUID& item_id, const LLUUID &object_
 	}
 }
 
+// <edit>
+void LLFloaterProperties::onClickMore(void* user_data)
+{
+	LLFloaterProperties* floaterp = (LLFloaterProperties*)user_data;
+	if(floaterp)
+	{
+		LLMultiProperties* host = (LLMultiProperties*)floaterp->getHost();
+		if(host)
+			host->setExpanded(TRUE);
+		else
+			floaterp->setExpanded(TRUE);
+	}
+}
+
+void LLFloaterProperties::onClickLess(void* user_data)
+{
+	LLFloaterProperties* floaterp = (LLFloaterProperties*)user_data;
+	if(floaterp)
+	{
+		LLMultiProperties* host = (LLMultiProperties*)floaterp->getHost();
+		if(host)
+			host->setExpanded(FALSE);
+		else
+			floaterp->setExpanded(FALSE);
+	}
+}
+
+void LLFloaterProperties::setExpanded(BOOL expanded)
+{
+	mExpanded = expanded;
+	LLRect rect = getRect();
+	if(expanded)
+		rect.setOriginAndSize(rect.mLeft, rect.mBottom, 800, rect.getHeight());
+	else
+		rect.setOriginAndSize(rect.mLeft, rect.mBottom, 350, rect.getHeight());
+	setRect(rect);
+	childSetVisible("more_btn", !mExpanded);
+	childSetVisible("less_btn", mExpanded);
+	childSetVisible("item_text", mExpanded);
+	childSetVisible("copy_btn", mExpanded);
+	childSetVisible("update_btn", mExpanded);
+	if(getHost())
+		setCanTearOff(!expanded); // idk why it comes out ugly if expanded
+}
+
+// static
+void LLFloaterProperties::onClickCopy(void* user_data)
+{
+	LLFloaterProperties* floaterp = (LLFloaterProperties*)user_data;
+	if(floaterp)
+	{
+		LLViewerInventoryItem* item = (LLViewerInventoryItem*)floaterp->findItem();
+		if(item)
+		{
+			std::string str(floaterp->childGetValue("item_text").asString());
+			std::string::size_type pos;
+			while((pos = str.find("    ")) != std::string::npos)
+			{
+				str.replace(pos, 4, "\t");
+			}
+
+			std::istringstream strm(str);
+			LLViewerInventoryItem* temp = new LLViewerInventoryItem();
+			temp->importLegacyStream(strm);
+			std::ostringstream strm2;
+			temp->exportLegacyStream(strm2, TRUE);
+			LLWString wstr(utf8str_to_wstring(strm2.str()));
+
+			gClipboard.copyFromSubstring(wstr, 0, wstr.length());
+
+			//delete temp;
+		}
+	}
+}
+
+// static
+void LLFloaterProperties::onClickUpdate(void* user_data)
+{
+	LLFloaterProperties* floaterp = (LLFloaterProperties*)user_data;
+	if(floaterp)
+	{
+		LLViewerInventoryItem* item = (LLViewerInventoryItem*)floaterp->findItem();
+		if(item)
+		{
+			std::string str(floaterp->childGetValue("item_text").asString());
+			std::string::size_type pos;
+			while((pos = str.find("    ")) != std::string::npos)
+			{
+				str.replace(pos, 4, "\t");
+			}
+			
+			std::istringstream strm(str);
+			item->importLegacyStream(strm);
+
+			if(floaterp->mObjectID.isNull())
+			{
+				// This is in the agent's inventory.
+				item->updateServer(FALSE);
+				gInventory.updateItem(item);
+				gInventory.notifyObservers();
+
+				item->setComplete(FALSE);
+				item->fetchFromServer();
+			}
+			else
+			{
+				// This is in an object's contents.
+				LLViewerObject* object = gObjectList.findObject(floaterp->mObjectID);
+				if(object)
+				{
+					object->updateInventory(
+						item,
+						TASK_INVENTORY_ITEM_KEY,
+						false);
+					object->fetchInventoryFromServer();
+				}
+			}
+		}
+	}
+}
+// </edit>
+
 ///----------------------------------------------------------------------------
 /// LLMultiProperties
 ///----------------------------------------------------------------------------
 
 LLMultiProperties::LLMultiProperties(const LLRect &rect) : LLMultiFloater(std::string("Properties"), rect)
+// <edit>
+, mExpanded(FALSE)
+// </edit>
 {
+}
+
+void LLMultiProperties::setExpanded(BOOL expanded)
+{
+	mExpanded = expanded;
+	LLRect rect = getRect();
+	LLRect tab_rect = mTabContainer->getRect();
+	if(expanded)
+	{
+		rect.setOriginAndSize(rect.mLeft, rect.mBottom, 800, rect.getHeight());
+		tab_rect.setOriginAndSize(tab_rect.mLeft, tab_rect.mBottom, 800, tab_rect.getHeight());
+	}
+	else
+	{
+		rect.setOriginAndSize(rect.mLeft, rect.mBottom, 350, rect.getHeight());
+		tab_rect.setOriginAndSize(tab_rect.mLeft, tab_rect.mBottom, 350, tab_rect.getHeight());
+	}
+	setRect(rect);
+	mTabContainer->setRect(tab_rect);
+	for (S32 i = 0; i < mTabContainer->getTabCount(); i++)
+	{
+		LLFloaterProperties* floaterp = (LLFloaterProperties*)mTabContainer->getPanelByIndex(i);
+		floaterp->setExpanded(expanded);
+	}
 }
 
 ///----------------------------------------------------------------------------
