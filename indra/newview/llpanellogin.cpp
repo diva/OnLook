@@ -1253,6 +1253,25 @@ void LLPanelLogin::onClickConnect(void *)
 		}
 		
 		std::string specified_channel = sInstance->getChild<LLLineEditor>("channel_edit")->getText();
+
+		//make sure they aren't using one of using Emerald's channels (or one that they think is)
+		std::string test_channel = specified_channel;
+
+		std::transform(test_channel.begin(), test_channel.end(), test_channel.begin(), toupper);
+
+		if(test_channel.find( "EMERALD", 0 ) != std::string::npos
+		   || test_channel.find( "GREENLIFE", 0 ) != std::string::npos)
+		{
+			LLSD args;
+			args["MESSAGE"] = std::string("Normally one changes the channel to avoid detection.\n\n") +
+							  std::string("A lot of the people working on client detection also work on Emerald in some capacity\n\n") +
+							  std::string("They can detect people spoofing Emerald. Choose another channel name.");
+
+			LLNotifications::instance().add("GenericAlert", args);
+
+			return;
+		}
+
 		gSavedSettings.setString("SpecifiedChannel", specified_channel);
 		
 		U32 specified_ver_maj = (U32)sInstance->getChild<LLSpinCtrl>("vermaj_spin")->getValue().asInteger();
