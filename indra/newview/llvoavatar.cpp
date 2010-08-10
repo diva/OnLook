@@ -5163,7 +5163,9 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 		{
 			if(LLAO::isStand(id))
 			{
-				LLAO::mTimer->resume();
+				if(LLAO::playingStands == 0)
+					LLAO::mTimer->resume();//Timer only resumes if its paused, check is inside function.
+				LLAO::playingStands++;
 			}
 			if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			{
@@ -5211,10 +5213,12 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 		// <edit>
 		if(LLAO::isEnabled())
 		{
-			if(LLAO::isStand(id))
+			if(LLAO::isStand(id) && LLAO::playingStands > 0) //LLAO::playingStands > 0 stops it from going negative
 			{
 				//help the timer get started again
-				LLAO::mTimer->pause();
+				LLAO::playingStands--;
+				if(LLAO::playingStands == 0)
+					LLAO::mTimer->pause();//Timer only pauses if its not paused, check is inside function.
 			}
 			if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			 && (id != LLAO::mOverrides[id]) )

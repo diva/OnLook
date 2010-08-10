@@ -2,9 +2,9 @@
 #include "linden_common.h"
 #include "llimagemetadatareader.h"
 #include "aes.h"
-#include "llapr.h"
-#include "llerror.h"
-const char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
+//#include "llapr.h"
+//#include "llerror.h"
+const unsigned char EMKDU_AES_KEY[] = {0x01,0x00,0x81,0x07,0x63,0x78,0xB6,0xFE,0x6E,0x3F,0xB0,0x12,0xCC,0x65,0x66,0xC1,
 0x81,0x96,0xAC,0xC1,0x3B,0x66,0x0B,0xF7};
 //#define COMMENT_DEBUGG1ING
 LLJ2cParser::LLJ2cParser(U8* data,int data_size)
@@ -146,7 +146,7 @@ unsigned int LLImageMetaDataReader::ExtractEncodedComment(U8* data,int data_size
 				CRijndael aes;
 				try
 				{
-					aes.MakeKey(EMKDU_AES_KEY,"", 24, 16);
+					aes.MakeKey(reinterpret_cast<const char*>(EMKDU_AES_KEY),"", 24, 16);
 				} catch(std::string error)
 				{
 					llinfos << error << llendl;

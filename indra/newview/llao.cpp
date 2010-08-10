@@ -8,13 +8,17 @@
 #include "llsdserialize.h"
 #include "llagent.h"
 #include "llvoavatar.h"
+//this is for debugging ;D
+//#define AO_DEBUG
 
+//static variables
 std::list<LLUUID> LLAO::mStandOverrides;
 std::map<LLUUID,LLUUID> LLAO::mOverrides;
 LLFloaterAO* LLFloaterAO::sInstance;
 BOOL LLAO::mEnabled = FALSE;
 F32 LLAO::mPeriod;
 LLAOStandTimer* LLAO::mTimer = NULL;
+S32 LLAO::playingStands = 0;
 
 LLAOStandTimer::LLAOStandTimer(F32 period) : LLEventTimer(period)
 {
@@ -23,6 +27,9 @@ BOOL LLAOStandTimer::tick()
 {
 	if(!mPaused && LLAO::isEnabled() && !LLAO::mStandOverrides.empty())
 	{
+#ifdef AO_DEBUG
+		llinfos << "tick" << llendl;
+#endif
 		LLVOAvatar* avatarp = gAgent.getAvatarObject();
 		if (avatarp)
 		{
@@ -35,7 +42,13 @@ BOOL LLAOStandTimer::tick()
 				{
 					//back is always last played, front is next
 					avatarp->stopMotion(LLAO::mStandOverrides.back());
+#ifdef AO_DEBUG
+					llinfos << "Stopping " << LLAO::mStandOverrides.back().asString() << llendl;
+#endif
 					avatarp->startMotion(LLAO::mStandOverrides.front());
+#ifdef AO_DEBUG
+					llinfos << "Starting " << LLAO::mStandOverrides.front().asString() << llendl;
+#endif
 					LLAO::mStandOverrides.push_back(LLAO::mStandOverrides.front());
 					LLAO::mStandOverrides.pop_front();
 					LLFloaterAO* ao = LLFloaterAO::sInstance;
@@ -54,6 +67,9 @@ BOOL LLAOStandTimer::tick()
 void LLAOStandTimer::pause()
 {
 	if(mPaused) return;
+#ifdef AO_DEBUG
+	llinfos << "Pausing AO Timer...." << llendl;
+#endif
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if (avatarp)
 	{
@@ -68,6 +84,9 @@ void LLAOStandTimer::pause()
 void LLAOStandTimer::resume()
 {
 	if(!mPaused) return;
+#ifdef AO_DEBUG
+	llinfos << "Unpausing AO Timer...." << llendl;
+#endif
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if (avatarp)
 	{

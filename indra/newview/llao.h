@@ -21,6 +21,7 @@ class LLAO
 {
 public:
 	static void setup();
+	static S32 playingStands;
 	static std::map<LLUUID,LLUUID> mOverrides;
 	static std::list<LLUUID> mStandOverrides;
 	static BOOL isEnabled(){ return mEnabled; }

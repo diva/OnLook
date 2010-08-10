@@ -1304,7 +1304,7 @@ void CRijndael::Encrypt(char const* in, char* result, size_t n, int iMode)
 	char* presult;
 	if(CBC == iMode) //CBC mode, using the Chain
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			Xor(m_chain, pin);
 			EncryptBlock(m_chain, presult);
@@ -1315,7 +1315,7 @@ void CRijndael::Encrypt(char const* in, char* result, size_t n, int iMode)
 	}
 	else if(CFB == iMode) //CFB mode, using the Chain
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			EncryptBlock(m_chain, presult);
 			Xor(presult, pin);
@@ -1326,7 +1326,7 @@ void CRijndael::Encrypt(char const* in, char* result, size_t n, int iMode)
 	}
 	else //ECB mode, not using the Chain
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			EncryptBlock(pin, presult);
 			pin += m_blockSize;
@@ -1347,7 +1347,7 @@ void CRijndael::Decrypt(char const* in, char* result, size_t n, int iMode)
 	char* presult;
 	if(CBC == iMode) //CBC mode, using the Chain
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			DecryptBlock(pin, presult);
 			Xor(presult, m_chain);
@@ -1358,7 +1358,7 @@ void CRijndael::Decrypt(char const* in, char* result, size_t n, int iMode)
 	}
 	else if(CFB == iMode) //CFB mode, using the Chain, not using Decrypt()
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			EncryptBlock(m_chain, presult);
 			//memcpy(presult, pin, m_blockSize);
@@ -1370,7 +1370,7 @@ void CRijndael::Decrypt(char const* in, char* result, size_t n, int iMode)
 	}
 	else //ECB mode, not using the Chain
 	{
-		for(i=0,pin=in,presult=result; i<n/m_blockSize; i++)
+		for(i=0,pin=in,presult=result; i<(int)n/m_blockSize; i++)
 		{
 			DecryptBlock(pin, presult);
 			pin += m_blockSize;
