@@ -2582,6 +2582,10 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		// trigger fidget anims
 		if (isAnyAnimationSignaled(AGENT_STAND_ANIMS, NUM_AGENT_STAND_ANIMS))
 		{
+			// <edit>
+			if(LLAO::isEnabled())
+				LLAO::mTimer->resume();//Timer only pauses if its not paused, check is inside function.
+			// </edit>
 			agent.fidget();
 		}
 	}
@@ -5161,12 +5165,6 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 	{
 		if(LLAO::isEnabled())
 		{
-			if(LLAO::isStand(id))
-			{
-				if(LLAO::playingStands == 0)
-					LLAO::mTimer->resume();//Timer only resumes if its paused, check is inside function.
-				LLAO::playingStands++;
-			}
 			if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			{
 				// avoid infinite loops!
@@ -5202,7 +5200,10 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 
 	return LLCharacter::startMotion(id, time_offset);
 }
-
+bool findStandAnim(const LLUUID& id,std::pair<LLUUID,S32> p)
+{
+	return id != p.first && LLAO::isStand(p.first);
+}
 //-----------------------------------------------------------------------------
 // stopMotion()
 //-----------------------------------------------------------------------------
@@ -5213,13 +5214,6 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 		// <edit>
 		if(LLAO::isEnabled())
 		{
-			if(LLAO::isStand(id) && LLAO::playingStands > 0) //LLAO::playingStands > 0 stops it from going negative
-			{
-				//help the timer get started again
-				LLAO::playingStands--;
-				if(LLAO::playingStands == 0)
-					LLAO::mTimer->pause();//Timer only pauses if its not paused, check is inside function.
-			}
 			if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			 && (id != LLAO::mOverrides[id]) )
 			{

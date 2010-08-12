@@ -8,8 +8,6 @@
 #include "llsdserialize.h"
 #include "llagent.h"
 #include "llvoavatar.h"
-//this is for debugging ;D
-//#define AO_DEBUG
 
 //static variables
 std::list<LLUUID> LLAO::mStandOverrides;
@@ -18,7 +16,6 @@ LLFloaterAO* LLFloaterAO::sInstance;
 BOOL LLAO::mEnabled = FALSE;
 F32 LLAO::mPeriod;
 LLAOStandTimer* LLAO::mTimer = NULL;
-S32 LLAO::playingStands = 0;
 
 LLAOStandTimer::LLAOStandTimer(F32 period) : LLEventTimer(period)
 {

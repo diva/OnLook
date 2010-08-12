@@ -2,6 +2,9 @@
 #ifndef LL_LLAO_H
 #define LL_LLAO_H
 
+//this is for debugging ;D
+//#define AO_DEBUG
+
 #include "llfloater.h"
 #include "llcombobox.h"
 
@@ -21,7 +24,6 @@ class LLAO
 {
 public:
 	static void setup();
-	static S32 playingStands;
 	static std::map<LLUUID,LLUUID> mOverrides;
 	static std::list<LLUUID> mStandOverrides;
 	static BOOL isEnabled(){ return mEnabled; }

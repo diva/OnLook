@@ -137,6 +137,7 @@
 #include "llviewerjoystick.h"
 #include "llfollowcam.h"
 // <edit>
+#include "llao.h"
 #include "llworldmapmessage.h"
 // </edit>
 using namespace LLVOAvatarDefines;
@@ -4957,6 +4958,10 @@ void LLAgent::onAnimStop(const LLUUID& id)
 	// handle automatic state transitions (based on completion of animation playback)
 	if (id == ANIM_AGENT_STAND)
 	{
+		// <edit>
+		if(LLAO::isEnabled())
+			LLAO::mTimer->resume();//Timer only pauses if its not paused, check is inside function.
+		// </edit>
 		stopFidget();
 	}
 	else if (id == ANIM_AGENT_AWAY)
