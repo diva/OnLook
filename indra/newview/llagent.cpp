@@ -4960,7 +4960,7 @@ void LLAgent::onAnimStop(const LLUUID& id)
 	{
 		// <edit>
 		if(LLAO::isEnabled())
-			LLAO::mTimer->resume();//Timer only pauses if its not paused, check is inside function.
+			LLAO::mTimer->pause();//Timer only pauses if its not paused, check is inside function.
 		// </edit>
 		stopFidget();
 	}
@@ -6418,8 +6418,12 @@ void LLAgent::fidget()
 
 			if (mCurrentFidget != oldFidget)
 			{
-				LLAgent::stopFidget();
-
+				//LLAgent::stopFidget();
+				// <edit>
+				// for the sack of smaller packets, make this cancel the last one only
+				if(oldFidget != 0)
+					sendAnimationRequest(AGENT_STAND_ANIMS[oldFidget],ANIM_REQUEST_STOP);
+				// </edit>
 				
 				switch(mCurrentFidget)
 				{
