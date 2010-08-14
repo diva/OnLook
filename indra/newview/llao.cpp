@@ -70,6 +70,9 @@ void LLAOStandTimer::pause()
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if (avatarp)
 	{
+#ifdef AO_DEBUG
+		llinfos << "Stopping " << LLAO::mStandOverrides.back().asString() << llendl;
+#endif
 		gAgent.sendAnimationRequest(LLAO::mStandOverrides.back(), ANIM_REQUEST_STOP);
 		avatarp->stopMotion(LLAO::mStandOverrides.back());
 	}
@@ -87,6 +90,9 @@ void LLAOStandTimer::resume()
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 	if (avatarp)
 	{
+#ifdef AO_DEBUG
+		llinfos << "Starting " << LLAO::mStandOverrides.back().asString() << llendl;
+#endif
 		gAgent.sendAnimationRequest(LLAO::mStandOverrides.back(), ANIM_REQUEST_START);
 		avatarp->startMotion(LLAO::mStandOverrides.back());
 	}
