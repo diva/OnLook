@@ -5200,10 +5200,6 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 
 	return LLCharacter::startMotion(id, time_offset);
 }
-bool findStandAnim(const LLUUID& id,std::pair<LLUUID,S32> p)
-{
-	return id != p.first && LLAO::isStand(p.first);
-}
 //-----------------------------------------------------------------------------
 // stopMotion()
 //-----------------------------------------------------------------------------
