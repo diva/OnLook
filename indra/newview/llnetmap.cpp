@@ -351,13 +351,15 @@ void LLNetMap::draw()
 
 			gCacheName->getFullName(avatar_ids[i], avName);
 
+			LLUUID estate_owner = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i])->getOwner();
+
 			//Lindens are always more Linden than your friend, make that take precedence
 			if(LLMuteList::getInstance()->isLinden(avName))
 			{
 				avColor = gColors.getColor( "MapLinden" );
 			}
 			//check if they are an estate owner at their current position
-			else if(avatar_ids[i] == LLWorld::getInstance()->getRegionFromPosGlobal(positions[i])->getOwner())
+			else if(estate_owner.notNull() && avatar_ids[i] == estate_owner)
 			{
 				avColor = gColors.getColor( "MapEstateOwner" );
 			}

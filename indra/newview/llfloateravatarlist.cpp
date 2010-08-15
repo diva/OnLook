@@ -53,6 +53,10 @@
 
 #include "llsdutil.h"
 
+//<edit>
+#include "llviewermenu.h"
+//</edit>
+
 /**
  * @brief How long to keep people who are gone in the list and in memory.
  */
@@ -687,10 +691,37 @@ void LLFloaterAvatarList::refreshAvatarList()
 		{
 			element["columns"][LIST_AVATAR_NAME]["font-style"] = "BOLD";
 		}
-		if (LLMuteList::getInstance()->isMuted(av_id))
+
+		//<edit> custom colors for certain types of avatars!
+		element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarAvatar" ).getValue();
+		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
+
+		//Lindens are always more Linden than your friend, make that take precedence
+		if(LLMuteList::getInstance()->isLinden(entry->getName()))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = LLColor4::red2.getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarLinden" ).getValue();
 		}
+		//first make sure their parent estate actually still exists and is alive
+		else if(parent_estate && parent_estate->isAlive())
+		{
+			LLUUID estate_owner = parent_estate->getOwner();
+			//check if they are an estate owner at their current position
+			if(estate_owner.notNull() && av_id == estate_owner)
+			{
+				element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarEstateOwner" ).getValue();
+			}
+		}
+		//without these people, SL would suck.
+		else if(is_agent_friend(av_id))
+		{
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarFriend" ).getValue();
+		}
+		//big fat jerkface who is probably a jerk, display them as such.
+		else if(LLMuteList::getInstance()->isMuted(av_id))
+		{
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarMuted" ).getValue();
+		}
+		//</edit>
 
 		char temp[32];
 		LLColor4 color = LLColor4::black;
