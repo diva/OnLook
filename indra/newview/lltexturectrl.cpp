@@ -1275,15 +1275,41 @@ BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 }
 
 // <edit>
+
+//static
+void LLTextureCtrl::handleClickOpenTexture(void* userdata)
+{
+	LLTextureCtrl* clickedTexture = static_cast<LLTextureCtrl*>(userdata);
+
+	if(clickedTexture)
+		LLLocalInventory::addItem(clickedTexture->mImageAssetID.asString(), (int)LLAssetType::AT_TEXTURE, clickedTexture->mImageAssetID, true);
+}
+
+//static
+void LLTextureCtrl::handleClickCopyAssetID(void* userdata)
+{
+	LLTextureCtrl* clickedTexture = static_cast<LLTextureCtrl*>(userdata);
+
+	if(clickedTexture)
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clickedTexture->mImageAssetID.asString()));
+}
+
 BOOL LLTextureCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
 {
-	if( mask & MASK_SHIFT )
+	BOOL handled = LLUICtrl::handleRightMouseDown( x, y , mask );
+	if( handled )
 	{
-		LLLocalInventory::addItem(mImageAssetID.asString(), (int)LLAssetType::AT_TEXTURE, mImageAssetID, true);
-		return TRUE;
+		LLMenuGL* menu = new LLMenuGL(LLStringUtil::null);
+		menu->append(new LLMenuItemCallGL("Open", LLTextureCtrl::handleClickOpenTexture, NULL, this));
+		menu->append(new LLMenuItemCallGL("Copy Asset UUID", LLTextureCtrl::handleClickCopyAssetID, NULL, this));
+		menu->updateParent(LLMenuGL::sMenuContainer);
+		menu->setCanTearOff(FALSE);
+		LLMenuGL::showPopup(this, menu, x, y);
 	}
-	return FALSE;
+
+	return handled;
 }
+
 // </edit>
 
 void LLTextureCtrl::onFloaterClose()

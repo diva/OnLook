@@ -159,6 +159,9 @@ public:
 
 	void setShowLoadingPlaceholder(BOOL showLoadingPlaceholder);
 
+	static void handleClickOpenTexture(void* userdata);
+	static void handleClickCopyAssetID(void* userdata);
+
 private:
 	BOOL allowDrop(LLInventoryItem* item);
 	BOOL doDrop(LLInventoryItem* item);
