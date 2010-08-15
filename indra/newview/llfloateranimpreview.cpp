@@ -68,6 +68,10 @@
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
 
+//<edit>
+#include "llinventorymodel.h" // gInventoryModel
+//</edit>
+
 S32 LLFloaterAnimPreview::sUploadAmount = 10;
 
 const S32 PREVIEW_BORDER_WIDTH = 2;
@@ -83,12 +87,32 @@ const F32 MAX_CAMERA_ZOOM = 10.f;
 
 const F32 BASE_ANIM_TIME_OFFSET = 5.f;
 
+// <edit>
+struct LLSaveInfo
+{
+	LLSaveInfo(const LLUUID& item_id, const LLUUID& object_id, const std::string& desc,
+				const LLTransactionID tid)
+		: mItemUUID(item_id), mObjectUUID(object_id), mDesc(desc), mTransactionID(tid)
+	{
+	}
+
+	LLUUID mItemUUID;
+	LLUUID mObjectUUID;
+	std::string mDesc;
+	LLTransactionID mTransactionID;
+};
+// </edit>
+
 //-----------------------------------------------------------------------------
 // LLFloaterAnimPreview()
 //-----------------------------------------------------------------------------
-LLFloaterAnimPreview::LLFloaterAnimPreview(const std::string& filename) : 
+LLFloaterAnimPreview::LLFloaterAnimPreview(const std::string& filename, void* item) :
 	LLFloaterNameDesc(filename)
 {
+	//<edit>
+	mItem = item;
+	//<edit>
+
 	mLastMouseX = 0;
 	mLastMouseY = 0;
 
@@ -243,6 +267,10 @@ BOOL LLFloaterAnimPreview::postBuild()
 	//childSetCommitCallback("ease_out_time", onCommitEaseOut, this);
 	//childSetValidate("ease_out_time", validateEaseOut);
 
+	// <edit> moved declaration from below
+	BOOL success = false;
+	// </edit>
+
 	std::string exten = gDirUtilp->getExtension(mFilename);
 	if (exten == "bvh")
 	{
@@ -273,15 +301,12 @@ BOOL LLFloaterAnimPreview::postBuild()
 
 			infile.close() ;
 			delete[] file_buffer;
-		}
-	}
 
-	if (loaderp && loaderp->isInitialized() && loaderp->getDuration() <= MAX_ANIM_DURATION)
+			// <edit> moved everything bvh from below
+			if(loaderp && loaderp->isInitialized())
 	{
-		// generate unique id for this motion
 		mTransactionID.generate();
 		mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
-
 		mAnimPreview = new LLPreviewAnimation(256, 256);
 
 		// motion will be returned, but it will be in a load-pending state, as this is a new motion
@@ -305,9 +330,60 @@ BOOL LLFloaterAnimPreview::postBuild()
 		// pass animation data through memory buffer
 		loaderp->serialize(dp);
 		dp.reset();
-		BOOL success = motionp && motionp->deserialize(dp);
+				success = motionp && motionp->deserialize(dp);
+			}
+			else
+			{
+				success = false;
+				if ( loaderp )
+				{
+					LLUIString out_str = getString("failed_file_read");
+					out_str.setArg("[STATUS]", loaderp->getStatus()); // *TODO:Translate
+					childSetValue("bad_animation_text", out_str.getString());
+				}
 
-		delete []buffer;
+				//setEnabled(FALSE);
+				mMotionID.setNull();
+				mAnimPreview = NULL;
+			}
+			// </edit>
+		}
+	}
+	// <edit>
+	else if(exten == "animatn")
+	{
+		S32 file_size;
+		LLAPRFile raw_animatn;
+		raw_animatn.open(mFilenameAndPath, LL_APR_RB, LLAPRFile::global, &file_size);
+
+		if (!raw_animatn.getFileHandle())
+		{
+			llwarns << "Can't open animatn file:" << mFilename << llendl;	
+		}
+		else
+		{
+			char*	file_buffer;
+
+			file_buffer = new char[file_size + 1];
+
+			if (file_size == raw_animatn.read(file_buffer, file_size))
+			{
+				file_buffer[file_size] = '\0';
+				llinfos << "Loading animatn file " << mFilename << llendl;
+				mTransactionID.generate();
+				mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
+				mAnimPreview = new LLPreviewAnimation(256, 256);
+				motionp = (LLKeyframeMotion*)mAnimPreview->getDummyAvatar()->createMotion(mMotionID);
+				LLDataPackerBinaryBuffer dp((U8*)file_buffer, file_size);
+				dp.reset();
+				success = motionp && motionp->deserialize(dp);
+			}
+
+			raw_animatn.close();
+			delete[] file_buffer;
+		}
+	}
+	// </edit>
 
 		if (success)
 		{
@@ -359,30 +435,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 			mMotionID.setNull();
 			childSetValue("bad_animation_text", getString("failed_to_initialize"));
 		}
-	}
-	else
-	{
-		if ( loaderp )
-		{
-			if (loaderp->getDuration() > MAX_ANIM_DURATION)
-			{
-				LLUIString out_str = getString("anim_too_long");
-				out_str.setArg("[LENGTH]", llformat("%.1f", loaderp->getDuration()));
-				out_str.setArg("[MAX_LENGTH]", llformat("%.1f", MAX_ANIM_DURATION));
-				childSetValue("bad_animation_text", out_str.getString());
-			}
-			else
-			{
-				LLUIString out_str = getString("failed_file_read");
-				out_str.setArg("[STATUS]", loaderp->getStatus()); // *TODO:Translate
-				childSetValue("bad_animation_text", out_str.getString());
-			}
-		}
 
-		//setEnabled(FALSE);
-		mMotionID.setNull();
-		mAnimPreview = NULL;
-	}
 
 	refresh();
 
@@ -1290,6 +1343,27 @@ void LLFloaterAnimPreview::onBtnOK(void* userdata)
 				LLAssetStorage::LLStoreAssetCallback callback = NULL;
 				S32 expected_upload_cost = sUploadAmount;
 				void *userdata = NULL;
+
+				// <edit>
+				if(floaterp->mItem)
+				{
+				        // Update existing item instead of creating a new one
+				        LLViewerInventoryItem* item = (LLViewerInventoryItem*)floaterp->mItem;
+				        LLSaveInfo* info = new LLSaveInfo(item->getUUID(), LLUUID::null, desc, floaterp->mTransactionID);
+				        gAssetStorage->storeAssetData(floaterp->mTransactionID, LLAssetType::AT_ANIMATION, NULL, info, FALSE);
+
+				        // I guess I will do this now because the floater is closing...
+				        LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
+				        new_item->setDescription(desc);
+				        new_item->setTransactionID(floaterp->mTransactionID);
+				        new_item->setAssetUUID(motionp->getID());
+				        new_item->updateServer(FALSE);
+				        gInventory.updateItem(new_item);
+				        gInventory.notifyObservers();
+				}
+				else
+				// </edit>
+
 				upload_new_resource(floaterp->mTransactionID, // tid
 						    LLAssetType::AT_ANIMATION,
 						    name,
