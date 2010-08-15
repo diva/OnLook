@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-300" can_close="true" can_drag_on_left="false" can_minimize="false"
-     can_resize="false" follows="left|top" height="546" name="Snapshot"
+     can_resize="false" follows="left|top" height="566" name="Snapshot"
      rect_control="FloaterSnapshotRect" title="Snapshot Preview" width="215">
 	<text bottom_delta="-40" follows="top|left" height="15" left="10" name="type_label"
 	     width="195">
