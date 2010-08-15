@@ -138,6 +138,9 @@
 <!-- MAP -->
 <MapAvatar value="0, 255, 0, 255" />
 <MapFriend value="255, 255, 0, 255" />
+<MapLinden value="0, 0, 255, 255" />
+<MapEstateOwner value="255, 165, 0, 255" />
+<MapMuted value="180, 180, 180, 255" />
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />

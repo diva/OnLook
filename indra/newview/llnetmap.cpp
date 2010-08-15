@@ -68,6 +68,10 @@
 
 #include "llglheaders.h"
 
+//<edit>
+#include "llmutelist.h"
+//</edit>
+
 const F32 MAP_SCALE_MIN = 32;
 const F32 MAP_SCALE_MID = 1024;
 const F32 MAP_SCALE_MAX = 4096;
@@ -330,8 +334,7 @@ void LLNetMap::draw()
 		F32 min_pick_dist = mDotRadius * MIN_PICK_SCALE; 
 
 		// Draw avatars
-		LLColor4 avatar_color = gColors.getColor( "MapAvatar" );
-		LLColor4 friend_color = gColors.getColor( "MapFriend" );
+		//<edit>
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLVector3d> positions;
 		LLWorld::getInstance()->getAvatars(&avatar_ids, &positions);
@@ -341,12 +344,40 @@ void LLNetMap::draw()
 			// just be careful to sort the avatar IDs along with the positions. -MG
 			pos_map = globalPosToView(positions[i], rotate_map);
 
+			//Default to boring green for random schlubs
+			LLColor4 avColor = gColors.getColor( "MapAvatar" );
+
+			std::string avName;
+
+			gCacheName->getFullName(avatar_ids[i], avName);
+
+			//Lindens are always more Linden than your friend, make that take precedence
+			if(LLMuteList::getInstance()->isLinden(avName))
+			{
+				avColor = gColors.getColor( "MapLinden" );
+			}
+			//check if they are an estate owner at their current position
+			else if(avatar_ids[i] == LLWorld::getInstance()->getRegionFromPosGlobal(positions[i])->getOwner())
+			{
+				avColor = gColors.getColor( "MapEstateOwner" );
+			}
+			//without these dots, SL would suck.
+			else if(is_agent_friend(avatar_ids[i]))
+			{
+				avColor = gColors.getColor( "MapFriend" );
+			}
+			//big fat jerkface who is probably a jerk, display them as such.
+			else if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
+			{
+				avColor = gColors.getColor( "MapMuted" );
+			}
+
 			LLWorldMapView::drawAvatar(
 				pos_map.mV[VX], pos_map.mV[VY], 
-				is_agent_friend(avatar_ids[i]) ? friend_color : avatar_color, 
+				avColor,
 				pos_map.mV[VZ],
 				mDotRadius);
-
+			//</edit>
 			F32	dist_to_cursor = dist_vec(LLVector2(pos_map.mV[VX], pos_map.mV[VY]), LLVector2(local_mouse_x,local_mouse_y));
 			if(dist_to_cursor < min_pick_dist && dist_to_cursor < closest_dist)
 			{
