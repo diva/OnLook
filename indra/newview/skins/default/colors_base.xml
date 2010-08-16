@@ -145,10 +145,10 @@
 <!-- RADAR -->
 
 <RadarAvatar value="0, 0, 0, 255" />
-<RadarFriend value="0, 255, 0, 255" />
-<RadarLinden value="0, 0, 255, 255" />
+<RadarFriend value="0, 128, 0, 255" />
+<RadarLinden value="0, 0, 128, 255" />
 <RadarEstateOwner value="204, 102, 10, 255" />
-<RadarMuted value="255, 255, 255, 150" />
+<RadarMuted value="128, 128, 128, 255" />
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />
