@@ -4956,7 +4956,14 @@ void LLAgent::requestStopMotion( LLMotion* motion )
 void LLAgent::onAnimStop(const LLUUID& id)
 {
 	// handle automatic state transitions (based on completion of animation playback)
-	if (id == ANIM_AGENT_STAND)
+	if(id == ANIM_AGENT_STAND
+		// <edit>
+		// I really do not like doing this
+		|| id == ANIM_AGENT_STAND_1
+		|| id == ANIM_AGENT_STAND_2
+		|| id == ANIM_AGENT_STAND_3
+		|| id == ANIM_AGENT_STAND_4)
+		// </edit>
 	{
 		// <edit>
 		if(LLAO::isEnabled())
