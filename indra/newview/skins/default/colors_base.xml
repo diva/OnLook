@@ -148,7 +148,7 @@
 <RadarFriend value="0, 255, 0, 255" />
 <RadarLinden value="0, 0, 255, 255" />
 <RadarEstateOwner value="204, 102, 10, 255" />
-<RadarMuted value="120, 120, 120, 255" />
+<RadarMuted value="255, 255, 255, 150" />
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />
