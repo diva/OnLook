@@ -137,6 +137,17 @@
 <!-- MAP -->
 <MapAvatar value="0, 255, 0, 255" />
 <MapFriend value="255, 255, 0, 255" />
+<MapLinden value="0, 0, 255, 255" />
+<MapEstateOwner value="255, 165, 0, 255" />
+<MapMuted value="180, 180, 180, 255" />
+
+<!-- RADAR -->
+
+<RadarAvatar value="0, 0, 0, 255" />
+<RadarFriend value="0, 128, 0, 255" />
+<RadarLinden value="0, 0, 128, 255" />
+<RadarEstateOwner value="204, 102, 10, 255" />
+<RadarMuted value="128, 128, 128, 255" />
 
 <!-- MINI-MAP -->
 <NetMapBackgroundColor value="0, 0, 0, 77" />
