@@ -102,7 +102,7 @@
 			     bottom="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="12"
 			     mouse_opaque="false" name="text_box" v_pad="0" width="500">
-				IP Spoofing Protection (0 being off, 3 being highest)
+				IP Spoofing Protection (0 being off, 3 being highest, anything higher than 1 may BlueScreen Windows)
 			</text>
 			 <slider bottom_delta="-25" can_edit_text="false"
 			     decimal_digits="0" enabled="true" follows="left|top" height="15"
