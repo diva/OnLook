@@ -927,14 +927,6 @@ bool idle_startup()
 				LLAppViewer::instance()->earlyExit("LoginFailedNoNetwork", LLSD().insert("DIAGNOSTIC", diagnostic));
 			}
 
-			// <edit>
-			if(gMessageSystem)
-			{
-				gMessageSystem->startSpoofProtection(gSavedSettings.getU32("SpoofProtectionLevel"));
-				gMessageSystem->setSpoofDroppedCallback(spoof_dropped_callback);
-			}
-			// </edit>
-
 			#if LL_WINDOWS
 				// On the windows dev builds, unpackaged, the message.xml file will 
 				// be located in indra/build-vc**/newview/<config>/app_settings.

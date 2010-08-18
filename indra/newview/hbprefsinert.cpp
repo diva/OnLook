@@ -39,6 +39,7 @@
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
 #include "llwind.h"
+#include "llviewernetwork.h"
 #include "pipeline.h"
 
 class LLPrefsInertImpl : public LLPanel
@@ -270,8 +271,13 @@ void LLPrefsInertImpl::apply()
 		if(new_spoof_protection != mSpoofProtectionAtOpen)
 		{
 			mSpoofProtectionAtOpen = new_spoof_protection;
+
 			gMessageSystem->stopSpoofProtection();
-			gMessageSystem->startSpoofProtection(new_spoof_protection);
+
+			if(LLViewerLogin::getInstance()->getGridChoice() < GRID_INFO_LOCAL)
+				gMessageSystem->startSpoofProtection(new_spoof_protection);
+			else
+				gMessageSystem->startSpoofProtection(0);
 		}
 	}
 	refreshValues();

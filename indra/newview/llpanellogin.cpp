@@ -80,6 +80,7 @@
 // <edit>
 #include "llappviewer.h"
 #include "llspinctrl.h"
+#include "llviewermessage.h"
 #include <boost/lexical_cast.hpp>
 // </edit>
 #define USE_VIEWER_AUTH 0
@@ -1233,7 +1234,19 @@ void LLPanelLogin::onClickConnect(void *)
 {
 	if (sInstance && sInstance->mCallback)
 	{
-		// <edit> save identity settings for login
+		// <edit>
+		if(gMessageSystem)
+		{
+			//IP spoofing protection only really works on the LL's grids
+			if(LLViewerLogin::getInstance()->getGridChoice() < GRID_INFO_LOCAL)
+				gMessageSystem->startSpoofProtection(gSavedSettings.getU32("SpoofProtectionLevel"));
+			else
+				gMessageSystem->startSpoofProtection(0);
+
+			gMessageSystem->setSpoofDroppedCallback(spoof_dropped_callback);
+		}
+
+		// save identity settings for login
 		bool specify_mac = sInstance->getChild<LLCheckBoxCtrl>("mac_check")->getValue();
 		bool specify_id0 = sInstance->getChild<LLCheckBoxCtrl>("id0_check")->getValue();
 		
