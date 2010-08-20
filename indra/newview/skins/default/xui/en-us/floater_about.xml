@@ -2,11 +2,21 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="false" height="440" min_height="100" min_width="100"
      name="floater_about" rect_control="FloaterAboutRect"
-     title="About Snowglobe" width="470">
+     title="Aboot Inertia" width="470">
 	<text_editor bottom="-434" embedded_items="false"
 	     follows="left|top|right|bottom" font="SansSerifSmall" height="168" left="6"
   max_length="65536" mouse_opaque="true" name="credits_editor" width="458"
   word_wrap="true">
+  
+  Inertia is a fork of snowglobe 1 trunk focusing on speed, security and making it easy to debug issues within SL
+  
+  Inertia includes source code contributions of the following people: Hazim Gazov, phr0z3nt0ast, Henri Beauchamp, Simman Federal, Apelsin, JCool410 Wildcat
+  
+  Inertia binary builds and support by: Simman Federal, electronbeam, asianman
+  
+  Significant contribution of the entire source base for SLPE and support of said source by: Philip
+  
+  Decryption advice and source code provided by: Anonymous, Anonymous furry
   
   Snowglobe includes source code contributions of the following residents: Able Whitman, Adam Marker, Agathos Frascati, Aimee Trescothick, Alejandro Rosenthal, Aleric Inglewood, Alissa Sabre, Angus Boyd, Ann Congrejo, Argent Stonecutter, Asuka Neely, Balp Allen, Benja Kepler, Biancaluce Robbiani, Blakar Ogre, blino Nakamura, Boroondas Gupte, Bulli Schumann, bushing Spatula, Carjay McGinnis, Catherine Pfeffer, Celierra Darling, Cron Stardust, Dale Glass, Drewan Keats, Dylan Haskell, Dzonatas Sol, Eddy Stryker, EponymousDylan Ra, Eva Nowicka, Farallon Greyskin, Feep Larsson, Flemming Congrejo, Fluf Fredriksson, Fremont Cunningham, Geneko Nemeth, Gigs Taggart, Ginko Bayliss, Grazer Kline, Gudmund Shepherd, Hamncheese Omlet, HappySmurf Papp, Henri Beauchamp, Hikkoshi Sakai, Hiro Sommambulist, Hoze Menges, Ian Kas, Irene Muni, Iskar Ariantho, Jacek Antonelli, JB Kraft, Joghert LeSabre, Kage Pixel, Ken March, Kerutsen Sellery, Khyota Wulluf, Kunnis Basiat, Lisa Lowe, Lockhart Cordoso, maciek marksman, Magnus Balczo, Malwina Dollinger, march Korda, Matthew Dowd, McCabe Maxsted, Michelle2 Zenovka, Mm Alder, Mr Greggan, Nicholaz Beresford, Nounouch Hapmouche, Patric Mills, Paul Churchill, Paula Innis, Peekay Semyorka, Peter Lameth, Pf Shan, princess niven, Renault Clio, Ringo Tuxing, Robin Cornelius, Ryozu Kojima, Salahzar Stenvaag, Sammy Frederix, Scrippy Scofield, Seg Baphomet, Sergen Davies, SignpostMarv Martin, Simon Nolan, SpacedOut Frye, Sporked Friis, Stevex Janus, Still Defiant, Strife Onizuka, Tayra Dagostino, TBBle Kurosawa, Teardrops Fall, tenebrous pau, Tharax Ferraris, Thickbrick Sleaford, Thraxis Epsilon, tiamat bingyi, TraductoresAnonimos Alter, Tue Torok, Vadim Bigbear, Vixen Heron, Whoops Babii, Wilton Lundquist, Zarkonnen Decosta, Zi Ree, Zipherius Turas
   
