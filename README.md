@@ -1,1 +1,1 @@
-DEATH TO AMERICA
+Forked from Inertia, Ascent's goal is to "clean up" the code, removing "bad" features and limiting as necessary to provide a stable, powerful client with features for both content creators and general use.
