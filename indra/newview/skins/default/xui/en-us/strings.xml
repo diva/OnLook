@@ -1641,5 +1641,33 @@ Responds to request_id with status and body
 string llGetHTTPHeader(key request_id, string header)
 Returns the value for header for request_id
   </string>
+  <string name="LSLTipText_llSetPrimMediaParams">
+    integer llSetPrimMediaParams(integer face, list params)
+    Returns an integer that is a STATUS_* flag which details the success/failure of the operation(s).
+  </string>
+  <string name="LSLTipText_llGetPrimMediaParams">
+    list llGetPrimMediaParams(integer face, list params)
+    Returns a list of values in the order requested.
+  </string>
+  <string name="LSLTipText_llClearPrimMedia">
+    integer llClearPrimMedia(integer face)
+    Returns an integer that is a STATUS_* flag which details the success/failure of the operation.
+  </string>
+  <string name="LSLTipText_llSetLinkPrimitiveParamsFast">
+    llSetLinkPrimitiveParamsFast(integer linknumber, list rules)
+    Set primitive parameters for linknumber based on rules with no built-in script sleep.
+  </string>
+  <string name="LSLTipText_llGetLinkPrimitiveParams">
+    list llGetLinkPrimitiveParams(integer link, list params)
+    Returns the list of primitive attributes requested in the params  list for link.
+  </string>
+  <string name="LSLTipText_llLinkParticleSystem">
+    list llLinkParticleSystem(integer link, list rules)
+    A particle system defined by a list of rules is set for the prim(s) link.
+  </string>
+  <string name="LSLTipText_llSetLinkTextureAnim">
+    llSetLinkTextureAnim(integer link, integer mode, integer face, integer sizex, integer sizey, float start, float length, float rate)
+    Animate the texture on the specified face/faces of the specified prim/prims by setting the texture scale and offset.
+  </string>
 </strings>
 

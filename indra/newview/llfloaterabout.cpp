@@ -30,7 +30,7 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
- 
+
 #include "llviewerprecompiledheaders.h"
 
 #include "llfloaterabout.h"
@@ -64,6 +64,11 @@
 #include "lldxhardware.h"
 #endif
 
+
+
+
+
+
 extern LLCPUInfo gSysCPU;
 extern LLMemoryInfo gSysMemory;
 extern U32 gPacketsIn;
@@ -87,10 +92,8 @@ LLFloaterAbout::LLFloaterAbout()
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_about.xml");
 
 	// Support for changing product name.
-	//<edit>
-	std::string title("Aboot ");
-	title += "Inertia";
-	//</edit>
+	std::string title("About ");
+	title += LLAppViewer::instance()->getSecondLifeTitle();
 	setTitle(title);
 
 	LLViewerTextEditor *support_widget = 
@@ -123,8 +126,8 @@ LLFloaterAbout::LLFloaterAbout()
     // <edit>
 	//			   gSavedSettings.getString("VersionChannelName").c_str());
 				   gSavedSettings.getString("SpecifiedChannel").c_str());
-	support_widget->appendColoredText("Spoofed Identification: " + version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	// </edit>
+	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, viewer_link_style);
 
 	std::string support;

@@ -85,7 +85,10 @@
 			     mouse_opaque="true" name="GroupText" v_pad="0" width="250" />
 			<button bottom="-160" enabled="true" follows="left|top" font="SansSerifSmall"
 			     halign="center" height="16" label="Set..." label_selected="Set..."
-			     left="350" mouse_opaque="true" name="Set..." scale_image="true" width="90" />
+			     left="350" mouse_opaque="true" name="Set..." scale_image="true" width="50" />
+			<button bottom="-120" enabled="true" follows="left|top" font="SansSerifSmall"
+			     halign="center" height="16" label="Info"
+			     left="400" mouse_opaque="true" name="group_profile" scale_image="true" width="50" />
 			<check_box bottom="-180" enabled="false" follows="left|top" font="SansSerifSmall"
 			     height="16" initial_value="false" label="Allow Deed to Group" left="96"
 			     mouse_opaque="true" name="check deed" radio_style="false"

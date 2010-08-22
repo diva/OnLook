@@ -410,6 +410,10 @@ public:
 	void			setFlying(BOOL fly);
 	void			toggleFlying();
 
+	static BOOL			getPhantom();
+	static void			setPhantom(BOOL phantom);
+	static void			togglePhantom();
+
 	// Does this parcel allow you to fly?
 	BOOL canFly();
 
@@ -785,6 +789,9 @@ public:
 	static int lure_y;
 	static int lure_z;
 	static std::string lure_maturity;
+
+	static LLVector3 exlStartMeasurePoint;
+	static LLVector3 exlEndMeasurePoint;
 	// </edit>
 
 	S32				mNumPendingQueries;
@@ -808,6 +815,8 @@ public:
 	// </edit>
 
 private:
+	static BOOL exlPhantom;
+
 	bool mbTeleportKeepsLookAt; // try to keep look-at after teleport is complete
 	bool mbAlwaysRun; // should the avatar run by default rather than walk
 	bool mbRunning;	// is the avatar trying to run right now

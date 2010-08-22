@@ -67,37 +67,73 @@ BOOL LLPanelSkins::postBuild()
 
 void LLPanelSkins::refresh()
 {
+	
 	mSkin = gSavedSettings.getString("SkinCurrent");
 	getChild<LLRadioGroup>("skin_selection")->setValue(mSkin);
 }
 
 void LLPanelSkins::apply()
 {
-	if (mSkin != gSavedSettings.getString("SkinCurrent"))
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 	{
-		  LLNotifications::instance().add("ChangeSkin");
-		  refresh();
+		if (mSkin != gSavedSettings.getString("SkinCurrent"))
+		{
+			  LLNotifications::instance().add("ChangeSkin");
+			  refresh();
+		}
 	}
+	else
+	{
+		if (mSkin != gSavedPerAccountSettings.getString("SkinCurrent"))
+		{
+			  LLNotifications::instance().add("ChangeSkin");
+			  refresh();
+		}
+	}
+	
 }
 
 void LLPanelSkins::cancel()
 {
 	// reverts any changes to current skin
-	gSavedSettings.setString("SkinCurrent", mSkin);
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	{
+		gSavedSettings.setString("SkinCurrent", mSkin);
+	}
+	else
+	{
+		gSavedPerAccountSettings.setString("SkinCurrent", mSkin);
+	}
+	
 }
 
 //static
 void LLPanelSkins::onSelectSkin(LLUICtrl* ctrl, void* data)
 {
 	std::string skin_selection = ctrl->getValue().asString();
-	gSavedSettings.setString("SkinCurrent", skin_selection);
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	{
+		gSavedSettings.setString("SkinCurrent", skin_selection);
+	}
+	else
+	{
+		gSavedPerAccountSettings.setString("SkinCurrent", skin_selection);
+	}
+	
 }
 
 //static 
 void LLPanelSkins::onClickClassic(void* data)
 {
 	LLPanelSkins* self = (LLPanelSkins*)data;
-	gSavedSettings.setString("SkinCurrent", "default");
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	{
+		gSavedSettings.setString("SkinCurrent", "default");
+	}
+	else
+	{
+		gSavedPerAccountSettings.setString("SkinCurrent", "default");
+	}
 	self->getChild<LLRadioGroup>("skin_selection")->setValue("default");
 }
 
@@ -105,6 +141,13 @@ void LLPanelSkins::onClickClassic(void* data)
 void LLPanelSkins::onClickSilver(void* data)
 {
 	LLPanelSkins* self = (LLPanelSkins*)data;
-	gSavedSettings.setString("SkinCurrent", "silver");
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	{
+		gSavedSettings.setString("SkinCurrent", "silver");
+	}
+	else
+	{
+		gSavedPerAccountSettings.setString("SkinCurrent", "silver");
+	}
 	self->getChild<LLRadioGroup>("skin_selection")->setValue("silver");
 }

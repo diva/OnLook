@@ -178,11 +178,11 @@ const F32 CAMERA_LAG_HALF_LIFE = 0.25f;
 const F32 MIN_CAMERA_LAG = 0.5f;
 const F32 MAX_CAMERA_LAG = 5.f;
 
-const F32 CAMERA_COLLIDE_EPSILON = 0.1f;
-const F32 MIN_CAMERA_DISTANCE = 0.1f;
-const F32 AVATAR_ZOOM_MIN_X_FACTOR = 0.55f;
-const F32 AVATAR_ZOOM_MIN_Y_FACTOR = 0.7f;
-const F32 AVATAR_ZOOM_MIN_Z_FACTOR = 1.15f;
+const F32 CAMERA_COLLIDE_EPSILON = 0.0f;
+const F32 MIN_CAMERA_DISTANCE = 0.0f;
+const F32 AVATAR_ZOOM_MIN_X_FACTOR = 0.0f;
+const F32 AVATAR_ZOOM_MIN_Y_FACTOR = 0.0f;
+const F32 AVATAR_ZOOM_MIN_Z_FACTOR = 0.0f;
 
 const F32 MAX_CAMERA_DISTANCE_FROM_AGENT = 50.f;
 
@@ -239,6 +239,10 @@ int LLAgent::lure_z;
 std::string LLAgent::lure_maturity;
 
 // </edit>
+
+BOOL LLAgent::exlPhantom = 0;
+LLVector3 LLAgent::exlStartMeasurePoint = LLVector3::zero;
+LLVector3 LLAgent::exlEndMeasurePoint = LLVector3::zero;
 
 const F32 LLAgent::TYPING_TIMEOUT_SECS = 5.f;
 
@@ -468,7 +472,16 @@ void LLAgent::init()
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
-	mEffectColor = gSavedSettings.getColor4("EffectColor");
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	{
+		llinfos << "Using client effect color." << llendl;
+		mEffectColor = gSavedSettings.getColor4("EffectColor");
+	}
+	else
+	{
+		llinfos << "Using account effect color." << llendl;
+		mEffectColor = gSavedPerAccountSettings.getColor4("EffectColor");
+	}
 	
 	mInitialized = TRUE;
 }
@@ -798,6 +811,17 @@ BOOL LLAgent::canFly()
 	return parcel->getAllowFly();
 }
 
+// Better Set Phantom options ~Charbl
+void LLAgent::setPhantom(BOOL phantom)
+{
+	exlPhantom = phantom;
+}
+
+BOOL LLAgent::getPhantom()
+{
+	return exlPhantom;
+}
+//
 
 //-----------------------------------------------------------------------------
 // setFlying()
@@ -855,6 +879,13 @@ void LLAgent::toggleFlying()
 
 	setFlying( fly );
 	resetView();
+}
+
+void LLAgent::togglePhantom()
+{
+	BOOL phan = !(exlPhantom);
+
+	setPhantom( phan );
 }
 
 
@@ -2165,6 +2196,8 @@ void LLAgent::setAFK()
 void LLAgent::clearAFK()
 {
 	gAwayTriggerTimer.reset();
+	if (!gSavedSettings.controlExists("FakeAway")) gSavedSettings.declareBOOL("FakeAway", FALSE, "", NO_PERSIST);
+	if (gSavedSettings.getBOOL("FakeAway") == TRUE) return;
 
 	// Gods can sometimes get into away state (via gestures)
 	// without setting the appropriate control flag. JC
@@ -2755,6 +2788,8 @@ BOOL LLAgent::needsRenderHead()
 //-----------------------------------------------------------------------------
 void LLAgent::startTyping()
 {
+	if (gSavedSettings.getBOOL("FakeAway")) 
+		return;
 	mTypingTimer.reset();
 
 	if (getRenderState() & AGENT_STATE_TYPING)
@@ -6194,9 +6229,10 @@ bool LLAgent::teleportCore(bool is_local)
 			gSavedSettings.setF32("SavedRenderFarClip", gSavedDrawDistance);
 			gSavedSettings.setF32("RenderFarClip", 32.0f);
 		}
-		make_ui_sound("UISndTeleportOut");
+		if(gSavedSettings.getBOOL("OptionPlayTpSound"))
+			make_ui_sound("UISndTeleportOut");
 	}
-
+	
 	// MBW -- Let the voice client know a teleport has begun so it can leave the existing channel.
 	// This was breaking the case of teleporting within a single sim.  Backing it out for now.
 //	gVoiceClient->leaveChannel();
@@ -7476,7 +7512,15 @@ void LLAgent::sendAgentSetAppearance()
 			msg->addU8Fast(_PREHASH_TextureIndex, (U8)texture_index);
 		}
 		msg->nextBlockFast(_PREHASH_ObjectData);
-		mAvatarObject->packTEMessage( gMessageSystem );
+
+		// Tag changing support
+		if (!gSavedSettings.controlExists("SpoofClientUUID")) 
+		{
+			gSavedSettings.declareString("SpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd", "FAKIN' BAKE-IN");
+			gSavedSettings.setString("SpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
+		}
+
+		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("SpoofClientUUID") );
 	}
 	else
 	{

@@ -379,7 +379,7 @@ void LLNetMap::draw()
 				avColor,
 				pos_map.mV[VZ],
 				mDotRadius);
-			//</edit>
+
 			F32	dist_to_cursor = dist_vec(LLVector2(pos_map.mV[VX], pos_map.mV[VY]), LLVector2(local_mouse_x,local_mouse_y));
 			if(dist_to_cursor < min_pick_dist && dist_to_cursor < closest_dist)
 			{

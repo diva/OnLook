@@ -92,6 +92,8 @@ private:
 		LIST_VISIBLE_ONLINE,
 		LIST_VISIBLE_MAP,
 		LIST_EDIT_MINE,
+		LIST_VISIBLE_ONLINE_THEIRS,
+		LIST_VISIBLE_MAP_THEIRS,
 		LIST_EDIT_THEIRS,
 		LIST_FRIEND_UPDATE_GEN
 	};
@@ -129,7 +131,11 @@ private:
 	static void onClickProfile(void* user_data);
 	static void onClickAddFriend(void* user_data);
 	static void onClickRemove(void* user_data);
-
+	static void onClickExport(void* user_data);
+	static void onClickImport(void* user_data);
+public:
+	static void FriendImportState(LLUUID id, bool accepted);
+private:
 	static void onClickOfferTeleport(void* user_data);
 	static void onClickPay(void* user_data);
 
@@ -147,6 +153,8 @@ private:
 	BOOL mShowMaxSelectWarning;
 	BOOL mAllowRightsChange;
 	S32 mNumRightsChanged;
+	S32 mNumOnline;
+	static bool merging;
 };
 
 

@@ -101,6 +101,7 @@
 #include "llbuildnewviewsscheduler.h"
 // </edit>
 // The files below handle dependencies from cleanup.
+#include "llcalc.h"
 #include "llkeyframemotion.h"
 #include "llworldmap.h"
 #include "llhudmanager.h"
@@ -170,6 +171,9 @@
 #include "llparcel.h"
 
 
+
+
+
 #include "llinventoryview.h"
 
 #include "llcommandlineparser.h"
@@ -193,8 +197,15 @@
 	#include "lllcd.h"
 #endif
 
+
 //----------------------------------------------------------------------------
 // viewer.cpp - these are only used in viewer, should be easily moved.
+
+
+
+
+
+
 
 #if LL_DARWIN
 extern void init_apple_menu(const char* product);
@@ -254,6 +265,7 @@ BOOL				gDisconnected = FALSE;
 
 // Minimap scale in pixels per region
 
+
 // used to restore texture state after a mode switch
 LLFrameTimer	gRestoreGLTimer;
 BOOL			gRestoreGL = FALSE;
@@ -283,6 +295,8 @@ BOOL gLogoutInProgress = FALSE;
 
 static std::string gPlaceAvatarCap;	//OGPX TODO: should belong elsewhere, as part of the llagent caps?
 
+
+
 ////////////////////////////////////////////////////////////
 // Internal globals... that should be removed.
 static std::string gArgs;
@@ -298,7 +312,7 @@ static BOOL gDoDisconnect = FALSE;
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
-const char* const VIEWER_WINDOW_CLASSNAME = "Second Life";
+const char* const VIEWER_WINDOW_CLASSNAME = "Ascent";
 
 //----------------------------------------------------------------------------
 // File scope definitons
@@ -314,6 +328,19 @@ static std::string gHelperURI;
 
 LLAppViewer::LLUpdaterInfo *LLAppViewer::sUpdaterInfo = NULL ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 void idle_afk_check()
 {
 	// check idle timers
@@ -322,6 +349,14 @@ void idle_afk_check()
 		gAgent.setAFK();
 	}
 }
+
+
+
+
+
+
+
+
 
 // A callback set in LLAppViewer::init()
 static void ui_audio_callback(const LLUUID& uuid)
@@ -549,6 +584,7 @@ LLAppViewer::LLAppViewer() :
 	sInstance = this;
 }
 
+
 LLAppViewer::~LLAppViewer()
 {
 	destroyMainloopTimeout();
@@ -596,13 +632,7 @@ bool LLAppViewer::init()
 
 	// Build a string representing the current version number.
 	// <edit> meh
-	gCurrentVersion = llformat("%s %d.%d.%d (%d)",
-            gSavedSettings.getString("SpecifiedChannel").c_str(),
-            gSavedSettings.getU32("SpecifiedVersionMaj"),
-            gSavedSettings.getU32("SpecifiedVersionMin"),
-            gSavedSettings.getU32("SpecifiedVersionPatch"),
-            gSavedSettings.getU32("SpecifiedVersionBuild") );
-	// </edit>
+	gCurrentVersion = "1.0.0.0";
 
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -1973,7 +2003,7 @@ bool LLAppViewer::initConfiguration()
     mYieldTime = gSavedSettings.getS32("YieldTime");
              
 	// XUI:translate
-	gSecondLife = "Snowglobe";
+	gSecondLife = "Ascent";
 
 	// Read skin/branding settings if specified.
 	//if (! gDirUtilp->getSkinDir().empty() )
@@ -2198,7 +2228,7 @@ bool LLAppViewer::initWindow()
 	BOOL ignorePixelDepth = gSavedSettings.getBOOL("IgnorePixelDepth");
 	// <edit>
 	//gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
-	gViewerWindow = new LLViewerWindow("Inertia", "Second Life",
+	gViewerWindow = new LLViewerWindow("Ascent", "Second Life",
 	// </edit>
 		gSavedSettings.getS32("WindowX"), gSavedSettings.getS32("WindowY"),
 		gSavedSettings.getS32("WindowWidth"), gSavedSettings.getS32("WindowHeight"),
@@ -2328,14 +2358,7 @@ void LLAppViewer::writeSystemInfo()
 {
 	gDebugInfo["SLLog"] = LLError::logFileName();
 
-	// <edit>
-	//gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("VersionChannelName");
-	gDebugInfo["ClientInfo"]["Name"] = gSavedSettings.getString("SpecifiedChannel");
-	gDebugInfo["ClientInfo"]["MajorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMaj");
-	gDebugInfo["ClientInfo"]["MinorVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionMin");
-	gDebugInfo["ClientInfo"]["PatchVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionPatch");
-	gDebugInfo["ClientInfo"]["BuildVersion"] = (S32)gSavedSettings.getU32("SpecifiedVersionBuild");
-	// </edit>
+	
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
@@ -3329,7 +3352,10 @@ void LLAppViewer::idle()
 	    {
 		    // Send avatar and camera info
 		    last_control_flags = gAgent.getControlFlags();
-		    send_agent_update(TRUE);
+		    if(!gAgent.getPhantom())
+			{
+				send_agent_update(TRUE);
+			}
 		    agent_update_timer.reset();
 	    }
 	}

@@ -15,7 +15,11 @@
 		Show these popups:
 	</text>
 	<scroll_list follows="top|left" height="88" left="15" name="enabled_popups" width="480" />
-	<button bottom_delta="-24" follows="top|left" height="20"
+	<button follows="top|left" height="20" label="Disable first time popups..." left="15"
+	     name="skip_frst_btn"
+	     tool_tip="Disable all of the first time use notifications."
+	     width="175" />
+	<button bottom_delta="0" follows="top|left" height="20"
 	     label="Disable all these popups..." left="200"
 	     name="skip_dialogs_btn"
 	     tool_tip="Disable all of the optional popups and &apos;first time use&apos; notifications."

@@ -8,10 +8,4 @@
 		<column dynamicwidth="true" label="Name" name="name" />
 		<column dynamicwidth="false" width ="100" label="" name="info" />
 	</scroll_list>
-	<button top="35" bottom="15" follows="top|right" height="20" label="Copy UUID" name="copy_uuid_btn"
-	     right="351" width="85" />
-	<button top="35" bottom="15" follows="top|right" height="20" label="Open" name="open_btn"
-	     right="436" width="85" />
-	<button top="35" bottom="15" follows="top|right" height="20" label="Jelly Roll" name="jelly_roll_btn"
-	     right="522" width="85" />
 </floater>

@@ -63,4 +63,13 @@
 			2:1
 		</combo_item>
 	</combo_box>
+	<button bottom="-318" enabled="true" follows="right|bottom" font="SansSerif"
+	     halign="center" height="20" label="Copy UUID" left="130"
+	     mouse_opaque="true" name="copy_uuid" scale_image="true" width="90" />
+	<button bottom_delta="0" enabled="true" follows="right|bottom" font="SansSerif"
+	     halign="center" height="20" label="Preview Sculpt" left_delta="90"
+	     mouse_opaque="true" name="preview_sculpt" scale_image="true" width="100" />
+	<button bottom_delta="20" enabled="true" follows="right|bottom" font="SansSerif"
+	     halign="center" height="20" label="Save Texture" left_delta="-90"
+	     mouse_opaque="true" name="Save" scale_image="true" width="90" />
 </floater>

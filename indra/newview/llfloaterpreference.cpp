@@ -65,7 +65,8 @@
 #include "llprefschat.h"
 #include "llprefsvoice.h"
 #include "llprefsim.h"
-#include "hbprefsinert.h"
+#include "ascentprefssys.h"
+#include "ascentprefsvan.h"
 #include "llresizehandle.h"
 #include "llresmgr.h"
 #include "llassetstorage.h"
@@ -134,7 +135,8 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mMsgPanel(NULL),
 	mSkinsPanel(NULL),
 	mLCDPanel(NULL),
-	mPrefsInert(NULL)
+	mPrefsAscentSys(NULL),
+	mPrefsAscentVan(NULL)
 {
 	mGeneralPanel = new LLPanelGeneral();
 	mTabContainer->addTabPanel(mGeneralPanel, mGeneralPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
@@ -194,9 +196,13 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mTabContainer->addTabPanel(mSkinsPanel, mSkinsPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
 	mSkinsPanel->setDefaultBtn(default_btn);
 
-	mPrefsInert = new LLPrefsInert();
-	mTabContainer->addTabPanel(mPrefsInert->getPanel(), mPrefsInert->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
-	mPrefsInert->getPanel()->setDefaultBtn(default_btn);
+	mPrefsAscentSys = new LLPrefsAscentSys();
+	mTabContainer->addTabPanel(mPrefsAscentSys->getPanel(), mPrefsAscentSys->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mPrefsAscentSys->getPanel()->setDefaultBtn(default_btn);
+
+	mPrefsAscentVan = new LLPrefsAscentVan();
+	mTabContainer->addTabPanel(mPrefsAscentVan->getPanel(), mPrefsAscentVan->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mPrefsAscentVan->getPanel()->setDefaultBtn(default_btn);
 
 	if (!mTabContainer->selectTab(gSavedSettings.getS32("LastPrefTab")))
 	{
@@ -257,12 +263,16 @@ LLPreferenceCore::~LLPreferenceCore()
 		delete mSkinsPanel;
 		mSkinsPanel = NULL;
 	}
-	if (mPrefsInert)
+	if (mPrefsAscentSys)
 	{
-		delete mPrefsInert;
-		mPrefsInert = NULL;
+		delete mPrefsAscentSys;
+		mPrefsAscentSys = NULL;
 	}
-
+	if (mPrefsAscentVan)
+	{
+		delete mPrefsAscentVan;
+		mPrefsAscentVan = NULL;
+	}
 }
 
 
@@ -278,7 +288,8 @@ void LLPreferenceCore::apply()
 	mPrefsIM->apply();
 	mMsgPanel->apply();
 	mSkinsPanel->apply();
-	mPrefsInert->apply();
+	mPrefsAscentSys->apply();
+	mPrefsAscentVan->apply();
 
 	// hardware menu apply
 	LLFloaterHardwareSettings::instance()->apply();
@@ -307,7 +318,8 @@ void LLPreferenceCore::cancel()
 	mPrefsIM->cancel();
 	mMsgPanel->cancel();
 	mSkinsPanel->cancel();
-	mPrefsInert->cancel();
+	mPrefsAscentSys->cancel();
+	mPrefsAscentVan->cancel();
 
 	// cancel hardware menu
 	LLFloaterHardwareSettings::instance()->cancel();

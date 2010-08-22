@@ -307,6 +307,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 	{
 		mTransactionID.generate();
 		mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
+
 		mAnimPreview = new LLPreviewAnimation(256, 256);
 
 		// motion will be returned, but it will be in a load-pending state, as this is a new motion

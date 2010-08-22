@@ -5,42 +5,36 @@
 	<menu bottom="273" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="263" label="File" left="0" mouse_opaque="false" name="File"
 	     opaque="true" tear_off="true" width="243">
-		<tearoff_menu bottom="-10" enabled="true" height="10" label="~~~~~~~~~~~" left="0"
-		     mouse_opaque="true" name="~~~~~~~~~~~" width="243" />
-    <menu label="Upload" name="upload" 
-        create_jump_keys="true" drop_shadow="true" enabled="true" mouse_opaque="false"
-		    opaque="true" tear_off="true">
-        <menu_item_call enabled="true" label="Image (L$[COST])..."
-	           mouse_opaque="true" name="Upload Image" shortcut="control|U" >
-          <on_click function="File.UploadImage" userdata="" />
-          <on_enable function="File.EnableUpload" />
-        </menu_item_call>
-        <menu_item_call label="Sound (L$[COST])..." name="Upload Sound"
-            mouse_opaque="true" enabled="true" >
-            <on_click function="File.UploadSound" userdata="" />
-            <on_enable function="File.EnableUpload" />
-        </menu_item_call>
-        <menu_item_call label="Animation (L$[COST])..." name="Upload Animation"
-	           mouse_opaque="true" enabled="true"  >
-            <on_click function="File.UploadAnim" userdata="" />
-            <on_enable function="File.EnableUpload" />
-        </menu_item_call>
-        <menu_item_call label="Bulk (L$[COST] per file)..." name="Bulk Upload"
-             mouse_opaque="true" enabled="true" >
-            <on_click function="File.UploadBulk" userdata="" />
-        </menu_item_call>
-		<menu_item_call bottom="-86" enabled="true" height="19"
-		     label="Import XML..." left="0" mouse_opaque="true"
-		     name="Import XML" width="243">
-			<on_click function="File.ImportXML" userdata="" />
-			<on_enable function ="File.EnableImportXML" userdata="" />
-		</menu_item_call>
-        <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
-        <menu_item_call enabled="true" label="Set Default Permissions..." 
-	          mouse_opaque="true" name="perm prefs" >
-            <on_click function="ShowFloater" userdata="perm prefs" />
-        </menu_item_call>
-    </menu>
+    <menu_item_call enabled="true" label="Image (L$[COST])..."
+         mouse_opaque="true" name="Upload Image" shortcut="control|U" >
+      <on_click function="File.UploadImage" userdata="" />
+      <on_enable function="File.EnableUpload" />
+    </menu_item_call>
+    <menu_item_call label="Sound (L$[COST])..." name="Upload Sound"
+        mouse_opaque="true" enabled="true" >
+        <on_click function="File.UploadSound" userdata="" />
+        <on_enable function="File.EnableUpload" />
+    </menu_item_call>
+    <menu_item_call label="Animation (L$[COST])..." name="Upload Animation"
+         mouse_opaque="true" enabled="true"  >
+        <on_click function="File.UploadAnim" userdata="" />
+        <on_enable function="File.EnableUpload" />
+    </menu_item_call>
+    <menu_item_call label="Bulk (L$[COST] per file)..." name="Bulk Upload"
+         mouse_opaque="true" enabled="true" >
+        <on_click function="File.UploadBulk" userdata="" />
+    </menu_item_call>
+<menu_item_call bottom="-86" enabled="true" height="19"
+     label="Import XML..." left="0" mouse_opaque="true"
+     name="Import XML" width="243">
+	<on_click function="File.ImportXML" userdata="" />
+	<on_enable function ="File.EnableImportXML" userdata="" />
+</menu_item_call>
+    <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
+    <menu_item_call enabled="true" label="Set Default Permissions..." 
+        mouse_opaque="true" name="perm prefs" >
+        <on_click function="ShowFloater" userdata="perm prefs" />
+    </menu_item_call>
 		<menu_item_separator bottom="-94" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator" width="243" />
 		<menu_item_call bottom="-113" enabled="true" height="19" label="Close Window" left="0"
@@ -73,13 +67,6 @@
 		     useMacCtrl="true" width="243">
 			<on_click function="File.TakeSnapshotToDisk" userdata="" />
 		</menu_item_call>
-		<menu_item_separator bottom="-194" enabled="true" height="8" label="-----------" left="0"
-		     mouse_opaque="true" name="separator4" width="243" />
-		<menu_item_check bottom="-384" enabled="true" height="19" label="SEE FOREVER" left="0"
-			mouse_opaque="true" name="dickdongs" width="211">
-			<on_click function="ShowFloater" userdata="dickdongs" />
-			<on_check function="FloaterVisible" userdata="dickdongs" />
-		</menu_item_check>
 		<menu_item_separator bottom="-194" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator4" width="243" />
 		<menu_item_call bottom="-259" enabled="true" height="19" label="Quit" left="0"
@@ -487,6 +474,10 @@
 		</menu_item_call>
 		<menu_item_separator bottom="-167" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator3" width="185" />
+    	<menu_item_call bottom="-186" enabled="true" height="19" label="Fake Away Status" left="0"
+     		mouse_opaque="true" name="Fake Away Status" width="185">
+      		<on_click function="World.FakeAway" userdata="" />
+    	</menu_item_call>
 		<menu_item_call bottom="-186" enabled="true" height="19" label="Set Away" left="0"
 		     mouse_opaque="true" name="Set Away" width="185">
 			<on_click function="World.SetAway" userdata="" />
@@ -538,10 +529,6 @@
 		<menu_item_call bottom="-308" enabled="true" height="19" label="Region/Estate..." left="0"
 		     mouse_opaque="true" name="Region/Estate..." width="185">
 			<on_click function="ShowFloater" userdata="about region" />
-		</menu_item_call>
-		<menu_item_call bottom="-308" enabled="true" height="19" label="Export Region" left="0"
-		     mouse_opaque="true" name="Export Region" width="185">
-			<on_click function="ShowFloater" userdata="export region" />
 		</menu_item_call>
 		<menu_item_separator bottom="-316" enabled="true" height="8" label="-----------" left="0"
 		     mouse_opaque="true" name="separator6" width="185" />
@@ -869,7 +856,7 @@
 				     userdata="WebLaunchPublicIssue,http://jira.secondlife.com" />
 			</menu_item_call>
 		</menu>
-		<menu_item_call bottom="-313" enabled="true" height="19" label="Aboot Inertia..." left="0"
+		<menu_item_call bottom="-313" enabled="true" height="19" label="About Snowglobe..." left="0"
 		     mouse_opaque="true" name="About Second Life..." width="166">
 			<on_click function="ShowFloater" userdata="about" />
 		</menu_item_call>

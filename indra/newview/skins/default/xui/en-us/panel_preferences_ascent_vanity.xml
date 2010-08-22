@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
+	border="true" label="Ascent Vanity" name="ascvan" enabled="true" mouse_opaque="true">
+	<tab_container label="Ascent" bottom="0" height="440" width="500" left="0"
+		name="Ascent Vanity" tab_min_width="90" tab_position="top">
+		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
+			follows="left|top|right|bottom" label="General" name="General">
+			<check_box bottom_delta="-25" control_name="AscentStoreSettingsPerAccount" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Where applicable, save Vanity settings per-account rather than globally" left="10"
+				mouse_opaque="true" name="use_account_settings_check" radio_style="false"
+				width="400" />
+		</panel>
+		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
+			follows="left|top|right|bottom" label="Colors" name="Colors">
+			<view_border bevel_style="none" border_thickness="1" bottom="-75" follows="top|left"
+				height="70" left="5" name="GraphicsBorder" width="485" />
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			      bottom_delta="50" drop_shadow_visible="true" enabled="true" follows="left|top"
+	    		  font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
+		    	  left="10" mouse_opaque="true" name="client_tag_text_box" v_pad="0"
+			      width="90">
+				Client Tag Color:
+			</text>
+			<combo_box allow_text_entry="false" enabled="true" follows="left|top"
+		    	  bottom_delta="-7" height="18" hidden="false" left="100" max_chars="20" mouse_opaque="true"
+		    	  name="tag_spoofing_combobox" width="130">
+				<combo_item type="string" length="1" enabled="true" name="Ascent" value="8873757c-092a-98fb-1afd-ecd347566fcd">
+					Ascent
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Explicit" value="734fed29-4c51-63e5-1648-6589949d7585">
+					Explicit
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Standard)" 
+					value="ccda2b3b-e72c-a112-e126-fee238b67218">
+					Emerald (Standard)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Blue)" 
+					value="4eb67510-0924-ebb1-50ca-8af5694cd267">
+					Emerald (Blue)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Fuschia)" 
+					value="e4117c3f-cc02-d537-665d-c31b8c11bb18">
+					Emerald (Fuschia)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Orange)" 
+					value="e741e2bf-cf8c-191c-97f2-b2709a843dfc">
+					Emerald (Orange)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Pink)" 
+					value="072343d0-1ce9-0952-4106-5312af4a789a">
+					Emerald (Pink)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Purple)" 
+					value="0ae2f973-98c1-a4e8-9f4b-9db2044ab079">
+					Emerald (Purple)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Red)" 
+					value="1da8eb54-a70f-bd4a-77e5-c7b815c3b2a2">
+					Emerald (Red)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Violet)" 
+					value="602243f4-8fb1-ac00-d5bc-7ab50c4433b7">
+					Emerald (Violet)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (White)" 
+					value="1e0948ab-706a-b309-434c-a694436a79be">
+					Emerald (White)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Emerald (Yellow)" 
+					value="8078ffb3-840c-d037-caf3-5cd02c2e7040">
+					Emerald (Yellow)
+				</combo_item>
+				<combo_item type="string" length="1" enabled="true" name="Hide Tag" value="c228d1cf-4b5d-4ba8-84f4-899a0796aa97">
+					Hide Tag
+				</combo_item>
+			</combo_box>
+			<check_box bottom_delta="-20" control_name="AscentShowSelfTag" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Display client tag to self" left="10"
+				mouse_opaque="true" name="show_self_tag_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentShowSelfTagColor" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Display client tag color to self" left="10"
+				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
+				width="400" />
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom="-104" drop_shadow_visible="true" enabled="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+				mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
+				Color For My Effects:
+			</text>
+			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom="-130"
+				can_apply_immediately="false" color="1 1 1 1"
+				enabled="true" follows="left|top" height="48" label="" left="153"
+				mouse_opaque="true" name="effect_color_swatch"
+				tool_tip="Click to open Color Picker" width="32" />
+		</panel>
+	</tab_container>
+</panel>

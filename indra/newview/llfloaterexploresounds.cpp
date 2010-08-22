@@ -78,7 +78,6 @@ BOOL LLFloaterExploreSounds::postBuild(void)
 	childSetAction("play_in_world_btn", handle_play_in_world, this);
 	childSetAction("play_ambient_btn", handle_play_ambient, this);
 	childSetAction("look_at_btn", handle_look_at, this);
-	childSetAction("open_btn", handle_open, this);
 	childSetAction("copy_uuid_btn", handle_copy_uuid, this);
 	childSetAction("stop_btn", handle_stop, this);
 
@@ -393,23 +392,7 @@ void LLFloaterExploreSounds::handle_look_at(void* user_data)
 // static
 void LLFloaterExploreSounds::handle_open(void* user_data)
 {
-	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
-	std::vector<LLScrollListItem*> selection = list->getAllSelected();
-	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
-	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
-	std::vector<LLUUID> asset_list;
-	for( ; selection_iter != selection_end; ++selection_iter)
-	{
-		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
-		if(item.mID.isNull()) continue;
-		// Unique assets only
-		if(std::find(asset_list.begin(), asset_list.end(), item.mAssetID) == asset_list.end())
-		{
-			asset_list.push_back(item.mAssetID);
-			LLUUID inv_item = LLLocalInventory::addItem(item.mAssetID.asString(), LLAssetType::AT_SOUND, item.mAssetID, true);
-		}
-	}
+
 }
 
 // static

@@ -65,6 +65,10 @@
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
 
+
+
+
+
 ///----------------------------------------------------------------------------
 /// Class llpanelpermissions
 ///----------------------------------------------------------------------------
@@ -85,13 +89,17 @@ BOOL LLPanelPermissions::postBuild()
 
 	
 	this->childSetAction("button owner profile",LLPanelPermissions::onClickOwner,this);
+	this->childSetAction("button last owner profile",LLPanelPermissions::onClickLastOwner,this);
 	this->childSetAction("button creator profile",LLPanelPermissions::onClickCreator,this);
 
 	this->childSetAction("button set group",LLPanelPermissions::onClickGroup,this);
+	this->childSetAction("button open group",LLPanelPermissions::onClickOpenGroup,this);
 
 	this->childSetCommitCallback("checkbox share with group",LLPanelPermissions::onCommitGroupShare,this);
 
 	this->childSetAction("button deed",LLPanelPermissions::onClickDeedToGroup,this);
+
+	this->childSetAction("button cpy_key",LLPanelPermissions::onClickCopyObjKey,this);
 
 	this->childSetCommitCallback("checkbox allow everyone move",LLPanelPermissions::onCommitEveryoneMove,this);
 
@@ -178,10 +186,16 @@ void LLPanelPermissions::refresh()
 		childSetEnabled("Owner Name",false);
 		childSetEnabled("button owner profile",false);
 
+		childSetEnabled("Last Owner:",false);
+		childSetText("Last Owner Name",LLStringUtil::null);
+		childSetEnabled("Last Owner Name",false);
+		childSetEnabled("button last owner profile",false);
+
 		childSetEnabled("Group:",false);
 		childSetText("Group Name",LLStringUtil::null);
 		childSetEnabled("Group Name",false);
 		childSetEnabled("button set group",false);
+		childSetEnabled("button open group",false);
 
 		childSetText("Object Name",LLStringUtil::null);
 		childSetEnabled("Object Name",false);
@@ -297,6 +311,8 @@ void LLPanelPermissions::refresh()
 	owners_identical = LLSelectMgr::getInstance()->selectGetOwner(mOwnerID, owner_name);
 
 //	llinfos << "owners_identical " << (owners_identical ? "TRUE": "FALSE") << llendl;
+	std::string last_owner_name;
+	LLSelectMgr::getInstance()->selectGetLastOwner(mLastOwnerID, last_owner_name);
 
 	if (mOwnerID.isNull())
 	{
@@ -320,9 +336,41 @@ void LLPanelPermissions::refresh()
 		}
 	}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	childSetText("Owner Name",owner_name);
 	childSetEnabled("Owner Name",TRUE);
 	childSetEnabled("button owner profile",owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
+
+
+
+
+
+	childSetText("Last Owner Name",last_owner_name);
+	childSetEnabled("Last Owner Name",TRUE);
+	childSetEnabled("button last owner profile",owners_identical && mLastOwnerID.notNull());
+
+
+
 
 	// update group text field
 	childSetEnabled("Group:",true);
@@ -348,6 +396,7 @@ void LLPanelPermissions::refresh()
 	}
 	
 	childSetEnabled("button set group",owners_identical && (mOwnerID == gAgent.getID()));
+	childSetEnabled("button open group", group_id.notNull());
 
 	// figure out the contents of the name, description, & category
 	BOOL edit_name_desc = FALSE;
@@ -843,6 +892,19 @@ void LLPanelPermissions::onClickOwner(void *data)
 	}
 }
 
+
+
+
+
+
+
+void LLPanelPermissions::onClickLastOwner(void *data)
+{
+	LLPanelPermissions *self = (LLPanelPermissions *)data;
+	if(self->mLastOwnerID.notNull())
+		LLFloaterAvatarInfo::showFromObject(self->mLastOwnerID);
+}
+
 void LLPanelPermissions::onClickGroup(void* data)
 {
 	LLPanelPermissions* panelp = (LLPanelPermissions*)data;
@@ -864,6 +926,14 @@ void LLPanelPermissions::onClickGroup(void* data)
 			parent_floater->addDependentFloater(fg);
 		}
 	}
+}
+
+void LLPanelPermissions::onClickOpenGroup(void* data)
+{
+	LLUUID group_id;
+	LLSelectMgr::getInstance()->selectGetGroup(group_id);
+	
+	LLFloaterGroupInfo::showFromUUID(group_id);
 }
 
 // static
@@ -896,6 +966,28 @@ bool callback_deed_to_group(const LLSD& notification, const LLSD& response)
 void LLPanelPermissions::onClickDeedToGroup(void* data)
 {
 	LLNotifications::instance().add( "DeedObjectToGroup", LLSD(), LLSD(), callback_deed_to_group);
+}
+
+void LLPanelPermissions::onClickCopyObjKey(void* data)
+{
+	//NAMESHORT - Was requested on the forums, was going to integrate a textbox with the ID, but due to lack of room on the floater,
+	//We now have a copy button :>
+	//Madgeek - Hacked together method to copy more than one key, separated by comma.
+	//At some point the separator was changed to read from the xml settings - I'll probably try to make this openly changable from settings. -HgB
+	std::string output;
+	std::string separator = gSavedSettings.getString("AscentDataSeparator");
+	for (LLObjectSelection::root_iterator iter = LLSelectMgr::getInstance()->getSelection()->root_begin();
+		iter != LLSelectMgr::getInstance()->getSelection()->root_end(); iter++)
+	{
+		LLSelectNode* selectNode = *iter;
+		LLViewerObject* object = selectNode->getObject();
+		if (object)
+		{
+			if (!output.empty()) output.append(separator);
+			output.append(object->getID().asString());
+		}
+	}
+	if (!output.empty()) gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(output));
 }
 
 ///----------------------------------------------------------------------------

@@ -118,49 +118,6 @@ bool doToSelected(LLFolderView* folder, std::string action)
 	{	
 		LLInventoryClipboard::instance().reset();
 	}
-	// <edit>
-	if("save_as" == action)
-	{
-		LLInventoryBackup::save(folder);
-		return true;
-	}
-	else if("save_invcache" == action)
-	{
-		LLFilePicker& file_picker = LLFilePicker::instance();
-		if(file_picker.getSaveFile( LLFilePicker::FFSAVE_INVGZ ))
-		{
-			std::string file_name = file_picker.getFirstFile();
-			LLLocalInventory::saveInvCache(file_name, folder);
-		}
-		return true;
-	}
-/*
-	else if("acquire_asset_id" == action)
-	{
-		if(LLCheats::cheatCodes["AcquireAssetID"].entered)
-		{
-			std::set<LLUUID> selected_items_set;
-			folder->getSelectionList(selected_items_set);
-
-			if(selected_items_set.size() > 0)
-			{
-				LLAssetIDAcquirer::acquire(selected_items_set);
-			}
-		}
-		return true;
-	}
-	else if("magic_get" == action)
-	{
-		std::set<LLUUID> selected_items_set;
-		folder->getSelectionList(selected_items_set);
-
-		if(selected_items_set.size() > 0)
-		{
-			LLNotecardMagic::acquire(selected_items_set);
-		}
-	}
-*/
-	// </edit>
 
 	std::set<LLUUID> selected_items;
 	folder->getSelectionList(selected_items);
@@ -201,6 +158,12 @@ bool doToSelected(LLFolderView* folder, std::string action)
 
 		bridge->performAction(folder, model, action);
 	}
+
+
+
+
+
+
 
 	LLFloater::setFloaterHost(NULL);
 	if (multi_previewp)
@@ -521,15 +484,159 @@ class LLDoCreateFloater : public inventory_listener_t
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
 		std::string type = userdata.asString();
-		// <edit>
-		if(type == "pretend")
-		{
-			LLFloaterNewLocalInventory* floater = new LLFloaterNewLocalInventory();
-			floater->center();
-		}
-		else
-		// </edit>
 		do_create(model, mPtr->getPanel(), type);
+		return true;
+	}
+};
+
+//Handles the search type buttons - RKeast
+class SetSearchType : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string search_type = userdata.asString();
+		if(search_type == "name")
+		{
+			mPtr->getActivePanel()->setSearchType(0);
+
+			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",0);
+			
+			mPtr->getControl("Inventory.SearchByName")->setValue(TRUE);
+			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);	
+			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
+		}
+		else if(search_type == "creator")
+		{
+			mPtr->getActivePanel()->setSearchType(1);
+
+			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",1);
+
+			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByCreator")->setValue(TRUE);
+			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
+		}
+		else if(search_type == "desc")
+		{
+			mPtr->getActivePanel()->setSearchType(2);
+
+			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",2);
+
+			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByDesc")->setValue(TRUE);
+			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
+		}
+		else if(search_type == "all")
+		{
+			mPtr->getActivePanel()->setSearchType(3);
+
+			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",3);
+
+			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
+			mPtr->getControl("Inventory.SearchByAll")->setValue(TRUE);
+		}
+		
+		//Clear search when switching modes.
+		mPtr->getActivePanel()->setFilterSubString(LLStringUtil::null);
+		mPtr->getActivePanel()->setFilterTypes(0xffffffff);
+	return true;
+	}
+};
+
+//Handles the partial search result button - RKeast
+class SetPartialSearch : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string data = userdata.asString();
+		if(data == "toggle")
+		{
+			BOOL current = mPtr->getActivePanel()->getPartialSearch();
+			mPtr->getActivePanel()->setPartialSearch(!current);
+			
+			if(current == false)
+			{			
+				mPtr->getActivePanel()->setPartialSearch(true);
+				mPtr->getControl("Inventory.PartialSearchToggle")->setValue(TRUE);
+
+				gSavedPerAccountSettings.setBOOL("rkeastInventoryPartialSearch",TRUE);
+			}
+			else 
+			{
+				mPtr->getActivePanel()->setPartialSearch(false);
+				mPtr->getControl("Inventory.PartialSearchToggle")->setValue(FALSE);
+
+				gSavedPerAccountSettings.setBOOL("rkeastInventoryPartialSearch",FALSE);
+			}
+		}
+		
+		//Clear search when switching modes.
+		mPtr->getActivePanel()->setFilterSubString(LLStringUtil::null);
+		mPtr->getActivePanel()->setFilterTypes(0xffffffff);
+	return true;
+	}
+};
+
+class LLSetSortBy : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string sort_field = userdata.asString();
+		if (sort_field == "name")
+		{
+			U32 order = mPtr->getActivePanel()->getSortOrder();
+			mPtr->getActivePanel()->setSortOrder( order & ~LLInventoryFilter::SO_DATE );
+			
+			mPtr->getControl("Inventory.SortByName")->setValue( TRUE );
+			mPtr->getControl("Inventory.SortByDate")->setValue( FALSE );
+		}
+		else if (sort_field == "date")
+		{
+			U32 order = mPtr->getActivePanel()->getSortOrder();
+			mPtr->getActivePanel()->setSortOrder( order | LLInventoryFilter::SO_DATE );
+
+			mPtr->getControl("Inventory.SortByName")->setValue( FALSE );
+			mPtr->getControl("Inventory.SortByDate")->setValue( TRUE );
+		}
+		else if (sort_field == "foldersalwaysbyname")
+		{
+			U32 order = mPtr->getActivePanel()->getSortOrder();
+			if ( order & LLInventoryFilter::SO_FOLDERS_BY_NAME )
+			{
+				order &= ~LLInventoryFilter::SO_FOLDERS_BY_NAME;
+
+				mPtr->getControl("Inventory.FoldersAlwaysByName")->setValue( FALSE );
+			}
+			else
+			{
+				order |= LLInventoryFilter::SO_FOLDERS_BY_NAME;
+
+				mPtr->getControl("Inventory.FoldersAlwaysByName")->setValue( TRUE );
+			}
+			mPtr->getActivePanel()->setSortOrder( order );
+		}
+		else if (sort_field == "systemfolderstotop")
+		{
+			U32 order = mPtr->getActivePanel()->getSortOrder();
+			if ( order & LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP )
+			{
+				order &= ~LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP;
+
+				mPtr->getControl("Inventory.SystemFoldersToTop")->setValue( FALSE );
+			}
+			else
+			{
+				order |= LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP;
+
+				mPtr->getControl("Inventory.SystemFoldersToTop")->setValue( TRUE );
+			}
+			mPtr->getActivePanel()->setSortOrder( order );
+		}
+
 		return true;
 	}
 };
@@ -562,62 +669,7 @@ class LLRefreshInvModel : public inventory_listener_t
 		return true;
 	}
 };
-// </edit>
-class LLSetSortBy : public inventory_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string sort_field = userdata.asString();
-		U32 order = mPtr->getActivePanel()->getSortOrder();
-		if (sort_field == "name")
-		{
-			order &= ~LLInventoryFilter::SO_DATE;
-		}
-		else if (sort_field == "date")
-		{
-			order |= LLInventoryFilter::SO_DATE;
-		}
-		else if (sort_field == "foldersalwaysbyname")
-		{
-			if (order & LLInventoryFilter::SO_FOLDERS_BY_NAME)
-			{
-				order &= ~LLInventoryFilter::SO_FOLDERS_BY_NAME;
-			}
-			else
-			{
-				order |= LLInventoryFilter::SO_FOLDERS_BY_NAME;
-			}
-		}
-		else if (sort_field == "systemfolderstotop")
-		{
-			if (order & LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP)
-			{
-				order &= ~LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP;
-			}
-			else
-			{
-				order |= LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP;
-			}
-		}
-		mPtr->getActivePanel()->setSortOrder(order);
-		mPtr->updateSortControls();
-	
-		return true;
-	}
-};
 
-class LLSetSearchType : public inventory_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string toggle = userdata.asString();
-		U32 flags = mPtr->getActivePanel()->getRootFolder()->toggleSearchType(toggle);
-		mPtr->getControl("Inventory.SearchName")->setValue((BOOL)(flags & 1));
-		mPtr->getControl("Inventory.SearchDesc")->setValue((BOOL)(flags & 2));
-		mPtr->getControl("Inventory.SearchCreator")->setValue((BOOL)(flags & 4));
-		return true;
-	}
-};
 
 class LLBeginIMSession : public inventory_panel_listener_t
 {
@@ -810,7 +862,8 @@ void init_inventory_actions(LLInventoryView *floater)
 	(new LLResetFilter())->registerListener(floater, "Inventory.ResetFilter");
 	(new LLSetSortBy())->registerListener(floater, "Inventory.SetSortBy");
 
-	(new LLSetSearchType())->registerListener(floater, "Inventory.SetSearchType");
+	(new SetSearchType())->registerListener(floater, "Inventory.SetSearchBy");
+	(new SetPartialSearch())->registerListener(floater, "Inventory.PartialSearch");
 }
 
 void init_inventory_panel_actions(LLInventoryPanel *panel)

@@ -50,11 +50,12 @@
 	     font="SansSerifSmall" height="16" initial_value="false"
 	     label="Hide My Group Title" left="151" name="show_my_title_checkbox"
 	     radio_style="false" width="256" />
-	<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom="-210"
-	     can_apply_immediately="false" color="1 1 1 1"
-	     enabled="true" follows="left|top" height="48" label="" left="153"
-	     mouse_opaque="true" name="effect_color_swatch"
-	     tool_tip="Click to open Color Picker" width="32" />
+	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-184" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="153"
+	     mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
+		Moved to Ascent Vanity.
+	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-215" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="12" left="10"

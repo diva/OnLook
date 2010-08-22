@@ -61,15 +61,9 @@ fi
 ##   you're building your own viewer, bear in mind that the executable
 ##   in the bin directory will be stripped: you should replace it with
 ##   an unstripped binary before you run.
-##
-##   I keep crashing without having GDB running, always run it if an
-##   environment variable is set.
-
-if [ $INERT_DEVELOPER -eq 1 ]; then
-#	export LL_WRAPPER='cgdb --args'
-	export LL_WRAPPER='gdb --args'
-#	export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
-fi
+#export LL_WRAPPER='cgdb --args'
+#export LL_WRAPPER='gdb --args'
+#export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
 
 ## - Avoids an often-buggy X feature that doesn't really benefit us anyway.
 export SDL_VIDEO_X11_DGAMOUSE=0

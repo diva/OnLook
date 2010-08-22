@@ -50,6 +50,8 @@
 #include "llwearable.h"
 #include "llvoavatardefines.h"
 
+
+
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
 extern const LLUUID ANIM_AGENT_EDITING;
@@ -65,11 +67,14 @@ class LLTexLayerSet;
 class LLVoiceVisualizer;
 class LLHUDText;
 class LLHUDEffectSpiral;
+
 class LLTexGlobalColor;
 
 class LLVOAvatarBoneInfo;
 class LLVOAvatarSkeletonInfo;
 class LLVOAvatarXmlInfo;
+
+
 
 //------------------------------------------------------------------------
 // LLVOAvatar
@@ -90,6 +95,7 @@ public:
 
 	// <edit>
 	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
+	LLColor4 getTagColorByUUID(std::string uuid_str);
 	std::string extraMetadata;
 	// </edit>
 	
@@ -112,6 +118,7 @@ public:
 	void idleUpdateLipSync(bool voice_enabled);
 	void idleUpdateLoadingEffect();
 	void idleUpdateWindEffect();
+
 	void idleUpdateNameTag(const LLVector3& root_pos_last);
 	void idleUpdateRenderCost();
 	void idleUpdateTractorBeam();
@@ -213,7 +220,16 @@ public:
 	static void		onCustomizeStart();
 	static void		onCustomizeEnd();
 
-public:
+
+
+
+	LLFrameTimer 	mIdleTimer;
+	void			undeform();
+
+	std::string		getIdleTime();
+
+
+
 	static void		dumpTotalLocalTextureByteCount();
 protected:
 	void			getLocalTextureByteCount( S32* gl_byte_count );
@@ -244,7 +260,7 @@ public:
 
 	void			addChat(const LLChat& chat);
 	void			clearChat();
-	void			startTyping() { mTyping = TRUE; mTypingTimer.reset(); }
+	void			startTyping() { mTyping = TRUE; mTypingTimer.reset(); mIdleTimer.reset();}
 	void			stopTyping() { mTyping = FALSE; }
 
 	// Returns "FirstName LastName"
@@ -275,6 +291,7 @@ public:
 	void updateSexDependentLayerSets( BOOL set_by_user );
 	void dirtyMesh(); // Dirty the avatar mesh
 	void hideSkirt();
+
 
 	virtual void setParent(LLViewerObject* parent);
 	virtual void addChild(LLViewerObject *childp);
@@ -357,11 +374,17 @@ public:
 	void			setLocTexTE( U8 te, LLViewerImage* image, BOOL set_by_user );
 	void			setupComposites();
 
+
+
+
+
+
 	//--------------------------------------------------------------------
 	// Handling partially loaded avatars (Ruth)
 	//--------------------------------------------------------------------
 public:
 	BOOL            isFullyLoaded();
+
 	BOOL            updateIsFullyLoaded();
 private:
 	BOOL            mFullyLoaded;
@@ -502,6 +525,59 @@ private:
 	BOOL			mAppearanceAnimSetByUser;
 	F32				mLastAppearanceBlendTime;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	//--------------------------------------------------------------------
 	// Attachments
 	//--------------------------------------------------------------------
@@ -534,6 +610,7 @@ public:
 	static BOOL		sJointDebug; // output total number of joints being touched for each avatar
 	static BOOL     sDebugAvatarRotation;
 
+
 	static S32 sNumVisibleAvatars; // Number of instances of this class
 	
 	//--------------------------------------------------------------------
@@ -545,6 +622,19 @@ public:
 	LLVector3 mHeadOffset; // current head position
 	LLViewerJoint mRoot; // avatar skeleton
 	BOOL mIsSitting; // sitting state
+
+	static bool updateClientTags();
+	static bool loadClientTags();
+
+
+
+
+
+
+
+
+
+
 
 	//--------------------------------------------------------------------
 	// Private member variables.
@@ -601,9 +691,20 @@ private:
 	LLVoiceVisualizer*  mVoiceVisualizer;
 	int					mCurrentGesticulationLevel;
 	
+
+
+
+
 	// Animation timer
 	LLTimer		mAnimTimer;
 	F32			mTimeLast;	
+
+	static LLSD sClientResolutionList;
+
+	bool isUnknownClient();
+	static void resolveClient(LLColor4& avatar_name_color, std::string& client, LLVOAvatar* avatar);
+	friend class LLFloaterAvatarList;
+
 
 	LLPointer<LLHUDEffectSpiral> mBeam;
 	LLFrameTimer mBeamTimer;
@@ -729,7 +830,6 @@ private:
 		U32				mMaskTexName;
 		// Stores pointers to the joint meshes that this baked texture deals with
 		std::vector< LLViewerJointMesh * > mMeshes;  // std::vector<LLViewerJointMesh> mJoints[i]->mMeshParts
-
 	};
 	typedef std::vector<BakedTextureData> bakedtexturedata_vec_t;
 	bakedtexturedata_vec_t mBakedTextureData;

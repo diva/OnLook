@@ -45,6 +45,20 @@
     </form>
   </template>
 
+  <template name="okcancelbuttonscanceldefault">
+    <form>
+      <button
+       index="0"
+       name="OK"
+       text="$yestext"/>
+      <button
+       default="true"
+       index="1"
+       name="Cancel"
+       text="$notext"/>
+    </form>
+  </template>
+
   <template name="okcancelignore">
     <form>
       <button
@@ -98,7 +112,7 @@
    name="MissingAlert"
    label="Unknown Alert Message"
    type="alertmodal">
-Your version of Snowglobe does not know how to display the alert message it just received.
+Your version of Ascent does not know how to display the alert message it just received.
 
 Error details: The alert called &apos;[_NAME]&apos; was not found in notifications.xml.
     <usetemplate
@@ -162,7 +176,7 @@ No tutorial is currently available.
    icon="alertmodal.tga"
    name="BadInstallation"
    type="alertmodal">
-An error occurred while updating Snowglobe. Please download the latest version from secondlife.com.
+An error occurred while updating Ascent. Please download the latest version from secondlife.com.
     <usetemplate
      name="okbutton"
      yestext="Ok"/>
@@ -1062,7 +1076,7 @@ Unable to write file [[FILE]]
    icon="alertmodal.tga"
    name="UnsupportedHardware"
    type="alertmodal">
-Warning: Your system does not meet Snowglobe&apos;s minimum system requirements. If you continue using Snowglobe, you may experience poor performance. Unfortunately, we cannot provide technical support for unsupported system configurations.
+Warning: Your system does not meet Ascent&apos;s minimum system requirements. If you continue using Snowglobe, you may experience poor performance. Unfortunately, we cannot provide technical support for unsupported system configurations.
 
 MINSPECS
 Do you wish to visit [_URL] for more information?
@@ -1082,7 +1096,7 @@ Do you wish to visit [_URL] for more information?
    name="UnknownGPU"
    type="alertmodal">
 Your system contains a graphics card that is unknown to us at this time.
-This is often the case with new hardware we haven&apos;t had a chance to test.  Snowglobe will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
+This is often the case with new hardware we haven&apos;t had a chance to test.  Ascent will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
 (Edit menu &gt; Preferences &gt; Graphics).
     <form name="form">
       <ignore name="ignore"
@@ -3928,7 +3942,7 @@ Default: off
    label="Voice Version Mismatch"
    name="VoiceVersionMismatch"
    type="alertmodal">
-This version of Snowglobe is not compatible with the Voice Chat feature in this region. In order for Voice Chat to function correctly you will need to update Snowglobe.
+This version of Ascent is not compatible with the Voice Chat feature in this region. In order for Voice Chat to function correctly you will need to update Snowglobe.
   </notification>
 
   <notification
@@ -4186,7 +4200,7 @@ Visit the Second Life Support Web site?
    type="alertmodal">
 Are you sure you want to quit?
     <usetemplate
-     ignoretext="When Quitting Snowglobe."
+     ignoretext="When Quitting Ascent."
      name="okcancelignore"
      notext="Continue"
      yestext="Quit"/>
@@ -5919,6 +5933,13 @@ An object named [OBJECTFROMNAME] owned by (an unknown user) has given you a [OBJ
   </notification>
 
   <notification
+   icon="alertmodal.tga"
+   name="FriendshipDissolved"
+   type="alertmodal">
+[NAME] dissolved friendship.
+  </notification>
+
+  <notification
    icon="notify.tga"
    name="OfferCallingCard"
    type="notify">
@@ -5999,7 +6020,7 @@ Failed to find [TYPE] named [DESC] in database.
    icon="notify.tga"
    name="InvalidWearable"
    type="notify">
-    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please upgrade your version of Snowglobe to wear this item.
+    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please upgrade your version of Ascent to wear this item.
   </notification>
 
   <notification
@@ -6081,6 +6102,28 @@ Grant this request?
        text="Ignore"/>
     </form>
   </notification>
+
+  <notification
+   icon="notify.tga"
+   name="ScriptTextBoxDialog"
+   type="notify">
+    [FIRST] [LAST]&apos;s &apos;[TITLE]&apos;
+    [MESSAGE]
+    <form name="form">
+      <input name="message">
+        [DEFAULT]
+      </input>
+      <button
+       index="-1"
+       name="Ignore"
+       text="Ignore"/>
+      <button
+       index="0"
+       name="Send"
+       text="Send"/>
+    </form>
+  </notification>
+  
 
   <notification
    icon="notify.tga"

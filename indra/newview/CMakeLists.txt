@@ -67,6 +67,8 @@ set(viewer_SOURCE_FILES
     dofloaterhex.cpp
     dohexeditor.cpp
     hgfloatertexteditor.cpp
+	hippogridmanager.cpp
+	hipporestrequest.cpp
     jcfloaterareasearch.cpp
     llagent.cpp
     llagentaccess.cpp
@@ -326,7 +328,8 @@ set(viewer_SOURCE_FILES
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
-    hbprefsinert.cpp
+    ascentprefssys.cpp
+	ascentprefsvan.cpp
     llprefsim.cpp
     llprefsvoice.cpp
     llpreviewanim.cpp
@@ -479,6 +482,7 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     noise.cpp
     pipeline.cpp
+	scriptcounter.cpp
     )
 
 # This gets renamed in the packaging step
@@ -506,6 +510,8 @@ set(viewer_HEADER_FILES
     dofloaterhex.h
     dohexeditor.h
     hgfloatertexteditor.h
+	hippogridmanager.h
+	hipporestrequest.h
     jcfloaterareasearch.h
     llagent.h
     llagentaccess.h
@@ -767,7 +773,8 @@ set(viewer_HEADER_FILES
     llpolymesh.h
     llpolymorph.h
     llprefschat.h
-    hbprefsinert.h
+    ascentprefssys.h
+	ascentprefsvan.h
     llprefsim.h
     llprefsvoice.h
     llpreview.h
@@ -926,6 +933,7 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     randgauss.h
+	scriptcounter.h
     VertexCache.h
     VorbisFramework.h
     )

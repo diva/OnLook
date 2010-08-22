@@ -70,6 +70,8 @@
 #include "llimview.h"
 // <edit>
 #include "llappviewer.h" // gLocalInventoryRoot
+#include "llparcel.h" // always rez
+#include "llviewerparcelmgr.h" // always rez
 // </edit>
 
 // MAX ITEMS is based on (sizeof(uuid)+2) * count must be < MTUBYTES
@@ -1257,16 +1259,16 @@ void LLToolDragAndDrop::dropScript(LLViewerObject* hit_obj,
 		}
 		hit_obj->saveScript(new_script, active, true);
 		gFloaterTools->dirty();
-		// <edit>
- 		if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+
+		if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 		{
  		// </edit>
 		// VEFFECT: SetScript
-		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
-		effectp->setTargetObject(hit_obj);
-		effectp->setDuration(LL_HUD_DUR_SHORT);
-		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+			effectp->setSourceObject(gAgent.getAvatarObject());
+			effectp->setTargetObject(hit_obj);
+			effectp->setDuration(LL_HUD_DUR_SHORT);
+			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 		// <edit>
 		}
 		// </edit>
@@ -1362,7 +1364,17 @@ void LLToolDragAndDrop::dropObject(LLViewerObject* raycast_target,
 	msg->nextBlockFast(_PREHASH_AgentData);
 	msg->addUUIDFast(_PREHASH_AgentID,  gAgent.getID());
 	msg->addUUIDFast(_PREHASH_SessionID,  gAgent.getSessionID());
-	msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+
+	// Alway rez objects as land group if available.
+	if (gSavedSettings.getBOOL("AscentAlwaysRezInGroup"))
+	{
+		LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+		if(gAgent.isInGroup(parcel->getGroupID()))
+			msg->addUUIDFast(_PREHASH_GroupID, parcel->getGroupID());
+		else if(gAgent.isInGroup(parcel->getOwnerID()))
+			msg->addUUIDFast(_PREHASH_GroupID, parcel->getOwnerID());
+		else msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
+	} else msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
 
 	msg->nextBlock("RezData");
 	// if it's being rezzed from task inventory, we need to enable
@@ -1426,16 +1438,16 @@ void LLToolDragAndDrop::dropObject(LLViewerObject* raycast_target,
 		gInventory.notifyObservers();
 	}
 	// <edit>
-	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 	{
-	// </edit>
-	// VEFFECT: DropObject
-	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-	effectp->setSourceObject(gAgent.getAvatarObject());
-	effectp->setPositionGlobal(mLastHitPos);
-	effectp->setDuration(LL_HUD_DUR_SHORT);
-	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-	// <edit>
+		// </edit>
+		// VEFFECT: DropObject
+		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setPositionGlobal(mLastHitPos);
+		effectp->setDuration(LL_HUD_DUR_SHORT);
+		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+		// <edit>
 	}
 	// </edit>
 	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_REZ_COUNT);
@@ -1494,15 +1506,15 @@ void LLToolDragAndDrop::dropInventory(LLViewerObject* hit_obj,
 		gFloaterTools->showPanel(LLFloaterTools::PANEL_CONTENTS);
 	}
 	// <edit>
-	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 	{
-	// </edit>
-	// VEFFECT: AddToInventory
-	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-	effectp->setSourceObject(gAgent.getAvatarObject());
-	effectp->setTargetObject(hit_obj);
-	effectp->setDuration(LL_HUD_DUR_SHORT);
-	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+		// </edit>
+		// VEFFECT: AddToInventory
+		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setTargetObject(hit_obj);
+		effectp->setDuration(LL_HUD_DUR_SHORT);
+		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 	// <edit>
 	}
 	// <edit>
@@ -1610,15 +1622,15 @@ void LLToolDragAndDrop::commitGiveInventoryItem(const LLUUID& to_agent,
 		BUCKET_SIZE);
 	gAgent.sendReliableMessage(); 
 	// <edit>
-	if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 	{
-	// </edit>
-	// VEFFECT: giveInventory
-	LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-	effectp->setSourceObject(gAgent.getAvatarObject());
-	effectp->setTargetObject(gObjectList.findObject(to_agent));
-	effectp->setDuration(LL_HUD_DUR_SHORT);
-	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+		// </edit>
+		// VEFFECT: giveInventory
+		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setTargetObject(gObjectList.findObject(to_agent));
+		effectp->setDuration(LL_HUD_DUR_SHORT);
+		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 	// <edit>
 	}
 	// </edit>
@@ -1833,16 +1845,16 @@ void LLToolDragAndDrop::commitGiveInventoryCategory(const LLUUID& to_agent,
 		gAgent.sendReliableMessage();
 		delete[] bucket;
 		// <edit>
- 		if(gSavedSettings.getBOOL("BroadcastViewerEffects"))
+ 		if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
 		{
- 		// </edit>
-		// VEFFECT: giveInventoryCategory
-		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
-		effectp->setTargetObject(gObjectList.findObject(to_agent));
-		effectp->setDuration(LL_HUD_DUR_SHORT);
-		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-		// <edit>
+ 			// </edit>
+			// VEFFECT: giveInventoryCategory
+			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+			effectp->setSourceObject(gAgent.getAvatarObject());
+			effectp->setTargetObject(gObjectList.findObject(to_agent));
+			effectp->setDuration(LL_HUD_DUR_SHORT);
+			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+			// <edit>
 		}
 		// </edit>
 		gFloaterTools->dirty();

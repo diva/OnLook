@@ -355,15 +355,14 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 		gMenuHolder->setParcelSelection(selection);
 		gPieLand->show(x, y, mPieMouseButtonDown);
 
-		// <edit>
 		if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 		{
 		// </edit>
 		// VEFFECT: ShowPie
-		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
-		effectp->setPositionGlobal(mPick.mPosGlobal);
-		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-		effectp->setDuration(0.25f);
+			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
+			effectp->setPositionGlobal(mPick.mPosGlobal);
+			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+			effectp->setDuration(0.25f);
 		// <edit>
 		}
 		// </edit>
@@ -434,18 +433,17 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			
 			gPieObject->show(x, y, mPieMouseButtonDown);
 
-			// <edit>
 			if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 			{
-			// </edit>
-			// VEFFECT: ShowPie object
-			// Don't show when you click on someone else, it freaks them
-			// out.
-			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
-			effectp->setPositionGlobal(mPick.mPosGlobal);
-			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-			effectp->setDuration(0.25f);
-			// <edit>
+				// </edit>
+				// VEFFECT: ShowPie object
+				// Don't show when you click on someone else, it freaks them
+				// out.
+				LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
+				effectp->setPositionGlobal(mPick.mPosGlobal);
+				effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+				effectp->setDuration(0.25f);
+				// <edit>
 			}
 			// </edit>
 		}

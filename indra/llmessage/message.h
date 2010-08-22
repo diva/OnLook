@@ -218,12 +218,6 @@ class LLMessageSystem : public LLMessageSenderInterface
  private:
 	U8					mSendBuffer[MAX_BUFFER_SIZE];
 	S32					mSendSize;
-	// <edit>
-	U32 mSpoofProtectionLevel;
-	std::vector<LLNetCanary*> mCanaries;
-	std::map<U32, LLNetCanary::entry> mCanaryEntries;
-	void (*mSpoofDroppedCallback)(LLNetCanary::entry);
-	// </edit>
 
 	bool				mBlockUntrustedInterface;
 	LLHost				mUntrustedInterface;
@@ -621,12 +615,6 @@ public:
 
 	// Change this message to be UDP black listed.
 	void banUdpMessage(const std::string& name);
-
-	// <edit>
-	void startSpoofProtection(U32 level);
-	void stopSpoofProtection();
-	void setSpoofDroppedCallback(void (*callback)(LLNetCanary::entry));
-	// </edit>
 
 private:
 	// A list of the circuits that need to be sent DenyTrustedCircuit messages.

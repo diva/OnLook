@@ -57,7 +57,8 @@ class LLPrefsIM;
 class LLPanelMsgs;
 class LLPanelSkins;
 class LLScrollListCtrl;
-class LLPrefsInert;
+class LLPrefsAscentSys;
+class LLPrefsAscentVan;
 
 class LLPreferenceCore
 {
@@ -93,7 +94,8 @@ private:
 	LLPanelWeb				*mWebPanel;
 	LLPanelMsgs				*mMsgPanel;
 	LLPanelLCD				*mLCDPanel;
-	LLPrefsInert			*mPrefsInert;
+	LLPrefsAscentSys		*mPrefsAscentSys;
+	LLPrefsAscentVan		*mPrefsAscentVan;
 };
 
 // Floater to control preferences (display, audio, bandwidth, general.

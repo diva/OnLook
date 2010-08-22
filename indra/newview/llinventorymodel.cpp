@@ -384,6 +384,28 @@ LLUUID LLInventoryModel::findCatUUID(LLAssetType::EType preferred_type)
 	return LLUUID::null;
 }
 
+LLUUID LLInventoryModel::findCategoryByName(std::string name)
+{
+	LLUUID root_id = gAgent.getInventoryRootID();
+	if(root_id.notNull())
+	{
+		cat_array_t* cats = NULL;
+		cats = get_ptr_in_map(mParentChildCategoryTree, root_id);
+		if(cats)
+		{
+			S32 count = cats->count();
+			for(S32 i = 0; i < count; ++i)
+			{
+				if(cats->get(i)->getName() == name)
+				{
+					return cats->get(i)->getUUID();
+				}
+			}
+		}
+	}
+	return LLUUID::null;
+}
+
 // Convenience function to create a new category. You could call
 // updateCategory() with a newly generated UUID category, but this
 // version will take care of details like what the name should be
@@ -402,6 +424,35 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 	if(preferred_type == LLAssetType::AT_SIMSTATE)
 	{
 		lldebugs << "Attempt to create simstate category." << llendl;
+		return id;
+	}
+	else if(preferred_type == LLAssetType::AT_SOUND_WAV)
+	{
+		lldebugs << "Attempt to create (wave) uncompressed sound category." << llendl;
+		return id;
+	}
+	else if(preferred_type == LLAssetType::AT_IMAGE_TGA)
+	{
+		lldebugs << "Attempt to create a AT_IMAGE_TGA uncompresssed images category." << llendl;
+		return id;
+	}
+	else if(preferred_type == LLAssetType::AT_TEXTURE_TGA)
+	{
+		lldebugs << "Attempt to create a AT_TEXTURE_TGA uncompresssed images category." << llendl;
+		return id;
+	}
+
+	else if(preferred_type == LLAssetType::AT_IMAGE_JPEG)
+	{
+		lldebugs << "Attempt to create a AT_IMAGE_JPEG uncompresssed images category." << llendl;
+		return id;
+	}else if(preferred_type == LLAssetType::AT_SCRIPT)
+	{
+		lldebugs << "Attempt to create a AT_Script scripts category." << llendl;
+		return id;
+	}else if(preferred_type == LLAssetType::AT_LSL_BYTECODE)
+	{
+		lldebugs << "Attempt to create a AT_LSL_BYTECODE scripts category." << llendl;
 		return id;
 	}
 
@@ -846,14 +897,12 @@ void LLInventoryModel::deleteObject(const LLUUID& id)
 // folders, items, etc in a fairly efficient manner.
 void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 {
-	// <edit> "Deliberately disobeying you" derf derf
-	//EHasChildren children = categoryHasChildren(id);
-	//if(children == CHILDREN_NO)
-	//{
-	//	llinfos << "Not purging descendents of " << id << llendl;
-	//	return;
-	//}
-	// </edit>
+	EHasChildren children = categoryHasChildren(id);
+	if(children == CHILDREN_NO)
+	{
+		llinfos << "Not purging descendents of " << id << llendl;
+		return;
+	}
 	LLPointer<LLViewerInventoryCategory> cat = getCategory(id);
 	if(cat.notNull())
 	{
@@ -2003,6 +2052,10 @@ bool LLInventoryModel::loadSkeleton(
 		//delete cat; // automatic when cat is reasigned or destroyed
 	}
  
+
+
+
+
 	S32 cached_category_count = 0;
 	S32 cached_item_count = 0;
 	if (!temp_cats.empty())
@@ -3171,6 +3224,14 @@ void LLInventoryModel::processSaveAssetIntoInventory(LLMessageSystem* msg,
 	}
 }
 
+
+
+
+
+
+
+
+
 struct InventoryCallbackInfo
 {
 	InventoryCallbackInfo(U32 callback, const LLUUID& inv_id) :
@@ -3207,6 +3268,23 @@ void LLInventoryModel::processBulkUpdateInventory(LLMessageSystem* msg, void**)
 		//		<< llendl;
 		if(tfolder->getUUID().notNull())
 		{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			folders.push_back(tfolder);
 			LLViewerInventoryCategory* folderp = gInventory.getCategory(tfolder->getUUID());
 			if(folderp)

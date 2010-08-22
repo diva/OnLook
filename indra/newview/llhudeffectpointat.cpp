@@ -449,7 +449,9 @@ bool LLHUDEffectPointAt::calcTargetPosition()
 
 	if (mSourceObject->isAvatar())
 	{
-		((LLVOAvatar*)(LLViewerObject*)mSourceObject)->setAnimationData("PointAtPoint", (void *)&mTargetPos);
+		LLVOAvatar* avatarp = ((LLVOAvatar*)(LLViewerObject*)mSourceObject);
+		avatarp->setAnimationData("PointAtPoint", (void *)&mTargetPos);
+		avatarp->mIdleTimer.reset();
 	}
 
 	return true;

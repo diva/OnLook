@@ -36,16 +36,20 @@
 
 // project includes
 #include "llagent.h"
+
 #include "llfilepicker.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterbuycurrency.h"
+
 #include "llfloaterimagepreview.h"
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
+
 #include "llinventorymodel.h"	// gInventory
 #include "llresourcedata.h"
 #include "llfloaterperms.h"
 #include "llstatusbar.h"
+
 #include "llviewercontrol.h"	// gSavedSettings
 #include "llviewerimagelist.h"
 #include "lluictrlfactory.h"
@@ -80,6 +84,8 @@
 // system libraries
 #include <boost/tokenizer.hpp>
 
+//#include "importtracker.h"
+
 typedef LLMemberListener<LLView> view_listener_t;
 
 
@@ -108,7 +114,7 @@ class LLFileEnableUpload : public view_listener_t
 #if LL_WINDOWS
 static std::string SOUND_EXTENSIONS = "wav";
 static std::string IMAGE_EXTENSIONS = "tga bmp jpg jpeg png";
-static std::string ANIM_EXTENSIONS =  "bvh";
+static std::string ANIM_EXTENSIONS =  "bvh anim animatn";
 #ifdef _CORY_TESTING
 static std::string GEOMETRY_EXTENSIONS = "slg";
 #endif
@@ -151,6 +157,12 @@ std::string build_extensions_string(LLFilePicker::ELoadFilter filter)
    to upload for a particular task.  If the file is valid for the given action,
    returns the string to the full path filename, else returns NULL.
    Data is the load filter for the type of file as defined in LLFilePicker.
+
+	Eventually I'd really like to have a built-in browser that gave you all 
+	valid filetypes, default permissions, "Temp when available", and a single 
+	upload button. Maybe let it show the contents of multiple folders. The main 
+	purpose of this features is to deal with the problem of SL just up and 
+	disconnecting if you take more than like 30 seconds to look for a file. -HgB
 **/
 const std::string upload_pick(void* data)
 {
@@ -242,9 +254,7 @@ const std::string upload_pick(void* data)
 	
 	//now we check to see
 	//if the file is actually a valid image/sound/etc.
-	// <edit> Screw their checks
-	/*
-	// </edit>
+	//Consider completely disabling this, see how SL handles it. Maybe we can get full song uploads again! -HgB
 	if (type == LLFilePicker::FFLOAD_WAV)
 	{
 		// pre-qualify wavs to make sure the format is acceptable
@@ -258,11 +268,7 @@ const std::string upload_pick(void* data)
 			return std::string();
 		}
 	}//end if a wave/sound file
-	// <edit>
-	*/
-	// </edit>
 
-	
 	return filename;
 }
 
@@ -461,6 +467,167 @@ void upload_error(const std::string& error_message, const std::string& label, co
 	}
 	LLFilePicker::instance().reset();						
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class LLFileEnableCloseWindow : public view_listener_t
 {
@@ -778,13 +945,6 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			return;
 		}
 	}
-	// <edit>
-	else if(exten == "ogg")
-	{
-		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
-		filename = src_filename;
-	}
-	// </edit>
 	else if(exten == "tmp")	 	
 	{	 	
 		// This is a generic .lin resource file	 	
@@ -950,6 +1110,13 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		// </edit>
 	}
 	// <edit>
+	// <edit>
+	else if(exten == "ogg")
+	{
+		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
+		filename = src_filename;
+	}
+	// </edit>
 	else if (exten == "animatn")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
@@ -1193,12 +1360,10 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 	LLUploadDialog::modalUploadFinished();
 	delete data;
 
-	// <edit>
-	/* 
-	// </edit>
 	// *NOTE: This is a pretty big hack. What this does is check the
 	// file picker if there are any more pending uploads. If so,
 	// upload that file.
+	/* Agreed, let's not use it. -HgB
 	const std::string& next_file = LLFilePicker::instance().getNextFile();
 	if(is_balance_sufficient && !next_file.empty())
 	{
@@ -1219,9 +1384,7 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 				    expected_upload_cost, // assuming next in a group of uploads is of roughly the same type, i.e. same upload cost
 				    userdata);
 	}
-	// <edit>
 	*/
-	// </edit>
 }
 
 void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_type,
@@ -1346,21 +1509,18 @@ void upload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_ty
 		data->mAssetInfo.setName(name);
 		data->mAssetInfo.setDescription(desc);
 		data->mPreferredLocation = destination_folder_type;
-		// <edit>
+
 		LLAssetStorage::LLStoreAssetCallback asset_callback = temporary ? &temp_upload_callback : &upload_done_callback;
-		// </edit>
 		if (callback)
 		{
 			asset_callback = callback;
 		}
-		// <edit>
 		gAssetStorage->storeAssetData(data->mAssetInfo.mTransactionID, data->mAssetInfo.mType,
 										asset_callback,
 										(void*)data,
 										temporary,
 										TRUE,
 										temporary);
-		// </edit>
 	}
 }
 
@@ -1386,7 +1546,7 @@ void init_menu_file()
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
-
+	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }

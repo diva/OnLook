@@ -51,9 +51,6 @@ LLFloaterExploreAnimations::~LLFloaterExploreAnimations()
 BOOL LLFloaterExploreAnimations::postBuild(void)
 {
 	childSetCommitCallback("anim_list", onSelectAnimation, this);
-	childSetAction("copy_uuid_btn", onClickCopyUUID, this);
-	childSetAction("open_btn", onClickOpen, this);
-	childSetAction("jelly_roll_btn", onClickJellyRoll, this);
 	LLRect r = getRect();
 	mPreviewRect.set(r.getWidth() - 266, r.getHeight() - 25, r.getWidth() - 10, r.getHeight() - 256);
 	update();
@@ -272,49 +269,6 @@ void LLFloaterExploreAnimations::onSelectAnimation(LLUICtrl* ctrl, void* user_da
 	preview->setZoom(2.0f);
 }
 
-// static
-void LLFloaterExploreAnimations::onClickCopyUUID(void* data)
-{
-	LLFloaterExploreAnimations* floater = (LLFloaterExploreAnimations*)data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("anim_list");
-	LLUUID selection = list->getSelectedValue().asUUID();
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(selection.asString()));
-}
-
-void LLFloaterExploreAnimations::onClickOpen(void* data)
-{
-	LLFloaterExploreAnimations* floater = (LLFloaterExploreAnimations*)data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("anim_list");
-	LLUUID selection = list->getSelectedValue().asUUID();
-	LLUUID item = LLLocalInventory::addItem(selection.asString(), LLAssetType::AT_ANIMATION, selection, true);
-}
-
-void LLFloaterExploreAnimations::onClickJellyRoll(void* data)
-{
-	std::string hover_text;
-	LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
-	LLObjectSelection::valid_iterator sel_it = selection->valid_begin();
-	LLObjectSelection::valid_iterator sel_end = selection->valid_end();
-	for( ; sel_it != sel_end; ++sel_it)
-	{
-		LLViewerObject* objectp = (*sel_it)->getObject();
-		hover_text = objectp->getDebugText();
-		if(hover_text != "")
-		{
-			break;
-		}
-	}
-
-	LLFloaterExploreAnimations* floater = (LLFloaterExploreAnimations*)data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("anim_list");
-	LLUUID anim_id = list->getSelectedValue().asUUID();
-	
-	LLFloaterNewLocalInventory* createy = new LLFloaterNewLocalInventory();
-	createy->childSetText("name_line", hover_text);
-	createy->childSetText("asset_id_line", anim_id.asString());
-	createy->childSetValue("type_combo", "animatn");
-	createy->childSetText("creator_id_line", LLFloaterNewLocalInventory::sLastCreatorId.asString());
-}
 //-----------------------------------------------------------------------------
 // handleMouseDown()
 //-----------------------------------------------------------------------------

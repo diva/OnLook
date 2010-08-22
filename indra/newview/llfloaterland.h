@@ -86,6 +86,10 @@ public:
 	virtual void onOpen();
 	virtual BOOL postBuild();
 
+
+
+
+
 protected:
 
 	// Does its own instance management, so clients not allowed
@@ -103,7 +107,6 @@ protected:
 	static void* createPanelLandMedia(void* data);
 	static void* createPanelLandAccess(void* data);
 	static void* createPanelLandBan(void* data);
-
 
 protected:
 	static LLParcelSelectionObserver* sObserver;
@@ -142,6 +145,7 @@ public:
 	void setGroup(const LLUUID& group_id);
 	static void onClickProfile(void*);
 	static void onClickSetGroup(void*);
+	static void onClickInfoGroup(void*);
 	static void cbGroupID(LLUUID group_id, void* userdata);
 	static BOOL enableDeedToGroup(void*);
 	static void onClickDeed(void*);
@@ -289,6 +293,7 @@ protected:
 	LLNameListCtrl	*mOwnerList;
 
 	LLPointer<LLUIImage>	mIconAvatarOnline;
+	LLPointer<LLUIImage>	mIconAvatarInSim;
 	LLPointer<LLUIImage>	mIconAvatarOffline;
 	LLPointer<LLUIImage>	mIconGroup;
 

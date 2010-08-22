@@ -97,9 +97,7 @@ unless you add wait steps.
 	     left_delta="0" name="wait_time_check" width="100" />
 	<line_editor bottom_delta="0" follows="top|left" height="20" left_delta="105"
 	     max_length="15" name="wait_time_editor" width="50" />
-	<button bottom_delta="-10" follows="top|left" height="20" left="233"
-	     label="Open" name="open_btn" width="64" />
-	<check_box bottom="7" follows="top|left" height="20" label="Active" left="100"
+	<check_box bottom="7" follows="top|left" height="20" label="Active" left="140"
 	     name="active_check"
 	     tool_tip="Active gestures can be triggered by chatting their trigger phrases or pressing their hot keys.  Gestures usually become inactive when there is a key binding conflict."
 	     width="100" />

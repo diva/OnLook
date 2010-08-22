@@ -64,9 +64,6 @@ public:
 	void			refresh();
 
 	static BOOL		precommitValidate(LLUICtrl* ctrl,void* userdata);
-	
-	static void		onClickBlink(void* userdata);//[SimmanFederal] Blinking
-	static void		onClickHardBlink(void* userdata);//[SimmanFederal] Griefer Blinking
 
 	static void		onCommitLock(LLUICtrl *ctrl, void *data);
 	static void 	onCommitPosition(		LLUICtrl* ctrl, void* userdata);
@@ -77,7 +74,19 @@ public:
 	static void 	onCommitPhantom(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitCastShadows(	LLUICtrl* ctrl, void* userdata);
 
-	static void 	onCommitParametric(LLUICtrl* ctrl, void* userdata);
+	static void 	onCopyPos(				void* user_data);
+	static void 	onPastePos(				void* user_data);
+	static void 	onPastePosClip(				void* user_data);
+	static void 	onCopySize(				void* user_data);
+	static void 	onPasteSize(			void* user_data);
+	static void 	onPasteSizeClip(			void* user_data);
+	static void 	onCopyRot(				void* user_data);
+	static void 	onPasteRot(				void* user_data);
+	static void 	onPasteRotClip(				void* user_data);
+	static void 	onCopyParams(				void* user_data);
+	static void 	onPasteParams(				void* user_data);
+	
+	static void 	onCommitParametric(		LLUICtrl* ctrl, void* userdata);
 
 	static void 	onCommitMaterial(		LLUICtrl* ctrl, void* userdata);
 
@@ -87,7 +96,9 @@ public:
 	static BOOL     onDropSculpt(          LLUICtrl* ctrl, LLInventoryItem* item, void* ud);
 	static void     onCommitSculptType(    LLUICtrl *ctrl, void* userdata);
 		
-	
+
+	static const 	LLUUID& findItemID(const LLUUID& asset_id);
+
 protected:
 	void			getState();
 
@@ -103,6 +114,13 @@ protected:
 	void 			getVolumeParams(LLVolumeParams& volume_params);
 	
 protected:
+
+	static LLVector3 mClipboardPos;
+	static LLVector3 mClipboardSize;
+	static LLVector3 mClipboardRot;
+	static LLVolumeParams mClipboardVolumeParams;
+	static BOOL hasParamClipboard;
+	
 	S32				mComboMaterialItemCount;
 
 	LLTextBox*		mLabelMaterial;
@@ -154,9 +172,6 @@ protected:
 	LLSpinCtrl*		mCtrlPosX;
 	LLSpinCtrl*		mCtrlPosY;
 	LLSpinCtrl*		mCtrlPosZ;
-	//VLife/Oynx Inspriation. IT BLINKS PRIMS TO 340282346638528859811704183484516925440.0f METERS. HERP.
-	LLButton*		mClickBlink;//[SimmanFederal]
-	LLButton*		mClickHardBlink;//[SimmanFederal]
 
 	LLTextBox*		mLabelSize;
 	LLSpinCtrl*		mCtrlScaleX;
@@ -167,6 +182,21 @@ protected:
 	LLSpinCtrl*		mCtrlRotX;
 	LLSpinCtrl*		mCtrlRotY;
 	LLSpinCtrl*		mCtrlRotZ;
+
+	LLButton		*mBtnCopyPos;
+	LLButton		*mBtnPastePos;
+	LLButton		*mBtnPastePosClip;
+	
+	LLButton		*mBtnCopySize;
+	LLButton		*mBtnPasteSize;
+	LLButton		*mBtnPasteSizeClip;
+	
+	LLButton		*mBtnCopyRot;
+	LLButton		*mBtnPasteRot;
+	LLButton		*mBtnPasteRotClip;
+	
+	LLButton		*mBtnCopyParams;
+	LLButton		*mBtnPasteParams;
 
 	LLCheckBoxCtrl	*mCheckLock;
 	LLCheckBoxCtrl	*mCheckPhysics;
@@ -180,6 +210,9 @@ protected:
 	LLCheckBoxCtrl  *mCtrlSculptMirror;
 	LLCheckBoxCtrl  *mCtrlSculptInvert;
 	
+
+
+
 	LLVector3		mCurEulerDegrees;		// to avoid sending rotation when not changed
 	BOOL			mIsPhysical;			// to avoid sending "physical" when not changed
 	BOOL			mIsTemporary;			// to avoid sending "temporary" when not changed

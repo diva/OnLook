@@ -1378,4 +1378,3 @@ void CRijndael::Decrypt(char const* in, char* result, size_t n, int iMode)
 		}
 	}
 }
-

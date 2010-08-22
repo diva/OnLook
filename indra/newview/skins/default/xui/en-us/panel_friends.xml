@@ -17,6 +17,10 @@
 		     tool_tip="Friend can locate you on the map" width="20" />
 		<column image="ff_edit_mine_button.tga" name="icon_edit_mine"
 		     tool_tip="Friend can edit, delete or take objects" width="20" />
+    	<column image="ff_visible_online_button.tga" name="icon_visible_online_theirs"
+		     tool_tip="You can see when they are online (only updates on login)" width="20" />
+   		<column image="ff_visible_map_button.tga" name="icon_visible_map_theirs"
+		     tool_tip="You can locate them on the map" width="20" />
 		<column image="ff_edit_theirs_button.tga" name="icon_edit_theirs"
 		     tool_tip="You can edit this friend&apos;s objects" width="20" />
 		<column name="friend_last_update_generation" width="0" />
@@ -40,4 +44,19 @@
 	<button bottom_delta="-35" follows="top|right" height="22" label="Add..."
 	     left_delta="0" name="add_btn" tool_tip="Offer friendship to a resident"
 	     width="80" />
+  <button bottom_delta="-30" follows="top|right" height="22" label="Import"
+	     left_delta="0" name="import_btn" tool_tip="Import friends list from HDD"
+	     width="80" />
+  <button bottom_delta="-25" follows="top|right" height="22" label="Export"
+	     left_delta="0" name="export_btn" tool_tip="Export friends list to HDD"
+	     width="80" />
+	<text bottom_delta="-50" follows="right|top" font="SansSerif" height="32" left_delta="10" name="friends" width="95">
+Online:
+    </text>	<text bottom_delta="-15" follows="right|top" font="SansSerif" height="32" left_delta="0" name="f_num" width="95">
+0000
+    </text>	<text bottom_delta="-20" follows="right|top" font="SansSerif" height="32" left_delta="0" name="sel" width="95">
+Selected:
+    </text>	<text bottom_delta="-15" follows="right|top" font="SansSerif" height="32" left_delta="0" name="s_num" width="95">
+0000
+    </text>		 
 </panel>

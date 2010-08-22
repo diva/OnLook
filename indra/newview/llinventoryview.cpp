@@ -45,6 +45,7 @@
 #include "llradiogroup.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
+
 #include "llui.h"
 
 #include "llfirstuse.h"
@@ -84,6 +85,7 @@
 #include "llselectmgr.h"
 
 #include "llsdserialize.h"
+
 // <edit>
 #include "llbuildnewviewsscheduler.h"
 // </edit>
@@ -489,15 +491,27 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	BOOL sort_by_name = ! ( sort_order & LLInventoryFilter::SO_DATE );
 	BOOL sort_folders_by_name = ( sort_order & LLInventoryFilter::SO_FOLDERS_BY_NAME );
 	BOOL sort_system_folders_to_top = ( sort_order & LLInventoryFilter::SO_SYSTEM_FOLDERS_TO_TOP );
+
 	addBoolControl("Inventory.ShowFilters", FALSE);
 	addBoolControl("Inventory.SortByName", sort_by_name );
 	addBoolControl("Inventory.SortByDate", ! sort_by_name );
 	addBoolControl("Inventory.FoldersAlwaysByName", sort_folders_by_name );
 	addBoolControl("Inventory.SystemFoldersToTop", sort_system_folders_to_top );
 	
-	addBoolControl("Inventory.SearchName", TRUE);
-	addBoolControl("Inventory.SearchDesc", FALSE);
-	addBoolControl("Inventory.SearchCreator", FALSE);
+
+	U32 search_type = gSavedPerAccountSettings.getU32("rkeastInventorySearchType");
+	BOOL search_by_name = (search_type == 0);
+
+	addBoolControl("Inventory.SearchByName", search_by_name);
+	addBoolControl("Inventory.SearchByCreator", !search_by_name);
+	addBoolControl("Inventory.SearchByDesc", !search_by_name);
+
+	addBoolControl("Inventory.SearchByAll", !search_by_name);
+	
+	//Bool for toggling the partial search results - RKeast
+	BOOL partial_search = gSavedPerAccountSettings.getBOOL("rkeastInventoryPartialSearch");
+	
+	addBoolControl("Inventory.PartialSearchToggle", partial_search);
 
 	mSavedFolderState = new LLSaveFolderState();
 	mSavedFolderState->setApply(FALSE);
@@ -511,6 +525,11 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	if (mActivePanel)
 	{
 		// "All Items" is the previous only view, so it gets the InventorySortOrder
+		
+		//Fix for gSavedSettings use - rkeast
+		mActivePanel->getFilter()->setSearchType(search_type);
+		mActivePanel->getFilter()->setPartialSearch(partial_search);
+
 		mActivePanel->setSortOrder(gSavedSettings.getU32("InventorySortOrder"));
 		mActivePanel->getFilter()->markDefault();
 		mActivePanel->getRootFolder()->applyFunctorRecursively(*mSavedFolderState);
@@ -520,15 +539,16 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	if (recent_items_panel)
 	{
 		recent_items_panel->setSinceLogoff(TRUE);
-		recent_items_panel->setSortOrder(gSavedSettings.getU32(LLInventoryPanel::RECENTITEMS_SORT_ORDER));
+		recent_items_panel->setSortOrder(LLInventoryFilter::SO_DATE);
 		recent_items_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		recent_items_panel->getFilter()->markDefault();
 		recent_items_panel->setSelectCallback(onSelectionChange, recent_items_panel);
 	}
+
 	LLInventoryPanel* worn_items_panel = getChild<LLInventoryPanel>("Worn Items");
 	if (worn_items_panel)
 	{
-		worn_items_panel->setSortOrder(gSavedSettings.getU32(LLInventoryPanel::WORNITEMS_SORT_ORDER));
+		worn_items_panel->setSortOrder(gSavedSettings.getU32("InventorySortOrder"));
 		worn_items_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		worn_items_panel->getFilter()->markDefault();
 		worn_items_panel->setFilterWorn(true);
@@ -560,10 +580,21 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	}
 
 
+	//Initialize item count - rkeast
+	mItemCount = gSavedPerAccountSettings.getS32("rkeastInventoryPreviousCount");
+
+
 	mSearchEditor = getChild<LLSearchEditor>("inventory search editor");
 	if (mSearchEditor)
 	{
 		mSearchEditor->setSearchCallback(onSearchEdit, this);
+	}
+	
+	mQuickFilterCombo = getChild<LLComboBox>("Quick Filter");
+
+	if (mQuickFilterCombo)
+	{
+		mQuickFilterCombo->setCommitCallback(onQuickFilterCommit);
 	}
 
 	sActiveViews.put(this);
@@ -576,6 +607,7 @@ BOOL LLInventoryView::postBuild()
 	childSetTabChangeCallback("inventory filter tabs", "All Items", onFilterSelected, this);
 	childSetTabChangeCallback("inventory filter tabs", "Recent Items", onFilterSelected, this);
 	childSetTabChangeCallback("inventory filter tabs", "Worn Items", onFilterSelected, this);
+
 	//panel->getFilter()->markDefault();
 	return TRUE;
 }
@@ -644,6 +676,12 @@ void LLInventoryView::draw()
 	{
 		mSearchEditor->setText(mActivePanel->getFilterSubString());
 	}
+	
+	if (mActivePanel && mQuickFilterCombo)
+	{
+		refreshQuickFilter( mQuickFilterCombo );
+	}
+
 	LLFloater::draw();
 }
 
@@ -793,8 +831,24 @@ void LLInventoryView::changed(U32 mask)
 		LLLocale locale(LLLocale::USER_LOCALE);
 		std::string item_count_string;
 		LLResMgr::getInstance()->getIntegerString(item_count_string, gInventory.getItemCount());
-		title << " (Fetched " << item_count_string << " items...)";
+		
+	//Displays a progress indication for loading the inventory, but not if it hasn't been loaded before on this PC, or we load more than expected - rkeast
+		if(mItemCount == -1)
+		{
+			title << " (Fetched " << item_count_string << " items...)";
+		}
+		else
+		{
+			S32 remaining = mItemCount - gInventory.getItemCount();
+			std::string total_items;
+			std::string items_remaining;
+			LLResMgr::getInstance()->getIntegerString(total_items, mItemCount);
+			LLResMgr::getInstance()->getIntegerString(items_remaining, remaining);
+			if(remaining < 0) title << " (Fetched " << item_count_string << " items...)";
+			else title << " (Fetched " << item_count_string << " items of ~" << total_items << " - ~" << items_remaining << " remaining...)";
+		}
 	}
+	else gSavedPerAccountSettings.setS32("rkeastInventoryPreviousCount", gInventory.getItemCount());
 	title << mFilterText;
 	setTitle(title.str());
 
@@ -1018,6 +1072,236 @@ void LLInventoryView::onSearchEdit(const std::string& search_string, void* user_
 
 	// set new filter string
 	self->mActivePanel->setFilterSubString(uppercase_search_string);
+}
+
+//static
+void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
+{
+
+	LLComboBox* quickfilter = (LLComboBox*)ctrl;
+
+
+	LLInventoryView* view = (LLInventoryView*)(quickfilter->getParent());
+	if (!view->mActivePanel)
+	{
+		return;
+	}
+
+
+	std::string item_type = quickfilter->getSimple();
+	U32 filter_type;
+
+	if (view->getString("filter_type_animation") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_ANIMATION;
+	}
+
+	else if (view->getString("filter_type_callingcard") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_CALLINGCARD;
+	}
+
+	else if (view->getString("filter_type_wearable") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_WEARABLE;
+	}
+
+	else if (view->getString("filter_type_gesture") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_GESTURE;
+	}
+
+	else if (view->getString("filter_type_landmark") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_LANDMARK;
+	}
+
+	else if (view->getString("filter_type_notecard") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_NOTECARD;
+	}
+
+	else if (view->getString("filter_type_object") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_OBJECT;
+	}
+
+	else if (view->getString("filter_type_script") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_LSL;
+	}
+
+	else if (view->getString("filter_type_sound") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_SOUND;
+	}
+
+	else if (view->getString("filter_type_texture") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_TEXTURE;
+	}
+
+	else if (view->getString("filter_type_snapshot") == item_type)
+	{
+		filter_type = 0x1 << LLInventoryType::IT_SNAPSHOT;
+	}
+
+	else if (view->getString("filter_type_custom") == item_type)
+	{
+		// When they select custom, show the floater then return
+		if( !(view->filtersVisible(view)) )
+		{
+			view->toggleFindOptions();
+		}
+		return;
+	}
+
+	else if (view->getString("filter_type_all") == item_type)
+	{
+		// Show all types
+		filter_type = 0xffffffff;
+	}
+
+	else
+	{
+		llwarns << "Ignoring unknown filter: " << item_type << llendl;
+		return;
+	}
+
+	view->mActivePanel->setFilterTypes( filter_type );
+
+
+	// Force the filters window to update itself, if it's open.
+	LLInventoryViewFinder* finder = view->getFinder();
+	if( finder )
+	{
+		finder->updateElementsFromFilter();
+	}
+
+	// llinfos << "Quick Filter: " << item_type << llendl;
+
+}
+
+
+
+//static
+void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
+{
+
+	LLInventoryView* view = (LLInventoryView*)(ctrl->getParent());
+	if (!view->mActivePanel)
+	{
+		return;
+	}
+
+	LLComboBox* quickfilter = view->getChild<LLComboBox>("Quick Filter");
+	if (!quickfilter)
+	{
+		return;
+	}
+
+
+	U32 filter_type = view->mActivePanel->getFilterTypes();
+
+
+  // Mask to extract only the bit fields we care about.
+  // *TODO: There's probably a cleaner way to construct this mask.
+  U32 filter_mask = 0;
+  filter_mask |= (0x1 << LLInventoryType::IT_ANIMATION);
+  filter_mask |= (0x1 << LLInventoryType::IT_CALLINGCARD);
+  filter_mask |= (0x1 << LLInventoryType::IT_WEARABLE);
+  filter_mask |= (0x1 << LLInventoryType::IT_GESTURE);
+  filter_mask |= (0x1 << LLInventoryType::IT_LANDMARK);
+  filter_mask |= (0x1 << LLInventoryType::IT_NOTECARD);
+  filter_mask |= (0x1 << LLInventoryType::IT_OBJECT);
+  filter_mask |= (0x1 << LLInventoryType::IT_LSL);
+  filter_mask |= (0x1 << LLInventoryType::IT_SOUND);
+  filter_mask |= (0x1 << LLInventoryType::IT_TEXTURE);
+  filter_mask |= (0x1 << LLInventoryType::IT_SNAPSHOT);
+
+
+  filter_type &= filter_mask;
+
+
+  //llinfos << "filter_type: " << filter_type << llendl;
+
+	std::string selection;
+
+
+	if (filter_type == filter_mask)
+	{
+		selection = view->getString("filter_type_all");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_ANIMATION))
+	{
+		selection = view->getString("filter_type_animation");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_CALLINGCARD))
+	{
+		selection = view->getString("filter_type_callingcard");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_WEARABLE))
+	{
+		selection = view->getString("filter_type_wearable");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_GESTURE))
+	{
+		selection = view->getString("filter_type_gesture");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_LANDMARK))
+	{
+		selection = view->getString("filter_type_landmark");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_NOTECARD))
+	{
+		selection = view->getString("filter_type_notecard");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_OBJECT))
+	{
+		selection = view->getString("filter_type_object");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_LSL))
+	{
+		selection = view->getString("filter_type_script");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_SOUND))
+	{
+		selection = view->getString("filter_type_sound");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_TEXTURE))
+	{
+		selection = view->getString("filter_type_texture");
+	}
+
+	else if (filter_type == (0x1 << LLInventoryType::IT_SNAPSHOT))
+	{
+		selection = view->getString("filter_type_snapshot");
+	}
+
+	else
+	{
+		selection = view->getString("filter_type_custom");
+	}
+
+
+	// Select the chosen item by label text
+	BOOL result = quickfilter->setSimple( (selection) );
+
+  if( !result )
+  {
+    llinfos << "The item didn't exist: " << selection << llendl;
+  }
+
 }
 
 
@@ -1400,6 +1684,30 @@ void LLInventoryPanel::draw()
 	LLPanel::draw();
 }
 
+//fix to get rid of gSavedSettings use - rkeast
+void LLInventoryPanel::setPartialSearch(bool toggle)
+{
+	mFolders->getFilter()->setPartialSearch(toggle);
+}
+
+//fix to get rid of gSavedSettings use - rkeast
+bool LLInventoryPanel::getPartialSearch()
+{
+	return mFolders->getFilter()->getPartialSearch();
+}
+
+//fix to get rid of gSavedSettings use - rkeast
+void LLInventoryPanel::setSearchType(U32 type)
+{
+	mFolders->getFilter()->setSearchType(type);
+}
+
+//fix to get rid of gSavedSettings use - rkeast
+U32 LLInventoryPanel::getSearchType()
+{
+	return mFolders->getFilter()->getSearchType();
+}
+
 void LLInventoryPanel::setFilterTypes(U32 filter_types)
 {
 	mFolders->getFilter()->setFilterTypes(filter_types);
@@ -1590,6 +1898,7 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 		{
 			llwarns << "LLInventoryPanel::buildNewViews called with objectp->mType == " 
 				<< ((S32) objectp->getType())
+				<< " for object " << objectp->getName()
 				<< " (shouldn't happen)" << llendl;
 		}
 		else if (objectp->getType() == LLAssetType::AT_CATEGORY) // build new view for category

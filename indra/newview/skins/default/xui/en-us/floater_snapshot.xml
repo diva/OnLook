@@ -32,7 +32,6 @@
        list_position="below" mouse_opaque="true" name="save_btn" tool_tip="Save image to a file"
        width="105">
     <flyout_button_item value="save" name="save_item">Save</flyout_button_item>
-    <flyout_button_item value="save as" name="saveas_item">Save As...</flyout_button_item>
   </flyout_button>
 	<button bottom_delta="0" follows="left|top" height="20" label="Cancel" left="120"
 	     name="discard_btn" width="85" />
@@ -167,7 +166,7 @@
 	     name="auto_snapshot_check" />
 	<check_box bottom_delta="-20" follows="left|top" control_name="TemporaryUpload" enabled="true"
              initial_value="false" label="Temporary Image (Free)" left="10"
-             name="temp_check" tooltip="Sets the asset to be temporary, meaning its free, but in return, only good for a short time before it ceases to exist." />
+             name="temp_check" tooltip="Sets the asset to be temporary, meaning it's free, but in return, only good for a short time before it ceases to exist." />
 	<string name="unknown">
 		unknown
 	</string>

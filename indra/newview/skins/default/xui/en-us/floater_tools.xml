@@ -348,10 +348,10 @@
 			     bottom="-66" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
 			     mouse_opaque="true" name="Creator Name" v_pad="0" width="88">
-				Thrax Linden
-			</text>
-			<button bottom="-66" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="20" label="Profile..." label_selected="Profile..." left_delta="94"
+		        Thrax Linden
+      		</text>
+      		<button bottom="-66" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Profile..." label_selected="Profile..." left_delta="94"
 			     mouse_opaque="true" name="button creator profile" scale_image="TRUE"
 			     width="78" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -364,29 +364,48 @@
 			     bottom="-86" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
 			     mouse_opaque="true" name="Owner Name" v_pad="0" width="88">
-				Thrax Linden
-			</text>
-			<button bottom="-86" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="20" label="Profile..." label_selected="Profile..." left_delta="94"
+		        Thrax Linden
+		      </text>
+		      <button bottom="-86" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Profile..." label_selected="Profile..." left_delta="94"
 			     mouse_opaque="true" name="button owner profile" scale_image="TRUE"
 			     width="78" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-106" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="Group:" v_pad="0" width="78">
-				Group:
+			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+						 bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
+						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+						 mouse_opaque="true" name="LastOwner:" v_pad="0" width="78">
+				Last Owner:
+				</text>
+			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+						 bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
+						 mouse_opaque="true" name="Last Owner Name" v_pad="0" width="88">
+				Thrax Linden
+			  </text>
+			  <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+						 height="16" label="Profile..." label_selected="Profile..." left_delta="94"
+						 mouse_opaque="true" name="button last owner profile" scale_image="TRUE"
+						 width="78" />
+			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+						 bottom="-126" drop_shadow_visible="true" follows="left|top"
+						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+						 mouse_opaque="true" name="Group:" v_pad="0" width="78">
+						Group:
 			</text>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-106" drop_shadow_visible="true" follows="left|top"
+			     bottom="-126" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
 			     mouse_opaque="true" name="Group Name Proxy" v_pad="0" visible="false"
 			     width="88">
-				The Lindens
-			</text>
-			<button bottom="-106" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="20" label="Set..." label_selected="Set..." left_delta="94"
-			     mouse_opaque="true" name="button set group" scale_image="TRUE" width="78" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+        The Lindens
+      </text>
+      <button bottom="-126" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Set" label_selected="Set..." left_delta="94"
+			     mouse_opaque="true" name="button set group" scale_image="TRUE" width="30" />
+      <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="View" label_selected="Open" left_delta="30"
+			     mouse_opaque="true" name="button open group" scale_image="TRUE" width="48" />
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
 			     mouse_opaque="true" name="Permissions:" v_pad="0" width="85">
@@ -475,7 +494,7 @@
 			     left="10" max_chars="20" mouse_opaque="true" name="clickaction" width="150">
 			     <!-- Do not reorder these items, the index numbers are
 					used internally. JC -->
-				<combo_item name="Touch/grab(default)" value="Touch/grab (default)">
+			<combo_item name="Touch/grab(default)" value="Touch/grab (default)">
 					Touch/grab (default)
 				</combo_item>
 				<combo_item name="Sitonobject" value="Sit on object">
@@ -497,8 +516,13 @@
 					Open parcel media
 				</combo_item>
 			</combo_box>
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-115" drop_shadow_visible="true" follows="left|top"
+			<button bottom="-358" follows="top|right" font="SansSerifSmall" halign="center"
+				height="20" label="Copy Key" label_selected="Copy Key" left_delta="172"
+				mouse_opaque="true" name="button cpy_key" scale_image="TRUE"
+				tool_tip="Copies the object key to the clipboard."
+				width="78" />
+      		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom="-135" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="88"
 			     mouse_opaque="true" name="B:" v_pad="0" width="174">
 				B:
@@ -617,15 +641,26 @@
 			     increment="0.01" initial_val="0" label="Z" label_width="10" left="10"
 			     max_val="4096" min_val="0" mouse_opaque="true" name="Pos Z"
 			     text_enabled_color="0, 67, 132, 255" width="87" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copypos" enabled="true"
+				 tool_tip="Copy Position"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pastepos"  enabled="true"
+			     tool_tip="Paste Position"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pasteposclip"  enabled="true"
+			     tool_tip="Paste Position from Clipboard"  width="20" />
+							 
+				 
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom_delta="-26" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="5"
 			     mouse_opaque="true" name="label size" v_pad="0" width="121">
-				Size (meters)
-			</text>
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+        Size
+      </text>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="X" label_width="10" left="10"
-			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale X"
+			     max_val="1024" min_val="0.01" mouse_opaque="true" name="Scale X"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
 			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Y" label_width="10" left="10"
@@ -635,9 +670,20 @@
 			     increment="0.01" initial_val="0" label="Z" label_width="10" left="10"
 			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="C" left_delta="90" mouse_opaque="true" name="copysize"  enabled="true"
+			     tool_tip="Copy Size"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pastesize"  enabled="true"
+			     tool_tip="Paste Size"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pastesizeclip"  enabled="true"
+			     tool_tip="Paste Size from Clipboard"  width="20" />
+				 
+				 
+		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="5"
 			     mouse_opaque="true" name="label rotation" v_pad="0" width="121">
 				Rotation (degrees)
 			</text>
@@ -653,7 +699,19 @@
 			     increment="1" initial_val="0" label="Z" label_width="10" left="10"
 			     max_val="9999" min_val="-9999" mouse_opaque="true" name="Rot Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copyrot"  enabled="true"
+				 tool_tip="Copy Rotation"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pasterot"  enabled="true"
+			     tool_tip="Paste Rotation"  width="20" />
+		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pasterotclip"  enabled="true"
+			     tool_tip="Paste Rotation from Clipboard"  width="20" />
+							 
+							 
+				 
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="label material" v_pad="0" width="121">
@@ -683,7 +741,13 @@
 					Rubber
 				</combo_item>
 			</combo_box>
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	  <button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Copy" left="150" mouse_opaque="true" name="copyparams"  enabled="true"
+			     tool_tip="Copy Parameters from Clipboard"  width="50" />
+	  <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Paste" left_delta="50" mouse_opaque="true" name="pasteparams"  enabled="true"
+     			 tool_tip="Paste Parameters from Clipboard"  width="50" />
+      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-36" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
 			     mouse_opaque="true" name="label basetype" v_pad="0" width="141">
@@ -826,11 +890,11 @@
 				Hole Size
 			</text>
 			<spinner bottom_delta="-20" decimal_digits="2" follows="left|top" height="16"
-			     increment="0.05" initial_val="0" label="X" label_width="10" left="121"
+			     increment="0.025" initial_val="0" label="X" label_width="10" left="121"
 			     max_val="1" min_val="-1" mouse_opaque="true" name="Taper Scale X"
 			     width="68" />
 			<spinner bottom_delta="0" decimal_digits="2" follows="left|top" height="16"
-			     increment="0.05" initial_val="0" label="Y" label_width="10" left_delta="73"
+			     increment="0.025" initial_val="0" label="Y" label_width="10" left_delta="73"
 			     max_val="1" min_val="-1" mouse_opaque="true" name="Taper Scale Y"
 			     width="68" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -840,10 +904,10 @@
 				Top Shear
 			</text>
 			<spinner bottom_delta="-20" decimal_digits="2" follows="left|top" height="16"
-			     increment="0.05" initial_val="0" label="X" label_width="10" left="121"
+			     increment="0.025" initial_val="0" label="X" label_width="10" left="121"
 			     max_val="0.5" min_val="-0.5" mouse_opaque="true" name="Shear X" width="68" />
 			<spinner bottom_delta="0" decimal_digits="2" follows="left|top" height="16"
-			     increment="0.05" initial_val="0" label="Y" label_width="10" left_delta="73"
+			     increment="0.025" initial_val="0" label="Y" label_width="10" left_delta="73"
 			     max_val="0.5" min_val="-0.5" mouse_opaque="true" name="Shear Y" width="68" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
@@ -941,14 +1005,7 @@
 				<combo_item name="Cylinder" value="Cylinder">
 					Cylinder
 				</combo_item>
-			</combo_box><!-- [SimmanFederal] Super-Blink Button -->
-      <button bottom="-25" follows="left|top" font="SansSerifSmall" halign="center"
-			     height="20" label="Hard-Blink" label_selected="Hard-Blink" left="140"
-			     mouse_opaque="true" name="button blink hard" scale_image="TRUE" width="65" />
-      <!-- [SimmanFederal] Blink Button -->
-      <button bottom="-25" follows="left|top" font="SansSerifSmall" halign="center"
-			     height="20" label="Blink" label_selected="Blink" left="205"
-			     mouse_opaque="true" name="button blink" scale_image="TRUE" width="55" />
+      			</combo_box>
 		</panel>
 
 <!-- Features sub-tab -->
@@ -972,33 +1029,33 @@
 			     name="Flexible1D Checkbox Ctrl"
 			     tool_tip="Allows object to flex about the Z axis. (Client-side only)"
 			     width="121" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="1" initial_val="2" label="Softness" label_width="65" left="10"
 			     max_val="3" min_val="0" mouse_opaque="true" name="FlexNumSections"
 			     width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.5" initial_val="0.3" label="Gravity" label_width="65"
 			     left="10" max_val="10" min_val="-10" mouse_opaque="true" name="FlexGravity"
 			     width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.5" initial_val="2" label="Drag" label_width="65" left="10"
 			     max_val="10" min_val="0" mouse_opaque="true" name="FlexFriction"
 			     width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.5" initial_val="0" label="Wind" label_width="65" left="10"
 			     max_val="10" min_val="0" mouse_opaque="true" name="FlexWind" width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.5" initial_val="1" label="Tension" label_width="65" left="10"
 			     max_val="10" min_val="0" mouse_opaque="true" name="FlexTension" width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Force X" label_width="65" left="10"
 			     max_val="10" min_val="-10" mouse_opaque="true" name="FlexForceX"
 			     width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Force Y" label_width="65" left="10"
 			     max_val="10" min_val="-10" mouse_opaque="true" name="FlexForceY"
 			     width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Force Z" label_width="65" left="10"
 			     max_val="10" min_val="-10" mouse_opaque="true" name="FlexForceZ"
 			     width="128" />
@@ -1016,15 +1073,15 @@
 			     can_apply_immediately="true" color="0.5, 0.5, 0.5, 1" follows="left|top"
 			     height="48" label="" left_delta="67" mouse_opaque="true" name="colorswatch"
 			     tool_tip="Click to open Color Picker" width="32" />
-			<spinner bottom_delta="-4" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-4" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.1" initial_val="0.5" label="Intensity" label_width="65"
 			     left="10" max_val="1" min_val="0" mouse_opaque="true"
 			     name="Light Intensity" width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.1" initial_val="5" label="Radius" label_width="65"
 			     left_delta="0" max_val="20" min_val="0" mouse_opaque="true"
 			     name="Light Radius" width="128" />
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
+			<spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.25" initial_val="1" label="Falloff" label_width="65"
 			     left_delta="0" max_val="2" min_val="0" mouse_opaque="true"
 			     name="Light Falloff" width="128" />
@@ -1233,11 +1290,17 @@
 			<button bottom="-360" follows="left|top" font="SansSerifSmall" halign="center"
 			     height="20" label="Align" label_selected="Align" left="112"
 			     mouse_opaque="true" name="button align" scale_image="TRUE" width="68" />
-		</panel>
-		<panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
+			<button bottom="-360" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Copy" left="80" mouse_opaque="true" name="copytextures"  enabled="true"
+			     tool_tip="Copy Testure Params from Clipboard"  width="50" />
+	  		<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Paste" left_delta="50" mouse_opaque="true" name="pastetextures"  enabled="true"
+			     tool_tip="Paste Texture Params from Clipboard"  width="50" />
+    	</panel>
+    	<panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
 		     label="Content" left="1" mouse_opaque="false" name="Contents" width="270">
-      <button bottom="-30" follows="left|top" font="SansSerif" halign="center" height="20"
-			      label="New Script" label_selected="New Script..."
+      		<button bottom="-30" follows="left|top" font="SansSerif" halign="center" height="20"
+			      label="New Script" label_selected="New Script"
 			     left="10" mouse_opaque="true" name="button new script" scale_image="TRUE"
 			     width="100" />
       <button bottom_delta="0" left_delta="110" width="100" height="20" follows="left|top"

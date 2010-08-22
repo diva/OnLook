@@ -3197,6 +3197,8 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 		return;
 	}
 
+	if(gAgent.getPhantom()) return; //Don't want to do this while phantom
+
 	// We have already requested to log out.  Don't send agent updates.
 	if(LLAppViewer::instance()->logoutRequestSent())
 	{
@@ -5914,16 +5916,3 @@ void LLOfferInfo::forceResponse(InventoryOfferResponse response)
 	params.functor(boost::bind(&LLOfferInfo::inventory_offer_callback, this, _1, _2));
 	LLNotifications::instance().forceResponse(params, response);
 }
-
-// <edit> lol
-void spoof_dropped_callback(LLNetCanary::entry entry)
-{
-	if(gSavedSettings.getBOOL("SpoofProtectionAlerts"))
-	{
-		LLSD args;
-		args["[MESSAGE]"] = llformat("A suspicious %s packet was dropped based on your IP Spoofing Protection settings.", entry.name.c_str());
-		LLNotifications::instance().add("SystemMessageTip",args);
-	}
-}
-// </edit>
-

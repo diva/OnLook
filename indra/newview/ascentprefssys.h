@@ -1,6 +1,6 @@
 /** 
  * @file hbprefsinert.h
- * @brief  Inertia Viewer preferences panel
+ * @brief  Ascent Viewer preferences panel
  *
  * $LicenseInfo:firstyear=2008&license=viewergpl$
  * 
@@ -29,17 +29,17 @@
  * $/LicenseInfo$
  */
 
-#ifndef HBPREFSINERT_H
-#define HBPREFSINERT_H
+#ifndef ASCENTPREFSSYS_H
+#define ASCENTPREFSSYS_H
 
 class LLPanel;
-class LLPrefsInertImpl;
+class LLPrefsAscentSysImpl;
 
-class LLPrefsInert
+class LLPrefsAscentSys
 {
 public:
-	LLPrefsInert();
-	~LLPrefsInert();
+	LLPrefsAscentSys();
+	~LLPrefsAscentSys();
 
 	void apply();
 	void cancel();
@@ -47,7 +47,7 @@ public:
 	LLPanel* getPanel();
 
 protected:
-	LLPrefsInertImpl& impl;
+	LLPrefsAscentSysImpl& impl;
 };
 
 #endif

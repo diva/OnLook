@@ -1,4 +1,3 @@
-
 /** 
  * @file llviewermenu.cpp
  * @brief Builds menus out of items.
@@ -44,6 +43,7 @@
 #include "llaudioengine.h"
 #include "indra_constants.h"
 #include "llassetstorage.h"
+
 #include "llchat.h"
 #include "llfeaturemanager.h"
 #include "llfocusmgr.h"
@@ -59,6 +59,7 @@
 #include "message.h"
 #include "raytrace.h"
 #include "llsdserialize.h"
+#include "llsdutil.h"
 // <edit>
 #include "lllocalinventory.h"
 #include "llfloaterimport.h"
@@ -82,6 +83,7 @@
 #include "llclipboard.h"
 #include "llcompilequeue.h"
 #include "llconsole.h"
+#include "llcontrol.h"
 #include "llviewercontrol.h"
 #include "lldebugview.h"
 #include "lldir.h"
@@ -91,6 +93,7 @@
 #include "llface.h"
 #include "llfirstuse.h"
 #include "llfloater.h"
+
 #include "llfloaterabout.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloateractivespeakers.h"
@@ -120,6 +123,7 @@
 #include "llfloatergroupinfo.h"
 #include "llfloatergroupinvite.h"
 #include "llfloatergroups.h"
+
 #include "llfloaterhtmlcurrency.h"
 #include "llfloatermediabrowser.h"			// gViewerHtmlHelp
 #include "llfloaterhtmlsimple.h"
@@ -129,6 +133,7 @@
 #include "llfloaterland.h"
 #include "llfloaterlandholdings.h"
 #include "llfloatermap.h"
+
 #include "llfloatermute.h"
 #include "llfloateropenobject.h"
 #include "llfloaterpermissionsmgr.h"
@@ -139,6 +144,7 @@
 #include "llfloaterreporter.h"
 #include "llfloaterscriptdebug.h"
 #include "llfloatersettingsdebug.h"
+
 #include "llfloaterenvsettings.h"
 #include "llfloaterstats.h"
 #include "llfloaterteleport.h"
@@ -174,7 +180,10 @@
 #include "llmutelist.h"
 #include "llnotify.h"
 #include "llpanelobject.h"
+
 #include "llparcel.h"
+
+
 #include "llprimitive.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"
@@ -241,6 +250,8 @@
 #include "llfloaterexportregion.h"
 // </edit>
 
+#include "scriptcounter.h"
+
 using namespace LLVOAvatarDefines;
 void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
@@ -254,6 +265,11 @@ void init_debug_baked_texture_menu(LLMenuGL* menu);
 
 BOOL enable_land_build(void*);
 BOOL enable_object_build(void*);
+
+
+
+
+
 
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
@@ -304,6 +320,7 @@ LLPieMenu* gDetachPieMenu = NULL;
 LLPieMenu* gDetachScreenPieMenu = NULL;
 LLPieMenu* gDetachBodyPartPieMenus[8];
 
+LLMenuItemCallGL* gFakeAway = NULL;
 LLMenuItemCallGL* gAFKMenu = NULL;
 LLMenuItemCallGL* gBusyMenu = NULL;
 
@@ -318,6 +335,7 @@ void handle_leave_group(void *);
 void handle_compress_image(void*);
 BOOL enable_save_as(void *);
 
+
 // Edit menu
 void handle_dump_group_info(void *);
 void handle_dump_capabilities_info(void *);
@@ -328,6 +346,8 @@ void handle_show_notifications_console(void*);
 void handle_region_dump_settings(void*);
 void handle_region_dump_temp_asset_data(void*);
 void handle_region_clear_temp_asset_data(void*);
+
+
 
 // Object pie menu
 BOOL sitting_on_selection();
@@ -401,6 +421,10 @@ void handle_god_mode(void*);
 void handle_leave_god_mode(void*);
 
 // <edit>
+void handle_fake_away_status(void*);
+void handle_force_ground_sit(void*);
+void handle_phantom_avatar(void*);
+void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
 void handle_open_message_log(void*);
@@ -508,6 +532,14 @@ void handle_debug_avatar_textures(void*);
 void handle_grab_texture(void*);
 BOOL enable_grab_texture(void*);
 void handle_dump_region_object_cache(void*);
+
+
+
+
+
+
+
+
 
 BOOL menu_ui_enabled(void *user_data);
 BOOL menu_check_control( void* user_data);
@@ -751,20 +783,17 @@ void init_client_menu(LLMenuGL* menu)
 	// <edit>
 	{
 		LLMenuGL* sub = NULL;
-		sub = new LLMenuGL("Useful Features");
+		sub = new LLMenuGL("Ascent");
+		sub->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
+		sub->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
+		sub->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
+		sub->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
 		sub->append(new LLMenuItemCallGL(	"Close All Dialogs", 
 											&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
 
-		sub->append(new LLMenuItemCallGL(	"Reopen with Hex Editor", 
-											&handle_reopen_with_hex_editor, NULL));	
-										
 		sub->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
 		sub->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
 
-		sub->append(new LLMenuItemCallGL(	"Local Assets...",
-												&handle_local_assets, NULL));
-		sub->append(new LLMenuItemCallGL(	"VFS Explorer",
-												&handle_vfs_explorer, NULL));
 		sub->append(new LLMenuItemCallGL(	"Sound Explorer",
 												&handle_sounds_explorer, NULL));
 		sub->append(new LLMenuItemCallGL(	"Asset Blacklist",
@@ -2263,27 +2292,6 @@ class LLObjectCopyUUID : public view_listener_t
 	}
 };
 
-class LLObjectEnableSaveAs : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		bool new_value = (object != NULL);
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-class LLObjectSaveAs : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFloaterExport* floater = new LLFloaterExport();
-		floater->center();
-		return true;
-	}
-};
-
 class LLObjectEnableImport : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -2338,6 +2346,81 @@ class LLObjectImport : public view_listener_t
 		LLXmlImportOptions* options = new LLXmlImportOptions(file_name);
 		options->mSupplier = object;
 		new LLFloaterXmlImportOptions(options);
+		return true;
+	}
+};
+
+class LLObjectData : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		if(object)
+		{
+			LLVector3 vPos = object->getPosition();
+			LLQuaternion rRot = object->getRotation();
+
+			F32 posX = vPos.mV[0];
+			F32 posY = vPos.mV[1];
+			F32 posZ = vPos.mV[2];
+
+			F32 rotX = rRot.mQ[0];
+			F32 rotY = rRot.mQ[1];
+			F32 rotZ = rRot.mQ[2];
+			F32 rotR = rRot.mQ[3];
+
+			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			chat.mText = llformat("LSL Helper:\nPosition: <%f, %f, %f>\nRotation: <%f, %f, %f, %f>", posX, posY, posZ, rotX, rotY, rotZ, rotR);
+			LLFloaterChat::addChat(chat);
+		}
+
+		return true;
+	}
+};
+
+class LLObjectMeasure : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		if(object)
+		{
+			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			
+			if (LLAgent::exlStartMeasurePoint.isExactlyZero())
+			{
+				LLAgent::exlStartMeasurePoint = object->getPosition();
+
+				chat.mText = llformat("Start point set");
+				LLFloaterChat::addChat(chat);
+			}
+			else if (LLAgent::exlEndMeasurePoint.isExactlyZero())
+			{
+				LLAgent::exlEndMeasurePoint = object->getPosition();
+
+				chat.mText = llformat("End point set");
+				LLFloaterChat::addChat(chat);
+			}
+			else
+			{
+				LLAgent::exlStartMeasurePoint = LLVector3::zero;
+				LLAgent::exlEndMeasurePoint = LLVector3::zero;
+				return false;
+			}
+
+			if (!LLAgent::exlStartMeasurePoint.isExactlyZero() && !LLAgent::exlEndMeasurePoint.isExactlyZero())
+			{
+				F32 fdist = dist_vec(LLAgent::exlStartMeasurePoint, LLAgent::exlEndMeasurePoint);
+				LLAgent::exlStartMeasurePoint = LLVector3::zero;
+				LLAgent::exlEndMeasurePoint = LLVector3::zero;
+
+				chat.mText = llformat("Distance: %fm", fdist);
+				LLFloaterChat::addChat(chat);
+			}
+		}
+
 		return true;
 	}
 };
@@ -2443,6 +2526,60 @@ bool callback_freeze(const LLSD& notification, const LLSD& response)
 	return false;
 }
 
+class LLScriptCount : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		ScriptCounter::serializeSelection(false);
+		return true;
+	}
+};
+
+class LLScriptDelete : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		ScriptCounter::serializeSelection(true);
+		return true;
+	}
+};
+
+class LLObjectVisibleScriptCount : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		
+		return true;
+	}
+};
+
+class LLObjectEnableScriptDelete : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		bool new_value = (object != NULL);
+		if(new_value)
+		for (LLObjectSelection::root_iterator iter = LLSelectMgr::getInstance()->getSelection()->root_begin();
+			iter != LLSelectMgr::getInstance()->getSelection()->root_end(); iter++)
+		{
+			LLSelectNode* selectNode = *iter;
+			LLViewerObject* object = selectNode->getObject();
+			if(object)
+				if(!object->permModify())
+				{
+					new_value=false;
+					break;
+				}
+		}
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		
+		return true;
+	}
+};
 
 class LLAvatarFreeze : public view_listener_t
 {
@@ -2628,6 +2765,22 @@ class LLAvatarEject : public view_listener_t
 				}
 			}
 		}
+		return true;
+	}
+};
+
+
+class LLAvatarCopyUUID : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+		if(!avatar) return true;
+		
+		LLUUID uuid = avatar->getID();
+		char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
+		uuid.toString(buffer);
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
 		return true;
 	}
 };
@@ -3071,19 +3224,7 @@ void process_grant_godlike_powers(LLMessageSystem* msg, void**)
 
 void handle_reopen_with_hex_editor(void*)
 {
-	LLFloater* top = gFloaterView->getFrontmost();
-	if (top)
-	{
-		LLUUID item_id = top->getItemID();
-		if(item_id.notNull())
-		{
-			LLInventoryItem* item = gInventory.getItem(item_id);
-			if(item)
-			{
-				DOFloaterHex::show(item_id);
-			}
-		}
-	}
+
 }
 
 void handle_open_message_log(void*)
@@ -3103,12 +3244,12 @@ void handle_edit_ao(void*)
 
 void handle_local_assets(void*)
 {
-	LLFloaterVFS::show();
+
 }
 
 void handle_vfs_explorer(void*)
 {
-	LLFloaterVFSExplorer::show();
+
 }
 
 void handle_sounds_explorer(void*)
@@ -3130,6 +3271,79 @@ void handle_close_all_notifications(void*)
 	{
 		gNotifyBoxView->removeChild(*iter);
 	}
+}
+
+void handle_fake_away_status(void*)
+{
+	if (!gSavedSettings.controlExists("FakeAway")) gSavedSettings.declareBOOL("FakeAway", FALSE, "", NO_PERSIST);
+
+	if (gSavedSettings.getBOOL("FakeAway") == TRUE)
+	{
+		gSavedSettings.declareBOOL("FakeAway", FALSE, "", NO_PERSIST);
+		gSavedSettings.setBOOL("FakeAway", FALSE);
+		gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_STOP);
+	}
+	else
+	{
+		gSavedSettings.declareBOOL("FakeAway", TRUE, "", NO_PERSIST);
+		gSavedSettings.setBOOL("FakeAway", TRUE);
+		gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_START);
+	}
+}
+
+void handle_hide_typing_notification(void*)
+{
+	if (!gSavedSettings.controlExists("HideTypingNotification")) 
+		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
+
+	BOOL hide = gSavedSettings.getBOOL("HideTypingNotification");
+	if (hide)
+	{
+		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
+		gSavedSettings.setBOOL("HideTypingNotification", FALSE);
+	}
+	else
+	{
+		gSavedSettings.declareBOOL("HideTypingNotification", TRUE, "Hide your 'Name is typing...' message when Instant Messaging.");
+		gSavedSettings.setBOOL("HideTypingNotification", TRUE);
+	}
+
+	LLChat chat;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	chat.mText = llformat("IM Typing Notifications: %s",(hide ? "On" : "Off"));
+	LLFloaterChat::addChat(chat);
+}
+
+void handle_force_ground_sit(void*)
+{
+	if (gAgent.getAvatarObject())
+	{
+		if(!gAgent.getAvatarObject()->mIsSitting)
+		{
+			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
+		} 
+		else 
+		{
+			gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+		}
+	}
+}
+
+void handle_phantom_avatar(void*)
+{
+	BOOL ph = LLAgent::getPhantom();
+
+	if (ph)
+		gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+	else
+		gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
+	
+	LLAgent::togglePhantom();
+	ph = LLAgent::getPhantom();
+	LLChat chat;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	chat.mText = llformat("%s%s","Phantom ",(ph ? "On" : "Off"));
+	LLFloaterChat::addChat(chat);
 }
 
 // </edit>
@@ -3937,12 +4151,12 @@ void derez_objects(EDeRezDestination dest, const LLUUID& dest_id)
 				// <edit>
 				if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 				{
-				// </edit>
-				// VEFFECT: DerezObject
-				LLHUDEffectSpiral* effectp = (LLHUDEffectSpiral*)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);
-				effectp->setPositionGlobal(object->getPositionGlobal());
-				effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-				// <edit>
+					// </edit>
+					// VEFFECT: DerezObject
+					LLHUDEffectSpiral* effectp = (LLHUDEffectSpiral*)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);
+					effectp->setPositionGlobal(object->getPositionGlobal());
+					effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+					// <edit>
 				}
 				// </edit>
 			}
@@ -5227,6 +5441,26 @@ class LLWorldSitOnGround : public view_listener_t
 	}
 };
 
+class LLWorldFakeAway : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		if (!gSavedSettings.controlExists("FakeAway")) gSavedSettings.declareBOOL("FakeAway", FALSE, "", NO_PERSIST);
+
+		if (gSavedSettings.getBOOL("FakeAway") == TRUE)
+		{
+			gSavedSettings.setBOOL("FakeAway", FALSE);
+			gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_STOP);
+		}
+		else
+		{
+			gSavedSettings.setBOOL("FakeAway", TRUE);
+			gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_START);
+		}
+		return true;
+	}
+};
+
 class LLWorldEnableSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -5682,10 +5916,6 @@ class LLShowFloater : public view_listener_t
 		else if (floater_name == "areasearch")
 		{
 			JCFloaterAreaSearch::toggle();
-		}
-		else if (floater_name == "export region")
-		{
-			LLFloaterExportRegion::toggleInstance(LLSD());
 		}
 		else if (floater_name == "grid options")
 		{
@@ -8081,6 +8311,1096 @@ static void addMenu(view_listener_t *menu, const std::string& name)
 	menu->registerListener(gMenuHolder, name);
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Chalice - Old beacon style
+class LLViewBeaconWidth : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string width = userdata.asString();
+		if(width == "1")
+		{
+			gSavedSettings.setS32("DebugBeaconLineWidth", 1);
+		}
+		else if(width == "4")
+		{
+			gSavedSettings.setS32("DebugBeaconLineWidth", 4);
+		}
+		else if(width == "16")
+		{
+			gSavedSettings.setS32("DebugBeaconLineWidth", 16);
+		}
+		else if(width == "32")
+		{
+			gSavedSettings.setS32("DebugBeaconLineWidth", 32);
+		}
+
+		return true;
+	}
+};
+
+//PURPLESL - Old beacon style
+class LLViewToggleBeacon : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string beacon = userdata.asString();
+		if (beacon == "scriptsbeacon")
+		{
+			LLPipeline::toggleRenderScriptedBeacons(NULL);
+			gSavedSettings.setBOOL( "scriptsbeacon", LLPipeline::getRenderScriptedBeacons(NULL) );
+			// toggle the other one off if it's on
+			if (LLPipeline::getRenderScriptedBeacons(NULL) && LLPipeline::getRenderScriptedTouchBeacons(NULL))
+			{
+				LLPipeline::toggleRenderScriptedTouchBeacons(NULL);
+				gSavedSettings.setBOOL( "scripttouchbeacon", LLPipeline::getRenderScriptedTouchBeacons(NULL) );
+			}
+		}
+		else if (beacon == "physicalbeacon")
+		{
+			LLPipeline::toggleRenderPhysicalBeacons(NULL);
+			gSavedSettings.setBOOL( "physicalbeacon", LLPipeline::getRenderPhysicalBeacons(NULL) );
+		}
+		else if (beacon == "soundsbeacon")
+		{
+			LLPipeline::toggleRenderSoundBeacons(NULL);
+			gSavedSettings.setBOOL( "soundsbeacon", LLPipeline::getRenderSoundBeacons(NULL) );
+		}
+		else if (beacon == "particlesbeacon")
+		{
+			LLPipeline::toggleRenderParticleBeacons(NULL);
+			gSavedSettings.setBOOL( "particlesbeacon", LLPipeline::getRenderParticleBeacons(NULL) );
+		}
+		else if (beacon == "scripttouchbeacon")
+		{
+			LLPipeline::toggleRenderScriptedTouchBeacons(NULL);
+			gSavedSettings.setBOOL( "scripttouchbeacon", LLPipeline::getRenderScriptedTouchBeacons(NULL) );
+			// toggle the other one off if it's on
+			if (LLPipeline::getRenderScriptedBeacons(NULL) && LLPipeline::getRenderScriptedTouchBeacons(NULL))
+			{
+				LLPipeline::toggleRenderScriptedBeacons(NULL);
+				gSavedSettings.setBOOL( "scriptsbeacon", LLPipeline::getRenderScriptedBeacons(NULL) );
+			}
+		}
+		else if (beacon == "renderbeacons")
+		{
+			LLPipeline::toggleRenderBeacons(NULL);
+			gSavedSettings.setBOOL( "renderbeacons", LLPipeline::getRenderBeacons(NULL) );
+			// toggle the other one on if it's not
+			if (!LLPipeline::getRenderBeacons(NULL) && !LLPipeline::getRenderHighlights(NULL))
+			{
+				LLPipeline::toggleRenderHighlights(NULL);
+				gSavedSettings.setBOOL( "renderhighlights", LLPipeline::getRenderHighlights(NULL) );
+			}
+		}
+		else if (beacon == "renderhighlights")
+		{
+			LLPipeline::toggleRenderHighlights(NULL);
+			gSavedSettings.setBOOL( "renderhighlights", LLPipeline::getRenderHighlights(NULL) );
+			// toggle the other one on if it's not
+			if (!LLPipeline::getRenderBeacons(NULL) && !LLPipeline::getRenderHighlights(NULL))
+			{
+				LLPipeline::toggleRenderBeacons(NULL);
+				gSavedSettings.setBOOL( "renderbeacons", LLPipeline::getRenderBeacons(NULL) );
+			}
+		}
+			
+		return true;
+	}
+};
+//PURPLESL - Old beacon style
+class LLViewCheckBeaconEnabled : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string beacon = userdata["data"].asString();
+		bool new_value = false;
+		if (beacon == "scriptsbeacon")
+		{
+			new_value = gSavedSettings.getBOOL( "scriptsbeacon");
+			LLPipeline::setRenderScriptedBeacons(new_value);
+		}
+		else if (beacon == "physicalbeacon")
+		{
+			new_value = gSavedSettings.getBOOL( "physicalbeacon");
+			LLPipeline::setRenderPhysicalBeacons(new_value);
+		}
+		else if (beacon == "soundsbeacon")
+		{
+			new_value = gSavedSettings.getBOOL( "soundsbeacon");
+			LLPipeline::setRenderSoundBeacons(new_value);
+		}
+		else if (beacon == "particlesbeacon")
+		{
+			new_value = gSavedSettings.getBOOL( "particlesbeacon");
+			LLPipeline::setRenderParticleBeacons(new_value);
+		}
+		else if (beacon == "scripttouchbeacon")
+		{
+			new_value = gSavedSettings.getBOOL( "scripttouchbeacon");
+			LLPipeline::setRenderScriptedTouchBeacons(new_value);
+		}
+		else if (beacon == "renderbeacons")
+		{
+			new_value = gSavedSettings.getBOOL( "renderbeacons");
+			LLPipeline::setRenderBeacons(new_value);
+		}
+		else if (beacon == "renderhighlights")
+		{
+			new_value = gSavedSettings.getBOOL( "renderhighlights");
+			LLPipeline::setRenderHighlights(new_value);
+		}
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return true;
+	}
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void initialize_menus()
 {
 	// A parameterized event handler used as ctrl-8/9/0 zoom controls below.
@@ -8151,6 +9471,8 @@ void initialize_menus()
 	addMenu(new LLViewLookAtLastChatter(), "View.LookAtLastChatter");
 	addMenu(new LLViewShowHoverTips(), "View.ShowHoverTips");
 	addMenu(new LLViewHighlightTransparent(), "View.HighlightTransparent");
+	addMenu(new LLViewToggleBeacon(), "View.ToggleBeacon");
+	addMenu(new LLViewBeaconWidth(), "View.BeaconWidth");
 	addMenu(new LLViewToggleRenderType(), "View.ToggleRenderType");
 	addMenu(new LLViewShowHUDAttachments(), "View.ShowHUDAttachments");
 	addMenu(new LLZoomer(1.2f), "View.ZoomOut");
@@ -8168,8 +9490,25 @@ void initialize_menus()
 	addMenu(new LLViewCheckJoystickFlycam(), "View.CheckJoystickFlycam");
 	addMenu(new LLViewCheckShowHoverTips(), "View.CheckShowHoverTips");
 	addMenu(new LLViewCheckHighlightTransparent(), "View.CheckHighlightTransparent");
+	addMenu(new LLViewCheckBeaconEnabled(), "View.CheckBeaconEnabled");
 	addMenu(new LLViewCheckRenderType(), "View.CheckRenderType");
 	addMenu(new LLViewCheckHUDAttachments(), "View.CheckHUDAttachments");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	// World menu
 	addMenu(new LLWorldChat(), "World.Chat");
@@ -8181,6 +9520,7 @@ void initialize_menus()
 	addMenu(new LLWorldCreateLandmark(), "World.CreateLandmark");
 	addMenu(new LLWorldSetHomeLocation(), "World.SetHomeLocation");
 	addMenu(new LLWorldTeleportHome(), "World.TeleportHome");
+	addMenu(new LLWorldFakeAway(), "World.FakeAway");
 	addMenu(new LLWorldSetAway(), "World.SetAway");
 	addMenu(new LLWorldSetBusy(), "World.SetBusy");
 
@@ -8196,11 +9536,13 @@ void initialize_menus()
 	(new LLWorldPostProcess())->registerListener(gMenuHolder, "World.PostProcess");
 	(new LLWorldDayCycle())->registerListener(gMenuHolder, "World.DayCycle");
 
+
 	// Tools menu
 	addMenu(new LLToolsSelectTool(), "Tools.SelectTool");
 	addMenu(new LLToolsSelectOnlyMyObjects(), "Tools.SelectOnlyMyObjects");
 	addMenu(new LLToolsSelectOnlyMovableObjects(), "Tools.SelectOnlyMovableObjects");
 	addMenu(new LLToolsSelectBySurrounding(), "Tools.SelectBySurrounding");
+
 	addMenu(new LLToolsShowSelectionHighlights(), "Tools.ShowSelectionHighlights");
 	addMenu(new LLToolsShowHiddenSelection(), "Tools.ShowHiddenSelection");
 	addMenu(new LLToolsShowSelectionLightRadius(), "Tools.ShowSelectionLightRadius");
@@ -8217,6 +9559,8 @@ void initialize_menus()
 	addMenu(new LLToolsBuyOrTake(), "Tools.BuyOrTake");
 	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
 	addMenu(new LLToolsTakeCopy(), "Tools.TakeCopy");
+
+	addMenu(new LLScriptDelete(), "Tools.ScriptDelete");
 	// <edit>
 	addMenu(new LLToolsEnableAdminDelete(), "Tools.EnableAdminDelete");
 	addMenu(new LLToolsAdminDelete(), "Tools.AdminDelete");
@@ -8246,10 +9590,13 @@ void initialize_menus()
 	addMenu(new LLSelfEnableRemoveAllAttachments(), "Self.EnableRemoveAllAttachments");
 
 	 // Avatar pie menu
+
+
 	addMenu(new LLObjectMute(), "Avatar.Mute");
 	addMenu(new LLAvatarAddFriend(), "Avatar.AddFriend");
 	addMenu(new LLAvatarFreeze(), "Avatar.Freeze");
 	addMenu(new LLAvatarDebug(), "Avatar.Debug");
+
 	addMenu(new LLAvatarVisibleDebug(), "Avatar.VisibleDebug");
 	addMenu(new LLAvatarEnableDebug(), "Avatar.EnableDebug");
 	addMenu(new LLAvatarInviteToGroup(), "Avatar.InviteToGroup");
@@ -8261,6 +9608,7 @@ void initialize_menus()
 	addMenu(new LLObjectEnableMute(), "Avatar.EnableMute");
 	addMenu(new LLAvatarEnableAddFriend(), "Avatar.EnableAddFriend");
 	addMenu(new LLAvatarEnableFreezeEject(), "Avatar.EnableFreezeEject");
+	addMenu(new LLAvatarCopyUUID(), "Avatar.CopyUUID");
 
 	// Object pie menu
 	addMenu(new LLObjectOpen(), "Object.Open");
@@ -8273,8 +9621,10 @@ void initialize_menus()
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	// <edit>
-	addMenu(new LLObjectSaveAs(), "Object.SaveAs");
 	addMenu(new LLObjectImport(), "Object.Import");
+	addMenu(new LLObjectMeasure(), "Object.Measure");
+	addMenu(new LLObjectData(), "Object.Data");
+	addMenu(new LLScriptCount(), "Object.ScriptCount");
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");
@@ -8289,7 +9639,6 @@ void initialize_menus()
 	addMenu(new LLObjectEnableReturn(), "Object.EnableReturn");
 	addMenu(new LLObjectEnableReportAbuse(), "Object.EnableReportAbuse");
 	// <edit>
-	addMenu(new LLObjectEnableSaveAs(), "Object.EnableSaveAs");
 	addMenu(new LLObjectEnableImport(), "Object.EnableImport");
 	// </edit>
 	addMenu(new LLObjectEnableMute(), "Object.EnableMute");

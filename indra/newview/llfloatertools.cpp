@@ -81,6 +81,7 @@
 #include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
 
+
 // Globals
 LLFloaterTools *gFloaterTools = NULL;
 

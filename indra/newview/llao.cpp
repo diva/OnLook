@@ -8,6 +8,8 @@
 #include "llsdserialize.h"
 #include "llagent.h"
 #include "llvoavatar.h"
+//this is for debugging ;D
+//#define AO_DEBUG
 
 //static variables
 std::list<LLUUID> LLAO::mStandOverrides;

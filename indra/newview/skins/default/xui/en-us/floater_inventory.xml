@@ -5,9 +5,43 @@
      title="Inventory" width="467">
 	<search_editor bottom="-50" follows="left|top|right" height="16" label="Type here to search"
 	     left="6" mouse_opaque="true" name="inventory search editor" width="455" />
-	<tab_container bottom_delta="-512" follows="left|top|right|bottom" height="508" left="2"
-	     mouse_opaque="false" name="inventory filter tabs" tab_position="top"
-	     width="463">
+<text name="group_titles_textbox" font="SansSerifSmall" follows="left|top"
+    height="16" left="10" bottom_delta="-24" width="120">Quick Filter:</text>
+  <!-- Inventory Type Filter Labels -->
+  <string name="filter_type_all">All Types</string>
+  <string name="filter_type_animation">Animations</string>
+  <string name="filter_type_callingcard">Calling Cards</string>
+  <string name="filter_type_wearable">Clothing / Body Parts</string>
+  <string name="filter_type_gesture">Gestures</string>
+  <string name="filter_type_landmark">Landmarks</string>
+  <string name="filter_type_notecard">Notecards</string>
+  <string name="filter_type_object">Objects</string>
+  <string name="filter_type_script">Scripts</string>
+  <string name="filter_type_sound">Sounds</string>
+  <string name="filter_type_texture">Textures</string>
+  <string name="filter_type_snapshot">Snapshots</string>
+  <string name="filter_type_custom">Custom...</string>
+  <combo_box name="Quick Filter" label="Quick Filter" follows="left|top" height="20" left="80" width="150" bottom_delta="0">
+    <combo_item name="filter_type_all">All Types</combo_item>
+    <separator />
+    <combo_item name="filter_type_animation">Animations</combo_item>
+    <combo_item name="filter_type_callingcard">Calling Cards</combo_item>
+    <combo_item name="filter_type_wearable">Clothing / Body Parts</combo_item>
+    <combo_item name="filter_type_gesture">Gestures</combo_item>
+    <combo_item name="filter_type_landmark">Landmarks</combo_item>
+    <combo_item name="filter_type_notecard">Notecards</combo_item>
+    <combo_item name="filter_type_object">Objects</combo_item>
+    <combo_item name="filter_type_script">Scripts</combo_item>
+    <combo_item name="filter_type_sound">Sounds</combo_item>
+    <combo_item name="filter_type_texture">Textures</combo_item>
+    <combo_item name="filter_type_snapshot">Snapshots</combo_item>
+    <separator />
+    <combo_item name="filter_type_custom">Custom...</combo_item>
+  </combo_box>
+	<tab_container name="inventory filter tabs" follows="left|top|right|bottom"
+	     bottom_delta="-487" height="480" left="2" width="463"
+	     mouse_opaque="false" tab_position="top">
+
 		<inventory_panel allow_multi_select="true" border="true" bottom="-507"
 		     follows="left|top|right|bottom" height="491" label="All Items" left="1"
 		     mouse_opaque="true" name="All Items" sort_order="InventorySortOrder"
@@ -55,10 +89,6 @@
 			<menu_item_call bottom_delta="-18" height="18" label="Empty Trash" left="0" mouse_opaque="true"
 			     name="Empty Trash" width="128">
 				<on_click filter="" function="Inventory.EmptyTrash" userdata="" />
-			</menu_item_call>
-			<menu_item_call bottom_delta="-18" height="18" label="Load InvCache..." left="0" mouse_opaque="true"
-			     name="Load InvCache..." width="128">
-				<on_click filter="" function="Inventory.LoadInvCache" userdata="" />
 			</menu_item_call>
 			<menu_item_call bottom_delta="-18" height="18" label="Refresh Inventory" left="0" mouse_opaque="true"
 			     name="Refresh Inventory" width="128">
@@ -150,10 +180,6 @@
 					<on_click filter="" function="Inventory.DoCreate" userdata="eyes" />
 				</menu_item_call>
 			</menu>
-			<menu_item_call bottom_delta="-18" height="18" label="New Pretend Item" left="0" mouse_opaque="true"
-				     name="New Pretend Item" width="118">
-				<on_click filter="" function="Inventory.DoCreate" userdata="pretend" />
-			</menu_item_call>
 		</menu>
 		<menu bottom_delta="64" drop_shadow="true" height="49"
 		     label="Sort" left="0" mouse_opaque="false" name="Sort" opaque="true"
@@ -182,18 +208,30 @@
 		<menu bottom_delta="64" drop_shadow="true" height="49"
 		     label="Search" left="0" mouse_opaque="false" name="Search" opaque="true"
 		     tear_off="true" width="118">
-			<menu_item_check bottom_delta="-18" control_name="Inventory.SearchName" height="18"
-			     label="Item name" left="0" mouse_opaque="true" name="Item name" width="118">
-				<on_click filter="" function="Inventory.SetSearchType" userdata="name" />
-			</menu_item_check>
-			<menu_item_check bottom_delta="-18" control_name="Inventory.SearchDesc" height="18"
-			     label="Item description" left="0" mouse_opaque="true" name="Item description" width="118">
-				<on_click filter="" function="Inventory.SetSearchType" userdata="description" />
-			</menu_item_check>
-			<menu_item_check bottom_delta="-18" control_name="Inventory.SearchCreator" height="18"
-			     label="Item creator" left="0" mouse_opaque="true" name="Item creatorr" width="118">
-				<on_click filter="" function="Inventory.SetSearchType" userdata="creator" />
-			</menu_item_check>
-		</menu>
+      <menu_item_check bottom_delta="-18" control_name="Inventory.SearchByName" height="18"
+			     label="By Name" left="0" mouse_opaque="true" name="By Name" width="118">
+        <on_click filter="" function="Inventory.SetSearchBy" userdata="name" />
+      </menu_item_check>
+      <menu_item_check bottom_delta="-18" control_name="Inventory.SearchByCreator" height="18"
+           label="By Creator" left="0" mouse_opaque="true" name="By Creator" width="118">
+        <on_click filter="" function="Inventory.SetSearchBy" userdata="creator" />
+      </menu_item_check>
+      <menu_item_check bottom_delta="-18" control_name="Inventory.SearchByDesc" height="18"
+          label="By Description" left="0" mouse_opaque="true" name="By Description" width="118">
+        <on_click filter="" function="Inventory.SetSearchBy" userdata="desc" />
+      </menu_item_check>
+      <menu_item_separator bottom_delta="-8" height="8" left="0" mouse_opaque="true" name="separator"
+			     width="118" />
+      <menu_item_check bottom_delta="-18" control_name="Inventory.SearchByAll" height="18"
+           label="By All" left="0" mouse_opaque="true" name="By All" width="118">
+        <on_click filter="" function="Inventory.SetSearchBy" userdata="all" />
+      </menu_item_check>
+      <menu_item_separator bottom_delta="-8" height="8" left="0" mouse_opaque="true" name="separator"
+			     width="118" />
+      <menu_item_check bottom_delta="-18" control_name="Inventory.PartialSearchToggle" height="18"
+           label="Show Partial Search Results" left="0" mouse_opaque="true" name="Show Partial Search Results" width="118">
+        <on_click filter="" function="Inventory.PartialSearch" userdata="toggle" />
+      </menu_item_check>
+    </menu>
 	</menu_bar>
 </floater>

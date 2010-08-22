@@ -1,0 +1,39 @@
+->> Features implemented in Ascent:
+In-World:
+* Idle time of avatars around you (Not perfect)
+* Client tags/coloring for various clients, and extra client definitions
+* Force Away button to fake being away if you really want to avoid someone :V
+* Double-Click teleport (Not all the functionality of Emerald yet)
+Preferences (Options are in Ascent Options):
+* Disable Look At
+* Disable Point At and beam end
+* Fetch inventory in background on login (No waiting for caching when searching)
+* Display your client tag to yourself
+* Display your client tag color to yourself
+* Rez objects as land group when possible
+* Some settings can now be saved per account after changing an option in the preferences. Currently affected settings:
+	Edit Beam color
+	Client Tag Color
+Communication Window:
+- Friend List:
+  * Friend List Online/Total counts (Not perfect)
+  * Shows what rights your friends have given you (Mod, See on map, Online)
+Parcel Window:
+- General tab:
+- Objects tab:
+  * In Sim/Online/Offline indicators for Parcel Object Owner listings (Online is currently wonky - This is an issue with SL, Emerald has the same problem.)
+Build Window:
+- General tab:
+  * Last Owner shown in Build "General" Tab
+  * Group object is set to has a "View" button to see the group's profile
+  * Copy Object Key button
+- Build Tab:
+  * Copy/Paste Position buttons
+  * Copy/Paste Size buttons
+  * Copy/Paste Rotation buttons
+  * Copy/Paste Primitive Parameters buttons
+
+Known issues:
+Online/Total counts in the friends list sometimes go haywire. Not often or by a large margin, but it happens.
+Import/Export buttons don't work. Or they try to and break. Don't use 'em.
+Skin menu doesn't work - On hold until we actually have some skins to show - Ascent will have its own "branded" skin at some point.

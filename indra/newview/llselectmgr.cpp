@@ -1456,11 +1456,11 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 				if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 				{
 				// </edit>
-				LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-				effectp->setSourceObject(gAgent.getAvatarObject());
-				effectp->setTargetObject(object);
-				effectp->setDuration(LL_HUD_DUR_SHORT);
-				effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+					LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
+					effectp->setSourceObject(gAgent.getAvatarObject());
+					effectp->setTargetObject(object);
+					effectp->setDuration(LL_HUD_DUR_SHORT);
+					effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 				// <edit>
 				}
 				// </edit>
@@ -2800,17 +2800,17 @@ bool LLSelectMgr::confirmDelete(const LLSD& notification, const LLSD& response, 
 										  (void*)info,
 										  SEND_ONLY_ROOTS);
 			// VEFFECT: Delete Object - one effect for all deletes
-			// <edit>
 			if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
-			// </edit>
-			if (LLSelectMgr::getInstance()->mSelectedObjects->mSelectType != SELECT_TYPE_HUD)
 			{
-				LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);
-				effectp->setPositionGlobal( LLSelectMgr::getInstance()->getSelectionCenterGlobal() );
-				effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-				F32 duration = 0.5f;
-				duration += LLSelectMgr::getInstance()->mSelectedObjects->getObjectCount() / 64.f;
-				effectp->setDuration(duration);
+				if (LLSelectMgr::getInstance()->mSelectedObjects->mSelectType != SELECT_TYPE_HUD)
+				{
+					LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_POINT, TRUE);
+					effectp->setPositionGlobal( LLSelectMgr::getInstance()->getSelectionCenterGlobal() );
+					effectp->setColor(LLColor4U(gAgent.getEffectColor()));
+					F32 duration = 0.5f;
+					duration += LLSelectMgr::getInstance()->mSelectedObjects->getObjectCount() / 64.f;
+					effectp->setDuration(duration);
+				}
 			}
 
 			gAgent.setLookAt(LOOKAT_TARGET_CLEAR);

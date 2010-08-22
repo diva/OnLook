@@ -76,10 +76,16 @@
 #include "llviewerwindow.h"
 #include "llviewercontrol.h"
 #include "roles_constants.h"
+#include "llworld.h"
+
+
+
+
 
 static std::string OWNER_ONLINE 	= "0";
 static std::string OWNER_OFFLINE	= "1";
 static std::string OWNER_GROUP 		= "2";
+static std::string OWNER_INSIM	 	= "4";
 
 // constants used in callbacks below - syntactic sugar.
 static const BOOL BUY_GROUP_LAND = TRUE;
@@ -278,7 +284,6 @@ void* LLFloaterLand::createPanelLandOptions(void* data)
 	return self->mPanelOptions;
 }
 
-
 // static
 void* LLFloaterLand::createPanelLandAudio(void* data)
 {
@@ -347,7 +352,8 @@ BOOL LLPanelLandGeneral::postBuild()
 	mBtnSetGroup = getChild<LLButton>("Set...");
 	mBtnSetGroup->setClickedCallback(onClickSetGroup, this);
 
-	
+	getChild<LLButton>("group_profile")->setClickedCallback(onClickInfoGroup, this);
+
 	mCheckDeedToGroup = getChild<LLCheckBoxCtrl>( "check deed");
 	childSetCommitCallback("check deed", onCommitAny, this);
 
@@ -786,6 +792,16 @@ void LLPanelLandGeneral::onClickSetGroup(void* userdata)
 }
 
 // static
+void LLPanelLandGeneral::onClickInfoGroup(void* userdata)
+{
+	LLPanelLandGeneral* panelp = (LLPanelLandGeneral*)userdata;
+	LLParcel* parcel = panelp->mParcel->getParcel();
+	if (!parcel) return;
+	LLUUID id = parcel->getGroupID();
+	if(id.notNull())LLFloaterGroupInfo::showFromUUID(parcel->getGroupID());
+}
+
+// static
 void LLPanelLandGeneral::onClickProfile(void* data)
 {
 	LLPanelLandGeneral* panelp = (LLPanelLandGeneral*)data;
@@ -835,6 +851,12 @@ void LLPanelLandGeneral::onClickBuyLand(void* data)
 	BOOL* for_group = (BOOL*)data;
 	LLViewerParcelMgr::getInstance()->startBuyLand(*for_group);
 }
+
+
+
+
+
+
 
 BOOL LLPanelLandGeneral::enableDeedToGroup(void* data)
 {
@@ -1038,6 +1060,7 @@ BOOL LLPanelLandObjects::postBuild()
 	mBtnReturnOwnerList->setClickedCallback(onClickReturnOwnerList, this);
 
 	mIconAvatarOnline = LLUIImageList::getInstance()->getUIImage("icon_avatar_online.tga");
+	mIconAvatarInSim = LLUIImageList::getInstance()->getUIImage("ff_visible_map.tga");
 	mIconAvatarOffline = LLUIImageList::getInstance()->getUIImage("icon_avatar_offline.tga");
 	mIconGroup = LLUIImageList::getInstance()->getUIImage("icon_group.tga");
 
@@ -1465,6 +1488,11 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 		self->mFirstReply = FALSE;
 	}
 
+	LLVector3d mypos = gAgent.getPositionGlobal();
+	std::vector<LLUUID> avatar_ids;
+	std::vector<LLVector3d> positions;
+	LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
+
 	for(S32 i = 0; i < rows; ++i)
 	{
 		msg->getUUIDFast(_PREHASH_Data, _PREHASH_OwnerID,		owner_id,		i);
@@ -1480,11 +1508,18 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 			continue;
 		}
 
+		BOOL in_sim = (std::find(avatar_ids.begin(), avatar_ids.end(), owner_id) != avatar_ids.end());
+
 		LLScrollListItem *row = new LLScrollListItem( TRUE, NULL, owner_id);
 		if (is_group_owned)
 		{
 			row->addColumn(self->mIconGroup);
 			row->addColumn(OWNER_GROUP, FONT);
+		}
+		else if (in_sim)
+		{
+			row->addColumn(self->mIconAvatarInSim);
+			row->addColumn(OWNER_INSIM, FONT);
 		}
 		else if (is_online)
 		{

@@ -2,5 +2,4 @@ The pristine version of Qt corresponding to this build is available at:
 http://viewer-source-downloads.s3.amazonaws.com/install_pkgs/qt-all-opensource-src-4.5.2.tar.bz2
 
 The patches we applied to the above package to get this build are available at:
-http://viewer-source-downloads.s3.amazonaws.com/install_pkgs/qtwebkit-linden-patches-20090709.tar.bz2
-
+http://hg.secondlife.com/llqtwebkit/src/tip/qt_patches/

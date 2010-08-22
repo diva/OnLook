@@ -46,8 +46,10 @@
 #include "lldriverparam.h"
 #include "lleditingmotion.h"
 #include "llemote.h"
+
 #include "llfirstuse.h"
 #include "llheadrotmotion.h"
+
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llinventoryview.h"
@@ -67,6 +69,7 @@
 #include "lltoolmgr.h" // for needsRenderBeam
 #include "lltoolmorph.h"
 #include "llviewercamera.h"
+#include "llviewercontrol.h"
 #include "llviewerimagelist.h"
 #include "llviewermedia.h"
 #include "llviewermenu.h"
@@ -83,6 +86,7 @@
 #include "llvoiceclient.h"
 #include "llvoicevisualizer.h" // Ventrella
 
+#include "llsdserialize.h" 
 // <edit>
 #include "llfloaterexploreanimations.h"
 #include "llao.h"
@@ -272,14 +276,14 @@ class LLVOAvatarXmlInfo
 public:
 	LLVOAvatarXmlInfo();
 	~LLVOAvatarXmlInfo();
-	
+
 private:
 	BOOL 	parseXmlSkeletonNode(LLXmlTreeNode* root);
 	BOOL 	parseXmlMeshNodes(LLXmlTreeNode* root);
 	BOOL 	parseXmlColorNodes(LLXmlTreeNode* root);
 	BOOL 	parseXmlLayerNodes(LLXmlTreeNode* root);
 	BOOL 	parseXmlDriverNodes(LLXmlTreeNode* root);
-	
+
 	struct LLVOAvatarMeshInfo
 	{
 		typedef std::pair<LLPolyMorphTargetInfo*,BOOL> morph_info_pair_t;
@@ -675,6 +679,9 @@ S32 LLVOAvatar::sScratchTexBytes = 0;
 F32 LLVOAvatar::sRenderDistance = 256.f;
 S32	LLVOAvatar::sNumVisibleAvatars = 0;
 S32	LLVOAvatar::sNumLODChangesThisFrame = 0;
+LLSD LLVOAvatar::sClientResolutionList;
+
+
 
 const LLUUID LLVOAvatar::sStepSoundOnLand = LLUUID("e8af4a28-aa83-4310-a7c4-c047e15ea0df");
 const LLUUID LLVOAvatar::sStepSounds[LL_MCODE_END] =
@@ -700,10 +707,16 @@ F32 LLVOAvatar::sLODFactor = 1.f;
 BOOL LLVOAvatar::sUseImpostors = FALSE;
 BOOL LLVOAvatar::sJointDebug = FALSE;
 
+
+
+
+
+
 F32 LLVOAvatar::sUnbakedTime = 0.f;
 F32 LLVOAvatar::sUnbakedUpdateTime = 0.f;
 F32 LLVOAvatar::sGreyTime = 0.f;
 F32 LLVOAvatar::sGreyUpdateTime = 0.f;
+
 
 //-----------------------------------------------------------------------------
 // Helper functions
@@ -999,6 +1012,16 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mCurrentGesticulationLevel = 0;		
 }
 
+
+
+
+
+
+
+
+
+
+
 //------------------------------------------------------------------------
 // LLVOAvatar::~LLVOAvatar()
 //------------------------------------------------------------------------
@@ -1043,8 +1066,8 @@ LLVOAvatar::~LLVOAvatar()
 
 	std::for_each(mMeshes.begin(), mMeshes.end(), DeletePairedPointer());
 	mMeshes.clear();
-
-	for (std::vector<LLViewerJoint*>::iterator jointIter = mMeshLOD.begin();
+	std::vector<LLViewerJoint*>::iterator jointIter;
+	for (jointIter = mMeshLOD.begin();
 		jointIter != mMeshLOD.end(); jointIter++)
 	{
 		LLViewerJoint* joint = (LLViewerJoint *) *jointIter;
@@ -1152,6 +1175,47 @@ void LLVOAvatar::dumpScratchTextureByteCount()
 	llinfos << "Scratch Texture GL: " << (sScratchTexBytes/1024) << "KB" << llendl;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // static
 void LLVOAvatar::dumpBakedStatus()
 {
@@ -1209,7 +1273,7 @@ void LLVOAvatar::dumpBakedStatus()
 		else
 		{
 			llcont << " Unbaked (";
-			
+
 			for (LLVOAvatarDictionary::baked_map_t::const_iterator iter = LLVOAvatarDictionary::getInstance()->getBakedTextures().begin();
 				 iter != LLVOAvatarDictionary::getInstance()->getBakedTextures().end();
 				 iter++)
@@ -1446,6 +1510,9 @@ void LLVOAvatar::initClass()
 		llerrs << "Error parsing skeleton node in avatar XML file: " << skeleton_path << llendl;
 	}
 
+	{
+		loadClientTags();
+	}
 }
 
 
@@ -1782,6 +1849,9 @@ BOOL LLVOAvatar::buildSkeleton(const LLVOAvatarSkeletonInfo *info)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	
+
+	if (!info)
+		return FALSE;
 	//-------------------------------------------------------------------------
 	// allocate joints
 	//-------------------------------------------------------------------------
@@ -2059,6 +2129,12 @@ void LLVOAvatar::buildCharacter()
 					}
 				}
 
+
+
+
+
+
+
 				if (!attachment_found)
 				{
 					gAttachPieMenu->appendSeparator();
@@ -2113,6 +2189,12 @@ void LLVOAvatar::buildCharacter()
 			}
 		}
 
+
+
+
+
+
+
 		for (S32 pass = 0; pass < 2; pass++)
 		{
 			for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
@@ -2124,6 +2206,7 @@ void LLVOAvatar::buildCharacter()
 				{
 					continue;
 				}
+
 				LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
 															  NULL, &object_selected_and_point_valid,
 															  &attach_label, attachment);
@@ -2183,8 +2266,13 @@ void LLVOAvatar::buildCharacter()
 				LLViewerJointAttachment* attachment = get_if_there(mAttachmentPoints, attach_index, (LLViewerJointAttachment*)NULL);
 				if (attachment)
 				{
+
+
 					LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
 																  NULL, object_selected_and_point_valid);
+
+
+
 					gAttachBodyPartPieMenus[group]->append(item);
 					item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", attach_index);
 					gDetachBodyPartPieMenus[group]->append(new LLMenuItemCallGL(attachment->getName(), 
@@ -2611,9 +2699,20 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		return TRUE;
 	}
 
+	//Emerald performs some force-bakes stuff here. Added it in because we noticed slow responses with client tag ident. -HgB
+	if(mIsSelf)
+	{
+		for(U8 i=0;i<getNumTEs();++i)
+		{
+			LLViewerImage* te = getTEImage(i);
+			te->forceActive();
+		}
+	}
+
 	idleUpdateVoiceVisualizer( voice_enabled );
 	idleUpdateMisc( detailed_update );
 	idleUpdateAppearanceAnimation();
+
 	idleUpdateLipSync( voice_enabled );
 	idleUpdateLoadingEffect();
 	idleUpdateBelowWater();	// wind effect uses this
@@ -2683,6 +2782,7 @@ void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
 			{
 				gAgent.clearAFK();
 			}
+			mIdleTimer.reset();
 		}
 		else
 		{
@@ -2843,12 +2943,19 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 			{
 				gAgent.sendAgentSetAppearance();
 			}
+			mIdleTimer.reset();
 		}
 		else
 		{
 			F32 blend_frac = calc_bouncy_animation(appearance_anim_time / APPEARANCE_MORPH_TIME);
 			F32 last_blend_frac = calc_bouncy_animation(mLastAppearanceBlendTime / APPEARANCE_MORPH_TIME);
 			F32 morph_amt;
+
+
+
+
+
+
 			if (last_blend_frac == 1.f)
 			{
 				morph_amt = 1.f;
@@ -2871,6 +2978,8 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 				}
 			}
 
+
+
 			// apply all params
 			for (param = getFirstVisualParam();
 				 param;
@@ -2884,6 +2993,106 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 		dirtyMesh();
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void LLVOAvatar::idleUpdateLipSync(bool voice_enabled)
 {
@@ -2914,6 +3123,7 @@ void LLVOAvatar::idleUpdateLipSync(bool voice_enabled)
 		mLipSyncActive = true;
 		LLCharacter::updateVisualParams();
 		dirtyMesh();
+		mIdleTimer.reset();
 	}
 }
 
@@ -2959,6 +3169,7 @@ void LLVOAvatar::idleUpdateLoadingEffect()
 		}
 	}
 }	
+
 
 void LLVOAvatar::idleUpdateWindEffect()
 {
@@ -3017,9 +3228,144 @@ void LLVOAvatar::idleUpdateWindEffect()
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+bool LLVOAvatar::updateClientTags()
+{/* Won't do anything for now, we don't have a definitions site set up. -HGB
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
+	LLSD response = LLHTTPClient::blockingGet("http://www.destructivelabs.net/remote/tags/client_list.xml");
+	if(response.has("body"))
+	{
+		const LLSD &client_list = response["body"];
+
+		if(client_list.has("isComplete"))
+		{
+			llofstream export_file;
+			export_file.open(client_list_filename);
+			LLSDSerialize::toPrettyXML(client_list, export_file);
+			export_file.close();
+			return true;
+		}
+	}*/
+	return false;
+}
+
+bool LLVOAvatar::loadClientTags()
+{
+	//Changed the file name to keep Emerald from overwriting it. Hokey stuff in there, and it's missing clients. -HGB
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_definitions.xml");
+
+	if(!LLFile::isfile(client_list_filename))
+	{
+		client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "client_definitions.xml");
+	}
+
+	if(LLFile::isfile(client_list_filename))
+	{
+		LLSD client_list;
+
+		llifstream importer(client_list_filename);
+		LLSDSerialize::fromXMLDocument(client_list, importer);
+		if(client_list.has("isComplete"))
+		{
+			sClientResolutionList = client_list;
+		}else
+		{
+			return false;
+		}
+	}else
+	{
+		return false;
+	}
+
+	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+	iter != LLCharacter::sInstances.end(); ++iter)
+	{
+		LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
+		if(avatarp)
+		{
+			LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
+			avatarp->idleUpdateNameTag(root_pos_last);
+		}
+	}
+	return true;
+}
+
 void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useComment)
 {
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
+	if (mIsSelf)
+	{
+		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
+		{
+			color = gColors.getColor( "AvatarNameColor" );
+			return;
+		}
+		else if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+		{
+			uuid_str = gSavedSettings.getString("AscentSpoofClientUUID");
+		}
+		else
+		{
+			uuid_str = gSavedPerAccountSettings.getString("AscentSpoofClientUUID");
+		}
+	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
 	{
 		BOOL res = FALSE;
@@ -3058,155 +3404,47 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_UPPER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
-				color = LLColor4(1.f, 1.0f, 1.0f);
-				client = "Unknown viewer";
+				color = LLColor4(0.5f, 0.0f, 0.0f);
+				client = "Unknown";
 			}
 			return;
 		}
 		else
 		{
-			color = LLColor4(0.5f, 0.5f, 0.5f);
+			color = LLColor4(1.0f, 1.0f, 1.0f); //White, since tags are white on their side. -HgB
 			client = "Viewer 2.0";
 			return;
 		}
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->isMissingAsset())
 	{
-		color = LLColor4(1.f, 1.0f, 1.0f);
-		client = "Unknown viewer";
+		color = LLColor4(0.5f, 0.0f, 0.0f);
+		client = "Unknown";
 	}
-	else if (uuid_str == "ccda2b3b-e72c-a112-e126-fee238b67218")
+	else if(LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
 	{
-		// textures other than head are 4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6
-		color = LLColor4(0.f, 1.0f, 0.0f);
-		client = "Emerald";
-		
-	}
-	else if (uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
-	{
-		color = LLColor4(1.0f, 0.3f, 0.5f);
-		client = "MoyMix";
-		
-	}
-	else if (uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
-	{
-		color = LLColor4(1.0f, 0.3f, 0.5f);
-		client = "MoyMix/B";
-		
-	}
-	else if (uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
-	{
-		color = LLColor4(1.0f, 0.3f, 0.5f);
-		client = "MoyMix/nolife";
-		
-	}
-	//else if (uuid_str == "abbca853-30ba-49c1-a1e7-2a5b9a70573f")
-	//{
-	//	color = LLColor4(0.5f, 0.75f, 1.0f);
-	//	strcat(line, " (CryoLife/" + "A)");
-	//	
-	//}
-	else if (uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
-	{
-		color = LLColor4(0.5f, 0.75f, 1.0f);
-		client = "CryoLife";
-		
-	}
-	else if (uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
-	{
-		color = LLColor4(0.5f, 0.75f, 1.0f);
-		client = "Phoxy SL";
-		
-	}
-	else if (uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
-	{
-		color = LLColor4(0.7f, 0.7f, 0.7f);
-		client = "VLife";
-		
-	}
-	else if (uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
-	{
-		color = LLColor4(1.f, 0.0f, 0.0f);
-		client = "GridProxy/LordGregGreg";
-		
-	}
-	else if (uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
-	{
-		color = LLColor4(1.f, 1.f, 0.0f);
-		client = "GridProxy/DayOh";
-		
-	}
-	else if (uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
-	{
-		color = LLColor4(1.0f, 0.0f, 1.0f);
-		client = "PSL/A";
-		
-	}
-	else if (uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
-	{
-		color = LLColor4(1.0f, 0.0f, 1.0f);
-		client = "PSL/B";
-		
-	}
-	else if (uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
-	{
-		color = LLColor4(1.f, 1.0f, 1.0f);
-		client = "Emerald/GEMINI";
-		
-	}
-	else if (uuid_str == "e6f9c019-8783-dc3e-b265-41f1510333fc")
-	{
-		color = LLColor4(0.4f,0.4f,0.4f);
-		client = "Onyx";
-		
-	}
-	else if (uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
-	{
-		color = LLColor4(0.9f, 0.9f, 0.9f);
-		client = "GEMINI Bot";
-		
-	}
-	else if (uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
-	{
-		color = LLColor4(1.0f, 0.5f, 0.4f);
-		client = "tyk3n";
-		
-	}
-	else if (uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
-	{
-		color = gColors.getColor( "AvatarNameColor" );
-		client = "NeilLife";
-		
-	}
-	else if (uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
-	{
-		color = LLColor4::purple;
-		client = "Imprudence";
-		
-	}
-	else if (uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
-	{
-		color = LLColor4(0.65f, 0.93f, 0.14f);
-		client = "Nano";
-		
-	}
-	else if (uuid_str == "c58fca06-33b3-827d-d81c-a886a631affc")
-	{
-		color = LLColor4(1.0f,0.61176f,0.0f);
-		client = "Whale";
-		
-	}
-	else if (uuid_str == "872c0005-3095-0967-866d-11cd71115c22")
-	{
-		color = LLColor4(0.25f,0.5f,0.75f);
-		client = "<-- Fag";
-		
+		LLSD cllsd = LLVOAvatar::sClientResolutionList[uuid_str];
+		client = cllsd["name"].asString();
+		LLColor4 colour;
+		colour.setValue(cllsd["color"]);
+		if(cllsd["multiple"].asReal() != 0)
+		{
+			color += colour;
+			color *= 1.0/(cllsd["multiple"].asReal()+1.0f);
+		}
+		else
+			color = colour;
 	}
 	else
 	{
 		color = gColors.getColor( "AvatarNameColor" );
 		color.setAlpha(1.f);
 		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
+	}
+
+	if ((mIsSelf)&&(!gSavedSettings.getBOOL("AscentShowSelfTagColor")))
+	{
+		color = gColors.getColor( "AvatarNameColor" );
 	}
 
 	if(useComment)
@@ -3240,6 +3478,123 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		}
 	}
 }
+
+LLColor4 LLVOAvatar::getTagColorByUUID(std::string uuid_str)
+{
+	if (uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
+	{
+		return LLColor4(1.0f, 0.3f, 0.5f);
+		//client = "MoyMix";
+	}
+	else if (uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
+	{
+		return LLColor4(1.0f, 0.3f, 0.5f);
+		//client = "MoyMix/B";
+	}
+	else if (uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
+	{
+		return LLColor4(1.0f, 0.3f, 0.5f);
+		//client = "MoyMix/nolife";
+	}
+	else if (uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
+	{
+		return LLColor4(0.5f, 0.75f, 1.0f);
+		//client = "CryoLife";
+	}
+	else if (uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
+	{
+		return LLColor4(0.5f, 0.75f, 1.0f);
+		//client = "Phoxy SL";
+	}
+	else if (uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
+	{
+		return LLColor4(0.7f, 0.7f, 0.7f);
+		//client = "VLife";
+	}
+	else if (uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
+	{
+		return LLColor4(1.f, 0.0f, 0.0f);
+		//client = "GridProxy/LordGregGreg";
+	}
+	else if (uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
+	{
+		return LLColor4(1.f, 1.f, 0.0f);
+		//client = "GridProxy/DayOh";
+	}
+	else if (uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
+	{
+		return LLColor4(1.0f, 0.0f, 1.0f);
+		//client = "PSL/A";
+	}
+	else if (uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
+	{
+		return LLColor4(1.0f, 0.0f, 1.0f);
+		//client = "PSL/B";
+	}
+	else if (uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
+	{
+		return LLColor4(1.f, 1.0f, 1.0f);
+		//client = "Emerald/GEMINI";
+	}
+	else if (uuid_str == "e6f9c019-8783-dc3e-b265-41f1510333fc")
+	{
+		return LLColor4(0.4f,0.4f,0.4f);
+		//client = "Onyx";
+	}
+	else if (uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
+	{
+		return LLColor4(0.9f, 0.9f, 0.9f);
+		//client = "GEMINI Bot";
+	}
+	else if (uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
+	{
+		return LLColor4(1.0f, 0.5f, 0.4f);
+		//client = "tyk3n";
+	}
+	else if (uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
+	{
+		return gColors.getColor( "AvatarNameColor" );
+		//client = "NeilLife";
+	}
+	else if (uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
+	{
+		return LLColor4::purple;
+		//client = "Imprudence";
+	}
+	else if (uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
+	{
+		return LLColor4(0.65f, 0.93f, 0.14f);
+		//client = "Nano";
+	}
+	else if (uuid_str == "c58fca06-33b3-827d-d81c-a886a631affc")
+	{
+		return LLColor4(1.0f,0.61176f,0.0f);
+		//client = "Whale";
+	}
+	else if (uuid_str == "872c0005-3095-0967-866d-11cd71115c22")
+	{
+		return LLColor4(0.25f,0.5f,0.75f);
+		//client = "<-- Fag";
+	}
+	else if (uuid_str == "00000000-0000-0000-0000-000000000000")
+	{
+		return LLColor4(0.5f, 0.5f, 0.5f);
+		//client = "Viewer 2.0";
+	}
+	else if (uuid_str == "734fed29-4c51-63e5-1648-6589949d7585")
+	{
+		return LLColor4(0.60000f, 0.42745f, 0.80784f);
+		//client = "Explicit";
+	}
+	else if (uuid_str == "8873757c-092a-98fb-1afd-ecd347566fcd")
+	{
+		return LLColor4(0.375f, 1.0f, 1.0f);
+		//client = "Ascent";
+	}
+
+	return gColors.getColor( "AvatarNameColor" );
+}
+
 void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 {
 	// update chat bubble
@@ -3254,6 +3609,9 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
 	const F32 NAME_SHOW_TIME = gSavedSettings.getF32("RenderNameShowTime");	// seconds
 	const F32 FADE_DURATION = gSavedSettings.getF32("RenderNameFadeDuration"); // seconds
+
+
+
 	BOOL visible_avatar = isVisible() || mNeedsAnimUpdate;
 	BOOL visible_chat = gSavedSettings.getBOOL("UseChatBubbles") && (mChats.size() || mTyping);
 	BOOL render_name =	visible_chat ||
@@ -3287,7 +3645,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		// <edit>
 		std::string client;
 		// </edit>
-
 		// First Calculate Alpha
 		// If alpha > 0, create mNameText if necessary, otherwise delete it
 		{
@@ -3329,13 +3686,17 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 				// <edit>
-				if(isFullyLoaded() && !mIsSelf)
+				if(isFullyLoaded())
 				{
 					getClientInfo(client,avatar_name_color);
 				}
-				// </edit>
+
 				avatar_name_color.setAlpha(alpha);
+					
+				//llinfos << "Show Self Tag is set to " << gSavedSettings.getBOOL("AscentShowSelfTagColor") << llendl;
+				
 				mNameText->setColor(avatar_name_color);
+				
 
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				mNameText->setUsePixelSize(TRUE);
@@ -3373,8 +3734,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		if (mNameText.notNull() && firstname && lastname)
 		{
 			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
+			if(mNameAway && ! is_away) mIdleTimer.reset();
 			BOOL is_busy = mSignaledAnimations.find(ANIM_AGENT_BUSY) != mSignaledAnimations.end();
+			if(mNameBusy && ! is_busy) mIdleTimer.reset();
 			BOOL is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
+			if(mNameAppearance && ! is_appearance) mIdleTimer.reset();
 			BOOL is_muted;
 			if (mIsSelf)
 			{
@@ -3394,6 +3758,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				|| client.length() ) // <edit>
 			{
 				std::string line;
+
+
+
+
 				if (!sRenderGroupTitles)
 				{
 					// If all group titles are turned off, stack first name
@@ -3415,50 +3783,67 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 				line += " ";
 				line += lastname->getString();
-				BOOL need_comma = FALSE;
 
+
+
+
+
+
+				std::string additions;
+				BOOL need_comma = FALSE;
+				
 				if (client.length() || is_away || is_muted || is_busy)
 				{
-					line += " (";
 					if (client != "")
 					{
-						line += client;
-						need_comma = TRUE;
+						if ((!mIsSelf)||(gSavedSettings.getBOOL("AscentShowSelfTag")))
+						{
+							additions += client;
+							need_comma = TRUE;
+						}
 					}
 					if (is_away)
 					{
 						if (need_comma)
 						{
-							line += ", ";
+							additions += ", ";
 						}
-						line += "Away";
+						additions += "Away";
 						need_comma = TRUE;
 					}
 					if (is_busy)
 					{
 						if (need_comma)
 						{
-							line += ", ";
+							additions += ", ";
 						}
-						line += "Busy";
+						additions += "Busy";
 						need_comma = TRUE;
 					}
 					if (is_muted)
 					{
 						if (need_comma)
 						{
-							line += ", ";
+							additions += ", ";
 						}
-						line += "Muted";
+						additions += "Muted";
 						need_comma = TRUE;
 					}
-					line += ")";
+					if (additions.length())
+						line += " (" + additions + ")";
+
 				}
 				if (is_appearance)
 				{
 					line += "\n";
 					line += "(Editing Appearance)";
 				}
+				if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120)
+				{
+					line += "\n";
+					line += getIdleTime();
+				}
+
 				mNameAway = is_away;
 				mNameBusy = is_busy;
 				mNameMute = is_muted;
@@ -3471,6 +3856,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 			if (visible_chat)
 			{
+				mIdleTimer.reset();
 				mNameText->setDropShadow(TRUE);
 				mNameText->setFont(LLFontGL::getFontSansSerif());
 				mNameText->setTextAlignment(LLHUDText::ALIGN_TEXT_LEFT);
@@ -3542,7 +3928,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						mNameText->addLine("...", new_chat);
 						break;
 					}
-
+					mIdleTimer.reset();
 				}
 			}
 			else
@@ -3574,6 +3960,42 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void LLVOAvatar::idleUpdateTractorBeam()
 {
 	//--------------------------------------------------------------------
@@ -3584,7 +4006,6 @@ void LLVOAvatar::idleUpdateTractorBeam()
 		return;
 	}
 
-	// <edit>
 	if(gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 	{
 		return;
@@ -3609,6 +4030,26 @@ void LLVOAvatar::idleUpdateTractorBeam()
 	{
 		mBeam = NULL;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	else if (!mBeam || mBeam->isDead())
 	{
 		// VEFFECT: Tractor Beam
@@ -3664,6 +4105,87 @@ void LLVOAvatar::idleUpdateTractorBeam()
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void LLVOAvatar::idleUpdateBelowWater()
 {
@@ -4504,6 +5026,12 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 		const bool should_alpha_mask = mSupportsAlphaLayers && mHasBakedHair
 									    && !LLDrawPoolAlpha::sShowDebugAlpha // Don't alpha mask if "Highlight Transparent" checked
 										&& !LLDrawPoolAvatar::sSkipTransparent;
+		
+
+
+
+
+
 		LLGLState test(GL_ALPHA_TEST, should_alpha_mask);
 
 		if (should_alpha_mask)
@@ -4614,6 +5142,10 @@ U32 LLVOAvatar::renderRigid()
 	{
 		return 0;
 	}
+
+
+
+
 
 	const bool should_alpha_mask = mSupportsAlphaLayers && mHasBakedHair
 								    && !LLDrawPoolAlpha::sShowDebugAlpha // Don't alpha mask if "Highlight Transparent" checked
@@ -4970,7 +5502,7 @@ void LLVOAvatar::processAnimationStateChanges()
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 	
-	if (gNoRender)
+	if (gNoRender)//||mLockTPose) (For future use -HGB)
 	{
 		return;
 	}
@@ -5011,6 +5543,11 @@ void LLVOAvatar::processAnimationStateChanges()
 		// playing, but not signaled, so stop
 		if (found_anim == mSignaledAnimations.end())
 		{
+
+
+
+
+
 			processSingleAnimationStateChange(anim_it->first, FALSE);
 			// <edit>
 			LLFloaterExploreAnimations::stopAnim(getID(), anim_it->first);
@@ -5044,6 +5581,16 @@ void LLVOAvatar::processAnimationStateChanges()
 		++anim_it;
 	}
 
+
+
+
+
+
+
+
+
+
+
 	// clear source information for animations which have been stopped
 	if (mIsSelf)
 	{
@@ -5064,6 +5611,70 @@ void LLVOAvatar::processAnimationStateChanges()
 
 	stop_glerror();
 }
+//Here's that undeform function I was talking about. -HGB
+std::string undeformers[] =
+{
+	"7a8a3dfc-acd1-7ac3-9cdf-71cd9be89969",
+	"3feba1c0-971b-f2bb-1b9c-79e81b096c94",
+	"383ef55f-5e70-02fb-8ef4-1b591b09fd49",
+	"e2f6bc07-97a5-1f55-6c5f-fbcb02511651",
+	"1370bf7d-eb29-c1dd-fc3c-cc8e06d57ac0",
+	"5833be17-3d69-faa0-8f18-58696a326b44",
+	"7746596d-b88a-216a-2335-06e28167ed31",
+	"edf75cf0-a2f3-d126-7cdf-5009382ec10b",
+	"430e8872-1095-4cff-5a39-7c991f32fffb",
+	"a83bab1b-2ff0-4365-1b6b-6b6e52efc69d",
+	"7db75c3d-ae67-4312-9734-1510f12a1392",
+	"551b8c1f-5241-b73e-7ce2-d78fc4ac316f",
+	"91d73df8-5dfa-e1f2-0a32-77327e56b8dd",
+	"b2b2fb93-aad5-a7a8-9731-ee8ed72f7acd",
+	"984eabe8-0953-a93b-f33d-6e21c405cc78",
+	"f6212696-dc74-b17f-4ea8-f90c37cb032e",
+	"aa825c4d-aa84-df7d-6ae6-fbf2dcb6f281",
+	"14ef74d1-93ad-09cb-7a39-fbac3bd80e64"
+};
+
+void LLVOAvatar::undeform()
+{
+	if(!mIsSelf) return;
+	
+	AnimIterator anim_it;
+	for (anim_it = mPlayingAnimations.begin(); anim_it != mPlayingAnimations.end();)
+	{
+		AnimIterator found_anim = mSignaledAnimations.find(anim_it->first);
+
+		if (found_anim == mSignaledAnimations.end())
+		{
+			processSingleAnimationStateChange(anim_it->first, FALSE);
+			mPlayingAnimations.erase(anim_it++);
+			continue;
+		}
+		++anim_it;
+	}
+	
+	AnimSourceIterator source_it = mAnimationSources.begin();
+
+	for (source_it = mAnimationSources.begin(); source_it != mAnimationSources.end();)
+	{
+		if (mSignaledAnimations.find(source_it->second) == mSignaledAnimations.end())
+		{
+			mAnimationSources.erase(source_it++);
+		}
+		else
+		{
+			++source_it;
+		}
+	}
+	U8 i=0;
+	for(i; i < 18; ++i)
+	{
+		gAgent.sendAnimationRequest( (LLUUID)undeformers[i], ANIM_REQUEST_START );
+		startMotion((LLUUID)undeformers[i]);
+	}
+
+	stop_glerror();
+}
+
 
 
 //-----------------------------------------------------------------------------
@@ -5099,6 +5710,9 @@ BOOL LLVOAvatar::processSingleAnimationStateChange( const LLUUID& anim_id, BOOL 
 				}
 			}
 		}
+
+
+
 		else if (anim_id == ANIM_AGENT_SIT_GROUND_CONSTRAINED)
 		{
 			mIsSitting = TRUE;
@@ -5152,8 +5766,21 @@ void LLVOAvatar::resetAnimations()
 }
 
 //-----------------------------------------------------------------------------
+// getIdleTime()
+//-----------------------------------------------------------------------------
+
+std::string LLVOAvatar::getIdleTime()
+{
+	F32 elapsed_time = mIdleTimer.getElapsedTimeF32();
+	U32 minutes = (U32)(elapsed_time/60);
+	
+	std::string output = llformat("(idle %dmin)", minutes);
+	return output;
+}
+
+//-----------------------------------------------------------------------------
 // startMotion()
-// id is the asset if of the animation to start
+// id is the asset id of the animation to start
 // time_offset is the offset into the animation at which to start playing
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
@@ -5200,6 +5827,37 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 
 	return LLCharacter::startMotion(id, time_offset);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //-----------------------------------------------------------------------------
 // stopMotion()
 //-----------------------------------------------------------------------------
@@ -5269,6 +5927,11 @@ LLVector3 LLVOAvatar::getVolumePos(S32 joint_index, LLVector3& volume_offset)
 
 	return mCollisionVolumes[joint_index].getVolumePos(volume_offset);
 }
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 // findCollisionVolume()
@@ -6228,6 +6891,21 @@ void LLVOAvatar::hideSkirt()
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //-----------------------------------------------------------------------------
 // requestLayerSetUpdate()
 //-----------------------------------------------------------------------------
@@ -6545,6 +7223,30 @@ void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //-----------------------------------------------------------------------------
 // getOffObject()
 //-----------------------------------------------------------------------------
@@ -6621,6 +7323,16 @@ void LLVOAvatar::getOffObject()
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
 
 //-----------------------------------------------------------------------------
 // findAvatarFromAttachment()
@@ -6708,6 +7420,20 @@ const std::string LLVOAvatar::getAttachedPointName(const LLUUID& inv_item_id)
 
 	return LLStringUtil::null;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -6988,6 +7714,7 @@ void LLVOAvatar::processRebakeAvatarTextures(LLMessageSystem* msg, void**)
 	}
 }
 
+
 BOOL LLVOAvatar::getLocalTextureRaw(ETextureIndex index, LLImageRaw* image_raw)
 {
 	if (!isIndexLocalTexture(index)) return FALSE;
@@ -7154,6 +7881,11 @@ BOOL LLVOAvatar::updateIsFullyLoaded()
 	
 	return changed;
 }
+
+
+
+
+
 
 
 BOOL LLVOAvatar::isFullyLoaded()
@@ -7604,7 +8336,7 @@ void LLVOAvatar::clearChat()
 S32 LLVOAvatar::getLocalDiscardLevel( ETextureIndex index )
 {
 	// If the texture is not local, we don't care and treat it as fully loaded
-	if (!isIndexLocalTexture(index)) return 0;
+	if (!isIndexLocalTexture(index)) return FALSE;
 
 	LocalTextureData &local_tex_data = mLocalTextureData[index];
 	if (index >= 0
@@ -7809,6 +8541,10 @@ void LLVOAvatar::releaseUnnecessaryTextures()
 		}
 	}
 }
+
+
+
+
 
 //-----------------------------------------------------------------------------
 // static
@@ -8390,6 +9126,24 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				mesgsys->getU8Fast(_PREHASH_VisualParam, _PREHASH_ParamValue, value, i);
 				F32 newWeight = U8_to_F32(value, param->getMinWeight(), param->getMaxWeight());
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 				if (is_first_appearance_message || (param->getWeight() != newWeight))
 				{
 					//llinfos << "Received update for param " << param->getDisplayName() << " at value " << newWeight << llendl;
@@ -8942,10 +9696,7 @@ void LLVOAvatar::dumpLocalTextures()
 				llinfos << "LocTex " << name << ": "
 						<< "Discard " << image->getDiscardLevel() << ", "
 						<< "(" << image->getWidth() << ", " << image->getHeight() << ") " 
-// <edit>
-//#if !LL_RELEASE_FOR_DOWNLOAD
-#if 1
-// </edit>
+#if !LL_RELEASE_FOR_DOWNLOAD
 					// End users don't get to trivially see avatar texture IDs,
 					// makes textures easier to steal
 						<< image->getID() << " "
@@ -9665,6 +10416,8 @@ void LLVOAvatar::idleUpdateRenderCost()
 	mText->setColor(LLColor4(red,green,0,1));
 }
 
+
+
 // static
 BOOL LLVOAvatar::isIndexLocalTexture(ETextureIndex index)
 {
@@ -9723,6 +10476,9 @@ U32 calc_shame(LLVOVolume* volume, std::set<LLUUID> &textures)
 	U32 bump = 0;
 	U32 planar = 0;
 	
+	const LLVector3& sc = volume->getScale();
+	scale += (U32) sc.mV[0] + (U32) sc.mV[1] + (U32) sc.mV[2];
+
 	if (volume->isFlexible())
 	{
 		flexi = 1;
@@ -9731,9 +10487,6 @@ U32 calc_shame(LLVOVolume* volume, std::set<LLUUID> &textures)
 	{
 		particles = 1;
 	}
-
-	const LLVector3& sc = volume->getScale();
-	scale += (U32) sc.mV[0] + (U32) sc.mV[1] + (U32) sc.mV[2];
 
 	LLDrawable* drawablep = volume->mDrawable;
 

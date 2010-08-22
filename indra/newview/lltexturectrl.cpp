@@ -484,7 +484,12 @@ BOOL LLFloaterTexturePicker::postBuild()
 {
 	LLFloater::postBuild();
 	
-	childSetValue("texture_uuid", mImageAssetID);
+	LLInventoryItem* itemp = gInventory.getItem(mImageAssetID);
+
+	if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
+		childSetValue("texture_uuid", mImageAssetID);
+	else
+		childSetValue("texture_uuid", LLUUID::null.asString());
 
 	if (!mLabel.empty())
 	{
@@ -913,19 +918,14 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*)data;
 
-	//<edit>
-	//LLUUID inventory_item_id = self->findItemID(te.getID(), TRUE);
-	//if (self && inventory_item_id.notNull())
-	if(self)
-	//</edit>
+	LLUUID inventory_item_id = self->findItemID(te.getID(), TRUE);
+	if (self && inventory_item_id.notNull())
 	{
 		LLToolPipette::getInstance()->setResult(TRUE, "");
 		self->setImageID(te.getID());
 
 		self->mNoCopyTextureSelected = FALSE;
-		//<edit>
-		self->childSetValue("texture_uuid", te.getID().asString());
-		/*
+
 		LLInventoryItem* itemp = gInventory.getItem(inventory_item_id);
 
 		if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
@@ -933,8 +933,10 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 			// no copy texture
 			self->mNoCopyTextureSelected = TRUE;
 		}
-		*/
-		//</edit>
+		else 
+		{
+			self->childSetValue("texture_uuid", te.getID().asString());
+		}
 		
 		self->commitIfImmediateSet();
 	}
@@ -1309,7 +1311,6 @@ BOOL LLTextureCtrl::handleRightMouseDown(S32 x, S32 y, MASK mask)
 
 	return handled;
 }
-
 // </edit>
 
 void LLTextureCtrl::onFloaterClose()

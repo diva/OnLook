@@ -34,7 +34,15 @@ Hover your mouse over the options for more help.
 	     mouse_opaque="true" name="founder_name" v_pad="0" width="200">
 		(waiting)
 	</text>
-	<text bottom_delta="-16" font="SansSerifSmall" halign="left" height="16"
+	<text font="SansSerifSmall" name="group_key_text" follows="left|top" left="7" bottom="-50">
+		Group Key:
+	</text>
+      <name_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="-55" enabled="false" follows="left|top"
+			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="65"
+			     max_length="254" mouse_opaque="false" name="group_key"
+			     width="256" />
+	<text bottom_delta="-20" font="SansSerifSmall" halign="left" height="16"
 	     name="group_charter_label" right="410" width="265">
 		Group Charter
 	</text>

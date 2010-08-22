@@ -693,5 +693,3 @@ BOOL LLAudioDecodeMgr::addDecodeRequest(const LLUUID &uuid)
 
 	return FALSE;
 }
-
-

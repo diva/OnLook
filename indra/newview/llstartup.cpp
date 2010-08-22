@@ -199,13 +199,28 @@
 //#include "llactivation.h"
 #include "llao.h"
 #include "llfloaterblacklist.h"
-//#include "llcheats.h"
+#include "scriptcounter.h"
 // </edit>
+
+
+
+
+
+
+
 
 #if LL_WINDOWS
 #include "llwindebug.h"
 #include "lldxhardware.h"
 #endif
+
+
+
+
+
+
+
+
 
 //
 // exported globals
@@ -240,6 +255,7 @@ static std::string sInitialOutfitGender;	// "male" or "female"
 static bool gUseCircuitCallbackCalled = false;
 
 EStartupState LLStartUp::gStartupState = STATE_FIRST;
+
 
 //
 // local function declaration
@@ -1706,14 +1722,6 @@ bool idle_startup()
 		hashed_mac.finalize();
 		hashed_mac.hex_digest(hashed_mac_string);
 
-		// <edit>
-		std::string my_mac = std::string(hashed_mac_string);
-		if(gSavedSettings.getBOOL("SpecifyMAC"))
-			my_mac = gSavedSettings.getString("SpecifiedMAC").c_str();
-		std::string my_id0 = LLAppViewer::instance()->getSerialNumber();
-		if(gSavedSettings.getBOOL("SpecifyID0"))
-			my_id0 = gSavedSettings.getString("SpecifiedID0");
-		// </edit>
 
 		LLViewerLogin* vl = LLViewerLogin::getInstance();
 		std::string grid_uri = vl->getCurrentGridURI();
@@ -1734,12 +1742,9 @@ bool idle_startup()
 			gAcceptCriticalMessage,
 			gLastExecEvent,
 			requested_options,
-		// <edit>
-		//	hashed_mac_string,
-		//	LLAppViewer::instance()->getSerialNumber());
-			my_mac,
-			my_id0);
-		// </edit>
+			hashed_mac_string,
+			LLAppViewer::instance()->getSerialNumber());
+
 
 		// reset globals
 		gAcceptTOS = FALSE;
@@ -2942,19 +2947,6 @@ bool idle_startup()
  			}
  		}
 
-		// <edit> testing adding a local inventory folder...
-		LLViewerInventoryCategory* test_cat = new LLViewerInventoryCategory(gAgent.getID());
-		test_cat->rename(std::string("Pretend Inventory"));
-		LLUUID test_cat_id;
-		test_cat_id.generate();
-		test_cat->setUUID(test_cat_id);
-		gLocalInventoryRoot = test_cat_id;
-		test_cat->setParent(LLUUID::null);
-		test_cat->setPreferredType(LLAssetType::AT_NONE);
-
-		gInventory.addCategory(test_cat);
-		// </edit>
-
 		options.clear();
  		if(LLUserAuth::getInstance()->getOptions("buddy-list", options))
  		{
@@ -4004,11 +3996,13 @@ void use_circuit_callback(void**, S32 result)
 	}
 }
 
+
 void pass_processObjectPropertiesFamily(LLMessageSystem *msg, void**)
 {
 	// Send the result to the corresponding requesters.
 	LLSelectMgr::processObjectPropertiesFamily(msg, NULL);
 	JCFloaterAreaSearch::processObjectPropertiesFamily(msg, NULL);
+	ScriptCounter::processObjectPropertiesFamily(msg,0);
 }
 
 void register_viewer_callbacks(LLMessageSystem* msg)

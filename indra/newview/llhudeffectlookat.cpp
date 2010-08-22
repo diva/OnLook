@@ -710,6 +710,6 @@ bool LLHUDEffectLookAt::calcTargetPosition()
 		return false;
 
 	source_avatar->setAnimationData("LookAtPoint", (void *)&mTargetPos);
-
+	source_avatar->mIdleTimer.reset();
 	return true;
 }

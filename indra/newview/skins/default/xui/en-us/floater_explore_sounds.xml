@@ -24,8 +24,6 @@
 	
 	<button bottom="6" follows="bottom|left" height="20" label="Look At" name="look_at_btn"
 	     left="10" width="95"/>
-	<button bottom_delta="0" follows="bottom|left" height="20" label="Open" name="open_btn"
-	     left_delta="100" width="95"/>
 	<button bottom_delta="0" follows="bottom|left" height="20" label="Copy UUID" name="copy_uuid_btn"
 	     left_delta="100" width="95"/>
 	<button bottom_delta="0" follows="bottom|left" height="20" label="Stop" name="stop_btn"

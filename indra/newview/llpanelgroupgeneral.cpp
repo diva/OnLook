@@ -48,11 +48,13 @@
 #include "lllineeditor.h"
 #include "llnamebox.h"
 #include "llnamelistctrl.h"
+#include "llnameeditor.h"
 #include "llspinctrl.h"
 #include "llstatusbar.h"	// can_afford_transaction()
 #include "lltextbox.h"
 #include "lltexteditor.h"
 #include "lltexturectrl.h"
+#include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
 // consts
@@ -75,9 +77,9 @@ LLPanelGroupGeneral::LLPanelGroupGeneral(const std::string& name,
 	mChanged(FALSE),
 	mFirstUse(TRUE),
 	mGroupNameEditor(NULL),
-	mGroupName(NULL),
 	mFounderName(NULL),
 	mInsignia(NULL),
+	mGroupName(NULL),
 	mEditCharter(NULL),
 	mBtnJoinGroup(NULL),
 	mListVisibleMembers(NULL),
@@ -254,6 +256,9 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mBtnInfo->setVisible(FALSE);
 		mGroupName->setVisible(FALSE);
 	}
+
+
+
 
 	return LLPanelGroupTab::postBuild();
 }
@@ -757,6 +762,12 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 	if (mGroupName) mGroupName->setText(gdatap->mName);
 	if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
 	if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
+
+
+
+
+
+
 	if (mInsignia)
 	{
 		if (gdatap->mInsigniaID.notNull())
@@ -843,15 +854,18 @@ void LLPanelGroupGeneral::updateMembers()
 
 		row["columns"][0]["column"] = "name";
 		row["columns"][0]["font-style"] = style;
+
 		// value is filled in by name list control
 
 		row["columns"][1]["column"] = "title";
 		row["columns"][1]["value"] = member->getTitle();
 		row["columns"][1]["font-style"] = style;
 		
+
 		row["columns"][2]["column"] = "online";
 		row["columns"][2]["value"] = member->getOnlineStatus();
 		row["columns"][2]["font-style"] = style;
+
 
 		sSDTime += sd_timer.getElapsedTimeF32();
 

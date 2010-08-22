@@ -166,7 +166,14 @@ public:
 
 class LLInventoryFilter
 {
+
 public:
+	//fix to get rid of gSavedSettings use - rkeast
+	void setPartialSearch(bool toggle);
+	bool getPartialSearch();
+	void setSearchType(U32 type);
+	U32	 getSearchType();
+
 	typedef enum e_folder_show
 	{
 		SHOW_ALL_FOLDERS,
@@ -246,6 +253,10 @@ public:
 	void fromLLSD(LLSD& data);
 
 protected:
+	//fix to get rid of gSavedSettings use - rkeast
+	U32				mSearchType;
+	bool			mPartialSearch;
+
 	struct filter_ops
 	{
 		U32			mFilterTypes;
@@ -320,12 +331,10 @@ class LLFolderView;
 
 class LLFolderViewItem : public LLUICtrl
 {
+protected:
 	friend class LLFolderViewEventListener;
 
-private:
-	BOOL					mIsSelected;
 
-protected:
 	static const LLFontGL*		sFont;
 	static const LLFontGL*		sSmallFont;
 	static LLColor4				sFgColor;
@@ -340,14 +349,21 @@ protected:
 
 	std::string					mLabel;
 	std::string					mSearchableLabel;
-	std::string					mSearchableLabelDesc;
+	std::string					mLabelCreator;
 	std::string					mSearchableLabelCreator;
-	std::string					mSearchable;
+
+	std::string					mLabelDesc;
+	std::string					mSearchableLabelDesc;
+
+	std::string					mLabelAll;
+	std::string					mSearchableLabelAll;
+
 	std::string					mType;
 	S32							mLabelWidth;
 	U32							mCreationDate;
 	LLFolderViewFolder*			mParentFolder;
 	LLFolderViewEventListener*	mListener;
+	BOOL						mIsSelected;
 	BOOL						mIsCurSelection;
 	BOOL						mSelectPending;
 	LLFontGL::StyleFlags		mLabelStyle;
@@ -356,6 +372,7 @@ protected:
 	std::string					mStatusText;
 	BOOL						mHasVisibleChildren;
 	S32							mIndentation;
+	S32							mNumDescendantsSelected;
 	BOOL						mFiltered;
 	S32							mLastFilterGeneration;
 	std::string::size_type		mStringMatchOffset;
@@ -420,13 +437,18 @@ public:
 	// Returns TRUE if this item ends up being selected.
 	virtual BOOL setSelection(LLFolderViewItem* selection, BOOL openitem, BOOL take_keyboard_focus);
 
+
+
 	// This method is used to set the selection state of an item.
 	// If 'selection' is 'this' then note selection.
 	// Returns TRUE if the selection state of this item was changed.
 	virtual BOOL changeSelection(LLFolderViewItem* selection, BOOL selected);
 
 	// this method is used to group select items
-	virtual void extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items) { }
+	virtual S32 extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items){ return FALSE; }
+
+	// this method is used to group select items
+	virtual void recursiveDeselect(BOOL deselect_self);
 
 	// this method is used to deselect this element
 	void deselectItem();
@@ -445,6 +467,8 @@ public:
 
 	// destroys this item recursively
 	virtual void destroyView();
+
+	S32 getNumSelectedDescendants() { return mNumDescendantsSelected; }
 
 	BOOL isSelected() const { return mIsSelected; }
 
@@ -466,7 +490,7 @@ public:
 	// viewed. This method will ask the viewed object itself.
 	const std::string& getName( void ) const;
 
-	std::string& getSearchableLabel( void );
+	const std::string& getSearchableLabel() const;
 
 	// This method returns the label displayed on the view. This
 	// method was primarily added to allow sorting on the folder
@@ -554,7 +578,7 @@ public:
 		UNKNOWN, TRASH, NOT_TRASH
 	} ETrash;
 
-private:
+
 	S32		mNumDescendantsSelected;
 
 public:	// Accessed needed by LLFolderViewItem
@@ -634,10 +658,10 @@ public:
 	virtual BOOL changeSelection(LLFolderViewItem* selection, BOOL selected);
 
 	// this method is used to group select items
-	virtual void extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items);
+	virtual S32 extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items);
 
 	// Deselect this folder and all folder/items it contains recursively.
-	void recursiveDeselect(BOOL deselect_self);
+	virtual void recursiveDeselect(BOOL deselect_self);
 
 	// Returns true is this object and all of its children can be removed.
 	virtual BOOL isRemovable();
@@ -801,7 +825,7 @@ public:
 	// children, and keeps track of selected objects.
 	virtual BOOL changeSelection(LLFolderViewItem* selection, BOOL selected);
 
-	virtual void extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items);
+	virtual S32 extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items);
 
 	virtual BOOL getSelectionList(std::set<LLUUID> &selection);
 

@@ -38,9 +38,6 @@ private:
 // static stuff!
 public:
 	static void onSelectAnimation(LLUICtrl* ctrl, void* user_data);
-	static void onClickCopyUUID(void* data);
-	static void onClickOpen(void* data);
-	static void onClickJellyRoll(void* data);
 
 	BOOL handleMouseDown(S32 x, S32 y, MASK mask);
 	BOOL handleMouseUp(S32 x, S32 y, MASK mask);

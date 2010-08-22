@@ -120,6 +120,41 @@ public:
 	}
 };
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLInventoryPanelObserver
 //
@@ -252,6 +287,8 @@ public:
 	virtual BOOL copyToClipboard() const;
 	virtual BOOL hasChildren() const { return FALSE; }
 	virtual BOOL isUpToDate() const { return TRUE; }
+
+
 
 	// override for LLInvFVBridge
 	virtual void clearDisplayName() { mDisplayName.clear(); }
@@ -559,6 +596,7 @@ public:
 	virtual const std::string& getPrefix() { return sPrefix; }
 
 	virtual LLUIImagePtr getIcon() const;
+
 	virtual void openItem();
 
 protected:

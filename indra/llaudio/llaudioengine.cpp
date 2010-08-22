@@ -1857,5 +1857,4 @@ void pruneSoundLog()
 		}
 	}
 }
-
 // </edit>

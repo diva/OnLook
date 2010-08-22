@@ -16,7 +16,7 @@
 	     max_length="254" name="description_form" right="-10" />
 	<pad height="0" />
 	<spinner decimal_digits="0" follows="left|top" height="18" increment="1" initial_val="0"
-	     label="Priority" label_width="50" left="10" max_val="4" min_val="0"
+	     label="Priority" label_width="50" left="10" max_val="7" min_val="0"
 	     name="priority"
 	     tool_tip="Controls which other animations can be overridden by this animation."
 	     width="90" />
