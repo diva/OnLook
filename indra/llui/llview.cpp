@@ -1807,7 +1807,13 @@ BOOL LLView::deleteViewByHandle(LLHandle<LLView> handle)
 {
 	LLView* viewp = handle.get();
 
-	delete viewp;
+	//<edit> Getting some crashes on exit,
+	//guess it should check if the view actually exists before deleting it, but I'm not wading through all of Philip's code.
+	//probably a bug in the delayed ui delete crap (what *is* that, anyways?)
+	if(viewp)
+		delete viewp;
+	//</edit>
+
 	return viewp != NULL;
 }
 
