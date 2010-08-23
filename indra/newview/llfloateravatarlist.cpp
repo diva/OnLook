@@ -824,10 +824,13 @@ void LLFloaterAvatarList::refreshAvatarList()
 			}
 			element["columns"][LIST_CLIENT]["value"] = client.c_str();
 
-			if(avatarp->extraMetadata.length())
-			{
-				element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
-			}
+			// <dogmode>
+			// Don't expose Emerald's metadata.
+
+			//if(avatarp->extraMetadata.length())
+			//{
+			//	element["columns"][LIST_METADATA]["value"] = avatarp->extraMetadata.c_str();
+			//}
 		}
 		else
 		{
