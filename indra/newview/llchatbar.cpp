@@ -407,51 +407,38 @@ void LLChatBar::sendChat( EChatType type )
 			std::string utf8_revised_text;
 			if (0 == channel)
 			{
+				llinfos << "Checking for OOC handling" << llendl;
 				if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
 				{
+					llinfos << "OOC Handling occurring" << llendl;
 					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 					int needsClosingType=0;
+					//Check if it needs the end-of-chat brackets -HgB
 					if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
-						needsClosingType=1;
-					else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
-						needsClosingType=2;
-					if(needsClosingType==1)
 					{
-						// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
-						int needsClosingType=0;
-						if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
-							needsClosingType=1;
-						else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
-							needsClosingType=2;
-						if(needsClosingType==1)
-						{
-							if(utf8text.at(utf8text.length() - 1) == ')')
-								utf8text+=" ";
-							utf8text+="))";
-						}
-						else if(needsClosingType==2)
-						{
-							if(utf8text.at(utf8text.length() - 1) == ']')
-								utf8text+=" ";
-							utf8text+="]]";
-						}
-						needsClosingType=0;
-						if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
-							needsClosingType=1;
-						else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
-							needsClosingType=2;
-						if(needsClosingType==1)
-						{
-							if(utf8text.at(0) == '(')
-								utf8text.insert(0," ");
-							utf8text.insert(0,"((");
-						}
-						else if(needsClosingType==2)
-						{
-							if(utf8text.at(0) == '[')
-								utf8text.insert(0," ");
-							utf8text.insert(0,"[[");
-						}
+						if(utf8text.at(utf8text.length() - 1) == ')')
+							utf8text+=" ";
+						utf8text+="))";
+					}
+					else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
+					{
+						if(utf8text.at(utf8text.length() - 1) == ']')
+							utf8text+=" ";
+						utf8text+="]]";
+					}
+					//Check if it needs the start-of-chat brackets -HgB
+					needsClosingType=0;
+					if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
+					{
+						if(utf8text.at(0) == '(')
+							utf8text.insert(0," ");
+						utf8text.insert(0,"((");
+					}
+					else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
+					{
+						if(utf8text.at(0) == '[')
+							utf8text.insert(0," ");
+						utf8text.insert(0,"[[");
 					}
 				}
 				// Convert MU*s style poses into IRC emotes here.

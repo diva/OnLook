@@ -8,26 +8,31 @@
 			<check_box bottom_delta="-25" control_name="DoubleClickTeleport" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	    		label="Enable teleporting via double-click in-world" left="10"
+				tool_tip="Double-clicking on an object/person will teleport you to that location."
 			    mouse_opaque="true" name="double_click_teleport_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="PreviewAnimInWorld" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	    		label="Preview animations on the avatar instead on a dummy before uploading" left="10"
+				tool_tip="The Animation upload window will play animations on your avatar when previewing them."
 			    mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="On standing up, revoke perms for the object your avatar was sitting on" left="10"
+				tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
 				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 	    		label="Save scripts in inventory as Mono scripts instead of LSL2" left="10"
+				tool_tip="Scripts will automatically be compiled in Mono when saving - Usually only possible when placed in an object."
 		    	mouse_opaque="true" name="save_scripts_as_mono_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="AscentAlwaysRezInGroup" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Always rez objects as land group when available" left="10"
+				tool_tip="Rez objects with the same group that the object is being rezzed on has, regardless of your active tag."
 				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
 				width="400" />
 		</panel>
@@ -41,11 +46,25 @@
 			<check_box bottom_delta="-20" control_name="PlayTypingSound" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 	    		label="Play the typing sound when an avatar types in chat" left="10"
+				tool_tip="Silences the chatting type sound, making it quieter for things like performances."
 		    	mouse_opaque="true" name="play_typing_sound_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="HideTypingNotification" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Don't send '%n is typing...' packet to others when IMing" left="10"
+				tool_tip="IM partners will not see '______ is typing...' when you're responding."
+				mouse_opaque="true" name="hide_typing_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentAllowMUpose" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+				label="Allow MU pose method." left="10"
+				tool_tip="Allows the use of both /me and : to perform emotes."
+				mouse_opaque="true" name="hide_typing_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentAutoCloseOOC" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+				label="Auto-close OOC comments." left="10"
+				tool_tip="Will automatically append '))' to any message starting with '((', or visa versa."
 				mouse_opaque="true" name="hide_typing_check" radio_style="false"
 				width="400" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -56,6 +75,7 @@
 					Show links on chatting object names in chat history for:
 			</text>
 			<radio_group bottom_delta="-26" control_name="LinksForChattingObjects" draw_border="true" enabled="true"
+				tool_tip="Enables a link to show you the owner of the speaking object."
 			    follows="left|top" height="20" left="20" mouse_opaque="true" name="objects_link" width="350">
 				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" left_delta="5" mouse_opaque="true"
 				 name="no_object" width="48">
@@ -79,6 +99,7 @@
 			</text>
 			<combo_box allow_text_entry="false" bottom_delta="-5" enabled="true" follows="left|top"
 		    	height="18" hidden="false" left="90" max_chars="20" mouse_opaque="true"
+				tool_tip="Show hours in either 12-23 or 12PM-11PM format."
 		    	name="time_format_combobox" width="130">
 				<combo_item type="string" length="1" enabled="true" name="24hours" value="default">
 					24-hour clock
@@ -118,6 +139,7 @@
 			 <check_box bottom_delta="-25" control_name="FetchInventoryOnLogin" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 		    	label="Automatically fetch the inventory in the background after login" left="10"
+				tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search."
 			    mouse_opaque="true" name="fetch_inventory_on_login_check" radio_style="false"
 		    	width="400" />
 			 <check_box bottom_delta="-20" control_name="WindEnabled" enabled="true"
@@ -140,13 +162,123 @@
 				label="Draw distance stepping interval:" label_width="180"
 				max_val="60" min_val="5" initial_val="20" increment="5"
 				mouse_opaque="true" name="speed_rez_interval" />
-			<text type="string" length="1" bottom_delta="0" left="265" bg_visible="false"
+			<text type="string" length="1" bottom_delta="0" left_delta="235" bg_visible="false"
 				border_visible="false" border_drop_shadow_visible="false"
 				drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="16"
 	     		mouse_opaque="true" name="speed_rez_seconds" v_pad="0" width="100">
 				seconds
 			</text>
+		</panel>
+		<panel border="true" bottom="-580" follows="left|top|right|bottom" height="525" label="Command Line"
+				 left="1" mouse_opaque="true" name="Command Line" width="418">
+			<check_box bottom="-25" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+						 initial_value="false" label="Enable usage of chat bar as a command line" left="10"
+						 mouse_opaque="true" name="chat_cmd_toggle" radio_style="false" width="270" 
+						 control_name="AscentCmdLine"/>
+			<text bottom_delta="-22" follows="left|top" font="SansSerifSmall" height="16" left_delta="10"
+						 name="cmd_line_text_2" width="512">
+				Teleport within sim (usage: cmd x y z)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLinePos" control_name="AscentCmdLinePos" width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_3" width="512">
+				Teleport to ground (usage: cmd)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineGround" control_name="AscentCmdLineGround" width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_4" width="512">
+				Teleport to altitude (usage: cmd z)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineHeight" control_name="AscentCmdLineHeight" width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_5" width="512">
+				Teleport home (usage: cmd)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineTeleportHome" control_name="AscentCmdLineTeleportHome"
+						 width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_6" width="512">
+				Rez a platform (usage: cmd 0 - 30)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineRezPlatform" control_name="AscentCmdLineRezPlatform"
+						 width="200"/>
+			<slider bottom_delta="-22" left_delta="0" name="AscentPlatformSize" control_name="AscentPlatformSize"
+						 decimal_digits="1" enabled="true" follows="left|top" height="18" increment="0.5"
+						 initial_val="5" label="Default width:" label_width="75" max_val="30" min_val="5"
+						 mouse_opaque="true" show_text="true" width="205" auto_resize="false" tool_tip="How big do you want the platform to appear to be?"/>
+			<text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_8" width="512">
+				Calc. expressions (usage: cmd 2 + 2)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineCalc" control_name="AscentCmdLineCalc" width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_15" width="512">
+				Clear the chat history (usage: cmd)</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="Clears the Chat History to prevent lag effects from chat spammers." 
+						 name="AscentCmdLineClearChat" control_name="AscentCmdLineClearChat" width="200"/>
+			<!-- Column Split -->
+			<view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="295"
+						 left="230" name="CmdDivisor" width="0"/>
+			<text bottom_delta="277" follows="left|top" font="SansSerifSmall" height="16" left_delta="10"
+						 name="cmd_line_text_9" width="512">
+				Change Draw Distance (usage: cmd meters)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineDrawDistance" control_name="AscentCmdLineDrawDistance"
+						 width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_10" width="512">
+				Teleport to cam position (usage: cmd)</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdTeleportToCam" control_name="AscentCmdTeleportToCam"
+						 width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_11" width="512">
+				Get avatar name from key (usage: cmd key)</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineKeyToName" control_name="AscentCmdLineKeyToName"
+						 width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_12" width="512">
+				Offer teleport to avatar (usage: cmd key)</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineOfferTp" control_name="AscentCmdLineOfferTp" width="200"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_7" width="512">
+				Teleport to sim x (usage: cmd simname)
+			</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="" name="AscentCmdLineMapTo" control_name="AscentCmdLineMapTo" width="200"/>
+			<check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+						 initial_value="false" label="Use same position between sims" left_delta="0" mouse_opaque="true"
+						 name="toggle" radio_style="false" width="270" control_name="AscentCmdLineMapToKeepPos"/>
+			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
+						 name="cmd_line_text_13" width="512">
+				Teleport to avatar (usage: cmd name)</text>
+			<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+						 font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
+						 tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open."
+						 name="AscentCmdLineTP2" control_name="AscentCmdLineTP2" width="200"/>
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Privacy" name="Privacy">
@@ -158,11 +290,13 @@
 			<check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 		    	label="Disable Point At And Beam" left="10"
+				tool_tip="Don't point at or show your edit beam when selecting an object."
 			    mouse_opaque="true" name="disable_point_at_and_beams_check" radio_style="false"
 		    	width="400" />
 			<check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	    		label="Do not Look At objects (defeats ShowLookAt)" left="10"
+				tool_tip="Turns off broadcasting headturns and lookat beacons for yourself."
 			    mouse_opaque="true" name="private_look_at_check" radio_style="false"
 			    width="400" />
 		</panel>

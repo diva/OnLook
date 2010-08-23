@@ -128,7 +128,7 @@
   <key>AscentCmdLineClearChat</key>
   <map>
     <key>Comment</key>
-    <string>Clear chat hsitory to stop lag from chat spam</string>
+    <string>Clear chat history to stop lag from chat spam</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
