@@ -279,6 +279,28 @@
     <key>Value</key>
     <string>tp2</string>
   </map>
+  <key>AscentAutoCloseOOC</key>
+  <map>
+    <key>Comment</key>
+    <string>Auto-close OOC chat (i.e. add \"))\" if not found and \"((\" was used)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>AscentAllowMUpose</key>
+  <map>
+    <key>Comment</key>
+    <string>Allow MU* pose style in chat and IM (with ':' as a synonymous to '/me ')</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
 	<key>AscentStoreSettingsPerAccount</key>
 	<map>
 	  <key>Comment</key>
