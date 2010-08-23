@@ -2017,12 +2017,44 @@ void LLFloaterIMPanel::sendMsg()
 			// store sent line in history, duplicates will get filtered
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
-			std::string utf8_text = wstring_to_utf8str(text);
-			utf8_text = utf8str_truncate(utf8_text, MAX_MSG_BUF_SIZE - 1);
+			std::string utf8text = wstring_to_utf8str(text);
+			if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
+			{
+				// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
+				int needsClosingType=0;
+				//Check if it needs the end-of-chat brackets -HgB
+				if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
+				{
+					if(utf8text.at(utf8text.length() - 1) == ')')
+						utf8text+=" ";
+					utf8text+="))";
+				}
+				else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
+				{
+					if(utf8text.at(utf8text.length() - 1) == ']')
+						utf8text+=" ";
+					utf8text+="]]";
+				}
+				//Check if it needs the start-of-chat brackets -HgB
+				needsClosingType=0;
+				if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
+				{
+					if(utf8text.at(0) == '(')
+						utf8text.insert(0," ");
+					utf8text.insert(0,"((");
+				}
+				else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
+				{
+					if(utf8text.at(0) == '[')
+						utf8text.insert(0," ");
+					utf8text.insert(0,"[[");
+				}
+			}
+			utf8text = utf8str_truncate(utf8text, MAX_MSG_BUF_SIZE - 1);
 			
 			if ( mSessionInitialized )
 			{
-				deliver_message(utf8_text,
+				deliver_message(utf8text,
 								mSessionUUID,
 								mOtherParticipantUUID,
 								mDialog);
@@ -2035,16 +2067,16 @@ void LLFloaterIMPanel::sendMsg()
 					gAgent.buildFullname(history_echo);
 
 					// Look for IRC-style emotes here.
-					std::string prefix = utf8_text.substr(0, 4);
+					std::string prefix = utf8text.substr(0, 4);
 					if (prefix == "/me " || prefix == "/me'")
 					{
-						utf8_text.replace(0,3,"");
+						utf8text.replace(0,3,"");
 					}
 					else
 					{
 						history_echo += ": ";
 					}
-					history_echo += utf8_text;
+					history_echo += utf8text;
 
 					BOOL other_was_typing = mOtherTyping;
 
@@ -2061,7 +2093,7 @@ void LLFloaterIMPanel::sendMsg()
 			{
 				//queue up the message to send once the session is
 				//initialized
-				mQueuedMsgsForInit.append(utf8_text);
+				mQueuedMsgsForInit.append(utf8text);
 			}
 		}
 

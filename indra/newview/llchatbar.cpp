@@ -407,10 +407,8 @@ void LLChatBar::sendChat( EChatType type )
 			std::string utf8_revised_text;
 			if (0 == channel)
 			{
-				llinfos << "Checking for OOC handling" << llendl;
 				if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
 				{
-					llinfos << "OOC Handling occurring" << llendl;
 					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 					int needsClosingType=0;
 					//Check if it needs the end-of-chat brackets -HgB
