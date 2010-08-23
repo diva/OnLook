@@ -948,9 +948,7 @@ void init_client_menu(LLMenuGL* menu)
 
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
-	// <edit>
-	//if (!LLViewerLogin::getInstance()->isInProductionGrid())
-	// </edit>
+	if (!LLViewerLogin::getInstance()->isInProductionGrid())
 	{
 		menu->append(new LLMenuItemCheckGL("Hacked Godmode",
 										   &handle_toggle_hacked_godmode,
