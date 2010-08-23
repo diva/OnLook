@@ -68,6 +68,7 @@
 #include "llviewermenu.h"
 #include "lluictrlfactory.h"
 
+#include "chatbar_as_cmdline.h"
 
 //
 // Globals
@@ -387,7 +388,7 @@ LLWString LLChatBar::stripChannelNumber(const LLWString &mesg, S32* channel)
 	}
 }
 
-
+// <dogmode>
 void LLChatBar::sendChat( EChatType type )
 {
 	if (mInputEditor)
@@ -397,15 +398,74 @@ void LLChatBar::sendChat( EChatType type )
 		{
 			// store sent line in history, duplicates will get filtered
 			if (mInputEditor) mInputEditor->updateHistory();
-			// Check if this is destined for another channel
+
 			S32 channel = 0;
 			stripChannelNumber(text, &channel);
 			
-			std::string utf8text = wstring_to_utf8str(text);
+			std::string utf8text = wstring_to_utf8str(text);//+" and read is "+llformat("%f",readChan)+" and undone is "+llformat("%d",undoneChan)+" but actualy channel is "+llformat("%d",channel);
 			// Try to trigger a gesture, if not chat to a script.
 			std::string utf8_revised_text;
 			if (0 == channel)
 			{
+				if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
+				{
+					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
+					int needsClosingType=0;
+					if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
+						needsClosingType=1;
+					else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
+						needsClosingType=2;
+					if(needsClosingType==1)
+					{
+						// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
+						int needsClosingType=0;
+						if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
+							needsClosingType=1;
+						else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
+							needsClosingType=2;
+						if(needsClosingType==1)
+						{
+							if(utf8text.at(utf8text.length() - 1) == ')')
+								utf8text+=" ";
+							utf8text+="))";
+						}
+						else if(needsClosingType==2)
+						{
+							if(utf8text.at(utf8text.length() - 1) == ']')
+								utf8text+=" ";
+							utf8text+="]]";
+						}
+						needsClosingType=0;
+						if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
+							needsClosingType=1;
+						else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
+							needsClosingType=2;
+						if(needsClosingType==1)
+						{
+							if(utf8text.at(0) == '(')
+								utf8text.insert(0," ");
+							utf8text.insert(0,"((");
+						}
+						else if(needsClosingType==2)
+						{
+							if(utf8text.at(0) == '[')
+								utf8text.insert(0," ");
+							utf8text.insert(0,"[[");
+						}
+					}
+				}
+				// Convert MU*s style poses into IRC emotes here.
+				if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.find(":") == 0 && utf8text.length() > 3)
+				{
+					if (utf8text.find(":'") == 0)
+					{
+						utf8text.replace(0, 1, "/me");
+	 				}
+					else if (isalpha(utf8text.at(1)))	// Do not prevent smileys and such.
+					{
+						utf8text.replace(0, 1, "/me ");
+					}
+				}
 				// discard returned "found" boolean
 				gGestureManager.triggerAndReviseString(utf8text, &utf8_revised_text);
 			}
@@ -415,11 +475,15 @@ void LLChatBar::sendChat( EChatType type )
 			}
 
 			utf8_revised_text = utf8str_trim(utf8_revised_text);
-
-			if (!utf8_revised_text.empty())
+			EChatType nType;
+			if(type == CHAT_TYPE_OOC)
+				nType=CHAT_TYPE_NORMAL;
+			else
+				nType=type;
+			if (!utf8_revised_text.empty() && cmd_line_chat(utf8_revised_text, nType))
 			{
 				// Chat with animation
-				sendChatFromViewer(utf8_revised_text, type, TRUE);
+				sendChatFromViewer(utf8_revised_text, nType, TRUE);
 			}
 		}
 	}

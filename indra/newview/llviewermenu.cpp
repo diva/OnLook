@@ -947,6 +947,7 @@ void init_client_menu(LLMenuGL* menu)
 	
 
 
+// <dogmode> 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 	if (!LLViewerLogin::getInstance()->isInProductionGrid())
 	{
@@ -957,7 +958,7 @@ void init_client_menu(LLMenuGL* menu)
 										   (void*)"HackedGodmode"));
 	}
 #endif
-
+// </dogmode>
 	menu->append(new LLMenuItemCallGL("Clear Group Cache", 
 									  LLGroupMgr::debugClearAllGroups));
 	menu->appendSeparator();

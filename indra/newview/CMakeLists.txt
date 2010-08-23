@@ -70,6 +70,7 @@ set(viewer_SOURCE_FILES
 	hippogridmanager.cpp
 	hipporestrequest.cpp
     jcfloaterareasearch.cpp
+	chatbar_as_cmdline.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentdata.cpp
@@ -513,6 +514,7 @@ set(viewer_HEADER_FILES
 	hippogridmanager.h
 	hipporestrequest.h
     jcfloaterareasearch.h
+	chatbar_as_cmdline.h
     llagent.h
     llagentaccess.h
     llagentdata.h

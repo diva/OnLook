@@ -48,6 +48,8 @@
 #include "llviewernetwork.h"
 #include "llagent.h"
 
+#include "chatbar_as_cmdline.h"
+
 // Globals
 LLViewerGestureList gGestureList;
 
@@ -132,6 +134,7 @@ void LLViewerGesture::doTrigger( BOOL send_chat )
 		}
 	}
 
+	cmd_line_chat(mOutputString, CHAT_TYPE_NORMAL);
 	if ( send_chat && !mOutputString.empty())
 	{
 		// Don't play nodding animation, since that might not blend

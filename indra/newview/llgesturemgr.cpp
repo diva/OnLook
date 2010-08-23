@@ -58,6 +58,8 @@
 #include "llvoavatar.h"
 #include "llviewerstats.h"
 
+#include "chatbar_as_cmdline.h"
+
 LLGestureManager gGestureManager;
 
 // Longest time, in seconds, to wait for all animations to stop playing
@@ -870,7 +872,10 @@ void LLGestureManager::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 			// other playing animations.
 			const BOOL animate = FALSE;
 
-			gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
+			if ( cmd_line_chat(chat_text, CHAT_TYPE_NORMAL))
+			{
+				gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
+			}
 			gesture->mCurrentStep++;
 			break;
 		}

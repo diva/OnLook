@@ -485,7 +485,7 @@ BOOL LLFloaterTexturePicker::postBuild()
 	LLFloater::postBuild();
 	
 	LLInventoryItem* itemp = gInventory.getItem(mImageAssetID);
-
+	
 	if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
 		childSetValue("texture_uuid", mImageAssetID);
 	else
@@ -935,7 +935,7 @@ void LLFloaterTexturePicker::onTextureSelect( const LLTextureEntry& te, void *da
 		}
 		else 
 		{
-			self->childSetValue("texture_uuid", te.getID().asString());
+			self->childSetValue("texture_uuid", inventory_item_id.asString());
 		}
 		
 		self->commitIfImmediateSet();
