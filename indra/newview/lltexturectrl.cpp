@@ -484,13 +484,15 @@ BOOL LLFloaterTexturePicker::postBuild()
 {
 	LLFloater::postBuild();
 	
+	// <dogmode>
+	/**
 	LLInventoryItem* itemp = gInventory.getItem(mImageAssetID);
 	
-	if (itemp && !itemp->getPermissions().allowCopyBy(gAgent.getID()))
+	if (itemp && (itemp->getPermissions().getMaskOwner() & PERM_ALL))
 		childSetValue("texture_uuid", mImageAssetID);
 	else
 		childSetValue("texture_uuid", LLUUID::null.asString());
-
+	**/
 	if (!mLabel.empty())
 	{
 		std::string pick = getString("pick title");
@@ -829,6 +831,13 @@ void LLFloaterTexturePicker::onSelectionChange(const std::deque<LLFolderViewItem
 		self->mNoCopyTextureSelected = FALSE;
 		if (itemp)
 		{
+			// <dogmode>
+			if (itemp->getPermissions().getMaskOwner() & PERM_ALL)
+				self->childSetValue("texture_uuid", self->mImageAssetID);
+			else
+				self->childSetValue("texture_uuid", LLUUID::null.asString());
+			// </dogmode>
+
 			if (!itemp->getPermissions().allowCopyBy(gAgent.getID()))
 			{
 				self->mNoCopyTextureSelected = TRUE;
