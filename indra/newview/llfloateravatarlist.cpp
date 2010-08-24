@@ -808,8 +808,8 @@ void LLFloaterAvatarList::refreshAvatarList()
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
 
-		element["columns"][LIST_METADATA]["column"] = "metadata";
-		element["columns"][LIST_METADATA]["type"] = "text";
+		//element["columns"][LIST_METADATA]["column"] = "metadata";
+		//element["columns"][LIST_METADATA]["type"] = "text";
 
 		LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 		std::string client;

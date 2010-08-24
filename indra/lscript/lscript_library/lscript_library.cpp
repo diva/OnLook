@@ -449,7 +449,14 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "llReleaseURL", NULL, "s");
 	addFunction(10.f, 0.f, dummy_func, "llHTTPResponse", NULL, "kis");
 	addFunction(10.f, 0.f, dummy_func, "llGetHTTPHeader", "s", "ks");
-
+	//Lesse if I can crash the sim! -HgB
+	addFunction(10.f, 1.0f, dummy_func, "llSetPrimMediaParams", "i", "il");
+	addFunction(10.f, 1.0f, dummy_func, "llGetPrimMediaParams", "l", "il");
+	addFunction(10.f, 1.0f, dummy_func, "llClearPrimMedia", "i", "i");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkPrimitiveParamsFast", NULL, "il");
+	addFunction(10.f, 0.f, dummy_func, "llGetLinkPrimitiveParams", NULL, "il");
+	addFunction(10.f, 0.f, dummy_func, "llLinkParticleSystem", NULL, "il");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkTextureAnim", NULL, "iiiiifff");
 	// energy, sleep, dummy_func, name, return type, parameters, gods-only
 
 	// IF YOU ADD NEW SCRIPT CALLS, YOU MUST PUT THEM AT THE END OF THIS LIST.

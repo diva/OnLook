@@ -42,112 +42,141 @@
 // project includes
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
+#include "llcombobox.h"
+#include "llsdserialize.h"
 
+
+LLPanelSkins* LLPanelSkins::sInstance;
 LLPanelSkins::LLPanelSkins()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_skins.xml");
+	if(sInstance)delete sInstance;
+	sInstance = this;
 }
 
 LLPanelSkins::~LLPanelSkins()
 {
+	sInstance = NULL;
 }
 
 BOOL LLPanelSkins::postBuild()
 {
-	LLRadioGroup* skin_select = getChild<LLRadioGroup>("skin_selection");
-	skin_select->setCommitCallback(onSelectSkin);
-	skin_select->setCallbackUserData(this);
-
-	getChild<LLButton>("classic_preview")->setClickedCallback(onClickClassic, this);
-	getChild<LLButton>("silver_preview")->setClickedCallback(onClickSilver, this);
-
+	mSkin = gSavedSettings.getString("SkinCurrent");
+	oldSkin=mSkin;
+	getChild<LLComboBox>("custom_skin_combo")->setCommitCallback(onComboBoxCommit);
 	refresh();
 	return TRUE;
 }
 
 void LLPanelSkins::refresh()
 {
-	
-	mSkin = gSavedSettings.getString("SkinCurrent");
-	getChild<LLRadioGroup>("skin_selection")->setValue(mSkin);
+	if(mSkin=="")
+	{
+		oldSkin=mSkin="default";
+		gSavedSettings.setString("SkinCurrent",mSkin);
+	}
+	LLComboBox* comboBox = getChild<LLComboBox>("custom_skin_combo");
+
+	if(comboBox != NULL) 
+	{
+		std::string name;
+		gDirUtilp->getNextFileInDir(gDirUtilp->getChatLogsDir(),"*",name,false);//stupid hack to clear last file search
+		comboBox->removeall();
+		datas.clear();
+		//comboBox->add("===OFF===");
+		std::string path_name(gDirUtilp->getSkinBaseDir()+gDirUtilp->getDirDelimiter());
+		bool found = true;	
+		std::string currentSkinName("");
+		while(found) 
+		{
+			found = gDirUtilp->getNextFileInDir(path_name, "*.xml", name, false);
+			//llinfos << "path name " << path_name << " and name " << name << " and found " << found << llendl;
+			if(found)
+			{
+				LLSD data;
+				llifstream importer(path_name+name);
+				LLSDSerialize::fromXMLDocument(data, importer);
+
+				if(data.has("folder_name"))
+				{
+					datas.push_back(data);
+					comboBox->add(data["skin_name"].asString());
+					//llinfos << "data is length " << datas.size() << " foldername field is "
+					//	<< data["folder_name"].asString() << " and looking for " << gSavedSettings.getString("SkinCurrent") <<llendl;
+					if(data["folder_name"].asString()==mSkin)
+					{
+						//llinfos << "found!!!!!!1!1" << llendl;
+						currentSkinName = data["skin_name"].asString();
+
+						//LLButton* b;
+						//b.setImageOverlay()
+						childSetValue("custom_skin_author",data["author_name"].asString());
+						childSetValue("custom_skin_ad_authors",data["additional_author_names"].asString());
+						childSetValue("custom_skin_info",data["skin_info"].asString());
+						childSetValue("custom_skin_folder",data["folder_name"].asString());
+						LLButton* b = getChild<LLButton>("custom_skin_preview");
+						std::string imagename = data["preview_image"].asString();
+						if(imagename == "" || imagename == " " || !LLFile::isfile(imagename)) imagename = "preview.png";
+						std::string imageprev(".."+gDirUtilp->getDirDelimiter()+
+							".."+gDirUtilp->getDirDelimiter()+
+							data["folder_name"].asString()+gDirUtilp->getDirDelimiter()+
+							"textures"+gDirUtilp->getDirDelimiter()+
+							imagename);
+						b->setImages(imageprev,imageprev);
+						b->setHoverImages(imageprev,imageprev);
+						b->setScaleImage(TRUE);
+
+						//<button scale_image="true" image_selected="skin_thumbnail_default.png"
+						//image_unselected="skin_thumbnail_default.png" 
+						//	image_hover_selected="skin_thumbnail_default.png" 
+						//	image_hover_unselected="skin_thumbnail_default.png"/>
+
+						//set the rest here!
+					}
+				}
+			}
+		}
+		comboBox->setSimple(currentSkinName);
+	}
 }
 
 void LLPanelSkins::apply()
 {
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	if (oldSkin != mSkin)
 	{
-		if (mSkin != gSavedSettings.getString("SkinCurrent"))
-		{
-			  LLNotifications::instance().add("ChangeSkin");
-			  refresh();
-		}
+		  oldSkin=mSkin;
+		  LLNotifications::instance().add("ChangeSkin");
+		  refresh();
 	}
-	else
-	{
-		if (mSkin != gSavedPerAccountSettings.getString("SkinCurrent"))
-		{
-			  LLNotifications::instance().add("ChangeSkin");
-			  refresh();
-		}
-	}
-	
 }
 
 void LLPanelSkins::cancel()
 {
 	// reverts any changes to current skin
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		gSavedSettings.setString("SkinCurrent", mSkin);
-	}
-	else
-	{
-		gSavedPerAccountSettings.setString("SkinCurrent", mSkin);
-	}
-	
+	gSavedSettings.setString("SkinCurrent", oldSkin);
 }
 
 //static
-void LLPanelSkins::onSelectSkin(LLUICtrl* ctrl, void* data)
+void LLPanelSkins::onComboBoxCommit(LLUICtrl* ctrl, void* userdata)
 {
-	std::string skin_selection = ctrl->getValue().asString();
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	LLComboBox* box = (LLComboBox*)ctrl;
+	if(box)
 	{
-		gSavedSettings.setString("SkinCurrent", skin_selection);
-	}
-	else
-	{
-		gSavedPerAccountSettings.setString("SkinCurrent", skin_selection);
-	}
-	
+		std::string skinName = box->getValue().asString();
+		for(int i =0;i<(int)sInstance->datas.size();i++)
+		{
+			LLSD tdata=sInstance->datas[i];
+			std::string tempName = tdata["skin_name"].asString();
+			if(tempName==skinName)
+			{
+				std::string newFolder(tdata["folder_name"].asString());
+				gSavedSettings.setString("SkinCurrent",newFolder);
+				sInstance->mSkin=newFolder;
+
+				if(sInstance)sInstance->refresh();
+				return;
+			}
+		}
+	}	
 }
 
-//static 
-void LLPanelSkins::onClickClassic(void* data)
-{
-	LLPanelSkins* self = (LLPanelSkins*)data;
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		gSavedSettings.setString("SkinCurrent", "default");
-	}
-	else
-	{
-		gSavedPerAccountSettings.setString("SkinCurrent", "default");
-	}
-	self->getChild<LLRadioGroup>("skin_selection")->setValue("default");
-}
-
-//static 
-void LLPanelSkins::onClickSilver(void* data)
-{
-	LLPanelSkins* self = (LLPanelSkins*)data;
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		gSavedSettings.setString("SkinCurrent", "silver");
-	}
-	else
-	{
-		gSavedPerAccountSettings.setString("SkinCurrent", "silver");
-	}
-	self->getChild<LLRadioGroup>("skin_selection")->setValue("silver");
-}

@@ -14,7 +14,6 @@
 		<column name="position" label="Pos." width="60" tool_tip="Position (X, Y) within this sim, or general direction (cardinal point) for outside sims"/>
 		<column name="altitude" label="Alt." width="48" tool_tip="Altitude"/>
 		<column name="client" label="Client" width="80" dynamicwidth="true" tool_tip="Client the avatar is possibly using"/>
-		<column name="metadata" label="Metadata" width="80" dynamicwidth="true" tool_tip="Extra info we know about the avatar"/>
 	</scroll_list>
 
 	<tab_container border="false" bottom_delta="-130" height="120" left="6" mouse_opaque="false"

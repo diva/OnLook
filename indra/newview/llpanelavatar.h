@@ -99,6 +99,8 @@ public:
 	LLPanelAvatarFirstLife(const std::string& name, const LLRect &rect, LLPanelAvatar* panel_avatar);
 
 	/*virtual*/ BOOL postBuild(void);
+	static void onClickImage(			void *userdata);
+
 
 	void enableControls(BOOL own_avatar);
 };
@@ -259,6 +261,10 @@ public:
 private:
 	static void onClickNew(void* data);
 	static void onClickDelete(void* data);
+	
+	//Pick import and export - RK
+	static void onClickImport(void* data);
+	static void onClickExport(void* data);
 
 	bool callbackDelete(const LLSD& notification, const LLSD& response);
 };
@@ -266,6 +272,7 @@ private:
 
 class LLPanelAvatar : public LLPanel
 {
+
 public:
 	LLPanelAvatar(const std::string& name, const LLRect &rect, BOOL allow_edit);
 	/*virtual*/ ~LLPanelAvatar();
@@ -314,8 +321,10 @@ public:
 
 	static void onClickTrack(	void *userdata);
 	static void onClickIM(		void *userdata);
+	static void onClickGroupInvite( void *userdata);
 	static void onClickOfferTeleport(	void *userdata);
 	static void onClickPay(	void *userdata);
+	static void onClickGetKey(void *userdata);
 	static void onClickAddFriend(void* userdata);
 	static void onClickOK(		void *userdata);
 	static void onClickCancel(	void *userdata);
@@ -324,6 +333,7 @@ public:
 	static void onClickUnfreeze(void *userdata);
 	static void onClickCSR(		void *userdata);
 	static void onClickMute(	void *userdata);
+	static void onCommitKey(LLUICtrl* ctrl, void* data);
 
 private:
 	void enableOKIfReady();

@@ -3446,8 +3446,10 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	{
 		color = gColors.getColor( "AvatarNameColor" );
 	}
-
-	if(useComment)
+	
+	if (false)
+	//Probably should remove this entirely, but it's useful information if we're going to try for the new client tag idea. -HgB
+	//if(useComment) 
 	{
 		LLUUID baked_head_id = getTE(9)->getID();
 		LLPointer<LLViewerImage> baked_head_image = gImageList.getImage(baked_head_id);

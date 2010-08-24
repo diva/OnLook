@@ -90,7 +90,7 @@
 				tool_tip="Enabling this set your avatar name color to your client tag color or custom set color."
 				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="65" control_name="AscentCustomizeOwnTag" enabled="true"
+			<check_box bottom_delta="65" control_name="AscentCustomizeOwnTag" enabled="false"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Use a custom color and label (Local only)" left_delta="230"
 				tool_tip="Enabling this will let you set your own name tag to show up with your custom client and tag color. This only shows up to yourself."
