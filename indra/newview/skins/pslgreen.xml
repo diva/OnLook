@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>PSL Green</string>
+    <key>author_name</key>
+        <string>Chalice Yao</string>
+    <key>additional_author_names</key>
+        <string>JB Kraft, Linden Lab</string>
+    <key>skin_info</key>
+        <string>This skin was origonaly found in purple second life.</string>
+    <key>folder_name</key>
+        <string>pslgreen</string>
+    </map>
+</llsd>

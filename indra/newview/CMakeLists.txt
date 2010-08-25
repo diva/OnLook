@@ -66,6 +66,7 @@ include_directories(
 set(viewer_SOURCE_FILES
     dofloaterhex.cpp
     dohexeditor.cpp
+	floatersculptpreview.cpp
     hgfloatertexteditor.cpp
 	hippogridmanager.cpp
 	hipporestrequest.cpp
@@ -510,6 +511,7 @@ set(viewer_HEADER_FILES
 
     dofloaterhex.h
     dohexeditor.h
+	floatersculptpreview.h
     hgfloatertexteditor.h
 	hippogridmanager.h
 	hipporestrequest.h

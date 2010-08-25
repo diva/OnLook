@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Open Life</string>
+    <key>author_name</key>
+        <string>3DX</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string>This is the skin from the open life viewer.</string>
+    <key>folder_name</key>
+        <string>openlife</string>
+    </map>
+</llsd>

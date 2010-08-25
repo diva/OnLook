@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Dark</string>
+    <key>author_name</key>
+        <string>JB Kraft</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string></string>
+    <key>folder_name</key>
+        <string>dark</string>
+    </map>
+</llsd>

@@ -85,12 +85,13 @@ void LLPanelSkins::refresh()
 		datas.clear();
 		//comboBox->add("===OFF===");
 		std::string path_name(gDirUtilp->getSkinBaseDir()+gDirUtilp->getDirDelimiter());
+		llinfos << "Reading skin listing from " << path_name << llendl;
 		bool found = true;	
 		std::string currentSkinName("");
 		while(found) 
 		{
 			found = gDirUtilp->getNextFileInDir(path_name, "*.xml", name, false);
-			//llinfos << "path name " << path_name << " and name " << name << " and found " << found << llendl;
+			llinfos << "path name " << path_name << " and name " << name << " and found " << found << llendl;
 			if(found)
 			{
 				LLSD data;
@@ -101,8 +102,8 @@ void LLPanelSkins::refresh()
 				{
 					datas.push_back(data);
 					comboBox->add(data["skin_name"].asString());
-					//llinfos << "data is length " << datas.size() << " foldername field is "
-					//	<< data["folder_name"].asString() << " and looking for " << gSavedSettings.getString("SkinCurrent") <<llendl;
+					llinfos << "data is length " << datas.size() << " foldername field is "
+						<< data["folder_name"].asString() << " and looking for " << gSavedSettings.getString("SkinCurrent") <<llendl;
 					if(data["folder_name"].asString()==mSkin)
 					{
 						//llinfos << "found!!!!!!1!1" << llendl;

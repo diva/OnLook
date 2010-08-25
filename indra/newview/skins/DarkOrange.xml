@@ -1,0 +1,15 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Dark Orange</string>
+    <key>author_name</key>
+        <string>Pony Ghost</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string>Game-style interface. Make your Second Life Viewer more like online games
+If you like it, there are still many other colors for you to choose.</string>
+    <key>folder_name</key>
+        <string>darkorange</string>
+    </map>
+</llsd>

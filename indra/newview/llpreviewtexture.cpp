@@ -41,6 +41,7 @@
 #include "llimagetga.h"
 #include "llinventoryview.h"
 #include "llinventory.h"
+#include "floatersculptpreview.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "lltextureview.h"
@@ -68,6 +69,8 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 								   const LLUUID& object_id,
 								   BOOL show_keep_discard)
 :	LLPreview(name, rect, title, item_uuid, object_id, TRUE, PREVIEW_TEXTURE_MIN_WIDTH, PREVIEW_TEXTURE_MIN_HEIGHT ),
+	mItemImageID(item_uuid),
+	mImageName(name),
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(show_keep_discard),
 	mCopyToInv(FALSE),
@@ -111,7 +114,6 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 	}
 }
 
-
 // Note: uses asset_id as a dummy item id.
 LLPreviewTexture::LLPreviewTexture(
 	const std::string& name,
@@ -130,10 +132,12 @@ LLPreviewTexture::LLPreviewTexture(
 		PREVIEW_TEXTURE_MIN_WIDTH,
 		PREVIEW_TEXTURE_MIN_HEIGHT ),
 	mImageID(asset_id),
+	mItemImageID(asset_id),
+	mImageName(name),
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
-	mIsCopyable(TRUE),
+	mIsCopyable(copy_to_inv),
 	mLastHeight(0),
 	mLastWidth(0),
 	mAspectRatio(0.f)
@@ -175,11 +179,15 @@ void LLPreviewTexture::init()
 
 	if (mCopyToInv) 
 	{
+		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_embedded_texture.xml");
+
 		childSetAction("Copy To Inventory",LLPreview::onBtnCopyToInv,this);
 	}
 
 	else if (mShowKeepDiscard)
 	{
+		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture_keep_discard.xml");
+
 		childSetAction("Keep",onKeepBtn,this);
 		childSetAction("Discard",onDiscardBtn,this);
 	}
@@ -210,7 +218,10 @@ void LLPreviewTexture::init()
 								  old_rect.getWidth(), old_rect.getHeight());
 		childSetRect("dimensions", new_rect);
 	}
-
+	childSetAction("copy_uuid", onClickCopyID, this);
+	childSetEnabled("copy_uuid", canSaveAs());
+	childSetAction("preview_sculpt", onPreviewSculpt, this);
+	childSetEnabled("preview_sculpt", canSaveAs());
 
 	if (!mCopyToInv) 
 	{
@@ -250,6 +261,7 @@ void LLPreviewTexture::draw()
 
 		if ( mImage.notNull() )
 		{
+			if(mImage->isMissingAsset()) setTitle("Asset Missing");
 			// Draw the texture
 			glColor3f( 1.f, 1.f, 1.f );
 			gl_draw_scaled_image(interior.mLeft,
@@ -331,14 +343,46 @@ void LLPreviewTexture::draw()
 	} 
 }
 
+void LLPreviewTexture::onClickCopyID(void* data)
+{
+	LLPreviewTexture *self = (LLPreviewTexture*)data;
+ 	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
+	self->mImageID.toString(buffer);
+	llinfos << "copying id " << self->mImageID << " to clipboard" << llendl;
+	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+}
 
+
+void LLPreviewTexture::onPreviewSculpt(void* data)
+{
+	LLPreviewTexture *self = (LLPreviewTexture*)data;
+	self->mImage->setLoadedCallback( LLPreviewTexture::OnFileLoadedForPreview, 
+								0, TRUE, FALSE, new LLUUID( self->mItemUUID ) );
+}
+void LLPreviewTexture::OnFileLoadedForPreview(BOOL success, 
+											LLViewerImage *src_vi,
+											LLImageRaw* src, 
+											LLImageRaw* aux_src, 
+											S32 discard_level,
+											BOOL final,
+											void* userdata)
+{
+	if( final && success )
+	{
+		LLFloaterSculptPreview::show(src);
+	}
+}
+
+
+void LLPreviewTexture::onClickSaveButton(void* user_data)
+{
+	LLPreviewTexture* self = (LLPreviewTexture*)user_data;
+	self->saveAs();
+}
 // virtual
 BOOL LLPreviewTexture::canSaveAs() const
 {
-	// <edit>
-	//return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
-	return !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
-	// </edit>
+	return mIsCopyable && !mLoadingFullImage && mImage.notNull() && !mImage->isMissingAsset();
 }
 
 

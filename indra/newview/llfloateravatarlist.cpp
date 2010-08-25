@@ -693,7 +693,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 
 		//<edit> custom colors for certain types of avatars!
-		element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarAvatar" ).getValue();
+		element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
 		LLUUID estate_owner = LLUUID::null;
 		if(parent_estate && parent_estate->isAlive())
@@ -704,22 +704,22 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//Lindens are always more Linden than your friend, make that take precedence
 		if(LLMuteList::getInstance()->isLinden(entry->getName()))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarLinden" ).getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapLinden" ).getValue();
 		}
 		//first make sure their parent estate actually still exists and is alive, and yes, I am lazy.
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-				element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarEstateOwner" ).getValue();
+				element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapEstateOwner" ).getValue();
 		}
 		//without these people, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarFriend" ).getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapFriend" ).getValue();
 		}
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "RadarMuted" ).getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapMuted" ).getValue();
 		}
 		//</edit>
 

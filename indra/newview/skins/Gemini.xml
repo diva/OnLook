@@ -1,0 +1,14 @@
+<llsd>
+    <map>
+    <key>skin_name</key>
+        <string>Gemini</string>
+    <key>author_name</key>
+        <string>Skills Hak</string>
+    <key>additional_author_names</key>
+        <string>Linden Lab</string>
+    <key>skin_info</key>
+        <string>Originally made for the INFAMOUS Gemini viewer. Also default skin of Second Life 3.0. Use it if you don't like eye-cancer.</string>
+    <key>folder_name</key>
+        <string>gemini</string>
+    </map>
+</llsd>
