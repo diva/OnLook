@@ -776,6 +776,12 @@ BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 				{
 					src = LLToolDragAndDrop::SOURCE_LIBRARY;
 				}
+				// <edit>
+				else if(mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gLocalInventoryRoot))
+				{ // Note: this is only ok if all future pretend folders are subcategories of Pretend Inventory
+					src = LLToolDragAndDrop::SOURCE_LIBRARY;
+				}
+				// </edit>
 
 				can_drag = root->startDrag(src);
 				if (can_drag)

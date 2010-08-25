@@ -472,6 +472,14 @@ class LLDoCreate : public inventory_panel_listener_t
 		LLInventoryModel* model = mPtr->getModel();
 		if(!model) return false;
 		std::string type = userdata.asString();
+		// <edit>
+		if(type == "pretend")
+		{
+			LLFloaterNewLocalInventory* floater = new LLFloaterNewLocalInventory();
+			floater->center();
+		}
+		else
+		// </edit>
 		do_create(model, mPtr, type, LLFolderBridge::sSelf);
 		return true;
 	}

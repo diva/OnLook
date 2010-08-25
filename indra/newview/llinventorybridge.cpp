@@ -1114,12 +1114,11 @@ std::string LLItemBridge::getLabelSuffix() const
 		LLPermissions perm = item->getPermissions();
 		//
 		if(perm.getOwner() == gAgent.getID())
-		
 		{
 			BOOL copy = perm.allowCopyBy(gAgent.getID());
 			BOOL mod = perm.allowModifyBy(gAgent.getID());
-			BOOL xfer = perm.allowOperationBy(PERM_TRANSFER,
-																gAgent.getID());
+			BOOL xfer = perm.allowOperationBy(PERM_TRANSFER, gAgent.getID());
+
 			// *TODO: Translate
 			const char* EMPTY = "";
 			const char* NO_COPY = " (no copy)";
@@ -1139,6 +1138,10 @@ std::string LLItemBridge::getLabelSuffix() const
 			if(perm.getGroup() == gAgent.getID())stempo = TEMPO;
 			else stempo = EMPTY;
 			suffix = llformat("%s%s%s%s",scopy,smod,sxfer,stempo);
+		}
+		else if (!perm.isOwned())
+		{
+			suffix = " (temporary)";
 		}
 	}
 	return suffix;

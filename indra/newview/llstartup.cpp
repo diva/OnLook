@@ -2145,6 +2145,19 @@ bool idle_startup()
  				}
  			}
 
+			// <edit> testing adding a local inventory folder...
+			LLViewerInventoryCategory* test_cat = new LLViewerInventoryCategory(gAgent.getID());
+			test_cat->rename(std::string("Pretend Inventory"));
+			LLUUID test_cat_id;
+			test_cat_id.generate();
+			test_cat->setUUID(test_cat_id);
+			gLocalInventoryRoot = test_cat_id;
+			test_cat->setParent(LLUUID::null);
+			test_cat->setPreferredType(LLAssetType::AT_NONE);
+
+			gInventory.addCategory(test_cat);
+			// </edit>
+
 			// OGPX login-flags : we don't currently get those passed back (there is a gendered hack in the code elsewhere)
 			// unsure if OGPX should be getting all these. 
 			if (LLUserAuth::getInstance()->mResult["login-flags"].isArray())
