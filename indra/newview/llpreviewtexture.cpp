@@ -41,7 +41,6 @@
 #include "llimagetga.h"
 #include "llinventoryview.h"
 #include "llinventory.h"
-#include "floatersculptpreview.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "lltextureview.h"
@@ -69,15 +68,12 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 								   const LLUUID& object_id,
 								   BOOL show_keep_discard)
 :	LLPreview(name, rect, title, item_uuid, object_id, TRUE, PREVIEW_TEXTURE_MIN_WIDTH, PREVIEW_TEXTURE_MIN_HEIGHT ),
-	mItemImageID(item_uuid),
-	mImageName(name),
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(show_keep_discard),
 	mCopyToInv(FALSE),
 	mIsCopyable(FALSE),
 	mLastHeight(0),
-	mLastWidth(0),
-	mAspectRatio(0.f)
+	mLastWidth(0)
 {
 	const LLInventoryItem *item = getItem();
 	if(item)
@@ -132,23 +128,21 @@ LLPreviewTexture::LLPreviewTexture(
 		PREVIEW_TEXTURE_MIN_WIDTH,
 		PREVIEW_TEXTURE_MIN_HEIGHT ),
 	mImageID(asset_id),
-	mItemImageID(asset_id),
-	mImageName(name),
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
 	mIsCopyable(copy_to_inv),
 	mLastHeight(0),
-	mLastWidth(0),
-	mAspectRatio(0.f)
+	mLastWidth(0)
 {
 
 	init();
 
 	setTitle(title);
-
+	
 	LLRect curRect = getRect();
 	translate(curRect.mLeft - rect.mLeft, curRect.mTop - rect.mTop);
+	
 }
 
 
@@ -159,26 +153,17 @@ LLPreviewTexture::~LLPreviewTexture()
 		getWindow()->decBusyCount();
 	}
 
-	if(mImage.notNull())
-	{
-		mImage->destroySavedRawImage() ;
-	}
 	mImage = NULL;
 }
 
 
 void LLPreviewTexture::init()
 {
-	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture.xml");
 	
-	childSetVisible("desc", !mCopyToInv);	// Hide description field for embedded textures
-	childSetVisible("desc txt", !mCopyToInv);
-	childSetVisible("Copy To Inventory", mCopyToInv);
-	childSetVisible("Keep", mShowKeepDiscard);
-	childSetVisible("Discard", mShowKeepDiscard);
-
-	if (mCopyToInv) 
+	
+	/*if (mCopyToInv) 
 	{
+		llinfos << "Loading embedded" << llendl;
 		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_embedded_texture.xml");
 
 		childSetAction("Copy To Inventory",LLPreview::onBtnCopyToInv,this);
@@ -186,6 +171,7 @@ void LLPreviewTexture::init()
 
 	else if (mShowKeepDiscard)
 	{
+		llinfos << "Loading Keep/Discard" << llendl;
 		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture_keep_discard.xml");
 
 		childSetAction("Keep",onKeepBtn,this);
@@ -193,35 +179,15 @@ void LLPreviewTexture::init()
 	}
 
 	else 
-	{
-		// If the buttons are hidden move stuff down to use the space.
-		
-		LLRect keep_rect, old_rect, new_rect;
-		S32 diff;
-		
-		childGetRect("Keep", keep_rect);
-		childGetRect("combo_aspect_ratio", old_rect);
-		
-		diff = old_rect.mBottom - keep_rect.mBottom;
-		
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
-								  old_rect.getWidth(), old_rect.getHeight());
-		childSetRect("combo_aspect_ratio", new_rect);
+	{*/
+		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture.xml");
+		childSetVisible("Copy To Inventory", mCopyToInv);
+		childSetVisible("Keep", mShowKeepDiscard);
+		childSetVisible("Discard", mShowKeepDiscard);
+		llinfos << "Image has alpha :" << mImage->getIsAlphaMask() << llendl;
 
-		childGetRect("aspect_ratio", old_rect);
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
-								  old_rect.getWidth(), old_rect.getHeight());
-		childSetRect("aspect_ratio", new_rect);
+	//}
 
-		childGetRect("dimensions", old_rect);
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
-								  old_rect.getWidth(), old_rect.getHeight());
-		childSetRect("dimensions", new_rect);
-	}
-	childSetAction("copy_uuid", onClickCopyID, this);
-	childSetEnabled("copy_uuid", canSaveAs());
-	childSetAction("preview_sculpt", onPreviewSculpt, this);
-	childSetEnabled("preview_sculpt", canSaveAs());
 
 	if (!mCopyToInv) 
 	{
@@ -233,8 +199,36 @@ void LLPreviewTexture::init()
 			childSetText("desc", item->getDescription());
 			childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
 		}
+
+		// If the buttons are hidden move stuff down to use the space.
+		
+		LLRect keep_rect, old_rect, new_rect;
+		S32 diff;
+		
+		childGetRect("Keep", keep_rect);
+		childGetRect("combo_aspect_ratio", old_rect);
+		
+		diff = old_rect.mBottom - keep_rect.mBottom;
+		
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+								  old_rect.getWidth(), old_rect.getHeight());
+		childSetRect("combo_aspect_ratio", new_rect);
+
+		childGetRect("aspect_ratio", old_rect);
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+								  old_rect.getWidth(), old_rect.getHeight());
+		childSetRect("aspect_ratio", new_rect);
+
+		childGetRect("dimensions", old_rect);
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+								  old_rect.getWidth(), old_rect.getHeight());
+		childSetRect("dimensions", new_rect);
 	}
-	
+	childSetText("uuid", getItemID().asString());
+	childSetText("uploader", getItemCreatorName());
+	childSetText("uploadtime", getItemCreationDate());
+
+
 	childSetCommitCallback("combo_aspect_ratio", onAspectRatioCommit, this);
 	LLComboBox* combo = getChild<LLComboBox>("combo_aspect_ratio");
 	combo->setCurrentByIndex(0);
@@ -261,7 +255,6 @@ void LLPreviewTexture::draw()
 
 		if ( mImage.notNull() )
 		{
-			if(mImage->isMissingAsset()) setTitle("Asset Missing");
 			// Draw the texture
 			glColor3f( 1.f, 1.f, 1.f );
 			gl_draw_scaled_image(interior.mLeft,
@@ -273,12 +266,7 @@ void LLPreviewTexture::draw()
 			// Pump the texture priority
 			F32 pixel_area = mLoadingFullImage ? (F32)MAX_IMAGE_AREA  : (F32)(interior.getWidth() * interior.getHeight() );
 			mImage->addTextureStats( pixel_area );
-			if(pixel_area > 0.f)
-			{
-				//boost the previewed image priority to the highest to make it to get loaded first.
-				mImage->setAdditionalDecodePriority(1.0f) ;
-			}
-
+			
 			// Don't bother decoding more than we can display, unless
 			// we're loading the full image.
 			if (!mLoadingFullImage)
@@ -329,8 +317,7 @@ void LLPreviewTexture::draw()
 					}
 				}
 			}
-			else
-			if( !mSavedFileTimer.hasExpired() )
+			else if( !mSavedFileTimer.hasExpired() )
 			{
 				// *TODO: Translate
 				LLFontGL::getFontSansSerif()->renderUTF8(std::string("File Saved"), 0,
@@ -343,42 +330,7 @@ void LLPreviewTexture::draw()
 	} 
 }
 
-void LLPreviewTexture::onClickCopyID(void* data)
-{
-	LLPreviewTexture *self = (LLPreviewTexture*)data;
- 	char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
-	self->mImageID.toString(buffer);
-	llinfos << "copying id " << self->mImageID << " to clipboard" << llendl;
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
-}
 
-
-void LLPreviewTexture::onPreviewSculpt(void* data)
-{
-	LLPreviewTexture *self = (LLPreviewTexture*)data;
-	self->mImage->setLoadedCallback( LLPreviewTexture::OnFileLoadedForPreview, 
-								0, TRUE, FALSE, new LLUUID( self->mItemUUID ) );
-}
-void LLPreviewTexture::OnFileLoadedForPreview(BOOL success, 
-											LLViewerImage *src_vi,
-											LLImageRaw* src, 
-											LLImageRaw* aux_src, 
-											S32 discard_level,
-											BOOL final,
-											void* userdata)
-{
-	if( final && success )
-	{
-		LLFloaterSculptPreview::show(src);
-	}
-}
-
-
-void LLPreviewTexture::onClickSaveButton(void* user_data)
-{
-	LLPreviewTexture* self = (LLPreviewTexture*)user_data;
-	self->saveAs();
-}
 // virtual
 BOOL LLPreviewTexture::canSaveAs() const
 {
@@ -400,18 +352,9 @@ void LLPreviewTexture::saveAs()
 	}
 	// remember the user-approved/edited file name.
 	mSaveFileName = file_picker.getFirstFile();
-	std::string filename = mSaveFileName;
-	LLStringUtil::toLower(filename);
-	if (filename.find(".tga") != filename.length() - 4)
-	{
-		mSaveFileName += ".tga";
-	}
 	mLoadingFullImage = TRUE;
 	getWindow()->incBusyCount();
-	// <edit>
-	//mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
-	mImage->setLoadedCallbackNoAux( LLPreviewTexture::onFileLoadedForSave, 
-	// </edit>
+	mImage->setLoadedCallback( LLPreviewTexture::onFileLoadedForSave, 
 								0, TRUE, FALSE, new LLUUID( mItemUUID ) );
 }
 
@@ -474,18 +417,40 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 	}
 }
 
-// <edit>
-// virtual
 LLUUID LLPreviewTexture::getItemID()
 {
 	const LLViewerInventoryItem* item = getItem();
-	if(item)
+	if(item && item->getPermissions().allowCopyBy(gAgent.getID()))
 	{
 		return item->getUUID();
 	}
 	return LLUUID::null;
 }
-// </edit>
+
+std::string LLPreviewTexture::getItemCreationDate()
+{
+	const LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		std::string time;
+		timeToFormattedString(item->getCreationDate(), gSavedSettings.getString("TimestampFormat"), time);
+		return time;
+	}
+	return "Unknown";
+}
+
+std::string LLPreviewTexture::getItemCreatorName()
+{
+	const LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		std::string name;
+		gCacheName->getFullName(item->getCreatorUUID(), name);
+		return name;
+	}
+	return "Unknown";
+}
+
 
 // It takes a while until we get height and width information.
 // When we receive it, reshape the window accordingly.
@@ -503,11 +468,12 @@ void LLPreviewTexture::updateDimensions()
 	S32 vert_pad = PREVIEW_HEADER_SIZE + 2 * CLIENT_RECT_VPAD + LLPANEL_BORDER_WIDTH;	
 	S32 max_client_width = gViewerWindow->getWindowWidth() - horiz_pad;
 	S32 max_client_height = gViewerWindow->getWindowHeight() - vert_pad;
-
-	if (mAspectRatio > 0.f) client_height = llceil((F32)client_width / mAspectRatio);
+	
+	if (mAspectRatio > 0.f) 
+		client_height = llceil((F32)client_width / mAspectRatio);
 
 	while ((client_width > max_client_width) ||
-	       (client_height > max_client_height ))
+	       (client_height > max_client_height ) )
 	{
 		client_width /= 2;
 		client_height /= 2;
@@ -538,7 +504,7 @@ void LLPreviewTexture::updateDimensions()
 
 	view_width = llmax(view_width, getMinWidth());
 	view_height = llmax(view_height, getMinHeight());
-
+	
 	if (client_height != mLastHeight || client_width != mLastWidth)
 	{
 		mLastWidth = client_width;
@@ -608,8 +574,8 @@ void LLPreviewTexture::updateDimensions()
 	window_rect.mTop -= (PREVIEW_HEADER_SIZE + CLIENT_RECT_VPAD);
 	window_rect.mBottom += PREVIEW_BORDER + button_height + CLIENT_RECT_VPAD + info_height + CLIENT_RECT_VPAD;
 
-	mClientRect.setLeftTopAndSize(window_rect.getCenterX() - (client_width / 2), window_rect.mTop, client_width, client_height);	
-	
+	mClientRect.setLeftTopAndSize(window_rect.getCenterX() - (client_width / 2), window_rect.mTop, client_width, client_height);
+
 	// Hide the aspect ratio label if the window is too narrow
 	// Assumes the label should be to the right of the dimensions
 	LLRect dim_rect, aspect_label_rect;
@@ -662,7 +628,6 @@ void LLPreviewTexture::loadAsset()
 {
 	mImage = gImageList.getImage(mImageID, MIPMAP_TRUE, FALSE);
 	mImage->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
-	mImage->forceToSaveRawImage(0) ;
 	mAssetStatus = PREVIEW_ASSET_LOADING;
 }
 

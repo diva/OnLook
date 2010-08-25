@@ -693,7 +693,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 
 		//<edit> custom colors for certain types of avatars!
-		element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
+		//element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
 		LLUUID estate_owner = LLUUID::null;
 		if(parent_estate && parent_estate->isAlive())

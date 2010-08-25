@@ -38,7 +38,6 @@
 #include "llframetimer.h"
 #include "llviewerimage.h"
 
-class LLComboBox;
 class LLImageRaw;
 
 class LLPreviewTexture : public LLPreview
@@ -60,20 +59,15 @@ public:
 	~LLPreviewTexture();
 
 	virtual void		draw();
-	
-	static void			onClickCopyID(void* data);
-	static void			onPreviewSculpt(void* data);
-	static void			SaveToInventory(void* data);
+
 	virtual BOOL		canSaveAs() const;
 	virtual void		saveAs();
-	// <edit>
-	virtual LLUUID getItemID();
-	// </edit>
-
+	virtual LLUUID		getItemID();
+	virtual std::string	getItemCreatorName();
+	virtual std::string	getItemCreationDate();
 	virtual void		loadAsset();
 	virtual EAssetStatus	getAssetStatus();
 
-	static void 		onClickSaveButton (void* user_data);
 	static void			saveToFile(void* userdata);
 	static void			onFileLoadedForSave( 
 							BOOL success,
@@ -83,16 +77,8 @@ public:
 							S32 discard_level, 
 							BOOL final,
 							void* userdata );
-	static void			OnFileLoadedForPreview( 
-							BOOL success,
-							LLViewerImage *src_vi,
-							LLImageRaw* src, 
-							LLImageRaw* aux_src,
-							S32 discard_level, 
-							BOOL final,
-							void* userdata );
 
-	LLImageRaw* mImageRaw;
+
 protected:
 	void				init();
 	bool				setAspectRatio(const F32 width, const F32 height);
@@ -102,9 +88,6 @@ protected:
 	
 private:
 	void				updateDimensions();
-	LLUUID 				mItemImageID;
-	std::string			mImageName;
-	LLUUID 				mAssetImageID;
 	LLUUID						mImageID;
 	LLPointer<LLViewerImage>		mImage;
 	BOOL				mLoadingFullImage;
@@ -116,10 +99,10 @@ private:
 	// This is stored off in a member variable, because the save-as
 	// button and drag and drop functionality need to know.
 	BOOL mIsCopyable;
-
+	
 	S32 mLastHeight;
 	S32 mLastWidth;
-	F32 mAspectRatio;	// 0 = Unconstrained
+	F32 mAspectRatio;
 };
 
 
