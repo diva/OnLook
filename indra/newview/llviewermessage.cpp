@@ -2405,20 +2405,17 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	msg->getUUID("ChatData", "SourceID", from_id);
 	chat.mFromID = from_id;
 	
-	// <edit>
-	// this chatter assignment is moved from below
+
 	chatter = gObjectList.findObject(from_id);
-	/*
+
 	if(chatter)
 	{
 		if(chatter->isAvatar())
 		{
-			((LLVOAvatar*)chatter)->resetIdleTime();
+			((LLVOAvatar*)chatter)->mIdleTimer.reset();
 		}
 	}
-	*/
-	// </edit>
-	// Object owner for objects
+
 	msg->getUUID("ChatData", "OwnerID", owner_id);
 	
 	msg->getU8Fast(_PREHASH_ChatData, _PREHASH_SourceType, source_temp);

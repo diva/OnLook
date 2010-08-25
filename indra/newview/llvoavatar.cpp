@@ -5827,38 +5827,38 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 		gAgent.setAFK();
 	}
 
+	if( id == ANIM_AGENT_BUSY ||
+		id == ANIM_AGENT_CROUCH ||
+		id == ANIM_AGENT_CROUCHWALK ||
+		id == ANIM_AGENT_FEMALE_WALK ||
+		id == ANIM_AGENT_FLY ||
+		id == ANIM_AGENT_FLYSLOW ||
+		id == ANIM_AGENT_HOVER ||
+		id == ANIM_AGENT_HOVER_DOWN ||
+		id == ANIM_AGENT_HOVER_UP ||
+		id == ANIM_AGENT_JUMP ||
+		id == ANIM_AGENT_LAND ||
+		id == ANIM_AGENT_PRE_JUMP ||
+		id == ANIM_AGENT_RUN ||
+		id == ANIM_AGENT_SHOUT ||
+		id == ANIM_AGENT_SIT ||
+		id == ANIM_AGENT_SIT_FEMALE ||
+		id == ANIM_AGENT_SIT_GENERIC ||
+		id == ANIM_AGENT_SIT_GROUND ||
+		id == ANIM_AGENT_SIT_GROUND_CONSTRAINED ||
+		id == ANIM_AGENT_SNAPSHOT ||
+		id == ANIM_AGENT_STAND ||
+		id == ANIM_AGENT_TURNLEFT ||
+		id == ANIM_AGENT_TURNRIGHT ||
+		id == ANIM_AGENT_TYPE ||
+		id == ANIM_AGENT_WALK ||
+		id == ANIM_AGENT_WHISPER ||
+		id == ANIM_AGENT_WHISPER
+	) 
+	mIdleTimer.reset();
+
 	return LLCharacter::startMotion(id, time_offset);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //-----------------------------------------------------------------------------
 // stopMotion()
@@ -5889,6 +5889,10 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 	{
 		LLCharacter::stopMotion(ANIM_AGENT_SIT_FEMALE, stop_immediate);
 	}
+	
+	if(id == ANIM_AGENT_AWAY ||
+		id == ANIM_AGENT_BUSY) 
+	mIdleTimer.reset();
 
 	return LLCharacter::stopMotion(id, stop_immediate);
 }
