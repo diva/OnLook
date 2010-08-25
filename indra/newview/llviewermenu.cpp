@@ -2412,6 +2412,66 @@ class LLObjectData : public view_listener_t
 	}
 };
 
+class LLCanIHasKillEmAll : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+		bool new_value = false;
+		if(objpos)
+		{
+			if (!objpos->permYouOwner())
+				new_value = false; // Don't give guns to retarded children.
+			else new_value = true;
+		}
+
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return false;
+	}
+};
+
+class LLKillEmAll : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		// Originally by SimmanFederal
+		// Moved here by a big fat fuckin dog. <dogmode>
+		LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+		if(objpos)
+		{
+			// Dont give guns to retarded children
+			if (!objpos->permYouOwner())
+			{
+				LLChat chat;
+				chat.mSourceType = CHAT_SOURCE_SYSTEM;
+				chat.mText = llformat("Can't do that, dave.");
+				LLFloaterChat::addChat(chat);
+				return false;
+			}
+
+			// Let the user know they are a rippling madman what is capable of everything
+			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			chat.mText = llformat("Irrevocably destroying object. Hope you didn't need that.");
+
+			LLFloaterChat::addChat(chat);
+			/*
+				NOTE: Temporary objects, when thrown off world/put off world,
+				do not report back to the viewer, nor go to lost and found.
+				
+				So we do selectionUpdateTemporary(1)
+			*/
+			LLSelectMgr::getInstance()->selectionUpdateTemporary(1);//set temp to TRUE
+			LLVector3 pos = objpos->getPosition();//get the x and the y
+			pos.mV[VZ] = 340282346638528859811704183484516925440.0f;//create the z
+			objpos->setPositionParent(pos);//set the x y z
+			LLSelectMgr::getInstance()->sendMultipleUpdate(UPD_POSITION);//send the data
+		}
+
+		return true;
+	}
+};
+
 class LLObjectMeasure : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9658,6 +9718,8 @@ void initialize_menus()
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
+	addMenu(new LLKillEmAll(), "Object.Destroy");
+	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");

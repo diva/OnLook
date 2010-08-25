@@ -407,7 +407,7 @@ void LLChatBar::sendChat( EChatType type )
 			std::string utf8_revised_text;
 			if (0 == channel)
 			{
-				if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
+				if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
 				{
 					// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 					int needsClosingType=0;

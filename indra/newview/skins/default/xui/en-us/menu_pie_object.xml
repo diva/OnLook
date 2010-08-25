@@ -44,12 +44,11 @@
 			<on_enable function="Object.EnableReturn" />
 		</menu_item_call>
 		<pie_menu label="More &gt;" name="Rate Menu">
-			<menu_item_call enabled="false" label="Report..." mouse_opaque="true"
-			     name="Report Abuse...">
-				<on_click function="Object.ReportAbuse" />
-				<on_enable function="Object.EnableReportAbuse" />
-			</menu_item_call>
-			<menu_item_call bottom="-487" enabled="false" height="19" label="Reset Scripts"
+      <menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
+        <on_click function="Object.Destroy" />
+        <on_enable function="Object.EnableDestroy" />
+      </menu_item_call>
+      <menu_item_call bottom="-487" enabled="false" height="19" label="Reset Scripts"
 				 left="0" mouse_opaque="true" name="Reset Scripts" width="250">
 				<on_click function="Tools.SelectedScriptAction" userdata="reset" />
 				<on_enable function="EditableSelected" />
