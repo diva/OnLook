@@ -4034,8 +4034,8 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 				items.push_back(std::string("Object Wear"));
 				items.push_back(std::string("Attach To"));
 				items.push_back(std::string("Attach To HUD"));
-				// commented out for DEV-32347
-				//items.push_back(std::string("Restore to Last Position"));
+				// commented out for DEV-32347 - AND Commented back in for non-morons.
+				items.push_back(std::string("Restore to Last Position"));
 
 
 
