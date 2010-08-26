@@ -96,8 +96,6 @@
 #include "llfloateranimpreview.h" // for reuploads
 #include "llfloaterimagepreview.h" // for reuploads
 #include "llimportobject.h" // for disabling options during import
-#include "llviewerparcelmgr.h" // FOR SEXING.
-#include "llparcel.h" // WOAH, EVEN MORE SEX
 //#include "llcheats.h"
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
@@ -1031,17 +1029,6 @@ void LLItemBridge::restoreToWorld()
 		msg->nextBlockFast(_PREHASH_AgentData);
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-
-		// Alway rez objects as land group if available.
-		if (gSavedSettings.getBOOL("AscentAlwaysRezInGroup"))
-		{
-			LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-			if(gAgent.isInGroup(parcel->getGroupID()))
-				msg->addUUIDFast(_PREHASH_GroupID, parcel->getGroupID());
-			else if(gAgent.isInGroup(parcel->getOwnerID()))
-				msg->addUUIDFast(_PREHASH_GroupID, parcel->getOwnerID());
-			else msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
-		} else msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID());
 
 		msg->nextBlockFast(_PREHASH_InventoryData);
 		itemp->packMessage(msg);
