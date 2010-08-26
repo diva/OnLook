@@ -90,32 +90,32 @@
 				tool_tip="Enabling this set your avatar name color to your client tag color or custom set color."
 				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="65" control_name="AscentCustomizeOwnTag" enabled="false"
-				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+			<check_box bottom_delta="65" control_name="AscentUseCustomTag" enabled="false"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Use a custom color and label (Local only)" left_delta="230"
 				tool_tip="Enabling this will let you set your own name tag to show up with your custom client and tag color. This only shows up to yourself."
 				mouse_opaque="true" name="customize_own_tag_check" radio_style="false"
 				width="400" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				bottom_delta="-16" left_delta="0" drop_shadow_visible="true" enabled="false" follows="left|top"
+				bottom_delta="-16" left_delta="0" drop_shadow_visible="true" enabled="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="10" 
-				mouse_opaque="true" name="tag_color_textbox" v_pad="0" width="394">
+				mouse_opaque="true" name="custom_tag_label_text" v_pad="0" width="394">
 				Tag Label:
 			</text>
-			<line_editor bottom_delta="-8" enabled="false" follows="left|top" font="SansSerif"
-				height="20" left_delta="60" name="custom_client_tag_label"
+			<line_editor bottom_delta="-8" enabled="true" follows="left|top" font="SansSerif"
+				height="20" left_delta="60" name="custom_tag_label_box"
 				tool_tip="The custom string you would like to replace your client tag with (Local only)"
 				width="170" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				bottom_delta="-25" left_delta="-60" drop_shadow_visible="true" enabled="false" follows="left|top"
+				bottom_delta="-25" left_delta="-60" drop_shadow_visible="true" enabled="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="10" 
-				mouse_opaque="true" name="tag_color_textbox" v_pad="0" width="394">
+				mouse_opaque="true" name="custom_tag_color_text" v_pad="0" width="394">
 				Tag color:
 			</text>
 			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-29"
 				can_apply_immediately="false" color="1 1 1 1"
-				enabled="false" follows="left|top" height="48" label="" left_delta="73"
-				mouse_opaque="true" name="tag_color_swatch"
+				enabled="true" follows="left|top" height="48" label="" left_delta="60"
+				mouse_opaque="true" name="custom_tag_color_swatch"
 				tool_tip="The custom color you would like to replace your client color with (Local only)" width="32" />
 			<!-- End of Client Tag settings -->
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

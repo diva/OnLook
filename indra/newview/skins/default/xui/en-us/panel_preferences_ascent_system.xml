@@ -17,12 +17,6 @@
 				tool_tip="The Animation upload window will play animations on your avatar when previewing them."
 			    mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
 			    width="400" />
-			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
-				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-				label="On standing up, revoke perms for the object your avatar was sitting on" left="10"
-				tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
-				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
-				width="400" />
 			<check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 	    		label="Save scripts in inventory as Mono scripts instead of LSL2" left="10"
@@ -271,7 +265,8 @@
 						 tool_tip="" name="AscentCmdLineMapTo" control_name="AscentCmdLineMapTo" width="200"/>
 			<check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
 						 initial_value="false" label="Use same position between sims" left_delta="0" mouse_opaque="true"
-						 name="toggle" radio_style="false" width="270" control_name="AscentCmdLineMapToKeepPos"/>
+						 name="AscentCmdLineMapToKeepPos" radio_style="false" width="270" 
+						 control_name="AscentCmdLineMapToKeepPos"/>
 			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
 						 name="cmd_line_text_13" width="512">
 				Teleport to avatar (usage: cmd name)</text>
@@ -299,6 +294,12 @@
 				tool_tip="Turns off broadcasting headturns and lookat beacons for yourself."
 			    mouse_opaque="true" name="private_look_at_check" radio_style="false"
 			    width="400" />
+			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+				label="On standing up, revoke perms for the object your avatar was sitting on" left="10"
+				tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
+				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
+				width="400" />
 		</panel>
 	</tab_container>
 </panel>
