@@ -5619,8 +5619,8 @@ void LLVOAvatar::processAnimationStateChanges()
 
 	stop_glerror();
 }
-/*Here's that undeform function I was talking about. -HGB
-// Bug-fixed Linden Labs style. Comment out 4ever.
+//Here's that undeform function I was talking about. -HGB
+/* Bug-fixed Linden Labs style. Comment out 4ever.
 std::string undeformers[] =
 {
 	"7a8a3dfc-acd1-7ac3-9cdf-71cd9be89969",
