@@ -10,6 +10,10 @@
 #include "llviewerwindow.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
+#include "llviewerparcelmgr.h"
+#include "llparcel.h"
+#include "llchat.h"
+#include "llfloaterchat.h"
 
 static const size_t num_collision_sounds = 28;
 const LLUUID collision_sounds[num_collision_sounds] =
@@ -257,7 +261,11 @@ BOOL LLFloaterExploreSounds::tick()
 
 		LLSD& sound_column = element["columns"][3];
 		sound_column["column"] = "sound";
-		sound_column["value"] = item.mAssetID.asString();
+
+		if (item.mOwnerID == gAgent.getID())
+			sound_column["value"] = item.mAssetID.asString();
+		else
+			sound_column["value"] = LLUUID::null.asString();
 
 		list->addElement(element, ADD_BOTTOM);
 	}
@@ -323,6 +331,16 @@ void LLFloaterExploreSounds::handle_play_in_world(void* user_data)
 // static
 void LLFloaterExploreSounds::handle_play_ambient(void* user_data)
 {
+	LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
+	if(!gAgent.isInGroup(parcel->getGroupID()))
+	{	
+		LLChat chat;
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+		chat.mText = llformat("Can't play ambient sound: Must be on land you're grouped to.");
+		LLFloaterChat::addChat(chat);
+		return;
+	}
+
 	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
 	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
 	std::vector<LLScrollListItem*> selection = list->getAllSelected();
@@ -404,7 +422,17 @@ void LLFloaterExploreSounds::handle_copy_uuid(void* user_data)
 	LLSoundHistoryItem item = floater->getItem(selection);
 	if(item.mID.isNull()) return;
 
-	gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item.mAssetID.asString()));
+	if (item.mOwnerID == gAgent.getID())
+	{
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item.mAssetID.asString()));
+	}
+	else
+	{
+		LLChat chat;
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+		chat.mText = llformat("Can't copy UUIDs you don't own.");
+		LLFloaterChat::addChat(chat);
+	}
 }
 
 // static
