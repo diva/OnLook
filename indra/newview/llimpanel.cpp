@@ -2018,7 +2018,7 @@ void LLFloaterIMPanel::sendMsg()
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
 			std::string utf8text = wstring_to_utf8str(text);
-			if (gSavedSettings.getBOOL("AscentAutoCloseOOC"))
+			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
 			{
 				// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 				int needsClosingType=0;
