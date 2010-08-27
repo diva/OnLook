@@ -34,7 +34,6 @@
 
 //File include
 #include "ascentprefssys.h"
-#include "ascentprefsvan.h"
 #include "llcolorswatch.h"
 #include "llvoavatar.h"
 #include "llagent.h"
@@ -244,9 +243,20 @@ void LLPrefsAscentSysImpl::apply()
 {
 	std::string short_date, long_date, short_time, long_time, timestamp;
 	
-	gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").asInteger());
+	//General ------------------------------------------------------------------------------
+	gSavedSettings.setBOOL("DoubleClickTeleport",		childGetValue("double_click_teleport_check"));
+	gSavedSettings.setBOOL("PreviewAnimInWorld",		childGetValue("preview_anim_in_world_check"));
+	gSavedSettings.setBOOL("SaveScriptsAsMono",			childGetValue("save_scripts_as_mono_check"));
+	gSavedSettings.setBOOL("AscentAlwaysRezInGroup",	childGetValue("always_rez_in_group_check"));
 
-	//Save User Interface
+	//Chat/IM ------------------------------------------------------------------------------
+	//Missing the echo/log option.
+	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
+	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
+	//MU Pose missing.
+	//Auto-close missing.
+	gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").asInteger());
+	
 	LLComboBox* combo = getChild<LLComboBox>("time_format_combobox");
 	if (combo) {
 		mTimeFormat = combo->getCurrentIndex();
@@ -290,37 +300,46 @@ void LLPrefsAscentSysImpl::apply()
 		timestamp  = "%a %b %d %Y" + timestamp;
 	}
 
-	gSavedSettings.setString("ShortDateFormat",	short_date);
-	gSavedSettings.setString("LongDateFormat",	long_date);
-	gSavedSettings.setString("ShortTimeFormat",	short_time);
-	gSavedSettings.setString("LongTimeFormat",	long_time);
-	gSavedSettings.setString("TimestampFormat",	timestamp);
+	gSavedSettings.setString("ShortDateFormat",			short_date);
+	gSavedSettings.setString("LongDateFormat",			long_date);
+	gSavedSettings.setString("ShortTimeFormat",			short_time);
+	gSavedSettings.setString("LongTimeFormat",			long_time);
+	gSavedSettings.setString("TimestampFormat",			timestamp);
 
 	gSavedSettings.setBOOL("SecondsInChatAndIMs",		childGetValue("seconds_in_chat_and_ims_check"));
 
-	//Save Chat/IM
-	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
-	
-	//Save Performance
+	//Performance ----------------------------------------------------------------------------
+	gSavedSettings.setBOOL("FetchInventoryOnLogin",		childGetValue("fetch_inventory_on_login_check"));
 	gSavedSettings.setBOOL("WindEnabled",				childGetValue("enable_wind"));
-
-	//Save Privacy
-
-	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
-
-	//Save Misc
-	gSavedSettings.setBOOL("DoubleClickTeleport",		childGetValue("double_click_teleport_check"));
+	//Missing "Enabled Clouds"
 	gSavedSettings.setBOOL("SpeedRez",					childGetValue("speed_rez_check"));
 	gSavedSettings.setU32("SpeedRezInterval",			childGetValue("speed_rez_interval").asReal());
-	gSavedSettings.setBOOL("PreviewAnimInWorld",		childGetValue("preview_anim_in_world_check"));
+	
+	//Commandline ----------------------------------------------------------------------------
+	//Missing "Use Command Line"
+	gSavedSettings.setString("AscentCmdLinePos",		childGetValue("AscentCmdLinePos"));
+	gSavedSettings.setString("AscentCmdLineGround",		childGetValue("AscentCmdLineGround"));
+	gSavedSettings.setString("AscentCmdLineHeight",		childGetValue("AscentCmdLineHeight"));
+	gSavedSettings.setString("AscentCmdLineTeleportHome",	childGetValue("AscentCmdLineTeleportHome"));
+	gSavedSettings.setString("AscentCmdLineRezPlatform",	childGetValue("AscentCmdLineRezPlatform"));
+	//Platform Size
+	gSavedSettings.setString("AscentCmdLineCalc",		childGetValue("AscentCmdLineCalc"));
+	gSavedSettings.setString("AscentCmdLineClearChat",	childGetValue("AscentCmdLineClearChat"));
+		//-------------------------------------------------------------------------------------
+	gSavedSettings.setString("AscentCmdLineDrawDistance",	childGetValue("AscentCmdLineDrawDistance"));
+	gSavedSettings.setString("AscentCmdTeleportToCam",		childGetValue("AscentCmdTeleportToCam"));
+	gSavedSettings.setString("AscentCmdLineKeyToName",		childGetValue("AscentCmdLineKeyToName"));
+	gSavedSettings.setString("AscentCmdLineOfferTp",		childGetValue("AscentCmdLineOfferTp"));
+	gSavedSettings.setString("AscentCmdLineMapTo",		childGetValue("AscentCmdLineMapTo"));
+	gSavedSettings.setBOOL("AscentCmdLineMapToKeepPos",	childGetValue("AscentCmdLineMapToKeepPos"));
+	gSavedSettings.setString("AscentCmdLineTP2",		childGetValue("AscentCmdLineTP2"));
+	
+
+	//Privacy --------------------------------------------------------------------------------
 	gSavedSettings.setBOOL("BroadcastViewerEffects",	childGetValue("broadcast_viewer_effects"));
 	gSavedSettings.setBOOL("DisablePointAtAndBeam",		childGetValue("disable_point_at_and_beams_check"));
 	gSavedSettings.setBOOL("PrivateLookAt",				childGetValue("private_look_at_check"));
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
-	gSavedSettings.setBOOL("SaveScriptsAsMono",			childGetValue("save_scripts_as_mono_check"));
-	gSavedSettings.setBOOL("FetchInventoryOnLogin",		childGetValue("fetch_inventory_on_login_check"));
-	gSavedSettings.setBOOL("AscentAlwaysRezInGroup",	childGetValue("always_rez_in_group_check"));
-	
 
 	refreshValues();
 }

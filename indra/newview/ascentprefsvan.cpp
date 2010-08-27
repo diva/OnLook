@@ -62,9 +62,14 @@ public:
 private:
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
 	void refreshValues();
+	//General
+	BOOL mUseAccountSettings;
+	//Colors
 	BOOL mShowSelfClientTag;
 	BOOL mShowSelfClientTagColor;
-	BOOL mUseAccountSettings;
+	BOOL mCustomTagOn;
+	std::string mCustomTagLabel;
+	LLColor4 mCustomTagColor;
 	LLColor4 mEffectColor;
 	U32 mSelectedClient;
 };
@@ -75,6 +80,9 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
+	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
+
+	
 	refresh();
 	
 }
@@ -82,8 +90,31 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 //static
 void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 {
+	
 	LLPrefsAscentVanImpl* self = (LLPrefsAscentVanImpl*)user_data;
-	self->refresh();
+
+	llinfos << "Control named " << ctrl->getControlName() << llendl;
+	if (ctrl->getControlName() == "AscentStoreSettingsPerAccount")
+	{
+		self->refresh();
+	}
+	else
+	{
+		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
+		{
+			self->childEnable("custom_tag_label_text");
+			self->childEnable("custom_tag_label_box");
+			self->childEnable("custom_tag_color_text");
+			self->childEnable("custom_tag_color_swatch");
+		}
+		else
+		{
+			self->childDisable("custom_tag_label_text");
+			self->childDisable("custom_tag_label_box");
+			self->childDisable("custom_tag_color_text");
+			self->childDisable("custom_tag_color_swatch");
+		}
+	}
 }
 
 void LLPrefsAscentVanImpl::refreshValues()
@@ -100,21 +131,58 @@ void LLPrefsAscentVanImpl::refreshValues()
 	{
 		mSelectedClient			= gSavedSettings.getU32("AscentSpoofClientIndex");
 		mEffectColor			= gSavedSettings.getColor4("EffectColor");
+		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
+		{
+			childEnable("custom_tag_label_text");
+			childEnable("custom_tag_label_box");
+			childEnable("custom_tag_color_text");
+			childEnable("custom_tag_color_swatch");
+		}
+		else
+		{
+			childDisable("custom_tag_label_text");
+			childDisable("custom_tag_label_box");
+			childDisable("custom_tag_color_text");
+			childDisable("custom_tag_color_swatch");
+		}
+		mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
+		mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
 	}
 	else
 	{
-		mSelectedClient = gSavedPerAccountSettings.getU32("AscentSpoofClientIndex");
+		mSelectedClient			= gSavedPerAccountSettings.getU32("AscentSpoofClientIndex");
 		mEffectColor			= gSavedPerAccountSettings.getColor4("EffectColor");
+		if (gSavedPerAccountSettings.getBOOL("AscentUseCustomTag"))
+		{
+			childEnable("custom_tag_label_text");
+			childEnable("custom_tag_label_box");
+			childEnable("custom_tag_color_text");
+			childEnable("custom_tag_color_swatch");
+		}
+		else
+		{
+			childDisable("custom_tag_label_text");
+			childDisable("custom_tag_label_box");
+			childDisable("custom_tag_color_text");
+			childDisable("custom_tag_color_swatch");
+		}
+		mCustomTagLabel			= gSavedPerAccountSettings.getString("AscentCustomTagLabel");
+		mCustomTagColor			= gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
 	}
+	
+	
 }
 
 void LLPrefsAscentVanImpl::refresh()
 {
 	refreshValues();
-	//General
+	//General --------------------------------------------------------------------------------
 	childSetValue("use_account_settings_check", mUseAccountSettings);
-	//Colors
-	llinfos << "Refreshing Vanity panel." << llendl;
+
+	//Colors ---------------------------------------------------------------------------------
+	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
+	combo->setCurrentByIndex(mSelectedClient);
+
 	childSetValue("show_self_tag_check", mShowSelfClientTag);
 	childSetValue("show_self_tag_color_check", mShowSelfClientTagColor);
 	
@@ -132,12 +200,6 @@ void LLPrefsAscentVanImpl::refresh()
 		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
 	}
-	
-	
-	// tag spoofing comboxbox
-	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
-	combo->setCurrentByIndex(mSelectedClient);
-
 }
 
 void LLPrefsAscentVanImpl::cancel()
@@ -149,8 +211,10 @@ void LLPrefsAscentVanImpl::apply()
 {
 	std::string client_uuid;
 	U32 client_index;
-	
-	//Colors
+	//General -----------------------------------------------------------------------------
+
+
+	//Colors ------------------------------------------------------------------------------
 	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
 	if (combo)
 	{
@@ -158,7 +222,7 @@ void LLPrefsAscentVanImpl::apply()
 		//Don't rebake if it's not neccesary.
 		if (client_index != mSelectedClient)
 		{
-			client_uuid = combo->getSelectedValue();
+			client_uuid = combo->getSelectedValue().asString();
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
 				gSavedSettings.setString("AscentSpoofClientUUID",  client_uuid);
@@ -177,20 +241,27 @@ void LLPrefsAscentVanImpl::apply()
 			avatar->forceBakeAllTextures(slam_for_debug);
 		}
 	}
+	gSavedSettings.setBOOL("AscentShowSelfTag",			childGetValue("show_self_tag_check"));
+	gSavedSettings.setBOOL("AscentShowSelfTagColor",	childGetValue("show_self_tag_color_check"));
 
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 	{
 		llinfos << "Storing color in client" << llendl;
-		gSavedSettings.setColor4("EffectColor", childGetValue("effect_color_swatch"));
+		gSavedSettings.setColor4("EffectColor",				childGetValue("effect_color_swatch"));
+		gSavedSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
+		gSavedSettings.setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
+		gSavedSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
 	}
 	else
 	{
 		llinfos << "Storing color in account" << llendl;
-		gSavedPerAccountSettings.setColor4("EffectColor", childGetValue("effect_color_swatch"));
+		gSavedPerAccountSettings.setColor4("EffectColor",			childGetValue("effect_color_swatch"));
+		gSavedPerAccountSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
+		gSavedPerAccountSettings.setString("AscentCustomTagLabel",	childGetValue("custom_tag_label_box"));
+		gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
 	}
 
-	gSavedSettings.setBOOL("AscentShowSelfTag",			childGetValue("show_self_tag_check"));
-	gSavedSettings.setBOOL("AscentShowSelfTagColor",	childGetValue("show_self_tag_color_check"));
+	
 
 	refreshValues();
 }
