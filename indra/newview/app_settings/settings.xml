@@ -213,6 +213,17 @@
 		<key>Value</key>
 		<string>mapto</string>
 	</map>
+	<key>AscentCmdLineMapToKeepPos</key>
+	<map>
+		<key>Comment</key>
+		<string>Attempt to arrive in the same location you were at.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
 	<key>AscentCmdLineDrawDistance</key>
 	<map>
 	<key>Comment</key>

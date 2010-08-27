@@ -3357,6 +3357,12 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			color = gColors.getColor( "AvatarNameColor" );
 			return;
 		}
+		else if (gSavedSettings.getBOOL("AscentUseCustomTag"))
+		{
+			color = gSavedSettings.getColor4("AscentCustomTagColor");
+			client = gSavedSettings.getString("AscentCustomTagLabel");
+			return;
+		}
 		else if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		{
 			uuid_str = gSavedSettings.getString("AscentSpoofClientUUID");
@@ -3405,7 +3411,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
 				color = LLColor4(0.5f, 0.0f, 0.0f);
-				client = "Unknown";
+				client = "??";
 			}
 			return;
 		}
@@ -3448,7 +3454,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	}
 	
 	if (false)
-	//Probably should remove this entirely, but it's useful information if we're going to try for the new client tag idea. -HgB
+	//We'll remove this entirely eventually, but it's useful information if we're going to try for the new client tag idea. -HgB
 	//if(useComment) 
 	{
 		LLUUID baked_head_id = getTE(9)->getID();
@@ -5613,7 +5619,8 @@ void LLVOAvatar::processAnimationStateChanges()
 
 	stop_glerror();
 }
-//Here's that undeform function I was talking about. -HGB
+/*Here's that undeform function I was talking about. -HGB
+// Bug-fixed Linden Labs style. Comment out 4ever.
 std::string undeformers[] =
 {
 	"7a8a3dfc-acd1-7ac3-9cdf-71cd9be89969",
@@ -5675,7 +5682,7 @@ void LLVOAvatar::undeform()
 	}
 
 	stop_glerror();
-}
+}*/
 
 
 

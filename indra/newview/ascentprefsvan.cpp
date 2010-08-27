@@ -82,20 +82,7 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
 
-	if (gSavedSettings.getBOOL("AscentUseCustomTag"))
-	{
-		childEnable("custom_tag_label_text");
-		childEnable("custom_tag_label_box");
-		childEnable("custom_tag_color_text");
-		childEnable("custom_tag_color_swatch");
-	}
-	else
-	{
-		childDisable("custom_tag_label_text");
-		childDisable("custom_tag_label_box");
-		childDisable("custom_tag_color_text");
-		childDisable("custom_tag_color_swatch");
-	}
+	
 	refresh();
 	
 }
@@ -144,12 +131,46 @@ void LLPrefsAscentVanImpl::refreshValues()
 	{
 		mSelectedClient			= gSavedSettings.getU32("AscentSpoofClientIndex");
 		mEffectColor			= gSavedSettings.getColor4("EffectColor");
+		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
+		{
+			childEnable("custom_tag_label_text");
+			childEnable("custom_tag_label_box");
+			childEnable("custom_tag_color_text");
+			childEnable("custom_tag_color_swatch");
+		}
+		else
+		{
+			childDisable("custom_tag_label_text");
+			childDisable("custom_tag_label_box");
+			childDisable("custom_tag_color_text");
+			childDisable("custom_tag_color_swatch");
+		}
+		mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
+		mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
 	}
 	else
 	{
 		mSelectedClient			= gSavedPerAccountSettings.getU32("AscentSpoofClientIndex");
 		mEffectColor			= gSavedPerAccountSettings.getColor4("EffectColor");
+		if (gSavedPerAccountSettings.getBOOL("AscentUseCustomTag"))
+		{
+			childEnable("custom_tag_label_text");
+			childEnable("custom_tag_label_box");
+			childEnable("custom_tag_color_text");
+			childEnable("custom_tag_color_swatch");
+		}
+		else
+		{
+			childDisable("custom_tag_label_text");
+			childDisable("custom_tag_label_box");
+			childDisable("custom_tag_color_text");
+			childDisable("custom_tag_color_swatch");
+		}
+		mCustomTagLabel			= gSavedPerAccountSettings.getString("AscentCustomTagLabel");
+		mCustomTagColor			= gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
 	}
+	
+	
 }
 
 void LLPrefsAscentVanImpl::refresh()
@@ -179,10 +200,6 @@ void LLPrefsAscentVanImpl::refresh()
 		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
 	}
-	
-	
-	
-
 }
 
 void LLPrefsAscentVanImpl::cancel()
@@ -230,12 +247,18 @@ void LLPrefsAscentVanImpl::apply()
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 	{
 		llinfos << "Storing color in client" << llendl;
-		gSavedSettings.setColor4("EffectColor", childGetValue("effect_color_swatch"));
+		gSavedSettings.setColor4("EffectColor",				childGetValue("effect_color_swatch"));
+		gSavedSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
+		gSavedSettings.setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
+		gSavedSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
 	}
 	else
 	{
 		llinfos << "Storing color in account" << llendl;
-		gSavedPerAccountSettings.setColor4("EffectColor", childGetValue("effect_color_swatch"));
+		gSavedPerAccountSettings.setColor4("EffectColor",			childGetValue("effect_color_swatch"));
+		gSavedPerAccountSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
+		gSavedPerAccountSettings.setString("AscentCustomTagLabel",	childGetValue("custom_tag_label_box"));
+		gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
 	}
 
 	
