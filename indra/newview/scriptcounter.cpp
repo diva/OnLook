@@ -104,11 +104,11 @@ void ScriptCounter::processObjectPropertiesFamily(LLMessageSystem* msg, void** u
 	{
 		if(doDelete)
 		{
-			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount, name);
+			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount  , name.c_str());
 		}
 		else
 		{
-			user_msg = llformat("Counted %u scripts in object %s.", scriptcount, name);
+			user_msg = llformat("Counted %u scripts in object %s.", scriptcount, name.c_str());
 		}
 		reqObjectID.setNull();
 		if(countingDone)
@@ -130,11 +130,11 @@ void ScriptCounter::processObjectProperties(LLMessageSystem* msg, void** user_da
 	{
 		if(doDelete)
 		{
-			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount, name);
+			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount, name.c_str());
 		}
 		else
 		{
-			user_msg = llformat("Counted %u scripts in object %s.", scriptcount, name);
+			user_msg = llformat("Counted %u scripts in object %s.", scriptcount, name.c_str());
 		}
 		reqObjectID.setNull();
 		if(countingDone)
@@ -146,7 +146,7 @@ void ScriptCounter::processObjectProperties(LLMessageSystem* msg, void** user_da
 
 void ScriptCounter::serializeSelection(bool delScript)
 {
-	LLDynamicArray<LLViewerObject*> catfayse;
+	LLDynamicArray<LLViewerObject*> objectArray;
 	foo=LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
 	sstr.str("");
 	doDelete=false;
@@ -173,7 +173,7 @@ void ScriptCounter::serializeSelection(bool delScript)
 					LLViewerObject* object = attachment->getObject();
 					if(object)
 					{
-						catfayse.put(object);
+						objectArray.put(object);
 						objectCount++;
 					}
 				}
@@ -188,7 +188,7 @@ void ScriptCounter::serializeSelection(bool delScript)
 				LLViewerObject* object = selectNode->getObject();
 				if(object)
 				{
-					catfayse.put(object);
+					objectArray.put(object);
 					objectCount++;
 				}
 			}
@@ -240,7 +240,7 @@ void ScriptCounter::serializeSelection(bool delScript)
 				gAgent.sendReliableMessage();
 			}
 		}
-		serialize(catfayse);
+		serialize(objectArray);
 	}
 }
 
@@ -310,7 +310,7 @@ void ScriptCounter::completechk()
 					valid=0;
 				  if(valid)
 				  {
-					  user_msg = llformat("Counted %u scripts in %u attachments on %s %s.", scriptcount, objectCount, firstname->getString(), lastname->getString());
+					  user_msg = llformat("Counted %u scripts in %u attachments on %s %s.", scriptcount, objectCount, firstname->getString()  , lastname->getString());
 					  //sstr << "Counted scripts from " << << " attachments on " << firstname->getString() << " " << lastname->getString() << ": ";
 				  }
 				}
