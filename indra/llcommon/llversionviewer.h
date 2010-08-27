@@ -36,9 +36,9 @@
 const S32 LL_VERSION_MAJOR = 1;
 const S32 LL_VERSION_MINOR = 4;
 const S32 LL_VERSION_PATCH = 0;
-const S32 LL_VERSION_BUILD = 0;
+const S32 LL_VERSION_BUILD = 3;
 
-const char * const LL_CHANNEL = "Ascent Test Build";
+const char * const LL_CHANNEL = "Ascent Viewer Release";
 
 #if LL_DARWIN
 const char * const LL_VERSION_BUNDLE_ID = "com.secondlife.snowglobe.viewer";
