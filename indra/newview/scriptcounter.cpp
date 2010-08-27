@@ -104,7 +104,7 @@ void ScriptCounter::processObjectPropertiesFamily(LLMessageSystem* msg, void** u
 	{
 		if(doDelete)
 		{
-			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount  , name.c_str());
+			user_msg = llformat("Deleted %u scripts from object %s.", scriptcount, name.c_str());
 		}
 		else
 		{

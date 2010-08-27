@@ -73,7 +73,8 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 	mCopyToInv(FALSE),
 	mIsCopyable(FALSE),
 	mLastHeight(0),
-	mLastWidth(0)
+	mLastWidth(0),
+	mAspectRatio(0.f)
 {
 	const LLInventoryItem *item = getItem();
 	if(item)
@@ -133,7 +134,8 @@ LLPreviewTexture::LLPreviewTexture(
 	mCopyToInv(copy_to_inv),
 	mIsCopyable(copy_to_inv),
 	mLastHeight(0),
-	mLastWidth(0)
+	mLastWidth(0),
+	mAspectRatio(0.f)
 {
 
 	init();

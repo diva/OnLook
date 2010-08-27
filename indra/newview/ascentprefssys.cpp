@@ -60,27 +60,33 @@ public:
 private:
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
 	void refreshValues();
-	//System
-	BOOL mSaveScriptsAsMono;
+	//General -----------------------------------------------------------------------------
 	BOOL mDoubleClickTeleport;
+	BOOL mPreviewAnimInWorld;
+	BOOL mSaveScriptsAsMono;
+	BOOL mAlwaysRezInGroup;
+	//Chat/IM -----------------------------------------------------------------------------
 	BOOL mHideNotificationsInChat;
 	BOOL mPlayTypingSound;
-	BOOL mDisablePointAtAndBeam;
-	BOOL mPrivateLookAt;
-	BOOL mFetchInventoryOnLogin;
-	BOOL mSecondsInChatAndIMs;
-	BOOL mPreviewAnimInWorld;
-	BOOL mSpeedRez;
-	BOOL mRevokePermsOnStandUp;
-	BOOL mEnableLLWind;
-	BOOL mEnableClouds;
-	BOOL mInitialEnableClouds;
-	BOOL mBroadcastViewerEffects;
-	BOOL mAlwaysRezInGroup;
-	U32 mSpeedRezInterval;
+	BOOL mHideTypingNotification;
+	BOOL mEnableMUPose;
+	BOOL mEnableOOCAutoClose;
 	U32 mLinksForChattingObjects;
 	U32 mTimeFormat;
 	U32 mDateFormat;
+	BOOL mSecondsInChatAndIMs;
+	//Performance -------------------------------------------------------------------------
+	BOOL mFetchInventoryOnLogin;
+	BOOL mEnableLLWind;
+	BOOL mEnableClouds;
+	BOOL mSpeedRez;
+	U32 mSpeedRezInterval;
+	//Command Line ------------------------------------------------------------------------
+	//Privacy -----------------------------------------------------------------------------
+	BOOL mBroadcastViewerEffects;
+	BOOL mDisablePointAtAndBeam;
+	BOOL mPrivateLookAt;
+	BOOL mRevokePermsOnStandUp;
 };
 
 
@@ -91,8 +97,6 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
 	
 	refresh();
-	
-	mInitialEnableClouds = mEnableClouds;
 }
 
 //static
@@ -117,65 +121,68 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 			self->childDisable("speed_rez_seconds");
 		}
 	}
-
 }
 
 void LLPrefsAscentSysImpl::refreshValues()
 {
-	mSecondsInChatAndIMs		= gSavedSettings.getBOOL("SecondsInChatAndIMs");
-
+	//General -----------------------------------------------------------------------------
+	mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
+	mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
+	mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
+	mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
+	//Chat/IMs ----------------------------------------------------------------------------
+	mHideNotificationsInChat	= gSavedSettings.getBOOL("HideNotificationsInChat");
+	mHideTypingNotification		= gSavedSettings.getBOOL("AscentHideTypingNotification");
 	mPlayTypingSound			= gSavedSettings.getBOOL("PlayTypingSound");
+	mEnableMUPose				= gSavedSettings.getBOOL("AscentAllowMUpose");
+	mEnableOOCAutoClose			= gSavedSettings.getBOOL("AscentAutoCloseOOC");
+	mLinksForChattingObjects	= gSavedSettings.getU32("LinksForChattingObjects");
+	//Time format
+	//Date Format
+	mSecondsInChatAndIMs		= gSavedSettings.getBOOL("SecondsInChatAndIMs");
 	
+	//Performance -------------------------------------------------------------------------
+	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
 	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
-
-	mHideNotificationsInChat	= gSavedSettings.getBOOL("AscentHideTypingNotification");
-	mLinksForChattingObjects	= gSavedSettings.getU32("LinksForChattingObjects");
-	
-	mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
 	mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
-	mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
+
+	//Command Line ------------------------------------------------------------------------
+
+
+	//Privacy -----------------------------------------------------------------------------
 	mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
 	mDisablePointAtAndBeam		= gSavedSettings.getBOOL("DisablePointAtAndBeam");
 	mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
-	mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
-	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
-	mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
 }
 
 void LLPrefsAscentSysImpl::refresh()
 {
 	refreshValues();
 	
-	childSetValue("seconds_in_chat_and_ims_check", mSecondsInChatAndIMs);
-
-	//Save Chat/IM
-	childSetValue("play_typing_sound_check", mPlayTypingSound);
-	
-	//Save Performance
+	//General -----------------------------------------------------------------------------
+	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
+	childSetValue("preview_anim_in_world_check",	mPreviewAnimInWorld);
+	childSetValue("save_scripts_as_mono_check",		mSaveScriptsAsMono);
+	childSetValue("always_rez_in_group_check",		mAlwaysRezInGroup);
+	//Chat --------------------------------------------------------------------------------
+	childSetValue("hide_notifications_in_chat_check", mHideNotificationsInChat);
+	childSetValue("play_typing_sound_check",		mPlayTypingSound);
+	childSetValue("hide_typing_check",				mHideTypingNotification);
+	childSetValue("seconds_in_chat_and_ims_check",	mSecondsInChatAndIMs);
+	childSetValue("allow_mu_pose_check",			mEnableMUPose);
+	childSetValue("close_ooc_check",				mEnableOOCAutoClose);
+	//Show Links
+	//Time Format
+	//Date Format
+	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
+	//Save Performance --------------------------------------------------------------------
+	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
-	
-	//Privacy
-	childSetValue("hide_typing_check", mHideNotificationsInChat);
-
-	//Misc
-	childSetValue("double_click_teleport_check", mDoubleClickTeleport);
 	childSetValue("speed_rez_check", mSpeedRez);
-	
-	childSetValue("preview_anim_in_world_check", mPreviewAnimInWorld);
-	childSetValue("broadcast_viewer_effects", mBroadcastViewerEffects);
-	childSetValue("disable_point_at_and_beams_check", mDisablePointAtAndBeam);
-	childSetValue("private_look_at_check", mPrivateLookAt);
-	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
-	childSetValue("save_scripts_as_mono_check", mSaveScriptsAsMono);
-	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
-	childSetValue("always_rez_in_group_check", mAlwaysRezInGroup);
-
-	childEnable("fetch_inventory_on_login_check");
-
 	if (mSpeedRez)
 	{
 		childEnable("speed_rez_interval");
@@ -186,6 +193,13 @@ void LLPrefsAscentSysImpl::refresh()
 		childDisable("speed_rez_interval");
 		childDisable("speed_rez_seconds");
 	}
+	//Command Line ------------------------------------------------------------------------
+
+	//Privacy -----------------------------------------------------------------------------
+	childSetValue("broadcast_viewer_effects", mBroadcastViewerEffects);
+	childSetValue("disable_point_at_and_beams_check", mDisablePointAtAndBeam);
+	childSetValue("private_look_at_check", mPrivateLookAt);
+	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
 
 	std::string format = gSavedSettings.getString("ShortTimeFormat");
 	if (format.find("%p") == -1)
@@ -228,11 +242,46 @@ void LLPrefsAscentSysImpl::refresh()
 
 void LLPrefsAscentSysImpl::cancel()
 {
-	gSavedSettings.setU32("SpeedRezInterval",			mSpeedRezInterval);
-	gSavedSettings.setU32("LinksForChattingObjects",	mLinksForChattingObjects);
-	gLLWindEnabled = mEnableLLWind;
+	//General -----------------------------------------------------------------------------
+	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
+	childSetValue("preview_anim_in_world_check",	mPreviewAnimInWorld);
+	childSetValue("save_scripts_as_mono_check",		mSaveScriptsAsMono);
+	childSetValue("always_rez_in_group_check",		mAlwaysRezInGroup);
+	//Chat --------------------------------------------------------------------------------
+	childSetValue("hide_notifications_in_chat_check", mHideNotificationsInChat);
+	childSetValue("play_typing_sound_check",		mPlayTypingSound);
+	childSetValue("hide_typing_check",				mHideTypingNotification);
+	childSetValue("seconds_in_chat_and_ims_check",	mSecondsInChatAndIMs);
+	childSetValue("allow_mu_pose_check",			mEnableMUPose);
+	childSetValue("close_ooc_check",				mEnableOOCAutoClose);
+	//Show Links
+	//Time Format
+	//Date Format
+	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
+	//Save Performance --------------------------------------------------------------------
+	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
+	childSetValue("enable_wind", mEnableLLWind);
+	childSetValue("enable_clouds", mEnableClouds);
+	childSetValue("speed_rez_check", mSpeedRez);
+	if (mSpeedRez)
+	{
+		childEnable("speed_rez_interval");
+		childEnable("speed_rez_seconds");
+	}
+	else
+	{
+		childDisable("speed_rez_interval");
+		childDisable("speed_rez_seconds");
+	}
+	//Command Line ------------------------------------------------------------------------
+
+	//Privacy -----------------------------------------------------------------------------
+	childSetValue("broadcast_viewer_effects", mBroadcastViewerEffects);
+	childSetValue("disable_point_at_and_beams_check", mDisablePointAtAndBeam);
+	childSetValue("private_look_at_check", mPrivateLookAt);
+	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
 	
-	if(mInitialEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
+	if(mEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
 	{
 		gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
@@ -253,8 +302,8 @@ void LLPrefsAscentSysImpl::apply()
 	//Missing the echo/log option.
 	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
 	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
-	//MU Pose missing.
-	//Auto-close missing.
+	gSavedSettings.setBOOL("AscentAllowMUpose",			childGetValue("allow_mu_pose_check"));
+	gSavedSettings.setBOOL("AscentAutoCloseOOC",		childGetValue("close_ooc_check"));
 	gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").asInteger());
 	
 	LLComboBox* combo = getChild<LLComboBox>("time_format_combobox");

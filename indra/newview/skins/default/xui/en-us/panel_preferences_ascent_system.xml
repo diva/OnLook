@@ -53,34 +53,34 @@
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Allow MU pose method." left="10"
 				tool_tip="Allows the use of both /me and : to perform emotes."
-				mouse_opaque="true" name="hide_typing_check" radio_style="false"
+				mouse_opaque="true" name="allow_mu_pose_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="AscentAutoCloseOOC" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Auto-close OOC comments." left="10"
 				tool_tip="Will automatically append '))' to any message starting with '((', or visa versa."
-				mouse_opaque="true" name="hide_typing_check" radio_style="false"
+				mouse_opaque="true" name="close_ooc_check" radio_style="false"
 				width="400" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			    bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
 		    	left="10" mouse_opaque="true" name="objects_link_text_box" v_pad="0"
 			    width="300">
-					Show links on chatting object names in chat history for:
+				Show links on chatting object names in chat history for:
 			</text>
 			<radio_group bottom_delta="-26" control_name="LinksForChattingObjects" draw_border="true" enabled="true"
 				tool_tip="Enables a link to show you the owner of the speaking object."
 			    follows="left|top" height="20" left="20" mouse_opaque="true" name="objects_link" width="350">
-				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" left_delta="5" mouse_opaque="true"
-				 name="no_object" width="48">
+				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18"
+					left_delta="5" mouse_opaque="true" name="no_object" width="48">
 					No object
 				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" left_delta="45" mouse_opaque="true"
-				 name="others_objects" width="48">
+				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" 
+					left_delta="45" mouse_opaque="true" name="others_objects" width="48">
 					Others' objects
 				</radio_item>
-				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" left_delta="60" mouse_opaque="true"
-				 name="anyones_objects" width="48">
+				<radio_item type="string" length="1" bottom_delta="0" enabled="true" height="18" 
+					left_delta="60" mouse_opaque="true" name="anyones_objects" width="48">
 					Anyone's objects
 				</radio_item>
 			</radio_group>
