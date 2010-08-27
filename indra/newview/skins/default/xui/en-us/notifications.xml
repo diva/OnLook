@@ -1076,10 +1076,10 @@ Unable to write file [[FILE]]
    icon="alertmodal.tga"
    name="UnsupportedHardware"
    type="alertmodal">
-Warning: Your system does not meet Ascent&apos;s minimum system requirements. If you continue using Snowglobe, you may experience poor performance. Unfortunately, we cannot provide technical support for unsupported system configurations.
+Warning: Your system does not meet Ascent&apos;s minimum system requirements. If you continue using Ascent, you may experience poor performance. Unfortunately, we cannot provide technical support for unsupported system configurations.
 
-MINSPECS
-Do you wish to visit [_URL] for more information?
+    MINSPECS
+    Do you wish to visit [_URL] for more information?
     <url option="0" name="url">
 
 			http://www.secondlife.com/corporate/sysreqs.php
@@ -6529,9 +6529,9 @@ The URL you clicked cannot be opened from this web browser.
   </global>
 
   <global name="UnsupportedGLRequirements">
-You do not appear to have the proper hardware requirements for Snowglobe. Snowglobe requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
+    You do not appear to have the proper hardware requirements for Ascent. Ascent requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
 
-If you continue to have problems, please visit: http://www.secondlife.com/support
+    If you continue to have problems, please visit: http://www.secondlife.com/support
   </global>
 
   <global name="UnsupportedCPUAmount">

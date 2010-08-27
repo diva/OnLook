@@ -113,6 +113,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	//
 	// FIXME: Get the comment field out of the texture
 	//
+	if (!base.getData()) return FALSE;
 
 	LLTimer decode_timer;
 
@@ -153,6 +154,8 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	cio = opj_cio_open((opj_common_ptr)dinfo, base.getData(), base.getDataSize());
 
 	/* decode the stream and fill the image structure */
+	if (!cio) return FALSE;
+	if (!dinfo) return FALSE;
 	image = opj_decode(dinfo, cio);
 
 	/* close the byte stream */
@@ -415,6 +418,7 @@ BOOL LLImageJ2COJ::getMetadata(LLImageJ2C &base)
 	//
 	// FIXME: We get metadata by decoding the ENTIRE image.
 	//
+	if (!base.getData()) return FALSE;
 
 	// Update the raw discard level
 	base.updateRawDiscardLevel();
@@ -459,6 +463,8 @@ BOOL LLImageJ2COJ::getMetadata(LLImageJ2C &base)
 	cio = opj_cio_open((opj_common_ptr)dinfo, base.getData(), base.getDataSize());
 
 	/* decode the stream and fill the image structure */
+	if (!cio) return FALSE;
+	if (!dinfo) return FALSE;
 	image = opj_decode(dinfo, cio);
 
 	/* close the byte stream */

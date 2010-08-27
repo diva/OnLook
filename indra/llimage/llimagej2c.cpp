@@ -252,7 +252,9 @@ BOOL LLImageJ2C::updateData()
 	}
 	else 
 	{
-		res = mImpl->getMetadata(*this);
+		if (mImpl)
+			res = mImpl->getMetadata(*this);
+		else res = FALSE;
 	}
 
 	if (res)
@@ -480,7 +482,8 @@ BOOL LLImageJ2C::validate(U8 *data, U32 file_size)
 		}
 		else
 		{
-			res = mImpl->getMetadata(*this);
+			if (mImpl)
+				res = mImpl->getMetadata(*this);
 		}
 	}
 	
