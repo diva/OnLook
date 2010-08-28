@@ -384,7 +384,7 @@ public:
 	//--------------------------------------------------------------------
 public:
 	BOOL            isFullyLoaded();
-
+	//BOOL			isReallyFullyLoaded();
 	BOOL            updateIsFullyLoaded();
 private:
 	BOOL            mFullyLoaded;

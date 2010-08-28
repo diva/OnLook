@@ -3349,6 +3349,8 @@ bool LLVOAvatar::loadClientTags()
 
 void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useComment)
 {
+	if (!getTE(TEX_HEAD_BODYPAINT))
+		 return;
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 	if (mIsSelf)
 	{
@@ -3427,8 +3429,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		color = LLColor4(0.5f, 0.0f, 0.0f);
 		client = "Unknown";
 	}
-	else if(LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
-	{
+	else if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))	{
 		LLSD cllsd = LLVOAvatar::sClientResolutionList[uuid_str];
 		client = cllsd["name"].asString();
 		LLColor4 colour;
@@ -7897,16 +7898,13 @@ BOOL LLVOAvatar::updateIsFullyLoaded()
 
 
 
-
-
-
-
 BOOL LLVOAvatar::isFullyLoaded()
 {
+	/* WHY WOULD YOU DO THIS -HgB
 	if (gSavedSettings.getBOOL("RenderUnloadedAvatar"))
 		return TRUE;
-	else
-		return mFullyLoaded;
+	else*/
+	return mFullyLoaded;
 }
 
 
