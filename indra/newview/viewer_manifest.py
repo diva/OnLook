@@ -125,7 +125,7 @@ class ViewerManifest(LLManifest):
     def installer_prefix(self):
         mapping={"secondlife":'SecondLife_',
                  "snowglobe":'Snowglobe_',
-                 "Inertia":'Inertia_'}
+                 "Ascent":'Ascent_'}
         return mapping[self.viewer_branding_id()]
 
     def flags_list(self):
@@ -547,13 +547,13 @@ class DarwinManifest(ViewerManifest):
     def app_name(self):
         mapping={"secondlife":"Second Life",
                  "snowglobe":"Snowglobe",
-                 "Inertia":"Intertia"}
+                 "Ascent":"Ascent"}
         return mapping[self.viewer_branding_id()]
         
     def info_plist_name(self):
         mapping={"secondlife":"Info-SecondLife.plist",
                  "snowglobe":"Info-Snowglobe.plist",
-                 "Inertia":"Info-Inertia.plist"}
+                 "Ascent":"Info-Ascent.plist"}
         return mapping[self.viewer_branding_id()]
 
     def package_finish(self):
@@ -692,19 +692,19 @@ class LinuxManifest(ViewerManifest):
     def wrapper_name(self):
         mapping={"secondlife":"secondlife",
                  "snowglobe":"snowglobe",
-                 "Inertia":"inertia"}
+                 "Ascent":"Ascent"}
         return mapping[self.viewer_branding_id()]
 
     def binary_name(self):
-        mapping={"secondlife":"do-not-directly-run-secondlife-bin",
-                 "snowglobe":"snowglobe-do-not-run-directly",
-                 "Inertia":"inertia-do-not-run-directly"}
+        mapping={"secondlife":"Ascent-do-not-run-directly",
+                 "snowglobe":"Ascent-do-not-run-directly",
+                 "Ascent":"Ascent-do-not-run-directly"}
         return mapping[self.viewer_branding_id()]
     
     def icon_name(self):
         mapping={"secondlife":"secondlife_icon.png",
                  "snowglobe":"snowglobe_icon.png",
-                 "Inertia":"inertia_icon.png"}
+                 "Ascent":"Ascent_icon.png"}
         return mapping[self.viewer_branding_id()]
 
     def package_finish(self):
@@ -720,7 +720,7 @@ class LinuxManifest(ViewerManifest):
             else:
                 installer_name += '_' + self.channel_oneword().upper()
 
-	installer_name = 'Inertia'
+	installer_name = 'Ascent'
 
         # Fix access permissions
         self.run_command("""

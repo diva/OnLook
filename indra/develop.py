@@ -73,10 +73,10 @@ class PlatformSetup(object):
     for t in ('Debug', 'Release', 'RelWithDebInfo'):
         build_types[t.lower()] = t
 
-    build_type = build_types['relwithdebinfo']
+    build_type = build_types['release']
     standalone = 'OFF'
     unattended = 'OFF'
-    project_name = 'SecondLife'
+    project_name = 'Ascent'
     distcc = True
     cmake_opts = []
     word_size = 32

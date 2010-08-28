@@ -115,7 +115,7 @@ if [ -n "$LL_TCMALLOC" ]; then
     fi
 fi
 
-export VIEWER_BINARY='snowglobe-do-not-run-directly'
+export VIEWER_BINARY='Ascent-do-not-run-directly'
 export SL_ENV='LD_LIBRARY_PATH="`pwd`"/lib:"`pwd`"/app_settings/mozilla-runtime-linux-i686:"${LD_LIBRARY_PATH}"'
 export SL_CMD='$LL_WRAPPER bin/$VIEWER_BINARY'
 export SL_OPT="`cat gridargs.dat` $@"

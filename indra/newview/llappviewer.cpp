@@ -222,7 +222,7 @@ const F32 DEFAULT_AFK_TIMEOUT = 5.f * 60.f; // time with no input before user fl
 F32 gSimLastTime; // Used in LLAppViewer::init and send_stats()
 F32 gSimFrames;
 
-BOOL gAllowIdleAFK = TRUE;
+BOOL gAllowIdleAFK = FALSE;
 BOOL gAllowTapTapHoldRun = TRUE;
 BOOL gShowObjectUpdates = FALSE;
 BOOL gUseQuickTime = TRUE;
