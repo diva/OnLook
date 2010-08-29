@@ -65,6 +65,10 @@ include_directories(
 
 set(viewer_SOURCE_FILES
 	ascentuploadbrowser.cpp
+	dhparam.cpp
+	dsaparam.cpp
+	emerald.cpp
+	emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
 	floatersculptpreview.cpp
@@ -510,6 +514,8 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 	ascentuploadbrowser.h
+	emerald.h
+	emeraldboobutils.h
     dofloaterhex.h
     dohexeditor.h
 	floatersculptpreview.h

@@ -49,7 +49,7 @@
 #include "llrendertarget.h"
 #include "llwearable.h"
 #include "llvoavatardefines.h"
-
+#include "emeraldboobutils.h"
 
 
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
@@ -118,7 +118,7 @@ public:
 	void idleUpdateLipSync(bool voice_enabled);
 	void idleUpdateLoadingEffect();
 	void idleUpdateWindEffect();
-
+	void idleUpdateBoobEffect();
 	void idleUpdateNameTag(const LLVector3& root_pos_last);
 	void idleUpdateRenderCost();
 	void idleUpdateTractorBeam();
@@ -525,58 +525,57 @@ private:
 	BOOL			mAppearanceAnimSetByUser;
 	F32				mLastAppearanceBlendTime;
 
+	//--------------------------------------------------------------------
+	// boob bounce stuff
+	//--------------------------------------------------------------------
 
+private:
+	bool			mFirstSetActualBoobGravRan;
+	//bool			mFirstSetActualButtGravRan;
+	//bool			mFirstSetActualFatGravRan;
+	LLFrameTimer	mBoobBounceTimer;
+	EmeraldAvatarLocalBoobConfig mLocalBoobConfig;
+	EmeraldBoobState mBoobState;
+	//EmeraldBoobState mButtState;
+	//EmeraldBoobState mFatState;
 
+public:
+	//boob
+	F32				getActualBoobGrav() { return mLocalBoobConfig.actualBoobGrav; }
+	void			setActualBoobGrav(F32 grav)
+	{
+		mLocalBoobConfig.actualBoobGrav = grav;
+		if(!mFirstSetActualBoobGravRan)
+		{
+			mBoobState.boobGrav = grav;
+			mFirstSetActualBoobGravRan = true;
+		}
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	//butt
+	/*F32				getActualButtGrav() { return mLocalBoobConfig.actualButtGrav; }
+	void			setActualButtGrav(F32 grav)
+	{
+		mLocalBoobConfig.actualButtGrav = grav;
+		if(!mFirstSetActualButtGravRan)
+		{
+			mButtState.boobGrav = grav;
+			mFirstSetActualButtGravRan = true;
+		}
+	}
+	//fat
+	F32				getActualFatGrav() { return mLocalBoobConfig.actualFatGrav; }
+	void			setActualFatGrav(F32 grav)
+	{
+		mLocalBoobConfig.actualFatGrav = grav;
+		if(!mFirstSetActualFatGravRan)
+		{
+			mFatState.boobGrav = grav;
+			mFirstSetActualFatGravRan = true;
+		}
+	}
+	*/
+	static EmeraldGlobalBoobConfig sBoobConfig;
 
 	//--------------------------------------------------------------------
 	// Attachments
@@ -870,6 +869,7 @@ public:
 	static F32 		sUnbakedUpdateTime; // Last time stats were updated (to prevent multiple updates per frame) 
 	static F32 		sGreyTime; // Total seconds with >=1 grey avatars
 	static F32 		sGreyUpdateTime; // Last time stats were updated (to prevent multiple updates per frame) 
+	static bool		sDoProperArc;
 
 	const std::string getBakedStatusForPrintout() const;
 };

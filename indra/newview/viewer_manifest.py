@@ -163,13 +163,13 @@ class WindowsManifest(ViewerManifest):
     def final_exe(self):
         if self.default_channel() and self.viewer_branding_id()=="secondlife":
             if self.default_grid():
-                return "SecondLife.exe"
+                return "Ascent.exe"
             else:
-                return "SecondLifePreview.exe"
+                return "Ascent.exe"
         elif(self.viewer_branding_id=="snowglobe"):
-            return "Snowglobe.exe"
+            return "Ascent.exe"
         else:
-            return ''.join(self.channel().split()) + '.exe'
+            return 'Ascent.exe'
 
 
     def construct(self):
