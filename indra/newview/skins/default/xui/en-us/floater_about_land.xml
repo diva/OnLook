@@ -537,7 +537,7 @@ Go to World menu > About Land or select another parcel to show its details.
 			     column_padding="0" draw_border="true" draw_heading="true"
 			     draw_stripes="true" enabled="true" 
 			     follows="left|top|right|bottom" height="117" left="4" mouse_opaque="true"
-			     multi_select="false" name="owner list" name_column_index="2" width="450">
+			     multi_select="true" name="owner list" name_column_index="2" width="450">
 				<column name="type" label="Type" sort="online_status" width="24" />
 				<column name="online_status" width="-1" />
 				<column name="name" dynamicwidth="true" label="Name" />

@@ -13523,7 +13523,7 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>FloaterDickDongsRect</key>
+    <key>FloaterUploadRect</key>
     <map>
         <key>Comment</key>
         <string>Rectangle for DicksDongs</string>
@@ -13534,11 +13534,10 @@
         <string>Rect</string>
         <key>Value</key>
         <array>
-            <integer>200</integer>
-
-            <integer>250</integer>
-            <integer>250</integer>
-            <integer>200</integer>
+            <integer>500</integer>
+            <integer>450</integer>
+            <integer>850</integer>
+            <integer>400</integer>
     </array>
     </map>
     <key>FloaterHexRect</key>

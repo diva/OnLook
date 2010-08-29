@@ -44,7 +44,7 @@
 //this is really the only thing that needs to be here atm
 LLFloaterDickDongs::LLFloaterDickDongs(const LLSD& seed)
 {
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_dickdongs.xml");
+	//LLUICtrlFactory::getInstance()->buildFloater(this, "floater_dickdongs.xml");
 }
 
 //Not needed yet

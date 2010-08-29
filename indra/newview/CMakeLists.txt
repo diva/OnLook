@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+	ascentuploadbrowser.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
 	floatersculptpreview.cpp
@@ -508,7 +509,7 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
-
+	ascentuploadbrowser.h
     dofloaterhex.h
     dohexeditor.h
 	floatersculptpreview.h

@@ -112,7 +112,8 @@
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
-#include "llfloaterdickdongs.h"
+//#include "llfloaterdickdongs.h" No need for the custom floater right now, I think. -HgB
+#include "ascentuploadbrowser.h" //New customer floater attempts
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
 #include "llfloaterchatterbox.h"
@@ -6062,17 +6063,17 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterActiveSpeakers::toggleInstance(LLSD());
 		}
-		else if (floater_name == "beacons")
+		/*else if (floater_name == "beacons")
 		{
-			LLFloaterBeacons::toggleInstance(LLSD());
-		}
+			LLFloaterBeacons::toggleInstance(LLSD()); NO
+		}*/
 		else if (floater_name == "perm prefs")
 		{
 			LLFloaterPerms::toggleInstance(LLSD());
 		}
-		else if (floater_name == "dickdongs")
+		else if (floater_name == "ascentuploadbrowser")
 		{
-			LLFloaterDickDongs::toggleInstance(LLSD());
+			ASFloaterUploadBrowser::show(NULL);
 		}
 		return true;
 	}
@@ -6129,14 +6130,14 @@ class LLFloaterVisible : public view_listener_t
 		{
 			new_value = LLFloaterActiveSpeakers::instanceVisible(LLSD());
 		}
-		else if (floater_name == "beacons")
+		/*else if (floater_name == "beacons")
 		{
-			new_value = LLFloaterBeacons::instanceVisible(LLSD());
+			new_value = LLFloaterBeacons::instanceVisible(LLSD()); Oh man fuck this floater so much.
 		}
 		else if (floater_name == "dickdongs")
 		{
-			new_value = LLFloaterDickDongs::instanceVisible(LLSD());
-		}
+			new_value = LLFloaterDickDongs::instanceVisible(LLSD()); Not needed any more.
+		}*/
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView* iv = LLInventoryView::getActiveInventory(); 
