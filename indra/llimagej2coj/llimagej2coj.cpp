@@ -115,6 +115,8 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	//
 	if (!base.getData()) return FALSE;
 	if (!base.getDataSize()) return FALSE;
+	if (!raw_image.getData()) return FALSE;
+	if (!raw_image.getDataSize()) return FALSE;
 
 	LLTimer decode_timer;
 
@@ -156,6 +158,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 
 	/* decode the stream and fill the image structure */
 	if (!cio) return FALSE;
+	if (cio->bp == NULL) return FALSE;
 	if (!dinfo) return FALSE;
 	image = opj_decode(dinfo, cio);
 
@@ -463,9 +466,10 @@ BOOL LLImageJ2COJ::getMetadata(LLImageJ2C &base)
 
 	/* open a byte stream */
 	cio = opj_cio_open((opj_common_ptr)dinfo, base.getData(), base.getDataSize());
-
+	
 	/* decode the stream and fill the image structure */
 	if (!cio) return FALSE;
+	if (cio->bp == NULL) return FALSE;
 	if (!dinfo) return FALSE;
 	image = opj_decode(dinfo, cio);
 
