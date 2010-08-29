@@ -55,7 +55,7 @@
 // </edit>
 
 
-BOOL LLHUDEffectLookAt::sDebugLookAt = FALSE;
+BOOL LLHUDEffectLookAt::sDebugLookAt = TRUE;
 
 // packet layout
 const S32 SOURCE_AVATAR = 0;
