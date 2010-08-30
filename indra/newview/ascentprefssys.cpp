@@ -36,11 +36,13 @@
 #include "ascentprefssys.h"
 #include "llcolorswatch.h"
 #include "llvoavatar.h"
+#include "llhudeffectlookat.h"
 #include "llagent.h"
 #include "llstartup.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
+#include "llradiogroup.h"
 #include "llwind.h"
 #include "llviewernetwork.h"
 #include "pipeline.h"
@@ -86,6 +88,7 @@ private:
 	BOOL mBroadcastViewerEffects;
 	BOOL mDisablePointAtAndBeam;
 	BOOL mPrivateLookAt;
+	BOOL mShowLookAt;
 	BOOL mRevokePermsOnStandUp;
 };
 
@@ -121,6 +124,10 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 			self->childDisable("speed_rez_seconds");
 		}
 	}
+	else if (ctrl->getControlName() == "ShowLookAt")
+	{
+		LLHUDEffectLookAt::sDebugLookAt = self->childGetValue("show_look_at_check").asBoolean();
+	}
 }
 
 void LLPrefsAscentSysImpl::refreshValues()
@@ -155,6 +162,7 @@ void LLPrefsAscentSysImpl::refreshValues()
 	mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
 	mDisablePointAtAndBeam		= gSavedSettings.getBOOL("DisablePointAtAndBeam");
 	mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
+	mShowLookAt					= LLHUDEffectLookAt::sDebugLookAt;
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
 }
 
@@ -174,33 +182,9 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("seconds_in_chat_and_ims_check",	mSecondsInChatAndIMs);
 	childSetValue("allow_mu_pose_check",			mEnableMUPose);
 	childSetValue("close_ooc_check",				mEnableOOCAutoClose);
-	//Show Links
-	//Time Format
-	//Date Format
-	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
-	//Save Performance --------------------------------------------------------------------
-	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
-	childSetValue("enable_wind", mEnableLLWind);
-	childSetValue("enable_clouds", mEnableClouds);
-	childSetValue("speed_rez_check", mSpeedRez);
-	if (mSpeedRez)
-	{
-		childEnable("speed_rez_interval");
-		childEnable("speed_rez_seconds");
-	}
-	else
-	{
-		childDisable("speed_rez_interval");
-		childDisable("speed_rez_seconds");
-	}
-	//Command Line ------------------------------------------------------------------------
-
-	//Privacy -----------------------------------------------------------------------------
-	childSetValue("broadcast_viewer_effects", mBroadcastViewerEffects);
-	childSetValue("disable_point_at_and_beams_check", mDisablePointAtAndBeam);
-	childSetValue("private_look_at_check", mPrivateLookAt);
-	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
-
+	LLRadioGroup* radioLinkOptions = getChild<LLRadioGroup>("objects_link");
+	radioLinkOptions->selectNthItem(mLinksForChattingObjects);
+	//childSetValue("objects_link",					mLinksForChattingObjects);
 	std::string format = gSavedSettings.getString("ShortTimeFormat");
 	if (format.find("%p") == -1)
 	{
@@ -238,6 +222,31 @@ void LLPrefsAscentSysImpl::refresh()
 	{
 		combo->setCurrentByIndex(mDateFormat);
 	}
+
+	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
+	//Save Performance --------------------------------------------------------------------
+	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
+	childSetValue("enable_wind", mEnableLLWind);
+	childSetValue("enable_clouds", mEnableClouds);
+	childSetValue("speed_rez_check", mSpeedRez);
+	if (mSpeedRez)
+	{
+		childEnable("speed_rez_interval");
+		childEnable("speed_rez_seconds");
+	}
+	else
+	{
+		childDisable("speed_rez_interval");
+		childDisable("speed_rez_seconds");
+	}
+	//Command Line ------------------------------------------------------------------------
+
+	//Privacy -----------------------------------------------------------------------------
+	childSetValue("broadcast_viewer_effects", mBroadcastViewerEffects);
+	childSetValue("disable_point_at_and_beams_check", mDisablePointAtAndBeam);
+	childSetValue("private_look_at_check", mPrivateLookAt);
+	childSetValue("show_look_at_check", mShowLookAt);
+	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
 }
 
 void LLPrefsAscentSysImpl::cancel()
@@ -304,7 +313,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
 	gSavedSettings.setBOOL("AscentAllowMUpose",			childGetValue("allow_mu_pose_check"));
 	gSavedSettings.setBOOL("AscentAutoCloseOOC",		childGetValue("close_ooc_check"));
-	gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").asInteger());
+	//gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").   );
 	
 	LLComboBox* combo = getChild<LLComboBox>("time_format_combobox");
 	if (combo) {
@@ -379,15 +388,16 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setString("AscentCmdTeleportToCam",		childGetValue("AscentCmdTeleportToCam"));
 	gSavedSettings.setString("AscentCmdLineKeyToName",		childGetValue("AscentCmdLineKeyToName"));
 	gSavedSettings.setString("AscentCmdLineOfferTp",		childGetValue("AscentCmdLineOfferTp"));
-	gSavedSettings.setString("AscentCmdLineMapTo",		childGetValue("AscentCmdLineMapTo"));
-	gSavedSettings.setBOOL("AscentCmdLineMapToKeepPos",	childGetValue("AscentCmdLineMapToKeepPos"));
-	gSavedSettings.setString("AscentCmdLineTP2",		childGetValue("AscentCmdLineTP2"));
+	gSavedSettings.setString("AscentCmdLineMapTo",			childGetValue("AscentCmdLineMapTo"));
+	gSavedSettings.setBOOL("AscentMapToKeepPos",			childGetValue("AscentMapToKeepPos"));
+	gSavedSettings.setString("AscentCmdLineTP2",			childGetValue("AscentCmdLineTP2"));
 	
 
 	//Privacy --------------------------------------------------------------------------------
 	gSavedSettings.setBOOL("BroadcastViewerEffects",	childGetValue("broadcast_viewer_effects"));
 	gSavedSettings.setBOOL("DisablePointAtAndBeam",		childGetValue("disable_point_at_and_beams_check"));
 	gSavedSettings.setBOOL("PrivateLookAt",				childGetValue("private_look_at_check"));
+	LLHUDEffectLookAt::sDebugLookAt						= childGetValue("show_look_at_check");
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
 
 	refreshValues();

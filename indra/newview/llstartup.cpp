@@ -2646,10 +2646,10 @@ bool idle_startup()
 			LLFloaterActiveSpeakers::showInstance();
 		}
 
-		if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
+		/*if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
 		{
-			LLFloaterBeacons::showInstance();
-		}
+			LLFloaterBeacons::showInstance(); DIE
+		}*/
 		
 		if (!gSavedSettings.getBOOL("CloudsEnabled") && !gNoRender)
 		{

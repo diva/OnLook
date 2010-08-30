@@ -79,4 +79,3 @@ Build Window:
 
 Known issues:
 Online/Total counts in the friends list sometimes go haywire. Not often or by a large margin, but it happens.
-Skin menu doesn't work - On hold until we actually have some skins to show - Ascent will have its own "branded" skin at some point.

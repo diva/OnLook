@@ -29,6 +29,19 @@
 				tool_tip="Rez objects with the same group that the object is being rezzed on has, regardless of your active tag."
 				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
 				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentDisableTeleportScreens" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Disable the Teleport progress screens" left="10"
+				tool_tip="Viewer will not hide your UI while teleporting, allowing you to continue to read IMs."
+				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentDisableLogoutScreens" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Hide the Logout progress screen" left="10"
+				tool_tip="Does not hide the UI when logging out."
+				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				width="400" />
+			
 		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Chat/IM" name="Chat/IM">
@@ -265,8 +278,8 @@
 						 tool_tip="" name="AscentCmdLineMapTo" control_name="AscentCmdLineMapTo" width="200"/>
 			<check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
 						 initial_value="false" label="Use same position between sims" left_delta="0" mouse_opaque="true"
-						 name="AscentCmdLineMapToKeepPos" radio_style="false" width="270" 
-						 control_name="AscentCmdLineMapToKeepPos"/>
+						 name="AscentMapToKeepPos" radio_style="false" width="270" 
+						 control_name="AscentMapToKeepPos"/>
 			<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
 						 name="cmd_line_text_13" width="512">
 				Teleport to avatar (usage: cmd name)</text>
@@ -293,6 +306,12 @@
 	    		label="Do not Look At objects (defeats ShowLookAt)" left="10"
 				tool_tip="Turns off broadcasting headturns and lookat beacons for yourself."
 			    mouse_opaque="true" name="private_look_at_check" radio_style="false"
+			    width="400" />
+			<check_box bottom_delta="-20" control_name="ShowLookAt" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	    		label="Show others' LookAt beacons" left="10"
+				tool_tip="Shows you where others are looking."
+			    mouse_opaque="true" name="show_look_at_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
