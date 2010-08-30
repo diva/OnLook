@@ -291,9 +291,9 @@ void LLToolBar::refresh()
 		sitting = gAgent.getAvatarObject()->mIsSitting;
 	}
 
-	childSetEnabled("fly_btn", (gAgent.canFly() || gAgent.getFlying()) && !sitting );
+	childSetEnabled("fly_btn", (gAgent.canFly() || gAgent.getFlying() || gSavedSettings.getBOOL("AscentFlyAlwaysEnabled")) && !sitting );
 
-	childSetEnabled("build_btn", LLViewerParcelMgr::getInstance()->agentCanBuild() );
+	childSetEnabled("build_btn", (LLViewerParcelMgr::getInstance()->agentCanBuild() || gSavedSettings.getBOOL("AscentBuildAlwaysEnabled")) );
 
 	// Check to see if we're in build mode
 	BOOL build_mode = LLToolMgr::getInstance()->inEdit();

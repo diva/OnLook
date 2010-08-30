@@ -44,33 +44,39 @@
 			<on_enable function="Object.EnableReturn" />
 		</menu_item_call>
 		<pie_menu label="More &gt;" name="Rate Menu">
-      <menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
-        <on_click function="Object.Destroy" />
-        <on_enable function="Object.EnableDestroy" />
+      <pie_menu label="Tools &gt;" name="Rate Menu">
+        <menu_item_call enabled="false" label="Destroy" mouse_opaque="true" name="Destroy">
+          <on_click function="Object.Destroy" />
+          <on_enable function="Object.EnableDestroy" />
+        </menu_item_call>
+        <menu_item_call enabled="false" label="Explode" mouse_opaque="true" name="Explode">
+          <on_click function="Object.Explode" />
+          <on_enable function="Object.EnableExplode" />
+        </menu_item_call>
+        <menu_item_call enabled="true" hidden="false" label="Measure" mouse_opaque="true" name="Measure">
+          <on_click function="Object.Measure" />
+        </menu_item_call>
+        <menu_item_call enabled="true" hidden="false" label="Data" mouse_opaque="true" name="Data">
+          <on_click function="Object.Data" />
+        </menu_item_call>
+        <menu_item_call enabled="false" hidden="false" label="S. Count" mouse_opaque="true" name="ScriptCount">
+          <on_click function="Object.ScriptCount" />
+          <on_visible function="Object.VisibleScriptCount" />
+        </menu_item_call>
+        <menu_item_call bottom="-487" enabled="false" height="19" label="Reset Scripts"
+   left="0" mouse_opaque="true" name="Reset Scripts" width="250">
+          <on_click function="Tools.SelectedScriptAction" userdata="reset" />
+          <on_enable function="EditableSelected" />
+        </menu_item_call>
+      </pie_menu>
+      <menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
+        <on_click function="Object.Mute" />
+        <on_enable function="Object.EnableMute" />
       </menu_item_call>
-      <menu_item_call bottom="-487" enabled="false" height="19" label="Reset Scripts"
-				 left="0" mouse_opaque="true" name="Reset Scripts" width="250">
-				<on_click function="Tools.SelectedScriptAction" userdata="reset" />
-				<on_enable function="EditableSelected" />
-			</menu_item_call>
-			<menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
-				<on_click function="Object.Mute" />
-				<on_enable function="Object.EnableMute" />
-			</menu_item_call>
-			<menu_item_call enabled="false" hidden="false" label="S. Count" mouse_opaque="true" name="ScriptCount">
-				<on_click function="Object.ScriptCount" />
-				<on_visible function="Object.VisibleScriptCount" />
-			</menu_item_call>
 			<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
 				<on_click function="Object.Inspect" />
 				<on_enable function="Object.EnableInspect" />
 			</menu_item_call>
-      <menu_item_call enabled="true" hidden="false" label="Measure" mouse_opaque="true" name="Measure">
-        <on_click function="Object.Measure" />
-      </menu_item_call>
-      <menu_item_call enabled="true" hidden="false" label="Data" mouse_opaque="true" name="Data">
-        <on_click function="Object.Data" />
-      </menu_item_call>
       <menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
         <on_click function="Object.DERENDER" />
       </menu_item_call>

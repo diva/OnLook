@@ -2425,6 +2425,59 @@ class LLCanIHasKillEmAll : public view_listener_t
 	}
 };
 
+class LLOHGOD : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+		bool new_value = false;
+		if(objpos)
+		{
+			if (!objpos->permYouOwner())
+				new_value = false; // Don't give guns to retarded children.
+			else new_value = true;
+		}
+
+		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
+		return false;
+	}
+};
+
+class LLPowerfulWizard : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLViewerObject* objpos = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject();
+		if(objpos)
+		{
+			// Dont give guns to retarded children
+			if (!objpos->permYouOwner())
+			{
+				LLChat chat;
+				chat.mSourceType = CHAT_SOURCE_SYSTEM;
+				chat.mText = llformat("Can't do that, dave.");
+				LLFloaterChat::addChat(chat);
+				return false;
+			}
+
+			// Let the user know they are a rippling madman what is capable of everything
+			LLChat chat;
+			chat.mSourceType = CHAT_SOURCE_SYSTEM;
+			chat.mText = llformat("~*zort*~");
+
+			LLFloaterChat::addChat(chat);
+			/*
+				NOTE: oh god how did this get here
+			*/
+			LLSelectMgr::getInstance()->selectionUpdateTemporary(1);//set temp to TRUE
+			LLSelectMgr::getInstance()->selectionUpdatePhysics(1);
+			LLSelectMgr::getInstance()->sendDelink();
+		}
+
+		return true;
+	}
+};
+
 class LLKillEmAll : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -9681,7 +9734,9 @@ void initialize_menus()
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
 	addMenu(new LLKillEmAll(), "Object.Destroy");
+	addMenu(new LLPowerfulWizard(), "Object.Explode");
 	addMenu(new LLCanIHasKillEmAll(), "Object.EnableDestroy");
+	addMenu(new LLOHGOD(), "Object.EnableExplode");
 	// </edit>
 	addMenu(new LLObjectMute(), "Object.Mute");
 	addMenu(new LLObjectBuy(), "Object.Buy");
