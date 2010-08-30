@@ -6240,7 +6240,7 @@ Flexible objects may not be physical and must be phantom until the flexible chec
    name="FirstDebugMenus"
    type="notify">
 You have enabled the Advanced menu.
-This menu contains features useful for developers debugging Snowglobe.
+This menu contains features useful for developers debugging Ascent.
 To toggle this menu on Windows press Ctrl-Alt-D. On Mac press Cmd-Opt-Shift-D.
   </notification>
 

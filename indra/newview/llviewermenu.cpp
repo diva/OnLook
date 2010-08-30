@@ -742,6 +742,44 @@ void init_menus()
 	// TomY TODO convert these two
 	LLMenuGL*menu;
 
+	menu = new LLMenuGL("Ascent");
+	menu->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
+	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
+	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
+	menu->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
+	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
+										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
+
+	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
+	menu->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
+
+	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
+											&handle_sounds_explorer, NULL));
+	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
+											&handle_blacklist, NULL));
+	
+	menu->append(new LLMenuItemCheckGL( "Enable AO",
+									&menu_toggle_control,
+									NULL,
+									&menu_check_control,
+									(void*)"AO.Enabled"));
+	menu->append(new LLMenuItemCallGL(  "Edit AO...",  
+									&handle_edit_ao, NULL));
+	menu->append(new LLMenuItemCheckGL( "Nimble",
+										&menu_toggle_control,
+										NULL,
+										&menu_check_control,
+										(void*)"Nimble"));
+	menu->append(new LLMenuItemCheckGL( "ReSit",
+										&menu_toggle_control,
+										NULL,
+										&menu_check_control,
+										(void*)"ReSit"));
+	//these should always be last in a sub menu
+	menu->createJumpKeys();
+	gMenuBarView->appendMenu( menu );
+	menu->updateParent(LLMenuGL::sMenuContainer);
+
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	init_client_menu(menu);
 	gMenuBarView->appendMenu( menu );
@@ -780,49 +818,6 @@ void init_client_menu(LLMenuGL* menu)
 
 	//menu->append(new LLMenuItemCallGL("Permissions Control", &show_permissions_control));
 	// this is now in the view menu so we don't need it here!
-
-	// <edit>
-	{
-		LLMenuGL* sub = NULL;
-		sub = new LLMenuGL("Ascent");
-		sub->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
-		sub->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
-		sub->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
-		sub->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
-		sub->append(new LLMenuItemCallGL(	"Close All Dialogs", 
-											&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-
-		sub->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
-		sub->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
-
-		sub->append(new LLMenuItemCallGL(	"Sound Explorer",
-												&handle_sounds_explorer, NULL));
-		sub->append(new LLMenuItemCallGL(	"Asset Blacklist",
-												&handle_blacklist, NULL));
-		
-		sub->append(new LLMenuItemCheckGL( "Enable AO",
-										&menu_toggle_control,
-										NULL,
-										&menu_check_control,
-										(void*)"AO.Enabled"));
-		sub->append(new LLMenuItemCallGL(  "Edit AO...",  
-										&handle_edit_ao, NULL));
-		sub->append(new LLMenuItemCheckGL( "Nimble",
-											&menu_toggle_control,
-											NULL,
-											&menu_check_control,
-											(void*)"Nimble"));
-		sub->append(new LLMenuItemCheckGL( "ReSit",
-											&menu_toggle_control,
-											NULL,
-											&menu_check_control,
-											(void*)"ReSit"));
-		//these should always be last in a sub menu
-		sub->createJumpKeys();
-		menu->appendMenu(sub);
-	}
-	menu->appendSeparator();
-	// </edit>
 
 	{
 		// *TODO: Translate
