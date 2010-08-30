@@ -43,7 +43,7 @@
 #include "llviewercontrol.h"
 #include "llimview.h"
 #include "llimpanel.h"
-
+#include "llstring.h"
 //
 // LLFloaterMyFriends
 //
@@ -94,7 +94,18 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 {
 	mAutoResize = FALSE;
 
-	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chatterbox.xml", NULL, FALSE);
+	std::string chatterbox_layout;
+	if(gSavedSettings.getBOOL("WoLfVerticalIMTabs"))
+	{ 
+		chatterbox_layout = "floater_chatterbox_wolf.xml"; 
+	}
+	else 
+	{
+		chatterbox_layout = "floater_chatterbox.xml";
+	}
+	LLUICtrlFactory::getInstance()->buildFloater(this, chatterbox_layout, NULL, FALSE);
+	/*childHide("chatterbox_tabs_horiz");
+	childShow("chatterbox_tabs_vert");*/
 	if (gSavedSettings.getBOOL("ContactsTornOff"))
 	{
 		LLFloaterMyFriends* floater_contacts = LLFloaterMyFriends::getInstance(0);

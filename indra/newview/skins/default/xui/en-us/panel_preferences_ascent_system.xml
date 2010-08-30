@@ -41,11 +41,33 @@
 				tool_tip="Does not hide the UI when logging out."
 				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
 				width="400" />
-			
+			<check_box bottom_delta="-20" control_name="AscentBuildAlwaysEnabled" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Always show Build as enabled" left="10"
+				tool_tip="Allows you to use the Build menu without having to be tricky about it. May not mean you can actually build there."
+				mouse_opaque="true" name="always_build_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentFlyAlwaysEnabled" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Always allow Fly" left="10"
+				tool_tip="Lets you fly in locations you shouldn't be allowed to. Use at your own risk - Just because you can doesn't mean you should."
+				mouse_opaque="true" name="always_fly_check" radio_style="false"
+				width="400" />	
+			<!--<check_box bottom_delta="-20" control_name="AscentPowerfulWizard" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Enable Power User functionality" left="10"
+				tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself. Turn this on at your own risk, and use any features it enables responsibly. Ascent devs will not replace anything you break if you ruin something important."
+				mouse_opaque="true" name="always_fly_check" radio_style="false"
+				width="400" />-->
 		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Chat/IM" name="Chat/IM">
-			<check_box bottom_delta="-25" control_name="HideNotificationsInChat" enabled="true"
+			 <check_box bottom_delta="-25" control_name="WoLfVerticalIMTabs" enabled="true"
+		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+		    	label="Use Vertical IMs (Requires a restart)" left="10"
+			    mouse_opaque="true" name="use_vertical_ims_check" radio_style="false"
+			    width="400" />
+			<check_box bottom_delta="-20" control_name="HideNotificationsInChat" enabled="true"
 		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 		    	label="Do not echo/log notifications in chat" left="10"
 			    mouse_opaque="true" name="hide_notifications_in_chat_check" radio_style="false"

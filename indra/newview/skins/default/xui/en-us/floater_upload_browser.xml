@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
+     width="650" height="340" min_width="650" min_height="340" max_width="650"
+     name="browser" title="Upload Browser" control_name="UploadBrowserFloater">
+	 <tab_container bottom="0" follows="left|right|top|bottom" height="320" left="4"
+	     name="FilesAndFolders" tab_position="top" tab_width="80" width="600">
+		 <panel bottom="0"  label="Files" left="0" name="file_panel" width="370">
+			 <scroll_list bottom="10" can_resize="true" column_padding="0" draw_heading="true"
+				follows="left|top|bottom" left="5" multi_select="true"
+				name="file_list" width="340" search_column="1"
+				tool_tip="Hold shift or control while clicking to select multiple friends"
+				top="-10">
+				<column name="file_type" width="0" />
+				<column image="ff_edit_mine_button.tga" name="icon_inventory_type"
+					tool_tip="Inventory Type" width="20" />
+				<column dynamicwidth="true" label="Filename" name="file_name" tool_tip="Filename" />
+			</scroll_list>
+			<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				 bottom="-23" drop_shadow_visible="true" enabled="true" follows="left|top"
+				 font="SansSerifSmall" h_pad="0" halign="left" height="12" left="352"
+				 mouse_opaque="true" name="name_label" v_pad="0" width="128">
+				Name:
+			</text>
+			<line_editor bottom_delta="-4" follows="left|top" font="SansSerifSmall" height="18" max_length="255"
+				width="214" name="asset_name" left_delta="70" select_all_on_focus_received="true" select_on_focus="true"/>
+			<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				 bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
+				 font="SansSerifSmall" h_pad="0" halign="left" height="12" left="352"
+				 mouse_opaque="true" name="name_label" v_pad="0" width="128">
+				Description:
+			</text>
+			<line_editor bottom_delta="-4" follows="left|top" font="SansSerifSmall" height="18" max_length="255"
+				width="214" name="asset_desc" left_delta="70" select_all_on_focus_received="true" select_on_focus="true"/>
+			<slider bottom_delta="0" can_edit_text="false" enabled="false" width="185" height="16" mouse_opaque="true"
+				 decimal_digits="0" increment="1" initial_val="16" left="30" min_val="1.0" max_val="16.0"
+				 name="timeline" show_text="false" value="1" control_name="AnimationTimelineScrubber"/> 
+			<button bottom="9" follows="bottom|left" height="22" label="Upload (L$10)"
+				 left="375" name="upload_button" tool_tip="Standard upload (L$10)"
+				 width="120" />
+			<button bottom_delta="0" follows="bottom|left" height="22" label="Temp Upload"
+				 left_delta="125" name="upload_button" tool_tip="Uploads a temporary version of the texture. It's free, but has a limited lifespan and area it can be used."
+				 width="120" />
+		</panel>
+		<panel bottom="0"  label="Folders" left="0" name="folder_panel" width="370">
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				 bottom_delta="-30" drop_shadow_visible="true" enabled="true" follows="left|top"
+				 font="SansSerifSmall" h_pad="0" halign="left" height="12" left="5"
+				 mouse_opaque="true" name="amountofawesomelabel" v_pad="0" width="170">
+				Oh god this needs to be finished
+			</text>
+		</panel>
+	</tab_container>
+</floater>
