@@ -374,10 +374,10 @@ public:
 	void			setLocTexTE( U8 te, LLViewerImage* image, BOOL set_by_user );
 	void			setupComposites();
 
+	typedef std::map<S32,std::string> lod_mesh_map_t;
+	typedef std::map<std::string,lod_mesh_map_t> mesh_info_t;
 
-
-
-
+	static void getMeshInfo (mesh_info_t* mesh_info);
 
 	//--------------------------------------------------------------------
 	// Handling partially loaded avatars (Ruth)
@@ -608,7 +608,7 @@ public:
 	static F32		sLODFactor; // user-settable LOD factor
 	static BOOL		sJointDebug; // output total number of joints being touched for each avatar
 	static BOOL     sDebugAvatarRotation;
-
+	static F32		sAvMorphTime;
 
 	static S32 sNumVisibleAvatars; // Number of instances of this class
 	

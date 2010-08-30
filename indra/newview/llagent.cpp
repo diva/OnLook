@@ -7514,13 +7514,13 @@ void LLAgent::sendAgentSetAppearance()
 		msg->nextBlockFast(_PREHASH_ObjectData);
 
 		// Tag changing support
-		if (!gSavedSettings.controlExists("SpoofClientUUID")) 
+		if (!gSavedSettings.controlExists("AscentSpoofClientUUID")) 
 		{
-			gSavedSettings.declareString("SpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd", "FAKIN' BAKE-IN");
-			gSavedSettings.setString("SpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
+			gSavedSettings.declareString("AscentSpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd", "FAKIN' BAKE-IN");
+			gSavedSettings.setString("AscentSpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
 		}
 
-		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("SpoofClientUUID") );
+		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentSpoofClientUUID") );
 	}
 	else
 	{
