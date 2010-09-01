@@ -73,6 +73,10 @@
 		     mouse_opaque="true" name="Quit" shortcut="control|Q" width="243">
 			<on_click function="File.Quit" userdata="" />
 		</menu_item_call>
+    <menu_item_call bottom="-259" enabled="true" height="19" label="Log Out" left="0" color="1 0 0 1"
+     mouse_opaque="true" name="Log Out" width="243">
+      <on_click function="File.LogOut" userdata="" />
+    </menu_item_call>
 		<!--<menu_item_check bottom="-384" enabled="true" height="19" label="Test" left="0"
 			mouse_opaque="true" name="ascentuploadbrowser" width="211">
 			<on_click function="ShowFloater" userdata="ascentuploadbrowser" />

@@ -769,6 +769,18 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 	}
 };
 
+class LLFileLogOut : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string command(gDirUtilp->getExecutableDir() + gDirUtilp->getDirDelimiter() + gDirUtilp->getExecutableFilename() + " --channel \"Ascent\"  --settings settings_ascent.xml");
+		gViewerWindow->getWindow()->ShellEx(command);
+
+		LLAppViewer::instance()->userQuit();
+		return true;
+	}
+};
+
 class LLFileQuit : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -1546,6 +1558,7 @@ void init_menu_file()
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
+	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
 	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");

@@ -267,11 +267,6 @@ void init_debug_baked_texture_menu(LLMenuGL* menu);
 BOOL enable_land_build(void*);
 BOOL enable_object_build(void*);
 
-
-
-
-
-
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object );
 LLVOAvatar* find_avatar_from_object( const LLUUID& object_id );
 
@@ -423,6 +418,15 @@ void handle_leave_god_mode(void*);
 
 // <edit>
 void handle_fake_away_status(void*);
+
+void handle_pose_stand_ltao(void*);
+void handle_pose_stand_ltah(void*);
+void handle_pose_stand_ltad(void*);
+void handle_pose_stand_loau(void*);
+void handle_pose_stand_loao(void*);
+void handle_pose_stand_lhao(void*);
+void handle_pose_stand_stop(void*);
+
 void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
 void handle_hide_typing_notification(void*);
@@ -559,6 +563,9 @@ BOOL enable_detach(void*);
 BOOL enable_region_owner(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
+
+// <dogmode> for pose stand
+LLUUID current_pose = LLUUID::null;
 
 class LLMenuParcelObserver : public LLParcelObserver
 {
@@ -775,6 +782,20 @@ void init_menus()
 										NULL,
 										&menu_check_control,
 										(void*)"ReSit"));
+	// <dogmode>
+	// Add in the pose stand -------------------------------------------
+	LLMenuGL* sub = new LLMenuGL("Pose Stand");
+	menu->appendMenu(sub);
+
+	sub->append(new LLMenuItemCallGL(  "Legs Together Arms Out", &handle_pose_stand_ltao, NULL));
+	sub->append(new LLMenuItemCallGL(  "Legs Together Arms Half", &handle_pose_stand_ltah, NULL));
+	sub->append(new LLMenuItemCallGL(  "Legs Together Arms Down", &handle_pose_stand_ltad, NULL));
+	sub->append(new LLMenuItemCallGL(  "Legs Out Arms Up", &handle_pose_stand_loau, NULL));
+	sub->append(new LLMenuItemCallGL(  "Legs Out Arms Out", &handle_pose_stand_loao, NULL));
+	sub->append(new LLMenuItemCallGL(  "Legs Half Arms Out", &handle_pose_stand_lhao, NULL));
+	sub->append(new LLMenuItemCallGL(  "Stop Pose Stand", &handle_pose_stand_stop, NULL));
+	// </dogmode> ------------------------------------------------------
+
 	//these should always be last in a sub menu
 	menu->createJumpKeys();
 	gMenuBarView->appendMenu( menu );
@@ -3414,6 +3435,53 @@ void handle_close_all_notifications(void*)
 		gNotifyBoxView->removeChild(*iter);
 	}
 }
+
+// <dogmode>
+// The following animations were made by Charley Levenque and are
+// not public property or free to use via UUID. When replicating 
+// this code, please supply your own animations.
+void handle_pose_stand_ltao(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("6c082c7b-f70e-9da0-0451-54793f869ff4");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_ltah(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("45e59c14-913b-c58c-2a55-c0a5c1eeef53");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_ltad(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("421d6bb4-94a9-3c42-4593-f2bc1f6a26e6");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_loau(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("8b3bb239-d610-1c0f-4d1a-69d29bc17e2c");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_loao(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("4d70e328-48b6-dc6a-0be1-85dd6b333e81");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_lhao(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set("f088eaf0-f1c9-8cf1-99c8-09df96bb13ae");
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand_stop(void*)
+{
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose = LLUUID::null;
+}
+// </dogmode> ---------------------------------------------------
 
 void handle_fake_away_status(void*)
 {
