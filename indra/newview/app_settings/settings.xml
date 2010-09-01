@@ -2,6 +2,39 @@
 <llsd>
 <map>
 	<!--Expanded settings from Vanilla SL -->
+  <key>AscentDisplayTotalScriptJumps</key>
+  <map>
+    <key>Comment</key>
+    <string>Shows large changes to the sim script count in chat.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>Ascentnumscriptdiff</key>
+  <map>
+    <key>Comment</key>
+    <string>The delta to spam you the script jump difference</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>100.0</real>
+  </map>
+  <key>Ascentnumscripts</key>
+  <map>
+    <key>Comment</key>
+    <string>temp..</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
       <key>Comment</key>
