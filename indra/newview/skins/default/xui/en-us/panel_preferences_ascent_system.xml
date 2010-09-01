@@ -11,6 +11,18 @@
 				tool_tip="Double-clicking on an object/person will teleport you to that location."
 			    mouse_opaque="true" name="double_click_teleport_check" radio_style="false"
 			    width="400" />
+			<check_box bottom_delta="-20" control_name="OptionRotateCamAfterLocalTP" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	    		label="Reset camera after teleporting" left="20"
+				tool_tip="Centers the camera behind you after a local teleport."
+			    mouse_opaque="true" name="center_after_teleport_check" radio_style="false"
+			    width="400" />
+			<check_box bottom_delta="-20" control_name="OptionOffsetTPByAgentHeight" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	    		label="Offset TP target by half agent height" left="20"
+				tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for."
+			    mouse_opaque="true" name="offset_teleport_check" radio_style="false"
+			    width="400" />
 			<check_box bottom_delta="-20" control_name="PreviewAnimInWorld" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	    		label="Preview animations on the avatar instead on a dummy before uploading" left="10"
@@ -73,6 +85,15 @@
 		    	label="Use Vertical IMs (Requires a restart)" left="10"
 			    mouse_opaque="true" name="use_vertical_ims_check" radio_style="false"
 			    width="400" />
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Display Total Script Count changes:" left_delta="0"
+				mouse_opaque="true" name="totalscriptjumps" radio_style="false" width="270" 
+				control_name="AscentDisplayTotalScriptJumps" 
+				tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
+			<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="16" increment="1"
+				label="" label_width="0" digits="4" left_delta="210" max_val="9999"
+				min_val="1" mouse_opaque="true" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff"
+				tool_tip="Threshold for the script jump message [Default: 100]"/>
 			<check_box bottom_delta="-20" control_name="HideNotificationsInChat" enabled="true"
 		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 		    	label="Do not echo/log notifications in chat" left="10"

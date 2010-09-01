@@ -123,7 +123,7 @@ LLOverlayBar::LLOverlayBar()
 {
 	setMouseOpaque(FALSE);
 	setIsChrome(TRUE);
-
+	
 	mBuilt = false;
 
 	LLCallbackMap::map_t factory_map;

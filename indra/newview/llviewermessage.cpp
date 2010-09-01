@@ -5241,13 +5241,13 @@ void process_teleport_local(LLMessageSystem *msg,void**)
 	gAgent.setPositionAgent(pos);
 	gAgent.slamLookAt(look_at);
 
-	if ( !(gAgent.getTeleportKeepsLookAt() && LLViewerJoystick::getInstance()->getOverrideCamera()) )
+	if ( !(gAgent.getTeleportKeepsLookAt() && LLViewerJoystick::getInstance()->getOverrideCamera()) && gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP"))
 	{
 		gAgent.resetView(TRUE, TRUE);
 	}
 
 	// send camera update to new region
-	gAgent.updateCamera();
+	//gAgent.updateCamera();
 
 	send_agent_update(TRUE, TRUE);
 }

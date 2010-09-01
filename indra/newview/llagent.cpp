@@ -6310,6 +6310,10 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 	LLViewerRegion* regionp = getRegion();
 	U64 handle = to_region_handle(pos_global);
 	LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle(handle);
+	bool calc = gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
+	LLVector3 offset = LLVector3(0.f,0.f,0.f);
+	if(calc)
+		offset += LLVector3(0.f,0.f,gAgent.getAvatarObject()->getScale().mV[2] / 2.0);
 	if(regionp && info)
 	{
 		LLVector3d region_origin = info->getGlobalOrigin();
@@ -6317,6 +6321,7 @@ void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 			(F32)(pos_global.mdV[VX] - region_origin.mdV[VX]),
 			(F32)(pos_global.mdV[VY] - region_origin.mdV[VY]),
 			(F32)(pos_global.mdV[VZ]));
+		pos_local += offset;
 		teleportRequest(handle, pos_local);
 	}
 	else if(regionp && 
