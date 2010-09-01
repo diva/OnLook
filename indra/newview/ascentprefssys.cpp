@@ -64,9 +64,16 @@ private:
 	void refreshValues();
 	//General -----------------------------------------------------------------------------
 	BOOL mDoubleClickTeleport;
+		BOOL mResetCameraAfterTP;
+		BOOL mOffsetTPByUserHeight;
 	BOOL mPreviewAnimInWorld;
 	BOOL mSaveScriptsAsMono;
 	BOOL mAlwaysRezInGroup;
+	//Disable Teleport Progress
+	//Disable Logout progress
+	//always show Build
+	BOOL mAlwaysShowFly;
+	//Disable camera minimum distance
 	//Chat/IM -----------------------------------------------------------------------------
 	BOOL mHideNotificationsInChat;
 	BOOL mPlayTypingSound;
@@ -99,6 +106,7 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
+	refreshValues();
 	refresh();
 }
 
@@ -132,9 +140,16 @@ void LLPrefsAscentSysImpl::refreshValues()
 {
 	//General -----------------------------------------------------------------------------
 	mDoubleClickTeleport		= gSavedSettings.getBOOL("DoubleClickTeleport");
+		mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
+		mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
 	mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
 	mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
 	mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
+	//Disable Teleport Progress
+	//Disable Logout progress
+	//always show Build
+	mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
+	//Disable camera minimum distance
 	//Chat/IMs ----------------------------------------------------------------------------
 	mHideNotificationsInChat	= gSavedSettings.getBOOL("HideNotificationsInChat");
 	mHideTypingNotification		= gSavedSettings.getBOOL("AscentHideTypingNotification");
@@ -165,14 +180,19 @@ void LLPrefsAscentSysImpl::refreshValues()
 }
 
 void LLPrefsAscentSysImpl::refresh()
-{
-	refreshValues();
-	
+{	
 	//General -----------------------------------------------------------------------------
 	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
+		childSetValue("center_after_teleport_check",	mResetCameraAfterTP);
+		childSetValue("offset_teleport_check",			mOffsetTPByUserHeight);
 	childSetValue("preview_anim_in_world_check",	mPreviewAnimInWorld);
 	childSetValue("save_scripts_as_mono_check",		mSaveScriptsAsMono);
 	childSetValue("always_rez_in_group_check",		mAlwaysRezInGroup);
+	//Disable Teleport Progress
+	//Disable Logout progress
+	//always show Build
+	childSetValue("always_fly_check",				mAlwaysShowFly);
+	//Disable camera minimum distance
 	//Chat --------------------------------------------------------------------------------
 	childSetValue("hide_notifications_in_chat_check", mHideNotificationsInChat);
 	childSetValue("play_typing_sound_check",		mPlayTypingSound);
@@ -251,6 +271,8 @@ void LLPrefsAscentSysImpl::cancel()
 {
 	//General -----------------------------------------------------------------------------
 	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
+		childSetValue("center_after_teleport_check",	mResetCameraAfterTP);
+		childSetValue("offset_teleport_check",			mOffsetTPByUserHeight);
 	childSetValue("preview_anim_in_world_check",	mPreviewAnimInWorld);
 	childSetValue("save_scripts_as_mono_check",		mSaveScriptsAsMono);
 	childSetValue("always_rez_in_group_check",		mAlwaysRezInGroup);
@@ -301,11 +323,20 @@ void LLPrefsAscentSysImpl::apply()
 	
 	//General ------------------------------------------------------------------------------
 	gSavedSettings.setBOOL("DoubleClickTeleport",		childGetValue("double_click_teleport_check"));
+		gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP",	childGetValue("center_after_teleport_check"));
+		gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight",	childGetValue("offset_teleport_check"));
 	gSavedSettings.setBOOL("PreviewAnimInWorld",		childGetValue("preview_anim_in_world_check"));
 	gSavedSettings.setBOOL("SaveScriptsAsMono",			childGetValue("save_scripts_as_mono_check"));
 	gSavedSettings.setBOOL("AscentAlwaysRezInGroup",	childGetValue("always_rez_in_group_check"));
+	//Disable Teleport Progress
+	//Disable Logout progress
+	//always show Build
+	gSavedSettings.setBOOL("AscentFlyAlwaysEnabled",	childGetValue("always_fly_check"));
+	//Disable camera minimum distance
 
 	//Chat/IM ------------------------------------------------------------------------------
+	//Use Vertical IMs
+	//Script count
 	//Missing the echo/log option.
 	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
 	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
@@ -397,7 +428,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setBOOL("PrivateLookAt",				childGetValue("private_look_at_check"));
 	LLHUDEffectLookAt::sDebugLookAt						= childGetValue("show_look_at_check");
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
-
+	
 	refreshValues();
 }
 
