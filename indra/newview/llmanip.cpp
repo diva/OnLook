@@ -69,7 +69,11 @@ S32		LLManip::sMaxTimesShowHelpText = 5;
 F32		LLManip::sGridMaxSubdivisionLevel = 32.f;
 F32		LLManip::sGridMinSubdivisionLevel = 1.f;
 LLVector2 LLManip::sTickLabelSpacing(60.f, 25.f);
-
+bool	LLManip::sActualRoot = false;// going to set these up in the main entry
+bool	LLManip::sPivotPerc  = false;
+F32		LLManip::sPivotX	 = 0.f;
+F32		LLManip::sPivotY	 = 0.f;
+F32		LLManip::sPivotZ	 = 0.f;
 
 //static
 void LLManip::rebuild(LLViewerObject* vobj)
@@ -100,6 +104,53 @@ LLManip::LLManip( const std::string& name, LLToolComposite* composite )
 	mHighlightedPart(LL_NO_PART),
 	mManipPart(LL_NO_PART)
 {
+	initPivot();
+
+	gSavedSettings.getControl("AscentBuildPrefs_ActualRoot")->getSignal()->connect(boost::bind(&updateActualRoot));
+	gSavedSettings.getControl("AscentBuildPrefs_PivotIsPercent")->getSignal()->connect(boost::bind(&updatePivotIsPercent));
+	gSavedSettings.getControl("AscentBuildPrefs_PivotX")->getSignal()->connect(boost::bind(&updatePivotX));
+	gSavedSettings.getControl("AscentBuildPrefs_PivotY")->getSignal()->connect(boost::bind(&updatePivotY));
+	gSavedSettings.getControl("AscentBuildPrefs_PivotZ")->getSignal()->connect(boost::bind(&updatePivotZ));
+}
+//static
+void LLManip::initPivot()
+{
+	sActualRoot = (bool)gSavedSettings.getBOOL("AscentBuildPrefs_ActualRoot");
+	sPivotPerc  = (bool)gSavedSettings.getBOOL("AscentBuildPrefs_PivotIsPercent");
+	sPivotX		= gSavedSettings.getF32("AscentBuildPrefs_PivotX");
+	sPivotY		= gSavedSettings.getF32("AscentBuildPrefs_PivotY");
+	sPivotZ		= gSavedSettings.getF32("AscentBuildPrefs_PivotZ");
+}
+//static
+bool LLManip::updateActualRoot()
+{
+	//sActualRoot = (bool)data.asBoolean();
+	sActualRoot = gSavedSettings.getBOOL("AscentBuildPrefs_ActualRoot");
+	return true;
+}
+//static
+bool LLManip::updatePivotIsPercent()
+{
+	sPivotPerc = gSavedSettings.getBOOL("AscentBuildPrefs_PivotIsPercent");
+	return true;
+}
+//static
+bool LLManip::updatePivotX()
+{
+	sPivotX = gSavedSettings.getF32("AscentBuildPrefs_PivotX");
+	return true;
+}
+//static
+bool LLManip::updatePivotY()
+{
+	sPivotY = gSavedSettings.getF32("AscentBuildPrefs_PivotY");
+	return true;
+}
+//static
+bool LLManip::updatePivotZ()
+{
+	sPivotZ = gSavedSettings.getF32("AscentBuildPrefs_PivotZ");
+	return true;
 }
 
 void LLManip::getManipNormal(LLViewerObject* object, EManipPart manip, LLVector3 &normal)
@@ -351,12 +402,45 @@ LLVector3 LLManip::getSavedPivotPoint() const
 
 LLVector3 LLManip::getPivotPoint()
 {
-	if (mObjectSelection->getFirstObject() && mObjectSelection->getObjectCount() == 1 && mObjectSelection->getSelectType() != SELECT_TYPE_HUD)
+	LLVector3 pos;
+	LLVector3 scale;
+	LLQuaternion rot;// = mObjectSelection->getFirstObject()->getRotation();
+	if (mObjectSelection->getFirstRootObject(TRUE) && (mObjectSelection->getObjectCount() == 1 || sActualRoot) && mObjectSelection->getSelectType() != SELECT_TYPE_HUD)
 	{
-		return mObjectSelection->getFirstObject()->getPivotPositionAgent();
+		pos = mObjectSelection->getFirstRootObject(TRUE)->getPivotPositionAgent();
+		scale = mObjectSelection->getFirstRootObject(TRUE)->getScale();
+		rot = mObjectSelection->getFirstRootObject(TRUE)->getRotation();
+	}else
+	{
+		pos = LLSelectMgr::getInstance()->getBBoxOfSelection().getCenterAgent();
+		scale = LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal();
+		rot = LLSelectMgr::getInstance()->getBBoxOfSelection().getRotation();
 	}
-	return LLSelectMgr::getInstance()->getBBoxOfSelection().getCenterAgent();
+	if(sPivotPerc)
+	{
+		
+		LLVector3 add(
+			(-scale[VX]*0.5) + (scale[VX]*(sPivotX*0.01)),
+			(-scale[VY]*0.5) + (scale[VY]*(sPivotY*0.01)),
+			(-scale[VZ]*0.5) + (scale[VZ]*(sPivotZ*0.01)));
+		add = add * rot;
+		pos = pos + add;
+	}else
+	{
+		//pos[VX] = pos[VX] + gSavedSettings.getF32("EmeraldBuildPrefs_PivotX");
+		//pos[VY] = pos[VY] + gSavedSettings.getF32("EmeraldBuildPrefs_PivotY");
+		//pos[VZ] = pos[VZ] + gSavedSettings.getF32("EmeraldBuildPrefs_PivotZ");
+		LLVector3 add(
+			sPivotX,
+			sPivotY,
+			sPivotZ);
+		add = add * rot;
+		pos = pos + add;
+	}
+	//pos = pos * rot;
+	return pos;
 }
+
 
 
 void LLManip::renderGuidelines(BOOL draw_x, BOOL draw_y, BOOL draw_z)
