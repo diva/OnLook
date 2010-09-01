@@ -2,7 +2,7 @@
 <panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
 	border="true" label="Ascent System" name="ascsys" enabled="true" mouse_opaque="true">
 	<tab_container label="Ascent" bottom="0" height="440" width="500" left="0"
-		name="Ascent System" tab_min_width="90" tab_position="top">
+		name="Ascent System" tab_min_width="70" tab_position="top">
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="General" name="User Interface">
 			<check_box bottom_delta="-25" control_name="DoubleClickTeleport" enabled="true"
@@ -45,13 +45,13 @@
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Disable the Teleport progress screens" left="10"
 				tool_tip="Viewer will not hide your UI while teleporting, allowing you to continue to read IMs."
-				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				mouse_opaque="true" name="disable_tp_screen_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="AscentDisableLogoutScreens" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Hide the Logout progress screen" left="10"
 				tool_tip="Does not hide the UI when logging out."
-				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				mouse_opaque="true" name="disable_logout_screen_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="AscentBuildAlwaysEnabled" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
@@ -69,7 +69,7 @@
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Disable camera minimum distance" left="10"
 				tool_tip="Allows the camera to get reeeaaally close to things."
-				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				mouse_opaque="true" name="disable_camera_zoom_check" radio_style="false"
 				width="400" />
 			<!--<check_box bottom_delta="-20" control_name="AscentPowerfulWizard" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
@@ -369,6 +369,9 @@
 				tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
 				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
 				width="400" />
+		</panel>
+		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
+			 follows="left|top|right|bottom" label="Building" name="Building">
 		</panel>
 	</tab_container>
 </panel>

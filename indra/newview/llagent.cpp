@@ -793,7 +793,8 @@ BOOL LLAgent::canFly()
 	if (isGodlike()) return TRUE;
 
 	// <edit>
-	if(gSavedSettings.getBOOL("AlwaysAllowFly")) return TRUE;
+	if(gSavedSettings.getBOOL("AscentFlyAlwaysEnabled")) 
+		return TRUE;
 	// </edit>
 
 	LLViewerRegion* regionp = getRegion();

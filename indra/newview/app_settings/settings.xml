@@ -24,6 +24,39 @@
     <key>Value</key>
     <real>100.0</real>
   </map>
+  <key>AscentAvatarXModifier</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar position modifier (X)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
+  <key>AscentAvatarYModifier</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar position modifier (Y)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
+  <key>AscentAvatarZModifier</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar position modifier (Z)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
   <key>Ascentnumscripts</key>
   <map>
     <key>Comment</key>
@@ -105,6 +138,61 @@
 	<map>
 		<key>Comment</key>
 		<string>temp..</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<real>0.0</real>
+	</map>
+	<key>AscentBuildPrefs_ActualRoot</key>
+	<map>
+		<key>Comment</key>
+		<string>Center selection on parent prim's center.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentBuildPrefs_PivotIsPercent</key>
+	<map>
+		<key>Comment</key>
+		<string>Would you like the chatbar to be able to be used for command line functions?</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentBuildPrefs_PivotX</key>
+	<map>
+		<key>Comment</key>
+		<string>idfk</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<real>0.0</real>
+	</map>
+	<key>AscentBuildPrefs_PivotY</key>
+	<map>
+		<key>Comment</key>
+		<string>idfk</string>
+		<key>Persist</key>
+		<integer>0</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<real>0.0</real>
+	</map>
+	<key>AscentBuildPrefs_PivotZ</key>
+	<map>
+		<key>Comment</key>
+		<string>idfk</string>
 		<key>Persist</key>
 		<integer>0</integer>
 		<key>Type</key>
