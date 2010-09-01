@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel bg_visible="false" border="false" border_visible="false" bottom="0"
+     enabled="true" follows="left|bottom" height="20" left="0"
+     name="Adv_Settings" use_bounding_rect="true" width="30" >
+	<panel bottom="1" filename="panel_bg_tab.xml" height="22" left="0" width="30" />
+	<button bottom="0" height="22" label=""
+	     left="5" name="expand" scale_image="true" toggle="true"
+	     tool_tip="Show the Settings Panel" width="22" />
+</panel>

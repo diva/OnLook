@@ -50,6 +50,7 @@ class LLFrameTimer;
 class LLStatGraph;
 class LLSlider;
 class LLVoiceRemoteCtrl;
+class wlfPanel_AdvSettings;
 
 class LLOverlayBar
 :	public LLPanel
@@ -71,6 +72,8 @@ public:
 	static void onClickSetNotBusy(void* data);
 	static void onClickMouselook(void* data);
 	static void onClickStandUp(void* data);
+	static void onClickCancelTP(void* data);
+	static void onClickCancelImport(void* data);
 	static void onClickResetView(void* data);
  	static void onClickFlycam(void* data);
 
@@ -83,9 +86,15 @@ public:
 
 	static void toggleAudioVolumeFloater(void*);
 
+	void setCancelTPButtonVisible(BOOL b, const std::string& label);
+
+	static BOOL sAdvSettingsPopup;
+	static BOOL sChatVisible;
+
 protected:	
 	static void* createMediaRemote(void* userdata);
 	static void* createVoiceRemote(void* userdata);
+	static void* createAdvSettings(void* userdata);
 	static void* createChatBar(void* userdata);
 
 	void enableMediaButtons();
@@ -93,9 +102,20 @@ protected:
 protected:
 	LLMediaRemoteCtrl*	mMediaRemote;
 	LLVoiceRemoteCtrl*	mVoiceRemote;
+	LLButton*	mCancelBtn;
+	wlfPanel_AdvSettings*	mAdvSettings;
 	bool mBuilt;	// dialog constructed yet?
 	enum { STOPPED=0, PLAYING=1, PAUSED=2 };
 	S32 mMusicState;
+	std::string			mOriginalIMLabel;
+	
+
+private:
+	
+
+	/*static bool	updateAdvSettingsPopup(const LLSD &data);
+	static void	updateChatVisible(const LLSD &data);*/
+
 };
 
 extern LLOverlayBar* gOverlayBar;

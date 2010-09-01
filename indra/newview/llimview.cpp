@@ -521,7 +521,8 @@ void LLIMMgr::toggle(void*)
 
 LLIMMgr::LLIMMgr() :
 	mFriendObserver(NULL),
-	mIMReceived(FALSE)
+	mIMReceived(FALSE),
+	mIMUnreadCount(0)
 {
 	mFriendObserver = new LLIMViewFriendObserver(this);
 	LLAvatarTracker::instance().addObserver(mFriendObserver);
@@ -665,6 +666,7 @@ void LLIMMgr::addMessage(
 
 		//notify of a new IM
 		notifyNewIM();
+		mIMUnreadCount++;
 	}
 }
 
@@ -708,11 +710,17 @@ void LLIMMgr::notifyNewIM()
 void LLIMMgr::clearNewIMNotification()
 {
 	mIMReceived = FALSE;
+	mIMUnreadCount = 0;
 }
 
 BOOL LLIMMgr::getIMReceived() const
 {
 	return mIMReceived;
+}
+
+int LLIMMgr::getIMUnreadCount()
+{
+	return mIMUnreadCount;
 }
 
 // This method returns TRUE if the local viewer has a session

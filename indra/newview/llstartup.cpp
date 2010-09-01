@@ -197,6 +197,7 @@
 #include "llpanellogin.h"
 //#include "llfloateravatars.h"
 //#include "llactivation.h"
+#include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "llao.h"
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"

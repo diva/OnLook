@@ -64,6 +64,8 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    ascentprefssys.cpp
+	ascentprefsvan.cpp
 	ascentuploadbrowser.cpp
 	dhparam.cpp
 	dsaparam.cpp
@@ -335,8 +337,6 @@ set(viewer_SOURCE_FILES
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
-    ascentprefssys.cpp
-	ascentprefsvan.cpp
     llprefsim.cpp
     llprefsvoice.cpp
     llpreviewanim.cpp
@@ -490,6 +490,7 @@ set(viewer_SOURCE_FILES
     noise.cpp
     pipeline.cpp
 	scriptcounter.cpp
+	wlfPanel_AdvSettings.cpp
     )
 
 # This gets renamed in the packaging step
@@ -513,6 +514,8 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+	ascentprefssys.h
+	ascentprefsvan.h
 	ascentuploadbrowser.h
 	emerald.h
 	emeraldboobutils.h
@@ -784,8 +787,6 @@ set(viewer_HEADER_FILES
     llpolymesh.h
     llpolymorph.h
     llprefschat.h
-    ascentprefssys.h
-	ascentprefsvan.h
     llprefsim.h
     llprefsvoice.h
     llpreview.h
@@ -947,6 +948,7 @@ set(viewer_HEADER_FILES
 	scriptcounter.h
     VertexCache.h
     VorbisFramework.h
+	wlfPanel_AdvSettings.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

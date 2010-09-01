@@ -114,6 +114,7 @@ private:
 
 protected:
 	LLFloater* mActiveVoiceFloater;
+	
 };
 
 
@@ -158,8 +159,6 @@ public:
 			}
 		}
 	}
-
-protected:
 	LLTabContainer* mTabs;
 };
 

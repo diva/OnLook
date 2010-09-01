@@ -98,18 +98,16 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
-	
+	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
 	refresh();
 }
 
 //static
 void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 {
-	LLPrefsAscentSysImpl* self = (LLPrefsAscentSysImpl*)user_data;
-
-	self->childEnable("fetch_inventory_on_login_check");	
+	LLPrefsAscentSysImpl* self = (LLPrefsAscentSysImpl*)user_data;	
 	
-	llinfos << "Change to " << ctrl->getControlName()  << llendl;
+	llinfos << "Change to " << ctrl->getControlName()  << " aka " << ctrl->getName() << llendl;
 	
 	if (ctrl->getControlName() == "SpeedRez")
 	{
@@ -124,7 +122,7 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 			self->childDisable("speed_rez_seconds");
 		}
 	}
-	else if (ctrl->getControlName() == "ShowLookAt")
+	else if (ctrl->getName() == "show_look_at_check")
 	{
 		LLHUDEffectLookAt::sDebugLookAt = self->childGetValue("show_look_at_check").asBoolean();
 	}

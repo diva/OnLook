@@ -94,18 +94,16 @@ LLFloaterChatterBox::LLFloaterChatterBox(const LLSD& seed) :
 {
 	mAutoResize = FALSE;
 
-	std::string chatterbox_layout;
-	if(gSavedSettings.getBOOL("WoLfVerticalIMTabs"))
+	
+	if(!gSavedSettings.getBOOL("WoLfVerticalIMTabs"))
 	{ 
-		chatterbox_layout = "floater_chatterbox_wolf.xml"; 
+		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chatterbox.xml", NULL, FALSE);
 	}
 	else 
 	{
-		chatterbox_layout = "floater_chatterbox.xml";
+		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_chatterbox_wolf.xml", NULL, FALSE);
 	}
-	LLUICtrlFactory::getInstance()->buildFloater(this, chatterbox_layout, NULL, FALSE);
-	/*childHide("chatterbox_tabs_horiz");
-	childShow("chatterbox_tabs_vert");*/
+	
 	if (gSavedSettings.getBOOL("ContactsTornOff"))
 	{
 		LLFloaterMyFriends* floater_contacts = LLFloaterMyFriends::getInstance(0);

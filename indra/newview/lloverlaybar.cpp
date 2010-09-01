@@ -38,6 +38,7 @@
 #include "lloverlaybar.h"
 
 #include "llaudioengine.h"
+#include "importtracker.h"
 #include "llrender.h"
 #include "llagent.h"
 #include "llbutton.h"
@@ -58,12 +59,14 @@
 #include "llviewerparcelmedia.h"
 #include "llviewerparcelmgr.h"
 #include "lluictrlfactory.h"
+#include "llviewercontrol.h"
 #include "llviewerwindow.h"
 #include "llvoiceclient.h"
 #include "llvoavatar.h"
 #include "llvoiceremotectrl.h"
 #include "llmediactrl.h"
 #include "llselectmgr.h"
+#include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 
 //
 // Globals
@@ -72,6 +75,10 @@
 LLOverlayBar *gOverlayBar = NULL;
 
 extern S32 MENU_BAR_HEIGHT;
+extern ImportTracker gImportTracker;
+
+BOOL LLOverlayBar::sAdvSettingsPopup;
+BOOL LLOverlayBar::sChatVisible;
 
 //
 // Functions
@@ -93,6 +100,13 @@ void* LLOverlayBar::createVoiceRemote(void* userdata)
 	return self->mVoiceRemote;
 }
 
+void* LLOverlayBar::createAdvSettings(void* userdata)
+{
+	LLOverlayBar *self = (LLOverlayBar*)userdata;	
+	self->mAdvSettings = new wlfPanel_AdvSettings();
+	return self->mAdvSettings;
+}
+
 void* LLOverlayBar::createChatBar(void* userdata)
 {
 	gChatBar = new LLChatBar();
@@ -103,7 +117,9 @@ LLOverlayBar::LLOverlayBar()
 	:	LLPanel(),
 		mMediaRemote(NULL),
 		mVoiceRemote(NULL),
-		mMusicState(STOPPED)
+		mAdvSettings(NULL),
+		mMusicState(STOPPED),
+		mOriginalIMLabel("")
 {
 	setMouseOpaque(FALSE);
 	setIsChrome(TRUE);
@@ -113,10 +129,26 @@ LLOverlayBar::LLOverlayBar()
 	LLCallbackMap::map_t factory_map;
 	factory_map["media_remote"] = LLCallbackMap(LLOverlayBar::createMediaRemote, this);
 	factory_map["voice_remote"] = LLCallbackMap(LLOverlayBar::createVoiceRemote, this);
+	factory_map["Adv_Settings"] = LLCallbackMap(LLOverlayBar::createAdvSettings, this);
 	factory_map["chat_bar"] = LLCallbackMap(LLOverlayBar::createChatBar, this);
 	
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_overlaybar.xml", &factory_map);
 }
+
+bool updateAdvSettingsPopup(const LLSD &data)
+{
+	LLOverlayBar::sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	gOverlayBar->childSetVisible("AdvSettings_container", !LLOverlayBar::sAdvSettingsPopup);
+	gOverlayBar->childSetVisible("AdvSettings_container_exp", LLOverlayBar::sAdvSettingsPopup);
+	return true;
+}
+
+bool updateChatVisible(const LLSD &data)
+{
+	LLOverlayBar::sChatVisible = data.asBoolean();
+	return true;
+}
+
 
 BOOL LLOverlayBar::postBuild()
 {
@@ -124,15 +156,29 @@ BOOL LLOverlayBar::postBuild()
 	childSetAction("Set Not Busy",onClickSetNotBusy,this);
 	childSetAction("Mouselook",onClickMouselook,this);
 	childSetAction("Stand Up",onClickStandUp,this);
+	//childSetAction("Cancel TP",onClickCancelTP,this);
  	childSetAction("Flycam",onClickFlycam,this);
 	childSetVisible("chat_bar", gSavedSettings.getBOOL("ChatVisible"));
 
+	//mCancelBtn = getChild<LLButton>("Cancel TP");
 	setFocusRoot(TRUE);
 	mBuilt = true;
 
+	mOriginalIMLabel = getChild<LLButton>("IM Received")->getLabelSelected();
+
 	layoutButtons();
+
+	sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
+	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
+
+	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(&updateAdvSettingsPopup);
+	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(&updateChatVisible);
+	childSetVisible("AdvSettings_container", !sAdvSettingsPopup);
+	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
+
 	return TRUE;
 }
+
 
 LLOverlayBar::~LLOverlayBar()
 {
@@ -193,9 +239,25 @@ void LLOverlayBar::refresh()
 	BOOL buttons_changed = FALSE;
 
 	BOOL im_received = gIMMgr->getIMReceived();
+	int unread_count = gIMMgr->getIMUnreadCount();
 	LLButton* button = getChild<LLButton>("IM Received");
-	if (button && button->getVisible() != im_received)
+
+	if ((button && button->getVisible() != im_received) ||
+			(button && button->getVisible()))
 	{
+		if (unread_count > 0)
+		{
+			if (unread_count > 1)
+			{
+				std::stringstream ss;
+				ss << unread_count << " " << getString("unread_count_string_plural");
+				button->setLabel(ss.str());
+			}
+			else
+			{
+				button->setLabel("1 " + mOriginalIMLabel);
+			}
+		}
 		button->setVisible(im_received);
 		sendChildToFront(button);
 		moveChildToBackOfTabGroup(button);
@@ -253,21 +315,36 @@ void LLOverlayBar::refresh()
 
 	moveChildToBackOfTabGroup(mMediaRemote);
 	moveChildToBackOfTabGroup(mVoiceRemote);
+	moveChildToBackOfTabGroup(mAdvSettings);
 
 	// turn off the whole bar in mouselook
-	if (gAgent.cameraMouselook())
+	static BOOL last_mouselook = FALSE;
+
+	BOOL in_mouselook = gAgent.cameraMouselook();
+
+	if(last_mouselook != in_mouselook)
 	{
-		childSetVisible("media_remote_container", FALSE);
-		childSetVisible("voice_remote_container", FALSE);
-		childSetVisible("state_buttons", FALSE);
+		last_mouselook = in_mouselook;
+		if (in_mouselook)
+		{
+			childSetVisible("media_remote_container", FALSE);
+			childSetVisible("voice_remote_container", FALSE);
+			childSetVisible("AdvSettings_container", FALSE);
+			childSetVisible("AdvSettings_container_exp", FALSE);
+			childSetVisible("state_buttons", FALSE);
+		}
+		else
+		{
+			// update "remotes"
+			childSetVisible("media_remote_container", TRUE);
+			//childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
+			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
+			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
+			childSetVisible("state_buttons", TRUE);
+		}
 	}
-	else
-	{
-		// update "remotes"
-		childSetVisible("media_remote_container", TRUE);
+	if(!in_mouselook)
 		childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
-		childSetVisible("state_buttons", TRUE);
-	}
 
 	// always let user toggle into and out of chatbar
 	childSetVisible("chat_bar", gSavedSettings.getBOOL("ChatVisible"));
