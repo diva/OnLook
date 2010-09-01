@@ -1783,12 +1783,12 @@ void LLAgent::setCameraZoomFraction(F32 fraction)
 	// 0.f -> camera zoomed all the way out
 	// 1.f -> camera zoomed all the way in
 	LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
-
+	BOOL disable_min = gSavedSettings.getBOOL("AscentDisableMinZoomDist");
 	if (selection->getObjectCount() && selection->getSelectType() == SELECT_TYPE_HUD)
 	{
 		mHUDTargetZoom = fraction;
 	}
-	else if (mFocusOnAvatar && cameraThirdPerson())
+	else if (mFocusOnAvatar && cameraThirdPerson() && !disable_min)
 	{
 		mCameraZoomFraction = rescale(fraction, 0.f, 1.f, MAX_ZOOM_FRACTION, MIN_ZOOM_FRACTION);
 	}
@@ -1801,12 +1801,12 @@ void LLAgent::setCameraZoomFraction(F32 fraction)
 	else
 	{
 		F32 min_zoom = LAND_MIN_ZOOM;
-		const F32 DIST_FUDGE = 16.f; // meters
-		F32 max_zoom = llmin(mDrawDistance - DIST_FUDGE, 
-								LLWorld::getInstance()->getRegionWidthInMeters() - DIST_FUDGE,
-								MAX_CAMERA_DISTANCE_FROM_AGENT);
+		//const F32 DIST_FUDGE = 16.f; // meters
+		//F32 max_zoom = llmin(mDrawDistance - DIST_FUDGE, 
+		//						LLWorld::getInstance()->getRegionWidthInMeters() - DIST_FUDGE,
+		//						MAX_CAMERA_DISTANCE_FROM_AGENT);
 
-		if (mFocusObject.notNull())
+		if (!disable_min)
 		{
 			if (mFocusObject.notNull())
 			{
@@ -1820,10 +1820,14 @@ void LLAgent::setCameraZoomFraction(F32 fraction)
 				}
 			}
 		}
-
+		else
+		{
+			min_zoom = 0.f;
+		}
 		LLVector3d camera_offset_dir = mCameraFocusOffsetTarget;
 		camera_offset_dir.normalize();
-		mCameraFocusOffsetTarget = camera_offset_dir * rescale(fraction, 0.f, 1.f, max_zoom, min_zoom);
+		//mCameraFocusOffsetTarget = camera_offset_dir * rescale(fraction, 0.f, 1.f, max_zoom, min_zoom);
+		mCameraFocusOffsetTarget = camera_offset_dir * rescale(fraction, 0.f, 65535.*4., 1.f, min_zoom);
 	}
 	startCameraAnimation();
 }
@@ -1903,7 +1907,7 @@ void LLAgent::cameraZoomIn(const F32 fraction)
 
 	LLVector3d	camera_offset(mCameraFocusOffsetTarget);
 	LLVector3d	camera_offset_unit(mCameraFocusOffsetTarget);
-	F32 min_zoom = LAND_MIN_ZOOM;
+	F32 min_zoom = 0.f;//LAND_MIN_ZOOM;
 	F32 current_distance = (F32)camera_offset_unit.normalize();
 	F32 new_distance = current_distance * fraction;
 
