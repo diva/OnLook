@@ -53,6 +53,12 @@
 				tool_tip="Lets you fly in locations you shouldn't be allowed to. Use at your own risk - Just because you can doesn't mean you should."
 				mouse_opaque="true" name="always_fly_check" radio_style="false"
 				width="400" />	
+			<check_box bottom_delta="-20" control_name="AscentDisableMinZoomDist" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Disable camera minimum distance" left="10"
+				tool_tip="Allows the camera to get reeeaaally close to things."
+				mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
+				width="400" />
 			<!--<check_box bottom_delta="-20" control_name="AscentPowerfulWizard" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Enable Power User functionality" left="10"

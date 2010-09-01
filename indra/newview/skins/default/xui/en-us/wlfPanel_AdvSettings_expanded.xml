@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel bg_visible="false" border="false" border_visible="false" bottom="1"
-     follows="left|bottom" height="198" left="0" name="Adv_Settings"
+     follows="left|bottom" height="220" left="0" name="Adv_Settings"
      use_bounding_rect="true" width="220" >
-	<panel bottom="0" filename="panel_bg_tab.xml" height="198" left="0" width="205" />
-	<slider bottom="175" left="10" control_name="RenderFarClip"
+	<panel bottom="0" filename="panel_bg_tab.xml" height="185" left="0" width="205" />
+	<slider bottom="160" left="10" control_name="RenderFarClip"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="8" label="Draw Dist.:" can_edit_text="true"
 		label_width="55" max_val="1024" min_val="24" mouse_opaque="true"
