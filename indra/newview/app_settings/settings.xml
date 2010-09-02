@@ -26,7 +26,7 @@
 	</map>
 	<key>AscentAvatarZModifier</key>
 	<map>
-		
+		<key>Comment</key>
 		<string>Avatar position modifier (Z)</string>
 		<key>Persist</key>
 		<integer>1</integer>
@@ -86,7 +86,7 @@
 		<key>Persist</key>
 		<integer>1</integer>
 		<key>Type</key>
-		<string>S32</string>
+		<string>F32</string>
 		<key>Value</key>
 		<real>100</real>
 	</map>
@@ -128,33 +128,33 @@
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50.0</real>
 	</map>
 	<key>AscentBuildPrefs_PivotY</key>
 	<map>
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50.0</real>
 	</map>
 	<key>AscentBuildPrefs_PivotZ</key>
 	<map>
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50.0</real>
 	</map>
 	<key>AscentCmdLine</key>
 	<map>

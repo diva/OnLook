@@ -414,8 +414,8 @@ public:
 	static void			setPhantom(BOOL phantom);
 	static void			togglePhantom();
 
-	static BOOL			isTPosed() { return mForceTPose; };
-	static void			setTPosed(BOOL TPose) { mForceTPose = TPose };
+	static BOOL			isTPosed() { return mForceTPose; }
+	static void			setTPosed(BOOL TPose) { mForceTPose = TPose; }
 	static void			toggleTPosed();
 
 	// Does this parcel allow you to fly?

@@ -137,9 +137,10 @@ LLOverlayBar::LLOverlayBar()
 
 bool updateAdvSettingsPopup(const LLSD &data)
 {
+	LLOverlayBar::sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	gOverlayBar->childSetVisible("AdvSettings_container", !LLOverlayBar::sAdvSettingsPopup);
 	gOverlayBar->childSetVisible("AdvSettings_container_exp", LLOverlayBar::sAdvSettingsPopup);
-	return false;
+	return true;
 }
 
 bool updateChatVisible(const LLSD &data)

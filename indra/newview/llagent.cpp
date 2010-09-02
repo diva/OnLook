@@ -241,6 +241,7 @@ std::string LLAgent::lure_maturity;
 // </edit>
 
 BOOL LLAgent::exlPhantom = 0;
+BOOL LLAgent::mForceTPose = 0;
 LLVector3 LLAgent::exlStartMeasurePoint = LLVector3::zero;
 LLVector3 LLAgent::exlEndMeasurePoint = LLVector3::zero;
 
@@ -1561,7 +1562,7 @@ BOOL LLAgent::calcCameraMinDistance(F32 &obj_min_distance)
 	*/
 	BOOL soft_limit = FALSE; // is the bounding box to be treated literally (volumes) or as an approximation (avatars)
 
-	if (!mFocusObject || mFocusObject->isDead())
+	if (!mFocusObject || mFocusObject->isDead() || gSavedSettings.getBOOL("DisableCameraConstraints"))
 	{
 		obj_min_distance = 0.f;
 		return TRUE;
@@ -3646,7 +3647,8 @@ F32	LLAgent::calcCameraFOVZoomFactor()
 		// don't FOV zoom on mostly transparent objects
 		LLVector3 focus_offset = mFocusObjectOffset;
 		F32 obj_min_dist = 0.f;
-		calcCameraMinDistance(obj_min_dist);
+		if (!gSavedSettings.getBOOL("AscentDisableMinZoomDist"))
+			calcCameraMinDistance(obj_min_dist);
 		F32 current_distance = llmax(0.001f, camera_offset_dir.magVec());
 
 		mFocusObjectDist = obj_min_dist - current_distance;

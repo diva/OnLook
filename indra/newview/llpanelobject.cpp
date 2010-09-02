@@ -190,6 +190,11 @@ BOOL	LLPanelObject::postBuild()
 	mCtrlRotZ = getChild<LLSpinCtrl>("Rot Z");
 	childSetCommitCallback("Rot Z",onCommitRotation,this);
 
+	mBtnLinkObj = getChild<LLButton>("link_obj");
+	childSetAction("link_obj",onLinkObj, this);
+	mBtnUnlinkObj = getChild<LLButton>("unlink_obj");
+	childSetAction("unlink_obj",onUnlinkObj, this);
+
 	mBtnCopyPos = getChild<LLButton>("copypos");
 	childSetAction("copypos",onCopyPos, this);
 	mBtnPastePos = getChild<LLButton>("pastepos");
@@ -467,7 +472,7 @@ void LLPanelObject::getState( )
 	BOOL enable_move	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
-
+	BOOL enable_link	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
 						 && (selected_count == 1);
@@ -514,6 +519,8 @@ void LLPanelObject::getState( )
 	mCtrlPosX->setEnabled(enable_move);
 	mCtrlPosY->setEnabled(enable_move);
 	mCtrlPosZ->setEnabled(enable_move);
+	mBtnLinkObj->setEnabled((enable_link && !single_volume));
+	mBtnUnlinkObj->setEnabled((enable_link && (selected_count > 1)));
 	mBtnCopyPos->setEnabled(enable_move);
 	mBtnPastePos->setEnabled(enable_move);
 	mBtnPastePosClip->setEnabled(enable_move);
@@ -2585,6 +2592,18 @@ void LLPanelObject::onPasteParams(void* user_data)
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	if(hasParamClipboard)
 		self->mObject->updateVolume(mClipboardVolumeParams);
+}
+
+void LLPanelObject::onLinkObj(void* user_data)
+{
+	llinfos << "Attempting link." << llendl;
+	LLSelectMgr::getInstance()->sendLink();
+}
+
+void LLPanelObject::onUnlinkObj(void* user_data)
+{
+	llinfos << "Attempting unlink." << llendl;
+	LLSelectMgr::getInstance()->sendDelink();
 }
 
 void LLPanelObject::onPastePos(void* user_data)

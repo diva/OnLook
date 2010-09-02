@@ -118,6 +118,8 @@ BOOL wlfPanel_AdvSettings::postBuild()
 	}
 	comboBoxWater->setCommitCallback(onChangePresetName);
 	fixPointer = this;
+	/*onClickExpandBtn(fixPointer);
+	onClickExpandBtn(fixPointer);*/
 	return TRUE;
 }
 void wlfPanel_AdvSettings::draw()
@@ -136,6 +138,7 @@ void wlfPanel_AdvSettings::draw()
 	}
 	refresh();
 	LLPanel::draw();
+	
 }
 wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 {

@@ -74,17 +74,19 @@ public:
 	static void 	onCommitPhantom(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitCastShadows(	LLUICtrl* ctrl, void* userdata);
 
+	static void		onLinkObj(				void* user_data);
+	static void		onUnlinkObj(			void* user_data);
 	static void 	onCopyPos(				void* user_data);
 	static void 	onPastePos(				void* user_data);
-	static void 	onPastePosClip(				void* user_data);
+	static void 	onPastePosClip(			void* user_data);
 	static void 	onCopySize(				void* user_data);
 	static void 	onPasteSize(			void* user_data);
-	static void 	onPasteSizeClip(			void* user_data);
+	static void 	onPasteSizeClip(		void* user_data);
 	static void 	onCopyRot(				void* user_data);
 	static void 	onPasteRot(				void* user_data);
-	static void 	onPasteRotClip(				void* user_data);
-	static void 	onCopyParams(				void* user_data);
-	static void 	onPasteParams(				void* user_data);
+	static void 	onPasteRotClip(			void* user_data);
+	static void 	onCopyParams(			void* user_data);
+	static void 	onPasteParams(			void* user_data);
 	
 	static void 	onCommitParametric(		LLUICtrl* ctrl, void* userdata);
 
@@ -182,6 +184,9 @@ protected:
 	LLSpinCtrl*		mCtrlRotX;
 	LLSpinCtrl*		mCtrlRotY;
 	LLSpinCtrl*		mCtrlRotZ;
+
+	LLButton		*mBtnLinkObj;
+	LLButton		*mBtnUnlinkObj;
 
 	LLButton		*mBtnCopyPos;
 	LLButton		*mBtnPastePos;

@@ -597,80 +597,79 @@
 			     bottom="-20" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="select_single" v_pad="0" width="252">
-				Select only one primitive to edit parameters.
 			</text>
-			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="0" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left_delta="0"
-			     mouse_opaque="true" name="edit_object" v_pad="0" width="252">
-				Edit object parameters:
-			</text>
+			<button bottom="-26" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="Link" left="10" mouse_opaque="true" name="link_obj"  enabled="true"
+			     tool_tip="He come to town..."  width="50" />
+			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="18" label="Unlink" left_delta="50" mouse_opaque="true" name="unlink_obj"  enabled="true"
+			     tool_tip="Unlinks linkset."  width="50" />
 			<check_box bottom_delta="-26" follows="left|top" font="SansSerifSmall" height="16"
-			     initial_value="false" label="Locked" left="8" mouse_opaque="true"
+			     initial_value="false" label="Locked" left="5" mouse_opaque="true"
 			     name="checkbox locked"
 			     tool_tip="Prevents object from being moved or deleted. Frequently useful during building to avoid unintended edits."
 			     width="123" />
 			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
-			     initial_value="false" label="Physical" left="8" mouse_opaque="true"
+			     initial_value="false" label="Physical" left_delta="0" mouse_opaque="true"
 			     name="Physical Checkbox Ctrl"
 			     tool_tip="Allows object to be pushed and affected by gravity" width="123" />
 			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
-			     initial_value="false" label="Temporary" left="8" mouse_opaque="true"
+			     initial_value="false" label="Temporary" left_delta="0" mouse_opaque="true"
 			     name="Temporary Checkbox Ctrl"
 			     tool_tip="Causes object to be deleted 1 minute after creation." width="123" />
 			<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
-			     initial_value="false" label="Phantom" left="8" mouse_opaque="true"
+			     initial_value="false" label="Phantom" left_delta="0" mouse_opaque="true"
 			     name="Phantom Checkbox Ctrl"
 			     tool_tip="Causes object to not collide with other objects or avatars"
 			     width="123" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left_delta="2"
 			     mouse_opaque="true" name="label position" v_pad="0" width="121">
 				Position (meters)
 			</text>
-			<spinner bottom_delta="-20" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="X" label_width="10" left="10"
+			<spinner bottom_delta="-22" decimal_digits="3" follows="left|top" height="16"
+			     increment="0.01" initial_val="0" label="X" label_width="10" left_delta="0"
 			     max_val="512" min_val="-256" mouse_opaque="true" name="Pos X"
 			     text_enabled_color="110, 15, 15, 255" width="87" />
 			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="Y" label_width="10" left="10"
+			     increment="0.01" initial_val="0" label="Y" label_width="10" left_delta="0"
 			     max_val="512" min_val="-256" mouse_opaque="true" name="Pos Y"
 			     text_enabled_color="0, 100, 40, 255" width="87" />
 			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="Z" label_width="10" left="10"
+			     increment="0.01" initial_val="0" label="Z" label_width="10" left_delta="0"
 			     max_val="4096" min_val="0" mouse_opaque="true" name="Pos Z"
 			     text_enabled_color="0, 67, 132, 255" width="87" />
-		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copypos" enabled="true"
 				 tool_tip="Copy Position"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pastepos"  enabled="true"
 			     tool_tip="Paste Position"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pasteposclip"  enabled="true"
 			     tool_tip="Paste Position from Clipboard"  width="20" />
 							 
 				 
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-26" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="5"
+			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="7"
 			     mouse_opaque="true" name="label size" v_pad="0" width="121">
         Size
       </text>
-      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="X" label_width="10" left="10"
+      <spinner bottom_delta="-22" decimal_digits="5" follows="left|top" height="16"
+			     increment="0.01" initial_val="0" label="X" label_width="10" left_delta="0"
 			     max_val="1024" min_val="0.01" mouse_opaque="true" name="Scale X"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="Y" label_width="10" left="10"
+			<spinner bottom_delta="-18" decimal_digits="5" follows="left|top" height="16"
+			     increment="0.01" initial_val="0" label="Y" label_width="10" left_delta="0"
 			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale Y"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<spinner bottom_delta="-18" decimal_digits="3" follows="left|top" height="16"
-			     increment="0.01" initial_val="0" label="Z" label_width="10" left="10"
+			<spinner bottom_delta="-18" decimal_digits="5" follows="left|top" height="16"
+			     increment="0.01" initial_val="0" label="Z" label_width="10" left_delta="0"
 			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+		<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="C" left_delta="90" mouse_opaque="true" name="copysize"  enabled="true"
 			     tool_tip="Copy Size"  width="20" />
 		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
@@ -682,24 +681,24 @@
 				 
 				 
 		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="5"
+			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="7"
 			     mouse_opaque="true" name="label rotation" v_pad="0" width="121">
 				Rotation (degrees)
 			</text>
-			<spinner bottom_delta="-22" decimal_digits="2" follows="left|top" height="16"
-			     increment="1" initial_val="0" label="X" label_width="10" left="10"
+			<spinner bottom_delta="-22" decimal_digits="5" follows="left|top" height="16"
+			     increment="1" initial_val="0" label="X" label_width="10" left_delta="0"
 			     max_val="9999" min_val="-9999" mouse_opaque="true" name="Rot X"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<spinner bottom_delta="-18" decimal_digits="2" follows="left|top" height="16"
-			     increment="1" initial_val="0" label="Y" label_width="10" left="10"
+			<spinner bottom_delta="-18" decimal_digits="5" follows="left|top" height="16"
+			     increment="1" initial_val="0" label="Y" label_width="10" left_delta="0"
 			     max_val="9999" min_val="-9999" mouse_opaque="true" name="Rot Y"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-			<spinner bottom_delta="-18" decimal_digits="2" follows="left|top" height="16"
-			     increment="1" initial_val="0" label="Z" label_width="10" left="10"
+			<spinner bottom_delta="-18" decimal_digits="5" follows="left|top" height="16"
+			     increment="1" initial_val="0" label="Z" label_width="10" left_delta="0"
 			     max_val="9999" min_val="-9999" mouse_opaque="true" name="Rot Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-		<button bottom_delta="36" follows="top|right" font="SansSerifSmall" halign="center"
+		<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copyrot"  enabled="true"
 				 tool_tip="Copy Rotation"  width="20" />
 		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
@@ -741,12 +740,18 @@
 					Rubber
 				</combo_item>
 			</combo_box>
-	  <button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Copy" left="150" mouse_opaque="true" name="copyparams"  enabled="true"
-			     tool_tip="Copy Parameters from Clipboard"  width="50" />
-	  <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Paste" left_delta="50" mouse_opaque="true" name="pasteparams"  enabled="true"
-     			 tool_tip="Paste Parameters from Clipboard"  width="50" />
+		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			    bottom="-20" drop_shadow_visible="true" follows="left|top"
+			    font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
+			    mouse_opaque="true" name="edit_object" v_pad="0" width="252">
+				Params:
+		</text>
+		<button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
+			    height="16" label="Copy" left="178" mouse_opaque="true" name="copyparams"  enabled="true"
+			    tool_tip="Copy Parameters from Clipboard"  width="42" />
+		<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="16" label="Paste" left_delta="42" mouse_opaque="true" name="pasteparams"  enabled="true"
+     			 tool_tip="Paste Parameters from Clipboard"  width="42" />
       <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-36" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
