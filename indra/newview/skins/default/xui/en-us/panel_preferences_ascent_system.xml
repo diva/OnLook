@@ -372,6 +372,31 @@
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Building" name="Building">
+      <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+					 bottom_delta="-25" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+					 h_pad="0" halign="left" height="10" left_delta="30" mouse_opaque="false"
+					 name="text_box6" v_pad="0" width="150">        Pivot Point</text>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
+         label="X pos" label_width="40" left="10" mouse_opaque="true" max_val="256"
+         min_val="-256" name="X pos" width="120" control_name="AscentBuildPrefs_PivotX"/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
+         label="Y pos" label_width="40" left_delta="0" mouse_opaque="true" max_val="256"
+         min_val="-256" name="Y pos" width="120" control_name="AscentBuildPrefs_PivotY"/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
+         label="Z pos" label_width="40" left_delta="0" mouse_opaque="true" max_val="256"
+         min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
+      <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+					 label="Values are percent" left_delta="-5" mouse_opaque="true" tool_tip="Default settings are Percentages and every axis set at 50"
+					 name="EmPivotPercToggle" radio_style="false" width="100" control_name="AscentBuildPrefs_PivotIsPercent"/>
+      <check_box bottom_delta="60" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+         initial_value="true" label="Enable highlighting of selected prims" left_delta="140"
+         mouse_opaque="true" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"
+         radio_style="false" width="270"/>
+      <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+         initial_value="false" label="Show axis arrow on root prim position" left_delta="0"
+         mouse_opaque="true" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead."
+         name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"
+         radio_style="false" width="270"/>
 		</panel>
 	</tab_container>
 </panel>

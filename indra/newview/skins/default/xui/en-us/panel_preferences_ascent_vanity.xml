@@ -155,6 +155,24 @@
 				decimal_digits="0" enabled="true" follows="left|top" height="18" increment="1"
 				label="Breast min vel:" label_width="100" max_val="100" min_val="1" mouse_opaque="true"
 				show_text="true" width="250" auto_resize="false" tool_tip=""/>
+      <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="15" left="10"
+				mouse_opaque="true" name="av_mod_textbox" v_pad="0" width="394">
+        Avatar Offset Modifiers
+      </text>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
+					 label="X Modifier" label_width="65" left_delta="5" max_val="0.15" min_val="-0.15"
+					 mouse_opaque="true" name="X Modifier" width="128" control_name="AscentAvatarXModifier"
+					 tool_tip="Use this to manipulate, to a degree, your avatar bounding box. This can be used to distort orbiters, or to raise you up or down without altering your shape."/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
+         label="Y Modifier" label_width="65" left_delta="0" max_val="0.20" min_val="-0.20"
+         mouse_opaque="true" name="Y Modifier" width="128" control_name="AscentAvatarYModifier"
+         tool_tip="Use this to manipulate, to a degree, your avatar bounding box. This can be used to distort orbiters, or to raise you up or down without altering your shape."/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.1"
+         label="Z Modifier" label_width="65" left_delta="0" max_val="5.0" min_val="-5.0"
+         mouse_opaque="true" name="Z Modifier" width="128" control_name="AscentAvatarZModifier"
+         tool_tip="Use this to manipulate, to a degree, your avatar bounding box. This can be used to distort orbiters, or to raise you up or down without altering your shape."/>
 		</panel>
 	</tab_container>
 </panel>
