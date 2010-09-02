@@ -1971,7 +1971,7 @@ void LLAgent::cameraOrbitIn(const F32 meters)
 		
 		mCameraZoomFraction = (mTargetCameraDistance - meters) / camera_offset_dist;
 
-		if (!gSavedSettings.getBOOL("FreezeTime") && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
+		if (!LLAppViewer::sFreezeTime && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
 		{
 			// No need to animate, camera is already there.
 			changeCameraToMouselook(FALSE);
@@ -1985,13 +1985,48 @@ void LLAgent::cameraOrbitIn(const F32 meters)
 		LLVector3d	camera_offset_unit(mCameraFocusOffsetTarget);
 		F32 current_distance = (F32)camera_offset_unit.normalize();
 		F32 new_distance = current_distance - meters;
+		/*
+		F32 min_zoom = LAND_MIN_ZOOM;
+		
+		// Don't move through focus point
+		if (mFocusObject.notNull())
+		{
+			if (mFocusObject->isAvatar())
+			{
+				min_zoom = AVATAR_MIN_ZOOM;
+			}
+			else
+			{
+				min_zoom = OBJECT_MIN_ZOOM;
+			}
+		}
 
+		new_distance = llmax(new_distance, min_zoom);
+
+		// Don't zoom too far back
+		const F32 DIST_FUDGE = 16.f; // meters
+		F32 max_distance = llmin(mDrawDistance - DIST_FUDGE, 
+								 LLWorld::getInstance()->getRegionWidthInMeters() - DIST_FUDGE );
+
+		if (new_distance > max_distance)
+		{
+			// Unless camera is unlocked
+			if (!gSavedSettings.getBOOL("DisableCameraConstraints"))
+			{
+				return;
+			}
+		}
+
+		if( CAMERA_MODE_CUSTOMIZE_AVATAR == getCameraMode() )
+		{
+			new_distance = llclamp( new_distance, APPEARANCE_MIN_ZOOM, APPEARANCE_MAX_ZOOM );
+		}
+		*/
+		// Compute new camera offset
 		mCameraFocusOffsetTarget = new_distance * camera_offset_unit;
 		cameraZoomIn(1.f);
 	}
 }
-
-
 //-----------------------------------------------------------------------------
 // cameraPanIn()
 //-----------------------------------------------------------------------------
@@ -3875,55 +3910,6 @@ LLVector3d LLAgent::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 		// camera gets pushed out later wrt mCameraFOVZoomFactor...this is "raw" value
 		camera_position_global = focusPosGlobal + mCameraFocusOffset;
 	}
-
-	if (!gSavedSettings.getBOOL("DisableCameraConstraints") && !gAgent.isGodlike())
-	{
-		LLViewerRegion* regionp = LLWorld::getInstance()->getRegionFromPosGlobal(
-			camera_position_global);
-		bool constrain = true;
-		if(regionp && regionp->canManageEstate())
-		{
-			constrain = false;
-		}
-		if(constrain)
-		{
-			F32 max_dist = ( CAMERA_MODE_CUSTOMIZE_AVATAR == mCameraMode ) ?
-				APPEARANCE_MAX_ZOOM : mDrawDistance;
-
-			LLVector3d camera_offset = camera_position_global
-				- gAgent.getPositionGlobal();
-			F32 camera_distance = (F32)camera_offset.magVec();
-
-			if(camera_distance > max_dist)
-			{
-				camera_position_global = gAgent.getPositionGlobal() + 
-					(max_dist / camera_distance) * camera_offset;
-				isConstrained = TRUE;
-			}
-		}
-
-// JC - Could constrain camera based on parcel stuff here.
-//			LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromPosGlobal(camera_position_global);
-//			
-//			if (regionp && !regionp->mParcelOverlay->isBuildCameraAllowed(regionp->getPosRegionFromGlobal(camera_position_global)))
-//			{
-//				camera_position_global = last_position_global;
-//
-//				isConstrained = TRUE;
-//			}
-	}
-
-	// Don't let camera go underground
-	F32 camera_min_off_ground = getCameraMinOffGround();
-
-	camera_land_height = LLWorld::getInstance()->resolveLandHeightGlobal(camera_position_global);
-
-	if (camera_position_global.mdV[VZ] < camera_land_height + camera_min_off_ground)
-	{
-		camera_position_global.mdV[VZ] = camera_land_height + camera_min_off_ground;
-		isConstrained = TRUE;
-	}
-
 
 	if (hit_limit)
 	{

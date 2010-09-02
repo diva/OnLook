@@ -37,36 +37,36 @@
 	</map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
-		<key>Comment</key>
-		<string>Show build option regardless of whether you can (May not mean you can actually build there)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
+      <key>Comment</key>
+      <string>Show build option regardless of whether you can (May not mean you can actually build there)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
 	<key>AscentDisableMinZoomDist</key>
     <map>
-		<key>Comment</key>
-		<string>Allows much closer camera zooming.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
+      <key>Comment</key>
+      <string>Allows much closer camera zooming.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
 	<key>AscentFlyAlwaysEnabled</key>
     <map>
-		<key>Comment</key>
-		<string>Always allow fly (Does actually always allow flight)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
+      <key>Comment</key>
+      <string>Always allow fly (Does actually always allow flight)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
 	<key>AscentDisplayTotalScriptJumps</key>
 	<map>
@@ -90,8 +90,8 @@
 		<key>Value</key>
 		<real>100</real>
 	</map>
-	<key>Ascentnumscripts</key>
-	<map>
+	 <key>Ascentnumscripts</key>
+	  <map>
 		<key>Comment</key>
 		<string>temp..</string>
 		<key>Persist</key>
@@ -100,7 +100,7 @@
 		<string>F32</string>
 		<key>Value</key>
 		<real>0.0</real>
-	</map>
+	  </map>
 	<key>AscentBuildPrefs_ActualRoot</key>
 	<map>
 		<key>Comment</key>
