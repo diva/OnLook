@@ -889,6 +889,13 @@ void LLAgent::togglePhantom()
 	setPhantom( phan );
 }
 
+void LLAgent::toggleTPosed()
+{
+	BOOL posed = !(mForceTPose);
+
+	setTPosed(posed);
+}
+
 
 //-----------------------------------------------------------------------------
 // setRegion()

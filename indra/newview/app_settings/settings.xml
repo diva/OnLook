@@ -35,17 +35,6 @@
     <key>Value</key>
     <real>0.0</real>
   </map>
-  <key>Ascentnumscripts</key>
-  <map>
-    <key>Comment</key>
-    <string>temp..</string>
-    <key>Persist</key>
-    <integer>0</integer>
-    <key>Type</key>
-    <string>F32</string>
-    <key>Value</key>
-    <real>0.0</real>
-  </map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
       <key>Comment</key>
@@ -101,8 +90,8 @@
 		<key>Value</key>
 		<real>100</real>
 	</map>
-	<key>Ascentnumscripts</key>
-	<map>
+	 <key>Ascentnumscripts</key>
+	  <map>
 		<key>Comment</key>
 		<string>temp..</string>
 		<key>Persist</key>
@@ -111,7 +100,7 @@
 		<string>F32</string>
 		<key>Value</key>
 		<real>0.0</real>
-	</map>
+	  </map>
 	<key>AscentBuildPrefs_ActualRoot</key>
 	<map>
 		<key>Comment</key>
@@ -139,33 +128,33 @@
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50</real>
 	</map>
 	<key>AscentBuildPrefs_PivotY</key>
 	<map>
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50</real>
 	</map>
 	<key>AscentBuildPrefs_PivotZ</key>
 	<map>
 		<key>Comment</key>
 		<string>idfk</string>
 		<key>Persist</key>
-		<integer>0</integer>
+		<integer>1</integer>
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.0</real>
+		<real>50</real>
 	</map>
 	<key>AscentCmdLine</key>
 	<map>

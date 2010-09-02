@@ -3440,53 +3440,50 @@ void handle_close_all_notifications(void*)
 // The following animations were made by Charley Levenque and are
 // not public property or free to use via UUID. When replicating 
 // this code, please supply your own animations.
+
+void set_current_pose(std::string anim)
+{
+	if (current_pose == LLUUID::null)
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 7.5);
+
+	gAgent.sendAgentSetAppearance();
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set(anim);
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
 void handle_pose_stand_ltao(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("6c082c7b-f70e-9da0-0451-54793f869ff4");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("6c082c7b-f70e-9da0-0451-54793f869ff4");
 }
 void handle_pose_stand_ltah(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("45e59c14-913b-c58c-2a55-c0a5c1eeef53");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("45e59c14-913b-c58c-2a55-c0a5c1eeef53");
 }
 void handle_pose_stand_ltad(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("421d6bb4-94a9-3c42-4593-f2bc1f6a26e6");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("421d6bb4-94a9-3c42-4593-f2bc1f6a26e6");
 }
 void handle_pose_stand_loau(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("8b3bb239-d610-1c0f-4d1a-69d29bc17e2c");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("8b3bb239-d610-1c0f-4d1a-69d29bc17e2c");
 }
 void handle_pose_stand_loao(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("4d70e328-48b6-dc6a-0be1-85dd6b333e81");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("4d70e328-48b6-dc6a-0be1-85dd6b333e81");
 }
 void handle_pose_stand_lhao(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 5.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set("f088eaf0-f1c9-8cf1-99c8-09df96bb13ae");
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+	set_current_pose("f088eaf0-f1c9-8cf1-99c8-09df96bb13ae");
 }
 void handle_pose_stand_stop(void*)
 {
-	gSavedSettings.setF32("AscentAvatarZModifier", 0.0);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose = LLUUID::null;
+	if (current_pose != LLUUID::null)
+	{
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 7.5);
+		gAgent.sendAgentSetAppearance();
+		gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+		current_pose = LLUUID::null;
+	}
 }
 // </dogmode> ---------------------------------------------------
 
