@@ -3245,63 +3245,6 @@ void LLVOAvatar::idleUpdateWindEffect()
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bool LLVOAvatar::updateClientTags()
 {/* Won't do anything for now, we don't have a definitions site set up. -HGB
 	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
@@ -3371,12 +3314,17 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 	if (mIsSelf)
 	{
+		BOOL showCustomTag;
+		if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			showCustomTag = gSavedSettings.getBOOL("AscentUseCustomTag");
+		else
+			showCustomTag = gSavedPerAccountSettings.getBOOL("AscentUseCustomTag");
 		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
 		{
 			color = gColors.getColor( "AvatarNameColor" );
 			return;
 		}
-		else if (gSavedSettings.getBOOL("AscentUseCustomTag"))
+		else if (showCustomTag)
 		{
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
@@ -3437,8 +3385,8 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_UPPER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
-				color = LLColor4(0.5f, 0.0f, 0.0f);
-				client = "??";
+				color = gColors.getColor( "AvatarNameColor" );
+				//client = "??";
 			}
 			return;
 		}
@@ -3605,34 +3553,54 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				}
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-
-				if(isFullyLoaded())
+				//As pointed out by Zwagoth, we really shouldn't be doing this per-frame. Skip if we already have the data. -HgB
+				if (mClientTag == "")
 				{
-					//The old client identification.
-					//llinfos << "Getting client from deprecated method." << llendl;
-					getClientInfo(client,avatar_name_color);
-
-					//Zwagoth's new client identification - HgB
-					// Overwrite the current tag/color settings if new method
-					// exists -- charbl.
-					const LLTextureEntry* texentry = getTE(0);
-					if(texentry->getGlow() > 0.0)
+					mClientColor = gColors.getColor( "AvatarNameColor" );
+					if(isFullyLoaded())
 					{
-						client = mClientTag;
-						avatar_name_color = texentry->getColor();
+						//Zwagoth's new client identification - HgB
+						// Overwrite the current tag/color settings if new method
+						// exists -- charbl.
+						/*const LLTextureEntry* texentry = getTE(0);
+						if(texentry->getGlow() > 0.0)
+						{
+							llinfos << "Using new client identifier." << llendl;
+							U8 tag_buffer[UUID_BYTES+1];
+							memset(&tag_buffer, 0, UUID_BYTES);
+							memcpy(&tag_buffer[0], &texentry->getID().mData, UUID_BYTES);
+							tag_buffer[UUID_BYTES] = 0;
+							U32 tag_len = strlen((const char*)&tag_buffer[0]);
+							tag_len = (tag_len>UUID_BYTES) ? (UUID_BYTES) : tag_len;
+							mClientTag = std::string((char*)&tag_buffer[0], tag_len);
+							LLStringFn::replace_ascii_controlchars(mClientTag, LL_UNKNOWN_CHAR);
+							mNameString.clear();
+							mClientColor = texentry->getColor();
+						}
+						else
+						{*/
+							llinfos << "Using Emerald-style client identifier." << llendl;
+							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
+							getClientInfo(mClientTag,mClientColor);
+						//}	
+					}
+
+					// Overwrite the tag/color shit yet again if we want to see
+					// friends in a special color. -- charbl
+					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+					{
+						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
+						{
+							mClientTag = "Friend";
+							if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+								mClientColor = gSavedSettings.getColor4("AscentFriendColor");
+							else
+								mClientColor = gSavedPerAccountSettings.getColor4("AscentFriendColor");
+						}
 					}
 				}
-
-				// Overwrite the tag/color shit yet again if we want to see
-				// friends in a special color. -- charbl
-				if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
-				{
-					if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
-					{
-						client = "Friend";
-						avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
-					}
-				}
+				client = mClientTag;
+				avatar_name_color = mClientColor;
 
 				avatar_name_color.setAlpha(alpha);
 					
@@ -8986,8 +8954,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 //	dumpAvatarTEs( "PRE  processAvatarAppearance()" );
 	unpackTEMessage(mesgsys, _PREHASH_ObjectData);
 //	dumpAvatarTEs( "POST processAvatarAppearance()" );
-
-	const LLTextureEntry* tex = getTE(0);
+	mClientTag = "";
+	/*const LLTextureEntry* tex = getTE(0);
 	if(tex->getGlow() > 0.0)
 	{
 		U8 tag_buffer[UUID_BYTES+1];
@@ -8999,7 +8967,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		mClientTag = std::string((char*)&tag_buffer[0], tag_len);
 		LLStringFn::replace_ascii_controlchars(mClientTag, LL_UNKNOWN_CHAR);
 		mNameString.clear();
-	}
+	}*/
 
 	// prevent the overwriting of valid baked textures with invalid baked textures
 	for (U8 baked_index = 0; baked_index < mBakedTextureData.size(); baked_index++)

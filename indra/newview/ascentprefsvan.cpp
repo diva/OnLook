@@ -61,6 +61,7 @@ public:
 
 private:
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
+	static void onCommitColor(LLUICtrl* ctrl, void* user_data);
 	void refreshValues();
 	//General
 	BOOL mUseAccountSettings;
@@ -82,6 +83,10 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
+
+	childSetCommitCallback("custom_tag_color_swatch", onCommitColor, this);
+	childSetCommitCallback("effect_color_swatch", onCommitColor, this);
+
 	childSetCommitCallback("X Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
 	childSetCommitCallback("Y Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
 	childSetCommitCallback("Z Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
@@ -96,6 +101,31 @@ void LLPrefsAscentVan::onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdat
 	//llinfos << llformat("%d,%d,%d",gSavedSettings.getF32("EmeraldAvatarXModifier"),gSavedSettings.getF32("EmeraldAvatarYModifier"),gSavedSettings.getF32("EmeraldAvatarZModifier")) << llendl;
 }
 
+void LLPrefsAscentVanImpl::onCommitColor(LLUICtrl* ctrl, void* user_data)
+{
+	LLPrefsAscentVanImpl* self = (LLPrefsAscentVanImpl*)user_data;
+
+	llinfos << "Control named " << ctrl->getControlName() << " aka " << ctrl->getName() << llendl;
+
+	if (ctrl->getName() == "custom_tag_color_swatch")
+	{
+		
+		llinfos << "Recreating color message for tag update." << llendl;
+		if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+		{
+			gSavedSettings.setString("AscentCustomTagLabel",		self->childGetValue("custom_tag_label_box"));
+			gSavedSettings.setColor4("AscentCustomTagColor",		self->childGetValue("custom_tag_color_swatch"));
+		}
+		else
+		{
+			gSavedPerAccountSettings.setString("AscentCustomTagLabel",	self->childGetValue("custom_tag_label_box"));
+			gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	self->childGetValue("custom_tag_color_swatch"));
+		}
+		gAgent.sendAgentSetAppearance();
+		gAgent.resetClientTag();
+	}
+}
+
 //static
 void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 {
@@ -107,23 +137,18 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	{
 		self->refresh();
 	}
+	BOOL showCustomOptions;
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+		showCustomOptions = gSavedSettings.getBOOL("AscentUseCustomTag");
 	else
-	{
-		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
-		{
-			self->childEnable("custom_tag_label_text");
-			self->childEnable("custom_tag_label_box");
-			self->childEnable("custom_tag_color_text");
-			self->childEnable("custom_tag_color_swatch");
-		}
-		else
-		{
-			self->childDisable("custom_tag_label_text");
-			self->childDisable("custom_tag_label_box");
-			self->childDisable("custom_tag_color_text");
-			self->childDisable("custom_tag_color_swatch");
-		}
-	}
+		showCustomOptions = gSavedPerAccountSettings.getBOOL("AscentUseCustomTag");
+
+	self->childSetValue("customize_own_tag_check", showCustomOptions);
+	self->childSetEnabled("custom_tag_label_text", showCustomOptions);
+	self->childSetEnabled("custom_tag_label_box", showCustomOptions);
+	self->childSetEnabled("custom_tag_color_text", showCustomOptions);
+	self->childSetEnabled("custom_tag_color_swatch", showCustomOptions);
+	gAgent.resetClientTag();
 }
 
 void LLPrefsAscentVanImpl::refreshValues()
@@ -221,6 +246,7 @@ void LLPrefsAscentVanImpl::refresh()
 		gSavedPerAccountSettings.setColor4("AscentFriendColor", LLColor4::yellow);
 		gSavedPerAccountSettings.setColor4("AscentFriendColor", mFriendColor);
 	}
+	gAgent.resetClientTag();
 }
 
 void LLPrefsAscentVanImpl::cancel()

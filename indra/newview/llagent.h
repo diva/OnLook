@@ -157,7 +157,7 @@ public:
 
 	void			sendMessage();						// Send message to this agent's region.
 	void			sendReliableMessage();
-
+	void			resetClientTag();
 	LLVector3d		calcCameraPositionTargetGlobal(BOOL *hit_limit = NULL); // Calculate the camera position target
 	LLVector3d		calcFocusPositionTargetGlobal();
 	LLVector3d		calcThirdPersonFocusOffset();

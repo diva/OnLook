@@ -623,7 +623,8 @@ public:
 
 	static bool updateClientTags();
 	static bool loadClientTags();
-
+	std::string 	mClientTag; //Zwagoth's new client identification system. -HgB
+	LLColor4 		mClientColor; //Zwagoth's new client identification system. -HgB
 
 
 
@@ -710,7 +711,6 @@ private:
 	F32		mAdjustedPixelArea;
 
 	LLWString mNameString;
-	std::string 	mClientTag; //Zwagoth's new client identification system. -HgB
 	std::string  mTitle;
 	BOOL	  mNameAway;
 	BOOL	  mNameBusy;

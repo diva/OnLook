@@ -707,7 +707,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//Lindens are always more Linden than your friend, make that take precedence
 		if(LLMuteList::getInstance()->isLinden(av_name))
 		{
-			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentLindenColor").getValue();
 			else
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentLindenColor").getValue();
@@ -715,7 +715,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//check if they are an estate owner at their current position
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentEstateOwnerColor").getValue();
 			else
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentEstateOwnerColor").getValue();
@@ -723,7 +723,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//without these dots, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentFriendColor").getValue();
 			else
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentFriendColor").getValue();
@@ -731,7 +731,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentMutedColor").getValue();
 			else
 				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentMutedColor").getValue();
