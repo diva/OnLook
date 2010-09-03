@@ -3606,30 +3606,31 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 
-				//Zwagoth's new client identification - HgB
-				const LLTextureEntry* texentry = getTE(0);
-				if(texentry->getGlow() > 0.0)
+				if(isFullyLoaded())
 				{
-					LLColor4 tag_color = texentry->getColor();
-					tag_color.setAlpha(alpha);
-					mNameText->setColor(tag_color);
-				}
-				else
-				{
-					avatar_name_color.setAlpha(alpha);
 					//The old client identification.
-					if(isFullyLoaded())
+					//llinfos << "Getting client from deprecated method." << llendl;
+					getClientInfo(client,avatar_name_color);
+
+					//Zwagoth's new client identification - HgB
+					// Overwrite the current tag/color settings if new method
+					// exists -- charbl.
+					const LLTextureEntry* texentry = getTE(0);
+					if(texentry->getGlow() > 0.0)
 					{
-						//llinfos << "Getting client from deprecated method." << llendl;
-						getClientInfo(client,avatar_name_color);
+						client = mClientTag;
+						avatar_name_color = texentry->getColor();
 					}
-					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+				}
+
+				// Overwrite the tag/color shit yet again if we want to see
+				// friends in a special color. -- charbl
+				if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+				{
+					if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
 					{
-						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
-						{
-							client = "Friend";
-							avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
-						}
+						client = "Friend";
+						avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
 					}
 				}
 
