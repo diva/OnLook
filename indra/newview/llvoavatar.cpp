@@ -3378,8 +3378,16 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		}
 		else if (gSavedSettings.getBOOL("AscentUseCustomTag"))
 		{
-			color = gSavedSettings.getColor4("AscentCustomTagColor");
-			client = gSavedSettings.getString("AscentCustomTagLabel");
+			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+			{
+				color = gSavedSettings.getColor4("AscentCustomTagColor");
+				client = gSavedSettings.getString("AscentCustomTagLabel");
+			}
+			else
+			{
+				color = gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
+				client = gSavedPerAccountSettings.getString("AscentCustomTagLabel");
+			}
 			return;
 		}
 		else if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
@@ -3446,14 +3454,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		color = LLColor4(0.5f, 0.0f, 0.0f);
 		client = "Unknown";
 	}
-	if (mIsSelf)
-	{
-		if (LLVOAvatar::sClientResolutionList.has("isComplete"))
-			llinfos << "XML Loaded with " << LLVOAvatar::sClientResolutionList.size() << " entries (?), checking UUID" << uuid_str << llendl;
-		if (LLVOAvatar::sClientResolutionList.has(uuid_str))
-			llinfos << "Found UUID" << llendl;
-	}
-	else if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
+	if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
 	{
 		
 		LLSD cllsd = LLVOAvatar::sClientResolutionList[uuid_str];
@@ -3604,10 +3605,25 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				}
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-				// <edit>
-				if(isFullyLoaded())
+
+				//Zwagoth's new client identification - HgB
+				const LLTextureEntry* texentry = getTE(0);
+				if(texentry->getGlow() > 0.0)
 				{
-					getClientInfo(client,avatar_name_color);
+					LLColor4 tag_color = texentry->getColor();
+					tag_color.setAlpha(alpha);
+					mNameText->setColor(tag_color);
+				}
+				else
+				{
+					LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+					avatar_name_color.setAlpha(alpha);
+					mNameText->setColor(avatar_name_color);
+					//The old client identification.
+					if(isFullyLoaded())
+					{
+						getClientInfo(client,avatar_name_color);
+					}
 				}
 
 				avatar_name_color.setAlpha(alpha);
@@ -8961,6 +8977,20 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 //	dumpAvatarTEs( "PRE  processAvatarAppearance()" );
 	unpackTEMessage(mesgsys, _PREHASH_ObjectData);
 //	dumpAvatarTEs( "POST processAvatarAppearance()" );
+
+	const LLTextureEntry* tex = getTE(0);
+	if(tex->getGlow() > 0.0)
+	{
+		U8 tag_buffer[UUID_BYTES+1];
+		memset(&tag_buffer, 0, UUID_BYTES);
+		memcpy(&tag_buffer[0], &tex->getID().mData, UUID_BYTES);
+		tag_buffer[UUID_BYTES] = 0;
+		U32 tag_len = strlen((const char*)&tag_buffer[0]);
+		tag_len = (tag_len>UUID_BYTES) ? (UUID_BYTES) : tag_len;
+		mClientTag = std::string((char*)&tag_buffer[0], tag_len);
+		LLStringFn::replace_ascii_controlchars(mClientTag, LL_UNKNOWN_CHAR);
+		mNameString.clear();
+	}
 
 	// prevent the overwriting of valid baked textures with invalid baked textures
 	for (U8 baked_index = 0; baked_index < mBakedTextureData.size(); baked_index++)

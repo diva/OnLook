@@ -36,49 +36,9 @@
 					value="734fed29-4c51-63e5-1648-6589949d7585">
 					Explicit
 				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Blue" 
-					value="424ff131-0a2d-6e26-1349-95155a883623">
-					Blue
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Fuschia" 
-					value="730f719f-2922-2028-cc7a-ba98894e8288">
-					Fuschia
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Standard" 
-					value="907b0318-fa09-2960-66c3-6044dc6f1e21">
-					Green
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Orange" 
-					value="585f11b5-985a-1f3b-5457-4a282a5024a3">
-					Orange
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Pink" 
-					value="544c1f14-74d0-f4b4-69c0-ddf12e0a5078">
-					Pink
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Purple" 
-					value="ef3e515f-8cb5-d0de-5520-05cea50eebb4">
-					Purple
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Red" 
-					value="40bc938e-7e9b-fe67-487f-033c964e91c2">
-					Red
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Violet" 
-					value="8ec4dbe2-8eba-9acb-9b7f-c46c2bf32815">
-					Violet
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="White" 
-					value="22babd8a-4a38-37a1-0ad2-222d3c71fab6">
-					White
-				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Yellow" 
-					value="d9670636-239c-1d1b-fd5b-8b1c7833a669">
-					Yellow
-				</combo_item>
 				<combo_item type="string" length="1" enabled="true" name="Hide Tag" 
 					value="c228d1cf-4b5d-4ba8-84f4-899a0796aa97">
-					Hide Tag
+					No Tag
 				</combo_item>
 			</combo_box>
 			<check_box bottom_delta="-23" control_name="AscentShowSelfTag" enabled="true"

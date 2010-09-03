@@ -608,7 +608,22 @@
 		<integer>0</integer>
 	</map>
 	<!-- Expanded Settings that have optionally Account-Specific alternatives -->
-	
+	<key>NaclTagColor</key>
+	<map>
+		<key>Comment</key>
+		<string>The tag color you wish to have.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Color4</string>
+		<key>Value</key>
+		<array>
+			<real>0.7</real>
+			<real>1.0</real>
+			<real>1.0</real>
+			<real>1.0</real>
+		</array>
+	</map>
 	<!-- Ascent-Specific Settings -->
 	<key>AscentPowerfulWizard</key>
 	<map>
@@ -624,7 +639,7 @@
 	<key>AscentUseCustomTag</key>
 	<map>
 		<key>Comment</key>
-		<string>Show a custom local tag.</string>
+		<string>Show a custom tag.</string>
 		<key>Persist</key>
 		<integer>1</integer>
 		<key>Type</key>
@@ -635,7 +650,7 @@
 	<key>AscentCustomTagColor</key>
     <map>
       <key>Comment</key>
-      <string>Color of custom local tag.</string>
+      <string>Color of custom tag.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
