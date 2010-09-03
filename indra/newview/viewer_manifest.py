@@ -176,7 +176,7 @@ class WindowsManifest(ViewerManifest):
         super(WindowsManifest, self).construct()
         # the final exe is complicated because we're not sure where it's coming from,
         # nor do we have a fixed name for the executable
-        self.path(self.find_existing_file('debug/secondlife-bin.exe', 'release/secondlife-bin.exe', 'relwithdebinfo/secondlife-bin.exe'), dst=self.final_exe())
+        self.path(self.find_existing_file('debug/Ascent.exe', 'release/Ascent.exe', 'relwithdebinfo/Ascent.exe'), dst=self.final_exe())
 
         # Plugin host application
         self.path(os.path.join(os.pardir,
@@ -255,7 +255,7 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # The config file name needs to match the exe's name.
-        self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
+        self.path(src="%s/Ascent.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
 
         # Vivox runtimes
         if self.prefix(src="vivox-runtime/i686-win32", dst=""):
@@ -668,7 +668,7 @@ class LinuxManifest(ViewerManifest):
             self.path("secondlife-stripped","bin/"+self.binary_name())
             self.path("../linux_crash_logger/linux-crash-logger-stripped","linux-crash-logger.bin")
         else:
-            self.path("secondlife-bin","bin/"+self.binary_name())
+            self.path("Ascent","bin/"+self.binary_name())
             self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
 
         self.path("linux_tools/launch_url.sh","launch_url.sh")

@@ -35,6 +35,17 @@
 		<key>Value</key>
 		<real>0.0</real>
 	</map>
+  <key>AscentShowFriendsTag</key>
+  <map>
+    <key>Comment</key>
+    <string>Show friends client tags as (Friend), and colorize them specially.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
       <key>Comment</key>

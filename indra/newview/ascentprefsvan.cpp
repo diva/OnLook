@@ -71,6 +71,7 @@ private:
 	std::string mCustomTagLabel;
 	LLColor4 mCustomTagColor;
 	LLColor4 mEffectColor;
+	LLColor4 mFriendColor;
 	U32 mSelectedClient;
 };
 
@@ -155,6 +156,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 		}
 		mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
 		mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
+		mFriendColor			= gSavedSettings.getColor4("AscentFriendColor");
 	}
 	else
 	{
@@ -176,6 +178,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 		}
 		mCustomTagLabel			= gSavedPerAccountSettings.getString("AscentCustomTagLabel");
 		mCustomTagColor			= gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
+		mFriendColor			= gSavedPerAccountSettings.getColor4("AscentFriendColor");
 	}
 	
 	
@@ -201,16 +204,22 @@ void LLPrefsAscentVanImpl::refresh()
 		llinfos << "Retrieving color from client" << llendl;
 		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
 		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
 		gSavedSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedSettings.setColor4("EffectColor", mEffectColor);
+		gSavedSettings.setColor4("AscentFriendColor", LLColor4::yellow);
+		gSavedSettings.setColor4("AscentFriendColor", mFriendColor);
 	}
 	else
 	{
 		llinfos << "Retrieving color from account" << llendl;
 		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
 		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
 		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
+		gSavedPerAccountSettings.setColor4("AscentFriendColor", LLColor4::yellow);
+		gSavedPerAccountSettings.setColor4("AscentFriendColor", mFriendColor);
 	}
 }
 
@@ -233,16 +242,22 @@ void LLPrefsAscentVanImpl::cancel()
 		llinfos << "Retrieving color from client" << llendl;
 		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
 		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
 		gSavedSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedSettings.setColor4("EffectColor", mEffectColor);
+		gSavedSettings.setColor4("AscentFriendColor", LLColor4::yellow);
+		gSavedSettings.setColor4("AscentFriendColor", mFriendColor);
 	}
 	else
 	{
 		llinfos << "Retrieving color from account" << llendl;
 		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
 		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
 		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
 		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
+		gSavedPerAccountSettings.setColor4("AscentFriendColor", LLColor4::yellow);
+		gSavedPerAccountSettings.setColor4("AscentFriendColor", mFriendColor);
 	}
 }
 
@@ -289,6 +304,7 @@ void LLPrefsAscentVanImpl::apply()
 	{
 		llinfos << "Storing color in client" << llendl;
 		gSavedSettings.setColor4("EffectColor",				childGetValue("effect_color_swatch"));
+		gSavedSettings.setColor4("AscentFriendColor",		childGetValue("friend_color_swatch"));
 		gSavedSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
 		gSavedSettings.setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
 		gSavedSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
@@ -297,6 +313,7 @@ void LLPrefsAscentVanImpl::apply()
 	{
 		llinfos << "Storing color in account" << llendl;
 		gSavedPerAccountSettings.setColor4("EffectColor",			childGetValue("effect_color_swatch"));
+		gSavedPerAccountSettings.setColor4("AscentFriendColor",		childGetValue("friend_color_swatch"));
 		gSavedPerAccountSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
 		gSavedPerAccountSettings.setString("AscentCustomTagLabel",	childGetValue("custom_tag_label_box"));
 		gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));

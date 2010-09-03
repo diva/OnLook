@@ -15,10 +15,10 @@
 		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="Colors" name="Colors">
 			<!-- Client tag options -->
-			<view_border bevel_style="none" border_thickness="1" bottom="-95" follows="top|left"
-				height="90" left="5" name="GraphicsBorder" width="485" />
+			<view_border bevel_style="none" border_thickness="1" bottom="-115" follows="top|left"
+				height="110" left="5" name="GraphicsBorder" width="485" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			      bottom_delta="74" drop_shadow_visible="true" enabled="true" follows="left|top"
+			      bottom_delta="94" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		  font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
 		    	  left_delta="9" mouse_opaque="true" name="client_tag_text_box" v_pad="0"
 			      width="90">
@@ -53,6 +53,12 @@
 				tool_tip="Enabling this set your avatar name color to your client tag color or custom set color."
 				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
 				width="400" />
+      <check_box bottom_delta="-20" control_name="AscentShowFriendsTag" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Display friend client tags as (Friend)" left_delta="0"
+				tool_tip="Enabling this changes your friends' client tags to (Friend)."
+				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
+				width="400" />
 			<check_box bottom_delta="65" control_name="AscentUseCustomTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Use a custom color and label (Local only)" left_delta="230"
@@ -82,15 +88,26 @@
 				tool_tip="The custom color you would like to replace your client color with (Local only)" width="32" />
 			<!-- End of Client Tag settings -->
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				bottom="-123" drop_shadow_visible="true" enabled="true" follows="left|top"
+				bottom="-143" drop_shadow_visible="true" enabled="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 				mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
 				Color For My Effects:
 			</text>
-			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom="-149"
+			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom="-169"
 				can_apply_immediately="false" color="1 1 1 1"
 				enabled="true" follows="left|top" height="48" label="" left="153"
 				mouse_opaque="true" name="effect_color_swatch"
+				tool_tip="Click to open Color Picker" width="32" />
+      <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom="-178" drop_shadow_visible="true" enabled="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
+				mouse_opaque="true" name="friends_color_textbox" v_pad="0" width="394">
+        Color For My Friends:
+      </text>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom="-204"
+				can_apply_immediately="false" color="1 1 1 1"
+				enabled="true" follows="left|top" height="48" label="" left="153"
+				mouse_opaque="true" name="friend_color_swatch"
 				tool_tip="Click to open Color Picker" width="32" />
 		</panel>
 		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"

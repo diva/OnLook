@@ -3613,6 +3613,16 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					LLColor4 tag_color = texentry->getColor();
 					tag_color.setAlpha(alpha);
 					mNameText->setColor(tag_color);
+
+					// you probably had e-sex with this person
+					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+					{
+						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
+						{
+							client = "Friend"; // "fuckable";
+							avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
+						}
+					}
 				}
 				else
 				{
@@ -3682,6 +3692,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			else
 			{
 				is_muted = LLMuteList::getInstance()->isMuted(getID());
+				
 			}
 
 			if (mNameString.empty() ||
