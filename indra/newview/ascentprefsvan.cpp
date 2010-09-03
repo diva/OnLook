@@ -81,10 +81,18 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
-
+	childSetCommitCallback("X Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
+	childSetCommitCallback("Y Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
+	childSetCommitCallback("Z Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
 	
 	refresh();
 	
+}
+
+void LLPrefsAscentVan::onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata)
+{
+	gAgent.sendAgentSetAppearance();
+	//llinfos << llformat("%d,%d,%d",gSavedSettings.getF32("EmeraldAvatarXModifier"),gSavedSettings.getF32("EmeraldAvatarYModifier"),gSavedSettings.getF32("EmeraldAvatarZModifier")) << llendl;
 }
 
 //static
@@ -129,7 +137,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 	
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 	{
-		mSelectedClient			= gSavedSettings.getU32("AscentSpoofClientIndex");
+		mSelectedClient			= gSavedSettings.getU32("AscentReportClientIndex");
 		mEffectColor			= gSavedSettings.getColor4("EffectColor");
 		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
 		{
@@ -150,7 +158,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 	}
 	else
 	{
-		mSelectedClient			= gSavedPerAccountSettings.getU32("AscentSpoofClientIndex");
+		mSelectedClient			= gSavedPerAccountSettings.getU32("AscentReportClientIndex");
 		mEffectColor			= gSavedPerAccountSettings.getColor4("EffectColor");
 		if (gSavedPerAccountSettings.getBOOL("AscentUseCustomTag"))
 		{
@@ -256,13 +264,15 @@ void LLPrefsAscentVanImpl::apply()
 			client_uuid = combo->getSelectedValue().asString();
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
-				gSavedSettings.setString("AscentSpoofClientUUID",  client_uuid);
-				gSavedSettings.setU32("AscentSpoofClientIndex",  client_index);
+				llinfos << "Setting texture to: " << client_uuid << llendl;
+				gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
+				gSavedSettings.setU32("AscentReportClientIndex",  client_index);
 			}
 			else
 			{
-				gSavedPerAccountSettings.setString("AscentSpoofClientUUID",  client_uuid);
-				gSavedPerAccountSettings.setU32("AscentSpoofClientIndex",  client_index);
+				llinfos << "Setting texture to: " << client_uuid << llendl;
+				gSavedPerAccountSettings.setString("AscentReportClientUUID",  client_uuid);
+				gSavedPerAccountSettings.setU32("AscentReportClientIndex",  client_index);
 			}
 			LLVOAvatar* avatar = gAgent.getAvatarObject();
 			if (!avatar) return;

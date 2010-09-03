@@ -135,7 +135,7 @@
 	     label="Show script errors and warnings as regular chat" left="148"
 	     mouse_opaque="true" name="script_errors_as_chat" radio_style="false"
 	     width="275" />
-	<check_box bottom_delta="-20" enabled="true"
+	<check_box bottom_delta="-20" enabled="true" control_name="PlayTypingAnim"
 	     follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 	     label="Play typing animation when chatting" left="148" mouse_opaque="true"
 	     name="play_typing_animation" radio_style="false" width="237" />

@@ -1971,7 +1971,7 @@ void LLAgent::cameraOrbitIn(const F32 meters)
 		
 		mCameraZoomFraction = (mTargetCameraDistance - meters) / camera_offset_dist;
 
-		if (!LLAppViewer::sFreezeTime && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
+		if (!gSavedSettings.getF32("FreezeTime") && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
 		{
 			// No need to animate, camera is already there.
 			changeCameraToMouselook(FALSE);
@@ -3705,7 +3705,7 @@ F32	LLAgent::calcCameraFOVZoomFactor()
 LLVector3d LLAgent::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 {
 	// Compute base camera position and look-at points.
-	F32			camera_land_height;
+	//F32			camera_land_height;
 	LLVector3d	frame_center_global = mAvatarObject.isNull() ? getPositionGlobal() 
 															 : getPosGlobalFromAgent(mAvatarObject->mRoot.getWorldPosition());
 		
@@ -7492,13 +7492,13 @@ void LLAgent::sendAgentSetAppearance()
 		msg->nextBlockFast(_PREHASH_ObjectData);
 
 		// Tag changing support
-		if (!gSavedSettings.controlExists("AscentSpoofClientUUID")) 
+		if (!gSavedSettings.controlExists("AscentReportClientUUID")) 
 		{
-			gSavedSettings.declareString("AscentSpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd", "FAKIN' BAKE-IN");
-			gSavedSettings.setString("AscentSpoofClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
+			gSavedSettings.declareString("AscentReportClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd", "FAKIN' BAKE-IN");
+			gSavedSettings.setString("AscentReportClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
 		}
 
-		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentSpoofClientUUID") );
+		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentReportClientUUID") );
 	}
 	else
 	{

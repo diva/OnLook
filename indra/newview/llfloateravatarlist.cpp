@@ -627,6 +627,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 	{
 		LLSD element;
 		LLUUID av_id;
+		std::string av_name;
 
 		LLAvatarListEntry *entry = &iter->second;
 
@@ -637,6 +638,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 
 		av_id = entry->getID();
+		av_name = entry->getName().c_str();
 
 		LLVector3d position = entry->getPosition();
 		BOOL UnknownAltitude = false;
@@ -686,13 +688,14 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		element["columns"][LIST_AVATAR_NAME]["column"] = "avatar_name";
 		element["columns"][LIST_AVATAR_NAME]["type"] = "text";
-		element["columns"][LIST_AVATAR_NAME]["value"] = entry->getName().c_str();
+		element["columns"][LIST_AVATAR_NAME]["value"] = av_name;
 		if (entry->isFocused())
 		{
 			element["columns"][LIST_AVATAR_NAME]["font-style"] = "BOLD";
 		}
 
 		//<edit> custom colors for certain types of avatars!
+		//Changed a bit so people can modify them in settings. And since they're colors, again it's possibly account-based. Starting to think I need a function just to determine that. - HgB
 		//element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapAvatar" ).getValue();
 		LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(entry->getPosition());
 		LLUUID estate_owner = LLUUID::null;
@@ -702,26 +705,38 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 
 		//Lindens are always more Linden than your friend, make that take precedence
-		if(LLMuteList::getInstance()->isLinden(entry->getName()))
+		if(LLMuteList::getInstance()->isLinden(av_name))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapLinden" ).getValue();
+			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentLindenColor").getValue();
+			else
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentLindenColor").getValue();
 		}
-		//first make sure their parent estate actually still exists and is alive, and yes, I am lazy.
+		//check if they are an estate owner at their current position
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-				element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapEstateOwner" ).getValue();
+			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentEstateOwnerColor").getValue();
+			else
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentEstateOwnerColor").getValue();
 		}
-		//without these people, SL would suck.
+		//without these dots, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapFriend" ).getValue();
+			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentFriendColor").getValue();
+			else
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentFriendColor").getValue();
 		}
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gColors.getColor( "MapMuted" ).getValue();
+			if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedSettings.getColor4("AscentMutedColor").getValue();
+			else
+				element["columns"][LIST_AVATAR_NAME]["color"] = gSavedPerAccountSettings.getColor4("AscentMutedColor").getValue();
 		}
-		//</edit>
+		
 
 		char temp[32];
 		LLColor4 color = LLColor4::black;

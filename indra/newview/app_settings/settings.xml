@@ -748,7 +748,71 @@
       <integer>1</integer>
     </map>
 	<!-- Ascent's Optionally Account-Specific Settings -->
-	<key>AscentSpoofClientIndex</key>
+	<key>AscentFriendColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of chat messages from other residents</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>0.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+	<key>AscentLindenColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of chat messages from other residents</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>0.0</real>
+        <real>0.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+	<key>AscentMutedColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of chat messages from other residents</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>0.7</real>
+        <real>0.7</real>
+        <real>0.7</real>
+        <real>1.0</real>
+      </array>
+    </map>
+	<key>AscentEstateOwnerColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of chat messages from other residents</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>0.6</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+	<key>AscentReportClientIndex</key>
     <map>
       <key>Comment</key>
       <string>Show your own tag</string>
@@ -759,7 +823,7 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-	<key>AscentSpoofClientUUID</key>
+	<key>AscentReportClientUUID</key>
     <map>
       <key>Comment</key>
       <string>Broadcasted Client Key</string>

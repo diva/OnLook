@@ -32,6 +32,8 @@
 #ifndef ASCENTPREFSVAN_H
 #define ASCENTPREFSVAN_H
 
+#include "llpanel.h"
+
 class LLPanel;
 class LLPrefsAscentVanImpl;
 
@@ -46,8 +48,13 @@ public:
 
 	LLPanel* getPanel();
 
+	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);	
+
 protected:
 	LLPrefsAscentVanImpl& impl;
+
+private:
+	
 };
 
 #endif

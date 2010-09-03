@@ -3341,7 +3341,8 @@ bool LLVOAvatar::loadClientTags()
 		if(client_list.has("isComplete"))
 		{
 			sClientResolutionList = client_list;
-		}else
+		}
+		else
 		{
 			return false;
 		}
@@ -3383,11 +3384,11 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		}
 		else if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		{
-			uuid_str = gSavedSettings.getString("AscentSpoofClientUUID");
+			uuid_str = gSavedSettings.getString("AscentReportClientUUID");
 		}
 		else
 		{
-			uuid_str = gSavedPerAccountSettings.getString("AscentSpoofClientUUID");
+			uuid_str = gSavedPerAccountSettings.getString("AscentReportClientUUID");
 		}
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
@@ -3445,8 +3446,16 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		color = LLColor4(0.5f, 0.0f, 0.0f);
 		client = "Unknown";
 	}
+	if (mIsSelf)
+	{
+		if (LLVOAvatar::sClientResolutionList.has("isComplete"))
+			llinfos << "XML Loaded with " << LLVOAvatar::sClientResolutionList.size() << " entries (?), checking UUID" << uuid_str << llendl;
+		if (LLVOAvatar::sClientResolutionList.has(uuid_str))
+			llinfos << "Found UUID" << llendl;
+	}
 	else if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
 	{
+		
 		LLSD cllsd = LLVOAvatar::sClientResolutionList[uuid_str];
 		client = cllsd["name"].asString();
 		LLColor4 colour;
@@ -3503,159 +3512,6 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			extraMetadata += baked_eye_image->decodedComment;
 		}
 	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-LLColor4 LLVOAvatar::getTagColorByUUID(std::string uuid_str)
-{
-	if (uuid_str == "0bcd5f5d-a4ce-9ea4-f9e8-15132653b3d8")
-	{
-		return LLColor4(1.0f, 0.3f, 0.5f);
-		//client = "MoyMix";
-	}
-	else if (uuid_str == "5855f37d-63e5-3918-1404-8ffa3820eb6d")
-	{
-		return LLColor4(1.0f, 0.3f, 0.5f);
-		//client = "MoyMix/B";
-	}
-	else if (uuid_str == "9ba526b6-f43d-6b60-42de-ce62a25ee7fb")
-	{
-		return LLColor4(1.0f, 0.3f, 0.5f);
-		//client = "MoyMix/nolife";
-	}
-	else if (uuid_str == "0f6723d2-5b23-6b58-08ab-308112b33786")
-	{
-		return LLColor4(0.5f, 0.75f, 1.0f);
-		//client = "CryoLife";
-	}
-	else if (uuid_str == "2c9c1e0b-e5d1-263e-16b1-7fc6d169f3d6")
-	{
-		return LLColor4(0.5f, 0.75f, 1.0f);
-		//client = "Phoxy SL";
-	}
-	else if (uuid_str == "c252d89d-6f7c-7d90-f430-d140d2e3fbbe")
-	{
-		return LLColor4(0.7f, 0.7f, 0.7f);
-		//client = "VLife";
-	}
-	else if (uuid_str == "5aa5c70d-d787-571b-0495-4fc1bdef1500")
-	{
-		return LLColor4(1.f, 0.0f, 0.0f);
-		//client = "GridProxy/LordGregGreg";
-	}
-	else if (uuid_str == "8183e823-c443-2142-6eb6-2ab763d4f81c")
-	{
-		return LLColor4(1.f, 1.f, 0.0f);
-		//client = "GridProxy/DayOh";
-	}
-	else if (uuid_str == "f3fd74a6-fee7-4b2f-93ae-ddcb5991da04")
-	{
-		return LLColor4(1.0f, 0.0f, 1.0f);
-		//client = "PSL/A";
-	}
-	else if (uuid_str == "77662f23-c77a-9b4d-5558-26b757b2144c")
-	{
-		return LLColor4(1.0f, 0.0f, 1.0f);
-		//client = "PSL/B";
-	}
-	else if (uuid_str == "1c29480c-c608-df87-28bb-964fb64c5366")
-	{
-		return LLColor4(1.f, 1.0f, 1.0f);
-		//client = "Emerald/GEMINI";
-	}
-	else if (uuid_str == "e6f9c019-8783-dc3e-b265-41f1510333fc")
-	{
-		return LLColor4(0.4f,0.4f,0.4f);
-		//client = "Onyx";
-	}
-	else if (uuid_str == "5262d71a-88f7-ef40-3b15-00ea148ab4b5")
-	{
-		return LLColor4(0.9f, 0.9f, 0.9f);
-		//client = "GEMINI Bot";
-	}
-	else if (uuid_str == "adcbe893-7643-fd12-f61c-0b39717e2e32")
-	{
-		return LLColor4(1.0f, 0.5f, 0.4f);
-		//client = "tyk3n";
-	}
-	else if (uuid_str == "f5a48821-9a98-d09e-8d6a-50cc08ba9a47")
-	{
-		return gColors.getColor( "AvatarNameColor" );
-		//client = "NeilLife";
-	}
-	else if (uuid_str == "cc7a030f-282f-c165-44d2-b5ee572e72bf")
-	{
-		return LLColor4::purple;
-		//client = "Imprudence";
-	}
-	else if (uuid_str == "380ae30b-f2c7-b07c-041e-5688e89a6fc1")
-	{
-		return LLColor4(0.65f, 0.93f, 0.14f);
-		//client = "Nano";
-	}
-	else if (uuid_str == "c58fca06-33b3-827d-d81c-a886a631affc")
-	{
-		return LLColor4(1.0f,0.61176f,0.0f);
-		//client = "Whale";
-	}
-	else if (uuid_str == "872c0005-3095-0967-866d-11cd71115c22")
-	{
-		return LLColor4(0.25f,0.5f,0.75f);
-		//client = "<-- Fag";
-	}
-	else if (uuid_str == "00000000-0000-0000-0000-000000000000")
-	{
-		return LLColor4(0.5f, 0.5f, 0.5f);
-		//client = "Viewer 2.0";
-	}
-	else if (uuid_str == "734fed29-4c51-63e5-1648-6589949d7585")
-	{
-		return LLColor4(0.60000f, 0.42745f, 0.80784f);
-		//client = "Explicit";
-	}
-	else if (uuid_str == "8873757c-092a-98fb-1afd-ecd347566fcd")
-	{
-		return LLColor4(0.375f, 1.0f, 1.0f);
-		//client = "Ascent";
-	}
-
-	return gColors.getColor( "AvatarNameColor" );
 }
 
 void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)

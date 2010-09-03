@@ -356,22 +356,34 @@ void LLNetMap::draw()
 			//Lindens are always more Linden than your friend, make that take precedence
 			if(LLMuteList::getInstance()->isLinden(avName))
 			{
-				avColor = gColors.getColor( "MapLinden" );
+				if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+					avColor = gSavedSettings.getColor4("AscentLindenColor");
+				else
+					avColor = gSavedPerAccountSettings.getColor4("AscentLindenColor");
 			}
 			//check if they are an estate owner at their current position
 			else if(estate_owner.notNull() && avatar_ids[i] == estate_owner)
 			{
-				avColor = gColors.getColor( "MapEstateOwner" );
+				if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+					avColor = gSavedSettings.getColor4("AscentEstateOwnerColor");
+				else
+					avColor = gSavedPerAccountSettings.getColor4("AscentEstateOwnerColor");
 			}
 			//without these dots, SL would suck.
 			else if(is_agent_friend(avatar_ids[i]))
 			{
-				avColor = gColors.getColor( "MapFriend" );
+				if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+					avColor = gSavedSettings.getColor4("AscentFriendColor");
+				else
+					avColor = gSavedPerAccountSettings.getColor4("AscentFriendColor");
 			}
 			//big fat jerkface who is probably a jerk, display them as such.
 			else if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
 			{
-				avColor = gColors.getColor( "MapMuted" );
+				if (gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+					avColor = gSavedSettings.getColor4("AscentMutedColor");
+				else
+					avColor = gSavedPerAccountSettings.getColor4("AscentMutedColor");
 			}
 
 			LLWorldMapView::drawAvatar(

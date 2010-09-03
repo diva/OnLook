@@ -98,38 +98,13 @@
         <key>name</key>
             <string>Day Oh proxy</string>
         </map>
-	<key>emeraldTags</key>
-        <map>
-        <key>Blue</key>
-            <string>4eb67510-0924-ebb1-50ca-8af5694cd267</string>
-        <key>Default</key>
-            <string>bf33bd15-7020-cce1-3725-48923440b7ee</string>
-        <key>Fuchsia</key>
-            <string>e4117c3f-cc02-d537-665d-c31b8c11bb18</string>
-        <key>Green</key>
-            <string>ccda2b3b-e72c-a112-e126-fee238b67218</string>
-        <key>Orange</key>
-            <string>e741e2bf-cf8c-191c-97f2-b2709a843dfc</string>
-        <key>Pink</key>
-            <string>072343d0-1ce9-0952-4106-5312af4a789a</string>
-        <key>Purple</key>
-            <string>0ae2f973-98c1-a4e8-9f4b-9db2044ab079</string>
-        <key>Red</key>
-            <string>1da8eb54-a70f-bd4a-77e5-c7b815c3b2a2</string>
-        <key>Violet</key>
-            <string>602243f4-8fb1-ac00-d5bc-7ab50c4433b7</string>
-        <key>White</key>
-            <string>1e0948ab-706a-b309-434c-a694436a79be</string>
-        <key>Yellow</key>
-            <string>8078ffb3-840c-d037-caf3-5cd02c2e7040</string>
-        </map>
 	<key>072343d0-1ce9-0952-4106-5312af4a789a</key>
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>1</real>
-                <real>1.6000000000000001</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -141,9 +116,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>1.2</real>
-                <real>0.40000000000000002</real>
-                <real>1.6000000000000001</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -155,9 +130,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>0</real>
-                <real>0</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -169,9 +144,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>2</real>
-                <real>2</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -183,9 +158,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>0.34999999999999998</real>
-                <real>0.34999999999999998</real>
-                <real>2</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -197,9 +172,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>0.5</real>
-                <real>0</real>
-                <real>2</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -211,9 +186,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>2</real>
-                <real>0</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -239,9 +214,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>0</real>
-                <real>2</real>
-                <real>0</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -253,9 +228,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>0</real>
-                <real>2</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -267,9 +242,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>2</real>
-                <real>0.5</real>
-                <real>0</real>
+                <real>0.97999999999999998</real>
+                <real>0.68999999999999995</real>
+                <real>0.34000000000000002</real>
                 <real>1</real>
             </array>
         <key>multiple</key>

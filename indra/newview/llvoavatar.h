@@ -95,7 +95,6 @@ public:
 
 	// <edit>
 	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
-	LLColor4 getTagColorByUUID(std::string uuid_str);
 	std::string extraMetadata;
 	// </edit>
 	
