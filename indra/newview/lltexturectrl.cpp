@@ -399,10 +399,10 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 		if (mod)  item_perm_mask |= PERM_MODIFY;
 		if (xfer) item_perm_mask |= PERM_TRANSFER;
 		
-		// <edit>
-		//PermissionMask filter_perm_mask = mImmediateFilterPermMask;
-		//if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
-		// </edit>
+
+		PermissionMask filter_perm_mask = mImmediateFilterPermMask;
+		if ( (item_perm_mask & filter_perm_mask) == filter_perm_mask )
+
 		{
 			if (drop)
 			{
@@ -412,12 +412,10 @@ BOOL LLFloaterTexturePicker::handleDragAndDrop(
 
 			*accept = ACCEPT_YES_SINGLE;
 		}
-		// <edit>
-		/*else
+		else
 		{
 			*accept = ACCEPT_NO;
-		}*/
-		// </edit>
+		}
 	}
 	else
 	{
@@ -1151,11 +1149,9 @@ void LLTextureCtrl::setEnabled( BOOL enabled )
 
 	mCaption->setEnabled( enabled );
 	mEnable = enabled;
-	// <edit>
-	/*
+
 	LLView::setEnabled( enabled );
-	*/
-	// </edit>
+
 }
 
 void LLTextureCtrl::setValid(BOOL valid )

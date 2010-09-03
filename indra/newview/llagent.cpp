@@ -7499,11 +7499,13 @@ void LLAgent::sendAgentSetAppearance()
 			gSavedSettings.setString("AscentReportClientUUID", "8873757c-092a-98fb-1afd-ecd347566fcd");
 		}
 
-		/*if(gSavedSettings.getString("AscentReportClientUUID") != "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
+		if(gSavedSettings.getString("AscentReportClientUUID") != "c228d1cf-4b5d-4ba8-84f4-899a0796aa97")
 		{
+			LLUUID old_teid;
 			U8 client_buffer[UUID_BYTES];
 			memset(&client_buffer, 0, UUID_BYTES);
-			LLTextureEntry* entry = LLPrimitive::getTE(0);// getTE(0);//   LLAgent::getAvatarObject()->mDrawable->getFace(0)->getT
+			LLTextureEntry* entry = (LLTextureEntry*)mAvatarObject->getTE(0);
+			old_teid = entry->getID();
 			//You edit this to change the tag in your client. Yes.
 			const char* tag_client = "Ascent";
 			strncpy((char*)&client_buffer[0], tag_client, UUID_BYTES);
@@ -7511,11 +7513,17 @@ void LLAgent::sendAgentSetAppearance()
 			memcpy(&part_a.mData, &client_buffer[0], UUID_BYTES);
 			entry->setColor(gSavedSettings.getColor4("AscentCustomTagColor") );
 			//This glow is used to tell if the tag color and name is set or not.
-			entry->setGlow(0.1);
+			entry->setGlow(0.1f);
 			entry->setID(part_a);
-		}*/
+			mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentReportClientUUID") );
+			entry->setID(old_teid);
+		}
+		else
+		{
+			mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentReportClientUUID") );
+		}
 
-		mAvatarObject->packTEMessage( gMessageSystem, 1, gSavedSettings.getString("AscentReportClientUUID") );
+		
 	}
 	else
 	{

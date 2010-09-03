@@ -3613,26 +3613,23 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					LLColor4 tag_color = texentry->getColor();
 					tag_color.setAlpha(alpha);
 					mNameText->setColor(tag_color);
-
-					// you probably had e-sex with this person
+				}
+				else
+				{
+					avatar_name_color.setAlpha(alpha);
+					//The old client identification.
+					if(isFullyLoaded())
+					{
+						//llinfos << "Getting client from deprecated method." << llendl;
+						getClientInfo(client,avatar_name_color);
+					}
 					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
 						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
 						{
-							client = "Friend"; // "fuckable";
+							client = "Friend";
 							avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
 						}
-					}
-				}
-				else
-				{
-					LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
-					avatar_name_color.setAlpha(alpha);
-					mNameText->setColor(avatar_name_color);
-					//The old client identification.
-					if(isFullyLoaded())
-					{
-						getClientInfo(client,avatar_name_color);
 					}
 				}
 
