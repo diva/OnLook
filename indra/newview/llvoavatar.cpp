@@ -3446,13 +3446,6 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		color = LLColor4(0.5f, 0.0f, 0.0f);
 		client = "Unknown";
 	}
-	if (mIsSelf)
-	{
-		if (LLVOAvatar::sClientResolutionList.has("isComplete"))
-			llinfos << "XML Loaded with " << LLVOAvatar::sClientResolutionList.size() << " entries (?), checking UUID" << uuid_str << llendl;
-		if (LLVOAvatar::sClientResolutionList.has(uuid_str))
-			llinfos << "Found UUID" << llendl;
-	}
 	else if (LLVOAvatar::sClientResolutionList.has("isComplete") && LLVOAvatar::sClientResolutionList.has(uuid_str))
 	{
 		
@@ -3608,6 +3601,16 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				if(isFullyLoaded())
 				{
 					getClientInfo(client,avatar_name_color);
+
+					// you probably had e-sex with this person
+					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+					{
+						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
+						{
+							client = "Friend"; // "fuckable";
+							avatar_name_color = gSavedSettings.getColor4("AscentFriendColor");
+						}
+					}
 				}
 
 				avatar_name_color.setAlpha(alpha);
@@ -3666,6 +3669,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			else
 			{
 				is_muted = LLMuteList::getInstance()->isMuted(getID());
+				
 			}
 
 			if (mNameString.empty() ||
