@@ -57,7 +57,7 @@
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Display friend client tags as (Friend)" left_delta="0"
 				tool_tip="Enabling this changes your friends' client tags to (Friend)."
-				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
+				mouse_opaque="true" name="show_friend_tag_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="65" control_name="AscentUseCustomTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"

@@ -73,7 +73,7 @@ class PlatformSetup(object):
     for t in ('Debug', 'Release', 'RelWithDebInfo'):
         build_types[t.lower()] = t
 
-    build_type = build_types['release']
+    build_type = build_types['relwithdebinfo']
     standalone = 'OFF'
     unattended = 'OFF'
     project_name = 'Ascent'
