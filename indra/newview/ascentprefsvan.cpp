@@ -83,6 +83,7 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
+	childSetCommitCallback("show_friend_tag_check", onCommitCheckBox, this);
 
 	childSetCommitCallback("custom_tag_color_swatch", onCommitColor, this);
 	childSetCommitCallback("effect_color_swatch", onCommitColor, this);
@@ -137,12 +138,26 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	{
 		self->refresh();
 	}
+
+	if (ctrl->getName() == "show_friend_tag_check")
+	{
+		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		iter != LLCharacter::sInstances.end(); ++iter)
+		{
+			LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
+			if(avatarp)
+			{
+				LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
+				avatarp->mClientTag = "";
+			}
+		}
+	}
+
 	BOOL showCustomOptions;
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		showCustomOptions = gSavedSettings.getBOOL("AscentUseCustomTag");
 	else
 		showCustomOptions = gSavedPerAccountSettings.getBOOL("AscentUseCustomTag");
-
 	self->childSetValue("customize_own_tag_check", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_text", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_box", showCustomOptions);

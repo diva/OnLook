@@ -2575,6 +2575,8 @@ bool idle_startup()
 		// object is created.  I think this must be done after setting the region.  JC
 		gAgent.setPositionAgent(agent_start_position_region);
 
+		wlfPanel_AdvSettings::fixPanel();
+
 		display_startup();
 		LLStartUp::setStartupState( STATE_MULTIMEDIA_INIT );
 		return FALSE;

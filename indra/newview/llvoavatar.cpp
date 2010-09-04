@@ -3244,9 +3244,9 @@ void LLVOAvatar::idleUpdateWindEffect()
 }
 
 bool LLVOAvatar::updateClientTags()
-{/* Won't do anything for now, we don't have a definitions site set up. -HGB
-	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_list.xml");
-	LLSD response = LLHTTPClient::blockingGet("http://www.destructivelabs.net/remote/tags/client_list.xml");
+{ 
+	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_definitions.xml");
+	LLSD response = LLHTTPClient::blockingGet("http://ascent.balseraph.org/updates/client_definitions.xml");
 	if(response.has("body"))
 	{
 		const LLSD &client_list = response["body"];
@@ -3259,7 +3259,7 @@ bool LLVOAvatar::updateClientTags()
 			export_file.close();
 			return true;
 		}
-	}*/
+	}
 	return false;
 }
 
@@ -3384,7 +3384,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
 				color = gColors.getColor( "AvatarNameColor" );
-				//client = "??";
+				client = "?";
 			}
 			return;
 		}
@@ -3419,6 +3419,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	{
 		color = gColors.getColor( "AvatarNameColor" );
 		color.setAlpha(1.f);
+		client = "?";
 		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
 	}
 
@@ -3704,7 +3705,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				
 				if (client.length() || is_away || is_muted || is_busy)
 				{
-					if (client != "")
+					if ((client != "")&&(client != "?"))
 					{
 						if ((!mIsSelf)||(gSavedSettings.getBOOL("AscentShowSelfTag")))
 						{
