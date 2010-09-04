@@ -119,12 +119,11 @@ LLFloaterAbout::LLFloaterAbout()
 	viewer_link_style->setColor(gSavedSettings.getColor4("HTMLLinkColor"));
 
 	// Version string
-	std::string version = LLAppViewer::instance()->getSecondLifeTitle()
+	std::string version = std::string(LLAppViewer::instance()->getSecondLifeTitle()
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
-				   gSavedSettings.getU32("SpecifiedVersionMaj"), gSavedSettings.getU32("SpecifiedVersionMin"), gSavedSettings.getU32("SpecifiedVersionPatch"), gSavedSettings.getU32("SpecifiedVersionBuild"),
-				   __DATE__, __TIME__,
-				   gSavedSettings.getString("SpecifiedChannel").c_str());
-
+		LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VIEWER_BUILD,
+		__DATE__, __TIME__,
+		LL_CHANNEL));
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, viewer_link_style);
 

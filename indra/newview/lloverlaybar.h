@@ -88,9 +88,8 @@ public:
 
 	void setCancelTPButtonVisible(BOOL b, const std::string& label);
 
-	static BOOL sAdvSettingsPopup;
 	static BOOL sChatVisible;
-
+	static BOOL sAdvSettingsPopup;
 protected:	
 	static void* createMediaRemote(void* userdata);
 	static void* createVoiceRemote(void* userdata);
@@ -113,7 +112,7 @@ protected:
 private:
 	
 
-	/*static bool	updateAdvSettingsPopup(const LLSD &data);
+	/*static void	updateAdvSettingsPopup(const LLSD &data);
 	static void	updateChatVisible(const LLSD &data);*/
 
 };

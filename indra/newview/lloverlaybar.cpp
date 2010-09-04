@@ -66,7 +66,12 @@
 #include "llvoiceremotectrl.h"
 #include "llmediactrl.h"
 #include "llselectmgr.h"
-#include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
+#include "wlfPanel_AdvSettings.h"
+
+
+
+
+#include "llcontrol.h"
 
 //
 // Globals
@@ -117,7 +122,6 @@ LLOverlayBar::LLOverlayBar()
 	:	LLPanel(),
 		mMediaRemote(NULL),
 		mVoiceRemote(NULL),
-		mAdvSettings(NULL),
 		mMusicState(STOPPED),
 		mOriginalIMLabel("")
 {
@@ -149,18 +153,17 @@ bool updateChatVisible(const LLSD &data)
 	return true;
 }
 
-
 BOOL LLOverlayBar::postBuild()
 {
 	childSetAction("IM Received",onClickIMReceived,this);
 	childSetAction("Set Not Busy",onClickSetNotBusy,this);
 	childSetAction("Mouselook",onClickMouselook,this);
 	childSetAction("Stand Up",onClickStandUp,this);
-	//childSetAction("Cancel TP",onClickCancelTP,this);
+	childSetAction("Cancel TP",onClickCancelTP,this);
  	childSetAction("Flycam",onClickFlycam,this);
 	childSetVisible("chat_bar", gSavedSettings.getBOOL("ChatVisible"));
 
-	//mCancelBtn = getChild<LLButton>("Cancel TP");
+	mCancelBtn = getChild<LLButton>("Cancel TP");
 	setFocusRoot(TRUE);
 	mBuilt = true;
 
@@ -178,7 +181,6 @@ BOOL LLOverlayBar::postBuild()
 
 	return TRUE;
 }
-
 
 LLOverlayBar::~LLOverlayBar()
 {
@@ -312,10 +314,32 @@ void LLOverlayBar::refresh()
 		buttons_changed = TRUE;
 	}
 
+	BOOL teleporting = FALSE;
+	if ((gAgent.getTeleportState() == LLAgent::TELEPORT_START) ||
+		(gAgent.getTeleportState() == LLAgent::TELEPORT_REQUESTED) ||
+		(gAgent.getTeleportState() == LLAgent::TELEPORT_MOVING) ||
+		(gAgent.getTeleportState() == LLAgent::TELEPORT_START))
+	{
+		teleporting = TRUE;
+	}
+	else
+	{
+		teleporting = FALSE;
+	}
+
+
+	button = getChild<LLButton>("Cancel TP");
+
+	if (button && button->getVisible() != teleporting)
+	{
+		button->setVisible(teleporting);
+		sendChildToFront(button);
+		moveChildToBackOfTabGroup(button);
+		buttons_changed = TRUE;
+	}
 
 	moveChildToBackOfTabGroup(mMediaRemote);
 	moveChildToBackOfTabGroup(mVoiceRemote);
-	moveChildToBackOfTabGroup(mAdvSettings);
 
 	// turn off the whole bar in mouselook
 	static BOOL last_mouselook = FALSE;
@@ -337,7 +361,7 @@ void LLOverlayBar::refresh()
 		{
 			// update "remotes"
 			childSetVisible("media_remote_container", TRUE);
-			//childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
+			childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
 			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
 			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
 			childSetVisible("state_buttons", TRUE);
@@ -397,6 +421,24 @@ void LLOverlayBar::onClickStandUp(void*)
 	LLSelectMgr::getInstance()->deselectAllForStandingUp();
 	gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
 }
+
+//static
+void LLOverlayBar::onClickCancelTP(void* data)
+{
+	LLOverlayBar* self = (LLOverlayBar*)data;
+	self->setCancelTPButtonVisible(FALSE,std::string("Cancel"));
+	gAgent.teleportCancel();
+	llinfos << "trying to cancel teleport" << llendl;
+}
+
+void LLOverlayBar::setCancelTPButtonVisible(BOOL b, const std::string& label)
+{
+	mCancelBtn->setVisible( b );
+//	mCancelBtn->setEnabled( b );
+	mCancelBtn->setLabelSelected(label);
+	mCancelBtn->setLabelUnselected(label);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // static media helpers
