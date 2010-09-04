@@ -827,8 +827,11 @@ BOOL LLAgent::getPhantom()
 
 void LLAgent::resetClientTag()
 {
-	llinfos << "Resetting mClientTag." << llendl;
-	mAvatarObject->mClientTag = "";
+	if (!mAvatarObject.isNull())
+	{
+		llinfos << "Resetting mClientTag." << llendl;
+		mAvatarObject->mClientTag = "";
+	}
 }
 //
 

@@ -106,6 +106,8 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
+	childSetCommitCallback("enable_clouds", onCommitCheckBox, this);
+	mEnableClouds = gSavedSettings.getBOOL("CloudsEnabled");
 	refreshValues();
 	refresh();
 }
@@ -164,7 +166,11 @@ void LLPrefsAscentSysImpl::refreshValues()
 	//Performance -------------------------------------------------------------------------
 	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
-	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
+	if(mEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
+	{
+		mEnableClouds			= gSavedSettings.getBOOL("CloudsEnabled");
+		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
+	}
 	mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 
@@ -246,6 +252,7 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
+	gLLWindEnabled = mEnableLLWind;
 	childSetValue("speed_rez_check", mSpeedRez);
 	if (mSpeedRez)
 	{
@@ -315,6 +322,7 @@ void LLPrefsAscentSysImpl::cancel()
 		gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
 	}
+	gLLWindEnabled = mEnableLLWind;
 }
 
 void LLPrefsAscentSysImpl::apply()
@@ -398,7 +406,7 @@ void LLPrefsAscentSysImpl::apply()
 	//Performance ----------------------------------------------------------------------------
 	gSavedSettings.setBOOL("FetchInventoryOnLogin",		childGetValue("fetch_inventory_on_login_check"));
 	gSavedSettings.setBOOL("WindEnabled",				childGetValue("enable_wind"));
-	//Missing "Enabled Clouds"
+	gSavedSettings.setBOOL("CloudsEnabled",				childGetValue("enable_clouds"));
 	gSavedSettings.setBOOL("SpeedRez",					childGetValue("speed_rez_check"));
 	gSavedSettings.setU32("SpeedRezInterval",			childGetValue("speed_rez_interval").asReal());
 	

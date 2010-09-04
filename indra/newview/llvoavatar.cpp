@@ -1659,8 +1659,6 @@ void LLVOAvatar::getSpatialExtents(LLVector3& newMin, LLVector3& newMax)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::renderCollisionVolumes()
 {
-	//BLATANTLY STOLEN FROM SIMMAN DURRR
-	LLGLDepthTest gls_depth(GL_FALSE); //make it so the skeleton shows through the mesh and prims (good for milfags)
 	for (S32 i = 0; i < mNumCollisionVolumes; i++)
 	{
 		mCollisionVolumes[i].renderCollision();

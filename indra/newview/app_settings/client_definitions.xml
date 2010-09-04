@@ -150,7 +150,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>1</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -164,7 +164,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>0</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -178,7 +178,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>0</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -192,7 +192,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>1</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -206,7 +206,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>0</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -234,7 +234,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>0</real>
+            <real>2</real>
         <key>name</key>
             <string>Emerald</string>
         </map>
@@ -262,7 +262,7 @@
                 <real>1</real>
             </array>
         <key>multiple</key>
-            <real>2</real>
+            <real>0</real>
         <key>name</key>
             <string>Emergence</string>
         </map>

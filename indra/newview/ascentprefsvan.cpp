@@ -148,7 +148,8 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	self->childSetEnabled("custom_tag_label_box", showCustomOptions);
 	self->childSetEnabled("custom_tag_color_text", showCustomOptions);
 	self->childSetEnabled("custom_tag_color_swatch", showCustomOptions);
-	gAgent.resetClientTag();
+	if (!gAgent.getID().isNull())
+		gAgent.resetClientTag();
 }
 
 void LLPrefsAscentVanImpl::refreshValues()
