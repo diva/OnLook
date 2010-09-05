@@ -498,13 +498,14 @@ void LLInventoryView::init(LLInventoryModel* inventory)
 	addBoolControl("Inventory.FoldersAlwaysByName", sort_folders_by_name );
 	addBoolControl("Inventory.SystemFoldersToTop", sort_system_folders_to_top );
 	
-
+	//Search Controls - RKeast
 	U32 search_type = gSavedPerAccountSettings.getU32("rkeastInventorySearchType");
 	BOOL search_by_name = (search_type == 0);
 
 	addBoolControl("Inventory.SearchByName", search_by_name);
 	addBoolControl("Inventory.SearchByCreator", !search_by_name);
 	addBoolControl("Inventory.SearchByDesc", !search_by_name);
+	addBoolControl("Inventory.SearchByUUID", !search_by_name);
 
 	addBoolControl("Inventory.SearchByAll", !search_by_name);
 	
@@ -607,6 +608,9 @@ BOOL LLInventoryView::postBuild()
 	childSetTabChangeCallback("inventory filter tabs", "All Items", onFilterSelected, this);
 	childSetTabChangeCallback("inventory filter tabs", "Recent Items", onFilterSelected, this);
 	childSetTabChangeCallback("inventory filter tabs", "Worn Items", onFilterSelected, this);
+
+	childSetAction("Inventory.ResetAll",onResetAll,this);
+	childSetAction("Inventory.ExpandAll",onExpandAll,this);
 
 	//panel->getFilter()->markDefault();
 	return TRUE;
@@ -832,7 +836,7 @@ void LLInventoryView::changed(U32 mask)
 		std::string item_count_string;
 		LLResMgr::getInstance()->getIntegerString(item_count_string, gInventory.getItemCount());
 		
-	//Displays a progress indication for loading the inventory, but not if it hasn't been loaded before on this PC, or we load more than expected - rkeast
+		//Displays a progress indication for loading the inventory, but not if it hasn't been loaded before on this PC, or we load more than expected - rkeast
 		if(mItemCount == -1)
 		{
 			title << " (Fetched " << item_count_string << " items...)";
@@ -1339,6 +1343,38 @@ void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
 
 // 	return FALSE;
 // }
+
+
+//static
+void LLInventoryView::onResetAll(void* userdata)
+{
+	LLInventoryView* self = (LLInventoryView*) userdata;
+	self->mActivePanel = (LLInventoryPanel*)self->childGetVisibleTab("inventory filter tabs");
+
+	if (!self->mActivePanel)
+	{
+		return;
+	}
+	if (self->mActivePanel && self->mSearchEditor)
+	{
+		self->mSearchEditor->setText(LLStringUtil::null);
+	}
+	self->onSearchEdit("",userdata);
+	self->mActivePanel->closeAllFolders();
+}
+
+//static
+void LLInventoryView::onExpandAll(void* userdata)
+{
+	LLInventoryView* self = (LLInventoryView*) userdata;
+	self->mActivePanel = (LLInventoryPanel*)self->childGetVisibleTab("inventory filter tabs");
+
+	if (!self->mActivePanel)
+	{
+		return;
+	}
+	self->mActivePanel->openAllFolders();
+}
 
 //static
 void LLInventoryView::onFilterSelected(void* userdata, bool from_click)

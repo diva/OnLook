@@ -2080,7 +2080,7 @@ void LLPanelAvatar::processAvatarPropertiesReply(LLMessageSystem *msg, void**)
 				args["[PAYMENTINFO]"] = self->mPanelSecondLife->getString(payment_text);
 				std::string age_text = age_verified ? "AgeVerified" : "NotAgeVerified";
 				// Do not display age verification status at this time
-				//args["[[AGEVERIFICATION]]"] = self->mPanelSecondLife->getString(age_text);
+				args["[[AGEVERIFICATION]]"] = self->mPanelSecondLife->getString(age_text);
 				args["[AGEVERIFICATION]"] = " ";
 			}
 			else

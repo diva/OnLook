@@ -1,7 +1,7 @@
 /** 
  * @file ascentuploadbrowser.h
- * @Author Duncan Garrett
- * Meant as a replacement to using Windows' file browser for uploads.
+ * @Author Duncan Garrett (Hg Beeks)
+ * Meant as a replacement to using a system file browser for uploads.
  *
  * Created August 27 2010
  * 
@@ -42,10 +42,12 @@ ASFloaterUploadBrowser::ASFloaterUploadBrowser()
 :	LLFloater(std::string("floater_upload_browser"), std::string("FloaterUploadRect"), LLStringUtil::null)
 {
 	mPathName = "C:\\Users\\Duncan\\Documents"+gDirUtilp->getDirDelimiter(); //(gDirUtilp->getSkinBaseDir()+gDirUtilp->getDirDelimiter());
+	mFilterType = "None";
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_upload_browser.xml");
 	mFileList = getChild<LLScrollListCtrl>("file_list");
 	childSetCommitCallback("file_list", onClickFile, this);
 	childSetDoubleClickCallback("file_list", onDoubleClick);
+	childSetCommitCallback("file_filter_combo", onUpdateFilter, this);
 	refresh();
 	mFileList->sortByColumn(std::string("file_name"), TRUE);
 	mFileList->sortByColumn(std::string("file_type"), TRUE);
@@ -61,6 +63,20 @@ void ASFloaterUploadBrowser::onClickFile(LLUICtrl* ctrl, void* user_data)
 {
 	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)user_data;
 	panelp->refreshUploadOptions();
+}
+
+void ASFloaterUploadBrowser::onUpdateFilter(LLUICtrl* ctrl, void* user_data)
+{
+	llinfos << "Filter change triggered." << llendl;
+	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)user_data;
+	LLComboBox* combo = panelp->getChild<LLComboBox>("file_filter_combo");
+	if (combo->getSelectedValue().asString() != panelp->mFilterType)
+	{
+		llinfos << "Selection is new, rebuilding file list." << llendl;
+		panelp->mFilterType.clear();
+		panelp->mFilterType = combo->getSelectedValue().asString().c_str();
+		panelp->refreshUploadOptions();
+	}
 }
 
 void ASFloaterUploadBrowser::refreshUploadOptions()
@@ -95,10 +111,10 @@ void ASFloaterUploadBrowser::handleDoubleClick()
 	}
 	else if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_FOLDER)
 	{
-		/*std::string newPath = (mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString()+gDirUtilp->getDirDelimiter());
-		newPath = (mPathName+newPath);
+		std::string newPath = (mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString()+gDirUtilp->getDirDelimiter());
+		/*newPath = (mPathName+newPath);
 		mPathName = newPath.c_str();*/
-		llinfos << "Double-clicked Folder. Directory should change to " << mPathName << mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString() << llendl;
+		llinfos << "Double-clicked Folder. Directory should change to " << mPathName << mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString() << "!!" << llendl;
 		//mPathName.append(mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString().c_str() + gDirUtilp->getDirDelimiter());
 		refresh();
 	}
@@ -110,16 +126,17 @@ void ASFloaterUploadBrowser::refresh()
 	mFileList->deleteAllItems();
 	llinfos << "Getting file listing at " << mPathName << llendl;
 	bool found = true;
+	U32 fileCount = gDirUtilp->countFilesInDir(mPathName, "*.*");
 	while(found) 
 	{
 		std::string filename;
 		found = gDirUtilp->getNextFileInDir(mPathName, "*.*", filename, false);
+		fileCount++;
+		//llinfo
 		if(found)
 		{
-
 			S32 periodIndex = filename.find_last_of(".");
 			std::string extension = filename.substr(periodIndex + 1, filename.length() - 1);
-			llinfos << extension << llendl;
 			LLSD element;
 			element["path"] = mPathName + filename;
 
@@ -137,20 +154,20 @@ void ASFloaterUploadBrowser::refresh()
 			invtype_column["type"] = "icon";
 			invtype_column["value"] = "inv_folder_trash.tga";
 
-			if ((extension == "jpeg")||(extension == "jpg")||(extension == "tga")
-				||(extension == "png")||(extension == "bmp"))
+			if (((extension == "jpeg")||(extension == "jpg")||(extension == "tga")
+				||(extension == "png")||(extension == "bmp"))&&((mFilterType == "None")||(mFilterType == "Texture")))
 			{
 				invtype_column["value"] = "inv_item_texture.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
 				filetype_column["value"] = LIST_TYPE_FILE;
 			}
-			else if (extension == "wav")
+			else if ((extension == "wav")&&((mFilterType == "None")||(mFilterType == "Sound")))
 			{	
 				invtype_column["value"] = "inv_item_sound.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
 				filetype_column["value"] = LIST_TYPE_FILE;
 			}
-			else if ((extension == "bvh")||(extension == "anim"))
+			else if (((extension == "bvh")||(extension == "anim"))&&((mFilterType == "None")||(mFilterType == "Animation")))
 			{	
 				invtype_column["value"] = "inv_item_animation.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
