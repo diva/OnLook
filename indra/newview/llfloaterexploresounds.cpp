@@ -79,10 +79,7 @@ BOOL LLFloaterExploreSounds::postBuild(void)
 	childSetDoubleClickCallback("sound_list", handle_play_locally, this);
 
 	childSetAction("play_locally_btn", handle_play_locally, this);
-	childSetAction("play_in_world_btn", handle_play_in_world, this);
-	childSetAction("play_ambient_btn", handle_play_ambient, this);
 	childSetAction("look_at_btn", handle_look_at, this);
-	childSetAction("copy_uuid_btn", handle_copy_uuid, this);
 	childSetAction("stop_btn", handle_stop, this);
 
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("sound_list");
@@ -209,13 +206,27 @@ BOOL LLFloaterExploreSounds::tick()
 
 		LLSD& playing_column = element["columns"][0];
 		playing_column["column"] = "playing";
-		if(item.mPlaying)
+		if (item.mIsLooped)
+		{
+			playing_column["value"] = " Looping";
+		}
+		else if(item.mPlaying)
+		{
 			playing_column["value"] = " Playing";
+		}
 		else
-			playing_column["value"] = llformat("%.1f min ago", (LLTimer::getElapsedSeconds() - item.mTimeStopped) / 60.f);
+		{
+			
+			S32 time = (LLTimer::getElapsedSeconds() - item.mTimeStopped);
+			S32 hours = time / 3600;
+			S32 mins = time / 60;
+			S32 secs = time % 60;
+			playing_column["value"] = llformat("%d:%02d:%02d", hours,mins,secs);
+		}
 
 		LLSD& type_column = element["columns"][1];
 		type_column["column"] = "type";
+		type_column["type"] = "icon";
 		if(item.mType == LLAudioEngine::AUDIO_TYPE_UI)
 		{
 			// this shouldn't happen for now, as UI is forbidden in the log
@@ -224,16 +235,18 @@ BOOL LLFloaterExploreSounds::tick()
 		else
 		{
 			std::string type;
-
+			std::string icon;
 			if(is_avatar)
 			{
 				type = "Avatar";
+				icon = "inv_item_gesture.tga";
 			}
 			else
 			{
 				if(item.mIsTrigger)
 				{
 					type = "llTriggerSound";
+					icon = "inv_item_sound.tga";
 				}
 				else
 				{
@@ -241,10 +254,12 @@ BOOL LLFloaterExploreSounds::tick()
 						type = "llLoopSound";
 					else
 						type = "llPlaySound";
+					icon = "inv_item_object.tga";
 				}
 			}
 
-			type_column["value"] = type;
+			type_column["value"] = icon;
+			type_column["tool_tip"] = type;
 		}
 
 		LLSD& owner_column = element["columns"][2];
@@ -262,10 +277,8 @@ BOOL LLFloaterExploreSounds::tick()
 		LLSD& sound_column = element["columns"][3];
 		sound_column["column"] = "sound";
 
-		if (item.mOwnerID == gAgent.getID())
-			sound_column["value"] = item.mAssetID.asString();
-		else
-			sound_column["value"] = LLUUID::null.asString();
+		std::string uuid = item.mAssetID.asString();
+		sound_column["value"] = uuid.substr(0, uuid.find_first_of("-")) + "...";
 
 		list->addElement(element, ADD_BOTTOM);
 	}
@@ -297,80 +310,6 @@ void LLFloaterExploreSounds::handle_play_locally(void* user_data)
 		}
 	}
 }
-
-// static
-void LLFloaterExploreSounds::handle_play_in_world(void* user_data)
-{
-	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
-	std::vector<LLScrollListItem*> selection = list->getAllSelected();
-	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
-	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
-	for( ; selection_iter != selection_end; ++selection_iter)
-	{
-		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
-		if(item.mID.isNull()) continue;
-
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessageFast(_PREHASH_SoundTrigger);
-		msg->nextBlockFast(_PREHASH_SoundData);
-		msg->addUUIDFast(_PREHASH_SoundID, item.mAssetID);
-		// Client untrusted, ids set on sim
-		msg->addUUIDFast(_PREHASH_OwnerID, LLUUID::null );
-		msg->addUUIDFast(_PREHASH_ObjectID, LLUUID::null );
-		msg->addUUIDFast(_PREHASH_ParentID, LLUUID::null );
-		msg->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
-		LLVector3 position = gAgent.getPositionAgent();
-		msg->addVector3Fast(_PREHASH_Position, position);
-		msg->addF32Fast(_PREHASH_Gain, 1.0f);
-
-		gAgent.sendMessage();
-	}
-}
-
-// static
-void LLFloaterExploreSounds::handle_play_ambient(void* user_data)
-{
-	LLParcel *parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-	if(!gAgent.isInGroup(parcel->getGroupID()))
-	{	
-		LLChat chat;
-		chat.mSourceType = CHAT_SOURCE_SYSTEM;
-		chat.mText = llformat("Can't play ambient sound: Must be on land you're grouped to.");
-		LLFloaterChat::addChat(chat);
-		return;
-	}
-
-	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
-	std::vector<LLScrollListItem*> selection = list->getAllSelected();
-	std::vector<LLScrollListItem*>::iterator selection_iter = selection.begin();
-	std::vector<LLScrollListItem*>::iterator selection_end = selection.end();
-	for( ; selection_iter != selection_end; ++selection_iter)
-	{
-		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
-		if(item.mID.isNull()) continue;
-		int gain = 0.01f;
-		for(int i = 0; i < 2; i++)
-		{
-			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);
-			gMessageSystem->nextBlockFast(_PREHASH_SoundData);
-			gMessageSystem->addUUIDFast(_PREHASH_SoundID, item.mAssetID);
-			gMessageSystem->addUUIDFast(_PREHASH_OwnerID, LLUUID::null);
-			gMessageSystem->addUUIDFast(_PREHASH_ObjectID, LLUUID::null);
-			gMessageSystem->addUUIDFast(_PREHASH_ParentID, LLUUID::null);
-			gMessageSystem->addU64Fast(_PREHASH_Handle, gAgent.getRegion()->getHandle());
-			LLVector3d	pos = -from_region_handle(gAgent.getRegion()->getHandle());
-			gMessageSystem->addVector3Fast(_PREHASH_Position, (LLVector3)pos);
-			gMessageSystem->addF32Fast(_PREHASH_Gain, gain);
-
-			gMessageSystem->sendReliable(gAgent.getRegionHost());
-
-			gain = 1.0f;
-		}
-	}
-}
-
 
 // static
 void LLFloaterExploreSounds::handle_look_at(void* user_data)
@@ -405,34 +344,6 @@ void LLFloaterExploreSounds::handle_look_at(void* user_data)
 	gAgent.setFocusOnAvatar(FALSE, FALSE);
 	gAgent.setCameraPosAndFocusGlobal(cam, pos_global, item.mSourceID);
 	gAgent.setCameraAnimating(FALSE);
-}
-
-// static
-void LLFloaterExploreSounds::handle_open(void* user_data)
-{
-
-}
-
-// static
-void LLFloaterExploreSounds::handle_copy_uuid(void* user_data)
-{
-	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
-	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
-	LLUUID selection = list->getSelectedValue().asUUID(); // Single item only
-	LLSoundHistoryItem item = floater->getItem(selection);
-	if(item.mID.isNull()) return;
-
-	if (item.mOwnerID == gAgent.getID())
-	{
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(item.mAssetID.asString()));
-	}
-	else
-	{
-		LLChat chat;
-		chat.mSourceType = CHAT_SOURCE_SYSTEM;
-		chat.mText = llformat("Can't copy UUIDs you don't own.");
-		LLFloaterChat::addChat(chat);
-	}
 }
 
 // static
