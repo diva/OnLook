@@ -18,7 +18,7 @@
       All
     </combo_item>
   </combo_box>
-  <line_editor bottom_delta="-14" enabled="true" follows="right|top" font="SansSerif"
+  <line_editor bottom_delta="-20" enabled="true" follows="right|top" font="SansSerif"
 				height="18" left="-235" name="buddy_search_lineedit"
 				tool_tip="The friend name you want to search for"
 				width="130" />
