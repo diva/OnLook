@@ -22,9 +22,10 @@
 #include "lluictrlfactory.h" //Loads the XUI
 
 // project includes
+#include "llresmgr.h"
+#include "llsdserialize.h" //XML Parsing - Probably not needed
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
-#include "llsdserialize.h" //XML Parsing - Probably not needed
 
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
@@ -40,17 +41,39 @@ ASFloaterUploadBrowser* ASFloaterUploadBrowser::sInstance = NULL;
 // Default constructor
 ASFloaterUploadBrowser::ASFloaterUploadBrowser() 
 :	LLFloater(std::string("floater_upload_browser"), std::string("FloaterUploadRect"), LLStringUtil::null)
-{
-	mPathName = "C:\\Users\\Duncan\\Documents"+gDirUtilp->getDirDelimiter(); //(gDirUtilp->getSkinBaseDir()+gDirUtilp->getDirDelimiter());
-	mFilterType = "None";
+{	
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_upload_browser.xml");
+	mPathName = gDirUtilp->getSkinBaseDir();
+	mFilterType = "None";
 	mFileList = getChild<LLScrollListCtrl>("file_list");
+	mDriveCombo = getChild<LLComboBox>("drive_combo");
+	mBookmarkCombo = getChild<LLComboBox>("bookmark_combo");
+	
 	childSetCommitCallback("file_list", onClickFile, this);
 	childSetDoubleClickCallback("file_list", onDoubleClick);
 	childSetCommitCallback("file_filter_combo", onUpdateFilter, this);
+
+	//This is so unbelievably shitty I can't believe it -HgB
+	std::string drive_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	S32 index;
+	mDriveCombo->removeall();
+	for (index = 0; index < 26; index++)
+	{
+		
+		std::string dir = drive_letters.substr(index, index) + ":" + gDirUtilp->getDirDelimiter();
+		S32 file_count = gDirUtilp->countFilesInDir(dir, "*.*");
+		llinfos << dir << " - " << file_count << llendl;
+		if(file_count)
+		{
+			mDriveCombo->add(dir, ADD_BOTTOM);
+		}
+	}
+
 	refresh();
 	mFileList->sortByColumn(std::string("file_name"), TRUE);
 	mFileList->sortByColumn(std::string("file_type"), TRUE);
+
+	
 }
 
 // Destroys the object
@@ -67,32 +90,45 @@ void ASFloaterUploadBrowser::onClickFile(LLUICtrl* ctrl, void* user_data)
 
 void ASFloaterUploadBrowser::onUpdateFilter(LLUICtrl* ctrl, void* user_data)
 {
-	llinfos << "Filter change triggered." << llendl;
 	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)user_data;
 	LLComboBox* combo = panelp->getChild<LLComboBox>("file_filter_combo");
 	if (combo->getSelectedValue().asString() != panelp->mFilterType)
 	{
-		llinfos << "Selection is new, rebuilding file list." << llendl;
-		panelp->mFilterType.clear();
-		panelp->mFilterType = combo->getSelectedValue().asString().c_str();
-		panelp->refreshUploadOptions();
+		panelp->mFilterType = "";
+		panelp->mFilterType = combo->getSelectedValue().asString();
+		panelp->refresh();
+		panelp->mFileList->selectFirstItem();
+		panelp->childSetValue("asset_name", "");
 	}
 }
 
 void ASFloaterUploadBrowser::refreshUploadOptions()
 {
-	if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_FILE)
+	if (!mFileList->isEmpty())
 	{
-		if (mFileList->getAllSelected().size() > 1)
+		if(!mFileList->getSelectedIDs().count())
 		{
-			llinfos << "Selected multiple files." << llendl;
-			childSetValue("asset_name", "(Multiple)");
+			llinfos << "No selection, clearing field." << llendl;
+			childSetValue("asset_name", "");
 		}
-		else
+		else 
 		{
-			llinfos << "Selected a file." << llendl;
-			std::string name = mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString();
-			childSetValue("asset_name", name);
+			if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_FILE)
+			{
+				if (mFileList->getAllSelected().size() > 1)
+				{
+					llinfos << "Selected multiple files." << llendl;
+					childSetValue("asset_name", "(Multiple)");
+					childSetLabelArg("upload_button", "[COST]", std::string("$L" + (10 * mFileList->getAllSelected().size())));
+				}
+				else
+				{
+					llinfos << "Selected a file." << llendl;
+					std::string name = mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString();
+					childSetValue("asset_name", name);
+					childSetLabelArg("upload_button", "[COST]", std::string("$L10"));
+				}
+			}
 		}
 	}
 }
@@ -107,36 +143,39 @@ void ASFloaterUploadBrowser::handleDoubleClick()
 {
 	if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_PARENT)
 	{
-		llinfos << "Double-clicked Parent." << llendl;
+		S32 dirLimiterIndex = mPathName.find_last_of(gDirUtilp->getDirDelimiter());
+		mPathName = mPathName.substr(0, dirLimiterIndex);
+		refresh();
+		mFileList->selectFirstItem();
 	}
 	else if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_FOLDER)
 	{
-		std::string newPath = (mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString()+gDirUtilp->getDirDelimiter());
-		/*newPath = (mPathName+newPath);
-		mPathName = newPath.c_str();*/
-		llinfos << "Double-clicked Folder. Directory should change to " << mPathName << mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString() << "!!" << llendl;
-		//mPathName.append(mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString().c_str() + gDirUtilp->getDirDelimiter());
+		mPathName = mPathName + gDirUtilp->getDirDelimiter() + mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString();
 		refresh();
+		mFileList->selectFirstItem();
+
 	}
+	childSetValue("asset_name", "");
 }
 
 void ASFloaterUploadBrowser::refresh()
 {
-	llinfos << "Emptying existing file list." << mPathName << llendl;
+	std::string filename;
+	std::string fullPath = mPathName + gDirUtilp->getDirDelimiter();
+	mFileList->deselectAllItems();
 	mFileList->deleteAllItems();
-	llinfos << "Getting file listing at " << mPathName << llendl;
+	llinfos << "Getting file listing at " << gDirUtilp->getDirName(fullPath) << " side note " << gDirUtilp->getDirName("C:\\") << llendl;
+	gDirUtilp->getNextFileInDir(gDirUtilp->getChatLogsDir(),"*", filename, false); //Clears the last file
 	bool found = true;
-	U32 fileCount = gDirUtilp->countFilesInDir(mPathName, "*.*");
+	S32 file_count = 0;
 	while(found) 
 	{
-		std::string filename;
-		found = gDirUtilp->getNextFileInDir(mPathName, "*.*", filename, false);
-		fileCount++;
-		//llinfo
+		found = gDirUtilp->getNextFileInDir(fullPath, "*.*", filename, false);
 		if(found)
 		{
 			S32 periodIndex = filename.find_last_of(".");
 			std::string extension = filename.substr(periodIndex + 1, filename.length() - 1);
+			std::string extensionL = utf8str_tolower(extension);
 			LLSD element;
 			element["path"] = mPathName + filename;
 
@@ -154,20 +193,20 @@ void ASFloaterUploadBrowser::refresh()
 			invtype_column["type"] = "icon";
 			invtype_column["value"] = "inv_folder_trash.tga";
 
-			if (((extension == "jpeg")||(extension == "jpg")||(extension == "tga")
-				||(extension == "png")||(extension == "bmp"))&&((mFilterType == "None")||(mFilterType == "Texture")))
+			if (((extensionL == "jpeg")||(extensionL == "jpg")||(extensionL == "tga")
+				||(extensionL == "png")||(extensionL == "bmp"))&&((mFilterType == "None")||(mFilterType == "Texture")))
 			{
 				invtype_column["value"] = "inv_item_texture.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
 				filetype_column["value"] = LIST_TYPE_FILE;
 			}
-			else if ((extension == "wav")&&((mFilterType == "None")||(mFilterType == "Sound")))
+			else if ((extensionL == "wav")&&((mFilterType == "None")||(mFilterType == "Sound")))
 			{	
 				invtype_column["value"] = "inv_item_sound.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
 				filetype_column["value"] = LIST_TYPE_FILE;
 			}
-			else if (((extension == "bvh")||(extension == "anim"))&&((mFilterType == "None")||(mFilterType == "Animation")))
+			else if (((extensionL == "bvh")||(extensionL == "anim"))&&((mFilterType == "None")||(mFilterType == "Animation")))
 			{	
 				invtype_column["value"] = "inv_item_animation.tga";
 				filename_column["value"] = filename.substr(0, periodIndex);
@@ -188,9 +227,20 @@ void ASFloaterUploadBrowser::refresh()
 			if (invtype_column["value"].asString() != "inv_folder_trash.tga")
 			{
 				mFileList->addElement(element, ADD_BOTTOM);
+				if (filetype_column["value"].asInteger() == LIST_TYPE_FILE)
+				{
+					file_count++;
+				}
 			}
 		}
 	}
+	
+	std::string result;
+	LLResMgr::getInstance()->getIntegerString(result, file_count);
+	childSetTextArg("result_label",  "[COUNT]", result);
+
+	mFileList->sortItems();
+	llinfos << "Total files loaded: " << result << "." << llendl;
 }
 
 // static

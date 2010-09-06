@@ -2,14 +2,54 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
     width="650" height="340" min_width="600" min_height="340" max_width="600"
     name="browser" title="Upload Browser" control_name="UploadBrowserFloater">
+	<combo_box allow_text_entry="false" bottom="-42" follows="left|top" height="18" left="10" max_chars="20" 
+		mouse_opaque="true" enabled="true" width="108" name="bookmark_combo" tool_tip="Jump to a common folder">
+		<combo_item name="None" enabled="false" value="None">
+			Bookmarked:
+		</combo_item>
+	</combo_box>
+	<button bottom_delta="0" follows="top|left" height="18" label="+"
+		left_delta="113" name="add_bookmark_button" tool_tip="Add current folder to Bookmarks"
+		width="20" />
+	<button bottom_delta="0" follows="top|left" height="18" label="-"
+		left_delta="22" name="remove_bookmark_button" tool_tip="Remove selected folder from Bookmarks"
+		width="20" />
 	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-		bottom="-35" drop_shadow_visible="true" enabled="true" follows="left|top"
+		bottom="-37" drop_shadow_visible="true" enabled="true" follows="left|top"
+		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="210"
+		mouse_opaque="true" name="drive_label" v_pad="0" width="128">
+		Drive:
+	</text>
+	<combo_box allow_text_entry="false" bottom_delta="-5" follows="left|top" height="18" left_delta="35" max_chars="20" 
+		mouse_opaque="true" enabled="true" width="40" name="drive_combo" tool_tip="Switch to another drive">
+		<combo_item name="None" enabled="false" value="None">
+			All
+		</combo_item>
+		<combo_item name="None" enabled="false" value="None">
+			Of
+		</combo_item>
+		<combo_item name="None" enabled="false" value="None">
+			Them
+		</combo_item>
+	</combo_box>
+	<scroll_list bottom="30" can_resize="true" column_padding="0" draw_heading="true"
+		follows="left|top|bottom" left="5" multi_select="true"
+		name="file_list" width="280" search_column="1"
+		tool_tip="Hold shift or control while clicking to select multiple files"
+		top="-46">
+		<column name="file_type" width="0" />
+		<column image="ff_edit_mine_button.tga" name="icon_inventory_type"
+			tool_tip="Inventory Type" width="20" />
+		<column dynamicwidth="true" label="Filename" name="file_name" tool_tip="Filename" />
+	</scroll_list>
+	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		bottom="12" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="10"
 		mouse_opaque="true" name="filter_label" v_pad="0" width="128">
 		Filter:
 	</text>
-	<combo_box allow_text_entry="false" bottom_delta="-5" follows="top|left" height="18" left_delta="40" max_chars="20" 
-		mouse_opaque="true" enabled="true" width="108" name="file_filter_combo" tool_tip="Preview at a fixed aspect ratio">
+	<combo_box allow_text_entry="false" bottom_delta="-5" follows="left|bottom" height="18" left_delta="40" max_chars="20" 
+		mouse_opaque="true" enabled="true" width="108" name="file_filter_combo" tool_tip="Limit results to a specific type">
 		<combo_item name="None" value="None">
 			None
 		</combo_item>
@@ -24,21 +64,11 @@
 		</combo_item>
 	</combo_box>
 	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-		bottom="-35" drop_shadow_visible="true" enabled="true" follows="left|top"
+		bottom_delta="5" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 		font="SansSerifSmall" h_pad="0" halign="right" height="12" left="155"
 		mouse_opaque="true" name="result_label" v_pad="0" width="128">
 		Files: [COUNT]
 	</text>
-	<scroll_list bottom="10" can_resize="true" column_padding="0" draw_heading="true"
-		follows="left|top|bottom" left="5" multi_select="true"
-		name="file_list" width="280" search_column="1"
-		tool_tip="Hold shift or control while clicking to select multiple files"
-		top="-46">
-		<column name="file_type" width="0" />
-		<column image="ff_edit_mine_button.tga" name="icon_inventory_type"
-			tool_tip="Inventory Type" width="20" />
-		<column dynamicwidth="true" label="Filename" name="file_name" tool_tip="Filename" />
-	</scroll_list>
 	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 		bottom="-35" drop_shadow_visible="true" enabled="true" follows="left|top"
 		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="302"

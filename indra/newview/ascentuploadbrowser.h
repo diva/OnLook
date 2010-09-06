@@ -15,6 +15,7 @@
 #define ASCENT_UPLOAD_BROWSER
 
 #include "llfloater.h"
+#include "llcombobox.h" 
 
 class LLScrollListCtrl;
 
@@ -50,6 +51,9 @@ private:
 		LIST_TYPE_FILE
 	};
 	LLScrollListCtrl* mFileList;
+	LLComboBox* mDriveCombo;
+	LLComboBox* mBookmarkCombo;
+
 	std::string mPathName;
 	std::string mFilterType;
 };
