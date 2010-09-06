@@ -68,6 +68,12 @@
 #include "llviewernetwork.h"
 #include "hippogridmanager.h"
 
+#include "llchat.h"
+#include "llfloaterchat.h"
+
+// <dogmode> stuff for Contact groups
+#include "ascentfloatercontactgroups.h"
+
 //Maximum number of people you can select to do an operation on at once.
 #define MAX_FRIEND_SELECT 20
 #define DEFAULT_PERIOD 5.0
@@ -192,6 +198,54 @@ void LLPanelFriends::updateFriends(U32 changed_mask)
 	mShowMaxSelectWarning = true;
 }
 
+// <dogmode>
+// Contact search and group system.
+// 09/05/2010 - Charley Levenque
+void LLPanelFriends::filterContacts()
+{
+	//LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
+	//if (combo->getValue().asString() != "All")
+	std::string friend_name;
+	std::string search_name;
+
+	search_name = LLPanelFriends::getChild<LLLineEditor>("buddy_search_lineedit")->getValue().asString();
+
+	if (search_name != "" && search_name != mLastContactSearch)
+	{	
+		mLastContactSearch = search_name;
+		//LLStringUtil::toLower(search_name);
+		refreshNames(LLFriendObserver::ADD);
+
+		std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
+		for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
+		{
+			friend_name = (*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString();
+			//LLStringUtil::toLower(friend_name);
+			BOOL show_entry = (friend_name.find(search_name) != std::string::npos);
+			if (!show_entry)
+			{
+				mFriendsList->deleteItems((*itr)->getValue());
+			}
+		}
+
+		refreshUI();
+	}
+	else if (search_name == "" && search_name != mLastContactSearch) refreshNames(LLFriendObserver::ADD);
+}
+
+void LLPanelFriends::onContactSearchKeystroke(LLLineEditor* caller, void* user_data)
+{
+	if (caller)
+	{
+		LLPanelFriends* panelp = (LLPanelFriends*)caller->getParent();
+		if (panelp)
+		{
+			panelp->filterContacts();
+		}
+	}
+}
+// --
+
 // virtual
 BOOL LLPanelFriends::postBuild()
 {
@@ -202,6 +256,16 @@ BOOL LLPanelFriends::postBuild()
 	childSetCommitCallback("friend_list", onSelectName, this);
 	childSetDoubleClickCallback("friend_list", onClickIM);
 
+	// <dogmode>
+	// Contact search and group system.
+	// 09/05/2010 - Charley Levenque
+	LLLineEditor* contact = getChild<LLLineEditor>("buddy_search_lineedit");
+	if (contact)
+	{
+		contact->setKeystrokeCallback(&onContactSearchKeystroke);
+	}
+	// --
+
 	getChild<LLTextBox>("s_num")->setValue("0");
 	getChild<LLTextBox>("f_num")->setValue(llformat("%d", mFriendsList->getItemCount()));
 
@@ -209,6 +273,7 @@ BOOL LLPanelFriends::postBuild()
 	refreshNames(changed_mask);
 
 	childSetAction("im_btn", onClickIM, this);
+	childSetAction("assign_btn", onClickAssign, this);
 	childSetAction("profile_btn", onClickProfile, this);
 	childSetAction("offer_teleport_btn", onClickOfferTeleport, this);
 	childSetAction("pay_btn", onClickPay, this);
@@ -417,6 +482,7 @@ void LLPanelFriends::refreshRightsChangeList()
 	if (num_selected == 0)  // nothing selected
 	{
 		childSetEnabled("im_btn", FALSE);
+		childSetEnabled("assign_btn", FALSE);
 		childSetEnabled("offer_teleport_btn", FALSE);
 	}
 	else // we have at least one friend selected...
@@ -425,6 +491,7 @@ void LLPanelFriends::refreshRightsChangeList()
 		// to be consistent with context menus in inventory and because otherwise
 		// offline friends would be silently dropped from the session
 		childSetEnabled("im_btn", selected_friends_online || num_selected == 1);
+		childSetEnabled("assign_btn", TRUE);
 		childSetEnabled("offer_teleport_btn", can_offer_teleport);
 	}
 }
@@ -538,7 +605,7 @@ BOOL LLPanelFriends::refreshNamesPresence(const LLAvatarTracker::buddy_map_t & a
 
 	return have_names;
 }
-
+// meal disk
 void LLPanelFriends::refreshUI()
 {	
 	BOOL single_selected = FALSE;
@@ -570,6 +637,7 @@ void LLPanelFriends::refreshUI()
 	//(single_selected will always be true in this situations)
 	childSetEnabled("remove_btn", single_selected);
 	childSetEnabled("im_btn", single_selected);
+	childSetEnabled("assign_btn", single_selected);
 	childSetEnabled("friend_rights", single_selected);
 
 	refreshRightsChangeList();
@@ -625,6 +693,11 @@ void LLPanelFriends::onClickProfile(void* user_data)
 }
 
 // static
+void LLPanelFriends::onClickAssign(void* user_data)
+{
+	ASFloaterContactGroups::show(user_data);
+}
+
 void LLPanelFriends::onClickIM(void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;

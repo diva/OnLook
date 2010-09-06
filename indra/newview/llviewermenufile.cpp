@@ -773,10 +773,12 @@ class LLFileLogOut : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		std::string command(gDirUtilp->getExecutableDir() + gDirUtilp->getDirDelimiter() + gDirUtilp->getExecutableFilename() + " --channel \"Ascent\"  --settings settings_ascent.xml");
+		std::string command(gDirUtilp->getExecutableDir() + gDirUtilp->getDirDelimiter() + gDirUtilp->getExecutableFilename());
+		gSavedSettings.setBOOL("ShowConsoleWindow", FALSE);
 		gViewerWindow->getWindow()->ShellEx(command);
-
+		gSavedSettings.setBOOL("ShowConsoleWindow", FALSE);
 		LLAppViewer::instance()->userQuit();
+		gSavedSettings.setBOOL("ShowConsoleWindow", FALSE);
 		return true;
 	}
 };
