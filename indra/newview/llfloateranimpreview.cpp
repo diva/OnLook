@@ -189,6 +189,11 @@ BOOL LLFloaterAnimPreview::postBuild()
 
 	childSetCommitCallback("name_form", onCommitName, this);
 
+	if (gSavedSettings.getBOOL("AscentPowerfulWizard"))
+	{
+		childSetMaxValue("priority", 7);
+	}
+
 	childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%d",sUploadAmount));
 	childSetAction("ok_btn", onBtnOK, this);
 	setDefaultBtn();

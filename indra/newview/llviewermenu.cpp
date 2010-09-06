@@ -756,10 +756,11 @@ void init_menus()
 	menu->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
 	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
 										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-
-	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
-	menu->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
-
+	if (gSavedSettings.getBOOL("AscentPowerfulWizard"))
+	{
+		menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
+		menu->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
+	}
 	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
 											&handle_sounds_explorer, NULL));
 	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
@@ -2437,7 +2438,7 @@ class LLCanIHasKillEmAll : public view_listener_t
 		bool new_value = false;
 		if(objpos)
 		{
-			if (!objpos->permYouOwner())
+			if (!objpos->permYouOwner()||!gSavedSettings.getBOOL("AscentPowerfulWizard"))
 				new_value = false; // Don't give guns to retarded children.
 			else new_value = true;
 		}
@@ -2455,9 +2456,10 @@ class LLOHGOD : public view_listener_t
 		bool new_value = false;
 		if(objpos)
 		{
-			if (!objpos->permYouOwner())
+			if (!objpos->permYouOwner()||!gSavedSettings.getBOOL("AscentPowerfulWizard"))
 				new_value = false; // Don't give guns to retarded children.
-			else new_value = true;
+			else 
+				new_value = true;
 		}
 
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
@@ -2494,6 +2496,7 @@ class LLPowerfulWizard : public view_listener_t
 			LLSelectMgr::getInstance()->selectionUpdateTemporary(1);//set temp to TRUE
 			LLSelectMgr::getInstance()->selectionUpdatePhysics(1);
 			LLSelectMgr::getInstance()->sendDelink();
+			LLSelectMgr::getInstance()->deselectAll();
 		}
 
 		return true;

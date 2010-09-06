@@ -38,6 +38,7 @@
 #include "llframetimer.h"
 #include "llviewerimage.h"
 
+class LLComboBox;
 class LLImageRaw;
 
 class LLPreviewTexture : public LLPreview
@@ -55,7 +56,8 @@ public:
 		const LLRect& rect,
 		const std::string& title,
 		const LLUUID& asset_id,
-		BOOL copy_to_inv = FALSE);
+		BOOL copy_to_inv = FALSE,
+		BOOL copyable = TRUE);
 	~LLPreviewTexture();
 
 	virtual void		draw();
@@ -77,7 +79,8 @@ public:
 							S32 discard_level, 
 							BOOL final,
 							void* userdata );
-
+	static LLPreviewTexture* getInstance(){ return sInstance; }
+	LLUUID mCreatorKey;
 
 protected:
 	void				init();
@@ -95,6 +98,10 @@ private:
 	LLFrameTimer		mSavedFileTimer;
 	BOOL                mShowKeepDiscard;
 	BOOL                mCopyToInv;
+	
+	static LLPreviewTexture* sInstance;
+	static void			onClickProfile(void* userdata);
+	static void callbackLoadAvatarName(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* data);
 
 	// This is stored off in a member variable, because the save-as
 	// button and drag and drop functionality need to know.
@@ -102,7 +109,7 @@ private:
 	
 	S32 mLastHeight;
 	S32 mLastWidth;
-	F32 mAspectRatio;
+	F32 mAspectRatio;	// 0 = Unconstrained
 };
 
 

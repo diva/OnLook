@@ -293,6 +293,8 @@ public:
     static void refreshQuickFilter(LLUICtrl* ctrl);
 
 	static void onFilterSelected(void* userdata, bool from_click);
+	static void onResetAll(void* userdata);
+	static void onExpandAll(void* userdata);
 	static void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
 
 	const std::string getFilterSubString() { return mActivePanel->getFilterSubString(); }

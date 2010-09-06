@@ -24,6 +24,7 @@ public:
 	ASFloaterUploadBrowser();
 	virtual ~ASFloaterUploadBrowser();
 	static void onClickFile(LLUICtrl* ctrl, void* user_data);
+	static void onUpdateFilter(LLUICtrl* ctrl, void* user_data);
 	static void onDoubleClick(void* user_data);
 	
 	void refresh();
@@ -50,6 +51,7 @@ private:
 	};
 	LLScrollListCtrl* mFileList;
 	std::string mPathName;
+	std::string mFilterType;
 };
 
 

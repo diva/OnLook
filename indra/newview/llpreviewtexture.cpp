@@ -50,6 +50,8 @@
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 #include "lllineeditor.h"
+#include "llfloateravatarinfo.h"
+
 
 const S32 PREVIEW_TEXTURE_MIN_WIDTH = 300;
 const S32 PREVIEW_TEXTURE_MIN_HEIGHT = 120;
@@ -61,6 +63,7 @@ const S32 CLIENT_RECT_VPAD = 4;
 
 const F32 SECONDS_TO_SHOW_FILE_SAVED_MSG = 8.f;
 
+LLPreviewTexture * LLPreviewTexture::sInstance;
 LLPreviewTexture::LLPreviewTexture(const std::string& name,
 								   const LLRect& rect,
 								   const std::string& title,
@@ -74,7 +77,8 @@ LLPreviewTexture::LLPreviewTexture(const std::string& name,
 	mIsCopyable(FALSE),
 	mLastHeight(0),
 	mLastWidth(0),
-	mAspectRatio(0.f)
+	mAspectRatio(0.f),
+	mCreatorKey(LLUUID())
 {
 	const LLInventoryItem *item = getItem();
 	if(item)
@@ -117,7 +121,8 @@ LLPreviewTexture::LLPreviewTexture(
 	const LLRect& rect,
 	const std::string& title,
 	const LLUUID& asset_id,
-	BOOL copy_to_inv)
+	BOOL copy_to_inv,
+	BOOL copyable)
 	:
 	LLPreview(
 		name,
@@ -132,7 +137,7 @@ LLPreviewTexture::LLPreviewTexture(
 	mLoadingFullImage( FALSE ),
 	mShowKeepDiscard(FALSE),
 	mCopyToInv(copy_to_inv),
-	mIsCopyable(copy_to_inv),
+	mIsCopyable(copyable),
 	mLastHeight(0),
 	mLastWidth(0),
 	mAspectRatio(0.f)
@@ -141,7 +146,6 @@ LLPreviewTexture::LLPreviewTexture(
 	init();
 
 	setTitle(title);
-	
 	LLRect curRect = getRect();
 	translate(curRect.mLeft - rect.mLeft, curRect.mTop - rect.mTop);
 	
@@ -155,53 +159,41 @@ LLPreviewTexture::~LLPreviewTexture()
 		getWindow()->decBusyCount();
 	}
 
+	if(mImage.notNull())
+	{
+		mImage->destroySavedRawImage() ;
+	}
 	mImage = NULL;
+	sInstance = NULL;
 }
 
 
 void LLPreviewTexture::init()
 {
+	sInstance = this;
+	LLUICtrlFactory::getInstance()->buildFloater(sInstance,"floater_preview_texture.xml");
 	
-	
-	/*if (mCopyToInv) 
-	{
-		llinfos << "Loading embedded" << llendl;
-		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_embedded_texture.xml");
+	childSetVisible("desc", !mCopyToInv);	// Hide description field for embedded textures
+	childSetVisible("desc txt", !mCopyToInv);
+	childSetVisible("Copy To Inventory", mCopyToInv);
+	childSetVisible("Keep", mShowKeepDiscard);
+	childSetVisible("Discard", mShowKeepDiscard);
+	childSetAction("openprofile", onClickProfile, this);
 
+	llinfos << "Image has alpha :" << mImage->getIsAlphaMask() << llendl;
+	if (mCopyToInv) 
+	{
 		childSetAction("Copy To Inventory",LLPreview::onBtnCopyToInv,this);
 	}
 
 	else if (mShowKeepDiscard)
 	{
-		llinfos << "Loading Keep/Discard" << llendl;
-		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture_keep_discard.xml");
-
 		childSetAction("Keep",onKeepBtn,this);
 		childSetAction("Discard",onDiscardBtn,this);
 	}
 
 	else 
-	{*/
-		LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_texture.xml");
-		childSetVisible("Copy To Inventory", mCopyToInv);
-		childSetVisible("Keep", mShowKeepDiscard);
-		childSetVisible("Discard", mShowKeepDiscard);
-		llinfos << "Image has alpha :" << mImage->getIsAlphaMask() << llendl;
-
-	//}
-
-
-	if (!mCopyToInv) 
 	{
-		const LLInventoryItem* item = getItem();
-		
-		if (item)
-		{
-			childSetCommitCallback("desc", LLPreview::onText, this);
-			childSetText("desc", item->getDescription());
-			childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
-		}
-
 		// If the buttons are hidden move stuff down to use the space.
 		
 		LLRect keep_rect, old_rect, new_rect;
@@ -212,28 +204,49 @@ void LLPreviewTexture::init()
 		
 		diff = old_rect.mBottom - keep_rect.mBottom;
 		
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
 								  old_rect.getWidth(), old_rect.getHeight());
 		childSetRect("combo_aspect_ratio", new_rect);
 
 		childGetRect("aspect_ratio", old_rect);
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
 								  old_rect.getWidth(), old_rect.getHeight());
 		childSetRect("aspect_ratio", new_rect);
 
 		childGetRect("dimensions", old_rect);
-		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff - 3,
+		new_rect.setOriginAndSize(old_rect.mLeft, old_rect.mBottom - diff,
 								  old_rect.getWidth(), old_rect.getHeight());
 		childSetRect("dimensions", new_rect);
 	}
-	childSetText("uuid", getItemID().asString());
-	childSetText("uploader", getItemCreatorName());
-	childSetText("uploadtime", getItemCreationDate());
 
 
+	if (!mCopyToInv) 
+	{
+		const LLInventoryItem* item = getItem();
+		
+		if (item)
+		{
+			mCreatorKey = item->getCreatorUUID();
+			childSetCommitCallback("desc", LLPreview::onText, this);
+			childSetText("desc", item->getDescription());
+			childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+			childSetText("uuid", getItemID().asString());
+			childSetText("uploader", getItemCreatorName());
+			childSetText("uploadtime", getItemCreationDate());
+		}
+	}
+	
 	childSetCommitCallback("combo_aspect_ratio", onAspectRatioCommit, this);
 	LLComboBox* combo = getChild<LLComboBox>("combo_aspect_ratio");
 	combo->setCurrentByIndex(0);
+}
+
+void LLPreviewTexture::callbackLoadAvatarName(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* data)
+{
+	if (!sInstance) return;
+	std::ostringstream fullname;
+	fullname << first << " " << last;
+	sInstance->childSetText("uploader", fullname.str());
 }
 
 void LLPreviewTexture::draw()
@@ -268,7 +281,11 @@ void LLPreviewTexture::draw()
 			// Pump the texture priority
 			F32 pixel_area = mLoadingFullImage ? (F32)MAX_IMAGE_AREA  : (F32)(interior.getWidth() * interior.getHeight() );
 			mImage->addTextureStats( pixel_area );
-			
+			if(pixel_area > 0.f)
+			{
+				//boost the previewed image priority to the highest to make it to get loaded first.
+				mImage->setAdditionalDecodePriority(1.0f) ;
+			}
 			// Don't bother decoding more than we can display, unless
 			// we're loading the full image.
 			if (!mLoadingFullImage)
@@ -319,7 +336,7 @@ void LLPreviewTexture::draw()
 					}
 				}
 			}
-			else if( !mSavedFileTimer.hasExpired() )
+			else if(!mSavedFileTimer.hasExpired())
 			{
 				// *TODO: Translate
 				LLFontGL::getFontSansSerif()->renderUTF8(std::string("File Saved"), 0,
@@ -448,6 +465,7 @@ std::string LLPreviewTexture::getItemCreatorName()
 	{
 		std::string name;
 		gCacheName->getFullName(item->getCreatorUUID(), name);
+		mCreatorKey = item->getCreatorUUID();
 		return name;
 	}
 	return "Unknown";
@@ -470,12 +488,11 @@ void LLPreviewTexture::updateDimensions()
 	S32 vert_pad = PREVIEW_HEADER_SIZE + 2 * CLIENT_RECT_VPAD + LLPANEL_BORDER_WIDTH;	
 	S32 max_client_width = gViewerWindow->getWindowWidth() - horiz_pad;
 	S32 max_client_height = gViewerWindow->getWindowHeight() - vert_pad;
-	
-	if (mAspectRatio > 0.f) 
-		client_height = llceil((F32)client_width / mAspectRatio);
+
+	if (mAspectRatio > 0.f) client_height = llceil((F32)client_width / mAspectRatio);
 
 	while ((client_width > max_client_width) ||
-	       (client_height > max_client_height ) )
+	       (client_height > max_client_height ))
 	{
 		client_width /= 2;
 		client_height /= 2;
@@ -603,6 +620,13 @@ bool LLPreviewTexture::setAspectRatio(const F32 width, const F32 height)
 	return (ratio == mAspectRatio);
 }
 
+void LLPreviewTexture::onClickProfile(void* userdata)
+{
+	LLPreviewTexture* self = (LLPreviewTexture*) userdata;
+	LLUUID key =  self->mCreatorKey;
+	if (!key.isNull()) LLFloaterAvatarInfo::showFromDirectory(key);
+}
+
 void LLPreviewTexture::onAspectRatioCommit(LLUICtrl* ctrl, void* userdata)
 {
 	LLPreviewTexture* self = (LLPreviewTexture*) userdata;
@@ -630,6 +654,7 @@ void LLPreviewTexture::loadAsset()
 {
 	mImage = gImageList.getImage(mImageID, MIPMAP_TRUE, FALSE);
 	mImage->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
+	mImage->forceToSaveRawImage(0) ;
 	mAssetStatus = PREVIEW_ASSET_LOADING;
 }
 

@@ -462,9 +462,47 @@ void LLFloaterTools::refresh()
 
 	// Refresh object and prim count labels
 	LLLocale locale(LLLocale::USER_LOCALE);
-	std::string obj_count_string;
-	LLResMgr::getInstance()->getIntegerString(obj_count_string, LLSelectMgr::getInstance()->getSelection()->getRootObjectCount());
-	childSetTextArg("obj_count",  "[COUNT]", obj_count_string);	
+	// Added in Link Num value -HgB
+	S32 object_count = LLSelectMgr::getInstance()->getSelection()->getRootObjectCount();
+	S32 prim_count = LLSelectMgr::getInstance()->getEditSelection()->getObjectCount();
+	std::string value_string;
+	std::string desc_string;
+	if ((gSavedSettings.getBOOL("EditLinkedParts"))&&(prim_count == 1)) //Selecting a single prim in "Edit Linked" mode, show link number
+	{
+		desc_string = "Link number:";
+
+		LLViewerObject* selected = LLSelectMgr::getInstance()->getSelection()->getFirstObject();
+		if (selected && selected->getRootEdit())
+		{
+			LLViewerObject::child_list_t children = selected->getRootEdit()->getChildren();
+			if (children.empty())
+			{
+				value_string = "0"; // An unlinked prim is "link 0".
+			}
+			else 
+			{
+				children.push_front(selected->getRootEdit()); // need root in the list too
+				S32 index = 0;
+				for (LLViewerObject::child_list_t::iterator iter = children.begin(); iter != children.end(); ++iter)
+				{
+					index++;
+					if ((*iter)->isSelected())
+					{
+						LLResMgr::getInstance()->getIntegerString(value_string, index);
+						break;
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		desc_string = "Selected objects:";
+		LLResMgr::getInstance()->getIntegerString(value_string, object_count);
+	}
+	childSetTextArg("link_num_obj_count",  "[DESC]", desc_string);	
+	childSetTextArg("link_num_obj_count",  "[NUM]", value_string);
+	
 	std::string prim_count_string;
 	LLResMgr::getInstance()->getIntegerString(prim_count_string, LLSelectMgr::getInstance()->getSelection()->getObjectCount());
 	childSetTextArg("prim_count", "[COUNT]", prim_count_string);
@@ -746,8 +784,8 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 		mSliderDozerForce	->setVisible( land_visible );
 		childSetVisible("Strength:", land_visible);
 	}
-
-	childSetVisible("obj_count", !land_visible);
+	
+	childSetVisible("link_num_obj_count", !land_visible);
 	childSetVisible("prim_count", !land_visible);
 	mTab->setVisible(!land_visible);
 	mPanelLandInfo->setVisible(land_visible);

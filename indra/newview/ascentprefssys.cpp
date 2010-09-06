@@ -38,6 +38,8 @@
 #include "llvoavatar.h"
 #include "llhudeffectlookat.h"
 #include "llagent.h"
+#include "llaudioengine.h" //For POWER USER affirmation.
+#include "llfloaterchat.h" //For POWER USER affirmation.
 #include "llstartup.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
@@ -74,6 +76,7 @@ private:
 	//always show Build
 	BOOL mAlwaysShowFly;
 	//Disable camera minimum distance
+	BOOL mPowerUser;
 	//Chat/IM -----------------------------------------------------------------------------
 	BOOL mHideNotificationsInChat;
 	BOOL mPlayTypingSound;
@@ -152,6 +155,7 @@ void LLPrefsAscentSysImpl::refreshValues()
 	//always show Build
 	mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
 	//Disable camera minimum distance
+	mPowerUser					= gSavedSettings.getBOOL("AscentPowerfulWizard");
 	//Chat/IMs ----------------------------------------------------------------------------
 	mHideNotificationsInChat	= gSavedSettings.getBOOL("HideNotificationsInChat");
 	mHideTypingNotification		= gSavedSettings.getBOOL("AscentHideTypingNotification");
@@ -199,6 +203,8 @@ void LLPrefsAscentSysImpl::refresh()
 	//always show Build
 	childSetValue("always_fly_check",				mAlwaysShowFly);
 	//Disable camera minimum distance
+	childSetValue("power_user_check",				mPowerUser);
+	childSetValue("power_user_confirm_check",		mPowerUser);
 	//Chat --------------------------------------------------------------------------------
 	childSetValue("hide_notifications_in_chat_check", mHideNotificationsInChat);
 	childSetValue("play_typing_sound_check",		mPlayTypingSound);
@@ -341,7 +347,17 @@ void LLPrefsAscentSysImpl::apply()
 	//always show Build
 	gSavedSettings.setBOOL("AscentFlyAlwaysEnabled",	childGetValue("always_fly_check"));
 	//Disable camera minimum distance
-
+	gSavedSettings.setBOOL("AscentPowerfulWizard",		(childGetValue("power_user_check") && childGetValue("power_user_confirm_check")));
+	if (gSavedSettings.getBOOL("AscentPowerfulWizard") && !mPowerUser)
+	{
+		LLVector3d lpos_global = gAgent.getPositionGlobal();
+		gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
+		LLChat chat;
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+		chat.mText = llformat("You are bestowed with powers beyond mortal comprehension.\nUse your newfound abilities wisely.\nUnlocked:\n- Animation Priority up to 7 - Meant for animations that should override anything and everything at all times. DO NOT USE THIS FOR GENERAL ANIMATIONS.\n- Right click > Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.\n- Right Click > Explode objects - Turns and object physical, temporary, and delinks it.");
+		LLFloaterChat::addChat(chat);
+	}
+		//
 	//Chat/IM ------------------------------------------------------------------------------
 	//Use Vertical IMs
 	//Script count
@@ -438,6 +454,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
 	
 	refreshValues();
+	refresh();
 }
 
 //---------------------------------------------------------------------------
