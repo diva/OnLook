@@ -82,86 +82,94 @@
 	     name="category_combo"
 	     tool_tip="Category -- select the category that best describes this report"
 	     width="356">
-<combo_item name="Select_category" value="0">
-Select category
-</combo_item><combo_item name="Age__Age_play" value="31">
-Age > Age play
-</combo_item><combo_item name="Age__Adult_resident_on_Teen_Second_Life" value="32">
-Age > Adult resident on Teen Second Life
-</combo_item><combo_item name="Age__Underage_resident_outside_of_Teen_Second_Life" value="33">
-Age > Underage resident outside of Teen Second Life
-</combo_item><combo_item name="Assault__Combat_sandbox___unsafe_area" value="34">
-Assault > Combat sandbox / unsafe area
-</combo_item><combo_item name="Assault__Safe_area" value="35">
-Assault > Safe area
-</combo_item><combo_item name="Assault__Weapons_testing_sandbox" value="36">
-Assault > Weapons testing sandbox
-</combo_item><combo_item name="Commerce__Failure_to_deliver_product_or_service" value="38">
-Commerce > Failure to deliver product or service
-</combo_item><combo_item name="Disclosure__Real_world_information" value="39">
-Disclosure > Real world information
-</combo_item><combo_item name="Disclosure__Remotely_monitoring chat" value="40">
-Disclosure > Remotely monitoring chat
-</combo_item><combo_item name="Disclosure__Second_Life_information_chat_IMs" value="41">
-Disclosure > Second Life information/chat/IMs
-</combo_item><combo_item name="Disturbing_the_peace__Unfair_use_of_region_resources" value="42">
-Disturbing the peace > Unfair use of region resources
-</combo_item><combo_item name="Disturbing_the_peace__Excessive_scripted_objects" value="43">
-Disturbing the peace > Excessive scripted objects
-</combo_item><combo_item name="Disturbing_the_peace__Object_littering" value="44">
-Disturbing the peace > Object littering
-</combo_item><combo_item name="Disturbing_the_peace__Repetitive_spam" value="45">
-Disturbing the peace > Repetitive spam
-</combo_item><combo_item name="Disturbing_the_peace__Unwanted_advert_spam" value="46">
-Disturbing the peace > Unwanted advert spam
-</combo_item><combo_item name="Fraud__L$" value="47">
-Fraud > L$
-</combo_item><combo_item name="Fraud__Land" value="48">
-Fraud > Land
-</combo_item><combo_item name="Fraud__Pyramid_scheme_or_chain_letter" value="49">
-Fraud > Pyramid scheme or chain letter
-</combo_item><combo_item name="Fraud__US$" value="50">
-Fraud > US$
-</combo_item><combo_item name="Harassment__Advert_farms___visual_spam" value="51">
-Harassment > Advert farms / visual spam
-</combo_item><combo_item name="Harassment__Defaming_individuals_or_groups" value="52">
-Harassment > Defaming individuals or groups
-</combo_item><combo_item name="Harassment__Impeding_movement" value="53">
-Harassment > Impeding movement
-</combo_item><combo_item name="Harassment__Sexual_harassment" value="54">
-Harassment > Sexual harassment
-</combo_item><combo_item name="Harassment__Solicting_inciting_others_to_violate_ToS" value="55">
-Harassment > Solicting/inciting others to violate ToS
-</combo_item><combo_item name="Harassment__Verbal_abuse" value="56">
-Harassment > Verbal abuse
-</combo_item><combo_item name="Indecency__Broadly_offensive_content_or_conduct" value="57">
-Indecency > Broadly offensive content or conduct
-<!--  58 = deprecated by AO -->
-</combo_item><combo_item name="Indecency__Inappropriate_avatar_name" value="59">
-Indecency > Inappropriate avatar name
-</combo_item><combo_item name="Indecency__Mature_content_in_PG_region" value="60">
-Indecency > Inappropriate content or conduct in a PG region
-</combo_item><combo_item name="Indecency__Inappropriate_content_in_Mature_region" value="69">
-Indecency > Inappropriate content or conduct in a Mature region
-</combo_item><combo_item name="Intellectual_property_infringement_Content_Removal" value="66">
-Intellectual property infringement > Content Removal
-</combo_item><combo_item name="Intellectual_property_infringement_CopyBot_or_Permissions_Exploit" value="37">
-Intellectual property infringement > CopyBot or Permissions Exploit
-</combo_item><combo_item name="Intolerance" value="61">
-Intolerance
-</combo_item><combo_item name="Land__Abuse_of_sandbox_resources" value="62">
-Land > Abuse of sandbox resources
-</combo_item><combo_item name="Land__Encroachment__Objects_textures" value="63">
-Land > Encroachment > Objects/textures
-</combo_item><combo_item name="Land__Encroachment__Particles" value="64">
-Land > Encroachment > Particles
-</combo_item><combo_item name="Land__Encroachment__Trees_plants" value="65">
-Land > Encroachment > Trees/plants
-</combo_item><combo_item name="Wagering_gambling" value="67">
-Wagering/gambling
-</combo_item><combo_item name="Other" value="68">
-Other
-</combo_item>
+    <combo_item name="Select_category" value="0">
+    Select category
+    </combo_item><combo_item name="Age__Age_play" value="31">
+    Age > Age play
+    </combo_item><combo_item name="Age__Adult_resident_on_Teen_Second_Life" value="32">
+    Age > Adult resident on Teen Second Life
+    </combo_item><combo_item name="Age__Underage_resident_outside_of_Teen_Second_Life" value="33">
+    Age > Underage resident outside of Teen Second Life
+    </combo_item><combo_item name="Assault__Combat_sandbox___unsafe_area" value="34">
+    Assault > Combat sandbox / unsafe area
+    </combo_item><combo_item name="Assault__Safe_area" value="35">
+    Assault > Safe area
+    </combo_item><combo_item name="Assault__Weapons_testing_sandbox" value="36">
+    Assault > Weapons testing sandbox
+    </combo_item><combo_item name="Commerce__Failure_to_deliver_product_or_service" value="38">
+    Commerce > Failure to deliver product or service
+    </combo_item><combo_item name="Disclosure__Real_world_information" value="39">
+    Disclosure > Real world information
+    </combo_item><combo_item name="Disclosure__Remotely_monitoring chat" value="40">
+    Disclosure > Remotely monitoring chat
+    </combo_item><combo_item name="Disclosure__Second_Life_information_chat_IMs" value="41">
+    Disclosure > Second Life information/chat/IMs
+    </combo_item><combo_item name="Disturbing_the_peace__Unfair_use_of_region_resources" value="42">
+    Disturbing the peace > Unfair use of region resources
+    </combo_item><combo_item name="Disturbing_the_peace__Excessive_scripted_objects" value="43">
+    Disturbing the peace > Excessive scripted objects
+    </combo_item><combo_item name="Disturbing_the_peace__Object_littering" value="44">
+    Disturbing the peace > Object littering
+    </combo_item><combo_item name="Disturbing_the_peace__Repetitive_spam" value="45">
+    Disturbing the peace > Repetitive spam
+    </combo_item><combo_item name="Disturbing_the_peace__Unwanted_advert_spam" value="46">
+    Disturbing the peace > Unwanted advert spam
+    </combo_item><combo_item name="Fraud__L$" value="47">
+    Fraud > L$
+    </combo_item><combo_item name="Fraud__Land" value="48">
+    Fraud > Land
+    </combo_item><combo_item name="Fraud__Pyramid_scheme_or_chain_letter" value="49">
+    Fraud > Pyramid scheme or chain letter
+    </combo_item><combo_item name="Fraud__US$" value="50">
+    Fraud > US$
+    </combo_item><combo_item name="Harassment__Advert_farms___visual_spam" value="51">
+    Harassment > Advert farms / visual spam
+    </combo_item><combo_item name="Harassment__Defaming_individuals_or_groups" value="52">
+    Harassment > Defaming individuals or groups
+    </combo_item><combo_item name="Harassment__Impeding_movement" value="53">
+    Harassment > Impeding movement
+    </combo_item><combo_item name="Harassment__Sexual_harassment" value="54">
+    Harassment > Sexual harassment
+    </combo_item><combo_item name="Harassment__Solicting_inciting_others_to_violate_ToS" value="55">
+    Harassment > Solicting/inciting others to violate ToS
+    </combo_item><combo_item name="Harassment__Verbal_abuse" value="56">
+    Harassment > Verbal abuse
+    </combo_item><combo_item name="Indecency__Broadly_offensive_content_or_conduct" value="57">
+    Indecency > Broadly offensive content or conduct
+    <!--  58 = deprecated by AO -->
+    </combo_item><combo_item name="Indecency__Inappropriate_avatar_name" value="59">
+    Indecency > Inappropriate avatar name
+    </combo_item><combo_item name="Indecency__Mature_content_in_PG_region" value="60">
+    Indecency > Inappropriate content or conduct in a PG region
+    </combo_item><combo_item name="Indecency__Inappropriate_content_in_Mature_region" value="69">
+    Indecency > Inappropriate content or conduct in a Mature region
+    </combo_item><combo_item name="Intellectual_property_infringement_Content_Removal" value="66">
+    Intellectual property infringement > Content Removal
+    </combo_item><combo_item name="Intellectual_property_infringement_CopyBot_or_Permissions_Exploit" value="37">
+    Intellectual property infringement > CopyBot or Permissions Exploit
+    </combo_item><combo_item name="Intolerance" value="61">
+    Intolerance
+    </combo_item><combo_item name="Land__Abuse_of_sandbox_resources" value="62">
+    Land > Abuse of sandbox resources
+    </combo_item><combo_item name="Land__Encroachment__Objects_textures" value="63">
+    Land > Encroachment > Objects/textures
+    </combo_item><combo_item name="Land__Encroachment__Particles" value="64">
+    Land > Encroachment > Particles
+    </combo_item><combo_item name="Land__Encroachment__Trees_plants" value="65">
+    Land > Encroachment > Trees/plants
+    </combo_item><combo_item name="Wagering_gambling" value="67">
+    Wagering/gambling
+    </combo_item>
+    <combo_item name="Other" value="68">
+      Other
+    </combo_item>
+    </combo_item>
+    <combo_item name="Ridiculous1" value="0">
+      User keeps licking finger and touching me
+    </combo_item>
+    <combo_item name="Ridiculous2" value="0">
+      User won't stay on their side of the car
+    </combo_item>
 
 	</combo_box>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
