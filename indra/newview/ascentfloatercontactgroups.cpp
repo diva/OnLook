@@ -22,6 +22,29 @@
  *	   [_]..........................\  \   /  /
 */
 
+/*
+                      __---__
+                   _-       _--______
+              __--( /     \ )XXXXXXXXXXXXX_
+            --XXX(   O   O  )XXXXXXXXXXXXXXX-
+           /XXX(       U     )        XXXXXXX\
+         /XXXXX(              )--_  XXXXXXXXXXX\
+        /XXXXX/ (      O     )   XXXXXX   \XXXXX\
+        XXXXX/   /            XXXXXX   \__ \XXXXX----
+        XXXXXX__/          XXXXXX         \__----  -
+---___  XXX__/          XXXXXX      \__         ---
+  --  --__/   ___/\  XXXXXX            /  ___---=
+    -_    ___/    XXXXXX              '--- XXXXXX
+      --\/XXX\ XXXXXX                      /XXXXX
+        \XXXXXXXXX                        /XXXXX/
+         \XXXXXX                        _/XXXXX/
+           \XXXXX--__/              __-- XXXX/
+            --XXXXXXX---------------  XXXXX--
+               \XXXXXXXXXXXXXXXXXXXXXXXX-
+                 --XXXXXXXXXXXXXXXXXX-
+			   CODE GHOSTS OFFICIALLY BUSTED
+*/
+
 #include "llviewerprecompiledheaders.h"
 
 #include "ascentfloatercontactgroups.h"
@@ -73,11 +96,12 @@ void ASFloaterContactGroups::populateGroupList()
 		gDirUtilp->getNextFileInDir(gDirUtilp->getPerAccountChatLogsDir(),"*",name,false);//stupid hack to clear last file search
 		scroller->clear();
 
-		std::string path_name(gDirUtilp->getPerAccountChatLogsDir());
+		std::string path_name(gDirUtilp->getPerAccountChatLogsDir() + gDirUtilp->getDirDelimiter());
+		S32 count = gDirUtilp->countFilesInDir(path_name, "*.grp");
 		bool found = true;	
-		LLChat msg("Searching: " + path_name);
+		LLChat msg(count + " total files in folder " + path_name);
 		LLFloaterChat::addChat(msg);
-		while(found = gDirUtilp->getNextFileInDir(path_name, "*", name, false)) 
+		while(found = gDirUtilp->getNextFileInDir(path_name, "*.grp", name, false)) 
 		{
 			if ((name == ".") || (name == "..")) continue;
 
