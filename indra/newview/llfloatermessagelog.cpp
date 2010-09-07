@@ -12,6 +12,20 @@
 #include "llmenugl.h"
 
 #include "llagent.h"
+
+
+////////////////////////////////
+// LLNetListItem
+//////////////////////////////// 	
+LLNetListItem::LLNetListItem(LLUUID id)
+:	mID(id),
+	mAutoName(TRUE),
+	mName("No name"),
+	mPreviousRegionName(""),
+	mCircuitData(NULL)	 	
+{
+}
+
 ////////////////////////////////
 // LLFloaterMessageLogItem
 ////////////////////////////////

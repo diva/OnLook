@@ -26,6 +26,8 @@ public:
 	U32 mFlags;
 	std::string getFull(BOOL show_header = TRUE);
 	BOOL isOutgoing();
+	void refreshNetList();
+
 private:
 	static LLTemplateMessageReader* sTemplateMessageReader;
 	static std::string getString(LLTemplateMessageReader* readerp, const char* block_name, S32 block_num, const char* var_name, e_message_variable_type var_type, BOOL &returned_hex, BOOL summary_mode = FALSE);
