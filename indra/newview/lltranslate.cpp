@@ -66,10 +66,10 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 //<edit>
     std::string user_agent = llformat("%s %d.%d.%d (%d)",
             gSavedSettings.getString("SpecifiedChannel").c_str(),
-            gSavedSettings.getU32("SpecifiedVersionMaj"),
-            gSavedSettings.getU32("SpecifiedVersionMin"),
-            gSavedSettings.getU32("SpecifiedVersionPatch"),
-            gSavedSettings.getU32("SpecifiedVersionBuild") );
+            LL_VERSION_MAJOR,
+            LL_VERSION_MINOR,
+            LL_VERSION_PATCH,
+            LL_VERSION_BUILD );
 //</edit>
 
 	if (!m_Header.size())

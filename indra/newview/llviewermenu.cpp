@@ -244,7 +244,6 @@
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
 #include "llfloatermessagelog.h"
-#include "llfloatermessagebuilder.h"
 #include "llao.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
@@ -433,7 +432,6 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
 void handle_open_message_log(void*);
-void handle_open_message_builder(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
@@ -756,11 +754,8 @@ void init_menus()
 	menu->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
 	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
 										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-	if (gSavedSettings.getBOOL("AscentPowerfulWizard"))
-	{
-		menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));
-		menu->append(new LLMenuItemCallGL(  "Message Builder", &handle_open_message_builder, NULL));	
-	}
+	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
+
 	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
 											&handle_sounds_explorer, NULL));
 	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
@@ -3396,11 +3391,6 @@ void handle_reopen_with_hex_editor(void*)
 void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
-}
-
-void handle_open_message_builder(void*)
-{
-	LLFloaterMessageBuilder::show("");
 }
 
 void handle_edit_ao(void*)

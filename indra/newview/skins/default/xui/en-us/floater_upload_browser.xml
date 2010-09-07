@@ -16,7 +16,7 @@
 		width="20" />
 	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 		bottom="-37" drop_shadow_visible="true" enabled="true" follows="left|top"
-		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="210"
+		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="213"
 		mouse_opaque="true" name="drive_label" v_pad="0" width="128">
 		Drive:
 	</text>
@@ -32,18 +32,22 @@
 			Them
 		</combo_item>
 	</combo_box>
-	<scroll_list bottom="30" can_resize="true" column_padding="0" draw_heading="true"
-		follows="left|top|bottom" left="5" multi_select="true"
+	<line_editor bottom_delta="-22" follows="left|top" font="SansSerifSmall" height="18" max_length="255"
+		width="255" name="dir_path" left="10" select_all_on_focus_received="true" select_on_focus="true"/>
+	<button bottom_delta="-1" follows="top|left" height="18" label=">" left_delta="257" 
+		name="directory_button" tool_tip="Go to this filepath" width="20" />
+	<scroll_list bottom="25" can_resize="true" column_padding="0" draw_heading="true"
+		follows="left|top|bottom" left="7" multi_select="true"
 		name="file_list" width="280" search_column="1"
 		tool_tip="Hold shift or control while clicking to select multiple files"
-		top="-46">
+		top="-68">
 		<column name="file_type" width="0" />
 		<column image="ff_edit_mine_button.tga" name="icon_inventory_type"
 			tool_tip="Inventory Type" width="20" />
 		<column dynamicwidth="true" label="Filename" name="file_name" tool_tip="Filename" />
 	</scroll_list>
 	<text type="string" length="50" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-		bottom="12" drop_shadow_visible="true" enabled="true" follows="left|bottom"
+		bottom="9" drop_shadow_visible="true" enabled="true" follows="left|bottom"
 		font="SansSerifSmall" h_pad="0" halign="left" height="12" left="10"
 		mouse_opaque="true" name="filter_label" v_pad="0" width="128">
 		Filter:

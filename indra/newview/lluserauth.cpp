@@ -138,10 +138,10 @@ void LLUserAuth::authenticate(
 	
 	XMLRPC_VectorAppendString(params, "version", std::string(
 		gSavedSettings.getString("SpecifiedChannel") + " " +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionBuild"))
+		llformat("%d", LL_VERSION_MAJOR) + "." +
+		llformat("%d", LL_VERSION_MINOR) + "." +
+		llformat("%d", LL_VERSION_PATCH) + "." +
+		llformat("%d", LL_VERSION_BUILD)
 	).c_str(), 0); // Includes channel name
 	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
@@ -240,10 +240,10 @@ void LLUserAuth::authenticate(
 	
 	XMLRPC_VectorAppendString(params, "version", std::string(
 		gSavedSettings.getString("SpecifiedChannel") + " " +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMaj")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionMin")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionPatch")) + "." +
-		llformat("%d", gSavedSettings.getU32("SpecifiedVersionBuild"))
+		llformat("%d", LL_VERSION_MAJOR) + "." +
+		llformat("%d", LL_VERSION_MINOR) + "." +
+		llformat("%d", LL_VERSION_PATCH) + "." +
+		llformat("%d", LL_VERSION_BUILD)
 	).c_str(), 0); // Includes channel name
 	
 	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);

@@ -929,9 +929,9 @@ bool idle_startup()
 			if(!start_messaging_system(
 				   message_template_path,
 				   port,
-				   gSavedSettings.getU32("SpecifiedVersionMaj"),
-				   gSavedSettings.getU32("SpecifiedVersionMin"),
-				   gSavedSettings.getU32("SpecifiedVersionPatch"),
+				   LL_VERSION_MAJOR,
+				   LL_VERSION_MINOR,
+				   LL_VERSION_PATCH,
 				   FALSE,
 				   std::string(),
 				   responder,
@@ -3898,9 +3898,8 @@ bool update_dialog_callback(const LLSD& notification, const LLSD& response)
 	// userserver no longer exists.
 	query_map["userserver"] = LLViewerLogin::getInstance()->getGridLabel();
 	// <edit>
-	//query_map["channel"] = gSavedSettings.getString("VersionChannelName");
-	query_map["channel"] = gSavedSettings.getString("SpecifiedChannel");
-	// </edit>
+	query_map["channel"] = LL_CHANNEL;
+
 	// *TODO constantize this guy
 	// *NOTE: This URL is also used in win_setup/lldownloader.cpp
 	LLURI update_url = LLURI::buildHTTP("secondlife.com", 80, "update.php", query_map);

@@ -304,10 +304,8 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 
 	// childSetAction("quit_btn", onClickQuit, this);
 
-	// <edit>
-	//std::string channel = gSavedSettings.getString("VersionChannelName");
-	std::string channel = gSavedSettings.getString("SpecifiedChannel");
-	// </edit>
+	std::string channel = LL_CHANNEL;
+
 	std::string version = llformat("%d.%d.%d (%d)",
 		LL_VERSION_MAJOR,
 		LL_VERSION_MINOR,
@@ -971,9 +969,9 @@ void LLPanelLogin::loadLoginPage()
 // <edit>
 	// Channel and Version
 	std::string version = llformat("%d.%d.%d (%d)",
-						gSavedSettings.getU32("SpecifiedVersionMaj"), gSavedSettings.getU32("SpecifiedVersionMin"), gSavedSettings.getU32("SpecifiedVersionPatch"), gSavedSettings.getU32("SpecifiedVersionBuild"));
+						LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD);
 
-	//char* curl_channel = curl_escape(gSavedSettings.getString("VersionChannelName").c_str(), 0);
+	//char* curl_channel = curl_escape(LL_CHANNEL.c_str(), 0);
 	char* curl_channel = curl_escape(gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
 	// </edit>
 	char* curl_version = curl_escape(version.c_str(), 0);
@@ -1138,17 +1136,6 @@ void LLPanelLogin::onClickConnect(void *)
 	if (sInstance && sInstance->mCallback)
 	{
 
-		
-		U32 specified_ver_maj = (U32)sInstance->getChild<LLSpinCtrl>("vermaj_spin")->getValue().asInteger();
-		gSavedSettings.setU32("SpecifiedVersionMaj", specified_ver_maj);
-		U32 specified_ver_min = (U32)sInstance->getChild<LLSpinCtrl>("vermin_spin")->getValue().asInteger();
-		gSavedSettings.setU32("SpecifiedVersionMin", specified_ver_min);
-		U32 specified_ver_patch = (U32)sInstance->getChild<LLSpinCtrl>("verpatch_spin")->getValue().asInteger();
-		gSavedSettings.setU32("SpecifiedVersionPatch", specified_ver_patch);
-		U32 specified_ver_build = (U32)sInstance->getChild<LLSpinCtrl>("verbuild_spin")->getValue().asInteger();
-		gSavedSettings.setU32("SpecifiedVersionBuild", specified_ver_build);
-		
-		// </edit>
 		// tell the responder we're not here anymore
 		if ( gResponsePtr )
 			gResponsePtr->setParent( 0 );
