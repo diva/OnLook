@@ -98,6 +98,20 @@
         <key>name</key>
             <string>Day Oh proxy</string>
         </map>
+	<key>28b4da3f-5f9b-f44e-1387-6a115ab482c5</key>
+    <map>
+        <key>color</key>
+		<array>
+			<real>0.64314000000000004</real>
+			<real>0.89803999999999995</real>
+			<real>0.99607999999999997</real>
+			<real>1</real>
+		</array>
+		<key>multiple</key>
+		<real>1</real>
+        <key>name</key>
+        <string>Diamond</string>
+    </map>
 	<key>072343d0-1ce9-0952-4106-5312af4a789a</key>
         <map>
         <key>color</key>
@@ -406,20 +420,6 @@
         <key>name</key>
             <string>NeilLife</string>
         </map>
-    <key>e6f9c019-8783-dc3e-b265-41f1510333fc</key>
-        <map>
-        <key>color</key>
-            <array>
-                <real>2</real>
-                <real>2</real>
-                <real>0</real>
-                <real>1</real>
-            </array>
-        <key>multiple</key>
-            <real>0</real>
-        <key>name</key>
-            <string>NeilLife</string>
-        </map>
     <key>f5a48821-9a98-d09e-8d6a-50cc08ba9a47</key>
         <map>
         <key>color</key>
@@ -447,6 +447,34 @@
             <real>2</real>
         <key>name</key>
             <string>NeilLife</string>
+        </map>
+	<key>e6f9c019-8783-dc3e-b265-41f1510333fc</key>
+        <map>
+        <key>color</key>
+            <array>
+                <real>2</real>
+                <real>2</real>
+                <real>0</real>
+                <real>1</real>
+            </array>
+        <key>multiple</key>
+            <real>0</real>
+        <key>name</key>
+            <string>Onyx</string>
+        </map>
+	<key>ed63fbd0-589e-fe1d-a3d0-16905efaa96b</key>
+        <map>
+        <key>color</key>
+            <array>
+                <real>1</real>
+                <real>0</real>
+                <real>0</real>
+                <real>1</real>
+            </array>
+        <key>multiple</key>
+            <real>2</real>
+        <key>name</key>
+            <string>Phoenix</string>
         </map>
 	<key>f3fd74a6-fee7-4b2f-93ae-ddcb5991da04</key>
         <map>

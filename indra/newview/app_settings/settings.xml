@@ -2,6 +2,17 @@
 <llsd>
 <map>
 	<!--Expanded settings from Vanilla SL -->
+	<key>AscentShowLookAt</key>
+	<map>
+		<key>Comment</key>
+		<string>Avatar position modifier (X)</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<real>0</real>
+	</map>
 	<key>AscentAvatarXModifier</key>
 	<map>
 		<key>Comment</key>
@@ -35,17 +46,17 @@
 		<key>Value</key>
 		<real>0.0</real>
 	</map>
-  <key>AscentShowFriendsTag</key>
-  <map>
-    <key>Comment</key>
-    <string>Show friends client tags as (Friend), and colorize them specially.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>Boolean</string>
-    <key>Value</key>
-    <integer>1</integer>
-  </map>
+	<key>AscentShowFriendsTag</key>
+	<map>
+		<key>Comment</key>
+		<string>Show friends client tags as (Friend), and colorize them specially.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
       <key>Comment</key>
@@ -379,11 +390,11 @@
 	<key>InventorySortOrder</key>
         <map>
         <key>Comment</key>
-            <string>Specifies sort key for inventory items (+0 = name, +1 = date, +2 = folders always by name, +4 = system folders to top)</string>
+        <string>Specifies sort key for inventory items (+0 = name, +1 = date, +2 = folders always by name, +4 = system folders to top)</string>
         <key>Type</key>
-            <string>U32</string>
+        <string>U32</string>
         <key>Value</key>
-            <integer>3</integer>
+        <integer>3</integer>
         </map>
 	<key>AO.Enabled</key>
 	<map>
@@ -646,6 +657,17 @@
 		<string>Boolean</string>
 		<key>Value</key>
 		<integer>0</integer>
+	</map>
+	<key>AscentUploadFolder</key>
+	<map>
+		<key>Comment</key>
+		<string>Active folder for the Uploader</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>None</string>
 	</map>
 	<key>AscentUseCustomTag</key>
 	<map>
@@ -13073,7 +13095,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>Second Life Release</string>
+      <string>Ascent Viewer Release</string>
     </map>
     <key>VertexShaderEnable</key>
     <map>
