@@ -22,8 +22,8 @@
 	     halign="center" height="20" label="Default" label_selected="Default"
 	     left="4" mouse_opaque="true" name="Default" scale_image="true" width="64" />
 	<button bottom="-228" enabled="false" follows="left|bottom" font="SansSerifSmall"
-	     halign="center" height="20" label="None" label_selected="None" left="72"
-	     mouse_opaque="true" name="None" scale_image="true" width="64" />
+	     halign="center" height="20" label="Alpha" label_selected="Alpha" left="72"
+	     mouse_opaque="true" name="Alpha" scale_image="true" width="64" />
 	<button bottom="-252" enabled="true" follows="left|bottom" font="SansSerifSmall"
 	     halign="center" height="20" label="Blank" label_selected="Blank" left="4"
 	     mouse_opaque="true" name="Blank" scale_image="true" width="64" />

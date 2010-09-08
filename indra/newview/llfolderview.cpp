@@ -349,7 +349,7 @@ void LLFolderViewItem::refresh()
 	LLStringUtil::toUpper(searchable_label_desc);
 	LLStringUtil::toUpper(searchable_label_all);
 
-		if (mSearchableLabel.compare(searchable_label) ||
+	if (mSearchableLabel.compare(searchable_label) ||
 		mSearchableLabelCreator.compare(searchable_label_creator) ||
 		mSearchableLabelDesc.compare(searchable_label_desc) || 
 		mSearchableLabelAll.compare(searchable_label_all))
@@ -4746,7 +4746,7 @@ std::string::size_type LLInventoryFilter::getStringMatchOffset() const
 BOOL LLInventoryFilter::isNotDefault()
 {
 	return mFilterOps.mFilterTypes != mDefaultFilterOps.mFilterTypes 
-		|| mFilterSubString.size() 
+		|| mFilterSubString.size()
 		|| mFilterWorn
 		|| mFilterOps.mPermissions != mDefaultFilterOps.mPermissions
 		|| mFilterOps.mMinDate != mDefaultFilterOps.mMinDate 
