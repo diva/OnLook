@@ -137,7 +137,9 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	}
 	else if (ctrl->getName() == "show_look_at_check")
 	{
-		LLHUDEffectLookAt::sDebugLookAt = self->childGetValue("show_look_at_check").asBoolean();
+		BOOL lookAt = self->childGetValue("show_look_at_check").asBoolean();
+		LLHUDEffectLookAt::sDebugLookAt = lookAt;
+		gSavedSettings.setBOOL("AscentShowLookAt", lookAt);
 	}
 }
 

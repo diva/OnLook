@@ -111,6 +111,7 @@
   <texture name="inv_folder_notecard.tga"/>
   <texture name="inv_folder_object.tga"/>
   <texture name="inv_folder_plain_closed.tga"/>
+  <texture name="inv_folder_plain_open.tga"/>
   <texture name="inv_folder_script.tga"/>
   <texture name="inv_folder_snapshot.tga"/>
   <texture name="inv_folder_sound.tga"/>

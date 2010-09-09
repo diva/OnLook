@@ -74,7 +74,7 @@
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"
-
+	
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -133,6 +133,7 @@
 
 #include "llworld.h"
 #include "llhudeffecttrail.h"
+#include "llhudeffectlookat.h"
 #include "llvectorperfoptions.h"
 #include "llurlsimstring.h"
 #include "llwatchdog.h"
@@ -666,6 +667,7 @@ bool LLAppViewer::init()
 	gSavedSettings.setS32("NumSessions", mNumSessions);
 
 	gSavedSettings.setString("HelpLastVisitedURL",gSavedSettings.getString("HelpHomeURL"));
+	LLHUDEffectLookAt::sDebugLookAt = gSavedSettings.getBOOL("AscentShowLookAt");
 
 	if (gSavedSettings.getBOOL("VerboseLogs"))
 	{

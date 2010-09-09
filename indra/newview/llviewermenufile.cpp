@@ -1256,12 +1256,15 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		item_id.generate();
 		LLPermissions* perms = new LLPermissions();
 		perms->set(LLPermissions::DEFAULT);
-		perms->setOwnerAndGroup(LLUUID::null, LLUUID::null, LLUUID::null, false);
-		perms->setMaskBase(0);
-		perms->setMaskEveryone(0);
-		perms->setMaskGroup(0);
-		perms->setMaskNext(0);
-		perms->setMaskOwner(0);
+		perms->setOwnerAndGroup(gAgentID, gAgentID, gAgentID, false);
+
+
+		perms->setMaskBase(PERM_ALL);
+		perms->setMaskOwner(PERM_ALL);
+		perms->setMaskEveryone(PERM_ALL);
+		perms->setMaskGroup(PERM_ALL);
+		perms->setMaskNext(PERM_ALL);
+		
 		LLViewerInventoryItem* item = new LLViewerInventoryItem(
 				item_id,
 				gLocalInventoryRoot,
@@ -1273,7 +1276,7 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 				data->mAssetInfo.getDescription(),
 				LLSaleInfo::DEFAULT,
 				0,
-				0);
+				time_corrected());
 		LLLocalInventory::addItem(item);
 	}
 	else 

@@ -24,10 +24,14 @@ class ASFloaterUploadBrowser : public LLFloater
 public:
 	ASFloaterUploadBrowser();
 	virtual ~ASFloaterUploadBrowser();
+	//File list
 	static void onClickFile(LLUICtrl* ctrl, void* user_data);
 	static void onUpdateFilter(LLUICtrl* ctrl, void* user_data);
 	static void onDoubleClick(void* user_data);
 	
+	static void onChangeDrives(LLUICtrl* ctrl, void* user_data);
+	static void onClickFilepathGoto(void* data);
+
 	void refresh();
 	void refreshUploadOptions();
 	void handleDoubleClick();

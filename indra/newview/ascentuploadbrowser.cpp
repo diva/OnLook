@@ -43,32 +43,41 @@ ASFloaterUploadBrowser::ASFloaterUploadBrowser()
 :	LLFloater(std::string("floater_upload_browser"), std::string("FloaterUploadRect"), LLStringUtil::null)
 {	
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_upload_browser.xml");
-	mPathName = gDirUtilp->getSkinBaseDir();
+	mPathName = gSavedSettings.getString("AscentUploadFolder");
+	if (mPathName == "None")
+		mPathName = gDirUtilp->getExecutableDir();
 	mFilterType = "None";
-	mFileList = getChild<LLScrollListCtrl>("file_list");
-	mDriveCombo = getChild<LLComboBox>("drive_combo");
-	mBookmarkCombo = getChild<LLComboBox>("bookmark_combo");
 	
+	//File list ------------------------------------------------------
+	mFileList = getChild<LLScrollListCtrl>("file_list");
 	childSetCommitCallback("file_list", onClickFile, this);
 	childSetDoubleClickCallback("file_list", onDoubleClick);
-	childSetCommitCallback("file_filter_combo", onUpdateFilter, this);
 
+	//Above File List ------------------------------------------------
+	mBookmarkCombo = getChild<LLComboBox>("bookmark_combo");
+
+	mDriveCombo = getChild<LLComboBox>("drive_combo");
+	childSetCommitCallback("drive_combo", onChangeDrives, this);
 	//This is so unbelievably shitty I can't believe it -HgB
-	std::string drive_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	std::string drive_letters[] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"}; //Oh my god it's somehow worse now -HgB
 	S32 index;
 	mDriveCombo->removeall();
 	for (index = 0; index < 26; index++)
 	{
-		
-		std::string dir = drive_letters.substr(index, index) + ":" + gDirUtilp->getDirDelimiter();
-		S32 file_count = gDirUtilp->countFilesInDir(dir, "*.*");
-		llinfos << dir << " - " << file_count << llendl;
+		std::string dir = drive_letters[index] + ":";
+		S32 file_count = gDirUtilp->countFilesInDir(dir + gDirUtilp->getDirDelimiter(), "*.*");
 		if(file_count)
 		{
 			mDriveCombo->add(dir, ADD_BOTTOM);
 		}
 	}
-
+	
+	childSetAction("directory_button", onClickFilepathGoto, this);
+	
+	//Below File List ------------------------------------------------
+	childSetCommitCallback("file_filter_combo", onUpdateFilter, this);
+	
+	
 	refresh();
 	mFileList->sortByColumn(std::string("file_name"), TRUE);
 	mFileList->sortByColumn(std::string("file_type"), TRUE);
@@ -82,10 +91,36 @@ ASFloaterUploadBrowser::~ASFloaterUploadBrowser()
 	sInstance = NULL;
 }
 
+//static
+void ASFloaterUploadBrowser::onClickFilepathGoto(void* data)
+{
+	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)data;
+	std::string new_path = panelp->childGetValue("dir_path");
+	if (new_path != panelp->mPathName)
+	{
+		panelp->mPathName = new_path;
+		panelp->refresh();
+		panelp->mFileList->selectFirstItem();
+		panelp->childSetValue("asset_name", "");
+	}
+}
+
 void ASFloaterUploadBrowser::onClickFile(LLUICtrl* ctrl, void* user_data)
 {
 	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)user_data;
 	panelp->refreshUploadOptions();
+}
+
+void ASFloaterUploadBrowser::onChangeDrives(LLUICtrl* ctrl, void* user_data)
+{
+	ASFloaterUploadBrowser* panelp = (ASFloaterUploadBrowser*)user_data;
+	if (panelp->mDriveCombo->getSelectedValue().asString() != panelp->mFilterType)
+	{
+		panelp->mPathName = panelp->mDriveCombo->getSelectedValue().asString();
+		panelp->refresh();
+		panelp->mFileList->selectFirstItem();
+		panelp->childSetValue("asset_name", "");
+	}
 }
 
 void ASFloaterUploadBrowser::onUpdateFilter(LLUICtrl* ctrl, void* user_data)
@@ -150,6 +185,11 @@ void ASFloaterUploadBrowser::handleDoubleClick()
 	}
 	else if (mFileList->getFirstSelected()->getColumn(LIST_FILE_TYPE)->getValue().asInteger() == LIST_TYPE_FOLDER)
 	{
+		//Make sure that it's an actual folder so you don't get stuck - Specifically meant for files with no extension. -HgB
+		std::string new_path = mPathName + gDirUtilp->getDirDelimiter() + mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString();
+		S32 file_count = gDirUtilp->countFilesInDir(new_path, "*.*");
+		if(!file_count)
+			return;
 		mPathName = mPathName + gDirUtilp->getDirDelimiter() + mFileList->getFirstSelected()->getColumn(LIST_FILE_NAME)->getValue().asString();
 		refresh();
 		mFileList->selectFirstItem();
@@ -164,7 +204,8 @@ void ASFloaterUploadBrowser::refresh()
 	std::string fullPath = mPathName + gDirUtilp->getDirDelimiter();
 	mFileList->deselectAllItems();
 	mFileList->deleteAllItems();
-	llinfos << "Getting file listing at " << gDirUtilp->getDirName(fullPath) << " side note " << gDirUtilp->getDirName("C:\\") << llendl;
+	childSetValue("dir_path", gDirUtilp->getDirName(fullPath));
+	gSavedSettings.setString("AscentUploadFolder", mPathName);
 	gDirUtilp->getNextFileInDir(gDirUtilp->getChatLogsDir(),"*", filename, false); //Clears the last file
 	bool found = true;
 	S32 file_count = 0;

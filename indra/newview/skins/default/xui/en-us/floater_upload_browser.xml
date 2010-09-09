@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
-    width="650" height="340" min_width="600" min_height="340" max_width="600"
+    width="650" height="400" min_width="600" min_height="400" max_width="600"
     name="browser" title="Upload Browser" control_name="UploadBrowserFloater">
 	<combo_box allow_text_entry="false" bottom="-42" follows="left|top" height="18" left="10" max_chars="20" 
 		mouse_opaque="true" enabled="true" width="108" name="bookmark_combo" tool_tip="Jump to a common folder">
@@ -9,7 +9,7 @@
 		</combo_item>
 	</combo_box>
 	<button bottom_delta="0" follows="top|left" height="18" label="+"
-		left_delta="113" name="add_bookmark_button" tool_tip="Add current folder to Bookmarks"
+		left_delta="112" name="add_bookmark_button" tool_tip="Add current folder to Bookmarks"
 		width="20" />
 	<button bottom_delta="0" follows="top|left" height="18" label="-"
 		left_delta="22" name="remove_bookmark_button" tool_tip="Remove selected folder from Bookmarks"
@@ -52,7 +52,7 @@
 		mouse_opaque="true" name="filter_label" v_pad="0" width="128">
 		Filter:
 	</text>
-	<combo_box allow_text_entry="false" bottom_delta="-5" follows="left|bottom" height="18" left_delta="40" max_chars="20" 
+	<combo_box allow_text_entry="false" bottom_delta="-4" follows="left|bottom" height="18" left_delta="30" max_chars="20" 
 		mouse_opaque="true" enabled="true" width="108" name="file_filter_combo" tool_tip="Limit results to a specific type">
 		<combo_item name="None" value="None">
 			None

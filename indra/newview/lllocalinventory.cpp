@@ -53,7 +53,7 @@ LLUUID LLLocalInventory::addItem(std::string name, int type, LLUUID asset_id)
 			"",
 			LLSaleInfo::DEFAULT,
 			0,
-			0);
+			time_corrected());
 	addItem(item);
 	return item_id;
 }
@@ -63,6 +63,7 @@ void LLLocalInventory::addItem(LLViewerInventoryItem* item)
 	//gInventory.addPretendItem(item);
 	LLInventoryModel::update_map_t update;
 	++update[item->getParentUUID()];
+	item->updateServer(TRUE);
 	gInventory.accountForUpdate(update);
 	gInventory.updateItem(item);
 	gInventory.notifyObservers();
