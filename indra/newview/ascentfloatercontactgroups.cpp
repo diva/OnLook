@@ -110,7 +110,7 @@ void ASFloaterContactGroups::populateGroupList()
 			{
 				LLChat msg("Found: " + name);
 				LLFloaterChat::addChat(msg);
-				scroller->addSimpleElement(name, ADD_BOTTOM);
+				scroller->addSimpleElement(name.substr(0, -4), ADD_BOTTOM);
 			}
 			else
 			{

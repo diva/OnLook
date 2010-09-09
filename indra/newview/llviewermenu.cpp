@@ -417,7 +417,7 @@ void handle_leave_god_mode(void*);
 
 // <edit>
 void handle_fake_away_status(void*);
-
+void handle_area_search(void*);
 void handle_pose_stand_ltao(void*);
 void handle_pose_stand_ltah(void*);
 void handle_pose_stand_ltad(void*);
@@ -748,6 +748,7 @@ void init_menus()
 	LLMenuGL*menu;
 
 	menu = new LLMenuGL("Ascent");
+	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
 	menu->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
 	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
@@ -3479,6 +3480,10 @@ void handle_pose_stand_stop(void*)
 	}
 }
 // </dogmode> ---------------------------------------------------
+void handle_area_search(void*)
+{
+	JCFloaterAreaSearch::toggle();
+}
 
 void handle_fake_away_status(void*)
 {

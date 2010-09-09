@@ -763,10 +763,11 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 	if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
 	if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
 
-
-
-
-
+	LLNameEditor* key_edit = getChild<LLNameEditor>("group_key");
+	if(key_edit)
+	{
+		key_edit->setText(gdatap->getID().asString());
+	}
 
 	if (mInsignia)
 	{
