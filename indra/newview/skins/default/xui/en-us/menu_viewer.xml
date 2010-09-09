@@ -30,11 +30,11 @@
 		<on_click function="File.ImportXML" userdata="" />
 		<on_enable function ="File.EnableImportXML" userdata="" />
 	</menu_item_call>
-	<menu_item_check bottom="-384" enabled="true" height="19" label="Upload Browser" left="0"
+	<!--<menu_item_check bottom="-384" enabled="true" height="19" label="Upload Browser" left="0"
 		mouse_opaque="true" name="ascentuploadbrowser" width="211">
 		<on_click function="ShowFloater" userdata="ascentuploadbrowser" />
 		<on_check function="FloaterVisible" userdata="ascentuploadbrowser" />
-	</menu_item_check>
+	</menu_item_check>-->
     <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
     <menu_item_call enabled="true" label="Set Default Permissions..." 
         mouse_opaque="true" name="perm prefs" >
