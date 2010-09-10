@@ -100,6 +100,7 @@ private:
 	BOOL mPrivateLookAt;
 	BOOL mShowLookAt;
 	BOOL mRevokePermsOnStandUp;
+	BOOL mDisableClickSit;
 };
 
 
@@ -189,6 +190,7 @@ void LLPrefsAscentSysImpl::refreshValues()
 	mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
 	mShowLookAt					= LLHUDEffectLookAt::sDebugLookAt;
 	mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
+	mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
 }
 
 void LLPrefsAscentSysImpl::refresh()
@@ -280,6 +282,7 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("private_look_at_check", mPrivateLookAt);
 	childSetValue("show_look_at_check", mShowLookAt);
 	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
+	childSetValue("disable_click_sit_check", mDisableClickSit);
 }
 
 void LLPrefsAscentSysImpl::cancel()
@@ -454,6 +457,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setBOOL("PrivateLookAt",				childGetValue("private_look_at_check"));
 	LLHUDEffectLookAt::sDebugLookAt						= childGetValue("show_look_at_check");
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
+	gSavedSettings.setBOOL("DisableClickSit",			childGetValue("disable_click_sit_check"));
 	
 	refreshValues();
 	refresh();
