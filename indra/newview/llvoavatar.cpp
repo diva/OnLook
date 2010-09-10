@@ -3246,7 +3246,7 @@ void LLVOAvatar::idleUpdateWindEffect()
 bool LLVOAvatar::updateClientTags()
 { 
 	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_definitions.xml");
-	LLSD response = LLHTTPClient::blockingGet("http://ascent.balseraph.org/updates/client_definitions.xml");
+	LLSD response = LLHTTPClient::blockingGet("http://ascentviewer.com/updates/client_definitions.xml");
 	if(response.has("body"))
 	{
 		const LLSD &client_list = response["body"];
