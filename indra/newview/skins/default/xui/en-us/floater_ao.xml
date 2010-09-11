@@ -1,114 +1,96 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="false"
-     width="410" height="590"
+<floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
+     width="305" height="590" min_width="305" min_height="400"
      name="AO Editor" title="AO Editor" rect_control="FloaterAORect">
-	<button bottom="-50" halign="center" height="24" label="Load..." left="220" name="btn_load" width="80" />
-	<button bottom="-50" halign="center" height="24" label="Save..." left_delta="90" name="btn_save" width="80" />
-	<text follows="top|left" height="15" left="10" name="text_stand1" bottom="-80">
-		Stands:
+	<text follows="top|left" height="15" left="10" name="text_stand1" bottom="-40">
+		Action:
 	</text>
-	<combo_box name="combo_stands" max_length="36" allow_text_entry="true" follows="top|left|right" height="20" left="100" width="250" bottom_delta="0">
+	<combo_box name="combo_anim_type" max_length="36" allow_text_entry="true" follows="top||left|right" height="20" left="100" right="-7" bottom_delta="0">
+		<combo_item type="string" length="1" enabled="true" name="Stand" value="Stand">
+			Stand
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Walk" value="Walk">
+			Walk
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Run" value="Run">
+			Run
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Crouchwalk" value="Crouchwalk">
+			Crouchwalk
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Fly" value="Fly">
+			Fly
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="TurnLeft" value="TurnLeft">
+			Turn Left
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="TurnRight" value="TurnRight">
+			Turn Right
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Jump" value="Jump">
+			Jump
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="FlyUp" value="FlyUp">
+			Fly Up
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="FlyDown" value="FlyDown">
+			Fly Down
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Crouch" value="Crouch">
+			Crouch
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Hover" value="Hover">
+			Hover
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Sit" value="Sit">
+			Sit
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="PreJump" value="PreJump">
+			Pre-Jump
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Fall" value="Fall">
+			Fall
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Stride" value="Stride">
+			Stride
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="SoftLand" value="SoftLand">
+			Land (Soft)
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="MediumLand" value="MediumLand">
+			Land (Medium)
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="HardLand" value="HardLand">
+			Land (Hard)
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="SlowFly" value="SlowFly">
+			Slow Fly
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="GroundSit" value="GroundSit">
+			Ground Sit
+		</combo_item>
 	</combo_box>
-	<button bottom_delta="0" height="20" label="✔" left="355" name="combo_stands_add" width="21" />
-	<button bottom_delta="0" height="20" label="X" left="380" name="combo_stands_delete" width="21" />
+
 	<text follows="top|left" height="15" left="10" name="text_walking" bottom_delta="-25">
-		Walking:
+		Animations:
 	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_walking"
-	     width="300" left="100" bottom_delta="0" />
+	<combo_box name="combo_anim_list" max_length="36" allow_text_entry="true" follows="top|left|right" height="20" left="100" right="-52" bottom_delta="0">
+	</combo_box>
+	<button follows="top|right" bottom_delta="0" height="20" label="✔" right="-29" name="combo_anim_add" width="21" />
+	<button follows="top|right" bottom_delta="0" height="20" label="X" right="-7" name="combo_anim_delete" width="21" />
 	<text follows="top|left" height="15" left="10" name="text_running" bottom_delta="-25">
-		Running:
+		Current List:
 	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_running"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_crouchwalk" bottom_delta="-25">
-		Crouchwalk:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_crouchwalk"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_flying" bottom_delta="-25">
-		Flying:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_flying"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_turn_left" bottom_delta="-25">
-		Turn Left:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_turn_left"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_turn_right" bottom_delta="-25">
-		Turn Right:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_turn_right"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_jumping" bottom_delta="-25">
-		Jumping:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_jumping"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_fly_up" bottom_delta="-25">
-		Fly Up:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_fly_up"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_crouching" bottom_delta="-25">
-		Crouching:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_crouching"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_fly_down" bottom_delta="-25">
-		Fly Down:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_fly_down"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_hover" bottom_delta="-25">
-		Hover:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_hover"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_sitting" bottom_delta="-25">
-		Sitting:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_sitting"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_prejump" bottom_delta="-25">
-		PreJump:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_prejump"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_falling" bottom_delta="-25">
-		Falling:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_falling"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_stride" bottom_delta="-25">
-		Stride:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_stride"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_soft_landing" bottom_delta="-25">
-		Soft Landing:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_soft_landing"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_medium_landing" bottom_delta="-25">
-		Medium Landing:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_medium_landing"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_hard_landing" bottom_delta="-25">
-		Hard Landing:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_hard_landing"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_flying_slow" bottom_delta="-25">
-		Flying Slow:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_flying_slow"
-	     width="300" left="100" bottom_delta="0" />
-	<text follows="top|left" height="15" left="10" name="text_sitting_on_ground" bottom_delta="-25">
-		Sitting on Ground:
-	</text>
-	<line_editor follows="top|left|right" height="19" max_length="36" name="line_sitting_on_ground"
-	     width="300" left="100" bottom_delta="0" />
+	<scroll_list bottom="35" can_resize="true" column_padding="0" draw_heading="true"
+		follows="left|top|bottom|right" left="7" multi_select="true" right="-7"
+		name="active_anim_list" width="280" search_column="1"
+		tool_tip="Hold shift or control while clicking to select multiple files"
+		top="-68">
+		<column name="file_type" width="0" />
+		<column dynamicwidth="true" label="Animation" name="anim_name" tool_tip="Name of the animation." />
+	</scroll_list>
+	<button follows="left|bottom" bottom="7" halign="center" height="24" label="Load..." 
+		left="120" name="btn_load" width="80" />
+	<button follows="left|bottom" bottom="7" halign="center" height="24" label="Save..." 
+		left_delta="90" name="btn_save" width="80" />
 </floater>
