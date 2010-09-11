@@ -345,7 +345,7 @@
 						 name="AscentCmdLineTP2" control_name="AscentCmdLineTP2" width="200"/>
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
-			 follows="left|top|right|bottom" label="Privacy" name="Privacy">
+			 follows="left|top|right|bottom" label="Security" name="Security">
 			 <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" enabled="true"
 			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 		    	label="Broadcast Viewer Effects (Does not include beams)" left="10"
@@ -375,6 +375,12 @@
 				tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
 				mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
 				width="400" />
+			<check_box bottom_delta="-20" control_name="DisableClickSit" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	    		label="Disable click-to-sit objects" left="10"
+				tool_tip="Some griefer tools rely on forcing or tricking you to click on an object that will make you sit, giving the object automatic permissions to trigger animations amongst other things. This will disable llSitTarget - It does mean that you will need to select 'Sit' on poseballs and furniture."
+			    mouse_opaque="true" name="disable_click_sit_check" radio_style="false"
+			    width="400" />
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="Building" name="Building">
