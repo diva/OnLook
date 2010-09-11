@@ -44,6 +44,7 @@
 #include "lluserauth.h"
 
 #include "llagent.h"
+#include "llavatarconstants.h" //For new Online check - HgB
 #include "llfloateravatarpicker.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
@@ -1477,7 +1478,8 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	BOOL	is_group_owned;
 	S32		object_count;
 	U32		most_recent_time = 0;
-	BOOL	is_online;
+	BOOL	is_online = 0;
+	U32		flags = 0x0;
 	std::string object_count_str;
 	//BOOL b_need_refresh = FALSE;
 
@@ -1492,13 +1494,16 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	std::vector<LLUUID> avatar_ids;
 	std::vector<LLVector3d> positions;
 	LLWorld::instance().getAvatars(&avatar_ids, &positions, mypos, F32_MAX);
-
+	
 	for(S32 i = 0; i < rows; ++i)
 	{
 		msg->getUUIDFast(_PREHASH_Data, _PREHASH_OwnerID,		owner_id,		i);
 		msg->getBOOLFast(_PREHASH_Data, _PREHASH_IsGroupOwned,	is_group_owned,	i);
 		msg->getS32Fast (_PREHASH_Data, _PREHASH_Count,			object_count,	i);
-		msg->getBOOLFast(_PREHASH_Data, _PREHASH_OnlineStatus,	is_online,		i);
+		//Trying a different approach to getting the Online flag. -HgB
+		//msg->getBOOLFast(_PREHASH_Data, _PREHASH_OnlineStatus,	is_online,		i);
+		msg->getU32Fast(_PREHASH_PropertiesData, _PREHASH_Flags, flags);
+		is_online = (flags & AVATAR_ONLINE);
 		if(msg->has("DataExtended"))
 		{
 			msg->getU32("DataExtended", "TimeStamp", most_recent_time, i);
