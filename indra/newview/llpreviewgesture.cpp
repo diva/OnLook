@@ -229,9 +229,6 @@ BOOL LLPreviewGesture::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 			if (item
 				&& gInventory.getItem(item->getUUID()))
 			{
-				// <edit>
-				/*
-				// </edit>
 				LLPermissions perm = item->getPermissions();
 				if (!((perm.getMaskBase() & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED))
 				{
@@ -245,10 +242,6 @@ BOOL LLPreviewGesture::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 					break;
 				}
 				else if (drop)
-				// <edit>
-				*/
-				if(drop)
-				// </edit>
 				{
 					LLScrollListItem* line = NULL;
 					if (cargo_type == DAD_ANIMATION)
@@ -640,10 +633,7 @@ void LLPreviewGesture::addAnimations()
 	LLViewerInventoryCategory::cat_array_t cats;
 	LLViewerInventoryItem::item_array_t items;
 	LLIsTypeWithPermissions is_copyable_animation(LLAssetType::AT_ANIMATION,
-	// <edit>
-	//												PERM_ITEM_UNRESTRICTED,
-													PERM_NONE,
-	// </edit>
+													PERM_ITEM_UNRESTRICTED,
 													gAgent.getID(),
 													gAgent.getGroupID());
 	gInventory.collectDescendentsIf(gAgent.getInventoryRootID(),
