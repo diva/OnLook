@@ -1,80 +1,86 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
-     width="305" height="590" min_width="305" min_height="400"
+     width="305" height="590" min_width="275" min_height="400"
      name="AO Editor" title="AO Editor" rect_control="FloaterAORect">
 	<text follows="top|left" height="15" left="10" name="text_stand1" bottom="-40">
 		Action:
 	</text>
-	<combo_box name="combo_anim_type" max_length="36" allow_text_entry="true" follows="top||left|right" height="20" left="100" right="-7" bottom_delta="0">
-		<combo_item type="string" length="1" enabled="true" name="Stand" value="Stand">
-			Stand
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Walk" value="Walk">
-			Walk
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Run" value="Run">
-			Run
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Crouchwalk" value="Crouchwalk">
+	<combo_box name="combo_anim_type" max_length="36" allow_text_entry="true" follows="top||left|right" height="20" left="75" right="-7" bottom_delta="0">
+		<combo_item type="string" length="1" enabled="true" name="Crouch" value="201f3fdf-cb1f-dbec-201f-7333e328ae7c">
+			Crouch
+		</combo_item>		
+		<combo_item type="string" length="1" enabled="true" name="Crouchwalk" value="47f5f6fb-22e5-ae44-f871-73aaaf4a6022">
 			Crouchwalk
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Fly" value="Fly">
-			Fly
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="TurnLeft" value="TurnLeft">
-			Turn Left
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="TurnRight" value="TurnRight">
-			Turn Right
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Jump" value="Jump">
-			Jump
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="FlyUp" value="FlyUp">
-			Fly Up
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="FlyDown" value="FlyDown">
-			Fly Down
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Crouch" value="Crouch">
-			Crouch
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Hover" value="Hover">
-			Hover
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Sit" value="Sit">
-			Sit
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="PreJump" value="PreJump">
-			Pre-Jump
-		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Fall" value="Fall">
+		<combo_item type="string" length="1" enabled="true" name="Fall" value="666307d9-a860-572d-6fd4-c3ab8865c094">
 			Fall
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="Stride" value="Stride">
-			Stride
+		<combo_item type="string" length="1" enabled="true" name="Fly" value="aec4610c-757f-bc4e-c092-c6e9caf18daf">
+			Fly
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="SoftLand" value="SoftLand">
+		<combo_item type="string" length="1" enabled="true" name="FlyDown" value="20f063ea-8306-2562-0b07-5c853b37b31e">
+			Fly Down
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="FlyUp" value="62c5de58-cb33-5743-3d07-9e4cd4352864">
+			Fly Up
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="GroundSit" value="1a2bd58e-87ff-0df8-0b4c-53e047b0bb6e">
+			Ground Sit
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Hover" value="4ae8016b-31b9-03bb-c401-b1ea941db41d">
+			Hover
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="SoftLand" value="7a17b059-12b2-41b1-570a-186368b6aa6f">
 			Land (Soft)
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="MediumLand" value="MediumLand">
+		<combo_item type="string" length="1" enabled="true" name="MediumLand" value="f4f00d6e-b9fe-9292-f4cb-0ae06ea58d57">
 			Land (Medium)
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="HardLand" value="HardLand">
+		<combo_item type="string" length="1" enabled="true" name="HardLand" value="3da1d753-028a-5446-24f3-9c9b856d9422">
 			Land (Hard)
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="SlowFly" value="SlowFly">
+		<combo_item type="string" length="1" enabled="true" name="Jump" value="2305bd75-1ca9-b03b-1faa-b176b8a8c49e">
+			Jump
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="PreJump" value="7a4e87fe-de39-6fcb-6223-024b00893244">
+			Pre-Jump
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Run" value="05ddbff8-aaa9-92a1-2b74-8fe77a29b445">
+			Run
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Sit" value="1a5fe8ac-a804-8a5d-7cbd-56bd83184568">
+			Sit
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="SlowFly" value="2b5a38b2-5e00-3a97-a495-4c826bc443e6">
 			Slow Fly
 		</combo_item>
-		<combo_item type="string" length="1" enabled="true" name="GroundSit" value="GroundSit">
-			Ground Sit
+		<combo_item type="string" length="1" enabled="true" name="Stand" value="Stands">
+			Stand
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Stride" value="1cb562b0-ba21-2202-efb3-30f82cdf9595">
+			Stride
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="TurnLeft" value="56e0ba0d-4a9f-7f27-6117-32f2ebbf6135">
+			Turn Left
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="TurnRight" value="2d6daa51-3192-6794-8e2e-a15f8338ec30">
+			Turn Right
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Type" value="c541c47f-e0c0-058b-ad1a-d6ae3a4584d9">
+			Typing
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Voice" value="Voices">
+			Voice
+		</combo_item>
+		<combo_item type="string" length="1" enabled="true" name="Walk" value="6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0">
+			Walk
 		</combo_item>
 	</combo_box>
 
 	<text follows="top|left" height="15" left="10" name="text_walking" bottom_delta="-25">
 		Animations:
 	</text>
-	<combo_box name="combo_anim_list" max_length="36" allow_text_entry="true" follows="top|left|right" height="20" left="100" right="-52" bottom_delta="0">
+	<combo_box name="combo_anim_list" max_length="36" allow_text_entry="true" follows="top|left|right" height="20" left="75" right="-52" bottom_delta="0">
 	</combo_box>
 	<button follows="top|right" bottom_delta="0" height="20" label="✔" right="-29" name="combo_anim_add" width="21" />
 	<button follows="top|right" bottom_delta="0" height="20" label="X" right="-7" name="combo_anim_delete" width="21" />
@@ -86,11 +92,10 @@
 		name="active_anim_list" width="280" search_column="1"
 		tool_tip="Hold shift or control while clicking to select multiple files"
 		top="-68">
-		<column name="file_type" width="0" />
 		<column dynamicwidth="true" label="Animation" name="anim_name" tool_tip="Name of the animation." />
 	</scroll_list>
-	<button follows="left|bottom" bottom="7" halign="center" height="24" label="Load..." 
+	<button follows="right|bottom" bottom="7" halign="center" height="24" label="Load..." 
 		left="120" name="btn_load" width="80" />
-	<button follows="left|bottom" bottom="7" halign="center" height="24" label="Save..." 
+	<button follows="right|bottom" bottom="7" halign="center" height="24" label="Save..." 
 		left_delta="90" name="btn_save" width="80" />
 </floater>

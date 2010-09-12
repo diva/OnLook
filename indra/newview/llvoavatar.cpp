@@ -5698,13 +5698,37 @@ std::string LLVOAvatar::getIdleTime()
 BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
-
 	// <edit>
 	if(mIsSelf)
 	{
 		if(LLAO::isEnabled())
 		{
-			if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
+			std::string ao_id;
+			if (LLAO::isStand(id))
+			{
+				ao_id = "Stands";
+			}
+			else if (LLAO::isVoice(id))
+			{
+				ao_id = "Voices";
+			}
+			else
+			{
+				ao_id = id.asString();
+			}
+			if (LLAO::mAnimationOverrides[ao_id].size() > 0)
+			{
+				LLAO::mAnimationIndex++;
+				if (LLAO::mAnimationOverrides[ao_id].size() <= LLAO::mAnimationIndex)
+				{
+					LLAO::mAnimationIndex = 0;
+				}
+				LLUUID new_anim = LLAO::getAssetIDByName(LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
+				llinfos << "Switching to anim #" << LLAO::mAnimationIndex << ": " << LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex] << llendl;
+				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_START);
+				startMotion(new_anim, time_offset);
+			}
+			/*if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			{
 				// avoid infinite loops!
 				if( (id != LLAO::mOverrides[id])
@@ -5714,7 +5738,7 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 					gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_START);
 					startMotion(LLAO::mOverrides[id], time_offset);
 				}
-			}
+			}*/
 		}
 	}
 	// </edit>
@@ -5777,15 +5801,35 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 {
 	if (mIsSelf)
 	{
+		
 		// <edit>
 		if(LLAO::isEnabled())
 		{
-			if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
+			std::string ao_id;
+			if (LLAO::isStand(id))
+			{
+				ao_id = "Stands";
+			}
+			else if (LLAO::isVoice(id))
+			{
+				ao_id = "Voices";
+			}
+			else
+			{
+				ao_id = id.asString();
+			}
+			if (LLAO::mAnimationOverrides[ao_id].size() > 0)
+			{
+				LLUUID new_anim = LLAO::getAssetIDByName(LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
+				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_STOP);
+				stopMotion(new_anim, stop_immediate);
+			}
+			/*if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			 && (id != LLAO::mOverrides[id]) )
 			{
 				gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_STOP);
 				stopMotion(LLAO::mOverrides[id], stop_immediate);
-			}
+			}*/
 		}
 		// </edit>
 		gAgent.onAnimStop(id);

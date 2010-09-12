@@ -27,36 +27,18 @@ public:
 	static void setup();
 	static std::map<LLUUID,LLUUID> mOverrides;
 	static std::list<std::string> mStandOverrides;
-	static std::list<std::string> mWalkOverrides;
-	static std::list<std::string> mRunOverrides;
-	static std::list<std::string> mCrouchwalkOverrides;
-	static std::list<std::string> mFlyOverrides;
-	static std::list<std::string> mTurnLeftOverrides;
-	static std::list<std::string> mTurnRightOverrides;
-	static std::list<std::string> mJumpOverrides;
-	static std::list<std::string> mFlyUpOverrides;
-	static std::list<std::string> mFlyDownOverrides;
-	static std::list<std::string> mCrouchOverrides;
-	static std::list<std::string> mHoverOverrides;
-	static std::list<std::string> mSitOverrides;
-	static std::list<std::string> mPreJumpOverrides;
-	static std::list<std::string> mFallOverrides;
-	static std::list<std::string> mStrideOverrides;
-	static std::list<std::string> mSoftLandOverrides;
-	static std::list<std::string> mMediumLandOverrides;
-	static std::list<std::string> mHardLandOverrides;
-	static std::list<std::string> mSlowFlyOverrides;
-	static std::list<std::string> mGroundSitOverrides;
+	//Animation LLSD for full animation options -HgB
+	static LLSD mAnimationOverrides;
+	static S32 mAnimationIndex;
 
 	static BOOL isEnabled(){ return mEnabled; }
 	static BOOL isStand(LLUUID _id);
+	static BOOL isVoice(LLUUID _id);
 	static void refresh();
 	static void runAnims(BOOL enabled);
 	static bool handleAOEnabledChanged(const LLSD& newvalue);
 	static bool handleAOPeriodChanged(const LLSD& newvalue);
 	static const LLUUID& getAssetIDByName(const std::string& name);
-	static std::list<std::string>* getOverrideList(const std::string name);
-	static void pushTo(std::string name, std::string value);
 	static LLUUID getFrontUUID();
 	static LLUUID getBackUUID();
 	static LLAOStandTimer* mTimer;

@@ -42,6 +42,8 @@ std::list<std::string> LLAO::mMediumLandOverrides;
 std::list<std::string> LLAO::mHardLandOverrides;
 std::list<std::string> LLAO::mSlowFlyOverrides;
 std::list<std::string> LLAO::mGroundSitOverrides;
+LLSD				   LLAO::mAnimationOverrides;
+S32					   LLAO::mAnimationIndex;
 
 std::map<LLUUID,LLUUID> LLAO::mOverrides;
 LLFloaterAO* LLFloaterAO::sInstance;
@@ -70,6 +72,21 @@ private:
 	std::string sName;
 };
 
+const LLUUID& LLAO::getAssetIDByName(const std::string& name)
+{
+	if (name.empty()) return LLUUID::null;
+
+	LLViewerInventoryCategory::cat_array_t cats;
+	LLViewerInventoryItem::item_array_t items;
+	ObjectNameMatches objectnamematches(name);
+	gInventory.collectDescendentsIf(LLUUID::null,cats,items,FALSE,objectnamematches);
+
+	if (items.count())
+	{
+		return items[0]->getAssetUUID();
+	}
+	return LLUUID::null;
+};
 
 LLUUID LLAO::getFrontUUID()
 {
@@ -192,6 +209,7 @@ void LLAO::setup()
 	mEnabled = gSavedSettings.getBOOL("AO.Enabled");
 	mPeriod = gSavedSettings.getF32("AO.Period");
 	mTimer = new LLAOStandTimer(mPeriod);
+	mAnimationIndex = 0;
 	gSavedSettings.getControl("AO.Enabled")->getSignal()->connect(boost::bind(&handleAOEnabledChanged, _1));
 	gSavedSettings.getControl("AO.Period")->getSignal()->connect(boost::bind(&handleAOPeriodChanged, _1));
 }
@@ -259,163 +277,38 @@ BOOL LLAO::isStand(LLUUID _id)
 	return FALSE;
 }
 
-const LLUUID& LLAO::getAssetIDByName(const std::string& name)
+BOOL LLAO::isVoice(LLUUID _id)
 {
-	if (name.empty()) return LLUUID::null;
-
-	LLViewerInventoryCategory::cat_array_t cats;
-	LLViewerInventoryItem::item_array_t items;
-	ObjectNameMatches objectnamematches(name);
-	gInventory.collectDescendentsIf(LLUUID::null,cats,items,FALSE,objectnamematches);
-
-	if (items.count())
-	{
-		return items[0]->getAssetUUID();
-	}
-	return LLUUID::null;
-};
+	std::string id = _id.asString();
+	//ALL KNOWN VOICE ANIMS
+	if(id == "3557510a-5eb4-d0ce-0b91-67c72aa75312") return TRUE;
+    if(id == "a71890f1-0dab-8744-fd47-7defaf411dbf") return TRUE;
+    if(id == "c1802201-5f4e-366f-7f78-2d08ec6ea54a") return TRUE;
+    if(id == "68db359f-4c9c-0932-5f1e-e95e3a0b19bc") return TRUE;
+    if(id == "7ef0d5c0-3346-06e4-5cfc-f081db108baa") return TRUE;
+    if(id == "28a3f544-268d-da71-7da6-82c8dd522cb9") return TRUE;
+    if(id == "cc340155-3e9d-60fe-d8e3-9e9abc7062d1") return TRUE;
+    if(id == "55fe6788-8a16-d998-2f63-3c1eab2b6009") return TRUE;
+    if(id == "69d5a8ed-9ec6-6dac-842f-d92d82e69428") return TRUE;
+    if(id == "9a7f3201-7bbd-4f75-b762-24270536e4e3") return TRUE;
+    if(id == "37694185-3107-d418-3a20-0181424e542d") return TRUE;
+    if(id == "cb1139b6-e7c3-fdc7-a9c1-e21673d7a50e") return TRUE;
+    if(id == "bbf194d1-a118-1312-998b-8145cec6eaff") return TRUE;
+    if(id == "593e9a3d-58d8-c594-d6dd-f4b98965202e") return TRUE;
+    if(id == "2b78c24a-2451-6135-fc49-ad274552bb68") return TRUE;
+    if(id == "0f645c60-3151-2805-b6f7-28e710ed22ac") return TRUE;
+	return FALSE;
+}
 
 //static
 void LLAO::refresh()
 {
 	mOverrides.clear();
-	mStandOverrides.clear();
-	mWalkOverrides.clear();
-	mRunOverrides.clear();
-	mCrouchwalkOverrides.clear();
-	mFlyOverrides.clear();
-	mTurnLeftOverrides.clear();
-	mTurnRightOverrides.clear();
-	mJumpOverrides.clear();
-	mFlyUpOverrides.clear();
-	mFlyDownOverrides.clear();
-	mCrouchOverrides.clear();
-	mHoverOverrides.clear();
-	mSitOverrides.clear();
-	mPreJumpOverrides.clear();
-	mFallOverrides.clear();
-	mStrideOverrides.clear();
-	mSoftLandOverrides.clear();
-	mMediumLandOverrides.clear();
-	mHardLandOverrides.clear();
-	mSlowFlyOverrides.clear();
-	mGroundSitOverrides.clear();
+	mAnimationOverrides.clear();
 	LLSD settings = gSavedPerAccountSettings.getLLSD("AO.Settings");
 	//S32 version = (S32)settings["version"].asInteger();
-	LLSD overrides = settings["overrides"];
-	LLSD::map_iterator sd_it = overrides.beginMap();
-	LLSD::map_iterator sd_end = overrides.endMap();
-	for( ; sd_it != sd_end; sd_it++)
-	{
-		if(sd_it->second.asString() == "" )
-		{
-			continue;
-		}
-		if(sd_it->first == "stands")
-		{
-			for(LLSD::array_iterator itr = sd_it->second.beginArray();
-				itr != sd_it->second.endArray(); ++itr)
-			{
-					//list of listness
-				if(itr->asString() != "")
-					mStandOverrides.push_back(itr->asString());
-			}
-		}
-	}
-}
-
-std::list<std::string>* LLAO::getOverrideList(const std::string name)
-{
-	std::list<std::string> *anim_list;
-	if (name == "Stand")
-		anim_list = &mStandOverrides;
-	else if (name == "Walk")
-		anim_list = &mWalkOverrides;
-	else if (name == "Run")
-		anim_list = &mRunOverrides;
-	else if (name == "Crouchwalk")
-		anim_list = &mCrouchwalkOverrides;
-	else if (name == "Fly")
-		anim_list = &mFlyOverrides;
-	else if (name == "TurnLeft")
-		anim_list = &mTurnLeftOverrides;
-	else if (name == "TurnRight")
-		anim_list = &mTurnRightOverrides;
-	else if (name == "Jump")
-		anim_list = &mJumpOverrides;
-	else if (name == "FlyUp")
-		anim_list = &mFlyUpOverrides;
-	else if (name == "FlyDown")
-		anim_list = &mFlyDownOverrides;
-	else if (name == "Crouch")
-		anim_list = &mCrouchOverrides;
-	else if (name == "Hover")
-		anim_list = &mHoverOverrides;
-	else if (name == "Sit")
-		anim_list = &mSitOverrides;
-	else if (name == "PreJump")
-		anim_list = &mPreJumpOverrides;
-	else if (name == "Fall")
-		anim_list = &mFallOverrides;
-	else if (name == "Stride")
-		anim_list = &mStrideOverrides;
-	else if (name == "SoftLand")
-		anim_list = &mSoftLandOverrides;
-	else if (name == "MediumLand")
-		anim_list = &mMediumLandOverrides;
-	else if (name == "HardLand")
-		anim_list = &mHardLandOverrides;
-	else if (name == "SlowFly")
-		anim_list = &mSlowFlyOverrides;
-	else
-		anim_list = &mGroundSitOverrides;
-	return anim_list;
-}
-
-void LLAO::pushTo(std::string name, std::string value)
-{
-	if (name == "Stand")
-		mStandOverrides.push_back(value);
-	else if (name == "Walk")
-		mWalkOverrides.push_back(value);
-	else if (name == "Run")
-		mRunOverrides.push_back(value);
-	else if (name == "Crouchwalk")
-		mCrouchwalkOverrides.push_back(value);
-	else if (name == "Fly")
-		mFlyOverrides.push_back(value);
-	else if (name == "TurnLeft")
-		mTurnLeftOverrides.push_back(value);
-	else if (name == "TurnRight")
-		mTurnRightOverrides.push_back(value);
-	else if (name == "Jump")
-		mJumpOverrides.push_back(value);
-	else if (name == "FlyUp")
-		mFlyUpOverrides.push_back(value);
-	else if (name == "FlyDown")
-		mFlyDownOverrides.push_back(value);
-	else if (name == "Crouch")
-		mCrouchOverrides.push_back(value);
-	else if (name == "Hover")
-		mHoverOverrides.push_back(value);
-	else if (name == "Sit")
-		mSitOverrides.push_back(value);
-	else if (name == "PreJump")
-		mPreJumpOverrides.push_back(value);
-	else if (name == "Fall")
-		mFallOverrides.push_back(value);
-	else if (name == "Stride")
-		mStrideOverrides.push_back(value);
-	else if (name == "SoftLand")
-		mSoftLandOverrides.push_back(value);
-	else if (name == "MediumLand")
-		mMediumLandOverrides.push_back(value);
-	else if (name == "HardLand")
-		mHardLandOverrides.push_back(value);
-	else if (name == "SlowFly")
-		mSlowFlyOverrides.push_back(value);
-	else
-		mGroundSitOverrides.push_back(value);
+	mAnimationOverrides = settings["overrides"];
+	llinfos << "Stand count: " << mAnimationOverrides["Stands"].size() << llendl;
 }
 
 //static ------------- Floater
@@ -450,37 +343,43 @@ BOOL LLFloaterAO::postBuild(void)
 	combo = getChild<LLComboBox>( "combo_anim_type");
 	combo->setCommitCallback(onCommitType);
 	combo->setCallbackUserData(this);
+	combo->selectFirstItem();
 	mAnimTypeCombo = combo;
+	mCurrentAnimType = mAnimTypeCombo->getValue();
 	
 	combo = getChild<LLComboBox>( "combo_anim_list");
 	mAnimListCombo = combo;
 	childSetAction("combo_anim_add", onClickAnimAdd, this);
 	childSetAction("combo_anim_delete", onClickAnimRemove, this);
 
-	list = getChild<LLScrollListCtrl>("combo_anim_list");
+	list = getChild<LLScrollListCtrl>("active_anim_list");
 	mAnimationList = list;
 
 	addAnimations();
+
 	refresh();
+	
 	return TRUE;
 }
 
 void LLFloaterAO::refresh()
 {
-	std::list<std::string> *animation_list = LLAO::getOverrideList(mCurrentAnimType);
-	llinfos << "Refreshed, building animation list for " << mCurrentAnimType << ", Count:" << animation_list->size() << llendl;
-	for(std::list<std::string>::iterator itr = animation_list->begin();itr != animation_list->end();
-		itr++)
+	mAnimationList->deleteAllItems();
+	S32 count = LLAO::mAnimationOverrides[mCurrentAnimType].size();
+	llinfos << "Refreshed, building animation list for " << mCurrentAnimType << ", Count:" << count << llendl;
+	int i;
+	for(i = 0; i < count; i++)
 	{
-		llinfos << "Adding " << itr->c_str() << llendl;
-		mAnimationList->addElement((*itr), ADD_BOTTOM);
+		std::string name = LLAO::mAnimationOverrides[mCurrentAnimType][i].asString();
+		llinfos << "Adding " << name << llendl;
+		mAnimationList->addSimpleElement(name, ADD_BOTTOM);
 	}
 }
 // static
 void LLFloaterAO::onCommitType(LLUICtrl* ctrl, void* user_data)
 {
 	LLFloaterAO* floater = (LLFloaterAO*)user_data;
-	floater->mCurrentAnimType = floater->mAnimTypeCombo->getSimple();
+	floater->mCurrentAnimType = floater->mAnimTypeCombo->getValue();
 	floater->refresh();
 }
 
@@ -491,11 +390,14 @@ void LLFloaterAO::addAnimations()
 	std::string none_text = getString("none_text");
 	mAnimListCombo->add(none_text, LLUUID::null);
 
+	// Add all the default (legacy) animations
+	S32 i;
+
 	// Get all inventory items that are animations
 	LLViewerInventoryCategory::cat_array_t cats;
 	LLViewerInventoryItem::item_array_t items;
 	LLIsTypeWithPermissions is_copyable_animation(LLAssetType::AT_ANIMATION,
-													PERM_ITEM_UNRESTRICTED,
+													PERM_NONE,
 													gAgent.getID(),
 													gAgent.getGroupID());
 	gInventory.collectDescendentsIf(gAgent.getInventoryRootID(),
@@ -521,18 +423,7 @@ void LLFloaterAO::addAnimations()
 	for (it = animations.begin(); it != animations.end(); ++it)
 	{
 		LLInventoryItem* item = *it;
-		llinfos << "Adding " << item->getName() << " to animation list." << llendl;
 		mAnimListCombo->add(item->getName(), item->getAssetUUID(), ADD_BOTTOM);
-	}
-}
-
-void generateAnimationSet(std::string name, std::list<std::string> anim_list, LLSD& overrides)
-{
-	for(std::list<std::string>::iterator itr = anim_list.begin();
-		itr != anim_list.end();
-		itr++)
-	{
-		overrides[name].append((*itr));
 	}
 }
 
@@ -540,38 +431,9 @@ void generateAnimationSet(std::string name, std::list<std::string> anim_list, LL
 void LLFloaterAO::onCommitAnim(LLUICtrl* ctrl, void* user_data)
 {
 	LLFloaterAO* floater = (LLFloaterAO*)user_data;
-	//LLUUID animid(getAssetIDByName(stranim));  ------------------------------------------- IMPORTANT FOR LATER
-
-	/*if (!(animid.notNull()))
-	{
-		cmdline_printchat(llformat("Warning: animation '%s' could not be found (Section: %s).",stranim.c_str(),strtoken.c_str()));
-	}*/
-	LLSD overrides;
-	generateAnimationSet("stands",		LLAO::mStandOverrides,		overrides);
-	generateAnimationSet("walks",		LLAO::mWalkOverrides,		overrides);
-	generateAnimationSet("runs",		LLAO::mRunOverrides,		overrides);
-	generateAnimationSet("crouchwalks", LLAO::mCrouchwalkOverrides,	overrides);
-	generateAnimationSet("flies",		LLAO::mFlyOverrides,		overrides);
-	generateAnimationSet("turnlefts",	LLAO::mTurnLeftOverrides,	overrides);
-	generateAnimationSet("turnrights",	LLAO::mTurnRightOverrides,	overrides);
-	generateAnimationSet("jumps",		LLAO::mJumpOverrides,		overrides);
-	generateAnimationSet("flyups",		LLAO::mFlyUpOverrides,		overrides);
-	generateAnimationSet("flydowns",	LLAO::mFlyDownOverrides,	overrides);
-	generateAnimationSet("crouches",	LLAO::mCrouchOverrides,		overrides);
-	generateAnimationSet("hovers",		LLAO::mHoverOverrides,		overrides);
-	generateAnimationSet("sits",		LLAO::mSitOverrides,		overrides);
-	generateAnimationSet("prejumps",	LLAO::mPreJumpOverrides,	overrides);
-	generateAnimationSet("falls",		LLAO::mFallOverrides,		overrides);
-	generateAnimationSet("strides",		LLAO::mStrideOverrides,		overrides);
-	generateAnimationSet("softlands",	LLAO::mSoftLandOverrides,	overrides);
-	generateAnimationSet("mediumlands", LLAO::mMediumLandOverrides, overrides);
-	generateAnimationSet("hardlands",	LLAO::mHardLandOverrides,	overrides);
-	generateAnimationSet("slowflies",	LLAO::mSlowFlyOverrides,	overrides);
-	generateAnimationSet("groundsits",	LLAO::mGroundSitOverrides,	overrides);
-	
 	LLSD settings;
 	settings["version"] = 2;
-	settings["overrides"] = overrides;
+	settings["overrides"] = LLAO::mAnimationOverrides;
 	gSavedPerAccountSettings.setLLSD("AO.Settings", settings);
 	LLAO::refresh();
 	floater->refresh();
@@ -588,44 +450,46 @@ void LLFloaterAO::onClickAnimRemove(void* user_data)
 		LLScrollListItem* item = *iter;
 		if (item->getValue().asString() != "")
 		{
-			//avatar_names.push_back(item->getColumn(0)->getValue().asString());
-			//avatar_ids.push_back(item->getUUID());
+			std::string anim_name = item->getValue().asString();
+			S32 count = LLAO::mAnimationOverrides[floater->mCurrentAnimType].size();
+			S32 index;
+			LLSD new_list;
+			for (index = 0; index < count; index++)
+			{
+				if (LLAO::mAnimationOverrides[floater->mCurrentAnimType][index].isDefined())
+				{
+					std::string this_anim = LLAO::mAnimationOverrides[floater->mCurrentAnimType][index].asString();
+					if (this_anim != anim_name)
+					{
+						new_list.append(this_anim);
+					}
+				}
+			}
+			LLAO::mAnimationOverrides[floater->mCurrentAnimType] = new_list;
 		}
 	}
-	/*std::list<std::string>::iterator itr = std::find(LLAO::mStandOverrides.begin(),LLAO::mStandOverrides.end(),id);
-	LLVOAvatar* avatarp = gAgent.getAvatarObject();
-	if(id.notNull() && itr != LLAO::mStandOverrides.end())
-	{
-		//back is always last played, front is next
-		avatarp->stopMotion(id);
-		LLAO::mStandOverrides.erase(itr);
-		avatarp->startMotion(LLAO::mStandOverrides.front());
-		LLAO::mStandOverrides.push_back(LLAO::mStandOverrides.front());
-		LLAO::mStandOverrides.pop_front();
-
-		floater->refresh();
-		LLAO::mTimer->reset();
-	}
-	onCommitAnim(NULL,user_data);*/
+	onCommitAnim(NULL,user_data);
 }
 //static
 void LLFloaterAO::onClickAnimAdd(void* user_data)
 {
 	LLFloaterAO* floater = (LLFloaterAO*)user_data;
 	std::string anim_name = floater->mAnimListCombo->getSimple();
+	if (anim_name == "")
+		return;
 	LLUUID id(LLAO::getAssetIDByName(anim_name));
-	std::list<std::string>* animation_list = LLAO::getOverrideList(floater->mCurrentAnimType);
-	std::list<std::string>::iterator itr = std::find(animation_list->begin(),
-		animation_list->end(),
-		anim_name);
 #ifdef AO_DEBUG
 	llinfos << "Attempting to add " << anim_name << " (" << id << ") " << " to " << floater->mCurrentAnimType << llendl;
 #endif
-	if(id.notNull() && (itr == animation_list->end()))
+	if(id.notNull() && !LLAO::mAnimationOverrides[floater->mCurrentAnimType].has(anim_name))
 	{
-		llinfos << "Actually adding animation, this should be refreshed. Count:" << animation_list->size() << llendl;
-		LLAO::pushTo(floater->mCurrentAnimType, anim_name);
-		llinfos << "Added animation. Count:" << animation_list->size() << llendl;
+#ifdef AO_DEBUG
+		llinfos << "Actually adding animation, this should be refreshed. Count:" << LLAO::mAnimationOverrides[floater->mCurrentAnimType].size() << llendl;
+#endif
+		LLAO::mAnimationOverrides[floater->mCurrentAnimType].append(anim_name);
+#ifdef AO_DEBUG
+		llinfos << "Added animation. Count:" << LLAO::mAnimationOverrides[floater->mCurrentAnimType].size() << llendl;
+#endif
 		LLAO::mTimer->reset();
 	}
 	onCommitAnim(NULL,user_data);
