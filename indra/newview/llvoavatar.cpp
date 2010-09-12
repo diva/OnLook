@@ -5718,6 +5718,11 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 			}
 			if (LLAO::mAnimationOverrides[ao_id].size() > 0)
 			{
+				if (LLAO::mLastAnimation.notNull())
+				{
+					gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
+					stopMotion(LLAO::mLastAnimation, true);
+				}
 				LLAO::mAnimationIndex++;
 				if (LLAO::mAnimationOverrides[ao_id].size() <= LLAO::mAnimationIndex)
 				{
@@ -5727,6 +5732,7 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 				llinfos << "Switching to anim #" << LLAO::mAnimationIndex << ": " << LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex] << llendl;
 				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_START);
 				startMotion(new_anim, time_offset);
+				LLAO::mLastAnimation = new_anim;
 			}
 			/*if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			{
@@ -5823,6 +5829,7 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 				LLUUID new_anim = LLAO::getAssetIDByName(LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
 				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_STOP);
 				stopMotion(new_anim, stop_immediate);
+				LLAO::mLastAnimation.setNull();
 			}
 			/*if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
 			 && (id != LLAO::mOverrides[id]) )
@@ -5831,9 +5838,19 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 				stopMotion(LLAO::mOverrides[id], stop_immediate);
 			}*/
 		}
+		/*else if this code ever works without crashing the viewer -HgB
+		{
+			if (LLAO::mLastAnimation.notNull())
+			{
+				gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
+				stopMotion(LLAO::mLastAnimation, true);
+				LLAO::mLastAnimation.setNull();
+			}
+		}*/
 		// </edit>
 		gAgent.onAnimStop(id);
 	}
+	
 
 	if (id == ANIM_AGENT_WALK)
 	{

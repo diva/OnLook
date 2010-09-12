@@ -30,7 +30,7 @@ public:
 	//Animation LLSD for full animation options -HgB
 	static LLSD mAnimationOverrides;
 	static S32 mAnimationIndex;
-
+	static LLUUID mLastAnimation;
 	static BOOL isEnabled(){ return mEnabled; }
 	static BOOL isStand(LLUUID _id);
 	static BOOL isVoice(LLUUID _id);

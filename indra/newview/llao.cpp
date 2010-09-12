@@ -21,9 +21,10 @@ We will handle drag-and-drop in the future. Reminder - Look in llPreviewGesture 
 #define AO_DEBUG
 
 //static variables
-std::list<std::string> LLAO::mStandOverrides;
-LLSD				   LLAO::mAnimationOverrides;
-S32					   LLAO::mAnimationIndex;
+std::list<std::string>	LLAO::mStandOverrides;
+LLSD					LLAO::mAnimationOverrides;
+S32						LLAO::mAnimationIndex;
+LLUUID					LLAO::mLastAnimation;
 
 std::map<LLUUID,LLUUID> LLAO::mOverrides;
 LLFloaterAO* LLFloaterAO::sInstance;
@@ -190,6 +191,7 @@ void LLAO::setup()
 	mPeriod = gSavedSettings.getF32("AO.Period");
 	mTimer = new LLAOStandTimer(mPeriod);
 	mAnimationIndex = 0;
+	mLastAnimation = LLUUID::null;
 	gSavedSettings.getControl("AO.Enabled")->getSignal()->connect(boost::bind(&handleAOEnabledChanged, _1));
 	gSavedSettings.getControl("AO.Period")->getSignal()->connect(boost::bind(&handleAOPeriodChanged, _1));
 }
