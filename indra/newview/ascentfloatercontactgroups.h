@@ -16,6 +16,7 @@
 #define ASCENT_CONTACT_GROUPS
 
 #include "llfloater.h"
+#include "lldarray.h"
 
 class LLScrollListCtrl;
 
@@ -27,15 +28,28 @@ public:
     virtual ~ASFloaterContactGroups();
 
     // by convention, this shows the floater and does instance management
-    static void show(void*);
+    static void show(LLDynamicArray<LLUUID> ids);
+	static std::string cleanFileName(std::string filename);
+
 	void populateGroupList();
+	void populateFriendList();
+	void addContactMember(std::string contact_grp, LLUUID to_add);
+	void createContactGroup(std::string contact_grp);
+	void deleteContactGroup(std::string contact_grp);
+
+	// Buttons
+	static void onBtnClose(void* userdata);
+	static void onBtnSave(void* userdata);
+	static void onBtnCreate(void* userdata);
+	static void onBtnDelete(void* userdata);
  
 private:
     //assuming we just need one, which is typical
     static ASFloaterContactGroups* sInstance;
+	static LLDynamicArray<LLUUID> mSelectedUUIDs;
 };
 
-#endif // ASCENT_UPLOAD_BROWSER
+#endif // ASCENT_CONTACT_GROUPS
 
 
 /* 

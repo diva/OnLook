@@ -542,18 +542,6 @@ BOOL LLPreviewGesture::postBuild()
 	btn->setCallbackUserData(this);
 	mSaveBtn = btn;
 
-	// <edit>
-	btn = getChild<LLButton>( "duplicate_btn");
-	btn->setClickedCallback(onClickDuplicate);
-	btn->setCallbackUserData(this);
-	mDuplicateBtn = btn;
-
-	btn = getChild<LLButton>( "open_btn");
-	btn->setClickedCallback(onClickOpen);
-	btn->setCallbackUserData(this);
-	mOpenBtn = btn;
-	// </edit>
-
 	btn = getChild<LLButton>( "preview_btn");
 	btn->setClickedCallback(onClickPreview);
 	btn->setCallbackUserData(this);
