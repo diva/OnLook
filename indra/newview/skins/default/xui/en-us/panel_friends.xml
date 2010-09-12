@@ -13,7 +13,7 @@
 		    	  bottom_delta="20" height="18" hidden="false" left="-235" max_chars="20" mouse_opaque="true"
 				  tool_tip="Buddy group"
 		    	  name="buddy_group_combobox" width="130">
-    <combo_item type="string" length="1" enabled="true" name="All" 
+    <combo_item type="string" length="20" enabled="true" name="All" 
       value="All">
       All
     </combo_item>

@@ -35,26 +35,14 @@
 			     width="112" />
       <button bottom_delta="-3" follows="top|right" font="SansSerif" halign="center"
 			     height="20" label="Create" label_selected="Create" left_delta="20" right="-10"
-			     mouse_opaque="true" name="create_grp_btn" scale_image="TRUE" width="90" />
+			     mouse_opaque="true" name="Create" scale_image="TRUE" width="90" />
+      <button bottom_delta="-25" follows="top|right" font="SansSerif" halign="center"
+			     height="20" label="Delete" label_selected="Delete" right="-15"
+			     mouse_opaque="true" name="Delete" scale_image="TRUE" width="90" />
       <scroll_list background_visible="true" bottom_delta="-125" column_padding="5"
 			     draw_border="true" draw_heading="false" draw_stripes="true"
 			     follows="left|top|right" height="120" left="10" mouse_opaque="true"
 			     multi_select="false" name="group_scroll_list" width="115" />
-    </panel>
-
-    <panel name="ManageGroupsPanel" label="Manage Groups"
-			border="true" bottom="0" height="150" left="0" width="135" 
-			mouse_opaque="true">
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-24" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="InstructSelectCallingCard" v_pad="0"
-			     width="220">
-        Select a calling card:
-      </text>
-      <inventory_panel allow_multi_select="false" border="true" bottom_delta="-117"
-			     follows="left|top|right|bottom" height="110" left="10" mouse_opaque="true"
-			     name="InventoryPanel" sort_order="AvatarPickerSortOrder" width="115" />
     </panel>
   </tab_container>
 

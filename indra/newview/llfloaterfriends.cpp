@@ -201,6 +201,84 @@ void LLPanelFriends::updateFriends(U32 changed_mask)
 // <dogmode>
 // Contact search and group system.
 // 09/05/2010 - Charley Levenque
+std::string LLPanelFriends::cleanFileName(std::string filename)
+{
+	std::string invalidChars = "\"\'\\/?*:<>|";
+	S32 position = filename.find_first_of(invalidChars);
+	while (position != filename.npos)
+	{
+		filename[position] = '_';
+		position = filename.find_first_of(invalidChars, position);
+	}
+	return filename;
+}
+
+void LLPanelFriends::populateContactGroupSelect()
+{
+	LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
+
+	if (combo)
+	{
+		combo->removeall();
+		combo->add("All", ADD_BOTTOM);
+
+		std::string name;
+		gDirUtilp->getNextFileInDir(gDirUtilp->getPerAccountChatLogsDir(),"*",name,false);//stupid hack to clear last file search
+
+		std::string path_name(gDirUtilp->getPerAccountChatLogsDir() + gDirUtilp->getDirDelimiter());
+		bool found = true;	
+		while(found = gDirUtilp->getNextFileInDir(path_name, "*.grp", name, false)) 
+		{
+			if ((name == ".") || (name == "..")) continue;
+
+			//llinfos << "path name " << path_name << " and name " << name << " and found " << found << llendl;
+			if(found)
+			{
+				S32 periodIndex = name.find_last_of(".");
+				name = name.substr(0, periodIndex);
+
+				if ((name == ".") || (name == "..")) continue;
+
+				combo->add(name, ADD_BOTTOM);
+				LLChat msg("Combo Add " + name);
+				LLFloaterChat::addChat(msg);
+			}
+		}
+	}
+	else
+	{
+		LLChat msg("Null combo");
+		LLFloaterChat::addChat(msg);
+	}
+}
+
+void LLPanelFriends::setContactGroup(std::string contact_grp)
+{
+	std::string group_path = gDirUtilp->getPerAccountChatLogsDir() + gDirUtilp->getDirDelimiter();
+	std::string filename = group_path + cleanFileName(contact_grp + ".grp");
+
+	FILE* fp = LLFile::fopen(filename, "w");
+	
+	if (fp)
+	{
+		char buffer[10000];		/*Flawfinder: ignore*/
+		char *bptr;
+		S32 len = 0;
+
+		while ( fgets(buffer, 10000, fp)  && !feof(fp) ) 
+		{
+			len = strlen(buffer) - 1;		/*Flawfinder: ignore*/
+			for ( bptr = (buffer + len); (*bptr == '\n' || *bptr == '\r') && bptr>buffer; bptr--)	*bptr='\0';
+		}
+
+		std::string file_contents(buffer);
+		mContactFilter = file_contents;
+
+		LLChat msg(mContactFilter);
+		LLFloaterChat::addChat(msg);
+	}
+}
+
 void LLPanelFriends::filterContacts()
 {
 	//LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
@@ -213,15 +291,13 @@ void LLPanelFriends::filterContacts()
 	if (search_name != "" && search_name != mLastContactSearch)
 	{	
 		mLastContactSearch = search_name;
-		//LLStringUtil::toLower(search_name);
 		refreshNames(LLFriendObserver::ADD);
 
 		std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
 		for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
 		{
-			friend_name = (*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString();
-			//LLStringUtil::toLower(friend_name);
-			BOOL show_entry = (friend_name.find(search_name) != std::string::npos);
+			friend_name = utf8str_tolower((*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString());
+			BOOL show_entry = (friend_name.find(utf8str_tolower(search_name)) != std::string::npos);
 			if (!show_entry)
 			{
 				mFriendsList->deleteItems((*itr)->getValue());
@@ -244,6 +320,20 @@ void LLPanelFriends::onContactSearchKeystroke(LLLineEditor* caller, void* user_d
 		}
 	}
 }
+
+void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
+{
+	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
+
+	if(panelp)
+	{
+		LLComboBox* combo = panelp->getChild<LLComboBox>("buddy_group_combobox");
+		if (combo->getValue().asString() != "All")
+		{
+			panelp->setContactGroup(combo->getValue().asString());
+		}
+	}
+}
 // --
 
 // virtual
@@ -254,6 +344,7 @@ BOOL LLPanelFriends::postBuild()
 	mFriendsList->setMaximumSelectCallback(onMaximumSelect);
 	mFriendsList->setCommitOnSelectionChange(TRUE);
 	childSetCommitCallback("friend_list", onSelectName, this);
+	childSetCommitCallback("buddy_group_combobox", onChangeContactGroup, this);
 	childSetDoubleClickCallback("friend_list", onClickIM);
 
 	// <dogmode>
@@ -264,7 +355,6 @@ BOOL LLPanelFriends::postBuild()
 	{
 		contact->setKeystrokeCallback(&onContactSearchKeystroke);
 	}
-	// --
 
 	getChild<LLTextBox>("s_num")->setValue("0");
 	getChild<LLTextBox>("f_num")->setValue(llformat("%d", mFriendsList->getItemCount()));
@@ -608,6 +698,7 @@ BOOL LLPanelFriends::refreshNamesPresence(const LLAvatarTracker::buddy_map_t & a
 // meal disk
 void LLPanelFriends::refreshUI()
 {	
+	populateContactGroupSelect();
 	BOOL single_selected = FALSE;
 	BOOL multiple_selected = FALSE;
 	int num_selected = mFriendsList->getAllSelected().size();
@@ -655,7 +746,7 @@ LLDynamicArray<LLUUID> LLPanelFriends::getSelectedIDs()
 	return friend_ids;
 }
 
-// static
+// static 
 void LLPanelFriends::onSelectName(LLUICtrl* ctrl, void* user_data)
 {
 	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
@@ -695,7 +786,12 @@ void LLPanelFriends::onClickProfile(void* user_data)
 // static
 void LLPanelFriends::onClickAssign(void* user_data)
 {
-	ASFloaterContactGroups::show(user_data);
+	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
+	if (panelp)
+	{
+		LLDynamicArray<LLUUID> ids = panelp->getSelectedIDs();
+		ASFloaterContactGroups::show(ids);
+	}
 }
 
 void LLPanelFriends::onClickIM(void* user_data)
