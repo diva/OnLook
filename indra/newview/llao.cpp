@@ -22,26 +22,6 @@ We will handle drag-and-drop in the future. Reminder - Look in llPreviewGesture 
 
 //static variables
 std::list<std::string> LLAO::mStandOverrides;
-std::list<std::string> LLAO::mWalkOverrides;
-std::list<std::string> LLAO::mRunOverrides;
-std::list<std::string> LLAO::mCrouchwalkOverrides;
-std::list<std::string> LLAO::mFlyOverrides;
-std::list<std::string> LLAO::mTurnLeftOverrides;
-std::list<std::string> LLAO::mTurnRightOverrides;
-std::list<std::string> LLAO::mJumpOverrides;
-std::list<std::string> LLAO::mFlyUpOverrides;
-std::list<std::string> LLAO::mFlyDownOverrides;
-std::list<std::string> LLAO::mCrouchOverrides;
-std::list<std::string> LLAO::mHoverOverrides;
-std::list<std::string> LLAO::mSitOverrides;
-std::list<std::string> LLAO::mPreJumpOverrides;
-std::list<std::string> LLAO::mFallOverrides;
-std::list<std::string> LLAO::mStrideOverrides;
-std::list<std::string> LLAO::mSoftLandOverrides;
-std::list<std::string> LLAO::mMediumLandOverrides;
-std::list<std::string> LLAO::mHardLandOverrides;
-std::list<std::string> LLAO::mSlowFlyOverrides;
-std::list<std::string> LLAO::mGroundSitOverrides;
 LLSD				   LLAO::mAnimationOverrides;
 S32					   LLAO::mAnimationIndex;
 
