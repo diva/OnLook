@@ -60,7 +60,7 @@
   <texture name="spin_down_out_blue.tga"	preload="true"/>
   <texture name="spin_up_in_blue.tga"	preload="true"/>
   <texture name="spin_up_out_blue.tga"	preload="true"/>
-  
+  <texture name="ff_visible_map.tga"	preload="true"/>
   <texture name="square_btn_32x128.tga"	preload="true" scale_left="8" scale_top="10" scale_right="120" scale_bottom="10"/>
   <texture name="square_btn_selected_32x128.tga"	preload="true" scale_left="2" scale_top="10" scale_right="126" scale_bottom="10"/>
   

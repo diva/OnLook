@@ -160,7 +160,7 @@ public:
 	//static void		onBtnRevert( void* userdata );
 	static void		onBtnWhite( void* userdata );
 	static void		onBtnInvisible( void* userdata );
-	static void		onBtnNone( void* userdata );
+	static void		onBtnAlpha( void* userdata );
 	static void		onBtnClear( void* userdata );
 	static void		onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
 	static void		onShowFolders(LLUICtrl* ctrl, void* userdata);
@@ -178,6 +178,7 @@ protected:
 	LLUUID				mWhiteImageAssetID;
 	LLUUID				mInvisibleImageAssetID;
 	LLUUID				mSpecialCurrentImageAssetID;  // Used when the asset id has no corresponding texture in the user's inventory.
+	LLUUID				mAlphaImageAssetID;
 	LLUUID				mOriginalImageAssetID;
 
 	std::string			mLabel;
@@ -218,6 +219,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 	mFallbackImageName( fallback_image_name ),
 	mWhiteImageAssetID( gSavedSettings.getString( "UIImgWhiteUUID" ) ),
 	mInvisibleImageAssetID(gSavedSettings.getString("UIImgInvisibleUUID")),
+	mAlphaImageAssetID("8dcd4a48-2d37-4909-9f78-f7a9eb4ef903"),
 	mOriginalImageAssetID(owner->getImageAssetID()),
 	mLabel(label),
 	mTentativeLabel(NULL),
@@ -237,7 +239,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 
 
 	childSetAction("Default",LLFloaterTexturePicker::onBtnSetToDefault,this);
-	childSetAction("None", LLFloaterTexturePicker::onBtnNone,this);
+	childSetAction("Alpha", LLFloaterTexturePicker::onBtnAlpha,this);
 	childSetAction("Blank", LLFloaterTexturePicker::onBtnWhite,this);
 	childSetAction("Invisible", LLFloaterTexturePicker::onBtnInvisible,this);
 
@@ -590,7 +592,7 @@ void LLFloaterTexturePicker::draw()
 		childSetEnabled("Default",  mImageAssetID != mOwner->getDefaultImageAssetID());
 		childSetEnabled("Blank",   mImageAssetID != mWhiteImageAssetID );
 		childSetEnabled("Invisible", mOwner->getAllowInvisibleTexture() && mImageAssetID != mInvisibleImageAssetID );
-		childSetEnabled("None", mOwner->getAllowNoTexture() && !mImageAssetID.isNull() );
+		childSetEnabled("Alpha", mImageAssetID != mAlphaImageAssetID );
 
 		LLFloater::draw();
 
@@ -734,10 +736,10 @@ void LLFloaterTexturePicker::onBtnInvisible(void* userdata)
 
 
 // static
-void LLFloaterTexturePicker::onBtnNone(void* userdata)
+void LLFloaterTexturePicker::onBtnAlpha(void* userdata)
 {
 	LLFloaterTexturePicker* self = (LLFloaterTexturePicker*) userdata;
-	self->setImageID( LLUUID::null );
+	self->setImageID(self->mAlphaImageAssetID);
 	self->commitIfImmediateSet();
 }
 

@@ -247,7 +247,6 @@
 #include "llao.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
-#include "llfloaterexportregion.h"
 // </edit>
 
 #include "scriptcounter.h"
@@ -2943,6 +2942,21 @@ class LLAvatarCopyUUID : public view_listener_t
 		char buffer[UUID_STR_LENGTH];		/*Flawfinder: ignore*/
 		uuid.toString(buffer);
 		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(buffer));
+		return true;
+	}
+};
+
+class LLAvatarClientUUID : public view_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+		if(!avatar) return true;
+		
+		std::string clientID;
+		LLColor4 color;
+		avatar->getClientInfo(clientID, color, false);
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID));
 		return true;
 	}
 };
@@ -9789,6 +9803,7 @@ void initialize_menus()
 	addMenu(new LLAvatarEnableAddFriend(), "Avatar.EnableAddFriend");
 	addMenu(new LLAvatarEnableFreezeEject(), "Avatar.EnableFreezeEject");
 	addMenu(new LLAvatarCopyUUID(), "Avatar.CopyUUID");
+	addMenu(new LLAvatarClientUUID(), "Avatar.ClientID");
 
 	// Object pie menu
 	addMenu(new LLObjectOpen(), "Object.Open");

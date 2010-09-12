@@ -1393,6 +1393,9 @@ bool idle_startup()
 		// Overwrite default user settings with user settings								 
 		LLAppViewer::instance()->loadSettingsFromDirectory("Account");
 
+		//User settings are loaded, get the AO settings - HgB
+		LLAO::refresh();
+
 		// Need to set the LastLogoff time here if we don't have one.  LastLogoff is used for "Recent Items" calculation
 		// and startup time is close enough if we don't have a real value.
 		if (gSavedPerAccountSettings.getU32("LastLogoff") == 0)
@@ -1430,7 +1433,6 @@ bool idle_startup()
 		LLFile::mkdir(user_windlight_days_path_name.c_str());
 		
 		// <edit>
-		LLAO::refresh();
 		LLFloaterBlacklist::loadFromSave();
 		// </edit>
 

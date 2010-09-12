@@ -192,11 +192,9 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			// touch behavior down below...
 			break;
 		case CLICK_ACTION_SIT:
-			if ((gAgent.getAvatarObject() != NULL) && (!gAgent.getAvatarObject()->mIsSitting)) // agent not already sitting
+			if ((gAgent.getAvatarObject() != NULL) && (!gAgent.getAvatarObject()->mIsSitting) 
+				&& (!gSavedSettings.getBOOL("DisableClickSit"))) // agent not already sitting
 			{
-				// <edit>
-				if(!gSavedSettings.getBOOL("DisableClickSit"))
-				// </edit>
 				handle_sit_or_stand();
 				// put focus in world when sitting on an object
 				gFocusMgr.setKeyboardFocus(NULL);

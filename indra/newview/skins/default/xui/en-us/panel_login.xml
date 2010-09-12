@@ -80,7 +80,7 @@
 			&lt;Type region name&gt;
 		</combo_item>
 	</combo_box>
-	<!--<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="45" drop_shadow_visible="true" follows="right|bottom"
 	     font="SansSerifSmall" font-style="UNDERLINE" h_pad="0" halign="right" height="16"
 	     left="-210" mouse_opaque="true" name="create_new_account_text" v_pad="0" width="200"
@@ -100,5 +100,5 @@
 	     left="-310" mouse_opaque="true" name="channel_text" v_pad="0" width="300"
 	     hover="true" hover_color="50 115 185">
 		[CHANNEL] [VERSION]
-	</text>-->
+	</text>
 </panel>

@@ -1,6 +1,6 @@
 <llsd>
     <map>
-	<key>8873757c-092a-98fb-1afd-ecd347566fcd</key>
+		<key>8873757c-092a-98fb-1afd-ecd347566fcd</key>
         <map>
         <key>color</key>
             <array>
@@ -9,182 +9,182 @@
                 <real>1</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>0</real>
-        <key>name</key>
+			<key>name</key>
             <string>Ascent</string>
         </map>
-	<key>f12457b5-762e-52a7-efad-8f17f3b022ee</key>
+		<key>f12457b5-762e-52a7-efad-8f17f3b022ee</key>
         <map>
         <key>color</key>
             <array>
-                <real>0.69999999999999996</real>
-                <real>0.80000000000000004</real>
-                <real>1.6000000238418579</real>
+                <real>0.7</real>
+                <real>0.8</real>
+                <real>1.6</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Anti-Life</string>
         </map>
-	<key>0f6723d2-5b23-6b58-08ab-308112b33786</key>
+		<key>0f6723d2-5b23-6b58-08ab-308112b33786</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>2</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>CryoLife</string>
         </map>
-	<key>e52d21f7-3c8b-819f-a3db-65c432295dac</key>
+		<key>e52d21f7-3c8b-819f-a3db-65c432295dac</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>2</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>CryoLife</string>
         </map>
-	<key>d0091f21-1eef-a4ad-b358-249a8e5432ea</key>
+		<key>d0091f21-1eef-a4ad-b358-249a8e5432ea</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>2</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>CryoLife</string>
         </map>
-	<key>7c4d47a3-0c51-04d1-fa47-e4f3ac12f59b</key>
+		<key>7c4d47a3-0c51-04d1-fa47-e4f3ac12f59b</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>2</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>CryoLife</string>
         </map>
-    <key>8183e823-c443-2142-6eb6-2ab763d4f81c</key>
+		<key>8183e823-c443-2142-6eb6-2ab763d4f81c</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>0</real>
                 <real>1</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>Day Oh proxy</string>
         </map>
-	<key>28b4da3f-5f9b-f44e-1387-6a115ab482c5</key>
-    <map>
-        <key>color</key>
-		<array>
-			<real>0.64314000000000004</real>
-			<real>0.89803999999999995</real>
-			<real>0.99607999999999997</real>
+		<key>28b4da3f-5f9b-f44e-1387-6a115ab482c5</key>
+		<map>
+			<key>color</key>
+			<array>
+				<real>0.64</real>
+				<real>0.9</real>
+				<real>1.0</real>
+				<real>1</real>
+			</array>
+			<key>multiple</key>
 			<real>1</real>
-		</array>
-		<key>multiple</key>
-		<real>1</real>
-        <key>name</key>
-        <string>Diamond</string>
-    </map>
-	<key>072343d0-1ce9-0952-4106-5312af4a789a</key>
+			<key>name</key>
+			<string>Diamond</string>
+		</map>
+		<key>072343d0-1ce9-0952-4106-5312af4a789a</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Emerald</string>
         </map>
-    <key>0ae2f973-98c1-a4e8-9f4b-9db2044ab079</key>
+		<key>0ae2f973-98c1-a4e8-9f4b-9db2044ab079</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Emerald</string>
         </map>
-	<key>1da8eb54-a70f-bd4a-77e5-c7b815c3b2a2</key>
+		<key>1da8eb54-a70f-bd4a-77e5-c7b815c3b2a2</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Emerald</string>
         </map>
-    <key>1e0948ab-706a-b309-434c-a694436a79be</key>
+		<key>1e0948ab-706a-b309-434c-a694436a79be</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Emerald</string>
         </map>
-    <key>4eb67510-0924-ebb1-50ca-8af5694cd267</key>
+		<key>4eb67510-0924-ebb1-50ca-8af5694cd267</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>2</real>
-        <key>name</key>
+			<key>name</key>
             <string>Emerald</string>
         </map>
-    <key>602243f4-8fb1-ac00-d5bc-7ab50c4433b7</key>
+		<key>602243f4-8fb1-ac00-d5bc-7ab50c4433b7</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>2</real>
@@ -280,7 +280,7 @@
         <key>name</key>
             <string>Emergence</string>
         </map>
-	<key>734fed29-4c51-63e5-1648-6589949d7585</key>
+		<key>734fed29-4c51-63e5-1648-6589949d7585</key>
         <map>
         <key>color</key>
             <array>
@@ -326,9 +326,9 @@
         <map>
         <key>color</key>
             <array>
-                <real>6.2999999999999998</real>
+                <real>6.3</real>
                 <real>3.5</real>
-                <real>7</real>
+                <real>7.0</real>
                 <real>1</real>
             </array>
         <key>multiple</key>
@@ -392,21 +392,7 @@
         <key>name</key>
             <string>nolife</string>
         </map>
-    <key>77662f23-c77a-9b4d-5558-26b757b2144c</key>
-        <map>
-        <key>color</key>
-            <array>
-                <real>0.60000002384185791</real>
-                <real>0.20000000298023224</real>
-                <real>0.80000001192092896</real>
-                <real>1</real>
-            </array>
-        <key>multiple</key>
-            <real>1</real>
-        <key>name</key>
-            <string>PSL</string>
-        </map>
-    <key>d95e0d9a-4d40-ea1b-a054-8db87f583f58</key>
+		<key>d95e0d9a-4d40-ea1b-a054-8db87f583f58</key>
         <map>
         <key>color</key>
             <array>
@@ -462,7 +448,7 @@
         <key>name</key>
             <string>Onyx</string>
         </map>
-	<key>ed63fbd0-589e-fe1d-a3d0-16905efaa96b</key>
+		<key>ed63fbd0-589e-fe1d-a3d0-16905efaa96b</key>
         <map>
         <key>color</key>
             <array>
@@ -477,6 +463,20 @@
             <string>Phoenix</string>
         </map>
 	<key>f3fd74a6-fee7-4b2f-93ae-ddcb5991da04</key>
+        <map>
+        <key>color</key>
+            <array>
+                <real>0.60000002384185791</real>
+                <real>0.20000000298023224</real>
+                <real>0.80000001192092896</real>
+                <real>1</real>
+            </array>
+        <key>multiple</key>
+            <real>1</real>
+        <key>name</key>
+            <string>PSL</string>
+        </map>
+		<key>77662f23-c77a-9b4d-5558-26b757b2144c</key>
         <map>
         <key>color</key>
             <array>
@@ -518,21 +518,49 @@
         <key>name</key>
             <string>Ruby</string>
         </map>
-	<key>872c0005-3095-0967-866d-11cd71115c22</key>
+		<key>872c0005-3095-0967-866d-11cd71115c22</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>1</real>
                 <real>2</real>
                 <real>3</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>3</real>
-        <key>name</key>
+			<key>name</key>
             <string>Simfed</string>
         </map>
-	<key>11ad2452-ce54-8d65-7c23-05589b59f516</key>
+		<key>11ad2452-ce54-8d65-7c23-05589b59f516</key>
+        <map>
+			<key>color</key>
+            <array>
+                <real>0</real>
+                <real>0.5</real>
+                <real>1</real>
+                <real>1</real>
+            </array>
+			<key>multiple</key>
+            <real>1</real>
+			<key>name</key>
+            <string>VerticalLife</string>
+        </map>
+		<key>e734563e-1c31-2a35-3ed5-8552c807439f</key>
+        <map>
+			<key>color</key>
+            <array>
+                <real>0</real>
+                <real>0.5</real>
+                <real>1</real>
+                <real>1</real>
+            </array>
+			<key>multiple</key>
+            <real>1</real>
+			<key>name</key>
+            <string>VerticalLife</string>
+        </map>
+		<key>3ab7e2fa-9572-ef36-1a30-d855dbea4f92</key>
         <map>
         <key>color</key>
             <array>
@@ -541,110 +569,82 @@
                 <real>1</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>VerticalLife</string>
         </map>
-	<key>e734563e-1c31-2a35-3ed5-8552c807439f</key>
+		<key>58a8b7ec-1455-7162-5d96-d3c3ead2ed71</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>0.5</real>
                 <real>1</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>VerticalLife</string>
         </map>
-	<key>3ab7e2fa-9572-ef36-1a30-d855dbea4f92</key>
+		<key>841ef25b-3b90-caf9-ea3d-5649e755db65</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>0</real>
                 <real>0.5</real>
                 <real>1</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>VerticalLife</string>
         </map>
-	<key>58a8b7ec-1455-7162-5d96-d3c3ead2ed71</key>
+		<key>c228d1cf-4b5d-4ba8-84f4-899a0796aa97</key>
         <map>
-        <key>color</key>
-            <array>
-                <real>0</real>
-                <real>0.5</real>
-                <real>1</real>
-                <real>1</real>
-            </array>
-        <key>multiple</key>
-            <real>1</real>
-        <key>name</key>
-            <string>VerticalLife</string>
-        </map>
-	<key>841ef25b-3b90-caf9-ea3d-5649e755db65</key>
-        <map>
-        <key>color</key>
-            <array>
-                <real>0</real>
-                <real>0.5</real>
-                <real>1</real>
-                <real>1</real>
-            </array>
-        <key>multiple</key>
-            <real>1</real>
-        <key>name</key>
-            <string>VerticalLife</string>
-        </map>
-	<key>c228d1cf-4b5d-4ba8-84f4-899a0796aa97</key>
-        <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>1</real>
                 <real>0.55000000000000004</real>
                 <real>0.75</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>Viewer 2.0</string>
         </map>
-    <key>c252d89d-6f7c-7d90-f430-d140d2e3fbbe</key>
+		<key>c252d89d-6f7c-7d90-f430-d140d2e3fbbe</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>1</real>
                 <real>0</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>1</real>
-        <key>name</key>
+			<key>name</key>
             <string>VLife</string>
         </map>
-    <key>c58fca06-33b3-827d-d81c-a886a631affc</key>
+		<key>c58fca06-33b3-827d-d81c-a886a631affc</key>
         <map>
-        <key>color</key>
+			<key>color</key>
             <array>
                 <real>1</real>
                 <real>0.61175999999999997</real>
                 <real>0</real>
                 <real>1</real>
             </array>
-        <key>multiple</key>
+			<key>multiple</key>
             <real>0</real>
-        <key>name</key>
+			<key>name</key>
             <string>Whale</string>
         </map>
-    <key>isComplete</key>
-        <string>true</string>
+		<key>isComplete</key>
+			<string>true</string>
     </map>
 </llsd>
