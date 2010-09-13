@@ -5838,15 +5838,14 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 				stopMotion(LLAO::mOverrides[id], stop_immediate);
 			}*/
 		}
-		/*else if this code ever works without crashing the viewer -HgB
+		else //if this code ever works without crashing the viewer -HgB
 		{
-			if (LLAO::mLastAnimation.notNull())
+			if (LLAO::mLastAnimation != LLUUID::null)
 			{
 				gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
-				stopMotion(LLAO::mLastAnimation, true);
-				LLAO::mLastAnimation.setNull();
+				LLAO::mLastAnimation = LLUUID::null;
 			}
-		}*/
+		}
 		// </edit>
 		gAgent.onAnimStop(id);
 	}
