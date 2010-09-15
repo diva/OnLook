@@ -374,10 +374,6 @@ LLPreviewGesture::LLPreviewGesture()
 	mSoundCombo(NULL),
 	mChatEditor(NULL),
 	mSaveBtn(NULL),
-	// <edit>
-	mDuplicateBtn(NULL),
-	mOpenBtn(NULL),
-	// </edit>
 	mPreviewBtn(NULL),
 	mPreviewGesture(NULL),
 	mDirty(FALSE)
@@ -739,8 +735,6 @@ void LLPreviewGesture::refresh()
 		mActiveCheck->setEnabled(FALSE);
 		mSaveBtn->setEnabled(FALSE);
 		// <edit>
-		mDuplicateBtn->setEnabled(TRUE);
-		mOpenBtn->setEnabled(TRUE);
 		mStepList->setEnabled(TRUE);
 		// </edit>
 
@@ -749,11 +743,7 @@ void LLPreviewGesture::refresh()
 		return;
 	}
 
-	// <edit>
-	//BOOL modifiable = item->getPermissions().allowModifyBy(gAgent.getID());
-	BOOL modifiable = TRUE;
-	mOpenBtn->setEnabled(TRUE);
-	// </edit>
+	BOOL modifiable = item->getPermissions().allowModifyBy(gAgent.getID());
 
 	childSetEnabled("desc", modifiable);
 	mTriggerEditor->setEnabled(TRUE);
@@ -802,9 +792,6 @@ void LLPreviewGesture::refresh()
 	mWaitAnimCheck->setVisible(FALSE);
 	mWaitTimeCheck->setVisible(FALSE);
 	mWaitTimeEditor->setVisible(FALSE);
-	// <edit>
-	mOpenBtn->setVisible(FALSE);
-	// </edit>
 
 	std::string optionstext;
 	
@@ -824,9 +811,6 @@ void LLPreviewGesture::refresh()
 				mAnimationRadio->setVisible(TRUE);
 				mAnimationRadio->setSelectedIndex((anim_step->mFlags & ANIM_FLAG_STOP) ? 1 : 0);
 				mAnimationCombo->setCurrentByID(anim_step->mAnimAssetID);
-				// <edit>
-				mOpenBtn->setVisible(TRUE);
-				// </edit>
 				break;
 			}
 		case STEP_SOUND:
@@ -835,9 +819,6 @@ void LLPreviewGesture::refresh()
 				optionstext = getString("step_sound");
 				mSoundCombo->setVisible(TRUE);
 				mSoundCombo->setCurrentByID(sound_step->mSoundAssetID);
-				// <edit>
-				mOpenBtn->setVisible(TRUE);
-				// </edit>
 				break;
 			}
 		case STEP_CHAT:

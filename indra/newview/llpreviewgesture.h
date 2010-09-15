@@ -192,10 +192,7 @@ protected:
 
 	LLCheckBoxCtrl*		mActiveCheck;
 	LLButton*			mSaveBtn;
-	// <edit>
-	LLButton*			mDuplicateBtn;
-	LLButton*			mOpenBtn;
-	// </edit>
+
 	LLButton*			mPreviewBtn;
 
 	LLMultiGesture*		mPreviewGesture;
