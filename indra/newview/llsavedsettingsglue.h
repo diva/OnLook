@@ -47,6 +47,22 @@ public:
 	static void setF32(LLUICtrl* ctrl, void* name);
 	static void setU32(LLUICtrl* ctrl, void* name);
 	static void setString(LLUICtrl* ctrl, void* name);
+
+	//Ascent Client-Or-Account Settings Get
+	static BOOL			getCOABOOL(std::string name);
+	static S32			getCOAS32(std::string name);
+	static F32			getCOAF32(std::string name);
+	static U32			getCOAU32(std::string name);
+	static std::string	getCOAString(std::string name);
+	static LLColor4		getCOAColor4(std::string name);
+
+	//Ascent Client-Or-Account Settings Set
+	static void setCOABOOL(std::string name, BOOL value);
+	static void setCOAS32(std::string name, S32 value);
+	static void setCOAF32(std::string name, F32 value);
+	static void setCOAU32(std::string name, U32 value);
+	static void setCOAString(std::string name, std::string value);
+	static void	setCOAColor4(std::string name, LLColor4 value);
 };
 
 #endif

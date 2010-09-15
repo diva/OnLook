@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel top="20" left="10" height="400" width="517" follows="left|top|right|bottom"
+<panel top="20" left="10" height="400" width="512" follows="left|top|right|bottom"
 	border="true" label="Ascent Vanity" name="ascvan" enabled="true" mouse_opaque="true">
-	<tab_container label="Ascent" bottom="0" height="440" width="500" left="0"
+	<tab_container label="Ascent" bottom="0" height="440" width="497" left="0"
 		name="Ascent Vanity" tab_min_width="90" tab_position="top">
 		<panel border="true" left="1" bottom="-190" height="180" width="500" mouse_opaque="true"
 				follows="left|top|right|bottom" label="General" name="General">
@@ -17,15 +17,14 @@
 			<!-- Client tag options -->
 			<view_border bevel_style="none" border_thickness="1" bottom="-115" follows="top|left"
 				height="110" left="5" name="GraphicsBorder" width="485" />
-			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			      bottom_delta="94" drop_shadow_visible="true" enabled="true" follows="left|top"
-	    		  font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
-		    	  left_delta="9" mouse_opaque="true" name="client_tag_text_box" v_pad="0"
-			      width="90">
-				Client Tag:
-			</text>
+			<check_box bottom_delta="90" control_name="AscentUseTag" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Use Client Tag:" left_delta="0"
+				tool_tip="Enabling this will show your client tag on your avatar name locally."
+				mouse_opaque="true" name="show_client_tag_check" radio_style="false"
+				width="400" />
 			<combo_box allow_text_entry="false" enabled="true" follows="left|top"
-		    	  bottom_delta="-28" height="18" hidden="false" left_delta="0" max_chars="20" mouse_opaque="true"
+		    	  bottom_delta="-24" height="18" hidden="false" left_delta="24" max_chars="20" mouse_opaque="true"
 				  tool_tip="The client tag (And subsequent color) to broadcast. Overridden locally by Custom Tag/Color."
 		    	  name="tag_spoofing_combobox" width="130">
 				<combo_item type="string" length="1" enabled="true" name="Ascent" 
@@ -36,14 +35,10 @@
 					value="734fed29-4c51-63e5-1648-6589949d7585">
 					Explicit
 				</combo_item>
-				<combo_item type="string" length="1" enabled="true" name="Hide Tag" 
-					value="c228d1cf-4b5d-4ba8-84f4-899a0796aa97">
-					No Tag
-				</combo_item>
 			</combo_box>
 			<check_box bottom_delta="-23" control_name="AscentShowSelfTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-				label="Display client tag to self" left_delta="0"
+				label="Display client tag to self" left_delta="-24"
 				tool_tip="Enabling this will show your client tag on your avatar name locally."
 				mouse_opaque="true" name="show_self_tag_check" radio_style="false"
 				width="400" />
@@ -53,39 +48,58 @@
 				tool_tip="Enabling this set your avatar name color to your client tag color or custom set color."
 				mouse_opaque="true" name="show_self_tag_color_check" radio_style="false"
 				width="400" />
-      <check_box bottom_delta="-20" control_name="AscentShowFriendsTag" enabled="true"
+			<check_box bottom_delta="-20" control_name="AscentShowFriendsTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Display friend client tags as (Friend)" left_delta="0"
 				tool_tip="Enabling this changes your friends' client tags to (Friend)."
 				mouse_opaque="true" name="show_friend_tag_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="65" control_name="AscentUseCustomTag" enabled="true"
+			<!-- End of Left Side -->
+			<check_box bottom_delta="87" control_name="AscentUseCustomTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Use a custom color and label (Local only)" left_delta="230"
 				tool_tip="Enabling this will let you set your own name tag to show up with your custom client and tag color. This only shows up to yourself."
 				mouse_opaque="true" name="customize_own_tag_check" radio_style="false"
 				width="400" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				bottom_delta="-16" left_delta="0" drop_shadow_visible="true" enabled="true" follows="left|top"
+				bottom_delta="-17" left_delta="25" drop_shadow_visible="true" enabled="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="10" 
 				mouse_opaque="true" name="custom_tag_label_text" v_pad="0" width="394">
-				Tag Label:
+				Label:
 			</text>
-			<line_editor bottom_delta="-8" enabled="true" follows="left|top" font="SansSerif"
-				height="20" left_delta="60" name="custom_tag_label_box"
+			<line_editor bottom_delta="-6" enabled="true" follows="left|top" font="SansSerif"
+				height="18" left_delta="35" name="custom_tag_label_box"
 				tool_tip="The custom string you would like to replace your client tag with (Local only)"
-				width="170" />
+				width="100" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-				bottom_delta="-25" left_delta="-60" drop_shadow_visible="true" enabled="true" follows="left|top"
+				bottom_delta="6" left_delta="110" drop_shadow_visible="true" enabled="true" follows="left|top"
 				font="SansSerifSmall" h_pad="0" halign="left" height="10" 
 				mouse_opaque="true" name="custom_tag_color_text" v_pad="0" width="394">
-				Tag color:
+				Color:
 			</text>
-			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-29"
+			<color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-22"
 				can_apply_immediately="false" color="1 1 1 1"
-				enabled="true" follows="left|top" height="48" label="" left_delta="60"
+				enabled="true" follows="left|top" height="34" label="" left_delta="35"
 				mouse_opaque="true" name="custom_tag_color_swatch"
-				tool_tip="The custom color you would like to replace your client color with (Local only)" width="32" />
+				tool_tip="The custom color you would like to replace your client color with (Local only)" width="30" />
+			<check_box bottom_delta="-8" control_name="AscentShowOthersTag" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Display client tag for others" left_delta="-205"
+				tool_tip="Enabling this will show client tag names on others' avatar names."
+				mouse_opaque="true" name="show_client_tag_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentShowOthersTagColor" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Display client tag color for others" left_delta="0"
+				tool_tip="Enabling this sets others' avatar name color to their client's color."
+				mouse_opaque="true" name="show_client_tag_color_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentShowIdleTime" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Show Idle Time" left_delta="0"
+				tool_tip="Enabling this will show the amount of time an avatar has been idle."
+				mouse_opaque="true" name="show_idle_time_check" radio_style="false"
+				width="400" />
 			<!-- End of Client Tag settings -->
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 				bottom="-143" drop_shadow_visible="true" enabled="true" follows="left|top"

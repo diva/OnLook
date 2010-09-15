@@ -87,6 +87,7 @@
 #include "llvoicevisualizer.h" // Ventrella
 
 #include "llsdserialize.h" //For the client definitions
+#include "llsavedsettingsglue.h" //For optionally per-account settings
 // <edit>
 #include "llfloaterexploreanimations.h"
 #include "llao.h"
@@ -3312,11 +3313,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 	if (mIsSelf)
 	{
-		BOOL showCustomTag;
-		if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-			showCustomTag = gSavedSettings.getBOOL("AscentUseCustomTag");
-		else
-			showCustomTag = gSavedPerAccountSettings.getBOOL("AscentUseCustomTag");
+		BOOL showCustomTag = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
 		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
 		{
 			color = gColors.getColor( "AvatarNameColor" );
@@ -3324,26 +3321,12 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		}
 		else if (showCustomTag)
 		{
-			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-			{
-				color = gSavedSettings.getColor4("AscentCustomTagColor");
-				client = gSavedSettings.getString("AscentCustomTagLabel");
-			}
-			else
-			{
-				color = gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
-				client = gSavedPerAccountSettings.getString("AscentCustomTagLabel");
-			}
+			color = LLSavedSettingsGlue::getCOAColor4("AscentCustomTagColor");
+			client = LLSavedSettingsGlue::getCOAString("AscentCustomTagLabel");
 			return;
 		}
-		else if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-		{
-			uuid_str = gSavedSettings.getString("AscentReportClientUUID");
-		}
-		else
-		{
-			uuid_str = gSavedPerAccountSettings.getString("AscentReportClientUUID");
-		}
+		else if (gSavedSettings.getBOOL("AscentUseTag"))
+			uuid_str = LLSavedSettingsGlue::getCOAString("AscentReportClientUUID");
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
 	{
@@ -3561,7 +3544,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						//Zwagoth's new client identification - HgB
 						// Overwrite the current tag/color settings if new method
 						// exists -- charbl.
-						/*const LLTextureEntry* texentry = getTE(0);
+						const LLTextureEntry* texentry = getTE(0);
 						if(texentry->getGlow() > 0.0)
 						{
 							llinfos << "Using new client identifier." << llendl;
@@ -3577,11 +3560,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 							mClientColor = texentry->getColor();
 						}
 						else
-						{*/
+						{
 							llinfos << "Using Emerald-style client identifier." << llendl;
 							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
 							getClientInfo(mClientTag,mClientColor);
-						//}	
+						}	
 					}
 
 					// Overwrite the tag/color shit yet again if we want to see
@@ -3591,15 +3574,15 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
 						{
 							mClientTag = "Friend";
-							if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-								mClientColor = gSavedSettings.getColor4("AscentFriendColor");
-							else
-								mClientColor = gSavedPerAccountSettings.getColor4("AscentFriendColor");
+							mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
 						}
 					}
 				}
+
 				client = mClientTag;
-				avatar_name_color = mClientColor;
+				if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTagColor"))
+							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTagColor")))
+					avatar_name_color = mClientColor;
 
 				avatar_name_color.setAlpha(alpha);
 					
@@ -3707,7 +3690,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				{
 					if ((client != "")&&(client != "?"))
 					{
-						if ((!mIsSelf)||(gSavedSettings.getBOOL("AscentShowSelfTag")))
+						if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTag"))
+							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTag")))
 						{
 							additions += client;
 							need_comma = TRUE;
@@ -3749,7 +3733,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line += "\n";
 					line += "(Editing Appearance)";
 				}
-				if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120)
+				if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120 && gSavedSettings.getBOOL("AscentShowIdleTime"))
 				{
 					line += "\n";
 					line += getIdleTime();

@@ -44,6 +44,7 @@
 #include "v4color.h"
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
+#include "llsavedsettingsglue.h"
 #include "llwind.h"
 #include "llviewernetwork.h"
 #include "pipeline.h"
@@ -112,16 +113,8 @@ void LLPrefsAscentVanImpl::onCommitColor(LLUICtrl* ctrl, void* user_data)
 	{
 		
 		llinfos << "Recreating color message for tag update." << llendl;
-		if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-		{
-			gSavedSettings.setString("AscentCustomTagLabel",		self->childGetValue("custom_tag_label_box"));
-			gSavedSettings.setColor4("AscentCustomTagColor",		self->childGetValue("custom_tag_color_swatch"));
-		}
-		else
-		{
-			gSavedPerAccountSettings.setString("AscentCustomTagLabel",	self->childGetValue("custom_tag_label_box"));
-			gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	self->childGetValue("custom_tag_color_swatch"));
-		}
+		LLSavedSettingsGlue::setCOAString("AscentCustomTagLabel",		self->childGetValue("custom_tag_label_box"));
+		LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor",		self->childGetValue("custom_tag_color_swatch"));
 		gAgent.sendAgentSetAppearance();
 		gAgent.resetClientTag();
 	}
@@ -154,10 +147,7 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	}
 
 	BOOL showCustomOptions;
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-		showCustomOptions = gSavedSettings.getBOOL("AscentUseCustomTag");
-	else
-		showCustomOptions = gSavedPerAccountSettings.getBOOL("AscentUseCustomTag");
+	showCustomOptions = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
 	self->childSetValue("customize_own_tag_check", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_text", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_box", showCustomOptions);
@@ -177,52 +167,25 @@ void LLPrefsAscentVanImpl::refreshValues()
 	mShowSelfClientTagColor		= gSavedSettings.getBOOL("AscentShowSelfTagColor");	
 	mCustomTagOn				= gSavedSettings.getBOOL("AscentUseCustomTag");
 	
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+	mSelectedClient			= LLSavedSettingsGlue::getCOAU32("AscentReportClientIndex");
+	mEffectColor			= LLSavedSettingsGlue::getCOAColor4("EffectColor");
+	if (LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag"))
 	{
-		mSelectedClient			= gSavedSettings.getU32("AscentReportClientIndex");
-		mEffectColor			= gSavedSettings.getColor4("EffectColor");
-		if (gSavedSettings.getBOOL("AscentUseCustomTag"))
-		{
-			childEnable("custom_tag_label_text");
-			childEnable("custom_tag_label_box");
-			childEnable("custom_tag_color_text");
-			childEnable("custom_tag_color_swatch");
-		}
-		else
-		{
-			childDisable("custom_tag_label_text");
-			childDisable("custom_tag_label_box");
-			childDisable("custom_tag_color_text");
-			childDisable("custom_tag_color_swatch");
-		}
-		mCustomTagLabel			= gSavedSettings.getString("AscentCustomTagLabel");
-		mCustomTagColor			= gSavedSettings.getColor4("AscentCustomTagColor");
-		mFriendColor			= gSavedSettings.getColor4("AscentFriendColor");
+		childEnable("custom_tag_label_text");
+		childEnable("custom_tag_label_box");
+		childEnable("custom_tag_color_text");
+		childEnable("custom_tag_color_swatch");
 	}
 	else
 	{
-		mSelectedClient			= gSavedPerAccountSettings.getU32("AscentReportClientIndex");
-		mEffectColor			= gSavedPerAccountSettings.getColor4("EffectColor");
-		if (gSavedPerAccountSettings.getBOOL("AscentUseCustomTag"))
-		{
-			childEnable("custom_tag_label_text");
-			childEnable("custom_tag_label_box");
-			childEnable("custom_tag_color_text");
-			childEnable("custom_tag_color_swatch");
-		}
-		else
-		{
-			childDisable("custom_tag_label_text");
-			childDisable("custom_tag_label_box");
-			childDisable("custom_tag_color_text");
-			childDisable("custom_tag_color_swatch");
-		}
-		mCustomTagLabel			= gSavedPerAccountSettings.getString("AscentCustomTagLabel");
-		mCustomTagColor			= gSavedPerAccountSettings.getColor4("AscentCustomTagColor");
-		mFriendColor			= gSavedPerAccountSettings.getColor4("AscentFriendColor");
+		childDisable("custom_tag_label_text");
+		childDisable("custom_tag_label_box");
+		childDisable("custom_tag_color_text");
+		childDisable("custom_tag_color_swatch");
 	}
-	
-	
+	mCustomTagLabel			= LLSavedSettingsGlue::getCOAString("AscentCustomTagLabel");
+	mCustomTagColor			= LLSavedSettingsGlue::getCOAColor4("AscentCustomTagColor");
+	mFriendColor			= LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
 }
 
 void LLPrefsAscentVanImpl::refresh()
@@ -240,28 +203,13 @@ void LLPrefsAscentVanImpl::refresh()
 	childSetValue("customize_own_tag_check", mCustomTagOn);
 	childSetValue("custom_tag_label_box", mCustomTagLabel);
 	
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		llinfos << "Retrieving color from client" << llendl;
-		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
-		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
-		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
-		gSavedSettings.setColor4("EffectColor", LLColor4::white);
-		gSavedSettings.setColor4("EffectColor", mEffectColor);
-		gSavedSettings.setColor4("AscentFriendColor", LLColor4::yellow);
-		gSavedSettings.setColor4("AscentFriendColor", mFriendColor);
-	}
-	else
-	{
-		llinfos << "Retrieving color from account" << llendl;
-		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
-		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
-		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
-		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
-		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
-		gSavedPerAccountSettings.setColor4("AscentFriendColor", LLColor4::yellow);
-		gSavedPerAccountSettings.setColor4("AscentFriendColor", mFriendColor);
-	}
+	getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
+	getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+	getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
+	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
+	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
+	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", LLColor4::yellow);
+	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", mFriendColor);
 	gAgent.resetClientTag();
 }
 
@@ -279,28 +227,13 @@ void LLPrefsAscentVanImpl::cancel()
 	childSetValue("customize_own_tag_check", mCustomTagOn);
 	childSetValue("custom_tag_label_box", mCustomTagLabel);
 	
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		llinfos << "Retrieving color from client" << llendl;
-		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
-		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
-		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
-		gSavedSettings.setColor4("EffectColor", LLColor4::white);
-		gSavedSettings.setColor4("EffectColor", mEffectColor);
-		gSavedSettings.setColor4("AscentFriendColor", LLColor4::yellow);
-		gSavedSettings.setColor4("AscentFriendColor", mFriendColor);
-	}
-	else
-	{
-		llinfos << "Retrieving color from account" << llendl;
-		getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
-		getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
-		getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
-		gSavedPerAccountSettings.setColor4("EffectColor", LLColor4::white);
-		gSavedPerAccountSettings.setColor4("EffectColor", mEffectColor);
-		gSavedPerAccountSettings.setColor4("AscentFriendColor", LLColor4::yellow);
-		gSavedPerAccountSettings.setColor4("AscentFriendColor", mFriendColor);
-	}
+	getChild<LLColorSwatchCtrl>("effect_color_swatch")->set(mEffectColor);
+	getChild<LLColorSwatchCtrl>("custom_tag_color_swatch")->set(mCustomTagColor);
+	getChild<LLColorSwatchCtrl>("friend_color_swatch")->set(mFriendColor);
+	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
+	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
+	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", LLColor4::yellow);
+	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", mFriendColor);
 }
 
 void LLPrefsAscentVanImpl::apply()
@@ -319,18 +252,8 @@ void LLPrefsAscentVanImpl::apply()
 		if (client_index != mSelectedClient)
 		{
 			client_uuid = combo->getSelectedValue().asString();
-			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-			{
-				llinfos << "Setting texture to: " << client_uuid << llendl;
-				gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
-				gSavedSettings.setU32("AscentReportClientIndex",  client_index);
-			}
-			else
-			{
-				llinfos << "Setting texture to: " << client_uuid << llendl;
-				gSavedPerAccountSettings.setString("AscentReportClientUUID",  client_uuid);
-				gSavedPerAccountSettings.setU32("AscentReportClientIndex",  client_index);
-			}
+			LLSavedSettingsGlue::setCOAString("AscentReportClientUUID",  client_uuid);
+			LLSavedSettingsGlue::setCOAU32("AscentReportClientIndex",  client_index);
 			LLVOAvatar* avatar = gAgent.getAvatarObject();
 			if (!avatar) return;
 
@@ -342,27 +265,12 @@ void LLPrefsAscentVanImpl::apply()
 	gSavedSettings.setBOOL("AscentShowSelfTag",			childGetValue("show_self_tag_check"));
 	gSavedSettings.setBOOL("AscentShowSelfTagColor",	childGetValue("show_self_tag_color_check"));
 
-	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-	{
-		llinfos << "Storing color in client" << llendl;
-		gSavedSettings.setColor4("EffectColor",				childGetValue("effect_color_swatch"));
-		gSavedSettings.setColor4("AscentFriendColor",		childGetValue("friend_color_swatch"));
-		gSavedSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
-		gSavedSettings.setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
-		gSavedSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
-	}
-	else
-	{
-		llinfos << "Storing color in account" << llendl;
-		gSavedPerAccountSettings.setColor4("EffectColor",			childGetValue("effect_color_swatch"));
-		gSavedPerAccountSettings.setColor4("AscentFriendColor",		childGetValue("friend_color_swatch"));
-		gSavedPerAccountSettings.setBOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
-		gSavedPerAccountSettings.setString("AscentCustomTagLabel",	childGetValue("custom_tag_label_box"));
-		gSavedPerAccountSettings.setColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
-	}
-
+	LLSavedSettingsGlue::setCOAColor4("EffectColor",			childGetValue("effect_color_swatch"));
+	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor",		childGetValue("friend_color_swatch"));
+	LLSavedSettingsGlue::setCOABOOL("AscentUseCustomTag",		childGetValue("customize_own_tag_check"));
+	LLSavedSettingsGlue::setCOAString("AscentCustomTagLabel",	childGetValue("custom_tag_label_box"));
+	LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor",	childGetValue("custom_tag_color_swatch"));
 	
-
 	refreshValues();
 }
 

@@ -57,6 +57,50 @@
 		<key>Value</key>
 		<integer>1</integer>
 	</map>
+	<key>AscentUseTag</key>
+	<map>
+		<key>Comment</key>
+		<string>Broadcast client tag</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentShowIdleTime</key>
+	<map>
+		<key>Comment</key>
+		<string>Show client tags for others.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentShowOthersTag</key>
+	<map>
+		<key>Comment</key>
+		<string>Show client tags for others.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentShowOthersTagColor</key>
+	<map>
+		<key>Comment</key>
+		<string>Show avatar names in the color of their client.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
 	<key>AscentBuildAlwaysEnabled</key>
     <map>
       <key>Comment</key>
@@ -787,7 +831,7 @@
 	<key>AscentAlwaysRezInGroup</key>
     <map>
       <key>Comment</key>
-      <string>Show your own tag</string>
+      <string>Always rez under the owned land group</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

@@ -50,6 +50,7 @@
 #include "llframetimer.h"
 #include "lltracker.h"
 #include "llmenugl.h"
+#include "llsavedsettingsglue.h"
 #include "llsurface.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
@@ -356,34 +357,22 @@ void LLNetMap::draw()
 			//Lindens are always more Linden than your friend, make that take precedence
 			if(LLMuteList::getInstance()->isLinden(avName))
 			{
-				if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-					avColor = gSavedSettings.getColor4("AscentLindenColor");
-				else
-					avColor = gSavedPerAccountSettings.getColor4("AscentLindenColor");
+				avColor = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
 			}
 			//check if they are an estate owner at their current position
 			else if(estate_owner.notNull() && avatar_ids[i] == estate_owner)
 			{
-				if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-					avColor = gSavedSettings.getColor4("AscentEstateOwnerColor");
-				else
-					avColor = gSavedPerAccountSettings.getColor4("AscentEstateOwnerColor");
+				avColor = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
 			}
 			//without these dots, SL would suck.
 			else if(is_agent_friend(avatar_ids[i]))
 			{
-				if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-					avColor = gSavedSettings.getColor4("AscentFriendColor");
-				else
-					avColor = gSavedPerAccountSettings.getColor4("AscentFriendColor");
+				avColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
 			}
 			//big fat jerkface who is probably a jerk, display them as such.
 			else if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
 			{
-				if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
-					avColor = gSavedSettings.getColor4("AscentMutedColor");
-				else
-					avColor = gSavedPerAccountSettings.getColor4("AscentMutedColor");
+				avColor = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
 			}
 
 			LLWorldMapView::drawAvatar(
