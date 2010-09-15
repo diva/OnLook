@@ -104,7 +104,7 @@ if (VIEWER)
   endif (LINUX)
 
   add_subdirectory(${VIEWER_PREFIX}newview)
-  add_dependencies(viewer secondlife-bin)
+  add_dependencies(viewer Ascent)
 endif (VIEWER)
 
 # Linux builds the viewer and server in 2 separate projects
