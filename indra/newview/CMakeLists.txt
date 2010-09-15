@@ -171,7 +171,6 @@ set(viewer_SOURCE_FILES
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
     llfloaterexport.cpp
-    llfloaterexportregion.cpp
     llfloaterexploreanimations.cpp
 	llfloaterexploresounds.cpp
     llfloaterfriends.cpp
@@ -620,7 +619,6 @@ set(viewer_HEADER_FILES
     llfloatereditui.h
     llfloaterenvsettings.h
     llfloaterexport.h
-    llfloaterexportregion.h
     llfloaterexploreanimations.h
 	llfloaterexploresounds.h
     llfloaterevent.h
