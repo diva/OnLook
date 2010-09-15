@@ -7,6 +7,7 @@
 <floater
 	name="floater_contact_groups"
 	title="Manage Contact Groups"
+	rect_control="FloaterContactRect"
 	can_resize="true"
 	can_minimize="false"
 	can_close="true"
