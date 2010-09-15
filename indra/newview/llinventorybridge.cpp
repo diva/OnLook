@@ -4011,6 +4011,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 			if( avatarp->isWearingAttachment( mUUID ) )
 			{
+				items.push_back(std::string("Attach Separator"));
 				items.push_back(std::string("Detach From Yourself"));
 			}
 			else
@@ -4034,7 +4035,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 				items.push_back(std::string("Object Wear"));
 				items.push_back(std::string("Attach To"));
 				items.push_back(std::string("Attach To HUD"));
-				// commented out for DEV-32347 - AND Commented back in for non-morons.
+				// commented out for DEV-32347 - AND Commented back in for non-morons. -HgB
 				items.push_back(std::string("Restore to Last Position"));
 
 
