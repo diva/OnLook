@@ -102,6 +102,10 @@
 #include "llspatialpartition.h"
 #include "llmutelist.h"
 
+#if !LL_DARWIN
+#include "llfloaterhardwaresettings.h"
+#endif
+
 #ifdef _DEBUG
 // Debug indices is disabled for now for debug performance - djs 4/24/02
 //#define DEBUG_INDICES
@@ -321,6 +325,7 @@ void LLPipeline::init()
 
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
+	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
 	sRenderAttachedLights = gSavedSettings.getBOOL("RenderAttachedLights");
 	sRenderAttachedParticles = gSavedSettings.getBOOL("RenderAttachedParticles");
 
@@ -4911,6 +4916,10 @@ void LLPipeline::setUseVBO(BOOL use_vbo)
 		
 		resetVertexBuffers();
 		LLVertexBuffer::initClass(use_vbo);
+#if !LL_DARWIN
+		if(LLFloaterHardwareSettings::isOpen())
+			LLFloaterHardwareSettings::instance()->refreshEnabledState();
+#endif
 	}
 }
 

@@ -161,10 +161,9 @@ namespace
 				fstream.seekg(0, std::ios::end);
 				U32 fileSize = fstream.tellg();
 				fstream.seekg(0, std::ios::beg);
-				char* fileBuffer;
-				fileBuffer = new char [fileSize];
-				fstream.read(fileBuffer, fileSize);
-				ostream.write(fileBuffer, fileSize);
+				std::vector<char> fileBuffer(fileSize); //Mem leak fix'd
+				fstream.read(&fileBuffer[0], fileSize);
+				ostream.write(&fileBuffer[0], fileSize);
 				fstream.close();
 				eos = true;
 				return STATUS_DONE;
@@ -191,10 +190,9 @@ namespace
 			
 			LLVFile vfile(gVFS, mUUID, mAssetType, LLVFile::READ);
 			S32 fileSize = vfile.getSize();
-			U8* fileBuffer;
-			fileBuffer = new U8 [fileSize];
-            vfile.read(fileBuffer, fileSize);
-            ostream.write((char*)fileBuffer, fileSize);
+			std::vector<U8> fileBuffer(fileSize);
+			vfile.read(&fileBuffer[0], fileSize);
+			ostream.write((char*)&fileBuffer[0], fileSize);
 			eos = true;
 			return STATUS_DONE;
 		}
@@ -340,6 +338,20 @@ void LLHTTPClient::get(const std::string& url, const LLSD& query, ResponderPtr r
 	uri = LLURI::buildHTTP(url, LLSD::emptyArray(), query);
 	get(uri.asString(), responder, headers, timeout);
 }
+
+class LLHTTPFileBuffer
+{
+public:
+	llofstream * stream;
+	LLHTTPFileBuffer(llofstream * fstream):stream(fstream){}
+	static size_t curl_write( void *ptr, size_t size, size_t nmemb, void *user_data)
+	{
+		LLHTTPFileBuffer* self = (LLHTTPFileBuffer*)user_data;
+		size_t bytes = (size * nmemb);
+		self->stream->write((char*)ptr,bytes);
+		return nmemb;
+	}
+};
 
 // A simple class for managing data returned from a curl http request.
 class LLHTTPBuffer

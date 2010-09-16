@@ -2,10 +2,21 @@
 <llsd>
 <map>
 	<!--Expanded settings from Vanilla SL -->
+	<key>ShyotlRenderUseStreamVBO</key>
+	<map>
+		<key>Comment</key>
+		<string>Use VBO's for stream buffers</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
 	<key>AscentShowLookAt</key>
 	<map>
 		<key>Comment</key>
-		<string>Avatar position modifier (X)</string>
+		<string>Show Others' Lookat points</string>
 		<key>Persist</key>
 		<integer>1</integer>
 		<key>Type</key>

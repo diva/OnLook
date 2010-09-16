@@ -255,7 +255,7 @@ PFNGLGETACTIVEATTRIBARBPROC glGetActiveAttribARB = NULL;
 PFNGLGETATTRIBLOCATIONARBPROC glGetAttribLocationARB = NULL;
 
 #if LL_WINDOWS
-PFNWGLSWAPINTERVALEXTPROC      wglSwapIntervalEXT = NULL;
+PFNWGLSWAPINTERVALEXTPROC		wglSwapIntervalEXT = NULL;
 #endif
 
 #if LL_LINUX_NV_GL_HEADERS
@@ -748,11 +748,13 @@ void LLGLManager::initExtensions()
 		LL_INFOS("RenderInit") << "Disabling mip-map generation for Intel GPUs" << LL_ENDL;
 		mHasMipMapGeneration = FALSE;
 	}
+	//Don't do this! This has since been fixed. I've benchmarked it. Hardware generation considerably faster. -Shyotl
+	/*
 	if (mIsATI && mHasMipMapGeneration)
 	{
 		LL_INFOS("RenderInit") << "Disabling mip-map generation for ATI GPUs (performance opt)" << LL_ENDL;
 		mHasMipMapGeneration = FALSE;
-	}
+	}*/
 	
 	// Misc
 	glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, (GLint*) &mGLMaxVertexRange);
