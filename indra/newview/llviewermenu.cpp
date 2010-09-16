@@ -747,20 +747,13 @@ void init_menus()
 	LLMenuGL*menu;
 
 	menu = new LLMenuGL("Ascent");
-	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
+	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
+										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
+	menu->appendSeparator();
 	menu->append(new LLMenuItemCallGL(  "Fake Away Status", &handle_fake_away_status, NULL));
 	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
-	menu->append(new LLMenuItemCallGL(  "Toggle IM Typing Notification", &handle_hide_typing_notification, NULL));
-	menu->append(new LLMenuItemCallGL(	"Close All Dialogs", 
-										&handle_close_all_notifications, NULL, NULL, 'D', MASK_CONTROL | MASK_ALT | MASK_SHIFT));
-	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
-
-	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
-											&handle_sounds_explorer, NULL));
-	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
-											&handle_blacklist, NULL));
-	
+	menu->appendSeparator();
 	menu->append(new LLMenuItemCheckGL( "Enable AO",
 									&menu_toggle_control,
 									NULL,
@@ -778,6 +771,17 @@ void init_menus()
 										NULL,
 										&menu_check_control,
 										(void*)"ReSit"));
+	menu->appendSeparator();
+	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
+	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
+
+	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
+											&handle_sounds_explorer, NULL));
+	menu->append(new LLMenuItemCallGL(	"Asset Blacklist",
+											&handle_blacklist, NULL));
+	
+	
+	
 	// <dogmode>
 	// Add in the pose stand -------------------------------------------
 	LLMenuGL* sub = new LLMenuGL("Pose Stand");
