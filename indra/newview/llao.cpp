@@ -476,6 +476,63 @@ void LLFloaterAO::onClickAnimAdd(void* user_data)
 	}
 	onCommitAnim(NULL,user_data);
 }
+
+BOOL LLFloaterAO::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
+										 EDragAndDropType cargo_type,
+										 void* cargo_data,
+										 EAcceptance* accept,
+										 std::string& tooltip_msg)
+{
+	BOOL handled = TRUE;
+	switch(cargo_type)
+	{
+	case DAD_ANIMATION:
+		{
+			LLInventoryItem* item = (LLInventoryItem*)cargo_data;
+			if (item
+				&& gInventory.getItem(item->getUUID()))
+			{
+				if (drop)
+				{
+					if (cargo_type == DAD_ANIMATION)
+					{
+						std::string anim_name = item->getName();
+						if (anim_name == "")
+							return true;
+						LLUUID id(LLAO::getAssetIDByName(anim_name));
+#ifdef AO_DEBUG
+						llinfos << "Actually adding animation, this should be refreshed. Count:" << LLAO::mAnimationOverrides[mCurrentAnimType].size() << llendl;
+#endif
+						LLAO::mAnimationOverrides[mCurrentAnimType].append(anim_name);
+#ifdef AO_DEBUG
+						llinfos << "Added animation. Count:" << LLAO::mAnimationOverrides[mCurrentAnimType].size() << llendl;
+#endif
+						LLAO::mTimer->reset();
+						onCommitAnim(NULL,this);
+					}
+					refresh();
+				}
+				*accept = ACCEPT_YES_COPY_MULTI;
+			}
+			else
+			{
+				// Not in user's inventory means it was in object inventory
+				*accept = ACCEPT_NO;
+			}
+			break;
+		}
+	default:
+		*accept = ACCEPT_NO;
+		if (tooltip_msg.empty())
+		{
+			tooltip_msg.assign("Only animations can be added to the AO.");
+		}
+		break;
+	}
+	return handled;
+}
+
+
 //static
 void LLFloaterAO::onClickSave(void* user_data)
 {

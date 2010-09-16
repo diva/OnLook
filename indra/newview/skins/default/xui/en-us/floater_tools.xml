@@ -1227,6 +1227,10 @@
 					weave
 				</combo_item>
 			</combo_box>
+			<check_box bottom="-148" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" enabled="false" label="Align planar textures"
+				left="8" mouse_opaque="true" name="checkbox planar align" width="160"
+				tool_tip="Aligns textures on all selected faces to the last selected face. Requires Planar texture mapping." />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-158" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
@@ -1295,12 +1299,18 @@
 			<button bottom="-360" follows="left|top" font="SansSerifSmall" halign="center"
 			     height="20" label="Align" label_selected="Align" left="112"
 			     mouse_opaque="true" name="button align" scale_image="TRUE" width="68" />
-			<button bottom="-360" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Copy" left="80" mouse_opaque="true" name="copytextures"  enabled="true"
-			     tool_tip="Copy Testure Params from Clipboard"  width="50" />
-	  		<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Paste" left_delta="50" mouse_opaque="true" name="pastetextures"  enabled="true"
-			     tool_tip="Paste Texture Params from Clipboard"  width="50" />
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom="-322" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="left" height="20" left="185"
+			     mouse_opaque="true" name="textbox params" v_pad="0" width="160">
+				Texture Params
+			</text>
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="20" label="Copy" left_delta="5" mouse_opaque="true" name="copytextures"  enabled="true"
+			     tool_tip="Copy Testure Params from Clipboard"  width="68" />
+	  		<button bottom_delta="-20" follows="top|right" font="SansSerifSmall" halign="center"
+			     height="20" label="Paste" left_delta="0" mouse_opaque="true" name="pastetextures"  enabled="true"
+			     tool_tip="Paste Texture Params from Clipboard"  width="68" />
     	</panel>
     	<panel border="true" bottom="-383" follows="left|top|right|bottom" height="367"
 		     label="Content" left="1" mouse_opaque="false" name="Contents" width="270">

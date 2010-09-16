@@ -70,7 +70,11 @@ public:
 	static void onClickAnimAdd(void* user_data);
 	static void onClickSave(void* user_data);
 	static void onClickLoad(void* user_data);
-	
+	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
+									 EDragAndDropType cargo_type,
+									 void* cargo_data,
+									 EAcceptance* accept,
+									 std::string& tooltip_msg);
 private:
 	LLComboBox*			mAnimListCombo;
 	LLComboBox*			mAnimTypeCombo;
