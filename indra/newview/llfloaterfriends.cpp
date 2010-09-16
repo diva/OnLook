@@ -240,8 +240,8 @@ void LLPanelFriends::populateContactGroupSelect()
 				if ((name == ".") || (name == "..")) continue;
 
 				combo->add(name, ADD_BOTTOM);
-				LLChat msg("Combo Add " + name);
-				LLFloaterChat::addChat(msg);
+				//LLChat msg("Combo Add " + name);
+				//LLFloaterChat::addChat(msg);
 			}
 		}
 	}
