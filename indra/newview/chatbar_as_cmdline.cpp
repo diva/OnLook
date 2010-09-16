@@ -207,9 +207,10 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 		std::istringstream i(revised_text);
 		std::string command;
 		i >> command;
+		command = utf8str_tolower(command);
 		if(command != "")
 		{
-			if(command == gSavedSettings.getString("AscentCmdLinePos"))
+			if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLinePos")))
 			{
 				F32 x,y,z;
 				if (i >> x)
@@ -232,7 +233,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					}
 				}
 			}
-			else if(command == gSavedSettings.getString("AscentCmdLineDrawDistance"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineDrawDistance")))
 			{
                 int drawDist;
                 if(i >> drawDist)
@@ -245,12 +246,12 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					return false;
                 }
 			}
-			else if(command == gSavedSettings.getString("AscentCmdTeleportToCam"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdTeleportToCam")))
             {
 				gAgent.teleportViaLocation(gAgent.getCameraPositionGlobal());
 				return false;
             }
-			else if(command == gSavedSettings.getString("AscentCmdLineKeyToName"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineKeyToName")))
             {
                 LLUUID targetKey;
                 if(i >> targetKey)
@@ -263,7 +264,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
                 }
 				return false;
             }
-			else if(command == gSavedSettings.getString("AscentCmdLineOfferTp"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineOfferTp")))
             {
                 std::string avatarKey;
 //				llinfos << "CMD DEBUG 0 " << command << " " << avatarName << llendl;
@@ -299,7 +300,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
                 }
             }
 			
-			else if(command == gSavedSettings.getString("AscentCmdLineGround"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineGround")))
 			{
 				LLVector3 agentPos = gAgent.getPositionAgent();
 				U64 agentRegion = gAgent.getRegion()->getHandle();
@@ -308,7 +309,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 				pos_global += LLVector3d((F64)targetPos.mV[0],(F64)targetPos.mV[1],(F64)targetPos.mV[2]);
 				gAgent.teleportViaLocation(pos_global);
 				return false;
-			}else if(command == gSavedSettings.getString("AscentCmdLineHeight"))
+			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineHeight")))
 			{
 				F32 z;
 				if(i >> z)
@@ -321,17 +322,17 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					gAgent.teleportViaLocation(pos_global);
 					return false;
 				}
-			}else if(command == gSavedSettings.getString("AscentCmdLineTeleportHome"))
+			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineTeleportHome")))
 			{
 				gAgent.teleportHome();
 				return false;
-            }else if(command == gSavedSettings.getString("AscentCmdLineRezPlatform"))
+            }else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineRezPlatform")))
             {
 				F32 width;
 				if (i >> width) cmdline_rezplat(false, width);
 				else cmdline_rezplat();
 				return false;
-			}else if(command == gSavedSettings.getString("AscentCmdLineMapTo"))
+			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineMapTo")))
 			{
 				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
 				{
@@ -353,7 +354,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					LLURLDispatcher::dispatch(url, NULL, true);
 				}
 				return false;
-			}else if(command == gSavedSettings.getString("AscentCmdLineCalc"))//Cryogenic Blitz
+			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineCalc")))//Cryogenic Blitz
 			{
 				bool success;
 				F32 result = 0.f;
@@ -382,18 +383,13 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					cmdline_printchat(out);
 					return false;
 				}
-			}else if(command == gSavedSettings.getString("AscentCmdLineTP2"))
+			}else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineTP2")))
 			{
 				if (revised_text.length() > command.length() + 1) //Typing this command with no argument was causing a crash. -Madgeek
 				{
 					std::string name = revised_text.substr(command.length()+1);
 					cmdline_tp2name(name);
 				}
-				return false;
-			}else if (revised_text == "xyzzy")
-			{
-				//Zwag: I wonder how many people will actually get this?
-				cmdline_printchat("Nothing happens.");
 				return false;
 			}else if(command == "typingstop")
 			{
@@ -403,7 +399,7 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					gChatBar->sendChatFromViewer(text, CHAT_TYPE_STOP, FALSE);
 				}
 			}
-			else if(command == gSavedSettings.getString("AscentCmdLineClearChat"))
+			else if(command == utf8str_tolower(gSavedSettings.getString("AscentCmdLineClearChat")))
 			{
 				LLFloaterChat* chat = LLFloaterChat::getInstance(LLSD());
 				if(chat)
@@ -413,33 +409,6 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					history_editor->clear();
 					history_editor_with_mute->clear();
 					return false;
-				}
-			}else if(command == "zdrop")
-			{
-				cmdline_printchat("lolZ");
-				std::string lolfolder;
-				if(i >> lolfolder)
-				{
-					cmdline_printchat("lolfolder");
-					std::stack<LLViewerInventoryItem*> lolstack;
-					LLDynamicArray<LLPointer<LLViewerInventoryItem> > lolinv = findInventoryInFolder(lolfolder);
-					for(LLDynamicArray<LLPointer<LLViewerInventoryItem> >::iterator it = lolinv.begin(); it != lolinv.end(); ++it)
-					{
-						LLViewerInventoryItem* item = *it;
-						lolstack.push(item);
-					}
-
-					if(lolstack.size())
-					{
-						cmdline_printchat("lolstack.size()");
-						std::string loldest;
-						if(i >> loldest)
-						{
-							cmdline_printchat("loldest");
-							LLUUID sdest = LLUUID(loldest);
-							new JCZface(lolstack, sdest, 2.5f);
-						}
-					}else cmdline_printchat("no size");
 				}
 			}else if(command == "invrepair")
 			{
