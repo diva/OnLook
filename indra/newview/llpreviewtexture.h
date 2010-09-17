@@ -110,6 +110,7 @@ private:
 	S32 mLastHeight;
 	S32 mLastWidth;
 	F32 mAspectRatio;	// 0 = Unconstrained
+	S32 mAlphaMaskResult;
 };
 
 

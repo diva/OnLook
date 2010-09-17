@@ -140,7 +140,8 @@ LLPreviewTexture::LLPreviewTexture(
 	mIsCopyable(copyable),
 	mLastHeight(0),
 	mLastWidth(0),
-	mAspectRatio(0.f)
+	mAspectRatio(0.f),
+	mAlphaMaskResult(0)
 {
 
 	init();
@@ -180,7 +181,6 @@ void LLPreviewTexture::init()
 	childSetVisible("Discard", mShowKeepDiscard);
 	childSetAction("openprofile", onClickProfile, this);
 
-	llinfos << "Image has alpha :" << mImage->getIsAlphaMask() << llendl;
 	if (mCopyToInv) 
 	{
 		childSetAction("Copy To Inventory",LLPreview::onBtnCopyToInv,this);
@@ -233,6 +233,7 @@ void LLPreviewTexture::init()
 			childSetText("uuid", getItemID().asString());
 			childSetText("uploader", getItemCreatorName());
 			childSetText("uploadtime", getItemCreationDate());
+			childSetText("alphanote", std::string("Loading..."));
 		}
 	}
 	
@@ -278,6 +279,20 @@ void LLPreviewTexture::draw()
 								interior.getHeight(),
 								mImage);
 
+			if (mAlphaMaskResult != mImage->getIsAlphaMask())
+			{
+				if (!mImage->getIsAlphaMask())
+				{
+					childSetColor("alphanote", LLColor4::green);
+					childSetText("alphanote", std::string("No Alpha"));
+				}
+				else
+				{
+					childSetColor("alphanote", LLColor4::red);
+					childSetText("alphanote", std::string("Has Alpha"));
+				}
+				mAlphaMaskResult = mImage->getIsAlphaMask();
+			}
 			// Pump the texture priority
 			F32 pixel_area = mLoadingFullImage ? (F32)MAX_IMAGE_AREA  : (F32)(interior.getWidth() * interior.getHeight() );
 			mImage->addTextureStats( pixel_area );
@@ -439,9 +454,14 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 LLUUID LLPreviewTexture::getItemID()
 {
 	const LLViewerInventoryItem* item = getItem();
-	if(item && item->getPermissions().allowCopyBy(gAgent.getID()))
+	if(item)
 	{
-		return item->getUUID();
+		U32 perms = item->getPermissions().getMaskOwner();
+		if ((perms & PERM_TRANSFER) &&
+			(perms & PERM_COPY))
+		{
+			return item->getUUID();
+		}
 	}
 	return LLUUID::null;
 }
