@@ -8,89 +8,84 @@
 <!-- Main floater tabs -->
 
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
-	     image_disabled="tool_zoom.tga"
-	     image_disabled_selected="tool_zoom_active.tga"
-	     image_selected="tool_zoom_active.tga" image_unselected="tool_zoom.tga"
-	     label="" label_selected="" left="4" mouse_opaque="true" name="button focus"
-	     tool_tip="Focus" width="32" />
+	    image_disabled="tool_zoom.tga" image_disabled_selected="tool_zoom_active.tga"
+	    image_selected="tool_zoom_active.tga" image_unselected="tool_zoom.tga"
+	    label="" label_selected="" left="4" mouse_opaque="true" name="button focus"
+	    tool_tip="Focus" width="32" />
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
-	     image_disabled="UIImgGrabUUID"
-	     image_disabled_selected="UIImgGrabSelectedUUID"
-	     image_selected="UIImgGrabSelectedUUID" image_unselected="UIImgGrabUUID"
-	     label="" label_selected="" left="40" mouse_opaque="true" name="button move"
-	     tool_tip="Move" width="32" />
+	    image_disabled="UIImgGrabUUID" image_disabled_selected="UIImgGrabSelectedUUID"
+	    image_selected="UIImgGrabSelectedUUID" image_unselected="UIImgGrabUUID"
+	    label="" label_selected="" left="40" mouse_opaque="true" name="button move"
+	    tool_tip="Move" width="32" />
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
-	     image_disabled="UIImgFaceUUID"
-	     image_disabled_selected="UIImgFaceSelectedUUID"
-	     image_selected="UIImgFaceSelectedUUID" image_unselected="UIImgFaceUUID"
-	     label="" label_selected="" left="76" mouse_opaque="true" name="button edit"
-	     tool_tip="Edit" width="32" />
+	    image_disabled="UIImgFaceUUID" image_disabled_selected="UIImgFaceSelectedUUID"
+	    image_selected="UIImgFaceSelectedUUID" image_unselected="UIImgFaceUUID"
+	    label="" label_selected="" left="76" mouse_opaque="true" name="button edit"
+	    tool_tip="Edit" width="32" />
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
-	     image_disabled="UIImgCreateUUID"
-	     image_disabled_selected="UIImgCreateSelectedUUID"
-	     image_selected="UIImgCreateSelectedUUID" image_unselected="UIImgCreateUUID"
-	     label="" label_selected="" left="112" mouse_opaque="true"
-	     name="button create" tool_tip="Create" width="32" />
+	    image_disabled="UIImgCreateUUID" image_disabled_selected="UIImgCreateSelectedUUID"
+	    image_selected="UIImgCreateSelectedUUID" image_unselected="UIImgCreateUUID"
+	    label="" label_selected="" left="112" mouse_opaque="true"
+	    name="button create" tool_tip="Create" width="32" />
 	<button bottom="-34" follows="left|top" font="SansSerif" halign="center" height="32"
-	     image_disabled="tool_dozer.tga"
-	     image_disabled_selected="tool_dozer_active.tga"
-	     image_selected="tool_dozer_active.tga" image_unselected="tool_dozer.tga"
-	     label="" label_selected="" left="148" mouse_opaque="true"
-	     name="button land" tool_tip="Land" width="32" />
+	    image_disabled="tool_dozer.tga" image_disabled_selected="tool_dozer_active.tga"
+	    image_selected="tool_dozer_active.tga" image_unselected="tool_dozer.tga"
+	    label="" label_selected="" left="148" mouse_opaque="true"
+	    name="button land" tool_tip="Land" width="32" />
 
 <!-- Focus panel -->
 
 	<check_box bottom="-70" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Zoom" left="4" mouse_opaque="true"
-	     name="radio zoom" radio_style="true" width="114" />
+	    initial_value="false" label="Zoom" left="4" mouse_opaque="true"
+	    name="radio zoom" radio_style="true" width="114" />
 	<volume_slider bottom="-69" follows="left|top" height="14" increment="0.01"
-	     initial_val="0.125" left="114" max_val="0.5" min_val="0"
-	     mouse_opaque="true" name="slider zoom" width="134" />
+	    initial_val="0.125" left="114" max_val="0.5" min_val="0"
+	    mouse_opaque="true" name="slider zoom" width="134" />
 	<check_box bottom="-84" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Orbit (Ctrl)" left="4" mouse_opaque="true"
-	     name="radio orbit" radio_style="true" width="114" />
+	    initial_value="false" label="Orbit (Ctrl)" left="4" mouse_opaque="true"
+	    name="radio orbit" radio_style="true" width="114" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Pan (Ctrl-Shift)" left="4"
-	     mouse_opaque="true" name="radio pan" radio_style="true" width="114" />
+	    initial_value="false" label="Pan (Ctrl-Shift)" left="4"
+	    mouse_opaque="true" name="radio pan" radio_style="true" width="114" />
 
 <!-- Move panel -->
 
 	<check_box bottom="-70" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Move" left="4" mouse_opaque="true"
-	     name="radio move" radio_style="true" width="114" />
+	    initial_value="false" label="Move" left="4" mouse_opaque="true"
+	    name="radio move" radio_style="true" width="114" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Lift (Ctrl)" left="4" mouse_opaque="true"
-	     name="radio lift" radio_style="true" width="114" />
+	    initial_value="false" label="Lift (Ctrl)" left="4" mouse_opaque="true"
+	    name="radio lift" radio_style="true" width="114" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Spin (Ctrl-Shift)" left="4"
-	     mouse_opaque="true" name="radio spin" radio_style="true" width="114" />
+	    initial_value="false" label="Spin (Ctrl-Shift)" left="4"
+	    mouse_opaque="true" name="radio spin" radio_style="true" width="114" />
 
 <!-- Edit panel -->
 	<check_box bottom="-70" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Position" left="4" mouse_opaque="true"
-	     name="radio position" radio_style="true" width="114" />
+	    initial_value="false" label="Position" left="4" mouse_opaque="true"
+	    name="radio position" radio_style="true" width="114" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Rotate (Ctrl)" left="4" mouse_opaque="true"
-	     name="radio rotate" radio_style="true" width="114" />
+	    initial_value="false" label="Rotate (Ctrl)" left="4" mouse_opaque="true"
+	    name="radio rotate" radio_style="true" width="114" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Stretch (Ctrl-Shift)" left="4"
-	     mouse_opaque="true" name="radio stretch" radio_style="true" width="123" />
+	    initial_value="false" label="Stretch (Ctrl-Shift)" left="4"
+	    mouse_opaque="true" name="radio stretch" radio_style="true" width="123" />
 	<check_box bottom_delta="-15" follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="false" label="Select Texture" left="4" mouse_opaque="true"
-	     name="radio select face" radio_style="true" width="114" />
+	    initial_value="false" label="Select Texture" left="4" mouse_opaque="true"
+	    name="radio select face" radio_style="true" width="114" />
 	<check_box bottom_delta="-19" control_name="EditLinkedParts" follows="left|top"
-	     font="SansSerifSmall" height="16" initial_value="false"
-	     label="Edit linked parts" left="4" mouse_opaque="true"
-	     name="checkbox edit linked parts" width="114" />
+	    font="SansSerifSmall" height="16" initial_value="false"
+	    label="Edit linked parts" left="4" mouse_opaque="true"
+	    name="checkbox edit linked parts" width="114" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="14" left="6"
-	     mouse_opaque="true" name="text ruler mode" v_pad="0" width="68">
+	    bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
+	    font="SansSerifSmall" h_pad="0" halign="left" height="14" left="6"
+	    mouse_opaque="true" name="text ruler mode" v_pad="0" width="68">
 		Ruler:
 	</text>
 	<combo_box allow_text_entry="false" bottom_delta="-4" follows="left|top" height="20"
-	     left_delta="40" max_chars="20" mouse_opaque="true"
-	     name="combobox grid mode" width="86">
+	    left_delta="40" max_chars="20" mouse_opaque="true"
+	    name="combobox grid mode" width="86">
 		<combo_item name="World" value="World">
 			World
 		</combo_item>
@@ -102,104 +97,100 @@
 		</combo_item>
 	</combo_box>
 	<check_box bottom="-70" control_name="ScaleUniform" follows="left|top"
-	     font="SansSerifSmall" height="15" initial_value="false"
-	     label="Stretch Both Sides" left="143" mouse_opaque="true"
-	     name="checkbox uniform" width="134" />
+	    font="SansSerifSmall" height="15" initial_value="false"
+	    label="Stretch Both Sides" left="143" mouse_opaque="true"
+	    name="checkbox uniform" width="134" />
 	<check_box bottom_delta="-16" control_name="ScaleStretchTextures" follows="left|top"
-	     font="SansSerifSmall" height="15" initial_value="true"
-	     label="Stretch Textures" left_delta="0" mouse_opaque="true"
-	     name="checkbox stretch textures" width="134" />
+	    font="SansSerifSmall" height="15" initial_value="true"
+	    label="Stretch Textures" left_delta="0" mouse_opaque="true"
+	    name="checkbox stretch textures" width="134" />
 	<check_box bottom_delta="-16" control_name="LimitDragDistance" follows="left|top"
-	     font="SansSerifSmall" height="15" initial_value="true"
-	     label="Limit drag distance" left_delta="0" mouse_opaque="true"
-	     name="checkbox limit drag distance" width="134" />
+	    font="SansSerifSmall" height="15" initial_value="true"
+	    label="Limit drag distance" left_delta="0" mouse_opaque="true"
+	    name="checkbox limit drag distance" width="134" />
 	<check_box bottom_delta="-16" control_name="SnapEnabled" follows="left|top"
-	     font="SansSerifSmall" height="15" initial_value="true" label="Use Grid"
-	     left_delta="0" mouse_opaque="true" name="checkbox snap to grid" width="134" />
-	<button bottom_delta="-17" follows="left|top" font="SansSerifSmall"
-       halign="center" valign="center"
-	     height="20" label="Options..." label_selected="Options..." left_delta="20"
-	     mouse_opaque="true" name="Options..." scale_image="TRUE" width="80" />
+	    font="SansSerifSmall" height="15" initial_value="true" label="Use Grid"
+	    left_delta="0" mouse_opaque="true" name="checkbox snap to grid" width="134" />
+	<button bottom_delta="-17" follows="left|top" font="SansSerifSmall" halign="center" 
+		valign="center" height="20" label="Options..." label_selected="Options..." 
+		left_delta="20" mouse_opaque="true" name="Options..." scale_image="TRUE" width="80" />
 
 <!-- Help text -->
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-52" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="4"
-	     mouse_opaque="true" name="text status" v_pad="0" width="264">
+	    bottom="-52" drop_shadow_visible="true" follows="left|top"
+	    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="4"
+	    mouse_opaque="true" name="text status" v_pad="0" width="264">
 		Drag to move, shift-drag to copy
 	</text>
 
 <!-- Create panel -->
 
 	<button bottom="-75" follows="left|top" font="SansSerif" halign="center" height="24"
-	     image_disabled="object_cube.tga"
-	     image_disabled_selected="object_cube_active.tga"
-	     image_selected="object_cube_active.tga" image_unselected="object_cube.tga"
-	     label="" label_selected="" left="4" mouse_opaque="true" name="ToolCube"
-	     scale_image="TRUE" width="24" tool_tip="Cube"/>
+	    image_disabled="object_cube.tga"
+	    image_disabled_selected="object_cube_active.tga"
+	    image_selected="object_cube_active.tga" image_unselected="object_cube.tga"
+	    label="" label_selected="" left="4" mouse_opaque="true" name="ToolCube"
+	    scale_image="TRUE" width="24" tool_tip="Cube"/>
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_prism.tga"
-	     image_disabled_selected="object_prism_active.tga"
-	     image_selected="object_prism_active.tga"
-	     image_unselected="object_prism.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolPrism" scale_image="TRUE"
-        tool_tip="Prism" width="24" />
+	    height="24" image_disabled="object_prism.tga" image_disabled_selected="object_prism_active.tga"
+	    image_selected="object_prism_active.tga" image_unselected="object_prism.tga" 
+		label="" label_selected="" left_delta="23" mouse_opaque="true" name="ToolPrism" 
+		scale_image="TRUE" tool_tip="Prism" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_pyramid.tga"
-	     image_disabled_selected="object_pyramid_active.tga"
-	     image_selected="object_pyramid_active.tga"
-	     image_unselected="object_pyramid.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolPyramid" scale_image="TRUE"
+	    height="24" image_disabled="object_pyramid.tga"
+	    image_disabled_selected="object_pyramid_active.tga"
+	    image_selected="object_pyramid_active.tga"
+	    image_unselected="object_pyramid.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolPyramid" scale_image="TRUE"
  tool_tip="Pyramid" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_tetrahedron.tga"
-	     image_disabled_selected="object_tetrahedron_active.tga"
-	     image_selected="object_tetrahedron_active.tga"
-	     image_unselected="object_tetrahedron.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolTetrahedron"
-	     scale_image="TRUE" tool_tip="Tetrahedron" width="24" />
+	    height="24" image_disabled="object_tetrahedron.tga"
+	    image_disabled_selected="object_tetrahedron_active.tga"
+	    image_selected="object_tetrahedron_active.tga"
+	    image_unselected="object_tetrahedron.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolTetrahedron"
+	    scale_image="TRUE" tool_tip="Tetrahedron" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_cylinder.tga"
-	     image_disabled_selected="object_cylinder_active.tga"
-	     image_selected="object_cylinder_active.tga"
-	     image_unselected="object_cylinder.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" tool_tip="Cylinder" name="ToolCylinder" scale_image="TRUE"
-	     width="24" />
+	    height="24" width="24" image_disabled="object_cylinder.tga"
+	    image_disabled_selected="object_cylinder_active.tga"
+	    image_selected="object_cylinder_active.tga"
+	    image_unselected="object_cylinder.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" tool_tip="Cylinder" name="ToolCylinder" scale_image="TRUE"/>
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_hemi_cylinder.tga"
-	     image_disabled_selected="object_hemi_cylinder_active.tga"
-	     image_selected="object_hemi_cylinder_active.tga"
-	     image_unselected="object_hemi_cylinder.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolHemiCylinder"
-	     scale_image="TRUE" tool_tip="Hemicylinder" width="24" />
+	    height="24" image_disabled="object_hemi_cylinder.tga"
+	    image_disabled_selected="object_hemi_cylinder_active.tga"
+	    image_selected="object_hemi_cylinder_active.tga"
+	    image_unselected="object_hemi_cylinder.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolHemiCylinder"
+	    scale_image="TRUE" tool_tip="Hemicylinder" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_cone.tga"
-	     image_disabled_selected="object_cone_active.tga"
-	     image_selected="object_cone_active.tga" image_unselected="object_cone.tga"
-	     label="" label_selected="" left_delta="23" mouse_opaque="true"
-	     name="ToolCone" scale_image="TRUE" tool_tip="Cone" width="24" />
+	    height="24" image_disabled="object_cone.tga"
+	    image_disabled_selected="object_cone_active.tga"
+	    image_selected="object_cone_active.tga" image_unselected="object_cone.tga"
+	    label="" label_selected="" left_delta="23" mouse_opaque="true"
+	    name="ToolCone" scale_image="TRUE" tool_tip="Cone" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_hemi_cone.tga"
-	     image_disabled_selected="object_hemi_cone_active.tga"
-	     image_selected="object_hemi_cone_active.tga"
-	     image_unselected="object_hemi_cone.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolHemiCone" scale_image="TRUE"
-      tool_tip="Hemicone" width="24" />
+	    height="24" image_disabled="object_hemi_cone.tga"
+	    image_disabled_selected="object_hemi_cone_active.tga"
+	    image_selected="object_hemi_cone_active.tga"
+	    image_unselected="object_hemi_cone.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolHemiCone" scale_image="TRUE"
+		tool_tip="Hemicone" width="24" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_sphere.tga"
-	     image_disabled_selected="object_sphere_active.tga"
-	     image_selected="object_sphere_active.tga"
-	     image_unselected="object_sphere.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolSphere" scale_image="TRUE"
-	     width="24" tool_tip="Sphere" />
+	    height="24" image_disabled="object_sphere.tga"
+	    image_disabled_selected="object_sphere_active.tga"
+	    image_selected="object_sphere_active.tga"
+	    image_unselected="object_sphere.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolSphere" scale_image="TRUE"
+	    width="24" tool_tip="Sphere" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="24" image_disabled="object_hemi_sphere.tga"
-	     image_disabled_selected="object_hemi_sphere_active.tga"
-	     image_selected="object_hemi_sphere_active.tga"
-	     image_unselected="object_hemi_sphere.tga" label="" label_selected=""
-	     left_delta="23" mouse_opaque="true" name="ToolHemiSphere"
-	     scale_image="TRUE" tool_tip="Hemisphere" width="24" />
+	    height="24" image_disabled="object_hemi_sphere.tga"
+	    image_disabled_selected="object_hemi_sphere_active.tga"
+	    image_selected="object_hemi_sphere_active.tga"
+	    image_unselected="object_hemi_sphere.tga" label="" label_selected=""
+	    left_delta="23" mouse_opaque="true" name="ToolHemiSphere"
+	    scale_image="TRUE" tool_tip="Hemisphere" width="24" />
 	<button bottom_delta="-23" follows="left|top" font="SansSerif" halign="center"
 	     height="24" image_disabled="object_torus.tga"
 	     image_disabled_selected="object_torus_active.tga"
@@ -298,18 +289,18 @@
 	<volume_slider bottom_delta="-4" follows="left|top" height="16" hidden="false"
 	     increment="0.1" initial_val="0.00" left="178" max_val="2.0" min_val="-1.0"
 	     mouse_opaque="true" name="slider force" width="80" />
-  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
          bottom="-151" left="118" drop_shadow_visible="true" follows="left|top"
          font="SansSerifSmall" h_pad="0" halign="right" height="16" visible="false" 
          mouse_opaque="true" name="link_num_obj_count" v_pad="0" width="143">
-    [DESC] [NUM]
-  </text>
-  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+		[DESC] [NUM]
+	</text>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
        bottom="-163" left="118" drop_shadow_visible="true" follows="left|top"
        font="SansSerifSmall" h_pad="0" halign="right" height="16"
        mouse_opaque="true" name="prim_count" v_pad="0" width="143">
-    primitives: [COUNT]
-  </text>
+		primitives: [COUNT]
+	</text>
 
 <!-- Sub-tabs -->
 
@@ -365,63 +356,63 @@
 			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
 			     mouse_opaque="true" name="Owner Name" v_pad="0" width="88">
 		        Thrax Linden
-		      </text>
-		      <button bottom="-86" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Profile..." label_selected="Profile..." left_delta="94"
-			     mouse_opaque="true" name="button owner profile" scale_image="TRUE"
-			     width="78" />
-			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-						 bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
-						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-						 mouse_opaque="true" name="Last Owner:" v_pad="0" width="78">
+		    </text>
+		    <button bottom="-86" follows="top|right" font="SansSerifSmall" halign="center"
+			    height="16" label="Profile..." label_selected="Profile..." left_delta="94"
+			    mouse_opaque="true" name="button owner profile" scale_image="TRUE"
+			    width="78" />
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+				mouse_opaque="true" name="Last Owner:" v_pad="0" width="78">
 				Last Owner:
-				</text>
-			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-						 bottom_delta="0" drop_shadow_visible="true" follows="left|top"
-						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
-						 mouse_opaque="true" name="Last Owner Name" v_pad="0" width="88">
-				Thrax Linden
-			  </text>
-			  <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
-						 height="16" label="Profile..." label_selected="Profile..." left_delta="94"
-						 mouse_opaque="true" name="button last owner profile" scale_image="TRUE"
-						 width="78" />
-			  <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-						 bottom="-126" drop_shadow_visible="true" follows="left|top"
-						 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-						 mouse_opaque="true" name="Group:" v_pad="0" width="78">
-						Group:
 			</text>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-126" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
-			     mouse_opaque="true" name="Group Name Proxy" v_pad="0" visible="false"
-			     width="88">
-        The Lindens
-      </text>
-      <button bottom="-126" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="Set" label_selected="Set..." left_delta="94"
-			     mouse_opaque="true" name="button set group" scale_image="TRUE" width="30" />
-      <button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
-			     height="16" label="View" label_selected="Open" left_delta="30"
-			     mouse_opaque="true" name="button open group" scale_image="TRUE" width="48" />
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="Permissions:" v_pad="0" width="85">
+				bottom_delta="0" drop_shadow_visible="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
+				mouse_opaque="true" name="Last Owner Name" v_pad="0" width="88">
+				Thrax Linden
+			</text>
+			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+				height="16" label="Profile..." label_selected="Profile..." left_delta="94"
+				mouse_opaque="true" name="button last owner profile" scale_image="TRUE"
+				width="78" />
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom="-126" drop_shadow_visible="true" follows="left|top"
+				font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+				mouse_opaque="true" name="Group:" v_pad="0" width="78">
+				Group:
+			</text>
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			    bottom="-126" drop_shadow_visible="true" follows="left|top"
+			    font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="78"
+			    mouse_opaque="true" name="Group Name Proxy" v_pad="0" visible="false"
+			    width="88">
+				The Lindens
+			</text>
+			<button bottom="-126" follows="top|right" font="SansSerifSmall" halign="center"
+			    height="16" label="Set" label_selected="Set..." left_delta="94"
+			    mouse_opaque="true" name="button set group" scale_image="TRUE" width="30" />
+			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			    height="16" label="View" label_selected="Open" left_delta="30"
+			    mouse_opaque="true" name="button open group" scale_image="TRUE" width="48" />
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			    bottom_delta="-20" drop_shadow_visible="true" follows="left|top"
+			    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+			    mouse_opaque="true" name="Permissions:" v_pad="0" width="85">
 				Permissions:
 			</text>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top|right"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="perm_modify" v_pad="0" width="250">
+			    bottom_delta="-20" drop_shadow_visible="true" follows="left|top|right"
+			    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+			    mouse_opaque="true" name="perm_modify" v_pad="0" width="250">
 				You can modify this object.
 			</text>
 			<check_box bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16"
-			     initial_value="false" label="Share with group" left="10"
-			     mouse_opaque="true" name="checkbox share with group"
-			     tool_tip="Allow all members of the set group to share and use your permissions for this object. You must Deed to enable role restrictions."
-			     width="166" />
+			    initial_value="false" label="Share with group" left="10"
+			    mouse_opaque="true" name="checkbox share with group"
+			    tool_tip="Allow all members of the set group to share and use your permissions for this object. You must Deed to enable role restrictions."
+			    width="166" />
 			<string name="text deed continued">
 				Deed...
 			</string>
@@ -651,15 +642,15 @@
 			     tool_tip="Paste Position from Clipboard"  width="20" />
 							 
 				 
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="7"
 			     mouse_opaque="true" name="label size" v_pad="0" width="121">
-        Size
-      </text>
-      <spinner bottom_delta="-22" decimal_digits="5" follows="left|top" height="16"
+				Size
+			</text>
+			<spinner bottom_delta="-22" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="X" label_width="10" left_delta="0"
-			     max_val="1024" min_val="0.01" mouse_opaque="true" name="Scale X"
+			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale X"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
 			<spinner bottom_delta="-18" decimal_digits="5" follows="left|top" height="16"
 			     increment="0.01" initial_val="0" label="Y" label_width="10" left_delta="0"
@@ -669,18 +660,18 @@
 			     increment="0.01" initial_val="0" label="Z" label_width="10" left_delta="0"
 			     max_val="10" min_val="0.01" mouse_opaque="true" name="Scale Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-		<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="C" left_delta="90" mouse_opaque="true" name="copysize"  enabled="true"
 			     tool_tip="Copy Size"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pastesize"  enabled="true"
 			     tool_tip="Paste Size"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pastesizeclip"  enabled="true"
 			     tool_tip="Paste Size from Clipboard"  width="20" />
 				 
 				 
-		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="7"
 			     mouse_opaque="true" name="label rotation" v_pad="0" width="121">
@@ -698,19 +689,19 @@
 			     increment="1" initial_val="0" label="Z" label_width="10" left_delta="0"
 			     max_val="9999" min_val="-9999" mouse_opaque="true" name="Rot Z"
 			     text_enabled_color="1, 1, 1, 1" width="87" />
-		<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="35" follows="top|right" font="SansSerifSmall" halign="center"
 				 height="18" label="C" left_delta="90" mouse_opaque="true" name="copyrot"  enabled="true"
 				 tool_tip="Copy Rotation"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="P" left_delta="0" mouse_opaque="true" name="pasterot"  enabled="true"
 			     tool_tip="Paste Rotation"  width="20" />
-		<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pasterotclip"  enabled="true"
 			     tool_tip="Paste Rotation from Clipboard"  width="20" />
 							 
 							 
 				 
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 			     mouse_opaque="true" name="label material" v_pad="0" width="121">
@@ -740,19 +731,19 @@
 					Rubber
 				</combo_item>
 			</combo_box>
-		<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			    bottom="-20" drop_shadow_visible="true" follows="left|top"
 			    font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
 			    mouse_opaque="true" name="edit_object" v_pad="0" width="252">
 				Params:
-		</text>
-		<button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
+			</text>
+			<button bottom="-24" follows="top|right" font="SansSerifSmall" halign="center"
 			    height="16" label="Copy" left="178" mouse_opaque="true" name="copyparams"  enabled="true"
 			    tool_tip="Copy Parameters from Clipboard"  width="42" />
-		<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
+			<button bottom_delta="0" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="16" label="Paste" left_delta="42" mouse_opaque="true" name="pasteparams"  enabled="true"
      			 tool_tip="Paste Parameters from Clipboard"  width="42" />
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-36" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
 			     mouse_opaque="true" name="label basetype" v_pad="0" width="141">
@@ -848,7 +839,7 @@
 			     increment="0.05" initial_val="0" left_delta="73" max_val="0.95"
 			     min_val="-0.95" mouse_opaque="true" name="Skew" width="68" />
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom_delta="-15" drop_shadow_visible="true" follows="left|top"
+			     bottom_delta="-12" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="121"
 			     mouse_opaque="true" name="Hollow Shape" v_pad="0" width="141">
 				Hollow Shape
@@ -1010,7 +1001,7 @@
 				<combo_item name="Cylinder" value="Cylinder">
 					Cylinder
 				</combo_item>
-      			</combo_box>
+      		</combo_box>
 		</panel>
 
 <!-- Features sub-tab -->
@@ -1237,15 +1228,15 @@
 			     mouse_opaque="true" name="tex scale" v_pad="0" width="160">
 				Repeats per Face
 			</text>
-			<spinner bottom="-178" decimal_digits="3" follows="left|top" height="16" increment="0.1"
+			<spinner bottom="-178" decimal_digits="5" follows="left|top" height="16" increment="0.1"
 			     initial_val="0" label="Horizontal (U)" label_width="90" left="20"
-			     max_val="100" min_val="0" mouse_opaque="true" name="TexScaleU" width="160" />
+			     max_val="1000" min_val="0" mouse_opaque="true" name="TexScaleU" width="160" />
 			<check_box bottom="-179" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Flip" left_delta="170" mouse_opaque="true"
 			     name="checkbox flip s" width="70" />
-			<spinner bottom="-196" decimal_digits="3" follows="left|top" height="16" increment="0.1"
+			<spinner bottom="-196" decimal_digits="5" follows="left|top" height="16" increment="0.1"
 			     initial_val="0" label="Vertical (V)" label_width="90" left="20"
-			     max_val="100" min_val="0" mouse_opaque="true" name="TexScaleV" width="160" />
+			     max_val="1000" min_val="0" mouse_opaque="true" name="TexScaleV" width="160" />
 			<check_box bottom="-197" follows="left|top" font="SansSerifSmall" height="16"
 			     initial_value="false" label="Flip" left_delta="170" mouse_opaque="true"
 			     name="checkbox flip t" width="70" />

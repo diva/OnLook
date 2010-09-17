@@ -143,6 +143,9 @@ BOOL	LLPanelObject::postBuild()
 	// Top
 	//--------------------------------------------------------
 	
+	// Build constant tipsheet
+	childSetAction("build_math_constants",onClickBuildConstants,this);
+
 	// Lock checkbox
 	mCheckLock = getChild<LLCheckBoxCtrl>("checkbox locked");
 	childSetCommitCallback("checkbox locked",onCommitLock,this);
@@ -473,6 +476,7 @@ void LLPanelObject::getState( )
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_link	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	childSetEnabled("build_math_constants",true);
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
 						 && (selected_count == 1);
@@ -901,8 +905,8 @@ void LLPanelObject::getState( )
 		F32 end_t	= volume_params.getEndT();
 
 		// Hollowness
-		F32 hollow = volume_params.getHollow();
-		mSpinHollow->set( 100.f * hollow );
+		F32 hollow = 100.f * volume_params.getHollow();
+		mSpinHollow->set( hollow );
 		calcp->setVar(LLCalc::HOLLOW, hollow);
 		// All hollow objects allow a shape to be selected.
 		if (hollow > 0.f)
@@ -2382,6 +2386,8 @@ void LLPanelObject::clearCtrls()
 	childSetEnabled("advanced_cut", FALSE);
 	childSetEnabled("advanced_dimple", FALSE);
 	childSetVisible("advanced_slice", FALSE);
+
+	childSetEnabled("build_math_constants",false);
 }
 
 //
@@ -2519,6 +2525,12 @@ void LLPanelObject::onCommitSculptType(LLUICtrl *ctrl, void* userdata)
 	LLPanelObject* self = (LLPanelObject*) userdata;
 
 	self->sendSculpt();
+}
+
+// static
+void LLPanelObject::onClickBuildConstants(void *)
+{
+	LLNotifications::instance().add("ClickBuildConstants");
 }
 
 std::string shortfloat(F32 in)

@@ -281,7 +281,9 @@ BOOL	LLFloaterTools::postBuild()
 		{
 			found->setClickedCallback(setObjectType,toolData[t]);
 			mButtons.push_back( found );
-		}else{
+		}
+		else
+		{
 			llwarns << "Tool button not found! DOA Pending." << llendl;
 		}
 	}

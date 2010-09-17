@@ -573,6 +573,61 @@ Objects: [N]
   </notification>
 
   <notification
+ icon="alert.tga"
+ name="ClickBuildConstants"
+ type="alert">
+The following constants are accepted in this tab:
+
+PX  --  X-axis position
+PY  --  Y-axis position
+PZ  --  Z-axis position
+SX  --  X-axis size
+SY  --  Y-axis size
+SZ  --  Z-axis size
+RX  --  X-axis rotation
+RY  --  Y-axis rotation
+RZ  --  Z-axis rotation
+CB  --  Path cut begin
+CE  --  Path cut end
+HLW  --  Hollow size
+SKW  --  Skew
+PB  --  Slice/Dimple/Profile cut begin
+PE  --  Slice/Dimple/Profile cut end
+TB  --  Twist begin
+TE  --  Twist end
+SHX  --  X-axis top shear
+SHY  --  Y-axis top shear
+HLX  --  X-axis hole size
+HLY  --  Y-axis hole size
+TPX  --  X-axis taper
+TPY  --  Y-axis taper
+ROF  --  Radius offset
+REV  --  Revolutions
+
+PI  --  pi
+TWO_PI  --  2pi
+PI_BY_TWO  --  pi/2
+SQRT2  --  Square root of 2
+DEG_TO_RAD  --  DEG_TO_RAD conversion (pi/180)
+RAD_TO_DEG  --  RAD_TO_DEG conversion (180/pi)
+GRAVITY  --  -9.8
+
+*  --  Multiplication
+\  --  Division
++  --  Addition
+-  --  Subtraction
+
+For information about this feature, click "More Info".
+  <url option="1" name="url">
+    http://imprudenceviewer.org/wiki/Build_Math_Expressions
+  </url>
+  <usetemplate
+   name="okhelpbuttons"
+   yestext="OK"
+   helptext="More Info"/>
+</notification>
+  
+  <notification
    icon="alertmodal.tga"
    name="ReturnObjectsOwnedBySelf"
    type="alertmodal">
