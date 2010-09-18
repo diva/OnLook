@@ -66,6 +66,9 @@ LLCalc::LLCalc() : mLastErrorPos(0)
 	(*mConstants)["DEG_TO_RAD"] = DEG_TO_RAD;
 	(*mConstants)["RAD_TO_DEG"] = RAD_TO_DEG;
 	(*mConstants)["GRAVITY"] = GRAVITY;
+	(*mConstants)["ALMOST_ZERO"] = F_ALMOST_ZERO;
+	(*mConstants)["ALMOST_ONE"] = F_ALMOST_ONE;
+	(*mConstants)["THE_ANSWER"] = 42;
 }
 
 LLCalc::~LLCalc()

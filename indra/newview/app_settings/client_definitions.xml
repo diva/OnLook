@@ -1,19 +1,5 @@
 <llsd>
     <map>
-		<key>8873757c-092a-98fb-1afd-ecd347566fcd</key>
-        <map>
-        <key>color</key>
-            <array>
-                <real>0.0375</real>
-                <real>1</real>
-                <real>1</real>
-                <real>1</real>
-            </array>
-			<key>multiple</key>
-            <real>0</real>
-			<key>name</key>
-            <string>Ascent</string>
-        </map>
 		<key>f12457b5-762e-52a7-efad-8f17f3b022ee</key>
         <map>
         <key>color</key>
@@ -27,6 +13,20 @@
             <real>2</real>
 			<key>name</key>
             <string>Anti-Life</string>
+        </map>
+		<key>8873757c-092a-98fb-1afd-ecd347566fcd</key>
+        <map>
+        <key>color</key>
+            <array>
+                <real>0.0375</real>
+                <real>1</real>
+                <real>1</real>
+                <real>1</real>
+            </array>
+			<key>multiple</key>
+            <real>0</real>
+			<key>name</key>
+            <string>Ascent</string>
         </map>
 		<key>0f6723d2-5b23-6b58-08ab-308112b33786</key>
         <map>

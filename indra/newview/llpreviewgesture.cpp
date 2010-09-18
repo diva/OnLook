@@ -70,14 +70,7 @@
 #include "llappviewer.h"			// gVFS
 #include "llanimstatelabels.h"
 #include "llresmgr.h"
-// <edit>
-#include "llviewercontrol.h"
-#include "llpreviewsound.h"
-#include "llpreviewanim.h"
 
-#include "lllocalinventory.h"
-#include "llfilepicker.h"
-// </edit>
 
 // *TODO: Translate?
 const std::string NONE_LABEL = "---";
@@ -170,10 +163,7 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 
 	// this will call refresh when we have everything.
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)self->getItem();
-	// <edit>
-	//if(item && !item->isComplete())
-	if(item && !item->isComplete() && !(gInventory.isObjectDescendentOf(item->getUUID(), gLocalInventoryRoot)))
-	// </edit>
+	if(item && !item->isComplete())
 	{
 		LLInventoryGestureAvailable* observer;
 		observer = new LLInventoryGestureAvailable();
@@ -1232,62 +1222,6 @@ void LLPreviewGesture::saveIfNeeded()
 	buffer = NULL;
 }
 
-// <edit>
-void LLPreviewGesture::saveDuplicate()
-{
-	LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(mItemUUID);
-	if(item)
-	{
-		create_inventory_item(	gAgent.getID(),
-								gAgent.getSessionID(),
-								item->getParentUUID(), 
-								LLTransactionID::tnull,
-								item->getName(),
-								item->getUUID().asString(),
-								item->getType(),
-								item->getInventoryType(),
-								NOT_WEARABLE,
-								PERM_ITEM_UNRESTRICTED,
-								new LLPreviewGesture::GestureItemForDuplicateCallback);
-	}
-}
-
-void LLPreviewGesture::GestureItemForDuplicateCallback::fire(const LLUUID& new_item_id)
-{
-	LLViewerInventoryItem* new_item = (LLViewerInventoryItem*)gInventory.getItem(new_item_id);
-	LLUUID old_item_id = LLUUID(new_item->getDescription());
-	if(old_item_id.isNull()) return;
-	LLViewerInventoryItem* old_item = (LLViewerInventoryItem*)gInventory.getItem(old_item_id);
-	if(!old_item) return;
-	new_item->setDescription(old_item->getDescription());
-	new_item->updateServer(FALSE);
-	gInventory.updateItem(new_item);
-	gInventory.notifyObservers();
-	LLPreviewGesture* preview = (LLPreviewGesture*)LLPreview::find(old_item_id);
-	if(!preview) return;
-	LLMultiGesture* gesture = preview->createGesture();
-	S32 max_size = gesture->getMaxSerialSize();
-	char* buffer = new char[max_size];
-	LLDataPackerAsciiBuffer dp(buffer, max_size);
-	BOOL ok = gesture->serialize(dp);
-	if(!ok) return;
-	LLTransactionID tid;
-	LLAssetID asset_id;
-	tid.generate();
-	asset_id = tid.makeAssetID(gAgent.getSecureSessionID());
-	LLVFile file(gVFS, asset_id, LLAssetType::AT_GESTURE, LLVFile::APPEND);
-	S32 size = dp.getCurrentSize();
-	file.setMaxSize(size);
-	file.write((U8*)buffer, size);
-
-	std::string agent_url = gAgent.getRegion()->getCapability("UpdateGestureAgentInventory");
-	if(agent_url.empty()) return;
-	LLSD body;
-	body["item_id"] = new_item_id;
-	LLHTTPClient::post(agent_url, body,
-					new LLUpdateAgentInventoryResponder(body, asset_id, LLAssetType::AT_GESTURE));
-}
-// </edit>
 
 // TODO: This is very similar to LLPreviewNotecard::onSaveComplete.
 // Could merge code.
@@ -1359,58 +1293,6 @@ void LLPreviewGesture::onSaveComplete(const LLUUID& asset_uuid, void* user_data,
 	info = NULL;
 }
 
-// <edit>
-void LLPreviewGesture::onSaveDuplicateComplete(const LLUUID& asset_uuid, void* user_data, S32 status, LLExtStat ext_status) // StoreAssetData callback (fixed)
-{
-	LLSaveInfo* info = (LLSaveInfo*)user_data;
-	if (info && (status == 0))
-	{
-		std::string item_name = "New Gesture";
-		std::string item_desc = "";
-		// Saving into user inventory
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(info->mItemUUID);
-		if(item)
-		{
-			item_name = item->getName();
-			item_desc = item->getDescription();
-		}
-		gMessageSystem->newMessageFast(_PREHASH_CreateInventoryItem);
-		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
-		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gMessageSystem->nextBlockFast(_PREHASH_InventoryBlock);
-		gMessageSystem->addU32Fast(_PREHASH_CallbackID, 0);
-		gMessageSystem->addUUIDFast(_PREHASH_FolderID, LLUUID::null);
-		gMessageSystem->addUUIDFast(_PREHASH_TransactionID, info->mTransactionID);
-		gMessageSystem->addU32Fast(_PREHASH_NextOwnerMask, 2147483647);
-		gMessageSystem->addS8Fast(_PREHASH_Type, 21);
-		gMessageSystem->addS8Fast(_PREHASH_InvType, 20);
-		gMessageSystem->addU8Fast(_PREHASH_WearableType, 0);
-		gMessageSystem->addStringFast(_PREHASH_Name, item_name);
-		gMessageSystem->addStringFast(_PREHASH_Description, item_desc);
-		gMessageSystem->sendReliable(gAgent.getRegionHost());
-
-		// Find our window and close it if requested.
-		/*
-		LLPreviewGesture* previewp = (LLPreviewGesture*)LLPreview::find(info->mItemUUID);
-		if (previewp && previewp->mCloseAfterSave)
-		{
-			previewp->close();
-		}
-		*/
-	}
-	else
-	{
-		llwarns << "Problem saving gesture: " << status << llendl;
-		LLSD args;
-		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("GestureSaveFailedReason", args);
-	}
-	delete info;
-	info = NULL;
-}
-// </edit>
 
 LLMultiGesture* LLPreviewGesture::createGesture()
 {
@@ -1864,36 +1746,6 @@ void LLPreviewGesture::onClickSave(void* data)
 	self->saveIfNeeded();
 }
 
-// <edit>
-// static
-void LLPreviewGesture::onClickDuplicate(void* data)
-{
-	LLPreviewGesture* self = (LLPreviewGesture*)data;
-	self->saveDuplicate();
-}
-
-// static
-void LLPreviewGesture::onClickOpen(void* data)
-{
-	LLPreviewGesture* self = (LLPreviewGesture*)data;
-
-	LLScrollListItem* step_item = self->mStepList->getFirstSelected();
-	if (!step_item) return;
-
-	LLGestureStep* step = (LLGestureStep*)step_item->getUserdata();
-	if (step->getType() == STEP_SOUND)
-	{
-		LLGestureStepSound* sound_step = (LLGestureStepSound*)step;
-		LLLocalInventory::addItem(sound_step->mSoundName, (int)LLAssetType::AT_SOUND, sound_step->mSoundAssetID, true);
-	}
-	else if (step->getType() == STEP_ANIMATION)
-	{
-		LLGestureStepAnimation* anim_step = (LLGestureStepAnimation*)step;
-		LLLocalInventory::addItem(anim_step->mAnimName, (int)LLAssetType::AT_ANIMATION, anim_step->mAnimAssetID, true);
-	}
-}
-// </edit>
-
 // static
 void LLPreviewGesture::onClickPreview(void* data)
 {
@@ -1938,64 +1790,3 @@ void LLPreviewGesture::onDonePreview(LLMultiGesture* gesture, void* data)
 
 	self->refresh();
 }
-
-// <edit>
-// virtual
-BOOL LLPreviewGesture::canSaveAs() const
-{
-	return TRUE;
-}
-
-// virtual
-void LLPreviewGesture::saveAs()
-{
-	std::string default_filename("untitled.gesture");
-	const LLInventoryItem *item = getItem();
-	if(item)
-	{
-		default_filename = LLDir::getScrubbedFileName(item->getName());
-	}
-
-	LLFilePicker& file_picker = LLFilePicker::instance();
-	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_GESTURE, default_filename ) )
-	{
-		// User canceled or we failed to acquire save file.
-		return;
-	}
-	// remember the user-approved/edited file name.
-	std::string filename = file_picker.getFirstFile();
-
-	// Copy the UI into a gesture
-	LLMultiGesture* gesture = createGesture();
-
-	// Serialize the gesture
-	S32 max_size = gesture->getMaxSerialSize();
-	char* buffer = new char[max_size];
-	LLDataPackerAsciiBuffer dp(buffer, max_size);
-
-	if(!gesture->serialize(dp))
-	{
-		// FIXME: Notify user
-		delete [] buffer;
-		return;
-	}
-
-	S32 size = dp.getCurrentSize();
-
-	std::ofstream export_file(filename.c_str(), std::ofstream::binary);
-	export_file.write(buffer, size);
-	export_file.close();
-
-	delete [] buffer;
-}
-
-LLUUID LLPreviewGesture::getItemID()
-{
-	const LLViewerInventoryItem* item = getItem();
-	if(item)
-	{
-		return item->getUUID();
-	}
-	return LLUUID::null;
-}
-// </edit>
