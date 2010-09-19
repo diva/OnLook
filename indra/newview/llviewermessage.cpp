@@ -1478,8 +1478,6 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	BOOL is_owned_by_me = FALSE;
 
 	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
-	
-	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
 
 	chat.mMuted = is_muted && !is_linden;
 	chat.mFromID = from_id;
