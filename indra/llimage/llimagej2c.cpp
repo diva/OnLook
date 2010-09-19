@@ -69,11 +69,11 @@ void LLImageJ2C::openDSO()
 	apr_status_t rv;
 
 #if LL_WINDOWS
-	dso_name = "llkdu.dll";
+	dso_name = "";
 #elif LL_DARWIN
-	dso_name = "libllkdu.dylib";
+	dso_name = "";
 #else
-	dso_name = "libllkdu.so";
+	dso_name = "";
 #endif
 
 	dso_path = gDirUtilp->findFile(dso_name,
