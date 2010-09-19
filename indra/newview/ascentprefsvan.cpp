@@ -39,6 +39,7 @@
 #include "llcolorswatch.h"
 #include "llvoavatar.h"
 #include "llagent.h"
+#include "llfloaterchat.h"
 #include "llstartup.h"
 #include "llviewercontrol.h"
 #include "v4color.h"
@@ -63,6 +64,7 @@ public:
 private:
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
 	static void onCommitColor(LLUICtrl* ctrl, void* user_data);
+	static void onManualClientUpdate(void* data);
 	void refreshValues();
 	//General
 	BOOL mUseAccountSettings;
@@ -93,6 +95,7 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	childSetCommitCallback("Y Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
 	childSetCommitCallback("Z Modifier", LLPrefsAscentVan::onCommitUpdateAvatarOffsets);
 	
+	childSetAction("update_clientdefs", onManualClientUpdate, this);
 	refresh();
 	
 }
@@ -118,6 +121,30 @@ void LLPrefsAscentVanImpl::onCommitColor(LLUICtrl* ctrl, void* user_data)
 		gAgent.sendAgentSetAppearance();
 		gAgent.resetClientTag();
 	}
+}
+
+void LLPrefsAscentVanImpl::onManualClientUpdate(void* data)
+{
+	LLChat chat;
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	chat.mText = llformat("Definitions already up-to-date.");
+	if (LLVOAvatar::updateClientTags())
+	{
+		chat.mText = llformat("Client definitions updated.");
+		LLVOAvatar::loadClientTags();
+		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		iter != LLCharacter::sInstances.end(); ++iter)
+		{
+			LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
+			if(avatarp)
+			{
+				LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
+				avatarp->mClientTag = "";
+			}
+		}
+	}
+	LLFloaterChat::addChat(chat);
+	
 }
 
 //static

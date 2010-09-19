@@ -713,6 +713,17 @@
 		<key>Value</key>
 		<integer>0</integer>
 	</map>
+	<key>AscentUpdateTagsOnLoad</key>
+	<map>
+		<key>Comment</key>
+		<string>Allowed client to update client definitions file.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
 	<key>AscentUploadFolder</key>
 	<map>
 		<key>Comment</key>
