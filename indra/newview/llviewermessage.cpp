@@ -1476,6 +1476,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	BOOL is_muted = LLMuteList::getInstance()->isMuted(from_id, name, LLMute::flagTextChat);
 	BOOL is_linden = LLMuteList::getInstance()->isLinden(name);
 	BOOL is_owned_by_me = FALSE;
+
+	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
 	
 	// <edit>
 	//chat.mMuted = is_muted && !is_linden;
