@@ -85,39 +85,51 @@
 				width="400" />
 		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
-			 follows="left|top|right|bottom" label="Chat/IM" name="Chat/IM">
-			 <check_box bottom_delta="-25" control_name="WoLfVerticalIMTabs" enabled="true"
+			follows="left|top|right|bottom" label="Chat/IM" name="Chat/IM">
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			    bottom="-15" drop_shadow_visible="true" enabled="true" follows="left|top"
+	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
+		    	left="15" mouse_opaque="true" name="objects_link_text_box" v_pad="0"
+			    width="300">
+				IMs:
+			</text>
+			<check_box bottom_delta="-25" control_name="WoLfVerticalIMTabs" enabled="true"
 		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 		    	label="Use Vertical IMs (Requires a restart)" left="10"
 			    mouse_opaque="true" name="use_vertical_ims_check" radio_style="false"
 			    width="400" />
 			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-				initial_value="false" label="Display Total Script Count changes:" left_delta="0"
-				mouse_opaque="true" name="totalscriptjumps" radio_style="false" width="270" 
-				control_name="AscentDisplayTotalScriptJumps" 
-				tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
-			<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="16" increment="1"
-				label="" label_width="0" digits="4" left_delta="210" max_val="9999"
-				min_val="1" mouse_opaque="true" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff"
-				tool_tip="Threshold for the script jump message [Default: 100]"/>
-			<check_box bottom_delta="-20" control_name="HideNotificationsInChat" enabled="true"
-		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-		    	label="Do not echo/log notifications in chat" left="10"
-			    mouse_opaque="true" name="hide_notifications_in_chat_check" radio_style="false"
-			    width="400" />
-			<check_box bottom_delta="-20" control_name="PlayTypingSound" enabled="true"
-			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-	    		label="Play the typing sound when an avatar types in chat" left="10"
-				tool_tip="Silences the chatting type sound, making it quieter for things like performances."
-		    	mouse_opaque="true" name="play_typing_sound_check" radio_style="false"
-			    width="400" />
+				initial_value="false" label="Announce incoming instant messages" left="10" mouse_opaque="true"
+				name="AscentInstantMessageAnnounceIncoming" radio_style="false" width="270"
+				tool_tip="Opens an IM window when someone starts typing an IM to you. This gives you a heads up that someone is IMing you before they hit enter. "/>
 			<check_box bottom_delta="-20" control_name="HideTypingNotification" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-				label="Don't send '%n is typing...' packet to others when IMing" left="10"
+				label="Don't send '[name] is typing...' in IMs" left="10"
 				tool_tip="IM partners will not see '______ is typing...' when you're responding."
 				mouse_opaque="true" name="hide_typing_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="-20" control_name="AscentAllowMUpose" enabled="true"
+			<!-- Left/Right Column split -->
+			<view_border bevel_style="none" border_thickness="1" bottom_delta="0" follows="top|left" height="60"
+						 left="235" name="CmdDivisor" width="0"/>
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			    bottom="-15" drop_shadow_visible="true" enabled="true" follows="left|top"
+	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
+		    	left="250" mouse_opaque="true" name="objects_link_text_box" v_pad="0"
+			    width="300">
+				Chat:
+			</text>
+			<check_box bottom_delta="-25" control_name="PlayTypingSound" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+	    		label="Play the typing sound for local chat" left_delta="-5"
+				tool_tip="Silences the chatting type sound, making it quieter for things like performances."
+		    	mouse_opaque="true" name="play_typing_sound_check" radio_style="false"
+			    width="400" />
+			<check_box bottom_delta="-20" control_name="HideNotificationsInChat" enabled="true"
+		    	follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+		    	label="Do not echo/log notifications in chat" left_delta="00"
+			    mouse_opaque="true" name="hide_notifications_in_chat_check" radio_style="false"
+			    width="400" />
+			<check_box bottom="-100" control_name="AscentAllowMUpose" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Allow MU pose method." left="10"
 				tool_tip="Allows the use of both /me and : to perform emotes."
@@ -130,9 +142,9 @@
 				mouse_opaque="true" name="close_ooc_check" radio_style="false"
 				width="400" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			    bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top"
+			    bottom_delta="-15" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
-		    	left="10" mouse_opaque="true" name="objects_link_text_box" v_pad="0"
+		    	left_delta="0" mouse_opaque="true" name="objects_link_text_box" v_pad="0"
 			    width="300">
 				Show links on chatting object names in chat history for:
 			</text>
@@ -176,7 +188,7 @@
 			    mouse_opaque="true" name="seconds_in_chat_and_ims_check" radio_style="false"
 		    	width="260" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			    bottom_delta="-25" drop_shadow_visible="true" enabled="true" follows="left|top"
+			    bottom_delta="-22" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
 		    	left="10" mouse_opaque="true" name="date_format_text_box" v_pad="0"
 			    width="80">
@@ -195,6 +207,79 @@
 					MM/DD/YYYY
 				</combo_item>
 			</combo_box>
+			<!-- Auto-responder -->
+			<view_border bevel_style="none" border_thickness="1" bottom="-420" follows="top|left"
+				height="190" left="5" name="GraphicsBorder" width="485" />
+			<check_box bottom_delta="168" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Enable Autoresponse" left="10" mouse_opaque="true"
+				name="AscentInstantMessageResponseAnyone" radio_style="false" width="270"
+                tool_tip="Sends a pre made message of your choosing, when people start IMing you. (Enter your message in the Response Text. Text area), located below."/>
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="-22" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+				h_pad="0" halign="left" height="18" left_delta="10" mouse_opaque="false"
+				name="text_box1" v_pad="0" width="430">
+				Response:
+			</text>
+			<combo_box allow_text_entry="false" bottom_delta="2" enabled="true" follows="left|top"
+		    	height="18" hidden="false" left_delta="67" max_chars="20" mouse_opaque="true"
+				tool_tip="Saved response to use."
+		    	name="autoresponse_combobox" width="90">
+				<combo_item type="string" length="1" enabled="true" name="default" value="default">
+					Default
+				</combo_item>
+			</combo_box>
+			<button bottom_delta="0" control_name="addResponse" name="add_current" follows="left|top" 
+				label="+" height="18" left_delta="90" width="20"/>
+			<button bottom_delta="0" control_name="removeResponse" name="remove_current" follows="left|top" 
+				label="-" height="18" left_delta="20" width="20"/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Autorespond to non-friends" left_delta="-187" mouse_opaque="true"
+				name="AscentInstantMessageResponseFriends" radio_style="false" width="270"
+				tool_tip="Sends a pre made message of your choosing, when people start IMing you. (Enter your message in the Response Text. Text area), located below."/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Autorespond to people you have muted" left_delta="0"
+				mouse_opaque="true" name="AscentInstantMessageResponseMuted" radio_style="false"
+				width="270" tool_tip="Sends a pre made message of your choosing, when people start IMing you. (Enter your message in the Response Text. Text area), located below."/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Send as soon as they start typing" left_delta="0" mouse_opaque="true"
+				name="AscentInstantMessageShowOnTyping" radio_style="false" width="270"/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="26"
+				initial_value="false" label="Don't show IMs you auto-responsed to" left_delta="0"
+				mouse_opaque="true" name="AscentInstantMessageShowResponded" radio_style="false"
+				width="170"/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Autorespond to every message" left_delta="0" mouse_opaque="true"
+				name="AscentInstantMessageResponseRepeat" radio_style="false" width="270"/>
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Send an item along with the response" left_delta="0"
+				mouse_opaque="true" name="AscentInstantMessageResponseItem" radio_style="false"
+				width="270" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
+			<view_border blevel_style="in" bottom_delta="-20" follows="left|top" height="18" left_delta="5"
+				mouse_opaque="false" name="im_give_drop_target_rect" width="220"/>
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false" bottom_delta="0"
+				drop_shadow_visible="true" follows="left|top" font="SansSerifSmall" h_pad="0" halign="center"
+				height="16" left_delta="0" mouse_opaque="true" name="Give inventory" tool_tip="Drop an inventory item here to have it given along with the auto-response."
+				v_pad="2" width="230">
+				Drop item here (Currently: NONE)
+			</text>
+			<!-- Right Column -->
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="160" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+				h_pad="0" halign="left" height="18" left_delta="245" mouse_opaque="false"
+				name="text_box1" v_pad="0" width="430">
+				Response Text:
+			</text>
+			<text_editor type="string" length="1" bottom_delta="-110" embedded_items="false" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="110" left_delta="0" max_length="1100"
+				mouse_opaque="true" name="im_response" width="230" word_wrap="true"/>
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="-25" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+				h_pad="0" halign="left" height="18" left_delta="0" mouse_opaque="false"
+				name="text_box1" v_pad="0" width="430">
+Use #f for user's first name, #l for last name, 
+#t for timestamp, #r for SLURL to you, 
+#i for your idle time. (e.g. "5 mins")
+			</text>
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			 follows="left|top|right|bottom" label="Performance" name="Performance">
@@ -381,6 +466,15 @@
 				tool_tip="Some griefer tools rely on forcing or tricking you to click on an object that will make you sit, giving the object automatic permissions to trigger animations amongst other things. This will disable llSitTarget - It does mean that you will need to select 'Sit' on poseballs and furniture."
 			    mouse_opaque="true" name="disable_click_sit_check" radio_style="false"
 			    width="400" />
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Display Total Script Count changes:" left_delta="0"
+				mouse_opaque="true" name="totalscriptjumps" radio_style="false" width="270" 
+				control_name="AscentDisplayTotalScriptJumps" 
+				tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
+			<spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="16" increment="1"
+				label="" label_width="0" digits="4" left_delta="210" max_val="9999"
+				min_val="1" mouse_opaque="true" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff"
+				tool_tip="Threshold for the script jump message [Default: 100]"/>
 		</panel>
 		<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="Building" name="Building">
