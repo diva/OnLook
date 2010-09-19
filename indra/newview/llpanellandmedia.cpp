@@ -124,8 +124,8 @@ BOOL LLPanelLandMedia::postBuild()
 	childSetCommitCallback("media_size_height", onCommitAny, this);
 	mMediaSizeCtrlLabel = getChild<LLTextBox>("media_size");
 
-    mMediaNavigateAllowCheck = getChild<LLCheckBoxCtrl>("check navigate allow");
-	childSetCommitCallback("check navigate allow", onCommitAny, this);
+    /*mMediaNavigateAllowCheck = getChild<LLCheckBoxCtrl>("check navigate allow");  Making Dummy View -HgB
+	childSetCommitCallback("check navigate allow", onCommitAny, this);*/
 	mMediaURLFilterCheck = getChild<LLCheckBoxCtrl>("check navigate filter");
 	childSetCommitCallback("check navigate filter", onCommitAny, this);
 	

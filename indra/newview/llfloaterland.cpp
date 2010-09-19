@@ -331,7 +331,7 @@ BOOL LLPanelLandGeneral::postBuild()
 	mEditDesc = getChild<LLTextEditor>("Description");
 	mEditDesc->setCommitOnFocusLost(TRUE);
 	mEditDesc->setCommitCallback(onCommitAny);	
-	childSetPrevalidate("Description", LLLineEditor::prevalidatePrintableNotPipe);
+	//childSetPrevalidate("Description",  LLLineEditor::prevalidatePrintableNotPipe);  Making Dummy View -HgB
 	childSetUserData("Description", this);
 
 	

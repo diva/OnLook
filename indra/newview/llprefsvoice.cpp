@@ -175,7 +175,7 @@ void LLPrefsVoice::onCommitEnableVoiceChat(LLUICtrl* ctrl, void* user_data)
 	bool enable = enable_voice_chat->getValue();
 
 	self->childSetEnabled("modifier_combo", enable);
-	self->childSetEnabled("friends_only_check", enable);
+	//self->childSetEnabled("friends_only_check", enable);
 	self->childSetEnabled("push_to_talk_label", enable);
 	self->childSetEnabled("voice_call_friends_only_check", enable);
 	self->childSetEnabled("auto_disengage_mic_check", enable);
