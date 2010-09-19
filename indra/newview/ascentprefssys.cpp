@@ -1,12 +1,12 @@
 /** 
- * @file hbprefsinert.cpp
- * @author Henri Beauchamp
- * @brief Ascent Viewer preferences panel
+ * @file ascentprefssys.cpp
+ * @Ascent Viewer preferences panel
  *
  * $LicenseInfo:firstyear=2008&license=viewergpl$
  * 
  * Copyright (c) 2008, Henri Beauchamp.
- * 
+ * Rewritten in its entirety 2010 Hg Beeks. 
+ *
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
  * to you under the terms of the GNU General Public License, version 2.0
@@ -258,6 +258,22 @@ void LLPrefsAscentSysImpl::refresh()
 	}
 
 	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
+
+
+	LLWString auto_response = utf8str_to_wstring( gSavedPerAccountSettings.getString("AscentInstantMessageResponse") );
+	LLWStringUtil::replaceChar(auto_response, '^', '\n');
+	LLWStringUtil::replaceChar(auto_response, '%', ' ');
+	childSetText("im_response", wstring_to_utf8str(auto_response));
+	childSetValue("AscentInstantMessageResponseFriends", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseFriends"));
+	childSetValue("AscentInstantMessageResponseMuted", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseMuted"));
+	childSetValue("AscentInstantMessageResponseAnyone", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseAnyone"));
+	childSetValue("AscentInstantMessageShowResponded", gSavedPerAccountSettings.getBOOL("AscentInstantMessageShowResponded"));
+	childSetValue("AscentInstantMessageShowOnTyping", gSavedPerAccountSettings.getBOOL("AscentInstantMessageShowOnTyping"));
+	childSetValue("AscentInstantMessageResponseRepeat", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat" ));
+	childSetValue("AscentInstantMessageResponseItem", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseItem"));
+	childSetValue("AscentInstantMessageAnnounceIncoming", gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"));
+
+
 	//Save Performance --------------------------------------------------------------------
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
@@ -421,8 +437,19 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setString("ShortTimeFormat",			short_time);
 	gSavedSettings.setString("LongTimeFormat",			long_time);
 	gSavedSettings.setString("TimestampFormat",			timestamp);
-
 	gSavedSettings.setBOOL("SecondsInChatAndIMs",		childGetValue("seconds_in_chat_and_ims_check"));
+
+
+	gSavedPerAccountSettings.setString("AscentInstantMessageResponse",			childGetValue("im_response").asString());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseMuted",		childGetValue("AscentInstantMessageResponseMuted").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseFriends",		childGetValue("AscentInstantMessageResponseFriends").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseMuted",		childGetValue("AscentInstantMessageResponseMuted").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseAnyone",		childGetValue("AscentInstantMessageResponseAnyone").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowResponded",		childGetValue("AscentInstantMessageShowResponded").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowOnTyping",		childGetValue("AscentInstantMessageShowOnTyping").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseRepeat",		childGetValue("AscentInstantMessageResponseRepeat").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseItem",		childGetValue("AscentInstantMessageResponseItem").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageAnnounceIncoming",	childGetValue("AscentInstantMessageAnnounceIncoming").asBoolean());
 
 	//Performance ----------------------------------------------------------------------------
 	gSavedSettings.setBOOL("FetchInventoryOnLogin",		childGetValue("fetch_inventory_on_login_check"));

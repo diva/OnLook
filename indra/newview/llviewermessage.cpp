@@ -1479,10 +1479,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
 	
-	// <edit>
-	//chat.mMuted = is_muted && !is_linden;
-	chat.mMuted = is_muted;
-	// </edit>
+	LLUUID computed_session_id = LLIMMgr::computeSessionID(dialog,from_id);
+
+	chat.mMuted = is_muted && !is_linden;
 	chat.mFromID = from_id;
 	chat.mFromName = name;
 	chat.mSourceType = (from_id.isNull() || (name == std::string(SYSTEM_FROM))) ? CHAT_SOURCE_SYSTEM : CHAT_SOURCE_AGENT;

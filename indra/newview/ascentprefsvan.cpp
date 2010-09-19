@@ -1,11 +1,11 @@
 /** 
- * @file hbprefsinert.cpp
- * @author Henri Beauchamp
- * @brief Ascent Viewer preferences panel
+ * @file ascentprefsvan.cpp
+ * @Ascent Viewer preferences panel
  *
  * $LicenseInfo:firstyear=2008&license=viewergpl$
  * 
  * Copyright (c) 2008, Henri Beauchamp.
+ * Rewritten in its entirety 2010 Hg Beeks. 
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
