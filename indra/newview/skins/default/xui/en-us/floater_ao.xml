@@ -82,8 +82,8 @@
 	</text>
 	<combo_box name="combo_anim_list" max_length="36" allow_text_entry="true" follows="top|left|right" height="20" left="75" right="-52" bottom_delta="0">
 	</combo_box>
-	<button follows="top|right" bottom_delta="0" height="20" label="✔" right="-29" name="combo_anim_add" width="21" />
-	<button follows="top|right" bottom_delta="0" height="20" label="X" right="-7" name="combo_anim_delete" width="21" />
+	<button follows="top|right" bottom_delta="0" height="20" label="+" right="-29" name="combo_anim_add" width="21" />
+	<button follows="top|right" bottom_delta="0" height="20" label="-" right="-7" name="combo_anim_delete" width="21" />
 	<text follows="top|left" height="15" left="10" name="text_running" bottom_delta="-25">
 		Current List:
 	</text>
