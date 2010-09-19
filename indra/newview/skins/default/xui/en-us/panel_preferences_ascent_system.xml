@@ -171,7 +171,7 @@
 				</radio_item>
 			</radio_group>
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-		    	bottom_delta="-30" drop_shadow_visible="true" enabled="true" follows="left|top"
+		    	bottom_delta="-18" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
 		    	left="10" mouse_opaque="true" name="time_format_text_box" v_pad="0"
 			    width="80">
@@ -194,7 +194,7 @@
 			    mouse_opaque="true" name="seconds_in_chat_and_ims_check" radio_style="false"
 		    	width="260" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			    bottom_delta="-22" drop_shadow_visible="true" enabled="true" follows="left|top"
+			    bottom_delta="-18" drop_shadow_visible="true" enabled="true" follows="left|top"
 	    		font="SansSerifSmall" h_pad="0" halign="left" height="10" hidden="false"
 		    	left="10" mouse_opaque="true" name="date_format_text_box" v_pad="0"
 			    width="80">
@@ -220,7 +220,7 @@
 				initial_value="false" label="Enable Autoresponse" left="10" mouse_opaque="true"
 				name="AscentInstantMessageResponseAnyone" radio_style="false" width="270"
                 tool_tip="Sends a pre made message of your choosing, when people start IMing you. (Enter your message in the Response Text. Text area), located below."/>
-			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<!--<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 				bottom_delta="-22" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
 				h_pad="0" halign="left" height="18" left_delta="10" mouse_opaque="false"
 				name="text_box1" v_pad="0" width="430">
@@ -239,7 +239,9 @@
 			<button bottom_delta="0" control_name="removeResponse" name="remove_current" follows="left|top" 
 				label="-" height="18" left_delta="20" width="20"/>
 			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-				initial_value="false" label="Autorespond to non-friends" left_delta="-187" mouse_opaque="true"
+				initial_value="false" label="Autorespond to non-friends" left_delta="-187" mouse_opaque="true"-->
+			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+				initial_value="false" label="Autorespond to non-friends" left_delta="0" mouse_opaque="true"
 				name="AscentInstantMessageResponseFriends" radio_style="false" width="270"
 				tool_tip="Sends a pre made message of your choosing, when people start IMing you. (Enter your message in the Response Text. Text area), located below."/>
 			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
@@ -260,17 +262,20 @@
 				initial_value="false" label="Send an item along with the response" left_delta="0"
 				mouse_opaque="true" name="AscentInstantMessageResponseItem" radio_style="false"
 				width="270" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
-			<view_border blevel_style="in" bottom_delta="-20" follows="left|top" height="18" left_delta="5"
+			<!--<view_border blevel_style="in" bottom_delta="-20" follows="left|top" height="18" left_delta="5"
 				mouse_opaque="false" name="im_give_drop_target_rect" width="220"/>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false" bottom_delta="0"
 				drop_shadow_visible="true" follows="left|top" font="SansSerifSmall" h_pad="0" halign="center"
 				height="16" left_delta="0" mouse_opaque="true" name="Give inventory" tool_tip="Drop an inventory item here to have it given along with the auto-response."
 				v_pad="2" width="230">
 				Drop item here (Currently: NONE)
-			</text>
+			</text>-->
 			<!-- Right Column -->
-			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			<!--<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 				bottom_delta="160" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
+				h_pad="0" halign="left" height="18" left_delta="245" mouse_opaque="false"-->
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom_delta="120" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
 				h_pad="0" halign="left" height="18" left_delta="245" mouse_opaque="false"
 				name="text_box1" v_pad="0" width="430">
 				Response Text:
