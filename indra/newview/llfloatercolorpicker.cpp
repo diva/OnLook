@@ -96,7 +96,7 @@ LLFloaterColorPicker (LLColorSwatchCtrl* swatch, BOOL show_apply_immediate )
 	  mLumMarkerSize		( 6 ),
 	  // *TODO: Specify this in XML
 	  mSwatchRegionLeft		( 12 ),
-	  mSwatchRegionTop		( 190 ),
+	  mSwatchRegionTop		( 170 ),
 	  mSwatchRegionWidth	( 116 ),
 	  mSwatchRegionHeight	( 60 ),
 	  mSwatchView			( NULL ),
@@ -105,7 +105,7 @@ LLFloaterColorPicker (LLColorSwatchCtrl* swatch, BOOL show_apply_immediate )
 	  numPaletteRows		( 2 ),
 	  highlightEntry		( -1 ),
 	  mPaletteRegionLeft	( 11 ),
-	  mPaletteRegionTop		( 100 - 8 ),
+	  mPaletteRegionTop		( 92 ),
 	  mPaletteRegionWidth	( mLumRegionLeft + mLumRegionWidth - 10 ),
 	  mPaletteRegionHeight	( 40 ),
 	  mSwatch				( swatch ),
@@ -249,6 +249,7 @@ postBuild()
 	childSetCommitCallback("hspin", onTextCommit, (void*)this );
 	childSetCommitCallback("sspin", onTextCommit, (void*)this );
 	childSetCommitCallback("lspin", onTextCommit, (void*)this );
+	childSetCommitCallback("hexval", onHexCommit, (void*)this );
 
     return TRUE;
 }
@@ -615,8 +616,8 @@ void LLFloaterColorPicker::draw()
 
 	// create rgb area outline
 	gl_rect_2d ( mRGBViewerImageLeft,
-				 mRGBViewerImageTop - mRGBViewerImageHeight,
-				 mRGBViewerImageLeft + mRGBViewerImageWidth,
+				 mRGBViewerImageTop - mRGBViewerImageHeight + 1,
+				 mRGBViewerImageLeft + mRGBViewerImageWidth + 1,
 				 mRGBViewerImageTop,
 				 LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ),
 				 FALSE );
@@ -635,7 +636,7 @@ void LLFloaterColorPicker::draw()
 	}
 
 
-	// draw luninance marker
+	// draw luminance marker
 	S32 startX = mLumRegionLeft + mLumRegionWidth;
 	S32 startY = mLumRegionTop - mLumRegionHeight + ( S32 ) ( mLumRegionHeight * getCurL () );
 	gl_triangle_2d ( startX, startY,
@@ -645,8 +646,8 @@ void LLFloaterColorPicker::draw()
 
 	// draw luminance slider outline
 	gl_rect_2d ( mLumRegionLeft,
-				 mLumRegionTop - mLumRegionHeight,
-				 mLumRegionLeft + mLumRegionWidth,
+				 mLumRegionTop - mLumRegionHeight + 1,
+				 mLumRegionLeft + mLumRegionWidth + 1,
 				 mLumRegionTop,
 				 LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ),
 				 FALSE );
@@ -661,8 +662,8 @@ void LLFloaterColorPicker::draw()
 
 	// draw selected color swatch outline
 	gl_rect_2d ( mSwatchRegionLeft,
-				 mSwatchRegionTop - mSwatchRegionHeight,
-				 mSwatchRegionLeft + mSwatchRegionWidth,
+				 mSwatchRegionTop - mSwatchRegionHeight + 1,
+				 mSwatchRegionLeft + mSwatchRegionWidth + 1,
 				 mSwatchRegionTop,
 				 LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ),
 				 FALSE );
@@ -714,7 +715,7 @@ drawPalette ()
 			// draw palette entry color
 			if ( mPalette [ curEntry ] )
 			{
-				gl_rect_2d ( x1 + 2, y1 - 2, x2 - 2, y2 + 2, *mPalette [ curEntry++ ], TRUE );
+				gl_rect_2d ( x1 + 1, y1 - 2, x2 - 2, y2 + 1, *mPalette [ curEntry++ ], TRUE );
 				gl_rect_2d ( x1 + 1, y1 - 1, x2 - 1, y2 + 1, LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ), FALSE );
 			}
 		}
@@ -746,6 +747,50 @@ drawPalette ()
 	}
 }
 
+//Convert to Hex.
+std::string RGBToHex(int rNum, int gNum, int bNum)
+{
+	std::string result;
+	char chr[255];	
+	sprintf_s(chr, "%.2X", rNum);
+	result.append(chr);
+	sprintf_s(chr, "%.2X", gNum);
+	result.append(chr);
+	sprintf_s(chr, "%.2X", bNum);
+	result.append(chr);
+	
+	return result;
+}
+
+//Called when a hex value is entered into the Hex field  - Convert and set values.
+void
+LLFloaterColorPicker::
+onHexCommit ( LLUICtrl* ctrl, void* data )
+{
+	if ( data )
+	{
+		LLFloaterColorPicker* self = ( LLFloaterColorPicker* )data;
+		if ( self )
+		{
+			char* pStop;
+			int num = strtol(ctrl->getValue().asString().c_str(), &pStop, 16);
+			int r = (num & 0xFF0000) >> 16;
+			int g = (num & 0xFF00) >> 8;
+			int b = num & 0xFF;
+			self->setCurRgb (r / 255.0f, g / 255.0f, b / 255.0f);
+
+			// HACK: turn off the call back wilst we update the text or we recurse ourselves into oblivion
+			self->enableTextCallbacks ( FALSE );
+			self->updateTextEntry ();
+			self->enableTextCallbacks ( TRUE );
+			if (self->mApplyImmediateCheck->get())
+			{
+				LLColorSwatchCtrl::onColorChanged ( self->getSwatch (), LLColorSwatchCtrl::COLOR_CHANGE );
+			}
+		}
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // update text entry values for RGB/HSL (can't be done in ::draw () since this overwrites input
 void
@@ -759,6 +804,7 @@ updateTextEntry ()
 	childSetValue("hspin", ( getCurH () * 360.0f ) );
 	childSetValue("sspin", ( getCurS () * 100.0f ) );
 	childSetValue("lspin", ( getCurL () * 100.0f ) );
+	childSetValue("hexval", RGBToHex(getCurR() * 255, getCurG() * 255, getCurB() * 255));
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -775,6 +821,7 @@ enableTextCallbacks ( BOOL stateIn )
 		childSetCommitCallback("hspin", onTextCommit, (void*)this );
 		childSetCommitCallback("sspin", onTextCommit, (void*)this );
 		childSetCommitCallback("lspin", onTextCommit, (void*)this );
+		childSetCommitCallback("hexval", onHexCommit, (void*)this );
 	}
 	else
 	{
@@ -784,6 +831,7 @@ enableTextCallbacks ( BOOL stateIn )
 		childSetCommitCallback("hspin", 0, (void*)this );
 		childSetCommitCallback("sspin", 0, (void*)this );
 		childSetCommitCallback("lspin", 0, (void*)this );
+		childSetCommitCallback("hexval", 0, (void*)this );
 	}
 }
 

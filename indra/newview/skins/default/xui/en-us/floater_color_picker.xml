@@ -55,30 +55,40 @@
 		Lum:
 	</text>
 	<spinner bottom="-166" decimal_digits="0" follows="left" height="16" increment="1"
-	     initial_val="50" left="75" max_val="100" min_val="0" mouse_opaque="true"
-	     name="lspin" width="50" />
+	    initial_val="50" left="75" max_val="100" min_val="0" mouse_opaque="true"
+	    name="lspin" width="50" />
 	<check_box bottom="-373" follows="left|bottom" font="SansSerifSmall" height="20"
-	     initial_value="false" label="Apply Immediately" left="12"
-	     mouse_opaque="true" name="apply_immediate" width="100" />
+	    initial_value="false" label="Apply Immediately" left="12"
+	    mouse_opaque="true" name="apply_immediate" width="100" />
 	<button bottom="-373" follows="left|top" font="SansSerif" halign="center" height="32"
-	     label="" label_selected="" left_delta="130" mouse_opaque="true"
-	     name="color_pipette" width="32" />
+	    label="" label_selected="" left_delta="130" mouse_opaque="true"
+	    name="color_pipette" width="32" />
 	<button bottom="-373" follows="right|bottom" font="SansSerif" halign="center"
-	     height="20" label="Cancel" label_selected="Cancel" left_delta="75"
-	     mouse_opaque="true" name="cancel_btn" width="100" />
+	    height="20" label="Cancel" label_selected="Cancel" left_delta="75"
+	    mouse_opaque="true" name="cancel_btn" width="100" />
 	<button bottom="-373" follows="right|bottom" font="SansSerif" halign="center"
-	     height="20" label="Select" label_selected="Select" left_delta="104"
-	     mouse_opaque="true" name="select_btn" width="100" />
+	    height="20" label="Select" label_selected="Select" left_delta="104"
+	    mouse_opaque="true" name="select_btn" width="100" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-188" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
-	     mouse_opaque="true" name="Current color:" v_pad="0" width="110">
+	    bottom="-190" drop_shadow_visible="true" follows="left|top"
+	    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
+	    mouse_opaque="true" name="Hex Value:" v_pad="0" width="110">
+		Hex:
+	</text>
+	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0" follows="left|top"
+		font="SansSerifSmall" height="18" left_delta="64" max_length="7" mouse_opaque="true"
+		tool_tip="" name="hexval" control_name="ColorHexValue"
+		width="49"/>
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	    bottom="-210" drop_shadow_visible="true" follows="left|top"
+	    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
+	    mouse_opaque="true" name="Current color:" v_pad="0" width="110">
 		Current color:
 	</text>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-270" drop_shadow_visible="true" follows="left|top"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
-	     mouse_opaque="true" name="(Drag below to save.)" v_pad="0" width="110">
-		(Drag below to save.)
+	    bottom="-288" drop_shadow_visible="true" follows="left|top"
+	    font="SansSerifSmall" h_pad="0" halign="left" height="16" left="12"
+	    mouse_opaque="true" name="(Drag below to save.)" v_pad="0" width="110">
+		Drag below to save.
 	</text>
 </floater>

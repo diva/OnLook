@@ -116,7 +116,7 @@ class LLFloaterColorPicker
 		// convert RGB to HSL and vice-versa
 		void hslToRgb ( F32 hValIn, F32 sValIn, F32 lValIn, F32& rValOut, F32& gValOut, F32& bValOut );
 		F32	 hueToRgb ( F32 val1In, F32 val2In, F32 valHUeIn );
-
+		
 		void setActive(BOOL active);
 
 	protected:
@@ -125,6 +125,7 @@ class LLFloaterColorPicker
 		static void onClickSelect ( void* data );
 		static void onClickPipette ( void* data );
 		static void onTextCommit ( LLUICtrl* ctrl, void* data );
+		static void onHexCommit ( LLUICtrl* ctrl, void* data );
 		static void onImmediateCheck ( LLUICtrl* ctrl, void* data );
 		static void onColorSelect( const LLTextureEntry& te, void *data );
 	private:
