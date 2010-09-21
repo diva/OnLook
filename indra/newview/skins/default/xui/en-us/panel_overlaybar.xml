@@ -18,7 +18,7 @@
 				     width="420">
 					<button bottom="1" follows="left|bottom" font="SansSerif" halign="center" height="20"
 					     label="New IM" label_selected="New IM" left="0"
-					     name="IM Received" scale_image="true"
+					     name="New IM" scale_image="true"
 					     tool_tip="You have an instant message pending. Click to show IMs."
 					     width="102" />
 					<button bottom="1" follows="left|bottom" font="SansSerif" halign="center" height="20"

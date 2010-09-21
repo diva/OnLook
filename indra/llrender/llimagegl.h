@@ -110,7 +110,7 @@ public:
 	BOOL setSubImage(const LLImageRaw* imageraw, S32 x_pos, S32 y_pos, S32 width, S32 height, BOOL force_fast_update = FALSE);
 	BOOL setSubImage(const U8* datap, S32 data_width, S32 data_height, S32 x_pos, S32 y_pos, S32 width, S32 height, BOOL force_fast_update = FALSE);
 	BOOL setSubImageFromFrameBuffer(S32 fb_x, S32 fb_y, S32 x_pos, S32 y_pos, S32 width, S32 height);
-	
+
 	// Read back a raw image for this discard level, if it exists
 	BOOL readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compressed_ok); 
 	void destroyGLTexture();

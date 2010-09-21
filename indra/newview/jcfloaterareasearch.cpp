@@ -16,7 +16,7 @@
  *      may be used to endorse or promote products derived from this
  *      software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS LTD AND CONTRIBUTORS “AS IS”
+ * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS LTD AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MODULAR SYSTEMS OR CONTRIBUTORS
@@ -55,7 +55,7 @@ std::string JCFloaterAreaSearch::sSearchedGroup;
 const std::string request_string = "JCFloaterAreaSearch::Requested_ø§µ";
 const F32 min_refresh_interval = 0.25f;	// Minimum interval between list refreshes in seconds.
 
-JCFloaterAreaSearch::JCFloaterAreaSearch() :  
+JCFloaterAreaSearch::JCFloaterAreaSearch() :
 LLFloater(),
 mCounterText(0),
 mResultList(0)
@@ -149,7 +149,7 @@ void JCFloaterAreaSearch::toggle()
 void JCFloaterAreaSearch::onDoubleClick(void *userdata)
 {
 	JCFloaterAreaSearch *self = (JCFloaterAreaSearch*)userdata;
- 	LLScrollListItem *item = self->mResultList->getFirstSelected();
+	LLScrollListItem *item = self->mResultList->getFirstSelected();
 	if (!item) return;
 	LLUUID object_id = item->getUUID();
 	LLViewerObject* objectp = gObjectList.findObject(object_id);

@@ -65,7 +65,7 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 
 //<edit>
     std::string user_agent = llformat("%s %d.%d.%d (%d)",
-            gSavedSettings.getString("SpecifiedChannel").c_str(),
+            LL_CHANNEL,
             LL_VERSION_MAJOR,
             LL_VERSION_MINOR,
             LL_VERSION_PATCH,

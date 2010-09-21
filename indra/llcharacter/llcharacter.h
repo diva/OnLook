@@ -276,6 +276,7 @@ protected:
 	U32					mAppearanceSerialNum;
 	U32					mSkeletonSerialNum;
 	LLAnimPauseRequest	mPauseRequest;
+
 	BOOL mInAppearance;
 
 private:

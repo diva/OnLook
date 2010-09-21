@@ -154,7 +154,7 @@ U8* LLImageBase::allocateData(S32 size)
 		size = mWidth * mHeight * mComponents;
 		if (size <= 0)
 		{
-			llerrs << llformat("LLImageBase::allocateData called with bad dimentions: %dx%dx%d",mWidth,mHeight,mComponents) << llendl;
+			llerrs << llformat("LLImageBase::allocateData called with bad dimensions: %dx%dx%d",mWidth,mHeight,mComponents) << llendl;
 		}
 	}
 	else if (size <= 0 || (size > 4096*4096*16 && sSizeOverride == FALSE))
@@ -659,6 +659,12 @@ void LLImageRaw::fill( const LLColor4U& color )
 // Src and dst can be any size.  Src and dst can each have 3 or 4 components.
 void LLImageRaw::copy(LLImageRaw* src)
 {
+	if (!src)
+	{
+		llwarns << "LLImageRaw::copy called with a null src pointer" << llendl;
+		return;
+	}
+
 	LLImageRaw* dst = this;  // Just for clarity.
 
 	llassert( (3 == src->getComponents()) || (4 == src->getComponents()) );
@@ -839,6 +845,7 @@ BOOL LLImageRaw::scale( S32 new_width, S32 new_height, BOOL scale_image_data )
 	{
 		// Vertical
 		S32 temp_data_size = old_width * new_height * getComponents();
+		llassert_always(temp_data_size > 0);
 		U8* temp_buffer = new U8[ temp_data_size ];
 		for( S32 col = 0; col < old_width; col++ )
 		{

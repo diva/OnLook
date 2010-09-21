@@ -1565,7 +1565,7 @@ if(dialog == IM_TYPING_START
 	if( do_auto_response )
 	{
 		if((dialog == IM_NOTHING_SPECIAL && !is_auto_response) ||
-			(dialog == IM_TYPING_START && gSavedPerAccountSettings.getBOOL("AscentInstantMessageShowOnTyping"))
+			(dialog == IM_TYPING_START && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 			)
 		{
 			BOOL has = gIMMgr->hasSession(computed_session_id);
@@ -2137,7 +2137,18 @@ if(dialog == IM_TYPING_START
 			position,
 			true);
 
-		chat.mText = std::string("IM: ") + name + separator_string +  saved + message.substr(message_offset);
+		std::string prepend_msg;
+		if (gAgent.isInGroup(session_id)&& gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
+		{
+			prepend_msg = "[";
+			prepend_msg += std::string((char*)binary_bucket);
+			prepend_msg += "] ";
+		}
+		else
+		{
+			prepend_msg = std::string("IM: ");
+		}
+		chat.mText = prepend_msg + name + separator_string +  saved + message.substr(message_offset);
 		LLFloaterChat::addChat(chat, TRUE, is_this_agent);
 	}
 	break;

@@ -137,15 +137,15 @@ void LLUserAuth::authenticate(
 	//WOW NEIL YOU ARE SO AWESOME!!
 	
 	XMLRPC_VectorAppendString(params, "version", std::string(
-		gSavedSettings.getString("SpecifiedChannel") + " " +
+		llformat("%s", LL_CHANNEL) + " " +
 		llformat("%d", LL_VERSION_MAJOR) + "." +
 		llformat("%d", LL_VERSION_MINOR) + "." +
 		llformat("%d", LL_VERSION_PATCH) + "." +
 		llformat("%d", LL_VERSION_BUILD)
 	).c_str(), 0); // Includes channel name
 	
-	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
-	// </edit>
+	XMLRPC_VectorAppendString(params, "channel", std::string(LL_CHANNEL).c_str(), 0);
+
 	XMLRPC_VectorAppendString(params, "platform", PLATFORM_STRING, 0);
 
 	XMLRPC_VectorAppendString(params, "mac", hashed_mac.c_str(), 0);
@@ -232,22 +232,18 @@ void LLUserAuth::authenticate(
 	XMLRPC_VectorAppendString(params, "last", lastname.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "passwd", dpasswd.c_str(), 0);
 	XMLRPC_VectorAppendString(params, "start", start.c_str(), 0);
-	// <edit>
+	//Partially correct but I'm very skeptical of the gSavedSettings part. Imprudence does it, but that doesn't mean it's right... -HgB
 	//XMLRPC_VectorAppendString(params, "version", gCurrentVersion.c_str(), 0); // Includes channel name
 	//XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("VersionChannelName").c_str(), 0);
-	
-	//WOW NEIL YOU ARE SO AWESOME!!
-	
 	XMLRPC_VectorAppendString(params, "version", std::string(
-		gSavedSettings.getString("SpecifiedChannel") + " " +
+		llformat("%s", LL_CHANNEL) + " " +
 		llformat("%d", LL_VERSION_MAJOR) + "." +
 		llformat("%d", LL_VERSION_MINOR) + "." +
 		llformat("%d", LL_VERSION_PATCH) + "." +
 		llformat("%d", LL_VERSION_BUILD)
 	).c_str(), 0); // Includes channel name
 	
-	XMLRPC_VectorAppendString(params, "channel", gSavedSettings.getString("SpecifiedChannel").c_str(), 0);
-	// </edit>
+	XMLRPC_VectorAppendString(params, "channel", std::string(LL_CHANNEL).c_str(), 0);
 	XMLRPC_VectorAppendString(params, "platform", PLATFORM_STRING, 0);
 
 	XMLRPC_VectorAppendString(params, "mac", hashed_mac.c_str(), 0);
