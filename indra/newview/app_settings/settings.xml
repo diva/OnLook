@@ -13,6 +13,28 @@
 		<key>Value</key>
 		<integer>1</integer>
 	</map>
+	<key>OptionShowGroupNameInChatIM</key>
+	<map>
+		<key>Comment</key>
+		<string>Show group name in IM notification</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+	<key>AscentInstantMessageAnnounceIncoming</key>
+	<map>
+		<key>Comment</key>
+		<string>Start IM window as soon as the person starts typing</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
 	<key>AscentShowLookAt</key>
 	<map>
 		<key>Comment</key>

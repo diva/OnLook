@@ -155,7 +155,7 @@ bool updateChatVisible(const LLSD &data)
 
 BOOL LLOverlayBar::postBuild()
 {
-	childSetAction("IM Received",onClickIMReceived,this);
+	childSetAction("New IM",onClickIMReceived,this);
 	childSetAction("Set Not Busy",onClickSetNotBusy,this);
 	childSetAction("Mouselook",onClickMouselook,this);
 	childSetAction("Stand Up",onClickStandUp,this);
@@ -167,7 +167,7 @@ BOOL LLOverlayBar::postBuild()
 	setFocusRoot(TRUE);
 	mBuilt = true;
 
-	mOriginalIMLabel = getChild<LLButton>("IM Received")->getLabelSelected();
+	mOriginalIMLabel = getChild<LLButton>("New IM")->getLabelSelected();
 
 	layoutButtons();
 
@@ -242,7 +242,7 @@ void LLOverlayBar::refresh()
 
 	BOOL im_received = gIMMgr->getIMReceived();
 	int unread_count = gIMMgr->getIMUnreadCount();
-	LLButton* button = getChild<LLButton>("IM Received");
+	LLButton* button = getChild<LLButton>("New IM");
 
 	if ((button && button->getVisible() != im_received) ||
 			(button && button->getVisible()))

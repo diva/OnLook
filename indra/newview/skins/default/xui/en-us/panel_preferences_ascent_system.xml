@@ -77,7 +77,7 @@
 				tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well."
 				mouse_opaque="true" name="power_user_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="-20" control_name="AscentPowerfulWizardCheck1" enabled="true"
+			<check_box bottom_delta="-20" control_name="AscentPowerfulWizardCheck2" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Confirm Power User functionality" left="10"
 				tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Ascent devs will not replace anything you break if you ruin something important. Unlike most checkboxes, you must apply/ok changes before this will activate."
@@ -100,7 +100,8 @@
 			    width="400" />
 			<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
 				initial_value="false" label="Announce incoming instant messages" left="10" mouse_opaque="true"
-				name="AscentInstantMessageAnnounceIncoming" radio_style="false" width="270"
+				control_name="AscentInstantMessageAnnounceIncoming" radio_style="false" width="270"
+				name="quickstart_im_check"
 				tool_tip="Opens an IM window when someone starts typing an IM to you. This gives you a heads up that someone is IMing you before they hit enter. "/>
 			<check_box bottom_delta="-20" control_name="HideTypingNotification" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
@@ -108,11 +109,11 @@
 				tool_tip="IM partners will not see '______ is typing...' when you're responding."
 				mouse_opaque="true" name="hide_typing_check" radio_style="false"
 				width="400" />
-			<check_box bottom_delta="-20" control_name="AscentInstantMessageAnnounceIncoming" enabled="true"
+			<check_box bottom_delta="-20" control_name="OptionShowGroupNameInChatIM" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-				label="Open IM as soon as user starts typing" left="10"
-				tool_tip="IM window will open as soon as the user begins typing."
-				mouse_opaque="true" name="quickstart_im_check" radio_style="false"
+				label="Show group name in chat" left="10"
+				tool_tip="The name of the group will also be displayed if the IM is from group chat."
+				mouse_opaque="true" name="append_group_name_check" radio_style="false"
 				width="400" />
 			<!-- Left/Right Column split -->
 			<view_border bevel_style="none" border_thickness="1" bottom_delta="0" follows="top|left" height="75"

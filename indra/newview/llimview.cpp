@@ -1540,8 +1540,20 @@ public:
 				message_params["region_id"].asUUID(),
 				ll_vector3_from_sd(message_params["position"]),
 				true);
-
-			chat.mText = std::string("IM: ") + name + separator_string + saved + message.substr(message_offset);
+			LLGroupData group_data;
+			gAgent.getGroupData(session_id, group_data);
+			std::string prepend_msg;
+			if (gAgent.isInGroup(session_id)&& gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
+			{
+				prepend_msg = "[";
+				prepend_msg += group_data.mName;
+				prepend_msg += "] ";
+			}
+			else
+			{
+				prepend_msg = std::string("IM: ");
+			}
+			chat.mText = prepend_msg + name + separator_string + saved + message.substr(message_offset);
 			LLFloaterChat::addChat(chat, TRUE, is_this_agent);
 
 			//K now we want to accept the invitation

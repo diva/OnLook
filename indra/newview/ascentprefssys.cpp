@@ -257,7 +257,7 @@ void LLPrefsAscentSysImpl::refresh()
 		combo->setCurrentByIndex(mDateFormat);
 	}
 
-	childSetValue("seconds_in_chat_and_ims_check",	mEnableOOCAutoClose);
+	childSetValue("seconds_in_chat_and_ims_check",	mSecondsInChatAndIMs);
 
 
 	LLWString auto_response = utf8str_to_wstring( gSavedPerAccountSettings.getString("AscentInstantMessageResponse") );
@@ -268,10 +268,9 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("AscentInstantMessageResponseMuted", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseMuted"));
 	childSetValue("AscentInstantMessageResponseAnyone", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseAnyone"));
 	childSetValue("AscentInstantMessageShowResponded", gSavedPerAccountSettings.getBOOL("AscentInstantMessageShowResponded"));
-	childSetValue("AscentInstantMessageShowOnTyping", gSavedPerAccountSettings.getBOOL("AscentInstantMessageShowOnTyping"));
+	childSetValue("AscentInstantMessageShowOnTyping", gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"));
 	childSetValue("AscentInstantMessageResponseRepeat", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseRepeat" ));
 	childSetValue("AscentInstantMessageResponseItem", gSavedPerAccountSettings.getBOOL("AscentInstantMessageResponseItem"));
-	childSetValue("AscentInstantMessageAnnounceIncoming", gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"));
 
 
 	//Save Performance --------------------------------------------------------------------
@@ -385,8 +384,9 @@ void LLPrefsAscentSysImpl::apply()
 	//Missing the echo/log option.
 	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
 	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
-	gSavedSettings.setBOOL("AscentAllowMUpose",			childGetValue("allow_mu_pose_check"));
-	gSavedSettings.setBOOL("AscentAutoCloseOOC",		childGetValue("close_ooc_check"));
+	gSavedSettings.setBOOL("AscentInstantMessageAnnounceIncoming",	childGetValue("AscentInstantMessageAnnounceIncoming").asBoolean());
+	gSavedSettings.setBOOL("AscentAllowMUpose",			childGetValue("allow_mu_pose_check").asBoolean());
+	gSavedSettings.setBOOL("AscentAutoCloseOOC",		childGetValue("close_ooc_check").asBoolean());
 	//gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").   );
 	
 	LLComboBox* combo = getChild<LLComboBox>("time_format_combobox");
@@ -437,7 +437,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setString("ShortTimeFormat",			short_time);
 	gSavedSettings.setString("LongTimeFormat",			long_time);
 	gSavedSettings.setString("TimestampFormat",			timestamp);
-	gSavedSettings.setBOOL("SecondsInChatAndIMs",		childGetValue("seconds_in_chat_and_ims_check"));
+	gSavedSettings.setBOOL("SecondsInChatAndIMs",		childGetValue("seconds_in_chat_and_ims_check").asBoolean());
 
 
 	gSavedPerAccountSettings.setString("AscentInstantMessageResponse",			childGetValue("im_response").asString());
