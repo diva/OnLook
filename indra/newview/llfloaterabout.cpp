@@ -301,5 +301,5 @@ static std::string get_viewer_release_notes_url()
 	std::ostringstream url;
 	url << RELEASE_NOTES_BASE_URL << LLURI::mapToQueryString(query);
 
-	return url.str();
+	return "http://ascent.balseraph.org/index.php/Ascent_" + version.str();// url.str();
 }
