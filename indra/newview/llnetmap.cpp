@@ -41,6 +41,8 @@
 #include "llfocusmgr.h"
 #include "llrender.h"
 
+#include "llfloateravatarlist.h"
+
 #include "llagent.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
@@ -109,6 +111,11 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
 	(new LLEnableProfile())->registerListener(this, "MiniMap.EnableProfile");
+	(new mmsetred())->registerListener(this, "MiniMap.setred");
+	(new mmsetgreen())->registerListener(this, "MiniMap.setgreen");
+	(new mmsetblue())->registerListener(this, "MiniMap.setblue");
+	(new mmsetyellow())->registerListener(this, "MiniMap.setyellow");
+	(new mmsetcustom())->registerListener(this, "MiniMap.setcustom");
 
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_mini_map.xml");
 
@@ -162,7 +169,19 @@ void LLNetMap::translatePan( F32 delta_x, F32 delta_y )
 
 
 ///////////////////////////////////////////////////////////////////////////////////
+LLColor4 mm_mapcols[1024];
+LLUUID mm_mapkeys[1024];
+U32 mm_netmapnum;
 
+void LLNetMap::mm_setcolor(LLUUID key,LLColor4 col){
+	if(mm_netmapnum>1023){
+		llinfos << "Minimap color buffer filled, relog or something to clear it" << llendl;
+		return;
+	}
+	mm_mapcols[mm_netmapnum]=col;
+	mm_mapkeys[mm_netmapnum]=key;
+	mm_netmapnum+=1;
+}
 void LLNetMap::draw()
 {
  	static LLFrameTimer map_timer;
@@ -293,8 +312,12 @@ void LLNetMap::draw()
 			U8 *default_texture = mObjectRawImagep->getData();
 			memset( default_texture, 0, mObjectImagep->getWidth() * mObjectImagep->getHeight() * mObjectImagep->getComponents() );
 
-			// Draw objects
-			gObjectList.renderObjectsForMap(*this);
+			// Draw buildings
+			//gObjectList.renderObjectsForMap(*this);
+			if(!gSavedSettings.getBOOL("MoyFastMiniMap")){
+				gObjectList.renderObjectsForMap(*this);
+				mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
+			}
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
 			
@@ -335,44 +358,59 @@ void LLNetMap::draw()
 		F32 min_pick_dist = mDotRadius * MIN_PICK_SCALE; 
 
 		// Draw avatars
-		//<edit>
+//		LLColor4 mapcolor = gAvatarMapColor;
+
+		LLColor4 standard_color = gColors.getColor( "MapAvatar" );
+		LLColor4 friend_color = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
+		LLColor4 em_color = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
+		LLColor4 linden_color = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
+		LLColor4 muted_color = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
+
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLVector3d> positions;
 		LLWorld::getInstance()->getAvatars(&avatar_ids, &positions);
+		U32 a;
 		for(U32 i=0; i<avatar_ids.size(); i++)
 		{
+			LLColor4 avColor = standard_color;
 			// TODO: it'd be very cool to draw these in sorted order from lowest Z to highest.
 			// just be careful to sort the avatar IDs along with the positions. -MG
 			pos_map = globalPosToView(positions[i], rotate_map);
-
-			//Default to boring green for random schlubs
-			LLColor4 avColor = gColors.getColor( "MapAvatar" );
-
 			std::string avName;
 
 			gCacheName->getFullName(avatar_ids[i], avName);
+			if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
+			{
+				avColor = muted_color;
+			}
 
 			LLUUID estate_owner = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i])->getOwner();
 
 			//Lindens are always more Linden than your friend, make that take precedence
 			if(LLMuteList::getInstance()->isLinden(avName))
 			{
-				avColor = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
+				avColor = linden_color;
 			}
 			//check if they are an estate owner at their current position
 			else if(estate_owner.notNull() && avatar_ids[i] == estate_owner)
 			{
-				avColor = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
+				avColor = em_color;
 			}
 			//without these dots, SL would suck.
 			else if(is_agent_friend(avatar_ids[i]))
 			{
-				avColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
+				avColor = friend_color;
 			}
-			//big fat jerkface who is probably a jerk, display them as such.
-			else if(LLMuteList::getInstance()->isMuted(avatar_ids[i]))
+			else 
 			{
-				avColor = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
+				// MOYMOD Minimap custom av colors.
+				for(a=0;a<mm_netmapnum;a+=1)
+				{
+					if(avatar_ids[i]==mm_mapkeys[a])
+					{
+						avColor = mm_mapcols[a];
+					}
+				}
 			}
 
 			LLWorldMapView::drawAvatar(
@@ -386,6 +424,7 @@ void LLNetMap::draw()
 			{
 				closest_dist = dist_to_cursor;
 				mClosestAgentToCursor = avatar_ids[i];
+				mClosestAgentPosition = positions[i];
 			}
 		}
 
@@ -582,6 +621,26 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 		{
 			msg.append(fullname);
 			msg.append("\n");
+
+			LLVector3d mypos = gAgent.getPositionGlobal();
+			LLVector3d position = mClosestAgentPosition;
+
+			if ( LLFloaterAvatarList::getInstance() )
+			{
+				LLAvatarListEntry *ent = LLFloaterAvatarList::getInstance()->getAvatarEntry(mClosestAgentToCursor);
+				if ( NULL != ent )
+				{
+					//position = LLFloaterAvatarList::AvatarPosition(mClosestAgentToCursor);
+					position = ent->getPosition();
+				}
+			}
+			LLVector3d delta = position - mypos;
+			F32 distance = (F32)delta.magVec();
+
+
+			//llinfos << distance << " - " << position << llendl;
+
+			msg.append( llformat("\n(Distance: %.02fm)\n\n",distance) );
 		}
 		msg.append( region->getName() );
 
@@ -651,7 +710,11 @@ void LLNetMap::renderScaledPointGlobal( const LLVector3d& pos, const LLColor4U &
 	LLVector3 local_pos;
 	local_pos.setVec( pos - mObjectImageCenterGlobal );
 
-	S32 diameter_pixels = llround(2 * radius_meters * mObjectMapTPM);
+	// DEV-17370 - megaprims of size > 4096 cause lag.  (go figger.)
+	const F32 MAX_RADIUS = 256.0f;
+	F32 radius_clamped = llmin(radius_meters, MAX_RADIUS);
+	
+	S32 diameter_pixels = llround(2 * radius_clamped * mObjectMapTPM);
 	renderPoint( local_pos, color, diameter_pixels );
 }
 
@@ -930,6 +993,47 @@ bool LLNetMap::LLScaleMap::handleEvent(LLPointer<LLEvent> event, const LLSD& use
 	return true;
 }
 
+//moymod - minimap color shit
+bool LLNetMap::mmsetred::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	//if(self->mClosestAgentAtLastRightClick){
+		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(1.0,0.0,0.0,1.0));
+	//}
+	return true;
+}
+bool LLNetMap::mmsetgreen::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	//if(self->mClosestAgentAtLastRightClick){
+		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(0.0,1.0,0.0,1.0));
+	//}
+	return true;
+}
+bool LLNetMap::mmsetblue::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	//if(self->mClosestAgentAtLastRightClick){
+		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(0.0,0.0,1.0,1.0));
+	//}
+	return true;
+}
+bool LLNetMap::mmsetyellow::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	//if(self->mClosestAgentAtLastRightClick){
+		mm_setcolor(self->mClosestAgentAtLastRightClick,LLColor4(1.0,1.0,0.0,1.0));
+	//}
+	return true;
+}
+bool LLNetMap::mmsetcustom::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	//if(self->mClosestAgentAtLastRightClick){
+		mm_setcolor(self->mClosestAgentAtLastRightClick,gSavedSettings.getColor4("MoyMiniMapCustomColor"));
+	//}
+	return true;
+}
 bool LLNetMap::LLCenterMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
 	EMiniMapCenter center = (EMiniMapCenter)userdata.asInteger();
