@@ -3568,6 +3568,13 @@ void LLSelectMgr::sendAttach(U8 attachment_point)
 	if (0 == attachment_point ||
 		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)attachment_point, (LLViewerJointAttachment*)NULL))
 	{
+		if (attachment_point != 0)
+		{
+			// If we know the attachment point then we got here by clicking an
+			// "Attach to..." context menu item, so we should add, not replace.
+			attachment_point |= ATTACHMENT_ADD;
+		}
+
 		sendListToRegions(
 			"ObjectAttach",
 			packAgentIDAndSessionAndAttachment, 

@@ -47,6 +47,7 @@
 #include "llgesturemgr.h"
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
+#include "llinventorybridge.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llmutelist.h"
@@ -475,6 +476,15 @@ LLToolDragAndDrop::dragOrDrop3dImpl LLToolDragAndDrop::sDragAndDrop3d[DAD_COUNT]
 		&LLToolDragAndDrop::dad3dActivateGesture, // Dest: DT_SELF
 		&LLToolDragAndDrop::dad3dGiveInventory, // Dest: DT_AVATAR
 		&LLToolDragAndDrop::dad3dUpdateInventory, // Dest: DT_OBJECT
+		&LLToolDragAndDrop::dad3dNULL,//dad3dAssetOnLand, // Dest: DT_LAND
+	},
+	//	Source: DAD_LINK
+	// TODO: gesture on self could play it?  edit it?
+	{
+		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_NONE
+		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_SELF
+		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_AVATAR
+		&LLToolDragAndDrop::dad3dNULL, // Dest: DT_OBJECT
 		&LLToolDragAndDrop::dad3dNULL,//dad3dAssetOnLand, // Dest: DT_LAND
 	},
 };
@@ -1986,6 +1996,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	//if(!vitem->isComplete()) return ACCEPT_NO;
 	if(!vitem->isComplete() && !(gInventory.isObjectDescendentOf(vitem->getUUID(), gLocalInventoryRoot))) return ACCEPT_NO;
 	// </edit>
+	if (vitem->getIsLinkType()) return ACCEPT_NO; // No giving away links
 
 	// deny attempts to drop from an object onto itself. This is to
 	// help make sure that drops that are from an object to an object

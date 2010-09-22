@@ -155,6 +155,7 @@ public:
 	void updateAttachmentVisibility(U32 camera_mode);
 	void clampAttachmentPositions();
 	S32 getAttachmentCount(); // Warning: order(N) not order(1)
+	BOOL canAttachMoreObjects() const;
 
 	// HUD functions
 	BOOL hasHUDAttachment() const;
@@ -292,7 +293,7 @@ public:
 	void hideSkirt();
 
 
-	virtual void setParent(LLViewerObject* parent);
+	virtual BOOL setParent(LLViewerObject* parent);
 	virtual void addChild(LLViewerObject *childp);
 	virtual void removeChild(LLViewerObject *childp);
 
@@ -587,7 +588,8 @@ public:
 	// <edit>
 	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
 	// </edit>
-
+protected:
+	U32					getNumAttachments() const; // O(N), not O(1) <---- Fix if possible, I guess it's not worst case scenario - HgB
 	//--------------------------------------------------------------------
 	// static preferences that are controlled by user settings/menus
 	//--------------------------------------------------------------------

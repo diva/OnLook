@@ -170,11 +170,16 @@ void ScriptCounter::serializeSelection(bool delScript)
 					LLViewerJointAttachment* attachment = iter->second;
 					if (!attachment->getValid())
 						continue ;
-					LLViewerObject* object = attachment->getObject();
-					if(object)
+					for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+						attachment_iter != attachment->mAttachedObjects.end();
+						++attachment_iter)
 					{
-						objectArray.put(object);
-						objectCount++;
+						LLViewerObject *attached_object = (*attachment_iter);
+						if (attached_object)
+						{
+							objectArray.put(attached_object);
+							objectCount++;
+						}
 					}
 				}
 			}

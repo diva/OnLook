@@ -79,6 +79,7 @@ private:
 	LLColor4 mLindenColor;
 	LLColor4 mMutedColor;
 	LLColor4 mEMColor;
+	LLColor4 mCustomColor;
 	U32 mSelectedClient;
 };
 
@@ -213,6 +214,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 	mLindenColor			= LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
 	mMutedColor				= LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
 	mEMColor				= LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
+	mCustomColor			= LLSavedSettingsGlue::getCOAColor4("MoyMiniMapCustomColor");
 }
 
 void LLPrefsAscentVanImpl::refresh()
@@ -236,6 +238,7 @@ void LLPrefsAscentVanImpl::refresh()
 	getChild<LLColorSwatchCtrl>("linden_color_swatch")->set(mLindenColor);
 	getChild<LLColorSwatchCtrl>("muted_color_swatch")->set(mMutedColor);
 	getChild<LLColorSwatchCtrl>("em_color_swatch")->set(mEMColor);
+	getChild<LLColorSwatchCtrl>("custom_color_swatch")->set(mCustomColor);
 	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
 	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
 	
@@ -250,6 +253,9 @@ void LLPrefsAscentVanImpl::refresh()
 
 	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", LLColor4::white);
 	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", mEMColor);
+
+	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", LLColor4::white);
+	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", mCustomColor);
 	gAgent.resetClientTag();
 }
 
@@ -268,6 +274,8 @@ void LLPrefsAscentVanImpl::cancel()
 	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor", mMutedColor);
 	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", LLColor4::yellow);
 	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", mEMColor);
+	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", LLColor4::yellow);
+	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", mCustomColor);
 }
 
 void LLPrefsAscentVanImpl::apply()
@@ -304,6 +312,7 @@ void LLPrefsAscentVanImpl::apply()
 	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor",			childGetValue("linden_color_swatch"));
 	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor",			childGetValue("muted_color_swatch"));
 	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor",		childGetValue("em_color_swatch"));
+	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor",		childGetValue("custom_color_swatch"));
 	LLSavedSettingsGlue::setCOABOOL("AscentUseCustomTag",			childGetValue("customize_own_tag_check"));
 	LLSavedSettingsGlue::setCOAString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
 	LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor",		childGetValue("custom_tag_color_swatch"));
