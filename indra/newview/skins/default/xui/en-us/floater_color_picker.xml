@@ -76,7 +76,7 @@
 		Hex:
 	</text>
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0" follows="left|top"
-		font="SansSerifSmall" height="18" left_delta="64" max_length="7" mouse_opaque="true"
+		font="SansSerifSmall" height="18" left_delta="64" max_length="6" mouse_opaque="true"
 		tool_tip="" name="hexval" control_name="ColorHexValue"
 		width="49"/>
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

@@ -751,13 +751,10 @@ drawPalette ()
 std::string RGBToHex(int rNum, int gNum, int bNum)
 {
 	std::string result;
-	char chr[255];	
-	sprintf_s(chr, "%.2X", rNum);
-	result.append(chr);
-	sprintf_s(chr, "%.2X", gNum);
-	result.append(chr);
-	sprintf_s(chr, "%.2X", bNum);
-	result.append(chr);
+	
+	result.append(llformat("%.2X", rNum));
+	result.append(llformat("%.2X", gNum));
+	result.append(llformat("%.2X", bNum));
 	
 	return result;
 }

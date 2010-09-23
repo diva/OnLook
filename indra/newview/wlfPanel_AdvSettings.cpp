@@ -142,7 +142,6 @@ void wlfPanel_AdvSettings::draw()
 	expand_button->setImageOverlay(ButtonState);
 	refresh();
 	LLPanel::draw();
-	
 }
 wlfPanel_AdvSettings::~wlfPanel_AdvSettings ()
 {
