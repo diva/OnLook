@@ -21,7 +21,7 @@
 #include "llviewerregion.h" // getCapability
 #include "llassetuploadresponders.h" // LLUpdateAgentInventoryResponder
 #include "llinventorymodel.h" // gInventory.updateItem
-#include "llappviewer.h" // gLocalInventoryRoot
+#include "llappviewer.h" // System Folders
 #include "llfloaterperms.h" //get default perms
 
 std::list<DOFloaterHex*> DOFloaterHex::sInstances;
@@ -261,7 +261,7 @@ void DOFloaterHex::assetCallback(LLVFS *vfs,
 	}
 
 	// Never enable save if it's a pretend item
-	if(gInventory.isObjectDescendentOf(item->getUUID(), gLocalInventoryRoot))
+	if(gInventory.isObjectDescendentOf(item->getUUID(), gSystemFolderRoot))
 	{
 		floater->childSetEnabled("save_btn", false);
 	}

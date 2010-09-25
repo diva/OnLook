@@ -83,6 +83,18 @@
 				tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Ascent devs will not replace anything you break if you ruin something important. Unlike most checkboxes, you must apply/ok changes before this will activate."
 				mouse_opaque="true" name="power_user_confirm_check" radio_style="false"
 				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentUseSystemFolder" enabled="true"
+				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
+				label="Enable Ascent System Inventory (Requires Restart)" left="10"
+				tool_tip="Creates a new folder in the inventory for storing settings files and non-permanent assets."
+				mouse_opaque="true" name="system_folder_check" radio_style="false"
+				width="400" />
+			<check_box bottom_delta="-20" control_name="AscentSystemTemporary" enabled="true"
+			    follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	    		label="Temporary uploads go in the System Asset folder." left="20"
+				tool_tip="Puts temporary uploads in the Asset folder which separates them from actual uploads, making them easier to find."
+			    mouse_opaque="true" name="temp_in_system_check" radio_style="false"
+			    width="400" />
 		</panel>
     	<panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
 			follows="left|top|right|bottom" label="Chat/IM" name="Chat/IM">

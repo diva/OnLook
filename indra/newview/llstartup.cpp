@@ -2148,19 +2148,6 @@ bool idle_startup()
  				}
  			}
 
-			// <edit> testing adding a local inventory folder...
-			LLViewerInventoryCategory* test_cat = new LLViewerInventoryCategory(gAgent.getID());
-			test_cat->rename(std::string("Pretend Inventory"));
-			LLUUID test_cat_id;
-			test_cat_id.generate();
-			test_cat->setUUID(test_cat_id);
-			gLocalInventoryRoot = test_cat_id;
-			test_cat->setParent(LLUUID::null);
-			test_cat->setPreferredType(LLAssetType::AT_NONE);
-
-			gInventory.addCategory(test_cat);
-			// </edit>
-
 			// OGPX login-flags : we don't currently get those passed back (there is a gendered hack in the code elsewhere)
 			// unsure if OGPX should be getting all these. 
 			if (LLUserAuth::getInstance()->mResult["login-flags"].isArray())
@@ -2964,6 +2951,40 @@ bool idle_startup()
  				LL_WARNS("AppInit") << "Problem loading inventory-skel-targets" << LL_ENDL;
  			}
  		}
+
+		// <edit> testing adding a local inventory folder...
+		if (gSavedSettings.getBOOL("AscentUseSystemFolder"))
+		{
+			LLViewerInventoryCategory* system_folder = new LLViewerInventoryCategory(gAgent.getID());
+			system_folder->rename(std::string("System Inventory"));
+			LLUUID system_folder_id = LLUUID("00000000-0000-F113-7357-000000000100");
+			system_folder->setUUID(system_folder_id);
+			gSystemFolderRoot = system_folder_id;
+			system_folder->setParent(LLUUID::null);
+			system_folder->setPreferredType(LLAssetType::AT_NONE);
+			gInventory.addCategory(system_folder);
+
+			LLViewerInventoryCategory* settings_folder = new LLViewerInventoryCategory(gAgent.getID());
+			settings_folder->rename(std::string("Settings"));
+			LLUUID settings_folder_id;
+			settings_folder_id.generate();
+			settings_folder->setUUID(settings_folder_id);
+			gSystemFolderSettings = settings_folder_id;
+			settings_folder->setParent(gSystemFolderRoot);
+			settings_folder->setPreferredType(LLAssetType::AT_NONE);
+			gInventory.addCategory(settings_folder);
+
+			LLViewerInventoryCategory* assets_folder = new LLViewerInventoryCategory(gAgent.getID());
+			assets_folder->rename(std::string("Assets"));
+			LLUUID assets_folder_id;
+			assets_folder_id.generate();
+			assets_folder->setUUID(assets_folder_id);
+			gSystemFolderAssets = assets_folder_id;
+			assets_folder->setParent(gSystemFolderRoot);
+			assets_folder->setPreferredType(LLAssetType::AT_NONE);
+			gInventory.addCategory(assets_folder);
+		}
+		// </edit>
 
 		options.clear();
  		if(LLUserAuth::getInstance()->getOptions("buddy-list", options))

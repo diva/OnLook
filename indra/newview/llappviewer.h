@@ -308,7 +308,9 @@ extern F32 gSimFrames;
 extern LLUUID gInventoryLibraryOwner;
 extern LLUUID gInventoryLibraryRoot;
 // <edit>
-extern LLUUID gLocalInventoryRoot;
+extern LLUUID gSystemFolderRoot;
+extern LLUUID gSystemFolderSettings;
+extern LLUUID gSystemFolderAssets;
 // </edit>
 
 extern BOOL		gDisconnected;

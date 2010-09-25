@@ -77,6 +77,8 @@ private:
 	BOOL mAlwaysShowFly;
 	//Disable camera minimum distance
 	BOOL mPowerUser;
+	BOOL mUseSystemFolder;
+	BOOL mUploadToSystem;
 	//Chat/IM -----------------------------------------------------------------------------
 	BOOL mHideNotificationsInChat;
 	BOOL mPlayTypingSound;
@@ -109,6 +111,8 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
 	childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
+	childSetCommitCallback("double_click_teleport_check", onCommitCheckBox, this);
+	childSetCommitCallback("system_folder_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
 	childSetCommitCallback("enable_clouds", onCommitCheckBox, this);
 	mEnableClouds = gSavedSettings.getBOOL("CloudsEnabled");
@@ -125,22 +129,26 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	
 	if (ctrl->getControlName() == "SpeedRez")
 	{
-		if (self->childGetValue("speed_rez_check").asBoolean())
-		{
-			self->childEnable("speed_rez_interval");
-			self->childEnable("speed_rez_seconds");
-		}
-		else
-		{
-			self->childDisable("speed_rez_interval");
-			self->childDisable("speed_rez_seconds");
-		}
+		bool enabled = self->childGetValue("speed_rez_check").asBoolean();
+		self->childSetEnabled("speed_rez_interval", enabled);
+		self->childSetEnabled("speed_rez_seconds", enabled);
 	}
 	else if (ctrl->getName() == "show_look_at_check")
 	{
 		BOOL lookAt = self->childGetValue("show_look_at_check").asBoolean();
 		LLHUDEffectLookAt::sDebugLookAt = lookAt;
 		gSavedSettings.setBOOL("AscentShowLookAt", lookAt);
+	}
+	else if (ctrl->getName() == "double_click_teleport_check")
+	{
+		bool enabled = self->childGetValue("double_click_teleport_check").asBoolean();
+		self->childSetEnabled("center_after_teleport_check", enabled);
+		self->childSetEnabled("offset_teleport_check", enabled);
+	}
+	else if (ctrl->getName() == "system_folder_check")
+	{
+		bool enabled = self->childGetValue("system_folder_check").asBoolean();
+		self->childSetEnabled("temp_in_system_check", enabled);
 	}
 }
 
@@ -159,6 +167,8 @@ void LLPrefsAscentSysImpl::refreshValues()
 	mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
 	//Disable camera minimum distance
 	mPowerUser					= gSavedSettings.getBOOL("AscentPowerfulWizard");
+	mUseSystemFolder			= gSavedSettings.getBOOL("AscentUseSystemFolder");
+		mUploadToSystem				= gSavedSettings.getBOOL("AscentSystemTemporary");
 	//Chat/IMs ----------------------------------------------------------------------------
 	mHideNotificationsInChat	= gSavedSettings.getBOOL("HideNotificationsInChat");
 	mHideTypingNotification		= gSavedSettings.getBOOL("AscentHideTypingNotification");
@@ -198,7 +208,9 @@ void LLPrefsAscentSysImpl::refresh()
 	//General -----------------------------------------------------------------------------
 	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
 		childSetValue("center_after_teleport_check",	mResetCameraAfterTP);
+		childSetEnabled("center_after_teleport_check",	mDoubleClickTeleport);
 		childSetValue("offset_teleport_check",			mOffsetTPByUserHeight);
+		childSetEnabled("offset_teleport_check",		mDoubleClickTeleport);
 	childSetValue("preview_anim_in_world_check",	mPreviewAnimInWorld);
 	childSetValue("save_scripts_as_mono_check",		mSaveScriptsAsMono);
 	childSetValue("always_rez_in_group_check",		mAlwaysRezInGroup);
@@ -209,6 +221,9 @@ void LLPrefsAscentSysImpl::refresh()
 	//Disable camera minimum distance
 	childSetValue("power_user_check",				mPowerUser);
 	childSetValue("power_user_confirm_check",		mPowerUser);
+	childSetValue("system_folder_check",			mUseSystemFolder);
+		childSetValue("temp_in_system_check",			mUploadToSystem);
+		childSetEnabled("temp_in_system_check",			mUseSystemFolder);
 	//Chat --------------------------------------------------------------------------------
 	childSetValue("hide_notifications_in_chat_check", mHideNotificationsInChat);
 	childSetValue("play_typing_sound_check",		mPlayTypingSound);
@@ -279,16 +294,8 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("enable_clouds", mEnableClouds);
 	gLLWindEnabled = mEnableLLWind;
 	childSetValue("speed_rez_check", mSpeedRez);
-	if (mSpeedRez)
-	{
-		childEnable("speed_rez_interval");
-		childEnable("speed_rez_seconds");
-	}
-	else
-	{
-		childDisable("speed_rez_interval");
-		childDisable("speed_rez_seconds");
-	}
+		childSetEnabled("speed_rez_interval", mSpeedRez);
+		childSetEnabled("speed_rez_seconds", mSpeedRez);
 	//Command Line ------------------------------------------------------------------------
 
 	//Privacy -----------------------------------------------------------------------------

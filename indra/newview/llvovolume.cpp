@@ -2001,7 +2001,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 			
 			if (face_hit >= 0 && mDrawable->getNumFaces() > face_hit)
 			{
-				LLFace* face = mDrawable->getFace(face_hit);				
+				LLFace* face = mDrawable->getFace(face_hit);
 
 				if (pick_transparent || !face->getTexture() || face->getTexture()->getMask(face->surfaceToTexture(tc, p, n)))
 				{
@@ -2414,7 +2414,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 	if (group->isState(LLSpatialGroup::MESH_DIRTY))
 	{
-		S32 num_mapped_veretx_buffer = LLVertexBuffer::sMappedCount ;
+		S32 num_mapped_vertex_buffer = LLVertexBuffer::sMappedCount ;
 
 		group->mBuilt = 1.f;
 		
@@ -2473,7 +2473,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		}
 
 		//if not all buffers are unmapped
-		if(num_mapped_veretx_buffer != LLVertexBuffer::sMappedCount) 
+		if(num_mapped_vertex_buffer != LLVertexBuffer::sMappedCount) 
 		{
 			if (++warningsCount > 20)	// Do not spam the log file uselessly...
 			{

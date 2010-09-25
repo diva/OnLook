@@ -117,6 +117,28 @@
 		<key>Value</key>
 		<real>0.0</real>
 	</map>
+	<key>AscentUseSystemFolder</key>
+	<map>
+		<key>Comment</key>
+		<string>Enables the System folder for setting and non-permanent asset storage.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+	<key>AscentSystemTemporary</key>
+	<map>
+		<key>Comment</key>
+		<string>When enabled, temporary uploads are put in the System Asset folder (if System Folder exists).</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
 	<key>AscentShowFriendsTag</key>
 	<map>
 		<key>Comment</key>

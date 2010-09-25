@@ -468,167 +468,6 @@ void upload_error(const std::string& error_message, const std::string& label, co
 	LLFilePicker::instance().reset();						
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class LLFileEnableCloseWindow : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -959,6 +798,13 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			return;
 		}
 	}
+	// <edit>
+	else if(exten == "ogg")
+	{
+		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
+		filename = src_filename;
+	}
+	// </edit>
 	else if(exten == "tmp")	 	
 	{	 	
 		// This is a generic .lin resource file	 	
@@ -1124,13 +970,6 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		// </edit>
 	}
 	// <edit>
-	// <edit>
-	else if(exten == "ogg")
-	{
-		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
-		filename = src_filename;
-	}
-	// </edit>
 	else if (exten == "animatn")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
@@ -1265,9 +1104,14 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		perms->setMaskGroup(PERM_ALL);
 		perms->setMaskNext(PERM_ALL);
 		
+		LLUUID destination = gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE);
+		if (gSavedSettings.getBOOL("AscentUseSystemFolder") && gSavedSettings.getBOOL("AscentSystemTemporary"))
+		{
+			destination = gSystemFolderAssets;
+		}
 		LLViewerInventoryItem* item = new LLViewerInventoryItem(
 				item_id,
-				gLocalInventoryRoot,
+				destination,
 				*perms,
 				uuid,
 				(LLAssetType::EType)data->mAssetInfo.mType,

@@ -92,7 +92,7 @@
 #include "llselectmgr.h"
 #include "llfloateropenobject.h"
 // <edit>
-#include "llappviewer.h" // gLocalInventoryRoot
+#include "llappviewer.h" // System Folders
 #include "llfloateranimpreview.h" // for reuploads
 #include "llfloaterimagepreview.h" // for reuploads
 #include "llimportobject.h" // for disabling options during import
@@ -364,7 +364,7 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 			--update[item->getParentUUID()];
 			++update[trash_id];
 			// <edit>
-			if(!gInventory.isObjectDescendentOf(item->getUUID(), gLocalInventoryRoot))
+			if(!gInventory.isObjectDescendentOf(item->getUUID(), gSystemFolderRoot))
 			{
 			// </edit>
 				if(start_new_message)
@@ -411,7 +411,7 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 			--update[cat->getParentUUID()];
 			++update[trash_id];
 			// <edit>
-			if(!gInventory.isObjectDescendentOf(cat->getUUID(), gLocalInventoryRoot))
+			if(!gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot))
 			{
 			// </edit>
 				if(start_new_message)
@@ -450,7 +450,7 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 	for(; it != end; ++it)
 	{
 		// <edit> trash problem
-		if(gInventory.isObjectDescendentOf(*it, gLocalInventoryRoot))
+		if(gInventory.isObjectDescendentOf(*it, gSystemFolderRoot))
 		{
 			// if it's a category, delete descendents
 			if(gInventory.getCategory(*it))
@@ -1148,7 +1148,7 @@ void LLItemBridge::selectItem()
 	if(item && !item->isComplete())
 	{
 		// <edit>
-		if(!(gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot)))
+		if(!(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot)))
 		// </edit>
 		item->fetchFromServer();
 	}
@@ -1298,10 +1298,6 @@ std::string LLItemBridge::getLabelSuffix() const
 			else stempo = EMPTY;
 			suffix = llformat("%s%s%s%s",scopy,smod,sxfer,stempo);
 		}
-		else if (!perm.isOwned())
-		{
-			suffix = " (temporary)";
-		}
 	}
 	return suffix;
 }
@@ -1380,7 +1376,7 @@ BOOL LLItemBridge::removeItem()
 	if(item && !model->isObjectDescendentOf(mUUID, trash_id))
 	{
 		// <edit> trash problem
-		if(gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot))
+		if(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))
 		{
 			LLInventoryModel::LLCategoryUpdate up(item->getParentUUID(), -1);
 			gInventory.deleteObject(mUUID);
@@ -1641,7 +1637,7 @@ BOOL LLFolderBridge::isUpToDate() const
 
 	// <edit> trying to make it stop trying to fetch Local Inventory
 	//return category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN;
-	return (category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN) || (mUUID == gLocalInventoryRoot) || (gInventory.isObjectDescendentOf(mUUID, gLocalInventoryRoot));
+	return (category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN) || (mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot));
 	// </edit>
 }
 
@@ -2355,7 +2351,7 @@ BOOL LLFolderBridge::removeItem()
 	if(cat)
 	{
 		// <edit> trash problem
-		if(gInventory.isObjectDescendentOf(cat->getUUID(), gLocalInventoryRoot))
+		if(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot))
 		{
 			S32 descendents = cat->getDescendentCount();
 			if(descendents > 0)
@@ -4942,9 +4938,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 			}
 			for(i = 0; i < wearable_count; ++i)
 			{
-
 				gAddToOutfit = wear_info->mAppend;
-
 
 				found = found_container.get(i);
 				gWearableList.getAsset(found->mAssetID,

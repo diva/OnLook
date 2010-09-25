@@ -259,7 +259,9 @@ F32 gLogoutMaxTime = LOGOUT_REQUEST_TIME;
 LLUUID gInventoryLibraryOwner;
 LLUUID gInventoryLibraryRoot;
 // <edit>
-LLUUID gLocalInventoryRoot;
+LLUUID gSystemFolderRoot;
+LLUUID gSystemFolderSettings;
+LLUUID gSystemFolderAssets;
 // </edit>
 
 BOOL				gDisconnected = FALSE;
@@ -632,8 +634,12 @@ bool LLAppViewer::init()
     writeSystemInfo();
 
 	// Build a string representing the current version number.
-	// <edit> meh
-	gCurrentVersion = "1.0.0.0";
+    gCurrentVersion = llformat("%s %d.%d.%d.%d",
+        LL_CHANNEL,
+        LL_VERSION_MAJOR,
+        LL_VERSION_MINOR,
+        LL_VERSION_PATCH,
+        LL_VERSION_BUILD );
 
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////

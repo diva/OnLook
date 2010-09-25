@@ -777,7 +777,7 @@ BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 					src = LLToolDragAndDrop::SOURCE_LIBRARY;
 				}
 				// <edit>
-				else if(mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gLocalInventoryRoot))
+				else if(mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gSystemFolderRoot))
 				{ // Note: this is only ok if all future pretend folders are subcategories of Pretend Inventory
 					src = LLToolDragAndDrop::SOURCE_LIBRARY;
 				}
@@ -2940,7 +2940,6 @@ void LLFolderView::filter( LLInventoryFilter& filter )
 {
 	LLFastTimer t2(LLFastTimer::FTM_FILTER);
 	filter.setFilterCount(llclamp(gSavedSettings.getS32("FilterItemsPerFrame"), 1, 5000));
-
 
 	if (getCompletedFilterGeneration() < filter.getCurrentGeneration())
 	{

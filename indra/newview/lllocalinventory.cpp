@@ -44,7 +44,7 @@ LLUUID LLLocalInventory::addItem(std::string name, int type, LLUUID asset_id)
 	perms->setMaskOwner(0);
 	LLViewerInventoryItem* item = new LLViewerInventoryItem(
 			item_id,
-			gLocalInventoryRoot,
+			gSystemFolderAssets,
 			*perms,
 			asset_id,
 			(LLAssetType::EType)type,
@@ -63,7 +63,6 @@ void LLLocalInventory::addItem(LLViewerInventoryItem* item)
 	//gInventory.addPretendItem(item);
 	LLInventoryModel::update_map_t update;
 	++update[item->getParentUUID()];
-	item->updateServer(TRUE);
 	gInventory.accountForUpdate(update);
 	gInventory.updateItem(item);
 	gInventory.notifyObservers();
@@ -185,7 +184,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 		LLUUID container_id;
 		container_id.generate();
 		container->setUUID(container_id);
-		container->setParent(gLocalInventoryRoot);
+		container->setParent(gSystemFolderRoot);
 		container->setPreferredType(LLAssetType::AT_NONE);
 		LLInventoryModel::update_map_t container_update;
 		++container_update[container->getParentUUID()];
@@ -229,7 +228,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 			// If the parent exists and outside of pretend inventory, generate a new uuid
 			else if(gInventory.getCategory((*cat_iter)->getParentUUID()))
 			{
-				if(!gInventory.isObjectDescendentOf((*cat_iter)->getParentUUID(), gLocalInventoryRoot, TRUE))
+				if(!gInventory.isObjectDescendentOf((*cat_iter)->getParentUUID(), gSystemFolderRoot, TRUE))
 				{
 					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*cat_iter)->getParentUUID());
 					if(itr == conflicting_cats.end())
@@ -276,7 +275,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 			// If the parent exists and outside of pretend inventory, generate a new uuid
 			if(gInventory.getCategory((*item_iter)->getParentUUID()))
 			{
-				if(!gInventory.isObjectDescendentOf((*item_iter)->getParentUUID(), gLocalInventoryRoot, TRUE))
+				if(!gInventory.isObjectDescendentOf((*item_iter)->getParentUUID(), gSystemFolderRoot, TRUE))
 				{
 					std::map<LLUUID,LLUUID>::iterator itr = conflicting_cats.find((*item_iter)->getParentUUID());
 					if(itr == conflicting_cats.end())
@@ -536,7 +535,7 @@ void LLFloaterNewLocalInventory::onClickOK(void* user_data)
 
 	LLViewerInventoryItem* item = new LLViewerInventoryItem(
 			item_id,
-			gLocalInventoryRoot,
+			gSystemFolderRoot,
 			*perms,
 			asset_id,
 			type,
