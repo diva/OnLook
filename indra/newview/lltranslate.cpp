@@ -64,12 +64,7 @@ void LLTranslate::translateMessage(LLHTTPClient::ResponderPtr &result, const std
 	getTranslateUrl(url, fromLang, toLang, mesg);
 
 //<edit>
-    std::string user_agent = llformat("%s %d.%d.%d (%d)",
-            LL_CHANNEL,
-            LL_VERSION_MAJOR,
-            LL_VERSION_MINOR,
-            LL_VERSION_PATCH,
-            LL_VERSION_BUILD );
+    std::string user_agent = gCurrentVersion;
 //</edit>
 
 	if (!m_Header.size())

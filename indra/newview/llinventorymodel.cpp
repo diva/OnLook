@@ -1516,7 +1516,7 @@ void LLInventoryModel::bulkFetch(std::string url)
 		    if (cat)
 		    {
 				// <edit> Pre-emptive strike
-				if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gLocalInventoryRoot)))
+				if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
 				{
 				// </edit>
 					if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
@@ -2047,7 +2047,7 @@ bool LLInventoryModel::isCategoryComplete(const LLUUID& cat_id) const
 	}
 
 	// <edit>
-	if((cat_id == gLocalInventoryRoot) || gInventory.isObjectDescendentOf(cat_id, gLocalInventoryRoot)) return true;
+	if((cat_id == gSystemFolderRoot) || gInventory.isObjectDescendentOf(cat_id, gSystemFolderRoot)) return true;
 	// </edit>
 
 	return false;
@@ -3381,14 +3381,6 @@ void LLInventoryModel::processSaveAssetIntoInventory(LLMessageSystem* msg,
 		gViewerWindow->getWindow()->decBusyCount();
 	}
 }
-
-
-
-
-
-
-
-
 
 struct InventoryCallbackInfo
 {

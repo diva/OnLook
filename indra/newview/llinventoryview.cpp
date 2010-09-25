@@ -667,14 +667,24 @@ void LLInventoryView::draw()
 {
  	if (LLInventoryModel::isEverythingFetched())
 	{
-		LLLocale locale(LLLocale::USER_LOCALE);
-		std::ostringstream title;
-		title << "Inventory";
-		std::string item_count_string;
-		LLResMgr::getInstance()->getIntegerString(item_count_string, gInventory.getItemCount());
-		title << " (" << item_count_string << " items)";
-		title << mFilterText;
-		setTitle(title.str());
+		S32 item_count = gInventory.getItemCount();
+
+		//don't let llfloater work more than necessary
+		if (item_count != mOldItemCount || mOldFilterText != mFilterText)
+		{
+			LLLocale locale(LLLocale::USER_LOCALE);
+			std::ostringstream title;
+			title << "Inventory"; //*TODO: make translatable
+			std::string item_count_string;
+			LLResMgr::getInstance()->getIntegerString(item_count_string, item_count);
+			title << " (" << item_count_string << " items)";
+			title << mFilterText;
+			setTitle(title.str());
+		}
+
+		mOldFilterText = mFilterText;
+		mOldItemCount = item_count;
+
 	}
 	if (mActivePanel && mSearchEditor)
 	{
@@ -835,7 +845,7 @@ void LLInventoryView::changed(U32 mask)
 		LLLocale locale(LLLocale::USER_LOCALE);
 		std::string item_count_string;
 		LLResMgr::getInstance()->getIntegerString(item_count_string, gInventory.getItemCount());
-		
+
 		//Displays a progress indication for loading the inventory, but not if it hasn't been loaded before on this PC, or we load more than expected - rkeast
 		if(mItemCount == -1)
 		{
@@ -852,7 +862,10 @@ void LLInventoryView::changed(U32 mask)
 			else title << " (Fetched " << item_count_string << " items of ~" << total_items << " - ~" << items_remaining << " remaining...)";
 		}
 	}
-	else gSavedPerAccountSettings.setS32("rkeastInventoryPreviousCount", gInventory.getItemCount());
+	else 
+	{
+		gSavedPerAccountSettings.setS32("rkeastInventoryPreviousCount", gInventory.getItemCount());
+	}
 	title << mFilterText;
 	setTitle(title.str());
 
@@ -2041,6 +2054,7 @@ void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
 		{
 			llwarns << "LLInventoryPanel::buildNewViews called with objectp->mType == " 
 				<< ((S32) objectp->getType())
+				<< "Named " << objectp->getName()
 				<< " (shouldn't happen)" << llendl;
 		}
 		else if (objectp->getType() == LLAssetType::AT_CATEGORY) // build new view for category
