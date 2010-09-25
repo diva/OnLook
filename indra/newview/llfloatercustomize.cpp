@@ -455,8 +455,7 @@ BOOL LLPanelEditWearable::postBuild()
 										 "inv_item_skin.tga" );*/
 	std::string icon_name = get_item_icon_name(asset_type,LLInventoryType::IT_WEARABLE,mType,FALSE);
 
- 									childSetValue("icon", icon_name);
-									childSetValue("icon", icon_name);
+	childSetValue("icon", icon_name);
 
 	childSetAction("Create New", LLPanelEditWearable::onBtnCreateNew, this );
 

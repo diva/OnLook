@@ -1480,7 +1480,7 @@ BOOL LLTextureCtrl::allowDrop(LLInventoryItem* item)
 			return TRUE;
 		}
 	}
-
+	else
 	{
 		return FALSE;
 	}

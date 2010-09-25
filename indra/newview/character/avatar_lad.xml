@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
+<?xml version="1.0" encoding="us-ascii" standalone="yes"?>
 <linden_avatar
  version="1.0"
  wearable_definition_version="22">  
@@ -6609,7 +6609,7 @@
     <layer
        name="head_tattoo">
         <texture
-        local_texture="head_tattoo" />
+			local_texture="head_tattoo" />
 		<param id="1062" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
 			name="tattoo_head_red" value_min="0" value_max="1" value_default="1">
 			<param_color>
@@ -6634,7 +6634,7 @@
 			</param_color>
 		</param>
     </layer>
-   </layer_set>
+</layer_set>
 
 <!-- =========================================================== -->
    <layer_set

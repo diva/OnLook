@@ -9156,7 +9156,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 						
 				if( !param )
 				{
-					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file." << llendl;
+					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Too few)." << llendl;
 					return;
 				}
 
@@ -9206,7 +9206,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		}
 		if( param )
 		{
-			llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file." << llendl;
+			if (param->getName() == "tattoo_red")
+				llinfos << "No tattoo tinting for " << getFullname() << "." << llendl;
+			else
+				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
 			return;
 		}
 

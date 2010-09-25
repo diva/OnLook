@@ -329,15 +329,16 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 		gMenuHolder->setParcelSelection(selection);
 		gPieLand->show(x, y, mPieMouseButtonDown);
 
+		// <edit>
 		if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 		{
-		// </edit>
-		// VEFFECT: ShowPie
+			// </edit>
+			// VEFFECT: ShowPie
 			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_SPHERE, TRUE);
 			effectp->setPositionGlobal(mPick.mPosGlobal);
 			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 			effectp->setDuration(0.25f);
-		// <edit>
+			// <edit>
 		}
 		// </edit>
 	}
@@ -407,6 +408,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			
 			gPieObject->show(x, y, mPieMouseButtonDown);
 
+			// <edit>
 			if(!gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 			{
 				// </edit>

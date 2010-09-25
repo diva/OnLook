@@ -303,10 +303,10 @@ void LLFloaterVFS::onClickAdd(void* user_data)
 		file.mType = asset_type;
 		file.mName = gDirUtilp->getBaseFileName(file_name, true);
 		floaterp->add(file);
-		if(floaterp->getChild<LLCheckBoxCtrl>("create_pretend_item")->get())
+		/*if(floaterp->getChild<LLCheckBoxCtrl>("create_pretend_item")->get())
 		{
 			LLLocalInventory::addItem(file.mName, (int)file.mType, file.mID, true);
-		}
+		}*/
 	}
 }
 // static
