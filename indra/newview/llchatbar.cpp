@@ -213,7 +213,7 @@ void LLChatBar::refresh()
 	childSetValue("History", LLFloaterChat::instanceVisible(LLSD()));
 
 	childSetEnabled("Say", mInputEditor->getText().size() > 0);
-	childSetEnabled("Shout", mInputEditor->getText().size() > 0);
+	//childSetEnabled("Shout", mInputEditor->getText().size() > 0); createDummyWidget Making Dummy -HgB
 
 }
 
