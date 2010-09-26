@@ -2,7 +2,6 @@
 /* DOUBLE EDIT REACH AROUND
 Rewritten by Hg Beeks
 
-We will handle drag-and-drop in the future. Reminder - Look in llPreviewGesture for handleDragAndDrop. -HgB
 */
 
 #include "llviewerprecompiledheaders.h"
