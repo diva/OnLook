@@ -2957,7 +2957,7 @@ bool idle_startup()
 		{
 			LLViewerInventoryCategory* system_folder = new LLViewerInventoryCategory(gAgent.getID());
 			system_folder->rename(std::string("System Inventory"));
-			LLUUID system_folder_id = LLUUID("00000000-0000-F113-7357-000000000100");
+			LLUUID system_folder_id = LLUUID("00000000-0000-0000-0000-000000000001");//"FFFFFFFF-0000-F113-7357-000000000001");
 			system_folder->setUUID(system_folder_id);
 			gSystemFolderRoot = system_folder_id;
 			system_folder->setParent(LLUUID::null);
