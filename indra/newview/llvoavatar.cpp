@@ -8656,13 +8656,13 @@ BOOL LLVOAvatar::teToColorParams( ETextureIndex te, const char* param_name[3] )
 		param_name[2] = "skirt_blue";
 		break;
 
-	case TEX_HEAD_TATTOO:
+	case TEX_HEAD_TATTOO:  //-ASC-TTRFE
 	case TEX_LOWER_TATTOO:
 	case TEX_UPPER_TATTOO:
 		param_name[0] = "tattoo_red";
 		param_name[1] = "tattoo_green";
 		param_name[2] = "tattoo_blue";
-		break;	
+		break;
 
 	default:
 		llassert(0);
@@ -9102,7 +9102,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			&& mBakedTextureData[baked_index].mLastTextureIndex != IMG_DEFAULT
 			&& baked_index != BAKED_SKIRT)
 		{
-			setTEImage(mBakedTextureData[baked_index].mTextureIndex, gImageList.getImage(mBakedTextureData[baked_index].mLastTextureIndex));
+			setTEImage(mBakedTextureData[baked_index].mTextureIndex,
+				 gImageList.getImage(mBakedTextureData[baked_index].mLastTextureIndex));
 		}
 	}
 
@@ -9121,16 +9122,12 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	}
 
 	setCompositeUpdatesEnabled( FALSE );
-	// <edit>
-/*
+
 	if (!mIsSelf)
 	{
-		
-		releaseUnnecessaryTextures();
-		
+		//releaseUnnecessaryTextures(); Commented out to ensure that users get the right client data -HgB
 	}
-*/
-	// </edit>
+
 	updateMeshTextures(); // enables updates for laysets without baked textures.
 
 	// parse visual params
@@ -9149,6 +9146,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			for( S32 i = 0; i < num_blocks; i++ )
 			{
+				
 				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
 				{
 					param = getNextVisualParam();
@@ -9156,7 +9154,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 						
 				if( !param )
 				{
-					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Too few)." << llendl;
+					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Too many)." << llendl;
 					return;
 				}
 
@@ -9206,11 +9204,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		}
 		if( param )
 		{
-			if (param->getName() == "tattoo_red")
-				llinfos << "No tattoo tinting for " << getFullname() << "." << llendl;
-			else
-				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
-			return;
+			llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
+			//return; //ASC-TTRFE
 		}
 
 		if (params_changed)

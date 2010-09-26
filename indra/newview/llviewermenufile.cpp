@@ -798,13 +798,11 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 			return;
 		}
 	}
-	// <edit>
 	else if(exten == "ogg")
 	{
 		asset_type = LLAssetType::AT_SOUND;  // tag it as audio
 		filename = src_filename;
 	}
-	// </edit>
 	else if(exten == "tmp")	 	
 	{	 	
 		// This is a generic .lin resource file	 	
@@ -924,80 +922,19 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 	}
 	else if (exten == "bvh")
 	{
-		// <edit> THE FUCK WE DON'T
-		//error_message = llformat("We do not currently support bulk upload of animation files\n");
-		//upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
-		//return;
-		asset_type = LLAssetType::AT_ANIMATION;
-		S32 file_size;
-		LLAPRFile fp;
-		
-		if(!fp.open(src_filename, LL_APR_RB, LLAPRFile::local, &file_size))
-		{
-			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
-			LLNotifications::instance().add("ErrorMessage", args);
-			return;
-		}
-		char* file_buffer = new char[file_size + 1];
-		if(!fp.read(file_buffer, file_size))
-		{
-			fp.close();
-			delete[] file_buffer;
-			args["ERROR_MESSAGE"] = llformat("Couldn't read file %s\n", src_filename.c_str());
-			LLNotifications::instance().add("ErrorMessage", args);
-			return;
-		}
-		LLBVHLoader* loaderp = new LLBVHLoader(file_buffer);
-		if(!loaderp->isInitialized())
-		{
-			fp.close();
-			delete[] file_buffer;
-			args["ERROR_MESSAGE"] = llformat("Couldn't convert file %s to internal animation format\n", src_filename.c_str());
-			LLNotifications::instance().add("ErrorMessage", args);
-			return;
-		}
-		S32 buffer_size = loaderp->getOutputSize();
-		U8* buffer = new U8[buffer_size];
-		LLDataPackerBinaryBuffer dp(buffer, buffer_size);
-		loaderp->serialize(dp);
-		LLAPRFile apr_file;
-		apr_file.open(filename, LL_APR_WB, LLAPRFile::local);
-		apr_file.write(buffer, buffer_size);
-		delete[] file_buffer;
-		delete[] buffer;
-		fp.close();
-		apr_file.close();
-		// </edit>
+		error_message = llformat("We do not currently support bulk upload of animation files\n");
+		upload_error(error_message, "DoNotSupportBulkAnimationUpload", filename, args);
+		return;
 	}
 	// <edit>
-	else if (exten == "animatn")
+	else if (exten == "anim" || exten == "animatn")
 	{
 		asset_type = LLAssetType::AT_ANIMATION;
 		filename = src_filename;
 	}
-	else if(exten == "jp2" || exten == "j2k" || exten == "j2c")
+	else if(exten == "j2k" || exten == "jp2" || exten == "j2c")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
-		filename = src_filename;
-	}
-	else if(exten == "gesture")
-	{
-		asset_type = LLAssetType::AT_GESTURE;
-		filename = src_filename;
-	}
-	else if(exten == "notecard")
-	{
-		asset_type = LLAssetType::AT_NOTECARD;
-		filename = src_filename;
-	}
-	else if(exten == "lsl")
-	{
-		asset_type = LLAssetType::AT_LSL_TEXT;
-		filename = src_filename;
-	}
-	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
-	{
-		asset_type = LLAssetType::AT_CLOTHING;
 		filename = src_filename;
 	}
 	// </edit>
@@ -1105,7 +1042,8 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		perms->setMaskNext(PERM_ALL);
 		
 		LLUUID destination = gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE);
-		if (gSavedSettings.getBOOL("AscentUseSystemFolder") && gSavedSettings.getBOOL("AscentSystemTemporary"))
+		BOOL bUseSystemInventory = (gSavedSettings.getBOOL("AscentUseSystemFolder") && gSavedSettings.getBOOL("AscentSystemTemporary"));
+		if (bUseSystemInventory)
 		{
 			destination = gSystemFolderAssets;
 		}
@@ -1121,7 +1059,16 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 				LLSaleInfo::DEFAULT,
 				0,
 				time_corrected());
-		LLLocalInventory::addItem(item);
+		if (bUseSystemInventory)
+		{
+			LLLocalInventory::addItem(item);
+		}
+		else
+		{
+			item->updateServer(TRUE);
+			gInventory.updateItem(item);
+			gInventory.notifyObservers();
+		}
 	}
 	else 
 	{

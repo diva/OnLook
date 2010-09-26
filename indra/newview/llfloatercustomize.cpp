@@ -2212,7 +2212,6 @@ void LLFloaterCustomize::initWearablePanels()
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
 		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
 		panel->addSubpart(LLStringUtil::null, SUBPART_TATTOO, part);
-		panel->addColorSwatch(TEX_LOWER_TATTOO, "Color/Tint");
 
 		panel->addTextureDropTarget(TEX_LOWER_TATTOO, "Lower Tattoo",
 									LLUUID::null,
@@ -2223,6 +2222,7 @@ void LLFloaterCustomize::initWearablePanels()
 		panel->addTextureDropTarget(TEX_HEAD_TATTOO, "Head Tattoo",
 									LLUUID::null,
 									TRUE);
+		panel->addColorSwatch(TEX_LOWER_TATTOO, "Color/Tint"); //-ASC-TTRFE
 	}
 
 	/////////////////////////////////////////

@@ -6608,8 +6608,7 @@
     </layer>
     <layer
        name="head_tattoo">
-        <texture
-			local_texture="head_tattoo" />
+        <texture local_texture="head_tattoo" />
 		<param id="1062" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
 			name="tattoo_head_red" value_min="0" value_max="1" value_default="1">
 			<param_color>
@@ -6749,11 +6748,9 @@
          </param>
       </layer>
 
-      <layer
-       name="upper_tattoo">
-         <texture
-          local_texture="upper_tattoo" />
-		  <param id="1065" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+      <layer name="upper_tattoo">
+        <texture local_texture="upper_tattoo" />
+		<param id="1065" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
 			name="tattoo_upper_red" value_min="0" value_max="1" value_default="1">
 			<param_color>
 				<value color="0, 0, 0, 255" />
@@ -7972,9 +7969,8 @@
 
       <layer
        name="lower_tattoo">
-         <texture
-          local_texture="lower_tattoo" />
-		  <param id="1068" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+         <texture local_texture="lower_tattoo" />
+		 <param id="1068" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
 			name="tattoo_lower_red" value_min="0" value_max="1" value_default="1">
 			<param_color>
 				<value color="0, 0, 0, 255" />
