@@ -443,7 +443,7 @@ class DarwinManifest(ViewerManifest):
         self.path(self.args['configuration'] + "/" + self.app_name() + ".app", dst="")
 
         if self.prefix(src="", dst="Contents"):  # everything goes in Contents
-            self.path(self.info_plist_name(), dst="Info.plist")
+            self.path(self.info_plist_name(), dst="Info-Ascent.plist")
 
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
@@ -460,15 +460,7 @@ class DarwinManifest(ViewerManifest):
                 self.path("featuretable_mac.txt")
                 self.path("SecondLife.nib")
 
-                if self.viewer_branding_id()=='secondlife':
-                    # If we are not using the default channel, use the 'Firstlook
-                    # icon' to show that it isn't a stable release.
-                    if self.default_channel() and self.default_grid():
-                        self.path("secondlife.icns")
-                    else:
-                        self.path("secondlife_firstlook.icns", "secondlife.icns")
-                elif self.viewer_branding_id()=="snowglobe":
-                    self.path("snowglobe.icns")
+                self.path("Ascent.icns")
 
                 # Translations
                 self.path("English.lproj")
@@ -495,17 +487,6 @@ class DarwinManifest(ViewerManifest):
                 self.path("vivox-runtime/universal-darwin/libvivoxsdk.dylib", "libvivoxsdk.dylib")
                 self.path("vivox-runtime/universal-darwin/SLVoice", "SLVoice")
 
-                # need to get the kdu dll from any of the build directories as well
-                try:
-                    self.path(self.find_existing_file('../llkdu/%s/libllkdu.dylib' % self.args['configuration'],
-                        '../../build-darwin-universal-Release/llkdu/Release/libllkdu.dylib',
-                        "../../libraries/universal-darwin/lib_release/libllkdu.dylib"),
-                        dst='libllkdu.dylib')
-                    pass
-                except:
-                    print "Skipping libllkdu.dylib"
-                    pass
-                
                 #libfmodwrapper.dylib
                 self.path(self.args['configuration'] + "/libfmodwrapper.dylib", "libfmodwrapper.dylib")
                 
@@ -523,6 +504,9 @@ class DarwinManifest(ViewerManifest):
                     self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
                     self.end_prefix("llplugin")
+
+                # skins
+                self.path("skins")
 
                 # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
                 self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
