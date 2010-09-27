@@ -17,7 +17,7 @@ Rewritten by Hg Beeks
 #include "llviewercontrol.h"
 #include "llvoavatar.h"
 //this is for debugging ;D
-#define AO_DEBUG
+//#define AO_DEBUG
 
 //static variables
 std::list<std::string>	LLAO::mStandOverrides;

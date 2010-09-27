@@ -547,7 +547,7 @@ void LLPanelEditWearable::setSubpart( ESubpart subpart )
 			param = (LLViewerVisualParam *)avatar->getNextVisualParam())
 		{
 			if (param->getID() == -1
-				|| param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE 
+				|| !param->isTweakable() 
 				|| param->getEditGroup() != part->mEditGroup 
 				|| !(param->getSex() & avatar_sex))
 			{

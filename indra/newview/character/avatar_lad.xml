@@ -1099,7 +1099,7 @@
        camera_distance=".8"
        camera_angle="15">
          <param_skeleton>
-				<bone name="mNeck" scale="0 0 .5" />
+       		<bone name="mNeck" scale="0 0 .5" />
          </param_skeleton>
       </param>
    </skeleton>
@@ -11424,7 +11424,7 @@
              id="876" />
          </param_driver>
       </param>
-		<param id="1071" group="0" wearable="tattoo" edit_group="colorpicker" name="tattoo_red" 
+		<param id="1071" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_red" 
 			value_min="0" value_max="1" value_default="1">
 			<param_driver>
 				<driven id="1062" min1="0" max1="1" max2="1" min2="1" />
@@ -11432,7 +11432,7 @@
 				<driven id="1068" min1="0" max1="1" max2="1" min2="1" />
 			</param_driver>
 		</param>
-		<param id="1072" group="0" wearable="tattoo" edit_group="colorpicker" name="tattoo_green" 
+		<param id="1072" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_green" 
 			value_min="0" value_max="1" value_default="1">
 			<param_driver>
 				<driven id="1063" min1="0" max1="1" max2="1" min2="1" />
@@ -11440,7 +11440,7 @@
 				<driven id="1069" min1="0" max1="1" max2="1" min2="1" />
 			</param_driver>
 		</param>
-		<param id="1073" group="0" wearable="tattoo" edit_group="colorpicker" name="tattoo_blue" 
+		<param id="1073" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_blue" 
 			value_min="0" value_max="1" value_default="1">
 			<param_driver>
 				<driven id="1064" min1="0" max1="1" max2="1" min2="1" />

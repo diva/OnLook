@@ -224,7 +224,7 @@ LLSD LLExportable::asLLSD()
 		{
 			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
 			if( (viewer_param->getWearableType() == type_s32) && 
-				(viewer_param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE) )
+				(viewer_param->isTweakable()) )
 			{
 				param_map[llformat("%d", viewer_param->getID())] = viewer_param->getWeight();
 			}

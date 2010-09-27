@@ -2968,7 +2968,7 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 				 param;
 				 param = getNextVisualParam())
 			{
-				if (param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE)
+				if (param->isTweakable())
 				{
 					param->stopAnimating(mAppearanceAnimSetByUser);
 				}
@@ -3007,7 +3007,7 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 				 param;
 				 param = getNextVisualParam())
 			{
-				if (param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE)
+				if (param->isTweakable())
 				{
 					param->animate(morph_amt, mAppearanceAnimSetByUser);
 				}
@@ -6252,6 +6252,7 @@ BOOL LLVOAvatar::loadAvatar()
 	if (sAvatarXmlInfo->mLayerInfoList.empty())
 	{
 		llwarns << "avatar file: missing <layer_set> node" << llendl;
+		return FALSE;
 	}
 	else
 	{
@@ -6292,23 +6293,21 @@ BOOL LLVOAvatar::loadAvatar()
 	}
 	
 	// avatar_lad.xml : <driver_parameters>
+	LLVOAvatarXmlInfo::driver_info_list_t::iterator iter;
+	for (iter = sAvatarXmlInfo->mDriverInfoList.begin();
+		 iter != sAvatarXmlInfo->mDriverInfoList.end(); iter++)
 	{
-		LLVOAvatarXmlInfo::driver_info_list_t::iterator iter;
-		for (iter = sAvatarXmlInfo->mDriverInfoList.begin();
-			 iter != sAvatarXmlInfo->mDriverInfoList.end(); iter++)
+		LLDriverParamInfo *info = *iter;
+		LLDriverParam* driver_param = new LLDriverParam( this );
+		if (driver_param->setInfo(info))
 		{
-			LLDriverParamInfo *info = *iter;
-			LLDriverParam* driver_param = new LLDriverParam( this );
-			if (driver_param->setInfo(info))
-			{
-				addVisualParam( driver_param );
-			}
-			else
-			{
-				delete driver_param;
-				llwarns << "avatar file: driver_param->parseData() failed" << llendl;
-				return FALSE;
-			}
+			addVisualParam( driver_param );
+		}
+		else
+		{
+			delete driver_param;
+			llwarns << "avatar file: driver_param->parseData() failed" << llendl;
+			return FALSE;
 		}
 	}
 	
@@ -9147,7 +9146,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			for( S32 i = 0; i < num_blocks; i++ )
 			{
 				
-				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
+				while( param && (!param->isTweakable()) )
 				{
 					param = getNextVisualParam();
 				}
@@ -9155,7 +9154,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				if( !param )
 				{
 					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Too many)." << llendl;
-					return;
+					break;
 				}
 
 				U8 value;
@@ -9198,7 +9197,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			}
 		}
 
-		while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
+		while( param && (!param->isTweakable()) )
 		{
 			param = getNextVisualParam();
 		}
@@ -9476,8 +9475,8 @@ void LLVOAvatar::dumpArchetypeXML( void* )
 		for( LLVisualParam* param = avatar->getFirstVisualParam(); param; param = avatar->getNextVisualParam() )
 		{
 			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
-			if( (viewer_param->getWearableType() == type) &&
-				(viewer_param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE) )
+			if( (viewer_param->getWearableType() == type) && 
+				(viewer_param->isTweakable() ) )
 			{
 				apr_file_printf( file, "\t\t<param id=\"%d\" name=\"%s\" value=\"%.3f\"/>\n",
 						 viewer_param->getID(), viewer_param->getName().c_str(), viewer_param->getWeight() );
