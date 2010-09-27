@@ -83,6 +83,8 @@ public:
 	static void requestFriendship(const LLUUID& target_id,
 								  const std::string& target_name, const std::string& message);
 
+	void populateContactGroupSelect();
+
 private:
 
 	enum FRIENDS_COLUMN_ORDER
@@ -103,8 +105,8 @@ private:
 	void refreshNames(U32 changed_mask);
 	// <dogmode> Contacts search and group system
 	void filterContacts();
+	void categorizeContacts();
 	void setContactGroup(std::string contact_grp);
-	void populateContactGroupSelect();
 	std::string cleanFileName(std::string filename);
 	// --
 	BOOL refreshNamesSync(const LLAvatarTracker::buddy_map_t & all_buddies);

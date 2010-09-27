@@ -105,6 +105,7 @@ public:
 	}
 	virtual BOOL tick()
 	{
+		mFloater->populateContactGroupSelect();
 		mFloater->updateFriends(mMask);
 
 		mEventTimer.stop();
@@ -222,27 +223,13 @@ void LLPanelFriends::populateContactGroupSelect()
 		combo->removeall();
 		combo->add("All", ADD_BOTTOM);
 
-		std::string name;
-		gDirUtilp->getNextFileInDir(gDirUtilp->getPerAccountChatLogsDir(),"*",name,false);//stupid hack to clear last file search
+		LLSD groups = gSavedPerAccountSettings.getLLSD("AscentContactGroups");
 
-		std::string path_name(gDirUtilp->getPerAccountChatLogsDir() + gDirUtilp->getDirDelimiter());
-		bool found = true;	
-		while(found = gDirUtilp->getNextFileInDir(path_name, "*.grp", name, false)) 
+		S32 count = groups["ASC_MASTER_GROUP_LIST"].size();
+		S32 index;
+		for (index = 0; index < count; index++)
 		{
-			if ((name == ".") || (name == "..")) continue;
-
-			//llinfos << "path name " << path_name << " and name " << name << " and found " << found << llendl;
-			if(found)
-			{
-				S32 periodIndex = name.find_last_of(".");
-				name = name.substr(0, periodIndex);
-
-				if ((name == ".") || (name == "..")) continue;
-
-				combo->add(name, ADD_BOTTOM);
-				//LLChat msg("Combo Add " + name);
-				//LLFloaterChat::addChat(msg);
-			}
+			combo->addSimpleElement(groups["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
 		}
 	}
 	else
@@ -254,41 +241,50 @@ void LLPanelFriends::populateContactGroupSelect()
 
 void LLPanelFriends::setContactGroup(std::string contact_grp)
 {
-	std::string group_path = gDirUtilp->getPerAccountChatLogsDir() + gDirUtilp->getDirDelimiter();
-	std::string filename = group_path + cleanFileName(contact_grp + ".grp");
-
-	FILE* fp = LLFile::fopen(filename, "w");
-	
-	if (fp)
+	if (contact_grp != "All")
 	{
-		char buffer[10000];		/*Flawfinder: ignore*/
-		char *bptr;
-		S32 len = 0;
+		filterContacts();
+		categorizeContacts();
+	}
+	else refreshNames(LLFriendObserver::ADD);
+}
 
-		while ( fgets(buffer, 10000, fp)  && !feof(fp) ) 
+void LLPanelFriends::categorizeContacts()
+{
+	LLSD contact_groups = gSavedPerAccountSettings.getLLSD("AscentContactGroups");
+	std::string group_name = "All";
+
+	LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
+	if (combo)
+	{
+		group_name = combo->getValue().asString();
+
+		if (group_name != "All")
 		{
-			len = strlen(buffer) - 1;		/*Flawfinder: ignore*/
-			for ( bptr = (buffer + len); (*bptr == '\n' || *bptr == '\r') && bptr>buffer; bptr--)	*bptr='\0';
+			std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
+			for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
+			{
+				BOOL show_entry = (contact_groups[group_name][(*itr)->getUUID().asString()].size() != 0);
+
+				if (!show_entry)
+				{
+					mFriendsList->deleteItems((*itr)->getValue());
+				}
+			}
 		}
 
-		std::string file_contents(buffer);
-		mContactFilter = file_contents;
-
-		LLChat msg(mContactFilter);
-		LLFloaterChat::addChat(msg);
+		refreshUI();
 	}
 }
 
 void LLPanelFriends::filterContacts()
 {
-	//LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
-	//if (combo->getValue().asString() != "All")
 	std::string friend_name;
 	std::string search_name;
 
 	search_name = LLPanelFriends::getChild<LLLineEditor>("buddy_search_lineedit")->getValue().asString();
 
-	if (search_name != "" && search_name != mLastContactSearch)
+	if ((search_name != "" /*&& search_name != mLastContactSearch*/))
 	{	
 		mLastContactSearch = search_name;
 		refreshNames(LLFriendObserver::ADD);
@@ -298,6 +294,7 @@ void LLPanelFriends::filterContacts()
 		{
 			friend_name = utf8str_tolower((*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString());
 			BOOL show_entry = (friend_name.find(utf8str_tolower(search_name)) != std::string::npos);
+
 			if (!show_entry)
 			{
 				mFriendsList->deleteItems((*itr)->getValue());
@@ -698,7 +695,6 @@ BOOL LLPanelFriends::refreshNamesPresence(const LLAvatarTracker::buddy_map_t & a
 // meal disk
 void LLPanelFriends::refreshUI()
 {	
-	populateContactGroupSelect();
 	BOOL single_selected = FALSE;
 	BOOL multiple_selected = FALSE;
 	int num_selected = mFriendsList->getAllSelected().size();

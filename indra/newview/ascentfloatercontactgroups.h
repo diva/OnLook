@@ -17,6 +17,7 @@
 
 #include "llfloater.h"
 #include "lldarray.h"
+#include "llsdserialize.h"
 
 class LLScrollListCtrl;
 
@@ -29,7 +30,6 @@ public:
 
     // by convention, this shows the floater and does instance management
     static void show(LLDynamicArray<LLUUID> ids);
-	static std::string cleanFileName(std::string filename);
 
 	void populateGroupList();
 	void populateFriendList();
@@ -47,6 +47,7 @@ private:
     //assuming we just need one, which is typical
     static ASFloaterContactGroups* sInstance;
 	static LLDynamicArray<LLUUID> mSelectedUUIDs;
+	static LLSD mContactGroupData;
 };
 
 #endif // ASCENT_CONTACT_GROUPS

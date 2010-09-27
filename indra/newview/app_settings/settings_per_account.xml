@@ -13,6 +13,19 @@
 		<string />
 	 </array>
 	</map>
+  <key>AscentContactGroups</key>
+  <map>
+    <key>Comment</key>
+    <string>List for contact groups</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>LLSD</string>
+    <key>Value</key>
+    <array>
+      <string />
+    </array>
+  </map>
 	<key>Responder.Settings</key>
 	<map>
 		<key>Comment</key>

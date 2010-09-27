@@ -32,6 +32,7 @@
 
 ASFloaterContactGroups* ASFloaterContactGroups::sInstance = NULL;
 LLDynamicArray<LLUUID> ASFloaterContactGroups::mSelectedUUIDs;
+LLSD ASFloaterContactGroups::mContactGroupData;
 
 ASFloaterContactGroups::ASFloaterContactGroups()
 :	LLFloater(std::string("floater_contact_groups"), std::string("FloaterContactRect"), LLStringUtil::null)
@@ -140,129 +141,37 @@ void ASFloaterContactGroups::populateFriendList()
 	}
 }
 
-std::string ASFloaterContactGroups::cleanFileName(std::string filename)
-{
-	std::string invalidChars = "\"\'\\/?*:<>| ";
-	S32 position = filename.find_first_of(invalidChars);
-	while (position != filename.npos)
-	{
-		filename[position] = '_';
-		position = filename.find_first_of(invalidChars, position);
-	}
-	return filename;
-}
-
 void ASFloaterContactGroups::addContactMember(std::string contact_grp, LLUUID to_add)
 {
-	std::string clean_contact_grp = cleanFileName(contact_grp);
-	std::string member_string = "Ascent." + clean_contact_grp + ".Members";
-
-	if (!gSavedSettings.controlExists(member_string)) 
-		gSavedSettings.declareString(member_string, to_add.asString(), "Stores UUIDs of members for " + clean_contact_grp, TRUE);
-	else
-		gSavedSettings.setString(member_string, gSavedSettings.getString(member_string) + " " + to_add.asString());
+	ASFloaterContactGroups::mContactGroupData[contact_grp].append(to_add.asString());
+	gSavedPerAccountSettings.setLLSD("AscentContactGroups", ASFloaterContactGroups::mContactGroupData);
 }
 
 void ASFloaterContactGroups::deleteContactGroup(std::string contact_grp)
 {
-	std::string clean_contact_grp = cleanFileName(contact_grp);
-	std::string display_string = "Ascent." + clean_contact_grp + ".Display";
-	gSavedSettings.setString(display_string, "##DELETED##");
-
-	std::string group_list(gSavedSettings.getString("AscentContactGroups"));
-
-	if (group_list.find(clean_contact_grp) != group_list.npos)
-	{
-		gSavedSettings.setString(
-			"AscentContactGroups", 
-			group_list.erase(
-				group_list.find_first_of(clean_contact_grp), 
-				clean_contact_grp.length()
-			)
-		);
-	}
+	
 }
 
 void ASFloaterContactGroups::createContactGroup(std::string contact_grp)
 {
-	std::string clean_contact_grp = cleanFileName(contact_grp);
-	std::string display_string = "Ascent." + clean_contact_grp + ".Display";
-	std::string member_string = "Ascent." + clean_contact_grp + ".Members";
-
-	if (gSavedSettings.controlExists(display_string)) 
-	{
-		std::string s_display = gSavedSettings.getString(display_string);
-		if (s_display != "##DELETED##")
-		{
-			LLChat msg("Can't create duplicate group names.");
-			LLFloaterChat::addChat(msg);
-			return;
-		}
-	}
-
-	gSavedSettings.declareString(member_string, "NULL_KEY", "Stores UUIDs of members for " + clean_contact_grp, TRUE);
-	gSavedSettings.declareString(display_string, contact_grp, "Stores the real name of " + clean_contact_grp, TRUE);
-
-	gSavedSettings.setString(display_string, contact_grp);
-	gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), TRUE);	
-
-	gSavedSettings.setString(member_string, "NULL_KEY");
-	gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), TRUE);	
-
-	if (!gSavedSettings.controlExists("AscentContactGroups")) 
-	{
-		gSavedSettings.declareString("AscentContactGroups", clean_contact_grp, "Stores titles of all Contact Groups", TRUE);
-		gSavedSettings.setString("AscentContactGroups", clean_contact_grp);
-	}
-	else
-	{
-		std::string group_list(gSavedSettings.getString("AscentContactGroups"));
-		group_list += " " + clean_contact_grp;
-		gSavedSettings.setString("AscentContactGroups", group_list);
-	}
-
-	gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), TRUE);	
-}
-
-void StringSplit(std::string str, std::string delim, std::vector<std::string> results)
-{
-	int cutAt;
-	while((cutAt = str.find_first_of(delim)) != str.npos)
-	{
-		if(cutAt > 0)
-		{
-			results.push_back(str.substr(0,cutAt));
-		}
-		str = str.substr(cutAt+1);
-	}
-
-	if(str.length() > 0)
-	{
-		results.push_back(str);
-	}
+	ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"].append(contact_grp);
+	gSavedPerAccountSettings.setLLSD("AscentContactGroups", ASFloaterContactGroups::mContactGroupData);
+	populateGroupList();
 }
 
 void ASFloaterContactGroups::populateGroupList()
 {
+	ASFloaterContactGroups::mContactGroupData = gSavedPerAccountSettings.getLLSD("AscentContactGroups");
 	LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("group_scroll_list");
 	if(scroller != NULL) 
 	{
 		scroller->deleteAllItems();
 
-		if (gSavedSettings.controlExists("AscentContactGroups")) 
+		S32 count = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"].size();
+		S32 index;
+		for (index = 0; index < count; index++)
 		{
-			scroller->addSimpleElement(gSavedSettings.getString("AscentContactGroups"), ADD_BOTTOM);
-			/**
-			std::vector<std::string> group_list;
-			StringSplit(gSavedSettings.getString("AscentContactGroups"), " ", group_list);
-
-			for (S32 i=0; i < group_list.size(); i++) 
-			{
-				scroller->addSimpleElement(group_list[i], ADD_BOTTOM);
-				LLChat msg("Add " + group_list[i]);
-				LLFloaterChat::addChat(msg);
-			}
-			**/
+			scroller->addSimpleElement(ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
 		}
 	} 
 	else
