@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Second Life</string>
+	<string>Ascent</string>
 	<key>CFBundleIconFile</key>
-	<string>secondlife.icns</string>
+	<string>Ascent.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.secondlife.indra.viewer</string>
+	<string>com.ascent.indra.viewer</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Second Life</string>
+	<string>Ascent</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
@@ -32,7 +32,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1.4.0.0</string>
+	<string>1.0.0.0</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 </dict>

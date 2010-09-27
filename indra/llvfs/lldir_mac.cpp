@@ -122,7 +122,7 @@ LLDir_Mac::LLDir_Mac()
 	CFStringRef		stringRef = NULL;
 	OSStatus		error = noErr;
 	FSRef			fileRef;
-	CFStringRef		secondLifeString = CFSTR("Ascent");
+	CFStringRef		secondLifeString = CFSTR("SecondLife");
 	
 	mainBundleRef = CFBundleGetMainBundle();
 		

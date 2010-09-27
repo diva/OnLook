@@ -1071,16 +1071,16 @@ anguage Infrstructure (CLI) international standard</string>
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>a6843398b780645c4897c9776c688926</string>
+            <string>9915f6bf3f81d88c3f9c3d21790c5b4f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/ogg-vorbis-1.03-1.1.2-darwin-20080812.tar.bz2</uri>
+            <uri>http://ascent.spiraling.org/download-libs/ogg-vorbis-1.2.0-1.3.1-darwin-20100920.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>6dc0536329a0aadf76e3054ffd4da61c</string>
+            <string>b72b032c3e1550516595efb38621d2f1</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/ogg-vorbis-1.2.0-linux-20081201.tar.bz2</uri>
+            <uri>http://ascent.spiraling.org/download-libs/ogg-vorbis-1.3.1-linux-20100907.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1092,9 +1092,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>9bf1fea65e66b2cd3075e6ffd7eb57ad</string>
+            <string>67ee18297c580940ea3c0ae23d4dec65</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/ogg-vorbis-1.1.3-1.2.0-windows-20080723.tar.bz2</uri>
+            <uri>http://ascent.spiraling.org/download-libs/ogg-vorbis-1.2.0-1.3.1-windows-20100907.tar.bz2</uri>
           </map>
         </map>
       </map>
