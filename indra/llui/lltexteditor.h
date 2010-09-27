@@ -45,6 +45,7 @@
 #include "lldarray.h"
 
 #include "llpreeditor.h"
+#include "llmenugl.h"
 
 class LLFontGL;
 class LLScrollbar;
@@ -84,6 +85,7 @@ public:
 	virtual BOOL	handleHover(S32 x, S32 y, MASK mask);
 	virtual BOOL	handleScrollWheel(S32 x, S32 y, S32 clicks);
 	virtual BOOL	handleDoubleClick(S32 x, S32 y, MASK mask );
+	virtual BOOL	handleRightMouseDown( S32 x, S32 y, MASK mask );
 	virtual BOOL	handleMiddleMouseDown(S32 x,S32 y,MASK mask);
 
 	virtual BOOL	handleKeyHere(KEY key, MASK mask );
@@ -132,6 +134,12 @@ public:
 	virtual BOOL	canSelectAll()	const;
 	virtual void	deselect();
 	virtual BOOL	canDeselect() const;
+	static void context_cut(void* data);
+
+	static void context_copy(void* data);
+	static void context_paste(void* data);
+	static void context_delete(void* data);
+	static void context_selectall(void* data);
 
 	void			selectNext(const std::string& search_text_in, BOOL case_insensitive, BOOL wrap = TRUE);
 	BOOL			replaceText(const std::string& search_text, const std::string& replace_text, BOOL case_insensitive, BOOL wrap = TRUE);
@@ -146,7 +154,7 @@ public:
 	BOOL			allowsEmbeddedItems() const { return mAllowEmbeddedItems; }
 
 	// inserts text at cursor
-	void			insertText(const std::string &text);
+	void			insertText(const std::string &text, BOOL deleteSelection = TRUE);
 	// appends text at end
 	void 			appendText(const std::string &wtext, bool allow_undo, bool prepend_newline,
 							   const LLStyleSP stylep = NULL);
@@ -172,6 +180,7 @@ public:
 	void			setCursor(S32 row, S32 column);
 	void			setCursorPos(S32 offset);
 	void			setCursorAndScrollToEnd();
+	void            scrollToPos(S32 pos);
 
 	void			getLineAndColumnForPosition( S32 position,  S32* line, S32* col, BOOL include_wordwrap );
 	void			getCurrentLineAndColumn( S32* line, S32* col, BOOL include_wordwrap );
@@ -264,16 +273,20 @@ public:
 
 	static bool		isPartOfWord(llwchar c) { return (c == '_') || LLStringOps::isAlnum((char)c); }
 
+	BOOL isReadOnly() { return mReadOnly; }
 protected:
 	//
 	// Methods
 	//
 
+	LLHandle<LLView>					mPopupMenuHandle;
+
 	S32				getLength() const { return mWText.length(); }
 	void			getSegmentAndOffset( S32 startpos, S32* segidxp, S32* offsetp ) const;
 	void			drawPreeditMarker();
-
+public:
 	void			updateLineStartList(S32 startpos = 0);
+protected:
 	void			updateScrollFromCursor();
 	void			updateTextRect();
 	const LLRect&	getTextRect() const { return mTextRect; }
@@ -405,8 +418,9 @@ protected:
 	//
 
 	// I-beam is just after the mCursorPos-th character.
+public:
 	S32				mCursorPos;
-
+protected:
 	// Use these to determine if a click on an embedded item is a drag or not.
 	S32				mMouseDownX;
 	S32				mMouseDownY;

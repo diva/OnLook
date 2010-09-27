@@ -53,11 +53,14 @@
 #include "llkeywords.h"
 #include "llundo.h"
 #include "llviewborder.h"
+
 #include "llcontrol.h"
 #include "llimagegl.h"
 #include "llwindow.h"
 #include "lltextparser.h"
 #include <queue>
+#include "llmenugl.h"
+#include "../newview/llviewercontrol.h"
 
 // 
 // Globals
@@ -254,6 +257,7 @@ LLTextEditor::LLTextEditor(
 	LLUICtrl( name, rect, TRUE, NULL, NULL, FOLLOWS_TOP | FOLLOWS_LEFT ),
 	mTextIsUpToDate(TRUE),
 	mMaxTextByteLength( max_length ),
+	mPopupMenuHandle(),
 	mBaseDocIsPristine(TRUE),
 	mPristineCmd( NULL ),
 	mLastCmd( NULL ),
@@ -339,6 +343,21 @@ LLTextEditor::LLTextEditor(
 
 	mParseHTML=FALSE;
 	mHTML.clear();
+	// make the popup menu available
+	//LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_texteditor.xml", parent_view);
+	LLMenuGL* menu = new LLMenuGL("rclickmenu");
+	/*if (!menu)
+	{
+			menu = new LLMenuGL(LLStringUtil::null);
+	}*/
+	menu->append(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
+	menu->append(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
+	menu->append(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
+	menu->append(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
+	menu->append(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
+	menu->setCanTearOff(FALSE);
+	menu->setVisible(FALSE);
+	mPopupMenuHandle = menu->getHandle();
 }
 
 
@@ -357,6 +376,32 @@ LLTextEditor::~LLTextEditor()
 	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 
 	std::for_each(mUndoStack.begin(), mUndoStack.end(), DeletePointer());
+	LLView::deleteViewByHandle(mPopupMenuHandle);
+}
+void LLTextEditor::context_cut(void* data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	if(line)line->cut();
+}
+void LLTextEditor::context_copy(void* data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	if(line)line->copy();
+}
+void LLTextEditor::context_paste(void* data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	if(line)line->paste();
+}
+void LLTextEditor::context_delete(void* data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	if(line)line->doDelete();
+}
+void LLTextEditor::context_selectall(void* data)
+{
+	LLTextEditor* line = (LLTextEditor*)data;
+	if(line)line->selectAll();
 }
 
 void LLTextEditor::setTrackColor( const LLColor4& color )
@@ -645,6 +690,7 @@ void LLTextEditor::selectNext(const std::string& search_text_in, BOOL case_insen
 	}
 
 	setCursorPos(loc);
+	scrollToPos(mCursorPos);
 	
 	mIsSelecting = TRUE;
 	mSelectionEnd = mCursorPos;
@@ -747,7 +793,14 @@ S32 LLTextEditor::getLineStart( S32 line ) const
 	S32 segoffset = mLineStartList[line].mOffset;
 	LLTextSegment* seg = mSegments[segidx];
 	S32 res = seg->getStart() + segoffset;
-	if (res > seg->getEnd()) llerrs << "wtf" << llendl;
+	if (res > seg->getEnd()) 
+	{
+		//llerrs << "wtf" << llendl;
+		// This happens when creating a new notecard using the AO on certain opensims.
+		// Play it safe instead of bringing down the viewer - MC
+		llwarns << "BAD JOOJOO! Text length (" << res << ") greater than text end (" << seg->getEnd() << "). Setting line start to " << seg->getEnd() << llendl;
+		res = seg->getEnd();
+	}
 	return res;
 }
 
@@ -875,6 +928,11 @@ S32 LLTextEditor::getCursorPosFromLocalCoord( S32 local_x, S32 local_y, BOOL rou
 
 void LLTextEditor::setCursor(S32 row, S32 column)
 {
+	// Make sure we're not trying to set the cursor anywhere 
+	// it can't go by always setting the min to 0 -- MC
+	row = (row < 0) ? 0 : row;
+	column = (column < 0) ? 0 : column;
+
 	const llwchar* doc = mWText.c_str();
 	const char CR = 10;
 	while(row--)
@@ -1126,6 +1184,14 @@ BOOL LLTextEditor::handleMouseDown(S32 x, S32 y, MASK mask)
 {
 	BOOL	handled = FALSE;
 
+	// SL-51858: Key presses are not being passed to the Popup menu.
+	// A proper fix is non-trivial so instead just close the menu.
+	LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+	if (menu && menu->isOpen())
+	{
+		LLMenuGL::sMenuContainer->hideMenus();
+	}
+
 	// Let scrollbar have first dibs
 	handled = LLView::childrenHandleMouseDown(x, y, mask) != NULL;
 
@@ -1199,6 +1265,20 @@ BOOL LLTextEditor::handleMouseDown(S32 x, S32 y, MASK mask)
 	resetKeystrokeTimer();
 
 	return handled;
+}
+BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
+{
+	setFocus(TRUE);
+	llinfos << "Right mouse click - Opening menu." << llendl;
+	//setCursorAtLocalPos( x, y, TRUE );
+	LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+	if (menu)
+	{
+		menu->buildDrawLabels();
+		menu->updateParent(LLMenuGL::sMenuContainer);
+		LLMenuGL::showPopup(this, menu, x, y);
+	}
+	return TRUE;
 }
 
 
@@ -2251,6 +2331,13 @@ BOOL LLTextEditor::handleKeyHere(KEY key, MASK mask )
 	BOOL	selection_modified = FALSE;
 	BOOL	return_key_hit = FALSE;
 	BOOL	text_may_have_changed = TRUE;
+	// SL-51858: Key presses are not being passed to the Popup menu.
+	// A proper fix is non-trivial so instead just close the menu.
+	LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+	if (menu && menu->isOpen())
+	{
+		LLMenuGL::sMenuContainer->hideMenus();
+	}
 
 	if ( gFocusMgr.getKeyboardFocus() == this )
 	{
@@ -2293,6 +2380,14 @@ BOOL LLTextEditor::handleKeyHere(KEY key, MASK mask )
 				selection_modified = TRUE;
 				text_may_have_changed = TRUE;
 			}
+		}
+
+		// SL-51858: Key presses are not being passed to the Popup menu.
+		// A proper fix is non-trivial so instead just close the menu.
+		LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+		if (menu && menu->isOpen())
+		{
+			LLMenuGL::sMenuContainer->hideMenus();
 		}
 
 		// Handle most keys only if the text editor is writeable.
@@ -3239,6 +3334,8 @@ void LLTextEditor::onTabInto()
 void LLTextEditor::clear()
 {
 	setText(LLStringUtil::null);
+	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
+	mSegments.clear();
 }
 
 // Start or stop the editor from accepting text-editing keystrokes
@@ -3415,6 +3512,43 @@ void LLTextEditor::setCursorAndScrollToEnd()
 	needsScroll();
 }
 
+void LLTextEditor::scrollToPos(S32 pos)
+{
+	mScrollbar->setDocSize( getLineCount() );
+
+	S32 line, offset;
+	getLineAndOffset(pos, &line, &offset );
+
+	S32 page_size = mScrollbar->getPageSize();
+
+	if( line < mScrollbar->getDocPos() )
+	{
+		// scroll so that the cursor is at the top of the page
+		mScrollbar->setDocPos( line );
+	}
+	else if( line >= mScrollbar->getDocPos() + page_size - 1 )
+	{
+		S32 new_pos = 0;
+		if( line < mScrollbar->getDocSize() - 1 )
+		{
+			// scroll so that the cursor is one line above the bottom of the page,
+			new_pos = line - page_size + 1;
+		}
+		else
+		{
+			// if there is less than a page of text remaining, scroll so that the cursor is at the bottom
+			new_pos = mScrollbar->getDocPosMax();
+		}
+		mScrollbar->setDocPos( new_pos );
+	}
+
+	// Check if we've scrolled to bottom for callback if asked for callback
+	if (mOnScrollEndCallback && mOnScrollEndData && (mScrollbar->getDocPos() == mScrollbar->getDocPosMax()))
+	{
+		mOnScrollEndCallback(mOnScrollEndData);
+	}
+}
+
 void LLTextEditor::getLineAndColumnForPosition( S32 position, S32* line, S32* col, BOOL include_wordwrap )
 {
 	if( include_wordwrap )
@@ -3492,45 +3626,13 @@ void LLTextEditor::endOfDoc()
 // Sets the scrollbar from the cursor position
 void LLTextEditor::updateScrollFromCursor()
 {
-	mScrollbar->setDocSize( getLineCount() );
-
 	if (mReadOnly)
 	{
 		// no cursor in read only mode
 		return;
 	}
 
-	S32 line, offset;
-	getLineAndOffset( mCursorPos, &line, &offset ); 
-
-	S32 page_size = mScrollbar->getPageSize();
-
-	if( line < mScrollbar->getDocPos() )
-	{
-		// scroll so that the cursor is at the top of the page
-		mScrollbar->setDocPos( line );
-	}
-	else if( line >= mScrollbar->getDocPos() + page_size - 1 )
-	{
-		S32 new_pos = 0;
-		if( line < mScrollbar->getDocSize() - 1 )
-		{
-			// scroll so that the cursor is one line above the bottom of the page,
-			new_pos = line - page_size + 1;
-		}
-		else
-		{
-			// if there is less than a page of text remaining, scroll so that the cursor is at the bottom
-			new_pos = mScrollbar->getDocPosMax();
-		}
-		mScrollbar->setDocPos( new_pos );
-	}
-
-	// Check if we've scrolled to bottom for callback if asked for callback
-	if (mOnScrollEndCallback && mOnScrollEndData && (mScrollbar->getDocPos() == mScrollbar->getDocPosMax()))
-	{
-		mOnScrollEndCallback(mOnScrollEndData);
-	}
+	scrollToPos(mCursorPos);
 }
 
 void LLTextEditor::reshape(S32 width, S32 height, BOOL called_from_parent)
@@ -3582,13 +3684,13 @@ void LLTextEditor::autoIndent()
 }
 
 // Inserts new text at the cursor position
-void LLTextEditor::insertText(const std::string &new_text)
+void LLTextEditor::insertText(const std::string &new_text,BOOL deleteCurrentSelection)
 {
 	BOOL enabled = getEnabled();
 	setEnabled( TRUE );
 
 	// Delete any selected characters (the insertion replaces them)
-	if( hasSelection() )
+	if( hasSelection() && (deleteCurrentSelection))
 	{
 		deleteSelection(TRUE);
 	}

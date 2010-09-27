@@ -56,6 +56,7 @@
 #include "lluictrlfactory.h"
 #include "llclipboard.h"
 
+#include "../newview/llviewercontrol.h"
 //
 // Imported globals
 //
@@ -103,6 +104,7 @@ LLLineEditor::LLLineEditor(const std::string& name, const LLRect& rect,
 	:
 		LLUICtrl( name, rect, TRUE, commit_callback, userdata, FOLLOWS_TOP | FOLLOWS_LEFT ),
 		mMaxLengthBytes(max_length_bytes),
+		mPopupMenuHandle(),
 		mCursorPos( 0 ),
 		mScrollHPos( 0 ),
 		mTextPadLeft(0),
@@ -174,6 +176,26 @@ LLLineEditor::LLLineEditor(const std::string& name, const LLRect& rect,
 		sImage = LLUI::getUIImage("sm_rounded_corners_simple.tga");
 	}
 	mImage = sImage;
+	// make the popup menu available
+	//LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_texteditor.xml", parent_view);
+	LLMenuGL* menu = new LLMenuGL("wot");
+	/*if (!menu)
+	{
+	menu = new LLMenuGL(LLStringUtil::null);
+	}*/
+	menu->append(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
+	menu->append(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
+	menu->append(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
+	menu->append(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
+	menu->append(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
+	menu->appendSeparator("Transep");
+	LLMenuGL* translatemenu = new LLMenuGL("Translate To");
+	translatemenu->setCanTearOff(FALSE);
+
+	//menu->setBackgroundColor(gColors.getColor("MenuPopupBgColor"));
+	menu->setCanTearOff(FALSE);
+	menu->setVisible(FALSE);
+	mPopupMenuHandle = menu->getHandle();
 }
 
 
@@ -187,6 +209,7 @@ LLLineEditor::~LLLineEditor()
 	{
 		gEditMenuHandler = NULL;
 	}
+	LLView::deleteViewByHandle(mPopupMenuHandle);
 }
 
 
@@ -342,7 +365,7 @@ void LLLineEditor::setText(const LLStringExplicit &new_text)
 
 
 // Picks a new cursor position based on the actual screen size of text being drawn.
-void LLLineEditor::setCursorAtLocalPos( S32 local_mouse_x )
+S32 LLLineEditor::calculateCursorFromMouse( S32 local_mouse_x )
 {
 	const llwchar* wtext = mText.getWString().c_str();
 	LLWString asterix_text;
@@ -350,18 +373,22 @@ void LLLineEditor::setCursorAtLocalPos( S32 local_mouse_x )
 	{
 		for (S32 i = 0; i < mText.length(); i++)
 		{
-			asterix_text += '*';
+			asterix_text += (llwchar) 0x2022L;
 		}
 		wtext = asterix_text.c_str();
 	}
 
-	S32 cursor_pos =
-		mScrollHPos + 
+	return mScrollHPos + 
 		mGLFont->charFromPixelOffset(
 			wtext, mScrollHPos,
 			(F32)(local_mouse_x - mMinHPixels),
 			(F32)(mMaxHPixels - mMinHPixels + 1)); // min-max range is inclusive
-	setCursor(cursor_pos);
+
+}
+// Picks a new cursor position based on the actual screen size of text being drawn.
+void LLLineEditor::setCursorAtLocalPos( S32 local_mouse_x )
+{
+	setCursor(calculateCursorFromMouse(local_mouse_x));
 }
 
 void LLLineEditor::setCursor( S32 pos )
@@ -416,6 +443,35 @@ void LLLineEditor::deselect()
 	mIsSelecting = FALSE;
 }
 
+
+void LLLineEditor::context_cut(void* data)
+{
+	LLLineEditor* line = (LLLineEditor*)data;
+	if(line)line->cut();
+}
+void LLLineEditor::context_copy(void* data)
+{
+	LLLineEditor* line = (LLLineEditor*)data;
+	if(line)line->copy();
+}
+
+void LLLineEditor::context_paste(void* data)
+{
+	LLLineEditor* line = (LLLineEditor*)data;
+	if(line)line->paste();
+}
+
+void LLLineEditor::context_delete(void* data)
+{
+	LLLineEditor* line = (LLLineEditor*)data;
+	if(line)line->doDelete();
+}
+
+void LLLineEditor::context_selectall(void* data)
+{
+	LLLineEditor* line = (LLLineEditor*)data;
+	if(line)line->selectAll();
+}
 
 void LLLineEditor::startSelection()
 {
@@ -504,6 +560,27 @@ BOOL LLLineEditor::handleDoubleClick(S32 x, S32 y, MASK mask)
 	// take selection to 'primary' clipboard
 	updatePrimary();
 
+	return TRUE;
+}
+
+
+BOOL LLLineEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
+{
+	setFocus(TRUE);
+
+	//setCursorAtLocalPos( x);
+	LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+	if (menu)
+	{
+		if(menu->isOpen())
+		{
+			menu->setVisible(FALSE);
+		}
+
+		menu->buildDrawLabels();
+		menu->updateParent(LLMenuGL::sMenuContainer);
+		LLMenuGL::showPopup(this, menu, x, y);
+	}
 	return TRUE;
 }
 
@@ -970,6 +1047,23 @@ void LLLineEditor::copy()
 	}
 }
 
+void LLLineEditor::insert(std::string what, S32 wher)
+{
+	LLLineEditorRollback rollback(this);
+	LLWString clean_string(utf8str_to_wstring(what));
+	LLWStringUtil::replaceTabsWithSpaces(clean_string, 4);
+	mText.insert(wher, clean_string);
+	//see if we should move over the cursor acordingly
+	// Validate new string and rollback the if needed.
+	BOOL need_to_rollback = ( mPrevalidateFunc && !mPrevalidateFunc( mText.getWString() ) );
+	if( need_to_rollback )
+	{
+		rollback.doRollback( this );
+		reportBadKeystroke();
+	}
+	else if( mKeystrokeCallback )
+		mKeystrokeCallback( this, mCallbackUserData );
+}
 BOOL LLLineEditor::canPaste() const
 {
 	return !mReadOnly && gClipboard.canPasteString(); 
@@ -1329,6 +1423,14 @@ BOOL LLLineEditor::handleKeyHere(KEY key, MASK mask )
 	BOOL	handled = FALSE;
 	BOOL	selection_modified = FALSE;
 
+	// SL-51858: Key presses are not being passed to the Popup menu.
+	// A proper fix is non-trivial so instead just close the menu.
+	LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+	if (menu && menu->isOpen())
+	{
+		LLMenuGL::sMenuContainer->hideMenus();
+	}
+
 	if ( gFocusMgr.getKeyboardFocus() == this )
 	{
 		LLLineEditorRollback rollback( this );
@@ -1403,6 +1505,13 @@ BOOL LLLineEditor::handleUnicodeCharHere(llwchar uni_char)
 
 	if ( (gFocusMgr.getKeyboardFocus() == this) && getVisible() && !mReadOnly)
 	{
+		// SL-51858: Key presses are not being passed to the Popup menu.
+		// A proper fix is non-trivial so instead just close the menu.
+		LLMenuGL* menu = (LLMenuGL*)mPopupMenuHandle.get();
+		if (menu && menu->isOpen())
+		{
+			LLMenuGL::sMenuContainer->hideMenus();
+		}
 		handled = TRUE;
 
 		LLLineEditorRollback rollback( this );
@@ -2173,6 +2282,7 @@ BOOL LLLineEditor::evaluateFloat()
 {
 	bool success = false;
 	std::string expr = getText();
+	LLStringUtil::toUpper(expr);
 
 	// user deleted the contents, nothing to evaluate -- MC
 	if (expr.empty())

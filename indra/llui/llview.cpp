@@ -149,6 +149,11 @@ LLView::~LLView()
 {
 	//llinfos << "Deleting view " << mName << ":" << (void*) this << llendl;
 // 	llassert(LLView::sIsDrawing == FALSE);
+	if( gFocusMgr.getKeyboardFocus() == this )
+	{
+		llwarns << "View holding keyboard focus deleted: " << getName() << ".  Keyboard focus removed." << llendl;
+		gFocusMgr.removeKeyboardFocusWithoutCallback( this );
+	}
 
 	if( hasMouseCapture() )
 	{
