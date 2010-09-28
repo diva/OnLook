@@ -68,6 +68,9 @@ private:
 	void refreshValues();
 	//General
 	BOOL mUseAccountSettings;
+	BOOL mShowTPScreen;
+	BOOL mPlayTPSound;
+	BOOL mShowLogScreens;
 	//Colors
 	BOOL mShowSelfClientTag;
 	BOOL mShowSelfClientTagColor;
@@ -91,6 +94,7 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_friend_tag_check", onCommitCheckBox, this);
+	childSetCommitCallback("use_status_check", onCommitCheckBox, this);
 
 	childSetCommitCallback("custom_tag_color_swatch", onCommitColor, this);
 	childSetCommitCallback("effect_color_swatch", onCommitColor, this);
@@ -163,7 +167,7 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 		self->refresh();
 	}
 
-	if (ctrl->getName() == "show_friend_tag_check")
+	if ((ctrl->getName() == "show_friend_tag_check")||(ctrl->getName() == "use_status_check"))
 	{
 		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
 		iter != LLCharacter::sInstances.end(); ++iter)
@@ -192,6 +196,9 @@ void LLPrefsAscentVanImpl::refreshValues()
 {
 	//General
 	mUseAccountSettings			= gSavedSettings.getBOOL("AscentStoreSettingsPerAccount");
+	mShowTPScreen				= !gSavedSettings.getBOOL("AscentDisableTeleportScreens");
+	mPlayTPSound				= gSavedSettings.getBOOL("OptionPlayTpSound");
+	mShowLogScreens				= !gSavedSettings.getBOOL("AscentDisableLogoutScreens");
 	
 	//Colors
 	mShowSelfClientTag			= gSavedSettings.getBOOL("AscentShowSelfTag");
@@ -202,6 +209,8 @@ void LLPrefsAscentVanImpl::refreshValues()
 	mEffectColor			= LLSavedSettingsGlue::getCOAColor4("EffectColor");
 	
 	BOOL use_custom = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
+
+	
 
 	childSetEnabled("custom_tag_label_text", use_custom);
 	childSetEnabled("custom_tag_label_box", use_custom);
@@ -222,6 +231,9 @@ void LLPrefsAscentVanImpl::refresh()
 	refreshValues();
 	//General --------------------------------------------------------------------------------
 	childSetValue("use_account_settings_check", mUseAccountSettings);
+	childSetValue("disable_tp_screen_check",	mShowTPScreen);
+	childSetValue("tp_sound_check",				mPlayTPSound);
+	childSetValue("disable_logout_screen_check", mShowLogScreens);
 
 	//Colors ---------------------------------------------------------------------------------
 	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
@@ -263,7 +275,10 @@ void LLPrefsAscentVanImpl::cancel()
 {
 	//General --------------------------------------------------------------------------------
 	childSetValue("use_account_settings_check", mUseAccountSettings);
-	
+	childSetValue("disable_tp_screen_check",	mShowTPScreen);
+	childSetValue("tp_sound_check",				mPlayTPSound);
+	childSetValue("disable_logout_screen_check", mShowLogScreens);
+
 	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
 	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
 	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", LLColor4::yellow);
@@ -283,7 +298,9 @@ void LLPrefsAscentVanImpl::apply()
 	std::string client_uuid;
 	U32 client_index;
 	//General -----------------------------------------------------------------------------
-
+	gSavedSettings.setBOOL("AscentDisableTeleportScreens",	!childGetValue("disable_tp_screen_check"));
+	gSavedSettings.setBOOL("OptionPlayTpSound",				childGetValue("tp_sound_check"));
+	gSavedSettings.setBOOL("AscentDisableLogoutScreens",	!childGetValue("disable_logout_screen_check"));
 
 	//Colors ------------------------------------------------------------------------------
 	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");

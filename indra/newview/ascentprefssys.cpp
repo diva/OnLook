@@ -161,8 +161,6 @@ void LLPrefsAscentSysImpl::refreshValues()
 	mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
 	mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
 	mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
-	//Disable Teleport Progress
-	//Disable Logout progress
 	//always show Build
 	mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
 	//Disable camera minimum distance
