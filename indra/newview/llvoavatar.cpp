@@ -3511,6 +3511,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			new_name = TRUE;
 		}
 
+		LLNameValue *title = getNVPair("Title");
+		LLNameValue* firstname = getNVPair("FirstName");
+		LLNameValue* lastname = getNVPair("LastName");
+
 		// <edit>
 		std::string client;
 		// </edit>
@@ -3593,8 +3597,42 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
 						{
 							mClientTag = "Friend";
-							mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
 						}
+					}
+				}
+
+				if (!mIsSelf && gSavedSettings.getBOOL("AscentUseStatusColors"))
+				{
+					LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(this->getPositionGlobal());
+					LLUUID estate_owner = LLUUID::null;
+					if(parent_estate && parent_estate->isAlive())
+					{
+						estate_owner = parent_estate->getOwner();
+					}
+					
+					std::string name;
+					name += firstname->getString();
+					name += " ";
+					name += lastname->getString();
+					//Lindens are always more Linden than your friend, make that take precedence
+					if(LLMuteList::getInstance()->isLinden(name))
+					{
+						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor").getValue();
+					}
+					//check if they are an estate owner at their current position
+					else if(estate_owner.notNull() && this->getID() == estate_owner)
+					{
+						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor").getValue();
+					}
+					//without these dots, SL would suck.
+					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+					{
+						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
+					}
+					//big fat jerkface who is probably a jerk, display them as such.
+					else if(LLMuteList::getInstance()->isMuted(this->getID()))
+					{
+						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor").getValue();
 					}
 				}
 
@@ -3602,6 +3640,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTagColor"))
 							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTagColor")))
 					avatar_name_color = mClientColor;
+				
 
 				avatar_name_color.setAlpha(alpha);
 					
@@ -3639,9 +3678,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 		}
 		
-		LLNameValue *title = getNVPair("Title");
-		LLNameValue* firstname = getNVPair("FirstName");
-		LLNameValue* lastname = getNVPair("LastName");
+		
 
 		if (mNameText.notNull() && firstname && lastname)
 		{
