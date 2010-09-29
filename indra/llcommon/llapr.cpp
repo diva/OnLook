@@ -396,7 +396,12 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 // File I/O
 S32 LLAPRFile::read(void *buf, S32 nbytes)
 {
-	llassert_always(mFile) ;
+	//llassert_always(mFile); (ASC-TUDCC) -HgB
+	if(!mFile) 
+	{
+		llwarns << "apr mFile is removed by somebody else. Can not write." << llendl ;
+		return 0;
+	}
 	
 	apr_size_t sz = nbytes;
 	apr_status_t s = apr_file_read(mFile, buf, &sz);
@@ -414,7 +419,12 @@ S32 LLAPRFile::read(void *buf, S32 nbytes)
 
 S32 LLAPRFile::write(const void *buf, S32 nbytes)
 {
-	llassert_always(mFile) ;
+	// llassert_always(mFile); (ASC-TUDCC) -HgB
+	if(!mFile) 
+	{
+		llwarns << "apr mFile is removed by somebody else. Can not write." << llendl ;
+		return 0;
+	}
 	
 	apr_size_t sz = nbytes;
 	apr_status_t s = apr_file_write(mFile, buf, &sz);
