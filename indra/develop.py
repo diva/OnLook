@@ -658,7 +658,7 @@ class WindowsSetup(PlatformSetup):
                           ' --solution ' +
                           os.path.join(build_dir,'Ascent.sln') +
                           ' --config ' + self.build_type +
-                          ' --startup secondlife-bin')
+                          ' --startup Ascent')
             print 'Running %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
             print >> open(stamp, 'w'), self.build_type
