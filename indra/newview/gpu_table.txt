@@ -164,11 +164,15 @@ Matrox							.*Matrox.*							0		0
 Mesa							.*Mesa.*							0		0
 NVIDIA GT 120					.*NVIDIA.*GeForce.*GT.*12.*			2		1
 NVIDIA GT 130					.*NVIDIA.*GeForce.*GT.*13.*			3		1
+NVIDIA GT 220					.*NVIDIA.*GeForce.*GT.*22.*		3		1
 NVIDIA GTS 250					.*NVIDIA.*GeForce.*GTS.*25.*		3		1
 NVIDIA GTX 260					.*NVIDIA.*GeForce.*GTX.*26.*		3		1
 NVIDIA GTX 270					.*NVIDIA.*GeForce.*GTX.*27.*		3		1
 NVIDIA GTX 280					.*NVIDIA.*GeForce.*GTX.*28.*		3		1
 NVIDIA GTX 290					.*NVIDIA.*GeForce.*GTX.*29.*		3		1
+NVIDIA GTX 460					.*NVIDIA.*GeForce.*GTX.*46.*		3		1
+NVIDIA GTX 470					.*NVIDIA.*GeForce.*GTX.*47.*		3		1
+NVIDIA GTX 480					.*NVIDIA.*GeForce.*GTX.*48.*		3		1
 NVIDIA C51						.*NVIDIA.*C51.*						0		1
 NVIDIA G72						.*NVIDIA.*G72.*						1		1
 NVIDIA G73						.*NVIDIA.*G73.*						1		1

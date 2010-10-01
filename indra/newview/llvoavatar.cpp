@@ -88,7 +88,7 @@
 #include "llvoicevisualizer.h" // Ventrella
 
 #include "llsdserialize.h" //For the client definitions
-#include "llsavedsettingsglue.h" //For optionally per-account settings
+
 // <edit>
 #include "llfloaterexploreanimations.h"
 #include "llao.h"
@@ -3332,7 +3332,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 	if (mIsSelf)
 	{
-		BOOL showCustomTag = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
+		BOOL showCustomTag = gCOASavedSettings->getBOOL("AscentUseCustomTag");
 		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
 		{
 			color = gColors.getColor( "AvatarNameColor" );
@@ -3340,12 +3340,12 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		}
 		else if (showCustomTag)
 		{
-			color = LLSavedSettingsGlue::getCOAColor4("AscentCustomTagColor");
-			client = LLSavedSettingsGlue::getCOAString("AscentCustomTagLabel");
+			color = gCOASavedSettings->getColor4("AscentCustomTagColor");
+			client = gCOASavedSettings->getString("AscentCustomTagLabel");
 			return;
 		}
 		else if (gSavedSettings.getBOOL("AscentUseTag"))
-			uuid_str = LLSavedSettingsGlue::getCOAString("AscentReportClientUUID");
+			uuid_str = gCOASavedSettings->getString("AscentReportClientUUID");
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
 	{
@@ -3587,6 +3587,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 							llinfos << "Using Emerald-style client identifier." << llendl;
 							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
 							getClientInfo(mClientTag,mClientColor);
+							if(mClientTag == "")
+								client = "?"; //prevent console spam..
 						}	
 					}
 
@@ -3617,22 +3619,22 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//Lindens are always more Linden than your friend, make that take precedence
 					if(LLMuteList::getInstance()->isLinden(name))
 					{
-						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor").getValue();
+						mClientColor = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
 					}
 					//check if they are an estate owner at their current position
 					else if(estate_owner.notNull() && this->getID() == estate_owner)
 					{
-						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor").getValue();
+						mClientColor = gCOASavedSettings->getColor4("AscentEstateOwnerColor").getValue();
 					}
 					//without these dots, SL would suck.
 					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
+						mClientColor = gCOASavedSettings->getColor4("AscentFriendColor");
 					}
 					//big fat jerkface who is probably a jerk, display them as such.
 					else if(LLMuteList::getInstance()->isMuted(this->getID()))
 					{
-						mClientColor = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor").getValue();
+						mClientColor = gCOASavedSettings->getColor4("AscentMutedColor").getValue();
 					}
 				}
 

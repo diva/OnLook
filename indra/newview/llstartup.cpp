@@ -2641,13 +2641,11 @@ bool idle_startup()
 			LLFloaterBeacons::showInstance(); DIE
 		}*/
 		
-		if (!gSavedSettings.getBOOL("CloudsEnabled") && !gNoRender)
-		{
-			LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
-		}
-
 		if (!gNoRender)
 		{
+			//Set up cloud rendertypes. Passed argument is unused.
+			handleCloudSettingsChanged(LLSD());
+
 			// Move the progress view in front of the UI
 			gViewerWindow->moveProgressViewToFront();
 

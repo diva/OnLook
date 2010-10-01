@@ -435,17 +435,16 @@ S32 LLQueuedThread::processNextRequest()
 		{
 			lockData();
 			req->setStatus(STATUS_COMPLETE);
-			unlockData();
+			
 
 			req->finishRequest(true);
 
 			if ((req->getFlags() & FLAG_AUTO_COMPLETE))
 			{
-				lockData();
 				mRequestHash.erase(req);
 				req->deleteRequest();
-				unlockData();
 			}
+			unlockData();
 		}
 		else
 		{

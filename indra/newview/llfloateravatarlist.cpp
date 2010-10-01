@@ -31,7 +31,6 @@
 #include "llregionflags.h"
 #include "llfloaterreporter.h"
 #include "llagent.h"
-#include "llsavedsettingsglue.h"
 #include "llviewerregion.h"
 #include "lltracker.h"
 #include "llviewerstats.h"
@@ -708,22 +707,22 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//Lindens are always more Linden than your friend, make that take precedence
 		if(LLMuteList::getInstance()->isLinden(av_name))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor").getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
 		}
 		//check if they are an estate owner at their current position
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor").getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentEstateOwnerColor").getValue();
 		}
 		//without these dots, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor").getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentFriendColor").getValue();
 		}
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor").getValue();
+			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentMutedColor").getValue();
 		}
 		
 

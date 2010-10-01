@@ -1419,7 +1419,7 @@ bool LLTextureFetch::createRequest(const std::string& url, const LLUUID& id, con
 	}
 	else if (w*h*c > 0)
 	{
-		// If the requester knows the dimentions of the image,
+		// If the requester knows the dimensions of the image,
 		// this will calculate how much data we need without having to parse the header
 
 		desired_size = LLImageJ2C::calcDataSizeJ2C(w, h, c, desired_discard);

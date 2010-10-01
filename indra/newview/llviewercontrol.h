@@ -35,6 +35,7 @@
 
 #include <map>
 #include "llcontrol.h"
+#include "lluictrl.h"
 
 // Enabled this definition to compile a 'hacked' viewer that
 // allows a hacked godmode to be toggled on and off.
@@ -54,6 +55,7 @@ void create_graphics_group(LLControlGroup& group);
 
 // saved at end of session
 extern LLControlGroup gSavedSettings;
+extern LLControlGroup *gCOASavedSettings;
 extern LLControlGroup gSavedPerAccountSettings;
 
 // Read-only
@@ -73,6 +75,8 @@ eControlType get_control_type(const T& in, LLSD& out)
 	llerrs << "Usupported control type: " << typeid(T).name() << "." << llendl;
 	return TYPE_COUNT;
 }
+
+bool handleCloudSettingsChanged(const LLSD& newvalue);
 
 //! Publish/Subscribe object to interact with LLControlGroups.
 
@@ -170,6 +174,12 @@ template <> eControlType get_control_type<LLColor4>(const LLColor4& in, LLSD& ou
 template <> eControlType get_control_type<LLColor3>(const LLColor3& in, LLSD& out);
 template <> eControlType get_control_type<LLColor4U>(const LLColor4U& in, LLSD& out); 
 template <> eControlType get_control_type<LLSD>(const LLSD& in, LLSD& out);
+
+//A template would be a little awkward to use here.. so.. a preprocessor macro. Alas. onCommitControlSetting(gSavedSettings) etc.
+inline void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name) {gSavedSettings.setValue((const char*)name,ctrl->getValue());}
+inline void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name) {gSavedPerAccountSettings.setValue((const char*)name,ctrl->getValue());}
+inline void onCommitControlSetting_gCOASavedSettings(LLUICtrl* ctrl, void* name) {gCOASavedSettings->setValue((const char*)name,ctrl->getValue());}
+#define onCommitControlSetting(controlgroup) onCommitControlSetting_##controlgroup
 
 //#define TEST_CACHED_CONTROL 1
 #ifdef TEST_CACHED_CONTROL

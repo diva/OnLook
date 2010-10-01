@@ -93,6 +93,7 @@ private:
 	BOOL mFetchInventoryOnLogin;
 	BOOL mEnableLLWind;
 	BOOL mEnableClouds;
+	BOOL mEnableClassicClouds;
 	BOOL mSpeedRez;
 	U32 mSpeedRezInterval;
 	//Command Line ------------------------------------------------------------------------
@@ -115,7 +116,7 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 	childSetCommitCallback("system_folder_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
 	childSetCommitCallback("enable_clouds", onCommitCheckBox, this);
-	mEnableClouds = gSavedSettings.getBOOL("CloudsEnabled");
+
 	refreshValues();
 	refresh();
 }
@@ -150,6 +151,11 @@ void LLPrefsAscentSysImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 		bool enabled = self->childGetValue("system_folder_check").asBoolean();
 		self->childSetEnabled("temp_in_system_check", enabled);
 	}
+	else if (ctrl->getName() == "enable_clouds")
+	{
+		bool enabled = self->childGetValue("enable_clouds").asBoolean();
+		self->childSetEnabled("enable_classic_clouds", enabled);
+	}
 }
 
 void LLPrefsAscentSysImpl::refreshValues()
@@ -181,11 +187,10 @@ void LLPrefsAscentSysImpl::refreshValues()
 	//Performance -------------------------------------------------------------------------
 	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
-	if(mEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
-	{
-		mEnableClouds			= gSavedSettings.getBOOL("CloudsEnabled");
-		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
-	}
+
+	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
+		mEnableClassicClouds	= gSavedSettings.getBOOL("SkyUseClassicClouds");
+
 	mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 
@@ -290,6 +295,7 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
+		childSetValue("enable_classic_clouds", mEnableClassicClouds);
 	gLLWindEnabled = mEnableLLWind;
 	childSetValue("speed_rez_check", mSpeedRez);
 		childSetEnabled("speed_rez_interval", mSpeedRez);
@@ -329,6 +335,7 @@ void LLPrefsAscentSysImpl::cancel()
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
+		childSetValue("enable_classic_clouds", mEnableClassicClouds);
 	childSetValue("speed_rez_check", mSpeedRez);
 	if (mSpeedRez)
 	{
@@ -348,11 +355,9 @@ void LLPrefsAscentSysImpl::cancel()
 	childSetValue("private_look_at_check", mPrivateLookAt);
 	childSetValue("revoke_perms_on_stand_up_check", mRevokePermsOnStandUp);
 	
-	if(mEnableClouds != gSavedSettings.getBOOL("CloudsEnabled"))
-	{
-		gSavedSettings.setBOOL("CloudsEnabled", mEnableClouds);
-		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLOUDS);
-	}
+	childSetValue("enable_clouds", mEnableClouds);
+	childSetValue("enable_classic_clouds", mEnableClassicClouds);
+
 	gLLWindEnabled = mEnableLLWind;
 }
 
@@ -460,6 +465,7 @@ void LLPrefsAscentSysImpl::apply()
 	gSavedSettings.setBOOL("FetchInventoryOnLogin",		childGetValue("fetch_inventory_on_login_check"));
 	gSavedSettings.setBOOL("WindEnabled",				childGetValue("enable_wind"));
 	gSavedSettings.setBOOL("CloudsEnabled",				childGetValue("enable_clouds"));
+	gSavedSettings.setBOOL("SkyUseClassicClouds",		childGetValue("enable_classic_clouds"));
 	gSavedSettings.setBOOL("SpeedRez",					childGetValue("speed_rez_check"));
 	gSavedSettings.setU32("SpeedRezInterval",			childGetValue("speed_rez_interval").asReal());
 	

@@ -48,5 +48,6 @@ std::string llformat(const char *fmt, ...)
 	vsnprintf(tstr, 1024, fmt, va);	/* Flawfinder: ignore */
 #endif
 	va_end(va);
+	tstr[1023] = '\0';
 	return std::string(tstr);
 }

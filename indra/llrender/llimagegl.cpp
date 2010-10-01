@@ -1563,49 +1563,46 @@ void LLImageGL::setNoDelete()
 //----------------------------------------------------------------------------
 void LLImageGL::updatePickMask(S32 width, S32 height, const U8* data_in)
 {
-	if (mFormatType != GL_UNSIGNED_BYTE ||
-		mFormatPrimary != GL_RGBA)
-	{
-		//cannot generate a pick mask for this texture
-		delete [] mPickMask;
-		mPickMask = NULL;
-		mPickMaskSize = 0;
-		return;
-	}
-
-	U32 pick_width = width/2;
-	U32 pick_height = height/2;
-
-	mPickMaskSize = llmax(pick_width, (U32) 1) * llmax(pick_height, (U32) 1);
-
-	mPickMaskSize = mPickMaskSize/8 + 1;
-
-	delete[] mPickMask;
-	mPickMask = new U8[mPickMaskSize];
-
-	memset(mPickMask, 0, sizeof(U8) * mPickMaskSize);
-
-	U32 pick_bit = 0;
+	delete [] mPickMask; //Always happens regardless.
+	mPickMask = NULL;
+	mPickMaskSize = 0;
 	
-	for (S32 y = 0; y < height; y += 2)
+	if (!(mFormatType != GL_UNSIGNED_BYTE ||
+		mFormatPrimary != GL_RGBA)) //can only generate a pick mask for this sort of texture
 	{
-		for (S32 x = 0; x < width; x += 2)
+		U32 pick_width = width/2;
+		U32 pick_height = height/2;
+
+		mPickMaskSize = llmax(pick_width, (U32) 1) * llmax(pick_height, (U32) 1);
+
+		mPickMaskSize = mPickMaskSize/8 + 1;
+
+		mPickMask = new U8[mPickMaskSize];
+
+		memset(mPickMask, 0, sizeof(U8) * mPickMaskSize);
+
+		U32 pick_bit = 0;
+	
+		for (S32 y = 0; y < height; y += 2)
 		{
-			U8 alpha = data_in[(y*width+x)*4+3];
-
-			if (alpha > 32)
+			for (S32 x = 0; x < width; x += 2)
 			{
-				U32 pick_idx = pick_bit/8;
-				U32 pick_offset = pick_bit%8;
-				if (pick_idx >= mPickMaskSize)
-				{
-					llerrs << "WTF?" << llendl;
-				}
+				U8 alpha = data_in[(y*width+x)*4+3];
 
-				mPickMask[pick_idx] |= 1 << pick_offset;
-			}
+				if (alpha > 32)
+				{
+					U32 pick_idx = pick_bit/8;
+					U32 pick_offset = pick_bit%8;
+					if (pick_idx >= mPickMaskSize)
+					{
+						llerrs << "WTF?" << llendl;
+					}
+
+					mPickMask[pick_idx] |= 1 << pick_offset;
+				}
 			
-			++pick_bit;
+				++pick_bit;
+			}
 		}
 	}
 }

@@ -38,7 +38,7 @@
 #include "lluictrl.h"
 
 #include "llviewercontrol.h"
-
+/*
 void LLSavedSettingsGlue::setBOOL(LLUICtrl* ctrl, void* data)
 {
 	const char* name = (const char*)data;
@@ -73,12 +73,20 @@ void LLSavedSettingsGlue::setString(LLUICtrl* ctrl, void* data)
 	LLSD value = ctrl->getValue();
 	gSavedSettings.setString(name, value.asString());
 }
+*/
 
-
+/*
 //Begin Ascent SavedSettings/PerAccountSettings handling
 
 //Get
-BOOL LLSavedSettingsGlue::getCOABOOL(std::string name)
+LLControlVariable *gCOASavedSettings->getControl(const std::string &name)
+{
+	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
+		return gSavedSettings.getControl(name);
+	else
+		return gSavedPerAccountSettings.getControl(name);
+}
+BOOL gCOASavedSettings->getBOOL(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getBOOL(name);
@@ -86,7 +94,7 @@ BOOL LLSavedSettingsGlue::getCOABOOL(std::string name)
 		return gSavedPerAccountSettings.getBOOL(name);
 }
 
-S32 LLSavedSettingsGlue::getCOAS32(std::string name)
+S32 gCOASavedSettings->getS32(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getS32(name);
@@ -94,7 +102,7 @@ S32 LLSavedSettingsGlue::getCOAS32(std::string name)
 		return gSavedPerAccountSettings.getS32(name);
 }
 
-F32 LLSavedSettingsGlue::getCOAF32(std::string name)
+F32 gCOASavedSettings->getF32(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getF32(name);
@@ -102,7 +110,7 @@ F32 LLSavedSettingsGlue::getCOAF32(std::string name)
 		return gSavedPerAccountSettings.getF32(name);
 }
 
-U32 LLSavedSettingsGlue::getCOAU32(std::string name)
+U32 gCOASavedSettings->getU32(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getU32(name);
@@ -110,7 +118,7 @@ U32 LLSavedSettingsGlue::getCOAU32(std::string name)
 		return gSavedPerAccountSettings.getU32(name);
 }
 
-std::string LLSavedSettingsGlue::getCOAString(std::string name)
+std::string gCOASavedSettings->getString(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getString(name);
@@ -118,7 +126,7 @@ std::string LLSavedSettingsGlue::getCOAString(std::string name)
 		return gSavedPerAccountSettings.getString(name);
 }
 
-LLColor4 LLSavedSettingsGlue::getCOAColor4(std::string name)
+LLColor4 gCOASavedSettings->getColor4(const std::string &name)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		return gSavedSettings.getColor4(name);
@@ -128,7 +136,7 @@ LLColor4 LLSavedSettingsGlue::getCOAColor4(std::string name)
 
 //Set
 
-void LLSavedSettingsGlue::setCOABOOL(std::string name, BOOL value)
+void gCOASavedSettings->setBOOL(const std::string &name, BOOL value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setBOOL(name, value);
@@ -136,7 +144,7 @@ void LLSavedSettingsGlue::setCOABOOL(std::string name, BOOL value)
 		gSavedPerAccountSettings.setBOOL(name, value);
 }
 
-void LLSavedSettingsGlue::setCOAS32(std::string name, S32 value)
+void gCOASavedSettings->setS32(const std::string &name, S32 value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setS32(name, value);
@@ -144,7 +152,7 @@ void LLSavedSettingsGlue::setCOAS32(std::string name, S32 value)
 		gSavedPerAccountSettings.setS32(name, value);
 }
 
-void LLSavedSettingsGlue::setCOAF32(std::string name, F32 value)
+void gCOASavedSettings->setF32(const std::string &name, F32 value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setF32(name, value);
@@ -152,7 +160,7 @@ void LLSavedSettingsGlue::setCOAF32(std::string name, F32 value)
 		gSavedPerAccountSettings.setF32(name, value);
 }
 
-void LLSavedSettingsGlue::setCOAU32(std::string name, U32 value)
+void gCOASavedSettings->setU32(const std::string &name, U32 value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setU32(name, value);
@@ -160,7 +168,7 @@ void LLSavedSettingsGlue::setCOAU32(std::string name, U32 value)
 		gSavedPerAccountSettings.setU32(name, value);
 }
 
-void LLSavedSettingsGlue::setCOAString(std::string name, std::string value)
+void gCOASavedSettings->setString(const std::string &name, std::string value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setString(name, value);
@@ -168,10 +176,10 @@ void LLSavedSettingsGlue::setCOAString(std::string name, std::string value)
 		gSavedPerAccountSettings.setString(name, value);
 }
 
-void LLSavedSettingsGlue::setCOAColor4(std::string name, LLColor4 value)
+void gCOASavedSettings->setColor4(const std::string &name, LLColor4 value)
 {
 	if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 		gSavedSettings.setColor4(name, value);
 	else
 		gSavedPerAccountSettings.setColor4(name, value);
-}
+}*/

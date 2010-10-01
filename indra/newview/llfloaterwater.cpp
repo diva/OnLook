@@ -54,7 +54,6 @@
 #include "llviewerdisplay.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
-#include "llsavedsettingsglue.h"
 
 #include "llwaterparamset.h"
 #include "llwaterparammanager.h"
