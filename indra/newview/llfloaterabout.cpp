@@ -219,6 +219,18 @@ LLFloaterAbout::LLFloaterAbout()
 	support.append( (const char*) glGetString(GL_VERSION) );
 	support.append("\n");
 
+	std::string sse_ver = "None";
+#if _M_IX86_FP > 0 //Windows
+	sse_ver = llformat("SSE%i", _M_IX86_FP );
+#elif defined(__SSE2__) //GCC
+	sse_ver = "SSE2";	
+#elif defined(__SSE__) //GCC
+	sse_ver = "SSE";
+#endif
+	support.append("SSE Version: ");
+	support.append(sse_ver);
+	support.append("\n");
+
 	support.append("\n");
 
 	support.append("libcurl Version: ");

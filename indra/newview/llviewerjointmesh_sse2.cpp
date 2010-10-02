@@ -59,7 +59,7 @@
 #include "v3math.h"
 
 
-#if LL_VECTORIZE
+#if LL_VECTORIZE && (_M_IX86_FP > 1 || defined(__SSE2__) ) //These intrinsics are only valid with sse2 or higher.
 
 
 inline void matrix_translate(LLV4Matrix4& m, const LLMatrix4* w, const LLVector3& j)
@@ -116,12 +116,20 @@ void LLViewerJointMesh::updateGeometrySSE2(LLFace *face, LLPolyMesh *mesh)
 	
 	//setBuffer(0) called in LLVOAvatar::renderSkinned
 }
+bool LLViewerJointMesh::supportsSSE2()
+{
+	return true;
+}
 
 #else
 
 void LLViewerJointMesh::updateGeometrySSE2(LLFace *face, LLPolyMesh *mesh)
 {
 	LLViewerJointMesh::updateGeometryVectorized(face, mesh);
+}
+bool LLViewerJointMesh::supportsSSE2()
+{
+	return false;
 }
 
 #endif

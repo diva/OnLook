@@ -70,7 +70,7 @@ def quote(opts):
 class PlatformSetup(object):
     generator = None
     build_types = {}
-    for t in ('Debug', 'Release', 'RelWithDebInfo'):
+    for t in ('Debug', 'Release', 'ReleaseSSE2', 'RelWithDebInfo'):
         build_types[t.lower()] = t
 
     build_type = build_types['relwithdebinfo']
@@ -725,7 +725,7 @@ Options:
        --standalone     build standalone, without Linden prebuild libraries
        --unattended     build unattended, do not invoke any tools requiring
                         a human response
-  -t | --type=NAME      build type ("Debug", "Release", or "RelWithDebInfo")
+  -t | --type=NAME      build type ("Debug", "Release", "ReleaseSSE2", or "RelWithDebInfo")
   -m32 | -m64           build architecture (32-bit or 64-bit)
   -N | --no-distcc      disable use of distcc
   -G | --generator=NAME generator name

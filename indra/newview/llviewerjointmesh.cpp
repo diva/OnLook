@@ -865,12 +865,18 @@ void LLViewerJointMesh::updateVectorize()
 		{
 			case 2:
 				sUpdateGeometryFunc = &updateGeometrySSE2;
+				if(!supportsSSE2())
+					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE2)" << LL_ENDL ;
 				break;
 			case 1:
 				sUpdateGeometryFunc = &updateGeometrySSE;
+				if(!supportsSSE())
+					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE)" << LL_ENDL ;
 				break;
 			default:
 				sUpdateGeometryFunc = &updateGeometryVectorized;
+				if(!gSysCPU.hasAltivec())
+					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (Altivec)" << LL_ENDL ;
 				break;
 		}
 	}
