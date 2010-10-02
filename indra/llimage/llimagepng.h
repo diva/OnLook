@@ -49,7 +49,6 @@ public:
 	/*virtual*/ BOOL encode(const LLImageRaw* raw_image, F32 encode_time);
 
 private:
-	U8* mTmpWriteBuffer;
 };
 
 #endif

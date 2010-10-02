@@ -4472,6 +4472,25 @@ BOOL LLPipeline::toggleRenderTypeControlNegated(void* data)
 }
 
 //static
+BOOL LLPipeline::hasRenderPairedTypeControl(void* data)
+{
+	U32 typeflags = (U32)(intptr_t)data;
+	return (gPipeline.mRenderTypeMask & typeflags);
+}
+
+//static
+void LLPipeline::toggleRenderPairedTypeControl(void *data)
+{
+	U32 typeflags = (U32)(intptr_t)data;
+	if(typeflags & RENDER_TYPE_WATER) 
+		typeflags |= RENDER_TYPE_VOIDWATER;
+	if( gPipeline.mRenderTypeMask & typeflags)
+		gPipeline.mRenderTypeMask &= ~typeflags;
+	else
+		gPipeline.mRenderTypeMask |= typeflags;
+}
+
+//static
 void LLPipeline::toggleRenderDebug(void* data)
 {
 	U32 bit = (U32)(intptr_t)data;
@@ -5752,7 +5771,8 @@ void LLPipeline::renderDeferredLighting()
 		U32 render_mask = mRenderTypeMask;
 		mRenderTypeMask = mRenderTypeMask &
 		                  ((1 << LLPipeline::RENDER_TYPE_SKY) |
-		                   (1 << LLPipeline::RENDER_TYPE_CLOUDS) |
+		                   (1 << LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+						   (1 << LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS) |
 		                   (1 << LLPipeline::RENDER_TYPE_WL_SKY) |
 		                   (1 << LLPipeline::RENDER_TYPE_ALPHA) |
 		                   (1 << LLPipeline::RENDER_TYPE_AVATAR) |
@@ -5909,7 +5929,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 				updateCull(camera, result);
 				stateSort(camera, result);
 				mRenderTypeMask = tmp & ((1 << LLPipeline::RENDER_TYPE_SKY) |
-									(1 << LLPipeline::RENDER_TYPE_CLOUDS) |
+									(1 << LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+									(1 << LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS) |
 									(1 << LLPipeline::RENDER_TYPE_WL_SKY));
 				renderGeom(camera, TRUE);
 				mRenderTypeMask = tmp;
@@ -5921,7 +5942,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 				                     (1<<LLPipeline::RENDER_TYPE_VOIDWATER) |
 				                     (1<<LLPipeline::RENDER_TYPE_GROUND) |
 				                     (1<<LLPipeline::RENDER_TYPE_SKY) |
-				                     (1<<LLPipeline::RENDER_TYPE_CLOUDS));
+				                     (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+									 (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS));
 
 				if (gSavedSettings.getBOOL("RenderWaterReflections"))
 				{ //mask out selected geometry based on reflection detail
@@ -5974,7 +5996,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			{
 				mRenderTypeMask &=	~((1<<LLPipeline::RENDER_TYPE_GROUND) |
 									  (1<<LLPipeline::RENDER_TYPE_SKY) |
-									  (1<<LLPipeline::RENDER_TYPE_CLOUDS) |
+									  (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+									  (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS) |
 									  (1<<LLPipeline::RENDER_TYPE_WL_SKY));		
 			}
 			LLViewerCamera::updateFrustumPlanes(camera);

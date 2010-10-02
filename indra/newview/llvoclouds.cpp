@@ -80,7 +80,7 @@ BOOL LLVOClouds::isActive() const
 
 BOOL LLVOClouds::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
-	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLOUDS)))
+	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
 	{
 		return TRUE;
 	}
@@ -110,7 +110,7 @@ LLDrawable* LLVOClouds::createDrawable(LLPipeline *pipeline)
 {
 	pipeline->allocDrawable(this);
 	mDrawable->setLit(FALSE);
-	mDrawable->setRenderType(LLPipeline::RENDER_TYPE_CLOUDS);
+	mDrawable->setRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 
 	return mDrawable;
 }
@@ -118,7 +118,7 @@ LLDrawable* LLVOClouds::createDrawable(LLPipeline *pipeline)
 BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_CLOUDS);
-	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLOUDS)))
+	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
 	{
 		return TRUE;
 	}
@@ -286,7 +286,7 @@ void LLVOClouds::updateDrawable(BOOL force_damped)
 
 LLCloudPartition::LLCloudPartition()
 {
-	mDrawableType = LLPipeline::RENDER_TYPE_CLOUDS;
+	mDrawableType = LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS;
 	mPartitionType = LLViewerRegion::PARTITION_CLOUD;
 }
 

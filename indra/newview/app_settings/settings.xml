@@ -84,6 +84,17 @@
 		<key>Value</key>
 		<real>0</real>
 	</map>
+	<key>AscentUseStatusColors</key>
+	<map>
+		<key>Comment</key>
+		<string>Show special colors for statuses like Friend, Linden, so on</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<real>0</real>
+	</map>
 	<key>AscentAvatarXModifier</key>
 	<map>
 		<key>Comment</key>
@@ -500,7 +511,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>0</integer>
+      <integer>1</integer>
     </map>
 	<key>OptionRotateCamAfterLocalTP</key>
     <map>

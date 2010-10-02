@@ -1428,14 +1428,14 @@ if (DARWIN)
     ${VIEWER_BINARY_NAME}
     PROPERTIES
     OUTPUT_NAME "${product}"
-    MACOSX_BUNDLE_INFO_STRING "info string - localize me"
+    MACOSX_BUNDLE_INFO_STRING "A stable third-party Second Life viewer."
     MACOSX_BUNDLE_ICON_FILE "${VIEWER_BRANDING_ID}.icns"
     MACOSX_BUNDLE_GUI_IDENTIFIER "${VIEWER_BRANDING_NAME}"
-    MACOSX_BUNDLE_LONG_VERSION_STRING "ververver"
+    MACOSX_BUNDLE_LONG_VERSION_STRING "${viewer_VERSION}"
     MACOSX_BUNDLE_BUNDLE_NAME "${VIEWER_BRANDING_NAME}"
-    MACOSX_BUNDLE_SHORT_VERSION_STRING "asdf"
-    MACOSX_BUNDLE_BUNDLE_VERSION "asdf"
-    MACOSX_BUNDLE_COPYRIGHT "copyright linden lab 2007 - localize me and run me through a legal wringer"
+    MACOSX_BUNDLE_SHORT_VERSION_STRING "${viewer_VERSION}"
+    MACOSX_BUNDLE_BUNDLE_VERSION "${viewer_VERSION}"
+    MACOSX_BUNDLE_COPYRIGHT "Copyright 2010 Balseraph Software Group"
     )
 
   add_custom_command(

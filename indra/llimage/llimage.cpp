@@ -139,7 +139,8 @@ BOOL LLImageBase::sSizeOverride = FALSE;
 // virtual
 void LLImageBase::deleteData()
 {
-	delete[] mData;
+	if(mData)
+		free(mData);//delete[] mData;
 	mData = NULL;
 	mDataSize = 0;
 }
@@ -166,14 +167,17 @@ U8* LLImageBase::allocateData(S32 size)
 	{
 		deleteData(); // virtual
 		mBadBufferAllocation = FALSE ;
-		mData = new U8[size];
-		if (!mData)
+		U8 *data = (U8 *)realloc(mData,sizeof(U8)*size);//new U8[size];
+		if (!data)
 		{
+			if(mData)
+				free(mData);
 			llwarns << "allocate image data: " << size << llendl;
 			size = 0 ;
 			mWidth = mHeight = 0 ;
 			mBadBufferAllocation = TRUE ;
 		}
+		mData = data;
 		mDataSize = size;
 	}
 
@@ -184,21 +188,15 @@ U8* LLImageBase::allocateData(S32 size)
 U8* LLImageBase::reallocateData(S32 size)
 {
 	LLMemType mt1((LLMemType::EMemType)mMemType);
-	U8 *new_datap = new U8[size];
-	if (!new_datap)
+	U8 *data = (U8 *)realloc(mData,sizeof(U8)*size);
+	if(data)
 	{
+		mData = data;
+		mDataSize = size;
+	}
+	else
 		llwarns << "Out of memory in LLImageBase::reallocateData" << llendl;
-		return 0;
-	}
-	if (mData)
-	{
-		S32 bytes = llmin(mDataSize, size);
-		memcpy(new_datap, mData, bytes);	/* Flawfinder: ignore */
-		delete[] mData;
-	}
-	mData = new_datap;
-	mDataSize = size;
-	return mData;
+	return data;
 }
 
 const U8* LLImageBase::getData() const	
@@ -1507,6 +1505,7 @@ void LLImageFormatted::appendData(U8 *data, S32 size)
 			S32 newsize = cursize + size;
 			reallocateData(newsize);
 			memcpy(getData() + cursize, data, size);
+			delete[] data; //Fixing leak from CommentCacheReadResponder
 		}
 	}
 }

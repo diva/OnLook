@@ -45,7 +45,6 @@
 #include "v4color.h"
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
-#include "llsavedsettingsglue.h"
 #include "llwind.h"
 #include "llviewernetwork.h"
 #include "pipeline.h"
@@ -68,6 +67,9 @@ private:
 	void refreshValues();
 	//General
 	BOOL mUseAccountSettings;
+	BOOL mShowTPScreen;
+	BOOL mPlayTPSound;
+	BOOL mShowLogScreens;
 	//Colors
 	BOOL mShowSelfClientTag;
 	BOOL mShowSelfClientTagColor;
@@ -91,6 +93,7 @@ LLPrefsAscentVanImpl::LLPrefsAscentVanImpl()
 	childSetCommitCallback("use_account_settings_check", onCommitCheckBox, this);
 	childSetCommitCallback("customize_own_tag_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_friend_tag_check", onCommitCheckBox, this);
+	childSetCommitCallback("use_status_check", onCommitCheckBox, this);
 
 	childSetCommitCallback("custom_tag_color_swatch", onCommitColor, this);
 	childSetCommitCallback("effect_color_swatch", onCommitColor, this);
@@ -120,8 +123,8 @@ void LLPrefsAscentVanImpl::onCommitColor(LLUICtrl* ctrl, void* user_data)
 	{
 		
 		llinfos << "Recreating color message for tag update." << llendl;
-		LLSavedSettingsGlue::setCOAString("AscentCustomTagLabel",		self->childGetValue("custom_tag_label_box"));
-		LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor",		self->childGetValue("custom_tag_color_swatch"));
+		gCOASavedSettings->setString("AscentCustomTagLabel",		self->childGetValue("custom_tag_label_box"));
+		gCOASavedSettings->setColor4("AscentCustomTagColor",		self->childGetValue("custom_tag_color_swatch"));
 		gAgent.sendAgentSetAppearance();
 		gAgent.resetClientTag();
 	}
@@ -163,7 +166,7 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 		self->refresh();
 	}
 
-	if (ctrl->getName() == "show_friend_tag_check")
+	if ((ctrl->getName() == "show_friend_tag_check")||(ctrl->getName() == "use_status_check"))
 	{
 		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
 		iter != LLCharacter::sInstances.end(); ++iter)
@@ -178,7 +181,7 @@ void LLPrefsAscentVanImpl::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	}
 
 	BOOL showCustomOptions;
-	showCustomOptions = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
+	showCustomOptions = gCOASavedSettings->getBOOL("AscentUseCustomTag");
 	self->childSetValue("customize_own_tag_check", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_text", showCustomOptions);
 	self->childSetEnabled("custom_tag_label_box", showCustomOptions);
@@ -192,29 +195,30 @@ void LLPrefsAscentVanImpl::refreshValues()
 {
 	//General
 	mUseAccountSettings			= gSavedSettings.getBOOL("AscentStoreSettingsPerAccount");
+	mShowTPScreen				= !gSavedSettings.getBOOL("AscentDisableTeleportScreens");
+	mPlayTPSound				= gSavedSettings.getBOOL("OptionPlayTpSound");
+	mShowLogScreens				= !gSavedSettings.getBOOL("AscentDisableLogoutScreens");
 	
 	//Colors
 	mShowSelfClientTag			= gSavedSettings.getBOOL("AscentShowSelfTag");
 	mShowSelfClientTagColor		= gSavedSettings.getBOOL("AscentShowSelfTagColor");	
 	mCustomTagOn				= gSavedSettings.getBOOL("AscentUseCustomTag");
 	
-	mSelectedClient			= LLSavedSettingsGlue::getCOAU32("AscentReportClientIndex");
-	mEffectColor			= LLSavedSettingsGlue::getCOAColor4("EffectColor");
-	
-	BOOL use_custom = LLSavedSettingsGlue::getCOABOOL("AscentUseCustomTag");
+	mSelectedClient			= gCOASavedSettings->getU32("AscentReportClientIndex");
+	mEffectColor			= gCOASavedSettings->getColor4("EffectColor");	
 
-	childSetEnabled("custom_tag_label_text", use_custom);
-	childSetEnabled("custom_tag_label_box", use_custom);
-	childSetEnabled("custom_tag_color_text", use_custom);
-	childSetEnabled("custom_tag_color_swatch", use_custom);
+	childSetEnabled("custom_tag_label_text",	mCustomTagOn);
+	childSetEnabled("custom_tag_label_box",		mCustomTagOn);
+	childSetEnabled("custom_tag_color_text",	mCustomTagOn);
+	childSetEnabled("custom_tag_color_swatch",	mCustomTagOn);
 
-	mCustomTagLabel			= LLSavedSettingsGlue::getCOAString("AscentCustomTagLabel");
-	mCustomTagColor			= LLSavedSettingsGlue::getCOAColor4("AscentCustomTagColor");
-	mFriendColor			= LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
-	mLindenColor			= LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
-	mMutedColor				= LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
-	mEMColor				= LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
-	mCustomColor			= LLSavedSettingsGlue::getCOAColor4("MoyMiniMapCustomColor");
+	mCustomTagLabel			= gCOASavedSettings->getString("AscentCustomTagLabel");
+	mCustomTagColor			= gCOASavedSettings->getColor4("AscentCustomTagColor");
+	mFriendColor			= gCOASavedSettings->getColor4("AscentFriendColor");
+	mLindenColor			= gCOASavedSettings->getColor4("AscentLindenColor");
+	mMutedColor				= gCOASavedSettings->getColor4("AscentMutedColor");
+	mEMColor				= gCOASavedSettings->getColor4("AscentEstateOwnerColor");
+	mCustomColor			= gCOASavedSettings->getColor4("MoyMiniMapCustomColor");
 }
 
 void LLPrefsAscentVanImpl::refresh()
@@ -222,6 +226,9 @@ void LLPrefsAscentVanImpl::refresh()
 	refreshValues();
 	//General --------------------------------------------------------------------------------
 	childSetValue("use_account_settings_check", mUseAccountSettings);
+	childSetValue("disable_tp_screen_check",	mShowTPScreen);
+	childSetValue("tp_sound_check",				mPlayTPSound);
+	childSetValue("disable_logout_screen_check", mShowLogScreens);
 
 	//Colors ---------------------------------------------------------------------------------
 	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
@@ -239,23 +246,23 @@ void LLPrefsAscentVanImpl::refresh()
 	getChild<LLColorSwatchCtrl>("muted_color_swatch")->set(mMutedColor);
 	getChild<LLColorSwatchCtrl>("em_color_swatch")->set(mEMColor);
 	getChild<LLColorSwatchCtrl>("custom_color_swatch")->set(mCustomColor);
-	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
+	gCOASavedSettings->setColor4("EffectColor", LLColor4::white);
+	gCOASavedSettings->setColor4("EffectColor", mEffectColor);
 	
-	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", mFriendColor);
+	gCOASavedSettings->setColor4("AscentFriendColor", LLColor4::white);
+	gCOASavedSettings->setColor4("AscentFriendColor", mFriendColor);
 
-	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor", mLindenColor);
+	gCOASavedSettings->setColor4("AscentLindenColor", LLColor4::white);
+	gCOASavedSettings->setColor4("AscentLindenColor", mLindenColor);
 
-	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor", mMutedColor);
+	gCOASavedSettings->setColor4("AscentMutedColor", LLColor4::white);
+	gCOASavedSettings->setColor4("AscentMutedColor", mMutedColor);
 
-	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", mEMColor);
+	gCOASavedSettings->setColor4("AscentEstateOwnerColor", LLColor4::white);
+	gCOASavedSettings->setColor4("AscentEstateOwnerColor", mEMColor);
 
-	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", mCustomColor);
+	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", LLColor4::white);
+	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", mCustomColor);
 	gAgent.resetClientTag();
 }
 
@@ -263,19 +270,22 @@ void LLPrefsAscentVanImpl::cancel()
 {
 	//General --------------------------------------------------------------------------------
 	childSetValue("use_account_settings_check", mUseAccountSettings);
-	
-	LLSavedSettingsGlue::setCOAColor4("EffectColor", LLColor4::white);
-	LLSavedSettingsGlue::setCOAColor4("EffectColor", mEffectColor);
-	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", LLColor4::yellow);
-	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor", mFriendColor);
-	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor", LLColor4::yellow);
-	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor", mLindenColor);
-	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor", LLColor4::yellow);
-	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor", mMutedColor);
-	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", LLColor4::yellow);
-	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor", mEMColor);
-	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", LLColor4::yellow);
-	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor", mCustomColor);
+	childSetValue("disable_tp_screen_check",	mShowTPScreen);
+	childSetValue("tp_sound_check",				mPlayTPSound);
+	childSetValue("disable_logout_screen_check", mShowLogScreens);
+
+	gCOASavedSettings->setColor4("EffectColor", LLColor4::white);
+	gCOASavedSettings->setColor4("EffectColor", mEffectColor);
+	gCOASavedSettings->setColor4("AscentFriendColor", LLColor4::yellow);
+	gCOASavedSettings->setColor4("AscentFriendColor", mFriendColor);
+	gCOASavedSettings->setColor4("AscentLindenColor", LLColor4::yellow);
+	gCOASavedSettings->setColor4("AscentLindenColor", mLindenColor);
+	gCOASavedSettings->setColor4("AscentMutedColor", LLColor4::yellow);
+	gCOASavedSettings->setColor4("AscentMutedColor", mMutedColor);
+	gCOASavedSettings->setColor4("AscentEstateOwnerColor", LLColor4::yellow);
+	gCOASavedSettings->setColor4("AscentEstateOwnerColor", mEMColor);
+	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", LLColor4::yellow);
+	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", mCustomColor);
 }
 
 void LLPrefsAscentVanImpl::apply()
@@ -283,7 +293,9 @@ void LLPrefsAscentVanImpl::apply()
 	std::string client_uuid;
 	U32 client_index;
 	//General -----------------------------------------------------------------------------
-
+	gSavedSettings.setBOOL("AscentDisableTeleportScreens",	!childGetValue("disable_tp_screen_check"));
+	gSavedSettings.setBOOL("OptionPlayTpSound",				childGetValue("tp_sound_check"));
+	gSavedSettings.setBOOL("AscentDisableLogoutScreens",	!childGetValue("disable_logout_screen_check"));
 
 	//Colors ------------------------------------------------------------------------------
 	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
@@ -294,8 +306,8 @@ void LLPrefsAscentVanImpl::apply()
 		if (client_index != mSelectedClient)
 		{
 			client_uuid = combo->getSelectedValue().asString();
-			LLSavedSettingsGlue::setCOAString("AscentReportClientUUID",  client_uuid);
-			LLSavedSettingsGlue::setCOAU32("AscentReportClientIndex",  client_index);
+			gCOASavedSettings->setString("AscentReportClientUUID",  client_uuid);
+			gCOASavedSettings->setU32("AscentReportClientIndex",  client_index);
 			LLVOAvatar* avatar = gAgent.getAvatarObject();
 			if (!avatar) return;
 
@@ -307,15 +319,15 @@ void LLPrefsAscentVanImpl::apply()
 	gSavedSettings.setBOOL("AscentShowSelfTag",			childGetValue("show_self_tag_check"));
 	gSavedSettings.setBOOL("AscentShowSelfTagColor",	childGetValue("show_self_tag_color_check"));
 
-	LLSavedSettingsGlue::setCOAColor4("EffectColor",				childGetValue("effect_color_swatch"));
-	LLSavedSettingsGlue::setCOAColor4("AscentFriendColor",			childGetValue("friend_color_swatch"));
-	LLSavedSettingsGlue::setCOAColor4("AscentLindenColor",			childGetValue("linden_color_swatch"));
-	LLSavedSettingsGlue::setCOAColor4("AscentMutedColor",			childGetValue("muted_color_swatch"));
-	LLSavedSettingsGlue::setCOAColor4("AscentEstateOwnerColor",		childGetValue("em_color_swatch"));
-	LLSavedSettingsGlue::setCOAColor4("MoyMiniMapCustomColor",		childGetValue("custom_color_swatch"));
-	LLSavedSettingsGlue::setCOABOOL("AscentUseCustomTag",			childGetValue("customize_own_tag_check"));
-	LLSavedSettingsGlue::setCOAString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
-	LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor",		childGetValue("custom_tag_color_swatch"));
+	gCOASavedSettings->setColor4("EffectColor",				childGetValue("effect_color_swatch"));
+	gCOASavedSettings->setColor4("AscentFriendColor",			childGetValue("friend_color_swatch"));
+	gCOASavedSettings->setColor4("AscentLindenColor",			childGetValue("linden_color_swatch"));
+	gCOASavedSettings->setColor4("AscentMutedColor",			childGetValue("muted_color_swatch"));
+	gCOASavedSettings->setColor4("AscentEstateOwnerColor",		childGetValue("em_color_swatch"));
+	gCOASavedSettings->setColor4("MoyMiniMapCustomColor",		childGetValue("custom_color_swatch"));
+	gCOASavedSettings->setBOOL("AscentUseCustomTag",			childGetValue("customize_own_tag_check"));
+	gCOASavedSettings->setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
+	gCOASavedSettings->setColor4("AscentCustomTagColor",		childGetValue("custom_tag_color_swatch"));
 	
 	refreshValues();
 }

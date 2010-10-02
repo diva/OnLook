@@ -91,9 +91,12 @@ public:
 	/*virtual*/ BOOL	handleHover(S32 x, S32 y, MASK mask);
 	/*virtual*/ BOOL	handleDoubleClick(S32 x,S32 y,MASK mask);
 	/*virtual*/ BOOL	handleMiddleMouseDown(S32 x,S32 y,MASK mask);
+	/*virtual*/ BOOL	handleRightMouseDown( S32 x, S32 y, MASK mask );
 	/*virtual*/ BOOL	handleKeyHere(KEY key, MASK mask );
 	/*virtual*/ BOOL	handleUnicodeCharHere(llwchar uni_char);
 	/*virtual*/ void	onMouseCaptureLost();
+
+	virtual void insert(std::string what,S32 wher);
 
 	// LLEditMenuHandler overrides
 	virtual void	cut();
@@ -119,6 +122,11 @@ public:
 	virtual void	deselect();
 	virtual BOOL	canDeselect() const;
 
+	static void context_cut(void* data);
+	static void context_copy(void* data);
+	static void context_paste(void* data);
+	static void context_delete(void* data);
+	static void context_selectall(void* data);
 	// view overrides
 	virtual void	draw();
 	virtual void	reshape(S32 width,S32 height,BOOL called_from_parent=TRUE);
@@ -232,6 +240,7 @@ private:
 	void			removeChar();
 	void			addChar(const llwchar c);
 	void			setCursorAtLocalPos(S32 local_mouse_x);
+	S32				calculateCursorFromMouse(S32 local_mouse_x);
 	S32				findPixelNearestPos(S32 cursor_offset = 0) const;
 	void			reportBadKeystroke();
 	BOOL			handleSpecialKey(KEY key, MASK mask);
@@ -255,6 +264,7 @@ private:
 	virtual S32		getPreeditFontSize() const;
 
 protected:
+	LLHandle<LLView> mPopupMenuHandle;
 	LLUIString		mText;					// The string being edited.
 	std::string		mPrevText;				// Saved string for 'ESC' revert
 	LLUIString		mLabel;					// text label that is visible when no user text provided

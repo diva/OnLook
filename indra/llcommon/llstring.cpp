@@ -582,10 +582,16 @@ std::string utf8str_removeCRLF(const std::string& utf8str)
 	}
 	const char CR = 13;
 
+	S32 i = utf8str.find(CR);
+	if(i == std::string::npos)
+		return  utf8str; //Save us from a reserve call.
+
 	std::string out;
 	out.reserve(utf8str.length());
 	const S32 len = (S32)utf8str.length();
-	for( S32 i = 0; i < len; i++ )
+	if(i)
+		out.assign(utf8str,0,i); //Copy previous text to buffer
+	for( ++i; i < len; i++ )
 	{
 		if( utf8str[i] != CR )
 		{

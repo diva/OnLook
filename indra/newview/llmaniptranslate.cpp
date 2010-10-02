@@ -1663,7 +1663,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		glClipPlane(GL_CLIP_PLANE0, plane);
 
 		BOOL particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
-		BOOL clouds = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLOUDS);
+		BOOL clouds = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		
 		if (particles)
 		{
@@ -1671,7 +1671,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		}
 		if (clouds)
 		{
-			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLOUDS);
+			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
 		
 		//stencil in volumes
@@ -1695,7 +1695,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		}
 		if (clouds)
 		{
-			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLOUDS);
+			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
 
 		gGL.setColorMask(true, false);
