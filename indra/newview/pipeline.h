@@ -256,6 +256,8 @@ public:
 	static void toggleRenderDebugFeature(void* data);
 	static void toggleRenderTypeControl(void* data);
 	static BOOL toggleRenderTypeControlNegated(void* data);
+	static BOOL hasRenderPairedTypeControl(void* data);
+	static void toggleRenderPairedTypeControl(void* data);
 	static BOOL toggleRenderDebugControl(void* data);
 	static BOOL toggleRenderDebugFeatureControl(void* data);
 
@@ -323,7 +325,8 @@ public:
 		RENDER_TYPE_HUD = LLDrawPool::NUM_POOL_TYPES,
 		RENDER_TYPE_VOLUME,
 		RENDER_TYPE_PARTICLES,
-		RENDER_TYPE_CLOUDS,
+		RENDER_TYPE_WL_CLOUDS,
+		RENDER_TYPE_CLASSIC_CLOUDS,
 		RENDER_TYPE_HUD_PARTICLES
 	};
 

@@ -52,7 +52,6 @@
 #include "llframetimer.h"
 #include "lltracker.h"
 #include "llmenugl.h"
-#include "llsavedsettingsglue.h"
 #include "llsurface.h"
 #include "lltextbox.h"
 #include "lluictrlfactory.h"
@@ -361,10 +360,10 @@ void LLNetMap::draw()
 //		LLColor4 mapcolor = gAvatarMapColor;
 
 		LLColor4 standard_color = gColors.getColor( "MapAvatar" );
-		LLColor4 friend_color = LLSavedSettingsGlue::getCOAColor4("AscentFriendColor");
-		LLColor4 em_color = LLSavedSettingsGlue::getCOAColor4("AscentEstateOwnerColor");
-		LLColor4 linden_color = LLSavedSettingsGlue::getCOAColor4("AscentLindenColor");
-		LLColor4 muted_color = LLSavedSettingsGlue::getCOAColor4("AscentMutedColor");
+		LLColor4 friend_color = gCOASavedSettings->getColor4("AscentFriendColor");
+		LLColor4 em_color = gCOASavedSettings->getColor4("AscentEstateOwnerColor");
+		LLColor4 linden_color = gCOASavedSettings->getColor4("AscentLindenColor");
+		LLColor4 muted_color = gCOASavedSettings->getColor4("AscentMutedColor");
 
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLVector3d> positions;

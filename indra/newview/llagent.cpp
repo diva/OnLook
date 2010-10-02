@@ -95,7 +95,6 @@
 #include "llnotify.h"
 #include "llprimitive.h" //For new client id method -HgB
 #include "llquantize.h"
-#include "llsavedsettingsglue.h" //For Client-Or-Account settings
 #include "llsdutil.h"
 #include "llselectmgr.h"
 #include "llsky.h"
@@ -475,7 +474,7 @@ void LLAgent::init()
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
-	mEffectColor = LLSavedSettingsGlue::getCOAColor4("EffectColor");
+	mEffectColor = gCOASavedSettings->getColor4("EffectColor");
 	
 	mInitialized = TRUE;
 }

@@ -44,8 +44,7 @@
 
 #include "llagent.h"
 #include "llcombobox.h"
-#include "llnotify.h"
-#include "llsavedsettingsglue.h"
+#include "llnotify.h"	
 #include "llviewerimagelist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
@@ -81,7 +80,7 @@ LLFloaterAuction::LLFloaterAuction() :
 	childSetValue("fence_check",
 		LLSD( gSavedSettings.getBOOL("AuctionShowFence") ) );
 	childSetCommitCallback("fence_check",
-		LLSavedSettingsGlue::setBOOL, (void*)"AuctionShowFence");
+		onCommitControlSetting(gSavedSettings), (void*)"AuctionShowFence");
 
 	childSetAction("snapshot_btn", onClickSnapshot, this);
 	childSetAction("ok_btn", onClickOK, this);

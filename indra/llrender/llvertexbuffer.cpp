@@ -217,7 +217,7 @@ void LLVertexBuffer::drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indi
 		llerrs << "Wrong vertex buffer bound." << llendl;
 	}
 
-	if (mode > LLRender::NUM_MODES)
+	if (mode >= LLRender::NUM_MODES)
 	{
 		llerrs << "Invalid draw mode: " << mode << llendl;
 		return;
@@ -247,7 +247,7 @@ void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
 		llerrs << "Wrong vertex buffer bound." << llendl;
 	}
 
-	if (mode > LLRender::NUM_MODES)
+	if (mode >= LLRender::NUM_MODES)
 	{
 		llerrs << "Invalid draw mode: " << mode << llendl;
 		return;
@@ -272,7 +272,7 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 		llerrs << "Wrong vertex buffer bound." << llendl;
 	}
 
-	if (mode > LLRender::NUM_MODES)
+	if (mode >= LLRender::NUM_MODES)
 	{
 		llerrs << "Invalid draw mode: " << mode << llendl;
 		return;

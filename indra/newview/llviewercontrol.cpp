@@ -71,6 +71,7 @@
 #include "llvowlsky.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
+#include "llviewerobjectlist.h"
 #include "emeraldboobutils.h"
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
@@ -81,6 +82,7 @@ BOOL 				gHackGodmode = FALSE;
 std::map<std::string, LLControlGroup*> gSettings;
 LLControlGroup gSavedSettings;	// saved at end of session
 LLControlGroup gSavedPerAccountSettings; // saved at end of session
+LLControlGroup *gCOASavedSettings = &gSavedSettings; //Ascent Client-Or-Account
 LLControlGroup gColors;			// read-only
 LLControlGroup gCrashSettings;	// saved at end of session
 
@@ -485,7 +487,40 @@ bool handleTranslateChatPrefsChanged(const LLSD& newvalue)
 	return true;
 }
 
+bool handleCloudSettingsChanged(const LLSD& newvalue)
+{
+	bool bCloudsEnabled = gSavedSettings.getBOOL("CloudsEnabled");
+	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS)!=bCloudsEnabled)
+		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS);
 
+	if( !gSavedSettings.getBOOL("SkyUseClassicClouds") ) bCloudsEnabled = false;
+
+	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)!=bCloudsEnabled )
+		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+	return true;
+}
+bool handleAscentCOAChange(const LLSD& newvalue)
+{
+	gCOASavedSettings = newvalue.asBoolean() ? &gSavedPerAccountSettings : &gSavedSettings;
+	return true;
+}
+bool handleAscentSelfTag(const LLSD& newvalue)
+{
+	if(gAgent.getAvatarObject())
+		gAgent.getAvatarObject()->mClientTag = "";
+	return true;
+}
+bool handleAscentGlobalTag(const LLSD& newvalue)
+{
+	S32 object_count = gObjectList.getNumObjects();
+	for (S32 i = 0; i < object_count; i++)
+	{
+		LLViewerObject *objectp = gObjectList.getObject(i);
+		if (objectp && objectp->isAvatar())
+			((LLVOAvatar*)objectp)->mClientTag = "";
+	}
+	return true;
+}
 ////////////////////////////////////////////////////////////////////////////
 
 void settings_setup_listeners()
@@ -625,6 +660,22 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AudioLevelMic")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));
 	gSavedSettings.getControl("LipSyncEnabled")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));	
 	gSavedSettings.getControl("TranslateChat")->getSignal()->connect(boost::bind(&handleTranslateChatPrefsChanged, _1));	
+
+	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
+	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
+
+	gSavedSettings.getControl("AscentStoreSettingsPerAccount")->getSignal()->connect(boost::bind(&handleAscentCOAChange,_1));
+	gSavedSettings.getControl("AscentShowSelfTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentShowSelfTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gCOASavedSettings->getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gCOASavedSettings->getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gCOASavedSettings->getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gCOASavedSettings->getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+	gSavedSettings.getControl("AscentShowOthersTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+	gSavedSettings.getControl("AscentShowOthersTagColor")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 }
 
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out) 

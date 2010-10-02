@@ -53,7 +53,6 @@
 #include "llviewerdisplay.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
-#include "llsavedsettingsglue.h"
 
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
@@ -210,7 +209,7 @@ void LLFloaterWindLight::initCallbacks(void) {
 	childSetCommitCallback("WLCloudScrollX", onCloudScrollXMoved, NULL);
 	childSetCommitCallback("WLCloudScrollY", onCloudScrollYMoved, NULL);
 	childSetCommitCallback("WLDistanceMult", onFloatControlMoved, &param_mgr->mDistanceMult);
-	childSetCommitCallback("DrawClassicClouds", LLSavedSettingsGlue::setBOOL, (void*)"SkyUseClassicClouds");
+	childSetCommitCallback("DrawClassicClouds", onCommitControlSetting(gSavedSettings), (void*)"SkyUseClassicClouds");
 
 	// WL Top
 	childSetAction("WLDayCycleMenuButton", onOpenDayCycle, NULL);

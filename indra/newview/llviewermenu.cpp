@@ -1299,10 +1299,10 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 											&LLPipeline::toggleRenderTypeControl, NULL,
 											&LLPipeline::hasRenderTypeControl,
 											(void*)LLPipeline::RENDER_TYPE_GRASS, '0', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
-	sub_menu->append(new LLMenuItemCheckGL("Clouds",
-											&LLPipeline::toggleRenderTypeControl, NULL,
-											&LLPipeline::hasRenderTypeControl,
-											(void*)LLPipeline::RENDER_TYPE_CLOUDS, '-', MASK_CONTROL|MASK_ALT| MASK_SHIFT));
+	sub_menu->append(new LLMenuItemCheckGL("Clouds",  //This clobbers skyuseclassicclouds, but.. big deal.
+											&LLPipeline::toggleRenderPairedTypeControl, NULL,
+											&LLPipeline::hasRenderPairedTypeControl,
+											(void*)(1<<LLPipeline::RENDER_TYPE_WL_CLOUDS | 1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS), '-', MASK_CONTROL|MASK_ALT| MASK_SHIFT));
 	sub_menu->append(new LLMenuItemCheckGL("Particles",
 											&LLPipeline::toggleRenderTypeControl, NULL,
 											&LLPipeline::hasRenderTypeControl,
