@@ -19,8 +19,12 @@ public:
 	LLSoundHistoryItem getItem(LLUUID itemID);
 
 	static void handle_play_locally(void* user_data);
+	static void handle_play_in_world(void* user_data);
 	static void handle_look_at(void* user_data);
+	static void handle_open(void* user_data);
+	static void handle_copy_uuid(void* user_data);
 	static void handle_stop(void* user_data);
+	static void blacklistSound(void* user_data);
 
 private:
 	virtual ~LLFloaterExploreSounds();
