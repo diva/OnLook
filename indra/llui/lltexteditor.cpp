@@ -60,7 +60,6 @@
 #include "lltextparser.h"
 #include <queue>
 #include "llmenugl.h"
-#include "../newview/llviewercontrol.h"
 
 // 
 // Globals

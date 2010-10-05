@@ -975,6 +975,44 @@ LLAudioData * LLAudioEngine::getAudioData(const LLUUID &audio_uuid)
 	}
 }
 
+ void LLAudioEngine::removeAudioData(LLUUID &audio_uuid)
+ {
+	if(audio_uuid.isNull())
+		return;
+	data_map::iterator iter = mAllData.find(audio_uuid);
+	if(iter != mAllData.end())
+ 	{
+
+		for (source_map::iterator iter2 = mAllSources.begin(); iter2 != mAllSources.end();)
+		{
+			LLAudioSource *sourcep = iter2->second;
+			if(	sourcep && sourcep->getCurrentData() && sourcep->getCurrentData()->getID() == audio_uuid )
+			{
+				LLAudioChannel* chan=sourcep->getChannel();
+				delete sourcep;
+				if(chan)
+					chan->cleanup();
+					mAllSources.erase(iter2++);			}
+			else
+				++iter2;
+		}
+		if(iter->second) //Shouldn't be null, but playing it safe.
+		{
+			LLAudioBuffer* buf=((LLAudioData*)iter->second)->getBuffer();
+			if(buf)
+			{
+				for (S32 i = 0; i < MAX_BUFFERS; i++)
+				{
+					if(mBuffers[i] == buf)
+						mBuffers[i] = NULL;
+				}
+				delete buf;
+			}
+			delete iter->second;
+		}
+		mAllData.erase(iter);
+ 	}
+ }
 void LLAudioEngine::addAudioSource(LLAudioSource *asp)
 {
 	mAllSources[asp->getID()] = asp;

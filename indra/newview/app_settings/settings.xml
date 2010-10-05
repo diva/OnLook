@@ -2128,6 +2128,22 @@
       <key>Value</key>
       <integer>40</integer>
     </map>
+    <key>FloaterBlacklistRect</key>
+    <map>
+      <key>Comment</key>
+      <string>LOLRectangle</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>400</integer>
+        <integer>400</integer>
+        <integer>0</integer>
+      </array>
+    </map>
     <key>BackwardBtnRect</key>
     <map>
       <key>Comment</key>

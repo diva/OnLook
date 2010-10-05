@@ -24,7 +24,7 @@
 		label="Show Repeats" control_name="FloaterSoundsLogRepeats" />
 	<check_box follows="top|left" bottom_delta="0" left_delta="110" width="80" name="pause_chk" 
 		label="Pause Log" initial_value="false"/>
-	<scroll_list bottom="30" can_resize="true" column_padding="0" draw_heading="true"
+	<scroll_list bottom="56" can_resize="true" column_padding="0" draw_heading="true"
 	     follows="left|top|bottom|right" left="10" multi_select="true" 
 	     name="sound_list" search_column="0" top="-60" right="-10">
 		<column width="20" tool_tip="Type" name="type" />
@@ -32,10 +32,17 @@
 		<column dynamicwidth="true" width="150" label="Owner" name="owner" />
 		<column width="80" label="Sound" name="sound" />
 	</scroll_list>
-	<button bottom="6" follows="bottom|left" height="20" label="Stop" name="stop_btn"
-	     left="10" width="95"/>
-	<button bottom_delta="0" follows="bottom|left" height="20" label="Look At" name="look_at_btn"
-	     left_delta="100" width="95"/>
+	
+	<button bottom="31" follows="bottom|left" height="20" label="Look At" name="look_at_btn"
+		left="10" width="95"/>
 	<button bottom_delta="0" follows="bottom|left" height="20" label="Play Locally" name="play_locally_btn"
-		 left_delta="100" width="95"/>
+		left_delta="100" width="95"/>
+	<button bottom_delta="0" follows="bottom|left" height="20" label="Play In World" name="play_ambient_btn" 
+	     	left_delta="100" width="95"/>
+
+	<button bottom="6" follows="bottom|left" height="20" label="Stop" name="stop_btn"
+	     	left="10" width="95"/>
+    	<button bottom_delta="0" follows="bottom|left" height="20" label="Add To Blacklist" name="bl_btn" 
+	     	left_delta="100" width="195"/>
+
 </floater>

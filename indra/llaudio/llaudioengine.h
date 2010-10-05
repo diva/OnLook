@@ -151,6 +151,7 @@ public:
 
 	LLAudioSource *findAudioSource(const LLUUID &source_id);
 	LLAudioData *getAudioData(const LLUUID &audio_uuid);
+	void removeAudioData(LLUUID &audio_uuid);
 
 	// Internet stream implementation manipulation
 	LLStreamingAudioInterface *getStreamingAudioImpl();

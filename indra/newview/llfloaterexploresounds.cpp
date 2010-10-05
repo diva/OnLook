@@ -5,15 +5,12 @@
 #include "llfloaterexploresounds.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
-#include "lllocalinventory.h"
 #include "llagent.h"
 #include "llviewerwindow.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-#include "llviewerparcelmgr.h"
-#include "llparcel.h"
-#include "llchat.h"
 #include "llfloaterchat.h"
+#include "llfloaterblacklist.h"
 
 static const size_t num_collision_sounds = 28;
 const LLUUID collision_sounds[num_collision_sounds] =
@@ -81,6 +78,7 @@ BOOL LLFloaterExploreSounds::postBuild(void)
 	childSetAction("play_locally_btn", handle_play_locally, this);
 	childSetAction("look_at_btn", handle_look_at, this);
 	childSetAction("stop_btn", handle_stop, this);
+	childSetAction("bl_btn", blacklistSound, this);
 
 	LLScrollListCtrl* list = getChild<LLScrollListCtrl>("sound_list");
 	list->sortByColumn("playing", TRUE);
@@ -373,6 +371,35 @@ void LLFloaterExploreSounds::handle_stop(void* user_data)
 		}
 	}
 }
+void LLFloaterExploreSounds::blacklistSound(void* user_data)
+{
+	
+	LLFloaterBlacklist::show();
+	LLFloaterExploreSounds* floater = (LLFloaterExploreSounds*)user_data;
+	LLScrollListCtrl* list = floater->getChild<LLScrollListCtrl>("sound_list");
 
+	typedef std::vector<LLScrollListItem*> item_map_t;
+	item_map_t selection = list->getAllSelected();
+	item_map_t::iterator selection_end = selection.end();
+	
+	for(item_map_t::iterator selection_iter = selection.begin(); selection_iter != selection_end; ++selection_iter)
+	{
+		LLSoundHistoryItem item = floater->getItem((*selection_iter)->getValue());
+		if(item.mID.isNull()) continue;
+
+		LLSD sound_data;
+		std::string agent;
+		gCacheName->getFullName(item.mOwnerID, agent);
+		LLViewerRegion* cur_region = gAgent.getRegion();
+
+		if(cur_region)
+		  sound_data["entry_name"] = llformat("Sound played by %s in region %s",agent.c_str(),cur_region->getName().c_str());
+		else
+		  sound_data["entry_name"] = llformat("Sound played by %s",agent.c_str());
+		sound_data["entry_type"] = (LLAssetType::EType)item.mType;
+		sound_data["entry_agent"] = gAgent.getID();
+		LLFloaterBlacklist::addEntry(item.mAssetID,sound_data);
+	}
+}
 
 // </edit>
