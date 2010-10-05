@@ -347,7 +347,7 @@ LLAppViewer::LLUpdaterInfo *LLAppViewer::sUpdaterInfo = NULL ;
 void idle_afk_check()
 {
 	// check idle timers
-	if (gAllowIdleAFK && (gAwayTriggerTimer.getElapsedTimeF32() > gSavedSettings.getF32("AFKTimeout")))
+	if (gAllowIdleAFK && (gAwayTriggerTimer.getElapsedTimeF32() > gSavedSettings.getF32("AFKTimeout")) && (gSavedSettings.getF32("AFKTimeout") > 0))
 	{
 		gAgent.setAFK();
 	}
