@@ -330,7 +330,7 @@ BOOL LLImageJ2COJ::encodeImpl(LLImageJ2C &base, const LLImageRaw &raw_image, con
 	OPJ_COLOR_SPACE color_space = CLRSPC_SRGB;
 	opj_image_cmptparm_t cmptparm[MAX_COMPS];
 	opj_image_t * image = NULL;
-	S32 numcomps = min(raw_image.getComponents(),MAX_COMPS); //Clamp avoid overrunning buffer -Shyotl
+	S32 numcomps = llmin((S32)raw_image.getComponents(),(S32)MAX_COMPS); //Clamp avoid overrunning buffer -Shyotl
 	S32 width = raw_image.getWidth();
 	S32 height = raw_image.getHeight();
 

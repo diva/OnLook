@@ -992,7 +992,7 @@ LLAudioData * LLAudioEngine::getAudioData(const LLUUID &audio_uuid)
 				delete sourcep;
 				if(chan)
 					chan->cleanup();
-				iter2 = mAllSources.erase(iter2);
+				 mAllSources.erase(iter2++);
 			}
 			else
 				++iter2;
