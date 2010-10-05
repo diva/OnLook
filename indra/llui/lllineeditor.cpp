@@ -56,7 +56,6 @@
 #include "lluictrlfactory.h"
 #include "llclipboard.h"
 
-#include "../newview/llviewercontrol.h"
 //
 // Imported globals
 //
