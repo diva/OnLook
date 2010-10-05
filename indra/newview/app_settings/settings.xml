@@ -817,16 +817,17 @@
 		<key>Value</key>
 		<integer>0</integer>
 	</map>
-	<key>AscentUploadFolder</key>
+	<key>AscentUploadSettings</key>
 	<map>
-		<key>Comment</key>
-		<string>Active folder for the Uploader</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>None</string>
+        <key>Comment</key>
+            <string>Settings for upload browser</string>
+        <key>Type</key>
+        <string>LLSD</string>
+        <key>Value</key>
+        <map>
+            <key>ActivePath</key>
+			<string>None</string>
+		</map>	
 	</map>
 	<key>AscentUseCustomTag</key>
 	<map>
