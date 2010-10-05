@@ -38,6 +38,7 @@
 #include "llmath.h"
 #include "llmemtype.h"
 #include "llstl.h"
+#include <iterator> //VS2010
 
 /** 
  * LLSegment

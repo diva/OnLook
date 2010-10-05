@@ -53,6 +53,7 @@ if (WINDOWS)
       /Zc:forScope
       /nologo
       /Oy-
+	  /Zc:wchar_t- #wchar_t is now on by default in VS2010. Force it to be disabled.
       )
      
   if(MSVC80 OR MSVC90)
