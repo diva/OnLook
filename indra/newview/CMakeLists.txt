@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+	ascentdaycyclemanager.cpp
 	ascentfloatercontactgroups.cpp
     ascentprefssys.cpp
 	ascentprefsvan.cpp
@@ -513,6 +514,7 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+	ascentdaycyclemanager.h
 	ascentfloatercontactgroups.h
 	ascentprefssys.h
 	ascentprefsvan.h

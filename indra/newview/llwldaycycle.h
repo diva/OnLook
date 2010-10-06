@@ -45,6 +45,9 @@ class LLWLDayCycle;
 
 class LLWLDayCycle
 {
+
+public:
+	std::string mName;	
 public:
 
 	// lists what param sets are used when during the day

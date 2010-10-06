@@ -867,6 +867,17 @@
 		<key>Value</key>
 		<string>Custom</string>
 	</map>
+	<key>AscentActiveDayCycle</key>
+	<map>
+		<key>Comment</key>
+		<string>Day cycle currently in use</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>String</string>
+		<key>Value</key>
+		<string>Default</string>
+	</map>
 	<key>AscentAutoCloseOOC</key>
 	<map>
 		<key>Comment</key>
