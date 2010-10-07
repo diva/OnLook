@@ -40,7 +40,9 @@
 
 #include <map>
 
-LLWLDayCycle::LLWLDayCycle() : mDayRate(120)
+LLWLDayCycle::LLWLDayCycle() : 
+	mDayRate(120),
+	mName("Unnamed Cycle")
 {
 }
 
@@ -54,22 +56,39 @@ void LLWLDayCycle::loadDayCycle(const std::string & fileName)
 	// clear the first few things
 	mTimeMap.clear();
 
-	// now load the file
-	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, 
-		"windlight/days", fileName));
-	llinfos << "Loading DayCycle settings from " << pathName << llendl;
-	
-	llifstream day_cycle_xml(pathName);
-	if (day_cycle_xml.is_open())
+	// bugfix for SL-46920: preventing filenames that break stuff.
+	char * curl_str = curl_escape(fileName.c_str(), fileName.size());
+	std::string escaped_filename(curl_str);
+	curl_free(curl_str);
+	curl_str = NULL;
+
+	escaped_filename += ".xml";
+
+	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", escaped_filename));
+	llinfos << "Loading Day Cycle preset from " << pathName << llendl;
+
+	llifstream day_cycle_xml;
+	day_cycle_xml.open(pathName.c_str());
+
+	// That failed, try loading from the users area instead.
+	if(!day_cycle_xml)
+	{
+		pathName=gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", escaped_filename);
+		llinfos << "Loading User Day Cycle preset from " << pathName << llendl;
+		day_cycle_xml.open(pathName.c_str());
+	}
+
+	if (day_cycle_xml)
 	{
 		// load and parse it
 		LLSD day_data(LLSD::emptyArray());
 		LLPointer<LLSDParser> parser = new LLSDXMLParser();
 		parser->parse(day_cycle_xml, day_data, LLSDSerialize::SIZE_UNLIMITED);
-
+		llinfos << "Loading day cycle into timeline..." << llendl;
 		// add each key
 		for(S32 i = 0; i < day_data.size(); ++i)
 		{
+			llinfos << "Loading value" << i << llendl;
 			// make sure it's a two array
 			if(day_data[i].size() != 2)
 			{
@@ -95,14 +114,39 @@ void LLWLDayCycle::loadDayCycle(const std::string & fileName)
 
 		day_cycle_xml.close();
 	}
+	else 
+	{
+		llwarns << "Can't find " << fileName << llendl;
+		return;
+	}
 }
 
 void LLWLDayCycle::saveDayCycle(const std::string & fileName)
 {
-	LLSD day_data(LLSD::emptyArray());
+	
+	// bugfix for SL-46920: preventing filenames that break stuff.
+	char * curl_str = curl_escape(fileName.c_str(), fileName.size());
+	std::string escaped_filename(curl_str);
+	curl_free(curl_str);
+	curl_str = NULL;
 
-	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", fileName));
-	//llinfos << "Saving WindLight settings to " << pathName << llendl;
+	escaped_filename += ".xml";
+
+	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", escaped_filename));
+	llinfos << "Saving Day Cycle preset from " << pathName << llendl;
+
+	llofstream day_cycle_xml;
+	day_cycle_xml.open(pathName.c_str());
+
+	// That failed, try loading from the users area instead.
+	if(!day_cycle_xml)
+	{
+		pathName=gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", escaped_filename);
+		llinfos << "Saving User Day Cycle preset from " << pathName << llendl;
+		day_cycle_xml.open(pathName.c_str());
+	}
+
+	LLSD day_data(LLSD::emptyArray());
 
 	for(std::map<F32, std::string>::const_iterator mIt = mTimeMap.begin();
 		mIt != mTimeMap.end();
@@ -114,7 +158,6 @@ void LLWLDayCycle::saveDayCycle(const std::string & fileName)
 		day_data.append(key);
 	}
 
-	llofstream day_cycle_xml(pathName);
 	LLPointer<LLSDFormatter> formatter = new LLSDXMLFormatter();
 	formatter->format(day_data, day_cycle_xml, LLSDFormatter::OPTIONS_PRETTY);
 	day_cycle_xml.close();

@@ -193,11 +193,13 @@
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
 
+
 // <edit>
 #include "llpanellogin.h"
 //#include "llfloateravatars.h"
 //#include "llactivation.h"
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
+#include "ascentdaycyclemanager.h"
 #include "llao.h"
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
@@ -2528,6 +2530,7 @@ bool idle_startup()
 		// init the shader managers
 		LLPostProcess::initClass();
 		LLWLParamManager::initClass();
+		AscentDayCycleManager::initClass();
 		LLWaterParamManager::initClass();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering

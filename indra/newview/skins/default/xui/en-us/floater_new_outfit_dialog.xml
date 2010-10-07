@@ -3,10 +3,10 @@
      can_minimize="false" can_resize="false" can_tear_off="true" enabled="true"
      height="510" left="278" min_height="100" min_width="100"
      mouse_opaque="true" name="modal container" title="" width="515">
-	<button bottom="-488" enabled="true" font="SansSerif" halign="center" height="20"
+	<button bottom="-500" enabled="true" font="SansSerif" halign="center" height="20"
 	     label="Save" label_selected="Save" left="171" mouse_opaque="true"
 	     name="Save" scale_image="true" width="82" />
-	<button bottom="-488" enabled="true" font="SansSerif" halign="center" height="20"
+	<button bottom="-500" enabled="true" font="SansSerif" halign="center" height="20"
 	     label="Cancel" label_selected="Cancel" left="261" mouse_opaque="true"
 	     name="Cancel" scale_image="true" width="82" />
 	<check_box bottom="-216" enabled="true" follows="left|top" font="SansSerifSmall"

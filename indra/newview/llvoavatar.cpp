@@ -3744,16 +3744,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						{
 							estate_owner = parent_estate->getOwner();
 						}
-						/*this->getClientInfo
-						std::string name;
-						name += firstname->getString();
-						name += " ";
-						name += lastname->getString();
+						
 						//Lindens are always more Linden than your friend, make that take precedence
-						if(LLMuteList::getInstance()->isLinden(name))
+						if(LLMuteList::getInstance()->isLinden(getFullname()))
 						{
 							mClientColor = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
-						}*/
+						}
 						//check if they are an estate owner at their current position
 						else if(estate_owner.notNull() && this->getID() == estate_owner)
 						{
@@ -9398,7 +9394,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		}
 		if( param )
 		{
-			llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
+			if (param->getName() == "tattoo_red")
+				llinfos << getFullname() << " does not have tattoo tinting." << llendl;
+			else
+				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
 			//return; //ASC-TTRFE
 		}
 
