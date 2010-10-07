@@ -65,7 +65,7 @@ fi
 ##   I keep crashing without having GDB running, always run it if an
 ##   environment variable is set.
 
-if [ $ASCENDED_DEVELOPER -eq 1 ]; then
+if [ -n "$ASCENDED_DEVELOPER" ]; then
 #	export LL_WRAPPER='cgdb --args'
 	export LL_WRAPPER='gdb --args'
 #	export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
