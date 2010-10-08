@@ -2933,9 +2933,11 @@ void LLMenuGL::draw( void )
 {
 	if (mDropShadowed && !mTornOff)
 	{
+		static LLColor4 color_drop_shadow = LLUI::sColorsGroup->getColor("ColorDropShadow");
+		static S32 drop_shadow_floater = LLUI::sConfigGroup->getS32("DropShadowFloater");
 		gl_drop_shadow(0, getRect().getHeight(), getRect().getWidth(), 0, 
-			LLUI::sColorsGroup->getColor("ColorDropShadow"), 
-			LLUI::sConfigGroup->getS32("DropShadowFloater") );
+			color_drop_shadow, 
+			drop_shadow_floater );
 	}
 
 	LLColor4 bg_color = mBackgroundColor;

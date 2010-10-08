@@ -185,7 +185,8 @@ void LLDrawPoolBump::prerender()
 // static
 S32 LLDrawPoolBump::numBumpPasses()
 {
-	if (gSavedSettings.getBOOL("RenderObjectBump"))
+	static LLCachedControl<bool> render_object_bump("RenderObjectBump",false);
+	if (render_object_bump)
 	{
 		if (mVertexShaderLevel > 1)
 		{

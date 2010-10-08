@@ -113,6 +113,7 @@ public:
 		typedef bool			Boolean;
 		typedef S32				Integer;
 		typedef F64				Real;
+		typedef F32				Float; //casting to F32 was broken, so..
 		typedef std::string		String;
 		typedef LLUUID			UUID;
 		typedef LLDate			Date;
@@ -187,6 +188,7 @@ public:
 		Boolean	asBoolean() const;
 		Integer	asInteger() const;
 		Real	asReal() const;
+		Float	asFloat() const {return (F32)asReal();}
 		String	asString() const;
 		UUID	asUUID() const;
 		Date	asDate() const;
@@ -196,6 +198,7 @@ public:
 		operator Boolean() const	{ return asBoolean(); }
 		operator Integer() const	{ return asInteger(); }
 		operator Real() const		{ return asReal(); }
+		operator Float() const		{ return asFloat(); }
 		operator String() const		{ return asString(); }
 		operator UUID() const		{ return asUUID(); }
 		operator Date() const		{ return asDate(); }

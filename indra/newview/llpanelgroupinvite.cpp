@@ -392,13 +392,13 @@ void LLPanelGroupInvite::addUsers(std::vector<LLUUID>& agent_ids)
 	for (S32 i = 0; i < (S32)agent_ids.size(); i++)
 	{
 		LLUUID agent_id = agent_ids[i];
-		LLViewerObject* dest = gObjectList.findObject(agent_id);
-		if(dest && dest->isAvatar())
+		LLVOAvatar* avatarp = gObjectList.findAvatar(agent_id);
+		if(avatarp)
 		{
 			std::string fullname;
 			LLSD args;
-			LLNameValue* nvfirst = dest->getNVPair("FirstName");
-			LLNameValue* nvlast = dest->getNVPair("LastName");
+			LLNameValue* nvfirst = avatarp->getNVPair("FirstName");
+			LLNameValue* nvlast = avatarp->getNVPair("LastName");
 			if(nvfirst && nvlast)
 			{
 				args["FIRST"] = std::string(nvfirst->getString());
@@ -411,7 +411,7 @@ void LLPanelGroupInvite::addUsers(std::vector<LLUUID>& agent_ids)
 			} 
 			else 
 			{
-				llwarns << "llPanelGroupInvite: Selected avatar has no name: " << dest->getID() << llendl;
+				llwarns << "llPanelGroupInvite: Selected avatar has no name: " << avatarp->getID() << llendl;
 				names.push_back("(Unknown)");
 			}
 		}

@@ -236,9 +236,11 @@ void LLStatusBar::draw()
 
 	if (isBackgroundVisible())
 	{
+		static LLCachedControl<LLColor4> color_drop_shadow("ColorDropShadow",LLColor4(0,0,200),LLUI::sColorsGroup);
+		static LLCachedControl<S32> drop_shadow_floater("DropShadowFloater",5,LLUI::sConfigGroup);
 		gl_drop_shadow(0, getRect().getHeight(), getRect().getWidth(), 0, 
-			LLUI::sColorsGroup->getColor("ColorDropShadow"), 
-			LLUI::sConfigGroup->getS32("DropShadowFloater") );
+			color_drop_shadow, 
+			drop_shadow_floater );
 	}
 	LLPanel::draw();
 }

@@ -253,9 +253,29 @@ LLSD LLControlVariable::getSaveValue() const
 	return mValues[0];
 }
 
+#if PROF_CTRL_CALLS
+std::vector<std::pair<std::string, U32>> gSettingsCallMap;
+#endif //PROF_CTRL_CALLS
 LLPointer<LLControlVariable> LLControlGroup::getControl(const std::string& name)
 {
 	ctrl_name_table_t::iterator iter = mNameTable.find(name);
+#if PROF_CTRL_CALLS
+	if(iter != mNameTable.end())
+	{
+		std::vector<std::pair<std::string, U32>>::iterator iter2 = gSettingsCallMap.begin();
+		std::vector<std::pair<std::string, U32>>::iterator end = gSettingsCallMap.end();
+		for(;iter2!=end;iter2++)
+		{
+			if(iter2->first==name)
+			{
+				iter2->second = iter2->second + 1;
+				break;
+			}
+		}
+		if(iter2 == gSettingsCallMap.end())
+			gSettingsCallMap.push_back(std::pair<std::string, U32>(name.c_str(),1));
+	}
+#endif //PROF_CTRL_CALLS
 	return iter == mNameTable.end() ? LLPointer<LLControlVariable>() : iter->second;
 }
 

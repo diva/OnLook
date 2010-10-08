@@ -89,17 +89,31 @@ class LLCachedControl
     T mCachedValue;
     LLPointer<LLControlVariable> mControl;
     boost::signals::connection mConnection;
+	LLControlGroup *mControlGroup;
 
 public:
-	LLCachedControl(const std::string& name, 
+	LLCachedControl(const std::string& name, const T& default_value, LLControlGroup *group, const std::string& comment = "Declared In Code") 
+	{Init(name,default_value,comment,*group);} //for gSavedPerAccountSettings, etc
+	LLCachedControl(const std::string& name, const T& default_value, LLControlGroup &group, const std::string& comment = "Declared In Code")
+	{Init(name,default_value,comment,group);}  //for LLUI::sConfigGroup, etc
+	LLCachedControl(const std::string& name,  
 					const T& default_value, 
-					const std::string& comment = "Declared In Code")
+					const std::string& comment = "Declared In Code",
+					LLControlGroup &group = gSavedSettings)
+	{Init(name,default_value,comment,group);}  //for default (gSavedSettings)
+private:
+	//Pulled out of ctor due to problems with initializer lists in template classes
+	void Init(	const std::string& name, 
+				const T& default_value, 
+				const std::string& comment,
+				LLControlGroup &group )
 	{
-		mControl = gSavedSettings.getControl(name);
+		mControlGroup = &group;
+		mControl = mControlGroup->getControl(name);
 		if(mControl.isNull())
 		{
-			declareTypedControl(gSavedSettings, name, default_value, comment);
-			mControl = gSavedSettings.getControl(name);
+			declareTypedControl(*mControlGroup, name, default_value, comment);
+			mControl = mControlGroup->getControl(name);
 			if(mControl.isNull())
 			{
 				llerrs << "The control could not be created!!!" << llendl;
@@ -113,11 +127,12 @@ public:
 		}
 
 		// Add a listener to the controls signal...
-		mControl->getSignal()->connect(
+		// and store the connection...
+		mConnection = mControl->getSignal()->connect(
 			boost::bind(&LLCachedControl<T>::handleValueChange, this, _1)
 			);
 	}
-
+public:
 	~LLCachedControl()
 	{
 		if(mConnection.connected())
@@ -129,6 +144,7 @@ public:
 	LLCachedControl& operator =(const T& newvalue)
 	{
 	   setTypeValue(*mControl, newvalue);
+	   return *this;
 	}
 
 	operator const T&() { return mCachedValue; }
@@ -158,6 +174,42 @@ private:
 		// Implicit conversion from T to LLSD...
 		c.set(v);
 	}
+};
+
+//Easiest way without messing with LLCachedControl even more..
+template <class T>
+class LLCachedCOAControl
+{
+	LLCachedControl<T> *mCachedControl;
+	boost::signals::connection mCOAConnection;
+	const std::string mName;
+	const std::string mComment;
+	const T mDefault;
+public:
+	LLCachedCOAControl(const std::string& name, const T& default_value,const std::string& comment = "Declared In Code")
+		: mName(name),mDefault(default_value),mComment(comment)
+	{
+		mCachedControl = new LLCachedControl<T>(mName,mDefault,gCOASavedSettings,mComment);
+
+		static LLCachedControl<bool> settings_per_account("AscentStoreSettingsPerAccount",false);
+		mCOAConnection = settings_per_account.getControl()->getSignal()->connect(
+			boost::bind(&LLCachedCOAControl<T>::handleCOAValueChange, this, _1));	
+	}
+	~LLCachedCOAControl()
+	{
+		if(mCachedControl)
+			delete mCOAConnection;
+		if(mCOAConnection.connected())
+			mCOAConnection.disconnect();
+	}
+	bool handleCOAValueChange(const LLSD& newvalue)
+	{
+		if(mCachedControl)
+			delete mCachedControl;
+		mCachedControl = new LLCachedControl<T>(mName,mDefault,gCOASavedSettings,mComment);
+		return true;
+	}
+	operator const T&() { return *mCachedControl; }
 };
 
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out);

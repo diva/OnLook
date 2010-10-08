@@ -2939,7 +2939,8 @@ const std::string LLFolderView::getFilterSubString(BOOL trim)
 void LLFolderView::filter( LLInventoryFilter& filter )
 {
 	LLFastTimer t2(LLFastTimer::FTM_FILTER);
-	filter.setFilterCount(llclamp(gSavedSettings.getS32("FilterItemsPerFrame"), 1, 5000));
+	static LLCachedControl<S32> filter_items_per_frame("FilterItemsPerFrame",500);
+	filter.setFilterCount(llclamp((S32)filter_items_per_frame, 1, 5000));
 
 	if (getCompletedFilterGeneration() < filter.getCurrentGeneration())
 	{
@@ -4394,8 +4395,8 @@ void LLFolderView::doIdle()
 {
 	LLFastTimer t2(LLFastTimer::FTM_INVENTORY);
 
-	BOOL debug_filters = gSavedSettings.getBOOL("DebugInventoryFilters");
-	if (debug_filters != getDebugFilters())
+	static LLCachedControl<bool> debug_filters("DebugInventoryFilters",false);
+	if (debug_filters != (bool)getDebugFilters())
 	{
 		mDebugFilters = debug_filters;
 		arrangeAll();

@@ -2674,9 +2674,9 @@ bool callback_freeze(const LLSD& notification, const LLSD& response)
 		}
 
 		LLMessageSystem* msg = gMessageSystem;
-		LLViewerObject* avatar = gObjectList.findObject(avatar_id);
+		LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
 
-		if (avatar)
+		if (avatarp && avatarp->getRegion())
 		{
 			msg->newMessage("FreezeUser");
 			msg->nextBlock("AgentData");
@@ -2685,7 +2685,7 @@ bool callback_freeze(const LLSD& notification, const LLSD& response)
 			msg->nextBlock("Data");
 			msg->addUUID("TargetID", avatar_id );
 			msg->addU32("Flags", flags );
-			msg->sendReliable( avatar->getRegion()->getHost() );
+			msg->sendReliable( avatarp->getRegion()->getHost() );
 		}
 	}
 	return false;
@@ -2836,9 +2836,9 @@ bool callback_eject(const LLSD& notification, const LLSD& response)
 	{
 		// Eject button
 		LLMessageSystem* msg = gMessageSystem;
-		LLViewerObject* avatar = gObjectList.findObject(avatar_id);
+		LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
 
-		if (avatar)
+		if (avatarp && avatarp->getRegion())
 		{
 			U32 flags = 0x0;
 			msg->newMessage("EjectUser");
@@ -2848,7 +2848,7 @@ bool callback_eject(const LLSD& notification, const LLSD& response)
 			msg->nextBlock("Data");
 			msg->addUUID("TargetID", avatar_id );
 			msg->addU32("Flags", flags );
-			msg->sendReliable( avatar->getRegion()->getHost() );
+			msg->sendReliable( avatarp->getRegion()->getHost() );
 		}
 	}
 	else if (ban_enabled)
@@ -2857,9 +2857,9 @@ bool callback_eject(const LLSD& notification, const LLSD& response)
 		// and it is also not an 'Cancle' button, and ban_enabled==ture, 
 		// it should be the 'Eject and Ban' button.
 		LLMessageSystem* msg = gMessageSystem;
-		LLViewerObject* avatar = gObjectList.findObject(avatar_id);
+		LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
 
-		if (avatar)
+		if (avatarp && avatarp->getRegion())
 		{
 			U32 flags = 0x1;
 			msg->newMessage("EjectUser");
@@ -2869,7 +2869,7 @@ bool callback_eject(const LLSD& notification, const LLSD& response)
 			msg->nextBlock("Data");
 			msg->addUUID("TargetID", avatar_id );
 			msg->addU32("Flags", flags );
-			msg->sendReliable( avatar->getRegion()->getHost() );
+			msg->sendReliable( avatarp->getRegion()->getHost() );
 		}
 	}
 	return false;
@@ -5494,7 +5494,7 @@ void print_agent_nvpairs(void*)
 
 	llinfos << "Agent Name Value Pairs" << llendl;
 
-	objectp = gObjectList.findObject(gAgentID);
+	objectp = gAgent.getAvatarObject();
 	if (objectp)
 	{
 		objectp->printNameValuePairs();

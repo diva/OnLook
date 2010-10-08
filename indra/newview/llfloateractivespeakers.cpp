@@ -1422,7 +1422,7 @@ void LLLocalSpeakerMgr::updateSpeakerList()
 		LLSpeaker* speakerp = speaker_it->second;
 		if (speakerp->mStatus == LLSpeaker::STATUS_TEXT_ONLY)
 		{
-			LLVOAvatar* avatarp = (LLVOAvatar*)gObjectList.findObject(speaker_id);
+			LLVOAvatar* avatarp = gObjectList.findAvatar(speaker_id);
 			if (!avatarp || dist_vec(avatarp->getPositionAgent(), gAgent.getPositionAgent()) > CHAT_NORMAL_RADIUS)
 			{
 				speakerp->mStatus = LLSpeaker::STATUS_NOT_IN_CHANNEL;

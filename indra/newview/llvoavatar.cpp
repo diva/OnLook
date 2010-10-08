@@ -3476,13 +3476,13 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	}
 	
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
-	const F32 NAME_SHOW_TIME = gSavedSettings.getF32("RenderNameShowTime");	// seconds
-	const F32 FADE_DURATION = gSavedSettings.getF32("RenderNameFadeDuration"); // seconds
-
-
-
+	static LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
+	static LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
+	static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+	static LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
+	
 	BOOL visible_avatar = isVisible() || mNeedsAnimUpdate;
-	BOOL visible_chat = gSavedSettings.getBOOL("UseChatBubbles") && (mChats.size() || mTyping);
+	BOOL visible_chat = use_chat_bubbles && (mChats.size() || mTyping);
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
 						((sRenderName == RENDER_NAME_ALWAYS) ||
@@ -3493,7 +3493,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	{
 		render_name = render_name
 						&& !gAgent.cameraMouselook()
-						&& (visible_chat || !gSavedSettings.getBOOL("RenderNameHideSelf"));
+						&& (visible_chat || !render_name_hide_self);
 	}
 
 	if ( render_name )
@@ -3603,7 +3603,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					}
 				}
 
-				if (!mIsSelf && gSavedSettings.getBOOL("AscentUseStatusColors"))
+				static LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
+				if (!mIsSelf && ascent_use_status_colors)
 				{
 					LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(this->getPositionGlobal());
 					LLUUID estate_owner = LLUUID::null;
@@ -7498,7 +7499,7 @@ void LLVOAvatar::onLocalTextureLoaded( BOOL success, LLViewerImage *src_vi, LLIm
 	LLAvatarTexData *data = (LLAvatarTexData *)userdata;
 	if (success)
 	{
-		LLVOAvatar *self = (LLVOAvatar *)gObjectList.findObject(data->mAvatarID);
+		LLVOAvatar *self = gObjectList.findAvatar(data->mAvatarID);
 		if (self)
 		{
 			ETextureIndex index = data->mIndex;
@@ -7524,7 +7525,7 @@ void LLVOAvatar::onLocalTextureLoaded( BOOL success, LLViewerImage *src_vi, LLIm
 	}
 	else if (final)
 	{
-		LLVOAvatar *self = (LLVOAvatar *)gObjectList.findObject(data->mAvatarID);
+		LLVOAvatar *self = gObjectList.findAvatar(data->mAvatarID);
 		if (self)
 		{
 			ETextureIndex index = data->mIndex;
@@ -9312,7 +9313,7 @@ void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerImage *src_vi,
 	const LLUUID id = src_vi->getID();
  
 	LLTextureMaskData* maskData = (LLTextureMaskData*) userdata;
-	LLVOAvatar* self = (LLVOAvatar*) gObjectList.findObject( maskData->mAvatarID );
+	LLVOAvatar* self = gObjectList.findAvatar( maskData->mAvatarID );
 
 	// if discard level is 2 less than last discard level we processed, or we hit 0,
 	// then generate morph masks
@@ -9404,7 +9405,7 @@ void LLVOAvatar::onBakedTextureMasksLoaded( BOOL success, LLViewerImage *src_vi,
 void LLVOAvatar::onInitialBakedTextureLoaded( BOOL success, LLViewerImage *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata )
 {
 	LLUUID *avatar_idp = (LLUUID *)userdata;
-	LLVOAvatar *selfp = (LLVOAvatar *)gObjectList.findObject(*avatar_idp);
+	LLVOAvatar *selfp = gObjectList.findAvatar(*avatar_idp);
 
 	if (!success && selfp)
 	{
@@ -9422,7 +9423,7 @@ void LLVOAvatar::onBakedTextureLoaded(BOOL success, LLViewerImage *src_vi, LLIma
 
 	LLUUID id = src_vi->getID();
 	LLUUID *avatar_idp = (LLUUID *)userdata;
-	LLVOAvatar *selfp = (LLVOAvatar *)gObjectList.findObject(*avatar_idp);
+	LLVOAvatar *selfp = gObjectList.findAvatar(*avatar_idp);
 
 	if (selfp && !success)
 	{

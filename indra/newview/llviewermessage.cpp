@@ -2784,7 +2784,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 			if (!is_muted && !is_busy)
 			{
-				visible_in_chat_bubble = gSavedSettings.getBOOL("UseChatBubbles");
+				static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+				visible_in_chat_bubble = use_chat_bubbles;
 				((LLVOAvatar*)chatter)->addChat(chat);
 			}
 		}
@@ -4157,12 +4158,11 @@ void process_avatar_animation(LLMessageSystem *mesgsys, void **user_data)
 	LLUUID	animation_id;
 	LLUUID	uuid;
 	S32		anim_sequence_id;
-	LLVOAvatar *avatarp;
 	
 	mesgsys->getUUIDFast(_PREHASH_Sender, _PREHASH_ID, uuid);
 
 	//clear animation flags
-	avatarp = (LLVOAvatar *)gObjectList.findObject(uuid);
+	LLVOAvatar* avatarp = gObjectList.findAvatar(uuid);
 
 	if (!avatarp)
 	{
@@ -4238,7 +4238,7 @@ void process_avatar_appearance(LLMessageSystem *mesgsys, void **user_data)
 	LLUUID uuid;
 	mesgsys->getUUIDFast(_PREHASH_Sender, _PREHASH_ID, uuid);
 
-	LLVOAvatar* avatarp = (LLVOAvatar *)gObjectList.findObject(uuid);
+	LLVOAvatar* avatarp = gObjectList.findAvatar(uuid);
 	if( avatarp )
 	{
 		avatarp->processAvatarAppearance( mesgsys );

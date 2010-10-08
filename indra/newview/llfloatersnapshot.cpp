@@ -733,7 +733,8 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 
 	LLVector3 new_camera_pos = LLViewerCamera::getInstance()->getOrigin();
 	LLQuaternion new_camera_rot = LLViewerCamera::getInstance()->getQuaternion();
-	if (gSavedSettings.getBOOL("FreezeTime") && 
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (freeze_time && 
 		(new_camera_pos != previewp->mCameraPos || dot(new_camera_rot, previewp->mCameraRot) < 0.995f))
 	{
 		previewp->mCameraPos = new_camera_pos;
@@ -2159,7 +2160,8 @@ LLSnapshotFloaterView::~LLSnapshotFloaterView()
 BOOL LLSnapshotFloaterView::handleKey(KEY key, MASK mask, BOOL called_from_parent)
 {
 	// use default handler when not in freeze-frame mode
-	if(!gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if(!freeze_time)
 	{
 		return LLFloaterView::handleKey(key, mask, called_from_parent);
 	}
@@ -2180,7 +2182,8 @@ BOOL LLSnapshotFloaterView::handleKey(KEY key, MASK mask, BOOL called_from_paren
 BOOL LLSnapshotFloaterView::handleMouseDown(S32 x, S32 y, MASK mask)
 {
 	// use default handler when not in freeze-frame mode
-	if(!gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if(!freeze_time)
 	{
 		return LLFloaterView::handleMouseDown(x, y, mask);
 	}
@@ -2195,7 +2198,8 @@ BOOL LLSnapshotFloaterView::handleMouseDown(S32 x, S32 y, MASK mask)
 BOOL LLSnapshotFloaterView::handleMouseUp(S32 x, S32 y, MASK mask)
 {
 	// use default handler when not in freeze-frame mode
-	if(!gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if(!freeze_time)
 	{
 		return LLFloaterView::handleMouseUp(x, y, mask);
 	}
@@ -2210,7 +2214,8 @@ BOOL LLSnapshotFloaterView::handleMouseUp(S32 x, S32 y, MASK mask)
 BOOL LLSnapshotFloaterView::handleHover(S32 x, S32 y, MASK mask)
 {
 	// use default handler when not in freeze-frame mode
-	if(!gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if(!freeze_time)
 	{
 		return LLFloaterView::handleHover(x, y, mask);
 	}	
