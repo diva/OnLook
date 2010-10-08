@@ -35,6 +35,9 @@
 #include <iostream>
 #include <fstream>
 
+#if LL_MSVC
+#pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
+#endif
 #include <boost/regex.hpp>
 
 #include "llfeaturemanager.h"
