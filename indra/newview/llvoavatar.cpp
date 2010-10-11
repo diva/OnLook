@@ -90,6 +90,7 @@
 #include "llvoicevisualizer.h" // Ventrella
 
 #include "llsdserialize.h" //For the client definitions
+#include "llcachename.h"
 
 // <edit>
 #include "llfloaterexploreanimations.h"
@@ -3748,12 +3749,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						estate_owner = parent_estate->getOwner();
 					}
 					
-					std::string name;
-					name += firstname->getString();
-					name += " ";
-					name += lastname->getString();
 					//Lindens are always more Linden than your friend, make that take precedence
-					if(LLMuteList::getInstance()->isLinden(name))
+					if(LLMuteList::getInstance()->isLinden(getFullname()))
 					{
 						mClientColor = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
 					}

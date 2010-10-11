@@ -149,6 +149,10 @@ public:
 
 	operator const T&() { return mCachedValue; }
 
+	const LLControlVariable * getControl() {
+		return mControl;
+	}
+
 private:
 	void declareTypedControl(LLControlGroup& group, 
 							 const std::string& name, 
