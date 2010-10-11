@@ -241,12 +241,11 @@ void LLPanelFriends::populateContactGroupSelect()
 
 void LLPanelFriends::setContactGroup(std::string contact_grp)
 {
-	if (contact_grp != "All")
-	{
-		filterContacts();
-		categorizeContacts();
-	}
-	else refreshNames(LLFriendObserver::ADD);
+	LLChat msg("Group set to " + contact_grp);
+	LLFloaterChat::addChat(msg);
+	refreshNames(LLFriendObserver::ADD);
+	refreshUI();
+	categorizeContacts();
 }
 
 void LLPanelFriends::categorizeContacts()
@@ -264,16 +263,44 @@ void LLPanelFriends::categorizeContacts()
 			std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
 			for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
 			{
-				BOOL show_entry = (contact_groups[group_name][(*itr)->getUUID().asString()].size() != 0);
+				BOOL show_entry = false;//contact_groups[group_name].has((*itr)->getUUID().asString());
+
+				S32 count = contact_groups[group_name].size();
+				int i;
+				for(i = 0; i < count; i++)
+				{
+					if (contact_groups[group_name][i].asString() == (*itr)->getUUID().asString())
+					{
+						show_entry = true;
+						break;
+					}
+				}
 
 				if (!show_entry)
 				{
+					LLChat msg("False: contact_groups['" + group_name + "'].has('" + (*itr)->getUUID().asString() + "');");
+					LLFloaterChat::addChat(msg);
 					mFriendsList->deleteItems((*itr)->getValue());
+				}
+				else
+				{
+					LLChat msg("True: contact_groups['" + group_name + "'].has('" + (*itr)->getUUID().asString() + "');");
+					LLFloaterChat::addChat(msg);
 				}
 			}
 		}
+		else
+		{
+			LLChat msg("Group set to all.");
+			LLFloaterChat::addChat(msg);
+		}
 
 		refreshUI();
+	}
+	else
+	{
+		LLChat msg("Null combo.");
+		LLFloaterChat::addChat(msg);
 	}
 }
 
@@ -325,10 +352,7 @@ void LLPanelFriends::onChangeContactGroup(LLUICtrl* ctrl, void* user_data)
 	if(panelp)
 	{
 		LLComboBox* combo = panelp->getChild<LLComboBox>("buddy_group_combobox");
-		if (combo->getValue().asString() != "All")
-		{
-			panelp->setContactGroup(combo->getValue().asString());
-		}
+		panelp->setContactGroup(combo->getValue().asString());
 	}
 }
 // --

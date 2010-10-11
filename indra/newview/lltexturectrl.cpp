@@ -1039,8 +1039,6 @@ LLXMLNodePtr LLTextureCtrl::getXML(bool save_children) const
 
 	node->createChild("allow_invisible_texture", TRUE)->setBoolValue(mAllowInvisibleTexture);
 
-	node->createChild("allow_invisible_texture", TRUE)->setBoolValue(mAllowInvisibleTexture);
-
 	node->createChild("can_apply_immediately", TRUE)->setBoolValue(mCanApplyImmediately );
 
 	return node;
@@ -1583,6 +1581,4 @@ BOOL LLToolTexEyedropper::handleHover(S32 x, S32 y, MASK mask)
 	gViewerWindow->getWindow()->setCursor(UI_CURSOR_CROSS);  // TODO: better cursor
 	return TRUE;
 }
-
-
 

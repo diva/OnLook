@@ -20,7 +20,7 @@
 #include "llcombobox.h" //Combo dropdowns
 #include "llscrolllistctrl.h" //List box for filenames
 #include "lluictrlfactory.h" //Loads the XUI
-
+#include "llresmgr.h"
 // project includes
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
@@ -84,8 +84,13 @@ void ASFloaterContactGroups::onBtnSave(void* userdata)
 			LLScrollListCtrl* scroller = self->getChild<LLScrollListCtrl>("group_scroll_list");
 			if(scroller != NULL) 
 			{
-				for (S32 i = self->mSelectedUUIDs.count(); i > 0; --i)
+				for (S32 i = (self->mSelectedUUIDs.count() - 1); i >= 0; --i)
 				{
+					std::string i_str;
+					LLResMgr::getInstance()->getIntegerString(i_str, i);
+					LLChat msg("Adding index " + i_str + ": " + self->mSelectedUUIDs.get(i).asString());
+					LLFloaterChat::addChat(msg);
+
 					self->addContactMember(scroller->getValue().asString(), self->mSelectedUUIDs.get(i));
 				}
 			}

@@ -32,10 +32,6 @@
 		<menu_item_call enabled="true" label="Group Invite..." mouse_opaque="true" name="Invite...">
 			<on_click function="Avatar.InviteToGroup" />
 		</menu_item_call>
-		<menu_item_call enabled="false" label="Eject..." mouse_opaque="true" name="Eject...">
-			<on_click function="Avatar.Eject" />
-			<on_enable function="Avatar.EnableFreezeEject" />
-		</menu_item_call>
 		<pie_menu label="Tools &gt;" name="Tools &gt;">
 			<menu_item_call enabled="false" hidden="false" label="S. Count" mouse_opaque="true" name="ScriptCount">
 				<on_click function="Object.ScriptCount" />
@@ -47,10 +43,15 @@
 			<menu_item_call enabled="false" hidden="false" label="Client ID" mouse_opaque="true" name="ClientID">
 				<on_click function="Avatar.ClientID" />
 			</menu_item_call>
-      <menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
-        <on_click function="Object.DERENDER" />
-      </menu_item_call>
+			<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
+				<on_click function="Object.DERENDER" />
+			</menu_item_call>
 		</pie_menu>
+		<menu_item_call enabled="false" label="Eject..." mouse_opaque="true" name="Eject...">
+			<on_click function="Avatar.Eject" />
+			<on_enable function="Avatar.EnableFreezeEject" />
+		</menu_item_call>
+		<menu_item_separator />
 		<menu_item_call enabled="true" label="Inspect" mouse_opaque="true" name="Object Inspect">
 			<on_click function="Object.Inspect" />
 			<on_enable function="Object.EnableInspect" />

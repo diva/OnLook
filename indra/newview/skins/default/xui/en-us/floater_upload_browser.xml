@@ -42,6 +42,7 @@
 		tool_tip="Hold shift or control while clicking to select multiple files"
 		top="-68">
 		<column name="file_type" width="0" />
+		<column name="asset_type" width="0" />
 		<column image="ff_edit_mine_button.tga" name="icon_inventory_type"
 			tool_tip="Inventory Type" width="20" />
 		<column dynamicwidth="true" label="Filename" name="file_name" tool_tip="Filename" />
@@ -89,12 +90,55 @@
 	</text>
 	<line_editor bottom_delta="-4" follows="left|top" font="SansSerifSmall" height="18" max_length="255"
 		width="214" name="asset_desc" left_delta="70" select_all_on_focus_received="true" select_on_focus="true"/>
+	<text bottom_delta="-20" follows="top|left" height="12" name="multiple_uploads_label" left="302">
+		Multiple files selected. Total cost is: 
+	</text>
+	<text bottom_delta="0" follows="top|left" height="12" name="texture_preview_label" left="302">
+		Preview image as:
+	</text>
+	<combo_box bottom_delta="-5" follows="left|top" height="18" label="Texture Preview"
+	     left_delta="120" name="texture_preview_combo" width="164">
+		<combo_item name="Image">
+			Image
+		</combo_item>
+		<combo_item name="Hair">
+			Hair
+		</combo_item>
+		<combo_item name="FemaleHead">
+			Female Head
+		</combo_item>
+		<combo_item name="FemaleUpperBody">
+			Female Upper Body
+		</combo_item>
+		<combo_item name="FemaleLowerBody">
+			Female Lower Body
+		</combo_item>
+		<combo_item name="MaleHead">
+			Male Head
+		</combo_item>
+		<combo_item name="MaleUpperBody">
+			Male Upper Body
+		</combo_item>
+		<combo_item name="MaleLowerBody">
+			Male Lower Body
+		</combo_item>
+		<combo_item name="Skirt">
+			Skirt
+		</combo_item>
+		<combo_item name="SculptedPrim">
+			Sculpted Prim
+		</combo_item>
+	</combo_box>
+	<text bottom="250" follows="top|left" left="302" name="bad_image_text">
+		Unable to read image.
+
+Try saving image as 24 bit Targa (.tga).
+	</text>
 	<slider bottom_delta="0" can_edit_text="false" enabled="false" width="185" height="16" mouse_opaque="true"
 		decimal_digits="0" increment="1" initial_val="16" left="30" min_val="1.0" max_val="16.0" visible="false"
 		name="timeline" show_text="false" value="1" control_name="AnimationTimelineScrubber"/> 
 	<button bottom="9" follows="bottom|left" height="22" label="Upload (L$10)"
-		left="325" name="upload_button" tool_tip="Standard upload (L$10)"
-		width="120" />
+		left="325" name="upload_button" width="120" />
 	<button bottom_delta="0" follows="bottom|left" height="22" label="Temp Upload"
 		left_delta="125" name="upload_button" tool_tip="Uploads a temporary version of the texture. It's free, but has a limited lifespan and area it can be used."
 		width="120" />

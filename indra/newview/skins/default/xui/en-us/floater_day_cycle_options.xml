@@ -237,14 +237,36 @@
 			     label="Use Estate Time" label_selected="Go to Estate Time"
 			     left_delta="55" mouse_opaque="true" name="WLUseLindenTime"
 			     scale_image="true" width="140" />
-			<button bottom="-195" enabled="true" font="SansSerif" halign="center" height="20"
+			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+				bottom="-180" drop_shadow_visible="true"
+				font="SansSerif" h_pad="0" halign="left" height="16"
+				left="430" mouse_opaque="true" name="KeyFramePresetsText" v_pad="0"
+				width="110">
+				Presets:
+			</text>
+			<combo_box allow_text_entry="false" bottom_delta="-1" follows="left|top" height="18"
+				left_delta="80" max_chars="20" mouse_opaque="true" name="DayCyclePresetsCombo"
+				width="120" />
+			<button bottom_delta="-40" enabled="true" font="SansSerif" halign="center" height="20"
+				label="New" label_selected="New" left_delta="-80"
+				mouse_opaque="true" name="DayCycleNewPreset" scale_image="true" width="60" />
+			<button bottom_delta="0" enabled="true" font="SansSerif" halign="center" height="20"
+				label="Save" label_selected="Save" left_delta="70"
+				mouse_opaque="true" name="DayCycleSavePreset" scale_image="true" width="60" />
+			<button bottom_delta="0" enabled="true" font="SansSerif" halign="center" height="20"
+				label="Delete" label_selected="Delete" left_delta="70"
+				mouse_opaque="true" name="DayCycleDeletePreset" scale_image="true" width="60" />
+			<!--<button bottom="-295" enabled="true" font="SansSerif" halign="center" height="20"
 			     label="Save Test Day" label_selected="Save Test Day"
 			     left="480" mouse_opaque="true" name="WLSaveDayCycle" scale_image="true"
 			     width="150" />
-			<button bottom="-220" enabled="true" font="SansSerif" halign="center" height="20"
+			<button bottom="-320" enabled="true" font="SansSerif" halign="center" height="20"
 			     label="Load Test Day" label_selected="Load Test Day"
 			     left="480" mouse_opaque="true" name="WLLoadDayCycle" scale_image="true"
-			     width="150" />
+			     width="150" />-->
 		</panel>
 	</tab_container>
+	<string name="DaycycleDefaultNames">
+		Default:Happy%20Bivouac
+	</string>
 </floater>

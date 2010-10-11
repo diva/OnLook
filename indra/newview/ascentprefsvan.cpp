@@ -202,15 +202,15 @@ void LLPrefsAscentVanImpl::refreshValues()
 	//Colors
 	mShowSelfClientTag			= gSavedSettings.getBOOL("AscentShowSelfTag");
 	mShowSelfClientTagColor		= gSavedSettings.getBOOL("AscentShowSelfTagColor");	
-	mCustomTagOn				= gCOASavedSettings->getBOOL("AscentUseCustomTag");
-
-	mSelectedClient			= gCOASavedSettings->getU32("AscentReportClientIndex");
-	mEffectColor			= gCOASavedSettings->getColor4("EffectColor");
+	mCustomTagOn				= gSavedSettings.getBOOL("AscentUseCustomTag");
 	
-	childSetEnabled("custom_tag_label_text", mCustomTagOn);
-	childSetEnabled("custom_tag_label_box", mCustomTagOn);
-	childSetEnabled("custom_tag_color_text", mCustomTagOn);
-	childSetEnabled("custom_tag_color_swatch", mCustomTagOn);
+	mSelectedClient			= gCOASavedSettings->getU32("AscentReportClientIndex");
+	mEffectColor			= gCOASavedSettings->getColor4("EffectColor");	
+
+	childSetEnabled("custom_tag_label_text",	mCustomTagOn);
+	childSetEnabled("custom_tag_label_box",		mCustomTagOn);
+	childSetEnabled("custom_tag_color_text",	mCustomTagOn);
+	childSetEnabled("custom_tag_color_swatch",	mCustomTagOn);
 
 	mCustomTagLabel			= gCOASavedSettings->getString("AscentCustomTagLabel");
 	mCustomTagColor			= gCOASavedSettings->getColor4("AscentCustomTagColor");

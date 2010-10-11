@@ -553,7 +553,7 @@ LLWLParamManager * LLWLParamManager::instance()
 		sInstance->loadPresets(LLStringUtil::null);
 
 		// load the day
-		sInstance->mDay.loadDayCycle(std::string("Default.xml"));
+		sInstance->mDay.loadDayCycle(gSavedSettings.getString("AscentActiveDayCycle"));
 
 		// *HACK - sets cloud scrolling to what we want... fix this better in the future
 		sInstance->getParamSet("Default", sInstance->mCurParams);

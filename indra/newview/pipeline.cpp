@@ -5957,8 +5957,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 				                     (1<<LLPipeline::RENDER_TYPE_VOIDWATER) |
 				                     (1<<LLPipeline::RENDER_TYPE_GROUND) |
 				                     (1<<LLPipeline::RENDER_TYPE_SKY) |
-									 (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
-				                     (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS));
+				                     (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+									 (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS));
 
 				if (gSavedSettings.getBOOL("RenderWaterReflections"))
 				{ //mask out selected geometry based on reflection detail

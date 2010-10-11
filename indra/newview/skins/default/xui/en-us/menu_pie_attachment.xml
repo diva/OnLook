@@ -11,6 +11,14 @@
 		<on_click function="Object.Touch" />
 		<on_enable function="Object.EnableTouch" userdata="Touch" name="EnableTouch"/>
 	</menu_item_call>
+	<menu_item_call enabled="true" label="Stand Up" name="Stand Up">
+		<on_click function="Self.StandUp" userdata="" />
+		<on_enable function="Self.EnableStandUp" />
+	</menu_item_call>
+	<menu_item_call enabled="false" label="Detach" mouse_opaque="true" name="Detach">
+		<on_click function="Attachment.Detach" />
+		<on_enable function="Attachment.EnableDetach" />
+	</menu_item_call>
 	<pie_menu label="Tools &gt;" name="Tools &gt;">
 		<menu_item_call enabled="false" hidden="false" label="S. Count" mouse_opaque="true" name="ScriptCount">
 			<on_click function="Object.ScriptCount" />
@@ -23,19 +31,11 @@
 		<menu_item_call enabled="false" label="Data" mouse_opaque="true" name="Data">
     		<on_click function="Object.Data" />
 		</menu_item_call>
-    <menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
-      <on_click function="Object.DERENDER" />
-      <on_enable function="Object.EnableDerender" />
-    </menu_item_call>
+		<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
+			<on_click function="Object.DERENDER" />
+			<on_enable function="Object.EnableDerender" />
+		</menu_item_call>
 	</pie_menu>
-	<menu_item_call enabled="true" label="Stand Up" name="Stand Up">
-		<on_click function="Self.StandUp" userdata="" />
-		<on_enable function="Self.EnableStandUp" />
-	</menu_item_call>
-	<menu_item_call enabled="false" label="Detach" mouse_opaque="true" name="Detach">
-		<on_click function="Attachment.Detach" />
-		<on_enable function="Attachment.EnableDetach" />
-	</menu_item_call>
 	<menu_item_call enabled="true" label="Appearance..." name="Appearance...">
 		<on_click function="ShowFloater" userdata="appearance" />
 		<on_enable function="Edit.EnableCustomizeAvatar" />

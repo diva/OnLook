@@ -2050,6 +2050,18 @@ void LLFloaterIMPanel::sendMsg()
 					utf8text.insert(0,"[[");
 				}
 			}
+			// Convert MU*s style poses into IRC emotes here.
+			if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.find(":") == 0 && utf8text.length() > 3)
+			{
+				if (utf8text.find(":'") == 0)
+				{
+					utf8text.replace(0, 1, "/me");
+ 				}
+				else if (isalpha(utf8text.at(1)))	// Do not prevent smileys and such.
+				{
+					utf8text.replace(0, 1, "/me ");
+				}
+			}
 			utf8text = utf8str_truncate(utf8text, MAX_MSG_BUF_SIZE - 1);
 			
 			if ( mSessionInitialized )
