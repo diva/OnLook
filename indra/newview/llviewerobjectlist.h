@@ -263,7 +263,7 @@ inline LLViewerObject *LLViewerObjectList::findObject(const LLUUID &id) const
 inline LLVOAvatar *LLViewerObjectList::findAvatar(const LLUUID &id) const
 {
 	std::map<LLUUID, LLPointer<LLVOAvatar> >::const_iterator iter = mUUIDAvatarMap.find(id);
-	return (iter != mUUIDAvatarMap.end()) ? iter->second : NULL;
+	return (iter != mUUIDAvatarMap.end()) ? iter->second.get() : NULL;
 }
 
 inline LLViewerObject *LLViewerObjectList::getObject(const S32 index)
