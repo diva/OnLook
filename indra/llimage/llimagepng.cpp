@@ -48,10 +48,6 @@ LLImagePNG::LLImagePNG()
 
 LLImagePNG::~LLImagePNG()
 {
-	/*if (mTmpWriteBuffer)
-	{
-		delete[] mTmpWriteBuffer; -Shyotl
-	}*/ 
 }
 
 // Virtual
@@ -121,6 +117,7 @@ BOOL LLImagePNG::encode(const LLImageRaw* raw_image, F32 encode_time)
 	setSize(raw_image->getWidth(), raw_image->getHeight(), raw_image->getComponents());
 
 	U32 bufferSize = getWidth() * getHeight() * getComponents() + 1024;
+
 	//New implementation
 	allocateData(bufferSize); //Set to largest possible size.
 	if(isBufferInvalid()) //Checking
@@ -128,13 +125,15 @@ BOOL LLImagePNG::encode(const LLImageRaw* raw_image, F32 encode_time)
 		setLastError("LLImagePNG::encode failed allocateData");
 		return FALSE;
 	}
-	// Delegate actual encoding work to wrapper
+
+ 	// Delegate actual encoding work to wrapper
  	LLPngWrapper pngWrapper;
 	if (! pngWrapper.writePng(raw_image, getData()))
 	{
 		setLastError(pngWrapper.getErrorMessage());
-		return FALSE;
-	}
+ 		return FALSE;
+ 	}
+
 	// Resize internal buffer.
 	if(!reallocateData(pngWrapper.getFinalSize())) //Shrink. Returns NULL on failure.
 	{
@@ -142,7 +141,9 @@ BOOL LLImagePNG::encode(const LLImageRaw* raw_image, F32 encode_time)
 		return FALSE;
 	}
 	return TRUE;
-	/*U8* mTmpWriteBuffer = new U8[ bufferSize ];
+
+
+    /*U8* mTmpWriteBuffer = new U8[ bufferSize ];
 
 	// Delegate actual encoding work to wrapper
 	LLPngWrapper pngWrapper;

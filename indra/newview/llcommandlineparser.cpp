@@ -100,6 +100,7 @@ class LLCLPValue : public po::value_semantic_codecvt_helper<char>
     unsigned mMinTokens;
     unsigned mMaxTokens;
     bool mIsComposing;
+	bool mIsRequired;
     typedef boost::function1<void, const LLCommandLineParser::token_vector_t&> notify_callback_t;
     notify_callback_t mNotifyCallback;
     bool mLastOption;
@@ -108,6 +109,7 @@ public:
     LLCLPValue() :
         mMinTokens(0),
         mMaxTokens(0),
+		mIsRequired(false),
         mIsComposing(false),
         mLastOption(false)
         {}
@@ -139,6 +141,10 @@ public:
         mNotifyCallback = f;
     }
 
+	void setRequired(bool c)
+	{
+		mIsRequired = c;
+	}
     // Overrides to support the value_semantic interface.
     virtual std::string name() const 
     { 
@@ -177,7 +183,10 @@ public:
         }
 
     }
-
+	virtual bool is_required(void) const
+	{
+		return mIsRequired;
+	}
 protected:
     void xparse(boost::any& value_store,
          const std::vector<std::string>& new_tokens) const
@@ -244,17 +253,13 @@ void LLCommandLineParser::addOptionDesc(const std::string& option_name,
     value_desc->setComposing(composing);
     value_desc->setLastOption(last_option);
 
-    boost::shared_ptr<po::option_description> d(
-            new po::option_description(boost_option_name.c_str(), 
-                                    value_desc, 
-                                    description.c_str()));
-
     if(!notify_callback.empty())
     {
         value_desc->setNotifyCallback(notify_callback);
     }
-
-    gOptionsDesc.add(d);
+	
+	po::options_description_easy_init gEasyInitDesc(&gOptionsDesc);
+	gEasyInitDesc(boost_option_name.c_str(),value_desc, description.c_str());
 
     if(positional)
     {

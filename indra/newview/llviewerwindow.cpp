@@ -518,7 +518,8 @@ public:
 			ypos += y_inc;
 		}
 		// only display these messages if we are actually rendering beacons at this moment
-		if (LLPipeline::getRenderBeacons(NULL) && gSavedSettings.getBOOL("BeaconAlwaysOn"))
+		static LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
+		if (LLPipeline::getRenderBeacons(NULL) && beacon_always_on)
 		{
 			if (LLPipeline::getRenderParticleBeacons(NULL))
 			{
@@ -2284,7 +2285,8 @@ void LLViewerWindow::draw()
 	//S32 screen_x, screen_y;
 
 	// HACK for timecode debugging
-	if (gSavedSettings.getBOOL("DisplayTimecode"))
+	static LLCachedControl<bool> display_timecode("DisplayTimecode",false);
+	if (display_timecode)
 	{
 		// draw timecode block
 		std::string text;
@@ -2761,7 +2763,8 @@ BOOL LLViewerWindow::handlePerFrameHover()
 
 	LLVector2 mouse_vel; 
 
-	if (gSavedSettings.getBOOL("MouseSmooth"))
+	static LLCachedControl<bool> mouse_smooth("MouseSmooth",false);
+	if (mouse_smooth)
 	{
 		static F32 fdx = 0.f;
 		static F32 fdy = 0.f;
@@ -2916,12 +2919,14 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	// Show a new tool tip (or update one that is alrady shown)
 	BOOL tool_tip_handled = FALSE;
 	std::string tool_tip_msg;
-	F32 tooltip_delay = gSavedSettings.getF32( "ToolTipDelay" );
+	static LLCachedControl<F32> tool_tip_delay("ToolTipDelay",.7f);
+	F32 tooltip_delay = tool_tip_delay;
 	//HACK: hack for tool-based tooltips which need to pop up more quickly
 	//Also for show xui names as tooltips debug mode
 	if ((mouse_captor && !mouse_captor->isView()) || LLUI::sShowXUINames)
 	{
-		tooltip_delay = gSavedSettings.getF32( "DragAndDropToolTipDelay" );
+		static LLCachedControl<F32> drag_and_drop_tool_tip_delay("DragAndDropToolTipDelay",.1f);
+		tooltip_delay = drag_and_drop_tool_tip_delay;
 	}
 	if( handled && 
 	    gMouseIdleTimer.getElapsedTimeF32() > tooltip_delay &&
@@ -2969,7 +2974,8 @@ BOOL LLViewerWindow::handlePerFrameHover()
 		}
 	}		
 	
-	if (tool && tool != gToolNull  && tool != LLToolCompInspect::getInstance() && tool != LLToolDragAndDrop::getInstance() && !gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",0);
+	if (tool && tool != gToolNull  && tool != LLToolCompInspect::getInstance() && tool != LLToolDragAndDrop::getInstance() && !freeze_time)
 	{ 
 		LLMouseHandler *captor = gFocusMgr.getMouseCapture();
 		// With the null, inspect, or drag and drop tool, don't muck
@@ -3110,7 +3116,8 @@ BOOL LLViewerWindow::handlePerFrameHover()
 		gFloaterView->syncFloaterTabOrder();
 	}
 
-	if (gSavedSettings.getBOOL("ChatBarStealsFocus") 
+	static LLCachedControl<bool> chat_bar_steals_focus("ChatBarStealsFocus",true);
+	if (chat_bar_steals_focus 
 		&& gChatBar 
 		&& gFocusMgr.getKeyboardFocus() == NULL 
 		&& gChatBar->isInVisibleChain())
@@ -3149,32 +3156,13 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	if ((previous_x != x) || (previous_y != y))
 		mouse_moved_since_pick = TRUE;
 
-	BOOL do_pick = FALSE;
-
-	F32 picks_moving = gSavedSettings.getF32("PicksPerSecondMouseMoving");
-	if ((mouse_moved_since_pick) && (picks_moving > 0.0) && (mPickTimer.getElapsedTimeF32() > 1.0f / picks_moving))
-	{
-		do_pick = TRUE;
-	}
-
-	F32 picks_stationary = gSavedSettings.getF32("PicksPerSecondMouseStationary");
-	if ((!mouse_moved_since_pick) && (picks_stationary > 0.0) && (mPickTimer.getElapsedTimeF32() > 1.0f / picks_stationary))
-	{
-		do_pick = TRUE;
-	}
-
-	if (getCursorHidden())
-	{
-		do_pick = FALSE;
-	}
-	
-	if(LLViewerMediaFocus::getInstance()->getFocus())
-	{
+	static LLCachedControl<F32> picks_moving("PicksPerSecondMouseMoving",5.f);
+	static LLCachedControl<F32> picks_stationary("PicksPerSecondMouseStationary",0.f);
+	if(	!getCursorHidden() 
 		// When in-world media is in focus, pick every frame so that browser mouse-overs, dragging scrollbars, etc. work properly.
-		do_pick = TRUE;
-	}
-
-	if (do_pick)
+		&& (LLViewerMediaFocus::getInstance()->getFocus()
+		|| ((mouse_moved_since_pick) && (picks_moving > 0.0) && (mPickTimer.getElapsedTimeF32() > 1.0f / picks_moving)) 
+		|| ((!mouse_moved_since_pick) && (picks_stationary > 0.0) && (mPickTimer.getElapsedTimeF32() > 1.0f / picks_stationary))))
 	{
 		mouse_moved_since_pick = FALSE;
 		mPickTimer.reset();
@@ -5102,7 +5090,8 @@ LLRect LLViewerWindow::getChatConsoleRect()
 
 	console_rect.mLeft   += CONSOLE_PADDING_LEFT; 
 
-	if (gSavedSettings.getBOOL("ChatFullWidth"))
+	static LLCachedControl<bool> chat_full_width("ChatFullWidth",true);
+	if (chat_full_width)
 	{
 		console_rect.mRight -= CONSOLE_PADDING_RIGHT;
 	}

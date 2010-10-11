@@ -2644,7 +2644,6 @@ bool idle_startup()
 			LLFloaterBeacons::showInstance(); DIE -HgB
 		}*/
 		
-
 		if (!gNoRender)
 		{
 			//Set up cloud rendertypes. Passed argument is unused.

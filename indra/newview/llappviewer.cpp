@@ -467,39 +467,32 @@ static void settings_modify()
 	gDebugGL = gSavedSettings.getBOOL("RenderDebugGL");
 	gDebugPipeline = gSavedSettings.getBOOL("RenderDebugPipeline");
 	gAuditTexture = gSavedSettings.getBOOL("AuditTexture");
-#if LL_VECTORIZE
-	if (gSysCPU.hasAltivec())
+
+	if (gSysCPU.hasAltivec()) //for mac. No intrinsics used. No real risk of breaking compat.
 	{
 		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
 		gSavedSettings.setU32("VectorizeProcessor", 0 );
 	}
-	else
-	if (gSysCPU.hasSSE2())
+
+	//Slightly confusing, but with linux llviewerjointmesh_sse(2) are compiled with relevent sse flags set.
+	//However, on windows or mac said files are only compiled with sse(2) if the entire project is.
+	else if (gSysCPU.hasSSE2() && LLViewerJointMesh::supportsSSE2())
 	{
 		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
 		gSavedSettings.setU32("VectorizeProcessor", 2 );
 	}
-	else
-	if (gSysCPU.hasSSE())
+	else if (gSysCPU.hasSSE() && LLViewerJointMesh::supportsSSE())
 	{
 		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
 		gSavedSettings.setU32("VectorizeProcessor", 1 );
 	}
-	else
+	else // This build target doesn't support SSE, don't test/run.
 	{
-		// Don't bother testing or running if CPU doesn't support it. JC
 		gSavedSettings.setBOOL("VectorizePerfTest", FALSE );
 		gSavedSettings.setBOOL("VectorizeEnable", FALSE );
 		gSavedSettings.setU32("VectorizeProcessor", 0 );
 		gSavedSettings.setBOOL("VectorizeSkin", FALSE);
 	}
-#else
-	// This build target doesn't support SSE, don't test/run.
-	gSavedSettings.setBOOL("VectorizePerfTest", FALSE );
-	gSavedSettings.setBOOL("VectorizeEnable", FALSE );
-	gSavedSettings.setU32("VectorizeProcessor", 0 );
-	gSavedSettings.setBOOL("VectorizeSkin", FALSE);
-#endif
 }
 
 void LLAppViewer::initGridChoice()
@@ -1027,7 +1020,7 @@ bool LLAppViewer::mainLoop()
 			// Sleep and run background threads
 			{
 				LLFastTimer t2(LLFastTimer::FTM_SLEEP);
-				bool run_multiple_threads = gSavedSettings.getBOOL("RunMultipleThreads");
+				static LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 
 				// yield some time to the os based on command line option
 				if(mYieldTime >= 0)
@@ -4084,7 +4077,8 @@ void LLAppViewer::resumeMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			secs = gSavedSettings.getF32("MainloopTimeoutDefault");
+			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			secs = mainloop_timeout_default;
 		}
 		
 		mMainloopTimeout->setTimeout(secs);
@@ -4111,7 +4105,8 @@ void LLAppViewer::pingMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			secs = gSavedSettings.getF32("MainloopTimeoutDefault");
+			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			secs = mainloop_timeout_default;
 		}
 
 		mMainloopTimeout->setTimeout(secs);

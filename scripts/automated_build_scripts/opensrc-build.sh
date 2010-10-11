@@ -178,7 +178,7 @@ Darwin)
 
 CYGWIN)
   helpers=/cygdrive/c/buildscripts/shared/latest
-  variants="Debug RelWithDebInfo Release"
+  variants="Debug RelWithDebInfo Release ReleaseSSE2"
   #variants="Release"
   cmake_generator="vc80"
   fmod=fmodapi375win
@@ -215,7 +215,7 @@ Linux)
 	fi
   fi
   acquire_lock
-  variants="Debug RelWithDebInfo Release"
+  variants="Debug RelWithDebInfo Release ReleaseSSE2"
   #variants="Release"
   cmake_generator="Unix Makefiles"
   fmod=fmodapi375linux

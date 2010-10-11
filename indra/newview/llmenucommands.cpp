@@ -124,7 +124,8 @@ void handle_inventory(void*)
 void handle_chat(void*)
 {
 	// give focus to chatbar if it's open but not focused
-	if (gSavedSettings.getBOOL("ChatVisible") && gFocusMgr.childHasKeyboardFocus(gChatBar))
+	static LLCachedControl<bool> chat_visible("ChatVisible",true);
+	if (chat_visible && gFocusMgr.childHasKeyboardFocus(gChatBar))
 	{
 		LLChatBar::stopChat();
 	}

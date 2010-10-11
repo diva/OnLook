@@ -435,6 +435,7 @@ S32 LLQueuedThread::processNextRequest()
 		{
 			lockData();
 			req->setStatus(STATUS_COMPLETE);
+			
 
 			req->finishRequest(true);
 

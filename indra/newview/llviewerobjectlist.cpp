@@ -127,6 +127,7 @@ void LLViewerObjectList::destroy()
 	mDeadObjects.clear();
 	mMapObjects.clear();
 	mUUIDObjectMap.clear();
+	mUUIDAvatarMap.clear();
 }
 
 
@@ -727,7 +728,8 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 		}
 	}
 
-	if (gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",0);
+	if (freeze_time)
 	{
 		for (std::vector<LLViewerObject*>::iterator iter = idle_list.begin();
 			iter != idle_list.end(); iter++)
@@ -853,6 +855,7 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 	// Remove from object map so noone can look it up.
 
 	mUUIDObjectMap.erase(objectp->mID);
+	mUUIDAvatarMap.erase(objectp->mID);//No need to be careful here.
 	
 	//if (objectp->getRegion())
 	//{
@@ -1364,6 +1367,12 @@ LLViewerObject *LLViewerObjectList::createObjectViewer(const LLPCode pcode, LLVi
 	}
 
 	mUUIDObjectMap[fullid] = objectp;
+	if(objectp->isAvatar())
+	{
+		LLVOAvatar *pAvatar = dynamic_cast<LLVOAvatar*>(objectp);
+		if(pAvatar)
+			mUUIDAvatarMap[fullid] = pAvatar;
+	}
 
 	mObjects.put(objectp);
 
@@ -1398,6 +1407,12 @@ LLViewerObject *LLViewerObjectList::createObject(const LLPCode pcode, LLViewerRe
 	}
 
 	mUUIDObjectMap[fullid] = objectp;
+	if(objectp->isAvatar())
+	{
+		LLVOAvatar *pAvatar = dynamic_cast<LLVOAvatar*>(objectp);
+		if(pAvatar)
+			mUUIDAvatarMap[fullid] = pAvatar;
+	}
 	setUUIDAndLocal(fullid,
 					local_id,
 					gMessageSystem->getSenderIP(),

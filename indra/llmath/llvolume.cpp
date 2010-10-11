@@ -4875,57 +4875,20 @@ BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 	else
 	{
 		// Not hollow, generate the triangle fan.
+		U16 v1 = 2;
+		U16 v2 = 1;
+
 		if (mTypeMask & TOP_MASK)
 		{
-			if (mTypeMask & OPEN_MASK)
-			{
-				// SOLID OPEN TOP
-				// Generate indices
-				// This is a tri-fan, so we reuse the same first point for all triangles.
-				for (S32 i = 0; i < (num_vertices - 2); i++)
-				{
-					mIndices[3*i] = num_vertices - 1;
-					mIndices[3*i+1] = i;
-					mIndices[3*i+2] = i + 1;
-				}
-			}
-			else
-			{
-				// SOLID CLOSED TOP
-				for (S32 i = 0; i < (num_vertices - 2); i++)
-				{				
-					//MSMSM fix these caps but only for the un-cut case
-					mIndices[3*i] = num_vertices - 1;
-					mIndices[3*i+1] = i;
-					mIndices[3*i+2] = i + 1;
-				}
-			}
+			v1 = 1;
+			v2 = 2;
 		}
-		else
+
+		for (S32 i = 0; i < (num_vertices - 2); i++)
 		{
-			if (mTypeMask & OPEN_MASK)
-			{
-				// SOLID OPEN BOTTOM
-				// Generate indices
-				// This is a tri-fan, so we reuse the same first point for all triangles.
-				for (S32 i = 0; i < (num_vertices - 2); i++)
-				{
-					mIndices[3*i] = num_vertices - 1;
-					mIndices[3*i+1] = i + 1;
-					mIndices[3*i+2] = i;
-				}
-			}
-			else
-			{
-				// SOLID CLOSED BOTTOM
-				for (S32 i = 0; i < (num_vertices - 2); i++)
-				{
-					//MSMSM fix these caps but only for the un-cut case
-					mIndices[3*i] = num_vertices - 1;
-					mIndices[3*i+1] = i + 1;
-					mIndices[3*i+2] = i;
-				}
-			}
+			mIndices[3*i] = num_vertices - 1;
+			mIndices[3*i+v1] = i;
+			mIndices[3*i+v2] = i + 1;
 		}
 	}
 	return TRUE;
@@ -5189,31 +5152,20 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 	//generate normals 
 	for (U32 i = 0; i < mIndices.size()/3; i++) //for each triangle
 	{
-		const S32 i0 = mIndices[i*3+0];
-		const S32 i1 = mIndices[i*3+1];
-		const S32 i2 = mIndices[i*3+2];
-		const VertexData& v0 = mVertices[i0];
-		const VertexData& v1 = mVertices[i1];
-		const VertexData& v2 = mVertices[i2];
+		const U16* idx = &(mIndices[i*3]);
+			
+		VertexData* v[] = 
+		{	&mVertices[idx[0]], &mVertices[idx[1]], &mVertices[idx[2]] };
 					
 		//calculate triangle normal
-		LLVector3 norm = (v0.mPosition-v1.mPosition) % (v0.mPosition-v2.mPosition);
+		LLVector3 norm = (v[0]->mPosition-v[1]->mPosition) % (v[0]->mPosition-v[2]->mPosition);
 
-		for (U32 j = 0; j < 3; j++) 
-		{ //add triangle normal to vertices
-			const S32 idx = mIndices[i*3+j];
-			mVertices[idx].mNormal += norm; // * (weight_sum - d[j])/weight_sum;
-		}
+		v[0]->mNormal += norm;
+		v[1]->mNormal += norm;
+		v[2]->mNormal += norm;
 
 		//even out quad contributions
-		if ((i & 1) == 0) 
-		{
-			mVertices[i2].mNormal += norm;
-		}
-		else 
-		{
-			mVertices[i1].mNormal += norm;
-		}
+		v[i%2+1]->mNormal += norm;
 	}
 	
 	// adjust normals based on wrapping and stitching

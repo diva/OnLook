@@ -38,7 +38,6 @@
 #include "lluictrl.h"
 
 #include "llviewercontrol.h"
-
 /*
 void LLSavedSettingsGlue::setBOOL(LLUICtrl* ctrl, void* data)
 {

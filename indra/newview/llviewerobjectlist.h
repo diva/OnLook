@@ -43,6 +43,7 @@
 
 // project includes
 #include "llviewerobject.h"
+#include "llvoavatar.h"
 
 class LLNetMap;
 class LLDebugBeacon;
@@ -69,7 +70,8 @@ public:
 	// an internal dynamic array.
 	inline LLViewerObject *getObject(const S32 index);
 	
-	inline LLViewerObject *findObject(const LLUUID &id);
+	inline LLViewerObject *findObject(const LLUUID &id) const;
+	inline LLVOAvatar *findAvatar(const LLUUID &id) const;
 	LLViewerObject *createObjectViewer(const LLPCode pcode, LLViewerRegion *regionp); // Create a viewer-side object
 	LLViewerObject *createObject(const LLPCode pcode, LLViewerRegion *regionp,
 								 const LLUUID &uuid, const U32 local_id, const LLHost &sender);
@@ -203,6 +205,7 @@ protected:
 	vo_map mDeadObjects;	// Need to keep multiple entries per UUID
 
 	std::map<LLUUID, LLPointer<LLViewerObject> > mUUIDObjectMap;
+	std::map<LLUUID, LLPointer<LLVOAvatar> > mUUIDAvatarMap;
 
 	LLDynamicArray<LLDebugBeacon> mDebugBeacons;
 
@@ -244,9 +247,9 @@ public:
 extern LLViewerObjectList gObjectList;
 
 // Inlines
-inline LLViewerObject *LLViewerObjectList::findObject(const LLUUID &id)
+inline LLViewerObject *LLViewerObjectList::findObject(const LLUUID &id) const
 {
-	std::map<LLUUID, LLPointer<LLViewerObject> >::iterator iter = mUUIDObjectMap.find(id);
+	std::map<LLUUID, LLPointer<LLViewerObject> >::const_iterator iter = mUUIDObjectMap.find(id);
 	if(iter != mUUIDObjectMap.end())
 	{
 		return iter->second;
@@ -255,6 +258,12 @@ inline LLViewerObject *LLViewerObjectList::findObject(const LLUUID &id)
 	{
 		return NULL;
 	}
+}
+
+inline LLVOAvatar *LLViewerObjectList::findAvatar(const LLUUID &id) const
+{
+	std::map<LLUUID, LLPointer<LLVOAvatar> >::const_iterator iter = mUUIDAvatarMap.find(id);
+	return (iter != mUUIDAvatarMap.end()) ? iter->second : NULL;
 }
 
 inline LLViewerObject *LLViewerObjectList::getObject(const S32 index)

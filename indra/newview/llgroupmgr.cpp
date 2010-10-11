@@ -54,6 +54,9 @@
 #include "llfloaterdirectory.h"
 #include "llfloatergroupinfo.h"
 #include "lluictrlfactory.h"
+#if LL_MSVC
+#pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
+#endif
 #include <boost/regex.hpp>
 
 

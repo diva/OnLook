@@ -109,6 +109,10 @@ void LLViewerJointMesh::updateGeometrySSE(LLFace *face, LLPolyMesh *mesh)
 
 	buffer->setBuffer(0);
 }
+bool LLViewerJointMesh::supportsSSE()
+{
+	return true;
+}
 
 #else
 
@@ -116,5 +120,10 @@ void LLViewerJointMesh::updateGeometrySSE(LLFace *face, LLPolyMesh *mesh)
 {
 	LLViewerJointMesh::updateGeometryVectorized(face, mesh);
 }
+bool LLViewerJointMesh::supportsSSE()
+{
+	return false;
+}
 
 #endif
+

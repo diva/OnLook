@@ -152,6 +152,8 @@ public:
 	
 	static void updateVectorize(); // Update globals when settings variables change
 	
+	static bool supportsSSE();
+	static bool supportsSSE2();
 private:
 	// Avatar vertex skinning is a significant performance issue on computers
 	// with avatar vertex programs turned off (for example, most Macs).  We

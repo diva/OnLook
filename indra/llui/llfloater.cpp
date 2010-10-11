@@ -1408,8 +1408,8 @@ void LLFloater::draw()
 		S32 right = getRect().getWidth() - LLPANEL_BORDER_WIDTH;
 		S32 bottom = LLPANEL_BORDER_WIDTH;
 
-		LLColor4 shadow_color = LLUI::sColorsGroup->getColor("ColorDropShadow");
-		F32 shadow_offset = (F32)LLUI::sConfigGroup->getS32("DropShadowFloater");
+		static LLColor4 shadow_color = LLUI::sColorsGroup->getColor("ColorDropShadow");
+		static F32 shadow_offset = (F32)LLUI::sConfigGroup->getS32("DropShadowFloater");
 		if (!isBackgroundOpaque())
 		{
 			shadow_offset *= 0.2f;

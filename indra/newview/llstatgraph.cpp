@@ -109,7 +109,8 @@ void LLStatGraph::draw()
 	//				gColors.getColor("ColorDropShadow"), 
 	//				(S32) gSavedSettings.getF32("DropShadowFloater") );
 
-	color = gColors.getColor( "MenuDefaultBgColor" );
+	static LLCachedControl<LLColor4> menu_default_color("MenuDefaultBgColor",LLColor4(0,0,255),gColors);
+	color = menu_default_color;
 	gGL.color4fv(color.mV);
 	gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0, TRUE);
 

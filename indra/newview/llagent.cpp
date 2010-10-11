@@ -543,7 +543,8 @@ void LLAgent::resetView(BOOL reset_camera, BOOL change_camera)
 		gMenuHolder->hideMenus();
 	}
 
-	if (change_camera && !gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (change_camera && !freeze_time)
 	{
 		changeCameraToDefault();
 		
@@ -566,8 +567,7 @@ void LLAgent::resetView(BOOL reset_camera, BOOL change_camera)
 		LLToolMgr::getInstance()->setCurrentToolset(gBasicToolset);
 	}
 
-
-	if (reset_camera && !gSavedSettings.getBOOL("FreezeTime"))
+	if (reset_camera && !freeze_time)
 	{
 		if (!gViewerWindow->getLeftMouseDown() && cameraThirdPerson())
 		{
@@ -786,7 +786,8 @@ BOOL LLAgent::canFly()
 	if (isGodlike()) return TRUE;
 
 	// <edit>
-	if(gSavedSettings.getBOOL("AscentFlyAlwaysEnabled")) 
+	static LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled",false);
+	if(ascent_fly_always_enabled) 
 		return TRUE;
 	// </edit>
 
@@ -1972,7 +1973,8 @@ void LLAgent::cameraOrbitIn(const F32 meters)
 		
 		mCameraZoomFraction = (mTargetCameraDistance - meters) / camera_offset_dist;
 
-		if (!gSavedSettings.getBOOL("FreezeTime") && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
+		static LLCachedControl<bool> freeze_time("FreezeTime",false);
+		if (!freeze_time && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
 		{
 			// No need to animate, camera is already there.
 			changeCameraToMouselook(FALSE);
@@ -2818,8 +2820,8 @@ void LLAgent::startTyping()
 
 	if (mChatTimer.getElapsedTimeF32() < 2.f)
 	{
-		LLViewerObject* chatter = gObjectList.findObject(mLastChatterID);
-		if (chatter && chatter->isAvatar())
+		LLVOAvatar* chatter = gObjectList.findAvatar(mLastChatterID);
+		if (chatter)
 		{
 			gAgent.setLookAt(LOOKAT_TARGET_RESPOND, chatter, LLVector3::zero);
 		}
@@ -6367,7 +6369,8 @@ void LLAgent::teleportViaLocationLookAt(const LLVector3d& pos_global)
 void LLAgent::setTeleportState(ETeleportState state)
 {
 	mTeleportState = state;
-	if (mTeleportState > TELEPORT_NONE && gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (mTeleportState > TELEPORT_NONE && freeze_time)
 	{
 		LLFloaterSnapshot::hide(0);
 	}
@@ -7536,7 +7539,7 @@ void LLAgent::sendAgentSetAppearance()
 			LLColor4 color;
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
-				color = LLSavedSettingsGlue::setCOAColor4("AscentCustomTagColor");
+				color = gCOASavedSettings->setColor4("AscentCustomTagColor");
 			}
 			else
 			{

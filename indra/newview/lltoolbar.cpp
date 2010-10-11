@@ -305,7 +305,9 @@ void LLToolBar::refresh()
 	{
 		build_mode = FALSE;
 	}
-	gSavedSettings.setBOOL("BuildBtnState", build_mode);
+	static LLCachedControl<bool> build_btn_state("BuildBtnState",false);
+	if(build_btn_state!=(bool)build_mode)
+		build_btn_state = build_mode;
 
 	if (isInVisibleChain())
 	{

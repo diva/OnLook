@@ -407,17 +407,10 @@ void LLFloaterAvatarList::updateAvatarList()
 			const LLUUID &avid = avatar_ids[i];
 
 			LLVector3d position;
-			LLViewerObject *obj = gObjectList.findObject(avid);
+			LLVOAvatar* avatarp = gObjectList.findAvatar(avid);
 
-			if (obj)
+			if (avatarp)
 			{
-				LLVOAvatar* avatarp = dynamic_cast<LLVOAvatar*>(obj);
-
-				if (avatarp == NULL)
-				{
-					continue;
-				}
-
 				// Skip if avatar is dead(what's that?)
 				// or if the avatar is ourselves.
 				// or if the avatar is a dummy
@@ -816,7 +809,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 		std::string client;
-		LLVOAvatar *avatarp = (LLVOAvatar*)gObjectList.findObject(av_id);
+		LLVOAvatar *avatarp = gObjectList.findAvatar(av_id);
 		if(avatarp)
 		{
 			avatarp->getClientInfo(client, avatar_name_color, TRUE);
@@ -1276,9 +1269,9 @@ static void send_freeze(const LLUUID& avatar_id, bool freeze)
 	}
 
 	LLMessageSystem* msg = gMessageSystem;
-	LLViewerObject* avatar = gObjectList.findObject(avatar_id);
+	LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
 
-	if (avatar)
+	if (avatarp && avatarp->getRegion())
 	{
 		msg->newMessage("FreezeUser");
 		msg->nextBlock("AgentData");
@@ -1287,16 +1280,16 @@ static void send_freeze(const LLUUID& avatar_id, bool freeze)
 		msg->nextBlock("Data");
 		msg->addUUID("TargetID", avatar_id);
 		msg->addU32("Flags", flags);
-		msg->sendReliable( avatar->getRegion()->getHost());
+		msg->sendReliable( avatarp->getRegion()->getHost());
 	}
 }
 
 static void send_eject(const LLUUID& avatar_id, bool ban)
 {	
 	LLMessageSystem* msg = gMessageSystem;
-	LLViewerObject* avatar = gObjectList.findObject(avatar_id);
+	LLVOAvatar* avatarp = gObjectList.findAvatar(avatar_id);
 
-	if (avatar)
+	if (avatarp && avatarp->getRegion())
 	{
 		U32 flags = 0x0;
 		if (ban)
@@ -1312,7 +1305,7 @@ static void send_eject(const LLUUID& avatar_id, bool ban)
 		msg->nextBlock("Data");
 		msg->addUUID("TargetID", avatar_id);
 		msg->addU32("Flags", flags);
-		msg->sendReliable( avatar->getRegion()->getHost());
+		msg->sendReliable( avatarp->getRegion()->getHost());
 	}
 }
 

@@ -293,8 +293,11 @@ void LLHUDText::renderText(BOOL for_select)
 	LLUIImagePtr imagep = LLUI::getUIImage("rounded_square.tga");
 
 	// *TODO: make this a per-text setting
-	LLColor4 bg_color = gSavedSettings.getColor4("BackgroundChatColor");
-	bg_color.setAlpha(gSavedSettings.getF32("ChatBubbleOpacity") * alpha_factor);
+	static LLCachedControl<LLColor4> background_chat_color("BackgroundChatColor", LLColor4(0,0,0,1.f));
+	//static LLColor4 background_chat_color(0,0,0,1.f); 
+	static LLCachedControl<F32> chat_bubble_opacity("ChatBubbleOpacity", .5);
+	LLColor4 bg_color = background_chat_color;
+	bg_color.setAlpha(chat_bubble_opacity * alpha_factor);
 
 	const S32 border_height = 16;
 	const S32 border_width = 16;

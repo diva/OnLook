@@ -196,6 +196,7 @@ U8* LLImageBase::reallocateData(S32 size)
 	}
 	else
 		llwarns << "Out of memory in LLImageBase::reallocateData" << llendl;
+
 	return data;
 }
 

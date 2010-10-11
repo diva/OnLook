@@ -340,20 +340,20 @@ void LLHUDEffectLookAt::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	
 	htonmemcpy(source_id.mData, &(packed_data[SOURCE_AVATAR]), MVT_LLUUID, 16);
 
-	LLViewerObject *objp = gObjectList.findObject(source_id);
-	if (objp && objp->isAvatar())
 	{
-		setSourceObject(objp);
-	}
-	else
-	{
-		//llwarns << "Could not find source avatar for lookat effect" << llendl;
-		return;
+		LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
+		if (avatarp)
+			setSourceObject(avatarp);
+		else
+		{
+			//llwarns << "Could not find source avatar for lookat effect" << llendl;
+			return;
+		}
 	}
 
 	htonmemcpy(target_id.mData, &(packed_data[TARGET_OBJECT]), MVT_LLUUID, 16);
 
-	objp = gObjectList.findObject(target_id);
+	LLViewerObject *objp = gObjectList.findObject(target_id);
 
 	htonmemcpy(new_target.mdV, &(packed_data[TARGET_POS]), MVT_LLVector3d, 24);
 
@@ -504,7 +504,8 @@ void LLHUDEffectLookAt::setSourceObject(LLViewerObject* objectp)
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::render()
 {
-    if (gSavedSettings.getBOOL("PrivateLookAt") &&
+	static LLCachedControl<bool> private_look_at("PrivateLookAt",false);
+    if (private_look_at &&
         (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject))) return;
 	if (sDebugLookAt && mSourceObject.notNull())
 	{

@@ -116,6 +116,7 @@ LLPrefsAscentSysImpl::LLPrefsAscentSysImpl()
 	childSetCommitCallback("system_folder_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
 	childSetCommitCallback("enable_clouds", onCommitCheckBox, this);
+
 	refreshValues();
 	refresh();
 }
@@ -186,8 +187,10 @@ void LLPrefsAscentSysImpl::refreshValues()
 	//Performance -------------------------------------------------------------------------
 	mFetchInventoryOnLogin		= gSavedSettings.getBOOL("FetchInventoryOnLogin");
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
-	mEnableClouds        = gSavedSettings.getBOOL("CloudsEnabled");
-	mEnableClassicClouds  = gSavedSettings.getBOOL("SkyUseClassicClouds");
+
+	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
+		mEnableClassicClouds	= gSavedSettings.getBOOL("SkyUseClassicClouds");
+
 	mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 
@@ -292,7 +295,7 @@ void LLPrefsAscentSysImpl::refresh()
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
-	childSetValue("enable_classic_clouds", mEnableClassicClouds);
+		childSetValue("enable_classic_clouds", mEnableClassicClouds);
 	gLLWindEnabled = mEnableLLWind;
 	childSetValue("speed_rez_check", mSpeedRez);
 		childSetEnabled("speed_rez_interval", mSpeedRez);
@@ -332,7 +335,7 @@ void LLPrefsAscentSysImpl::cancel()
 	childSetValue("fetch_inventory_on_login_check", mFetchInventoryOnLogin);
 	childSetValue("enable_wind", mEnableLLWind);
 	childSetValue("enable_clouds", mEnableClouds);
-	childSetValue("enable_classic_clouds", mEnableClassicClouds);
+		childSetValue("enable_classic_clouds", mEnableClassicClouds);
 	childSetValue("speed_rez_check", mSpeedRez);
 	if (mSpeedRez)
 	{
@@ -354,6 +357,7 @@ void LLPrefsAscentSysImpl::cancel()
 	
 	childSetValue("enable_clouds", mEnableClouds);
 	childSetValue("enable_classic_clouds", mEnableClassicClouds);
+
 	gLLWindEnabled = mEnableLLWind;
 }
 

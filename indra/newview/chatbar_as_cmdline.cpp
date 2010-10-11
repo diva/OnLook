@@ -198,8 +198,13 @@ void invrepair()
 }
 
 
-
-
+#if PROF_CTRL_CALLS
+extern std::vector<std::pair<std::string, U32>> gSettingsCallMap;
+bool stort_calls(const std::pair<std::string, U32>& left, const std::pair<std::string, U32>& right)
+{
+	return left.second < right.second;
+}
+#endif //PROF_CTRL_CALLS
 bool cmd_line_chat(std::string revised_text, EChatType type)
 {
 	if(gSavedSettings.getBOOL("AscentCmdLine"))
@@ -414,6 +419,16 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 			{
 				invrepair();
 			}
+#if PROF_CTRL_CALLS
+			else if(command == "dumpcalls")
+			{
+				llinfos << "gSavedSettings lookup count (" << gFrameCount << "frames)" << llendl;
+				std::sort(gSettingsCallMap.begin(),gSettingsCallMap.end(),stort_calls);
+				for(U32 i = 0;i<gSettingsCallMap.size();i++)
+					llinfos << gSettingsCallMap[i].first << " : " << gSettingsCallMap[i].second << "  " << ((float)gSettingsCallMap[i].second / (float)gFrameCount) << "c/f" << llendl;
+				return false;
+			}
+#endif //PROF_CTRL_CALLS
 		}
 	}
 	return true;
@@ -444,10 +459,9 @@ LLUUID cmdline_partial_name2key(std::string partial_name)
 		}
 		if (av_name.empty() && !gCacheName->getFullName(*i, av_name))
 		{
-			LLViewerObject *obj = gObjectList.findObject(*i);
-			if(obj)
+			LLVOAvatar *avatarp = gObjectList.findAvatar(*i);
+			if(avatarp)
 			{
-				LLVOAvatar* avatarp = dynamic_cast<LLVOAvatar*>(obj);
 				av_name = avatarp->getFullname();
 			}
 		}
@@ -471,10 +485,10 @@ void cmdline_tp2name(std::string target)
 		return;
 	}
 	LLFloaterAvatarList* avlist = LLFloaterAvatarList::getInstance();
-	LLViewerObject* obj = gObjectList.findObject(avkey);
-	if(obj)
+	LLVOAvatar* avatarp = gObjectList.findAvatar(avkey);
+	if(avatarp)
 	{
-		LLVector3d pos = obj->getPositionGlobal();
+		LLVector3d pos = avatarp->getPositionGlobal();
 		pos.mdV[VZ] += 2.0;
 		gAgent.teleportViaLocation(pos);
 	}

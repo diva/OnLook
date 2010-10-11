@@ -1020,7 +1020,8 @@ U32 LLPipeline::addObject(LLViewerObject *vobj)
 		return 0;
 	}
 
-	if (gSavedSettings.getBOOL("RenderDelayCreation"))
+	static LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
+	if (render_delay_creation)
 	{
 		mCreateQ.push_back(vobj);
 	}
@@ -1083,7 +1084,8 @@ void LLPipeline::createObject(LLViewerObject* vobj)
 
 	markRebuild(drawablep, LLDrawable::REBUILD_ALL, TRUE);
 
-	if (drawablep->getVOVolume() && gSavedSettings.getBOOL("RenderAnimateRes"))
+	static LLCachedControl<bool> render_animate_res("RenderAnimateRes",false);
+	if (drawablep->getVOVolume() && render_animate_res)
 	{
 		// fun animated res
 		drawablep->updateXform(TRUE);
@@ -1122,7 +1124,8 @@ void LLPipeline::resetFrameStats()
 //external functions for asynchronous updating
 void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 {
-	if (gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (freeze_time)
 	{
 		return;
 	}
@@ -1152,7 +1155,8 @@ void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 
 void LLPipeline::updateMoveNormalAsync(LLDrawable* drawablep)
 {
-	if (gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (freeze_time)
 	{
 		return;
 	}
@@ -1205,7 +1209,8 @@ void LLPipeline::updateMove()
 	LLFastTimer t(LLFastTimer::FTM_UPDATE_MOVE);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
-	if (gSavedSettings.getBOOL("FreezeTime"))
+	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	if (freeze_time)
 	{
 		return;
 	}
@@ -2296,7 +2301,8 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
-	if (gSavedSettings.getBOOL("BeaconAlwaysOn") && !sShadowRender)
+	static LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
+	if (beacon_always_on && !sShadowRender)
 	{
 		if (sRenderScriptedTouchBeacons)
 		{
@@ -5942,8 +5948,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 				                     (1<<LLPipeline::RENDER_TYPE_VOIDWATER) |
 				                     (1<<LLPipeline::RENDER_TYPE_GROUND) |
 				                     (1<<LLPipeline::RENDER_TYPE_SKY) |
-				                     (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
-									 (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS));
+									 (1<<LLPipeline::RENDER_TYPE_WL_CLOUDS) |
+				                     (1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS));
 
 				if (gSavedSettings.getBOOL("RenderWaterReflections"))
 				{ //mask out selected geometry based on reflection detail

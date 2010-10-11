@@ -98,7 +98,9 @@ std::string LLServiceBuilder::buildServiceURI(const std::string& service_name)
 {
 	std::ostringstream service_url;
 	// Find the service builder
-	if(mServiceMap.find(service_name) != mServiceMap.end())
+	std::map<std::string, std::string>::const_iterator it =
+		mServiceMap.find(service_name);
+	if(it != mServiceMap.end())
 	{
 		// construct the service builder url
 		LLApp* app = LLApp::instance();
@@ -119,7 +121,7 @@ std::string LLServiceBuilder::buildServiceURI(const std::string& service_name)
 			}
 			service_url << base_url.asString();
 		}
-		service_url << mServiceMap[service_name];
+		service_url << it->second;
 	}
 	else
 	{

@@ -209,7 +209,8 @@ void LLDrawPoolTerrain::render(S32 pass)
 	}
 
 	// Special-case for land ownership feedback
-	if (gSavedSettings.getBOOL("ShowParcelOwners"))
+	static LLCachedControl<bool> show_parcel_owners("ShowParcelOwners",false);
+	if (show_parcel_owners)
 	{
 		if (mVertexShaderLevel > 1)
 		{ //use fullbright shader for highlighting
