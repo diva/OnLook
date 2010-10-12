@@ -51,6 +51,7 @@
 #include "llcombobox.h"
 #include "lldrawpoolbump.h"
 #include "llface.h"
+#include "llinventorymodel.h" //Perms check for texture params
 #include "lllineeditor.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"
@@ -1183,8 +1184,22 @@ void LLPanelFace::onClickCopy(void* userdata)
 	textures.clear();
 	for (S32 i = 0; i < te_count; i++)
 	{
+		LLSD tex_params = objectp->getTE(i)->asLLSD();
+		LLInventoryItem* itemp = gInventory.getItem(objectp->getTE(i)->getID());
+		LLUUID tex = tex_params["imageid"];
+		tex_params["imageid"] = LLUUID::null;
+		gSavedPerAccountSettings.setLLSD("Image.Settings", tex_params);
+		if (itemp)
+		{
+			LLPermissions perms = itemp->getPermissions();
+			//full perms
+			if (perms.getMaskOwner() & PERM_ITEM_UNRESTRICTED)
+			{
+				tex_params["imageid"] = tex;
+			}
+		}
 		llinfos << "Copying params on face " << i << "." << llendl;
-		textures.append(objectp->getTE(i)->asLLSD());
+		textures.append(tex_params);
 	}
 }
 
@@ -1215,6 +1230,9 @@ void LLPanelFace::onClickPaste(void* userdata)
 	for (int i = 0; i < textures.size(); i++)
 	{
 		llinfos << "Pasting params on face " << i << "." << llendl;
+		LLSD cur_tex = objectp->getTE(i)->asLLSD();
+		if (textures[i]["imageid"].asUUID() == LLUUID::null)
+			textures[i]["imageid"] = cur_tex["imageid"];
 		LLTextureEntry tex;
 		tex.fromLLSD(textures[i]);
 		obj.setTE(U8(i), tex);
