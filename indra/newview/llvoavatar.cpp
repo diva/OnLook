@@ -3825,22 +3825,28 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		if (mNameText.notNull() && firstname && lastname)
 		{
 			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
-			if(mNameAway && ! is_away) mIdleTimer.reset();
 			BOOL is_busy = mSignaledAnimations.find(ANIM_AGENT_BUSY) != mSignaledAnimations.end();
-			if(mNameBusy && ! is_busy) mIdleTimer.reset();
 			BOOL is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
-			if(mNameAppearance && ! is_appearance) mIdleTimer.reset();
 			BOOL is_muted = !mIsSelf && LLMuteList::getInstance()->isMuted(getID());
-
+			BOOL is_idle = FALSE;
+			BOOL idle_reset = (mNameAppearance && ! is_appearance) || (mNameAway && ! is_away) || (mNameBusy && ! is_busy);
+			if(idle_reset)
+				mIdleTimer.reset();
+			else
+			{
+				static const LLCachedControl<bool> ascent_show_idle_time("AscentShowIdleTime",true);
+				is_idle = !mIsSelf && ascent_show_idle_time && mIdleTimer.getElapsedTimeF32() > 120;
+			}
 			//Is client-tagging enabled for this av?
 			BOOL render_tag = (((mIsSelf && ascent_show_self_tag) || (!mIsSelf && ascent_show_others_tag)));
 
-			if (mNameString.empty() ||
-				new_name ||
-				(!title && !mTitle.empty()) ||
-				(title && mTitle != title->getString()) ||
-				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
-				|| is_appearance != mNameAppearance
+			if (mNameString.empty()
+				|| new_name
+				|| (!title && !mTitle.empty())
+				|| (title && mTitle != title->getString())
+				|| is_muted != mNameMute //Mute setting changed
+				|| idle_reset //Idle time was reset.
+				|| is_idle //Agent is indeed idle
 				|| tag_changed //mClientTag was just set.
 				|| (mRenderTag != render_tag) //tag setting is dirty. Need to update mNameString.
 				)
@@ -3915,8 +3921,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line += "(Editing Appearance)";
 				}
 				
-				static const LLCachedControl<bool> ascent_show_idle_time("AscentShowIdleTime",true);
-				if(!mIsSelf && ascent_show_idle_time && mIdleTimer.getElapsedTimeF32() > 120 )
+				if(is_idle)
 				{
 					line += "\n";
 					line += getIdleTime();
