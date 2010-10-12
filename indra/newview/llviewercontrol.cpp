@@ -665,16 +665,12 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
 
 	gSavedSettings.getControl("AscentStoreSettingsPerAccount")->getSignal()->connect(boost::bind(&handleAscentCOAChange,_1));
-	gSavedSettings.getControl("AscentShowSelfTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
-	gSavedSettings.getControl("AscentShowSelfTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gCOASavedSettings->getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gCOASavedSettings->getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gCOASavedSettings->getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gCOASavedSettings->getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
-	gSavedSettings.getControl("AscentShowOthersTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
-	gSavedSettings.getControl("AscentShowOthersTagColor")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 }
 

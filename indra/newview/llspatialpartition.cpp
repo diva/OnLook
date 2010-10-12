@@ -1302,7 +1302,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 {
 	if (mSpatialPartition->isOcclusionEnabled() && LLPipeline::sUseOcclusion > 1)
 	{
-		static LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
+		static const LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
 		// Don't cull hole/edge water, unless RenderWaterVoidCulling is set and we have the GL_ARB_depth_clamp extension.
 		if ((mSpatialPartition->mDrawableType == LLPipeline::RENDER_TYPE_VOIDWATER &&
 			 !(render_water_void_culling && gGLManager.mHasDepthClamp)) ||

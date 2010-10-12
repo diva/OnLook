@@ -54,7 +54,7 @@ extern std::map<std::string, LLControlGroup*> gSettings;
 void create_graphics_group(LLControlGroup& group);
 
 // saved at end of session
-extern LLControlGroup *gCOASavedSettings;
+// gSavedSettings and gCOASavedSettings moved to llcontrol.h
 extern LLControlGroup gSavedPerAccountSettings;
 
 // Read-only

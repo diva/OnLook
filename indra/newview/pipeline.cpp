@@ -1020,7 +1020,7 @@ U32 LLPipeline::addObject(LLViewerObject *vobj)
 		return 0;
 	}
 
-	static LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
+	static const LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
 	if (render_delay_creation)
 	{
 		mCreateQ.push_back(vobj);
@@ -1084,7 +1084,7 @@ void LLPipeline::createObject(LLViewerObject* vobj)
 
 	markRebuild(drawablep, LLDrawable::REBUILD_ALL, TRUE);
 
-	static LLCachedControl<bool> render_animate_res("RenderAnimateRes",false);
+	static const LLCachedControl<bool> render_animate_res("RenderAnimateRes",false);
 	if (drawablep->getVOVolume() && render_animate_res)
 	{
 		// fun animated res
@@ -1124,7 +1124,7 @@ void LLPipeline::resetFrameStats()
 //external functions for asynchronous updating
 void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 {
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -1155,7 +1155,7 @@ void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 
 void LLPipeline::updateMoveNormalAsync(LLDrawable* drawablep)
 {
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -1209,7 +1209,7 @@ void LLPipeline::updateMove()
 	LLFastTimer t(LLFastTimer::FTM_UPDATE_MOVE);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -2301,7 +2301,7 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
-	static LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
+	static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
 	if (beacon_always_on && !sShadowRender)
 	{
 		if (sRenderScriptedTouchBeacons)
@@ -5424,14 +5424,14 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	}
 
 	shader.uniform4fv("shadow_clip", 1, mSunClipPlanes.mV);
-	static LLCachedControl<F32> render_deferred_sun_wash("RenderDeferredSunWash",.5f);
-	static LLCachedControl<F32> render_shadow_noise("RenderShadowNoise",-.0001f);
-	static LLCachedControl<F32> render_shadow_blur_size("RenderShadowBlurSize",.7f);
-	static LLCachedControl<F32> render_ssao_scale("RenderSSAOScale",500);
-	static LLCachedControl<S32> render_ssao_max_scale("RenderSSAOMaxScale",60);
-	static LLCachedControl<F32> render_ssao_factor("RenderSSAOFactor",.3f);
-	static LLCachedControl<LLVector3> render_ssao_effect("RenderSSAOEffect",LLVector3(.4f,1,0));
-	static LLCachedControl<F32> render_deferred_alpha_soft("RenderDeferredAlphaSoften",.75f);
+	static const LLCachedControl<F32> render_deferred_sun_wash("RenderDeferredSunWash",.5f);
+	static const LLCachedControl<F32> render_shadow_noise("RenderShadowNoise",-.0001f);
+	static const LLCachedControl<F32> render_shadow_blur_size("RenderShadowBlurSize",.7f);
+	static const LLCachedControl<F32> render_ssao_scale("RenderSSAOScale",500);
+	static const LLCachedControl<S32> render_ssao_max_scale("RenderSSAOMaxScale",60);
+	static const LLCachedControl<F32> render_ssao_factor("RenderSSAOFactor",.3f);
+	static const LLCachedControl<LLVector3> render_ssao_effect("RenderSSAOEffect",LLVector3(.4f,1,0));
+	static const LLCachedControl<F32> render_deferred_alpha_soft("RenderDeferredAlphaSoften",.75f);
 
 	shader.uniform1f("sun_wash", render_deferred_sun_wash);
 	shader.uniform1f("shadow_noise", render_shadow_noise);

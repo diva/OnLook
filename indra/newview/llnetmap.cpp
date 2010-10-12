@@ -359,11 +359,11 @@ void LLNetMap::draw()
 		// Draw avatars
 //		LLColor4 mapcolor = gAvatarMapColor;
 
-		LLColor4 standard_color = gColors.getColor( "MapAvatar" );
-		LLColor4 friend_color = gCOASavedSettings->getColor4("AscentFriendColor");
-		LLColor4 em_color = gCOASavedSettings->getColor4("AscentEstateOwnerColor");
-		LLColor4 linden_color = gCOASavedSettings->getColor4("AscentLindenColor");
-		LLColor4 muted_color = gCOASavedSettings->getColor4("AscentMutedColor");
+		static const LLCachedControl<LLColor4>		standard_color("MapAvatar",LLColor4(0.f,1.f,0.f,1.f),gColors);
+		static const LLCachedCOAControl<LLColor4>	friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+		static const LLCachedCOAControl<LLColor4>	em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+		static const LLCachedCOAControl<LLColor4>	linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+		static const LLCachedCOAControl<LLColor4>	muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
 
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLVector3d> positions;

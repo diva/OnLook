@@ -2784,7 +2784,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 			if (!is_muted && !is_busy)
 			{
-				static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
 				visible_in_chat_bubble = use_chat_bubbles;
 				((LLVOAvatar*)chatter)->addChat(chat);
 			}

@@ -655,8 +655,8 @@ void LLWorld::updateParticles()
 
 void LLWorld::updateClouds(const F32 dt)
 {
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
-	static LLCachedControl<bool> sky_use_classic_clouds("SkyUseClassicClouds",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> sky_use_classic_clouds("SkyUseClassicClouds",false);
 	if (freeze_time ||
 		!sky_use_classic_clouds)
 	{

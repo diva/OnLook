@@ -300,7 +300,7 @@ private:
 		}
 		else
 		{
-			mCachedValue = (const T&)mControl->getValue();
+			handleValueChange(mControl->getValue());
 		}
 
 		// Add a listener to the controls signal...
@@ -324,7 +324,15 @@ public:
 	   return *this;
 	}
 	
-	operator const T&() { return mCachedValue; }
+	operator const T&() const { return mCachedValue; }
+	/*	Sometimes implicit casting doesn't work.
+		For instance, something like "LLCachedControl<LLColor4> color("blah",LLColor4()); color.getValue();" 
+		will not compile as it will look for the function getValue() in LLCachedControl, which doesn't exist.
+			Use 'color.get().getValue()' instead if something like this happens.
+		
+		Manually casting to (const T) would work too, but it's ugly and requires knowledge of LLCachedControl's internals
+	*/
+	const T &get() const { return mCachedValue; } 
 
 	LLPointer<LLControlVariable> getControl() const
 	{
@@ -343,10 +351,20 @@ private:
 			group.declareControl(name, type, init_value, comment, FALSE);
 		}
 	}
-
-	bool handleValueChange(const LLSD& newvalue)
+	template <class TT> void setValue(const LLSD& newvalue) //default behavior
 	{
 		mCachedValue = (const T &)newvalue;
+	}
+	template <> void setValue<LLColor4>(const LLSD& newvalue)
+	{
+		if(mControl->isType(TYPE_COL4U))
+			mCachedValue.set(LLColor4U(newvalue)); //a color4u LLSD cannot be auto-converted to color4.. so do it manually.
+		else
+			mCachedValue = (const T &)newvalue;
+	}
+	bool handleValueChange(const LLSD& newvalue)
+	{
+		setValue<T>(newvalue);
 		return true;
 	}
 
@@ -383,6 +401,11 @@ public:
 		if(mCOAConnection.connected())
 			mCOAConnection.disconnect();
 	}
+	LLCachedCOAControl& operator =(const T& newvalue)
+	{
+	   mCachedControl = newvalue;
+	   return *this;
+	}
 	bool handleCOAValueChange(const LLSD& newvalue)
 	{
 		if(mCachedControl)
@@ -390,7 +413,8 @@ public:
 		mCachedControl = new LLCachedControl<T>(mName,mDefault,gCOASavedSettings,mComment);
 		return true;
 	}
-	operator const T&() { return *mCachedControl; }
+	operator const T&() const { return *mCachedControl; }
+	const T &get() const { return *mCachedControl; }
 };
 
 //Following is actually defined in newview/llviewercontrol.cpp, but extern access is fine (Unless GCC bites me)

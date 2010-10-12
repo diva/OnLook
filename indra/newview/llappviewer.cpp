@@ -1020,7 +1020,7 @@ bool LLAppViewer::mainLoop()
 			// Sleep and run background threads
 			{
 				LLFastTimer t2(LLFastTimer::FTM_SLEEP);
-				static LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
+				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 
 				// yield some time to the os based on command line option
 				if(mYieldTime >= 0)
@@ -4077,7 +4077,7 @@ void LLAppViewer::resumeMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			static const LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
 			secs = mainloop_timeout_default;
 		}
 		
@@ -4105,7 +4105,7 @@ void LLAppViewer::pingMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			static const LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
 			secs = mainloop_timeout_default;
 		}
 

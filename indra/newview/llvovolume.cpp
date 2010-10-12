@@ -2220,8 +2220,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	std::vector<LLFace*> alpha_faces;
 	U32 useage = group->mSpatialPartition->mBufferUsage;
 
-	static LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
-	static LLCachedControl<S32> render_max_node_size("RenderMaxNodeSize",8192);
+	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
+	static const LLCachedControl<S32> render_max_node_size("RenderMaxNodeSize",8192);
 	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
 	U32 max_total = (render_max_node_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
@@ -2503,7 +2503,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort)
 {
 	//calculate maximum number of vertices to store in a single buffer
-	static LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
+	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
 	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
 

@@ -504,7 +504,7 @@ void LLHUDEffectLookAt::setSourceObject(LLViewerObject* objectp)
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::render()
 {
-	static LLCachedControl<bool> private_look_at("PrivateLookAt",false);
+	static const LLCachedControl<bool> private_look_at("PrivateLookAt",false);
     if (private_look_at &&
         (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject))) return;
 	if (sDebugLookAt && mSourceObject.notNull())

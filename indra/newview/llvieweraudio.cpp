@@ -114,24 +114,24 @@ void init_audio()
 
 void audio_update_volume(bool force_update)
 {
-	static LLCachedControl<F32> master_volume("AudioLevelMaster",1.0);
-	static LLCachedControl<F32> audio_level_sfx("AudioLevelSFX",1.0);
-	static LLCachedControl<F32> audio_level_ui("AudioLevelUI",1.0);
-	static LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1.0);
-	static LLCachedControl<F32> audio_level_music("AudioLevelMusic",1.0);
-	static LLCachedControl<F32> audio_level_media("AudioLevelMedia",1.0);
-	static LLCachedControl<F32> audio_level_voice("AudioLevelVoice",1.0);
-	static LLCachedControl<F32> audio_level_mic("AudioLevelMic",1.0);
-	static LLCachedControl<bool> _mute_audio("MuteAudio",false);
-	static LLCachedControl<bool> mute_sounds("MuteSounds",false);
-	static LLCachedControl<bool> mute_ui("MuteUI",false);
-	static LLCachedControl<bool> mute_ambient("MuteAmbient",false);
-	static LLCachedControl<bool> mute_music("MuteMusic",false);
-	static LLCachedControl<bool> mute_media("MuteMedia",false);
-	static LLCachedControl<bool> mute_voice("MuteVoice",false);
-	static LLCachedControl<bool> mute_when_minimized("MuteWhenMinimized",true);
-	static LLCachedControl<F32> audio_level_doppler("AudioLevelDoppler",1.0);
-	static LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1.0);
+	static const LLCachedControl<F32> master_volume("AudioLevelMaster",1.0);
+	static const LLCachedControl<F32> audio_level_sfx("AudioLevelSFX",1.0);
+	static const LLCachedControl<F32> audio_level_ui("AudioLevelUI",1.0);
+	static const LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1.0);
+	static const LLCachedControl<F32> audio_level_music("AudioLevelMusic",1.0);
+	static const LLCachedControl<F32> audio_level_media("AudioLevelMedia",1.0);
+	static const LLCachedControl<F32> audio_level_voice("AudioLevelVoice",1.0);
+	static const LLCachedControl<F32> audio_level_mic("AudioLevelMic",1.0);
+	static const LLCachedControl<bool> _mute_audio("MuteAudio",false);
+	static const LLCachedControl<bool> mute_sounds("MuteSounds",false);
+	static const LLCachedControl<bool> mute_ui("MuteUI",false);
+	static const LLCachedControl<bool> mute_ambient("MuteAmbient",false);
+	static const LLCachedControl<bool> mute_music("MuteMusic",false);
+	static const LLCachedControl<bool> mute_media("MuteMedia",false);
+	static const LLCachedControl<bool> mute_voice("MuteVoice",false);
+	static const LLCachedControl<bool> mute_when_minimized("MuteWhenMinimized",true);
+	static const LLCachedControl<F32> audio_level_doppler("AudioLevelDoppler",1.0);
+	static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1.0);
 	BOOL mute_audio = _mute_audio;
 	if (!gViewerWindow->getActive() && mute_when_minimized)
 	{
@@ -228,7 +228,7 @@ void audio_update_wind(bool force_update)
 		//
 		if (force_update || (last_camera_water_height * camera_water_height) < 0.f)
 		{
-			static LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1);
+			static const LLCachedControl<F32> audio_level_rolloff("AudioLevelRolloff",1);
 			if (camera_water_height < 0.f)
 			{
 				gAudiop->setRolloffFactor(audio_level_rolloff * LL_ROLLOFF_MULTIPLIER_UNDER_WATER);
@@ -246,10 +246,10 @@ void audio_update_wind(bool force_update)
 		// don't use the setter setMaxWindGain() because we don't
 		// want to screw up the fade-in on startup by setting actual source gain
 		// outside the fade-in.
-		static LLCachedControl<bool> mute_audio("MuteAudio",false);
-		static LLCachedControl<bool> mute_ambient("MuteAmbient",false);
-		static LLCachedControl<F32> audio_level_master("AudioLevelMaster",1);
-		static LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1);
+		static const LLCachedControl<bool> mute_audio("MuteAudio",false);
+		static const LLCachedControl<bool> mute_ambient("MuteAmbient",false);
+		static const LLCachedControl<F32> audio_level_master("AudioLevelMaster",1);
+		static const LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1);
 		F32 master_volume  = mute_audio ? 0.f : mute_ambient;
 		F32 ambient_volume = mute_ambient ? 0.f : audio_level_ambient;
 

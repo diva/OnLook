@@ -763,6 +763,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNameMute(FALSE),
 	mRenderGroupTitles(sRenderGroupTitles),
 	mNameAppearance(FALSE),
+	mRenderTag(FALSE),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
 	mFirstTEMessageReceived( FALSE ),
@@ -3468,22 +3469,24 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	if (!getTE(TEX_HEAD_BODYPAINT))
 		 return;
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
+
+	static const LLCachedControl<LLColor4>	avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
 	if (mIsSelf)
 	{
-		BOOL showCustomTag = gCOASavedSettings->getBOOL("AscentUseCustomTag");
-		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
+		static const LLCachedCOAControl<bool>			ascent_use_custom_tag("AscentUseCustomTag", false);
+		static const LLCachedCOAControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
+		static const LLCachedCOAControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
+		static const LLCachedControl<bool>				ascent_use_tag("AscentUseTag",true);
+		static const LLCachedCOAControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","8873757c-092a-98fb-1afd-ecd347566fcd");
+
+		if (ascent_use_custom_tag)
 		{
-			color = gColors.getColor( "AvatarNameColor" );
+			color = ascent_custom_tag_color;
+			client = ascent_custom_tag_label;
 			return;
 		}
-		else if (showCustomTag)
-		{
-			color = gCOASavedSettings->getColor4("AscentCustomTagColor");
-			client = gCOASavedSettings->getString("AscentCustomTagLabel");
-			return;
-		}
-		else if (gSavedSettings.getBOOL("AscentUseTag"))
-			uuid_str = gCOASavedSettings->getString("AscentReportClientUUID");
+		else if (ascent_use_tag)
+			uuid_str = ascent_report_client_uuid;
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
 	{
@@ -3523,7 +3526,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_UPPER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
-				color = gColors.getColor( "AvatarNameColor" );
+				color = avatar_name_color;
 				client = "?";
 			}
 			return;
@@ -3557,17 +3560,12 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	}
 	else
 	{
-		color = gColors.getColor( "AvatarNameColor" );
+		color = avatar_name_color;
 		color.setAlpha(1.f);
 		client = "?";
 		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
 	}
 
-	if ((mIsSelf)&&(!gSavedSettings.getBOOL("AscentShowSelfTagColor")))
-	{
-		color = gColors.getColor( "AvatarNameColor" );
-	}
-	
 	if (false)
 	//We'll remove this entirely eventually, but it's useful information if we're going to try for the new client tag idea. -HgB
 	//if(useComment) 
@@ -3614,17 +3612,24 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	}
 	
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
-	static LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
-	static LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
-	static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
-	static LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
-	
+	static const LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
+	static const LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
+	static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+	static const LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
+	static const LLCachedControl<LLColor4> avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
+	static const LLCachedControl<bool> ascent_show_self_tag("AscentShowSelfTag",true);
+	static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor",true);
+	static const LLCachedControl<bool> ascent_show_others_tag("AscentShowOthersTag",true);
+	static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor",true);
+
 	BOOL visible_avatar = isVisible() || mNeedsAnimUpdate;
 	BOOL visible_chat = use_chat_bubbles && (mChats.size() || mTyping);
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
 						((sRenderName == RENDER_NAME_ALWAYS) ||
 						(sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME)));
+
+	BOOL tag_changed = FALSE;
 	// If it's your own avatar, don't draw in mouselook, and don't
 	// draw if we're specifically hiding our own name.
 	if (mIsSelf)
@@ -3649,10 +3654,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			new_name = TRUE;
 		}
 
-
-		// <edit>
-		std::string client;
-		// </edit>
 		// First Calculate Alpha
 		// If alpha > 0, create mNameText if necessary, otherwise delete it
 		{
@@ -3692,11 +3693,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					new_name = TRUE;
 				}
 				
-				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 				//As pointed out by Zwagoth, we really shouldn't be doing this per-frame. Skip if we already have the data. -HgB
 				if (mClientTag == "")
 				{
-					mClientColor = gColors.getColor( "AvatarNameColor" );
+					mClientColor = avatar_name_color;
 					if(isFullyLoaded())
 					{
 						//Zwagoth's new client identification - HgB
@@ -3722,65 +3722,73 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 							llinfos << "Using Emerald-style client identifier." << llendl;
 							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
 							getClientInfo(mClientTag,mClientColor);
-							if(mClientTag == "")
-								client = "?"; //prevent console spam..
 						}	
+						if(mClientTag == "") //Failed to resolve. Don't try again unless something's changed.
+							mClientTag = "?"; //prevent console spam..
+						tag_changed = TRUE;
 					}
 
 					// Overwrite the tag/color shit yet again if we want to see
 					// friends in a special color. -- charbl
-					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
+						static const LLCachedControl<bool> ascent_show_friends_tag("AscentShowFriendsTag",true);
+						if (ascent_show_friends_tag && LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 						{
 							mClientTag = "Friend";
+							tag_changed = TRUE;
 						}
 					}
-					if (!mIsSelf && gSavedSettings.getBOOL("AscentUseStatusColors"))
+					if (!mIsSelf)
 					{
-						LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(this->getPositionGlobal());
-						LLUUID estate_owner = LLUUID::null;
-						if(parent_estate && parent_estate->isAlive())
+						static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
+						if ( ascent_use_status_colors)
 						{
-							estate_owner = parent_estate->getOwner();
-						}
-						
-						//Lindens are always more Linden than your friend, make that take precedence
-						if(LLMuteList::getInstance()->isLinden(getFullname()))
-						{
-							mClientColor = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
-						}
-						//check if they are an estate owner at their current position
-						else if(estate_owner.notNull() && this->getID() == estate_owner)
-						{
-							mClientColor = gCOASavedSettings->getColor4("AscentEstateOwnerColor").getValue();
-						}
-						//without these dots, SL would suck.
-						else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
-						{
-							mClientColor = gCOASavedSettings->getColor4("AscentFriendColor");
-						}
-						//big fat jerkface who is probably a jerk, display them as such.
-						else if(LLMuteList::getInstance()->isMuted(this->getID()))
-						{
-							mClientColor = gCOASavedSettings->getColor4("AscentMutedColor").getValue();
+							LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(this->getPositionGlobal());
+							LLUUID estate_owner = LLUUID::null;
+							if(parent_estate && parent_estate->isAlive())
+							{
+								estate_owner = parent_estate->getOwner();
+							}
+							
+							//Lindens are always more Linden than your friend, make that take precedence
+							if(LLMuteList::getInstance()->isLinden(getFullname()))
+							{
+								static const LLCachedCOAControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+								mClientColor = ascent_linden_color;
+							}
+							//check if they are an estate owner at their current position
+							else if(estate_owner.notNull() && this->getID() == estate_owner)
+							{
+								static const LLCachedCOAControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+								mClientColor = ascent_estate_owner_color;
+							}
+							//without these dots, SL would suck.
+							else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
+							{
+								static const LLCachedCOAControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+								mClientColor = ascent_friend_color;
+							}
+							//big fat jerkface who is probably a jerk, display them as such.
+							else if(LLMuteList::getInstance()->isMuted(this->getID()))
+							{
+								static const LLCachedCOAControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
+								mClientColor = ascent_muted_color;
+							}
 						}
 					}
 				}
-
-				client = mClientTag;
-				if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTagColor"))
-							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTagColor")))
-					avatar_name_color = mClientColor;
 				
+				LLColor4 final_name_color(avatar_name_color);
 
-				avatar_name_color.setAlpha(alpha);
+				if ( (mIsSelf && ascent_show_self_tag_color) || (!mIsSelf && ascent_show_others_tag_color) )
+					final_name_color = mClientColor;
+				
+				final_name_color.setAlpha(alpha);
 					
 				//llinfos << "Show Self Tag is set to " << gSavedSettings.getBOOL("AscentShowSelfTagColor") << llendl;
 				
-				mNameText->setColor(avatar_name_color);
+				mNameText->setColor(final_name_color);
 				
-
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				mNameText->setUsePixelSize(TRUE);
 				LLVector3 pixel_right_vec;
@@ -3822,16 +3830,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			if(mNameBusy && ! is_busy) mIdleTimer.reset();
 			BOOL is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
 			if(mNameAppearance && ! is_appearance) mIdleTimer.reset();
-			BOOL is_muted;
-			if (mIsSelf)
-			{
-				is_muted = FALSE;
-			}
-			else
-			{
-				is_muted = LLMuteList::getInstance()->isMuted(getID());
-				
-			}
+			BOOL is_muted = !mIsSelf && LLMuteList::getInstance()->isMuted(getID());
+
+			//Is client-tagging enabled for this av?
+			BOOL render_tag = (((mIsSelf && ascent_show_self_tag) || (!mIsSelf && ascent_show_others_tag)));
 
 			if (mNameString.empty() ||
 				new_name ||
@@ -3839,12 +3841,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				(title && mTitle != title->getString()) ||
 				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
 				|| is_appearance != mNameAppearance
-				|| client.length() ) // <edit>
+				|| tag_changed //mClientTag was just set.
+				|| (mRenderTag != render_tag) //tag setting is dirty. Need to update mNameString.
+				)
 			{
 				std::string line;
-
-
-
 
 				if (!sRenderGroupTitles)
 				{
@@ -3868,24 +3869,14 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				line += " ";
 				line += lastname->getString();
 
-
-
-
-
-
-				std::string additions;
-				BOOL need_comma = FALSE;
-				
-				if (client.length() || is_away || is_muted || is_busy)
+				if (render_tag || is_away || is_muted || is_busy)
 				{
-					if ((client != "")&&(client != "?"))
+					std::string additions;
+					BOOL need_comma = FALSE;
+					if (render_tag && !mClientTag.empty() && mClientTag != "?")
 					{
-						if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTag"))
-							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTag")))
-						{
-							additions += client;
-							need_comma = TRUE;
-						}
+						additions += mClientTag;
+						need_comma = TRUE;
 					}
 					if (is_away)
 					{
@@ -3923,7 +3914,9 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line += "\n";
 					line += "(Editing Appearance)";
 				}
-				if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120 && gSavedSettings.getBOOL("AscentShowIdleTime"))
+				
+				static const LLCachedControl<bool> ascent_show_idle_time("AscentShowIdleTime",true);
+				if(!mIsSelf && ascent_show_idle_time && mIdleTimer.getElapsedTimeF32() > 120 )
 				{
 					line += "\n";
 					line += getIdleTime();
@@ -3933,6 +3926,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				mNameBusy = is_busy;
 				mNameMute = is_muted;
 				mNameAppearance = is_appearance;
+				mRenderTag = render_tag;
 				mTitle = title ? title->getString() : "";
 				LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
 				mNameString = utf8str_to_wstring(line);
@@ -3956,7 +3950,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				std::deque<LLChat>::iterator chat_iter = mChats.begin();
 				mNameText->clearString();
 
-				LLColor4 new_chat = gColors.getColor( "AvatarNameColor" );
+				LLColor4 new_chat(avatar_name_color);
 				LLColor4 normal_chat = lerp(new_chat, LLColor4(0.8f, 0.8f, 0.8f, 1.f), 0.7f);
 				LLColor4 old_chat = lerp(normal_chat, LLColor4(0.6f, 0.6f, 0.6f, 1.f), 0.7f);
 				if (mTyping && mChats.size() >= MAX_BUBBLE_CHAT_UTTERANCES) 
@@ -4018,7 +4012,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 			else
 			{
-				if (gSavedSettings.getBOOL("SmallAvatarNames"))
+				static const LLCachedControl<bool> small_avatar_names("SmallAvatarNames",false);
+				if (small_avatar_names)
 				{
 					mNameText->setFont(LLFontGL::getFontSansSerif());
 				}

@@ -722,7 +722,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 	if (mState == LOAD_FROM_NETWORK)
 	{
-		static LLCachedControl<bool> image_pipeline_use_http("ImagePipelineUseHTTP",false);
+		static const LLCachedControl<bool> image_pipeline_use_http("ImagePipelineUseHTTP",false);
 		bool get_url = image_pipeline_use_http;
 		if (!mUrl.empty()) get_url = false;
 // 		if (mHost != LLHost::invalid) get_url = false;
@@ -1606,7 +1606,7 @@ S32 LLTextureFetch::update(U32 max_time_ms)
 {
 	S32 res;
 	
-	static LLCachedControl<F32> throttle_bandwidth_kbps("ThrottleBandwidthKBPS",500);
+	static const LLCachedControl<F32> throttle_bandwidth_kbps("ThrottleBandwidthKBPS",500);
 	mMaxBandwidth = throttle_bandwidth_kbps;
 	
 	res = LLWorkerThread::update(max_time_ms);

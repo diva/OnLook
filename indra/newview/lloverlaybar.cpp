@@ -371,7 +371,7 @@ void LLOverlayBar::refresh()
 		childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
 
 	// always let user toggle into and out of chatbar
-	static LLCachedControl<bool> chat_visible("ChatVisible",true);
+	static const LLCachedControl<bool> chat_visible("ChatVisible",true);
 	childSetVisible("chat_bar", chat_visible);
 
 	if (buttons_changed)
