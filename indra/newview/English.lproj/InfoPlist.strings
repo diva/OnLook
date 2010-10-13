@@ -2,6 +2,6 @@
 
 CFBundleName = "Ascent";
 
-CFBundleShortVersionString = "Ascent version 1.4.2.7";
-CFBundleGetInfoString = "Snowglobe version 1.4.2.7, Balseraph Software Group";
+CFBundleShortVersionString = "Ascent version 1.4.2.9";
+CFBundleGetInfoString = "Snowglobe version 1.4.2.9, Balseraph Software Group";
 
