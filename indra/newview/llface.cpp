@@ -1269,10 +1269,18 @@ F32 LLFace::getTextureVirtualSize()
 	}
 
 	F32 face_area;
-	if (mVObjp->isSculpted() && texel_area > 1.f)
+	if (mVObjp->isSculpted())
 	{
 		//sculpts can break assumptions about texel area
-		face_area = mPixelArea;
+		if (texel_area > 1.f)
+		{
+			face_area = mPixelArea;
+		}
+		else
+		{
+			face_area =  mPixelArea / llclamp(texel_area, 0.015625f, 128.f);
+		}
+
 	}
 	else
 	{
