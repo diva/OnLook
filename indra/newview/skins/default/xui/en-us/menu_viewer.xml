@@ -78,10 +78,10 @@
 			mouse_opaque="true" name="Quit" shortcut="control|Q" width="243">
 			<on_click function="File.Quit" userdata="" />
 		</menu_item_call>
-		<menu_item_call bottom="-259" enabled="true" height="19" label="Log Out" left="0" color="1 0 0 1"
+	    <!--menu_item_call bottom="-259" enabled="true" height="19" label="Log Out" left="0" color="1 0 0 1"
 			mouse_opaque="true" name="Log Out" width="243">
 			<on_click function="File.LogOut" userdata="" />
-		</menu_item_call>
+		</menu_item_call-->
 	</menu>
 	<menu bottom="97" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="439" label="Edit" left="38" mouse_opaque="false" name="Edit"
