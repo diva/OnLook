@@ -2,25 +2,31 @@
  * @file llkeyframemotion.cpp
  * @brief Implementation of LLKeyframeMotion class.
  *
- * $LicenseInfo:firstyear=2001&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2001&license=viewergpl$
+ * 
+ * Copyright (c) 2001-2009, Linden Research, Inc.
+ * 
  * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
+ * The source code in this file ("Source Code") is provided by Linden Lab
+ * to you under the terms of the GNU General Public License, version 2.0
+ * ("GPL"), unless you have obtained a separate licensing agreement
+ * ("Other License"), formally executed by you and Linden Lab.  Terms of
+ * the GPL can be found in doc/GPL-license.txt in this distribution, or
+ * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
  * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation;
- * version 2.1 of the License only.
+ * There are special exceptions to the terms and conditions of the GPL as
+ * it is applied to this Source Code. View the full text of the exception
+ * in the file doc/FLOSS-exception.txt in this software distribution, or
+ * online at
+ * http://secondlifegrid.net/programs/open_source/licensing/flossexception
  * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * By copying, modifying or distributing this software, you acknowledge
+ * that you have read and understood your obligations described above,
+ * and agree to abide by those obligations.
  * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
+ * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
+ * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
 
@@ -462,7 +468,14 @@ LLMotion *LLKeyframeMotion::create(const LLUUID &id)
 //-----------------------------------------------------------------------------
 LLPointer<LLJointState>& LLKeyframeMotion::getJointState(U32 index)
 {
-	llassert_always (index < mJointStates.size());
+	// <edit>
+	//llassert_always (index < (S32)mJointStates.size());
+	if(index >= (S32)mJointStates.size())
+	{
+		llwarns << "LLKeyframeMotion::getJointState: index >= size" << llendl;
+		index = (S32)mJointStates.size() - 1;
+	}
+	// </edit>
 	return mJointStates[index];
 }
 
@@ -471,7 +484,11 @@ LLPointer<LLJointState>& LLKeyframeMotion::getJointState(U32 index)
 //-----------------------------------------------------------------------------
 LLJoint* LLKeyframeMotion::getJoint(U32 index)
 {
-	llassert_always (index < mJointStates.size());
+	// <edit>
+	//llassert_always (index < (S32)mJointStates.size());
+	if(index >= (S32)mJointStates.size())
+		index = (S32)mJointStates.size() - 1;
+	// </edit>
 	LLJoint* joint = mJointStates[index]->getJoint();
 	llassert_always (joint);
 	return joint;
@@ -652,12 +669,15 @@ BOOL LLKeyframeMotion::onActivate()
 	// If the keyframe anim has an associated emote, trigger it. 
 	if( mJointMotionList->mEmoteName.length() > 0 )
 	{
-		LLUUID emote_anim_id = gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName);
-		// don't start emote if already active to avoid recursion
-		if (!mCharacter->isMotionActive(emote_anim_id))
+		// <edit> crashfix
+		//mCharacter->startMotion( gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName) );
+		LLUUID emo = gAnimLibrary.stringToAnimState(mJointMotionList->mEmoteName);
+		
+		if(mCharacter->findMotion(emo) == NULL)
 		{
-			mCharacter->startMotion( emote_anim_id );
+			mCharacter->startMotion(emo);
 		}
+		// </edit>
 	}
 
 	mLastLoopedTime = 0.f;
@@ -1158,9 +1178,12 @@ void LLKeyframeMotion::applyConstraint(JointConstraint* constraint, F32 time, U8
 	{
 		LLVector3 delta = source_to_target * weight;
 		LLPointer<LLJointState> current_joint_state = getJointState(shared_data->mJointStateIndices[0]);
-		LLQuaternion parent_rot = current_joint_state->getJoint()->getParent()->getWorldRotation();
-		delta = delta * ~parent_rot;
-		current_joint_state->setPosition(current_joint_state->getJoint()->getPosition() + delta);
+		if (current_joint_state->getJoint())
+		{
+			LLQuaternion parent_rot = current_joint_state->getJoint()->getParent()->getWorldRotation();
+			delta = delta * ~parent_rot;
+			current_joint_state->setPosition(current_joint_state->getJoint()->getPosition() + delta);
+		}
 	}
 }
 
@@ -1207,7 +1230,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 
 	if (!dp.unpackS32(temp_priority, "base_priority"))
 	{
-		llwarns << "can't read animation base_priority" << llendl;
+		llwarns << "can't read priority" << llendl;
 		return FALSE;
 	}
 	mJointMotionList->mBasePriority = (LLJoint::JointPriority) temp_priority;
@@ -1216,11 +1239,6 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 	{
 		mJointMotionList->mBasePriority = (LLJoint::JointPriority)((int)LLJoint::ADDITIVE_PRIORITY-1);
 		mJointMotionList->mMaxPriority = mJointMotionList->mBasePriority;
-	}
-	else if (mJointMotionList->mBasePriority < LLJoint::USE_MOTION_PRIORITY)
-	{
-		llwarns << "bad animation base_priority " << mJointMotionList->mBasePriority << llendl;
-		return FALSE;
 	}
 
 	//-------------------------------------------------------------------------
@@ -1232,8 +1250,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		return FALSE;
 	}
 	
-	if (mJointMotionList->mDuration > MAX_ANIM_DURATION ||
-	    !llfinite(mJointMotionList->mDuration))
+	if (mJointMotionList->mDuration > MAX_ANIM_DURATION )
 	{
 		llwarns << "invalid animation duration" << llendl;
 		return FALSE;
@@ -1253,19 +1270,17 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		llwarns << "Malformed animation mEmoteName==mID" << llendl;
 		return FALSE;
 	}
-
+	
 	//-------------------------------------------------------------------------
 	// get loop
 	//-------------------------------------------------------------------------
-	if (!dp.unpackF32(mJointMotionList->mLoopInPoint, "loop_in_point") ||
-	    !llfinite(mJointMotionList->mLoopInPoint))
+	if (!dp.unpackF32(mJointMotionList->mLoopInPoint, "loop_in_point"))
 	{
 		llwarns << "can't read loop point" << llendl;
 		return FALSE;
 	}
 
-	if (!dp.unpackF32(mJointMotionList->mLoopOutPoint, "loop_out_point") ||
-	    !llfinite(mJointMotionList->mLoopOutPoint))
+	if (!dp.unpackF32(mJointMotionList->mLoopOutPoint, "loop_out_point"))
 	{
 		llwarns << "can't read loop point" << llendl;
 		return FALSE;
@@ -1280,15 +1295,13 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 	//-------------------------------------------------------------------------
 	// get easeIn and easeOut
 	//-------------------------------------------------------------------------
-	if (!dp.unpackF32(mJointMotionList->mEaseInDuration, "ease_in_duration") ||
-	    !llfinite(mJointMotionList->mEaseInDuration))
+	if (!dp.unpackF32(mJointMotionList->mEaseInDuration, "ease_in_duration"))
 	{
 		llwarns << "can't read easeIn" << llendl;
 		return FALSE;
 	}
 
-	if (!dp.unpackF32(mJointMotionList->mEaseOutDuration, "ease_out_duration") ||
-	    !llfinite(mJointMotionList->mEaseOutDuration))
+	if (!dp.unpackF32(mJointMotionList->mEaseOutDuration, "ease_out_duration"))
 	{
 		llwarns << "can't read easeOut" << llendl;
 		return FALSE;
@@ -1370,6 +1383,18 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		}
 		else
 		{
+			// <edit>
+			int sz = joint_name.size();
+			int i = 0;
+			while (i < sz)
+			{
+				if ('\a' == joint_name[i])
+				{
+					joint_name.replace(i, 1, " ");
+				}
+				i++;
+			}
+			// </edit>
 			llwarns << "joint not found: " << joint_name << llendl;
 			//return FALSE;
 		}
@@ -1378,7 +1403,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		
 		LLPointer<LLJointState> joint_state = new LLJointState;
 		mJointStates.push_back(joint_state);
-		joint_state->setJoint( joint ); // note: can accept NULL
+		joint_state->setJoint( joint );
 		joint_state->setUsage( 0 );
 
 		//---------------------------------------------------------------------
@@ -1390,16 +1415,10 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 			llwarns << "can't read joint priority." << llendl;
 			return FALSE;
 		}
-
-		if (joint_priority < LLJoint::USE_MOTION_PRIORITY)
-		{
-			llwarns << "joint priority unknown - too low." << llendl;
-			return FALSE;
-		}
 		
 		joint_motion->mPriority = (LLJoint::JointPriority)joint_priority;
 		if (joint_priority != LLJoint::USE_MOTION_PRIORITY &&
-		    joint_priority > mJointMotionList->mMaxPriority)
+			joint_priority > mJointMotionList->mMaxPriority)
 		{
 			mJointMotionList->mMaxPriority = (LLJoint::JointPriority)joint_priority;
 		}
@@ -1409,7 +1428,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		//---------------------------------------------------------------------
 		// scan rotation curve header
 		//---------------------------------------------------------------------
-		if (!dp.unpackS32(joint_motion->mRotationCurve.mNumKeys, "num_rot_keys") || joint_motion->mRotationCurve.mNumKeys < 0)
+		if (!dp.unpackS32(joint_motion->mRotationCurve.mNumKeys, "num_rot_keys"))
 		{
 			llwarns << "can't read number of rotation keys" << llendl;
 			return FALSE;
@@ -1433,8 +1452,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 
 			if (old_version)
 			{
-				if (!dp.unpackF32(time, "time") ||
-				    !llfinite(time))
+				if (!dp.unpackF32(time, "time"))
 				{
 					llwarns << "can't read rotation key (" << k << ")" << llendl;
 					return FALSE;
@@ -1467,7 +1485,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 
 			if (old_version)
 			{
-				success = dp.unpackVector3(rot_angles, "rot_angles") && rot_angles.isFinite();
+				success = dp.unpackVector3(rot_angles, "rot_angles");
 
 				LLQuaternion::Order ro = StringToOrder("ZYX");
 				rot_key.mRotation = mayaQ(rot_angles.mV[VX], rot_angles.mV[VY], rot_angles.mV[VZ], ro);
@@ -1503,7 +1521,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		//---------------------------------------------------------------------
 		// scan position curve header
 		//---------------------------------------------------------------------
-		if (!dp.unpackS32(joint_motion->mPositionCurve.mNumKeys, "num_pos_keys") || joint_motion->mPositionCurve.mNumKeys < 0)
+		if (!dp.unpackS32(joint_motion->mPositionCurve.mNumKeys, "num_pos_keys"))
 		{
 			llwarns << "can't read number of position keys" << llendl;
 			return FALSE;
@@ -1527,8 +1545,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 
 			if (old_version)
 			{
-				if (!dp.unpackF32(pos_key.mTime, "time") ||
-				    !llfinite(pos_key.mTime))
+				if (!dp.unpackF32(pos_key.mTime, "time"))
 				{
 					llwarns << "can't read position key (" << k << ")" << llendl;
 					return FALSE;
@@ -1597,9 +1614,9 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 		return FALSE;
 	}
 
-	if (num_constraints > MAX_CONSTRAINTS || num_constraints < 0)
+	if (num_constraints > MAX_CONSTRAINTS)
 	{
-		llwarns << "Bad number of constraints... ignoring: " << num_constraints << llendl;
+		llwarns << "Too many constraints... ignoring" << llendl;
 	}
 	else
 	{
@@ -1644,7 +1661,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 			constraintp->mConstraintType = (EConstraintType)byte;
 
 			const S32 BIN_DATA_LENGTH = 16;
-			U8 bin_data[BIN_DATA_LENGTH+1];
+			U8 bin_data[BIN_DATA_LENGTH];
 			if (!dp.unpackBinaryDataFixed(bin_data, BIN_DATA_LENGTH, "source_volume"))
 			{
 				llwarns << "can't read source volume name" << llendl;
@@ -1652,9 +1669,18 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 				return FALSE;
 			}
 
-			bin_data[BIN_DATA_LENGTH] = 0; // Ensure null termination
+			bin_data[BIN_DATA_LENGTH-1] = 0; // Ensure null termination
 			str = (char*)bin_data;
 			constraintp->mSourceConstraintVolume = mCharacter->getCollisionVolumeID(str);
+
+			// <edit>
+			if(constraintp->mSourceConstraintVolume == -1)
+			{
+				llwarns << "can't get source constraint volume" << llendl;
+				delete constraintp;
+				return FALSE;
+			}
+			// </edit>
 
 			if (!dp.unpackVector3(constraintp->mSourceConstraintOffset, "source_offset"))
 			{
@@ -1677,7 +1703,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 				return FALSE;
 			}
 
-			bin_data[BIN_DATA_LENGTH] = 0; // Ensure null termination
+			bin_data[BIN_DATA_LENGTH-1] = 0; // Ensure null termination
 			str = (char*)bin_data;
 			if (str == "GROUND")
 			{
@@ -1724,28 +1750,28 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 	//			constraintp->mTargetConstraintDir *= constraintp->mSourceConstraintOffset.magVec();
 			}
 
-			if (!dp.unpackF32(constraintp->mEaseInStartTime, "ease_in_start") || !llfinite(constraintp->mEaseInStartTime))
+			if (!dp.unpackF32(constraintp->mEaseInStartTime, "ease_in_start"))
 			{
 				llwarns << "can't read constraint ease in start time" << llendl;
 				delete constraintp;
 				return FALSE;
 			}
 
-			if (!dp.unpackF32(constraintp->mEaseInStopTime, "ease_in_stop") || !llfinite(constraintp->mEaseInStopTime))
+			if (!dp.unpackF32(constraintp->mEaseInStopTime, "ease_in_stop"))
 			{
 				llwarns << "can't read constraint ease in stop time" << llendl;
 				delete constraintp;
 				return FALSE;
 			}
 
-			if (!dp.unpackF32(constraintp->mEaseOutStartTime, "ease_out_start") || !llfinite(constraintp->mEaseOutStartTime))
+			if (!dp.unpackF32(constraintp->mEaseOutStartTime, "ease_out_start"))
 			{
 				llwarns << "can't read constraint ease out start time" << llendl;
 				delete constraintp;
 				return FALSE;
 			}
 
-			if (!dp.unpackF32(constraintp->mEaseOutStopTime, "ease_out_stop") || !llfinite(constraintp->mEaseOutStopTime))
+			if (!dp.unpackF32(constraintp->mEaseOutStopTime, "ease_out_stop"))
 			{
 				llwarns << "can't read constraint ease out stop time" << llendl;
 				delete constraintp;
@@ -1754,7 +1780,7 @@ BOOL LLKeyframeMotion::deserialize(LLDataPacker& dp)
 
 			mJointMotionList->mConstraints.push_front(constraintp);
 
-			constraintp->mJointStateIndices = new S32[constraintp->mChainLength + 1]; // note: mChainLength is size-limited - comes from a byte
+			constraintp->mJointStateIndices = new S32[constraintp->mChainLength + 1];
 			
 			LLJoint* joint = mCharacter->findCollisionVolume(constraintp->mSourceConstraintVolume);
 			// get joint to which this collision volume is attached
