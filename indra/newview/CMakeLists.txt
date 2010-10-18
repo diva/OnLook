@@ -1512,7 +1512,7 @@ if (INSTALL)
 endif (INSTALL)
 
 # Add tests
-if (NOT STANDALONE)
+if (LL_TESTS)
 	ADD_VIEWER_BUILD_TEST(llagentaccess viewer)
 	#ADD_VIEWER_BUILD_TEST(llworldmap viewer)
 	#ADD_VIEWER_BUILD_TEST(llworldmipmap viewer)
@@ -1520,7 +1520,7 @@ if (NOT STANDALONE)
 	ADD_VIEWER_BUILD_TEST(lltextureinfodetails viewer)
 	ADD_VIEWER_BUILD_TEST(lltexturestatsuploader viewer)
 	#ADD_VIEWER_COMM_BUILD_TEST(lltranslate viewer "")
-endif (NOT STANDALONE)
+endif (LL_TESTS)
 
 # Don't do these for DARWIN or LINUX here -- they're taken care of by viewer_manifest.py
 if (WINDOWS)

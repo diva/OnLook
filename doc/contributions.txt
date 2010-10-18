@@ -74,6 +74,16 @@ Aleric Inglewood
 	SNOW-203
 	SNOW-408
 	SNOW-415
+	SNOW-479
+	SNOW-626
+	SNOW-713
+	SNOW-744
+	SNOW-751
+	SNOW-752
+	SNOW-753
+	SNOW-772
+	SNOW-793
+	SNOW-806
 Alissa Sabre
 	VWR-81
 	VWR-83
@@ -566,6 +576,7 @@ Robin Cornelius
 	SNOW-484
 	SNOW-485
 	SNOW-488
+	SNOW-802
 	VWR-2488
 	VWR-9557
 	VWR-11128
@@ -663,7 +674,9 @@ Techwolf Lupindo
 	SNOW-237
 	SNOW-333
 	SNOW-334
+	SNOW-497
 	VWR-12385
+	VWR-20340
 tenebrous pau
 	VWR-247
 Tharax Ferraris
@@ -694,6 +707,12 @@ Thickbrick Sleaford
 	SNOW-462
 	SNOW-513
 	SNOW-551
+	SNOW-586
+	SNOW-592
+	SNOW-636
+	SNOW-698
+	SNOW-712
+	SNOW-799
 Thraxis Epsilon
 	SVC-371
 	VWR-383
@@ -746,6 +765,9 @@ Whoops Babii
 	VWR-8298
 Wilton Lundquist
 	VWR-7682
+Wolfpup Lowenhar
+	SNOW-622
+	SNOW-772
 Zarkonnen Decosta
 	VWR-253
 Zi Ree

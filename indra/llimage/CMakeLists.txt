@@ -63,6 +63,7 @@ target_link_libraries(
     )
 
 # Add tests
-if (NOT STANDALONE)
+if (LL_TESTS)
 	ADD_BUILD_TEST(llimageworker llimage)
-endif (NOT STANDALONE)
+endif (LL_TESTS)
+
