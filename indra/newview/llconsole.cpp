@@ -206,11 +206,26 @@ void LLConsole::draw()
 
 	F32 line_height = mFont->getLineHeight();
 
-	S32 message_spacing=4;
+	S32 message_spacing = 0;
 	
 //080813 Spatters:  This section makes a single huge black box behind all the text.
-	S32 bkg_height=4;
+	S32 bkg_height=8;
 	S32 bkg_width=0;
+
+// VWR-8999
+// ChatSpacing:   0 -- chat lines are close together, as they were in the 1.20 viewer.
+//                4 -- chat lines are farther apart as they are in SnowGlobe 1.4.
+	static LLCachedControl<S32> chat_spacing("ChatSpacing", 0);
+	// Perform clamping.
+	S32 const clamped_chat_spacing = llclamp((S32)chat_spacing, -16, 128);
+	if (chat_spacing != clamped_chat_spacing)
+	{
+		gSavedSettings.setS32("ChatSpacing", clamped_chat_spacing);
+	}
+	// Adjust spacing.
+	message_spacing += chat_spacing;
+	bkg_height -= chat_spacing;
+
 	for(paragraph_it = mParagraphs.rbegin(); paragraph_it != mParagraphs.rend(); paragraph_it++)
 	{
 		S32 target_height = llfloor( (*paragraph_it)->mLines.size() * line_height + message_spacing);

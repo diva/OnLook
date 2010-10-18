@@ -73,7 +73,7 @@ ENDMACRO(ADD_SIMULATOR_BUILD_TEST name parent)
 MACRO(ADD_BUILD_TEST_INTERNAL name parent libraries source_files)
     # Optional additional parameter: pathname of Python wrapper script
     SET(wrapper "${ARGN}")
-    #MESSAGE(STATUS "ADD_BUILD_TEST_INTERNAL ${name} wrapper = ${wrapper}")
+    #MESSAGE(STATUS "ADD_BUILD_TEST_INTERNAL ${name} libraries = \"${libraries}\"; source_files = \"${source_files}\"; wrapper = \"${wrapper}\"")
 
     SET(TEST_SOURCE_FILES ${source_files})
     SET(HEADER "${name}.h")
@@ -96,11 +96,19 @@ MACRO(ADD_BUILD_TEST_INTERNAL name parent libraries source_files)
     ENDIF ("${wrapper}" STREQUAL "")
 
     #MESSAGE(STATUS "ADD_BUILD_TEST_INTERNAL ${name} test_cmd  = ${TEST_CMD}")
+    #MESSAGE(STATUS "CMAKE_BINARY_DIR = \"${CMAKE_BINARY_DIR}\"")
+    SET(LD_LIBRARY_PATH "${CMAKE_BINARY_DIR}/llcommon:/usr/lib:/usr/local/lib")
+    IF (NOT "${ARCH_PREBUILT_DIRS}" STREQUAL "")
+      SET(LD_LIBRARY_PATH "${ARCH_PREBUILT_DIRS}:${LD_LIBRARY_PATH}")
+    ENDIF (NOT "${ARCH_PREBUILT_DIRS}" STREQUAL "")
+    IF (NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
+      SET(LD_LIBRARY_PATH "$ENV{LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}")
+    ENDIF (NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
     ADD_CUSTOM_COMMAND(
         OUTPUT ${TEST_OUTPUT}
         COMMAND
           ${CMAKE_COMMAND}
-            "-DLD_LIBRARY_PATH=${ARCH_PREBUILT_DIRS}:/usr/lib"
+            "-DLD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
             "-DTEST_CMD:STRING=${TEST_CMD}"
             -P ${CMAKE_SOURCE_DIR}/cmake/RunBuildTest.cmake
         DEPENDS ${name}_test

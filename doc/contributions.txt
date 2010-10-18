@@ -336,6 +336,8 @@ JB Kraft
 	VWR-7802
 Joghert LeSabre
 	VWR-64
+Jonathan Yap
+	VWR-8999
 Kage Pixel
 	VWR-11
 Ken March

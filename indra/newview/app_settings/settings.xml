@@ -3003,6 +3003,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>ChatSpacing</key>
+    <map>
+      <key>Comment</key>
+      <string>Add extra vertical spacing between local chat lines</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>ChatVisible</key>
     <map>
       <key>Comment</key>

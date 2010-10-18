@@ -30,6 +30,7 @@ set(LIBS_SERVER_DIR ${CMAKE_SOURCE_DIR}/${LIBS_SERVER_PREFIX})
 set(SCRIPTS_DIR ${CMAKE_SOURCE_DIR}/${SCRIPTS_PREFIX})
 set(SERVER_DIR ${CMAKE_SOURCE_DIR}/${SERVER_PREFIX})
 set(VIEWER_DIR ${CMAKE_SOURCE_DIR}/${VIEWER_PREFIX})
+set(LL_TESTS ON CACHE BOOL "Build and run unit and integration tests (disable for build timing runs to reduce variation)")
 
 set(LIBS_PREBUILT_DIR ${CMAKE_SOURCE_DIR}/../libraries CACHE PATH
     "Location of prebuilt libraries.")

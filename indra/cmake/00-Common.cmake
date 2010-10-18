@@ -72,6 +72,21 @@ if (WINDOWS)
   if (NOT VS_DISABLE_FATAL_WARNINGS)
     add_definitions(/WX)
   endif (NOT VS_DISABLE_FATAL_WARNINGS)
+  
+  # Various libs are compiler specific, generate some variables here we can just use
+  # when we require them instead of reimplementing the test each time.
+  
+  if (MSVC71)
+	    set(MSVC_DIR 7.1)
+	    set(MSVC_SUFFIX 71)
+    elseif (MSVC80)
+	    set(MSVC_DIR 8.0)
+	    set(MSVC_SUFFIX 80)
+    elseif (MSVC90)
+	    set(MSVC_DIR 9.0)
+	    set(MSVC_SUFFIX 90)
+    endif (MSVC71)
+    
 endif (WINDOWS)
 
 
