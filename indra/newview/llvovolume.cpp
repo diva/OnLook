@@ -881,19 +881,17 @@ void LLVOVolume::updateFaceFlags()
 	}
 }
 
-BOOL LLVOVolume::setParent(LLViewerObject* parent)
+void LLVOVolume::setParent(LLViewerObject* parent)
 {
-	BOOL ret = FALSE;
 	if (parent != getParent())
 	{
-		ret = LLViewerObject::setParent(parent);
+		LLViewerObject::setParent(parent);
 		if (mDrawable)
 		{
 			gPipeline.markMoved(mDrawable);
 			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
 		}
 	}
-	return ret;
 }
 
 // NOTE: regenFaces() MUST be followed by genTriangles()!

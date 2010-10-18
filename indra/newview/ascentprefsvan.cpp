@@ -81,7 +81,6 @@ private:
 	LLColor4 mLindenColor;
 	LLColor4 mMutedColor;
 	LLColor4 mEMColor;
-	LLColor4 mCustomColor;
 	U32 mSelectedClient;
 };
 
@@ -218,7 +217,7 @@ void LLPrefsAscentVanImpl::refreshValues()
 	mLindenColor			= gCOASavedSettings->getColor4("AscentLindenColor");
 	mMutedColor				= gCOASavedSettings->getColor4("AscentMutedColor");
 	mEMColor				= gCOASavedSettings->getColor4("AscentEstateOwnerColor");
-	mCustomColor			= gCOASavedSettings->getColor4("MoyMiniMapCustomColor");
+	//mCustomColor			= gCOASavedSettings->getColor4("MoyMiniMapCustomColor");
 }
 
 void LLPrefsAscentVanImpl::refresh()
@@ -245,7 +244,6 @@ void LLPrefsAscentVanImpl::refresh()
 	getChild<LLColorSwatchCtrl>("linden_color_swatch")->set(mLindenColor);
 	getChild<LLColorSwatchCtrl>("muted_color_swatch")->set(mMutedColor);
 	getChild<LLColorSwatchCtrl>("em_color_swatch")->set(mEMColor);
-	getChild<LLColorSwatchCtrl>("custom_color_swatch")->set(mCustomColor);
 	gCOASavedSettings->setColor4("EffectColor", LLColor4::white);
 	gCOASavedSettings->setColor4("EffectColor", mEffectColor);
 	
@@ -261,8 +259,6 @@ void LLPrefsAscentVanImpl::refresh()
 	gCOASavedSettings->setColor4("AscentEstateOwnerColor", LLColor4::white);
 	gCOASavedSettings->setColor4("AscentEstateOwnerColor", mEMColor);
 
-	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", LLColor4::white);
-	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", mCustomColor);
 	gAgent.resetClientTag();
 }
 
@@ -284,8 +280,6 @@ void LLPrefsAscentVanImpl::cancel()
 	gCOASavedSettings->setColor4("AscentMutedColor", mMutedColor);
 	gCOASavedSettings->setColor4("AscentEstateOwnerColor", LLColor4::yellow);
 	gCOASavedSettings->setColor4("AscentEstateOwnerColor", mEMColor);
-	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", LLColor4::yellow);
-	gCOASavedSettings->setColor4("MoyMiniMapCustomColor", mCustomColor);
 }
 
 void LLPrefsAscentVanImpl::apply()
@@ -324,7 +318,6 @@ void LLPrefsAscentVanImpl::apply()
 	gCOASavedSettings->setColor4("AscentLindenColor",			childGetValue("linden_color_swatch"));
 	gCOASavedSettings->setColor4("AscentMutedColor",			childGetValue("muted_color_swatch"));
 	gCOASavedSettings->setColor4("AscentEstateOwnerColor",		childGetValue("em_color_swatch"));
-	gCOASavedSettings->setColor4("MoyMiniMapCustomColor",		childGetValue("custom_color_swatch"));
 	gCOASavedSettings->setBOOL("AscentUseCustomTag",			childGetValue("customize_own_tag_check"));
 	gCOASavedSettings->setString("AscentCustomTagLabel",		childGetValue("custom_tag_label_box"));
 	gCOASavedSettings->setColor4("AscentCustomTagColor",		childGetValue("custom_tag_color_swatch"));

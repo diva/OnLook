@@ -4672,15 +4672,6 @@ LLInventoryFilter::~LLInventoryFilter()
 
 BOOL LLInventoryFilter::check(LLFolderViewItem* item) 
 {
-	LLFolderViewEventListener* listener = item->getListener();
-	const LLUUID& item_id = listener->getUUID();
-	const LLInventoryObject *obj = gInventory.getObject(item_id);
-	if (isActive() && obj && obj->getIsLinkType())
-	{
-		// When filtering is active, omit links.
-		return FALSE;
-	}
-
 	time_t earliest;
 
 	earliest = time_corrected() - mFilterOps.mHoursAgo * 3600;
@@ -4692,7 +4683,8 @@ BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 	{
 		earliest = 0;
 	}
-
+	LLFolderViewEventListener* listener = item->getListener();
+	const LLUUID& item_id = listener->getUUID();
 
 	//When searching for all labels, we need to explode the filter string
 	//Into an array, and then compare each string to the label seperately

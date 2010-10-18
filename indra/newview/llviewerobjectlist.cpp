@@ -1244,22 +1244,18 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 				LLViewerJointAttachment* attachmentp = curiter->second;
 				if (attachmentp->getIsHUDAttachment())
 				{
-					for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachmentp->mAttachedObjects.begin();
-						 attachment_iter != attachmentp->mAttachedObjects.end();
-						 ++attachment_iter)
+					LLViewerObject* objectp = attachmentp->getObject();
+					if (objectp)
 					{
-						if (LLViewerObject* objectp = (*attachment_iter))
+						mSelectPickList.insert(objectp);		
+						LLViewerObject::const_child_list_t& child_list = objectp->getChildren();
+						for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
+							 iter != child_list.end(); iter++)
 						{
-							mSelectPickList.insert(objectp);		
-							LLViewerObject::const_child_list_t& child_list = objectp->getChildren();
-							for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
-								 iter != child_list.end(); iter++)
+							LLViewerObject* childp = *iter;
+							if (childp)
 							{
-								LLViewerObject* childp = *iter;
-								if (childp)
-								{
-									mSelectPickList.insert(childp);
-								}
+								mSelectPickList.insert(childp);
 							}
 						}
 					}

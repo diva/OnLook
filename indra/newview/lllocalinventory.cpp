@@ -175,8 +175,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 
 	LLInventoryModel::cat_array_t cats;
 	LLInventoryModel::item_array_t items;
-	bool is_cache_obsolete = false;
-	if(LLInventoryModel::loadFromFile(inv_filename, cats, items, is_cache_obsolete))
+	if(LLInventoryModel::loadFromFile(inv_filename, cats, items))
 	{
 		// create a container category for everything
 		LLViewerInventoryCategory* container = new LLViewerInventoryCategory(gAgent.getID());
