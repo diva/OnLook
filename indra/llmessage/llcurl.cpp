@@ -122,7 +122,7 @@ LLCurl::Responder::~Responder()
 }
 
 // virtual
-void LLCurl::Responder::error(
+void LLCurl::Responder::errorWithContent(
 	U32 status,
 	const std::string& reason,
 	const LLSD&)
@@ -163,7 +163,7 @@ void LLCurl::Responder::completed(U32 status, const std::string& reason, const L
 	}
 	else
 	{
-		error(status, reason, content);
+		errorWithContent(status, reason, content);
 	}
 }
 
