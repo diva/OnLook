@@ -125,7 +125,7 @@ void dec_busy_count()
 
 // Function declarations
 struct LLWearableHoldingPattern;
-void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL append, BOOL replace = FALSE);
+void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL append);
 void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata);
 void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void*);
 void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, BOOL append);
@@ -187,7 +187,6 @@ struct LLWearInfo
 {
 	LLUUID	mCategoryID;
 	BOOL	mAppend;
-	BOOL	mReplace;
 };
 
 
@@ -1890,10 +1889,6 @@ void LLFolderBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 	{
 		modifyOutfit(TRUE);
 	}
-	else if ("wearitems" == action)
-	{
-		modifyOutfit(TRUE, TRUE);
-	}
 	else if ("removefromoutfit" == action)
 	{
 		// <edit> derf
@@ -2255,7 +2250,6 @@ void LLFolderBridge::folderOptionsMenu()
 			{
 			// </edit>
 				mItems.push_back(std::string("Add To Outfit"));
-				mItems.push_back(std::string("Wear Items"));
 				mItems.push_back(std::string("Replace Outfit"));
 			// <edit>
 			}
@@ -2608,7 +2602,7 @@ void LLFolderBridge::createWearable(LLUUID parent_id, EWearableType type)
 		LLPointer<LLInventoryCallback>(NULL));
 }
 
-void LLFolderBridge::modifyOutfit(BOOL append, BOOL replace)
+void LLFolderBridge::modifyOutfit(BOOL append)
 {
 	// <edit> derf
 	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
@@ -2622,7 +2616,7 @@ void LLFolderBridge::modifyOutfit(BOOL append, BOOL replace)
 	LLViewerInventoryCategory* cat = getCategory();
 	if(!cat) return;
 	
-	wear_inventory_category_on_avatar(cat, append, replace);
+	wear_inventory_category_on_avatar( cat, append );
 }
 
 // helper stuff
@@ -3820,56 +3814,6 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 		// Could be first use
 		LLFirstUse::useBuild();
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
->>>>>>> ec55705... THE BIGGIE.
 	else LLItemBridge::performAction(folder, model, action);
 }
 
@@ -4619,7 +4563,7 @@ void wear_inventory_category(LLInventoryCategory* category, bool copy, bool appe
 }
 
 // *NOTE: hack to get from avatar inventory to avatar
-void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL append, BOOL replace)
+void wear_inventory_category_on_avatar( LLInventoryCategory* category, BOOL append )
 {
 	// Avoid unintentionally overwriting old wearables.  We have to do
 	// this up front to avoid having to deal with the case of multiple
@@ -4630,7 +4574,6 @@ void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL appen
 			 	
 	LLWearInfo* userdata = new LLWearInfo;
 	userdata->mAppend = append;
-	userdata->mReplace = replace;
 	userdata->mCategoryID = category->getUUID();
 
 	if( gFloaterCustomize )
@@ -4828,11 +4771,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 					msg->nextBlockFast(_PREHASH_ObjectData );
 					msg->addUUIDFast(_PREHASH_ItemID, item->getUUID() );
 					msg->addUUIDFast(_PREHASH_OwnerID, item->getPermissions().getOwner());
-<<<<<<< HEAD
-					msg->addU8Fast(_PREHASH_AttachmentPt, wear_info->mReplace ? 0 : ATTACHMENT_ADD);	// Wear at the previous or default attachment point
-=======
 					msg->addU8Fast(_PREHASH_AttachmentPt, 0 );	// Wear at the previous or default attachment point
->>>>>>> ec55705... THE BIGGIE.
 					pack_permissions_slam(msg, item->getFlags(), item->getPermissions());
 					msg->addStringFast(_PREHASH_Name, item->getName());
 					msg->addStringFast(_PREHASH_Description, item->getDescription());
@@ -5588,20 +5527,4 @@ void LLWearableBridge::onRemoveFromAvatarArrived(LLWearable* wearable,
 	}
 	delete item_id;
 }
-<<<<<<< HEAD
 
-const LLUUID &LLLinkFolderBridge::getFolderID() const
-{
-	if (LLViewerInventoryItem *link_item = getItem())
-	{
-		if (const LLViewerInventoryCategory *cat = link_item->getLinkedCategory())
-		{
-			const LLUUID& cat_uuid = cat->getUUID();
-			return cat_uuid;
-		}
-	}
-	return LLUUID::null;
-}
-
-=======
->>>>>>> ec55705... THE BIGGIE.

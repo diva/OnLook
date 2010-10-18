@@ -200,10 +200,6 @@
 	     mouse_opaque="true" name="Add To Outfit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="addtooutfit" />
 	</menu_item_call>
-  <menu_item_call bottom_delta="-18" height="18" label="Wear Items" left="0"
-	     mouse_opaque="true" name="Wear Items" width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="wearitems" />
-	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Replace Outfit" left="0"
 	     mouse_opaque="true" name="Replace Outfit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="replaceoutfit" />

@@ -327,7 +327,7 @@ protected:
 
 	BOOL checkFolderForContentsOfType(LLInventoryModel* model, LLInventoryCollectFunctor& typeToCheck);
 
-	void modifyOutfit(BOOL append, BOOL replace = FALSE);
+	void modifyOutfit(BOOL append);
 public:
 	static LLFolderBridge* sSelf;
 	static void staticFolderOptionsMenu();

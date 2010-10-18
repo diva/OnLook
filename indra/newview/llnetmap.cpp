@@ -312,11 +312,7 @@ void LLNetMap::draw()
 			memset( default_texture, 0, mObjectImagep->getWidth() * mObjectImagep->getHeight() * mObjectImagep->getComponents() );
 
 			// Draw buildings
-			//gObjectList.renderObjectsForMap(*this);
-			if(!gSavedSettings.getBOOL("MoyFastMiniMap")){
-				gObjectList.renderObjectsForMap(*this);
-				mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
-			}
+			gObjectList.renderObjectsForMap(*this);
 
 			mObjectImagep->setSubImage(mObjectRawImagep, 0, 0, mObjectImagep->getWidth(), mObjectImagep->getHeight());
 			

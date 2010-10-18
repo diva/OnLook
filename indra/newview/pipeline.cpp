@@ -4871,7 +4871,7 @@ void LLPipeline::resetVertexBuffers(LLDrawable* drawable)
 void LLPipeline::resetVertexBuffers()
 {
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
-	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("RenderUseStreamVBO");
+	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 	{

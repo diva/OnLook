@@ -300,7 +300,6 @@ public:
 	BOOL attachObject(LLViewerObject *viewer_object);
 	BOOL detachObject(LLViewerObject *viewer_object);
 	void lazyAttach();
-	void checkAttachments();
 
 	void sitOnObject(LLViewerObject *sit_object);
 	void getOffObject();
