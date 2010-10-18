@@ -732,8 +732,26 @@ std::string LLAppViewerLinux::generateSerialNumber()
 {
 	char serial_md5[MD5HEX_STR_SIZE];
 	serial_md5[0] = 0;
+	std::string best;
+	std::string uuiddir("/dev/disk/by-uuid/");
 
-	// TODO
+	// trawl /dev/disk/by-uuid looking for a good-looking UUID to grab
+	std::string this_name;
+	BOOL wrap = FALSE;
+	while (gDirUtilp->getNextFileInDir(uuiddir, "*", this_name, wrap))
+	{
+		if (this_name.length() > best.length() ||
+		    (this_name.length() == best.length() &&
+		     this_name > best))
+		{
+			// longest (and secondarily alphabetically last) so far
+			best = this_name;
+		}
+	}
+
+	// we don't return the actual serial number, just a hash of it.
+	LLMD5 md5( reinterpret_cast<const unsigned char*>(best.c_str()) );
+	md5.hex_digest(serial_md5);
 
 	return serial_md5;
 }
