@@ -70,6 +70,10 @@
 
 #include "chatbar_as_cmdline.h"
 
+#if SHY_MOD //Command handler
+#include "shcommandhandler.h"
+#endif //shy_mod
+
 //
 // Globals
 //
@@ -468,6 +472,9 @@ void LLChatBar::sendChat( EChatType type )
 			if (!utf8_revised_text.empty() && cmd_line_chat(utf8_revised_text, nType))
 			{
 				// Chat with animation
+#if SHY_MOD //Command handler
+				if(!SHCommandHandler::handleCommand(true, utf8_revised_text, gAgentID, (LLViewerObject*)gAgent.getAvatarObject()))//returns true if handled
+#endif //shy_mod
 				sendChatFromViewer(utf8_revised_text, nType, TRUE);
 			}
 		}

@@ -3473,11 +3473,11 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	static const LLCachedControl<LLColor4>	avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
 	if (mIsSelf)
 	{
-		static const LLCachedCOAControl<bool>			ascent_use_custom_tag("AscentUseCustomTag", false);
-		static const LLCachedCOAControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
-		static const LLCachedCOAControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
-		static const LLCachedControl<bool>				ascent_use_tag("AscentUseTag",true);
-		static const LLCachedCOAControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","8873757c-092a-98fb-1afd-ecd347566fcd");
+		static const LLCachedControl<bool>			ascent_use_custom_tag("AscentUseCustomTag", false);
+		static const LLCachedControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
+		static const LLCachedControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
+		static const LLCachedControl<bool>			ascent_use_tag("AscentUseTag",true);
+		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","8873757c-092a-98fb-1afd-ecd347566fcd");
 
 		if (ascent_use_custom_tag)
 		{
@@ -3753,25 +3753,25 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 							//Lindens are always more Linden than your friend, make that take precedence
 							if(LLMuteList::getInstance()->isLinden(getFullname()))
 							{
-								static const LLCachedCOAControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+								static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
 								mClientColor = ascent_linden_color;
 							}
 							//check if they are an estate owner at their current position
 							else if(estate_owner.notNull() && this->getID() == estate_owner)
 							{
-								static const LLCachedCOAControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+								static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
 								mClientColor = ascent_estate_owner_color;
 							}
 							//without these dots, SL would suck.
 							else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 							{
-								static const LLCachedCOAControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+								static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 								mClientColor = ascent_friend_color;
 							}
 							//big fat jerkface who is probably a jerk, display them as such.
 							else if(LLMuteList::getInstance()->isMuted(this->getID()))
 							{
-								static const LLCachedCOAControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
+								static const LLCachedControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
 								mClientColor = ascent_muted_color;
 							}
 						}

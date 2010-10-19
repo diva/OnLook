@@ -82,7 +82,6 @@ BOOL 				gHackGodmode = FALSE;
 std::map<std::string, LLControlGroup*> gSettings;
 LLControlGroup gSavedSettings;	// saved at end of session
 LLControlGroup gSavedPerAccountSettings; // saved at end of session
-LLControlGroup *gCOASavedSettings = &gSavedSettings; //Ascent Client-Or-Account
 LLControlGroup gColors;			// read-only
 LLControlGroup gCrashSettings;	// saved at end of session
 
@@ -499,11 +498,7 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 	return true;
 }
-bool handleAscentCOAChange(const LLSD& newvalue)
-{
-	gCOASavedSettings = newvalue.asBoolean() ? &gSavedPerAccountSettings : &gSavedSettings;
-	return true;
-}
+
 bool handleAscentSelfTag(const LLSD& newvalue)
 {
 	if(gAgent.getAvatarObject())
@@ -522,7 +517,6 @@ bool handleAscentGlobalTag(const LLSD& newvalue)
 	return true;
 }
 ////////////////////////////////////////////////////////////////////////////
-
 void settings_setup_listeners()
 {
 	gSavedSettings.getControl("FirstPersonAvatarVisible")->getSignal()->connect(boost::bind(&handleRenderAvatarMouselookChanged, _1));
@@ -645,7 +639,6 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("UserLogFile")->getSignal()->connect(boost::bind(&handleLogFileChanged, _1));
 	gSavedSettings.getControl("RenderHideGroupTitle")->getSignal()->connect(boost::bind(handleHideGroupTitleChanged, _1));
 	gSavedSettings.getControl("EffectColor")->getSignal()->connect(boost::bind(handleEffectColorChanged, _1));
-	gSavedPerAccountSettings.getControl("EffectColor")->getSignal()->connect(boost::bind(handleEffectColorChanged, _1));
 	gSavedSettings.getControl("VectorizePerfTest")->getSignal()->connect(boost::bind(&handleVectorizeChanged, _1));
 	gSavedSettings.getControl("VectorizeEnable")->getSignal()->connect(boost::bind(&handleVectorizeChanged, _1));
 	gSavedSettings.getControl("VectorizeProcessor")->getSignal()->connect(boost::bind(&handleVectorizeChanged, _1));
@@ -664,12 +657,11 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
 
-	gSavedSettings.getControl("AscentStoreSettingsPerAccount")->getSignal()->connect(boost::bind(&handleAscentCOAChange,_1));
 	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
-	gCOASavedSettings->getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
-	gCOASavedSettings->getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
-	gCOASavedSettings->getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
-	gCOASavedSettings->getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
+	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 }

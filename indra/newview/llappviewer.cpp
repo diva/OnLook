@@ -1758,6 +1758,10 @@ bool LLAppViewer::initConfiguration()
 		return false;
 	}
 
+	//COA vars in gSavedSettings will be linked to gSavedPerAccountSettings entries that will be created if not present.
+	//Signals will be shared between linked vars.
+	gSavedSettings.connectCOAVars(gSavedPerAccountSettings);
+
 	// - set procedural settings 
 	gSavedSettings.setString("ClientSettingsFile", 
         gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, getSettingsFilename("Default", "Global")));

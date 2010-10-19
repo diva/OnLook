@@ -49,7 +49,7 @@ public:/*
 	static void setString(LLUICtrl* ctrl, void* name);
 
 	//Ascent Client-Or-Account Settings Get
-	static LLControlVariable *gCOASavedSettings->getControl(const std::string &name);
+	static LLControlVariable *getControl(const std::string &name);
 	static BOOL			getCOABOOL(const std::string &name);
 	static S32			getCOAS32(const std::string &name);
 	static F32			getCOAF32(const std::string &name);

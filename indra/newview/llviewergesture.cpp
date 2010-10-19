@@ -50,6 +50,10 @@
 
 #include "chatbar_as_cmdline.h"
 
+#if SHY_MOD //Command handler
+#include "shcommandhandler.h"
+#endif //shy_mod
+
 // Globals
 LLViewerGestureList gGestureList;
 
@@ -134,8 +138,11 @@ void LLViewerGesture::doTrigger( BOOL send_chat )
 		}
 	}
 
-	cmd_line_chat(mOutputString, CHAT_TYPE_NORMAL);
-	if ( send_chat && !mOutputString.empty())
+	bool handled = !cmd_line_chat(mOutputString, CHAT_TYPE_NORMAL);
+#if SHY_MOD //Command handler
+	handled = handled || SHCommandHandler::handleCommand(true, mOutputString, gAgentID, gAgent.getAvatarObject());
+#endif //shy_mod
+	if (!handled && send_chat && !mOutputString.empty())
 	{
 		// Don't play nodding animation, since that might not blend
 		// with the gesture animation.

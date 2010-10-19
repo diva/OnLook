@@ -700,25 +700,25 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//Lindens are always more Linden than your friend, make that take precedence
 		if(LLMuteList::getInstance()->isLinden(av_name))
 		{
-			static const LLCachedCOAControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+			static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
 			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_linden_color.get().getValue();
 		}
 		//check if they are an estate owner at their current position
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-			static const LLCachedCOAControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+			static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
 			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_estate_owner_color.get().getValue();
 		}
 		//without these dots, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			static const LLCachedCOAControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+			static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_friend_color.get().getValue();
 		}
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			static const LLCachedCOAControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
+			static const LLCachedControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
 			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_muted_color.get().getValue();
 		}
 		

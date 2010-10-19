@@ -60,6 +60,10 @@
 
 #include "chatbar_as_cmdline.h"
 
+#if SHY_MOD //Command handler
+#include "shcommandhandler.h"
+#endif //shy_mod
+
 LLGestureManager gGestureManager;
 
 // Longest time, in seconds, to wait for all animations to stop playing
@@ -886,6 +890,9 @@ void LLGestureManager::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 
 			if ( cmd_line_chat(chat_text, CHAT_TYPE_NORMAL))
 			{
+#if SHY_MOD //Command handler
+				if(!SHCommandHandler::handleCommand(true, chat_text, gAgentID, gAgent.getAvatarObject()))//returns true if handled
+#endif //shy_mod
 				gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
 			}
 			gesture->mCurrentStep++;

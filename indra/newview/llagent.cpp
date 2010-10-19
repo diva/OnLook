@@ -474,7 +474,7 @@ void LLAgent::init()
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
-	mEffectColor = gCOASavedSettings->getColor4("EffectColor");
+	mEffectColor = gSavedSettings.getColor4("EffectColor");
 	
 	mInitialized = TRUE;
 }
@@ -7539,7 +7539,7 @@ void LLAgent::sendAgentSetAppearance()
 			LLColor4 color;
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
-				color = gCOASavedSettings->setColor4("AscentCustomTagColor");
+				color = gSavedSettings.setColor4("AscentCustomTagColor");
 			}
 			else
 			{

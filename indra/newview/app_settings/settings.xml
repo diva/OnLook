@@ -1,7 +1,14 @@
 <?xml version="1.0" ?>
 <llsd>
 <map>
-	<!--Expanded settings from Vanilla SL -->
+	<!--Inclusion of other xml setting files-->
+	<key>Include</key>
+	<array>
+		<string>settings_ascent.xml</string>
+		<string>settings_ascent_COA.xml</string>
+		<string>settings_SH.xml</string>
+	</array>
+	<!--Expanded settings from Vanilla SL -->							 
 	<key>BeauchampUseInventoryLinks</key>
 	<map>
 		<key>Comment</key>
@@ -24,22 +31,6 @@
 		<key>Value</key>
 		<integer>0</integer>
 	</map>
-	<key>MoyMiniMapCustomColor</key>
-	<map>
-		<key>Comment</key>
-		<string>Custom minimap color you wish to have.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Color4</string>
-		<key>Value</key>
-		<array>
-			<real>0.375</real>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-		</array>
-	</map>
 	<key>ShyotlRenderUseStreamVBO</key>
 	<map>
 		<key>Comment</key>
@@ -61,446 +52,6 @@
 		<string>Boolean</string>
 		<key>Value</key>
 		<integer>1</integer>
-	</map>
-	<key>AscentInstantMessageAnnounceIncoming</key>
-	<map>
-		<key>Comment</key>
-		<string>Start IM window as soon as the person starts typing</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentShowLookAt</key>
-	<map>
-		<key>Comment</key>
-		<string>Show Others' Lookat points</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<real>0</real>
-	</map>
-	<key>AscentUseStatusColors</key>
-	<map>
-		<key>Comment</key>
-		<string>Show special colors for statuses like Friend, Linden, so on</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<real>0</real>
-	</map>
-	<key>AscentAvatarXModifier</key>
-	<map>
-		<key>Comment</key>
-		<string>Avatar position modifier (X)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>0.0</real>
-	</map>
-	<key>AscentAvatarYModifier</key>
-	<map>
-		<key>Comment</key>
-		<string>Avatar position modifier (Y)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>0.0</real>
-	</map>
-	<key>AscentAvatarZModifier</key>
-	<map>
-		<key>Comment</key>
-		<string>Avatar position modifier (Z)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>0.0</real>
-	</map>
-	<key>AscentUseSystemFolder</key>
-	<map>
-		<key>Comment</key>
-		<string>Enables the System folder for setting and non-permanent asset storage.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentSystemTemporary</key>
-	<map>
-		<key>Comment</key>
-		<string>When enabled, temporary uploads are put in the System Asset folder (if System Folder exists).</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentShowFriendsTag</key>
-	<map>
-		<key>Comment</key>
-		<string>Show friends client tags as (Friend), and colorize them specially.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentUseTag</key>
-	<map>
-		<key>Comment</key>
-		<string>Broadcast client tag</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentShowIdleTime</key>
-	<map>
-		<key>Comment</key>
-		<string>Show client tags for others.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentShowOthersTag</key>
-	<map>
-		<key>Comment</key>
-		<string>Show client tags for others.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentShowOthersTagColor</key>
-	<map>
-		<key>Comment</key>
-		<string>Show avatar names in the color of their client.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentBuildAlwaysEnabled</key>
-    <map>
-      <key>Comment</key>
-      <string>Show build option regardless of whether you can (May not mean you can actually build there)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<key>AscentDisableMinZoomDist</key>
-    <map>
-      <key>Comment</key>
-      <string>Allows much closer camera zooming.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<key>AscentFlyAlwaysEnabled</key>
-    <map>
-      <key>Comment</key>
-      <string>Always allow fly (Does actually always allow flight)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-	<key>AscentDisplayTotalScriptJumps</key>
-	<map>
-		<key>Comment</key>
-		<string>Shows large changes to the sim script count in chat.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>Ascentnumscriptdiff</key>
-	<map>
-		<key>Comment</key>
-		<string>The delta to spam you the script jump difference</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>100</real>
-	</map>
-	 <key>Ascentnumscripts</key>
-	  <map>
-		<key>Comment</key>
-		<string>temp..</string>
-		<key>Persist</key>
-		<integer>0</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>0.0</real>
-	  </map>
-	<key>AscentBuildPrefs_ActualRoot</key>
-	<map>
-		<key>Comment</key>
-		<string>Center selection on parent prim's center.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentBuildPrefs_PivotIsPercent</key>
-	<map>
-		<key>Comment</key>
-		<string>Would you like the chatbar to be able to be used for command line functions?</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentBuildPrefs_PivotX</key>
-	<map>
-		<key>Comment</key>
-		<string>idfk</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>50.0</real>
-	</map>
-	<key>AscentBuildPrefs_PivotY</key>
-	<map>
-		<key>Comment</key>
-		<string>idfk</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>50.0</real>
-	</map>
-	<key>AscentBuildPrefs_PivotZ</key>
-	<map>
-		<key>Comment</key>
-		<string>idfk</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>50.0</real>
-	</map>
-	<key>AscentCmdLine</key>
-	<map>
-		<key>Comment</key>
-		<string>Would you like the chatbar to be able to be used for command line functions?</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>1</integer>
-	</map>
-	<key>AscentCmdLineClearChat</key>
-	<map>
-		<key>Comment</key>
-		<string>Clear chat history to stop lag from chat spam</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>clrchat</string>
-	</map>
-	<key>AscentCmdLineHeight</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to height function command</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>gth</string>
-	</map>
-	<key>AscentCmdLinePos</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to position function command</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>gtp</string>
-	</map>
-	<key>AscentCmdLineGround</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to ground function command</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>flr</string>
-	</map>
-	<key>AscentCmdLineTeleportHome</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to home function command</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>tph</string>
-	</map>
-	<key>AscentCmdLineRezPlatform</key>
-	<map>
-		<key>Comment</key>
-		<string>Rez a platform underneath you</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>rezplat</string>
-	</map>
-	<key>AscentPlatformSize</key>
-	<map>
-		<key>Comment</key>
-		<string>How wide the rezzed platform will appear to be.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>F32</string>
-		<key>Value</key>
-		<real>30</real>
-	</map>
-	<key>AscentCmdLineMapTo</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to a region by name rapidly</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>mapto</string>
-	</map>
-	<key>AscentMapToKeepPos</key>
-	<map>
-		<key>Comment</key>
-		<string>Attempt to arrive in the same location you were at.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentCmdLineDrawDistance</key>
-	<map>
-	<key>Comment</key>
-		<string>Change draw distance quickly</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>dd</string>
-	</map>
-	<key>AscentCmdTeleportToCam</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to your camera</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>tp2cam</string>
-	</map>
-	<key>AscentCmdLineKeyToName</key>
-	<map>
-		<key>Comment</key>
-		<string>Use a fast key to name querry</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>key2name</string>
-	</map>
-	<key>AscentCmdLineOfferTp</key>
-	<map>
-		<key>Comment</key>
-		<string>Offer a teleport to target avatar</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>offertp</string>
-	</map>
-	<key>AscentCmdLineCalc</key>
-	<map>
-		<key>Comment</key>
-		<string>Calculates an expression</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>calc</string>
-	</map>
-	<key>AscentCmdLineTP2</key>
-	<map>
-		<key>Comment</key>
-		<string>Teleport to a person by name, partials work.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>tp2</string>
 	</map>
 	<key>OptionPlayTpSound</key>
     <map>
@@ -634,28 +185,6 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-	<key>AscentDisableLogoutScreens</key>
-	<map>
-		<key>Comment</key>
-		<string>Disable logout screen progress bar</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentDisableTeleportScreens</key>
-	<map>
-		<key>Comment</key>
-		<string>Disable teleport screens</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
 	<key>EmeraldUseProperArc</key>
 	<map>
 		<key>Comment</key>
@@ -777,282 +306,6 @@
 		<key>Value</key>
 		<integer>0</integer>
 	</map>
-	<!-- Expanded Settings that have optionally Account-Specific alternatives -->
-	<key>NaclTagColor</key>
-	<map>
-		<key>Comment</key>
-		<string>The tag color you wish to have.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Color4</string>
-		<key>Value</key>
-		<array>
-			<real>0.7</real>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-		</array>
-	</map>
-	<!-- Ascent-Specific Settings -->
-	<key>AscentPowerfulWizard</key>
-	<map>
-		<key>Comment</key>
-		<string>User is a bad enough dude.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentUpdateTagsOnLoad</key>
-	<map>
-		<key>Comment</key>
-		<string>Allowed client to update client definitions file.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentUploadSettings</key>
-	<map>
-        <key>Comment</key>
-            <string>Settings for upload browser</string>
-        <key>Type</key>
-        <string>LLSD</string>
-        <key>Value</key>
-        <map>
-            <key>ActivePath</key>
-			<string>None</string>
-		</map>	
-	</map>
-	<key>AscentUseCustomTag</key>
-	<map>
-		<key>Comment</key>
-		<string>Show a custom tag.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentCustomTagColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Color of custom tag.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Color4</string>
-      <key>Value</key>
-      <array>
-        <real>0.5</real>
-        <real>1.0</real>
-        <real>0.25</real>
-        <real>1.0</real>
-      </array>
-    </map>
-	<key>AscentCustomTagLabel</key>
-	<map>
-		<key>Comment</key>
-		<string>Label for the custom local tag</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>Custom</string>
-	</map>
-	<key>AscentActiveDayCycle</key>
-	<map>
-		<key>Comment</key>
-		<string>Day cycle currently in use</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>Default</string>
-	</map>
-	<key>AscentAutoCloseOOC</key>
-	<map>
-		<key>Comment</key>
-		<string>Auto-close OOC chat (i.e. add \"))\" if not found and \"((\" was used)</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentAllowMUpose</key>
-	<map>
-		<key>Comment</key>
-		<string>Allow MU* pose style in chat and IM (with ':' as a synonymous to '/me ')</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentStoreSettingsPerAccount</key>
-	<map>
-		<key>Comment</key>
-		<string>Toggles whether to save certain settings per-account, rather than per-install.</string>
-		<key>Persist</key>
-		<integer>0</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentDataSeparator</key>
-	<map>
-		<key>Comment</key>
-		<string>This separates data bits from each other - May be used in multiple locations</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>::</string>
-	</map>
-	<key>AscentHideTypingNotification</key>
-	<map>
-	  <key>Comment</key>
-	  <string>Keep those jerks guessing by hiding your "____ is typing..." message.</string>
-	  <key>Persist</key>
-	  <integer>0</integer>
-	  <key>Type</key>
-	  <string>Boolean</string>
-	  <key>Value</key>
-	  <integer>1</integer>
-	</map>
-	<key>AscentShowSelfTag</key>
-    <map>
-      <key>Comment</key>
-      <string>Show your own tag</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<key>AscentShowSelfTagColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Show your own tag</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<key>AscentAlwaysRezInGroup</key>
-    <map>
-      <key>Comment</key>
-      <string>Always rez under the owned land group</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<!-- Ascent's Optionally Account-Specific Settings -->
-	<key>AscentFriendColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Color of chat messages from other residents</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Color4</string>
-      <key>Value</key>
-      <array>
-        <real>1.0</real>
-        <real>1.0</real>
-        <real>0.0</real>
-        <real>1.0</real>
-      </array>
-    </map>
-	<key>AscentLindenColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Color of chat messages from other residents</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Color4</string>
-      <key>Value</key>
-      <array>
-        <real>0.0</real>
-        <real>0.0</real>
-        <real>1.0</real>
-        <real>1.0</real>
-      </array>
-    </map>
-	<key>AscentMutedColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Color of chat messages from other residents</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Color4</string>
-      <key>Value</key>
-      <array>
-        <real>0.7</real>
-        <real>0.7</real>
-        <real>0.7</real>
-        <real>1.0</real>
-      </array>
-    </map>
-	<key>AscentEstateOwnerColor</key>
-    <map>
-      <key>Comment</key>
-      <string>Color of chat messages from other residents</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Color4</string>
-      <key>Value</key>
-      <array>
-        <real>1.0</real>
-        <real>0.6</real>
-        <real>1.0</real>
-        <real>1.0</real>
-      </array>
-    </map>
-	<key>AscentReportClientIndex</key>
-    <map>
-      <key>Comment</key>
-      <string>Show your own tag</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>U32</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-	<key>AscentReportClientUUID</key>
-    <map>
-      <key>Comment</key>
-      <string>Broadcasted Client Key</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>String</string>
-      <key>Value</key>
-      <string>8873757c-092a-98fb-1afd-ecd347566fcd</string>
-    </map>
 	<!-- Vanilla SL settings that are now optionally Account-Specific -->
 	<key>AgentChatColor</key>
     <map>
@@ -1069,6 +322,8 @@
         <real>1.0</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>BackgroundChatColor</key>
     <map>
@@ -1085,6 +340,8 @@
         <real>0.0</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>EffectColor</key>
     <map>
@@ -1101,6 +358,8 @@
         <real>1.0</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>IMChatColor</key>
     <map>
@@ -1117,6 +376,8 @@
         <real>1.0</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>llOwnerSayChatColor</key>
     <map>
@@ -1133,6 +394,8 @@
         <real>0.689999997616</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>ObjectChatColor</key>
     <map>
@@ -1149,6 +412,8 @@
          <real>0.699999988079</real>
          <real>1</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>SkinCurrent</key>
     <map>
@@ -1160,6 +425,8 @@
       <string>String</string>
       <key>Value</key>
       <string>silver</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>SystemChatColor</key>
     <map>
@@ -1176,6 +443,8 @@
         <real>1.0</real>
         <real>1.0</real>
       </array>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>UISndAlert</key>
     <map>
@@ -1187,6 +456,8 @@
       <string>String</string>
       <key>Value</key>
       <string>ed124764-705d-d497-167a-182cd9fa2e6c</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndBadKeystroke</key>
     <map>
@@ -1198,6 +469,8 @@
       <string>String</string>
       <key>Value</key>
       <string>2ca849ba-2885-4bc3-90ef-d4987a5b983a</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndClick</key>
     <map>
@@ -1209,6 +482,8 @@
       <string>String</string>
       <key>Value</key>
       <string>4c8c3c77-de8d-bde2-b9b8-32635e0fd4a6</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndClickRelease</key>
     <map>
@@ -1220,6 +495,8 @@
       <string>String</string>
       <key>Value</key>
       <string>4c8c3c77-de8d-bde2-b9b8-32635e0fd4a6</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndDebugSpamToggle</key>
     <map>
@@ -1231,6 +508,8 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndHealthReductionF</key>
     <map>
@@ -1242,6 +521,8 @@
       <string>String</string>
       <key>Value</key>
       <string>219c5d93-6c09-31c5-fb3f-c5fe7495c115</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndHealthReductionM</key>
     <map>
@@ -1253,6 +534,8 @@
       <string>String</string>
       <key>Value</key>
       <string>e057c244-5768-1056-c37e-1537454eeb62</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndHealthReductionThreshold</key>
     <map>
@@ -1264,6 +547,8 @@
       <string>F32</string>
       <key>Value</key>
       <real>10.0</real>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndInvalidOp</key>
     <map>
@@ -1275,6 +560,8 @@
       <string>String</string>
       <key>Value</key>
       <string>4174f859-0d3d-c517-c424-72923dc21f65</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndMoneyChangeDown</key>
     <map>
@@ -1286,6 +573,8 @@
       <string>String</string>
       <key>Value</key>
       <string>104974e3-dfda-428b-99ee-b0d4e748d3a3</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndMoneyChangeThreshold</key>
     <map>
@@ -1297,6 +586,8 @@
       <string>F32</string>
       <key>Value</key>
       <real>50.0</real>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndMoneyChangeUp</key>
     <map>
@@ -1308,6 +599,8 @@
       <string>String</string>
       <key>Value</key>
       <string>77a018af-098e-c037-51a6-178f05877c6f</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndNewIncomingIMSession</key>
     <map>
@@ -1319,6 +612,8 @@
       <string>String</string>
       <key>Value</key>
       <string>67cc2844-00f3-2b3c-b991-6418d01e1bb7</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndObjectCreate</key>
     <map>
@@ -1330,6 +625,8 @@
       <string>String</string>
       <key>Value</key>
       <string>f4a0660f-5446-dea2-80b7-6482a082803c</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndObjectDelete</key>
     <map>
@@ -1341,6 +638,8 @@
       <string>String</string>
       <key>Value</key>
       <string>0cb7b00a-4c10-6948-84de-a93c09af2ba9</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndObjectRezIn</key>
     <map>
@@ -1352,6 +651,8 @@
       <string>String</string>
       <key>Value</key>
       <string>3c8fc726-1fd6-862d-fa01-16c5b2568db6</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndObjectRezOut</key>
     <map>
@@ -1363,6 +664,8 @@
       <string>String</string>
       <key>Value</key>
       <string>00000000-0000-0000-0000-000000000000</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuAppear</key>
     <map>
@@ -1374,6 +677,8 @@
       <string>String</string>
       <key>Value</key>
       <string>8eaed61f-92ff-6485-de83-4dcc938a478e</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuHide</key>
     <map>
@@ -1385,6 +690,8 @@
       <string>String</string>
       <key>Value</key>
       <string>00000000-0000-0000-0000-000000000000</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight0</key>
     <map>
@@ -1396,6 +703,8 @@
       <string>String</string>
       <key>Value</key>
       <string>d9f73cf8-17b4-6f7a-1565-7951226c305d</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight1</key>
     <map>
@@ -1407,6 +716,8 @@
       <string>String</string>
       <key>Value</key>
       <string>f6ba9816-dcaf-f755-7b67-51b31b6233e5</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight2</key>
     <map>
@@ -1418,6 +729,8 @@
       <string>String</string>
       <key>Value</key>
       <string>7aff2265-d05b-8b72-63c7-dbf96dc2f21f</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight3</key>
     <map>
@@ -1429,6 +742,8 @@
       <string>String</string>
       <key>Value</key>
       <string>09b2184e-8601-44e2-afbb-ce37434b8ba1</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight4</key>
     <map>
@@ -1440,6 +755,8 @@
       <string>String</string>
       <key>Value</key>
       <string>bbe4c7fc-7044-b05e-7b89-36924a67593c</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight5</key>
     <map>
@@ -1451,6 +768,8 @@
       <string>String</string>
       <key>Value</key>
       <string>d166039b-b4f5-c2ec-4911-c85c727b016c</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight6</key>
     <map>
@@ -1462,6 +781,8 @@
       <string>String</string>
       <key>Value</key>
       <string>242af82b-43c2-9a3b-e108-3b0c7e384981</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndPieMenuSliceHighlight7</key>
     <map>
@@ -1473,6 +794,8 @@
       <string>String</string>
       <key>Value</key>
       <string>c1f334fb-a5be-8fe7-22b3-29631c21cf0b</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndSnapshot</key>
     <map>
@@ -1484,6 +807,8 @@
       <string>String</string>
       <key>Value</key>
       <string>3d09f582-3851-c0e0-f5ba-277ac5c73fb4</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndStartIM</key>
     <map>
@@ -1495,6 +820,8 @@
       <string>String</string>
       <key>Value</key>
       <string>c825dfbc-9827-7e02-6507-3713d18916c1</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndTeleportOut</key>
     <map>
@@ -1506,6 +833,8 @@
       <string>String</string>
       <key>Value</key>
       <string>d7a9a565-a013-2a69-797d-5332baa1a947</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndTyping</key>
     <map>
@@ -1517,6 +846,8 @@
       <string>String</string>
       <key>Value</key>
       <string>5e191c7b-8996-9ced-a177-b2ac32bfea06</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndWindowClose</key>
     <map>
@@ -1528,6 +859,8 @@
       <string>String</string>
       <key>Value</key>
       <string>2c346eda-b60c-ab33-1119-b8941916a499</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
     <key>UISndWindowOpen</key>
     <map>
@@ -1539,22 +872,26 @@
       <string>String</string>
       <key>Value</key>
       <string>c80260ba-41fd-8a46-768a-6bf236360e3a</string>
+	  <key>IsCOA</key>
+	  <integer>1</integer>
     </map>
 	<key>UserChatColor</key>
 	<map>
-	<key>Comment</key>
+		<key>Comment</key>
 		<string>Color of your chat messages</string>
-	<key>Persist</key>
+		<key>Persist</key>
 		<integer>1</integer>
-	<key>Type</key>
+		<key>Type</key>
 		<string>Color4</string>
-	<key>Value</key>
+		<key>Value</key>
 		<array>
 			<real>1.0</real>
 			<real>1.0</real>
 			<real>1.0</real>
 			<real>1.0</real>
 		</array>
+		<key>IsCOA</key>
+		<integer>1</integer>
 	</map>
 	<!-- Standard SL options (To my knowledge) -->
 	<key>AFKTimeout</key>

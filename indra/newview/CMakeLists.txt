@@ -491,6 +491,7 @@ set(viewer_SOURCE_FILES
     pipeline.cpp
 	scriptcounter.cpp
 	wlfPanel_AdvSettings.cpp
+	shcommandhandler.cpp
     )
 
 # This gets renamed in the packaging step
@@ -949,6 +950,7 @@ set(viewer_HEADER_FILES
     VertexCache.h
     VorbisFramework.h
 	wlfPanel_AdvSettings.h
+	shcommandhandler.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

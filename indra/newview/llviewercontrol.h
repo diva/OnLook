@@ -54,8 +54,7 @@ extern std::map<std::string, LLControlGroup*> gSettings;
 void create_graphics_group(LLControlGroup& group);
 
 // saved at end of session
-// gSavedSettings and gCOASavedSettings moved to llcontrol.h
-extern LLControlGroup gSavedPerAccountSettings;
+// gSavedSettings and gSavedPerAccountSettings moved to llcontrol.h
 
 // Read-only
 extern LLControlGroup gColors;
@@ -76,7 +75,6 @@ bool handleCloudSettingsChanged(const LLSD& newvalue);
 //A template would be a little awkward to use here.. so.. a preprocessor macro. Alas. onCommitControlSetting(gSavedSettings) etc.
 inline void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name) {gSavedSettings.setValue((const char*)name,ctrl->getValue());}
 inline void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name) {gSavedPerAccountSettings.setValue((const char*)name,ctrl->getValue());}
-inline void onCommitControlSetting_gCOASavedSettings(LLUICtrl* ctrl, void* name) {gCOASavedSettings->setValue((const char*)name,ctrl->getValue());}
 #define onCommitControlSetting(controlgroup) onCommitControlSetting_##controlgroup
 
 //#define TEST_CACHED_CONTROL 1

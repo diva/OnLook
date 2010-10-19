@@ -59,6 +59,26 @@
 //this defines the current version of the settings file
 const S32 CURRENT_VERSION = 101;
 
+//Currently global. Would be better in LLControlGroup... except that that requires LLControlVars to know their parent group.
+//Could also pass the setting to each COA var too.. but that's not much better.
+//Can't use llcachedcontrol as an alternative as that drags in LLCachedControl constructors that refer to gSavedSettings.. which'll break
+// the crashlogger which also includes llxml.lib (unresolved externals).
+//So, a global it is!
+bool gCOAEnabled = false; 
+
+inline LLControlVariable *LLControlVariable::getCOAActive()
+{
+	//if no coa connection, return 'this'
+	//if per account is ON and this IS a parent, return child var
+	//if per account is ON and this IS NOT a parent, return 'this'
+	//if per account is OFF and this IS NOT a parent, return parent var
+	//if per account is OFF and this IS a parent, return 'this'
+	if(getCOAConnection() && gCOAEnabled == isCOAParent())
+		return getCOAConnection();
+	else
+		return this;
+}
+
 bool LLControlVariable::llsd_compare(const LLSD& a, const LLSD & b)
 {
 	bool result = false;
@@ -102,12 +122,16 @@ bool LLControlVariable::llsd_compare(const LLSD& a, const LLSD & b)
 
 LLControlVariable::LLControlVariable(const std::string& name, eControlType type,
 							 LLSD initial, const std::string& comment,
-							 bool persist, bool hidefromsettingseditor)
+							 bool persist, bool hidefromsettingseditor, bool IsCOA)
 	: mName(name),
 	  mComment(comment),
 	  mType(type),
 	  mPersist(persist),
-	  mHideFromSettingsEditor(hidefromsettingseditor)
+	  mHideFromSettingsEditor(hidefromsettingseditor),
+	  mSignal(new signal_t),
+	  mIsCOA(IsCOA),
+	  mIsCOAParent(false),
+	  mCOAConnectedVar(NULL)
 {
 	if (mPersist && mComment.empty())
 	{
@@ -188,7 +212,8 @@ void LLControlVariable::setValue(const LLSD& value, bool saved_value)
 
     if(value_changed)
     {
-        mSignal(storable_value); 
+		if(getCOAActive() == this)
+			(*mSignal)(storable_value); 
     }
 }
 
@@ -205,6 +230,7 @@ void LLControlVariable::setDefaultValue(const LLSD& value)
 	mValues[0] = comparable_value;
 	if(value_changed)
 	{
+		if(getCOAActive() == this)
 		firePropertyChanged();
 	}
 }
@@ -235,6 +261,7 @@ void LLControlVariable::resetToDefault(bool fire_signal)
 	
 	if(fire_signal) 
 	{
+		if(getCOAActive() == this)
 		firePropertyChanged();
 	}
 }
@@ -276,7 +303,13 @@ LLPointer<LLControlVariable> LLControlGroup::getControl(const std::string& name)
 			gSettingsCallMap.push_back(std::pair<std::string, U32>(name.c_str(),1));
 	}
 #endif //PROF_CTRL_CALLS
-	return iter == mNameTable.end() ? LLPointer<LLControlVariable>() : iter->second;
+	//return iter == mNameTable.end() ? LLPointer<LLControlVariable>() : iter->second;
+
+	LLControlVariable *pFoundVar = (iter != mNameTable.end()) ? iter->second : NULL;
+	if(pFoundVar)
+		return pFoundVar->getCOAActive();
+	else
+		return LLPointer<LLControlVariable>();
 }
 
 
@@ -322,7 +355,7 @@ std::string LLControlGroup::typeEnumToString(eControlType typeenum)
 	return mTypeString[typeenum];
 }
 
-BOOL LLControlGroup::declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor)
+BOOL LLControlGroup::declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor, bool IsCOA)
 {
 	LLControlVariable* existing_control = getControl(name);
 	if (existing_control)
@@ -335,6 +368,7 @@ BOOL LLControlGroup::declareControl(const std::string& name, eControlType type, 
 				LLSD cur_value = existing_control->getValue(); // get the current value
 				existing_control->setDefaultValue(initial_val); // set the default to the declared value
 				existing_control->setValue(cur_value); // now set to the loaded value
+				existing_control->setIsCOA(IsCOA);
 			}
 		}
 		else
@@ -345,7 +379,7 @@ BOOL LLControlGroup::declareControl(const std::string& name, eControlType type, 
 	}
 
 	// if not, create the control and add it to the name table
-	LLControlVariable* control = new LLControlVariable(name, type, initial_val, comment, persist, hidefromsettingseditor);
+	LLControlVariable* control = new LLControlVariable(name, type, initial_val, comment, persist, hidefromsettingseditor, IsCOA);
 	mNameTable[name] = control;	
 	return TRUE;
 }
@@ -1061,6 +1095,9 @@ U32 LLControlGroup::saveToFile(const std::string& filename, BOOL nondefault_only
 
 U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_values)
 {
+	if(mIncludedFiles.find(filename) != mIncludedFiles.end())
+		return 0; //Already included this file.
+
 	std::string name;
 	LLSD settings;
 	LLSD control_map;
@@ -1089,6 +1126,24 @@ U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_v
 		name = (*itr).first;
 		control_map = (*itr).second;
 		
+		if(name == "Include")
+		{
+			if(control_map.isArray())
+			{
+#if LL_WINDOWS
+				size_t pos = filename.find_last_of("\\");
+#else
+				size_t pos = filename.find_last_of("/");
+#endif			
+				if(pos!=std::string::npos)
+				{
+					const std::string dir = filename.substr(0,++pos);
+					for(LLSD::array_const_iterator array_itr = control_map.beginArray(); array_itr != control_map.endArray(); ++array_itr)
+						validitems+=loadFromFile(dir+(*array_itr).asString(),set_default_values);
+				}
+			}
+			continue;
+		}
 		if(control_map.has("Persist")) 
 		{
 			persist = control_map["Persist"].asInteger();
@@ -1139,13 +1194,16 @@ U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_v
 		}
 		else
 		{
+			bool IsCOA = control_map.has("IsCOA") && !!control_map["IsCOA"].asInteger();
 			declareControl(name, 
 						   typeStringToEnum(control_map["Type"].asString()), 
 						   control_map["Value"], 
 						   control_map["Comment"].asString(), 
 						   persist,
-						   hidefromsettingseditor
+						   hidefromsettingseditor,
+						   IsCOA
 						   );
+
 		}
 		
 		++validitems;
@@ -1172,6 +1230,53 @@ void LLControlGroup::applyToAll(ApplyFunctor* func)
 		 iter != mNameTable.end(); iter++)
 	{
 		func->apply(iter->first, iter->second);
+	}
+}
+
+void LLControlGroup::connectCOAVars(LLControlGroup &OtherGroup)
+{
+	LLControlVariable *pCOAVar = NULL;
+	for (ctrl_name_table_t::iterator iter = mNameTable.begin();
+		 iter != mNameTable.end(); iter++)
+	{
+		if(iter->second->isCOA())
+		{
+			LLControlVariable *pParent = iter->second;
+			LLControlVariable *pChild = OtherGroup.getControl(pParent->getName());
+			if(!pChild)
+			{
+				OtherGroup.declareControl(
+					pParent->getName(),
+					pParent->type(),
+					pParent->getDefault(),
+					pParent->getComment(),
+					pParent->isPersisted(),
+					true);
+
+				pChild = OtherGroup.getControl(pParent->getName());
+			}
+			if(pChild)
+			{
+				pParent->setCOAConnect(pChild,true);
+				pChild->setCOAConnect(pParent,false);
+			}
+		}
+		else if(iter->second->getName() == "AscentStoreSettingsPerAccount")
+			pCOAVar = iter->second;
+	}
+	if(pCOAVar)
+	{
+		pCOAVar->getSignal()->connect(boost::bind(&LLControlGroup::handleCOASettingChange, this, _1));
+		pCOAVar->firePropertyChanged();
+	}
+}
+void LLControlGroup::updateCOASetting(bool coa_enabled)
+{
+	for (ctrl_name_table_t::iterator iter = mNameTable.begin();
+		 iter != mNameTable.end(); iter++)
+	{
+		if(iter->second->getCOAConnection())
+			iter->second->getCOAActive()->firePropertyChanged();
 	}
 }
 
@@ -1224,6 +1329,12 @@ void LLControlGroup::resetWarnings()
 	}
 }
 
+bool LLControlGroup::handleCOASettingChange(const LLSD& newvalue)
+{
+	gCOAEnabled = !!newvalue.asInteger(); //TODO. De-globalize this.
+	updateCOASetting(gCOAEnabled);
+	return true;
+}
 //============================================================================
 
 #ifdef TEST_HARNESS

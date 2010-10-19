@@ -72,7 +72,7 @@ const BOOL NO_PERSIST = FALSE;
 // Saved at end of session
 class LLControlGroup; //Defined further down
 extern LLControlGroup gSavedSettings;		//Default control group used in LLCachedControl
-extern LLControlGroup *gCOASavedSettings;	//Used in LLCachedCOAControl
+extern LLControlGroup gSavedPerAccountSettings;	//For ease
 
 typedef enum e_control_type
 {
@@ -104,12 +104,16 @@ private:
 	bool			mHideFromSettingsEditor;
 	std::vector<LLSD> mValues;
 	
-	signal_t mSignal;
-	
+	boost::shared_ptr<signal_t> mSignal;	//Signals are non-copyable. Therefore, using a pointer so vars can 'share' signals for COA
+
+	//COA stuff:
+	bool			mIsCOA;				//To have COA connection set.
+	bool			mIsCOAParent;		//if true, use if settingsperaccount is false.
+	LLControlVariable *mCOAConnectedVar;//Because the two vars refer to eachother, LLPointer would be a circular refrence..
 public:
 	LLControlVariable(const std::string& name, eControlType type,
 					  LLSD initial, const std::string& comment,
-					  bool persist = true, bool hidefromsettingseditor = false);
+					  bool persist = true, bool hidefromsettingseditor = false, bool IsCOA = false);
 
 	virtual ~LLControlVariable();
 	
@@ -121,7 +125,7 @@ public:
 
 	void resetToDefault(bool fire_signal = false);
 
-	signal_t* getSignal() { return &mSignal; }
+	signal_t* getSignal() { return mSignal.get(); }
 
 	bool isDefault() { return (mValues.size() == 1); }
 	bool isSaveValueDefault();
@@ -141,7 +145,21 @@ public:
 
 	void firePropertyChanged()
 	{
-		mSignal(mValues.back());
+		(*mSignal)(mValues.back());
+	}
+
+	//COA stuff
+	bool isCOA()		const	{ return mIsCOA; }
+	bool isCOAParent()	const	{ return mIsCOAParent; }
+	LLControlVariable *getCOAConnection() const	{ return mCOAConnectedVar; }
+	LLControlVariable *getCOAActive();
+	void setIsCOA(bool IsCOA)  { mIsCOA=IsCOA; }
+	void setCOAConnect(LLControlVariable *pConnect, bool IsParent) 
+	{
+		mIsCOAParent=IsParent;
+		mCOAConnectedVar=pConnect;
+		if(!IsParent)
+			mSignal = pConnect->mSignal; //Share a single signal.
 	}
 private:
 	LLSD getComparableValue(const LLSD& value);
@@ -160,6 +178,7 @@ protected:
 
 	eControlType typeStringToEnum(const std::string& typestr);
 	std::string typeEnumToString(eControlType typeenum);	
+	std::set<std::string> mIncludedFiles; //To prevent perpetual recursion.
 public:
 	LLControlGroup();
 	~LLControlGroup();
@@ -173,8 +192,8 @@ public:
 		virtual void apply(const std::string& name, LLControlVariable* control) = 0;
 	};
 	void applyToAll(ApplyFunctor* func);
-	
-	BOOL declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor = FALSE);
+
+	BOOL declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor = FALSE, bool IsCOA = false);
 	BOOL declareU32(const std::string& name, U32 initial_val, const std::string& comment, BOOL persist = TRUE);
 	BOOL declareS32(const std::string& name, S32 initial_val, const std::string& comment, BOOL persist = TRUE);
 	BOOL declareF32(const std::string& name, F32 initial_val, const std::string& comment, BOOL persist = TRUE);
@@ -245,6 +264,12 @@ public:
 	
 	// Resets all ignorables
 	void resetWarnings();
+
+	//COA stuff
+	void connectToCOA(LLControlVariable *pConnecter, const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist);
+	void connectCOAVars(LLControlGroup &OtherGroup);
+	void updateCOASetting(bool coa_enabled);
+	bool handleCOASettingChange(const LLSD& newvalue);
 };
 
 //! Helper function for LLCachedControl
@@ -260,6 +285,7 @@ eControlType get_control_type(const T& in, LLSD& out)
 //! An LLCachedControl instance to connect to a LLControlVariable
 //! without have to manually create and bind a listener to a local
 //! object.
+
 template <class T>
 class LLCachedControl
 {
@@ -279,11 +305,10 @@ public:
 					LLControlGroup &group = gSavedSettings)
 	{Init(name,default_value,comment,group);}  //for default (gSavedSettings)
 private:
-	//Pulled out of ctor due to problems with initializer lists in template classes
 	void Init(	const std::string& name, 
 				const T& default_value, 
 				const std::string& comment,
-				LLControlGroup &group )
+				LLControlGroup &group)
 	{
 		mControlGroup = &group;
 		mControl = mControlGroup->getControl(name);
@@ -303,6 +328,8 @@ private:
 			handleValueChange(mControl->getValue());
 		}
 
+		if(mConnection.connected())
+			mConnection.disconnect();
 		// Add a listener to the controls signal...
 		// and store the connection...
 		mConnection = mControl->getSignal()->connect(
@@ -325,6 +352,8 @@ public:
 	}
 	
 	operator const T&() const { return mCachedValue; }
+
+
 	/*	Sometimes implicit casting doesn't work.
 		For instance, something like "LLCachedControl<LLColor4> color("blah",LLColor4()); color.getValue();" 
 		will not compile as it will look for the function getValue() in LLCachedControl, which doesn't exist.
@@ -334,10 +363,6 @@ public:
 	*/
 	const T &get() const { return mCachedValue; } 
 
-	LLPointer<LLControlVariable> getControl() const
-	{
-		return mControl;
-	}
 private:
 	void declareTypedControl(LLControlGroup& group, 
 							 const std::string& name, 
@@ -373,48 +398,6 @@ private:
 		// Implicit conversion from T to LLSD...
 		c.set(v);
 	}
-};
-
-//Easiest way without messing with LLCachedControl even more..
-template <class T>
-class LLCachedCOAControl
-{
-	LLCachedControl<T> *mCachedControl;
-	boost::signals::connection mCOAConnection;
-	const std::string mName;
-	const std::string mComment;
-	const T mDefault;
-public:
-	LLCachedCOAControl(const std::string& name, const T& default_value,const std::string& comment = "Declared In Code")
-		: mName(name),mDefault(default_value),mComment(comment)
-	{
-		mCachedControl = new LLCachedControl<T>(mName,mDefault,gCOASavedSettings,mComment);
-
-		static LLCachedControl<bool> settings_per_account("AscentStoreSettingsPerAccount",false);
-		mCOAConnection = settings_per_account.getControl()->getSignal()->connect(
-			boost::bind(&LLCachedCOAControl<T>::handleCOAValueChange, this, _1));	
-	}
-	~LLCachedCOAControl()
-	{
-		if(mCachedControl)
-			delete mCachedControl;
-		if(mCOAConnection.connected())
-			mCOAConnection.disconnect();
-	}
-	LLCachedCOAControl& operator =(const T& newvalue)
-	{
-	   mCachedControl = newvalue;
-	   return *this;
-	}
-	bool handleCOAValueChange(const LLSD& newvalue)
-	{
-		if(mCachedControl)
-			delete mCachedControl;
-		mCachedControl = new LLCachedControl<T>(mName,mDefault,gCOASavedSettings,mComment);
-		return true;
-	}
-	operator const T&() const { return *mCachedControl; }
-	const T &get() const { return *mCachedControl; }
 };
 
 //Following is actually defined in newview/llviewercontrol.cpp, but extern access is fine (Unless GCC bites me)

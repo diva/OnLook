@@ -100,7 +100,7 @@ void LLFloaterSettingsDebug::draw()
 {
 	LLComboBox* settings_combo = getChild<LLComboBox>("settings_combo");
 	LLControlVariable* controlp = (LLControlVariable*)settings_combo->getCurrentUserdata();
-	updateControl(controlp);
+	updateControl(controlp ? controlp->getCOAActive() : NULL);
 
 	LLFloater::draw();
 }
@@ -125,7 +125,7 @@ void LLFloaterSettingsDebug::onSettingSelect(LLUICtrl* ctrl, void* user_data)
 	LLComboBox* combo_box = (LLComboBox*)ctrl;
 	LLControlVariable* controlp = (LLControlVariable*)combo_box->getCurrentUserdata();
 
-	floaterp->updateControl(controlp);
+	floaterp->updateControl(controlp ? controlp->getCOAActive() : NULL);
 }
 
 //static
@@ -135,6 +135,7 @@ void LLFloaterSettingsDebug::onCommitSettings(LLUICtrl* ctrl, void* user_data)
 
 	LLComboBox* settings_combo = floaterp->getChild<LLComboBox>("settings_combo");
 	LLControlVariable* controlp = (LLControlVariable*)settings_combo->getCurrentUserdata();
+	controlp = controlp ? controlp->getCOAActive() : NULL;
 
 	LLVector3 vector;
 	LLVector3d vectord;
@@ -212,6 +213,7 @@ void LLFloaterSettingsDebug::onClickDefault(void* user_data)
 
 	if (controlp)
 	{
+		controlp = controlp->getCOAActive();
 		controlp->resetToDefault();
 		floaterp->updateControl(controlp);
 	}
@@ -243,6 +245,7 @@ void LLFloaterSettingsDebug::updateControl(LLControlVariable* controlp)
 
 	if (controlp)
 	{
+		controlp = controlp->getCOAActive();
 		eControlType type = controlp->type();
 
 		//hide combo box only for non booleans, otherwise this will result in the combo box closing every frame
