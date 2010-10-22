@@ -221,7 +221,11 @@ glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top,
 	return ret;
 }
 
+#if SHY_MOD //screenshot improvement
+void display_update_camera(bool tiling=false);
+#else //shy_mod
 void display_update_camera();
+#endif //ignore
 //----------------------------------------
 
 S32		LLPipeline::sCompiles = 0;

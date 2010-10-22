@@ -4248,6 +4248,20 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 
 	LLRenderTarget target;
 	F32 scale_factor = 1.0f ;
+
+#if SHY_MOD // screenshot improvement
+	F32 internal_scale = 1.f;
+	static const LLCachedControl<bool> force_tile("SHHighResSnapshotForceTile",false);
+	if(force_tile)
+	{
+		static const LLCachedControl<F32> super_sample_scale("SHHighResSnapshotSuperSample",1.f);
+		internal_scale = llmax(super_sample_scale.get(),1.f);
+	}
+	// render at specified internal resolution. >1 results in supersampling.
+	image_height *= internal_scale;
+	image_width *= internal_scale;
+#endif //shy_mod
+
 	if(!keep_window_aspect) //image cropping
 	{		
 		F32 ratio = llmin( (F32)window_width / image_width , (F32)window_height / image_height) ;
@@ -4259,6 +4273,9 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	{
 		if(image_width > window_width || image_height > window_height) //need to enlarge the scene
 		{
+#if SHY_MOD // screenshot improvement
+			if(!force_tile)
+#endif //shy_mod
 			if (gGLManager.mHasFramebufferObject && !show_ui)
 			{
 				GLint max_size = 0;
@@ -4295,6 +4312,9 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 
 	S32 image_buffer_x = llfloor(snapshot_width*scale_factor) ;
 	S32 image_buffer_y = llfloor(snapshot_height *scale_factor) ;
+#if SHY_MOD // screenshot improvement
+	if(internal_scale > 1.f) //If supersampling... Don't care about max_size.
+#endif //shy_mod
 	if(image_buffer_x > max_size || image_buffer_y > max_size) //boundary check to avoid memory overflow
 	{
 		scale_factor *= llmin((F32)max_size / image_buffer_x, (F32)max_size / image_buffer_y) ;
@@ -4348,11 +4368,32 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 			else
 			{
 				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
+#if SHY_MOD // screenshot improvement
+				//tiling requires gPipeline.generateWaterReflection to be called in display(). CANNOT be done if using an fbo.
+				display(do_rebuild, scale_factor, subfield, TRUE, !use_fbo && (scale_factor > 1.0f));
+#else //shy_mod
 				display(do_rebuild, scale_factor, subfield, TRUE);
+#endif
 				// Required for showing the GUI in snapshots?  See DEV-16350 for details. JC
 				render_ui(scale_factor, subfield);
 			}
 
+#if SHY_MOD // screenshot improvement
+			if(scale_factor <= 1.f) //faster. bulk copy opposed to line per line
+			{
+				if (type == SNAPSHOT_TYPE_OBJECT_ID || type == SNAPSHOT_TYPE_COLOR)
+				{
+					glReadPixels(0,0,image_width, image_height,GL_RGB, GL_UNSIGNED_BYTE,raw->getData());
+				}
+				else // SNAPSHOT_TYPE_DEPTH
+				{
+					LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(image_width, image_height, sizeof(GL_FLOAT));
+					glReadPixels(0, 0,image_width,image_height,	GL_DEPTH_COMPONENT, GL_FLOAT,depth_line_buffer->getData());
+					raw->copy(depth_line_buffer);
+				}
+				continue;
+			}
+#endif //shy_mod
 			S32 subimage_x_offset = llclamp(buffer_x_offset - (subimage_x * window_width), 0, window_width);
 			// handle fractional rows
 			U32 read_width = llmax(0, (window_width - subimage_x_offset) -
@@ -4453,6 +4494,14 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		ret = raw->scale( image_width, image_height, FALSE );  
 	}
 	
+#if SHY_MOD // screenshot improvement
+	if(raw->isBufferInvalid()) //Just checking!
+		return FALSE;
+	if(internal_scale != 1.f)  //Scale down our render to the desired dimensions.
+		raw->scale( image_width/internal_scale, image_height/internal_scale );	
+	if(raw->isBufferInvalid()) //Just checking!
+		return FALSE;
+#endif //shy_mod
 
 	setCursor(UI_CURSOR_ARROW);
 

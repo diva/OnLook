@@ -163,7 +163,11 @@ void display_startup()
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+#if SHY_MOD //screenshot improvement
+void display_update_camera(bool tiling=false)
+#else //shy_mod
 void display_update_camera()
+#endif //ignore
 {
 	llpushcallstacks ;
 	// TODO: cut draw distance down if customizing avatar?
@@ -172,6 +176,15 @@ void display_update_camera()
 	// Cut draw distance in half when customizing avatar,
 	// but on the viewer only.
 	F32 final_far = gAgent.mDrawDistance;
+#if SHY_MOD //screenshot improvement
+	if(tiling) //Don't animate clouds and water if tiling!
+	{
+		LLViewerCamera::getInstance()->setFar(final_far);
+		gViewerWindow->setup3DRender();
+		LLWorld::getInstance()->setLandFarClip(final_far);
+		return;
+	}
+#endif //shy_mod
 	if (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgent.getCameraMode())
 	{
 		final_far *= 0.5f;
@@ -216,7 +229,11 @@ void display_stats()
 }
 
 // Paint the display!
+#if SHY_MOD // screenshot improvement
+void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, BOOL tiling)
+#else //shy_mod
 void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
+#endif //ignore
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER);
 
@@ -577,7 +594,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLNamePool::upkeepPools();
 		
 		stop_glerror();
+#if SHY_MOD //screenshot improvement
+		display_update_camera(tiling);
+#else //shy_mod
 		display_update_camera();
+#endif //ignore
 		stop_glerror();
 				
 		// *TODO: merge these two methods
@@ -707,7 +728,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
+#if SHY_MOD // screenshot improvement
+		if (!for_snapshot || tiling)
+#else //shy_mod
 		if (!for_snapshot)
+#endif //ignore
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Imagery");
 			gPipeline.generateWaterReflection(*LLViewerCamera::getInstance());
