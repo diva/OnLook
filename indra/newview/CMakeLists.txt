@@ -81,6 +81,7 @@ set(viewer_SOURCE_FILES
 	hipporestrequest.cpp
     jcfloaterareasearch.cpp
 	chatbar_as_cmdline.cpp
+	qtoolalign.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentdata.cpp
@@ -529,6 +530,7 @@ set(viewer_HEADER_FILES
 	hipporestrequest.h
     jcfloaterareasearch.h
 	chatbar_as_cmdline.h
+	qtoolalign.h
     llagent.h
     llagentaccess.h
     llagentdata.h
