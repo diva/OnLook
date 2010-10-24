@@ -59,6 +59,7 @@
 #include "llfloaterchat.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
+#include "llcheckboxctrl.h"
 #include "llnotify.h"
 #include "llresmgr.h"
 #include "lltabcontainer.h"
@@ -1279,6 +1280,8 @@ BOOL LLFloaterIMPanel::postBuild()
 
 	if (checkRequirements())
 	{
+		mRPMode = false;
+
 		mInputEditor = getChild<LLLineEditor>("chat_editor");
 		mInputEditor->setFocusReceivedCallback( onInputEditorFocusReceived, this );
 		mInputEditor->setFocusLostCallback( onInputEditorFocusLost, this );
@@ -1293,6 +1296,7 @@ BOOL LLFloaterIMPanel::postBuild()
 		childSetAction("profile_tele_btn", onClickTeleport, this);
 		childSetAction("group_info_btn", onClickGroupInfo, this);
 		childSetAction("history_btn", onClickHistory, this);
+		childSetCommitCallback("rp_mode", onRPMode, this);
 
 		childSetAction("start_call_btn", onClickStartCall, this);
 		childSetAction("end_call_btn", onClickEndCall, this);
@@ -1793,6 +1797,13 @@ void LLFloaterIMPanel::onClickTeleport( void* userdata )
 }
 
 // static
+void LLFloaterIMPanel::onRPMode(LLUICtrl* source, void* user_data)
+{
+	LLFloaterIMPanel* self = (LLFloaterIMPanel*) user_data;
+	self->mRPMode = source->getValue().asBoolean();
+}
+
+// static
 void LLFloaterIMPanel::onClickHistory( void* userdata )
 {
 	LLFloaterIMPanel* self = (LLFloaterIMPanel*) userdata;
@@ -2018,7 +2029,7 @@ void LLFloaterIMPanel::sendMsg()
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
 			std::string utf8text = wstring_to_utf8str(text);
-			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1))
+			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1) && !mRPMode)
 			{
 				// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 				int needsClosingType=0;
@@ -2062,7 +2073,12 @@ void LLFloaterIMPanel::sendMsg()
 					utf8text.replace(0, 1, "/me ");
 				}
 			}
+
 			utf8text = utf8str_truncate(utf8text, MAX_MSG_BUF_SIZE - 1);
+
+			std::string prefix = utf8text.substr(0, 4);
+			if (prefix != "/me " && prefix != "/me'")
+				if (mRPMode) utf8text = "[[" + utf8text + "]]";
 			
 			if ( mSessionInitialized )
 			{

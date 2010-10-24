@@ -44,9 +44,9 @@
 		height="18" left="-235" name="buddy_search_lineedit"
 		tool_tip="The friend name you want to search for" width="130" />
 	<pad bottom="-7" height="0" left="-90" width="1" />
-  <button bottom_delta="-25" follows="top|right" height="22" label="Set Contact"
+  <!--<button bottom_delta="-25" follows="top|right" height="22" label="Set Contact"
 		left_delta="0" name="assign_btn" tool_tip="Asign a friend to a Contact Group"
-		width="80" />
+		width="80" />-->
 	<button bottom_delta="-25" follows="top|right" height="22" label="IM/Call"
 	    left_delta="0" name="im_btn" tool_tip="Open Instant Message session"
 	    width="80" />
