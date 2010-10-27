@@ -138,6 +138,8 @@ private:
 	static void onContactSearchKeystroke(LLLineEditor* caller, void* user_data);
 	static void onClickIM(void* user_data);
 	static void onClickAssign(void* user_data);
+	static void onClickExpand(void* user_data);
+	static void updateColumns(void* user_data);
 	static void onClickProfile(void* user_data);
 	static void onClickAddFriend(void* user_data);
 	static void onClickRemove(void* user_data);

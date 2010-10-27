@@ -385,13 +385,14 @@ BOOL LLPanelFriends::postBuild()
 
 	childSetAction("im_btn", onClickIM, this);
 	childSetAction("assign_btn", onClickAssign, this);
+	childSetAction("expand_collapse_btn", onClickExpand, this);
 	childSetAction("profile_btn", onClickProfile, this);
 	childSetAction("offer_teleport_btn", onClickOfferTeleport, this);
 	childSetAction("pay_btn", onClickPay, this);
 	childSetAction("add_btn", onClickAddFriend, this);
 	childSetAction("remove_btn", onClickRemove, this);
-	childSetAction("export_btn", onClickExport, this);
-	childSetAction("import_btn", onClickImport, this);
+	//childSetAction("export_btn", onClickExport, this); Making Dummy View -HgB
+	//childSetAction("import_btn", onClickImport, this); Making Dummy View -HgB
 
 	setDefaultBtn("im_btn");
 
@@ -401,6 +402,8 @@ BOOL LLPanelFriends::postBuild()
 	// primary sort = online status, secondary sort = name
 	mFriendsList->sortByColumn(std::string("friend_name"), TRUE);
 	mFriendsList->sortByColumn(std::string("icon_online_status"), FALSE);
+
+	updateColumns(this);
 
 	return TRUE;
 }
@@ -551,7 +554,7 @@ void LLPanelFriends::refreshRightsChangeList()
 	bool can_offer_teleport = num_selected >= 1;
 	bool selected_friends_online = true;
 
-	LLTextBox* processing_label = getChild<LLTextBox>("process_rights_label");
+	/*LLTextBox* processing_label = getChild<LLTextBox>("process_rights_label");
 
 	if(!mAllowRightsChange)
 	{
@@ -566,7 +569,7 @@ void LLPanelFriends::refreshRightsChangeList()
 	else if(processing_label)
 	{
 		processing_label->setVisible(false);
-	}
+	} Making Dummy View -HgB */
 	const LLRelationship* friend_status = NULL;
 	for(LLDynamicArray<LLUUID>::iterator itr = friends.begin(); itr != friends.end(); ++itr)
 	{
@@ -602,7 +605,7 @@ void LLPanelFriends::refreshRightsChangeList()
 		// to be consistent with context menus in inventory and because otherwise
 		// offline friends would be silently dropped from the session
 		childSetEnabled("im_btn", selected_friends_online || num_selected == 1);
-		childSetEnabled("assign_btn", TRUE);
+		childSetEnabled("assign_btn", num_selected == 1);
 		childSetEnabled("offer_teleport_btn", can_offer_teleport);
 	}
 }
@@ -727,29 +730,20 @@ void LLPanelFriends::refreshUI()
 		single_selected = TRUE;
 		if(num_selected > 1)
 		{
-			childSetText("friend_name_label", getString("Multiple"));
 			multiple_selected = TRUE;		
 		}
-		else
-		{			
-			childSetText("friend_name_label", mFriendsList->getFirstSelected()->getColumn(LIST_FRIEND_NAME)->getValue().asString() + "...");
-		}
-	}
-	else
-	{
-		childSetText("friend_name_label", LLStringUtil::null);
 	}
 
 	//Options that can only be performed with one friend selected
 	childSetEnabled("profile_btn", single_selected && !multiple_selected);
 	childSetEnabled("pay_btn", single_selected && !multiple_selected);
+	childSetEnabled("assign_btn", single_selected && !multiple_selected);
 
 	//Options that can be performed with up to MAX_FRIEND_SELECT friends selected
 	//(single_selected will always be true in this situations)
 	childSetEnabled("remove_btn", single_selected);
 	childSetEnabled("im_btn", single_selected);
-	childSetEnabled("assign_btn", single_selected);
-	childSetEnabled("friend_rights", single_selected);
+	//childSetEnabled("friend_rights", single_selected); Making Dummy View -HgB
 
 	refreshRightsChangeList();
 }
@@ -811,6 +805,47 @@ void LLPanelFriends::onClickAssign(void* user_data)
 	{
 		LLDynamicArray<LLUUID> ids = panelp->getSelectedIDs();
 		ASFloaterContactGroups::show(ids);
+	}
+}
+
+// static
+void LLPanelFriends::onClickExpand(void* user_data)
+{
+	BOOL collapsed = gSavedSettings.getBOOL("ContactListCollapsed");
+	gSavedSettings.setBOOL("ContactListCollapsed", !collapsed);
+	updateColumns(user_data);
+}
+
+void LLPanelFriends::updateColumns(void* user_data)
+{
+	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
+	if (panelp)
+	{
+		LLButton* expand_button = panelp->getChild<LLButton>("expand_collapse_btn");
+		LLScrollListCtrl* list = panelp->getChild<LLScrollListCtrl>("friend_list");
+		//llinfos << "Refreshing UI" << llendl;
+		S32 width = 22;
+		std::string button = ">";
+		if (gSavedSettings.getBOOL("ContactListCollapsed"))
+		{
+			width = 0;
+			button = "<";
+		}
+		expand_button->setLabel(button);
+		LLScrollListColumn* column = list->getColumn(5);
+		list->updateStaticColumnWidth(column, width);
+		column->setWidth(width);
+		column = list->getColumn(6);
+		list->updateStaticColumnWidth(column, width);
+		column->setWidth(width);
+		column = list->getColumn(7);
+		list->updateStaticColumnWidth(column, width);
+		column->setWidth(width);
+		list->updateLayout();
+		if (!gSavedSettings.getBOOL("ContactListCollapsed"))
+		{
+			panelp->updateFriends(LLFriendObserver::ADD);
+		}
 	}
 }
 

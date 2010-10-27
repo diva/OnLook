@@ -4,53 +4,35 @@
 <!-- Floaters can optionally have their titlebar drag handle on the left.
      If so, the title is not visible.
      When a floater is resizable, a min_width and min_height must be specified. -->
-<floater
-	name="floater_contact_groups"
-	title="Manage Contact Groups"
-	rect_control="FloaterContactRect"
-	can_resize="true"
-	can_minimize="false"
-	can_close="true"
-	can_drag_on_left="false"
-	width="335"
-	height="275"
-	min_width="335"
-	min_height="275"
-	>
-  <tab_container bottom="30" follows="left|right|top|bottom" height="220" left="4"
-         name="ContactTabs" tab_position="top" tab_width="65" width="330">
-    <panel name="AddPanel" label="Add Contact"
-			border="true" bottom_delta="-10" height="150" left="6" width="135"
-			mouse_opaque="true">
-      <text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-			     bottom="-24" drop_shadow_visible="true" follows="left|top"
-			     font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
-			     mouse_opaque="true" name="InstructManageContacts" v_pad="0"
-			     width="240">
-        Create a new group or select an existing one:
-      </text>
-      <line_editor bevel_style="in" border_style="line"
-			     border_thickness="1" bottom_delta="-20" enabled="true" follows="left|top|right"
-			     font="SansSerifSmall" height="16" left="10" right="-120"
-			     max_length="254" mouse_opaque="true" name="add_group_lineedit"
-			     width="112" />
-      <button bottom_delta="-3" follows="top|right" font="SansSerif" halign="center"
-			     height="20" label="Create" label_selected="Create" left_delta="20" right="-10"
-			     mouse_opaque="true" name="Create" scale_image="TRUE" width="90" />
-      <button bottom_delta="-25" follows="top|right" font="SansSerif" halign="center"
-			     height="20" label="Delete" label_selected="Delete" right="-15"
-			     mouse_opaque="true" name="Delete" scale_image="TRUE" width="90" />
-      <scroll_list background_visible="true" bottom_delta="-125" column_padding="5"
-			     draw_border="true" draw_heading="false" draw_stripes="true"
-			     follows="left|top|right" height="120" left="10" mouse_opaque="true"
-			     multi_select="false" name="group_scroll_list" width="115" />
-    </panel>
-  </tab_container>
-
-  <button bottom="6" left="10" follows="left|bottom" font="SansSerif" halign="center"
-	     width="95" height="20" label="Save" label_selected="Save" mouse_opaque="true"
-	     name="Save" scale_image="TRUE" />
-  <button bottom_delta="0" right="240" follows="left|bottom" font="SansSerif" halign="center"
-	     width="95" height="20" label="Cancel" label_selected="Cancel" mouse_opaque="true"
-	     name="Cancel" scale_image="TRUE" />
+<floater name="floater_contact_groups" title="Manage Contact Groups" rect_control="FloaterContactRect"
+	can_resize="true" can_minimize="false" can_close="true"	can_drag_on_left="false" width="335"
+	height="275" min_width="260" min_height="275">
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			 bottom="-35" drop_shadow_visible="true" follows="left|top"
+			 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+			 mouse_opaque="true" name="InstructManageContacts" v_pad="0"
+			 width="240">
+	Select a group (Or press New to create one):
+	</text>
+	<combo_box allow_text_entry="true" enabled="true" follows="left|top|right"
+		bottom_delta="-20" height="18" hidden="false" left="10" right="-96" max_chars="20" mouse_opaque="true"
+		tool_tip="Buddy group" name="buddy_group_combobox" width="200">
+		<combo_item type="string" length="20" enabled="true" name="All" value="All">
+			All
+		</combo_item>
+	</combo_box>
+	<button follows="top|right" bottom_delta="-1" height="20" label="+" right="-71" name="combo_group_add" width="21" />
+	<button follows="top|right" bottom_delta="0" height="20" label="-" left_delta="22" name="combo_group_remove" width="21" />
+	<button follows="top|right" bottom_delta="0" height="20" label="New" left_delta="22" name="combo_group_create" width="40" />
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			 bottom_delta="-18" drop_shadow_visible="true" follows="left|top"
+			 font="SansSerifSmall" h_pad="0" halign="left" height="16" left="10"
+			 mouse_opaque="true" name="contact_list_text" v_pad="0"
+			 width="240">
+	Currently in:
+	</text>
+	<scroll_list background_visible="true" bottom="15" column_padding="5"
+			 draw_border="true" draw_heading="false" draw_stripes="true"
+			 follows="left|top|right|bottom" left="10" right="-10" mouse_opaque="true"
+			 multi_select="false" name="group_scroll_list" top="-75" />
 </floater>

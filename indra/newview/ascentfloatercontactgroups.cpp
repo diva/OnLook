@@ -45,17 +45,16 @@ void ASFloaterContactGroups::show(LLDynamicArray<LLUUID> ids)
 {
     if (!sInstance)
 	sInstance = new ASFloaterContactGroups();
-
 	mSelectedUUIDs = ids;
 
     sInstance->open();
 	sInstance->populateGroupList();
 	sInstance->populateFriendList();
 
-	sInstance->childSetAction("Cancel", onBtnClose, sInstance);
-	sInstance->childSetAction("Save", onBtnSave, sInstance);
-	sInstance->childSetAction("Create", onBtnCreate, sInstance);
-	sInstance->childSetAction("Delete", onBtnDelete, sInstance);
+	sInstance->childSetAction("combo_group_add", onBtnAdd, sInstance);
+	sInstance->childSetAction("combo_group_remove", onBtnRemove, sInstance);
+	//sInstance->childSetAction("New", onBtnCreate, sInstance);
+	//sInstance->childSetAction("Delete", onBtnDelete, sInstance);
 }
 
 void ASFloaterContactGroups::onBtnDelete(void* userdata)
@@ -73,7 +72,28 @@ void ASFloaterContactGroups::onBtnDelete(void* userdata)
 	}
 }
 
-void ASFloaterContactGroups::onBtnSave(void* userdata)
+void ASFloaterContactGroups::onBtnAdd(void* userdata)
+{
+	ASFloaterContactGroups* self = (ASFloaterContactGroups*)userdata;
+	llinfos << "Button Add Begin" << llendl;
+	if(self)
+	{
+		LLComboBox* combo = self->getChild<LLComboBox>("buddy_group_combobox");
+		if (combo->getCurrentIndex() == -1) //Entered text is a new group name, create a group first
+		{
+			std::string name = combo->getSimple();
+			self->createContactGroup(name);
+			combo->selectByValue(name);
+		}
+		for (S32 i = (self->mSelectedUUIDs.count() - 1); i >= 0; --i)
+		{
+			//self->addContactMember(combo->getSimple(), self->mSelectedUUIDs.get(i));
+		}
+	}
+}
+
+
+void ASFloaterContactGroups::onBtnRemove(void* userdata)
 {
 	ASFloaterContactGroups* self = (ASFloaterContactGroups*)userdata;
 
@@ -98,12 +118,6 @@ void ASFloaterContactGroups::onBtnSave(void* userdata)
 	}
 }
 
-void ASFloaterContactGroups::onBtnClose(void* userdata)
-{
-	ASFloaterContactGroups* self = (ASFloaterContactGroups*)userdata;
-	if(self) self->close();
-}
-
 void ASFloaterContactGroups::onBtnCreate(void* userdata)
 {
 	ASFloaterContactGroups* self = (ASFloaterContactGroups*)userdata;
@@ -112,12 +126,12 @@ void ASFloaterContactGroups::onBtnCreate(void* userdata)
 		LLLineEditor* editor = self->getChild<LLLineEditor>("add_group_lineedit");
 		if (editor)
 		{
-			LLScrollListCtrl* scroller = self->getChild<LLScrollListCtrl>("friend_scroll_list");
+			/*LLScrollListCtrl* scroller = self->getChild<LLScrollListCtrl>("friend_scroll_list");
 			if(scroller != NULL) 
 			{
 				self->createContactGroup(editor->getValue().asString());
 				self->populateGroupList();
-			}
+			}*/
 		}
 		else
 		{
@@ -139,17 +153,58 @@ ASFloaterContactGroups::~ASFloaterContactGroups()
 
 void ASFloaterContactGroups::populateFriendList()
 {
-	LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("friend_scroll_list");
+	/*LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("friend_scroll_list");
 	if(scroller != NULL) 
 	{
 		
-	}
+	}*/
 }
 
 void ASFloaterContactGroups::addContactMember(std::string contact_grp, LLUUID to_add)
 {
-	ASFloaterContactGroups::mContactGroupData[contact_grp].append(to_add.asString());
-	gSavedPerAccountSettings.setLLSD("AscentContactGroups", ASFloaterContactGroups::mContactGroupData);
+	BOOL is_new = true;
+	S32 entrycount = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][contact_grp].size();
+	for(S32 i = 0; i < entrycount; i++)
+	{
+		if (ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][contact_grp][i].asString() == to_add.asString())
+		{
+			is_new = false;
+			break;
+		}
+	}
+	if (is_new)
+	{
+		ASFloaterContactGroups::mContactGroupData[contact_grp].append(to_add.asString());
+		gSavedPerAccountSettings.setLLSD("AscentContactGroups", ASFloaterContactGroups::mContactGroupData);
+	}
+	populateActiveGroupList(to_add);
+}
+
+void ASFloaterContactGroups::populateActiveGroupList(LLUUID user_key)
+{
+	LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("group_scroll_list");
+	if(scroller != NULL) 
+	{
+		llinfos << "Cleaning and rebuilding group list" << llendl;
+		scroller->deleteAllItems();
+
+		S32 count = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"].size();
+		for (S32 index = 0; index < count; index++)
+		{
+			llinfos << "Entries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString() << llendl;
+			S32 entrycount = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].size();
+			for(S32 i = 0; i < entrycount; i++)
+			{
+				llinfos << "Subentries for " << ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index][i].asString() << llendl;
+				if (ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index][i].asString() == user_key.asString())
+				{
+
+					scroller->addSimpleElement(ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
+					break;
+				}
+			}
+		}
+	} 
 }
 
 void ASFloaterContactGroups::deleteContactGroup(std::string contact_grp)
@@ -167,21 +222,21 @@ void ASFloaterContactGroups::createContactGroup(std::string contact_grp)
 void ASFloaterContactGroups::populateGroupList()
 {
 	ASFloaterContactGroups::mContactGroupData = gSavedPerAccountSettings.getLLSD("AscentContactGroups");
-	LLScrollListCtrl* scroller = getChild<LLScrollListCtrl>("group_scroll_list");
-	if(scroller != NULL) 
+	LLComboBox* combo = getChild<LLComboBox>("buddy_group_combobox");
+	if(combo != NULL) 
 	{
-		scroller->deleteAllItems();
+		combo->removeall();
 
 		S32 count = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"].size();
 		S32 index;
 		for (index = 0; index < count; index++)
 		{
-			scroller->addSimpleElement(ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
+			std::string group = ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString();
+			if (group != "")
+			{
+				llinfos << "Adding " << group << llendl;
+				combo->add(ASFloaterContactGroups::mContactGroupData["ASC_MASTER_GROUP_LIST"][index].asString(), ADD_BOTTOM);
+			}
 		}
 	} 
-	else
-	{
-		LLChat msg("Null Scroller");
-		LLFloaterChat::addChat(msg);
-	}
 }
