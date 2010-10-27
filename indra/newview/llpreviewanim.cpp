@@ -58,9 +58,6 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 
 	childSetAction("Anim play btn",playAnim,this);
 	childSetAction("Anim audition btn",auditionAnim,this);
-	// <edit>
-	childSetAction("Anim copy uuid btn", copyAnimID, this);
-	// </edit>
 
 	const LLInventoryItem* item = getItem();
 	

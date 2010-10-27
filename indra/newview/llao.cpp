@@ -371,9 +371,7 @@ void LLFloaterAO::addAnimations()
 	std::string none_text = getString("none_text");
 	mAnimListCombo->add(none_text, LLUUID::null);
 
-	// Add all the default (legacy) animations
 	S32 i;
-
 	// Get all inventory items that are animations
 	LLViewerInventoryCategory::cat_array_t cats;
 	LLViewerInventoryItem::item_array_t items;
