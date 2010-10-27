@@ -101,6 +101,13 @@
 #include "hgfloatertexteditor.h"
 // </edit>
 
+// Editing wearables from inventory is an include-hungry feature -.- -SG
+#include "llviewerparcelmgr.h"
+#include "llfloatertools.h"
+#include "lltoolcomp.h"
+#include "llviewerjoystick.h"
+#include "lltoolmgr.h"
+
 // Helpers
 // bug in busy count inc/dec right now, logic is complex... do we really need it?
 void inc_busy_count()
@@ -4033,14 +4040,6 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 	{
 		LLInventoryItem* item = gInventory.getItem(mUUID);
 
-
-
-
-
-
-
-
-
 		if( item )
 		{
 			gMessageSystem->newMessageFast(_PREHASH_DetachAttachmentIntoInv);
@@ -4061,6 +4060,55 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 		{
 			llwarns << "object not found - ignoring" << llendl;
 		}
+	}
+	else if ("edit" == action)
+	{
+		//if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+		//	return;
+		LLVOAvatar* avatarp = gAgent.getAvatarObject();
+		if (!avatarp)
+			return;
+		LLViewerObject* objectp = avatarp->getWornAttachment(mUUID);
+		if (!objectp)
+			return;
+
+		// [Selective copy/paste from LLObjectEdit::handleEvent()]
+		LLViewerParcelMgr::getInstance()->deselectLand();
+		LLSelectMgr::getInstance()->deselectAll();
+
+		if (gAgent.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit())
+		{
+			if (objectp->isHUDAttachment() || !gSavedSettings.getBOOL("EditCameraMovement"))
+			{
+				// always freeze camera in space, even if camera doesn't move
+				// so, for example, follow cam scripts can't affect you when in build mode
+				gAgent.setFocusGlobal(gAgent.calcFocusPositionTargetGlobal(), LLUUID::null);
+				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+			}
+			else
+			{
+				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+
+				// zoom in on object center instead of where we clicked, as we need to see the manipulator handles
+				gAgent.setFocusGlobal(objectp->getPositionGlobal(), objectp->getID());
+				gAgent.cameraZoomIn(0.666f);
+				gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+				gViewerWindow->moveCursorToCenter();
+			}
+		}
+
+		gFloaterTools->open();
+	
+		LLToolMgr::getInstance()->setCurrentToolset(gBasicToolset);
+		gFloaterTools->setEditTool( LLToolCompTranslate::getInstance() );
+
+		LLViewerJoystick::getInstance()->moveObjects(true);
+		LLViewerJoystick::getInstance()->setNeedsReset(true);
+
+		LLSelectMgr::getInstance()->selectObjectAndFamily(objectp);
+
+		// Could be first use
+		LLFirstUse::useBuild();
 	}
 	else LLItemBridge::performAction(folder, model, action);
 }
@@ -4251,6 +4299,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			{
 				items.push_back(std::string("Attach Separator"));
 				items.push_back(std::string("Detach From Yourself"));
+				items.push_back(std::string("Wearable Edit"));
 			}
 			else
 			// <edit> testzone attachpt

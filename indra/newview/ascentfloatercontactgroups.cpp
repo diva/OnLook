@@ -21,7 +21,6 @@
 #include "llscrolllistctrl.h" //List box for filenames
 #include "lluictrlfactory.h" //Loads the XUI
 #include "llresmgr.h"
-// project includes
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 #include "llsdserialize.h"

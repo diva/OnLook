@@ -215,6 +215,7 @@ public:
 	void selectAll();
 	void selectNone();
 	void setVisible(BOOL b);
+	BOOL mRPMode;
 
 	S32 getNumUnreadMessages() { return mNumUnreadMessages; }
 
@@ -232,6 +233,7 @@ public:
 
 	static void		onClickProfile( void* userdata );
 	static void		onClickHistory( void* userdata );
+	static void		onRPMode(LLUICtrl* source, void* user_data);
 	static void		onClickTeleport( void* userdata );
 	static void		onClickGroupInfo( void* userdata );
 	static void		onClickClose( void* userdata );
