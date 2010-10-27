@@ -40,6 +40,22 @@
 			<real>1.0</real>
 		</array>
 	</map>
+	<key>BeauchampFloaterGroupTitlesRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for group titles window</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>400</integer>
+        <integer>500</integer>
+        <integer>0</integer>
+    </array>
+  </map>
 	<key>ShyotlRenderUseStreamVBO</key>
 	<map>
 		<key>Comment</key>
@@ -14156,9 +14172,8 @@
     <key>FloaterUploadRect</key>
     <map>
         <key>Comment</key>
-        <string>Rectangle for DicksDongs</string>
+        <string>Rectangle for Uploader</string>
         <key>Persist</key>
-
         <integer>1</integer>
         <key>Type</key>
         <string>Rect</string>
@@ -14169,6 +14184,33 @@
             <integer>850</integer>
             <integer>400</integer>
     </array>
+    </map>
+	<key>FloaterContactRect</key>
+    <map>
+        <key>Comment</key>
+        <string>Rectangle for Contact Group Manager</string>
+        <key>Persist</key>
+        <integer>1</integer>
+        <key>Type</key>
+        <string>Rect</string>
+        <key>Value</key>
+        <array>
+            <integer>500</integer>
+            <integer>450</integer>
+            <integer>850</integer>
+            <integer>400</integer>
+    </array>
+    </map>
+	<key>ContactListCollapsed</key>
+    <map>
+      <key>Comment</key>
+      <string>Send a digest of texture info to the sim</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
     </map>
     <key>FloaterHexRect</key>
     <map>

@@ -76,6 +76,7 @@ set(viewer_SOURCE_FILES
     dofloaterhex.cpp
     dohexeditor.cpp
 	floatersculptpreview.cpp
+	hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
 	hippogridmanager.cpp
 	hipporestrequest.cpp
@@ -525,6 +526,7 @@ set(viewer_HEADER_FILES
     dofloaterhex.h
     dohexeditor.h
 	floatersculptpreview.h
+	hbfloatergrouptitles.h
     hgfloatertexteditor.h
 	hippogridmanager.h
 	hipporestrequest.h
