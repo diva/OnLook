@@ -74,7 +74,7 @@ class ViewerManifest(LLManifest):
 
         # skins
         if self.prefix(src="skins"):
-                self.path("paths.xml")
+                self.path("*.xml")
                 # include the entire textures directory recursively
                 if self.prefix(src="*/textures"):
                         self.path("*.tga")
@@ -720,6 +720,7 @@ class LinuxManifest(ViewerManifest):
 
         # temporarily move directory tree so that it has the right
         # name in the tarfile
+        self.run_command("rm '%s'" % self.build_path_of(installer_name))
         self.run_command("mv '%(dst)s' '%(inst)s'" % {
             'dst': self.get_dst_prefix(),
             'inst': self.build_path_of(installer_name)})
