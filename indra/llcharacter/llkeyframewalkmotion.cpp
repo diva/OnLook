@@ -53,6 +53,7 @@ const F32 SPEED_ADJUST_MAX_SEC = 3.f;	// maximum adjustment to walk animation pl
 const F32 DRIFT_COMP_MAX_TOTAL = 0.07f;//0.55f; // maximum drift compensation overall, in any direction 
 const F32 DRIFT_COMP_MAX_SPEED = 4.f; // speed at which drift compensation total maxes out
 const F32 MAX_ROLL = 0.6f;
+const F32 SPEED_FINAL_SCALING = 0.5f;	// final scaling for walk animation
 
 //-----------------------------------------------------------------------------
 // LLKeyframeWalkMotion()
@@ -314,6 +315,7 @@ BOOL LLWalkAdjustMotion::onUpdate(F32 time, U8* joint_mask)
 	}
 
 	mAnimSpeed = (mAvgSpeed + mSpeedAdjust) * mRelativeDir;
+	mAnimSpeed = mAnimSpeed * SPEED_FINAL_SCALING;
 //	char debug_text[64];
 //	sprintf(debug_text, "Foot slip vel: %.2f", footSlipVelocity);
 //	mCharacter->addDebugText(debug_text);
