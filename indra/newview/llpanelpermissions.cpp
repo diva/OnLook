@@ -353,22 +353,17 @@ void LLPanelPermissions::refresh()
 	}
 // [/RLVa:KB]
 
+	childSetText("Owner Name",owner_name);
+	childSetEnabled("Owner Name",TRUE);
 //	childSetEnabled("button owner profile",owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
 	childSetEnabled("button owner profile",
 		fRlvEnableOwner && owners_identical && (mOwnerID.notNull() || LLSelectMgr::getInstance()->selectIsGroupOwned()));
 // [/RLVa:KB]
 
-
-
-
-
 	childSetText("Last Owner Name",last_owner_name);
 	childSetEnabled("Last Owner Name",TRUE);
 	childSetEnabled("button last owner profile",owners_identical && mLastOwnerID.notNull());
-
-
-
 
 	// update group text field
 	childSetEnabled("Group:",true);

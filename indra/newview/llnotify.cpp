@@ -145,7 +145,6 @@ LLNotifyBox::LLNotifyBox(LLNotificationPtr notification,
 	setIsChrome(TRUE);
 
 	// class init
-	if (!sFont)
 	{
 		sFont = LLFontGL::getFontSansSerif();
 		sFontSmall = LLFontGL::getFontSansSerifSmall();
@@ -270,12 +269,6 @@ LLNotifyBox::LLNotifyBox(LLNotificationPtr notification,
 
 	if (mIsTip)
 	{
-		if (!gSavedSettings.getBOOL("HideNotificationsInChat")) {
-			// TODO: Make a separate archive for these.
-			LLChat chat(mMessage);
-			chat.mSourceType = CHAT_SOURCE_SYSTEM;
-			LLFloaterChat::getInstance(LLSD())->addChatHistory(chat);
-		}
 		// TODO: Make a separate archive for these.
 		LLChat chat(mMessage);
 		chat.mSourceType = CHAT_SOURCE_SYSTEM;
@@ -286,7 +279,9 @@ LLNotifyBox::LLNotifyBox(LLNotificationPtr notification,
 			chat.mRlvLocFiltered = chat.mRlvNamesFiltered = TRUE;
 		}
 // [/RLVa:KB]
-		LLFloaterChat::getInstance(LLSD())->addChatHistory(chat);
+		if (!gSavedSettings.getBOOL("HideNotificationsInChat")) {
+			LLFloaterChat::getInstance(LLSD())->addChatHistory(chat);
+		}
 	}
 	else
 	{
