@@ -51,6 +51,11 @@
 #include "llvoavatar.h"
 #include "llworld.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+#include "llfloatertools.h"
+// [/RLVa:KB]
+
 // Globals
 extern BOOL gAllowSelectAvatar;
 
@@ -83,6 +88,51 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 	{
 		object = object->getRootEdit();
 	}
+
+// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
+	if (rlv_handler_t::isEnabled())
+	{
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+		{
+			if (!temp_select)
+			{
+				return LLSelectMgr::getInstance()->getSelection();
+			}
+			else
+			{
+				// Temporary selection, but if the build floater is open then it'll be permanent so get rid of the floater
+				if (gFloaterTools->getVisible())
+				{
+					// Copy/paste from toggle_build_mode()
+					gAgent.resetView(false);
+					gFloaterTools->close();
+					gViewerWindow->showCursor();
+				}
+			}
+		}
+		
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH)) && (object) && ((!object->isAttachment()) || (!object->permYouOwner())) &&
+			 (dist_vec_squared(gAgent.getPositionAgent(), object->getPositionRegion()) > 1.5f * 1.5f) )
+		{
+			// NOTE-RLVa: see behaviour notes for a rather lengthy explanation of why we're doing things this way
+			//if (dist_vec_squared(gAgent.getPositionAgent(), object->getPositionRegion() + pick.mObjectOffset) > 1.5f * 1.5f)
+			if (dist_vec_squared(gAgent.getPositionAgent(), pick.mIntersection) > 1.5f * 1.5f)
+			{
+				if ( (gFloaterTools->getVisible()) && (pick.mKeyMask != MASK_SHIFT) && (pick.mKeyMask != MASK_CONTROL) )
+					LLSelectMgr::getInstance()->deselectAll();
+				return LLSelectMgr::getInstance()->getSelection();
+			}
+			else if (gFloaterTools->getVisible())
+			{
+				// Copy/paste from toggle_build_mode()
+				gAgent.resetView(false);
+				gFloaterTools->close();
+				gViewerWindow->showCursor();
+			}
+		}
+	}
+// [/RLVa:KB]
+
 	BOOL select_owned = gSavedSettings.getBOOL("SelectOwnedOnly");
 	BOOL select_movable = gSavedSettings.getBOOL("SelectMovableOnly");
 	

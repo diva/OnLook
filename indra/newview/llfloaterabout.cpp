@@ -60,6 +60,10 @@
 #include "llglheaders.h"
 #include "llwindow.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 #if LL_WINDOWS
 #include "lldxhardware.h"
 #endif
@@ -140,7 +144,15 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// Position
 	LLViewerRegion* region = gAgent.getRegion();
-	if (region)
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+	{
+		support.append(RlvStrings::getString(RLV_STRING_HIDDEN));
+		support.append("\n\n");
+	}
+	else if (region)
+// [/RLVa:KB]
+//	if (region)
 	{
 		LLStyleSP server_link_style(new LLStyle);
 		server_link_style->setVisible(true);

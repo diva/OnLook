@@ -90,6 +90,10 @@
 #include "llbuildnewviewsscheduler.h"
 // </edit>
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 static LLRegisterWidget<LLInventoryPanel> r("inventory_panel");
 
 LLDynamicArray<LLInventoryView*> LLInventoryView::sActiveViews;
@@ -783,7 +787,17 @@ void LLInventoryView::setVisible( BOOL visible )
 // Destroy all but the last floater, which is made invisible.
 void LLInventoryView::onClose(bool app_quitting)
 {
-	S32 count = sActiveViews.count();
+//	S32 count = sActiveViews.count();
+// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
+	// See LLInventoryView::closeAll() on why we're doing it this way
+	S32 count = 0;
+	for (S32 idx = 0, cnt = sActiveViews.count(); idx < cnt; idx++)
+	{
+		if (!sActiveViews.get(idx)->isDead())
+			count++;
+	}
+// [/RLVa:KB]
+
 	if (count > 1)
 	{
 		destroy();
@@ -879,6 +893,13 @@ LLInventoryView* LLInventoryView::showAgentInventory(BOOL take_keyboard_focus)
 	{
 		return NULL;
 	}
+
+// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWINV))
+	{
+		return NULL;
+	}
+// [/RLVa:KB]
 
 	LLInventoryView* iv = LLInventoryView::getActiveInventory();
 #if 0 && !LL_RELEASE_FOR_DOWNLOAD

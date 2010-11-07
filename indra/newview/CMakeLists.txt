@@ -491,6 +491,12 @@ set(viewer_SOURCE_FILES
     pipeline.cpp
 	scriptcounter.cpp
 	wlfPanel_AdvSettings.cpp
+    rlvhandler.cpp
+    rlvhelper.cpp
+    rlvcommon.cpp
+    rlvmultistringsearch.cpp
+    rlvextensions.cpp
+    rlvfloaterbehaviour.cpp
     )
 
 # This gets renamed in the packaging step
@@ -949,6 +955,13 @@ set(viewer_HEADER_FILES
     VertexCache.h
     VorbisFramework.h
 	wlfPanel_AdvSettings.h
+    rlvdefines.h
+    rlvhandler.h
+    rlvhelper.h
+    rlvcommon.h
+    rlvmultistringsearch.h
+    rlvextensions.h
+    rlvfloaterbehaviour.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

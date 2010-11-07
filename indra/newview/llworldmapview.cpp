@@ -55,6 +55,10 @@
 
 #include "llglheaders.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 // Basically a C++ implementation of the OCEAN_COLOR defined in mapstitcher.py 
 // Please ensure consistency between those 2 files (TODO: would be better to get that color from an asset source...)
 // # Constants
@@ -456,7 +460,14 @@ void LLWorldMapView::draw()
 		{
 			LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 			std::string mesg;
-			if (info->isDown())
+// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+			{
+				mesg = RlvStrings::getString(RLV_STRING_HIDDEN);
+			}
+			else if (info->isDown())
+// [/RLVa:KB]
+			//if (info->isDown())
 			{
 				mesg = llformat( "%s (%s)", info->getName().c_str(), sStringsMap["offline"].c_str());
 			}
@@ -1003,7 +1014,10 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 	text_x = llclamp(text_x, half_text_width + TEXT_PADDING, getRect().getWidth() - half_text_width - TEXT_PADDING);
 	text_y = llclamp(text_y + vert_offset, TEXT_PADDING + vert_offset, getRect().getHeight() - llround(font->getLineHeight()) - TEXT_PADDING - vert_offset);
 
-	if (label != "")
+	//if (label != "")
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Added: RLVa-1.0.0a
+	if ( (label != "") && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+// [/RLVa:KB]
 	{
 		font->renderUTF8(
 			label, 0,
@@ -1062,7 +1076,12 @@ BOOL LLWorldMapView::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 	{
 		LLViewerRegion *region = gAgent.getRegion();
 
-		std::string message = llformat("%s (%s)", info->getName().c_str(), info->getAccessString().c_str());
+//		std::string message = llformat("%s (%s)", info->getName().c_str(), info->getAccessString().c_str());
+// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+		std::string message = llformat("%s (%s)", 
+			(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? info->getName().c_str() : RlvStrings::getString(RLV_STRING_HIDDEN).c_str(), 
+			info->getAccessString().c_str());
+// [/RLVa:KB]
 
 		if (!info->isDown())
 		{

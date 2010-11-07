@@ -43,6 +43,10 @@
 #include "llresizebar.h"
 #include "lluictrlfactory.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 LLFloaterMap::LLFloaterMap(const LLSD& key)
 	:
 	LLFloater(std::string("minimap")),
@@ -123,3 +127,12 @@ void LLFloaterMap::draw()
 	}
 }
 
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-05 (RLVa-1.0.0c)
+void LLFloaterMap::open()
+{
+	if (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWMINIMAP))
+	{
+		LLFloater::open();
+	}
+}
+// [/RLVa:KB]

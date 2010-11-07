@@ -77,6 +77,14 @@
 
 #include "llglheaders.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
+#define USE_VIEWER_AUTH 0
+
+const S32 BLACK_BORDER_HEIGHT = 160;
+
 // <edit>
 #include "llappviewer.h"
 #include "llspinctrl.h"
@@ -879,6 +887,16 @@ void LLPanelLogin::refreshLocation( bool force_visible )
 
 	if ( ! force_visible )
 		show_start = gSavedSettings.getBOOL("ShowStartLocation");
+
+// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
+	// TODO-RLVa: figure out some way to make this work with RLV_EXTENSION_STARTLOCATION
+	#ifndef RLV_EXTENSION_STARTLOCATION
+		if (rlv_handler_t::isEnabled())
+		{
+			show_start = FALSE;
+		}
+	#endif // RLV_EXTENSION_STARTLOCATION
+// [/RLVa:KB]
 
 	// OGPX : if --ogp on the command line (or --set OpenGridProtocol TRUE), then
 	// the start location is hidden, and regionuri shows in its place. 

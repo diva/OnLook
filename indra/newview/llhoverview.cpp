@@ -72,6 +72,10 @@
 #include "llhudmanager.h" // For testing effects
 #include "llhudeffect.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 //
 // Constants
 //
@@ -246,14 +250,25 @@ void LLHoverView::updateText()
 			LLNameValue* lastname =  hit_object->getNVPair("LastName");
 			if (firstname && lastname)
 			{
-				if (title)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+				if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 				{
-					line.append(title->getString());
-					line.append(1, ' ');
+					line = RlvStrings::getAnonym(line.append(firstname->getString()).append(1, ' ').append(lastname->getString()));
 				}
-				line.append(firstname->getString());
-				line.append(1, ' ');
-				line.append(lastname->getString());
+				else
+				{
+// [/RLVa:KB]
+					if (title)
+					{
+						line.append(title->getString());
+						line.append(1, ' ');
+					}
+					line.append(firstname->getString());
+					line.append(1, ' ');
+					line.append(lastname->getString());
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+				}
+// [/RLVa:KB]
 			}
 			else
 			{
@@ -309,6 +324,13 @@ void LLHoverView::updateText()
 						}
 						else if(gCacheName->getFullName(owner, name))
 						{
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+							if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+							{
+								name = RlvStrings::getAnonym(name);
+							}
+// [/RLVa:KB]
+
 							line.append(name);
 						}
 						else
@@ -470,7 +492,11 @@ void LLHoverView::updateText()
 		line.append(LLTrans::getString("TooltipLand"));
 		if (hover_parcel)
 		{
-			line.append(hover_parcel->getName());
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Added: RLVa-0.2.0b
+			line.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) 
+				? hover_parcel->getName() : RlvStrings::getString(RLV_STRING_HIDDEN_PARCEL) );
+// [/RLVa:KB]
+			//line.append(hover_parcel->getName());
 		}
 		mText.push_back(line);
 
@@ -499,7 +525,10 @@ void LLHoverView::updateText()
 			}
 			else if(gCacheName->getFullName(owner, name))
 			{
-				line.append(name);
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
+				line.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? name : RlvStrings::getAnonym(name));
+// [/RLVa:KB]
+				//line.append(name);
 			}
 			else
 			{
@@ -609,7 +638,14 @@ void LLHoverView::draw()
 	// To toggle off hover tips, you have to just suppress the draw.
 	// The picking is still needed to do cursor changes over physical
 	// and scripted objects.  JC
+//	if (!sShowHoverTips) 
+// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
+#ifdef RLV_EXTENSION_CMD_INTERACT
+	if ( (!sShowHoverTips) || (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) )
+#else
 	if (!sShowHoverTips) 
+#endif // RLV_EXTENSION_CMD_INTERACT
+// [/RLVa:KB]
 	{
 		return;
 	}

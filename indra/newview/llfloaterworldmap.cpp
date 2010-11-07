@@ -72,6 +72,10 @@
 
 #include "llglheaders.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 //---------------------------------------------------------------------------
 // Constants
 //---------------------------------------------------------------------------
@@ -263,6 +267,13 @@ void LLFloaterWorldMap::onClose(bool app_quitting)
 // static
 void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 {
+// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0c)
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWWORLDMAP))
+	{
+		return;
+	}
+// [/RLVa:KB]
+
 	BOOL was_visible = gFloaterWorldMap->getVisible();
 
 	gFloaterWorldMap->mIsClosing = FALSE;
@@ -629,7 +640,10 @@ void LLFloaterWorldMap::trackLocation(const LLVector3d& pos_global)
 	F32 region_x = (F32)fmod( pos_global.mdV[VX], (F64)REGION_WIDTH_METERS );
 	F32 region_y = (F32)fmod( pos_global.mdV[VY], (F64)REGION_WIDTH_METERS );
 	std::string full_name = llformat("%s (%d, %d, %d)", 
-								  sim_name.c_str(), 
+//								  sim_name.c_str(), 
+// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+		(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) ? sim_name.c_str() : RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(),
+// [/RLVa:KB]
 								  llround(region_x), 
 								  llround(region_y),
 								  llround((F32)pos_global.mdV[VZ]));
@@ -681,6 +695,14 @@ void LLFloaterWorldMap::updateLocation()
 
 				// Set the current SLURL
 				mSLURL = LLURLDispatcher::buildSLURL(agent_sim_name, agent_x, agent_y, agent_z);
+
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+				if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+				{
+					childSetValue("location", RlvStrings::getString(RLV_STRING_HIDDEN_REGION));
+					mSLURL.clear();
+				}
+// [/RLVa:KB]
 			}
 		}
 
@@ -723,6 +745,14 @@ void LLFloaterWorldMap::updateLocation()
 		{	// Empty SLURL will disable the "Copy SLURL to clipboard" button
 			mSLURL = "";
 		}
+
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+		{
+			childSetValue("location", RlvStrings::getString(RLV_STRING_HIDDEN_REGION));
+			mSLURL.clear();
+		}
+// [/RLVa:KB]
 	}
 }
 

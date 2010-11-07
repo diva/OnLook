@@ -68,6 +68,10 @@
 #include "lltoolcomp.h"
 #include "llpanelinventory.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 //
 // Imported globals
 //
@@ -119,6 +123,24 @@ void LLPanelContents::getState(LLViewerObject *objectp )
 					       && ( objectp->permYouOwner() || ( !group_id.isNull() && gAgent.isInGroup(group_id) )));  // solves SL-23488
 	BOOL all_volume = LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME );
 
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+	if ( (rlv_handler_t::isEnabled()) && (editable) )
+	{
+		// Don't allow creation of new scripts if it's undetachable
+		editable = !gRlvHandler.isLockedAttachment(objectp, RLV_LOCK_REMOVE);
+
+		// Don't allow creation of new scripts if we're @unsit=n or @sittp=n restricted and we're sitting on the selection
+		if ( (editable) && ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP))) )
+		{
+			LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+			// Only check the first (non-)root object because nothing else would result in enabling the button (see below)
+			LLViewerObject* pObj = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject(TRUE);
+
+			editable = (pObj) && (pAvatar) && ((!pAvatar->mIsSitting) || (pAvatar->getRoot() != pObj->getRootEdit()));
+		}
+	}
+// [/RLVa:KB]
+
 	// Edit script button - ok if object is editable and there's an unambiguous destination for the object.
 	childSetEnabled("button new script",
 		editable &&
@@ -153,6 +175,22 @@ void LLPanelContents::onClickNewScript(void *userdata)
 	LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject(children_ok);
 	if(object)
 	{
+// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a)
+		if (rlv_handler_t::isEnabled())	// Fallback code [see LLPanelContents::getState()]
+		{
+			if (gRlvHandler.isLockedAttachment(object, RLV_LOCK_REMOVE))
+			{
+				return;					// Disallow creating new scripts in a locked attachment
+			}
+			else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
+			{
+				LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+				if ( (pAvatar) && (pAvatar->mIsSitting) && (pAvatar->getRoot() == object->getRootEdit()) )
+					return;				// .. or in a linkset the avie is sitting on under @unsit=n/@sittp=n
+			}
+		}
+// [/RLVa:KB]
+
 		LLPermissions perm;
 		perm.init(gAgent.getID(), gAgent.getID(), LLUUID::null, LLUUID::null);
 		perm.initMasks(

@@ -62,6 +62,10 @@
 
 #include "llappviewer.h" // for gPacificDaylightTime
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 static LLRegisterWidget<LLViewerTextEditor> r("text_editor");
 
 ///----------------------------------------------------------------------------
@@ -96,6 +100,14 @@ public:
 		}
 		else
 		{
+// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE))
+			{
+				RlvNotifications::notifyBlockedViewNote();
+				return;
+			}
+// [/RLVa:KB]
+
 			// See if we can bring an existing preview to the front
 			if(!LLPreview::show(item->getUUID(), true))
 			{
@@ -1409,6 +1421,14 @@ BOOL LLViewerTextEditor::openEmbeddedItem(LLInventoryItem* item, llwchar wc)
 
 void LLViewerTextEditor::openEmbeddedTexture( LLInventoryItem* item, llwchar wc )
 {
+// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
+	{
+		RlvNotifications::notifyBlockedViewTexture();
+		return;
+	}
+// [/RLVa:KB]
+
 	// See if we can bring an existing preview to the front
 	// *NOTE:  Just for embedded Texture , we should use getAssetUUID(), 
 	// not getUUID(), because LLPreviewTexture pass in AssetUUID into 

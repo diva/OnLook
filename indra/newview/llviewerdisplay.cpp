@@ -83,6 +83,10 @@
 #include "llwaterparammanager.h"
 #include "llpostprocess.h"
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 extern LLPointer<LLImageGL> gStartImageGL;
 
 LLPointer<LLImageGL> gDisconnectedImagep = NULL;
@@ -774,7 +778,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			gSky.updateSky();
 		}
 
-		if(gUseWireframe)
+//		if(gUseWireframe)
+// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+		if ( (gUseWireframe) && ( (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) ) )
+// [/RLVa:KB]
 		{
 			glClearColor(0.5f, 0.5f, 0.5f, 0.f);
 			glClear(GL_COLOR_BUFFER_BIT);
@@ -933,7 +940,12 @@ void render_hud_attachments()
 	glh::matrix4f current_mod = glh_get_current_modelview();
 
 	// clamp target zoom level to reasonable values
-	gAgent.mHUDTargetZoom = llclamp(gAgent.mHUDTargetZoom, 0.1f, 1.f);
+// [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
+	// TODO-RLVa: while hasLockedHUD() isn't slow this is called per frame so find a better way
+	gAgent.mHUDTargetZoom = llclamp(gAgent.mHUDTargetZoom, 
+		( (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasLockedHUD()) ) ? 0.1f : 0.85f, 1.f);
+// [/RLVa:KB]
+	//gAgent.mHUDTargetZoom = llclamp(gAgent.mHUDTargetZoom, 0.1f, 1.f);
 	// smoothly interpolate current zoom level
 	gAgent.mHUDCurZoom = lerp(gAgent.mHUDCurZoom, gAgent.mHUDTargetZoom, LLCriticalDamp::getInterpolant(0.03f));
 

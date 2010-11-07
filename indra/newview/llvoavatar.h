@@ -309,6 +309,9 @@ public:
 	BOOL isWearingUnsupportedAttachment( const LLUUID& inv_item_id );
 	// </edit>
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
+// [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
+	LLViewerJointAttachment* getWornAttachmentPoint(const LLUUID& inv_item_id);
+// [/RLVa:KB]
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
 	static LLVOAvatar* findAvatarFromAttachment( LLViewerObject* obj );

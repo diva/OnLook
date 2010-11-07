@@ -86,6 +86,9 @@
 // system includes
 #include <iomanip>
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 //
 // Globals
@@ -562,6 +565,16 @@ void LLStatusBar::refresh()
 		mRegionDetails.mTraffic = 0.0f;
 	}
 
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
+	if ( (region) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )	// region == NULL if we loose our connection to the grid
+	{
+		// TODO-RLVa: find out whether the LCD code is still used because if so then we need to filter that as well
+		location_name = llformat("%s (%s) - %s", 
+			RlvStrings::getString(RLV_STRING_HIDDEN_REGION).c_str(), region->getSimAccessString().c_str(), 
+			RlvStrings::getString(RLV_STRING_HIDDEN).c_str());
+	}
+// [/RLVa:KB]
+
 	mTextParcelName->setText(location_name);
 
 
@@ -823,6 +836,12 @@ static void onClickScripts(void*)
 
 static void onClickBuyLand(void*)
 {
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+	if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+	{
+		return;
+	}
+// [/RLVa:KB]
 	LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
 	LLViewerParcelMgr::getInstance()->startBuyLand();
 }

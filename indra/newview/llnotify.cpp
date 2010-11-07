@@ -55,6 +55,9 @@
 #include "lloverlaybar.h" // for gOverlayBar
 #include "lluictrlfactory.h"
 
+// [RLVa:KB] - Version: 1.23.4
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 // Globals
 LLNotifyBoxView* gNotifyBoxView = NULL;
@@ -273,6 +276,17 @@ LLNotifyBox::LLNotifyBox(LLNotificationPtr notification,
 			chat.mSourceType = CHAT_SOURCE_SYSTEM;
 			LLFloaterChat::getInstance(LLSD())->addChatHistory(chat);
 		}
+		// TODO: Make a separate archive for these.
+		LLChat chat(mMessage);
+		chat.mSourceType = CHAT_SOURCE_SYSTEM;
+// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
+		if (rlv_handler_t::isEnabled())
+		{
+			// Notices should already have their contents filtered where necessary
+			chat.mRlvLocFiltered = chat.mRlvNamesFiltered = TRUE;
+		}
+// [/RLVa:KB]
+		LLFloaterChat::getInstance(LLSD())->addChatHistory(chat);
 	}
 	else
 	{
