@@ -3455,30 +3455,6 @@ void LLSelectMgr::convertTransient()
 }
 
 
-void LLSelectMgr::deselectUnused()
-{
-	// no more outstanding references to this selection
-
-// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
-#ifdef RLV_EXTENSION_CMD_INTERACT
-	// [Fall-back code] Don't allow an active selection (except for HUD attachments - see above) when @interact=n restricted
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT))
-	{
-		deselectAll();
-		return;
-	}
-#endif // RLV_EXTENSION_CMD_INTERACT
-// [/RLVa:KB]
-
-	// HACK: Don't deselect when we're navigating to rate an object's
-	// owner or creator.  JC
-	if (gPieObject->getVisible() || gPieRate->getVisible() )
-	if (mSelectedObjects->getNumRefs() == 1)
-	{
-		deselectAll();
-	}
-}
-
 void LLSelectMgr::deselectAllIfTooFar()
 {
 	if (mSelectedObjects->isEmpty() || mSelectedObjects->mSelectType == SELECT_TYPE_HUD)

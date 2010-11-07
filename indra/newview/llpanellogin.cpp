@@ -81,10 +81,6 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-#define USE_VIEWER_AUTH 0
-
-const S32 BLACK_BORDER_HEIGHT = 160;
-
 // <edit>
 #include "llappviewer.h"
 #include "llspinctrl.h"

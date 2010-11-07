@@ -237,7 +237,9 @@ const std::string& RlvStrings::getAnonym(const std::string& strName)
 	// Test with 11,264 SL names showed a 3.33% - 3.82% occurance for each so we *should* get a very even spread
 	for (int idx = 0, cnt = strName.length(); idx < cnt; idx++)
 		nHash += pszName[idx];
-
+	
+	static const std::string empty = "";
+	if (m_Anonyms.size() == 0) return empty;
 	return m_Anonyms[nHash % m_Anonyms.size()];
 }
 

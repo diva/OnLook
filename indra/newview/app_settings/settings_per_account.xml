@@ -1,188 +1,190 @@
+<?xml version="1.0"?>
 <llsd>
-    <map>
-      <key>RLVaLoginLastLocation</key>
-      <map>
-        <key>Comment</key>
-        <string>Determines whether the next login will be forced to the last logoff location (set by the viewer)</string>
-        <key>Persist</key>
-        <integer>1</integer>
-        <key>Type</key>
-        <string>Boolean</string>
-        <key>Value</key>
-        <integer>1</integer>
-      </map>
-      <key>BusyModeResponse</key>
-        <map>
-        <key>Comment</key>
-            <string>Auto response to instant messages while in busy mode.</string>
-	<key>AO.Settings</key>
-	 <map>
-	 <key>Comment</key>
-	 	<string>List for animation overrider</string>
-	 <key>Persist</key>
-	 	<integer>1</integer>
-	 <key>Type</key>
-	 	<string>LLSD</string>
-	 <key>Value</key>
-	 <array>
-		<string />
-	 </array>
-	</map>
-  <key>AscentContactGroups</key>
   <map>
-    <key>Comment</key>
-    <string>List for contact groups</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>LLSD</string>
-    <key>Value</key>
-    <array>
-      <string />
-    </array>
-  </map>
-	<key>Responder.Settings</key>
-	<map>
-		<key>Comment</key>
-		<string>New organization to the Auto-Respond settings for keeping clean</string>
-		<key>Persist</key>
-	 	<integer>1</integer>
-		<key>Type</key>
-	 	<string>LLSD</string>
-		<key>Value</key>
-		<map>
-            <key>Message</key>
-			<string>This is an autoresponse!</string>
-		</map>
-	</map>
-	<key>AscentInstantMessageAnnounceIncoming</key>
-	<map>
-	<key>Comment</key>
-		<string>Open a new IM tab when another person begins typing to you and announce that they are doing so.</string>
-	<key>Persist</key>
-		<integer>1</integer>
-	<key>Type</key>
-		<string>Boolean</string>
-	<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>MoyMiniMapCustomColor</key>
-	<map>
-		<key>Comment</key>
-		<string>Custom minimap color you wish to have.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Color4</string>
-		<key>Value</key>
-		<array>
-			<real>0.375</real>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-		</array>
-	</map>
-	<key>AscentInstantMessageResponse</key>
-		<map>
-		<key>Comment</key>
-			<string>Auto response to instant messages</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>String</string>
-		<key>Value</key>
-			<string>This is an autoresponse!</string>
-		</map>
-	<key>AscentInstantMessageResponseAnyone</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to auto-respond to anyone</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageResponseFriends</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to auto-respond to non-friends</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageResponseItem</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to send a item along with the autoresponse</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageResponseItemData</key>
-		<map>
-		<key>Comment</key>
-			<string>UUID</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>String</string>
-		<key>Value</key>
-			<string></string>
-		</map>
-	<key>AscentInstantMessageResponseMuted</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to auto-respond to muted people</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageResponseRepeat</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to keep on resending the autoresponse every line they send</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageShowOnTyping</key>
-		<map>
-		<key>Comment</key>
-			<string>Whether to perform the autorespond the moment they begin to type instead of waiting for a actual message</string>
-		<key>Persist</key>
-			<integer>1</integer>
-		<key>Type</key>
-			<string>Boolean</string>
-		<key>Value</key>
-			<integer>0</integer>
-		</map>
-	<key>AscentInstantMessageShowResponded</key>
-	<map>
-	<key>Comment</key>
-		<string>Whether to hide IMs entirely from those you have chosen to send autoresponses</string>
-	<key>Persist</key>
-		<integer>1</integer>
-	<key>Type</key>
-		<string>Boolean</string>
-	<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<!-- Ascent Account-Specific (If active) -->
-	<key>AscentFriendColor</key>
+    <key>RLVaLoginLastLocation</key>
+    <map>
+      <key>Comment</key>
+      <string>Determines whether the next login will be forced to the last logoff location (set by the viewer)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>BusyModeResponse</key>
+    <map>
+      <key>Comment</key>
+      <string>Auto response to instant messages while in busy mode.</string>
+    </map>
+    <key>AO.Settings</key>
+    <map>
+      <key>Comment</key>
+      <string>List for animation overrider</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>LLSD</string>
+      <key>Value</key>
+      <array>
+        <string/>
+      </array>
+    </map>
+    <key>AscentContactGroups</key>
+    <map>
+      <key>Comment</key>
+      <string>List for contact groups</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>LLSD</string>
+      <key>Value</key>
+      <array>
+        <string/>
+      </array>
+    </map>
+    <key>Responder.Settings</key>
+    <map>
+      <key>Comment</key>
+      <string>New organization to the Auto-Respond settings for keeping clean</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>LLSD</string>
+      <key>Value</key>
+      <map>
+        <key>Message</key>
+        <string>This is an autoresponse!</string>
+      </map>
+    </map>
+    <key>AscentInstantMessageAnnounceIncoming</key>
+    <map>
+      <key>Comment</key>
+      <string>Open a new IM tab when another person begins typing to you and announce that they are doing so.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>MoyMiniMapCustomColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Custom minimap color you wish to have.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>0.375</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
+    </map>
+    <key>AscentInstantMessageResponse</key>
+    <map>
+      <key>Comment</key>
+      <string>Auto response to instant messages</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>This is an autoresponse!</string>
+    </map>
+    <key>AscentInstantMessageResponseAnyone</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to auto-respond to anyone</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageResponseFriends</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to auto-respond to non-friends</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageResponseItem</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to send a item along with the autoresponse</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageResponseItemData</key>
+    <map>
+      <key>Comment</key>
+      <string>UUID</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string/>
+    </map>
+    <key>AscentInstantMessageResponseMuted</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to auto-respond to muted people</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageResponseRepeat</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to keep on resending the autoresponse every line they send</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageShowOnTyping</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to perform the autorespond the moment they begin to type instead of waiting for a actual message</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentInstantMessageShowResponded</key>
+    <map>
+      <key>Comment</key>
+      <string>Whether to hide IMs entirely from those you have chosen to send autoresponses</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <!-- Ascent Account-Specific (If active) -->
+    <key>AscentFriendColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from other residents</string>
@@ -198,7 +200,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>AscentLindenColor</key>
+    <key>AscentLindenColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from other residents</string>
@@ -214,7 +216,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>AscentMutedColor</key>
+    <key>AscentMutedColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from other residents</string>
@@ -230,7 +232,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>AscentEstateOwnerColor</key>
+    <key>AscentEstateOwnerColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from other residents</string>
@@ -246,18 +248,18 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>AscentUseCustomTag</key>
-	<map>
-		<key>Comment</key>
-		<string>Show a custom local tag.</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>Boolean</string>
-		<key>Value</key>
-		<integer>0</integer>
-	</map>
-	<key>AscentCustomTagColor</key>
+    <key>AscentUseCustomTag</key>
+    <map>
+      <key>Comment</key>
+      <string>Show a custom local tag.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>AscentCustomTagColor</key>
     <map>
       <key>Comment</key>
       <string>Color of custom local tag.</string>
@@ -273,18 +275,18 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>AscentCustomTagLabel</key>
-	<map>
-		<key>Comment</key>
-		<string>Label for the custom local tag</string>
-		<key>Persist</key>
-		<integer>1</integer>
-		<key>Type</key>
-		<string>String</string>
-		<key>Value</key>
-		<string>Custom</string>
-	</map>
-	<key>AscentReportClientIndex</key>
+    <key>AscentCustomTagLabel</key>
+    <map>
+      <key>Comment</key>
+      <string>Label for the custom local tag</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>Custom</string>
+    </map>
+    <key>AscentReportClientIndex</key>
     <map>
       <key>Comment</key>
       <string>Show your own tag</string>
@@ -295,7 +297,7 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-	<key>AscentReportClientUUID</key>
+    <key>AscentReportClientUUID</key>
     <map>
       <key>Comment</key>
       <string>Broadcasted Client Key</string>
@@ -306,43 +308,43 @@
       <key>Value</key>
       <string>8873757c-092a-98fb-1afd-ecd347566fcd</string>
     </map>
-	<!-- Ascent Account-Specific (Always) -->
-	<!-- General additions -->
-	<key>rkeastInventoryPreviousCount</key>
-	<map>
-	  <key>Comment</key>
-	  <string>Used to keep track of the number of items in inventory when fetching for progress reasons. DO NOT EDIT.</string>
-	  <key>Persist</key>
-	  <integer>1</integer>
-	  <key>Type</key>
-	  <string>S32</string>
-	  <key>Value</key>
-	  <integer>-1</integer>
-	</map>
-	<key>rkeastInventorySearchType</key>
-	<map>
-	  <key>Comment</key>
-	  <string>Controls what type of inventory search we perform.</string>
-	  <key>Persist</key>
-	  <integer>0</integer>
-	  <key>Type</key>
-	  <string>U32</string>
-	  <key>Value</key>
-	  <integer>0</integer>
-	</map>
-	<key>rkeastInventoryPartialSearch</key>
-	<map>
-	  <key>Comment</key>
-	  <string>Toggles whether to search using partial search filters on normal (name, desc, creator) searches.</string>
-	  <key>Persist</key>
-	  <integer>0</integer>
-	  <key>Type</key>
-	  <string>Boolean</string>
-	  <key>Value</key>
-	  <integer>0</integer>
-	</map>
-	<!-- Standard options now with Account-specific (if active) handling -->
-	<key>AgentChatColor</key>
+    <!-- Ascent Account-Specific (Always) -->
+    <!-- General additions -->
+    <key>rkeastInventoryPreviousCount</key>
+    <map>
+      <key>Comment</key>
+      <string>Used to keep track of the number of items in inventory when fetching for progress reasons. DO NOT EDIT.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>
+    <key>rkeastInventorySearchType</key>
+    <map>
+      <key>Comment</key>
+      <string>Controls what type of inventory search we perform.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>rkeastInventoryPartialSearch</key>
+    <map>
+      <key>Comment</key>
+      <string>Toggles whether to search using partial search filters on normal (name, desc, creator) searches.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <!-- Standard options now with Account-specific (if active) handling -->
+    <key>AgentChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from other residents</string>
@@ -358,7 +360,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>BackgroundChatColor</key>
+    <key>BackgroundChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat bubble background</string>
@@ -374,7 +376,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>EffectColor</key>
+    <key>EffectColor</key>
     <map>
       <key>Comment</key>
       <string>Particle effects color</string>
@@ -390,7 +392,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>IMChatColor</key>
+    <key>IMChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of instant messages from other residents</string>
@@ -406,7 +408,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>llOwnerSayChatColor</key>
+    <key>llOwnerSayChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from objects only visible to the owner</string>
@@ -422,7 +424,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>ObjectChatColor</key>
+    <key>ObjectChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from objects</string>
@@ -432,13 +434,13 @@
       <string>Color4</string>
       <key>Value</key>
       <array>
-         <real>0.699999988079</real>
-         <real>0.899999976158</real>
-         <real>0.699999988079</real>
-         <real>1</real>
+        <real>0.699999988079</real>
+        <real>0.899999976158</real>
+        <real>0.699999988079</real>
+        <real>1</real>
       </array>
     </map>
-	<key>SkinCurrent</key>
+    <key>SkinCurrent</key>
     <map>
       <key>Comment</key>
       <string>The currently selected skin.</string>
@@ -449,7 +451,7 @@
       <key>Value</key>
       <string>default</string>
     </map>
-	<key>SystemChatColor</key>
+    <key>SystemChatColor</key>
     <map>
       <key>Comment</key>
       <string>Color of chat messages from SL System</string>
@@ -465,7 +467,7 @@
         <real>1.0</real>
       </array>
     </map>
-	<key>UISndAlert</key>
+    <key>UISndAlert</key>
     <map>
       <key>Comment</key>
       <string>Sound file for alerts (uuid for sound asset)</string>
@@ -828,131 +830,131 @@
       <key>Value</key>
       <string>c80260ba-41fd-8a46-768a-6bf236360e3a</string>
     </map>
-	<key>UserChatColor</key>
-	<map>
-	<key>Comment</key>
-		<string>Color of your chat messages</string>
-	<key>Persist</key>
-		<integer>1</integer>
-	<key>Type</key>
-		<string>Color4</string>
-	<key>Value</key>
-		<array>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-			<real>1.0</real>
-		</array>
-	</map>
-    <key>BusyModeResponse</key>
-        <map>
-        <key>Comment</key>
-            <string>Auto response to instant messages while in busy mode.</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>String</string>
-        <key>Value</key>
-            <string>The Resident you messaged is in &apos;busy mode&apos; which means they have requested not to be disturbed.  Your message will still be shown in their IM panel for later viewing.</string>
-        </map>
-    <key>IMLogTimestamp</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Timestamp of Instant Messages</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>1</integer>
-        </map>
-    <key>InstantMessageLogPath</key>
-        <map>
-        <key>Comment</key>
-            <string>Path to your log files.</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>String</string>
-        <key>Value</key>
-            <string />
-        </map>
-    <key>LastLogoff</key>
-        <map>
-        <key>Comment</key>
-            <string>Last logoff</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>U32</string>
-        <key>Value</key>
-            <integer>0</integer>
-        </map>
-    <key>LogChat</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Chat</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>0</integer>
-        </map>
-    <key>LogChatIM</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Incoming Instant Messages with Chat</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>0</integer>
-        </map>
-    <key>LogChatTimestamp</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Timestamp of Chat</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>0</integer>
-        </map>
-    <key>LogInstantMessages</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Instant Messages</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>1</integer>
-        </map>
-    <key>LogShowHistory</key>
-        <map>
-        <key>Comment</key>
-            <string>Log Show History</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>1</integer>
-        </map>
-    <key>LogTimestampDate</key>
-        <map>
-        <key>Comment</key>
-            <string>Include Date with Timestamp</string>
-        <key>Persist</key>
-            <integer>1</integer>
-        <key>Type</key>
-            <string>Boolean</string>
-        <key>Value</key>
-            <integer>1</integer>
-        </map>
+    <key>UserChatColor</key>
+    <map>
+      <key>Comment</key>
+      <string>Color of your chat messages</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+        <real>1.0</real>
+      </array>
     </map>
+    <key>BusyModeResponse</key>
+    <map>
+      <key>Comment</key>
+      <string>Auto response to instant messages while in busy mode.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>The Resident you messaged is in 'busy mode' which means they have requested not to be disturbed.  Your message will still be shown in their IM panel for later viewing.</string>
+    </map>
+    <key>IMLogTimestamp</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Timestamp of Instant Messages</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>InstantMessageLogPath</key>
+    <map>
+      <key>Comment</key>
+      <string>Path to your log files.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string/>
+    </map>
+    <key>LastLogoff</key>
+    <map>
+      <key>Comment</key>
+      <string>Last logoff</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LogChat</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Chat</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LogChatIM</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Incoming Instant Messages with Chat</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LogChatTimestamp</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Timestamp of Chat</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>LogInstantMessages</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Instant Messages</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>LogShowHistory</key>
+    <map>
+      <key>Comment</key>
+      <string>Log Show History</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>LogTimestampDate</key>
+    <map>
+      <key>Comment</key>
+      <string>Include Date with Timestamp</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+  </map>
 </llsd>

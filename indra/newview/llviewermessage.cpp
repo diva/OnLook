@@ -1877,7 +1877,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				prepend_msg = std::string("IM: ");
 			}
-			chat.mText = prepend_msg + name + separator_string +  saved + message.substr(message_offset);
+			chat.mText = prepend_msg + name + separator_string + message.substr(message_offset);
 			LLFloaterChat::addChat( chat, TRUE, TRUE );
 		}
 		else if (from_id.isNull())

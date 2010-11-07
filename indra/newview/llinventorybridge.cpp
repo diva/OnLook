@@ -4343,34 +4343,7 @@ protected:
 };
 
 
-class LLWearAttachmentsCallback : public LLInventoryCallback
-{
-public:
-	LLWearAttachmentsCallback(bool append) : mAppend(append) {}
-	void fire(const LLUUID& item_id)
-	{
-		mItemIDs.insert(item_id);
-	}
-protected:
-	~LLWearAttachmentsCallback()
-	{
-		if( LLInventoryCallbackManager::is_instantiated() )
-		{
-			wear_attachments_on_avatar(mItemIDs, mAppend);
-		}
-		else
-		{
-			llwarns << "Dropping unhandled LLWearAttachmentsCallback" << llendl;
-		}
-	}
-private:
-	std::set<LLUUID> mItemIDs;
-	bool mAppend;
-};
-
-
-
-class LLWearInventoryCategoryCallback : public LLInventoryCallback;
+class LLWearInventoryCategoryCallback : public LLInventoryCallback
 {
 public:
 	LLWearInventoryCategoryCallback(const LLUUID& cat_id, bool append)
@@ -4411,6 +4384,30 @@ private:
 };
 
 
+class LLWearAttachmentsCallback : public LLInventoryCallback
+{
+public:
+	LLWearAttachmentsCallback(bool append) : mAppend(append) {}
+	void fire(const LLUUID& item_id)
+	{
+		mItemIDs.insert(item_id);
+	}
+protected:
+	~LLWearAttachmentsCallback()
+	{
+		if( LLInventoryCallbackManager::is_instantiated() )
+		{
+			wear_attachments_on_avatar(mItemIDs, mAppend);
+		}
+		else
+		{
+			llwarns << "Dropping unhandled LLWearAttachmentsCallback" << llendl;
+		}
+	}
+private:
+	std::set<LLUUID> mItemIDs;
+	bool mAppend;
+};
 
 
 void LLOutfitObserver::done()

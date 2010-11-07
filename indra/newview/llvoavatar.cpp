@@ -3466,6 +3466,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	}
 }
 
+
 void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 {
 	// update chat bubble
@@ -3482,7 +3483,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	static LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
 	static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
 	static LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
-	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 	bool fRlvShowNames = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
 // [/RLVa:KB]
@@ -3490,9 +3490,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	BOOL visible_chat = use_chat_bubbles && (mChats.size() || mTyping);
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
-// [RLVa:KB] - Checked: 2009-08-11 (RLVa-1.0.1h) | Added: RLVa-1.0.0h
-						( (!fRlvShowNames) || (RlvSettings::getShowNameTags()) ) &&
-// [/RLVa:KB]
 						((sRenderName == RENDER_NAME_ALWAYS) ||
 						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME)));
 	// If it's your own avatar, don't draw in mouselook, and don't
@@ -3530,13 +3527,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			new_name = TRUE;
 		}
 
-		LLNameValue *title = getNVPair("Title");
-		LLNameValue* firstname = getNVPair("FirstName");
-		LLNameValue* lastname = getNVPair("LastName");
-
-		// <edit>
 		std::string client;
-		// </edit>
+
 		// First Calculate Alpha
 		// If alpha > 0, create mNameText if necessary, otherwise delete it
 		{
@@ -3562,9 +3554,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 			if (alpha > 0.f)
 			{
-				std::string line;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
-				if (!fRlvShowNames)
+				if (!mNameText)
 				{
 					mNameText = (LLHUDText *)LLHUDObject::addHUDObject(LLHUDObject::LL_HUD_TEXT);
 					mNameText->setMass(10.f);
@@ -3579,6 +3569,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				}
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+
 				//As pointed out by Zwagoth, we really shouldn't be doing this per-frame. Skip if we already have the data. -HgB
 				if (mClientTag == "")
 				{
@@ -3660,15 +3651,11 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				if ((mIsSelf && gSavedSettings.getBOOL("AscentShowSelfTagColor"))
 							|| (!mIsSelf && gSavedSettings.getBOOL("AscentShowOthersTagColor")))
 					avatar_name_color = mClientColor;
-				
+
 
 				avatar_name_color.setAlpha(alpha);
-					
-				//llinfos << "Show Self Tag is set to " << gSavedSettings.getBOOL("AscentShowSelfTagColor") << llendl;
-				
 				mNameText->setColor(avatar_name_color);
 				
-
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				mNameText->setUsePixelSize(TRUE);
 				LLVector3 pixel_right_vec;
@@ -3698,15 +3685,17 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 		}
 		
-		
+		LLNameValue *title = getNVPair("Title");
+		LLNameValue* firstname = getNVPair("FirstName");
+		LLNameValue* lastname = getNVPair("LastName");
 
 		if (mNameText.notNull() && firstname && lastname)
 		{
-			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
+ 			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
 			if(mNameAway && ! is_away) mIdleTimer.reset();
 			BOOL is_busy = mSignaledAnimations.find(ANIM_AGENT_BUSY) != mSignaledAnimations.end();
 			if(mNameBusy && ! is_busy) mIdleTimer.reset();
-			BOOL is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
+ 			BOOL is_appearance = mSignaledAnimations.find(ANIM_AGENT_CUSTOMIZE) != mSignaledAnimations.end();
 			if(mNameAppearance && ! is_appearance) mIdleTimer.reset();
 			BOOL is_muted;
 			if (mIsSelf)
@@ -3716,7 +3705,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			else
 			{
 				is_muted = LLMuteList::getInstance()->isMuted(getID());
-				
 			}
 
 			if (mNameString.empty() ||
@@ -3725,14 +3713,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				(title && mTitle != title->getString()) ||
 				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
 				|| is_appearance != mNameAppearance
-				|| client.length() ) // <edit>
+				|| client.length() ) // <edit/>
 			{
 				std::string line;
 
-
-
-
-				if (!sRenderGroupTitles)
+// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
+				if (!fRlvShowNames)
 				{
 // [/RLVa:KB]
 					if (!sRenderGroupTitles)
@@ -3763,9 +3749,9 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line = RlvStrings::getAnonym(line.assign(firstname->getString()).append(" ").append(lastname->getString()));
 				}
 // [/RLVa:KB]
+				BOOL need_comma = FALSE;
 
 				std::string additions;
-				BOOL need_comma = FALSE;
 				
 				if (client.length() || is_away || is_muted || is_busy)
 				{
@@ -3935,40 +3921,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		sNumVisibleChatBubbles--;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

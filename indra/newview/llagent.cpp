@@ -7103,11 +7103,6 @@ void LLAgent::processAgentInitialWearablesUpdate( LLMessageSystem* mesgsys, void
 			LL_DEBUGS("Wearables") << "      fetching " << asset_id_array[i] << LL_ENDL;
 			if( !gAgent.mWearableEntry[i].mItemID.isNull() )
 			{
-		for( i = 0; i < WT_COUNT; i++ )
-		{
-			LL_DEBUGS("Wearables") << "      fetching " << asset_id_array[i] << LL_ENDL;
-			if( !gAgent.mWearableEntry[i].mItemID.isNull() )
-			{
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-08-08 (RLVa-1.0.1g) | Added: RLVa-1.0.1g
 				if (rlv_handler_t::isEnabled())
 					rlvItems.push_back(gAgent.mWearableEntry[i].mItemID);
@@ -8113,12 +8108,6 @@ void LLAgent::userRemoveAllAttachments( void* userdata )
 // [RLVa:KB] - Checked: 2009-11-24 (RLVa-1.1.0f) | Modified: RLVa-1.1.0e
 	std::list<U32> LocalIDs;
 	for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); iter != avatarp->mAttachmentPoints.end(); )
-	{
-		LLVOAvatar::attachment_map_t::iterator curiter = iter++;
-		LLViewerJointAttachment* attachment = curiter->second;
-		LLViewerObject* objectp = attachment->getObject();
-		if (objectp)
-		{
 	{
 		LLVOAvatar::attachment_map_t::iterator curiter = iter++;
 		LLViewerJointAttachment* attachment = curiter->second;

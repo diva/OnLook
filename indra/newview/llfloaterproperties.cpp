@@ -66,7 +66,6 @@
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
->>>>>>>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPropertiesObserver
