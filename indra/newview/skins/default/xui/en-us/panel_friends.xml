@@ -25,28 +25,31 @@
 		    tool_tip="You can edit this friend&apos;s objects" width="20" />
 		<column name="friend_last_update_generation" width="0" />
 	</scroll_list>
-	<text bottom_delta="-40" follows="left|top" font="SansSerif" height="16" left_delta="10" 
+	<text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
 		name="friends" width="110">
 		Contact Group:
 	</text>
-	<text bottom_delta="-20" follows="left|top" font="SansSerif" height="16" left_delta="0" 
+	<text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
 		name="friends" width="110">
 		Contact Search:
 	</text>
 	<combo_box allow_text_entry="false" enabled="true" follows="right|top"
-		bottom_delta="20" height="18" hidden="false" left="-235" max_chars="20" mouse_opaque="true"
+		bottom_delta="20" height="18" hidden="false" left="-255" max_chars="20" mouse_opaque="true"
 		tool_tip="Buddy group" name="buddy_group_combobox" width="130">
 		<combo_item type="string" length="20" enabled="true" name="All" value="All">
 			All
 		</combo_item>
 	</combo_box>
 	<line_editor bottom_delta="-20" enabled="true" follows="right|top" font="SansSerif"
-		height="18" left="-235" name="buddy_search_lineedit"
+		height="18" left_delta="0" name="buddy_search_lineedit"
 		tool_tip="The friend name you want to search for" width="130" />
+	<button bottom_delta="-3" follows="top|right" height="22" label="0"
+		left_delta="132" name="expand_collapse_btn" tool_tip="Expand/Collapse extra info"
+		width="22" />
 	<pad bottom="-7" height="0" left="-90" width="1" />
-  <button bottom_delta="-25" follows="top|right" height="22" label="Set Contact"
-		left_delta="0" name="assign_btn" tool_tip="Asign a friend to a Contact Group"
-		width="80" />
+	<button bottom_delta="-25" follows="top|right" height="22" label="Set Contact"
+		left_delta="0" name="assign_btn" tool_tip="Assign a friend to a Contact Group"
+		width="80" />-->
 	<button bottom_delta="-25" follows="top|right" height="22" label="IM/Call"
 	    left_delta="0" name="im_btn" tool_tip="Open Instant Message session"
 	    width="80" />

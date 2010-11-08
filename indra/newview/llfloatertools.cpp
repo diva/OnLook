@@ -81,6 +81,7 @@
 #include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
 
+#include "qtoolalign.h" //Thank Qarl!
 
 // Globals
 LLFloaterTools *gFloaterTools = NULL;
@@ -222,6 +223,8 @@ BOOL	LLFloaterTools::postBuild()
 	childSetCommitCallback("radio stretch",commit_select_tool,LLToolCompScale::getInstance());
 	mRadioSelectFace = getChild<LLCheckBoxCtrl>("radio select face");
 	childSetCommitCallback("radio select face",commit_select_tool,LLToolFace::getInstance());
+	mRadioAlign = getChild<LLCheckBoxCtrl>("radio align");
+	childSetCommitCallback("radio align",commit_select_tool,QToolAlign::getInstance());
 	mCheckSelectIndividual = getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
 	childSetValue("checkbox edit linked parts",(BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
 	childSetCommitCallback("checkbox edit linked parts",commit_select_component,this);
@@ -332,6 +335,7 @@ BOOL	LLFloaterTools::postBuild()
 	mStatusText["rotate"] = getString("status_rotate");
 	mStatusText["scale"] = getString("status_scale");
 	mStatusText["move"] = getString("status_move");
+	mStatusText["align"] = getString("status_align");
 	mStatusText["modifyland"] = getString("status_modifyland");
 	mStatusText["camera"] = getString("status_camera");
 	mStatusText["grab"] = getString("status_grab");
@@ -364,6 +368,7 @@ LLFloaterTools::LLFloaterTools()
 	mRadioRotate(NULL),
 	mRadioStretch(NULL),
 	mRadioSelectFace(NULL),
+	mRadioAlign(NULL),
 	mCheckSelectIndividual(NULL),
 
 	mCheckSnapToGrid(NULL),
@@ -627,6 +632,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 						tool == LLToolCompRotate::getInstance() ||
 						tool == LLToolCompScale::getInstance() ||
 						tool == LLToolFace::getInstance() ||
+						tool == QToolAlign::getInstance() ||
 						tool == LLToolIndividual::getInstance() ||
 						tool == LLToolPipette::getInstance();
 
@@ -635,6 +641,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	mRadioPosition	->setVisible( edit_visible );
 	mRadioRotate	->setVisible( edit_visible );
 	mRadioStretch	->setVisible( edit_visible );
+	mRadioAlign		->setVisible( edit_visible );
 	if (mRadioSelectFace)
 	{
 		mRadioSelectFace->setVisible( edit_visible );
@@ -650,6 +657,7 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	mRadioPosition	->set( tool == LLToolCompTranslate::getInstance() );
 	mRadioRotate	->set( tool == LLToolCompRotate::getInstance() );
 	mRadioStretch	->set( tool == LLToolCompScale::getInstance() );
+	mRadioAlign		->set( tool == QToolAlign::getInstance() );
 
 	if (mComboGridMode) 
 	{

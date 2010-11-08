@@ -54,6 +54,7 @@
 #include "llviewerwindow.h"
 #include "llagent.h"
 #include "llfloatertools.h"
+#include "qtoolalign.h"
 #include "llviewercontrol.h"
 
 const S32 BUTTON_HEIGHT = 16;
@@ -278,13 +279,20 @@ BOOL LLToolCompTranslate::handleMouseUp(S32 x, S32 y, MASK mask)
 
 LLTool* LLToolCompTranslate::getOverrideTool(MASK mask)
 {
-	if (mask == MASK_CONTROL)
+	if (gKeyboard->getKeyDown('A') && mask & MASK_CONTROL)
 	{
-		return LLToolCompRotate::getInstance();
+		return QToolAlign::getInstance();
 	}
-	else if (mask == (MASK_CONTROL | MASK_SHIFT))
+	else 
 	{
-		return LLToolCompScale::getInstance();
+		if (mask == MASK_CONTROL)
+		{
+			return LLToolCompRotate::getInstance();
+		}
+		else if (mask == (MASK_CONTROL | MASK_SHIFT))
+		{
+			return LLToolCompScale::getInstance();
+		}
 	}
 	return LLToolComposite::getOverrideTool(mask);
 }
@@ -397,11 +405,14 @@ BOOL LLToolCompScale::handleMouseUp(S32 x, S32 y, MASK mask)
 
 LLTool* LLToolCompScale::getOverrideTool(MASK mask)
 {
-	if (mask == MASK_CONTROL)
+	if (gKeyboard->getKeyDown('A') && mask & MASK_CONTROL)
+	{
+		return QToolAlign::getInstance();
+	}
+	else if (mask == MASK_CONTROL)
 	{
 		return LLToolCompRotate::getInstance();
 	}
-
 	return LLToolComposite::getOverrideTool(mask);
 }
 
@@ -597,7 +608,11 @@ BOOL LLToolCompRotate::handleMouseUp(S32 x, S32 y, MASK mask)
 
 LLTool* LLToolCompRotate::getOverrideTool(MASK mask)
 {
-	if (mask == (MASK_CONTROL | MASK_SHIFT))
+	if (gKeyboard->getKeyDown('A') && mask & MASK_CONTROL)
+	{
+		return QToolAlign::getInstance();
+	}
+	else if (mask == (MASK_CONTROL | MASK_SHIFT))
 	{
 		return LLToolCompScale::getInstance();
 	}

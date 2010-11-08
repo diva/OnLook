@@ -76,11 +76,13 @@ set(viewer_SOURCE_FILES
     dofloaterhex.cpp
     dohexeditor.cpp
 	floatersculptpreview.cpp
+	hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
 	hippogridmanager.cpp
 	hipporestrequest.cpp
     jcfloaterareasearch.cpp
 	chatbar_as_cmdline.cpp
+	qtoolalign.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentdata.cpp
@@ -530,11 +532,13 @@ set(viewer_HEADER_FILES
     dofloaterhex.h
     dohexeditor.h
 	floatersculptpreview.h
+	hbfloatergrouptitles.h
     hgfloatertexteditor.h
 	hippogridmanager.h
 	hipporestrequest.h
     jcfloaterareasearch.h
 	chatbar_as_cmdline.h
+	qtoolalign.h
     llagent.h
     llagentaccess.h
     llagentdata.h

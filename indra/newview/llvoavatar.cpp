@@ -5740,16 +5740,40 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 				{
 					gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
 					stopMotion(LLAO::mLastAnimation, true);
+					llinfos << "Stopping old animation." << llendl;
 				}
-				LLAO::mAnimationIndex++;
-				if (LLAO::mAnimationOverrides[ao_id].size() <= LLAO::mAnimationIndex)
+				std::string anim_name;
+				LLUUID new_anim = LLUUID::null;
+					
+				while (new_anim.isNull())
 				{
-					LLAO::mAnimationIndex = 0;
+					LLAO::mAnimationIndex++;
+					if (LLAO::mAnimationOverrides[ao_id].size() <= LLAO::mAnimationIndex)
+					{
+						LLAO::mAnimationIndex = 0;
+					}
+					anim_name = static_cast<const std::string&> (LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
+					new_anim = LLAO::getAssetIDByName(anim_name);
+					
+					if (new_anim.isNull())
+					{
+						LLChat chat;
+						chat.mSourceType = CHAT_SOURCE_SYSTEM;
+						chat.mText = llformat("Could not find animation %s, skipping and moving to next.", anim_name.c_str());
+						LLFloaterChat::addChat(chat);
+					}
 				}
-				LLUUID new_anim = LLAO::getAssetIDByName(LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
-				llinfos << "Switching to anim #" << LLAO::mAnimationIndex << ": " << LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex] << llendl;
+				llinfos << "Switching to anim #" << LLAO::mAnimationIndex << ": " << anim_name << "(UUID " << new_anim << ")" << llendl;
 				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_START);
 				startMotion(new_anim, time_offset);
+
+				//LLMotion*   motion = findMotion(new_anim);
+				
+				/*if (motion)
+				{
+					motion->setDeactivateCallback(&endAnimCallback, (void *)(new LLHandle<LLFloater>(self->getHandle())));
+				}*/
+				
 				LLAO::mLastAnimation = new_anim;
 			}
 			/*if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
@@ -5858,8 +5882,9 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 		}
 		else //if this code ever works without crashing the viewer -HgB
 		{
-			if (LLAO::mLastAnimation != LLUUID::null)
+			if (!LLAO::mLastAnimation.isNull())
 			{
+				llinfos << "Stopped last animation automatically. May not have needed to be stopped yet." << llendl;
 				gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
 				LLAO::mLastAnimation = LLUUID::null;
 			}

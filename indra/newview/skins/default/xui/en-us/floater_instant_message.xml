@@ -37,46 +37,16 @@
 	<string name="unavailable_text_label">
 		Text chat is not available for this call.
 	</string>
-	<!--[$PLOTR$]-->
-	<string name="otr_empty_string"></string>
-	<string name="otr_gen_key_please_wait">OTR is generating keys.  This will happen once for each of your avatars and should take less than 45 seconds.</string>
-	<string name="otr_generic_name">Your buddy</string>
-	<string name="otr_err_send_in_finished">[NAME] has ended the private conversation, so your message was not sent.  You should restart the private conversation, or end the private conversation.</string>
-	<string name="otr_err_deacivated">OTR has been deactivated by preferences (edit > preferences > Extras tab > IM tab)</string>
-	<string name="otr_err_failed_sending">Unable to encrypt your message for some reason; it has not been sent.</string>
-	<string name="otr_err_failed_starting">Unable to start private conversation.</string>
-	<string name="otr_err_offline_start">[NAME] appears offline; OTR will not try to start a private conversation.</string>
-	<string name="otr_err_offline_send">[NAME] appears offline; You may "End private conversation" and send your message un-encrypted.</string>
-	<string name="otr_prog_I_start">Attempting to start a private conversation with [NAME].</string>
-	<string name="otr_prog_I_stop_unverified">You have ended the unverified conversation with [NAME].</string>
-	<string name="otr_prog_I_stop_private"   >You have ended the private conversation with [NAME].</string>
-	<string name="otr_prog_I_stop"           >You have ended the OTR conversation with [NAME].</string>
-	<string name="otr_prog_they_start">[NAME] is attempting to start a private conversation.</string>
-	<string name="otr_prog_they_stop_unverified">[NAME] has ended the unverified conversation.</string>
-	<string name="otr_prog_they_stop_private"   >[NAME] has ended the private conversation.</string>
-	<string name="otr_prog_they_stop"           >[NAME] has ended the OTR conversation.</string>
-	<string name="otr_log_authenticated"   >[NAME] is now authenticated.</string>
-	<string name="otr_log_start_private"   >Private conversation with [NAME] started.</string>
-	<string name="otr_log_start_unverified">Unverified conversation started.  [NAME] has not been authenticated, you should "authenticate buddy," see http://www.cypherpunks.ca/otr/help/3.2.0/authenticate.php</string>
-	<string name="otr_log_gone_insecure">Private conversation ended.</string>
-	<string name="otr_log_still_private"   >Private conversation with [NAME] resumed.</string>
-	<string name="otr_log_still_unverified">Unverified conversation resumed.  [NAME] has not been authenticated, you should "authenticate buddy," see http://www.cypherpunks.ca/otr/help/3.2.0/authenticate.php</string>
-	<string name="otr_not_private">OTR: Not Private</string>
-	<string name="otr_unverified" >OTR: Unverified</string>
-	<string name="otr_private"    >OTR: Private</string>
-	<string name="otr_finished"   >OTR: Finished</string>
-	<string name="otr_start"  >Start private conversation</string>
-	<string name="otr_refresh">Refresh private conversation</string>
-	<string name="otr_restart">Restart private conversation</string>
-	<string name="otr_stop"   >End private conversation</string>
-	<string name="otr_auth"   >Authenticate buddy</string>
-	<!--[/$PLOTR$]-->
 	<button bottom="-40" follows="left|top" height="20" label="Profile" left="5"
 	     name="profile_callee_btn" width="80" />
 	<button bottom="-40" follows="left|top" halign="center" height="20" label="Teleport" left_delta="80"
 		 name="profile_tele_btn" width="80" />
   <button bottom="-40" follows="left|top" halign="center" height="20" label="History" left_delta="80"
-          name="history_btn" pad_right="10" visible="true" width="80" />
+          name="history_btn" visible="true" width="80" />
+  <check_box bottom="-40" follows="left|top" halign="center" height="20" left_delta="80"
+			     name="rp_mode" pad_right="10" >
+    RP Mode
+	</check_box>
 	<button bottom="-40" follows="left|top" halign="right" height="20"
 	     image_overlay="icn_voice-call-start.tga" image_overlay_alignment="left"
 	     label="Call" left_delta="80" name="start_call_btn" width="53" />

@@ -32,14 +32,15 @@ public:
     static void show(LLDynamicArray<LLUUID> ids);
 
 	void populateGroupList();
+	void populateActiveGroupList(LLUUID to_add);
 	void populateFriendList();
 	void addContactMember(std::string contact_grp, LLUUID to_add);
 	void createContactGroup(std::string contact_grp);
 	void deleteContactGroup(std::string contact_grp);
 
 	// Buttons
-	static void onBtnClose(void* userdata);
-	static void onBtnSave(void* userdata);
+	static void onBtnAdd(void* userdata);
+	static void onBtnRemove(void* userdata);
 	static void onBtnCreate(void* userdata);
 	static void onBtnDelete(void* userdata);
  
