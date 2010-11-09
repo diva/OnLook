@@ -629,6 +629,91 @@ bool packRoleUpdateMessageBlock(LLMessageSystem* msg,
 	return start_message;
 }
 
+#if SHY_MOD //Group Title script access
+#include "shcommandhandler.h"
+class SH_GroupRoleChanger
+{
+	std::pair<LLUUID, std::string> gForceRole;
+	typedef std::map<const bool,std::string> title_map_t;
+	typedef std::map<std::string,title_map_t> role_map_t;
+	typedef std::map<const LLUUID,role_map_t> group_map_t;
+
+	//group_map_t = <GroupID,<Rolename,<Title/Desc,text>>>
+	group_map_t gPendingRoleChanges; //lol
+
+public:
+	virtual ~SH_GroupRoleChanger(){}
+	void CheckUpdateRole(const LLUUID &group_id,LLGroupMgrGroupData::role_list_t &roles)
+	{
+		group_map_t::iterator group_it = gPendingRoleChanges.find(group_id);
+		if(group_it != gPendingRoleChanges.end()) //valid group
+		{
+			for(LLGroupMgrGroupData::role_list_t::iterator roles_it = roles.begin();roles_it!=roles.end();++roles_it)
+			{
+				//bool start_message = true;
+				LLGroupRoleData &role = *(roles_it->second);
+				LLRoleData data = role.getRoleData();
+				role_map_t::iterator stored_role_it = group_it->second.find(data.mRoleName);
+				if(stored_role_it != group_it->second.end())//found matching role.
+				{
+					if(!(stored_role_it->second.empty()))
+					{
+						title_map_t::iterator entry_it = stored_role_it->second.begin();
+						for(;entry_it!=stored_role_it->second.end();++entry_it)
+						{
+							if(entry_it->first == false)
+								data.mRoleDescription = entry_it->second;
+							else
+								data.mRoleTitle = entry_it->second;
+						}
+						if(gForceRole.first == group_id && gForceRole.second == data.mRoleName)
+						{
+							if(gAgent.getGroupID() != group_id)
+							{
+								LLMessageSystem* msg = gMessageSystem;
+								msg->newMessageFast(_PREHASH_ActivateGroup);
+								msg->nextBlockFast(_PREHASH_AgentData);
+								msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+								msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+								msg->addUUIDFast(_PREHASH_GroupID, group_id);
+								gAgent.sendReliableMessage(); //Set group.
+							}
+							LLGroupMgr::getInstance()->sendGroupTitleUpdate(group_id,role.getID());
+						}
+						LLGroupMgrGroupData* gdatap = LLGroupMgr::getInstance()->getGroupData(group_id);
+						gdatap->setRoleData(role.getID(),data);
+					}
+				}
+			}
+			gPendingRoleChanges.erase(group_it);
+		}
+		LLGroupMgr::getInstance()->sendGroupRoleChanges(group_id); //get roles list from groupid
+		gForceRole.first = LLUUID::null;
+	}
+	void RequestUpdateRole(const LLUUID& group_id,	const std::string &rolename, bool title, const std::string &string, bool force = false) //if !title then desc.
+	{
+		if(force)
+		{
+			gForceRole.first	= group_id;
+			gForceRole.second	= rolename;
+		}
+		gPendingRoleChanges[group_id][rolename][title]=string;
+		LLGroupMgr::getInstance()->sendGroupRoleDataRequest(group_id); //get roles list from groupid
+	}
+}gGroupRoleChanger;
+
+CMD_SCRIPT(setroletext)
+{
+	const LLUUID group_id = args[1].asUUID();
+	const std::string rolename = args[2].asString();
+	const bool title = args[3].asInteger() == 1;
+	const std::string str = args[4].asString();
+	const bool force = args[5].asInteger() == 1;
+	llinfos<<"Updating role- group_id:"<<group_id<<" rolename:"<<rolename<<" title:"<<title<<" string:"<<str<<llendl;
+	gGroupRoleChanger.RequestUpdateRole(group_id,rolename,title,str,force);
+}
+#endif //shy_mod
+
 void LLGroupMgrGroupData::sendRoleChanges()
 {
 	// Commit changes locally
@@ -1031,6 +1116,9 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 	}
 
 	group_data->mChanged = TRUE;
+#if SHY_MOD //Group title script access
+	gGroupRoleChanger.CheckUpdateRole(group_id,group_data->mRoles);
+#endif //shy_mod
 	LLGroupMgr::getInstance()->notifyObservers(GC_ROLE_DATA);
 }
 

@@ -762,6 +762,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNameMute(FALSE),
 	mRenderGroupTitles(sRenderGroupTitles),
 	mNameAppearance(FALSE),
+	mRenderTag(FALSE),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
 	mFirstTEMessageReceived( FALSE ),
@@ -3332,22 +3333,24 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	if (!getTE(TEX_HEAD_BODYPAINT))
 		 return;
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
+
+	static const LLCachedControl<LLColor4>	avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
 	if (mIsSelf)
 	{
-		BOOL showCustomTag = gCOASavedSettings->getBOOL("AscentUseCustomTag");
-		if (!gSavedSettings.getBOOL("AscentShowSelfTagColor"))
+		static const LLCachedControl<bool>			ascent_use_custom_tag("AscentUseCustomTag", false);
+		static const LLCachedControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
+		static const LLCachedControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
+		static const LLCachedControl<bool>			ascent_use_tag("AscentUseTag",true);
+		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","8873757c-092a-98fb-1afd-ecd347566fcd");
+
+		if (ascent_use_custom_tag)
 		{
-			color = gColors.getColor( "AvatarNameColor" );
+			color = ascent_custom_tag_color;
+			client = ascent_custom_tag_label;
 			return;
 		}
-		else if (showCustomTag)
-		{
-			color = gCOASavedSettings->getColor4("AscentCustomTagColor");
-			client = gCOASavedSettings->getString("AscentCustomTagLabel");
-			return;
-		}
-		else if (gSavedSettings.getBOOL("AscentUseTag"))
-			uuid_str = gCOASavedSettings->getString("AscentReportClientUUID");
+		else if (ascent_use_tag)
+			uuid_str = ascent_report_client_uuid;
 	}
 	if(getTEImage(TEX_HEAD_BODYPAINT)->getID() == IMG_DEFAULT_AVATAR)
 	{
@@ -3387,7 +3390,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 			&& getTEImage(TEX_UPPER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6"
 			&& getTEImage(TEX_LOWER_BODYPAINT)->getID().asString() == "4934f1bf-3b1f-cf4f-dbdf-a72550d05bc6")
 			{
-				color = gColors.getColor( "AvatarNameColor" );
+				color = avatar_name_color;
 				client = "?";
 			}
 			return;
@@ -3421,17 +3424,12 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 	}
 	else
 	{
-		color = gColors.getColor( "AvatarNameColor" );
+		color = avatar_name_color;
 		color.setAlpha(1.f);
 		client = "?";
 		//llinfos << "Apparently this tag isn't registered: " << uuid_str << llendl;
 	}
 
-	if ((mIsSelf)&&(!gSavedSettings.getBOOL("AscentShowSelfTagColor")))
-	{
-		color = gColors.getColor( "AvatarNameColor" );
-	}
-	
 	if (false)
 	//We'll remove this entirely eventually, but it's useful information if we're going to try for the new client tag idea. -HgB
 	//if(useComment) 
@@ -3628,22 +3626,22 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//Lindens are always more Linden than your friend, make that take precedence
 					if(LLMuteList::getInstance()->isLinden(getFullname()))
 					{
-						mClientColor = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentLindenColor").getValue();
 					}
 					//check if they are an estate owner at their current position
 					else if(estate_owner.notNull() && this->getID() == estate_owner)
 					{
-						mClientColor = gCOASavedSettings->getColor4("AscentEstateOwnerColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentEstateOwnerColor").getValue();
 					}
 					//without these dots, SL would suck.
 					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						mClientColor = gCOASavedSettings->getColor4("AscentFriendColor");
+						mClientColor = gSavedSettings.getColor4("AscentFriendColor");
 					}
 					//big fat jerkface who is probably a jerk, display them as such.
 					else if(LLMuteList::getInstance()->isMuted(this->getID()))
 					{
-						mClientColor = gCOASavedSettings->getColor4("AscentMutedColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentMutedColor").getValue();
 					}
 				}
 
@@ -3923,7 +3921,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 }
 
 
-
 void LLVOAvatar::idleUpdateTractorBeam()
 {
 	//--------------------------------------------------------------------
@@ -3958,26 +3955,6 @@ void LLVOAvatar::idleUpdateTractorBeam()
 	{
 		mBeam = NULL;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	else if (!mBeam || mBeam->isDead())
 	{
 		// VEFFECT: Tractor Beam
@@ -4033,87 +4010,6 @@ void LLVOAvatar::idleUpdateTractorBeam()
 		}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void LLVOAvatar::idleUpdateBelowWater()
 {

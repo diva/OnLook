@@ -205,13 +205,6 @@
 #include "scriptcounter.h"
 // </edit>
 
-
-
-
-
-
-
-
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -220,14 +213,6 @@
 #include "llwindebug.h"
 #include "lldxhardware.h"
 #endif
-
-
-
-
-
-
-
-
 
 //
 // exported globals

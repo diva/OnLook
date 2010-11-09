@@ -38,6 +38,8 @@
 #include "llmap.h"
 #include "llstring.h"
 #include "llrect.h"
+#include "v4color.h"
+#include "v4coloru.h"
 
 #include "llcontrolgroupreader.h"
 
@@ -63,11 +65,15 @@
 
 class LLVector3;
 class LLVector3d;
-class LLColor4;
 class LLColor3;
 class LLColor4U;
 
 const BOOL NO_PERSIST = FALSE;
+
+// Saved at end of session
+class LLControlGroup; //Defined further down
+extern LLControlGroup gSavedSettings;		//Default control group used in LLCachedControl
+extern LLControlGroup gSavedPerAccountSettings;	//For ease
 
 typedef enum e_control_type
 {
@@ -99,12 +105,16 @@ private:
 	bool			mHideFromSettingsEditor;
 	std::vector<LLSD> mValues;
 	
-	signal_t mSignal;
-	
+	boost::shared_ptr<signal_t> mSignal;	//Signals are non-copyable. Therefore, using a pointer so vars can 'share' signals for COA
+
+	//COA stuff:
+	bool			mIsCOA;				//To have COA connection set.
+	bool			mIsCOAParent;		//if true, use if settingsperaccount is false.
+	LLControlVariable *mCOAConnectedVar;//Because the two vars refer to eachother, LLPointer would be a circular refrence..
 public:
 	LLControlVariable(const std::string& name, eControlType type,
 					  LLSD initial, const std::string& comment,
-					  bool persist = true, bool hidefromsettingseditor = false);
+					  bool persist = true, bool hidefromsettingseditor = false, bool IsCOA = false);
 
 	virtual ~LLControlVariable();
 	
@@ -116,7 +126,7 @@ public:
 
 	void resetToDefault(bool fire_signal = false);
 
-	signal_t* getSignal() { return &mSignal; }
+	signal_t* getSignal() { return mSignal.get(); }
 
 	bool isDefault() { return (mValues.size() == 1); }
 	bool isSaveValueDefault();
@@ -136,7 +146,21 @@ public:
 
 	void firePropertyChanged()
 	{
-		mSignal(mValues.back());
+		(*mSignal)(mValues.back());
+	}
+
+	//COA stuff
+	bool isCOA()		const	{ return mIsCOA; }
+	bool isCOAParent()	const	{ return mIsCOAParent; }
+	LLControlVariable *getCOAConnection() const	{ return mCOAConnectedVar; }
+	LLControlVariable *getCOAActive();
+	void setIsCOA(bool IsCOA)  { mIsCOA=IsCOA; }
+	void setCOAConnect(LLControlVariable *pConnect, bool IsParent) 
+	{
+		mIsCOAParent=IsParent;
+		mCOAConnectedVar=pConnect;
+		if(!IsParent)
+			mSignal = pConnect->mSignal; //Share a single signal.
 	}
 private:
 	LLSD getComparableValue(const LLSD& value);
@@ -155,6 +179,7 @@ protected:
 
 	eControlType typeStringToEnum(const std::string& typestr);
 	std::string typeEnumToString(eControlType typeenum);	
+	std::set<std::string> mIncludedFiles; //To prevent perpetual recursion.
 public:
 	LLControlGroup();
 	~LLControlGroup();
@@ -168,8 +193,8 @@ public:
 		virtual void apply(const std::string& name, LLControlVariable* control) = 0;
 	};
 	void applyToAll(ApplyFunctor* func);
-	
-	BOOL declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor = FALSE);
+
+	BOOL declareControl(const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist, BOOL hidefromsettingseditor = FALSE, bool IsCOA = false);
 	BOOL declareU32(const std::string& name, U32 initial_val, const std::string& comment, BOOL persist = TRUE);
 	BOOL declareS32(const std::string& name, S32 initial_val, const std::string& comment, BOOL persist = TRUE);
 	BOOL declareF32(const std::string& name, F32 initial_val, const std::string& comment, BOOL persist = TRUE);
@@ -240,6 +265,160 @@ public:
 	
 	// Resets all ignorables
 	void resetWarnings();
+
+	//COA stuff
+	void connectToCOA(LLControlVariable *pConnecter, const std::string& name, eControlType type, const LLSD initial_val, const std::string& comment, BOOL persist);
+	void connectCOAVars(LLControlGroup &OtherGroup);
+	void updateCOASetting(bool coa_enabled);
+	bool handleCOASettingChange(const LLSD& newvalue);
 };
 
+//! Helper function for LLCachedControl
+template <class T> 
+eControlType get_control_type(const T& in, LLSD& out)
+{
+	llerrs << "Usupported control type: " << typeid(T).name() << "." << llendl;
+	return TYPE_COUNT;
+}
+
+//! Publish/Subscribe object to interact with LLControlGroups.
+
+//! An LLCachedControl instance to connect to a LLControlVariable
+//! without have to manually create and bind a listener to a local
+//! object.
+
+template <class T>
+class LLCachedControl
+{
+private:
+    T mCachedValue;
+    LLPointer<LLControlVariable> mControl;
+    boost::signals::connection mConnection;
+	LLControlGroup *mControlGroup;
+
+public:
+	LLCachedControl(const std::string& name, const T& default_value, LLControlGroup *group, const std::string& comment = "Declared In Code") 
+	{Init(name,default_value,comment,*group);} //for gSavedPerAccountSettings, etc
+	LLCachedControl(const std::string& name, const T& default_value, LLControlGroup &group, const std::string& comment = "Declared In Code")
+	{Init(name,default_value,comment,group);}  //for LLUI::sConfigGroup, etc
+	LLCachedControl(const std::string& name,  
+					const T& default_value, 
+					const std::string& comment = "Declared In Code",
+					LLControlGroup &group = gSavedSettings)
+	{Init(name,default_value,comment,group);}  //for default (gSavedSettings)
+private:
+	void Init(	const std::string& name, 
+				const T& default_value, 
+				const std::string& comment,
+				LLControlGroup &group)
+	{
+		mControlGroup = &group;
+		mControl = mControlGroup->getControl(name);
+		if(mControl.isNull())
+		{
+			declareTypedControl(*mControlGroup, name, default_value, comment);
+			mControl = mControlGroup->getControl(name);
+			if(mControl.isNull())
+			{
+				llerrs << "The control could not be created!!!" << llendl;
+			}
+
+			mCachedValue = default_value;
+		}
+		else
+		{
+			handleValueChange(mControl->getValue());
+		}
+
+		if(mConnection.connected())
+			mConnection.disconnect();
+		// Add a listener to the controls signal...
+		// and store the connection...
+		mConnection = mControl->getSignal()->connect(
+			boost::bind(&LLCachedControl<T>::handleValueChange, this, _1)
+			);
+	}
+public:
+	~LLCachedControl()
+	{
+		if(mConnection.connected())
+		{
+			mConnection.disconnect();
+		}
+	}
+
+	LLCachedControl& operator =(const T& newvalue)
+	{
+	   setTypeValue(*mControl, newvalue);
+	   return *this;
+	}
+	
+	operator const T&() const { return mCachedValue; }
+
+
+	/*	Sometimes implicit casting doesn't work.
+		For instance, something like "LLCachedControl<LLColor4> color("blah",LLColor4()); color.getValue();" 
+		will not compile as it will look for the function getValue() in LLCachedControl, which doesn't exist.
+			Use 'color.get().getValue()' instead if something like this happens.
+		
+		Manually casting to (const T) would work too, but it's ugly and requires knowledge of LLCachedControl's internals
+	*/
+	const T &get() const { return mCachedValue; } 
+
+private:
+	void declareTypedControl(LLControlGroup& group, 
+							 const std::string& name, 
+							 const T& default_value,
+							 const std::string& comment)
+	{
+		LLSD init_value;
+		eControlType type = get_control_type<T>(default_value, init_value);
+		if(type < TYPE_COUNT)
+		{
+			group.declareControl(name, type, init_value, comment, FALSE);
+		}
+	}
+
+	void setValue(const LLSD& newvalue) //default behavior
+	{
+		mCachedValue = (const T &)newvalue;
+	}
+
+	bool handleValueChange(const LLSD& newvalue)
+	{
+		setValue(newvalue);
+		return true;
+	}
+
+	void setTypeValue(LLControlVariable& c, const T& v)
+	{
+		// Implicit conversion from T to LLSD...
+		c.set(v);
+	}
+};
+
+template <> inline void LLCachedControl<LLColor4>::setValue(const LLSD& newvalue)
+{
+	if(this->mControl->isType(TYPE_COL4U))
+		this->mCachedValue.set(LLColor4U(newvalue)); //a color4u LLSD cannot be auto-converted to color4.. so do it manually.
+	else
+		this->mCachedValue = (const LLColor4 &)newvalue;
+}
+
+
+//Following is actually defined in newview/llviewercontrol.cpp, but extern access is fine (Unless GCC bites me)
+template <> eControlType get_control_type<U32>(const U32& in, LLSD& out);
+template <> eControlType get_control_type<S32>(const S32& in, LLSD& out);
+template <> eControlType get_control_type<F32>(const F32& in, LLSD& out);
+template <> eControlType get_control_type<bool> (const bool& in, LLSD& out); 
+// Yay BOOL, its really an S32.
+//template <> eControlType get_control_type<BOOL> (const BOOL& in, LLSD& out) 
+template <> eControlType get_control_type<std::string>(const std::string& in, LLSD& out);
+template <> eControlType get_control_type<LLVector3>(const LLVector3& in, LLSD& out);
+template <> eControlType get_control_type<LLVector3d>(const LLVector3d& in, LLSD& out); 
+template <> eControlType get_control_type<LLRect>(const LLRect& in, LLSD& out);
+template <> eControlType get_control_type<LLColor4>(const LLColor4& in, LLSD& out);
+template <> eControlType get_control_type<LLColor3>(const LLColor3& in, LLSD& out);
+template <> eControlType get_control_type<LLColor4U>(const LLColor4U& in, LLSD& out); 
+template <> eControlType get_control_type<LLSD>(const LLSD& in, LLSD& out);
 #endif

@@ -719,6 +719,7 @@ private:
 	BOOL	  mNameBusy;
 	BOOL	  mNameMute;
 	BOOL      mNameAppearance;
+	BOOL	  mRenderTag;
 	BOOL	  mVisibleChat;
 	BOOL      mRenderGroupTitles;
 

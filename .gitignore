@@ -1,4 +1,9 @@
 /installed.xml
+/indra/build-*
+/indra/tools/vstool/obj/
+*.aps
+*.suo
+*.vshost.exe
 /bin/
 /bin-release/
 /bin

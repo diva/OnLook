@@ -499,6 +499,7 @@ set(viewer_SOURCE_FILES
     rlvmultistringsearch.cpp
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
+	shcommandhandler.cpp
     )
 
 # This gets renamed in the packaging step
@@ -966,6 +967,7 @@ set(viewer_HEADER_FILES
     rlvmultistringsearch.h
     rlvextensions.h
     rlvfloaterbehaviour.h
+	shcommandhandler.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

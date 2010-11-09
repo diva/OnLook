@@ -239,7 +239,7 @@ bool LLToolMgr::inBuildMode()
 	// when entering mouselook inEdit() immediately returns true before 
 	// cameraMouselook() actually starts returning true.  Also, appearance edit
 	// sets build mode to true, so let's exclude that.
-	static LLCachedControl<bool> build_btn_state("BuildBtnState",false);
+	static const LLCachedControl<bool> build_btn_state("BuildBtnState",false);
 	bool b=(inEdit() 
 			&& build_btn_state
 			&& !gAgent.cameraMouselook()

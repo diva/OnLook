@@ -700,22 +700,26 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//Lindens are always more Linden than your friend, make that take precedence
 		if(LLMuteList::getInstance()->isLinden(av_name))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentLindenColor").getValue();
+			static const LLCachedControl<LLColor4> ascent_linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_linden_color.get().getValue();
 		}
 		//check if they are an estate owner at their current position
 		else if(estate_owner.notNull() && av_id == estate_owner)
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentEstateOwnerColor").getValue();
+			static const LLCachedControl<LLColor4> ascent_estate_owner_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_estate_owner_color.get().getValue();
 		}
 		//without these dots, SL would suck.
 		else if(is_agent_friend(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentFriendColor").getValue();
+			static const LLCachedControl<LLColor4> ascent_friend_color("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_friend_color.get().getValue();
 		}
 		//big fat jerkface who is probably a jerk, display them as such.
 		else if(LLMuteList::getInstance()->isMuted(av_id))
 		{
-			element["columns"][LIST_AVATAR_NAME]["color"] = gCOASavedSettings->getColor4("AscentMutedColor").getValue();
+			static const LLCachedControl<LLColor4> ascent_muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
+			element["columns"][LIST_AVATAR_NAME]["color"] = ascent_muted_color.get().getValue();
 		}
 		
 
@@ -807,15 +811,17 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//element["columns"][LIST_METADATA]["column"] = "metadata";
 		//element["columns"][LIST_METADATA]["type"] = "text";
 
-		LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+		static const LLCachedControl<LLColor4> avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
+		static const LLCachedControl<LLColor4> unselected_color("ScrollUnselectedColor",LLColor4(LLColor4U(0, 0, 0, 204)), gColors );
+		LLColor4 name_color(avatar_name_color);
 		std::string client;
 		LLVOAvatar *avatarp = gObjectList.findAvatar(av_id);
 		if(avatarp)
 		{
-			avatarp->getClientInfo(client, avatar_name_color, TRUE);
+			avatarp->getClientInfo(client, name_color, TRUE);
 			if(client == "")
 			{
-				avatar_name_color = gColors.getColor( "ScrollUnselectedColor" );
+				name_color = unselected_color;
 				client = "?";
 			}
 			element["columns"][LIST_CLIENT]["value"] = client.c_str();
@@ -833,9 +839,9 @@ void LLFloaterAvatarList::refreshAvatarList()
 			element["columns"][LIST_CLIENT]["value"] = "Out Of Range";
 		}
 		//Blend to make the color show up better
-		avatar_name_color = avatar_name_color * 0.5f + gColors.getColor( "ScrollUnselectedColor" ) * 0.5f;
+		name_color = name_color *.5f + unselected_color * .5f;
 
-		element["columns"][LIST_CLIENT]["color"] = avatar_name_color.getValue();
+		element["columns"][LIST_CLIENT]["color"] = avatar_name_color.get().getValue();
 
 		// Add to list
 		mAvatarList->addElement(element, ADD_BOTTOM);

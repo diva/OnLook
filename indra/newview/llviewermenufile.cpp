@@ -567,8 +567,14 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 
 		if (gSavedSettings.getBOOL("HighResSnapshot"))
 		{
+#if SHY_MOD // screenshot improvement
+			const F32 mult = gSavedSettings.getF32("SHHighResSnapshotScale");
+			width *= mult;
+			height *= mult;
+#else //shy_mod
 			width *= 2;
 			height *= 2;
+#endif //ignore
 		}
 
 		if (gViewerWindow->rawSnapshot(raw,

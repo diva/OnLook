@@ -225,7 +225,11 @@ glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top,
 	return ret;
 }
 
+#if SHY_MOD //screenshot improvement
+void display_update_camera(bool tiling=false);
+#else //shy_mod
 void display_update_camera();
+#endif //ignore
 //----------------------------------------
 
 S32		LLPipeline::sCompiles = 0;
@@ -1024,7 +1028,7 @@ U32 LLPipeline::addObject(LLViewerObject *vobj)
 		return 0;
 	}
 
-	static LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
+	static const LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
 	if (render_delay_creation)
 	{
 		mCreateQ.push_back(vobj);
@@ -1088,7 +1092,7 @@ void LLPipeline::createObject(LLViewerObject* vobj)
 
 	markRebuild(drawablep, LLDrawable::REBUILD_ALL, TRUE);
 
-	static LLCachedControl<bool> render_animate_res("RenderAnimateRes",false);
+	static const LLCachedControl<bool> render_animate_res("RenderAnimateRes",false);
 	if (drawablep->getVOVolume() && render_animate_res)
 	{
 		// fun animated res
@@ -1128,7 +1132,7 @@ void LLPipeline::resetFrameStats()
 //external functions for asynchronous updating
 void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 {
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -1159,7 +1163,7 @@ void LLPipeline::updateMoveDampedAsync(LLDrawable* drawablep)
 
 void LLPipeline::updateMoveNormalAsync(LLDrawable* drawablep)
 {
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -1213,7 +1217,7 @@ void LLPipeline::updateMove()
 	LLFastTimer t(LLFastTimer::FTM_UPDATE_MOVE);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (freeze_time)
 	{
 		return;
@@ -2310,7 +2314,7 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
-	static LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
+	static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
 	if (beacon_always_on && !sShadowRender)
 	{
 		if (sRenderScriptedTouchBeacons)
@@ -5431,18 +5435,27 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	}
 
 	shader.uniform4fv("shadow_clip", 1, mSunClipPlanes.mV);
-	shader.uniform1f("sun_wash", gSavedSettings.getF32("RenderDeferredSunWash"));
-	shader.uniform1f("shadow_noise", gSavedSettings.getF32("RenderShadowNoise"));
-	shader.uniform1f("blur_size", gSavedSettings.getF32("RenderShadowBlurSize"));
+	static const LLCachedControl<F32> render_deferred_sun_wash("RenderDeferredSunWash",.5f);
+	static const LLCachedControl<F32> render_shadow_noise("RenderShadowNoise",-.0001f);
+	static const LLCachedControl<F32> render_shadow_blur_size("RenderShadowBlurSize",.7f);
+	static const LLCachedControl<F32> render_ssao_scale("RenderSSAOScale",500);
+	static const LLCachedControl<S32> render_ssao_max_scale("RenderSSAOMaxScale",60);
+	static const LLCachedControl<F32> render_ssao_factor("RenderSSAOFactor",.3f);
+	static const LLCachedControl<LLVector3> render_ssao_effect("RenderSSAOEffect",LLVector3(.4f,1,0));
+	static const LLCachedControl<F32> render_deferred_alpha_soft("RenderDeferredAlphaSoften",.75f);
 
-	shader.uniform1f("ssao_radius", gSavedSettings.getF32("RenderSSAOScale"));
-	shader.uniform1f("ssao_max_radius", gSavedSettings.getU32("RenderSSAOMaxScale"));
+	shader.uniform1f("sun_wash", render_deferred_sun_wash);
+	shader.uniform1f("shadow_noise", render_shadow_noise);
+	shader.uniform1f("blur_size", render_shadow_blur_size);
 
-	F32 ssao_factor = gSavedSettings.getF32("RenderSSAOFactor");
+	shader.uniform1f("ssao_radius", render_ssao_scale);
+	shader.uniform1f("ssao_max_radius", render_ssao_max_scale);
+
+	F32 ssao_factor = render_ssao_factor;
 	shader.uniform1f("ssao_factor", ssao_factor);
 	shader.uniform1f("ssao_factor_inv", 1.0/ssao_factor);
 
-	LLVector3 ssao_effect = gSavedSettings.getVector3("RenderSSAOEffect");
+	LLVector3 ssao_effect = render_ssao_effect;
 	F32 matrix_diag = (ssao_effect[0] + 2.0*ssao_effect[1])/3.0;
 	F32 matrix_nondiag = (ssao_effect[0] - ssao_effect[1])/3.0;
 	// This matrix scales (proj of color onto <1/rt(3),1/rt(3),1/rt(3)>) by
@@ -5454,7 +5467,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 
 	shader.uniform2f("screen_res", mDeferredScreen.getWidth(), mDeferredScreen.getHeight());
 	shader.uniform1f("near_clip", LLViewerCamera::getInstance()->getNear()*2.f);
-	shader.uniform1f("alpha_soften", gSavedSettings.getF32("RenderDeferredAlphaSoften"));
+	shader.uniform1f("alpha_soften", render_deferred_alpha_soft);
 }
 
 void LLPipeline::renderDeferredLighting()

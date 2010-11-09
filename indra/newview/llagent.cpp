@@ -479,7 +479,7 @@ void LLAgent::init()
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
-	mEffectColor = gCOASavedSettings->getColor4("EffectColor");
+	mEffectColor = gSavedSettings.getColor4("EffectColor");
 	
 	mInitialized = TRUE;
 }
@@ -548,7 +548,7 @@ void LLAgent::resetView(BOOL reset_camera, BOOL change_camera)
 		gMenuHolder->hideMenus();
 	}
 
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (change_camera && !freeze_time)
 	{
 		changeCameraToDefault();
@@ -794,7 +794,7 @@ BOOL LLAgent::canFly()
 	if (isGodlike()) return TRUE;
 
 	// <edit>
-	static LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled",false);
+	static const LLCachedControl<bool> ascent_fly_always_enabled("AscentFlyAlwaysEnabled",false);
 	if(ascent_fly_always_enabled) 
 		return TRUE;
 	// </edit>
@@ -1988,7 +1988,7 @@ void LLAgent::cameraOrbitIn(const F32 meters)
 		
 		mCameraZoomFraction = (mTargetCameraDistance - meters) / camera_offset_dist;
 
-		static LLCachedControl<bool> freeze_time("FreezeTime",false);
+		static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 		if (!freeze_time && mCameraZoomFraction < MIN_ZOOM_FRACTION && meters > 0.f)
 		{
 			// No need to animate, camera is already there.
@@ -6431,7 +6431,7 @@ void LLAgent::teleportViaLocationLookAt(const LLVector3d& pos_global)
 void LLAgent::setTeleportState(ETeleportState state)
 {
 	mTeleportState = state;
-	static LLCachedControl<bool> freeze_time("FreezeTime",false);
+	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
 	if (mTeleportState > TELEPORT_NONE && freeze_time)
 	{
 		LLFloaterSnapshot::hide(0);
@@ -7582,7 +7582,7 @@ void LLAgent::sendAgentSetAppearance()
 			LLColor4 color;
 			if (!gSavedSettings.getBOOL("AscentStoreSettingsPerAccount"))
 			{
-				color = gCOASavedSettings->setColor4("AscentCustomTagColor");
+				color = gSavedSettings.setColor4("AscentCustomTagColor");
 			}
 			else
 			{

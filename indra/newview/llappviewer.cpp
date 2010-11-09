@@ -335,42 +335,23 @@ static std::string gHelperURI;
 
 LLAppViewer::LLUpdaterInfo *LLAppViewer::sUpdaterInfo = NULL ;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 void idle_afk_check()
 {
 	// check idle timers
+	static const LLCachedControl<F32> afk_timeout("AFKTimeout",0.f);
 	//if (gAllowIdleAFK && (gAwayTriggerTimer.getElapsedTimeF32() > gSavedSettings.getF32("AFKTimeout")))
 // [RLVa:KB] - Checked: 2009-10-19 (RLVa-1.1.0g) | Added: RLVa-1.1.0g
 #ifdef RLV_EXTENSION_CMD_ALLOWIDLE
 	if ( (gAllowIdleAFK || gRlvHandler.hasBehaviour(RLV_BHVR_ALLOWIDLE)) && 
-		 (gAwayTriggerTimer.getElapsedTimeF32() > gSavedSettings.getF32("AFKTimeout"))&& (gSavedSettings.getF32("AFKTimeout") > 0))
+		 (gAwayTriggerTimer.getElapsedTimeF32() > afk_timeout) && (afk_timeout > 0))
 #else
-	if (gAllowIdleAFK && (gAwayTriggerTimer.getElapsedTimeF32() > gSavedSettings.getF32("AFKTimeout"))&& (gSavedSettings.getF32("AFKTimeout") > 0))
+	if (gAllowIdleAFK && (gAwayTriggerTimer.getElapsedTimeF32() > afk_timeout) && (afk_timeout > 0))
 #endif // RLV_EXTENSION_CMD_ALLOWIDLE
 // [/RLVa:KB]
 	{
 		gAgent.setAFK();
 	}
 }
-
-
-
-
-
-
-
 
 
 // A callback set in LLAppViewer::init()
@@ -1032,7 +1013,7 @@ bool LLAppViewer::mainLoop()
 			// Sleep and run background threads
 			{
 				LLFastTimer t2(LLFastTimer::FTM_SLEEP);
-				static LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
+				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 
 				// yield some time to the os based on command line option
 				if(mYieldTime >= 0)
@@ -1768,6 +1749,10 @@ bool LLAppViewer::initConfiguration()
 
 		return false;
 	}
+
+	//COA vars in gSavedSettings will be linked to gSavedPerAccountSettings entries that will be created if not present.
+	//Signals will be shared between linked vars.
+	gSavedSettings.connectCOAVars(gSavedPerAccountSettings);
 
 	// - set procedural settings 
 	gSavedSettings.setString("ClientSettingsFile", 
@@ -4095,7 +4080,7 @@ void LLAppViewer::resumeMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			static const LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
 			secs = mainloop_timeout_default;
 		}
 		
@@ -4123,7 +4108,7 @@ void LLAppViewer::pingMainloopTimeout(const std::string& state, F32 secs)
 	{
 		if(secs < 0.0f)
 		{
-			static LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
+			static const LLCachedControl<F32> mainloop_timeout_default("ThrottleBandwidthKBPS",20);
 			secs = mainloop_timeout_default;
 		}
 

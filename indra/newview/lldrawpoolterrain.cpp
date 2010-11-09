@@ -209,7 +209,7 @@ void LLDrawPoolTerrain::render(S32 pass)
 	}
 
 	// Special-case for land ownership feedback
-	static LLCachedControl<bool> show_parcel_owners("ShowParcelOwners",false);
+	static const LLCachedControl<bool> show_parcel_owners("ShowParcelOwners",false);
 	if (show_parcel_owners)
 	{
 		if (mVertexShaderLevel > 1)

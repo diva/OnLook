@@ -147,6 +147,10 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#if SHY_MOD //Group Title script access
+# include "shcommandhandler.h"
+#endif //shy_mod
+
 #include <boost/tokenizer.hpp>
 
 #if LL_WINDOWS // For Windows specific error handler
@@ -3036,7 +3040,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 			if (!is_muted && !is_busy)
 			{
-				static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+				static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
 				visible_in_chat_bubble = use_chat_bubbles;
 				((LLVOAvatar*)chatter)->addChat(chat);
 			}
@@ -3142,6 +3146,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				}
 // [/RLVa:KB]
 			case CHAT_TYPE_DEBUG_MSG:
+#if SHY_MOD //Command handler
+				if(SHCommandHandler::handleCommand(false,mesg,from_id,chatter)) 
+					return;
+#endif //shy_mod
 			case CHAT_TYPE_NORMAL:
 				verb = ": ";
 				break;
@@ -3198,6 +3206,21 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			// just add to chat history
 			check_translate_chat(mesg, chat, TRUE);
 		}
+	}
+
+	// Make swirly things only for talking objects. (not script debug messages, though)
+	if(	chatter 
+		&& chat.mSourceType == CHAT_SOURCE_OBJECT 
+		&& chat.mChatType != CHAT_TYPE_DEBUG_MSG
+		&& gSavedSettings.getBOOL("EffectScriptChatParticles") )
+	{
+		LLPointer<LLViewerPartSourceChat> psc = new LLViewerPartSourceChat(chatter->getPositionAgent());
+		psc->setSourceObject(chatter);
+		psc->setColor(color);
+		//We set the particles to be owned by the object's owner, 
+		//just in case they should be muted by the mute list
+		psc->setOwnerUUID(owner_id);
+		LLViewerPartSim::getInstance()->addPartSource(psc);
 	}
 }
 

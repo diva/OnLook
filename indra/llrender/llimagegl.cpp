@@ -1564,6 +1564,7 @@ void LLImageGL::setNoDelete()
 void LLImageGL::updatePickMask(S32 width, S32 height, const U8* data_in)
 {
 	delete [] mPickMask; //Always happens regardless.
+
 	mPickMask = NULL;
 	mPickMaskSize = 0;
 	
@@ -1582,7 +1583,6 @@ void LLImageGL::updatePickMask(S32 width, S32 height, const U8* data_in)
 		memset(mPickMask, 0, sizeof(U8) * mPickMaskSize);
 
 		U32 pick_bit = 0;
-	
 		for (S32 y = 0; y < height; y += 2)
 		{
 			for (S32 x = 0; x < width; x += 2)

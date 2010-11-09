@@ -298,7 +298,7 @@ bool LLTexUnit::bindManual(eTextureType type, U32 texture, bool hasMips)
 	if(mCurrTexture != texture)
 	{
 		gGL.flush();
-		
+
 		activate();
 		enable(type);
 		mCurrTexture = texture;

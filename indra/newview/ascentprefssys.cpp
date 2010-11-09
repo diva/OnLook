@@ -189,7 +189,7 @@ void LLPrefsAscentSysImpl::refreshValues()
 	mEnableLLWind				= gSavedSettings.getBOOL("WindEnabled");
 
 	mEnableClouds				= gSavedSettings.getBOOL("CloudsEnabled");
-		mEnableClassicClouds	= gSavedSettings.getBOOL("SkyUseClassicClouds");
+	mEnableClassicClouds		= gSavedSettings.getBOOL("SkyUseClassicClouds");
 
 	mSpeedRez					= gSavedSettings.getBOOL("SpeedRez");
 	mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");

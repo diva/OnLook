@@ -359,15 +359,15 @@ void LLNetMap::draw()
 		// Draw avatars
 //		LLColor4 mapcolor = gAvatarMapColor;
 
-		LLColor4 standard_color = gColors.getColor( "MapAvatar" );
-		//LLColor4 friend_color = gCOASavedSettings->getColor4("AscentFriendColor");
-		LLColor4 em_color = gCOASavedSettings->getColor4("AscentEstateOwnerColor");
-		LLColor4 linden_color = gCOASavedSettings->getColor4("AscentLindenColor");
-		LLColor4 muted_color = gCOASavedSettings->getColor4("AscentMutedColor");
+		static const LLCachedControl<LLColor4>	standard_color("MapAvatar",LLColor4(0.f,1.f,0.f,1.f),gColors);
+		static const LLCachedControl<LLColor4>	friend_color_stored("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
+		static const LLCachedControl<LLColor4>	em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
+		static const LLCachedControl<LLColor4>	linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
+		static const LLCachedControl<LLColor4>	muted_color("AscentMutedColor",LLColor4(0.7f,0.7f,0.7f,1.f));
 
 		// Draw avatars
 // [RLVa:KB] - Version: 1.23.4 | Alternate: Snowglobe-1.2.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
-		LLColor4 friend_color = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? gCOASavedSettings->getColor4("AscentFriendColor") : standard_color;
+		LLColor4 friend_color = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? friend_color_stored : standard_color;
 // [/RLVa:KB]
 		std::vector<LLUUID> avatar_ids;
 		std::vector<LLVector3d> positions;
