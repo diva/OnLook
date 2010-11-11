@@ -1094,6 +1094,7 @@ U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_v
 {
 	if(mIncludedFiles.find(filename) != mIncludedFiles.end())
 		return 0; //Already included this file.
+	mIncludedFiles.insert(filename);
 
 	std::string name;
 	LLSD settings;

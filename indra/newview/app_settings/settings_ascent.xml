@@ -166,7 +166,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<real>0</real>
+			<integer>0</integer>
 		</map>
 		<key>AscentUseStatusColors</key>
 		<map>
@@ -177,7 +177,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<real>0</real>
+			<integer>0</integer>
 		</map>
 		<key>AscentAvatarXModifier</key>
 		<map>
