@@ -2,10 +2,6 @@
 
 project(media_plugin_gstreamer010)
 
-if(WORD_SIZE EQUAL 64)
-    set(REQUIRE_PIC)
-endif(WORD_SIZE EQUAL 64)
-
 include(00-Common)
 include(LLCommon)
 include(LLImage)
@@ -34,14 +30,6 @@ include_directories(
 
 ### media_plugin_gstreamer010
 
-if(WORD_SIZE EQUAL 64)
-	if(WINDOWS)
-		add_definitions(/FIXED:NO)
-	else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
-		add_definitions(-fPIC)
-	endif(WINDOWS)
-endif (WORD_SIZE EQUAL 64)
-
 set(media_plugin_gstreamer010_SOURCE_FILES
     media_plugin_gstreamer010.cpp
     llmediaimplgstreamer_syms.cpp
@@ -54,15 +42,6 @@ set(media_plugin_gstreamer010_HEADER_FILES
     llmediaimplgstreamertriviallogging.h
     )
     
-if (LINUX)
-    if (${CXX_VERSION} GREATER 419)
-        # Work around a bad interaction between broken gstreamer headers and
-        # g++ 4.2's increased strictness.
-        set_source_files_properties(llmediaimplgstreamervidplug.cpp PROPERTIES
-                                    COMPILE_FLAGS -Wno-write-strings)
-    endif (${CXX_VERSION} GREATER 419)
-endif (LINUX)
-
 add_library(media_plugin_gstreamer010
     SHARED
     ${media_plugin_gstreamer010_SOURCE_FILES}
