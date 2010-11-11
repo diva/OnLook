@@ -303,11 +303,8 @@ LLPointer<LLControlVariable> LLControlGroup::getControl(const std::string& name)
 			gSettingsCallMap.push_back(std::pair<std::string, U32>(name.c_str(),1));
 	}
 #endif //PROF_CTRL_CALLS
-	//return iter == mNameTable.end() ? LLPointer<LLControlVariable>() : iter->second;
-
-	LLControlVariable *pFoundVar = (iter != mNameTable.end()) ? iter->second : NULL;
-	if(pFoundVar)
-		return pFoundVar->getCOAActive();
+	if(iter != mNameTable.end())
+		return iter->second->getCOAActive();
 	else
 		return LLPointer<LLControlVariable>();
 }

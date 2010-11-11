@@ -38,6 +38,8 @@
 #include "llmap.h"
 #include "llstring.h"
 #include "llrect.h"
+#include "v4color.h"
+#include "v4coloru.h"
 
 #include "llcontrolgroupreader.h"
 
@@ -376,20 +378,13 @@ private:
 			group.declareControl(name, type, init_value, comment, FALSE);
 		}
 	}
-	template <class TT> void setValue(const LLSD& newvalue) //default behavior
+	void setValue(const LLSD& newvalue) //default behavior
 	{
 		mCachedValue = (const T &)newvalue;
 	}
-	template <> void setValue<LLColor4>(const LLSD& newvalue)
-	{
-		if(mControl->isType(TYPE_COL4U))
-			mCachedValue.set(LLColor4U(newvalue)); //a color4u LLSD cannot be auto-converted to color4.. so do it manually.
-		else
-			mCachedValue = (const T &)newvalue;
-	}
 	bool handleValueChange(const LLSD& newvalue)
 	{
-		setValue<T>(newvalue);
+		setValue(newvalue);
 		return true;
 	}
 
@@ -399,6 +394,15 @@ private:
 		c.set(v);
 	}
 };
+
+template <> inline void LLCachedControl<LLColor4>::setValue(const LLSD& newvalue)
+{
+	if(this->mControl->isType(TYPE_COL4U))
+		this->mCachedValue.set(LLColor4U(newvalue)); //a color4u LLSD cannot be auto-converted to color4.. so do it manually.
+	else
+		this->mCachedValue = (const LLColor4 &)newvalue;
+}
+
 
 //Following is actually defined in newview/llviewercontrol.cpp, but extern access is fine (Unless GCC bites me)
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out);
