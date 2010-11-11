@@ -49,6 +49,13 @@
 #include <stdlib.h>
 #endif
 
+#if LL_LINUX
+extern "C" {
+#include <glib.h>
+#include <glib-object.h>
+}
+#endif // LL_LINUX
+
 #if LL_WINDOWS
 	// NOTE - This captures the module handle of the dll. This is used below
 	// to get the path to this dll for webkit initialization.
@@ -80,9 +87,11 @@ private:
 	enum
 	{
 		INIT_STATE_UNINITIALIZED,		// Browser instance hasn't been set up yet
+		INIT_STATE_INITIALIZED,			// LLQtWebkit has been set up, but no browser window has been created yet.
 		INIT_STATE_NAVIGATING,			// Browser instance has been set up and initial navigate to about:blank has been issued
 		INIT_STATE_NAVIGATE_COMPLETE,	// initial navigate to about:blank has completed
 		INIT_STATE_WAIT_REDRAW,			// First real navigate begin has been received, waiting for page changed event to start handling redraws
+		INIT_STATE_WAIT_COMPLETE,		// Waiting for first real navigate complete event
 		INIT_STATE_RUNNING				// All initialization gymnastics are complete.
 	};
 	int mBrowserWindowId;
@@ -107,6 +116,16 @@ private:
 	//
 	void update(int milliseconds)
 	{
+#if LL_QTLINUX_DOESNT_HAVE_GLIB
+		// pump glib generously, as Linux browser plugins are on the
+		// glib main loop, even if the browser itself isn't - ugh
+		// This is NOT NEEDED if Qt itself was built with glib
+		// mainloop integration.
+		GMainContext *mainc = g_main_context_default();
+		while(g_main_context_iteration(mainc, FALSE));
+#endif // LL_QTLINUX_DOESNT_HAVE_GLIB
+
+		// pump qt
 		LLQtWebKit::getInstance()->pump( milliseconds );
 		
 		checkEditState();
@@ -121,7 +140,7 @@ private:
 			}
 		}
 		
-		if ( (mInitState == INIT_STATE_RUNNING) && mNeedsUpdate )
+		if (mInitState > INIT_STATE_WAIT_REDRAW && mNeedsUpdate)
 		{
 			const unsigned char* browser_pixels = LLQtWebKit::getInstance()->grabBrowserWindow( mBrowserWindowId );
 
@@ -154,13 +173,6 @@ private:
 		if ( mInitState > INIT_STATE_UNINITIALIZED )
 			return true;
 
-		// not enough information to initialize the browser yet.
-		if ( mWidth < 0 || mHeight < 0 || mDepth < 0 || 
-				mTextureWidth < 0 || mTextureHeight < 0 )
-		{
-			return false;
-		};
-
 		// set up directories
 		char cwd[ FILENAME_MAX ];	// I *think* this is defined on all platforms we use
 		if (NULL == getcwd( cwd, FILENAME_MAX - 1 ))
@@ -169,6 +181,23 @@ private:
 			return false;
 		}
 		std::string application_dir = std::string( cwd );
+
+#if LL_LINUX
+		// take care to initialize glib properly, because some
+		// versions of Qt don't, and we indirectly need it for (some
+		// versions of) Flash to not crash the browser.
+		if (!g_thread_supported ()) g_thread_init (NULL);
+		g_type_init();
+#endif // LL_LINUX
+
+#if LL_DARWIN
+		// When running under the Xcode debugger, there's a setting called "Break on Debugger()/DebugStr()" which defaults to being turned on.
+		// This causes the environment variable USERBREAK to be set to 1, which causes these legacy calls to break into the debugger.
+		// This wouldn't cause any problems except for the fact that the current release version of the Flash plugin has a call to Debugger() in it
+		// which gets hit when the plugin is probed by webkit.
+		// Unsetting the environment variable here works around this issue.
+		unsetenv("USERBREAK");
+#endif
 
 #if LL_WINDOWS
 		// NOTE - On windows, at least, the component path is the
@@ -208,36 +237,52 @@ private:
 		bool result = LLQtWebKit::getInstance()->init( application_dir, component_dir, mProfileDir, native_window_handle );
 		if ( result )
 		{
-			// create single browser window
-			mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow( mWidth, mHeight );
+			mInitState = INIT_STATE_INITIALIZED;
 
-#if LL_WINDOWS
-			// Enable plugins
+			return true;
+		};
+
+		return false;
+	};
+
+	////////////////////////////////////////////////////////////////////////////////
+	//
+	bool initBrowserWindow()
+	{
+		// already initialized
+		if (mInitState > INIT_STATE_INITIALIZED)
+			return true;
+
+		// not enough information to initialize the browser yet.
+		if (mWidth < 0 || mHeight < 0 || mDepth < 0 || 
+			mTextureWidth < 0 || mTextureHeight < 0)
+		{
+			return false;
+		};
+
+		// turn on/off cookies based on what host app tells us
+		LLQtWebKit::getInstance()->enableCookies(true);
+
+		// turn on/off plugins based on what host app tells us
 			LLQtWebKit::getInstance()->enablePlugins(true);
-#elif LL_DARWIN
-			// Enable plugins
-			LLQtWebKit::getInstance()->enablePlugins(true);
-#elif LL_LINUX
-			// Enable plugins
-			LLQtWebKit::getInstance()->enablePlugins(true);
-#endif
-			// Enable cookies
-			LLQtWebKit::getInstance()->enableCookies( true );
+
+		// create single browser window
+		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight);
 
 			// tell LLQtWebKit about the size of the browser window
-			LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
+		LLQtWebKit::getInstance()->setSize(mBrowserWindowId, mWidth, mHeight);
 
 			// observer events that LLQtWebKit emits
-			LLQtWebKit::getInstance()->addObserver( mBrowserWindowId, this );
+		LLQtWebKit::getInstance()->addObserver(mBrowserWindowId, this);
 
 			// append details to agent string
-			LLQtWebKit::getInstance()->setBrowserAgentId( "LLPluginMedia Web Browser" );
+		LLQtWebKit::getInstance()->setBrowserAgentId("LLPluginMedia Web Browser");
 
 			// don't flip bitmap
-			LLQtWebKit::getInstance()->flipWindow( mBrowserWindowId, true );
+		LLQtWebKit::getInstance()->flipWindow(mBrowserWindowId, true);
 			
 			// set background color to be black - mostly for initial login page
-			LLQtWebKit::getInstance()->setBackgroundColor( mBrowserWindowId, 0x00, 0x00, 0x00 );
+		LLQtWebKit::getInstance()->setBackgroundColor(mBrowserWindowId, 0x00, 0x00, 0x00);
 
 			// Set state _before_ starting the navigate, since onNavigateBegin might get called before this call returns.
 			setInitState(INIT_STATE_NAVIGATING);
@@ -245,13 +290,10 @@ private:
 			// Don't do this here -- it causes the dreaded "white flash" when loading a browser instance.
 			// FIXME: Re-added this because navigating to a "page" initializes things correctly - especially
 			// for the HTTP AUTH dialog issues (DEV-41731). Will fix at a later date.
-			LLQtWebKit::getInstance()->navigateTo( mBrowserWindowId, "about:blank" );
+		LLQtWebKit::getInstance()->navigateTo(mBrowserWindowId, "about:blank");
 
 			return true;
 		};
-
-		return false;
-	};
 
 	////////////////////////////////////////////////////////////////////////////////
 	// virtual
@@ -294,7 +336,7 @@ private:
 	{
 		if(mInitState == INIT_STATE_WAIT_REDRAW)
 		{
-			setInitState(INIT_STATE_RUNNING);
+			setInitState(INIT_STATE_WAIT_COMPLETE);
 		}
 		
 		// flag that an update is required
@@ -316,7 +358,9 @@ private:
 
 		if(mInitState == INIT_STATE_NAVIGATE_COMPLETE)
 		{
-			setInitState(INIT_STATE_WAIT_REDRAW);
+			// Skip the WAIT_REDRAW state now -- with the right background color set, it should no longer be necessary.
+//			setInitState(INIT_STATE_WAIT_REDRAW);
+			setInitState(INIT_STATE_WAIT_COMPLETE);
 		}
 		
 	}
@@ -327,6 +371,14 @@ private:
 	{
 		if(mInitState >= INIT_STATE_NAVIGATE_COMPLETE)
 		{
+			if (mInitState < INIT_STATE_RUNNING)
+			{
+				setInitState(INIT_STATE_RUNNING);
+
+				// Clear the history, so the "back" button doesn't take you back to "about:blank".
+				LLQtWebKit::getInstance()->clearHistory(mBrowserWindowId);
+			}
+
 			LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "navigate_complete");
 			message.setValue("uri", event.getEventUri());
 			message.setValueS32("result_code", event.getIntValue());
@@ -594,6 +646,9 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 		{
 			if(message_name == "init")
 			{
+				// This is the media init message -- all necessary data for initialization should have been received.
+				if (initBrowser())
+				{
 				std::string user_data_path = message_in.getValue("user_data_path"); // n.b. always has trailing platform-specific dir-delimiter
 				mProfileDir = user_data_path + "browser_profile";
 
@@ -621,6 +676,12 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				message.setValueU32("type", GL_UNSIGNED_BYTE);
 				message.setValueBoolean("coords_opengl", true);
 				sendMessage(message);
+			}
+				else
+				{
+					// if initialization failed, we're done.
+					mDeleteMe = true;
+				}
 			}
 			else if(message_name == "idle")
 			{
@@ -706,9 +767,8 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 						mWidth = width;
 						mHeight = height;
 
-						// initialize (only gets called once)
-						initBrowser();
-
+						if (initBrowserWindow())
+						{
 						// size changed so tell the browser
 						LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
 						
@@ -718,7 +778,7 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 						S32 real_width = LLQtWebKit::getInstance()->getBrowserRowSpan(mBrowserWindowId) / LLQtWebKit::getInstance()->getBrowserDepth(mBrowserWindowId); 
 						
 						// The actual width the browser will be drawing to is probably smaller... let the host know by modifying texture_width in the response.
-						if(real_width <= texture_width)
+							if (real_width <= texture_width)
 						{
 							texture_width = real_width;
 						}
@@ -729,10 +789,15 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 							mDeleteMe = true;
 							return;
 						}
+						}
+						else
+						{
+							// Setting up the browser window failed.  This is a fatal error.
+							mDeleteMe = true;
+						}
 						
 						mTextureWidth = texture_width;
 						mTextureHeight = texture_height;
-						
 					};
 				};
 

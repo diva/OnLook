@@ -203,6 +203,8 @@ int main(int argc, char **argv)
 	// see the missing heartbeat and log appropriately.
 	initExceptionHandler();
 #elif LL_DARWIN || LL_LINUX
+	setpriority(PRIO_PROCESS, getpid(), 19);
+
 	if(argc < 2)
 	{
 		LL_ERRS("slplugin") << "usage: " << argv[0] << " launcher_port" << LL_ENDL;
@@ -236,6 +238,9 @@ int main(int argc, char **argv)
 	checkExceptionHandler();
 #endif
 		
+#if LL_DARWIN
+	EventTargetRef event_target = GetEventDispatcherTarget();
+#endif
 	while(!plugin->isDone())
 	{
 		timer.reset();	
@@ -243,8 +248,12 @@ int main(int argc, char **argv)
 #if LL_DARWIN
 		{
 			// Some plugins (webkit at least) will want an event loop.  This qualifies.
-			EventRecord evt;
-			WaitNextEvent(0, &evt, 0, NULL);
+			EventRef event;
+			if(ReceiveNextEvent(0, 0, kEventDurationNoWait, true, &event) == noErr)
+			{
+				SendEventToEventTarget (event, event_target);
+				ReleaseEvent(event);
+			}
 		}
 #endif
 		F64 elapsed = timer.getElapsedTimeF64();

@@ -196,45 +196,34 @@ void LLViewerParcelMedia::play(LLParcel* parcel)
 	// Debug print
 	// LL_DEBUGS("Media") << "Play media type : " << mime_type << ", url : " << media_url << LL_ENDL;
 
-	if(sMediaImpl)
+	if (!sMediaImpl || (sMediaImpl &&
+						(sMediaImpl->getMediaURL() != media_url ||
+						 sMediaImpl->getMimeType() != mime_type ||
+						 sMediaImpl->getMediaTextureID() != placeholder_texture_id)))
 	{
-		// If the url and mime type are the same, call play again
-		if(sMediaImpl->getMediaURL() == media_url 
-			&& sMediaImpl->getMimeType() == mime_type
-			&& sMediaImpl->getMediaTextureID() == placeholder_texture_id)
+		if (sMediaImpl)
 		{
-			LL_DEBUGS("Media") << "playing with existing url " << media_url << LL_ENDL;
-
-			sMediaImpl->play();
-		}
-		// Else if the texture id's are the same, navigate and rediscover type
-		// MBW -- This causes other state from the previous parcel (texture size, autoscale, and looping) to get re-used incorrectly.
-		// It's also not really necessary -- just creating a new instance is fine.
-//		else if(sMediaImpl->getMediaTextureID() == placeholder_texture_id)
-//		{
-//			sMediaImpl->navigateTo(media_url, mime_type, true);
-//		}
-		else
-		{
-			// Since the texture id is different, we need to generate a new impl
-			LL_DEBUGS("Media") << "new media impl with mime type " << mime_type << ", url " << media_url << LL_ENDL;
-
-			// Delete the old one first so they don't fight over the texture.
+			// Delete the old media impl first so they don't fight over the texture.
 			sMediaImpl->stop();
+		}
 
+		LL_DEBUGS("Media") << "new media impl with mime type " << mime_type << ", url " << media_url << LL_ENDL;
+
+		// There is no media impl, or it has just been deprecated, make a new one
 			sMediaImpl = LLViewerMedia::newMediaImpl(media_url, placeholder_texture_id,
 				media_width, media_height, media_auto_scale,
 				media_loop, mime_type);
 		}
-	}
-	else
-	{
-		// There is no media impl, make a new one
-		sMediaImpl = LLViewerMedia::newMediaImpl(media_url, placeholder_texture_id,
-			media_width, media_height, media_auto_scale,
-			media_loop, mime_type);
-	}
 
+	// The url, mime type and texture are now the same, call play again
+	if (sMediaImpl->getMediaURL() == media_url 
+		&& sMediaImpl->getMimeType() == mime_type
+		&& sMediaImpl->getMediaTextureID() == placeholder_texture_id)
+	{
+		LL_DEBUGS("Media") << "playing with existing url " << media_url << LL_ENDL;
+
+		sMediaImpl->play();
+	}
 	
 	LLFirstUse::useMedia();
 

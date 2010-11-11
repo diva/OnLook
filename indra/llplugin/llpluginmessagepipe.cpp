@@ -303,8 +303,14 @@ void LLPluginMessagePipe::processInput(void)
 	while((delim = mInput.find(MESSAGE_DELIMITER, start)) != std::string::npos)
 	{	
 		// Let the owner process this message
+		if (mOwner)
+		{
 		mOwner->receiveMessageRaw(mInput.substr(start, delim - start));
-		
+		}
+		else
+		{
+			LL_WARNS("Plugin") << "!mOwner" << LL_ENDL;
+		}
 		start = delim + 1;
 	}
 	

@@ -53,7 +53,7 @@ LLPluginProcessParent::LLPluginProcessParent(LLPluginProcessParentOwner *owner)
 	mDebug = false;
 
 	mPluginLaunchTimeout = 60.0f;
-	mPluginLockupTimeout = 30.0f;
+	mPluginLockupTimeout = 15.0f;
 	
 	// Don't start the timer here -- start it when we actually launch the plugin process.
 	mHeartbeat.stop();
