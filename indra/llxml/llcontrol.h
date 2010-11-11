@@ -400,7 +400,8 @@ private:
 template <> inline void LLCachedControl<LLColor4>::setValue(const LLSD& newvalue)
 {
 	if(this->mControl->isType(TYPE_COL4U))
-		this->mCachedValue.set(LLColor4U(newvalue)); //a color4u LLSD cannot be auto-converted to color4.. so do it manually.
+		//a color4u LLSD cannot be auto-converted to color4.. so do it manually.
+		this->mCachedValue.set(LLColor4U(newvalue)); 
 	else
 		this->mCachedValue = (const LLColor4 &)newvalue;
 }

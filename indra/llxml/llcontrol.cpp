@@ -303,11 +303,8 @@ LLPointer<LLControlVariable> LLControlGroup::getControl(const std::string& name)
 			gSettingsCallMap.push_back(std::pair<std::string, U32>(name.c_str(),1));
 	}
 #endif //PROF_CTRL_CALLS
-	//return iter == mNameTable.end() ? LLPointer<LLControlVariable>() : iter->second;
-
-	LLControlVariable *pFoundVar = (iter != mNameTable.end()) ? iter->second : (LLPointer<LLControlVariable>) NULL;
-	if(pFoundVar)
-		return pFoundVar->getCOAActive();
+	if(iter != mNameTable.end())
+		return iter->second->getCOAActive();
 	else
 		return LLPointer<LLControlVariable>();
 }
@@ -1097,6 +1094,7 @@ U32 LLControlGroup::loadFromFile(const std::string& filename, bool set_default_v
 {
 	if(mIncludedFiles.find(filename) != mIncludedFiles.end())
 		return 0; //Already included this file.
+	mIncludedFiles.insert(filename);
 
 	std::string name;
 	LLSD settings;
