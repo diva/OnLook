@@ -147,6 +147,7 @@ private:
 	void readHeaderCache();
 	void purgeAllTextures(bool purge_directories);
 	void purgeTextures(bool validate);
+	void purgeTextureFilesTimeSliced(BOOL force_all = FALSE);	// VWR-3878 - NB
 	LLAPRFile* openHeaderEntriesFile(bool readonly, S32 offset);
 	void closeHeaderEntriesFile();
 	void readEntriesHeader();
@@ -176,6 +177,9 @@ private:
 	typedef std::vector<std::pair<LLPointer<Responder>, bool> > responder_list_t;
 	responder_list_t mCompletedList;
 	
+	typedef std::list<std::string> filename_list_t;
+	filename_list_t	mFilesToDelete;
+	LLTimer mTimeLastFileDelete;
 	BOOL mReadOnly;
 	
 	// HEADERS (Include first mip)
