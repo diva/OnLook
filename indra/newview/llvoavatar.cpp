@@ -3594,7 +3594,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						}
 						else
 						{
-							llinfos << "Using Emerald-style client identifier." << llendl;
+							//llinfos << "Using Emerald-style client identifier." << llendl;
 							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
 							getClientInfo(mClientTag,mClientColor);
 							if(mClientTag == "")

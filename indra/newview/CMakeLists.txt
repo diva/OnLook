@@ -1013,7 +1013,7 @@ endif (DARWIN)
 if (LINUX)
     LIST(APPEND viewer_SOURCE_FILES llappviewerlinux.cpp)
     LIST(APPEND viewer_SOURCE_FILES llappviewerlinux_api_dbus.cpp)
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--as-needed")
+    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -luuid -lrt -laprutil-1 -lfontconfig -Wl,--as-needed")
 
     set(viewer_LIBRARIES
         Xinerama

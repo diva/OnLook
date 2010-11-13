@@ -66,7 +66,7 @@ const S32 CURRENT_VERSION = 101;
 //So, a global it is!
 bool gCOAEnabled = false; 
 
-inline LLControlVariable *LLControlVariable::getCOAActive()
+LLControlVariable *LLControlVariable::getCOAActive()
 {
 	//if no coa connection, return 'this'
 	//if per account is ON and this IS a parent, return child var
