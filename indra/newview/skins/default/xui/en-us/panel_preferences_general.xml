@@ -54,7 +54,7 @@
 	     bottom="-184" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="153"
 	     mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
-		Moved to Ascent Vanity.
+		Moved to Vanity Settings.
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-215" drop_shadow_visible="true" enabled="true" follows="left|top"

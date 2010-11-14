@@ -126,7 +126,7 @@
    name="MissingAlert"
    label="Unknown Alert Message"
    type="alertmodal">
-Your version of Ascent does not know how to display the alert message it just received.
+Your version of Singularity Viewer does not know how to display the alert message it just received.
 
 Error details: The alert called &apos;[_NAME]&apos; was not found in notifications.xml.
     <usetemplate
@@ -190,7 +190,7 @@ No tutorial is currently available.
    icon="alertmodal.tga"
    name="BadInstallation"
    type="alertmodal">
-An error occurred while updating Ascent. Please download the latest version from secondlife.com.
+An error occurred while updating Singularity Viewer. Please download the latest version from the official download site or use the Linden Lab SecondLife Viewer from secondlife.com.
     <usetemplate
      name="okbutton"
      yestext="Ok"/>
@@ -1145,7 +1145,7 @@ Unable to write file [[FILE]]
    icon="alertmodal.tga"
    name="UnsupportedHardware"
    type="alertmodal">
-Warning: Your system does not meet Ascent&apos;s minimum system requirements. If you continue using Ascent, you may experience poor performance. Unfortunately, we cannot provide technical support for unsupported system configurations.
+Warning: Your system does not meet Second Life minimum system requirements. If you continue using Singularity Viewer, you may experience poor performance. Linden Lab cannot provide technical support for unsupported system configurations.
 
     MINSPECS
     Do you wish to visit [_URL] for more information?
@@ -1165,7 +1165,7 @@ Warning: Your system does not meet Ascent&apos;s minimum system requirements. If
    name="UnknownGPU"
    type="alertmodal">
 Your system contains a graphics card that is unknown to us at this time.
-This is often the case with new hardware we haven&apos;t had a chance to test.  Ascent will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
+This is often the case with new hardware we haven&apos;t had a chance to test.  Singularity Viewer will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
 (Edit menu &gt; Preferences &gt; Graphics).
     <form name="form">
       <ignore name="ignore"
@@ -4011,7 +4011,7 @@ Default: off
    label="Voice Version Mismatch"
    name="VoiceVersionMismatch"
    type="alertmodal">
-This version of Ascent is not compatible with the Voice Chat feature in this region. In order for Voice Chat to function correctly you will need to update Snowglobe.
+This version of Singularity Viewer is not compatible with the Voice Chat feature in this region. Please try the most recent official Linden Lab SecondLife Viewer before reporting to Singularity developers.
   </notification>
 
   <notification
@@ -4269,7 +4269,7 @@ Visit the Second Life Support Web site?
    type="alertmodal">
 Are you sure you want to quit?
     <usetemplate
-     ignoretext="When Quitting Ascent."
+     ignoretext="When Quitting Singularity Viewer."
      name="okcancelignore"
      notext="Continue"
      yestext="Quit"/>
@@ -6117,7 +6117,7 @@ Failed to find [TYPE] named [DESC] in database.
    icon="notify.tga"
    name="InvalidWearable"
    type="notify">
-    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please upgrade your version of Ascent to wear this item.
+    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please consider using the latest official SecondLife viewer by Linden Lab.
   </notification>
 
   <notification
@@ -6337,7 +6337,7 @@ Flexible objects may not be physical and must be phantom until the flexible chec
    name="FirstDebugMenus"
    type="notify">
 You have enabled the Advanced menu.
-This menu contains features useful for developers debugging Ascent.
+This menu contains features useful for developers debugging Singularity Viewer.
 To toggle this menu on Windows press Ctrl-Alt-D. On Mac press Cmd-Opt-Shift-D.
   </notification>
 
@@ -6660,9 +6660,9 @@ The URL you clicked cannot be opened from this web browser.
   </global>
 
   <global name="UnsupportedGLRequirements">
-    You do not appear to have the proper hardware requirements for Ascent. Ascent requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
+    You do not appear to have the proper hardware requirements for Singularity Viewer. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
 
-    If you continue to have problems, please visit: http://www.secondlife.com/support
+    If you continue to have problems, please consider using Linden Lab official SecondLife Viewer. 
   </global>
 
   <global name="UnsupportedCPUAmount">
