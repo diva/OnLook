@@ -184,6 +184,12 @@
 <ConsoleBackground value="0, 0, 0, 255" />
 <FolderViewLoadingMessageTextColor value="240, 165, 90, 255"/>     <!-- "loading..." in the inv -->
 <InventoryBackgroundColor value="62, 62, 62, 80"/>
+<ComboBoxBg value="255, 255, 255, 255"/>
+<AvatarListTextDistNormalRange value="0, 0, 0, 255"/>
+<AvatarListTextDistShoutRange value="0, 0, 0, 128"/>
+<AvatarListTextDistOver value="128, 0, 0, 128"/>
+<AvatarListTextAgeYoung value="255, 0, 0, 255"/>
+<AvatarListTextAgeNormal value="0, 0, 0, 255"/>
 
 <!-- Alert box colors -->
 <AlertBoxColor value="62, 62, 62, 255" />               <!-- Warnings floaters, like when returning objects -->
