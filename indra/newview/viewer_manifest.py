@@ -87,6 +87,7 @@ class ViewerManifest(LLManifest):
                 self.exclude("default/xui/en_us/mime_types_mac.xml")
                 self.exclude("default/xui/en_us/mime_types_linux.xml")
                 self.path("default/xui/*/*.xml")
+                self.path("Default.xml")
                 self.path("default/*.xml")
                 if self.prefix(src="dark/textures"):
                         self.path("*.tga")

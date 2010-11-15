@@ -53,7 +53,7 @@
 			<check_box bottom_delta="-23" control_name="AscentShowSelfTag" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
 				label="Display client tag to self" left_delta="-24"
-				tool_tip="Enabling this will show your client tag on your avatar name locally."
+				tool_tip="Choose whether others see that you enjoy Singularity."
 				mouse_opaque="true" name="show_self_tag_check" radio_style="false"
 				width="400" />
 			<check_box bottom_delta="-20" control_name="AscentShowSelfTagColor" enabled="true"
