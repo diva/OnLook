@@ -3131,6 +3131,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 					break;
 				}
 // [/RLVa:KB]
+#if SHY_MOD //Command handler
+				if(SHCommandHandler::handleCommand(false,mesg,from_id,chatter)) 
+					return;
+#endif //shy_mod
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-10 (RLVa-1.0.0g)
 				// Copy/paste from above
 				if ( (chatter) && (chat.mSourceType == CHAT_SOURCE_OBJECT && chat.mChatType != CHAT_TYPE_DEBUG_MSG) && 
@@ -3146,10 +3150,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				}
 // [/RLVa:KB]
 			case CHAT_TYPE_DEBUG_MSG:
-#if SHY_MOD //Command handler
-				if(SHCommandHandler::handleCommand(false,mesg,from_id,chatter)) 
-					return;
-#endif //shy_mod
 			case CHAT_TYPE_NORMAL:
 				verb = ": ";
 				break;
@@ -3206,21 +3206,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			// just add to chat history
 			check_translate_chat(mesg, chat, TRUE);
 		}
-	}
-
-	// Make swirly things only for talking objects. (not script debug messages, though)
-	if(	chatter 
-		&& chat.mSourceType == CHAT_SOURCE_OBJECT 
-		&& chat.mChatType != CHAT_TYPE_DEBUG_MSG
-		&& gSavedSettings.getBOOL("EffectScriptChatParticles") )
-	{
-		LLPointer<LLViewerPartSourceChat> psc = new LLViewerPartSourceChat(chatter->getPositionAgent());
-		psc->setSourceObject(chatter);
-		psc->setColor(color);
-		//We set the particles to be owned by the object's owner, 
-		//just in case they should be muted by the mute list
-		psc->setOwnerUUID(owner_id);
-		LLViewerPartSim::getInstance()->addPartSource(psc);
 	}
 }
 
