@@ -371,7 +371,7 @@ if (MSVC80)
             )
         set(all_targets ${all_targets} ${out_targets})
 
-        set(debug_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Debug/Ascent.exe.config)
+        set(debug_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Debug/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${debug_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}
@@ -424,7 +424,7 @@ if (MSVC80)
             )
         set(all_targets ${all_targets} ${out_targets})
 
-        set(release_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/Ascent.exe.config)
+        set(release_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${release_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}
@@ -437,7 +437,7 @@ if (MSVC80)
             COMMENT "Creating release app config file"
             )
 
-		set(releasesse2_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/Ascent.exe.config)
+        set(releasesse2_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${releasesse2_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}
@@ -450,7 +450,7 @@ if (MSVC80)
             COMMENT "Creating release-sse2 app config file"
             )
             
-        set(relwithdebinfo_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/Ascent.exe.config)
+        set(relwithdebinfo_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${relwithdebinfo_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}

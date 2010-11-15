@@ -2,7 +2,7 @@
 <floater can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="false" height="440" min_height="100" min_width="100"
      name="floater_about" rect_control="FloaterAboutRect"
-     title="About Ascent" width="470">
+     title="About Singularity Viewer" width="470">
 	<text_editor bottom="-434" embedded_items="false"
 	     follows="left|top|right|bottom" font="SansSerifSmall" height="168" left="6"
   max_length="65536" mouse_opaque="true" name="credits_editor" width="458"

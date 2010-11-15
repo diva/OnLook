@@ -38,7 +38,7 @@ const S32 LL_VERSION_MINOR = 5;
 const S32 LL_VERSION_PATCH = 0;
 const S32 LL_VERSION_BUILD = 0;
 
-const char * const LL_CHANNEL = "Ascent Viewer Release";
+const char * const LL_CHANNEL = "Singularity Viewer";
 
 #if LL_DARWIN
 const char * const LL_VERSION_BUNDLE_ID = "com.secondlife.snowglobe.viewer";

@@ -76,7 +76,7 @@ class PlatformSetup(object):
     build_type = build_types['relwithdebinfo']
     standalone = 'OFF'
     unattended = 'OFF'
-    project_name = 'Ascent'
+    project_name = 'Singularity'
     distcc = True
     cmake_opts = []
     word_size = 32
@@ -661,9 +661,9 @@ class WindowsSetup(PlatformSetup):
                 continue
             vstool_cmd = (os.path.join('tools','vstool','VSTool.exe') +
                           ' --solution ' +
-                          os.path.join(build_dir,'Ascent.sln') +
+                          os.path.join(build_dir,'Singularity.sln') +
                           ' --config ' + self.build_type +
-                          ' --startup Ascent')
+                          ' --startup secondlife-bin')
             print 'Running %r in %r' % (vstool_cmd, getcwd())
             self.run(vstool_cmd)        
             print >> open(stamp, 'w'), self.build_type

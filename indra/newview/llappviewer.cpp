@@ -319,7 +319,7 @@ static BOOL gDoDisconnect = FALSE;
 static std::string gLaunchFileOnQuit;
 
 // Used on Win32 for other apps to identify our window (eg, win_setup)
-const char* const VIEWER_WINDOW_CLASSNAME = "Ascent";
+const char* const VIEWER_WINDOW_CLASSNAME = "SingularityViewer";
 
 //----------------------------------------------------------------------------
 // File scope definitons
@@ -2007,7 +2007,7 @@ bool LLAppViewer::initConfiguration()
     mYieldTime = gSavedSettings.getS32("YieldTime");
              
 	// XUI:translate
-	gSecondLife = "Ascent";
+	gSecondLife = "Singularity Viewer";
 
 	// Read skin/branding settings if specified.
 	//if (! gDirUtilp->getSkinDir().empty() )
@@ -2230,10 +2230,7 @@ bool LLAppViewer::initWindow()
 
 	// always start windowed
 	BOOL ignorePixelDepth = gSavedSettings.getBOOL("IgnorePixelDepth");
-	// <edit>
-	//gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
-	gViewerWindow = new LLViewerWindow("Ascent", "Second Life",
-	// </edit>
+	gViewerWindow = new LLViewerWindow(gWindowTitle, "Second Life",
 		gSavedSettings.getS32("WindowX"), gSavedSettings.getS32("WindowY"),
 		gSavedSettings.getS32("WindowWidth"), gSavedSettings.getS32("WindowHeight"),
 		FALSE, ignorePixelDepth);

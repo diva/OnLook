@@ -134,7 +134,7 @@ class ViewerManifest(LLManifest):
     def installer_prefix(self):
         mapping={"secondlife":'SecondLife_',
                  "snowglobe":'Snowglobe_',
-                 "Ascent":'Ascent_'}
+                 "singularity":'Singularity_'}
         return mapping[self.viewer_branding_id()]
 
     def flags_list(self):
@@ -170,22 +170,14 @@ class ViewerManifest(LLManifest):
 
 class WindowsManifest(ViewerManifest):
     def final_exe(self):
-        if self.default_channel() and self.viewer_branding_id()=="secondlife":
-            if self.default_grid():
-                return "Ascent.exe"
-            else:
-                return "Ascent.exe"
-        elif(self.viewer_branding_id=="snowglobe"):
-            return "Ascent.exe"
-        else:
-            return 'Ascent.exe'
+        return 'Singularity.exe'
 
 
     def construct(self):
         super(WindowsManifest, self).construct()
         # the final exe is complicated because we're not sure where it's coming from,
         # nor do we have a fixed name for the executable
-        self.path(self.find_existing_file('debug/Ascent.exe', 'release/Ascent.exe', 'releaseSSE2/Ascent.exe', 'relwithdebinfo/Ascent.exe'), dst=self.final_exe())
+        self.path(self.find_existing_file('debug/secondlife-bin.exe', 'releaseSSE2/secondlife-bin.exe', 'relwithdebinfo/secondlife-bin.exe'), dst=self.final_exe())
 
         # Plugin host application
         self.path(os.path.join(os.pardir,
@@ -264,7 +256,7 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # The config file name needs to match the exe's name.
-        self.path(src="%s/Ascent.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
+        self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
 
         # Vivox runtimes
         if self.prefix(src="vivox-runtime/i686-win32", dst=""):
@@ -290,9 +282,9 @@ class WindowsManifest(ViewerManifest):
                   dst="updater.exe")
 
         # For google-perftools tcmalloc allocator.
-        #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-        #        self.path("libtcmalloc_minimal.dll")
-        #        self.end_prefix()
+        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+                self.path("libtcmalloc_minimal.dll")
+                self.end_prefix()
 
 
     def nsi_file_commands(self, install=True):
@@ -471,7 +463,8 @@ class DarwinManifest(ViewerManifest):
                 self.path("featuretable_mac.txt")
                 self.path("SecondLife.nib")
 
-                self.path("Ascent.icns")
+				# SG:TODO
+                self.path("singularity.icns")
 
                 # Translations
                 self.path("English.lproj")
@@ -540,16 +533,10 @@ class DarwinManifest(ViewerManifest):
                                  { 'viewer_binary' : self.dst_path_of('Contents/MacOS/'+self.app_name())})
 
     def app_name(self):
-        mapping={"secondlife":"Second Life",
-                 "snowglobe":"Snowglobe",
-                 "Ascent":"Ascent"}
-        return mapping[self.viewer_branding_id()]
+        return "Singularity"
         
     def info_plist_name(self):
-        mapping={"secondlife":"Info-SecondLife.plist",
-                 "snowglobe":"Info-Snowglobe.plist",
-                 "Ascent":"Info-Ascent.plist"}
-        return mapping[self.viewer_branding_id()]
+        return "Info-Singularity.plist"
 
     def package_finish(self):
         channel_standin = self.app_name()
@@ -663,7 +650,7 @@ class LinuxManifest(ViewerManifest):
             self.path("secondlife-stripped","bin/"+self.binary_name())
             self.path("../linux_crash_logger/linux-crash-logger-stripped","linux-crash-logger.bin")
         else:
-            self.path("Ascent","bin/"+self.binary_name())
+            self.path("secondlife-bin","bin/"+self.binary_name())
             self.path("../linux_crash_logger/linux-crash-logger","linux-crash-logger.bin")
 
         self.path("linux_tools/launch_url.sh","launch_url.sh")
@@ -685,22 +672,13 @@ class LinuxManifest(ViewerManifest):
         self.path("featuretable_linux.txt")
 
     def wrapper_name(self):
-        mapping={"secondlife":"secondlife",
-                 "snowglobe":"snowglobe",
-                 "Ascent":"Ascent"}
-        return mapping[self.viewer_branding_id()]
+        return 'singularity'
 
     def binary_name(self):
-        mapping={"secondlife":"Ascent-do-not-run-directly",
-                 "snowglobe":"Ascent-do-not-run-directly",
-                 "Ascent":"Ascent-do-not-run-directly"}
-        return mapping[self.viewer_branding_id()]
+        return 'singularity-do-not-run-directly'
     
     def icon_name(self):
-        mapping={"secondlife":"secondlife_icon.png",
-                 "snowglobe":"snowglobe_icon.png",
-                 "Ascent":"Ascent_icon.png"}
-        return mapping[self.viewer_branding_id()]
+        return "snowglobe_icon.png"
 
     def package_finish(self):
         if 'installer_name' in self.args:
@@ -715,7 +693,6 @@ class LinuxManifest(ViewerManifest):
             else:
                 installer_name += '_' + self.channel_oneword().upper()
 
-	installer_name = 'Ascent'
 
         # Fix access permissions
         self.run_command("""
@@ -729,7 +706,6 @@ class LinuxManifest(ViewerManifest):
 
         # temporarily move directory tree so that it has the right
         # name in the tarfile
-        self.run_command("rm '%s'" % self.build_path_of(installer_name))
         self.run_command("mv '%(dst)s' '%(inst)s'" % {
             'dst': self.get_dst_prefix(),
             'inst': self.build_path_of(installer_name)})

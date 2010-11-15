@@ -173,7 +173,7 @@ LLDir_Mac::LLDir_Mac()
 		if (error == noErr)
 		{
 			FSRefToLLString(&cacheDirRef, mOSCacheDir);
-			(void)CFCreateDirectory(&cacheDirRef, CFSTR("Ascent"), NULL);
+			(void)CFCreateDirectory(&cacheDirRef, CFSTR("SingularityViewer"), NULL);
 		}
 		
 		// mOSUserAppDir

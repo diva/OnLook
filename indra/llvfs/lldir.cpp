@@ -247,7 +247,7 @@ std::string LLDir::buildSLOSCacheDir() const
 	}
 	else
 	{
-		res = getOSCacheDir() + mDirDelimiter + "Ascent";
+		res = getOSCacheDir() + mDirDelimiter + "SingularityViewer";
 	}
 	return res;
 }
