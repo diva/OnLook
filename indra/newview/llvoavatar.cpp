@@ -1560,7 +1560,7 @@ void LLVOAvatar::cleanupClass()
 
 const LLVector3 LLVOAvatar::getRenderPosition() const
 {
-	if (mDrawable.isNull() || mDrawable->getGeneration() < 0)
+	if (!mDrawable || mDrawable.isNull() || mDrawable->getGeneration() < 0)
 	{
 		return getPositionAgent();
 	}
@@ -2349,7 +2349,7 @@ void LLVOAvatar::releaseMeshData()
 	}
 
 	//cleanup data
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		LLFace* facep = mDrawable->getFace(0);
 		facep->setSize(0, 0);
@@ -2411,7 +2411,7 @@ void LLVOAvatar::restoreMeshData()
 //-----------------------------------------------------------------------------
 void LLVOAvatar::updateMeshData()
 {
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		stop_glerror();
 
@@ -2670,7 +2670,7 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	setPixelAreaAndAngle(gAgent);
 
 	// force asynchronous drawable update
-	if(mDrawable.notNull() && !gNoRender)
+	if(mDrawable && mDrawable.notNull() && !gNoRender)
 	{
 		LLFastTimer t(LLFastTimer::FTM_JOINT_UPDATE);
 	
@@ -2861,7 +2861,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 	LLJoint::sNumTouches = 0;
 
 	// *NOTE: this is necessary for the floating name text above your head.
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_SHADOW, TRUE);
 	}
@@ -2947,13 +2947,16 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 			}
 		}
 	}
-
-	mDrawable->movePartition();
 	
-	//force a move if sitting on an active object
-	if (getParent() && ((LLViewerObject*) getParent())->mDrawable->isActive())
+	if(mDrawable)
 	{
-		gPipeline.markMoved(mDrawable, TRUE);
+		mDrawable->movePartition();
+		
+		//force a move if sitting on an active object
+		if (getParent() && ((LLViewerObject*) getParent())->mDrawable->isActive())
+		{
+			gPipeline.markMoved(mDrawable, TRUE);
+		}
 	}
 }
 
@@ -4026,7 +4029,7 @@ void LLVOAvatar::slamPosition()
 	gAgent.setPositionAgent(getPositionAgent());
 	mRoot.setWorldPosition(getPositionAgent()); // teleport
 	setChanged(TRANSLATED);
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		gPipeline.updateMoveNormalAsync(mDrawable);
 	}
@@ -4101,7 +4104,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 
 	// For fading out the names above heads, only let the timer
 	// run if we're visible.
-	if (mDrawable.notNull() && !visible)
+	if (mDrawable && mDrawable.notNull() && !visible)
 	{
 		mTimeVisible.reset();
 	}
@@ -4414,7 +4417,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			
 		}
 	}
-	else if (mDrawable.notNull())
+	else if (mDrawable && mDrawable.notNull())
 	{
 		mRoot.setPosition(mDrawable->getPosition());
 		mRoot.setRotation(mDrawable->getRotation());
@@ -4542,10 +4545,10 @@ void LLVOAvatar::updateHeadOffset()
 {
 	// since we only care about Z, just grab one of the eyes
 	LLVector3 midEyePt = mEyeLeftp->getWorldPosition();
-	midEyePt -= mDrawable.notNull() ? mDrawable->getWorldPosition() : mRoot.getWorldPosition();
+	midEyePt -= (mDrawable && mDrawable.notNull()) ? mDrawable->getWorldPosition() : mRoot.getWorldPosition();
 	midEyePt.mV[VZ] = llmax(-mPelvisToFoot + LLViewerCamera::getInstance()->getNear(), midEyePt.mV[VZ]);
 
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		midEyePt = midEyePt * ~mDrawable->getWorldRotation();
 	}
@@ -4571,7 +4574,7 @@ void LLVOAvatar::updateVisibility()
 	{
 		visible = TRUE;
 	}
-	else if (mDrawable.isNull())
+	else if (!mDrawable || mDrawable.isNull())
 	{
 		visible = FALSE;
 	}
@@ -4806,7 +4809,7 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 	// *NOTE: this is disabled (there is no UI for enabling sShowFootPlane) due
 	// to DEV-14477.  the code is left here to aid in tracking down the cause
 	// of the crash in the future. -brad
-	if (!gRenderForSelect && sShowFootPlane && mDrawable.notNull())
+	if (!gRenderForSelect && sShowFootPlane && mDrawable && mDrawable.notNull())
 	{
 		LLVector3 slaved_pos = mDrawable->getPositionAgent();
 		LLVector3 foot_plane_normal(mFootPlane.mV[VX], mFootPlane.mV[VY], mFootPlane.mV[VZ]);
@@ -5920,7 +5923,7 @@ LLJoint *LLVOAvatar::getJoint( const std::string &name )
 //-----------------------------------------------------------------------------
 LLVector3 LLVOAvatar::getCharacterPosition()
 {
-	if (mDrawable.notNull())
+	if (mDrawable && mDrawable.notNull())
 	{
 		return mDrawable->getPositionAgent();
 	}
@@ -6544,7 +6547,7 @@ void LLVOAvatar::setPixelAreaAndAngle(LLAgent &agent)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
-	if (mDrawable.isNull())
+	if (!mDrawable || mDrawable.isNull())
 	{
 		return;
 	}
@@ -7099,7 +7102,7 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 {
-	if (mDrawable.isNull())
+	if (!mDrawable || mDrawable.isNull())
 	{
 		return;
 	}
@@ -7147,34 +7150,12 @@ void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //-----------------------------------------------------------------------------
 // getOffObject()
 //-----------------------------------------------------------------------------
 void LLVOAvatar::getOffObject()
 {
-	if (mDrawable.isNull())
+	if (!mDrawable || mDrawable.isNull())
 	{
 		return;
 	}
@@ -7742,7 +7723,7 @@ void LLVOAvatar::dumpTotalLocalTextureByteCount()
 
 BOOL LLVOAvatar::isVisible()
 {
-	return mDrawable.notNull()
+	return mDrawable && mDrawable.notNull()
 		&& (mDrawable->isVisible() || mIsDummy);
 }
 
@@ -9439,7 +9420,7 @@ U32 LLVOAvatar::getVisibilityRank()
 
 void LLVOAvatar::setVisibilityRank(U32 rank)
 {
-	if (mDrawable.isNull() || mDrawable->isDead())
+	if (!mDrawable || mDrawable.isNull() || mDrawable->isDead())
 	{ //do nothing
 		return;
 	}
@@ -9510,7 +9491,7 @@ void LLVOAvatar::cullAvatarsByPixelArea()
 		{
 			inst->setVisibilityRank(0);
 		}
-		else if (inst->mDrawable.notNull() && inst->mDrawable->isVisible())
+		else if (inst->mDrawable && inst->mDrawable.notNull() && inst->mDrawable->isVisible())
 		{
 			inst->setVisibilityRank(rank++);
 		}
