@@ -2038,20 +2038,23 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 		}
 	}
 
-	for (LLDrawable::face_list_t::iterator iter = drawablep->mFaces.begin();
-			iter != drawablep->mFaces.end(); iter++)
+	if(!drawablep->getVOVolume())
 	{
-		LLFace* facep = *iter;
-
-		if (facep->hasGeometry())
+		for (LLDrawable::face_list_t::iterator iter = drawablep->mFaces.begin();
+				iter != drawablep->mFaces.end(); iter++)
 		{
-			if (facep->getPool())
+			LLFace* facep = *iter;
+
+			if (facep->hasGeometry())
 			{
-				facep->getPool()->enqueue(facep);
-			}
-			else
-			{
-				break;
+				if (facep->getPool())
+				{
+					facep->getPool()->enqueue(facep);
+				}
+				else
+				{
+					break;
+				}
 			}
 		}
 	}
