@@ -152,7 +152,7 @@ public:
 	LLVertexBuffer(U32 typemask, S32 usage);
 	
 	// map for data access
-	U8*		mapBuffer(S32 access = -1);
+	volatile U8*		mapBuffer(S32 access = -1);
 	// set for rendering
 	virtual void	setBuffer(U32 data_mask); 	// calls  setupVertexBuffer() if data_mask is not 0
 	// allocate buffer
@@ -183,15 +183,15 @@ public:
 	S32 getRequestedVerts() const			{ return mRequestedNumVerts; }
 	S32 getRequestedIndices() const			{ return mRequestedNumIndices; }
 
-	U8* getIndicesPointer() const			{ return useVBOs() ? NULL : mMappedIndexData; }
-	U8* getVerticesPointer() const			{ return useVBOs() ? NULL : mMappedData; }
+	volatile U8* getIndicesPointer() const			{ return useVBOs() ? NULL : mMappedIndexData; }
+	volatile U8* getVerticesPointer() const			{ return useVBOs() ? NULL : mMappedData; }
 	S32 getStride() const					{ return mStride; }
 	S32 getTypeMask() const					{ return mTypeMask; }
 	BOOL hasDataType(S32 type) const		{ return ((1 << type) & getTypeMask()) ? TRUE : FALSE; }
 	S32 getSize() const						{ return mNumVerts*mStride; }
 	S32 getIndicesSize() const				{ return mNumIndices * sizeof(U16); }
-	U8* getMappedData() const				{ return mMappedData; }
-	U8* getMappedIndices() const			{ return mMappedIndexData; }
+	volatile U8* getMappedData() const				{ return mMappedData; }
+	volatile U8* getMappedIndices() const			{ return mMappedIndexData; }
 	S32 getOffset(S32 type) const			{ return mOffsets[type]; }
 	S32 getUsage() const					{ return mUsage; }
 
@@ -214,8 +214,8 @@ protected:
 	S32		mUsage;			// GL usage
 	U32		mGLBuffer;		// GL VBO handle
 	U32		mGLIndices;		// GL IBO handle
-	U8*		mMappedData;	// pointer to currently mapped data (NULL if unmapped)
-	U8*		mMappedIndexData;	// pointer to currently mapped indices (NULL if unmapped)
+	volatile U8*	mMappedData;	// pointer to currently mapped data (NULL if unmapped)
+	volatile U8*	mMappedIndexData;	// pointer to currently mapped indices (NULL if unmapped)
 	BOOL	mLocked;			// if TRUE, buffer is being or has been written to in client memory
 	BOOL	mFinal;			// if TRUE, buffer can not be mapped again
 	BOOL	mFilthy;		// if TRUE, entire buffer must be copied (used to prevent redundant dirty flags)

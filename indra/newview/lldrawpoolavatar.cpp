@@ -873,7 +873,7 @@ void LLVertexBufferAvatar::setupVertexBuffer(U32 data_mask) const
 {
 	if (sRenderingSkinned)
 	{
-		U8* base = useVBOs() ? NULL : mMappedData;
+		volatile U8* base = useVBOs() ? NULL : mMappedData;
 
 		glVertexPointer(3,GL_FLOAT, mStride, (void*)(base + 0));
 		glNormalPointer(GL_FLOAT, mStride, (void*)(base + mOffsets[TYPE_NORMAL]));

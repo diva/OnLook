@@ -491,7 +491,7 @@ void LLVertexBuffer::createGLBuffer()
 		static int gl_buffer_idx = 0;
 		mGLBuffer = ++gl_buffer_idx;
 		mMappedData = new U8[size];
-		memset(mMappedData, 0, size);
+		//memset(mMappedData, 0, size);
 	}
 }
 
@@ -521,7 +521,7 @@ void LLVertexBuffer::createGLIndices()
 	else
 	{
 		mMappedIndexData = new U8[size];
-		memset(mMappedIndexData, 0, size);
+		//memset(mMappedIndexData, 0, size);
 		static int gl_buffer_idx = 0;
 		mGLIndices = ++gl_buffer_idx;
 	}
@@ -692,21 +692,21 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 				//delete old buffer, keep GL buffer for now
 				if (!useVBOs())
 				{
-					U8* old = mMappedData;
+					volatile U8* old = mMappedData;
 					mMappedData = new U8[newsize];
 					if (old)
 					{	
-						memcpy(mMappedData, old, llmin(newsize, oldsize));
+						memcpy((void*)mMappedData, (void*)old, llmin(newsize, oldsize));
 						if (newsize > oldsize)
 						{
-							memset(mMappedData+oldsize, 0, newsize-oldsize);
+							//memset(mMappedData+oldsize, 0, newsize-oldsize);
 						}
 
 						delete [] old;
 					}
 					else
 					{
-						memset(mMappedData, 0, newsize);
+						//memset(mMappedData, 0, newsize);
 						mEmpty = TRUE;
 					}
 				}
@@ -729,21 +729,21 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 				if (!useVBOs())
 				{
 					//delete old buffer, keep GL buffer for now
-					U8* old = mMappedIndexData;
+					volatile U8* old = mMappedIndexData;
 					mMappedIndexData = new U8[new_index_size];
 					
 					if (old)
 					{	
-						memcpy(mMappedIndexData, old, llmin(new_index_size, old_index_size));
+						memcpy((void*)mMappedIndexData, (void*)old, llmin(new_index_size, old_index_size));
 						if (new_index_size > old_index_size)
 						{
-							memset(mMappedIndexData+old_index_size, 0, new_index_size - old_index_size);
+							//memset(mMappedIndexData+old_index_size, 0, new_index_size - old_index_size);
 						}
 						delete [] old;
 					}
 					else
 					{
-						memset(mMappedIndexData, 0, new_index_size);
+						//memset(mMappedIndexData, 0, new_index_size);
 						mEmpty = TRUE;
 					}
 				}
@@ -783,7 +783,7 @@ BOOL LLVertexBuffer::useVBOs() const
 //----------------------------------------------------------------------------
 
 // Map for data access
-U8* LLVertexBuffer::mapBuffer(S32 access)
+volatile U8* LLVertexBuffer::mapBuffer(S32 access)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	if (mFinal)
@@ -1130,7 +1130,7 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	stop_glerror();
-	U8* base = useVBOs() ? NULL : mMappedData;
+	volatile U8* base = useVBOs() ? NULL : mMappedData;
 	S32 stride = mStride;
 
 	if ((data_mask & mTypeMask) != data_mask)
