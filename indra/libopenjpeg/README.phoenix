@@ -1,0 +1,15 @@
+# libopenjpeg was grabbed from the google code svn server of the project.
+# This patch was applied to fix a crash issue
+# If you upgrade libopenjpeg, be sure to edit openjpeg.h with the correct version numbers.
+# The last place in the version number string is the svn rev number.
+#
+--- a/image.c.org	2010-04-15 22:35:11.000000000 -0400
++++ b/image.c	2010-04-15 22:36:21.000000000 -0400
+@@ -28,6 +28,7 @@
+ 
+ opj_image_t* opj_image_create0(void) {
+ 	opj_image_t *image = (opj_image_t*)opj_calloc(1, sizeof(opj_image_t));
++	image->comps=NULL;
+ 	return image;
+ }
+ 
