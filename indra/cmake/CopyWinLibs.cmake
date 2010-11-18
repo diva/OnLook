@@ -437,7 +437,7 @@ if (MSVC80)
             COMMENT "Creating release app config file"
             )
 
-        set(releasesse2_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/${VIEWER_BINARY_NAME}.exe.config)
+        set(releasesse2_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${releasesse2_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}
@@ -450,7 +450,7 @@ if (MSVC80)
             COMMENT "Creating release-sse2 app config file"
             )
             
-        set(relwithdebinfo_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/Release/${VIEWER_BINARY_NAME}.exe.config)
+        set(relwithdebinfo_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${VIEWER_BINARY_NAME}.exe.config)
         add_custom_command(
             OUTPUT ${relwithdebinfo_appconfig_file}
             COMMAND ${PYTHON_EXECUTABLE}
