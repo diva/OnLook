@@ -156,7 +156,7 @@ public:
 
 	void callbackHttpGet(const LLChannelDescriptors& channels,
 						 const LLIOPipe::buffer_ptr_t& buffer,
-						 bool last_block, bool success);
+						 bool partial, bool unsatisfiable, bool success);
 	void callbackCacheRead(bool success, LLImageFormatted* image,
 						   S32 imagesize, BOOL islocal);
 	void callbackCacheWrite(bool success);
@@ -175,7 +175,7 @@ protected:
 	LLTextureFetchWorker(LLTextureFetch* fetcher, const LLUUID& id, const LLHost& host,
 						 F32 priority, S32 discard, S32 size);
 	LLTextureFetchWorker(LLTextureFetch* fetcher, const std::string& url, const LLUUID& id, const LLHost& host,
-						 F32 priority, S32 discard, S32 size);
+						 F32 priority, S32 discard, S32 size, bool can_use_http);
 
 private:
 	/*virtual*/ void startWork(S32 param); // called from addWork() (MAIN THREAD)
@@ -323,6 +323,7 @@ public:
 		{
 			bool success = false;
 			bool partial = false;
+			bool unsatisfiable = false;
 			if (200 <= status &&  status < 300)
 			{
 				success = true;
@@ -331,10 +332,10 @@ public:
 					partial = true;
 				}
 			}
-			else
+			else if (status == HTTP_REQUESTED_RANGE_NOT_SATISFIABLE)
 			{
-				worker->setGetStatus(status, reason);
-// 				llwarns << status << ": " << reason << llendl;
+				llwarns << "TextureFetch: Request was an unsatisfiable range: mRequestedSize=" << mRequestedSize << " mOffset=" << mOffset << " for: " << mID << LL_ENDL;
+				unsatisfiable = true;
 			}
 			if (!success)
 			{
@@ -342,7 +343,7 @@ public:
 // 				llwarns << "CURL GET FAILED, status:" << status << " reason:" << reason << llendl;
 			}
 			mFetcher->removeFromHTTPQueue(mID);
-			worker->callbackHttpGet(channels, buffer, partial, success);
+			worker->callbackHttpGet(channels, buffer, partial, unsatisfiable, success);
 		}
 		else
 		{
@@ -387,7 +388,8 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 										   const LLHost& host,	// Simulator host
 										   F32 priority,		// Priority
 										   S32 discard,			// Desired discard
-										   S32 size)			// Desired size
+										   S32 size,			// Desired size
+										   bool can_use_http)	// Try HTTP first
 	: LLWorkerClass(fetcher, "TextureFetch"),
 	  mState(INIT),
 	  mWriteToCacheState(NOT_WRITE),
@@ -419,7 +421,7 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	  mNeedsAux(FALSE),
 	  mHaveAllData(FALSE),
 	  mInLocalCache(FALSE),
-	  mCanUseHTTP(true),
+	  mCanUseHTTP(can_use_http),
 	  mHTTPFailCount(0),
 	  mRetryAttempt(0),
 	  mActiveCount(0),
@@ -869,6 +871,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			if (mFormattedImage.notNull())
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
+				if (mFormattedImage->getDiscardLevel() == 0)
+				{
+					// We already have all the data, just decode it
+					mLoadedDiscard = mFormattedImage->getDiscardLevel();
+					mState = DECODE_IMAGE;
+					return false;
+				}
 			}
 			mRequestedSize = mDesiredSize;
 			mRequestedDiscard = mDesiredDiscard;
@@ -885,6 +894,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mGetReason.clear();
 				lldebugs << "HTTP GET: " << mID << " Offset: " << offset
 						<< " Bytes: " << mRequestedSize
+						<< " Range: " << offset << "-" << offset+mRequestedSize-1
 						<< " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << max_bandwidth
 						<< llendl;
 				setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
@@ -1152,8 +1162,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			if(mDecodedDiscard<=0)
 			{	
-			return true;
-		}
+				return true;
+			}
 			else
 			{
 				return false;
@@ -1305,7 +1315,9 @@ bool LLTextureFetchWorker::processSimulatorPackets()
 
 void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 										   const LLIOPipe::buffer_ptr_t& buffer,
-										   bool last_block, bool success)
+										   bool partial,
+										   bool unsatisfiable,
+										   bool success)
 {
 	LLMutexLock lock(&mWorkMutex);
 
@@ -1320,45 +1332,88 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 		llwarns << "Duplicate callback for " << mID.asString() << llendl;
 		return; // ignore duplicate callback
 	}
+
+	S32 data_size = 0;
 	if (success)
 	{
 		// get length of stream:
-		S32 data_size = buffer->countAfter(channels.in(), NULL);
+		data_size = buffer->countAfter(channels.in(), NULL);
 
 		gImageList.sTextureBits += data_size * 8; // Approximate - does not include header bits
 	
 		//llinfos << "HTTP RECEIVED: " << mID.asString() << " Bytes: " << data_size << llendl;
 		if (data_size > 0)
 		{
-			// *TODO: set the formatted image data here directly to avoid the copy
-			mBuffer = new U8[data_size];
-			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
-			mBufferSize += data_size;
-			if (data_size < mRequestedSize || last_block == true)
+			bool clean_data = false;
+			bool done = false;
+			if (!partial)
+ 			{
+				// we got the whole image in one go
+				done = true;
+				clean_data = true;
+			}
+			else if (data_size < mRequestedSize)
 			{
-				mHaveAllData = TRUE;
+				// we have the whole image
+				done = true;
+			}
+			else if (data_size == mRequestedSize)
+			{
+				if (mRequestedDiscard <= 0)
+				{
+					done = true;
+				}
+				else
+				{
+					// this is the normal case where we get the data we requested,
+					// but still need to request more data.
+				}
 			}
 			else if (data_size > mRequestedSize)
 			{
 				// *TODO: This shouldn't be happening any more
 				llwarns << "data_size = " << data_size << " > requested: " << mRequestedSize << llendl;
-				mHaveAllData = TRUE;
+				done = true;
+				clean_data = true;
 				llassert_always(mDecodeHandle == 0);
-				mFormattedImage = NULL; // discard any previous data we had
-				mBufferSize = data_size;
 			}
+			
+			if (clean_data)
+ 			{
+				resetFormattedData(); // discard any previous data we had
+				llassert(mBufferSize == 0);
+ 			}
+			if (done)
+ 			{
+				mHaveAllData = TRUE;
+				mRequestedDiscard = 0;
+ 			}
+			
+			// *TODO: set the formatted image data here directly to avoid the copy
+			mBuffer = new U8[data_size];
+			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
+			mBufferSize += data_size;
+			mRequestedSize = data_size;
 		}
-		else
-		{
-			// We requested data but received none (and no error),
-			// so presumably we have all of it
-			mHaveAllData = TRUE;
-		}
-		mRequestedSize = data_size;
 	}
 	else
 	{
 		mRequestedSize = -1; // error
+	}
+
+	if ((success && (data_size == 0)) || unsatisfiable)
+	{
+		if (mFormattedImage.notNull() && mFormattedImage->getDataSize() > 0)
+		{
+			// we already have some data, so we'll assume we have it all
+			mRequestedSize = 0;
+			mRequestedDiscard = 0;
+			mHaveAllData = TRUE;
+		}
+		else
+		{
+			mRequestedSize = -1;	// treat this fetch as if it failed.
+		}
 	}
 	mLoaded = TRUE;
 	setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
@@ -1563,7 +1618,7 @@ bool LLTextureFetch::createRequest(const std::string& url, const LLUUID& id, con
 		worker->lockWorkMutex();
 		worker->setImagePriority(priority);
 		worker->setDesiredDiscard(desired_discard, desired_size);
-		worker->setCanUseHTTP(can_use_http) ;
+		worker->setCanUseHTTP(can_use_http);
 		worker->unlockWorkMutex();
 		if (!worker->haveWork())
 		{
@@ -1579,7 +1634,7 @@ bool LLTextureFetch::createRequest(const std::string& url, const LLUUID& id, con
 	}
 	else
 	{
-		worker = new LLTextureFetchWorker(this, url, id, host, priority, desired_discard, desired_size);
+		worker = new LLTextureFetchWorker(this, url, id, host, priority, desired_discard, desired_size, can_use_http);
 		mRequestMap[id] = worker;
 	}
 	worker->mActiveCount++;
