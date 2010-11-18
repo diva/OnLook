@@ -51,6 +51,9 @@ protected:
 		// Divide a by b to the power of 2 and round upwards.
 		return (a + (1 << b) - 1) >> b;
 	}
+
+	// Temporary variables for in-progress decodes...
+	LLImageRaw *mRawImagep;
 };
 
 #endif
