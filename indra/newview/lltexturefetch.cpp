@@ -861,7 +861,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				(mFetcher->getTextureBandwidth() > max_bandwidth))
 			{
 				// Make normal priority and return (i.e. wait until there is room in the queue)
-				// setPriority(LLWorkerThread::PRIORITY_NORMAL | mWorkPriority);
+				setPriority(LLWorkerThread::PRIORITY_NORMAL | mWorkPriority);
 				return false;
 			}
 			
@@ -870,10 +870,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
 			}
-
-			resetFormattedData(); // discard any previous data we had
-			cur_size = 0 ;
-
 			mRequestedSize = mDesiredSize;
 			mRequestedDiscard = mDesiredDiscard;
 			mRequestedSize -= cur_size;
@@ -1156,8 +1152,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			if(mDecodedDiscard<=0)
 			{	
-				return true;
-			}
+			return true;
+		}
 			else
 			{
 				return false;
@@ -1335,16 +1331,22 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 		if (data_size > 0)
 		{
 			// *TODO: set the formatted image data here directly to avoid the copy
-			llassert_always(mBuffer == NULL);
 			mBuffer = new U8[data_size];
 			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
 			mBufferSize += data_size;
-			if (data_size < mRequestedSize &&
-			  (mRequestedDiscard == 0 || last_block == true) )
+			if (data_size < mRequestedSize || last_block == true)
 			{
 				mHaveAllData = TRUE;
 			}
-			llassert_always(data_size <= mRequestedSize);
+			else if (data_size > mRequestedSize)
+			{
+				// *TODO: This shouldn't be happening any more
+				llwarns << "data_size = " << data_size << " > requested: " << mRequestedSize << llendl;
+				mHaveAllData = TRUE;
+				llassert_always(mDecodeHandle == 0);
+				mFormattedImage = NULL; // discard any previous data we had
+				mBufferSize = data_size;
+			}
 		}
 		else
 		{
