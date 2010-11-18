@@ -102,7 +102,8 @@ void LLDrawPoolTree::render(S32 pass)
 	LLGLEnable test(GL_ALPHA_TEST);
 	LLOverrideFaceColor color(this, 1.f, 1.f, 1.f, 1.f);
 
-	if (gSavedSettings.getBOOL("RenderAnimateTrees"))
+	LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+	if (render_animate_trees)
 	{
 		renderTree();
 	}
@@ -198,7 +199,8 @@ void LLDrawPoolTree::renderForSelect()
 	gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_PREV_COLOR);
 	gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_ALPHA, LLTexUnit::TBS_VERT_ALPHA);
 
-	if (gSavedSettings.getBOOL("RenderAnimateTrees"))
+	LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+	if (render_animate_trees)
 	{
 		renderTree(TRUE);
 	}
@@ -319,8 +321,8 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 
 			scale_mat *= rot_mat;
 
-			const F32 THRESH_ANGLE_FOR_BILLBOARD = 15.f;
-			const F32 BLEND_RANGE_FOR_BILLBOARD = 3.f;
+			const F32 THRESH_ANGLE_FOR_BILLBOARD = 7.5f; //Made LoD now a little less aggressive here -Shyotl
+			/*const F32 BLEND_RANGE_FOR_BILLBOARD = 1.5f;*/ //Unused, really
 
 			F32 droop = treep->mDroop + 25.f*(1.f - treep->mTrunkBend.magVec());
 			
@@ -339,7 +341,7 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 				}
 			} 
 
-			if (app_angle < (THRESH_ANGLE_FOR_BILLBOARD - BLEND_RANGE_FOR_BILLBOARD))
+			if (app_angle < (THRESH_ANGLE_FOR_BILLBOARD/* - BLEND_RANGE_FOR_BILLBOARD*/))
 			{
 				//
 				//  Draw only the billboard 
@@ -354,7 +356,6 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 				//
 				//  Draw only the full geometry tree
 				//
-				//stop_depth = (app_angle < THRESH_ANGLE_FOR_RECURSION_REDUCTION);
 				LLFacePool::LLOverrideFaceColor clr(this, color); 
 				indices_drawn += treep->drawBranchPipeline(scale_mat, indicesp, trunk_LOD, stop_depth, treep->mDepth, treep->mTrunkDepth, 1.0, treep->mTwist, droop, treep->mBranches, alpha);
 			}

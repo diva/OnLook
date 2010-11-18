@@ -141,6 +141,8 @@ void LLFloaterSettingsDebug::onCommitSettings(LLUICtrl* ctrl, void* user_data)
 	LLComboBox* settings_combo = floaterp->getChild<LLComboBox>("settings_combo");
 	LLControlVariable* controlp = (LLControlVariable*)settings_combo->getCurrentUserdata();
 	controlp = controlp ? controlp->getCOAActive() : NULL;
+	if(!controlp)//Uh oh!
+		return;
 
 	LLVector3 vector;
 	LLVector3d vectord;
