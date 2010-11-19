@@ -388,12 +388,15 @@ public:
 	BOOL            isFullyLoaded();
 	//BOOL			isReallyFullyLoaded();
 	BOOL            updateIsFullyLoaded();
+protected:
+	void			updateRuthTimer(bool loading);
 private:
 	BOOL            mFullyLoaded;
 	BOOL            mPreviousFullyLoaded;
 	BOOL            mFullyLoadedInitialized;
 	S32             mFullyLoadedFrameCounter;
 	LLFrameTimer    mFullyLoadedTimer;
+	LLFrameTimer	mRuthTimer;
 
 	//--------------------------------------------------------------------
 	// Collision Volumes
