@@ -187,6 +187,12 @@ BOOL LLChatBar::handleKeyHere( KEY key, MASK mask )
 			sendChat(CHAT_TYPE_SHOUT);
 			handled = TRUE;
 		}
+		else if (mask == MASK_SHIFT)
+		{
+			// whisper
+			sendChat( CHAT_TYPE_WHISPER );
+			handled = TRUE;
+		}
 		else if (mask == MASK_NONE)
 		{
 			// say
