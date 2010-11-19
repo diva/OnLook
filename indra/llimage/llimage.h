@@ -156,6 +156,7 @@ private:
 
 public:
 	S16 mMemType; // debug
+	
 	static BOOL sSizeOverride;
 };
 

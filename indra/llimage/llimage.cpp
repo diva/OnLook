@@ -139,8 +139,7 @@ BOOL LLImageBase::sSizeOverride = FALSE;
 // virtual
 void LLImageBase::deleteData()
 {
-	if(mData)
-		free(mData);//delete[] mData;
+	delete[] mData;
 	mData = NULL;
 	mDataSize = 0;
 }
@@ -155,7 +154,7 @@ U8* LLImageBase::allocateData(S32 size)
 		size = mWidth * mHeight * mComponents;
 		if (size <= 0)
 		{
-			llerrs << llformat("LLImageBase::allocateData called with bad dimensions: %dx%dx%d",mWidth,mHeight,mComponents) << llendl;
+			llerrs << llformat("LLImageBase::allocateData called with bad dimentions: %dx%dx%d",mWidth,mHeight,mComponents) << llendl;
 		}
 	}
 	else if (size <= 0 || (size > 4096*4096*16 && sSizeOverride == FALSE))
@@ -167,17 +166,14 @@ U8* LLImageBase::allocateData(S32 size)
 	{
 		deleteData(); // virtual
 		mBadBufferAllocation = FALSE ;
-		U8 *data = (U8 *)realloc(mData,sizeof(U8)*size);//new U8[size];
-		if (!data)
+		mData = new U8[size];
+		if (!mData)
 		{
-			if(mData)
-				free(mData);
 			llwarns << "allocate image data: " << size << llendl;
 			size = 0 ;
 			mWidth = mHeight = 0 ;
 			mBadBufferAllocation = TRUE ;
 		}
-		mData = data;
 		mDataSize = size;
 	}
 
@@ -188,16 +184,21 @@ U8* LLImageBase::allocateData(S32 size)
 U8* LLImageBase::reallocateData(S32 size)
 {
 	LLMemType mt1((LLMemType::EMemType)mMemType);
-	U8 *data = (U8 *)realloc(mData,sizeof(U8)*size);
-	if(data)
+	U8 *new_datap = new U8[size];
+	if (!new_datap)
 	{
-		mData = data;
-		mDataSize = size;
-	}
-	else
 		llwarns << "Out of memory in LLImageBase::reallocateData" << llendl;
-
-	return data;
+		return 0;
+	}
+	if (mData)
+	{
+		S32 bytes = llmin(mDataSize, size);
+		memcpy(new_datap, mData, bytes);	/* Flawfinder: ignore */
+		delete[] mData;
+	}
+	mData = new_datap;
+	mDataSize = size;
+	return mData;
 }
 
 const U8* LLImageBase::getData() const	
@@ -265,7 +266,7 @@ LLImageRaw::LLImageRaw(U8 *data, U16 width, U16 height, S8 components)
 	: LLImageBase()
 {
 	mMemType = LLMemType::MTYPE_IMAGERAW;
-	if(allocateDataSize(width, height, components))
+	if(allocateDataSize(width, height, components) && data)
 	{
 		memcpy(getData(), data, width*height*components);
 	}
@@ -658,12 +659,6 @@ void LLImageRaw::fill( const LLColor4U& color )
 // Src and dst can be any size.  Src and dst can each have 3 or 4 components.
 void LLImageRaw::copy(LLImageRaw* src)
 {
-	if (!src)
-	{
-		llwarns << "LLImageRaw::copy called with a null src pointer" << llendl;
-		return;
-	}
-
 	LLImageRaw* dst = this;  // Just for clarity.
 
 	llassert( (3 == src->getComponents()) || (4 == src->getComponents()) );
@@ -844,7 +839,6 @@ BOOL LLImageRaw::scale( S32 new_width, S32 new_height, BOOL scale_image_data )
 	{
 		// Vertical
 		S32 temp_data_size = old_width * new_height * getComponents();
-		llassert_always(temp_data_size > 0);
 		U8* temp_buffer = new U8[ temp_data_size ];
 		for( S32 col = 0; col < old_width; col++ )
 		{
@@ -1506,7 +1500,7 @@ void LLImageFormatted::appendData(U8 *data, S32 size)
 			S32 newsize = cursize + size;
 			reallocateData(newsize);
 			memcpy(getData() + cursize, data, size);
-			delete[] data; //Fixing leak from CommentCacheReadResponder
+			delete[] data;
 		}
 	}
 }
