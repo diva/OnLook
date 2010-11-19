@@ -52,8 +52,6 @@ protected:
 		return (a + (1 << b) - 1) >> b;
 	}
 
-	// Temporary variables for in-progress decodes...
-	LLImageRaw *mRawImagep;
 };
 
 #endif
