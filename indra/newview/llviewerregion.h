@@ -230,6 +230,9 @@ public:
 	std::string getCapability(const std::string& name) const;
 	static bool isSpecialCapabilityName(const std::string &name);
 	void logActiveCapabilities() const;
+	// has region received its final (not seed) capability list?
+	bool capabilitiesReceived() const;
+	void setCapabilitiesReceived(bool received);
 
 	const LLHost	&getHost() const			{ return mHost; }
 	const U64 		&getHandle() const 			{ return mHandle; }
@@ -397,6 +400,7 @@ private:
 
 private:
 	bool	mAlive;					// can become false if circuit disconnects
+	bool	mCapabilitiesReceived;
 
 	//spatial partitions for objects in this region
 	std::vector<LLSpatialPartition*> mObjectPartition;

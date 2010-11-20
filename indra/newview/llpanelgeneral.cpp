@@ -44,6 +44,8 @@
 
 #include "llagent.h"
 #include "llviewerregion.h"
+#include "llavatarnamecache.h"
+#include "llvoavatar.h"
 
 LLPanelGeneral::LLPanelGeneral()
 {
@@ -54,6 +56,9 @@ BOOL LLPanelGeneral::postBuild()
 {
 	LLComboBox* fade_out_combobox = getChild<LLComboBox>("fade_out_combobox");
 	fade_out_combobox->setCurrentByIndex(gSavedSettings.getS32("RenderName"));
+
+	LLComboBox* namesystem_combobox = getChild<LLComboBox>("namesystem_combobox");
+	namesystem_combobox->setCurrentByIndex(gSavedSettings.getS32("PhoenixNameSystem"));
 
 	childSetValue("default_start_location", gSavedSettings.getBOOL("LoginLastLocation") ? "MyLastLocation" : "MyHome");
 	childSetValue("show_location_checkbox", gSavedSettings.getBOOL("ShowStartLocation"));
@@ -117,6 +122,16 @@ void LLPanelGeneral::apply()
 	LLComboBox* fade_out_combobox = getChild<LLComboBox>("fade_out_combobox");
 	gSavedSettings.setS32("RenderName", fade_out_combobox->getCurrentIndex());
 	
+	LLComboBox* namesystem_combobox = getChild<LLComboBox>("namesystem_combobox");
+	if(gSavedSettings.getS32("PhoenixNameSystem")!=namesystem_combobox->getCurrentIndex()){
+		gSavedSettings.setS32("PhoenixNameSystem", namesystem_combobox->getCurrentIndex());
+		if(gAgent.getRegion()){
+			if(namesystem_combobox->getCurrentIndex()<=0 || namesystem_combobox->getCurrentIndex()>2) LLAvatarNameCache::setUseDisplayNames(false);
+			else LLAvatarNameCache::setUseDisplayNames(true);
+			//LLVOAvatar::invalidateNameTags(); No need, they'll be updated on the next loop
+		}
+	}
+
 	gSavedSettings.setBOOL("LoginLastLocation", childGetValue("default_start_location").asString() == "MyLastLocation");
 	gSavedSettings.setBOOL("ShowStartLocation", childGetValue("show_location_checkbox"));
 	gSavedSettings.setBOOL("RenderHideGroupTitleAll", childGetValue("show_all_title_checkbox"));

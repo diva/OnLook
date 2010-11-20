@@ -97,6 +97,9 @@
 #include "llimagemetadatareader.h"
 // </edit>
 
+#include "llavatarname.h"
+#include "llavatarnamecache.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -758,6 +761,9 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mAppearanceAnimating(FALSE),
 	mNameString(),
 	mTitle(),
+	mRenderedName(),
+	mUsedNameSystem(),
+	mClientName(),
 	mNameAway(FALSE),
 	mNameBusy(FALSE),
 	mNameMute(FALSE),
@@ -3513,6 +3519,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			mVisibleChat = visible_chat;
 			new_name = TRUE;
 		}
+
+		static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 		
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 		if (fRlvShowNames)
@@ -3695,6 +3703,27 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 		if (mNameText.notNull() && firstname && lastname)
 		{
+			/*
+			Phoenix: Wolfspirit:
+				The following part replaces the username with the Displayname, if Displaynames are enabled
+
+			*/
+			LLAvatarName av_name;
+			bool dnhasloaded = false;
+			bool useddn = true;
+			if(LLAvatarNameCache::useDisplayNames() && LLAvatarNameCache::get(getID(), &av_name)) dnhasloaded=true;
+			
+			std::string usedname;
+			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsDummy 
+					&& av_name.mDisplayName != av_name.getLegacyName()) usedname = av_name.mDisplayName;
+			else {
+				usedname = firstname->getString();
+				usedname += " ";
+				usedname += lastname->getString();
+				dnhasloaded=false;
+				useddn=false;
+			}
+
  			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
 			if(mNameAway && ! is_away) mIdleTimer.reset();
 			BOOL is_busy = mSignaledAnimations.find(ANIM_AGENT_BUSY) != mSignaledAnimations.end();
@@ -3713,11 +3742,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 			if (mNameString.empty() ||
 				new_name ||
+				mRenderedName != usedname ||
+				mUsedNameSystem != phoenix_name_system ||
 				(!title && !mTitle.empty()) ||
 				(title && mTitle != title->getString()) ||
 				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
-				|| is_appearance != mNameAppearance
-				|| client.length() ) // <edit/>
+				|| is_appearance != mNameAppearance || client != mClientName)
 			{
 				std::string line;
 
@@ -3729,23 +3759,42 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					{
 						// If all group titles are turned off, stack first name
 						// on a line above last name
-						line += firstname->getString();
-						line += "\n";
+						if(!dnhasloaded){
+							line += firstname->getString();
+							line += "\n";
+							line += lastname->getString();
+						}
+						else
+						{
+							line += usedname;
+						}
 					}
 					else if (title && title->getString() && title->getString()[0] != '\0')
 					{
 						line += title->getString();
 						LLStringFn::replace_ascii_controlchars(line,LL_UNKNOWN_CHAR);
 						line += "\n";
-						line += firstname->getString();
+						if(!dnhasloaded){
+							line += usedname;
+						}
+						else
+						{
+							useddn=true;
+							line += usedname;
+						}
 					}
 					else
 					{
-						line += firstname->getString();
+						if(!dnhasloaded){
+							line += usedname;
+						}
+						else
+						{
+							useddn=true;
+							line += usedname;
+						}
 					}
 
-					line += " ";
-					line += lastname->getString();
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 				}
 				else
@@ -3799,6 +3848,19 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						line += " (" + additions + ")";
 
 				}
+				if(useddn){
+					if(phoenix_name_system != 2){
+						line += "\n";
+						line += "("+av_name.mUsername+")";
+					}
+					mRenderedName = av_name.mDisplayName;
+				}
+				else
+				{
+					mRenderedName = firstname->getString();
+					mRenderedName += " ";
+					mRenderedName += lastname->getString();
+				}
 				if (is_appearance)
 				{
 					line += "\n";
@@ -3813,6 +3875,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				mNameAway = is_away;
 				mNameBusy = is_busy;
 				mNameMute = is_muted;
+				mClientName = client;
+				mUsedNameSystem = phoenix_name_system;
 				mNameAppearance = is_appearance;
 				mTitle = title ? title->getString() : "";
 				LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
@@ -3923,6 +3987,44 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		mNameText->markDead();
 		mNameText = NULL;
 		sNumVisibleChatBubbles--;
+	}
+}
+
+/* Phoenix: Wolfspirit: This allows us to replace one specific nametag of a user */
+
+void LLVOAvatar::clearNameTag()
+{
+	mNameString.clear();
+	if (mNameText)
+				{
+					mNameText->setLabel("");
+		mNameText->setString(mNameString);
+	}
+}
+
+//static
+void LLVOAvatar::invalidateNameTag(const LLUUID& agent_id)
+{
+	LLViewerObject* obj = gObjectList.findObject(agent_id);
+	if (!obj) return;
+
+	LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(obj);
+	if (!avatar) return;
+
+	avatar->clearNameTag();
+}
+
+//staticmNameString.empty()
+void LLVOAvatar::invalidateNameTags()
+{
+	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		iter != LLCharacter::sInstances.end(); ++iter)
+	{
+		LLVOAvatar* avatar = (LLVOAvatar*) *iter;
+		if (!avatar) continue;
+		if (avatar->isDead()) continue;
+		
+		avatar->clearNameTag();
 	}
 }
 

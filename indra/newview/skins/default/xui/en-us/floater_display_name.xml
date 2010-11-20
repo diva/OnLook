@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="false"
+     can_resize="false" enabled="true" height="220"
+     mouse_opaque="true" name="Display Name" title="CHANGE DISPLAY NAME" width="400">
+
+    <text length="1" bottom_delta="-50" font="SansSerif" height="25" left="20" text_color="AlertTextColor" name="lockout_text" visible="true" width="360"
+       wrap="true">
+      Next possible change: [TIME].
+    </text>
+    
+    <text left="20" bottom_delta="-20" width="360" height="18" font="SansSerif" name="set_name_label">
+      New Display Name:
+    </text>
+    <line_editor max_length="31" name="display_name_editor" width="300" height="20" left="50" bottom_delta="-20" />
+    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label">
+      Type your new name again to confirm:
+    </text>
+    <line_editor max_length="31" width="300" name="display_name_confirm" height="20" bottom_delta="-20" left="50" />
+    <button height="20" bottom_delta="-28" label="Save" font="SansSerif" left="20" name="save_btn" tool_tip="Save your new Display Name" width="113" />
+    <button height="20" bottom_delta="0" label="Reset" font="SansSerif" left_delta="123" name="reset_btn" tool_tip="Make Display Name the same as Username" width="113" />
+    <button height="20" bottom_delta="0" label="Cancel" font="SansSerif" left_delta="123" name="cancel_btn" tool_tip="Cancel and close this Dialog" width="113" />
+    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label">
+      The name you give your avatar is called yours Display Name.
+    </text>
+     <text left="20" bottom_delta="-18" width="360" height="18" font="SansSerif" name="name_confirm_label">
+      You can change it once a week.
+    </text>
+</floater>
+    

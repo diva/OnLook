@@ -250,6 +250,7 @@
 // </edit>
 
 #include "scriptcounter.h"
+#include "llfloaterdisplayname.h"
 
 using namespace LLVOAvatarDefines;
 void init_client_menu(LLMenuGL* menu);
@@ -6443,6 +6444,11 @@ class LLShowFloater : public view_listener_t
 			{
 				gAgent.changeCameraToCustomizeAvatar();
 			}
+		}
+		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
+		else if (floater_name == "displayname")
+		{
+			LLFloaterDisplayName::show();
 		}
 		else if (floater_name == "friends")
 		{

@@ -40,6 +40,7 @@
 #include "llstring.h"
 #include "llfontgl.h"
 #include "lllineeditor.h"
+#include "llavatarname.h"
 
 
 class LLNameEditor
@@ -79,6 +80,7 @@ public:
 
 private:
 	static std::set<LLNameEditor*> sInstances;
+	static void on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata);
 
 private:
 	LLUUID mNameID;

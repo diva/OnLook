@@ -29,6 +29,18 @@
 			Always
 		</combo_item>
 	</combo_box>
+	<combo_box bottom_delta="0" follows="left|top" height="18" left="330"
+	     mouse_opaque="true" name="namesystem_combobox" width="146">
+		<combo_item name="Old Names" value="Old Names">
+			Old Names
+		</combo_item>
+		<combo_item name="Display Names (with Username)" value="Display Names (with Username)">
+			Display Names (with Username)
+		</combo_item>
+		<combo_item name="Display Names only" value="Display Names only">
+			Display Names only
+		</combo_item>
+	</combo_box>
 	<check_box bottom_delta="-25" follows="left|top"
 	     font="SansSerifSmall" height="16" initial_value="true"
 	     label="Small Avatar Names" left="151" name="small_avatar_names_checkbox"

@@ -205,6 +205,8 @@
 #include "scriptcounter.h"
 // </edit>
 
+#include "llavatarnamecache.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -2699,6 +2701,13 @@ bool idle_startup()
 			// Load stored cache if possible
             LLAppViewer::instance()->loadNameCache();
 		}
+
+		// Start cache in not-running state until we figure out if we have
+		// capabilities for display name lookup
+		LLAvatarNameCache::initClass(false);	
+		S32 phoenix_name_system = gSavedSettings.getS32("PhoenixNameSystem");
+		if(phoenix_name_system <= 0 || phoenix_name_system > 2) LLAvatarNameCache::setUseDisplayNames(false);
+		else LLAvatarNameCache::setUseDisplayNames(true);
 
 		// *Note: this is where gWorldMap used to be initialized.
 

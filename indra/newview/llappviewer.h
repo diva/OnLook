@@ -195,6 +195,7 @@ private:
     void idle(); 
     void idleShutdown();
     void idleNetwork();
+    void idleNameCache();
 
     void sendLogoutRequest();
     void disconnectViewer();

@@ -83,12 +83,10 @@
 #include "roles_constants.h"
 #include "lluictrlfactory.h"
 #include "llviewermenu.h"
-
+#include "llavatarnamecache.h"
 
 
 #include <iosfwd>
-
-
 
 
 
@@ -1416,9 +1414,11 @@ void LLPanelAvatar::setAvatar(LLViewerObject *avatarp)
 	{
 		name.assign("");
 	}
+	LLAvatarName av_name;
+	LLAvatarNameCache::get(avatarp->getID(), &av_name);
 
 	// If we have an avatar pointer, they must be online.
-	setAvatarID(avatarp->getID(), name, ONLINE_STATUS_YES);
+	setAvatarID(avatarp->getID(), av_name.getCompleteName(), ONLINE_STATUS_YES);
 }
 
 void LLPanelAvatar::onCommitKey(LLUICtrl* ctrl, void* data)
