@@ -43,6 +43,7 @@
 #include "llmemtype.h"
 #include "llstl.h"
 #include "llstat.h"
+#include "llfasttimer.h"
 #include <iterator> //VS2010
 
 // These should not be enabled in production, but they can be

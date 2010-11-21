@@ -71,7 +71,6 @@
 	     increment="1" initial_val="13000" label="Port Number:" label_width="75"
 	     left_delta="20" max_val="13050" min_val="13000" mouse_opaque="true"
 	     name="connection_port" width="150" />
-
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-24" drop_shadow_visible="true" enabled="true"
 	     follows="left|top" font="SansSerifSmall" h_pad="0" halign="left"
@@ -79,7 +78,6 @@
 	     v_pad="0" width="128">
 		Http Proxy:
 	</text>
-
   <radio_group bottom_delta="-8" draw_border="false" follows="left|top" height="20" left="12"
 	     name="socks5_http_proxy_type" width="380" >
     <radio_item height="20" bottom="0" left="100" name="None" width="50"
@@ -95,12 +93,10 @@
       Web
     </radio_item>
   </radio_group>
-
 	<check_box bottom_delta="-24" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	     label="Enable SOCKS 5 Proxy" left="6" mouse_opaque="true"
 	     name="socks5_proxy_enabled" radio_style="false" width="256" />
-
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-26" drop_shadow_visible="true" enabled="true"
 	     follows="left|top" font="SansSerifSmall" h_pad="0" halign="left"
@@ -112,13 +108,11 @@
 	     height="20" left="90" name="socks5_proxy_host"
 	     tool_tip="The name or IP address of the SOCKS5 proxy you would like to use"
 	     width="200" />
-
 	<spinner bottom_delta="-30" decimal_digits="0"
 	     enabled="true" follows="left|top" height="16" increment="1"
 	     initial_val="80" label="Port Number:" label_width="75" left="12"
 	     max_val="12000" min_val="10" mouse_opaque="true" name="socks5_proxy_port"
 	     width="140" />
-
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-20" drop_shadow_visible="true" enabled="true"
 	     follows="left|top" font="SansSerifSmall" h_pad="0" halign="left"
@@ -126,19 +120,17 @@
 	     v_pad="0" width="128">
 		Socks5 Authentication:
 	</text>
-
  <radio_group bottom_delta="-6" draw_border="false" follows="left|top" height="20" left="12"
 	     name="socks5_auth" width="420">
-    <radio_item bottom_delta="0" height="20" left_delta="80" name="None" width="50"
+	     <radio_item bottom="0" height="20" left_delta="80" name="None" width="50"
 		  tool_tip="No authentication">
       None
     </radio_item>
-    <radio_item bottom_delta="0" height="20" left_delta="50" name="UserPass" width="50"
+	     <radio_item bottom="0" height="20" left_delta="50" name="UserPass" width="50"
 		  tool_tip="Username / Password authentication">
       Username/Password
     </radio_item>
   </radio_group>
-
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-22" drop_shadow_visible="true" enabled="true"
 	     follows="left|top" font="SansSerifSmall" h_pad="0" halign="left"

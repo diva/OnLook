@@ -115,7 +115,7 @@ def extract_tarball_sans_linden(filename, targetdir):
     # get a series of TarInfo objects
     tarentries=archive.getmembers()
     for tarentry in tarentries:
-        target = re.sub(r'^(\./)?(linden/)?', "", tarentry.name)
+        target = re.sub(r'^(\./)?(linden/?)?', "", tarentry.name)
         if(target==""):
             continue
         fulltarget=os.path.join(targetdir, target)

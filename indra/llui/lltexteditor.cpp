@@ -934,6 +934,11 @@ void LLTextEditor::setCursor(S32 row, S32 column)
 
 	const llwchar* doc = mWText.c_str();
 	const char CR = 10;
+
+	//why are row and column S32s anyways?
+	if(row < 0) row = 0;
+	if(column < 0) column = 0;
+
 	while(row--)
 	{
 		while (CR != *doc++);
@@ -4617,6 +4622,12 @@ BOOL LLTextEditor::findHTML(const std::string &line, S32 *begin, S32 *end) const
 		std::string slurlID = "slurl.com/secondlife/";
 		strpos = url.find(slurlID);
 		
+		if (strpos < 0)
+		{
+			slurlID="maps.secondlife.com/secondlife/";
+			strpos = url.find(slurlID);
+		}
+	
 		if (strpos < 0)
 		{
 			slurlID="secondlife://";

@@ -1,7 +1,7 @@
 /* Localized versions of Info.plist keys */
 
-CFBundleName = "Ascent";
+CFBundleName = "SingularityViewer";
 
-CFBundleShortVersionString = "Ascent version 1.5.0.0";
-CFBundleGetInfoString = "Snowglobe version 1.5.0.0, Balseraph Software Group";
+CFBundleShortVersionString = "Singularity Viewer 1.5.0.0";
+CFBundleGetInfoString = "Singularity Viewer 1.5.0.0, Copyright 2010 Siana Gearz";
 

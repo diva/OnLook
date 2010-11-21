@@ -76,6 +76,7 @@ class PlatformSetup(object):
     build_type = build_types['relwithdebinfo']
     standalone = 'OFF'
     unattended = 'OFF'
+    universal = 'OFF'
     project_name = 'Singularity'
     distcc = True
     cmake_opts = []
@@ -421,7 +422,7 @@ class DarwinSetup(UnixSetup):
         return 'darwin'
 
     def arch(self):
-        if self.unattended == 'ON':
+        if self.universal == 'ON':
             return 'universal'
         else:
             return UnixSetup.arch(self)
@@ -435,11 +436,11 @@ class DarwinSetup(UnixSetup):
             word_size=self.word_size,
             unattended=self.unattended,
             project_name=self.project_name,
-            universal='',
+            universal=self.universal,
             opensim_rules=self.opensim_rules,
             type=self.build_type.upper(),
             )
-        if self.unattended == 'ON':
+        if self.universal == 'ON':
             args['universal'] = '-DCMAKE_OSX_ARCHITECTURES:STRING=\'i386;ppc\''
         #if simple:
         #    return 'cmake %(opts)s %(dir)r' % args
@@ -730,6 +731,7 @@ Options:
        --standalone     build standalone, without Linden prebuild libraries
        --unattended     build unattended, do not invoke any tools requiring
                         a human response
+       --universal      build a universal binary on Mac OS X (unsupported)
   -t | --type=NAME      build type ("Debug", "Release", "ReleaseSSE2", or "RelWithDebInfo")
   -m32 | -m64           build architecture (32-bit or 64-bit)
   -N | --no-distcc      disable use of distcc
@@ -744,6 +746,8 @@ Commands:
   build      configure and build default target
   clean      delete all build directories, does not affect sources
   configure  configure project by running cmake (default command if none given)
+  configure       configure project by running cmake (default if none given)
+  printbuilddirs  print the build directory that will be used
 
 Command-options for "configure":
   We use cmake variables to change the build configuration.
@@ -761,15 +765,6 @@ Examples:
 '''
 
 def main(arguments):
-    if os.getenv('DISTCC_DIR') is None:
-        distcc_dir = os.path.join(getcwd(), '.distcc')
-        if not os.path.exists(distcc_dir):
-            os.mkdir(distcc_dir)
-        print "setting DISTCC_DIR to %s" % distcc_dir
-        os.environ['DISTCC_DIR'] = distcc_dir
-    else:
-        print "DISTCC_DIR is set to %s" % os.getenv('DISTCC_DIR')
- 
     setup = setup_platform[sys.platform]()
     try:
         opts, args = getopt.getopt(
@@ -829,6 +824,14 @@ For example: develop.py configure -DSERVER:BOOL=OFF"""
         if cmd in ('cmake', 'configure'):
             setup.run_cmake(args)
         elif cmd == 'build':
+            if os.getenv('DISTCC_DIR') is None:
+                distcc_dir = os.path.join(getcwd(), '.distcc')
+                if not os.path.exists(distcc_dir):
+                    os.mkdir(distcc_dir)
+                print "setting DISTCC_DIR to %s" % distcc_dir
+                os.environ['DISTCC_DIR'] = distcc_dir
+            else:
+                print "DISTCC_DIR is set to %s" % os.getenv('DISTCC_DIR')
             for d in setup.build_dirs():
                 if not os.path.exists(d):
                     raise CommandError('run "develop.py cmake" first')
@@ -839,6 +842,9 @@ For example: develop.py configure -DSERVER:BOOL=OFF"""
             if args:
                 raise CommandError('clean takes no arguments')
             setup.cleanup()
+        elif cmd == 'printbuilddirs':
+            for d in setup.build_dirs():
+                print >> sys.stdout, d
         else:
             print >> sys.stderr, 'Error: unknown subcommand', repr(cmd)
             print >> sys.stderr, "(run 'develop.py --help' for help)"

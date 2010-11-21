@@ -3,6 +3,7 @@ include(Linking)
 include(Prebuilt)
 
 if (STANDALONE)
+    find_package(LLQtWebkit REQUIRED)
     set(WEBKITLIBPLUGIN OFF CACHE BOOL
         "WEBKITLIBPLUGIN support for the llplugin/llmedia test apps.")
 else (STANDALONE)
@@ -35,7 +36,7 @@ elseif (DARWIN)
         )
 elseif (LINUX)
     if (STANDALONE)
-       set(WEBKIT_PLUGIN_LIBRARIES llqtwebkit)
+       set(WEBKIT_PLUGIN_LIBRARIES ${LLQTWEBKIT_LIBRARY})
     else (STANDALONE)
        set(WEBKIT_PLUGIN_LIBRARIES
            llqtwebkit

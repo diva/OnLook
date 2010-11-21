@@ -2361,7 +2361,7 @@ void LLViewerWindow::draw()
 		// Draw tooltips
 		// Adjust their rectangle so they don't go off the top or bottom
 		// of the screen.
-		if( mToolTip && mToolTip->getVisible() )
+		if( mToolTip && mToolTip->getVisible() && !mToolTipBlocked )
 		{
 			glMatrixMode(GL_MODELVIEW);
 			LLUI::pushMatrix();
@@ -2408,6 +2408,16 @@ void LLViewerWindow::draw()
 // Takes a single keydown event, usually when UI is visible
 BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 {
+	// Hide tooltips on keypress
+	mToolTipBlocked = TRUE; // block until next time mouse is moved
+
+	// Also hide hover info on keypress
+	if (gHoverView)
+	{
+		gHoverView->cancelHover();
+		gHoverView->setTyping(TRUE);
+	}
+
 	if (gFocusMgr.getKeyboardFocus() 
 		&& !(mask & (MASK_CONTROL | MASK_ALT))
 		&& !gFocusMgr.getKeystrokesOnly())
@@ -2428,17 +2438,6 @@ BOOL LLViewerWindow::handleKey(KEY key, MASK mask)
 		{
 			return TRUE;
 		}
-	}
-
-	// Hide tooltips on keypress
-	mToolTipBlocked = TRUE; // block until next time mouse is moved
-
-	// Also hide hover info on keypress
-	if (gHoverView)
-	{
-		gHoverView->cancelHover();
-
-		gHoverView->setTyping(TRUE);
 	}
 
 	// Explicit hack for debug menu.

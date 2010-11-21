@@ -109,10 +109,6 @@ struct socks_command_response_t {
 	U16						port;
 };
 
-#define METHOD_NOAUTH   0x00 // Client supports no auth
-#define METHOD_GSSAPI   0x01 // Client supports GSSAPI (Not currently supported)
-#define METHOD_PASSWORD 0x02 // Client supports username/password
-
 #define AUTH_NOT_ACCEPTABLE 0xFF // reply if prefered methods are not avaiable
 #define AUTH_SUCCESS        0x00 // reply if authentication successfull
 
@@ -154,6 +150,14 @@ enum LLHttpProxyType
 	LLPROXY_HTTP=1
 };
 
+// Auth types
+enum LLSocks5AuthType
+{
+	METHOD_NOAUTH=0x00,		// Client supports no auth
+	METHOD_GSSAPI=0x01, 	// Client supports GSSAPI (Not currently supported)
+	METHOD_PASSWORD=0x02 	// Client supports username/password
+};
+
 class LLSocks: public LLSingleton<LLSocks>
 {
 public:
@@ -171,6 +175,9 @@ public:
 	
 	// Set up to use No Auth when connecting to the socks proxy;
 	void setAuthNone();
+	
+	// get the currently selected auth method
+	LLSocks5AuthType getSelectedAuthMethod() { return mAuthMethodSelected; };
 	
 	// static check for enabled status for UDP packets
 	static bool isEnabled(){return sUdpProxyEnabled;};
@@ -200,6 +207,9 @@ public:
 	// report if the current settings are applied or dirty pending a startProxy
 	bool needsUpdate() { return mNeedUpdate; };
 
+	//Get the username password in a curl compatible format
+	std::string getProxyUserPwd(){ return (mSocksUsername+":"+mSocksPassword);};
+
 private:
 
 	// Open a communication channel to the socks5 proxy proxy, at port messagePort
@@ -227,7 +237,7 @@ private:
 	LLHost mHTTPProxy;
 
 	// socks 5 auth method selected
-	U8 mAuthMethodSelected;
+	LLSocks5AuthType mAuthMethodSelected;
 
 	// socks 5 username
 	std::string mSocksUsername;

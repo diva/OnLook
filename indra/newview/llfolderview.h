@@ -893,7 +893,7 @@ public:
 	/*virtual*/ void onFocusLost();
 	virtual BOOL handleScrollWheel(S32 x, S32 y, S32 clicks);
 	virtual void draw();
-	virtual void deleteAllChildren();
+	virtual void deleteAllChildren(BOOL delayed_delete=FALSE);
 
 	void scrollToShowSelection();
 	void scrollToShowItem(LLFolderViewItem* item);

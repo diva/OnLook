@@ -2902,7 +2902,7 @@
       <key>Comment</key>
       <string>Socks 5 Username</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
@@ -2913,7 +2913,7 @@
       <key>Comment</key>
       <string>Socks 5 Password</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
@@ -2924,7 +2924,7 @@
       <key>Comment</key>
       <string>Selected Auth mechanism for Socks5</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
@@ -8221,6 +8221,17 @@
       <string>F32</string>
       <key>Value</key>
       <real>20.0</real>
+    </map>
+    <key>MapServerURL</key>
+    <map>
+      <key>Comment</key>
+      <string>World map URL template for locating map tiles</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string>http://map.secondlife.com.s3.amazonaws.com/</string>
     </map>
     <key>MapOverlayIndex</key>
     <map>
@@ -14791,7 +14802,7 @@
       <array>
         <integer>343</integer>
         <integer>687</integer>
-        <integer>901</integer>
+            <integer>981</integer>
         <integer>473</integer>
       </array>
     </map>

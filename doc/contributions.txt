@@ -128,6 +128,7 @@ Alissa Sabre
 	VWR-10728
 	VWR-12620
 	SNOW-124
+	SNOW-479
 Angus Boyd
 	VWR-592
 Ann Congrejo
@@ -138,6 +139,9 @@ Ardy Lay
 	SNOW-205
 	SNOW-322
 	SNOW-364
+	SNOW-384
+	SNOW-629
+	SNOW-783
 Argent Stonecutter
 	VWR-68
 Armin Weatherwax
@@ -176,6 +180,8 @@ blino Nakamura
 Boroondas Gupte
 	SNOW-201
 	SNOW-396
+	SNOW-589
+	SNOW-624
 	VWR-233
 	WEB-262
 Bulli Schumann
@@ -366,6 +372,8 @@ Kitty Barnett
 Kunnis Basiat
 	VWR-82
 	VWR-102
+Lance Corrimal
+	SNOW-717
 Latif Khalifa
 	VWR-5370
 Lisa Lowe

@@ -22,6 +22,8 @@ class LLScrollListCtrl;
 class ASFloaterUploadBrowser : public LLFloater
 {
 public:
+	using LLFloater::handleDoubleClick;
+
 	ASFloaterUploadBrowser();
 	virtual ~ASFloaterUploadBrowser();
 	//File list

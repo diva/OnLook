@@ -221,7 +221,7 @@ void LLFloaterSettingsDebug::onClickDefault(void* user_data)
 	if (controlp)
 	{
 		controlp = controlp->getCOAActive();
-		controlp->resetToDefault();
+		controlp->resetToDefault(true);
 		floaterp->updateControl(controlp);
 	}
 }

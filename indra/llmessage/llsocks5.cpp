@@ -124,8 +124,8 @@ int LLSocks::proxyHandshake(LLHost proxy, U32 message_port)
 	connect_request.flag    = FIELD_RESERVED;
 	connect_request.atype   = ADDRESS_IPV4;
 	connect_request.address = 0; // 0.0.0.0 We are not fussy about address
-							     //UDP is promiscious receive for our protocol
-	connect_request.port    = htons(message_port); // Port must be in network byte order
+							     // UDP is promiscious receive for our protocol
+	connect_request.port    = 0; // Port must be 0 if you ever want to connect via NAT and your router does port rewrite for you
 
 	result = tcp_handshake(hProxyControlChannel, (char*)&connect_request, sizeof(socks_command_request_t), (char*)&connect_reply, sizeof(socks_command_response_t));
 	if (result != 0)

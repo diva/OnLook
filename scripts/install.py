@@ -35,7 +35,6 @@ $/LicenseInfo$
 
 import sys
 import os.path
-import re
 
 # Look for indra/lib/python in all possible parent directories ...
 # This is an improvement over the setup-path.py method used previously:
@@ -494,7 +493,7 @@ windows/i686/vs/2003 -- specify a windows visual studio 2003 package"""
         for filename in remove_file_list:
             print "rm",filename
             if not self._dryrun:
-                if os.path.exists(filename):
+                if os.path.lexists(filename):
                     remove_dir_set.add(os.path.dirname(filename))
                     try:
                         os.remove(filename)
@@ -695,10 +694,7 @@ class SCPOrHTTPHandler(urllib2.BaseHandler):
         url = ''.join(url)
         print "Using HTTP:",url
         request = urllib2.Request(url)
-        
-        if re.match("/^http:\/\/github.com/", self.url):
-			request.add_header('User-agent', defaultUserAgent)
-		
+        request.add_header('User-agent', defaultUserAgent)
         return urllib2.urlopen(request)
 
     def do_scp(self, remote):

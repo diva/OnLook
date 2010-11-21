@@ -37,6 +37,7 @@
 #include "../llworldmipmap.h"
 // Dependencies
 #include "../llviewerimagelist.h"
+#include "../../llxml/llcontrol.h"
 // Tut header
 #include "../test/lltut.h"
 
@@ -61,6 +62,17 @@ LLViewerImage* LLViewerImageList::getImageFromUrl(const std::string& url,
 												   const LLUUID& force_id)
 { return NULL; }
 void LLViewerImage::setBoostLevel(S32 level) { }
+
+LLControlGroup::LLControlGroup() { }
+LLControlGroup::~LLControlGroup() { }
+std::string	LLControlGroup::getString(const std::string& name) { return LLStringUtil::null; }
+std::string	LLControlGroup::getText(const std::string& name) { return LLStringUtil::null; }
+BOOL		LLControlGroup::getBOOL(const std::string& name) { return FALSE; }
+S32			LLControlGroup::getS32(const std::string& name) { return 0;}
+F32			LLControlGroup::getF32(const std::string& name) { return 0.f; }
+U32			LLControlGroup::getU32(const std::string& name) { return 0; }
+
+LLControlGroup gSavedSettings;
 
 // End Stubbing
 // -------------------------------------------------------------------------------------------

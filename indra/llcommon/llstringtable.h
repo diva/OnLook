@@ -58,7 +58,7 @@
 
 const U32 MAX_STRINGS_LENGTH = 256;
 
-class LLStringTableEntry
+class LL_COMMON_API LLStringTableEntry
 {
 public:
 	LLStringTableEntry(const char *str)
@@ -83,7 +83,7 @@ public:
 	S32  mCount;
 };
 
-class LLStringTable
+class LL_COMMON_API LLStringTable
 {
 public:
 	LLStringTable(int tablesize);
@@ -117,7 +117,7 @@ public:
 #endif	
 };
 
-extern LLStringTable gStringTable;
+extern LL_COMMON_API LLStringTable gStringTable;
 
 //============================================================================
 
@@ -127,7 +127,7 @@ extern LLStringTable gStringTable;
 
 typedef const std::string* LLStdStringHandle;
 
-class LLStdStringTable
+class LL_COMMON_API LLStdStringTable
 {
 public:
 	LLStdStringTable(S32 tablesize = 0)

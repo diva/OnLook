@@ -151,8 +151,8 @@ virtual void completed(bool success)
 	}
 	else
 	{
-		if(!success)
-			llwarns << "FAIL NOT SUCCESSFUL getting texture "<<mID<< llendl;
+		//if(!success)
+		//	llwarns << "FAIL NOT SUCCESSFUL getting texture "<<mID<< llendl;
 	}
 }
 private:

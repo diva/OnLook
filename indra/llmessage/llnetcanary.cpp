@@ -1,5 +1,6 @@
 // <edit>
 #include "llnetcanary.h"
+#include "linden_common.h"
 #include "llerror.h"
 #ifdef _MSC_VER
 #include <winsock2.h>

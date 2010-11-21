@@ -1568,6 +1568,7 @@ bool idle_startup()
 		requested_options.push_back("buddy-list");
 		requested_options.push_back("ui-config");
 #endif
+		requested_options.push_back("map-server-url");
 		requested_options.push_back("tutorial_setting");
 		requested_options.push_back("login-flags");
 		requested_options.push_back("global-textures");
@@ -2189,6 +2190,11 @@ bool idle_startup()
 			sInitialOutfitGender = LLUserAuth::getInstance()->mResult["initial-outfit"]["gender"].asString();
 			gAgent.setGenderChosen(TRUE); // OGPX TODO: remove this once we start sending back gendered flag
 
+			std::string map_server_url = LLUserAuth::getInstance()->mResult["map-server-url"].asString();
+			if(!map_server_url.empty())
+			{
+				gSavedSettings.setString("MapServerURL", map_server_url);
+			}
 		}
 
 		// XML-RPC successful login path here
@@ -2453,6 +2459,11 @@ bool idle_startup()
 				}
 			}
 
+			std::string map_server_url = LLUserAuth::getInstance()->getResponse("map-server-url");
+			if(!map_server_url.empty())
+			{
+				gSavedSettings.setString("MapServerURL", map_server_url);
+			}
 		}
 
 		// OGPX : successful login path common to OGP and XML-RPC
@@ -2652,10 +2663,10 @@ bool idle_startup()
 			LLFloaterActiveSpeakers::showInstance();
 		}
 
-		/*if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
+		if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
 		{
-			LLFloaterBeacons::showInstance(); DIE -HgB
-		}*/
+			LLFloaterBeacons::showInstance();
+		}
 		
 		if (!gNoRender)
 		{
@@ -4576,35 +4587,27 @@ void apply_udp_blacklist(const std::string& csv)
 
 bool LLStartUp::handleSocksProxy(bool reportOK)
 {
-	bool use_http_proxy = gSavedSettings.getBOOL("BrowserProxyEnabled");
-	if (use_http_proxy)
-	{
 		std::string httpProxyType = gSavedSettings.getString("Socks5HttpProxyType");
 
 		// Determine the http proxy type (if any)
-		if (httpProxyType.compare("Web") == 0)
+	if ((httpProxyType.compare("Web") == 0) && gSavedSettings.getBOOL("BrowserProxyEnabled"))
 		{
 			LLHost httpHost;
 			httpHost.setHostByName(gSavedSettings.getString("BrowserProxyAddress"));
 			httpHost.setPort(gSavedSettings.getS32("BrowserProxyPort"));
 			LLSocks::getInstance()->EnableHttpProxy(httpHost,LLPROXY_HTTP);
 		}
-		else if (httpProxyType.compare("Socks") == 0)
+	else if ((httpProxyType.compare("Socks") == 0) && gSavedSettings.getBOOL("Socks5ProxyEnabled"))
 		{
 			LLHost httpHost;
 			httpHost.setHostByName(gSavedSettings.getString("Socks5ProxyHost"));
-			httpHost.setPort(gSavedSettings.getS32("Socks5ProxyPort"));
+		httpHost.setPort(gSavedSettings.getU32("Socks5ProxyPort"));
 			LLSocks::getInstance()->EnableHttpProxy(httpHost,LLPROXY_SOCKS);
 		}
 		else
 		{
 			LLSocks::getInstance()->DisableHttpProxy();
 		}
-	}
-	else
-	{
-		LLSocks::getInstance()->DisableHttpProxy();
-	}
 	
 	bool use_socks_proxy = gSavedSettings.getBOOL("Socks5ProxyEnabled");
 	if (use_socks_proxy)

@@ -424,7 +424,7 @@ void LLApp::incSigChildCount()
 int LLApp::getPid()
 {
 #if LL_WINDOWS
-	return 0;
+	return GetCurrentProcessId();
 #else
 	return getpid();
 #endif

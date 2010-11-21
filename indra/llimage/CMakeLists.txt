@@ -62,8 +62,8 @@ target_link_libraries(
     ${ZLIB_LIBRARIES}
     )
 
-# Add tests
 if (LL_TESTS)
+	# Add tests
 	ADD_BUILD_TEST(llimageworker llimage)
 endif (LL_TESTS)
 

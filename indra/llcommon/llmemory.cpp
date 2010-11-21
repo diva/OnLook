@@ -283,6 +283,11 @@ LLRefCount::LLRefCount() :
 {
 }
 
+LLRefCount::LLRefCount(const LLRefCount& other)
+:   mRef(0)
+{
+}
+
 LLRefCount::~LLRefCount()
 { 
 	if (mRef != 0)
@@ -291,6 +296,12 @@ LLRefCount::~LLRefCount()
 	}
 }
 	
+LLRefCount& LLRefCount::operator=(const LLRefCount&)
+{
+	// do nothing, since ref count is specific to *this* reference
+	return *this;
+}
+
 //----------------------------------------------------------------------------
 
 #if defined(LL_WINDOWS)

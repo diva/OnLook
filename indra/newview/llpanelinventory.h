@@ -101,7 +101,7 @@ public:
 	LLFolderView* getRootFolder() const { return mFolders; }
 
 	virtual void draw();
-	virtual void deleteAllChildren();
+	virtual void deleteAllChildren(BOOL delayed_delete=FALSE);
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void *cargo_data, EAcceptance *accept, std::string& tooltip_msg);
 	
 	static void idle(void* user_data);
