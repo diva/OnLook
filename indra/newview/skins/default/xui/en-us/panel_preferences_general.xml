@@ -62,48 +62,48 @@
 	     font="SansSerifSmall" height="16" initial_value="false"
 	     label="Hide My Group Title" left="151" name="show_my_title_checkbox"
 	     radio_style="false" width="256" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<!--text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-184" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="153"
 	     mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
 		Moved to Vanity Settings.
-	</text>
+	</text-->
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-215" drop_shadow_visible="true" enabled="true" follows="left|top"
+		bottom="-180" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="12" left="10"
 	     mouse_opaque="true" name="UI Size:" v_pad="0" width="128">
 		UI Size:
 	</text>
-	<slider bottom="-217" can_edit_text="true"
+	<slider bottom="-180" can_edit_text="true"
 	     decimal_digits="3" enabled="true" height="16" increment="0.025"
 	     initial_val="1" left="148" max_val="1.4" min_val="0.75" mouse_opaque="true"
 	     name="ui_scale_slider" show_text="true" value="1" width="256" />
-	<check_box bottom="-236" enabled="true" follows="left|top"
+	<check_box bottom="-195" enabled="true" follows="left|top"
 	     font="SansSerifSmall" height="16" initial_value="false"
 	     label="Use resolution independent scale" left="151" mouse_opaque="true"
 	     name="ui_auto_scale" radio_style="false" width="256" />
-	<spinner bottom="-260" decimal_digits="0" enabled="true"
+	<spinner bottom="-229" decimal_digits="0" enabled="true"
 	     follows="left|top" height="16" increment="1" initial_val="300"
 	     label="Away Timeout:" label_width="141" left="10" max_val="600"
 	     min_val="30" mouse_opaque="true" name="afk_timeout_spinner" width="202" />
-	<check_box bottom="-286" enabled="true"
+	<check_box bottom="-265" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 	     label="Notify when Linden dollars (L$) spent or received" left="151"
 	     mouse_opaque="true" name="notify_money_change_checkbox" radio_style="false"
 	     width="256" />
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-322" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-291" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="maturity_desired_label" v_pad="0" width="394">
 		 Rating:
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-322" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-291" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="151"
 	     mouse_opaque="true" name="maturity_desired_prompt" v_pad="0" width="394">
 		 I want to access content rated:
 	</text>
-	<combo_box bottom="-328" follows="left|top" height="18" left="315"
+	<combo_box bottom="-297" follows="left|top" height="18" left="315"
 	     mouse_opaque="true" name="maturity_desired_combobox" width="150" control_name="PreferredMaturity">
 		<combo_item name="Desired_Adult" value="42">
 			PG, Mature and Adult
@@ -116,7 +116,7 @@
 		</combo_item>
 	</combo_box>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-322" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-291" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="315"
 	     mouse_opaque="true" name="maturity_desired_textbox" v_pad="0" width="150">
 		 PG only
@@ -133,26 +133,26 @@
 	     mouse_opaque="true" name="show_names_textbox" v_pad="0" width="394">
 		Show Names:
 	</text>
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	<!--text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-184" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
 	     mouse_opaque="true" name="effects_color_textbox" v_pad="0" width="394">
 		Color For My Effects:
-	</text>
+	</text-->
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-254" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-224" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="220"
 	     mouse_opaque="true" name="seconds_textbox" v_pad="0" width="128">
 		seconds
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-362" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-331" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="18" left="10"
 	     mouse_opaque="true" name="crash_report_textbox" v_pad="0" width="394">
 		Crash reports:
 	</text>
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="-394" drop_shadow_visible="true" enabled="true" follows="left|top"
+	     bottom="-363" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="18" left="10"
 	     mouse_opaque="true" name="language_textbox" v_pad="0" width="394">
 		Language:
@@ -164,7 +164,7 @@
 	     v_pad="0" width="400">
 		(Requires restart for full effect)
 	</text>
-	<combo_box allow_text_entry="true" bottom="-394" enabled="true"
+	<combo_box allow_text_entry="true" bottom="-361" enabled="true"
 	     follows="left|top" height="16" left="153" max_chars="135"
 	     mouse_opaque="true" name="language_combobox" width="146">
 		<combo_item type="string" length="1" enabled="true" name="System Default Language" value="default">
@@ -225,7 +225,7 @@
 	<string name="region_name_prompt">
 		&lt;Type region name&gt;
 	</string>
-	<combo_box allow_text_entry="false" bottom="-362" enabled="true" follows="left|top"
+	<combo_box allow_text_entry="false" bottom="-331" enabled="true" follows="left|top"
 	     height="18" left="153" max_chars="20" mouse_opaque="true"
 	     name="crash_behavior_combobox" width="146">
 		<combo_item type="string" length="1" enabled="true" name="Askbeforesending" value="Ask before sending">
@@ -238,7 +238,7 @@
 			Never send
 		</combo_item>
 	</combo_box>
-	<check_box bottom="-415" enabled="true"
+	<check_box bottom="-385" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16" hidden="false"
 	     initial_value="false" label="Share language with objects" left="151"
 	     mouse_opaque="true" name="language_is_public"
