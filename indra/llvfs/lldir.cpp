@@ -614,7 +614,7 @@ void LLDir::setSkinFolder(const std::string &skin_folder)
 	// e.g. c:\documents and settings\users\username\application data\second life\skins\dazzle
 	mUserSkinDir = getOSUserAppDir();
 	mUserSkinDir += mDirDelimiter;
-	mUserSkinDir += "skins";
+	mUserSkinDir += "skins_sg1";
 	mUserSkinDir += mDirDelimiter;	
 	mUserSkinDir += skin_folder;
 
