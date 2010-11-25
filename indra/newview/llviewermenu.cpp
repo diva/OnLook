@@ -1003,7 +1003,7 @@ void init_client_menu(LLMenuGL* menu)
 		menu->appendMenu(sub_menu);
 	}
 
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
 	#ifdef RLV_ADVANCED_MENU
 		if (rlv_handler_t::isEnabled())
 		{
@@ -1124,7 +1124,7 @@ void init_client_menu(LLMenuGL* menu)
 										&menu_check_control,
 										(void*)"ShowConsoleWindow"));
 
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-1.0.0e
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-1.0.0e | OK
 	#ifdef RLV_ADVANCED_TOGGLE_RLVA
 		if (gSavedSettings.controlExists(RLV_SETTING_MAIN))
 			menu->append(new LLMenuItemCheckGL("RestrainedLove API", &rlvToggleEnabled, NULL, &rlvGetEnabled, NULL));
@@ -1601,7 +1601,7 @@ void init_debug_baked_texture_menu(LLMenuGL* menu)
 	menu->createJumpKeys();
 }
 
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-11-17 (RLVa-1.1.0d) | Modified: RLVa-1.1.0d
+// [RLVa:KB] - Checked: 2009-11-17 (RLVa-1.1.0d) | Modified: RLVa-1.1.0d | OK
 void init_debug_rlva_menu(LLMenuGL* menu)
 {
 	// Debug options
@@ -1610,7 +1610,6 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 
 		if (gSavedSettings.controlExists(RLV_SETTING_DEBUG))
 			pDbgMenu->append(new LLMenuItemCheckGL("Show Debug Messages", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_DEBUG));
-		pDbgMenu->append(new LLMenuItemCallGL("Dump Attachment Locks", RlvHandler::dumpAttachmentLocks, NULL, NULL));
 		pDbgMenu->appendSeparator();
 		if (gSavedSettings.controlExists(RLV_SETTING_ENABLELEGACYNAMING))
 			pDbgMenu->append(new LLMenuItemCheckGL("Enable Legacy Naming", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_ENABLELEGACYNAMING));
@@ -1621,12 +1620,8 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 		menu->appendSeparator();
 	}
 
-	if (gSavedSettings.controlExists(RLV_SETTING_ENABLEWEAR))
-		menu->append(new LLMenuItemCheckGL("Enable Default Wear", menu_toggle_control, rlvEnableWearEnabler, menu_check_control, (void*)RLV_SETTING_ENABLEWEAR));
-#ifndef RLV_WORKAROUND_REZMULTIPLEATTACH
 	if (gSavedSettings.controlExists(RLV_SETTING_ENABLESHAREDWEAR))
-		menu->append(new LLMenuItemCheckGL("Enable Shared Wear", menu_toggle_control, rlvEnableSharedWearEnabler, menu_check_control, (void*)RLV_SETTING_ENABLESHAREDWEAR));
-#endif // RLV_WORKAROUND_REZMULTIPLEATTACH
+		menu->append(new LLMenuItemCheckGL("Enable Shared Wear", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_ENABLESHAREDWEAR));
 	menu->appendSeparator();
 
 	#ifdef RLV_EXTENSION_HIDELOCKED
@@ -1802,9 +1797,11 @@ class LLObjectTouch : public view_listener_t
 
 		LLPickInfo pick = LLToolPie::getInstance()->getPick();
 
-// [RLVa:KB] - Checked: 2010-01-01 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
+// [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.0e) | Modified: RLVa-1.1.0l | OK
+		// NOTE: fallback code since we really shouldn't be getting an active selection if we can't touch this
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canTouch(object, pick.mObjectOffset)) )
 		{
+			RLV_ASSERT(false);
 			return true;
 		}
 // [/RLVa:KB]
@@ -1911,7 +1908,7 @@ class LLObjectOpen : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b)
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b) | OK
 		// TODO-RLVa: shouldn't we be checking for fartouch here as well?
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
 		{
@@ -1937,11 +1934,6 @@ class LLObjectEnableOpen : public view_listener_t
 			if (!root) new_value = false;
 			else new_value = root->allowOpen();
 		}
-
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b) | Modified: RLVa-1.0.0b
-		// TODO-RLV: shouldn't we be checking for fartouch here as well? (and LLViewerObject::allowOpen() makes this redundant?)
-		new_value &= !gRlvHandler.hasBehaviour(RLV_BHVR_EDIT);
-// [/RLVa:KB]
 
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
@@ -2354,10 +2346,9 @@ class LLSelfEnableRemoveAllAttachments : public view_listener_t
 			{
 				LLVOAvatar::attachment_map_t::iterator curiter = iter++;
 				LLViewerJointAttachment* attachment = curiter->second;
-//				if (attachment->getObject())
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-				if ( (attachment->getObject()) && 
-					 ((!rlv_handler_t::isEnabled()) || (!gRlvHandler.isLockedAttachment(curiter->first, RLV_LOCK_REMOVE))) )
+//				if (attachment->getNumObjects() > 0)
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Added: RLVa-1.2.0a | OK
+				if ( (attachment->getNumObjects() > 0) && ((!rlv_handler_t::isEnabled()) || (gRlvAttachmentLocks.canDetach(attachment))) )
 // [/RLVa:KB]
 				{
 					new_value = true;
@@ -2405,7 +2396,7 @@ class LLObjectEnableMute : public view_listener_t
 				BOOL is_linden = lastname && !LLStringUtil::compareStrings(lastname->getString(), "Linden");
 				BOOL is_self = avatar->isSelf();
 				new_value = !is_linden && !is_self;
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
 				new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 // [/RLVa:KB]
 			}
@@ -2428,7 +2419,7 @@ class LLObjectMute : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object(object); 
 		if (avatar)
 		{
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-1.0.0e
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-1.0.0e | OK
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 			{
 				return true;	// Fallback code [see LLObjectEnableMute::handleEvent()]
@@ -2767,10 +2758,12 @@ class LLAvatarAnims : public view_listener_t
 bool handle_go_to()
 {
 // [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+/*
 	if ( (rlv_handler_t::isEnabled()) && (gAgent.forwardGrabbed()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
 	{
 		return true;
 	}
+*/
 // [/RLVa:KB]
 
 	// JAMESDEBUG try simulator autopilot
@@ -2930,7 +2923,7 @@ class LLAvatarFreeze : public view_listener_t
 			{
 				LLSD args;
 //				args["AVATAR_NAME"] = fullname;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
 				args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
 // [/RLVa:KB]
 				LLNotifications::instance().add("FreezeAvatarFullname",
@@ -3061,12 +3054,6 @@ class LLAvatarEject : public view_listener_t
 			LLSD payload;
 			payload["avatar_id"] = avatar->getID();
 			std::string fullname = avatar->getFullname();
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
-			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (!fullname.empty()) )
-			{
-				fullname = RlvStrings::getAnonym(fullname);
-			}
-// [/RLVa:KB]
 
 			const LLVector3d& pos = avatar->getPositionGlobal();
 			LLParcel* parcel = LLViewerParcelMgr::getInstance()->selectParcelAt(pos)->getParcel();
@@ -3077,7 +3064,10 @@ class LLAvatarEject : public view_listener_t
 				if (!fullname.empty())
 				{
     				LLSD args;
-    				args["AVATAR_NAME"] = fullname;
+//					args["AVATAR_NAME"] = fullname;
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
+					args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
+// [/RLVa:KB]
     				LLNotifications::instance().add("EjectAvatarFullname",
     							args,
     							payload,
@@ -3097,7 +3087,10 @@ class LLAvatarEject : public view_listener_t
 				if (!fullname.empty())
 				{
     				LLSD args;
-    				args["AVATAR_NAME"] = fullname;
+//					args["AVATAR_NAME"] = fullname;
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
+					args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
+// [/RLVa:KB]
     				LLNotifications::instance().add("EjectAvatarFullnameNoBan",
     							args,
     							payload,
@@ -3181,16 +3174,12 @@ class LLAvatarGiveCard : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-		{
-			return true;
-		}
-// [/RLVa:KB]
-
 		llinfos << "handle_give_card()" << llendl;
 		LLViewerObject* dest = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		if(dest && dest->isAvatar())
+//		if(dest && dest->isAvatar())
+// [RLVa:KB] - Checked: 2010-06-04 (RLVa-1.2.0d) | Modified: RLVa-1.2.0d | OK
+		if ( (dest && dest->isAvatar()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) )
+// [/RLVa:KB]
 		{
 			bool found_name = false;
 			LLSD args;
@@ -3449,7 +3438,7 @@ class LLSelfSitOrStand : public view_listener_t
 	{
 		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->mIsSitting)
 		{
-// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k
+// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT))
 				return true;
 // [/RLVa:KB]
@@ -3457,7 +3446,7 @@ class LLSelfSitOrStand : public view_listener_t
 		}
 		else
 		{
-// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k
+// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SIT))
 				return true;
 // [/RLVa:KB]
@@ -3491,20 +3480,20 @@ class LLSelfEnableSitOrStand : public view_listener_t
 		
 		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->mIsSitting)
 		{
-// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k
+// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT));
 // [/RLVa:KB]
 			label = stand_text;
 		}
 		else
 		{
-// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k
+// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_SIT));
 // [/RLVa:KB]
 			label = sit_text;
 		}
 		
-// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k
+// [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 // [/RLVa:KB]
 		gMenuHolder->childSetText("Self Sit", label);
@@ -3861,7 +3850,7 @@ class LLAvatarEnableAddFriend : public view_listener_t
 		LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
 		bool new_value = avatar && !is_agent_friend(avatar->getID());
 
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
 		new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES));
 // [/RLVa:KB]
 
@@ -3924,7 +3913,7 @@ bool handle_sit_or_stand()
 		return true;
 	}
 
-// [RLVa:KB] - Checked: 2009-12-22 (RLVa-1.1.0k) | Modified: RLVa-1.1.0j
+// [RLVa:KB] - Checked: 2009-12-22 (RLVa-1.1.0k) | Modified: RLVa-1.1.0j | OK
 	// Block if we can't sit on the selected object (also handles sitting and prevented from standing up)
 	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canSit(object, pick.mObjectOffset)) )
 	{
@@ -3942,6 +3931,19 @@ bool handle_sit_or_stand()
 
 	if (object && object->getPCode() == LL_PCODE_VOLUME)
 	{
+// [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.1.3b) | Added: RLVa-1.2.1c | OK
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_STANDTP)) && (gAgent.getAvatarObject()) )
+		{
+			if (gAgent.getAvatarObject()->mIsSitting)
+			{
+				if (gRlvHandler.canStand())
+					gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
+				return true;
+			}
+			gRlvHandler.setSitSource(gAgent.getPositionGlobal());
+		}
+// [/RLVa:KB]
+
 		// <edit>
 		gReSitTargetID = object->mID;
 		gReSitOffset = pick.mObjectOffset;
@@ -3983,8 +3985,8 @@ class LLLandSit : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.1.1a) | Modified: RLVa-1.2.0c
-		if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f | OK
+		if ( (rlv_handler_t::isEnabled()) && ((!gRlvHandler.canStand()) || (gRlvHandler.hasBehaviour(RLV_BHVR_SIT))) )
 		{
 			return true;
 		}
@@ -4654,7 +4656,7 @@ class LLToolsTakeCopy : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return true;
-// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b) | Modified: RLVa-1.0.0b
+// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b) | Modified: RLVa-1.0.0b | OK
 		// NOTE: we need to handle "Take Copy" because it will force a sim-side unsit if we're sitting on the selection, 
 		//       but we do want to allow "Take Copy" under @rez=n so that's why we explicitly check for @unsit=n here
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (!rlvCanDeleteOrReturn()) ) return true;
@@ -4674,7 +4676,7 @@ class LLObjectReturn : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return true;
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-05 (RLVa-1.0.0b)
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Modified: RLVa-1.0.0b | OK
 		if ( (rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn()) ) return true;
 // [/RLVa:KB]
 
@@ -4744,14 +4746,9 @@ class LLObjectEnableReturn : public view_listener_t
 			}
 		}
 #endif
-
-// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
-		if ( (new_value) && (rlv_handler_t::isEnabled()) )
-		{
-			new_value = rlvCanDeleteOrReturn();
-		}
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Modified: RLVa-1.0.0b | OK
+		new_value &= (!rlv_handler_t::isEnabled()) || (rlvCanDeleteOrReturn());
 // [/RLVa:KB]
-
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -4768,18 +4765,14 @@ void handle_take()
 {
 	// we want to use the folder this was derezzed from if it's
 	// available. Otherwise, derez to the normal place.
-	if(LLSelectMgr::getInstance()->getSelection()->isEmpty())
+//	if(LLSelectMgr::getInstance()->getSelection()->isEmpty())
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Modified: RLVa-1.0.0b | OK
+	if ( (LLSelectMgr::getInstance()->getSelection()->isEmpty()) || ((rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn())) )
+// [/RLVa:KB]
 	{
 		return;
 	}
 	
-// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
-	if ( (rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn()) )
-	{
-		return;
-	}
-// [/RLVa:KB]
-
 	BOOL you_own_everything = TRUE;
 	BOOL locked_but_takeable_object = FALSE;
 	LLUUID category_id;
@@ -4894,17 +4887,13 @@ bool confirm_take(const LLSD& notification, const LLSD& response)
 // one item selected can be copied to inventory.
 BOOL enable_take()
 {
-	if (sitting_on_selection())
-	{
-		return FALSE;
-	}
-
-// [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
-	if ( (rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn()) )
-	{
-		return FALSE;
-	}
+//	if (sitting_on_selection())
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Modified: RLVa-1.0.0b | OK
+	if ( (sitting_on_selection()) || ((rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn())) )
 // [/RLVa:KB]
+	{
+		return FALSE;
+	}
 
 	for (LLObjectSelection::valid_root_iterator iter = LLSelectMgr::getInstance()->getSelection()->valid_root_begin();
 		 iter != LLSelectMgr::getInstance()->getSelection()->valid_root_end(); iter++)
@@ -5404,14 +5393,13 @@ class LLToolsEnableUnlink : public view_listener_t
 		bool new_value = LLSelectMgr::getInstance()->selectGetAllRootsValid() &&
 			LLSelectMgr::getInstance()->getSelection()->getFirstEditableObject() &&
 			!LLSelectMgr::getInstance()->getSelection()->getFirstEditableObject()->isAttachment();
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0g
-		if ( (new_value) && (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && 
-			 (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->mIsSitting) )
+// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
+		if ( (new_value) && (!gRlvHandler.canStand()) )
 		{
-			// Allow if the avie isn't sitting on any of the selected objects
+			// Allow only if the avie isn't sitting on any of the selected objects
 			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn func(gAgent.getAvatarObject()->getRoot());
-			if (handleSel->getFirstRootNode(&func, TRUE))
+			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+			if (handleSel->getFirstRootNode(&f, TRUE) != NULL)
 				new_value = false;
 		}
 // [/RLVa:KB]
@@ -5424,13 +5412,13 @@ class LLToolsUnlink : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0g
-		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->mIsSitting) )
+// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
+		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
 		{
-			// Allow if the avie isn't sitting on any of the selected objects
-			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn func(gAgent.getAvatarObject()->getRoot());
-			if (handleSel->getFirstRootNode(&func, TRUE))
+			// Allow only if the avie isn't sitting on any of the selected objects
+			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+			if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE)) )
 				return true;
 		}
 // [/RLVa:KB]
@@ -5454,11 +5442,9 @@ class LLToolsReleaseKeys : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-		if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
-		{
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.2.0f) | Modified: RLVa-1.0.5a | OK
+		if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 			return true;
-		}
 // [/RLVa:KB]
 
 		gAgent.forceReleaseControls();
@@ -5471,9 +5457,9 @@ class LLToolsEnableReleaseKeys : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.2.0f) | Modified: RLVa-1.0.5a | OK
 		gMenuHolder->findControl(userdata["control"].asString())->setValue( 
-			gAgent.anyControlGrabbed() && ( (!rlv_handler_t::isEnabled()) || (!gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE) ) ) );
+			gAgent.anyControlGrabbed() && ((!rlv_handler_t::isEnabled()) || (!gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE))) );
 // [/RLVa:KB]
 		//gMenuHolder->findControl(userdata["control"].asString())->setValue( gAgent.anyControlGrabbed() );
 		return true;
@@ -6075,12 +6061,13 @@ class LLWorldCreateLandmark : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Added: RLVa-1.0.0a | OK
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 		{
 			return true;
 		}
 // [/RLVa:KB]
+
 		LLViewerRegion* agent_region = gAgent.getRegion();
 		if(!agent_region)
 		{
@@ -6181,7 +6168,7 @@ class LLAvatarInviteToGroup : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		{
 			return true;
@@ -6201,7 +6188,7 @@ class LLAvatarAddFriend : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		{
 			return true;	// Fallback code [see LLAvatarEnableAddFriend::handleEvent()]
@@ -6924,13 +6911,12 @@ private:
 			if (index > 0)
 				attachment_point = get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, index, (LLViewerJointAttachment*)NULL);
 
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f | OK
+			// RELEASE-RLVa: [SL-2.2.0] If 'index != 0' then the object will be "add attached" [see LLSelectMgr::sendAttach()]
 			if ( (rlv_handler_t::isEnabled()) &&
-				 ( ((index == 0) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_ANY))) ||		 // Can't wear on default attach point
-				   ((index > 0) &&                                                           // or replace a locked attachment
-				    ((gRlvHandler.isLockedAttachment(attachment_point->getObject(), RLV_LOCK_REMOVE)) ||
-					 (gRlvHandler.isLockedAttachment(attachment_point, RLV_LOCK_ADD)) ) ) || // or wear on a non-attachable attach point
-				   (gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) ) )								 // Attach on rezzed object == "Take"
+				 ( ((!index) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY))) ||		    // Can't wear on default
+				   ((index) && ((RLV_WEAR_ADD & gRlvAttachmentLocks.canAttach(attachment_point)) == 0)) ||	// or non-attachable attachpt
+				   (gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) ) )											    // Attach on object == "Take"
 			{
 				setObjectSelection(NULL); // Clear the selection or it'll get stuck
 				return true;
@@ -7044,18 +7030,18 @@ class LLAttachmentDrop : public view_listener_t
 			return true;
 		}
 
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-		if (rlv_handler_t::isEnabled()) 
+// [RLVa:KB] - Checked: 2010-03-15 (RLVa-1.2.0e) | Modified: RLVa-1.0.5 | OK
+		if (rlv_handler_t::isEnabled())
 		{
-			if (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE))
+			if (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE))
 			{
 				// NOTE: copy/paste of the code in enable_detach()
-				LLObjectSelectionHandle hSelection = LLSelectMgr::getInstance()->getSelection();
-				RlvSelectHasLockedAttach functor(RLV_LOCK_REMOVE);
-				if ( (hSelection->isAttachment()) && (hSelection->getFirstRootNode(&functor, FALSE)) )
+				LLObjectSelectionHandle hSelect = LLSelectMgr::getInstance()->getSelection();
+				RlvSelectHasLockedAttach f;
+				if ( (hSelect->isAttachment()) && (hSelect->getFirstRootNode(&f, FALSE) != NULL) )
 					return true;
 			}
-			else if (gRlvHandler.hasBehaviour(RLV_BHVR_REZ))
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_REZ))
 			{
 				return true;
 			}
@@ -7074,42 +7060,53 @@ class LLAttachmentDrop : public view_listener_t
 // called from avatar pie menu
 void handle_detach_from_avatar(void* user_data)
 {
-	LLViewerJointAttachment *attachment = (LLViewerJointAttachment *)user_data;
+	const LLViewerJointAttachment *attachment = (LLViewerJointAttachment*)user_data;
 	
-	LLViewerObject* attached_object = attachment->getObject();
-
-	if (attached_object)
-	{
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-		if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.isLockedAttachment(attached_object, RLV_LOCK_REMOVE)) )
-		{
-			return;
-		}
+//	if (attachment->getNumObjects() > 0)
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+	if ( (attachment->getNumObjects() > 0) && ((!rlv_handler_t::isEnabled()) || (gRlvAttachmentLocks.canDetach(attachment))) )
 // [/RLVa:KB]
-
+	{
 		gMessageSystem->newMessage("ObjectDetach");
 		gMessageSystem->nextBlockFast(_PREHASH_AgentData);
 		gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 		gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-
-		gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
-		gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, attached_object->getLocalID());
+		
+		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator iter = attachment->mAttachedObjects.begin();
+			 iter != attachment->mAttachedObjects.end();
+			 iter++)
+		{
+			LLViewerObject *attached_object = (*iter);
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+			if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.isLockedAttachment(attached_object)) )
+				continue;
+// [/RLVa:KB]
+			gMessageSystem->nextBlockFast(_PREHASH_ObjectData);
+			gMessageSystem->addU32Fast(_PREHASH_ObjectLocalID, attached_object->getLocalID());
+		}
 		gMessageSystem->sendReliable( gAgent.getRegionHost() );
 	}
 }
 
 void attach_label(std::string& label, void* user_data)
 {
-	LLViewerJointAttachment* attachmentp = (LLViewerJointAttachment*)user_data;
-	if (attachmentp)
+	LLViewerJointAttachment *attachment = (LLViewerJointAttachment*)user_data;
+	if (attachment)
 	{
-		label = attachmentp->getName();
-		if (attachmentp->getObject())
+		label = attachment->getName();
+		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator attachment_iter = attachment->mAttachedObjects.begin();
+			 attachment_iter != attachment->mAttachedObjects.end();
+			 ++attachment_iter)
 		{
-			LLViewerInventoryItem* itemp = gInventory.getItem(attachmentp->getItemID());
-			if (itemp)
+			const LLViewerObject* attached_object = (*attachment_iter);
+			if (attached_object)
 			{
-				label += std::string(" (") + itemp->getName() + std::string(")");
+				LLViewerInventoryItem* itemp = gInventory.getItem(attached_object->getAttachmentItemID());
+				if (itemp)
+				{
+					label += std::string(" (") + itemp->getName() + std::string(")");
+					break;
+				}
 			}
 		}
 	}
@@ -7117,16 +7114,23 @@ void attach_label(std::string& label, void* user_data)
 
 void detach_label(std::string& label, void* user_data)
 {
-	LLViewerJointAttachment* attachmentp = (LLViewerJointAttachment*)user_data;
-	if (attachmentp)
+	LLViewerJointAttachment *attachment = (LLViewerJointAttachment*)user_data;
+	if (attachment)
 	{
-		label = attachmentp->getName();
-		if (attachmentp->getObject())
+		label = attachment->getName();
+		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator attachment_iter = attachment->mAttachedObjects.begin();
+			 attachment_iter != attachment->mAttachedObjects.end();
+			 ++attachment_iter)
 		{
-			LLViewerInventoryItem* itemp = gInventory.getItem(attachmentp->getItemID());
-			if (itemp)
+			const LLViewerObject* attached_object = (*attachment_iter);
+			if (attached_object)
 			{
-				label += std::string(" (") + itemp->getName() + std::string(")");
+				LLViewerInventoryItem* itemp = gInventory.getItem(attached_object->getAttachmentItemID());
+				if (itemp)
+				{
+					label += std::string(" (") + itemp->getName() + std::string(")");
+					break;
+				}
 			}
 		}
 	}
@@ -7169,14 +7173,14 @@ class LLAttachmentDetach : public view_listener_t
 			return true;
 		}
 
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5) | Modified: RLVa-1.0.5
+// [RLVa:KB] - Checked: 2010-03-15 (RLVa-1.2.0a) | Modified: RLVa-1.0.5 | OK
 		// NOTE: copy/paste of the code in enable_detach()
-		if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
+		if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 		{
 			LLObjectSelectionHandle hSelect = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectHasLockedAttach functor(RLV_LOCK_REMOVE);
-			if ( (hSelect->isAttachment()) && (hSelect->getFirstRootNode(&functor, FALSE)) )
-				return FALSE;
+			RlvSelectHasLockedAttach f;
+			if ( (hSelect->isAttachment()) && (hSelect->getFirstRootNode(&f, FALSE) != NULL) )
+				return true;
 		}
 // [/RLVa:KB]
 
@@ -7240,27 +7244,31 @@ class LLAttachmentEnableDrop : public view_listener_t
 
 			if ( attachment_pt )
 			{
-				// make sure item is in your inventory (it could be a delayed attach message being sent from the sim)
-				// so check to see if the item is in the inventory already
-				item = gInventory.getItem(attachment_pt->getItemID());
-				
-				if ( !item )
+				for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment_pt->mAttachedObjects.begin();
+					 attachment_iter != attachment_pt->mAttachedObjects.end();
+					 ++attachment_iter)
 				{
-					// Item does not exist, make an observer to enable the pie menu 
-					// when the item finishes fetching worst case scenario 
-					// if a fetch is already out there (being sent from a slow sim)
-					// we refetch and there are 2 fetches
-					LLWornItemFetchedObserver* wornItemFetched = new LLWornItemFetchedObserver();
-					LLInventoryFetchObserver::item_ref_t items; //add item to the inventory item to be fetched
+					// make sure item is in your inventory (it could be a delayed attach message being sent from the sim)
+					// so check to see if the item is in the inventory already
+					item = gInventory.getItem((*attachment_iter)->getAttachmentItemID());
+					if (!item)
+					{
+						// Item does not exist, make an observer to enable the pie menu 
+						// when the item finishes fetching worst case scenario 
+						// if a fetch is already out there (being sent from a slow sim)
+						// we refetch and there are 2 fetches
+						LLWornItemFetchedObserver* wornItemFetched = new LLWornItemFetchedObserver();
+						LLInventoryFetchObserver::item_ref_t items; //add item to the inventory item to be fetched
 
-					items.push_back(attachment_pt->getItemID());
-				
-					wornItemFetched->fetchItems(items);
-					gInventory.addObserver(wornItemFetched);
+						items.push_back((*attachment_iter)->getAttachmentItemID());
+
+						wornItemFetched->fetchItems(items);
+						gInventory.addObserver(wornItemFetched);
+					}
 				}
 			}
 		}
-		
+
 		//now check to make sure that the item is actually in the inventory before we enable dropping it
 //		bool new_value = enable_detach(NULL) && can_build && item;
 // [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
@@ -7285,17 +7293,17 @@ BOOL enable_detach(void*)
 		// ...if it's you, good to detach
 		if (avatar->getID() == gAgent.getID())
 		{
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5) | Modified: RLVa-1.0.5
+// [RLVa:KB] - Checked: 2010-03-15 (RLVa-1.2.0a) | Modified: RLVa-1.0.5 | OK
 			// NOTE: this code is reused as-is in LLAttachmentDetach::handleEvent() and LLAttachmentDrop::handleEvent()
 			//       so any changes here should be reflected there as well
 
-			// RELEASE-RLVa: LLSelectMgr::sendDetach() and LLSelectMgr::sendDropAttachment() call sendListToRegions with
-			//               SEND_ONLY_ROOTS so we only need to examine the roots which saves us time
-			if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
+			// RELEASE-RLVa: [SL-2.2.0] LLSelectMgr::sendDetach() and LLSelectMgr::sendDropAttachment() call sendListToRegions with
+			//                          SEND_ONLY_ROOTS so we only need to examine the roots which saves us time
+			if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 			{
 				LLObjectSelectionHandle hSelect = LLSelectMgr::getInstance()->getSelection();
-				RlvSelectHasLockedAttach functor(RLV_LOCK_REMOVE);
-				if ( (hSelect->isAttachment()) && (hSelect->getFirstRootNode(&functor, FALSE)) )
+				RlvSelectHasLockedAttach f;
+				if ( (hSelect->isAttachment()) && (hSelect->getFirstRootNode(&f, FALSE) != NULL) )
 					return FALSE;
 			}
 // [/RLVa:KB]
@@ -7321,7 +7329,7 @@ class LLAttachmentEnableDetach : public view_listener_t
 // Used to tell if the selected object can be attached to your avatar.
 BOOL object_selected_and_point_valid(void *user_data)
 {
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5) | Modified: RLVa-1.0.5
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f | OK
 	if (rlv_handler_t::isEnabled())
 	{
 		// RELEASE-RLVa: look at the caller graph for this function on every new release
@@ -7330,12 +7338,10 @@ BOOL object_selected_and_point_valid(void *user_data)
 		//      - LLObjectEnableWear::handleEvent() => Rezzed prim / right-click / "Wear" [user_data == NULL => see above]
 		//      - enabler set up in LLVOAvatar::buildCharacter() => Rezzed prim / right-click / "Attach >" [user_data == pAttachPt]
 		//      - enabler set up in LLVOAvatar::buildCharacter() => Rezzed prim / Edit menu / "Attach Object" [user_data == pAttachPt]
-		LLViewerJointAttachment* pAttachPt = (LLViewerJointAttachment*)user_data;
-		if  ( ( (!pAttachPt) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_ANY)) ) ||	// Don't allow attach to default attach point
-			  ( (pAttachPt) &&															// Don't allow replacing of a locked attachment
-			    ( (gRlvHandler.isLockedAttachment(pAttachPt->getObject(), RLV_LOCK_REMOVE)) ||
-			      (gRlvHandler.isLockedAttachment(pAttachPt, RLV_LOCK_ADD)) ) ) ||		// or wear on a non-attachable attach point
-			  (gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) )								// Attaching a rezzed object == "Take"
+		const LLViewerJointAttachment* pAttachPt = (const LLViewerJointAttachment*)user_data;
+		if ( ((!pAttachPt) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY))) ||		// Can't wear on default attach point
+			 ((pAttachPt) && ((RLV_WEAR_ADD & gRlvAttachmentLocks.canAttach(pAttachPt)) == 0)) ||	// or non-attachable attach point
+			 (gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) )												// Attach on object == "Take"
 		{
 			return FALSE;
 		}
@@ -7413,13 +7419,13 @@ BOOL object_attached(void *user_data)
 {
 	LLViewerJointAttachment *attachment = (LLViewerJointAttachment *)user_data;
 
-// [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
 	return ( 
-		      (attachment->getObject() != NULL) && 
-			  ( (!rlv_handler_t::isEnabled()) || (!gRlvHandler.isLockedAttachment(attachment->getObject(), RLV_LOCK_REMOVE)) )
+		      (attachment->getNumObjects() > 0) && 
+			  ( (!rlv_handler_t::isEnabled()) || (gRlvAttachmentLocks.canDetach(attachment)) )
 		   );
 // [/RLVa:KB]
-//	return attachment->getObject() != NULL;
+//	return attachment->getNumObjects() > 0;
 }
 
 class LLAvatarSendIM : public view_listener_t
@@ -7427,7 +7433,7 @@ class LLAvatarSendIM : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e)
+// [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | OK
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		{
 			return true;
@@ -7558,13 +7564,13 @@ class LLToolsSelectedScriptAction : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.2.0f) | Modified: RLVa-1.0.5a | OK
 		// We'll allow resetting the scripts of objects on a non-attachable attach point since they wouldn't be able to circumvent anything
-		if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
+		if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 		{
-			LLObjectSelectionHandle hSelection = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectHasLockedAttach functor(RLV_LOCK_REMOVE);
-			if ( (hSelection->isAttachment()) && (hSelection->getFirstNode(&functor)) )
+			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+			RlvSelectHasLockedAttach f;
+			if ( (hSel->isAttachment()) && (hSel->getFirstNode(&f) != NULL) )
 				return true;
 		}
 // [/RLVa:KB]
@@ -7670,10 +7676,10 @@ void handle_dump_image_list(void*)
 
 void handle_test_male(void*)
 {
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-	if ( (rlv_handler_t::isEnabled()) && 
-		 ( (gRlvHandler.hasLockedAttachment(RLV_LOCK_ANY)) || 
-		   (gRlvHandler.hasBehaviour(RLV_BHVR_ADDOUTFIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_REMOUTFIT)) ) )
+// [RLVa:KB] - Checked: 2010-03-19 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a | OK
+	// TODO-RLVa: [RLVa-1.2.1] Is there any reason to still block this?
+ 	if ( (rlv_handler_t::isEnabled()) && 
+		 ((gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) || (gRlvWearableLocks.hasLockedWearableType(RLV_LOCK_ANY))) )
 	{
 		return;
 	}
@@ -7685,10 +7691,10 @@ void handle_test_male(void*)
 
 void handle_test_female(void*)
 {
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-	if ( (rlv_handler_t::isEnabled()) && 
-		 ( (gRlvHandler.hasLockedAttachment(RLV_LOCK_ANY)) || 
-		   (gRlvHandler.hasBehaviour(RLV_BHVR_ADDOUTFIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_REMOUTFIT)) ) )
+// [RLVa:KB] - Checked: 2010-03-19 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a | OK
+	// TODO-RLVa: [RLVa-1.2.1] Is there any reason to still block this?
+ 	if ( (rlv_handler_t::isEnabled()) && 
+		 ((gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) || (gRlvWearableLocks.hasLockedWearableType(RLV_LOCK_ANY))) )
 	{
 		return;
 	}
@@ -7722,17 +7728,23 @@ void handle_dump_attachments(void*)
 		LLVOAvatar::attachment_map_t::iterator curiter = iter++;
 		LLViewerJointAttachment* attachment = curiter->second;
 		S32 key = curiter->first;
-		BOOL visible = (attachment->getObject() != NULL &&
-						attachment->getObject()->mDrawable.notNull() && 
-						!attachment->getObject()->mDrawable->isRenderType(0));
-		LLVector3 pos;
-		if (visible) pos = attachment->getObject()->mDrawable->getPosition();
-		llinfos << "ATTACHMENT " << key << ": item_id=" << attachment->getItemID()
-				<< (attachment->getObject() ? " present " : " absent ")
-				<< (visible ? "visible " : "invisible ")
-				<<  " at " << pos
-				<< " and " << (visible ? attachment->getObject()->getPosition() : LLVector3::zero)
-				<< llendl;
+		for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+			 attachment_iter != attachment->mAttachedObjects.end();
+			 ++attachment_iter)
+		{
+			LLViewerObject *attached_object = (*attachment_iter);
+			BOOL visible = (attached_object != NULL &&
+							attached_object->mDrawable.notNull() && 
+							!attached_object->mDrawable->isRenderType(0));
+			LLVector3 pos;
+			if (visible) pos = attached_object->mDrawable->getPosition();
+			llinfos << "ATTACHMENT " << key << ": item_id=" << attached_object->getAttachmentItemID()
+					<< (attached_object ? " present " : " absent ")
+					<< (visible ? "visible " : "invisible ")
+					<<  " at " << pos
+					<< " and " << (visible ? attached_object->getPosition() : LLVector3::zero)
+					<< llendl;
+		}
 	}
 }
 
@@ -7850,16 +7862,16 @@ BOOL enable_more_than_one_selected(void* )
 
 static bool is_editable_selected()
 {
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-	// RELEASE-RLVa: check that this still isn't called by anything but script actions in the Tools menu
-	if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE)) )
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.5a | OK
+	// RELEASE-RLVa: [SL-2.2.0] Check that this still isn't called by anything but script actions in the Build menu
+	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
 	{
 		LLObjectSelectionHandle hSelection = LLSelectMgr::getInstance()->getSelection();
 
 		// NOTE: this is called for 5 different menu items so we'll trade accuracy for efficiency and only
 		//       examine root nodes (LLToolsSelectedScriptAction::handleEvent() will catch what we miss)
-		RlvSelectHasLockedAttach functor(RLV_LOCK_REMOVE);
-		if ( (hSelection->isAttachment()) && (hSelection->getFirstRootNode(&functor)) )
+		RlvSelectHasLockedAttach f;
+		if ( (hSelection->isAttachment()) && (hSelection->getFirstRootNode(&f)) )
 		{
 			return false;
 		}
@@ -8129,7 +8141,7 @@ class LLWorldEnableCreateLandmark : public view_listener_t
 	{
 		bool new_value = gAgent.isGodlike() || 
 			(gAgent.getRegion() && gAgent.getRegion()->getAllowLandmark());
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
+// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a) | OK
 		new_value &= !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC);
 // [/RLVa:KB]
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
@@ -8736,11 +8748,9 @@ class LLViewHighlightTransparent : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b)
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
-		{
+// [RLVa:KB] - Checked: 2010-04-11 (RLVa-1.2.0e) | Modified: RLVa-1.0.0b | OK
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!LLDrawPoolAlpha::sShowDebugAlpha))
 			return true;
-		}
 // [/RLVa:KB]
 
 		LLDrawPoolAlpha::sShowDebugAlpha = !LLDrawPoolAlpha::sShowDebugAlpha;
@@ -8790,11 +8800,9 @@ class LLViewShowHUDAttachments : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
-		if ( (LLPipeline::sShowHUDAttachments) && (rlv_handler_t::isEnabled()) && (gRlvHandler.hasLockedHUD()) )
-		{
+// [RLVa:KB] - Checked: 2010-04-19 (RLVa-1.2.1a) | Modified: RLVa-1.0.0c | OK
+		if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedHUD()) && (LLPipeline::sShowHUDAttachments) )
 			return true;
-		}
 // [/RLVa:KB]
 
 		LLPipeline::sShowHUDAttachments = !LLPipeline::sShowHUDAttachments;
@@ -8864,9 +8872,9 @@ class LLEditEnableTakeOff : public view_listener_t
 			new_value = LLAgent::selfHasWearable((void *)WT_TATTOO);
 		}
 
-// [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d)
+// [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b | OK
 		// Why aren't they using LLWearable::typeNameToType()? *confuzzled*
-		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.isRemovable(LLWearable::typeNameToType(clothing))) )
+		if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canRemove(LLWearable::typeNameToType(clothing))) )
 		{
 			new_value = false;
 		}
@@ -8977,11 +8985,9 @@ class LLWorldEnvSettings : public view_listener_t
 {	
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
+// [RLVa:KB] - Checked: 2010-03-18 (RLVa-1.2.0a) | Modified: RLVa-1.0.0g | OK
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SETENV))
-		{
 			return true;
-		}
 // [/RLVa:KB]
 
 		std::string tod = userdata.asString();
@@ -10499,7 +10505,7 @@ void initialize_menus()
 	addMenu(new LLEditableSelected(), "EditableSelected");
 	addMenu(new LLEditableSelectedMono(), "EditableSelectedMono");
 
-// [RLVa:KB] - Checked: 2010-01-18 (RLVa-1.1.0m) | Added: RLVa-1.1.0m
+// [RLVa:KB] - Checked: 2010-01-18 (RLVa-1.1.0m) | Added: RLVa-1.1.0m | OK
 	if (rlv_handler_t::isEnabled())
 	{
 		addMenu(new RlvEnableIfNot(), "RLV.EnableIfNot");

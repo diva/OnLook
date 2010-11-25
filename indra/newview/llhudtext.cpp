@@ -571,7 +571,7 @@ void LLHUDText::renderText(BOOL for_select)
 
 void LLHUDText::setStringUTF8(const std::string &wtext)
 {
-// [RLVa:KB] - Checked: 2009-07-09 (RLVa-1.0.0f)
+// [RLVa:KB] - Checked: 2010-03-02 (RLVa-1.2.0a) | Modified: RLVa-1.0.0f
 	// NOTE: setString() is only called for debug beacons and the floating name tags (which we don't want to censor
 	//       because you'd see "(Region hidden) LastName" if you happen to go to a sim who's name is your first name :p
 	if (rlv_handler_t::isEnabled())
@@ -581,9 +581,9 @@ void LLHUDText::setStringUTF8(const std::string &wtext)
 		if (gRlvHandler.canShowHoverText(mSourceObject))
 		{
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-				gRlvHandler.filterLocation(text);
+				RlvUtil::filterLocation(text);
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
-				gRlvHandler.filterNames(text);
+				RlvUtil::filterNames(text);
 		}
 		else
 		{

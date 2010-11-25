@@ -117,7 +117,7 @@ void LLFloaterObjectIMInfo::update(const LLUUID& object_id, const std::string& n
 
 //	bool my_object = (owner_id == gAgentID);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	bool my_object = (owner_id == gAgentID) || ((gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (gRlvHandler.isAgentNearby(owner_id)));
+	bool my_object = (owner_id == gAgentID) || ((gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(owner_id)));
 // [/RLVa:KB]
 	childSetEnabled("Mute",!my_object);
 	
@@ -151,7 +151,7 @@ void LLFloaterObjectIMInfo::onClickOwner(void* data)
 	}
 //	else
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	else if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (!gRlvHandler.isAgentNearby(self->mOwnerID)) )
+	else if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) || (!RlvUtil::isNearbyAgent(self->mOwnerID)) )
 // [/RLVa:KB]
 	{
 		LLFloaterAvatarInfo::showFromObject(self->mOwnerID);
@@ -165,7 +165,7 @@ void LLFloaterObjectIMInfo::onClickMute(void* data)
 
 	LLMute::EType mute_type = (self->mOwnerIsGroup) ? LLMute::GROUP : LLMute::AGENT;
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if ( (LLMute::GROUP != mute_type) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (gRlvHandler.isAgentNearby(self->mOwnerID)) )
+	if ( (LLMute::GROUP != mute_type) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(self->mOwnerID)) )
 	{
 		return;
 	}
@@ -188,7 +188,7 @@ void LLFloaterObjectIMInfo::nameCallback(const LLUUID& id, const std::string& fi
 	}
 
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0g
-	if ( (!is_group) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (gRlvHandler.isAgentNearby(id)) )
+	if ( (!is_group) && (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(id)) )
 	{
 		self->mOwnerName = RlvStrings::getAnonym(self->mOwnerName);
 	}

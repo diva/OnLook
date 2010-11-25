@@ -1971,9 +1971,11 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 				<< " for object " << objectp->getName()
 				<< " (shouldn't happen)" << llendl;
 		}
-		else if (objectp->getType() == LLAssetType::AT_CATEGORY) // build new view for category
+		else if ((objectp->getType() == LLAssetType::AT_CATEGORY) &&
+				(objectp->getActualType() != LLAssetType::AT_LINK_FOLDER)) // build new view for category
 		{
 			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(objectp->getType(),
+													objectp->getType(),
 													LLInventoryType::IT_CATEGORY,
 													this,
 													objectp->getUUID());
@@ -1994,6 +1996,7 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 			LLInventoryItem* item = (LLInventoryItem*)objectp;
 			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(
 				item->getType(),
+				item->getActualType(),
 				item->getInventoryType(),
 				this,
 				item->getUUID(),
@@ -2078,6 +2081,7 @@ void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
 		else if (objectp->getType() == LLAssetType::AT_CATEGORY) // build new view for category
 		{
 			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(objectp->getType(),
+													objectp->getType(),
 													LLInventoryType::IT_CATEGORY,
 													this,
 													objectp->getUUID());
@@ -2098,6 +2102,7 @@ void LLInventoryPanel::buildNewViews(const LLInventoryObject* objectp)
 			LLInventoryItem* item = (LLInventoryItem*)objectp;
 			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(
 				item->getType(),
+				item->getActualType(),
 				item->getInventoryType(),
 				this,
 				item->getUUID(),

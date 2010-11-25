@@ -160,6 +160,7 @@ public:
 	void updateAttachmentVisibility(U32 camera_mode);
 	void clampAttachmentPositions();
 	S32 getAttachmentCount(); // Warning: order(N) not order(1)
+	BOOL canAttachMoreObjects() const;
 
 	// HUD functions
 	BOOL hasHUDAttachment() const;
@@ -297,14 +298,18 @@ public:
 	void hideSkirt();
 
 
-	virtual void setParent(LLViewerObject* parent);
+	virtual BOOL setParent(LLViewerObject* parent);
 	virtual void addChild(LLViewerObject *childp);
 	virtual void removeChild(LLViewerObject *childp);
 
-	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
+// [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
+	LLViewerJointAttachment* getTargetAttachmentPoint(const LLViewerObject* viewer_object) const;
+// [/RLVa:KB]
 	BOOL attachObject(LLViewerObject *viewer_object);
 	BOOL detachObject(LLViewerObject *viewer_object);
 	void lazyAttach();
+
+	static BOOL	detachAttachmentIntoInventory(const LLUUID& item_id);
 
 	void sitOnObject(LLViewerObject *sit_object);
 	void getOffObject();
@@ -314,8 +319,8 @@ public:
 	BOOL isWearingUnsupportedAttachment( const LLUUID& inv_item_id );
 	// </edit>
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
-// [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
-	LLViewerJointAttachment* getWornAttachmentPoint(const LLUUID& inv_item_id);
+// [RLVa:KB] - Checked: 2010-03-14 (RLVa-1.2.0a) | Added: RLVa-1.1.0i
+	LLViewerJointAttachment* getWornAttachmentPoint(const LLUUID& inv_item_id) const;
 // [/RLVa:KB]
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
@@ -599,6 +604,8 @@ public:
 	// <edit>
 	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
 	// </edit>
+protected:
+	U32					getNumAttachments() const; // O(N), not O(1)
 
 	//--------------------------------------------------------------------
 	// static preferences that are controlled by user settings/menus

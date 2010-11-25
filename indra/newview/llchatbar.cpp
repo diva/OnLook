@@ -674,7 +674,7 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 		utf8_text = utf8str_truncate(utf8_text, MAX_STRING - 1);
 	}
 
-// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.1.1a) | Modified: RLVa-1.2.0b
+// [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.2.0b) | Modified: RLVa-1.2.0b
 	if ( (0 == channel) && (rlv_handler_t::isEnabled()) )
 	{
 		// Adjust the (public) chat "volume" on chat and gestures (also takes care of playing the proper animation)
@@ -685,7 +685,7 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 		else if ( (CHAT_TYPE_WHISPER == type) && (gRlvHandler.hasBehaviour(RLV_BHVR_CHATWHISPER)) )
 			type = CHAT_TYPE_NORMAL;
 
-		animate &= !gRlvHandler.hasBehaviour( (!rlvIsEmote(utf8_text)) ? RLV_BHVR_REDIRCHAT : RLV_BHVR_REDIREMOTE );
+		animate &= !gRlvHandler.hasBehaviour( (!RlvUtil::isEmote(utf8_text)) ? RLV_BHVR_REDIRCHAT : RLV_BHVR_REDIREMOTE );
 	}
 // [/RLVa:KB]
 
@@ -728,7 +728,7 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel)
 // [/RLVa:KB]
 {
-// [RLVa:KB] - Checked: 2010-02-27 (RLVa-1.1.1a) | Modified: RLVa-1.2.0a
+// [RLVa:KB] - Checked: 2010-02-27 (RLVa-1.2.0b) | Modified: RLVa-1.2.0a
 	// Only process chat messages (ie not CHAT_TYPE_START, CHAT_TYPE_STOP, etc)
 	if ( (rlv_handler_t::isEnabled()) && ( (CHAT_TYPE_WHISPER == type) || (CHAT_TYPE_NORMAL == type) || (CHAT_TYPE_SHOUT == type) ) )
 	{
@@ -762,7 +762,7 @@ void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channe
 			// Don't allow chat on debug channel if @sendchat, @redirchat or @rediremote restricted (shows as public chat on viewers)
 			if (CHAT_CHANNEL_DEBUG == channel)
 			{
-				bool fIsEmote = rlvIsEmote(utf8_out_text);
+				bool fIsEmote = RlvUtil::isEmote(utf8_out_text);
 				if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDCHAT)) || 
 					 ((!fIsEmote) && (gRlvHandler.hasBehaviour(RLV_BHVR_REDIRCHAT))) || 
 					 ((fIsEmote) && (gRlvHandler.hasBehaviour(RLV_BHVR_REDIREMOTE))) )

@@ -292,6 +292,8 @@ bool is_asset_id_knowable(LLAssetType::EType type)
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_ANIMATION:
 	case LLAssetType::AT_GESTURE:
+	case LLAssetType::AT_LINK:
+	case LLAssetType::AT_LINK_FOLDER:
 		rv = true;
 		break;
 	default:

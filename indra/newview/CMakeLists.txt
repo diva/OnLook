@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    cofmgr.cpp
 	ascentdaycyclemanager.cpp
 	ascentfloatercontactgroups.cpp
     ascentprefssys.cpp
@@ -94,6 +95,7 @@ set(viewer_SOURCE_FILES
     llassetconverter.cpp
     llassetuploadresponders.cpp
     llassetuploadqueue.cpp
+    llattachmentsmgr.cpp
     llaudiosourcevo.cpp
     llbbox.cpp
     llbox.cpp
@@ -498,9 +500,11 @@ set(viewer_SOURCE_FILES
     rlvhandler.cpp
     rlvhelper.cpp
     rlvcommon.cpp
-    rlvmultistringsearch.cpp
+    rlvlocks.cpp
+    rlvinventory.cpp
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
+    rlvviewer2.cpp
 	shcommandhandler.cpp
     )
 
@@ -525,6 +529,8 @@ endif (LINUX)
 set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
+
+	cofmgr.h
 	ascentdaycyclemanager.h
 	ascentfloatercontactgroups.h
 	ascentprefssys.h
@@ -554,6 +560,7 @@ set(viewer_HEADER_FILES
     llassetconverter.h
     llassetuploadresponders.h
     llassetuploadqueue.h
+    llattachmentsmgr.h
     llaudiosourcevo.h
     llbbox.h
     llbox.h
@@ -968,9 +975,11 @@ set(viewer_HEADER_FILES
     rlvhandler.h
     rlvhelper.h
     rlvcommon.h
-    rlvmultistringsearch.h
+    rlvlocks.h
+    rlvinventory.h
     rlvextensions.h
     rlvfloaterbehaviour.h
+    rlvviewer2.h
 	shcommandhandler.h
     )
 

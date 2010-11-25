@@ -93,9 +93,6 @@
 //#include "llnotecardmagic.h"
 // </edit>
 
-// Defined in llinventorybridge.cpp
-void wear_attachments_on_avatar(const std::set<LLUUID>& item_ids, BOOL remove);
-
 const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
 const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
 const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)
@@ -125,12 +122,6 @@ bool doToSelected(LLFolderView* folder, std::string action)
 
 	std::set<LLUUID> selected_items;
 	folder->getSelectionList(selected_items);
-
-	if ( ("attach" == action) && (selected_items.size() > 1) )
-	{
-		wear_attachments_on_avatar(selected_items, FALSE);
-		return true;
-	}
 
 	LLMultiPreview* multi_previewp = NULL;
 	LLMultiProperties* multi_propertiesp = NULL;
@@ -793,8 +784,6 @@ class LLBeginIMSession : public inventory_panel_listener_t
 		return true;
 	}
 };
-
-void rez_attachment(LLViewerInventoryItem* item, LLViewerJointAttachment* attachment);
 
 class LLAttachObject : public inventory_panel_listener_t
 {

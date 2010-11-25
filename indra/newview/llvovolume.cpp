@@ -63,8 +63,7 @@
 #include "llworld.h"
 #include "llselectmgr.h"
 #include "pipeline.h"
-
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.0d)
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
@@ -885,17 +884,20 @@ void LLVOVolume::updateFaceFlags()
 	}
 }
 
-void LLVOVolume::setParent(LLViewerObject* parent)
+BOOL LLVOVolume::setParent(LLViewerObject* parent)
 {
+	BOOL ret = FALSE ;
 	if (parent != getParent())
 	{
-		LLViewerObject::setParent(parent);
+		ret = LLViewerObject::setParent(parent);
 		if (mDrawable)
 		{
 			gPipeline.markMoved(mDrawable);
 			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
 		}
 	}
+
+	return ret ;
 }
 
 // NOTE: regenFaces() MUST be followed by genTriangles()!
@@ -1941,9 +1943,9 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 {
 	if (!mbCanSelect ||
 //		(gHideSelectedObjects && isSelected()) ||
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
 		( (gHideSelectedObjects && isSelected()) && 
-		  ((!rlv_handler_t::isEnabled()) || (!isHUDAttachment()) || (!gRlvHandler.isLockedAttachment(this, RLV_LOCK_REMOVE))) ) ||
+		  ((!rlv_handler_t::isEnabled()) || (!isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(getRootEdit()))) ) ||
 // [/RLVa:KB]
 			mDrawable->isDead() || 
 			!gPipeline.hasRenderType(mDrawable->getRenderType()))
@@ -2087,17 +2089,14 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 
 //	if (facep->getViewerObject()->isSelected() && gHideSelectedObjects)
-//	{
-//		return;
-//	}
-// [RLVa:KB] - Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
-	LLViewerObject* pObj = facep->getViewerObject();
+// [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.2.1f
+	const LLViewerObject* pObj = facep->getViewerObject();
 	if ( (pObj->isSelected() && gHideSelectedObjects) && 
-		 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvHandler.isLockedAttachment(pObj, RLV_LOCK_REMOVE))) )
+		 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) )
+// [/RVLa:KB]
 	{
 		return;
 	}
-// [/RVLa:KB]
 
 	//add face to drawmap
 	LLSpatialGroup::drawmap_elem_t& draw_vec = group->mDrawMap[type];	

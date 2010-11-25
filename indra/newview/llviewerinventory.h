@@ -37,6 +37,8 @@
 #include "llframetimer.h"
 #include "llwearable.h"
 
+class LLViewerInventoryCategory;
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLViewerInventoryItem
 //
@@ -53,6 +55,16 @@ protected:
 	~LLViewerInventoryItem( void ); // ref counted
 	
 public:
+	virtual LLAssetType::EType getType() const;
+	virtual const LLUUID& getAssetUUID() const;
+	virtual const std::string& getName() const;
+	virtual const LLPermissions& getPermissions() const;
+	virtual const LLUUID& getCreatorUUID() const;
+	virtual const std::string& getDescription() const;
+	virtual const LLSaleInfo& getSaleInfo() const;
+	virtual LLInventoryType::EType getInventoryType() const;
+	virtual U32 getFlags() const;
+
 	// construct a complete viewer inventory item
 	LLViewerInventoryItem(const LLUUID& uuid, const LLUUID& parent_uuid,
 						  const LLPermissions& permissions,
@@ -113,6 +125,10 @@ public:
 	BOOL isComplete() const { return mIsComplete; }
 	void setComplete(BOOL complete) { mIsComplete = complete; }
 	//void updateAssetOnServer() const;
+// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3a) | Added: RLVa-1.1.3a
+	virtual bool isWearableType() const;
+	virtual EWearableType getWearableType() const;
+// [/RLVa:KB]
 
 	virtual void packMessage(LLMessageSystem* msg) const;
 	virtual void setTransactionID(const LLTransactionID& transaction_id);
@@ -125,6 +141,10 @@ public:
 	};
 	LLTransactionID getTransactionID() const { return mTransactionID; }
 	
+	bool getIsBrokenLink() const; // true if the baseitem this points to doesn't exist in memory.
+	LLViewerInventoryItem *getLinkedItem() const;
+	LLViewerInventoryCategory *getLinkedCategory() const;
+
 protected:
 	BOOL mIsComplete;
 	LLTransactionID mTransactionID;
@@ -208,7 +228,7 @@ class LLViewerJointAttachment;
 class RezAttachmentCallback : public LLInventoryCallback
 {
 public:
-	RezAttachmentCallback(LLViewerJointAttachment *attachmentp);
+	RezAttachmentCallback(LLViewerJointAttachment *attachmentp, bool replace = false);
 	void fire(const LLUUID& inv_item);
 
 protected:
@@ -216,6 +236,7 @@ protected:
 
 private:
 	LLViewerJointAttachment* mAttach;
+	bool mReplace;
 };
 
 class ActivateGestureCallback : public LLInventoryCallback
@@ -270,6 +291,15 @@ void copy_inventory_item(
 	const LLUUID& item_id,
 	const LLUUID& parent_id,
 	const std::string& new_name,
+	LLPointer<LLInventoryCallback> cb);
+
+void link_inventory_item(
+	const LLUUID& agent_id,
+	const LLUUID& item_id,
+	const LLUUID& parent_id,
+	const std::string& new_name,
+	const std::string& new_description,
+	const LLAssetType::EType asset_type,
 	LLPointer<LLInventoryCallback> cb);
 
 void move_inventory_item(

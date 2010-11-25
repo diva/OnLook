@@ -20,7 +20,11 @@
 #include "lluictrlfactory.h"
 #include "llversionviewer.h"
 #include "llviewermenu.h"
+#include "llviewerparcelmgr.h"
+#include "llviewerregion.h"
+#include "llviewerstats.h"
 #include "llvoavatar.h"
+#include "llworld.h"
 
 #include "rlvcommon.h"
 #include "rlvhandler.h"
@@ -42,6 +46,14 @@ void RlvNotifications::notifyBehaviour(ERlvBehaviour eBhvr, ERlvParamType eType)
 	}
 }
 #endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
+
+// Checked: 2010-10-11 (RLVa-1.1.3c) | Added: RLVa-1.1.3c
+void RlvNotifications::notifyBlocked(const std::string& strRlvString)
+{
+	LLSD argsNotify;
+	argsNotify["MESSAGE"] = RlvStrings::getString(strRlvString);
+	LLNotifications::instance().add("SystemMessageTip", argsNotify);
+}
 
 // Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a
 void RlvNotifications::notifyBlockedViewXXX(const char* pstrAssetType)
@@ -105,37 +117,20 @@ void RlvSettings::initClass()
 		if (gSavedSettings.controlExists(RLV_SETTING_SHOWNAMETAGS))
 			gSavedSettings.getControl(RLV_SETTING_SHOWNAMETAGS)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _1, &fShowNameTags));
 
+		if (gSavedSettings.controlExists(RLV_SETTING_AVATAROFFSET_Z))
+			gSavedSettings.getControl(RLV_SETTING_AVATAROFFSET_Z)->getSignal()->connect(boost::bind(&onChangedAvatarOffset, _1));
+
 		fInitialized = true;
 	}
 }
 
-BOOL RlvSettings::getEnableWear()
-{
-	return 
-		(rlvGetSettingBOOL(RLV_SETTING_ENABLEWEAR, TRUE)) && // "Enable Wear" is toggled on and...
-		(!gRlvHandler.hasBehaviour(RLV_BHVR_DEFAULTWEAR)) && // not restricted and...
-		(!gRlvHandler.hasBehaviour(RLV_BHVR_ADDATTACH));	 // we have attach points we can attach to [see RlvHandler::onAddRemAttach()]
-}
-
-#ifndef RLV_WORKAROUND_REZMULTIPLEATTACH
-BOOL RlvSettings::getEnableSharedWear()
-{
-	// NOTE-RLVa: it's not proper but some code relies on the fact that getEnableSharedWear() returns FALSE if any attach point is locked
-	return 
-		(rlvGetSettingBOOL(RLV_SETTING_ENABLESHAREDWEAR, FALSE)) && // "Enable Shared Wear" is toggled on and...
-		(!gRlvHandler.hasLockedAttachment(RLV_LOCK_ANY));			// no attachment point is non-attachable or non-detachable
-}
-#endif // RLV_WORKAROUND_REZMULTIPLEATTACH
-
 #ifdef RLV_EXTENSION_STARTLOCATION
-	// Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1d
+	// Checked: 2010-04-01 (RLVa-1.2.0c) | Modified: RLVa-0.2.1d
 	void RlvSettings::updateLoginLastLocation()
 	{
 		if (gSavedPerAccountSettings.controlExists(RLV_SETTING_LOGINLASTLOCATION))
 		{
-			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || 
-						  ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && 
-						    (gAgent.getAvatarObject()) && (!gAgent.getAvatarObject()->mIsSitting) );
+			BOOL fValue = (gRlvHandler.hasBehaviour(RLV_BHVR_TPLOC)) || (!gRlvHandler.canStand());
 			if (gSavedPerAccountSettings.getBOOL(RLV_SETTING_LOGINLASTLOCATION) != fValue)
 			{
 				gSavedPerAccountSettings.setBOOL(RLV_SETTING_LOGINLASTLOCATION, fValue);
@@ -144,6 +139,13 @@ BOOL RlvSettings::getEnableSharedWear()
 		}
 	}
 #endif // RLV_EXTENSION_STARTLOCATION
+
+// Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
+bool RlvSettings::onChangedAvatarOffset(const LLSD& sdValue)
+{
+	gAgent.sendAgentSetAppearance();
+	return true;
+}
 
 // Checked: 2009-12-18 (RLVa-1.1.0k) | Added: RLVa-1.1.0i
 bool RlvSettings::onChangedSettingBOOL(const LLSD& newvalue, BOOL* pfSetting)
@@ -164,7 +166,7 @@ std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrAddMap;
 std::map<ERlvBehaviour, std::string> RlvStrings::m_BhvrRemMap;
 #endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
 
-// Checked: 2009-12-05 (RLVa-1.1.0h) | Added: RLVa-1.1.0h
+// Checked: 2010-03-09 (RLVa-1.2.0a) | Added: RLVa-1.1.0h
 void RlvStrings::initClass()
 {
 	static bool fInitialized = false;
@@ -173,7 +175,7 @@ void RlvStrings::initClass()
 		LLXMLNodePtr xmlRoot;
 		if ( (!LLUICtrlFactory::getLayeredXMLNode("rlva_strings.xml", xmlRoot)) || (xmlRoot.isNull()) || (!xmlRoot->hasName("rlva_strings")) )
 		{
-			llerrs << "Problem reading RLVa string XML file" << llendl;
+			RLV_ERRS << "Problem reading RLVa string XML file" << RLV_ENDL;
 			return;
 		}
 
@@ -221,7 +223,7 @@ void RlvStrings::initClass()
 
 		if ( (m_StringMap.empty()) || (m_Anonyms.empty()) )
 		{
-			llerrs << "Problem parsing RLVa string XML file" << llendl;
+			RLV_ERRS << "Problem parsing RLVa string XML file" << RLV_ENDL;
 			return;
 		}
 
@@ -325,10 +327,141 @@ std::string RlvStrings::getVersionAbout()
 		RLVa_VERSION_MAJOR, RLVa_VERSION_MINOR, RLVa_VERSION_PATCH, 'a' + RLVa_VERSION_BUILD);
 }
 
-// Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
+// Checked: 2010-03-27 (RLVa-1.2.0b) | Modified: RLVa-1.1.0a
 std::string RlvStrings::getVersionNum() 
 {
 	return llformat("%d%02d%02d%02d", RLV_VERSION_MAJOR, RLV_VERSION_MINOR, RLV_VERSION_PATCH, RLV_VERSION_BUILD);
+}
+
+// Checked: 2010-05-26 (RLVa-1.2.0h) | Added: RLVa-1.2.0g
+bool RlvStrings::hasString(const std::string& strStringName)
+{
+	return m_StringMap.find(strStringName) != m_StringMap.end();
+}
+
+// ============================================================================
+// RlvUtil
+//
+
+bool RlvUtil::m_fForceTp = false;
+
+// Checked: 2009-07-04 (RLVa-1.0.0a) | Modified: RLVa-1.0.0a
+void RlvUtil::filterLocation(std::string& strUTF8Text)
+{
+	// TODO-RLVa: if either the region or parcel name is a simple word such as "a" or "the" then confusion will ensue?
+	//            -> not sure how you would go about preventing this though :|...
+
+	// Filter any mention of the surrounding region names
+	LLWorld::region_list_t regions = LLWorld::getInstance()->getRegionList();
+	const std::string& strHiddenRegion = RlvStrings::getString(RLV_STRING_HIDDEN_REGION);
+	for (LLWorld::region_list_t::const_iterator itRegion = regions.begin(); itRegion != regions.end(); ++itRegion)
+		rlvStringReplace(strUTF8Text, (*itRegion)->getName(), strHiddenRegion);
+
+	// Filter any mention of the parcel name
+	LLViewerParcelMgr* pParcelMgr = LLViewerParcelMgr::getInstance();
+	if (pParcelMgr)
+		rlvStringReplace(strUTF8Text, pParcelMgr->getAgentParcelName(), RlvStrings::getString(RLV_STRING_HIDDEN_PARCEL));
+}
+
+// Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
+void RlvUtil::filterNames(std::string& strUTF8Text)
+{
+	std::vector<LLUUID> idAgents;
+	LLWorld::getInstance()->getAvatars(&idAgents, NULL);
+
+	std::string strFullName;
+	for (int idxAgent = 0, cntAgent = idAgents.size(); idxAgent < cntAgent; idxAgent++)
+	{
+		// LLCacheName::getFullName() will add the UUID to the lookup queue if we don't know it yet
+		if (gCacheName->getFullName(idAgents[idxAgent], strFullName))
+			rlvStringReplace(strUTF8Text, strFullName, RlvStrings::getAnonym(strFullName));
+	}
+}
+
+// Checked: 2010-08-29 (RLVa-1.2.1c) | Added: RLVa-1.2.1c
+void RlvUtil::forceTp(const LLVector3d& posDest)
+{
+	m_fForceTp = true;
+	gAgent.teleportViaLocationLookAt(posDest);
+	m_fForceTp = false;
+}
+
+// Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
+bool RlvUtil::isNearbyAgent(const LLUUID& idAgent)
+{
+	// Sanity check since we call this with notification payloads as well and those strings tend to change from one release to another
+	RLV_ASSERT(idAgent.notNull());
+	if ( (idAgent.notNull()) && (gAgent.getID() != idAgent) )
+	{
+		std::vector<LLUUID> idAgents;
+		LLWorld::getInstance()->getAvatars(&idAgents, NULL);
+
+		for (int idxAgent = 0, cntAgent = idAgents.size(); idxAgent < cntAgent; idxAgent++)
+			if (idAgents[idxAgent] == idAgent)
+				return true;
+	}
+	return false;
+}
+
+// Checked: 2010-04-05 (RLVa-1.2.0d) | Modified: RLVa-1.2.0d
+bool RlvUtil::isNearbyRegion(const std::string& strRegion)
+{
+	LLWorld::region_list_t regions = LLWorld::getInstance()->getRegionList();
+	for (LLWorld::region_list_t::const_iterator itRegion = regions.begin(); itRegion != regions.end(); ++itRegion)
+		if ((*itRegion)->getName() == strRegion)
+			return true;
+	return false;
+}
+
+// Checked: 2010-11-11 (RLVa-1.2.1g) | Added: RLVa-1.2.1g
+void RlvUtil::notifyFailedAssertion(const std::string& strAssert, const std::string& strFile, int nLine)
+{
+	static std::string strAssertPrev, strFilePrev; static int nLinePrev;
+	if ( (strAssertPrev == strAssert) && (strFile == strFilePrev) && (nLine == nLinePrev) )
+	{
+		// Don't show the same assertion over and over
+		return;
+	}
+	strAssertPrev = strAssert;
+	strFilePrev = strFile;
+	nLinePrev = nLine;
+
+	LLSD argsNotify;
+	argsNotify["MESSAGE"] = llformat("RLVa assertion failure: %s (%s - %d)", strAssert.c_str(), strFile.c_str(), nLine);
+	LLNotifications::instance().add("SystemMessageTip", argsNotify);
+}
+
+// Checked: 2010-03-27 (RLVa-1.1.3a) | Modified: RLVa-1.2.0b
+void RlvUtil::sendBusyMessage(const LLUUID& idTo, const std::string& strMsg, const LLUUID& idSession)
+{
+	// [See process_improved_im()]
+	std::string strFullName;
+	gAgent.buildFullname(strFullName);
+
+	pack_instant_message(gMessageSystem, gAgent.getID(), FALSE, gAgent.getSessionID(), idTo, strFullName,
+		strMsg, IM_ONLINE, IM_BUSY_AUTO_RESPONSE, idSession);
+	gAgent.sendReliableMessage();
+}
+
+// Checked: 2010-03-09 (RLVa-1.2.0a) | Modified: RLVa-1.0.1e
+bool RlvUtil::sendChatReply(S32 nChannel, const std::string& strUTF8Text)
+{
+	if (!isValidReplyChannel(nChannel))
+		return false;
+
+	// Copy/paste from send_chat_from_viewer()
+	gMessageSystem->newMessageFast(_PREHASH_ChatFromViewer);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	gMessageSystem->nextBlockFast(_PREHASH_ChatData);
+	gMessageSystem->addStringFast(_PREHASH_Message, strUTF8Text);
+	gMessageSystem->addU8Fast(_PREHASH_Type, CHAT_TYPE_SHOUT);
+	gMessageSystem->addS32("Channel", nChannel);
+	gAgent.sendReliableMessage();
+	LLViewerStats::getInstance()->incStat(LLViewerStats::ST_CHAT_COUNT);
+
+	return true;
 }
 
 // ============================================================================
@@ -351,10 +484,10 @@ bool RlvEnableIfNot::handleEvent(LLPointer<LLEvent>, const LLSD& userdata)
 // Selection functors
 //
 
-// Checked: 2009-07-06 (RLVa-1.0.0c) | Modified: RLVa-0.2.0f
+// Checked: 2010-04-20 (RLVa-1.2.0f) | Modified: RLVa-0.2.0f
 bool RlvSelectHasLockedAttach::apply(LLSelectNode* pNode)
 {
-	return (pNode->getObject()) ? gRlvHandler.isLockedAttachment(pNode->getObject(), m_eLock) : false;
+	return (pNode->getObject()) ? gRlvAttachmentLocks.isLockedAttachment(pNode->getObject()->getRootEdit()) : false;
 }
 
 // Checked: 2009-07-05 (RLVa-1.0.0b) | Modified: RLVa-0.2.0f
@@ -363,39 +496,87 @@ bool RlvSelectIsOwnedByOrGroupOwned::apply(LLSelectNode* pNode)
 	return (pNode->mPermissions->isGroupOwned()) || (pNode->mPermissions->getOwner() == m_idAgent);
 }
 
-// Checked: 2009-05-31 (RLVa-0.2.0f) | Modified: RLVa-0.2.0f
+// Checked: 2010-04-01 (RLVa-1.2.0c) | Modified: RLVa-0.2.0f
 bool RlvSelectIsSittingOn::apply(LLSelectNode* pNode)
 {
 	return (pNode->getObject()) && (pNode->getObject()->getRootEdit() == m_pObject);
 }
 
 // ============================================================================
+// Predicates
+//
+
+// Checked: 2010-11-11 (RLVa-1.2.1g) | Modified: RLVa-1.2.1g
+bool rlvPredCanWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask)
+{
+	if ( (pItem) && (RlvForceWear::isWearableItem(pItem)) )
+	{
+		if (RlvForceWear::isWearingItem(pItem))
+			return true; // Special exception for currently worn items
+		switch (pItem->getType())
+		{
+			case LLAssetType::AT_BODYPART:
+				// NOTE: only one body part of each type is allowed so the only way to wear one is if we can replace the current one
+				return (RLV_WEAR_LOCKED != (gRlvWearableLocks.canWear(pItem) & RLV_WEAR_REPLACE & eWearMask));
+			case LLAssetType::AT_CLOTHING:
+				return (RLV_WEAR_LOCKED != (gRlvWearableLocks.canWear(pItem) & eWearMask));
+			case LLAssetType::AT_OBJECT:
+				return (RLV_WEAR_LOCKED != (gRlvAttachmentLocks.canAttach(pItem) & eWearMask));
+			case LLAssetType::AT_GESTURE:
+				return true;
+			default:
+				RLV_ASSERT(false);
+		}
+	}
+	return false;
+}
+
+// Checked: 2010-03-22 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
+bool rlvPredCanNotWearItem(const LLViewerInventoryItem* pItem, ERlvWearMask eWearMask)
+{
+	return !rlvPredCanWearItem(pItem, eWearMask);
+}
+
+// Checked: 2010-03-22 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
+bool rlvPredCanRemoveItem(const LLViewerInventoryItem* pItem)
+{
+	if ( (pItem) && (RlvForceWear::isWearableItem(pItem)) )
+	{
+		switch (pItem->getType())
+		{
+			case LLAssetType::AT_BODYPART:
+			case LLAssetType::AT_CLOTHING:
+				return gRlvWearableLocks.canRemove(pItem);
+			case LLAssetType::AT_OBJECT:
+				return gRlvAttachmentLocks.canDetach(pItem);
+			case LLAssetType::AT_GESTURE:
+				return true;
+			default:
+				RLV_ASSERT(false);
+		}
+	}
+	return false;
+}
+
+// Checked: 2010-03-22 (RLVa-1.2.0c) | Added: RLVa-1.2.0a
+bool rlvPredCanNotRemoveItem(const LLViewerInventoryItem* pItem)
+{
+	return !rlvPredCanRemoveItem(pItem);
+}
+
+// ============================================================================
 // Various public helper functions
 //
 
-// Checked: 2009-10-10 (RLVa-1.0.5a) | Modified: RLVa-1.0.5a
+// Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
 BOOL rlvAttachToEnabler(void* pParam)
 {
 	// Visually disable an option on the "Attach to (HUD)" submenu if:
 	//   - the attachment point is locked non-detachable with an object attached
 	//   - the attachment point is locked non-attachable
 	return (pParam != NULL) && 
-		(!gRlvHandler.isLockedAttachment(((LLViewerJointAttachment*)pParam)->getObject(), RLV_LOCK_REMOVE)) &&
-		(!gRlvHandler.isLockedAttachment((LLViewerJointAttachment*)pParam, RLV_LOCK_ADD));
-}
-
-// Checked: 2009-10-04 (RLVa-1.0.4b) | Modified: RLVa-1.0.4b
-BOOL rlvEnableWearEnabler(void* pParam)
-{
-	// Visually disable the "Enable Wear" option when restricted from toggling it
-	return (!gRlvHandler.hasBehaviour(RLV_BHVR_DEFAULTWEAR));
-}
-
-// Checked: 2009-11-15 (RLVa-1.1.0c) | Added: RLVa-1.1.0c
-BOOL rlvEnableSharedWearEnabler(void* pParam)
-{
-	// Visually disable the "Enable Shared Wear" option when at least one attachment is non-detachable
-	return (!gRlvHandler.hasLockedAttachment(RLV_LOCK_REMOVE));
+		(!gRlvAttachmentLocks.hasLockedAttachment((LLViewerJointAttachment*)pParam)) &&
+		(!gRlvAttachmentLocks.isLockedAttachmentPoint((LLViewerJointAttachment*)pParam, RLV_LOCK_ADD));
 }
 
 // ============================================================================

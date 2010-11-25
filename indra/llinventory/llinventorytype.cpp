@@ -120,6 +120,33 @@ DEFAULT_ASSET_FOR_INV_TYPE[LLAssetType::AT_COUNT] =
 	LLInventoryType::IT_NONE,			// AT_IMAGE_JPEG
 	LLInventoryType::IT_ANIMATION,		// AT_ANIMATION
 	LLInventoryType::IT_GESTURE,		// AT_GESTURE
+	LLInventoryType::IT_NONE,			// AT_SIMSTATE
+	LLInventoryType::IT_NONE,			// AT_FAVORITE
+	LLInventoryType::IT_NONE,			// AT_LINK
+	LLInventoryType::IT_NONE,			// AT_LINK_FOLDER
+	LLInventoryType::IT_NONE,			// FT_ENSEMBLE_START
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// 
+	LLInventoryType::IT_NONE,			// FT_ENSEMBLE_END
+	LLInventoryType::IT_NONE,			// AT_CURRENT_OUTFIT
+	LLInventoryType::IT_NONE,			// AT_OUTFIT
+	LLInventoryType::IT_NONE			// AT_MY_OUTFITS
 };
 
 static const int MAX_POSSIBLE_ASSET_TYPES = 2;

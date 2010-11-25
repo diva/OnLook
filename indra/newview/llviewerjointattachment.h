@@ -76,15 +76,21 @@ public:
 	void setOriginalPosition(LLVector3 &position);
 	void setAttachmentVisibility(BOOL visible);
 	void setIsHUDAttachment(BOOL is_hud) { mIsHUDAttachment = is_hud; }
-	BOOL getIsHUDAttachment() { return mIsHUDAttachment; }
+//	BOOL getIsHUDAttachment() { return mIsHUDAttachment; }
+// [RLVa:KB] - Checked: 2010-09-26 (RLVa-1.3.0a) | Added: RLVa-1.3.0a
+	BOOL getIsHUDAttachment() const { return mIsHUDAttachment; }
+// [/RLVa:KB]
 
 	BOOL isAnimatable() { return FALSE; }
 
-	S32 getGroup() { return mGroup; }
-	S32 getPieSlice() { return mPieSlice; }
-	LLViewerObject *getObject() { return mAttachedObject; }
-	S32	getNumObjects() { return (mAttachedObject ? 1 : 0); }
-	const LLUUID& getItemID() { return mItemID; }
+//	S32 getGroup() { return mGroup; }
+//	S32 getPieSlice() { return mPieSlice; }
+//	S32 getNumObjects() { return mAttachedObjects.size(); }
+// [RLVa:KB] - Checked: 2010-09-26 (RLVa-1.3.0a) | Added: RLVa-1.3.0a
+	S32 getGroup() const { return mGroup; }
+	S32 getPieSlice() const { return mPieSlice; }
+	S32 getNumObjects() const { return mAttachedObjects.size(); }
+// [/RLVa:KB]
 
 	//
 	// unique methods
@@ -92,21 +98,29 @@ public:
 	BOOL addObject(LLViewerObject* object);
 	void removeObject(LLViewerObject *object);
 
-	void setupDrawable(LLDrawable* drawable);
 	void clampObjectPosition();
+
+	// 
+	// attachments operations
+	//
+	BOOL isObjectAttached(const LLViewerObject *viewer_object) const;
+	const LLViewerObject *getAttachedObject(const LLUUID &object_id) const;
+	LLViewerObject *getAttachedObject(const LLUUID &object_id);
+
+	// list of attachments for this joint
+	typedef std::vector<LLViewerObject *> attachedobjs_vec_t;
+	attachedobjs_vec_t mAttachedObjects;
 
 protected:
 	void calcLOD();
+	void setupDrawable(LLViewerObject *object);
 	
 protected:
-	// Backlink only; don't make this an LLPointer.
-	LLViewerObject*	mAttachedObject;
 	BOOL			mVisibleInFirst;
 	LLVector3		mOriginalPos;
 	S32				mGroup;
 	BOOL			mIsHUDAttachment;
 	S32				mPieSlice;
-	LLUUID			mItemID;			// Inventory item id of the attached item (null if not in inventory)
 };
 
 #endif // LL_LLVIEWERJOINTATTACHMENT_H

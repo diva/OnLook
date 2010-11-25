@@ -30,7 +30,13 @@
  * $/LicenseInfo$
  */
 
+#ifndef LL_LLINVENTORYBRIDGE_H
+#define LL_LLINVENTORYBRIDGE_H
+
 #include "llfloaterproperties.h"
+#include "llfolderview.h"
+#include "llinventorymodel.h"
+#include "llinventoryview.h"
 #include "llwearable.h"
 #include "llviewercontrol.h"
 #include "llcallingcard.h"
@@ -70,6 +76,9 @@ enum EInventoryIcon
 	ANIMATION_ICON_NAME,
 	GESTURE_ICON_NAME,
 
+	LINKITEM_ICON_NAME,
+	LINKFOLDER_ICON_NAME,
+
 	ICON_NAME_COUNT
 };
 
@@ -95,7 +104,7 @@ struct LLAttachmentRezAction
 };
 
 // [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
-// Moved from llinventorybridge.cpp because we need it in RlvForceWear
+// Moved from llinventorybridge.cpp because we need it in RlvForceWearLegacy
 struct LLFoundData
 {
 	LLFoundData(const LLUUID& item_id,
@@ -187,6 +196,7 @@ public:
 	// This method is a convenience function which creates the correct
 	// type of bridge based on some basic information
 	static LLInvFVBridge* createBridge(LLAssetType::EType asset_type,
+									   LLAssetType::EType actual_asset_type,
 									   LLInventoryType::EType inv_type,
 									   LLInventoryPanel* inventory,
 									   const LLUUID& uuid,
@@ -223,7 +233,9 @@ public:
 	virtual BOOL copyToClipboard() const { return FALSE; }
 	virtual void cutToClipboard() {}
 	virtual BOOL isClipboardPasteable() const;
+	virtual BOOL isClipboardPasteableAsLink() const;
 	virtual void pasteFromClipboard() {}
+	virtual void pasteLinkFromClipboard() {}
 	void getClipboardEntries(bool show_asset_id, std::vector<std::string> &items, 
 		std::vector<std::string> &disabled_items, U32 flags);
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
@@ -242,6 +254,8 @@ protected:
 
 	LLInventoryObject* getInventoryObject() const;
 	BOOL isInTrash() const;
+	BOOL isLinkedObjectInTrash() const; // Is this obj or its baseobj in the trash?
+	BOOL isLinkedObjectMissing() const; // Is this a linked obj whose baseobj is not in inventory?
 	// return true if the item is in agent inventory. if false, it
 	// must be lost or in the inventory library.
 	BOOL isAgentInventory() const;
@@ -274,7 +288,7 @@ public:
 	virtual void selectItem();
 	virtual void restoreItem();
 	virtual void restoreToWorld();
-
+	virtual void gotoItem(LLFolderView *folder);
 	virtual LLUIImagePtr getIcon() const;
 	virtual const std::string& getDisplayName() const;
 	virtual std::string getLabelSuffix() const;
@@ -320,7 +334,9 @@ public:
 	virtual BOOL renameItem(const std::string& new_name);
 	virtual BOOL removeItem();
 	virtual BOOL isClipboardPasteable() const;
+	virtual BOOL isClipboardPasteableAsLink() const;
 	virtual void pasteFromClipboard();
+	virtual void pasteLinkFromClipboard();
 	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
 	virtual BOOL hasChildren() const;
 	virtual BOOL dragOrDrop(MASK mask, BOOL drop,
@@ -362,7 +378,7 @@ protected:
 
 	BOOL checkFolderForContentsOfType(LLInventoryModel* model, LLInventoryCollectFunctor& typeToCheck);
 
-	void modifyOutfit(BOOL append);
+	void modifyOutfit(BOOL append, BOOL replace = FALSE);
 public:
 	static LLFolderBridge* sSelf;
 	static void staticFolderOptionsMenu();
@@ -647,3 +663,47 @@ protected:
 	LLInventoryType::EType mInvType;
 	EWearableType  mWearableType;
 };
+
+class LLLinkItemBridge : public LLItemBridge
+{
+	friend class LLInvFVBridge;
+public:
+	virtual const std::string& getPrefix() { return sPrefix; }
+
+	virtual LLUIImagePtr getIcon() const;
+	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
+
+protected:
+	LLLinkItemBridge(LLInventoryPanel* inventory, const LLUUID& uuid) :
+		LLItemBridge(inventory, uuid) {}
+
+protected:
+	static std::string sPrefix;
+};
+
+
+class LLLinkFolderBridge : public LLItemBridge
+{
+	friend class LLInvFVBridge;
+public:
+	virtual const std::string& getPrefix() { return sPrefix; }
+
+	virtual LLUIImagePtr getIcon() const;
+	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
+	virtual void performAction(LLFolderView* folder, LLInventoryModel* model, std::string action);
+	virtual void gotoItem(LLFolderView *folder);
+
+protected:
+	LLLinkFolderBridge(LLInventoryPanel* inventory, const LLUUID& uuid) :
+		LLItemBridge(inventory, uuid) {}
+	const LLUUID &getFolderID() const;
+
+protected:
+	static std::string sPrefix;
+};
+
+void rez_attachment(LLViewerInventoryItem* item, 
+					LLViewerJointAttachment* attachment,
+					bool replace = false);
+
+#endif // LL_LLINVENTORYBRIDGE_H

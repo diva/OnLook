@@ -28,6 +28,27 @@
 #include "rlvhandler.h"
 
 // ============================================================================
+// Helper functions
+//
+
+// Checked: 2010-03-11 (RLVa-1.1.3b) | Modified: RLVa-1.2.0g
+std::string rlvGetItemNameFromObjID(const LLUUID& idObj, bool fIncludeAttachPt = true)
+{
+	const LLViewerObject* pObj = gObjectList.findObject(idObj);
+	const LLViewerObject* pObjRoot = (pObj) ? pObj->getRootEdit() : NULL;
+	const LLViewerInventoryItem* pItem = ((pObjRoot) && (pObjRoot->isAttachment())) ? gInventory.getItem(pObjRoot->getAttachmentItemID()) : NULL;
+
+	std::string strItemName = (pItem) ? pItem->getName() : idObj.asString();
+	if ( (!fIncludeAttachPt) || (!pObj) || (!pObj->isAttachment()) || (!gAgent.getAvatarObject()) )
+		return strItemName;
+
+	const LLViewerJointAttachment* pAttachPt = 
+		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, RlvAttachPtLookup::getAttachPointIndex(pObjRoot), (LLViewerJointAttachment*)NULL);
+	std::string strAttachPtName = (pAttachPt) ? pAttachPt->getName() : std::string("Unknown");
+	return llformat("%s (%s, %s)", strItemName.c_str(), strAttachPtName.c_str(), (pObj == pObjRoot) ? "root" : "child");
+}
+
+// ============================================================================
 
 RlvFloaterBehaviour::RlvFloaterBehaviour(const LLSD& key) 
 	: LLFloater(std::string("rlvBehaviours"))
@@ -41,69 +62,57 @@ void RlvFloaterBehaviour::show(void*)
 	RlvFloaterBehaviour::showInstance();
 }
 
+// Checked: 2010-04-18 (RLVa-1.1.3b) | Modified: RLVa-1.2.0e
 void RlvFloaterBehaviour::refreshAll()
 {
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-	LLCtrlListInterface* pList = childGetListInterface("behaviour_list");
-	const rlv_object_map_t* pRlvObjects = gRlvHandler.getObjectMap();
-	if ( (!pAvatar) || (!pList) || (!pRlvObjects) )
+	LLCtrlListInterface* pBhvrList = childGetListInterface("behaviour_list");
+	if (!pBhvrList)
+		return;
+	pBhvrList->operateOnAll(LLCtrlListInterface::OP_DELETE);
+
+	if (!gAgent.getAvatarObject())
 		return;
 
-	pList->operateOnAll(LLCtrlListInterface::OP_DELETE);
+	//
+	// Set-up a row we can just reuse
+	//
+	LLSD sdRow;
+	LLSD& sdColumns = sdRow["columns"];
+	sdColumns[0]["column"] = "behaviour";   sdColumns[0]["type"] = "text";
+	sdColumns[1]["column"] = "name"; sdColumns[1]["type"] = "text";
 
-	for (rlv_object_map_t::const_iterator itObj = pRlvObjects->begin(), endObj = pRlvObjects->end(); itObj != endObj; ++itObj)
+	//
+	// List behaviours
+	//
+	const RlvHandler::rlv_object_map_t* pRlvObjects = gRlvHandler.getObjectMap();
+	for (RlvHandler::rlv_object_map_t::const_iterator itObj = pRlvObjects->begin(), endObj = pRlvObjects->end(); itObj != endObj; ++itObj)
 	{
-		std::string strName = itObj->first.asString();
-
-		LLViewerInventoryItem* pItem = NULL;
-		LLViewerObject* pObj = gObjectList.findObject(itObj->first);
-		if (pObj)
-		{
-			LLViewerJointAttachment* pAttachPt = 
-				get_if_there(pAvatar->mAttachmentPoints, gRlvHandler.getAttachPointIndex(pObj), (LLViewerJointAttachment*)NULL);
-			if (pAttachPt)
-			{
-				pItem = gInventory.getItem(pAttachPt->getItemID());
-			}
-		}
-
-		if (pItem)
-			strName = pItem->getName();
+		sdColumns[1]["value"] = rlvGetItemNameFromObjID(itObj->first);
 
 		const rlv_command_list_t* pCommands = itObj->second.getCommandList();
 		for (rlv_command_list_t::const_iterator itCmd = pCommands->begin(), endCmd = pCommands->end(); itCmd != endCmd; ++itCmd)
 		{
-			std::string strBhvr = itCmd->asString(); LLUUID uuid(itCmd->getOption());
-			if (uuid.notNull())
+			std::string strBhvr = itCmd->asString();
+			
+			LLUUID idOption(itCmd->getOption());
+			if (idOption.notNull())
 			{
 				std::string strLookup;
-				if ( (gCacheName->getFullName(uuid, strLookup)) || (gCacheName->getGroupName(uuid, strLookup)) )
+				if ( (gCacheName->getFullName(idOption, strLookup)) || (gCacheName->getGroupName(idOption, strLookup)) )
 				{
 					if (strLookup.find("???") == std::string::npos)
 						strBhvr.assign(itCmd->getBehaviour()).append(":").append(strLookup);
 				}
-				else if (m_PendingLookup.end() == std::find(m_PendingLookup.begin(), m_PendingLookup.end(), uuid))
+				else if (m_PendingLookup.end() == std::find(m_PendingLookup.begin(), m_PendingLookup.end(), idOption))
 				{
-					gCacheName->get(uuid, FALSE, onAvatarNameLookup, this);
-					m_PendingLookup.push_back(uuid);
+					gCacheName->get(idOption, FALSE, onAvatarNameLookup, this);
+					m_PendingLookup.push_back(idOption);
 				}
 			}
 
-			LLSD element;
+			sdColumns[0]["value"] = strBhvr;
 
-			// Restriction column
-			element["columns"][0]["column"] = "behaviour";
-			element["columns"][0]["value"] = strBhvr;
-			element["columns"][0]["font"] = "SANSSERIF";
-			element["columns"][0]["font-style"] = "NORMAL";
-
-			// Object Name column
-			element["columns"][1]["column"] = "name";
-			element["columns"][1]["value"] = strName;
-			element["columns"][1]["font"] = "SANSSERIF";
-			element["columns"][1]["font-style"] = "NORMAL";
-
-			pList->addElement(element, ADD_BOTTOM);
+			pBhvrList->addElement(sdRow, ADD_BOTTOM);
 		}
 	}
 }

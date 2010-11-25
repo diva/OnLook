@@ -46,6 +46,7 @@
 #include "lldbstrings.h"
 #include "llhudeffectlookat.h"
 #include "llhudeffectpointat.h"
+#include "llinventorymodel.h"
 #include "llmemory.h"
 #include "llstring.h"
 #include "lluuid.h"
@@ -63,6 +64,7 @@
 #include "llcharacter.h"
 #include "llinventory.h"
 #include "llviewerinventory.h"
+#include "llviewerobject.h"
 #include "llagentdata.h"
 
 // Ventrella
@@ -730,6 +732,14 @@ public:
 	static void		userRemoveAllClothesStep2(BOOL proceed, void* userdata ); // userdata is NULL
 	static void		userRemoveAllAttachments( void* userdata);	// userdata is NULL
 	static BOOL		selfHasWearable( void* userdata );			// userdata is EWearableType
+
+//	static void 	userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array);
+// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
+	// Not the best way to go about this but other attempts changed far too much LL code to be a viable solution
+	static void 	userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array, bool fAttachOnly = false);
+// [/SL:KB]
+	static void		userRemoveMultipleAttachments(llvo_vec_t& llvo_array);
+	static void		userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_item_array);
 
 	//debug methods
 	static void		clearVisualParams(void *);

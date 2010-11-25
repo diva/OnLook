@@ -223,6 +223,10 @@ public:
 		childSetAction("Cancel", onCancel, this ); 
 		childSetAction("Check All", onCheckAll, this );
 		childSetAction("Uncheck All", onUncheckAll, this );
+
+		LLCheckBoxCtrl* pOutfitFoldersCtrl = getChild<LLCheckBoxCtrl>("checkbox_use_outfits");
+		pOutfitFoldersCtrl->setCommitCallback(&LLMakeOutfitDialog::onOutfitFoldersToggle);
+		pOutfitFoldersCtrl->setCallbackUserData(this);
 	}
 
 	BOOL getRenameClothing()
@@ -251,9 +255,11 @@ public:
 
 	void setWearableToInclude( S32 wearable, S32 enabled, S32 selected )
 	{
-		if( (0 <= wearable) && (wearable < WT_COUNT) )
+		EWearableType wtType = (EWearableType)wearable;
+		if ( ( (0 <= wtType) && (wtType < WT_COUNT) ) && 
+			 ( (LLAssetType::AT_BODYPART != LLWearable::typeToAssetType(wtType)) || (!gSavedSettings.getBOOL("UseOutfitFolders")) ) )
 		{
-			std::string name = std::string("checkbox_") + LLWearable::typeToTypeLabel( (EWearableType)wearable );
+			std::string name = std::string("checkbox_") + LLWearable::typeToTypeLabel(wtType);
 			childSetEnabled(name, enabled);
 			childSetValue(name, selected);
 		}
@@ -322,6 +328,39 @@ public:
 	{
 		LLMakeOutfitDialog* self = (LLMakeOutfitDialog*) userdata;
 		self->close(); // destroys this object
+	}
+
+	BOOL postBuild()
+	{
+		refresh();
+		return TRUE;
+	}
+
+	void refresh()
+	{
+		BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders");
+
+		for (S32 idxType = 0; idxType < WT_COUNT; idxType++ )
+		{
+			EWearableType wtType = (EWearableType)idxType;
+			if (LLAssetType::AT_BODYPART != LLWearable::typeToAssetType(wtType))
+				continue;
+			LLCheckBoxCtrl* pCheckCtrl = getChild<LLCheckBoxCtrl>(std::string("checkbox_") + LLWearable::typeToTypeLabel(wtType));
+			if (!pCheckCtrl)
+				continue;
+
+			pCheckCtrl->setEnabled(!fUseOutfits);
+			if (fUseOutfits)
+				pCheckCtrl->setValue(TRUE);
+		}
+		childSetEnabled("checkbox_use_links", !fUseOutfits);
+	}
+
+	static void onOutfitFoldersToggle(LLUICtrl*, void* pParam)
+	{
+		LLMakeOutfitDialog* pSelf = (LLMakeOutfitDialog*)pParam;
+		if (pSelf)
+			pSelf->refresh();
 	}
 };
 

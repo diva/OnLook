@@ -131,6 +131,20 @@ public:
 		// simstate file
 		AT_SIMSTATE = 22,
 
+		AT_FAVORITE = 23,
+
+		// Inventory symbolic link
+		AT_LINK = 24,
+
+		// Inventory folder link
+		AT_LINK_FOLDER = 25,
+
+		AT_CURRENT_OUTFIT = 46,
+
+		AT_OUTFIT = 47,
+
+		AT_MY_OUTFITS = 48,
+
 		// +*********************************************+
 		// |  TO ADD AN ELEMENT TO THIS ENUM:            |
 		// +*********************************************+
@@ -140,7 +154,7 @@ public:
 		// | 4. ADD TO LLAssetType::mAssetTypeHumanNames |
 		// +*********************************************+
 
-		AT_COUNT = 23,
+		AT_COUNT = 49,
 
 		AT_NONE = -1
 	};
@@ -165,6 +179,9 @@ public:
 	static EType getType(const std::string& sin);
 	static std::string getDesc(EType type);
 	
+	static bool lookupCanLink(EType asset_type);
+	static bool lookupIsLinkType(EType asset_type);
+
 private:
 	// don't instantiate or derive one of these objects
 	LLAssetType( void ) {}

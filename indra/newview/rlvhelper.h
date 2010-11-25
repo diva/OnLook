@@ -1,3 +1,19 @@
+/** 
+ *
+ * Copyright (c) 2009-2010, Kitty Barnett
+ * 
+ * The source code in this file is provided to you under the terms of the 
+ * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A 
+ * PARTICULAR PURPOSE. Terms of the GPL can be found in doc/GPL-license.txt 
+ * in this distribution, or online at http://www.gnu.org/licenses/gpl-2.0.txt
+ * 
+ * By copying, modifying or distributing this software, you acknowledge that
+ * you have read and understood your obligations described above, and agree to 
+ * abide by those obligations.
+ * 
+ */
+
 #ifndef RLV_HELPER_H
 #define RLV_HELPER_H
 
@@ -27,20 +43,21 @@
 class RlvCommand
 {
 public:
-	explicit RlvCommand(const std::string& strCommand);
+	explicit RlvCommand(const LLUUID& idObj, const std::string& strCommand);
 
 	/*
 	 * Member functions
 	 */
 public:
 	std::string        asString() const;
-	const std::string& getBehaviour() const     { return m_strBehaviour; }
-	ERlvBehaviour      getBehaviourType() const { return m_eBehaviour; }
-	const std::string& getOption() const        { return m_strOption; }
-	const std::string& getParam() const         { return m_strParam; }
-	ERlvParamType      getParamType() const     { return m_eParamType; }
+	const std::string& getBehaviour() const		{ return m_strBehaviour; }
+	ERlvBehaviour      getBehaviourType() const	{ return m_eBehaviour; }
+	const LLUUID&      getObjectID() const		{ return m_idObj; }
+	const std::string& getOption() const		{ return m_strOption; }
+	const std::string& getParam() const			{ return m_strParam; }
+	ERlvParamType      getParamType() const		{ return m_eParamType; }
 	bool               isStrict() const			{ return m_fStrict; }
-	bool               isValid() const          { return m_fValid; }
+	bool               isValid() const			{ return m_fValid; }
 
 	static ERlvBehaviour      getBehaviourFromString(const std::string& strBhvr, bool* pfStrict = NULL);
 	static const std::string& getStringFromBehaviour(ERlvBehaviour eBhvr);
@@ -60,13 +77,14 @@ public:
 	 * Member variables
 	 */
 protected:
-	bool         	m_fValid;
-	std::string  	m_strBehaviour;
-	ERlvBehaviour	m_eBehaviour;
-	bool            m_fStrict;
-	std::string  	m_strOption;
-	std::string  	m_strParam;
-	ERlvParamType	m_eParamType;
+	bool          m_fValid;
+	LLUUID        m_idObj;
+	std::string   m_strBehaviour;
+	ERlvBehaviour m_eBehaviour;
+	bool          m_fStrict;
+	std::string   m_strOption;
+	std::string   m_strParam;
+	ERlvParamType m_eParamType;
 
 	typedef std::map<std::string, ERlvBehaviour> RlvBhvrTable;
 	static RlvBhvrTable m_BhvrMap;
@@ -74,6 +92,88 @@ protected:
 	friend class RlvHandler;
 };
 typedef std::list<RlvCommand> rlv_command_list_t;
+
+// ============================================================================
+// RlvCommandOption (and derived classed)
+//
+
+class RlvCommandOption
+{
+protected:
+	RlvCommandOption() {}
+public:
+	virtual ~RlvCommandOption() {}
+
+public:
+	virtual bool isAttachmentPoint() const		{ return false; }
+	virtual bool isAttachmentPointGroup() const	{ return false; }
+	virtual bool isEmpty() const = 0;
+	virtual bool isSharedFolder() const			{ return false; }
+	virtual bool isString() const				{ return false; }
+	virtual bool isUUID() const					{ return false; }
+	virtual bool isValid() const = 0;
+	virtual bool isWearableType() const			{ return false; }
+
+	virtual LLViewerJointAttachment*   getAttachmentPoint() const		{ return NULL; }
+	virtual ERlvAttachGroupType        getAttachmentPointGroup() const	{ return RLV_ATTACHGROUP_INVALID; }
+	virtual LLViewerInventoryCategory* getSharedFolder() const			{ return NULL; }
+	virtual const std::string&         getString() const				{ return LLStringUtil::null; }
+	virtual const LLUUID&              getUUID() const					{ return LLUUID::null; }
+	virtual EWearableType              getWearableType() const			{ return WT_INVALID; }
+};
+
+class RlvCommandOptionGeneric : public RlvCommandOption
+{
+public:
+	explicit RlvCommandOptionGeneric(const std::string& strOption);
+	RlvCommandOptionGeneric(LLViewerJointAttachment* pAttachPt) : m_fEmpty(false)	{ m_varOption = pAttachPt; }
+	RlvCommandOptionGeneric(LLViewerInventoryCategory* pFolder) : m_fEmpty(false)	{ m_varOption = pFolder; }
+	RlvCommandOptionGeneric(const LLUUID& idOption) : m_fEmpty(false)				{ m_varOption = idOption; }
+	RlvCommandOptionGeneric(EWearableType wtType) : m_fEmpty(false)			{ m_varOption = wtType; }
+	/*virtual*/ ~RlvCommandOptionGeneric() {}
+
+public:
+	/*virtual*/ bool isAttachmentPoint() const		{ return (!isEmpty()) && (typeid(LLViewerJointAttachment*) == m_varOption.type()); }
+	/*virtual*/ bool isAttachmentPointGroup() const	{ return (!isEmpty()) && (typeid(ERlvAttachGroupType) == m_varOption.type()); }
+	/*virtual*/ bool isEmpty() const				{ return m_fEmpty; }
+	/*virtual*/ bool isSharedFolder() const			{ return (!isEmpty()) && (typeid(LLViewerInventoryCategory*) == m_varOption.type()); }
+	/*virtual*/ bool isString() const				{ return (!isEmpty()) && (typeid(std::string) == m_varOption.type()); }
+	/*virtual*/ bool isUUID() const					{ return (!isEmpty()) && (typeid(LLUUID) == m_varOption.type()); }
+	/*virtual*/ bool isValid() const				{ return true; } // This doesn't really have any significance for the generic class
+	/*virtual*/ bool isWearableType() const			{ return (!isEmpty()) && (typeid(EWearableType) == m_varOption.type()); }
+
+	/*virtual*/ LLViewerJointAttachment*   getAttachmentPoint() const
+		{ return (isAttachmentPoint()) ? boost::get<LLViewerJointAttachment*>(m_varOption) : RlvCommandOption::getAttachmentPoint(); }
+	/*virtual*/ ERlvAttachGroupType        getAttachmentPointGroup() const
+		{ return (isAttachmentPointGroup()) ? boost::get<ERlvAttachGroupType>(m_varOption) : RlvCommandOption::getAttachmentPointGroup(); }
+	/*virtual*/ LLViewerInventoryCategory* getSharedFolder() const
+		{ return (isSharedFolder()) ? boost::get<LLViewerInventoryCategory*>(m_varOption) : RlvCommandOption::getSharedFolder(); }
+	/*virtual*/ const std::string&         getString() const
+		{ return (isString()) ? boost::get<std::string>(m_varOption) : RlvCommandOption::getString(); }
+	/*virtual*/ const LLUUID&              getUUID() const
+		{ return (isUUID()) ? boost::get<LLUUID>(m_varOption) : RlvCommandOption::getUUID(); }
+	/*virtual*/ EWearableType              getWearableType() const
+		{ return (isWearableType()) ? boost::get<EWearableType>(m_varOption) : RlvCommandOption::getWearableType(); }
+
+protected:
+	bool m_fEmpty;
+	boost::variant<LLViewerJointAttachment*, ERlvAttachGroupType, LLViewerInventoryCategory*, std::string, LLUUID, EWearableType> m_varOption;
+};
+
+class RlvCommandOptionGetPath : public RlvCommandOption
+{
+public:
+	RlvCommandOptionGetPath(const RlvCommand& rlvCmd);
+	/*virtual*/ ~RlvCommandOptionGetPath() {}
+
+	/*virtual*/ bool  isEmpty() const	 { return m_idItems.empty(); }
+	/*virtual*/ bool  isValid() const	 { return m_fValid; }
+	const uuid_vec_t& getItemIDs() const { return m_idItems; }
+
+protected:
+	bool       m_fValid;
+	uuid_vec_t m_idItems;
+};
 
 // ============================================================================
 // RlvObject
@@ -103,6 +203,7 @@ public:
 protected:
 	LLUUID             m_UUID;				// The object's UUID
 	S32                m_idxAttachPt;		// The object's attachment point (or 0 if it's not an attachment)
+	LLUUID             m_idRoot;			// The UUID of the object's root (may or may not be different from m_UUID)
 	bool               m_fLookup;			// TRUE if the object existed in gObjectList at one point in time
 	S16                m_nLookupMisses;		// Count of unsuccessful lookups in gObjectList by the GC
 	rlv_command_list_t m_Commands;			// List of behaviours held by this object (in the order they were received)
@@ -111,216 +212,112 @@ protected:
 };
 
 // ============================================================================
-// RlvAttachmentManager - Self contained helper class that automagically takes care of the nitty gritty of force detaching/reattaching
-//
-
-class RlvAttachmentManager
-{
-public:
-	RlvAttachmentManager() : m_pTimer(NULL) {}
-	~RlvAttachmentManager() { delete m_pTimer; }
-
-	/*
-	 * Member functions
-	 */
-public:
-	// NOTE: the following two do *not* respect attachment locks so use with care
-	static void attach(const LLUUID& idItem, S32 idxAttachPt);
-	static void detach(LLViewerJointAttachment* pAttachPt);
-protected:
-	void startTimer() { if (!m_pTimer) m_pTimer = new RlvAttachmentManagerTimer(this); }
-
-	/*
-	 * Event handlers
-	 */
-public:
-	void onAttach(LLViewerJointAttachment* pAttachPt);
-	void onDetach(LLViewerJointAttachment* pAttachPt);
-	void onSavedAssetIntoInventory(const LLUUID& idItem);
-	BOOL onTimer();
-	void onWearAttachment(const LLUUID& idItem);
-
-	/*
-	 * Member variables
-	 */
-protected:
-	typedef std::map<S32, LLUUID> rlv_detach_map_t;
-	rlv_detach_map_t m_PendingDetach;
-
-	struct RlvReattachInfo
-	{
-		RlvReattachInfo(const LLUUID& itemid) : idItem(itemid), fAssetSaved(false), tsAttach(0) 
-			{ tsDetach = LLFrameTimer::getElapsedSeconds(); }
-
-		LLUUID idItem;
-		bool   fAssetSaved;
-		F64    tsDetach;
-		F64    tsAttach;
-	protected:
-		RlvReattachInfo();
-	};
-	typedef std::map<S32, RlvReattachInfo> rlv_attach_map_t;
-	rlv_attach_map_t m_PendingAttach;
-
-	struct RlvWearInfo
-	{
-		RlvWearInfo(LLUUID itemid) : idItem(itemid) { tsWear = LLFrameTimer::getElapsedSeconds(); }
-
-		LLUUID idItem;
-		F64    tsWear;
-		std::map<S32, LLUUID> attachPts;
-	protected:
-		RlvWearInfo();
-	};
-	typedef std::map<LLUUID, RlvWearInfo> rlv_wear_map_t;
-	rlv_wear_map_t   m_PendingWear;
-
-	class RlvAttachmentManagerTimer : public LLEventTimer
-	{
-	public:
-		RlvAttachmentManagerTimer(RlvAttachmentManager* pMgr) : LLEventTimer(10), m_pMgr(pMgr) {}
-		virtual ~RlvAttachmentManagerTimer() { m_pMgr->m_pTimer = NULL; }
-		virtual BOOL tick() { return m_pMgr->onTimer(); }
-		RlvAttachmentManager* m_pMgr;
-	} *m_pTimer;
-};
-
-// ============================================================================
-// RlvCriteriaCategoryCollector - Criteria based folder matching filter used by @findfolder and @findfolders
-//
-
-class RlvCriteriaCategoryCollector : public LLInventoryCollectFunctor
-{
-public:
-	RlvCriteriaCategoryCollector(const std::string& strCriteria)
-	{
-		std::string::size_type idxIt, idxLast = 0;
-		while (idxLast < strCriteria.length())
-		{
-			idxIt = strCriteria.find("&&", idxLast);
-			if (std::string::npos == idxIt)
-				idxIt = strCriteria.length();
-			if (idxIt != idxLast)
-				m_Criteria.push_back(strCriteria.substr(idxLast, idxIt - idxLast));
-			idxLast = idxIt + 2;
-		}
-	}
-	virtual ~RlvCriteriaCategoryCollector() {}
-
-	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem)
-	{
-		if ( (!pFolder) || (m_Criteria.empty()) )	// We're only interested in matching folders, we don't care about items
-			return false;							// (if there are no criteria then we don't want to return a match)
-
-		std::string strFolderName = pFolder->getName();
-		LLStringUtil::toLower(strFolderName);
-
-		// NOTE: hidden or "give to #RLV" folders can never be a match
-		if ( (strFolderName.empty()) ||	
-			 (RLV_FOLDER_PREFIX_HIDDEN == strFolderName[0]) || (RLV_FOLDER_PREFIX_PUTINV == strFolderName[0]) )
-		{
-			return false;
-		}
-
-		for (std::list<std::string>::const_iterator itCrit = m_Criteria.begin(); itCrit != m_Criteria.end(); ++itCrit)
-			if (std::string::npos == strFolderName.find(*itCrit))	// Return false on the first mismatch
-				return false;
-		return true;
-	}
-
-protected:
-	std::list<std::string> m_Criteria;
-};
-
-// ============================================================================
-// RlvWearableItemCollector - Inventory item filter used by attach/detach/attachall/detachall/getinvworn
-//
-
-class RlvWearableItemCollector : public LLInventoryCollectFunctor
-{
-public:
-	RlvWearableItemCollector(const LLUUID& idFolder, bool fAttach, bool fMatchAll)
-		: m_idFolder(idFolder), m_fAttach(fAttach), m_fMatchAll(fMatchAll)
-	{
-		m_Wearable.push_back(idFolder);
-	}
-	virtual ~RlvWearableItemCollector() {}
-
-	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem);
-
-	const LLUUID& getFoldedParent(const LLUUID& idFolder) const;
-protected:
-	bool         m_fAttach;
-	bool         m_fMatchAll;
-	const LLUUID m_idFolder;
-
-	bool onCollectFolder(const LLInventoryCategory* pFolder);
-	bool onCollectItem(const LLInventoryItem* pItem);
-
-	std::list<LLUUID> m_Tentative;
-	std::list<LLUUID> m_Wearable;
-
-	std::map<LLUUID, LLUUID> m_Folding;
-};
-
-// ============================================================================
 // RlvForceWear
 //
 
-class RlvForceWear
+class RlvForceWear : public LLSingleton<RlvForceWear>
 {
+protected:
+	RlvForceWear() {}
+
 public:
 	// Folders
-	enum eWearAction { ACTION_ATTACH, ACTION_DETACH };
-	enum eWearFlags { FLAG_NONE = 0x00, FLAG_MATCHALL = 0x01, FLAG_DEFAULT = FLAG_NONE };
-	void forceFolder(const LLViewerInventoryCategory* pFolder, eWearAction eAction, eWearFlags eFlags);
+	enum EWearAction { ACTION_WEAR_REPLACE, ACTION_WEAR_ADD, ACTION_REMOVE };
+	enum EWearFlags { FLAG_NONE = 0x00, FLAG_MATCHALL = 0x01, FLAG_DEFAULT = FLAG_NONE };
+	void forceFolder(const LLViewerInventoryCategory* pFolder, EWearAction eAction, EWearFlags eFlags);
 
-	// Attachments
-	static bool isForceDetachable(LLViewerJointAttachment* pAttachPt, bool fCheckComposite = true, LLViewerObject* pExceptObj = NULL);
-	void forceDetach(LLViewerJointAttachment* ptAttachPt);
-
-	// Wearables
-	static bool isForceRemovable(EWearableType wtType, bool fCheckComposite = true, const LLUUID& idExcept = LLUUID::null);
-	void forceRemove(EWearableType wtType);
-
-	// General purpose
+	// Generic
+	static bool isWearAction(EWearAction eAction) { return (ACTION_WEAR_REPLACE == eAction) || (ACTION_WEAR_ADD == eAction); }
 	static bool isWearableItem(const LLInventoryItem* pItem);
 	static bool isWearingItem(const LLInventoryItem* pItem);
 
+	// Nostrip
+	static bool isStrippable(const LLUUID& idItem) { return isStrippable(gInventory.getItem(idItem)); }
+	static bool isStrippable(const LLInventoryItem* pItem);
+
+	// Attachments
+	static bool isForceDetachable(const LLViewerObject* pAttachObj, bool fCheckComposite = true, const LLUUID& idExcept = LLUUID::null);
+	static bool isForceDetachable(const LLViewerJointAttachment* pAttachPt, bool fCheckComposite = true, const LLUUID& idExcept = LLUUID::null);
+	void forceDetach(const LLViewerObject* pAttachObj);
+	void forceDetach(const LLViewerJointAttachment* ptAttachPt);
+
+	// Wearables
+	static bool isForceRemovable(const LLWearable* pWearable, bool fCheckComposite = true, const LLUUID& idExcept = LLUUID::null);
+	static bool isForceRemovable(EWearableType wtType, bool fCheckComposite = true, const LLUUID& idExcept = LLUUID::null);
+	void forceRemove(const LLWearable* pWearable);
+	void forceRemove(EWearableType wtType);
+
 public:
-	void done()	{ processRem(); processAdd(); }
+	void done();
 protected:
-	void processAdd();
-	void processRem();
-	static void	onWearableArrived(LLWearable* pWearable, void* pParam);
+	void addAttachment(const LLViewerInventoryItem* pItem, EWearAction eAction);
+	void remAttachment(const LLViewerObject* pAttachObj);
+	void addWearable(const LLViewerInventoryItem* pItem, EWearAction eAction);
+	void remWearable(const LLWearable* pWearable);
+
+	// Convenience (prevents long lines that run off the screen elsewhere)
+	bool isAddAttachment(const LLViewerInventoryItem* pItem) const
+	{
+		bool fFound = false;
+		for (addattachments_map_t::const_iterator itAddAttachments = m_addAttachments.begin(); 
+				(!fFound) && (itAddAttachments != m_addAttachments.end()); ++itAddAttachments)
+		{
+			const LLInventoryModel::item_array_t& wearItems = itAddAttachments->second;
+			fFound = (std::find_if(wearItems.begin(), wearItems.end(), RlvPredIsEqualOrLinkedItem(pItem)) != wearItems.end());
+		}
+		return fFound;
+	}
+	bool isRemAttachment(const LLViewerObject* pAttachObj) const
+	{
+		return std::find(m_remAttachments.begin(), m_remAttachments.end(), pAttachObj) != m_remAttachments.end();
+	}
+	bool isAddWearable(const LLViewerInventoryItem* pItem) const
+	{
+		bool fFound = false;
+		for (addwearables_map_t::const_iterator itAddWearables = m_addWearables.begin(); 
+				(!fFound) && (itAddWearables != m_addWearables.end()); ++itAddWearables)
+		{
+			const LLInventoryModel::item_array_t& wearItems = itAddWearables->second;
+			fFound = (std::find_if(wearItems.begin(), wearItems.end(), RlvPredIsEqualOrLinkedItem(pItem)) != wearItems.end());
+		}
+		return fFound;
+	}
+	bool isRemWearable(const LLWearable* pWearable) const
+	{
+		return std::find(m_remWearables.begin(), m_remWearables.end(), pWearable) != m_remWearables.end();
+	}
 
 protected:
-	LLInventoryModel::item_array_t m_addAttachments, m_addWearables, m_addGestures, m_remGestures;
-	std::list<LLViewerJointAttachment*> m_remAttachments;
-	std::list<EWearableType> m_remWearables;
+	typedef std::pair<EWearableType, LLInventoryModel::item_array_t> addwearable_pair_t;
+	typedef std::map<EWearableType, LLInventoryModel::item_array_t> addwearables_map_t;
+	addwearables_map_t               m_addWearables;
+	typedef std::pair<S32, LLInventoryModel::item_array_t> addattachment_pair_t;
+	typedef std::map<S32, LLInventoryModel::item_array_t> addattachments_map_t;
+	addattachments_map_t             m_addAttachments;
+	LLInventoryModel::item_array_t   m_addGestures;
+	std::list<const LLViewerObject*> m_remAttachments;
+	std::list<const LLWearable*>     m_remWearables;
+	LLInventoryModel::item_array_t   m_remGestures;
+
+private:
+	friend class LLSingleton<RlvForceWear>;
 };
 
 // ============================================================================
-// RlvBehaviourNotifyObserver
+// RlvBehaviourNotifyHandler
 //
 
-class RlvBehaviourNotifyObserver : public RlvBehaviourObserver
+class RlvBehaviourNotifyHandler : public LLSingleton<RlvBehaviourNotifyHandler>, public RlvBehaviourObserver
 {
-public:
-	virtual ~RlvBehaviourNotifyObserver() { }
-	virtual void changed(const RlvCommand& rlvCmd, bool fInternal);
+	friend class LLSingleton<RlvBehaviourNotifyHandler>;
+protected:
+	RlvBehaviourNotifyHandler();
+	virtual ~RlvBehaviourNotifyHandler();
 
+public:
 	void addNotify(const LLUUID& idObj, S32 nChannel, const std::string& strFilter)
 	{
 		m_Notifications.insert(std::pair<LLUUID, notifyData>(idObj, notifyData(nChannel, strFilter)));
-	}
-	void clearNotify(const LLUUID& idObj)
-	{
-		m_Notifications.erase(idObj);
-	}
-	bool hasNotify()
-	{
-		return (m_Notifications.size() != 0);
 	}
 	void removeNotify(const LLUUID& idObj, S32 nChannel, const std::string& strFilter)
 	{
@@ -333,7 +330,13 @@ public:
 				break;
 			}
 		}
+		if (m_Notifications.empty())
+			delete this;	// Delete ourself if we have nothing to do
 	}
+	void sendNotification(const std::string& strText, const std::string& strSuffix = LLStringUtil::null) const;
+protected:
+	/*virtual*/ void changed(const RlvCommand& rlvCmd, bool fInternal);
+
 protected:
 	struct notifyData
 	{
@@ -343,22 +346,6 @@ protected:
 	};
 	std::multimap<LLUUID, notifyData> m_Notifications;
 };
-
-// ============================================================================
-// RlvRetainedCommand
-//
-
-struct RlvRetainedCommand
-{
-public:
-	LLUUID      idObject;
-	RlvCommand  rlvCmd;
-
-	RlvRetainedCommand(const LLUUID& uuid, const RlvCommand& cmd) : idObject(uuid), rlvCmd(cmd) {}
-private:
-	RlvRetainedCommand();
-};
-typedef std::list<RlvRetainedCommand> rlv_retained_list_t;
 
 // ============================================================================
 // RlvException
@@ -406,36 +393,14 @@ public:
 	virtual BOOL tick();
 };
 
-class RlvCurrentlyWorn : public LLInventoryFetchObserver
-{
-public:
-	RlvCurrentlyWorn() {}
-	~RlvCurrentlyWorn() {}
-	virtual void done() {}
-
-	static void fetchWorn();
-	void fetchItem(const LLUUID& idItem);
-};
-
-class RlvGiveToRLVAgentOffer : public LLInventoryFetchDescendentsObserver
-{
-public:
-	RlvGiveToRLVAgentOffer() {}
-	virtual void done();
-};
-
 // ============================================================================
 // Various helper functions
 //
 
 bool rlvCanDeleteOrReturn();
-S32  rlvGetDirectDescendentsCount(const LLInventoryCategory* pFolder, LLAssetType::EType type);
-bool rlvIsEmote(const std::string& strUTF8Text);
-bool rlvIsValidReplyChannel(S32 nChannel);
 
-void rlvSendBusyMessage(const LLUUID& idTo, const std::string& strMsg, const LLUUID& idSession = LLUUID::null);
-bool rlvSendChatReply(const std::string& strChannel, const std::string& strReply);
-bool rlvSendChatReply(S32 nChannel, const std::string& strReply);
+ERlvAttachGroupType rlvAttachGroupFromIndex(S32 idxGroup);
+ERlvAttachGroupType rlvAttachGroupFromString(const std::string& strGroup);
 
 std::string rlvGetFirstParenthesisedText(const std::string& strText, std::string::size_type* pidxMatch = NULL);
 std::string rlvGetLastParenthesisedText(const std::string& strText, std::string::size_type* pidxStart = NULL);
@@ -446,10 +411,6 @@ void        rlvStringReplace(std::string& strText, std::string strFrom, const st
 	void rlvToggleEnabled(void*);
 	BOOL rlvGetEnabled(void*);
 #endif // RLV_ADVANCED_TOGGLE_RLVA
-
-// ============================================================================
-// Debug helper functions
-//
 
 // ============================================================================
 // Inlined class member functions
@@ -487,52 +448,13 @@ inline bool RlvCommand::hasStrictVariant(ERlvBehaviour eBhvr)
 	}
 }
 
-inline void RlvCurrentlyWorn::fetchItem(const LLUUID& idItem)
-{ 
-	if (idItem.notNull()) 
-	{
-		LLInventoryFetchObserver::item_ref_t idItems; 
-		idItems.push_back(idItem);
-		fetchItems(idItems);
-	}
-}
-
-// Checked: 2009-12-18 (RLVa-1.1.0k) | Added: RLVa-1.1.0i
+// Checked: 2010-04-05 (RLVa-1.2.0d) | Modified: RLVa-1.2.0d
 inline bool RlvForceWear::isWearableItem(const LLInventoryItem* pItem)
 {
-	return (LLAssetType::AT_OBJECT == pItem->getType()) || (LLAssetType::AT_GESTURE == pItem->getType()) ||
-		(LLAssetType::AT_BODYPART == pItem->getType()) || (LLAssetType::AT_CLOTHING == pItem->getType());
-}
-
-// Checked: 2009-12-18 (RLVa-1.1.0k) | Modified: RLVa-1.1.0i
-inline bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
-{
+	LLAssetType::EType assetType = (pItem) ? pItem->getType() : LLAssetType::AT_NONE;
 	return 
-		((LLAssetType::AT_OBJECT == pItem->getType()) && (gAgent.getAvatarObject()->isWearingAttachment(pItem->getUUID()))) ||
-		((LLAssetType::AT_GESTURE == pItem->getType()) && (gGestureManager.isGestureActive(pItem->getUUID()))) ||
-		(gAgent.isWearingItem(pItem->getUUID()));
-}
-
-// ============================================================================
-// Inlined helper functions
-//
-
-inline bool rlvIsEmote(const std::string& strUTF8Text)
-{
-	return (strUTF8Text.length() > 4) && ( (strUTF8Text.compare(0, 4, "/me ") == 0) || (strUTF8Text.compare(0, 4, "/me'") == 0) );
-}
-
-// Checked: 2009-09-05 (RLVa-1.0.2a) | Added: RLVa-1.0.2a
-inline bool rlvIsValidReplyChannel(S32 nChannel)
-{
-	return (nChannel > 0) && (CHAT_CHANNEL_DEBUG != nChannel);
-}
-
-// Checked: 2009-08-05 (RLVa-1.0.1e) | Added: RLVa-1.0.0e
-inline bool rlvSendChatReply(const std::string& strChannel, const std::string& strReply)
-{
-	S32 nChannel;
-	return (LLStringUtil::convertToS32(strChannel, nChannel)) ? rlvSendChatReply(nChannel, strReply) : false;
+		(LLAssetType::AT_BODYPART == assetType) || (LLAssetType::AT_CLOTHING == assetType) ||
+		(LLAssetType::AT_OBJECT == assetType) || (LLAssetType::AT_GESTURE == assetType);
 }
 
 // ============================================================================

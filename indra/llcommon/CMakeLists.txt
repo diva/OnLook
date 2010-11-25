@@ -22,6 +22,7 @@ set(llcommon_SOURCE_FILES
     llbase32.cpp
     llbase64.cpp
     llcommon.cpp
+    llcommonutils.cpp
     llcrc.cpp
     llcriticaldamp.cpp
     llcursortypes.cpp
@@ -96,6 +97,7 @@ set(llcommon_HEADER_FILES
     llchat.h
     llclickaction.h
     llcommon.h
+    llcommonutils.h
     llcrc.h
     llcriticaldamp.h
     llcursortypes.h
