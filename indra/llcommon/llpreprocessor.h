@@ -142,6 +142,7 @@
 #define LL_DLLIMPORT
 #endif // LL_WINDOWS
 
+/*
 #ifdef llcommon_EXPORTS
 // Compiling llcommon (shared)
 #define LL_COMMON_API LL_DLLEXPORT
@@ -149,5 +150,9 @@
 // Using llcommon (shared)
 #define LL_COMMON_API LL_DLLIMPORT
 #endif // llcommon_EXPORTS
+*/
+
+//I hate DLLs -SG
+#define LL_COMMON_API
 
 #endif	//	not LL_LINDEN_PREPROCESSOR_H
