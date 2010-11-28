@@ -165,6 +165,7 @@ LLPluginClassMedia* LLStreamingAudio_MediaPlugins::initializeMedia(const std::st
 	if (media_source)
 	{
 		media_source->setLoop(false); // audio streams are not expected to loop
+		media_source->setPriority(LLPluginClassMedia::PRIORITY_HIGH); // don't stutter on me! -SG
 	}
 
 	return media_source;
