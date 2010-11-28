@@ -64,6 +64,7 @@ BOOL LLPanelInput::postBuild()
 	childSetValue("invert_mouse", gSavedSettings.getBOOL("InvertMouse"));
 	childSetValue("edit_camera_movement", gSavedSettings.getBOOL("EditCameraMovement"));
 	childSetValue("appearance_camera_movement", gSavedSettings.getBOOL("AppearanceCameraMovement"));
+	childSetValue("unsit_on_camera_reset", gSavedSettings.getBOOL("SianaUnsitOnCamReset"));
 	childSetValue("first_person_avatar_visible", gSavedSettings.getBOOL("FirstPersonAvatarVisible"));
 
 	LLSliderCtrl* fov_slider = getChild<LLSliderCtrl>("camera_fov");
@@ -91,6 +92,7 @@ void LLPanelInput::apply()
 	gSavedSettings.setBOOL("InvertMouse", childGetValue("invert_mouse"));
 	gSavedSettings.setBOOL("EditCameraMovement", childGetValue("edit_camera_movement"));
 	gSavedSettings.setBOOL("AppearanceCameraMovement", childGetValue("appearance_camera_movement"));
+	gSavedSettings.setBOOL("SianaUnsitOnCamReset", childGetValue("unsit_on_camera_reset"));
 	gSavedSettings.setF32("CameraAngle", mPreAdjustFOV);
 	gSavedSettings.setBOOL("FirstPersonAvatarVisible", childGetValue("first_person_avatar_visible"));
 }

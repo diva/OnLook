@@ -10,8 +10,19 @@
 	</array-->
 	
 	<!-- !!! settings_ascent.xml -->
-
-
+		
+		
+		<key>SianaUnsitOnCamReset</key>
+		<map>
+			<key>Comment</key>
+			<string>Make avatar stand up when camera is reset to 3rd Person View</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>Boolean</string>
+			<key>Value</key>
+			<integer>0</integer>
+		</map>
 		<key>PhoenixNameSystem</key>
 		<map>
 		  <key>Comment</key>

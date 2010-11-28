@@ -4191,15 +4191,16 @@ void LLAgent::changeCameraToThirdPerson(BOOL animate)
 		return;
 	}
 
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (mAvatarObject.notNull()) && (mAvatarObject->mIsSitting) )
+// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) +SG
+	if ( (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) 
+			&& (mAvatarObject.notNull()) 
+			&& (mAvatarObject->mIsSitting) 
+			&& gSavedSettings.getBOOL("SianaUnsitOnCamReset"))
 	{
-		return;
+		setControlFlags(AGENT_CONTROL_STAND_UP); // force stand up
 	}
 // [/RLVa:KB]
-
-	setControlFlags(AGENT_CONTROL_STAND_UP); // force stand up
-
+	
 	gViewerWindow->getWindow()->resetBusyCount();
 
 	mCameraZoomFraction = INITIAL_ZOOM_FRACTION;

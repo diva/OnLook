@@ -68,6 +68,11 @@
 	     label="Automatic Appearance Camera Movement" left="148" mouse_opaque="true"
 	     name="appearance_camera_movement" radio_style="false"
 	     tool_tip="Use automatic camera positioning while in edit mode" width="242" />
+	<check_box bottom_delta="-18" enabled="true"
+	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	     label="Unsit Avatar on Camera Reset" left="148" mouse_opaque="true"
+	     name="unsit_on_camera_reset" radio_style="false"
+	     tool_tip="Stand up automatically when you press Esc and the camera switches to third person mode" width="242" />
   <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-22" drop_shadow_visible="true" enabled="true" follows="left|top"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="12" left="10"
