@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>Ascent</string>
+	<string>Singularity Viewer</string>
 	<key>CFBundleIconFile</key>
-	<string>Ascent.icns</string>
+	<string>singularity.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.ascent.indra.viewer</string>
+	<string>com.secondlife.indra.viewer</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Ascent</string>
+	<string>Singularity Viewer</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
