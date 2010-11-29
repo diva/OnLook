@@ -217,13 +217,13 @@
             <string>4db3d74e40d149eeec06f4d97a609bb1</string>
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-linux-20100624.tar.bz2</uri>
-	  </map>
+          </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>72e6e2eff5d146a107f3059b6c31fb95</string>
+            <string>094acc8173faca882ed9532e868d767f</string>
             <key>url</key>
-			<uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-windows-20100630.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/boost-1.36.0-windows-20091124.tar.bz2</uri>
           </map>
         </map>
       </map>
