@@ -69,6 +69,7 @@ import optparse
 import os
 import platform
 import pprint
+import re
 import shutil
 import tarfile
 import tempfile
