@@ -1,7 +1,137 @@
-Forked from Inertia, Ascent's goal is to "clean up" the code, removing "bad" features and limiting as necessary to provide a stable, powerful client with features for both content creators and general use that adheres to the Linden Labs Third Party Viewer Policy.
+00000000011111111112222222222333333333344444444445555555555666666666677777777778
+12345678901234567890123456789012345678901234567890123456789012345678901234567890
+       ______ ___ __   _  _____ _    _       ______  _____ ___ _____ _   _
+       |_____  |  | \  | |  ___ |    | |     |____| |____/  |    |    \_/  
+       _____| _|_ |  \_| |____| |____| |____ |    | |   \_ _|_   |     |   
+                                               _  _ _ ____ _  _ ____ ____
+                                                \/  | |=== |/\| |=== |--<
 
-Since the initial fork to take in Inertia's useful asset browsing features, alpha skins on a Snowglobe base and other numerous attractive features, the code has been extensively modified to make sure that it is a legit Second Life client. Code from other Third Party Viewers has been merged extensively as well -- Including Emerald, Imprudence, and Nano. 
+Sin-gu-la-ri-ty (noun) - a distinctive feature, a uniqueness; a point at which
+continuity breaks up; a point in history at which machine becomes smarter than 
+humanity and/or fuses with it indivisively; or simply a cool sounding word with 
+my initials in it :)
+	
+Singularity Viewer is a Second Life protocol compatible client application. It
+can be used to access Second LIfe service as well as a number of other such as
+those based upon OpenSim plattform. It is directly based upon source code of 
+Ascent Viewer by Balseraph Software Group, which is in turn based upon source 
+code released by Linden Lab, with contributions from various sources.
 
-Far from being just a fork, we aim to aggregate useful features from all clients where content development is concerned, to provide builders, modders, programmers and all other creators in Second Life a powerful toolset to work their trade, without having to compromise their privacy or security by using TPVs such as Emerald.
+I, Siana Gearz (Second Life Resident) am the soul maintainer of Singularity
+Viewer, and to the best of my knowledge and effort, Singularity is fully 
+compatible to Second Life/ Linden Lab Terms of Service and Third Party Viewer 
+Policy and shall stay that way.
 
-If you don't trust us or the legitimacy of our code, please, take it upon yourself to download our source and take a look. We have nothing to hide, and we will never obfusticate our code with encryption or closed-source DLL bundling.
+Following features are the focus of my work to distinguish it from Ascent:
+
+* Ongoing effort to improve stability and performance beyond that of Ascent, and
+  hopefully also beyond that of any other Second Life viewer. In particular,
+  base code was upgraded from Snowglobe 1.4 to 1.5, texture fetch and texture
+  decode reimplemented based on work from Imprudence Viewer project. Several
+  performance and stability related improvements were implemented from scratch 
+  or backported from more recent Linden Lab codebases.
+
+* For roleplaying: RLVa system 1.1.3 which supports in-world RLV compatible 
+  wearables. Thanks to Kitty Barnett for contributed implementation!
+
+* Display names - partial support ported from Phoenix Viewer. Not as complete
+  as in Phoenix so far, needs further porting, and after that is done, needs
+  even more work.
+
+Following features are present in Singularity, distinguishing it from official
+Linden Lab viewers. These particular features have already been present in 
+Ascent Viewer, unless noted otherwise.
+
+General conveniences:
+* Identification of other viewers, avatar idle time
+* Double-click local teleport (partial support)
+* Phantom Avatar lets you avoid physical push when you're being harassed
+* Script counting to check yourself and those around you for your impact on the
+  simulator performance
+* Multiple attachments per attachment point. Incompatible with Emerald system,
+  but compatible to Viewer 2.1 and more recent. Nonetheless, Emerald-compatible
+  attachments on other avatars can be displayed too. [NEW] in Singularity:
+  the worn items in inventory managed in Viewer 2.2 compatible manner
+* Vertical IM tabs
+* Quick settings for performance and windlight in lower right
+* Command line from Emerald for common operations
+* Area search
+* Windlight editor
+* Built in pose stand
+
+Improvements for content creators:
+* Free texture upload for testing textures and sculpties.
+* Copy and Paste in build panel
+* Embedded Animation Override editor
+* Rez Objects As Land Group option
+* Math expressions in build panel, from Imprudence
+* Alignment tool, by Qarl Fizz
+* UUID display for various things - full perm textures, prims, avatars
+* Enhanced inspection floater
+
+Roleplaying:
+* Fake away status
+* Mu style posing, auto close AAC brackets
+* Bouncy Breast physics effect
+* Emerald-style privacy controls
+
+And possibly some or many that i forgot.
+
+System requierements: Dualcore CPU with SSE2 support, NVidia or ATI/AMD graphics 
+chip, 2GB RAM, Windows XP or newer, Ubuntu Linux 10.4 or newer. 
+Other systems support pending.
+
+Thanks go to following people:
+* Linden Lab for publishing viewer source code
+* All the various TPV developers and Snowglobe contributors for creating a
+  huge body of code to borrow from and compare against
+* Hazim for developing Inertia on which Ascent is based. A really fine dude,
+  although his viewer is not TOS compliant
+* Shyotl Kuhr who did many of the oprimizations incorportated in Ascent and
+  some new for Singularity.
+* Beeks and Charbi for Ascent. Ascent was started as a project to bring
+  Inertia to TOS compliance, and went on further to incorporate more features
+* Robin Cornelius and Thickbrick Sleaford from Imprudence.
+* Henri Beauchamp and Lance Corrimal for being a great source to borrow from
+  .oO(if Henri just wasn't such an unapproachable arse who doesn't respond
+  to IMs or contact me when he bugfixes my patches?)
+* Tonya Souther and Wolfspirit Magic from Phoenix.
+
+Time for some FAQ! The questions are anonymized.
+
+Q: I heard your viewer is malicious! I hate you!
+A: This was not a question. Also the person who came up with the rumor is 
+   malicious, whoever they might be.
+
+Q: You are only 6 months old, thus you can't code!
+A: And you don't have a life.
+
+Q: You are only 6 months old, thus you must be a griefer alt!
+A: Still not a question. And no, i'm really an angel kitty -.-
+
+Q: You are only 6 months old, thus you cannot know what Residents need!
+A: Even if i was 1000, i'd still only know either what i myself need, or
+   whatever needs any Residents have expressed to me. Go ahead, get in touch.
+
+Q: But all TPVs are shady!
+A: You are shady. Still, not a question.
+
+Q: Why isn't your viewer listed on Linden TPVD?
+A: Oh thanks, a first real question! Because i haven't applied for it.
+   If there is a demand by real userbase someday, TPVD application will be
+   considered. It shouldn't be a problem because i check all of the code which
+   i commit, and borrow basically only from well known viewers from TPVD.
+   And oh besides, that the viewer is on TPVD doesn't mean it's safe. It is not
+   an unreasonable guess that it is, but there is quite a bit outside anyone's
+   control, unless Lindens set up a build farm which builds TPVs automatically
+   from publically released source, you just can't know that it matches up.
+
+Q: I like your viewer! How can i help?
+A: If you are able to, fork my viewer source on GitHub, work your magic there,
+   ping me on it, and i'll see whether i want your changes back in my viewer.
+   Or build my viewer from source and find bugs.
+   If you don't have necessary skills for that, your bug reports are somewhat
+   unlikely to be processed because of lack of time on my hands.
+   Oh, and position of localization manager might be open.
+   Also needed: someone to report building failures on Mac and provide binaries.
+
