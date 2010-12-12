@@ -38,6 +38,7 @@
 #include <deque>
 
 #include "llaudioengine.h" 
+#include "llavatarnamecache.h"
 #include "indra_constants.h"
 #include "lscript_byteformat.h"
 #include "mean_collision_data.h"
@@ -3009,6 +3010,36 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
+		// [Ansariel/Henri: Display name support]
+		if (chatter && chatter->isAvatar())
+		{
+#ifdef LL_RRINTERFACE_H //MK
+            if (!gRRenabled || !gAgent.mRRInterface.mContainsShownames)
+			{
+#endif //mk
+				if (LLAvatarNameCache::useDisplayNames())
+				{
+					LLAvatarName avatar_name;
+					if (LLAvatarNameCache::get(from_id, &avatar_name))
+					{
+						static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
+						{
+							from_name = avatar_name.mDisplayName;
+						}
+						else
+						{
+							from_name = avatar_name.getCompleteName();
+						}
+					}
+					chat.mFromName = from_name;
+				}
+#ifdef LL_RRINTERFACE_H //MK
+			}
+#endif //mk
+		}
+		// [/Ansariel/Henri: Display name support]
+
 		BOOL visible_in_chat_bubble = FALSE;
 		std::string verb;
 
@@ -3055,8 +3086,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 					RlvUtil::filterNames(chat.mFromName);
 				}
 			}
-		}
 // [/RLVa:KB]
+		}
 
 		BOOL ircstyle = FALSE;
 
@@ -3252,17 +3283,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// F		T		T		T				*			No			No
 		// T		*		*		*				F			Yes			Yes
 
-		// <edit>
-		//chat.mMuted = is_muted && !is_linden;
-		chat.mMuted = is_muted;
-		// </edit>
-		
+		chat.mMuted = is_muted && !is_linden;
 		
 		if (!visible_in_chat_bubble 
-		// <edit>
-		//	&& (is_linden || !is_busy || is_owned_by_me))
-			&& (!is_busy || is_owned_by_me))
-		// </edit>
+			&& (is_linden || !is_busy || is_owned_by_me))
 		{
 			// show on screen and add to history
 			check_translate_chat(mesg, chat, FALSE);

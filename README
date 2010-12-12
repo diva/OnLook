@@ -158,6 +158,10 @@ Contact information:
 TO-DO LIST:
  * Integrate, test, fix, test, test, fix and test OpenJPEG v2,
    inline interleaved operations.
+ * Unified, high performance memory manager for all 3 plattforms. jemalloc wins on 
+   memory use, google tcmalloc wins in every other regard, including use for 
+   debugging, possibility of manual full collect on e.g. teleport, clean cross 
+   platform integration. Either are better at what Windows and Linux offer.
  * Bug: if window is resized during teleport, HUDs don't adjust to new window ratio.
  * Bug: focusing from minimap is defunct.
  * Bug: foot shadows show even if avatar below ground, and sink into prims.

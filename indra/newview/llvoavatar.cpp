@@ -3899,10 +3899,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						line += " (" + additions + ")";
 
 				}
+				mSubNameString = "";
 				if(useddn){
 					if(phoenix_name_system != 2){
-						line += "\n";
-						line += "("+av_name.mUsername+")";
+						mSubNameString = "("+av_name.mUsername+")";
 					}
 					mRenderedName = av_name.mDisplayName;
 				}
@@ -4014,21 +4014,22 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 			else
 			{
-				if (gSavedSettings.getBOOL("SmallAvatarNames"))
-				{
-					mNameText->setFont(LLFontGL::getFontSansSerif());
-				}
-				else
-				{
-					mNameText->setFont(LLFontGL::getFontSansSerifBig());
-				}
-				mNameText->setTextAlignment(LLHUDText::ALIGN_TEXT_CENTER);
-				mNameText->setFadeDistance(CHAT_NORMAL_RADIUS, 5.f);
-				mNameText->setVisibleOffScreen(FALSE);
 				if (new_name)
 				{
+					if (gSavedSettings.getBOOL("SmallAvatarNames"))
+					{
+						mNameText->setFont(LLFontGL::getFontSansSerif());
+					}
+					else
+					{
+						mNameText->setFont(LLFontGL::getFontSansSerifBig());
+					}
+					mNameText->setTextAlignment(LLHUDText::ALIGN_TEXT_CENTER);
+					mNameText->setFadeDistance(CHAT_NORMAL_RADIUS, 5.f);
+					mNameText->setVisibleOffScreen(FALSE);
 					mNameText->setLabel("");
 					mNameText->setString(mNameString);
+					mNameText->addLine(mSubNameString, mClientColor, LLFontGL::NORMAL, LLFontGL::getFontSansSerifSmall());
 				}
 			}
 		}
@@ -4047,8 +4048,8 @@ void LLVOAvatar::clearNameTag()
 {
 	mNameString.clear();
 	if (mNameText)
-				{
-					mNameText->setLabel("");
+	{
+		mNameText->setLabel("");
 		mNameText->setString(mNameString);
 	}
 }

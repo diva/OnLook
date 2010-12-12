@@ -33,6 +33,7 @@
 #ifndef LL_IMPANEL_H
 #define LL_IMPANEL_H
 
+#include "llavatarnamecache.h"
 #include "llfloater.h"
 #include "lllogchat.h"
 #include "lluuid.h"
@@ -192,6 +193,11 @@ public:
 					 const LLDynamicArray<LLUUID>& ids,
 					 EInstantMessage dialog);
 	virtual ~LLFloaterIMPanel();
+
+    // [Ansariel: Display name support]	
+	void lookupName();
+	static void onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data);	
+    // [/Ansariel: Display name support]
 
 	/*virtual*/ BOOL postBuild();
 
@@ -367,6 +373,9 @@ private:
 
 	typedef std::map<LLUUID, LLStyleSP> styleMap;
 	static styleMap mStyleMap;
+	
+	// [Ansariel: Display name support]
+	static std::set<LLFloaterIMPanel*> sFloaterIMPanels;
 };
 
 

@@ -63,6 +63,8 @@
 #include "llvoavatar.h"
 #include "llimview.h"
 #include "llimpanel.h"
+#include "llavatarname.h"
+#include "llavatarnamecache.h"
 
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
@@ -593,11 +595,19 @@ void LLAvatarTracker::processChange(LLMessageSystem* msg)
 				if((mBuddyInfo[agent_id]->getRightsGrantedFrom() ^  new_rights) & LLRelationship::GRANT_MODIFY_OBJECTS)
 				{
 					std::string first, last;
+					std::string fullname;
 					LLSD args;
-					if(gCacheName->getName(agent_id, first, last))
+					LLAvatarName avatar_name;
+					if (LLAvatarNameCache::get(agent_id, &avatar_name))
 					{
-						args["FIRST_NAME"] = first;
-						args["LAST_NAME"] = last;	
+						switch (gSavedSettings.getS32("PhoenixNameSystem"))
+						{
+							case 0 : fullname = avatar_name.getLegacyName(); break;
+							case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
+							case 2 : fullname = avatar_name.mDisplayName; break;
+							default : fullname = avatar_name.getCompleteName(); break;
+						}
+						args["NAME"] = fullname;
 					}
 					if(LLRelationship::GRANT_MODIFY_OBJECTS & new_rights)
 					{
@@ -649,12 +659,19 @@ void LLAvatarTracker::processNotify(LLMessageSystem* msg, bool online)
 				setBuddyOnline(agent_id,online);
 				if(chat_notify)
 				{
-					std::string first, last;
-					if(gCacheName->getName(agent_id, first, last))
+					std::string fullname;
+					LLAvatarName avatar_name;
+					if (LLAvatarNameCache::get(agent_id, &avatar_name))
 					{
+						switch (gSavedSettings.getS32("PhoenixNameSystem"))
+						{
+							case 0 : fullname = avatar_name.getLegacyName(); break;
+							case 1 : fullname = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
+							case 2 : fullname = avatar_name.mDisplayName; break;
+							default : fullname = avatar_name.getCompleteName(); break;
+						}
 						notify = TRUE;
-						args["FIRST"] = first;
-						args["LAST"] = last;
+						args["NAME"] = fullname;
 					}
 				}
 			}

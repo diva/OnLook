@@ -52,6 +52,11 @@ namespace LLAvatarNameCache
 	// supports it.
 	bool sUseDisplayNames = true;
 
+// [RLVa:KB] - Checked: 2010-12-08 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+	// RLVa override for display names
+	bool sForceDisplayNames = false;
+// [/RLVa:KB]
+
 	// Cache starts in a paused state until we can determine if the
 	// current region supports display names.
 	bool sRunning = false;
@@ -232,6 +237,15 @@ public:
 			{
 				const LLUUID& agent_id = *it;
 				// cache it and fire signals
+
+				// Wolfspirit: Do not use ???  as username. Try to get a username out of the old legacy name
+				std::string oldname;
+				gCacheName->getFullName(agent_id, oldname);		
+				LLStringUtil::toLower(oldname);
+				LLStringUtil::replaceString(oldname," ",".");	
+				LLStringUtil::replaceString(oldname,".resident","");	
+				av_name.mUsername = oldname;
+
 				LLAvatarNameCache::processName(agent_id, av_name, true);
 			}
 		}
@@ -259,6 +273,15 @@ public:
 		{
 			const LLUUID& agent_id = *it;
 			// cache it and fire signals
+
+			// Wolfspirit: Do not use ???  as username. Try to get a username out of the old legacy name
+			std::string oldname;
+			gCacheName->getFullName(agent_id, oldname);		
+			LLStringUtil::toLower(oldname);
+			LLStringUtil::replaceString(oldname," ",".");	
+			LLStringUtil::replaceString(oldname,".resident","");	
+			av_name.mUsername = oldname;
+
 			LLAvatarNameCache::processName(agent_id, av_name, true);
 		}
 	}
@@ -568,6 +591,15 @@ void LLAvatarNameCache::buildLegacyName(const std::string& full_name,
 	av_name->mIsDisplayNameDefault = true;
 	av_name->mIsDummy = true;
 	av_name->mExpires = F64_MAX;
+
+	// [Ansariel]
+	// Why ain't those set? In case of disabled display names
+	// we would have to parse LLAvatarName::mDisplayName to get
+	// first and lastname if we need them. So do it already here
+	// for convenience.
+	std::istringstream fname(full_name);
+	fname >> av_name->mLegacyFirstName >> av_name->mLegacyLastName;
+	// [/Ansariel]
 }
 
 // fills in av_name if it has it in the cache, even if expired (can check expiry time)
@@ -689,9 +721,28 @@ void LLAvatarNameCache::get(const LLUUID& agent_id, callback_slot_t slot)
 	}
 }
 
+// [RLVa:KB] - Checked: 2010-12-08 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+bool LLAvatarNameCache::getForceDisplayNames()
+{
+	return sForceDisplayNames;
+}
+
+void LLAvatarNameCache::setForceDisplayNames(bool force)
+{
+	sForceDisplayNames = force;
+	if ( (!sUseDisplayNames) && (force) )
+	{
+		setUseDisplayNames(true);
+	}
+}
+// [/RLVa:KB]
 
 void LLAvatarNameCache::setUseDisplayNames(bool use)
 {
+// [RLVa:KB] - Checked: 2010-12-08 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+	// We need to force the use of the "display names" cache when @shownames=n restricted (and disallow toggling it)
+	use |= getForceDisplayNames();
+// [/RLVa:KB]
 	if (use != sUseDisplayNames)
 	{
 		sUseDisplayNames = use;

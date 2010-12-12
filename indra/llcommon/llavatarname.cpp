@@ -91,12 +91,19 @@ void LLAvatarName::fromLLSD(const LLSD& sd)
 	mNextUpdate = next_update.secondsSinceEpoch();
 }
 
-std::string LLAvatarName::getCompleteName() const
+std::string LLAvatarName::getCompleteName(bool linefeed) const
 {
 	std::string name;
 	if (!mUsername.empty())
 	{
-		name = mDisplayName + " (" + mUsername + ")";
+		if (linefeed)
+		{
+			name = mDisplayName + "\n(" + mUsername + ")";
+		}
+		else
+		{
+			name = mDisplayName + " (" + mUsername + ")";
+		}
 	}
 	else
 	{

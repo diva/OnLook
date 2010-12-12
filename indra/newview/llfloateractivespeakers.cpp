@@ -55,6 +55,8 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include "llavatarname.h"
+
 const F32 SPEAKER_TIMEOUT = 10.f; // seconds of not being on voice channel before removed from list of active speakers
 const F32 RESORT_TIMEOUT = 5.f; // seconds of mouse inactivity before it's ok to sort regardless of mouse-in-view.
 const LLColor4 INACTIVE_COLOR(0.3f, 0.3f, 0.3f, 0.5f);
@@ -75,13 +77,16 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 	mModeratorMutedVoice(FALSE),
 	mModeratorMutedText(FALSE)
 {
-	if (name.empty() && type == SPEAKER_AGENT)
+	// Make sure we also get the display name if SLIM or some other external
+	// voice client is used and not whatever is provided.
+	if ((name.empty() && type == SPEAKER_AGENT) || type == SPEAKER_EXTERNAL)
 	{
 		lookupName();
 	}
 	else
 	{
 		mDisplayName = name;
+		mLegacyName = name;
 	}
 
 	gVoiceClient->setUserVolume(id, LLMuteList::getInstance()->getSavedResidentVolume(id));
@@ -92,18 +97,35 @@ LLSpeaker::LLSpeaker(const LLUUID& id, const std::string& name, const ESpeakerTy
 
 void LLSpeaker::lookupName()
 {
-	gCacheName->getName(mID, onAvatarNameLookup, new LLHandle<LLSpeaker>(getHandle()));
+    // [Ansariel: Display name support]
+	LLAvatarNameCache::get(mID, boost::bind(&LLSpeaker::onAvatarNameLookup, _1, _2, new LLHandle<LLSpeaker>(getHandle())));
+    // [/Ansariel: Display name support]
 }
 
 //static 
-void LLSpeaker::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
+// [Ansariel: Display name support]
+void LLSpeaker::onAvatarNameLookup(const LLUUID& id, const LLAvatarName& avatar_name, void* user_data)
+// [/Ansariel: Display name support]
 {
 	LLSpeaker* speaker_ptr = ((LLHandle<LLSpeaker>*)user_data)->get();
 	delete (LLHandle<LLSpeaker>*)user_data;
 
 	if (speaker_ptr)
 	{
-		speaker_ptr->mDisplayName = first + " " + last;
+        // [Ansariel: Display name support]
+		switch (gSavedSettings.getS32("PhoenixNameSystem"))
+		{
+			case 0 : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
+			case 1 : speaker_ptr->mDisplayName = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
+			case 2 : speaker_ptr->mDisplayName = avatar_name.mDisplayName; break;
+			default : speaker_ptr->mDisplayName = avatar_name.getLegacyName(); break;
+		}
+		
+		// Also set the legacy name. We will need it to initiate a new
+		// IM session.
+		speaker_ptr->mLegacyName = avatar_name.getLegacyName();
+	    // [/Ansariel: Display name support]
+		
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Added: RLVa-1.0.0g
 		// TODO-RLVa: this seems to get called per frame which is very likely an LL bug that will eventuall get fixed
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
@@ -591,7 +613,9 @@ void LLPanelActiveSpeakers::refreshSpeakers()
 								&& selected_id != gAgent.getID() 
 								&& selected_speakerp.notNull() 
 								&& selected_speakerp->mType != LLSpeaker::SPEAKER_EXTERNAL
-								&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mDisplayName));
+								// Ansariel: No, we don't want to mute Lindens with display names
+								//&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mDisplayName));
+								&& !LLMuteList::getInstance()->isLinden(selected_speakerp->mLegacyName));
 	}
 	childSetValue("speaker_volume", gVoiceClient->getUserVolume(selected_id));
 	childSetEnabled("speaker_volume", LLVoiceClient::voiceEnabled()
@@ -774,7 +798,9 @@ void LLPanelActiveSpeakers::onDoubleClickSpeaker(void* user_data)
 
 	if (speaker_id != gAgent.getID() && speakerp.notNull())
 	{
-		gIMMgr->addSession(speakerp->mDisplayName, IM_NOTHING_SPECIAL, speaker_id);
+		// Changed for display name support
+		//gIMMgr->addSession(speakerp->mDisplayName, IM_NOTHING_SPECIAL, speaker_id);
+		gIMMgr->addSession(speakerp->mLegacyName, IM_NOTHING_SPECIAL, speaker_id);
 	}
 }
 

@@ -34,8 +34,6 @@
  
 #include "llnameeditor.h"
 #include "llcachename.h"
-#include "llavatarname.h"
-#include "llavatarnamecache.h"
 #include "llagent.h"
 
 #include "llfontgl.h"
@@ -84,11 +82,6 @@ LLNameEditor::~LLNameEditor()
 	LLNameEditor::sInstances.erase(this);
 }
 
-void LLNameEditor::on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata){
-	LLNameEditor* self = (LLNameEditor*)userdata;
-	if(self->mNameID == agent_id) self->setText(av_name.getCompleteName());
-}
-
 void LLNameEditor::setNameID(const LLUUID& name_id, BOOL is_group)
 {
 	mNameID = name_id;
@@ -97,21 +90,7 @@ void LLNameEditor::setNameID(const LLUUID& name_id, BOOL is_group)
 
 	if (!is_group)
 	{
-		/* Phoenix: Wolfspirit: Check if we already have the name in Cache.
-			This will (if DN is enabled) return the full name (Displayname (username)).
-			If DN is diabled it will return the old "Firstname Lastname" style.
-			If it is not in cache, then add the LegacyName until we received the name from the callback.
-			Do the Request only, if DN is enabled. */
-
-		LLAvatarName av_name;
-		if(LLAvatarNameCache::get(name_id, &av_name)){
-			name = av_name.getCompleteName();
-		}
-		else
-		{
-			gCacheName->getFullName(name_id,name);
-			if(LLAvatarNameCache::useDisplayNames()) LLAvatarNameCache::get(name_id, boost::bind(&LLNameEditor::on_avatar_name_response, _1, _2, this));
-		}
+		gCacheName->getFullName(name_id, name);
 	}
 	else
 	{
@@ -129,16 +108,7 @@ void LLNameEditor::refresh(const LLUUID& id, const std::string& firstname,
 		std::string name;
 		if (!is_group)
 		{
-			/* Phoenix: Wolfspirit: Use DN Cache first */
-			LLAvatarName av_name;
-			if(LLAvatarNameCache::get(id, &av_name)){
-				name = av_name.getCompleteName();
-			}
-			else
-			{
-				gCacheName->getFullName(id,name);
-				if(LLAvatarNameCache::useDisplayNames()) LLAvatarNameCache::get(id, boost::bind(&LLNameEditor::on_avatar_name_response, _1, _2, this));
-			}
+			name = firstname + " " + lastname;
 		}
 		else
 		{

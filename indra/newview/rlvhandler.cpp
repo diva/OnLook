@@ -15,6 +15,7 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llavatarnamecache.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterchat.h"
 #include "llfloaterdaycycle.h"
@@ -1080,6 +1081,12 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 					// If this is the first @shownames=n restriction refresh all object text so we can filter it if necessary
 					fRefreshHover = (0 == m_Behaviours[RLV_BHVR_SHOWNAMES]);
 
+					// Force the use of the "display name" cache so we can filter both display and legacy names
+					if (0 == m_Behaviours[RLV_BHVR_SHOWNAMES])
+					{
+						LLAvatarNameCache::setForceDisplayNames(true);
+					}
+
 					// Close the "Active Speakers" panel if it's currently visible
 					LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
 				}
@@ -1087,6 +1094,13 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 				{
 					// If this is the last @shownames=n restriction refresh all object text in case anything needs restoring
 					fRefreshHover = (1 == m_Behaviours[RLV_BHVR_SHOWNAMES]);
+
+					// Return the use of display names back to the user's preferences on the last @shownames=n restriction
+					if (1 == m_Behaviours[RLV_BHVR_SHOWNAMES])
+					{
+						LLAvatarNameCache::setForceDisplayNames(false);
+						LLAvatarNameCache::setUseDisplayNames(gSavedSettings.getS32("PhoenixNameSystem") != 0);
+					}
 				}
 			}
 			break;

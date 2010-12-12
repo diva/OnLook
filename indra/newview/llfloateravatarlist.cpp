@@ -17,6 +17,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llavatarconstants.h"
+#include "llavatarnamecache.h"
 #include "llfloateravatarlist.h"
 
 #include "lluictrlfactory.h"
@@ -422,10 +423,25 @@ void LLFloaterAvatarList::updateAvatarList()
 				// Get avatar data
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
 				name = avatarp->getFullname();
+			
+				// [Ansariel: Display name support]
+				LLAvatarName avatar_name;
+				if (LLAvatarNameCache::get(avatarp->getID(), &avatar_name))
+				{
+				    static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+					switch (phoenix_name_system)
+					{
+						case 0 : name = avatar_name.getLegacyName(); break;
+						case 1 : name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
+						case 2 : name = avatar_name.mDisplayName; break;
+						default : name = avatar_name.getLegacyName(); break;
+					}
 
-				// Apparently, sometimes the name comes out empty, with a " " name. This is because
-				// getFullname concatenates first and last name with a " " in the middle.
-				// This code will avoid adding a nameless entry to the list until it acquires a name.
+					first = avatar_name.mLegacyFirstName;
+					last = avatar_name.mLegacyLastName;
+				}
+				else continue;
+				// [/Ansariel: Display name support]
 
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
@@ -871,9 +887,16 @@ void LLFloaterAvatarList::onClickIM(void* userdata)
 			LLUUID agent_id = ids[0];
 
 			char buffer[MAX_STRING];
-			snprintf(buffer, MAX_STRING, "%s", self->mAvatars[agent_id].getName().c_str());
-			gIMMgr->setFloaterOpen(TRUE);
-			gIMMgr->addSession(buffer, IM_NOTHING_SPECIAL, agent_id);
+			// [Ansariel: Display name support]
+			// snprintf(buffer, MAX_STRING, "%s", avlist->mAvatars[agent_id].getName().c_str());
+			LLAvatarName avatar_name;
+			if (LLAvatarNameCache::get(agent_id, &avatar_name))
+			{
+				snprintf(buffer, MAX_STRING, "%s", avatar_name.getLegacyName().c_str());
+				gIMMgr->setFloaterOpen(TRUE);
+				gIMMgr->addSession(buffer,IM_NOTHING_SPECIAL,agent_id);
+			}
+			// [Ansariel: Display name support]
 		}
 		else
 		{

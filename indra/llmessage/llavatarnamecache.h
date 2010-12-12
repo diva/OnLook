@@ -79,6 +79,12 @@ namespace LLAvatarNameCache
 	// Allow display names to be explicitly disabled for testing.
 	void setUseDisplayNames(bool use);
 	bool useDisplayNames();
+
+// [RLVa:KB] - Checked: 2010-12-08 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+	bool getForceDisplayNames();
+	void setForceDisplayNames(bool force);
+// [/RLVa:KB]
+
 	bool isRequestPending(const LLUUID& agent_id);
 
 	void erase(const LLUUID& agent_id);

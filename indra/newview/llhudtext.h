@@ -62,14 +62,15 @@ protected:
 	class LLHUDTextSegment
 	{
 	public:
-		LLHUDTextSegment(const LLWString& text, const LLFontGL::StyleFlags style, const LLColor4& color)
-			: mColor(color), mStyle(style), mText(text) {}
+		LLHUDTextSegment(const LLWString& text, const LLFontGL::StyleFlags style, const LLColor4& color, const LLFontGL* font)
+			: mColor(color), mStyle(style), mText(text), mFont(font) {}
 		F32 getWidth(const LLFontGL* font);
 		const LLWString& getText() const { return mText; };
 		void clearFontWidthMap() { mFontWidthMap.clear(); }
 		
 		LLColor4				mColor;
 		LLFontGL::StyleFlags	mStyle;
+		const LLFontGL*			mFont;
 	private:
 		LLWString				mText;
 		std::map<const LLFontGL*, F32> mFontWidthMap;
@@ -92,13 +93,15 @@ public:
 	void setStringUTF8(const std::string &utf8string);
 	void setString(const LLWString &wstring);
 	void clearString();
-	void addLine(const std::string &text, const LLColor4& color, const LLFontGL::StyleFlags style = LLFontGL::NORMAL);
-	void addLine(const LLWString &wtext, const LLColor4& color, const LLFontGL::StyleFlags style = LLFontGL::NORMAL);
+	void addLine(const std::string &text, const LLColor4& color, const LLFontGL::StyleFlags style = LLFontGL::NORMAL, const LLFontGL* font = NULL);
+	void addLine(const LLWString &wtext, const LLColor4& color, const LLFontGL::StyleFlags style = LLFontGL::NORMAL, const LLFontGL* font = NULL);
 	void setLabel(const std::string &label);
 	void setLabel(const LLWString &label);
+	void addLabel(const LLWString &label);
 	void setDropShadow(const BOOL do_shadow);
 	void setFont(const LLFontGL* font);
 	void setColor(const LLColor4 &color);
+	void setAlpha(F32 alpha);
 	void setUsePixelSize(const BOOL use_pixel_size);
 	void setZCompare(const BOOL zcompare);
 	void setDoFade(const BOOL do_fade);

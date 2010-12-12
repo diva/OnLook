@@ -44,6 +44,7 @@
 #include "llfloateravatarlist.h"
 
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
 #include "llviewercontrol.h"
@@ -624,7 +625,44 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 		{
 			//msg.append(fullname);
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.0b
-			msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname) );
+            // [Ansariel: Display name support]
+			// msg.append( (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname) );
+            if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+            {
+                msg.append(RlvStrings::getAnonym(fullname));
+            }
+            else
+            {
+#ifdef LL_RRINTERFACE_H //MK
+    			if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
+    			{
+	    			fullname = gAgent.mRRInterface.getDummyName(fullname);
+		    	}
+			    else
+			    {
+#endif //mk
+				    if (LLAvatarNameCache::useDisplayNames())
+    				{
+	    				LLAvatarName avatar_name;
+		    			if (LLAvatarNameCache::get(mClosestAgentToCursor, &avatar_name))
+			    		{
+							static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+    						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
+					    	{
+						    	fullname = avatar_name.mDisplayName;
+    						}
+	    					else
+		    				{
+			    				fullname = avatar_name.getCompleteName(true);
+				    		}
+					    }
+    				}
+#ifdef LL_RRINTERFACE_H //MK
+			    }
+#endif //mk
+                msg.append(fullname);
+            }
+            // [/Ansariel: Display name support]
 // [/RLVa:KB]
 			msg.append("\n");
 

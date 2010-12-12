@@ -730,6 +730,7 @@ private:
 	F32		mAdjustedPixelArea;
 
 	LLWString mNameString;
+	std::string  mSubNameString;
 	std::string  mTitle;
 	BOOL	  mNameAway;
 	BOOL	  mNameBusy;

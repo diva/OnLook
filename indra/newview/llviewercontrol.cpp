@@ -40,6 +40,7 @@
 // For Listeners
 #include "llaudioengine.h"
 #include "llagent.h"
+#include "llavatarnamecache.h"
 #include "llconsole.h"
 #include "lldrawpoolterrain.h"
 #include "llflexibleobject.h"
@@ -516,6 +517,18 @@ bool handleAscentGlobalTag(const LLSD& newvalue)
 	}
 	return true;
 }
+
+// [Ansariel: Display name support]
+static bool handlePhoenixNameSystemChanged(const LLSD& newvalue)
+{
+	S32 dnval = (S32)newvalue.asInteger();
+	if (dnval <= 0 || dnval > 2) LLAvatarNameCache::setUseDisplayNames(false);
+	else LLAvatarNameCache::setUseDisplayNames(true);
+	LLVOAvatar::invalidateNameTags();
+	return true;
+}
+// [/Ansariel: Display name support]
+
 ////////////////////////////////////////////////////////////////////////////
 void settings_setup_listeners()
 {
@@ -664,6 +677,10 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+
+    // [Ansariel: Display name support]
+	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _1));
+    // [/Ansariel: Display name support]
 }
 
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out) 
