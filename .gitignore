@@ -16,6 +16,6 @@
 *.rej
 *.bak
 *~
-+/LICENSES
+/LICENSES/
 /edited-files.txt
 qtcreator-build/

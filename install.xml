@@ -221,9 +221,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>094acc8173faca882ed9532e868d767f</string>
+            <string>d631c18f447ff4d413525f3c7d52db42</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/boost-1.36.0-windows-20091124.tar.bz2</uri>
+            <uri>http://cloud.github.com/downloads/HazimGazov/Inertia/boost-1.39-windows.tar.bz2</uri>
           </map>
         </map>
       </map>
