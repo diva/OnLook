@@ -202,12 +202,14 @@ class WindowsManifest(ViewerManifest):
         self.path("dbghelp.dll")
 
         # For using FMOD for sound... DJS
-        self.path("fmod.dll")
+        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          self.path("fmod.dll")
+          self.end_prefix()
 
         # For textures
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-            self.path("openjpeg.dll")
-            self.end_prefix()
+        #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+        #    self.path("openjpeg.dll")
+        #    self.end_prefix()
 
         # Media plugins - QuickTime
         if self.prefix(src='../media_plugins/quicktime/%s' % self.args['configuration'], dst="llplugin"):
@@ -243,21 +245,36 @@ class WindowsManifest(ViewerManifest):
         # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
         self.path("skins/default/xui/en-us/mime_types_windows.xml", "skins/default/xui/en-us/mime_types.xml")
 
+        # Get llcommon and deps. If missing assume static linkage and continue.
+        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          try:
+            self.path('llcommon.dll')
+          except RuntimeError, err:
+            print err.message
+            print "Skipping llcommon.dll (assuming llcommon was linked statically)"
+          try:
+            self.path('libapr-1.dll')
+            self.path('libaprutil-1.dll')
+            self.path('libapriconv-1.dll')
+          except RuntimeError, err:
+            pass
+          self.end_prefix()
+        
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
-        if self.prefix(src=self.args['configuration'], dst=""):
-            if self.args['configuration'] == 'Debug':
-                self.path("msvcr80d.dll")
-                self.path("msvcp80d.dll")
-                self.path("Microsoft.VC80.DebugCRT.manifest")
-            else:
-                self.path("msvcr80.dll")
-                self.path("msvcp80.dll")
-                self.path("Microsoft.VC80.CRT.manifest")
-            self.end_prefix()
+        #~ if self.prefix(src=self.args['configuration'], dst=""):
+            #~ if self.args['configuration'] == 'Debug':
+                #~ self.path("msvcr80d.dll")
+                #~ self.path("msvcp80d.dll")
+                #~ self.path("Microsoft.VC80.DebugCRT.manifest")
+            #~ else:
+                #~ self.path("msvcr80.dll")
+                #~ self.path("msvcp80.dll")
+                #~ self.path("Microsoft.VC80.CRT.manifest")
+            #~ self.end_prefix()
 
         # The config file name needs to match the exe's name.
-        self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
+        #~ self.path(src="%s/secondlife-bin.exe.config" % self.args['configuration'], dst=self.final_exe() + ".config")
 
         # Vivox runtimes
         if self.prefix(src="vivox-runtime/i686-win32", dst=""):
@@ -353,61 +370,18 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_LONG "%(version)s"
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
-        if self.default_channel() and self.viewer_branding_id()=="secondlife":
-            if self.default_grid():
-                # release viewer
-                installer_file = "Second_Life_%(version_dashes)s_Setup.exe"
-                grid_vars_template = """
-                OutFile "%(installer_file)s"
-                !define VIEWERNAME "Second Life"
-                !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "SecondLife"
-                !define SHORTCUT   "Second Life"
-                !define URLNAME   "secondlife"
-                !define INSTALL_ICON "install_icon.ico"
-                !define UNINSTALL_ICON "uninstall_icon.ico"
-                Caption "Second Life ${VERSION}"
-                """
-            else:
-                # beta grid viewer
-                installer_file = "Second_Life_%(version_dashes)s_(%(grid_caps)s)_Setup.exe"
-                grid_vars_template = """
-                OutFile "%(installer_file)s"
-                !define VIEWERNAME "Second Life"
-                !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "SecondLife%(grid_caps)s"
-                !define SHORTCUT   "Second Life (%(grid_caps)s)"
-                !define URLNAME   "secondlife%(grid)s"
-                !define INSTALL_ICON "install_icon.ico"
-                !define UNINSTALL_ICON "uninstall_icon.ico"
-                !define UNINSTALL_SETTINGS 1
-                Caption "Second Life %(grid)s ${VERSION}"
-                """
-        elif self.viewer_branding_id()=="snowglobe":
-                installer_file = "Snowglobe_%(version_dashes)s_Setup.exe"
-                grid_vars_template = """
-                OutFile "%(installer_file)s"
-                !define VIEWERNAME "Snowglobe"
-                !define INSTFLAGS "%(flags)s"
-                !define INSTNAME   "Snowglobe"
-                !define SHORTCUT   "Snowglobe"
-                !define URLNAME   "secondlife"
-                !define INSTALL_ICON "install_icon_snowglobe.ico"
-                !define UNINSTALL_ICON "uninstall_icon_snowglobe.ico"
-                Caption "Snowglobe ${VERSION}"
-                """
-        else:
-            # some other channel on some grid
-            installer_file = "Second_Life_%(version_dashes)s_%(channel_oneword)s_Setup.exe"
-            grid_vars_template = """
-            OutFile "%(installer_file)s"
-            !define INSTFLAGS "%(flags)s"
-            !define INSTNAME   "SecondLife%(channel_oneword)s"
-            !define SHORTCUT   "%(channel)s"
-            !define URLNAME   "secondlife"
-            !define UNINSTALL_SETTINGS 1
-            Caption "%(channel)s ${VERSION}"
-            """
+        installer_file = "Singularity_%(version_short)s_Setup.exe"
+        grid_vars_template = """
+        OutFile "%(installer_file)s"
+        !define VIEWERNAME "Singularity Viewer"
+        !define INSTFLAGS "%(flags)s"
+        !define INSTNAME   "SingularityViewer"
+        !define SHORTCUT   "Singularity Viewer"
+        !define URLNAME   "singularity"
+        !define INSTALL_ICON "install_icon_singularity.ico"
+        !define UNINSTALL_ICON "install_icon_singularity.ico"
+        Caption "Singularity Viewer ${VERSION}"
+        """
         if 'installer_name' in self.args:
             installer_file = self.args['installer_name']
         else:
