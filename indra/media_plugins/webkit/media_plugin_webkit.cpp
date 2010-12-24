@@ -2,9 +2,10 @@
  * @file media_plugin_webkit.cpp
  * @brief Webkit plugin for LLMedia API plugin system
  *
+ * @cond
  * $LicenseInfo:firstyear=2008&license=viewergpl$
  * 
- * Copyright (c) 2008-2009, Linden Research, Inc.
+ * Copyright (c) 2008-2010, Linden Research, Inc.
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -12,13 +13,13 @@
  * ("GPL"), unless you have obtained a separate licensing agreement
  * ("Other License"), formally executed by you and Linden Lab.  Terms of
  * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * online at http://secondlife.com/developers/opensource/gplv2
  * 
  * There are special exceptions to the terms and conditions of the GPL as
  * it is applied to this Source Code. View the full text of the exception
  * in the file doc/FLOSS-exception.txt in this software distribution, or
  * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * http://secondlife.com/developers/opensource/flossexception
  * 
  * By copying, modifying or distributing this software, you acknowledge
  * that you have read and understood your obligations described above,
@@ -28,6 +29,8 @@
  * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
+ * 
+ * @endcond
  */
 
 #include "llqtwebkit.h"
@@ -42,22 +45,29 @@
 #include "llpluginmessageclasses.h"
 #include "media_plugin_base.h"
 
-#if LL_WINDOWS
-#include <direct.h>
-#else
-#include <unistd.h>
-#include <stdlib.h>
-#endif
-
+// set to 1 if you're using the version of llqtwebkit that's QPixmap-ified
 #if LL_LINUX
+# define LL_QTWEBKIT_USES_PIXMAPS 0
 extern "C" {
-#include <glib.h>
-#include <glib-object.h>
+# include <glib.h>
+# include <glib-object.h>
 }
+#else
+# define LL_QTWEBKIT_USES_PIXMAPS 0
 #endif // LL_LINUX
 
+# include "volume_catcher.h"
+
 #if LL_WINDOWS
-	// NOTE - This captures the module handle of the dll. This is used below
+# include <direct.h>
+#else
+# include <unistd.h>
+# include <stdlib.h>
+#endif
+#include <iomanip>
+
+#if LL_WINDOWS
+	// *NOTE:Mani - This captures the module handle for the dll. This is used below
 	// to get the path to this dll for webkit initialization.
 	// I don't know how/if this can be done with apr...
 	namespace {	HMODULE gModuleHandle;};
@@ -83,10 +93,15 @@ public:
 private:
 
 	std::string mProfileDir;
+	std::string mHostLanguage;
+	std::string mUserAgent;
+	bool mCookiesEnabled;
+	bool mJavascriptEnabled;
+	bool mPluginsEnabled;
 
 	enum
 	{
-		INIT_STATE_UNINITIALIZED,		// Browser instance hasn't been set up yet
+		INIT_STATE_UNINITIALIZED,		// LLQtWebkit hasn't been set up yet
 		INIT_STATE_INITIALIZED,			// LLQtWebkit has been set up, but no browser window has been created yet.
 		INIT_STATE_NAVIGATING,			// Browser instance has been set up and initial navigate to about:blank has been issued
 		INIT_STATE_NAVIGATE_COMPLETE,	// initial navigate to about:blank has completed
@@ -105,7 +120,13 @@ private:
 	int mLastMouseX;
 	int mLastMouseY;
 	bool mFirstFocus;
+	F32 mBackgroundR;
+	F32 mBackgroundG;
+	F32 mBackgroundB;
+	std::string mTarget;
 	
+	VolumeCatcher mVolumeCatcher;
+
 	void setInitState(int state)
 	{
 //		std::cerr << "changing init state to " << state << std::endl;
@@ -128,6 +149,8 @@ private:
 		// pump qt
 		LLQtWebKit::getInstance()->pump( milliseconds );
 		
+		mVolumeCatcher.pump();
+
 		checkEditState();
 		
 		if(mInitState == INIT_STATE_NAVIGATE_COMPLETE)
@@ -140,11 +163,15 @@ private:
 			}
 		}
 		
-		if (mInitState > INIT_STATE_WAIT_REDRAW && mNeedsUpdate)
+		if ( (mInitState > INIT_STATE_WAIT_REDRAW) && mNeedsUpdate )
 		{
 			const unsigned char* browser_pixels = LLQtWebKit::getInstance()->grabBrowserWindow( mBrowserWindowId );
 
-			unsigned int buffer_size = LLQtWebKit::getInstance()->getBrowserRowSpan( mBrowserWindowId ) * LLQtWebKit::getInstance()->getBrowserHeight( mBrowserWindowId );
+			unsigned int rowspan = LLQtWebKit::getInstance()->getBrowserRowSpan( mBrowserWindowId );
+			unsigned int height = LLQtWebKit::getInstance()->getBrowserHeight( mBrowserWindowId );
+#if !LL_QTWEBKIT_USES_PIXMAPS
+			unsigned int buffer_size = rowspan * height;
+#endif // !LL_QTWEBKIT_USES_PIXMAPS
 			
 //			std::cerr << "webkit plugin: updating" << std::endl;
 			
@@ -152,7 +179,16 @@ private:
 			if ( mPixels && browser_pixels )
 			{
 //				std::cerr << "    memcopy of " << buffer_size << " bytes" << std::endl;
+
+#if LL_QTWEBKIT_USES_PIXMAPS
+				// copy the pixel data upside-down because of the co-ord system
+				for (int y=0; y<height; ++y)
+				{
+					memcpy( &mPixels[(height-y-1)*rowspan], &browser_pixels[y*rowspan], rowspan );
+				}
+#else
 				memcpy( mPixels, browser_pixels, buffer_size );
+#endif // LL_QTWEBKIT_USES_PIXMAPS
 			}
 
 			if ( mWidth > 0 && mHeight > 0 )
@@ -188,7 +224,7 @@ private:
 		// versions of) Flash to not crash the browser.
 		if (!g_thread_supported ()) g_thread_init (NULL);
 		g_type_init();
-#endif // LL_LINUX
+#endif
 
 #if LL_DARWIN
 		// When running under the Xcode debugger, there's a setting called "Break on Debugger()/DebugStr()" which defaults to being turned on.
@@ -200,7 +236,7 @@ private:
 #endif
 
 #if LL_WINDOWS
-		// NOTE - On windows, at least, the component path is the
+		//*NOTE:Mani - On windows, at least, the component path is the
 		// location of this dll's image file. 
 		std::string component_dir;
 		char dll_path[_MAX_PATH];
@@ -216,8 +252,8 @@ private:
 		}
 		else
 		{
-			// NOTE - This case should be a rare exception. 
-			// GetModuleFileNameA should always give you a full path.
+			// *NOTE:Mani - This case should be an rare exception. 
+			// GetModuleFileNameA should always give you a full path, no?
 			component_dir = application_dir;
 		}
 #else
@@ -238,7 +274,7 @@ private:
 		if ( result )
 		{
 			mInitState = INIT_STATE_INITIALIZED;
-
+			
 			return true;
 		};
 
@@ -250,50 +286,78 @@ private:
 	bool initBrowserWindow()
 	{
 		// already initialized
-		if (mInitState > INIT_STATE_INITIALIZED)
+		if ( mInitState > INIT_STATE_INITIALIZED )
 			return true;
 
 		// not enough information to initialize the browser yet.
-		if (mWidth < 0 || mHeight < 0 || mDepth < 0 || 
-			mTextureWidth < 0 || mTextureHeight < 0)
+		if ( mWidth < 0 || mHeight < 0 || mDepth < 0 || 
+				mTextureWidth < 0 || mTextureHeight < 0 )
 		{
 			return false;
 		};
+		
+		// Set up host language before creating browser window
+		if(!mHostLanguage.empty())
+		{
+			LLQtWebKit::getInstance()->setHostLanguage(mHostLanguage);
+		}
 
 		// turn on/off cookies based on what host app tells us
-		LLQtWebKit::getInstance()->enableCookies(true);
+		LLQtWebKit::getInstance()->enableCookies( mCookiesEnabled );
 
 		// turn on/off plugins based on what host app tells us
-			LLQtWebKit::getInstance()->enablePlugins(true);
+		LLQtWebKit::getInstance()->enablePlugins( mPluginsEnabled );
 
+		// turn on/off Javascript based on what host app tells us
+		LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
+		
 		// create single browser window
-		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight);
+		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow( mWidth, mHeight, mTarget);
 
-			// tell LLQtWebKit about the size of the browser window
-		LLQtWebKit::getInstance()->setSize(mBrowserWindowId, mWidth, mHeight);
+		// tell LLQtWebKit about the size of the browser window
+		LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
 
-			// observer events that LLQtWebKit emits
-		LLQtWebKit::getInstance()->addObserver(mBrowserWindowId, this);
+		// observer events that LLQtWebKit emits
+		LLQtWebKit::getInstance()->addObserver( mBrowserWindowId, this );
 
-			// append details to agent string
-		LLQtWebKit::getInstance()->setBrowserAgentId("LLPluginMedia Web Browser");
+		// append details to agent string
+		LLQtWebKit::getInstance()->setBrowserAgentId( mUserAgent );
+		
+#if !LL_QTWEBKIT_USES_PIXMAPS
+		// don't flip bitmap
+		LLQtWebKit::getInstance()->flipWindow( mBrowserWindowId, true );
+#endif // !LL_QTWEBKIT_USES_PIXMAPS
 
-			// don't flip bitmap
-		LLQtWebKit::getInstance()->flipWindow(mBrowserWindowId, true);
-			
-			// set background color to be black - mostly for initial login page
-		LLQtWebKit::getInstance()->setBackgroundColor(mBrowserWindowId, 0x00, 0x00, 0x00);
+		// set background color
+		// convert background color channels from [0.0, 1.0] to [0, 255];
+		LLQtWebKit::getInstance()->setBackgroundColor( mBrowserWindowId, int(mBackgroundR * 255.0f), int(mBackgroundG * 255.0f), int(mBackgroundB * 255.0f) );
 
-			// Set state _before_ starting the navigate, since onNavigateBegin might get called before this call returns.
-			setInitState(INIT_STATE_NAVIGATING);
+		// Set state _before_ starting the navigate, since onNavigateBegin might get called before this call returns.
+		setInitState(INIT_STATE_NAVIGATING);
 
-			// Don't do this here -- it causes the dreaded "white flash" when loading a browser instance.
-			// FIXME: Re-added this because navigating to a "page" initializes things correctly - especially
-			// for the HTTP AUTH dialog issues (DEV-41731). Will fix at a later date.
-		LLQtWebKit::getInstance()->navigateTo(mBrowserWindowId, "about:blank");
+		// Don't do this here -- it causes the dreaded "white flash" when loading a browser instance.
+		// FIXME: Re-added this because navigating to a "page" initializes things correctly - especially
+		// for the HTTP AUTH dialog issues (DEV-41731). Will fix at a later date.
+		// Build a data URL like this: "data:text/html,%3Chtml%3E%3Cbody bgcolor=%22#RRGGBB%22%3E%3C/body%3E%3C/html%3E"
+		// where RRGGBB is the background color in HTML style
+		std::stringstream url;
+		
+		url << "data:text/html,%3Chtml%3E%3Cbody%20bgcolor=%22#";
+		// convert background color channels from [0.0, 1.0] to [0, 255];
+		url << std::setfill('0') << std::setw(2) << std::hex << int(mBackgroundR * 255.0f);
+		url << std::setfill('0') << std::setw(2) << std::hex << int(mBackgroundG * 255.0f);
+		url << std::setfill('0') << std::setw(2) << std::hex << int(mBackgroundB * 255.0f);
+		url << "%22%3E%3C/body%3E%3C/html%3E";
+		
+		lldebugs << "data url is: " << url.str() << llendl;
+					
+		LLQtWebKit::getInstance()->navigateTo( mBrowserWindowId, url.str() );
+//		LLQtWebKit::getInstance()->navigateTo( mBrowserWindowId, "about:blank" );
 
-			return true;
-		};
+		return true;	
+	}
+
+	void setVolume(F32 vol);
 
 	////////////////////////////////////////////////////////////////////////////////
 	// virtual
@@ -371,14 +435,14 @@ private:
 	{
 		if(mInitState >= INIT_STATE_NAVIGATE_COMPLETE)
 		{
-			if (mInitState < INIT_STATE_RUNNING)
+			if(mInitState < INIT_STATE_RUNNING)
 			{
 				setInitState(INIT_STATE_RUNNING);
-
+				
 				// Clear the history, so the "back" button doesn't take you back to "about:blank".
 				LLQtWebKit::getInstance()->clearHistory(mBrowserWindowId);
 			}
-
+			
 			LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "navigate_complete");
 			message.setValue("uri", event.getEventUri());
 			message.setValueS32("result_code", event.getIntValue());
@@ -449,8 +513,9 @@ private:
 	void onClickLinkHref(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_href");
-		message.setValue("uri", event.getStringValue());
-		message.setValue("target", event.getStringValue2());
+		message.setValue("uri", event.getEventUri());
+		message.setValue("target", event.getStringValue());
+		message.setValue("uuid", event.getStringValue2());
 		sendMessage(message);
 	}
 	
@@ -459,8 +524,57 @@ private:
 	void onClickLinkNoFollow(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_nofollow");
-		message.setValue("uri", event.getStringValue());
+		message.setValue("uri", event.getEventUri());
 		sendMessage(message);
+	}
+	
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	void onCookieChanged(const EventType& event)
+	{
+		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "cookie_set");
+		message.setValue("cookie", event.getStringValue());
+		// These could be passed through as well, but aren't really needed.
+//		message.setValue("uri", event.getEventUri());
+//		message.setValueBoolean("dead", (event.getIntValue() != 0))
+		sendMessage(message);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	void onWindowCloseRequested(const EventType& event)
+	{
+		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "close_request");
+		message.setValue("uuid", event.getStringValue());
+		sendMessage(message);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	void onWindowGeometryChangeRequested(const EventType& event)
+	{
+		int x, y, width, height;
+		event.getRectValue(x, y, width, height);
+
+		// This sometimes gets called with a zero-size request.  Don't pass these along.
+		if(width > 0 && height > 0)
+		{
+			LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "geometry_change");
+			message.setValue("uuid", event.getStringValue());
+			message.setValueS32("x", x);
+			message.setValueS32("y", y);
+			message.setValueS32("width", width);
+			message.setValueS32("height", height);
+			sendMessage(message);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	std::string onRequestFilePicker( const EventType& eventIn )
+	{
+		return blockingPickFile();
 	}
 	
 	LLQtWebKit::EKeyboardModifier decodeModifiers(std::string &modifiers)
@@ -482,91 +596,95 @@ private:
 		return (LLQtWebKit::EKeyboardModifier)result;
 	}
 	
+	////////////////////////////////////////////////////////////////////////////////
+	//
+	void deserializeKeyboardData( LLSD native_key_data, uint32_t& native_scan_code, uint32_t& native_virtual_key, uint32_t& native_modifiers )
+	{
+		native_scan_code = 0;
+		native_virtual_key = 0;
+		native_modifiers = 0;
+		
+		if( native_key_data.isMap() )
+		{
+#if LL_DARWIN
+			native_scan_code = (uint32_t)(native_key_data["char_code"].asInteger());
+			native_virtual_key = (uint32_t)(native_key_data["key_code"].asInteger());
+			native_modifiers = (uint32_t)(native_key_data["modifiers"].asInteger());
+#elif LL_WINDOWS
+			native_scan_code = (uint32_t)(native_key_data["scan_code"].asInteger());
+			native_virtual_key = (uint32_t)(native_key_data["virtual_key"].asInteger());
+			// TODO: I don't think we need to do anything with native modifiers here -- please verify
+#elif LL_LINUX
+			native_scan_code = (uint32_t)(native_key_data["scan_code"].asInteger());
+			native_virtual_key = (uint32_t)(native_key_data["virtual_key"].asInteger());
+			native_modifiers = (uint32_t)(native_key_data["modifiers"].asInteger());
+#else
+			// Add other platforms here as needed
+#endif
+		};
+	};
 
 	////////////////////////////////////////////////////////////////////////////////
 	//
-	void keyEvent(LLQtWebKit::EKeyEvent key_event, int key, LLQtWebKit::EKeyboardModifier modifiers)
+	void keyEvent(LLQtWebKit::EKeyEvent key_event, int key, LLQtWebKit::EKeyboardModifier modifiers, LLSD native_key_data = LLSD::emptyMap())
 	{
-		int llqt_key;
-		
 		// The incoming values for 'key' will be the ones from indra_constants.h
-		// the outgoing values are the ones from llqtwebkit.h
+		std::string utf8_text;
 		
+		if(key < KEY_SPECIAL)
+		{
+			// Low-ascii characters need to get passed through.
+			utf8_text = (char)key;
+		}
+		
+		// Any special-case handling we want to do for particular keys...
 		switch((KEY)key)
 		{
-			// This is the list that the llqtwebkit implementation actually maps into Qt keys.
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_CANCEL;			break;
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_HELP;			break;
-			case KEY_BACKSPACE:		llqt_key = LL_DOM_VK_BACK_SPACE;		break;
-			case KEY_TAB:			llqt_key = LL_DOM_VK_TAB;			break;
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_CLEAR;			break;
-			case KEY_RETURN:		llqt_key = LL_DOM_VK_RETURN;			break;
-			case KEY_PAD_RETURN:	llqt_key = LL_DOM_VK_ENTER;			break;
-			case KEY_SHIFT:			llqt_key = LL_DOM_VK_SHIFT;			break;
-			case KEY_CONTROL:		llqt_key = LL_DOM_VK_CONTROL;		break;
-			case KEY_ALT:			llqt_key = LL_DOM_VK_ALT;			break;
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_PAUSE;			break;
-			case KEY_CAPSLOCK:		llqt_key = LL_DOM_VK_CAPS_LOCK;		break;
-			case KEY_ESCAPE:		llqt_key = LL_DOM_VK_ESCAPE;			break;
-			case KEY_PAGE_UP:		llqt_key = LL_DOM_VK_PAGE_UP;		break;
-			case KEY_PAGE_DOWN:		llqt_key = LL_DOM_VK_PAGE_DOWN;		break;
-			case KEY_END:			llqt_key = LL_DOM_VK_END;			break;
-			case KEY_HOME:			llqt_key = LL_DOM_VK_HOME;			break;
-			case KEY_LEFT:			llqt_key = LL_DOM_VK_LEFT;			break;
-			case KEY_UP:			llqt_key = LL_DOM_VK_UP;				break;
-			case KEY_RIGHT:			llqt_key = LL_DOM_VK_RIGHT;			break;
-			case KEY_DOWN:			llqt_key = LL_DOM_VK_DOWN;			break;
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_PRINTSCREEN;	break;
-			case KEY_INSERT:		llqt_key = LL_DOM_VK_INSERT;			break;
-			case KEY_DELETE:		llqt_key = LL_DOM_VK_DELETE;			break;
-//			case KEY_XXX:			llqt_key = LL_DOM_VK_CONTEXT_MENU;	break;
+			// ASCII codes for some standard keys
+			case LLQtWebKit::KEY_BACKSPACE:		utf8_text = (char)8;		break;
+			case LLQtWebKit::KEY_TAB:			utf8_text = (char)9;		break;
+			case LLQtWebKit::KEY_RETURN:		utf8_text = (char)13;		break;
+			case LLQtWebKit::KEY_PAD_RETURN:	utf8_text = (char)13;		break;
+			case LLQtWebKit::KEY_ESCAPE:		utf8_text = (char)27;		break;
 			
-			default:
-				if(key < KEY_SPECIAL)
-				{
-					// Pass the incoming key through -- it should be regular ASCII, which should be correct for webkit.
-					llqt_key = key;
-				}
-				else
-				{
-					// Don't pass through untranslated special keys -- they'll be all wrong.
-					llqt_key = 0;
-				}
+			default:  
 			break;
 		}
 		
-//		std::cerr << "keypress, original code = 0x" << std::hex << key << ", converted code = 0x" << std::hex << llqt_key << std::dec << std::endl;
+//		std::cerr << "key event " << (int)key_event << ", native_key_data = " << native_key_data << std::endl;
 		
-		if(llqt_key != 0)
-		{
-			LLQtWebKit::getInstance()->keyEvent( mBrowserWindowId, key_event, llqt_key, modifiers);
-		}
+		uint32_t native_scan_code = 0;
+		uint32_t native_virtual_key = 0;
+		uint32_t native_modifiers = 0;
+		deserializeKeyboardData( native_key_data, native_scan_code, native_virtual_key, native_modifiers );
+		
+		LLQtWebKit::getInstance()->keyboardEvent( mBrowserWindowId, key_event, (uint32_t)key, utf8_text.c_str(), modifiers, native_scan_code, native_virtual_key, native_modifiers);
 
 		checkEditState();
 	};
 
 	////////////////////////////////////////////////////////////////////////////////
 	//
-	void unicodeInput( const std::string &utf8str, LLQtWebKit::EKeyboardModifier modifiers)
-	{
-		LLWString wstr = utf8str_to_wstring(utf8str);
+	void unicodeInput( const std::string &utf8str, LLQtWebKit::EKeyboardModifier modifiers, LLSD native_key_data = LLSD::emptyMap())
+	{		
+		uint32_t key = LLQtWebKit::KEY_NONE;
 		
-		unsigned int i;
-		for(i=0; i < wstr.size(); i++)
+//		std::cerr << "unicode input, native_key_data = " << native_key_data << std::endl;
+		
+		if(utf8str.size() == 1)
 		{
-//			std::cerr << "unicode input, code = 0x" << std::hex << (unsigned long)(wstr[i]) << std::dec << std::endl;
-			
-			if(wstr[i] == 32)
-			{
-				// For some reason, the webkit plugin really wants the space bar to come in through the key-event path, not the unicode path.
-				LLQtWebKit::getInstance()->keyEvent( mBrowserWindowId, LLQtWebKit::KE_KEY_DOWN, 32, modifiers);
-				LLQtWebKit::getInstance()->keyEvent( mBrowserWindowId, LLQtWebKit::KE_KEY_UP, 32, modifiers);
-			}
-			else
-			{
-				LLQtWebKit::getInstance()->unicodeInput(mBrowserWindowId, wstr[i], modifiers);
-			}
+			// The only way a utf8 string can be one byte long is if it's actually a single 7-bit ascii character.
+			// In this case, use it as the key value.
+			key = utf8str[0];
 		}
+
+		uint32_t native_scan_code = 0;
+		uint32_t native_virtual_key = 0;
+		uint32_t native_modifiers = 0;
+		deserializeKeyboardData( native_key_data, native_scan_code, native_virtual_key, native_modifiers );
+		
+		LLQtWebKit::getInstance()->keyboardEvent( mBrowserWindowId, LLQtWebKit::KE_KEY_DOWN, (uint32_t)key, utf8str.c_str(), modifiers, native_scan_code, native_virtual_key, native_modifiers);
+		LLQtWebKit::getInstance()->keyboardEvent( mBrowserWindowId, LLQtWebKit::KE_KEY_UP, (uint32_t)key, utf8str.c_str(), modifiers, native_scan_code, native_virtual_key, native_modifiers);
 
 		checkEditState();
 	};
@@ -603,6 +721,26 @@ private:
 			
 		}
 	}
+	
+	std::string mPickedFile;
+	
+	std::string blockingPickFile(void)
+	{
+		mPickedFile.clear();
+		
+		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "pick_file");
+		message.setValueBoolean("blocking_request", true);
+		
+		// The "blocking_request" key in the message means this sendMessage call will block until a response is received.
+		sendMessage(message);
+		
+		return mPickedFile;
+	}
+
+	void onPickFileResponse(const std::string &file)
+	{
+		mPickedFile = file;
+	}
 
 };
 
@@ -620,6 +758,14 @@ MediaPluginWebKit::MediaPluginWebKit(LLPluginInstance::sendMessageFunction host_
 	mLastMouseX = 0;
 	mLastMouseY = 0;
 	mFirstFocus = true;
+	mBackgroundR = 0.0f;
+	mBackgroundG = 0.0f;
+	mBackgroundB = 0.0f;
+
+	mHostLanguage = "en";		// default to english
+	mJavascriptEnabled = true;	// default to on
+	mPluginsEnabled = true;		// default to on
+	mUserAgent = "LLPluginMedia Web Browser";
 }
 
 MediaPluginWebKit::~MediaPluginWebKit()
@@ -646,12 +792,6 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 		{
 			if(message_name == "init")
 			{
-				// This is the media init message -- all necessary data for initialization should have been received.
-				if (initBrowser())
-				{
-				std::string user_data_path = message_in.getValue("user_data_path"); // n.b. always has trailing platform-specific dir-delimiter
-				mProfileDir = user_data_path + "browser_profile";
-
 				LLPluginMessage message("base", "init_response");
 				LLSD versions = LLSD::emptyMap();
 				versions[LLPLUGIN_MESSAGE_CLASS_BASE] = LLPLUGIN_MESSAGE_CLASS_BASE_VERSION;
@@ -663,25 +803,6 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				plugin_version += LLQtWebKit::getInstance()->getVersion();
 				message.setValue("plugin_version", plugin_version);
 				sendMessage(message);
-				
-				// Plugin gets to decide the texture parameters to use.
-				mDepth = 4;
-
-				message.setMessage(LLPLUGIN_MESSAGE_CLASS_MEDIA, "texture_params");
-				message.setValueS32("default_width", 1024);
-				message.setValueS32("default_height", 1024);
-				message.setValueS32("depth", mDepth);
-				message.setValueU32("internalformat", GL_RGBA);
-				message.setValueU32("format", GL_RGBA);
-				message.setValueU32("type", GL_UNSIGNED_BYTE);
-				message.setValueBoolean("coords_opengl", true);
-				sendMessage(message);
-			}
-				else
-				{
-					// if initialization failed, we're done.
-					mDeleteMe = true;
-				}
 			}
 			else if(message_name == "idle")
 			{
@@ -705,7 +826,6 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				info.mAddress = message_in.getValuePointer("address");
 				info.mSize = (size_t)message_in.getValueS32("size");
 				std::string name = message_in.getValue("name");
-				
 				
 //				std::cerr << "MediaPluginWebKit::receiveMessage: shared memory added, name: " << name 
 //					<< ", size: " << info.mSize 
@@ -747,16 +867,81 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 //				std::cerr << "MediaPluginWebKit::receiveMessage: unknown base message: " << message_name << std::endl;
 			}
 		}
+		else if(message_class == LLPLUGIN_MESSAGE_CLASS_MEDIA_TIME)
+		{
+			if(message_name == "set_volume")
+			{
+				F32 volume = message_in.getValueReal("volume");
+				setVolume(volume);
+			}
+		}
 		else if(message_class == LLPLUGIN_MESSAGE_CLASS_MEDIA)
 		{
-			if(message_name == "size_change")
+			if(message_name == "init")
+			{
+				mTarget = message_in.getValue("target");
+				
+				// This is the media init message -- all necessary data for initialization should have been received.
+				if(initBrowser())
+				{
+					
+					// Plugin gets to decide the texture parameters to use.
+					mDepth = 4;
+
+					LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "texture_params");
+					message.setValueS32("default_width", 1024);
+					message.setValueS32("default_height", 1024);
+					message.setValueS32("depth", mDepth);
+					message.setValueU32("internalformat", GL_RGBA);
+	#if LL_QTWEBKIT_USES_PIXMAPS
+					message.setValueU32("format", GL_BGRA_EXT); // I hope this isn't system-dependant... is it?  If so, we'll have to check the root window's pixel layout or something... yuck.
+	#else
+					message.setValueU32("format", GL_RGBA);
+	#endif // LL_QTWEBKIT_USES_PIXMAPS
+					message.setValueU32("type", GL_UNSIGNED_BYTE);
+					message.setValueBoolean("coords_opengl", true);
+					sendMessage(message);
+				}
+				else
+				{
+					// if initialization failed, we're done.
+					mDeleteMe = true;
+				}
+
+			}
+			else if(message_name == "set_user_data_path")
+			{
+				std::string user_data_path = message_in.getValue("path"); // n.b. always has trailing platform-specific dir-delimiter
+				mProfileDir = user_data_path + "browser_profile";
+
+				// FIXME: Should we do anything with this if it comes in after the browser has been initialized?
+			}
+			else if(message_name == "set_language_code")
+			{
+				mHostLanguage = message_in.getValue("language");
+
+				// FIXME: Should we do anything with this if it comes in after the browser has been initialized?
+			}
+			else if(message_name == "plugins_enabled")
+			{
+				mPluginsEnabled = message_in.getValueBoolean("enable");
+			}
+			else if(message_name == "javascript_enabled")
+			{
+				mJavascriptEnabled = message_in.getValueBoolean("enable");
+			}
+			else if(message_name == "size_change")
 			{
 				std::string name = message_in.getValue("name");
 				S32 width = message_in.getValueS32("width");
 				S32 height = message_in.getValueS32("height");
 				S32 texture_width = message_in.getValueS32("texture_width");
 				S32 texture_height = message_in.getValueS32("texture_height");
-				
+				mBackgroundR = message_in.getValueReal("background_r");
+				mBackgroundG = message_in.getValueReal("background_g");
+				mBackgroundB = message_in.getValueReal("background_b");
+//				mBackgroundA = message_in.setValueReal("background_a");		// Ignore any alpha
+								
 				if(!name.empty())
 				{
 					// Find the shared memory region with this name
@@ -767,37 +952,40 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 						mWidth = width;
 						mHeight = height;
 
-						if (initBrowserWindow())
+						if(initBrowserWindow())
 						{
-						// size changed so tell the browser
-						LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
-						
-//						std::cerr << "webkit plugin: set size to " << mWidth << " x " << mHeight 
-//								<< ", rowspan is " << LLQtWebKit::getInstance()->getBrowserRowSpan(mBrowserWindowId) << std::endl;
-								
-						S32 real_width = LLQtWebKit::getInstance()->getBrowserRowSpan(mBrowserWindowId) / LLQtWebKit::getInstance()->getBrowserDepth(mBrowserWindowId); 
-						
-						// The actual width the browser will be drawing to is probably smaller... let the host know by modifying texture_width in the response.
-							if (real_width <= texture_width)
-						{
-							texture_width = real_width;
-						}
-						else
-						{
-							// This won't work -- it'll be bigger than the allocated memory.  This is a fatal error.
-//							std::cerr << "Fatal error: browser rowbytes greater than texture width" << std::endl;
-							mDeleteMe = true;
-							return;
-						}
+
+							// size changed so tell the browser
+							LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
+							
+	//						std::cerr << "webkit plugin: set size to " << mWidth << " x " << mHeight 
+	//								<< ", rowspan is " << LLQtWebKit::getInstance()->getBrowserRowSpan(mBrowserWindowId) << std::endl;
+									
+							S32 real_width = LLQtWebKit::getInstance()->getBrowserRowSpan(mBrowserWindowId) / LLQtWebKit::getInstance()->getBrowserDepth(mBrowserWindowId); 
+							
+							// The actual width the browser will be drawing to is probably smaller... let the host know by modifying texture_width in the response.
+							if(real_width <= texture_width)
+							{
+								texture_width = real_width;
+							}
+							else
+							{
+								// This won't work -- it'll be bigger than the allocated memory.  This is a fatal error.
+	//							std::cerr << "Fatal error: browser rowbytes greater than texture width" << std::endl;
+								mDeleteMe = true;
+								return;
+							}
 						}
 						else
 						{
 							// Setting up the browser window failed.  This is a fatal error.
 							mDeleteMe = true;
 						}
+
 						
 						mTextureWidth = texture_width;
 						mTextureHeight = texture_height;
+						
 					};
 				};
 
@@ -874,6 +1062,7 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				std::string event = message_in.getValue("event");
 				S32 key = message_in.getValueS32("key");
 				std::string modifiers = message_in.getValue("modifiers");
+				LLSD native_key_data = message_in.getValueLLSD("native_key_data");
 				
 				// Treat unknown events as key-up for safety.
 				LLQtWebKit::EKeyEvent key_event = LLQtWebKit::KE_KEY_UP;
@@ -886,14 +1075,15 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 					key_event = LLQtWebKit::KE_KEY_REPEAT;
 				}
 				
-				keyEvent(key_event, key, decodeModifiers(modifiers));
+				keyEvent(key_event, key, decodeModifiers(modifiers), native_key_data);
 			}
 			else if(message_name == "text_event")
 			{
 				std::string text = message_in.getValue("text");
 				std::string modifiers = message_in.getValue("modifiers");
+				LLSD native_key_data = message_in.getValueLLSD("native_key_data");
 				
-				unicodeInput(text, decodeModifiers(modifiers));
+				unicodeInput(text, decodeModifiers(modifiers), native_key_data);
 			}
 			if(message_name == "edit_cut")
 			{
@@ -910,10 +1100,14 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				LLQtWebKit::getInstance()->userAction( mBrowserWindowId, LLQtWebKit::UA_EDIT_PASTE );
 				checkEditState();
 			}
+			if(message_name == "pick_file_response")
+			{
+				onPickFileResponse(message_in.getValue("file"));
+			}
 			else
 			{
 //				std::cerr << "MediaPluginWebKit::receiveMessage: unknown media message: " << message_string << std::endl;
-			};
+			}
 		}
 		else if(message_class == LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER)
 		{
@@ -941,8 +1135,22 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 			}
 			else if(message_name == "enable_cookies")
 			{
-				bool val = message_in.getValueBoolean("enable");
-				LLQtWebKit::getInstance()->enableCookies( val );
+				mCookiesEnabled = message_in.getValueBoolean("enable");
+				LLQtWebKit::getInstance()->enableCookies( mCookiesEnabled );
+			}
+			else if(message_name == "enable_plugins")
+			{
+				mPluginsEnabled = message_in.getValueBoolean("enable");
+				LLQtWebKit::getInstance()->enablePlugins( mPluginsEnabled );
+			}
+			else if(message_name == "enable_javascript")
+			{
+				mJavascriptEnabled = message_in.getValueBoolean("enable");
+				//LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
+			}
+			else if(message_name == "set_cookies")
+			{
+				LLQtWebKit::getInstance()->setCookies(message_in.getValue("cookies"));
 			}
 			else if(message_name == "proxy_setup")
 			{
@@ -979,8 +1187,8 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 			}
 			else if(message_name == "set_user_agent")
 			{
-				std::string user_agent = message_in.getValue("user_agent");
-				LLQtWebKit::getInstance()->setBrowserAgentId( user_agent );
+				mUserAgent = message_in.getValue("user_agent");
+				LLQtWebKit::getInstance()->setBrowserAgentId( mUserAgent );
 			}
 			else if(message_name == "init_history")
 			{
@@ -999,6 +1207,17 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 					}
 				}
 			}
+			else if(message_name == "proxy_window_opened")
+			{
+				std::string target = message_in.getValue("target");
+				std::string uuid = message_in.getValue("uuid");
+				LLQtWebKit::getInstance()->proxyWindowOpened(mBrowserWindowId, target, uuid);
+			}
+			else if(message_name == "proxy_window_closed")
+			{
+				std::string uuid = message_in.getValue("uuid");
+				LLQtWebKit::getInstance()->proxyWindowClosed(mBrowserWindowId, uuid);
+			}
 			else
 			{
 //				std::cerr << "MediaPluginWebKit::receiveMessage: unknown media_browser message: " << message_string << std::endl;
@@ -1009,6 +1228,11 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 //			std::cerr << "MediaPluginWebKit::receiveMessage: unknown message class: " << message_class << std::endl;
 		};
 	}
+}
+
+void MediaPluginWebKit::setVolume(F32 volume)
+{
+	mVolumeCatcher.setVolume(volume);
 }
 
 int init_media_plugin(LLPluginInstance::sendMessageFunction host_send_func, void *host_user_data, LLPluginInstance::sendMessageFunction *plugin_send_func, void **plugin_user_data)

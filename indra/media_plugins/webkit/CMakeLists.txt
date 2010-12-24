@@ -14,10 +14,12 @@ include(Linking)
 include(PluginAPI)
 include(MediaPluginBase)
 include(FindOpenGL)
+include(PulseAudio)
 
 include(WebKitLibPlugin)
 
 include_directories(
+    ${PULSEAUDIO_INCLUDE_DIRS}
     ${LLPLUGIN_INCLUDE_DIRS}
     ${MEDIA_PLUGIN_BASE_INCLUDE_DIRS}
     ${LLCOMMON_INCLUDE_DIRS}
@@ -25,23 +27,26 @@ include_directories(
     ${LLIMAGE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
-    ${LLQTWEBKIT_INCLUDE_DIR}
 )
 
 
 ### media_plugin_webkit
 
+if(NOT WORD_SIZE EQUAL 32)
+  if(WINDOWS)
+    add_definitions(/FIXED:NO)
+  else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
+    add_definitions(-fPIC)
+  endif(WINDOWS)
+endif(NOT WORD_SIZE EQUAL 32)
+
 set(media_plugin_webkit_SOURCE_FILES
     media_plugin_webkit.cpp
     )
 
-if(WORD_SIZE EQUAL 64)
-	if(WINDOWS)
-		add_definitions(/FIXED:NO)
-	else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
-		add_definitions(-fPIC)
-	endif(WINDOWS)
-endif (WORD_SIZE EQUAL 64)
+set(media_plugin_webkit_HEADER_FILES
+    volume_catcher.h
+    )
 
 set(media_plugin_webkit_LINK_LIBRARIES
   ${LLPLUGIN_LIBRARIES}
@@ -49,14 +54,35 @@ set(media_plugin_webkit_LINK_LIBRARIES
   ${LLCOMMON_LIBRARIES}
   ${WEBKIT_PLUGIN_LIBRARIES}
   ${PLUGIN_API_WINDOWS_LIBRARIES}
+  ${PULSEAUDIO_LIBRARIES}
 )
 
-if(LINUX)
+# Select which VolumeCatcher implementation to use
+if (LINUX)
+  if (PULSEAUDIO_FOUND)
+    list(APPEND media_plugin_webkit_SOURCE_FILES linux_volume_catcher.cpp)
+  else (PULSEAUDIO_FOUND)
+    list(APPEND media_plugin_webkit_SOURCE_FILES dummy_volume_catcher.cpp)
+  endif (PULSEAUDIO_FOUND)
   list(APPEND media_plugin_webkit_LINK_LIBRARIES
-    ${UI_LIBRARIES}  # for glib/GTK
-    )
-endif(LINUX)
+       ${UI_LIBRARIES}     # for glib/GTK
+       )
+elseif (DARWIN)
+  list(APPEND media_plugin_webkit_SOURCE_FILES mac_volume_catcher.cpp)
+  find_library(CORESERVICES_LIBRARY CoreServices)
+  find_library(AUDIOUNIT_LIBRARY AudioUnit)
+  list(APPEND media_plugin_webkit_LINK_LIBRARIES
+       ${CORESERVICES_LIBRARY}     # for Component Manager calls
+       ${AUDIOUNIT_LIBRARY}        # for AudioUnit calls
+       )
+elseif (WINDOWS)
+  list(APPEND media_plugin_webkit_SOURCE_FILES windows_volume_catcher.cpp)
+endif (LINUX)
 
+set_source_files_properties(${media_plugin_webkit_HEADER_FILES}
+                            PROPERTIES HEADER_FILE_ONLY TRUE)
+
+list(APPEND media_plugin_webkit_SOURCE_FILES ${media_plugin_webkit_HEADER_FILES})
 
 add_library(media_plugin_webkit
     SHARED
@@ -99,3 +125,4 @@ if (DARWIN)
     )
     
 endif (DARWIN)
+
