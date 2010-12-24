@@ -32,6 +32,7 @@ if (STANDALONE)
   endforeach(pkg)
 else (STANDALONE)
   if (NOT DARWIN)
+    use_prebuilt_binary(glib)		# gtk-etc needs glib
     use_prebuilt_binary(gtk-atk-pango-glib)
   endif (NOT DARWIN)
   if (LINUX)
@@ -49,11 +50,14 @@ else (STANDALONE)
         pangoft2-1.0
         pangox-1.0
         pangoxft-1.0
+        pangocairo-1.0
         )
   endif (LINUX)
 
   include_directories (
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include
+      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/cairo
+      ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/pixman-1
       ${LIBS_PREBUILT_DIR}/include
       )
   foreach(include ${${LL_ARCH}_INCLUDES})

@@ -39,8 +39,9 @@
 #include "llviewercontrol.h"
 #include "llviewerimage.h"
 #include "llviewerwindow.h"
-#include "llversionviewer.h"
 #include "llviewerimagelist.h"
+//#include "viewerversion.h"
+
 #include "llpluginclassmedia.h"
 
 #include "llevent.h"		// LLSimpleListener
@@ -241,13 +242,15 @@ LLViewerMediaImpl* LLViewerMedia::getMediaImplFromTextureID(const LLUUID& textur
 // static
 std::string LLViewerMedia::getCurrentUserAgent()
 {
+	// Don't include version, channel, or skin -- MC
+
 	// Don't use user-visible string to avoid 
 	// punctuation and strange characters.
-	std::string skin_name = gSavedSettings.getString("SkinCurrent");
+	//std::string skin_name = gSavedSettings.getString("SkinCurrent");
 
 	// Just in case we need to check browser differences in A/B test
 	// builds.
-	std::string channel = gSavedSettings.getString("VersionChannelName");
+	//std::string channel = gSavedSettings.getString("VersionChannelName");
 
 	// append our magic version number string to the browser user agent id
 	// See the HTTP 1.0 and 1.1 specifications for allowed formats:
@@ -257,9 +260,10 @@ std::string LLViewerMedia::getCurrentUserAgent()
 	// http://www.mozilla.org/build/revised-user-agent-strings.html
 	std::ostringstream codec;
 	codec << "SecondLife/";
-	codec << LL_VERSION_MAJOR << "." << LL_VERSION_MINOR << "." << LL_VERSION_PATCH << "." << LL_VERSION_BUILD;
-	codec << " (" << channel << "; " << skin_name << " skin)";
-	llinfos << codec.str() << llendl;
+	codec << "C64 Basic V2";
+	//codec << ViewerVersion::getImpMajorVersion() << "." << ViewerVersion::getImpMinorVersion() << "." << ViewerVersion::getImpPatchVersion() << " " << ViewerVersion::getImpTestVersion();
+ 	//codec << " (" << channel << "; " << skin_name << " skin)";
+// 	llinfos << codec.str() << llendl;
 	
 	return codec.str();
 }
@@ -468,7 +472,7 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 		// In this case we just use whatever gDirUtilp->getOSUserAppDir() gives us (this
 		// is what we always used before this change)
 		std::string linden_user_dir = gDirUtilp->getLindenUserDir();
-		if (!linden_user_dir.empty())
+		if ( ! linden_user_dir.empty() )
 		{
 			// gDirUtilp->getLindenUserDir() is whole path, not just Linden name
 			user_data_path = linden_user_dir;
@@ -489,7 +493,22 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 		{
 			LLPluginClassMedia* media_source = new LLPluginClassMedia(owner);
 			media_source->setSize(default_width, default_height);
-			if (media_source->init(launcher_name, plugin_name, false, user_data_path))
+			media_source->setUserDataPath(user_data_path);
+			media_source->setLanguageCode(LLUI::getLanguage());
+
+			// collect 'cookies enabled' setting from prefs and send to embedded browser
+			bool cookies_enabled = gSavedSettings.getBOOL( "BrowserCookiesEnabled" );
+			media_source->enable_cookies( cookies_enabled );
+
+			// collect 'plugins enabled' setting from prefs and send to embedded browser
+			bool plugins_enabled = gSavedSettings.getBOOL( "BrowserPluginsEnabled" );
+			media_source->setPluginsEnabled( plugins_enabled );
+
+			// collect 'javascript enabled' setting from prefs and send to embedded browser
+			bool javascript_enabled = gSavedSettings.getBOOL( "BrowserJavascriptEnabled" );
+			media_source->setJavascriptEnabled( javascript_enabled );
+
+			if (media_source->init(launcher_name, plugin_name, gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins")))
 			{
 				return media_source;
 			}
@@ -500,7 +519,12 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 			}
 		}
 	}
-	
+
+	LL_WARNS("Plugin") << "plugin intialization failed for mime type: " << media_type << LL_ENDL;
+	LLSD args;
+	args["MIME_TYPE"] = media_type;
+	LLNotifications::instance().add("NoPlugin", args);
+
 	return NULL;
 }							
 
@@ -715,12 +739,8 @@ void LLViewerMediaImpl::navigateHome()
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-void LLViewerMediaImpl::navigateTo(const std::string& _url, const std::string& mime_type, bool rediscover_type)
+void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mime_type,  bool rediscover_type)
 {
-	// trim whitespace from front and back of URL - fixes EXT-5363
-	std::string url(_url);
-	LLStringUtil::trim(url);
-
 	if(rediscover_type)
 	{
 
@@ -729,12 +749,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& _url, const std::string& m
 
 		if(scheme.empty() || "http" == scheme || "https" == scheme)
 		{
-			// If we don't set an Accept header, LLHTTPClient will add one like this:
-			//    Accept: application/llsd+xml
-			// which is really not what we want.
-			LLSD headers = LLSD::emptyMap();
-			headers["Accept"] = "*/*";
-			LLHTTPClient::getHeaderOnly(url, new LLMimeDiscoveryResponder(this), headers, 10.0f);
+			LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
 		}
 		else if("data" == scheme || "file" == scheme || "about" == scheme)
 		{
@@ -788,7 +803,38 @@ bool LLViewerMediaImpl::handleKeyHere(KEY key, MASK mask)
 	
 	if (mMediaSource)
 	{
-		result = mMediaSource->keyEvent(LLPluginClassMedia::KEY_EVENT_DOWN ,key, mask);
+		// FIXME: THIS IS SO WRONG.
+		// Menu keys should be handled by the menu system and not passed to UI elements, but this is how LLTextEditor and LLLineEditor do it...
+		if( MASK_CONTROL & mask )
+		{
+			if( 'C' == key )
+			{
+				mMediaSource->copy();
+				result = true;
+			}
+			else
+			if( 'V' == key )
+			{
+				mMediaSource->paste();
+				result = true;
+			}
+			else
+			if( 'X' == key )
+			{
+				mMediaSource->cut();
+				result = true;
+			}
+		}
+		
+		if(!result)
+		{
+			
+			LLSD native_key_data = LLSD::emptyMap(); 
+			
+			result = mMediaSource->keyEvent(LLPluginClassMedia::KEY_EVENT_DOWN ,key, mask, native_key_data);
+			// Since the viewer internal event dispatching doesn't give us key-up events, simulate one here.
+			(void)mMediaSource->keyEvent(LLPluginClassMedia::KEY_EVENT_UP ,key, mask, native_key_data);
+		}
 	}
 	
 	return result;
@@ -805,7 +851,9 @@ bool LLViewerMediaImpl::handleUnicodeCharHere(llwchar uni_char)
 		if (uni_char >= 32 // discard 'control' characters
 			&& uni_char != 127) // SDL thinks this is 'delete' - yuck.
 		{
-			mMediaSource->textInput(wstring_to_utf8str(LLWString(1, uni_char)), gKeyboard->currentMask(FALSE));
+			LLSD native_key_data = LLSD::emptyMap(); 
+			
+			mMediaSource->textInput(wstring_to_utf8str(LLWString(1, uni_char)), gKeyboard->currentMask(FALSE), native_key_data);
 		}
 	}
 	

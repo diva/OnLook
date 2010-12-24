@@ -1,6 +1,6 @@
 /** 
- * @file dummy_volume_catcher.cpp
- * @brief A null implementation of the "VolumeCatcher" class for platforms where it's not implemented yet.
+ * @file linux_volume_catcher.h
+ * @brief A Linux-specific, PulseAudio-specific hack to detect and volume-adjust new audio sources
  *
  * @cond
  * $LicenseInfo:firstyear=2010&license=viewergpl$
@@ -33,33 +33,24 @@
  * @endcond
  */
 
-#include "volume_catcher.h"
+#ifndef LINUX_VOLUME_CATCHER_H
+#define LINUX_VOLUME_CATCHER_H
 
+#include "linden_common.h"
 
-class VolumeCatcherImpl
+class LinuxVolumeCatcherImpl;
+
+class LinuxVolumeCatcher
 {
+ public:
+	LinuxVolumeCatcher();
+	~LinuxVolumeCatcher();
+
+	void setVolume(F32 volume); // 0.0 - 1.0
+	void pump(); // call this at least a few times a second if you can - it affects how quickly we can 'catch' a new audio source and adjust its volume
+	
+ private:
+	LinuxVolumeCatcherImpl *pimpl;
 };
 
-/////////////////////////////////////////////////////
-
-VolumeCatcher::VolumeCatcher()
-{
-	pimpl = NULL;
-}
-
-VolumeCatcher::~VolumeCatcher()
-{
-}
-
-void VolumeCatcher::setVolume(F32 volume)
-{
-}
-
-void VolumeCatcher::setPan(F32 pan)
-{
-}
-
-void VolumeCatcher::pump()
-{
-}
-
+#endif // LINUX_VOLUME_CATCHER_H

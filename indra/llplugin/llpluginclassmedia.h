@@ -2,9 +2,10 @@
  * @file llpluginclassmedia.h
  * @brief LLPluginClassMedia handles interaction with a plugin which knows about the "media" message class.
  *
+ * @cond
  * $LicenseInfo:firstyear=2008&license=viewergpl$
  * 
- * Copyright (c) 2008-2009, Linden Research, Inc.
+ * Copyright (c) 2008-2010, Linden Research, Inc.
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -12,13 +13,13 @@
  * ("GPL"), unless you have obtained a separate licensing agreement
  * ("Other License"), formally executed by you and Linden Lab.  Terms of
  * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * online at http://secondlife.com/developers/opensource/gplv2
  * 
  * There are special exceptions to the terms and conditions of the GPL as
  * it is applied to this Source Code. View the full text of the exception
  * in the file doc/FLOSS-exception.txt in this software distribution, or
  * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * http://secondlife.com/developers/opensource/flossexception
  * 
  * By copying, modifying or distributing this software, you acknowledge
  * that you have read and understood your obligations described above,
@@ -28,6 +29,8 @@
  * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
+ * 
+ * @endcond
  */
 
 #ifndef LL_LLPLUGINCLASSMEDIA_H
@@ -38,7 +41,7 @@
 #include "llrect.h"
 #include "llpluginclassmediaowner.h"
 #include <queue>
-
+#include "v4color.h"
 
 class LLPluginClassMedia : public LLPluginProcessParentOwner
 {
@@ -48,7 +51,9 @@ public:
 	virtual ~LLPluginClassMedia();
 
 	// local initialization, called by the media manager when creating a source
-	virtual bool init(const std::string &launcher_filename, const std::string &plugin_filename, bool debug, const std::string &user_data_path);
+	virtual bool init(const std::string &launcher_filename, 
+					  const std::string &plugin_filename, 
+					  bool debug);
 
 	// undoes everything init() didm called by the media manager when destroying a source
 	virtual void reset();
@@ -85,6 +90,8 @@ public:
 	void setSize(int width, int height);
 	void setAutoScale(bool auto_scale);
 	
+	void setBackgroundColor(LLColor4 color) { mBackgroundColor = color; };
+	
 	// Returns true if all of the texture parameters (depth, format, size, and texture size) are set up and consistent.
 	// This will initially be false, and will also be false for some time after setSize while the resize is processed.
 	// Note that if this returns true, it is safe to use all the get() functions above without checking for invalid return values
@@ -111,12 +118,12 @@ public:
 		KEY_EVENT_REPEAT
 	}EKeyEventType;
 	
-	bool keyEvent(EKeyEventType type, int key_code, MASK modifiers);
+	bool keyEvent(EKeyEventType type, int key_code, MASK modifiers, LLSD native_key_data);
 
 	void scrollEvent(int x, int y, MASK modifiers);
 	
 	// Text may be unicode (utf8 encoded)
-	bool textInput(const std::string &text, MASK modifiers);
+	bool textInput(const std::string &text, MASK modifiers, LLSD native_key_data);
 	
 	void loadURI(const std::string &uri);
 	
@@ -170,6 +177,12 @@ public:
 
 	void	paste();
 	bool	canPaste() const { return mCanPaste; };
+	
+	// These can be called before init(), and they will be queued and sent before the media init message.
+	void	setUserDataPath(const std::string &user_data_path);
+	void	setLanguageCode(const std::string &language_code);
+	void	setPluginsEnabled(const bool enabled);
+	void	setJavascriptEnabled(const bool enabled);
 		
 	///////////////////////////////////
 	// media browser class functions
@@ -178,6 +191,7 @@ public:
 	void focus(bool focused);
 	void clear_cache();
 	void clear_cookies();
+	void set_cookies(const std::string &cookies);
 	void enable_cookies(bool enable);
 	void proxy_setup(bool enable, const std::string &host = LLStringUtil::null, int port = 0);
 	void browse_stop();
@@ -210,6 +224,7 @@ public:
 
 	// This is valid after MEDIA_EVENT_CLICK_LINK_HREF
 	std::string getClickTarget() const { return mClickTarget; };
+
 
 	std::string getMediaName() const { return mMediaName; };
 	std::string getMediaDescription() const { return mMediaDescription; };
@@ -327,6 +342,8 @@ protected:
 	std::string		mMediaName;
 	std::string		mMediaDescription;
 	
+	LLColor4		mBackgroundColor;
+	
 	/////////////////////////////////////////
 	// media_browser class
 	std::string		mNavigateURI;
@@ -347,6 +364,14 @@ protected:
 	F64				mCurrentRate;
 	F64				mLoadedDuration;
 	
+//--------------------------------------
+	//debug use only
+	//
+private:
+	bool  mDeleteOK ;
+public:
+	void setDeleteOK(bool flag) { mDeleteOK = flag ;}
+//--------------------------------------
 };
 
 #endif // LL_LLPLUGINCLASSMEDIA_H

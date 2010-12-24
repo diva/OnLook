@@ -1,8 +1,9 @@
-/** 
- * @file dummy_volume_catcher.cpp
- * @brief A null implementation of the "VolumeCatcher" class for platforms where it's not implemented yet.
+/**
+ * @file slplugin-objc.h
+ * @brief Header file for slplugin-objc.mm.
  *
  * @cond
+ *
  * $LicenseInfo:firstyear=2010&license=viewergpl$
  * 
  * Copyright (c) 2010, Linden Research, Inc.
@@ -30,36 +31,12 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  * 
+ *
  * @endcond
  */
 
-#include "volume_catcher.h"
 
-
-class VolumeCatcherImpl
-{
-};
-
-/////////////////////////////////////////////////////
-
-VolumeCatcher::VolumeCatcher()
-{
-	pimpl = NULL;
-}
-
-VolumeCatcher::~VolumeCatcher()
-{
-}
-
-void VolumeCatcher::setVolume(F32 volume)
-{
-}
-
-void VolumeCatcher::setPan(F32 pan)
-{
-}
-
-void VolumeCatcher::pump()
-{
-}
-
+/* Defined in slplugin-objc.mm: */
+void setupCocoa();
+void createAutoReleasePool();
+void deleteAutoReleasePool();

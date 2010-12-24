@@ -7,6 +7,7 @@ if (STANDALONE)
   pkg_check_modules(GSTREAMER010 REQUIRED gstreamer-0.10)
   pkg_check_modules(GSTREAMER010_PLUGINS_BASE REQUIRED gstreamer-plugins-base-0.10)
 elseif (LINUX)
+  use_prebuilt_binary(glib)			# gstreamer needs glib
   use_prebuilt_binary(gstreamer)
   # possible libxml should have its own .cmake file instead
   use_prebuilt_binary(libxml)
