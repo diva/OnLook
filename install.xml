@@ -580,9 +580,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>2cd3f6499f8444f1d119d097e4047252</string>
+            <string>c829b638b6eef71ca63418cb9aea46a2</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
+            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gstreamer-linux-20080613.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>

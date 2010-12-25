@@ -3,44 +3,30 @@
  * @brief GStreamer-0.10 plugin for LLMedia API plugin system
  *
  * @cond
- * $LicenseInfo:firstyear=2007&license=viewergpl$
- * 
- * Copyright (c) 2007-2010, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlife.com/developers/opensource/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlife.com/developers/opensource/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
- * 
  * @endcond
  */
 
 #include "linden_common.h"
-
-// Needed for _getcwd() RC 
-#ifdef LL_WINDOWS
-#include <direct.h>
-#include <stdlib.h>
-#include <stdio.h>
-#endif
 
 #include "llgl.h"
 
@@ -53,13 +39,14 @@
 
 extern "C" {
 #include <gst/gst.h>
-#include <gst/gstelement.h>
 }
 
 #include "llmediaimplgstreamer.h"
 #include "llmediaimplgstreamertriviallogging.h"
 
 #include "llmediaimplgstreamervidplug.h"
+
+#include "llmediaimplgstreamer_syms.h"
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -73,8 +60,6 @@ public:
 
 	static bool startup();
 	static bool closedown();
-
-	static void set_gst_plugin_path();
 
 	gboolean processGSTEvents(GstBus     *bus,
 				  GstMessage *message);
@@ -91,7 +76,7 @@ private:
 	bool play(double rate);
 	bool getTimePos(double &sec_out);
 
-	#define MIN_LOOP_SEC 1.0F
+	static const double MIN_LOOP_SEC = 1.0F;
 
 	bool mIsLooping;
 
@@ -147,12 +132,11 @@ private:
 
 	bool mSeekWanted;
 	double mSeekDestination;
-
-	std::string mLastTitle;
 	
 	// Very GStreamer-specific
 	GMainLoop *mPump; // event pump for this media
 	GstElement *mPlaybin;
+	GstElement *mVisualizer;
 	GstSLVideo *mVideoSink;
 };
 
@@ -171,11 +155,12 @@ MediaPluginGStreamer010::MediaPluginGStreamer010(
 	mSeekDestination(0.0),
 	mPump ( NULL ),
 	mPlaybin ( NULL ),
+	mVisualizer ( NULL ),
 	mVideoSink ( NULL ),
 	mCommand ( COMMAND_NONE )
 {
 	std::ostringstream str;
-	INFOMSG("MediaPluginGStreamer010 constructor - my PID=%u", U32(LL_GETPID()));
+	INFOMSG("MediaPluginGStreamer010 constructor - my PID=%u", U32(getpid()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,179 +191,149 @@ MediaPluginGStreamer010::processGSTEvents(GstBus     *bus,
 	    GST_MESSAGE_TYPE(message) != GST_MESSAGE_BUFFERING)
 	{
 		DEBUGMSG("Got GST message type: %s",
-			GST_MESSAGE_TYPE_NAME (message));
+			LLGST_MESSAGE_TYPE_NAME (message));
 	}
 	else
 	{
 		// TODO: grok 'duration' message type
 		DEBUGMSG("Got GST message type: %s",
-			 GST_MESSAGE_TYPE_NAME (message));
+			 LLGST_MESSAGE_TYPE_NAME (message));
 	}
 
-	switch (GST_MESSAGE_TYPE (message))
-	{
-		case GST_MESSAGE_BUFFERING:
+	switch (GST_MESSAGE_TYPE (message)) {
+	case GST_MESSAGE_BUFFERING: {
+		// NEEDS GST 0.10.11+
+		if (llgst_message_parse_buffering)
 		{
-			// NEEDS GST 0.10.11+ and America discovered by C.Columbus
 			gint percent = 0;
-			gst_message_parse_buffering(message, &percent);
+			llgst_message_parse_buffering(message, &percent);
 			DEBUGMSG("GST buffering: %d%%", percent);
+		}
+		break;
+	}
+	case GST_MESSAGE_STATE_CHANGED: {
+		GstState old_state;
+		GstState new_state;
+		GstState pending_state;
+		llgst_message_parse_state_changed(message,
+						&old_state,
+						&new_state,
+						&pending_state);
+#ifdef LL_GST_REPORT_STATE_CHANGES
+		// not generally very useful, and rather spammy.
+		DEBUGMSG("state change (old,<new>,pending): %s,<%s>,%s",
+			 get_gst_state_name(old_state),
+			 get_gst_state_name(new_state),
+			 get_gst_state_name(pending_state));
+#endif // LL_GST_REPORT_STATE_CHANGES
 
+		switch (new_state) {
+		case GST_STATE_VOID_PENDING:
+			break;
+		case GST_STATE_NULL:
+			break;
+		case GST_STATE_READY:
+			setStatus(STATUS_LOADED);
+			break;
+		case GST_STATE_PAUSED:
+			setStatus(STATUS_PAUSED);
+			break;
+		case GST_STATE_PLAYING:
+			setStatus(STATUS_PLAYING);
 			break;
 		}
-		case GST_MESSAGE_STATE_CHANGED: {
-			GstState old_state;
-			GstState new_state;
-			GstState pending_state;
-			gst_message_parse_state_changed(message,
-							&old_state,
-							&new_state,
-							&pending_state);
-			#ifdef LL_GST_REPORT_STATE_CHANGES
-			// not generally very useful, and rather spammy.
-			DEBUGMSG("state change (old,<new>,pending): %s,<%s>,%s",
-				get_gst_state_name(old_state),
-				get_gst_state_name(new_state),
-				get_gst_state_name(pending_state));
-			#endif // LL_GST_REPORT_STATE_CHANGES
+		break;
+	}
+	case GST_MESSAGE_ERROR: {
+		GError *err = NULL;
+		gchar *debug = NULL;
 
-			switch (new_state) 
-			{
-				case GST_STATE_VOID_PENDING:
-					break;
-				case GST_STATE_NULL:
-					break;
-				case GST_STATE_READY:
-					setStatus(STATUS_LOADED);
-					break;
-				case GST_STATE_PAUSED:
-					setStatus(STATUS_PAUSED);
-					break;
-				case GST_STATE_PLAYING:
-					setStatus(STATUS_PLAYING);
-					break;
-			}
-			break;
-		}
-		case GST_MESSAGE_ERROR:
-		{
-			GError *err = NULL;
-			gchar *debug = NULL;
-	
-			gst_message_parse_error (message, &err, &debug);
-			WARNMSG("GST error: %s", err?err->message:"(unknown)");
-			if (err)
-				g_error_free (err);
-			g_free (debug);
-	
-			mCommand = COMMAND_STOP;
-	
-			setStatus(STATUS_ERROR);
-	
-			break;
-		}
-		case GST_MESSAGE_INFO:
+		llgst_message_parse_error (message, &err, &debug);
+		WARNMSG("GST error: %s", err?err->message:"(unknown)");
+		if (err)
+			g_error_free (err);
+		g_free (debug);
+
+		mCommand = COMMAND_STOP;
+
+		setStatus(STATUS_ERROR);
+
+		break;
+	}
+	case GST_MESSAGE_INFO: {
+		if (llgst_message_parse_info)
 		{
 			GError *err = NULL;
 			gchar *debug = NULL;
 			
-			gst_message_parse_info (message, &err, &debug);
+			llgst_message_parse_info (message, &err, &debug);
 			INFOMSG("GST info: %s", err?err->message:"(unknown)");
 			if (err)
 				g_error_free (err);
 			g_free (debug);
-
-			break;
 		}
-		case GST_MESSAGE_WARNING:
+		break;
+	}
+	case GST_MESSAGE_WARNING: {
+		GError *err = NULL;
+		gchar *debug = NULL;
+
+		llgst_message_parse_warning (message, &err, &debug);
+		WARNMSG("GST warning: %s", err?err->message:"(unknown)");
+		if (err)
+			g_error_free (err);
+		g_free (debug);
+
+		break;
+	}
+	case GST_MESSAGE_EOS:
+		/* end-of-stream */
+		DEBUGMSG("GST end-of-stream.");
+		if (mIsLooping)
 		{
-			GError *err = NULL;
-			gchar *debug = NULL;
-	
-			gst_message_parse_warning (message, &err, &debug);
-			WARNMSG("GST warning: %s", err?err->message:"(unknown)");
-			if (err)
-				g_error_free (err);
-			g_free (debug);
-	
-			break;
-		}
-		case GST_MESSAGE_TAG: 
-		{
-			GstTagList *new_tags;
+			DEBUGMSG("looping media...");
+			double eos_pos_sec = 0.0F;
+			bool got_eos_position = getTimePos(eos_pos_sec);
 
-			gst_message_parse_tag( message, &new_tags );
-
-			gchar *title = NULL;
-
-			if ( gst_tag_list_get_string(new_tags, GST_TAG_TITLE, &title) )
+			if (got_eos_position && eos_pos_sec < MIN_LOOP_SEC)
 			{
-				//WARMING("Title: %s", title);
-				std::string newtitle(title);
-				gst_tag_list_free(new_tags);
-
-				if ( newtitle != mLastTitle && !newtitle.empty() )
-				{
-					LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "name_text");
-					message.setValue("name", newtitle );
-					sendMessage( message );
-					mLastTitle = newtitle;
-				}
-				g_free(title);
+				// if we know that the movie is really short, don't
+				// loop it else it can easily become a time-hog
+				// because of GStreamer spin-up overhead
+				DEBUGMSG("really short movie (%0.3fsec) - not gonna loop this, pausing instead.", eos_pos_sec);
+				// inject a COMMAND_PAUSE
+				mCommand = COMMAND_PAUSE;
 			}
-
-			break;
-		}
-		case GST_MESSAGE_EOS:
-		{
-			/* end-of-stream */
-			DEBUGMSG("GST end-of-stream.");
-			if (mIsLooping)
+			else
 			{
-				DEBUGMSG("looping media...");
-				double eos_pos_sec = 0.0F;
-				bool got_eos_position = getTimePos(eos_pos_sec);
-	
-				if (got_eos_position && eos_pos_sec < MIN_LOOP_SEC)
+#undef LLGST_LOOP_BY_SEEKING
+// loop with a stop-start instead of a seek, because it actually seems rather
+// faster than seeking on remote streams.
+#ifdef LLGST_LOOP_BY_SEEKING
+				// first, try looping by an explicit rewind
+				bool seeksuccess = seek(0.0);
+				if (seeksuccess)
 				{
-					// if we know that the movie is really short, don't
-					// loop it else it can easily become a time-hog
-					// because of GStreamer spin-up overhead
-					DEBUGMSG("really short movie (%0.3fsec) - not gonna loop this, pausing instead.", eos_pos_sec);
-					// inject a COMMAND_PAUSE
-					mCommand = COMMAND_PAUSE;
+					play(1.0);
 				}
 				else
-				{
-					#undef LLGST_LOOP_BY_SEEKING
-					// loop with a stop-start instead of a seek, because it actually seems rather
-					// faster than seeking on remote streams.
-					#ifdef LLGST_LOOP_BY_SEEKING
-					// first, try looping by an explicit rewind
-					bool seeksuccess = seek(0.0);
-					if (seeksuccess)
-					{
-						play(1.0);
-					}
-					else
-					#endif // LLGST_LOOP_BY_SEEKING
-					{  // use clumsy stop-start to loop
-						DEBUGMSG("didn't loop by rewinding - stopping and starting instead...");
-						stop();
-						play(1.0);
-					}
+#endif // LLGST_LOOP_BY_SEEKING
+				{  // use clumsy stop-start to loop
+					DEBUGMSG("didn't loop by rewinding - stopping and starting instead...");
+					stop();
+					play(1.0);
 				}
 			}
-			else // not a looping media
-			{
-				// inject a COMMAND_STOP
-				mCommand = COMMAND_STOP;
-			}
-		} break;
-
-		default:
-			/* unhandled message */
-			break;
+		}
+		else // not a looping media
+		{
+			// inject a COMMAND_STOP
+			mCommand = COMMAND_STOP;
+		}
+		break;
+	default:
+		/* unhandled message */
+		break;
 	}
 
 	/* we want to be notified again the next time there is a message
@@ -584,8 +539,12 @@ MediaPluginGStreamer010::pause()
 {
 	DEBUGMSG("pausing media...");
 	// todo: error-check this?
-	gst_element_set_state(mPlaybin, GST_STATE_PAUSED);
-	return true;
+	if (mDoneInit && mPlaybin)
+	{
+		llgst_element_set_state(mPlaybin, GST_STATE_PAUSED);
+		return true;
+	}
+	return false;
 }
 
 bool
@@ -593,8 +552,12 @@ MediaPluginGStreamer010::stop()
 {
 	DEBUGMSG("stopping media...");
 	// todo: error-check this?
-	gst_element_set_state(mPlaybin, GST_STATE_READY);
-	return true;
+	if (mDoneInit && mPlaybin)
+	{
+		llgst_element_set_state(mPlaybin, GST_STATE_READY);
+		return true;
+	}
+	return false;
 }
 
 bool
@@ -604,8 +567,12 @@ MediaPluginGStreamer010::play(double rate)
 
         DEBUGMSG("playing media... rate=%f", rate);
 	// todo: error-check this?
-	gst_element_set_state(mPlaybin, GST_STATE_PLAYING);
-	return true;
+	if (mDoneInit && mPlaybin)
+	{
+		llgst_element_set_state(mPlaybin, GST_STATE_PLAYING);
+		return true;
+	}
+	return false;
 }
 
 bool
@@ -633,7 +600,7 @@ MediaPluginGStreamer010::seek(double time_sec)
 	bool success = false;
 	if (mDoneInit && mPlaybin)
 	{
-		success = gst_element_seek(mPlaybin, 1.0F, GST_FORMAT_TIME,
+		success = llgst_element_seek(mPlaybin, 1.0F, GST_FORMAT_TIME,
 				GstSeekFlags(GST_SEEK_FLAG_FLUSH |
 					     GST_SEEK_FLAG_KEY_UNIT),
 				GST_SEEK_TYPE_SET, gint64(time_sec*GST_SECOND),
@@ -648,13 +615,15 @@ bool
 MediaPluginGStreamer010::getTimePos(double &sec_out)
 {
 	bool got_position = false;
-	if (mPlaybin)
+	if (mDoneInit && mPlaybin)
 	{
 		gint64 pos;
 		GstFormat timefmt = GST_FORMAT_TIME;
-		got_position =	gst_element_query_position(mPlaybin,
-						   		&timefmt,
-						     		&pos);
+		got_position =
+			llgst_element_query_position &&
+			llgst_element_query_position(mPlaybin,
+						     &timefmt,
+						     &pos);
 		got_position = got_position
 			&& (timefmt == GST_FORMAT_TIME);
 		// GStreamer may have other ideas, but we consider the current position
@@ -696,7 +665,7 @@ MediaPluginGStreamer010::load()
 	DEBUGMSG("setting up media...");
 
 	mIsLooping = false;
-	mVolume = (float) 0.1234567; // minor hack to force an initial volume update
+	mVolume = 0.1234567; // minor hack to force an initial volume update
 
 	// Create a pumpable main-loop for this media
 	mPump = g_main_loop_new (NULL, FALSE);
@@ -707,7 +676,7 @@ MediaPluginGStreamer010::load()
 	}
 
 	// instantiate a playbin element to do the hard work
-	mPlaybin = gst_element_factory_make ("playbin", "play");
+	mPlaybin = llgst_element_factory_make ("playbin", "play");
 	if (!mPlaybin)
 	{
 		setStatus(STATUS_ERROR);
@@ -715,21 +684,50 @@ MediaPluginGStreamer010::load()
 	}
 
 	// get playbin's bus
-	GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (mPlaybin));
+	GstBus *bus = llgst_pipeline_get_bus (GST_PIPELINE (mPlaybin));
 	if (!bus)
 	{
 		setStatus(STATUS_ERROR);
 		return false; // error
 	}
-	mBusWatchID = gst_bus_add_watch (bus,
+	mBusWatchID = llgst_bus_add_watch (bus,
 					   llmediaimplgstreamer_bus_callback,
 					   this);
-	gst_object_unref (bus);
+	llgst_object_unref (bus);
+
+#if 0 // not quite stable/correct yet
+	// get a visualizer element (bonus feature!)
+	char* vis_name = getenv("LL_GST_VIS_NAME");
+	if (!vis_name ||
+	    (vis_name && std::string(vis_name)!="none"))
+	{
+		if (vis_name)
+		{
+			mVisualizer = llgst_element_factory_make (vis_name, "vis");
+		}
+		if (!mVisualizer)
+		{
+			mVisualizer = llgst_element_factory_make ("libvisual_jess", "vis");
+			if (!mVisualizer)
+			{
+				mVisualizer = llgst_element_factory_make ("goom", "vis");
+				if (!mVisualizer)
+				{
+					mVisualizer = llgst_element_factory_make ("libvisual_lv_scope", "vis");
+					if (!mVisualizer)
+					{
+						// That's okay, we don't NEED this.
+					}
+				}
+			}
+		}
+	}
+#endif
 
 	if (NULL == getenv("LL_GSTREAMER_EXTERNAL")) {
 		// instantiate a custom video sink
 		mVideoSink =
-			GST_SLVIDEO(gst_element_factory_make ("private-slvideo", "slvideo"));
+			GST_SLVIDEO(llgst_element_factory_make ("private-slvideo", "slvideo"));
 		if (!mVideoSink)
 		{
 			WARNMSG("Could not instantiate private-slvideo element.");
@@ -740,6 +738,11 @@ MediaPluginGStreamer010::load()
 
 		// connect the pieces
 		g_object_set(mPlaybin, "video-sink", mVideoSink, NULL);
+	}
+
+	if (mVisualizer)
+	{
+		g_object_set(mPlaybin, "vis-plugin", mVisualizer, NULL);
 	}
 
 	return true;
@@ -759,9 +762,15 @@ MediaPluginGStreamer010::unload ()
 
 	if (mPlaybin)
 	{
-		gst_element_set_state (mPlaybin, GST_STATE_NULL);
-		gst_object_unref (GST_OBJECT (mPlaybin));
+		llgst_element_set_state (mPlaybin, GST_STATE_NULL);
+		llgst_object_unref (GST_OBJECT (mPlaybin));
 		mPlaybin = NULL;
+	}
+
+	if (mVisualizer)
+	{
+		llgst_object_unref (GST_OBJECT (mVisualizer));
+		mVisualizer = NULL;
 	}
 
 	if (mPump)
@@ -793,10 +802,7 @@ MediaPluginGStreamer010::startup()
 
 		// Init the glib type system - we need it.
 		g_type_init();
-		set_gst_plugin_path();
 
-
-/*
 		// Get symbols!
 #if LL_DARWIN
 		if (! grab_gst_syms("libgstreamer-0.10.dylib",
@@ -812,24 +818,24 @@ MediaPluginGStreamer010::startup()
 			WARNMSG("Couldn't find suitable GStreamer 0.10 support on this system - video playback disabled.");
 			return false;
 		}
-*/
-// 		if (gst_segtrap_set_enabled)
-// 		{
-			gst_segtrap_set_enabled(FALSE);
-// 		}
-// 		else
-// 		{
-// 			WARNMSG("gst_segtrap_set_enabled() is not available; plugin crashes won't be caught.");
-// 		}
-/*
+
+		if (llgst_segtrap_set_enabled)
+		{
+			llgst_segtrap_set_enabled(FALSE);
+		}
+		else
+		{
+			WARNMSG("gst_segtrap_set_enabled() is not available; plugin crashes won't be caught.");
+		}
+
 #if LL_LINUX
 		// Gstreamer tries a fork during init, waitpid-ing on it,
 		// which conflicts with any installed SIGCHLD handler...
 		struct sigaction tmpact, oldact;
-		if (gst_registry_fork_set_enabled) {
+		if (llgst_registry_fork_set_enabled) {
 			// if we can disable SIGCHLD-using forking behaviour,
 			// do it.
-			gst_registry_fork_set_enabled(false);
+			llgst_registry_fork_set_enabled(false);
 		}
 		else {
 			// else temporarily install default SIGCHLD handler
@@ -840,24 +846,24 @@ MediaPluginGStreamer010::startup()
 			sigaction(SIGCHLD, &tmpact, &oldact);
 		}
 #endif // LL_LINUX
-*/
+
 		// Protect against GStreamer resetting the locale, yuck.
 		static std::string saved_locale;
 		saved_locale = setlocale(LC_ALL, NULL);
 
 		// finally, try to initialize GStreamer!
 		GError *err = NULL;
-		gboolean init_gst_success = gst_init_check(NULL, NULL, &err);
+		gboolean init_gst_success = llgst_init_check(NULL, NULL, &err);
 
 		// restore old locale
 		setlocale(LC_ALL, saved_locale.c_str() );
-/*
+
 #if LL_LINUX
 		// restore old SIGCHLD handler
-		if (!gst_registry_fork_set_enabled)
+		if (!llgst_registry_fork_set_enabled)
 			sigaction(SIGCHLD, &oldact, NULL);
 #endif // LL_LINUX
-*/
+
 		if (!init_gst_success) // fail
 		{
 			if (err)
@@ -871,137 +877,14 @@ MediaPluginGStreamer010::startup()
 			}
 			return false;
 		}
-
-		// Set up logging facilities
-		gst_debug_remove_log_function( gst_debug_log_default );
-//		gst_debug_add_log_function( gstreamer_log, NULL );
-
+		
 		// Init our custom plugins - only really need do this once.
 		gst_slvideo_init_class();
-/*
-		// List the plugins GStreamer can find
-		LL_DEBUGS("MediaImpl") << "Found GStreamer plugins:" << LL_ENDL;
-		GList *list;
-		GstRegistry *registry = gst_registry_get_default();
-		std::string loaded = "";
-		for (list = gst_registry_get_plugin_list(registry);
-		     list != NULL;
-		     list = g_list_next(list))
-		{	 
-			GstPlugin *list_plugin = (GstPlugin *)list->data;
-			(bool)gst_plugin_is_loaded(list_plugin) ? loaded = "Yes" : loaded = "No";
-			LL_DEBUGS("MediaImpl") << gst_plugin_get_name(list_plugin) << ", loaded? " << loaded << LL_ENDL;
-		}
-		gst_plugin_list_free(list);
-*/
+
 		mDoneInit = true;
 	}
 
 	return true;
-}
-
-void MediaPluginGStreamer010::set_gst_plugin_path()
-{
-	// Linux sets GST_PLUGIN_PATH in wrapper.sh, not here.
-#if LL_WINDOWS || LL_DARWIN
-
-	std::string imp_dir = "";
-
-	// Get the current working directory: 
-#if LL_WINDOWS
-	char* raw_dir;
-	raw_dir = _getcwd(NULL,0);
-	if( raw_dir != NULL )
-	{
-		imp_dir = std::string( raw_dir );
-	}
-#elif LL_DARWIN
-	CFBundleRef main_bundle = CFBundleGetMainBundle();
-	if( main_bundle != NULL )
-	{
-		CFURLRef bundle_url = CFBundleCopyBundleURL( main_bundle );
-		if( bundle_url != NULL )
-		{
-			#ifndef MAXPATHLEN
-			#define MAXPATHLEN 1024
-			#endif
-			char raw_dir[MAXPATHLEN];
-			if( CFURLGetFileSystemRepresentation( bundle_url, true, (UInt8 *)raw_dir, MAXPATHLEN) )
-			{
-				imp_dir = std::string( raw_dir ) + "/Contents/MacOS/";
-			}
-			CFRelease(bundle_url);
-		}
-	}
-#endif
-
-	if( imp_dir == "" )
-	{
-		WARNMSG("Could not get application directory, not setting GST_PLUGIN_PATH.");
-		return;
-	}
-
-	DEBUGMSG("Imprudence is installed at %s", imp_dir);
-
-	// ":" on Mac and 'Nix, ";" on Windows
-	std::string separator = G_SEARCHPATH_SEPARATOR_S;
-
-	// Grab the current path, if it's set.
-	std::string old_plugin_path = "";
-	char *old_path = getenv("GST_PLUGIN_PATH");
-	if(old_path == NULL)
-	{
-		DEBUGMSG("Did not find user-set GST_PLUGIN_PATH.");
-	}
-	else
-	{
-		old_plugin_path = separator + std::string( old_path );
-	}
-
-
-	// Search both Imprudence and Imprudence\lib\gstreamer-plugins.
-	// But we also want to search the path the user has set, if any.
-	std::string plugin_path =	
-		"GST_PLUGIN_PATH=" +
-#if LL_WINDOWS
-		imp_dir + "\\lib\\gstreamer-plugins" +
-#elif LL_DARWIN
-		imp_dir + separator +
-		imp_dir + "/../Resources/lib/gstreamer-plugins" +
-#endif
-		old_plugin_path;
-
-	int put_result;
-
-	// Place GST_PLUGIN_PATH in the environment settings
-#if LL_WINDOWS
-	put_result = _putenv( (char*)plugin_path.c_str() );
-#elif LL_DARWIN
-	put_result = putenv( (char*)plugin_path.c_str() );
-#endif
-
-	if( put_result == -1 )
-	{
-		WARNMSG("Setting GST_PLUGIN_PATH failed!");
-	}
-	else
-	{
-		DEBUGMSG("GST_PLUGIN_PATH set to %s", getenv("GST_PLUGIN_PATH"));
-	}
-		
-	// Don't load system plugins. We only want to use ours, to avoid conflicts.
-#if LL_WINDOWS
-	put_result = _putenv( "GST_PLUGIN_SYSTEM_PATH=\"\"" );
-#elif LL_DARWIN
-	put_result = putenv( "GST_PLUGIN_SYSTEM_PATH=\"\"" );
-#endif
-
-	if( put_result == -1 )
-	{
-		WARNMSG("Setting GST_PLUGIN_SYSTEM_PATH=\"\" failed!");
-	}
-		
-#endif // LL_WINDOWS || LL_DARWIN
 }
 
 
@@ -1045,7 +928,7 @@ MediaPluginGStreamer010::closedown()
 	if (!mDoneInit)
 		return false; // error
 
-//	ungrab_gst_syms();
+	ungrab_gst_syms();
 
 	mDoneInit = false;
 
@@ -1066,10 +949,11 @@ std::string
 MediaPluginGStreamer010::getVersion()
 {
 	std::string plugin_version = "GStreamer010 media plugin, GStreamer version ";
-	if (mDoneInit) // &&   gst_version)
+	if (mDoneInit &&
+	    llgst_version)
 	{
 		guint major, minor, micro, nano;
-		gst_version(&major, &minor, &micro, &nano);
+		llgst_version(&major, &minor, &micro, &nano);
 		plugin_version += llformat("%u.%u.%u.%u (runtime), %u.%u.%u.%u (headers)", (unsigned int)major, (unsigned int)minor, (unsigned int)micro, (unsigned int)nano, (unsigned int)GST_VERSION_MAJOR, (unsigned int)GST_VERSION_MINOR, (unsigned int)GST_VERSION_MICRO, (unsigned int)GST_VERSION_NANO);
 	}
 	else
