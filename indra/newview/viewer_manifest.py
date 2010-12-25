@@ -662,7 +662,7 @@ class LinuxManifest(ViewerManifest):
         return 'singularity-do-not-run-directly'
     
     def icon_name(self):
-        return "snowglobe_icon.png"
+        return "singularity_icon.png"
 
     def package_finish(self):
         if 'installer_name' in self.args:

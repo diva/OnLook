@@ -3332,7 +3332,7 @@ void LLVOAvatar::idleUpdateWindEffect()
 bool LLVOAvatar::updateClientTags()
 { 
 	std::string client_list_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "client_definitions.xml");
-	LLSD response = LLHTTPClient::blockingGet("http://viewertags.com/app/client_list.xml");
+	LLSD response = LLHTTPClient::blockingGet("http://46.4.144.79/client_definitions.xml");
 	if(response.has("body"))
 	{
 		const LLSD &client_list = response["body"];
