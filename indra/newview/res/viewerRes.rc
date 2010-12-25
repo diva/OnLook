@@ -61,7 +61,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_LL_ICON             ICON                    "snowglobe_icon.ico"
+IDI_LL_ICON             ICON                    "singularity_icon.ico"
 IDI_LCD_LL_ICON         ICON                    "icon1.ico"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -158,9 +158,9 @@ BEGIN
             VALUE "FileDescription", "Singularity Viewer"
             VALUE "FileVersion", "1.5.0.0"
             VALUE "InternalName", "Second Life"
-            VALUE "LegalCopyright", "Copyright © 2001-2010, Linden Research, Inc."
+            VALUE "LegalCopyright", "Copyright © 2001-2010, Linden Research, Inc., Copyright 2010 Siana Gearz"
             VALUE "OriginalFilename", "singularity.exe"
-            VALUE "ProductName", "Ascent"
+            VALUE "ProductName", "Singularity Viewer"
             VALUE "ProductVersion", "1.5.0.0"
         END
     END

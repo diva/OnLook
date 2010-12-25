@@ -44,7 +44,6 @@
 #include "llpluginmessage.h"
 #include "llpluginmessageclasses.h"
 #include "media_plugin_base.h"
-#include <iomanip> 
 
 // set to 1 if you're using the version of llqtwebkit that's QPixmap-ified
 #if LL_LINUX
@@ -65,6 +64,7 @@ extern "C" {
 # include <unistd.h>
 # include <stdlib.h>
 #endif
+#include <iomanip>
 
 #if LL_WINDOWS
 	// *NOTE:Mani - This captures the module handle for the dll. This is used below
@@ -76,20 +76,6 @@ extern "C" {
 		gModuleHandle = (HMODULE) hinstDLL;
 		return TRUE;
 	}
-#endif
-
-#ifdef LL_STANDALONE
-#include <qglobal.h>
-#elif defined(LL_LINUX)
-// We don't provide Qt headers for non-standalone, therefore define this here.
-// Our prebuilt is built with QT_NAMESPACE undefined.
-#define QT_MANGLE_NAMESPACE(name) name
-#define Q_INIT_RESOURCE(name) \
-	do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
-		 QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (0)
-#else
-// Apparently this symbol doesn't exist in the windows and Mac tar balls provided by LL.
-#define Q_INIT_RESOURCE(name) /*nothing*/
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -137,6 +123,7 @@ private:
 	F32 mBackgroundR;
 	F32 mBackgroundG;
 	F32 mBackgroundB;
+	std::string mTarget;
 	
 	VolumeCatcher mVolumeCatcher;
 
@@ -325,11 +312,7 @@ private:
 		LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
 		
 		// create single browser window
-#if LLQTWEBKIT_API_VERSION >= 2
-		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight /*, mTarget*/ );	// We don't have mTarget yet.
-#else
-		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow( mWidth, mHeight );
-#endif
+		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow( mWidth, mHeight, mTarget);
 
 		// tell LLQtWebKit about the size of the browser window
 		LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
@@ -339,12 +322,6 @@ private:
 
 		// append details to agent string
 		LLQtWebKit::getInstance()->setBrowserAgentId( mUserAgent );
-
-// Viewer 2+ -- MC
-#if LL_WINDOWS
-		// Set up window open behavior
-		LLQtWebKit::getInstance()->setWindowOpenBehavior(mBrowserWindowId, LLQtWebKit::WOB_SIMULATE_BLANK_HREF_CLICK);
-#endif
 		
 #if !LL_QTWEBKIT_USES_PIXMAPS
 		// don't flip bitmap
@@ -536,16 +513,9 @@ private:
 	void onClickLinkHref(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_href");
-#if LLQTWEBKIT_API_VERSION >= 2
 		message.setValue("uri", event.getEventUri());
 		message.setValue("target", event.getStringValue());
 		message.setValue("uuid", event.getStringValue2());
-#else
-		// This will work as long as we don't need "uuid", which will be needed for MoaP.
-		message.setValue("uri", event.getStringValue());
-		message.setValue("target", event.getStringValue2());
-		message.setValueU32("target_type", event.getLinkType());
-#endif
 		sendMessage(message);
 	}
 	
@@ -554,13 +524,10 @@ private:
 	void onClickLinkNoFollow(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_nofollow");
-#if LLQTWEBKIT_API_VERSION >= 2
 		message.setValue("uri", event.getEventUri());
-#else
-		message.setValue("uri", event.getStringValue());
-#endif
 		sendMessage(message);
 	}
+	
 
 	////////////////////////////////////////////////////////////////////////////////
 	// virtual
@@ -572,6 +539,42 @@ private:
 //		message.setValue("uri", event.getEventUri());
 //		message.setValueBoolean("dead", (event.getIntValue() != 0))
 		sendMessage(message);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	void onWindowCloseRequested(const EventType& event)
+	{
+		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "close_request");
+		message.setValue("uuid", event.getStringValue());
+		sendMessage(message);
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	void onWindowGeometryChangeRequested(const EventType& event)
+	{
+		int x, y, width, height;
+		event.getRectValue(x, y, width, height);
+
+		// This sometimes gets called with a zero-size request.  Don't pass these along.
+		if(width > 0 && height > 0)
+		{
+			LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "geometry_change");
+			message.setValue("uuid", event.getStringValue());
+			message.setValueS32("x", x);
+			message.setValueS32("y", y);
+			message.setValueS32("width", width);
+			message.setValueS32("height", height);
+			sendMessage(message);
+		}
+	}
+
+	////////////////////////////////////////////////////////////////////////////////
+	// virtual
+	std::string onRequestFilePicker( const EventType& eventIn )
+	{
+		return blockingPickFile();
 	}
 	
 	LLQtWebKit::EKeyboardModifier decodeModifiers(std::string &modifiers)
@@ -718,6 +721,26 @@ private:
 			
 		}
 	}
+	
+	std::string mPickedFile;
+	
+	std::string blockingPickFile(void)
+	{
+		mPickedFile.clear();
+		
+		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA, "pick_file");
+		message.setValueBoolean("blocking_request", true);
+		
+		// The "blocking_request" key in the message means this sendMessage call will block until a response is received.
+		sendMessage(message);
+		
+		return mPickedFile;
+	}
+
+	void onPickFileResponse(const std::string &file)
+	{
+		mPickedFile = file;
+	}
 
 };
 
@@ -743,9 +766,6 @@ MediaPluginWebKit::MediaPluginWebKit(LLPluginInstance::sendMessageFunction host_
 	mJavascriptEnabled = true;	// default to on
 	mPluginsEnabled = true;		// default to on
 	mUserAgent = "LLPluginMedia Web Browser";
-
-	// Initialize WebCore resource.
-	Q_INIT_RESOURCE(WebCore);
 }
 
 MediaPluginWebKit::~MediaPluginWebKit()
@@ -859,6 +879,8 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 		{
 			if(message_name == "init")
 			{
+				mTarget = message_in.getValue("target");
+				
 				// This is the media init message -- all necessary data for initialization should have been received.
 				if(initBrowser())
 				{
@@ -1078,10 +1100,14 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				LLQtWebKit::getInstance()->userAction( mBrowserWindowId, LLQtWebKit::UA_EDIT_PASTE );
 				checkEditState();
 			}
+			if(message_name == "pick_file_response")
+			{
+				onPickFileResponse(message_in.getValue("file"));
+			}
 			else
 			{
 //				std::cerr << "MediaPluginWebKit::receiveMessage: unknown media message: " << message_string << std::endl;
-			};
+			}
 		}
 		else if(message_class == LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER)
 		{
@@ -1180,6 +1206,17 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 						LLQtWebKit::getInstance()->prependHistoryUrl(mBrowserWindowId, url);
 					}
 				}
+			}
+			else if(message_name == "proxy_window_opened")
+			{
+				std::string target = message_in.getValue("target");
+				std::string uuid = message_in.getValue("uuid");
+				LLQtWebKit::getInstance()->proxyWindowOpened(mBrowserWindowId, target, uuid);
+			}
+			else if(message_name == "proxy_window_closed")
+			{
+				std::string uuid = message_in.getValue("uuid");
+				LLQtWebKit::getInstance()->proxyWindowClosed(mBrowserWindowId, uuid);
 			}
 			else
 			{
