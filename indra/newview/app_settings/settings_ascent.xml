@@ -2,6 +2,29 @@
 <llsd>
 	<map>
 		<!-- Ascent-Specific Settings -->
+		
+		<key>SianaUnsitOnCamReset</key>
+		<map>
+			<key>Comment</key>
+			<string>Make avatar stand up when camera is reset to 3rd Person View</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>Boolean</string>
+			<key>Value</key>
+			<integer>0</integer>
+		</map>
+		<key>PhoenixNameSystem</key>
+		<map>
+		  <key>Comment</key>
+		  <string>Use Display Names instead of Legacy Names. 0 = Old Style, 1 = Display Names and Username, 2 = Displayname only</string>
+		  <key>Persist</key>
+		  <integer>2</integer>
+		  <key>Type</key>
+		  <string>S32</string>
+		  <key>Value</key>
+		  <integer>0</integer>
+		</map>
 		<key>AscentPowerfulWizard</key>
 		<map>
 			<key>Comment</key>
@@ -78,7 +101,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<iAscentCmdLineTP2nteger>0</integer>
+			<integer>0</integer>
 		</map>
 		<key>AscentDataSeparator</key>
 		<map>
@@ -166,7 +189,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<integer>0</integer>
+			<real>0</real>
 		</map>
 		<key>AscentUseStatusColors</key>
 		<map>
@@ -177,7 +200,7 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
-			<integer>0</integer>
+			<real>0</real>
 		</map>
 		<key>AscentAvatarXModifier</key>
 		<map>
@@ -729,5 +752,7 @@
       <key>Value</key>
       <integer>1</integer>
 	</map>
+
+
     </map>
 </llsd>
