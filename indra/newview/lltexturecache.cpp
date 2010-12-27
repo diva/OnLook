@@ -747,7 +747,6 @@ LLTextureCache::LLTextureCache(bool threaded)
 
 LLTextureCache::~LLTextureCache()
 {
- 	purgeTextureFilesTimeSliced(TRUE); // VWR-3878 - NB - force-flush all pending file deletes
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1386,15 +1385,14 @@ void LLTextureCache::purgeTextures(bool validate)
 		if (purge_entry)
 		{
 			purge_count++;
-			mFilesToDelete.push_back(filename);
+	 		LL_DEBUGS("TextureCache") << "PURGING: " << filename << LL_ENDL;
+			LLAPRFile::remove(filename);
 			cache_size -= entries[idx].mBodySize;
 			mTexturesSizeTotal -= entries[idx].mBodySize;
 			entries[idx].mBodySize = 0;
 			mTexturesSizeMap.erase(entries[idx].mID);
 		}
 	}
-
-	mTimeLastFileDelete.reset();
 
 	LL_DEBUGS("TextureCache") << "TEXTURE CACHE: Writing Entries: " << num_entries << LL_ENDL;
 
@@ -1409,51 +1407,8 @@ void LLTextureCache::purgeTextures(bool validate)
 	LL_INFOS("TextureCache") << "TEXTURE CACHE:"
 			<< " PURGED: " << purge_count
 			<< " ENTRIES: " << num_entries
-			<< " CACHE SIZE: " << mTexturesSizeTotal / 1024 / 1024 << " MB"
+			<< " CACHE SIZE: " << mTexturesSizeTotal / 1024*1024 << " MB"
 			<< llendl;
-}
-
-void LLTextureCache::purgeTextureFilesTimeSliced(BOOL force_all)
-{
-	LLMutexLock lock(&mHeaderMutex);
-
-	F32 delay_between_passes = 1.0f; // seconds
-	F32 max_time_per_pass = 0.1f; // seconds
-
-	if (!force_all && mTimeLastFileDelete.getElapsedTimeF32() <= delay_between_passes) 
-	{
-		return;
-	}
-
-	LLTimer timer;
-	S32 howmany = 0;
-
-	if (!mFilesToDelete.empty())
-	{
-		LL_INFOS("TEXTURE CACHE") << "purging time sliced with " << mFilesToDelete.size() << " files scheduled for deletion" << llendl;
-
-		for (LLTextureCache::filename_list_t::iterator iter = mFilesToDelete.begin(); iter!=mFilesToDelete.end(); ) 
-		{	
-			LLTextureCache::filename_list_t::iterator iter2 = iter++;
-			LLAPRFile::remove(*iter2);
-			mFilesToDelete.erase(iter2);
-			howmany++;
-
-			if (!force_all && timer.getElapsedTimeF32() > max_time_per_pass) 
-			{
-				break;
-			}
-		}
-	}
-
-	if (!mFilesToDelete.empty())
-	{
-		LL_INFOS("TEXTURE CACHE") << "purging time sliced with " << howmany << " files deleted (" 
-				<< mFilesToDelete.size() << " files left for next pass)" 
-			<< llendl;
-	}
-
-	mTimeLastFileDelete.reset();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1607,9 +1562,6 @@ LLTextureCache::handle_t LLTextureCache::writeToCache(const LLUUID& id, U32 prio
 		purgeTextures(false);
 		mDoPurge = FALSE;
 	}
-
-	purgeTextureFilesTimeSliced();	// VWR-3878 - NB - purge textures from cache in a non-hiccup-way
-
 	LLMutexLock lock(&mWorkersMutex);
 	LLTextureCacheWorker* worker = new LLTextureCacheRemoteWorker(this, priority, id,
 																  data, datasize, 0,
