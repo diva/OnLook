@@ -38,6 +38,7 @@
 
 #include "lltexturefetch.h"
 
+#include "llappviewer.h"
 #include "llcurl.h"
 #include "lldir.h"
 #include "llhttpclient.h"
@@ -316,7 +317,7 @@ public:
 			mFetcher->mTextureInfo.setRequestCompleteTimeAndLog(mID, timeNow);
 		}
 
-		lldebugs << "HTTP COMPLETE: " << mID << llendl;
+		LL_DEBUGS("TextureFetch") << "HTTP COMPLETE: " << mID << " with status: " << status << LL_ENDL;
 		mFetcher->lockQueue();
 		LLTextureFetchWorker* worker = mFetcher->getWorker(mID);
 		if (worker)
@@ -334,9 +335,10 @@ public:
 			}
 			else if (status == HTTP_REQUESTED_RANGE_NOT_SATISFIABLE)
 			{
-				llwarns << "TextureFetch: Request was an unsatisfiable range: mRequestedSize=" << mRequestedSize << " mOffset=" << mOffset << " for: " << mID << LL_ENDL;
+				LL_DEBUGS("TextureFetch") << "Request was an unsatisfiable range: mRequestedSize=" << mRequestedSize << " mOffset=" << mOffset << " for: " << mID << LL_ENDL;
 				unsatisfiable = true;
 			}
+
 			if (!success)
 			{
 				worker->setGetStatus(status, reason);
@@ -593,24 +595,24 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	if ((mFetcher->isQuitting() || getFlags(LLWorkerClass::WCF_DELETE_REQUESTED)))
 	{
 		if (mState < DECODE_IMAGE)
-	{
+ 		{
 			return true; // abort
 		}
 	}
-	if(mImagePriority < 1.0f)
+	if (mImagePriority < 1.0f)
 	{
 		if (mState == INIT || mState == LOAD_FROM_NETWORK || mState == LOAD_FROM_SIMULATOR)
-		{
-			return true; // abort
-		}
-	}
-	if(mState > CACHE_POST && !mCanUseNET && !mCanUseHTTP)
+ 		{
+ 			return true; // abort
+ 		}
+ 	}
+	if (mState > CACHE_POST && !mCanUseNET && !mCanUseHTTP)
 	{
 		//nowhere to get data, abort.
 		return true ;
 	}
 	
-	if (mFetcher->mDebugPause)
+	if (mFetcher->mDebugPause|| gDisconnected)
 	{
 		return false; // debug: don't do any work
 	}
@@ -629,10 +631,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		if(gAssetStorage && std::find(gAssetStorage->mBlackListedAsset.begin(),
 			gAssetStorage->mBlackListedAsset.end(),mID) != gAssetStorage->mBlackListedAsset.end())
 		{
-			llinfos << "Blacklisted asset " << mID.asString() << " was trying to be accessed!!!!!!" << llendl; 
+			llinfos << "Blacklisted asset " << mID.asString() << " was trying to be accessed!!!!!!" << llendl;
 			mState = DONE;
 			return true;
 		}
+
 		mRequestedDiscard = -1;
 		mLoadedDiscard = -1;
 		mDecodedDiscard = -1;
@@ -643,9 +646,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		mSentRequest = UNSENT;
 		mDecoded  = FALSE;
 		mWritten  = FALSE;
-		// <edit>
-		if(mBuffer)
-		// </edit>
 		delete[] mBuffer;
 		mBuffer = NULL;
 		mBufferSize = 0;
@@ -761,8 +761,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 	if (mState == LOAD_FROM_NETWORK)
 	{
-		static const LLCachedControl<bool> image_pipeline_use_http("ImagePipelineUseHTTP",false);
+		static const LLCachedControl<bool> image_pipeline_use_http("ImagePipelineUseHTTP", false);
 		bool get_url = image_pipeline_use_http;
+
 		if (!mUrl.empty()) get_url = false;
 // 		if (mHost != LLHost::invalid) get_url = false;
 		if ( get_url && mCanUseHTTP && mUrl.empty())//get http url.
@@ -852,7 +853,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	{
 		if(mCanUseHTTP)
 		{
-			const S32 HTTP_QUEUE_MAX_SIZE = 8;
+			const S32 HTTP_QUEUE_MAX_SIZE = 16;
 			// *TODO: Integrate this with llviewerthrottle
 			// Note: LLViewerThrottle uses dynamic throttling which makes sense for UDP,
 			// but probably not for Textures.
@@ -879,6 +880,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					return false;
 				}
 			}
+
 			mRequestedSize = mDesiredSize;
 			mRequestedDiscard = mDesiredDiscard;
 			mRequestedSize -= cur_size;
@@ -892,11 +894,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
-				lldebugs << "HTTP GET: " << mID << " Offset: " << offset
+				LL_DEBUGS("TextureFetch") << "HTTP GET: " << mID << " Offset: " << offset
 						<< " Bytes: " << mRequestedSize
 						<< " Range: " << offset << "-" << offset+mRequestedSize-1
 						<< " Bandwidth(kbps): " << mFetcher->getTextureBandwidth() << "/" << max_bandwidth
-						<< llendl;
+						<< LL_ENDL;
 				setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 				mState = WAIT_HTTP_REQ;	
 
@@ -934,7 +936,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					//roll back to try UDP
 					if(mCanUseNET)
 					{
-						llinfos << "Falling back to UDP fetch for texture " << mID << llendl;
 						mState = INIT ;
 						mCanUseHTTP = false ;
 						setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
@@ -943,7 +944,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					else
 					{
 						// UDP is not an option, we are dead
-						llwarns << "No UDP fallback available for texture " << mID << llendl;
 						resetFormattedData();
 						return true; // failed
 					}
@@ -957,7 +957,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					max_attempts = mHTTPFailCount+1; // Keep retrying
 					LL_INFOS_ONCE("Texture") << "Texture server busy (503): " << mUrl << LL_ENDL;
 				}
-					else
+				else
 					{
 					const S32 HTTP_MAX_RETRY_COUNT = 3;
 					max_attempts = HTTP_MAX_RETRY_COUNT + 1;
@@ -965,7 +965,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					llinfos << "HTTP GET failed for: " << mUrl
 							<< " Status: " << mGetStatus << " Reason: '" << mGetReason << "'"
 							<< " Attempt:" << mHTTPFailCount+1 << "/" << max_attempts << llendl;
-					}
+				}
 
 				if (mHTTPFailCount >= max_attempts)
 				{
@@ -975,14 +975,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						// Use available data
 						mLoadedDiscard = mFormattedImage->getDiscardLevel();
 						mState = DECODE_IMAGE;
-						return false; 
-				}
-				else
-				{
+						return false;
+					}
+					else
+					{
 						//roll back to try UDP
 						if(mCanUseNET)
 						{
-							llinfos << "Falling back to UDP fetch for texture " << mID << llendl;
 							mState = INIT ;
 							mCanUseHTTP = false ;
 							setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
@@ -991,7 +990,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						else
 						{
 							// UDP is not an option, we are dead
-							llwarns << "No UDP fallback available for texture " << mID << llendl;
 							resetFormattedData();
 							return true; // failed
 						}
@@ -1024,7 +1022,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			{
 				mFileSize = mBufferSize + 1 ; //flag the file is not fully loaded.
 			}
-			
+
 			U8* buffer = new U8[mBufferSize];
 			if (cur_size > 0)
 			{
@@ -1161,7 +1159,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 
 			if(mDecodedDiscard<=0)
-			{	
+			{
 				return true;
 			}
 			else
@@ -1332,7 +1330,7 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 		llwarns << "Duplicate callback for " << mID.asString() << llendl;
 		return; // ignore duplicate callback
 	}
-
+	
 	S32 data_size = 0;
 	if (success)
 	{
@@ -1341,13 +1339,14 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 
 		gImageList.sTextureBits += data_size * 8; // Approximate - does not include header bits
 	
-		//llinfos << "HTTP RECEIVED: " << mID.asString() << " Bytes: " << data_size << llendl;
+		LL_DEBUGS("TextureFetch") << "HTTP RECEIVED: " << mID.asString() << " Bytes: " << data_size << " mRequestedSize: " << mRequestedSize << LL_ENDL;
+
 		if (data_size > 0)
 		{
 			bool clean_data = false;
 			bool done = false;
 			if (!partial)
- 			{
+			{
 				// we got the whole image in one go
 				done = true;
 				clean_data = true;
@@ -1379,15 +1378,15 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 			}
 			
 			if (clean_data)
- 			{
+			{
 				resetFormattedData(); // discard any previous data we had
 				llassert(mBufferSize == 0);
- 			}
+			}
 			if (done)
- 			{
+			{
 				mHaveAllData = TRUE;
 				mRequestedDiscard = 0;
- 			}
+			}
 			
 			// *TODO: set the formatted image data here directly to avoid the copy
 			mBuffer = new U8[data_size];
@@ -1415,6 +1414,7 @@ void LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 			mRequestedSize = -1;	// treat this fetch as if it failed.
 		}
 	}
+
 	mLoaded = TRUE;
 	setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
 }
@@ -1784,8 +1784,7 @@ S32 LLTextureFetch::update(U32 max_time_ms)
 {
 	S32 res;
 	
-	static const LLCachedControl<F32> throttle_bandwidth_kbps("ThrottleBandwidthKBPS",500);
-	mMaxBandwidth = throttle_bandwidth_kbps;
+	mMaxBandwidth = gSavedSettings.getF32("ThrottleBandwidthKBPS");
 	
 	res = LLWorkerThread::update(max_time_ms);
 	
@@ -2269,4 +2268,3 @@ void LLTextureFetch::dump()
 				<< llendl;
 	}
 }
-
