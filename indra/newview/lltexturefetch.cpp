@@ -365,6 +365,78 @@ private:
 
 //////////////////////////////////////////////////////////////////////////////
 
+class SGHostBlackList{
+	static const int MAX_ERRORCOUNT = 5;
+	struct BlackListEntry {
+		LLHost host;
+		clock_t timeUntil;
+		U32 reason;
+		int errorCount;
+	};
+
+	static LLMutex* sMutex;
+	typedef std::vector<BlackListEntry> blacklist_t;
+	typedef blacklist_t::iterator iter;
+	static blacklist_t blacklist;
+
+	static bool is_obsolete(BlackListEntry entry) {
+			clock_t now = clock();
+			return (now > entry.timeUntil);
+	} //should make a functor. if i cared.
+
+	static void cleanup() {
+		std::remove_if(blacklist.begin(), blacklist.end(), is_obsolete);
+	}
+
+	static iter find(LLHost& host) {
+		cleanup();
+		for(blacklist_t::iterator i = blacklist.begin(); i != blacklist.end(); ++i) {
+			if (i->host == host) return i;
+		}
+		return blacklist.end();
+	}
+
+	static void lock() {
+		if (!sMutex)
+			sMutex = new LLMutex(0);
+		sMutex->lock();
+	}
+
+	static void unlock() {
+		sMutex->unlock();
+	}
+
+public:
+	static bool isBlacklisted(LLHost& host) {
+		lock();
+		iter found = find(host);
+		bool r = (found != blacklist.end()) && (found->errorCount > MAX_ERRORCOUNT);
+		unlock();
+		return r;
+	}
+
+	static void add(LLHost& host, float timeout, U32 reason) {
+		BlackListEntry entry;
+		entry.host = host;
+		entry.timeUntil = clock() + timeout*CLOCKS_PER_SEC;
+		entry.reason = reason;
+		entry.errorCount = 0;
+		lock();
+		iter found = find(host);
+		if(found != blacklist.end()) {
+			entry.errorCount = found->errorCount + 1;
+			*found = entry;
+		}
+		else blacklist.push_back(entry);
+		unlock();
+	}
+};
+
+LLMutex* SGHostBlackList::sMutex = 0;
+SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
+
+//////////////////////////////////////////////////////////////////////////////
+
 //static
 const char* LLTextureFetchWorker::sStateDescs[] = {
 	"INVALID",
@@ -766,6 +838,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 		if (!mUrl.empty()) get_url = false;
 // 		if (mHost != LLHost::invalid) get_url = false;
+		if (SGHostBlackList::isBlacklisted(mHost)) get_url = false;
+
 		if ( get_url && mCanUseHTTP && mUrl.empty())//get http url.
 		{
 			LLViewerRegion* region = NULL;
@@ -928,10 +1002,19 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			if (mRequestedSize < 0)
 			{
 				S32 max_attempts;
-				if (mGetStatus == HTTP_NOT_FOUND)
+				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == 499 || mGetStatus == HTTP_SERVICE_UNAVAILABLE)
 				{
 					mHTTPFailCount = max_attempts = 1; // Don't retry
-					llwarns << "Texture missing from server (404): " << mUrl << llendl;
+					if(mGetStatus == HTTP_NOT_FOUND)
+						llwarns << "Texture missing from server (404): " << mUrl << llendl;
+					else if (mGetStatus == 499) {
+						llwarns << "No response from server (499): " << mUrl << llendl;
+						SGHostBlackList::add(mHost, 60.0, mGetStatus);
+					}
+					else if (mGetStatus == HTTP_SERVICE_UNAVAILABLE){
+						llwarns << "Texture server busy (503): " << mUrl << LL_ENDL;
+						SGHostBlackList::add(mHost, 60.0, mGetStatus);
+					}
 
 					//roll back to try UDP
 					if(mCanUseNET)
@@ -948,18 +1031,18 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						return true; // failed
 					}
 				}
-				else if (mGetStatus == HTTP_SERVICE_UNAVAILABLE)
-				{
-					// *TODO: Should probably introduce a timer here to delay future HTTP requsts
-					// for a short time (~1s) to ease server load? Ideally the server would queue
-					// requests instead of returning 503... we already limit the number pending.
-					++mHTTPFailCount;
-					max_attempts = mHTTPFailCount+1; // Keep retrying
-					LL_INFOS_ONCE("Texture") << "Texture server busy (503): " << mUrl << LL_ENDL;
-				}
+				//else if (mGetStatus == HTTP_SERVICE_UNAVAILABLE)
+				//{
+				//	// *TODO: Should probably introduce a timer here to delay future HTTP requsts
+				//	// for a short time (~1s) to ease server load? Ideally the server would queue
+				//	// requests instead of returning 503... we already limit the number pending.
+				//	++mHTTPFailCount;
+				//	max_attempts = mHTTPFailCount+1; // Keep retrying
+				//	LL_INFOS_ONCE("Texture") << "Texture server busy (503): " << mUrl << LL_ENDL;
+				//}
 				else
-					{
-					const S32 HTTP_MAX_RETRY_COUNT = 3;
+				{
+					const S32 HTTP_MAX_RETRY_COUNT = 1;
 					max_attempts = HTTP_MAX_RETRY_COUNT + 1;
 					++mHTTPFailCount;
 					llinfos << "HTTP GET failed for: " << mUrl
