@@ -1377,7 +1377,10 @@ bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, op
 		opj_tcd_tilecomp_t* tilec = &tile->comps[compno];
 		/* The +3 is headroom required by the vectorized DWT */
 		tilec->data = (int*) opj_aligned_malloc((((tilec->x1 - tilec->x0) * (tilec->y1 - tilec->y0))+3) * sizeof(int));
-		t1_decode_cblks(t1, tilec, &tcd->tcp->tccps[compno]);
+		if(tilec->data)
+			t1_decode_cblks(t1, tilec, &tcd->tcp->tccps[compno]);
+		else
+			opj_event_msg(tcd->cinfo, EVT_ERROR, "tcd_decode: tile size invalid\n");
 	}
 	t1_destroy(t1);
 	t1_time = opj_clock() - t1_time;
