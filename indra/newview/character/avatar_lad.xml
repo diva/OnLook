@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="US-ASCII" standalone="yes"?>
+<?xml version="1.0" encoding="us-ascii" standalone="yes"?>
 <linden_avatar
  version="1.0"
  wearable_definition_version="22">  
@@ -393,7 +393,8 @@
        hud="true"
        max_attachment_offset="2.0"
        visible_in_first_person="true" />
-       
+
+
     <param
        id="32"
        group="1"
@@ -404,61 +405,20 @@
        value_min="0"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="0 0 .2" />
-
-            <bone
-             name="mCollarLeft"
-             scale="0 .4 0" />
-
-            <bone
-             name="mCollarRight"
-             scale="0 .4 0" />
-
-            <bone
-             name="mShoulderLeft"
-             scale="0 .35 0" />
-
-            <bone
-             name="mShoulderRight"
-             scale="0 .35 0" />
-
-            <bone
-             name="mElbowLeft"
-             scale="0 .1 0" />
-
-            <bone
-             name="mElbowRight"
-             scale="0 .1 0" />
-
-            <bone
-             name="mChest"
-             scale=".05 .05 .05" />
-
-            <bone
-             name="mTorso"
-             scale="0 0 .05" />
-
-            <bone
-             name="mPelvis"
-             scale="0 0 0" />
-
-            <bone
-             name="mHipLeft"
-             scale=".05 .05 0" />
-
-            <bone
-             name="mHipRight"
-             scale=".05 .05 0" />
-
-            <bone
-             name="mKneeLeft"
-             scale=".05 .05 .1" />
-
-            <bone
-             name="mKneeRight"
-             scale=".05 .05 .1" />
+				<bone name="mNeck" scale="0 0 .2" />
+				<bone name="mCollarLeft" scale="0 .4 0" />
+				<bone name="mCollarRight" scale="0 .4 0" />
+				<bone name="mShoulderLeft" scale="0 .35 0" />
+				<bone name="mShoulderRight" scale="0 .35 0" />
+				<bone name="mElbowLeft" scale="0 .1 0" />
+				<bone name="mElbowRight" scale="0 .1 0" />
+				<bone name="mChest" scale=".05 .05 .05" />
+				<bone name="mTorso" scale="0 0 .05" />
+				<bone name="mPelvis" scale="0 0 0" />
+				<bone name="mHipLeft" scale=".05 .05 0" />
+				<bone name="mHipRight" scale=".05 .05 0" />
+				<bone name="mKneeLeft" scale=".05 .05 .1" />
+				<bone name="mKneeRight" scale=".05 .05 .1" />
          </param_skeleton>
       </param>
 
@@ -477,61 +437,20 @@
        value_max="2"
        camera_distance="2.2">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="0 0 .02" />
-
-            <bone
-             name="mCollarLeft"
-             scale="0 0 0" />
-
-            <bone
-             name="mCollarRight"
-             scale="0 0 0" />
-
-            <bone
-             name="mShoulderLeft"
-             scale="0 0.08 0" />
-
-            <bone
-             name="mShoulderRight"
-             scale="0 0.08 0" />
-
-            <bone
-             name="mElbowLeft"
-             scale="0 0.06 0" />
-
-            <bone
-             name="mElbowRight"
-             scale="0 0.06 0" />
-
-            <bone
-             name="mChest"
-             scale="0 0 0.05" />
-
-            <bone
-             name="mTorso"
-             scale="0 0 0.05" />
-
-            <bone
-             name="mPelvis"
-             scale="0 0 0" />
-
-            <bone
-             name="mHipLeft"
-             scale="0 0 0.1" />
-
-            <bone
-             name="mHipRight"
-             scale="0 0 0.1" />
-
-            <bone
-             name="mKneeLeft"
-             scale="0 0 0.1" />
-
-            <bone
-             name="mKneeRight"
-             scale="0 0 0.1" />
+				<bone name="mNeck" scale="0 0 .02" />
+				<bone name="mCollarLeft" scale="0 0 0" />
+				<bone name="mCollarRight" scale="0 0 0" />
+				<bone name="mShoulderLeft" scale="0 0.08 0" />
+				<bone name="mShoulderRight" scale="0 0.08 0" />
+				<bone name="mElbowLeft" scale="0 0.06 0" />
+				<bone name="mElbowRight" scale="0 0.06 0" />
+				<bone name="mChest" scale="0 0 0.05" />
+				<bone name="mTorso" scale="0 0 0.05" />
+				<bone name="mPelvis" scale="0 0 0" />
+				<bone name="mHipLeft" scale="0 0 0.1" />
+				<bone name="mHipRight" scale="0 0 0.1" />
+				<bone name="mKneeLeft" scale="0 0 0.1" />
+				<bone name="mKneeRight" scale="0 0 0.1" />
          </param_skeleton>
       </param>
 
@@ -550,61 +469,20 @@
        value_max="1.5"
        camera_distance="1.8">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="0.1 0.1 0" />
-
-            <bone
-             name="mCollarLeft"
-             scale="0 0.2 0" />
-
-            <bone
-             name="mCollarRight"
-             scale="0 0.2 0" />
-
-            <bone
-             name="mShoulderLeft"
-             scale="0.1 0 0.1" />
-
-            <bone
-             name="mShoulderRight"
-             scale="0.1 0 0.1" />
-
-            <bone
-             name="mElbowLeft"
-             scale="0.1 0 0.1" />
-
-            <bone
-             name="mElbowRight"
-             scale="0.1 0 0.1" />
-
-            <bone
-             name="mChest"
-             scale="0.1 0.1 0" />
-
-            <bone
-             name="mTorso"
-             scale="0.1 0.1 0" />
-
-            <bone
-             name="mPelvis"
-             scale="0.1 0.1 0" />
-
-            <bone
-             name="mHipLeft"
-             scale="0.13 0.13 0" />
-
-            <bone
-             name="mHipRight"
-             scale="0.13 0.13 0" />
-
-            <bone
-             name="mKneeLeft"
-             scale="0.12 0.12 0" />
-
-            <bone
-             name="mKneeRight"
-             scale="0.12 0.12 0" />
+				<bone name="mNeck" scale="0.1 0.1 0" />
+				<bone name="mCollarLeft" scale="0 0.2 0" />
+				<bone name="mCollarRight" scale="0 0.2 0" />
+				<bone name="mShoulderLeft" scale="0.1 0 0.1" />
+				<bone name="mShoulderRight" scale="0.1 0 0.1" />
+				<bone name="mElbowLeft" scale="0.1 0 0.1" />
+				<bone name="mElbowRight" scale="0.1 0 0.1" />
+				<bone name="mChest" scale="0.1 0.1 0" />
+				<bone name="mTorso" scale="0.1 0.1 0" />
+				<bone name="mPelvis" scale="0.1 0.1 0" />
+				<bone name="mHipLeft" scale="0.13 0.13 0" />
+				<bone name="mHipRight" scale="0.13 0.13 0" />
+				<bone name="mKneeLeft" scale="0.12 0.12 0" />
+				<bone name="mKneeRight" scale="0.12 0.12 0" />
          </param_skeleton>
       </param>
 
@@ -626,23 +504,10 @@
        camera_distance="1.2"
        camera_angle="0">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="0.01 0.03 0" />
-
-            <bone
-             name="mCollarLeft"
-             scale="0 0 0"
-             offset="0 .02 0" />
-
-            <bone
-             name="mCollarRight"
-             scale="0 0 0"
-             offset="0 -.02 0" />
-
-            <bone
-             name="mChest"
-             scale="0.02 0.08 0" />
+				<bone name="mNeck" scale="0.01 0.03 0" />
+				<bone name="mCollarLeft" scale="0 0 0" offset="0 .02 0" />
+				<bone name="mCollarRight" scale="0 0 0" offset="0 -.02 0" />
+				<bone name="mChest" scale="0.02 0.08 0" />
          </param_skeleton>
       </param>
 
@@ -661,19 +526,9 @@
        value_max="2.8"
        camera_distance="1.8">
          <param_skeleton>
-            <bone
-             name="mPelvis"
-             scale="0 0.1 0" />
-
-            <bone
-             name="mHipLeft"
-             scale="0 0 0"
-             offset="0 .004 0" />
-
-            <bone
-             name="mHipRight"
-             scale="0 0 0"
-             offset="0 -.004 0" />
+				<bone name="mPelvis" scale="0 0.1 0" />
+				<bone name="mHipLeft" scale="0 0 0" offset="0 .004 0" />
+				<bone name="mHipRight" scale="0 0 0" offset="0 -.004 0" />
          </param_skeleton>
       </param>
 
@@ -690,9 +545,7 @@
        value_max="1"
        camera_distance="1.8">
          <param_skeleton>
-            <bone
-             name="mPelvis"
-             scale="0 0 0.3" />
+				<bone name="mPelvis" scale="0 0 0.3" />
          </param_skeleton>
       </param>
 
@@ -709,29 +562,12 @@
        value_max="1"
        camera_distance="1.8">
          <param_skeleton>
-            <bone
-             name="mTorso"
-             scale="0 0 .3" />
-
-            <bone
-             name="mPelvis"
-             scale="0 0 .1" />
-
-            <bone
-             name="mHipLeft"
-             scale="0 0 -.1" />
-
-            <bone
-             name="mHipRight"
-             scale="0 0 -.1" />
-
-            <bone
-             name="mKneeRight"
-             scale="0 0 -.05" />
-
-            <bone
-             name="mKneeLeft"
-             scale="0 0 -.05" />
+				<bone name="mTorso" scale="0 0 .3" />
+				<bone name="mPelvis" scale="0 0 .1" />
+				<bone name="mHipLeft" scale="0 0 -.1" />
+				<bone name="mHipRight" scale="0 0 -.1" />
+				<bone name="mKneeRight" scale="0 0 -.05" />
+				<bone name="mKneeLeft" scale="0 0 -.05" />
          </param_skeleton>
       </param>
 
@@ -746,15 +582,8 @@
        value_min="-1"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mEyeLeft"
-             scale="0 0 0"
-             offset="0 .009 0" />
-
-            <bone
-             name="mEyeRight"
-             scale="0 0 0"
-             offset="0 -.009 0" />
+				<bone name="mEyeLeft" scale="0 0 0" offset="0 .009 0" />
+				<bone name="mEyeRight" scale="0 0 0" offset="0 -.009 0" />
          </param_skeleton>
       </param>
 
@@ -769,15 +598,8 @@
        value_min="-2"
        value_max="2">
          <param_skeleton>
-            <bone
-             name="mEyeLeft"
-             scale="0 0 0"
-             offset="0 0 .004" />
-
-            <bone
-             name="mEyeRight"
-             scale="0 0 0"
-             offset="0 0 -.004" />
+				<bone name="mEyeLeft" scale="0 0 0" offset="0 0 .004" />
+				<bone name="mEyeRight" scale="0 0 0" offset="0 0 -.004" />
          </param_skeleton>
       </param>
 
@@ -792,15 +614,8 @@
        value_min="-1"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mEyeLeft"
-             scale="0 0 0"
-             offset=".016 0 0" />
-
-            <bone
-             name="mEyeRight"
-             scale="0 0 0"
-             offset=".016 0 0" />
+				<bone name="mEyeLeft" scale="0 0 0" offset=".016 0 0" />
+				<bone name="mEyeRight" scale="0 0 0" offset=".016 0 0" />
          </param_skeleton>
       </param>
 
@@ -815,15 +630,8 @@
        value_min="-2"
        value_max="2">
          <param_skeleton>
-            <bone
-             name="mEyeLeft"
-             scale="0 0 0"
-             offset=".005 0 0" />
-
-            <bone
-             name="mEyeRight"
-             scale="0 0 0"
-             offset=".005 0 0" />
+				<bone name="mEyeLeft" scale="0 0 0" offset=".005 0 0" />
+				<bone name="mEyeRight" scale="0 0 0" offset=".005 0 0" />
          </param_skeleton>
       </param>
 
@@ -840,25 +648,10 @@
        value_min="-.25"
        value_max=".10">
          <param_skeleton>
-            <bone
-             name="mSkull"
-             scale="1 1 1"
-             offset="0 0 0.1" />
-
-            <bone
-             name="mHead"
-             scale="1 1 1"
-             offset="0 0 0" />
-
-            <bone
-             name="mEyeLeft"
-             scale="1 1 1"
-             offset="0 0 0" />
-
-            <bone
-             name="mEyeRight"
-             scale="1 1 1"
-             offset="0 0 0" />
+				<bone name="mSkull" scale="1 1 1" offset="0 0 0.1" />
+				<bone name="mHead" scale="1 1 1" offset="0 0 0" />
+				<bone name="mEyeLeft" scale="1 1 1" offset="0 0 0" />
+				<bone name="mEyeRight" scale="1 1 1" offset="0 0 0" />
          </param_skeleton>
       </param>
 
@@ -873,15 +666,8 @@
        value_min="0"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mFootRight"
-             scale="0 0 0"
-             offset="0 0 -.08" />
-
-            <bone
-             name="mFootLeft"
-             scale="0 0 0"
-             offset="0 0 -.08" />
+				<bone name="mFootRight" scale="0 0 0" offset="0 0 -.08" />
+				<bone name="mFootLeft" scale="0 0 0" offset="0 0 -.08" />
          </param_skeleton>
       </param>
 
@@ -896,15 +682,8 @@
        value_min="0"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mFootRight"
-             scale="0 0 0"
-             offset="0 0 -.07" />
-
-            <bone
-             name="mFootLeft"
-             scale="0 0 0"
-             offset="0 0 -.07" />
+				<bone name="mFootRight" scale="0 0 0" offset="0 0 -.07" />
+				<bone name="mFootLeft" scale="0 0 0" offset="0 0 -.07" />
          </param_skeleton>
       </param>
 
@@ -923,15 +702,8 @@
        camera_distance="1.4"
        camera_angle="0">
          <param_skeleton>
-            <bone
-             name="mWristRight"
-             scale="1 1 1"
-             offset="0 0 0" />
-
-            <bone
-             name="mWristLeft"
-             scale="1 1 1"
-             offset="0 0 0" />
+				<bone name="mWristRight" scale="1 1 1" offset="0 0 0" />
+				<bone name="mWristLeft" scale="1 1 1" offset="0 0 0" />
          </param_skeleton>
       </param>
 
@@ -951,10 +723,7 @@
        camera_distance=".8"
        camera_angle="15">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="1 1 0"
-             offset="0 0 0" />
+				<bone name="mNeck" scale="1 1 0" offset="0 0 0" />
          </param_skeleton>
       </param>
 
@@ -969,15 +738,8 @@
        value_min="-1"
        value_max="1">
          <param_skeleton>
-            <bone
-             name="mEyeLeft"
-             scale="0 0 0"
-             offset="-.005 0 0" />
-
-            <bone
-             name="mEyeRight"
-             scale="0 0 0"
-             offset="-.005 0 0" />
+				<bone name="mEyeLeft" scale="0 0 0" offset="-.005 0 0" />
+				<bone name="mEyeRight" scale="0 0 0" offset="-.005 0 0" />
          </param_skeleton>
       </param>
 
@@ -994,21 +756,10 @@
        value_max="1"
        camera_distance="2.5">
          <param_skeleton>
-            <bone
-             name="mHipLeft"
-             scale="0 0 .2" />
-
-            <bone
-             name="mHipRight"
-             scale="0 0 .2" />
-
-            <bone
-             name="mKneeRight"
-             scale="0 0 .2" />
-
-            <bone
-             name="mKneeLeft"
-             scale="0 0 .2" />
+				<bone name="mHipLeft" scale="0 0 .2" />
+				<bone name="mHipRight" scale="0 0 .2" />
+				<bone name="mKneeRight" scale="0 0 .2" />
+				<bone name="mKneeLeft" scale="0 0 .2" />
          </param_skeleton>
       </param>
 
@@ -1026,21 +777,10 @@
        value_default=".6"
        camera_distance="1.5">
          <param_skeleton>
-            <bone
-             name="mShoulderLeft"
-             scale="0 .2 0" />
-
-            <bone
-             name="mShoulderRight"
-             scale="0 .2 0" />
-
-            <bone
-             name="mElbowRight"
-             scale="0 .3 0" />
-
-            <bone
-             name="mElbowLeft"
-             scale="0 .3 0" />
+				<bone name="mShoulderLeft" scale="0 .2 0" />
+				<bone name="mShoulderRight" scale="0 .2 0" />
+				<bone name="mElbowRight" scale="0 .3 0" />
+				<bone name="mElbowLeft" scale="0 .3 0" />
          </param_skeleton>
       </param>
 
@@ -1060,9 +800,7 @@
        camera_distance=".8"
        camera_angle="15">
          <param_skeleton>
-            <bone
-             name="mNeck"
-             scale="0 0 .5" />
+       		<bone name="mNeck" scale="0 0 .5" />
          </param_skeleton>
       </param>
    </skeleton>
@@ -5542,15 +5280,27 @@
       <texture
        local_texture="hair_grain" />
     </layer>
+
+    <layer
+       name="hair texture alpha layer"
+       visibility_mask="TRUE">
+      <texture
+         local_texture="hair_grain" />
+    </layer>
+
+    <layer
+       name="hair alpha"
+       visibility_mask="TRUE">
+      <texture
+         local_texture="hair_alpha" />
+    </layer>
   </layer_set>
   <!-- =========================================================== -->
 
   <layer_set
     body_region="head"
     width="512"
-    height="512"
-	clear_alpha="false"
-    alpha_tga_file="head_alpha.tga">
+    height="512">
 		<layer
 		   name="head bump base"
 		   fixed_color = "128,128,128,255"
@@ -6544,7 +6294,47 @@
          <texture
           local_texture="head_bodypaint" />
       </layer>
-   </layer_set>
+    <layer
+	   name="eyelash alpha"
+	   visibility_mask="TRUE">
+         <texture
+	      tga_file="head_alpha.tga"
+	      file_is_mask="TRUE" />
+    </layer>
+    <layer
+       name="head alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="head_alpha" />
+    </layer>
+    <layer
+       name="head_tattoo">
+        <texture local_texture="head_tattoo" />
+		<param id="1062" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+			name="tattoo_head_red" value_min="0" value_max="1" value_default="1">
+			<param_color>
+				<value color="0, 0, 0, 255" />
+				<value color="255, 0, 0, 255" />
+			</param_color>
+		</param>
+
+		<param id="1063" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+			name="tattoo_head_green" value_min="0" value_max="1" value_default="1">
+			<param_color>
+				<value color="0, 0, 0, 255" />
+				<value color="0, 255, 0, 255" />
+			</param_color>
+		</param>
+
+		<param id="1064" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+			name="tattoo_head_blue" value_min="0" value_max="1" value_default="1">
+			<param_color>
+				<value color="0, 0, 0, 255" />
+				<value color="0, 0, 255, 255" />
+			</param_color>
+		</param>
+    </layer>
+</layer_set>
 
 <!-- =========================================================== -->
    <layer_set
@@ -6657,6 +6447,33 @@
              skip_if_zero="true"
              domain="0.6" />
          </param>
+      </layer>
+
+      <layer name="upper_tattoo">
+        <texture local_texture="upper_tattoo" />
+		<param id="1065" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+			name="tattoo_upper_red" value_min="0" value_max="1" value_default="1">
+			<param_color>
+				<value color="0, 0, 0, 255" />
+				<value color="255, 0, 0, 255" />
+			</param_color>
+			</param>
+
+			<param id="1066" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+				name="tattoo_upper_green" value_min="0" value_max="1" value_default="1">
+				<param_color>
+					<value color="0, 0, 0, 255" />
+					<value color="0, 255, 0, 255" />
+				</param_color>
+			</param>
+
+			<param id="1067" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+				name="tattoo_upper_blue" value_min="0" value_max="1" value_default="1">
+				<param_color>
+					<value color="0, 0, 0, 255" />
+					<value color="0, 0, 255, 255" />
+				</param_color>
+			</param>
       </layer>
 
       <layer
@@ -7728,6 +7545,14 @@
              domain="0.01" />
          </param>
       </layer>
+
+      <layer
+       name="upper alpha"
+       visibility_mask="TRUE">
+        <texture
+         local_texture="upper_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->
@@ -7841,6 +7666,34 @@
              skip_if_zero="true"
              domain="0.6" />
          </param>
+      </layer>
+
+      <layer
+       name="lower_tattoo">
+         <texture local_texture="lower_tattoo" />
+		 <param id="1068" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+			name="tattoo_lower_red" value_min="0" value_max="1" value_default="1">
+			<param_color>
+				<value color="0, 0, 0, 255" />
+				<value color="255, 0, 0, 255" />
+			</param_color>
+			</param>
+
+			<param id="1069" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+				name="tattoo_lower_green" value_min="0" value_max="1" value_default="1">
+				<param_color>
+					<value color="0, 0, 0, 255" />
+					<value color="0, 255, 0, 255" />
+				</param_color>
+			</param>
+
+			<param id="1070" group="1" edit_group="colorpicker_driven" wearable="tattoo" 
+				name="tattoo_lower_blue" value_min="0" value_max="1" value_default="1">
+				<param_color>
+					<value color="0, 0, 0, 255" />
+					<value color="0, 0, 255, 255" />
+				</param_color>
+			</param>
       </layer>
 
       <layer
@@ -8600,6 +8453,14 @@
              domain="0.01" />
          </param>
       </layer>
+
+      <layer
+       name="lower alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="lower_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->
@@ -8619,6 +8480,14 @@
          <texture
           local_texture="eyes_iris" />
       </layer>
+
+      <layer
+       name="eyes alpha"
+       visibility_mask="TRUE">
+         <texture
+          local_texture="eyes_alpha" />
+      </layer>
+
    </layer_set>
 
 <!-- =========================================================== -->
@@ -11256,7 +11125,31 @@
              id="876" />
          </param_driver>
       </param>
+		<param id="1071" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_red" 
+			value_min="0" value_max="1" value_default="1">
+			<param_driver>
+				<driven id="1062" min1="0" max1="1" max2="1" min2="1" />
+				<driven id="1065" min1="0" max1="1" max2="1" min2="1" />
+				<driven id="1068" min1="0" max1="1" max2="1" min2="1" />
+			</param_driver>
+		</param>
+		<param id="1072" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_green" 
+			value_min="0" value_max="1" value_default="1">
+			<param_driver>
+				<driven id="1063" min1="0" max1="1" max2="1" min2="1" />
+				<driven id="1066" min1="0" max1="1" max2="1" min2="1" />  
+				<driven id="1069" min1="0" max1="1" max2="1" min2="1" />
+			</param_driver>
+		</param>
+		<param id="1073" group="2" wearable="tattoo" edit_group="colorpicker" name="tattoo_blue" 
+			value_min="0" value_max="1" value_default="1">
+			<param_driver>
+				<driven id="1064" min1="0" max1="1" max2="1" min2="1" />
+				<driven id="1067" min1="0" max1="1" max2="1" min2="1" />  
+				<driven id="1070" min1="0" max1="1" max2="1" min2="1" />
+			</param_driver>
+		</param>
       
-   </driver_parameters>
+	</driver_parameters>
 </linden_avatar>
 
