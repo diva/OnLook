@@ -117,7 +117,7 @@
 			     max_length="254" mouse_opaque="false" name="partner_edit"
 			     tool_tip="Second Life partner. For more info on how to set, see www.secondlife.com/partner"
 			     width="121">
-				[FIRST] [LAST]
+				[NAME]
 			</line_editor>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom="-68" drop_shadow_visible="true" follows="left|top"
