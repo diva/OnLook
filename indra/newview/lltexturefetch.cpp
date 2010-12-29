@@ -366,21 +366,22 @@ private:
 //////////////////////////////////////////////////////////////////////////////
 
 class SGHostBlackList{
-	static const int MAX_ERRORCOUNT = 5;
+	static const int MAX_ERRORCOUNT = 20;
 	struct BlackListEntry {
-		LLHost host;
-		clock_t timeUntil;
+		std::string host;
+		U64 timeUntil;
 		U32 reason;
 		int errorCount;
 	};
 
 	static LLMutex* sMutex;
 	typedef std::vector<BlackListEntry> blacklist_t;
+	//Why is it a vector? because using std::map for just 1-2 values is insane-ish.
 	typedef blacklist_t::iterator iter;
 	static blacklist_t blacklist;
 
 	static bool is_obsolete(BlackListEntry entry) {
-			clock_t now = clock();
+			U64 now = LLTimer::getTotalTime();
 			return (now > entry.timeUntil);
 	} //should make a functor. if i cared.
 
@@ -388,10 +389,10 @@ class SGHostBlackList{
 		std::remove_if(blacklist.begin(), blacklist.end(), is_obsolete);
 	}
 
-	static iter find(LLHost& host) {
+	static iter find(std::string host) {
 		cleanup();
 		for(blacklist_t::iterator i = blacklist.begin(); i != blacklist.end(); ++i) {
-			if (i->host == host) return i;
+			if (i->host.find(host) == 0) return i;
 		}
 		return blacklist.end();
 	}
@@ -407,25 +408,35 @@ class SGHostBlackList{
 	}
 
 public:
-	static bool isBlacklisted(LLHost& host) {
+	static bool isBlacklisted(std::string url) {
 		lock();
-		iter found = find(host);
+		iter found = find(url);
 		bool r = (found != blacklist.end()) && (found->errorCount > MAX_ERRORCOUNT);
 		unlock();
 		return r;
 	}
 
-	static void add(LLHost& host, float timeout, U32 reason) {
+	static void add(std::string url, float timeout, U32 reason) {
+		llwarns << "Requested adding to blacklist: " << url << llendl;
 		BlackListEntry entry;
-		entry.host = host;
-		entry.timeUntil = clock() + timeout*CLOCKS_PER_SEC;
+		entry.host = url.substr(0, url.rfind("/"));
+		if (entry.host.empty()) return;
+		entry.timeUntil = LLTimer::getTotalTime() + timeout*1000;
 		entry.reason = reason;
 		entry.errorCount = 0;
 		lock();
-		iter found = find(host);
+		iter found = find(entry.host);
 		if(found != blacklist.end()) {
 			entry.errorCount = found->errorCount + 1;
 			*found = entry;
+			if (entry.errorCount > MAX_ERRORCOUNT) {
+				std::string s;
+				microsecondsToTimecodeString(entry.timeUntil, s);
+				llwarns << "Blacklisting address " << entry.host
+					<< "is blacklisted for " << timeout 
+					<< " seconds because of error " << reason
+					<< llendl;
+			}
 		}
 		else blacklist.push_back(entry);
 		unlock();
@@ -838,7 +849,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 		if (!mUrl.empty()) get_url = false;
 // 		if (mHost != LLHost::invalid) get_url = false;
-		if (SGHostBlackList::isBlacklisted(mHost)) get_url = false;
 
 		if ( get_url && mCanUseHTTP && mUrl.empty())//get http url.
 		{
@@ -867,6 +877,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				//llwarns << "Region not found for host: " << mHost << llendl;
 				mCanUseHTTP = false;
 			}
+		}
+		if (!mUrl.empty() && SGHostBlackList::isBlacklisted(mUrl)){
+			mCanUseHTTP = false;
 		}
 		if (mCanUseHTTP && !mUrl.empty())
 		{
@@ -1009,11 +1022,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						llwarns << "Texture missing from server (404): " << mUrl << llendl;
 					else if (mGetStatus == 499) {
 						llwarns << "No response from server (499): " << mUrl << llendl;
-						SGHostBlackList::add(mHost, 60.0, mGetStatus);
+						SGHostBlackList::add(mUrl, 60.0, mGetStatus);
 					}
 					else if (mGetStatus == HTTP_SERVICE_UNAVAILABLE){
 						llwarns << "Texture server busy (503): " << mUrl << LL_ENDL;
-						SGHostBlackList::add(mHost, 60.0, mGetStatus);
+						SGHostBlackList::add(mUrl, 60.0, mGetStatus);
 					}
 
 					//roll back to try UDP
