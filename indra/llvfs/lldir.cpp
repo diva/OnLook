@@ -243,7 +243,7 @@ std::string LLDir::buildSLOSCacheDir() const
 		}
 		else
 		{
-			res = getOSUserAppDir() + mDirDelimiter + "cache";
+			res = getOSUserAppDir() + mDirDelimiter + "cache_sg1";
 		}
 	}
 	else
