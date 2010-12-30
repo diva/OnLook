@@ -86,6 +86,7 @@ public:
 	static LLVBOPool sDynamicIBOPool;
 
 	static BOOL	sUseStreamDraw;
+	static BOOL sOmitBlank;
 
 	static void initClass(bool use_vbo);
 	static void cleanupClass();

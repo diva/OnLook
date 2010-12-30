@@ -334,6 +334,7 @@ void LLPipeline::init()
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
+	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("SianaRenderOmitBlankVBO");
 	sRenderAttachedLights = gSavedSettings.getBOOL("RenderAttachedLights");
 	sRenderAttachedParticles = gSavedSettings.getBOOL("RenderAttachedParticles");
 
@@ -4892,6 +4893,7 @@ void LLPipeline::resetVertexBuffers()
 {
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
+	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("SianaRenderOmitBlankVBO");
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 	{

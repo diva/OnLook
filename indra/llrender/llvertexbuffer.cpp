@@ -41,6 +41,8 @@
 #include "llmemtype.h"
 #include "llrender.h"
 
+#include "llcontrol.h"
+
 //============================================================================
 
 //static
@@ -63,6 +65,7 @@ BOOL LLVertexBuffer::sIBOActive = FALSE;
 U32 LLVertexBuffer::sAllocatedBytes = 0;
 BOOL LLVertexBuffer::sMapped = FALSE;
 BOOL LLVertexBuffer::sUseStreamDraw = TRUE;
+BOOL LLVertexBuffer::sOmitBlank = FALSE;
 
 std::vector<U32> LLVertexBuffer::sDeleteList;
 
@@ -491,7 +494,7 @@ void LLVertexBuffer::createGLBuffer()
 		static int gl_buffer_idx = 0;
 		mGLBuffer = ++gl_buffer_idx;
 		mMappedData = new U8[size];
-		//memset(mMappedData, 0, size);
+		if(!sOmitBlank) memset((void*)mMappedData, 0, size);
 	}
 }
 
@@ -521,7 +524,7 @@ void LLVertexBuffer::createGLIndices()
 	else
 	{
 		mMappedIndexData = new U8[size];
-		//memset(mMappedIndexData, 0, size);
+		if(!sOmitBlank) memset((void*)mMappedIndexData, 0, size);
 		static int gl_buffer_idx = 0;
 		mGLIndices = ++gl_buffer_idx;
 	}
@@ -697,16 +700,16 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 					if (old)
 					{	
 						memcpy((void*)mMappedData, (void*)old, llmin(newsize, oldsize));
-						if (newsize > oldsize)
+						if ((newsize > oldsize) && !sOmitBlank)
 						{
-							//memset(mMappedData+oldsize, 0, newsize-oldsize);
+							memset((void*)(mMappedData+oldsize), 0, newsize-oldsize);
 						}
 
 						delete [] old;
 					}
 					else
 					{
-						//memset(mMappedData, 0, newsize);
+						if (!sOmitBlank) memset((void*)mMappedData, 0, newsize);
 						mEmpty = TRUE;
 					}
 				}
@@ -735,15 +738,15 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 					if (old)
 					{	
 						memcpy((void*)mMappedIndexData, (void*)old, llmin(new_index_size, old_index_size));
-						if (new_index_size > old_index_size)
+						if ((new_index_size > old_index_size) && !sOmitBlank)
 						{
-							//memset(mMappedIndexData+old_index_size, 0, new_index_size - old_index_size);
+							memset((void*)(mMappedIndexData+old_index_size), 0, new_index_size - old_index_size);
 						}
 						delete [] old;
 					}
 					else
 					{
-						//memset(mMappedIndexData, 0, new_index_size);
+						if (!sOmitBlank) memset((void*)mMappedIndexData, 0, new_index_size);
 						mEmpty = TRUE;
 					}
 				}
