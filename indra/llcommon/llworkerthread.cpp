@@ -60,6 +60,27 @@ LLWorkerThread::~LLWorkerThread()
 	// ~LLQueuedThread() will be called here
 }
 
+//called only in destructor.
+void LLWorkerThread::clearDeleteList()
+{
+	// Delete any workers in the delete queue (should be safe - had better be!)
+	if (!mDeleteList.empty())
+	{
+		llwarns << "Worker Thread: " << mName << " destroyed with " << mDeleteList.size()
+				<< " entries in delete list." << llendl;
+
+		mDeleteMutex->lock();
+		for (delete_list_t::iterator iter = mDeleteList.begin(); iter != mDeleteList.end(); ++iter)
+		{
+			(*iter)->mRequestHandle = LLWorkerThread::nullHandle();
+			(*iter)->clearFlags(LLWorkerClass::WCF_HAVE_WORK);
+			delete *iter ;
+		}
+		mDeleteList.clear() ;
+		mDeleteMutex->unlock() ;
+	}
+}
+
 // virtual
 S32 LLWorkerThread::update(U32 max_time_ms)
 {
@@ -181,6 +202,7 @@ void LLWorkerThread::WorkRequest::finishRequest(bool completed)
 
 LLWorkerClass::LLWorkerClass(LLWorkerThread* workerthread, const std::string& name)
 	: mWorkerThread(workerthread),
+	  mRequestPriority(LLWorkerThread::PRIORITY_NORMAL),
 	  mWorkerClassName(name),
 	  mRequestHandle(LLWorkerThread::nullHandle()),
 	  mMutex(NULL),
@@ -314,7 +336,20 @@ bool LLWorkerClass::checkWork(bool aborting)
 	if (mRequestHandle != LLWorkerThread::nullHandle())
 	{
 		LLWorkerThread::WorkRequest* workreq = (LLWorkerThread::WorkRequest*)mWorkerThread->getRequest(mRequestHandle);
+		if(!workreq)
+		{
+			if(mWorkerThread->isQuitting() || mWorkerThread->isStopped()) //the mWorkerThread is not running
+			{
+				mRequestHandle = LLWorkerThread::nullHandle();
+				clearFlags(WCF_HAVE_WORK);
+			}
+			else
+			{
 		llassert_always(workreq);
+			}
+			return true ;
+		}
+
 		LLQueuedThread::status_t status = workreq->getStatus();
 		if (status == LLWorkerThread::STATUS_ABORTED)
 		{
@@ -364,7 +399,7 @@ void LLWorkerClass::scheduleDelete()
 void LLWorkerClass::setPriority(U32 priority)
 {
 	mMutex.lock();
-	if (mRequestHandle != LLWorkerThread::nullHandle())
+	if (mRequestHandle != LLWorkerThread::nullHandle() && mRequestPriority != priority)
 	{
 		mRequestPriority = priority;
 		mWorkerThread->setPriority(mRequestHandle, priority);

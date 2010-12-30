@@ -1252,16 +1252,17 @@ F32 LLFace::getTextureVirtualSize()
 {
 	F32 radius;
 	F32 cos_angle_to_view_dir;
-	mPixelArea = calcPixelArea(cos_angle_to_view_dir, radius);
+	BOOL in_frustum = calcPixelArea(cos_angle_to_view_dir, radius);
 
-	if (mPixelArea <= 0)
+	if (mPixelArea < F_ALMOST_ZERO || !in_frustum)
 	{
+		setVirtualSize(0.f) ;
 		return 0.f;
 	}
 
 	//get area of circle in texture space
 	LLVector2 tdim = mTexExtents[1] - mTexExtents[0];
-	F32 texel_area = (tdim * 0.5f).lengthSquared()*3.14159f;
+	F32 texel_area = (tdim * 0.5f).lengthSquared() * 3.14159f;
 	if (texel_area <= 0)
 	{
 		// Probably animated, use default
@@ -1278,59 +1279,73 @@ F32 LLFace::getTextureVirtualSize()
 	{
 		//apply texel area to face area to get accurate ratio
 		//face_area /= llclamp(texel_area, 1.f/64.f, 16.f);
-
-		//face_area =  mPixelArea / llclamp(texel_area, 0.015625f, 1024.f);
-		face_area =  mPixelArea / llclamp(texel_area, 0.015625f, 128.f); // see SNOW-207
+		face_area =  mPixelArea / llclamp(texel_area, 0.015625f, 128.f);
 	}
 
-	if(face_area > LLViewerImage::sMaxSmallImageSize)
+	face_area = LLFace::adjustPixelArea(mImportanceToCamera, face_area);
+	if (mImportanceToCamera < 1.0f && face_area > LLViewerImage::sMinLargeImageSize) //if is large image, shrink face_area by considering the partial overlapping.
 	{
-		if(mImportanceToCamera < LEAST_IMPORTANCE) //if the face is not important, do not load hi-res.
+		if (mImportanceToCamera > LEAST_IMPORTANCE_FOR_LARGE_IMAGE && mTexture.notNull() && mTexture->isLargeImage())
 		{
-			face_area = LLViewerImage::sMaxSmallImageSize ;
+			face_area *= adjustPartialOverlapPixelArea(cos_angle_to_view_dir, radius);
+		}	
 		}
-		else if(face_area > LLViewerImage::sMinLargeImageSize) //if is large image, shrink face_area by considering the partial overlapping.
-		{
-			if(mImportanceToCamera < LEAST_IMPORTANCE_FOR_LARGE_IMAGE)//if the face is not important, do not load hi-res.
-			{
-				face_area = LLViewerImage::sMinLargeImageSize ;
-			}	
-			else if(mTexture.notNull() && mTexture->isLargeImage())
-			{		
-				face_area *= adjustPartialOverlapPixelArea(cos_angle_to_view_dir, radius );
-			}			
-		}
-	}
+
+	setVirtualSize(face_area);
 
 	return face_area;
 }
 
-F32 LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
+//static 
+F32 LLFace::adjustPixelArea(F32 importance, F32 pixel_area)
+{
+	if (pixel_area > LLViewerImage::sMaxSmallImageSize)
+		{
+		if (importance < LEAST_IMPORTANCE) //if the face is not important, do not load hi-res.
+			{
+			static const F32 MAX_LEAST_IMPORTANCE_IMAGE_SIZE = 128.0f * 128.0f;
+			pixel_area = llmin(pixel_area * 0.5f, MAX_LEAST_IMPORTANCE_IMAGE_SIZE);
+			}	
+		else if (pixel_area > LLViewerImage::sMinLargeImageSize)	//if is large image, shrink face_area by considering the partial overlapping.
+			{		
+			if (importance < LEAST_IMPORTANCE_FOR_LARGE_IMAGE)		//if the face is not important, do not load hi-res.
+			{
+				pixel_area = LLViewerImage::sMinLargeImageSize;
+			}			
+		}
+	}
+
+	return pixel_area ;
+}
+
+BOOL LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 {
 	//get area of circle around face
 	LLVector3 center = getPositionAgent();
 	LLVector3 size = (mExtents[1] - mExtents[0]) * 0.5f;
+	LLViewerCamera* camera = LLViewerCamera::getInstance();
 	
-	LLVector3 lookAt = center - LLViewerCamera::getInstance()->getOrigin();
+	F32 size_squared = size.lengthSquared() ;
+	LLVector3 lookAt = center - camera->getOrigin();
 	F32 dist = lookAt.normVec() ;
 
 	//get area of circle around node
-	F32 app_angle = atanf(size.length()/dist);
+	F32 app_angle = atanf(fsqrtf(size_squared) / dist);
 	radius = app_angle*LLDrawable::sCurPixelAngle;
-	F32 face_area = radius*radius * 3.14159f;
+	mPixelArea = radius*radius * 3.14159f;
+	cos_angle_to_view_dir = lookAt * camera->getXAxis();
 
-	if(dist < mBoundingSphereRadius) //camera is very close
+	if (dist < mBoundingSphereRadius || dist < 10.0f) //camera is very close
 	{
-		cos_angle_to_view_dir = 1.0f ;
-		mImportanceToCamera = 1.0f ;
+		cos_angle_to_view_dir = 1.0f;
+		mImportanceToCamera = 1.0f;
 	}
 	else
 	{
-		cos_angle_to_view_dir = lookAt * LLViewerCamera::getInstance()->getXAxis() ;	
-		mImportanceToCamera = LLFace::calcImportanceToCamera(cos_angle_to_view_dir, dist) ;
+		mImportanceToCamera = LLFace::calcImportanceToCamera(cos_angle_to_view_dir, dist);
 	}
 
-	return face_area ;
+	return true;
 }
 
 //the projection of the face partially overlaps with the screen

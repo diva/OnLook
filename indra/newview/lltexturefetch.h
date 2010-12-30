@@ -58,9 +58,11 @@ public:
 	~LLTextureFetch();
 
 	/*virtual*/ S32 update(U32 max_time_ms);	
+	void shutDownTextureCacheThread() ; //called in the main thread after the TextureCacheThread shuts down.
+	void shutDownImageDecodeThread() ;  //called in the main thread after the ImageDecodeThread shuts down.
 
 	bool createRequest(const std::string& url, const LLUUID& id, const LLHost& host, F32 priority,
-					   S32 w, S32 h, S32 c, S32 discard, bool needs_aux, bool use_http);
+					   S32 w, S32 h, S32 c, S32 discard, bool needs_aux, bool can_use_http);
 	void deleteRequest(const LLUUID& id, bool cancel);
 	bool getRequestFinished(const LLUUID& id, S32& discard_level,
 							LLPointer<LLImageRaw>& raw, LLPointer<LLImageRaw>& aux);
@@ -73,24 +75,26 @@ public:
 	F32 getTextureBandwidth() { return mTextureBandwidth; }
 	
 	// Debug
+	BOOL isFromLocalCache(const LLUUID& id);
 	S32 getFetchState(const LLUUID& id, F32& decode_progress_p, F32& requested_priority_p,
-					  U32& fetch_priority_p, F32& fetch_dtime_p, F32& request_dtime_p);
+					  U32& fetch_priority_p, F32& fetch_dtime_p, F32& request_dtime_p, bool& can_use_http);
 	void dump();
-	S32 getNumRequests() const { LLMutexLock lock(&mQueueMutex); return mRequestMap.size(); }
-	S32 getNumHTTPRequests() const { LLMutexLock lock(&mNetworkQueueMutex); return mHTTPTextureQueue.size(); }
+	S32 getNumRequests();
+	S32 getNumHTTPRequests();
 	
 	// Public for access by callbacks
 	void lockQueue() { mQueueMutex.lock(); }
 	void unlockQueue() { mQueueMutex.unlock(); }
 	LLTextureFetchWorker* getWorker(const LLUUID& id);
+	LLTextureFetchWorker* getWorkerAfterLock(const LLUUID& id);
 
 	LLTextureInfo* getTextureInfo() { return &mTextureInfo; }
-
+	
 protected:
 	void addToNetworkQueue(LLTextureFetchWorker* worker);
 	void removeFromNetworkQueue(LLTextureFetchWorker* worker, bool cancel);
 	void addToHTTPQueue(const LLUUID& id);
-	void removeFromHTTPQueue(const LLUUID& id);
+	void removeFromHTTPQueue(const LLUUID& id, S32 received_size = 0);
 	void removeRequest(LLTextureFetchWorker* worker, bool cancel);
 	// Called from worker thread (during doWork)
 	void processCurlRequests();	
@@ -109,8 +113,8 @@ public:
 	S32 mBadPacketCount;
 	
 private:
-	mutable LLMutex mQueueMutex;
-	mutable LLMutex mNetworkQueueMutex;
+	LLMutex mQueueMutex;        //to protect mRequestMap only
+	LLMutex mNetworkQueueMutex; //to protect mNetworkQueue, mHTTPTextureQueue and mCancelQueue.
 
 	LLTextureCache* mTextureCache;
 	LLImageDecodeThread* mImageDecodeThread;
@@ -129,6 +133,8 @@ private:
 	F32 mTextureBandwidth;
 	F32 mMaxBandwidth;
 	LLTextureInfo mTextureInfo;
+
+	U32 mHTTPTextureBits;
 };
 
 #endif // LL_LLTEXTUREFETCH_H

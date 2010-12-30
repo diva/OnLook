@@ -1428,6 +1428,8 @@ bool LLAppViewer::cleanup()
 	sTextureCache->shutdown();
 	sTextureFetch->shutdown();
 	sImageDecodeThread->shutdown();
+	sTextureFetch->shutDownTextureCacheThread();
+	sTextureFetch->shutDownImageDecodeThread();
 	delete sTextureCache;
     sTextureCache = NULL;
 	delete sTextureFetch;
@@ -2853,22 +2855,28 @@ void LLAppViewer::migrateCacheDirectory()
 bool LLAppViewer::initCache()
 {
 	mPurgeCache = false;
+	BOOL read_only = mSecondInstance ? TRUE : FALSE;
+	LLAppViewer::getTextureCache()->setReadOnly(read_only);
+
+	BOOL texture_cache_mismatch = FALSE ;
+	static const S32 cache_version = 7;
+	if (gSavedSettings.getS32("LocalCacheVersion") != cache_version)
+	{
+		texture_cache_mismatch = TRUE ;
+		if (!read_only) 
+		{
+			gSavedSettings.setS32("LocalCacheVersion", cache_version);
+		}
+	}
+
+	if (!read_only)
+	{
 	// Purge cache if user requested it
 	if (gSavedSettings.getBOOL("PurgeCacheOnStartup") ||
 		gSavedSettings.getBOOL("PurgeCacheOnNextStartup"))
 	{
 		gSavedSettings.setBOOL("PurgeCacheOnNextStartup", false);
 		mPurgeCache = true;
-	}
-	// Purge cache if it belongs to an old version
-	else
-	{
-		static const S32 cache_version = 5;
-		if (gSavedSettings.getS32("LocalCacheVersion") != cache_version)
-		{
-			mPurgeCache = true;
-			gSavedSettings.setS32("LocalCacheVersion", cache_version);
-		}
 	}
 	
 	// We have moved the location of the cache directory over time.
@@ -2883,6 +2891,7 @@ bool LLAppViewer::initCache()
 		purgeCache(); // purge old cache
 		gSavedSettings.setString("CacheLocation", new_cache_location);
 	}
+	}
 	
 	if (!gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation")))
 	{
@@ -2890,7 +2899,7 @@ bool LLAppViewer::initCache()
 		gSavedSettings.setString("CacheLocation", "");
 	}
 	
-	if (mPurgeCache)
+	if (mPurgeCache && !read_only)
 	{
 		LLSplashScreen::update("Clearing cache...");
 		purgeCache();
@@ -2900,13 +2909,12 @@ bool LLAppViewer::initCache()
 	
 	// Init the texture cache
 	// Allocate 80% of the cache size for textures
-	BOOL read_only = mSecondInstance ? TRUE : FALSE;
 	const S32 MB = 1024*1024;
 	S64 cache_size = (S64)(gSavedSettings.getU32("CacheSize")) * MB;
 	const S64 MAX_CACHE_SIZE = 1024*MB;
 	cache_size = llmin(cache_size, MAX_CACHE_SIZE);
 	S64 texture_cache_size = ((cache_size * 8)/10);
-	S64 extra = LLAppViewer::getTextureCache()->initCache(LL_PATH_CACHE, texture_cache_size, read_only);
+	S64 extra = LLAppViewer::getTextureCache()->initCache(LL_PATH_CACHE, texture_cache_size, texture_cache_mismatch);
 	texture_cache_size -= extra;
 
 	LLSplashScreen::update("Initializing VFS...");
