@@ -4,13 +4,12 @@ include(Prebuilt)
 if (STANDALONE)
   include(FindGooglePerfTools)
 else (STANDALONE)
-  if (LINUX)
+  if (LINUX OR WINDOWS)
     use_prebuilt_binary(google)
-  endif (LINUX)
+  endif (LINUX OR WINDOWS)
   if (WINDOWS)
     set(TCMALLOC_LIBRARIES 
-        debug libtcmalloc_minimal-debug
-        optimized libtcmalloc_minimal-debug)
+        libtcmalloc_minimal)
   endif (WINDOWS)
   if (LINUX)
     set(TCMALLOC_LIBRARIES tcmalloc)
@@ -28,7 +27,7 @@ endif (GOOGLE_PERFTOOLS_FOUND)
 
 # XXX Disable temporarily, until we have compilation issues on 64-bit
 # Etch sorted.
-set(USE_GOOGLE_PERFTOOLS OFF)
+#set(USE_GOOGLE_PERFTOOLS OFF)
 
 if (USE_GOOGLE_PERFTOOLS)
   set(TCMALLOC_FLAG -DLL_USE_TCMALLOC=1)
@@ -37,3 +36,10 @@ if (USE_GOOGLE_PERFTOOLS)
 else (USE_GOOGLE_PERFTOOLS)
   set(TCMALLOC_FLAG -ULL_USE_TCMALLOC)
 endif (USE_GOOGLE_PERFTOOLS)
+
+if (NOT(DISABLE_TCMALLOC OR USE_GOOGLE_PERFTOOLS))
+	set(TCMALLOC_FLAG -DLL_USE_TCMALLOC=1_)
+	include_directories(${GOOGLE_PERFTOOLS_INCLUDE_DIR})
+	set(GOOGLE_PERFTOOLS_LIBRARIES ${TCMALLOC_LIBRARIES})
+endif()
+

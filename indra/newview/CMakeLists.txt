@@ -512,7 +512,7 @@ set(viewer_SOURCE_FILES
 set(VIEWER_BINARY_NAME "secondlife-bin" CACHE STRING
     "The name of the viewer executable to create.")
 
-if (LINUX)
+if ((LINUX OR DARWIN) AND NOT DARWIN_PPC)
   # We can't set these flags for Darwin, because they get passed to
   # the PPC compiler.  Ugh.
 
@@ -524,7 +524,7 @@ if (LINUX)
       llviewerjointmesh_sse2.cpp
       PROPERTIES COMPILE_FLAGS "-msse2 -mfpmath=sse"
       )
-endif (LINUX)
+endif ((LINUX OR DARWIN) AND NOT DARWIN_PPC)
 
 set(viewer_HEADER_FILES
     CMakeLists.txt
@@ -1384,6 +1384,7 @@ if (WINDOWS)
 endif (WINDOWS)
 
 target_link_libraries(${VIEWER_BINARY_NAME}
+	${GOOGLE_PERFTOOLS_LIBRARIES}
     ${LLAUDIO_LIBRARIES}
     ${LLCHARACTER_LIBRARIES}
     ${LLIMAGE_LIBRARIES}

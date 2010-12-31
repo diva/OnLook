@@ -268,6 +268,8 @@ class WindowsManifest(ViewerManifest):
             pass
           self.end_prefix()
         
+        self.path(src="../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll")
+        
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
         #~ if self.prefix(src=self.args['configuration'], dst=""):
@@ -758,7 +760,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libuuid.so.1")
             self.path("libSDL-1.2.so.0")
             self.path("libELFIO.so")
-            self.path("libopenjpeg.so.1.3.0", "libopenjpeg.so.1.3")
+            #self.path("libopenjpeg.so.1.3.0", "libopenjpeg.so.1.3")
             self.path("libalut.so")
             self.path("libopenal.so", "libopenal.so.1")
             self.end_prefix("lib")

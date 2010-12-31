@@ -569,6 +569,13 @@
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/google-linux-20080812.tar.bz2</uri>
           </map>
+          <key>windows</key>
+          <map>
+            <key>md5sum</key>
+            <string>b46525d8eae16865c27905a844c86ac0</string>
+            <key>url</key>
+            <uri>http://github.com/downloads/siana/SingularityViewer/tcmalloc_win_101223.tar.bz2</uri>
+          </map>
         </map>
       </map>
       <key>gstreamer</key>
