@@ -1698,7 +1698,11 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		to_id.isNull() )
 		do_auto_response = false;
 
-	if( do_auto_response )
+//	if( do_auto_response )
+// [RLVa:KB] - Alternate: Phoenix-370
+	// Phoenix specific: auto-response should be blocked if the avie is RLV @sendim=n restricted and the recipient is not an exception
+	if ( (do_auto_response) && ( (!gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.isException(RLV_BHVR_SENDIM, from_id)) ) )
+// [/RLVa:KB]
 	{
 		if((dialog == IM_NOTHING_SPECIAL && !is_auto_response) ||
 			(dialog == IM_TYPING_START && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
@@ -2371,7 +2375,17 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			position,
 			true);
 
-		chat.mText = std::string("IM: ") + name + separator_string +  saved + message.substr(message_offset);
+		if (gAgent.isInGroup(session_id)&& gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
+		{
+			prepend_msg = "[";
+			prepend_msg += std::string((char*)binary_bucket);
+			prepend_msg += "] ";
+		}
+		else
+		{
+			prepend_msg = std::string("IM: ");
+		}
+		chat.mText = prepend_msg + name + separator_string + saved + message.substr(message_offset);
 		LLFloaterChat::addChat(chat, TRUE, is_this_agent);
 	}
 	break;
@@ -2462,11 +2476,22 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		
 	case IM_LURE_USER:
 		{
-			if (is_muted)
+// [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+			// If the lure sender is a specific @accepttp exception they will override muted and busy status
+			bool fRlvSummon = (rlv_handler_t::isEnabled()) && (gRlvHandler.isException(RLV_BHVR_ACCEPTTP, from_id));
+// [/RLVa:KB]
+
+//			if (is_muted)
+// [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+			if ( (is_muted) && (!fRlvSummon) )
+// [/RLVa:KB]
 			{ 
 				return;
 			}
-			else if (is_busy) 
+//			else if (is_busy) 
+// [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+			else if ( (is_busy)  && (!fRlvSummon) )
+// [/RLVa:KB]
 			{
 				busy_message(msg,from_id);
 			}
@@ -2475,12 +2500,11 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 // [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3a) | Modified: RLVa-1.0.0d
 				if (rlv_handler_t::isEnabled())
 				{
-					// Block if: 1) @tplure=n restricted (and sender isn't an exception), or 2) @unsit=n restricted and currently sitting
-					LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-					if ( ( (gRlvHandler.hasBehaviour(RLV_BHVR_TPLURE)) && (!gRlvHandler.isException(RLV_BHVR_TPLURE, from_id)) ) || 
-						 ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (pAvatar) && (pAvatar->mIsSitting) ) )
+					if (!gRlvHandler.canTeleportViaLure(from_id))
 					{
 						RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_TPLURE_REMOTE));
+						if (is_busy)
+							busy_message(msg,from_id);
 						return;
 					}
 
@@ -3078,7 +3102,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			{
 				if (CHAT_SOURCE_AGENT == chat.mSourceType)
 				{
-					chat.mFromName = RlvStrings::getAnonym(from_name);
+					chat.mFromName = from_name = RlvStrings::getAnonym(from_name);
 					chat.mRlvNamesFiltered = TRUE;
 				} 
 				else if ( (!is_owned_by_me) || (!is_attachment) )

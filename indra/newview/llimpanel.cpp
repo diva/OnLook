@@ -1618,13 +1618,42 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, const LLColor4
 		}
 		else
 		{
+			std::string show_name = name;
+			LLAvatarName avatar_name;
+			if ((LLUUID::null != source) &&
+				LLAvatarNameCache::get(source, &avatar_name))
+			{
+				static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+				switch (phoenix_name_system)
+				{
+					case 0 : show_name = avatar_name.getCompleteName(); break;
+					case 1 : show_name = (avatar_name.mIsDisplayNameDefault ? avatar_name.mDisplayName : avatar_name.getCompleteName()); break;
+					case 2 : show_name = avatar_name.mDisplayName; break;
+					default : show_name = avatar_name.getCompleteName(); break;
+				}
+			}
 			// Convert the name to a hotlink and add to message.
 			const LLStyleSP &source_style = LLStyleMap::instance().lookupAgent(source);
-			mHistoryEditor->appendStyledText(name,false,prepend_newline,source_style);
+			mHistoryEditor->appendStyledText(show_name,false,prepend_newline,source_style);
 		}
 		prepend_newline = false;
 	}
-	mHistoryEditor->appendColoredText(utf8msg, false, prepend_newline, color);
+
+	//Kadah - Bold group mods chat. Doesnt work on the first msg of the session, dont have speakers list yet?
+	if (isModerator(source))
+	{
+		mHistoryEditor->appendColoredText(utf8msg.substr(0,1), false, prepend_newline, color);
+		LLStyleSP style(new LLStyle);
+		style->setVisible(true);
+		style->setColor(color);
+		style->setFontName(LLStringUtil::null);
+		style->mBold = TRUE;
+		mHistoryEditor->appendStyledText(utf8msg.substr(1), false, prepend_newline, style);
+	}
+	else
+	{
+		mHistoryEditor->appendColoredText(utf8msg, false, prepend_newline, color);
+	}
 	
 	if (log_to_file
 		&& gSavedPerAccountSettings.getBOOL("LogInstantMessages") ) 
@@ -2521,4 +2550,15 @@ bool LLFloaterIMPanel::onConfirmForceCloseError(const LLSD& notification, const 
 	return false;
 }
 
+
+//Kadah
+const bool LLFloaterIMPanel::isModerator(const LLUUID& speaker_id)
+{
+	if (mSpeakers)
+	{
+		LLPointer<LLSpeaker> speakerp = mSpeakers->findSpeaker(speaker_id);
+		return speakerp && speakerp->mIsModerator;
+	}
+	return FALSE;
+}
 

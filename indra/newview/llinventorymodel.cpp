@@ -1640,7 +1640,8 @@ void LLInventoryModel::bulkFetch(std::string url)
 		    if (cat)
 		    {
 				// <edit> Pre-emptive strike
-				if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
+				//if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
+				if(true)
 				{
 				// </edit>
 					if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
@@ -3858,11 +3859,9 @@ bool LLInventoryCollectFunctor::itemTransferCommonlyAllowed(LLInventoryItem* ite
 
 	switch(item->getType())
 	{
-	// <edit> I don't even think changing this did anything
-	//case LLAssetType::AT_CALLINGCARD:
-	//	// not allowed
-	//	break;
-	// </edit>
+	case LLAssetType::AT_CALLINGCARD:
+		// not allowed
+		break;
 
 	case LLAssetType::AT_OBJECT:
 		my_avatar = gAgent.getAvatarObject();

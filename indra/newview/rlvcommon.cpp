@@ -17,6 +17,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
 #include "llappviewer.h"
+#include "llavatarnamecache.h"
 #include "lluictrlfactory.h"
 #include "llversionviewer.h"
 #include "llviewermenu.h"
@@ -117,9 +118,6 @@ void RlvSettings::initClass()
 		if (gSavedSettings.controlExists(RLV_SETTING_SHOWNAMETAGS))
 			gSavedSettings.getControl(RLV_SETTING_SHOWNAMETAGS)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _1, &fShowNameTags));
 
-		if (gSavedSettings.controlExists(RLV_SETTING_AVATAROFFSET_Z))
-			gSavedSettings.getControl(RLV_SETTING_AVATAROFFSET_Z)->getSignal()->connect(boost::bind(&onChangedAvatarOffset, _1));
-
 		fInitialized = true;
 	}
 }
@@ -139,13 +137,6 @@ void RlvSettings::initClass()
 		}
 	}
 #endif // RLV_EXTENSION_STARTLOCATION
-
-// Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-bool RlvSettings::onChangedAvatarOffset(const LLSD& sdValue)
-{
-	gAgent.sendAgentSetAppearance();
-	return true;
-}
 
 // Checked: 2009-12-18 (RLVa-1.1.0k) | Added: RLVa-1.1.0i
 bool RlvSettings::onChangedSettingBOOL(const LLSD& newvalue, BOOL* pfSetting)
@@ -239,9 +230,7 @@ const std::string& RlvStrings::getAnonym(const std::string& strName)
 	// Test with 11,264 SL names showed a 3.33% - 3.82% occurance for each so we *should* get a very even spread
 	for (int idx = 0, cnt = strName.length(); idx < cnt; idx++)
 		nHash += pszName[idx];
-	
-	static const std::string empty = "";
-	if (m_Anonyms.size() == 0) return empty;
+
 	return m_Anonyms[nHash % m_Anonyms.size()];
 }
 
@@ -363,18 +352,38 @@ void RlvUtil::filterLocation(std::string& strUTF8Text)
 		rlvStringReplace(strUTF8Text, pParcelMgr->getAgentParcelName(), RlvStrings::getString(RLV_STRING_HIDDEN_PARCEL));
 }
 
-// Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
-void RlvUtil::filterNames(std::string& strUTF8Text)
+// Checked: 2010-12-08 (RLVa-1.2.2c) | Modified: RLVa-1.2.2c
+void RlvUtil::filterNames(std::string& strUTF8Text, bool fFilterLegacy)
 {
 	std::vector<LLUUID> idAgents;
 	LLWorld::getInstance()->getAvatars(&idAgents, NULL);
 
-	std::string strFullName;
 	for (int idxAgent = 0, cntAgent = idAgents.size(); idxAgent < cntAgent; idxAgent++)
 	{
-		// LLCacheName::getFullName() will add the UUID to the lookup queue if we don't know it yet
-		if (gCacheName->getFullName(idAgents[idxAgent], strFullName))
-			rlvStringReplace(strUTF8Text, strFullName, RlvStrings::getAnonym(strFullName));
+		LLAvatarName avName;
+		if (LLAvatarNameCache::get(idAgents[idxAgent], &avName))
+		{
+			const std::string& strAnonym = RlvStrings::getAnonym(avName.mDisplayName);
+
+			// NOTE: if the legacy first and last name are empty we get a legacy name of " " which would replace all spaces in the string
+			std::string strLegacyName;
+			if ( (fFilterLegacy) && (!avName.mIsDisplayNameDefault) && (!avName.mLegacyFirstName.empty()) )
+				strLegacyName = avName.getLegacyName();
+
+			// If the display name is a subset of the legacy name we need to filter that first, otherwise it's the other way around
+			if (std::string::npos != strLegacyName.find(avName.mDisplayName))
+			{
+				if (!strLegacyName.empty())
+					rlvStringReplace(strUTF8Text, strLegacyName, strAnonym);
+				rlvStringReplace(strUTF8Text, avName.mDisplayName, strAnonym);
+			}
+			else
+			{
+				rlvStringReplace(strUTF8Text, avName.mDisplayName, strAnonym);
+				if (!strLegacyName.empty())
+					rlvStringReplace(strUTF8Text, strLegacyName, strAnonym);
+			}
+		}
 	}
 }
 

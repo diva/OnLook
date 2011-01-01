@@ -33,17 +33,6 @@
 		<integer>1</integer>
 		</map>
 
-    <key>OptionShowGroupNameInChatIM</key>
-    <map>
-      <key>Comment</key>
-      <string>Show group name in IM notification</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
     <key>BeauchampUseInventoryLinks</key>
     <map>
       <key>Comment</key>

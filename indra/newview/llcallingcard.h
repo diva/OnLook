@@ -153,6 +153,8 @@ public:
 
 	static void formFriendship(const LLUUID& friend_id);
 
+	void updateFriends();
+
 protected:
 	void deleteTrackingData();
 	void agentFound(const LLUUID& prey,

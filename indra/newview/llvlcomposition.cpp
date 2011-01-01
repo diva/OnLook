@@ -77,11 +77,14 @@ LLVLComposition::LLVLComposition(LLSurface *surfacep, const U32 width, const F32
 	setDetailTextureID(2, TERRAIN_MOUNTAIN_DETAIL);
 	setDetailTextureID(3, TERRAIN_ROCK_DETAIL);
 
+	static const LLCachedControl<F32> terrain_color_start_height("TerrainColorStartHeight", 20.f); 
+	static const LLCachedControl<F32> terrain_color_height_range("TerrainColorHeightRange", 60.f); 
+
 	// Initialize the texture matrix to defaults.
 	for (S32 i = 0; i < CORNER_COUNT; ++i)
 	{
-		mStartHeight[i] = gSavedSettings.getF32("TerrainColorStartHeight");
-		mHeightRange[i] = gSavedSettings.getF32("TerrainColorHeightRange");
+		mStartHeight[i] = terrain_color_start_height;
+		mHeightRange[i] = terrain_color_height_range;
 	}
 	mTexScaleX = 16.f;
 	mTexScaleY = 16.f;

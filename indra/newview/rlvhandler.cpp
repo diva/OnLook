@@ -15,6 +15,7 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "floateravatarlist.h"
 #include "llavatarnamecache.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterchat.h"
@@ -1089,6 +1090,10 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 
 					// Close the "Active Speakers" panel if it's currently visible
 					LLFloaterChat::getInstance()->childSetVisible("active_speakers_panel", false);
+
+					// Close the "Avatar List/Radar" floater if it's currently visible
+					if ( (LLFloaterAvatarList::getInstance()) && (LLFloaterAvatarList::getInstance()->getVisible()) )
+						LLFloaterAvatarList::toggle(NULL);
 				}
 				else
 				{
@@ -1489,15 +1494,12 @@ ERlvCmdRet RlvHandler::processForceCommand(const RlvCommand& rlvCmd) const
 			break;
 		case RLV_BHVR_DETACHME:		// @detachme=force						- Checked: 2010-09-04 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
 			{
-				// NOTE: @detachme=force could be seen as a @detach:<attachpt>=force but RLV implements it as a "detach by UUID"
 				VERIFY_OPTION(rlvCmd.getOption().empty());
-				LLViewerObject* pObj = NULL; LLVOAvatar* pAvatar = NULL; LLViewerJointAttachment* pAttachPt = NULL;
-				if ( ((pObj = gObjectList.findObject(rlvCmd.getObjectID())) != NULL) && (pObj->isAttachment()) && 
-					 ((pAvatar = gAgent.getAvatarObject()) != NULL) && 
-					 ((pAttachPt = pAvatar->getTargetAttachmentPoint(pObj->getRootEdit())) != NULL) )
+				// NOTE: @detachme should respect locks but shouldn't respect things like nostrip
+				const LLViewerObject* pAttachObj = gObjectList.findObject(rlvCmd.getObjectID());
+				if ( (pAttachObj) && (pAttachObj->isAttachment()) )
 				{
-					// @detachme should respect locks but shouldn't respect things like nostrip so handle it like a manual user detach
-					handle_detach_from_avatar(pAttachPt); 
+					LLVOAvatar::detachAttachmentIntoInventory(pAttachObj->getAttachmentItemID());
 				}
 			}
 			break;
@@ -1677,6 +1679,7 @@ ERlvCmdRet RlvHandler::processReplyCommand(const RlvCommand& rlvCmd) const
 			eRet = onFindFolder(rlvCmd, strReply);
 			break;
 		case RLV_BHVR_GETPATH:			// @getpath[:<option>]=<channel>
+		case RLV_BHVR_GETPATHNEW:		// @getpathnew[:<option>]=<channel>
 			eRet = onGetPath(rlvCmd, strReply);
 			break;
 		case RLV_BHVR_GETINV:			// @getinv[:<path>]=<channel>
@@ -1700,6 +1703,16 @@ ERlvCmdRet RlvHandler::processReplyCommand(const RlvCommand& rlvCmd) const
 				strReply = idSitObj.asString();
 			}
 			break;
+#ifdef RLV_EXTENSION_CMD_GETCOMMAND
+		case RLV_BHVR_GETCOMMAND:		// @getcommand:<option>=<channel>		- Checked: 2010-12-11 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+			{
+				RlvCommand::bhvr_map_t cmdList;
+				if (RlvCommand::getCommands(cmdList, rlvCmd.getOption()))
+					for (RlvCommand::bhvr_map_t::const_iterator itCmd = cmdList.begin(); itCmd != cmdList.end(); ++itCmd)
+						strReply.append("/").append(itCmd->first);
+			}
+			break;
+#endif // RLV_EXTENSION_CMD_GETCOMMAND
 		case RLV_BHVR_GETSTATUS:		// @getstatus[:<option>]=<channel>		- Checked: 2009-11-26 (RLVa-1.1.0f) | Modified: RLVa-1.1.0f
 			{
 				// NOTE: specification says response should start with '/' but RLV-1.16.1 returns an empty string when no rules are set
@@ -1980,7 +1993,7 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 	const EWearableType wtRlvTypes[] =
 		{ 
 			WT_GLOVES, WT_JACKET, WT_PANTS, WT_SHIRT, WT_SHOES, WT_SKIRT, WT_SOCKS, 
-			WT_UNDERPANTS, WT_UNDERSHIRT, WT_SKIN, WT_EYES, WT_HAIR, WT_SHAPE
+			WT_UNDERPANTS, WT_UNDERSHIRT, WT_SKIN, WT_EYES, WT_HAIR, WT_SHAPE, WT_ALPHA, WT_TATTOO
 		};
 
 	for (int idxType = 0, cntType = sizeof(wtRlvTypes) / sizeof(EWearableType); idxType < cntType; idxType++)

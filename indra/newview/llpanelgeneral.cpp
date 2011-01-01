@@ -46,6 +46,7 @@
 #include "llviewerregion.h"
 #include "llavatarnamecache.h"
 #include "llvoavatar.h"
+#include "llcallingcard.h"
 
 LLPanelGeneral::LLPanelGeneral()
 {
@@ -128,7 +129,9 @@ void LLPanelGeneral::apply()
 		if(gAgent.getRegion()){
 			if(namesystem_combobox->getCurrentIndex()<=0 || namesystem_combobox->getCurrentIndex()>2) LLAvatarNameCache::setUseDisplayNames(false);
 			else LLAvatarNameCache::setUseDisplayNames(true);
-			//LLVOAvatar::invalidateNameTags(); No need, they'll be updated on the next loop
+			LLVOAvatar::invalidateNameTags(); // Remove all clienttags to get them updated
+
+			LLAvatarTracker::instance().updateFriends();
 		}
 	}
 

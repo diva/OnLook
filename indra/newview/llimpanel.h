@@ -304,6 +304,8 @@ private:
 	void removeTypingIndicator(const LLIMInfo* im_info);
 
 	void sendTypingState(BOOL typing);
+
+	const bool isModerator(const LLUUID& speaker_id);
 	
 private:
 	LLLineEditor* mInputEditor;

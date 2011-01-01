@@ -106,9 +106,24 @@ void LLFloaterDisplayName::onOpen()
 		// display as "July 18 12:17 PM"
 //		std::string next_update_string =
 //		next_update_local.toHTTPDateString("%B %d %I:%M %p");
-		std::string next_update_string = next_update_local.asString();
-		getChild<LLUICtrl>("lockout_text")->setTextArg("[TIME]", next_update_string);
+		std::string year = next_update_local.asString().substr(0,4);
+		std::string month = next_update_local.asString().substr(5,2);
+		std::string day = next_update_local.asString().substr(8,2);
+		std::string hour = next_update_local.asString().substr(11,2);
+		std::string minute = next_update_local.asString().substr(14,2);
+		std::string second = next_update_local.asString().substr(17,2);
+		std::string next_update_string_date = 
+			llformat("%s/%s/%s",year.c_str(),month.c_str(),
+			day.c_str());
+		std::string next_update_string_time = 
+			llformat("%s:%s:%s",hour.c_str(),minute.c_str(),
+			second.c_str());
+		getChild<LLUICtrl>("lockout_text")->setTextArg("[DATE]",
+			next_update_string_date);
+		getChild<LLUICtrl>("lockout_text")->setTextArg("[TIME]",
+			next_update_string_time);
 		getChild<LLUICtrl>("lockout_text")->setVisible(true);
+		getChild<LLUICtrl>("no_lockout_text")->setVisible(false);
 		getChild<LLUICtrl>("save_btn")->setEnabled(false);
 		getChild<LLUICtrl>("display_name_editor")->setEnabled(false);
 		getChild<LLUICtrl>("display_name_confirm")->setEnabled(false);
@@ -118,6 +133,7 @@ void LLFloaterDisplayName::onOpen()
 	else
 	{
 		getChild<LLUICtrl>("lockout_text")->setVisible(false);
+		getChild<LLUICtrl>("no_lockout_text")->setVisible(true);
 		getChild<LLUICtrl>("save_btn")->setEnabled(true);
 		getChild<LLUICtrl>("display_name_editor")->setEnabled(true);
 		getChild<LLUICtrl>("display_name_confirm")->setEnabled(true);
@@ -229,4 +245,5 @@ void LLFloaterDisplayName::onSave(void* data)
 
 	self->setVisible(false);
 }
+
 

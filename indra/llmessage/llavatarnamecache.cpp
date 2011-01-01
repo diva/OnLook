@@ -334,7 +334,15 @@ void LLAvatarNameCache::processName(const LLUUID& agent_id,
 {
 	if (add_to_cache)
 	{
-		sCache[agent_id] = av_name;
+		//  sCache[agent_id] = av_name;
+		// [SL:KB] - Patch: Agent-DisplayNames | Checked: 2010-12-28 (Catznip-2.4.0h) | Added: Catznip-2.4.0h
+		  // Don't replace existing entries with dummies
+		  cache_t::iterator itName = (av_name.mIsDummy) ? sCache.find(agent_id) : sCache.end();
+		  if (sCache.end() != itName)
+		   itName->second.mExpires = av_name.mExpires;
+		  else
+		   sCache[agent_id] = av_name;
+		// [/SL:KB]
 	}
 
 	sPendingQueue.erase(agent_id);
@@ -592,14 +600,14 @@ void LLAvatarNameCache::buildLegacyName(const std::string& full_name,
 	av_name->mIsDummy = true;
 	av_name->mExpires = F64_MAX;
 
-	// [Ansariel]
+	// [Ansariel/Henri]
 	// Why ain't those set? In case of disabled display names
 	// we would have to parse LLAvatarName::mDisplayName to get
 	// first and lastname if we need them. So do it already here
 	// for convenience.
 	std::istringstream fname(full_name);
 	fname >> av_name->mLegacyFirstName >> av_name->mLegacyLastName;
-	// [/Ansariel]
+	// [/Ansariel/Henri]
 }
 
 // fills in av_name if it has it in the cache, even if expired (can check expiry time)

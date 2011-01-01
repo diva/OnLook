@@ -201,7 +201,9 @@ struct LLWearInfo
 };
 
 
-BOOL gAddToOutfit = FALSE;
+// [RLVa:KB] - Made this part of LLWearableHoldingPattern
+//BOOL gAddToOutfit = FALSE;
+// [/RLVa:KB]
 
 // +=================================================+
 // |        LLInvFVBridge                            |
@@ -1616,8 +1618,8 @@ BOOL LLFolderBridge::isUpToDate() const
 	}
 
 	// <edit> trying to make it stop trying to fetch Local Inventory
-	//return category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN;
-	return (category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN) || (mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot));
+	return category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN;
+	//return (category->getVersion() != LLViewerInventoryCategory::VERSION_UNKNOWN) || (mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot));
 	// </edit>
 }
 
@@ -3203,13 +3205,13 @@ void open_texture(const LLUUID& item_id,
 				   const LLUUID& source_id,
 				   BOOL take_focus)
 {
-
-
-
-
-
-
-
+// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
+	{
+		RlvNotifications::notifyBlockedViewTexture();
+		return;
+	}
+// [/RLVa:KB]
 
 	// See if we can bring an exiting preview to the front
 	if( !LLPreview::show( item_id, take_focus ) )
@@ -3419,14 +3421,6 @@ void open_landmark(LLViewerInventoryItem* inv_item,
 				   const LLUUID& source_id,
 				   BOOL take_focus)
 {
-// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
-	{
-		RlvNotifications::notifyBlockedViewTexture();
-		return;
-	}
-// [/RLVa:KB]
-
 	// See if we can bring an exiting preview to the front
 	if( !LLPreview::show( inv_item->getUUID(), take_focus ) )
 	{
@@ -4116,8 +4110,8 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 	}
 	else if ("edit" == action)
 	{
-		//if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
-		//	return;
+		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+			return;
 		LLVOAvatar* avatarp = gAgent.getAvatarObject();
 		if (!avatarp)
 			return;
@@ -5037,7 +5031,10 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0z) | Modified: RLVa-1.2.0b
 			// Filter out any new attachments that can't be worn before adding them
 			if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
-				obj_items_new.erase(std::remove_if(obj_items_new.begin(), obj_items_new.end(), RlvPredCanNotWearItem(RLV_WEAR_REPLACE)), obj_items_new.end());
+				obj_items_new.erase(std::remove_if(obj_items_new.begin(), obj_items_new.end(), 
+						RlvPredCanNotWearItem(RLV_WEAR_ADD)), obj_items_new.end());
+			for (S32 idxObjNew = 0; idxObjNew < obj_items_new.count(); idxObjNew++)
+				RlvAttachmentLockWatchdog::instance().onWearAttachment(obj_items_new.get(idxObjNew).get() , RLV_WEAR_ADD);
 			obj_items.insert(obj_items.end(), obj_items_new.begin(), obj_items_new.end());
 // [/RLVa:KB]
 
@@ -5118,7 +5115,7 @@ void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, B
 			if( wearable && ((S32)wearable->getType() == i) )
 			{
 				LLViewerInventoryItem* item;
-				item = (LLViewerInventoryItem*)gInventory.getItem(data->mItemID);
+				item = (LLViewerInventoryItem*)gInventory.getLinkedItem(data->mItemID);
 				if( item && (item->getAssetUUID() == wearable->getID()) )
 				{
 				//RN: after discussing with Brashears, I disabled this code

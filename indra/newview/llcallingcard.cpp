@@ -745,6 +745,12 @@ void LLAvatarTracker::processTerminateFriendship(LLMessageSystem* msg, void**)
 	}
 }
 
+void LLAvatarTracker::updateFriends()
+{
+	mModifyMask |= LLFriendObserver::ADD | LLFriendObserver::REMOVE;
+	notifyObservers();
+}
+
 ///----------------------------------------------------------------------------
 /// Tracking Data
 ///----------------------------------------------------------------------------

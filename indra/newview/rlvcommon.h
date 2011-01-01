@@ -67,10 +67,6 @@ inline BOOL rlvGetPerUserSettingsBOOL(const std::string& strSetting, BOOL fDefau
 {
 	return (gSavedPerAccountSettings.controlExists(strSetting)) ? gSavedPerAccountSettings.getBOOL(strSetting) : fDefault;
 }
-inline BOOL rlvGetSettingF32(const std::string& strSetting, F32 nDefault)
-{
-	return (gSavedSettings.controlExists(strSetting)) ? gSavedSettings.getF32(strSetting) : nDefault;
-}
 inline std::string rlvGetSettingString(const std::string& strSetting, const std::string& strDefault)
 {
 	return (gSavedSettings.controlExists(strSetting)) ? gSavedSettings.getString(strSetting) : strDefault;
@@ -79,7 +75,6 @@ inline std::string rlvGetSettingString(const std::string& strSetting, const std:
 class RlvSettings
 {
 public:
-	static F32  getAvatarOffsetZ()				{ return rlvGetSettingF32(RLV_SETTING_AVATAROFFSET_Z, 0.0); }
 	static BOOL getDebug()						{ return rlvGetSettingBOOL(RLV_SETTING_DEBUG, FALSE); }
 	static BOOL getForbidGiveToRLV()			{ return rlvGetSettingBOOL(RLV_SETTING_FORBIDGIVETORLV, TRUE); }
 	static BOOL getNoSetEnv()					{ return fNoSetEnv; }
@@ -107,7 +102,6 @@ public:
 
 	static void initClass();
 protected:
-	static bool onChangedAvatarOffset(const LLSD& sdValue);
 	static bool onChangedSettingBOOL(const LLSD& newvalue, BOOL* pfSetting);
 
 	#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
@@ -153,14 +147,14 @@ class RlvUtil
 {
 public:
 	static bool isEmote(const std::string& strUTF8Text);
-	static bool isNearbyAgent(const LLUUID& idAgent);						// @shownames
-	static bool isNearbyRegion(const std::string& strRegion);				// @showloc
+	static bool isNearbyAgent(const LLUUID& idAgent);								// @shownames
+	static bool isNearbyRegion(const std::string& strRegion);						// @showloc
 
-	static void filterLocation(std::string& strUTF8Text);					// @showloc
-	static void filterNames(std::string& strUTF8Text);						// @shownames
+	static void filterLocation(std::string& strUTF8Text);							// @showloc
+	static void filterNames(std::string& strUTF8Text, bool fFilterLegacy = true);	// @shownames
 
 	static bool isForceTp()	{ return m_fForceTp; }
-	static void forceTp(const LLVector3d& posDest);							// Ignores restrictions that might otherwise prevent tp'ing
+	static void forceTp(const LLVector3d& posDest);									// Ignores restrictions that might otherwise prevent tp'ing
 
 	static void notifyFailedAssertion(const std::string& strAssert, const std::string& strFile, int nLine);
 
@@ -170,7 +164,7 @@ public:
 	static bool sendChatReply(const std::string& strChannel, const std::string& strUTF8Text);
 
 protected:
-	static bool m_fForceTp;													// @standtp
+	static bool m_fForceTp;															// @standtp
 };
 
 // ============================================================================

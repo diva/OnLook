@@ -372,7 +372,7 @@ void RlvRenameOnWearObserver::doneIdle()
 	}
 
 	const LLViewerJointAttachment* pAttachPt = NULL; S32 idxAttachPt = 0;
-	RLV_ASSERT(mComplete.size() > 0);	// Catch instances where we forgot to call startFetch()
+//	RLV_ASSERT(mComplete.size() > 0);	// Catch instances where we forgot to call startFetch()
 	for (uuid_vec_t::const_iterator itItem = mComplete.begin(); itItem != mComplete.end(); ++itItem)
 	{
 		const LLUUID& idAttachItem = *itItem;
@@ -389,7 +389,7 @@ void RlvRenameOnWearObserver::doneIdle()
 		if ( ((pAttachPt = pAvatar->getWornAttachmentPoint(idAttachItem)) == NULL) ||
 			 ((idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachPt)) == 0) )
 		{
-			RLV_ASSERT(false);
+//			RLV_ASSERT(false);
 			continue;
 		}
 
@@ -636,7 +636,7 @@ bool RlvWearableItemCollector::onCollectFolder(const LLInventoryCategory* pFolde
 		return false;
 
 	bool fAttach = RlvForceWear::isWearAction(m_eWearAction);
-	bool fMatchAll = (!fLinkedFolder) && (m_eWearFlags | RlvForceWear::FLAG_MATCHALL);
+	bool fMatchAll = (!fLinkedFolder) && (m_eWearFlags & RlvForceWear::FLAG_MATCHALL);
 
 	if ( (!fLinkedFolder) && (RlvInventory::isFoldedFolder(pFolder, false)) )	// Check for folder that should get folded under its parent
 	{
