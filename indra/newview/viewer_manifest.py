@@ -387,7 +387,7 @@ class WindowsManifest(ViewerManifest):
         !define INSTFLAGS "%(flags)s"
         !define INSTNAME   "SingularityViewer"
         !define SHORTCUT   "Singularity Viewer"
-        !define URLNAME   "singularity"
+        !define URLNAME   "secondlife"
         !define INSTALL_ICON "install_icon_singularity.ico"
         !define UNINSTALL_ICON "install_icon_singularity.ico"
         Caption "Singularity Viewer ${VERSION}"

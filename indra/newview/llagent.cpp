@@ -7606,10 +7606,6 @@ void LLAgent::sendAgentSetAppearance()
 	body_size.mV[VY] = body_size.mV[VY] + gSavedSettings.getF32("AscentAvatarYModifier");
 	body_size.mV[VZ] = body_size.mV[VZ] + gSavedSettings.getF32("AscentAvatarZModifier");
 
-// [RLVa:KB] - Checked: 2010-10-11 (RLVa-1.2.0e) | Added: RLVa-1.2.0e
-	body_size.mV[VZ] += RlvSettings::getAvatarOffsetZ();
-// [/RLVa:KB]
-
 	msg->addVector3Fast(_PREHASH_Size, body_size);	
 
 	// To guard against out of order packets

@@ -2375,6 +2375,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			position,
 			true);
 
+		std::string prepend_msg;
 		if (gAgent.isInGroup(session_id)&& gSavedSettings.getBOOL("OptionShowGroupNameInChatIM"))
 		{
 			prepend_msg = "[";

@@ -15,7 +15,7 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-#include "floateravatarlist.h"
+#include "llfloateravatarlist.h"
 #include "llavatarnamecache.h"
 #include "llfloaterbeacons.h"
 #include "llfloaterchat.h"

@@ -13,7 +13,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 SetOverwrite on				; overwrite files
 SetCompress auto			; compress iff saves space
-SetCompressor /solid lzma	; compress whole installer as one block
+SetCompressor /solid /final lzma	; compress whole installer as one block
 SetDatablockOptimize off	; only saves us 0.1%, not worth it
 XPStyle on                  ; add an XP manifest to the installer
 RequestExecutionLevel admin	; on Vista we must be admin because we write to Program Files
@@ -63,18 +63,18 @@ LangString LanguageCode ${LANG_DUTCH}    "nl"
 LangString LanguageCode ${LANG_PORTUGUESEBR} "pt"
 LangString LanguageCode ${LANG_SIMPCHINESE}  "zh"
 
-Name ${INSTNAME}
+Name ${VIEWERNAME}
 
 SubCaption 0 $(LicenseSubTitleSetup)	; override "license agreement" text
 
-BrandingText " "						; bottom of window text
+BrandingText "Prepare to Implode!"						; bottom of window text
 Icon          %%SOURCE%%\installers\windows\install_icon_singularity.ico
 UninstallIcon %%SOURCE%%\installers\windows\install_icon_singularity.ico
-WindowIcon on							; show our icon in left corner
-BGGradient off							; no big background window
+WindowIcon off							; show our icon in left corner
+BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK
 InstProgressFlags smooth colored		; new colored smooth look
-ShowInstDetails nevershow				; no details, no "show" button
+ShowInstDetails show				; no details, no "show" button
 SetOverwrite on							; stomp files by default
 AutoCloseWindow true					; after all files install, close window
 
@@ -729,7 +729,7 @@ Call CheckWindowsVersion		; warn if on Windows 98/ME
 Call CheckIfAdministrator		; Make sure the user can install/uninstall
 Call CheckIfAlreadyCurrent		; Make sure that we haven't already installed this version
 Call CloseSecondLife			; Make sure we're not running
-Call CheckNetworkConnection		; ping secondlife.com
+#Call CheckNetworkConnection		; ping secondlife.com
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Don't remove cache files during a regular install, removing the inventory cache on upgrades results in lots of damage to the servers.
