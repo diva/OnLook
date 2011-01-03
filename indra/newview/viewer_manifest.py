@@ -268,6 +268,7 @@ class WindowsManifest(ViewerManifest):
             pass
           self.end_prefix()
         
+        # For google-perftools tcmalloc allocator.
         self.path(src="../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll")
         
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
@@ -308,11 +309,6 @@ class WindowsManifest(ViewerManifest):
                 "../win_updater/releaseSSE2/windows-updater.exe",
                 "../win_updater/relwithdebinfo/windows-updater.exe"),
                   dst="updater.exe")
-
-        # For google-perftools tcmalloc allocator.
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-                self.path("libtcmalloc_minimal.dll")
-                self.end_prefix()
 
 
     def nsi_file_commands(self, install=True):
@@ -687,6 +683,11 @@ class LinuxManifest(ViewerManifest):
             else:
                 installer_name += '_' + self.channel_oneword().upper()
 
+        if self.args['buildtype'].lower() in ['release', 'releasesse2']:
+            print "* Going strip-crazy on the packaged binaries, since this is a RELEASE build"
+            # makes some small assumptions about our packaged dir structure
+            self.run_command("find %(d)r/bin %(d)r/lib -type f | xargs --no-run-if-empty strip --strip-unneeded" % {'d': self.get_dst_prefix()} )
+            self.run_command("find %(d)r/bin %(d)r/lib -type f -not -name \\*.so | xargs --no-run-if-empty strip -s" % {'d': self.get_dst_prefix()} )
 
         # Fix access permissions
         self.run_command("""
@@ -757,13 +758,15 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libcrypto.so.0.9.7")
             self.path("libexpat.so.1")
             self.path("libssl.so.0.9.7")
-            self.path("libuuid.so.1")
+            #self.path("libuuid.so.1")
             self.path("libSDL-1.2.so.0")
             self.path("libELFIO.so")
             #self.path("libopenjpeg.so.1.3.0", "libopenjpeg.so.1.3")
             self.path("libalut.so")
             self.path("libopenal.so", "libopenal.so.1")
+            self.path("libtcmalloc_minimal.so.0")
             self.end_prefix("lib")
+
 
             # Vivox runtimes
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):

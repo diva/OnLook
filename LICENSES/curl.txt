@@ -1,6 +1,6 @@
 COPYRIGHT AND PERMISSION NOTICE
 
-Copyright (c) 1996 - 2007, Daniel Stenberg, <daniel@haxx.se>.
+Copyright (c) 1996 - 2002, Daniel Stenberg, <daniel@haxx.se>.
 
 All rights reserved.
 
@@ -19,3 +19,4 @@ OR OTHER DEALINGS IN THE SOFTWARE.
 Except as contained in this notice, the name of a copyright holder shall not
 be used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization of the copyright holder.
+

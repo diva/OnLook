@@ -31,7 +31,7 @@ include(Versions)
 include(UnixInstall)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+  set(CMAKE_BUILD_TYPE ReleaseSSE2 CACHE STRING
       "Build type.  One of: Debug Release ReleaseSSE2 RelWithDebInfo" FORCE)
 endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 

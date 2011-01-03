@@ -518,10 +518,10 @@ class LLManifest(object):
     def ccopy(self, src, dst):
         """ Copy a single file or symlink.  Uses filecmp to skip copying for existing files."""
         if os.path.islink(src):
-            linkto = os.readlink(src)
+            #linkto = os.readlink(src)
             if os.path.islink(dst) or os.path.exists(dst):
                 os.remove(dst)  # because symlinking over an existing link fails
-            os.symlink(linkto, dst)
+            shutil.copy2(src, dst)
         else:
             # Don't recopy file if it's up-to-date.
             # If we seem to be not not overwriting files that have been

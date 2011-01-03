@@ -12,18 +12,22 @@ else (STANDALONE)
         libtcmalloc_minimal)
   endif (WINDOWS)
   if (LINUX)
-    set(TCMALLOC_LIBRARIES tcmalloc)
-    set(STACKTRACE_LIBRARIES stacktrace)
-    set(PROFILER_LIBRARIES profiler)
+    if(USE_GOOGLE_PERFTOOLS)
+      set(TCMALLOC_LIBRARIES tcmalloc)
+      set(STACKTRACE_LIBRARIES stacktrace)
+      set(PROFILER_LIBRARIES profiler)
+    else()
+      set(TCMALLOC_LIBRARIES tcmalloc_minimal)
+    endif()
     set(GOOGLE_PERFTOOLS_INCLUDE_DIR
         ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
     set(GOOGLE_PERFTOOLS_FOUND "YES")
   endif (LINUX)
 endif (STANDALONE)
 
-if (GOOGLE_PERFTOOLS_FOUND)
-  set(USE_GOOGLE_PERFTOOLS ON CACHE BOOL "Build with Google PerfTools support.")
-endif (GOOGLE_PERFTOOLS_FOUND)
+#if (GOOGLE_PERFTOOLS_FOUND)
+#  set(USE_GOOGLE_PERFTOOLS ON CACHE BOOL "Build with Google PerfTools support.")
+#endif (GOOGLE_PERFTOOLS_FOUND)
 
 # XXX Disable temporarily, until we have compilation issues on 64-bit
 # Etch sorted.
