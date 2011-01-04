@@ -78,6 +78,7 @@ extern bool gAgentMovementCompleted;
 extern LLPointer<LLImageGL> gStartImageGL;
 extern std::string gInitialOutfit;
 extern std::string gInitialOutfitGender;	// "male" or "female"
+extern S32 gMaxAgentGroups;
 
 class LLStartUp
 {

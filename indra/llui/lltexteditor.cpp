@@ -3899,6 +3899,7 @@ void LLTextEditor::removeTextFromEnd(S32 num_chars)
 {
 	if (num_chars <= 0) return;
 
+	num_chars = llclamp(num_chars, 0, getLength());
 	remove(getLength() - num_chars, num_chars, FALSE);
 
 	S32 len = getLength();

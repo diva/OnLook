@@ -205,6 +205,7 @@ public:
 	void			setThumbColor( const LLColor4& color );
 	void			setHighlightColor( const LLColor4& color );
 	void			setShadowColor( const LLColor4& color );
+	LLColor4		getReadOnlyFgColor() { return mReadOnlyFgColor; }
 
 	// Hacky methods to make it into a word-wrapping, potentially scrolling,
 	// read-only text box.

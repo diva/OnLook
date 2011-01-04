@@ -247,6 +247,7 @@ BOOL LLPanelGroupNotices::postBuild()
 	// View
 	mViewSubject = getChild<LLLineEditor>("view_subject",recurse);
 	mViewMessage = getChild<LLTextEditor>("view_message",recurse);
+	mViewMessage->setParseHTML(TRUE);
 
 	mViewInventoryName =  getChild<LLLineEditor>("view_inventory_name",recurse);
 	mViewInventoryName->setTabStop(FALSE);
@@ -524,7 +525,12 @@ void LLPanelGroupNotices::showNotice(const std::string& subject,
 	arrangeNoticeView(VIEW_PAST_NOTICE);
 
 	if(mViewSubject) mViewSubject->setText(subject);
-	if(mViewMessage) mViewMessage->setText(message);
+	if (mViewMessage) {
+		// We need to prune the highlights, and clear() is not doing it...
+		mViewMessage->removeTextFromEnd(mViewMessage->getMaxLength());
+		// Now we append the new text (setText() won't highlight URLs)
+		mViewMessage->appendColoredText(message, false, false, mViewMessage->getReadOnlyFgColor());
+	}
 	
 	if (mInventoryOffer)
 	{

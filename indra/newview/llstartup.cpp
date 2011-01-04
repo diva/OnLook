@@ -226,6 +226,8 @@ std::string gInitialOutfitGender;
 std::string SCREEN_HOME_FILENAME = "screen_home.bmp";
 std::string SCREEN_LAST_FILENAME = "screen_last.bmp";
 
+S32  gMaxAgentGroups = DEFAULT_MAX_AGENT_GROUPS;
+
 //
 // Imported globals
 //
@@ -2457,6 +2459,17 @@ bool idle_startup()
 				{
 					gCloudTextureID.set((*it).second);
 				}
+			}
+
+			std::string max_agent_groups = LLUserAuth::getInstance()->getResponse("max-agent-groups");
+			if (!max_agent_groups.empty())
+			{
+				gMaxAgentGroups = atoi(max_agent_groups.c_str());
+				LL_INFOS("LLStartup") << "gMaxAgentGroups read from login.cgi: " << gMaxAgentGroups << LL_ENDL;
+			}
+			else
+			{
+				gMaxAgentGroups = DEFAULT_MAX_AGENT_GROUPS;
 			}
 
 			std::string map_server_url = LLUserAuth::getInstance()->getResponse("map-server-url");

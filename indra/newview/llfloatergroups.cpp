@@ -58,6 +58,7 @@
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
 #include "llimview.h"
+#include "llstartup.h"
 
 // static
 std::map<const LLUUID, LLFloaterGroupPicker*> LLFloaterGroupPicker::sInstances;
@@ -202,7 +203,7 @@ void LLPanelGroups::reset()
 		group_list->operateOnAll(LLCtrlListInterface::OP_DELETE);
 	}
 	childSetTextArg("groupcount", "[COUNT]", llformat("%d",gAgent.mGroups.count()));
-	childSetTextArg("groupcount", "[MAX]", llformat("%d",MAX_AGENT_GROUPS));
+	childSetTextArg("groupcount", "[MAX]", llformat("%d", gMaxAgentGroups));
 
 	const std::string none_text = getString("none");
 	init_group_list(getChild<LLScrollListCtrl>("group list"), gAgent.getGroupID(), none_text);
@@ -214,7 +215,7 @@ BOOL LLPanelGroups::postBuild()
 	childSetCommitCallback("group list", onGroupList, this);
 
 	childSetTextArg("groupcount", "[COUNT]", llformat("%d",gAgent.mGroups.count()));
-	childSetTextArg("groupcount", "[MAX]", llformat("%d",MAX_AGENT_GROUPS));
+	childSetTextArg("groupcount", "[MAX]", llformat("%d", gMaxAgentGroups));
 
 	const std::string none_text = getString("none");
 	init_group_list(getChild<LLScrollListCtrl>("group list"), gAgent.getGroupID(), none_text);
@@ -274,7 +275,7 @@ void LLPanelGroups::enableButtons()
 		childDisable("IM");
 		childDisable("Leave");
 	}
-	if(gAgent.mGroups.count() < MAX_AGENT_GROUPS)
+	if(gAgent.mGroups.count() < gMaxAgentGroups)
 	{
 		childEnable("Create");
 	}
