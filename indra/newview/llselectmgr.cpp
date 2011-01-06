@@ -4482,18 +4482,8 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 // static
 void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** user_data)
 {
-	LLUUID id;
-	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_ObjectID, id);
-	if (sObjectPropertiesFamilyRequests.count(id) == 0)
-	{
-		// This reply is not for us.
-		return;
-	}
-	// We got the reply, so remove the object from the list of pending requests
-	sObjectPropertiesFamilyRequests.erase(id);
-	//llinfos << "Got ObjectPropertiesFamily reply for object " << id << llendl;
-
 	U32 request_flags;
+	LLUUID id;
 	LLUUID creator_id;
 	LLUUID owner_id;
 	LLUUID group_id;
@@ -4503,6 +4493,7 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	LLCategory category;
 	
 	msg->getU32Fast(_PREHASH_ObjectData, _PREHASH_RequestFlags,	request_flags );
+	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_ObjectID,    id );
 	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_OwnerID,		owner_id );
 	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_GroupID,		group_id );
 	msg->getU32Fast(_PREHASH_ObjectData, _PREHASH_BaseMask,		base_mask );
@@ -4512,6 +4503,8 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	msg->getU32Fast(_PREHASH_ObjectData, _PREHASH_NextOwnerMask, next_owner_mask);
 	sale_info.unpackMessage(msg, _PREHASH_ObjectData);
 	category.unpackMessage(msg, _PREHASH_ObjectData);
+
+	llinfos << "Got ObjectPropertiesFamily reply for object " << id << llendl;
 
 	LLUUID last_owner_id;
 	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_LastOwnerID, last_owner_id );
