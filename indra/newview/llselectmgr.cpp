@@ -4504,8 +4504,6 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	sale_info.unpackMessage(msg, _PREHASH_ObjectData);
 	category.unpackMessage(msg, _PREHASH_ObjectData);
 
-	llinfos << "Got ObjectPropertiesFamily reply for object " << id << llendl;
-
 	LLUUID last_owner_id;
 	msg->getUUIDFast(_PREHASH_ObjectData, _PREHASH_LastOwnerID, last_owner_id );
 
@@ -4516,9 +4514,15 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	std::string desc;
 	msg->getStringFast(_PREHASH_ObjectData, _PREHASH_Description, desc);
 
-	// <edit> Send to export floaters
-	LLFloaterExport::receiveObjectProperties(id, name, desc);
-	// </edit>
+	//llinfos << "Got ObjectPropertiesFamily reply for object " << id << llendl;
+	if(sObjectPropertiesFamilyRequests.count(id) != 0 )
+	{
+		// Send to export floaters
+		LLFloaterExport::receiveObjectProperties(id, name, desc);
+		// We got the reply, so remove the object from the list of pending requests
+		sObjectPropertiesFamilyRequests.erase(id);
+	}
+
 	// the reporter widget askes the server for info about picked objects
 	if (request_flags & (COMPLAINT_REPORT_REQUEST | BUG_REPORT_REQUEST))
 	{
