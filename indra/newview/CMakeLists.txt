@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    floatervoicelicense.cpp
     cofmgr.cpp
 	ascentdaycyclemanager.cpp
 	ascentfloatercontactgroups.cpp
@@ -530,6 +531,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    floatervoicelicense.h
 	cofmgr.h
 	ascentdaycyclemanager.h
 	ascentfloatercontactgroups.h

@@ -44,6 +44,8 @@
 #include "llui.h"
 #include "llappviewer.h"
 #include "lltracker.h"
+#include "floatervoicelicense.h"
+#include "llstartup.h"
 
 // static
 std::set<std::string> LLFirstUse::sConfigVariables;
@@ -275,5 +277,21 @@ void LLFirstUse::useMedia()
 		gSavedSettings.setWarning("FirstMedia", FALSE);
 
 		LLNotifications::instance().add("FirstMedia");
+	}
+}
+
+// static
+void LLFirstUse::voiceLicenseAgreement()
+{
+	if (gSavedSettings.getWarning("FirstVoiceLicense"))
+	{
+		gSavedSettings.setWarning("FirstVoiceLicense", FALSE);
+
+		FloaterVoiceLicense::getInstance()->open();
+		FloaterVoiceLicense::getInstance()->center();
+	}
+	else // currently in STATE_LOGIN_VOICE_LICENSE when arriving here
+	{
+		LLStartUp::setStartupState(STATE_LOGIN_AUTH_INIT);
 	}
 }

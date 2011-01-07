@@ -110,6 +110,7 @@ public:
 	static void useDebugMenus();
 	static void useSculptedPrim();
 	static void useMedia();
+	static void voiceLicenseAgreement();
 	
 protected:
 	static std::set<std::string> sConfigVariables;
