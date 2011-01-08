@@ -1141,6 +1141,22 @@ void LLFloaterAvatarList::focusOnNext(BOOL marked_only)
 	}
 }
 
+/*static*/
+void LLFloaterAvatarList::lookAtAvatar(LLUUID &uuid)
+{ // twisted laws
+	LLViewerObject* voavatar = gObjectList.findObject(uuid);
+	if(voavatar && voavatar->isAvatar())
+	{
+		gAgent.setFocusOnAvatar(FALSE, FALSE);
+		gAgent.changeCameraToThirdPerson();
+		gAgent.setFocusGlobal(voavatar->getPositionGlobal(),uuid);
+		gAgent.setCameraPosAndFocusGlobal(voavatar->getPositionGlobal()
+				+ LLVector3d(3.5,1.35,0.75) * voavatar->getRotation(),
+												voavatar->getPositionGlobal(),
+												uuid );
+	}
+}
+
 //static
 void LLFloaterAvatarList::onClickPrevInList(void *userdata)
 {

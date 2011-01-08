@@ -115,6 +115,7 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
 	(new LLEnableProfile())->registerListener(this, "MiniMap.EnableProfile");
+	(new LLCamFollow())->registerListener(this, "MiniMap.CamFollow"); //moymod - add cam follow crap thingie
 	(new mmsetred())->registerListener(this, "MiniMap.setred");
 	(new mmsetgreen())->registerListener(this, "MiniMap.setgreen");
 	(new mmsetblue())->registerListener(this, "MiniMap.setblue");
@@ -1119,6 +1120,15 @@ bool LLNetMap::LLEnableTracking::handleEvent(LLPointer<LLEvent> event, const LLS
 	self->findControl(userdata["control"].asString())->setValue(LLTracker::isTracking(NULL));
 	return true;
 }
+
+
+bool LLNetMap::LLCamFollow::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	LLFloaterAvatarList::lookAtAvatar(self->mClosestAgentAtLastRightClick);
+	return true;
+}
+
 
 bool LLNetMap::LLShowAgentProfile::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {

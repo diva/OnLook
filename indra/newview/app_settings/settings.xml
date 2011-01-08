@@ -13672,13 +13672,13 @@
     <key>ContactListCollapsed</key>
     <map>
       <key>Comment</key>
-      <string>Send a digest of texture info to the sim</string>
+      <string>Hide extended friend information in contact list</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>FloaterHexRect</key>
     <map>

@@ -182,6 +182,8 @@ public:
 	std::string getSelectedName();
 	LLUUID getSelectedID();
 
+	static void lookAtAvatar(LLUUID &uuid);
+
 	static void sound_trigger_hook(LLMessageSystem* msg,void **);
 	static void sendKeys();
 
