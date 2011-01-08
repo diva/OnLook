@@ -111,6 +111,8 @@ LLNetMap::LLNetMap(const std::string& name) :
 	(new LLScaleMap())->registerListener(this, "MiniMap.ZoomLevel");
 	(new LLCenterMap())->registerListener(this, "MiniMap.Center");
 	(new LLCheckCenterMap())->registerListener(this, "MiniMap.CheckCenter");
+	(new LLRotateMap())->registerListener(this, "MiniMap.Rotate");
+	(new LLCheckRotateMap())->registerListener(this, "MiniMap.CheckRotate");
 	(new LLStopTracking())->registerListener(this, "MiniMap.StopTracking");
 	(new LLEnableTracking())->registerListener(this, "MiniMap.EnableTracking");
 	(new LLShowAgentProfile())->registerListener(this, "MiniMap.ShowProfile");
@@ -1104,6 +1106,22 @@ bool LLNetMap::LLCheckCenterMap::handleEvent(LLPointer<LLEvent> event, const LLS
 	EMiniMapCenter center = (EMiniMapCenter)userdata["data"].asInteger();
 	BOOL enabled = (gSavedSettings.getS32("MiniMapCenter") == center);
 
+	self->findControl(userdata["control"].asString())->setValue(enabled);
+	return true;
+}
+
+bool LLNetMap::LLRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	BOOL rotate = gSavedSettings.getBOOL("MiniMapRotate");
+	gSavedSettings.setBOOL("MiniMapRotate", !rotate);
+
+	return true;
+}
+
+bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+{
+	LLNetMap *self = mPtr;
+	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
 	self->findControl(userdata["control"].asString())->setValue(enabled);
 	return true;
 }
