@@ -41,6 +41,7 @@
 #include "llfolderview.h"
 #include "llinventorymodel.h"
 #include "llmemberlistener.h"
+#include "llcombobox.h"
 #include "lluictrlfactory.h"
 #include <set>
 
@@ -59,7 +60,6 @@ class LLCheckBoxCtrl;
 class LLSpinCtrl;
 class LLScrollableContainerView;
 class LLTextBox;
-class LLComboBox;
 class LLIconCtrl;
 class LLSaveFolderState;
 class LLSearchEditor;
@@ -81,10 +81,6 @@ public:
 			LLView *parent_view = NULL);
 	~LLInventoryPanel();
 
-	// <edit>
-	static std::list<LLInventoryPanel*> sInstances;
-	// </edit>
-
 	LLInventoryModel* getModel() { return mInventory; }
 
 	BOOL postBuild();
@@ -100,12 +96,6 @@ public:
 								   void* cargo_data,
 								   EAcceptance* accept,
 								   std::string& tooltip_msg);
-
-	//fix to get rid of gSavedSettings use - rkeast
-	void setPartialSearch(bool toggle);
-	bool getPartialSearch();
-	void setSearchType(U32 type);
-	U32 getSearchType();
 
 	// Call this method to set the selection.
 	void openAllFolders();
@@ -149,9 +139,6 @@ protected:
 	// Given the id and the parent, build all of the folder views.
 	void rebuildViewsFor(const LLUUID& id, U32 mask);
 	void buildNewViews(const LLUUID& id);
-	// <edit>
-	void buildNewViews(const LLInventoryObject* objectp);
-	// </edit>
 
 public:
 	// TomY TODO: Move this elsewhere?
@@ -264,7 +251,7 @@ public:
 	}
 // [/RLVa:KB]
 
-// Final cleanup, destroy all open inventory views.
+	// Final cleanup, destroy all open inventory views.
 	static void cleanup();
 
 	// LLView & LLFloater functionality
@@ -289,9 +276,9 @@ public:
 	static BOOL checkFoldersByName(void *user_data);
 	static void onSearchEdit(const std::string& search_string, void* user_data );
 
-    static void onQuickFilterCommit(LLUICtrl* ctrl, void* user_data);
-    static void refreshQuickFilter(LLUICtrl* ctrl);
-
+	static void onQuickFilterCommit(LLUICtrl* ctrl, void* user_data);
+	static void refreshQuickFilter(LLUICtrl* ctrl);
+	
 	static void onFilterSelected(void* userdata, bool from_click);
 	static void onResetAll(void* userdata);
 	static void onExpandAll(void* userdata);
@@ -315,17 +302,14 @@ protected:
 
 protected:
 	LLSearchEditor*				mSearchEditor;
-	LLComboBox*					mQuickFilterCombo;
+	LLComboBox*						mQuickFilterCombo;
 	LLTabContainer*				mFilterTabs;
-	LLHandle<LLFloater>			mFinderHandle;
+	LLHandle<LLFloater>				mFinderHandle;
 	LLInventoryPanel*			mActivePanel;
 	LLSaveFolderState*			mSavedFolderState;
 
 	std::string					mFilterText;
-	std::string					mOldFilterText;
 
-	S32							mItemCount;
-	S32 						mOldItemCount;
 
 	// This container is used to hold all active inventory views. This
 	// is here to support the inventory toggle show button.

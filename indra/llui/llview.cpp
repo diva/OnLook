@@ -161,10 +161,7 @@ LLView::~LLView()
 		gFocusMgr.removeMouseCaptureWithoutCallback( this );
 	}
 
-	// <edit> TESTZONE DERF
-	//deleteAllChildren();
-	deleteAllChildren(mDelayedDelete);
-	// </edit>
+	deleteAllChildren();
 
 	if (mParentView != NULL)
 	{
@@ -596,26 +593,8 @@ BOOL LLView::focusPrev(LLView::child_list_t & result)
 // delete all children. Override this function if you need to
 // perform any extra clean up such as cached pointers to selected
 // children, etc.
-// <edit>
-//void LLView::deleteAllChildren()
-void LLView::deleteAllChildren(BOOL delay_delete)
-// </edit>
+void LLView::deleteAllChildren()
 {
-	// <edit> TESTZONE DERF
-	if(delay_delete)
-	{
-		child_list_t::iterator end = mChildList.end();
-		for(child_list_t::iterator iter = mChildList.begin(); iter != end; ++iter)
-		{
-			if((*iter)->getParent() == this)
-				(*iter)->mParentView = NULL;
-		}
-		mCtrlOrder.clear();
-		std::list<LLView*> children(mChildList);
-		gDeleteScheduler->addViewDeleteJob(children);
-		return;
-	}
-	// </edit>
 	// clear out the control ordering
 	mCtrlOrder.clear();
 

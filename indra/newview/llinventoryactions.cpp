@@ -498,98 +498,6 @@ class LLDoCreateFloater : public inventory_listener_t
 	}
 };
 
-//Handles the search type buttons - RKeast
-class SetSearchType : public inventory_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string search_type = userdata.asString();
-		if(search_type == "name")
-		{
-			mPtr->getActivePanel()->setSearchType(0);
-
-			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",0);
-			
-			mPtr->getControl("Inventory.SearchByName")->setValue(TRUE);
-			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);	
-			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
-		}
-		else if(search_type == "creator")
-		{
-			mPtr->getActivePanel()->setSearchType(1);
-
-			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",1);
-
-			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByCreator")->setValue(TRUE);
-			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
-		}
-		else if(search_type == "desc")
-		{
-			mPtr->getActivePanel()->setSearchType(2);
-
-			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",2);
-
-			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByDesc")->setValue(TRUE);
-			mPtr->getControl("Inventory.SearchByAll")->setValue(FALSE);
-		}
-		else if(search_type == "all")
-		{
-			mPtr->getActivePanel()->setSearchType(3);
-
-			gSavedPerAccountSettings.setU32("rkeastInventorySearchType",3);
-
-			mPtr->getControl("Inventory.SearchByName")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByCreator")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByDesc")->setValue(FALSE);
-			mPtr->getControl("Inventory.SearchByAll")->setValue(TRUE);
-		}
-		
-		//Clear search when switching modes.
-		mPtr->getActivePanel()->setFilterSubString(LLStringUtil::null);
-		mPtr->getActivePanel()->setFilterTypes(0xffffffff);
-	return true;
-	}
-};
-
-//Handles the partial search result button - RKeast
-class SetPartialSearch : public inventory_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string data = userdata.asString();
-		if(data == "toggle")
-		{
-			BOOL current = mPtr->getActivePanel()->getPartialSearch();
-			mPtr->getActivePanel()->setPartialSearch(!current);
-			
-			if(current == false)
-			{			
-				mPtr->getActivePanel()->setPartialSearch(true);
-				mPtr->getControl("Inventory.PartialSearchToggle")->setValue(TRUE);
-
-				gSavedPerAccountSettings.setBOOL("rkeastInventoryPartialSearch",TRUE);
-			}
-			else 
-			{
-				mPtr->getActivePanel()->setPartialSearch(false);
-				mPtr->getControl("Inventory.PartialSearchToggle")->setValue(FALSE);
-
-				gSavedPerAccountSettings.setBOOL("rkeastInventoryPartialSearch",FALSE);
-			}
-		}
-		
-		//Clear search when switching modes.
-		mPtr->getActivePanel()->setFilterSubString(LLStringUtil::null);
-		mPtr->getActivePanel()->setFilterTypes(0xffffffff);
-	return true;
-	}
-};
-
 class LLSetSortBy : public inventory_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -679,6 +587,18 @@ class LLRefreshInvModel : public inventory_listener_t
 	}
 };
 
+class LLSetSearchType : public inventory_listener_t
+{
+	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		std::string toggle = userdata.asString();
+		U32 flags = mPtr->getActivePanel()->getRootFolder()->toggleSearchType(toggle);
+		mPtr->getControl("Inventory.SearchName")->setValue((BOOL)(flags & 1));
+		mPtr->getControl("Inventory.SearchDesc")->setValue((BOOL)(flags & 2));
+		mPtr->getControl("Inventory.SearchCreator")->setValue((BOOL)(flags & 4));
+		return true;
+	}
+};
 
 class LLBeginIMSession : public inventory_panel_listener_t
 {
@@ -869,8 +789,8 @@ void init_inventory_actions(LLInventoryView *floater)
 	(new LLResetFilter())->registerListener(floater, "Inventory.ResetFilter");
 	(new LLSetSortBy())->registerListener(floater, "Inventory.SetSortBy");
 
-	(new SetSearchType())->registerListener(floater, "Inventory.SetSearchBy");
-	(new SetPartialSearch())->registerListener(floater, "Inventory.PartialSearch");
+	(new LLSetSearchType())->registerListener(floater, "Inventory.SetSearchType");
+	
 }
 
 void init_inventory_panel_actions(LLInventoryPanel *panel)

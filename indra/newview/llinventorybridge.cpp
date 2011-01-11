@@ -240,13 +240,6 @@ time_t LLInvFVBridge::getCreationDate() const
 // Can be destroyed (or moved to trash)
 BOOL LLInvFVBridge::isItemRemovable()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if (!model)
 	{
@@ -278,13 +271,6 @@ void LLInvFVBridge::showProperties()
 
 void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch)
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	// Deactivate gestures when moving them into Trash
 	LLInvFVBridge* bridge;
 	LLInventoryModel* model = mInventoryPanel->getModel();
@@ -329,13 +315,6 @@ void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batc
 
 void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*>& batch)
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	// this method moves a bunch of items and folders to the trash. As
 	// per design guidelines for the inventory model, the message is
 	// built and the accounting is performed first. After all of that,
@@ -505,13 +484,6 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 
 BOOL LLInvFVBridge::isClipboardPasteable() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if (!model)
 	{
@@ -789,13 +761,6 @@ BOOL LLInvFVBridge::startDrag(EDragAndDropType* type, LLUUID* id) const
 
 LLInventoryObject* LLInvFVBridge::getInventoryObject() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return NULL;
-	}
-	// </edit>
 	LLInventoryObject* obj = NULL;
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(model)
@@ -807,13 +772,6 @@ LLInventoryObject* LLInvFVBridge::getInventoryObject() const
 
 BOOL LLInvFVBridge::isInTrash() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLUUID trash_id = model->findCategoryUUIDForType(LLAssetType::AT_TRASH);
@@ -852,13 +810,6 @@ BOOL LLInvFVBridge::isLinkedObjectMissing() const
 
 BOOL LLInvFVBridge::isAgentInventory() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	if(gAgent.getInventoryRootID() == mUUID) return TRUE;
@@ -1187,13 +1138,6 @@ void LLItemBridge::selectItem()
 
 void LLItemBridge::restoreItem()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)getItem();
 	if(item)
 	{
@@ -1371,13 +1315,6 @@ BOOL LLItemBridge::renameItem(const std::string& new_name)
 {
 	if(!isItemRenameable()) return FALSE;
 	LLPreview::rename(mUUID, getPrefix() + new_name);
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLViewerInventoryItem* item = getItem();
@@ -1404,13 +1341,6 @@ BOOL LLItemBridge::removeItem()
 	}
 	// move it to the trash
 	LLPreview::hide(mUUID, TRUE);
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLUUID trash_id = model->findCategoryUUIDForType(LLAssetType::AT_TRASH);
@@ -1467,13 +1397,6 @@ BOOL LLItemBridge::copyToClipboard() const
 
 LLViewerInventoryItem* LLItemBridge::getItem() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return NULL;
-	}
-	// </edit>
 	LLViewerInventoryItem* item = NULL;
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(model)
@@ -1522,13 +1445,6 @@ void LLFolderBridge::selectItem()
 // Can be destroyed (or moved to trash)
 BOOL LLFolderBridge::isItemRemovable()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) 
 	{
@@ -1602,13 +1518,6 @@ BOOL LLFolderBridge::isItemRemovable()
 
 BOOL LLFolderBridge::isUpToDate() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLViewerInventoryCategory* category = (LLViewerInventoryCategory*)model->getCategory(mUUID);
@@ -1688,13 +1597,6 @@ BOOL LLFolderBridge::dragCategoryIntoFolder(LLInventoryCategory* inv_cat,
 	// the UI will get confused and pass in a NULL.
 	if(!inv_cat) return FALSE;
 
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 
@@ -2152,13 +2054,6 @@ void LLFolderBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 	}
 	else if ("removefromoutfit" == action)
 	{
-		// <edit> derf
-		if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-		{
-			llwarns << "scheduled for delayed delete" << llendl;
-			return;
-		}
-		// </edit>
 		LLInventoryModel* model = mInventoryPanel->getModel();
 		if(!model) return;
 		LLViewerInventoryCategory* cat = getCategory();
@@ -2190,13 +2085,6 @@ void LLFolderBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 void LLFolderBridge::openItem()
 {
 	lldebugs << "LLFolderBridge::openItem()" << llendl;
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return;
 	model->fetchDescendentsOf(mUUID);
@@ -2215,13 +2103,6 @@ BOOL LLFolderBridge::isItemRenameable() const
 
 void LLFolderBridge::restoreItem()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLViewerInventoryCategory* cat;
 	cat = (LLViewerInventoryCategory*)getCategory();
 	if(cat)
@@ -2300,13 +2181,6 @@ LLUIImagePtr LLFolderBridge::getIcon() const
 
 BOOL LLFolderBridge::renameItem(const std::string& new_name)
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	if(!isItemRenameable()) return FALSE;
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
@@ -2332,13 +2206,6 @@ BOOL LLFolderBridge::removeItem()
 	}
 	// move it to the trash
 	LLPreview::hide(mUUID);
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 
@@ -2418,13 +2285,6 @@ BOOL LLFolderBridge::isClipboardPasteable() const
 
 void LLFolderBridge::pasteFromClipboard()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(model && isClipboardPasteable())
 	{
@@ -2491,13 +2351,6 @@ void LLFolderBridge::folderOptionsMenu()
 
 	// *TODO: Translate
 	
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return;
 
@@ -2569,13 +2422,6 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	// *TODO: Translate
 	lldebugs << "LLFolderBridge::buildContextMenu()" << llendl;
 //	std::vector<std::string> disabled_items;
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return;
 	LLUUID cof_id = LLCOFMgr::instance().getCOF();
@@ -2712,13 +2558,6 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 BOOL LLFolderBridge::hasChildren() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLInventoryModel::EHasChildren has_children;
@@ -2761,13 +2600,6 @@ BOOL LLFolderBridge::dragOrDrop(MASK mask, BOOL drop,
 
 LLViewerInventoryCategory* LLFolderBridge::getCategory() const
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return NULL;
-	}
-	// </edit>
 	LLViewerInventoryCategory* cat = NULL;
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(model)
@@ -2789,13 +2621,6 @@ void LLFolderBridge::createNewCategory(void* user_data)
 {
 	LLFolderBridge* bridge = (LLFolderBridge*)user_data;
 	if(!bridge) return;
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), bridge->mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// <edit>
 	LLInventoryPanel* panel = bridge->mInventoryPanel;
 	LLInventoryModel* model = panel->getModel();
 	if(!model) return;
@@ -2910,13 +2735,6 @@ void LLFolderBridge::createWearable(LLUUID parent_id, EWearableType type)
 
 void LLFolderBridge::modifyOutfit(BOOL append, BOOL replace)
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return;
 	LLViewerInventoryCategory* cat = getCategory();
@@ -2968,13 +2786,6 @@ bool move_task_inventory_callback(const LLSD& notification, const LLSD& response
 BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 										BOOL drop)
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 
@@ -3513,13 +3324,6 @@ LLCallingCardBridge::~LLCallingCardBridge()
 
 void LLCallingCardBridge::refreshFolderViewItem()
 {
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return;
-	}
-	// </edit>
 	LLFolderViewItem* itemp = mInventoryPanel->getRootFolder()->getItemByID(mUUID);
 	if (itemp)
 	{
@@ -4424,37 +4228,17 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 // [/RLVa:KB]
 						}
 
-						// <edit> derf
-						if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
+						LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachObject");
+						
+						if (callback)
 						{
-							llwarns << "scheduled for delayed delete" << llendl;
+							new_item->addListener(callback, "on_click", LLSD(attachment->getName()));
 						}
-						else
-						{
-							// </edit>
-							LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachObject");
-
-							if (callback)
-							{
-								new_item->addListener(callback, "on_click", LLSD(attachment->getName()));
-							}
-							// <edit> derf
-						}
-							// </edit>
 					}
-					// <edit>
 					LLMenuItemCallGL *new_item = new LLMenuItemCallGL("Custom...", NULL, NULL);
 					attach_menu->append(new_item);
-					if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-					{
-						llwarns << "scheduled for delayed delete" << llendl;
-					}
-					else
-					{
-						LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachCustom");
-						new_item->addListener(callback, "on_click", LLSD());
-					}
-					// </edit>
+					LLSimpleListener* callback = mInventoryPanel->getListenerByName("Inventory.AttachCustom");
+					new_item->addListener(callback, "on_click", LLSD());
 				}
 			}
 		}
@@ -4466,13 +4250,6 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 {
 	if(!isItemRenameable()) return FALSE;
 	LLPreview::rename(mUUID, getPrefix() + new_name);
-	// <edit> derf
-	if(std::find(LLInventoryPanel::sInstances.begin(), LLInventoryPanel::sInstances.end(), mInventoryPanel) == LLInventoryPanel::sInstances.end())
-	{
-		llwarns << "scheduled for delayed delete" << llendl;
-		return FALSE;
-	}
-	// </edit>
 	LLInventoryModel* model = mInventoryPanel->getModel();
 	if(!model) return FALSE;
 	LLViewerInventoryItem* item = getItem();

@@ -2078,11 +2078,11 @@ void LLPanelInventory::draw()
 	}
 }
 
-void LLPanelInventory::deleteAllChildren(BOOL delayed_delete)
+void LLPanelInventory::deleteAllChildren()
 {
 	mScroller = NULL;
 	mFolders = NULL;
-	LLView::deleteAllChildren(delayed_delete);
+	LLView::deleteAllChildren();
 }
 
 BOOL LLPanelInventory::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop, EDragAndDropType cargo_type, void *cargo_data, EAcceptance *accept, std::string& tooltip_msg)
