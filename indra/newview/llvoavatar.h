@@ -399,6 +399,7 @@ public:
 	//BOOL			isReallyFullyLoaded();
 	BOOL            updateIsFullyLoaded();
 protected:
+	bool 			sendAvatarTexturesRequest();
 	void			updateRuthTimer(bool loading);
 private:
 	BOOL            mFullyLoaded;

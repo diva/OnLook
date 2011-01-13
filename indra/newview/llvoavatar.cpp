@@ -71,10 +71,10 @@
 #include "lltexlayer.h"
 #include "lltoolgrab.h"	// for needsRenderBeam
 #include "lltoolmgr.h" // for needsRenderBeam
-#include "lltoolmorph.h" // for auto deruth
+#include "lltoolmorph.h"
 #include "llviewercamera.h"
+#include "llviewergenericmessage.h" //for Auto Deruth
 #include "llviewercontrol.h"
-#include "llviewergenericmessage.h"
 #include "llviewerimagelist.h"
 #include "llviewermedia.h"
 #include "llviewermenu.h"
@@ -193,6 +193,8 @@ const F32 CHAT_FADE_TIME = 8.0;
 const F32 BUBBLE_CHAT_TIME = CHAT_FADE_TIME * 3.f;
 
 const LLColor4 DUMMY_COLOR = LLColor4(0.5,0.5,0.5,1.0);
+
+const F32 DERUTHING_TIMEOUT_SECONDS = 30.f;
 
 enum ERenderName
 {
@@ -7994,9 +7996,7 @@ BOOL LLVOAvatar::updateIsFullyLoaded()
 	{
 		loading = TRUE;
 	}
-
-	updateRuthTimer(loading);
-
+	
 	// special case to keep nudity off orientation island -
 	// this is fragilely dependent on the compositing system,
 	// which gets available textures in the following order:
@@ -8033,6 +8033,7 @@ BOOL LLVOAvatar::updateIsFullyLoaded()
 	
 	mFullyLoaded = (mFullyLoadedTimer.getElapsedTimeF32() > PAUSE);
 
+	updateRuthTimer(loading);
 	
 	// did our loading state "change" from last call?
 	const S32 UPDATE_RATE = 30;
@@ -8049,35 +8050,6 @@ BOOL LLVOAvatar::updateIsFullyLoaded()
 }
 
 
-void LLVOAvatar::updateRuthTimer(bool loading)
-{
-	if (isSelf() || !loading) 
-	{
-		return;
-	}
-
-	if (mPreviousFullyLoaded)
-	{
-		mRuthTimer.reset();
-	}
-	
-	const F32 LOADING_TIMEOUT__SECONDS = 30.f;
-	if (mRuthTimer.getElapsedTimeF32() > LOADING_TIMEOUT__SECONDS)
-	{
-		llinfos << "Ruth Timer timeout: Missing texture data for '" << getFullname() << "' "
-				<< "( Params loaded : " << !visualParamWeightsAreDefault() << " ) "
-				<< "( Lower : " << isTextureDefined(TEX_LOWER_BAKED) << " ) "
-				<< "( Upper : " << isTextureDefined(TEX_UPPER_BAKED) << " ) "
-				<< "( Head : " << isTextureDefined(TEX_HEAD_BAKED) << " )."
-				<< llendl;
-		
-		//LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(getID());
-		std::vector<std::string> strings;
-		strings.push_back(getID().asString());
-		send_generic_message("avatartexturesrequest", strings);
-		mRuthTimer.reset();
-	}
-}
 
 BOOL LLVOAvatar::isFullyLoaded()
 {
@@ -8090,6 +8062,37 @@ BOOL LLVOAvatar::isFullyLoaded()
 // [/SL:KB]
 }
 
+bool LLVOAvatar::sendAvatarTexturesRequest()
+{
+	bool sent = false;
+	if (mRuthTimer.getElapsedTimeF32() > DERUTHING_TIMEOUT_SECONDS)
+	{
+		std::vector<std::string> strings;
+		strings.push_back(getID().asString());
+		send_generic_message("avatartexturesrequest", strings);
+		mRuthTimer.reset();
+		sent = true;
+	}
+	return sent;
+}
+
+void LLVOAvatar::updateRuthTimer(bool loading)
+{
+	if (isSelf() || !loading) 
+	{
+		return;
+	}
+
+	if (!mPreviousFullyLoaded && sendAvatarTexturesRequest())
+	{
+		llinfos << "Ruth Timer timeout: Missing texture data for '" << getFullname() << "' "
+				<< "( Params loaded : " << !visualParamWeightsAreDefault() << " ) "
+				<< "( Lower : " << isTextureDefined(TEX_LOWER_BAKED) << " ) "
+				<< "( Upper : " << isTextureDefined(TEX_UPPER_BAKED) << " ) "
+				<< "( Head : " << isTextureDefined(TEX_HEAD_BAKED) << " )."
+				<< llendl;
+	}
+}
 
 //-----------------------------------------------------------------------------
 // findMotion()
@@ -9415,22 +9418,12 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	else
 	{
 		llwarns << "AvatarAppearance msg received without any parameters, object: " << getID() << llendl;
-		const F32 LOADING_TIMEOUT_SECONDS = 20.f;
-		// this isn't really a problem if we already have a non-default shape
-		if (visualParamWeightsAreDefault() && mRuthTimer.getElapsedTimeF32() > LOADING_TIMEOUT_SECONDS)
+
+		// ehr, don't trust old shapes any longer -SG
+		if (sendAvatarTexturesRequest())
 		{
 			// re-request appearance, hoping that it comes back with a shape next time
-			llinfos << "Re-requesting AvatarAppearance for object: "  << getID() << llendl;
-			//LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(getID());
-			std::vector<std::string> strings;
-			strings.push_back(getID().asString());
-			send_generic_message("avatartexturesrequest", strings);
-			mRuthTimer.reset();
-		}
-		else
-		{
-			llinfos << "That's okay, we already have a non-default shape for object: "  << getID() << llendl;
-			// we don't really care.
+			llinfos << "Re-requested AvatarAppearance for object: "  << getID() << llendl;
 		}
 	}
 
