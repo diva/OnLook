@@ -3768,11 +3768,19 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			
 			std::string usedname;
 			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsDummy 
-					&& av_name.mDisplayName != av_name.getLegacyName()) usedname = av_name.mDisplayName;
-			else {
+					&& av_name.mDisplayName != av_name.getLegacyName())
+			{
+					usedname = av_name.mDisplayName;
+			}
+			else
+			{
 				usedname = firstname->getString();
-				usedname += " ";
-				usedname += lastname->getString();
+				std::string ln = lastname->getString();
+				if(ln != "Resident")
+				{
+					usedname += " ";
+					usedname += ln;
+				}
 				dnhasloaded=false;
 				useddn=false;
 			}
