@@ -939,31 +939,31 @@ Would you like to disable all popups which can be skipped?
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="CacheWillClear"
-   type="alertmodal">
+   type="notify">
 Cache will be cleared after you restart [SECOND_LIFE].
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="CacheWillBeMoved"
-   type="alertmodal">
+   type="notify">
 Cache will be moved after you restart [SECOND_LIFE].
 Note: This will clear the cache.
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="ChangeConnectionPort"
-   type="alertmodal">
+   type="notify">
 Port settings take effect after you restart [SECOND_LIFE].
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="ProxyNeedRestart"
-   type="alertmodal">
+   type="notify">
 Socks proxy settings will take effect after you restart [SECOND_LIFE].
   </notification>
 
@@ -1017,9 +1017,9 @@ Could not connect to Socks5 proxy server "[PROXY]"
   </notification>
 
   <notification
-   icon="alertmodal.tga"
+   icon="notify.tga"
    name="ChangeSkin"
-   type="alertmodal">
+   type="notfy">
 The new skin will appear after you restart [SECOND_LIFE].
   </notification>
 
