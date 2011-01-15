@@ -299,9 +299,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>eb25444142d4102b0ce1b7ffaadb071e</string>
+            <string>5bbf7e33dadc7d046dcf44883a9ec3d0</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/dbusglib-linux-20080707.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux-20101031.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>09be41e3145e1a960e50f2f9ce0a5e7d</string>
+            <key>url</key>
+            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux64-20101007.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -317,6 +324,13 @@
             <string>82ea408af2f968cfe5f013ab241323ef</string>
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/elfio-1.0.3-linux-20080812.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>e829a52ba67e02b011cf2e372914d32f</string>
+            <key>url</key>
+            <uri>http://imprudenceviewer.org/download/libs/elfio-1.0.3-linux64-20091129.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -443,16 +457,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>eeffb03bd6672b6e7751448e5306d874</string>
+            <string>efc845cf291073b1e4d381a271f194eb</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/freetype-2.1.5-linux-20081201.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/freetype-2.3.11-linux-20091103.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>35f6fa557ba90f9cda0a18d1af2055a4</string>
+            <string>1b4624ab06a7ba30e29d1994424db41e</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/freetype-2.1.5-linux64-20080909.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/freetype-2.3.11-linux64-20091230.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
