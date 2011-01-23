@@ -221,6 +221,5 @@
 				<on_click filter="" function="Inventory.SetSearchType" userdata="creator" />
 			</menu_item_check>
 		</menu>
-    </menu>
 	</menu_bar>
 </floater>
