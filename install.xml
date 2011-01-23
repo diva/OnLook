@@ -1742,6 +1742,11 @@ EA0300
         <key>url</key>
         <string>http://xmlrpc-epi.sourceforge.net/main.php?t=license</string>
       </map>
+      <key>xiph-bsd</key>
+      <map>
+        <key>url</key>
+        <string>http://www.xiph.org/licenses/bsd/</string>
+      </map>
       <key>zlib</key>
       <map>
         <key>url</key>
