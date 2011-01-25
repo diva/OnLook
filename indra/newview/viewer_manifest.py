@@ -489,7 +489,7 @@ class DarwinManifest(ViewerManifest):
                 #self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
 
                 # plugin launcher
-                self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin", "SLPlugin")
+                self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
