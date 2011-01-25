@@ -79,9 +79,9 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}media_plugins)
 
   # llplugin testbed code (is this the right way to include it?)
-  if (NOT LINUX)
-    add_subdirectory(${VIEWER_PREFIX}test_apps/llplugintest)
-  endif (NOT LINUX)
+  #if (NOT LINUX)
+  #  add_subdirectory(${VIEWER_PREFIX}test_apps/llplugintest)
+  #endif (NOT LINUX)
 
   if (LINUX)
     add_subdirectory(${VIEWER_PREFIX}linux_crash_logger)
