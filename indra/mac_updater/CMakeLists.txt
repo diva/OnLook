@@ -50,6 +50,7 @@ set_target_properties(mac-updater
 target_link_libraries(mac-updater
     ${LLVFS_LIBRARIES}
     ${CURL_LIBRARIES}
+	${OPENSSL_LIBRARIES}
     ${LLCOMMON_LIBRARIES}
     )
 

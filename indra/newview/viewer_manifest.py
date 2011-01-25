@@ -486,7 +486,7 @@ class DarwinManifest(ViewerManifest):
                 
                 # our apps
                 self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                #self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
 
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin", "SLPlugin")
