@@ -830,8 +830,16 @@ void init_menus()
 
 	gLoginMenuBarView = (LLMenuBarGL*)LLUICtrlFactory::getInstance()->buildMenu("menu_login.xml", gMenuHolder);
 	LLRect menuBarRect = gLoginMenuBarView->getRect();
-	gLoginMenuBarView->setRect(LLRect(menuBarRect.mLeft, menuBarRect.mTop, gViewerWindow->getRootView()->getRect().getWidth() - menuBarRect.mLeft,  menuBarRect.mBottom));
+	
+	menu = new LLMenuGL(CLIENT_MENU_NAME);
+	menu->append(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
+	gLoginMenuBarView->appendMenu(menu);
+	menu->updateParent(LLMenuGL::sMenuContainer);
 
+	gLoginMenuBarView->setRect(LLRect(menuBarRect.mLeft, menuBarRect.mTop,
+									  gViewerWindow->getRootView()->getRect().getWidth() - menuBarRect.mLeft,
+									  menuBarRect.mBottom));
+	
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
