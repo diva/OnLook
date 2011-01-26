@@ -3406,7 +3406,7 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		static const LLCachedControl<LLColor4>		ascent_custom_tag_color("AscentCustomTagColor", LLColor4(.5f,1.f,.25f,1.f));
 		static const LLCachedControl<std::string>	ascent_custom_tag_label("AscentCustomTagLabel","custom");
 		static const LLCachedControl<bool>			ascent_use_tag("AscentUseTag",true);
-		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","8873757c-092a-98fb-1afd-ecd347566fcd");
+		static const LLCachedControl<std::string>	ascent_report_client_uuid("AscentReportClientUUID","f25263b7-6167-4f34-a4ef-af65213b2e39");
 
 		if (ascent_use_custom_tag)
 		{
