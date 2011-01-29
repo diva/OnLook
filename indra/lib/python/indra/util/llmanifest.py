@@ -288,7 +288,8 @@ class LLManifest(object):
             return self.args.get('channel', None) == DEFAULT_CHANNEL
         elif self.viewer_branding_id()=="snowglobe":
             return self.args.get('channel', None) == DEFAULT_CHANNEL_SNOWGLOBE
-        raise ValueError, "Invalid branding id: " + self.viewer_branding_id()
+        else:
+            return true
 
     def construct(self):
         """ Meant to be overriden by LLManifest implementors with code that

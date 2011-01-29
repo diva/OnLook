@@ -42,6 +42,7 @@
 #include "llfloater.h"
 #include "lltabcontainervertical.h"
 
+class HippoPanelGrids;
 class LLPanelGeneral;
 class LLPanelInput;
 class LLPanelLCD;
@@ -64,6 +65,8 @@ class LLPreferenceCore
 {
 
 public:
+	enum { TAB_GRIDS = 11 };
+	
 	LLPreferenceCore(LLTabContainer* tab_container, LLButton * default_btn);
 	~LLPreferenceCore();
 
@@ -83,6 +86,7 @@ private:
 	LLTabContainer	*mTabContainer;
 	LLPanelGeneral	        *mGeneralPanel;
 	LLPanelSkins			*mSkinsPanel;
+	HippoPanelGrids			*mGridsPanel;
 	LLPanelInput			*mInputPanel;
 	LLPanelNetwork	        *mNetworkPanel;
 	LLPanelDisplay	        *mDisplayPanel;
@@ -115,6 +119,8 @@ public:
 
 	// refresh all the graphics preferences menus
 	static void refreshEnabledGraphics();
+	
+	static void switchTab(S32 i);
 
 protected:
 	LLPreferenceCore		*mPreferenceCore;

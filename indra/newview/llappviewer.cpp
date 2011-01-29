@@ -35,6 +35,9 @@
 #include "llappviewer.h"
 #include "llprimitive.h"
 
+#include "hippogridmanager.h"
+#include "hippolimits.h"
+
 #include "llversionviewer.h"
 #include "llfeaturemanager.h"
 #include "lluictrlfactory.h"
@@ -482,40 +485,6 @@ static void settings_modify()
 		gSavedSettings.setBOOL("VectorizeEnable", FALSE );
 		gSavedSettings.setU32("VectorizeProcessor", 0 );
 		gSavedSettings.setBOOL("VectorizeSkin", FALSE);
-	}
-}
-
-void LLAppViewer::initGridChoice()
-{
-	// Load	up the initial grid	choice from:
-	//	- hard coded defaults...
-	//	- command line settings...
-	//	- if dev build,	persisted settings...
-
-	// Set the "grid choice", this is specified	by command line.
-	std::string	grid_choice	= gSavedSettings.getString("CmdLineGridChoice");
-	LLViewerLogin* vl = LLViewerLogin::getInstance();
-	vl->setGridChoice(grid_choice);
-
-	// Load last server choice by default 
-	// ignored if the command line grid	choice has been	set
-	if(grid_choice.empty() && vl->getGridChoice() != GRID_INFO_OTHER)
-	{
-		S32	server = gSavedSettings.getS32("ServerChoice");
-		std::string custom_server = gSavedSettings.getString("CustomServer");
-		server = llclamp(server, 0,	(S32)GRID_INFO_COUNT - 1);
-		if(server == GRID_INFO_OTHER && !custom_server.empty())
-		{
-			vl->setGridChoice(custom_server);
-		}
-		else if(server != (S32)GRID_INFO_NONE && server != GRID_INFO_OTHER)
-		{
-			vl->setGridChoice((EGridInfo)server);
-		}
-		else
-		{
-			vl->setGridChoice(DEFAULT_GRID_CHOICE);
-		}
 	}
 }
 
@@ -1941,7 +1910,15 @@ bool LLAppViewer::initConfiguration()
         }
     }
 
-    initGridChoice();
+	if (!gHippoGridManager)
+	{
+		gHippoGridManager = new HippoGridManager();
+		gHippoGridManager->init();
+	}
+	if (!gHippoLimits)
+	{
+		gHippoLimits = new HippoLimits();
+	}
 
 	// If we have specified crash on startup, set the global so we'll trigger the crash at the right time
 	if(clp.hasOption("crashonstartup"))

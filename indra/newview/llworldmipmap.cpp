@@ -38,10 +38,9 @@
 #include "llviewerimagelist.h"
 #include "math.h"	// log()
 
-// <edit>
 #include "llworldmap.h"
 #include "llviewernetwork.h" //for isProductionGrid();
-// </edit>
+#include "hippogridmanager.h"
 
 // Turn this on to output tile stats in the standard output
 #define DEBUG_TILES_STAT 0
@@ -159,10 +158,10 @@ LLPointer<LLViewerImage> LLWorldMipmap::getObjectsTile(U32 grid_x, U32 grid_y, S
 		{
 			// Load it 
 			LLPointer<LLViewerImage> img;
-			// <edit>
-			//this is a hack for opensims.
-			if(LLViewerLogin::getInstance()->getGridChoice() < GRID_INFO_OTHER)
-				img = loadObjectsTile(grid_x, grid_y, level);
+
+			//hack for opensims.
+			if(gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_SECONDLIFE)
+			  img = loadObjectsTile(grid_x, grid_y, level);
 			else
 			{
 				LLSimInfo* info = LLWorldMap::getInstance()->simInfoFromHandle(handle);

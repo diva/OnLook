@@ -51,76 +51,12 @@ public:
 	LLSavedLoginEntry(const LLSD& entry_data);
 	/**
 	 * @brief	Constructs a history entry from individual fields.
-	 * @param	gridinfo	Grid as EGridInfo enumeration.
 	 * @param	firstname	Resident first name.
 	 * @param	lastname	Resident last name.
 	 * @param	password	Munged password of PASSWORD_HASH_LENGTH.
 	 */
-	LLSavedLoginEntry(const EGridInfo gridinfo, const std::string& firstname,
+	LLSavedLoginEntry(const std::string& firstname,
 					  const std::string& lastname, const std::string& password);
-	/**
-	 * @brief	Returns the display name of the grid ID associated with this entry.
-	 * @return	String containing grid name.
-	 */
-	const std::string getGridName() const;
-
-	/**
-	 * @brief	Gets the grid ID associated with this entry.
-	 * @return	EGridInfo enumeration corresponding to grid.
-	 */
-	const EGridInfo getGrid() const
-	{
-		return (mEntry.has("grid") ? static_cast<EGridInfo>(mEntry.get("grid").asInteger()) : GRID_INFO_OTHER);
-	}
-	/**
-	 * @brief	Sets the grid associated with the entry.
-	 */
-	void setGrid(EGridInfo value)
-	{
-		mEntry.insert("grid", LLSD(value));
-	}
-	/**
-	 * @brief	Gets the grid URI associated with the entry, if any.
-	 */
-	const LLURI getGridURI() const
-	{
-		return (getGrid() == GRID_INFO_OTHER && mEntry.has("griduri") ? mEntry.get("griduri").asURI() : LLURI());
-	}
-	/**
-	 * @brief	Sets the grid URI associated with the entry.
-	 */
-	void setGridURI(const LLURI& uri)
-	{
-		mEntry.insert("griduri", uri);
-	}
-	/**
-	 * @brief	Gets the login page URI associated with the entry, if any.
-	 */
-	const LLURI getLoginPageURI() const
-	{
-		return (getGrid() == GRID_INFO_OTHER && mEntry.has("loginpageuri") ? mEntry.get("loginpageuri").asURI() : LLURI());
-	}
-	/**
-	 * @brief	Sets the login page URI associated with the entry.
-	 */
-	void setLoginPageURI(const LLURI& uri)
-	{
-		mEntry.insert("loginpageuri", uri);
-	}
-	/**
-	 * @brief	Gets the helper URI associated with the entry, if any.
-	 */
-	const LLURI getHelperURI() const
-	{
-		return (getGrid() == GRID_INFO_OTHER && mEntry.has("helperuri") ? mEntry.get("helperuri").asURI() : LLURI());
-	}
-	/**
-	 * @brief	Sets the helper URI associated with the entry.
-	 */
-	void setHelperURI(const LLURI& uri)
-	{
-		mEntry.insert("helperuri", uri);
-	}
 	/**
 	 * @brief	Returns the first name associated with this login entry.
 	 * @return	First name as string.
@@ -210,12 +146,10 @@ public:
 	void addEntry(const LLSavedLoginEntry& entry);
 	/**
 	 * @brief	Deletes a login history entry by looking up its name and grid.
-	 * @param	grid	EGridInfo enumeration of the grid.
 	 * @param	firstname	First name to find and delete.
 	 * @param	lastname	Last name to find and delete.
-	 * @param	griduri		Full URI if grid is GRID_INFO_OTHER.
 	 */
-	void deleteEntry(const EGridInfo grid, const std::string& firstname, const std::string& lastname, const std::string& griduri);
+	void deleteEntry(const std::string& firstname, const std::string& lastname);
 	/**
 	 * @brief	Access internal vector of login entries from the history.
 	 * @return	Const reference to internal login history storage.

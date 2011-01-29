@@ -81,7 +81,9 @@ set(viewer_SOURCE_FILES
 	hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
 	hippogridmanager.cpp
+	hippolimits.cpp
 	hipporestrequest.cpp
+	hippopanelgrids.cpp
     jcfloaterareasearch.cpp
 	chatbar_as_cmdline.cpp
 	qtoolalign.cpp
@@ -546,7 +548,9 @@ set(viewer_HEADER_FILES
 	hbfloatergrouptitles.h
     hgfloatertexteditor.h
 	hippogridmanager.h
+	hippolimits.h
 	hipporestrequest.h
+	hippopanelgrids.h
     jcfloaterareasearch.h
 	chatbar_as_cmdline.h
 	qtoolalign.h

@@ -50,7 +50,7 @@ class LLPanelLogin:
 {
 	LOG_CLASS(LLPanelLogin);
 public:
-	LLPanelLogin(const LLRect &rect, BOOL show_server, 
+	LLPanelLogin(const LLRect &rect,
 				void (*callback)(S32 option, void* user_data),
 				void *callback_data);
 	~LLPanelLogin();
@@ -59,7 +59,7 @@ public:
 	virtual void draw();
 	virtual void setFocus( BOOL b );
 
-	static void show(const LLRect &rect, BOOL show_server, 
+	static void show(const LLRect &rect, 
 		void (*callback)(S32 option, void* user_data), 
 		void* callback_data);
 
@@ -81,20 +81,23 @@ public:
 	 */
 	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = true);
 
-	static void addServer(const std::string& server, S32 domain_name);
+	//static void addServer(const std::string& server, S32 domain_name);
 	static void refreshLocation( bool force_visible );
 
 	static void getFields(std::string *firstname, std::string *lastname,
 						  std::string *password);
 
-	static BOOL isGridComboDirty();
+	//static BOOL isGridComboDirty();
 	static void getLocation(std::string &location);
 
 	static void close();
 
 	void setSiteIsAlive( bool alive );
 
+	void updateGridCombo();
+
 	static void loadLoginPage();	
+	static void refreshLoginPage();
 	static void giveFocus();
 	static void setAlwaysRefresh(bool refresh); 
 	static void mungePassword(LLUICtrl* caller, void* user_data);
@@ -106,26 +109,19 @@ private:
 	static void onClickConnect(void*);
 	static void onClickNewAccount(void*);
 	static bool newAccountAlertCallback(const LLSD& notification, const LLSD& response);
+	static void onClickGrids(void*);
+	static void onSelectGrid(LLUICtrl *ctrl, void*);
 	static void onClickQuit(void*);
 	static void onClickVersion(void*);
 	static void onClickForgotPassword(void*);
 	static void onPassKey(LLLineEditor* caller, void* user_data);
-	static void onSelectServer(LLUICtrl*, void*);
-	static void onServerComboLostFocus(LLFocusableElement*, void*);
+	//static void onSelectServer(LLUICtrl*, void*);
+	//static void onServerComboLostFocus(LLFocusableElement*, void*);
 	static void onLastNameEditLostFocus(LLUICtrl* ctrl, void* data);
 	static void onSelectLoginEntry(LLUICtrl*, void*);
 	static void onLoginComboLostFocus(LLFocusableElement* fe, void*);
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
 	static void clearPassword();
-	// <edit>
-	void fillMAC();
-	void fillID0();
-	void fillVer();
-	static void onCheckMAC(LLUICtrl* ctrl, void* userData);
-	static void onCheckID0(LLUICtrl* ctrl, void* userData);
-	static void onClickMACRandom(void* userData);
-	static void onClickID0Random(void* userData);
-	// </edit>
 
 public:
 	/**
@@ -148,7 +144,7 @@ public:
 	 */
 	static bool getRememberLogin();
 
-	static void selectFirstElement(void);
+	//static void selectFirstElement(void);
 
 private:
 	LLPointer<LLUIImage> mLogoImage;
@@ -162,7 +158,6 @@ private:
 	static LLPanelLogin* sInstance;
 	static BOOL		sCapslockDidNotification;
 	BOOL			mHtmlAvailable;
-	BOOL			mShowServerCombo;
 
 	LLSavedLogins	mLoginHistoryData;
 };

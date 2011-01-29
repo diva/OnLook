@@ -37,9 +37,9 @@
 #include "llworldmap.h"
 #include "llagent.h"
 #include "llfloaterworldmap.h"
-// <edit>
+
 #include "llviewernetwork.h" //for isInProductionGrid()
-// </edit>
+#include "hippogridmanager.h"
 
 const U32 LAYER_FLAG = 2;
 
@@ -162,9 +162,8 @@ void LLWorldMapMessage::processMapBlockReply(LLMessageSystem* msg, void**)
 	msg->getU32Fast(_PREHASH_AgentData, _PREHASH_Flags, agent_flags);
 
 	// There's only one flag that we ever use here
-	if (agent_flags != LAYER_FLAG
-		//<edit>
-		&& LLViewerLogin::getInstance()->getGridChoice() < GRID_INFO_OTHER)
+	if (agent_flags != LAYER_FLAG 
+		&& gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_SECONDLIFE)
 	{
 		llwarns << "Invalid map image type returned! layer = " << agent_flags << llendl;
 		return;

@@ -62,6 +62,7 @@
 #include "llpanelmsgs.h"
 #include "llpanelweb.h"
 #include "llpanelskins.h"
+#include "hippopanelgrids.h"
 #include "llprefschat.h"
 #include "llprefsvoice.h"
 #include "llprefsim.h"
@@ -78,6 +79,7 @@
 #include "llkeyboard.h"
 #include "llscrollcontainer.h"
 #include "llfloaterhardwaresettings.h"
+#include "hippopanelgrids.h"
 
 const S32 PREF_BORDER = 4;
 const S32 PREF_PAD = 5;
@@ -134,6 +136,7 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mAudioPanel(NULL),
 	mMsgPanel(NULL),
 	mSkinsPanel(NULL),
+	mGridsPanel(NULL),
 	mLCDPanel(NULL),
 	mPrefsAscentSys(NULL),
 	mPrefsAscentVan(NULL)
@@ -195,6 +198,10 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mSkinsPanel = new LLPanelSkins();
 	mTabContainer->addTabPanel(mSkinsPanel, mSkinsPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
 	mSkinsPanel->setDefaultBtn(default_btn);
+
+	mGridsPanel = HippoPanelGrids::create();
+	mTabContainer->addTabPanel(mGridsPanel, mGridsPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mGridsPanel->setDefaultBtn(default_btn);
 
 	mPrefsAscentSys = new LLPrefsAscentSys();
 	mTabContainer->addTabPanel(mPrefsAscentSys->getPanel(), mPrefsAscentSys->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
@@ -263,6 +270,11 @@ LLPreferenceCore::~LLPreferenceCore()
 		delete mSkinsPanel;
 		mSkinsPanel = NULL;
 	}
+	if (mGridsPanel)
+	{
+		delete mGridsPanel;
+		mGridsPanel = NULL;
+	}
 	if (mPrefsAscentSys)
 	{
 		delete mPrefsAscentSys;
@@ -288,6 +300,7 @@ void LLPreferenceCore::apply()
 	mPrefsIM->apply();
 	mMsgPanel->apply();
 	mSkinsPanel->apply();
+	mGridsPanel->apply();
 	mPrefsAscentSys->apply();
 	mPrefsAscentVan->apply();
 
@@ -318,6 +331,7 @@ void LLPreferenceCore::cancel()
 	mPrefsIM->cancel();
 	mMsgPanel->cancel();
 	mSkinsPanel->cancel();
+	mGridsPanel->cancel();
 	mPrefsAscentSys->cancel();
 	mPrefsAscentVan->cancel();
 
@@ -538,4 +552,10 @@ void LLFloaterPreference::updateUserInfo(const std::string& visibility, bool im_
 void LLFloaterPreference::refreshEnabledGraphics()
 {
 	sInstance->mPreferenceCore->refreshEnabledGraphics();
+}
+
+//static
+void LLFloaterPreference::switchTab(S32 i)
+{
+	sInstance->mPreferenceCore->getTabContainer()->selectTab(i);
 }

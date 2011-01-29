@@ -53,17 +53,9 @@ LLSavedLoginEntry::LLSavedLoginEntry(const LLSD& entry_data)
 	{
 		throw std::invalid_argument("Missing lastname key.");
 	}
-	if (!entry_data.has("grid"))
-	{
-		throw std::invalid_argument("Missing grid key.");
-	}
 	if (!entry_data.has("password"))
 	{
 		throw std::invalid_argument("Missing password key.");
-	}
-	if (!entry_data.get("grid").isInteger())
-	{
-		throw std::invalid_argument("grid key is not integer.");
 	}
 	if (!entry_data.get("firstname").isString())
 	{
@@ -80,32 +72,14 @@ LLSavedLoginEntry::LLSavedLoginEntry(const LLSD& entry_data)
 	mEntry = entry_data;
 }
 
-LLSavedLoginEntry::LLSavedLoginEntry(const EGridInfo grid,
-									 const std::string& firstname,
+LLSavedLoginEntry::LLSavedLoginEntry(const std::string& firstname,
 									 const std::string& lastname,
 									 const std::string& password)
 {
 	mEntry.clear();
-	mEntry.insert("grid", LLSD(grid));
 	mEntry.insert("firstname", LLSD(firstname));
 	mEntry.insert("lastname", LLSD(lastname));
 	setPassword(password);
-}
-
-const std::string LLSavedLoginEntry::getGridName() const
-{
-	std::string gridname = "";
-	if (mEntry.has("griduri") && mEntry.get("griduri").isURI())
-	{
-		gridname = mEntry.get("griduri").asURI().hostName();
-		LLStringUtil::toLower(gridname);
-	}
-	else if (mEntry.has("grid"))
-	{
-		LLViewerLogin* login_data = LLViewerLogin::getInstance();
-		gridname = login_data->getKnownGridLabel(static_cast<EGridInfo>(mEntry.get("grid").asInteger()));
-	}
-	return gridname;
 }
 
 LLSD LLSavedLoginEntry::asLLSD() const
@@ -116,7 +90,7 @@ LLSD LLSavedLoginEntry::asLLSD() const
 const std::string LLSavedLoginEntry::getDisplayString() const
 {
 	std::ostringstream etitle;
-	etitle << getFirstName() << " " << getLastName() << " (" <<	getGridName() << ")";
+	etitle << getFirstName() << " " << getLastName();
 	return etitle.str();
 }
 
@@ -202,18 +176,14 @@ void LLSavedLogins::addEntry(const LLSavedLoginEntry& entry)
 	mEntries.push_back(entry);
 }
 
-void LLSavedLogins::deleteEntry(const EGridInfo grid,
-				const std::string& firstname,
-				const std::string& lastname,
-				const std::string& griduri)
+void LLSavedLogins::deleteEntry(const std::string& firstname,
+				const std::string& lastname)
 {
 	for (LLSavedLoginsList::iterator i = mEntries.begin();
 		 i != mEntries.end();)
 	{
 		if (i->getFirstName() == firstname &&
-			i->getGrid() == grid &&
-			i->getLastName() == lastname &&
-			(grid != GRID_INFO_OTHER || i->getGridURI().asString() == griduri))
+			i->getLastName() == lastname)
 		{
 			i = mEntries.erase(i);
 		}

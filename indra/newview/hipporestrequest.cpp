@@ -1,5 +1,3 @@
-
-
 #include "llviewerprecompiledheaders.h"
 
 #include "hipporestrequest.h"
@@ -22,7 +20,7 @@ static size_t curlWrite(void *ptr, size_t size, size_t nmemb, void *userData)
 }
 
 
-//static
+// static
 int HippoRestRequest::getBlocking(const std::string &url, std::string *result)
 {
 	llinfos << "Requesting: " << url << llendl;
