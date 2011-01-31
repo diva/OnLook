@@ -6461,8 +6461,7 @@ void LLAgent::setTeleportState(ETeleportState state)
 	{
 		mbTeleportKeepsLookAt = false;
 	}
-	// OGPX : Only compute a 'slurl' in non-OGP mode. In OGP, set it to regionuri in floaterteleport.
-	if ((mTeleportState == TELEPORT_MOVING)&& (!gSavedSettings.getBOOL("OpenGridProtocol")))
+	if ((mTeleportState == TELEPORT_MOVING))
 	{
 		// We're outa here. Save "back" slurl.
 		mTeleportSourceSLURL = getSLURL();

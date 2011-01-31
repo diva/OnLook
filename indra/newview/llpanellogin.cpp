@@ -639,16 +639,6 @@ void LLPanelLogin::setFields(const std::string& firstname,
 	llassert_always(firstname.find(' ') == std::string::npos);
 	login_combo->setLabel(firstname);
 
-
-	// OGPX : Are we guaranteed that LLAppViewer::instance exists already?
-	if (gSavedSettings.getBOOL("OpenGridProtocol"))
-	{
-		LLComboBox* regioncombo = sInstance->getChild<LLComboBox>("regionuri_edit");
-		
-		// select which is displayed if we have a current URL.
-		regioncombo->setSelectedByValue(LLSD(gSavedSettings.getString("CmdLineRegionURI")),TRUE);
-	}
-
 	// Max "actual" password length is 16 characters.
 	// Hex digests are always 32 characters.
 	if (password.length() == 32)
@@ -729,22 +719,7 @@ void LLPanelLogin::getFields(std::string *firstname,
 
 	*lastname = sInstance->childGetText("last_name_edit");
 	LLStringUtil::trim(*lastname);
-    // OGPX : Nice up the uri string and save it.
-	if (gSavedSettings.getBOOL("OpenGridProtocol"))
-	{
-		std::string regionuri = sInstance->childGetValue("regionuri_edit").asString();
-		LLStringUtil::trim(regionuri);
-		if (regionuri.find("://",0) == std::string::npos)
-		{
-			// if there wasn't a URI designation, assume http
-			regionuri = "http://"+regionuri;
-			llinfos << "Region URI was prepended, now " << regionuri << llendl;
-		}
-		gSavedSettings.setString("CmdLineRegionURI",regionuri);
-		// add new uri to url history (don't need to add to combo box since it is recreated each login)
-		LLURLHistory::appendToURLCollection("regionuri", regionuri);
-	}
-
+	
 	*password = sInstance->mMungedPassword;
 }
 
@@ -797,23 +772,9 @@ void LLPanelLogin::refreshLocation( bool force_visible )
 	#endif // RLV_EXTENSION_STARTLOCATION
 // [/RLVa:KB]
 
-	// OGPX : if --ogp on the command line (or --set OpenGridProtocol TRUE), then
-	// the start location is hidden, and regionuri shows in its place. 
-	// "Home", and "Last" have no meaning in OGPX, so it's OK to not have the start_location combo
-	// box unavailable on the menu panel. 
-	if (gSavedSettings.getBOOL("OpenGridProtocol"))
-	{
-		sInstance->childSetVisible("start_location_combo", FALSE); // hide legacy box
-		sInstance->childSetVisible("start_location_text", TRUE);   // when OGPX always show location
-		sInstance->childSetVisible("regionuri_edit",TRUE);         // show regionuri box if OGPX
-
-	}
-	else
-	{
-		sInstance->childSetVisible("start_location_combo", show_start); // maintain ShowStartLocation if legacy
-		sInstance->childSetVisible("start_location_text", show_start);
-		sInstance->childSetVisible("regionuri_edit",FALSE); // Do Not show regionuri box if legacy
-	}
+	sInstance->childSetVisible("start_location_combo", show_start); // maintain ShowStartLocation if legacy
+	sInstance->childSetVisible("start_location_text", show_start);
+	sInstance->childSetVisible("regionuri_edit",FALSE); // Do Not show regionuri box if legacy
 
 #endif
 }

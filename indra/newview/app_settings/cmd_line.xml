@@ -296,14 +296,6 @@
       <string>CmdLineAgentURI</string>
     </map>
 
-    <key>ogp</key>
-    <map>
-      <key>desc</key>
-      <string>enable OGPX protocol</string>            
-      <key>map-to</key>
-      <string>OpenGridProtocol</string>
-    </map>
-
     <key>ignorepixeldepth</key>
     <map>
       <key>desc</key>

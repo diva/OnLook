@@ -1698,12 +1698,7 @@ void LLInventoryModel::bulkFetch(std::string url)
 			if (body_lib["folders"].size())
 			{
 				std::string url_lib;
-				if (!gSavedSettings.getBOOL("OpenGridProtocol") )
-				{
-					url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents");
-				}else{
-					url_lib = gAgent.getCapability("agent/inventory_library");
-				}
+				url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents");
 				LL_DEBUGS("Inventory") << " fetch descendents lib post: " << ll_pretty_print_sd(body_lib) << LL_ENDL; // OGPX
 				LLHTTPClient::post(url_lib, body_lib, new fetchDescendentsResponder(body_lib),300.0);
 			}

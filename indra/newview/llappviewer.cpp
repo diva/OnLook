@@ -3805,26 +3805,12 @@ void LLAppViewer::sendLogoutRequest()
 	if(!mLogoutRequestSent)
 	{
 
-		if (!gSavedSettings.getBOOL("OpenGridProtocol")) // OGPX : if not OGP mode, then tell sim bye
-		{
 		LLMessageSystem* msg = gMessageSystem;
 		msg->newMessageFast(_PREHASH_LogoutRequest);
 		msg->nextBlockFast(_PREHASH_AgentData);
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		gAgent.sendReliableMessage();
-		}
-		else 
-		{
-			// OGPX : Send log-off to Agent Domain instead of sim. This is done via HTTP using the
-			// rez_avatar/place cap. Also, note that sending a null region is how a 
-			// "logoff" is indicated.
-			LLSD args;
-			args["public_region_seed_capability"] = "";
-			std::string cap = LLAppViewer::instance()->getPlaceAvatarCap();
-			LLHTTPClient::post(cap, args, new LLLogoutResponder());
-		}
-
 
 		gLogoutTimer.reset();
 		gLogoutMaxTime = LOGOUT_REQUEST_TIME;

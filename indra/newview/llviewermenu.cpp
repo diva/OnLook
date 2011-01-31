@@ -1003,15 +1003,6 @@ void init_client_menu(LLMenuGL* menu)
 	init_debug_world_menu(sub_menu);
 	menu->appendMenu(sub_menu);
 
-	// only include region teleport UI if we are using agent domain
-	if (gSavedSettings.getBOOL("OpenGridProtocol"))
-	{
-		sub_menu = new LLMenuGL("Interop");
-		sub_menu->append(new LLMenuItemCallGL("Teleport Region...", 
-			&LLFloaterTeleport::show, NULL, NULL));
-		menu->appendMenu(sub_menu);
-	}
-
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Modified: RLVa-0.2.1b | OK
 	#ifdef RLV_ADVANCED_MENU
 		if (rlv_handler_t::isEnabled())
