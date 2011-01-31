@@ -229,8 +229,6 @@ std::string gInitialOutfitGender;
 std::string SCREEN_HOME_FILENAME = "screen_home.bmp";
 std::string SCREEN_LAST_FILENAME = "screen_last.bmp";
 
-S32  gMaxAgentGroups = DEFAULT_MAX_AGENT_GROUPS;
-
 //
 // Imported globals
 //
@@ -1181,6 +1179,8 @@ bool idle_startup()
 		requested_options.push_back("buddy-list");
 		requested_options.push_back("ui-config");
 #endif
+		requested_options.push_back("max_groups");				
+		requested_options.push_back("max-agent-groups");		
 		requested_options.push_back("map-server-url");
 		requested_options.push_back("tutorial_setting");
 		requested_options.push_back("login-flags");
