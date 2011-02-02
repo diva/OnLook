@@ -2669,8 +2669,9 @@ bool idle_startup()
 		if (!gAgent.isFirstLogin())
 		{
 			bool url_ok = LLURLSimString::sInstance.parse();
-			if (!url_ok && ((agent_start_location == "last" && gSavedSettings.getBOOL("LoginLastLocation")) ||
-						(agent_start_location == "home" && !gSavedSettings.getBOOL("LoginLastLocation"))))
+			if (!((agent_start_location == "url" && url_ok) ||
+                  (!url_ok && ((agent_start_location == "last" && gSavedSettings.getBOOL("LoginLastLocation")) ||
+							   (agent_start_location == "home" && !gSavedSettings.getBOOL("LoginLastLocation"))))))
 			{
 				// The reason we show the alert is because we want to
 				// reduce confusion for when you log in and your provided

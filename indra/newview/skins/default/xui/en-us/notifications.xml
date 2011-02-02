@@ -4270,7 +4270,14 @@ Visit the Second Life Support Web site?
      notext="Cancel"
      yestext="Go"/>
   </notification>
-
+  
+  <notification
+   icon="alertmodal.tga"
+   name="NoSupportUrl"
+   type="alertmodal">
+This grid has no link for support.
+  </notification>
+  
   <notification
    icon="alertmodal.tga"
    name="ConfirmQuit"
@@ -5111,6 +5118,51 @@ Would you like to visit the Second Life website to set this up?
    name="MissingString"
    type="alertmodal">
 The string [STRING_NAME] is missing from strings.xml
+  </notification>
+  
+  <notification
+   icon="alertmodal.tga"
+   name="GridsNoNick"
+   type="alertmodal">
+Cannot save new grid information.
+You need to specify a unique grid nickname.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GridsNoLoginUri"
+   type="alertmodal">
+Cannot save new grid '[NAME]'.
+You need to specify a login URI.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GridExists"
+   type="alertmodal">
+Cannot save new grid '[NAME]'.
+A grid with the same nickname already exists.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GridInfoNoLoginUri"
+   type="alertmodal">
+A login URI is required to retrieve the grid info.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="GridInfoError"
+   type="alertmodal">
+Cannot retrieve grid info from server.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="HelpRenderCompat"
+   type="alertmodal">
+Builds with extended hollow or extended hole size do not render properly on other viewers. Please keep this option checked, if you want your builds looking properly in other viewers.
   </notification>
 
   <notification
