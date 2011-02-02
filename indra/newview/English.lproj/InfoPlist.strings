@@ -1,6 +1,6 @@
 /* Localized versions of Info.plist keys */
 
-CFBundleName = "SingularityViewer";
+CFBundleName = "Singularity";
 
 CFBundleShortVersionString = "Singularity Viewer 1.5.0.0";
 CFBundleGetInfoString = "Singularity Viewer 1.5.0.0, Copyright 2010 Siana Gearz";
