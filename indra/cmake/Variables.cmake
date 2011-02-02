@@ -89,9 +89,9 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
   endif (NOT CMAKE_OSX_DEPLOYMENT_TARGET)
 
-  # GCC 4.2 is incompatible with the MacOSX 10.5 SDK
+  # Use GCC 4.2
   if (${CMAKE_OSX_SYSROOT} MATCHES "10.5")
-    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "4.0")
+    set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "4.2")
   endif (${CMAKE_OSX_SYSROOT} MATCHES "10.5")
 
   # NOTE: To attempt an i386/PPC Universal build, add this on the configure line:
