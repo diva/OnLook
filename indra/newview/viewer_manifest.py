@@ -440,6 +440,10 @@ class DarwinManifest(ViewerManifest):
 
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
+            self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
+            self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
+            self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
+            self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
 
             # most everything goes in the Resources directory
             if self.prefix(src="", dst="Resources"):
@@ -453,8 +457,8 @@ class DarwinManifest(ViewerManifest):
                 self.path("featuretable_mac.txt")
                 self.path("SecondLife.nib")
 
-				# SG:TODO
-                self.path("singularity.icns")
+   			  # SG:TODO
+                self.path("../newview/res/singularity.icns", dst="singularity.icns")
 
                 # Translations
                 self.path("English.lproj")
@@ -480,6 +484,14 @@ class DarwinManifest(ViewerManifest):
                 self.path("vivox-runtime/universal-darwin/libortp.dylib", "libortp.dylib")
                 self.path("vivox-runtime/universal-darwin/libvivoxsdk.dylib", "libvivoxsdk.dylib")
                 self.path("vivox-runtime/universal-darwin/SLVoice", "SLVoice")
+                
+                libfile = "lib%s.dylib"
+                libdir = "../../libraries/universal-darwin/lib_release"
+
+                for libfile in ("libapr-1.0.3.7.dylib",
+                                "libaprutil-1.0.3.8.dylib",
+                                "libexpat.0.5.0.dylib"):
+                    self.path(os.path.join(libdir, libfile), libfile)
 
                 #libfmodwrapper.dylib
                 self.path(self.args['configuration'] + "/libfmodwrapper.dylib", "libfmodwrapper.dylib")
@@ -490,6 +502,22 @@ class DarwinManifest(ViewerManifest):
 
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
+                
+                # dependencies on shared libs
+                mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
+                slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
+                for libfile in ("libapr-1.0.3.7.dylib",
+                                "libaprutil-1.0.3.8.dylib",
+                                "libexpat.0.5.0.dylib"):
+                    target_lib = os.path.join('../../..', libfile)
+                    self.run_command("ln -sf %(target)r %(link)r" %
+                                     {'target': target_lib,
+                                      'link' : os.path.join(mac_crash_logger_res_path, libfile)}
+                                     )
+                    self.run_command("ln -sf %(target)r %(link)r" %
+                                     {'target': target_lib,
+                                      'link' : os.path.join(slplugin_res_path, libfile)}
+                                     )
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
