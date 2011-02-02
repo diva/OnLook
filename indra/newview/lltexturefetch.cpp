@@ -944,25 +944,16 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				return false ; //wait.
 			}
 			
-			mFetcher->removeFromNetworkQueue(this, false);			
-			
 			S32 cur_size = 0;
 			if (mFormattedImage.notNull())
 			{
 				cur_size = mFormattedImage->getDataSize(); // amount of data we already have
 				if (mFormattedImage->getDiscardLevel() == 0)
 				{
-					if(cur_size > 0)
-					{
-						// We already have all the data, just decode it
-						mLoadedDiscard = mFormattedImage->getDiscardLevel();
-						mState = DECODE_IMAGE;
-						return false;
-					}
-					else
-					{
-						return true; //abort
-					}
+					// We already have all the data, just decode it
+					mLoadedDiscard = mFormattedImage->getDiscardLevel();
+					mState = DECODE_IMAGE;
+					return false;
 				}
 			}
 			mRequestedSize = mDesiredSize;
@@ -1260,7 +1251,15 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		else
 		{
 			setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
-			return true;
+
+			if(mDecodedDiscard<=0)
+			{	
+				return true;
+			}
+			else
+			{
+				return false;
+			}
 		}
 	}
 	
@@ -1427,36 +1426,62 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 	if (success)
 	{
 		// get length of stream:
-		data_size = buffer->countAfter(channels.in(), NULL);		
-	
+		data_size = buffer->countAfter(channels.in(), NULL);
+
 		LL_DEBUGS("Texture") << "HTTP RECEIVED: " << mID.asString() << " Bytes: " << data_size << LL_ENDL;
 		if (data_size > 0)
 		{
-			// *TODO: set the formatted image data here directly to avoid the copy
-			mBuffer = new U8[data_size];
-			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
-			mBufferSize += data_size;
-			if (data_size < mRequestedSize && mRequestedDiscard == 0)
+			bool clean_data = false;
+			bool done = false;
+			if (!partial)
 			{
-				mHaveAllData = TRUE;
+				// we got the whole image in one go
+				done = true;
+				clean_data = true;
+			}
+			else if (data_size < mRequestedSize)
+			{
+				// we have the whole image
+				done = true;
+			}
+			else if (data_size == mRequestedSize)
+			{
+				if (mRequestedDiscard <= 0)
+			{
+				done = true;
+			}
+			else
+			{
+				// this is the normal case where we get the data we requested,
+				// but still need to request more data.
+			}
 			}
 			else if (data_size > mRequestedSize)
 			{
 				// *TODO: This shouldn't be happening any more
 				llwarns << "data_size = " << data_size << " > requested: " << mRequestedSize << llendl;
-				mHaveAllData = TRUE;
+				done = true;
+				clean_data = true;
 				llassert_always(mDecodeHandle == 0);
-				mFormattedImage = NULL; // discard any previous data we had
-				mBufferSize = data_size;
 			}
+
+			if (clean_data)
+			{
+				resetFormattedData(); // discard any previous data we had
+				llassert(mBufferSize == 0);
+			}
+			if (done)
+			{
+				mHaveAllData = TRUE;
+				mRequestedDiscard = 0;
+			}
+
+			// *TODO: set the formatted image data here directly to avoid the copy
+			mBuffer = new U8[data_size];
+			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
+			mBufferSize += data_size;
+			mRequestedSize = data_size;
 		}
-		else
-		{
-			// We requested data but received none (and no error),
-			// so presumably we have all of it
-			mHaveAllData = TRUE;
-		}
-		mRequestedSize = data_size;
 	}
 	else
 	{
