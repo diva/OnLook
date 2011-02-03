@@ -289,7 +289,7 @@ class LLManifest(object):
         elif self.viewer_branding_id()=="snowglobe":
             return self.args.get('channel', None) == DEFAULT_CHANNEL_SNOWGLOBE
         else:
-            return true
+            return True
 
     def construct(self):
         """ Meant to be overriden by LLManifest implementors with code that
