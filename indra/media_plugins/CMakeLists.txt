@@ -8,7 +8,7 @@ if (LINUX)
     add_subdirectory(gstreamer010)
 endif (LINUX)
 
-if (DARWIN or WINDOWS)
+if (DARWIN OR WINDOWS)
     add_subdirectory(quicktime)
 endif (DARWIN OR WINDOWS)
 
