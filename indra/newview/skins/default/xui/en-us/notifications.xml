@@ -6268,7 +6268,6 @@ Grant this request?
     [MESSAGE]
     <form name="form">
       <input name="message">
-        [DEFAULT]
       </input>
       <button
        index="-1"
