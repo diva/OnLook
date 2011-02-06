@@ -76,32 +76,32 @@
 	<combo_box max_chars="20" allow_text_entry="false" name="platform"
 		height="18" width="200" left="120" bottom_delta="-4"
 		follows="left|top" mouse_opaque="true" />
-	<!-- Grid Nickname -->
-	<text type="string" length="1" enabled="true" name="gridnick_label" 
-		height="10" width="100" left="12" bottom_delta="-22"
-		h_pad="0" v_pad="0" halign="left" 
-		font="SansSerifSmall" 
-		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
-	    drop_shadow_visible="true" border_drop_shadow_visible="false">
-		Grid Nickname:
-	</text>
-	<line_editor max_length="25" enabled="false" name="gridnick" 
-		handle_edit_keys_directly="true" 
-		height="18" width="175" left="120" bottom_delta="-4"
-		halign="right"
-		font="SansSerifSmall"
-		follows="left|top" border_visible="false" mouse_opaque="false"
-		drop_shadow_visible="true" border_drop_shadow_visible="false" />
 	<!-- Grid Name -->
 	<text type="string" length="1" enabled="true" name="gridname_label" 
 		height="10" width="100" left="12" bottom_delta="-20"
 		h_pad="0" v_pad="0" halign="left" 
 		font="SansSerifSmall" 
 		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
-	    drop_shadow_visible="true" border_drop_shadow_visible="false">
+		drop_shadow_visible="true" border_drop_shadow_visible="false">
 		Grid Name:
 	</text>
 	<line_editor max_length="254" enabled="true" name="gridname" 
+		handle_edit_keys_directly="true" 
+		height="18" left="120" right="-12" bottom_delta="-4"
+		halign="right"
+		font="SansSerifSmall"
+		follows="left|top|right" border_visible="false" mouse_opaque="false"
+		drop_shadow_visible="true" border_drop_shadow_visible="false" />
+	<!-- Grid Splash Page -->
+	<text type="string" length="1" enabled="true" name="loginpage_label" 
+		height="10" width="100" left="12" bottom_delta="-22"
+		h_pad="0" v_pad="0" halign="left" 
+		font="SansSerifSmall" 
+		follows="left|top" bg_visible="false" border_visible="false" mouse_opaque="true"
+		drop_shadow_visible="true" border_drop_shadow_visible="false">
+		Splash Page:
+	</text>
+	<line_editor max_length="254" enabled="true" name="loginpage" 
 		handle_edit_keys_directly="true" 
 		height="18" left="120" right="-12" bottom_delta="-4"
 		halign="right"
@@ -189,7 +189,6 @@
 		follows="left|top|right" border_visible="false" mouse_opaque="false"
 		drop_shadow_visible="true" border_drop_shadow_visible="false" />
     <!-- Search URL -->
-	<!--
     <text type="string" length="1" enabled="true" name="search_label"
 		height="10" width="100" left="12" bottom_delta="-20"
 		h_pad="0" v_pad="0" halign="left"
@@ -205,7 +204,6 @@
 		font="SansSerifSmall"
 		follows="left|top|right" border_visible="false" mouse_opaque="false"
 		drop_shadow_visible="true" border_drop_shadow_visible="false" />
-	-->
     <!-- Rendering Compatibility -->
 	<check_box enabled="true" radio_style="false" 
 		label="Rendering Compatibility" name="render_compat"

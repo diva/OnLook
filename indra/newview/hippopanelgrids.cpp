@@ -128,7 +128,7 @@ BOOL HippoPanelGridsImpl::postBuild()
 	requires<LLLineEditor>("support");
 	requires<LLLineEditor>("register");
 	requires<LLLineEditor>("password");
-	//requires<LLLineEditor>("search");
+	requires<LLLineEditor>("search");
 	requires<LLButton>("btn_delete");
 	requires<LLButton>("btn_add");
 	requires<LLButton>("btn_copy");
@@ -204,14 +204,14 @@ void HippoPanelGridsImpl::refresh()
 		bool enablePlatform = (LLStartUp::getStartupState() < STATE_LOGIN_CLEANUP) ||
 			(mCurGrid != gHippoGridManager->getConnectedGrid()->getGridNick());
 		childSetEnabled("platform", enablePlatform);
-		//childSetEnabled("search", false);
-		//childSetText("search", LLStringExplicit(""));
+		childSetEnabled("search", false);
+		childSetText("search", LLStringExplicit(""));
 		childSetEnabled("render_compat", false);
 		childSetValue("render_compat", false);
 	} else {
 		childSetEnabled("platform", true);
-		//childSetEnabled("search", true);
-		//childSetText("search", gridInfo->getSearchUrl());
+		childSetEnabled("search", true);
+		childSetText("search", gHippoGridManager->getConnectedGrid()->getSearchUrl());
 		childSetEnabled("render_compat", true);
 	}
 }
@@ -357,7 +357,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 	gridInfo->setSupportUrl(childGetValue("support"));
 	gridInfo->setRegisterUrl(childGetValue("register"));
 	gridInfo->setPasswordUrl(childGetValue("password"));
-	//gridInfo->setSearchUrl(childGetValue("search"));
+	gridInfo->setSearchUrl(childGetValue("search"));
 	gridInfo->setRenderCompat(childGetValue("render_compat"));
 	
 	refresh();
@@ -413,7 +413,7 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 		if (grid->getSupportUrl() != "") childSetText("support", grid->getSupportUrl());
 		if (grid->getRegisterUrl() != "") childSetText("register", grid->getRegisterUrl());
 		if (grid->getPasswordUrl() != "") childSetText("password", grid->getPasswordUrl());
-		//if (grid->getSearchUrl() != "") childSetText("search", grid->getSearchUrl());
+		if (grid->getSearchUrl() != "") childSetText("search", grid->getSearchUrl());
 	} else {
 		LLNotifications::instance().add("GridInfoError");
 	}

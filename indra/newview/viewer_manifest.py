@@ -793,6 +793,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libalut.so")
             self.path("libopenal.so", "libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
+            self.path("libtcmalloc_minimal.so.0.0.0")
             self.end_prefix("lib")
 
 
