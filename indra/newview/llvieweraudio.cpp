@@ -248,10 +248,10 @@ void audio_update_wind(bool force_update)
 		// outside the fade-in.
 		static const LLCachedControl<bool> mute_audio("MuteAudio",false);
 		static const LLCachedControl<bool> mute_ambient("MuteAmbient",false);
-		static const LLCachedControl<F32> audio_level_master("AudioLevelMaster",1);
-		static const LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1);
-		F32 master_volume  = mute_audio ? 0.f : mute_ambient;
-		F32 ambient_volume = mute_ambient ? 0.f : audio_level_ambient;
+		static const LLCachedControl<F32> audio_level_master("AudioLevelMaster", 1.0f);
+		static const LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1.0f);
+		F32 master_volume  = mute_audio ? 0.f : (F32)audio_level_master;
+		F32 ambient_volume = mute_ambient ? 0.f : (F32)audio_level_ambient;
 
 		F32 wind_volume = master_volume * ambient_volume;
 		gAudiop->mMaxWindGain = wind_volume;
