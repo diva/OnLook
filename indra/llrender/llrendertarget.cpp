@@ -386,8 +386,6 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 	}
 	else
 	{
-#if !LL_DARWIN
-
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	
 		if (mSampleBuffer)
@@ -427,7 +425,6 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 				}
 			}
 		}
-#endif
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		glFlush();
@@ -437,7 +434,6 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, S32 srcX1, S32 srcY1,
 						S32 dstX0, S32 dstY0, S32 dstX1, S32 dstY1, U32 mask, U32 filter)
 {
-#if !LL_DARWIN
 	if (!source.mFBO || !mFBO)
 	{
 		llerrs << "Cannot copy framebuffer contents for non FBO render targets." << llendl;
@@ -456,7 +452,6 @@ void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, 
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
-#endif
 }
 
 BOOL LLRenderTarget::isComplete() const
@@ -600,7 +595,6 @@ void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth
 
 void LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
 {
-#if !LL_DARWIN
 	if (color_fmt == 0)
 	{
 		return;
@@ -641,12 +635,10 @@ void LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
 	}
 
 	mTex.push_back(tex);
-#endif
 }
 
 void LLMultisampleBuffer::allocateDepth()
 {
-#if !LL_DARWIN
 	glGenRenderbuffersEXT(1, (GLuint* ) &mDepth);
 	glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mDepth);
 	if (mStencil)
@@ -657,6 +649,5 @@ void LLMultisampleBuffer::allocateDepth()
 	{
 		glRenderbufferStorageMultisampleEXT(GL_RENDERBUFFER_EXT, mSamples, GL_DEPTH_COMPONENT16_ARB, mResX, mResY);	
 	}
-#endif
 }
 

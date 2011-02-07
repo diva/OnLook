@@ -45,11 +45,7 @@
 #endif
 
 #define LL_OCTREE_PARANOIA_CHECK 0
-#if LL_DARWIN
-#define LL_OCTREE_MAX_CAPACITY 32
-#else
 #define LL_OCTREE_MAX_CAPACITY 128
-#endif
 
 template <class T> class LLOctreeNode;
 
