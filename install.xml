@@ -1024,7 +1024,7 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-			<string>bfe002ba073b6824016db98269972</string>
+            <string>38abfe002ba073b6824016db98269972</string>
             <key>url</key>
 			<uri>http://imprudenceviewer.org/download/libs/ndofdev-linux32-0.3.1-20100817.tar.bz2</uri>
           </map>
