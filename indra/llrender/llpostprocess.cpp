@@ -37,6 +37,9 @@
 #include "llsdserialize.h"
 #include "llrender.h"
 
+#include "lldir.h"
+extern LLGLSLShader			gPostColorFilterProgram;
+extern LLGLSLShader			gPostNightVisionProgram;
 
 LLPostProcess * gPostProcess = NULL;
 
@@ -60,7 +63,7 @@ LLPostProcess::LLPostProcess(void) :
 	mNoiseTexture = NULL ;
 	mTempBloomTexture = NULL ;
 					
-	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.
+	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
 	LL_DEBUGS2("AppInit", "Shaders") << "Loading PostProcess Effects settings from " << pathName << LL_ENDL;
 
@@ -108,7 +111,7 @@ LLPostProcess::LLPostProcess(void) :
 	}
 
 	setSelectedEffect("default");
-	*/
+	//*/
 }
 
 LLPostProcess::~LLPostProcess(void)
@@ -145,7 +148,7 @@ void LLPostProcess::setSelectedEffect(std::string const & effectName)
 
 void LLPostProcess::saveEffect(std::string const & effectName)
 {
-	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.
+	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	mAllEffects[effectName] = tweaks;
 
 	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight", XML_FILENAME));
@@ -156,7 +159,7 @@ void LLPostProcess::saveEffect(std::string const & effectName)
 	LLPointer<LLSDFormatter> formatter = new LLSDXMLFormatter();
 
 	formatter->format(mAllEffects, effectsXML);
-	*/
+	//*/
 }
 void LLPostProcess::invalidate()
 {
@@ -228,13 +231,13 @@ void LLPostProcess::applyShaders(void)
 
 void LLPostProcess::applyColorFilterShader(void)
 {	
-	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.
+	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	gPostColorFilterProgram.bind();
 
 	gGL.getTexUnit(0)->activate();
 	gGL.getTexUnit(0)->enable(LLTexUnit::TT_RECT_TEXTURE);
 
-	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, sceneRenderTexture);
+	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mSceneRenderTexture.get()->getTexName());
 
 	getShaderUniforms(colorFilterUniforms, gPostColorFilterProgram.mProgramObject);
 	glUniform1iARB(colorFilterUniforms["RenderTexture"], 0);
@@ -256,7 +259,7 @@ void LLPostProcess::applyColorFilterShader(void)
 	/// Draw a screen space quad
 	drawOrthoQuad(screenW, screenH, QUAD_NORMAL);
 	gPostColorFilterProgram.unbind();
-	*/
+	//*/
 }
 
 void LLPostProcess::createColorFilterShader(void)
@@ -272,20 +275,20 @@ void LLPostProcess::createColorFilterShader(void)
 
 void LLPostProcess::applyNightVisionShader(void)
 {	
-	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.
+	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	gPostNightVisionProgram.bind();
 
 	gGL.getTexUnit(0)->activate();
 	gGL.getTexUnit(0)->enable(LLTexUnit::TT_RECT_TEXTURE);
 
 	getShaderUniforms(nightVisionUniforms, gPostNightVisionProgram.mProgramObject);
-	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, sceneRenderTexture);
+	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mSceneRenderTexture.get()->getTexName());
 	glUniform1iARB(nightVisionUniforms["RenderTexture"], 0);
 
 	gGL.getTexUnit(1)->activate();
 	gGL.getTexUnit(1)->enable(LLTexUnit::TT_TEXTURE);	
 
-	gGL.getTexUnit(1)->bindManual(LLTexUnit::TT_TEXTURE, noiseTexture);
+	gGL.getTexUnit(1)->bindManual(LLTexUnit::TT_TEXTURE,  mNoiseTexture.get()->getTexName());
 	glUniform1iARB(nightVisionUniforms["NoiseTexture"], 1);
 
 	
@@ -305,7 +308,7 @@ void LLPostProcess::applyNightVisionShader(void)
 	drawOrthoQuad(screenW, screenH, QUAD_NOISE);
 	gPostNightVisionProgram.unbind();
 	gGL.getTexUnit(0)->activate();
-	*/
+	//*/
 }
 
 void LLPostProcess::createNightVisionShader(void)
@@ -392,79 +395,79 @@ void LLPostProcess::copyFrameBuffer(U32 & texture, unsigned int width, unsigned 
 	glCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, 0, 0, width, height, 0);
 }
 
+inline void InitQuadArray(F32 *arr, const F32 x, const F32 y, const F32 width, const F32 height)
+{
+	//Lower left
+	*(arr++)=x; 
+	*(arr++)=y;
+	//Upper left
+	*(arr++)=x;
+	*(arr++)=y+height;
+	//Upper right
+	*(arr++)=x+width;
+	*(arr++)=y+height;
+	//Lower right
+	*(arr++)=x+width;
+	*(arr++)=y;
+}
 void LLPostProcess::drawOrthoQuad(unsigned int width, unsigned int height, QuadType type)
 {
-#if 0
-	float noiseX = 0.f;
-	float noiseY = 0.f;
-	float screenRatio = 1.0f;
+#if 1
+	//Redid the logic here. Less cases. No longer using immediate mode.
+	bool second_tex = true;
+	//Vertex array used for all post-processing effects
+	static F32 verts[8];
+	//Texture coord array used for all post-processing effects
+	static F32 tex0[8];
+	//Texture coord array used for relevant post processing effects
+	static F32 tex1[8];
 
-	if (type == QUAD_NOISE){
-		noiseX = ((float) rand() / (float) RAND_MAX);
-		noiseY = ((float) rand() / (float) RAND_MAX);
-		screenRatio = (float) width / (float) height;
+	//Set up vertex array
+	InitQuadArray(verts, 0.f, 0.f, width, height);
+	
+	//Set up first texture coords
+	if(type == QUAD_BLOOM_EXTRACT)
+	{
+		InitQuadArray(tex0, 0.f, 0.f, width*2.f, height*2.f);
+		second_tex = false;
+	}
+	else
+	{
+		InitQuadArray(tex0, 0.f, 0.f, width, height);
+		//Set up second texture coords
+		if( type == QUAD_BLOOM_COMBINE)
+			InitQuadArray(tex1, 0.f, 0.f, width*.5, height*.5);
+		else if( type == QUAD_NOISE )
+			InitQuadArray(tex1, ((float) rand() / (float) RAND_MAX), ((float) rand() / (float) RAND_MAX), 
+				width * noiseTextureScale / height, noiseTextureScale);
+		else
+			second_tex = false;
 	}
 	
+	//Prepare to render
+	glEnableClientState( GL_VERTEX_ARRAY );
+	glVertexPointer(2, GL_FLOAT, sizeof(F32)*2, verts);
+	if(second_tex) //tex1 setup
+	{
+		glClientActiveTextureARB(GL_TEXTURE1);
+		glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+		glTexCoordPointer(2, GL_FLOAT, sizeof(F32)*2, tex1);
+	}
+	glClientActiveTextureARB(GL_TEXTURE0);
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY );
+	glTexCoordPointer(2, GL_FLOAT, sizeof(F32)*2, tex0);
 
-	glBegin(GL_QUADS);
-		if (type != QUAD_BLOOM_EXTRACT){
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.f, (GLfloat) height);
-		} else {
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.f, (GLfloat) height * 2.0f);
-		}
-		if (type == QUAD_NOISE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB,
-									noiseX,
-									noiseTextureScale + noiseY);
-		} else if (type == QUAD_BLOOM_COMBINE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.f, (GLfloat) height * 0.5f);
-		}
-		glVertex2f(0.f, (GLfloat) screenH - height);
+	//Render
+	glDrawArrays(GL_QUADS, 0, sizeof(verts)/sizeof(verts[0]));
 
-		if (type != QUAD_BLOOM_EXTRACT){
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.f, 0.f);
-		} else {
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.f, 0.f);
-		}
-		if (type == QUAD_NOISE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB,
-									noiseX,
-									noiseY);
-		} else if (type == QUAD_BLOOM_COMBINE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.f, 0.f);
-		}
-		glVertex2f(0.f, (GLfloat) height + (screenH - height));
-
-		
-		if (type != QUAD_BLOOM_EXTRACT){
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, (GLfloat) width, 0.f);
-		} else {
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, (GLfloat) width * 2.0f, 0.f);
-		}
-		if (type == QUAD_NOISE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB,
-									screenRatio * noiseTextureScale + noiseX,
-									noiseY);
-		} else if (type == QUAD_BLOOM_COMBINE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, (GLfloat) width * 0.5f, 0.f);
-		}
-		glVertex2f((GLfloat) width, (GLfloat) height + (screenH - height));
-
-		
-		if (type != QUAD_BLOOM_EXTRACT){
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, (GLfloat) width, (GLfloat) height);
-		} else {
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, (GLfloat) width * 2.0f, (GLfloat) height * 2.0f);
-		}
-		if (type == QUAD_NOISE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB,
-									screenRatio * noiseTextureScale + noiseX,
-									noiseTextureScale + noiseY);
-		} else if (type == QUAD_BLOOM_COMBINE){
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, (GLfloat) width * 0.5f, (GLfloat) height * 0.5f);
-		}
-		glVertex2f((GLfloat) width, (GLfloat) screenH - height);
-	glEnd();
+	//Cleanup
+	glDisableClientState( GL_VERTEX_ARRAY );
+	glDisableClientState( GL_TEXTURE_COORD_ARRAY ); //for tex0
+	if(second_tex)
+	{
+		glClientActiveTextureARB(GL_TEXTURE1);
+		glDisableClientState( GL_TEXTURE_COORD_ARRAY ); //for tex1
+	}
 #endif
 }
 
@@ -473,7 +476,7 @@ void LLPostProcess::viewOrthogonal(unsigned int width, unsigned int height)
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadIdentity();
-	glOrtho( 0.f, (GLdouble) width , (GLdouble) height , 0.f, -1.f, 1.f );
+	glOrtho( 0.f, (GLdouble) width, 0.f, (GLdouble) height, -1.f, 1.f );
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
 	glLoadIdentity();

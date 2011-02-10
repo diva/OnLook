@@ -754,7 +754,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		}
 	}
 	
-#if 0
+#if 1
 	// disabling loading of postprocess shaders until we fix
 	// ATI sampler2DRect compatibility.
 	

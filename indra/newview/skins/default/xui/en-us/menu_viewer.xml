@@ -668,6 +668,10 @@
 			     mouse_opaque="true" name="Day Cycle Editor" width="169">
         <on_click function="World.DayCycle" userdata="editor" />
       </menu_item_call>
+	  <menu_item_call bottom="-173" enabled="false" height="19" label="Post-Processing Effects" left="0"
+		     mouse_opaque="true" name="Post-Processing Effects" width="169">
+			 <on_click function="World.PostProcess" userdata="editor" />
+     </menu_item_call>
 		</menu>
 	</menu>
 	<menu bottom="-18" create_jump_keys="true" drop_shadow="true" enabled="true"
