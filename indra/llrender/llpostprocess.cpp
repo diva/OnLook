@@ -40,6 +40,7 @@
 #include "lldir.h"
 extern LLGLSLShader			gPostColorFilterProgram;
 extern LLGLSLShader			gPostNightVisionProgram;
+extern LLGLSLShader			gPostGaussianBlurProgram;
 
 LLPostProcess * gPostProcess = NULL;
 
@@ -108,6 +109,8 @@ LLPostProcess::LLPostProcess(void) :
 		contrastBase.append(1.0);
 		contrastBase.append(1.0);
 		contrastBase.append(0.5);
+
+		defaultEffect["gauss_blur_passes"] = 2;
 	}
 
 	setSelectedEffect("default");
@@ -190,6 +193,7 @@ void LLPostProcess::initialize(unsigned int width, unsigned int height)
 	createNightVisionShader();
 	createBloomShader();
 	createColorFilterShader();
+	createGaussBlurShader();
 	checkError();
 }
 
@@ -197,40 +201,53 @@ inline bool LLPostProcess::shadersEnabled(void)
 {
 	return (tweaks.useColorFilter().asBoolean() ||
 			tweaks.useNightVisionShader().asBoolean() ||
-			tweaks.useBloomShader().asBoolean() );
+			tweaks.useBloomShader().asBoolean() ||
+			tweaks.useGaussBlurFilter().asBoolean() );
 
 }
 
 void LLPostProcess::applyShaders(void)
 {
-	if (tweaks.useColorFilter()){
+	bool copy_buffer = false;
+	if (tweaks.useColorFilter())
+	{
 		applyColorFilterShader();
 		checkError();
-	}	
-	if (tweaks.useNightVisionShader()){
+		copy_buffer = true;
+	}
+	if (tweaks.useGaussBlurFilter())
+	{
 		/// If any of the above shaders have been called update the frame buffer;
-		if (tweaks.useColorFilter())
-		{
-			U32 tex = mSceneRenderTexture->getTexName() ;
-			copyFrameBuffer(tex, screenW, screenH);
-		}
+		if (copy_buffer)
+			copyFrameBuffer(mSceneRenderTexture->getTexName(), screenW, screenH);
+		applyGaussBlurShader();
+		checkError();
+		copy_buffer = true;
+	}
+	if (tweaks.useNightVisionShader())
+	{
+		/// If any of the above shaders have been called update the frame buffer;
+		if (copy_buffer)
+			copyFrameBuffer(mSceneRenderTexture->getTexName(), screenW, screenH);
 		applyNightVisionShader();
 		checkError();
+		copy_buffer = true;
 	}
-	if (tweaks.useBloomShader()){
+	if (tweaks.useBloomShader())
+	{
 		/// If any of the above shaders have been called update the frame buffer;
-		if (tweaks.useColorFilter().asBoolean() || tweaks.useNightVisionShader().asBoolean())
-		{
-			U32 tex = mSceneRenderTexture->getTexName() ;
-			copyFrameBuffer(tex, screenW, screenH);
-		}
+		if (copy_buffer)
+			copyFrameBuffer(mSceneRenderTexture->getTexName(), screenW, screenH);
 		applyBloomShader();
 		checkError();
+		copy_buffer = true;
 	}
 }
 
 void LLPostProcess::applyColorFilterShader(void)
 {	
+	if(gPostColorFilterProgram.mProgramObject == 0)
+		return;
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	gPostColorFilterProgram.bind();
 
@@ -275,6 +292,8 @@ void LLPostProcess::createColorFilterShader(void)
 
 void LLPostProcess::applyNightVisionShader(void)
 {	
+	if(gPostNightVisionProgram.mProgramObject == 0)
+		return;
 	/*  Do nothing.  Needs to be updated to use our current shader system, and to work with the move into llrender.*/
 	gPostNightVisionProgram.bind();
 
@@ -330,7 +349,7 @@ void LLPostProcess::applyBloomShader(void)
 
 void LLPostProcess::createBloomShader(void)
 {
-	createTexture(mTempBloomTexture, unsigned(screenW * 0.5), unsigned(screenH * 0.5));
+	//createTexture(mTempBloomTexture, unsigned(screenW * 0.5), unsigned(screenH * 0.5));
 
 	/// Create Bloom Extract Shader
 	bloomExtractUniforms["RenderTexture"] = 0;
@@ -344,6 +363,43 @@ void LLPostProcess::createBloomShader(void)
 	bloomBlurUniforms["texelSize"] = 0;
 	bloomBlurUniforms["blurDirection"] = 0;
 	bloomBlurUniforms["blurWidth"] = 0;
+}
+
+void LLPostProcess::applyGaussBlurShader(void)
+{
+	int pass_count = tweaks.getGaussBlurPasses();
+	if(!pass_count || gPostGaussianBlurProgram.mProgramObject == 0)
+		return;
+
+	getShaderUniforms(gaussBlurUniforms, gPostGaussianBlurProgram.mProgramObject);
+	gPostGaussianBlurProgram.bind();
+	gGL.getTexUnit(0)->activate();
+	gGL.getTexUnit(0)->enable(LLTexUnit::TT_RECT_TEXTURE);
+	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mSceneRenderTexture.get()->getTexName());
+	LLGLEnable blend(GL_BLEND);
+	LLGLDepthTest depth(GL_FALSE);
+	gGL.setSceneBlendType(LLRender::BT_REPLACE);
+	glUniform1iARB(gaussBlurUniforms["RenderTexture"], 0);
+	GLint horiz_pass = gaussBlurUniforms["hoizontalPass"];
+	for(int i = 0;i<pass_count;++i)
+	{
+		for(int j = 0;j<2;++j)
+		{
+			if(i || j)
+				copyFrameBuffer(mSceneRenderTexture->getTexName(), screenW, screenH);		
+			glUniform1iARB(horiz_pass, j);
+			drawOrthoQuad(screenW, screenH, QUAD_NORMAL);
+			
+		}
+	}
+	gPostGaussianBlurProgram.unbind();
+	
+}
+
+void LLPostProcess::createGaussBlurShader(void)
+{
+	gaussBlurUniforms["RenderTexture"] = 0;
+	gaussBlurUniforms["hoizontalPass"] = 0;
 }
 
 void LLPostProcess::getShaderUniforms(glslUniforms & uniforms, GLhandleARB & prog)
@@ -363,8 +419,7 @@ void LLPostProcess::doEffects(void)
 
 	/// Copy the screen buffer to the render texture
 	{
-		U32 tex = mSceneRenderTexture->getTexName() ;
-		copyFrameBuffer(tex, screenW, screenH);
+		copyFrameBuffer(mSceneRenderTexture->getTexName(), screenW, screenH);
 	}
 
 	/// Clear the frame buffer.
@@ -389,7 +444,7 @@ void LLPostProcess::doEffects(void)
 	checkError();
 }
 
-void LLPostProcess::copyFrameBuffer(U32 & texture, unsigned int width, unsigned int height)
+void LLPostProcess::copyFrameBuffer(LLGLuint texture, unsigned int width, unsigned int height)
 {
 	gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, texture);
 	glCopyTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, 0, 0, width, height, 0);

@@ -101,6 +101,7 @@ LLGLSLShader			gGlowProgram;
 LLGLSLShader			gGlowExtractProgram;
 LLGLSLShader			gPostColorFilterProgram;
 LLGLSLShader			gPostNightVisionProgram;
+LLGLSLShader			gPostGaussianBlurProgram;
 
 // Deferred rendering shaders
 LLGLSLShader			gDeferredImpostorProgram;
@@ -494,6 +495,7 @@ void LLViewerShaderMgr::unloadShaders()
 
 	gPostColorFilterProgram.unload();
 	gPostNightVisionProgram.unload();
+	gPostGaussianBlurProgram.unload();
 
 	gDeferredDiffuseProgram.unload();
 
@@ -723,6 +725,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gGlowExtractProgram.unload();
 		gPostColorFilterProgram.unload();	
 		gPostNightVisionProgram.unload();
+		gPostGaussianBlurProgram.unload();
 		return FALSE;
 	}
 
@@ -759,7 +762,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 	// ATI sampler2DRect compatibility.
 	
 	//load Color Filter Shader
-	if (success)
+	//if (success)
 	{
 		vector<string> shaderUniforms;
 		shaderUniforms.reserve(7);
@@ -776,11 +779,11 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gPostColorFilterProgram.mShaderFiles.push_back(make_pair("effects/colorFilterF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gPostColorFilterProgram.mShaderFiles.push_back(make_pair("effects/drawQuadV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostColorFilterProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		success = gPostColorFilterProgram.createShader(NULL, &shaderUniforms);
+		/*success = */gPostColorFilterProgram.createShader(NULL, &shaderUniforms);
 	}
 
 	//load Night Vision Shader
-	if (success)
+	//if (success)
 	{
 		vector<string> shaderUniforms;
 		shaderUniforms.reserve(5);
@@ -795,8 +798,25 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("effects/nightVisionF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("effects/drawQuadV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostNightVisionProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		success = gPostNightVisionProgram.createShader(NULL, &shaderUniforms);
+		/*success = */gPostNightVisionProgram.createShader(NULL, &shaderUniforms);
 	}
+
+	//if (success)
+	{
+		vector<string> shaderUniforms;
+		shaderUniforms.reserve(2);
+		shaderUniforms.push_back("RenderTexture");
+		shaderUniforms.push_back("hoizontalPass");
+
+		gPostGaussianBlurProgram.mName = "Gaussian Blur Shader (Post)";
+		gPostGaussianBlurProgram.mShaderFiles.clear();
+		gPostGaussianBlurProgram.mShaderFiles.push_back(make_pair("effects/gaussBlurF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gPostGaussianBlurProgram.mShaderFiles.push_back(make_pair("effects/drawQuadV.glsl", GL_VERTEX_SHADER_ARB));
+		gPostGaussianBlurProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
+		/*success = */gPostGaussianBlurProgram.createShader(NULL, &shaderUniforms);
+	}
+
+	
 	#endif
 
 	return success;

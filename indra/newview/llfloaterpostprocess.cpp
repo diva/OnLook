@@ -75,6 +75,10 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 	childSetCommitCallback("BloomSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_width");
 	childSetCommitCallback("BloomStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_strength");
 
+	// Gauss Blur Callbacks
+	childSetCommitCallback("GaussBlurToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_gauss_blur");
+	childSetCommitCallback("GaussBlurPasses", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gauss_blur_passes");
+
 	// Effect loading and saving.
 	LLComboBox* comboBox = getChild<LLComboBox>("PPEffectsCombo");
 	childSetAction("PPLoadEffect", &LLFloaterPostProcess::onLoadEffect, comboBox);
