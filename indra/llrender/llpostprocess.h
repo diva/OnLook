@@ -157,6 +157,10 @@ public:
 			return F32((*this)["bloom_strength"].asReal());
 		}
 
+		inline F32 getGamma() const {
+			return F32((*this)["gamma"].asReal());
+		}
+
 		inline F32 getBrightness() const {
 			return F32((*this)["brightness"].asReal());
 		}

@@ -100,6 +100,7 @@ LLPostProcess::LLPostProcess(void) :
 		defaultEffect["bloom_strength"] = 1.5;
 
 		/// Color Filter Defaults
+		defaultEffect["gamma"] = 1.0;
 		defaultEffect["brightness"] = 1.0;
 		defaultEffect["contrast"] = 1.0;
 		defaultEffect["saturation"] = 1.0;
@@ -258,6 +259,7 @@ void LLPostProcess::applyColorFilterShader(void)
 
 	getShaderUniforms(colorFilterUniforms, gPostColorFilterProgram.mProgramObject);
 	glUniform1iARB(colorFilterUniforms["RenderTexture"], 0);
+	glUniform1fARB(colorFilterUniforms["gamma"], tweaks.getGamma());
 	glUniform1fARB(colorFilterUniforms["brightness"], tweaks.getBrightness());
 	glUniform1fARB(colorFilterUniforms["contrast"], tweaks.getContrast());
 	float baseI = (tweaks.getContrastBaseR() + tweaks.getContrastBaseG() + tweaks.getContrastBaseB()) / 3.0f;
@@ -283,6 +285,7 @@ void LLPostProcess::createColorFilterShader(void)
 {
 	/// Define uniform names
 	colorFilterUniforms["RenderTexture"] = 0;
+	colorFilterUniforms["gamma"] = 0;
 	colorFilterUniforms["brightness"] = 0;
 	colorFilterUniforms["contrast"] = 0;
 	colorFilterUniforms["contrastBase"] = 0;

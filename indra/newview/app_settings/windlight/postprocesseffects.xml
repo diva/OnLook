@@ -151,6 +151,8 @@
 			<real>1.5</real>
 			<key>bloom_width</key>
 			<real>2.25</real>
+			<key>gamma</key>
+			<real>1.0</real>
 			<key>brightness</key>
 			<real>1</real>
 			<key>brightness_multiplier</key>

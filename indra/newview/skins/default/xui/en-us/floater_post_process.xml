@@ -12,6 +12,18 @@
 			<check_box bottom="-20" control_name="ColorFilterToggle" follows="left|top"
 			     font="SansSerifSmall" height="16" initial_value="false" label="Enable"
 			     left="14" mouse_opaque="true" name="ColorFilterToggle" width="200" />
+      <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top|right"
+			     font="SansSerif" h_pad="0" halign="left" height="16"
+			     left="10" mouse_opaque="true" name="ColorFilterGammaText" v_pad="0"
+			     width="355">
+        Gamma
+      </text>
+      <slider bottom_delta="-30" can_edit_text="true"
+			     control_name="ColorFilterGamma" decimal_digits="2" follows="left"
+			     height="18" increment="0.01" initial_val="1.0" label="" left="14"
+			     max_val="10" min_val="-.25" mouse_opaque="true" name="ColorFilterGamma"
+			     show_text="true" value="1.0" width="200" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-20" drop_shadow_visible="true" follows="left|top|right"
 			     font="SansSerif" h_pad="0" halign="left" height="16" 

@@ -12,12 +12,15 @@ uniform vec3  contrastBase;
 uniform float saturation;
 uniform vec3  lumWeights;
 
-const float gamma = 2.0;
+uniform float gamma;
 
 void main(void) 
 {
 	vec3 color = vec3(texture2DRect(RenderTexture, gl_TexCoord[0].st));
 
+	/// Apply gamma
+	color = pow(color, vec3(1.0/gamma));
+	
 	/// Modulate brightness
 	color *= brightness;
 
