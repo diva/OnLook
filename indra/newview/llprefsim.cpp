@@ -47,6 +47,8 @@
 
 #include "lldirpicker.h"
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -186,9 +188,16 @@ void LLPrefsIMImpl::apply()
 
 		gDirUtilp->setChatLogsDir(gSavedPerAccountSettings.getString("InstantMessageLogPath"));
 
-		gDirUtilp->setPerAccountChatLogsDir(gSavedSettings.getString("FirstName"), 
-											gSavedSettings.getString("LastName") );
-		LLFile::mkdir(gDirUtilp->getPerAccountChatLogsDir());
+		if (gHippoGridManager->getCurrentGrid()->isSecondLife())
+		{
+			gDirUtilp->setPerAccountChatLogsDir(LLStringUtil::null, 
+				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
+		}
+		else
+		{
+			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getCurrentGridNick(), 
+				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
+		}
 		
 		bool new_im_via_email = childGetValue("send_im_to_email").asBoolean();
 		bool new_hide_online = childGetValue("online_visibility").asBoolean();		

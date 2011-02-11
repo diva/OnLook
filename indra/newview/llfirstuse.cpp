@@ -47,6 +47,9 @@
 #include "floatervoicelicense.h"
 #include "llstartup.h"
 
+#include "hippogridmanager.h"
+
+
 // static
 std::set<std::string> LLFirstUse::sConfigVariables;
 
@@ -90,6 +93,7 @@ void LLFirstUse::useBalanceIncrease(S32 delta)
 
 		LLSD args;
 		args["AMOUNT"] = llformat("%d",delta);
+		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 		LLNotifications::instance().add("FirstBalanceIncrease", args);
 	}
 }
@@ -104,6 +108,7 @@ void LLFirstUse::useBalanceDecrease(S32 delta)
 
 		LLSD args;
 		args["AMOUNT"] = llformat("%d",-delta);
+		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 		LLNotifications::instance().add("FirstBalanceDecrease", args);
 	}
 }

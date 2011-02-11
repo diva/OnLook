@@ -68,6 +68,8 @@
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
 
+#include "hippogridmanager.h"
+
 //<edit>
 #include "llinventorymodel.h" // gInventoryModel
 //</edit>
@@ -194,7 +196,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 		childSetMaxValue("priority", 7);
 	}
 
-	childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%d",sUploadAmount));
+	childSetLabelArg("ok_btn", "[UPLOADFEE]", gHippoGridManager->getConnectedGrid()->getUploadFee());
 	childSetAction("ok_btn", onBtnOK, this);
 	setDefaultBtn();
 

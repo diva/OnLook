@@ -59,7 +59,7 @@ Hover your mouse over the options for more help.
 		Group Charter
 	</text_editor>
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
-	     height="22" label="Join (L$0)" label_selected="Join (L$0)" left="7"
+	     height="22" label="Join ([CURRENCY]0)" label_selected="Join ([CURRENCY]0)" left="7"
 	     mouse_opaque="true" name="join_button" width="128" />
 	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
 	     height="22" label="Detailed View" label_selected="Detailed View"
@@ -97,7 +97,7 @@ Hover your mouse over the options for more help.
 		     tool_tip="Sets whether this group allows new members to join   without being invited."
 		     width="95" />
 		<check_box bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16"
-		     initial_value="false" label="Enrollment fee: L$" left_delta="16"
+		     initial_value="false" label="Enrollment fee: [CURRENCY]" left_delta="16"
 		     max_length="5" mouse_opaque="true" name="check_enrollment_fee"
 		     radio_style="false" 
 		     tool_tip="Sets whether to require an enrollment fee to join the group."
@@ -147,8 +147,8 @@ Hover your mouse over the options for more help.
 		Retrieving member data
 	</string>
 	<string name="confirm_group_create_str">
-		Creating this group will cost L$100. 
-Are you really, really, REALLY sure you want to spend L$100 to create this group?
+		Creating this group will cost [GROUPCREATEFEE]. 
+Are you really, really, REALLY sure you want to spend [GROUPCREATEFEE] to create this group?
 Be aware that if nobody else joins this group within 48 hours, it will be disbanded and the group&apos;s name will be unavailable for future use.
 	</string>
 </panel>

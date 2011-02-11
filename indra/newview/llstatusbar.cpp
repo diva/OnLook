@@ -86,6 +86,8 @@
 // system includes
 #include <iomanip>
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -178,6 +180,11 @@ mSquareMetersCommitted(0)
 	childSetActionTextbox("ParcelNameText", onClickParcelInfo );
 	childSetActionTextbox("BalanceText", onClickBalance );
 
+	// TODO: Disable buying currency when connected to non-SL grids
+	// that don't support currency yet -- MC
+	LLButton* buybtn = getChild<LLButton>("buycurrency");
+	buybtn->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+	
 	// Adding Net Stat Graph
 	S32 x = getRect().getWidth() - 2;
 	S32 y = 0;
@@ -663,10 +670,8 @@ void LLStatusBar::creditBalance(S32 credit)
 
 void LLStatusBar::setBalance(S32 balance)
 {
-	std::string money_str = LLResMgr::getInstance()->getMonetaryString( balance );
-	std::string balance_str = "L$";
-	balance_str += money_str;
-	mTextBalance->setText( balance_str );
+	mTextBalance->setText(gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str() +
+		LLResMgr::getInstance()->getMonetaryString(balance));
 
 	if (mBalance && (fabs((F32)(mBalance - balance)) > gSavedSettings.getF32("UISndMoneyChangeThreshold")))
 	{

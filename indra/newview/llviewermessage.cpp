@@ -695,6 +695,7 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 			delete_context_data = FALSE;
 			LLSD args;
 			args["COST"] = llformat("%d", fee);
+			args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 			// Set the fee for next time to 0, so that we don't keep
 			// asking about a fee.
 			LLSD next_payload = notification["payload"];
@@ -5448,10 +5449,14 @@ void process_economy_data(LLMessageSystem *msg, void** /*user_data*/)
 	LLFloaterImagePreview::setUploadAmount(upload_cost);
 	LLFloaterAnimPreview::setUploadAmount(upload_cost);
 
-	gMenuHolder->childSetLabelArg("Upload Image", "[COST]", llformat("%d", upload_cost));
-	gMenuHolder->childSetLabelArg("Upload Sound", "[COST]", llformat("%d", upload_cost));
-	gMenuHolder->childSetLabelArg("Upload Animation", "[COST]", llformat("%d", upload_cost));
-	gMenuHolder->childSetLabelArg("Bulk Upload", "[COST]", llformat("%d", upload_cost));
+	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
+	gMenuHolder->childSetLabelArg("Upload Image", "[UPLOADFEE]", fee);
+	gMenuHolder->childSetLabelArg("Upload Sound", "[UPLOADFEE]", fee);
+	gMenuHolder->childSetLabelArg("Upload Animation", "[UPLOADFEE]", fee);
+	gMenuHolder->childSetLabelArg("Bulk Upload", "[UPLOADFEE]", fee);
+	gMenuHolder->childSetLabelArg("ImportUpload", "[UPLOADFEE]", fee);
+	gMenuHolder->childSetLabelArg("Buy and Sell L$...", "[CURRENCY]",
+		gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 }
 
 void notify_cautioned_script_question(const LLSD& notification, const LLSD& response, S32 orig_questions, BOOL granted)
@@ -5525,7 +5530,9 @@ void notify_cautioned_script_question(const LLSD& notification, const LLSD& resp
 					perms.append(", ");
 				}
 
-				perms.append(LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i]));
+				LLStringUtil::format_map_t args;
+				args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+				perms.append(LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i], args));
 			}
 		}
 
@@ -5686,8 +5693,11 @@ void process_script_question(LLMessageSystem *msg, void **user_data)
 		{
 			if (questions & LSCRIPTRunTimePermissionBits[i])
 			{
+				LLStringUtil::format_map_t args;
+				args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+				
 				count++;
-				script_question += "    " + LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i]) + "\n";
+				script_question += "    " + LLFloaterChat::getInstance()->getString(SCRIPT_QUESTIONS[i], args) + "\n";
 
 				// check whether permission question should cause special caution dialog
 				caution |= (SCRIPT_QUESTION_IS_CAUTION[i]);

@@ -8,10 +8,11 @@
 #ifndef XML_STATIC
 #define XML_STATIC
 #endif
+
 #ifdef LL_STANDALONE
-# include "expat.h"
+#include <expat.h>
 #else
-# include <expat/expat.h>
+#include "expat/expat.h"
 #endif
 
 class LLSD;
@@ -19,7 +20,6 @@ class LLSD;
 
 class HippoGridInfo
 {
-	LOG_CLASS(HippoGridInfo);
 public:
 	enum Platform {
 		PLATFORM_OTHER = 0,
@@ -33,62 +33,63 @@ public:
 		SEARCH_ALL_TEMPLATE
 	};
 
-	explicit HippoGridInfo(const std::string &gridNick);
+	explicit HippoGridInfo(const std::string& gridNick);
 
-	Platform           getPlatform()        const { return mPlatform;       }
-	const std::string &getGridNick()        const { return mGridNick;       }
-	const std::string &getGridName()        const { return mGridName;       }
-	const std::string &getLastFName()       const { return mLastFName;      }
-	const std::string &getLastLName()       const { return mLastLName;      }
-	const std::string &getLoginUri()        const { return mLoginUri;       }
-	const std::string &getLoginPage()       const { return mLoginPage;      }
-	const std::string &getHelperUri()       const { return mHelperUri;      }
-	const std::string &getWebSite()         const { return mWebSite;        }
-	const std::string &getSupportUrl()      const { return mSupportUrl;     }
-	const std::string &getRegisterUrl()     const { return mRegisterUrl;    }
-	const std::string &getPasswordUrl()     const { return mPasswordUrl;    }
-	const std::string &getSearchUrl()       const { return mSearchUrl;      }
-	const std::string &getVoiceConnector()  const { return mVoiceConnector; }
-	std::string getSearchUrl(SearchType ty) const;
-	bool isRenderCompat() const { return mRenderCompat; }
+	Platform           getPlatform();
+	bool isOpenSimulator() const;
+	bool isSecondLife() const;
+	const std::string& getGridNick()        const;
+	const std::string& getGridName()        const;
+	const std::string& getLoginUri()        const;
+	const std::string& getLoginPage()       const;
+	const std::string& getHelperUri()       const;
+	const std::string& getWebSite()         const;
+	const std::string& getSupportUrl()      const;
+	const std::string& getRegisterUrl()     const;
+	const std::string& getPasswordUrl()     const;
+	// Returns the url base used for the Web Search tab
+	const std::string& getSearchUrl()       const;
+	const std::string& getFirstName()       const;
+	const std::string& getLastName()        const;
+	const std::string& getAvatarPassword()  const;
+	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
+	std::string getSearchUrl(SearchType ty, bool is_web) const;
+	bool isRenderCompat()                   const;
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
-	int getVersion() const { return mVersion; }
 
-	const std::string &getCurrencySymbol() const { return mCurrencySymbol; }
-	const std::string &getRealCurrencySymbol() const { return mRealCurrencySymbol; }
-	std::string getUploadFee() const;
-	std::string getGroupCreationFee() const;
-	std::string getDirectoryFee() const;
+	const std::string& getCurrencySymbol()     const;
+	const std::string& getRealCurrencySymbol() const;
+	std::string getUploadFee()                 const;
+	std::string getGroupCreationFee()          const;
+	std::string getDirectoryFee()              const;
 
-	bool isOpenSimulator() const { return (mPlatform == PLATFORM_OPENSIM   ); }
-	bool isSecondLife()	   const { return (mPlatform == PLATFORM_SECONDLIFE); }
-
-	void setPlatform   (const std::string &platform);
-	void setPlatform   (Platform platform);
-	void setGridName   (const std::string &gridName)  { mGridName = gridName;    }
-	void setLastFName  (const std::string &firstName) { mLastFName = firstName;  }
-	void setLastLName  (const std::string &lastName)  { mLastLName = lastName;   }
-	void setLoginUri   (const std::string &loginUri)  { mLoginUri = loginUri; cleanUpUri(mLoginUri); }
-	void setLoginPage  (const std::string &loginPage) { mLoginPage = loginPage;  }
-	void setHelperUri  (const std::string &helperUri) { mHelperUri = helperUri; cleanUpUri(mHelperUri); }
-	void setWebSite	   (const std::string &website)   { mWebSite = website;      }
-	void setSupportUrl (const std::string &url)       { mSupportUrl = url;       }
-	void setRegisterUrl(const std::string &url)       { mRegisterUrl = url;      }
-	void setPasswordUrl(const std::string &url)       { mPasswordUrl = url;      }
-	void setSearchUrl  (const std::string &url)       { mSearchUrl = url;        }
-	void setRenderCompat(bool compat)                 { mRenderCompat = compat;  }
+	void setPlatform (const std::string& platform);
+	void setPlatform (Platform platform);
+	void setGridName (const std::string& gridName);
+	void setLoginUri (const std::string& loginUri);
+	void setLoginPage(const std::string& loginPage);
+	void setHelperUri(const std::string& helperUri);
+	void setWebSite  (const std::string& website);
+	void setSupportUrl(const std::string& url);
+	void setRegisterUrl(const std::string& url);
+	void setPasswordUrl(const std::string& url);
+	// sets the url base used for the Web Search tab
+	void setSearchUrl(const std::string& url);
+	void setRenderCompat(bool compat);
 	void setMaxAgentGroups(int max)                   { mMaxAgentGroups = max;   }
-	void setVersion(int version)                      { mVersion = version;      }
-	void setVoiceConnector(const std::string &vc)     { mVoiceConnector = vc;    }
+	void setFirstName(const std::string& firstName);
+	void setLastName(const std::string& lastName);
+	void setAvatarPassword(const std::string& avatarPassword);
+	void setVoiceConnector(const std::string& vc)     { mVoiceConnector = vc;    }
 
-	void setCurrencySymbol(const std::string &sym) { mCurrencySymbol = sym.substr(0, 3); }
-	void setRealCurrencySymbol(const std::string &sym) { mRealCurrencySymbol = sym.substr(0, 3); }
-	void setDirectoryFee(int fee) { mDirectoryFee = fee; }
+	void setCurrencySymbol(const std::string& sym);
+	void setRealCurrencySymbol(const std::string& sym);
+	void setDirectoryFee(int fee);
 
 	bool retrieveGridInfo();
 
-	static const char *getPlatformString(Platform platform);
-	static void cleanUpGridNick(std::string &gridnick);
+	static const char* getPlatformString(Platform platform);
+	static std::string sanitizeGridNick(std::string &gridnick);
 
 	static HippoGridInfo FALLBACK_GRIDINFO;
 	static void initFallback();
@@ -97,8 +98,6 @@ private:
 	Platform mPlatform;
 	std::string mGridNick;
 	std::string mGridName;
-	std::string mLastFName;
-	std::string mLastLName;
 	std::string mLoginUri;
 	std::string mLoginPage;
 	std::string mHelperUri;
@@ -108,53 +107,56 @@ private:
 	std::string mPasswordUrl;
 	std::string mSearchUrl;
 	std::string mVoiceConnector;
+	std::string mFirstName;
+	std::string mLastName;
+	std::string mAvatarPassword;
 	bool mRenderCompat;
 	int mMaxAgentGroups;
-	int mVersion;
 
 	std::string mCurrencySymbol;
 	std::string mRealCurrencySymbol;
 	int mDirectoryFee;
 
 	// for parsing grid info XML
-	enum XmlState {
+	enum XmlState 
+	{
 		XML_VOID, XML_GRIDNICK, XML_PLATFORM, XML_GRIDNAME,
 		XML_LOGINURI, XML_LOGINPAGE, XML_HELPERURI,
 		XML_WEBSITE, XML_SUPPORT, XML_REGISTER, XML_PASSWORD, XML_SEARCH
 	};
 	XmlState mXmlState;
 
-	static void cleanUpUri(std::string &uri);
+	static std::string sanitizeUri(std::string &uri);
 	void formatFee(std::string &fee, int cost, bool showFree) const;
 
-	static void onXmlElementStart(void *userData, const XML_Char *name, const XML_Char **atts);
-	static void onXmlElementEnd(void *userData, const XML_Char *name);
-	static void onXmlCharacterData(void *userData, const XML_Char *s, int len);
+	static void onXmlElementStart(void* userData, const XML_Char* name, const XML_Char** atts);
+	static void onXmlElementEnd(void* userData, const XML_Char* name);
+	static void onXmlCharacterData(void* userData, const XML_Char* s, int len);
 };
 
 
 class HippoGridManager
 {
-	LOG_CLASS(HippoGridManager);
 public:
 	HippoGridManager();
 	~HippoGridManager();
 
 	void init();
 	void saveFile();
+	void discardAndReload();
 
-	HippoGridInfo *getGrid(const std::string &grid) const;
-	HippoGridInfo *getConnectedGrid() const { return (mConnectedGrid)? mConnectedGrid: getCurrentGrid(); }
-	HippoGridInfo *getCurrentGrid() const;
-	const std::string &getDefaultGridNick() const { return mDefaultGrid; }
-	const std::string &getCurrentGridNick() const { return mCurrentGrid; }
+	HippoGridInfo* getGrid(const std::string& grid) const;
+	HippoGridInfo* getConnectedGrid()               const;
+	HippoGridInfo* getCurrentGrid()                 const;
+	const std::string& getDefaultGridNick()         const;
+	const std::string& getCurrentGridNick()         const;
 
-	void setDefaultGrid(const std::string &grid);
-	void setCurrentGrid(const std::string &grid);
-	void setCurrentGridAsConnected() { mConnectedGrid = getCurrentGrid(); }
+	void setDefaultGrid(const std::string& grid);
+	void setCurrentGrid(const std::string& grid);
+	void setCurrentGridAsConnected();
 
-	void addGrid(HippoGridInfo *grid);
-	void deleteGrid(const std::string &grid);
+	void addGrid(HippoGridInfo* grid);
+	void deleteGrid(const std::string& grid);
 
 	typedef std::map<std::string, HippoGridInfo*>::iterator GridIterator;
 	GridIterator beginGrid() { return mGridInfo.begin(); }
@@ -164,17 +166,18 @@ private:
 	std::map<std::string, HippoGridInfo*> mGridInfo;
 	std::string mDefaultGrid;
 	std::string mCurrentGrid;
-	HippoGridInfo *mConnectedGrid;
+	HippoGridInfo* mConnectedGrid;
+	int mDefaultGridsVersion;
 
 	void cleanup();
 	void loadFromFile();
-	void parseFile(const std::string &fileName, bool mergeIfNewer);
-	void parseUrl(const char *url, bool mergeIfNewer);
+	void parseFile(const std::string& fileName, bool mergeIfNewer);
+	void parseUrl(const std::string url, bool mergeIfNewer);
 	void parseData(LLSD &gridInfo, bool mergeIfNewer);
 };
 
 
-extern HippoGridManager *gHippoGridManager;
+extern HippoGridManager* gHippoGridManager;
 
 
 #endif

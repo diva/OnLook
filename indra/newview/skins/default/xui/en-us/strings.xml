@@ -44,7 +44,7 @@
 	<string name="TooltipFlagTemporary">Temporary</string>
 	<string name="TooltipFlagRightClickMenu">(Right-click for menu)</string>
 	<string name="TooltipFreeToCopy">Free to copy</string>
-	<string name="TooltipForSaleL$">For Sale: L$[AMOUNT]</string> <!-- L$ version -->
+	<string name="TooltipForSaleL$">For Sale: [CURRENCY][AMOUNT]</string> <!-- L$ version -->
 	<string name="TooltipForSaleMsg">For Sale: [MESSAGE]</string> <!-- Message (RetrievingData) -->
 	<string name="TooltipFlagGroupBuild">Group Build</string>
 	<string name="TooltipFlagNoBuild">No Build</string>
@@ -611,7 +611,7 @@ Returns a string that is src with all lower-case characters
   </string>
   <string name="LSLTipText_llGiveMoney">
 llGiveMoney(key destination, integer amount)
-Transfers amount of L$ from script owner to destination
+Transfers amount of [CURRENCY] from script owner to destination
   </string>
   <string name="LSLTipText_llMakeExplosion">
 llMakeExplosion(integer particles, float scale, float vel, float lifetime, float arc, string texture, vector offset)
@@ -1431,7 +1431,7 @@ Returns a list containing results of the sent query
   </string>
   <string name="LSLTipText_llModPow">
 integer llModPow(integer a, integer b, integer c)
-Returns a raised to the b power, mod c. ( (a**b)%c )
+Returns a raised to the b power, mod c. ( (a**b)%c )
 b is capped at 0xFFFF (16 bits).
   </string>
   <string name="LSLTipText_llGetInventoryType">

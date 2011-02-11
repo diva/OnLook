@@ -8,6 +8,18 @@
 		<string>settings_sh.xml</string>
 		<string>settings_rlv.xml</string>
 	</array>
+	
+  <key>LastSelectedGrid</key>
+  <map>
+    <key>Comment</key>
+    <string>Last grid selected from the grid pulldown</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>String</string>
+    <key>Value</key>
+    <string />
+  </map>
 
   <key>CheckForGridUpdates</key>
   <map>
@@ -10007,6 +10019,19 @@
       <key>Value</key>
       <string>http://search.secondlife.com/client_search.php?</string>
     </map>
+	<key>SearchURLDefaultOpenSim</key>
+	<map>
+	  <key>Comment</key>
+	  <string>URL to load for empty OpenSim searches</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>HideFromEditor</key>
+	  <integer>0</integer>
+	  <key>Type</key>
+	  <string>String</string>
+	  <key>Value</key>
+	  <string>http://webi.metaverseink.com/opensim/results.jsp?</string>
+	</map>
     <key>SearchURLQuery</key>
     <map>
       <key>Comment</key>

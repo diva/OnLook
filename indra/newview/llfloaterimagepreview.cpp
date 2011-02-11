@@ -62,6 +62,8 @@
 #include "llviewercontrol.h"
 // </edit>
 
+#include "hippogridmanager.h"
+
 //static
 S32 LLFloaterImagePreview::sUploadAmount = 10;
 
@@ -107,7 +109,7 @@ BOOL LLFloaterImagePreview::postBuild()
 		return FALSE;
 	}
 
-	childSetLabelArg("ok_btn", "[AMOUNT]", llformat("%d",sUploadAmount));
+	childSetLabelArg("ok_btn", "[UPLOADFEE]", gHippoGridManager->getConnectedGrid()->getUploadFee());
 
 	LLCtrlSelectionInterface* iface = childGetSelectionInterface("clothing_type_combo");
 	if (iface)
