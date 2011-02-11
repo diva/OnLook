@@ -69,9 +69,10 @@ hasGamma(false), hasLighting(false), calculatesAtmospherics(false)
 //===============================
 // LLGLSL Shader implementation
 //===============================
-LLGLSLShader::LLGLSLShader()
-: mProgramObject(0), mShaderLevel(0), mShaderGroup(SG_DEFAULT)
+LLGLSLShader::LLGLSLShader(S32 shader_class)
+: mProgramObject(0), mShaderClass(shader_class), mShaderLevel(0), mShaderGroup(SG_DEFAULT)
 {
+	LLShaderMgr::getGlobalShaderList().push_back(this);
 }
 
 void LLGLSLShader::unload()
@@ -84,17 +85,18 @@ void LLGLSLShader::unload()
 
 	if (mProgramObject)
 	{
-		GLhandleARB obj[1024];
+		//Don't do this! Attached objects are already flagged for deletion.
+		//They will be deleted when no programs have them attached. (deleting a program auto-detaches them!)
+		/*GLhandleARB obj[1024];
 		GLsizei count;
 
 		glGetAttachedObjectsARB(mProgramObject, 1024, &count, obj);
-		for (GLsizei i = 0; i < count; i++)
+		for (GLsizei i = 0; i < count; i++) 
 		{
 			glDeleteObjectARB(obj[i]);
-		}
-
-		glDeleteObjectARB(mProgramObject);
-
+		}*/
+		if(mProgramObject)
+			glDeleteObjectARB(mProgramObject);
 		mProgramObject = 0;
 	}
 	
@@ -110,12 +112,17 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	llassert_always(!mShaderFiles.empty());
 	BOOL success = TRUE;
 
+	if(mProgramObject)	//purge the old program
+		glDeleteObjectARB(mProgramObject);
 	// Create program
 	mProgramObject = glCreateProgramObjectARB();
 	
 	// Attach existing objects
 	if (!LLShaderMgr::instance()->attachShaderFeatures(this))
 	{
+		if(mProgramObject)
+			glDeleteObjectARB(mProgramObject);
+		mProgramObject = 0;
 		return FALSE;
 	}
 
@@ -145,6 +152,10 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	}
 	if( !success )
 	{
+		if(mProgramObject)
+			glDeleteObjectARB(mProgramObject);
+		mProgramObject = 0;
+
 		LL_WARNS("ShaderLoading") << "Failed to link shader: " << mName << LL_ENDL;
 
 		// Try again using a lower shader level;

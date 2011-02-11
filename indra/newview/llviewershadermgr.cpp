@@ -67,99 +67,72 @@ BOOL				LLViewerShaderMgr::sInitialized = FALSE;
 
 LLVector4			gShinyOrigin;
 
-//object shaders
-LLGLSLShader		gObjectSimpleProgram;
-LLGLSLShader		gObjectSimpleWaterProgram;
-LLGLSLShader		gObjectFullbrightProgram;
-LLGLSLShader		gObjectFullbrightWaterProgram;
+ // WindLight shader handles
+ // Make sure WL Sky is the first program
+LLGLSLShader		gWLSkyProgram(LLViewerShaderMgr::SHADER_WINDLIGHT);
+LLGLSLShader		gWLCloudProgram(LLViewerShaderMgr::SHADER_WINDLIGHT);
 
-LLGLSLShader		gObjectFullbrightShinyProgram;
-LLGLSLShader		gObjectShinyProgram;
-LLGLSLShader		gObjectShinyWaterProgram;
-
-//environment shaders
-LLGLSLShader		gTerrainProgram;
-LLGLSLShader		gTerrainWaterProgram;
-LLGLSLShader		gWaterProgram;
-LLGLSLShader		gUnderWaterProgram;
-
-//interface shaders
-LLGLSLShader		gHighlightProgram;
-
-//avatar shader handles
-LLGLSLShader		gAvatarProgram;
-LLGLSLShader		gAvatarWaterProgram;
-LLGLSLShader		gAvatarEyeballProgram;
-LLGLSLShader		gAvatarPickProgram;
-
-// WindLight shader handles
-LLGLSLShader			gWLSkyProgram;
-LLGLSLShader			gWLCloudProgram;
-
-// Effects Shaders
-LLGLSLShader			gGlowProgram;
-LLGLSLShader			gGlowExtractProgram;
-LLGLSLShader			gPostColorFilterProgram;
-LLGLSLShader			gPostNightVisionProgram;
-LLGLSLShader			gPostGaussianBlurProgram;
-
-// Deferred rendering shaders
-LLGLSLShader			gDeferredImpostorProgram;
-LLGLSLShader			gDeferredWaterProgram;
-LLGLSLShader			gDeferredDiffuseProgram;
-LLGLSLShader			gDeferredBumpProgram;
-LLGLSLShader			gDeferredTerrainProgram;
-LLGLSLShader			gDeferredTreeProgram;
-LLGLSLShader			gDeferredAvatarProgram;
-LLGLSLShader			gDeferredAvatarAlphaProgram;
-LLGLSLShader			gDeferredLightProgram;
-LLGLSLShader			gDeferredMultiLightProgram;
-LLGLSLShader			gDeferredSunProgram;
-LLGLSLShader			gDeferredBlurLightProgram;
-LLGLSLShader			gDeferredSoftenProgram;
-LLGLSLShader			gDeferredShadowProgram;
-LLGLSLShader			gDeferredAvatarShadowProgram;
-LLGLSLShader			gDeferredAlphaProgram;
-LLGLSLShader			gDeferredFullbrightProgram;
+ //object shaders
+LLGLSLShader		gObjectSimpleProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectSimpleWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectFullbrightProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectFullbrightWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
+ 
+LLGLSLShader		gObjectFullbrightShinyProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectShinyProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectShinyWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
+ 
+ //environment shaders
+LLGLSLShader		gTerrainProgram(LLViewerShaderMgr::SHADER_ENVIRONMENT);
+LLGLSLShader		gTerrainWaterProgram(LLViewerShaderMgr::SHADER_WATER); //note, water.
+LLGLSLShader		gWaterProgram(LLViewerShaderMgr::SHADER_WATER);
+LLGLSLShader		gUnderWaterProgram(LLViewerShaderMgr::SHADER_WATER);
+ 
+ //interface shaders
+LLGLSLShader		gHighlightProgram(LLViewerShaderMgr::SHADER_INTERFACE);			//Not in mShaderList
+ 
+ //avatar shader handles
+LLGLSLShader		gAvatarProgram(LLViewerShaderMgr::SHADER_AVATAR);
+LLGLSLShader		gAvatarWaterProgram(LLViewerShaderMgr::SHADER_AVATAR);
+LLGLSLShader		gAvatarEyeballProgram(LLViewerShaderMgr::SHADER_AVATAR);
+LLGLSLShader		gAvatarPickProgram(LLViewerShaderMgr::SHADER_AVATAR);			//Not in mShaderList
+ 
+ // Effects Shaders
+LLGLSLShader			gGlowProgram(LLViewerShaderMgr::SHADER_EFFECT);				//Not in mShaderList
+LLGLSLShader			gGlowExtractProgram(LLViewerShaderMgr::SHADER_EFFECT);		//Not in mShaderList
+LLGLSLShader			gPostColorFilterProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
+LLGLSLShader			gPostNightVisionProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
+LLGLSLShader			gPostGaussianBlurProgram(LLViewerShaderMgr::SHADER_EFFECT);	//Not in mShaderList
+ 
+ // Deferred rendering shaders
+LLGLSLShader			gDeferredImpostorProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredWaterProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calculatesAtmospherics
+LLGLSLShader			gDeferredDiffuseProgram(LLViewerShaderMgr::SHADER_DEFERRED);//Not in mShaderList
+LLGLSLShader			gDeferredBumpProgram(LLViewerShaderMgr::SHADER_DEFERRED);	//Not in mShaderList
+LLGLSLShader			gDeferredTerrainProgram(LLViewerShaderMgr::SHADER_DEFERRED);//Not in mShaderList
+LLGLSLShader			gDeferredTreeProgram(LLViewerShaderMgr::SHADER_DEFERRED);	//Not in mShaderList
+LLGLSLShader			gDeferredAvatarProgram(LLViewerShaderMgr::SHADER_DEFERRED);	//Not in mShaderList
+LLGLSLShader			gDeferredAvatarAlphaProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calculatesAtmospherics
+LLGLSLShader			gDeferredLightProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredMultiLightProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredSunProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredBlurLightProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredSoftenProgram(LLViewerShaderMgr::SHADER_DEFERRED);
+LLGLSLShader			gDeferredShadowProgram(LLViewerShaderMgr::SHADER_DEFERRED);	//Not in mShaderList
+LLGLSLShader			gDeferredAvatarShadowProgram(LLViewerShaderMgr::SHADER_DEFERRED);//Not in mShaderList
+LLGLSLShader			gDeferredAlphaProgram(LLViewerShaderMgr::SHADER_DEFERRED);		//calculatesAtmospherics
+LLGLSLShader			gDeferredFullbrightProgram(LLViewerShaderMgr::SHADER_DEFERRED); //calculatesAtmospherics
 
 //current avatar shader parameter pointer
 GLint				gAvatarMatrixParam;
 
 LLViewerShaderMgr::LLViewerShaderMgr() :
 	mVertexShaderLevel(SHADER_COUNT, 0)
-{	
-	/// Make sure WL Sky is the first program
-	mShaderList.push_back(&gWLSkyProgram);
-	mShaderList.push_back(&gWLCloudProgram);
-	mShaderList.push_back(&gAvatarProgram);
-	mShaderList.push_back(&gObjectShinyProgram);
-	mShaderList.push_back(&gWaterProgram);
-	mShaderList.push_back(&gAvatarEyeballProgram); 
-	mShaderList.push_back(&gObjectSimpleProgram);
-	mShaderList.push_back(&gObjectFullbrightProgram);
-	mShaderList.push_back(&gObjectFullbrightShinyProgram);
-	mShaderList.push_back(&gTerrainProgram);
-	mShaderList.push_back(&gTerrainWaterProgram);
-	mShaderList.push_back(&gObjectSimpleWaterProgram);
-	mShaderList.push_back(&gObjectFullbrightWaterProgram);
-	mShaderList.push_back(&gAvatarWaterProgram);
-	mShaderList.push_back(&gObjectShinyWaterProgram);
-	mShaderList.push_back(&gUnderWaterProgram);
-	mShaderList.push_back(&gDeferredSunProgram);
-	mShaderList.push_back(&gDeferredBlurLightProgram);
-	mShaderList.push_back(&gDeferredSoftenProgram);
-	mShaderList.push_back(&gDeferredLightProgram);
-	mShaderList.push_back(&gDeferredMultiLightProgram);
-	mShaderList.push_back(&gDeferredAlphaProgram);
-	mShaderList.push_back(&gDeferredFullbrightProgram);
-	mShaderList.push_back(&gDeferredWaterProgram);
-	mShaderList.push_back(&gDeferredAvatarAlphaProgram);
-}
+{}
 
 LLViewerShaderMgr::~LLViewerShaderMgr()
 {
 	mVertexShaderLevel.clear();
-	mShaderList.clear();
 }
 
 // static
@@ -284,8 +257,6 @@ void LLViewerShaderMgr::setShaders()
 	{
 		return;
 	}
-	// Make sure the compiled shader map is cleared before we recompile shaders.
-	mShaderObjects.clear();
 	
 	initAttribsAndUniforms();
 	gPipeline.releaseGLBuffers();
@@ -379,12 +350,7 @@ void LLViewerShaderMgr::setShaders()
 			loadShadersWindLight();
 			loadShadersEffects();
 			loadShadersInterface();
-			
-			// Load max avatar shaders to set the max level
-			mVertexShaderLevel[SHADER_AVATAR] = 3;
-			mMaxAvatarShaderLevel = 3;
-			loadShadersAvatar();
-			
+					
 #if 0 && LL_DARWIN // force avatar shaders off for mac
 			mVertexShaderLevel[SHADER_AVATAR] = 0;
 			sMaxAvatarShaderLevel = 0;
@@ -437,28 +403,24 @@ void LLViewerShaderMgr::setShaders()
 		{
 			gPipeline.mVertexShadersEnabled = FALSE;
 			gPipeline.mVertexShadersLoaded = 0;
-			mVertexShaderLevel[SHADER_LIGHTING] = 0;
-			mVertexShaderLevel[SHADER_INTERFACE] = 0;
-			mVertexShaderLevel[SHADER_ENVIRONMENT] = 0;
-			mVertexShaderLevel[SHADER_WATER] = 0;
-			mVertexShaderLevel[SHADER_OBJECT] = 0;
-			mVertexShaderLevel[SHADER_EFFECT] = 0;
-			mVertexShaderLevel[SHADER_WINDLIGHT] = 0;
-			mVertexShaderLevel[SHADER_AVATAR] = 0;
+			for (S32 i = 0; i < SHADER_COUNT; i++)
+				mVertexShaderLevel[i] = 0;
 		}
+
+		//Flag base shader objects for deletion
+		//Don't worry-- they won't be deleted until no programs refrence them.
+		std::map<std::string, GLhandleARB>::iterator it = mShaderObjects.begin();
+		for(it;it!=mShaderObjects.end();++it)
+			if(it->second)
+				glDeleteObjectARB(it->second);
+		mShaderObjects.clear(); 
 	}
 	else
 	{
 		gPipeline.mVertexShadersEnabled = FALSE;
 		gPipeline.mVertexShadersLoaded = 0;
-		mVertexShaderLevel[SHADER_LIGHTING] = 0;
-		mVertexShaderLevel[SHADER_INTERFACE] = 0;
-		mVertexShaderLevel[SHADER_ENVIRONMENT] = 0;
-		mVertexShaderLevel[SHADER_WATER] = 0;
-		mVertexShaderLevel[SHADER_OBJECT] = 0;
-		mVertexShaderLevel[SHADER_EFFECT] = 0;
-		mVertexShaderLevel[SHADER_WINDLIGHT] = 0;
-		mVertexShaderLevel[SHADER_AVATAR] = 0;
+		for (S32 i = 0; i < SHADER_COUNT; i++)
+				mVertexShaderLevel[i] = 0;
 	}
 	
 	if (gViewerWindow)
@@ -470,43 +432,14 @@ void LLViewerShaderMgr::setShaders()
 
 void LLViewerShaderMgr::unloadShaders()
 {
-	gObjectSimpleProgram.unload();
-	gObjectSimpleWaterProgram.unload();
-	gObjectFullbrightProgram.unload();
-	gObjectFullbrightWaterProgram.unload();
+	//Instead of manually unloading, shaders are now automatically accumulated in a list.
+	//Simply iterate and unload.
+	std::vector<LLGLSLShader *> &shader_list = LLShaderMgr::getGlobalShaderList();
+	for(std::vector<LLGLSLShader *>::iterator it=shader_list.begin();it!=shader_list.end();++it)
+		(*it)->unload();
 
-	gObjectShinyProgram.unload();
-	gObjectFullbrightShinyProgram.unload();
-	gObjectShinyWaterProgram.unload();
-	gWaterProgram.unload();
-	gUnderWaterProgram.unload();
-	gTerrainProgram.unload();
-	gTerrainWaterProgram.unload();
-	gGlowProgram.unload();
-	gGlowExtractProgram.unload();
-	gAvatarProgram.unload();
-	gAvatarWaterProgram.unload();
-	gAvatarEyeballProgram.unload();
-	gAvatarPickProgram.unload();
-	gHighlightProgram.unload();
-
-	gWLSkyProgram.unload();
-	gWLCloudProgram.unload();
-
-	gPostColorFilterProgram.unload();
-	gPostNightVisionProgram.unload();
-	gPostGaussianBlurProgram.unload();
-
-	gDeferredDiffuseProgram.unload();
-
-	mVertexShaderLevel[SHADER_LIGHTING] = 0;
-	mVertexShaderLevel[SHADER_OBJECT] = 0;
-	mVertexShaderLevel[SHADER_AVATAR] = 0;
-	mVertexShaderLevel[SHADER_ENVIRONMENT] = 0;
-	mVertexShaderLevel[SHADER_WATER] = 0;
-	mVertexShaderLevel[SHADER_INTERFACE] = 0;
-	mVertexShaderLevel[SHADER_EFFECT] = 0;
-	mVertexShaderLevel[SHADER_WINDLIGHT] = 0;
+	for (S32 i = 0; i < SHADER_COUNT; i++)
+		mVertexShaderLevel[i] = 0;
 
 	gPipeline.mVertexShadersLoaded = 0;
 }
@@ -603,7 +536,7 @@ BOOL LLViewerShaderMgr::loadShadersEnvironment()
 
 	if (mVertexShaderLevel[SHADER_ENVIRONMENT] == 0)
 	{
-		gTerrainProgram.unload();
+		unloadShaderClass(SHADER_ENVIRONMENT);
 		return FALSE;
 	}
 
@@ -639,9 +572,7 @@ BOOL LLViewerShaderMgr::loadShadersWater()
 
 	if (mVertexShaderLevel[SHADER_WATER] == 0)
 	{
-		gWaterProgram.unload();
-		gUnderWaterProgram.unload();
-		gTerrainWaterProgram.unload();
+		unloadShaderClass(SHADER_WATER);
 		return FALSE;
 	}
 
@@ -721,39 +652,32 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 
 	if (mVertexShaderLevel[SHADER_EFFECT] == 0)
 	{
-		gGlowProgram.unload();
-		gGlowExtractProgram.unload();
-		gPostColorFilterProgram.unload();	
-		gPostNightVisionProgram.unload();
-		gPostGaussianBlurProgram.unload();
+		unloadShaderClass(SHADER_EFFECT);
 		return FALSE;
 	}
 
-	if (success)
+	if(LLPipeline::sRenderGlow)
 	{
-		gGlowProgram.mName = "Glow Shader (Post)";
-		gGlowProgram.mShaderFiles.clear();
-		gGlowProgram.mShaderFiles.push_back(make_pair("effects/glowV.glsl", GL_VERTEX_SHADER_ARB));
-		gGlowProgram.mShaderFiles.push_back(make_pair("effects/glowF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gGlowProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		success = gGlowProgram.createShader(NULL, &mGlowUniforms);
-		if (!success)
+		if (success)
 		{
-			LLPipeline::sRenderGlow = FALSE;
+			gGlowProgram.mName = "Glow Shader (Post)";
+			gGlowProgram.mShaderFiles.clear();
+			gGlowProgram.mShaderFiles.push_back(make_pair("effects/glowV.glsl", GL_VERTEX_SHADER_ARB));
+			gGlowProgram.mShaderFiles.push_back(make_pair("effects/glowF.glsl", GL_FRAGMENT_SHADER_ARB));
+			gGlowProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
+			success = gGlowProgram.createShader(NULL, &mGlowUniforms);
+			LLPipeline::sRenderGlow = success;
 		}
-	}
-	
-	if (success)
-	{
-		gGlowExtractProgram.mName = "Glow Extract Shader (Post)";
-		gGlowExtractProgram.mShaderFiles.clear();
-		gGlowExtractProgram.mShaderFiles.push_back(make_pair("effects/glowExtractV.glsl", GL_VERTEX_SHADER_ARB));
-		gGlowExtractProgram.mShaderFiles.push_back(make_pair("effects/glowExtractF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gGlowExtractProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		success = gGlowExtractProgram.createShader(NULL, &mGlowExtractUniforms);
-		if (!success)
+		
+		if (success)
 		{
-			LLPipeline::sRenderGlow = FALSE;
+			gGlowExtractProgram.mName = "Glow Extract Shader (Post)";
+			gGlowExtractProgram.mShaderFiles.clear();
+			gGlowExtractProgram.mShaderFiles.push_back(make_pair("effects/glowExtractV.glsl", GL_VERTEX_SHADER_ARB));
+			gGlowExtractProgram.mShaderFiles.push_back(make_pair("effects/glowExtractF.glsl", GL_FRAGMENT_SHADER_ARB));
+			gGlowExtractProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
+			success = gGlowExtractProgram.createShader(NULL, &mGlowExtractUniforms);
+			LLPipeline::sRenderGlow = success;
 		}
 	}
 	
@@ -827,23 +751,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 {
 	if (mVertexShaderLevel[SHADER_DEFERRED] == 0)
 	{
-		gDeferredTreeProgram.unload();
-		gDeferredDiffuseProgram.unload();
-		gDeferredBumpProgram.unload();
-		gDeferredImpostorProgram.unload();
-		gDeferredTerrainProgram.unload();
-		gDeferredLightProgram.unload();
-		gDeferredMultiLightProgram.unload();
-		gDeferredSunProgram.unload();
-		gDeferredBlurLightProgram.unload();
-		gDeferredSoftenProgram.unload();
-		gDeferredShadowProgram.unload();
-		gDeferredAvatarShadowProgram.unload();
-		gDeferredAvatarProgram.unload();
-		gDeferredAvatarAlphaProgram.unload();
-		gDeferredAlphaProgram.unload();
-		gDeferredFullbrightProgram.unload();
-		gDeferredWaterProgram.unload();
+		unloadShaderClass(SHADER_DEFERRED);
 		return FALSE;
 	}
 
@@ -1051,13 +959,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 
 	if (mVertexShaderLevel[SHADER_OBJECT] == 0)
 	{
-		gObjectShinyProgram.unload();
-		gObjectFullbrightShinyProgram.unload();
-		gObjectShinyWaterProgram.unload();
-		gObjectSimpleProgram.unload();
-		gObjectSimpleWaterProgram.unload();
-		gObjectFullbrightProgram.unload();
-		gObjectFullbrightWaterProgram.unload();
+		unloadShaderClass(SHADER_OBJECT);
 		return FALSE;
 	}
 
@@ -1183,10 +1085,7 @@ BOOL LLViewerShaderMgr::loadShadersAvatar()
 
 	if (mVertexShaderLevel[SHADER_AVATAR] == 0)
 	{
-		gAvatarProgram.unload();
-		gAvatarWaterProgram.unload();
-		gAvatarEyeballProgram.unload();
-		gAvatarPickProgram.unload();
+		unloadShaderClass(SHADER_AVATAR);
 		return FALSE;
 	}
 
@@ -1273,7 +1172,7 @@ BOOL LLViewerShaderMgr::loadShadersInterface()
 
 	if (mVertexShaderLevel[SHADER_INTERFACE] == 0)
 	{
-		gHighlightProgram.unload();
+		unloadShaderClass(SHADER_INTERFACE);
 		return FALSE;
 	}
 	
@@ -1302,8 +1201,7 @@ BOOL LLViewerShaderMgr::loadShadersWindLight()
 
 	if (mVertexShaderLevel[SHADER_WINDLIGHT] < 2)
 	{
-		gWLSkyProgram.unload();
-		gWLCloudProgram.unload();
+		unloadShaderClass(SHADER_WINDLIGHT);
 		return FALSE;
 	}
 
@@ -1343,4 +1241,19 @@ void LLViewerShaderMgr::updateShaderUniforms(LLGLSLShader * shader)
 {
 	LLWLParamManager::instance()->updateShaderUniforms(shader);
 	LLWaterParamManager::instance()->updateShaderUniforms(shader);
+}
+
+/*static*/ void LLShaderMgr::unloadShaderClass(int shader_class)
+{
+	std::vector<LLGLSLShader *> &shader_list = getGlobalShaderList();
+	for(std::vector<LLGLSLShader *>::iterator it=shader_list.begin();it!=shader_list.end();++it)
+	{
+		if((*it)->mShaderClass == shader_class)
+			(*it)->unload();
+	}
+}
+/*static*/ std::vector<LLGLSLShader *> &LLShaderMgr::getGlobalShaderList()
+{
+	static std::vector<LLGLSLShader *> sGlbShaderLst;
+	return sGlbShaderLst;
 }

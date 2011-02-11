@@ -67,7 +67,7 @@ public:
 		SG_WATER
 	};
 	
-	LLGLSLShader();
+	LLGLSLShader(S32 shader_class);
 
 	void unload();
 	BOOL createShader(std::vector<std::string> * attributes,
@@ -134,6 +134,7 @@ public:
 	std::map<GLint, LLVector4> mValue; //lookup map of uniform location to last known value
 	std::vector<GLint> mTexture;
 	S32 mActiveTextureChannels;
+	S32 mShaderClass;
 	S32 mShaderLevel;
 	S32 mShaderGroup;
 	BOOL mUniformsDirty;

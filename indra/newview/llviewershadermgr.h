@@ -227,12 +227,14 @@ public:
 
 	shader_iter beginShaders() const
 	{
-		return mShaderList.begin();
+		return getGlobalShaderList().begin();
+		//return mShaderList.begin();
 	}
 
 	shader_iter endShaders() const
 	{
-		return mShaderList.end();
+		return getGlobalShaderList().end();
+		//return mShaderList.end();
 	}
 
 
@@ -263,8 +265,10 @@ private:
 	std::vector<std::string> mAvatarUniforms;
 
 	// the list of shaders we need to propagate parameters to.
-	std::vector<LLGLSLShader *> mShaderList;
-
+	// Currently this is replaced with a global list of all shaders
+	//  which isn't quite as efficient. However, if other changes prove
+	//  stable then I will mimic mShaderList on a per-ParamManager basis.
+	//std::vector<LLGLSLShader *> mShaderList;
 }; //LLViewerShaderMgr
 
 inline bool operator == (LLViewerShaderMgr::shader_iter const & a, LLViewerShaderMgr::shader_iter const & b)

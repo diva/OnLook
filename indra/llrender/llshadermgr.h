@@ -71,6 +71,9 @@ protected:
 	// our parameter manager singleton instance
 	static LLShaderMgr * sInstance;
 
+public:
+	static void unloadShaderClass(int shader_class);
+	static std::vector<LLGLSLShader *> &getGlobalShaderList(); //Holds a list of ALL LLGLSLShader objects.
 }; //LLShaderMgr
 
 #endif
