@@ -730,7 +730,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		vector<string> shaderUniforms;
 		shaderUniforms.reserve(2);
 		shaderUniforms.push_back("RenderTexture");
-		shaderUniforms.push_back("hoizontalPass");
+		shaderUniforms.push_back("horizontalPass");
 
 		gPostGaussianBlurProgram.mName = "Gaussian Blur Shader (Post)";
 		gPostGaussianBlurProgram.mShaderFiles.clear();

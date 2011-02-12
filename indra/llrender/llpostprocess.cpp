@@ -383,7 +383,7 @@ void LLPostProcess::applyGaussBlurShader(void)
 	LLGLDepthTest depth(GL_FALSE);
 	gGL.setSceneBlendType(LLRender::BT_REPLACE);
 	glUniform1iARB(gaussBlurUniforms["RenderTexture"], 0);
-	GLint horiz_pass = gaussBlurUniforms["hoizontalPass"];
+	GLint horiz_pass = gaussBlurUniforms["horizontalPass"];
 	for(int i = 0;i<pass_count;++i)
 	{
 		for(int j = 0;j<2;++j)
@@ -402,7 +402,7 @@ void LLPostProcess::applyGaussBlurShader(void)
 void LLPostProcess::createGaussBlurShader(void)
 {
 	gaussBlurUniforms["RenderTexture"] = 0;
-	gaussBlurUniforms["hoizontalPass"] = 0;
+	gaussBlurUniforms["horizontalPass"] = 0;
 }
 
 void LLPostProcess::getShaderUniforms(glslUniforms & uniforms, GLhandleARB & prog)
