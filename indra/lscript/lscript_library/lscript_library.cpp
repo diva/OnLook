@@ -457,6 +457,15 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "llGetLinkPrimitiveParams", NULL, "il");
 	addFunction(10.f, 0.f, dummy_func, "llLinkParticleSystem", NULL, "il");
 	addFunction(10.f, 0.f, dummy_func, "llSetLinkTextureAnim", NULL, "iiiiifff");
+
+	addFunction(10.f, 0.f, dummy_func, "llGetLinkNumberOfSides", "i", "i");
+
+    // IDEVO Name lookup calls, see lscript_avatar_names.h
+    addFunction(10.f, 0.f, dummy_func, "llGetUsername", "s", "k");
+    addFunction(10.f, 0.f, dummy_func, "llRequestUsername", "k", "k");
+    addFunction(10.f, 0.f, dummy_func, "llGetDisplayName", "s", "k");
+    addFunction(10.f, 0.f, dummy_func, "llRequestDisplayName", "k", "k");
+
 	// energy, sleep, dummy_func, name, return type, parameters, gods-only
 
 	// IF YOU ADD NEW SCRIPT CALLS, YOU MUST PUT THEM AT THE END OF THIS LIST.
