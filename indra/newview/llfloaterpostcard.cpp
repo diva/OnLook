@@ -64,6 +64,8 @@
 
 #include "llassetuploadresponders.h"
 
+#include "hippogridmanager.h"
+
 #if LL_MSVC
 #pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
 #endif
@@ -358,7 +360,12 @@ bool LLFloaterPostcard::missingSubjMsgAlertCallback(const LLSD& notification, co
 		if((childGetValue("subject_form").asString()).empty())
 		{
 			// Stuff the subject back into the form.
-			childSetValue("subject_form", getString("default_subject"));
+			LLStringUtil::format_map_t targs;
+			targs["[GRID_NAME]"] = gHippoGridManager->getConnectedGrid()->getGridName();
+			std::string subj = getString("default_subject");
+			LLStringUtil::format(subj, targs);
+
+			childSetValue("subject_form", subj);
 		}
 
 		if(!mHasFirstMsgFocus)

@@ -79,7 +79,7 @@
 #include "roles_constants.h"
 #include "llworld.h"
 
-
+#include "hippogridmanager.h"
 
 
 
@@ -668,6 +668,7 @@ void LLPanelLandGeneral::refresh()
 				mSaleInfoForSaleNoObjects->setVisible(TRUE);
 			}
 			mSaleInfoNotForSale->setVisible(FALSE);
+			mSaleInfoForSale1->setTextArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 			F32 cost_per_sqm = 0.0f;
 			if (area > 0)
@@ -926,6 +927,7 @@ void LLPanelLandGeneral::onClickBuyPass(void* data)
 
 	LLSD args;
 	args["COST"] = cost;
+	args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 	args["PARCEL_NAME"] = parcel_name;
 	args["TIME"] = time;
 	
@@ -2124,6 +2126,7 @@ void LLPanelLandOptions::refreshSearch()
 	}
 	BOOL show_directory = parcel->getParcelFlag(PF_SHOW_DIRECTORY);
 	mCheckShowDirectory	->set(show_directory);
+	mCheckShowDirectory->setLabelArg("[DIRECTORYFEE]", gHippoGridManager->getConnectedGrid()->getDirectoryFee());
 
 	// Set by string in case the order in UI doesn't match the order by index.
 	// *TODO:Translate
@@ -2491,6 +2494,7 @@ void LLPanelLandAccess::refresh()
 		
 		S32 pass_price = parcel->getPassPrice();
 		childSetValue( "PriceSpin", (F32)pass_price );
+		childSetLabelArg("PriceSpin", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 
 		F32 pass_hours = parcel->getPassHours();
 		childSetValue( "HoursSpin", pass_hours );

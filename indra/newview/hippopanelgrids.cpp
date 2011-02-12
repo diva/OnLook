@@ -304,7 +304,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		// check nickname
 		std::string gridnick = childGetValue("gridnick");
 		if (gridnick == "<required>") gridnick = "";
-		HippoGridInfo::cleanUpGridNick(gridnick);
+		HippoGridInfo::sanitizeGridNick(gridnick);
 		childSetValue("gridnick", (gridnick != "")? gridnick: "<required>");
 		if (gridnick == "") {
 			LLNotifications::instance().add("GridsNoNick");

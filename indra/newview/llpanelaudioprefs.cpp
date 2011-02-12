@@ -62,6 +62,8 @@
 #include "llviewerwindow.h"
 #include "llviewercontrol.h"
 
+#include "hippogridmanager.h"
+
 //
 // Static functions
 //
@@ -88,6 +90,8 @@ LLPanelAudioPrefs::~LLPanelAudioPrefs()
 BOOL LLPanelAudioPrefs::postBuild()
 {
 	refreshValues(); // initialize member data from saved settings
+	childSetLabelArg("currency_change_threshold", "[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
+
 	return TRUE;
 }
 

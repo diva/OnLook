@@ -57,7 +57,7 @@ void LLPanelDirGroups::search(const std::string& search_text)
 		}
 		
 		std::string selected_collection = "Groups";
-		std::string url = buildSearchURL(search_text, selected_collection, inc_pg, inc_mature, inc_adult);
+		std::string url = buildSearchURL(search_text, selected_collection, inc_pg, inc_mature, inc_adult, true);
 		if (mWebBrowser)
 		{
 			mWebBrowser->navigateTo(url);

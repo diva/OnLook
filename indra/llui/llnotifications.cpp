@@ -37,6 +37,8 @@
 
 #include "llnotifications.h"
 
+#include "../newview/hippogridmanager.h"
+
 #include <algorithm>
 #if LL_MSVC
 #pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
@@ -605,7 +607,14 @@ void LLNotification::init(const std::string& template_name, const LLSD& form_ele
 
 	// add default substitutions
 	// TODO: change this to read from the translatable strings file!
-	mSubstitutions["SECOND_LIFE"] = "Second Life";
+	mSubstitutions["[SECOND_LIFE]"] = "Second Life";
+	mSubstitutions["[VIEWER_NAME]"] = LLNotifications::instance().getGlobalString("VIEWER_NAME");
+	mSubstitutions["[VIEWER_SITE]"] = LLNotifications::instance().getGlobalString("VIEWER_SITE");
+	
+	mSubstitutions["[GRID_NAME]"] = gHippoGridManager->getConnectedGrid()->getGridName();
+	mSubstitutions["[GRID_SITE]"] = gHippoGridManager->getConnectedGrid()->getWebSite();
+	mSubstitutions["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+
 	mSubstitutions["_URL"] = getURL();
 	mSubstitutions["_NAME"] = template_name;
 	// TODO: something like this so that a missing alert is sensible:

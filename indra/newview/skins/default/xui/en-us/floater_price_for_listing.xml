@@ -14,7 +14,7 @@ and appear higher in searches.
 	</text>
 	<text bottom="50" follows="top|left" font="SansSerif" height="20" left="15"
 	     name="price_text" width="120">
-		Price for Ad (L$):
+		Price for Ad ([CURRENCY]):
 	</text>
 	<line_editor bottom_delta="2" follows="top|left" height="20" left="125" max_length="6"
 	     name="price_edit" width="60" />

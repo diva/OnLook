@@ -85,6 +85,8 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+#include "hippogridmanager.h"
+
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
@@ -237,6 +239,7 @@ void LLTaskInvFVBridge::buyItem()
 	{
         LLSD args;
         args["PRICE"] = llformat("%d",sale_info.getSalePrice());
+        args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
         args["OWNER"] = owner_name;
         if (sale_info.getSaleType() != LLSaleInfo::FS_CONTENTS)
         {
@@ -730,7 +733,7 @@ void LLTaskInvFVBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		else
 		{
 			std::ostringstream info;
-			info << "Buy for L$" << price;
+			info << "Buy for " << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
 			label.assign(info.str());
 		}
 
@@ -1120,7 +1123,7 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		else
 		{
 			std::ostringstream info;
-			info << "Buy for L$" << price;
+			info << "Buy for " << gHippoGridManager->getConnectedGrid()->getCurrencySymbol() << price;
 			label.assign(info.str());
 		}
 

@@ -63,6 +63,8 @@
 #include "llfloaterdirectory.h"
 #include "llpaneldirbrowser.h"
 
+#include "hippogridmanager.h"
+
 #if LL_MSVC
 // disable boost::lexical_cast warning
 #pragma warning (disable:4702)
@@ -220,8 +222,20 @@ void LLPanelDirFindAll::search(const std::string& search_text)
 	
 	if (!search_text.empty())
 	{
+		// Check whether or not we're on the old or web search All -- MC
+		bool is_web = false;
+		LLPanel* tabs_panel = mFloaterDirectory->getChild<LLTabContainer>("Directory Tabs")->getCurrentPanel();
+		if (tabs_panel)
+		{
+			is_web = tabs_panel->getName() == "find_all_panel";
+		}
+		else
+		{
+			llwarns << "search panel not found! How can this be?!" << llendl;
+		}
+
 		std::string selected_collection = childGetValue( "Category" ).asString();
-		std::string url = buildSearchURL(search_text, selected_collection, inc_pg, inc_mature, inc_adult);
+		std::string url = buildSearchURL(search_text, selected_collection, inc_pg, inc_mature, inc_adult, is_web);
 		if (mWebBrowser)
 		{
 			mWebBrowser->navigateTo(url);
@@ -243,20 +257,48 @@ void LLPanelDirFind::focus()
 
 void LLPanelDirFind::navigateToDefaultPage()
 {
-	std::string start_url = getString("default_search_page");
-	BOOL inc_pg = childGetValue("incpg").asBoolean();
-	BOOL inc_mature = childGetValue("incmature").asBoolean();
-	BOOL inc_adult = childGetValue("incadult").asBoolean();
-	if (!(inc_pg || inc_mature || inc_adult))
+	std::string start_url = "";
+	// Note: we use the web panel in OpenSim as well as Second Life -- MC
+	if (gHippoGridManager->getConnectedGrid()->getSearchUrl().empty() && 
+		!gHippoGridManager->getConnectedGrid()->isSecondLife())
 	{
-		// if nothing's checked, just go for pg; we don't notify in
-		// this case because it's a default page.
-		inc_pg = true;
+		// OS-based but doesn't have its own web search url -- MC
+		start_url = gSavedSettings.getString("SearchURLDefaultOpenSim");
 	}
-	
-	start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult);
+	else
+	{
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife()) 
+		{
+			if (mBrowserName == "showcase_browser")
+			{
+				// note that the showcase URL in floater_directory.xml is no longer used
+				start_url = gSavedSettings.getString("ShowcaseURLDefault");
+			}
+			else
+			{
+				start_url = gSavedSettings.getString("SearchURLDefault");
+			}
+		}
+		else
+		{
+			// OS-based but has its own web search url -- MC
+			start_url = gHippoGridManager->getConnectedGrid()->getSearchUrl();
+		}
 
-	llinfos << "default url: "  << start_url << llendl;
+		BOOL inc_pg = childGetValue("incpg").asBoolean();
+		BOOL inc_mature = childGetValue("incmature").asBoolean();
+		BOOL inc_adult = childGetValue("incadult").asBoolean();
+		if (!(inc_pg || inc_mature || inc_adult))
+		{
+			// if nothing's checked, just go for pg; we don't notify in
+			// this case because it's a default page.
+			inc_pg = true;
+		}
+	
+		start_url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, true);
+	}
+
+	llinfos << "default web search url: "  << start_url << llendl;
 
 	if (mWebBrowser)
 	{
@@ -265,10 +307,14 @@ void LLPanelDirFind::navigateToDefaultPage()
 }
 // static
 std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const std::string& collection, 
-										   bool inc_pg, bool inc_mature, bool inc_adult)
+										   bool inc_pg, bool inc_mature, bool inc_adult, bool is_web)
 {
-	std::string url = gSavedSettings.getString("SearchURLDefault");
-	if (!search_text.empty())
+	std::string url;
+	if (search_text.empty()) 
+	{
+		url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_EMPTY, is_web);
+	} 
+	else 
 	{
 		// Replace spaces with "+" for use by Google search appliance
 		// Yes, this actually works for double-spaces
@@ -291,7 +337,7 @@ std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const
 			"-._~$+!*'()";
 		std::string query = LLURI::escape(search_text_with_plus, allowed);
 
-		url = gSavedSettings.getString("SearchURLQuery");
+		url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_QUERY, is_web);
 		std::string substring = "[QUERY]";
 		std::string::size_type where = url.find(substring);
 		if (where != std::string::npos)
@@ -309,66 +355,74 @@ std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const
 		}
 
 	}
-	url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult);
-	llinfos << "search url " << url << llendl;
+	url += getSearchURLSuffix(inc_pg, inc_mature, inc_adult, is_web);
+	llinfos << "web search url " << url << llendl;
 	return url;
 }
 // static
-std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult)
+std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web)
 {
-	std::string url = gSavedSettings.getString("SearchURLSuffix2");
+	std::string url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_TEMPLATE, is_web);
 
-	// if the mature checkbox is unchecked, modify query to remove 
-	// terms with given phrase from the result set
-	// This builds a value from 1-7 by or-ing together the flags, and then converts
-	// it to a string. 
-	std::string substring="[MATURITY]";
-	S32 maturityFlag = 
-		(inc_pg ? SEARCH_PG : SEARCH_NONE) |
-		(inc_mature ? SEARCH_MATURE : SEARCH_NONE) |
-		(inc_adult ? SEARCH_ADULT : SEARCH_NONE);
-	url.replace(url.find(substring), substring.length(), boost::lexical_cast<std::string>(maturityFlag));
-	
-	// Include region and x/y position, not for the GSA, but
-	// just to get logs on the web server for search_proxy.php
-	// showing where people were standing when they searched.
-	std::string region_name;
-	LLViewerRegion* region = gAgent.getRegion();
-	if (region)
+	if (!url.empty())
 	{
-		region_name = region->getName();
+		// Note: opensim's default template (SearchURLSuffixOpenSim) is currently empty -- MC
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife() || 
+			!gHippoGridManager->getConnectedGrid()->getSearchUrl().empty())
+		{
+			// if the mature checkbox is unchecked, modify query to remove 
+			// terms with given phrase from the result set
+			// This builds a value from 1-7 by or-ing together the flags, and then converts
+			// it to a string. 
+			std::string substring="[MATURITY]";
+			S32 maturityFlag = 
+				(inc_pg ? SEARCH_PG : SEARCH_NONE) |
+				(inc_mature ? SEARCH_MATURE : SEARCH_NONE) |
+				(inc_adult ? SEARCH_ADULT : SEARCH_NONE);
+			url.replace(url.find(substring), substring.length(), boost::lexical_cast<std::string>(maturityFlag));
+			
+			// Include region and x/y position, not for the GSA, but
+			// just to get logs on the web server for search_proxy.php
+			// showing where people were standing when they searched.
+			std::string region_name;
+			LLViewerRegion* region = gAgent.getRegion();
+			if (region)
+			{
+				region_name = region->getName();
+			}
+			// take care of spaces in names
+			region_name = LLURI::escape(region_name);
+			substring = "[REGION]";
+			url.replace(url.find(substring), substring.length(), region_name);
+
+			LLVector3 pos_region = gAgent.getPositionAgent();
+
+			std::string x = llformat("%.0f", pos_region.mV[VX]);
+			substring = "[X]";
+			url.replace(url.find(substring), substring.length(), x);
+			std::string y = llformat("%.0f", pos_region.mV[VY]);
+			substring = "[Y]";
+			url.replace(url.find(substring), substring.length(), y);
+			std::string z = llformat("%.0f", pos_region.mV[VZ]);
+			substring = "[Z]";
+			url.replace(url.find(substring), substring.length(), z);
+
+			LLUUID session_id = gAgent.getSessionID();
+			std::string session_string = session_id.getString();
+			substring = "[SESSION]";
+			url.replace(url.find(substring), substring.length(), session_string);
+
+			// set the currently selected language by asking the pref setting
+			std::string language_string = LLUI::getLanguage();
+			std::string language_tag = "[LANG]";
+			url.replace( url.find( language_tag ), language_tag.length(), language_string );
+
+			// and set the flag for the teen grid
+			std::string teen_string = gAgent.isTeen() ? "y" : "n";
+			std::string teen_tag = "[TEEN]";
+			url.replace( url.find( teen_tag ), teen_tag.length(), teen_string );
+		}	
 	}
-	// take care of spaces in names
-	region_name = LLURI::escape(region_name);
-	substring = "[REGION]";
-	url.replace(url.find(substring), substring.length(), region_name);
-
-	LLVector3 pos_region = gAgent.getPositionAgent();
-
-	std::string x = llformat("%.0f", pos_region.mV[VX]);
-	substring = "[X]";
-	url.replace(url.find(substring), substring.length(), x);
-	std::string y = llformat("%.0f", pos_region.mV[VY]);
-	substring = "[Y]";
-	url.replace(url.find(substring), substring.length(), y);
-	std::string z = llformat("%.0f", pos_region.mV[VZ]);
-	substring = "[Z]";
-	url.replace(url.find(substring), substring.length(), z);
-
-	LLUUID session_id = gAgent.getSessionID();
-	std::string session_string = session_id.getString();
-	substring = "[SESSION]";
-	url.replace(url.find(substring), substring.length(), session_string);
-
-	// set the currently selected language by asking the pref setting
-	std::string language_string = LLUI::getLanguage();
-	std::string language_tag = "[LANG]";
-	url.replace( url.find( language_tag ), language_tag.length(), language_string );
-
-	// and set the flag for the teen grid
-	std::string teen_string = gAgent.isTeen() ? "y" : "n";
-	std::string teen_tag = "[TEEN]";
-	url.replace( url.find( teen_tag ), teen_tag.length(), teen_string );	
 	
 	return url;
 }

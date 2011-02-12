@@ -55,6 +55,8 @@
 #include "lloverlaybar.h" // for gOverlayBar
 #include "lluictrlfactory.h"
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB] - Version: 1.23.4
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -579,7 +581,10 @@ void LLNotifyBox::format(std::string& msg, const LLStringUtil::format_map_t& arg
 {
 	// XUI:translate!
 	LLStringUtil::format_map_t targs = args;
-	targs["[SECOND_LIFE]"] = "Second Life";
+	targs["[SECOND_LIFE]"] = gHippoGridManager->getConnectedGrid()->getGridName();
+	targs["[GRID_NAME]"] = gHippoGridManager->getConnectedGrid()->getGridName();
+	targs["[GRID_SITE]"] = gHippoGridManager->getConnectedGrid()->getWebSite();
+	targs["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 	targs["[VIEWER_NAME]"] = "Singularity Viewer";
 	LLStringUtil::format(msg, targs);
 }

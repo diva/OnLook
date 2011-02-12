@@ -3133,9 +3133,6 @@ void LLAppViewer::badNetworkHandler()
 
 	// Flush all of our caches on exit in the case of disconnect due to
 	// invalid packets.
-	// <edit>
-	if(1) return;
-	// </edit>
 
 	mPurgeOnExit = TRUE;
 
@@ -3146,17 +3143,23 @@ void LLAppViewer::badNetworkHandler()
 	LLAppViewer::handleSyncViewerCrash();
 	LLAppViewer::handleViewerCrash();
 
+	std::string grid_support_msg = "";
+	if (!gHippoGridManager->getCurrentGrid()->getSupportUrl().empty())
+	{
+		grid_support_msg = "\n\nOr visit the gird support page at: \n " 
+			+ gHippoGridManager->getCurrentGrid()->getSupportUrl();
+	}
 	std::ostringstream message;
 	message <<
 		"The viewer has detected mangled network data indicative\n"
 		"of a bad upstream network connection or an incomplete\n"
-		"local installation of " << LLAppViewer::instance()->getSecondLifeTitle() << ". \n"
+		"local installation of " << gSecondLife << ". \n"
 		" \n"
 		"Try uninstalling and reinstalling to see if this resolves \n"
 		"the issue. \n"
 		" \n"
-		"If the problem continues, see the Tech Support FAQ at: \n"
-		"www.secondlife.com/support";
+		"If the problem continues, please report the issue at: \n"
+		"http://www.singularityviewer.org" << grid_support_msg;
 	forceDisconnect(message.str());
 }
 

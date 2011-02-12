@@ -54,8 +54,8 @@
 	     show_text="true" width="250" />
 	<spinner bottom_delta="-20" control_name="UISndMoneyChangeThreshold" decimal_digits="0"
 	     enabled="true" follows="left|top" height="16" increment="10"
-	     initial_val="10" label="L$ Change Threshold" label_width="128" left="148"
-	     max_val="10000" min_val="0" mouse_opaque="true" name="L$ Change Threshold"
+	     initial_val="10" label="[CURRENCY] change threshold:" label_width="128" left="148"
+	     max_val="10000" min_val="0" mouse_opaque="true" name="currency_change_threshold"
 	     width="192" />
 	<spinner bottom_delta="-20" control_name="UISndHealthReductionThreshold"
 	     decimal_digits="0" enabled="true" follows="left|top" height="16"

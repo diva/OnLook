@@ -42,6 +42,8 @@
 #include "llviewerimage.h"
 #include "llviewerimagelist.h"
 
+#include "hippogridmanager.h"
+
 // Timers to temporise database requests
 const F32 AGENTS_UPDATE_TIMER = 60.0;			// Seconds between 2 agent requests for a region
 const F32 REQUEST_ITEMS_TIMER = 10.f * 60.f;	// Seconds before we consider re-requesting item data for the grid
@@ -525,7 +527,10 @@ bool LLWorldMap::insertItem(U32 x_world, U32 y_world, std::string& name, LLUUID&
 		case MAP_ITEM_LAND_FOR_SALE:		// land for sale
 		case MAP_ITEM_LAND_FOR_SALE_ADULT:	// adult land for sale 
 		{
-			std::string tooltip = llformat("%d sq. m. L$%d", extra, extra2);
+			std::string tooltip = llformat("%d sq. m. %s%d",
+				extra,
+				gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(),
+				extra2);
 			new_item.setTooltip(tooltip);
 			if (type == MAP_ITEM_LAND_FOR_SALE)
 			{

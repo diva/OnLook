@@ -57,6 +57,8 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
+#include "hippogridmanager.h"
+
 // consts
 const S32 MATURE_CONTENT = 1;
 const S32 NON_MATURE_CONTENT = 2;
@@ -187,6 +189,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlEnrollmentFee = getChild<LLCheckBoxCtrl>("check_enrollment_fee", recurse);
 	if (mCtrlEnrollmentFee)
 	{
+		mCtrlEnrollmentFee->setLabelArg("[CURRENCY]", gHippoGridManager->getConnectedGrid()->getCurrencySymbol());
 		mCtrlEnrollmentFee->setCommitCallback(onCommitEnrollment);
 		mCtrlEnrollmentFee->setCallbackUserData(this);
 	}
@@ -237,6 +240,8 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mComboActiveTitle->resetDirty();
 	}
 
+	LLStringUtil::format_map_t args;
+	args["[GROUPCREATEFEE]"] = gHippoGridManager->getConnectedGrid()->getGroupCreationFee();
 	mIncompleteMemberDataStr = getString("incomplete_member_data_str");
 	mConfirmGroupCreateStr = getString("confirm_group_create_str");
 
@@ -256,9 +261,6 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mBtnInfo->setVisible(FALSE);
 		mGroupName->setVisible(FALSE);
 	}
-
-
-
 
 	return LLPanelGroupTab::postBuild();
 }
@@ -356,6 +358,7 @@ void LLPanelGroupGeneral::onClickJoin(void *userdata)
 		S32 cost = gdatap->mMembershipFee;
 		LLSD args;
 		args["COST"] = llformat("%d", cost);
+		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 		LLSD payload;
 		payload["group_id"] = self->mGroupID;
 
@@ -735,7 +738,9 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 
 		if ( visible )
 		{
-			fee_buff = llformat( "Join (L$%d)", gdatap->mMembershipFee);
+			fee_buff = llformat( "Join (%s%d)",
+				gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(),
+				gdatap->mMembershipFee);
 			mBtnJoinGroup->setLabelSelected(fee_buff);
 			mBtnJoinGroup->setLabelUnselected(fee_buff);
 		}

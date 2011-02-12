@@ -579,7 +579,7 @@ void LLDir::setChatLogsDir(const std::string &path)
 	}
 }
 
-void LLDir::setPerAccountChatLogsDir(const std::string &first, const std::string &last)
+void LLDir::setPerAccountChatLogsDir(const std::string &grid, const std::string &first, const std::string &last)
 {
 	// if both first and last aren't set, assume we're grabbing the cached dir
 	if (!first.empty() && !last.empty())
@@ -595,6 +595,14 @@ void LLDir::setPerAccountChatLogsDir(const std::string &first, const std::string
 		mPerAccountChatLogsDir += firstlower;
 		mPerAccountChatLogsDir += "_";
 		mPerAccountChatLogsDir += lastlower;
+
+		if (!grid.empty())
+		{
+			std::string gridlower(grid);
+			LLStringUtil::toLower(gridlower);
+			mPerAccountChatLogsDir += "@";
+			mPerAccountChatLogsDir += gridlower;
+		}
 	}
 	else
 	{

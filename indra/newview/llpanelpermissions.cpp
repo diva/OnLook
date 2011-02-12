@@ -65,7 +65,7 @@
 #include "lluictrlfactory.h"
 #include "roles_constants.h"
 
-
+#include "hippogridmanager.h"
 
 
 
@@ -145,6 +145,10 @@ LLPanelPermissions::~LLPanelPermissions()
 
 void LLPanelPermissions::refresh()
 {
+
+	LLStringUtil::format_map_t argsCurrency;
+	argsCurrency["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+
 	LLButton*	BtnDeedToGroup = getChild<LLButton>("button deed");
 	if(BtnDeedToGroup)
 	{	
@@ -246,7 +250,7 @@ void LLPanelPermissions::refresh()
 		}
 		
 		childSetEnabled("Cost",false);
-		childSetText("Cost",getString("Cost Default"));
+		childSetText("Cost", getString("Cost Default", argsCurrency));
 		childSetText("Edit Cost",LLStringUtil::null);
 		childSetEnabled("Edit Cost",false);
 		
@@ -464,11 +468,11 @@ void LLPanelPermissions::refresh()
 		// If there are multiple items for sale then set text to PRICE PER UNIT.
 		if (num_for_sale > 1)
 		{
-			childSetText("Cost",getString("Cost Per Unit"));
+			childSetText("Cost",getString("Cost Per Unit", argsCurrency));
 		}
 		else
 		{
-			childSetText("Cost",getString("Cost Default"));
+			childSetText("Cost",getString("Cost Default", argsCurrency));
 		}
 		
 		LLLineEditor *editPrice = getChild<LLLineEditor>("Edit Cost");
@@ -509,15 +513,15 @@ void LLPanelPermissions::refresh()
 
 		// If multiple items are for sale, set text to TOTAL PRICE.
 		if (num_for_sale > 1)
-			childSetText("Cost",getString("Cost Total"));
+			childSetText("Cost", getString("Cost Total", argsCurrency));
 		else
-			childSetText("Cost",getString("Cost Default"));
+			childSetText("Cost", getString("Cost Default", argsCurrency));
 	}
 	// This is a public object.
 	else
 	{
 		childSetEnabled("Cost",false);
-		childSetText("Cost",getString("Cost Default"));
+		childSetText("Cost", getString("Cost Default", argsCurrency));
 		
 		childSetText("Edit Cost",LLStringUtil::null);
 		childSetEnabled("Edit Cost",false);
@@ -1091,6 +1095,9 @@ void LLPanelPermissions::setAllSaleInfo()
 {
 	llinfos << "LLPanelPermissions::setAllSaleInfo()" << llendl;
 	LLSaleInfo::EForSale sale_type = LLSaleInfo::FS_NOT;
+	
+	LLStringUtil::format_map_t argsCurrency;
+	argsCurrency["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 
 	LLCheckBoxCtrl *checkPurchase = getChild<LLCheckBoxCtrl>("checkbox for sale");
 	
@@ -1125,7 +1132,8 @@ void LLPanelPermissions::setAllSaleInfo()
 	{
 		// Don't extract the price if it's labeled as MIXED or is empty.
 		const std::string& editPriceString = editPrice->getText();
-		if (editPriceString != getString("Cost Mixed") && editPriceString != getString("Sale Mixed") &&
+		if (editPriceString != getString("Cost Mixed", argsCurrency) && 
+			editPriceString != getString("Sale Mixed", argsCurrency) &&
 			!editPriceString.empty())
 		{
 			price = atoi(editPriceString.c_str());

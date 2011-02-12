@@ -77,6 +77,8 @@
 #include "llvfile.h"
 #include "llvfs.h"
 
+#include "hippogridmanager.h"
+
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
@@ -1232,6 +1234,9 @@ void LLFloaterSnapshot::Impl::updateLayout(LLFloaterSnapshot* floaterp)
 // static
 void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 {
+	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
+	floater->childSetLabelArg("upload_btn", "[UPLOADFEE]", fee);
+
 	LLRadioGroup* snapshot_type_radio = floater->getChild<LLRadioGroup>("snapshot_type_radio");
 	snapshot_type_radio->setSelectedIndex(gSavedSettings.getS32("LastSnapshotType"));
 	LLSnapshotLivePreview::ESnapshotType shot_type = getTypeIndex(floater);
