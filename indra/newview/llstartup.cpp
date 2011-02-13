@@ -1004,7 +1004,18 @@ bool idle_startup()
 		{
 			gDirUtilp->setChatLogsDir(gSavedPerAccountSettings.getString("InstantMessageLogPath"));		
 		}
-		
+
+		//Get these logs out of my newview root directory, PLEASE.
+		if (gHippoGridManager->getCurrentGrid()->isSecondLife())
+		{
+			gDirUtilp->setPerAccountChatLogsDir(LLStringUtil::null, 
+				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
+		}
+		else
+		{
+			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getCurrentGridNick(), 
+				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
+		}
 		LLFile::mkdir(gDirUtilp->getChatLogsDir());
 		LLFile::mkdir(gDirUtilp->getPerAccountChatLogsDir());
 
