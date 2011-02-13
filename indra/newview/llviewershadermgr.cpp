@@ -410,7 +410,7 @@ void LLViewerShaderMgr::setShaders()
 		//Flag base shader objects for deletion
 		//Don't worry-- they won't be deleted until no programs refrence them.
 		std::map<std::string, GLhandleARB>::iterator it = mShaderObjects.begin();
-		for(it;it!=mShaderObjects.end();++it)
+		for(; it!=mShaderObjects.end();++it)
 			if(it->second)
 				glDeleteObjectARB(it->second);
 		mShaderObjects.clear(); 

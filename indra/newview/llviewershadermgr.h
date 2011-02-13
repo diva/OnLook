@@ -227,13 +227,13 @@ public:
 
 	shader_iter beginShaders() const
 	{
-		return getGlobalShaderList().begin();
+		return (shader_iter)(getGlobalShaderList().begin());
 		//return mShaderList.begin();
 	}
 
 	shader_iter endShaders() const
 	{
-		return getGlobalShaderList().end();
+		return (shader_iter)(getGlobalShaderList().end());
 		//return mShaderList.end();
 	}
 
