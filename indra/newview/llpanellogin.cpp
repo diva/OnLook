@@ -849,7 +849,7 @@ void LLPanelLogin::refreshLoginPage()
 	// kick off a request to grab the url manually
 	gResponsePtr = LLIamHereLogin::build(sInstance);
 
-	std::string login_page = "http://phoenixviewer.com/app/login/"; //gHippoGridManager->getConnectedGrid()->getLoginPage();
+	std::string login_page = gHippoGridManager->getConnectedGrid()->getLoginPage();
 	if (!login_page.empty()) {
 		LLHTTPClient::head(login_page, gResponsePtr);
 	} else {

@@ -577,6 +577,13 @@ void LLIMMgr::addMessage(
 		other_participant_id = LLUUID::null;
 	}
 
+	//This is for InWorldz glitch.
+	if( other_participant_id == session_id )
+	{
+		other_participant_id = LLUUID::null;
+	}
+	
+
 	LLFloaterIMPanel* floater;
 	LLUUID new_session_id = session_id;
 	if (new_session_id.isNull())

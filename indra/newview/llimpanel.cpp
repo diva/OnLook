@@ -1620,7 +1620,7 @@ void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, const LLColor4
 		{
 			std::string show_name = name;
 			LLAvatarName avatar_name;
-			if ((LLUUID::null != source) &&
+			if (source.notNull() &&
 				LLAvatarNameCache::get(source, &avatar_name))
 			{
 				static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
