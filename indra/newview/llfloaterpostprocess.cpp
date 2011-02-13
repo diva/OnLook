@@ -53,7 +53,7 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 
 	/// Color Filter Callbacks
 	childSetCommitCallback("ColorFilterToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_color_filter");
-	//childSetCommitCallback("ColorFilterGamma", &LLFloaterPostProcess::onFloatControlMoved, &(gPostProcess->tweaks.gamma()));
+	childSetCommitCallback("ColorFilterGamma", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gamma");
 	childSetCommitCallback("ColorFilterBrightness", &LLFloaterPostProcess::onFloatControlMoved, (char*)"brightness");
 	childSetCommitCallback("ColorFilterSaturation", &LLFloaterPostProcess::onFloatControlMoved, (char*)"saturation");
 	childSetCommitCallback("ColorFilterContrast", &LLFloaterPostProcess::onFloatControlMoved, (char*)"contrast");
@@ -74,6 +74,10 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 	childSetCommitCallback("BloomExtract", &LLFloaterPostProcess::onFloatControlMoved, (char*)"extract_low");
 	childSetCommitCallback("BloomSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_width");
 	childSetCommitCallback("BloomStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_strength");
+
+	// Gauss Blur Callbacks
+	childSetCommitCallback("GaussBlurToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_gauss_blur");
+	childSetCommitCallback("GaussBlurPasses", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gauss_blur_passes");
 
 	// Effect loading and saving.
 	LLComboBox* comboBox = getChild<LLComboBox>("PPEffectsCombo");
@@ -248,7 +252,7 @@ void LLFloaterPostProcess::syncMenu()
 
 	/// Sync Color Filter Menu
 	childSetValue("ColorFilterToggle", gPostProcess->tweaks.useColorFilter());
-	//childSetValue("ColorFilterGamma", gPostProcess->tweaks.gamma());
+	childSetValue("ColorFilterGamma", gPostProcess->tweaks.getGamma());
 	childSetValue("ColorFilterBrightness", gPostProcess->tweaks.brightness());
 	childSetValue("ColorFilterSaturation", gPostProcess->tweaks.saturation());
 	childSetValue("ColorFilterContrast", gPostProcess->tweaks.contrast());
@@ -268,4 +272,7 @@ void LLFloaterPostProcess::syncMenu()
 	childSetValue("BloomExtract", gPostProcess->tweaks.extractLow());
 	childSetValue("BloomSize", gPostProcess->tweaks.bloomWidth());
 	childSetValue("BloomStrength", gPostProcess->tweaks.bloomStrength());
+
+	childSetValue("GaussBlurToggle", gPostProcess->tweaks.useGaussBlurFilter());
+	childSetValue("GaussBlurPasses", gPostProcess->tweaks.getGaussBlurPasses());
 }

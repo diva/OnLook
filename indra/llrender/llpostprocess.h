@@ -124,7 +124,10 @@ public:
 		inline LLSD & useColorFilter() {
 			return (*this)["enable_color_filter"];
 		}
-
+	
+		inline LLSD & useGaussBlurFilter() {
+			return (*this)["enable_gauss_blur"];
+		}
 
 		inline F32 getBrightMult() const {
 			return F32((*this)["brightness_multiplier"].asReal());
@@ -152,6 +155,10 @@ public:
 
 		inline F32 getBloomStrength() const {
 			return F32((*this)["bloom_strength"].asReal());
+		}
+
+		inline F32 getGamma() const {
+			return F32((*this)["gamma"].asReal());
 		}
 
 		inline F32 getBrightness() const {
@@ -182,6 +189,9 @@ public:
 			return F32((*this)["saturation"].asReal());
 		}
 
+		inline LLSD & getGaussBlurPasses() {
+			return (*this)["gauss_blur_passes"];
+		}
 	};
 	
 	bool initialized;
@@ -230,6 +240,7 @@ private:
 	glslUniforms bloomExtractUniforms;
 	glslUniforms bloomBlurUniforms;
 	glslUniforms colorFilterUniforms;
+	glslUniforms gaussBlurUniforms;
 
 	// the name of currently selected effect in mAllEffects
 	// invariant: tweaks == mAllEffects[mSelectedEffectName]
@@ -253,10 +264,14 @@ private:
 	void createColorFilterShader(void);
 	void applyColorFilterShader(void);
 
+	/// Gaussian blur Filter Functions
+	void createGaussBlurShader(void);
+	void applyGaussBlurShader(void);
+
 	/// OpenGL Helper Functions
 	void getShaderUniforms(glslUniforms & uniforms, GLhandleARB & prog);
 	void createTexture(LLPointer<LLImageGL>& texture, unsigned int width, unsigned int height);
-	void copyFrameBuffer(U32 & texture, unsigned int width, unsigned int height);
+	void copyFrameBuffer(LLGLuint texture, unsigned int width, unsigned int height);
 	void createNoiseTexture(LLPointer<LLImageGL>& texture);
 	bool checkError(void);
 	void checkShaderError(GLhandleARB shader);

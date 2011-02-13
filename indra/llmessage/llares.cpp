@@ -42,6 +42,7 @@
 #include "apr_poll.h"
 
 #include "llapr.h"
+#define CARES_STATICLIB
 #include "llares.h"
 
 #if defined(LL_WINDOWS)
@@ -104,7 +105,8 @@ void LLAres::QueryResponder::queryError(int code)
 LLAres::LLAres() :
 chan_(NULL), mInitSuccess(false)
 {
-	if (ares_init(&chan_) != ARES_SUCCESS)
+	if (ares_library_init(ARES_LIB_INIT_ALL) != ARES_SUCCESS || 
+		ares_init(&chan_) != ARES_SUCCESS)
 	{
 		llwarns << "Could not succesfully initialize ares!" << llendl;
 		return;
@@ -468,7 +470,7 @@ bool LLAres::process(U64 timeout)
 		ll_init_apr();
 	}
 
-	int socks[ARES_GETSOCK_MAXNUM];
+	ares_socket_t socks[ARES_GETSOCK_MAXNUM];
 	apr_pollfd_t aprFds[ARES_GETSOCK_MAXNUM];
 	apr_int32_t nsds = 0;	
 	int nactive = 0;

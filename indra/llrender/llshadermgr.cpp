@@ -385,6 +385,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		if (error != GL_NO_ERROR)
 		{
 			LL_WARNS("ShaderLoading") << "GL ERROR in glShaderSourceARB: " << error << LL_ENDL;
+			glDeleteObjectARB(ret); //no longer need handle
 		}
 		else
 		{
@@ -394,6 +395,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			if (error != GL_NO_ERROR)
 			{
 				LL_WARNS("ShaderLoading") << "GL ERROR in glCompileShaderARB: " << error << LL_ENDL;
+				glDeleteObjectARB(ret); //no longer need handle
 			}
 		}
 	}
@@ -413,6 +415,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			//an error occured, print log
 			LL_WARNS("ShaderLoading") << "GLSL Compilation Error: (" << error << ") in " << filename << LL_ENDL;
 			dumpObjectLog(ret);
+			glDeleteObjectARB(ret); //no longer need handle
 			ret = 0;
 		}
 	}

@@ -914,12 +914,6 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 				gPipeline.mScreen.flush();
 			}
 		}
-
-		/// We copy the frame buffer straight into a texture here,
-		/// and then display it again with compositor effects.
-		/// Using render to texture would be faster/better, but I don't have a 
-		/// grasp of their full display stack just yet.
-		// gPostProcess->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
 		
 		if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 		{
@@ -933,7 +927,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		{
 			gFrameStats.start(LLFrameStats::RENDER_UI);
 			render_ui();
-		}
+		}		
 
 		LLSpatialGroup::sNoDelete = FALSE;
 	}
@@ -1131,8 +1125,14 @@ void render_ui(F32 zoom_factor, int subfield)
 		if (to_texture)
 		{
 			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield);
+			gPipeline.mScreen.flush(); //blit, etc.
 		}
-
+		/// We copy the frame buffer straight into a texture here,
+		/// and then display it again with compositor effects.
+		/// Using render to texture would be faster/better, but I don't have a 
+		/// grasp of their full display stack just yet.
+		gPostProcess->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		
 		render_hud_elements();
 		render_hud_attachments();
 	}
