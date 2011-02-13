@@ -14,66 +14,58 @@
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="32" mouse_opaque="true" name="first_name_text" v_pad="0" width="120">
-		First Name:
+	     left="32" mouse_opaque="true" name="name_label" v_pad="0" width="120">
+		Name or Username:
 	</text>
 	<combo_box bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
 	     font="SansSerif" handle_edit_keys_directly="true" height="20" left="32"
-       max_chars="31" mouse_opaque="true" name="first_name_combo"
-       select_all_on_focus_received="true" width="120" allow_text_entry="true" />
+       max_chars="64" mouse_opaque="true" name="name_combo"
+       select_all_on_focus_received="true" width="155" allow_text_entry="true" />
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="164" mouse_opaque="true" name="last_name_text" v_pad="0" width="120">
-		Last Name:
-	</text>
-	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
-	     follows="left|bottom" font="SansSerifSmall" handle_edit_keys_directly="true"
-	     height="20" left="164" max_length="31" mouse_opaque="true"
-	     name="last_name_edit" select_all_on_focus_received="true" width="120" />
-	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerif" h_pad="0" halign="left" height="16"
-	     left="296" mouse_opaque="true" name="password_text" v_pad="0" width="120">
+	     left="203" mouse_opaque="true" name="password_text" v_pad="0" width="120">
 		Password:
 	</text>
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-24"
 	     follows="left|bottom" font="SansSerifSmall" handle_edit_keys_directly="true"
-	     height="20" left="296" max_length="16" mouse_opaque="true"
+	     height="20" left="203" max_length="16" mouse_opaque="true"
 	     name="password_edit" select_all_on_focus_received="true" width="120" />
 	<check_box bottom="10" control_name="RememberName"
          follows="left|bottom" font="SansSerifSmall" height="16"
-	     initial_value="true" label="Remember resident name"
+	     initial_value="true" label="Remember name"
 	     left="28" mouse_opaque="true" name="remember_name_check" width="158" />
 	<check_box bottom="10" control_name="RememberPassword"
          follows="left|bottom" font="SansSerifSmall" height="16"
 	     initial_value="false" label="Remember password"
-	     left="292" mouse_opaque="true" name="remember_check" width="138" />
+	     left="199" mouse_opaque="true" name="remember_check" width="138" />
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
-	     left="428" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
+	     left="339" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
 		Grid:
 	</text>
 	<combo_box allow_text_entry="false" bottom_delta="-24" follows="left|bottom" height="20"
-	     left="428" mouse_opaque="true" name="grids_combo" width="120" />
+	     left="339" mouse_opaque="true" name="grids_combo" width="120" />
 
-	<button bottom_delta="-3" follows="left|bottom" font="SansSerif" halign="center"
-	     height="24" width="60" label="Grids" label_selected="Grids"
-	     left="550" mouse_opaque="true" name="grids_btn" scale_image="TRUE"/>
+	<button name="grids_btn" label="Grid Manager"
+	    bottom_delta="-20" left_delta="10" height="16" width="100"
+	    follows="left|bottom" font="SansSerifSmall" halign="center"
+	    mouse_opaque="true" scale_image="TRUE" />		 
+
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
 	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
-	     left="624" mouse_opaque="true" name="start_location_text" v_pad="0" width="120">
+	     left="475" mouse_opaque="true" name="start_location_text" v_pad="0" width="120">
 		Start Location:
 	</text>
 
 	<combo_box allow_text_entry="true" bevel_style="in" border_style="line" border_thickness="1" 
 	     follows="left|bottom" font="SansSerif" handle_edit_keys_directly="true"
-	     height="20" hidden="false" left="619" bottom_delta="-24" max_chars="256"  mouse_opaque="true"
+	     height="20" hidden="false" left="529" bottom_delta="-24" max_chars="256"  mouse_opaque="true"
 	     name="regionuri_edit" select_all_on_focus_received="true" width="240" />
-	<combo_box allow_text_entry="true" bottom_delta="0" left="624" follows="left|bottom" height="20"
+	<combo_box allow_text_entry="true" bottom_delta="0" left="475" follows="left|bottom" height="20"
 	     max_chars="128" mouse_opaque="true" name="start_location_combo" width="155">
 		<combo_item name="MyHome" value="My Home">
 			My Home
@@ -88,7 +80,7 @@
 
 	<button bottom_delta="-3" follows="left|bottom" font="SansSerif" halign="center"
 	     height="24" label="Log In" label_selected="Log In"
-	     left="782" mouse_opaque="true" name="connect_btn" scale_image="TRUE"
+	     left="634" mouse_opaque="true" name="connect_btn" scale_image="TRUE"
 	     width="100" />
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
