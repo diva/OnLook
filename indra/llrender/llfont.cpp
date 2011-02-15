@@ -39,7 +39,10 @@
 # include <ft2build.h>
 #else
 // I had to do some work to avoid the system-installed FreeType headers... --ryan.
-# include "llfreetype2/freetype/ft2build.h"
+//This path no longer exists.
+//# include "llfreetype2/freetype/ft2build.h"
+//This works fine.
+# include "../include/ft2build.h"
 #endif
 
 // For some reason, this won't work if it's not wrapped in the ifdef
