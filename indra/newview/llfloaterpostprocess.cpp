@@ -70,10 +70,10 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 	childSetCommitCallback("NightVisionNoiseStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"noise_strength");
 
 	/// Bloom Callbacks
-	childSetCommitCallback("BloomToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_bloom");
+	/*childSetCommitCallback("BloomToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_bloom");
 	childSetCommitCallback("BloomExtract", &LLFloaterPostProcess::onFloatControlMoved, (char*)"extract_low");
 	childSetCommitCallback("BloomSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_width");
-	childSetCommitCallback("BloomStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_strength");
+	childSetCommitCallback("BloomStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_strength");*/
 
 	// Gauss Blur Callbacks
 	childSetCommitCallback("GaussBlurToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_gauss_blur");
@@ -268,10 +268,10 @@ void LLFloaterPostProcess::syncMenu()
 	childSetValue("NightVisionNoiseStrength", gPostProcess->tweaks.noiseStrength());
 
 	/// Sync Bloom Menu
-	childSetValue("BloomToggle", LLSD(gPostProcess->tweaks.useBloomShader()));
+	/*childSetValue("BloomToggle", LLSD(gPostProcess->tweaks.useBloomShader()));
 	childSetValue("BloomExtract", gPostProcess->tweaks.extractLow());
 	childSetValue("BloomSize", gPostProcess->tweaks.bloomWidth());
-	childSetValue("BloomStrength", gPostProcess->tweaks.bloomStrength());
+	childSetValue("BloomStrength", gPostProcess->tweaks.bloomStrength());*/
 
 	childSetValue("GaussBlurToggle", gPostProcess->tweaks.useGaussBlurFilter());
 	childSetValue("GaussBlurPasses", gPostProcess->tweaks.getGaussBlurPasses());
