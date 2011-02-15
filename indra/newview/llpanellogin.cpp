@@ -89,6 +89,10 @@
 #include "llviewermessage.h"
 #include <boost/lexical_cast.hpp>
 // </edit>
+#include <boost/algorithm/string.hpp>
+#include "llstring.h"
+#include <cctype>
+
 #define USE_VIEWER_AUTH 0
 
 const S32 BLACK_BORDER_HEIGHT = 160;
@@ -97,6 +101,30 @@ const S32 MAX_PASSWORD = 16;
 LLPanelLogin *LLPanelLogin::sInstance = NULL;
 BOOL LLPanelLogin::sCapslockDidNotification = FALSE;
 
+
+static bool nameSplit(const std::string& full, std::string& first, std::string& last) {
+	std::vector<std::string> fragments;
+	boost::algorithm::split(fragments, full, boost::is_any_of(" ."));
+	if (fragments.size() == 0)
+		return false;
+	first = fragments[0];
+	if (fragments.size() == 1)
+		last = "resident";
+	else
+		last = fragments[1];
+	return (fragments.size() <= 2);
+}
+
+static std::string nameJoin(const std::string& first,const std::string& last) {
+	if (last.empty() || boost::algorithm::iequals(last, "resident"))
+		return first;
+	else {
+		if(std::islower(last[0]))
+			return first + "." + last;
+		else
+			return first + " " + last;
+	}
+}
 
 class LLLoginRefreshHandler : public LLCommandHandler
 {
@@ -216,16 +244,11 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	reshape(rect.getWidth(), rect.getHeight());
 
 #if !USE_VIEWER_AUTH
-	LLComboBox* first_name_combo = sInstance->getChild<LLComboBox>("first_name_combo");
-	first_name_combo->setCommitCallback(onSelectLoginEntry);
-	first_name_combo->setFocusLostCallback(onLoginComboLostFocus);
-	first_name_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNoSpace);
-	first_name_combo->setSuppressTentative(true);
-
-
-	LLLineEditor* last_name_edit = sInstance->getChild<LLLineEditor>("last_name_edit");
-	last_name_edit->setPrevalidate(LLLineEditor::prevalidatePrintableNoSpace);
-	last_name_edit->setCommitCallback(onLastNameEditLostFocus);
+	LLComboBox* name_combo = sInstance->getChild<LLComboBox>("name_combo");
+	name_combo->setCommitCallback(onSelectLoginEntry);
+	name_combo->setFocusLostCallback(onLoginComboLostFocus);
+	name_combo->setPrevalidate(LLLineEditor::prevalidatePrintableNotPipe);
+	name_combo->setSuppressTentative(true);
 
 	childSetCommitCallback("remember_name_check", onNameCheckChanged);
 	childSetCommitCallback("password_edit", mungePassword);
@@ -445,7 +468,7 @@ void LLPanelLogin::setLoginHistory(LLSavedLogins const& login_history)
 {
 	sInstance->mLoginHistoryData = login_history;
 
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("first_name_combo");
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 	llassert(login_combo);
 	login_combo->clear();
 
@@ -454,7 +477,8 @@ void LLPanelLogin::setLoginHistory(LLSavedLogins const& login_history)
 	     i != saved_login_entries.rend(); ++i)
 	{
 		LLSD e = i->asLLSD();
-		if (e.isMap()) login_combo->add(i->getDisplayString(), e);
+		if (e.isMap())
+			login_combo->add(nameJoin(i->getFirstName(), i->getLastName()), e);
 	}
 }
 
@@ -571,7 +595,7 @@ void LLPanelLogin::giveFocus()
 	if( sInstance )
 	{
 		// Grab focus and move cursor to first blank input field
-		std::string first = sInstance->childGetText("first_name_combo");
+		std::string first = sInstance->childGetText("name_combo");
 		std::string pass = sInstance->childGetText("password_edit");
 
 		BOOL have_first = !first.empty();
@@ -580,7 +604,7 @@ void LLPanelLogin::giveFocus()
 		if (!have_first)
 		{
 			// User doesn't have a name, so start there.
-			LLComboBox* combo = sInstance->getChild<LLComboBox>("first_name_combo");
+			LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
 			combo->setFocusText(TRUE);
 		}
 		else if (!have_pass)
@@ -633,11 +657,10 @@ void LLPanelLogin::setFields(const std::string& firstname,
 		return;
 	}
 
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("first_name_combo");
-	sInstance->childSetText("last_name_edit", lastname);
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 
 	llassert_always(firstname.find(' ') == std::string::npos);
-	login_combo->setLabel(firstname);
+	login_combo->setLabel(nameJoin(firstname, lastname));
 
 	// Max "actual" password length is 16 characters.
 	// Hex digests are always 32 characters.
@@ -674,15 +697,11 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	}
 
 	LLCheckBoxCtrl* remember_pass_check = sInstance->getChild<LLCheckBoxCtrl>("remember_check");
-	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("first_name_combo");
-	login_combo->setLabel(entry.getFirstName());
-	login_combo->resetDirty();
-	login_combo->resetTextDirty();
-
-	LLLineEditor* last_name = sInstance->getChild<LLLineEditor>("last_name_edit");
-	last_name->setText(entry.getLastName());
-	last_name->resetDirty();
-
+	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName()); 
+	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
+	login_combo->setLabel(fullname);
+	sInstance->childSetText("name_combo", fullname);
+	
 	if (entry.getPassword().empty())
 	{
 		sInstance->childSetText("password_edit", std::string(""));
@@ -714,10 +733,8 @@ void LLPanelLogin::getFields(std::string *firstname,
 		return;
 	}
 
-	*firstname = sInstance->childGetText("first_name_combo");
+	nameSplit(sInstance->childGetText("name_combo"), *firstname, *lastname);
 	LLStringUtil::trim(*firstname);
-
-	*lastname = sInstance->childGetText("last_name_edit");
 	LLStringUtil::trim(*lastname);
 	
 	*password = sInstance->mMungedPassword;
@@ -1077,9 +1094,8 @@ void LLPanelLogin::onClickConnect(void *)
 		// JC - Make sure the fields all get committed.
 		sInstance->setFocus(FALSE);
 
-		std::string first = sInstance->childGetText("first_name_combo");
-		std::string last  = sInstance->childGetText("last_name_edit");
-		if (!first.empty() && !last.empty())
+		std::string first, last;
+		if (nameSplit(sInstance->childGetText("name_combo"), first, last))
 		{
 			// has both first and last name typed
 			sInstance->mCallback(0, sInstance->mCallbackData);
@@ -1173,28 +1189,11 @@ void LLPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
 }
 
 // static
-void LLPanelLogin::onLastNameEditLostFocus(LLUICtrl* ctrl, void* data)
-{
-	if (sInstance)
-	{
-		LLLineEditor* edit = sInstance->getChild<LLLineEditor>("last_name_edit");
-		if(ctrl == edit)
-		{
-			if (edit->isDirty())
-			{
-				clearPassword();
-				LLViewerLogin::getInstance()->setNameEditted(true);
-			}
-		}
-	}
-}
-
-// static
 void LLPanelLogin::onSelectLoginEntry(LLUICtrl* ctrl, void* data)
 {
 	if (sInstance)
 	{
-		LLComboBox* combo = sInstance->getChild<LLComboBox>("first_name_combo");
+		LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
 		if (ctrl == combo)
 		{
 			LLSD selected_entry = combo->getSelectedValue();
@@ -1214,7 +1213,7 @@ void LLPanelLogin::onLoginComboLostFocus(LLFocusableElement* fe, void*)
 {
 	if (sInstance)
 	{
-		LLComboBox* combo = sInstance->getChild<LLComboBox>("first_name_combo");
+		LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
 		if(fe == combo)
 		{
 			if (combo->isTextDirty())

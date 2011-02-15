@@ -1,10 +1,9 @@
 <llsd>
   <array>
 
-    <!--
-        This file contains fallback settings only.
-        The actual list of grids is loaded from a web server.
-    -->
+    <map>
+      <key>default_grids_version</key><string>1</string>
+    </map>
 
     <!-- Second Life -->
     <map>

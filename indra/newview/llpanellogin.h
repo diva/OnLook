@@ -79,7 +79,7 @@ public:
 	 * @brief	Set the values of the displayed fields from a populated history entry.
 	 * @param	entry	History entry containing all necessary fields.
 	 */
-	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = true);
+	static void setFields(const LLSavedLoginEntry& entry, bool takeFocus = false);
 
 	//static void addServer(const std::string& server, S32 domain_name);
 	static void refreshLocation( bool force_visible );
@@ -117,7 +117,6 @@ private:
 	static void onPassKey(LLLineEditor* caller, void* user_data);
 	//static void onSelectServer(LLUICtrl*, void*);
 	//static void onServerComboLostFocus(LLFocusableElement*, void*);
-	static void onLastNameEditLostFocus(LLUICtrl* ctrl, void* data);
 	static void onSelectLoginEntry(LLUICtrl*, void*);
 	static void onLoginComboLostFocus(LLFocusableElement* fe, void*);
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);

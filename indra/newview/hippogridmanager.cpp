@@ -954,7 +954,7 @@ void HippoGridManager::saveFile()
 	}
 
 	// write client grid info file
-	std::string fileName = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "grid_info.xml");
+	std::string fileName = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "grids_sg1.xml");
 	llofstream file;
 	file.open(fileName.c_str());
 	if (file.is_open()) 
