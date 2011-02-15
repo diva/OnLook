@@ -1118,12 +1118,20 @@ if (WINDOWS)
       include_directories(${ARTWORK_DIR}/res)
     endif(NOT ARTWORK_IN_SOURCE)
 
-    set(viewer_RESOURCE_FILES 
-        res/resource.h
-        res/viewerRes.rc 
-        ${viewer_RESOURCE_FILES}
-        )
-
+	if (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
+		set(viewer_RESOURCE_FILES 
+			res/resource.h
+			res/viewerRes_bc.rc 
+			${viewer_RESOURCE_FILES}
+		)
+	else (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
+		set(viewer_RESOURCE_FILES 
+			res/resource.h
+			res/viewerRes.rc 
+			${viewer_RESOURCE_FILES}
+		)
+	endif (MSVC71 OR MSVC80 AND NOT VISTA_ICON)
+	  
     SOURCE_GROUP("Resource Files" FILES ${viewer_RESOURCE_FILES})
 
     list(APPEND viewer_SOURCE_FILES ${viewer_RESOURCE_FILES})
