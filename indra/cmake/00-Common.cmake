@@ -43,6 +43,8 @@ if (WINDOWS)
   set(CMAKE_C_FLAGS_RELEASESSE2
       "${CMAKE_C_FLAGS_RELEASESSE2} ${LL_C_FLAGS} /O2 /Zi /MD /MP /arch:SSE2 /fp:fast"
       CACHE STRING "C compiler release-SSE2 options" FORCE)
+
+  set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /LARGEADDRESSAWARE")
            
   set(CMAKE_CXX_STANDARD_LIBRARIES "")
   set(CMAKE_C_STANDARD_LIBRARIES "")
@@ -99,6 +101,7 @@ if (WINDOWS)
     
 endif (WINDOWS)
 
+set (GCC_EXTRA_OPTIMIZATION "-ffast-math -frounding-math")
 
 if (LINUX)
   set(CMAKE_SKIP_RPATH TRUE)
@@ -193,8 +196,8 @@ if (LINUX)
       # this stops us requiring a really recent glibc at runtime
       add_definitions(-fno-stack-protector)
     endif (NOT STANDALONE)
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -march=pentium4 -mfpmath=sse -msse2")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -march=pentium4 -mfpmath=sse -msse2")
+    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -march=pentium4 -mfpmath=sse -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -march=pentium4 -mfpmath=sse -msse2 "${GCC_EXTRA_OPTIMIZATIONS})
   endif (VIEWER)
 
   set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -214,8 +217,8 @@ if (DARWIN)
   # NOTE: it's critical to have both CXX_FLAGS and C_FLAGS covered.
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O0 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
   set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O0 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
-  set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 -msse2 -mfpmath=sse ${CMAKE_CXX_FLAGS_RELEASESSE2}")
-  set(CMAKE_C_FLAGS_RELEASESSE2 "-03 -msse2 -mfpmath=sse ${CMAKE_C_FLAGS_RELEASESSE2}")
+  set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -O3 -msse2 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
+  set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -03 -msse2 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
 endif (DARWIN)
 
 
