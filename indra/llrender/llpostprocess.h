@@ -117,9 +117,9 @@ public:
 			return (*this)["enable_night_vision"];
 		}
 
-		inline LLSD & useBloomShader() {
+		/*inline LLSD & useBloomShader() {
 			return (*this)["enable_bloom"];
-		}
+		}*/
 
 		inline LLSD & useColorFilter() {
 			return (*this)["enable_color_filter"];

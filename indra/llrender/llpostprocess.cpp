@@ -81,9 +81,9 @@ LLPostProcess::LLPostProcess(void) :
 	{
 		LLSD & defaultEffect = (mAllEffects["default"] = LLSD::emptyMap());
 
-		defaultEffect["enable_night_vision"] = LLSD::Boolean(false);
+		/*defaultEffect["enable_night_vision"] = LLSD::Boolean(false);
 		defaultEffect["enable_bloom"] = LLSD::Boolean(false);
-		defaultEffect["enable_color_filter"] = LLSD::Boolean(false);
+		defaultEffect["enable_color_filter"] = LLSD::Boolean(false);*/
 
 		/// NVG Defaults
 		defaultEffect["brightness_multiplier"] = 3.0;
@@ -192,7 +192,7 @@ void LLPostProcess::initialize(unsigned int width, unsigned int height)
 
 	checkError();
 	createNightVisionShader();
-	createBloomShader();
+	//createBloomShader();
 	createColorFilterShader();
 	createGaussBlurShader();
 	checkError();
@@ -202,7 +202,7 @@ inline bool LLPostProcess::shadersEnabled(void)
 {
 	return (tweaks.useColorFilter().asBoolean() ||
 			tweaks.useNightVisionShader().asBoolean() ||
-			tweaks.useBloomShader().asBoolean() ||
+			/*tweaks.useBloomShader().asBoolean() ||*/
 			tweaks.useGaussBlurFilter().asBoolean() );
 
 }
@@ -234,7 +234,7 @@ void LLPostProcess::applyShaders(void)
 		checkError();
 		copy_buffer = true;
 	}
-	if (tweaks.useBloomShader())
+	/*if (tweaks.useBloomShader())
 	{
 		/// If any of the above shaders have been called update the frame buffer;
 		if (copy_buffer)
@@ -242,7 +242,7 @@ void LLPostProcess::applyShaders(void)
 		applyBloomShader();
 		checkError();
 		copy_buffer = true;
-	}
+	}*/
 }
 
 void LLPostProcess::applyColorFilterShader(void)
