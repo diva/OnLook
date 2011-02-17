@@ -105,7 +105,7 @@ BOOL LLPanelLogin::sCapslockDidNotification = FALSE;
 static bool nameSplit(const std::string& full, std::string& first, std::string& last) {
 	std::vector<std::string> fragments;
 	boost::algorithm::split(fragments, full, boost::is_any_of(" ."));
-	if (fragments.size() == 0)
+	if (!fragments.size() || !fragments[0].length())
 		return false;
 	first = fragments[0];
 	if (fragments.size() == 1)
