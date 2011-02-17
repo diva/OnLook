@@ -1249,7 +1249,24 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 	floater->childSetLabelArg("upload_btn", "[UPLOADFEE]", fee);
 	
 	LLRadioGroup* snapshot_type_radio = floater->getChild<LLRadioGroup>("snapshot_type_radio");
-	snapshot_type_radio->setSelectedIndex(gSavedSettings.getS32("LastSnapshotType"));
+	if (snapshot_type_radio) 
+	{
+		snapshot_type_radio->setSelectedIndex(gSavedSettings.getS32("LastSnapshotType"));
+
+		const child_list_t *childs = snapshot_type_radio->getChildList();
+		if (childs) 
+		{
+			child_list_t::const_iterator it, end=childs->end();
+			for (it=childs->begin(); it!=end; ++it) 
+			{
+				LLRadioCtrl *ctrl = dynamic_cast<LLRadioCtrl*>(*it);
+				if (ctrl && (ctrl->getName() == "texture"))
+				{
+					ctrl->setLabelArg("[UPLOADFEE]", fee);
+				}
+			}
+		}
+	}
 	LLSnapshotLivePreview::ESnapshotType shot_type = getTypeIndex(floater);
 	ESnapshotFormat shot_format = (ESnapshotFormat)gSavedSettings.getS32("SnapshotFormat"); //getFormatIndex(floater);	LLViewerWindow::ESnapshotType layer_type = getLayerType(floater);
 	LLViewerWindow::ESnapshotType layer_type = getLayerType(floater);
