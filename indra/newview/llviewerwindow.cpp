@@ -4422,8 +4422,8 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 				render_ui(scale_factor, subfield);
 			}
 
-#if SHY_MOD // screenshot improvement
-			if(scale_factor <= 1.f) //faster. bulk copy opposed to line per line
+#if 1//SHY_MOD // screenshot improvement
+			if(scale_factor <= 1.f && image_width == image_buffer_x && image_height == image_buffer_y) //faster. bulk copy opposed to line per line
 			{
 				if (type == SNAPSHOT_TYPE_OBJECT_ID || type == SNAPSHOT_TYPE_COLOR)
 				{
