@@ -88,4 +88,20 @@ public:
 	static void focus(LLPanelDirFindAll* panel);
 };
 
+
+class LLPanelDirFindAllOld : public LLPanelDirBrowser
+{
+public:
+	LLPanelDirFindAllOld(const std::string& name, LLFloaterDirectory* floater);
+	/*virtual*/ ~LLPanelDirFindAllOld();
+
+	/*virtual*/ BOOL postBuild();
+
+	/*virtual*/ void draw();
+
+	static void onClickSearch(void *userdata);
+	static void onCommitScope(LLUICtrl* ctrl, void* data);
+	static void onKeystrokeName(LLLineEditor* line, void* data);
+};
+
 #endif
