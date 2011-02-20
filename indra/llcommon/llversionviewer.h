@@ -35,10 +35,10 @@
 
 const S32 LL_VERSION_MAJOR = 1;
 const S32 LL_VERSION_MINOR = 5;
-const S32 LL_VERSION_PATCH = 3;
+const S32 LL_VERSION_PATCH = 4;
 const S32 LL_VERSION_BUILD = 0;
 
-const char * const LL_CHANNEL = "Singularity Viewer";
+const char * const LL_CHANNEL = "Singularity";
 
 #if LL_DARWIN
 const char * const LL_VERSION_BUNDLE_ID = "com.secondlife.snowglobe.viewer";

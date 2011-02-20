@@ -73,7 +73,9 @@ UninstallIcon %%SOURCE%%\installers\windows\install_icon_singularity.ico
 WindowIcon off							; show our icon in left corner
 BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK
-InstProgressFlags smooth colored		; new colored smooth look
+#InstProgressFlags smooth colored		; new colored smooth look
+InstProgressFlags
+InstallColors /windows
 ShowInstDetails show				; no details, no "show" button
 SetOverwrite on							; stomp files by default
 AutoCloseWindow true					; after all files install, close window
