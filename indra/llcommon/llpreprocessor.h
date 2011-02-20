@@ -92,6 +92,16 @@
 
 #endif
 
+// Static linking with apr on windows needs to be declared.
+#ifdef LL_WINDOWS
+#ifndef APR_DECLARE_STATIC
+#define APR_DECLARE_STATIC // For APR on Windows
+#endif
+#ifndef APU_DECLARE_STATIC
+#define APU_DECLARE_STATIC // For APR util on Windows
+#endif
+#endif
+
 // Deal with the differeneces on Windows
 #if defined(LL_WINDOWS)
 #define BOOST_REGEX_NO_LIB 1

@@ -936,12 +936,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-			<string>b678c4d18ea8e4fab42b20f8d0b2629a</string>
-            <!--<string>fa5041874761895a06a20782b8ba34a2</string>-->
+            <string>2a89c84f778ba932f63a884421e05be1</string>
             <key>url</key>
-			<uri>http://viewer-source-downloads.s3.amazonaws.com/install_pkgs/llqtwebkit-windows-qt4.7.1-20101221.tar.bz2</uri>
-            <!--<uri>http://liny-odell.users.sourceforge.net/llqtwebkit-windows-qt4.6-20101122.tar.bz2</uri>-->
-			
+            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-windows-qt4.6-2010a.tar.bz2</uri>
           </map>
         </map>
       </map>

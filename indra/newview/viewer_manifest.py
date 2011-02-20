@@ -254,19 +254,19 @@ class WindowsManifest(ViewerManifest):
         self.path("skins/default/xui/en-us/mime_types_windows.xml", "skins/default/xui/en-us/mime_types.xml")
 
         # Get llcommon and deps. If missing assume static linkage and continue.
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-          try:
-            self.path('llcommon.dll')
-          except RuntimeError, err:
-            print err.message
-            print "Skipping llcommon.dll (assuming llcommon was linked statically)"
-          try:
-            self.path('libapr-1.dll')
-            self.path('libaprutil-1.dll')
-            self.path('libapriconv-1.dll')
-          except RuntimeError, err:
-            pass
-          self.end_prefix()
+        #~ if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          #~ try:
+            #~ self.path('llcommon.dll')
+          #~ except RuntimeError, err:
+            #~ print err.message
+            #~ print "Skipping llcommon.dll (assuming llcommon was linked statically)"
+          #~ try:
+            #~ self.path('libapr-1.dll')
+            #~ self.path('libaprutil-1.dll')
+            #~ self.path('libapriconv-1.dll')
+          #~ except RuntimeError, err:
+            #~ pass
+          #~ self.end_prefix()
         
         # For google-perftools tcmalloc allocator.
         self.path(src="../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll")
