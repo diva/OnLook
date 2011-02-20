@@ -243,6 +243,7 @@ LLSnapshotLivePreview::LLSnapshotLivePreview (const LLRect& rect) :
 	mKeepAspectRatio = gSavedSettings.getBOOL("KeepAspectForSnapshot") ;
 	mThumbnailUpdateLock = FALSE ;
 	mThumbnailUpToDate   = FALSE ;
+	updateSnapshot(TRUE,TRUE); //To initialize mImageRect to correct values
 }
 
 LLSnapshotLivePreview::~LLSnapshotLivePreview()
@@ -880,7 +881,17 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 			curr_preview_image->setAddressMode(LLTexUnit::TAM_CLAMP);
 
 			previewp->mSnapshotUpToDate = TRUE;
-			previewp->generateThumbnailImage(TRUE) ;
+			//Resize to thumbnail.
+			{
+				previewp->mThumbnailUpToDate = TRUE ;
+				previewp->mThumbnailUpdateLock = TRUE ;
+				S32 w = get_lower_power_two(scaled->getWidth(), 512) * 2 ;
+				S32 h = get_lower_power_two(scaled->getHeight(), 512) * 2 ;
+				scaled->scale(w,h);
+				previewp->mThumbnailImage = new LLImageGL(scaled, FALSE);
+				previewp->mThumbnailUpdateLock = FALSE ;
+				previewp->setThumbnailImageSize();
+			}
 
 			previewp->mPosTakenGlobal = gAgent.getCameraPositionGlobal();
 			previewp->mShineCountdown = 4; // wait a few frames to avoid animation glitch due to readback this frame
@@ -1236,7 +1247,7 @@ void LLFloaterSnapshot::Impl::updateControls(LLFloaterSnapshot* floater)
 {
 	std::string fee = gHippoGridManager->getConnectedGrid()->getUploadFee();
 	floater->childSetLabelArg("upload_btn", "[UPLOADFEE]", fee);
-
+	
 	LLRadioGroup* snapshot_type_radio = floater->getChild<LLRadioGroup>("snapshot_type_radio");
 	if (snapshot_type_radio) 
 	{

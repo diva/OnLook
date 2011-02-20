@@ -428,7 +428,8 @@ void LLPostProcess::doEffects(void)
 	/// Clear the frame buffer.
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
-	
+	LLGLDisable(GL_DEPTH_TEST);
+
 	/// Change to an orthogonal view
 	viewOrthogonal(screenW, screenH);
 	

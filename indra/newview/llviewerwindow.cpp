@@ -4422,22 +4422,6 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 				render_ui(scale_factor, subfield);
 			}
 
-#if SHY_MOD // screenshot improvement
-			if(scale_factor <= 1.f) //faster. bulk copy opposed to line per line
-			{
-				if (type == SNAPSHOT_TYPE_OBJECT_ID || type == SNAPSHOT_TYPE_COLOR)
-				{
-					glReadPixels(0,0,image_width, image_height,GL_RGB, GL_UNSIGNED_BYTE,raw->getData());
-				}
-				else // SNAPSHOT_TYPE_DEPTH
-				{
-					LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(image_width, image_height, sizeof(GL_FLOAT));
-					glReadPixels(0, 0,image_width,image_height,	GL_DEPTH_COMPONENT, GL_FLOAT,depth_line_buffer->getData());
-					raw->copy(depth_line_buffer);
-				}
-				continue;
-			}
-#endif //shy_mod
 			S32 subimage_x_offset = llclamp(buffer_x_offset - (subimage_x * window_width), 0, window_width);
 			// handle fractional rows
 			U32 read_width = llmax(0, (window_width - subimage_x_offset) -
