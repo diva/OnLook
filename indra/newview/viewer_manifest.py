@@ -528,7 +528,8 @@ class DarwinManifest(ViewerManifest):
                     self.end_prefix("llplugin")
 
                 # skins
-                self.path("skins")
+                self.path("skins/default", "skins/default")
+		self.path("skins/dark", "skins/dark")
 
                 # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
                 self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
