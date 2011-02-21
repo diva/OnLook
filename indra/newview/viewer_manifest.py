@@ -515,10 +515,7 @@ class DarwinManifest(ViewerManifest):
                     self.path("../media_plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
                     self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
-                    self.end_prefix("llplugin")
-
-                # skins
-                self.path("skins")
+                    self.end_prefix("llplugin")              
 
                 # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
                 self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
