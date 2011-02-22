@@ -54,6 +54,7 @@ set_target_properties(SLPlugin
   )
 
 target_link_libraries(SLPlugin
+  ${GOOGLE_PERFTOOLS_LIBRARIES}
   ${LLPLUGIN_LIBRARIES}
   ${LLMESSAGE_LIBRARIES}
   ${LLCOMMON_LIBRARIES}
@@ -82,5 +83,12 @@ endif (DARWIN)
 if (LINUX)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lrt")
 endif (LINUX)
+
+if (WINDOWS)
+    set_target_properties(SLPlugin
+      PROPERTIES
+        LINK_FLAGS "${GOOGLE_PERFTOOLS_LINKER_FLAGS}"
+        )
+endif (WINDOWS)
 
 #ll_deploy_sharedlibs_command(SLPlugin)

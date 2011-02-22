@@ -178,7 +178,7 @@ class WindowsManifest(ViewerManifest):
         super(WindowsManifest, self).construct()
         # the final exe is complicated because we're not sure where it's coming from,
         # nor do we have a fixed name for the executable
-        self.path(self.find_existing_file('debug/secondlife-bin.exe', 'releaseSSE2/secondlife-bin.exe', 'relwithdebinfo/secondlife-bin.exe'), dst=self.final_exe())
+        self.path(src='%s/secondlife-bin.exe' % self.args['configuration'], dst=self.final_exe())
 
         # Plugin host application
         self.path(os.path.join(os.pardir,
@@ -186,14 +186,14 @@ class WindowsManifest(ViewerManifest):
                   "SLPlugin.exe")
         
       	# need to get the kdu dll from any of the build directories as well
-        try:
-            self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
-                '../../libraries/i686-win32/lib/release/llkdu.dll'), 
-                  dst='llkdu.dll')
-            pass
-        except:
-            print "Skipping llkdu.dll"
-            pass
+        #~ try:
+            #~ self.path(self.find_existing_file('../llkdu/%s/llkdu.dll' % self.args['configuration'],
+                #~ '../../libraries/i686-win32/lib/release/llkdu.dll'), 
+                  #~ dst='llkdu.dll')
+            #~ pass
+        #~ except:
+            #~ print "Skipping llkdu.dll"
+            #~ pass
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")
@@ -269,7 +269,7 @@ class WindowsManifest(ViewerManifest):
           #~ self.end_prefix()
         
         # For google-perftools tcmalloc allocator.
-        self.path(src="../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll")
+        self.path("../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
         
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
@@ -297,18 +297,8 @@ class WindowsManifest(ViewerManifest):
             self.end_prefix()
 
         # pull in the crash logger and updater from other projects
-        self.path(src=self.find_existing_file( # tag:"crash-logger" here as a cue to the exporter
-                "../win_crash_logger/debug/windows-crash-logger.exe",
-                "../win_crash_logger/release/windows-crash-logger.exe",
-                "../win_crash_logger/releaseSSE2/windows-crash-logger.exe",
-                "../win_crash_logger/relwithdebinfo/windows-crash-logger.exe"),
-                  dst="win_crash_logger.exe")
-        self.path(src=self.find_existing_file(
-                "../win_updater/debug/windows-updater.exe",
-                "../win_updater/release/windows-updater.exe",
-                "../win_updater/releaseSSE2/windows-updater.exe",
-                "../win_updater/relwithdebinfo/windows-updater.exe"),
-                  dst="updater.exe")
+        self.path(src='../win_crash_logger/%s/windows-crash-logger.exe' % self.args['configuration'], dst="win_crash_logger.exe")
+        self.path(src='../win_updater/%s/windows-updater.exe' % self.args['configuration'], dst="updater.exe")
 
 
     def nsi_file_commands(self, install=True):
@@ -525,10 +515,7 @@ class DarwinManifest(ViewerManifest):
                     self.path("../media_plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
                     self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
-                    self.end_prefix("llplugin")
-
-                # skins
-                self.path("skins")
+                    self.end_prefix("llplugin")              
 
                 # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
                 self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
@@ -754,15 +741,15 @@ class Linux_i686Manifest(LinuxManifest):
 
         # install either the libllkdu we just built, or a prebuilt one, in
         # decreasing order of preference.  for linux package, this goes to bin/
-        try:
-            self.path(self.find_existing_file('../llkdu/libllkdu.so',
-                '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 
-                  dst='bin/libllkdu.so')
-            # keep this one to preserve syntax, open source mangling removes previous lines
-            pass
-        except:
-            print "Skipping libllkdu.so - not found"
-            pass
+        #~ try:
+            #~ self.path(self.find_existing_file('../llkdu/libllkdu.so',
+                #~ '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 
+                  #~ dst='bin/libllkdu.so')
+            #~ # keep this one to preserve syntax, open source mangling removes previous lines
+            #~ pass
+        #~ except:
+            #~ print "Skipping libllkdu.so - not found"
+            #~ pass
 
         if self.prefix("../../libraries/i686-linux/lib_release_client", dst="lib"):
 
