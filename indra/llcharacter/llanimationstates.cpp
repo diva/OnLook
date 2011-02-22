@@ -90,11 +90,13 @@ LLUUID const ANIM_AGENT_EXPRESS_TONGUE_OUT	("835965c6-7f2f-bda2-5deb-2478737f91b
 LLUUID const ANIM_AGENT_EXPRESS_TOOTHSMILE	("b92ec1a5-e7ce-a76b-2b05-bcdb9311417e");
 LLUUID const ANIM_AGENT_EXPRESS_WINK		("da020525-4d94-59d6-23d7-81fdebf33148");
 LLUUID const ANIM_AGENT_EXPRESS_WORRY		("9c05e5c7-6f07-6ca4-ed5a-b230390c3950");
-LLUUID const ANIM_AGENT_FALLDOWN			("666307d9-a860-572d-6fd4-c3ab8865c094");
-LLUUID const ANIM_AGENT_FEMALE_WALK			("f5fc7433-043d-e819-8298-f519a119b688");
-LLUUID const ANIM_AGENT_FINGER_WAG			("c1bc7f36-3ba0-d844-f93c-93be945d644f");
-LLUUID const ANIM_AGENT_FIST_PUMP			("7db00ccd-f380-f3ee-439d-61968ec69c8a");
-LLUUID const ANIM_AGENT_FLY					("aec4610c-757f-bc4e-c092-c6e9caf18daf");
+LLUUID const ANIM_AGENT_FALLDOWN              ("666307d9-a860-572d-6fd4-c3ab8865c094");
+LLUUID const ANIM_AGENT_FEMALE_RUN_NEW        ("85995026-eade-5d78-d364-94a64512cb66");
+LLUUID const ANIM_AGENT_FEMALE_WALK           ("f5fc7433-043d-e819-8298-f519a119b688");
+LLUUID const ANIM_AGENT_FEMALE_WALK_NEW       ("d60c41d2-7c24-7074-d3fa-6101cea22a51");
+LLUUID const ANIM_AGENT_FINGER_WAG            ("c1bc7f36-3ba0-d844-f93c-93be945d644f");
+LLUUID const ANIM_AGENT_FIST_PUMP             ("7db00ccd-f380-f3ee-439d-61968ec69c8a");
+LLUUID const ANIM_AGENT_FLY                   ("aec4610c-757f-bc4e-c092-c6e9caf18daf");
 LLUUID const ANIM_AGENT_FLYSLOW				("2b5a38b2-5e00-3a97-a495-4c826bc443e6");
 LLUUID const ANIM_AGENT_HELLO				("9b29cd61-c45b-5689-ded2-91756b8d76a9");
 LLUUID const ANIM_AGENT_HOLD_BAZOOKA_R		("ef62d355-c815-4816-2474-b1acc21094a6");
@@ -122,21 +124,22 @@ LLUUID const ANIM_AGENT_PEACE				("b312b10e-65ab-a0a4-8b3c-1326ea8e3ed9");
 LLUUID const ANIM_AGENT_POINT_ME			("17c024cc-eef2-f6a0-3527-9869876d7752");
 LLUUID const ANIM_AGENT_POINT_YOU			("ec952cca-61ef-aa3b-2789-4d1344f016de");
 LLUUID const ANIM_AGENT_PRE_JUMP			("7a4e87fe-de39-6fcb-6223-024b00893244");
-LLUUID const ANIM_AGENT_PUNCH_LEFT			("f3300ad9-3462-1d07-2044-0fef80062da0");
-LLUUID const ANIM_AGENT_PUNCH_RIGHT			("c8e42d32-7310-6906-c903-cab5d4a34656");
-LLUUID const ANIM_AGENT_REPULSED			("36f81a92-f076-5893-dc4b-7c3795e487cf");
-LLUUID const ANIM_AGENT_ROUNDHOUSE_KICK		("49aea43b-5ac3-8a44-b595-96100af0beda");
-LLUUID const ANIM_AGENT_RPS_COUNTDOWN		("35db4f7e-28c2-6679-cea9-3ee108f7fc7f");
-LLUUID const ANIM_AGENT_RPS_PAPER			("0836b67f-7f7b-f37b-c00a-460dc1521f5a");
-LLUUID const ANIM_AGENT_RPS_ROCK			("42dd95d5-0bc6-6392-f650-777304946c0f");
-LLUUID const ANIM_AGENT_RPS_SCISSORS		("16803a9f-5140-e042-4d7b-d28ba247c325");
-LLUUID const ANIM_AGENT_RUN					("05ddbff8-aaa9-92a1-2b74-8fe77a29b445");
-LLUUID const ANIM_AGENT_SAD					("0eb702e2-cc5a-9a88-56a5-661a55c0676a");
-LLUUID const ANIM_AGENT_SALUTE				("cd7668a6-7011-d7e2-ead8-fc69eff1a104");
-LLUUID const ANIM_AGENT_SHOOT_BOW_L			("e04d450d-fdb5-0432-fd68-818aaf5935f8");
-LLUUID const ANIM_AGENT_SHOUT				("6bd01860-4ebd-127a-bb3d-d1427e8e0c42");
-LLUUID const ANIM_AGENT_SHRUG				("70ea714f-3a97-d742-1b01-590a8fcd1db5");
-LLUUID const ANIM_AGENT_SIT					("1a5fe8ac-a804-8a5d-7cbd-56bd83184568");
+LLUUID const ANIM_AGENT_PUNCH_LEFT            ("f3300ad9-3462-1d07-2044-0fef80062da0");
+LLUUID const ANIM_AGENT_PUNCH_RIGHT           ("c8e42d32-7310-6906-c903-cab5d4a34656");
+LLUUID const ANIM_AGENT_REPULSED              ("36f81a92-f076-5893-dc4b-7c3795e487cf");
+LLUUID const ANIM_AGENT_ROUNDHOUSE_KICK       ("49aea43b-5ac3-8a44-b595-96100af0beda");
+LLUUID const ANIM_AGENT_RPS_COUNTDOWN         ("35db4f7e-28c2-6679-cea9-3ee108f7fc7f");
+LLUUID const ANIM_AGENT_RPS_PAPER             ("0836b67f-7f7b-f37b-c00a-460dc1521f5a");
+LLUUID const ANIM_AGENT_RPS_ROCK              ("42dd95d5-0bc6-6392-f650-777304946c0f");
+LLUUID const ANIM_AGENT_RPS_SCISSORS          ("16803a9f-5140-e042-4d7b-d28ba247c325");
+LLUUID const ANIM_AGENT_RUN                   ("05ddbff8-aaa9-92a1-2b74-8fe77a29b445");
+LLUUID const ANIM_AGENT_RUN_NEW               ("1ab1b236-cd08-21e6-0cbc-0d923fc6eca2");
+LLUUID const ANIM_AGENT_SAD                   ("0eb702e2-cc5a-9a88-56a5-661a55c0676a");
+LLUUID const ANIM_AGENT_SALUTE                ("cd7668a6-7011-d7e2-ead8-fc69eff1a104");
+LLUUID const ANIM_AGENT_SHOOT_BOW_L           ("e04d450d-fdb5-0432-fd68-818aaf5935f8");
+LLUUID const ANIM_AGENT_SHOUT                 ("6bd01860-4ebd-127a-bb3d-d1427e8e0c42");
+LLUUID const ANIM_AGENT_SHRUG                 ("70ea714f-3a97-d742-1b01-590a8fcd1db5");
+LLUUID const ANIM_AGENT_SIT                   ("1a5fe8ac-a804-8a5d-7cbd-56bd83184568");
 LLUUID const ANIM_AGENT_SIT_FEMALE			("b1709c8d-ecd3-54a1-4f28-d55ac0840782");
 LLUUID const ANIM_AGENT_SIT_GENERIC			("245f3c54-f1c0-bf2e-811f-46d8eeb386e7");
 LLUUID const ANIM_AGENT_SIT_GROUND 			("1c7600d6-661f-b87b-efe2-d7421eb93c86");
@@ -164,10 +167,11 @@ LLUUID const ANIM_AGENT_THROW_R				("aa134404-7dac-7aca-2cba-435f9db875ca");
 LLUUID const ANIM_AGENT_TRYON_SHIRT			("83ff59fe-2346-f236-9009-4e3608af64c1");
 LLUUID const ANIM_AGENT_TURNLEFT			("56e0ba0d-4a9f-7f27-6117-32f2ebbf6135");
 LLUUID const ANIM_AGENT_TURNRIGHT			("2d6daa51-3192-6794-8e2e-a15f8338ec30");
-LLUUID const ANIM_AGENT_TYPE				("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
-LLUUID const ANIM_AGENT_WALK				("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0");
-LLUUID const ANIM_AGENT_WHISPER				("7693f268-06c7-ea71-fa21-2b30d6533f8f");
-LLUUID const ANIM_AGENT_WHISTLE				("b1ed7982-c68e-a982-7561-52a88a5298c0");
+LLUUID const ANIM_AGENT_TYPE                  ("c541c47f-e0c0-058b-ad1a-d6ae3a4584d9");
+LLUUID const ANIM_AGENT_WALK                  ("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0");
+LLUUID const ANIM_AGENT_WALK_NEW              ("33339176-7ddc-9397-94a4-bf3403cbc8f5");
+LLUUID const ANIM_AGENT_WHISPER               ("7693f268-06c7-ea71-fa21-2b30d6533f8f");
+LLUUID const ANIM_AGENT_WHISTLE               ("b1ed7982-c68e-a982-7561-52a88a5298c0");
 LLUUID const ANIM_AGENT_WINK				("869ecdad-a44b-671e-3266-56aef2e3ac2e");
 LLUUID const ANIM_AGENT_WINK_HOLLYWOOD		("c0c4030f-c02b-49de-24ba-2331f43fe41c");
 LLUUID const ANIM_AGENT_WORRY				("9f496bd2-589a-709f-16cc-69bf7df1d36c");
@@ -252,7 +256,9 @@ LLAnimationLibrary::LLAnimationLibrary() :
 	mAnimMap[ANIM_AGENT_EXPRESS_WINK]=			mAnimStringTable.addString("express_wink_emote");
 	mAnimMap[ANIM_AGENT_EXPRESS_WORRY]=			mAnimStringTable.addString("express_worry_emote");
 	mAnimMap[ANIM_AGENT_FALLDOWN]=				mAnimStringTable.addString("falldown");
+	mAnimMap[ANIM_AGENT_FEMALE_RUN_NEW]=		mAnimStringTable.addString("female_run_new");
 	mAnimMap[ANIM_AGENT_FEMALE_WALK]=			mAnimStringTable.addString("female_walk");
+	mAnimMap[ANIM_AGENT_FEMALE_WALK_NEW]=		mAnimStringTable.addString("female_walk_new");
 	mAnimMap[ANIM_AGENT_FINGER_WAG]=			mAnimStringTable.addString("angry_fingerwag");
 	mAnimMap[ANIM_AGENT_FIST_PUMP]=				mAnimStringTable.addString("fist_pump");
 	mAnimMap[ANIM_AGENT_FLY]=					mAnimStringTable.addString("fly");
@@ -292,6 +298,7 @@ LLAnimationLibrary::LLAnimationLibrary() :
 	mAnimMap[ANIM_AGENT_RPS_ROCK]=				mAnimStringTable.addString("rps_rock");
 	mAnimMap[ANIM_AGENT_RPS_SCISSORS]=			mAnimStringTable.addString("rps_scissors");
 	mAnimMap[ANIM_AGENT_RUN]=					mAnimStringTable.addString("run");
+	mAnimMap[ANIM_AGENT_RUN_NEW]=				mAnimStringTable.addString("run_new");
 	mAnimMap[ANIM_AGENT_SAD]=					mAnimStringTable.addString("express_sad");
 	mAnimMap[ANIM_AGENT_SALUTE]=				mAnimStringTable.addString("salute");
 	mAnimMap[ANIM_AGENT_SHOOT_BOW_L]=			mAnimStringTable.addString("shoot_l_bow");
@@ -327,6 +334,7 @@ LLAnimationLibrary::LLAnimationLibrary() :
 	mAnimMap[ANIM_AGENT_TURNRIGHT]=				mAnimStringTable.addString("turnright");
 	mAnimMap[ANIM_AGENT_TYPE]=					mAnimStringTable.addString("type");
 	mAnimMap[ANIM_AGENT_WALK]=					mAnimStringTable.addString("walk");
+	mAnimMap[ANIM_AGENT_WALK_NEW]=				mAnimStringTable.addString("walk_new");
 	mAnimMap[ANIM_AGENT_WHISPER]=				mAnimStringTable.addString("whisper");
 	mAnimMap[ANIM_AGENT_WHISTLE]=				mAnimStringTable.addString("whistle");
 	mAnimMap[ANIM_AGENT_WINK]=					mAnimStringTable.addString("express_wink");
@@ -394,6 +402,23 @@ LLUUID LLAnimationLibrary::stringToAnimState( const std::string& name, BOOL allo
 	}
 
 	return id;
+}
+
+//-----------------------------------------------------------------------------
+// Associate an anim state with a name
+//-----------------------------------------------------------------------------
+void LLAnimationLibrary::animStateSetString( const LLUUID& state, const std::string& name)
+{
+	mAnimMap[state] = mAnimStringTable.addString(name);
+}
+
+std::string LLAnimationLibrary::animationName( const LLUUID& id ) const
+{
+	const char *cptr = gAnimLibrary.animStateToString(id); 
+	if (cptr)
+		return std::string(cptr);
+	else
+		return std::string("[") + id.asString() + std::string("]");
 }
 
 // Animation states that the user can trigger as part of a gesture

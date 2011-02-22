@@ -105,6 +105,43 @@ struct LLSaveInfo
 };
 // </edit>
 
+std::string STATUS[] =
+{
+	"E_ST_OK",
+	"E_ST_EOF",
+	"E_ST_NO_CONSTRAINT",
+	"E_ST_NO_FILE",
+	"E_ST_NO_HIER",
+	"E_ST_NO_JOINT",
+	"E_ST_NO_NAME",
+	"E_ST_NO_OFFSET",
+	"E_ST_NO_CHANNELS",
+	"E_ST_NO_ROTATION",
+	"E_ST_NO_AXIS",
+	"E_ST_NO_MOTION",
+	"E_ST_NO_FRAMES",
+	"E_ST_NO_FRAME_TIME",
+	"E_ST_NO_POS",
+	"E_ST_NO_ROT",
+	"E_ST_NO_XLT_FILE",
+	"E_ST_NO_XLT_HEADER",
+	"E_ST_NO_XLT_NAME",
+	"E_ST_NO_XLT_IGNORE",
+	"E_ST_NO_XLT_RELATIVE",
+	"E_ST_NO_XLT_OUTNAME",
+	"E_ST_NO_XLT_MATRIX",
+	"E_ST_NO_XLT_MERGECHILD",
+	"E_ST_NO_XLT_MERGEPARENT",
+	"E_ST_NO_XLT_PRIORITY",
+	"E_ST_NO_XLT_LOOP",
+	"E_ST_NO_XLT_EASEIN",
+	"E_ST_NO_XLT_EASEOUT",
+	"E_ST_NO_XLT_HAND",
+	"E_ST_NO_XLT_EMOTE",
+"E_ST_BAD_ROOT"
+};
+
+
 //-----------------------------------------------------------------------------
 // LLFloaterAnimPreview()
 //-----------------------------------------------------------------------------
@@ -303,14 +340,26 @@ BOOL LLFloaterAnimPreview::postBuild()
 			{
 				file_buffer[file_size] = '\0';
 				llinfos << "Loading BVH file " << mFilename << llendl;
-				loaderp = new LLBVHLoader(file_buffer);
+				ELoadStatus load_status = E_ST_OK;
+				S32 line_number = 0; 
+				loaderp = new LLBVHLoader(file_buffer, load_status, line_number);
+				std::string status = getString(STATUS[load_status]);
+				
+				if(load_status == E_ST_NO_XLT_FILE)
+				{
+					llwarns << "NOTE: No translation table found." << llendl;
+				}
+				else
+				{
+					llwarns << "ERROR: [line: " << line_number << "] " << status << llendl;
+				}
 			}
 
 			infile.close() ;
 			delete[] file_buffer;
 
 			// <edit> moved everything bvh from below
-			if(loaderp && loaderp->isInitialized())
+			if(loaderp && loaderp->isInitialized() && loaderp->getDuration() <= MAX_ANIM_DURATION)
 	{
 		mTransactionID.generate();
 		mMotionID = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
@@ -345,9 +394,19 @@ BOOL LLFloaterAnimPreview::postBuild()
 				success = false;
 				if ( loaderp )
 				{
-					LLUIString out_str = getString("failed_file_read");
-					out_str.setArg("[STATUS]", loaderp->getStatus()); // *TODO:Translate
-					childSetValue("bad_animation_text", out_str.getString());
+					if (loaderp->getDuration() > MAX_ANIM_DURATION)
+					{
+						LLUIString out_str = getString("anim_too_long");
+						out_str.setArg("[LENGTH]", llformat("%.1f", loaderp->getDuration()));
+						out_str.setArg("[MAX_LENGTH]", llformat("%.1f", MAX_ANIM_DURATION));
+						getChild<LLUICtrl>("bad_animation_text")->setValue(out_str.getString());
+					}
+					else
+					{
+						LLUIString out_str = getString("failed_file_read");
+						out_str.setArg("[STATUS]", getString(STATUS[loaderp->getStatus()])); 
+						getChild<LLUICtrl>("bad_animation_text")->setValue(out_str.getString());
+					}
 				}
 
 				//setEnabled(FALSE);

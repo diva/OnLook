@@ -347,8 +347,11 @@ BOOL LLKeyframeMotionParam::loadMotions()
 	// Load named file by concatenating the character prefix with the motion name.
 	// Load data into a buffer to be parsed.
 	//-------------------------------------------------------------------------
-	std::string path = gDirUtilp->getExpandedFilename(LL_PATH_MOTIONS,mCharacter->getAnimationPrefix())
-		+ "_" + getName() + ".llp";
+	//std::string path = gDirUtilp->getExpandedFilename(LL_PATH_MOTIONS,mCharacter->getAnimationPrefix())
+	//	+ "_" + getName() + ".llp";
+	//RN: deprecated unused reference to "motion" directory
+	std::string path;
+
 
 	//-------------------------------------------------------------------------
 	// open the file
@@ -364,97 +367,97 @@ BOOL LLKeyframeMotionParam::loadMotions()
 	}
 
 	// allocate a text buffer
-	char *text = new char[ fileSize+1 ];
-	if ( !text )
+	try
 	{
-		llinfos << "ERROR: can't allocated keyframe text buffer." << llendl;
-		return FALSE;
-	}
+		std::vector<char> text(fileSize+1);
 
-	//-------------------------------------------------------------------------
-	// load data from file into buffer
-	//-------------------------------------------------------------------------
-	bool error = false;
-	char *p = text;
-	while ( 1 )
-	{
-		if (apr_file_eof(fp) == APR_EOF)
+		//-------------------------------------------------------------------------
+		// load data from file into buffer
+		//-------------------------------------------------------------------------
+		bool error = false;
+		char *p = &text[0];
+		while ( 1 )
 		{
-			break;
+			if (apr_file_eof(fp) == APR_EOF)
+			{
+				break;
+			}
+			if (apr_file_gets(p, 1024, fp) != APR_SUCCESS)
+			{
+				error = true;
+				break;
+			}
+			while ( *(++p) )
+				;
 		}
-		if (apr_file_gets(p, 1024, fp) != APR_SUCCESS)
+
+		//-------------------------------------------------------------------------
+		// close the file
+		//-------------------------------------------------------------------------
+		infile.close();
+
+		//-------------------------------------------------------------------------
+		// check for error
+		//-------------------------------------------------------------------------
+		llassert( p <= (&text[0] + fileSize) );
+
+		if ( error )
 		{
-			error = true;
-			break;
-		}
-		while ( *(++p) )
-			;
-	}
-
-	//-------------------------------------------------------------------------
-	// close the file
-	//-------------------------------------------------------------------------
-	infile.close();
-
-	//-------------------------------------------------------------------------
-	// check for error
-	//-------------------------------------------------------------------------
-	llassert( p <= (text+fileSize) );
-
-	if ( error )
-	{
-		llinfos << "ERROR: error while reading from " << path << llendl;
-		delete [] text;
-		return FALSE;
-	}
-
-	llinfos << "Loading parametric keyframe data for: " << getName() << llendl;
-
-	//-------------------------------------------------------------------------
-	// parse the text and build keyframe data structures
-	//-------------------------------------------------------------------------
-	p = text;
-	S32 num;
-	char strA[80]; /* Flawfinder: ignore */
-	char strB[80]; /* Flawfinder: ignore */
-	F32 floatA = 0.0f;
-
-
-	//-------------------------------------------------------------------------
-	// get priority
-	//-------------------------------------------------------------------------
-	BOOL isFirstMotion = TRUE;
-	num = sscanf(p, "%79s %79s %f", strA, strB, &floatA);	/* Flawfinder: ignore */
-
-	while(1)
-	{
-		if (num == 0 || num == EOF) break;
-		if ((num != 3))
-		{
-			llinfos << "WARNING: can't read parametric motion" << llendl;
-			delete [] text;
+			llinfos << "ERROR: error while reading from " << path << llendl;
 			return FALSE;
 		}
 
-		addKeyframeMotion(strA, gAnimLibrary.stringToAnimState(std::string(strA)), strB, floatA);
-		if (isFirstMotion)
-		{
-			isFirstMotion = FALSE;
-			setDefaultKeyframeMotion(strA);
-		}
-		
-		p = strstr(p, "\n");
-		if (!p)
-		{
-			break;
-		}
-			
-		p++;
-		num = sscanf(p, "%79s %79s %f", strA, strB, &floatA);	/* Flawfinder: ignore */
-	}
+		llinfos << "Loading parametric keyframe data for: " << getName() << llendl;
 
-	delete [] text;
-	return TRUE;
+		//-------------------------------------------------------------------------
+		// parse the text and build keyframe data structures
+		//-------------------------------------------------------------------------
+		p = &text[0];
+		S32 num;
+		char strA[80]; /* Flawfinder: ignore */
+		char strB[80]; /* Flawfinder: ignore */
+		F32 floatA = 0.0f;
+
+
+		//-------------------------------------------------------------------------
+		// get priority
+		//-------------------------------------------------------------------------
+		BOOL isFirstMotion = TRUE;
+		num = sscanf(p, "%79s %79s %f", strA, strB, &floatA);	/* Flawfinder: ignore */
+
+		while(1)
+		{
+			if (num == 0 || num == EOF) break;
+			if ((num != 3))
+			{
+				llinfos << "WARNING: can't read parametric motion" << llendl;
+				return FALSE;
+			}
+
+			addKeyframeMotion(strA, gAnimLibrary.stringToAnimState(std::string(strA)), strB, floatA);
+			if (isFirstMotion)
+			{
+				isFirstMotion = FALSE;
+				setDefaultKeyframeMotion(strA);
+			}
+		
+			p = strstr(p, "\n");
+			if (!p)
+			{
+				break;
+			}
+			
+			p++;
+			num = sscanf(p, "%79s %79s %f", strA, strB, &floatA);	/* Flawfinder: ignore */
+		}
+
+		return TRUE;
+	}
+	catch(std::bad_alloc)
+	{
+		llinfos << "ERROR: Unable to allocate keyframe text buffer." << llendl;
+		return FALSE;
+	}
 }
 
 // End

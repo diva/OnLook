@@ -169,7 +169,7 @@ public:
 	void updateMotions(e_update_t update_type);
 
 	LLAnimPauseRequest requestPause();
-	BOOL areAnimationsPaused() { return mMotionController.isPaused(); }
+	BOOL areAnimationsPaused() const { return mMotionController.isPaused(); }
 	void setAnimTimeFactor(F32 factor) { mMotionController.setTimeFactor(factor); }
 	void setTimeStep(F32 time_step) { mMotionController.setTimeStep(time_step); }
 
@@ -203,9 +203,9 @@ public:
 	void addVisualParam(LLVisualParam *param);
 	void addSharedVisualParam(LLVisualParam *param);
 
-	BOOL setVisualParamWeight(LLVisualParam *which_param, F32 weight, BOOL set_by_user = FALSE );
-	BOOL setVisualParamWeight(const char* param_name, F32 weight, BOOL set_by_user = FALSE );
-	BOOL setVisualParamWeight(S32 index, F32 weight, BOOL set_by_user = FALSE );
+	virtual BOOL setVisualParamWeight(LLVisualParam *which_param, F32 weight, BOOL upload_bake = FALSE );
+	virtual BOOL setVisualParamWeight(const char* param_name, F32 weight, BOOL upload_bake = FALSE );
+	virtual BOOL setVisualParamWeight(S32 index, F32 weight, BOOL upload_bake = FALSE );
 
 	// get visual param weight by param or name
 	F32 getVisualParamWeight(LLVisualParam *distortion);
@@ -231,14 +231,29 @@ public:
 		return (mCurIterator++)->second;
 	}
 
+	S32 getVisualParamCountInGroup(const EVisualParamGroup group) const
+	{
+		S32 rtn = 0;
+		for (visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.begin();
+		     iter != mVisualParamIndexMap.end();
+		     /* */ )
+		{
+			if ((iter++)->second->getGroup() == group)
+			{
+				++rtn;
+			}
+		}
+		return rtn;
+	}
+
 	LLVisualParam*	getVisualParam(S32 id)
 	{
-		VisualParamIndexMap_t::iterator iter = mVisualParamIndexMap.find(id);
+		visual_param_index_map_t::iterator iter = mVisualParamIndexMap.find(id);
 		return (iter == mVisualParamIndexMap.end()) ? 0 : iter->second;
 	}
 	S32 getVisualParamID(LLVisualParam *id)
 	{
-		VisualParamIndexMap_t::iterator iter;
+		visual_param_index_map_t::iterator iter;
 		for (iter = mVisualParamIndexMap.begin(); iter != mVisualParamIndexMap.end(); iter++)
 		{
 			if (iter->second == id)
@@ -250,7 +265,7 @@ public:
 	LLVisualParam*	getVisualParam(const char *name);
 
 
-	ESex getSex()				{ return mSex; }
+	ESex getSex() const			{ return mSex; }
 	void setSex( ESex sex )		{ mSex = sex; }
 
 	// set appearance flag
@@ -281,11 +296,12 @@ protected:
 
 private:
 	// visual parameter stuff
-	typedef std::map<S32, LLVisualParam *>    VisualParamIndexMap_t;
-	VisualParamIndexMap_t mVisualParamIndexMap;
-	VisualParamIndexMap_t::iterator mCurIterator;
-	typedef std::map<char *, LLVisualParam *> VisualParamNameMap_t;
-	VisualParamNameMap_t  mVisualParamNameMap;
+	typedef std::map<S32, LLVisualParam *> 		visual_param_index_map_t;
+	typedef std::map<char *, LLVisualParam *> 	visual_param_name_map_t;
+
+	visual_param_index_map_t::iterator 			mCurIterator;
+	visual_param_index_map_t 					mVisualParamIndexMap;
+	visual_param_name_map_t  					mVisualParamNameMap;
 
 	static LLStringTable sVisualParamNames;	
 };
