@@ -8,6 +8,7 @@
 #include "llvorbisencode.h"
 #include "llbvhloader.h"
 // static
+extern std::string STATUS[];
 LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::string filename)
 {
 	std::string exten = gDirUtilp->getExtension(src_filename);
@@ -73,24 +74,24 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 	//else if(exten == "tmp") FIXME
 	else if (exten == "bvh")
 	{
+
 		asset_type = LLAssetType::AT_ANIMATION;
 		S32 file_size;
 		LLAPRFile fp;
 		fp.open(src_filename, LL_APR_RB, LLAPRFile::global, &file_size);
 		if(!fp.getFileHandle()) return LLAssetType::AT_NONE;
 		char* file_buffer = new char[file_size + 1];
-		if(fp.read(file_buffer, file_size) == 0) //not sure if this is right, gotta check this one
+		ELoadStatus load_status = E_ST_OK;
+		S32 line_number = 0; 
+		LLBVHLoader* loaderp = new LLBVHLoader(file_buffer, load_status, line_number);
+		
+		if(load_status == E_ST_NO_XLT_FILE)
 		{
-			fp.close();
-			delete[] file_buffer;
-			return LLAssetType::AT_NONE;
+			llwarns << "NOTE: No translation table found." << llendl;
 		}
-		LLBVHLoader* loaderp = new LLBVHLoader(file_buffer);
-		if(!loaderp->isInitialized())
+		else
 		{
-			fp.close();
-			delete[] file_buffer;
-			return LLAssetType::AT_NONE;
+			llwarns << "ERROR: [line: " << line_number << "] " << STATUS[load_status].c_str() << llendl;
 		}
 		S32 buffer_size = loaderp->getOutputSize();
 		U8* buffer = new U8[buffer_size];

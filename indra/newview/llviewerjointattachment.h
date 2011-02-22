@@ -81,7 +81,7 @@ public:
 	BOOL getIsHUDAttachment() const { return mIsHUDAttachment; }
 // [/RLVa:KB]
 
-	BOOL isAnimatable() { return FALSE; }
+	/*virtual*/ BOOL isAnimatable() const { return FALSE; }
 
 //	S32 getGroup() { return mGroup; }
 //	S32 getPieSlice() { return mPieSlice; }

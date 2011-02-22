@@ -59,12 +59,14 @@ const F32 SPEED_FINAL_SCALING = 0.5f;	// final scaling for walk animation
 // LLKeyframeWalkMotion()
 // Class Constructor
 //-----------------------------------------------------------------------------
-LLKeyframeWalkMotion::LLKeyframeWalkMotion(const LLUUID &id) : LLKeyframeMotion(id)
-{
-	mRealTimeLast = 0.0f;
-	mAdjTimeLast = 0.0f;
-	mCharacter = NULL;
-}
+LLKeyframeWalkMotion::LLKeyframeWalkMotion(const LLUUID &id)
+:	LLKeyframeMotion(id),
+    mCharacter(NULL),
+    mCyclePhase(0.0f),
+    mRealTimeLast(0.0f),
+    mAdjTimeLast(0.0f),
+    mDownFoot(0)
+{}
 
 
 //-----------------------------------------------------------------------------
@@ -72,8 +74,7 @@ LLKeyframeWalkMotion::LLKeyframeWalkMotion(const LLUUID &id) : LLKeyframeMotion(
 // Class Destructor
 //-----------------------------------------------------------------------------
 LLKeyframeWalkMotion::~LLKeyframeWalkMotion()
-{
-}
+{}
 
 
 //-----------------------------------------------------------------------------
@@ -413,14 +414,8 @@ BOOL LLFlyAdjustMotion::onUpdate(F32 time, U8* joint_mask)
 	// roll is critically damped interpolation between current roll and angular velocity-derived target roll
 	mRoll = lerp(mRoll, target_roll, LLCriticalDamp::getInterpolant(0.1f));
 
-//	llinfos << mRoll << llendl;
-
 	LLQuaternion roll(mRoll, LLVector3(0.f, 0.f, 1.f));
 	mPelvisState->setRotation(roll);
 
-//	F32 lerp_amt = LLCriticalDamp::getInterpolant(0.2f);
-//	
-//	LLVector3 pelvis_correction = mPelvisState->getPosition() - lerp(LLVector3::zero, mPelvisState->getJoint()->getPosition() + mPelvisState->getPosition(), lerp_amt);
-//	mPelvisState->setPosition(pelvis_correction);
 	return TRUE;
 }

@@ -222,31 +222,61 @@ BOOL LLVorbisDecodeState::initDecode()
 	S32 sample_count = ov_pcm_total(&mVF, -1);
 	size_t size_guess = (size_t)sample_count;
 	vorbis_info* vi = ov_info(&mVF, -1);
-	size_guess *= vi->channels;
+	size_guess *= (vi? vi->channels : 1);
 	size_guess *= 2;
 	size_guess += 2048;
 	
 	bool abort_decode = false;
+
+	if (vi)
+	{
+		if( vi->channels < 1 || vi->channels > LLVORBIS_CLIP_MAX_CHANNELS )
+		{
+			abort_decode = true;
+			llwarns << "Bad channel count: " << vi->channels << llendl;
+		}
+	}
+	else // !vi
+	{
+		abort_decode = true;
+		llwarns << "No default bitstream found" << llendl;	
+	}
 	// <edit>
-	// This magic value is equivilent to 150MiB of data.
-	// Prevents griffers from utilizin a huge xbox sound the size of god to instafry the viewer
+		// This magic value is equivilent to 150MiB of data.
+		// Prevents griffers from utilizin a huge xbox sound the size of god to instafry the viewer
 	if(size_guess >= 157286400)
 	{
 		llwarns << "Bad sound caught by zmagic" << llendl;
 		abort_decode = true;
 	}
-
-	else /* </edit> */if( vi->channels < 1 || vi->channels > LLVORBIS_CLIP_MAX_CHANNELS )
+	else
+	{
+	// </edit> 
+	//Much more restrictive than zmagic. Perhaps make toggleable.
+	if( (size_t)sample_count > LLVORBIS_CLIP_REJECT_SAMPLES ||
+	    (size_t)sample_count <= 0)
 	{
 		abort_decode = true;
-		llwarns << "Bad channel count: " << vi->channels << llendl;
+		llwarns << "Illegal sample count: " << sample_count << llendl;
 	}
-
 	
+	if( size_guess > LLVORBIS_CLIP_REJECT_SIZE ||
+	    size_guess < 0)
+	{
+		abort_decode = true;
+		llwarns << "Illegal sample size: " << size_guess << llendl;
+	}
+	// <edit>
+	}
+	// </edit>
 	if( abort_decode )
 	{
 		llwarns << "Canceling initDecode. Bad asset: " << mUUID << llendl;
-		llwarns << "Bad asset encoded by: " << ov_comment(&mVF,-1)->vendor << llendl;
+		vorbis_comment* comment = ov_comment(&mVF,-1);
+		if (comment && comment->vendor)
+		{
+			llwarns << "Bad asset encoded by: " << comment->vendor << llendl;
+		}
 		delete mInFilep;
 		mInFilep = NULL;
 		return FALSE;
