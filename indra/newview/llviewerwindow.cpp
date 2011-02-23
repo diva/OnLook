@@ -3050,7 +3050,7 @@ BOOL LLViewerWindow::handlePerFrameHover()
 		// snap floaters to top of chat bar/button strip
 		LLView* chatbar_and_buttons = gOverlayBar->getChild<LLView>("chatbar_and_buttons", TRUE);
 		// find top of chatbar and state buttons, if either are visible
-		if (chatbar_and_buttons && !chatbar_and_buttons->getLocalBoundingRect().isNull())
+		if (chatbar_and_buttons && chatbar_and_buttons->getLocalBoundingRect().notEmpty())
 		{
 			// convert top/left corner of chatbar/buttons container to gFloaterView-relative coordinates
 			S32 top, left;
@@ -3492,7 +3492,7 @@ void LLViewerWindow::schedulePick(LLPickInfo& pick_info)
 	
 		return;
 	}
-	llassert_always(pick_info.mScreenRegion.notNull());
+	llassert_always(pick_info.mScreenRegion.notEmpty());
 	mPicks.push_back(pick_info);
 	
 	/*S32 scaled_x = llround((F32)pick_info.mMousePt.mX * mDisplayScale.mV[VX]);

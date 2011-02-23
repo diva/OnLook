@@ -837,6 +837,7 @@ public:
 	S32 mNumT;
 
 	LLVector3 mExtents[2]; //minimum and maximum point of face
+	LLVector2 mTexCoordExtents[2]; //minimum and maximum of texture coordinates of the face.
 
 	std::vector<VertexData> mVertices;
 	std::vector<U16>	mIndices;

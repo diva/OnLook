@@ -67,13 +67,11 @@ class LLVector3
 		explicit LLVector3(const LLVector2 &vec);				// Initializes LLVector3 to (vec[0]. vec[1], 0)
 		explicit LLVector3(const LLVector3d &vec);				// Initializes LLVector3 to (vec[0]. vec[1], vec[2])
 		explicit LLVector3(const LLVector4 &vec);				// Initializes LLVector4 to (vec[0]. vec[1], vec[2])
-		LLVector3(const LLSD& sd);
+		/*explicit */LLVector3(const LLSD& sd);
 
 		LLSD getValue() const;
 
 		void setValue(const LLSD& sd);
-
-		const LLVector3& operator=(const LLSD& sd);
 
 		inline BOOL isFinite() const;									// checks to see if all values of LLVector3 are finite
 		BOOL		clamp(F32 min, F32 max);		// Clamps all values to (min,max), returns TRUE if data changed
@@ -558,4 +556,9 @@ inline BOOL are_parallel(const LLVector3 &a, const LLVector3 &b, F32 epsilon)
 	return FALSE;
 }
 
+inline std::ostream& operator<<(std::ostream& s, const LLVector3 &a) 
+{
+	s << "{ " << a.mV[VX] << ", " << a.mV[VY] << ", " << a.mV[VZ] << " }";
+	return s;
+}
 #endif
