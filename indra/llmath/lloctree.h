@@ -45,7 +45,11 @@
 #endif
 
 #define LL_OCTREE_PARANOIA_CHECK 0
+#if LL_DARWIN
+#define LL_OCTREE_MAX_CAPACITY 32
+#else
 #define LL_OCTREE_MAX_CAPACITY 128
+#endif
 
 template <class T> class LLOctreeNode;
 
@@ -61,7 +65,7 @@ public:
 };
 
 template <class T>
-class LLOctreeTraveler : public LLTreeTraveler<T>
+class LLOctreeTraveler
 {
 public:
 	virtual void traverse(const LLOctreeNode<T>* node);
@@ -179,7 +183,6 @@ public:
 		{
 			mMax.mdV[i] = mCenter.mdV[i] + mSize.mdV[i];
 			mMin.mdV[i] = mCenter.mdV[i] - mSize.mdV[i];
-			mCenter.mdV[i] = mCenter.mdV[i];
 		}
 	}
 

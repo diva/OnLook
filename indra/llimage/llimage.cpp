@@ -93,9 +93,10 @@ LLImageBase::LLImageBase()
 	  mWidth(0),
 	  mHeight(0),
 	  mComponents(0),
+	  mBadBufferAllocation(false),
+	  mAllowOverSize(false),
 	  mMemType(LLMemType::MTYPE_IMAGEBASE)
 {
-	mBadBufferAllocation = FALSE ;
 }
 
 // virtual
@@ -134,8 +135,6 @@ void LLImageBase::sanityCheck()
 	}
 }
 
-BOOL LLImageBase::sSizeOverride = FALSE;
-
 // virtual
 void LLImageBase::deleteData()
 {
@@ -158,7 +157,7 @@ U8* LLImageBase::allocateData(S32 size)
 			llerrs << llformat("LLImageBase::allocateData called with bad dimensions: %dx%dx%d",mWidth,mHeight,mComponents) << llendl;
 		}
 	}
-	else if (size <= 0 || (size > 4096*4096*16 && sSizeOverride == FALSE))
+	else if (size <= 0 || (size > 4096*4096*16 && !mAllowOverSize))
 	{
 		llerrs << "LLImageBase::allocateData: bad size: " << size << llendl;
 	}
@@ -220,7 +219,7 @@ U8* LLImageBase::getData()
 	return mData; 
 }
 
-BOOL LLImageBase::isBufferInvalid()
+bool LLImageBase::isBufferInvalid()
 {
 	return mBadBufferAllocation || mData == NULL ;
 }
@@ -1287,7 +1286,7 @@ LLImageFormatted::LLImageFormatted(S8 codec)
 	  mCodec(codec),
 	  mDecoding(0),
 	  mDecoded(0),
-	  mDiscardLevel(0)
+	  mDiscardLevel(-1)
 {
 	mMemType = LLMemType::MTYPE_IMAGEFORMATTED;
 }

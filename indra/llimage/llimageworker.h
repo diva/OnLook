@@ -78,6 +78,8 @@ public:
 	
 public:
 	LLImageDecodeThread(bool threaded = true);
+	virtual ~LLImageDecodeThread();
+
 	handle_t decodeImage(LLImageFormatted* image,
 						 U32 priority, S32 discard, BOOL needs_aux,
 						 Responder* responder);
@@ -90,7 +92,7 @@ private:
 	struct creation_info
 	{
 		handle_t handle;
-		LLImageFormatted* image;
+		LLPointer<LLImageFormatted> image;
 		U32 priority;
 		S32 discard;
 		BOOL needs_aux;

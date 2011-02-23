@@ -91,13 +91,12 @@ void ll_cleanup_apr()
 //
 //LLAPRPool
 //
-LLAPRPool::LLAPRPool(apr_pool_t *parent, apr_size_t size, BOOL releasePoolFlag) 
-{
-	mParent = parent ;
-	mReleasePoolFlag = releasePoolFlag ;
-	mMaxSize = size ;
-	mPool = NULL ;
-
+LLAPRPool::LLAPRPool(apr_pool_t *parent, apr_size_t size, BOOL releasePoolFlag) 	
+	: mParent(parent),
+	mReleasePoolFlag(releasePoolFlag),
+	mMaxSize(size),
+	mPool(NULL)
+{	
 	createAPRPool() ;
 }
 
@@ -399,7 +398,7 @@ S32 LLAPRFile::read(void *buf, S32 nbytes)
 	//llassert_always(mFile); (ASC-TUDCC) -HgB
 	if(!mFile) 
 	{
-		llwarns << "apr mFile is removed by somebody else. Can not write." << llendl ;
+		llwarns << "apr mFile is removed by somebody else. Can not read." << llendl ;
 		return 0;
 	}
 	

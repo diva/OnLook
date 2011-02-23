@@ -123,14 +123,16 @@ public:
 
 	const U8 *getData() const	;
 	U8 *getData()				;
-	BOOL isBufferInvalid() ;
+	bool isBufferInvalid() ;
 
 	void setSize(S32 width, S32 height, S32 ncomponents);
 	U8* allocateDataSize(S32 width, S32 height, S32 ncomponents, S32 size = -1); // setSize() + allocateData()
+	void enableOverSize() {mAllowOverSize = true ;}
+	void disableOverSize() {mAllowOverSize = false; }
 
 protected:
 	// special accessor to allow direct setting of mData and mDataSize by LLImageFormatted
-	void setDataAndSize(U8 *data, S32 size) { mData = data; mDataSize = size; };
+	void setDataAndSize(U8 *data, S32 size) { mData = data; mDataSize = size; }
 	
 public:
 	static void generateMip(const U8 *indata, U8* mipdata, int width, int height, S32 nchannels);
@@ -138,8 +140,6 @@ public:
 	// Function for calculating the download priority for textures
 	// <= 0 priority means that there's no need for more data.
 	static F32 calc_download_priority(F32 virtual_size, F32 visible_area, S32 bytes_sent);
-
-	static void setSizeOverride(BOOL enabled) { sSizeOverride = enabled; }
 
 	static EImageCodec getCodecFromExtension(const std::string& exten);
 	
@@ -152,11 +152,10 @@ private:
 
 	S8 mComponents;
 
-	BOOL mBadBufferAllocation ;
-
+	bool mBadBufferAllocation ;
+	bool mAllowOverSize ;
 public:
 	S16 mMemType; // debug
-	static BOOL sSizeOverride;
 };
 
 // Raw representation of an image (used for textures, and other uncompressed formats

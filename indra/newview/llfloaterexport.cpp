@@ -4,6 +4,7 @@
 #include "llfloaterexport.h"
 #include "lluictrlfactory.h"
 #include "llsdutil.h"
+#include "llsdutil_math.h"
 #include "llsdserialize.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"

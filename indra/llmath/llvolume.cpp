@@ -84,6 +84,7 @@ const F32 SKEW_MIN	= -0.95f;
 const F32 SKEW_MAX	=  0.95f;
 
 const F32 SCULPT_MIN_AREA = 0.002f;
+const S32 SCULPT_MIN_AREA_DETAIL = 1;
 
 BOOL check_same_clock_dir( const LLVector3& pt1, const LLVector3& pt2, const LLVector3& pt3, const LLVector3& norm)
 {    
@@ -1687,7 +1688,7 @@ LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL ge
 	mGenerateSingleFace = generate_single_face;
 
 	generate();
-	if (mParams.getSculptID().isNull())
+	if (mParams.getSculptID().isNull() && params.getSculptType() == LL_SCULPT_TYPE_NONE)
 	{
 		createVolumeFaces();
 	}
@@ -1863,6 +1864,11 @@ void LLVolume::createVolumeFaces()
 			LLProfile::Face& face = mProfilep->mFaces[i];
 			vf.mBeginS = face.mIndex;
 			vf.mNumS = face.mCount;
+			if (vf.mNumS < 0)
+			{
+				llerrs << "Volume face corruption detected." << llendl;
+			}
+
 			vf.mBeginT = 0;
 			vf.mNumT= getPath().mPath.size();
 			vf.mID = i;
@@ -1906,6 +1912,10 @@ void LLVolume::createVolumeFaces()
 					if (face.mFlat && vf.mNumS > 2)
 					{ //flat inner faces have to copy vert normals
 						vf.mNumS = vf.mNumS*2;
+						if (vf.mNumS < 0)
+						{
+							llerrs << "Volume face corruption detected." << llendl;
+						}
 					}
 				}
 				else
@@ -2237,10 +2247,14 @@ void LLVolume::sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components,
 	if (!data_is_empty)
 	{
 		sculptGenerateMapVertices(sculpt_width, sculpt_height, sculpt_components, sculpt_data, sculpt_type);
-		
-		if (sculptGetSurfaceArea() < SCULPT_MIN_AREA)
+
+		// don't test lowest LOD to support legacy content DEV-33670
+		if (mDetail > SCULPT_MIN_AREA_DETAIL)
 		{
-			data_is_empty = TRUE;
+			if (sculptGetSurfaceArea() < SCULPT_MIN_AREA)
+			{
+				data_is_empty = TRUE;
+			}
 		}
 	}
 
@@ -3818,6 +3832,7 @@ BOOL LLVolume::cleanupTriangleData( const S32 num_input_vertices,
 
 	// Generate the vertex mapping and the list of vertices without
 	// duplicates.  This will crash if there are no vertices.
+	llassert(num_input_vertices > 0); // check for no vertices!
 	S32 *vertex_mapping = new S32[num_input_vertices];
 	LLVector3 *new_vertices = new LLVector3[num_input_vertices];
 	LLVertexIndexPair *prev_pairp = NULL;
@@ -4396,19 +4411,54 @@ std::ostream& operator<<(std::ostream &s, const LLVolume *volumep)
 
 BOOL LLVolumeFace::create(LLVolume* volume, BOOL partial_build)
 {
+	BOOL ret = FALSE ;
 	if (mTypeMask & CAP_MASK)
 	{
-		return createCap(volume, partial_build);
+		ret = createCap(volume, partial_build);
 	}
 	else if ((mTypeMask & END_MASK) || (mTypeMask & SIDE_MASK))
 	{
-		return createSide(volume, partial_build);
+		ret = createSide(volume, partial_build);
 	}
 	else
 	{
 		llerrs << "Unknown/uninitialized face type!" << llendl;
-		return FALSE;
 	}
+
+	//update the range of the texture coordinates
+	if(ret)
+	{
+		mTexCoordExtents[0].setVec(1.f, 1.f) ;
+		mTexCoordExtents[1].setVec(0.f, 0.f) ;
+
+		U32 end = mVertices.size() ;
+		for(U32 i = 0 ; i < end ; i++)
+		{
+			if(mTexCoordExtents[0].mV[0] > mVertices[i].mTexCoord.mV[0])
+			{
+				mTexCoordExtents[0].mV[0] = mVertices[i].mTexCoord.mV[0] ;
+			}
+			if(mTexCoordExtents[1].mV[0] < mVertices[i].mTexCoord.mV[0])
+			{
+				mTexCoordExtents[1].mV[0] = mVertices[i].mTexCoord.mV[0] ;
+			}
+
+			if(mTexCoordExtents[0].mV[1] > mVertices[i].mTexCoord.mV[1])
+			{
+				mTexCoordExtents[0].mV[1] = mVertices[i].mTexCoord.mV[1] ;
+			}
+			if(mTexCoordExtents[1].mV[1] < mVertices[i].mTexCoord.mV[1])
+			{
+				mTexCoordExtents[1].mV[1] = mVertices[i].mTexCoord.mV[1] ;
+			}			
+		}
+		mTexCoordExtents[0].mV[0] = llmax(0.f, mTexCoordExtents[0].mV[0]) ;
+		mTexCoordExtents[0].mV[1] = llmax(0.f, mTexCoordExtents[0].mV[1]) ;
+		mTexCoordExtents[1].mV[0] = llmin(1.f, mTexCoordExtents[1].mV[0]) ;
+		mTexCoordExtents[1].mV[1] = llmin(1.f, mTexCoordExtents[1].mV[1]) ;
+	}
+
+	return ret ;
 }
 
 void	LerpPlanarVertex(LLVolumeFace::VertexData& v0,
@@ -4516,13 +4566,25 @@ BOOL LLVolumeFace::createUnCutCubeCap(LLVolume* volume, BOOL partial_build)
 
 	if (!partial_build)
 	{
-		int idxs[] = {0,1,(grid_size+1)+1,(grid_size+1)+1,(grid_size+1),0};
-		for(int gx = 0;gx<grid_size;gx++){
-			for(int gy = 0;gy<grid_size;gy++){
-				if (mTypeMask & TOP_MASK){
-					for(int i=5;i>=0;i--)mIndices.push_back(vtop+(gy*(grid_size+1))+gx+idxs[i]);
-				}else{
-					for(int i=0;i<6;i++)mIndices.push_back(vtop+(gy*(grid_size+1))+gx+idxs[i]);
+		S32 idxs[] = {0,1,(grid_size+1)+1,(grid_size+1)+1,(grid_size+1),0};
+		for(S32 gx = 0;gx<grid_size;gx++)
+		{
+			
+			for(S32 gy = 0;gy<grid_size;gy++)
+			{
+				if (mTypeMask & TOP_MASK)
+				{
+					for(S32 i=5;i>=0;i--)
+					{
+						mIndices.push_back(vtop+(gy*(grid_size+1))+gx+idxs[i]);
+					}
+				}
+				else
+				{
+					for(S32 i=0;i<6;i++)
+					{
+						mIndices.push_back(vtop+(gy*(grid_size+1))+gx+idxs[i]);
+					}
 				}
 			}
 		}
@@ -4977,12 +5039,6 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 		mHasBinormals = FALSE;
 	}
 
-
-	LLVector3& face_min = mExtents[0];
-	LLVector3& face_max = mExtents[1];
-
-	mCenter.clearVec();
-
 	S32 begin_stex = llfloor( profile[mBeginS].mV[2] );
 	S32 num_s = ((mTypeMask & INNER_MASK) && (mTypeMask & FLAT_MASK) && mNumS > 2) ? mNumS/2 : mNumS;
 
@@ -5038,15 +5094,6 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 		
 			mVertices[cur_vertex].mNormal = LLVector3(0,0,0);
 			mVertices[cur_vertex].mBinormal = LLVector3(0,0,0);
-			
-			if (cur_vertex == 0)
-			{
-				face_min = face_max = mesh[i].mPos;
-			}
-			else
-			{
-				update_min_max(face_min, face_max, mesh[i].mPos);
-			}
 
 			cur_vertex++;
 
@@ -5080,12 +5127,22 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 			mVertices[cur_vertex].mNormal = LLVector3(0,0,0);
 			mVertices[cur_vertex].mBinormal = LLVector3(0,0,0);
 
-			update_min_max(face_min,face_max,mesh[i].mPos);
-
 			cur_vertex++;
 		}
 	}
 	
+
+	//get bounding box for this side
+	LLVector3& face_min = mExtents[0];
+	LLVector3& face_max = mExtents[1];
+	mCenter.clearVec();
+
+	face_min = face_max = mVertices[0].mPosition;
+	for (U32 i = 1; i < mVertices.size(); ++i)
+	{
+		update_min_max(face_min, face_max, mVertices[i].mPosition);
+	}
+
 	mCenter = (face_min + face_max) * 0.5f;
 
 	S32 cur_index = 0;

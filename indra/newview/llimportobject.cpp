@@ -7,7 +7,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llimportobject.h"
 #include "llsdserialize.h"
-#include "llsdutil.h"
+#include "llsdutil_math.h"
 #include "llviewerobject.h"
 #include "llagent.h"
 #include "llchat.h"

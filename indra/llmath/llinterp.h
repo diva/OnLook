@@ -32,6 +32,12 @@
 #ifndef LL_LLINTERP_H
 #define LL_LLINTERP_H
 
+#if defined(LL_WINDOWS)
+// macro definitions for common math constants (e.g. M_PI) are declared under the _USE_MATH_DEFINES
+// on Windows system.
+// So, let's define _USE_MATH_DEFINES before including math.h
+	#define _USE_MATH_DEFINES
+#endif
 #include "math.h"
 
 // Class from which different types of interpolators can be derived
@@ -144,6 +150,7 @@ protected:
 
 template <typename Type>
 LLInterp<Type>::LLInterp()
+: mStartVal(Type()), mEndVal(Type()), mCurVal(Type())
 {
 	mStartTime = 0.f;
 	mEndTime = 1.f;

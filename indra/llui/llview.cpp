@@ -1355,7 +1355,7 @@ void LLView::draw()
 		{
 			// Only draw views that are within the root view
 			localRectToScreen(viewp->getRect(),&screenRect);
-			if ( rootRect.rectInRect(&screenRect) )
+			if ( rootRect.overlaps(screenRect) )
 			{
 				glMatrixMode(GL_MODELVIEW);
 				LLUI::pushMatrix();
@@ -1560,7 +1560,7 @@ void LLView::updateBoundingRect()
 
 			LLRect child_bounding_rect = childp->getBoundingRect();
 
-			if (local_bounding_rect.isNull())
+			if (local_bounding_rect.isEmpty())
 			{
 				// start out with bounding rect equal to first visible child's bounding rect
 				local_bounding_rect = child_bounding_rect;
@@ -1568,7 +1568,7 @@ void LLView::updateBoundingRect()
 			else
 			{
 				// accumulate non-null children rectangles
-				if (!child_bounding_rect.isNull())
+				if (child_bounding_rect.notEmpty())
 				{
 					local_bounding_rect.unionWith(child_bounding_rect);
 				}

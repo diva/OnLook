@@ -333,8 +333,8 @@ public:
 	//--------------------------------------------------------------------
 public:
 	LLColor4		getGlobalColor( const std::string& color_name );
-	BOOL			isLocalTextureDataAvailable( LLTexLayerSet* layerset );
-	BOOL			isLocalTextureDataFinal( LLTexLayerSet* layerset );
+	BOOL			isLocalTextureDataAvailable( const LLTexLayerSet* layerset );
+	BOOL			isLocalTextureDataFinal( const LLTexLayerSet* layerset );
 	LLVOAvatarDefines::ETextureIndex	getBakedTE( LLTexLayerSet* layerset );
 	void			updateComposites();
 	void			onGlobalColorChanged( LLTexGlobalColor* global_color, BOOL set_by_user );

@@ -40,7 +40,7 @@
 #include "lluuid.h"
 #include "llsd.h"
 #include "llsdserialize.h"
-#include "llsdutil.h"
+#include "llsdutil_math.h"
 #include "llmemory.h"
 #include "message.h"
 

@@ -1910,7 +1910,7 @@ LLRect LLFloaterView::findNeighboringPosition( LLFloater* reference_floater, LLF
 		if (sibling && 
 			sibling != neighbor && 
 			sibling->getVisible() && 
-			expanded_base_rect.rectInRect(&sibling->getRect()))
+			expanded_base_rect.overlaps(sibling->getRect()))
 		{
 			base_rect.unionWith(sibling->getRect());
 		}

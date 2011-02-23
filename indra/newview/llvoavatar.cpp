@@ -3693,12 +3693,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//Lindens are always more Linden than your friend, make that take precedence
 					if(LLMuteList::getInstance()->isLinden(getFullname()))
 					{
-						mClientColor = gSavedSettings.getColor4("AscentLindenColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentLindenColor");
 					}
 					//check if they are an estate owner at their current position
 					else if(estate_owner.notNull() && this->getID() == estate_owner)
 					{
-						mClientColor = gSavedSettings.getColor4("AscentEstateOwnerColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentEstateOwnerColor");
 					}
 					//without these dots, SL would suck.
 					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
@@ -3708,7 +3708,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//big fat jerkface who is probably a jerk, display them as such.
 					else if(LLMuteList::getInstance()->isMuted(this->getID()))
 					{
-						mClientColor = gSavedSettings.getColor4("AscentMutedColor").getValue();
+						mClientColor = gSavedSettings.getColor4("AscentMutedColor");
 					}
 				}
 
@@ -8562,7 +8562,7 @@ S32 LLVOAvatar::getLocalDiscardLevel( ETextureIndex index )
 // Returns true if the highest quality discard level exists for every texture
 // in the layerset.
 //-----------------------------------------------------------------------------
-BOOL LLVOAvatar::isLocalTextureDataFinal( LLTexLayerSet* layerset )
+BOOL LLVOAvatar::isLocalTextureDataFinal( const LLTexLayerSet* layerset )
 {
 	for (U32 i = 0; i < mBakedTextureData.size(); i++)
 	{
@@ -8591,7 +8591,7 @@ BOOL LLVOAvatar::isLocalTextureDataFinal( LLTexLayerSet* layerset )
 // Returns true if at least the lowest quality discard level exists for every texture
 // in the layerset.
 //-----------------------------------------------------------------------------
-BOOL LLVOAvatar::isLocalTextureDataAvailable( LLTexLayerSet* layerset )
+BOOL LLVOAvatar::isLocalTextureDataAvailable( const LLTexLayerSet* layerset )
 {
 	/* if( layerset == mBakedTextureData[BAKED_HEAD].mTexLayerSet )
 	   return getLocalDiscardLevel( TEX_HEAD_BODYPAINT ) >= 0; */

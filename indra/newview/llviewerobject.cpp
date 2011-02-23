@@ -1839,7 +1839,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 	}
 
-	new_rot.normQuat();
+	new_rot.normalize();
 
 	if (gPingInterpolate)
 	{ 
