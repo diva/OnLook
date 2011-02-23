@@ -1355,7 +1355,7 @@ void LLView::draw()
 		{
 			// Only draw views that are within the root view
 			localRectToScreen(viewp->getRect(),&screenRect);
-			if ( rootRect.contains(screenRect) )
+			if ( rootRect.overlaps(screenRect) )
 			{
 				glMatrixMode(GL_MODELVIEW);
 				LLUI::pushMatrix();
