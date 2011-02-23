@@ -37,9 +37,13 @@
 #include "v4color.h"
 #include "llsd.h"
 
+// These bits are used while unpacking TEM messages to tell which aspects of
+// the texture entry changed.
+const S32 TEM_CHANGE_NONE = 0x0;
 const S32 TEM_CHANGE_COLOR = 0x1;
 const S32 TEM_CHANGE_TEXTURE = 0x2;
-const S32 TEM_INVALID = 0x4;
+const S32 TEM_CHANGE_MEDIA = 0x4; //Currently doesn't do anything, (not that TEM_CHANGE_TEXTURE either)
+const S32 TEM_INVALID = 0x8;
 
 const S32 TEM_BUMPMAP_COUNT = 32;
 
@@ -68,6 +72,7 @@ const S32 TEM_TEX_GEN_SHIFT		= 1;
 class LLTextureEntry
 {
 public:	
+	static LLTextureEntry* newTextureEntry();
 
 	typedef enum e_texgen
 	{
@@ -82,14 +87,18 @@ public:
 	LLTextureEntry(const LLTextureEntry &rhs);
 
 	LLTextureEntry &operator=(const LLTextureEntry &rhs);
-    ~LLTextureEntry();
+    virtual ~LLTextureEntry();
 
 	bool operator==(const LLTextureEntry &rhs) const;
 	bool operator!=(const LLTextureEntry &rhs) const;
 
 	LLSD asLLSD() const;
+	void asLLSD(LLSD& sd) const;
 	operator LLSD() const { return asLLSD(); }
-	bool fromLLSD(LLSD& sd);
+	bool fromLLSD(const LLSD& sd);
+
+	virtual LLTextureEntry* newBlank() const;
+	virtual LLTextureEntry* newCopy() const;
 
 	void init(const LLUUID& tex_id, F32 scale_s, F32 scale_t, F32 offset_s, F32 offset_t, F32 rotation, U8 bump);
 
@@ -99,7 +108,11 @@ public:
 	S32  setColor(const LLColor3 &color);
 	S32  setAlpha(const F32 alpha);
 	S32  setScale(F32 s, F32 t);
+	S32  setScaleS(F32 s);
+	S32  setScaleT(F32 t);
 	S32  setOffset(F32 s, F32 t);
+	S32  setOffsetS(F32 s);
+	S32  setOffsetT(F32 t);
 	S32  setRotation(F32 theta);
 
 	S32  setBumpmap(U8 bump);
@@ -113,7 +126,7 @@ public:
 	S32  setMediaTexGen(U8 media);
     S32  setGlow(F32 glow);
 	
-	const LLUUID &getID() const { return mID; }
+	virtual const LLUUID &getID() const { return mID; }
 	const LLColor4 &getColor() const { return mColor; }
 	void getScale(F32 *s, F32 *t) const { *s = mScaleS; *t = mScaleT; }
 	void getOffset(F32 *s, F32 *t) const { *s = mOffsetS; *t = mOffsetT; }
@@ -132,7 +145,7 @@ public:
     F32  getGlow() const { return mGlow; }
 	
 	// Media flags
-	enum { MF_NONE = 0x0, MF_WEB_PAGE = 0x1 };
+	enum { MF_NONE = 0x0, MF_HAS_MEDIA = 0x1 };
 
 public:
 	F32                 mScaleS;                // S, T offset
