@@ -42,6 +42,7 @@
 #include "llfloaterchat.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
+#include "llsdutil_math.h"
 #include "lluictrlfactory.h" // builds floaters from XML
 #include "llurlhistory.h"
 #include "lluserauth.h"      // for saving placeavatarresponder result
