@@ -87,6 +87,16 @@ LLFloaterAbout* LLFloaterAbout::sInstance = NULL;
 
 static std::string get_viewer_release_notes_url();
 
+static void onAboutClickCopyToClipboard(void* user_data)
+{
+	LLFloater* self = (LLFloater*) user_data;
+	LLViewerTextEditor *support_widget = 
+		self->getChild<LLViewerTextEditor>("support_editor", true);
+	support_widget->selectAll();
+	support_widget->copy();
+	support_widget->deselect();
+}
+
 ///----------------------------------------------------------------------------
 /// Class LLFloaterAbout
 ///----------------------------------------------------------------------------
@@ -107,7 +117,8 @@ LLFloaterAbout::LLFloaterAbout()
 
 	LLViewerTextEditor *credits_widget = 
 		getChild<LLViewerTextEditor>("credits_editor", true);
-
+	
+	childSetAction("copy_btn", onAboutClickCopyToClipboard, this);
 
 	if (!support_widget || !credits_widget)
 	{
@@ -264,7 +275,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// TODO: Implement media plugin version query
 
-	support.append("Qt Webkit Version: 4.5.2 ");
+	support.append("Qt Webkit Version: 4.6.0 ");
 	support.append("\n");
 
 	if (gPacketsIn > 0)
@@ -315,7 +326,8 @@ void LLFloaterAbout::show(void*)
 
 static std::string get_viewer_release_notes_url()
 {
-	std::ostringstream version;
+	return "http://www.singularityviewer.org";
+	/*std::ostringstream version;
 	version <<  LL_VERSION_MAJOR
 		<< "." << LL_VERSION_MINOR
 		<< "." << LL_VERSION_PATCH
@@ -329,5 +341,6 @@ static std::string get_viewer_release_notes_url()
 	std::ostringstream url;
 	url << RELEASE_NOTES_BASE_URL << LLURI::mapToQueryString(query);
 
-	return "http://ascent.balseraph.org/index.php/Ascent_" + version.str();// url.str();
+	return "http://ascent.balseraph.org/index.php/Ascent_" + version.str();// url.str();*/
 }
+
