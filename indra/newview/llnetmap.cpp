@@ -1136,21 +1136,6 @@ bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLS
 	return true;
 }
 
-bool LLNetMap::LLRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	BOOL rotate = gSavedSettings.getBOOL("MiniMapRotate");
-	gSavedSettings.setBOOL("MiniMapRotate", !rotate);
-	return true;
-}
-
-bool LLNetMap::LLCheckRotateMap::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-{
-	LLNetMap *self = mPtr;
-	BOOL enabled = gSavedSettings.getBOOL("MiniMapRotate");
-	self->findControl(userdata["control"].asString())->setValue(enabled);
-	return true;
-}
-
 bool LLNetMap::LLStopTracking::handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 {
 	LLTracker::stopTracking(NULL);

@@ -160,18 +160,6 @@ private:
 		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
 	};
 
-	class LLRotateMap : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
-	};
-
-	class LLCheckRotateMap : public LLMemberListener<LLNetMap>
-	{
-	public:
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
-	};
-
 	class LLStopTracking : public LLMemberListener<LLNetMap>
 	{
 	public:

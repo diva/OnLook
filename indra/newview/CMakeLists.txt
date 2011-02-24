@@ -492,8 +492,7 @@ set(viewer_SOURCE_FILES
     llwlparamset.cpp
     llworld.cpp
     llworldmap.cpp
-    llworldmapmessage.cpp
-    llworldmipmap.cpp
+    llmapresponders.cpp
     llworldmapview.cpp
     llxmlrpctransaction.cpp
     noise.cpp
@@ -965,8 +964,7 @@ set(viewer_HEADER_FILES
     llwlparamset.h
     llworld.h
     llworldmap.h
-    llworldmapmessage.h
-    llworldmipmap.h
+    llmapresponders.h
     llworldmapview.h
     llxmlrpctransaction.h
     macmain.h

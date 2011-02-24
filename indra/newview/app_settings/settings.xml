@@ -7147,6 +7147,17 @@
       <key>Value</key>
       <string>http://map.secondlife.com.s3.amazonaws.com/</string>
     </map>
+    <key>UseWebMapTiles</key>
+    <map>
+      <key>Comment</key>
+      <string>Use web map tiles whenever possible</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
     <key>MapOverlayIndex</key>
     <map>
       <key>Comment</key>
@@ -7180,16 +7191,38 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>MapShowEvents</key>
+    <key>MapShowPGEvents</key>
     <map>
       <key>Comment</key>
-      <string>Show events on world map</string>
+      <string>Show PG events on world map</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
       <integer>1</integer>
+    </map>
+    <key>MapShowMatureEvents</key>
+    <map>
+      <key>Comment</key>
+      <string>Show mature events on world map</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>MapShowAdultEvents</key>
+    <map>
+      <key>Comment</key>
+      <string>Show adult events on world map</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
     </map>
     <key>MapShowInfohubs</key>
     <map>

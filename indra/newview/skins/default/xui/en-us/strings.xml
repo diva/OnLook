@@ -7,6 +7,13 @@
 	
 	<string name="hippo_label_free">free</string>
 	<string name="hippo_label_week">week</string>
+	<string name="TeleportOfferMaturity">
+	  [NAME] is offering a TP to [DESTINATION]
+	</string>
+	<string name="TeleportLureMaturity">
+	  [NAME]'s teleport lure is to [DESTINATION]
+	</string>	
+
 	<!-- Login -->
 	<string name="LoginInProgress">Logging in. [APP_NAME] may appear frozen.  Please wait.</string>
 	<string name="LoginAuthenticating">Authenticating</string>

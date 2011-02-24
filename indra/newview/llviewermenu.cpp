@@ -1001,6 +1001,9 @@ void init_client_menu(LLMenuGL* menu)
 // </dogmode>
 	menu->append(new LLMenuItemCallGL("Clear Group Cache", 
 									  LLGroupMgr::debugClearAllGroups));
+
+	menu->append(new LLMenuItemCheckGL("Use Web Map Tiles", menu_toggle_control, NULL, menu_check_control, (void*)"UseWebMapTiles"));
+
 	menu->appendSeparator();
 
 	sub_menu = new LLMenuGL("Rendering");
@@ -3543,7 +3546,8 @@ void set_god_level(U8 god_level)
 	LLFloaterDirectory::requestClassifieds();
 
 	// God mode changes region visibility
-	LLWorldMap::getInstance()->reloadItems(true);
+	LLWorldMap::getInstance()->reset();
+	LLWorldMap::getInstance()->setCurrentLayer(0);
 
 	// inventory in items may change in god mode
 	gObjectList.dirtyAllObjectInventory();

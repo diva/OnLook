@@ -110,6 +110,7 @@
 #include "lltoolmgr.h"
 #include "lltoolpie.h"
 #include "lltoolview.h"
+#include "lltrans.h"
 #include "llui.h"			// for make_ui_sound
 #include "llurldispatcher.h"
 #include "llviewercamera.h"
@@ -139,7 +140,6 @@
 #include "llfollowcam.h"
 
 #include "llao.h"
-#include "llworldmapmessage.h"
 #include "llfollowcam.h"
 
 // [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
@@ -8517,21 +8517,26 @@ std::string LLAgent::getCapability(const std::string& name) const
 	}
 	return iter->second;
 }
-// <edit>
 
 void LLAgent::showLureDestination(const std::string fromname, const int global_x, const int global_y, const int x, const int y, const int z, const std::string maturity)
 {
 	const LLVector3d posglobal = LLVector3d(F64(global_x), F64(global_y), F64(0));
 	LLSimInfo* siminfo;
 	siminfo = LLWorldMap::getInstance()->simInfoFromPosGlobal(posglobal);
+	std::string sim_name;
+	LLWorldMap::getInstance()->simNameFromPosGlobal( posglobal, sim_name );
+
 	if(siminfo)
 	{
-		llinfos << fromname << "'s teleport lure is to " << siminfo->getName() << " (" << maturity << ")" << llendl;
-		std::string url = LLURLDispatcher::buildSLURL(siminfo->getName(), S32(x), S32(y), S32(z));
-		std::string msg;
-		msg = llformat("%s's teleport lure is to %s", fromname.c_str(), url.c_str());
-		if(maturity != "")
+		llinfos << fromname << "'s teleport lure is to " << sim_name << " (" << maturity << ")" << llendl;
+		LLStringUtil::format_map_t args;
+		args["[NAME]"] = fromname;
+		args["[DESTINATION]"] = LLURLDispatcher::buildSLURL(sim_name.c_str(), S32(x), S32(y), S32(z));
+		std::string msg = LLTrans::getString("TeleportLureMaturity", args);
+		if (maturity != "")
+		{
 			msg.append(llformat(" (%s)", maturity.c_str()));
+		}
 		LLChat chat(msg);
 		LLFloaterChat::addChat(chat);
 	}
@@ -8546,7 +8551,7 @@ void LLAgent::showLureDestination(const std::string fromname, const int global_x
 		LLAgent::lure_y = y;
 		LLAgent::lure_z = z;
 		LLAgent::lure_maturity = maturity;
-		LLWorldMapMessage::getInstance()->sendMapBlockRequest(lure_global_x, lure_global_y, lure_global_x, lure_global_y, true);
+		LLWorldMap::getInstance()->sendMapBlockRequest(lure_global_x, lure_global_y, lure_global_x, lure_global_y, true);
 	}
 }
 
@@ -8555,14 +8560,19 @@ void LLAgent::onFoundLureDestination()
 	LLAgent::lure_show = FALSE;
 	LLSimInfo* siminfo;
 	siminfo = LLWorldMap::getInstance()->simInfoFromPosGlobal(LLAgent::lure_posglobal);
+	std::string sim_name;
+	LLWorldMap::getInstance()->simNameFromPosGlobal(LLAgent::lure_posglobal, sim_name );
 	if(siminfo)
 	{
-		llinfos << LLAgent::lure_name << "'s teleport lure is to " << siminfo->getName() << " (" << LLAgent::lure_maturity << ")" << llendl;
-		std::string url = LLURLDispatcher::buildSLURL(siminfo->getName(), S32(LLAgent::lure_x), S32(LLAgent::lure_y), S32(LLAgent::lure_z));
-		std::string msg;
-		msg = llformat("%s's teleport lure is to %s", LLAgent::lure_name.c_str(), url.c_str());
-		if(LLAgent::lure_maturity != "")
+		llinfos << LLAgent::lure_name << "'s teleport lure is to " << sim_name << " (" << LLAgent::lure_maturity << ")" << llendl;
+		LLStringUtil::format_map_t args;
+		args["[NAME]"] = LLAgent::lure_name;
+		args["[DESTINATION]"] = LLURLDispatcher::buildSLURL(sim_name, S32(LLAgent::lure_x), S32(LLAgent::lure_y), S32(LLAgent::lure_z));
+		std::string msg = LLTrans::getString("TeleportOfferMaturity", args);
+		if (LLAgent::lure_maturity != "")
+		{
 			msg.append(llformat(" (%s)", LLAgent::lure_maturity.c_str()));
+		}
 		LLChat chat(msg);
 		LLFloaterChat::addChat(chat);
 	}
@@ -8570,7 +8580,6 @@ void LLAgent::onFoundLureDestination()
 		llwarns << "Grand scheme failed" << llendl;
 }
 
-// </edit>
 
 // EOF
 
