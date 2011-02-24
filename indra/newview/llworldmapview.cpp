@@ -1245,11 +1245,11 @@ BOOL LLWorldMapView::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 
 				if (agent_count == 1)
 				{
-					message += "person";
+					message += "avatar";
 				}
 				else
 				{
-					message += "people";
+					message += "avatars";
 				}
 			}
 		}

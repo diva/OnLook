@@ -37,6 +37,7 @@
 #include "llregionhandle.h"
 #include "message.h"
 
+
 #include "llappviewer.h"	// for gPacificDaylightTime
 #include "llagent.h"
 #include "llmapresponders.h"
@@ -46,9 +47,7 @@
 #include "llviewerimagelist.h"
 #include "llviewerregion.h"
 #include "llregionflags.h"
-
-#include "hippogridmanager.h"
-
+ #include "hippogridmanager.h"
 bool LLWorldMap::sGotMapURL =  false;
 const F32 REQUEST_ITEMS_TIMER =  10.f * 60.f; // 10 minutes
 
@@ -133,9 +132,9 @@ LLWorldMap::LLWorldMap() :
 		mMapLoaded[map] = FALSE;
 		mMapBlockLoaded[map] = new BOOL[MAP_BLOCK_RES*MAP_BLOCK_RES];
 		for (S32 idx=0; idx<MAP_BLOCK_RES*MAP_BLOCK_RES; ++idx)
-	{
+		{
 			mMapBlockLoaded[map][idx] = FALSE;
-	}
+		}
 	}
 }
 
@@ -156,12 +155,12 @@ void LLWorldMap::reset()
 	mSimInfoMap.clear();
 
 	for (S32 m=0; m<MAP_SIM_IMAGE_TYPES; ++m)
-		{
+	{
 		mMapLoaded[m] = FALSE;
 	}
 
 	clearSimFlags();
-
+	
 	eraseItems();
 
 	mMinX = U32_MAX;
@@ -225,8 +224,8 @@ void LLWorldMap::clearSimFlags()
 {
 	for (S32 map=0; map<MAP_SIM_IMAGE_TYPES; ++map)
 	{
-	for (S32 idx=0; idx<MAP_BLOCK_RES*MAP_BLOCK_RES; ++idx)
-	{
+		for (S32 idx=0; idx<MAP_BLOCK_RES*MAP_BLOCK_RES; ++idx)
+		{
 			mMapBlockLoaded[map][idx] = FALSE;
 		}
 	}
@@ -267,7 +266,7 @@ LLSimInfo* LLWorldMap::simInfoFromName(const std::string& sim_name)
 				break;
 			}
 			sim_info = NULL;
-	}
+		}
 	}
 	return sim_info;
 }
@@ -568,7 +567,7 @@ void LLWorldMap::processMapLayerReply(LLMessageSystem* msg, void**)
 bool LLWorldMap::useWebMapTiles()
 {
 	return gSavedSettings.getBOOL("UseWebMapTiles") &&
-		   ((gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL) && LLWorldMap::getInstance()->mCurrentMap == 0);
+		   (( gHippoGridManager->getConnectedGrid()->isSecondLife() || sGotMapURL) && LLWorldMap::getInstance()->mCurrentMap == 0);
 }
 
 // public static
@@ -628,34 +627,34 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 
 		U64 handle = to_region_handle(x_meters, y_meters);
 
-	if (accesscode == 255)
-	{
+		if (accesscode == 255)
+		{
 			// This region doesn't exist
 			if (LLWorldMap::getInstance()->mIsTrackingUnknownLocation &&
 				LLWorldMap::getInstance()->mUnknownLocation.mdV[0] >= x_meters &&
 				LLWorldMap::getInstance()->mUnknownLocation.mdV[0] < x_meters + 256 &&
 				LLWorldMap::getInstance()->mUnknownLocation.mdV[1] >= y_meters &&
 				LLWorldMap::getInstance()->mUnknownLocation.mdV[1] < y_meters + 256)
-		{
+			{
 				// We were tracking this location, but it doesn't exist
 				LLWorldMap::getInstance()->mInvalidLocation = TRUE;
-		}
+			}
 
 			found_null_sim = true;
-	}
-	else
-	{
+		}
+		else
+		{
 			adjust = LLWorldMap::getInstance()->extendAABB(x_meters, 
 										y_meters, 
 										x_meters+REGION_WIDTH_UNITS,
 										y_meters+REGION_WIDTH_UNITS) || adjust;
 
 // 			llinfos << "Map sim " << name << " image layer " << agent_flags << " ID " << image_id.getString() << llendl;
-
+			
 			LLSimInfo* siminfo = new LLSimInfo();
 			sim_info_map_t::iterator iter = LLWorldMap::getInstance()->mSimInfoMap.find(handle);
 			if (iter != LLWorldMap::getInstance()->mSimInfoMap.end())
-		{
+			{
 				LLSimInfo* oldinfo = iter->second;
 				for (S32 image=0; image<MAP_SIM_IMAGE_TYPES; ++image)
 				{
@@ -690,7 +689,7 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 #ifdef IMMEDIATE_IMAGE_LOAD
 				siminfo->mOverlayImage = gImageList.getImage(siminfo->mMapImageID[2], MIPMAP_TRUE, FALSE);
 #endif
-		}
+			}
 			else
 			{
 				siminfo->mOverlayImage = NULL;
@@ -734,7 +733,14 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 				LLWorldMap::getInstance()->mSLURLRegionHandle = 0;
 
 				callback(handle, LLWorldMap::getInstance()->mSLURL, image_id, LLWorldMap::getInstance()->mSLURLTeleport);
-	}
+			}
+		}
+		if(gAgent.mLureShow)
+		{
+			if((x_regions == gAgent.mLureGlobalX) && (y_regions == gAgent.mLureGlobalY))
+			{
+				gAgent.onFoundLureDestination();
+			}
 		}
 	}
 
@@ -771,92 +777,94 @@ void LLWorldMap::processMapItemReply(LLMessageSystem* msg, void**)
 		LLItemInfo new_item(world_x, world_y, name, uuid, extra, extra2);
 		LLSimInfo* siminfo = LLWorldMap::getInstance()->simInfoFromHandle(new_item.mRegionHandle);
 
-	switch (type)
-	{
-		case MAP_ITEM_TELEHUB: // telehubs
+		switch (type)
 		{
+			case MAP_ITEM_TELEHUB: // telehubs
+			{
 				// Telehub color, store in extra as 4 U8's
 				U8 *color = (U8 *)&new_item.mExtra;
 
-			F32 red = fmod((F32)X * 0.11f, 1.f) * 0.8f;
-			F32 green = fmod((F32)Y * 0.11f, 1.f) * 0.8f;
-			F32 blue = fmod(1.5f * (F32)(X + Y) * 0.11f, 1.f) * 0.8f;
-			F32 add_amt = (X % 2) ? 0.15f : -0.15f;
-			add_amt += (Y % 2) ? -0.15f : 0.15f;
+				F32 red = fmod((F32)X * 0.11f, 1.f) * 0.8f;
+				F32 green = fmod((F32)Y * 0.11f, 1.f) * 0.8f;
+				F32 blue = fmod(1.5f * (F32)(X + Y) * 0.11f, 1.f) * 0.8f;
+				F32 add_amt = (X % 2) ? 0.15f : -0.15f;
+				add_amt += (Y % 2) ? -0.15f : 0.15f;
 				color[0] = U8((red + add_amt) * 255);
 				color[1] = U8((green + add_amt) * 255);
 				color[2] = U8((blue + add_amt) * 255);
 				color[3] = 255;
-			
-			// extra2 specifies whether this is an infohub or a telehub.
-			if (extra2)
-			{
+				
+				// extra2 specifies whether this is an infohub or a telehub.
+				if (extra2)
+				{
 					LLWorldMap::getInstance()->mInfohubs.push_back(new_item);
-			}
-			else
-			{
+				}
+				else
+				{
 					LLWorldMap::getInstance()->mTelehubs.push_back(new_item);
+				}
+
+				break;
 			}
+			case MAP_ITEM_PG_EVENT: // events
+			case MAP_ITEM_MATURE_EVENT:
+			case MAP_ITEM_ADULT_EVENT:
+			{
+				struct tm* timep;
+				// Convert to Pacific, based on server's opinion of whether
+				// it's daylight savings time there.
+				timep = utc_to_pacific_time(extra, gPacificDaylightTime);
 
-			break;
-		}
-		case MAP_ITEM_PG_EVENT: // events
-		case MAP_ITEM_MATURE_EVENT:
-		case MAP_ITEM_ADULT_EVENT:
-		{
-			struct tm* timep;
-			// Convert to Pacific, based on server's opinion of whether
-			// it's daylight savings time there.
-			timep = utc_to_pacific_time(extra, gPacificDaylightTime);
-
-			S32 display_hour = timep->tm_hour % 12;
-			if (display_hour == 0) display_hour = 12;
+				S32 display_hour = timep->tm_hour % 12;
+				if (display_hour == 0) display_hour = 12;
 
 				new_item.mToolTip = llformat( "%d:%02d %s",
-										  display_hour,
-										  timep->tm_min,
-										  (timep->tm_hour < 12 ? "AM" : "PM") );
+											  display_hour,
+											  timep->tm_min,
+											  (timep->tm_hour < 12 ? "AM" : "PM") );
 
-			// HACK: store Z in extra2
+				// HACK: store Z in extra2
 				new_item.mPosGlobal.mdV[VZ] = (F64)extra2;
-			if (type == MAP_ITEM_PG_EVENT)
-			{
+				if (type == MAP_ITEM_PG_EVENT)
+				{
 					LLWorldMap::getInstance()->mPGEvents.push_back(new_item);
-			}
-			else if (type == MAP_ITEM_MATURE_EVENT)
-			{
+				}
+				else if (type == MAP_ITEM_MATURE_EVENT)
+				{
 					LLWorldMap::getInstance()->mMatureEvents.push_back(new_item);
-			}
-			else if (type == MAP_ITEM_ADULT_EVENT)
-			{
+				}
+				else if (type == MAP_ITEM_ADULT_EVENT)
+				{
 					LLWorldMap::getInstance()->mAdultEvents.push_back(new_item);
-			}
+				}
 
-			break;
-		}
-		case MAP_ITEM_LAND_FOR_SALE:		// land for sale
-		case MAP_ITEM_LAND_FOR_SALE_ADULT:	// adult land for sale 
-		{
-				new_item.mToolTip = llformat("%d sq. m. L$%d", new_item.mExtra, new_item.mExtra2);
-			if (type == MAP_ITEM_LAND_FOR_SALE)
+				break;
+			}
+			case MAP_ITEM_LAND_FOR_SALE: // land for sale
+			case MAP_ITEM_LAND_FOR_SALE_ADULT: // adult land for sale 
 			{
+				new_item.mToolTip = llformat("%d sq. m. %s%d", new_item.mExtra,
+					gHippoGridManager->getConnectedGrid()->getCurrencySymbol().c_str(),
+					new_item.mExtra2);
+				if (type == MAP_ITEM_LAND_FOR_SALE)
+				{
 					LLWorldMap::getInstance()->mLandForSale.push_back(new_item);
-			}
-			else if (type == MAP_ITEM_LAND_FOR_SALE_ADULT)
-			{
+				}
+				else if (type == MAP_ITEM_LAND_FOR_SALE_ADULT)
+				{
 					LLWorldMap::getInstance()->mLandForSaleAdult.push_back(new_item);
+				}
+				break;
 			}
-			break;
-		}
-		case MAP_ITEM_CLASSIFIED: // classifieds
-		{
-			//DEPRECATED: no longer used
-			break;
-		}
-		case MAP_ITEM_AGENT_LOCATIONS: // agent locations
-		{
-				if (!siminfo)
+			case MAP_ITEM_CLASSIFIED: // classifieds
 			{
+				//DEPRECATED: no longer used
+				break;
+			}
+			case MAP_ITEM_AGENT_LOCATIONS: // agent locations
+			{
+				if (!siminfo)
+				{
 					llinfos << "siminfo missing for " << new_item.mPosGlobal.mdV[0] << ", " << new_item.mPosGlobal.mdV[1] << llendl;
 					break;
 				}
@@ -882,11 +890,11 @@ void LLWorldMap::processMapItemReply(LLMessageSystem* msg, void**)
 				if (new_item.mExtra > 0)
 				{
 					agentcounts.push_back(new_item);
+				}
+				break;
 			}
-			break;
-		}
-		default:
-			break;
+			default:
+				break;
 		};
 	}
 }
@@ -932,20 +940,20 @@ BOOL LLWorldMap::extendAABB(U32 min_x, U32 min_y, U32 max_x, U32 max_y)
 		mMinX = min_x;
 	}
 	if (min_y < mMinY)
-		{
+	{
 		rv = TRUE;
 		mMinY = min_y;
 	}
 	if (max_x > mMaxX)
-			{
+	{
 		rv = TRUE;
 		mMaxX = max_x;
-			}
+	}
 	if (max_y > mMaxY)
 	{
 		rv = TRUE;
 		mMaxY = max_y;
-		}
+	}
 	lldebugs << "World map aabb: (" << mMinX << ", " << mMinY << "), ("
 			 << mMaxX << ", " << mMaxY << ")" << llendl;
 	return rv;
@@ -1022,7 +1030,7 @@ void LLWorldMap::updateTelehubCoverage()
 	}
 
 	for (it = mSimInfoMap.begin(); it != mSimInfoMap.end(); ++it)
-		{
+	{
 		U64 handle = (*it).first;
 		LLSimInfo* info = (*it).second;
 
