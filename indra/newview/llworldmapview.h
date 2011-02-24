@@ -186,6 +186,7 @@ public:
 	LLTextBox*		mTextBoxScrollHint;
 
 	static BOOL		sHandledLastClick;
+	static BOOL		sUseOldTrackingDots;
 	S32				mSelectIDStart;
 
 	// Keep the list of regions that are displayed on screen. Avoids iterating through the whole region map after draw().

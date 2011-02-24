@@ -71,6 +71,7 @@ const F32 GODLY_TELEPORT_HEIGHT = 200.f;
 const S32 SCROLL_HINT_WIDTH = 65;
 const F32 BIG_DOT_RADIUS = 5.f;
 BOOL LLWorldMapView::sHandledLastClick = FALSE;
+BOOL LLWorldMapView::sUseOldTrackingDots = FALSE;
 
 LLUIImagePtr LLWorldMapView::sAvatarSmallImage = NULL;
 LLUIImagePtr LLWorldMapView::sAvatarYouImage = NULL;
@@ -139,6 +140,8 @@ void LLWorldMapView::initClass()
 	
 	sStringsMap["loading"] = LLTrans::getString("texture_loading");
 	sStringsMap["offline"] = LLTrans::getString("worldmap_offline");
+
+ 	sUseOldTrackingDots = gSavedSettings.getBOOL("UseOldTrackingDots");
 }
 
 // static
@@ -1186,23 +1189,79 @@ void LLWorldMapView::drawAvatar(F32 x_pixels,
 								F32 dot_radius)
 {
 	const F32 HEIGHT_THRESHOLD = 7.f;
-	LLUIImagePtr dot_image = sAvatarLevelImage;
-	if(relative_z < -HEIGHT_THRESHOLD) 
+	LLUIImagePtr dot_image = sAvatarSmallImage;
+	if (sUseOldTrackingDots || relative_z == 16000.f)
+	{
+		F32 left =		x_pixels - dot_radius;
+		F32 right =		x_pixels + dot_radius;
+		F32 center = 	(left + right) * 0.5f;
+		F32 top =		y_pixels + dot_radius;
+		F32 bottom =	y_pixels - dot_radius;
+
+		if (relative_z == 16000.f)
+		{
+			// Unknown altitude (0m or > 1020m)
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+			glColor4fv(color.mV);
+			LLUI::setLineWidth(1.5f);
+			glBegin(GL_LINES);
+				glVertex2f(left, y_pixels);
+				glVertex2f(right, y_pixels);
+			glEnd();
+			LLUI::setLineWidth(1.0f);
+			
+		}
+		else if (relative_z > HEIGHT_THRESHOLD)
+		{
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+			glColor4fv(color.mV);
+			LLUI::setLineWidth(1.5f);
+			glBegin(GL_LINES);
+				glVertex2f(left, top);
+				glVertex2f(right, top);
+				glVertex2f(center, top);
+				glVertex2f(center, bottom);
+			glEnd();
+			LLUI::setLineWidth(1.0f);
+		}
+		else if (relative_z > -HEIGHT_THRESHOLD)
+		{
+			dot_image->draw(llround(x_pixels) - dot_image->getWidth()/2,
+							llround(y_pixels) - dot_image->getHeight()/2, 
+							color);
+		}
+		else
+		{
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+			glColor4fv(color.mV);
+			LLUI::setLineWidth(1.5f);
+			glBegin(GL_LINES);
+				glVertex2f(center, top);
+				glVertex2f(center, bottom);
+				glVertex2f(left, bottom);
+				glVertex2f(right, bottom);
+			glEnd();
+			LLUI::setLineWidth(1.0f);
+		}
+	}
+	else
+	{
+		if (relative_z < -HEIGHT_THRESHOLD) 
 	{
 		dot_image = sAvatarBelowImage; 
 	}
-	else if(relative_z > HEIGHT_THRESHOLD) 
+		else if (relative_z > HEIGHT_THRESHOLD) 
 	{ 
 		dot_image = sAvatarAboveImage;
 	}
 
 	S32 dot_width = llround(dot_radius * 2.f);
-	dot_image->draw(
-		llround(x_pixels - dot_radius),
+		dot_image->draw(llround(x_pixels - dot_radius),
 		llround(y_pixels - dot_radius),
 		dot_width,
 		dot_width,
 		color);
+	}
 }
 
 // Pass relative Z of 0 to draw at same level.

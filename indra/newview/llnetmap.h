@@ -69,6 +69,9 @@ public:
 
 	static void mm_setcolor(LLUUID key,LLColor4 col); //moymod
 
+	static S32		sMiniMapCenter;
+	static BOOL		sMiniMapRotate;
+
 private:
 
 	void			setScale( F32 scale );
@@ -140,6 +143,18 @@ private:
 	};
 
 	class LLCheckCenterMap : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLRotateMap : public LLMemberListener<LLNetMap>
+	{
+	public:
+		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+	};
+
+	class LLCheckRotateMap : public LLMemberListener<LLNetMap>
 	{
 	public:
 		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);

@@ -70,6 +70,8 @@
 #include "llappviewer.h"
 #include "llvosurfacepatch.h"
 #include "llvowlsky.h"
+#include "llworldmapview.h"
+#include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
 #include "llviewerobjectlist.h"
@@ -336,6 +338,23 @@ static bool handleUploadBakedTexOldChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleMiniMapCenterChanged(const LLSD& newvalue)
+{
+	LLNetMap::sMiniMapCenter = newvalue.asInteger();
+	return true;
+}
+
+static bool handleMiniMapRotateChanged(const LLSD& newvalue)
+{
+	LLNetMap::sMiniMapRotate = newvalue.asBoolean();
+	return true;
+}
+
+static bool handleUseOldTrackingDotsChanged(const LLSD& newvalue)
+{
+	LLWorldMapView::sUseOldTrackingDots = newvalue.asBoolean();
+	return true;
+}
 
 static bool handleNumpadControlChanged(const LLSD& newvalue)
 {
@@ -666,6 +685,9 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AudioLevelMic")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));
 	gSavedSettings.getControl("LipSyncEnabled")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));	
 	gSavedSettings.getControl("TranslateChat")->getSignal()->connect(boost::bind(&handleTranslateChatPrefsChanged, _1));
+	gSavedSettings.getControl("MiniMapCenter")->getSignal()->connect(boost::bind(&handleMiniMapCenterChanged, _1));	
+	gSavedSettings.getControl("MiniMapRotate")->getSignal()->connect(boost::bind(&handleMiniMapRotateChanged, _1));	
+	gSavedSettings.getControl("UseOldTrackingDots")->getSignal()->connect(boost::bind(&handleUseOldTrackingDotsChanged, _1));	
 
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));

@@ -7444,6 +7444,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+    <key>UseOldTrackingDots</key>
+    <map>
+      <key>Comment</key>
+      <string>Use old T-like tracking dots in mini-map</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>MiniMapScale</key>
     <map>
       <key>Comment</key>
