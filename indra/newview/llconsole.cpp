@@ -220,7 +220,7 @@ void LLConsole::draw()
 	S32 const clamped_chat_spacing = llclamp((S32)chat_spacing, -16, 128);
 	if (chat_spacing != clamped_chat_spacing)
 	{
-		gSavedSettings.setS32("ChatSpacing", clamped_chat_spacing);
+		chat_spacing = clamped_chat_spacing;
 	}
 	// Adjust spacing.
 	message_spacing += chat_spacing;

@@ -649,7 +649,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 	    				LLAvatarName avatar_name;
 		    			if (LLAvatarNameCache::get(mClosestAgentToCursor, &avatar_name))
 			    		{
-							static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
     						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
 					    	{
 						    	fullname = avatar_name.mDisplayName;

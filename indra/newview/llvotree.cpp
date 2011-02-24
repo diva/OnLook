@@ -350,7 +350,7 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	}
 	
 	//it's cheaper to check if wind is enabled first
-	LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+	static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
 	if (gLLWindEnabled && render_animate_trees)
 	{
 		F32 mass_inv; 
@@ -553,7 +553,7 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 			max_vertices += sLODVertexCount[lod];
 		}
 
-		LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+		static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
 		mReferenceBuffer = new LLVertexBuffer(LLDrawPoolTree::VERTEX_DATA_MASK, render_animate_trees ? GL_STATIC_DRAW_ARB : 0);
 		mReferenceBuffer->allocateBuffer(max_vertices, max_indices, TRUE);
 
@@ -858,7 +858,7 @@ BOOL LLVOTree::updateGeometry(LLDrawable *drawable)
 		llassert(index_count == max_indices);
 	}
 
-	LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+	static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
 	//Ignoring gLLWindEnabled fixes vanishing trees when wind is disabled but anim trees are enabled.
 	//Using an && here is incorrect, and will cause instability.
 	if (/*gLLWindEnabled || */render_animate_trees)
