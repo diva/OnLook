@@ -56,6 +56,7 @@ S32 LLImageGL::sGlobalTextureMemoryInBytes		= 0;
 S32 LLImageGL::sBoundTextureMemoryInBytes		= 0;
 S32 LLImageGL::sCurBoundTextureMemory	= 0;
 S32 LLImageGL::sCount					= 0;
+std::list<U32> LLImageGL::sDeadTextureList;
 
 BOOL LLImageGL::sGlobalUseAnisotropic	= FALSE;
 F32 LLImageGL::sLastFrameTime			= 0.f;
@@ -75,7 +76,7 @@ std::vector<S32> LLImageGL::sTextureBoundCounter(MAX_TEXTURE_LOG_SIZE + 1) ;
 std::vector<S32> LLImageGL::sTextureCurBoundCounter(MAX_TEXTURE_LOG_SIZE + 1) ;
 S32 LLImageGL::sCurTexSizeBar = -1 ;
 S32 LLImageGL::sCurTexPickSize = -1 ;
-LLPointer<LLImageGL> LLImageGL::sDefaultTexturep = NULL;
+LLPointer<LLImageGL> LLImageGL::sHighlightTexturep = NULL;
 S32 LLImageGL::sMaxCatagories = 1 ;
 
 std::vector<S32> LLImageGL::sTextureMemByCategory;
@@ -133,6 +134,13 @@ void LLImageGL::checkTexSize() const
 //**************************************************************************************
 
 //----------------------------------------------------------------------------
+BOOL is_little_endian()
+{
+	S32 a = 0x12345678;
+    U8 *c = (U8*)(&a);
+    
+	return (*c == 0x78) ;
+}
 //static 
 void LLImageGL::initClass(S32 num_catagories) 
 {
@@ -146,6 +154,40 @@ void LLImageGL::initClass(S32 num_catagories)
 //static 
 void LLImageGL::cleanupClass() 
 {	
+	sTextureMemByCategory.clear() ;
+	sTextureMemByCategoryBound.clear() ;
+	sTextureCurMemByCategoryBound.clear() ;
+}
+
+//static 
+void LLImageGL::setHighlightTexture(S32 category) 
+{
+	const S32 dim = 128;
+	sHighlightTexturep = new LLImageGL() ;
+	LLPointer<LLImageRaw> image_raw = new LLImageRaw(dim,dim,3);
+	U8* data = image_raw->getData();
+	for (S32 i = 0; i<dim; i++)
+	{
+		for (S32 j = 0; j<dim; j++)
+		{
+			const S32 border = 2;
+			if (i<border || j<border || i>=(dim-border) || j>=(dim-border))
+			{
+				*data++ = 0xff;
+				*data++ = 0xff;
+				*data++ = 0xff;
+			}
+			else
+			{
+				*data++ = 0xff;
+				*data++ = 0xff;
+				*data++ = 0x00;
+			}
+		}
+	}
+	sHighlightTexturep->createGLTexture(0, image_raw, 0, TRUE, category);
+	sHighlightTexturep->dontDiscard();
+	image_raw = NULL;
 }
 
 //static
@@ -369,7 +411,6 @@ LLImageGL::~LLImageGL()
 	sImageList.erase(this);
 	delete [] mPickMask;
 	mPickMask = NULL;
-	mPickMaskSize = 0;
 	sCount--;
 }
 
@@ -380,10 +421,13 @@ void LLImageGL::init(BOOL usemipmaps)
 #endif
 
 	mPickMask		  = NULL;
-	mPickMaskSize	  = 0;
 	mTextureState       = NO_DELETE ;
 	mTextureMemory    = 0;
 	mLastBindTime     = 0.f;
+	mPickMaskWidth = 0;
+	mPickMaskHeight = 0;
+	mAlphaStride = 0 ;
+	mAlphaOffset = 0 ;
 	
 	mTarget			  = GL_TEXTURE_2D;
 	mBindTarget		  = LLTexUnit::TT_TEXTURE;
@@ -455,7 +499,7 @@ void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents)
 		// Check if dimensions are a power of two!
 		if (!checkSize(width,height))
 		{
-			llerrs << llformat("Texture has non power of two dimention: %dx%d",width,height) << llendl;
+			llerrs << llformat("Texture has non power of two dimension: %dx%d",width,height) << llendl;
 		}
 		
 		if (mTexName)
@@ -463,7 +507,12 @@ void LLImageGL::setSize(S32 width, S32 height, S32 ncomponents)
 // 			llwarns << "Setting Size of LLImageGL with existing mTexName = " << mTexName << llendl;
 			destroyGLTexture();
 		}
-		
+
+		// pickmask validity depends on old image size, delete it
+		delete [] mPickMask;
+		mPickMask = NULL;
+		mPickMaskWidth = mPickMaskHeight = 0;
+
 		mWidth = width;
 		mHeight = height;
 		mComponents = ncomponents;
@@ -518,7 +567,7 @@ void LLImageGL::forceUpdateBindStats(void) const
 	mLastBindTime = sLastFrameTime;
 }
 
-void LLImageGL::updateBindStats(void) const
+BOOL LLImageGL::updateBindStats() const
 {	
 	if (mTexName != 0)
 	{
@@ -533,8 +582,11 @@ void LLImageGL::updateBindStats(void) const
 	
 			updateBoundTexMem();
 			mLastBindTime = sLastFrameTime;
+			
+			return TRUE ;
 		}
 	}
+	return FALSE;
 }
 
 //virtual
@@ -567,6 +619,8 @@ void LLImageGL::setExplicitFormat( LLGLint internal_format, LLGLenum primary_for
 	else
 		mFormatType = type_format;
 	mFormatSwapBytes = swap_bytes;
+
+	calcAlphaChannelOffsetAndStride() ;
 }
 
 //----------------------------------------------------------------------------
@@ -922,7 +976,10 @@ void LLImageGL::generateTextures(S32 numTextures, U32 *textures)
 // static
 void LLImageGL::deleteTextures(S32 numTextures, U32 *textures)
 {
-	glDeleteTextures(numTextures, (GLuint*)textures);
+	for (S32 i = 0; i < numTextures; i++)
+	{
+		sDeadTextureList.push_back(textures[i]);
+	}
 }
 
 // static
@@ -1020,6 +1077,8 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 			to_create = false;
 			break;
 		}
+
+		calcAlphaChannelOffsetAndStride() ;
 	}
 
 	if(!to_create) //not create a gl texture
@@ -1030,7 +1089,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 		return TRUE ;
 	}
 
-	mCategory = category ;
+	setCategory(category) ;
  	const U8* rawdata = imageraw->getData();
 	return createGLTexture(discard_level, rawdata, FALSE, usename);
 }
@@ -1286,21 +1345,30 @@ BOOL LLImageGL::readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compre
 	return TRUE ;
 }
 
-void LLImageGL::destroyGLTexture()
+void LLImageGL::deleteDeadTextures()
 {
-	if (mTexName != 0)
+	while (!sDeadTextureList.empty())
 	{
-		stop_glerror();
-
+		GLuint tex = sDeadTextureList.front();
+		sDeadTextureList.pop_front();
 		for (int i = 0; i < gGLManager.mNumTextureUnits; i++)
 		{
-			if (sCurrentBoundTextures[i] == mTexName)
+			if (sCurrentBoundTextures[i] == tex)
 			{
 				gGL.getTexUnit(i)->unbind(LLTexUnit::TT_TEXTURE);
 				stop_glerror();
 			}
 		}
 		
+		glDeleteTextures(1, &tex);
+		stop_glerror();
+	}
+}
+		
+void LLImageGL::destroyGLTexture()
+{
+	if (mTexName != 0)
+	{
 		if(mTextureMemory)
 		{
 			if(gAuditTexture)
@@ -1316,7 +1384,6 @@ void LLImageGL::destroyGLTexture()
 		mTexName = 0;
 		mCurrentDiscardLevel = -1 ; //invalidate mCurrentDiscardLevel.
 		mGLTextureCreated = FALSE ;
-		stop_glerror();
 	}
 }
 
@@ -1345,12 +1412,12 @@ void LLImageGL::setFilteringOption(LLTexUnit::eTextureFilterOptions option)
 		mFilterOption = option;
 	}
 
-	if (gGL.getTexUnit(gGL.getCurrentTexUnitIndex())->getCurrTexture() == mTexName)
+	if (mTexName != 0 && gGL.getTexUnit(gGL.getCurrentTexUnitIndex())->getCurrTexture() == mTexName)
 	{
 		gGL.getTexUnit(gGL.getCurrentTexUnitIndex())->setTextureFilteringOption(option);
 		mTexOptionsDirty = false;
+		stop_glerror();
 	}
-	stop_glerror();
 }
 
 BOOL LLImageGL::getIsResident(BOOL test_now)
@@ -1442,59 +1509,189 @@ void LLImageGL::setTarget(const LLGLenum target, const LLTexUnit::eTextureType b
 	mBindTarget = bind_target;
 }
 
-void LLImageGL::analyzeAlpha(const void* data_in, S32 w, S32 h)
+//Used by media in V2
+const S8 INVALID_OFFSET = -99 ;
+void LLImageGL::setNeedsAlphaAndPickMask(BOOL need_mask) 
 {
-	if (mFormatType != GL_UNSIGNED_BYTE)
+	if(mNeedsAlphaAndPickMask != need_mask)
 	{
-		llwarns << "Cannot analyze alpha for image with format type " << std::hex << mFormatType << std::dec << llendl;
+		mNeedsAlphaAndPickMask = need_mask;
+
+		if(mNeedsAlphaAndPickMask)
+		{
+			mAlphaOffset = 0 ;
+		}
+		else //do not need alpha mask
+		{
+			mAlphaOffset = INVALID_OFFSET ;
+			mIsMask = FALSE;
+		}
+	}
+}
+
+void LLImageGL::calcAlphaChannelOffsetAndStride()
+{
+	if(mAlphaOffset == INVALID_OFFSET)//do not need alpha mask
+	{
+		return ;
 	}
 
-	U32 stride = 0;
+	mAlphaStride = -1 ;
 	switch (mFormatPrimary)
 	{
 	case GL_LUMINANCE:
 	case GL_ALPHA:
-		stride = 1;
+		mAlphaStride = 1;
 		break;
 	case GL_LUMINANCE_ALPHA:
-		stride = 2;
+		mAlphaStride = 2;
 		break;
 	case GL_RGB:
-		//no alpha
+		mNeedsAlphaAndPickMask = FALSE ;
 		mIsMask = FALSE;
-		return;
+		return ; //no alpha channel.
 	case GL_RGBA:
-		stride = 4;
+		mAlphaStride = 4;
 		break;
 	case GL_BGRA_EXT:
-		stride = 4;
+		mAlphaStride = 4;
 		break;
 	default:
-		llwarns << "Cannot analyze alpha of image with primary format " << std::hex << mFormatPrimary << std::dec << llendl;
-		return;
+		break;
+	}
+
+	mAlphaOffset = -1 ;
+	if (mFormatType == GL_UNSIGNED_BYTE)
+	{
+		mAlphaOffset = mAlphaStride - 1 ;
+	}
+	else if(is_little_endian())
+	{
+		if (mFormatType == GL_UNSIGNED_INT_8_8_8_8)
+		{
+			mAlphaOffset = 0 ;
+		}
+		else if (mFormatType == GL_UNSIGNED_INT_8_8_8_8_REV)
+		{
+			mAlphaOffset = 3 ;
+		}
+	}
+	else //big endian
+	{
+		if (mFormatType == GL_UNSIGNED_INT_8_8_8_8)
+		{
+			mAlphaOffset = 3 ;
+		}
+		else if (mFormatType == GL_UNSIGNED_INT_8_8_8_8_REV)
+		{
+			mAlphaOffset = 0 ;
+		}
+	}
+
+	if( mAlphaStride < 1 || //unsupported format
+		mAlphaOffset < 0 || //unsupported type
+		(mFormatPrimary == GL_BGRA_EXT && mFormatType != GL_UNSIGNED_BYTE)) //unknown situation
+	{
+		llwarns << "Cannot analyze alpha for image with format type " << std::hex << mFormatType << std::dec << llendl;
+
+		mNeedsAlphaAndPickMask = FALSE ;
+		mIsMask = FALSE;
+	}
+}
+
+void LLImageGL::analyzeAlpha(const void* data_in, U32 w, U32 h)
+{
+	if(!mNeedsAlphaAndPickMask)
+	{
+		return ;
 	}
 
 	U32 length = w * h;
-	const GLubyte* current = ((const GLubyte*) data_in)+stride-1;
+	U32 alphatotal = 0;
 	
-	S32 sample[16];
-	memset(sample, 0, sizeof(S32)*16);
+	U32 sample[16];
+	memset(sample, 0, sizeof(U32)*16);
 
-	for (U32 i = 0; i < length; i++)
+	// generate histogram of quantized alpha.
+	// also add-in the histogram of a 2x2 box-sampled version.  The idea is
+	// this will mid-skew the data (and thus increase the chances of not
+	// being used as a mask) from high-frequency alpha maps which
+	// suffer the worst from aliasing when used as alpha masks.
+	if (w >= 2 && h >= 2)
 	{
-		++sample[*current/16];
-		current += stride;
-	}
+		llassert(w%2 == 0);
+		llassert(h%2 == 0);
+		const GLubyte* rowstart = ((const GLubyte*) data_in) + mAlphaOffset;
+		for (U32 y = 0; y < h; y+=2)
+		{
+			const GLubyte* current = rowstart;
+			for (U32 x = 0; x < w; x+=2)
+			{
+				const U32 s1 = current[0];
+				alphatotal += s1;
+				const U32 s2 = current[w * mAlphaStride];
+				alphatotal += s2;
+				current += mAlphaStride;
+				const U32 s3 = current[0];
+				alphatotal += s3;
+				const U32 s4 = current[w * mAlphaStride];
+				alphatotal += s4;
+				current += mAlphaStride;
 
-	U32 total = 0;
+				++sample[s1/16];
+				++sample[s2/16];
+				++sample[s3/16];
+				++sample[s4/16];
+
+				const U32 asum = (s1+s2+s3+s4);
+				alphatotal += asum;
+				sample[asum/(16*4)] += 4;
+			}
+			
+			rowstart += 2 * w * mAlphaStride;
+		}
+		length *= 2; // we sampled everything twice, essentially
+	}
+	else
+	{
+		const GLubyte* current = ((const GLubyte*) data_in) + mAlphaOffset;
+		for (U32 i = 0; i < length; i++)
+		{
+			const U32 s1 = *current;
+			alphatotal += s1;
+			++sample[s1/16];
+			current += mAlphaStride;
+		}
+	}
+	
+	// if more than 1/16th of alpha samples are mid-range, this
+	// shouldn't be treated as a 1-bit mask
+
+	// also, if all of the alpha samples are clumped on one half
+	// of the range (but not at an absolute extreme), then consider
+	// this to be an intentional effect and don't treat as a mask.
+
+	U32 midrangetotal = 0;
 	for (U32 i = 4; i < 11; i++)
 	{
-		total += sample[i];
+		midrangetotal += sample[i];
+	}
+	U32 lowerhalftotal = 0;
+	for (U32 i = 0; i < 8; i++)
+	{
+		lowerhalftotal += sample[i];
+	}
+	U32 upperhalftotal = 0;
+	for (U32 i = 8; i < 16; i++)
+	{
+		upperhalftotal += sample[i];
 	}
 
-	if (total > length/16)
+	if (midrangetotal > length/16 || // lots of midrange, or
+	    (lowerhalftotal == length && alphatotal != 0) || // all close to transparent but not all totally transparent, or
+	    (upperhalftotal == length && alphatotal != 255*length)) // all close to opaque but not all totally opaque
 	{
-		mIsMask = FALSE;
+		mIsMask = FALSE; // not suitable for masking
 	}
 	else
 	{
@@ -1516,6 +1713,8 @@ BOOL LLImageGL::isDeletionCandidate()
 { 
 	return mTextureState == DELETION_CANDIDATE ; 
 }
+//----------------------------------------------------------------------------
+ 
 
 void LLImageGL::setDeletionCandidate()  
 { 
@@ -1556,46 +1755,51 @@ void LLImageGL::setNoDelete()
 //----------------------------------------------------------------------------
 void LLImageGL::updatePickMask(S32 width, S32 height, const U8* data_in)
 {
-	delete [] mPickMask; //Always happens regardless.
-
-	mPickMask = NULL;
-	mPickMaskSize = 0;
-	
-	if (!(mFormatType != GL_UNSIGNED_BYTE ||
-		mFormatPrimary != GL_RGBA)) //can only generate a pick mask for this sort of texture
+	if(!mNeedsAlphaAndPickMask)
 	{
-		U32 pick_width = width/2;
-		U32 pick_height = height/2;
+		return ;
+	}
 
-		mPickMaskSize = llmax(pick_width, (U32) 1) * llmax(pick_height, (U32) 1);
+	delete [] mPickMask;
+	mPickMask = NULL;
+	mPickMaskWidth = mPickMaskHeight = 0;
 
-		mPickMaskSize = mPickMaskSize/8 + 1;
+	if (mFormatType != GL_UNSIGNED_BYTE ||
+	    mFormatPrimary != GL_RGBA)
+	{
+		//cannot generate a pick mask for this texture
+		return;
+	}
 
-		mPickMask = new U8[mPickMaskSize];
+	U32 pick_width = width/2 + 1;
+	U32 pick_height = height/2 + 1;
 
-		memset(mPickMask, 0, sizeof(U8) * mPickMaskSize);
+	U32 size = pick_width * pick_height;
+	size = (size + 7) / 8; // pixelcount-to-bits
+	mPickMask = new U8[size];
+	mPickMaskWidth = pick_width - 1;
+	mPickMaskHeight = pick_height - 1;
 
-		U32 pick_bit = 0;
-		for (S32 y = 0; y < height; y += 2)
+	memset(mPickMask, 0, sizeof(U8) * size);
+
+	U32 pick_bit = 0;
+	
+	for (S32 y = 0; y < height; y += 2)
+	{
+		for (S32 x = 0; x < width; x += 2)
 		{
-			for (S32 x = 0; x < width; x += 2)
+			U8 alpha = data_in[(y*width+x)*4+3];
+
+			if (alpha > 32)
 			{
-				U8 alpha = data_in[(y*width+x)*4+3];
+				U32 pick_idx = pick_bit/8;
+				U32 pick_offset = pick_bit%8;
+				llassert(pick_idx < size);
 
-				if (alpha > 32)
-				{
-					U32 pick_idx = pick_bit/8;
-					U32 pick_offset = pick_bit%8;
-					if (pick_idx >= mPickMaskSize)
-					{
-						llerrs << "WTF?" << llendl;
-					}
-
-					mPickMask[pick_idx] |= 1 << pick_offset;
-				}
-			
-				++pick_bit;
+				mPickMask[pick_idx] |= 1 << pick_offset;
 			}
+			
+			++pick_bit;
 		}
 	}
 }
@@ -1606,33 +1810,47 @@ BOOL LLImageGL::getMask(const LLVector2 &tc)
 
 	if (mPickMask)
 	{
-		S32 width = getWidth()/2;
-		S32 height = getHeight()/2;
-
-		F32 u = tc.mV[0] - floorf(tc.mV[0]);
-		F32 v = tc.mV[1] - floorf(tc.mV[1]);
-
-		if (u < 0.f || u > 1.f ||
-		    v < 0.f || v > 1.f)
+		F32 u,v;
+		if (LL_LIKELY(tc.isFinite()))
 		{
-			llerrs << "WTF?" << llendl;
-		}
-		
-		S32 x = (S32)(u * width);
-		S32 y = (S32)(v * height);
-
-		S32 idx = y*width+x;
-		S32 offset = idx%8;
-
-		if (idx / 8 < (S32)mPickMaskSize)
-		{
-			res = mPickMask[idx/8] & (1 << offset) ? TRUE : FALSE;
+			u = tc.mV[0] - floorf(tc.mV[0]);
+			v = tc.mV[1] - floorf(tc.mV[1]);
 		}
 		else
 		{
-			llwarns << "Index out of range for mPickMask !" << llendl;
-			return FALSE;
+			LL_WARNS_ONCE("render") << "Ugh, non-finite u/v in mask pick" << LL_ENDL;
+			u = v = 0.f;
+			// removing assert per EXT-4388
+			// llassert(false);
 		}
+
+		if (LL_UNLIKELY(u < 0.f || u > 1.f ||
+				v < 0.f || v > 1.f))
+		{
+			LL_WARNS_ONCE("render") << "Ugh, u/v out of range in image mask pick" << LL_ENDL;
+			u = v = 0.f;
+			// removing assert per EXT-4388
+			// llassert(false);
+		}
+
+		S32 x = llfloor(u * mPickMaskWidth);
+		S32 y = llfloor(v * mPickMaskHeight);
+
+		if (LL_UNLIKELY(x > mPickMaskWidth))
+		{
+			LL_WARNS_ONCE("render") << "Ooh, width overrun on pick mask read, that coulda been bad." << LL_ENDL;
+			x = llmax((U16)0, mPickMaskWidth);
+		}
+		if (LL_UNLIKELY(y > mPickMaskHeight))
+		{
+			LL_WARNS_ONCE("render") << "Ooh, height overrun on pick mask read, that woulda been bad." << LL_ENDL;
+			y = llmax((U16)0, mPickMaskHeight);
+		}
+
+		S32 idx = y*mPickMaskWidth+x;
+		S32 offset = idx%8;
+
+		res = mPickMask[idx/8] & (1 << offset) ? TRUE : FALSE;
 	}
 	
 	return res;
@@ -1650,9 +1868,15 @@ void LLImageGL::setCategory(S32 category)
 		{
 			sTextureMemByCategory[mCategory] -= mTextureMemory ;
 		}
-		sTextureMemByCategory[category] += mTextureMemory ;
-		
-		mCategory = category;
+		if(category > -1 && category < sMaxCatagories)
+		{
+			sTextureMemByCategory[category] += mTextureMemory ;		
+			mCategory = category;
+		}
+		else
+		{
+			mCategory = -1 ;
+		}
 	}
 }
 

@@ -50,12 +50,16 @@ class LLImageGL : public LLRefCount
 {
 	friend class LLTexUnit;
 public:
+	static std::list<U32> sDeadTextureList;
+
+	static void deleteDeadTextures();
+
 	// Size calculation
 	static S32 dataFormatBits(S32 dataformat);
 	static S32 dataFormatBytes(S32 dataformat, S32 width, S32 height);
 	static S32 dataFormatComponents(S32 dataformat);
 
-	void updateBindStats(void) const;
+	BOOL updateBindStats(void) const;
 	void forceUpdateBindStats(void) const;
 
 	// needs to be called every frame
@@ -85,7 +89,8 @@ public:
 protected:
 	virtual ~LLImageGL();
 
-	void analyzeAlpha(const void* data_in, S32 w, S32 h);
+	void analyzeAlpha(const void* data_in, U32 w, U32 h);
+	void calcAlphaChannelOffsetAndStride();
 
 public:
 	virtual void dump();	// debugging info to llinfos
@@ -182,6 +187,7 @@ protected:
 	void init(BOOL usemipmaps);
 	virtual void cleanup(); // Clean up the LLImageGL so it can be reinitialized.  Be careful when using this in derived class destructors
 
+	void setNeedsAlphaAndPickMask(BOOL need_mask);
 public:
 	// Various GL/Rendering options
 	S32 mTextureMemory;
@@ -190,12 +196,16 @@ public:
 private:
 	LLPointer<LLImageRaw> mSaveData; // used for destroyGL/restoreGL
 	U8* mPickMask;  //downsampled bitmap approximation of alpha channel.  NULL if no alpha channel
-	U32 mPickMaskSize;
+	U16 mPickMaskWidth;
+	U16 mPickMaskHeight;
 	S8 mUseMipMaps;
 	S8 mHasExplicitFormat; // If false (default), GL format is f(mComponents)
 	S8 mAutoGenMips;
 
 	BOOL mIsMask;
+	BOOL mNeedsAlphaAndPickMask;
+	S8   mAlphaStride ;
+	S8   mAlphaOffset ;
 	
 	bool     mGLTextureCreated ;
 	LLGLuint mTexName;
@@ -279,13 +289,14 @@ public:
 
 	//for debug use: show texture size distribution 
 	//----------------------------------------
-	static LLPointer<LLImageGL> sDefaultTexturep; //default texture to replace normal textures
+	static LLPointer<LLImageGL> sHighlightTexturep; //default texture to replace normal textures
 	static std::vector<S32> sTextureLoadedCounter ;
 	static std::vector<S32> sTextureBoundCounter ;
 	static std::vector<S32> sTextureCurBoundCounter ;
 	static S32 sCurTexSizeBar ;
 	static S32 sCurTexPickSize ;
 
+	static void setHighlightTexture(S32 category) ;
 	static S32 getTextureCounterIndex(U32 val) ;
 	static void incTextureCounterStatic(U32 val, S32 ncomponents, S32 category) ;
 	static void decTextureCounterStatic(U32 val, S32 ncomponents, S32 category) ;

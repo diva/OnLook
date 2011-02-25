@@ -218,7 +218,8 @@ bool findOrCreateFont(LLFontGL*& fontp, const LLFontDescriptor& desc)
 // static
 BOOL LLFontGL::initDefaultFonts(F32 screen_dpi, F32 x_scale, F32 y_scale,
 								const std::string& app_dir,
-								const std::vector<std::string>& xui_paths)
+								const std::vector<std::string>& xui_paths,
+								bool create_gl_textures)
 {
 	bool succ = true;
 	sVertDPI = (F32)llfloor(screen_dpi * y_scale);
@@ -230,7 +231,7 @@ BOOL LLFontGL::initDefaultFonts(F32 screen_dpi, F32 x_scale, F32 y_scale,
 	// Font registry init
 	if (!sFontRegistry)
 	{
-		sFontRegistry = new LLFontRegistry(xui_paths);
+		sFontRegistry = new LLFontRegistry(xui_paths,create_gl_textures);
 		sFontRegistry->parseFontInfo("fonts.xml");
 	}
 	else

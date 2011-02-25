@@ -203,7 +203,7 @@ void LLRenderTarget::allocateDepth()
 		gGL.getTexUnit(0)->bindManual(mUsage, mDepth);
 		U32 internal_type = LLTexUnit::getInternalType(mUsage);
 		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
-		LLImageGL::setManualImage(internal_type, 0, GL_DEPTH24_STENCIL8_EXT, mResX, mResY, GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
+		LLImageGL::setManualImage(internal_type, 0, GL_DEPTH_COMPONENT32_ARB, mResX, mResY, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 	}
 }
 
@@ -378,7 +378,7 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 				allocateDepth();
 			}
 
-			gGL.getTexUnit(0)->bind(this, true);
+			gGL.getTexUnit(0)->bind(this);
 			glCopyTexImage2D(LLTexUnit::getInternalType(mUsage), 0, GL_DEPTH24_STENCIL8_EXT, 0, 0, mResX, mResY, 0);
 		}
 
@@ -427,13 +427,13 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 		}
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-		glFlush();
 	}
 }
 
 void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, S32 srcX1, S32 srcY1,
 						S32 dstX0, S32 dstY0, S32 dstX1, S32 dstY1, U32 mask, U32 filter)
 {
+	gGL.flush();
 	if (!source.mFBO || !mFBO)
 	{
 		llerrs << "Cannot copy framebuffer contents for non FBO render targets." << llendl;
@@ -445,12 +445,53 @@ void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, 
 	}
 	else
 	{
+		if (mask == GL_DEPTH_BUFFER_BIT && source.mStencil != mStencil)
+		{
+			stop_glerror();
+		
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, source.mFBO);
+			gGL.getTexUnit(0)->bind(this, true);
+			stop_glerror();
+			glCopyTexSubImage2D(LLTexUnit::getInternalType(mUsage), 0, srcX0, srcY0, dstX0, dstY0, dstX1, dstY1);
+			stop_glerror();
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			stop_glerror();
+		}
+		else
+		{
+			glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source.mFBO);
+			stop_glerror();
+			glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, mFBO);
+			stop_glerror();
+			check_framebuffer_status();
+			stop_glerror();
+			glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+			stop_glerror();
+			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+			stop_glerror();
+		}
+	}
+}
+
+//static
+void LLRenderTarget::copyContentsToFramebuffer(LLRenderTarget& source, S32 srcX0, S32 srcY0, S32 srcX1, S32 srcY1,
+						S32 dstX0, S32 dstY0, S32 dstX1, S32 dstY1, U32 mask, U32 filter)
+{
+	if (!source.mFBO)
+	{
+		llerrs << "Cannot copy framebuffer contents for non FBO render targets." << llendl;
+	}
+	{
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source.mFBO);
-		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, mFBO);
-
+		stop_glerror();
+		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
+		stop_glerror();
+		check_framebuffer_status();
+		stop_glerror();
 		glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-
+		stop_glerror();
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		stop_glerror();
 	}
 }
 

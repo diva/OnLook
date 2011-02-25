@@ -33,8 +33,8 @@
 
 #include "linden_common.h"
 #include "llgl.h"
-#include "llfontregistry.h"
 #include "llfontgl.h"
+#include "llfontregistry.h"
 #include <boost/tokenizer.hpp>
 #include "llcontrol.h"
 #include "lldir.h"
@@ -104,7 +104,7 @@ bool removeSubString(std::string& str, const std::string& substr)
 	size_t pos = str.find(substr);
 	if (pos != string::npos)
 	{
-		str.replace(pos,substr.length(),(const char *)NULL, 0);
+		str.erase(pos, substr.size());
 		return true;
 	}
 	return false;
@@ -168,7 +168,9 @@ LLFontDescriptor LLFontDescriptor::normalize() const
 	return LLFontDescriptor(new_name,new_size,new_style,getFileNames());
 }
 
-LLFontRegistry::LLFontRegistry(const string_vec_t& xui_paths)
+LLFontRegistry::LLFontRegistry(const string_vec_t& xui_paths,
+							   bool create_gl_textures)
+:	mCreateGLTextures(create_gl_textures)
 {
 	// Propagate this down from LLUICtrlFactory so LLRender doesn't
 	// need an upstream dependency on LLUI.
@@ -377,10 +379,22 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 	LLFontDescriptor nearest_exact_desc = *match_desc;
 	nearest_exact_desc.setSize(norm_desc.getSize());
 	font_reg_map_t::iterator it = mFontMap.find(nearest_exact_desc);
-	if (it != mFontMap.end())
+	// If we fail to find a font in the fonts directory, it->second might be NULL.
+	// We shouldn't construcnt a font with a NULL mFontFreetype.
+	// This may not be the best solution, but it at least prevents a crash.
+	if (it != mFontMap.end() && it->second != NULL)
 	{
 		llinfos << "-- matching font exists: " << nearest_exact_desc.getName() << " size " << nearest_exact_desc.getSize() << " style " << ((S32) nearest_exact_desc.getStyle()) << llendl;
+		
 		return it->second;
+		//Haven't plugged free-type in yet.
+		// copying underlying Freetype font, and storing in LLFontGL with requested font descriptor
+		/*LLFontGL *font = new LLFontGL;
+		font->mFontDescriptor = desc;
+		font->mFontFreetype = it->second->mFontFreetype;
+		mFontMap[desc] = font;
+
+		return font;*/
 	}
 
 	// Build list of font names to look for.
@@ -427,7 +441,9 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 	{
 		LLFontGL *fontp = new LLFontGL;
 		std::string font_path = local_path + *file_name_it;
-		BOOL is_fallback = !is_first_found;
+		// *HACK: Fallback fonts don't render, so we can use that to suppress
+		// creation of OpenGL textures for test apps. JC
+		BOOL is_fallback = !is_first_found || !mCreateGLTextures;
 		F32 extra_scale = (is_fallback)?fallback_scale:1.0;
 		if (!fontp->loadFace(font_path, extra_scale * point_size,
 							 LLFontGL::sVertDPI, LLFontGL::sHorizDPI, 2, is_fallback))
@@ -648,4 +664,9 @@ void LLFontRegistry::dump()
 			llinfos << "  file: " << *file_it <<llendl;
 		}
 	}
+}
+
+const string_vec_t& LLFontRegistry::getUltimateFallbackList() const 
+{ 
+	return mUltimateFallbackList;
 }

@@ -149,31 +149,7 @@ void LLViewerImage::initClass()
 
 	if(gAuditTexture)
 	{
-		sDefaultTexturep = new LLImageGL() ;
-		image_raw = new LLImageRaw(dim,dim,3);
-		data = image_raw->getData();
-		for (S32 i = 0; i<dim; i++)
-		{
-			for (S32 j = 0; j<dim; j++)
-			{
-				const S32 border = 2;
-				if (i<border || j<border || i>=(dim-border) || j>=(dim-border))
-				{
-					*data++ = 0xff;
-					*data++ = 0xff;
-					*data++ = 0xff;
-				}
-				else
-				{
-					*data++ = 0xff;
-					*data++ = 0xff;
-					*data++ = 0x00;
-				}
-			}
-		}
-		sDefaultTexturep->createGLTexture(0, image_raw, 0, TRUE, LLViewerImageBoostLevel::OTHER);
-		image_raw = NULL;
-		sDefaultTexturep->dontDiscard();
+		LLImageGL::setHighlightTexture(LLViewerImageBoostLevel::OTHER) ;	
 	}
 }
 
@@ -188,7 +164,6 @@ void LLViewerImage::cleanupClass()
 	sSmokeImagep = NULL;
 	sMissingAssetImagep = NULL;
 	sWhiteImagep = NULL;	
-	sDefaultTexturep = NULL ;
 }
 
 // tuning params
