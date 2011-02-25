@@ -337,7 +337,14 @@ void LLVertexBuffer::clientCopy(F64 max_time)
 
 LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 	LLRefCount(),
-	mNumVerts(0), mNumIndices(0), mUsage(usage), mGLBuffer(0), mGLIndices(0), 
+
+	mNumVerts(0),
+	mNumIndices(0),
+	mRequestedNumVerts(-1),
+	mRequestedNumIndices(-1),
+	mUsage(usage),
+	mGLBuffer(0),
+	mGLIndices(0), 
 	mMappedData(NULL),
 	mMappedIndexData(NULL), mLocked(FALSE),
 	mFinal(FALSE),
@@ -811,7 +818,7 @@ volatile U8* LLVertexBuffer::mapBuffer(S32 access)
 
 			GLint buff;
 			glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &buff);
-			if (buff != mGLBuffer)
+			if ((GLuint)buff != mGLBuffer)
 			{
 				llerrs << "Invalid GL vertex buffer bound: " << buff << llendl;
 			}
@@ -824,7 +831,7 @@ volatile U8* LLVertexBuffer::mapBuffer(S32 access)
 		{
 			GLint buff;
 			glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
-			if (buff != mGLIndices)
+			if ((GLuint)buff != mGLIndices)
 			{
 				llerrs << "Invalid GL index buffer bound: " << buff << llendl;
 			}
@@ -1020,15 +1027,18 @@ void LLVertexBuffer::setBuffer(U32 data_mask)
 		{
 			GLint buff;
 			glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &buff);
-			if (buff != mGLBuffer)
+			if ((GLuint)buff != mGLBuffer)
 			{
 				llerrs << "Invalid GL vertex buffer bound: " << buff << llendl;
 			}
 
-			glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
-			if (buff != mGLIndices)
+			if (mGLIndices)
 			{
-				llerrs << "Invalid GL index buffer bound: " << buff << llendl;
+				glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
+				if ((GLuint)buff != mGLIndices)
+				{
+					llerrs << "Invalid GL index buffer bound: " << buff << llendl;
+				}
 			}
 		}
 
@@ -1038,15 +1048,18 @@ void LLVertexBuffer::setBuffer(U32 data_mask)
 			{
 				GLint buff;
 				glGetIntegerv(GL_ARRAY_BUFFER_BINDING_ARB, &buff);
-				if (buff != mGLBuffer)
+				if ((GLuint)buff != mGLBuffer)
 				{
 					llerrs << "Invalid GL vertex buffer bound: " << buff << llendl;
 				}
 
-				glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
-				if (buff != mGLIndices)
+				if (mGLIndices != 0)
 				{
-					llerrs << "Invalid GL index buffer bound: " << buff << llendl;
+					glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
+					if ((GLuint)buff != mGLIndices)
+					{
+						llerrs << "Invalid GL index buffer bound: " << buff << llendl;
+					}
 				}
 			}
 

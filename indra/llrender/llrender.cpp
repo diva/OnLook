@@ -88,7 +88,9 @@ static GLenum sGLBlendFactor[] =
 	GL_DST_ALPHA,
 	GL_SRC_ALPHA,
 	GL_ONE_MINUS_DST_ALPHA,
-	GL_ONE_MINUS_SRC_ALPHA
+	GL_ONE_MINUS_SRC_ALPHA,
+
+	GL_ZERO // 'BF_UNDEF'
 };
 
 LLTexUnit::LLTexUnit(S32 index)
@@ -99,7 +101,7 @@ mCurrAlphaSrc1(TBS_TEX_ALPHA), mCurrAlphaSrc2(TBS_PREV_ALPHA),
 mCurrColorScale(1), mCurrAlphaScale(1), mCurrTexture(0),
 mHasMipMaps(false)
 {
-	llassert_always(index < LL_NUM_TEXTURE_LAYERS);
+	llassert_always(index < (S32)LL_NUM_TEXTURE_LAYERS);
 	mIndex = index;
 }
 
@@ -207,7 +209,7 @@ bool LLTexUnit::bind(LLImageGL* texture, bool for_rendering, bool forceBind)
 		if(texture->getWidth() * texture->getHeight() == LLImageGL::sCurTexPickSize)
 		{
 			texture->updateBindStats();
-			return bind(LLImageGL::sDefaultTexturep.get());
+			return bind(LLImageGL::sHighlightTexturep.get());
 		}
 	}
 
@@ -217,8 +219,10 @@ bool LLTexUnit::bind(LLImageGL* texture, bool for_rendering, bool forceBind)
 		enable(texture->getTarget());
 		mCurrTexture = texture->getTexName();
 		glBindTexture(sGLTextureType[texture->getTarget()], mCurrTexture);
-		texture->updateBindStats();
-		texture->setActive() ;
+		if(texture->updateBindStats())
+		{
+			texture->setActive() ;
+		}
 		mHasMipMaps = texture->mHasMipMaps;
 		if (texture->mTexOptionsDirty)
 		{
@@ -227,7 +231,6 @@ bool LLTexUnit::bind(LLImageGL* texture, bool for_rendering, bool forceBind)
 			setTextureFilteringOption(texture->mFilterOption);
 		}
 	}
-
 	return true;
 }
 
@@ -280,6 +283,11 @@ bool LLTexUnit::bind(LLRenderTarget* renderTarget, bool bindDepth)
 
 	if (bindDepth)
 	{
+		if (renderTarget->hasStencil())
+		{
+			llerrs << "Cannot bind a render buffer for sampling.  Allocate render target without a stencil buffer if sampling of depth buffer is required." << llendl;
+		}
+
 		bindManual(renderTarget->getUsage(), renderTarget->getDepth());
 	}
 	else
@@ -293,8 +301,11 @@ bool LLTexUnit::bind(LLRenderTarget* renderTarget, bool bindDepth)
 
 bool LLTexUnit::bindManual(eTextureType type, U32 texture, bool hasMips)
 {
-	if (mIndex < 0) return false;
-
+	if (mIndex < 0)  
+	{
+		return false;
+	}
+	
 	if(mCurrTexture != texture)
 	{
 		gGL.flush();
@@ -372,6 +383,9 @@ void LLTexUnit::setTextureFilteringOption(LLTexUnit::eTextureFilterOptions optio
 			if (gGL.mMaxAnisotropy < 1.f)
 			{
 				glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &gGL.mMaxAnisotropy);
+
+				llinfos << "gGL.mMaxAnisotropy: " << gGL.mMaxAnisotropy << llendl ;
+				gGL.mMaxAnisotropy = llmax(1.f, gGL.mMaxAnisotropy) ;
 			}
 			glTexParameterf(sGLTextureType[mCurrTexType], GL_TEXTURE_MAX_ANISOTROPY_EXT, gGL.mMaxAnisotropy);
 		}
@@ -680,8 +694,11 @@ void LLTexUnit::debugTextureUnit(void)
 
 
 LLRender::LLRender()
-: mDirty(false), mCount(0), mMode(LLRender::TRIANGLES),
-	mMaxAnisotropy(0.f) 
+  : mDirty(false),
+    mCount(0),
+    mMode(LLRender::TRIANGLES),
+    mCurrTextureUnitIndex(0),
+    mMaxAnisotropy(0.f) 
 {
 	mBuffer = new LLVertexBuffer(immediate_mask, 0);
 	mBuffer->allocateBuffer(4096, 0, TRUE);
@@ -703,6 +720,10 @@ LLRender::LLRender()
 
 	mCurrAlphaFunc = CF_DEFAULT;
 	mCurrAlphaFuncVal = 0.01f;
+	mCurrBlendColorSFactor = BF_UNDEF;
+	mCurrBlendAlphaSFactor = BF_UNDEF;
+	mCurrBlendColorDFactor = BF_UNDEF;
+	mCurrBlendAlphaDFactor = BF_UNDEF;
 }
 
 LLRender::~LLRender()
@@ -787,29 +808,28 @@ void LLRender::setColorMask(bool writeColorR, bool writeColorG, bool writeColorB
 
 void LLRender::setSceneBlendType(eBlendType type)
 {
-	flush();
 	switch (type) 
 	{
 		case BT_ALPHA:
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			blendFunc(BF_SOURCE_ALPHA, BF_ONE_MINUS_SOURCE_ALPHA);
 			break;
 		case BT_ADD:
-			glBlendFunc(GL_ONE, GL_ONE);
+			blendFunc(BF_ONE, BF_ONE);
 			break;
 		case BT_ADD_WITH_ALPHA:
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+			blendFunc(BF_SOURCE_ALPHA, BF_ONE);
 			break;
 		case BT_MULT:
-			glBlendFunc(GL_DST_COLOR, GL_ZERO);
+			blendFunc(BF_DEST_COLOR, BF_ZERO);
 			break;
 		case BT_MULT_ALPHA:
-			glBlendFunc(GL_DST_ALPHA, GL_ZERO);
+			blendFunc(BF_DEST_ALPHA, BF_ZERO);
 			break;
 		case BT_MULT_X2:
-			glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
+			blendFunc(BF_DEST_COLOR, BF_SOURCE_COLOR);
 			break;
 		case BT_REPLACE:
-			glBlendFunc(GL_ONE, GL_ZERO);
+			blendFunc(BF_ONE, BF_ZERO);
 			break;
 		default:
 			llerrs << "Unknown Scene Blend Type: " << type << llendl;
@@ -835,10 +855,45 @@ void LLRender::setAlphaRejectSettings(eCompareFunc func, F32 value)
 
 void LLRender::blendFunc(eBlendFactor sfactor, eBlendFactor dfactor)
 {
-	flush();
-	glBlendFunc(sGLBlendFactor[sfactor], sGLBlendFactor[dfactor]);
+	llassert(sfactor < BF_UNDEF);
+	llassert(dfactor < BF_UNDEF);
+	if (mCurrBlendColorSFactor != sfactor || mCurrBlendColorDFactor != dfactor ||
+	    mCurrBlendAlphaSFactor != sfactor || mCurrBlendAlphaDFactor != dfactor)
+	{
+		mCurrBlendColorSFactor = sfactor;
+		mCurrBlendAlphaSFactor = sfactor;
+		mCurrBlendColorDFactor = dfactor;
+		mCurrBlendAlphaDFactor = dfactor;
+		flush();
+		glBlendFunc(sGLBlendFactor[sfactor], sGLBlendFactor[dfactor]);
+	}
 }
 
+void LLRender::blendFunc(eBlendFactor color_sfactor, eBlendFactor color_dfactor,
+			 eBlendFactor alpha_sfactor, eBlendFactor alpha_dfactor)
+{
+	llassert(color_sfactor < BF_UNDEF);
+	llassert(color_dfactor < BF_UNDEF);
+	llassert(alpha_sfactor < BF_UNDEF);
+	llassert(alpha_dfactor < BF_UNDEF);
+	if (!gGLManager.mHasBlendFuncSeparate)
+	{
+		LL_WARNS_ONCE("render") << "no glBlendFuncSeparateEXT(), using color-only blend func" << llendl;
+		blendFunc(color_sfactor, color_dfactor);
+		return;
+	}
+	if (mCurrBlendColorSFactor != color_sfactor || mCurrBlendColorDFactor != color_dfactor ||
+	    mCurrBlendAlphaSFactor != alpha_sfactor || mCurrBlendAlphaDFactor != alpha_dfactor)
+	{
+		mCurrBlendColorSFactor = color_sfactor;
+		mCurrBlendAlphaSFactor = alpha_sfactor;
+		mCurrBlendColorDFactor = color_dfactor;
+		mCurrBlendAlphaDFactor = alpha_dfactor;
+		flush();
+		glBlendFuncSeparateEXT(sGLBlendFactor[color_sfactor], sGLBlendFactor[color_dfactor],
+				       sGLBlendFactor[alpha_sfactor], sGLBlendFactor[alpha_dfactor]);
+	}
+}
 LLTexUnit* LLRender::getTexUnit(U32 index)
 {
 	if ((index >= 0) && (index < mTexUnits.size()))
@@ -975,15 +1030,85 @@ void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 		return;
 	}
 
-	mVerticesp[mCount] = LLVector3(x,y,z);
-	mCount++;
-	if (mCount < 4096)
+	//if (mUIOffset.empty())
 	{
-		mVerticesp[mCount] = mVerticesp[mCount-1];
-		mColorsp[mCount] = mColorsp[mCount-1];
-		mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
+		mVerticesp[mCount] = LLVector3(x,y,z);
 	}
+	/*else
+	{
+		LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
+		mVerticesp[mCount] = vert;
+	}*/
+
+	mCount++;
+	mVerticesp[mCount] = mVerticesp[mCount-1];
+	mColorsp[mCount] = mColorsp[mCount-1];
+	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
 }
+
+void LLRender::vertexBatchPreTransformed(LLVector3* verts, S32 vert_count)
+{
+	if (mCount + vert_count > 4094)
+	{
+		//	llwarns << "GL immediate mode overflow.  Some geometry not drawn." << llendl;
+		return;
+	}
+
+	for (S32 i = 0; i < vert_count; i++)
+	{
+		mVerticesp[mCount] = verts[i];
+
+		mCount++;
+		mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
+		mColorsp[mCount] = mColorsp[mCount-1];
+	}
+
+	mVerticesp[mCount] = mVerticesp[mCount-1];
+}
+
+void LLRender::vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, S32 vert_count)
+{
+	if (mCount + vert_count > 4094)
+	{
+		//	llwarns << "GL immediate mode overflow.  Some geometry not drawn." << llendl;
+		return;
+	}
+
+	for (S32 i = 0; i < vert_count; i++)
+	{
+		mVerticesp[mCount] = verts[i];
+		mTexcoordsp[mCount] = uvs[i];
+
+		mCount++;
+		mColorsp[mCount] = mColorsp[mCount-1];
+	}
+
+	mVerticesp[mCount] = mVerticesp[mCount-1];
+	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
+}
+
+void LLRender::vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, LLColor4U* colors, S32 vert_count)
+{
+	if (mCount + vert_count > 4094)
+	{
+		//	llwarns << "GL immediate mode overflow.  Some geometry not drawn." << llendl;
+		return;
+	}
+
+	for (S32 i = 0; i < vert_count; i++)
+	{
+		mVerticesp[mCount] = verts[i];
+		mTexcoordsp[mCount] = uvs[i];
+		mColorsp[mCount] = colors[i];
+
+		mCount++;
+	}
+
+	mVerticesp[mCount] = mVerticesp[mCount-1];
+	mTexcoordsp[mCount] = mTexcoordsp[mCount-1];
+	mColorsp[mCount] = mColorsp[mCount-1];
+}
+
 void LLRender::vertex2i(const GLint& x, const GLint& y)
 {
 	vertex3f((GLfloat) x, (GLfloat) y, 0);	

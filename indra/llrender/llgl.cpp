@@ -139,6 +139,9 @@ PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC glRenderbufferStorageMultisampleEXT =
 // GL_EXT_framebuffer_blit
 PFNGLBLITFRAMEBUFFEREXTPROC glBlitFramebufferEXT = NULL;
 
+// GL_EXT_blend_func_separate
+PFNGLBLENDFUNCSEPARATEEXTPROC glBlendFuncSeparateEXT = NULL;
+
 // GL_ARB_draw_buffers
 PFNGLDRAWBUFFERSARBPROC glDrawBuffersARB = NULL;
 
@@ -278,6 +281,7 @@ LLGLManager::LLGLManager() :
 	mHasCompressedTextures(FALSE),
 	mHasFramebufferObject(FALSE),
 	mHasFramebufferMultisample(FALSE),
+	mHasBlendFuncSeparate(FALSE),
 
 	mHasVertexBufferObject(FALSE),
 	mHasPBuffer(FALSE),
@@ -286,6 +290,8 @@ LLGLManager::LLGLManager() :
 	mHasFragmentShader(FALSE),
 	mHasOcclusionQuery(FALSE),
 	mHasPointParameters(FALSE),
+	mHasDrawBuffers(FALSE),
+	mHasTextureRectangle(FALSE),
 
 	mHasAnisotropic(FALSE),
 	mHasARBEnvCombine(FALSE),
@@ -590,6 +596,11 @@ void LLGLManager::initExtensions()
 #else
 	mHasDepthClamp = FALSE;
 #endif
+# if GL_EXT_blend_func_separate
+	mHasBlendFuncSeparate = TRUE;
+#else
+	mHasBlendFuncSeparate = FALSE;
+# endif
 	mHasMipMapGeneration = FALSE;
 	mHasSeparateSpecularColor = FALSE;
 	mHasAnisotropic = FALSE;
@@ -599,6 +610,7 @@ void LLGLManager::initExtensions()
 	mHasShaderObjects = FALSE;
 	mHasVertexShader = FALSE;
 	mHasFragmentShader = FALSE;
+	mHasTextureRectangle = FALSE;
 #else // LL_MESA_HEADLESS
 	mHasMultitexture = glh_init_extensions("GL_ARB_multitexture");
 	mHasMipMapGeneration = glh_init_extensions("GL_SGIS_generate_mipmap");
@@ -610,12 +622,14 @@ void LLGLManager::initExtensions()
 	mHasCompressedTextures = glh_init_extensions("GL_ARB_texture_compression");
 	mHasOcclusionQuery = ExtensionExists("GL_ARB_occlusion_query", gGLHExts.mSysExts);
 	mHasVertexBufferObject = ExtensionExists("GL_ARB_vertex_buffer_object", gGLHExts.mSysExts);
+	mHasDepthClamp = ExtensionExists("GL_ARB_depth_clamp", gGLHExts.mSysExts) || ExtensionExists("GL_NV_depth_clamp", gGLHExts.mSysExts);
 	// mask out FBO support when packed_depth_stencil isn't there 'cause we need it for LLRenderTarget -Brad
 	mHasFramebufferObject = ExtensionExists("GL_EXT_framebuffer_object", gGLHExts.mSysExts)
 		&& ExtensionExists("GL_EXT_packed_depth_stencil", gGLHExts.mSysExts);
 	mHasFramebufferMultisample = mHasFramebufferObject && ExtensionExists("GL_EXT_framebuffer_multisample", gGLHExts.mSysExts);
 	mHasDrawBuffers = ExtensionExists("GL_ARB_draw_buffers", gGLHExts.mSysExts);
-	mHasDepthClamp = ExtensionExists("GL_ARB_depth_clamp", gGLHExts.mSysExts) || ExtensionExists("GL_NV_depth_clamp", gGLHExts.mSysExts);
+	mHasBlendFuncSeparate = ExtensionExists("GL_EXT_blend_func_separate", gGLHExts.mSysExts);
+	mHasTextureRectangle = ExtensionExists("GL_ARB_texture_rectangle", gGLHExts.mSysExts);
 	mHasPointParameters = !mIsATI && ExtensionExists("GL_ARB_point_parameters", gGLHExts.mSysExts);
 	mHasShaderObjects = ExtensionExists("GL_ARB_shader_objects", gGLHExts.mSysExts) && ExtensionExists("GL_ARB_shading_language_100", gGLHExts.mSysExts);
 	mHasVertexShader = ExtensionExists("GL_ARB_vertex_program", gGLHExts.mSysExts) && ExtensionExists("GL_ARB_vertex_shader", gGLHExts.mSysExts)
@@ -630,13 +644,14 @@ void LLGLManager::initExtensions()
 	if (getenv("LL_GL_NOEXT"))	/* Flawfinder: ignore */
 	{
 		//mHasMultitexture = FALSE; // NEEDED!
+		mHasDepthClamp = FALSE;
 		mHasARBEnvCombine = FALSE;
 		mHasCompressedTextures = FALSE;
 		mHasVertexBufferObject = FALSE;
 		mHasFramebufferObject = FALSE;
 		mHasFramebufferMultisample = FALSE;
 		mHasDrawBuffers = FALSE;
-		mHasDepthClamp = FALSE;
+		mHasBlendFuncSeparate = FALSE;
 		mHasMipMapGeneration = FALSE;
 		mHasSeparateSpecularColor = FALSE;
 		mHasAnisotropic = FALSE;
@@ -661,6 +676,7 @@ void LLGLManager::initExtensions()
 		mHasShaderObjects = FALSE;
 		mHasVertexShader = FALSE;
 		mHasFragmentShader = FALSE;
+		mHasBlendFuncSeparate = FALSE;
 		LL_WARNS("RenderInit") << "GL extension support forced to SIMPLE level via LL_GL_BASICEXT" << LL_ENDL;
 	}
 	if (getenv("LL_GL_BLACKLIST"))	/* Flawfinder: ignore */
@@ -688,7 +704,9 @@ void LLGLManager::initExtensions()
 		if (strchr(blacklist,'q')) mHasFramebufferObject = FALSE;//S
 		if (strchr(blacklist,'r')) mHasDrawBuffers = FALSE;//S
 		if (strchr(blacklist,'s')) mHasFramebufferMultisample = FALSE;
-		if (strchr(blacklist,'t')) mHasDepthClamp = FALSE;
+		if (strchr(blacklist,'t')) mHasTextureRectangle = FALSE;
+		if (strchr(blacklist,'u')) mHasBlendFuncSeparate = FALSE;//S
+		if (strchr(blacklist,'v')) mHasDepthClamp = FALSE;
 
 	}
 #endif // LL_LINUX || LL_SOLARIS
@@ -736,6 +754,14 @@ void LLGLManager::initExtensions()
 	if (!mHasFragmentShader)
 	{
 		LL_INFOS("RenderInit") << "Couldn't initialize GL_ARB_fragment_shader" << LL_ENDL;
+	}
+	if (!mHasBlendFuncSeparate)
+	{
+		LL_INFOS("RenderInit") << "Couldn't initialize GL_EXT_blend_func_separate" << LL_ENDL;
+	}
+	if (!mHasDrawBuffers)
+	{
+		LL_INFOS("RenderInit") << "Couldn't initialize GL_ARB_draw_buffers" << LL_ENDL;
 	}
 
 	// Disable certain things due to known bugs
@@ -808,6 +834,10 @@ void LLGLManager::initExtensions()
 	if (mHasDrawBuffers)
 	{
 		glDrawBuffersARB = (PFNGLDRAWBUFFERSARBPROC) GLH_EXT_GET_PROC_ADDRESS("glDrawBuffersARB");
+	}
+	if (mHasBlendFuncSeparate)
+	{
+		glBlendFuncSeparateEXT = (PFNGLBLENDFUNCSEPARATEEXTPROC) GLH_EXT_GET_PROC_ADDRESS("glBlendFuncSeparateEXT");
 	}
 #if (!LL_LINUX && !LL_SOLARIS) || LL_LINUX_NV_GL_HEADERS
 	// This is expected to be a static symbol on Linux GL implementations, except if we use the nvidia headers - bah
@@ -977,7 +1007,7 @@ void assert_glerror()
 	{
 		return;
 	}
-	if (!gGLManager.mInited)
+	if (LL_UNLIKELY(!gGLManager.mInited))
 	{
 		LL_ERRS("RenderInit") << "GL not initialized" << LL_ENDL;
 	}
@@ -985,7 +1015,7 @@ void assert_glerror()
 	GLenum error;
 	error = glGetError();
 	BOOL quit = FALSE;
-	while (error)
+	while (LL_UNLIKELY(error))
 	{
 		quit = TRUE;
 #ifndef LL_LINUX // *FIX: !  This should be an error for linux as well.
@@ -1138,7 +1168,7 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 		}
 	}
 
-	GLint maxTextureUnits;
+	GLint maxTextureUnits = 0;
 	glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &maxTextureUnits);
 
 	static const char* label[] =
@@ -1168,8 +1198,11 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 	};
 
 	GLint stackDepth = 0;
-	LLMatrix4 identity;
-	LLMatrix4 matrix;
+	glh::matrix4f mat;
+	glh::matrix4f identity;
+	identity.identity();
+//	LLMatrix4 identity;
+//	LLMatrix4 matrix;
 
 	for (GLint i = 1; i < maxTextureUnits; i++)
 	{
@@ -1184,15 +1217,18 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 			LL_WARNS("RenderState") << "Texture matrix stack corrupted." << LL_ENDL;
 		}
 
-		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) matrix.mMatrix);
+		//glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) matrix.mMatrix);
+		glGetFloatv(GL_TEXTURE_MATRIX, (GLfloat*) mat.m);
 
-		if (matrix != identity)
+		//if (matrix != identity)
+		if (mat != identity)
 		{
 			error = TRUE;
 			LL_WARNS("RenderState") << "Texture matrix in channel " << i << " corrupt." << LL_ENDL;
 		}
 
-		for (S32 j = (i == 0 ? 1 : 0); j < 9; j++)
+		for (S32 j = (i == 0 ? 1 : 0); 
+			j < (gGLManager.mHasTextureRectangle ? 9 : 8); j++)
 		{
 			if (glIsEnabled(value[j]))
 			{
@@ -1200,10 +1236,6 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 				LL_WARNS("RenderState") << "Texture channel " << i << " still has " << label[j] << " enabled." << LL_ENDL;
 			}
 		}
-
-		glh::matrix4f mat;
-		glh::matrix4f identity;
-		identity.identity();
 
 		glGetFloatv(GL_TEXTURE_MATRIX, mat.m);
 
@@ -1735,6 +1767,14 @@ LLGLDepthTest::LLGLDepthTest(GLboolean depth_enabled, GLboolean write_enabled, G
 : mPrevDepthEnabled(sDepthEnabled), mPrevDepthFunc(sDepthFunc), mPrevWriteEnabled(sWriteEnabled)
 {
 	stop_glerror();
+
+	if (!depth_enabled)
+	{ // always disable depth writes if depth testing is disabled
+	  // GL spec defines this as a requirement, but some implementations allow depth writes with testing disabled
+	  // The proper way to write to depth buffer with testing disabled is to enable testing and use a depth_func of GL_ALWAYS
+		write_enabled = FALSE;
+	}
+
 	if (depth_enabled != sDepthEnabled)
 	{
 		gGL.flush();

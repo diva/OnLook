@@ -1511,13 +1511,14 @@ void LLManipScale::updateSnapGuides(const LLBBox& bbox)
 
 void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 {
-	if (!gSavedSettings.getBOOL("SnapEnabled"))
+	static const LLCachedControl<bool> snap_enabled("SnapEnabled",false);
+	if (!snap_enabled)
 	{
 		return;
 	}
 
 	F32 max_subdivisions = sGridMaxSubdivisionLevel;
-	F32 grid_alpha = gSavedSettings.getF32("GridOpacity");
+	static const LLCachedControl<F32> grid_alpha("GridOpacity",1.f);
 
 	F32 max_point_on_scale_line = partToMaxScale(mManipPart, bbox);
 	LLVector3 drag_point = gAgent.getPosAgentFromGlobal(mDragPointGlobal);

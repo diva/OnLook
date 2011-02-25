@@ -71,7 +71,10 @@ private:
 class LLFontRegistry
 {
 public:
-	LLFontRegistry(const string_vec_t& xui_paths);
+	// create_gl_textures - set to false for test apps with no OpenGL window,
+	// such as llui_libtest
+	LLFontRegistry(const string_vec_t& xui_paths,
+		bool create_gl_textures);
 	~LLFontRegistry();
 
 	// Load standard font info from XML file(s).
@@ -95,7 +98,7 @@ public:
 
 	void dump();
 	
-	const string_vec_t& getUltimateFallbackList() const { return mUltimateFallbackList; }
+	const string_vec_t& getUltimateFallbackList() const;
 
 private:
 	LLFontGL *createFont(const LLFontDescriptor& desc);
@@ -109,6 +112,7 @@ private:
 
 	string_vec_t mUltimateFallbackList;
 	string_vec_t mXUIPaths;
+	bool mCreateGLTextures;
 };
 
 #endif // LL_LLFONTREGISTRY_H

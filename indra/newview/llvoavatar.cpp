@@ -3542,10 +3542,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	}
 	
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
-	static LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
-	static LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
-	static LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
-	static LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
+	static const LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
+	static const LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
+	static const LLCachedControl<bool> use_chat_bubbles("UseChatBubbles",false);
+	static const LLCachedControl<bool> render_name_hide_self("RenderNameHideSelf",false);
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 	bool fRlvShowNames = gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES);
 // [/RLVa:KB]
@@ -3573,7 +3573,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			new_name = TRUE;
 		}
 
-		static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+		static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 		
 // [RLVa:KB] - Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 		if (fRlvShowNames)
@@ -3680,7 +3680,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					}
 				}
 
-				static LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
+				static const LLCachedControl<bool> ascent_use_status_colors("AscentUseStatusColors",true);
 				if (!mIsSelf && ascent_use_status_colors)
 				{
 					LLViewerRegion* parent_estate = LLWorld::getInstance()->getRegionFromPosGlobal(this->getPositionGlobal());

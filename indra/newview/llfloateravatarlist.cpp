@@ -428,7 +428,7 @@ void LLFloaterAvatarList::updateAvatarList()
 				LLAvatarName avatar_name;
 				if (LLAvatarNameCache::get(avatarp->getID(), &avatar_name))
 				{
-				    static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+				    static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 					switch (phoenix_name_system)
 					{
 						case 0 : name = avatar_name.getLegacyName(); break;

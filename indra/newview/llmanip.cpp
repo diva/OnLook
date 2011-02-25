@@ -664,12 +664,12 @@ void LLManip::renderTickValue(const LLVector3& pos, F32 value, const std::string
 
 LLColor4 LLManip::setupSnapGuideRenderPass(S32 pass)
 {
-	static LLColor4 grid_color_fg = gColors.getColor("GridlineColor");
-	static LLColor4 grid_color_bg = gColors.getColor("GridlineBGColor");
-	static LLColor4 grid_color_shadow = gColors.getColor("GridlineShadowColor");
+	static const LLCachedControl<LLColor4> grid_color_fg("GridlineColor",LLColor4(1.f,1.f,1.f,.8f));
+	static const LLCachedControl<LLColor4> grid_color_bg("GridlineBGColor",LLColor4(.9f,.9f,1.f,.8f));
+	static const LLCachedControl<LLColor4> grid_color_shadow("GridlineShadowColor",LLColor4(0.f,0.f,0.f,.3f));
 
 	LLColor4 line_color;
-	F32 line_alpha = gSavedSettings.getF32("GridOpacity");
+	static const LLCachedControl<F32> line_alpha("GridOpacity",1.f);
 
 	switch(pass)
 	{

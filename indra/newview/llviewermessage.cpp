@@ -3040,7 +3040,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 					LLAvatarName avatar_name;
 					if (LLAvatarNameCache::get(from_id, &avatar_name))
 					{
-						static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+						static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
 						{
 							from_name = avatar_name.mDisplayName;

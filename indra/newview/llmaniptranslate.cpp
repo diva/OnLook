@@ -1083,13 +1083,14 @@ void LLManipTranslate::render()
 
 void LLManipTranslate::renderSnapGuides()
 {
-	if (!gSavedSettings.getBOOL("SnapEnabled"))
+	static const LLCachedControl<bool> snap_enabled("SnapEnabled",false);
+	if (!snap_enabled)
 	{
 		return;
 	}
 
 	F32 max_subdivisions = sGridMaxSubdivisionLevel;//(F32)gSavedSettings.getS32("GridSubdivision");
-	F32 line_alpha = gSavedSettings.getF32("GridOpacity");
+	static const LLCachedControl<F32> line_alpha("GridOpacity",1.0);
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	LLGLDepthTest gls_depth(GL_TRUE);

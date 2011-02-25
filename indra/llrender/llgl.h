@@ -78,6 +78,7 @@ public:
 	BOOL mHasCompressedTextures;
 	BOOL mHasFramebufferObject;
 	BOOL mHasFramebufferMultisample;
+	BOOL mHasBlendFuncSeparate;
 	
 	// ARB Extensions
 	BOOL mHasVertexBufferObject;
@@ -89,6 +90,7 @@ public:
 	BOOL mHasPointParameters;
 	BOOL mHasDrawBuffers;
 	BOOL mHasDepthClamp;
+	BOOL mHasTextureRectangle;
 
 	// Other extensions.
 	BOOL mHasAnisotropic;

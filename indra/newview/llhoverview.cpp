@@ -272,7 +272,7 @@ void LLHoverView::updateText()
     					LLAvatarName avatar_name;
     					if (LLAvatarNameCache::get(hit_object->getID(), &avatar_name))
     					{
-							static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
     						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
     						{
     							complete_name = avatar_name.mDisplayName;
@@ -358,7 +358,7 @@ void LLHoverView::updateText()
 						//else if(gCacheName->getFullName(owner, name))
 						else if (LLAvatarNameCache::get(owner, &avatar_name))
 						{
-							static LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
 							switch (phoenix_name_system)
 							{
 								case 0 : name = avatar_name.getCompleteName(); break;
