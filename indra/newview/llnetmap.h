@@ -69,9 +69,6 @@ public:
 
 	static void mm_setcolor(LLUUID key,LLColor4 col); //moymod
 
-	static S32		sMiniMapCenter;
-	static BOOL		sMiniMapRotate;
-
 private:
 
 	void			setScale( F32 scale );

@@ -117,7 +117,7 @@ public:
 										S32 overlap );
 	static void		drawAvatar(	F32 x_pixels, 
 								F32 y_pixels, 
-								const LLColor4& color,
+								LLColor4 color,
 								F32 relative_z = 0.f,
 								F32 dot_radius = 3.f);
 	static void		drawIconName(F32 x_pixels, 
@@ -193,7 +193,6 @@ public:
 	LLTextBox*		mTextBoxScrollHint;
 
 	static BOOL		sHandledLastClick;
-	static BOOL		sUseOldTrackingDots;
 	S32				mSelectIDStart;
 
 	typedef std::vector<U64> handle_list_t;

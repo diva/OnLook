@@ -90,9 +90,6 @@ const F32 DOT_SCALE = 0.75f;
 const F32 MIN_PICK_SCALE = 2.f;
 const S32 MOUSE_DRAG_SLOP = 2;				// How far the mouse needs to move before we think it's a drag
 
-BOOL LLNetMap::sMiniMapRotate = TRUE;
-S32 LLNetMap::sMiniMapCenter = 1;
-
 LLNetMap::LLNetMap(const std::string& name) :
 	LLPanel(name),
 	mScale(128.f),
@@ -107,9 +104,6 @@ LLNetMap::LLNetMap(const std::string& name) :
 	mScale = gSavedSettings.getF32("MiniMapScale");
 	mPixelsPerMeter = mScale / LLWorld::getInstance()->getRegionWidthInMeters();
 	mDotRadius = llmax(DOT_SCALE * mPixelsPerMeter, MIN_DOT_RADIUS);
-
-	sMiniMapCenter = gSavedSettings.getS32("MiniMapCenter");
-	sMiniMapRotate = gSavedSettings.getBOOL("MiniMapRotate");
 
 	mObjectImageCenterGlobal = gAgent.getCameraPositionGlobal();
 	
@@ -204,7 +198,7 @@ void LLNetMap::draw()
 		createObjectImage();
 	}
 
-	if (sMiniMapCenter != MAP_CENTER_NONE)
+	if (gSavedSettings.getS32( "MiniMapCenter") != MAP_CENTER_NONE)
 	{
 		mCurPanX = lerp(mCurPanX, mTargetPanX, LLCriticalDamp::getInterpolant(0.1f));
 		mCurPanY = lerp(mCurPanY, mTargetPanY, LLCriticalDamp::getInterpolant(0.1f));
@@ -237,8 +231,9 @@ void LLNetMap::draw()
 		gGL.pushMatrix();
 
 		gGL.translatef( (F32) center_sw_left, (F32) center_sw_bottom, 0.f);
-
-		if (sMiniMapRotate)
+		
+		BOOL rotate_map = gSavedSettings.getBOOL( "MiniMapRotate" );
+		if (rotate_map)
 		{
 			// rotate subsequent draws to agent rotation
 			rotation = atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] );
@@ -314,11 +309,11 @@ void LLNetMap::draw()
 			mUpdateNow = FALSE;
 
 			// Locate the centre of the object layer, accounting for panning
-			LLVector3 new_center = globalPosToView(gAgent.getCameraPositionGlobal(), sMiniMapRotate);	
+			LLVector3 new_center = globalPosToView(gAgent.getCameraPositionGlobal(), rotate_map);	
 			new_center.mV[0] -= mCurPanX;
 			new_center.mV[1] -= mCurPanY;
 			new_center.mV[2] = 0.f;
-			mObjectImageCenterGlobal = viewPosToGlobal(llround(new_center.mV[0]), llround(new_center.mV[1]), sMiniMapRotate);
+			mObjectImageCenterGlobal = viewPosToGlobal(llround(new_center.mV[0]), llround(new_center.mV[1]), rotate_map);
 
 			// Create the base texture.
 			U8 *default_texture = mObjectRawImagep->getData();
@@ -387,7 +382,7 @@ void LLNetMap::draw()
 			LLColor4 avColor = standard_color;
 			// TODO: it'd be very cool to draw these in sorted order from lowest Z to highest.
 			// just be careful to sort the avatar IDs along with the positions. -MG
-			pos_map = globalPosToView(positions[i], sMiniMapRotate);
+			pos_map = globalPosToView(positions[i], rotate_map);
 			if (positions[i].mdV[VZ] == 0.f)
 			{
 				pos_map.mV[VZ] = 16000.f;
@@ -447,25 +442,25 @@ void LLNetMap::draw()
 		// Draw dot for autopilot target
 		if (gAgent.getAutoPilot())
 		{
-			drawTracking(gAgent.getAutoPilotTargetGlobal(), sMiniMapRotate, gTrackColor);
+			drawTracking(gAgent.getAutoPilotTargetGlobal(), rotate_map, gTrackColor);
 		}
 		else
 		{
 			LLTracker::ETrackingStatus tracking_status = LLTracker::getTrackingStatus();
 			if (  LLTracker::TRACKING_AVATAR == tracking_status )
 			{
-				drawTracking(LLAvatarTracker::instance().getGlobalPos(), sMiniMapRotate, gTrackColor);
+				drawTracking(LLAvatarTracker::instance().getGlobalPos(), rotate_map, gTrackColor);
 			} 
 			else if ( LLTracker::TRACKING_LANDMARK == tracking_status 
 					|| LLTracker::TRACKING_LOCATION == tracking_status )
 			{
-				drawTracking(LLTracker::getTrackedPositionGlobal(), sMiniMapRotate, gTrackColor);
+				drawTracking(LLTracker::getTrackedPositionGlobal(), rotate_map, gTrackColor);
 			}
 		}
 
 		// Draw dot for self avatar position
 		pos_global = gAgent.getPositionGlobal();
-		pos_map = globalPosToView(pos_global, sMiniMapRotate);
+		pos_map = globalPosToView(pos_global, rotate_map);
 		LLUIImagePtr you = LLWorldMapView::sAvatarYouLargeImage;
 		S32 dot_width = llround(mDotRadius * 2.f);
 		you->draw(
@@ -490,7 +485,7 @@ void LLNetMap::draw()
 
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-		if (sMiniMapRotate)
+		if (rotate_map)
 		{
 			gGL.color4fv(gColors.getColor("NetMapFrustum").mV);
 
@@ -629,7 +624,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 	{
 		return FALSE;
 	}
-	LLViewerRegion*	region = LLWorld::getInstance()->getRegionFromPosGlobal(viewPosToGlobal(x, y, sMiniMapRotate));
+	LLViewerRegion*	region = LLWorld::getInstance()->getRegionFromPosGlobal(viewPosToGlobal(x, y, gSavedSettings.getBOOL( "MiniMapRotate" )));
 	if( region )
 	{
 		msg.assign("");
@@ -995,7 +990,7 @@ BOOL LLNetMap::handleHover( S32 x, S32 y, MASK mask )
 
 BOOL LLNetMap::handleDoubleClick( S32 x, S32 y, MASK mask )
 {
-	LLVector3d pos_global = viewPosToGlobal(x, y, sMiniMapRotate);
+	LLVector3d pos_global = viewPosToGlobal(x, y, gSavedSettings.getBOOL( "MiniMapRotate" ));
 	BOOL new_target = FALSE;
 	if (!LLTracker::isTracking(NULL))
 	{
