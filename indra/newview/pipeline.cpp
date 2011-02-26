@@ -1168,6 +1168,7 @@ void LLPipeline::updateMoveNormalAsync(LLDrawable* drawablep)
 	if (!drawablep)
 	{
 		llerrs << "updateMove called with NULL drawablep" << llendl;
+		return;
 	}
 	if (drawablep->isState(LLDrawable::EARLY_MOVE))
 	{
@@ -1546,6 +1547,7 @@ void LLPipeline::doOcclusion(LLCamera& camera)
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 
+	LLGLDisable cull(GL_CULL_FACE);
 	if (LLPipeline::sUseOcclusion > 1)
 	{
 		for (LLCullResult::sg_list_t::iterator iter = sCull->beginOcclusionGroups(); iter != sCull->endOcclusionGroups(); ++iter)
@@ -1557,7 +1559,6 @@ void LLPipeline::doOcclusion(LLCamera& camera)
 	}
 
 	gGL.setColorMask(true, false);
-	glFlush();
 }
 	
 BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
@@ -1685,6 +1686,26 @@ void LLPipeline::markVisible(LLDrawable *drawablep, LLCamera& camera)
 	
 	if (drawablep->isSpatialBridge())
 	{
+		const LLDrawable* root = ((LLSpatialBridge*) drawablep)->mDrawable;
+		llassert(root); // trying to catch a bad assumption
+		if (root && //  // this test may not be needed, see above
+				root->getVObj()->isAttachment())
+		{
+			LLDrawable* rootparent = root->getParent();
+			if (rootparent) // this IS sometimes NULL
+			{
+				LLViewerObject *vobj = rootparent->getVObj();
+				llassert(vobj); // trying to catch a bad assumption
+				if (vobj) // this test may not be needed, see above
+				{
+					if (vobj->isAvatar() && ((LLVOAvatar*)vobj)->isImpostor())
+					{
+							return;
+					}
+				}
+			}
+		}
+			
 		sCull->pushBridge((LLSpatialBridge*) drawablep);
 	}
 	else
@@ -1981,7 +2002,7 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 		const LLViewerObject* pObj = drawablep->getVObj();
 		if ( (pObj) && (pObj->isSelected()) && 
 			 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) )
-// [/RVLa:KB]
+// [/RLVa:KB]
 		{
 			return;
 		}
@@ -2263,6 +2284,10 @@ void LLPipeline::postSort(LLCamera& camera)
 		for (LLSpatialGroup::draw_map_t::iterator j = group->mDrawMap.begin(); j != group->mDrawMap.end(); ++j)
 		{
 			LLSpatialGroup::drawmap_elem_t& src_vec = j->second;	
+			/*if (!hasRenderType(j->first)) //No worky yet.
+			{
+				continue;
+			}*/
 			
 			for (LLSpatialGroup::drawmap_elem_t::iterator k = src_vec.begin(); k != src_vec.end(); ++k)
 			{
@@ -2270,6 +2295,7 @@ void LLPipeline::postSort(LLCamera& camera)
 			}
 		}
 
+		
 		LLSpatialGroup::draw_map_t::iterator alpha = group->mDrawMap.find(LLRenderPass::PASS_ALPHA);
 		
 		if (alpha != group->mDrawMap.end())
@@ -2287,12 +2313,13 @@ void LLPipeline::postSort(LLCamera& camera)
 					group->updateDistance(camera);
 				}
 			}
-			
+		
 			if (hasRenderType(LLDrawPool::POOL_ALPHA))
 			{
 				sCull->pushAlphaGroup(group);
 			}
 		}
+		
 	}
 		
 	if (!sShadowRender)
@@ -2755,6 +2782,11 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			LLHUDObject::renderAllForTimer();
 		}
 	}
+	else
+	{
+		// Make sure particle effects disappear
+		LLHUDObject::renderAllForTimer();
+	}
 
 	LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderGeomEnd");
 
@@ -2844,15 +2876,18 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 				poolp->endDeferredPass(i);
 				LLVertexBuffer::unbind();
 
-				GLint depth;
-				glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
-				if (depth > 3)
+				if (gDebugGL || gDebugPipeline)
 				{
-					llerrs << "GL matrix stack corrupted!" << llendl;
+					GLint depth;
+					glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
+					if (depth > 3)
+					{
+						llerrs << "GL matrix stack corrupted!" << llendl;
+					}
+					LLGLState::checkStates();
+					LLGLState::checkTextureChannels();
+					LLGLState::checkClientArrays();
 				}
-				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
 			}
 		}
 		else
@@ -2934,15 +2969,18 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 				poolp->endPostDeferredPass(i);
 				LLVertexBuffer::unbind();
 
-				GLint depth;
-				glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
-				if (depth > 3)
+				if (gDebugGL || gDebugPipeline)
 				{
-					llerrs << "GL matrix stack corrupted!" << llendl;
+					GLint depth;
+					glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
+					if (depth > 3)
+					{
+						llerrs << "GL matrix stack corrupted!" << llendl;
+					}
+					LLGLState::checkStates();
+					LLGLState::checkTextureChannels();
+					LLGLState::checkClientArrays();
 				}
-				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
 			}
 		}
 		else
@@ -5315,8 +5353,10 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
 
 		gGL.getTexUnit(0)->activate();
 		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
+
 	}
 	
+
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
@@ -5338,7 +5378,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	if (channel > -1)
 	{
 		mDeferredScreen.bindTexture(0,channel);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
@@ -5346,12 +5386,14 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	if (channel > -1)
 	{
 		mDeferredScreen.bindTexture(1, channel);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_NORMAL, LLTexUnit::TT_RECT_TEXTURE);
 	if (channel > -1)
 	{
 		mDeferredScreen.bindTexture(2, channel);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_POSITION, LLTexUnit::TT_RECT_TEXTURE);
@@ -5364,12 +5406,14 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	if (channel > -1)
 	{
 		gGL.getTexUnit(channel)->bind(&mDeferredScreen, TRUE);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_NOISE);
 	if (channel > -1)
 	{
 		gGL.getTexUnit(channel)->bindManual(LLTexUnit::TT_TEXTURE, mNoiseMap);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	stop_glerror();
@@ -5378,6 +5422,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 	if (channel > -1)
 	{
 		mDeferredLight[light_index].bindTexture(0, channel);
+		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	stop_glerror();
@@ -5391,6 +5436,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index)
 			stop_glerror();
 			gGL.getTexUnit(channel)->bind(&mSunShadow[i], TRUE);
 			gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
+			gGL.getTexUnit(channel)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
 			stop_glerror();
 			
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE_ARB, GL_COMPARE_R_TO_TEXTURE_ARB);
