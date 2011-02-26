@@ -70,6 +70,8 @@
 #include "llappviewer.h"
 #include "llvosurfacepatch.h"
 #include "llvowlsky.h"
+#include "llworldmapview.h"
+#include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
 #include "llviewerobjectlist.h"
@@ -335,7 +337,6 @@ static bool handleUploadBakedTexOldChanged(const LLSD& newvalue)
 	LLPipeline::sForceOldBakedUpload = newvalue.asBoolean();
 	return true;
 }
-
 
 static bool handleNumpadControlChanged(const LLSD& newvalue)
 {

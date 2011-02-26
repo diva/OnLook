@@ -3,6 +3,6 @@
 	 can_tear_off="false" follows="top|right" height="220" min_height="64" min_width="64"
 	 name="minimap" rect_control="FloaterMiniMapRect" width="200">
     <panel bottom="2" follows="left|top|right|bottom" height="216" label="Mini Map"
-		 left="2" mouse_opaque="false" name="mini_mapview" tool_tip="(Double-click to open Map, Shift-drag to pan)"
+		 left="2" mouse_opaque="false" name="mini_mapview" tool_tip="(Double-click to open the Map, SHIFT-click and drag to pan)"
 		 width="196" />
 </floater>

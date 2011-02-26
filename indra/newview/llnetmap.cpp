@@ -80,10 +80,10 @@
 // [/RLVa:KB]
 
 const F32 MAP_SCALE_MIN = 32;
-const F32 MAP_SCALE_MID = 1024;
+const F32 MAP_SCALE_MID = 256;
 const F32 MAP_SCALE_MAX = 4096;
 const F32 MAP_SCALE_INCREMENT = 16;
-const F32 MAP_SCALE_ZOOM_FACTOR = 1.04f;	// Zoom in factor per click of the scroll wheel (4%)
+const F32 MAP_SCALE_ZOOM_FACTOR = 1.1f;		// Zoom in factor per click of the scroll wheel (10%)
 const F32 MAP_MINOR_DIR_THRESHOLD = 0.08f;
 const F32 MIN_DOT_RADIUS = 3.5f;
 const F32 DOT_SCALE = 0.75f;
@@ -198,7 +198,7 @@ void LLNetMap::draw()
 		createObjectImage();
 	}
 
-	if (gSavedSettings.getS32( "MiniMapCenter" ) != MAP_CENTER_NONE)
+	if (gSavedSettings.getS32( "MiniMapCenter") != MAP_CENTER_NONE)
 	{
 		mCurPanX = lerp(mCurPanX, mTargetPanX, LLCriticalDamp::getInterpolant(0.1f));
 		mCurPanY = lerp(mCurPanY, mTargetPanY, LLCriticalDamp::getInterpolant(0.1f));
@@ -231,9 +231,9 @@ void LLNetMap::draw()
 		gGL.pushMatrix();
 
 		gGL.translatef( (F32) center_sw_left, (F32) center_sw_bottom, 0.f);
-
+		
 		BOOL rotate_map = gSavedSettings.getBOOL( "MiniMapRotate" );
-		if( rotate_map )
+		if (rotate_map)
 		{
 			// rotate subsequent draws to agent rotation
 			rotation = atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] );
@@ -383,6 +383,10 @@ void LLNetMap::draw()
 			// TODO: it'd be very cool to draw these in sorted order from lowest Z to highest.
 			// just be careful to sort the avatar IDs along with the positions. -MG
 			pos_map = globalPosToView(positions[i], rotate_map);
+			if (positions[i].mdV[VZ] == 0.f)
+			{
+				pos_map.mV[VZ] = 16000.f;
+			}
 			std::string avName;
 
 			gCacheName->getFullName(avatar_ids[i], avName);
@@ -438,19 +442,19 @@ void LLNetMap::draw()
 		// Draw dot for autopilot target
 		if (gAgent.getAutoPilot())
 		{
-			drawTracking( gAgent.getAutoPilotTargetGlobal(), rotate_map, gTrackColor );
+			drawTracking(gAgent.getAutoPilotTargetGlobal(), rotate_map, gTrackColor);
 		}
 		else
 		{
 			LLTracker::ETrackingStatus tracking_status = LLTracker::getTrackingStatus();
 			if (  LLTracker::TRACKING_AVATAR == tracking_status )
 			{
-				drawTracking( LLAvatarTracker::instance().getGlobalPos(), rotate_map, gTrackColor );
+				drawTracking(LLAvatarTracker::instance().getGlobalPos(), rotate_map, gTrackColor);
 			} 
 			else if ( LLTracker::TRACKING_LANDMARK == tracking_status 
 					|| LLTracker::TRACKING_LOCATION == tracking_status )
 			{
-				drawTracking( LLTracker::getTrackedPositionGlobal(), rotate_map, gTrackColor );
+				drawTracking(LLTracker::getTrackedPositionGlobal(), rotate_map, gTrackColor);
 			}
 		}
 
@@ -481,7 +485,7 @@ void LLNetMap::draw()
 
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-		if( rotate_map )
+		if (rotate_map)
 		{
 			gGL.color4fv(gColors.getColor("NetMapFrustum").mV);
 
@@ -529,7 +533,8 @@ void LLNetMap::reshape(S32 width, S32 height, BOOL called_from_parent)
 	updateMinorDirections();
 }
 
-LLVector3 LLNetMap::globalPosToView( const LLVector3d& global_pos, BOOL rotated ){
+LLVector3 LLNetMap::globalPosToView(const LLVector3d& global_pos, BOOL rotated)
+{
 	LLVector3d relative_pos_global = global_pos - gAgent.getCameraPositionGlobal();
 	LLVector3 pos_local;
 	pos_local.setVec(relative_pos_global);  // convert to floats from doubles
@@ -619,7 +624,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 	{
 		return FALSE;
 	}
-	LLViewerRegion*	region = LLWorld::getInstance()->getRegionFromPosGlobal( viewPosToGlobal( x, y , gSavedSettings.getBOOL( "MiniMapRotate" )) );
+	LLViewerRegion*	region = LLWorld::getInstance()->getRegionFromPosGlobal(viewPosToGlobal(x, y, gSavedSettings.getBOOL( "MiniMapRotate" )));
 	if( region )
 	{
 		msg.assign("");
@@ -985,7 +990,7 @@ BOOL LLNetMap::handleHover( S32 x, S32 y, MASK mask )
 
 BOOL LLNetMap::handleDoubleClick( S32 x, S32 y, MASK mask )
 {
-	LLVector3d pos_global = viewPosToGlobal( x, y , gSavedSettings.getBOOL( "MiniMapRotate" ) );
+	LLVector3d pos_global = viewPosToGlobal(x, y, gSavedSettings.getBOOL( "MiniMapRotate" ));
 	BOOL new_target = FALSE;
 	if (!LLTracker::isTracking(NULL))
 	{
