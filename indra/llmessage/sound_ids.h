@@ -33,31 +33,31 @@
 #ifndef LL_SOUND_IDS_H
 #define LL_SOUND_IDS_H
 
-#include "lluuid.h"
+// *NOTE: Do not put the actual IDs in this file - otherwise the symbols
+// and values will be copied into every .o/.obj file and increase link time.
 
-extern LLUUID const SND_NULL;
+class LLUUID;
+
+extern const LLUUID SND_NULL;
 extern LLUUID const SND_RIDE;
 extern LLUUID const SND_SHOT;
 extern LLUUID const SND_MORTAR;
-extern LLUUID const SND_HIT;
-extern LLUUID const SND_EXPLOSION;
-extern LLUUID const SND_BOING;
-extern LLUUID const SND_OBJECT_CREATE;
+extern const LLUUID SND_HIT;
+extern const LLUUID SND_EXPLOSION;
+extern const LLUUID SND_BOING;
+extern const LLUUID SND_OBJECT_CREATE;
 
-//
 //  Different bird sounds for different states 
-//
-											
-extern LLUUID const SND_CHIRP;
-extern LLUUID const SND_CHIRP2;
-extern LLUUID const SND_CHIRP3;
-extern LLUUID const SND_CHIRP4;
-extern LLUUID const SND_CHIRP5;
-extern LLUUID const SND_CHIRPDEAD;
+extern const LLUUID SND_CHIRP;				//  Flying random chirp
+extern const LLUUID SND_CHIRP2;			//  Spooked by user 
+extern const LLUUID SND_CHIRP3;			//  Spooked by object
+extern const LLUUID SND_CHIRP4;			//  Chasing other bird 
+extern const LLUUID SND_CHIRP5;			//  Hopping random chirp
+extern const LLUUID SND_CHIRPDEAD;			//  Hit by grenade - dead!
 
 
-extern LLUUID const SND_MUNCH;
-extern LLUUID const SND_PUNCH;
+extern const LLUUID SND_MUNCH;
+extern const LLUUID SND_PUNCH;
 extern LLUUID const SND_SPLASH;
 extern LLUUID const SND_CLICK;
 extern LLUUID const SND_WHISTLE;

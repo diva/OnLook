@@ -524,7 +524,7 @@ F32 LLDrawable::updateXform(BOOL undamped)
 		{
 			// snap to final position
 			dist_squared = 0.0f;
-			if (!isRoot())
+			if (getVOVolume() && !isRoot())
 			{ //child prim snapping to some position, needs a rebuild
 				gPipeline.markRebuild(this, LLDrawable::REBUILD_POSITION, TRUE);
 			}
@@ -1278,12 +1278,25 @@ void LLSpatialBridge::updateDistance(LLCamera& camera_in, bool force_update)
 		return;
 	}
 
-	LLCamera camera = transformCamera(camera_in);
-	
-	mDrawable->updateDistance(camera, force_update);
-	
 	if (mDrawable->getVObj())
 	{
+		if (mDrawable->getVObj()->isAttachment())
+		{
+			LLDrawable* parent = mDrawable->getParent();
+			if (parent)
+			{
+				LLViewerObject *obj = parent->getVObj();
+				if (obj && obj->isAvatar() && ((LLVOAvatar*)obj)->isImpostor())
+				{
+					return;
+				}
+			}
+		}
+
+		LLCamera camera = transformCamera(camera_in);
+	
+		mDrawable->updateDistance(camera, force_update);
+	
 		LLViewerObject::const_child_list_t& child_list = mDrawable->getVObj()->getChildren();
 		for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
 			 iter != child_list.end(); iter++)

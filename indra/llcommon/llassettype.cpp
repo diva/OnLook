@@ -343,3 +343,41 @@ bool LLAssetType::lookupIsLinkType(EType asset_type)
 {
 	return (asset_type == AT_LINK || asset_type == AT_LINK_FOLDER);
 }
+
+// static
+bool LLAssetType::lookupIsAssetFetchByIDAllowed(EType asset_type)
+{
+	// *FIX: Make this list smaller.
+	switch(asset_type)
+	{
+	case LLAssetType::AT_SOUND:
+	case LLAssetType::AT_LANDMARK:
+	case LLAssetType::AT_CLOTHING:
+	case LLAssetType::AT_BODYPART:
+	case LLAssetType::AT_ANIMATION:
+	case LLAssetType::AT_GESTURE:
+		return true;
+	}
+	return false;
+}
+
+// static
+bool LLAssetType::lookupIsAssetIDKnowable(EType asset_type)
+{
+	switch(asset_type)
+	{
+	case LLAssetType::AT_TEXTURE:
+	case LLAssetType::AT_SOUND:
+	case LLAssetType::AT_LANDMARK:
+	case LLAssetType::AT_CLOTHING:
+	case LLAssetType::AT_NOTECARD:
+	case LLAssetType::AT_BODYPART:
+	case LLAssetType::AT_ANIMATION:
+	case LLAssetType::AT_GESTURE:
+	case LLAssetType::AT_LINK:
+	case LLAssetType::AT_LINK_FOLDER:
+		return true;
+	}
+	return false;
+}
+

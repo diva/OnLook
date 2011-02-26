@@ -136,6 +136,7 @@ public:
                     { return mOutOfOrderRate.meanValue(scale); }
     U32         getLastPacketGap() const { return mLastPacketGap; }
     LLHost      getHost() const { return mHost; }
+	F64			getLastPacketInTime() const		{ return mLastPacketInTime;	}
 
 	LLThrottleGroup &getThrottleGroup()		{	return mThrottles; }
 
@@ -254,6 +255,7 @@ protected:
 	S32										mUnackedPacketCount;
 	S32										mUnackedPacketBytes;
 
+	F64										mLastPacketInTime;		// Time of last packet arrival
 
 	LLUUID									mLocalEndPointID;
 

@@ -76,7 +76,7 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-static const S32 EASY_HANDLE_POOL_SIZE		= 5;
+static const U32 EASY_HANDLE_POOL_SIZE		= 5;
 static const S32 MULTI_PERFORM_CALL_REPEAT	= 5;
 static const S32 CURL_REQUEST_TIMEOUT = 30; // seconds
 static const S32 MAX_ACTIVE_REQUEST_COUNT = 100;
@@ -133,12 +133,17 @@ void LLCurl::Responder::errorWithContent(
 // virtual
 void LLCurl::Responder::error(U32 status, const std::string& reason)
 {
-	llinfos << status << ": " << reason << llendl;
+	llinfos << mURL << " [" << status << "]: " << reason << llendl;
 }
 
 // virtual
 void LLCurl::Responder::result(const LLSD& content)
 {
+}
+
+void LLCurl::Responder::setURL(const std::string& url)
+{
+	mURL = url;
 }
 
 // virtual
@@ -150,7 +155,10 @@ void LLCurl::Responder::completedRaw(
 {
 	LLSD content;
 	LLBufferStream istr(channels, buffer.get());
-	LLSDSerialize::fromXML(content, istr);
+	if (!LLSDSerialize::fromXML(content, istr))
+	{
+		llinfos << "Failed to deserialize LLSD. " << mURL << " [" << status << "]: " << reason << llendl;
+	}
 	completed(status, reason, content);
 }
 
@@ -491,6 +499,12 @@ void LLCurl::Easy::prepRequest(const std::string& url,
 	
 	setopt(CURLOPT_HEADERFUNCTION, (void*)&curlHeaderCallback);
 	setopt(CURLOPT_HEADERDATA, (void*)this);
+	// Allow up to five redirects
+	if(responder && responder->followRedir())
+	{
+		setopt(CURLOPT_FOLLOWLOCATION, 1);
+		setopt(CURLOPT_MAXREDIRS, MAX_REDIRECTS);
+	}
 
 	setErrorBuffer();
 	setCA();
@@ -925,6 +939,15 @@ void LLCurlEasyRequest::setReadCallback(curl_read_callback callback, void* userd
 	}
 }
 
+void LLCurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* userdata)
+{
+	if (mEasy)
+	{
+		mEasy->setopt(CURLOPT_SSL_CTX_FUNCTION, (void*)callback);
+		mEasy->setopt(CURLOPT_SSL_CTX_DATA, userdata);
+	}
+}
+
 void LLCurlEasyRequest::slist_append(const char* str)
 {
 	if (mEasy)
@@ -1075,3 +1098,4 @@ void LLCurl::cleanupClass()
 	curl_global_cleanup();
 }
 
+const unsigned int LLCurl::MAX_REDIRECTS = 5;

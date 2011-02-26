@@ -290,7 +290,7 @@ namespace
 	public:
 		static LogControlFile& fromDirectory(const std::string& dir);
 		
-		virtual void loadFile();
+		virtual bool loadFile();
 		
 	private:
 		LogControlFile(const std::string &filename)
@@ -318,7 +318,7 @@ namespace
 			// NB: This instance is never freed
 	}
 	
-	void LogControlFile::loadFile()
+	bool LogControlFile::loadFile()
 	{
 		LLSD configuration;
 
@@ -334,12 +334,13 @@ namespace
 				llwarns << filename() << " missing, ill-formed,"
 							" or simply undefined; not changing configuration"
 						<< llendl;
-				return;
+				return false;
 			}
 		}
 		
 		LLError::configure(configuration);
 		llinfos << "logging reconfigured from " << filename() << llendl;
+		return true;
 	}
 
 
@@ -601,11 +602,17 @@ namespace LLError
 		s.printLocation = print;
 	}
 
-	void setFatalFunction(FatalFunction f)
+	void setFatalFunction(const FatalFunction& f)
 	{
 		Settings& s = Settings::get();
 		s.crashFunction = f;
 	}
+
+    FatalFunction getFatalFunction()
+    {
+        Settings& s = Settings::get();
+        return s.crashFunction;
+    }
 
 	void setTimeFunction(TimeFunction f)
 	{
@@ -1211,14 +1218,17 @@ namespace LLError
 	void crashAndLoop(const std::string& message)
 	{
 		// Now, we go kaboom!
-		int* crash = NULL;
+		int* make_me_crash = NULL;
 
-		*crash = 0;
+		*make_me_crash = 0;
 
 		while(true)
 		{
 			// Loop forever, in case the crash didn't work?
 		}
+		
+		// this is an attempt to let Coverity and other semantic scanners know that this function won't be returning ever.
+		exit(EXIT_FAILURE);
 	}
 #if LL_WINDOWS
 		#pragma optimize("", on)

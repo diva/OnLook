@@ -679,14 +679,12 @@ void LLAvatarNameCache::get(const LLUUID& agent_id, callback_slot_t slot)
 			std::map<LLUUID,LLAvatarName>::iterator it = sCache.find(agent_id);
 			if (it != sCache.end())
 			{
-				LLAvatarName& av_name = it->second;
+				const LLAvatarName& av_name = it->second;
 				
 				if (av_name.mExpires > LLFrameTimer::getTotalSeconds())
 				{
-					av_name.mDisplayName = av_name.mDisplayName;
 					// ...name already exists in cache, fire callback now
 					fireSignal(agent_id, slot, av_name);
-
 					return;
 				}
 			}
@@ -698,7 +696,6 @@ void LLAvatarNameCache::get(const LLUUID& agent_id, callback_slot_t slot)
 			if (gCacheName->getFullName(agent_id, full_name))
 			{
 				LLAvatarName av_name;
-				av_name.mDisplayName = av_name.mDisplayName;
 				buildLegacyName(full_name, &av_name);
 				fireSignal(agent_id, slot, av_name);
 				return;
