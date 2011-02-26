@@ -571,6 +571,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderMaxVBOSize")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _1));
 	//See LL jira VWR-3258 comment section. Implemented by LL in 2.1 -Shyotl
 	gSavedSettings.getControl("ShyotlRenderUseStreamVBO")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _1));
+	gSavedSettings.getControl("SianaRenderOmitBlankVBO")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _1));
 	gSavedSettings.getControl("RenderUseFBO")->getSignal()->connect(boost::bind(&handleRenderUseFBOChanged, _1));
 	gSavedSettings.getControl("RenderDeferredNoise")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _1));
 	gSavedSettings.getControl("RenderUseImpostors")->getSignal()->connect(boost::bind(&handleRenderUseImpostorsChanged, _1));
