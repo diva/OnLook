@@ -63,6 +63,7 @@ char*		u32_to_ip_string(U32 ip, char *ip_string);	// NULL on failure, ip_string 
 U32			ip_string_to_u32(const char* ip_string);	// Wrapper for inet_addr()
 
 extern const char* LOOPBACK_ADDRESS_STRING;
+extern const char* BROADCAST_ADDRESS_STRING;
 
 void tcp_close_channel(S32 handle);
 S32 tcp_open_channel(LLHost host);

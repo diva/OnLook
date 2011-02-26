@@ -62,7 +62,7 @@ public:
     static std::string filename();
     
 protected:
-    /* virtual */ void loadFile();
+    /* virtual */ bool loadFile();
 
 public:
     void init(LLPerfStats* statsp);
@@ -94,12 +94,12 @@ LLStatsConfigFile& LLStatsConfigFile::instance()
 
 /* virtual */
 // Load and parse the stats configuration file
-void LLStatsConfigFile::loadFile()
+bool LLStatsConfigFile::loadFile()
 {
     if (!mStatsp)
     {
         llwarns << "Tries to load performance configure file without initializing LPerfStats" << llendl;
-        return;
+        return false;
     }
     mChanged = true;
     
@@ -113,7 +113,7 @@ void LLStatsConfigFile::loadFile()
             {
                 llinfos << "Performance statistics configuration file ill-formed, not recording statistics" << llendl;
                 mStatsp->setReportPerformanceDuration( 0.f );
-                return;
+                return false;
             }
         }
         else 
@@ -123,7 +123,7 @@ void LLStatsConfigFile::loadFile()
                 llinfos << "Performance statistics configuration file deleted, not recording statistics" << llendl;
                 mStatsp->setReportPerformanceDuration( 0.f );
             }
-            return;
+            return true;
         }
     }
 
@@ -159,6 +159,7 @@ void LLStatsConfigFile::loadFile()
     {
         llinfos << "Performance stats recording turned off" << llendl;
     }
+	return true;
 }
 
 
@@ -327,6 +328,7 @@ U64 LLStatAccum::sScaleTimes[NUM_SCALES] =
 LLStatAccum::LLStatAccum(bool useFrameTimer)
 	: mUseFrameTimer(useFrameTimer),
 	  mRunning(FALSE),
+	  mLastTime(0),
 	  mLastSampleValue(0.0),
 	  mLastSampleValid(FALSE)
 {
@@ -347,7 +349,7 @@ void LLStatAccum::reset(U64 when)
 	{
 		mBuckets[i].accum = 0.0;
 		mBuckets[i].endTime = when + sScaleTimes[i];
-		mBuckets[i].lastValid = FALSE;
+		mBuckets[i].lastValid = false;
 	}
 }
 
@@ -395,7 +397,7 @@ void LLStatAccum::sum(F64 value, U64 when)
 			{
 				F64 valueLeft = value * timeLeft / timeSpan;
 
-				bucket.lastValid = TRUE;
+				bucket.lastValid = true;
 				bucket.lastAccum = bucket.accum + (value - valueLeft);
 				bucket.accum = valueLeft;
 				bucket.endTime += timeScale;
@@ -404,7 +406,7 @@ void LLStatAccum::sum(F64 value, U64 when)
 			{
 				U64 timeTail = timeLeft % timeScale;
 
-				bucket.lastValid = TRUE;
+				bucket.lastValid = true;
 				bucket.lastAccum = value * timeScale / timeSpan;
 				bucket.accum = value * timeTail / timeSpan;
 				bucket.endTime += (timeLeft - timeTail) + timeScale;
@@ -726,7 +728,6 @@ LLFrameTimer LLStat::sFrameTimer;
 LLStat::LLStat(const U32 num_bins, const BOOL use_frame_timer)
 {
 	llassert(num_bins > 0);
-	U32 i;
 	mUseFrameTimer = use_frame_timer;
 	mNumValues = 0;
 	mLastValue = 0.f;
@@ -738,7 +739,7 @@ LLStat::LLStat(const U32 num_bins, const BOOL use_frame_timer)
 	mBeginTime = new F64[mNumBins];
 	mTime      = new F64[mNumBins];
 	mDT        = new F32[mNumBins];
-	for (i = 0; i < mNumBins; i++)
+	for (U32 i = 0; i < mNumBins; i++)
 	{
 		mBins[i]      = 0.f;
 		mBeginTime[i] = 0.0;

@@ -54,7 +54,7 @@ private:
     static std::string filename();
 
 protected:
-	/* virtual */ void loadFile();
+	/* virtual */ bool loadFile();
 	LLSD mConfig;
 };
 

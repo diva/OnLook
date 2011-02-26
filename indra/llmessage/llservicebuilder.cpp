@@ -44,7 +44,7 @@ void LLServiceBuilder::loadServiceDefinitionsFromFile(
 	if(service_file.is_open())
 	{
 		LLSD service_data;
-		LLSDSerialize::fromXML(service_data, service_file);
+		LLSDSerialize::fromXMLDocument(service_data, service_file);
 		service_file.close();
 		// Load service 
 		LLSD service_map = service_data["services"];

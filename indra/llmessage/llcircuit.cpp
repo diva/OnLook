@@ -77,6 +77,8 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
 	mPacketsOutID(0), 
 	mPacketsInID(in_id),
 	mHighestPacketID(in_id),
+	mTimeoutCallback(NULL),
+	mTimeoutUserData(NULL),
 	mTrusted(FALSE),
 	mbAllowTimeout(TRUE),
 	mbAlive(TRUE),
@@ -91,6 +93,7 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
 	mPingDelayAveraged((F32)INITIAL_PING_VALUE_MSEC), 
 	mUnackedPacketCount(0),
 	mUnackedPacketBytes(0),
+	mLastPacketInTime(0.0),
 	mLocalEndPointID(),
 	mPacketsOut(0),
 	mPacketsIn(0), 
@@ -102,11 +105,12 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
 	mBytesOutLastPeriod(0),
 	mBytesInThisPeriod(0),
 	mBytesOutThisPeriod(0),
-	mPeakBPSIn(0),
-	mPeakBPSOut(0),
+	mPeakBPSIn(0.f),
+	mPeakBPSOut(0.f),
 	mPeriodTime(0.0),
 	mExistenceTimer(),
 	mCurrentResendCount(0),
+	mLastPacketGap(0),
 	mHeartbeatInterval(circuit_heartbeat_interval), 
 	mHeartbeatTimeout(circuit_timeout)
 {
@@ -120,9 +124,6 @@ LLCircuitData::LLCircuitData(const LLHost &host, TPACKETID in_id,
 	mLastPingReceivedTime = mt_sec;
 	mNextPingSendTime = mLastPingSendTime + 0.95*mHeartbeatInterval + ll_frand(0.1f*mHeartbeatInterval);
 	mPeriodTime = mt_sec;
-
-	mTimeoutCallback = NULL;
-	mTimeoutUserData = NULL;
 
 	mLocalEndPointID.generate();
 }
@@ -673,6 +674,8 @@ void LLCircuitData::checkPacketInID(TPACKETID id, BOOL receive_resent)
 		mHighestPacketID = llmax(mHighestPacketID, id);
 	}
 
+	// Save packet arrival time
+	mLastPacketInTime = LLMessageSystem::getMessageTimeSeconds();
 
 	// Have we received anything on this circuit yet?
 	if (0 == mPacketsIn)

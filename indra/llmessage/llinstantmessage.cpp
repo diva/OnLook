@@ -61,6 +61,7 @@ const char EMPTY_BINARY_BUCKET[] = "";
 const S32 EMPTY_BINARY_BUCKET_SIZE = 1;
 const U32 NO_TIMESTAMP = 0;
 const std::string SYSTEM_FROM("Second Life");
+const std::string INTERACTIVE_SYSTEM_FROM("F387446C-37C4-45f2-A438-D99CBDBB563B");
 const S32 IM_TTL = 1;
 
 
@@ -68,9 +69,11 @@ const S32 IM_TTL = 1;
  * LLIMInfo
  */
 LLIMInfo::LLIMInfo() :
+	mFromGroup(FALSE),
 	mParentEstateID(0),
 	mOffline(0),
 	mViewerThinksToIsOnline(false),
+	mIMType(IM_NOTHING_SPECIAL),
 	mTimeStamp(0),
 	mSource(IM_FROM_SIM),
 	mTTL(IM_TTL)

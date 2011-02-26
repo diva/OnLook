@@ -728,7 +728,7 @@ static S32 buildBlock(U8* buffer, S32 buffer_size, const LLMessageBlock* templat
 					    // out gracefully from this function. XXXTBD
 						llerrs << "buildBlock failed. "
 							<< "Attempted to pack "
-							<< result + mvci.getSize()
+							<< (result + mvci.getSize())
 							<< " bytes into a buffer with size "
 							<< buffer_size << "." << llendl;
 					}						

@@ -45,7 +45,7 @@ static const char indraConfigFileName[] = "indra.xml";
 
 
 LLIndraConfigFile::LLIndraConfigFile()
-        : LLLiveFile(filename(), configFileRefreshRate),
+        : LLLiveFile(filename()),
           mConfig(LLSD())
 {
 }
@@ -84,7 +84,7 @@ std::string LLIndraConfigFile::filename()
 }
 
 /* virtual */
-void LLIndraConfigFile::loadFile()
+bool LLIndraConfigFile::loadFile()
 {
 	llinfos << "LLIndraConfigFile::loadFile: reading from "
 		<< filename() << llendl;
@@ -102,17 +102,18 @@ void LLIndraConfigFile::loadFile()
         {
             llinfos << "LLIndraConfigFile::loadFile: file missing, ill-formed,"
                 " or simply undefined; not changing the blacklist" << llendl;
-            return;
+            return false;
         }
     }
 
 	if (config.isMap())
 	{
 		mConfig = config;
+		return true;
 	}
 	else
     {
         llwarns << "LLIndraConfigFile: " << indraConfigFileName << "  expects a map; wrong format" << llendl;
-        return;
+        return false;
     }
 }

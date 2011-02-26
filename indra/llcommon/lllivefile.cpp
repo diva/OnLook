@@ -35,6 +35,8 @@
 #include "llframetimer.h"
 #include "lltimer.h"
 
+const F32 DEFAULT_CONFIG_FILE_REFRESH = 5.0f;
+
 class LLLiveFile::Impl
 {
 public:
@@ -42,7 +44,7 @@ public:
 	~Impl();
 	
 	bool check();
-	
+	void changed();
 	
 	bool mForceCheck;
 	F32 mRefreshPeriod;
@@ -50,16 +52,19 @@ public:
 
 	std::string mFilename;
 	time_t mLastModTime;
+	time_t mLastStatTime;
 	bool mLastExists;
 	
 	LLEventTimer* mEventTimer;
 };
 
-LLLiveFile::Impl::Impl(const std::string &filename, const F32 refresh_period)
-	: mForceCheck(true),
+LLLiveFile::Impl::Impl(const std::string& filename, const F32 refresh_period)
+	:
+	mForceCheck(true),
 	mRefreshPeriod(refresh_period),
 	mFilename(filename),
 	mLastModTime(0),
+	mLastStatTime(0),
 	mLastExists(false),
 	mEventTimer(NULL)
 {
@@ -121,17 +126,29 @@ bool LLLiveFile::Impl::check()
 
 	// We want to read the file.  Update status info for the file.
 	mLastExists = true;
-	mLastModTime = stat_data.st_mtime;
-	
+	mLastStatTime = stat_data.st_mtime;
 	return true;
 }
 
+void LLLiveFile::Impl::changed()
+{
+	// we wanted to read this file, and we were successful.
+	mLastModTime = mLastStatTime;
+}
 bool LLLiveFile::checkAndReload()
 {
 	bool changed = impl.check();
 	if (changed)
 	{
-		loadFile();
+		if(loadFile())
+		{
+			impl.changed();
+			this->changed();
+		}
+		else
+		{
+			changed = false;
+		}
 	}
 	return changed;
 }
@@ -167,3 +184,11 @@ void LLLiveFile::addToEventTimer()
 	impl.mEventTimer = new LiveFileEventTimer(*this, impl.mRefreshPeriod);
 }
 
+void LLLiveFile::setRefreshPeriod(F32 seconds)
+{
+	if (seconds < 0.f)
+	{
+		seconds = -seconds;
+	}
+	impl.mRefreshPeriod = seconds;
+}

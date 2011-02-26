@@ -32,6 +32,8 @@
 
 #include "sound_ids.h"
 
+#include "lluuid.h"
+
 LLUUID const SND_NULL = LLUUID::null;
 LLUUID const SND_RIDE		   ("00000000-0000-0000-0000-000000000100");
 LLUUID const SND_SHOT		   ("00000000-0000-0000-0000-000000000101");

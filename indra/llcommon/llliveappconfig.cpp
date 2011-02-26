@@ -48,7 +48,7 @@ LLLiveAppConfig::~LLLiveAppConfig()
 { }
 
 // virtual 
-void LLLiveAppConfig::loadFile()
+bool LLLiveAppConfig::loadFile()
 {
 	llinfos << "LLLiveAppConfig::loadFile(): reading from "
 		<< filename() << llendl;
@@ -59,12 +59,25 @@ void LLLiveAppConfig::loadFile()
         LLSDSerialize::fromXML(config, file);
 		if(!config.isMap())
 		{
-			llinfos << "LLDataserverConfig::loadFile(): not an map!"
+			llwarns << "Live app config not an map in " << filename()
 				<< " Ignoring the data." << llendl;
-			return;
+			return false;
 		}
 		file.close();
     }
+	else
+	{
+		llinfos << "Live file " << filename() << " does not exit." << llendl;
+	}
+	// *NOTE: we do not handle the else case here because we would not
+	// have attempted to load the file unless LLLiveFile had
+	// determined there was a reason to load it. This only happens
+	// when either the file has been updated or it is either suddenly
+	// in existence or has passed out of existence. Therefore, we want
+	// to set the config to an empty config, and return that it
+	// changed.
+
 	mApp->setOptionData(
 		LLApp::PRIORITY_SPECIFIC_CONFIGURATION, config);
+	return true;
 }

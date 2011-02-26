@@ -36,7 +36,13 @@
 #define LL_LLARES_H
 
 #ifdef LL_WINDOWS
+// ares.h is broken on windows in that it depends on types defined in ws2tcpip.h
+// we need to include them first to work around it, but the headers issue warnings
+# pragma warning(push)
+# pragma warning(disable:4996)
+# include <winsock2.h>
 # include <ws2tcpip.h>
+# pragma warning(pop)
 #endif
 
 #ifdef LL_STANDALONE
