@@ -571,8 +571,12 @@ void LLPipeline::releaseGLBuffers()
 	mScreen.release();
 	mSampleBuffer.releaseSampleBuffer();
 	mDeferredScreen.release();
-	
-	
+
+
+	for (U32 i = 0; i < 2; i++)
+	{
+		mDeferredLight[i].release();
+	}
 	for (U32 i = 0; i < 4; i++)
 	{
 		mSunShadow[i].release();
