@@ -357,8 +357,9 @@ bool LLAssetType::lookupIsAssetFetchByIDAllowed(EType asset_type)
 	case LLAssetType::AT_ANIMATION:
 	case LLAssetType::AT_GESTURE:
 		return true;
+	default:
+		return false;
 	}
-	return false;
 }
 
 // static
@@ -377,7 +378,8 @@ bool LLAssetType::lookupIsAssetIDKnowable(EType asset_type)
 	case LLAssetType::AT_LINK:
 	case LLAssetType::AT_LINK_FOLDER:
 		return true;
+	default:
+		return false;
 	}
-	return false;
 }
 
