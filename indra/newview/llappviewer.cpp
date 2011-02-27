@@ -159,6 +159,7 @@
 #include "llvosurfacepatch.h"
 
 // includes for idle() idleShutdown()
+#include "floaterao.h"
 #include "llviewercontrol.h"
 #include "lleventnotifier.h"
 #include "llcallbacklist.h"
@@ -1752,6 +1753,7 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstTeleport");
 	LLFirstUse::addConfigVariable("FirstOverrideKeys");
 	LLFirstUse::addConfigVariable("FirstAttach");
+	LLFirstUse::addConfigVariable("FirstAO");
 	LLFirstUse::addConfigVariable("FirstAppearance");
 	LLFirstUse::addConfigVariable("FirstInventory");
 	LLFirstUse::addConfigVariable("FirstSandbox");

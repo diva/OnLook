@@ -53,6 +53,7 @@
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
+#include "floaterao.h"
 
 #include "llares.h"
 #include "llcachename.h"
@@ -2855,6 +2856,12 @@ bool idle_startup()
 		{
 			gFloaterWorldMap->observeInventory(&gInventory);
 			gFloaterWorldMap->observeFriends();
+		}
+
+		// Start the AO now that settings have loaded and login successful -- MC
+		if (!gAOInvTimer)
+		{
+			gAOInvTimer = new AOInvTimer();
 		}
 
 		gViewerWindow->showCursor();

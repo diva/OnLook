@@ -251,6 +251,7 @@
 #include "scriptcounter.h"
 #include "llfloaterdisplayname.h"
 #include "llavatarnamecache.h"
+#include "floaterao.h"
 
 #include "hippogridmanager.h"
 
@@ -439,6 +440,7 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
 void handle_open_message_log(void*);
+void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
@@ -767,11 +769,8 @@ void init_menus()
 	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
 	menu->appendSeparator();
-	menu->append(new LLMenuItemCheckGL( "Enable AO",
-									&menu_toggle_control,
-									NULL,
-									&menu_check_control,
-									(void*)"AO.Enabled"));
+	menu->append(new LLMenuItemCallGL( "Animation Override...",
+									&handle_edit_ao, NULL));
 	menu->append(new LLMenuItemCheckGL( "Nimble",
 										&menu_toggle_control,
 										NULL,
@@ -3612,6 +3611,11 @@ void handle_reopen_with_hex_editor(void*)
 void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
+}
+
+void handle_edit_ao(void*)
+{
+	LLFloaterAO::show(NULL);
 }
 
 void handle_local_assets(void*)

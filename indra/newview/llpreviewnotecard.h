@@ -43,6 +43,7 @@
 // This class allows us to edit notecards
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+class LLTextEditor;
 class LLViewerTextEditor;
 class LLButton;
 
@@ -89,10 +90,12 @@ public:
 	LLUUID getObjectID();
 	virtual LLUUID getItemID();
 	// </edit>
-protected:
 
-	virtual void loadAsset();
+	LLTextEditor* getEditor();	
 	bool saveIfNeeded(LLInventoryItem* copyitem = NULL);
+
+protected:
+	virtual void loadAsset();
 
 	static LLPreviewNotecard* getInstance(const LLUUID& uuid);
 

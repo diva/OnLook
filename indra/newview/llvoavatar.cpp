@@ -93,6 +93,7 @@
 
 #include "llsdserialize.h" //For the client definitions
 #include "llcachename.h"
+#include "floaterao.h"
 
 // <edit>
 #include "llfloaterexploreanimations.h"
@@ -5540,9 +5541,13 @@ void LLVOAvatar::processAnimationStateChanges()
 		if (found_anim == mSignaledAnimations.end())
 		{
 
-
-
-
+			if (mIsSelf)
+			{
+				if ((gSavedSettings.getBOOL("AOEnabled")) && LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
+				{
+//					return TRUE; //no local stop needed
+				}
+			}
 
 			processSingleAnimationStateChange(anim_it->first, FALSE);
 			// <edit>
@@ -5568,6 +5573,11 @@ void LLVOAvatar::processAnimationStateChanges()
 			// </edit>
 			if (processSingleAnimationStateChange(anim_it->first, TRUE))
 			{
+				if (mIsSelf && gSavedSettings.getBOOL("AOEnabled")) // AO is only for ME
+				{
+					LLFloaterAO::startMotion(anim_it->first, 0,FALSE); // AO overrides the anim if needed
+				}
+
 				mPlayingAnimations[anim_it->first] = anim_it->second;
 				++anim_it;
 				continue;
@@ -5576,16 +5586,6 @@ void LLVOAvatar::processAnimationStateChanges()
 
 		++anim_it;
 	}
-
-
-
-
-
-
-
-
-
-
 
 	// clear source information for animations which have been stopped
 	if (mIsSelf)
@@ -5642,6 +5642,14 @@ void LLVOAvatar::undeform()
 
 		if (found_anim == mSignaledAnimations.end())
 		{
+			if (mIsSelf)
+			{
+				if ((gSavedSettings.getBOOL("AOEnabled")) && LLFloaterAO::stopMotion(anim_it->first, FALSE)) // if the AO replaced this anim serverside then stop it serverside
+				{
+//					return TRUE; //no local stop needed
+				}
+			}
+
 			processSingleAnimationStateChange(anim_it->first, FALSE);
 			mPlayingAnimations.erase(anim_it++);
 			continue;
@@ -5865,6 +5873,11 @@ void LLVOAvatar::stopMotionFromSource(const LLUUID& source_id)
 //-----------------------------------------------------------------------------
 LLVector3 LLVOAvatar::getVolumePos(S32 joint_index, LLVector3& volume_offset)
 {
+	if(joint_index < 0)
+	{
+		return LLVector3::zero;
+	}
+
 	if (joint_index > mNumCollisionVolumes)
 	{
 		return LLVector3::zero;
@@ -7222,6 +7235,7 @@ void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 
 	gPipeline.markMoved(mDrawable, TRUE);
 	mIsSitting = TRUE;
+	LLFloaterAO::ChangeStand();	
 	mRoot.getXform()->setParent(&sit_object->mDrawable->mXform); // LLVOAvatar::sitOnObject
 	mRoot.setPosition(getPosition());
 	mRoot.updateWorldMatrixChildren();
@@ -7298,6 +7312,7 @@ void LLVOAvatar::getOffObject()
 	mRoot.getXform()->update();
 
 	startMotion(ANIM_AGENT_BODY_NOISE);
+	LLFloaterAO::ChangeStand();
 
 	if (mIsSelf)
 	{

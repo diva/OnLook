@@ -37,6 +37,7 @@
 
 #include "lloverlaybar.h"
 
+#include "aoremotectrl.h"
 #include "llaudioengine.h"
 #include "importtracker.h"
 #include "llrender.h"
@@ -116,6 +117,13 @@ void* LLOverlayBar::createAdvSettings(void* userdata)
 	return self->mAdvSettings;
 }
 
+void* LLOverlayBar::createAORemote(void* userdata)
+{
+	LLOverlayBar *self = (LLOverlayBar*)userdata;	
+	self->mAORemote = new AORemoteCtrl();
+	return self->mAORemote;
+}
+
 void* LLOverlayBar::createChatBar(void* userdata)
 {
 	gChatBar = new LLChatBar();
@@ -126,6 +134,7 @@ LLOverlayBar::LLOverlayBar()
 	:	LLPanel(),
 		mMediaRemote(NULL),
 		mVoiceRemote(NULL),
+		mAORemote(NULL),
 		mMusicState(STOPPED),
 		mOriginalIMLabel("")
 {
@@ -138,6 +147,7 @@ LLOverlayBar::LLOverlayBar()
 	factory_map["media_remote"] = LLCallbackMap(LLOverlayBar::createMediaRemote, this);
 	factory_map["voice_remote"] = LLCallbackMap(LLOverlayBar::createVoiceRemote, this);
 	factory_map["Adv_Settings"] = LLCallbackMap(LLOverlayBar::createAdvSettings, this);
+	factory_map["ao_remote"] = LLCallbackMap(LLOverlayBar::createAORemote, this);
 	factory_map["chat_bar"] = LLCallbackMap(LLOverlayBar::createChatBar, this);
 	
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_overlaybar.xml", &factory_map);
@@ -156,6 +166,13 @@ bool updateChatVisible(const LLSD &data)
 	LLOverlayBar::sChatVisible = data.asBoolean();
 	return true;
 }
+
+bool updateAORemote(const LLSD &data)
+{
+	gOverlayBar->childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
+	return true;
+}
+
 
 BOOL LLOverlayBar::postBuild()
 {
@@ -180,8 +197,10 @@ BOOL LLOverlayBar::postBuild()
 
 	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(&updateAdvSettingsPopup);
 	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(&updateChatVisible);
+	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(&updateAORemote);
 	childSetVisible("AdvSettings_container", !sAdvSettingsPopup);
 	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
+	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	
 
 	return TRUE;
 }
@@ -345,6 +364,7 @@ void LLOverlayBar::refresh()
 		buttons_changed = TRUE;
 	}
 
+	moveChildToBackOfTabGroup(mAORemote);
 	moveChildToBackOfTabGroup(mMediaRemote);
 	moveChildToBackOfTabGroup(mVoiceRemote);
 
@@ -362,6 +382,7 @@ void LLOverlayBar::refresh()
 			childSetVisible("voice_remote_container", FALSE);
 			childSetVisible("AdvSettings_container", FALSE);
 			childSetVisible("AdvSettings_container_exp", FALSE);
+			childSetVisible("ao_remote_container", FALSE);
 			childSetVisible("state_buttons", FALSE);
 		}
 		else
@@ -371,6 +392,7 @@ void LLOverlayBar::refresh()
 			childSetVisible("voice_remote_container", LLVoiceClient::voiceEnabled());
 			childSetVisible("AdvSettings_container", !sAdvSettingsPopup);//!gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
 			childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);//gSavedSettings.getBOOL("wlfAdvSettingsPopup")); 
+			childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));
 			childSetVisible("state_buttons", TRUE);
 		}
 	}

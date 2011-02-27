@@ -8,6 +8,127 @@
 		<string>settings_sh.xml</string>
 		<string>settings_rlv.xml</string>
 	</array>
+
+  <!-- Begin: AO-->
+
+  <key>ShowAOSitPopup</key>
+  <map>
+    <key>Comment</key>
+    <string>Show AO sit popup</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>EnableAORemote</key>
+  <map>
+    <key>Comment</key>
+    <string>Enable AO quick access remote in toolbar</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+
+  <key>DisableInternalFlyUpAnimation</key>
+  <map>
+    <key>Comment</key>
+    <string>Disables the internal hover up animation (on your local computer only). Enable if you use an AO and wear hand attachments like rings, prim nails etc. that often loose their correct position while flying.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+
+  <key>AOEnabled</key>
+  <map>
+    <key>Comment</key>
+    <string>Turn on Animation Overrider</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>AOAdvanced</key>
+  <map>
+    <key>Comment</key>
+    <string>Advanced options</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>AOSitsEnabled</key>
+  <map>
+    <key>Comment</key>
+    <string>Overrides sit animations.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>AONoStandsInMouselook</key>
+  <map>
+    <key>Comment</key>
+    <string>Disables stand anims during mouselook</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>AOStandInterval</key>
+  <map>
+    <key>Comment</key>
+    <string>AO stand time in seconds</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>20</real>
+  </map>
+  <key>AOStandRandomize</key>
+  <map>
+    <key>Comment</key>
+    <string>Randomize stand anims</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>AORect</key>
+  <map>
+    <key>Comment</key>
+    <string>Rectangle for AO window</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Rect</string>
+    <key>Value</key>
+    <array>
+      <integer>0</integer>
+      <integer>100</integer>
+      <integer>100</integer>
+      <integer>100</integer>
+    </array>
+  </map>
+
 	
   <key>ClientDefinitionsURL</key>
   <map>
@@ -205,28 +326,6 @@
       <string>U32</string>
       <key>Value</key>
       <integer>3</integer>
-    </map>
-    <key>AO.Enabled</key>
-    <map>
-      <key>Comment</key>
-      <string>Enable animation overrider</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>AO.Period</key>
-    <map>
-      <key>Comment</key>
-      <string>Period when changing stands in seconds</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <integer>20.0</integer>
     </map>
     <key>Blacklist.Settings</key>
     <map>
@@ -13140,6 +13239,17 @@
     <map>
       <key>Comment</key>
       <string>Enables DeedObject warning dialog</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>WarnFirstAO</key>
+    <map>
+      <key>Comment</key>
+      <string>Enables FirstAO warning dialog</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
