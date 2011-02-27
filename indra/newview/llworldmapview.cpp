@@ -1322,12 +1322,13 @@ void LLWorldMapView::drawAvatar(F32 x_pixels,
 								F32 dot_radius)
 {
 	const F32 HEIGHT_THRESHOLD = 7.f;
-	LLUIImagePtr dot_image = sAvatarSmallImage;
+	LLUIImagePtr dot_image = sAvatarLevelImage;
 	
 	if (relative_z == 16000.f) // Unknown altitude (0m or > 1020m)
 	{
-		F32 mag = color.length();
-		color=color*0.5f + LLColor4(mag, mag, mag)*0.25f;
+		//F32 mag = color.length();
+		//color=color*0.5f + LLColor4(mag, mag, mag)*0.25f;
+		dot_image = sAvatarSmallImage;
 	}
 	else if (relative_z < -HEIGHT_THRESHOLD) 
 	{
