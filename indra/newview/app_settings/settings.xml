@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 	
+  <key>ClientDefinitionsURL</key>
+  <map>
+    <key>Comment</key>
+	<string>Where to fetch updated client definitions from</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>String</string>
+    <key>Value</key>
+	<string>http://app.singularityviewer.org/client_definitions.xml</string>
+  </map>
+
   <key>LastSelectedGrid</key>
   <map>
     <key>Comment</key>
