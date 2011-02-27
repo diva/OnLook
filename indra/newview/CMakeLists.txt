@@ -93,7 +93,6 @@ set(viewer_SOURCE_FILES
     llagentlanguage.cpp
     llagentpilot.cpp
     llanimstatelabels.cpp
-    llao.cpp
     llappviewer.cpp
     llassetconverter.cpp
     llassetuploadresponders.cpp
@@ -559,7 +558,6 @@ set(viewer_HEADER_FILES
     llagentlanguage.h
     llagentpilot.h
     llanimstatelabels.h
-    llao.h
     llappearance.h
     llappviewer.h
     llassetconverter.h

@@ -139,9 +139,6 @@
 #include "llviewerjoystick.h"
 #include "llfollowcam.h"
 
-#include "llao.h"
-#include "llfollowcam.h"
-
 // [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
 #include "rlvhandler.h"
 #include "rlvinventory.h"
@@ -4995,12 +4992,8 @@ void LLAgent::requestStopMotion( LLMotion* motion )
 void LLAgent::onAnimStop(const LLUUID& id)
 {
 	// handle automatic state transitions (based on completion of animation playback)
-	if(LLAO::isStand(id))
+	if (id == ANIM_AGENT_STAND)
 	{
-		// <edit>
-		if(LLAO::isEnabled())
-			LLAO::mTimer->pause();//Timer only pauses if its not paused, check is inside function.
-		// </edit>
 		stopFidget();
 	}
 	else if (id == ANIM_AGENT_AWAY)

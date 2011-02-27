@@ -203,7 +203,6 @@
 //#include "llactivation.h"
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
 #include "ascentdaycyclemanager.h"
-#include "llao.h"
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
 // </edit>
@@ -983,9 +982,6 @@ bool idle_startup()
 
 		// Overwrite default user settings with user settings								 
 		LLAppViewer::instance()->loadSettingsFromDirectory("Account");
-
-		//User settings are loaded, get the AO settings - HgB
-		LLAO::refresh();
 
 		// Need to set the LastLogoff time here if we don't have one.  LastLogoff is used for "Recent Items" calculation
 		// and startup time is close enough if we don't have a real value.

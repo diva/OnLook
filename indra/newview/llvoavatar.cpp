@@ -96,7 +96,6 @@
 
 // <edit>
 #include "llfloaterexploreanimations.h"
-#include "llao.h"
 #include "llimagemetadatareader.h"
 // </edit>
 
@@ -2727,10 +2726,6 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		// trigger fidget anims
 		if (isAnyAnimationSignaled(AGENT_STAND_ANIMS, NUM_AGENT_STAND_ANIMS))
 		{
-			// <edit>
-			if(LLAO::isEnabled())
-				LLAO::mTimer->resume();//Timer only pauses if its not paused, check is inside function.
-			// </edit>
 			agent.fidget();
 		}
 	}
@@ -5787,81 +5782,16 @@ std::string LLVOAvatar::getIdleTime()
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 {
-	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	// <edit>
-	if(mIsSelf)
+	// [Ansariel Hiller]: Disable pesky hover up animation that changes
+	//                    hand and finger position and often breaks correct
+	//                    fit of prim nails, rings etc. when flying and
+	//                    using an AO.
+	if ("62c5de58-cb33-5743-3d07-9e4cd4352864" == id.getString() && gSavedSettings.getBOOL("DisableInternalFlyUpAnimation"))
 	{
-		if(LLAO::isEnabled())
-		{
-			std::string ao_id;
-			if (LLAO::isStand(id))
-			{
-				ao_id = "Stands";
-			}
-			else if (LLAO::isVoice(id))
-			{
-				ao_id = "Voices";
-			}
-			else
-			{
-				ao_id = id.asString();
-			}
-			if (LLAO::mAnimationOverrides[ao_id].size() > 0)
-			{
-				if (LLAO::mLastAnimation.notNull())
-				{
-					gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
-					stopMotion(LLAO::mLastAnimation, true);
-					llinfos << "Stopping old animation." << llendl;
-				}
-				std::string anim_name;
-				LLUUID new_anim = LLUUID::null;
-					
-				while (new_anim.isNull())
-				{
-					LLAO::mAnimationIndex++;
-					if (LLAO::mAnimationOverrides[ao_id].size() <= LLAO::mAnimationIndex)
-					{
-						LLAO::mAnimationIndex = 0;
-					}
-					anim_name = static_cast<const std::string&> (LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
-					new_anim = LLAO::getAssetIDByName(anim_name);
-					
-					if (new_anim.isNull())
-					{
-						LLChat chat;
-						chat.mSourceType = CHAT_SOURCE_SYSTEM;
-						chat.mText = llformat("Could not find animation %s, skipping and moving to next.", anim_name.c_str());
-						LLFloaterChat::addChat(chat);
-					}
-				}
-				llinfos << "Switching to anim #" << LLAO::mAnimationIndex << ": " << anim_name << "(UUID " << new_anim << ")" << llendl;
-				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_START);
-				startMotion(new_anim, time_offset);
-
-				//LLMotion*   motion = findMotion(new_anim);
-				
-				/*if (motion)
-				{
-					motion->setDeactivateCallback(&endAnimCallback, (void *)(new LLHandle<LLFloater>(self->getHandle())));
-				}*/
-				
-				LLAO::mLastAnimation = new_anim;
-			}
-			/*if(LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
-			{
-				// avoid infinite loops!
-				if( (id != LLAO::mOverrides[id])
-				 && (LLAO::mOverrides.find(LLAO::mOverrides[id]) == LLAO::mOverrides.end()) )
-				{
-					//llinfos << "AO: Replacing " << id.asString() << " with " << LLAO::mOverrides[id].asString() << llendl;
-					gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_START);
-					startMotion(LLAO::mOverrides[id], time_offset);
-				}
-			}*/
-		}
+		return TRUE;
 	}
-	// </edit>
+
+	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
 	// start special case female walk for female avatars
 	if (getSex() == SEX_FEMALE)
@@ -5881,36 +5811,6 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 		gAgent.setAFK();
 	}
 
-	if( id == ANIM_AGENT_BUSY ||
-		id == ANIM_AGENT_CROUCH ||
-		id == ANIM_AGENT_CROUCHWALK ||
-		id == ANIM_AGENT_FEMALE_WALK ||
-		id == ANIM_AGENT_FLY ||
-		id == ANIM_AGENT_FLYSLOW ||
-		id == ANIM_AGENT_HOVER ||
-		id == ANIM_AGENT_HOVER_DOWN ||
-		id == ANIM_AGENT_HOVER_UP ||
-		id == ANIM_AGENT_JUMP ||
-		id == ANIM_AGENT_LAND ||
-		id == ANIM_AGENT_PRE_JUMP ||
-		id == ANIM_AGENT_RUN ||
-		id == ANIM_AGENT_SHOUT ||
-		id == ANIM_AGENT_SIT ||
-		id == ANIM_AGENT_SIT_FEMALE ||
-		id == ANIM_AGENT_SIT_GENERIC ||
-		id == ANIM_AGENT_SIT_GROUND ||
-		id == ANIM_AGENT_SIT_GROUND_CONSTRAINED ||
-		id == ANIM_AGENT_SNAPSHOT ||
-		id == ANIM_AGENT_STAND ||
-		id == ANIM_AGENT_TURNLEFT ||
-		id == ANIM_AGENT_TURNRIGHT ||
-		id == ANIM_AGENT_TYPE ||
-		id == ANIM_AGENT_WALK ||
-		id == ANIM_AGENT_WHISPER ||
-		id == ANIM_AGENT_WHISPER
-	) 
-	mIdleTimer.reset();
-
 	return LLCharacter::startMotion(id, time_offset);
 }
 
@@ -5921,50 +5821,8 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 {
 	if (mIsSelf)
 	{
-		
-		// <edit>
-		if(LLAO::isEnabled())
-		{
-			std::string ao_id;
-			if (LLAO::isStand(id))
-			{
-				ao_id = "Stands";
-			}
-			else if (LLAO::isVoice(id))
-			{
-				ao_id = "Voices";
-			}
-			else
-			{
-				ao_id = id.asString();
-			}
-			if (LLAO::mAnimationOverrides[ao_id].size() > 0)
-			{
-				LLUUID new_anim = LLAO::getAssetIDByName(LLAO::mAnimationOverrides[ao_id][LLAO::mAnimationIndex]);
-				gAgent.sendAnimationRequest(new_anim, ANIM_REQUEST_STOP);
-				stopMotion(new_anim, stop_immediate);
-				LLAO::mLastAnimation.setNull();
-			}
-			/*if( (LLAO::mOverrides.find(id) != LLAO::mOverrides.end())
-			 && (id != LLAO::mOverrides[id]) )
-			{
-				gAgent.sendAnimationRequest(LLAO::mOverrides[id], ANIM_REQUEST_STOP);
-				stopMotion(LLAO::mOverrides[id], stop_immediate);
-			}*/
-		}
-		else //if this code ever works without crashing the viewer -HgB
-		{
-			if (!LLAO::mLastAnimation.isNull())
-			{
-				llinfos << "Stopped last animation automatically. May not have needed to be stopped yet." << llendl;
-				gAgent.sendAnimationRequest(LLAO::mLastAnimation, ANIM_REQUEST_STOP);
-				LLAO::mLastAnimation = LLUUID::null;
-			}
-		}
-		// </edit>
 		gAgent.onAnimStop(id);
 	}
-	
 
 	if (id == ANIM_AGENT_WALK)
 	{
@@ -5974,10 +5832,6 @@ BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 	{
 		LLCharacter::stopMotion(ANIM_AGENT_SIT_FEMALE, stop_immediate);
 	}
-	
-	if(id == ANIM_AGENT_AWAY ||
-		id == ANIM_AGENT_BUSY) 
-	mIdleTimer.reset();
 
 	return LLCharacter::stopMotion(id, stop_immediate);
 }

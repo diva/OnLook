@@ -244,7 +244,6 @@
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
 #include "llfloatermessagelog.h"
-#include "llao.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 // </edit>
@@ -440,7 +439,6 @@ void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
 void handle_open_message_log(void*);
-void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
 void handle_sounds_explorer(void*);
@@ -774,8 +772,6 @@ void init_menus()
 									NULL,
 									&menu_check_control,
 									(void*)"AO.Enabled"));
-	menu->append(new LLMenuItemCallGL(  "Edit AO...",  
-									&handle_edit_ao, NULL));
 	menu->append(new LLMenuItemCheckGL( "Nimble",
 										&menu_toggle_control,
 										NULL,
@@ -3616,11 +3612,6 @@ void handle_reopen_with_hex_editor(void*)
 void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
-}
-
-void handle_edit_ao(void*)
-{
-	LLFloaterAO::show();
 }
 
 void handle_local_assets(void*)
