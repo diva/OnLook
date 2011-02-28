@@ -142,6 +142,7 @@ void LLImageJ2C::openDSO()
 		fprintf(stderr, "error: %d, %s\n", rv, errbuf);
 		apr_dso_error(j2cimpl_dso_handle, errbuf, sizeof(errbuf));
 		fprintf(stderr, "dso-error: %d, %s\n", rv, errbuf);
+		fflush(stderr);
 #endif
 
 		if ( j2cimpl_dso_handle )
