@@ -42,7 +42,7 @@
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
 	     left="339" mouse_opaque="true" name="grids_combo_text" v_pad="0" width="120">
 		Grid:
 	</text>
@@ -56,7 +56,7 @@
 
 	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="54" drop_shadow_visible="true" follows="left|bottom"
-	     font="SansSerifSmall" h_pad="0" halign="left" height="16"
+	     font="SansSerif" h_pad="0" halign="left" height="16"
 	     left="475" mouse_opaque="true" name="start_location_text" v_pad="0" width="120">
 		Start Location:
 	</text>

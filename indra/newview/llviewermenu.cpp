@@ -867,6 +867,7 @@ void init_menus()
 	LLRect menuBarRect = gLoginMenuBarView->getRect();
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
+	menu->setCanTearOff(FALSE);
 	menu->append(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
 	gLoginMenuBarView->appendMenu(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
