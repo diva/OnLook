@@ -772,9 +772,11 @@ void LLFloater::snappedTo(const LLView* snap_view)
 	else
 	{
 		//RN: assume it's a floater as it must be a sibling to our parent floater
-		LLFloater* floaterp = (LLFloater*)snap_view;
-		
-		setSnapTarget(floaterp->getHandle());
+		const LLFloater* floaterp = dynamic_cast<const LLFloater*>(snap_view);
+		if (floaterp)
+		{
+			setSnapTarget(floaterp->getHandle());
+		}
 	}
 }
 
@@ -1760,41 +1762,50 @@ void LLFloaterView::reshapeFloater(S32 width, S32 height, BOOL called_from_paren
 			// dependents use same follow flags as their "dependee"
 			continue;
 		}
-		LLRect r = floaterp->getRect();
-
-		// Compute absolute distance from each edge of screen
-		S32 left_offset = llabs(r.mLeft - 0);
-		S32 right_offset = llabs(old_width - r.mRight);
-
-		S32 top_offset = llabs(old_height - r.mTop);
-		S32 bottom_offset = llabs(r.mBottom - 0);
 
 		// Make if follow the edge it is closest to
 		U32 follow_flags = 0x0;
 
-		if (left_offset < right_offset)
+		if (floaterp->isMinimized())
 		{
-			follow_flags |= FOLLOWS_LEFT;
+			follow_flags |= (FOLLOWS_LEFT | FOLLOWS_TOP);
 		}
 		else
 		{
-			follow_flags |= FOLLOWS_RIGHT;
-		}
+			LLRect r = floaterp->getRect();
 
-		// "No vertical adjustment" usually means that the bottom of the view
-		// has been pushed up or down.  Hence we want the floaters to follow
-		// the top.
-		if (!adjust_vertical)
-		{
-			follow_flags |= FOLLOWS_TOP;
-		}
-		else if (top_offset < bottom_offset)
-		{
-			follow_flags |= FOLLOWS_TOP;
-		}
-		else
-		{
-			follow_flags |= FOLLOWS_BOTTOM;
+			// Compute absolute distance from each edge of screen
+			S32 left_offset = llabs(r.mLeft - 0);
+			S32 right_offset = llabs(old_width - r.mRight);
+
+			S32 top_offset = llabs(old_height - r.mTop);
+			S32 bottom_offset = llabs(r.mBottom - 0);
+
+
+			if (left_offset < right_offset)
+			{
+				follow_flags |= FOLLOWS_LEFT;
+			}
+			else
+			{
+				follow_flags |= FOLLOWS_RIGHT;
+			}
+
+			// "No vertical adjustment" usually means that the bottom of the view
+			// has been pushed up or down.  Hence we want the floaters to follow
+			// the top.
+			if (!adjust_vertical)
+			{
+				follow_flags |= FOLLOWS_TOP;
+			}
+			else if (top_offset < bottom_offset)
+			{
+				follow_flags |= FOLLOWS_TOP;
+			}
+			else
+			{
+				follow_flags |= FOLLOWS_BOTTOM;
+			}
 		}
 
 		floaterp->setFollows(follow_flags);
@@ -2038,6 +2049,11 @@ void LLFloaterView::bringToFront(LLFloater* child, BOOL give_focus)
 	if (give_focus && !gFocusMgr.childHasKeyboardFocus(child))
 	{
 		child->setFocus(TRUE);
+		// floater did not take focus, so relinquish focus to world
+		if (!child->hasFocus())
+		{
+			gFocusMgr.setKeyboardFocus(NULL);
+		}
 	}
 }
 
@@ -2177,7 +2193,9 @@ void LLFloaterView::closeAllChildren(bool app_quitting)
 
 		// Attempt to close floater.  This will cause the "do you want to save"
 		// dialogs to appear.
-		if (floaterp->canClose() && !floaterp->isDead())
+		// Skip invisible floaters if we're not quitting (STORM-192).
+		if (floaterp->canClose() && !floaterp->isDead() &&
+			(app_quitting || floaterp->getVisible()))
 		{
 			floaterp->close(app_quitting);
 		}
@@ -2234,8 +2252,8 @@ void LLFloaterView::refresh()
 	// Constrain children to be entirely on the screen
 	for ( child_list_const_iter_t child_it = getChildList()->begin(); child_it != getChildList()->end(); ++child_it)
 	{
-		LLFloater* floaterp = (LLFloater*)*child_it;
-		if( floaterp->getVisible() )
+		LLFloater* floaterp = dynamic_cast<LLFloater*>(*child_it);
+		if (floaterp && floaterp->getVisible() )
 		{
 			// minimized floaters are kept fully onscreen
 			adjustToFitScreen(floaterp, !floaterp->isMinimized());
@@ -2255,7 +2273,7 @@ void LLFloaterView::adjustToFitScreen(LLFloater* floater, BOOL allow_partial_out
 	// convert to local coordinate frame
 	LLRect snap_rect_local = getLocalSnapRect();
 
-	if( floater->isResizable() )
+	if( floater->isResizable() && !floater->isMinimized() )
 	{
 		LLRect view_rect = floater->getRect();
 		S32 old_width = view_rect.getWidth();

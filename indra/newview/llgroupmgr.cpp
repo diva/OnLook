@@ -846,7 +846,8 @@ void LLGroupMgr::clearGroupData(const LLUUID& group_id)
 
 void LLGroupMgr::addObserver(LLGroupMgrObserver* observer) 
 { 
-	mObservers.insert(std::pair<LLUUID, LLGroupMgrObserver*>(observer->getID(), observer));
+	if( observer->getID() != LLUUID::null )
+		mObservers.insert(std::pair<LLUUID, LLGroupMgrObserver*>(observer->getID(), observer));
 }
 
 void LLGroupMgr::removeObserver(LLGroupMgrObserver* observer)
@@ -1193,8 +1194,8 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 				}
 				else
 				{
-					if (!rd) llwarns << "Received role data for unkown role " << role_id << " in group " << group_id << llendl;
-					if (!md) llwarns << "Received role data for unkown member " << member_id << " in group " << group_id << llendl;
+					if (!rd) llwarns << "Received role data for unknown role " << role_id << " in group " << group_id << llendl;
+					if (!md) llwarns << "Received role data for unknown member " << member_id << " in group " << group_id << llendl;
 				}
 			}
 		}
@@ -1402,11 +1403,17 @@ void LLGroupMgr::notifyObservers(LLGroupChange gc)
 {
 	for (group_map_t::iterator gi = mGroups.begin(); gi != mGroups.end(); ++gi)
 	{
+		LLUUID group_id = gi->first;
 		if (gi->second->mChanged)
 		{
+			// notify LLGroupMgrObserver
+			// Copy the map because observers may remove themselves on update
+			observer_multimap_t observers = mObservers;
+
 			// find all observers for this group id
-			observer_multimap_t::iterator oi = mObservers.find(gi->first);
-			for (; oi != mObservers.end(); ++oi)
+			observer_multimap_t::iterator oi = observers.lower_bound(group_id);
+			observer_multimap_t::iterator end = observers.upper_bound(group_id);
+			for (; oi != end; ++oi)
 			{
 				oi->second->changed(gc);
 			}
@@ -1751,11 +1758,13 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 	for (std::vector<LLUUID>::iterator it = member_ids.begin();
 		 it != member_ids.end(); ++it)
 	{
+		LLUUID& ejected_member_id = (*it);
+
 		// Can't use 'eject' to leave a group.
-		if ((*it) == gAgent.getID()) continue;
+		if (ejected_member_id == gAgent.getID()) continue;
 
 		// Make sure they are in the group, and we need the member data
-		LLGroupMgrGroupData::member_list_t::iterator mit = group_datap->mMembers.find(*it);
+		LLGroupMgrGroupData::member_list_t::iterator mit = group_datap->mMembers.find(ejected_member_id);
 		if (mit != group_datap->mMembers.end())
 		{
 			// Add them to the message
@@ -1771,7 +1780,7 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 			}
 			
 			msg->nextBlock("EjectData");
-			msg->addUUID("EjecteeID",(*it));
+			msg->addUUID("EjecteeID",ejected_member_id);
 
 			if (msg->isSendFull())
 			{
@@ -1779,17 +1788,23 @@ void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
 				start_message = true;
 			}
 
+			LLGroupMemberData* member_data = (*mit).second;
+
 			// Clean up groupmgr
-			for (LLGroupMemberData::role_list_t::iterator rit = (*mit).second->roleBegin();
-				 rit != (*mit).second->roleEnd(); ++rit)
+			for (LLGroupMemberData::role_list_t::iterator rit = member_data->roleBegin();
+				 rit != member_data->roleEnd(); ++rit)
 			{
-				if ((*rit).first.notNull())
+				if ((*rit).first.notNull() && (*rit).second!=0)
 				{
-					(*rit).second->removeMember(*it);
+					(*rit).second->removeMember(ejected_member_id);
 				}
 			}
-			delete (*mit).second;
-			group_datap->mMembers.erase(*it);
+			
+			group_datap->mMembers.erase(ejected_member_id);
+			
+			// member_data was introduced and is used here instead of (*mit).second to avoid crash because of invalid iterator
+			// It becomes invalid after line with erase above. EXT-4778
+			delete member_data;
 		}
 	}
 

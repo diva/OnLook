@@ -247,8 +247,13 @@ void LLView::sendChildToFront(LLView* child)
 {
 	if (child && child->getParent() == this) 
 	{
-		mChildList.remove( child );
-		mChildList.push_front(child);
+		// minor optimization, but more importantly,
+		//  won't temporarily create an empty list
+		if (child != mChildList.front())
+		{
+			mChildList.remove( child );
+			mChildList.push_front(child);
+		}
 	}
 }
 
@@ -256,8 +261,13 @@ void LLView::sendChildToBack(LLView* child)
 {
 	if (child && child->getParent() == this) 
 	{
-		mChildList.remove( child );
-		mChildList.push_back(child);
+		// minor optimization, but more importantly,
+		//  won't temporarily create an empty list
+		if (child != mChildList.back())
+		{
+			mChildList.remove( child );
+			mChildList.push_back(child);
+		}
 	}
 }
 
@@ -279,6 +289,10 @@ void LLView::moveChildToBackOfTabGroup(LLUICtrl* child)
 
 void LLView::addChild(LLView* child, S32 tab_group)
 {
+	if (!child)
+	{
+		return;
+	}
 	if (mParentView == child) 
 	{
 		llerrs << "Adding view " << child->getName() << " as child of itself" << llendl;
