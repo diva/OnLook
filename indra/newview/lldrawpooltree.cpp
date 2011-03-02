@@ -115,9 +115,12 @@ void LLDrawPoolTree::render(S32 pass)
 			 iter != mDrawFace.end(); iter++)
 		{
 			LLFace *face = *iter;
-			face->mVertexBuffer->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
-			face->mVertexBuffer->drawRange(LLRender::TRIANGLES, 0, face->mVertexBuffer->getRequestedVerts()-1, face->mVertexBuffer->getRequestedIndices(), 0); 
-			gPipeline.addTrianglesDrawn(face->mVertexBuffer->getRequestedIndices()/3);
+			if(face->mVertexBuffer.notNull())
+			{
+				face->mVertexBuffer->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
+				face->mVertexBuffer->drawRange(LLRender::TRIANGLES, 0, face->mVertexBuffer->getRequestedVerts()-1, face->mVertexBuffer->getRequestedIndices(), 0); 
+				gPipeline.addTrianglesDrawn(face->mVertexBuffer->getRequestedIndices());
+			}
 		}
 	}
 }
