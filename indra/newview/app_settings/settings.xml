@@ -6093,7 +6093,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>DejaVuSansCondensed.ttf</string>
+      <string>Ubuntu-R.ttf</string>
     </map>
     <key>FontSansSerifBundledFallback</key>
     <map>
@@ -6115,7 +6115,7 @@
       <key>Type</key>
       <string>String</string>
       <key>Value</key>
-      <string>DejaVuSansCondensed-Bold.ttf</string>
+      <string>Ubuntu-B.ttf</string>
     </map>
     <key>FontSansSerifFallback</key>
     <map>
@@ -6137,7 +6137,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>1.0</real>
+      <real>0.95</real>
     </map>
     <key>FontScreenDPI</key>
     <map>
@@ -6148,7 +6148,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>90.0</real>
+      <real>96.0</real>
     </map>
     <key>FontSizeHuge</key>
     <map>
