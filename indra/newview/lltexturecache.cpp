@@ -53,7 +53,7 @@
 
 //note: there is no good to define 1024 for TEXTURE_CACHE_ENTRY_SIZE while FIRST_PACKET_SIZE is 600 on sim side.
 const S32 TEXTURE_CACHE_ENTRY_SIZE = FIRST_PACKET_SIZE;//1024;
-const F32 TEXTURE_CACHE_PURGE_AMOUNT = .20f; // % amount to reduce the cache by when it exceeds its limit
+const S64 TEXTURE_PURGED_CACHE_SIZE = 80; // % amount of cache left after a purge.
 const F32 TEXTURE_CACHE_LRU_SIZE = .10f; // % amount for LRU list (low overhead to regenerate)
 
 class LLTextureCacheWorker : public LLWorkerClass
@@ -751,7 +751,7 @@ LLTextureCache::LLTextureCache(bool threaded)
 	  mTexturesSizeTotal(0),
 	  mDoPurge(FALSE)
 {
-	purgeTextures(false, true);
+	purgeTextureFilesTimeSliced(true);
 	clearDeleteList();
 	writeUpdatedEntries();
 }
@@ -836,17 +836,15 @@ std::string LLTextureCache::getTextureFileName(const LLUUID& id)
 BOOL LLTextureCache::isInCache(const LLUUID& id) 
 {
 	LLMutexLock lock(&mHeaderMutex);
-	id_map_t::const_iterator iter = mHeaderIDMap.find(id);
-
-	return (iter != mHeaderIDMap.end());
+	return (mHeaderIDMap.find(id) != mHeaderIDMap.end());
 }
-						
+
 //debug
 BOOL LLTextureCache::isInLocal(const LLUUID& id) 
 {
 	S32 local_size = 0;
 	std::string local_filename;
-	
+						
 	std::string filename = getLocalFileName(id);	
 	// Is it a JPEG2000 file? 
 			{
@@ -917,19 +915,13 @@ void LLTextureCache::purgeCache(ELLPath location)
 		if(LLFile::isdir(mTexturesDirName))
 		{
 			std::string file_name = gDirUtilp->getExpandedFilename(location, entries_filename);
-			if (LLAPRFile::isExist(file_name))
-			{
-				LLAPRFile::remove(file_name);
-			}
+			LLAPRFile::remove(file_name);
 
 			file_name = gDirUtilp->getExpandedFilename(location, cache_filename);
-			if (LLAPRFile::isExist(file_name))
-			{
-				LLAPRFile::remove(file_name);
-			}
+			LLAPRFile::remove(file_name);
 
 			purgeAllTextures(true);
-		}
+	}
 		mTexturesDirName = texture_dir;
 	}
 
@@ -1323,7 +1315,7 @@ void LLTextureCache::writeEntriesAndClose(const std::vector<Entry>& entries)
 			{
 				clearCorruptedCache(); //clear the cache.
 				return;
-		}
+			}
 		}
 		closeHeaderEntriesFile();
 	}
@@ -1555,22 +1547,16 @@ void LLTextureCache::purgeAllTextures(bool purge_directories)
 	llinfos << "The entire texture cache is cleared." << llendl;
 }
 
-void LLTextureCache::purgeTextures(bool validate, bool force)
+void LLTextureCache::purgeTextures(bool validate)
 {
-	static LLTimer timeout;
-	const S32 min_purge_count = 20;
-	const F32 delay_between_passes = 15.0f;
-	const F32 max_time_per_pass = 0.5f;
-	static F32 time_per_pass = 0.05f;
+	mDoPurge = FALSE;
 
-	if (!force && timeout.getElapsedTimeF32() <= delay_between_passes)
+	if (mReadOnly)
 	{
 		return;
 	}
-	mDoPurge = FALSE;
-	timeout.reset();
 
-	if (mReadOnly)
+	if (!validate && mTexturesSizeTotal < sCacheMaxTexturesSize)
 	{
 		return;
 	}
@@ -1583,8 +1569,6 @@ void LLTextureCache::purgeTextures(bool validate, bool force)
 	
 	LLMutexLock lock(&mHeaderMutex);
 
-	llinfos << "TEXTURE CACHE: Purging." << llendl;
-
 	// Read the entries list
 	std::vector<Entry> entries;
 	U32 num_entries = openAndReadEntries(entries);
@@ -1594,9 +1578,11 @@ void LLTextureCache::purgeTextures(bool validate, bool force)
 		return; // nothing to purge
 	}
 	
+	LL_INFOS("TextureCache") << "TEXTURE CACHE: Purging." << LL_ENDL;
+
 	// Use mTexturesSizeMap to collect UUIDs of textures with bodies
 	typedef std::set<std::pair<U32,S32> > time_idx_set_t;
-	std::set<std::pair<U32,S32> > time_idx_set;
+	time_idx_set_t time_idx_set;
 	for (size_map_t::iterator iter1 = mTexturesSizeMap.begin();
 		 iter1 != mTexturesSizeMap.end(); ++iter1)
 	{
@@ -1629,26 +1615,12 @@ void LLTextureCache::purgeTextures(bool validate, bool force)
 		LL_DEBUGS("TextureCache") << "TEXTURE CACHE: Validating: " << validate_idx << LL_ENDL;
 	}
 
-	F32 overhead = timeout.getElapsedTimeF32();
-	if (2.0f * overhead > time_per_pass)
-	{
-		time_per_pass = llmin(overhead, max_time_per_pass);
-	}
-	timeout.reset();
-
 	S64 cache_size = mTexturesSizeTotal;
-	S64 purged_cache_size = (sCacheMaxTexturesSize * (S64)((1.f - TEXTURE_CACHE_PURGE_AMOUNT) * 100.f)) / 100;
+	S64 purged_cache_size = (TEXTURE_PURGED_CACHE_SIZE * sCacheMaxTexturesSize) / (S64)100;
 	S32 purge_count = 0;
 	for (time_idx_set_t::iterator iter = time_idx_set.begin();
 		 iter != time_idx_set.end(); ++iter)
 	{
-		if (!force && !validate && purge_count >= min_purge_count && timeout.getElapsedTimeF32() > time_per_pass) 
-		{
-			LL_INFOS("TextureCache") << "Texture cache purge splitted to avoid long hiccup." << LL_ENDL;
-			mDoPurge = TRUE;
-			break;
-		}
-
 		S32 idx = iter->second;
 		bool purge_entry = false;
 		std::string filename = getTextureFileName(entries[idx].mID);
@@ -1680,76 +1652,101 @@ void LLTextureCache::purgeTextures(bool validate, bool force)
 		if (purge_entry)
 		{
 			purge_count++;
-			removeEntry(idx, entries[idx], filename);
+			mFilesToDelete.insert(std::make_pair(entries[idx].mID, filename));
 			cache_size -= entries[idx].mBodySize;
+			removeEntry(idx, entries[idx], filename, false); // remove the entry but not the file
 		}
 	}
 
-	mTimeLastFileDelete.reset();
-
 	LL_DEBUGS("TextureCache") << "TEXTURE CACHE: Writing Entries: " << num_entries << LL_ENDL;
 
-	F32 purge_time = timeout.getElapsedTimeF32();
-	timeout.reset();
 	writeEntriesAndClose(entries);
 	
-	overhead += timeout.getElapsedTimeF32();
-	time_per_pass = llmin(overhead, max_time_per_pass);
+	if (purge_count > 0)
+	{
+		writeEntriesAndClose(entries);
+
+		LL_INFOS("TextureCache") << "TEXTURE CACHE:"
+				<< " Purged: " << purge_count
+				<< " - Entries: " << num_entries
+				<< " - Cache size: " << mTexturesSizeTotal / (1024 * 1024) << " MB"
+				<< " - Files scheduled for deletion: " << mFilesToDelete.size()
+				<< LL_ENDL;
+	}
+	else
+	{
+		LL_INFOS("TextureCache") << "TEXTURE CACHE: nothing to purge." << LL_ENDL;
+	}
 
 		// *FIX:Mani - watchdog back on.
 		LLAppViewer::instance()->resumeMainloopTimeout();
 	
-	LL_INFOS("TextureCache") << "TEXTURE CACHE:"
-			<< " Purged: " << purge_count
-			<< " - Entries: " << num_entries
-			<< " - Cache size: " << mTexturesSizeTotal / (1024 * 1024) << " MB"
-			<< " - Time used for this purge: " << purge_time + overhead << "s (including " << overhead << "s of overhead)."
-			<< LL_ENDL;
-
-	timeout.reset();
+	mSlicedPurgeTimer.reset();
 }
 
-void LLTextureCache::purgeTextureFilesTimeSliced(BOOL force_all)
+void LLTextureCache::purgeTextureFilesTimeSliced(bool force)
 {
-	LLMutexLock lock(&mHeaderMutex);
+	const F32 delay_between_passes = 2.0f; // seconds
+	const F32 max_time_per_pass = 0.1f; // seconds
 
-	F32 delay_between_passes = 1.0f; // seconds
-	F32 max_time_per_pass = 0.1f; // seconds
-
-	if (!force_all && mTimeLastFileDelete.getElapsedTimeF32() <= delay_between_passes) 
+	if (!force && mSlicedPurgeTimer.getElapsedTimeF32() <= delay_between_passes) 
 	{
 		return;
 	}
 
-	LLTimer timer;
-	S32 howmany = 0;
-
 	if (!mFilesToDelete.empty())
 	{
-		LL_INFOS("TEXTURE CACHE") << "purging time sliced with " << mFilesToDelete.size() << " files scheduled for deletion" << llendl;
+		LL_INFOS("TextureCache") << "time sliced purging with " << mFilesToDelete.size()
+								 << " files scheduled for deletion" << LL_ENDL;
 
-		for (LLTextureCache::filename_list_t::iterator iter = mFilesToDelete.begin(); iter!=mFilesToDelete.end(); ) 
+		LLMutexLock lock(&mHeaderMutex);
+		mSlicedPurgeTimer.reset();
+		U32 purged = 0;
+		std::string filename;
+
+		for (LLTextureCache::purge_map_t::iterator iter = mFilesToDelete.begin(); iter != mFilesToDelete.end(); ) 
+		{
+			LLTextureCache::purge_map_t::iterator curiter = iter++;
+			// Only remove files for textures that have not been cached again
+			// since we selected them for removal !
+			if (mHeaderIDMap.find(curiter->first) == mHeaderIDMap.end())
+			{
+				filename = curiter->second;
+				LLAPRFile::remove(filename);
+			}
+			else
 		{	
-			LLTextureCache::filename_list_t::iterator iter2 = iter++;
-			LLAPRFile::remove(*iter2);
-			mFilesToDelete.erase(iter2);
-			howmany++;
+				LL_DEBUGS("TextureCache") << curiter->second
+										  << " selected for removal, but texture cached again since !"
+										  << LL_ENDL;
+			}
+			mFilesToDelete.erase(curiter);
+			purged++;
 
-			if (!force_all && timer.getElapsedTimeF32() > max_time_per_pass) 
+			if (!force && mSlicedPurgeTimer.getElapsedTimeF32() > max_time_per_pass) 
 			{
 				break;
 			}
 		}
-	}
 
-	if (!mFilesToDelete.empty())
+		if (mFilesToDelete.empty())
+		{
+			LL_INFOS("TextureCache") << "time sliced purge finished with " << purged
+									 << " files deleted in "
+									 << mSlicedPurgeTimer.getElapsedTimeF32()
+									 << "s" << LL_ENDL;
+		}
+		else
 	{
-		LL_INFOS("TEXTURE CACHE") << "purging time sliced with " << howmany << " files deleted (" 
-				<< mFilesToDelete.size() << " files left for next pass)" 
-			<< llendl;
+			LL_INFOS("TextureCache") << "time sliced purge: " << purged
+									 << " files deleted in "
+									 << mSlicedPurgeTimer.getElapsedTimeF32()
+									 << "s (" << mFilesToDelete.size()
+									 << " files left for next pass)" << LL_ENDL;
 	}
 
-	mTimeLastFileDelete.reset();
+		mSlicedPurgeTimer.reset();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1943,23 +1940,20 @@ void LLTextureCache::addCompleted(Responder* responder, bool success)
 //called after mHeaderMutex is locked.
 void LLTextureCache::removeCachedTexture(const LLUUID& id)
 {
-	if(mTexturesSizeMap.find(id) != mTexturesSizeMap.end())
+	if (mTexturesSizeMap.find(id) != mTexturesSizeMap.end())
 	{
 		mTexturesSizeTotal -= mTexturesSizeMap[id];
 		mTexturesSizeMap.erase(id);
 	}
 	mHeaderIDMap.erase(id);
 	std::string filename = getTextureFileName(id);
-	if (LLAPRFile::isExist(filename))
-	{
-		LLAPRFile::remove(filename);
-	}
+	LLAPRFile::remove(filename);
 }
 
 //called after mHeaderMutex is locked.
-void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename)
+void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename, bool remove_file)
 {
-	if(idx >= 0) //valid entry
+	if (idx >= 0) //valid entry
 		{
 			entry.mImageSize = -1;
 			entry.mBodySize = 0;
@@ -1970,7 +1964,7 @@ void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename)
 			mFreeList.insert(idx);
 		}
 
-	if (LLAPRFile::isExist(filename))
+	if (remove_file)
 	{
 		LLAPRFile::remove(filename);
 	}

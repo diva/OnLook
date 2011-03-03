@@ -119,6 +119,7 @@
 #include "llhudmanager.h"
 #include "llhttpclient.h"
 #include "llimagebmp.h"
+#include "llimview.h" // for gIMMgr
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"
@@ -1833,6 +1834,8 @@ bool idle_startup()
 		// OGPX : successful login path common to OGP and XML-RPC
 		if (successful_login)
 		{
+			gIMMgr->loadIgnoreGroup();
+
 			// JC: gesture loading done below, when we have an asset system
 			// in place.  Don't delete/clear user_credentials until then.
 

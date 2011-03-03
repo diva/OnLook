@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    floaterlocalassetbrowse.cpp
 	aoremotectrl.cpp
 	floaterao.cpp
     floatervoicelicense.cpp
@@ -533,6 +534,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    floaterlocalassetbrowse.h
     aoremotectrl.h
 	floaterao.h
     floatervoicelicense.h
@@ -1418,8 +1420,11 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLCOMMON_LIBRARIES}
     ${NDOF_LIBRARY}
     ${viewer_LIBRARIES}
+    ${BOOST_FILESYSTEM_LIBRARY}
     ${BOOST_PROGRAM_OPTIONS_LIBRARY}
     ${BOOST_REGEX_LIBRARY}
+    ${BOOST_SIGNALS_LIBRARY}
+    ${BOOST_SYSTEM_LIBRARY}
     ${DBUSGLIB_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FMODWRAPPER_LIBRARY}

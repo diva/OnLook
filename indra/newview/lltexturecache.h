@@ -151,8 +151,8 @@ private:
 	void readHeaderCache();
 	void clearCorruptedCache();
 	void purgeAllTextures(bool purge_directories);
-	void purgeTextures(bool validate, bool force = false);
-	void purgeTextureFilesTimeSliced(BOOL force_all = FALSE);	// VWR-3878 - NB
+	void purgeTextures(bool validate);
+	void purgeTextureFilesTimeSliced(bool force = false);
 	LLAPRFile* openHeaderEntriesFile(bool readonly, S32 offset);
 	void closeHeaderEntriesFile();
 	void readEntriesHeader();
@@ -164,7 +164,7 @@ private:
 	void writeEntriesAndClose(const std::vector<Entry>& entries);
 	void readEntryFromHeaderImmediately(S32& idx, Entry& entry) ;
 	void writeEntryToHeaderImmediately(S32& idx, Entry& entry, bool write_header = false) ;
-	void removeEntry(S32 idx, Entry& entry, std::string& filename);
+	void removeEntry(S32 idx, Entry& entry, std::string& filename, bool remove_file = true);
 	void removeCachedTexture(const LLUUID& id) ;
 	S32 getHeaderCacheEntry(const LLUUID& id, Entry& entry);
 	S32 setHeaderCacheEntry(const LLUUID& id, Entry& entry, S32 imagesize, S32 datasize);
@@ -190,9 +190,10 @@ private:
 	typedef std::vector<std::pair<LLPointer<Responder>, bool> > responder_list_t;
 	responder_list_t mCompletedList;
 	
-	typedef std::list<std::string> filename_list_t;
-	filename_list_t	mFilesToDelete;
-	LLTimer mTimeLastFileDelete;
+	typedef std::map<LLUUID, std::string> purge_map_t;
+	purge_map_t mFilesToDelete;
+	LLTimer mSlicedPurgeTimer;
+
 	BOOL mReadOnly;
 	
 	// HEADERS (Include first mip)
