@@ -267,7 +267,8 @@ public:
 		BUILT			= 0x08000000,
 		FORCE_INVISIBLE = 0x10000000, // stay invis until CLEAR_INVISIBLE is set (set of orphaned)
 		CLEAR_INVISIBLE = 0x20000000, // clear FORCE_INVISIBLE next draw frame
-		REBUILD_SHADOW =  0x40000000
+		REBUILD_SHADOW =  0x40000000,
+		HAS_ALPHA		= 0x80000000,
 	} EDrawableFlags;
 
 	LLXformMatrix       mXform;
@@ -314,8 +315,20 @@ private:
 
 inline LLFace* LLDrawable::getFace(const S32 i) const
 {
-	llassert((U32)i < mFaces.size());
-	llassert(mFaces[i]);
+	//switch these asserts to llerrs -- davep
+	//llassert((U32)i < mFaces.size());
+	//llassert(mFaces[i]);
+
+	if ((U32) i >= mFaces.size())
+	{
+		llerrs << "Invalid face index." << llendl;
+	}
+
+	if (!mFaces[i])
+	{
+		llerrs << "Null face found." << llendl;
+	}
+	
 	return mFaces[i];
 }
 

@@ -125,7 +125,8 @@ void LLDrawPoolAvatar::prerender()
 	
 	if (sShaderLevel > 0)
 	{
-		sBufferUsage = GL_STATIC_DRAW_ARB;
+		sBufferUsage = GL_DYNAMIC_DRAW_ARB;
+		//sBufferUsage = GL_STATIC_DRAW_ARB;
 	}
 	else
 	{
@@ -861,8 +862,8 @@ LLColor3 LLDrawPoolAvatar::getDebugColor() const
 
 LLVertexBufferAvatar::LLVertexBufferAvatar()
 : LLVertexBuffer(sDataMask, 
-	LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_AVATAR) > 0 ?	
-	GL_DYNAMIC_DRAW_ARB : 
+	//LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_AVATAR) > 0 ?	
+	//GL_DYNAMIC_DRAW_ARB : 
 	GL_STREAM_DRAW_ARB)
 {
 
