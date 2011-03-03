@@ -143,6 +143,7 @@ public:
 
 	//for volumes
 	void updateRebuildFlags();
+	bool canRenderAsMask(); // logic helper
 	BOOL getGeometryVolume(const LLVolume& volume,
 						const S32 &f,
 						const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,

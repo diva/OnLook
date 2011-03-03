@@ -170,11 +170,13 @@ void LLToolMgr::setCurrentTool( LLTool* tool )
 
 	mBaseTool = tool;
 	updateToolStatus();
+
+	mSavedTool = NULL;
 }
 
 LLTool* LLToolMgr::getCurrentTool()
 {
-	MASK override_mask = gKeyboard->currentMask(TRUE);
+	MASK override_mask = gKeyboard ? gKeyboard->currentMask(TRUE) : 0;
 
 	LLTool* cur_tool = NULL;
 	// always use transient tools if available

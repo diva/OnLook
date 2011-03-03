@@ -693,6 +693,8 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 				pos += volume->getRegion()->getOriginAgent();
 			}
 
+			if (isState(LLDrawable::HAS_ALPHA))
+			{
 			for (S32 i = 0; i < getNumFaces(); i++)
 			{
 				LLFace* facep = getFace(i);
@@ -707,6 +709,7 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 					}
 					facep->mDistance = v * camera.getAtAxis();
 				}
+			}
 			}
 		}
 		else
@@ -1239,7 +1242,9 @@ void LLSpatialBridge::setVisible(LLCamera& camera_in, std::vector<LLDrawable*>* 
 		(camera_in.AABBInFrustumNoFarClip(center, size) && 
 		AABBSphereIntersect(mExtents[0], mExtents[1], camera_in.getOrigin(), camera_in.mFrustumCornerDist)))
 	{
-		if (!LLPipeline::sImpostorRender && LLPipeline::calcPixelArea(center, size, camera_in) < FORCE_INVISIBLE_AREA)
+		if (!LLPipeline::sImpostorRender &&
+			!LLPipeline::sShadowRender && 
+			LLPipeline::calcPixelArea(center, size, camera_in) < FORCE_INVISIBLE_AREA)
 		{
 			return;
 		}

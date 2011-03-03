@@ -110,6 +110,10 @@ void LLVOVolume::initClass()
 {
 }
 
+// static
+void LLVOVolume::cleanupClass()
+{
+}
 
 U32 LLVOVolume::processUpdateMessage(LLMessageSystem *mesgsys,
 										  void **user_data,
@@ -415,6 +419,26 @@ void LLVOVolume::updateTextures()
 	}
 }
 
+BOOL LLVOVolume::isVisible() const 
+{
+	if(mDrawable.notNull() && mDrawable->isVisible())
+	{
+		return TRUE ;
+	}
+
+	if(isAttachment())
+	{
+		LLViewerObject* objp = (LLViewerObject*)getParent() ;
+		while(objp && !objp->isAvatar())
+		{
+			objp = (LLViewerObject*)objp->getParent() ;
+		}
+
+		return objp && objp->mDrawable.notNull() && objp->mDrawable->isVisible() ;
+	}
+
+	return FALSE ;
+}
 void LLVOVolume::updateTextureVirtualSize()
 {
 	// Update the pixel area of all faces
@@ -938,7 +962,7 @@ BOOL LLVOVolume::setParent(LLViewerObject* parent)
 	if (parent != getParent())
 	{
 		ret = LLViewerObject::setParent(parent);
-		if (mDrawable)
+		if (ret && mDrawable)
 		{
 			gPipeline.markMoved(mDrawable);
 			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
@@ -1778,14 +1802,7 @@ void LLVOVolume::updateRadius()
 
 BOOL LLVOVolume::isAttachment() const
 {
-	if (mState == 0)
-	{
-		return FALSE;
-	}
-	else
-	{
-		return TRUE;
-	}
+	return mState != 0 ;
 }
 
 BOOL LLVOVolume::isHUDAttachment() const
@@ -1863,9 +1880,7 @@ F32 LLVOVolume::getBinRadius()
 		{
 			LLFace* face = mDrawable->getFace(i);
 			if (face->getPoolType() == LLDrawPool::POOL_ALPHA &&
-				(!LLPipeline::sFastAlpha || 
-				face->getFaceColor().mV[3] != 1.f ||
-				!face->getTexture()->getIsAlphaMask()))
+			    !face->canRenderAsMask())
 			{
 				alpha_wrap = TRUE;
 				break;
@@ -2057,9 +2072,9 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 			
 			if (face_hit >= 0 && mDrawable->getNumFaces() > face_hit)
 			{
-				LLFace* face = mDrawable->getFace(face_hit);
+				LLFace* face = mDrawable->getFace(face_hit);				
 
-				if (pick_transparent || !face->getTexture() || face->getTexture()->getMask(face->surfaceToTexture(tc, p, n)))
+				if (pick_transparent || !face->getTexture() || !face->getTexture()->getHasGLTexture() || face->getTexture()->getMask(face->surfaceToTexture(tc, p, n)))
 				{
 					v_end = p;
 					if (face_hitp != NULL)
@@ -2141,7 +2156,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	const LLViewerObject* pObj = facep->getViewerObject();
 	if ( (pObj->isSelected() && gHideSelectedObjects) && 
 		 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) )
-// [/RVLa:KB]
+// [/RLVa:KB]
 	{
 		return;
 	}
@@ -2151,9 +2166,9 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 
 	S32 idx = draw_vec.size()-1;
 
-
-	BOOL fullbright = (type == LLRenderPass::PASS_FULLBRIGHT ||
-					  type == LLRenderPass::PASS_ALPHA) ? facep->isState(LLFace::FULLBRIGHT) : FALSE;
+	BOOL fullbright = (type == LLRenderPass::PASS_FULLBRIGHT) ||
+		(type == LLRenderPass::PASS_INVISIBLE) ||
+		(type == LLRenderPass::PASS_ALPHA && facep->isState(LLFace::FULLBRIGHT));
 
 	const LLMatrix4* tex_mat = NULL;
 	if (facep->isState(LLFace::TEXTURE_ANIM) && facep->getVirtualSize() > MIN_TEX_ANIM_SIZE)
@@ -2309,6 +2324,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		vobj->updateTextureVirtualSize();
 		vobj->preRebuild();
 
+		drawablep->clearState(LLDrawable::HAS_ALPHA);
+
 		//for each face
 		for (S32 i = 0; i < drawablep->getNumFaces(); i++)
 		{
@@ -2316,7 +2333,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 			drawablep->updateFaceSize(i);
 			LLFace* facep = drawablep->getFace(i);
 
-			if (cur_total > max_total)
+			if (cur_total > max_total || facep->getIndicesCount() <= 0 || facep->getGeomCount() <= 0)
 			{
 				facep->mVertexBuffer = NULL;
 				facep->mLastVertexBuffer = NULL;
@@ -2369,14 +2386,13 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 
 				if (type == LLDrawPool::POOL_ALPHA)
 				{
-					if (LLPipeline::sFastAlpha &&
-						(te->getColor().mV[VW] == 1.0f) &&
-						facep->getTexture()->getIsAlphaMask())
+					if (facep->canRenderAsMask())
 					{ //can be treated as alpha mask
 						simple_faces.push_back(facep);
 					}
 					else
 					{
+						drawablep->setState(LLDrawable::HAS_ALPHA);
 						alpha_faces.push_back(facep);
 					}
 				}
@@ -2474,8 +2490,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 {
 	static int warningsCount = 20;
-
-	if (group->isState(LLSpatialGroup::MESH_DIRTY))
+	if (group && group->isState(LLSpatialGroup::MESH_DIRTY) && !group->isState(LLSpatialGroup::GEOM_DIRTY))
 	{
 		S32 num_mapped_vertex_buffer = LLVertexBuffer::sMappedCount ;
 
@@ -2703,6 +2718,11 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 			BOOL force_simple = facep->mPixelArea < FORCE_SIMPLE_RENDER_AREA;
 			BOOL fullbright = facep->isState(LLFace::FULLBRIGHT);
+			if ((mask & LLVertexBuffer::MAP_NORMAL) == 0)
+			{ //paranoia check to make sure GL doesn't try to read non-existant normals
+				fullbright = TRUE;
+			}
+
 			const LLTextureEntry* te = facep->getTextureEntry();
 
 			BOOL is_alpha = facep->getPoolType() == LLDrawPool::POOL_ALPHA ? TRUE : FALSE;
@@ -2710,9 +2730,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			if (is_alpha)
 			{
 				// can we safely treat this as an alpha mask?
-				if (LLPipeline::sFastAlpha &&
-				    (te->getColor().mV[VW] == 1.0f) &&
-				    facep->getTexture()->getIsAlphaMask())
+				if (facep->canRenderAsMask())
 				{
 					if (te->getFullbright())
 					{

@@ -222,7 +222,7 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 
 	mPositionRegion = LLVector3(0.f, 0.f, 0.f);
 
-	if(!is_global)
+	if (!is_global && mRegionp)
 	{
 		mPositionAgent = mRegionp->getOriginAgent();
 	}
@@ -464,6 +464,7 @@ void LLViewerObject::cleanupVOClasses()
 	LLVOWater::cleanupClass();
 	LLVOTree::cleanupClass();
 	LLVOAvatar::cleanupClass();
+	LLVOVolume::cleanupClass();
 }
 
 // Replaces all name value pairs with data from \n delimited list
@@ -559,7 +560,11 @@ void LLViewerObject::removeChild(LLViewerObject *childp)
 			}
 
 			mChildList.erase(i);
-			childp->setParent(NULL);			
+
+			if(childp->getParent() == this)
+			{
+				childp->setParent(NULL);			
+			}
 			break;
 		}
 	}
@@ -704,7 +709,24 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	// Coordinates of objects on simulators are region-local.
 	U64 region_handle;
 	mesgsys->getU64Fast(_PREHASH_RegionData, _PREHASH_RegionHandle, region_handle);
-	mRegionp = LLWorld::getInstance()->getRegionFromHandle(region_handle);
+	
+	{
+		LLViewerRegion* regionp = LLWorld::getInstance()->getRegionFromHandle(region_handle);
+		if(regionp != mRegionp && regionp && mRegionp)//region cross
+		{
+			//this is the redundant position and region update, but it is necessary in case the viewer misses the following 
+			//position and region update messages from sim.
+			//this redundant update should not cause any problems.
+			LLVector3 delta_pos =  mRegionp->getOriginAgent() - regionp->getOriginAgent();
+			setPositionParent(getPosition() + delta_pos); //update to the new region position immediately.
+			setRegion(regionp) ; //change the region.
+		}
+		else
+		{
+			mRegionp = regionp ;
+		}
+	}	
+	
 	if (!mRegionp)
 	{
 		U32 x, y;
@@ -2807,22 +2829,23 @@ void LLViewerObject::setPixelAreaAndAngle(LLAgent &agent)
 	// I don't think there's a better way to do this without calculating distance per-poly
 	F32 range = sqrt(dx*dx + dy*dy + dz*dz) - min_scale/2;
 
+	LLViewerCamera* camera = LLViewerCamera::getInstance();
 	if (range < 0.001f || isHUDAttachment())		// range == zero
 	{
 		mAppAngle = 180.f;
-		mPixelArea = (F32)LLViewerCamera::getInstance()->getScreenPixelArea();
+		mPixelArea = (F32)camera->getScreenPixelArea();
 	}
 	else
 	{
 		mAppAngle = (F32) atan2( max_scale, range) * RAD_TO_DEG;
 
-		F32 pixels_per_meter = LLViewerCamera::getInstance()->getPixelMeterRatio() / range;
+		F32 pixels_per_meter = camera->getPixelMeterRatio() / range;
 
 		mPixelArea = (pixels_per_meter * max_scale) * (pixels_per_meter * mid_scale);
-		if (mPixelArea > LLViewerCamera::getInstance()->getScreenPixelArea())
+		if (mPixelArea > camera->getScreenPixelArea())
 		{
 			mAppAngle = 180.f;
-			mPixelArea = (F32)LLViewerCamera::getInstance()->getScreenPixelArea();
+			mPixelArea = (F32)camera->getScreenPixelArea();
 		}
 	}
 }
@@ -4040,9 +4063,15 @@ LLBBox LLViewerObject::getBoundingBoxAgent() const
 {
 	LLVector3 position_agent;
 	LLQuaternion rot;
+	LLViewerObject* avatar_parent = NULL;
 	LLViewerObject* root_edit = (LLViewerObject*)getRootEdit();
-	LLViewerObject* avatar_parent = (LLViewerObject*)root_edit->getParent();
-	if (avatar_parent && avatar_parent->isAvatar() && root_edit->mDrawable.notNull())
+	if (root_edit)
+	{
+		avatar_parent = (LLViewerObject*)root_edit->getParent();
+	}
+	
+	if (avatar_parent && avatar_parent->isAvatar() &&
+		root_edit && root_edit->mDrawable.notNull() && root_edit->mDrawable->getXform()->getParent())
 	{
 		LLXform* parent_xform = root_edit->mDrawable->getXform()->getParent();
 		position_agent = (getPositionEdit() * parent_xform->getWorldRotation()) + parent_xform->getWorldPosition();
@@ -4940,7 +4969,11 @@ void LLViewerObject::setIncludeInSearch(bool include_in_search)
 
 void LLViewerObject::setRegion(LLViewerRegion *regionp)
 {
-	llassert(regionp);
+	if (!regionp)
+	{
+		llwarns << "viewer object set region to NULL" << llendl;
+	}
+	
 	mLatestRecvPacketID = 0;
 	mRegionp = regionp;
 
