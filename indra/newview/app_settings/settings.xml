@@ -9,6 +9,23 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>FloaterLocalbitmapbrowserRect</key>
+  <map>
+    <key>Comment</key>
+    <string>LOLRectangle</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Rect</string>
+    <key>Value</key>
+    <array>
+      <integer>0</integer>
+      <integer>400</integer>
+      <integer>400</integer>
+      <integer>0</integer>
+    </array>
+  </map>
+
   <!-- Begin: AO-->
 
   <key>ShowAOSitPopup</key>
@@ -6170,7 +6187,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>12.0</real>
+      <real>11.5</real>
     </map>
     <key>FontSizeMedium</key>
     <map>
@@ -6181,7 +6198,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>10.0</real>
+      <real>9.5</real>
     </map>
     <key>FontSizeMonospace</key>
     <map>
@@ -6192,7 +6209,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>8.1</real>
+      <real>9.0</real>
     </map>
     <key>FontSizeSmall</key>
     <map>
@@ -6203,7 +6220,7 @@
       <key>Type</key>
       <string>F32</string>
       <key>Value</key>
-      <real>9.0</real>
+      <real>8.5</real>
     </map>
     <key>ForceNotecardDragCargoPermissive</key>
     <map>
