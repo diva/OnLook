@@ -103,7 +103,12 @@ LLPanelNetwork::~LLPanelNetwork()
 
 void LLPanelNetwork::apply()
 {
-	gSavedSettings.setU32("CacheSize", childGetValue("cache_size").asInteger());
+	U32 cache_size = (U32)childGetValue("cache_size").asInteger();
+	if (gSavedSettings.getU32("CacheSize") != cache_size)
+	{
+		onClickClearCache(this);
+		gSavedSettings.setU32("CacheSize", cache_size);
+	}
 	gSavedSettings.setF32("ThrottleBandwidthKBPS", childGetValue("max_bandwidth").asReal());
 	gSavedSettings.setBOOL("ConnectionPortEnabled", childGetValue("connection_port_enabled"));
 	gSavedSettings.setU32("ConnectionPort", childGetValue("connection_port").asInteger());
