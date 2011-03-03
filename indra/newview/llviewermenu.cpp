@@ -244,7 +244,6 @@
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
 #include "llfloatermessagelog.h"
-#include "llao.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 // </edit>
@@ -252,6 +251,7 @@
 #include "scriptcounter.h"
 #include "llfloaterdisplayname.h"
 #include "llavatarnamecache.h"
+#include "floaterao.h"
 
 #include "hippogridmanager.h"
 
@@ -426,13 +426,46 @@ void handle_leave_god_mode(void*);
 // <edit>
 void handle_fake_away_status(void*);
 void handle_area_search(void*);
-void handle_pose_stand_ltao(void*);
-void handle_pose_stand_ltah(void*);
-void handle_pose_stand_ltad(void*);
-void handle_pose_stand_loau(void*);
-void handle_pose_stand_loao(void*);
-void handle_pose_stand_lhao(void*);
-void handle_pose_stand_stop(void*);
+
+// <dogmode> for pose stand
+LLUUID current_pose = LLUUID::null;
+
+void set_current_pose(std::string anim)
+{
+	if (current_pose == LLUUID::null)
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 7.5);
+
+	gAgent.sendAgentSetAppearance();
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+	current_pose.set(anim);
+	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
+}
+void handle_pose_stand(void*)
+{
+	set_current_pose("038fcec9-5ebd-8a8e-0e2e-6e71a0a1ac53");
+}
+void handle_pose_stand_stop(void*)
+{
+	if (current_pose != LLUUID::null)
+	{
+		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 7.5);
+		gAgent.sendAgentSetAppearance();
+		gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
+		current_pose = LLUUID::null;
+	}
+}
+
+void handle_toggle_pose(void* userdata) {
+	if(current_pose.isNull())
+		handle_pose_stand(userdata);
+	else
+		handle_pose_stand_stop(userdata);
+}
+
+BOOL handle_check_pose(void* userdata) {
+	return current_pose.notNull();
+}
+
 
 void handle_force_ground_sit(void*);
 void handle_phantom_avatar(void*);
@@ -569,9 +602,6 @@ BOOL enable_detach(void*);
 BOOL enable_region_owner(void*);
 void menu_toggle_attached_lights(void* user_data);
 void menu_toggle_attached_particles(void* user_data);
-
-// <dogmode> for pose stand
-LLUUID current_pose = LLUUID::null;
 
 class LLMenuParcelObserver : public LLParcelObserver
 {
@@ -769,12 +799,7 @@ void init_menus()
 	menu->append(new LLMenuItemCallGL(  "Force Ground Sit", &handle_force_ground_sit, NULL));
 	menu->append(new LLMenuItemCallGL(  "Phantom Avatar", &handle_phantom_avatar, NULL));
 	menu->appendSeparator();
-	menu->append(new LLMenuItemCheckGL( "Enable AO",
-									&menu_toggle_control,
-									NULL,
-									&menu_check_control,
-									(void*)"AO.Enabled"));
-	menu->append(new LLMenuItemCallGL(  "Edit AO...",  
+	menu->append(new LLMenuItemCallGL( "Animation Override...",
 									&handle_edit_ao, NULL));
 	menu->append(new LLMenuItemCheckGL( "Nimble",
 										&menu_toggle_control,
@@ -799,7 +824,7 @@ void init_menus()
 	
 	// <dogmode>
 	// Add in the pose stand -------------------------------------------
-	LLMenuGL* sub = new LLMenuGL("Pose Stand...");
+	/*LLMenuGL* sub = new LLMenuGL("Pose Stand...");
 	menu->appendMenu(sub);
 
 	sub->append(new LLMenuItemCallGL(  "Legs Together Arms Out", &handle_pose_stand_ltao, NULL));
@@ -809,7 +834,9 @@ void init_menus()
 	sub->append(new LLMenuItemCallGL(  "Legs Out Arms Out", &handle_pose_stand_loao, NULL));
 	sub->append(new LLMenuItemCallGL(  "Legs Half Arms Out", &handle_pose_stand_lhao, NULL));
 	sub->append(new LLMenuItemCallGL(  "Stop Pose Stand", &handle_pose_stand_stop, NULL));
-	// </dogmode> ------------------------------------------------------
+	// </dogmode> ------------------------------------------------------*/
+	
+	menu->append(new LLMenuItemCheckGL("Pose Stand",&handle_toggle_pose, NULL, &handle_check_pose, NULL));
 
 	//these should always be last in a sub menu
 	menu->createJumpKeys();
@@ -840,6 +867,7 @@ void init_menus()
 	LLRect menuBarRect = gLoginMenuBarView->getRect();
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
+	menu->setCanTearOff(FALSE);
 	menu->append(new LLMenuItemCallGL("Debug Settings...", LLFloaterSettingsDebug::show, NULL, NULL));
 	gLoginMenuBarView->appendMenu(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
@@ -3620,7 +3648,7 @@ void handle_open_message_log(void*)
 
 void handle_edit_ao(void*)
 {
-	LLFloaterAO::show();
+	LLFloaterAO::show(NULL);
 }
 
 void handle_local_assets(void*)
@@ -3654,56 +3682,6 @@ void handle_close_all_notifications(void*)
 	}
 }
 
-// <dogmode>
-// The following animations were made by Charley Levenque and are
-// not public property or free to use via UUID. When replicating 
-// this code, please supply your own animations.
-
-void set_current_pose(std::string anim)
-{
-	if (current_pose == LLUUID::null)
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") + 7.5);
-
-	gAgent.sendAgentSetAppearance();
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-	current_pose.set(anim);
-	gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_START);
-}
-void handle_pose_stand_ltao(void*)
-{
-	set_current_pose("6c082c7b-f70e-9da0-0451-54793f869ff4");
-}
-void handle_pose_stand_ltah(void*)
-{
-	set_current_pose("45e59c14-913b-c58c-2a55-c0a5c1eeef53");
-}
-void handle_pose_stand_ltad(void*)
-{
-	set_current_pose("421d6bb4-94a9-3c42-4593-f2bc1f6a26e6");
-}
-void handle_pose_stand_loau(void*)
-{
-	set_current_pose("8b3bb239-d610-1c0f-4d1a-69d29bc17e2c");
-}
-void handle_pose_stand_loao(void*)
-{
-	set_current_pose("4d70e328-48b6-dc6a-0be1-85dd6b333e81");
-}
-void handle_pose_stand_lhao(void*)
-{
-	set_current_pose("f088eaf0-f1c9-8cf1-99c8-09df96bb13ae");
-}
-void handle_pose_stand_stop(void*)
-{
-	if (current_pose != LLUUID::null)
-	{
-		gSavedSettings.setF32("AscentAvatarZModifier", gSavedSettings.getF32("AscentAvatarZModifier") - 7.5);
-		gAgent.sendAgentSetAppearance();
-		gAgent.sendAnimationRequest(current_pose, ANIM_REQUEST_STOP);
-		current_pose = LLUUID::null;
-	}
-}
-// </dogmode> ---------------------------------------------------
 void handle_area_search(void*)
 {
 	JCFloaterAreaSearch::toggle();

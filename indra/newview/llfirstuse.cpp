@@ -204,6 +204,17 @@ void LLFirstUse::useAttach()
 }
 
 // static
+void LLFirstUse::useAO()
+{
+	if (gSavedSettings.getWarning("FirstAO"))
+	{
+		gSavedSettings.setWarning("FirstAO", FALSE);
+
+		LLNotifications::instance().add("FirstAO");
+	}
+}
+
+// static
 void LLFirstUse::useAppearance()
 {
 	if (gSavedSettings.getWarning("FirstAppearance"))

@@ -64,6 +64,8 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+	aoremotectrl.cpp
+	floaterao.cpp
     floatervoicelicense.cpp
     cofmgr.cpp
 	ascentdaycyclemanager.cpp
@@ -93,7 +95,6 @@ set(viewer_SOURCE_FILES
     llagentlanguage.cpp
     llagentpilot.cpp
     llanimstatelabels.cpp
-    llao.cpp
     llappviewer.cpp
     llassetconverter.cpp
     llassetuploadresponders.cpp
@@ -532,6 +533,8 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    aoremotectrl.h
+	floaterao.h
     floatervoicelicense.h
 	cofmgr.h
 	ascentdaycyclemanager.h
@@ -559,7 +562,6 @@ set(viewer_HEADER_FILES
     llagentlanguage.h
     llagentpilot.h
     llanimstatelabels.h
-    llao.h
     llappearance.h
     llappviewer.h
     llassetconverter.h

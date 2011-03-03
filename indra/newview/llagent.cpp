@@ -67,6 +67,7 @@
 #include "llface.h"
 #include "llfirstuse.h"
 #include "llfloater.h"
+#include "floaterao.h"
 #include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"
 #include "llfloaterbuildoptions.h"
@@ -137,9 +138,6 @@
 #include "llviewercontrol.h"
 #include "llappviewer.h"
 #include "llviewerjoystick.h"
-#include "llfollowcam.h"
-
-#include "llao.h"
 #include "llfollowcam.h"
 
 // [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
@@ -4073,6 +4071,7 @@ void LLAgent::changeCameraToMouselook(BOOL animate)
 	if( mCameraMode != CAMERA_MODE_MOUSELOOK )
 	{
 		gFocusMgr.setKeyboardFocus( NULL );
+		if (gSavedSettings.getBOOL("AONoStandsInMouselook"))	LLFloaterAO::stopMotion(LLFloaterAO::getCurrentStandId(), FALSE,TRUE);
 		
 		mLastCameraMode = mCameraMode;
 		mCameraMode = CAMERA_MODE_MOUSELOOK;
@@ -4995,12 +4994,8 @@ void LLAgent::requestStopMotion( LLMotion* motion )
 void LLAgent::onAnimStop(const LLUUID& id)
 {
 	// handle automatic state transitions (based on completion of animation playback)
-	if(LLAO::isStand(id))
+	if (id == ANIM_AGENT_STAND)
 	{
-		// <edit>
-		if(LLAO::isEnabled())
-			LLAO::mTimer->pause();//Timer only pauses if its not paused, check is inside function.
-		// </edit>
 		stopFidget();
 	}
 	else if (id == ANIM_AGENT_AWAY)

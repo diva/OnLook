@@ -767,4 +767,9 @@ LLUUID LLPreviewNotecard::getItemID()
 }
 // </edit>
 
+LLTextEditor* LLPreviewNotecard::getEditor()
+{
+	return getChild<LLViewerTextEditor>("Notecard Editor");
+}
+
 // EOF

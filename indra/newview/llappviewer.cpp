@@ -99,7 +99,6 @@
 #include "llimageworker.h"
 
 // <edit>
-#include "llao.h" //for setting up listener
 #include "lldelayeduidelete.h"
 #include "llbuildnewviewsscheduler.h"
 // </edit>
@@ -160,6 +159,7 @@
 #include "llvosurfacepatch.h"
 
 // includes for idle() idleShutdown()
+#include "floaterao.h"
 #include "llviewercontrol.h"
 #include "lleventnotifier.h"
 #include "llcallbacklist.h"
@@ -678,10 +678,6 @@ bool LLAppViewer::init()
 	settings_to_globals();
 	// Setup settings listeners
 	settings_setup_listeners();
-	// <edit>
-	// Setup AO settings listener
-	LLAO::setup();
-	// </edit>
 	// Modify settings based on system configuration and compile options
 	settings_modify();
 
@@ -1757,6 +1753,7 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstTeleport");
 	LLFirstUse::addConfigVariable("FirstOverrideKeys");
 	LLFirstUse::addConfigVariable("FirstAttach");
+	LLFirstUse::addConfigVariable("FirstAO");
 	LLFirstUse::addConfigVariable("FirstAppearance");
 	LLFirstUse::addConfigVariable("FirstInventory");
 	LLFirstUse::addConfigVariable("FirstSandbox");

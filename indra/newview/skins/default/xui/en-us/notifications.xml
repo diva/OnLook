@@ -6837,6 +6837,13 @@ No
     [OLD_NAME] ([SLID]) is now known as [NEW_NAME].
   </notification>
 
+  <notification
+   icon="notify.tga"
+   name="FirstAO"
+   type="notify">
+    For instructions, make a new template in the AO. Use the toolbar to toggle the AO on/off.
+  </notification>
+
 
 </notifications>
 

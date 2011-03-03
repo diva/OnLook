@@ -51,6 +51,7 @@ class LLStatGraph;
 class LLSlider;
 class LLVoiceRemoteCtrl;
 class wlfPanel_AdvSettings;
+class AORemoteCtrl;
 
 class LLOverlayBar
 :	public LLPanel
@@ -94,6 +95,7 @@ protected:
 	static void* createMediaRemote(void* userdata);
 	static void* createVoiceRemote(void* userdata);
 	static void* createAdvSettings(void* userdata);
+	static void* createAORemote(void* userdata);
 	static void* createChatBar(void* userdata);
 
 	void enableMediaButtons();
@@ -103,6 +105,7 @@ protected:
 	LLVoiceRemoteCtrl*	mVoiceRemote;
 	LLButton*	mCancelBtn;
 	wlfPanel_AdvSettings*	mAdvSettings;
+	AORemoteCtrl*			mAORemote;
 	bool mBuilt;	// dialog constructed yet?
 	enum { STOPPED=0, PLAYING=1, PAUSED=2 };
 	S32 mMusicState;
