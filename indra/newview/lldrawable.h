@@ -281,6 +281,7 @@ public:
 	S32				mQuietCount;
 
 	static S32 getCurrentFrame() { return sCurVisible; }
+	static S32 getMinVisFrameRange();
 	
 	void setSpatialBridge(LLSpatialBridge* bridge) { mSpatialBridge = (LLDrawable*) bridge; }
 	LLSpatialBridge* getSpatialBridge() { return (LLSpatialBridge*) (LLDrawable*) mSpatialBridge; }

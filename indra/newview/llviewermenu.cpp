@@ -1365,10 +1365,12 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 											&LLPipeline::toggleRenderTypeControl, NULL,
 											&LLPipeline::hasRenderTypeControl,
 											(void*)LLPipeline::RENDER_TYPE_GRASS, '0', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
+	//NOTE: Using a static variable, as an unsigned long long cannot fit in the space of a pointer. Pass pointer to callbacks
+	static U64 cloud_flags = (1ULL<<LLPipeline::RENDER_TYPE_WL_CLOUDS | 1ULL<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 	sub_menu->append(new LLMenuItemCheckGL("Clouds",  //This clobbers skyuseclassicclouds, but.. big deal.
 											&LLPipeline::toggleRenderPairedTypeControl, NULL,
 											&LLPipeline::hasRenderPairedTypeControl,
-											(void*)(1<<LLPipeline::RENDER_TYPE_WL_CLOUDS | 1<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS), '-', MASK_CONTROL|MASK_ALT| MASK_SHIFT));
+											(void*)&cloud_flags, '-', MASK_CONTROL|MASK_ALT| MASK_SHIFT));
 	sub_menu->append(new LLMenuItemCheckGL("Particles",
 											&LLPipeline::toggleRenderTypeControl, NULL,
 											&LLPipeline::hasRenderTypeControl,

@@ -46,6 +46,8 @@
 #include "lldrawable.h"
 #include "llrendertarget.h"
 
+#include <stack>
+
 class LLViewerImage;
 class LLEdge;
 class LLFace;
@@ -129,6 +131,8 @@ public:
 	void        markMoved(LLDrawable *drawablep, BOOL damped_motion = FALSE);
 	void        markShift(LLDrawable *drawablep);
 	void        markTextured(LLDrawable *drawablep);
+	void		markGLRebuild(LLGLUpdate* glu);
+	void		markRebuild(LLSpatialGroup* group, BOOL priority = FALSE);
 	void        markRebuild(LLDrawable *drawablep, LLDrawable::EDrawableFlags flag = LLDrawable::REBUILD_ALL, BOOL priority = FALSE);
 		
 	//get the object between start and end that's closest to start.
@@ -179,10 +183,14 @@ public:
 	void updateMove();
 	BOOL visibleObjectsInFrustum(LLCamera& camera);
 	BOOL getVisibleExtents(LLCamera& camera, LLVector3 &min, LLVector3& max);
+	BOOL getVisiblePointCloud(LLCamera& camera, LLVector3 &min, LLVector3& max, std::vector<LLVector3>& fp, LLVector3 light_dir = LLVector3(0,0,0));
 	void updateCull(LLCamera& camera, LLCullResult& result, S32 water_clip = 0);  //if water_clip is 0, ignore water plane, 1, cull to above plane, -1, cull to below plane
 	void createObjects(F32 max_dtime);
 	void createObject(LLViewerObject* vobj);
 	void updateGeom(F32 max_dtime);
+	void updateGL();
+	void rebuildPriorityGroups();
+	void rebuildGroups();
 
 	//calculate pixel area of given box from vantage point of given camera
 	static F32 calcPixelArea(LLVector3 center, LLVector3 size, LLCamera& camera);
@@ -234,8 +242,7 @@ public:
 	void shiftObjects(const LLVector3 &offset);
 
 	void setLight(LLDrawable *drawablep, BOOL is_light);
-	void setActive(LLDrawable *drawablep, BOOL active);
-
+	
 	BOOL hasRenderBatches(const U32 type) const;
 	LLCullResult::drawinfo_list_t::iterator beginRenderMap(U32 type);
 	LLCullResult::drawinfo_list_t::iterator endRenderMap(U32 type);
@@ -243,11 +250,20 @@ public:
 	LLCullResult::sg_list_t::iterator endAlphaGroups();
 	
 	void addTrianglesDrawn(S32 count);
-	BOOL hasRenderType(const U32 type) const				{ return (type && (mRenderTypeMask & (1<<type))) ? TRUE : FALSE; }
+
 	BOOL hasRenderDebugFeatureMask(const U32 mask) const	{ return (mRenderDebugFeatureMask & mask) ? TRUE : FALSE; }
 	BOOL hasRenderDebugMask(const U32 mask) const			{ return (mRenderDebugMask & mask) ? TRUE : FALSE; }
-	void setRenderTypeMask(const U32 mask)					{ mRenderTypeMask = mask; }
-	U32  getRenderTypeMask() const							{ return mRenderTypeMask; }
+	BOOL hasRenderType(const U32 type) const;
+	BOOL hasAnyRenderType(const U32 type, ...) const;
+
+	void setRenderTypeMask(U32 type, ...);
+	void orRenderTypeMask(U32 type, ...);
+	void andRenderTypeMask(U32 type, ...);
+	void clearRenderTypeMask(U32 type, ...);
+	
+	void pushRenderTypeMask();
+	void popRenderTypeMask();
+
 	static void toggleRenderType(U32 type);
 
 	// For UI control of render features
@@ -317,17 +333,31 @@ public:
 		RENDER_TYPE_TREE		= LLDrawPool::POOL_TREE,
 		RENDER_TYPE_INVISIBLE	= LLDrawPool::POOL_INVISIBLE,
 		RENDER_TYPE_VOIDWATER	= LLDrawPool::POOL_VOIDWATER,
-		RENDER_TYPE_WATER		= LLDrawPool::POOL_WATER,
- 		RENDER_TYPE_ALPHA		= LLDrawPool::POOL_ALPHA,
-		RENDER_TYPE_GLOW		= LLDrawPool::POOL_GLOW,
-		
+		RENDER_TYPE_WATER						= LLDrawPool::POOL_WATER,
+ 		RENDER_TYPE_ALPHA						= LLDrawPool::POOL_ALPHA,
+		RENDER_TYPE_GLOW						= LLDrawPool::POOL_GLOW,
+		RENDER_TYPE_PASS_SIMPLE 				= LLRenderPass::PASS_SIMPLE,
+		RENDER_TYPE_PASS_GRASS					= LLRenderPass::PASS_GRASS,
+		RENDER_TYPE_PASS_FULLBRIGHT				= LLRenderPass::PASS_FULLBRIGHT,
+		RENDER_TYPE_PASS_INVISIBLE				= LLRenderPass::PASS_INVISIBLE,
+		RENDER_TYPE_PASS_INVISI_SHINY			= LLRenderPass::PASS_INVISI_SHINY,
+		RENDER_TYPE_PASS_FULLBRIGHT_SHINY		= LLRenderPass::PASS_FULLBRIGHT_SHINY,
+		RENDER_TYPE_PASS_SHINY					= LLRenderPass::PASS_SHINY,
+		RENDER_TYPE_PASS_BUMP					= LLRenderPass::PASS_BUMP,
+		RENDER_TYPE_PASS_GLOW					= LLRenderPass::PASS_GLOW,
+		RENDER_TYPE_PASS_ALPHA					= LLRenderPass::PASS_ALPHA,
+		RENDER_TYPE_PASS_ALPHA_MASK				= LLRenderPass::PASS_ALPHA_MASK,
+		RENDER_TYPE_PASS_FULLBRIGHT_ALPHA_MASK	= LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK,
+		RENDER_TYPE_PASS_ALPHA_SHADOW = LLRenderPass::PASS_ALPHA_SHADOW,
 		// Following are object types (only used in drawable mRenderType)
-		RENDER_TYPE_HUD = LLDrawPool::NUM_POOL_TYPES,
+		RENDER_TYPE_HUD = LLRenderPass::NUM_RENDER_TYPES,
 		RENDER_TYPE_VOLUME,
 		RENDER_TYPE_PARTICLES,
 		RENDER_TYPE_WL_CLOUDS,
 		RENDER_TYPE_CLASSIC_CLOUDS,
-		RENDER_TYPE_HUD_PARTICLES
+		RENDER_TYPE_HUD_PARTICLES,
+		NUM_RENDER_TYPES,
+		END_RENDER_TYPES = NUM_RENDER_TYPES
 	};
 
 	enum LLRenderDebugFeatureMask
@@ -420,7 +450,9 @@ public:
 	static BOOL				sRenderAttachedLights;
 	static BOOL				sRenderAttachedParticles;
 	static BOOL				sRenderDeferred;
+	static BOOL             sAllowRebuildPriorityGroup;
 	static S32				sVisibleLightCount;
+	static F32				sMinRenderSize;
 
 	//screen texture
 	LLRenderTarget			mScreen;
@@ -457,7 +489,9 @@ public:
 	S32						mVertexShadersLoaded; // 0 = no, 1 = yes, -1 = failed
 
 protected:
-	U32						mRenderTypeMask;
+	BOOL					mRenderTypeEnabled[NUM_RENDER_TYPES];
+	std::stack<std::string> mRenderTypeEnableStack;
+
 	U32						mRenderDebugFeatureMask;
 	U32						mRenderDebugMask;
 
@@ -508,10 +542,10 @@ protected:
 	//
 	LLDrawable::drawable_list_t 	mBuildQ1; // priority
 	LLDrawable::drawable_list_t 	mBuildQ2; // non-priority
+	LLSpatialGroup::sg_vector_t		mGroupQ1; //priority
+	LLSpatialGroup::sg_vector_t		mGroupQ2; // non-priority
 	LLViewerObject::vobj_list_t		mCreateQ;
 		
-	LLDrawable::drawable_set_t		mActiveQ;
-	
 	LLDrawable::drawable_set_t		mRetexturedList;
 
 	//////////////////////////////////////////////////

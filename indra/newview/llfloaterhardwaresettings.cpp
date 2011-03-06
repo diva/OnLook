@@ -193,7 +193,8 @@ void LLFloaterHardwareSettings::apply()
 	}
 	else if (old_anisotropic != LLImageGL::sGlobalUseAnisotropic)
 	{
-		gViewerWindow->restartDisplay(logged_in);
+		LLImageGL::dirtyTexOptions();
+		gViewerWindow->restartDisplay(logged_in);	
 	}
 
 	refresh();

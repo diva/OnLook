@@ -208,7 +208,9 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mState(0),
 	mMedia(NULL),
 	mClickAction(0),
-	mAttachmentItemID(LLUUID::null)
+	mAttachmentItemID(LLUUID::null),
+	mLastUpdateType(OUT_UNKNOWN),
+	mLastUpdateCached(FALSE)
 {
 	if(!is_global)
 	{
@@ -2860,6 +2862,11 @@ BOOL LLViewerObject::updateGeometry(LLDrawable *drawable)
 	return TRUE;
 }
 
+void LLViewerObject::updateGL()
+{
+
+}
+
 void LLViewerObject::updateFaceSize(S32 idx)
 {
 	
@@ -3785,6 +3792,15 @@ S32 LLViewerObject::setTETextureCore(const U8 te, const LLUUID& uuid, LLHost hos
 	return retval;
 }
 
+
+void LLViewerObject::changeTEImage(S32 index, LLViewerImage* new_image) 
+{
+	if(index < 0 || index >= getNumTEs())
+	{
+		return ;
+	}
+	mTEImages[index] = new_image ;
+}
 
 S32 LLViewerObject::setTETexture(const U8 te, const LLUUID& uuid)
 {
@@ -5071,7 +5087,7 @@ U32 LLViewerObject::getPartitionType() const
 	return LLViewerRegion::PARTITION_NONE; 
 }
 
-void LLViewerObject::dirtySpatialGroup() const
+void LLViewerObject::dirtySpatialGroup(BOOL priority) const
 {
 	if (mDrawable)
 	{
@@ -5079,6 +5095,7 @@ void LLViewerObject::dirtySpatialGroup() const
 		if (group)
 		{
 			group->dirtyGeom();
+			gPipeline.markRebuild(group, priority);
 		}
 	}
 }
@@ -5266,7 +5283,25 @@ std::string LLViewerObject::getAttachmentPointName()
 	return llformat("unsupported point %d", point);
 }
 // </edit>
+EObjectUpdateType LLViewerObject::getLastUpdateType() const
+{
+	return mLastUpdateType;
+}
 
+void LLViewerObject::setLastUpdateType(EObjectUpdateType last_update_type)
+{
+	mLastUpdateType = last_update_type;
+}
+
+BOOL LLViewerObject::getLastUpdateCached() const
+{
+	return mLastUpdateCached;
+}
+
+void LLViewerObject::setLastUpdateCached(BOOL last_update_cached)
+{
+	mLastUpdateCached = last_update_cached;
+}
 
 const LLUUID &LLViewerObject::extractAttachmentItemID()
 {

@@ -570,6 +570,9 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			}
 		}
 		// </edit>
+		
+		objectp->setLastUpdateType(update_type);
+		objectp->setLastUpdateCached(cached);
 	}
 
 	LLVOAvatar::cullAvatarsByPixelArea();
@@ -1064,7 +1067,7 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 	{
 		objectp = getObject(i);
 		// There could be dead objects on the object list, so don't update stuff if the object is dead.
-		if (objectp)
+		if (objectp && !objectp->isDead())
 		{
 			objectp->updatePositionCaches();
 

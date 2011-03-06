@@ -157,6 +157,7 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mGeomIndex		= 0;
 	mIndicesCount	= 0;
 	mIndicesIndex	= 0;
+	mIndexInTex = 0;
 	mTexture		= NULL;
 	mTEOffset		= -1;
 
@@ -205,6 +206,7 @@ void LLFace::destroy()
 			if (group)
 			{
 				group->dirtyGeom();
+				gPipeline.markRebuild(group, TRUE);
 			}
 		}
 	}
@@ -272,12 +274,36 @@ void LLFace::setTexture(LLViewerImage* tex)
 		mTexture->removeFace(this) ;
 	}
 	
-	mTexture = tex ;
-	
-	if(mTexture.notNull())
+	if(tex)
 	{
-		mTexture->addFace(this) ;
-	} 
+		tex->addFace(this) ;
+	}
+
+	mTexture = tex ;
+}
+
+void LLFace::dirtyTexture()
+{
+	gPipeline.markTextured(getDrawable());
+}
+
+void LLFace::switchTexture(LLViewerImage* new_texture)
+{
+	if(mTexture == new_texture)
+	{
+		return ;
+	}
+
+	if(!new_texture)
+	{
+		llerrs << "Can not switch to a null texture." << llendl;
+		return;
+	}
+	new_texture->addTextureStats(mTexture->mMaxVirtualSize) ;
+
+	getViewerObject()->changeTEImage(mTEOffset, new_texture) ;
+	setTexture(new_texture) ;	
+	dirtyTexture();
 }
 
 void LLFace::setTEOffset(const S32 te_offset)
@@ -453,8 +479,15 @@ void LLFace::renderForSelect(U32 data_mask)
 
 void LLFace::renderSelected(LLImageGL *imagep, const LLColor4& color)
 {
-	if(mDrawablep.isNull() || mVertexBuffer.isNull() || mDrawablep->getSpatialGroup() == NULL ||
-		mDrawablep->getSpatialGroup()->isState(LLSpatialGroup::GEOM_DIRTY))
+	if (mDrawablep->getSpatialGroup() == NULL)
+	{
+		return;
+	}
+
+	mDrawablep->getSpatialGroup()->rebuildGeom();
+	mDrawablep->getSpatialGroup()->rebuildMesh();
+		
+	if(mDrawablep.isNull() || mVertexBuffer.isNull())
 	{
 		return;
 	}
@@ -473,17 +506,13 @@ void LLFace::renderSelected(LLImageGL *imagep, const LLColor4& color)
 			glMultMatrixf((GLfloat*)mDrawablep->getRegion()->mRenderMatrix.mMatrix);
 		}
 
-		setFaceColor(color);
-		renderSetColor();
-
+		glColor4fv(color.mV);
 		mVertexBuffer->setBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 #if !LL_RELEASE_FOR_DOWNLOAD
 		LLGLState::checkClientArrays("", LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 #endif
 		mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
 
-		unsetFaceColor();
-		unsetFaceColor();
 		gGL.popMatrix();
 	}
 }
@@ -805,6 +834,7 @@ LLVector2 LLFace::surfaceToTexture(LLVector2 surface_coord, LLVector3 position, 
 // by planarProjection(). This is needed to match planar texgen parameters.
 void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_pos, F32* scale) const
 {
+	const LLMatrix4& vol_mat = getWorldMatrix();
 	const LLVolumeFace& vf = getViewerObject()->getVolume()->getVolumeFace(mTEOffset);
 	LLVector3 normal = vf.mVertices[0].mNormal;
 	LLVector3 binormal = vf.mVertices[0].mBinormal;
@@ -819,8 +849,8 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 	ang = (projected_binormal.mV[VX] < 0.f) ? -ang : ang;
 	binormal.rotVec(ang, normal);
 	LLQuaternion local_rot( binormal % normal, binormal, normal );
-	*face_rot = local_rot * mXform->getWorldRotation();
-	*face_pos = mXform->getWorldPosition();
+	*face_rot = local_rot * vol_mat.quaternion();
+	*face_pos = vol_mat.getTranslation();
 }
 
 // Returns the necessary texture transform to align this face's TE to align_to's TE
@@ -1089,7 +1119,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (full_rebuild)
 	{
 		mVertexBuffer->getIndexStrider(indicesp, mIndicesIndex);
-		for (U16 i = 0; i < num_indices; i++)
+		for (U32 i = 0; i < (U32) num_indices; i++)
 		{
 			*indicesp++ = vf.mIndices[i] + index_offset;
 		}
@@ -1256,6 +1286,13 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		mTexExtents[1].setVec(1,1);
 		xform(mTexExtents[0], cos_ang, sin_ang, os, ot, ms, mt);
 		xform(mTexExtents[1], cos_ang, sin_ang, os, ot, ms, mt);		
+		
+		F32 es = vf.mTexCoordExtents[1].mV[0] - vf.mTexCoordExtents[0].mV[0] ;
+		F32 et = vf.mTexCoordExtents[1].mV[1] - vf.mTexCoordExtents[0].mV[1] ;
+		mTexExtents[0][0] *= es ;
+		mTexExtents[1][0] *= es ;
+		mTexExtents[0][1] *= et ;
+		mTexExtents[1][1] *= et ;
 	}
 
 	mLastVertexBuffer = mVertexBuffer;
@@ -1305,13 +1342,13 @@ F32 LLFace::getTextureVirtualSize()
 	}
 
 	face_area = LLFace::adjustPixelArea(mImportanceToCamera, face_area);
-	if (mImportanceToCamera < 1.0f && face_area > LLViewerImage::sMinLargeImageSize) //if is large image, shrink face_area by considering the partial overlapping.
+	if (/*mImportanceToCamera < 1.0f && */face_area > LLViewerImage::sMinLargeImageSize) //if is large image, shrink face_area by considering the partial overlapping.
 	{
 		if (mImportanceToCamera > LEAST_IMPORTANCE_FOR_LARGE_IMAGE && mTexture.notNull() && mTexture->isLargeImage())
 		{
 			face_area *= adjustPartialOverlapPixelArea(cos_angle_to_view_dir, radius);
 		}	
-		}
+	}
 
 	setVirtualSize(face_area);
 
@@ -1413,8 +1450,9 @@ F32 LLFace::calcImportanceToCamera(F32 cos_angle_to_view_dir, F32 dist)
 	if(cos_angle_to_view_dir > LLViewerCamera::getInstance()->getCosHalfFov() && 
 		dist < FACE_IMPORTANCE_TO_CAMERA_OVER_DISTANCE[FACE_IMPORTANCE_LEVEL - 1][0]) 
 	{
-		F32 camera_moving_speed = LLViewerCamera::getInstance()->getAverageSpeed() ;
-		F32 camera_angular_speed = LLViewerCamera::getInstance()->getAverageAngularSpeed();
+		LLViewerCamera* camera = LLViewerCamera::getInstance();
+		F32 camera_moving_speed = camera->getAverageSpeed() ;
+		F32 camera_angular_speed = camera->getAverageAngularSpeed();
 
 		if(camera_moving_speed > 10.0f || camera_angular_speed > 1.0f)
 		{

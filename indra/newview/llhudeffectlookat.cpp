@@ -647,6 +647,8 @@ bool LLHUDEffectLookAt::calcTargetPosition()
 	}
 
 	LLVOAvatar* source_avatar = (LLVOAvatar*)(LLViewerObject*)mSourceObject;
+	if (!source_avatar->isBuilt())
+		return false;
 
 	if (target_obj && target_obj->mDrawable.notNull())
 	{

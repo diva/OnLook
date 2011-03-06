@@ -1056,7 +1056,8 @@ void LLViewerObjectList::renderObjectBeacons()
 
 		S32 last_line_width = -1;
 		// gGL.begin(LLRender::LINES); // Always happens in (line_width != last_line_width)
-		
+
+		BOOL flush = FALSE;	
 		for (S32 i = 0; i < mDebugBeacons.count(); i++)
 		{
 			const LLDebugBeacon &debug_beacon = mDebugBeacons[i];
@@ -1065,11 +1066,12 @@ void LLViewerObjectList::renderObjectBeacons()
 			S32 line_width = debug_beacon.mLineWidth;
 			if (line_width != last_line_width)
 			{
-				if (i > 0)
+				if (flush)
 				{
 					gGL.end();
-					gGL.flush();
 				}
+				flush = TRUE;
+				gGL.flush();
 				glLineWidth( (F32)line_width );
 				last_line_width = line_width;
 				gGL.begin(LLRender::LINES);
@@ -1095,7 +1097,8 @@ void LLViewerObjectList::renderObjectBeacons()
 		
 		S32 last_line_width = -1;
 		// gGL.begin(LLRender::LINES); // Always happens in (line_width != last_line_width)
-		
+	
+		BOOL flush = FALSE;	
 		for (S32 i = 0; i < mDebugBeacons.count(); i++)
 		{
 			const LLDebugBeacon &debug_beacon = mDebugBeacons[i];
@@ -1103,11 +1106,12 @@ void LLViewerObjectList::renderObjectBeacons()
 			S32 line_width = debug_beacon.mLineWidth;
 			if (line_width != last_line_width)
 			{
-				if (i > 0)
+				if (flush)
 				{
 					gGL.end();
-					gGL.flush();
 				}
+				flush = TRUE;
+				gGL.flush();
 				glLineWidth( (F32)line_width );
 				last_line_width = line_width;
 				gGL.begin(LLRender::LINES);

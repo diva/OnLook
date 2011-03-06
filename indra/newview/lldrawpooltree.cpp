@@ -52,7 +52,6 @@ LLDrawPoolTree::LLDrawPoolTree(LLViewerImage *texturep) :
 	LLFacePool(POOL_TREE),
 	mTexturep(texturep)
 {
-	gGL.getTexUnit(0)->bind(mTexturep.get());
 	mTexturep->setAddressMode(LLTexUnit::TAM_WRAP);
 }
 

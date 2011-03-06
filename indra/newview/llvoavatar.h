@@ -103,6 +103,7 @@ public:
 	// LLViewerObject interface
 	//--------------------------------------------------------------------
 public:
+	virtual void			updateGL();
 	static void initClass(); // Initialize data that's only init'd once per class.
 	static void cleanupClass();	// Cleanup data that's only init'd once per class.
 	static BOOL parseSkeletonFile(const std::string& filename);
@@ -245,7 +246,7 @@ public:
 	BOOL			isVisible();
 	BOOL			isSelf() const { return mIsSelf; }
 	BOOL			isCulled() const { return mCulled; }
-
+	bool			isBuilt() const { return mIsBuilt; }
 public:
 	static void		cullAvatarsByPixelArea();
 	void			setVisibilityRank(U32 rank); 
@@ -294,7 +295,6 @@ public:
 	void processAvatarAppearance( LLMessageSystem* mesgsys );
 	void onFirstTEMessageReceived();
 	void updateSexDependentLayerSets( BOOL set_by_user );
-	void dirtyMesh(); // Dirty the avatar mesh
 	void hideSkirt();
 
 
@@ -668,7 +668,6 @@ private:
 	BOOL mSupportsAlphaLayers; // For backwards compatibility, TRUE for 1.23+ clients
 	
 	// LLFrameTimer mUpdateLODTimer; // controls frequency of LOD change calculations
-	BOOL mDirtyMesh;
 	BOOL mTurning; // controls hysteresis on avatar rotation
 	F32	mSpeed; // misc. animation repeated state
 
@@ -681,7 +680,7 @@ private:
 	BOOL			mMeshValid;
 	BOOL			mVisible;
 	LLFrameTimer	mMeshInvisibleTime;
-
+	
 	// Lip synch morph stuff
 	bool mLipSyncActive; // we're morphing for lip sync
 	LLVisualParam* mOohMorph; // cached pointers morphs for lip sync
@@ -886,6 +885,13 @@ private:
 	static LLVOAvatarSkeletonInfo* sAvatarSkeletonInfo;
 	static LLVOAvatarXmlInfo* sAvatarXmlInfo;
 
+public:
+	void 			dirtyMesh();
+private:
+	void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
+	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
+	BOOL			mMeshTexturesDirty;
+	
 	//-----------------------------------------------------------------------------------------------
 	// Diagnostics
 	//-----------------------------------------------------------------------------------------------

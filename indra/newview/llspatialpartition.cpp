@@ -86,7 +86,7 @@ protected:
 
 static LLOcclusionQueryPool sQueryPool;
 
-BOOL LLSpatialPartition::sFreezeState = FALSE;
+//BOOL LLSpatialPartition::sFreezeState = FALSE;
 
 //static counter for frame to switch LOD on
 
@@ -281,10 +281,10 @@ S32 LLSphereAABB(const LLVector3& center, const LLVector3& size, const LLVector3
 
 LLSpatialGroup::~LLSpatialGroup()
 {
-	if (sNoDelete)
+	/*if (sNoDelete)
 	{
 		llerrs << "Illegal deletion of LLSpatialGroup!" << llendl;
-	}
+	}*/
 
 	if (isState(DEAD))
 	{
@@ -293,12 +293,13 @@ LLSpatialGroup::~LLSpatialGroup()
 	
 	sNodeCount--;
 
-	if (gGLManager.mHasOcclusionQuery && mOcclusionQuery)
+	if (gGLManager.mHasOcclusionQuery && mOcclusionQuery[LLViewerCamera::sCurCameraID])
 	{
-		sQueryPool.release(mOcclusionQuery);
+		sQueryPool.release(mOcclusionQuery[LLViewerCamera::sCurCameraID]);
 	}
 
 	delete [] mOcclusionVerts;
+	mOcclusionVerts = NULL;
 
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	clearDrawMap();
@@ -309,17 +310,19 @@ void LLSpatialGroup::clearDrawMap()
 	mDrawMap.clear();
 }
 
+BOOL LLSpatialGroup::isRecentlyVisible() const
+{
+	return (LLDrawable::getCurrentFrame() - mVisible[LLViewerCamera::sCurCameraID]) < LLDrawable::getMinVisFrameRange() ;
+}
+
 BOOL LLSpatialGroup::isVisible() const
 {
-	return mVisible == LLDrawable::getCurrentFrame() ? TRUE : FALSE;
+	return mVisible[LLViewerCamera::sCurCameraID] == LLDrawable::getCurrentFrame() ? TRUE : FALSE;
 }
 
 void LLSpatialGroup::setVisible()
 {
-	if (!LLSpatialPartition::sFreezeState)
-	{
-		mVisible = LLDrawable::getCurrentFrame();
-	}
+	mVisible[LLViewerCamera::sCurCameraID] = LLDrawable::getCurrentFrame();
 }
 
 void LLSpatialGroup::validate()
@@ -378,63 +381,6 @@ void LLSpatialGroup::validate()
 #endif
 }
 
-
-
-class LLOctreeStateCheck : public LLOctreeTraveler<LLDrawable>
-{
-public:
-	U32 mInheritedMask;
-
-	LLOctreeStateCheck(): mInheritedMask(0) { }
-
-	virtual void traverse(const LLSpatialGroup::OctreeNode* node)
-	{
-		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
-		
-		node->accept(this);
-
-		U32 temp = mInheritedMask;
-		mInheritedMask |= group->getState() & 
-			(LLSpatialGroup::OCCLUDED);
-
-		for (U32 i = 0; i < node->getChildCount(); i++)
-		{
-			traverse(node->getChild(i));
-		}
-
-		mInheritedMask = temp;
-	}
-
-	virtual void visit(const LLOctreeNode<LLDrawable>* state)
-	{
-		LLSpatialGroup* group = (LLSpatialGroup*) state->getListener(0);
-
-		if (mInheritedMask && !group->isState(mInheritedMask))
-		{
-			llerrs << "Spatial group failed inherited mask test." << llendl;
-		}
-
-		if (group->isState(LLSpatialGroup::DIRTY))
-		{
-			assert_parent_state(group, LLSpatialGroup::DIRTY);
-		}
-	}
-
-	void assert_parent_state(LLSpatialGroup* group, U32 state)
-	{
-		LLSpatialGroup* parent = group->getParent();
-		while (parent)
-		{
-			if (!parent->isState(state))
-			{
-				llerrs << "Spatial group failed parent state check." << llendl;
-			}
-			parent = parent->getParent();
-		}
-	}	
-};
-
-
 void LLSpatialGroup::checkStates()
 {
 #if LL_OCTREE_PARANOIA_CHECK
@@ -468,17 +414,17 @@ void validate_draw_info(LLDrawInfo& params)
 	}
 	
 	//bad indices
-	U32* indicesp = (U32*) params.mVertexBuffer->getIndicesPointer();
+	U16* indicesp = (U16*) params.mVertexBuffer->getIndicesPointer();
 	if (indicesp)
 	{
 		for (U32 i = params.mOffset; i < params.mOffset+params.mCount; i++)
 		{
-			if (indicesp[i] < params.mStart)
+			if (indicesp[i] < (U16)params.mStart)
 			{
 				llerrs << "Draw batch has vertex buffer index out of range error (index too low)." << llendl;
 			}
 			
-			if (indicesp[i] > params.mEnd)
+			if (indicesp[i] > (U16)params.mEnd)
 			{
 				llerrs << "Draw batch has vertex buffer index out of range error (index too high)." << llendl;
 			}
@@ -539,7 +485,9 @@ BOOL LLSpatialGroup::addObject(LLDrawable *drawablep, BOOL add_all, BOOL from_oc
 	{
 		drawablep->setSpatialGroup(this);
 		validate_drawable(drawablep);
-		setState(OBJECT_DIRTY | GEOM_DIRTY | DISCARD_QUERY);
+		setState(OBJECT_DIRTY | GEOM_DIRTY);
+		setOcclusionState(LLSpatialGroup::DISCARD_QUERY, LLSpatialGroup::STATE_MODE_ALL_CAMERAS);
+		gPipeline.markRebuild(this, TRUE);
 		if (drawablep->isSpatialBridge())
 		{
 			mBridgeList.push_back((LLSpatialBridge*) drawablep);
@@ -572,22 +520,26 @@ void LLSpatialGroup::rebuildMesh()
 
 void LLSpatialPartition::rebuildGeom(LLSpatialGroup* group)
 {
-	if (!gPipeline.hasRenderType(mDrawableType))
+	/*if (!gPipeline.hasRenderType(mDrawableType))
 	{
+		return;
+	}*/
+
+	if (group->isDead() || !group->isState(LLSpatialGroup::GEOM_DIRTY))
+	{
+		/*if (!group->isState(LLSpatialGroup::GEOM_DIRTY) && mRenderByGroup)
+		{
+			llerrs << "WTF?" << llendl;
+		}*/
 		return;
 	}
 
-	if (!LLPipeline::sSkipUpdate && group->changeLOD())
+	if (/*!LLPipeline::sSkipUpdate && */group->changeLOD())
 	{
 		group->mLastUpdateDistance = group->mDistance;
 		group->mLastUpdateViewAngle = group->mViewAngle;
 	}
-
-	if (group->isDead() || !group->isState(LLSpatialGroup::GEOM_DIRTY))
-	{
-		return;
-	}
-
+	
 	LLFastTimer ftm(LLFastTimer::FTM_REBUILD_VBO);	
 
 	group->clearDrawMap();
@@ -663,8 +615,11 @@ BOOL LLSpatialGroup::boundObjects(BOOL empty, LLVector3& minOut, LLVector3& maxO
 			drawablep = *i;
 			minMax = drawablep->getSpatialExtents();
 			
+			update_min_max(newMin, newMax, minMax[0]);
+			update_min_max(newMin, newMax, minMax[1]);
+
 			//bin up the object
-			for (U32 i = 0; i < 3; i++)
+			/*for (U32 i = 0; i < 3; i++)
 			{
 				if (minMax[0].mV[i] < newMin.mV[i])
 				{
@@ -674,7 +629,7 @@ BOOL LLSpatialGroup::boundObjects(BOOL empty, LLVector3& minOut, LLVector3& maxO
 				{
 					newMax.mV[i] = minMax[1].mV[i];
 				}
-			}
+			}*/
 		}
 		
 		mObjectBounds[0] = (newMin + newMax) * 0.5f;
@@ -738,6 +693,10 @@ LLSpatialGroup* LLSpatialGroup::getParent()
 		return NULL;
 	}
 
+	if(!mOctreeNode)
+	{
+		return NULL;
+	}
 	OctreeNode* parent = mOctreeNode->getOctParent();
 
 	if (parent)
@@ -763,6 +722,8 @@ BOOL LLSpatialGroup::removeObject(LLDrawable *drawablep, BOOL from_octree)
 	{
 		drawablep->setSpatialGroup(NULL);
 		setState(GEOM_DIRTY);
+		gPipeline.markRebuild(this, TRUE);
+
 		if (drawablep->isSpatialBridge())
 		{
 			for (bridge_list_t::iterator i = mBridgeList.begin(); i != mBridgeList.end(); ++i)
@@ -799,6 +760,7 @@ void LLSpatialGroup::shift(const LLVector3 &offset)
 	//if (!mSpatialPartition->mRenderByGroup)
 	{
 		setState(GEOM_DIRTY);
+		gPipeline.markRebuild(this, TRUE);
 	}
 
 	if (mOcclusionVerts)
@@ -816,15 +778,15 @@ void LLSpatialGroup::shift(const LLVector3 &offset)
 class LLSpatialSetState : public LLSpatialGroup::OctreeTraveler
 {
 public:
-	U32 mState;
-	LLSpatialSetState(U32 state) : mState(state) { }
+	LLSpatialGroup::eSpatialState mState;
+	LLSpatialSetState(LLSpatialGroup::eSpatialState state) : mState(state) { }
 	virtual void visit(const LLSpatialGroup::OctreeNode* branch) { ((LLSpatialGroup*) branch->getListener(0))->setState(mState); }	
 };
 
 class LLSpatialSetStateDiff : public LLSpatialSetState
 {
 public:
-	LLSpatialSetStateDiff(U32 state) : LLSpatialSetState(state) { }
+	LLSpatialSetStateDiff(LLSpatialGroup::eSpatialState state) : LLSpatialSetState(state) { }
 
 	virtual void traverse(const LLSpatialGroup::OctreeNode* n)
 	{
@@ -837,20 +799,27 @@ public:
 	}
 };
 
-void LLSpatialGroup::setState(U32 state) 
+void LLSpatialGroup::setState(eSpatialState state) 
 { 
-	if (!LLSpatialPartition::sFreezeState)
+//	if (LLSpatialPartition::sFreezeState)
+//		return;
+	mState |= state; 
+
+	if (state > LLSpatialGroup::STATE_MASK)
 	{
-		mState |= state; 
-	}
+		llerrs << "WTF?" << llendl;
+	} 
 }	
 
-void LLSpatialGroup::setState(U32 state, S32 mode) 
+void LLSpatialGroup::setState(eSpatialState state, S32 mode) 
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	if (LLSpatialPartition::sFreezeState)
+//	if (LLSpatialPartition::sFreezeState)
+//		return;
+	
+	if (state > LLSpatialGroup::STATE_MASK)
 	{
-		return;
+		llerrs << "WTF?" << llendl;
 	}
 
 	if (mode > STATE_MODE_SINGLE)
@@ -875,15 +844,15 @@ void LLSpatialGroup::setState(U32 state, S32 mode)
 class LLSpatialClearState : public LLSpatialGroup::OctreeTraveler
 {
 public:
-	U32 mState;
-	LLSpatialClearState(U32 state) : mState(state) { }
+	LLSpatialGroup::eSpatialState mState;
+	LLSpatialClearState(LLSpatialGroup::eSpatialState state) : mState(state) { }
 	virtual void visit(const LLSpatialGroup::OctreeNode* branch) { ((LLSpatialGroup*) branch->getListener(0))->clearState(mState); }
 };
 
 class LLSpatialClearStateDiff : public LLSpatialClearState
 {
 public:
-	LLSpatialClearStateDiff(U32 state) : LLSpatialClearState(state) { }
+	LLSpatialClearStateDiff(LLSpatialGroup::eSpatialState state) : LLSpatialClearState(state) { }
 
 	virtual void traverse(const LLSpatialGroup::OctreeNode* n)
 	{
@@ -896,22 +865,30 @@ public:
 	}
 };
 
-void LLSpatialGroup::clearState(U32 state)
+void LLSpatialGroup::clearState(eSpatialState state)
 {
-	if (!LLSpatialPartition::sFreezeState)
+//	if (LLSpatialPartition::sFreezeState)
+//		return;
+	if (state > LLSpatialGroup::STATE_MASK)
 	{
-		mState &= ~state; 
+		llerrs << "WTF?" << llendl;
 	}
+
+	mState &= ~state; 
 }
 
-void LLSpatialGroup::clearState(U32 state, S32 mode)
+void LLSpatialGroup::clearState(eSpatialState state, S32 mode)
 {
-	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-	if (LLSpatialPartition::sFreezeState)
+
+//	if (LLSpatialPartition::sFreezeState)
+//		return;
+	if (state > LLSpatialGroup::STATE_MASK)
 	{
-		return;
+		llerrs << "WTF?" << llendl;
 	}
 
+	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
+	
 	if (mode > STATE_MODE_SINGLE)
 	{
 		if (mode == STATE_MODE_DIFF)
@@ -931,6 +908,128 @@ void LLSpatialGroup::clearState(U32 state, S32 mode)
 	}
 }
 
+BOOL LLSpatialGroup::isState(eSpatialState state) const
+{ 
+	if (state > LLSpatialGroup::STATE_MASK)
+	{
+		llerrs << "LLSpatialGroup::isState passed invalid state '" << state << "'" << llendl;
+	}
+
+	return mState & state ? TRUE : FALSE; 
+}
+
+//=====================================
+//		Occlusion State Set/Clear
+//=====================================
+class LLSpatialSetOcclusionState : public LLSpatialGroup::OctreeTraveler
+{
+public:
+	LLSpatialGroup::eOcclusionState mState;
+	LLSpatialSetOcclusionState(LLSpatialGroup::eOcclusionState state) : mState(state) { }
+	virtual void visit(const LLSpatialGroup::OctreeNode* branch) { ((LLSpatialGroup*) branch->getListener(0))->setOcclusionState(mState); }	
+};
+
+class LLSpatialSetOcclusionStateDiff : public LLSpatialSetOcclusionState
+{
+public:
+	LLSpatialSetOcclusionStateDiff(LLSpatialGroup::eOcclusionState state) : LLSpatialSetOcclusionState(state) { }
+
+	virtual void traverse(const LLSpatialGroup::OctreeNode* n)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) n->getListener(0);
+		
+		if (!group->isOcclusionState(mState))
+		{
+			LLSpatialGroup::OctreeTraveler::traverse(n);
+		}
+	}
+};
+
+
+void LLSpatialGroup::setOcclusionState(eOcclusionState state, S32 mode) 
+{
+	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
+	
+	if (mode > STATE_MODE_SINGLE)
+	{
+		if (mode == STATE_MODE_DIFF)
+		{
+			LLSpatialSetOcclusionStateDiff setter(state);
+			setter.traverse(mOctreeNode);
+		}
+		else if (mode == STATE_MODE_BRANCH)
+		{
+			LLSpatialSetOcclusionState setter(state);
+			setter.traverse(mOctreeNode);
+		}
+		else
+		{
+			for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+			{
+				mOcclusionState[i] |= state;
+			}
+		}
+	}
+	else
+	{
+		mOcclusionState[LLViewerCamera::sCurCameraID] |= state;
+	}
+}
+
+class LLSpatialClearOcclusionState : public LLSpatialGroup::OctreeTraveler
+{
+public:
+	LLSpatialGroup::eOcclusionState mState;
+	
+	LLSpatialClearOcclusionState(LLSpatialGroup::eOcclusionState state) : mState(state) { }
+	virtual void visit(const LLSpatialGroup::OctreeNode* branch) { ((LLSpatialGroup*) branch->getListener(0))->clearOcclusionState(mState); }
+};
+
+class LLSpatialClearOcclusionStateDiff : public LLSpatialClearOcclusionState
+{
+public:
+	LLSpatialClearOcclusionStateDiff(LLSpatialGroup::eOcclusionState state) : LLSpatialClearOcclusionState(state) { }
+
+	virtual void traverse(const LLSpatialGroup::OctreeNode* n)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) n->getListener(0);
+		
+		if (group->isOcclusionState(mState))
+		{
+			LLSpatialGroup::OctreeTraveler::traverse(n);
+		}
+	}
+};
+
+void LLSpatialGroup::clearOcclusionState(eOcclusionState state, S32 mode)
+{
+	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
+	
+	if (mode > STATE_MODE_SINGLE)
+	{
+		if (mode == STATE_MODE_DIFF)
+		{
+			LLSpatialClearOcclusionStateDiff clearer(state);
+			clearer.traverse(mOctreeNode);
+		}
+		else if (mode == STATE_MODE_BRANCH)
+		{
+			LLSpatialClearOcclusionState clearer(state);
+			clearer.traverse(mOctreeNode);
+		}
+		else
+		{
+			for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+			{
+				mOcclusionState[i] &= ~state;
+			}
+		}
+	}
+	else
+	{
+		mOcclusionState[LLViewerCamera::sCurCameraID] &= ~state;
+	}
+}
 //======================================
 //		Octree Listener Implementation
 //======================================
@@ -942,7 +1041,6 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	mSpatialPartition(part),
 	mVertexBuffer(NULL), 
 	mBufferUsage(GL_STATIC_DRAW_ARB),
-	mVisible(0),
 	mDistance(0.f),
 	mDepth(0.f),
 	mLastUpdateDistance(-1.f), 
@@ -956,6 +1054,7 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	sg_assert(mOctreeNode->getListenerCount() == 0);
 	mOctreeNode->addListener(this);
 	setState(SG_INITIAL_STATE_MASK);
+	gPipeline.markRebuild(this, TRUE);
 
 	mBounds[0] = LLVector3(node->getCenter());
 	mBounds[1] = LLVector3(node->getSize());
@@ -963,7 +1062,16 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	part->mLODSeed = (part->mLODSeed+1)%part->mLODPeriod;
 	mLODHash = part->mLODSeed;
 	
-	mOcclusionQuery = 0;
+	OctreeNode* oct_parent = node->getOctParent();
+
+	LLSpatialGroup* parent = oct_parent ? (LLSpatialGroup*) oct_parent->getListener(0) : NULL;
+
+	for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+	{
+		mOcclusionQuery[i] = 0;
+		mOcclusionState[i] = parent ? SG_STATE_INHERIT_MASK & parent->mOcclusionState[i] : 0;
+		mVisible[i] = 0;
+	}
 	mOcclusionVerts = NULL;
 
 	mRadius = 1;
@@ -972,13 +1080,18 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 
 void LLSpatialGroup::updateDistance(LLCamera &camera)
 {
+	if (LLViewerCamera::sCurCameraID != LLViewerCamera::CAMERA_WORLD)
+	{
+		llerrs << "WTF?" << llendl;
+	}
+
 #if !LL_RELEASE_FOR_DOWNLOAD
 	if (isState(LLSpatialGroup::OBJECT_DIRTY))
 	{
 		llerrs << "Spatial group dirty on distance update." << llendl;
 	}
 #endif
-	if (!getData().empty() && !LLSpatialPartition::sFreezeState)
+	if (!getData().empty() /*&& !LLSpatialPartition::sFreezeState*/)
 	{
 		mRadius = mSpatialPartition->mRenderByGroup ? mObjectBounds[1].magVec() :
 						(F32) mOctreeNode->getSize().magVec();
@@ -1014,6 +1127,7 @@ F32 LLSpatialPartition::calcDistance(LLSpatialGroup* group, LLCamera& camera)
 					//NOTE: If there is a trivial way to detect that alpha sorting here would not change the render order,
 					//not setting this node to dirty would be a very good thing
 					group->setState(LLSpatialGroup::ALPHA_DIRTY);
+					gPipeline.markRebuild(group, FALSE);
 				}
 			}
 		}
@@ -1048,6 +1162,18 @@ F32 LLSpatialPartition::calcDistance(LLSpatialGroup* group, LLCamera& camera)
 F32 LLSpatialPartition::calcPixelArea(LLSpatialGroup* group, LLCamera& camera)
 {
 	return LLPipeline::calcPixelArea(group->mObjectBounds[0], group->mObjectBounds[1], camera);
+}
+
+F32 LLSpatialGroup::getUpdateUrgency() const
+{
+	if (!isVisible())
+	{
+		return 0.f;
+	}
+	else
+	{
+		return (gFrameTimeSeconds - mLastUpdateTime+4.f)/mDistance;
+	}
 }
 
 BOOL LLSpatialGroup::needsUpdate()
@@ -1136,8 +1262,7 @@ void LLSpatialGroup::handleChildAddition(const OctreeNode* parent, OctreeNode* c
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	if (child->getListenerCount() == 0)
 	{
-		LLSpatialGroup* group = new LLSpatialGroup(child, mSpatialPartition);
-		group->setState(mState & SG_STATE_INHERIT_MASK);
+		new LLSpatialGroup(child, mSpatialPartition);
 	}
 	else
 	{
@@ -1157,16 +1282,20 @@ void LLSpatialGroup::handleChildRemoval(const OctreeNode* parent, const OctreeNo
 void LLSpatialGroup::destroyGL() 
 {
 	setState(LLSpatialGroup::GEOM_DIRTY | LLSpatialGroup::IMAGE_DIRTY);
+	gPipeline.markRebuild(this, TRUE);
 	mLastUpdateTime = gFrameTimeSeconds;
 	mVertexBuffer = NULL;
 	mBufferMap.clear();
 
 	clearDrawMap();
 
-	if (mOcclusionQuery)
+	for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
 	{
-		sQueryPool.release(mOcclusionQuery);
-		mOcclusionQuery = 0;
+		if (mOcclusionQuery[i])
+		{
+			sQueryPool.release(mOcclusionQuery[i]);
+			mOcclusionQuery[i] = 0;
+		}
 	}
 
 	delete [] mOcclusionVerts;
@@ -1260,39 +1389,45 @@ void LLSpatialGroup::checkOcclusion()
 {
 	if (LLPipeline::sUseOcclusion > 1)
 	{
+		LLFastTimer t( LLFastTimer::FTM_OCCLUSION_READBACK);
 		LLSpatialGroup* parent = getParent();
-		if (parent && parent->isState(LLSpatialGroup::OCCLUDED))
+		if (parent && parent->isOcclusionState(LLSpatialGroup::OCCLUDED))
 		{	//if the parent has been marked as occluded, the child is implicitly occluded
-			clearState(QUERY_PENDING | DISCARD_QUERY);
+			clearOcclusionState(QUERY_PENDING | DISCARD_QUERY);
 		}
-		else if (isState(QUERY_PENDING))
+		else if (isOcclusionState(QUERY_PENDING))
 		{	//otherwise, if a query is pending, read it back
 			LLFastTimer t(LLFastTimer::FTM_OCCLUSION_READBACK);
 			GLuint res = 1;
-			if (!isState(DISCARD_QUERY) && mOcclusionQuery)
+			if (!isOcclusionState(DISCARD_QUERY) && mOcclusionQuery[LLViewerCamera::sCurCameraID])
 			{
-				glGetQueryObjectuivARB(mOcclusionQuery, GL_QUERY_RESULT_ARB, &res);	
+				glGetQueryObjectuivARB(mOcclusionQuery[LLViewerCamera::sCurCameraID], GL_QUERY_RESULT_ARB, &res);	
+			}
+
+			if (isOcclusionState(DISCARD_QUERY))
+			{
+				res = 2;
 			}
 
 			if (res > 0)
 			{
 				assert_states_valid(this);
-				clearState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
+				clearOcclusionState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
 				assert_states_valid(this);
 			}
 			else
 			{
 				assert_states_valid(this);
-				setState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
+				setOcclusionState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
 				assert_states_valid(this);
 			}
 
-			clearState(QUERY_PENDING | DISCARD_QUERY);
+			clearOcclusionState(QUERY_PENDING | DISCARD_QUERY);
 		}
-		else if (mSpatialPartition->isOcclusionEnabled() && isState(LLSpatialGroup::OCCLUDED))
+		else if (mSpatialPartition->isOcclusionEnabled() && isOcclusionState(LLSpatialGroup::OCCLUDED))
 		{	//check occlusion has been issued for occluded node that has not had a query issued
 			assert_states_valid(this);
-			clearState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
+			clearOcclusionState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
 			assert_states_valid(this);
 		}
 	}
@@ -1306,11 +1441,11 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 		// Don't cull hole/edge water, unless RenderWaterVoidCulling is set and we have the GL_ARB_depth_clamp extension.
 		if ((mSpatialPartition->mDrawableType == LLPipeline::RENDER_TYPE_VOIDWATER &&
 			 !(render_water_void_culling && gGLManager.mHasDepthClamp)) ||
-		    earlyFail(camera, this))
+			earlyFail(camera, this))
 		{
-			setState(LLSpatialGroup::DISCARD_QUERY);
+			setOcclusionState(LLSpatialGroup::DISCARD_QUERY);
 			assert_states_valid(this);
-			clearState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
+			clearOcclusionState(LLSpatialGroup::OCCLUDED, LLSpatialGroup::STATE_MODE_DIFF);
 			assert_states_valid(this);
 		}
 		else
@@ -1318,9 +1453,9 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 			{
 				LLFastTimer t(LLFastTimer::FTM_RENDER_OCCLUSION);
 
-				if (!mOcclusionQuery)
+				if (!mOcclusionQuery[LLViewerCamera::sCurCameraID])
 				{
-					mOcclusionQuery = sQueryPool.allocate();
+					mOcclusionQuery[LLViewerCamera::sCurCameraID] = sQueryPool.allocate();
 				}
 
 				if (!mOcclusionVerts || isState(LLSpatialGroup::OCCLUSION_DIRTY))
@@ -1339,11 +1474,21 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 				{
 					glEnable(GL_DEPTH_CLAMP);
 				}
-
-				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, mOcclusionQuery);					
+				
+				glBeginQueryARB(GL_SAMPLES_PASSED_ARB, mOcclusionQuery[LLViewerCamera::sCurCameraID]);					
 				glVertexPointer(3, GL_FLOAT, 0, mOcclusionVerts);
-				glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-							GL_UNSIGNED_BYTE, get_box_fan_indices(camera, mBounds[0]));
+				if (camera->getOrigin().isExactlyZero())
+				{ //origin is invalid, draw entire box
+					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
+												GL_UNSIGNED_BYTE, sOcclusionIndices);
+					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
+							GL_UNSIGNED_BYTE, sOcclusionIndices+b111*8);
+				}
+				else
+				{
+					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
+								GL_UNSIGNED_BYTE, get_box_fan_indices(camera, mBounds[0]));
+				}
 				glEndQueryARB(GL_SAMPLES_PASSED_ARB);
 
 				if (use_depth_clamp)
@@ -1352,15 +1497,16 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 				}
 			}
 
-			setState(LLSpatialGroup::QUERY_PENDING);
-			clearState(LLSpatialGroup::DISCARD_QUERY);
+			setOcclusionState(LLSpatialGroup::QUERY_PENDING);
+			clearOcclusionState(LLSpatialGroup::DISCARD_QUERY);
 		}
 	}
 }
 
 //==============================================
 
-LLSpatialPartition::LLSpatialPartition(U32 data_mask, U32 buffer_usage)
+LLSpatialPartition::LLSpatialPartition(U32 data_mask, BOOL render_by_group, U32 buffer_usage)
+: mRenderByGroup(render_by_group)
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	mOcclusionEnabled = TRUE;
@@ -1372,7 +1518,6 @@ LLSpatialPartition::LLSpatialPartition(U32 data_mask, U32 buffer_usage)
 	mBufferUsage = buffer_usage;
 	mDepthMask = FALSE;
 	mSlopRatio = 0.25f;
-	mRenderByGroup = TRUE;
 	mInfiniteFarClip = FALSE;
 
 	LLGLNamePool::registerPool(&sQueryPool);
@@ -1409,9 +1554,9 @@ LLSpatialGroup *LLSpatialPartition::put(LLDrawable *drawablep, BOOL was_visible)
 	
 	LLSpatialGroup* group = drawablep->getSpatialGroup();
 
-	if (group && was_visible && group->isState(LLSpatialGroup::QUERY_PENDING))
+	if (group && was_visible && group->isOcclusionState(LLSpatialGroup::QUERY_PENDING))
 	{
-		group->setState(LLSpatialGroup::DISCARD_QUERY);
+		group->setOcclusionState(LLSpatialGroup::DISCARD_QUERY, LLSpatialGroup::STATE_MODE_ALL_CAMERAS);
 	}
 
 	return group;
@@ -1510,7 +1655,7 @@ public:
 
 		if (group->mOctreeNode->getParent() &&	//never occlusion cull the root node
 		  	LLPipeline::sUseOcclusion &&			//ignore occlusion if disabled
-			group->isState(LLSpatialGroup::OCCLUDED))
+			group->isOcclusionState(LLSpatialGroup::OCCLUDED))
 		{
 			gPipeline.markOccluder(group);
 			return true;
@@ -1592,7 +1737,7 @@ public:
 	virtual void processGroup(LLSpatialGroup* group)
 	{
 		if (group->needsUpdate() ||
-			group->mVisible < LLDrawable::getCurrentFrame() - 1)
+			group->mVisible[LLViewerCamera::sCurCameraID] < LLDrawable::getCurrentFrame() - 1)
 		{
 			group->doOcclusion(mCamera);
 		}
@@ -1660,7 +1805,7 @@ public:
 	{
 		if (group->mOctreeNode->getParent() &&	//never occlusion cull the root node
 			LLPipeline::sUseOcclusion &&			//ignore occlusion if disabled
-			group->isState(LLSpatialGroup::OCCLUDED))
+			group->isOcclusionState(LLSpatialGroup::OCCLUDED))
 		{
 			return true;
 		}
@@ -1668,13 +1813,54 @@ public:
 		return false;
 	}
 
+	virtual void traverse(const LLSpatialGroup::OctreeNode* n)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) n->getListener(0);
+
+		if (earlyFail(group))
+		{
+			return;
+		}
+		
+		if ((mRes && group->isState(LLSpatialGroup::SKIP_FRUSTUM_CHECK)) ||
+			mRes == 2)
+		{	//don't need to do frustum check
+			LLSpatialGroup::OctreeTraveler::traverse(n);
+		}
+		else
+		{  
+			mRes = frustumCheck(group);
+				
+			if (mRes)
+			{ //at least partially in, run on down
+				LLSpatialGroup::OctreeTraveler::traverse(n);
+			}
+
+			mRes = 0;
+		}
+	}
+
 	virtual void processGroup(LLSpatialGroup* group)
 	{
-		if (group->mObjectBounds[1].magVecSquared() < 256.f * 256.f)
-		{ //megaprims and water edge patches be damned!
+		if (group->isState(LLSpatialGroup::DIRTY) || group->getData().empty())
+		{
+			llerrs << "WTF?" << llendl;
+		}
+
+		if (mRes < 2)
+		{
+			if (mCamera->AABBInFrustum(group->mObjectBounds[0], group->mObjectBounds[1]) > 0)
+			{
+				mEmpty = FALSE;
+				update_min_max(mMin, mMax, group->mObjectExtents[0]);
+				update_min_max(mMin, mMax, group->mObjectExtents[1]);
+			}
+		}
+		else
+		{
 			mEmpty = FALSE;
-			update_min_max(mMin, mMax, group->mObjectExtents[0]);
-			update_min_max(mMin, mMax, group->mObjectExtents[1]);
+			update_min_max(mMin, mMax, group->mExtents[0]);
+			update_min_max(mMin, mMax, group->mExtents[1]);
 		}
 	}
 
@@ -1693,8 +1879,8 @@ public:
 	{
 		if (mResult || //already found a node, don't check any more
 			(group->mOctreeNode->getParent() &&	//never occlusion cull the root node
-			LLPipeline::sUseOcclusion &&			//ignore occlusion if disabled
-			group->isState(LLSpatialGroup::OCCLUDED)))
+			 LLPipeline::sUseOcclusion &&			//ignore occlusion if disabled
+			 group->isOcclusionState(LLSpatialGroup::OCCLUDED)))
 		{
 			return true;
 		}
@@ -1873,6 +2059,11 @@ BOOL LLSpatialPartition::isOcclusionEnabled()
 
 BOOL LLSpatialPartition::getVisibleExtents(LLCamera& camera, LLVector3& visMin, LLVector3& visMax)
 {
+	{
+		LLFastTimer ftm( LLFastTimer::FTM_CULL_REBOUND);		
+		LLSpatialGroup* group = (LLSpatialGroup*) mOctree->getListener(0);
+		group->rebound();
+	}
 	LLOctreeCullVisExtents vis(&camera, visMin, visMax);
 	vis.traverse(mOctree);
 	return vis.mEmpty;
@@ -1892,12 +2083,12 @@ S32 LLSpatialPartition::cull(LLCamera &camera, std::vector<LLDrawable *>* result
 	((LLSpatialGroup*)mOctree->getListener(0))->checkStates();
 #endif
 	{
-		BOOL temp = sFreezeState;
-		sFreezeState = FALSE;
+		//BOOL temp = sFreezeState;
+		//sFreezeState = FALSE;
 		LLFastTimer ftm(LLFastTimer::FTM_CULL_REBOUND);		
 		LLSpatialGroup* group = (LLSpatialGroup*) mOctree->getListener(0);
 		group->rebound();
-		sFreezeState = temp;
+		//sFreezeState = temp;
 	}
 
 #if LL_OCTREE_PARANOIA_CHECK
@@ -1934,6 +2125,11 @@ S32 LLSpatialPartition::cull(LLCamera &camera, std::vector<LLDrawable *>* result
 
 BOOL earlyFail(LLCamera* camera, LLSpatialGroup* group)
 {
+	if (camera->getOrigin().isExactlyZero())
+	{
+		return FALSE;
+	}
+
 	const F32 vel = SG_OCCLUSION_FUDGE*2.f;
 	LLVector3 c = group->mBounds[0];
 	LLVector3 r = group->mBounds[1] + LLVector3(vel,vel,vel);
@@ -2161,7 +2357,6 @@ void renderOctree(LLSpatialGroup* group)
 	gGL.color4fv(col.mV);
 	drawBox(group->mObjectBounds[0], group->mObjectBounds[1]*1.01f+LLVector3(0.001f, 0.001f, 0.001f));
 	
-	glDepthMask(GL_TRUE);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
 	if (group->mBuilt <= 0.f)
@@ -2211,7 +2406,7 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 	LLGLEnable cull(GL_CULL_FACE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	BOOL render_objects = (!LLPipeline::sUseOcclusion || !group->isState(LLSpatialGroup::OCCLUDED)) && group->isVisible() &&
+	BOOL render_objects = (!LLPipeline::sUseOcclusion || !group->isOcclusionState(LLSpatialGroup::OCCLUDED)) && group->isVisible() &&
 							!group->getData().empty();
 	if (render_objects)
 	{
@@ -2270,6 +2465,49 @@ void renderCrossHairs(LLVector3 position, F32 size, LLColor4 color)
 	gGL.end();
 }
 
+void renderUpdateType(LLDrawable* drawablep)
+{
+	LLViewerObject* vobj = drawablep->getVObj();
+	if (!vobj || OUT_UNKNOWN == vobj->getLastUpdateType())
+	{
+		return;
+	}
+	LLGLEnable blend(GL_BLEND);
+	switch (vobj->getLastUpdateType())
+	{
+	case OUT_FULL:
+		glColor4f(0,1,0,0.5f);
+		break;
+	case OUT_TERSE_IMPROVED:
+		glColor4f(0,1,1,0.5f);
+		break;
+	case OUT_FULL_COMPRESSED:
+		if (vobj->getLastUpdateCached())
+		{
+			glColor4f(1,0,0,0.5f);
+		}
+		else
+		{
+			glColor4f(1,1,0,0.5f);
+		}
+		break;
+	case OUT_FULL_CACHED:
+		glColor4f(0,0,1,0.5f);
+		break;
+	default:
+		llwarns << "Unknown update_type " << vobj->getLastUpdateType() << llendl;
+		break;
+	};
+	S32 num_faces = drawablep->getNumFaces();
+	if (num_faces)
+	{
+		for (S32 i = 0; i < num_faces; ++i)
+		{
+			pushVerts(drawablep->getFace(i), LLVertexBuffer::MAP_VERTEX);
+		}
+	}
+}
+
 
 void renderBoundingBox(LLDrawable* drawable, BOOL set_color = TRUE)
 {
@@ -2310,6 +2548,7 @@ void renderBoundingBox(LLDrawable* drawable, BOOL set_color = TRUE)
 						break;
 				case LL_PCODE_LEGACY_TREE:
 						gGL.color4f(0,0.5f,0,1);
+						break;
 				default:
 						gGL.color4f(1,0,1,1);
 						break;
@@ -2587,6 +2826,9 @@ public:
 			//draw tight fit bounding boxes for spatial group
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCTREE))
 			{	
+				group->rebuildGeom();
+				group->rebuildMesh();
+
 				renderOctree(group);
 				stop_glerror();
 			}
@@ -2594,6 +2836,9 @@ public:
 			//render visibility wireframe
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCCLUSION))
 			{
+				group->rebuildGeom();
+				group->rebuildMesh();
+
 				gGL.flush();
 				glPushMatrix();
 				gGLLastMatrix = NULL;
@@ -2618,6 +2863,19 @@ public:
 
 		LLVector3 nodeCenter = group->mBounds[0];
 		LLVector3 octCenter = LLVector3(group->mOctreeNode->getCenter());
+
+		group->rebuildGeom();
+		group->rebuildMesh();
+
+		if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_BBOXES))
+		{
+			if (!group->getData().empty())
+			{
+				gGL.color3f(0,0,1);
+				drawBoxOutline(group->mObjectBounds[0],
+								group->mObjectBounds[1]);
+			}
+		}
 
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getData().begin(); i != branch->getData().end(); ++i)
 		{
@@ -2726,6 +2984,79 @@ void LLSpatialPartition::renderIntersectingBBoxes(LLCamera* camera)
 	pusher.traverse(mOctree);
 }
 
+class LLOctreeStateCheck : public LLOctreeTraveler<LLDrawable>
+{
+public:
+	U32 mInheritedMask[LLViewerCamera::NUM_CAMERAS];
+
+	LLOctreeStateCheck()
+	{ 
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			mInheritedMask[i] = 0;
+		}
+	}
+
+	virtual void traverse(const LLSpatialGroup::OctreeNode* node)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
+		
+		node->accept(this);
+
+
+		U32 temp[LLViewerCamera::NUM_CAMERAS];
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			temp[i] = mInheritedMask[i];
+			mInheritedMask[i] |= group->mOcclusionState[i] & LLSpatialGroup::OCCLUDED; 
+		}
+
+		for (U32 i = 0; i < node->getChildCount(); i++)
+		{
+			traverse(node->getChild(i));
+		}
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			mInheritedMask[i] = temp[i];
+		}
+	}
+	
+
+	virtual void visit(const LLOctreeNode<LLDrawable>* state)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) state->getListener(0);
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			if (mInheritedMask[i] && !(group->mOcclusionState[i] & mInheritedMask[i]))
+			{
+				llerrs << "Spatial group failed inherited mask test." << llendl;
+			}
+		}
+
+		if (group->isState(LLSpatialGroup::DIRTY))
+		{
+			assert_parent_state(group, LLSpatialGroup::DIRTY);
+		}
+	}
+
+	void assert_parent_state(LLSpatialGroup* group, LLSpatialGroup::eSpatialState state)
+	{
+		LLSpatialGroup* parent = group->getParent();
+		while (parent)
+		{
+			if (!parent->isState(state))
+			{
+				llerrs << "Spatial group failed parent state check." << llendl;
+			}
+			parent = parent->getParent();
+		}
+	}	
+};
+
+
 void LLSpatialPartition::renderDebug()
 {
 	if (!gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCTREE |
@@ -2771,6 +3102,12 @@ void LLSpatialPartition::renderDebug()
 
 	LLOctreeRenderNonOccluded render_debug(camera);
 	render_debug.traverse(mOctree);
+}
+
+void LLSpatialGroup::drawObjectBox(LLColor4 col)
+{
+	gGL.color4fv(col.mV);
+	drawBox(mObjectBounds[0], mObjectBounds[1]*1.01f+LLVector3(0.001f, 0.001f, 0.001f));
 }
 
 
@@ -2953,10 +3290,10 @@ LLDrawInfo::LLDrawInfo(U16 start, U16 end, U32 count, U32 offset,
 
 LLDrawInfo::~LLDrawInfo()	
 {
-	if (LLSpatialGroup::sNoDelete)
+	/*if (LLSpatialGroup::sNoDelete)
 	{
 		llerrs << "LLDrawInfo deleted illegally!" << llendl;
-	}
+	}*/
 
 	if (mFace)
 	{
@@ -2977,11 +3314,22 @@ LLCullResult::LLCullResult()
 void LLCullResult::clear()
 {
 	mVisibleGroupsSize = 0;
+	mVisibleGroupsEnd = mVisibleGroups.begin();
+
 	mAlphaGroupsSize = 0;
+	mAlphaGroupsEnd = mAlphaGroups.begin();
+
 	mOcclusionGroupsSize = 0;
+	mOcclusionGroupsEnd = mOcclusionGroups.begin();
+
 	mDrawableGroupsSize = 0;
+	mDrawableGroupsEnd = mDrawableGroups.begin();
+
 	mVisibleListSize = 0;
+	mVisibleListEnd = mVisibleList.begin();
+
 	mVisibleBridgeSize = 0;
+	mVisibleBridgeEnd = mVisibleBridge.begin();
 
 	for (U32 i = 0; i < LLRenderPass::NUM_RENDER_TYPES; i++)
 	{
@@ -2990,6 +3338,7 @@ void LLCullResult::clear()
 			mRenderMap[i][j] = 0;
 		}
 		mRenderMapSize[i] = 0;
+		mRenderMapEnd[i] = mRenderMap[i].begin();
 	}
 }
 
@@ -3000,7 +3349,7 @@ LLCullResult::sg_list_t::iterator LLCullResult::beginVisibleGroups()
 
 LLCullResult::sg_list_t::iterator LLCullResult::endVisibleGroups()
 {
-	return mVisibleGroups.begin() + mVisibleGroupsSize;
+	return mVisibleGroupsEnd;
 }
 
 LLCullResult::sg_list_t::iterator LLCullResult::beginAlphaGroups()
@@ -3010,7 +3359,7 @@ LLCullResult::sg_list_t::iterator LLCullResult::beginAlphaGroups()
 
 LLCullResult::sg_list_t::iterator LLCullResult::endAlphaGroups()
 {
-	return mAlphaGroups.begin() + mAlphaGroupsSize;
+	return mAlphaGroupsEnd;
 }
 
 LLCullResult::sg_list_t::iterator LLCullResult::beginOcclusionGroups()
@@ -3020,7 +3369,7 @@ LLCullResult::sg_list_t::iterator LLCullResult::beginOcclusionGroups()
 
 LLCullResult::sg_list_t::iterator LLCullResult::endOcclusionGroups()
 {
-	return mOcclusionGroups.begin() + mOcclusionGroupsSize;
+	return mOcclusionGroupsEnd;
 }
 
 LLCullResult::sg_list_t::iterator LLCullResult::beginDrawableGroups()
@@ -3030,7 +3379,7 @@ LLCullResult::sg_list_t::iterator LLCullResult::beginDrawableGroups()
 
 LLCullResult::sg_list_t::iterator LLCullResult::endDrawableGroups()
 {
-	return mDrawableGroups.begin() + mDrawableGroupsSize;
+	return mDrawableGroupsEnd;
 }
 
 LLCullResult::drawable_list_t::iterator LLCullResult::beginVisibleList()
@@ -3040,7 +3389,7 @@ LLCullResult::drawable_list_t::iterator LLCullResult::beginVisibleList()
 
 LLCullResult::drawable_list_t::iterator LLCullResult::endVisibleList()
 {
-	return mVisibleList.begin() + mVisibleListSize;
+	return mVisibleListEnd;
 }
 
 LLCullResult::bridge_list_t::iterator LLCullResult::beginVisibleBridge()
@@ -3050,7 +3399,7 @@ LLCullResult::bridge_list_t::iterator LLCullResult::beginVisibleBridge()
 
 LLCullResult::bridge_list_t::iterator LLCullResult::endVisibleBridge()
 {
-	return mVisibleBridge.begin() + mVisibleBridgeSize;
+	return mVisibleBridgeEnd;
 }
 
 LLCullResult::drawinfo_list_t::iterator LLCullResult::beginRenderMap(U32 type)
@@ -3060,7 +3409,7 @@ LLCullResult::drawinfo_list_t::iterator LLCullResult::beginRenderMap(U32 type)
 
 LLCullResult::drawinfo_list_t::iterator LLCullResult::endRenderMap(U32 type)
 {
-	return mRenderMap[type].begin() + mRenderMapSize[type];
+	return mRenderMapEnd[type];
 }
 
 void LLCullResult::pushVisibleGroup(LLSpatialGroup* group)
@@ -3074,6 +3423,7 @@ void LLCullResult::pushVisibleGroup(LLSpatialGroup* group)
 		mVisibleGroups.push_back(group);
 	}
 	++mVisibleGroupsSize;
+	mVisibleGroupsEnd = mVisibleGroups.begin()+mVisibleGroupsSize;
 }
 
 void LLCullResult::pushAlphaGroup(LLSpatialGroup* group)
@@ -3087,6 +3437,7 @@ void LLCullResult::pushAlphaGroup(LLSpatialGroup* group)
 		mAlphaGroups.push_back(group);
 	}
 	++mAlphaGroupsSize;
+	mAlphaGroupsEnd = mAlphaGroups.begin()+mAlphaGroupsSize;
 }
 
 void LLCullResult::pushOcclusionGroup(LLSpatialGroup* group)
@@ -3100,6 +3451,7 @@ void LLCullResult::pushOcclusionGroup(LLSpatialGroup* group)
 		mOcclusionGroups.push_back(group);
 	}
 	++mOcclusionGroupsSize;
+	mOcclusionGroupsEnd = mOcclusionGroups.begin()+mOcclusionGroupsSize;
 }
 
 void LLCullResult::pushDrawableGroup(LLSpatialGroup* group)
@@ -3113,6 +3465,7 @@ void LLCullResult::pushDrawableGroup(LLSpatialGroup* group)
 		mDrawableGroups.push_back(group);
 	}
 	++mDrawableGroupsSize;
+	mDrawableGroupsEnd = mDrawableGroups.begin()+mDrawableGroupsSize;
 }
 
 void LLCullResult::pushDrawable(LLDrawable* drawable)
@@ -3126,6 +3479,7 @@ void LLCullResult::pushDrawable(LLDrawable* drawable)
 		mVisibleList.push_back(drawable);
 	}
 	++mVisibleListSize;
+	mVisibleListEnd = mVisibleList.begin()+mVisibleListSize;
 }
 
 void LLCullResult::pushBridge(LLSpatialBridge* bridge)
@@ -3139,6 +3493,7 @@ void LLCullResult::pushBridge(LLSpatialBridge* bridge)
 		mVisibleBridge.push_back(bridge);
 	}
 	++mVisibleBridgeSize;
+	mVisibleBridgeEnd = mVisibleBridge.begin()+mVisibleBridgeSize;
 }
 
 void LLCullResult::pushDrawInfo(U32 type, LLDrawInfo* draw_info)
@@ -3152,6 +3507,7 @@ void LLCullResult::pushDrawInfo(U32 type, LLDrawInfo* draw_info)
 		mRenderMap[type].push_back(draw_info);
 	}
 	++mRenderMapSize[type];
+	mRenderMapEnd[type] = mRenderMap[type].begin() + mRenderMapSize[type];
 }
 
 
