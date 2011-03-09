@@ -456,7 +456,6 @@ void LLViewerObject::initVOClasses()
 	llinfos << "Viewer Object size: " << sizeof(LLViewerObject) << llendl;
 	LLVOGrass::initClass();
 	LLVOWater::initClass();
-	LLVOSky::initClass();
 	LLVOVolume::initClass();
 }
 

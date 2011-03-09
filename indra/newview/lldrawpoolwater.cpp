@@ -137,6 +137,19 @@ void LLDrawPoolWater::endPostDeferredPass(S32 pass)
 	deferred_render = FALSE;
 }
 
+//===============================
+//DEFERRED IMPLEMENTATION
+//===============================
+void LLDrawPoolWater::renderDeferred(S32 pass)
+{
+	LLFastTimer t(LLFastTimer::FTM_RENDER_WATER);
+	deferred_render = TRUE;
+	shade();
+	deferred_render = FALSE;
+}
+
+//=========================================
+
 void LLDrawPoolWater::render(S32 pass)
 {
 	LLFastTimer ftm(LLFastTimer::FTM_RENDER_WATER);
@@ -338,7 +351,10 @@ void LLDrawPoolWater::renderReflection(LLFace* face)
 
 void LLDrawPoolWater::shade()
 {
-	gGL.setColorMask(true, true);
+	if (!deferred_render)
+	{
+		gGL.setColorMask(true, true);
+	}
 
 	LLVOSky *voskyp = gSky.mVOSkyp;
 
@@ -354,7 +370,7 @@ void LLDrawPoolWater::shade()
 	LLVector3 light_dir;
 	LLColor3 light_color;
 
-	if (gSky.getSunDirection().mV[2] > NIGHTTIME_ELEVATION_COS) 	 
+	if (gSky.getSunDirection().mV[2] > LLSky::NIGHTTIME_ELEVATION_COS) 	 
     { 	 
         light_dir  = gSky.getSunDirection(); 	 
         light_dir.normVec(); 	
@@ -388,17 +404,26 @@ void LLDrawPoolWater::shade()
 
 	F32 eyedepth = LLViewerCamera::getInstance()->getOrigin().mV[2] - gAgent.getRegion()->getWaterHeight();
 	
-	if (deferred_render)
+	if (eyedepth > 0.f && deferred_render)
 	{
 		shader = &gDeferredWaterProgram;
 	}
-	else if (eyedepth < 0.f && LLPipeline::sWaterReflections)
+	else if (eyedepth < 0.f /*&& LLPipeline::sWaterReflections*/)
 	{
 		shader = &gUnderWaterProgram;
 	}
 	else
 	{
 		shader = &gWaterProgram;
+	}
+
+	if (deferred_render)
+	{
+		gPipeline.bindDeferredShader(*shader);
+	}
+	else
+	{
+		shader->bind();
 	}
 
 	sTime = (F32)LLFrameTimer::getElapsedSeconds()*0.5f;
@@ -436,15 +461,6 @@ void LLDrawPoolWater::shade()
 	
 	S32 screentex = shader->enableTexture(LLViewerShaderMgr::WATER_SCREENTEX);	
 		
-	if (deferred_render)
-	{
-		gPipeline.bindDeferredShader(*shader);
-	}
-	else
-	{
-		shader->bind();
-	}
-	
 	if (screentex > -1)
 	{
 		shader->uniform4fv(LLViewerShaderMgr::WATER_FOGCOLOR, 1, sWaterFogColor.mV);
@@ -545,7 +561,7 @@ void LLDrawPoolWater::shade()
 				sNeedsDistortionUpdate = TRUE;
 				face->renderIndexed();
 			}
-			else if (gGLManager.mHasDepthClamp)
+			else if (gGLManager.mHasDepthClamp || deferred_render)
 			{
 				face->renderIndexed();
 			}
@@ -575,7 +591,10 @@ void LLDrawPoolWater::shade()
 
 	gGL.getTexUnit(0)->activate();
 	gGL.getTexUnit(0)->enable(LLTexUnit::TT_TEXTURE);
-	gGL.setColorMask(true, false);
+	if (!deferred_render)
+	{
+		gGL.setColorMask(true, false);
+	}
 
 }
 

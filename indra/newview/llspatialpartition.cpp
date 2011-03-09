@@ -534,7 +534,7 @@ void LLSpatialPartition::rebuildGeom(LLSpatialGroup* group)
 		return;
 	}
 
-	if (/*!LLPipeline::sSkipUpdate && */group->changeLOD())
+	if (!LLPipeline::sSkipUpdate && group->changeLOD())
 	{
 		group->mLastUpdateDistance = group->mDistance;
 		group->mLastUpdateViewAngle = group->mViewAngle;
@@ -1397,7 +1397,6 @@ void LLSpatialGroup::checkOcclusion()
 		}
 		else if (isOcclusionState(QUERY_PENDING))
 		{	//otherwise, if a query is pending, read it back
-			LLFastTimer t(LLFastTimer::FTM_OCCLUSION_READBACK);
 			GLuint res = 1;
 			if (!isOcclusionState(DISCARD_QUERY) && mOcclusionQuery[LLViewerCamera::sCurCameraID])
 			{
@@ -1437,10 +1436,9 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 {
 	if (mSpatialPartition->isOcclusionEnabled() && LLPipeline::sUseOcclusion > 1)
 	{
-		static const LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
+		//static const LLCachedControl<BOOL> render_water_void_culling("RenderWaterVoidCulling", TRUE);
 		// Don't cull hole/edge water, unless RenderWaterVoidCulling is set and we have the GL_ARB_depth_clamp extension.
-		if ((mSpatialPartition->mDrawableType == LLPipeline::RENDER_TYPE_VOIDWATER &&
-			 !(render_water_void_culling && gGLManager.mHasDepthClamp)) ||
+		if ((mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER && !gGLManager.mHasDepthClamp) ||
 			earlyFail(camera, this))
 		{
 			setOcclusionState(LLSpatialGroup::DISCARD_QUERY);
@@ -1466,10 +1464,9 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 				// Depth clamp all water to avoid it being culled as a result of being
 				// behind the far clip plane, and in the case of edge water to avoid
 				// it being culled while still visible.
-				bool const use_depth_clamp =
-					gGLManager.mHasDepthClamp &&
-					(mSpatialPartition->mDrawableType == LLPipeline::RENDER_TYPE_WATER ||
-					 mSpatialPartition->mDrawableType == LLPipeline::RENDER_TYPE_VOIDWATER);
+				bool const use_depth_clamp = gGLManager.mHasDepthClamp &&
+											(mSpatialPartition->mDrawableType == LLDrawPool::POOL_WATER ||
+											mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER);
 				if (use_depth_clamp)
 				{
 					glEnable(GL_DEPTH_CLAMP);

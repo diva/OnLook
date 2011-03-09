@@ -78,16 +78,9 @@ static const LLVector2 TEX01 = LLVector2(0.f, 1.f);
 static const LLVector2 TEX10 = LLVector2(1.f, 0.f);
 static const LLVector2 TEX11 = LLVector2(1.f, 1.f);
 
-// Exported global semi-constants.
+// Exported globals
 LLUUID gSunTextureID = IMG_SUN;
 LLUUID gMoonTextureID = IMG_MOON;
-// Exported global constants.
-LLColor3 const gAirScaSeaLevel = calc_air_sca_sea_level();
-F32 const AIR_SCA_INTENS = color_intens(gAirScaSeaLevel);
-F32 const AIR_SCA_AVG = AIR_SCA_INTENS / 3.f;
-
-//static 
-LLColor3 LLHaze::sAirScaSeaLevel;
 
 class LLFastLn
 {
@@ -191,6 +184,23 @@ inline void color_gamma_correct(LLColor3 &col)
 	}
 }
 
+static LLColor3 calc_air_sca_sea_level()
+{
+	static LLColor3 WAVE_LEN(675, 520, 445);
+	static LLColor3 refr_ind = refr_ind_calc(WAVE_LEN);
+	static LLColor3 n21 = refr_ind * refr_ind - LLColor3(1, 1, 1);
+	static LLColor3 n4 = n21 * n21;
+	static LLColor3 wl2 = WAVE_LEN * WAVE_LEN * 1e-6f;
+	static LLColor3 wl4 = wl2 * wl2;
+	static LLColor3 mult_const = fsigma * 2.0f/ 3.0f * 1e24f * (F_PI * F_PI) * n4;
+	static F32 dens_div_N = F32( ATM_SEA_LEVEL_NDENS / Ndens2);
+	return dens_div_N * color_div ( mult_const, wl4 );
+}
+
+// static constants.
+LLColor3 const LLHaze::sAirScaSeaLevel = calc_air_sca_sea_level();
+F32 const LLHaze::sAirScaIntense = color_intens(LLHaze::sAirScaSeaLevel);	
+F32 const LLHaze::sAirScaAvg = LLHaze::sAirScaIntense / 3.f;
 
 
 /***************************************
@@ -389,20 +399,19 @@ LLVOSky::LLVOSky(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	mBloomTexturep->setAddressMode(LLTexUnit::TAM_CLAMP);
 
 	mHeavenlyBodyUpdated = FALSE ;
+
+	mDrawRefl = 0;
+	mHazeConcentration = 0.f;
+	mInterpVal = 0.f;
 }
 
 
 LLVOSky::~LLVOSky()
 {
-	// Don't delete images - it'll get deleted by gImageList on shutdown
+	// Don't delete images - it'll get deleted by gTextureList on shutdown
 	// This needs to be done for each texture
 
 	mCubeMap = NULL;
-}
-
-void LLVOSky::initClass()
-{
-	LLHaze::initClass();
 }
 
 
@@ -969,7 +978,7 @@ void LLVOSky::calcAtmospherics(void)
 		
 		// and vary_sunlight will work properly with moon light
 		F32 lighty = unclamped_lightnorm[1];
-		if(lighty < NIGHTTIME_ELEVATION_COS)
+		if(lighty < LLSky::NIGHTTIME_ELEVATION_COS)
 		{
 			lighty = -lighty;
 		}
@@ -1080,10 +1089,10 @@ BOOL LLVOSky::updateSky()
 		++next_frame;
 		next_frame = next_frame % cycle_frame_no;
 
-		sInterpVal = (!mInitialized) ? 1 : (F32)next_frame / cycle_frame_no;
+		mInterpVal = (!mInitialized) ? 1 : (F32)next_frame / cycle_frame_no;
 		// sInterpVal = (F32)next_frame / cycle_frame_no;
-		LLSkyTex::setInterpVal( sInterpVal );
-		LLHeavenBody::setInterpVal( sInterpVal );
+		LLSkyTex::setInterpVal( mInterpVal );
+		LLHeavenBody::setInterpVal( mInterpVal );
 		calcAtmospherics();
 
 		if (mForceUpdate || total_no_tiles == frame)
@@ -2151,17 +2160,8 @@ void LLVOSky::updateFog(const F32 distance)
 	stop_glerror();
 }
 
-// static
-void LLHaze::initClass()
-{
-	sAirScaSeaLevel = LLHaze::calcAirScaSeaLevel();
-}
-
-
 
 // Functions used a lot.
-
-
 F32 color_norm_pow(LLColor3& col, F32 e, BOOL postmultiply)
 {
 	F32 mv = color_max(col);

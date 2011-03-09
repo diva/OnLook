@@ -71,14 +71,14 @@ void main()
 
 	color.rgb = scaleSoftClip(color.rgb);
 
-	if (samp_pos.z != 0.0)
+	/*if (samp_pos.z != 0.0)
 	{
 		float dist_factor = alpha_soften;
 		float a = gl_Color.a;
 		a *= a;
 		dist_factor *= 1.0/(1.0-a);
 		color.a *= min((pos.z-samp_pos.z)*dist_factor, 1.0);
-	}
+	}*/
 	
 	//gl_FragColor = gl_Color;
 	gl_FragColor = color;

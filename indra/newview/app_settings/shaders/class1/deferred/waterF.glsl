@@ -5,6 +5,7 @@
  * $License$
  */
 
+#extension GL_ARB_texture_rectangle : enable
 vec3 scaleSoftClip(vec3 inColor);
 vec3 atmosTransport(vec3 inColor);
 
@@ -32,6 +33,7 @@ uniform vec3 normScale;
 uniform float fresnelScale;
 uniform float fresnelOffset;
 uniform float blurMultiplier;
+uniform mat4 norm_mat; //region space to screen space
 
 
 //bigWave is (refCoord.w, view.w);
@@ -88,7 +90,7 @@ void main()
 	refcol *= df1 * 0.333;
 	
 	vec3 wavef = (wave1 + wave2 * 0.4 + wave3 * 0.6) * 0.5;
-	wavef.z *= max(-viewVec.z, 0.1);
+//	wavef.z *= max(-viewVec.z, 0.1);
 	wavef = normalize(wavef);
 	
 	float df2 = dot(viewVec, wavef) * fresnelScale+fresnelOffset;
@@ -101,10 +103,10 @@ void main()
 	refcol = mix(baseCol*df2, refcol, dweight);
 
 	//get specular component
-	float spec = clamp(dot(lightDir, (reflect(viewVec,wavef))),0.0,1.0);
+//	float spec = clamp(dot(lightDir, (reflect(viewVec,wavef))),0.0,1.0);
 		
 	//harden specular
-	spec = pow(spec, 128.0);
+//	spec = pow(spec, 128.0);
 
 	//figure out distortion vector (ripply)   
 	vec2 distort2 = distort+wavef.xy*refScale/max(dmod*df1, 1.0);
@@ -118,13 +120,13 @@ void main()
 	float shadow = 1.0;
 	vec4 pos = vary_position;
 	
-	vec3 nz = texture2D(noiseMap, gl_FragCoord.xy/128.0).xyz;
+	//vec3 nz = texture2D(noiseMap, gl_FragCoord.xy/128.0).xyz;
 
-	if (pos.z > -shadow_clip.w)
-	{	
+//	if (pos.z > -shadow_clip.w)
+//	{	
 		vec4 spos = pos;
 			
-		if (pos.z < -shadow_clip.z)
+/*		if (pos.z < -shadow_clip.z)
 		{
 			vec4 lpos = (shadow_matrix[3]*spos);
 			shadow = shadow2DProj(shadowMap3, lpos).x;
@@ -144,14 +146,19 @@ void main()
 			vec4 lpos = (shadow_matrix[0]*spos);
 			shadow = shadow2DProj(shadowMap0, lpos).x;
 		}
-	}
+	}*/
 	
-	spec *= shadow;
-	color.rgb += spec * specular;
+//	spec *= shadow;
+//	color.rgb += spec * specular;
 	
 	color.rgb = atmosTransport(color.rgb);
-	color.rgb = scaleSoftClip(color.rgb);
-	color.a = spec * sunAngle2;
+//	color.rgb = scaleSoftClip(color.rgb);
+//	color.a = spec * sunAngle2;
 
-	gl_FragColor = color;
+//	gl_FragColor = color;
+	vec3 screenspacewavef = (norm_mat*vec4(wavef, 1.0)).xyz;
+	
+	gl_FragData[0] = vec4(color.rgb, 0.5); // diffuse
+	gl_FragData[1] = vec4(0.5,0.5,0.5, 0.95); // speccolor*spec, spec
+	gl_FragData[2] = vec4(screenspacewavef, 0.0); // normalxyz, displace
 }

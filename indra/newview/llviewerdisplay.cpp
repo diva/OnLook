@@ -615,6 +615,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		const F32 max_geom_update_time = 0.005f*10.f*gFrameIntervalSeconds; // 50 ms/second update time
 		gPipeline.createObjects(max_geom_update_time);
 		gPipeline.updateGeom(max_geom_update_time);
+		gPipeline.updateGL();
 		stop_glerror();
 		
 		gFrameStats.start(LLFrameStats::UPDATE_CULL);
@@ -667,6 +668,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLState::checkClientArrays();
 
 		static LLCullResult result;
+		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 		gPipeline.updateCull(*LLViewerCamera::getInstance(), result, water_clip);
 		stop_glerror();
 
@@ -784,6 +786,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		//
 		LLAppViewer::instance()->pingMainloopTimeout("Display:StateSort");
 		{
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			gFrameStats.start(LLFrameStats::STATE_SORT);
 			gPipeline.sAllowRebuildPriorityGroup = TRUE ;
 			gPipeline.stateSort(*LLViewerCamera::getInstance(), result);
@@ -887,7 +890,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
 				&& !gRestoreGL)
 		{
-
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			gGL.setColorMask(true, false);
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
@@ -1366,6 +1369,12 @@ void render_disconnected_background()
 	gGL.color4f(1,1,1,1);
 	if (!gDisconnectedImagep && gDisconnected)
 	{
+		//Default black image.
+		gDisconnectedImagep = new LLImageGL( FALSE );
+		LLPointer<LLImageRaw> raw = new LLImageRaw(1,1,3);
+		raw->clear();
+		gDisconnectedImagep->createGLTexture(0, raw, 0, TRUE, LLViewerImageBoostLevel::OTHER);
+		
 		llinfos << "Loading last bitmap..." << llendl;
 
 		std::string temp_str;
@@ -1378,8 +1387,6 @@ void render_disconnected_background()
 			return;
 		}
 
-		gDisconnectedImagep = new LLImageGL( FALSE );
-		LLPointer<LLImageRaw> raw = new LLImageRaw;
 		if (!image_bmp->decode(raw, 0.0f))
 		{
 			llinfos << "Bitmap decode failed" << llendl;
