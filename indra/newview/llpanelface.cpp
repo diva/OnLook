@@ -276,9 +276,12 @@ void LLPanelFace::sendAlpha()
 void LLPanelFace::sendGlow()
 {
 	LLSpinCtrl*	mCtrlGlow = getChild<LLSpinCtrl>("glow");
-	F32 glow = mCtrlGlow->get();
-
-	LLSelectMgr::getInstance()->selectionSetGlow( glow );
+	llassert(mCtrlGlow);
+	if (mCtrlGlow)
+	{
+		F32 glow = mCtrlGlow->get();
+		LLSelectMgr::getInstance()->selectionSetGlow( glow );
+	}
 }
 
 struct LLPanelFaceSetTEFunctor : public LLSelectedTEFunctor
@@ -296,6 +299,8 @@ struct LLPanelFaceSetTEFunctor : public LLSelectedTEFunctor
 		LLCheckBoxCtrl*	checkFlipScaleS = mPanel->getChild<LLCheckBoxCtrl>("checkbox flip s");
 		LLCheckBoxCtrl*	checkFlipScaleT = mPanel->getChild<LLCheckBoxCtrl>("checkbox flip t");
 		LLComboBox*		comboTexGen = mPanel->getChild<LLComboBox>("combobox texgen");
+		llassert(comboTexGen);
+		llassert(object);
 		if (ctrlTexScaleS)
 		{
 			valid = !ctrlTexScaleS->getTentative() || !checkFlipScaleS->getTentative();
@@ -306,7 +311,8 @@ struct LLPanelFaceSetTEFunctor : public LLSelectedTEFunctor
 				{
 					value = -value;
 				}
-				if (comboTexGen->getCurrentIndex() == 1)
+				if (comboTexGen &&
+				    comboTexGen->getCurrentIndex() == 1)
 				{
 					value *= 0.5f;
 				}
@@ -324,7 +330,8 @@ struct LLPanelFaceSetTEFunctor : public LLSelectedTEFunctor
 				{
 					value = -value;
 				}
-				if (comboTexGen->getCurrentIndex() == 1)
+				if (comboTexGen &&
+				    comboTexGen->getCurrentIndex() == 1)
 				{
 					value *= 0.5f;
 				}
