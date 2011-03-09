@@ -404,11 +404,11 @@ void LLDrawPoolWater::shade()
 
 	F32 eyedepth = LLViewerCamera::getInstance()->getOrigin().mV[2] - gAgent.getRegion()->getWaterHeight();
 	
-	if (eyedepth > 0.f && deferred_render)
+	if (deferred_render)
 	{
 		shader = &gDeferredWaterProgram;
 	}
-	else if (eyedepth < 0.f /*&& LLPipeline::sWaterReflections*/)
+	else if (eyedepth < 0.f && LLPipeline::sWaterReflections)
 	{
 		shader = &gUnderWaterProgram;
 	}
