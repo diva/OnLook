@@ -209,6 +209,7 @@ public:
 	virtual LLVector3d getPosGlobalFromAgent(const LLVector3 &position);
 	virtual LLVector3 getPosAgentFromGlobal(const LLVector3d &position);
 	virtual void updateVisualParams();
+	LLUUID remapMotionID(const LLUUID& id);
 	virtual BOOL startMotion(const LLUUID& id, F32 time_offset = 0.f);
 	virtual BOOL stopMotion(const LLUUID& id, BOOL stop_immediate = FALSE);
 	virtual void stopMotionFromSource(const LLUUID& source_id);
