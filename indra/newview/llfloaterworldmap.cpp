@@ -167,7 +167,6 @@ LLFloaterWorldMap::LLFloaterWorldMap()
 {
 	LLCallbackMap::map_t factory_map;
 	factory_map["objects_mapview"] = LLCallbackMap(createWorldMapView, NULL);
-	factory_map["terrain_mapview"] = LLCallbackMap(createWorldMapView, NULL);
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_world_map.xml", &factory_map);
 }
 
@@ -183,19 +182,6 @@ BOOL LLFloaterWorldMap::postBuild()
 	if (!mTabs) return FALSE;
 
 	LLPanel *panel;
-
-	panel = mTabs->getChild<LLPanel>("objects_mapview");
-	if (panel)
-	{
-		mTabs->setTabChangeCallback(panel, onCommitBackground);
-		mTabs->setTabUserData(panel, this);
-	}
-	panel = mTabs->getChild<LLPanel>("terrain_mapview");
-	if (panel)
-	{
-		mTabs->setTabChangeCallback(panel, onCommitBackground);
-		mTabs->setTabUserData(panel, this);
-	}
 
 	// The following callback syncs the worlmap tabs with the images.
 	// Commented out since it was crashing when LLWorldMap became a singleton.
@@ -1564,17 +1550,6 @@ void LLFloaterWorldMap::flyToAvatar()
 	{
 		gAgent.startAutoPilotGlobal( LLAvatarTracker::instance().getGlobalPos() );
 	}
-}
-
-// static
-void LLFloaterWorldMap::onCommitBackground(void* userdata, bool from_click)
-{
-	LLFloaterWorldMap* self = (LLFloaterWorldMap*) userdata;
-
-	// Find my index
-	S32 index = self->mTabs->getCurrentPanelIndex();
-
-	LLWorldMap::getInstance()->setCurrentLayer(index);
 }
 
 void LLFloaterWorldMap::updateSims(bool found_null_sim)

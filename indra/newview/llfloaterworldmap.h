@@ -123,8 +123,6 @@ protected:
 	static void		onAvatarComboPrearrange( LLUICtrl* ctrl, void* data );
 	static void		onAvatarComboCommit( LLUICtrl* ctrl, void* data );
 
-	static void		onCommitBackground(void* data, bool from_click);
-
 	static void		onComboTextEntry( LLLineEditor* ctrl, void* data );
 	static void		onSearchTextEntry( LLLineEditor* ctrl, void* data );
 
