@@ -550,7 +550,7 @@ LLPluginClassMedia* LLMediaCtrl::getMediaPlugin()
 //
 void LLMediaCtrl::draw()
 {
-	if ( ! mWebBrowserImage )
+	if ( ! mWebBrowserImage || mWebBrowserImage->getNeedsUpdate())
 		return;
 
 	if ( gRestoreGL == 1 )
@@ -1129,12 +1129,14 @@ bool LLWebBrowserTexture::updateBrowserTexture()
 		mHeight = media->getTextureHeight();
 		mTextureCoordsOpenGL = media->getTextureCoordsOpenGL();
 
+		const LLColor4U fill_color(0,0,0,255);
 		// will create mWidth * mHeight sized texture, using the texture params specified by the media.
 		LLDynamicTexture::generateGLTexture(
 				media->getTextureFormatInternal(), 
 				media->getTextureFormatPrimary(), 
 				media->getTextureFormatType(), 
-				media->getTextureFormatSwapBytes());
+				media->getTextureFormatSwapBytes(),
+				&fill_color); //Initialize the texture to black.
 
 
 		mMediaSource->mNeedsNewTexture = false;

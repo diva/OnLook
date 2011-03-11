@@ -97,7 +97,7 @@ void LLDynamicTexture::generateGLTexture()
 	generateGLTexture(-1, 0, 0, FALSE);
 }
 
-void LLDynamicTexture::generateGLTexture(LLGLint internal_format, LLGLenum primary_format, LLGLenum type_format, BOOL swap_bytes)
+void LLDynamicTexture::generateGLTexture(LLGLint internal_format, LLGLenum primary_format, LLGLenum type_format, BOOL swap_bytes, const LLColor4U *fill_color/* = NULL*/)
 {
 	if (mComponents < 1 || mComponents > 4)
 	{
@@ -105,6 +105,8 @@ void LLDynamicTexture::generateGLTexture(LLGLint internal_format, LLGLenum prima
 	}
 	releaseGLTexture();
 	LLPointer<LLImageRaw> raw_image = new LLImageRaw(mWidth, mHeight, mComponents);
+	if(fill_color)
+		raw_image->fill(*fill_color);
 	mTexture = new LLViewerImage(mWidth, mHeight, mComponents, FALSE);
 	if (internal_format >= 0)
 	{
