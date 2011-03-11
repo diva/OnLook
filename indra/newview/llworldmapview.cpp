@@ -111,9 +111,9 @@ F32 CONE_SIZE = 0.6f;
 
 std::map<std::string,std::string> LLWorldMapView::sStringsMap;
 
-#define SIM_NULL_MAP_SCALE 1 // width in pixels, where we start drawing "null" sims
-#define SIM_MAP_AGENT_SCALE 2 // width in pixels, where we start drawing agents
-#define SIM_MAP_SCALE 1 // width in pixels, where we start drawing sim tiles
+#define SIM_NULL_MAP_SCALE 4 // width in pixels, where we start drawing "null" sims
+#define SIM_MAP_AGENT_SCALE 16 // width in pixels, where we start drawing agents
+#define SIM_MAP_SCALE 4 // width in pixels, where we start drawing sim tiles
 
 // Updates for agent locations.
 #define AGENTS_UPDATE_TIME 60.0 // in seconds
@@ -313,8 +313,6 @@ void LLWorldMapView::draw()
 
 	const S32 width = getRect().getWidth();
 	const S32 height = getRect().getHeight();
-	const F32 half_width = F32(width) / 2.0f;
-	const F32 half_height = F32(height) / 2.0f;
 	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
 
 	LLLocalClipRect clip(getLocalRect());
@@ -337,8 +335,251 @@ void LLWorldMapView::draw()
 	gGL.setColorMask(true, true);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
-	F32 layer_alpha = 1.f;
+	drawTiles(width, height);
+	
+	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
+	const F32 half_width = F32(width) / 2.0f;
+	const F32 half_height = F32(height) / 2.0f;	
 
+	// Draw the region name in the lower left corner	
+	for (LLWorldMap::sim_info_map_t::iterator it = LLWorldMap::getInstance()->mSimInfoMap.begin();
+		 it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
+	{
+		U64 handle = it->first;
+		LLSimInfo* info = (*it).second;		
+		
+		LLVector3d origin_global = from_region_handle(handle);
+
+		// Find x and y position relative to camera's center.
+		LLVector3d rel_region_pos = origin_global - camera_global;
+		F32 relative_x = (rel_region_pos.mdV[0] / REGION_WIDTH_METERS) * sMapScale;
+		F32 relative_y = (rel_region_pos.mdV[1] / REGION_WIDTH_METERS) * sMapScale;
+		
+		F32 bottom =	sPanY + half_height + relative_y;
+		F32 left =		sPanX + half_width + relative_x;
+		
+		std::string mesg;
+		if (sMapScale < sThresholdA)
+		{
+		}
+		else if (sMapScale < sThresholdB)
+		{
+			//	mesg = llformat( info->mAgents);
+		}
+		else
+		{
+			//mesg = llformat("%d / %s (%s)",
+			//			info->mAgents,
+			//			info->mName.c_str(),
+			//			LLViewerRegion::accessToShortString(info->mAccess).c_str() );
+			// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+			{
+				mesg = RlvStrings::getString(RLV_STRING_HIDDEN);
+			}
+			// [/RLVa:KB]
+			else if (info->mAccess == SIM_ACCESS_DOWN)
+			{
+				mesg = llformat( "%s (%s)", info->mName.c_str(), sStringsMap["offline"].c_str());
+			}
+			else
+			{
+				mesg = info->mName;
+			}
+		}
+		
+		if (!mesg.empty())
+		{
+			font->renderUTF8(
+					mesg, 0,
+					llfloor(left + 3), 
+					llfloor(bottom + 2),
+					LLColor4::white,
+					LLFontGL::LEFT,
+					LLFontGL::BASELINE,
+					LLFontGL::DROP_SHADOW);
+			
+			// If map texture is still loading,
+			// display "Loading" placeholder text.
+			/*if ((simimage != NULL) &&
+				simimage->getDiscardLevel() != 1 &&
+				simimage->getDiscardLevel() != 0)
+			{
+				font->renderUTF8(
+						sStringsMap["loading"], 0,
+						llfloor(left + 18), 
+						llfloor(top - 25),
+						LLColor4::white,
+						LLFontGL::LEFT,
+						LLFontGL::BASELINE,
+						LLFontGL::DROP_SHADOW);			
+			}*/
+		}
+	}
+	
+	
+	// Draw background rectangle
+	LLGLSUIDefault gls_ui;
+	{
+		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		gGL.setAlphaRejectSettings(LLRender::CF_GREATER_EQUAL, 0.f);
+		gGL.blendFunc(LLRender::BF_ONE_MINUS_DEST_ALPHA, LLRender::BF_DEST_ALPHA);
+		gGL.color4fv( mBackgroundColor.mV );
+		gl_rect_2d(0, height, width, 0);
+	}
+	
+	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+
+	// Infohubs
+	if (gSavedSettings.getBOOL("MapShowInfohubs"))   //(sMapScale >= sThresholdB)
+	{
+		drawGenericItems(LLWorldMap::getInstance()->mInfohubs, sInfohubImage);
+	}
+
+	// Telehubs
+	if (gSavedSettings.getBOOL("MapShowTelehubs"))   //(sMapScale >= sThresholdB)
+	{
+		drawGenericItems(LLWorldMap::getInstance()->mTelehubs, sTelehubImage);
+	}
+
+	// Home Sweet Home
+	LLVector3d home;
+	if (gAgent.getHomePosGlobal(&home))
+	{
+		drawImage(home, sHomeImage);
+	}
+
+	if (gSavedSettings.getBOOL("MapShowLandForSale"))
+	{
+		drawGenericItems(LLWorldMap::getInstance()->mLandForSale, sForSaleImage);
+		// for 1.23, we're showing normal land and adult land in the same UI; you don't
+		// get a choice about which ones you want. If you're currently asking for adult
+		// content and land you'll get the adult land.
+		if (gAgent.canAccessAdult())
+		{
+			drawGenericItems(LLWorldMap::getInstance()->mLandForSaleAdult, sForSaleAdultImage);
+		}
+	}
+	
+	if (gSavedSettings.getBOOL("MapShowPGEvents") ||
+		gSavedSettings.getBOOL("MapShowMatureEvents") ||
+		gSavedSettings.getBOOL("MapShowAdultEvents") )
+	{
+		drawEvents();
+	}
+
+	// Now draw your avatar after all that other stuff.
+	LLVector3d pos_global = gAgent.getPositionGlobal();
+	drawImage(pos_global, sAvatarYouImage);
+
+	LLVector3 pos_map = globalPosToView(pos_global);
+	if (!pointInView(llround(pos_map.mV[VX]), llround(pos_map.mV[VY])))
+	{
+		drawTracking(pos_global, 
+			lerp(LLColor4::yellow, LLColor4::orange, 0.4f), 
+			TRUE, 
+			"You are here", 
+			"", 
+			llround(LLFontGL::getFontSansSerifSmall()->getLineHeight())); // offset vertically by one line, to avoid overlap with target tracking
+	}
+
+	// Show your viewing angle
+	drawFrustum();
+
+	// Draw icons for the avatars in each region.
+	// Drawn after your avatar so you can see nearby people.
+	if (gSavedSettings.getBOOL("MapShowPeople"))
+	{
+		drawAgents();
+	}
+
+	// Always draw tracking information
+	LLTracker::ETrackingStatus tracking_status = LLTracker::getTrackingStatus();
+	if ( LLTracker::TRACKING_AVATAR == tracking_status )
+	{
+		drawTracking( LLAvatarTracker::instance().getGlobalPos(), gTrackColor, TRUE, LLTracker::getLabel(), "" );
+	} 
+	else if ( LLTracker::TRACKING_LANDMARK == tracking_status 
+			 || LLTracker::TRACKING_LOCATION == tracking_status )
+	{
+		// While fetching landmarks, will have 0,0,0 location for a while,
+		// so don't draw. JC
+		LLVector3d pos_global = LLTracker::getTrackedPositionGlobal();
+		if (!pos_global.isExactlyZero())
+		{
+			drawTracking( pos_global, gTrackColor, TRUE, LLTracker::getLabel(), LLTracker::getToolTip() );
+		}
+	}
+	else if (LLWorldMap::getInstance()->mIsTrackingUnknownLocation)
+	{
+		if (LLWorldMap::getInstance()->mInvalidLocation)
+		{
+			// We know this location to be invalid
+			LLColor4 loading_color(0.0, 0.5, 1.0, 1.0);
+			drawTracking( LLWorldMap::getInstance()->mUnknownLocation, loading_color, TRUE, "Invalid Location", "");
+		}
+		else
+		{
+			double value = fmod(current_time, 2);
+			value = 0.5 + 0.5*cos(value * 3.14159f);
+			LLColor4 loading_color(0.0, F32(value/2), F32(value), 1.0);
+			drawTracking( LLWorldMap::getInstance()->mUnknownLocation, loading_color, TRUE, "Loading...", "");
+		}
+	}
+	// #endif used to be here
+	
+	// turn off the scissor
+	LLGLDisable no_scissor(GL_SCISSOR_TEST);
+	
+	updateDirections();
+
+	LLView::draw();
+
+	updateVisibleBlocks();
+} // end draw()
+
+
+//virtual
+void LLWorldMapView::setVisible(BOOL visible)
+{
+	LLPanel::setVisible(visible);
+	if (!visible)
+	{
+		for (S32 map = 0; map < MAP_SIM_IMAGE_TYPES; map++)
+	{
+			for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[map].size(); ++layer_idx)
+		{
+				if (LLWorldMap::getInstance()->mMapLayers[map][layer_idx].LayerDefined)
+		{
+					LLWorldMapLayer *layer = &LLWorldMap::getInstance()->mMapLayers[map][layer_idx];
+					layer->LayerImage->setBoostLevel(0);
+		}
+	}
+				}
+		for (LLWorldMap::sim_info_map_t::iterator it = LLWorldMap::getInstance()->mSimInfoMap.begin();
+			 it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
+		{
+			LLSimInfo* info = (*it).second;
+			if (info->mCurrentImage.notNull())
+			{
+				info->mCurrentImage->setBoostLevel(0);
+			}
+			if (info->mOverlayImage.notNull())
+			{
+				info->mOverlayImage->setBoostLevel(0);
+			}
+		}
+	}
+}
+
+void LLWorldMapView::drawTiles(S32 width, S32 height) {
+	F64 current_time = LLTimer::getElapsedSeconds();	
+	const F32 half_width = F32(width) / 2.0f;
+	const F32 half_height = F32(height) / 2.0f;
+	F32 layer_alpha = 1.f;
+	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	
 	// Draw one image per layer
 	for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap].size(); ++layer_idx)
 	{
@@ -434,7 +675,6 @@ void LLWorldMapView::draw()
 	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	gGL.setColorMask(true, true);
 
-	// there used to be an #if 1 here, but it was uncommented; perhaps marking a block of code?
 	F32 sim_alpha = 1.f;
 
 	// Draw one image per region, centered on the camera position.
@@ -607,7 +847,7 @@ void LLWorldMapView::draw()
 			gGL.end();
 
 			if (gSavedSettings.getBOOL("MapShowLandForSale") && overlayimage && overlayimage->getHasGLTexture())
-		{
+			{
 				gGL.getTexUnit(0)->bind(overlayimage);
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
 				gGL.begin(LLRender::QUADS);
@@ -620,7 +860,7 @@ void LLWorldMapView::draw()
 					gGL.texCoord2f(1.f, 1.f);
 					gGL.vertex3f(right, top, -0.5f);
 				gGL.end();
-		}
+			}
 		
 			if ((info->mRegionFlags & REGION_FLAGS_NULL_LAYER) == 0)
 			{
@@ -679,225 +919,10 @@ void LLWorldMapView::draw()
 			gGL.end();
 		}
 		 **********************/
-		// Draw the region name in the lower left corner
-		LLFontGL* font = LLFontGL::getFontSansSerifSmall();
-
-		std::string mesg;
-		if (sMapScale < sThresholdA)
-		{
-		}
-		else if (sMapScale < sThresholdB)
-		{
-			//	mesg = llformat( info->mAgents);
-		}
-		else
-		{
-			//mesg = llformat("%d / %s (%s)",
-			//			info->mAgents,
-			//			info->mName.c_str(),
-			//			LLViewerRegion::accessToShortString(info->mAccess).c_str() );
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-			{
-				mesg = RlvStrings::getString(RLV_STRING_HIDDEN);
-			}
-// [/RLVa:KB]
-			else if (info->mAccess == SIM_ACCESS_DOWN)
-			{
-				mesg = llformat( "%s (%s)", info->mName.c_str(), sStringsMap["offline"].c_str());
-			}
-			else
-			{
-				mesg = info->mName;
-			}
-			}
-
-			if (!mesg.empty())
-			{
-				font->renderUTF8(
-					mesg, 0,
-				llfloor(left + 3), 
-				llfloor(bottom + 2),
-				LLColor4::white,
-				LLFontGL::LEFT,
-				LLFontGL::BASELINE,
-				LLFontGL::DROP_SHADOW);
-			
-			// If map texture is still loading,
-			// display "Loading" placeholder text.
-			if ((simimage != NULL) &&
-				simimage->getDiscardLevel() != 1 &&
-				simimage->getDiscardLevel() != 0)
-			{
-				font->renderUTF8(
-					sStringsMap["loading"], 0,
-					llfloor(left + 18), 
-					llfloor(top - 25),
-					LLColor4::white,
-					LLFontGL::LEFT,
-					LLFontGL::BASELINE,
-					LLFontGL::DROP_SHADOW);			
-			}
-		}
-	}
-	// #endif used to be here
-
-
-	// there used to be an #if 1 here, but it was uncommented; perhaps marking a block of code?
-	// Draw background rectangle
-	LLGLSUIDefault gls_ui;
-	{
-		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-		gGL.setAlphaRejectSettings(LLRender::CF_GREATER_EQUAL, 0.f);
-		gGL.blendFunc(LLRender::BF_ONE_MINUS_DEST_ALPHA, LLRender::BF_DEST_ALPHA);
-		gGL.color4fv( mBackgroundColor.mV );
-		gl_rect_2d(0, height, width, 0);
-	}
-	
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
-	gGL.setSceneBlendType(LLRender::BT_ALPHA);
-
-	// Infohubs
-	if (gSavedSettings.getBOOL("MapShowInfohubs"))   //(sMapScale >= sThresholdB)
-	{
-		drawGenericItems(LLWorldMap::getInstance()->mInfohubs, sInfohubImage);
-	}
-
-	// Telehubs
-	if (gSavedSettings.getBOOL("MapShowTelehubs"))   //(sMapScale >= sThresholdB)
-	{
-		drawGenericItems(LLWorldMap::getInstance()->mTelehubs, sTelehubImage);
-	}
-
-	// Home Sweet Home
-	LLVector3d home;
-	if (gAgent.getHomePosGlobal(&home))
-	{
-		drawImage(home, sHomeImage);
-	}
-
-	if (gSavedSettings.getBOOL("MapShowLandForSale"))
-	{
-		drawGenericItems(LLWorldMap::getInstance()->mLandForSale, sForSaleImage);
-		// for 1.23, we're showing normal land and adult land in the same UI; you don't
-		// get a choice about which ones you want. If you're currently asking for adult
-		// content and land you'll get the adult land.
-		if (gAgent.canAccessAdult())
-		{
-			drawGenericItems(LLWorldMap::getInstance()->mLandForSaleAdult, sForSaleAdultImage);
-		}
-	}
-	
-	if (gSavedSettings.getBOOL("MapShowPGEvents") ||
-		gSavedSettings.getBOOL("MapShowMatureEvents") ||
-		gSavedSettings.getBOOL("MapShowAdultEvents") )
-	{
-		drawEvents();
-	}
-
-	// Now draw your avatar after all that other stuff.
-	LLVector3d pos_global = gAgent.getPositionGlobal();
-	drawImage(pos_global, sAvatarYouImage);
-
-	LLVector3 pos_map = globalPosToView(pos_global);
-	if (!pointInView(llround(pos_map.mV[VX]), llround(pos_map.mV[VY])))
-	{
-		drawTracking(pos_global, 
-			lerp(LLColor4::yellow, LLColor4::orange, 0.4f), 
-			TRUE, 
-			"You are here", 
-			"", 
-			llround(LLFontGL::getFontSansSerifSmall()->getLineHeight())); // offset vertically by one line, to avoid overlap with target tracking
-	}
-
-	// Show your viewing angle
-	drawFrustum();
-
-	// Draw icons for the avatars in each region.
-	// Drawn after your avatar so you can see nearby people.
-	if (gSavedSettings.getBOOL("MapShowPeople"))
-	{
-		drawAgents();
-	}
-
-	// Always draw tracking information
-	LLTracker::ETrackingStatus tracking_status = LLTracker::getTrackingStatus();
-	if ( LLTracker::TRACKING_AVATAR == tracking_status )
-	{
-		drawTracking( LLAvatarTracker::instance().getGlobalPos(), gTrackColor, TRUE, LLTracker::getLabel(), "" );
-	} 
-	else if ( LLTracker::TRACKING_LANDMARK == tracking_status 
-			 || LLTracker::TRACKING_LOCATION == tracking_status )
-	{
-		// While fetching landmarks, will have 0,0,0 location for a while,
-		// so don't draw. JC
-		LLVector3d pos_global = LLTracker::getTrackedPositionGlobal();
-		if (!pos_global.isExactlyZero())
-		{
-			drawTracking( pos_global, gTrackColor, TRUE, LLTracker::getLabel(), LLTracker::getToolTip() );
-		}
-	}
-	else if (LLWorldMap::getInstance()->mIsTrackingUnknownLocation)
-	{
-		if (LLWorldMap::getInstance()->mInvalidLocation)
-		{
-			// We know this location to be invalid
-			LLColor4 loading_color(0.0, 0.5, 1.0, 1.0);
-			drawTracking( LLWorldMap::getInstance()->mUnknownLocation, loading_color, TRUE, "Invalid Location", "");
-		}
-		else
-		{
-			double value = fmod(current_time, 2);
-			value = 0.5 + 0.5*cos(value * 3.14159f);
-			LLColor4 loading_color(0.0, F32(value/2), F32(value), 1.0);
-			drawTracking( LLWorldMap::getInstance()->mUnknownLocation, loading_color, TRUE, "Loading...", "");
-		}
-	}
-	// #endif used to be here
-	
-	// turn off the scissor
-	LLGLDisable no_scissor(GL_SCISSOR_TEST);
-	
-	updateDirections();
-
-	LLView::draw();
-
-	updateVisibleBlocks();
-} // end draw()
-
-
-//virtual
-void LLWorldMapView::setVisible(BOOL visible)
-{
-	LLPanel::setVisible(visible);
-	if (!visible)
-	{
-		for (S32 map = 0; map < MAP_SIM_IMAGE_TYPES; map++)
-	{
-			for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[map].size(); ++layer_idx)
-		{
-				if (LLWorldMap::getInstance()->mMapLayers[map][layer_idx].LayerDefined)
-		{
-					LLWorldMapLayer *layer = &LLWorldMap::getInstance()->mMapLayers[map][layer_idx];
-					layer->LayerImage->setBoostLevel(0);
-		}
-	}
-				}
-		for (LLWorldMap::sim_info_map_t::iterator it = LLWorldMap::getInstance()->mSimInfoMap.begin();
-			 it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
-		{
-			LLSimInfo* info = (*it).second;
-			if (info->mCurrentImage.notNull())
-			{
-				info->mCurrentImage->setBoostLevel(0);
-			}
-			if (info->mOverlayImage.notNull())
-			{
-				info->mOverlayImage->setBoostLevel(0);
-			}
-		}
 	}
 }
+
+
 
 void LLWorldMapView::drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image)
 {

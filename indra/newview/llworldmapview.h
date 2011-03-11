@@ -87,6 +87,7 @@ public:
 	LLVector3d		viewPosToGlobal(S32 x,S32 y);
 
 	virtual void	draw();
+	void			drawTiles(S32 width, S32 height);
 	void			drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image);
 	void			drawGenericItem(const LLItemInfo& item, LLUIImagePtr image);
 	void			drawImage(const LLVector3d& global_pos, LLUIImagePtr image, const LLColor4& color = LLColor4::white);
