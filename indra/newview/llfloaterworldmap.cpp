@@ -178,17 +178,15 @@ void* LLFloaterWorldMap::createWorldMapView(void* data)
 
 BOOL LLFloaterWorldMap::postBuild()
 {
-	mTabs = getChild<LLTabContainer>("maptab");
-	if (!mTabs) return FALSE;
-
-	LLPanel *panel;
-
+	
 	// The following callback syncs the worlmap tabs with the images.
 	// Commented out since it was crashing when LLWorldMap became a singleton.
 	// We should be fine without it but override the onOpen method and put it 
 	// there if it turns out to be needed. -MG
 	//
 	//onCommitBackground((void*)this, false);
+	
+	mPanel = getChild<LLPanel>("objects_mapview");
 
 	childSetCommitCallback("friend combo", onAvatarComboCommit, this);
 
@@ -249,7 +247,7 @@ BOOL LLFloaterWorldMap::postBuild()
 LLFloaterWorldMap::~LLFloaterWorldMap()
 {
 	// All cleaned up by LLView destructor
-	mTabs = NULL;
+	mPanel = NULL;
 
 	// Inventory deletes all observers on shutdown
 	mInventory = NULL;
@@ -282,7 +280,7 @@ void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 	gFloaterWorldMap->open();		/* Flawfinder: ignore */
 
 	LLWorldMapView* map_panel;
-	map_panel = (LLWorldMapView*)gFloaterWorldMap->mTabs->getCurrentPanel();
+	map_panel = (LLWorldMapView*)gFloaterWorldMap->mPanel;
 	map_panel->clearLastClick();
 
 	if (!was_visible)
@@ -300,9 +298,8 @@ void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 		// Reload any maps that may have changed
 		LLWorldMap::getInstance()->clearSimFlags();
 
-		const S32 panel_num = gFloaterWorldMap->mTabs->getCurrentPanelIndex();
 		const bool request_from_sim = true;
-		LLWorldMap::getInstance()->setCurrentLayer(panel_num, request_from_sim);
+		LLWorldMap::getInstance()->setCurrentLayer(1, request_from_sim);
 
 		// We may already have a bounding box for the regions of the world,
 		// so use that to adjust the view.
@@ -1019,9 +1016,7 @@ void LLFloaterWorldMap::adjustZoomSliderBounds()
 	world_height_regions++;
 
 	// Find how much space we have to display the world
-	LLWorldMapView* map_panel;
-	map_panel = (LLWorldMapView*)mTabs->getCurrentPanel();
-	LLRect view_rect = map_panel->getRect();
+	LLRect view_rect = mPanel->getRect();
 
 	// View size in pixels
 	S32 view_width = view_rect.getWidth();
@@ -1070,7 +1065,7 @@ void LLFloaterWorldMap::onPanBtn( void* userdata )
 	}
 
 	LLWorldMapView* map_panel;
-	map_panel = (LLWorldMapView*)gFloaterWorldMap->mTabs->getCurrentPanel();
+	map_panel = (LLWorldMapView*)gFloaterWorldMap->mPanel;
 	map_panel->translatePan( pan_x, pan_y );
 }
 

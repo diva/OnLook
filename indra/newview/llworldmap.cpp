@@ -294,6 +294,7 @@ bool LLWorldMap::simNameFromPosGlobal(const LLVector3d& pos_global, std::string 
 
 void LLWorldMap::setCurrentLayer(S32 layer, bool request_layer)
 {
+	//TODO: we only have 1 layer -SG
 	mCurrentMap = layer;
 	if (!mMapLoaded[layer] || request_layer)
 	{
