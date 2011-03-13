@@ -368,6 +368,12 @@ void LLWorldMapView::draw()
 		F32 bottom =	sPanY + half_height + relative_y;
 		F32 left =		sPanX + half_width + relative_x;
 		
+		if ((bottom < -256.f) ||
+			(bottom > height - 10.f) || 
+			(left < -256.f) ||
+			(left > width))
+			continue; //TODO: get rid of real problem to kill this workaround -SG
+		
 		std::string mesg;
 		if (sMapScale < sThresholdA)
 		{
@@ -395,6 +401,25 @@ void LLWorldMapView::draw()
 			else
 			{
 				mesg = info->mName;
+				U8 access = info->mAccess;
+				switch(access)
+				{
+				case SIM_ACCESS_MIN:
+					mesg += " (Min)";
+					break;
+				case SIM_ACCESS_PG:
+					mesg += " (PG)";
+					break;
+				case SIM_ACCESS_MATURE:
+					mesg += " (Mature)";
+					break;
+				case SIM_ACCESS_ADULT:
+					mesg += " (Adult)";
+					break;
+				default:
+					mesg += llformat(" (Access=%d)",access);
+					break;
+				}
 			}
 		}
 		
