@@ -299,7 +299,7 @@ void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 		LLWorldMap::getInstance()->clearSimFlags();
 
 		const bool request_from_sim = true;
-		LLWorldMap::getInstance()->setCurrentLayer(1, request_from_sim);
+		LLWorldMap::getInstance()->setCurrentLayer(0, request_from_sim);
 
 		// We may already have a bounding box for the regions of the world,
 		// so use that to adjust the view.

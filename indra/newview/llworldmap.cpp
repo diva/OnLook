@@ -203,6 +203,8 @@ void LLWorldMap::eraseItems()
 
 void LLWorldMap::clearImageRefs()
 {
+	mWorldMipmap.reset();	
+	
 	for (sim_info_map_t::iterator it = mSimInfoMap.begin(); it != mSimInfoMap.end(); ++it)
 	{
 		LLSimInfo* info = (*it).second;
@@ -229,6 +231,12 @@ void LLWorldMap::clearSimFlags()
 			mMapBlockLoaded[map][idx] = FALSE;
 		}
 	}
+}
+
+void LLWorldMap::equalizeBoostLevels()
+{
+	mWorldMipmap.equalizeBoostLevels();
+	return;
 }
 
 LLSimInfo* LLWorldMap::simInfoFromPosGlobal(const LLVector3d& pos_global)
@@ -1070,4 +1078,20 @@ void LLWorldMap::updateTelehubCoverage()
 		S32 index = x_pos - min_x + (mNeighborMapWidth * (y_pos - min_y));
 		mTelehubCoverageMap[index] *= mNeighborMap[index];
 	}*/
+}
+
+// Drop priority of all images being fetched by the map
+void LLWorldMap::dropImagePriorities()
+{
+	// Drop the download of tiles priority to nil
+	mWorldMipmap.dropBoostLevels();
+	// Same for the "land for sale" tiles per region
+	for (sim_info_map_t::iterator it = mSimInfoMap.begin(); it != mSimInfoMap.end(); ++it)
+	{
+		LLSimInfo* info = it->second;
+		if (!info->mOverlayImage.isNull())
+		{
+			info->mOverlayImage->setBoostLevel(0);
+		}
+	}
 }

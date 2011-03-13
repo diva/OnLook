@@ -95,6 +95,8 @@ public:
 	void			drawAgents();
 	void			drawEvents();
 	void			drawFrustum();
+	void			drawMipmap(S32 width, S32 height);
+	bool			drawMipmapLevel(S32 width, S32 height, S32 level, bool load = true);		
 
 	static void		cleanupTextures();
 
@@ -174,6 +176,7 @@ public:
 	static F32		sTargetPanY;		// in pixels
 	static S32		sTrackingArrowX;
 	static S32		sTrackingArrowY;
+	static bool		sVisibleTilesLoaded;	
 
 	// Are we mid-pan from a user drag?
 	BOOL			mPanning;

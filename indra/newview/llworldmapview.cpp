@@ -61,11 +61,14 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llworldmap.h"
+#include "llworldmipmap.h"
 #include "lltexturefetch.h"
 #include "llappviewer.h"				// Only for constants!
 #include "lltrans.h"
 
 #include "llglheaders.h"
+
+#include "hippogridmanager.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -106,6 +109,7 @@ F32 LLWorldMapView::sTargetPanY = 0.f;
 S32 LLWorldMapView::sTrackingArrowX = 0;
 S32 LLWorldMapView::sTrackingArrowY = 0;
 F32 LLWorldMapView::sPixelsPerMeter = 1.f;
+bool LLWorldMapView::sVisibleTilesLoaded = false;
 F32 LLWorldMapView::sMapScale = 128.f;
 F32 CONE_SIZE = 0.6f;
 
@@ -261,6 +265,7 @@ void LLWorldMapView::setScale( F32 scale )
 		sTargetPanY = sPanY;
 
 		sPixelsPerMeter = sMapScale / REGION_WIDTH_METERS;
+		sVisibleTilesLoaded = false;		
 	}
 }
 
@@ -272,6 +277,7 @@ void LLWorldMapView::translatePan( S32 delta_x, S32 delta_y )
 	sPanY += delta_y;
 	sTargetPanX = sPanX;
 	sTargetPanY = sPanY;
+	sVisibleTilesLoaded = false;	
 }
 
 
@@ -285,6 +291,7 @@ void LLWorldMapView::setPan( S32 x, S32 y, BOOL snap )
 		sPanX = sTargetPanX;
 		sPanY = sTargetPanY;
 	}
+	sVisibleTilesLoaded = false;
 }
 
 
@@ -335,7 +342,10 @@ void LLWorldMapView::draw()
 	gGL.setColorMask(true, true);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
-	drawTiles(width, height);
+	if(gHippoGridManager->getConnectedGrid()->isSecondLife())
+		drawMipmap(width, height);
+	else
+		drawTiles(width, height);
 	
 	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 	const F32 half_width = F32(width) / 2.0f;
@@ -922,8 +932,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 	}
 }
 
-
-
 void LLWorldMapView::drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image)
 {
 	LLWorldMap::item_info_list_t::const_iterator e;
@@ -1122,6 +1130,138 @@ void LLWorldMapView::drawFrustum()
 	gGL.popMatrix();
 }
 
+void LLWorldMapView::drawMipmap(S32 width, S32 height)
+{
+	// Compute the level of the mipmap to use for the current scale level
+	S32 level = LLWorldMipmap::scaleToLevel(sMapScale);
+	// Set the tile boost level so that unused tiles get to 0
+	LLWorldMap::getInstance()->equalizeBoostLevels();
+
+	// Render whatever we already have loaded if we haven't the current level
+	// complete and use it as a background (scaled up or scaled down)
+	if (!sVisibleTilesLoaded)
+	{
+		// Note: the (load = false) parameter avoids missing tiles to be fetched (i.e. we render what we have, no more)
+		// Check all the lower res levels and render them in reverse order (worse to best)
+		// We need to traverse all the levels as the user can zoom in very fast
+		for (S32 l = LLWorldMipmap::MAP_LEVELS; l > level; l--)
+		{
+			drawMipmapLevel(width, height, l, false);
+		}
+		// Skip the current level, as we'll do it anyway here under...
+
+		// Just go one level down in res as it can really get too much stuff 
+		// when zooming out and too small to see anyway...
+		if (level > 1)
+		{
+			drawMipmapLevel(width, height, level - 1, false);
+		}
+	}
+	else
+	{
+		//LL_INFOS("World Map") << "Render complete, don't draw background..." << LL_ENDL;
+	}
+
+	// Render the current level
+	sVisibleTilesLoaded = drawMipmapLevel(width, height, level);
+
+	return;
+}
+
+// Return true if all the tiles required to render that level have been fetched or are truly missing
+bool LLWorldMapView::drawMipmapLevel(S32 width, S32 height, S32 level, bool load)
+{
+	// Check input level
+	llassert (level > 0);
+	if (level <= 0)
+		return false;
+
+	// Count tiles hit and completed
+	S32 completed_tiles = 0;
+	S32 total_tiles = 0;
+
+	// Size in meters (global) of each tile of that level
+	S32 tile_width = LLWorldMipmap::MAP_TILE_SIZE * (1 << (level - 1));
+	// Dimension of the screen in meter at that scale
+	LLVector3d pos_SW = viewPosToGlobal(0, 0);
+	LLVector3d pos_NE = viewPosToGlobal(width, height);
+	// Add external band of tiles on the outskirt so to hit the partially displayed tiles right and top
+	pos_NE[VX] += tile_width;
+	pos_NE[VY] += tile_width;
+
+	// Iterate through the tiles on screen: we just need to ask for one tile every tile_width meters
+	U32 grid_x, grid_y;
+	for (F64 index_y = pos_SW[VY]; index_y < pos_NE[VY]; index_y += tile_width)
+	{
+		for (F64 index_x = pos_SW[VX]; index_x < pos_NE[VX]; index_x += tile_width)
+		{
+			// Compute the world coordinates of the current point
+			LLVector3d pos_global(index_x, index_y, pos_SW[VZ]);
+			// Convert to the mipmap level coordinates for that point (i.e. which tile to we hit)
+			LLWorldMipmap::globalToMipmap(pos_global[VX], pos_global[VY], level, &grid_x, &grid_y);
+			// Get the tile. Note: NULL means that the image does not exist (so it's considered "complete" as far as fetching is concerned)
+			LLPointer<LLViewerImage> simimage = LLWorldMap::getInstance()->getObjectsTile(grid_x, grid_y, level, load);
+			if (simimage)
+			{
+				// Check the texture state
+				if (simimage->getHasGLTexture())
+				{
+					// Increment the number of completly fetched tiles
+					completed_tiles++;
+
+					// Convert those coordinates (SW corner of the mipmap tile) into world (meters) coordinates
+					pos_global[VX] = grid_x * REGION_WIDTH_METERS;
+					pos_global[VY] = grid_y * REGION_WIDTH_METERS;
+					// Now to screen coordinates for SW corner of that tile
+					LLVector3 pos_screen = globalPosToView (pos_global);
+					F32 left   = pos_screen[VX];
+					F32 bottom = pos_screen[VY];
+					// Compute the NE corner coordinates of the tile now
+					pos_global[VX] += tile_width;
+					pos_global[VY] += tile_width;
+					pos_screen = globalPosToView (pos_global);
+					F32 right  = pos_screen[VX];
+					F32 top    = pos_screen[VY];
+
+					// Draw the tile
+					LLGLSUIDefault gls_ui;
+					gGL.getTexUnit(0)->bind(simimage.get());
+					simimage->setAddressMode(LLTexUnit::TAM_CLAMP);
+
+					gGL.setSceneBlendType(LLRender::BT_ALPHA);
+					gGL.color4f(1.f, 1.0f, 1.0f, 1.0f);
+
+					gGL.begin(LLRender::QUADS);
+						gGL.texCoord2f(0.f, 1.f);
+						gGL.vertex3f(left, top, 0.f);
+						gGL.texCoord2f(0.f, 0.f);
+						gGL.vertex3f(left, bottom, 0.f);
+						gGL.texCoord2f(1.f, 0.f);
+						gGL.vertex3f(right, bottom, 0.f);
+						gGL.texCoord2f(1.f, 1.f);
+						gGL.vertex3f(right, top, 0.f);
+					gGL.end();
+#if DEBUG_DRAW_TILE
+					drawTileOutline(level, top, left, bottom, right);
+#endif // DEBUG_DRAW_TILE
+				}
+				//else
+				//{
+				//	Waiting for a tile -> the level is not complete
+				//	LL_INFOS("World Map") << "Unfetched tile. level = " << level << LL_ENDL;
+				//}
+			}
+			else
+			{
+				// Unexistent tiles are counted as "completed"
+				completed_tiles++;
+			}
+			// Increment the number of tiles in that level / screen
+			total_tiles++;
+		}
+	}
+	return (completed_tiles == total_tiles);
+}
 
 LLVector3 LLWorldMapView::globalPosToView( const LLVector3d& global_pos )
 {
