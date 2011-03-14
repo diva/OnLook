@@ -588,7 +588,6 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 			gViewerWindow->playSnapshotAnimAndSound();
 			
 			LLPointer<LLImageFormatted> formatted;
-			formatted->enableOverSize();
 			switch(LLFloaterSnapshot::ESnapshotFormat(gSavedSettings.getS32("SnapshotFormat")))
 			{
 			  case LLFloaterSnapshot::SNAPSHOT_FORMAT_JPEG:
@@ -605,6 +604,7 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 				return true;
 			}
 
+			formatted->enableOverSize() ;
 			formatted->encode(raw, 0);
 			formatted->disableOverSize();
 			gViewerWindow->saveImageNumbered(formatted);
