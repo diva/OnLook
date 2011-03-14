@@ -2778,11 +2778,11 @@ LLViewerInventoryItem* LLViewerObject::getInventoryItemByAsset(const LLUUID& ass
 		for( ; it != end; ++it)
 		{
 			LLInventoryObject* obj = *it;
-			if(obj->getType() != LLAssetType::AT_CATEGORY)
+			if (obj && obj->getType() != LLAssetType::AT_CATEGORY && obj->getType() != LLAssetType::AT_NONE)
 			{
 				// *FIX: gank-ass down cast!
 				item = (LLViewerInventoryItem*)obj;
-				if(item->getAssetUUID() == asset_id)
+				if (item && item->getAssetUUID() == asset_id)
 				{
 					rv = item;
 					break;
