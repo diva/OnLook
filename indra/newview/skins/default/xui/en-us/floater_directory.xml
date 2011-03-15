@@ -30,6 +30,8 @@
 			     left="230" name="back_btn" width="70" />
 			<button bottom="-26" follows="top|right" font="SansSerifSmall" height="20"
 			     label="Forward" left="304" name="forward_btn" width="70" />
+      <button bottom="-26" follows="top|right" font="SansSerifSmall" height="20"
+			     label="Reload" left="388" name="reload_btn" width="50" />
 			<button bottom="-48" follows="top|right" font="SansSerif" height="20"
 			     label="Search" left="121" name="search_btn" width="95" />
 			<combo_box allow_text_entry="false" bottom="-46" follows="right|top" height="18"
@@ -56,15 +58,15 @@
 			</combo_box>
 			<check_box bottom="-22" control_name="ShowPGSearchAll" follows="right|top"
 			     font="SansSerifSmall" height="16" initial_value="true"
-			     label="PG content" left="420" mouse_opaque="true"
+			     label="PG content" left="450" mouse_opaque="true"
 			     name="incpg" width="156" />
 			<check_box bottom="-40" control_name="ShowMatureSearchAll" follows="right|top"
 			     font="SansSerifSmall" height="16" initial_value="true"
-			     label="Mature content" left="420" mouse_opaque="true"
+			     label="Mature content" left="450" mouse_opaque="true"
 			     name="incmature" width="156" />
 			<check_box bottom="-58" control_name="ShowAdultSearchAll" follows="right|top"
 			     font="SansSerifSmall" height="16" initial_value="false"
-			     label="Adult content" left="420" mouse_opaque="true"
+			     label="Adult content" left="450" mouse_opaque="true"
 			     name="incadult" width="156" />
 	                <button bottom="-22" enabled="true" follows="right|top" font="SansSerif"
                              halign="center" height="18" label="?" label_selected="?" left="-25"
@@ -318,6 +320,9 @@
         <button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="20"
           label="Forward" left_delta="75"
           name="forward_btn" width="70" />
+        <button bottom_delta="0" follows="top|left" font="SansSerifSmall" height="20"
+         label="Reload" left_delta="85"
+         name="reload_btn" width="50" />
         <!-- No mature content checkbox, showcase is all PG -->
         <web_browser name="showcase_browser"
           bottom="25"

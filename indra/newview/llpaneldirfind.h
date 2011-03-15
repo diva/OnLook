@@ -68,6 +68,7 @@ private:
 	static void onClickBack( void* data );
 	static void onClickForward( void* data );
 	static void onClickHome( void* data );
+	static void onClickRefresh( void* data );
 	static void onClickSearch( void* data );
 	static void onCommitSearch(LLUICtrl*, void* data);
 	static void onClickHelp( void* data );
