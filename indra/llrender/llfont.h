@@ -151,6 +151,8 @@ public:
 	F32 getXKerning(const llwchar char_left, const llwchar char_right) const; // Get the kerning between the two characters
 	virtual void reset() = 0;
 
+	static bool sOpenGLcrashOnRestart;
+
 protected:
 	virtual BOOL hasGlyph(const llwchar wch) const;		// Has a glyph for this character
 	virtual BOOL addChar(const llwchar wch) const;		// Add a new character to the font if necessary

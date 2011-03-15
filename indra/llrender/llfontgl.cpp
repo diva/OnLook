@@ -267,7 +267,15 @@ void LLFontGL::destroyAllGL()
 {
 	if (sFontRegistry)
 	{
+		if (LLFont::sOpenGLcrashOnRestart)
+		{
+			// This will leak memory but will prevent a crash...
+			sFontRegistry = NULL;
+		}
+		else
+		{
 		sFontRegistry->destroyGL();
+	}
 	}
 }
 
