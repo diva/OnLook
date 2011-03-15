@@ -109,6 +109,7 @@ BOOL LLPanelDirFind::postBuild()
 	childSetAction("back_btn", onClickBack, this);
 	childSetAction("home_btn", onClickHome, this);
 	childSetAction("forward_btn", onClickForward, this);
+	childSetAction("reload_btn", onClickRefresh, this);
 	childSetCommitCallback("search_editor", onCommitSearch, this);
 	childSetAction("search_btn", onClickSearch, this);
 	childSetAction("?", onClickHelp, this);
@@ -177,6 +178,7 @@ void LLPanelDirFind::draw()
 
 		bool enable_forward = mWebBrowser->canNavigateForward();	
 		childSetEnabled( "forward_btn", enable_forward );
+		childSetEnabled( "reload_btn", TRUE );
 	}
 
 	// showcase doesn't have maturity flags -- it's all PG
@@ -461,6 +463,16 @@ void LLPanelDirFind::onClickHome( void* data )
 	if ( self->mWebBrowser )
 	{
 		self->mWebBrowser->navigateHome();
+	}
+}
+
+// static
+void LLPanelDirFind::onClickRefresh( void* data )
+{
+	LLPanelDirFind* self = ( LLPanelDirFind* )data;
+	if ( self->mWebBrowser )
+	{
+		self->mWebBrowser->navigateTo(self->mWebBrowser->getCurrentNavUrl());
 	}
 }
 
