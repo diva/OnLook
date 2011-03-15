@@ -242,6 +242,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER);
 
+	if (LLPipeline::sRenderDeferred)
+	{ //hack to make sky show up in deferred snapshots
+		for_snapshot = FALSE;
+	}
+
 	if (LLPipeline::sRenderFrameTest)
 	{
 		send_agent_pause();

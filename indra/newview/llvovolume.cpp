@@ -2606,7 +2606,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 			} 
 		}
 
-		group->clearState(LLSpatialGroup::MESH_DIRTY);
+		group->clearState(LLSpatialGroup::MESH_DIRTY | LLSpatialGroup::NEW_DRAWINFO);
 	}
 }
 
@@ -2789,72 +2789,74 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				&& group->mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_HUD 
 				&& LLPipeline::sRenderBump 
 				&& te->getShiny())
-			{
+			{ //shiny
 				if (tex->getPrimaryFormat() == GL_ALPHA)
-				{
+				{ //invisiprim+shiny
 					registerFace(group, facep, LLRenderPass::PASS_INVISI_SHINY);
 					registerFace(group, facep, LLRenderPass::PASS_INVISIBLE);
 				}
 				else if (LLPipeline::sRenderDeferred)
-				{
+				{ //deferred rendering
 					if (te->getBumpmap())
-					{
+					{ //register in deferred bump pass
 						registerFace(group, facep, LLRenderPass::PASS_BUMP);
 					}
 					else if (te->getFullbright())
-					{
+					{ //register in post deferred fullbright shiny pass
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_SHINY);
 					}
 					else
-					{
+					{ //register in deferred simple pass (deferred simple includes shiny)
 						llassert(mask & LLVertexBuffer::MAP_NORMAL);
 						registerFace(group, facep, LLRenderPass::PASS_SIMPLE);
 					}
 				}
 				else if (fullbright)
-				{						
+				{	//not deferred, register in standard fullbright shiny pass					
 					registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_SHINY);
 				}
 				else
-				{
+				{ //not deferred or fullbright, register in standard shiny pass
 					registerFace(group, facep, LLRenderPass::PASS_SHINY);
 				}
 			}
 			else
-			{
+			{ //not alpha and not shiny
 				if (!is_alpha && tex->getPrimaryFormat() == GL_ALPHA)
-				{
+				{ //invisiprim
 					registerFace(group, facep, LLRenderPass::PASS_INVISIBLE);
 				}
 				else if (fullbright)
-				{
+				{ //fullbright
 					registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT);
 				}
 				else
 				{
-					if (LLPipeline::sRenderDeferred && te->getBumpmap())
-					{
+					if (LLPipeline::sRenderDeferred && LLPipeline::sRenderBump && te->getBumpmap())
+					{ //non-shiny or fullbright deferred bump
 						registerFace(group, facep, LLRenderPass::PASS_BUMP);
 					}
 					else
-					{
+					{ //all around simple
 						llassert(mask & LLVertexBuffer::MAP_NORMAL);
 						registerFace(group, facep, LLRenderPass::PASS_SIMPLE);
 					}
 				}
 				
-				if (!is_alpha && te->getShiny())
+				//not sure why this is here -- shiny HUD attachments maybe?  -- davep 5/11/2010
+				if (!is_alpha && te->getShiny() && LLPipeline::sRenderBump)
 				{
 					registerFace(group, facep, LLRenderPass::PASS_SHINY);
 				}
 			}
 			
+			//not sure why this is here, and looks like it might cause bump mapped objects to get rendered redundantly -- davep 5/11/2010
 			if (!is_alpha && !LLPipeline::sRenderDeferred)
 			{
 				llassert((mask & LLVertexBuffer::MAP_NORMAL) || fullbright);
 				facep->setPoolType((fullbright) ? LLDrawPool::POOL_FULLBRIGHT : LLDrawPool::POOL_SIMPLE);
 				
-				if (!force_simple && te->getBumpmap())
+				if (!force_simple && te->getBumpmap() && LLPipeline::sRenderBump)
 				{
 					registerFace(group, facep, LLRenderPass::PASS_BUMP);
 				}

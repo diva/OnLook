@@ -320,66 +320,66 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 					if (params.mFullbright)
 					{
 						// Turn off lighting if it hasn't already been so.
-					if (light_enabled || !initialized_lighting)
+						if (light_enabled || !initialized_lighting)
+						{
+							initialized_lighting = TRUE;
+							if (use_shaders) 
+							{
+								target_shader = fullbright_shader;
+							}
+							else
+							{
+								gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
+							}
+							light_enabled = FALSE;
+						}
+					}
+					// Turn on lighting if it isn't already.
+					else if (!light_enabled || !initialized_lighting)
 					{
 						initialized_lighting = TRUE;
 						if (use_shaders) 
 						{
-							target_shader = fullbright_shader;
+							target_shader = simple_shader;
 						}
 						else
 						{
-							gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
+							gPipeline.enableLightsDynamic();
 						}
-						light_enabled = FALSE;
+						light_enabled = TRUE;
 					}
-				}
-				// Turn on lighting if it isn't already.
-				else if (!light_enabled || !initialized_lighting)
-				{
-					initialized_lighting = TRUE;
-					if (use_shaders) 
-					{
-						target_shader = simple_shader;
-					}
-					else
-					{
-						gPipeline.enableLightsDynamic();
-					}
-					light_enabled = TRUE;
-				}
 
-				// If we need shaders, and we're not ALREADY using the proper shader, then bind it
-				// (this way we won't rebind shaders unnecessarily).
-				if(use_shaders && (current_shader != target_shader))
-				{
-					llassert(target_shader != NULL);
-					if (deferred_render && current_shader != NULL)
+					// If we need shaders, and we're not ALREADY using the proper shader, then bind it
+					// (this way we won't rebind shaders unnecessarily).
+					if(use_shaders && (current_shader != target_shader))
 					{
-						gPipeline.unbindDeferredShader(*current_shader);
+						llassert(target_shader != NULL);
+						if (deferred_render && current_shader != NULL)
+						{
+							gPipeline.unbindDeferredShader(*current_shader);
+						}
+						current_shader = target_shader;
+						if (deferred_render)
+						{
+							gPipeline.bindDeferredShader(*current_shader);
+						}
+						else
+						{
+							current_shader->bind();
+						}
 					}
-					current_shader = target_shader;
-					if (deferred_render)
+					else if (!use_shaders && current_shader != NULL)
 					{
-						gPipeline.bindDeferredShader(*current_shader);
-					}
-					else
-					{
-						current_shader->bind();
-					}
-				}
-				else if (!use_shaders && current_shader != NULL)
-				{
 					
-					if (deferred_render)
-					{
-						gPipeline.unbindDeferredShader(*current_shader);
+						if (deferred_render)
+						{
+							gPipeline.unbindDeferredShader(*current_shader);
+						}
+						LLGLSLShader::bindNoShader();
+						current_shader = NULL;
 					}
-					LLGLSLShader::bindNoShader();
-					current_shader = NULL;
-				}
 
-				if (params.mGroup)
+					if (params.mGroup)
 					{
 						params.mGroup->rebuildMesh();
 					}
