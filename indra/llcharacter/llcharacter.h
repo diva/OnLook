@@ -246,9 +246,9 @@ public:
 		return rtn;
 	}
 
-	LLVisualParam*	getVisualParam(S32 id)
+	LLVisualParam*	getVisualParam(S32 id) const
 	{
-		visual_param_index_map_t::iterator iter = mVisualParamIndexMap.find(id);
+		visual_param_index_map_t::const_iterator iter = mVisualParamIndexMap.find(id);
 		return (iter == mVisualParamIndexMap.end()) ? 0 : iter->second;
 	}
 	S32 getVisualParamID(LLVisualParam *id)
