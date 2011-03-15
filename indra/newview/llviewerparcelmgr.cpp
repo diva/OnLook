@@ -53,6 +53,7 @@
 #include "llfloatergroups.h"
 //#include "llfloaterhtml.h"
 #include "llfloatersellland.h"
+#include "llfloaterteleporthistory.h"
 #include "llfloatertools.h"
 #include "llnotify.h"
 #include "llparcelselection.h"
@@ -1517,6 +1518,9 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 			delete[] bitmap;
 		}
 	}
+
+	// Add any pending entry to the TP history now that we got the *new* parcel name.
+	gFloaterTeleportHistory->addEntry(LLViewerParcelMgr::getInstance()->getAgentParcelName());
 
 	// Handle updating selections, if necessary.
 	if (sequence_id == SELECTED_PARCEL_SEQ_ID)

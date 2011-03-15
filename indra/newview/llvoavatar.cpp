@@ -1950,6 +1950,7 @@ BOOL LLVOAvatar::buildSkeleton(const LLVOAvatarSkeletonInfo *info)
 		LLVector3 scale(1.f, aspect, 1.f);
 		mScreenp->setScale(scale);
 		mScreenp->setWorldPosition(LLVector3::zero);
+		mScreenp->mUpdateXform = TRUE;
 	}
 
 	return TRUE;

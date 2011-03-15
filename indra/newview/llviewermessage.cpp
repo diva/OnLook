@@ -3748,7 +3748,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		}
 
 		// add teleport destination to the list of visited places
-		gFloaterTeleportHistory->addEntry(regionp->getName(),(S16)agent_pos.mV[0],(S16)agent_pos.mV[1],(S16)agent_pos.mV[2]);
+		gFloaterTeleportHistory->addPendingEntry(regionp->getName(), (S16)agent_pos.mV[VX], (S16)agent_pos.mV[VY], (S16)agent_pos.mV[VZ]);
 	}
 	else
 	{
