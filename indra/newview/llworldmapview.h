@@ -87,6 +87,7 @@ public:
 	LLVector3d		viewPosToGlobal(S32 x,S32 y);
 
 	virtual void	draw();
+	void			drawTiles(S32 width, S32 height);
 	void			drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image);
 	void			drawGenericItem(const LLItemInfo& item, LLUIImagePtr image);
 	void			drawImage(const LLVector3d& global_pos, LLUIImagePtr image, const LLColor4& color = LLColor4::white);
@@ -94,6 +95,8 @@ public:
 	void			drawAgents();
 	void			drawEvents();
 	void			drawFrustum();
+	void			drawMipmap(S32 width, S32 height);
+	bool			drawMipmapLevel(S32 width, S32 height, S32 level, bool load = true);		
 
 	static void		cleanupTextures();
 
@@ -173,6 +176,7 @@ public:
 	static F32		sTargetPanY;		// in pixels
 	static S32		sTrackingArrowX;
 	static S32		sTrackingArrowY;
+	static bool		sVisibleTilesLoaded;	
 
 	// Are we mid-pan from a user drag?
 	BOOL			mPanning;
