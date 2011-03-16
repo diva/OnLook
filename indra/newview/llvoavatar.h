@@ -647,15 +647,6 @@ public:
 	std::string 	mClientTag; //Zwagoth's new client identification system. -HgB
 	LLColor4 		mClientColor; //Zwagoth's new client identification system. -HgB
 
-
-
-
-
-
-
-
-
-
 	//--------------------------------------------------------------------
 	// Private member variables.
 	//--------------------------------------------------------------------

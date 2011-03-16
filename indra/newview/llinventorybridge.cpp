@@ -109,6 +109,8 @@
 #include "llviewerjoystick.h"
 #include "lltoolmgr.h"
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 #include "llattachmentsmgr.h"
@@ -526,6 +528,10 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 
 BOOL LLInvFVBridge::isClipboardPasteableAsLink() const
 {
+	if (!gHippoGridManager->getConnectedGrid()->isSecondLife())
+	{
+		return FALSE;
+	}
 	if (!LLInventoryClipboard::instance().hasContents() || !isAgentInventory())
 	{
 		return FALSE;
@@ -1376,11 +1382,14 @@ BOOL LLItemBridge::isItemCopyable() const
 	LLViewerInventoryItem* item = getItem();
 	if (item && !item->getIsLinkType())
 	{
-		// All items can be copied since you can
-		// at least paste-as-link the item, though you 
-		// still may not be able paste the item.
-		return TRUE;
-//		return (item->getPermissions().allowCopyBy(gAgent.getID()));
+		if(!gHippoGridManager->getConnectedGrid()->isSecondLife()) {
+			return (item->getPermissions().allowCopyBy(gAgent.getID()));
+		} else {
+			// All items can be copied since you can
+			// at least paste-as-link the item, though you 
+			// still may not be able paste the item.
+			return TRUE;
+		}
 	}
 	return FALSE;
 }
@@ -2392,7 +2401,8 @@ void LLFolderBridge::folderOptionsMenu()
 			if(!(LLXmlImport::sImportInProgress && LLXmlImport::sImportHasAttachments))
 			{
 			// </edit>
-				mItems.push_back(std::string("Add To Outfit"));
+				if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+					mItems.push_back(std::string("Add To Outfit"));
 				mItems.push_back(std::string("Wear Items"));
 				mItems.push_back(std::string("Replace Outfit"));
 			// <edit>

@@ -140,6 +140,8 @@
 #include "llviewerjoystick.h"
 #include "llfollowcam.h"
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
 #include "rlvhandler.h"
 #include "rlvinventory.h"
@@ -7346,7 +7348,8 @@ void LLAgent::makeNewOutfit(
 		return;
 	}
 
-	BOOL fUseLinks = !gSavedSettings.getBOOL("UseInventoryLinks");
+	BOOL fUseLinks = !gSavedSettings.getBOOL("UseInventoryLinks") &&
+					 gHippoGridManager->getConnectedGrid()->isSecondLife();
 	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders");
 
 	LLAssetType::EType typeDest = (fUseOutfits) ? LLAssetType::AT_MY_OUTFITS : LLAssetType::AT_CLOTHING;
