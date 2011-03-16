@@ -74,6 +74,14 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+// Basically a C++ implementation of the OCEAN_COLOR defined in mapstitcher.py 
+// Please ensure consistency between those 2 files (TODO: would be better to get that color from an asset source...)
+// # Constants
+// OCEAN_COLOR = "#1D475F"
+const F32 OCEAN_RED   = (F32)(0x1D)/255.f;
+const F32 OCEAN_GREEN = (F32)(0x47)/255.f;
+const F32 OCEAN_BLUE  = (F32)(0x5F)/255.f;
+
 const F32 GODLY_TELEPORT_HEIGHT = 200.f;
 const S32 SCROLL_HINT_WIDTH = 65;
 const F32 BIG_DOT_RADIUS = 5.f;
@@ -116,7 +124,7 @@ F32 CONE_SIZE = 0.6f;
 std::map<std::string,std::string> LLWorldMapView::sStringsMap;
 
 #define SIM_NULL_MAP_SCALE 4 // width in pixels, where we start drawing "null" sims
-#define SIM_MAP_AGENT_SCALE 16 // width in pixels, where we start drawing agents
+#define SIM_MAP_AGENT_SCALE 8 // width in pixels, where we start drawing agents
 #define SIM_MAP_SCALE 4 // width in pixels, where we start drawing sim tiles
 
 // Updates for agent locations.
@@ -178,7 +186,7 @@ void LLWorldMapView::cleanupClass()
 
 LLWorldMapView::LLWorldMapView(const std::string& name, const LLRect& rect )
 :	LLPanel(name, rect, BORDER_NO), 
-	mBackgroundColor( LLColor4( 4.f/255.f, 4.f/255.f, 75.f/255.f, 1.f ) ),
+	mBackgroundColor( LLColor4( OCEAN_RED, OCEAN_GREEN, OCEAN_BLUE, 1.f ) ),
 	mItemPicked(FALSE),
 	mPanning( FALSE ),
 	mMouseDownPanX( 0 ),
@@ -367,12 +375,26 @@ void LLWorldMapView::draw()
 		
 		F32 bottom =	sPanY + half_height + relative_y;
 		F32 left =		sPanX + half_width + relative_x;
+		F32 top =		bottom + sMapScale ;
+		F32 right =		left + sMapScale ;
 		
-		if ((bottom < -256.f) ||
-			(bottom > height - 10.f) || 
-			(left < -256.f) ||
-			(left > width))
-			continue; //TODO: get rid of real problem to kill this workaround -SG
+		// disregard regions that are outside the rectangle
+		if (top < 0.f ||
+			bottom > height ||
+			right < 0.f ||
+			left > width )
+		{
+			continue;			
+		}
+		
+		info->mShowAgentLocations = (sMapScale >= SIM_MAP_AGENT_SCALE);
+		mVisibleRegions.push_back(handle);		
+		// See if the agents need updating
+		if (current_time - info->mAgentsUpdateTime > AGENTS_UPDATE_TIME)
+		{
+			LLWorldMap::getInstance()->sendItemRequest(MAP_ITEM_AGENT_LOCATIONS, info->mHandle);
+			info->mAgentsUpdateTime = current_time;
+		}		
 		
 		std::string mesg;
 		if (sMapScale < sThresholdA)
@@ -450,6 +472,7 @@ void LLWorldMapView::draw()
 						LLFontGL::DROP_SHADOW);			
 			}*/
 		}
+
 	}
 	
 	
@@ -609,7 +632,6 @@ void LLWorldMapView::setVisible(BOOL visible)
 }
 
 void LLWorldMapView::drawTiles(S32 width, S32 height) {
-	F64 current_time = LLTimer::getElapsedSeconds();	
 	const F32 half_width = F32(width) / 2.0f;
 	const F32 half_height = F32(height) / 2.0f;
 	F32 layer_alpha = 1.f;
@@ -759,8 +781,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 			map_scale_cutoff = SIM_NULL_MAP_SCALE;
 		}
 
-		info->mShowAgentLocations = (sMapScale >= SIM_MAP_AGENT_SCALE);
-
 		bool sim_visible =
 			(sMapScale >= map_scale_cutoff) &&
 			(simimage != NULL) &&
@@ -830,14 +850,6 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 			}
 		}
 
-		mVisibleRegions.push_back(handle);
-		// See if the agents need updating
-		if (current_time - info->mAgentsUpdateTime > AGENTS_UPDATE_TIME)
-		{
-			LLWorldMap::getInstance()->sendItemRequest(MAP_ITEM_AGENT_LOCATIONS, info->mHandle);
-			info->mAgentsUpdateTime = current_time;
-		}
-		
 		// Bias the priority escalation for images nearer
 		LLVector3d center_global = origin_global;
 		center_global.mdV[VX] += 128.0;
@@ -993,7 +1005,10 @@ void LLWorldMapView::drawImageStack(const LLVector3d& global_pos, LLUIImagePtr i
 
 
 void LLWorldMapView::drawAgents()
-{
+{	
+	if(sMapScale < SIM_MAP_AGENT_SCALE)
+		return;
+		
 	F32 agents_scale = (sMapScale * 0.9f) / 256.f;
 
 	LLColor4 avatar_color = gColors.getColor( "MapAvatar" );
