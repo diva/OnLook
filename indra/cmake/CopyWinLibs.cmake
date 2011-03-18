@@ -41,7 +41,7 @@ set(all_targets ${all_targets} ${out_targets})
 # Debug config runtime files required for the plugin test mule
 set(plugintest_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
 set(plugintest_debug_files
-    libeay32.dll
+    #libeay32.dll
     libglib-2.0-0.dll
     libgmodule-2.0-0.dll
     libgobject-2.0-0.dll
@@ -51,7 +51,7 @@ set(plugintest_debug_files
     qtnetworkd4.dll
     qtopengld4.dll
     qtwebkitd4.dll
-    ssleay32.dll
+    #ssleay32.dll
     )
 copy_if_different(
     ${plugintest_debug_src_dir}
@@ -90,7 +90,7 @@ set(all_targets ${all_targets} ${out_targets})
 # Release & ReleaseDebInfo config runtime files required for the plugin test mule
 set(plugintest_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
 set(plugintest_release_files
-    libeay32.dll
+    #libeay32.dll
     libglib-2.0-0.dll
     libgmodule-2.0-0.dll
     libgobject-2.0-0.dll
@@ -101,7 +101,7 @@ set(plugintest_release_files
     qtnetwork4.dll
     qtopengl4.dll
     qtwebkit4.dll
-    ssleay32.dll
+    #ssleay32.dll
     )
 copy_if_different(
     ${plugintest_release_src_dir}
@@ -188,13 +188,13 @@ set(all_targets ${all_targets} ${out_targets})
 # Debug config runtime files required for the plugins
 set(plugins_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
 set(plugins_debug_files
-    libeay32.dll
+    #libeay32.dll
     qtcored4.dll
     qtguid4.dll
     qtnetworkd4.dll
     qtopengld4.dll
     qtwebkitd4.dll
-    ssleay32.dll
+    #ssleay32.dll
     )
 copy_if_different(
     ${plugins_debug_src_dir}
@@ -207,13 +207,13 @@ set(all_targets ${all_targets} ${out_targets})
 # Release & ReleaseDebInfo config runtime files required for the plugins
 set(plugins_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
 set(plugins_release_files
-    libeay32.dll
+    #libeay32.dll
     qtcore4.dll
     qtgui4.dll
     qtnetwork4.dll
     qtopengl4.dll
     qtwebkit4.dll
-    ssleay32.dll
+    #ssleay32.dll
     )
 copy_if_different(
     ${plugins_release_src_dir}

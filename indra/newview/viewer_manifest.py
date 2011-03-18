@@ -223,14 +223,14 @@ class WindowsManifest(ViewerManifest):
             
         # For WebKit/Qt plugin runtimes
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst="llplugin"):
-            self.path("libeay32.dll")
+            #self.path("libeay32.dll")
             self.path("qtcore4.dll")
             self.path("qtgui4.dll")
             self.path("qtnetwork4.dll")
             self.path("qtopengl4.dll")
             self.path("qtwebkit4.dll")
             self.path("qtxmlpatterns4.dll")
-            self.path("ssleay32.dll")
+            #self.path("ssleay32.dll")
             self.end_prefix()
 
         # For WebKit/Qt plugin runtimes (image format plugins)
@@ -270,6 +270,11 @@ class WindowsManifest(ViewerManifest):
         
         # For google-perftools tcmalloc allocator.
         self.path("../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
+        
+        try:
+          if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
+            self.path(*.dll)
+            self.end_prefix()
         
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
