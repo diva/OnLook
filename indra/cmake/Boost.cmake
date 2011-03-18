@@ -17,7 +17,7 @@ else (STANDALONE)
   set(Boost_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/include)
 
   if (WINDOWS)
-    set(BOOST_VERSION 1_39)
+    set(BOOST_VERSION 1_45)
 
 	# SNOW-788
 	# 00-Common.cmake alreay sets MSVC_SUFFIX to be correct for the VS we are using eg VC71, VC80, VC90 etc

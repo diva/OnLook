@@ -10,6 +10,8 @@ include(Variables)
 set(CMAKE_CXX_FLAGS_DEBUG "-D_DEBUG -DLL_DEBUG=1")
 set(CMAKE_CXX_FLAGS_RELEASE
     "-DLL_RELEASE=1 -DLL_RELEASE_FOR_DOWNLOAD=1 -D_SECURE_SCL=0 -DLL_SEND_CRASH_REPORTS=1 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE
+    "${CMAKE_CXX_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASESSE2
     "-DLL_RELEASE=1 -DLL_RELEASE_FOR_DOWNLOAD=1 -D_SECURE_SCL=0 -DLL_SEND_CRASH_REPORTS=1 -DNDEBUG")
 #llimage now requires this (?)
@@ -28,6 +30,10 @@ set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;ReleaseSSE2;Debug" CACHE S
 if (WINDOWS)
   # Don't build DLLs.
   set(BUILD_SHARED_LIBS OFF)
+
+  if (MSVC10)
+    set(MSVC100 TRUE)
+  endif (MSVC10)
 
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi /MDd"
       CACHE STRING "C++ compiler debug options" FORCE)
@@ -63,6 +69,7 @@ if (WINDOWS)
       /Zc:forScope
       /nologo
       /Oy-
+      /Zc:wchar_t-
       )
      
   if(MSVC80 OR MSVC90 OR MSVC100)
@@ -75,9 +82,6 @@ if (WINDOWS)
     set(CMAKE_C_FLAGS_RELEASESSE2
       "${CMAKE_CXX_FLAGS_RELEASESSE2} -D_SECURE_STL=0 -D_HAS_ITERATOR_DEBUGGING=0"
       CACHE STRING "C compiler release-SSE2 options" FORCE)
-    add_definitions(
-      /Zc:wchar_t-
-      )
   endif (MSVC80 OR MSVC90 OR MSVC100)
   
   # Are we using the crummy Visual Studio KDU build workaround?
@@ -207,6 +211,7 @@ if (LINUX)
 
   set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline ${CMAKE_CXX_FLAGS_DEBUG}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 ${CMAKE_CXX_FLAGS_RELEASESSE2}")
   set(CMAKE_C_FLAGS_RELEASESSE2 "-O3 ${CMAKE_C_FLAGS_RELEASESSE2}")
 endif (LINUX)

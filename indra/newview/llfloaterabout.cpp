@@ -275,7 +275,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// TODO: Implement media plugin version query
 
-	support.append("Qt Webkit Version: 4.6.0 ");
+	support.append("Qt Webkit Version: 4.7.1 ");
 	support.append("\n");
 
 	if (gPacketsIn > 0)

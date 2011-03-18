@@ -221,9 +221,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>d631c18f447ff4d413525f3c7d52db42</string>
+            <string>17f89b854959b4d728be832d9c8184e4</string>
             <key>url</key>
-            <uri>http://cloud.github.com/downloads/HazimGazov/Inertia/boost-1.39-windows.tar.bz2</uri>
+            <uri>https://github.com/downloads/NickyPerian/imprudence/boost_1_45_VC100_libs_inc_patch4073.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -588,14 +588,14 @@
             <key>md5sum</key>
             <string>1d7acbc5b578b3b5cfc739d2f454b18c</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/google-linux-110103.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/google-linux-110103.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>b46525d8eae16865c27905a844c86ac0</string>
+            <string>38a70e2d892520ed3281b0f459e4f15f</string>
             <key>url</key>
-            <uri>http://github.com/downloads/siana/SingularityViewer/tcmalloc_win_101223.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/tcmalloc-1.6-min-20110317.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -785,9 +785,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>6912b5137a8533096a731f77fb1363b4</string>
+            <string>e82faeae2942dd183c51a7d77f2372fb</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/json-windows.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-windows-20110316.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -922,23 +922,23 @@ anguage Infrstructure (CLI) international standard</string>
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>34d9e4c93678a422cf80521bf0cd7628</string>
+            <string>c983326e0fbe1b77ffc9e006a4c9bee2</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/llqtwebkit-4.6-darwin-20100914.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-darwin-20110317.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>5d743c93b970abe685b185de83001a6e</string>
+            <string>b3acc92ca0a7b671bd5e5185fb10fc66</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/llqtwebkit-linux-qt4.6-20100923.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-linux-20110317.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>2a89c84f778ba932f63a884421e05be1</string>
+            <string>a3e926b2dee29bbddfeff907102ca2b7</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-windows-qt4.6-2010a.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-windows-20110317.tar.bz2</uri>
           </map>
         </map>
       </map>
