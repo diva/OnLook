@@ -273,8 +273,11 @@ class WindowsManifest(ViewerManifest):
         
         try:
           if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
-            self.path(*.dll)
+            self.path("*.dll")
             self.end_prefix()
+        except:
+          pass
+        
         
         # These need to be installed as a SxS assembly, currently a 'private' assembly.
         # See http://msdn.microsoft.com/en-us/library/ms235291(VS.80).aspx
