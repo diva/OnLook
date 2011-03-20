@@ -52,7 +52,6 @@ LLDrawPoolTree::LLDrawPoolTree(LLViewerImage *texturep) :
 	LLFacePool(POOL_TREE),
 	mTexturep(texturep)
 {
-	gGL.getTexUnit(0)->bind(mTexturep.get());
 	mTexturep->setAddressMode(LLTexUnit::TAM_WRAP);
 }
 
@@ -142,8 +141,8 @@ void LLDrawPoolTree::endRenderPass(S32 pass)
 void LLDrawPoolTree::beginDeferredPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_TREES);
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
-		
+	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.f);	
+
 	shader = &gDeferredTreeProgram;
 	shader->bind();
 }

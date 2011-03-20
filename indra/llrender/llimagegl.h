@@ -68,6 +68,7 @@ public:
 	// Save off / restore GL textures
 	static void destroyGL(BOOL save_state = TRUE);
 	static void restoreGL();
+	static void dirtyTexOptions();
 
 	// Sometimes called externally for textures not using LLImageGL (should go away...)	
 	static S32 updateBoundTexMemStatic(const S32 delta, const S32 size, S32 category) ;
@@ -137,6 +138,7 @@ public:
 	BOOL getBoundRecently() const;
 	BOOL isJustBound() const;
 	LLGLenum getPrimaryFormat() const { return mFormatPrimary; }
+	LLGLenum getFormatType() const { return mFormatType; }
 
 	BOOL getHasGLTexture() const { return mTexName != 0; }
 	LLGLuint getTexName() const { return mTexName; }

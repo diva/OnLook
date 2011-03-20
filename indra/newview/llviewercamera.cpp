@@ -51,6 +51,8 @@
 #include "lltoolmgr.h"
 #include "llviewerjoystick.h"
 
+U32 LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
+
 //glu pick matrix implementation borrowed from Mesa3D
 glh::matrix4f gl_pick_matrix(GLfloat x, GLfloat y, GLfloat width, GLfloat height, GLint* viewport)
 {

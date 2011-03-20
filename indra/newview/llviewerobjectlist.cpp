@@ -570,6 +570,9 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			}
 		}
 		// </edit>
+		
+		objectp->setLastUpdateType(update_type);
+		objectp->setLastUpdateCached(cached);
 	}
 
 	LLVOAvatar::cullAvatarsByPixelArea();
@@ -842,13 +845,14 @@ void LLViewerObjectList::clearDebugText()
 void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
-	if (mDeadObjects.count(objectp->mID))
+	if (mDeadObjects.find(objectp->mID) != mDeadObjects.end())
 	{
 		llinfos << "Object " << objectp->mID << " already on dead list, ignoring cleanup!" << llendl;	
-		return;
 	}
-
-	mDeadObjects.insert(std::pair<LLUUID, LLPointer<LLViewerObject> >(objectp->mID, objectp));
+	else
+	{
+		mDeadObjects.insert(std::pair<LLUUID, LLPointer<LLViewerObject> >(objectp->mID, objectp));
+	}
 
 	// Cleanup any references we have to this object
 	// Remove from object map so noone can look it up.
@@ -1064,7 +1068,7 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 	{
 		objectp = getObject(i);
 		// There could be dead objects on the object list, so don't update stuff if the object is dead.
-		if (objectp)
+		if (objectp && !objectp->isDead())
 		{
 			objectp->updatePositionCaches();
 
@@ -1097,7 +1101,7 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 	for (S32 i = 0; i < mMapObjects.count(); i++)
 	{
 		LLViewerObject* objectp = mMapObjects[i];
-		if (!objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
+		if (objectp->isDead() || !objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
 		{
 			continue;
 		}

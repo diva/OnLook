@@ -31,10 +31,6 @@ if (WINDOWS)
   # Don't build DLLs.
   set(BUILD_SHARED_LIBS OFF)
 
-  if (MSVC10)
-    set(MSVC100 TRUE)
-  endif (MSVC10)
-
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Od /Zi /MDd"
       CACHE STRING "C++ compiler debug options" FORCE)
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO 
@@ -69,10 +65,9 @@ if (WINDOWS)
       /Zc:forScope
       /nologo
       /Oy-
-      /Zc:wchar_t-
       )
      
-  if(MSVC80 OR MSVC90 OR MSVC100)
+  if(MSVC80 OR MSVC90 OR MSVC10)
     set(CMAKE_CXX_FLAGS_RELEASE
       "${CMAKE_CXX_FLAGS_RELEASE} -D_SECURE_STL=0 -D_HAS_ITERATOR_DEBUGGING=0"
       CACHE STRING "C++ compiler release options" FORCE)
@@ -82,7 +77,10 @@ if (WINDOWS)
     set(CMAKE_C_FLAGS_RELEASESSE2
       "${CMAKE_CXX_FLAGS_RELEASESSE2} -D_SECURE_STL=0 -D_HAS_ITERATOR_DEBUGGING=0"
       CACHE STRING "C compiler release-SSE2 options" FORCE)
-  endif (MSVC80 OR MSVC90 OR MSVC100)
+    add_definitions(
+      /Zc:wchar_t-
+      )
+  endif (MSVC80 OR MSVC90 OR MSVC10)
   
   # Are we using the crummy Visual Studio KDU build workaround?
   if (NOT VS_DISABLE_FATAL_WARNINGS)
