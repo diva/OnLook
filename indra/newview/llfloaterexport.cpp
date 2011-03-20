@@ -22,6 +22,7 @@
 #include "lltexturecache.h"
 #include "llimage.h"
 #include "llappviewer.h"
+#include "llimagej2c.h"
 
 std::vector<LLFloaterExport*> LLFloaterExport::instances;
 

@@ -13,6 +13,7 @@
 #include "llfloater.h"
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
+#include "llimagetga.h"
 
 
 std::list<LLFloaterInventoryBackup*> LLFloaterInventoryBackup::sInstances;

@@ -43,6 +43,7 @@
 #include "llfontgl.h"
 #include "llgl.h"			// for renderer
 #include "llinventory.h"
+#include "llimagej2c.h"
 #include "llstring.h"
 #include "llsys.h"
 #include "llversionviewer.h"

@@ -75,6 +75,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llfont.h"
+#include "llimagej2c.h"
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"

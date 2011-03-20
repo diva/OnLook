@@ -114,13 +114,13 @@
 
 // Library includes from llimage
 //#include "llblockdata.h"
-#include "llimage.h"
-#include "llimagebmp.h"
-#include "llimagepng.h"
-#include "llimagej2c.h"
-#include "llimagejpeg.h"
-#include "llimagetga.h"
-#include "llmapimagetype.h"
+//#include "llimage.h"
+//#include "llimagebmp.h"
+//#include "llimagepng.h"
+//#include "llimagej2c.h"
+//#include "llimagejpeg.h"
+//#include "llimagetga.h"
+//#include "llmapimagetype.h"
 
 // Library includes from llmath project
 //#include "camera.h"

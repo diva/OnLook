@@ -38,6 +38,7 @@
 
 #include "llmemory.h"
 #include "llimagegl.h"
+#include "llimagejpeg.h"
 
 class LLTextEditor;
 class LLLineEditor;
