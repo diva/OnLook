@@ -785,9 +785,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>e82faeae2942dd183c51a7d77f2372fb</string>
+            <string>91e081c4b7b4949c4e53849182a42370</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-windows-20110316.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-windows-20110320.tar.bz2</uri>
           </map>
         </map>
       </map>
