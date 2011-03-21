@@ -223,14 +223,14 @@ class WindowsManifest(ViewerManifest):
             
         # For WebKit/Qt plugin runtimes
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst="llplugin"):
-            #self.path("libeay32.dll")
+            self.path("libeay32.dll")
             self.path("qtcore4.dll")
             self.path("qtgui4.dll")
             self.path("qtnetwork4.dll")
             self.path("qtopengl4.dll")
             self.path("qtwebkit4.dll")
             self.path("qtxmlpatterns4.dll")
-            #self.path("ssleay32.dll")
+            self.path("ssleay32.dll")
             self.end_prefix()
 
         # For WebKit/Qt plugin runtimes (image format plugins)
