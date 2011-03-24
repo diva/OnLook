@@ -299,8 +299,11 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 	for (LLCullResult::sg_list_t::iterator i = gPipeline.beginAlphaGroups(); i != gPipeline.endAlphaGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
+		llassert(group);
+		llassert(group->mSpatialPartition);
+
 		if (group->mSpatialPartition->mRenderByGroup &&
-			!group->isDead())
+		    !group->isDead())
 		{
 			bool draw_glow_for_this_partition = mVertexShaderLevel > 0 && // no shaders = no glow.
 				// All particle systems seem to come off the wire with texture entries which claim that they glow.  This is probably a bug in the data.  Suppress.

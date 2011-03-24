@@ -1041,7 +1041,11 @@ LLSpatialBridge::LLSpatialBridge(LLDrawable* root, BOOL render_by_group, U32 dat
 	mPartitionType = LLViewerRegion::PARTITION_VOLUME;
 	
 	mOctree->balance();
+
+	llassert(mDrawable);
+	llassert(mDrawable->getRegion());
 	LLSpatialPartition *part = mDrawable->getRegion()->getSpatialPartition(mPartitionType);
+	llassert(part);
 	
 	if (part)
 	{
@@ -1360,6 +1364,9 @@ void LLSpatialBridge::move(LLDrawable *drawablep, LLSpatialGroup *curp, BOOL imm
 
 BOOL LLSpatialBridge::updateMove()
 {
+	llassert_always(mDrawable);
+	llassert_always(mDrawable->mVObjp);
+	llassert_always(mDrawable->getRegion());
 	LLSpatialPartition* part = mDrawable->getRegion()->getSpatialPartition(mPartitionType);
 	llassert_always(part);
 	mOctree->balance();
