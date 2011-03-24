@@ -87,8 +87,9 @@ public:
 	U16				getGeomCount()		const	{ return mGeomCount; }		// vertex count for this face
 	U16				getGeomIndex()		const	{ return mGeomIndex; }		// index into draw pool
 	U16				getGeomStart()		const	{ return mGeomIndex; }		// index into draw pool
-	LLViewerImage*	getTexture()		const	{ return mTexture; }
 	void			setTexture(LLViewerImage* tex) ;
+	void            switchTexture(LLViewerImage* new_texture);
+	void            dirtyTexture();
 	LLXformMatrix*	getXform()			const	{ return mXform; }
 	BOOL			hasGeometry()		const	{ return mGeomCount > 0; }
 	LLVector3		getPositionAgent()	const;
@@ -126,8 +127,8 @@ public:
 	LLVertexBuffer* getVertexBuffer()	const	{ return mVertexBuffer; }
 	void			setPoolType(U32 type)		{ mPoolType = type; }
 	S32				getTEOffset()				{ return mTEOffset; }
-	LLViewerImage*	getTexture()				{ return mTexture; }
-
+	LLViewerImage*	getTexture()		const	{ return mTexture; }
+	
 	void			setViewerObject(LLViewerObject* object);
 	void			setPool(LLFacePool *pool, LLViewerImage *texturep);
 	
@@ -262,7 +263,7 @@ public:
 	{
 		bool operator()(const LLFace* const& lhs, const LLFace* const& rhs)
 		{
-			return lhs->mDistance > rhs->mDistance; // farthest = first
+			return !lhs || (rhs && (lhs->mDistance > rhs->mDistance)); // farthest = first
 		}
 	};
 	

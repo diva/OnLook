@@ -72,7 +72,7 @@ public:
 	/*virtual*/ void updateTextures();
 	/*virtual*/ void setPixelAreaAndAngle(LLAgent &agent); // generate accurate apparent angle and area
 
-	/*virtual*/ U32 getPartitionType() const;
+	virtual U32 getPartitionType() const;
 
 	/*virtual*/ BOOL isActive() const; // Whether this object needs to do an idleUpdate.
 

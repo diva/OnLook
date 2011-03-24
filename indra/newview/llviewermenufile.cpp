@@ -81,6 +81,10 @@
 #include "lluuid.h"
 #include "llvorbisencode.h"
 
+#include "llimagejpeg.h"
+#include "llimagepng.h"
+#include "llimagebmp.h"
+
 // system libraries
 #include <boost/tokenizer.hpp>
 

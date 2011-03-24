@@ -41,6 +41,7 @@
 #include "v3dmath.h"
 #include "llframetimer.h"
 #include "llmapimagetype.h"
+#include "llworldmipmap.h"
 #include "lluuid.h"
 #include "llmemory.h"
 #include "llviewerimage.h"
@@ -133,6 +134,9 @@ public:
 	// Clears the flags indicating that we've received sim infos
 	// Causes a re-request of the sim info without erasing extisting info
 	void clearSimFlags();
+	
+	// Drops the priority of the images being fetched	
+	void dropImagePriorities();
 
 	// Returns simulator information, or NULL if out of range
 	LLSimInfo* simInfoFromHandle(const U64 handle);
@@ -183,6 +187,13 @@ public:
 	// Bounds of the world, in meters
 	U32 getWorldWidth() const;
 	U32 getWorldHeight() const;
+	
+	// World Mipmap delegation: currently used when drawing the mipmap
+	void	equalizeBoostLevels();
+	LLPointer<LLViewerImage> getObjectsTile(U32 grid_x, U32 grid_y, S32 level, bool load = true) {
+		return mWorldMipmap.getObjectsTile(grid_x, grid_y, level, load);
+	}
+	
 public:
 	// Map from region-handle to simulator info
 	typedef std::map<U64, LLSimInfo*> sim_info_map_t;
@@ -224,6 +235,9 @@ public:
 	S32		mNeighborMapHeight;
 
 private:
+	
+	LLWorldMipmap	mWorldMipmap;	
+	
 	LLTimer	mRequestTimer;
 
 	// search for named region for url processing

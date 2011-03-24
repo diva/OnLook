@@ -87,6 +87,7 @@
 #include "pipeline.h"
 
 #include "llglheaders.h"
+#include "hippogridmanager.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -109,6 +110,7 @@ const S32 OWNERSHIP_COST_PER_OBJECT = 10; // Must be the same as economy_constan
 const S32 MAX_ACTION_QUEUE_SIZE = 20;
 const S32 MAX_SILS_PER_FRAME = 50;
 const S32 MAX_OBJECTS_PER_PACKET = 254;
+const S32 TE_SELECT_MASK_ALL = 0xFFFFFFFF;
 
 //
 // Globals
@@ -218,6 +220,9 @@ LLSelectMgr::LLSelectMgr()
 	mSelectedObjects = new LLObjectSelection();
 	mHoverObjects = new LLObjectSelection();
 	mHighlightedObjects = new LLObjectSelection();
+
+	mForceSelection = FALSE;
+	mShowSelection = FALSE;
 }
 
 
@@ -550,7 +555,7 @@ BOOL LLSelectMgr::removeObjectFromSelections(const LLUUID &id)
 				object_found = TRUE;
 				break; // must break here, may have removed multiple objects from list
 			}
-			else if (object->isAvatar())
+			else if (object->isAvatar() && object->getParent() && ((LLViewerObject*)object->getParent())->mID == id)
 			{
 				// It's possible the item being removed has an avatar sitting on it
 				// So remove the avatar that is sitting on the object.
@@ -786,41 +791,53 @@ void LLSelectMgr::addAsIndividual(LLViewerObject *objectp, S32 face, BOOL undoab
 
 LLObjectSelectionHandle LLSelectMgr::setHoverObject(LLViewerObject *objectp, S32 face)
 {
-	// Always blitz hover list when setting
-	mHoverObjects->deleteAllNodes();
-
 	if (!objectp)
 	{
+		mHoverObjects->deleteAllNodes();
 		return NULL;
 	}
 
 	// Can't select yourself
 	if (objectp->mID == gAgentID)
 	{
+		mHoverObjects->deleteAllNodes();
 		return NULL;
 	}
 
 	// Can't select land
 	if (objectp->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
 	{
+		mHoverObjects->deleteAllNodes();
 		return NULL;
 	}
 
-	// Collect all of the objects
-	LLDynamicArray<LLViewerObject*> objects;
-	objectp = objectp->getRootEdit();
-	objectp->addThisAndNonJointChildren(objects);
+	mHoverObjects->mPrimaryObject = objectp; 
 
-	for (std::vector<LLViewerObject*>::iterator iter = objects.begin();
-		 iter != objects.end(); ++iter)
+	objectp = objectp->getRootEdit();
+
+	// is the requested object the same as the existing hover object root?
+	// NOTE: there is only ever one linked set in mHoverObjects
+	if (mHoverObjects->getFirstRootObject() != objectp) 
 	{
-		LLViewerObject* cur_objectp = *iter;
-		LLSelectNode* nodep = new LLSelectNode(cur_objectp, FALSE);
-		nodep->selectTE(face, TRUE);
-		mHoverObjects->addNodeAtEnd(nodep);
+
+		// Collect all of the objects
+		LLDynamicArray<LLViewerObject*> objects;
+		objectp = objectp->getRootEdit();
+		objectp->addThisAndNonJointChildren(objects);
+
+		mHoverObjects->deleteAllNodes();
+		for (std::vector<LLViewerObject*>::iterator iter = objects.begin();
+			 iter != objects.end(); ++iter)
+		{
+			LLViewerObject* cur_objectp = *iter;
+			LLSelectNode* nodep = new LLSelectNode(cur_objectp, FALSE);
+			nodep->selectTE(face, TRUE);
+			mHoverObjects->addNodeAtEnd(nodep);
+		}
+
+		requestObjectPropertiesFamily(objectp);
 	}
 
-	requestObjectPropertiesFamily(objectp);
 	return mHoverObjects;
 }
 
@@ -3595,7 +3612,7 @@ void LLSelectMgr::sendAttach(U8 attachment_point)
 	if (0 == attachment_point ||
 		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)attachment_point, (LLViewerJointAttachment*)NULL))
 	{
-		if (attachment_point != 0)
+		if (attachment_point != 0 && gHippoGridManager->getConnectedGrid()->isSecondLife())
 		{
 			// If we know the attachment point then we got here by clicking an
 			// "Attach to..." context menu item, so we should add, not replace.
@@ -5058,6 +5075,7 @@ LLSelectNode::LLSelectNode(const LLSelectNode& nodep)
 	mName = nodep.mName;
 	mDescription = nodep.mDescription;
 	mCategory = nodep.mCategory;
+	mInventorySerial = 0;
 	mSavedPositionLocal = nodep.mSavedPositionLocal;
 	mSavedPositionGlobal = nodep.mSavedPositionGlobal;
 	mSavedScale = nodep.mSavedScale;
@@ -5096,7 +5114,7 @@ LLSelectNode::~LLSelectNode()
 
 void LLSelectNode::selectAllTEs(BOOL b)
 {
-	mTESelectMask = b ? 0xFFFFFFFF : 0x0;
+	mTESelectMask = b ? TE_SELECT_MASK_ALL : 0x0;
 	mLastTESelected = 0;
 }
 
@@ -5731,8 +5749,22 @@ void LLSelectMgr::redo()
 //-----------------------------------------------------------------------------
 BOOL LLSelectMgr::canDoDelete() const
 {
+	bool can_delete = false;
+	// This function is "logically const" - it does not change state in
+	// a way visible outside the selection manager.
+	LLSelectMgr* self = const_cast<LLSelectMgr*>(this);
+	LLViewerObject* obj = self->mSelectedObjects->getFirstDeleteableObject();
 	// Note: Can only delete root objects (see getFirstDeleteableObject() for more info)
-	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstDeleteableObject() != NULL; // HACK: casting away constness - MG
+	if (obj!= NULL)
+	{
+		// all the faces needs to be selected
+		if(self->mSelectedObjects->contains(obj,SELECT_ALL_TES ))
+		{
+			can_delete = true;
+		}
+	}
+	
+	return can_delete;
 }
 
 //-----------------------------------------------------------------------------
@@ -6135,8 +6167,14 @@ BOOL LLObjectSelection::contains(LLViewerObject* object, S32 te)
 			LLSelectNode* nodep = *iter;
 			if (nodep->getObject() == object)
 			{
+				// Optimization
+				if (nodep->getTESelectMask() == TE_SELECT_MASK_ALL)
+				{
+					return TRUE;
+				}
+
 				BOOL all_selected = TRUE;
-				for (S32 i = 0; i < SELECT_MAX_TES; i++)
+				for (S32 i = 0; i < object->getNumTEs(); i++)
 				{
 					all_selected = all_selected && nodep->isTESelected(i);
 				}

@@ -61,15 +61,26 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llworldmap.h"
+#include "llworldmipmap.h"
 #include "lltexturefetch.h"
 #include "llappviewer.h"				// Only for constants!
 #include "lltrans.h"
 
 #include "llglheaders.h"
 
+#include "hippogridmanager.h"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
+
+// Basically a C++ implementation of the OCEAN_COLOR defined in mapstitcher.py 
+// Please ensure consistency between those 2 files (TODO: would be better to get that color from an asset source...)
+// # Constants
+// OCEAN_COLOR = "#1D475F"
+const F32 OCEAN_RED   = (F32)(0x1D)/255.f;
+const F32 OCEAN_GREEN = (F32)(0x47)/255.f;
+const F32 OCEAN_BLUE  = (F32)(0x5F)/255.f;
 
 const F32 GODLY_TELEPORT_HEIGHT = 200.f;
 const S32 SCROLL_HINT_WIDTH = 65;
@@ -106,14 +117,15 @@ F32 LLWorldMapView::sTargetPanY = 0.f;
 S32 LLWorldMapView::sTrackingArrowX = 0;
 S32 LLWorldMapView::sTrackingArrowY = 0;
 F32 LLWorldMapView::sPixelsPerMeter = 1.f;
+bool LLWorldMapView::sVisibleTilesLoaded = false;
 F32 LLWorldMapView::sMapScale = 128.f;
 F32 CONE_SIZE = 0.6f;
 
 std::map<std::string,std::string> LLWorldMapView::sStringsMap;
 
-#define SIM_NULL_MAP_SCALE 1 // width in pixels, where we start drawing "null" sims
-#define SIM_MAP_AGENT_SCALE 2 // width in pixels, where we start drawing agents
-#define SIM_MAP_SCALE 1 // width in pixels, where we start drawing sim tiles
+#define SIM_NULL_MAP_SCALE 4 // width in pixels, where we start drawing "null" sims
+#define SIM_MAP_AGENT_SCALE 8 // width in pixels, where we start drawing agents
+#define SIM_MAP_SCALE 4 // width in pixels, where we start drawing sim tiles
 
 // Updates for agent locations.
 #define AGENTS_UPDATE_TIME 60.0 // in seconds
@@ -174,7 +186,7 @@ void LLWorldMapView::cleanupClass()
 
 LLWorldMapView::LLWorldMapView(const std::string& name, const LLRect& rect )
 :	LLPanel(name, rect, BORDER_NO), 
-	mBackgroundColor( LLColor4( 4.f/255.f, 4.f/255.f, 75.f/255.f, 1.f ) ),
+	mBackgroundColor( LLColor4( OCEAN_RED, OCEAN_GREEN, OCEAN_BLUE, 1.f ) ),
 	mItemPicked(FALSE),
 	mPanning( FALSE ),
 	mMouseDownPanX( 0 ),
@@ -261,6 +273,7 @@ void LLWorldMapView::setScale( F32 scale )
 		sTargetPanY = sPanY;
 
 		sPixelsPerMeter = sMapScale / REGION_WIDTH_METERS;
+		sVisibleTilesLoaded = false;		
 	}
 }
 
@@ -272,6 +285,7 @@ void LLWorldMapView::translatePan( S32 delta_x, S32 delta_y )
 	sPanY += delta_y;
 	sTargetPanX = sPanX;
 	sTargetPanY = sPanY;
+	sVisibleTilesLoaded = false;	
 }
 
 
@@ -285,6 +299,7 @@ void LLWorldMapView::setPan( S32 x, S32 y, BOOL snap )
 		sPanX = sTargetPanX;
 		sPanY = sTargetPanY;
 	}
+	sVisibleTilesLoaded = false;
 }
 
 
@@ -313,8 +328,6 @@ void LLWorldMapView::draw()
 
 	const S32 width = getRect().getWidth();
 	const S32 height = getRect().getHeight();
-	const F32 half_width = F32(width) / 2.0f;
-	const F32 half_height = F32(height) / 2.0f;
 	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
 
 	LLLocalClipRect clip(getLocalRect());
@@ -337,351 +350,52 @@ void LLWorldMapView::draw()
 	gGL.setColorMask(true, true);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
-	F32 layer_alpha = 1.f;
+	if(gHippoGridManager->getConnectedGrid()->isSecondLife())
+		drawMipmap(width, height);
+	else
+		drawTiles(width, height);
+	
+	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
+	const F32 half_width = F32(width) / 2.0f;
+	const F32 half_height = F32(height) / 2.0f;	
 
-	// Draw one image per layer
-	for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap].size(); ++layer_idx)
-	{
-		if (!LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap][layer_idx].LayerDefined)
-		{
-			continue;
-		}
-		LLWorldMapLayer *layer = &LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap][layer_idx];
-		LLViewerImage *current_image = layer->LayerImage;
-
-		if (current_image->isMissingAsset())
-		{
-			continue; // better to draw nothing than the missing asset image
-		}
-		
-		LLVector3d origin_global((F64)layer->LayerExtents.mLeft * REGION_WIDTH_METERS, (F64)layer->LayerExtents.mBottom * REGION_WIDTH_METERS, 0.f);
-
-		// Find x and y position relative to camera's center.
-		LLVector3d rel_region_pos = origin_global - camera_global;
-		F32 relative_x = (rel_region_pos.mdV[0] / REGION_WIDTH_METERS) * sMapScale;
-		F32 relative_y = (rel_region_pos.mdV[1] / REGION_WIDTH_METERS) * sMapScale;
-
-		F32 pix_width = sMapScale*(layer->LayerExtents.getWidth() + 1);
-		F32 pix_height = sMapScale*(layer->LayerExtents.getHeight() + 1);
-
-		// When the view isn't panned, 0,0 = center of rectangle
-		F32 bottom =	sPanY + half_height + relative_y;
-		F32 left =		sPanX + half_width + relative_x;
-		F32 top =		bottom + pix_height;
-		F32 right =		left + pix_width;
-		F32 pixel_area = pix_width*pix_height;
-		// discard layers that are outside the rectangle
-		// and discard small layers
-		if (top < 0.f ||
-			bottom > height ||
-			right < 0.f ||
-			left > width ||
-			(pixel_area < 4*4))
-		{
-			current_image->setBoostLevel(0);
-			continue;
-		}
-		
-		current_image->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP_VISIBLE);
-		current_image->setKnownDrawSize(llround(pix_width * LLUI::sGLScaleFactor.mV[VX]), llround(pix_height * LLUI::sGLScaleFactor.mV[VY]));
-		
-		if (!current_image->getHasGLTexture())
-		{
-			continue; // better to draw nothing than the default image
-		}
-
-// 		LLTextureView::addDebugImage(current_image);
-		
-		// Draw using the texture.  If we don't clamp we get artifact at
-		// the edge.
-		gGL.getTexUnit(0)->bind(current_image);
-
-		// Draw map image into RGB
-		//gGL.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		gGL.flush();
-		gGL.setColorMask(true, false);
-		gGL.color4f(1.f, 1.f, 1.f, layer_alpha);
-
-		gGL.begin(LLRender::QUADS);
-			gGL.texCoord2f(0.0f, 1.0f);
-			gGL.vertex3f(left, top, -1.0f);
-			gGL.texCoord2f(0.0f, 0.0f);
-			gGL.vertex3f(left, bottom, -1.0f);
-			gGL.texCoord2f(1.0f, 0.0f);
-			gGL.vertex3f(right, bottom, -1.0f);
-			gGL.texCoord2f(1.0f, 1.0f);
-			gGL.vertex3f(right, top, -1.0f);
-		gGL.end();
-
-		// draw an alpha of 1 where the sims are visible
-	gGL.flush();
-		gGL.setColorMask(false, true);
-		gGL.color4f(1.f, 1.f, 1.f, 1.f);
-
-		gGL.begin(LLRender::QUADS);
-			gGL.texCoord2f(0.0f, 1.0f);
-			gGL.vertex2f(left, top);
-			gGL.texCoord2f(0.0f, 0.0f);
-			gGL.vertex2f(left, bottom);
-			gGL.texCoord2f(1.0f, 0.0f);
-			gGL.vertex2f(right, bottom);
-			gGL.texCoord2f(1.0f, 1.0f);
-			gGL.vertex2f(right, top);
-		gGL.end();
-	}
-
-	gGL.flush();
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
-	gGL.setColorMask(true, true);
-
-	// there used to be an #if 1 here, but it was uncommented; perhaps marking a block of code?
-	F32 sim_alpha = 1.f;
-
-	// Draw one image per region, centered on the camera position.
-	const S32 MAX_SIMULTANEOUS_TEX = 100;
-	const S32 MAX_REQUEST_PER_TICK = 5;
-	const S32 MIN_REQUEST_PER_TICK = 1;
-	S32 textures_requested_this_tick = 0;
-
-	bool use_web_map_tiles = LLWorldMap::useWebMapTiles();
-
+	// Draw the region name in the lower left corner	
 	for (LLWorldMap::sim_info_map_t::iterator it = LLWorldMap::getInstance()->mSimInfoMap.begin();
 		 it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
 	{
-		U64 handle = (*it).first;
-		LLSimInfo* info = (*it).second;
-
-		LLViewerImage* simimage = info->mCurrentImage;
-		LLViewerImage* overlayimage = info->mOverlayImage;
-
-		if (sMapScale < SIM_MAP_SCALE)
-		{
-			if (simimage != NULL) simimage->setBoostLevel(0);
-			if (overlayimage != NULL) overlayimage->setBoostLevel(0);
-			continue;
-		}
-
+		U64 handle = it->first;
+		LLSimInfo* info = (*it).second;		
+		
 		LLVector3d origin_global = from_region_handle(handle);
-		LLVector3d camera_global = gAgent.getCameraPositionGlobal();
 
 		// Find x and y position relative to camera's center.
 		LLVector3d rel_region_pos = origin_global - camera_global;
 		F32 relative_x = (rel_region_pos.mdV[0] / REGION_WIDTH_METERS) * sMapScale;
 		F32 relative_y = (rel_region_pos.mdV[1] / REGION_WIDTH_METERS) * sMapScale;
-
-		// When the view isn't panned, 0,0 = center of rectangle
+		
 		F32 bottom =	sPanY + half_height + relative_y;
 		F32 left =		sPanX + half_width + relative_x;
 		F32 top =		bottom + sMapScale ;
 		F32 right =		left + sMapScale ;
-
-		// Switch to world map texture (if available for this region) if either:
-		// 1. Tiles are zoomed out small enough, or
-		// 2. Sim's texture has not been loaded yet
-		F32 map_scale_cutoff = SIM_MAP_SCALE;
-		if ((info->mRegionFlags & REGION_FLAGS_NULL_LAYER) > 0)
-		{
-			map_scale_cutoff = SIM_NULL_MAP_SCALE;
-		}
-
-		info->mShowAgentLocations = (sMapScale >= SIM_MAP_AGENT_SCALE);
-
-		bool sim_visible =
-			(sMapScale >= map_scale_cutoff) &&
-			(simimage != NULL) &&
-			(simimage->getHasGLTexture());
-
-		if (sim_visible)
-		{
-			// Fade in
-			if (info->mAlpha < 0.0f)
-				info->mAlpha = 1.f; // don't fade initially
-			else
-				info->mAlpha = lerp(info->mAlpha, 1.f, LLCriticalDamp::getInterpolant(0.15f));
-		}
-		else
-		{
-			// Fade out
-			if (info->mAlpha < 0.0f)
-				info->mAlpha = 0.f; // don't fade initially
-			else
-				info->mAlpha = lerp(info->mAlpha, 0.f, LLCriticalDamp::getInterpolant(0.15f));
-		}
-
-		// discard regions that are outside the rectangle
-		// and discard small regions
+		
+		// disregard regions that are outside the rectangle
 		if (top < 0.f ||
 			bottom > height ||
 			right < 0.f ||
 			left > width )
 		{
-			if (simimage != NULL) simimage->setBoostLevel(0);
-			if (overlayimage != NULL) overlayimage->setBoostLevel(0);
-			continue;
+			continue;			
 		}
-
-		if (info->mCurrentImage.isNull())
-		{
-			if ((textures_requested_this_tick < MIN_REQUEST_PER_TICK) ||
-				((LLAppViewer::getTextureFetch()->getNumRequests() < MAX_SIMULTANEOUS_TEX) &&
-				 (textures_requested_this_tick < MAX_REQUEST_PER_TICK)))
-			{
-				textures_requested_this_tick++;
-				if (use_web_map_tiles)
-				{
-					LLVector3d region_pos = info->getGlobalOrigin();
-					info->mCurrentImage = LLWorldMap::loadObjectsTile((U32)(region_pos.mdV[VX] / REGION_WIDTH_UNITS), (U32)(region_pos.mdV[VY] / REGION_WIDTH_UNITS));
-				}
-				else
-				{
-					info->mCurrentImage = gImageList.getImage(info->mMapImageID[LLWorldMap::getInstance()->mCurrentMap], MIPMAP_TRUE, FALSE);
-				}
-                info->mCurrentImage->setAddressMode(LLTexUnit::TAM_CLAMP);
-				simimage = info->mCurrentImage;
-				gGL.getTexUnit(0)->bind(simimage);
-			}
-		}
-		if (info->mOverlayImage.isNull() && info->mMapImageID[2].notNull())
-		{
-			if ((textures_requested_this_tick < MIN_REQUEST_PER_TICK) ||
-				((LLAppViewer::getTextureFetch()->getNumRequests() < MAX_SIMULTANEOUS_TEX) &&
-				 (textures_requested_this_tick < MAX_REQUEST_PER_TICK)))
-			{
-				textures_requested_this_tick++;
-				info->mOverlayImage = gImageList.getImage(info->mMapImageID[2], MIPMAP_TRUE, FALSE);
-				info->mOverlayImage->setAddressMode(LLTexUnit::TAM_CLAMP);
-				overlayimage = info->mOverlayImage;
-				gGL.getTexUnit(0)->bind(overlayimage);
-			}
-		}
-
-		mVisibleRegions.push_back(handle);
+		
+		info->mShowAgentLocations = (sMapScale >= SIM_MAP_AGENT_SCALE);
+		mVisibleRegions.push_back(handle);		
 		// See if the agents need updating
 		if (current_time - info->mAgentsUpdateTime > AGENTS_UPDATE_TIME)
 		{
 			LLWorldMap::getInstance()->sendItemRequest(MAP_ITEM_AGENT_LOCATIONS, info->mHandle);
 			info->mAgentsUpdateTime = current_time;
-		}
+		}		
 		
-		// Bias the priority escalation for images nearer
-		LLVector3d center_global = origin_global;
-		center_global.mdV[VX] += 128.0;
-		center_global.mdV[VY] += 128.0;
-
-		S32 draw_size = llround(sMapScale);
-		if (simimage != NULL)
-		{
-			simimage->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP);
-			simimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
-		}
-
-		if (overlayimage != NULL)
-		{
-			overlayimage->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP);
-			overlayimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
-		}
-			
-// 		LLTextureView::addDebugImage(simimage);
-
-		if (sim_visible && info->mAlpha > 0.001f)
-		{
-			// Draw using the texture.  If we don't clamp we get artifact at
-			// the edge.
-			LLGLSUIDefault gls_ui;
-			if (simimage != NULL)
-				gGL.getTexUnit(0)->bind(simimage);
-
-			gGL.setSceneBlendType(LLRender::BT_ALPHA);
-			F32 alpha = sim_alpha * info->mAlpha;
-			gGL.color4f(1.f, 1.0f, 1.0f, alpha);
-
-			gGL.begin(LLRender::QUADS);
-				gGL.texCoord2f(0.f, 1.f);
-				gGL.vertex3f(left, top, 0.f);
-				gGL.texCoord2f(0.f, 0.f);
-				gGL.vertex3f(left, bottom, 0.f);
-				gGL.texCoord2f(1.f, 0.f);
-				gGL.vertex3f(right, bottom, 0.f);
-				gGL.texCoord2f(1.f, 1.f);
-				gGL.vertex3f(right, top, 0.f);
-			gGL.end();
-
-			if (gSavedSettings.getBOOL("MapShowLandForSale") && overlayimage && overlayimage->getHasGLTexture())
-		{
-				gGL.getTexUnit(0)->bind(overlayimage);
-				gGL.color4f(1.f, 1.f, 1.f, alpha);
-				gGL.begin(LLRender::QUADS);
-					gGL.texCoord2f(0.f, 1.f);
-					gGL.vertex3f(left, top, -0.5f);
-					gGL.texCoord2f(0.f, 0.f);
-					gGL.vertex3f(left, bottom, -0.5f);
-					gGL.texCoord2f(1.f, 0.f);
-					gGL.vertex3f(right, bottom, -0.5f);
-					gGL.texCoord2f(1.f, 1.f);
-					gGL.vertex3f(right, top, -0.5f);
-				gGL.end();
-		}
-		
-			if ((info->mRegionFlags & REGION_FLAGS_NULL_LAYER) == 0)
-			{
-				// draw an alpha of 1 where the sims are visible (except NULL sims)
-				gGL.flush();
-				gGL.setSceneBlendType(LLRender::BT_REPLACE);
-				gGL.setColorMask(false, true);
-				gGL.color4f(1.f, 1.f, 1.f, 1.f);
-
-				gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-				gGL.begin(LLRender::QUADS);
-					gGL.vertex2f(left, top);
-					gGL.vertex2f(left, bottom);
-					gGL.vertex2f(right, bottom);
-					gGL.vertex2f(right, top);
-				gGL.end();
-
-				gGL.flush();
-				gGL.setColorMask(true, true);
-			}
-		}
-
-		if (info->mAccess == SIM_ACCESS_DOWN)
-		{
-			// Draw a transparent red square over down sims
-			gGL.blendFunc(LLRender::BF_DEST_ALPHA, LLRender::BF_SOURCE_ALPHA);
-			gGL.color4f(0.2f, 0.0f, 0.0f, 0.4f);
-
-			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-			gGL.begin(LLRender::QUADS);
-				gGL.vertex2f(left, top);
-				gGL.vertex2f(left, bottom);
-				gGL.vertex2f(right, bottom);
-				gGL.vertex2f(right, top);
-			gGL.end();
-		}
-
-		// As part of the AO project, we no longer want to draw access indicators;
-		// it's too complicated to get all the rules straight and will only 
-		// cause confusion.
-		/**********************
-		 // If this is mature, and you are not, draw a line across it
-		if (info->mAccess != SIM_ACCESS_DOWN
-			&& info->mAccess > SIM_ACCESS_PG
-			&& gAgent.isTeen())
-		{
-			gGL.blendFunc(LLRender::BF_DEST_ALPHA, LLRender::BF_ZERO);
-			
-			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-			gGL.color3f(1.f, 0.f, 0.f);
-			gGL.begin(LLRender::LINES);
-				gGL.vertex2f(left, top);
-				gGL.vertex2f(right, bottom);
-				gGL.vertex2f(left, bottom);
-				gGL.vertex2f(right, top);
-			gGL.end();
-		}
-		 **********************/
-		// Draw the region name in the lower left corner
-		LLFontGL* font = LLFontGL::getFontSansSerifSmall();
-
 		std::string mesg;
 		if (sMapScale < sThresholdA)
 		{
@@ -696,12 +410,12 @@ void LLWorldMapView::draw()
 			//			info->mAgents,
 			//			info->mName.c_str(),
 			//			LLViewerRegion::accessToShortString(info->mAccess).c_str() );
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
+			// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 			{
 				mesg = RlvStrings::getString(RLV_STRING_HIDDEN);
 			}
-// [/RLVa:KB]
+			// [/RLVa:KB]
 			else if (info->mAccess == SIM_ACCESS_DOWN)
 			{
 				mesg = llformat( "%s (%s)", info->mName.c_str(), sStringsMap["offline"].c_str());
@@ -709,41 +423,59 @@ void LLWorldMapView::draw()
 			else
 			{
 				mesg = info->mName;
+				U8 access = info->mAccess;
+				switch(access)
+				{
+				case SIM_ACCESS_MIN:
+					mesg += " (Min)";
+					break;
+				case SIM_ACCESS_PG:
+					mesg += " (PG)";
+					break;
+				case SIM_ACCESS_MATURE:
+					mesg += " (Mature)";
+					break;
+				case SIM_ACCESS_ADULT:
+					mesg += " (Adult)";
+					break;
+				default:
+					mesg += llformat(" (Access=%d)",access);
+					break;
+				}
 			}
-			}
-
-			if (!mesg.empty())
-			{
-				font->renderUTF8(
+		}
+		
+		if (!mesg.empty())
+		{
+			font->renderUTF8(
 					mesg, 0,
-				llfloor(left + 3), 
-				llfloor(bottom + 2),
-				LLColor4::white,
-				LLFontGL::LEFT,
-				LLFontGL::BASELINE,
-				LLFontGL::DROP_SHADOW);
+					llfloor(left + 3), 
+					llfloor(bottom + 2),
+					LLColor4::white,
+					LLFontGL::LEFT,
+					LLFontGL::BASELINE,
+					LLFontGL::DROP_SHADOW);
 			
 			// If map texture is still loading,
 			// display "Loading" placeholder text.
-			if ((simimage != NULL) &&
+			/*if ((simimage != NULL) &&
 				simimage->getDiscardLevel() != 1 &&
 				simimage->getDiscardLevel() != 0)
 			{
 				font->renderUTF8(
-					sStringsMap["loading"], 0,
-					llfloor(left + 18), 
-					llfloor(top - 25),
-					LLColor4::white,
-					LLFontGL::LEFT,
-					LLFontGL::BASELINE,
-					LLFontGL::DROP_SHADOW);			
-			}
+						sStringsMap["loading"], 0,
+						llfloor(left + 18), 
+						llfloor(top - 25),
+						LLColor4::white,
+						LLFontGL::LEFT,
+						LLFontGL::BASELINE,
+						LLFontGL::DROP_SHADOW);			
+			}*/
 		}
+
 	}
-	// #endif used to be here
-
-
-	// there used to be an #if 1 here, but it was uncommented; perhaps marking a block of code?
+	
+	
 	// Draw background rectangle
 	LLGLSUIDefault gls_ui;
 	{
@@ -899,6 +631,344 @@ void LLWorldMapView::setVisible(BOOL visible)
 	}
 }
 
+void LLWorldMapView::drawTiles(S32 width, S32 height) {
+	const F32 half_width = F32(width) / 2.0f;
+	const F32 half_height = F32(height) / 2.0f;
+	F32 layer_alpha = 1.f;
+	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	
+	// Draw one image per layer
+	for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap].size(); ++layer_idx)
+	{
+		if (!LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap][layer_idx].LayerDefined)
+		{
+			continue;
+		}
+		LLWorldMapLayer *layer = &LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap][layer_idx];
+		LLViewerImage *current_image = layer->LayerImage;
+
+		if (current_image->isMissingAsset())
+		{
+			continue; // better to draw nothing than the missing asset image
+		}
+		
+		LLVector3d origin_global((F64)layer->LayerExtents.mLeft * REGION_WIDTH_METERS, (F64)layer->LayerExtents.mBottom * REGION_WIDTH_METERS, 0.f);
+
+		// Find x and y position relative to camera's center.
+		LLVector3d rel_region_pos = origin_global - camera_global;
+		F32 relative_x = (rel_region_pos.mdV[0] / REGION_WIDTH_METERS) * sMapScale;
+		F32 relative_y = (rel_region_pos.mdV[1] / REGION_WIDTH_METERS) * sMapScale;
+
+		F32 pix_width = sMapScale*(layer->LayerExtents.getWidth() + 1);
+		F32 pix_height = sMapScale*(layer->LayerExtents.getHeight() + 1);
+
+		// When the view isn't panned, 0,0 = center of rectangle
+		F32 bottom =	sPanY + half_height + relative_y;
+		F32 left =		sPanX + half_width + relative_x;
+		F32 top =		bottom + pix_height;
+		F32 right =		left + pix_width;
+		F32 pixel_area = pix_width*pix_height;
+		// discard layers that are outside the rectangle
+		// and discard small layers
+		if (top < 0.f ||
+			bottom > height ||
+			right < 0.f ||
+			left > width ||
+			(pixel_area < 4*4))
+		{
+			current_image->setBoostLevel(0);
+			continue;
+		}
+		
+		current_image->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP_VISIBLE);
+		current_image->setKnownDrawSize(llround(pix_width * LLUI::sGLScaleFactor.mV[VX]), llround(pix_height * LLUI::sGLScaleFactor.mV[VY]));
+		
+		if (!current_image->getHasGLTexture())
+		{
+			continue; // better to draw nothing than the default image
+		}
+
+// 		LLTextureView::addDebugImage(current_image);
+		
+		// Draw using the texture.  If we don't clamp we get artifact at
+		// the edge.
+		gGL.getTexUnit(0)->bind(current_image);
+
+		// Draw map image into RGB
+		//gGL.blendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		gGL.flush();
+		gGL.setColorMask(true, false);
+		gGL.color4f(1.f, 1.f, 1.f, layer_alpha);
+
+		gGL.begin(LLRender::QUADS);
+			gGL.texCoord2f(0.0f, 1.0f);
+			gGL.vertex3f(left, top, -1.0f);
+			gGL.texCoord2f(0.0f, 0.0f);
+			gGL.vertex3f(left, bottom, -1.0f);
+			gGL.texCoord2f(1.0f, 0.0f);
+			gGL.vertex3f(right, bottom, -1.0f);
+			gGL.texCoord2f(1.0f, 1.0f);
+			gGL.vertex3f(right, top, -1.0f);
+		gGL.end();
+
+		// draw an alpha of 1 where the sims are visible
+	gGL.flush();
+		gGL.setColorMask(false, true);
+		gGL.color4f(1.f, 1.f, 1.f, 1.f);
+
+		gGL.begin(LLRender::QUADS);
+			gGL.texCoord2f(0.0f, 1.0f);
+			gGL.vertex2f(left, top);
+			gGL.texCoord2f(0.0f, 0.0f);
+			gGL.vertex2f(left, bottom);
+			gGL.texCoord2f(1.0f, 0.0f);
+			gGL.vertex2f(right, bottom);
+			gGL.texCoord2f(1.0f, 1.0f);
+			gGL.vertex2f(right, top);
+		gGL.end();
+	}
+
+	gGL.flush();
+	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	gGL.setColorMask(true, true);
+
+	F32 sim_alpha = 1.f;
+
+	// Draw one image per region, centered on the camera position.
+	const S32 MAX_SIMULTANEOUS_TEX = 100;
+	const S32 MAX_REQUEST_PER_TICK = 5;
+	const S32 MIN_REQUEST_PER_TICK = 1;
+	S32 textures_requested_this_tick = 0;
+
+	bool use_web_map_tiles = LLWorldMap::useWebMapTiles();
+
+	for (LLWorldMap::sim_info_map_t::iterator it = LLWorldMap::getInstance()->mSimInfoMap.begin();
+		 it != LLWorldMap::getInstance()->mSimInfoMap.end(); ++it)
+	{
+		U64 handle = (*it).first;
+		LLSimInfo* info = (*it).second;
+
+		LLViewerImage* simimage = info->mCurrentImage;
+		LLViewerImage* overlayimage = info->mOverlayImage;
+
+		if (sMapScale < SIM_MAP_SCALE)
+		{
+			if (simimage != NULL) simimage->setBoostLevel(0);
+			if (overlayimage != NULL) overlayimage->setBoostLevel(0);
+			continue;
+		}
+
+		LLVector3d origin_global = from_region_handle(handle);
+		LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+
+		// Find x and y position relative to camera's center.
+		LLVector3d rel_region_pos = origin_global - camera_global;
+		F32 relative_x = (rel_region_pos.mdV[0] / REGION_WIDTH_METERS) * sMapScale;
+		F32 relative_y = (rel_region_pos.mdV[1] / REGION_WIDTH_METERS) * sMapScale;
+
+		// When the view isn't panned, 0,0 = center of rectangle
+		F32 bottom =	sPanY + half_height + relative_y;
+		F32 left =		sPanX + half_width + relative_x;
+		F32 top =		bottom + sMapScale ;
+		F32 right =		left + sMapScale ;
+
+		// Switch to world map texture (if available for this region) if either:
+		// 1. Tiles are zoomed out small enough, or
+		// 2. Sim's texture has not been loaded yet
+		F32 map_scale_cutoff = SIM_MAP_SCALE;
+		if ((info->mRegionFlags & REGION_FLAGS_NULL_LAYER) > 0)
+		{
+			map_scale_cutoff = SIM_NULL_MAP_SCALE;
+		}
+
+		bool sim_visible =
+			(sMapScale >= map_scale_cutoff) &&
+			(simimage != NULL) &&
+			(simimage->getHasGLTexture());
+
+		if (sim_visible)
+		{
+			// Fade in
+			if (info->mAlpha < 0.0f)
+				info->mAlpha = 1.f; // don't fade initially
+			else
+				info->mAlpha = lerp(info->mAlpha, 1.f, LLCriticalDamp::getInterpolant(0.15f));
+		}
+		else
+		{
+			// Fade out
+			if (info->mAlpha < 0.0f)
+				info->mAlpha = 0.f; // don't fade initially
+			else
+				info->mAlpha = lerp(info->mAlpha, 0.f, LLCriticalDamp::getInterpolant(0.15f));
+		}
+
+		// discard regions that are outside the rectangle
+		// and discard small regions
+		if (top < 0.f ||
+			bottom > height ||
+			right < 0.f ||
+			left > width )
+		{
+			if (simimage != NULL) simimage->setBoostLevel(0);
+			if (overlayimage != NULL) overlayimage->setBoostLevel(0);
+			continue;
+		}
+
+		if (info->mCurrentImage.isNull())
+		{
+			if ((textures_requested_this_tick < MIN_REQUEST_PER_TICK) ||
+				((LLAppViewer::getTextureFetch()->getNumRequests() < MAX_SIMULTANEOUS_TEX) &&
+				 (textures_requested_this_tick < MAX_REQUEST_PER_TICK)))
+			{
+				textures_requested_this_tick++;
+				if (use_web_map_tiles)
+				{
+					LLVector3d region_pos = info->getGlobalOrigin();
+					info->mCurrentImage = LLWorldMap::loadObjectsTile((U32)(region_pos.mdV[VX] / REGION_WIDTH_UNITS), (U32)(region_pos.mdV[VY] / REGION_WIDTH_UNITS));
+				}
+				else
+				{
+					info->mCurrentImage = gImageList.getImage(info->mMapImageID[LLWorldMap::getInstance()->mCurrentMap], MIPMAP_TRUE, FALSE);
+				}
+                info->mCurrentImage->setAddressMode(LLTexUnit::TAM_CLAMP);
+				simimage = info->mCurrentImage;
+				gGL.getTexUnit(0)->bind(simimage);
+			}
+		}
+		if (info->mOverlayImage.isNull() && info->mMapImageID[2].notNull())
+		{
+			if ((textures_requested_this_tick < MIN_REQUEST_PER_TICK) ||
+				((LLAppViewer::getTextureFetch()->getNumRequests() < MAX_SIMULTANEOUS_TEX) &&
+				 (textures_requested_this_tick < MAX_REQUEST_PER_TICK)))
+			{
+				textures_requested_this_tick++;
+				info->mOverlayImage = gImageList.getImage(info->mMapImageID[2], MIPMAP_TRUE, FALSE);
+				info->mOverlayImage->setAddressMode(LLTexUnit::TAM_CLAMP);
+				overlayimage = info->mOverlayImage;
+				gGL.getTexUnit(0)->bind(overlayimage);
+			}
+		}
+
+		// Bias the priority escalation for images nearer
+		LLVector3d center_global = origin_global;
+		center_global.mdV[VX] += 128.0;
+		center_global.mdV[VY] += 128.0;
+
+		S32 draw_size = llround(sMapScale);
+		if (simimage != NULL)
+		{
+			simimage->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP);
+			simimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
+		}
+
+		if (overlayimage != NULL)
+		{
+			overlayimage->setBoostLevel(LLViewerImageBoostLevel::BOOST_MAP);
+			overlayimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
+		}
+			
+// 		LLTextureView::addDebugImage(simimage);
+
+		if (sim_visible && info->mAlpha > 0.001f)
+		{
+			// Draw using the texture.  If we don't clamp we get artifact at
+			// the edge.
+			LLGLSUIDefault gls_ui;
+			if (simimage != NULL)
+				gGL.getTexUnit(0)->bind(simimage);
+
+			gGL.setSceneBlendType(LLRender::BT_ALPHA);
+			F32 alpha = sim_alpha * info->mAlpha;
+			gGL.color4f(1.f, 1.0f, 1.0f, alpha);
+
+			gGL.begin(LLRender::QUADS);
+				gGL.texCoord2f(0.f, 1.f);
+				gGL.vertex3f(left, top, 0.f);
+				gGL.texCoord2f(0.f, 0.f);
+				gGL.vertex3f(left, bottom, 0.f);
+				gGL.texCoord2f(1.f, 0.f);
+				gGL.vertex3f(right, bottom, 0.f);
+				gGL.texCoord2f(1.f, 1.f);
+				gGL.vertex3f(right, top, 0.f);
+			gGL.end();
+
+			if (gSavedSettings.getBOOL("MapShowLandForSale") && overlayimage && overlayimage->getHasGLTexture())
+			{
+				gGL.getTexUnit(0)->bind(overlayimage);
+				gGL.color4f(1.f, 1.f, 1.f, alpha);
+				gGL.begin(LLRender::QUADS);
+					gGL.texCoord2f(0.f, 1.f);
+					gGL.vertex3f(left, top, -0.5f);
+					gGL.texCoord2f(0.f, 0.f);
+					gGL.vertex3f(left, bottom, -0.5f);
+					gGL.texCoord2f(1.f, 0.f);
+					gGL.vertex3f(right, bottom, -0.5f);
+					gGL.texCoord2f(1.f, 1.f);
+					gGL.vertex3f(right, top, -0.5f);
+				gGL.end();
+			}
+		
+			if ((info->mRegionFlags & REGION_FLAGS_NULL_LAYER) == 0)
+			{
+				// draw an alpha of 1 where the sims are visible (except NULL sims)
+				gGL.flush();
+				gGL.setSceneBlendType(LLRender::BT_REPLACE);
+				gGL.setColorMask(false, true);
+				gGL.color4f(1.f, 1.f, 1.f, 1.f);
+
+				gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+				gGL.begin(LLRender::QUADS);
+					gGL.vertex2f(left, top);
+					gGL.vertex2f(left, bottom);
+					gGL.vertex2f(right, bottom);
+					gGL.vertex2f(right, top);
+				gGL.end();
+
+				gGL.flush();
+				gGL.setColorMask(true, true);
+			}
+		}
+
+		if (info->mAccess == SIM_ACCESS_DOWN)
+		{
+			// Draw a transparent red square over down sims
+			gGL.blendFunc(LLRender::BF_DEST_ALPHA, LLRender::BF_SOURCE_ALPHA);
+			gGL.color4f(0.2f, 0.0f, 0.0f, 0.4f);
+
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+			gGL.begin(LLRender::QUADS);
+				gGL.vertex2f(left, top);
+				gGL.vertex2f(left, bottom);
+				gGL.vertex2f(right, bottom);
+				gGL.vertex2f(right, top);
+			gGL.end();
+		}
+
+		// As part of the AO project, we no longer want to draw access indicators;
+		// it's too complicated to get all the rules straight and will only 
+		// cause confusion.
+		/**********************
+		 // If this is mature, and you are not, draw a line across it
+		if (info->mAccess != SIM_ACCESS_DOWN
+			&& info->mAccess > SIM_ACCESS_PG
+			&& gAgent.isTeen())
+		{
+			gGL.blendFunc(LLRender::BF_DEST_ALPHA, LLRender::BF_ZERO);
+			
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+			gGL.color3f(1.f, 0.f, 0.f);
+			gGL.begin(LLRender::LINES);
+				gGL.vertex2f(left, top);
+				gGL.vertex2f(right, bottom);
+				gGL.vertex2f(left, bottom);
+				gGL.vertex2f(right, top);
+			gGL.end();
+		}
+		 **********************/
+	}
+}
+
 void LLWorldMapView::drawGenericItems(const LLWorldMap::item_info_list_t& items, LLUIImagePtr image)
 {
 	LLWorldMap::item_info_list_t::const_iterator e;
@@ -935,7 +1005,10 @@ void LLWorldMapView::drawImageStack(const LLVector3d& global_pos, LLUIImagePtr i
 
 
 void LLWorldMapView::drawAgents()
-{
+{	
+	if(sMapScale < SIM_MAP_AGENT_SCALE)
+		return;
+		
 	F32 agents_scale = (sMapScale * 0.9f) / 256.f;
 
 	LLColor4 avatar_color = gColors.getColor( "MapAvatar" );
@@ -1097,6 +1170,138 @@ void LLWorldMapView::drawFrustum()
 	gGL.popMatrix();
 }
 
+void LLWorldMapView::drawMipmap(S32 width, S32 height)
+{
+	// Compute the level of the mipmap to use for the current scale level
+	S32 level = LLWorldMipmap::scaleToLevel(sMapScale);
+	// Set the tile boost level so that unused tiles get to 0
+	LLWorldMap::getInstance()->equalizeBoostLevels();
+
+	// Render whatever we already have loaded if we haven't the current level
+	// complete and use it as a background (scaled up or scaled down)
+	if (!sVisibleTilesLoaded)
+	{
+		// Note: the (load = false) parameter avoids missing tiles to be fetched (i.e. we render what we have, no more)
+		// Check all the lower res levels and render them in reverse order (worse to best)
+		// We need to traverse all the levels as the user can zoom in very fast
+		for (S32 l = LLWorldMipmap::MAP_LEVELS; l > level; l--)
+		{
+			drawMipmapLevel(width, height, l, false);
+		}
+		// Skip the current level, as we'll do it anyway here under...
+
+		// Just go one level down in res as it can really get too much stuff 
+		// when zooming out and too small to see anyway...
+		if (level > 1)
+		{
+			drawMipmapLevel(width, height, level - 1, false);
+		}
+	}
+	else
+	{
+		//LL_INFOS("World Map") << "Render complete, don't draw background..." << LL_ENDL;
+	}
+
+	// Render the current level
+	sVisibleTilesLoaded = drawMipmapLevel(width, height, level);
+
+	return;
+}
+
+// Return true if all the tiles required to render that level have been fetched or are truly missing
+bool LLWorldMapView::drawMipmapLevel(S32 width, S32 height, S32 level, bool load)
+{
+	// Check input level
+	llassert (level > 0);
+	if (level <= 0)
+		return false;
+
+	// Count tiles hit and completed
+	S32 completed_tiles = 0;
+	S32 total_tiles = 0;
+
+	// Size in meters (global) of each tile of that level
+	S32 tile_width = LLWorldMipmap::MAP_TILE_SIZE * (1 << (level - 1));
+	// Dimension of the screen in meter at that scale
+	LLVector3d pos_SW = viewPosToGlobal(0, 0);
+	LLVector3d pos_NE = viewPosToGlobal(width, height);
+	// Add external band of tiles on the outskirt so to hit the partially displayed tiles right and top
+	pos_NE[VX] += tile_width;
+	pos_NE[VY] += tile_width;
+
+	// Iterate through the tiles on screen: we just need to ask for one tile every tile_width meters
+	U32 grid_x, grid_y;
+	for (F64 index_y = pos_SW[VY]; index_y < pos_NE[VY]; index_y += tile_width)
+	{
+		for (F64 index_x = pos_SW[VX]; index_x < pos_NE[VX]; index_x += tile_width)
+		{
+			// Compute the world coordinates of the current point
+			LLVector3d pos_global(index_x, index_y, pos_SW[VZ]);
+			// Convert to the mipmap level coordinates for that point (i.e. which tile to we hit)
+			LLWorldMipmap::globalToMipmap(pos_global[VX], pos_global[VY], level, &grid_x, &grid_y);
+			// Get the tile. Note: NULL means that the image does not exist (so it's considered "complete" as far as fetching is concerned)
+			LLPointer<LLViewerImage> simimage = LLWorldMap::getInstance()->getObjectsTile(grid_x, grid_y, level, load);
+			if (simimage)
+			{
+				// Check the texture state
+				if (simimage->getHasGLTexture())
+				{
+					// Increment the number of completly fetched tiles
+					completed_tiles++;
+
+					// Convert those coordinates (SW corner of the mipmap tile) into world (meters) coordinates
+					pos_global[VX] = grid_x * REGION_WIDTH_METERS;
+					pos_global[VY] = grid_y * REGION_WIDTH_METERS;
+					// Now to screen coordinates for SW corner of that tile
+					LLVector3 pos_screen = globalPosToView (pos_global);
+					F32 left   = pos_screen[VX];
+					F32 bottom = pos_screen[VY];
+					// Compute the NE corner coordinates of the tile now
+					pos_global[VX] += tile_width;
+					pos_global[VY] += tile_width;
+					pos_screen = globalPosToView (pos_global);
+					F32 right  = pos_screen[VX];
+					F32 top    = pos_screen[VY];
+
+					// Draw the tile
+					LLGLSUIDefault gls_ui;
+					gGL.getTexUnit(0)->bind(simimage.get());
+					simimage->setAddressMode(LLTexUnit::TAM_CLAMP);
+
+					gGL.setSceneBlendType(LLRender::BT_ALPHA);
+					gGL.color4f(1.f, 1.0f, 1.0f, 1.0f);
+
+					gGL.begin(LLRender::QUADS);
+						gGL.texCoord2f(0.f, 1.f);
+						gGL.vertex3f(left, top, 0.f);
+						gGL.texCoord2f(0.f, 0.f);
+						gGL.vertex3f(left, bottom, 0.f);
+						gGL.texCoord2f(1.f, 0.f);
+						gGL.vertex3f(right, bottom, 0.f);
+						gGL.texCoord2f(1.f, 1.f);
+						gGL.vertex3f(right, top, 0.f);
+					gGL.end();
+#if DEBUG_DRAW_TILE
+					drawTileOutline(level, top, left, bottom, right);
+#endif // DEBUG_DRAW_TILE
+				}
+				//else
+				//{
+				//	Waiting for a tile -> the level is not complete
+				//	LL_INFOS("World Map") << "Unfetched tile. level = " << level << LL_ENDL;
+				//}
+			}
+			else
+			{
+				// Unexistent tiles are counted as "completed"
+				completed_tiles++;
+			}
+			// Increment the number of tiles in that level / screen
+			total_tiles++;
+		}
+	}
+	return (completed_tiles == total_tiles);
+}
 
 LLVector3 LLWorldMapView::globalPosToView( const LLVector3d& global_pos )
 {

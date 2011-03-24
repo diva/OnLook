@@ -158,8 +158,8 @@ S32 LLDrawPoolAvatar::getNumDeferredPasses()
 
 void LLDrawPoolAvatar::beginDeferredPass(S32 pass)
 {
-	LLFastTimer t(LLFastTimer::FTM_RENDER_CHARACTERS);
-	
+	sSkipTransparent = TRUE;
+
 	if (LLPipeline::sImpostorRender)
 	{
 		beginDeferredSkinned();
@@ -182,7 +182,7 @@ void LLDrawPoolAvatar::beginDeferredPass(S32 pass)
 
 void LLDrawPoolAvatar::endDeferredPass(S32 pass)
 {
-	LLFastTimer t(LLFastTimer::FTM_RENDER_CHARACTERS);
+	sSkipTransparent = FALSE;
 
 	if (LLPipeline::sImpostorRender)
 	{
@@ -317,6 +317,10 @@ void LLDrawPoolAvatar::renderShadow(S32 pass)
 		return;
 	}
 	
+	if (sShaderLevel > 0)
+	{
+		gAvatarMatrixParam = sVertexProgram->mUniform[LLViewerShaderMgr::AVATAR_MATRIX];
+	}
 	avatarp->renderSkinned(AVATAR_RENDER_PASS_SINGLE);
 
 }
@@ -353,7 +357,7 @@ void LLDrawPoolAvatar::beginRenderPass(S32 pass)
 	switch (pass)
 	{
 	case 0:
-		beginFootShadow();
+		beginImpostor();
 		break;
 	case 1:
 		beginRigid();
@@ -377,7 +381,7 @@ void LLDrawPoolAvatar::endRenderPass(S32 pass)
 	switch (pass)
 	{
 	case 0:
-		endFootShadow();
+		endImpostor();
 		break;
 	case 1:
 		endRigid();
@@ -387,7 +391,7 @@ void LLDrawPoolAvatar::endRenderPass(S32 pass)
 	}
 }
 
-void LLDrawPoolAvatar::beginFootShadow()
+void LLDrawPoolAvatar::beginImpostor()
 {
 	if (!LLPipeline::sReflectionRender)
 	{
@@ -398,7 +402,7 @@ void LLDrawPoolAvatar::beginFootShadow()
 	gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 }
 
-void LLDrawPoolAvatar::endFootShadow()
+void LLDrawPoolAvatar::endImpostor()
 {
 	gPipeline.enableLightsDynamic();
 }
@@ -568,7 +572,6 @@ void LLDrawPoolAvatar::endSkinned()
 
 void LLDrawPoolAvatar::beginDeferredSkinned()
 {
-	sSkipTransparent = TRUE;
 	sShaderLevel = mVertexShaderLevel;
 	sVertexProgram = &gDeferredAvatarProgram;
 
@@ -583,7 +586,6 @@ void LLDrawPoolAvatar::beginDeferredSkinned()
 
 void LLDrawPoolAvatar::endDeferredSkinned()
 {
-	sSkipTransparent = FALSE;
 	// if we're in software-blending, remember to set the fence _after_ we draw so we wait till this rendering is done
 	sRenderingSkinned = FALSE;
 	disable_vertex_weighting(sVertexProgram->mAttribute[LLViewerShaderMgr::AVATAR_WEIGHT]);

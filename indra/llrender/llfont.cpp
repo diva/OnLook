@@ -65,6 +65,8 @@ LLFontManager *gFontManagerp = NULL;
 
 FT_Library gFTLibrary = NULL;
 
+bool LLFont::sOpenGLcrashOnRestart = false;
+
 //static
 void LLFontManager::initClass()
 {
@@ -269,8 +271,11 @@ void LLFont::resetBitmapCache()
 	}
 	mFontBitmapCachep->reset();
 
+	if (!mIsFallback || !sOpenGLcrashOnRestart)	// because this often crashes under Linux...
+	{
 	// Add the empty glyph`5
 	addGlyph(0, 0);
+	}
 }
 
 LLFontGlyphInfo* LLFont::getGlyphInfo(const llwchar wch) const

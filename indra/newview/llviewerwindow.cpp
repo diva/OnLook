@@ -1544,7 +1544,7 @@ LLViewerWindow::LLViewerWindow(
 	{
 		gSavedSettings.setBOOL("RenderVBOEnable", FALSE);
 	}
-	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"));
+	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"), gSavedSettings.getBOOL("RenderVBOMappingDisable"));
 
 	if (LLFeatureManager::getInstance()->isSafe()
 		|| (gSavedSettings.getS32("LastFeatureVersion") != LLFeatureManager::getInstance()->getVersion())
@@ -2065,6 +2065,9 @@ LLViewerWindow::~LLViewerWindow()
 {
 	llinfos << "Destroying Window" << llendl;
 	destroyWindow();
+
+	delete mDebugText;
+	mDebugText = NULL;
 }
 
 
@@ -4375,9 +4378,12 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	if (high_res)
 	{
 		send_agent_pause();
+		if (show_ui || !hide_hud)
+		{
 		//rescale fonts
 		initFonts(scale_factor);
 		LLHUDText::reshape();
+	}
 	}
 
 	S32 output_buffer_offset_y = 0;
@@ -4501,7 +4507,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		LLPipeline::sShowHUDAttachments = TRUE;
 	}
 
-	if (high_res)
+	if (high_res && (show_ui || !hide_hud))
 	{
 		initFonts(1.f);
 		LLHUDText::reshape();
@@ -5392,11 +5398,15 @@ void LLPickInfo::fetchResults()
 
 			// put global position into land_pos
 			LLVector3d land_pos;
-			if (gViewerWindow->mousePointOnLandGlobal(mPickPt.mX, mPickPt.mY, &land_pos))
+			if (!gViewerWindow->mousePointOnLandGlobal(mPickPt.mX, mPickPt.mY, &land_pos))
 			{
-				// Fudge the land focus a little bit above ground.
-				mPosGlobal = land_pos + LLVector3d::z_axis * 0.1f;
+				// The selected point is beyond the draw distance or is otherwise 
+				// not selectable. Return before calling mPickCallback().
+				return;
 			}
+
+			// Fudge the land focus a little bit above ground.
+			mPosGlobal = land_pos + LLVector3d::z_axis * 0.1f;
 		}
 		else
 		{

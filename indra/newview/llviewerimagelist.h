@@ -56,6 +56,7 @@ const BOOL IMMEDIATE_NO = FALSE;
 class LLMessageSystem;
 class LLViewerImage;
 class LLTextureView;
+class LLImageJ2C;
 
 typedef	void (*LLImageCallback)(BOOL success,
 								LLViewerImage *src_vi,

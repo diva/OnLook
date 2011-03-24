@@ -160,6 +160,7 @@ void LLSurface::initClasses()
 void LLSurface::setRegion(LLViewerRegion *regionp)
 {
 	mRegionp = regionp;
+	mWaterObjp = NULL; // depends on regionp, needs recreating
 }
 
 // Assumes that arguments are powers of 2, and that
@@ -1282,6 +1283,10 @@ BOOL LLSurface::generateWaterTexture(const F32 x, const F32 y,
 		}
 	}
 
+	if (!mWaterTexturep->getHasGLTexture())
+	{
+		mWaterTexturep->createGLTexture(0, raw);
+	}
 	mWaterTexturep->setSubImage(raw, x_begin, y_begin, x_end - x_begin, y_end - y_begin);
 	return TRUE;
 }

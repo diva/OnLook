@@ -97,8 +97,7 @@ LLViewerParcelOverlay::LLViewerParcelOverlay(LLViewerRegion* region, F32 region_
 		mOwnership[i] = PARCEL_PUBLIC;
 	}
 
-	// Make sure the texture matches the ownership information.
-	updateOverlayTexture();
+	gPipeline.markGLRebuild(this);
 }
 
 
@@ -711,6 +710,11 @@ void LLViewerParcelOverlay::setDirty()
 	mDirty = TRUE;
 }
 
+void LLViewerParcelOverlay::updateGL()
+{
+	updateOverlayTexture();
+}
+
 void LLViewerParcelOverlay::idleUpdate(bool force_update)
 {
 	if (gGLManager.mIsDisabled)
@@ -720,7 +724,7 @@ void LLViewerParcelOverlay::idleUpdate(bool force_update)
 	if (mOverlayTextureIdx >= 0 && (!(mDirty && force_update)))
 	{
 		// We are in the middle of updating the overlay texture
-		updateOverlayTexture();
+		gPipeline.markGLRebuild(this);
 		return;
 	}
 	// Only if we're dirty and it's been a while since the last update.

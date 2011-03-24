@@ -131,6 +131,7 @@ void display_startup()
 		return; 
 	}
 
+	gPipeline.updateGL();
 	LLGLSDefault gls_default;
 
 	// Required for HTML update in login screen
@@ -240,6 +241,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 #endif //ignore
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER);
+
+	if (LLPipeline::sRenderDeferred)
+	{ //hack to make sky show up in deferred snapshots
+		for_snapshot = FALSE;
+	}
 
 	if (LLPipeline::sRenderFrameTest)
 	{
@@ -614,6 +620,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		const F32 max_geom_update_time = 0.005f*10.f*gFrameIntervalSeconds; // 50 ms/second update time
 		gPipeline.createObjects(max_geom_update_time);
 		gPipeline.updateGeom(max_geom_update_time);
+		gPipeline.updateGL();
 		stop_glerror();
 		
 		gFrameStats.start(LLFrameStats::UPDATE_CULL);
@@ -666,6 +673,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLState::checkClientArrays();
 
 		static LLCullResult result;
+		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 		gPipeline.updateCull(*LLViewerCamera::getInstance(), result, water_clip);
 		stop_glerror();
 
@@ -705,6 +713,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 				  //try to generate a shadow before the first frame is through
 					gPipeline.generateSunShadow(*LLViewerCamera::getInstance());
 				}
+
+				LLVertexBuffer::unbind();
 
 				LLGLState::checkStates();
 				LLGLState::checkTextureChannels();
@@ -781,7 +791,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		//
 		LLAppViewer::instance()->pingMainloopTimeout("Display:StateSort");
 		{
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			gFrameStats.start(LLFrameStats::STATE_SORT);
+			gPipeline.sAllowRebuildPriorityGroup = TRUE ;
 			gPipeline.stateSort(*LLViewerCamera::getInstance(), result);
 			stop_glerror();
 				
@@ -866,6 +878,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.bindTarget();
+				glClearColor(0,0,0,0);
 				gPipeline.mDeferredScreen.clear();
 			}
 			else
@@ -882,7 +895,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		if (!(LLAppViewer::instance()->logoutRequestSent() && LLAppViewer::instance()->hasSavedFinalSnapshot())
 				&& !gRestoreGL)
 		{
-
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			gGL.setColorMask(true, false);
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
@@ -932,6 +945,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			render_ui();
 		}		
 
+		gPipeline.rebuildGroups();
+
 		LLSpatialGroup::sNoDelete = FALSE;
 	}
 	
@@ -980,9 +995,10 @@ void render_hud_attachments()
 		bool render_particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES) && gSavedSettings.getBOOL("RenderHUDParticles");
 		
 		//only render hud objects
-		U32 mask = gPipeline.getRenderTypeMask();
+		gPipeline.pushRenderTypeMask();
+		
 		// turn off everything
-		gPipeline.setRenderTypeMask(0);
+		gPipeline.andRenderTypeMask(LLPipeline::END_RENDER_TYPES);
 		// turn on HUD
 		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_HUD);
 		// turn on HUD particles
@@ -1009,6 +1025,7 @@ void render_hud_attachments()
 		static LLCullResult result;
 		LLSpatialGroup::sNoDelete = TRUE;
 
+		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 		gPipeline.updateCull(hud_cam, result);
 
 		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_BUMP);
@@ -1016,6 +1033,15 @@ void render_hud_attachments()
 		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_VOLUME);
 		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_ALPHA);
 		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_FULLBRIGHT);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_ALPHA);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_BUMP);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT_ALPHA_MASK);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT_SHINY);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_SHINY);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_INVISIBLE);
+		gPipeline.toggleRenderType(LLPipeline::RENDER_TYPE_PASS_INVISI_SHINY);
 		
 		gPipeline.stateSort(hud_cam, result);
 
@@ -1024,8 +1050,10 @@ void render_hud_attachments()
 		LLSpatialGroup::sNoDelete = FALSE;
 
 		render_hud_elements();
+
 		//restore type mask
-		gPipeline.setRenderTypeMask(mask);
+		gPipeline.popRenderTypeMask();
+
 		if (has_ui)
 		{
 			gPipeline.toggleRenderDebugFeature((void*) LLPipeline::RENDER_DEBUG_FEATURE_UI);
@@ -1056,7 +1084,6 @@ BOOL setup_hud_matrices()
 		S32 tile_height = llround((F32)gViewerWindow->getWindowHeight() / zoom_factor);
 		int tile_y = sub_region / num_horizontal_tiles;
 		int tile_x = sub_region - (tile_y * num_horizontal_tiles);
-		glh::matrix4f mat;
 
 		whole_screen.setLeftTopAndSize(tile_x * tile_width, gViewerWindow->getWindowHeight() - (tile_y * tile_height), tile_width, tile_height);
 	}
@@ -1157,6 +1184,10 @@ void render_ui(F32 zoom_factor, int subfield)
 			{
 				render_ui_3d();
 				LLGLState::checkStates();
+			}
+			else
+			{
+				render_disconnected_background();
 			}
 
 			render_ui_2d();
@@ -1343,6 +1374,12 @@ void render_disconnected_background()
 	gGL.color4f(1,1,1,1);
 	if (!gDisconnectedImagep && gDisconnected)
 	{
+		//Default black image.
+		gDisconnectedImagep = new LLImageGL( FALSE );
+		LLPointer<LLImageRaw> raw = new LLImageRaw(1,1,3);
+		raw->clear();
+		gDisconnectedImagep->createGLTexture(0, raw, 0, TRUE, LLViewerImageBoostLevel::OTHER);
+		
 		llinfos << "Loading last bitmap..." << llendl;
 
 		std::string temp_str;
@@ -1355,8 +1392,6 @@ void render_disconnected_background()
 			return;
 		}
 
-		gDisconnectedImagep = new LLImageGL( FALSE );
-		LLPointer<LLImageRaw> raw = new LLImageRaw;
 		if (!image_bmp->decode(raw, 0.0f))
 		{
 			llinfos << "Bitmap decode failed" << llendl;

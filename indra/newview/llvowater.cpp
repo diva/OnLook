@@ -69,8 +69,9 @@ const U32 WIDTH			= (N_RES * WAVE_STEP); //128.f //64		// width of wave tile, in
 const F32 WAVE_STEP_INV	= (1. / WAVE_STEP);
 
 
-LLVOWater::LLVOWater(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
-:	LLStaticViewerObject(id, pcode, regionp)
+LLVOWater::LLVOWater(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp) :
+	LLStaticViewerObject(id, pcode, regionp),
+	mRenderType(LLPipeline::RENDER_TYPE_WATER)
 {
 	// Terrain must draw during selection passes so it can block objects behind it.
 	mbCanSelect = FALSE;
@@ -78,8 +79,8 @@ LLVOWater::LLVOWater(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regi
 
 	mUseTexture = TRUE;
 	mIsEdgePatch = FALSE;
-	mRenderType = LLPipeline::RENDER_TYPE_WATER;
 }
+
 
 void LLVOWater::markDead()
 {
@@ -281,9 +282,8 @@ U32 LLVOVoidWater::getPartitionType() const
 }
 
 LLWaterPartition::LLWaterPartition()
-: LLSpatialPartition(0)
+: LLSpatialPartition(0, FALSE, 0)
 {
-	mRenderByGroup = FALSE;
 	mInfiniteFarClip = TRUE;
 	mDrawableType = LLPipeline::RENDER_TYPE_WATER;
 	mPartitionType = LLViewerRegion::PARTITION_WATER;

@@ -494,6 +494,7 @@ set(viewer_SOURCE_FILES
     llwlparamset.cpp
     llworld.cpp
     llworldmap.cpp
+    llworldmipmap.cpp
     llmapresponders.cpp
     llworldmapview.cpp
     llxmlrpctransaction.cpp
@@ -968,6 +969,7 @@ set(viewer_HEADER_FILES
     llwlparamset.h
     llworld.h
     llworldmap.h
+    llworldmipmap.h
     llmapresponders.h
     llworldmapview.h
     llxmlrpctransaction.h
@@ -1225,8 +1227,6 @@ set(viewer_APPSETTINGS_FILES
     ${CMAKE_SOURCE_DIR}/../etc/message.xml
     ${CMAKE_SOURCE_DIR}/../scripts/messages/message_template.msg
     )
-
-use_prebuilt_binary(artwork-common)
 
 source_group("App Settings" FILES ${viewer_APPSETTINGS_FILES})
 
