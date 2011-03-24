@@ -225,6 +225,16 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 }
 
 
+bool LLUICtrlFactory::getLayeredXMLNodeFromBuffer(const std::string &buffer, LLXMLNodePtr& root)
+{
+	if (!LLXMLNode::parseBuffer(buffer.data(), buffer.size(), root, 0)) {
+		llwarns << "Error reading UI description from buffer." << llendl;
+		return false;
+	}
+	return true;
+}
+
+
 //-----------------------------------------------------------------------------
 // buildFloater()
 //-----------------------------------------------------------------------------
@@ -238,6 +248,23 @@ void LLUICtrlFactory::buildFloater(LLFloater* floaterp, const std::string& filen
 		return;
 	}
 	
+	buildFloaterInternal(floaterp, root, filename, factory_map, open);
+}
+
+void LLUICtrlFactory::buildFloaterFromBuffer(LLFloater *floaterp, const std::string &buffer,
+											 const LLCallbackMap::map_t *factory_map, BOOL open) /* Flawfinder: ignore */
+{
+	LLXMLNodePtr root;
+
+	if (!LLUICtrlFactory::getLayeredXMLNodeFromBuffer(buffer, root))
+		return;
+	
+	buildFloaterInternal(floaterp, root, "(buffer)", factory_map, open);
+}
+
+void LLUICtrlFactory::buildFloaterInternal(LLFloater *floaterp, LLXMLNodePtr &root, const std::string &filename,
+										   const LLCallbackMap::map_t *factory_map, BOOL open) /* Flawfinder: ignore */
+{
 	// root must be called floater
 	if( !(root->hasName("floater") || root->hasName("multi_floater") ) )
 	{
@@ -294,13 +321,31 @@ S32 LLUICtrlFactory::saveToXML(LLView* viewp, const std::string& filename)
 BOOL LLUICtrlFactory::buildPanel(LLPanel* panelp, const std::string& filename,
 									const LLCallbackMap::map_t* factory_map)
 {
-	BOOL didPost = FALSE;
 	LLXMLNodePtr root;
 
 	if (!LLUICtrlFactory::getLayeredXMLNode(filename, root))
 	{
-		return didPost;
+		return FALSE;
 	}
+	
+	return buildPanelInternal(panelp, root, filename, factory_map);
+	}
+
+BOOL LLUICtrlFactory::buildPanelFromBuffer(LLPanel *panelp, const std::string &buffer,
+                                           const LLCallbackMap::map_t* factory_map)
+{
+	LLXMLNodePtr root;
+
+	if (!LLUICtrlFactory::getLayeredXMLNodeFromBuffer(buffer, root))
+		return FALSE;
+
+	return buildPanelInternal(panelp, root, "(buffer)", factory_map);
+}
+
+BOOL LLUICtrlFactory::buildPanelInternal(LLPanel* panelp, LLXMLNodePtr &root, const std::string &filename,
+                                         const LLCallbackMap::map_t* factory_map)
+{
+	BOOL didPost = FALSE;
 
 	// root must be called panel
 	if( !root->hasName("panel" ) )

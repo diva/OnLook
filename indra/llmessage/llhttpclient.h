@@ -156,6 +156,8 @@ public:
 		///< must be called before any of the above calls are made
 	static bool hasPump();
 		///< for testing
+	static LLPumpIO &getPump();
+		///< Hippo special
 };
 
 #endif // LL_LLHTTPCLIENT_H

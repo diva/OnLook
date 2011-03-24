@@ -270,6 +270,9 @@ public:
 	void			startTyping() { mTyping = TRUE; mTypingTimer.reset(); mIdleTimer.reset();}
 	void			stopTyping() { mTyping = FALSE; }
 
+	void setNameFromChat(const std::string &text) { mNameFromChatOverride = mNameFromChatChanged = true; mNameFromChatText = text; }
+	void clearNameFromChat() { mNameFromChatOverride = false; mNameFromChatChanged = true; mNameFromChatText = ""; }
+
 	// Returns "FirstName LastName"
 	std::string		getFullname() const;
 
@@ -701,10 +704,6 @@ private:
 	LLVoiceVisualizer*  mVoiceVisualizer;
 	int					mCurrentGesticulationLevel;
 	
-
-
-
-
 	// Animation timer
 	LLTimer		mAnimTimer;
 	F32			mTimeLast;	
@@ -715,6 +714,10 @@ private:
 	static void resolveClient(LLColor4& avatar_name_color, std::string& client, LLVOAvatar* avatar);
 	friend class LLFloaterAvatarList;
 
+	bool mNameFromChatOverride;
+	bool mNameFromChatChanged;
+	std::string mNameFromChatText;
+	std::string mNameFromAttachment;
 
 	LLPointer<LLHUDEffectSpiral> mBeam;
 	LLFrameTimer mBeamTimer;

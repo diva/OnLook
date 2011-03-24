@@ -181,6 +181,7 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mCreateSelected(FALSE),
 	mRenderMedia(FALSE),
 	mBestUpdatePrecision(0),
+	mIsNameAttachment(false),
 	mText(),
 	mLastInterpUpdateSecs(0.f),
 	mLastMessageUpdateSecs(0.f),

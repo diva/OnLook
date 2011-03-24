@@ -561,6 +561,8 @@ public:
 	LLPointer<LLHUDText> mText;
 	LLPointer<LLHUDIcon> mIcon;
 
+	bool mIsNameAttachment;
+
 	static			BOOL		sUseSharedDrawables;
 
 protected:

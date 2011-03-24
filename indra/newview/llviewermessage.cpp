@@ -155,6 +155,9 @@
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
+#include "hipporestrequest.h"
+#include "hippofloaterxml.h"
+#include "llversionviewer.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -2896,6 +2899,19 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 	}
 }
 
+// defined in llchatbar.cpp, but not declared in any header
+void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
+
+class AuthHandler : public HippoRestHandlerRaw
+{
+	void result(const std::string &content)
+	{
+		send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
+	}
+};
+
+std::map<LLUUID, int> gChatObjectAuth;
+
 void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 {
 	LLChat		chat;
@@ -3028,6 +3044,52 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
+		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
+			(mesg.substr(0, 3) == "># ")) {
+			if (mesg.substr(mesg.size()-3, 3) == " #<") {
+				// hello from object
+				if (from_id.isNull()) return;
+				char buf[200];
+				snprintf(buf, 200, "%s v%d.%d.%d", LL_CHANNEL, LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH);
+				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
+				gChatObjectAuth[from_id] = 1;
+			} else if (gChatObjectAuth.find(from_id) != gChatObjectAuth.end()) {
+				LLUUID key;
+				if (LLUUID::parseUUID(mesg.substr(3, 36), &key)) {
+					// object command found
+					if (key.isNull() && (mesg.size() == 39)) {
+						// clear all nameplates
+						for (int i=0; i<gObjectList.getNumObjects(); i++) {
+							LLViewerObject *obj = gObjectList.getObject(i);
+							if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
+								avatar->clearNameFromChat();
+						}
+					} else {
+						LLViewerObject *obj = gObjectList.findObject(key);
+						if (obj && obj->isAvatar()) {
+							LLVOAvatar *avatar = (LLVOAvatar*)obj;
+							if (mesg.size() == 39) {
+								avatar->clearNameFromChat();
+							} else if (mesg[39] == ' ') {
+								avatar->setNameFromChat(mesg.substr(40));
+							}
+						}
+					}
+					return;
+				} else if (mesg.substr(2, 9) == " floater ") {
+					HippoFloaterXml::execute(mesg.substr(11));
+					return;
+				} else if (mesg.substr(2, 6) == " auth ") {
+					std::string authUrl = mesg.substr(8);
+					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
+					authUrl += gAuthString;
+					HippoRestRequest::get(authUrl, new AuthHandler());
+					return;
+				}
+			}
+		}
+
+
 		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{

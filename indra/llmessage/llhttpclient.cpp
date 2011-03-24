@@ -599,3 +599,8 @@ bool LLHTTPClient::hasPump()
 {
 	return theClientPump != NULL;
 }
+
+LLPumpIO &LLHTTPClient::getPump()
+{
+	return *theClientPump;
+}
