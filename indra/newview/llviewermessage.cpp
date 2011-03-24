@@ -2145,6 +2145,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				LLFloaterGroupInfo::showNotice(subj,mes,group_id,has_inventory,item_name,info);
 			}
+			else
+			{
+				delete info;
+			}
 		}
 		break;
 	case IM_GROUP_INVITATION:
@@ -2206,6 +2210,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if (sizeof(offer_agent_bucket_t) != binary_bucket_size)
 				{
 					LL_WARNS("Messaging") << "Malformed inventory offer from agent" << LL_ENDL;
+					delete info;
 					break;
 				}
 				bucketp = (struct offer_agent_bucket_t*) &binary_bucket[0];
@@ -2224,6 +2229,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if (sizeof(S8) != binary_bucket_size)
 				{
 					LL_WARNS("Messaging") << "Malformed inventory offer from object" << LL_ENDL;
+					delete info;
 					break;
 				}
 				info->mType = (LLAssetType::EType) binary_bucket[0];
@@ -3515,6 +3521,9 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 		LL_WARNS("Messaging") << "Got teleport notification for wrong agent!" << LL_ENDL;
 		return;
 	}
+	
+	// Teleport is finished; it can't be cancelled now.
+	gViewerWindow->setProgressCancelButtonVisible(FALSE);
 
 	// Do teleport effect for where you're leaving
 	// VEFFECT: TeleportStart
@@ -6119,6 +6128,9 @@ void handle_lure(const LLUUID& invitee)
 // Prompt for a message to the invited user.
 void handle_lure(LLDynamicArray<LLUUID>& ids) 
 {
+	if (ids.empty()) return;
+
+	if (!gAgent.getRegion()) return;
 	LLSD edit_args;
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
 	edit_args["REGION"] = 
@@ -6653,7 +6665,6 @@ void onCovenantLoadComplete(LLVFS *vfs,
 				// Version 0 (just text, doesn't include version number)
 				covenant_text = editor->getText();
 			}
-			delete[] buffer;
 			delete editor;
 		}
 		else
@@ -6661,6 +6672,7 @@ void onCovenantLoadComplete(LLVFS *vfs,
 			LL_WARNS("Messaging") << "Problem importing estate covenant: Covenant file format error." << LL_ENDL;
 			covenant_text = "Problem importing estate covenant: Covenant file format error.";
 		}
+		delete[] buffer;
 	}
 	else
 	{
