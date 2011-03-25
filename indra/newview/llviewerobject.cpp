@@ -369,11 +369,10 @@ void LLViewerObject::markDead()
 
 		if (flagAnimSource())
 		{
-			LLVOAvatar* avatarp = gAgent.getAvatarObject();
-			if (avatarp && !avatarp->isDead())
+			if (isAgentAvatarValid())
 			{
 				// stop motions associated with this object
-				avatarp->stopMotionFromSource(mID);
+				gAgent.getAvatarObject()->stopMotionFromSource(mID);
 			}
 		}
 

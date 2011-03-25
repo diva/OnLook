@@ -123,6 +123,8 @@ inline bool operator==(const LLGroupData &a, const LLGroupData &b)
 	return (a.mID == b.mID);
 }
 
+BOOL isAgentAvatarValid();
+
 // forward declarations
 
 //
@@ -449,6 +451,7 @@ public:
 	void			cameraPanLeft(const F32 meters);
 	void			cameraPanUp(const F32 meters);
 
+	void			updateLastCamera();
 	void			updateFocusOffset();
 	void			validateFocusObject();
 
