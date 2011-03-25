@@ -2154,9 +2154,7 @@ bool LLAppViewer::initConfiguration()
 
 void LLAppViewer::checkForCrash(void)
 {
-	// <edit> screw sending crash reports
-#if LL_SEND_CRASH_REPORTS && 0
-	// </edit>
+#if LL_SEND_CRASH_REPORTS
 	//*NOTE:Mani The current state of the crash handler has the MacOSX
 	// sending all crash reports as freezes, in order to let 
 	// the MacOSX CrashRepoter generate stacks before spawning the 

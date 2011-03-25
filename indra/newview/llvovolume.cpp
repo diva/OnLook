@@ -473,7 +473,7 @@ void LLVOVolume::updateTextureVirtualSize()
 
 	if(!isVisible())
 	{
-		return ;
+		return;
 	}
 
 	if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SIMPLE))

@@ -53,8 +53,12 @@ public:
 
 	void buildFloater(LLFloater* floaterp, const std::string &filename, 
 					const LLCallbackMap::map_t* factory_map = NULL, BOOL open = TRUE);
+	void buildFloaterFromBuffer(LLFloater *floaterp, const std::string &buffer,
+								const LLCallbackMap::map_t *factory_map = NULL, BOOL open = TRUE);
 	BOOL buildPanel(LLPanel* panelp, const std::string &filename,
 					const LLCallbackMap::map_t* factory_map = NULL);
+	BOOL buildPanelFromBuffer(LLPanel *panelp, const std::string &buffer,
+							  const LLCallbackMap::map_t* factory_map = NULL);
 
 	void removePanel(LLPanel* panelp) { mBuiltPanels.erase(panelp->getHandle()); }
 	void removeFloater(LLFloater* floaterp) { mBuiltFloaters.erase(floaterp->getHandle()); }
@@ -77,6 +81,7 @@ public:
 	virtual LLView* createWidget(LLPanel *parent, LLXMLNodePtr node);
 
 	static bool getLayeredXMLNode(const std::string &filename, LLXMLNodePtr& root);
+	static bool getLayeredXMLNodeFromBuffer(const std::string &buffer, LLXMLNodePtr& root);
 
 	static const std::vector<std::string>& getXUIPaths();
 
@@ -94,6 +99,11 @@ private:
 	static std::vector<std::string> sXUIPaths;
 
 	LLPanel* mDummyPanel;
+	
+	void buildFloaterInternal(LLFloater *floaterp, LLXMLNodePtr &root, const std::string &filename,
+							  const LLCallbackMap::map_t *factory_map, BOOL open);
+	BOOL buildPanelInternal(LLPanel* panelp, LLXMLNodePtr &root, const std::string &filename,
+							const LLCallbackMap::map_t* factory_map = NULL);
 };
 
 

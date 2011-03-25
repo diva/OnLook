@@ -141,7 +141,7 @@ public:
 		LLXMLNodePtr& node, 
 		LLXMLNode* defaults_tree);
 	static bool parseBuffer(
-		U8* buffer,
+		const char *buffer,
 		U32 length,
 		LLXMLNodePtr& node, 
 		LLXMLNode* defaults);

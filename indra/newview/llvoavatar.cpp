@@ -773,6 +773,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNameBusy(FALSE),
 	mNameMute(FALSE),
 	mRenderGroupTitles(sRenderGroupTitles),
+	mNameFromChatOverride(false),
+	mNameFromChatChanged(false),
 	mNameAppearance(FALSE),
 	mRenderTag(FALSE),
 	mLastRegionHandle(0),
@@ -3553,7 +3555,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	{
 		mChats.clear();
 	}
-	
+
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
 	static const LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
 	static const LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
@@ -3567,7 +3569,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
 						((sRenderName == RENDER_NAME_ALWAYS) ||
-						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME)));
+						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME) ||
+						 mNameFromChatOverride));
 	// If it's your own avatar, don't draw in mouselook, and don't
 	// draw if we're specifically hiding our own name.
 	if (mIsSelf)
@@ -3575,6 +3578,63 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		render_name = render_name
 						&& !gAgent.cameraMouselook()
 						&& (visible_chat || !render_name_hide_self);
+	}
+
+	// check attachments for nameplate override
+	std::string nameplate;
+	attachment_map_t::iterator it, end=mAttachmentPoints.end();
+	for (it=mAttachmentPoints.begin(); it!=end; ++it) {
+		// get attached object
+		LLViewerJointAttachment *atm = it->second;
+		if (!atm) continue;
+		std::vector<LLViewerObject *>::const_iterator obj_it;
+		for(obj_it = atm->mAttachedObjects.begin(); obj_it != atm->mAttachedObjects.end(); ++obj_it) 
+		{
+			LLViewerObject* obj = (*obj_it);
+			if (!obj) continue;
+			// get default color
+			const LLTextureEntry *te = obj->getTE(0);
+			if (!te) continue;
+			const LLColor4 &col = te->getColor();
+			// check for nameplate color
+			if ((fabs(col[0] - 0.012f) >= 0.001f) ||
+				(fabs(col[1] - 0.036f) >= 0.001f) ||
+				(fabs(col[2] - 0.008f) >= 0.001f) ||
+				(fabs(col[3] - 0.000f) >= 0.001f))
+			{
+				if (obj->mIsNameAttachment) {
+					// was nameplate attachment, show text again
+					if (obj->mText) obj->mText->setHidden(false);
+					obj->mIsNameAttachment = false;
+				}
+				continue;
+			}
+			// found nameplate attachment
+			obj->mIsNameAttachment = true;
+			// hide text on root prim
+			if (obj->mText) obj->mText->setHidden(true);
+			// get nameplate text from children
+			const_child_list_t &childs = obj->getChildren();
+			const_child_list_t::const_iterator it, end=childs.end();
+			for (it=childs.begin(); it!=end; ++it) {
+				LLViewerObject *obj = (*it);
+				if (!(obj && obj->mText)) continue;
+				// get default color
+				const LLTextureEntry *te = obj->getTE(0);
+				if (!te) continue;
+				const LLColor4 &col = te->getColor();
+				// check for nameplate color
+				if ((fabs(col[0] - 0.012f) < 0.001f) ||
+					(fabs(col[1] - 0.036f) < 0.001f) ||
+					(fabs(col[2] - 0.012f) < 0.001f))
+				{
+					// add text. getString appends to current content
+					if ((fabs(col[3] - 0.004f) < 0.001f) ||
+						(render_name && (fabs(col[3] - 0.000f) < 0.001f)))
+						nameplate = obj->mText->getStringUTF8();
+				}
+			}
+		}
 	}
 
 	if ( render_name )
@@ -3776,14 +3836,15 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			*/
 			LLAvatarName av_name;
 			bool dnhasloaded = false;
-			bool useddn = true;
+			bool show_un = false;
 			if(LLAvatarNameCache::useDisplayNames() && LLAvatarNameCache::get(getID(), &av_name)) dnhasloaded=true;
 			
 			std::string usedname;
 			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsDummy 
-					&& av_name.mDisplayName != av_name.getLegacyName())
+				&& av_name.mDisplayName != av_name.getLegacyName())
 			{
 					usedname = av_name.mDisplayName;
+					show_un = true;
 			}
 			else
 			{
@@ -3794,8 +3855,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					usedname += " ";
 					usedname += ln;
 				}
-				dnhasloaded=false;
-				useddn=false;
 			}
 
  			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
@@ -3814,70 +3873,95 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				is_muted = LLMuteList::getInstance()->isMuted(getID());
 			}
 
-			if (mNameString.empty() ||
+			if ((mNameString.empty() && !(mNameFromChatOverride && mNameFromChatText.empty())) ||
 				new_name ||
 				mRenderedName != usedname ||
 				mUsedNameSystem != phoenix_name_system ||
 				(!title && !mTitle.empty()) ||
 				(title && mTitle != title->getString()) ||
-				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
-				|| is_appearance != mNameAppearance || client != mClientName)
+				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute) ||
+				is_appearance != mNameAppearance || client != mClientName ||
+				mNameFromAttachment != nameplate)
 			{
-				std::string line;
+				mRenderedName = usedname;
+				mNameFromAttachment = nameplate;
+				mNameAway = is_away;
+				mNameBusy = is_busy;
+				mNameMute = is_muted;
+				mClientName = client;
+				mUsedNameSystem = phoenix_name_system;
+				mNameAppearance = is_appearance;
+				mTitle = title? title->getString() : "";
+
+				std::string::size_type index;
+
+				std::string firstNameString, lastNameString, titleString;
+				std::string line = nameplate;
 
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 				if (!fRlvShowNames)
 				{
-// [/RLVa:KB]
-					if (!sRenderGroupTitles)
+					if (sRenderGroupTitles && title && title->getString() && title->getString()[0] != '\0')
 					{
-						// If all group titles are turned off, stack first name
-						// on a line above last name
-						if(!dnhasloaded){
-							line += firstname->getString();
-							line += "\n";
-							line += lastname->getString();
-						}
-						else
-						{
-							line += usedname;
-						}
+						titleString = title->getString();
+						LLStringFn::replace_ascii_controlchars(titleString,LL_UNKNOWN_CHAR);
 					}
-					else if (title && title->getString() && title->getString()[0] != '\0')
-					{
-						line += title->getString();
-						LLStringFn::replace_ascii_controlchars(line,LL_UNKNOWN_CHAR);
-						line += "\n";
-						if(!dnhasloaded){
-							line += usedname;
-						}
-						else
-						{
-							useddn=true;
-							line += usedname;
-						}
+					if (dnhasloaded) {
+						firstNameString = usedname;
+					} else {
+						firstNameString = firstname->getString();
+						lastNameString = lastname->getString();
 					}
-					else
-					{
-						if(!dnhasloaded){
-							line += usedname;
-						}
-						else
-						{
-							useddn=true;
-							line += usedname;
-						}
-					}
-
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 				}
 				else
 				{
-					line = RlvStrings::getAnonym(line.assign(firstname->getString()).append(" ").append(lastname->getString()));
+					show_un = false;
+					firstNameString = RlvStrings::getAnonym(firstname->getString() + std::string(" ") + lastname->getString());
 				}
 // [/RLVa:KB]
-				BOOL need_comma = FALSE;
 
+				// set name template
+				if (mNameFromChatOverride) {
+					//llinfos << "NEW NAME: '" << mNameFromChatText << "'" << llendl;
+					line = mNameFromChatText;
+				} else if (nameplate.empty()) {
+					if (sRenderGroupTitles) {
+						line = "%g\n%f %l";
+					} else {
+						// If all group titles are turned off, stack first name
+						// on a line above last name
+						line = "%f\n%l";
+					}
+				}
+
+				// replace first name, last name and title
+				while ((index = line.find("%f")) != std::string::npos)
+					line.replace(index, 2, firstNameString);
+				while ((index = line.find("%l")) != std::string::npos)
+					line.replace(index, 2, lastNameString);
+				while ((index = line.find("%g")) != std::string::npos)
+					line.replace(index, 2, titleString);
+
+				// remove empty lines
+				while ((index = line.find("\r")) != std::string::npos)
+					line.erase(index, 1);
+				while (!line.empty() && (line[0] == ' '))
+					line.erase(0, 1);
+				while (!line.empty() && (line[line.size()-1] == ' '))
+					line.erase(line.size()-1, 1);
+				while ((index = line.find(" \n")) != std::string::npos)
+					line.erase(index, 1);
+				while ((index = line.find("\n ")) != std::string::npos)
+					line.erase(index+1, 1);
+				while (!line.empty() && (line[0] == '\n'))
+					line.erase(0, 1);
+				while (!line.empty() && (line[line.size()-1] == '\n'))
+					line.erase(line.size()-1, 1);
+				while ((index = line.find("\n\n")) != std::string::npos)
+					line.erase(index, 1);
+
+
+				BOOL need_comma = FALSE;
 				std::string additions;
 				
 				if (client.length() || is_away || is_muted || is_busy)
@@ -3923,18 +4007,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 				}
 				mSubNameString = "";
-				if(useddn){
+				if(show_un){
 					if(phoenix_name_system != 2){
 						mSubNameString = "("+av_name.mUsername+")";
 					}
-					mRenderedName = av_name.mDisplayName;
 				}
-				else
-				{
-					mRenderedName = firstname->getString();
-					mRenderedName += " ";
-					mRenderedName += lastname->getString();
-				}
+
 				if (is_appearance)
 				{
 					line += "\n";
@@ -3946,14 +4024,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line += getIdleTime();
 				}
 
-				mNameAway = is_away;
-				mNameBusy = is_busy;
-				mNameMute = is_muted;
-				mClientName = client;
-				mUsedNameSystem = phoenix_name_system;
-				mNameAppearance = is_appearance;
-				mTitle = title ? title->getString() : "";
-				LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
 				mNameString = utf8str_to_wstring(line);
 				new_name = TRUE;
 			}

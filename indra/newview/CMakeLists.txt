@@ -65,31 +65,32 @@ include_directories(
 
 set(viewer_SOURCE_FILES
     floaterlocalassetbrowse.cpp
-	aoremotectrl.cpp
-	floaterao.cpp
+    aoremotectrl.cpp
+    floaterao.cpp
     floatervoicelicense.cpp
     cofmgr.cpp
-	ascentdaycyclemanager.cpp
-	ascentfloatercontactgroups.cpp
+    ascentdaycyclemanager.cpp
+    ascentfloatercontactgroups.cpp
     ascentprefssys.cpp
-	ascentprefsvan.cpp
-	ascentuploadbrowser.cpp
-	dhparam.cpp
-	dsaparam.cpp
-	emerald.cpp
-	emeraldboobutils.cpp
+    ascentprefsvan.cpp
+    ascentuploadbrowser.cpp
+    dhparam.cpp
+    dsaparam.cpp
+    emerald.cpp
+    emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
-	floatersculptpreview.cpp
-	hbfloatergrouptitles.cpp
+    floatersculptpreview.cpp
+    hbfloatergrouptitles.cpp
     hgfloatertexteditor.cpp
-	hippogridmanager.cpp
-	hippolimits.cpp
-	hipporestrequest.cpp
-	hippopanelgrids.cpp
+    hippogridmanager.cpp
+    hippofloaterxml.cpp
+    hippolimits.cpp
+    hipporestrequest.cpp
+    hippopanelgrids.cpp
     jcfloaterareasearch.cpp
-	chatbar_as_cmdline.cpp
-	qtoolalign.cpp
+    chatbar_as_cmdline.cpp
+    qtoolalign.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentdata.cpp
@@ -160,9 +161,9 @@ set(viewer_SOURCE_FILES
     llfloateravatarpicker.cpp
     llfloateravatartextures.cpp
     llfloaterbeacons.cpp
-	llfloaterblacklist.cpp
-	llviewerdisplayname.cpp
-	llfloaterdisplayname.cpp
+    llfloaterblacklist.cpp
+    llviewerdisplayname.cpp
+    llfloaterdisplayname.cpp
     llfloaterbuildoptions.cpp
     llfloaterbulkpermission.cpp
     llfloaterbump.cpp
@@ -184,7 +185,7 @@ set(viewer_SOURCE_FILES
     llfloaterevent.cpp
     llfloaterexport.cpp
     llfloaterexploreanimations.cpp
-	llfloaterexploresounds.cpp
+    llfloaterexploresounds.cpp
     llfloaterfriends.cpp
     llfloaterfonttest.cpp
     llfloatergesture.cpp
@@ -500,8 +501,8 @@ set(viewer_SOURCE_FILES
     llxmlrpctransaction.cpp
     noise.cpp
     pipeline.cpp
-	scriptcounter.cpp
-	wlfPanel_AdvSettings.cpp
+    scriptcounter.cpp
+    wlfPanel_AdvSettings.cpp
     rlvhandler.cpp
     rlvhelper.cpp
     rlvcommon.cpp
@@ -537,28 +538,29 @@ set(viewer_HEADER_FILES
 
     floaterlocalassetbrowse.h
     aoremotectrl.h
-	floaterao.h
+    floaterao.h
     floatervoicelicense.h
-	cofmgr.h
-	ascentdaycyclemanager.h
-	ascentfloatercontactgroups.h
-	ascentprefssys.h
-	ascentprefsvan.h
-	ascentuploadbrowser.h
-	emerald.h
-	emeraldboobutils.h
+    cofmgr.h
+    ascentdaycyclemanager.h
+    ascentfloatercontactgroups.h
+    ascentprefssys.h
+    ascentprefsvan.h
+    ascentuploadbrowser.h
+    emerald.h
+    emeraldboobutils.h
     dofloaterhex.h
     dohexeditor.h
-	floatersculptpreview.h
-	hbfloatergrouptitles.h
+    floatersculptpreview.h
+    hbfloatergrouptitles.h
     hgfloatertexteditor.h
-	hippogridmanager.h
-	hippolimits.h
-	hipporestrequest.h
-	hippopanelgrids.h
+    hippogridmanager.h
+    hippofloaterxml.h
+    hippolimits.h
+    hipporestrequest.h
+    hippopanelgrids.h
     jcfloaterareasearch.h
-	chatbar_as_cmdline.h
-	qtoolalign.h
+    chatbar_as_cmdline.h
+    qtoolalign.h
     llagent.h
     llagentaccess.h
     llagentdata.h
@@ -654,7 +656,7 @@ set(viewer_HEADER_FILES
     llfloaterenvsettings.h
     llfloaterexport.h
     llfloaterexploreanimations.h
-	llfloaterexploresounds.h
+    llfloaterexploresounds.h
     llfloaterevent.h
     llfloaterfonttest.h
     llfloaterfriends.h
@@ -977,10 +979,10 @@ set(viewer_HEADER_FILES
     noise.h
     pipeline.h
     randgauss.h
-	scriptcounter.h
+    scriptcounter.h
     VertexCache.h
     VorbisFramework.h
-	wlfPanel_AdvSettings.h
+    wlfPanel_AdvSettings.h
     rlvdefines.h
     rlvhandler.h
     rlvhelper.h
@@ -990,7 +992,7 @@ set(viewer_HEADER_FILES
     rlvextensions.h
     rlvfloaterbehaviour.h
     rlvviewer2.h
-	shcommandhandler.h
+    shcommandhandler.h
     )
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)

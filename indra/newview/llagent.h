@@ -1042,6 +1042,8 @@ private:
 };
 
 extern LLAgent gAgent;
+extern std::string gAuthString;
+
 // <edit>
 extern LLUUID gReSitTargetID;
 extern LLVector3 gReSitOffset;
