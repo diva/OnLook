@@ -356,12 +356,14 @@ void LLSurfacePatch::calcNormal(const U32 x, const U32 y, const U32 stride)
 	normal %= c2;
 	normal.normVec();
 
+	llassert(mDataNorm);
 	*(mDataNorm + surface_stride * y + x) = normal;
 }
 
 const LLVector3 &LLSurfacePatch::getNormal(const U32 x, const U32 y) const
 {
 	U32 surface_stride = mSurfacep->getGridsPerEdge();
+	llassert(mDataNorm);
 	return *(mDataNorm + surface_stride * y + x);
 }
 
@@ -403,6 +405,7 @@ void LLSurfacePatch::updateVerticalStats()
 	U32 i, j, k;
 	F32 z, total;
 
+	llassert(mDataZ);
 	z = *(mDataZ);
 
 	mMinZ = z;
