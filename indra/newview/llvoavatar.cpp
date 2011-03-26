@@ -773,6 +773,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mNameBusy(FALSE),
 	mNameMute(FALSE),
 	mRenderGroupTitles(sRenderGroupTitles),
+	mNameFromChatOverride(false),
+	mNameFromChatChanged(false),
 	mNameAppearance(FALSE),
 	mRenderTag(FALSE),
 	mLastRegionHandle(0),
@@ -830,7 +832,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 		mBakedTextureData[i].mTextureIndex = getTextureIndex((EBakedTextureIndex)i);
 	}
 
-	mDirtyMesh = TRUE;	// Dirty geometry, need to regenerate.
+	mDirtyMesh = 2;	// Dirty geometry, need to regenerate.
+	mMeshTexturesDirty = FALSE;
 	mShadow0Facep = NULL;
 	mShadow1Facep = NULL;
 	mHeadp = NULL;
@@ -2461,7 +2464,7 @@ void LLVOAvatar::updateMeshData()
 			}
 			if(num_vertices < 1)//skip empty meshes
 			{
-				break ;
+				continue ;
 			}
 			if(last_v_num > 0)//put the last inserted part into next vertex buffer.
 			{
@@ -2483,6 +2486,8 @@ void LLVOAvatar::updateMeshData()
 			// resize immediately
 			facep->setSize(num_vertices, num_indices);
 
+			bool terse_update = false;
+
 			if(facep->mVertexBuffer.isNull())
 			{
 				facep->mVertexBuffer = new LLVertexBufferAvatar();
@@ -2490,7 +2495,15 @@ void LLVOAvatar::updateMeshData()
 			}
 			else
 			{
-				facep->mVertexBuffer->resizeBuffer(num_vertices, num_indices) ;
+				if (facep->mVertexBuffer->getRequestedIndices() == num_indices &&
+					facep->mVertexBuffer->getRequestedVerts() == num_vertices)
+				{
+					terse_update = true;
+				}
+				else
+				{
+					facep->mVertexBuffer->resizeBuffer(num_vertices, num_indices) ;
+				}
 			}
 		
 			facep->setGeomIndex(0);
@@ -2505,7 +2518,7 @@ void LLVOAvatar::updateMeshData()
 
 			for(S32 k = j ; k < part_index ; k++)
 			{
-				mMeshLOD[k]->updateFaceData(facep, mAdjustedPixelArea, k == MESH_ID_HAIR);
+				mMeshLOD[k]->updateFaceData(facep, mAdjustedPixelArea, k == MESH_ID_HAIR, terse_update);
 			}
 
 			stop_glerror();
@@ -3542,7 +3555,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	{
 		mChats.clear();
 	}
-	
+
 	const F32 time_visible = mTimeVisible.getElapsedTimeF32();
 	static const LLCachedControl<F32> NAME_SHOW_TIME("RenderNameShowTime",10);	// seconds
 	static const LLCachedControl<F32> FADE_DURATION("RenderNameFadeDuration",1); // seconds
@@ -3556,7 +3569,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
 						((sRenderName == RENDER_NAME_ALWAYS) ||
-						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME)));
+						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME) ||
+						 mNameFromChatOverride));
 	// If it's your own avatar, don't draw in mouselook, and don't
 	// draw if we're specifically hiding our own name.
 	if (mIsSelf)
@@ -3564,6 +3578,63 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 		render_name = render_name
 						&& !gAgent.cameraMouselook()
 						&& (visible_chat || !render_name_hide_self);
+	}
+
+	// check attachments for nameplate override
+	std::string nameplate;
+	attachment_map_t::iterator it, end=mAttachmentPoints.end();
+	for (it=mAttachmentPoints.begin(); it!=end; ++it) {
+		// get attached object
+		LLViewerJointAttachment *atm = it->second;
+		if (!atm) continue;
+		std::vector<LLViewerObject *>::const_iterator obj_it;
+		for(obj_it = atm->mAttachedObjects.begin(); obj_it != atm->mAttachedObjects.end(); ++obj_it) 
+		{
+			LLViewerObject* obj = (*obj_it);
+			if (!obj) continue;
+			// get default color
+			const LLTextureEntry *te = obj->getTE(0);
+			if (!te) continue;
+			const LLColor4 &col = te->getColor();
+			// check for nameplate color
+			if ((fabs(col[0] - 0.012f) >= 0.001f) ||
+				(fabs(col[1] - 0.036f) >= 0.001f) ||
+				(fabs(col[2] - 0.008f) >= 0.001f) ||
+				(fabs(col[3] - 0.000f) >= 0.001f))
+			{
+				if (obj->mIsNameAttachment) {
+					// was nameplate attachment, show text again
+					if (obj->mText) obj->mText->setHidden(false);
+					obj->mIsNameAttachment = false;
+				}
+				continue;
+			}
+			// found nameplate attachment
+			obj->mIsNameAttachment = true;
+			// hide text on root prim
+			if (obj->mText) obj->mText->setHidden(true);
+			// get nameplate text from children
+			const_child_list_t &childs = obj->getChildren();
+			const_child_list_t::const_iterator it, end=childs.end();
+			for (it=childs.begin(); it!=end; ++it) {
+				LLViewerObject *obj = (*it);
+				if (!(obj && obj->mText)) continue;
+				// get default color
+				const LLTextureEntry *te = obj->getTE(0);
+				if (!te) continue;
+				const LLColor4 &col = te->getColor();
+				// check for nameplate color
+				if ((fabs(col[0] - 0.012f) < 0.001f) ||
+					(fabs(col[1] - 0.036f) < 0.001f) ||
+					(fabs(col[2] - 0.012f) < 0.001f))
+				{
+					// add text. getString appends to current content
+					if ((fabs(col[3] - 0.004f) < 0.001f) ||
+						(render_name && (fabs(col[3] - 0.000f) < 0.001f)))
+						nameplate = obj->mText->getStringUTF8();
+				}
+			}
+		}
 	}
 
 	if ( render_name )
@@ -3765,14 +3836,15 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			*/
 			LLAvatarName av_name;
 			bool dnhasloaded = false;
-			bool useddn = true;
+			bool show_un = false;
 			if(LLAvatarNameCache::useDisplayNames() && LLAvatarNameCache::get(getID(), &av_name)) dnhasloaded=true;
 			
 			std::string usedname;
 			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsDummy 
-					&& av_name.mDisplayName != av_name.getLegacyName())
+				&& av_name.mDisplayName != av_name.getLegacyName())
 			{
 					usedname = av_name.mDisplayName;
+					show_un = true;
 			}
 			else
 			{
@@ -3783,8 +3855,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					usedname += " ";
 					usedname += ln;
 				}
-				dnhasloaded=false;
-				useddn=false;
 			}
 
  			BOOL is_away = mSignaledAnimations.find(ANIM_AGENT_AWAY)  != mSignaledAnimations.end();
@@ -3803,70 +3873,95 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				is_muted = LLMuteList::getInstance()->isMuted(getID());
 			}
 
-			if (mNameString.empty() ||
+			if ((mNameString.empty() && !(mNameFromChatOverride && mNameFromChatText.empty())) ||
 				new_name ||
 				mRenderedName != usedname ||
 				mUsedNameSystem != phoenix_name_system ||
 				(!title && !mTitle.empty()) ||
 				(title && mTitle != title->getString()) ||
-				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute)
-				|| is_appearance != mNameAppearance || client != mClientName)
+				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute) ||
+				is_appearance != mNameAppearance || client != mClientName ||
+				mNameFromAttachment != nameplate)
 			{
-				std::string line;
+				mRenderedName = usedname;
+				mNameFromAttachment = nameplate;
+				mNameAway = is_away;
+				mNameBusy = is_busy;
+				mNameMute = is_muted;
+				mClientName = client;
+				mUsedNameSystem = phoenix_name_system;
+				mNameAppearance = is_appearance;
+				mTitle = title? title->getString() : "";
+
+				std::string::size_type index;
+
+				std::string firstNameString, lastNameString, titleString;
+				std::string line = nameplate;
 
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 				if (!fRlvShowNames)
 				{
-// [/RLVa:KB]
-					if (!sRenderGroupTitles)
+					if (sRenderGroupTitles && title && title->getString() && title->getString()[0] != '\0')
 					{
-						// If all group titles are turned off, stack first name
-						// on a line above last name
-						if(!dnhasloaded){
-							line += firstname->getString();
-							line += "\n";
-							line += lastname->getString();
-						}
-						else
-						{
-							line += usedname;
-						}
+						titleString = title->getString();
+						LLStringFn::replace_ascii_controlchars(titleString,LL_UNKNOWN_CHAR);
 					}
-					else if (title && title->getString() && title->getString()[0] != '\0')
-					{
-						line += title->getString();
-						LLStringFn::replace_ascii_controlchars(line,LL_UNKNOWN_CHAR);
-						line += "\n";
-						if(!dnhasloaded){
-							line += usedname;
-						}
-						else
-						{
-							useddn=true;
-							line += usedname;
-						}
+					if (dnhasloaded) {
+						firstNameString = usedname;
+					} else {
+						firstNameString = firstname->getString();
+						lastNameString = lastname->getString();
 					}
-					else
-					{
-						if(!dnhasloaded){
-							line += usedname;
-						}
-						else
-						{
-							useddn=true;
-							line += usedname;
-						}
-					}
-
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e) | Added: RLVa-0.2.0b
 				}
 				else
 				{
-					line = RlvStrings::getAnonym(line.assign(firstname->getString()).append(" ").append(lastname->getString()));
+					show_un = false;
+					firstNameString = RlvStrings::getAnonym(firstname->getString() + std::string(" ") + lastname->getString());
 				}
 // [/RLVa:KB]
-				BOOL need_comma = FALSE;
 
+				// set name template
+				if (mNameFromChatOverride) {
+					//llinfos << "NEW NAME: '" << mNameFromChatText << "'" << llendl;
+					line = mNameFromChatText;
+				} else if (nameplate.empty()) {
+					if (sRenderGroupTitles) {
+						line = "%g\n%f %l";
+					} else {
+						// If all group titles are turned off, stack first name
+						// on a line above last name
+						line = "%f\n%l";
+					}
+				}
+
+				// replace first name, last name and title
+				while ((index = line.find("%f")) != std::string::npos)
+					line.replace(index, 2, firstNameString);
+				while ((index = line.find("%l")) != std::string::npos)
+					line.replace(index, 2, lastNameString);
+				while ((index = line.find("%g")) != std::string::npos)
+					line.replace(index, 2, titleString);
+
+				// remove empty lines
+				while ((index = line.find("\r")) != std::string::npos)
+					line.erase(index, 1);
+				while (!line.empty() && (line[0] == ' '))
+					line.erase(0, 1);
+				while (!line.empty() && (line[line.size()-1] == ' '))
+					line.erase(line.size()-1, 1);
+				while ((index = line.find(" \n")) != std::string::npos)
+					line.erase(index, 1);
+				while ((index = line.find("\n ")) != std::string::npos)
+					line.erase(index+1, 1);
+				while (!line.empty() && (line[0] == '\n'))
+					line.erase(0, 1);
+				while (!line.empty() && (line[line.size()-1] == '\n'))
+					line.erase(line.size()-1, 1);
+				while ((index = line.find("\n\n")) != std::string::npos)
+					line.erase(index, 1);
+
+
+				BOOL need_comma = FALSE;
 				std::string additions;
 				
 				if (client.length() || is_away || is_muted || is_busy)
@@ -3912,18 +4007,12 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
 				}
 				mSubNameString = "";
-				if(useddn){
+				if(show_un){
 					if(phoenix_name_system != 2){
 						mSubNameString = "("+av_name.mUsername+")";
 					}
-					mRenderedName = av_name.mDisplayName;
 				}
-				else
-				{
-					mRenderedName = firstname->getString();
-					mRenderedName += " ";
-					mRenderedName += lastname->getString();
-				}
+
 				if (is_appearance)
 				{
 					line += "\n";
@@ -3935,14 +4024,6 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					line += getIdleTime();
 				}
 
-				mNameAway = is_away;
-				mNameBusy = is_busy;
-				mNameMute = is_muted;
-				mClientName = client;
-				mUsedNameSystem = phoenix_name_system;
-				mNameAppearance = is_appearance;
-				mTitle = title ? title->getString() : "";
-				LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
 				mNameString = utf8str_to_wstring(line);
 				new_name = TRUE;
 			}
@@ -4903,12 +4984,19 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 		return num_indices;
 	}
 
-	if (mDirtyMesh || mDrawable->isState(LLDrawable::REBUILD_GEOMETRY))
+	LLFace* face = mDrawable->getFace(0);
+
+	bool needs_rebuild = !face || face->mVertexBuffer.isNull() || mDrawable->isState(LLDrawable::REBUILD_GEOMETRY);
+
+	if (needs_rebuild || mDirtyMesh)
 	{	//LOD changed or new mesh created, allocate new vertex buffer if needed
+		if (needs_rebuild || mDirtyMesh >= 2 || mVisibilityRank <= 4)
+		{
 		updateMeshData();
-		mDirtyMesh = FALSE;
+			mDirtyMesh = 0;
 		mNeedsSkin = TRUE;
 		mDrawable->clearState(LLDrawable::REBUILD_GEOMETRY);
+	}
 	}
 
 	if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_AVATAR) <= 0)
@@ -6693,7 +6781,7 @@ BOOL LLVOAvatar::updateJointLODs()
  		if (res)
 		{
 			sNumLODChangesThisFrame++;
-			dirtyMesh();
+			dirtyMesh(2);
 			return TRUE;
 		}
 	}
@@ -6728,10 +6816,19 @@ LLDrawable *LLVOAvatar::createDrawable(LLPipeline *pipeline)
 
 	mNumInitFaces = mDrawable->getNumFaces() ;
 
-	dirtyMesh();
+	dirtyMesh(2);
 	return mDrawable;
 }
 
+
+void LLVOAvatar::updateGL()
+{
+	if (mMeshTexturesDirty)
+	{
+		updateMeshTextures();
+		mMeshTexturesDirty = FALSE;
+	}
+}
 
 //-----------------------------------------------------------------------------
 // updateGeometry()
@@ -6874,9 +6971,12 @@ void LLVOAvatar::updateSexDependentLayerSets( BOOL set_by_user )
 //-----------------------------------------------------------------------------
 void LLVOAvatar::dirtyMesh()
 {
-	mDirtyMesh = TRUE;
+	dirtyMesh(1);
 }
-
+void LLVOAvatar::dirtyMesh(S32 priority)
+{
+	mDirtyMesh = llmax(mDirtyMesh, priority);
+}
 //-----------------------------------------------------------------------------
 // hideSkirt()
 //-----------------------------------------------------------------------------
@@ -9142,7 +9242,8 @@ void LLVOAvatar::onFirstTEMessageReceived()
 			}
 		}
 
-		updateMeshTextures();
+		mMeshTexturesDirty = TRUE;
+		gPipeline.markGLRebuild(this);
 	}
 }
 
@@ -9227,6 +9328,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	}
 
 	setCompositeUpdatesEnabled( FALSE );
+	mMeshTexturesDirty = TRUE;
+	gPipeline.markGLRebuild(this);
 
 	if (!mIsSelf)
 	{
@@ -10437,21 +10540,22 @@ void LLVOAvatar::updateFreezeCounter(S32 counter)
 
 BOOL LLVOAvatar::updateLOD()
 {
+	if (isImpostor())
+	{
+		return TRUE;
+	}
 	BOOL res = updateJointLODs();
 
 	LLFace* facep = mDrawable->getFace(0);
-	if (facep->mVertexBuffer.isNull() ||
-		(LLVertexBuffer::sEnableVBOs &&
-		((facep->mVertexBuffer->getUsage() == GL_STATIC_DRAW ? TRUE : FALSE) !=
-		(facep->getPool()->getVertexShaderLevel() > 0 ? TRUE : FALSE))))
+	if (facep->mVertexBuffer.isNull())
 	{
-		mDirtyMesh = TRUE;
+		dirtyMesh(2);
 	}
 
-	if (mDirtyMesh || mDrawable->isState(LLDrawable::REBUILD_GEOMETRY))
+	if (mDirtyMesh >= 2 || mDrawable->isState(LLDrawable::REBUILD_GEOMETRY))
 	{	//LOD changed or new mesh created, allocate new vertex buffer if needed
 		updateMeshData();
-		mDirtyMesh = FALSE;
+		mDirtyMesh = 0;
 		mNeedsSkin = TRUE;
 		mDrawable->clearState(LLDrawable::REBUILD_GEOMETRY);
 	}

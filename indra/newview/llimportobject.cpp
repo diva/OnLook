@@ -24,6 +24,7 @@
 #include "llfloaterperms.h"
 #include "llviewerregion.h"
 #include "llviewerobjectlist.h"
+#include "llimagej2c.h"
 
 // static vars
 bool LLXmlImport::sImportInProgress = false;

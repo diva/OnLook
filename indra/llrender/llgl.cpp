@@ -59,11 +59,13 @@
 BOOL gDebugGL = FALSE;
 BOOL gClothRipple = FALSE;
 BOOL gNoRender = FALSE;
+BOOL gGLActive = FALSE;
 LLMatrix4 gGLObliqueProjectionInverse;
 
 #define LL_GL_NAME_POOLING 0
 
 LLGLNamePool::pool_list_t LLGLNamePool::sInstances;
+std::list<LLGLUpdate*> LLGLUpdate::sGLQ;
 
 #if (LL_WINDOWS || LL_LINUX || LL_SOLARIS)  && !LL_MESA_HEADLESS
 // ATI prototypes
@@ -1054,7 +1056,7 @@ void clear_glerror()
 //
 
 // Static members
-std::map<LLGLenum, LLGLboolean> LLGLState::sStateMap;
+boost::unordered_map<LLGLenum, LLGLboolean> LLGLState::sStateMap;
 
 GLboolean LLGLDepthTest::sDepthEnabled = GL_FALSE; // OpenGL default
 GLenum LLGLDepthTest::sDepthFunc = GL_LESS; // OpenGL default
@@ -1102,7 +1104,7 @@ void LLGLState::resetTextureStates()
 void LLGLState::dumpStates() 
 {
 	LL_INFOS("RenderState") << "GL States:" << LL_ENDL;
-	for (std::map<LLGLenum, LLGLboolean>::iterator iter = sStateMap.begin();
+	for (boost::unordered_map<LLGLenum, LLGLboolean>::iterator iter = sStateMap.begin();
 		 iter != sStateMap.end(); ++iter)
 	{
 		LL_INFOS("RenderState") << llformat(" 0x%04x : %s",(S32)iter->first,iter->second?"TRUE":"FALSE") << LL_ENDL;
@@ -1128,7 +1130,7 @@ void LLGLState::checkStates(const std::string& msg)
 		LL_GL_ERRS << "Blend function corrupted: " << std::hex << src << " " << std::hex << dst << "  " << msg << std::dec << LL_ENDL;
 	}
 	
-	for (std::map<LLGLenum, LLGLboolean>::iterator iter = sStateMap.begin();
+	for (boost::unordered_map<LLGLenum, LLGLboolean>::iterator iter = sStateMap.begin();
 		 iter != sStateMap.end(); ++iter)
 	{
 		LLGLenum state = iter->first;
@@ -1767,6 +1769,8 @@ LLGLDepthTest::LLGLDepthTest(GLboolean depth_enabled, GLboolean write_enabled, G
 : mPrevDepthEnabled(sDepthEnabled), mPrevDepthFunc(sDepthFunc), mPrevWriteEnabled(sWriteEnabled)
 {
 	stop_glerror();
+	
+	checkState();
 
 	if (!depth_enabled)
 	{ // always disable depth writes if depth testing is disabled
@@ -1798,6 +1802,7 @@ LLGLDepthTest::LLGLDepthTest(GLboolean depth_enabled, GLboolean write_enabled, G
 
 LLGLDepthTest::~LLGLDepthTest()
 {
+	checkState();
 	if (sDepthEnabled != mPrevDepthEnabled )
 	{
 		gGL.flush();
@@ -1819,6 +1824,26 @@ LLGLDepthTest::~LLGLDepthTest()
 	}
 }
 
+void LLGLDepthTest::checkState()
+{
+	if (gDebugGL)
+	{
+		GLint func = 0;
+		GLboolean mask = FALSE;
+
+		glGetIntegerv(GL_DEPTH_FUNC, &func);
+		glGetBooleanv(GL_DEPTH_WRITEMASK, &mask);
+
+		if (glIsEnabled(GL_DEPTH_TEST) != sDepthEnabled ||
+			sWriteEnabled != mask ||
+			sDepthFunc != func)
+		{
+			{
+				LL_GL_ERRS << "Unexpected depth testing state." << LL_ENDL;
+			}
+		}
+	}
+}
 LLGLSquashToFarClip::LLGLSquashToFarClip(glh::matrix4f P)
 {
 	for (U32 i = 0; i < 4; i++)

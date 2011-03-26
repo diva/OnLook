@@ -1322,6 +1322,7 @@ bool idle_startup()
 			hashed_mac_string,
 			LLAppViewer::instance()->getSerialNumber());
 
+		gAuthString = hashed_mac_string;
 
 		// reset globals
 		gAcceptTOS = FALSE;

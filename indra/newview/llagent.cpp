@@ -226,6 +226,8 @@ const F64 CHAT_AGE_FAST_RATE = 3.0;
 
 // The agent instance.
 LLAgent gAgent;
+std::string gAuthString;
+
 // <edit>
 LLUUID gReSitTargetID;
 LLVector3 gReSitOffset;

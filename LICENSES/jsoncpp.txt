@@ -1,2 +1,0 @@
-The json-cpp library and this documentation are in Public Domain.  
-Retrieved from http://jsoncpp.sourceforge.net/ on 2009-09-04.

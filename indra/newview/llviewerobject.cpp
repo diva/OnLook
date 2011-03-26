@@ -181,6 +181,7 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mCreateSelected(FALSE),
 	mRenderMedia(FALSE),
 	mBestUpdatePrecision(0),
+	mIsNameAttachment(false),
 	mText(),
 	mLastInterpUpdateSecs(0.f),
 	mLastMessageUpdateSecs(0.f),
@@ -208,7 +209,9 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mState(0),
 	mMedia(NULL),
 	mClickAction(0),
-	mAttachmentItemID(LLUUID::null)
+	mAttachmentItemID(LLUUID::null),
+	mLastUpdateType(OUT_UNKNOWN),
+	mLastUpdateCached(FALSE)
 {
 	if(!is_global)
 	{
@@ -454,7 +457,6 @@ void LLViewerObject::initVOClasses()
 	llinfos << "Viewer Object size: " << sizeof(LLViewerObject) << llendl;
 	LLVOGrass::initClass();
 	LLVOWater::initClass();
-	LLVOSky::initClass();
 	LLVOVolume::initClass();
 }
 
@@ -2860,6 +2862,11 @@ BOOL LLViewerObject::updateGeometry(LLDrawable *drawable)
 	return TRUE;
 }
 
+void LLViewerObject::updateGL()
+{
+
+}
+
 void LLViewerObject::updateFaceSize(S32 idx)
 {
 	
@@ -3786,6 +3793,15 @@ S32 LLViewerObject::setTETextureCore(const U8 te, const LLUUID& uuid, LLHost hos
 }
 
 
+void LLViewerObject::changeTEImage(S32 index, LLViewerImage* new_image) 
+{
+	if(index < 0 || index >= getNumTEs())
+	{
+		return ;
+	}
+	mTEImages[index] = new_image ;
+}
+
 S32 LLViewerObject::setTETexture(const U8 te, const LLUUID& uuid)
 {
 	// Invalid host == get from the agent's sim
@@ -4651,7 +4667,7 @@ bool LLViewerObject::setParameterEntry(U16 param_type, const LLNetworkData& new_
 bool LLViewerObject::setParameterEntryInUse(U16 param_type, BOOL in_use, bool local_origin)
 {
 	ExtraParameter* param = getExtraParameterEntryCreate(param_type);
-	if (param->in_use != in_use)
+	if (param && param->in_use != in_use)
 	{
 		param->in_use = in_use;
 		parameterChanged(param_type, param->data, in_use, local_origin);
@@ -5071,7 +5087,7 @@ U32 LLViewerObject::getPartitionType() const
 	return LLViewerRegion::PARTITION_NONE; 
 }
 
-void LLViewerObject::dirtySpatialGroup() const
+void LLViewerObject::dirtySpatialGroup(BOOL priority) const
 {
 	if (mDrawable)
 	{
@@ -5079,6 +5095,7 @@ void LLViewerObject::dirtySpatialGroup() const
 		if (group)
 		{
 			group->dirtyGeom();
+			gPipeline.markRebuild(group, priority);
 		}
 	}
 }
@@ -5266,7 +5283,25 @@ std::string LLViewerObject::getAttachmentPointName()
 	return llformat("unsupported point %d", point);
 }
 // </edit>
+EObjectUpdateType LLViewerObject::getLastUpdateType() const
+{
+	return mLastUpdateType;
+}
 
+void LLViewerObject::setLastUpdateType(EObjectUpdateType last_update_type)
+{
+	mLastUpdateType = last_update_type;
+}
+
+BOOL LLViewerObject::getLastUpdateCached() const
+{
+	return mLastUpdateCached;
+}
+
+void LLViewerObject::setLastUpdateCached(BOOL last_update_cached)
+{
+	mLastUpdateCached = last_update_cached;
+}
 
 const LLUUID &LLViewerObject::extractAttachmentItemID()
 {

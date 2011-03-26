@@ -608,9 +608,11 @@ void LLPanelFace::getState()
 			}
 		}
 
+
 		// planar align
 		bool align_planar = false;
 		bool identical_planar_aligned = false;
+		bool is_planar = false;
 		{
 			LLCheckBoxCtrl*	cb_planar_align = getChild<LLCheckBoxCtrl>("checkbox planar align");
 			align_planar = (cb_planar_align && cb_planar_align->get());
@@ -621,13 +623,12 @@ void LLPanelFace::getState()
 					return (object->getTE(face)->getTexGen() == LLTextureEntry::TEX_GEN_PLANAR);
 				}
 			} func;
-			
-			bool is_planar;
+
 			bool texgens_identical = LLSelectMgr::getInstance()->getSelection()->getSelectedTEValue( &func, is_planar );
 			bool enabled = (editable && texgens_identical && is_planar);
 			childSetValue("checkbox planar align", align_planar && enabled);
 			childSetEnabled("checkbox planar align", enabled);
-		
+
 			if (align_planar && enabled)
 			{
 				struct f2 : public LLSelectedTEGetFunctor<LLFace *>

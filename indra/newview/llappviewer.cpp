@@ -75,6 +75,7 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llfont.h"
+#include "llimagej2c.h"
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"
@@ -179,6 +180,7 @@
 #include "llinventoryview.h"
 
 #include "llcommandlineparser.h"
+#include "llprogressview.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -733,6 +735,7 @@ bool LLAppViewer::init()
 	//
 	// Initialize the window
 	//
+	gGLActive = TRUE;
 	initWindow();
 
 	// call all self-registered classes
@@ -874,7 +877,8 @@ bool LLAppViewer::mainLoop()
 		{
 			LLFastTimer t(LLFastTimer::FTM_FRAME);
 			pingMainloopTimeout("Main:MiscNativeWindowEvents");
-			
+
+			if (gViewerWindow)
 			{
 				LLFastTimer t2(LLFastTimer::FTM_MESSAGES);
 				gViewerWindow->mWindow->processMiscNativeEvents();
@@ -882,6 +886,7 @@ bool LLAppViewer::mainLoop()
 			
 			pingMainloopTimeout("Main:GatherInput");
 			
+			if (gViewerWindow)
 			{
 				LLFastTimer t2(LLFastTimer::FTM_MESSAGES);
 				if (!restoreErrorTrap())
@@ -957,11 +962,12 @@ bool LLAppViewer::mainLoop()
 				if (!LLApp::isExiting())
 				{
 					pingMainloopTimeout("Main:Display");
+					gGLActive = TRUE;
 					display();
 
 					pingMainloopTimeout("Main:Snapshot");
 					LLFloaterSnapshot::update(); // take snapshots
-					
+					gGLActive = FALSE;
 #if LL_LCD_COMPILE
 					// update LCD Screen
 					pingMainloopTimeout("Main:LCD");
@@ -988,7 +994,7 @@ bool LLAppViewer::mainLoop()
 
 				// yield cooperatively when not running as foreground window
 				if (   gNoRender
-						|| !gViewerWindow->mWindow->getVisible()
+					   || (gViewerWindow && !gViewerWindow->mWindow->getVisible())
 						|| !gFocusMgr.getAppHasFocus())
 				{
 					// Sleep if we're not rendering, or the window is minimized.
@@ -1140,11 +1146,14 @@ bool LLAppViewer::cleanup()
 	llinfos << "Cleaning Up" << llendflush;
 
 	// Must clean up texture references before viewer window is destroyed.
-	LLHUDManager::getInstance()->updateEffects();
-	LLHUDObject::updateAll();
-	LLHUDManager::getInstance()->cleanupEffects();
-	LLHUDObject::cleanupHUDObjects();
-	llinfos << "HUD Objects cleaned up" << llendflush;
+	if(LLHUDManager::instanceExists())
+	{
+		LLHUDManager::getInstance()->updateEffects();
+		LLHUDObject::updateAll();
+		LLHUDManager::getInstance()->cleanupEffects();
+		LLHUDObject::cleanupHUDObjects();
+		llinfos << "HUD Objects cleaned up" << llendflush;
+	}
 
 	LLKeyframeDataCache::clear();
 	
@@ -1156,8 +1165,10 @@ bool LLAppViewer::cleanup()
 	// Note: this is where gWorldMap used to be deleted.
 
 	// Note: this is where gHUDManager used to be deleted.
-	LLHUDManager::getInstance()->shutdownClass();
-	
+	if(LLHUDManager::instanceExists())
+	{
+		LLHUDManager::getInstance()->shutdownClass();
+	}
 
 	delete gAssetStorage;
 	gAssetStorage = NULL;
@@ -1246,21 +1257,25 @@ bool LLAppViewer::cleanup()
 	llinfos << "Shutting down." << llendflush;
 
 	// Destroy the UI
-	gViewerWindow->shutdownViews();
+	if( gViewerWindow)
+		gViewerWindow->shutdownViews();
 
 	// Clean up selection managers after UI is destroyed, as UI may be observing them.
 	// Clean up before GL is shut down because we might be holding on to objects with texture references
 	LLSelectMgr::cleanupGlobals();
 
 	// Shut down OpenGL
-	gViewerWindow->shutdownGL();
+	if( gViewerWindow)
+	{
+		gViewerWindow->shutdownGL();
 	
-	// Destroy window, and make sure we're not fullscreen
-	// This may generate window reshape and activation events.
-	// Therefore must do this before destroying the message system.
-	delete gViewerWindow;
-	gViewerWindow = NULL;
-	llinfos << "ViewerWindow deleted" << llendflush;
+		// Destroy window, and make sure we're not fullscreen
+		// This may generate window reshape and activation events.
+		// Therefore must do this before destroying the message system.
+		delete gViewerWindow;
+		gViewerWindow = NULL;
+		llinfos << "ViewerWindow deleted" << llendflush;
+	}
 
 	// viewer UI relies on keyboard so keep it aound until viewer UI isa gone
 	delete gKeyboard;
@@ -1368,6 +1383,9 @@ bool LLAppViewer::cleanup()
 	
 	writeDebugInfo();
 
+	// Stop the plugin read thread if it's running.
+	LLPluginProcessParent::setUseReadThread(false);
+
 	// Let threads finish
 	LLTimer idleTimer;
 	idleTimer.reset();
@@ -1393,8 +1411,8 @@ bool LLAppViewer::cleanup()
 	
 	// Delete workers first
 	// shotdown all worker threads before deleting them in case of co-dependencies
-	sTextureCache->shutdown();
 	sTextureFetch->shutdown();
+	sTextureCache->shutdown();
 	sImageDecodeThread->shutdown();
 	sTextureFetch->shutDownTextureCacheThread();
 	sTextureFetch->shutDownImageDecodeThread();
@@ -1423,7 +1441,10 @@ bool LLAppViewer::cleanup()
 
 #ifndef LL_RELEASE_FOR_DOWNLOAD
 	llinfos << "Auditing VFS" << llendl;
-	gVFS->audit();
+	if(gVFS)
+	{
+		gVFS->audit();
+	}
 #endif
 
 	// For safety, the LLVFS has to be deleted *after* LLVFSThread. This should be cleaned up.
@@ -2133,9 +2154,7 @@ bool LLAppViewer::initConfiguration()
 
 void LLAppViewer::checkForCrash(void)
 {
-	// <edit> screw sending crash reports
-#if LL_SEND_CRASH_REPORTS && 0
-	// </edit>
+#if LL_SEND_CRASH_REPORTS
 	//*NOTE:Mani The current state of the crash handler has the MacOSX
 	// sending all crash reports as freezes, in order to let 
 	// the MacOSX CrashRepoter generate stacks before spawning the 
@@ -2524,7 +2543,7 @@ void LLAppViewer::handleViewerCrash()
 		gMessageSystem->stopLogging();
 	}
 
-	LLWorld::getInstance()->getInfo(gDebugInfo);
+	if (LLWorld::instanceExists()) LLWorld::getInstance()->getInfo(gDebugInfo);
 
 	// Close the debug file
 	pApp->writeDebugInfo();
@@ -2691,6 +2710,13 @@ void LLAppViewer::requestQuit()
 	
 	if( (LLStartUp::getStartupState() < STATE_STARTED) || !region )
 	{
+		// If we have a region, make some attempt to send a logout request first.
+		// This prevents the halfway-logged-in avatar from hanging around inworld for a couple minutes.
+		if(region)
+		{
+			sendLogoutRequest();
+		}
+		
 		// Quit immediately
 		forceQuit();
 		return;
@@ -2730,6 +2756,11 @@ static LLNotificationFunctorRegistration finish_quit_reg("ConfirmQuit", finish_q
 
 void LLAppViewer::userQuit()
 {
+	if (gDisconnected || gViewerWindow->getProgressView()->getVisible())
+	{
+		requestQuit();
+	}
+	else
 	LLNotifications::instance().add("ConfirmQuit");
 }
 
@@ -3310,10 +3341,13 @@ void LLAppViewer::idle()
 	if (LLStartUp::getStartupState() < STATE_STARTED)
 	{
 		// Skip rest if idle startup returns false (essentially, no world yet)
+		gGLActive = TRUE;
 		if (!idle_startup())
 		{
+			gGLActive = FALSE;
 			return;
 		}
+		gGLActive = FALSE;
 	}
 
 	
@@ -3640,6 +3674,7 @@ void LLAppViewer::idle()
 	// forcibly quit if it has taken too long
 	if (mQuitRequested)
 	{
+		gGLActive = TRUE;
 		idleShutdown();
 	}
 

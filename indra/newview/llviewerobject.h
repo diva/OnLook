@@ -81,6 +81,7 @@ typedef enum e_object_update_type
 	OUT_TERSE_IMPROVED,
 	OUT_FULL_COMPRESSED,
 	OUT_FULL_CACHED,
+	OUT_UNKNOWN,
 } EObjectUpdateType;
 
 
@@ -116,7 +117,7 @@ public:
 
 //============================================================================
 
-class LLViewerObject : public LLPrimitive, public LLRefCount
+class LLViewerObject : public LLPrimitive, public LLRefCount, public LLGLUpdate
 {
 protected:
 	~LLViewerObject(); // use unref()
@@ -194,6 +195,7 @@ public:
 	
 	virtual LLDrawable* createDrawable(LLPipeline *pipeline);
 	virtual BOOL		updateGeometry(LLDrawable *drawable);
+	virtual void		updateGL();
 	virtual void		updateFaceSize(S32 idx);
 	virtual BOOL		updateLOD();
 	virtual BOOL		setDrawableParent(LLDrawable* parentp);
@@ -312,6 +314,7 @@ public:
 	/*virtual*/ S32     setTEGlow(const U8 te, const F32 glow);
 	/*virtual*/	BOOL	setMaterial(const U8 material);
 	virtual		void	setTEImage(const U8 te, LLViewerImage *imagep); // Not derived from LLPrimitive
+	void                changeTEImage(S32 index, LLViewerImage* new_image)  ;
 	LLViewerImage		*getTEImage(const U8 te) const;
 	
 	void fitFaceTexture(const U8 face);
@@ -450,6 +453,7 @@ public:
 	inline BOOL		flagAnimSource() const			{ return ((mFlags & FLAGS_ANIM_SOURCE) != 0); }
 	inline BOOL		flagCameraSource() const		{ return ((mFlags & FLAGS_CAMERA_SOURCE) != 0); }
 	inline BOOL		flagCameraDecoupled() const		{ return ((mFlags & FLAGS_CAMERA_DECOUPLED) != 0); }
+	inline BOOL		flagObjectMove() const			{ return ((mFlags & FLAGS_OBJECT_MOVE) != 0); }
 
 	bool getIncludeInSearch() const;
 	void setIncludeInSearch(bool include_in_search);
@@ -474,7 +478,7 @@ public:
 
 	virtual S32 getLOD() const { return 3; } 
 	virtual U32 getPartitionType() const;
-	virtual void dirtySpatialGroup() const;
+	virtual void dirtySpatialGroup(BOOL priority = FALSE) const;
 	virtual void dirtyMesh();
 
 	virtual LLNetworkData* getParameterEntry(U16 param_type) const;
@@ -556,6 +560,8 @@ public:
 	// TODO: Make all this stuff private.  JC
 	LLPointer<LLHUDText> mText;
 	LLPointer<LLHUDIcon> mIcon;
+
+	bool mIsNameAttachment;
 
 	static			BOOL		sUseSharedDrawables;
 
@@ -673,8 +679,14 @@ public:
 	const LLUUID &getAttachmentItemID() const { return mAttachmentItemID; }
 	void setAttachmentItemID(const LLUUID &id) { mAttachmentItemID = id; }
 	const LLUUID &extractAttachmentItemID(); // find&set the inventory item ID of the attached object
+	EObjectUpdateType getLastUpdateType() const;
+	void setLastUpdateType(EObjectUpdateType last_update_type);
+	BOOL getLastUpdateCached() const;
+	void setLastUpdateCached(BOOL last_update_cached);
 private:
 	LLUUID mAttachmentItemID; // ItemID when item is in user inventory.
+	EObjectUpdateType	mLastUpdateType;
+	BOOL	mLastUpdateCached;
 };
 
 typedef std::vector<LLViewerObject*> llvo_vec_t;

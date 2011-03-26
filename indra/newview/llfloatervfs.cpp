@@ -10,6 +10,7 @@
 #include "llassetconverter.h"
 #include "llviewerimagelist.h"
 #include "llviewerimage.h"
+#include "llimagej2c.h"
 
 LLFloaterVFS* LLFloaterVFS::sInstance;
 std::list<LLFloaterVFS::entry> LLFloaterVFS::mFiles;

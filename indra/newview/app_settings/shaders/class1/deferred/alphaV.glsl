@@ -37,8 +37,8 @@ void main()
 	calcAtmospherics(pos.xyz);
 
 	//vec4 color = calcLighting(pos.xyz, norm, gl_Color, vec4(0.));
-	vec4 col;
-	col.a = gl_Color.a;
+	
+	vec4 col = vec4(0.0, 0.0, 0.0, gl_Color.a);
 	
 	// Add windlight lights
 	col.rgb = atmosAmbient(vec3(0.));

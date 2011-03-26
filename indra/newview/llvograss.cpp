@@ -45,6 +45,7 @@
 #include "llsurface.h"
 #include "llsurfacepatch.h"
 #include "llvosky.h"
+#include "llvotree.h"
 #include "llviewercamera.h"
 #include "llviewerimagelist.h"
 #include "llviewerregion.h"
@@ -304,6 +305,22 @@ BOOL LLVOGrass::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		return TRUE;
 	}
 
+	if(LLVOTree::isTreeRenderingStopped()) //stop rendering grass
+	{
+		if(mNumBlades)
+		{
+			mNumBlades = 0 ;
+			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL, TRUE);
+		}
+		return TRUE ;
+	}
+	else if(!mNumBlades)//restart grass rendering
+	{
+		mNumBlades = GRASS_MAX_BLADES ;
+		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL, TRUE);
+		
+		return TRUE ;
+	}
 	if (mPatch && (mLastPatchUpdateTime != mPatch->getLastUpdateTime()))
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
@@ -350,7 +367,20 @@ BOOL LLVOGrass::updateLOD()
 	{
 		return FALSE;
 	}
-	
+	if(LLVOTree::isTreeRenderingStopped())
+	{
+		if(mNumBlades)
+		{
+			mNumBlades = 0 ;
+			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL, TRUE);
+		}
+		return TRUE ;
+	}
+	if(!mNumBlades)
+	{
+		mNumBlades = GRASS_MAX_BLADES;
+	}
+
 	LLFace* face = mDrawable->getFace(0);
 
 	F32 tan_angle = 0.f;
@@ -396,7 +426,22 @@ BOOL LLVOGrass::updateGeometry(LLDrawable *drawable)
 {
 	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_GRASS);
 	dirtySpatialGroup();
-	plantBlades();
+
+	if(!mNumBlades)//stop rendering grass
+	{
+		if (mDrawable->getNumFaces() > 0)
+		{
+			LLFace* facep = mDrawable->getFace(0);
+			if(facep)
+			{
+				facep->setSize(0, 0);			
+			}
+		}
+	}
+	else
+	{		
+		plantBlades();
+	}
 	return TRUE;
 }
 
@@ -437,6 +482,11 @@ void LLVOGrass::getGeometry(S32 idx,
 								LLStrider<LLColor4U>& colorsp, 
 								LLStrider<U16>& indicesp)
 {
+	if(!mNumBlades)//stop rendering grass
+	{
+		return ;
+	}
+
 	mPatch = mRegionp->getLand().resolvePatchRegion(getPositionRegion());
 	if (mPatch)
 		mLastPatchUpdateTime = mPatch->getLastUpdateTime();

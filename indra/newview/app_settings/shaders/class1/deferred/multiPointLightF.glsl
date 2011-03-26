@@ -77,6 +77,12 @@ void main()
 	
 	//attenuate point light contribution by SSAO component
 	out_col *= texture2DRect(lightMap, frag.xy).g;
+
+
+	if (dot(out_col, out_col) <= 0.0)
+	{
+		discard;
+	}
 	
 	gl_FragColor.rgb = out_col;
 	gl_FragColor.a = 0.0;

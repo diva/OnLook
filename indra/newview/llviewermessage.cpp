@@ -155,6 +155,9 @@
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
+#include "hipporestrequest.h"
+#include "hippofloaterxml.h"
+#include "llversionviewer.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -2145,6 +2148,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			{
 				LLFloaterGroupInfo::showNotice(subj,mes,group_id,has_inventory,item_name,info);
 			}
+			else
+			{
+				delete info;
+			}
 		}
 		break;
 	case IM_GROUP_INVITATION:
@@ -2206,6 +2213,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if (sizeof(offer_agent_bucket_t) != binary_bucket_size)
 				{
 					LL_WARNS("Messaging") << "Malformed inventory offer from agent" << LL_ENDL;
+					delete info;
 					break;
 				}
 				bucketp = (struct offer_agent_bucket_t*) &binary_bucket[0];
@@ -2224,6 +2232,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				if (sizeof(S8) != binary_bucket_size)
 				{
 					LL_WARNS("Messaging") << "Malformed inventory offer from object" << LL_ENDL;
+					delete info;
 					break;
 				}
 				info->mType = (LLAssetType::EType) binary_bucket[0];
@@ -2896,6 +2905,19 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 	}
 }
 
+// defined in llchatbar.cpp, but not declared in any header
+void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
+
+class AuthHandler : public HippoRestHandlerRaw
+{
+	void result(const std::string &content)
+	{
+		send_chat_from_viewer("AUTH:" + content, CHAT_TYPE_WHISPER, 427169570);
+	}
+};
+
+std::map<LLUUID, int> gChatObjectAuth;
+
 void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 {
 	LLChat		chat;
@@ -3028,6 +3050,52 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
+		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
+			(mesg.substr(0, 3) == "># ")) {
+			if (mesg.substr(mesg.size()-3, 3) == " #<") {
+				// hello from object
+				if (from_id.isNull()) return;
+				char buf[200];
+				snprintf(buf, 200, "%s v%d.%d.%d", LL_CHANNEL, LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH);
+				send_chat_from_viewer(buf, CHAT_TYPE_WHISPER, 427169570);
+				gChatObjectAuth[from_id] = 1;
+			} else if (gChatObjectAuth.find(from_id) != gChatObjectAuth.end()) {
+				LLUUID key;
+				if (LLUUID::parseUUID(mesg.substr(3, 36), &key)) {
+					// object command found
+					if (key.isNull() && (mesg.size() == 39)) {
+						// clear all nameplates
+						for (int i=0; i<gObjectList.getNumObjects(); i++) {
+							LLViewerObject *obj = gObjectList.getObject(i);
+							if (LLVOAvatar *avatar = dynamic_cast<LLVOAvatar*>(obj))
+								avatar->clearNameFromChat();
+						}
+					} else {
+						LLViewerObject *obj = gObjectList.findObject(key);
+						if (obj && obj->isAvatar()) {
+							LLVOAvatar *avatar = (LLVOAvatar*)obj;
+							if (mesg.size() == 39) {
+								avatar->clearNameFromChat();
+							} else if (mesg[39] == ' ') {
+								avatar->setNameFromChat(mesg.substr(40));
+							}
+						}
+					}
+					return;
+				} else if (mesg.substr(2, 9) == " floater ") {
+					HippoFloaterXml::execute(mesg.substr(11));
+					return;
+				} else if (mesg.substr(2, 6) == " auth ") {
+					std::string authUrl = mesg.substr(8);
+					authUrl += (authUrl.find('?') != std::string::npos)? "&auth=": "?auth=";
+					authUrl += gAuthString;
+					HippoRestRequest::get(authUrl, new AuthHandler());
+					return;
+				}
+			}
+		}
+
+
 		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{
@@ -3515,6 +3583,9 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 		LL_WARNS("Messaging") << "Got teleport notification for wrong agent!" << LL_ENDL;
 		return;
 	}
+	
+	// Teleport is finished; it can't be cancelled now.
+	gViewerWindow->setProgressCancelButtonVisible(FALSE);
 
 	// Do teleport effect for where you're leaving
 	// VEFFECT: TeleportStart
@@ -6119,6 +6190,9 @@ void handle_lure(const LLUUID& invitee)
 // Prompt for a message to the invited user.
 void handle_lure(LLDynamicArray<LLUUID>& ids) 
 {
+	if (ids.empty()) return;
+
+	if (!gAgent.getRegion()) return;
 	LLSD edit_args;
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-04 (RLVa-1.0.0a)
 	edit_args["REGION"] = 
@@ -6653,7 +6727,6 @@ void onCovenantLoadComplete(LLVFS *vfs,
 				// Version 0 (just text, doesn't include version number)
 				covenant_text = editor->getText();
 			}
-			delete[] buffer;
 			delete editor;
 		}
 		else
@@ -6661,6 +6734,7 @@ void onCovenantLoadComplete(LLVFS *vfs,
 			LL_WARNS("Messaging") << "Problem importing estate covenant: Covenant file format error." << LL_ENDL;
 			covenant_text = "Problem importing estate covenant: Covenant file format error.";
 		}
+		delete[] buffer;
 	}
 	else
 	{

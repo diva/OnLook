@@ -36,6 +36,7 @@
 // This file contains various stuff for handling gl extensions and other gl related stuff.
 
 #include <string>
+#include <boost/unordered_map.hpp>
 #include <map>
 
 #include "llerror.h"
@@ -233,7 +234,7 @@ public:
 	static void checkClientArrays(const std::string& msg = "", U32 data_mask = 0x0001);
 	
 protected:
-	static std::map<LLGLenum, LLGLboolean> sStateMap;
+	static boost::unordered_map<LLGLenum, LLGLboolean> sStateMap;
 	
 public:
 	enum { CURRENT_STATE = -2 };
@@ -361,6 +362,35 @@ protected:
 	virtual void releaseName(GLuint name) = 0;
 };
 
+/*
+	Interface for objects that need periodic GL updates applied to them.
+	Used to synchronize GL updates with GL thread.
+*/
+class LLGLUpdate
+{
+public:
+
+	static std::list<LLGLUpdate*> sGLQ;
+
+	BOOL mInQ;
+	LLGLUpdate()
+		: mInQ(FALSE)
+	{
+	}
+	virtual ~LLGLUpdate()
+	{
+		if (mInQ)
+		{
+			std::list<LLGLUpdate*>::iterator iter = std::find(sGLQ.begin(), sGLQ.end(), this);
+			if (iter != sGLQ.end())
+			{
+				sGLQ.erase(iter);
+			}
+		}
+	}
+	virtual void updateGL() = 0;
+};
+
 extern LLMatrix4 gGLObliqueProjectionInverse;
 
 #include "llglstates.h"
@@ -379,4 +409,6 @@ void parse_gl_version( S32* major, S32* minor, S32* release, std::string* vendor
 
 extern BOOL gClothRipple;
 extern BOOL gNoRender;
+extern BOOL gGLActive;
+
 #endif // LL_LLGL_H
