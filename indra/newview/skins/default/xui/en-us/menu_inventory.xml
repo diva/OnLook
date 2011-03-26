@@ -263,7 +263,7 @@
 		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
 	</menu_item_call>
 	<menu_item_separator name="Attach Separator" />
-	<menu_item_call bottom_delta="-18" height="18" label="Restore to Last Position" left="0" mouse_opaque="true"
+	<menu_item_call bottom_delta="-18" height="18" label="Restore in World" left="0" mouse_opaque="true"
 	     name="Restore to Last Position" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="restoreToWorld" />
 	</menu_item_call>
@@ -271,7 +271,7 @@
 	     name="Object Wear" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="attach" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Add" left="0" mouse_opaque="true"
+	<menu_item_call bottom_delta="-18" height="18" label="Add to Worn" left="0" mouse_opaque="true"
 	     name="Object Add" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="wear_add" />
 	</menu_item_call>

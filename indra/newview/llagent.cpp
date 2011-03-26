@@ -7348,9 +7348,10 @@ void LLAgent::makeNewOutfit(
 		return;
 	}
 
-	BOOL fUseLinks = !gSavedSettings.getBOOL("UseInventoryLinks") &&
+	BOOL fUseLinks = gSavedSettings.getBOOL("UseInventoryLinks") &&
 					 gHippoGridManager->getConnectedGrid()->isSecondLife();
-	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders");
+	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders") &&
+					   gHippoGridManager->getConnectedGrid()->isSecondLife();
 
 	LLAssetType::EType typeDest = (fUseOutfits) ? LLAssetType::AT_MY_OUTFITS : LLAssetType::AT_CLOTHING;
 	LLAssetType::EType typeFolder = (fUseOutfits) ? LLAssetType::AT_OUTFIT : LLAssetType::AT_NONE;

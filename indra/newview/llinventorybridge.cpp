@@ -4179,7 +4179,8 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			{
 				items.push_back(std::string("Attach Separator"));
 				items.push_back(std::string("Object Wear"));
-				items.push_back(std::string("Object Add"));
+				if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+					items.push_back(std::string("Object Add"));
 				if (!avatarp->canAttachMoreObjects())
 				{
 					disabled_items.push_back(std::string("Object Add"));
