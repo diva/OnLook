@@ -37,6 +37,10 @@
 // project includes
 #include "llagent.h"
 
+#include "llimagejpeg.h"
+#include "llimagepng.h"
+#include "llimagebmp.h"
+
 #include "llfilepicker.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterbuycurrency.h"
@@ -80,10 +84,6 @@
 #include "lltransactiontypes.h"
 #include "lluuid.h"
 #include "llvorbisencode.h"
-
-#include "llimagejpeg.h"
-#include "llimagepng.h"
-#include "llimagebmp.h"
 
 // system libraries
 #include <boost/tokenizer.hpp>

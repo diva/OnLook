@@ -32,6 +32,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "llimagejpeg.h"
 #include "llfloatercustomize.h"
 #include "llfontgl.h"
 #include "llbutton.h"
@@ -71,7 +72,6 @@
 #include "llglheaders.h"
 #include "llui.h"
 #include "llviewermessage.h"
-#include "llimagejpeg.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 

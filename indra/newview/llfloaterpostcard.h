@@ -33,12 +33,12 @@
 #ifndef LL_LLFLOATERPOSTCARD_H
 #define LL_LLFLOATERPOSTCARD_H
 
+#include "llimagegl.h"
+#include "llimagejpeg.h"
 #include "llfloater.h"
 #include "llcheckboxctrl.h"
 
 #include "llmemory.h"
-#include "llimagegl.h"
-#include "llimagejpeg.h"
 
 class LLTextEditor;
 class LLLineEditor;

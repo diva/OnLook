@@ -37,6 +37,7 @@
 
 #include <deque>
 
+#include "llimagejpeg.h"
 #include "llaudioengine.h" 
 #include "llavatarnamecache.h"
 #include "indra_constants.h"
