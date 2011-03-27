@@ -578,11 +578,11 @@ void LLViewerObject::removeChild(LLViewerObject *childp)
 	}
 }
 
-void LLViewerObject::addThisAndAllChildren(LLDynamicArray<LLViewerObject*>& objects)
+void LLViewerObject::addThisAndAllChildren(std::vector<LLViewerObject*>& objects)
 {
-	objects.put(this);
+	objects.push_back(this);
 	for (child_list_t::iterator iter = mChildList.begin();
-		 iter != mChildList.end(); iter++)
+		 iter != mChildList.end(); ++iter)
 	{
 		LLViewerObject* child = *iter;
 		if (!child->isAvatar())
@@ -592,16 +592,16 @@ void LLViewerObject::addThisAndAllChildren(LLDynamicArray<LLViewerObject*>& obje
 	}
 }
 
-void LLViewerObject::addThisAndNonJointChildren(LLDynamicArray<LLViewerObject*>& objects)
+void LLViewerObject::addThisAndNonJointChildren(std::vector<LLViewerObject*>& objects)
 {
-	objects.put(this);
+	objects.push_back(this);
 	// don't add any attachments when temporarily selecting avatar
 	if (isAvatar())
 	{
 		return;
 	}
 	for (child_list_t::iterator iter = mChildList.begin();
-		 iter != mChildList.end(); iter++)
+		 iter != mChildList.end(); ++iter)
 	{
 		LLViewerObject* child = *iter;
 		if ( (!child->isAvatar()) && (!child->isJointChild()))
@@ -614,7 +614,7 @@ void LLViewerObject::addThisAndNonJointChildren(LLDynamicArray<LLViewerObject*>&
 BOOL LLViewerObject::isChild(LLViewerObject *childp) const
 {
 	for (child_list_t::const_iterator iter = mChildList.begin();
-		 iter != mChildList.end(); iter++)
+		 iter != mChildList.end(); ++iter)
 	{
 		LLViewerObject* testchild = *iter;
 		if (testchild == childp)
@@ -628,7 +628,7 @@ BOOL LLViewerObject::isChild(LLViewerObject *childp) const
 BOOL LLViewerObject::isSeat() const
 {
 	for (child_list_t::const_iterator iter = mChildList.begin();
-		 iter != mChildList.end(); iter++)
+		 iter != mChildList.end(); ++iter)
 	{
 		LLViewerObject* child = *iter;
 		if (child->isAvatar())
@@ -2914,7 +2914,8 @@ void LLViewerObject::updateSpatialExtents(LLVector3& newMin, LLVector3 &newMax)
 	LLVector3 size = getScale();
 	newMin.setVec(center-size);
 	newMax.setVec(center+size);
-	mDrawable->setPositionGroup((newMin + newMax) * 0.5f);
+	if(mDrawable.notNull())
+		mDrawable->setPositionGroup((newMin + newMax) * 0.5f);
 }
 
 F32 LLViewerObject::getBinRadius()

@@ -1585,7 +1585,7 @@ const LLVector3 LLVOAvatar::getRenderPosition() const
 	{
 		return getPositionAgent();
 	}
-	else if (isRoot())
+	else if (isRoot() || !mDrawable->getParent())
 	{
 		return mDrawable->getPositionAgent();
 	}
@@ -3029,7 +3029,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 		mDrawable->movePartition();
 		
 		//force a move if sitting on an active object
-		if (getParent() && ((LLViewerObject*) getParent())->mDrawable->isActive())
+		if (getParent() && ((LLViewerObject*)getParent())->mDrawable.notNull() && ((LLViewerObject*) getParent())->mDrawable->isActive())
 		{
 			gPipeline.markMoved(mDrawable, TRUE);
 		}
@@ -7358,7 +7358,7 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 //-----------------------------------------------------------------------------
 void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 {
-	if (!mDrawable || mDrawable.isNull())
+	if (!mDrawable || mDrawable.isNull() || sit_object->mDrawable.isNull())
 	{
 		return;
 	}
