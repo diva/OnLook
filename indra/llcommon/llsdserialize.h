@@ -639,7 +639,7 @@ protected:
  *  </code>
  */
 template <class Formatter>
-class LLSDOStreamer : public Formatter
+class LLSDOStreamer
 {
 public:
 	/** 
@@ -660,7 +660,8 @@ public:
 		std::ostream& str,
 		const LLSDOStreamer<Formatter>& formatter)
 	{
-		formatter.format(formatter.mSD, str, formatter.mOptions);
+		LLPointer<Formatter> f = new Formatter;
+		f->format(formatter.mSD, str, formatter.mOptions);
 		return str;
 	}
 

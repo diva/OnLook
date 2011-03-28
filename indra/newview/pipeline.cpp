@@ -1037,13 +1037,14 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 
 U32 LLPipeline::addObject(LLViewerObject *vobj)
 {
+	llassert_always(vobj);
 	if (gNoRender)
 	{
 		return 0;
 	}
 
 	static const LLCachedControl<bool> render_delay_creation("RenderDelayCreation",false);
-	if (render_delay_creation)
+	if (!vobj->isAvatar() && render_delay_creation)
 	{
 		mCreateQ.push_back(vobj);
 	}

@@ -372,7 +372,7 @@ void request_initial_instant_messages()
 	if (!requested
 		&& gMessageSystem
 		&& LLMuteList::getInstance()->isLoaded()
-		&& gAgent.getAvatarObject())
+		&& isAgentAvatarValid())
 	{
 		// Auto-accepted inventory items may require the avatar object
 		// to build a correct name.  Likewise, inventory offers from
@@ -800,7 +800,7 @@ bool LLAppViewer::init()
 			minSpecs += "\n";
 			unsupported = true;
 		}
-		if(gSysCPU.getMhz() < minCPU)
+		if(gSysCPU.getMHz() < minCPU)
 		{
 			minSpecs += LLNotifications::instance().getGlobalString("UnsupportedCPU");
 			minSpecs += "\n";
@@ -2358,7 +2358,7 @@ void LLAppViewer::writeSystemInfo()
 	//need to put in something to lie about this stuff
 	gDebugInfo["CPUInfo"]["CPUString"] = gSysCPU.getCPUString();
 	gDebugInfo["CPUInfo"]["CPUFamily"] = gSysCPU.getFamily();
-	gDebugInfo["CPUInfo"]["CPUMhz"] = gSysCPU.getMhz();
+	gDebugInfo["CPUInfo"]["CPUMhz"] = gSysCPU.getMHz();
 	gDebugInfo["CPUInfo"]["CPUAltivec"] = gSysCPU.hasAltivec();
 	gDebugInfo["CPUInfo"]["CPUSSE"] = gSysCPU.hasSSE();
 	gDebugInfo["CPUInfo"]["CPUSSE2"] = gSysCPU.hasSSE2();
@@ -2633,25 +2633,26 @@ void LLAppViewer::initMarkerFile()
     
 	if(LLAPRFile::isExist(logout_marker_file, LL_APR_RB))
 	{
-		LL_INFOS("MarkerFile") << "Last exec LLError crashed, setting LastExecEvent to " << LAST_EXEC_LLERROR_CRASH << LL_ENDL;
 		gLastExecEvent = LAST_EXEC_LOGOUT_FROZE;
+		LL_INFOS("MarkerFile") << "Last exec LLError crashed, setting LastExecEvent to " << gLastExecEvent << LL_ENDL;
+		LLAPRFile::remove(logout_marker_file);
 	}
 	if(LLAPRFile::isExist(llerror_marker_file, LL_APR_RB))
 	{
 		llinfos << "Last exec LLError crashed, setting LastExecEvent to " << LAST_EXEC_LLERROR_CRASH << llendl;
 		if(gLastExecEvent == LAST_EXEC_LOGOUT_FROZE) gLastExecEvent = LAST_EXEC_LOGOUT_CRASH;
 		else gLastExecEvent = LAST_EXEC_LLERROR_CRASH;
+		LL_INFOS("MarkerFile") << "Last exec LLError crashed, setting LastExecEvent to " << gLastExecEvent << LL_ENDL;
+		LLAPRFile::remove(llerror_marker_file);
 	}
 	if(LLAPRFile::isExist(error_marker_file, LL_APR_RB))
 	{
 		LL_INFOS("MarkerFile") << "Last exec crashed, setting LastExecEvent to " << LAST_EXEC_OTHER_CRASH << LL_ENDL;
 		if(gLastExecEvent == LAST_EXEC_LOGOUT_FROZE) gLastExecEvent = LAST_EXEC_LOGOUT_CRASH;
 		else gLastExecEvent = LAST_EXEC_OTHER_CRASH;
+		LL_INFOS("MarkerFile") << "Last exec crashed, setting LastExecEvent to " << gLastExecEvent << LL_ENDL;
+		LLAPRFile::remove(error_marker_file);
 	}
-	
-	LLAPRFile::remove(logout_marker_file);
-	LLAPRFile::remove(llerror_marker_file);
-	LLAPRFile::remove(error_marker_file);
 	
 	// No new markers if another instance is running.
 	if(anotherInstanceRunning()) 
@@ -3988,7 +3989,7 @@ void LLAppViewer::idleNetwork()
 	// Check that the circuit between the viewer and the agent's current
 	// region is still alive
 	LLViewerRegion *agent_region = gAgent.getRegion();
-	if (agent_region)
+	if (agent_region && (LLStartUp::getStartupState()==STATE_STARTED))
 	{
 		LLUUID this_region_id = agent_region->getRegionID();
 		bool this_region_alive = agent_region->isAlive();

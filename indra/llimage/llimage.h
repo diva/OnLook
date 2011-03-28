@@ -189,6 +189,7 @@ public:
 	void contractToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE, BOOL scale_image = TRUE);
 	void biasedScaleToPowerOfTwo(S32 max_dim = MAX_IMAGE_SIZE);
 	BOOL scale( S32 new_width, S32 new_height, BOOL scale_image = TRUE );
+	BOOL scaleDownWithoutBlending( S32 new_width, S32 new_height) ;
 
 	// Fill the buffer with a constant color
 	void fill( const LLColor4U& color );
@@ -236,6 +237,8 @@ protected:
 	void compositeRowScaled4onto3( U8* in, U8* out, S32 in_pixel_len, S32 out_pixel_len );
 
 	U8	fastFractionalMult(U8 a,U8 b);
+
+	void setDataAndSize(U8 *data, S32 width, S32 height, S8 components) ;
 
 public:
 	static S32 sGlobalRawMemory;
