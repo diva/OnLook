@@ -295,7 +295,7 @@
 				None Found.
 			</string>
 			<string name="land_help_text">
-				Land can be bought direct for Linden Dollars (L$) or at auction for either L$ or US$.
+			Land can be bought direct for in-world money ([CURRENCY]) or at auction for either [CURRENCY] or [REALCURRENCY].
 To buy direct, visit the land and click on the place name in the title bar.
 			</string>
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
@@ -416,7 +416,7 @@ To buy direct, visit the land and click on the place name in the title bar.
 					Any Category
 				</combo_item>
 				<combo_item name="LindenLocation" value="linden">
-					Linden Location
+					Official Location
 				</combo_item>
 				<combo_item name="Arts&amp;Culture" value="arts">
 					Arts &amp; Culture

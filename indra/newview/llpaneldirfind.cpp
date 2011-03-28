@@ -285,6 +285,7 @@ void LLPanelDirFind::navigateToDefaultPage()
 		{
 			// OS-based but has its own web search url -- MC
 			start_url = gHippoGridManager->getConnectedGrid()->getSearchUrl();
+			start_url += "panel=" + getName() + "&";
 		}
 
 		BOOL inc_pg = childGetValue("incpg").asBoolean();
@@ -365,6 +366,7 @@ std::string LLPanelDirFind::buildSearchURL(const std::string& search_text, const
 std::string LLPanelDirFind::getSearchURLSuffix(bool inc_pg, bool inc_mature, bool inc_adult, bool is_web)
 {
 	std::string url = gHippoGridManager->getConnectedGrid()->getSearchUrl(HippoGridInfo::SEARCH_ALL_TEMPLATE, is_web);
+	llinfos << "Suffix template " << url << llendl;
 
 	if (!url.empty())
 	{

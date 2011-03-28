@@ -94,7 +94,9 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 	
 	// Build the floater with our tab panel classes
 	
-	bool isInSecondLife = gHippoGridManager->getConnectedGrid()->isSecondLife();
+	bool enableWebSearch = gHippoGridManager->getConnectedGrid()->isSecondLife() ||
+						   !gHippoGridManager->getConnectedGrid()->getSearchUrl().empty();
+	bool enableClassicAllSearch = !gHippoGridManager->getConnectedGrid()->isSecondLife();
 
 	LLCallbackMap::map_t factory_map;
 	factory_map["classified_panel"] = LLCallbackMap(createClassified, this);
@@ -103,15 +105,16 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 	factory_map["land_sales_panel"] = LLCallbackMap(createLand, this);
 	factory_map["people_panel"] = LLCallbackMap(createPeople, this);
 	factory_map["groups_panel"] = LLCallbackMap(createGroups, this);
-	if (isInSecondLife)
+	if (enableWebSearch)
 	{
 		// web search and showcase only for SecondLife
 		factory_map["find_all_panel"] = LLCallbackMap(createFindAll, this);
-		factory_map["showcase_panel"] = LLCallbackMap(createShowcase, this);
+		factory_map["showcase_panel"] = LLCallbackMap(createShowcase, this);		
 	}
-	else
+
+	if (enableClassicAllSearch)
 	{
-		factory_map["find_all_old_panel"] = LLCallbackMap(createFindAllOld, this);		
+		factory_map["find_all_old_panel"] = LLCallbackMap(createFindAllOld, this);
 	}
 
 	factory_map["classified_details_panel"] = LLCallbackMap(createClassifiedDetail, this);
@@ -123,9 +126,12 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 
 	factory_map["Panel Avatar"] = LLCallbackMap(createPanelAvatar, this);
 	
-	if (isInSecondLife)
+	if (enableWebSearch)
 	{
-		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_directory.xml", &factory_map);
+		if (enableClassicAllSearch)
+			LLUICtrlFactory::getInstance()->buildFloater(this, "floater_directory3.xml", &factory_map);
+		else
+			LLUICtrlFactory::getInstance()->buildFloater(this, "floater_directory.xml", &factory_map);
 	}
 	else
 	{
@@ -144,13 +150,14 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 	childSetTabChangeCallback("Directory Tabs", "land_sales_panel", onTabChanged, this);
 	childSetTabChangeCallback("Directory Tabs", "people_panel", onTabChanged, this);
 	childSetTabChangeCallback("Directory Tabs", "groups_panel", onTabChanged, this);
-	if (isInSecondLife)
+	if (enableWebSearch)
 	{
 		// web search and showcase for SecondLife
 		childSetTabChangeCallback("Directory Tabs", "find_all_panel", onTabChanged, this);
 		childSetTabChangeCallback("Directory Tabs", "showcase_panel", onTabChanged, this);
 	}
-	else
+	
+	if(enableClassicAllSearch)
 	{
 		childSetTabChangeCallback("Directory Tabs", "find_all_old_panel", onTabChanged, this);		
 	}
@@ -421,10 +428,10 @@ void LLFloaterDirectory::toggleFind(void*)
 	if (!sInstance)
 	{
 		std::string panel = gSavedSettings.getString("LastFindPanel");
-		if (!gHippoGridManager->getConnectedGrid()->isSecondLife()
-			&& (panel == "find_all_panel" || panel == "showcase_panel"))
+		bool hasWebSearch = gHippoGridManager->getConnectedGrid()->isSecondLife() ||
+							!gHippoGridManager->getConnectedGrid()->getSearchUrl().empty();
+		if (hasWebSearch && (panel == "find_all_panel" || panel == "showcase_panel"))
 		{
-			// No web search neither showcase for OpenSim grids...
 			panel = "find_all_old_panel";
 		}
 		showPanel(panel);
