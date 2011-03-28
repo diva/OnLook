@@ -476,7 +476,7 @@ bool idle_startup()
 		{
 			std::string diagnostic = "Could not start address resolution system";
 			LL_WARNS("AppInit") << diagnostic << LL_ENDL;
-			LLAppViewer::instance()->earlyExit("LoginFailedNoNetwork", LLSD().insert("DIAGNOSTIC", diagnostic));
+			LLAppViewer::instance()->earlyExit("LoginFailedNoNetwork", LLSD().with("DIAGNOSTIC", diagnostic));
 		}
 		
 		//
@@ -536,7 +536,7 @@ bool idle_startup()
 			{
 				std::string diagnostic = llformat(" Error: %d", gMessageSystem->getErrorCode());
 				LL_WARNS("AppInit") << diagnostic << LL_ENDL;
-				LLAppViewer::instance()->earlyExit("LoginFailedNoNetwork", LLSD().insert("DIAGNOSTIC", diagnostic));
+				LLAppViewer::instance()->earlyExit("LoginFailedNoNetwork", LLSD().with("DIAGNOSTIC", diagnostic));
 			}
 
 			#if LL_WINDOWS
@@ -559,7 +559,7 @@ bool idle_startup()
 		}
 		else
 		{
-			LLAppViewer::instance()->earlyExit("MessageTemplateNotFound", LLSD().insert("PATH", message_template_path));
+			LLAppViewer::instance()->earlyExit("MessageTemplateNotFound", LLSD().with("PATH", message_template_path));
 		}
 
 		if(gMessageSystem && gMessageSystem->isOK())

@@ -734,7 +734,7 @@ void LLNotificationChannelBase::connectChanged(const LLStandardSignal::slot_type
 	// only about new notifications
 	for (LLNotificationSet::iterator it = mItems.begin(); it != mItems.end(); ++it)
 	{
-		slot.get_slot_function()(LLSD().insert("sigtype", "load").insert("id", (*it)->id()));
+		slot.get_slot_function()(LLSD().with("sigtype", "load").with("id", (*it)->id()));
 	}
 	// and then connect the signal so that all future notifications will also be
 	// forwarded.
@@ -922,7 +922,7 @@ void LLNotificationChannel::setComparator(LLNotificationComparator comparator)
 	mItems.swap(s2);
 	
 	// notify clients that we've been resorted
-	mChanged(LLSD().insert("sigtype", "sort")); 
+	mChanged(LLSD().with("sigtype", "sort")); 
 }
 
 bool LLNotificationChannel::isEmpty() const
@@ -1432,7 +1432,7 @@ void LLNotifications::add(const LLNotificationPtr pNotif)
 		llerrs << "Notification added a second time to the master notification channel." << llendl;
 	}
 
-	updateItem(LLSD().insert("sigtype", "add").insert("id", pNotif->id()), pNotif);
+	updateItem(LLSD().with("sigtype", "add").with("id", pNotif->id()), pNotif);
 }
 
 void LLNotifications::cancel(LLNotificationPtr pNotif)
@@ -1442,7 +1442,7 @@ void LLNotifications::cancel(LLNotificationPtr pNotif)
 	{
 		llerrs << "Attempted to delete nonexistent notification " << pNotif->getName() << llendl;
 	}
-	updateItem(LLSD().insert("sigtype", "delete").insert("id", pNotif->id()), pNotif);
+	updateItem(LLSD().with("sigtype", "delete").with("id", pNotif->id()), pNotif);
 	pNotif->cancel();
 }
 
@@ -1451,7 +1451,7 @@ void LLNotifications::update(const LLNotificationPtr pNotif)
 	LLNotificationSet::iterator it=mItems.find(pNotif);
 	if (it != mItems.end())
 	{
-		updateItem(LLSD().insert("sigtype", "change").insert("id", pNotif->id()), pNotif);
+		updateItem(LLSD().with("sigtype", "change").with("id", pNotif->id()), pNotif);
 	}
 }
 
