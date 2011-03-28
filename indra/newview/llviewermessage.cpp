@@ -3054,6 +3054,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
+		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
+		
 		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
 			(mesg.substr(0, 3) == "># ")) {
 			if (mesg.substr(mesg.size()-3, 3) == " #<") {
@@ -3134,7 +3136,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		std::string verb;
 
 		color.setVec(1.f,1.f,1.f,1.f);
-		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
 
 // [RLVa:KB] - Checked: 2010-04-23 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
 		if ( (rlv_handler_t::isEnabled()) && (CHAT_TYPE_START != chat.mChatType) && (CHAT_TYPE_STOP != chat.mChatType) )
