@@ -220,11 +220,11 @@ public:
 			}
 		}
 
-		if(!gHippoGridManager->getConnectedGrid()->isSecondLife()) {
+		if(!gHippoGridManager->getConnectedGrid()->supportsInvLinks()) {
 			childSetEnabled("checkbox_use_links", FALSE);
 			childSetValue("checkbox_use_links", FALSE);
 			childSetEnabled("checkbox_use_outfits", FALSE);
-			childSetValue("checkbox_use_outfits", FALSE);			
+			childSetValue("checkbox_use_outfits", FALSE);
 		}
 		
 		childSetAction("Save", onSave, this ); 

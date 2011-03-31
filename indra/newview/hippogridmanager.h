@@ -85,6 +85,7 @@ public:
 	void setCurrencySymbol(const std::string& sym);
 	void setRealCurrencySymbol(const std::string& sym);
 	void setDirectoryFee(int fee);
+	bool supportsInvLinks();
 
 	bool retrieveGridInfo();
 

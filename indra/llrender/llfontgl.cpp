@@ -788,9 +788,12 @@ S32 LLFontGL::maxDrawableChars(const llwchar* wchars, F32 max_pixels, S32 max_ch
 	{
 		return 0;
 	}
-	
-	llassert(max_pixels >= 0.f);
-	llassert(max_chars >= 0);
+
+	//llassert(max_pixels >= 0.f);
+	//llassert(max_chars >= 0);	
+	if(max_pixels < 0.f || max_chars < 0) {
+		return 0;
+	}
 	
 	BOOL clip = FALSE;
 	F32 cur_x = 0;
