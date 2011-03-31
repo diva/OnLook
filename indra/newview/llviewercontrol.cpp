@@ -50,7 +50,7 @@
 #include "llpanelinput.h"
 #include "llsky.h"
 #include "llvieweraudio.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
@@ -75,6 +75,7 @@
 #include "llrender.h"
 #include "llfloaterchat.h"
 #include "llviewerobjectlist.h"
+#include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
@@ -120,6 +121,8 @@ static bool handleTerrainDetailChanged(const LLSD& newvalue)
 
 static bool handleSetShaderChanged(const LLSD& newvalue)
 {
+	gBumpImageList.destroyGL();
+	gBumpImageList.restoreGL();
 	LLViewerShaderMgr::instance()->setShaders();
 	return true;
 }
@@ -261,7 +264,7 @@ static bool handleMaxPartCountChanged(const LLSD& newvalue)
 
 static bool handleVideoMemoryChanged(const LLSD& newvalue)
 {
-	gImageList.updateMaxResidentTexMem(newvalue.asInteger());
+	gTextureList.updateMaxResidentTexMem(newvalue.asInteger());
 	return true;
 }
 

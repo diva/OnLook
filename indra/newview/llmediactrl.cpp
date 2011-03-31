@@ -589,7 +589,7 @@ void LLMediaCtrl::draw()
 		}
 
 		// scale texture to fit the space using texture coords
-		gGL.getTexUnit(0)->bind(mWebBrowserImage->getTexture());
+		gGL.getTexUnit(0)->bind(mWebBrowserImage);
 		gGL.color4fv( LLColor4::white.mV );
 		F32 max_u = ( F32 )mWebBrowserImage->getMediaWidth() / ( F32 )mWebBrowserImage->getWidth();
 		F32 max_v = ( F32 )mWebBrowserImage->getMediaHeight() / ( F32 )mWebBrowserImage->getHeight();
@@ -914,7 +914,7 @@ void LLMediaCtrl::onClickLinkNoFollow( LLPluginClassMedia* self )
 ////////////////////////////////////////////////////////////////////////////////
 //
 LLWebBrowserTexture::LLWebBrowserTexture( S32 width, S32 height, LLMediaCtrl* browserCtrl, viewer_media_t media_source ) :
-	LLDynamicTexture( 512, 512, 4, ORDER_FIRST, TRUE ),
+	LLViewerDynamicTexture( 512, 512, 4, ORDER_FIRST, TRUE ),
 	mNeedsUpdate( true ),
 	mNeedsResize( false ),
 	mTextureCoordsOpenGL( true ),
@@ -1005,7 +1005,7 @@ BOOL LLWebBrowserTexture::render()
 				data += ( x_pos * media_plugin->getTextureDepth() * media_plugin->getBitsWidth() );
 				data += ( y_pos * media_plugin->getTextureDepth() );
 				
-				mTexture->setSubImage(
+				setSubImage(
 						data, 
 						media_plugin->getBitsWidth(), 
 						media_plugin->getBitsHeight(),
@@ -1120,18 +1120,18 @@ bool LLWebBrowserTexture::updateBrowserTexture()
 		return false;
 	
 	if(mMediaSource->mNeedsNewTexture
-		|| media->getTextureWidth() != mWidth
-		|| media->getTextureHeight() != mHeight )
+		|| media->getTextureWidth() != getFullWidth()
+		|| media->getTextureHeight() != getFullHeight() )
 	{
-		releaseGLTexture();
+		//releaseGLTexture();
 		
-		mWidth = media->getTextureWidth();
-		mHeight = media->getTextureHeight();
+		mFullWidth = media->getTextureWidth();
+		mFullHeight = media->getTextureHeight();
 		mTextureCoordsOpenGL = media->getTextureCoordsOpenGL();
 
 		const LLColor4U fill_color(0,0,0,255);
 		// will create mWidth * mHeight sized texture, using the texture params specified by the media.
-		LLDynamicTexture::generateGLTexture(
+		generateGLTexture(
 				media->getTextureFormatInternal(), 
 				media->getTextureFormatPrimary(), 
 				media->getTextureFormatType(), 

@@ -165,7 +165,7 @@ class LLMediaCtrl :
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-class LLWebBrowserTexture : public LLDynamicTexture
+class LLWebBrowserTexture : public LLViewerDynamicTexture
 {
 LOG_CLASS(LLWebBrowserTexture);
 	public:
