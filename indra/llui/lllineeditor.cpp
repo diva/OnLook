@@ -1599,7 +1599,7 @@ void LLLineEditor::draw()
 		std::string text;
 		for (S32 i = 0; i < mText.length(); i++)
 		{
-			text += '*';
+			text += "\xe2\x80\xa2";
 		}
 		mText = text;
 	}
