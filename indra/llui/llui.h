@@ -162,8 +162,7 @@ public:
 						  LLImageProviderInterface* image_provider,
 						  LLUIAudioCallback audio_callback = NULL,
 						  const LLVector2 *scale_factor = NULL,
-						  const std::string& language = LLStringUtil::null,
-						  const S32 default_icon_priority = 0);
+						  const std::string& language = LLStringUtil::null);
 	static void cleanupClass();
 
 	static void pushMatrix();
@@ -182,8 +181,8 @@ public:
 	static void getCursorPositionLocal(const LLView* viewp, S32 *x, S32 *y);
 	static void setScaleFactor(const LLVector2& scale_factor);
 	static void setLineWidth(F32 width);
-	static LLPointer<LLUIImage> getUIImageByID(const LLUUID& image_id, S32 priority = LLUI::sDefaultIconPriority);
-	static LLPointer<LLUIImage> getUIImage(const std::string& name, S32 priority = LLUI::sDefaultIconPriority);
+	static LLPointer<LLUIImage> getUIImageByID(const LLUUID& image_id, S32 priority = 0);
+	static LLPointer<LLUIImage> getUIImage(const std::string& name, S32 priority = 0);
 	static LLVector2 getWindowSize();
 	static void screenPointToGL(S32 screen_x, S32 screen_y, S32 *gl_x, S32 *gl_y);
 	static void glPointToScreen(S32 gl_x, S32 gl_y, S32 *screen_x, S32 *screen_y);
@@ -203,8 +202,6 @@ public:
 	static LLWindow*		sWindow;
 	static BOOL             sShowXUINames;
 	static LLHtmlHelp*		sHtmlHelp;
-
-	static S32				sDefaultIconPriority;
 
 	// *TODO: remove the following when QAR-369 settings clean-up work is in.
 	// Also remove the call to this method which will then be obsolete.

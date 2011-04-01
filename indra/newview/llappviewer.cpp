@@ -654,9 +654,8 @@ bool LLAppViewer::init()
 					&gColors, 
 					LLUIImageList::getInstance(),
 					ui_audio_callback,
-					&LLUI::sGLScaleFactor,
-					std::string(),
-					LLViewerFetchedTexture::BOOST_ICON);
+					&LLUI::sGLScaleFactor
+					);
 	LLWeb::initClass();			  // do this after LLUI
 
 	LLTextEditor::setURLCallbacks(&LLWeb::loadURL,

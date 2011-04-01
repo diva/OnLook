@@ -75,7 +75,6 @@ LLHtmlHelp*		LLUI::sHtmlHelp = NULL;
 BOOL            LLUI::sShowXUINames = FALSE;
 std::stack<LLRect> LLScreenClipRect::sClipRectStack;
 BOOL            LLUI::sQAMode = FALSE;
-S32				LLUI::sDefaultIconPriority = 0;
 
 //
 // Functions
@@ -1559,8 +1558,8 @@ void LLUI::initClass(LLControlGroup* config,
 					 LLImageProviderInterface* image_provider,
 					 LLUIAudioCallback audio_callback,
 					 const LLVector2* scale_factor,
-					 const std::string& language,
-					 const S32 default_icon_priority)
+					 const std::string& language
+					 )
 {
 	sConfigGroup = config;
 	sIgnoresGroup = ignores;
@@ -1578,7 +1577,6 @@ void LLUI::initClass(LLControlGroup* config,
 	sGLScaleFactor = (scale_factor == NULL) ? LLVector2(1.f, 1.f) : *scale_factor;
 	sWindow = NULL; // set later in startup
 	LLFontGL::sShadowColor = colors->getColor("ColorDropShadow");
-	sDefaultIconPriority = default_icon_priority;
 
 	LLUI::sShowXUINames = LLUI::sConfigGroup->getBOOL("ShowXUINames");
 	LLUI::sConfigGroup->getControl("ShowXUINames")->getSignal()->connect(&handleShowXUINamesChanged);

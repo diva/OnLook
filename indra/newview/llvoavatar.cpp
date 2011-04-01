@@ -2935,6 +2935,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 	LLJoint::sNumTouches = 0;
 
 	/*// *NOTE: this is necessary for the floating name text above your head.
+	// NOTE NOTE: This doesn't seem to be needed any more?
 	if (mDrawable && mDrawable.notNull())
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_SHADOW, TRUE);
