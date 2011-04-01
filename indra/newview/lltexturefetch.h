@@ -106,7 +106,6 @@ public:
 							const LLUUID & agent_id,
 							LLViewerAssetStats * main_stats);
 	void commandDataBreak();
-#endif
 
 	LLCurlRequest & getCurlRequest()	{ return *mCurlGetRequest; }
 
@@ -115,6 +114,7 @@ public:
 	// Curl POST counter maintenance
 	inline void incrCurlPOSTCount()		{ mCurlPOSTRequestCount++; }
 	inline void decrCurlPOSTCount()		{ mCurlPOSTRequestCount--; }
+#endif
 
 protected:
 	void addToNetworkQueue(LLTextureFetchWorker* worker);
@@ -133,6 +133,7 @@ private:
 	/*virtual*/ void threadedUpdate(void);
 	void commonUpdate();
 
+#if HTTP_METRICS
 	// Metrics command helpers
 	/**
 	 * Enqueues a command request at the end of the command queue
@@ -162,6 +163,7 @@ private:
 	 * Method locks the command queue.
 	 */
 	void cmdDoWork();
+#endif
 	
 public:
 	LLUUID mDebugID;
@@ -197,6 +199,7 @@ private:
 	//debug use
 	U32 mTotalHTTPRequests ;
 
+#if HTTP_METRICS
 	// Out-of-band cross-thread command queue.  This command queue
 	// is logically tied to LLQueuedThread's list of
 	// QueuedRequest instances and so must be covered by the
@@ -213,12 +216,13 @@ private:
 	// use the LLCurl module's request counter as it isn't thread compatible.
 	// *NOTE:  Don't mix Atomic and static, apr_initialize must be called first.
 	LLAtomic32<S32> mCurlPOSTRequestCount;
-	
+
 public:
 	// A probabilistically-correct indicator that the current
 	// attempt to log metrics follows a break in the metrics stream
 	// reporting due to either startup or a problem POSTing data.
 	static volatile bool svMetricsDataBreak;
+#endif
 };
 
 #endif // LL_LLTEXTUREFETCH_H

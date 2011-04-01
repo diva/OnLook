@@ -472,6 +472,7 @@ public:
 LLMutex* SGHostBlackList::sMutex = 0;
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
 
+#if HTTP_METRICS
 // Cross-thread messaging for asset metrics.
 
 /**
@@ -695,7 +696,7 @@ public:
 bool truncate_viewer_metrics(int max_regions, LLSD & metrics);
 
 } // end of anonymous namespace
-
+#endif
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -716,8 +717,10 @@ const char* LLTextureFetchWorker::sStateDescs[] = {
 	"DONE",
 };
 
+#if HTTP_METRICS
 // static
 volatile bool LLTextureFetch::svMetricsDataBreak(true);	// Start with a data break
+#endif
 
 // called from MAIN THREAD
 
@@ -1224,8 +1227,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		}
 		else
 		{
-#if HTTP_METRICS
 			mFetcher->addToNetworkQueue(this); // failsafe
+#if HTTP_METRICS
 			if (! mMetricsStartTime)
 			{
 				mMetricsStartTime = LLViewerAssetStatsFF::get_timestamp();
@@ -1334,11 +1337,16 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			if (mRequestedSize < 0)
 			{
 				S32 max_attempts;
-				if (mGetStatus == HTTP_NOT_FOUND)
+				if (mGetStatus == HTTP_NOT_FOUND || mGetStatus == 499)
 				{
 					mHTTPFailCount = max_attempts = 1; // Don't retry
-					llwarns << "Texture missing from server (404): " << mUrl << llendl;
-
+					if(mGetStatus == HTTP_NOT_FOUND)
+						llwarns << "Texture missing from server (404): " << mUrl << llendl;
+					else if (mGetStatus == 499) 
+					{
+						llwarns << "No response from server (499): " << mUrl << llendl;
+						SGHostBlackList::add(mUrl, 60.0, mGetStatus);
+					}
 					//roll back to try UDP
 					if(mCanUseNET)
 					{
@@ -1939,10 +1947,14 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mTextureBandwidth(0),
 	  mHTTPTextureBits(0),
 	  mTotalHTTPRequests(0),
-	  mCurlGetRequest(NULL),
-	  mQAMode(qa_mode)
+	  mCurlGetRequest(NULL)
+#if HTTP_METRICS
+	  ,mQAMode(qa_mode)
+#endif
 {
+#if HTTP_METRICS
 	mCurlPOSTRequestCount = 0;
+#endif
 	mMaxBandwidth = gSavedSettings.getF32("ThrottleBandwidthKBPS");
 	mTextureInfo.setUpLogging(gSavedSettings.getBOOL("LogTextureDownloadsToViewerLog"), gSavedSettings.getBOOL("LogTextureDownloadsToSimulator"), gSavedSettings.getU32("TextureLoggingThreshold"));
 }
@@ -1951,12 +1963,14 @@ LLTextureFetch::~LLTextureFetch()
 {
 	clearDeleteList() ;
 
+#if HTTP_METRICS
 	while (! mCommands.empty())
 	{
 		TFRequest * req(mCommands.front());
 		mCommands.erase(mCommands.begin());
 		delete req;
 	}
+#endif
 	
 	// ~LLQueuedThread() called here
 }
@@ -2259,8 +2273,10 @@ S32 LLTextureFetch::getPending()
         LLMutexLock lock(&mQueueMutex);
         
         res = mRequestQueue.size();
+#if HTTP_METRICS
         res += mCurlPOSTRequestCount;
         res += mCommands.size();
+#endif
     }
 	unlockData();
 	return res;
@@ -2278,6 +2294,7 @@ bool LLTextureFetch::runCondition()
 	//
 	// Changes here may need to be reflected in getPending().
 	
+#if HTTP_METRICS
 	bool have_no_commands(false);
 	{
 		LLMutexLock lock(&mQueueMutex);
@@ -2290,6 +2307,9 @@ bool LLTextureFetch::runCondition()
 	return ! (have_no_commands
 			  && have_no_curl_requests
 			  && (mRequestQueue.empty() && mIdleThread));		// From base class
+#else
+	return !(mRequestQueue.empty() && mIdleThread);
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -2297,9 +2317,11 @@ bool LLTextureFetch::runCondition()
 // MAIN THREAD (unthreaded envs), WORKER THREAD (threaded envs)
 void LLTextureFetch::commonUpdate()
 {
+#if HTTP_METRICS
 	// Run a cross-thread command, if any.
 	cmdDoWork();
-	
+#endif
+
 	// Update Curl on same thread as mCurlGetRequest was constructed
 	S32 processed = mCurlGetRequest->process();
 	if (processed > 0)
@@ -2869,7 +2891,6 @@ void LLTextureFetch::commandDataBreak()
 
 	LLTextureFetch::svMetricsDataBreak = true;
 }
-#endif
 
 void LLTextureFetch::cmdEnqueue(TFRequest * req)
 {
@@ -2927,14 +2948,11 @@ namespace
 bool
 TFReqSetRegion::doWork(LLTextureFetch *)
 {
-#if HTTP_METRICS
 	LLViewerAssetStatsFF::set_region_thread1(mRegionHandle);
-#endif
 	return true;
 }
 
 
-#if HTTP_METRICS
 TFReqSendMetrics::~TFReqSendMetrics()
 {
 	delete mMainStats;
@@ -3076,8 +3094,6 @@ TFReqSendMetrics::doWork(LLTextureFetch * fetcher)
 
 	return true;
 }
-#endif
-
 
 bool
 truncate_viewer_metrics(int max_regions, LLSD & metrics)
@@ -3117,6 +3133,5 @@ truncate_viewer_metrics(int max_regions, LLSD & metrics)
 }
 
 } // end of anonymous namespace
-
-
+#endif
 

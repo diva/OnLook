@@ -73,7 +73,7 @@ static std::string title_string3("Pkt Bnd");
 static std::string title_string4("  W x H (Dis) Mem");
 
 static S32 title_x1 = 0;
-static S32 title_x2 = 440;
+static S32 title_x2 = 460;
 static S32 title_x3 = title_x2 + 40;
 static S32 title_x4 = title_x3 + 50;
 static S32 texture_bar_height = 8;
@@ -182,7 +182,7 @@ void LLTextureBar::draw()
 	// Various numerical stats.
 	std::string tex_str;
 	S32 left, right;
-	S32 top = 0;
+	S32 top = -2;
 	S32 bottom = top + 6;
 	LLColor4 clr;
 
@@ -256,13 +256,15 @@ void LLTextureBar::draw()
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 	// Draw the progress bar.
-	S32 bar_width = 100;
+	S32 bar_width = 125;
 	S32 bar_left = 330;
 	left = bar_left;
 	right = left + bar_width;
 
 	gGL.color4f(0.f, 0.f, 0.f, 0.75f);
 	gl_rect_2d(left, top, right, bottom);
+	gGL.color4f(.75f, .75f, .75f, 0.75f);
+	gl_rect_2d(left, top, right, bottom, false);
 
 	F32 data_progress = mImagep->mDownloadProgress;
 	
@@ -272,7 +274,7 @@ void LLTextureBar::draw()
 		right = left + llfloor(data_progress * (F32)bar_width);
 		if (right > left)
 		{
-			gGL.color4f(0.f, 0.f, 1.f, 0.75f);
+			gGL.color4f(.75f, .75f, .75f, 0.75f);
 			gl_rect_2d(left, top, right, bottom);
 		}
 	}
@@ -494,12 +496,13 @@ void LLGLTexMemBar::draw()
 #endif
 	//----------------------------------------------------------------------------
 
-	text = llformat("Textures: %d Fetch: %d(%d) Pkts:%d(%d) Cache R/W: %d/%d LFS:%d IW:%d RAW:%d HTP:%d BW: %.0f/%.0f",
+	text = llformat("Textures: %d Fetch: %d(%d) Pkts:%d(%d) Cache R/W: %d/%d LFS:%d IW:%d RAW:%d HTP:%d DEC:%d CRE:%d",
 					gTextureList.getNumImages(),
 					LLAppViewer::getTextureFetch()->getNumRequests(), LLAppViewer::getTextureFetch()->getNumDeletes(),
 					LLAppViewer::getTextureFetch()->mPacketCount, LLAppViewer::getTextureFetch()->mBadPacketCount, 
 					LLAppViewer::getTextureCache()->getNumReads(), LLAppViewer::getTextureCache()->getNumWrites(),
 					LLLFSThread::sLocal->getPending(),
+					LLAppViewer::getImageDecodeThread()->getPending(),
 					LLImageRaw::sRawImageCount,
 					LLAppViewer::getTextureFetch()->getNumHTTPRequests(),
 					LLAppViewer::getImageDecodeThread()->getPending(), 
@@ -508,7 +511,7 @@ void LLGLTexMemBar::draw()
 	LLFontGL::getFontMonospace()->renderUTF8(text, 0, 0, line_height*2,
 									 text_color, LLFontGL::LEFT, LLFontGL::TOP);
 
-	left = 600;
+	left = 650;
 	F32 bandwidth = LLAppViewer::getTextureFetch()->getTextureBandwidth();
 	F32 max_bandwidth = gSavedSettings.getF32("ThrottleBandwidthKBPS");
 	color = bandwidth > max_bandwidth ? LLColor4::red : bandwidth > max_bandwidth*.75f ? LLColor4::yellow : text_color;
