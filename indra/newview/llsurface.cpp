@@ -960,6 +960,7 @@ LLSurfacePatch *LLSurface::resolvePatchRegion(const LLVector3 &pos_region) const
 
 LLSurfacePatch *LLSurface::resolvePatchGlobal(const LLVector3d &pos_global) const
 {
+	llassert(mRegionp);
 	LLVector3 pos_region = mRegionp->getPosRegionFromGlobal(pos_global);
 	return resolvePatchRegion(pos_region);
 }

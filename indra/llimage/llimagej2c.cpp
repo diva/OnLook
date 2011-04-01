@@ -179,8 +179,8 @@ LLImageJ2C::LLImageJ2C() : 	LLImageFormatted(IMG_CODEC_J2C),
 							mMaxBytes(0),
 							mRawDiscardLevel(-1),
 							mRate(0.0f),
-							mReversible(FALSE)
-	
+							mReversible(FALSE),
+							mAreaUsedForDataSizeCalcs(0)
 {
 	//We assume here that if we wanted to create via
 	//a dynamic library that the approriate open calls were made

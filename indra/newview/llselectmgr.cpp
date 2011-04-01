@@ -405,7 +405,7 @@ LLObjectSelectionHandle LLSelectMgr::selectObjectAndFamily(LLViewerObject* obj, 
 	}
 
 	// Collect all of the objects
-	LLDynamicArray<LLViewerObject*> objects;
+	std::vector<LLViewerObject*> objects;
 
 	root->addThisAndNonJointChildren(objects);
 	addAsFamily(objects, add_to_end);
@@ -451,7 +451,7 @@ LLObjectSelectionHandle LLSelectMgr::selectObjectAndFamily(const std::vector<LLV
 														   BOOL send_to_sim)
 {
 	// Collect all of the objects, children included
-	LLDynamicArray<LLViewerObject*> objects;
+	std::vector<LLViewerObject*> objects;
 
 	//clear primary object (no primary object)
 	mSelectedObjects->mPrimaryObject = NULL;
@@ -575,7 +575,7 @@ void LLSelectMgr::deselectObjectAndFamily(LLViewerObject* object, BOOL send_to_s
 	if(!object->isSelected()) return;
 
 	// Collect all of the objects, and remove them
-	LLDynamicArray<LLViewerObject*> objects;
+	std::vector<LLViewerObject*> objects;
 
 	if (include_entire_object)
 	{
@@ -821,7 +821,7 @@ LLObjectSelectionHandle LLSelectMgr::setHoverObject(LLViewerObject *objectp, S32
 	{
 
 		// Collect all of the objects
-		LLDynamicArray<LLViewerObject*> objects;
+		std::vector<LLViewerObject*> objects;
 		objectp = objectp->getRootEdit();
 		objectp->addThisAndNonJointChildren(objects);
 
@@ -1312,7 +1312,7 @@ void LLSelectMgr::promoteSelectionToRoot()
 //-----------------------------------------------------------------------------
 void LLSelectMgr::demoteSelectionToIndividuals()
 {
-	LLDynamicArray<LLViewerObject*> objects;
+	std::vector<LLViewerObject*> objects;
 
 	for (LLObjectSelection::root_iterator iter = getSelection()->root_begin();
 		 iter != getSelection()->root_end(); iter++)
@@ -1321,7 +1321,7 @@ void LLSelectMgr::demoteSelectionToIndividuals()
 		object->addThisAndNonJointChildren(objects);
 	}
 
-	if (objects.getLength())
+	if (!objects.empty())
 	{
 		deselectAll();
 		for (std::vector<LLViewerObject*>::iterator iter = objects.begin();
@@ -3604,7 +3604,7 @@ void LLSelectMgr::sendAttach(U8 attachment_point)
 {
 	LLViewerObject* attach_object = mSelectedObjects->getFirstRootObject();
 
-	if (!attach_object || !gAgent.getAvatarObject() || mSelectedObjects->mSelectType != SELECT_TYPE_WORLD)
+	if (!attach_object || !isAgentAvatarValid() || mSelectedObjects->mSelectType != SELECT_TYPE_WORLD)
 	{
 		return;
 	}
@@ -4888,7 +4888,7 @@ void LLSelectMgr::updateSelectionSilhouette(LLObjectSelectionHandle object_handl
 						generateSilhouette(node, LLViewerCamera::getInstance()->getOrigin());
 						changed_objects.push_back(objectp);
 					}
-					else if (objectp->isAttachment())
+					else if (objectp->isAttachment() && objectp->getRootEdit() && objectp->getRootEdit()->mDrawable.notNull())
 					{
 						//RN: hack for orthogonal projection of HUD attachments
 						LLViewerJointAttachment* attachment_pt = (LLViewerJointAttachment*)objectp->getRootEdit()->mDrawable->getParent();
@@ -4916,9 +4916,9 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	LLGLEnable blend(GL_BLEND);
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
-	if (for_hud && avatar)
+	if (isAgentAvatarValid() && for_hud)
 	{
+			LLVOAvatar* avatar = gAgent.getAvatarObject();
 		LLBBox hud_bbox = avatar->getHUDBBox();
 
 		F32 cur_zoom = gAgent.mHUDCurZoom;
@@ -5012,7 +5012,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 		}
 	}
 
-	if (for_hud && avatar)
+	if (isAgentAvatarValid() && for_hud)
 	{
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
@@ -5374,7 +5374,7 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 	if (volume)
 	{
 		F32 silhouette_thickness;
-		if (is_hud_object && gAgent.getAvatarObject())
+		if (isAgentAvatarValid() && is_hud_object)
 		{
 			silhouette_thickness = LLSelectMgr::sHighlightThickness / gAgent.mHUDCurZoom;
 		}
@@ -5569,7 +5569,7 @@ void LLSelectMgr::updateSelectionCenter()
 	{
 		mSelectedObjects->mSelectType = getSelectTypeForObject(object);
 
-		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && gAgent.getAvatarObject())
+		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 		{
 			mPauseRequest = gAgent.getAvatarObject()->requestPause();
 		}
@@ -5578,7 +5578,7 @@ void LLSelectMgr::updateSelectionCenter()
 			mPauseRequest = NULL;
 		}
 
-		if (mSelectedObjects->mSelectType != SELECT_TYPE_HUD && gAgent.getAvatarObject())
+		if (mSelectedObjects->mSelectType != SELECT_TYPE_HUD && isAgentAvatarValid())
 		{
 			// reset hud ZOOM
 			gAgent.mHUDTargetZoom = 1.f;

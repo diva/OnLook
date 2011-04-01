@@ -471,7 +471,7 @@ void LLVOVolume::updateTextureVirtualSize()
 {
 	// Update the pixel area of all faces
 
-	if(!isVisible())
+	if(!isVisible() || mDrawable.isNull())
 	{
 		return;
 	}
