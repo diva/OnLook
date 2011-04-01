@@ -542,7 +542,7 @@ std::string LLDir::getForbiddenFileChars()
 	return "\\/:*?\"<>|";
 }
 
-void LLDir::setLindenUserDir(const std::string &first, const std::string &last)
+void LLDir::setLindenUserDir(const std::string &grid, const std::string &first, const std::string &last)
 {
 	// if both first and last aren't set, assume we're grabbing the cached dir
 	if (!first.empty() && !last.empty())
@@ -558,6 +558,14 @@ void LLDir::setLindenUserDir(const std::string &first, const std::string &last)
 		mLindenUserDir += firstlower;
 		mLindenUserDir += "_";
 		mLindenUserDir += lastlower;
+		
+		if (!grid.empty())
+		{
+			std::string gridlower(grid);
+			LLStringUtil::toLower(gridlower);
+			mPerAccountChatLogsDir += "@";
+			mPerAccountChatLogsDir += gridlower;
+		}		
 	}
 	else
 	{
