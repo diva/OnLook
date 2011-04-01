@@ -600,7 +600,14 @@ void HippoGridInfo::initFallback()
 	FALLBACK_GRIDINFO.setHelperUri("http://127.0.0.1:9000/");
 }
 
-
+bool HippoGridInfo::supportsInvLinks(){
+	if(isSecondLife())
+		return true;
+	else if(mLoginUri.find("avination.")!=std::string::npos)
+		return true;
+	else
+		return false;
+}
 
 // ********************************************************************
 // ********************************************************************

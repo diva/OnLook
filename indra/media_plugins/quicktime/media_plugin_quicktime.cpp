@@ -40,6 +40,10 @@
 #if defined(LL_DARWIN)
 	#include <QuickTime/QuickTime.h>
 #elif defined(LL_WINDOWS)
+	#undef __STDC_CONSTANT_MACROS //Needed, as boost/unordered_map.hpp already defines INT32_C, etc. 
+	#if defined(_MSC_VER) && _MSC_VER >= 1600
+		#define _STDINT_H //Visual Studio 2010 includes its own stdint header already
+	#endif
 	#include "MacTypes.h"
 	#include "QTML.h"
 	#include "Movies.h"
