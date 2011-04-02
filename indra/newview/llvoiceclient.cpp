@@ -2572,7 +2572,7 @@ void LLVoiceClient::sessionCreateSendMessage(sessionState *session, bool startAu
 	if(!session->mHash.empty())
 	{
 		stream
-			<< "<llfloat>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
+			<< "<Password>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
 			<< "<PasswordHashAlgorithm>SHA1UserName</PasswordHashAlgorithm>";
 	}
 	
