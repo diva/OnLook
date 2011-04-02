@@ -175,10 +175,6 @@ static	void updatePosition(void);
 		void setAvatarPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot);
 		bool channelFromRegion(LLViewerRegion *region, std::string &name);
 		void leaveChannel(void);		// call this on logout or teleport begin
-		
-		// This should be called when the code detects we have changed parcels.
-		// It initiates the call to the server that gets the parcel channel.
-		void parcelChanged();
 
 		
 		void setMuteMic(bool muted);		// Use this to mute the local mic (for when the client is minimized, etc), ignoring user PTT state.
@@ -196,8 +192,6 @@ static	void updatePosition(void);
 		void setUserVolume(const LLUUID& id, F32 volume); // set's volume for specified agent, from 0-1 (where .5 is nominal)
 		void setLipSyncEnabled(BOOL enabled);
 		BOOL lipSyncEnabled();
-		void setPosLocked(bool locked);
-		BOOL getPosLocked(); //whether our position is locked to keep us nearby
 
 		// PTT key triggering
 		void keyDown(KEY key, MASK mask);
@@ -298,10 +292,6 @@ static	void updatePosition(void);
 		public:
 			sessionState();
 			~sessionState();
-
-			// <edit>
-			static void onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data);
-			// </edit>
 
 			participantState *addParticipant(const std::string &uri);
 			// Note: after removeParticipant returns, the participant* that was passed to it will have been deleted.
@@ -656,6 +646,10 @@ static	void updatePosition(void);
 		bool mCaptureDeviceDirty;
 		bool mRenderDeviceDirty;
 		
+		// This should be called when the code detects we have changed parcels.
+		// It initiates the call to the server that gets the parcel channel.
+		void parcelChanged();
+		
 	void switchChannel(std::string uri = std::string(), bool spatial = true, bool no_reconnect = false, bool is_p2p = false, std::string hash = "");
 		void joinSession(sessionState *session);
 		
@@ -738,8 +732,6 @@ static	std::string nameFromsipURI(const std::string &uri);
 		LLTimer		mUpdateTimer;
 		
 		BOOL		mLipSyncEnabled;
-		
-		bool		mPosLocked;
 
 		typedef std::set<LLVoiceClientParticipantObserver*> observer_set_t;
 		observer_set_t mParticipantObservers;
