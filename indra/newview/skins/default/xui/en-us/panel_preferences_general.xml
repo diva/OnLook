@@ -88,7 +88,7 @@
 	     min_val="30" mouse_opaque="true" name="afk_timeout_spinner" width="202" />
 	<check_box bottom="-265" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-	     label="Notify when in-world money ([CURRENCY]) spent or received" left="151"
+	     label="Notify when in-world currency is spent or received" left="151"
 	     mouse_opaque="true" name="notify_money_change_checkbox" radio_style="false"
 	     width="256" />
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

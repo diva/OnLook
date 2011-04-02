@@ -1102,8 +1102,12 @@ void LLPanelLogin::onClickConnect(void *)
 		}
 		else
 		{
-			LLNotifications::instance().add("MustHaveAccountToLogIn", LLSD(), LLSD(),
-										LLPanelLogin::newAccountAlertCallback);
+			if (gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty()) {
+				LLNotifications::instance().add("MustHaveAccountToLogInNoLinks");
+			} else {
+				LLNotifications::instance().add("MustHaveAccountToLogIn", LLSD(), LLSD(),
+												LLPanelLogin::newAccountAlertCallback);
+			}
 		}
 	}
 }
@@ -1129,7 +1133,14 @@ bool LLPanelLogin::newAccountAlertCallback(const LLSD& notification, const LLSD&
 // static
 void LLPanelLogin::onClickNewAccount(void*)
 {
-	LLWeb::loadURLExternal( CREATE_ACCOUNT_URL );
+	const std::string &url = gHippoGridManager->getConnectedGrid()->getRegisterUrl();
+	if (!url.empty()) {
+		llinfos << "Going to account creation URL." << llendl;
+		LLWeb::loadURLExternal(url);
+	} else {
+		llinfos << "Account creation URL is empty." << llendl;
+		sInstance->setFocus(TRUE);
+	}
 }
 
 // static
@@ -1174,7 +1185,12 @@ void LLPanelLogin::onClickForgotPassword(void*)
 {
 	if (sInstance )
 	{
-		LLWeb::loadURLExternal(sInstance->getString( "forgot_password_url" ));
+		const std::string &url = gHippoGridManager->getConnectedGrid()->getPasswordUrl();
+		if (!url.empty()) {
+			LLWeb::loadURLExternal(url);
+		} else {
+			llwarns << "Link for 'forgotton password' not set." << llendl;
+		}
 	}
 }
 
