@@ -394,7 +394,7 @@ void LLPrefsAscentSysImpl::apply()
 	//Missing the echo/log option.
 	gSavedSettings.setBOOL("PlayTypingSound",			childGetValue("play_typing_sound_check"));
 	gSavedSettings.setBOOL("AscentHideTypingNotification",	childGetValue("hide_typing_check"));
-	gSavedSettings.setBOOL("AscentInstantMessageAnnounceIncoming",	childGetValue("AscentInstantMessageAnnounceIncoming").asBoolean());
+	gSavedPerAccountSettings.setBOOL("AscentInstantMessageAnnounceIncoming",	childGetValue("AscentInstantMessageAnnounceIncoming").asBoolean());
 	gSavedSettings.setBOOL("AscentAllowMUpose",			childGetValue("allow_mu_pose_check").asBoolean());
 	gSavedSettings.setBOOL("AscentAutoCloseOOC",		childGetValue("close_ooc_check").asBoolean());
 	//gSavedSettings.setU32("LinksForChattingObjects",	childGetValue("objects_link").   );

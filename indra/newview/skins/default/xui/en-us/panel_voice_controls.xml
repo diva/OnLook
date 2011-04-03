@@ -6,7 +6,7 @@
 	     name="speakers_btn"
 	     tool_tip="Show list of residents using voice chat around you" width="38" />
 	<button bottom="-22" height="22" label="Talk" left_delta="40" name="push_to_talk"
-	     tab_stop="false" tool_tip="Hold the button to talk" width="64" />
+	     tab_stop="false" tool_tip="Hold the button to talk" width="60" />
 	<button bottom="-19" height="16" image_selected="ptt_lock_on.tga"
 	     image_unselected="ptt_lock_off.tga" label="" left_delta="4" name="ptt_lock"
 	     scale_image="false" toggle="true"
@@ -14,6 +14,6 @@
 	<icon bottom="-19" height="16" image_name="icn_voice_ptt-off.tga" left_delta="42"
 	     name="voice_volume" width="16" />
 	<button bottom="-22" control_name="ShowVoiceChannelPopup" height="22" label=""
-	     left_delta="20" name="show_channel" scale_image="true" toggle="true"
+	     left_delta="16" name="show_channel" scale_image="true" toggle="true"
 	     tool_tip="Click to show current voice channel" width="22" />
 </panel>

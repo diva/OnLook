@@ -1050,7 +1050,12 @@ bool LLViewerImage::updateFetch()
 					// We've changed the number of components, so we need to move any
 					// objects using this pool to a different pool.
 					mComponents = mRawImage->getComponents();
-					gImageList.dirtyImage(this);
+					
+					for(U32 i = 0 ; i < mNumFaces ; i++)
+					{
+						mFaceList[i]->dirtyTexture() ;
+					}
+					//gImageList.dirtyImage(this);
 				}			
 				
 				mFullWidth = mRawImage->getWidth() << mRawDiscardLevel;

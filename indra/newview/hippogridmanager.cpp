@@ -95,6 +95,15 @@ const std::string& HippoGridInfo::getGridName() const
 	return mGridName;
 }
 
+const std::string& HippoGridInfo::getGridOwner() const {
+	if(isSecondLife()) {
+		static const std::string ll = "Linden Lab";
+		return ll;
+	} else {
+		return this->getGridName();
+	}	
+}
+
 const std::string& HippoGridInfo::getLoginUri() const
 {
 	return mLoginUri;

@@ -563,8 +563,8 @@ void LLDir::setLindenUserDir(const std::string &grid, const std::string &first, 
 		{
 			std::string gridlower(grid);
 			LLStringUtil::toLower(gridlower);
-			mPerAccountChatLogsDir += "@";
-			mPerAccountChatLogsDir += gridlower;
+			mLindenUserDir += "@";
+			mLindenUserDir += gridlower;
 		}		
 	}
 	else

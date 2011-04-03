@@ -40,6 +40,7 @@ public:
 	bool isSecondLife() const;
 	const std::string& getGridNick()        const;
 	const std::string& getGridName()        const;
+	const std::string& getGridOwner()       const;	
 	const std::string& getLoginUri()        const;
 	const std::string& getLoginPage()       const;
 	const std::string& getHelperUri()       const;

@@ -54,13 +54,11 @@ public:
 	static void onClickPopupBtn(void* user_data);
 	static void onClickVoiceChannel(void* user_data);
 	static void onClickEndCall(void* user_data);
-	static void onClickPosLock(void* user_data);
 
 protected:
 	LLButton* mTalkBtn;
 	LLButton* mTalkLockBtn;
 	LLButton* mSpeakersBtn;
-	LLButton* mPosLockBtn;
 };
 
 #endif // LL_LLVOICEREMOTECTRL_H

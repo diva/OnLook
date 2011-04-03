@@ -75,10 +75,6 @@
 // for MD5 hash
 #include "llmd5.h"
 
-// <edit>
-#include "llworld.h"
-// </edit>
-
 #define USE_SESSION_GROUPS 0
 
 static bool sConnectingToAgni = false;
@@ -1120,7 +1116,6 @@ LLVoiceClient::LLVoiceClient()
 	mCommandCookie = 0;
 	mCurrentParcelLocalID = 0;
 	mLoginRetryCount = 0;
-	mPosLocked = false;
 
 	mSpeakerVolume = 0;
 	mMicVolume = 0;
@@ -1153,7 +1148,6 @@ LLVoiceClient::LLVoiceClient()
 	mTuningMicVolumeDirty = true;
 	mTuningSpeakerVolume = 0;
 	mTuningSpeakerVolumeDirty = true;
-	
 					
 	//  gMuteListp isn't set up at this point, so we defer this until later.
 //	gMuteListp->addObserver(&mutelist_listener);
@@ -2572,7 +2566,7 @@ void LLVoiceClient::sessionCreateSendMessage(sessionState *session, bool startAu
 	if(!session->mHash.empty())
 	{
 		stream
-			<< "<llfloat>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
+			<< "<Password>" << LLURI::escape(session->mHash, allowed_chars) << "</Password>"
 			<< "<PasswordHashAlgorithm>SHA1UserName</PasswordHashAlgorithm>";
 	}
 	
@@ -3620,7 +3614,7 @@ void LLVoiceClient::sendFriendsListUpdates()
 							<< "<Request requestId=\"" << mCommandCookie++ << "\" action=\"Account.BuddySet.1\">"
 								<< "<AccountHandle>" << mAccountHandle << "</AccountHandle>"
 								<< "<BuddyURI>" << buddy->mURI << "</BuddyURI>"
-								<< "<DisplayName>" << buddy->mDisplayName << "</DisplayName>" 
+								<< "<DisplayName>" << buddy->mDisplayName << "</DisplayName>"
 								<< "<BuddyData></BuddyData>"	// Without this, SLVoice doesn't seem to parse the command.
 								<< "<GroupID>0</GroupID>"
 							<< "</Request>\n\n\n";	
@@ -4846,20 +4840,6 @@ LLVoiceClient::participantState::participantState(const std::string &uri) :
 {
 }
 
-// <edit>
-//static 
-void LLVoiceClient::sessionState::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
-{
-	LLChat chat;
-	std::string name(first + " " + last);
-	chat.mFromName = name;
-	chat.mURL = llformat("secondlife:///app/agent/%s/about",id.asString().c_str());
-	chat.mText = name+" is possibly eavesdropping in voice."; 
-	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	LLFloaterChat::addChat(chat);
-}
-// </edit>
-
 LLVoiceClient::participantState *LLVoiceClient::sessionState::addParticipant(const std::string &uri)
 {
 	participantState *result = NULL;
@@ -4904,30 +4884,6 @@ LLVoiceClient::participantState *LLVoiceClient::sessionState::addParticipant(con
 
 				if(result->updateMuteState())
 					mVolumeDirty = true;
-				// <edit>
-				if(nameFromsipURI(uri) != gVoiceClient->mAccountName)
-				{
-					bool found = true;
-					for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
-							iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
-					{
-						LLViewerRegion* regionp = *iter;
-						// let us check to see if they are actually in the sim
-						if(regionp)
-						{
-							if(regionp->mMapAvatarIDs.find(id) != -1)
-							{
-								found = true;
-								break;
-							}
-						}
-					}
-					if(!found)
-						// They are not in my list of people in my sims, they must be a spy.
-						gCacheName->getName(id, onAvatarNameLookup, NULL);
-				}
-				// </edit>
-				
 			}
 			else
 			{
@@ -5202,19 +5158,16 @@ void LLVoiceClient::switchChannel(
 
 void LLVoiceClient::joinSession(sessionState *session)
 {
-	if(!mPosLocked)
+	mNextAudioSession = session;
+	
+	if(getState() <= stateNoChannel)
 	{
-		mNextAudioSession = session;
-		
-		if(getState() <= stateNoChannel)
-		{
-			// We're already set up to join a channel, just needed to fill in the session handle
-		}
-		else
-		{
-			// State machine will come around and rejoin if uri/handle is not empty.
-			sessionTerminate();
-		}
+		// We're already set up to join a channel, just needed to fill in the session handle
+	}
+	else
+	{
+		// State machine will come around and rejoin if uri/handle is not empty.
+		sessionTerminate();
 	}
 }
 
@@ -5229,23 +5182,20 @@ void LLVoiceClient::setSpatialChannel(
 	const std::string &uri,
 	const std::string &credentials)
 {
-	if(!mPosLocked)
-	{
-		mSpatialSessionURI = uri;
-		mSpatialSessionCredentials = credentials;
-		mAreaVoiceDisabled = mSpatialSessionURI.empty();
+	mSpatialSessionURI = uri;
+	mSpatialSessionCredentials = credentials;
+	mAreaVoiceDisabled = mSpatialSessionURI.empty();
 
-		LL_DEBUGS("Voice") << "got spatial channel uri: \"" << uri << "\"" << LL_ENDL;
-		
-		if((mAudioSession && !(mAudioSession->mIsSpatial)) || (mNextAudioSession && !(mNextAudioSession->mIsSpatial)))
-		{
-			// User is in a non-spatial chat or joining a non-spatial chat.  Don't switch channels.
-			LL_INFOS("Voice") << "in non-spatial chat, not switching channels" << LL_ENDL;
-		}
-		else
-		{
-			switchChannel(mSpatialSessionURI, true, false, false, mSpatialSessionCredentials);
-		}
+	LL_DEBUGS("Voice") << "got spatial channel uri: \"" << uri << "\"" << LL_ENDL;
+	
+	if((mAudioSession && !(mAudioSession->mIsSpatial)) || (mNextAudioSession && !(mNextAudioSession->mIsSpatial)))
+	{
+		// User is in a non-spatial chat or joining a non-spatial chat.  Don't switch channels.
+		LL_INFOS("Voice") << "in non-spatial chat, not switching channels" << LL_ENDL;
+	}
+	else
+	{
+		switchChannel(mSpatialSessionURI, true, false, false, mSpatialSessionCredentials);
 	}
 }
 
@@ -5477,23 +5427,20 @@ void LLVoiceClient::declineInvite(std::string &sessionHandle)
 
 void LLVoiceClient::leaveNonSpatialChannel()
 {
-	if(!mPosLocked)
-	{
-		LL_DEBUGS("Voice") 
-			<< "called in state " << state2string(getState()) 
-			<< LL_ENDL;
-		
-		// Make sure we don't rejoin the current session.	
-		sessionState *oldNextSession = mNextAudioSession;
-		mNextAudioSession = NULL;
-		
-		// Most likely this will still be the current session at this point, but check it anyway.
-		reapSession(oldNextSession);
-		
-		verifySessionState();
-		
-		sessionTerminate();
-	}
+	LL_DEBUGS("Voice") 
+		<< "called in state " << state2string(getState()) 
+		<< LL_ENDL;
+	
+	// Make sure we don't rejoin the current session.	
+	sessionState *oldNextSession = mNextAudioSession;
+	mNextAudioSession = NULL;
+	
+	// Most likely this will still be the current session at this point, but check it anyway.
+	reapSession(oldNextSession);
+	
+	verifySessionState();
+	
+	sessionTerminate();
 }
 
 std::string LLVoiceClient::getCurrentChannel()
@@ -5722,7 +5669,7 @@ void LLVoiceClient::enforceTether(void)
 void LLVoiceClient::updatePosition(void)
 {
 	
-	if(gVoiceClient && !gVoiceClient->getPosLocked())
+	if(gVoiceClient)
 	{
 		LLVOAvatar *agent = gAgent.getAvatarObject();
 		LLViewerRegion *region = gAgent.getRegion();
@@ -5761,45 +5708,39 @@ void LLVoiceClient::updatePosition(void)
 
 void LLVoiceClient::setCameraPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot)
 {
-	if(!mPosLocked)
+	mCameraRequestedPosition = position;
+	
+	if(mCameraVelocity != velocity)
 	{
-		mCameraRequestedPosition = position;
-		
-		if(mCameraVelocity != velocity)
-		{
-			mCameraVelocity = velocity;
-			mSpatialCoordsDirty = true;
-		}
-		
-		if(mCameraRot != rot)
-		{
-			mCameraRot = rot;
-			mSpatialCoordsDirty = true;
-		}
+		mCameraVelocity = velocity;
+		mSpatialCoordsDirty = true;
+	}
+	
+	if(mCameraRot != rot)
+	{
+		mCameraRot = rot;
+		mSpatialCoordsDirty = true;
 	}
 }
 
 void LLVoiceClient::setAvatarPosition(const LLVector3d &position, const LLVector3 &velocity, const LLMatrix3 &rot)
 {
-	if(!mPosLocked)
+	if(dist_vec(mAvatarPosition, position) > 0.1)
 	{
-		if(dist_vec(mAvatarPosition, position) > 0.1)
-		{
-			mAvatarPosition = position;
-			mSpatialCoordsDirty = true;
-		}
-		
-		if(mAvatarVelocity != velocity)
-		{
-			mAvatarVelocity = velocity;
-			mSpatialCoordsDirty = true;
-		}
-		
-		if(mAvatarRot != rot)
-		{
-			mAvatarRot = rot;
-			mSpatialCoordsDirty = true;
-		}
+		mAvatarPosition = position;
+		mSpatialCoordsDirty = true;
+	}
+	
+	if(mAvatarVelocity != velocity)
+	{
+		mAvatarVelocity = velocity;
+		mSpatialCoordsDirty = true;
+	}
+	
+	if(mAvatarRot != rot)
+	{
+		mAvatarRot = rot;
+		mSpatialCoordsDirty = true;
 	}
 }
 
@@ -5820,7 +5761,7 @@ bool LLVoiceClient::channelFromRegion(LLViewerRegion *region, std::string &name)
 
 void LLVoiceClient::leaveChannel(void)
 {
-	if(!mPosLocked && getState() == stateRunning)
+	if(getState() == stateRunning)
 	{
 		LL_DEBUGS("Voice") << "leaving channel for teleport/logout" << LL_ENDL;
 		mChannelName.clear();
@@ -5859,7 +5800,7 @@ void LLVoiceClient::setVoiceEnabled(bool enabled)
 		}
 		else
 		{
-			// Turning voice off loses your current channel -- this makes sure the UI isn't out of sync when you re-enable it.
+			// Turning voice off looses your current channel -- this makes sure the UI isn't out of sync when you re-enable it.
 			LLVoiceChannel::getCurrentVoiceChannel()->deactivate();
 		}
 	}
@@ -5867,9 +5808,7 @@ void LLVoiceClient::setVoiceEnabled(bool enabled)
 
 bool LLVoiceClient::voiceEnabled()
 {
-	static const LLCachedControl<bool> enable_voice_chat("EnableVoiceChat",false);
-	static const LLCachedControl<bool> cmd_line_disable_voice("CmdLineDisableVoice",false);
-	return enable_voice_chat && !cmd_line_disable_voice;
+	return gSavedSettings.getBOOL("EnableVoiceChat") && !gSavedSettings.getBOOL("CmdLineDisableVoice");
 }
 
 void LLVoiceClient::setLipSyncEnabled(BOOL enabled)
@@ -5888,16 +5827,6 @@ BOOL LLVoiceClient::lipSyncEnabled()
 	{
 		return FALSE;
 	}
-}
-
-BOOL LLVoiceClient::getPosLocked()
-{
-	return mPosLocked;
-}
-
-void LLVoiceClient::setPosLocked(bool locked)
-{
-	mPosLocked = locked;
 }
 
 void LLVoiceClient::setUsePTT(bool usePTT)
