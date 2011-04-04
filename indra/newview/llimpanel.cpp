@@ -1108,6 +1108,11 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
+	if(mOtherParticipantUUID.isNull()) 
+	{
+		llwarns << "Other participant is NULL" << llendl;
+	}
+		
     // [Ansariel: Display name support]
     sFloaterIMPanels.insert(this);
     // [/Ansariel: Display name support]
@@ -1144,6 +1149,11 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
+	if(mOtherParticipantUUID.isNull()) 
+	{
+		llwarns << "Other participant is NULL" << llendl;
+	}
+	
     // [Ansariel: Display name support]
     sFloaterIMPanels.insert(this);
     // [/Ansariel: Display name support]

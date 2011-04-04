@@ -578,13 +578,6 @@ void LLIMMgr::addMessage(
 		other_participant_id = LLUUID::null;
 	}
 
-	//This is for InWorldz glitch.
-	if( other_participant_id == session_id )
-	{
-		other_participant_id = LLUUID::null;
-	}
-	
-
 	LLFloaterIMPanel* floater;
 	LLUUID new_session_id = session_id;
 	if (new_session_id.isNull())
@@ -679,7 +672,17 @@ void LLIMMgr::addMessage(
 	}
 	else
 	{
-		floater->addHistoryLine(msg, color, true, other_participant_id, from); // Insert linked name to front of message
+		
+		if( other_participant_id == session_id )
+		{
+			// The name can be bogus on InWorldz
+			floater->addHistoryLine(msg, color, true, LLUUID::null, from);
+		}
+		else 
+		{
+			// Insert linked name to front of message
+			floater->addHistoryLine(msg, color, true, other_participant_id, from);
+		}
 	}
 
 	LLFloaterChatterBox* chat_floater = LLFloaterChatterBox::getInstance(LLSD());
