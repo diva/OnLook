@@ -1376,11 +1376,15 @@ bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, op
 	for (compno = 0; compno < tile->numcomps; ++compno) {
 		opj_tcd_tilecomp_t* tilec = &tile->comps[compno];
 		/* The +3 is headroom required by the vectorized DWT */
-		tilec->data = (int*) opj_aligned_malloc((((tilec->x1 - tilec->x0) * (tilec->y1 - tilec->y0))+3) * sizeof(int));
-		if(tilec->data)
-			t1_decode_cblks(t1, tilec, &tcd->tcp->tccps[compno]);
-		else
-			opj_event_msg(tcd->cinfo, EVT_ERROR, "tcd_decode: tile size invalid\n");
+		tilec->datasize=(((tilec->x1 - tilec->x0) * (tilec->y1 - tilec->y0))+3) * sizeof(int);
+		tilec->data = (int*) opj_aligned_malloc(tilec->datasize);
+		if(!t1_decode_cblks(t1, tilec, &tcd->tcp->tccps[compno]))
+		{
+			 opj_event_msg(tcd->cinfo, EVT_ERROR, "Error decoding tile.\n");
+	                opj_aligned_free(tilec->data);
+			t1_destroy(t1);
+			return false;
+		}
 	}
 	t1_destroy(t1);
 	t1_time = opj_clock() - t1_time;
@@ -1457,7 +1461,8 @@ bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, op
 
 		int i, j;
 		if(!imagec->data){
-			imagec->data = (int*) opj_malloc(imagec->w * imagec->h * sizeof(int));
+			imagec->datasize = imagec->w * imagec->h * sizeof(int);
+			imagec->data = (int*) opj_malloc(imagec->datasize);
 		}
 		if(tcd->tcp->tccps[compno].qmfbid == 1) {
 			for(j = res->y0; j < res->y1; ++j) {
@@ -1468,6 +1473,12 @@ bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, op
 				}
 			}
 		}else{
+			if((imagec->datasize - (((res->x1) - offset_x) + ((res->y1) - offset_y) * w)) < 1)
+			{
+				opj_event_msg(tcd->cinfo, EVT_ERROR, "tcd_decode: Tile not large enough for data\n");
+		                opj_aligned_free(tilec->data);
+				return false;
+			}
 			for(j = res->y0; j < res->y1; ++j) {
 				for(i = res->x0; i < res->x1; ++i) {
 					float tmp = ((float*)tilec->data)[i - res->x0 + (j - res->y0) * tw];
