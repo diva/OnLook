@@ -32,7 +32,10 @@
 #ifndef OPENJPEG_H
 #define OPENJPEG_H
 
-#define OPENJPEG_VERSION "1.4.0.635"
+// Linden Labs Secondlife code requires this to be defined.
+// It was removed in openjpeg 1.4.0 stable release.
+//   --Techwolf Lupindo
+#define OPENJPEG_VERSION "1.4.0.697"
 
 /* 
 ==========================================================
@@ -40,7 +43,7 @@
 ==========================================================
 */
 
-#if defined(OPJ_STATIC) || !(defined(WIN32) || defined(__WIN32__))
+#if defined(OPJ_STATIC) || !defined(_WIN32)
 #define OPJ_API
 #define OPJ_CALLCONV
 #else
@@ -53,12 +56,12 @@ that uses this DLL. This way any other project whose source files include this f
 OPJ_API functions as being imported from a DLL, wheras this DLL sees symbols
 defined with this macro as being exported.
 */
-#ifdef OPJ_EXPORTS
+#if defined(OPJ_EXPORTS) || defined(DLL_EXPORT)
 #define OPJ_API __declspec(dllexport)
 #else
 #define OPJ_API __declspec(dllimport)
 #endif /* OPJ_EXPORTS */
-#endif /* !OPJ_STATIC || !WIN32 */
+#endif /* !OPJ_STATIC || !_WIN32 */
 
 #ifndef __cplusplus
 #if defined(HAVE_STDBOOL_H)
@@ -535,6 +538,8 @@ typedef struct opj_image_comp {
 	int factor;
 	/** image component data */
 	int *data;
+	/** image datablock size */
+	int datasize;
 } opj_image_comp_t;
 
 /** 
@@ -555,6 +560,10 @@ typedef struct opj_image {
 	OPJ_COLOR_SPACE color_space;
 	/** image components */
 	opj_image_comp_t *comps;
+	/** 'restricted' ICC profile */
+	unsigned char *icc_profile_buf;
+	/** size of ICC profile */
+	int icc_profile_len;
 } opj_image_t;
 
 /**
