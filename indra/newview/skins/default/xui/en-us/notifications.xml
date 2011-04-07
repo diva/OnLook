@@ -5377,6 +5377,13 @@ The complete contents you are offering are not yet locally available. Please try
 
   <notification
    icon="notifytip.tga"
+   name="IncompleteInventoryItem"
+   type="notifytip">
+The item you are accessing is not yet locally available. Please try again in a minute.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
    name="CannotModifyProtectedCategories"
    type="notifytip">
 You cannot modify protected categories.
