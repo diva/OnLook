@@ -1180,6 +1180,8 @@ void LLViewerFetchedTexture::init(bool firstinit)
 	mForSculpt = FALSE ;
 	mIsFetched = FALSE ;
 
+	if(!firstinit && mCachedRawImage.notNull())
+		mCachedRawImage->setInCache(false);
 	mCachedRawImage = NULL ;
 	mCachedRawDiscardLevel = -1 ;
 	mCachedRawImageReady = FALSE ;
@@ -1228,6 +1230,8 @@ void LLViewerFetchedTexture::cleanup()
 	
 	// Clean up image data
 	destroyRawImage();
+	if(mCachedRawImage.notNull())
+		mCachedRawImage->setInCache(false);
 	mCachedRawImage = NULL ;
 	mCachedRawDiscardLevel = -1 ;
 	mCachedRawImageReady = FALSE ;
@@ -1354,6 +1358,8 @@ void LLViewerFetchedTexture::addToCreateTexture()
 		//discard the cached raw image and the saved raw image
 		mCachedRawImageReady = FALSE ;
 		mCachedRawDiscardLevel = -1 ;
+		if(mCachedRawImage.notNull())
+			mCachedRawImage->setInCache(false);
 		mCachedRawImage = NULL ;
 		mSavedRawDiscardLevel = -1 ;
 		mSavedRawImage = NULL ;
@@ -2617,7 +2623,11 @@ void LLViewerFetchedTexture::setCachedRawImage(S32 discard_level, LLImageRaw* im
 {
 	if(imageraw != mRawImage.get())
 	{
+		if(mCachedRawImage.notNull())
+			mCachedRawImage->setInCache(false);
 		mCachedRawImage = imageraw ;
+		if(mCachedRawImage.notNull())
+			mCachedRawImage->setInCache(true);
 		mCachedRawDiscardLevel = discard_level ;
 		mCachedRawImageReady = TRUE ;
 	}
@@ -2674,7 +2684,11 @@ void LLViewerFetchedTexture::setCachedRawImage()
 			
 			mRawImage->scale(w >> i, h >> i) ;
 		}
+		if(mCachedRawImage.notNull())
+			mCachedRawImage->setInCache(false);
 		mCachedRawImage = mRawImage ;
+		if(mCachedRawImage.notNull())
+			mCachedRawImage->setInCache(true);
 		mRawDiscardLevel += i ;
 		mCachedRawDiscardLevel = mRawDiscardLevel ;			
 	}

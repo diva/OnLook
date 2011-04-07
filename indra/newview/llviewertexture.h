@@ -495,6 +495,7 @@ private:
 
 	void saveRawImage() ;
 	void setCachedRawImage() ;
+	void setCachedRawImagePtr(LLImageRaw *pRawImage) ;
 
 	//for atlas
 	/*void resetFaceAtlas() ;
