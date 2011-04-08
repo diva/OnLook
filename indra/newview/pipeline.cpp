@@ -146,21 +146,23 @@ const LLMatrix4* gGLLastMatrix = NULL;
 std::string gPoolNames[] = 
 {
 	// Correspond to LLDrawpool enum render type
-	"NONE",
 	"POOL_SIMPLE",
-	"POOL_TERRAIN",
+	"POOL_TERRAIN",	
 	"POOL_BUMP",
 	"POOL_TREE",
 	"POOL_SKY",
 	"POOL_WL_SKY",
 	"POOL_GROUND",
-	"POOL_INVISIBLE",
-	"POOL_AVATAR",
-	"POOL_WATER",
 	"POOL_GRASS",
 	"POOL_FULLBRIGHT",
+	"POOL_BUMP",
+	"POOL_INVISIBLE",
+	"POOL_AVATAR",
+	"POOL_VOIDWATER",
+	"POOL_WATER",
 	"POOL_GLOW",
 	"POOL_ALPHA",
+	"POOL_INVALID_OUCH_CATASTROPHE_ERROR"
 };
 
 U32 nhpo2(U32 v) 
