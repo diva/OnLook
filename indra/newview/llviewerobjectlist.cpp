@@ -1092,6 +1092,9 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 						gColors.getColor( "NetMapGroupOwnBelowWater" );
 
 	F32 max_radius = gSavedSettings.getF32("MiniMapPrimMaxRadius");
+	
+	static const F32 MAX_ALTITUDE_ABOVE_SELF = 256.f;
+	F32 max_altitude = gAgent.getPositionGlobal()[VZ] + MAX_ALTITUDE_ABOVE_SELF;
 
 	for (vobj_list_t::iterator iter = mMapObjects.begin(); iter != mMapObjects.end(); ++iter)
 	{
@@ -1104,11 +1107,12 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 		{
 			continue;
 		}
+		
 		const LLVector3& scale = objectp->getScale();
 		const LLVector3d pos = objectp->getPositionGlobal();
 		const F64 water_height = F64( objectp->getRegion()->getWaterHeight() );
 		// LLWorld::getInstance()->getWaterHeight();
-
+		
 		F32 approx_radius = (scale.mV[VX] + scale.mV[VY]) * 0.5f * 0.5f * 1.3f;  // 1.3 is a fudge
 
 		// Limit the size of megaprims so they don't blot out everything on the minimap.
@@ -1124,7 +1128,7 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 			{
 				approx_radius = MIN_RADIUS_FOR_OWNED_OBJECTS;
 			}
-
+			
 			if( pos.mdV[VZ] >= water_height )
 			{
 				if ( objectp->permGroupOwner() )
@@ -1133,8 +1137,8 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 				}
 				else
 				{
-				color = you_own_above_water_color;
-			}
+					color = you_own_above_water_color;
+				}
 			}
 			else
 			{
@@ -1142,14 +1146,17 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 				{
 					color = group_own_below_water_color;
 				}
-			else
-			{
-				color = you_own_below_water_color;
+				else
+				{
+					color = you_own_below_water_color;
+				}
 			}
 		}
+		else if ( pos[VZ] > max_altitude )
+		{
+			continue;
 		}
-		else
-		if( pos.mdV[VZ] < water_height )
+		else if ( pos.mdV[VZ] < water_height )
 		{
 			color = below_water_color;
 		}
