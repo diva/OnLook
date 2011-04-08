@@ -274,6 +274,7 @@ class WindowsManifest(ViewerManifest):
         try:
           if self.prefix("../../libraries/i686-win32/lib/release/msvcrt", dst=""):
             self.path("*.dll")
+            self.path("*.manifest")
             self.end_prefix()
         except:
           pass
