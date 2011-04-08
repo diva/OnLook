@@ -252,6 +252,7 @@
 #include "llfloaterdisplayname.h"
 #include "llavatarnamecache.h"
 #include "floaterao.h"
+#include "slfloatermediafilter.h"
 
 #include "hippogridmanager.h"
 
@@ -6470,6 +6471,10 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterMute::toggleInstance();
 		}
+		else if (floater_name == "media filter")
+		{
+			SLFloaterMediaFilter::toggleInstance();
+		}
 		else if (floater_name == "camera controls")
 		{
 			LLFloaterCamera::toggleInstance();
@@ -6628,6 +6633,10 @@ class LLFloaterVisible : public view_listener_t
 		else if (floater_name == "mute list")
 		{
 			new_value = LLFloaterMute::instanceVisible();
+		}
+		else if (floater_name == "media filter")
+		{
+			new_value = SLFloaterMediaFilter::instanceVisible();
 		}
 		else if (floater_name == "camera controls")
 		{

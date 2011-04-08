@@ -78,6 +78,9 @@ public:
 	static void onClickResetView(void* data);
  	static void onClickFlycam(void* data);
 
+	static void audioFilterPlay();
+	static void audioFilterStop();
+
 	//static media helper functions
 	static void toggleMediaPlay(void*);
 	static void toggleMusicPlay(void*);

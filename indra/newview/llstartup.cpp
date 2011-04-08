@@ -2846,6 +2846,8 @@ bool idle_startup()
 	{
 		set_startup_status(1.0, "", "");
 
+		LLViewerParcelMedia::loadDomainFilterList();
+
 		// Let the map know about the inventory.
 		if(gFloaterWorldMap)
 		{
