@@ -135,10 +135,10 @@ void t1_encode_cblks(opj_t1_t *t1, opj_tcd_tile_t *tile, opj_tcp_t *tcp);
 /**
 Decode the code-blocks of a tile
 @param t1 T1 handle
-@param tilec The tile to decode
-@param tccp Tile coding parameters
+@param tile The tile to decode
+@param tcp Tile coding parameters
 */
-bool t1_decode_cblks(opj_t1_t* t1, opj_tcd_tilecomp_t* tilec, opj_tccp_t* tccp);
+void t1_decode_cblks(opj_t1_t* t1, opj_tcd_tilecomp_t* tilec, opj_tccp_t* tccp);
 /* ----------------------------------------------------------------------- */
 /*@}*/
 

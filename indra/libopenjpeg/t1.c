@@ -240,7 +240,6 @@ Encode 1 code-block
 @param stepsize
 @param cblksty Code-block style
 @param numcomps
-@param mct
 @param tile
 */
 static void t1_encode_cblk(
@@ -1089,14 +1088,27 @@ static double t1_getwmsedec(
 		int numcomps,
 		int mct)
 {
-	double w1, w2, wmsedec;
+	double w1 = 1, w2, wmsedec;
+	
+	// Prevent running an MCT on more than 3 components. NB openjpeg v2.0 will support this via
+	// custom MCT tables that can be passed as encode parameters, 1.3 cannot support this as it
+	// uses a static table of 3 entries and there for can only cope with 3 components with out an
+	// array overflow
+
+	if(numcomps==3) {
+	        if (qmfbid == 1) {
+			w1 = (numcomps > 1) ? mct_getnorm(compno) : 1.0;
+		} else {
+			w1 = (numcomps > 1) ? mct_getnorm_real(compno) : 1.0;	
+		}
+	}	
+
 	if (qmfbid == 1) {
-		w1 = (mct && numcomps==3) ? mct_getnorm(compno) : 1.0;
 		w2 = dwt_getnorm(level, orient);
 	} else {			/* if (qmfbid == 0) */
-		w1 = (mct && numcomps==3) ? mct_getnorm_real(compno) : 1.0;
 		w2 = dwt_getnorm_real(level, orient);
 	}
+
 	wmsedec = w1 * w2 * stepsize * (1 << bpno);
 	wmsedec *= wmsedec * nmsedec / 8192.0;
 	
@@ -1488,7 +1500,7 @@ void t1_encode_cblks(
 	} /* compno  */
 }
 
-bool t1_decode_cblks(
+void t1_decode_cblks(
 		opj_t1_t* t1,
 		opj_tcd_tilecomp_t* tilec,
 		opj_tccp_t* tccp)
@@ -1558,28 +1570,16 @@ bool t1_decode_cblks(
 							}
 						}
 					} else {		/* if (tccp->qmfbid == 0) */
-						int chkSize=tilec->datasize - ((y * tile_w)+x);
-						if((chkSize < (cblk_h * cblk_w)) || (chkSize < (((cblk_h -1 ) * tile_w)+cblk_w)))
-						{
-							opj_free(cblk->data);
-							opj_free(cblk->segs);
-							opj_free(precinct->cblks.dec);
-							opj_event_msg(t1->cinfo, EVT_ERROR, "Block does not fit into tile.\n");
-							return false;
-						}
-						else
-						{
-							float* restrict tiledp = (float*) &tilec->data[(y * tile_w) + x];
-							for (j = 0; j < cblk_h; ++j) {
-								float* restrict tiledp2 = tiledp;
-								for (i = 0; i < cblk_w; ++i) {
-									float tmp = *datap * band->stepsize;
-									*tiledp2 = tmp;
-									datap++;
-									tiledp2++;
-								}
-								tiledp += tile_w;
+						float* restrict tiledp = (float*) &tilec->data[(y * tile_w) + x];
+						for (j = 0; j < cblk_h; ++j) {
+							float* restrict tiledp2 = tiledp;
+							for (i = 0; i < cblk_w; ++i) {
+								float tmp = *datap * band->stepsize;
+								*tiledp2 = tmp;
+								datap++;
+								tiledp2++;
 							}
+							tiledp += tile_w;
 						}
 					}
 					opj_free(cblk->data);
@@ -1589,6 +1589,5 @@ bool t1_decode_cblks(
 			} /* precno */
 		} /* bandno */
 	} /* resno */
-	return true;
 }
 
