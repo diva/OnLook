@@ -1407,11 +1407,6 @@ bool tcd_decode_tile(opj_tcd_t *tcd, unsigned char *src, int len, int tileno, op
 			}
 		}
 
-		if(!tilec->data) {
-				opj_event_msg(tcd->cinfo, EVT_ERROR, "Error decoding tile. null data\n");
-				return false;
-		}
-
 		numres2decode = tcd->image->comps[compno].resno_decoded + 1;
 		if(numres2decode > 0){
 			if (tcd->tcp->tccps[compno].qmfbid == 1) {
