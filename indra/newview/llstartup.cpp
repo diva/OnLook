@@ -1497,7 +1497,7 @@ bool idle_startup()
 			}
 			else
 			{
-				emsg << "Unable to connect to " << LLAppViewer::instance()->getSecondLifeTitle() << ".\n";
+				emsg << "Unable to connect to " << gHippoGridManager->getCurrentGrid()->getGridName() << ".\n";
 				emsg << LLUserAuth::getInstance()->errorMessage();
 			}
 			break;
@@ -2845,6 +2845,8 @@ bool idle_startup()
 	if (STATE_CLEANUP == LLStartUp::getStartupState())
 	{
 		set_startup_status(1.0, "", "");
+
+		LLViewerParcelMedia::loadDomainFilterList();
 
 		// Let the map know about the inventory.
 		if(gFloaterWorldMap)

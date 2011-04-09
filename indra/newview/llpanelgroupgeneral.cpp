@@ -254,7 +254,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	LLStringUtil::format_map_t args;
 	args["[GROUPCREATEFEE]"] = gHippoGridManager->getConnectedGrid()->getGroupCreationFee();
 	mIncompleteMemberDataStr = getString("incomplete_member_data_str");
-	mConfirmGroupCreateStr = getString("confirm_group_create_str");
+	mConfirmGroupCreateStr = getString("confirm_group_create_str", args);
 
 	// If the group_id is null, then we are creating a new group
 	if (mGroupID.isNull())

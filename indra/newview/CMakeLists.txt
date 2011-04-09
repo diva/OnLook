@@ -64,6 +64,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    slfloatermediafilter.cpp
     floaterlocalassetbrowse.cpp
     aoremotectrl.cpp
     floaterao.cpp
@@ -536,6 +537,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    slfloatermediafilter.h
     floaterlocalassetbrowse.h
     aoremotectrl.h
     floaterao.h
