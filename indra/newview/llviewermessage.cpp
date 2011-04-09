@@ -3082,6 +3082,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 							avatar->clearNameFromChat();
 						} else if (mesg[39] == ' ') {
 							avatar->setNameFromChat(mesg.substr(40));
+						}
 					}
 					return;
 				} else if (mesg.substr(2, 9) == " floater ") {
