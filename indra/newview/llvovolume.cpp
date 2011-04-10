@@ -2766,7 +2766,9 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				// can we safely treat this as an alpha mask?
 				if (facep->canRenderAsMask())
 				{
-					if (te->getFullbright())
+					const LLDrawable* drawablep = facep->getDrawable();
+					const LLVOVolume* vobj = drawablep ? drawablep->getVOVolume() : NULL;
+					if (te->getFullbright() || (vobj && vobj->isHUDAttachment()))
 					{
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK);
 					}
