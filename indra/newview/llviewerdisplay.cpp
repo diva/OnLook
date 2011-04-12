@@ -680,7 +680,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLState::checkTextureChannels();
 		LLGLState::checkClientArrays();
 
-		BOOL to_texture = gPipeline.canUseVertexShaders() && (LLPipeline::sRenderDeferred ||	LLPipeline::sRenderGlow);
+		BOOL to_texture = gPipeline.canUseVertexShaders() && (LLPipeline::sRenderDeferred || (LLPipeline::sRenderGlow && !gSnapshot));
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Swap");
 		
