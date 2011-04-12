@@ -1478,7 +1478,13 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu->append(new LLMenuItemCheckGL("Sculpt",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_SCULPTED));
-		
+	sub_menu->append(new LLMenuItemCheckGL("Build Queue",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_BUILD_QUEUE));
+	sub_menu->append(new LLMenuItemCheckGL("Update Types",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_UPDATE_TYPE));
+
 	sub_menu->append(new LLMenuItemCallGL("Vectorize Perf Test", &run_vectorize_perf_test));
 
 	sub_menu = new LLMenuGL("Render Tests");
