@@ -3886,7 +3886,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				(title && mTitle != title->getString()) ||
 				(is_away != mNameAway || is_busy != mNameBusy || is_muted != mNameMute) ||
 				is_appearance != mNameAppearance || client != mClientName ||
-				mNameFromAttachment != nameplate)
+				mNameFromAttachment != nameplate ||
+				mNameFromChatChanged)
 			{
 				mRenderedName = usedname;
 				mNameFromAttachment = nameplate;
@@ -3938,6 +3939,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 						line = "%f\n%l";
 					}
 				}
+				mNameFromChatChanged =  false;
 
 				// replace first name, last name and title
 				while ((index = line.find("%f")) != std::string::npos)

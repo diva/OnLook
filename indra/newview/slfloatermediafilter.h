@@ -1,10 +1,11 @@
 /** 
- * @file llvoiceremotectrl.h
- * @brief A remote control for voice chat
+ * @file slfloatermediafilter.h
+ * @brief The SLFloaterMediaFilter class declaration
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
+ * $LicenseInfo:firstyear=2011&license=viewergpl$
  * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
+ * Copyright (c) 2011, Sione Lomu
+ * with debugging and improvements by Henri Beauchamp
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -30,35 +31,42 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLVOICEREMOTECTRL_H
-#define LL_LLVOICEREMOTECTRL_H
+#ifndef LL_SLFLOATERMEDIAFILTER_H
+#define LL_SLFLOATERMEDIAFILTER_H
 
-#include "llpanel.h"
+#include "llfloater.h"
 
+class LLScrollListCtrl;
 class LLButton;
 
-class LLVoiceRemoteCtrl : public LLPanel
+class SLFloaterMediaFilter : public LLFloater
 {
 public:
-	LLVoiceRemoteCtrl (const std::string& name);
-	virtual ~LLVoiceRemoteCtrl();
+	SLFloaterMediaFilter();
+	BOOL postBuild();
+	virtual void draw();
+	virtual ~SLFloaterMediaFilter();
 
-	/*virtual*/ BOOL postBuild();
-	/*virtual*/ void draw();
+	static void setDirty();
+	static BOOL instanceVisible();
+	static void toggleInstance();
 
-	static void onBtnLock(void* user_data);
-	static void onBtnTalkHeld(void *user_data);
-	static void onBtnTalkReleased(void* user_data);
-	static void onBtnTalkClicked(void* user_data);
-	static void onClickSpeakers(void *user_data);
-	static void onClickPopupBtn(void* user_data);
-	static void onClickVoiceChannel(void* user_data);
-	static void onClickEndCall(void* user_data);
+	static void onClearLists(void*);
+	static void onShowIPs(void*);
+	static void onWhitelistAdd(void*);
+	static void onWhitelistRemove(void*);
+	static void onBlacklistAdd(void*);
+	static void onBlacklistRemove(void*);
+	static void onCommitDomain(void*);
 
-protected:
-	LLButton* mTalkBtn;
-	LLButton* mTalkLockBtn;
-	LLButton* mSpeakersBtn;
+private:
+	static bool sIsWhitelist;
+	static bool sShowIPs;
+	LLScrollListCtrl* mWhitelistSLC;
+	LLScrollListCtrl* mBlacklistSLC;
+	bool mIsDirty;
+
+	static SLFloaterMediaFilter* sInstance;
+
 };
-
-#endif // LL_LLVOICEREMOTECTRL_H
+#endif

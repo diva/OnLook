@@ -622,6 +622,7 @@ BOOL LLWearable::isDirty()
 			const LLUUID& image_id = get_if_there(mTEMap,  te, LLVOAvatar::getDefaultTEImageID((ETextureIndex) te ) );
 			if( avatar_image->getID() != image_id )
 			{
+				llwarns << "image ID " << avatar_image->getID() << " was changed." << llendl;
 				return TRUE;
 			}
 		}

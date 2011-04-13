@@ -35,8 +35,6 @@
 
 #include <csetjmp>
 
-#include "llimage.h"
-
 extern "C" {
 #ifdef LL_STANDALONE
 # include <jpeglib.h>
@@ -46,6 +44,8 @@ extern "C" {
 # include "jpeglib/jerror.h"
 #endif
 }
+
+#include "llimage.h"
 
 class LLImageJPEG : public LLImageFormatted
 {

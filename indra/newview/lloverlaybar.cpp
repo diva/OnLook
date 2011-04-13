@@ -478,6 +478,23 @@ void LLOverlayBar::setCancelTPButtonVisible(BOOL b, const std::string& label)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+void LLOverlayBar::audioFilterPlay()
+{
+	if (gOverlayBar && gOverlayBar->mMusicState != PLAYING)
+	{
+		gOverlayBar->mMusicState = PLAYING;
+	}
+}
+
+void LLOverlayBar::audioFilterStop()
+{
+	if (gOverlayBar && gOverlayBar->mMusicState != STOPPED)
+	{
+		gOverlayBar->mMusicState = STOPPED;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // static media helpers
 // *TODO: Move this into an audio manager abstraction
 //static

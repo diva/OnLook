@@ -528,7 +528,7 @@ BOOL LLInvFVBridge::isClipboardPasteable() const
 
 BOOL LLInvFVBridge::isClipboardPasteableAsLink() const
 {
-	if (!gHippoGridManager->getConnectedGrid()->isSecondLife())
+	if (!gHippoGridManager->getConnectedGrid()->supportsInvLinks())
 	{
 		return FALSE;
 	}
@@ -1382,7 +1382,7 @@ BOOL LLItemBridge::isItemCopyable() const
 	LLViewerInventoryItem* item = getItem();
 	if (item && !item->getIsLinkType())
 	{
-		if(!gHippoGridManager->getConnectedGrid()->isSecondLife()) {
+		if(!gHippoGridManager->getConnectedGrid()->supportsInvLinks()) {
 			return (item->getPermissions().allowCopyBy(gAgent.getID()));
 		} else {
 			// All items can be copied since you can
@@ -2401,7 +2401,7 @@ void LLFolderBridge::folderOptionsMenu()
 			if(!(LLXmlImport::sImportInProgress && LLXmlImport::sImportHasAttachments))
 			{
 			// </edit>
-				if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+				if (gHippoGridManager->getConnectedGrid()->supportsInvLinks())
 					mItems.push_back(std::string("Add To Outfit"));
 				mItems.push_back(std::string("Wear Items"));
 				mItems.push_back(std::string("Replace Outfit"));
@@ -4179,7 +4179,8 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			{
 				items.push_back(std::string("Attach Separator"));
 				items.push_back(std::string("Object Wear"));
-				items.push_back(std::string("Object Add"));
+				if (gHippoGridManager->getConnectedGrid()->supportsInvLinks())
+					items.push_back(std::string("Object Add"));
 				if (!avatarp->canAttachMoreObjects())
 				{
 					disabled_items.push_back(std::string("Object Add"));
@@ -4667,7 +4668,7 @@ void wear_inventory_category(LLInventoryCategory* category, bool copy, bool appe
 
 // *NOTE: hack to get from avatar inventory to avatar
 void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL append, BOOL replace)
-{
+{	
 	// Avoid unintentionally overwriting old wearables.  We have to do
 	// this up front to avoid having to deal with the case of multiple
 	// wearables being dirty.

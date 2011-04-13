@@ -1004,6 +1004,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	BOOL rebuild_binormal = rebuild_pos && mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_BINORMAL);
 
 	const LLTextureEntry *tep = mVObjp->getTE(f);
+	if (!tep) rebuild_color = FALSE;	// can't get color when tep is NULL
 	U8  bump_code = tep ? tep->getBumpmap() : 0;
 
 	if (rebuild_pos)
@@ -1101,9 +1102,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 	}
 
-	LLColor4U color = tep->getColor();
+	LLColor4U color = (tep ? LLColor4U(tep->getColor()) : LLColor4U::white);
 
-	if (rebuild_color)
+	if (rebuild_color)	// FALSE if tep == NULL
 	{
 		if (tep)
 		{

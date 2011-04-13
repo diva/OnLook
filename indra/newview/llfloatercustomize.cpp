@@ -32,6 +32,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "llimagejpeg.h"
 #include "llfloatercustomize.h"
 #include "llfontgl.h"
 #include "llbutton.h"
@@ -71,11 +72,11 @@
 #include "llglheaders.h"
 #include "llui.h"
 #include "llviewermessage.h"
-#include "llimagejpeg.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 
 #include "llfilepicker.h"
+#include "hippogridmanager.h"
 
 using namespace LLVOAvatarDefines;
 
@@ -219,6 +220,13 @@ public:
 			}
 		}
 
+		if(!gHippoGridManager->getConnectedGrid()->supportsInvLinks()) {
+			childSetEnabled("checkbox_use_links", FALSE);
+			childSetValue("checkbox_use_links", FALSE);
+			childSetEnabled("checkbox_use_outfits", FALSE);
+			childSetValue("checkbox_use_outfits", FALSE);
+		}
+		
 		childSetAction("Save", onSave, this ); 
 		childSetAction("Cancel", onCancel, this ); 
 		childSetAction("Check All", onCheckAll, this );

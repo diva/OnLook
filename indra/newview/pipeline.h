@@ -48,7 +48,7 @@
 
 #include <stack>
 
-class LLViewerTexture;
+class LLViewerImage;
 class LLEdge;
 class LLFace;
 class LLViewerObject;
@@ -107,15 +107,15 @@ public:
 
 	/// @brief Get a draw pool from pool type (POOL_SIMPLE, POOL_MEDIA) and texture.
 	/// @return Draw pool, or NULL if not found.
-	LLDrawPool *findPool(const U32 pool_type, LLViewerTexture *tex0 = NULL);
+	LLDrawPool *findPool(const U32 pool_type, LLViewerImage *tex0 = NULL);
 
 	/// @brief Get a draw pool for faces of the appropriate type and texture.  Create if necessary.
 	/// @return Always returns a draw pool.
-	LLDrawPool *getPool(const U32 pool_type, LLViewerTexture *tex0 = NULL);
+	LLDrawPool *getPool(const U32 pool_type, LLViewerImage *tex0 = NULL);
 
 	/// @brief Figures out draw pool type from texture entry. Creates pool if necessary.
-	static LLDrawPool* getPoolFromTE(const LLTextureEntry* te, LLViewerTexture* te_image);
-	static U32 getPoolTypeFromTE(const LLTextureEntry* te, LLViewerTexture* imagep);
+	static LLDrawPool* getPoolFromTE(const LLTextureEntry* te, LLViewerImage* te_image);
+	static U32 getPoolTypeFromTE(const LLTextureEntry* te, LLViewerImage* imagep);
 
 	void		 addPool(LLDrawPool *poolp);	// Only to be used by LLDrawPool classes for splitting pools!
 	void		 removePool( LLDrawPool* poolp );
@@ -155,7 +155,7 @@ public:
 		);
 
 	// Something about these textures has changed.  Dirty them.
-	void        dirtyPoolObjectTextures(const std::set<LLViewerFetchedTexture*>& textures);
+	void        dirtyPoolObjectTextures(const std::set<LLViewerImage*>& textures);
 
 	void        resetDrawOrders();
 
@@ -397,7 +397,9 @@ public:
 		RENDER_DEBUG_SHADOW_FRUSTA		= 0x0040000,
 		RENDER_DEBUG_SCULPTED           = 0x0080000,
 		RENDER_DEBUG_AVATAR_VOLUME      = 0x0100000,
-		RENDER_DEBUG_AGENT_TARGET       = 0x0200000,
+		RENDER_DEBUG_BUILD_QUEUE		= 0x0200000,
+		RENDER_DEBUG_AGENT_TARGET       = 0x0400000,
+		RENDER_DEBUG_UPDATE_TYPE		= 0x0800000,
 	};
 
 public:
@@ -601,9 +603,7 @@ public:
 protected:
 	std::vector<LLFace*>		mSelectedFaces;
 
-	LLPointer<LLViewerTexture>	mFaceSelectImagep;
-	LLPointer<LLViewerTexture>	mBloomImagep;
-	LLPointer<LLViewerTexture>	mBloomImage2p;
+	LLPointer<LLViewerImage>	mFaceSelectImagep;
 	
 	U32						mLightMask;
 	U32						mLightMovingMask;
@@ -620,6 +620,7 @@ public:
 };
 
 void render_bbox(const LLVector3 &min, const LLVector3 &max);
+void render_hud_elements();
 
 extern LLPipeline gPipeline;
 extern BOOL gRenderForSelect;

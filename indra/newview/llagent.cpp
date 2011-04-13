@@ -7367,9 +7367,10 @@ void LLAgent::makeNewOutfit(
 		return;
 	}
 
-	BOOL fUseLinks = !gSavedSettings.getBOOL("UseInventoryLinks") &&
-					 gHippoGridManager->getConnectedGrid()->isSecondLife();
-	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders");
+	BOOL fUseLinks = !gSavedSettings.getBOOL("UseInventoryLinks") ||
+					 !gHippoGridManager->getConnectedGrid()->supportsInvLinks();
+	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders") &&
+					   gHippoGridManager->getConnectedGrid()->supportsInvLinks();
 
 	LLAssetType::EType typeDest = (fUseOutfits) ? LLAssetType::AT_MY_OUTFITS : LLAssetType::AT_CLOTHING;
 	LLAssetType::EType typeFolder = (fUseOutfits) ? LLAssetType::AT_OUTFIT : LLAssetType::AT_NONE;
@@ -8482,10 +8483,11 @@ void LLAgent::userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_
 		}
 
 		const LLInventoryItem* item = obj_item_array.get(i).get();
+		bool replace = !gHippoGridManager->getConnectedGrid()->supportsInvLinks();
 		msg->nextBlockFast(_PREHASH_ObjectData );
 		msg->addUUIDFast(_PREHASH_ItemID, item->getLinkedUUID());
 		msg->addUUIDFast(_PREHASH_OwnerID, item->getPermissions().getOwner());
-		msg->addU8Fast(_PREHASH_AttachmentPt, 0 | ATTACHMENT_ADD);	// Wear at the previous or default attachment point
+		msg->addU8Fast(_PREHASH_AttachmentPt, replace? 0 : ATTACHMENT_ADD);	// Wear at the previous or default attachment point
 		pack_permissions_slam(msg, item->getFlags(), item->getPermissions());
 		msg->addStringFast(_PREHASH_Name, item->getName());
 		msg->addStringFast(_PREHASH_Description, item->getDescription());

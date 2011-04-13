@@ -252,6 +252,7 @@
 #include "llfloaterdisplayname.h"
 #include "llavatarnamecache.h"
 #include "floaterao.h"
+#include "slfloatermediafilter.h"
 
 #include "hippogridmanager.h"
 
@@ -1477,7 +1478,13 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	sub_menu->append(new LLMenuItemCheckGL("Sculpt",	&LLPipeline::toggleRenderDebug, NULL,
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_SCULPTED));
-		
+	sub_menu->append(new LLMenuItemCheckGL("Build Queue",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_BUILD_QUEUE));
+	sub_menu->append(new LLMenuItemCheckGL("Update Types",	&LLPipeline::toggleRenderDebug, NULL,
+													&LLPipeline::toggleRenderDebugControl,
+													(void*)LLPipeline::RENDER_DEBUG_UPDATE_TYPE));
+
 	sub_menu->append(new LLMenuItemCallGL("Vectorize Perf Test", &run_vectorize_perf_test));
 
 	sub_menu = new LLMenuGL("Render Tests");
@@ -6470,6 +6477,10 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterMute::toggleInstance();
 		}
+		else if (floater_name == "media filter")
+		{
+			SLFloaterMediaFilter::toggleInstance();
+		}
 		else if (floater_name == "camera controls")
 		{
 			LLFloaterCamera::toggleInstance();
@@ -6628,6 +6639,10 @@ class LLFloaterVisible : public view_listener_t
 		else if (floater_name == "mute list")
 		{
 			new_value = LLFloaterMute::instanceVisible();
+		}
+		else if (floater_name == "media filter")
+		{
+			new_value = SLFloaterMediaFilter::instanceVisible();
 		}
 		else if (floater_name == "camera controls")
 		{

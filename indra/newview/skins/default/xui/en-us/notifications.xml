@@ -121,12 +121,66 @@
   </template>
 
   <notification
+   icon="alert.tga"
+   name="MediaAlert"
+   type="alert">
+The owner of this parcel has requested the following [TYPE] URL to be loaded by your viewer:
+
+[URL]
+
+You may choose to allow or deny the corresponding domain or in-world scripted object server:
+
+[DOMAIN]
+
+"Allow" and "Deny" apply only for this session, while "Blacklist" and "Whitelist" apply forever.
+   <form name="form">
+    <button
+	 index="0"
+	 name="Allow"
+	 text="Allow"/>
+	<button
+	 index="1"
+	 name="Deny"
+	 text="Deny"/>
+	<button
+	 index="2"
+	 name="Blacklist"
+	 text="Blacklist"/>
+	<button
+	 index="3"
+	 name="Whitelist"
+	 text="Whitelist"/>
+   </form>
+  </notification>
+
+  <notification
+   icon="alert.tga"
+   name="MediaListed"
+   type="alert">
+Media/audio URLs for [DOMAIN] now [LISTED]
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="MediaBlocked"
+   type="notifytip">
+Media/audio URL blocked for [DOMAIN]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="MediaFiltersCleared"
+   type="alertmodal">
+The media filters have been cleared
+  </notification>
+
+  <notification
    functor="GenericAcknowledge"
    icon="alertmodal.tga"
    name="MissingAlert"
    label="Unknown Alert Message"
    type="alertmodal">
-Your version of Singularity Viewer does not know how to display the alert message it just received.
+Your version of [VIEWER_NAME] does not know how to display the alert message it just received.
 
 Error details: The alert called &apos;[_NAME]&apos; was not found in notifications.xml.
     <usetemplate
@@ -190,7 +244,7 @@ No tutorial is currently available.
    icon="alertmodal.tga"
    name="BadInstallation"
    type="alertmodal">
-An error occurred while updating Singularity Viewer. Please download the latest version from the official download site or use the Linden Lab SecondLife Viewer from secondlife.com.
+An error occurred while updating [VIEWER_NAME]. Please download the latest version from the official download site.
     <usetemplate
      name="okbutton"
      yestext="Ok"/>
@@ -465,7 +519,7 @@ Selecting &quot;Show in Search&quot; will show:
    type="alertmodal">
 You can propose to another Resident or dissolve an existing partnership through the [SECOND_LIFE] website.
 
-Go to the Second Life web site for more information on partnering?
+Go to the [GRID_NAME] web site for more information on partnering?
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
@@ -548,7 +602,7 @@ Your selling price will be [CURRENCY][SALE_PRICE] and will be authorized for sal
    icon="alertmodal.tga"
    name="ConfirmLandSaleToAnyoneChange"
    type="alertmodal">
-ATTENTION: Clicking &apos;sell to anyone&apos; makes your land available to the entire Second Life community, even those not in this region.
+ATTENTION: Clicking &apos;sell to anyone&apos; makes your land available to the entire [GRID_NAME] community, even those not in this region.
 
 The selected [LAND_SIZE] m² land is being set for sale.
 Your selling price will be [CURRENCY][SALE_PRICE] and will be authorized for sale to [NAME].
@@ -832,13 +886,22 @@ You can not wear that item because it has not yet loaded. Please try again in a 
    name="MustHaveAccountToLogIn"
    type="alertmodal">
 Oops! Something was left blank.
-You need to enter both the First and Last name of your avatar.
+You need to enter the First and Last name, or Username of your avatar.
 
-You need an account to enter [SECOND_LIFE]. Would you like to create one now?
+You need an account to enter [GRID_NAME]. Would you like to create one now?
     <usetemplate
      name="okcancelbuttons"
      notext="Try again"
      yestext="Create a new account"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="MustHaveAccountToLogInNoLinks"
+   type="alertmodal">
+You need to enter the First and Last name, or Username of your avatar.
+
+You need an account to enter [GRID_NAME].
   </notification>
 
   <notification
@@ -1153,7 +1216,7 @@ Unable to write file [[FILE]]
    icon="alertmodal.tga"
    name="UnsupportedHardware"
    type="alertmodal">
-Warning: Your system does not meet Second Life minimum system requirements. If you continue using Singularity Viewer, you may experience poor performance. Linden Lab cannot provide technical support for unsupported system configurations.
+Warning: Your system does not meet [VIEWER_NAME] minimum system requirements. If you continue using [VIEWER_NAME], you may experience poor performance. [GRID_OWNER] cannot provide technical support for unsupported system configurations.
 
     MINSPECS
     Do you wish to visit [_URL] for more information?
@@ -1173,7 +1236,7 @@ Warning: Your system does not meet Second Life minimum system requirements. If y
    name="UnknownGPU"
    type="alertmodal">
 Your system contains a graphics card that is unknown to us at this time.
-This is often the case with new hardware we haven&apos;t had a chance to test.  Singularity Viewer will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
+This is often the case with new hardware we haven&apos;t had a chance to test.  [VIEWER_NAME] will most likely run properly, but you may need to adjust your graphics settings to something more appropriate.
 (Edit menu &gt; Preferences &gt; Graphics).
     <form name="form">
       <ignore name="ignore"
@@ -1511,7 +1574,7 @@ Corrupt resource file: [FILE]
    icon="alertmodal.tga"
    name="UnknownResourceFileVersion"
    type="alertmodal">
-Unknown Linden resource file version in file: [FILE]
+Unknown resource file version in file: [FILE]
   </notification>
 
   <notification
@@ -1786,7 +1849,7 @@ Cannot find the region this land is in.
    icon="alertmodal.tga"
    name="CannotCloseFloaterBuyLand"
    type="alertmodal">
-You cannot close the Buy Land window until Second Life estimates the price of this transaction.
+You cannot close the Buy Land window until [GRID_NAME] estimates the price of this transaction.
   </notification>
 
   <notification
@@ -2470,7 +2533,7 @@ Return to www.secondlife.com to create a new account?
    icon="alertmodal.tga"
    name="LoginPacketNeverReceived"
    type="alertmodal">
-We&apos;re having trouble connecting. There may be a problem with your internet connection or the Second Life servers.
+We&apos;re having trouble connecting. There may be a problem with your internet connection or the [GRID_NAME] servers.
 
 You can either check your internet connection and try again in a few minutes, click Help to connect to our support site, or click Teleport to attempt to teleport home.
     <form name="form">
@@ -2880,7 +2943,7 @@ Visit the [SECOND_LIFE] Wiki for info on how to use the Public Issue Tracker.
    icon="alertmodal.tga"
    name="WebLaunchSupportWiki"
    type="alertmodal">
-Go to the Official Linden Blog, for the latest news and information.
+Go to the Official [GRID_OWNER] Blog, for the latest news and information.
     <usetemplate
      ignoretext="When launching web browser to view the blog"
      name="okcancelignore"
@@ -2953,7 +3016,7 @@ Do you REALLY want to kick all users off the grid?
    icon="alertmodal.tga"
    name="MuteLinden"
    type="alertmodal">
-Sorry, you cannot mute a Linden.
+Sorry, you cannot mute an employee of [GRID_OWNER].
     <usetemplate
      name="okbutton"
      yestext="OK"/>
@@ -3197,7 +3260,7 @@ Type a short announcement which will be sent to everyone currently in your estat
    label="Change Linden Estate"
    name="ChangeLindenEstate"
    type="alert">
-You are about to change a Linden owned estate (mainland, teen grid, orientation, etc.).
+You are about to change a Governance-owned estate (mainland, teen grid, orientation, etc.).
 
 This is EXTREMELY DANGEROUS because it can fundamentally affect the user experience.  On the mainland, it will change thousands of regions and make the spaceserver hiccup.
 
@@ -3213,7 +3276,7 @@ Proceed?
    label="Change Linden Estate Access"
    name="ChangeLindenAccess"
    type="alert">
-You are about to change the access list for a Linden owned estate (mainland, teen grid, orientation, etc.).
+You are about to change the access list for a Governance-owned estate (mainland, teen grid, orientation, etc.).
 
 This is DANGEROUS and should only be done to invoke the hack allowing objects/[CURRENCY] to be transfered in/out of a grid.
 It will change thousands of regions and make the spaceserver hiccup.
@@ -3946,7 +4009,7 @@ Estate managers can only be added or removed by the owner of the estate, not by 
    label="Use Global Time"
    name="HelpEstateUseGlobalTime"
    type="alertmodal">
-This checkbox makes the sun in your estate follow the same position as on the Linden-owned &apos;mainland&apos; estates.
+This checkbox makes the sun in your estate follow the same position as on the Governance-owned &apos;mainland&apos; estates.
 
 Default: on
   </notification>
@@ -4001,7 +4064,7 @@ Access to this estate will be limited to groups listed here and any Residents ab
    name="HelpEstateAbuseEmailAddress"
    type="alertmodal">
 Setting this to a valid email address will cause abuse reports on this estate to be sent to that address.
-Setting it blank will cause abuse reports to be sent only to Linden Lab.
+Setting it blank will cause abuse reports to be sent only to [GRID_NAME].
   </notification>
 
   <notification
@@ -4027,7 +4090,7 @@ Default: off
    label="Voice Version Mismatch"
    name="VoiceVersionMismatch"
    type="alertmodal">
-This version of Singularity Viewer is not compatible with the Voice Chat feature in this region. Please try the most recent official Linden Lab SecondLife Viewer before reporting to Singularity developers.
+This version of [VIEWER_NAME] is not compatible with the Voice Chat feature in this region. Please upgrate to the latest version.
   </notification>
 
   <notification
@@ -4259,7 +4322,7 @@ There are no items in this object that you are allowed to copy.
    icon="alertmodal.tga"
    name="WebLaunchAccountHistory"
    type="alertmodal">
-Go to the Second Life web site to see your account history?
+Go to the [GRID_NAME] web site to see your account history?
     <usetemplate
      ignoretext="When loading account history web page"
      name="okcancelignore"
@@ -4271,9 +4334,9 @@ Go to the Second Life web site to see your account history?
    icon="alertmodal.tga"
    name="ClickOpenF1Help"
    type="alertmodal">
-Visit the Second Life Support Web site?
+Visit the [GRID_NAME] Support Web site?
     <usetemplate
-     ignoretext="When visiting the Second Life Support Website."
+     ignoretext="When visiting the [GRID_NAME] Support Website."
      name="okcancelignore"
      notext="Cancel"
      yestext="Go"/>
@@ -4292,7 +4355,7 @@ This grid has no link for support.
    type="alertmodal">
 Are you sure you want to quit?
     <usetemplate
-     ignoretext="When Quitting Singularity Viewer."
+     ignoretext="When Quitting [VIEWER_NAME]."
      name="okcancelignore"
      notext="Continue"
      yestext="Quit"/>
@@ -4316,14 +4379,14 @@ http://secondlife.com/support/incidentreport.php
    icon="alertmodal.tga"
    name="HelpReportAbuseEmailEO"
    type="alertmodal">
-IMPORTANT: This report will go to the owner of the region you are currently in and not to Linden Lab.
+IMPORTANT: This report will go to the owner of the region you are currently in and not to [GRID_OWNER].
 
-As a service to residents and visitors, the owner of the region you are in has elected to receive and resolve all reports originating in this region. Linden Lab will not investigate reports you file from this location.
+As a service to residents and visitors, the owner of the region you are in has elected to receive and resolve all reports originating in this region. [GRID_OWNER] will not investigate reports you file from this location.
 
 The region owner will resolve reports based on the local rules of this region as outlined in the estate Covenant.
 (View covenants by going to the World menu and selecting About Land.)
 
-The resolution of this report applies only to this Region; Residents access to other areas of Second Life will not be affected by the outcome of this report. Only Linden Lab can restrict access to the entirety of Second Life.
+The resolution of this report applies only to this Region; Residents access to other areas of [GRID_NAME] will not be affected by the outcome of this report. Only [GRID_OWNER] can restrict access to the entirety of [GRID_NAME].
   </notification>
 
   <notification
@@ -4416,15 +4479,15 @@ Dear Resident,
 
 You appear to be reporting intellectual property infringement. Please make sure you are reporting it correctly:
 
-(1) The Abuse Process. You may submit an abuse report if you believe a Resident is exploiting the Second Life permissions system, for example, by using CopyBot or similar copying tools, to infringe intellectual property rights. The Abuse Team investigates and issues appropriate disciplinary action for behavior that violates the Second Life Community Standards or Terms of Service. However, the Abuse Team does not handle and will not respond to requests to remove content from the Second Life world.
+(1) The Abuse Process. You may submit an abuse report if you believe a Resident is exploiting the [GRID_NAME] permissions system, for example, by using CopyBot or similar copying tools, to infringe intellectual property rights. The Abuse Team investigates and issues appropriate disciplinary action for behavior that violates the [GRID_NAME] Community Standards or Terms of Service. However, the Abuse Team does not handle and will not respond to requests to remove content from the [GRID_NAME] world.
 
-(2) The DMCA or Content Removal Process. To request removal of content from Second Life, you MUST submit a valid notification of infringement as provided in our DMCA Policy at http://secondlife.com/corporate/dmca.php.
+(2) The DMCA or Content Removal Process. To request removal of content from [GRID_NAME], you MUST submit a valid notification of infringement as provided in our DMCA Policy.
 
 If you still wish to continue with the abuse process, please close this window and finish submitting your report.  You may need to select the specific category &apos;CopyBot or Permissions Exploit&apos;.
 
 Thank you,
 
-Linden Lab
+[GRID_OWNER]
   </notification>
 
   <notification
@@ -4668,7 +4731,7 @@ Click &quot;Advanced Water&quot; to bring up an editor with more advanced settin
    icon="alertmodal.tga"
    name="HelpDayCycle"
    type="alertmodal">
-The Day Cycle Editor gives you control over the sky during Second Life&apos;s day/night cycle. This is the cycle that is used by the Basic Environment Editor&apos;s Time of Day slider.
+The Day Cycle Editor gives you control over the sky during [GRID_NAME]&apos;s day/night cycle. This is the cycle that is used by the Basic Environment Editor&apos;s Time of Day slider.
 
 The Day Cycle Editor works by setting keyframes. These are nodes (represented by the gray blips on the time graph) that have Sky Presets associated with them. As the Time of Day progresses, the WindLight sky &quot;animates&quot; as it interpolates between these keyframes.
 
@@ -4835,7 +4898,7 @@ Controls the speed of the clouds as they move in the Y direction.
    icon="alertmodal.tga"
    name="HelpClassicClouds"
    type="alertmodal">
-Check this box to enable rendering of Second Life&apos;s older classic clouds in addition to WindLight&apos;s clouds.
+Check this box to enable rendering of older classic clouds in addition to WindLight&apos;s clouds.
   </notification>
 
   <notification
@@ -5088,7 +5151,7 @@ Would you like to automatically wear the clothing item you create?
    name="NotAgeVerified"
    type="alertmodal">
 You need to be age-verified in order to access this parcel.
-Would you like to visit the Second Life website to verify your age?
+Would you like to visit the [GRID_NAME] website to verify your age?
 
 [_URL]
     <url option="0" name="url">
@@ -5107,7 +5170,7 @@ Would you like to visit the Second Life website to verify your age?
    name="Cannot enter parcel: no payment info on file"
    type="alertmodal">
 This parcel requires that you have payment information on file before you can access it.
-Would you like to visit the Second Life website to set this up?
+Would you like to visit the [GRID_NAME] website to set this up?
 
 [_URL]
     <url option="0" name="url">
@@ -5364,6 +5427,13 @@ Unable to load script.  Please try again.
    name="IncompleteInventory"
    type="notifytip">
 The complete contents you are offering are not yet locally available. Please try offering those items again in a minute.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="IncompleteInventoryItem"
+   type="notifytip">
+The item you are accessing is not yet locally available. Please try again in a minute.
   </notification>
 
   <notification
@@ -6185,7 +6255,7 @@ Failed to find [TYPE] named [DESC] in database.
    icon="notify.tga"
    name="InvalidWearable"
    type="notify">
-    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please consider using the latest official SecondLife viewer by Linden Lab.
+    The item you are trying to wear uses a feature that your viewer can&apos;t read. Please consider using the latest [VIEWER_NAME].
   </notification>
 
   <notification
@@ -6404,7 +6474,7 @@ Flexible objects may not be physical and must be phantom until the flexible chec
    name="FirstDebugMenus"
    type="notify">
 You have enabled the Advanced menu.
-This menu contains features useful for developers debugging Singularity Viewer.
+This menu contains features useful for developers debugging [VIEWER_NAME].
 To toggle this menu on Windows press Ctrl-Alt-D. On Mac press Cmd-Opt-Shift-D.
   </notification>
 
@@ -6727,9 +6797,7 @@ The URL you clicked cannot be opened from this web browser.
   </global>
 
   <global name="UnsupportedGLRequirements">
-    You do not appear to have the proper hardware requirements for Singularity Viewer. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
-
-    If you continue to have problems, please consider using Linden Lab official SecondLife Viewer. 
+    You do not appear to have the proper hardware requirements for [VIEWER_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
   </global>
 
   <global name="UnsupportedCPUAmount">

@@ -37,6 +37,7 @@
 
 #include <deque>
 
+#include "llimagejpeg.h"
 #include "llaudioengine.h" 
 #include "llavatarnamecache.h"
 #include "indra_constants.h"
@@ -158,6 +159,9 @@
 #include "hipporestrequest.h"
 #include "hippofloaterxml.h"
 #include "llversionviewer.h"
+
+#include "llwlparammanager.h"
+#include "llwaterparammanager.h"
 
 #include <boost/tokenizer.hpp>
 
@@ -3050,6 +3054,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	if (is_audible)
 	{
+		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
+		
 		if ((source_temp == CHAT_SOURCE_OBJECT) && (type_temp == CHAT_TYPE_OWNER) &&
 			(mesg.substr(0, 3) == "># ")) {
 			if (mesg.substr(mesg.size()-3, 3) == " #<") {
@@ -3071,14 +3077,11 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 								avatar->clearNameFromChat();
 						}
 					} else {
-						LLViewerObject *obj = gObjectList.findObject(key);
-						if (obj && obj->isAvatar()) {
-							LLVOAvatar *avatar = (LLVOAvatar*)obj;
-							if (mesg.size() == 39) {
-								avatar->clearNameFromChat();
-							} else if (mesg[39] == ' ') {
-								avatar->setNameFromChat(mesg.substr(40));
-							}
+						LLVOAvatar *avatar = gObjectList.findAvatar(key);
+						if (mesg.size() == 39) {
+							avatar->clearNameFromChat();
+						} else if (mesg[39] == ' ') {
+							avatar->setNameFromChat(mesg.substr(40));
 						}
 					}
 					return;
@@ -3130,7 +3133,6 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		std::string verb;
 
 		color.setVec(1.f,1.f,1.f,1.f);
-		msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, mesg);
 
 // [RLVa:KB] - Checked: 2010-04-23 (RLVa-1.2.0f) | Modified: RLVa-1.2.0f
 		if ( (rlv_handler_t::isEnabled()) && (CHAT_TYPE_START != chat.mChatType) && (CHAT_TYPE_STOP != chat.mChatType) )
@@ -3661,6 +3663,12 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	gAssetStorage->setUpstream(sim);
 	gCacheName->setUpstream(sim);
 */
+
+	//Reset the windlight profile to default
+	LLWLParamManager::instance()->mAnimator.mIsRunning = false;
+	LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::instance()->loadPreset("Default", true);
+	LLWaterParamManager::instance()->loadPreset("Default",true);
 
 	// now, use the circuit info to tell simulator about us!
 	LL_INFOS("Messaging") << "process_teleport_finish() Enabling "

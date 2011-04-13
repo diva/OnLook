@@ -2883,6 +2883,16 @@ public:
 				renderBoundingBox(drawable);			
 			}
 			
+			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_BUILD_QUEUE))
+			{
+				if (drawable->isState(LLDrawable::IN_REBUILD_Q2))
+				{
+					gGL.color4f(0.6f, 0.6f, 0.1f, 1.f);
+					const LLVector3* ext = drawable->getSpatialExtents();
+					drawBoxOutline((ext[0]+ext[1])*0.5f, (ext[1]-ext[0])*0.5f);
+				}
+			}	
+
 			if (drawable->getVOVolume() && gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY))
 			{
 				renderTexturePriority(drawable);
@@ -2901,6 +2911,10 @@ public:
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_RAYCAST))
 			{
 				renderRaycast(drawable);
+			}
+			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_UPDATE_TYPE))
+			{
+				renderUpdateType(drawable);
 			}
 
 			LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(drawable->getVObj().get());
@@ -3060,13 +3074,15 @@ void LLSpatialPartition::renderDebug()
 									  LLPipeline::RENDER_DEBUG_OCCLUSION |
 									  LLPipeline::RENDER_DEBUG_LIGHTS |
 									  LLPipeline::RENDER_DEBUG_BATCH_SIZE |
+									  LLPipeline::RENDER_DEBUG_UPDATE_TYPE |
 									  LLPipeline::RENDER_DEBUG_BBOXES |
 									  LLPipeline::RENDER_DEBUG_POINTS |
 									  LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY |
 									  LLPipeline::RENDER_DEBUG_TEXTURE_ANIM |
 									  LLPipeline::RENDER_DEBUG_RAYCAST |
 									  LLPipeline::RENDER_DEBUG_AVATAR_VOLUME |
-									  LLPipeline::RENDER_DEBUG_AGENT_TARGET))
+									  LLPipeline::RENDER_DEBUG_AGENT_TARGET |
+									  LLPipeline::RENDER_DEBUG_BUILD_QUEUE))
 	{
 		return;
 	}

@@ -35,7 +35,6 @@
 #include "llhudeffecttrail.h"
 
 #include "llviewercontrol.h"
-#include "llimagegl.h"
 #include "message.h"
 
 #include "llagent.h"

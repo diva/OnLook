@@ -75,6 +75,8 @@
 #include "llmutelist.h"
 #include "llstylemap.h"
 
+#include "boost/algorithm/string.hpp"
+
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -1106,6 +1108,11 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
+	if(mOtherParticipantUUID.isNull()) 
+	{
+		llwarns << "Other participant is NULL" << llendl;
+	}
+		
     // [Ansariel: Display name support]
     sFloaterIMPanels.insert(this);
     // [/Ansariel: Display name support]
@@ -1142,6 +1149,11 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 	mFirstKeystrokeTimer(),
 	mLastKeystrokeTimer()
 {
+	if(mOtherParticipantUUID.isNull()) 
+	{
+		llwarns << "Other participant is NULL" << llendl;
+	}
+	
     // [Ansariel: Display name support]
     sFloaterIMPanels.insert(this);
     // [/Ansariel: Display name support]
@@ -2499,11 +2511,13 @@ void LLFloaterIMPanel::showSessionEventError(
 	const std::string& error_string)
 {
 	LLSD args;
-	args["REASON"] =
-		LLFloaterIM::sErrorStringsMap[error_string];
-	args["EVENT"] =
-		LLFloaterIM::sEventStringsMap[event_string];
-	args["RECIPIENT"] = getTitle();
+	std::string recipient = getTitle();
+	std::string reason = LLFloaterIM::sErrorStringsMap[error_string];
+	boost::replace_all(reason, "[RECIPIENT]", recipient);
+	std::string event = LLFloaterIM::sEventStringsMap[event_string];
+	boost::replace_all(event, "[RECIPIENT]", recipient);
+	args["REASON"] = reason;
+	args["EVENT"] = event;
 
 	LLNotifications::instance().add(
 		"ChatterBoxSessionEventError",

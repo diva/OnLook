@@ -189,9 +189,9 @@ void LLViewerInventoryItem::updateServer(BOOL is_new) const
 	if(!mIsComplete)
 	{
 		// *FIX: deal with this better.
-		// If we're crashing here then the UI is incorrectly enabled.
 		llwarns << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
+	 	LLNotifications::instance().add("IncompleteInventoryItem");
 		return;
 	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);

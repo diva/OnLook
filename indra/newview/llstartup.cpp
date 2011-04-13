@@ -807,13 +807,6 @@ bool idle_startup()
 
 		timeout_count = 0;
 
-		// OGPX : Load URL History File for saved user. Needs to happen *before* login panel is displayed.
-		//  Note: it only loads them if it can figure out the saved username. 
-		if (!firstname.empty() && !lastname.empty()) 
-		{
-			gDirUtilp->setLindenUserDir(firstname, lastname);
-			LLURLHistory::loadFile("url_history.xml");
-		} 
 
 		// *NOTE: This is where LLViewerParcelMgr::getInstance() used to get allocated before becoming LLViewerParcelMgr::getInstance().
 
@@ -972,7 +965,14 @@ bool idle_startup()
 
 		// create necessary directories
 		// *FIX: these mkdir's should error check
-		gDirUtilp->setLindenUserDir(firstname, lastname);
+		if (gHippoGridManager->getCurrentGrid()->isSecondLife()) 
+		{
+			gDirUtilp->setLindenUserDir(LLStringUtil::null, firstname, lastname);
+		}
+		else
+		{
+			gDirUtilp->setLindenUserDir(gHippoGridManager->getCurrentGridNick(), firstname, lastname);
+		}
     	LLFile::mkdir(gDirUtilp->getLindenUserDir());
 
         // Set PerAccountSettingsFile to the default value.
@@ -1043,22 +1043,13 @@ bool idle_startup()
 			// END TODO
 			LLPanelLogin::close();
 		}
-
 		
 		//For HTML parsing in text boxes.
 		LLTextEditor::setLinkColor( gSavedSettings.getColor4("HTMLLinkColor") );
 
 		// Load URL History File
 		LLURLHistory::loadFile("url_history.xml");
-		// OGPX : Since loading the file wipes the new value that might have gotten added on
-		// the login panel, let's add it to URL history 
-		// (appendToURLCollection() only adds unique values to list)
-		// OGPX kind of ugly. TODO: figure out something less hacky
-		if (!gSavedSettings.getString("CmdLineRegionURI").empty())
-		{
-			LLURLHistory::appendToURLCollection("regionuri",gSavedSettings.getString("CmdLineRegionURI"));
-		}
-
+				
 		//-------------------------------------------------
 		// Handle startup progress screen
 		//-------------------------------------------------
@@ -1506,7 +1497,7 @@ bool idle_startup()
 			}
 			else
 			{
-				emsg << "Unable to connect to " << LLAppViewer::instance()->getSecondLifeTitle() << ".\n";
+				emsg << "Unable to connect to " << gHippoGridManager->getCurrentGrid()->getGridName() << ".\n";
 				emsg << LLUserAuth::getInstance()->errorMessage();
 			}
 			break;
@@ -2854,6 +2845,8 @@ bool idle_startup()
 	if (STATE_CLEANUP == LLStartUp::getStartupState())
 	{
 		set_startup_status(1.0, "", "");
+
+		LLViewerParcelMedia::loadDomainFilterList();
 
 		// Let the map know about the inventory.
 		if(gFloaterWorldMap)
