@@ -93,7 +93,7 @@ LLMediaCtrl::LLMediaCtrl( const std::string& name, const LLRect& rect ) :
 	if ( !mMediaSource )
 	{
 		llwarns << "media source create failed " << llendl;
-		// return;
+		return;
 	}
 	else
 	{
@@ -123,7 +123,6 @@ LLMediaCtrl::~LLMediaCtrl()
 
 	if ( mWebBrowserImage )
 	{
-		delete mWebBrowserImage;
 		mWebBrowserImage = NULL;
 	}
 }

@@ -376,6 +376,8 @@ LLViewerMediaImpl::LLViewerMediaImpl(const std::string& media_url,
 	mMediaURL(media_url),
 	mMimeType(mime_type),
 	mNeedsNewTexture(true),
+	mTextureUsedWidth(0),
+	mTextureUsedHeight(0),
 	mSuspendUpdates(false),
 	mVisible(true)
 { 
@@ -898,8 +900,8 @@ void LLViewerMediaImpl::updateMovieImage(const LLUUID& uuid, BOOL active)
 			// Can't use mipmaps for movies because they don't update the full image
 			// Casting to LLViewerMediaTexture is a huge hack. Implement LLViewerMediaTexture some time later.
 			mMovieImageHasMips = ((LLViewerMediaTexture*)viewerImage)->getUseMipMaps();
-			((LLViewerMediaTexture*)viewerImage)->reinit(mMovieImageHasMips);
-			viewerImage->mIsMediaTexture = FALSE;
+			((LLViewerMediaTexture*)viewerImage)->reinit(FALSE);
+			viewerImage->mIsMediaTexture = TRUE;
 		}
 	}
 }
@@ -985,13 +987,16 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 		return NULL;
 	}
 	
-	LLViewerTexture* placeholder_image = LLViewerTextureManager::findTexture( mTextureId );
+	LLViewerMediaTexture* placeholder_image = (LLViewerMediaTexture*)LLViewerTextureManager::findTexture( mTextureId );
 	
 	if (mNeedsNewTexture 
-		|| ((LLViewerMediaTexture*)placeholder_image)->getUseMipMaps()
+		|| placeholder_image->getUseMipMaps()
 		|| ! placeholder_image->mIsMediaTexture
-		|| placeholder_image->getWidth() != mMediaSource->getTextureWidth()
-		|| placeholder_image->getHeight() != mMediaSource->getTextureHeight())
+		|| (placeholder_image->getWidth() != mMediaSource->getTextureWidth())
+		|| (placeholder_image->getHeight() != mMediaSource->getTextureHeight())
+		|| (mTextureUsedWidth != mMediaSource->getWidth())
+		|| (mTextureUsedHeight != mMediaSource->getHeight())
+		)
 	{
 		llinfos << "initializing media placeholder" << llendl;
 		llinfos << "movie image id " << mTextureId << llendl;
@@ -1003,7 +1008,7 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 		// MEDIAOPT: check to see if size actually changed before doing work
 		placeholder_image->destroyGLTexture();
 		// MEDIAOPT: apparently just calling setUseMipMaps(FALSE) doesn't work?
-		((LLViewerMediaTexture*)placeholder_image)->reinit(FALSE);	// probably not needed
+		placeholder_image->reinit(FALSE);	// probably not needed
 
 		// MEDIAOPT: seems insane that we actually have to make an imageraw then
 		// immediately discard it
@@ -1020,11 +1025,16 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 		placeholder_image->createGLTexture(discard_level, raw);
 
 		// placeholder_image->setExplicitFormat()
-		((LLViewerMediaTexture*)placeholder_image)->setUseMipMaps(FALSE);
+		placeholder_image->setUseMipMaps(FALSE);
 
 		// MEDIAOPT: set this dynamically on play/stop
-		((LLViewerMediaTexture*)placeholder_image)->mIsMediaTexture = true;
+		placeholder_image->mIsMediaTexture = true;
 		mNeedsNewTexture = false;
+				
+		// If the amount of the texture being drawn by the media goes down in either width or height, 
+		// recreate the texture to avoid leaving parts of the old image behind.
+		mTextureUsedWidth = mMediaSource->getWidth();
+		mTextureUsedHeight = mMediaSource->getHeight();
 	}
 	
 	return placeholder_image;
