@@ -238,9 +238,11 @@ public:
 class LLGLSSpecular
 {
 public:
+	F32 mShininess;
 	LLGLSSpecular(const LLColor4& color, F32 shininess)
 	{
-		if (shininess > 0.0f)
+		mShininess = shininess;
+		if (mShininess > 0.0f)
 		{
 			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color.mV);
 			S32 shiny = (S32)(shininess*128.f);
@@ -250,8 +252,11 @@ public:
 	}
 	~LLGLSSpecular()
 	{
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, LLColor4(0.f,0.f,0.f,0.f).mV);
-		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+		if (mShininess > 0.f)
+		{
+			glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, LLColor4(0.f,0.f,0.f,0.f).mV);
+			glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+		}
 	}
 };
 
