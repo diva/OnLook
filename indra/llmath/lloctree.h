@@ -44,7 +44,12 @@
 #define OCT_ERRS LL_WARNS("OctreeErrors")
 #endif
 
+#if LL_DEBUG
 #define LL_OCTREE_PARANOIA_CHECK 0
+#else
+#define LL_OCTREE_PARANOIA_CHECK 0
+#endif
+
 #define LL_OCTREE_MAX_CAPACITY 128
 
 template <class T> class LLOctreeNode;
@@ -295,7 +300,7 @@ public:
 				//if this is a redundant insertion, error out (should never happen)
 				if (mData.find(data) != mData.end())
 				{
-					llwarns << "Redundant octree insertion detected. " << data << llendl;
+					llerrs << "Redundant octree insertion detected. " << data << llendl;
 					return false;
 				}
 #endif
@@ -313,16 +318,9 @@ public:
 					child = getChild(i);
 					if (child->isInside(data->getPositionGroup()))
 					{
-						// <edit>
-						// tempfix, test, shitsux
-						//child->insert(data);
-						if(child->getElementCount() < LL_OCTREE_MAX_CAPACITY)
-						{
-							child->insert(data);
-							return false;
-						}
-						//return false;
-						// </edit>
+						llassert(child->getElementCount() <= LL_OCTREE_MAX_CAPACITY);
+						child->insert(data);
+						return false;
 					}
 				}
 				
