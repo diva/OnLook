@@ -337,11 +337,6 @@ void LLVOVolume::animateTextures()
 				te->getScale(&scale_s, &scale_t);
 			}
 
-			LLVector3 scale(scale_s, scale_t, 1.f);
-			LLVector3 trans(off_s+0.5f, off_t+0.5f, 0.f);
-			LLQuaternion quat;
-			quat.setQuat(rot, 0, 0, -1.f);
-		
 			if (!facep->mTextureMatrix)
 			{
 				facep->mTextureMatrix = new LLMatrix4();
@@ -349,7 +344,16 @@ void LLVOVolume::animateTextures()
 
 			LLMatrix4& tex_mat = *facep->mTextureMatrix;
 			tex_mat.setIdentity();
-			tex_mat.translate(LLVector3(-0.5f, -0.5f, 0.f));
+			LLVector3 trans ;
+			{
+				trans.set(LLVector3(off_s+0.5f, off_t+0.5f, 0.f));			
+				tex_mat.translate(LLVector3(-0.5f, -0.5f, 0.f));
+			}
+
+			LLVector3 scale(scale_s, scale_t, 1.f);			
+			LLQuaternion quat;
+			quat.setQuat(rot, 0, 0, -1.f);
+
 			tex_mat.rotate(quat);				
 
 			LLMatrix4 mat;
@@ -892,9 +896,7 @@ BOOL LLVOVolume::calcLOD()
 	if (distance < rampDist)
 	{
 		// Boost LOD when you're REALLY close
-		distance *= 1.0f/rampDist;
-		distance *= distance;
-		distance *= rampDist;
+		distance *= distance/rampDist;
 	}
 	
 	// DON'T Compensate for field of view changing on FOV zoom.
@@ -2228,7 +2230,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 
 	U8 glow = 0;
 		
-	if (type == LLRenderPass::PASS_GLOW)
+	if (type == LLRenderPass::PASS_GLOW || type==LLRenderPass::PASS_ALPHA) //Alpha pass now handles glow internally
 	{
 		glow = (U8) (facep->getTextureEntry()->getGlow() * 255);
 	}
@@ -2766,7 +2768,9 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				// can we safely treat this as an alpha mask?
 				if (facep->canRenderAsMask())
 				{
-					if (te->getFullbright())
+					const LLDrawable* drawablep = facep->getDrawable();
+					const LLVOVolume* vobj = drawablep ? drawablep->getVOVolume() : NULL;
+					if (te->getFullbright() || (vobj && vobj->isHUDAttachment()))
 					{
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK);
 					}
@@ -2862,7 +2866,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				}
 			}
 
-			if (LLPipeline::sRenderGlow && te->getGlow() > 0.f)
+			if (!is_alpha && LLPipeline::sRenderGlow && te->getGlow() > 0.f)
 			{
 				registerFace(group, facep, LLRenderPass::PASS_GLOW);
 			}

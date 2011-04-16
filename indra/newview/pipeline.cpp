@@ -146,6 +146,7 @@ const LLMatrix4* gGLLastMatrix = NULL;
 std::string gPoolNames[] = 
 {
 	// Correspond to LLDrawpool enum render type
+	"NONE",
 	"POOL_SIMPLE",
 	"POOL_TERRAIN",	
 	"POOL_BUMP",
@@ -380,6 +381,7 @@ void LLPipeline::init()
 	LLViewerShaderMgr::instance()->setShaders();
 
 	stop_glerror();
+	setLightingDetail(-1);
 }
 
 LLPipeline::~LLPipeline()
@@ -452,8 +454,6 @@ void LLPipeline::cleanup()
 
 	releaseGLBuffers();
 
-	mBloomImagep = NULL;
-	mBloomImage2p = NULL;
 	mFaceSelectImagep = NULL;
 
 	mMovedBridge.clear();
@@ -558,13 +558,12 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 //static
 void LLPipeline::updateRenderDeferred()
 {
-	BOOL deferred = (gSavedSettings.getBOOL("RenderDeferred") && 
+	sRenderDeferred = (gSavedSettings.getBOOL("RenderDeferred") && 
 		LLRenderTarget::sUseFBO &&
 		gSavedSettings.getBOOL("VertexShaderEnable") && 
 		gSavedSettings.getBOOL("RenderAvatarVP") &&
-		gSavedSettings.getBOOL("WindLightUseAtmosShaders")) ? TRUE : FALSE;
-	
-	sRenderDeferred = deferred;			
+		gSavedSettings.getBOOL("WindLightUseAtmosShaders") &&
+		!gUseWireframe);	
 }
 
 void LLPipeline::releaseGLBuffers()
@@ -1398,6 +1397,7 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 	gGLLastMatrix = NULL;
 	glLoadMatrixd(gGLLastModelView);
 
+
 	LLVertexBuffer::unbind();
 	LLGLDisable blend(GL_BLEND);
 	LLGLDisable test(GL_ALPHA_TEST);
@@ -1475,10 +1475,10 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 	{
 		mScreen.flush();
 	}
-	/*else if (LLPipeline::sUseOcclusion > 1)
+	else if (LLPipeline::sUseOcclusion > 1)
 	{
 		glFlush();
-	}*/
+	}
 }
 
 void LLPipeline::markNotCulled(LLSpatialGroup* group, LLCamera& camera)
@@ -2372,6 +2372,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 	assertInitialized();
 
+	llpushcallstacks ;
 	//rebuild drawable geometry
 	for (LLCullResult::sg_list_t::iterator i = sCull->beginDrawableGroups(); i != sCull->endDrawableGroups(); ++i)
 	{
@@ -2382,7 +2383,7 @@ void LLPipeline::postSort(LLCamera& camera)
 			group->rebuildGeom();
 		}
 	}
-
+	llpushcallstacks ;
 	//rebuild groups
 	sCull->assertDrawMapsEmpty();
 
@@ -2400,10 +2401,10 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	LLSpatialGroup::sNoDelete = TRUE;*/
 
+
 	rebuildPriorityGroups();
-	
-	
-	
+	llpushcallstacks ;
+
 	const S32 bin_count = 1024*8;
 		
 	static LLCullResult::drawinfo_list_t alpha_bins[bin_count];
@@ -2504,7 +2505,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 		std::sort(sCull->beginAlphaGroups(), sCull->endAlphaGroups(), LLSpatialGroup::CompareDepthGreater());
 	}
-	
+	llpushcallstacks ;
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
 	static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
 	if (beacon_always_on && !sShadowRender)
@@ -2553,7 +2554,7 @@ void LLPipeline::postSort(LLCamera& camera)
 			forAllVisibleDrawables(renderSoundHighlights);
 		}
 	}
-
+	llpushcallstacks ;
 	// If managing your telehub, draw beacons at telehub and currently selected spawnpoint.
 	if (LLFloaterTelehub::renderBeacons())
 	{
@@ -2583,6 +2584,7 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 
 	//LLSpatialGroup::sNoDelete = FALSE;
+	llpushcallstacks ;
 }
 
 
@@ -2615,7 +2617,12 @@ void render_hud_elements()
 	
 		// Render debugging beacons.
 		//gObjectList.renderObjectBeacons();
-		//LLHUDObject::renderAll();
+
+		//TO-DO:
+		//V2 moved this line from LLPipeline::renderGeom
+		//Uncomment once multisample z-buffer issues are figured out on ati cards.
+	//	LLHUDObject::renderAll(); 
+
 		//gObjectList.resetObjectBeacons();
 	}
 	else if (gForceRenderLandFence)
@@ -2938,6 +2945,9 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 		{
 			// Render debugging beacons.
 			gObjectList.renderObjectBeacons();
+			//TO-DO:
+			//V2 moved this line to LLPipeline::render_hud_elements
+			//Migrate once multisample z-buffer issues are figured out on ati cards.
 			LLHUDObject::renderAll();
 			gObjectList.resetObjectBeacons();
 		}
@@ -3167,26 +3177,32 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 	gGLLastMatrix = NULL;
 	glLoadMatrixd(gGLModelView);
 
-	renderHighlights();
-	mHighlightFaces.clear();
-
-	renderDebug();
-
-	LLVertexBuffer::unbind();
-
-	if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+	//TO-DO:
+	//V2 moved block to LLPipeline::renderDeferredLighting
+	//Migrate once multisample z-buffer issues are figured out on ati cards.
 	{
-		// Render debugging beacons.
-		gObjectList.renderObjectBeacons();
-		LLHUDObject::renderAll();
-		gObjectList.resetObjectBeacons();
-	}
-	else
-	{
-		// Make sure particle effects disappear
-		LLHUDObject::renderAllForTimer();
-	}
+		renderHighlights();
+		mHighlightFaces.clear();
 
+		renderDebug();
+
+		LLVertexBuffer::unbind();
+
+		if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+		{
+			// Render debugging beacons.
+			gObjectList.renderObjectBeacons();
+			LLHUDObject::renderAll();
+			gObjectList.resetObjectBeacons();	
+		}
+		else
+		{
+			// Make sure particle effects disappear
+			LLHUDObject::renderAllForTimer();
+		}
+	}
+	//END
+	
 	if (occlude)
 	{
 		occlude = FALSE;
@@ -3281,6 +3297,9 @@ void LLPipeline::addTrianglesDrawn(S32 count)
 void LLPipeline::renderDebug()
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
+
+	if(!mRenderDebugMask)
+		return;
 
 	assertInitialized();
 
@@ -3446,6 +3465,55 @@ void LLPipeline::renderDebug()
 		}
 	}
 
+	if (mRenderDebugMask & LLPipeline::RENDER_DEBUG_BUILD_QUEUE)
+	{
+		U32 count = 0;
+		U32 size = mBuildQ2.size();
+		LLColor4 col;
+
+		LLGLEnable blend(GL_BLEND);
+		LLGLDepthTest depth(GL_TRUE, GL_FALSE);
+		gGL.getTexUnit(0)->bind(LLViewerImage::sWhiteImagep.get());
+		
+		for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin(); iter != mGroupQ2.end(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			if (group->isDead())
+			{
+				continue;
+			}
+
+			LLSpatialBridge* bridge = group->mSpatialPartition->asBridge();
+
+			if (bridge && (!bridge->mDrawable || bridge->mDrawable->isDead()))
+			{
+				continue;
+			}
+
+			if (bridge)
+			{
+				gGL.pushMatrix();
+				glMultMatrixf((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
+			}
+
+			F32 alpha = (F32) (size-count)/size;
+
+			
+			LLVector2 c(1.f-alpha, alpha);
+			c.normVec();
+
+			
+			++count;
+			col.set(c.mV[0], c.mV[1], 0, alpha*0.5f+0.1f);
+			group->drawObjectBox(col);
+
+			if (bridge)
+			{
+				gGL.popMatrix();
+			}
+		}
+	}
+	
 	gGL.flush();
 }
 
@@ -4257,32 +4325,28 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 			LLVector4 light_pos_gl(light_pos, 1.0f);
 	
 			F32 light_radius = llmax(light->getLightRadius(), 0.001f);
-			F32 atten, quad;
 
-#if 0 //1.9.1
-			if (pool->getVertexShaderLevel() > 0)
-			{
-				atten = light_radius;
-				quad = llmax(light->getLightFalloff(), 0.0001f);
-			}
-			else
-#endif
-			{
-				F32 x = (3.f * (1.f + light->getLightFalloff()));
-				atten = x / (light_radius); // % of brightness at radius
-				quad = 0.0f;
-			}
+			F32 x = (3.f * (1.f + light->getLightFalloff())); // why this magic?  probably trying to match a historic behavior.
+			float linatten = x / (light_radius); // % of brightness at radius
+
 			mHWLightColors[cur_light] = light_color;
 			S32 gllight = GL_LIGHT0+cur_light;
 			glLightfv(gllight, GL_POSITION, light_pos_gl.mV);
 			glLightfv(gllight, GL_DIFFUSE,  light_color.mV);
 			glLightfv(gllight, GL_AMBIENT,  LLColor4::black.mV);
-			glLightfv(gllight, GL_SPECULAR, LLColor4::black.mV);
 			glLightf (gllight, GL_CONSTANT_ATTENUATION,   0.0f);
-			glLightf (gllight, GL_LINEAR_ATTENUATION,     atten);
-			glLightf (gllight, GL_QUADRATIC_ATTENUATION,  quad);
-			glLightf (gllight, GL_SPOT_EXPONENT,          0.0f);
-			glLightf (gllight, GL_SPOT_CUTOFF,            180.0f);
+			glLightf (gllight, GL_LINEAR_ATTENUATION,     linatten);
+			glLightf (gllight, GL_QUADRATIC_ATTENUATION,  0.0f);
+			//Point lights
+			{
+				glLightf (gllight, GL_SPOT_EXPONENT,          0.0f);
+				glLightf (gllight, GL_SPOT_CUTOFF,            180.0f);
+
+				// we use specular.w = 1.0 as a cheap hack for the shaders to know that this is omnidirectional rather than a spotlight
+				const float specular[] = {0.f, 0.f, 0.f, 1.f};
+				glLightfv(gllight, GL_SPECULAR, specular);
+				//llinfos << "boring light" << llendl;
+			}
 			cur_light++;
 			if (cur_light >= 8)
 			{
@@ -4299,7 +4363,7 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		glLightfv(gllight, GL_SPECULAR, LLColor4::black.mV);
 	}
 
-	if (gAgent.getAvatarObject() &&
+	if (isAgentAvatarValid() &&
 		gAgent.getAvatarObject()->mSpecialRenderMode == 3)
 	{
 		LLColor4  light_color = LLColor4::white;
@@ -4309,13 +4373,10 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		LLVector4 light_pos_gl(light_pos, 1.0f);
 
 		F32 light_radius = 16.f;
-		F32 atten, quad;
 
-		{
 			F32 x = 3.f;
-			atten = x / (light_radius); // % of brightness at radius
-			quad = 0.0f;
-		}
+		float linatten = x / (light_radius); // % of brightness at radius
+
 		mHWLightColors[2] = light_color;
 		S32 gllight = GL_LIGHT2;
 		glLightfv(gllight, GL_POSITION, light_pos_gl.mV);
@@ -4323,8 +4384,8 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		glLightfv(gllight, GL_AMBIENT,  LLColor4::black.mV);
 		glLightfv(gllight, GL_SPECULAR, LLColor4::black.mV);
 		glLightf (gllight, GL_CONSTANT_ATTENUATION,   0.0f);
-		glLightf (gllight, GL_LINEAR_ATTENUATION,     atten);
-		glLightf (gllight, GL_QUADRATIC_ATTENUATION,  quad);
+		glLightf (gllight, GL_LINEAR_ATTENUATION,     linatten);
+		glLightf (gllight, GL_QUADRATIC_ATTENUATION,  0.0f);
 		glLightf (gllight, GL_SPOT_EXPONENT,          0.0f);
 		glLightf (gllight, GL_SPOT_CUTOFF,            180.0f);
 	}
@@ -4341,6 +4402,7 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 void LLPipeline::enableLights(U32 mask)
 {
 	assertInitialized();
+
 	if (mLightingDetail == 0)
 	{
 		mask &= 0xf003; // sun and backlight only (and fullbright bit)
@@ -5528,6 +5590,14 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
 		gGL.getTexUnit(0)->activate();
 		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
 
+		//TO-DO: 
+		//V2 requires this for hover text and such since they have been pulled out of geom render.
+		//Do this when multisample z-buffer issues are figured out
+		/*if (LLRenderTarget::sUseFBO)
+		{ //copy depth buffer from mScreen to framebuffer
+			LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
+				0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		}*/
 	}
 	
 
@@ -5836,6 +5906,9 @@ void LLPipeline::renderDeferredLighting()
 
 		{
 			LLGLDisable blend(GL_BLEND);
+			//TO-DO: 
+			//V2 changed to LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
+			//Do this when multisample z-buffer issues are figured out
 			LLGLDepthTest depth(GL_FALSE);
 			stop_glerror();
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
@@ -5852,6 +5925,9 @@ void LLPipeline::renderDeferredLighting()
 
 		{
 			LLGLDisable blend(GL_BLEND);
+			//TO-DO: 
+			//V2 changed to LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
+			//Do this when multisample z-buffer issues are figured out
 			LLGLDepthTest depth(GL_FALSE);
 			stop_glerror();
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -6088,6 +6164,26 @@ void LLPipeline::renderDeferredLighting()
 		popRenderTypeMask();
 	}
 
+	//TO-DO:
+	//V2 moved block from LLPipeline::renderGeomPostDeferred
+	//Migrate once multisample z-buffer issues are figured out on ati cards.
+	/*{
+		//render highlights, etc.
+		renderHighlights();
+		mHighlightFaces.clear();
+
+		renderDebug();
+
+		LLVertexBuffer::unbind();
+
+		if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+		{
+			// Render debugging beacons.
+			gObjectList.renderObjectBeacons();
+			gObjectList.resetObjectBeacons();
+		}
+	}*/
+
 	mScreen.flush();
 						
 }
@@ -6251,48 +6347,47 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 					gPipeline.popRenderTypeMask();
 				}
 
-				gPipeline.pushRenderTypeMask();
-
-				clearRenderTypeMask(LLPipeline::RENDER_TYPE_WATER,
-									LLPipeline::RENDER_TYPE_VOIDWATER,
-									LLPipeline::RENDER_TYPE_GROUND,
-									LLPipeline::RENDER_TYPE_SKY,
-									LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
-									LLPipeline::RENDER_TYPE_WL_CLOUDS,
-									LLPipeline::END_RENDER_TYPES);	
 
 				if (gSavedSettings.getBOOL("RenderWaterReflections"))
 				{ //mask out selected geometry based on reflection detail
 					S32 detail = gSavedSettings.getS32("RenderReflectionDetail");
-					if (detail > 0)
+					//if (detail > 0)
 					{ //mask out selected geometry based on reflection detail
 						{
-							if (detail < 4)
-							{
-								clearRenderTypeMask(LLPipeline::RENDER_TYPE_PARTICLES, END_RENDER_TYPES);
+							gPipeline.pushRenderTypeMask();
 							if (detail < 3)
 							{
-									clearRenderTypeMask(LLPipeline::RENDER_TYPE_AVATAR, END_RENDER_TYPES);
+								clearRenderTypeMask(LLPipeline::RENDER_TYPE_PARTICLES, END_RENDER_TYPES);
 								if (detail < 2)
 								{
+									clearRenderTypeMask(LLPipeline::RENDER_TYPE_AVATAR, END_RENDER_TYPES);
+									if (detail < 1)
+									{
 										clearRenderTypeMask(LLPipeline::RENDER_TYPE_VOLUME, END_RENDER_TYPES);
 									}
 								}
 							}
+							
+							clearRenderTypeMask(LLPipeline::RENDER_TYPE_WATER,
+										LLPipeline::RENDER_TYPE_VOIDWATER,
+										LLPipeline::RENDER_TYPE_GROUND,
+										LLPipeline::RENDER_TYPE_SKY,
+										LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
+										LLPipeline::RENDER_TYPE_WL_CLOUDS,
+										LLPipeline::END_RENDER_TYPES);
 							static LLCachedControl<bool> skip_distortion_updates("SkipReflectOcclusionUpdates",false);
 							LLPipeline::sSkipUpdate = skip_distortion_updates;
 							LLGLUserClipPlane clip_plane(plane, mat, projection);
 							LLGLDisable cull(GL_CULL_FACE);
 							updateCull(camera, ref_result, 1);
 							stateSort(camera, ref_result);
+							gPipeline.grabReferences(ref_result);
+							renderGeom(camera);
+							LLPipeline::sSkipUpdate = FALSE;
+							gPipeline.popRenderTypeMask();
 						}
-						gPipeline.grabReferences(ref_result);
-						LLGLUserClipPlane clip_plane(plane, mat, projection);
-						renderGeom(camera);
-						LLPipeline::sSkipUpdate = FALSE;
 					}							
 				}
-				gPipeline.popRenderTypeMask();
 			}	
 			glCullFace(GL_BACK);
 			glPopMatrix();
