@@ -116,6 +116,78 @@ void validate_drawable(LLDrawable* drawablep)
 #define validate_drawable(x)
 #endif
 
+class LLOctreeStateCheck : public LLOctreeTraveler<LLDrawable>
+{
+public:
+	U32 mInheritedMask[LLViewerCamera::NUM_CAMERAS];
+
+	LLOctreeStateCheck()
+	{ 
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			mInheritedMask[i] = 0;
+		}
+	}
+
+	virtual void traverse(const LLSpatialGroup::OctreeNode* node)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
+		
+		node->accept(this);
+
+
+		U32 temp[LLViewerCamera::NUM_CAMERAS];
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			temp[i] = mInheritedMask[i];
+			mInheritedMask[i] |= group->mOcclusionState[i] & LLSpatialGroup::OCCLUDED; 
+		}
+
+		for (U32 i = 0; i < node->getChildCount(); i++)
+		{
+			traverse(node->getChild(i));
+		}
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			mInheritedMask[i] = temp[i];
+		}
+	}
+	
+
+	virtual void visit(const LLOctreeNode<LLDrawable>* state)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) state->getListener(0);
+
+		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
+		{
+			if (mInheritedMask[i] && !(group->mOcclusionState[i] & mInheritedMask[i]))
+			{
+				llerrs << "Spatial group failed inherited mask test." << llendl;
+			}
+		}
+
+		if (group->isState(LLSpatialGroup::DIRTY))
+		{
+			assert_parent_state(group, LLSpatialGroup::DIRTY);
+		}
+	}
+
+	void assert_parent_state(LLSpatialGroup* group, LLSpatialGroup::eSpatialState state)
+	{
+		LLSpatialGroup* parent = group->getParent();
+		while (parent)
+		{
+			if (!parent->isState(state))
+			{
+				llerrs << "Spatial group failed parent state check." << llendl;
+			}
+			parent = parent->getParent();
+		}
+	}	
+};
+
 
 S32 AABBSphereIntersect(const LLVector3& min, const LLVector3& max, const LLVector3 &origin, const F32 &rad)
 {
@@ -421,15 +493,17 @@ void validate_draw_info(LLDrawInfo& params)
 		{
 			if (indicesp[i] < (U16)params.mStart)
 			{
-				llerrs << "Draw batch has vertex buffer index out of range error (index too low)." << llendl;
+				llerrs << "Draw batch has vertex buffer index out of range error (index too low). "
+					   << "indicesp["<<i<<"]="<<indicesp[i]<< llendl;
 			}
 			
 			if (indicesp[i] > (U16)params.mEnd)
 			{
-				llerrs << "Draw batch has vertex buffer index out of range error (index too high)." << llendl;
+				llerrs << "Draw batch has vertex buffer index out of range error (index too high)."
+				       << "indicesp["<<i<<"]="<<indicesp[i]<< llendl;
 			}
 		}
-	}
+	} //Complains -SG
 #endif
 }
 
@@ -2994,79 +3068,6 @@ void LLSpatialPartition::renderIntersectingBBoxes(LLCamera* camera)
 	LLOctreePushBBoxVerts pusher(camera);
 	pusher.traverse(mOctree);
 }
-
-class LLOctreeStateCheck : public LLOctreeTraveler<LLDrawable>
-{
-public:
-	U32 mInheritedMask[LLViewerCamera::NUM_CAMERAS];
-
-	LLOctreeStateCheck()
-	{ 
-		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
-		{
-			mInheritedMask[i] = 0;
-		}
-	}
-
-	virtual void traverse(const LLSpatialGroup::OctreeNode* node)
-	{
-		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
-		
-		node->accept(this);
-
-
-		U32 temp[LLViewerCamera::NUM_CAMERAS];
-
-		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
-		{
-			temp[i] = mInheritedMask[i];
-			mInheritedMask[i] |= group->mOcclusionState[i] & LLSpatialGroup::OCCLUDED; 
-		}
-
-		for (U32 i = 0; i < node->getChildCount(); i++)
-		{
-			traverse(node->getChild(i));
-		}
-
-		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
-		{
-			mInheritedMask[i] = temp[i];
-		}
-	}
-	
-
-	virtual void visit(const LLOctreeNode<LLDrawable>* state)
-	{
-		LLSpatialGroup* group = (LLSpatialGroup*) state->getListener(0);
-
-		for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
-		{
-			if (mInheritedMask[i] && !(group->mOcclusionState[i] & mInheritedMask[i]))
-			{
-				llerrs << "Spatial group failed inherited mask test." << llendl;
-			}
-		}
-
-		if (group->isState(LLSpatialGroup::DIRTY))
-		{
-			assert_parent_state(group, LLSpatialGroup::DIRTY);
-		}
-	}
-
-	void assert_parent_state(LLSpatialGroup* group, LLSpatialGroup::eSpatialState state)
-	{
-		LLSpatialGroup* parent = group->getParent();
-		while (parent)
-		{
-			if (!parent->isState(state))
-			{
-				llerrs << "Spatial group failed parent state check." << llendl;
-			}
-			parent = parent->getParent();
-		}
-	}	
-};
-
 
 void LLSpatialPartition::renderDebug()
 {
