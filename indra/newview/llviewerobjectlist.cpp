@@ -909,6 +909,13 @@ void LLViewerObjectList::removeDrawable(LLDrawable* drawablep)
 
 BOOL LLViewerObjectList::killObject(LLViewerObject *objectp)
 {
+	// Don't commit suicide just because someone thinks you are on a ledge. -SG
+	if (objectp == gAgent.getAvatarObject())
+	{
+		objectp->setRegion(gAgent.getRegion());
+		return FALSE;
+	}	
+	
 	// When we're killing objects, all we do is mark them as dead.
 	// We clean up the dead objects later.
 
