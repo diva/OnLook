@@ -42,7 +42,8 @@ const LLUUID collision_sounds[num_collision_sounds] =
 	LLUUID("be582e5d-b123-41a2-a150-454c39e961c8"),
 	LLUUID("c70141d4-ba06-41ea-bcbc-35ea81cb8335"),
 	LLUUID("7d1826f4-24c4-4aac-8c2e-eff45df37783"),
-	LLUUID("063c97d3-033a-4e9b-98d8-05c8074922cb")
+	LLUUID("063c97d3-033a-4e9b-98d8-05c8074922cb"),
+	LLUUID("e8af4a28-aa83-4310-a7c4-c047e15ea0df") //Step sound
 };
 
 LLFloaterExploreSounds* LLFloaterExploreSounds::sInstance;
