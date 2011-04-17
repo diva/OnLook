@@ -12,7 +12,7 @@
 #include "llfloaterchat.h"
 #include "llfloaterblacklist.h"
 
-static const size_t num_collision_sounds = 28;
+static const size_t num_collision_sounds = 29;
 const LLUUID collision_sounds[num_collision_sounds] =
 {
 	LLUUID("dce5fdd4-afe4-4ea1-822f-dd52cac46b08"),
