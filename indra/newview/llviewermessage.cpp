@@ -3077,7 +3077,15 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 								avatar->clearNameFromChat();
 						}
 					} else {
+						if (key.isNull()) {
+							llwarns << "Nameplate from chat on NULL avatar (ignored)" << llendl;
+							return;
+						}	
 						LLVOAvatar *avatar = gObjectList.findAvatar(key);
+						if (!avatar) {
+							llwarns << "Nameplate from chat on invalid avatar (ignored)" << llendl;
+							return;							
+						}
 						if (mesg.size() == 39) {
 							avatar->clearNameFromChat();
 						} else if (mesg[39] == ' ') {
