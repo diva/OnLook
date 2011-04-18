@@ -1297,7 +1297,10 @@ add_executable(${VIEWER_BINARY_NAME}
     MACOSX_BUNDLE
     ${viewer_SOURCE_FILES}
     )
-check_message_template(${VIEWER_BINARY_NAME})
+
+if (!DISABLE_TEMPLATE_CHECK)
+	check_message_template(${VIEWER_BINARY_NAME})
+endif (!DISABLE_TEMPLATE_CHECK)
 
 if (LLKDU_LIBRARY)
   add_dependencies(${VIEWER_BINARY_NAME} ${LLKDU_LIBRARY})
