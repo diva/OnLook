@@ -24,17 +24,14 @@
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadBulk" userdata="" />
     </menu_item_call>
-	<menu_item_call bottom="-86" enabled="true" height="19"
-		label="Import XML..." left="0" mouse_opaque="true"
-		name="Import XML" width="243">
-		<on_click function="File.ImportXML" userdata="" />
-		<on_enable function ="File.EnableImportXML" userdata="" />
+	<menu_item_call enabled="false" hidden="false" label="Import" mouse_opaque="true" name="Import">
+		<on_click function="Object.Import" />
+		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
-	<!--<menu_item_check bottom="-384" enabled="true" height="19" label="Upload Browser" left="0"
-		mouse_opaque="true" name="ascentuploadbrowser" width="211">
-		<on_click function="ShowFloater" userdata="ascentuploadbrowser" />
-		<on_check function="FloaterVisible" userdata="ascentuploadbrowser" />
-	</menu_item_check>-->
+	<menu_item_call enabled="false" hidden="false" label="Upload Textures + Import" mouse_opaque="true" name="Import">
+		<on_click function="Object.ImportUpload" />
+		<on_enable function="Object.EnableImport" />
+	</menu_item_call>
     <menu_item_separator enabled="true" label="-----------" mouse_opaque="true" name="separator" />
     <menu_item_call enabled="true" label="Set Default Permissions..." 
         mouse_opaque="true" name="perm prefs" >

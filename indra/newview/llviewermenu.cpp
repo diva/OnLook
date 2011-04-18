@@ -62,8 +62,6 @@
 #include "llsdutil.h"
 // <edit>
 #include "lllocalinventory.h"
-#include "llfloaterimport.h"
-#include "llfloaterexport.h"
 #include "llfloaterexploreanimations.h"
 #include "llfloaterexploresounds.h"
 #include "llfloaterblacklist.h"
@@ -113,7 +111,6 @@
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
 //#include "llfloaterdickdongs.h" No need for the custom floater right now, I think. -HgB
-#include "ascentuploadbrowser.h" //New customer floater attempts
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
 #include "llfloaterchatterbox.h"
@@ -2534,64 +2531,6 @@ class LLObjectCopyUUID : public view_listener_t
 		{
 			gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(object->getID().asString()));
 		}
-		return true;
-	}
-};
-
-class LLObjectEnableImport : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		bool new_value = (object != NULL);
-		if(object)
-		{
-			if(!object->permCopy())
-				new_value = false;
-			else if(!object->permModify())
-				new_value = false;
-			else if(!object->permMove())
-				new_value = false;
-			else if(object->numChildren() != 0)
-				new_value = false;
-			else if(object->getParent())
-				new_value = false;
-		}
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-class LLObjectImport : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		bool new_value = (object != NULL);
-		if(object)
-		{
-			if(!object->permCopy())
-				new_value = false;
-			else if(!object->permModify())
-				new_value = false;
-			else if(!object->permMove())
-				new_value = false;
-			else if(object->numChildren() != 0)
-				new_value = false;
-			else if(object->getParent())
-				new_value = false;
-		}
-		if(new_value == false) return true;
-		
-		LLFilePicker& picker = LLFilePicker::instance();
-		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
-		{
-			return true;
-		}
-		std::string file_name = picker.getFirstFile();
-		LLXmlImportOptions* options = new LLXmlImportOptions(file_name);
-		options->mSupplier = object;
-		new LLFloaterXmlImportOptions(options);
 		return true;
 	}
 };
@@ -6597,10 +6536,6 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterPerms::toggleInstance(LLSD());
 		}
-		else if (floater_name == "ascentuploadbrowser")
-		{
-			ASFloaterUploadBrowser::show(NULL);
-		}
 		return true;
 	}
 };
@@ -7420,10 +7355,6 @@ class LLObjectEnableWear : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		bool is_wearable = object_selected_and_point_valid(NULL);
-		// <edit> Don't allow attaching objects while importing attachments
-		if(LLXmlImport::sImportInProgress && LLXmlImport::sImportHasAttachments)
-			is_wearable = false;
-		// </edit>
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(is_wearable);
 		return TRUE;
 	}
@@ -10452,7 +10383,7 @@ void initialize_menus()
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	addMenu(new LLObjectReportAbuse(), "Object.ReportAbuse");
 	// <edit>
-	addMenu(new LLObjectImport(), "Object.Import");
+	//addMenu(new LLObjectImport(), "Object.Import");
 	addMenu(new LLObjectMeasure(), "Object.Measure");
 	addMenu(new LLObjectData(), "Object.Data");
 	addMenu(new LLScriptCount(), "Object.ScriptCount");
@@ -10476,7 +10407,7 @@ void initialize_menus()
 	addMenu(new LLObjectEnableReturn(), "Object.EnableReturn");
 	addMenu(new LLObjectEnableReportAbuse(), "Object.EnableReportAbuse");
 	// <edit>
-	addMenu(new LLObjectEnableImport(), "Object.EnableImport");
+	//addMenu(new LLObjectEnableImport(), "Object.EnableImport");
 	// </edit>
 	addMenu(new LLObjectEnableMute(), "Object.EnableMute");
 	addMenu(new LLObjectEnableBuy(), "Object.EnableBuy");
