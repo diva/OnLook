@@ -75,6 +75,8 @@
 
 #include "llappviewer.h"
 
+#include "llviewerobjectbackup.h"
+
 extern F32 gMinObjectDistance;
 extern BOOL gAnimateTextures;
 
@@ -247,6 +249,11 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	{
 		gPipeline.addObject(objectp);
 	}
+	else
+	{
+		LLObjectBackup::getInstance()->primUpdate(objectp);
+	}
+	
 
 	// Also sets the approx. pixel area
 	objectp->setPixelAreaAndAngle(gAgent);
@@ -272,6 +279,8 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 		objectp->mCreateSelected = false;
 		gViewerWindow->getWindow()->decBusyCount();
 		gViewerWindow->getWindow()->setCursor( UI_CURSOR_ARROW );
+		
+		LLObjectBackup::getInstance()->newPrim(objectp);		
 	}
 }
 

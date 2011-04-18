@@ -24,11 +24,11 @@
         mouse_opaque="true" enabled="true" >
         <on_click function="File.UploadBulk" userdata="" />
     </menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import" mouse_opaque="true" name="Import">
+	<menu_item_call enabled="false" hidden="false" label="Import XML" mouse_opaque="true" name="Import">
 		<on_click function="Object.Import" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Upload Textures + Import" mouse_opaque="true" name="Import">
+	<menu_item_call enabled="false" hidden="false" label="Import with Textures" mouse_opaque="true" name="Import">
 		<on_click function="Object.ImportUpload" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
