@@ -1700,17 +1700,11 @@ BOOL LLFloaterCustomize::postBuild()
 	childSetAction("Make Outfit", LLFloaterCustomize::onBtnMakeOutfit, (void*)this);
 	childSetAction("Ok", LLFloaterCustomize::onBtnOk, (void*)this);
 	childSetAction("Cancel", LLFloater::onClickClose, (void*)this);
-	// OGPX : if using agent domain, disable saving appearance until inventory and assets is working
-	// since it doesn't work in OGP right now, disable it, since enabling it hits an error case.
-	// OGPX TODO: test with it enabled with Agent Domain that manages Inventory and Assets
-    //    This was originally added as part of OGP9 svn branch because the viewer deeply deeply 
-	//    assumes that there *will* be an inventory there. If you never get an inventory, 
-	//    Make Outfit breaks badly. 
-	//if (!gSavedSettings.getString("CmdLineRegionURI").empty()) 
-	//{
-	//	childSetEnabled("Make Outfit", FALSE);
-	//}
 
+    // reX
+	childSetAction("Import", LLFloaterCustomize::onBtnImport, (void*)this);
+	childSetAction("Export", LLFloaterCustomize::onBtnExport, (void*)this);
+	
 	// Wearable panels
 	initWearablePanels();
 
@@ -1777,6 +1771,128 @@ void LLFloaterCustomize::setCurrentWearableType( EWearableType type )
 			gFloaterCustomize->switchToDefaultSubpart();
 		}
 	}
+}
+
+// reX: new function
+void LLFloaterCustomize::onBtnImport( void* userdata )
+{
+	LLFilePicker& file_picker = LLFilePicker::instance();
+	if( !file_picker.getOpenFile( LLFilePicker::FFLOAD_XML ) )
+		{
+			// User canceled import.
+			return;
+		}
+
+	const std::string filename = file_picker.getFirstFile();
+
+	FILE* fp = LLFile::fopen(filename, "rb");
+
+	//char text_buffer[2048];		/* Flawfinder: ignore */
+	S32 c;
+	S32 typ;
+	S32 count;
+	S32 param_id=0;
+	F32 param_weight=0;
+	S32 fields_read;
+
+	for( S32 i=0; i < WT_COUNT; i++ )
+	{
+		fields_read = fscanf( fp, "type %d\n", &typ);
+		if( fields_read != 1 )
+		{
+			llwarns << "Bad asset type: early end of file" << llendl;
+			return;
+		}
+
+		fields_read = fscanf( fp, "parameters %d\n", &count);
+		if( fields_read != 1 )
+		{
+			llwarns << "Bad parameters : early end of file" << llendl;
+			return;
+		}
+		for(c=0;c<count;c++)
+		{
+			fields_read = fscanf( fp, "%d %f\n", &param_id, &param_weight );
+			if( fields_read != 2 )
+			{
+				llwarns << "Bad parameters list: early end of file" << llendl;
+				return;
+			}
+			gAgent.getAvatarObject()->setVisualParamWeight( param_id, param_weight, TRUE);
+			gAgent.getAvatarObject()->updateVisualParams();
+		}
+	}
+
+	fclose(fp);
+	return;
+}
+
+// reX: new function
+void LLFloaterCustomize::onBtnExport( void* userdata )
+{
+	LLFilePicker& file_picker = LLFilePicker::instance();
+	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_XML ) )
+		{
+			// User canceled export.
+			return;
+		}
+
+	LLViewerInventoryItem* item;
+	BOOL is_modifiable;
+
+	const std::string filename = file_picker.getFirstFile();
+
+	FILE* fp = LLFile::fopen(filename, "wb");
+
+	for( S32 i=0; i < WT_COUNT; i++ )
+	{
+		is_modifiable = FALSE;
+		LLWearable* old_wearable = gAgent.getWearable((EWearableType)i);
+		if( old_wearable )
+		{
+			item = (LLViewerInventoryItem*)gAgent.getWearableInventoryItem((EWearableType)i);
+			if(item)
+			{
+				const LLPermissions& perm = item->getPermissions();
+				is_modifiable = perm.allowModifyBy(gAgent.getID(), gAgent.getGroupID());
+			}
+		}
+		if (is_modifiable)
+		{
+			old_wearable->FileExportParams(fp);
+		}
+		if (!is_modifiable)
+		{
+			fprintf( fp, "type %d\n",i);
+			fprintf( fp, "parameters 0\n");
+		}
+	}	
+
+	for( S32 i=0; i < WT_COUNT; i++ )
+	{
+		is_modifiable = FALSE;
+		LLWearable* old_wearable = gAgent.getWearable((EWearableType)i);
+		if( old_wearable )
+		{
+			item = (LLViewerInventoryItem*)gAgent.getWearableInventoryItem((EWearableType)i);
+			if(item)
+			{
+				const LLPermissions& perm = item->getPermissions();
+				is_modifiable = perm.allowModifyBy(gAgent.getID(), gAgent.getGroupID());
+			}
+		}
+		if (is_modifiable)
+		{
+			old_wearable->FileExportTextures(fp);
+		}
+		if (!is_modifiable)
+		{
+			fprintf( fp, "type %d\n",i);
+			fprintf( fp, "textures 0\n");
+		}
+	}	
+
+	fclose(fp);
 }
 
 // static
