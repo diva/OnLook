@@ -596,23 +596,26 @@ void LLFace::printDebugInfo() const
 	llinfos << "II: " << mIndicesIndex << " Count:" << mIndicesCount << llendl;
 	llinfos << llendl;
 
-	poolp->printDebugInfo();
-
-	S32 pool_references = 0;
-	for (std::vector<LLFace*>::iterator iter = poolp->mReferences.begin();
-		 iter != poolp->mReferences.end(); iter++)
+	if (poolp)
 	{
-		LLFace *facep = *iter;
-		if (facep == this)
+		poolp->printDebugInfo();
+
+		S32 pool_references = 0;
+		for (std::vector<LLFace*>::iterator iter = poolp->mReferences.begin();
+			 iter != poolp->mReferences.end(); iter++)
 		{
-			llinfos << "Pool reference: " << pool_references << llendl;
-			pool_references++;
+			LLFace *facep = *iter;
+			if (facep == this)
+			{
+				llinfos << "Pool reference: " << pool_references << llendl;
+				pool_references++;
+			}
 		}
-	}
 
-	if (pool_references != 1)
-	{
-		llinfos << "Incorrect number of pool references!" << llendl;
+		if (pool_references != 1)
+		{
+			llinfos << "Incorrect number of pool references!" << llendl;
+		}
 	}
 
 #if 0
