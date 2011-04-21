@@ -69,6 +69,10 @@
 					<on_click function="Tools.SelectedScriptAction" userdata="reset" />
 					<on_enable function="EditableSelected" />
 				</menu_item_call>
+				<menu_item_call enabled="false" hidden="false" label="Export" mouse_opaque="true" name="Export">
+						<on_click function="Object.Export" />
+						<on_enable function="Object.EnableExport" />
+				</menu_item_call>				
 			</pie_menu>
 			<menu_item_call enabled="false" label="Mute" mouse_opaque="true" name="Object Mute">
 				<on_click function="Object.Mute" />
@@ -80,6 +84,11 @@
 			</menu_item_call>
 			<menu_item_call enabled="true" label="Derender" mouse_opaque="true" name="Derender">
 				<on_click function="Object.DERENDER" />
+			</menu_item_call>
+			<menu_item_call enabled="false" label="Report..." mouse_opaque="true"
+			     name="Report Abuse...">
+				<on_click function="Object.ReportAbuse" />
+				<on_enable function="Object.EnableReportAbuse" />
 			</menu_item_call>
 		</pie_menu>
 		<menu_item_call enabled="false" label="Buy..." mouse_opaque="true" name="Buy...">

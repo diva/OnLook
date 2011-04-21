@@ -397,7 +397,9 @@ public:
 		RENDER_DEBUG_SHADOW_FRUSTA		= 0x0040000,
 		RENDER_DEBUG_SCULPTED           = 0x0080000,
 		RENDER_DEBUG_AVATAR_VOLUME      = 0x0100000,
-		RENDER_DEBUG_AGENT_TARGET       = 0x0200000,
+		RENDER_DEBUG_BUILD_QUEUE		= 0x0200000,
+		RENDER_DEBUG_AGENT_TARGET       = 0x0400000,
+		RENDER_DEBUG_UPDATE_TYPE		= 0x0800000,
 	};
 
 public:
@@ -602,8 +604,6 @@ protected:
 	std::vector<LLFace*>		mSelectedFaces;
 
 	LLPointer<LLViewerImage>	mFaceSelectImagep;
-	LLPointer<LLViewerImage>	mBloomImagep;
-	LLPointer<LLViewerImage>	mBloomImage2p;
 	
 	U32						mLightMask;
 	U32						mLightMovingMask;
@@ -620,6 +620,7 @@ public:
 };
 
 void render_bbox(const LLVector3 &min, const LLVector3 &max);
+void render_hud_elements();
 
 extern LLPipeline gPipeline;
 extern BOOL gRenderForSelect;

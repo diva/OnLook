@@ -809,13 +809,14 @@ void LLHUDText::updateVisibility()
 		return;
 	}
 		
-	if (vec_from_camera * LLViewerCamera::getInstance()->getAtAxis() <= LLViewerCamera::getInstance()->getNear() + 0.1f + mSourceObject->getVObjRadius())
+	F32 object_radius = llmin(mSourceObject->getVObjRadius(), 26.f); //~15x15x15 prim : sqrt((15^2) * 3) = 25.9807621. getVObjRadius is diam.
+	if (vec_from_camera * LLViewerCamera::getInstance()->getAtAxis() <= LLViewerCamera::getInstance()->getNear() + 0.1f + object_radius)
 	{
 		mPositionAgent = LLViewerCamera::getInstance()->getOrigin() + vec_from_camera * ((LLViewerCamera::getInstance()->getNear() + 0.1f) / (vec_from_camera * LLViewerCamera::getInstance()->getAtAxis()));
 	}
 	else
 	{
-		mPositionAgent -= dir_from_camera * mSourceObject->getVObjRadius();
+		mPositionAgent -= dir_from_camera * object_radius;
 	}
 
 	mLastDistance = (mPositionAgent - LLViewerCamera::getInstance()->getOrigin()).magVec();
