@@ -224,11 +224,7 @@ glh::matrix4f gl_ortho(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top,
 	return ret;
 }
 
-#if SHY_MOD //screenshot improvement
 void display_update_camera(bool tiling=false);
-#else //shy_mod
-void display_update_camera();
-#endif //ignore
 //----------------------------------------
 
 S32		LLPipeline::sCompiles = 0;
@@ -5300,7 +5296,7 @@ void LLPipeline::bindScreenToTexture()
 	
 }
 
-void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
+void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, bool tiling)
 {
 	if (!(gPipeline.canUseVertexShaders() &&
 		sRenderGlow))
@@ -5352,7 +5348,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
 	gGL.setColorMask(true, true);
 	glClearColor(0,0,0,0);
 
-	if (for_snapshot)
+	if (tiling && !LLPipeline::sRenderDeferred) //Need to coax this into working with deferred now that tiling is back.
 	{
 		gGL.getTexUnit(0)->bind(&mGlow[1]);
 		{
@@ -5374,7 +5370,6 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
 			
 			LLGLEnable blend(GL_BLEND);
 			gGL.setSceneBlendType(LLRender::BT_ADD);
-			
 				
 			gGL.begin(LLRender::TRIANGLE_STRIP);
 			gGL.color4f(1,1,1,1);
@@ -5462,10 +5457,10 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield)
 	const U32 glow_res = llmax(1, 
 		llmin(1024, 1 << glowResPow));
 
-	static const LLCachedControl<S32> glow_iters("RenderGlowIterations",2);//*2;
+	static const LLCachedControl<S32> glow_iters("RenderGlowIterations",2);
 	S32 kernel = glow_iters*2;
-	static const LLCachedControl<F32> glow_width("RenderGlowWidth",1.3f);// / glow_res;
-	F32 delta = glow_width/glow_res;
+	static const LLCachedControl<F32> glow_width("RenderGlowWidth",1.3f);
+	F32 delta = glow_width*zoom_factor/glow_res;
 	// Use half the glow width if we have the res set to less than 9 so that it looks
 	// almost the same in either case.
 	if (glowResPow < 9)

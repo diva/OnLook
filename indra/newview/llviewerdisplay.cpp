@@ -105,6 +105,7 @@ BOOL gForceRenderLandFence = FALSE;
 BOOL gDisplaySwapBuffers = FALSE;
 BOOL gDepthDirty = FALSE;
 BOOL gResizeScreenTexture = FALSE;
+BOOL gWindowResized = FALSE;
 BOOL gSnapshot = FALSE;
 
 U32 gRecentFrameCount = 0; // number of 'recent' frames
@@ -114,7 +115,7 @@ LLFrameTimer gRecentMemoryTime;
 // Rendering stuff
 void pre_show_depth_buffer();
 void post_show_depth_buffer();
-void render_ui(F32 zoom_factor = 1.f, int subfield = 0);
+void render_ui(F32 zoom_factor = 1.f, int subfield = 0, bool tiling = false);
 void render_hud_attachments();
 void render_ui_3d();
 void render_ui_2d();
@@ -167,11 +168,7 @@ void display_startup()
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-#if SHY_MOD //screenshot improvement
 void display_update_camera(bool tiling=false)
-#else //shy_mod
-void display_update_camera()
-#endif //ignore
 {
 	llpushcallstacks ;
 	// TODO: cut draw distance down if customizing avatar?
@@ -180,7 +177,6 @@ void display_update_camera()
 	// Cut draw distance in half when customizing avatar,
 	// but on the viewer only.
 	F32 final_far = gAgent.mDrawDistance;
-#if SHY_MOD //screenshot improvement
 	if(tiling) //Don't animate clouds and water if tiling!
 	{
 		LLViewerCamera::getInstance()->setFar(final_far);
@@ -188,7 +184,6 @@ void display_update_camera()
 		LLWorld::getInstance()->setLandFarClip(final_far);
 		return;
 	}
-#endif //shy_mod
 	if (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgent.getCameraMode())
 	{
 		final_far *= 0.5f;
@@ -233,18 +228,26 @@ void display_stats()
 }
 
 // Paint the display!
-#if SHY_MOD // screenshot improvement
-void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, BOOL tiling)
-#else //shy_mod
-void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
-#endif //ignore
+void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, bool tiling)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER);
 
-	if (LLPipeline::sRenderDeferred)
+	if (gWindowResized)
+	{ //skip render on frames where window has been resized
+		gGL.flush();
+		glClear(GL_COLOR_BUFFER_BIT);
+		gViewerWindow->mWindow->swapBuffers();
+		gPipeline.resizeScreenTexture();
+		gResizeScreenTexture = FALSE;
+		gWindowResized = FALSE;
+		return;
+	}
+
+	//Nope
+	/*if (LLPipeline::sRenderDeferred)
 	{ //hack to make sky show up in deferred snapshots
 		for_snapshot = FALSE;
-	}
+	}*/
 
 	if (LLPipeline::sRenderFrameTest)
 	{
@@ -603,11 +606,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLNamePool::upkeepPools();
 		
 		stop_glerror();
-#if SHY_MOD //screenshot improvement
 		display_update_camera(tiling);
-#else //shy_mod
-		display_update_camera();
-#endif //ignore
 		stop_glerror();
 				
 		// *TODO: merge these two methods
@@ -680,7 +679,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 		LLGLState::checkTextureChannels();
 		LLGLState::checkClientArrays();
 
-		BOOL to_texture = gPipeline.canUseVertexShaders() && (LLPipeline::sRenderDeferred || (LLPipeline::sRenderGlow && !gSnapshot));
+		BOOL to_texture = gPipeline.canUseVertexShaders() && LLPipeline::sRenderGlow;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Swap");
 		
@@ -703,7 +702,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			LLGLState::checkTextureChannels();
 			LLGLState::checkClientArrays();
 
-			if (!for_snapshot)
+			if (!for_snapshot || LLPipeline::sRenderDeferred)
 			{
 				if (gFrameCount > 1)
 				{ //for some reason, ATI 4800 series will error out if you 
@@ -739,11 +738,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		}
 
-#if SHY_MOD // screenshot improvement
 		if (!for_snapshot || tiling)
-#else //shy_mod
-		if (!for_snapshot)
-#endif //ignore
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Imagery");
 			gPipeline.generateWaterReflection(*LLViewerCamera::getInstance());
@@ -878,7 +873,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 				glClearColor(0,0,0,0);
 				gPipeline.mDeferredScreen.clear();
 			}
-			else
+			else if(!tiling)
 			{
 				gPipeline.mScreen.bindTarget();
 				gPipeline.mScreen.clear();
@@ -922,7 +917,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot)
 			{
 				gPipeline.mDeferredScreen.flush();
 			}
-			else
+			else if(!tiling)
 			{
 				gPipeline.mScreen.flush();
 			}
@@ -1136,7 +1131,7 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 }
 
 
-void render_ui(F32 zoom_factor, int subfield)
+void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
 	
@@ -1151,7 +1146,7 @@ void render_ui(F32 zoom_factor, int subfield)
 
 		if (to_texture)
 		{
-			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield);
+			gPipeline.renderBloom(gSnapshot, zoom_factor, subfield, tiling);
 			gPipeline.mScreen.flush(); //blit, etc.
 		}
 		/// We copy the frame buffer straight into a texture here,
