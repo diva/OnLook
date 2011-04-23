@@ -5892,7 +5892,7 @@ void LLPipeline::renderDeferredLighting()
 		bindDeferredShader(gDeferredBlurLightProgram);
 
 		static const LLCachedControl<LLVector3> go("RenderShadowGaussian",LLVector3(2.f,2.f,0.f));
-		static const LLCachedControl<F32> blur_size("RenderShadowBlurSize",.7);
+		static const LLCachedControl<F32> blur_size("RenderShadowBlurSize",.7f);
 		static const LLCachedControl<U32> blur_samples("RenderShadowBlurSamples",(U32)5);
 		U32 kern_length = llclamp(blur_samples.get(), (U32) 1, (U32) 16)*2 - 1;
 
