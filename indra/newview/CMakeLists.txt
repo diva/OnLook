@@ -9,6 +9,7 @@ include(DirectX)
 include(ELFIO)
 include(FMOD)
 include(OPENAL)
+include(HUNSPELL)
 include(FindOpenGL)
 include(JsonCpp)
 include(LLAddBuildTest)
@@ -43,6 +44,7 @@ endif (WINDOWS)
 
 include_directories(
     ${DBUSGLIB_INCLUDE_DIRS}
+    ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIRS}
     ${LLAUDIO_INCLUDE_DIRS}
@@ -67,6 +69,8 @@ set(viewer_SOURCE_FILES
     slfloatermediafilter.cpp
     floaterlocalassetbrowse.cpp
     aoremotectrl.cpp
+    lgghunspell_wrapper.cpp
+    lggdicdownload.cpp
     floaterao.cpp
     floatervoicelicense.cpp
     cofmgr.cpp
@@ -561,6 +565,8 @@ set(viewer_HEADER_FILES
     hipporestrequest.h
     hippopanelgrids.h
     jcfloaterareasearch.h
+    lggdicdownload.h
+    lgghunspell_wrapper.h
     chatbar_as_cmdline.h
     qtoolalign.h
     llagent.h
@@ -1440,6 +1446,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${WINDOWS_LIBRARIES}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
+    ${HUNSPELL_LIBRARY}
     )
 
 if (LINUX)
