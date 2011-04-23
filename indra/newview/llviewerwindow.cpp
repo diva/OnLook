@@ -4259,7 +4259,7 @@ BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 
 // Saves the image from the screen to the specified filename and path.
 BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height, 
-								 BOOL keep_window_aspect, BOOL is_texture, BOOL show_ui, BOOL do_rebuild, ESnapshotType type, S32 max_size)
+								 BOOL keep_window_aspect, BOOL is_texture, BOOL show_ui, BOOL do_rebuild, ESnapshotType type, S32 max_size, F32 supersample)
 {
 	if (!raw)
 	{
@@ -4308,12 +4308,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	static const LLCachedControl<bool> force_tile("SHHighResSnapshotForceTile",false);*/
 
 #if 1//SHY_MOD // screenshot improvement
-	F32 internal_scale = 1.f;
-	//if(force_tile)
-	{
-		static const LLCachedControl<F32> super_sample_scale("SHHighResSnapshotSuperSample",1.f);
-		internal_scale = llmax(super_sample_scale.get(),1.f);
-	}
+	F32 internal_scale = llmin(llmax(supersample,1.f),3.f);
 	// render at specified internal resolution. >1 results in supersampling.
 	image_height *= internal_scale;
 	image_width *= internal_scale;

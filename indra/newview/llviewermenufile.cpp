@@ -569,12 +569,15 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 		S32 width = gViewerWindow->getWindowDisplayWidth();
 		S32 height = gViewerWindow->getWindowDisplayHeight();
 
+		F32 supersample = 1.f;
 		if (gSavedSettings.getBOOL("HighResSnapshot"))
 		{
 #if 1//SHY_MOD // screenshot improvement
 			const F32 mult = gSavedSettings.getF32("SHHighResSnapshotScale");
 			width *= mult;
 			height *= mult;
+			static const LLCachedControl<F32> super_sample_scale("SHHighResSnapshotSuperSample",1.f);
+			supersample = super_sample_scale;
 #else //shy_mod
 			width *= 2;
 			height *= 2;
@@ -587,7 +590,10 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 									   TRUE,
 									   FALSE,
 									   gSavedSettings.getBOOL("RenderUIInSnapshot"),
-									   FALSE))
+									   FALSE,
+									   LLViewerWindow::SNAPSHOT_TYPE_COLOR,
+									   6144,
+									   supersample))
 		{
 			gViewerWindow->playSnapshotAnimAndSound();
 			
