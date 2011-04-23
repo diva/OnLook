@@ -552,7 +552,8 @@ void LLDrawPoolWater::shade()
 			}
 
 			LLVOWater* water = (LLVOWater*) face->getViewerObject();
-			gGL.getTexUnit(diffTex)->bind(face->getTexture());
+			if(diffTex > -1 && face->getTexture()->getHasGLTexture())
+				gGL.getTexUnit(diffTex)->bind(face->getTexture());
 
 			sNeedsReflectionUpdate = TRUE;
 			
@@ -570,6 +571,8 @@ void LLDrawPoolWater::shade()
 				LLGLSquashToFarClip far_clip(glh_get_current_projection());
 				face->renderIndexed();
 			}
+			if(diffTex > -1 && face->getTexture()->getHasGLTexture())
+				gGL.getTexUnit(diffTex)->unbind(LLTexUnit::TT_TEXTURE);
 		}
 	}
 	
