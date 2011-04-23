@@ -686,11 +686,12 @@ BOOL LLViewerWindow::handleMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask
 		llinfos << "Left Mouse Down not handled by view" << llendl;
 	}
 
+	// Do not allow tool manager to handle mouseclicks if we have disconnected	
 	if (gDisconnected)
 	{
 		return FALSE;
 	}
-
+		
 	if(LLToolMgr::getInstance()->getCurrentTool()->handleMouseDown( x, y, mask ) )
 	{
 		// This is necessary to force clicks in the world to cause edit
@@ -1499,6 +1500,15 @@ LLViewerWindow::LLViewerWindow(
 		LL_WARNS("Window") << " Someone took over my signal/exception handler (post createWindow)!" << LL_ENDL;
 	}
 
+	LLCoordScreen scr;
+    mWindow->getSize(&scr);
+
+    if(fullscreen && ( scr.mX!=width || scr.mY!=height))
+    {
+		llwarns << "Fullscreen has forced us in to a different resolution now using "<<scr.mX<<" x "<<scr.mY<<llendl;
+		gSavedSettings.setS32("FullScreenWidth",scr.mX);
+		gSavedSettings.setS32("FullScreenHeight",scr.mY);
+    }
 
 	if (NULL == mWindow)
 	{
