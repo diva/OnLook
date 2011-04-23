@@ -248,6 +248,8 @@ void LLComboBox::onCommit()
 		mTextEntry->setValue(getSimple());
 		mTextEntry->setTentative(FALSE);
 	}
+
+	setControlValue(getValue());
 	LLUICtrl::onCommit();
 }
 
