@@ -289,11 +289,13 @@ S32 LLImageGL::updateBoundTexMem(const S32 mem, const S32 ncomponents, S32 categ
 //static 
 void LLImageGL::destroyGL(BOOL save_state)
 {
+	deleteDeadTextures(); //Dump unimportant textures.
 	for (S32 stage = 0; stage < gGLManager.mNumTextureUnits; stage++)
 	{
 		gGL.getTexUnit(stage)->unbind(LLTexUnit::TT_TEXTURE);
 	}
 	
+	int stored_count = 0;
 	sAllowReadBackRaw = true ;
 	for (std::set<LLImageGL*>::iterator iter = sImageList.begin();
 		 iter != sImageList.end(); iter++)
@@ -308,18 +310,24 @@ void LLImageGL::destroyGL(BOOL save_state)
 				{
 					glimage->mSaveData = NULL ;
 				}
+				else
+					stored_count++;
 			}
 
 			glimage->destroyGLTexture();
 			stop_glerror();
 		}
 	}
+	llinfos << "Storing " << stored_count << " images..." << llendl;
 	sAllowReadBackRaw = false ;
+	deleteDeadTextures();//Now, actually call glDeleteTextures for everything.
 }
 
 //static 
 void LLImageGL::restoreGL()
 {
+	
+	int recovered_count = 0;
 	for (std::set<LLImageGL*>::iterator iter = sImageList.begin();
 		 iter != sImageList.end(); iter++)
 	{
@@ -334,10 +342,12 @@ void LLImageGL::restoreGL()
 			{
 				glimage->createGLTexture(glimage->mCurrentDiscardLevel, glimage->mSaveData, 0, TRUE, glimage->getCategory());
 				stop_glerror();
+				recovered_count++;
 			}
 			glimage->mSaveData = NULL; // deletes data
 		}
 	}
+	llinfos << "Restored " << recovered_count << " images" << llendl;
 }
 
 //static 
@@ -1250,7 +1260,7 @@ BOOL LLImageGL::readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compre
 	llverify(gGL.getTexUnit(0)->bindManual(mBindTarget, mTexName));	
 
 	//debug code, leave it there commented.
-	//checkTexSize() ;
+	checkTexSize() ;
 
 	LLGLint glwidth = 0;
 	glGetTexLevelParameteriv(mTarget, gl_discard, GL_TEXTURE_WIDTH, (GLint*)&glwidth);

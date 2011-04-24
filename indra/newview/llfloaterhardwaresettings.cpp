@@ -169,32 +169,20 @@ BOOL LLFloaterHardwareSettings::postBuild()
 }
 
 
-void LLFloaterHardwareSettings::apply()
+void LLFloaterHardwareSettings::apply() 
 {
-	// Anisotropic rendering
-	BOOL old_anisotropic = LLImageGL::sGlobalUseAnisotropic;
-	LLImageGL::sGlobalUseAnisotropic = childGetValue("ani");
-
-	U32 fsaa = (U32) childGetValue("fsaa").asInteger();
-	U32 old_fsaa = gSavedSettings.getU32("RenderFSAASamples");
-
-	BOOL logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
-
-	if (old_fsaa != fsaa)
+	//Still do a bit of voodoo here. V2 forces restart to change FSAA with FBOs off.
+	//Let's not do that, and instead do pre-V2 FSAA change handling for that particular case
+	if(!LLRenderTarget::sUseFBO && (mFSAASamples != (U32)childGetValue("fsaa").asInteger()))
 	{
-		gSavedSettings.setU32("RenderFSAASamples", fsaa);
+		BOOL logged_in = (LLStartUp::getStartupState() >= STATE_STARTED);
 		LLWindow* window = gViewerWindow->getWindow();
 		LLCoordScreen size;
 		window->getSize(&size);
 		gViewerWindow->changeDisplaySettings(window->getFullscreen(), 
-														size,
-														gSavedSettings.getBOOL("DisableVerticalSync"),
-														logged_in);
-	}
-	else if (old_anisotropic != LLImageGL::sGlobalUseAnisotropic)
-	{
-		LLImageGL::dirtyTexOptions();
-		gViewerWindow->restartDisplay(logged_in);	
+															size,
+															gSavedSettings.getBOOL("DisableVerticalSync"),
+															logged_in);
 	}
 
 	refresh();
