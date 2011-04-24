@@ -75,9 +75,7 @@
 
 #include "llappviewer.h"
 
-// <edit>
-#include "llimportobject.h"
-// </edit>
+#include "llviewerobjectbackup.h"
 
 extern F32 gMinObjectDistance;
 extern BOOL gAnimateTextures;
@@ -251,6 +249,11 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	{
 		gPipeline.addObject(objectp);
 	}
+	else
+	{
+		LLObjectBackup::getInstance()->primUpdate(objectp);
+	}
+	
 
 	// Also sets the approx. pixel area
 	objectp->setPixelAreaAndAngle(gAgent);
@@ -276,6 +279,8 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 		objectp->mCreateSelected = false;
 		gViewerWindow->getWindow()->decBusyCount();
 		gViewerWindow->getWindow()->setCursor( UI_CURSOR_ARROW );
+		
+		LLObjectBackup::getInstance()->newPrim(objectp);		
 	}
 }
 
@@ -548,28 +553,6 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			}
 			processUpdateCore(objectp, user_data, i, update_type, NULL, justCreated);
 		}
-		// <edit>
-		if(justCreated && LLXmlImport::sImportInProgress)
-		{
-			if(objectp)
-			{
-				LLViewerObject* parent = (LLViewerObject*)objectp->getParent();
-				if(parent)
-				{
-					if(parent->getID() == gAgent.getID())
-					{
-						LLXmlImport::onNewAttachment(objectp);
-					}
-				}
-				else if( objectp->permYouOwner()
-					&& (objectp->getPCode() == LLXmlImport::sSupplyParams->getPCode())
-					&& (objectp->getScale() == LLXmlImport::sSupplyParams->getScale()))
-				{
-					LLXmlImport::onNewPrim(objectp);
-				}
-			}
-		}
-		// </edit>
 		
 		objectp->setLastUpdateType(update_type);
 		objectp->setLastUpdateCached(cached);

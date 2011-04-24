@@ -60,7 +60,6 @@
 #include "llvoavatar.h"
 #include "llsdutil.h"
 // <edit>
-#include "llimportobject.h"
 #include "llappviewer.h" // gLostItemsRoot
 // </edit>
 #include <deque>
@@ -1977,10 +1976,6 @@ void LLInventoryModel::addItem(LLViewerInventoryItem* item)
 	if(item)
 	{
 		mItemMap[item->getUUID()] = item;
-		// <edit>
-		if(LLXmlImport::sImportInProgress)
-			LLXmlImport::onNewItem(item);
-		// </edit>
 	}
 }
 

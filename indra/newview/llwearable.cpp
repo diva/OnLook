@@ -194,6 +194,50 @@ std::string terse_F32_to_string( F32 f )
 	return r;
 }
 
+// reX: new function
+BOOL LLWearable::FileExportParams( FILE* file )
+{
+	// wearable type 
+	S32 type = (S32)mType;
+	fprintf( file, "type %d\n", type );
+
+	// parameters
+	S32 num_parameters = mVisualParamMap.size();
+	fprintf( file, "parameters %d\n", num_parameters );
+
+	for (param_map_t::iterator iter = mVisualParamMap.begin();
+		 iter != mVisualParamMap.end(); ++iter)
+	{
+		S32 param_id = iter->first;
+		F32 param_weight = iter->second;
+		fprintf( file, "%d %s\n", param_id, terse_F32_to_string(param_weight).c_str() );
+	}
+
+	return TRUE;
+}
+
+// reX: new function
+BOOL LLWearable::FileExportTextures( FILE* file )
+{
+	// wearable type 
+	S32 type = (S32)mType;
+	fprintf( file, "type %d\n", type );
+
+	// texture entries
+	S32 num_textures = mTEMap.size();
+	fprintf( file, "textures %d\n", num_textures );
+	
+	for (te_map_t::iterator iter = mTEMap.begin();
+		 iter != mTEMap.end(); ++iter)
+	{
+		S32 te = iter->first;
+		LLUUID& image_id = iter->second;
+		fprintf( file, "%d %s\n", te, image_id.asString().c_str() );
+    }
+
+	return TRUE;
+}
+
 BOOL LLWearable::exportFile( LLFILE* file )
 {
 	// header and version

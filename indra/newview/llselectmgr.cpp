@@ -93,10 +93,6 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-// <edit>
-#include "llfloaterexport.h"
-// </edit>
-
 #include "llglheaders.h"
 
 LLViewerObject* getSelectedParentObject(LLViewerObject *object) ;
@@ -4400,10 +4396,6 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 			}
 		}
 
-		// <edit> Send to export floaters
-		LLFloaterExport::receiveObjectProperties(id, name, desc);
-		// </edit>
-
 		// Iterate through nodes at end, since it can be on both the regular AND hover list
 		struct f : public LLSelectedNodeFunctor
 		{
@@ -4537,7 +4529,7 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	if(sObjectPropertiesFamilyRequests.count(id) != 0 )
 	{
 		// Send to export floaters
-		LLFloaterExport::receiveObjectProperties(id, name, desc);
+		//LLFloaterExport::receiveObjectProperties(id, name, desc);
 		// We got the reply, so remove the object from the list of pending requests
 		sObjectPropertiesFamilyRequests.erase(id);
 	}
