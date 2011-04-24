@@ -65,8 +65,6 @@
 #include "lluploaddialog.h"
 // <edit>
 #include "llselectmgr.h"
-#include "llfloaterimport.h"
-#include "llfloaterexport.h"
 #include "llassettype.h"
 #include "llinventorytype.h"
 #include "llbvhloader.h"
@@ -432,35 +430,6 @@ class LLFileUploadBulk : public view_listener_t
 	}
 };
 
-// <edit>
-class LLFileImportXML : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		LLFilePicker& picker = LLFilePicker::instance();
-		if (!picker.getOpenFile(LLFilePicker::FFLOAD_XML))
-		{
-			return true;
-		}
-		std::string file_name = picker.getFirstFile();
-		new LLFloaterXmlImportOptions(new LLXmlImportOptions(file_name));
-		return true;
-	}
-};
-
-class LLFileEnableImportXML : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		bool new_value = !LLXmlImport::sImportInProgress;
-
-		// horrendously opaque, this code
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-// </edit>
-
 void upload_error(const std::string& error_message, const std::string& label, const std::string& filename, const LLSD& args) 
 {
 	llwarns << error_message << llendl;
@@ -533,20 +502,8 @@ class LLFileSaveTexture : public view_listener_t
 		LLFloater* top = gFloaterView->getFrontmost();
 		if (top)
 		{
-			// <edit>
-			if(top->canSaveAs())
-			{
-			// </edit>
-				top->saveAs();
-			// <edit>
-				return true;
-			}
-			// </edit>
+			top->saveAs();
 		}
-		// <edit>
-		top = new LLFloaterExport();
-		top->center();
-		// </edit>
 		return true;
 	}
 };
@@ -1348,10 +1305,6 @@ void init_menu_file()
 	(new LLFileUploadSound())->registerListener(gMenuHolder, "File.UploadSound");
 	(new LLFileUploadAnim())->registerListener(gMenuHolder, "File.UploadAnim");
 	(new LLFileUploadBulk())->registerListener(gMenuHolder, "File.UploadBulk");
-	// <edit>
-	(new LLFileImportXML())->registerListener(gMenuHolder, "File.ImportXML");
-	(new LLFileEnableImportXML())->registerListener(gMenuHolder, "File.EnableImportXML");
-	// </edit>
 	(new LLFileCloseWindow())->registerListener(gMenuHolder, "File.CloseWindow");
 	(new LLFileCloseAllWindows())->registerListener(gMenuHolder, "File.CloseAllWindows");
 	(new LLFileEnableCloseWindow())->registerListener(gMenuHolder, "File.EnableCloseWindow");

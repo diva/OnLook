@@ -1,63 +1,45 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater can_close="true" can_drag_on_left="false" can_minimize="true"
-     can_resize="false" height="950" name="avatar_texture_debug"
-     title="Avatar Textures" width="960">
-	<text bottom="-40" height="16" left="10" name="label" width="80">
-		Baked Textures
-	</text>
-	<text bottom="-40" height="16" left="150" name="composite_label" width="120">
-		Composite Textures
-	</text>
-
+<floater
+  can_close="true"
+  can_drag_on_left="false"
+  can_minimize="true"
+  can_resize="false"
+  height="570"
+  width="600"
+  name="avatar_texture_debug"
+  title="Avatar Textures"
+	rect_control="FloaterAvatarTextRect"
+  >
 	<button bottom="-45" left="-160" font="SansSerif" halign="center" height="20" label="Dump IDs to Console"
 	     label_selected="Dump" mouse_opaque="true" name="Dump" scale_image="TRUE" width="150" />
 
+  <texture_picker bottom="-130" height="111" label="Hair Baked" left="4" name="hair-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Hair" left_delta="99" name="hair" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Eyes Baked" left_delta="99" name="eyes-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Eyes" left_delta="99" name="iris" width="96" />
 
-	<texture_picker bottom_delta="-145" height="143" label="Hair" left="10" name="hair-baked"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Hair" left_delta="135" name="hair"
-	     width="128" />
+  <texture_picker bottom_delta="-110" height="111" label="Head Baked" left="4" name="head-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Makeup" left_delta="99" name="head bodypaint" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Head Tattoo" left_delta="99" name="head_tattoo" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Upper Tattoo" left_delta="99" name="upper_tattoo" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Lower Tattoo" left_delta="99" name="lower_tattoo" width="96" />
 
-	<texture_picker bottom_delta="-150" height="143" label="Head" left="10" name="head-baked"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Makeup" left_delta="135"
-	     name="head bodypaint" width="128" />
+  <texture_picker bottom_delta="-110" height="111" label="Upper Baked" left="4" name="upper-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Upper Skin" left_delta="99" name="upper bodypaint" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Undershirt" left_delta="99" name="undershirt" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Shirt" left_delta="99" name="shirt" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Upper Jacket" left_delta="99" name="upper jacket" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Gloves" left_delta="99" name="gloves" width="96" />
 
-	<texture_picker bottom_delta="-150" height="143" label="Eyes" left="10" name="eyes-baked"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Eye" left_delta="135" name="iris"
-	     width="128" />
+  <texture_picker bottom_delta="-110" height="111" label="Lower Baked" left="4" name="lower-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Lower Skin" left_delta="99" name="lower bodypaint" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Underpants" left_delta="99" name="underpants" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Pants" left_delta="99" name="pants" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Lower Jacket" left_delta="99" name="lower jacket" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Socks" left_delta="99" name="socks" width="96" />
 
-	<texture_picker bottom_delta="-150" height="143" label="Upper Body" left="10"
-	     name="upper-baked" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Upper Body Tattoo" left_delta="135"
-	     name="upper bodypaint" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Undershirt" left_delta="135"
-	     name="undershirt" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Gloves" left_delta="135" name="gloves"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Shirt" left_delta="135" name="shirt"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Upper Jacket" left_delta="135"
-	     name="upper jacket" width="128" />
+  <texture_picker bottom_delta="-110" height="111" label="Skirt Baked" left="4" name="skirt-baked" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Skirt" left_delta="99" name="skirt" width="96" />
+  <texture_picker bottom_delta="0" height="111" label="Shoes" left_delta="99" name="shoes" width="96" />
 
-	<texture_picker bottom_delta="-150" height="143" label="Lower Body" left="10"
-	     name="lower-baked" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Lower Body Tattoo" left_delta="135"
-	     name="lower bodypaint" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Underpants" left_delta="135"
-	     name="underpants" width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Socks" left_delta="135" name="socks"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Shoes" left_delta="135" name="shoes"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Pants" left_delta="135" name="pants"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Jacket" left_delta="135" name="lower jacket"
-	     width="128" />
-
-	<texture_picker bottom_delta="-150" height="143" label="Skirt" left="10" name="skirt-baked"
-	     width="128" />
-	<texture_picker bottom_delta="0" height="143" label="Skirt" left_delta="135"
-	     name="skirt" width="128" />
 </floater>

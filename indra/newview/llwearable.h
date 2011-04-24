@@ -81,6 +81,9 @@ public:
 
 	BOOL				exportFile(LLFILE* file);
 	BOOL				importFile(LLFILE* file);
+	BOOL				FileExportParams(FILE* file);
+	BOOL				FileExportTextures(FILE* file);
+	
 
 	EWearableType		getType() const							{ return mType; }
 	void				setType( EWearableType type )			{ mType = type; }

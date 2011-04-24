@@ -518,9 +518,16 @@ class WindowsSetup(PlatformSetup):
                         self.using_express = True
                         print 'Building with ', self.gens[version]['gen'] , "Express edition"
                         break
-                    else:
-                        print >> sys.stderr, 'Cannot find any Visual Studio installation'
-                        sys.exit(1)
+                else:
+					for version in 'vc80 vc90 vc100 vc71'.split():
+						if self.find_visual_studio_express_single(version):
+							self._generator = version
+							self.using_express = True
+							print 'Building with ', self.gens[version]['gen'] , "Express edition"
+							break
+					else:
+						print >> sys.stderr, 'Cannot find any Visual Studio installation'
+						sys.exit(1)
         return self._generator
 
     def _set_generator(self, gen):
@@ -605,6 +612,28 @@ class WindowsSetup(PlatformSetup):
         except WindowsError, err:
             print >> sys.stderr, "Didn't find ", self.gens[gen]['gen']
             return ''
+        
+    def find_visual_studio_express_single(self, gen=None):
+        if gen is None:
+            gen = self._generator
+        gen = gen.lower()
+        try:
+            import _winreg
+            key_str = (r'SOFTWARE\Microsoft\VCEXpress\%s_Config\Setup\VC' %
+                       self.gens[gen]['ver'])
+            value_str = (r'ProductDir')
+            print ('Reading VS environment from HKEY_CURRENT_USER\%s\%s' %
+                   (key_str, value_str))
+            print key_str
+
+            reg = _winreg.ConnectRegistry(None, _winreg.HKEY_CURRENT_USER)
+            key = _winreg.OpenKey(reg, key_str)
+            value = _winreg.QueryValueEx(key, value_str)[0]+"IDE"
+            print 'Found: %s' % value
+            return value
+        except WindowsError, err:
+            print >> sys.stderr, "Didn't find ", self.gens[gen]['gen']
+            return ''
 
     def get_build_cmd(self):
         if self.incredibuild:
@@ -617,13 +646,15 @@ class WindowsSetup(PlatformSetup):
         if environment == '':
             environment = self.find_visual_studio_express()
             if environment == '':
-                 print >> sys.stderr, "Something went very wrong during build stage, could not find a Visual Studio?"
-            else:
-                 build_dirs=self.build_dirs()
-                 print >> sys.stderr, "\nSolution generation complete, it can can now be found in:", build_dirs[0]    
-                 print >> sys.stderr, "\nAs you are using an Express Visual Studio, the build step cannot be automated"
-		 print >> sys.stderr, "\nPlease see https://wiki.secondlife.com/wiki/Microsoft_Visual_Studio#Extra_steps_for_Visual_Studio_Express_editions for Visual Studio Express specific information"
-                 exit(0)
+				environment = self.find_visual_studio_express_single()
+				if environment == '':
+					print >> sys.stderr, "Something went very wrong during build stage, could not find a Visual Studio?"
+				else:
+					build_dirs=self.build_dirs()
+					print >> sys.stderr, "\nSolution generation complete, it can can now be found in:", build_dirs[0]    
+					print >> sys.stderr, "\nAs you are using an Express Visual Studio, the build step cannot be automated"
+					print >> sys.stderr, "\nPlease see https://wiki.secondlife.com/wiki/Microsoft_Visual_Studio#Extra_steps_for_Visual_Studio_Express_editions for Visual Studio Express specific information"
+					exit(0)
     
         # devenv.com is CLI friendly, devenv.exe... not so much.
         return ('"%sdevenv.com" %s.sln /build %s' % 
