@@ -66,6 +66,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    llviewerobjectbackup.cpp
     slfloatermediafilter.cpp
     floaterlocalassetbrowse.cpp
     aoremotectrl.cpp
@@ -78,7 +79,6 @@ set(viewer_SOURCE_FILES
     ascentfloatercontactgroups.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-    ascentuploadbrowser.cpp
     dhparam.cpp
     dsaparam.cpp
     emerald.cpp
@@ -188,7 +188,6 @@ set(viewer_SOURCE_FILES
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
     llfloaterevent.cpp
-    llfloaterexport.cpp
     llfloaterexploreanimations.cpp
     llfloaterexploresounds.cpp
     llfloaterfriends.cpp
@@ -205,7 +204,6 @@ set(viewer_SOURCE_FILES
     llfloaterhtmlsimple.cpp
     llfloaterhud.cpp
     llfloaterimagepreview.cpp
-    llfloaterimport.cpp
     llfloaterinspect.cpp
     llfloaterjoystick.cpp
     llfloaterlagmeter.cpp
@@ -273,7 +271,6 @@ set(viewer_SOURCE_FILES
     llhudtext.cpp
     llhudview.cpp
     llimpanel.cpp
-    llimportobject.cpp
     llimview.cpp
     llinventoryactions.cpp
     llinventorybackup.cpp
@@ -541,6 +538,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    llviewerobjectbackup.h
     slfloatermediafilter.h
     floaterlocalassetbrowse.h
     aoremotectrl.h
@@ -551,7 +549,6 @@ set(viewer_HEADER_FILES
     ascentfloatercontactgroups.h
     ascentprefssys.h
     ascentprefsvan.h
-    ascentuploadbrowser.h
     emerald.h
     emeraldboobutils.h
     dofloaterhex.h
@@ -662,7 +659,6 @@ set(viewer_HEADER_FILES
     llfloaterdirectory.h
     llfloatereditui.h
     llfloaterenvsettings.h
-    llfloaterexport.h
     llfloaterexploreanimations.h
     llfloaterexploresounds.h
     llfloaterevent.h
@@ -680,7 +676,6 @@ set(viewer_HEADER_FILES
     llfloaterhtmlsimple.h
     llfloaterhud.h
     llfloaterimagepreview.h
-    llfloaterimport.h
     llfloaterinspect.h
     llfloaterjoystick.h
     llfloaterlagmeter.h
@@ -747,7 +742,6 @@ set(viewer_HEADER_FILES
     llhudtext.h
     llhudview.h
     llimpanel.h
-    llimportobject.h
     llimview.h
     llinventorybackup.h
     llinventorybridge.h
@@ -1311,7 +1305,10 @@ add_executable(${VIEWER_BINARY_NAME}
     MACOSX_BUNDLE
     ${viewer_SOURCE_FILES}
     )
-check_message_template(${VIEWER_BINARY_NAME})
+
+if (!DISABLE_TEMPLATE_CHECK)
+	check_message_template(${VIEWER_BINARY_NAME})
+endif (!DISABLE_TEMPLATE_CHECK)
 
 if (LLKDU_LIBRARY)
   add_dependencies(${VIEWER_BINARY_NAME} ${LLKDU_LIBRARY})

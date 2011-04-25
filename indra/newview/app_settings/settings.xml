@@ -9,6 +9,22 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+    <key>FloaterObjectBackuptRect</key>
+    <map>
+      <key>Comment</key>
+      <string>Rectangle for the object backup floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Rect</string>
+      <key>Value</key>
+      <array>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+        <integer>0</integer>
+      </array>
+    </map>
 
   <key>MediaEnableFilter</key>
   <map>

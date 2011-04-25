@@ -5882,8 +5882,8 @@ std::string LLVOAvatar::getIdleTime()
 // animations.
 LLUUID LLVOAvatar::remapMotionID(const LLUUID& id)
 {
-	LLCachedControl<bool> use_new_walk_run("UseNewWalkRun",true);
-	LLCachedControl<bool> use_cross_walk_run("UseCrossWalkRun",false);
+	static const LLCachedControl<bool> use_new_walk_run("UseNewWalkRun",true);
+	static const LLCachedControl<bool> use_cross_walk_run("UseCrossWalkRun",false);
 	LLUUID result = id;
 
 	// start special case female walk for female avatars

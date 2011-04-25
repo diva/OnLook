@@ -127,9 +127,13 @@ BOOL FloaterVoiceLicense::postBuild()
 	{
 		// start to observe it so we see navigate complete events
 		web_browser->addObserver( this );
-
-		gResponsePtr = LLIamHereVoice::build( this );
-		LLHTTPClient::get( getString( "real_url" ), gResponsePtr );
+		std::string url = getString( "real_url" );
+		if(url.substr(0,4) == "http") {
+			gResponsePtr = LLIamHereVoice::build( this );
+			LLHTTPClient::get( url, gResponsePtr );
+		} else {
+			setSiteIsAlive(false);
+		}
 	}
 
 	return TRUE;
@@ -145,11 +149,7 @@ void FloaterVoiceLicense::setSiteIsAlive( bool alive )
 		{
 			// navigate to the "real" page 
 			std::string real_url = getString( "real_url" );
-			if (real_url.find("http://") == 0) {
-				web_browser->navigateTo(real_url);
-			} else {
-				web_browser->navigateToLocalPage("license",real_url);
-			}
+			web_browser->navigateTo(real_url);
 		}
 	}
 	else
