@@ -2224,7 +2224,8 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		model_mat = &(drawable->getRegion()->mRenderMatrix);
 	}
 
-	U8 bump = (type == LLRenderPass::PASS_BUMP ? facep->getTextureEntry()->getBumpmap() : 0);
+
+	U8 bump = (type == LLRenderPass::PASS_BUMP || type == LLRenderPass::PASS_POST_BUMP) ? facep->getTextureEntry()->getBumpmap() : 0;
 	
 	LLViewerTexture* tex = facep->getTexture();
 
@@ -2801,13 +2802,17 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				}
 				else if (LLPipeline::sRenderDeferred)
 				{ //deferred rendering
-					if (te->getBumpmap())
-					{ //register in deferred bump pass
-						registerFace(group, facep, LLRenderPass::PASS_BUMP);
-					}
-					else if (te->getFullbright())
+					if (te->getFullbright())
 					{ //register in post deferred fullbright shiny pass
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_SHINY);
+						if (te->getBumpmap())
+						{ //register in post deferred bump pass
+							registerFace(group, facep, LLRenderPass::PASS_POST_BUMP);
+						}
+					}
+					else if (te->getBumpmap())
+					{ //register in deferred bump pass
+						registerFace(group, facep, LLRenderPass::PASS_BUMP);
 					}
 					else
 					{ //register in deferred simple pass (deferred simple includes shiny)
@@ -2833,6 +2838,10 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				else if (fullbright)
 				{ //fullbright
 					registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT);
+					if (LLPipeline::sRenderDeferred && LLPipeline::sRenderBump && te->getBumpmap())
+					{ //if this is the deferred render and a bump map is present, register in post deferred bump
+						registerFace(group, facep, LLRenderPass::PASS_POST_BUMP);
+					}
 				}
 				else
 				{
