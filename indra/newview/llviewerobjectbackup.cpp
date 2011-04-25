@@ -72,7 +72,7 @@
 #include "lluictrlfactory.h"
 #include "lluploaddialog.h"
 #include "llviewercontrol.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerobjectlist.h"
 #include "llviewermenu.h"
 #include "llviewerregion.h"
@@ -691,16 +691,16 @@ void LLObjectBackup::exportNextTexture()
 
 		id = (*iter);
 
-		LLViewerImage* imagep = gImageList.hasImage(id);
+		LLViewerTexture* imagep = LLViewerTextureManager::findTexture(id);
 		if (imagep != NULL)
 		{
 			S32 cur_discard = imagep->getDiscardLevel();
 			if (cur_discard > 0)
 			{
-				if (imagep->getBoostLevel() != LLViewerImageBoostLevel::BOOST_PREVIEW)
+				if (imagep->getBoostLevel() != LLViewerTexture::BOOST_PREVIEW)
 				{
 					// we want to force discard 0: this one does this.
-					imagep->setBoostLevel(LLViewerImageBoostLevel::BOOST_PREVIEW);
+					imagep->setBoostLevel(LLViewerTexture::BOOST_PREVIEW);
 				}
 			}
 			else
