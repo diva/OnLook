@@ -67,7 +67,6 @@
 //
 static LLRegisterWidget<LLTextEditor> r("simple_text_editor");
 BOOL gDebugTextEditorTips = FALSE;
-static BOOL bSpellCheckText;
 
 //
 // Constants
