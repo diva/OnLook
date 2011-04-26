@@ -637,9 +637,9 @@ BOOL LLDrawPoolBump::bindBumpMap(LLDrawInfo& params, S32 channel)
 }
 
 //static
-void LLDrawPoolBump::beginBump()
+void LLDrawPoolBump::beginBump(U32 pass)
 {	
-	if (!gPipeline.hasRenderBatches(LLRenderPass::PASS_BUMP))
+	if (!gPipeline.hasRenderBatches(pass))
 	{
 		return;
 	}
@@ -682,9 +682,9 @@ void LLDrawPoolBump::beginBump()
 }
 
 //static
-void LLDrawPoolBump::renderBump()
+void LLDrawPoolBump::renderBump(U32 pass)
 {
-	if (!gPipeline.hasRenderBatches(LLRenderPass::PASS_BUMP))
+	if (!gPipeline.hasRenderBatches(pass))
 	{
 		return;
 	}
@@ -697,13 +697,13 @@ void LLDrawPoolBump::renderBump()
 	/// Get rid of z-fighting with non-bump pass.
 	LLGLEnable polyOffset(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(-1.0f, -1.0f);
-	renderBump(LLRenderPass::PASS_BUMP, sVertexMask);
+	renderBump(pass, sVertexMask);
 }
 
 //static
-void LLDrawPoolBump::endBump()
+void LLDrawPoolBump::endBump(U32 pass)
 {
-	if (!gPipeline.hasRenderBatches(LLRenderPass::PASS_BUMP))
+	if (!gPipeline.hasRenderBatches(pass))
 	{
 		return;
 	}
@@ -718,6 +718,12 @@ void LLDrawPoolBump::endBump()
 	gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
 	
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+}
+
+S32 LLDrawPoolBump::getNumDeferredPasses()
+{ 
+	static const LLCachedControl<bool> render_object_bump("RenderObjectBump",false);
+	return render_object_bump ? 1 : 0;
 }
 
 void LLDrawPoolBump::beginDeferredPass(S32 pass)
@@ -774,17 +780,41 @@ void LLDrawPoolBump::renderDeferred(S32 pass)
 
 void LLDrawPoolBump::beginPostDeferredPass(S32 pass)
 {
-	beginFullbrightShiny();
+	switch (pass)
+	{
+	case 0:
+		beginFullbrightShiny();
+		break;
+	case 1:
+		beginBump(LLRenderPass::PASS_POST_BUMP);
+		break;
+	}
 }
 
 void LLDrawPoolBump::endPostDeferredPass(S32 pass)
 {
-	endFullbrightShiny();
+	switch (pass)
+	{
+	case 0:
+		endFullbrightShiny();
+		break;
+	case 1:
+		endBump(LLRenderPass::PASS_POST_BUMP);
+		break;
+	}
 }
 
 void LLDrawPoolBump::renderPostDeferred(S32 pass)
 {
-	renderFullbrightShiny();
+	switch (pass)
+	{
+	case 0:
+		renderFullbrightShiny();
+		break;
+	case 1:
+		renderBump(LLRenderPass::PASS_POST_BUMP);
+		break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////

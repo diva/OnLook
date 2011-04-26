@@ -6169,6 +6169,7 @@ void LLPipeline::renderDeferredLighting()
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA,
 						 LLPipeline::RENDER_TYPE_PASS_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_BUMP,
+						 LLPipeline::RENDER_TYPE_PASS_POST_BUMP,
 						 LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT,
 						 LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT_ALPHA_MASK,
 						 LLPipeline::RENDER_TYPE_PASS_FULLBRIGHT_SHINY,
