@@ -2708,9 +2708,11 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		{
 			if (LLVertexBuffer::sEnableVBOs && buffer->getUsage() != group->mBufferUsage)
 			{
-				buffer = createVertexBuffer(group->mSpatialPartition->mVertexDataMask, 
+				//Using group->mSpatialPartition->mVertexDataMask may be dropping MAP_BINORMAL on RENDER_BUMP...
+				buffer = createVertexBuffer(mask /*group->mSpatialPartition->mVertexDataMask*/, 
 											group->mBufferUsage);
 				buffer->allocateBuffer(geom_count, index_count, TRUE);
+				llassert_always(buffer->getTypeMask() == mask);
 			}
 			else
 			{
