@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>ScriptsCanShowUI</key>
+    <map>
+      <key>Comment</key>
+      <string>Allow LSL calls (such as LLMapDestination) to spawn viewer UI</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+  </map>
     <key>FloaterObjectBackuptRect</key>
     <map>
       <key>Comment</key>

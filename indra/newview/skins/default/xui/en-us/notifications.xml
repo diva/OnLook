@@ -6933,6 +6933,12 @@ No
     For instructions, make a new template in the AO. Use the toolbar to toggle the AO on/off.
   </notification>
 
+  <notification icon="notifytip.tga" name="BlockedCards" type="notifytip">Blocked calling cards from [FIRST] [LAST] ([SOURCE])</notification>
+  <notification icon="notifytip.tga" name="BlockedDialogs" type="notifytip">Blocking all dialogs from [FIRST] [LAST]'s objects. (Origin: [SOURCE])</notification>
+  <notification icon="notifytip.tga" name="BlockedGeneralAvatar" type="notifytip">Blocked spam from avatar [FULL_NAME] ([SOURCE])</notification>
+  <notification icon="notifytip.tga" name="BlockedGeneralObjects" type="notifytip">Blocked spam from objects owned by [OWNER] ([SOURCE])</notification>
+  <notification icon="notifytip.tga" name="BlockedChatterAvatar" type="notifytip">Blocked chat-spam from avatar [FULL_NAME] ([SOURCE])</notification>
+  <notification icon="notifytip.tga" name="BlockedChatterObjects" type="notifytip">Blocked chat-spam from objects owned by [OWNER] ([SOURCE])</notification>
 
 </notifications>
 
