@@ -405,7 +405,14 @@ enum ESubpart {
 	SUBPART_UNDERPANTS,
 	SUBPART_SKIRT,
 	SUBPART_ALPHA,
-	SUBPART_TATTOO
+	SUBPART_TATTOO,
+	SUBPART_PHYSICS_BREASTS_UPDOWN,
+    SUBPART_PHYSICS_BREASTS_INOUT,
+    SUBPART_PHYSICS_BREASTS_LEFTRIGHT,
+    SUBPART_PHYSICS_BELLY_UPDOWN,
+    SUBPART_PHYSICS_BUTT_UPDOWN,
+    SUBPART_PHYSICS_BUTT_LEFTRIGHT,
+    SUBPART_PHYSICS_ADVANCED
  };
 
 struct LLSubpart
@@ -926,6 +933,7 @@ ESubpart LLPanelEditWearable::getDefaultSubpart()
 		case WT_SKIRT:		return SUBPART_SKIRT;
 		case WT_ALPHA:		return SUBPART_ALPHA;
 		case WT_TATTOO:		return SUBPART_TATTOO;
+		case WT_PHYSICS:	return SUBPART_PHYSICS_BELLY_UPDOWN;
 
 		default:	llassert(0);		return SUBPART_SHAPE_WHOLE;
 	}
@@ -1708,6 +1716,7 @@ LLFloaterCustomize::LLFloaterCustomize()
 	factory_map["Skirt"] = LLCallbackMap(createWearablePanel, (void*)(new WearablePanelData(this, WT_SKIRT) ) );
 	factory_map["Alpha"] = LLCallbackMap(createWearablePanel, (void*)(new WearablePanelData(this, WT_ALPHA)));
 	factory_map["Tattoo"] = LLCallbackMap(createWearablePanel, (void*)(new WearablePanelData(this, WT_TATTOO)));
+	factory_map["Physics"] = LLCallbackMap(createWearablePanel, (void*)(new WearablePanelData(this, WT_PHYSICS)));
 
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_customize.xml", &factory_map);
 }
@@ -1741,6 +1750,7 @@ BOOL LLFloaterCustomize::postBuild()
 	childSetTabChangeCallback("customize tab container", "Skirt", onTabChanged, (void*)WT_SKIRT, onTabPrecommit );
 	childSetTabChangeCallback("customize tab container", "Alpha", onTabChanged, (void*)WT_ALPHA, onTabPrecommit);
 	childSetTabChangeCallback("customize tab container", "Tattoo", onTabChanged, (void*)WT_TATTOO, onTabPrecommit);
+	childSetTabChangeCallback("customize tab container", "Physics", onTabChanged, (void*)WT_PHYSICS, onTabPrecommit);
 
 	// Remove underwear panels for teens
 	if (gAgent.isTeen())

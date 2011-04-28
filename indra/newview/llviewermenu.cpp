@@ -3913,6 +3913,7 @@ class LLEditEnableCustomizeAvatar : public view_listener_t
 	}
 };
 
+
 class LLEditEnableChangeDisplayname : public view_listener_t
 {
        bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
@@ -8894,6 +8895,10 @@ class LLEditEnableTakeOff : public view_listener_t
 		{
 			new_value = LLAgent::selfHasWearable((void *)WT_TATTOO);
 		}
+		if (clothing == "physics")
+		{
+			new_value = LLAgent::selfHasWearable((void *)WT_PHYSICS);
+		}
 
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b | OK
 		// Why aren't they using LLWearable::typeNameToType()? *confuzzled*
@@ -8956,6 +8961,10 @@ class LLEditTakeOff : public view_listener_t
 		else if (clothing == "tattoo")
 		{
 			LLAgent::userRemoveWearable((void*)WT_TATTOO);
+		}
+		else if (clothing == "physics")
+		{
+			LLAgent::userRemoveWearable((void*)WT_PHYSICS);
 		}
 		else if (clothing == "all")
 		{

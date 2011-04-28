@@ -72,6 +72,7 @@ enum EInventoryIcon
 	CLOTHING_SKIRT_ICON_NAME,
 	CLOTHING_ALPHA_ICON_NAME,
 	CLOTHING_TATTOO_ICON_NAME,
+	CLOTHING_PHYSICS_ICON_NAME,
 	
 	ANIMATION_ICON_NAME,
 	GESTURE_ICON_NAME,
@@ -375,6 +376,7 @@ protected:
 	static void createNewSkin(void* user_data);
 	static void createNewHair(void* user_data);
 	static void createNewEyes(void* user_data);
+	static void createNewPhysics(void* user_data);
 
 	BOOL checkFolderForContentsOfType(LLInventoryModel* model, LLInventoryCollectFunctor& typeToCheck);
 
