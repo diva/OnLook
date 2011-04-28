@@ -1474,7 +1474,7 @@ std::string get_item_icon_name(LLAssetType::EType asset_type,
 		{
 			idx = BODYPART_ICON_NAME;
 		}
-		switch(LLInventoryItem::II_FLAGS_WEARABLES_MASK & attachment_point)
+		switch(LLInventoryItemFlags::II_FLAGS_WEARABLES_MASK & attachment_point)
 		{
 		case WT_SHAPE:
 			idx = BODYPART_SHAPE_ICON_NAME;

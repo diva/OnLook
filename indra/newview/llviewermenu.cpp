@@ -8467,7 +8467,7 @@ void handle_grab_texture(void* data)
 											name,
 											LLStringUtil::null,
 											LLSaleInfo::DEFAULT,
-											LLInventoryItem::II_FLAGS_NONE,
+											LLInventoryItemFlags::II_FLAGS_NONE,
 											creation_date_now);
 
 			item->updateServer(TRUE);

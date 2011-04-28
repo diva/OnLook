@@ -5930,7 +5930,7 @@ void process_derez_container(LLMessageSystem *msg, void**)
 }
 
 void container_inventory_arrived(LLViewerObject* object,
-								 InventoryObjectList* inventory,
+								 LLInventoryObject::object_list_t* inventory,
 								 S32 serial_num,
 								 void* data)
 {
@@ -5950,8 +5950,8 @@ void container_inventory_arrived(LLViewerObject* object,
 											  LLAssetType::AT_NONE,
 											  std::string("Acquired Items")); //TODO: Translate
 
-		InventoryObjectList::const_iterator it = inventory->begin();
-		InventoryObjectList::const_iterator end = inventory->end();
+		LLInventoryObject::object_list_t::const_iterator it = inventory->begin();
+		LLInventoryObject::object_list_t::const_iterator end = inventory->end();
 		for ( ; it != end; ++it)
 		{
 			if ((*it)->getType() != LLAssetType::AT_CATEGORY &&
