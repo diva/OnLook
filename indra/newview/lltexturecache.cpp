@@ -915,10 +915,12 @@ void LLTextureCache::purgeCache(ELLPath location)
 		if(LLFile::isdir(mTexturesDirName))
 		{
 			std::string file_name = gDirUtilp->getExpandedFilename(location, entries_filename);
-			LLAPRFile::remove(file_name);
+			if(LLAPRFile::isExist(file_name))
+				LLAPRFile::remove(file_name);
 
 			file_name = gDirUtilp->getExpandedFilename(location, cache_filename);
-			LLAPRFile::remove(file_name);
+			if(LLAPRFile::isExist(file_name))
+				LLAPRFile::remove(file_name);
 
 			purgeAllTextures(true);
 	}
@@ -1711,7 +1713,8 @@ void LLTextureCache::purgeTextureFilesTimeSliced(bool force)
 			if (mHeaderIDMap.find(curiter->first) == mHeaderIDMap.end())
 			{
 				filename = curiter->second;
-				LLAPRFile::remove(filename);
+				if(LLAPRFile::isExist(filename))
+					LLAPRFile::remove(filename);
 			}
 			else
 		{	
@@ -1963,7 +1966,7 @@ void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename, b
 			mFreeList.insert(idx);
 		}
 
-	if (remove_file)
+	if (remove_file && LLAPRFile::isExist(filename))
 	{
 		LLAPRFile::remove(filename);
 	}
