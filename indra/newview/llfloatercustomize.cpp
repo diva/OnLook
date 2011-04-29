@@ -417,7 +417,7 @@ enum ESubpart {
 
 struct LLSubpart
 {
-	LLSubpart() : mSex( SEX_BOTH ) {}
+	LLSubpart() : mSex( SEX_BOTH ), mVisualHint(true) {}
 
 	std::string			mButtonName;
 	std::string			mTargetJoint;
@@ -425,6 +425,8 @@ struct LLSubpart
 	LLVector3d			mTargetOffset;
 	LLVector3d			mCameraOffset;
 	ESex				mSex;
+
+	bool				mVisualHint;
 };
 
 ////////////////////////////////////////////////////////////////////////////
@@ -629,7 +631,7 @@ void LLPanelEditWearable::setSubpart( ESubpart subpart )
 			llassert( sorted_params.find(-param->getDisplayOrder()) == sorted_params.end() );  // Check for duplicates
 			sorted_params.insert(vt);
 		}
-		gFloaterCustomize->generateVisualParamHints(NULL, sorted_params);
+		gFloaterCustomize->generateVisualParamHints(NULL, sorted_params, part->mVisualHint);
 		gFloaterCustomize->updateScrollingPanelUI();
 		gFloaterCustomize->childSetEnabled("Export", can_export);
 		gFloaterCustomize->childSetEnabled("Import", can_import);
@@ -982,6 +984,7 @@ void LLPanelEditWearable::draw()
 	for (std::map<ESubpart, LLSubpart*>::iterator iter = mSubpartList.begin();
 		 iter != mSubpartList.end(); ++iter)
 	{
+		childSetVisible(iter->second->mButtonName,has_wearable);
 		if( has_wearable && is_complete && is_modifiable )
 		{
 			childSetEnabled(iter->second->mButtonName, iter->second->mSex & avatar->getSex() );
@@ -1001,6 +1004,8 @@ void LLPanelEditWearable::draw()
 
 	childSetVisible("path", FALSE);
 
+	LLTextBox *av_height = getChild<LLTextBox>("avheight",FALSE,FALSE);
+	if(av_height) //Only display this if the element exists
 	{
 		// Display the shape's nominal height.
 		//
@@ -1014,8 +1019,8 @@ void LLPanelEditWearable::draw()
 		std::ostringstream avheight(std::ostringstream::trunc);
 		avheight << std::fixed << std::setprecision(2) << avsize << " m ("
 			<< feet << "' " << inches << "\")";
-		childSetVisible("avheight", TRUE);
-		childSetTextArg("avheight", "[AVHEIGHT]", avheight.str());
+		av_height->setVisible(TRUE);
+		av_height->setTextArg("[AVHEIGHT]",avheight.str());		
 	}
 	
 	if(has_wearable && !is_modifiable)
@@ -1279,7 +1284,7 @@ void LLPanelEditWearable::setUIPermissions(U32 perm_mask, BOOL is_complete)
 class LLScrollingPanelParam : public LLScrollingPanel
 {
 public:
-	LLScrollingPanelParam( const std::string& name, LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify );
+	LLScrollingPanelParam( const std::string& name, LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, bool bVisualHint );
 	virtual ~LLScrollingPanelParam();
 
 	virtual void		draw();
@@ -1307,6 +1312,9 @@ public:
 	LLViewerVisualParam* mParam;
 	LLPointer<LLVisualParamHint>	mHintMin;
 	LLPointer<LLVisualParamHint>	mHintMax;
+	LLButton*						mLess;
+	LLButton*						mMore;
+
 	static S32 			sUpdateDelayFrames;
 	
 protected:
@@ -1327,51 +1335,68 @@ const S32 PARAM_PANEL_WIDTH = 2 * (3* BTN_BORDER + PARAM_HINT_WIDTH +  LLPANEL_B
 const S32 PARAM_PANEL_HEIGHT = 2 * BTN_BORDER + PARAM_HINT_HEIGHT + PARAM_HINT_LABEL_HEIGHT + 4 * LLPANEL_BORDER_WIDTH; 
 
 LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
-											  LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify )
+											  LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, bool bVisualHint )
 	: LLScrollingPanel( name, LLRect( 0, PARAM_PANEL_HEIGHT, PARAM_PANEL_WIDTH, 0 ) ),
 	  mParam(param),
-	  mAllowModify(allow_modify)
+	  mAllowModify(allow_modify),
+	  mLess(NULL),
+	  mMore(NULL)
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_scrolling_param.xml");
-
-	S32 pos_x = 2 * LLPANEL_BORDER_WIDTH;
-	S32 pos_y = 3 * LLPANEL_BORDER_WIDTH + SLIDERCTRL_HEIGHT;
-	F32 min_weight = param->getMinWeight();
-	F32 max_weight = param->getMaxWeight();
-
-	mHintMin = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param,  min_weight);
-	pos_x += PARAM_HINT_WIDTH + 3 * BTN_BORDER;
-	mHintMax = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param, max_weight );
 	
-	mHintMin->setAllowsUpdates( FALSE );
-	mHintMax->setAllowsUpdates( FALSE );
-	childSetValue("param slider", weightToPercent(param->getWeight()));
-	childSetLabelArg("param slider", "[DESC]", param->getDisplayName());
-	childSetEnabled("param slider", mAllowModify);
-	childSetCommitCallback("param slider", LLScrollingPanelParam::onSliderMoved, this);
+	//Set up the slider
+	LLSliderCtrl *slider = getChild<LLSliderCtrl>("param slider");
+	slider->setValue(weightToPercent(param->getWeight()));
+	slider->setLabelArg("[DESC]", param->getDisplayName());
+	slider->setEnabled(mAllowModify);
+	slider->setCommitCallback(LLScrollingPanelParam::onSliderMoved);
+	slider->setCallbackUserData(this);
 
-	// *TODO::translate
-	std::string min_name = param->getMinDisplayName();
-	std::string max_name = param->getMaxDisplayName();
-	childSetValue("min param text", min_name);
-	childSetValue("max param text", max_name);
-
-	LLButton* less = getChild<LLButton>("less");
-	if (less)
+	if(bVisualHint)
 	{
-		less->setMouseDownCallback( LLScrollingPanelParam::onHintMinMouseDown );
-		less->setMouseUpCallback( LLScrollingPanelParam::onHintMinMouseUp );
-		less->setHeldDownCallback( LLScrollingPanelParam::onHintMinHeldDown );
-		less->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
+		S32 pos_x = 2 * LLPANEL_BORDER_WIDTH;
+		S32 pos_y = 3 * LLPANEL_BORDER_WIDTH + SLIDERCTRL_HEIGHT;
+		F32 min_weight = param->getMinWeight();
+		F32 max_weight = param->getMaxWeight();
+
+		mHintMin = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param,  min_weight);
+		pos_x += PARAM_HINT_WIDTH + 3 * BTN_BORDER;
+		mHintMax = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param, max_weight );
+
+		mHintMin->setAllowsUpdates( FALSE );
+		mHintMax->setAllowsUpdates( FALSE );
+
+		// *TODO::translate
+		std::string min_name = param->getMinDisplayName();
+		std::string max_name = param->getMaxDisplayName();
+		childSetValue("min param text", min_name);
+		childSetValue("max param text", max_name);
+		mLess = getChild<LLButton>("less");
+		mLess->setMouseDownCallback( LLScrollingPanelParam::onHintMinMouseDown );
+		mLess->setMouseUpCallback( LLScrollingPanelParam::onHintMinMouseUp );
+		mLess->setHeldDownCallback( LLScrollingPanelParam::onHintMinHeldDown );
+		mLess->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
+
+		mMore = getChild<LLButton>("more");
+		mMore->setMouseDownCallback( LLScrollingPanelParam::onHintMaxMouseDown );
+		mMore->setMouseUpCallback( LLScrollingPanelParam::onHintMaxMouseUp );
+		mMore->setHeldDownCallback( LLScrollingPanelParam::onHintMaxHeldDown );
+		mMore->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
 	}
-
-	LLButton* more = getChild<LLButton>("more");
-	if (more)
+	else
 	{
-		more->setMouseDownCallback( LLScrollingPanelParam::onHintMaxMouseDown );
-		more->setMouseUpCallback( LLScrollingPanelParam::onHintMaxMouseUp );
-		more->setHeldDownCallback( LLScrollingPanelParam::onHintMaxHeldDown );
-		more->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
+		//Kill everything that isn't the slider...
+		for(child_list_t::const_iterator it = getChildList()->begin();it!=getChildList()->end();)
+		{
+			if((*it)!=slider && (*it)->getName() != "panel border")
+			{
+				llinfos << "removing: " << (*it)->getName() << llendl;
+				removeChild((*(it++)),TRUE);
+			}
+			else ++it;
+		}
+		slider->translate(0,PARAM_HINT_HEIGHT);
+		reshape(getRect().getWidth(),getRect().getHeight()-PARAM_HINT_HEIGHT);
 	}
 
 	setVisible(FALSE);
@@ -1386,15 +1411,19 @@ LLScrollingPanelParam::~LLScrollingPanelParam()
 
 void LLScrollingPanelParam::updatePanel(BOOL allow_modify)
 {
-	LLViewerVisualParam* param = mHintMin->getVisualParam();
-	childSetValue("param slider", weightToPercent( param->getWeight() ) );
-	mHintMin->requestUpdate( sUpdateDelayFrames++ );
-	mHintMax->requestUpdate( sUpdateDelayFrames++ );
+	childSetValue("param slider", weightToPercent( mParam->getWeight() ) );
+	if(mHintMin)
+		mHintMin->requestUpdate( sUpdateDelayFrames++ );
+	if(mHintMax)
+		mHintMax->requestUpdate( sUpdateDelayFrames++ );
 
 	mAllowModify = allow_modify;
 	childSetEnabled("param slider", mAllowModify);
-	childSetEnabled("less", mAllowModify);
-	childSetEnabled("more", mAllowModify);
+
+	if(mLess)
+		mLess->setEnabled(mAllowModify);
+	if(mMore)
+		mMore->setEnabled(mAllowModify);
 }
 
 void LLScrollingPanelParam::setVisible( BOOL visible )
@@ -1402,13 +1431,17 @@ void LLScrollingPanelParam::setVisible( BOOL visible )
 	if( getVisible() != visible )
 	{
 		LLPanel::setVisible( visible );
-		mHintMin->setAllowsUpdates( visible );
-		mHintMax->setAllowsUpdates( visible );
+		if(mHintMin)
+			mHintMin->setAllowsUpdates( visible );
+		if(mHintMax)
+			mHintMax->setAllowsUpdates( visible );
 
 		if( visible )
 		{
-			mHintMin->setUpdateDelayFrames( sUpdateDelayFrames++ );
-			mHintMax->setUpdateDelayFrames( sUpdateDelayFrames++ );
+			if(mHintMin)
+				mHintMin->setUpdateDelayFrames( sUpdateDelayFrames++ );
+			if(mHintMax)
+				mHintMax->setUpdateDelayFrames( sUpdateDelayFrames++ );
 		}
 	}
 }
@@ -1420,8 +1453,10 @@ void LLScrollingPanelParam::draw()
 		return;
 	}
 	
-	childSetVisible("less", mHintMin->getVisible());
-	childSetVisible("more", mHintMax->getVisible());
+	if(mLess)
+		mLess->setVisible(mHintMin ? mHintMin->getVisible() : false);
+	if(mMore)
+		mMore->setVisible(mHintMax ? mHintMax->getVisible() : false);
 
 	// Draw all the children except for the labels
 	childSetVisible( "min param text", FALSE );
@@ -1429,25 +1464,31 @@ void LLScrollingPanelParam::draw()
 	LLPanel::draw();
 
 	// Draw the hints over the "less" and "more" buttons.
-	glPushMatrix();
+	if(mHintMin)
 	{
-		const LLRect& r = mHintMin->getRect();
-		F32 left = (F32)(r.mLeft + BTN_BORDER);
-		F32 bot  = (F32)(r.mBottom + BTN_BORDER);
-		glTranslatef(left, bot, 0.f);
-		mHintMin->draw();
+		glPushMatrix();
+		{
+			const LLRect& r = mHintMin->getRect();
+			F32 left = (F32)(r.mLeft + BTN_BORDER);
+			F32 bot  = (F32)(r.mBottom + BTN_BORDER);
+			glTranslatef(left, bot, 0.f);
+			mHintMin->draw();
+		}
+		glPopMatrix();
 	}
-	glPopMatrix();
 
-	glPushMatrix();
+	if(mHintMax)
 	{
-		const LLRect& r = mHintMax->getRect();
-		F32 left = (F32)(r.mLeft + BTN_BORDER);
-		F32 bot  = (F32)(r.mBottom + BTN_BORDER);
-		glTranslatef(left, bot, 0.f);
-		mHintMax->draw();
+		glPushMatrix();
+		{
+			const LLRect& r = mHintMax->getRect();
+			F32 left = (F32)(r.mLeft + BTN_BORDER);
+			F32 bot  = (F32)(r.mBottom + BTN_BORDER);
+			glTranslatef(left, bot, 0.f);
+			mHintMax->draw();
+		}
+		glPopMatrix();
 	}
-	glPopMatrix();
 
 
 	// Draw labels on top of the buttons
@@ -1692,6 +1733,8 @@ LLFloaterCustomize::LLFloaterCustomize()
 	mNextStepAfterSaveCallback( NULL ),
 	mNextStepAfterSaveUserdata( NULL )
 {
+	memset(&mWearablePanelList[0],0,sizeof(char*)*WT_COUNT); //Initialize to 0
+
 	gSavedSettings.setU32("AvatarSex", (gAgent.getAvatarObject()->getSex() == SEX_MALE) );
 
 	mResetParams = new LLVisualParamReset();
@@ -2416,63 +2459,72 @@ void LLFloaterCustomize::initWearablePanels()
 	}
 
 	/////////////////////////////////////////
-	// Alpha
-	panel = mWearablePanelList[WT_ALPHA];
+	// Physics
 
-	if (panel)
+	panel = mWearablePanelList[WT_PHYSICS];
+
+	if(panel)
 	{
 		part = new LLSubpart();
-		part->mTargetJoint = "mPelvis";
-		part->mEditGroup = "alpha";
+		part->mSex = SEX_FEMALE;
+		part->mTargetJoint = "mTorso";
+		part->mEditGroup = "physics_breasts_updown";
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
 		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
-		panel->addSubpart(LLStringUtil::null, SUBPART_ALPHA, part);
+		part->mVisualHint = false;
+		panel->addSubpart("Breast Bounce", SUBPART_PHYSICS_BREASTS_UPDOWN, part);
 
-		panel->addTextureDropTarget(TEX_LOWER_ALPHA, "Lower Alpha",
-									LLUUID(gSavedSettings.getString("UIImgDefaultAlphaUUID")),
-									TRUE);
-		panel->addTextureDropTarget(TEX_UPPER_ALPHA, "Upper Alpha",
-									LLUUID(gSavedSettings.getString("UIImgDefaultAlphaUUID")),
-									TRUE);
-		panel->addTextureDropTarget(TEX_HEAD_ALPHA, "Head Alpha",
-									LLUUID(gSavedSettings.getString("UIImgDefaultAlphaUUID")),
-									TRUE);
-		panel->addTextureDropTarget(TEX_EYES_ALPHA, "Eye Alpha",
-									LLUUID(gSavedSettings.getString("UIImgDefaultAlphaUUID")),
-									TRUE);
-		panel->addTextureDropTarget(TEX_HAIR_ALPHA, "Hair Alpha",
-									LLUUID(gSavedSettings.getString("UIImgDefaultAlphaUUID")),
-									TRUE);
+		part = new LLSubpart();
+		part->mSex = SEX_FEMALE;
+		part->mTargetJoint = "mTorso";
+		part->mEditGroup = "physics_breasts_inout";
+		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
+		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mVisualHint = false;
+		panel->addSubpart("Breast Cleavage", SUBPART_PHYSICS_BREASTS_INOUT, part);
 
-		panel->addInvisibilityCheckbox(TEX_LOWER_ALPHA, "lower alpha texture invisible");
-		panel->addInvisibilityCheckbox(TEX_UPPER_ALPHA, "upper alpha texture invisible");
-		panel->addInvisibilityCheckbox(TEX_HEAD_ALPHA, "head alpha texture invisible");
-		panel->addInvisibilityCheckbox(TEX_EYES_ALPHA, "eye alpha texture invisible");
-		panel->addInvisibilityCheckbox(TEX_HAIR_ALPHA, "hair alpha texture invisible");
-	}
+		part = new LLSubpart();
+		part->mSex = SEX_FEMALE;
+		part->mTargetJoint = "mTorso";
+		part->mEditGroup = "physics_breasts_leftright";
+		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
+		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mVisualHint = false;
+		panel->addSubpart("Breast Sway", SUBPART_PHYSICS_BREASTS_LEFTRIGHT, part);
 
-	/////////////////////////////////////////
-	// Tattoo
-	panel = mWearablePanelList[WT_TATTOO];
+		part = new LLSubpart();
+		part->mSex = SEX_FEMALE;
+		part->mTargetJoint = "mTorso";
+		part->mEditGroup = "physics_belly_updown";
+		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
+		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mVisualHint = false;
+		panel->addSubpart("Belly Bounce", SUBPART_PHYSICS_BELLY_UPDOWN, part);
 
-	if (panel)
-	{
 		part = new LLSubpart();
 		part->mTargetJoint = "mPelvis";
-		part->mEditGroup = "tattoo";
+		part->mEditGroup = "physics_butt_updown";
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
 		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
-		panel->addSubpart(LLStringUtil::null, SUBPART_TATTOO, part);
+		part->mVisualHint = false;
+		panel->addSubpart("Butt Bounce", SUBPART_PHYSICS_BUTT_UPDOWN, part);
 
-		panel->addTextureDropTarget(TEX_LOWER_TATTOO, "Lower Tattoo",
-									LLUUID::null,
-									TRUE);
-		panel->addTextureDropTarget(TEX_UPPER_TATTOO, "Upper Tattoo",
-									LLUUID::null,
-									TRUE);
-		panel->addTextureDropTarget(TEX_HEAD_TATTOO, "Head Tattoo",
-									LLUUID::null,
-									TRUE);
+		part = new LLSubpart();
+		part->mTargetJoint = "mPelvis";
+		part->mEditGroup = "physics_butt_leftright";
+		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
+		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mVisualHint = false;
+		panel->addSubpart("Butt Sway", SUBPART_PHYSICS_BUTT_LEFTRIGHT, part);
+
+		part = new LLSubpart();
+		part->mTargetJoint = "mTorso";
+		part->mEditGroup = "physics_advanced";
+		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
+		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mVisualHint = false;
+		panel->addSubpart("Advanced Parameters", SUBPART_PHYSICS_ADVANCED, part);
+
 	}
 }
 
@@ -2607,7 +2659,7 @@ void LLFloaterCustomize::clearScrollingPanelList()
 	}
 }
 
-void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh, LLFloaterCustomize::param_map& params)
+void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh, LLFloaterCustomize::param_map& params, bool bVisualHint)
 {
 	// sorted_params is sorted according to magnitude of effect from
 	// least to greatest.  Adding to the front of the child list
@@ -2618,7 +2670,7 @@ void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh,
 		param_map::iterator end = params.end();
 		for(param_map::iterator it = params.begin(); it != end; ++it)
 		{
-			mScrollingPanelList->addPanel( new LLScrollingPanelParam( "LLScrollingPanelParam", joint_mesh, (*it).second.second, (*it).second.first) );
+			mScrollingPanelList->addPanel( new LLScrollingPanelParam( "LLScrollingPanelParam", joint_mesh, (*it).second.second, (*it).second.first, bVisualHint) );
 		}
 	}
 }
