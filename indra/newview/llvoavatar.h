@@ -99,6 +99,9 @@ public:
 	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
 	std::string extraMetadata;
 	// </edit>
+
+	// EmeraldBoobUtils
+	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
 	
 	//--------------------------------------------------------------------
 	// LLViewerObject interface

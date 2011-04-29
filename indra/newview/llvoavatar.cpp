@@ -795,7 +795,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mFullyLoadedInitialized(FALSE),
 	mHasBakedHair( FALSE ),
 	mSupportsAlphaLayers(FALSE),
-	mFirstSetActualBoobGravRan( false )
+	mFirstSetActualBoobGravRan( false ),
+	mSupportsPhysics( false )
 	//mFirstSetActualButtGravRan( false ),
 	//mFirstSetActualFatGravRan( false )
 	// <edit>
@@ -9368,6 +9369,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 
 	updateMeshTextures(); // enables updates for laysets without baked textures.
 
+	mSupportsPhysics = false;
+
 	// parse visual params
 	S32 num_blocks = mesgsys->getNumberOfBlocksFast(_PREHASH_VisualParam);
 	if( num_blocks > 1 )
@@ -9400,6 +9403,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				mesgsys->getU8Fast(_PREHASH_VisualParam, _PREHASH_ParamValue, value, i);
 				F32 newWeight = U8_to_F32(value, param->getMinWeight(), param->getMaxWeight());
 
+				if(param->getID() == 10000)
+				{
+					mSupportsPhysics = true;
+				}
 				if(param->getID() == 507 && newWeight != getActualBoobGrav())
 				{
 					llwarns << "Boob Grav SET to " << newWeight << " for " << getFullname() << llendl;
@@ -9444,6 +9451,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			if (param->getName() == "tattoo_red")
 				llinfos << getFullname() << " does not have tattoo tinting." << llendl;
+			else if(param->getName() == "breast_physics_leftright_spring")
+				llinfos << getFullname() << " does not have avatar physics." << llendl;
 			else
 				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
 			//return; //ASC-TTRFE

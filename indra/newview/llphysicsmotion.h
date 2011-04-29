@@ -110,7 +110,6 @@ public:
 	virtual void onDeactivate();
 
 	LLCharacter* getCharacter() { return mCharacter; }
-
 protected:
 	void addMotion(LLPhysicsMotion *motion);
 private:
@@ -118,6 +117,8 @@ private:
 
 	typedef std::vector<LLPhysicsMotion *> motion_vec_t;
 	motion_vec_t mMotions;
+
+	bool mIsDefault;
 };
 
 #endif // LL_LLPHYSICSMOTION_H

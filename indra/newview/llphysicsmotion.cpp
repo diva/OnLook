@@ -111,12 +111,14 @@ public:
 
         ~LLPhysicsMotion() {}
 
-        BOOL onUpdate(F32 time, bool &bHandled);
+        BOOL onUpdate(F32 time);
 
         LLPointer<LLJointState> getJointState() 
         {
                 return mJointState;
         }
+		
+		void reset();
 protected:
         F32 getParamValue(const std::string& controller_key)
         {
@@ -135,6 +137,7 @@ protected:
         F32 toLocal(const LLVector3 &world);
         F32 calculateVelocity_local();
         F32 calculateAcceleration_local(F32 velocity_local);
+
 private:
         const std::string mParamDriverName;
         const std::string mParamControllerName;
@@ -193,7 +196,8 @@ BOOL LLPhysicsMotion::initialize()
 
 LLPhysicsMotionController::LLPhysicsMotionController(const LLUUID &id) : 
         LLMotion(id),
-        mCharacter(NULL)
+        mCharacter(NULL),
+		mIsDefault(true)
 {
         mName = "breast_motion";
 }
@@ -210,11 +214,13 @@ LLPhysicsMotionController::~LLPhysicsMotionController()
 
 BOOL LLPhysicsMotionController::onActivate() 
 { 
+	llinfos << "LLPhysicsMotionController activate" << llendl;
         return TRUE; 
 }
 
 void LLPhysicsMotionController::onDeactivate() 
 {
+	llinfos << "LLPhysicsMotionController deactivate" << llendl;
 }
 
 LLMotion::LLMotionInitStatus LLPhysicsMotionController::onInitialize(LLCharacter *character)
@@ -414,36 +420,42 @@ F32 LLPhysicsMotion::calculateAcceleration_local(const F32 velocity_local)
 BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 {
         // Skip if disabled globally.
-        /*if (!gSavedSettings.getBOOL("AvatarPhysics"))
+		static const LLCachedControl<bool> avatar_physics("AvatarPhysics",false);
+        if (!avatar_physics || (!((LLVOAvatar*)mCharacter)->isSelf() && !((LLVOAvatar*)mCharacter)->mSupportsPhysics))
         {
-                return TRUE;
-        }*/
+			if(!mIsDefault)
+			{
+				mIsDefault = true;
+				for (motion_vec_t::iterator iter = mMotions.begin();iter != mMotions.end();++iter)
+				{
+					(*iter)->reset();
+				}
+				mCharacter->updateVisualParams();
+			}
+			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
+			return TRUE;
+		}
         
+		mIsDefault = false;
+
         BOOL update_visuals = FALSE;
-		bool physics_handled = false;
         for (motion_vec_t::iterator iter = mMotions.begin();
              iter != mMotions.end();
              ++iter)
         {
                 LLPhysicsMotion *motion = (*iter);
-				bool bHandled;
-                update_visuals |= motion->onUpdate(time,bHandled);
-				physics_handled |= bHandled;
+                update_visuals |= motion->onUpdate(time);
         }
                 
         if (update_visuals)
                 mCharacter->updateVisualParams();
         
-		if(!physics_handled && mCharacter) //If absolutely nothing was done, and it wasn't due to timers/lod
-			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect();
         return TRUE;
 }
 
-
 // Return TRUE if character has to update visual params.
-BOOL LLPhysicsMotion::onUpdate(F32 time, bool &bHandled)
+BOOL LLPhysicsMotion::onUpdate(F32 time)
 {
-	bHandled = false;
         // static FILE *mFileWrite = fopen("c:\\temp\\avatar_data.txt","w");
         
         if (!mParamDriver)
@@ -461,7 +473,6 @@ BOOL LLPhysicsMotion::onUpdate(F32 time, bool &bHandled)
 
         const F32 time_delta = time - mLastTime;
 
-	bHandled = true;
 	// Don't update too frequently, to avoid precision errors from small time slices.
 	if (time_delta <= .01)
 	{
@@ -540,7 +551,6 @@ BOOL LLPhysicsMotion::onUpdate(F32 time, bool &bHandled)
 		// to set the position to the default (i.e. user) position.
 		if ((behavior_maxeffect == 0) && (position_current_local == position_user_local))
 		{
-			bHandled = false; //Let emerald boob stuff do its thing, possibly.
 			return update_visuals;
 		}
 
@@ -744,4 +754,22 @@ void LLPhysicsMotion::setParamValue(LLViewerVisualParam *param,
         mCharacter->setVisualParamWeight(param,
                                          new_value_local,
                                          FALSE);
+}
+
+void LLPhysicsMotion::reset()
+{
+	LLDriverParam *driver_param = dynamic_cast<LLDriverParam *>(mParamDriver);
+	if (driver_param)
+	{
+		if ((driver_param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) &&
+			(driver_param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT))
+		{
+			mCharacter->setVisualParamWeight(driver_param,driver_param->getDefaultWeight());
+		}
+		for (LLDriverParam::entry_list_t::iterator iter = driver_param->mDriven.begin();
+			 iter != driver_param->mDriven.end();++iter)
+		{
+			mCharacter->setVisualParamWeight((*iter).mParam,(*iter).mParam->getDefaultWeight());
+		}
+	}
 }
