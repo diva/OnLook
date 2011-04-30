@@ -279,7 +279,7 @@ void LLNewAgentInventoryResponder::uploadComplete(const LLSD& content)
 										mPostData["name"].asString(),
 										mPostData["description"].asString(),
 										LLSaleInfo::DEFAULT,
-										LLInventoryItem::II_FLAGS_NONE,
+										LLInventoryItemFlags::II_FLAGS_NONE,
 										creation_date_now);
 		gInventory.updateItem(item);
 		gInventory.notifyObservers();

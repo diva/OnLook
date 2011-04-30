@@ -1962,7 +1962,7 @@ void LLLiveLSLEditor::loadAsset(BOOL is_new)
 									DEFAULT_SCRIPT_NAME,
 									DEFAULT_SCRIPT_DESC,
 									LLSaleInfo::DEFAULT,
-									LLInventoryItem::II_FLAGS_NONE,
+									LLInventoryItemFlags::II_FLAGS_NONE,
 									time_corrected());
 		mAssetStatus = PREVIEW_ASSET_LOADED;
 	}

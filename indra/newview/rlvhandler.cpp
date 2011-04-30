@@ -835,7 +835,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 				case LLAssetType::AT_CLOTHING:
 					{
 						// NOTE: without its asset we don't know what type the wearable is so we need to look at the item's flags instead
-						EWearableType wtType = (EWearableType)(pItem->getFlags() & LLInventoryItem::II_FLAGS_WEARABLES_MASK);
+						EWearableType wtType = (EWearableType)(pItem->getFlags() & LLInventoryItemFlags::II_FLAGS_WEARABLES_MASK);
 						LLViewerInventoryCategory* pFolder;
 						if ( (!isWearable(wtType)) ||
 							 ( (gAgent.getWearable(wtType)) && (!isRemovable(wtType)) ) || 

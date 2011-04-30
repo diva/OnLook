@@ -454,7 +454,7 @@ protected:
 		LLItemBridge(inventory, uuid) 
 	{
 		mVisited = FALSE;
-		if (flags & LLInventoryItem::II_FLAGS_LANDMARK_VISITED)
+		if (flags & LLInventoryItemFlags::II_FLAGS_LANDMARK_VISITED)
 		{
 			mVisited = TRUE;
 		}
@@ -593,7 +593,7 @@ protected:
 	{
 		mAttachPt = (flags & 0xff); // low bye of inventory flags
 
-		mIsMultiObject = ( flags & LLInventoryItem::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS ) ?  TRUE: FALSE;
+		mIsMultiObject = ( flags & LLInventoryItemFlags::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS ) ?  TRUE: FALSE;
 	}
 
 protected:

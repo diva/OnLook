@@ -879,13 +879,13 @@ void LLInvFVBridge::changeCategoryParent(LLInventoryModel* model,
 }
 
 
-const char* safe_inv_type_lookup(LLInventoryType::EType inv_type)
+const std::string &safe_inv_type_lookup(LLInventoryType::EType inv_type)
 {
-	const char* rv = LLInventoryType::lookup(inv_type);
-	if(!rv)
+	const std::string &rv = LLInventoryType::lookup(inv_type);
+	if(rv.empty())
 	{
-		const char* INVALID_TYPE = "<invalid>";
-		rv = INVALID_TYPE;
+		static const std::string INVALID_TYPE("<invalid>");
+		return INVALID_TYPE;
 	}
 	return rv;
 }
@@ -5452,7 +5452,7 @@ LLUIImagePtr LLLinkItemBridge::getIcon() const
 	if (LLViewerInventoryItem *item = getItem())
 	{
 		U32 attachment_point = (item->getFlags() & 0xff); // low byte of inventory flags
-		bool is_multi =  LLInventoryItem::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS & item->getFlags();
+		bool is_multi =  LLInventoryItemFlags::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS & item->getFlags();
 
 		return get_item_icon(item->getActualType(), item->getInventoryType(), attachment_point, is_multi);
 	}
