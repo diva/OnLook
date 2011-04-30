@@ -2470,7 +2470,7 @@ void LLFloaterCustomize::initWearablePanels()
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_breasts_updown";
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mCameraOffset.setVec(-0.8f, 0.15f, 0.38f);
 		part->mVisualHint = false;
 		panel->addSubpart("Breast Bounce", SUBPART_PHYSICS_BREASTS_UPDOWN, part);
 
@@ -2479,7 +2479,7 @@ void LLFloaterCustomize::initWearablePanels()
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_breasts_inout";
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mCameraOffset.setVec(-0.8f, 0.15f, 0.38f);
 		part->mVisualHint = false;
 		panel->addSubpart("Breast Cleavage", SUBPART_PHYSICS_BREASTS_INOUT, part);
 
@@ -2488,7 +2488,7 @@ void LLFloaterCustomize::initWearablePanels()
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_breasts_leftright";
 		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mCameraOffset.setVec(-0.8f, 0.15f, 0.38f);
 		part->mVisualHint = false;
 		panel->addSubpart("Breast Sway", SUBPART_PHYSICS_BREASTS_LEFTRIGHT, part);
 
@@ -2496,24 +2496,24 @@ void LLFloaterCustomize::initWearablePanels()
 		part->mSex = SEX_FEMALE;
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_belly_updown";
-		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mTargetOffset.setVec(0.f, 0.f, -.05f);
+		part->mCameraOffset.setVec(-0.8f, 0.15f, 0.38f);
 		part->mVisualHint = false;
 		panel->addSubpart("Belly Bounce", SUBPART_PHYSICS_BELLY_UPDOWN, part);
 
 		part = new LLSubpart();
 		part->mTargetJoint = "mPelvis";
 		part->mEditGroup = "physics_butt_updown";
-		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mTargetOffset.setVec(0.f, 0.f, -0.1f);
+		part->mCameraOffset.setVec(0.3f, 0.8f, -0.1f);
 		part->mVisualHint = false;
 		panel->addSubpart("Butt Bounce", SUBPART_PHYSICS_BUTT_UPDOWN, part);
 
 		part = new LLSubpart();
 		part->mTargetJoint = "mPelvis";
 		part->mEditGroup = "physics_butt_leftright";
-		part->mTargetOffset.setVec(0.f, 0.f, 0.1f);
-		part->mCameraOffset.setVec(-2.5f, 0.5f, 0.8f);
+		part->mTargetOffset.setVec(0.f, 0.f, -0.1f);
+		part->mCameraOffset.setVec(0.3f, 0.8f, -0.1f);
 		part->mVisualHint = false;
 		panel->addSubpart("Butt Sway", SUBPART_PHYSICS_BUTT_LEFTRIGHT, part);
 
