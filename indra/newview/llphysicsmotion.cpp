@@ -214,13 +214,11 @@ LLPhysicsMotionController::~LLPhysicsMotionController()
 
 BOOL LLPhysicsMotionController::onActivate() 
 { 
-	llinfos << "LLPhysicsMotionController activate" << llendl;
         return TRUE; 
 }
 
 void LLPhysicsMotionController::onDeactivate() 
 {
-	llinfos << "LLPhysicsMotionController deactivate" << llendl;
 }
 
 LLMotion::LLMotionInitStatus LLPhysicsMotionController::onInitialize(LLCharacter *character)
