@@ -55,6 +55,7 @@
 
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
+extern const LLUUID ANIM_AGENT_PHYSICS_MOTION;
 extern const LLUUID ANIM_AGENT_EDITING;
 extern const LLUUID ANIM_AGENT_EYE;
 extern const LLUUID ANIM_AGENT_FLY_ADJUST;
@@ -98,6 +99,9 @@ public:
 	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
 	std::string extraMetadata;
 	// </edit>
+
+	// EmeraldBoobUtils
+	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
 	
 	//--------------------------------------------------------------------
 	// LLViewerObject interface
@@ -629,6 +633,7 @@ public:
 	static BOOL		sDebugInvisible;
 	static BOOL		sShowAttachmentPoints;
 	static F32		sLODFactor; // user-settable LOD factor
+	static F32		sPhysicsLODFactor; // user-settable physics LOD factor
 	static BOOL		sJointDebug; // output total number of joints being touched for each avatar
 	static BOOL     sDebugAvatarRotation;
 	static F32		sAvMorphTime;

@@ -7306,7 +7306,8 @@ void LLAgent::createStandardWearables(BOOL female)
 		TRUE,  //WT_UNDERPANTS
 		FALSE, //WT_SKIRT
 		FALSE, //WT_ALPHA
-		FALSE  //WT_TATTOO
+		FALSE, //WT_TATTOO
+		FALSE, //WT_PHYSICS
 	};
 
 	for( S32 i=0; i < WT_COUNT; i++ )
@@ -7918,6 +7919,7 @@ void LLAgent::setWearableOutfit(
 	wearables_to_remove[WT_SKIRT]		= remove && gRlvWearableLocks.canRemove(WT_SKIRT);
 	wearables_to_remove[WT_ALPHA]		= remove && gRlvWearableLocks.canRemove(WT_ALPHA);
 	wearables_to_remove[WT_TATTOO]		= remove && gRlvWearableLocks.canRemove(WT_TATTOO);
+	wearables_to_remove[WT_PHYSICS]		= remove && gRlvWearableLocks.canRemove(WT_PHYSICS);
 // [/RLVa:KB]
 
 	S32 count = wearables.count();
@@ -8199,6 +8201,7 @@ void LLAgent::userRemoveAllClothesStep2( BOOL proceed, void* userdata )
 		gAgent.removeWearable( WT_SKIRT );
 		gAgent.removeWearable( WT_ALPHA );
 		gAgent.removeWearable( WT_TATTOO );
+		gAgent.removeWearable( WT_PHYSICS );
 	}
 }
 

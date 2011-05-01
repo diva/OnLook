@@ -103,6 +103,8 @@
 #include "llavatarname.h"
 #include "llavatarnamecache.h"
 
+#include "llphysicsmotion.h"
+
 // [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.2.0c)
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -128,6 +130,7 @@ const LLUUID ANIM_AGENT_HEAD_ROT = LLUUID("e6e8d1dd-e643-fff7-b238-c6b4b056a68d"
 const LLUUID ANIM_AGENT_PELVIS_FIX = LLUUID("0c5dd2a2-514d-8893-d44d-05beffad208b");  //"pelvis_fix"
 const LLUUID ANIM_AGENT_TARGET = LLUUID("0e4896cb-fba4-926c-f355-8720189d5b55");  //"target"
 const LLUUID ANIM_AGENT_WALK_ADJUST	= LLUUID("829bc85b-02fc-ec41-be2e-74cc6dd7215d");  //"walk_adjust"
+const LLUUID ANIM_AGENT_PHYSICS_MOTION = LLUUID("7360e029-3cb8-ebc4-863e-212df440d987");  //"physics_motion"
 
 
 //-----------------------------------------------------------------------------
@@ -720,6 +723,7 @@ BOOL LLVOAvatar::sShowAnimationDebug = FALSE;
 BOOL LLVOAvatar::sShowFootPlane = FALSE;
 BOOL LLVOAvatar::sVisibleInFirstPerson = FALSE;
 F32 LLVOAvatar::sLODFactor = 1.f;
+F32 LLVOAvatar::sPhysicsLODFactor = 1.f;
 BOOL LLVOAvatar::sUseImpostors = FALSE;
 BOOL LLVOAvatar::sJointDebug = FALSE;
 
@@ -791,7 +795,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mFullyLoadedInitialized(FALSE),
 	mHasBakedHair( FALSE ),
 	mSupportsAlphaLayers(FALSE),
-	mFirstSetActualBoobGravRan( false )
+	mFirstSetActualBoobGravRan( false ),
+	mSupportsPhysics( false )
 	//mFirstSetActualButtGravRan( false ),
 	//mFirstSetActualFatGravRan( false )
 	// <edit>
@@ -1016,6 +1021,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 		// motions without a start/stop bit
 		registerMotion( ANIM_AGENT_BODY_NOISE,				LLBodyNoiseMotion::create );
 		registerMotion( ANIM_AGENT_BREATHE_ROT,				LLBreatheMotionRot::create );
+		registerMotion( ANIM_AGENT_PHYSICS_MOTION,			LLPhysicsMotionController::create );
 		registerMotion( ANIM_AGENT_EDITING,					LLEditingMotion::create	);
 		registerMotion( ANIM_AGENT_EYE,						LLEyeMotion::create	);
 		registerMotion( ANIM_AGENT_FLY_ADJUST,				LLFlyAdjustMotion::create );
@@ -1970,6 +1976,7 @@ void LLVOAvatar::startDefaultMotions()
 	startMotion( ANIM_AGENT_EYE );
 	startMotion( ANIM_AGENT_BODY_NOISE );
 	startMotion( ANIM_AGENT_BREATHE_ROT );
+	startMotion( ANIM_AGENT_PHYSICS_MOTION );
 	startMotion( ANIM_AGENT_HAND_MOTION );
 	startMotion( ANIM_AGENT_PELVIS_FIX );
 
@@ -2791,7 +2798,7 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	idleUpdateAppearanceAnimation();
 	if (detailed_update)
 	{
-		idleUpdateBoobEffect();
+		//idleUpdateBoobEffect();
 		idleUpdateLipSync( voice_enabled );
 		idleUpdateLoadingEffect();
 		idleUpdateBelowWater();	// wind effect uses this
@@ -9151,6 +9158,13 @@ void LLVOAvatar::wearableUpdated(EWearableType type, BOOL upload_result)
 			}
 		}
 	}
+	
+	// Physics type has no associated baked textures, but change of params needs to be sent to
+	// other avatars.
+	if (isSelf() && type == WT_PHYSICS)
+	  {
+	    gAgent.sendAgentSetAppearance();
+	  }
 }
 
 
@@ -9355,6 +9369,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 
 	updateMeshTextures(); // enables updates for laysets without baked textures.
 
+	mSupportsPhysics = false;
+
 	// parse visual params
 	S32 num_blocks = mesgsys->getNumberOfBlocksFast(_PREHASH_VisualParam);
 	if( num_blocks > 1 )
@@ -9387,6 +9403,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				mesgsys->getU8Fast(_PREHASH_VisualParam, _PREHASH_ParamValue, value, i);
 				F32 newWeight = U8_to_F32(value, param->getMinWeight(), param->getMaxWeight());
 
+				if(param->getID() == 10000)
+				{
+					mSupportsPhysics = true;
+				}
 				if(param->getID() == 507 && newWeight != getActualBoobGrav())
 				{
 					llwarns << "Boob Grav SET to " << newWeight << " for " << getFullname() << llendl;
@@ -9431,6 +9451,8 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			if (param->getName() == "tattoo_red")
 				llinfos << getFullname() << " does not have tattoo tinting." << llendl;
+			else if(param->getName() == "breast_physics_leftright_spring")
+				llinfos << getFullname() << " does not have avatar physics." << llendl;
 			else
 				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
 			//return; //ASC-TTRFE
