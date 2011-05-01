@@ -1709,10 +1709,10 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
 		if(d==IM_FROM_TASK||d==IM_GOTO_URL||d==IM_FROM_TASK_AS_ALERT||d==IM_TASK_INVENTORY_OFFERED||d==IM_TASK_INVENTORY_ACCEPTED||d==IM_TASK_INVENTORY_DECLINED)
 		{
-			if(object_spam_check.isBlocked(from_id,session_id,"BlockedGeneralObjects"),args)
+			if(object_spam_check.isBlocked(from_id,session_id,"BlockedGeneralObjects",args))
 				return;
 		}
-		else if(avatar_spam_check.isBlocked(from_id,from_id,"BlockedGeneralAvatar"),args)
+		else if(avatar_spam_check.isBlocked(from_id,from_id,"BlockedGeneralAvatar",args))
 			return;
 	}
 
