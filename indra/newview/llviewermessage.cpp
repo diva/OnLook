@@ -255,7 +255,7 @@ public:
 		mBlockedList.clear();
 		return true;
 	}
-	bool isBlocked(const T &owner, const LLUUID &source_id, const char *pNotification, LLSD &args=LLSD())
+	bool isBlocked(const T &owner, const LLUUID &source_id, const char *pNotification, LLSD args=LLSD())
 	{
 		if(!mEnabled || isAgent(owner))
 			return false;
@@ -263,7 +263,7 @@ public:
 			return true;
 		if(mTimer.getStarted() && mTimer.getElapsedTimeF32() < mDuration)
 		{
-			std::map<const T,U32>::iterator it = mActiveList.insert(std::pair<const T, U32>(owner,0)).first;
+			typename std::map<const T,U32>::iterator it = mActiveList.insert(std::pair<const T, U32>(owner,0)).first;
 			if(++(it->second)>=mFrequency)
 			{
 				mBlockedList.insert(owner);
@@ -285,16 +285,16 @@ public:
 	}
 private:
 	//Owner is either a key, or a name. Do not look up perms since object may be unknown.
-	bool isAgent(const T &owner) const;
+	static bool isAgent(const T &owner);
 	bool mEnabled;
 	LLFrameTimer mTimer;
 	const LLCachedControl<F32> mDuration;
 	const LLCachedControl<U32> mFrequency;
 	std::map<const T,U32> mActiveList;
-	std::set<const T> mBlockedList;
+	std::set<T> mBlockedList;
 };
-template<> bool SH_SpamHandler<LLUUID>::isAgent(const LLUUID &owner) const { return gAgent.getID() == owner; }
-template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner) const
+template<> bool SH_SpamHandler<LLUUID>::isAgent(const LLUUID &owner) { return gAgent.getID() == owner; }
+template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner)
 {
 	std::string str;
 	gAgent.getName(str);
