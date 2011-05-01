@@ -530,40 +530,80 @@ Use #f for user's first name, #l for last name,
       <check_box bottom="-25" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
          label="Show misspelled words in red" left="12" mouse_opaque="true" name="SpellDisplay"
          control_name="SpellDisplay" width="126"/>
-      <text bottom_delta="-30" follows="left|top" font="SansSerifSmall" height="16" left="12"
+      <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="16" left="12"
          name="EmSpell_txt1" width="512">
         Current language (dictionary):
       </text>
-      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="18"
+      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="20"
          max_chars="200" mouse_opaque="true" name="SpellBase" width="250"
          control_name="SpellBase" tool_tip=""/>
-      <text bottom_delta="-30" follows="left|top" font="SansSerifSmall" height="16" left="12"
+      <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="20" left="12"
          name="EmSpell_txt3" width="512">
         Downloaded languages (dictionaries):
       </text>
-      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="18"
+      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="20"
          max_chars="200" mouse_opaque="true" name="EmSpell_Avail" width="250"
          control_name="EmSpell_Avail" tool_tip=""/>
       <button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="20" label="Install"
          name="EmSpell_Add" tool_tip="" left_delta="255" width="80"/>
       <button bottom_delta="-22" follows="left|top" font="SansSerifSmall" height="20" label="Download More..."
          name="EmSpell_GetMore" tool_tip="Get more dictionaries availabe online" left="12" width="250"/>
-      <text bottom_delta="-30" follows="left|top" font="SansSerifSmall" height="16" left="12"
+      <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="20" left="12"
          name="EmSpell_txt2" width="512">
         Additional custom languages (dictionaries):
       </text>
-      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="18"
+      <combo_box allow_text_entry="false" bottom_delta="-20" left_delta="0" follows="left|top" height="20"
          max_chars="200" mouse_opaque="true" name="EmSpell_Installed" width="250"
          control_name="EmSpell_Installed" tool_tip=""/>
       <button bottom_delta="0" follows="left|top" font="SansSerifSmall" height="20" label="Remove"
          name="EmSpell_Remove" tool_tip="" left_delta="255" width="80"/>
-      <button bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="18" label="Edit Custom dictionary"
+      <button bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="20" label="Edit Custom dictionary"
          name="EmSpell_EditCustom" tool_tip="" left="12" width="250"/>
-      <text bottom_delta="-30" follows="left|top" font="SansSerifSmall" height="16" left="12"
+      <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="20" left="12"
          name="EmSpell_txt4" width="512">
-        To use spellcheck, right-click a misspelled word
-        (red or otherwise) and select its replacement
+To use spellcheck, right-click a misspelled word
+(red or otherwise) and select its replacement
       </text>
+
+      <view_border bevel_style="none" border_thickness="1" bottom_delta="-16" follows="top|left" height="0"
+						 left="5" name="CmdDivisor" width="356"/>
+
+      <check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+          label="Highlight messages if any of they contain the terms" left="5" mouse_opaque="true"
+          name="Keywords_Alert" radio_style="false" width="270"/>
+
+      <text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="20" left="12"
+         name="keyword_txt1" width="512">
+        (separated by commas)
+      </text>
+
+      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+          font="SansSerifSmall" height="20" left_delta="5" max_length="500" mouse_opaque="true" name="Keywords_Entries" width="300" />
+
+      <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="20" left_delta="15" name="EmKeyw"
+          width="100">Is found within:</text>
+
+      <check_box bottom_delta="3" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+          label="Local Chat Floater" left_delta="100" mouse_opaque="true" name="Keywords_LocalChat" radio_style="false" width="270"/>
+
+      <check_box bottom_delta="-15" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+          label="Instant Message Floater" left_delta="0" mouse_opaque="true" name="Keywords_IM" radio_style="false" width="270"/>
+
+      <check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+          label="Highlight the message in this color:" left_delta="-110" mouse_opaque="true" name="Keywords_Highlight"
+          radio_style="false" width="270"/>
+
+      <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom_delta="-16" can_apply_immediately="true"
+          color="1, 1, 1, 1" follows="left|top" height="35" label="" left_delta="210"
+          mouse_opaque="true" name="Keywords_Color" tool_tip="Click to open Color Picker" width="50"/>
+
+      <check_box bottom_delta="-10" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+          label="Play this sound alert: (UUID)" left_delta="-210" mouse_opaque="true" name="Keywords_PlaySound"
+          radio_style="false" width="270"/>
+
+      <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
+          font="SansSerifSmall" height="20" left_delta="-5" max_length="36" mouse_opaque="true" name="Keywords_SoundUUID" width="300" />
+
     </panel>
 
   </tab_container>
