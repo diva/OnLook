@@ -69,6 +69,20 @@ void LLWeb::loadURLExternal(const std::string& url)
 
 
 // static
+std::string LLWeb::curlEscape(const std::string& url)
+{
+	std::stringstream escaped_url;
+	for (std::string::const_iterator iter = url.begin(); iter != url.end(); ++iter)
+	{
+	  if (std::isalnum(*iter))
+		escaped_url << *iter;
+	  else
+		escaped_url << '%' << std::hex << std::setfill('0') << std::setw(2) << std::uppercase << (int)*iter;
+	}
+	return escaped_url.str();
+}
+
+// static
 std::string LLWeb::escapeURL(const std::string& url)
 {
 	// The CURL curl_escape() function escapes colons, slashes,
