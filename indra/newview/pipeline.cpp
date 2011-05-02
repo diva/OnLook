@@ -3181,6 +3181,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 	//TO-DO:
 	//V2 moved block to LLPipeline::renderDeferredLighting
 	//Migrate once multisample z-buffer issues are figured out on ati cards.
+	if(!sImpostorRender)
 	{
 		renderHighlights();
 		mHighlightFaces.clear();

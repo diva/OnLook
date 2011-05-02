@@ -35,7 +35,7 @@ set(cmake_SOURCE_FILES
     FindNDOF.cmake
     FindOpenJPEG.cmake
     FindXmlRpcEpi.cmake
-    FindZLIB.cmake
+    FindMyZLIB.cmake
     FMOD.cmake
     FreeType.cmake
     GStreamer010Plugin.cmake

@@ -577,12 +577,16 @@ void LLAvatarNameCache::eraseExpired()
 {
 	F64 now = LLFrameTimer::getTotalSeconds();
 	cache_t::iterator it = sCache.begin();
-	for (cache_t::iterator it = sCache.begin(); it != sCache.end(); ++it)
+	for (cache_t::iterator it = sCache.begin(); it != sCache.end();)
 	{
 		const LLAvatarName& av_name = it->second;
 		if (av_name.mExpires < now)
 		{
-			sCache.erase(it);
+			sCache.erase(it++);
+		}
+		else
+		{
+			++it;
 		}
 	}
 }

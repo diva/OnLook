@@ -348,6 +348,7 @@ set(viewer_SOURCE_FILES
     llpanelweb.cpp
     llparcelselection.cpp
     llpatchvertexarray.cpp
+    llphysicsmotion.cpp
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
@@ -822,6 +823,7 @@ set(viewer_HEADER_FILES
     llpanelweb.h
     llparcelselection.h
     llpatchvertexarray.h
+    llphysicsmotion.h
     llpolymesh.h
     llpolymorph.h
     llprefschat.h

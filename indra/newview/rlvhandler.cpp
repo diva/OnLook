@@ -1993,7 +1993,7 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 	const EWearableType wtRlvTypes[] =
 		{ 
 			WT_GLOVES, WT_JACKET, WT_PANTS, WT_SHIRT, WT_SHOES, WT_SKIRT, WT_SOCKS, 
-			WT_UNDERPANTS, WT_UNDERSHIRT, WT_SKIN, WT_EYES, WT_HAIR, WT_SHAPE, WT_ALPHA, WT_TATTOO
+			WT_UNDERPANTS, WT_UNDERSHIRT, WT_SKIN, WT_EYES, WT_HAIR, WT_SHAPE, WT_ALPHA, WT_TATTOO, WT_PHYSICS
 		};
 
 	for (int idxType = 0, cntType = sizeof(wtRlvTypes) / sizeof(EWearableType); idxType < cntType; idxType++)

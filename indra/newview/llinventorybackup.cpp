@@ -209,6 +209,8 @@ LLFilePicker::ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item
 			return LLFilePicker::FFSAVE_UNDERPANTS;
 		case WT_UNDERSHIRT:
 			return LLFilePicker::FFSAVE_UNDERSHIRT;
+		case WT_PHYSICS:
+			return LLFilePicker::FFSAVE_PHYSICS;
 		default:
 			return LLFilePicker::FFSAVE_ALL;
 		}

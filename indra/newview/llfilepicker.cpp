@@ -693,6 +693,16 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 			L"Asset Blacklists (*.blacklist)\0*.blacklist\0" \
 			L"\0";
 		break;
+	case FFSAVE_PHYSICS:
+	if(filename.empty())
+		{
+			wcsncpy( mFilesW,L"untitled.phy", FILENAME_BUFFER_SIZE);
+		}
+		mOFN.lpstrDefExt = L"phy";
+		mOFN.lpstrFilter =
+			L"Landmarks (*.phy)\0*.phy\0" \
+			L"\0";
+		break;
 	// </edit>
 	default:
 		return FALSE;

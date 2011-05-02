@@ -88,7 +88,7 @@ public:
 	// New methods
 	void			clearScrollingPanelList();
 	void			generateVisualParamHints(LLViewerJointMesh* joint_mesh,
-											 param_map& params);
+											 param_map& params, bool bVisualHint);
 
 	const std::string& getEditGroup();
 	void 			updateScrollingPanelList(BOOL allow_modify);

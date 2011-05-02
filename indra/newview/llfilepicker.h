@@ -139,6 +139,7 @@ public:
 		FFSAVE_LANDMARK = 34,
 		FFSAVE_AO = 35,
 		FFSAVE_BLACKLIST = 36,
+		FFSAVE_PHYSICS = 37,
 		// </edit>
 	};
 
