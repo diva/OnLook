@@ -85,6 +85,7 @@ static struct ft_display_info ft_display_table[] =
 	{ LLFastTimer::FTM_IDLE,				" Idle",				&blue0, 0 },
 	{ LLFastTimer::FTM_PUMP,				"  Pump",				&LLColor4::magenta2, 1 },
 	{ LLFastTimer::FTM_CURL,				"   Curl",				&LLColor4::magenta3, 0 },
+	{ LLFastTimer::FTM_PUMPIO,				"   PumpIO",			&LLColor4::magenta1, 0 },
 	{ LLFastTimer::FTM_INVENTORY,			"  Inventory Update",	&LLColor4::purple6, 1 },
 	{ LLFastTimer::FTM_AUTO_SELECT,			"   Open and Select",	&LLColor4::red, 0 },
 	{ LLFastTimer::FTM_FILTER,				"   Filter",			&LLColor4::red2, 0 },
