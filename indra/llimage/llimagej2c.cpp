@@ -34,6 +34,7 @@
 #include "apr_dso.h"
 
 #include "lldir.h"
+#include "../llxml/llcontrol.h"
 #include "llimagej2c.h"
 #include "llmemtype.h"
 
@@ -382,6 +383,12 @@ S32 LLImageJ2C::calcHeaderSize()
 // to load discard_level (including header and higher discard levels)
 S32 LLImageJ2C::calcDataSize(S32 discard_level)
 {
+	static const LLCachedControl<bool> legacy_size("SianaLegacyJ2CSize", false);
+	
+	if (legacy_size) {
+		return calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), discard_level, mRate);
+	}
+
 	discard_level = llclamp(discard_level, 0, MAX_DISCARD_LEVEL);
 
 	if ( mAreaUsedForDataSizeCalcs != (getHeight() * getWidth()) 

@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+	<key>SianaLegacyJ2CSize</key>
+	<map>
+		<key>Comment</key>
+		<string>Use older JPEG2000 size estimation method</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>1</integer>
+	</map>
+
     <key>SpellDownloadURL</key>
     <map>
       <key>Comment</key>
