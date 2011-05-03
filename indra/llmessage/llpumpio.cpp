@@ -450,7 +450,7 @@ void LLPumpIO::pump()
 void LLPumpIO::pump(const S32& poll_timeout)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
-	LLFastTimer t1(LLFastTimer::FTM_PUMP);
+	LLFastTimer t1(LLFastTimer::FTM_PUMPIO);
 	//llinfos << "LLPumpIO::pump()" << llendl;
 
 	// Run any pending runners.
