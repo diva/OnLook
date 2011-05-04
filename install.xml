@@ -374,39 +374,6 @@
           </map>
         </map>
       </map>
-      <key>fmod</key>
-      <map>
-        <key>copyright</key>
-        <string>FMOD Sound System, copyright (C) Firelight Technologies Pty, Ltd., 1994-2006.</string>
-        <key>description</key>
-        <string>Audio engine and mp3 stream decoder .</string>
-        <key>license</key>
-        <string>fmod</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>c7e317bec481b7efa2a0319e163dcc65</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/fmod-3.75-darwin-20080818.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>abd2b4ba4ac993f19d82804af387eb7c</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/fmod-3.75-linux-20080818.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>1a55dec2907821f5f785648a660126c3</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/fmod-3.75-windows-20080611.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>fontconfig</key>
       <map>
         <key>license</key>
@@ -1015,35 +982,6 @@ anguage Infrstructure (CLI) international standard</string>
           </map>
         </map>
       </map>
-      <key>mysql</key>
-      <map>
-        <key>license</key>
-        <string>gpl</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>df27f2db244ea2762759a06cd75ada4e</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/mysql-darwin-20080812.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>cc86b4cc858655e23704d1168325d7b9</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/mysqlclient-linux-20090320.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>98bac06680dca907e783d8dd4aa9edde</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/mysql-windows-20080804.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>ndofdev</key>
       <map>
         <key>copyright</key>
@@ -1216,58 +1154,6 @@ anguage Infrstructure (CLI) international standard</string>
             <string>30cb00069fe2a545fbf7be1070386236</string>
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/linux-pulse-headers-0.9.14.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>quicktime</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (C) 1990-2007 by Apple Computer, Inc., all rights reserved.</string>
-        <key>description</key>
-        <string>Separate download. Used to play in-world video clips on a prim. </string>
-        <key>license</key>
-        <string>quicktime</string>
-        <key>packages</key>
-        <map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>be45825cc14ede53790ac93c58307dcb</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/quicktime-sdk-windows-7.3-20091110.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>smartheap</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (C) 1991-2000 Compuware Corporation. All Rights Reserved.</string>
-        <key>description</key>
-        <string>Memory Management Library</string>
-        <key>license</key>
-        <string>smartheap</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>f54131b5f228e805c64c2e4e6c96579a</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/smartheap-6.0.2-darwin-20080610.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>499208522bf7d7843e1d014d64214e06</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/smartheap-6.0.2-linux-20080610.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>78fd47017f21d11eae43bca3e38a3e1e</string>
-            <key>url</key>
-            <uri>scp:install-packages.lindenlab.com:/local/www/install-packages/doc/smartheap-6.0.2-windows-20080611.tar.bz2</uri>
           </map>
         </map>
       </map>

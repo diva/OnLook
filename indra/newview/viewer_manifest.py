@@ -827,24 +827,7 @@ class Linux_x86_64Manifest(LinuxManifest):
             self.path("libopenal.so.1")
             self.path("libalut.so.0")
 
-            # GTK+ and dependencies
-            ## Lets just use the system libraries for all of these:
-            ##self.path("libatk-1.0.so.0")
-            ##self.path("libcairo.so.2")
-            ##self.path("libfontconfig.so.1")
-            ##self.path("libfreetype.so.6")
-            self.path("libgdk_pixbuf-2.0.so.0") # was commented to use systems gdk pixbufs instead -
-                            # but seems webkit needs it o_O . Packaging for testing now.
-            ##self.path("libgdk-x11-2.0.so.0")
-            ##self.path("libgtk-x11-2.0.so.0")
-#            self.path("libpango-1.0.so.0")     # use systems pango instead
-#            self.path("libpangoft2-1.0.so.0")      # Both gdk pixbufs and pango would load systems modules
-#            self.path("libpangox-1.0.so.0")        # and crash if not compatible or present. 
-#            self.path("libpangoxft-1.0.so.0")      # So we depend system gdk pixbufs and pango anyway.
-            ##self.path("libpixman-1.so.0")
-
             self.end_prefix("lib64")
-
 
             # Vivox runtimes and libs
             if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
