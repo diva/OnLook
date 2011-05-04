@@ -1912,7 +1912,8 @@ void LLViewerWindow::initWorldUI()
 	S32 width = mRootView->getRect().getWidth();
 	LLRect full_window(0, height, width, 0);
 
-	if ( gBottomPanel == NULL )			// Don't re-enter if objects are alreay created
+	// Don't re-enter if objects are alreay created
+	if (gBottomPanel == NULL)
 	{
 		// panel containing chatbar, toolbar, and overlay, over floaters
 		gBottomPanel = new LLBottomPanel(mRootView->getRect());
@@ -1924,6 +1925,57 @@ void LLViewerWindow::initWorldUI()
 		mRootView->addChild(gHoverView);
 		
 		gIMMgr = LLIMMgr::getInstance();
+
+		//
+		// Tools for building
+		//
+
+		init_menus();
+
+		// Toolbox floater
+		gFloaterTools = new LLFloaterTools();
+		gFloaterTools->setVisible(FALSE);
+	}
+	
+	if ( gHUDView == NULL )
+	{
+		LLRect hud_rect = full_window;
+		hud_rect.mBottom += 50;
+		if (gMenuBarView)
+		{
+			hud_rect.mTop -= gMenuBarView->getRect().getHeight();
+		}
+		gHUDView = new LLHUDView(hud_rect);
+		// put behind everything else in the UI
+		mRootView->addChildAtEnd(gHUDView);
+	}
+}
+
+// initWorldUI that wasn't before logging in. Some of this may require the access the 'LindenUserDir'.
+void LLViewerWindow::initWorldUI_postLogin()
+{
+	S32 height = mRootView->getRect().getHeight();
+	S32 width = mRootView->getRect().getWidth();
+	LLRect full_window(0, height, width, 0);
+
+	// Don't re-enter if objects are alreay created.
+	if (!gStatusBar)
+	{
+		// Status bar
+		S32 menu_bar_height = gMenuBarView->getRect().getHeight();
+		LLRect root_rect = getRootView()->getRect();
+		LLRect status_rect(0, root_rect.getHeight(), root_rect.getWidth(), root_rect.getHeight() - menu_bar_height);
+		gStatusBar = new LLStatusBar(std::string("status"), status_rect);
+		gStatusBar->setFollows(FOLLOWS_LEFT | FOLLOWS_RIGHT | FOLLOWS_TOP);
+
+		gStatusBar->reshape(root_rect.getWidth(), gStatusBar->getRect().getHeight(), TRUE);
+		gStatusBar->translate(0, root_rect.getHeight() - gStatusBar->getRect().getHeight());
+		// sync bg color with menu bar
+		gStatusBar->setBackgroundColor( gMenuBarView->getBackgroundColor() );
+		getRootView()->addChild(gStatusBar);
+
+		// Menu holder appears on top to get first pass at all mouse events
+		getRootView()->sendChildToFront(gMenuHolder);
 
 		if ( gSavedPerAccountSettings.getBOOL("LogShowHistory") )
 		{
@@ -1950,47 +2002,7 @@ void LLViewerWindow::initWorldUI()
 		gFloaterTeleportHistory = new LLFloaterTeleportHistory();
 		gFloaterTeleportHistory->setVisible(FALSE);
 
-		//
-		// Tools for building
-		//
-
-		// Toolbox floater
-		init_menus();
-
-		gFloaterTools = new LLFloaterTools();
-		gFloaterTools->setVisible(FALSE);
-
-		// Status bar
-		S32 menu_bar_height = gMenuBarView->getRect().getHeight();
-		LLRect root_rect = getRootView()->getRect();
-		LLRect status_rect(0, root_rect.getHeight(), root_rect.getWidth(), root_rect.getHeight() - menu_bar_height);
-		gStatusBar = new LLStatusBar(std::string("status"), status_rect);
-		gStatusBar->setFollows(FOLLOWS_LEFT | FOLLOWS_RIGHT | FOLLOWS_TOP);
-
-		gStatusBar->reshape(root_rect.getWidth(), gStatusBar->getRect().getHeight(), TRUE);
-		gStatusBar->translate(0, root_rect.getHeight() - gStatusBar->getRect().getHeight());
-		// sync bg color with menu bar
-		gStatusBar->setBackgroundColor( gMenuBarView->getBackgroundColor() );
-
 		LLFloaterChatterBox::createInstance(LLSD());
-
-		getRootView()->addChild(gStatusBar);
-
-		// menu holder appears on top to get first pass at all mouse events
-		getRootView()->sendChildToFront(gMenuHolder);
-	}
-	
-	if ( gHUDView == NULL )
-	{
-		LLRect hud_rect = full_window;
-		hud_rect.mBottom += 50;
-		if (gMenuBarView)
-		{
-			hud_rect.mTop -= gMenuBarView->getRect().getHeight();
-		}
-		gHUDView = new LLHUDView(hud_rect);
-		// put behind everything else in the UI
-		mRootView->addChildAtEnd(gHUDView);
 	}
 }
 

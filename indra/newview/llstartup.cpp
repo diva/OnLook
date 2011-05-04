@@ -1890,6 +1890,10 @@ bool idle_startup()
 		gLLWindEnabled = gSavedSettings.getBOOL("WindEnabled");
 		
 		set_startup_status(0.40f, LLTrans::getString("LoginInitializingWorld"), gAgent.mMOTD);
+
+		// Initialize the rest of the world.
+		gViewerWindow->initWorldUI_postLogin();
+
 		display_startup();
 		// We should have an agent id by this point.
 		llassert(!(gAgentID == LLUUID::null));

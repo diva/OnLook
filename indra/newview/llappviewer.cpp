@@ -3202,12 +3202,15 @@ void LLAppViewer::saveFinalSnapshot()
 		gSavedSettings.setBOOL("ShowParcelOwners", FALSE);
 		idle();
 
-		std::string snap_filename = gDirUtilp->getLindenUserDir();
-		snap_filename += gDirUtilp->getDirDelimiter();
-		snap_filename += SCREEN_LAST_FILENAME;
-		// use full pixel dimensions of viewer window (not post-scale dimensions)
-		gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, TRUE);
-		mSavedFinalSnapshot = TRUE;
+		std::string snap_filename = gDirUtilp->getLindenUserDir(true);
+		if (!snap_filename.empty())
+		{
+			snap_filename += gDirUtilp->getDirDelimiter();
+			snap_filename += SCREEN_LAST_FILENAME;
+			// use full pixel dimensions of viewer window (not post-scale dimensions)
+			gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, TRUE);
+			mSavedFinalSnapshot = TRUE;
+		}
 	}
 }
 

@@ -6643,7 +6643,7 @@ class LLFloaterVisible : public view_listener_t
 		}
 		else if (floater_name == "teleport history")
 		{
-			new_value = gFloaterTeleportHistory->getVisible();
+			new_value = (gFloaterTeleportHistory && gFloaterTeleportHistory->getVisible());
 		}
 		else if (floater_name == "im")
 		{
