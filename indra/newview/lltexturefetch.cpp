@@ -425,7 +425,7 @@ class SGHostBlackList{
 
 	static void lock() {
 		if (!sMutex)
-			sMutex = new LLMutex(0);
+			sMutex = new LLMutex;
 		sMutex->lock();
 	}
 
@@ -767,7 +767,6 @@ LLTextureFetchWorker::LLTextureFetchWorker(LLTextureFetch* fetcher,
 	  mRetryAttempt(0),
 	  mActiveCount(0),
 	  mGetStatus(0),
-	  mWorkMutex(NULL),
 	  mFirstPacket(0),
 	  mLastPacket(-1),
 	  mTotalPackets(0),
@@ -1943,8 +1942,6 @@ LLTextureFetch::LLTextureFetch(LLTextureCache* cache, LLImageDecodeThread* image
 	  mDebugPause(FALSE),
 	  mPacketCount(0),
 	  mBadPacketCount(0),
-	  mQueueMutex(getAPRPool()),
-	  mNetworkQueueMutex(getAPRPool()),
 	  mTextureCache(cache),
 	  mImageDecodeThread(imagedecodethread),
 	  mTextureBandwidth(0),

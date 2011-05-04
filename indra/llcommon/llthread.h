@@ -38,10 +38,31 @@
 #include "llmemory.h"
 
 #include "apr_thread_cond.h"
+#include "aiaprpool.h"
+
+#ifdef SHOW_ASSERT
+extern bool is_main_thread(void);
+#endif
 
 class LLThread;
 class LLMutex;
 class LLCondition;
+
+class LL_COMMON_API AIThreadLocalData
+{
+private:
+	static apr_threadkey_t* sThreadLocalDataKey;
+
+public:
+	// Thread-local memory pool.
+	AIAPRRootPool mRootPool;
+	AIVolatileAPRPool mVolatileAPRPool;
+
+	static void init(void);
+	static void destroy(void* thread_local_data);
+	static void create(LLThread* pthread);
+	static AIThreadLocalData& tldata(void);
+};
 
 class LL_COMMON_API LLThread
 {
@@ -53,7 +74,7 @@ public:
 		QUITTING= 2 	// Someone wants this thread to quit
 	} EThreadStatus;
 
-	LLThread(const std::string& name, apr_pool_t *poolp = NULL);
+	LLThread(std::string const& name);
 	virtual ~LLThread(); // Warning!  You almost NEVER want to destroy a thread unless it's in the STOPPED state.
 	virtual void shutdown(); // stops the thread
 	
@@ -82,7 +103,8 @@ public:
 	// this kicks off the apr thread
 	void start(void);
 
-	apr_pool_t *getAPRPool() { return mAPRPoolp; }
+	// Return thread-local data for the current thread.
+	static AIThreadLocalData& tldata(void) { return AIThreadLocalData::tldata(); }
 
 private:
 	BOOL				mPaused;
@@ -95,9 +117,10 @@ protected:
 	LLCondition*		mRunCondition;
 
 	apr_thread_t		*mAPRThreadp;
-	apr_pool_t			*mAPRPoolp;
-	BOOL				mIsLocalPool;
 	EThreadStatus		mStatus;
+
+	friend void AIThreadLocalData::create(LLThread* threadp);
+	AIThreadLocalData*  mThreadLocalData;
 
 	void setQuitting();
 	
@@ -125,12 +148,9 @@ protected:
 
 //============================================================================
 
-class LL_COMMON_API LLMutex
+class LL_COMMON_API LLMutexBase
 {
 public:
-	LLMutex(apr_pool_t *apr_poolp); // NULL pool constructs a new pool for the mutex
-	~LLMutex();
-	
 	void lock() { apr_thread_mutex_lock(mAPRMutexp); }
 	void unlock() { apr_thread_mutex_unlock(mAPRMutexp); }
 	// Returns true if lock was obtained successfully.
@@ -139,16 +159,60 @@ public:
 	bool isLocked(); 	// non-blocking, but does do a lock/unlock so not free
 
 protected:
-	apr_thread_mutex_t *mAPRMutexp;
-	apr_pool_t			*mAPRPoolp;
-	BOOL				mIsLocalPool;
+	// mAPRMutexp is initialized and uninitialized in the derived class.
+	apr_thread_mutex_t* mAPRMutexp;
 };
+
+class LL_COMMON_API LLMutex : public LLMutexBase
+{
+public:
+	LLMutex(AIAPRPool& parent = LLThread::tldata().mRootPool) : mPool(parent)
+	{
+		apr_thread_mutex_create(&mAPRMutexp, APR_THREAD_MUTEX_UNNESTED, mPool());
+	}
+	~LLMutex()
+	{
+		llassert(!isLocked()); // better not be locked!
+		apr_thread_mutex_destroy(mAPRMutexp);
+		mAPRMutexp = NULL;
+	}
+
+protected:
+	AIAPRPool mPool;
+};
+
+#if APR_HAS_THREADS
+// No need to use a root pool in this case.
+typedef LLMutex LLMutexRootPool;
+#else  // APR_HAS_THREADS
+class LL_COMMON_API LLMutexRootPool : public LLMutexBase
+{
+public:
+	LLMutexRootPool(void)
+	{
+		apr_thread_mutex_create(&mAPRMutexp, APR_THREAD_MUTEX_UNNESTED, mRootPool());
+	}
+	~LLMutexRootPool()
+	{
+#if APR_POOL_DEBUG
+		// It is allowed to destruct root pools from a different thread.
+		mRootPool.grab_ownership();
+#endif
+		llassert(!isLocked()); // better not be locked!
+		apr_thread_mutex_destroy(mAPRMutexp);
+		mAPRMutexp = NULL;
+	}
+
+protected:
+	AIAPRRootPool mRootPool;
+};
+#endif // APR_HAS_THREADS
 
 // Actually a condition/mutex pair (since each condition needs to be associated with a mutex).
 class LL_COMMON_API LLCondition : public LLMutex
 {
 public:
-	LLCondition(apr_pool_t *apr_poolp); // Defaults to global pool, could use the thread pool as well.
+	LLCondition(AIAPRPool& parent = LLThread::tldata().mRootPool);
 	~LLCondition();
 	
 	void wait();		// blocks
@@ -162,7 +226,7 @@ protected:
 class LL_COMMON_API LLMutexLock
 {
 public:
-	LLMutexLock(LLMutex* mutex)
+	LLMutexLock(LLMutexBase* mutex)
 	{
 		mMutex = mutex;
 		mMutex->lock();
@@ -172,7 +236,7 @@ public:
 		mMutex->unlock();
 	}
 private:
-	LLMutex* mMutex;
+	LLMutexBase* mMutex;
 };
 
 //============================================================================
