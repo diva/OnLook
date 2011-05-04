@@ -162,26 +162,12 @@
         <string>artwork</string>
         <key>packages</key>
         <map>
-          <key>darwin</key>
+          <key>common</key>
           <map>
             <key>md5sum</key>
-            <string>5e047437d73d1017bf270a6c6e936f23</string>
+            <string>a2cde4f24bdcc260b661e139846b8acd</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/artwork-common-20090415.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>5e047437d73d1017bf270a6c6e936f23</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/artwork-common-20090415.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>5e047437d73d1017bf270a6c6e936f23</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/artwork-common-20090415.tar.bz2</uri>
+			<uri>http://imprudenceviewer.org/download/libs/imprudence-artwork-20101026.tar.bz2</uri>
           </map>
         </map>
       </map>
