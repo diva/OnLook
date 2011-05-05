@@ -56,9 +56,10 @@ class ViewerManifest(LLManifest):
 
             # include the entire shaders directory recursively
             self.path("shaders")
-            self.path("dictionaries")
             # ... and the entire windlight directory
             self.path("windlight")
+            # ... and the hunspell dictionaries
+            self.path("dictionaries")
             self.end_prefix("app_settings")
 
         if self.prefix(src="character"):
@@ -200,6 +201,11 @@ class WindowsManifest(ViewerManifest):
         self.path(src="licenses-win32.txt", dst="licenses.txt")
 
         self.path("featuretable.txt")
+
+        # For spellchecking
+        if self.prefix(src=self.args['configuration'], dst=""):
+            self.path("libhunspell.dll")
+            self.end_prefix()
 
         # For use in crash reporting (generates minidumps)
         self.path("dbghelp.dll")
@@ -441,6 +447,7 @@ class DarwinManifest(ViewerManifest):
             self.path(self.info_plist_name(), dst="Info.plist")
 
             # copy additional libs in <bundle>/Contents/MacOS/
+            self.path("../../libraries/universal-darwin/lib_release/libhunspell-1.2.dylib", dst="MacOS/libhunspell-1.2.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
@@ -777,6 +784,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libdb-4.2.so")
             self.path("libcrypto.so.0.9.7")
             self.path("libexpat.so.1")
+            self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
             self.path("libssl.so.0.9.7")
             #self.path("libuuid.so.1")
             self.path("libSDL-1.2.so.0")

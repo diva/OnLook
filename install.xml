@@ -106,9 +106,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>a02619c1e30a3db02d3883bf1ad7a1e6</string>
+            <string>ea394402d4d4af4c5238fe4e35c64389</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/apr_suite-1.3.8-windows-20090911.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/apr_suite-1.4.2-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -146,9 +146,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>b06f412608c8fccfc756935c262b03f0</string>
+            <string>e4ab04da7db20ba388f2109e84f0fcda</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/ares-1.7.1-windows-20100611a.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/ares-1.7.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -247,9 +247,9 @@
 					<key>windows</key>
 					<map>
 						<key>md5sum</key>
-						<string>7f73eeff95087369ffebeac8356c7eaa</string>
+						<string>60ed73408c4050ff9c96f26771fd6b46</string>
 						<key>url</key>
-						<uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-windows-20100611.tar.bz2</uri>
+						<uri>https://github.com/downloads/siana/SingularityViewer/curl-7.21.1-windows-20110504.tar.bz2</uri>
 					</map>
 				</map>
 			</map>
@@ -354,9 +354,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>5dbbdb4a9b5bec86d180ef20a5f8ccfb</string>
+            <string>74494ba202b3d2cd74e4032716f4bf1b</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/expat-1.95.8-windows-20090917.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/expat-2.0.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -424,9 +424,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>88980fd6d91ac541b62dea877ebe6ba6</string>
+            <string>c1fec2f5a4924b75ca6047edfcc91eba</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/freetype-2.3.9-windows-20090917.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/freetype-2.4.4-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -738,9 +738,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>6a6bb0143a2561e3276dab4bcfa425ef</string>
+            <string>e4dfbea847d92b46e3d2d1a2c25fe3b3</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/jpeglib-6b-windows-20090917a.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/jpeglib-8c-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -859,9 +859,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>c781cd9846cf20afb90ac40ad1a0ce9d</string>
+            <string>7597e9d7f4e9e8e032692a1aade8298e</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libpng-1.2.35-windows-20090917.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/libpng-1.5.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1002,9 +1002,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>f0df8a1e60991095e3adca1450b8c9c0</string>
+            <string>383ce3f78ae3e6afa39ee9ced6d8e531</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/ndofdev-windows-20090917.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/libndofdev-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1276,9 +1276,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>262629bcaa39dcf7266caa50da01a599</string>
+            <string>2faea7fe8fa66872793e0ea917c33e2e</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/xmlrpc-epi-0.51-windows-20091016.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/xmlrpc_epi-0.54.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1316,9 +1316,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>73baf52a740d151fddbc2a008369c462</string>
+            <string>7fc3539a45054e91b7e225cc3888f838</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/zlib-1.2.3-windows-20090921.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/zlib-1.2.5-windows-20110504.tar.bz2</uri>
           </map>
         </map>
       </map>

@@ -544,7 +544,7 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 
 		stop_glerror();
 	}
-	else if (LLPipeline::sRenderDeferred)
+	if (LLPipeline::sRenderDeferred)
 	{ //share depth buffer between deferred targets
 		mDeferredScreen.shareDepthBuffer(mScreen);
 		for (U32 i = 0; i < 2; i++)
@@ -2622,7 +2622,7 @@ void render_hud_elements()
 		//TO-DO:
 		//V2 moved this line from LLPipeline::renderGeom
 		//Uncomment once multisample z-buffer issues are figured out on ati cards.
-	//	LLHUDObject::renderAll(); 
+		LLHUDObject::renderAll(); 
 
 		//gObjectList.resetObjectBeacons();
 	}
@@ -2949,7 +2949,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			//TO-DO:
 			//V2 moved this line to LLPipeline::render_hud_elements
 			//Migrate once multisample z-buffer issues are figured out on ati cards.
-			LLHUDObject::renderAll();
+			//LLHUDObject::renderAll();
 			gObjectList.resetObjectBeacons();
 		}
 		else
@@ -3181,7 +3181,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 	//TO-DO:
 	//V2 moved block to LLPipeline::renderDeferredLighting
 	//Migrate once multisample z-buffer issues are figured out on ati cards.
-	if(!sImpostorRender)
+	/*if(!sImpostorRender)
 	{
 		renderHighlights();
 		mHighlightFaces.clear();
@@ -3202,7 +3202,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 			// Make sure particle effects disappear
 			LLHUDObject::renderAllForTimer();
 		}
-	}
+	}*/
 	//END
 	
 	if (occlude)
@@ -5596,11 +5596,11 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		//TO-DO: 
 		//V2 requires this for hover text and such since they have been pulled out of geom render.
 		//Do this when multisample z-buffer issues are figured out
-		/*if (LLRenderTarget::sUseFBO)
+		if (LLRenderTarget::sUseFBO)
 		{ //copy depth buffer from mScreen to framebuffer
 			LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
 				0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		}*/
+		}
 	}
 	
 
@@ -5869,7 +5869,8 @@ void LLPipeline::renderDeferredLighting()
 			//TO-DO: 
 			//V2 changed to LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			//Do this when multisample z-buffer issues are figured out
-			LLGLDepthTest depth(GL_FALSE);
+			//LLGLDepthTest depth(GL_FALSE);
+			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			stop_glerror();
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 			stop_glerror();
@@ -5929,7 +5930,8 @@ void LLPipeline::renderDeferredLighting()
 			//TO-DO: 
 			//V2 changed to LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			//Do this when multisample z-buffer issues are figured out
-			LLGLDepthTest depth(GL_FALSE);
+			//LLGLDepthTest depth(GL_FALSE);
+			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			stop_glerror();
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 			stop_glerror();
@@ -5948,7 +5950,8 @@ void LLPipeline::renderDeferredLighting()
 			//TO-DO: 
 			//V2 changed to LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			//Do this when multisample z-buffer issues are figured out
-			LLGLDepthTest depth(GL_FALSE);
+			//LLGLDepthTest depth(GL_FALSE);
+			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
 			stop_glerror();
 			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 			stop_glerror();
@@ -6189,7 +6192,7 @@ void LLPipeline::renderDeferredLighting()
 	//TO-DO:
 	//V2 moved block from LLPipeline::renderGeomPostDeferred
 	//Migrate once multisample z-buffer issues are figured out on ati cards.
-	/*{
+	{
 		//render highlights, etc.
 		renderHighlights();
 		mHighlightFaces.clear();
@@ -6204,7 +6207,7 @@ void LLPipeline::renderDeferredLighting()
 			gObjectList.renderObjectBeacons();
 			gObjectList.resetObjectBeacons();
 		}
-	}*/
+	}
 
 	mScreen.flush();
 						
