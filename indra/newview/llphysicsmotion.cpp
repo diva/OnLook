@@ -102,10 +102,14 @@ public:
                 mLastTime(0),
                 mPosition_local(0),
                 mVelocityJoint_local(0),
-                mPositionLastUpdate_local(0)
+                mPositionLastUpdate_local(0),
+				mAccelerationJoint_local(0),
+				mVelocity_local(0)
         {
                 mJointState = new LLJointState;
         }
+
+		void getString(std::ostringstream &oss);
 
         BOOL initialize();
 
@@ -127,8 +131,7 @@ protected:
                 {
                         return sDefaultController[controller_key];
                 }
-                const std::string& param_name = (*entry).second.c_str();
-                return mCharacter->getVisualParamWeight(param_name.c_str());
+                return mCharacter->getVisualParamWeight((*entry).second.c_str());
         }
         void setParamValue(LLViewerVisualParam *param,
                            const F32 new_value_local,
@@ -192,6 +195,80 @@ BOOL LLPhysicsMotion::initialize()
         }
 
         return TRUE;
+}
+
+std::string LLPhysicsMotionController::getString()
+{
+	std::ostringstream oss;
+	oss << "{" << std::endl <<
+	 	"Active: " << mActive << std::endl <<
+		"IsDefault: " << mIsDefault << std::endl <<
+		"Stopped: " << isStopped() << std::endl <<
+		"Name: " << getName() << std::endl <<
+		"ID: " << getID().asString() << std::endl;
+
+	for (motion_vec_t::iterator iter = mMotions.begin();iter != mMotions.end();++iter)
+	{
+		(*iter)->getString(oss);
+	}
+	oss << "}" << std::endl;
+	return oss.str();
+}
+void getParamString(U32 depth, LLViewerVisualParam *param, std::ostringstream &oss)
+{
+	std::string indent;
+	indent.resize(depth,' ');
+
+	oss <<
+		indent << "getID: " << param->getID() << std::endl << 
+		indent << "getName: " << param->getName() << std::endl << 
+		indent << "getDisplayName: " << param->getDisplayName() << std::endl << 
+		indent << "getGroup: " << param->getGroup() << std::endl << 
+		indent << "getSex: " << param->getSex() << std::endl << 
+		indent << "getMinWeight: " << param->getMinWeight() << std::endl << 
+		indent << "getMaxWeight: " << param->getMaxWeight() << std::endl << 
+		indent << "getDefaultWeight: " << param->getDefaultWeight() << std::endl << 
+		indent << "getWeight: " << param->getWeight() << std::endl << 
+		indent << "getCurrentWeight: " << param->getCurrentWeight() << std::endl << 
+		indent << "getLastWeight: " << param->getLastWeight() << std::endl << 
+		indent << "isAnimating: " << param->isAnimating() << std::endl << 
+		indent << "isTweakable: " << param->isTweakable() << std::endl;
+}
+void LLPhysicsMotion::getString(std::ostringstream &oss)
+{
+	oss << 
+		" mParamDriverName: " << mParamDriverName << std::endl <<
+		" mParamControllerName: " << mParamControllerName << std::endl <<
+		" mMotionDirectionVec: " << mMotionDirectionVec << std::endl <<
+		" mJointName: " << mJointName << std::endl <<
+		" mPosition_local: " << mPosition_local << std::endl << 
+		" mVelocityJoint_local: " << mVelocityJoint_local << std::endl << 
+		" mAccelerationJoint_local: " << mAccelerationJoint_local << std::endl << 
+		" mPositionLastUpdate_local: " << mPositionLastUpdate_local << std::endl << 
+		" mPosition_world: " << mPosition_world << std::endl << 
+		" mVelocity_local: " << mVelocity_local << std::endl;
+	if(mParamDriver)
+	{
+		oss << " <DRIVER>" << std::endl;
+		getParamString(2,mParamDriver,oss);
+		LLDriverParam *driver_param = dynamic_cast<LLDriverParam *>(mParamDriver);
+		if(driver_param)
+		{
+			for (LLDriverParam::entry_list_t::iterator iter = driver_param->mDriven.begin();
+				 iter != driver_param->mDriven.end();++iter)
+			{
+				oss << "  <DRIVEN>" << std::endl;
+				getParamString(3,iter->mParam,oss);
+			}
+		}
+	}
+	else
+		oss << " mParamDriver: (NULL)" << std::endl;
+	oss << " Controllers:" << std::endl;
+	for(controller_map_t::const_iterator it = mParamControllers.begin(); it!= mParamControllers.end(); ++it)
+	{
+		oss << "  mParamControllers[\"" << it->first << "\"] = \"" << it->second << "\" =" << getParamValue(it->first) << std::endl;
+	}
 }
 
 LLPhysicsMotionController::LLPhysicsMotionController(const LLUUID &id) : 

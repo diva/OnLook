@@ -704,8 +704,8 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 				{
 					LLVector3 box = (facep->mExtents[1] - facep->mExtents[0]) * 0.25f;
 					LLVector3 v = (facep->mCenterLocal-camera.getOrigin());
-					LLVector3 at = camera.getAtAxis();
-					for (U32 j = 0; j < 3; j++)
+						const LLVector3& at = camera.getAtAxis();
+						for (U32 j = 0; j < 3; j++)
 					{
 						v.mV[j] -= box.mV[j] * at.mV[j];
 					}
