@@ -116,6 +116,7 @@ extern CWD_API channel_ct primbackup;
 extern CWD_API channel_ct gtk;
 extern CWD_API channel_ct sdl;
 extern CWD_API channel_ct backtrace;
+extern CWD_API channel_ct statemachine;
 
 #endif
 

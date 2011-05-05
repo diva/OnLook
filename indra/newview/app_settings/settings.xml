@@ -11382,6 +11382,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>StateMachineMaxTime</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum time per frame spent executing AIStateMachine objects, in miliseconds</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>20</integer>
+    </map>
     <key>StatsAutoRun</key>
     <map>
       <key>Comment</key>
