@@ -11390,6 +11390,7 @@
     <param
      id="1105"
      group="1"
+     sex="female"
      wearable="shape"
      name="Breast_Physics_LeftRight_Controller"
      label="Breast Physics LeftRight Controller"

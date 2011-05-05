@@ -51,6 +51,9 @@ class LLPhysicsMotionController :
 	public LLMotion
 {
 public:
+
+	std::string getString();
+
 	// Constructor
 	LLPhysicsMotionController(const LLUUID &id);
 
