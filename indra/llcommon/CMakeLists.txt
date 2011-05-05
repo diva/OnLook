@@ -80,6 +80,7 @@ set(llcommon_HEADER_FILES
     CMakeLists.txt
 
     aiaprpool.h
+    aithreadsafe.h
     bitpack.h
     ctype_workaround.h
     doublelinkedlist.h
