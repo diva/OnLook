@@ -46,10 +46,9 @@
 ///
 /// @param[in] send_message_function Function for sending messages from plugin to plugin loader shell
 /// @param[in] plugin_instance Message data for messages from plugin to plugin loader shell
-BasicPluginBase::BasicPluginBase(LLPluginInstance::sendMessageFunction send_message_function, LLPluginInstance* plugin_instance)
+BasicPluginBase::BasicPluginBase(LLPluginInstance::sendMessageFunction send_message_function, LLPluginInstance* plugin_instance) :
+		mPluginInstance(plugin_instance), mSendMessageFunction(send_message_function), mDeleteMe(false)
 {
-	mSendMessageFunction = send_message_function;
-	mPluginInstance = plugin_instance;
 }
 
 /**
@@ -79,6 +78,12 @@ void BasicPluginBase::staticReceiveMessage(char const* message_string, BasicPlug
 // This is the loaded DSO.
 //
 // Call this function to send 'message' to the viewer.
+// Note: mSendMessageFunction points to LLPluginInstance::staticReceiveMessage, so indirectly this
+//       just calls LLPluginInstance::receiveMessage (mPluginInstance->receiveMessage) where
+//       mPluginInstance is the LLPluginInstance created in LLPluginProcessChild::idle during
+//       state STATE_PLUGIN_LOADING. That function then immediately calls mOwner->receivePluginMessage
+//       which is implemented as LLPluginProcessChild::receivePluginMessage, the same
+//       LLPluginProcessChild object that created the LLPluginInstance.
 /**
  * Send message to plugin loader shell.
  * 
@@ -89,6 +94,17 @@ void BasicPluginBase::sendMessage(const LLPluginMessage &message)
 {
 	std::string output = message.generate();
 	mSendMessageFunction(output.c_str(), &mPluginInstance);
+}
+
+/**
+ * Send shutdown message to the plugin loader shell.
+ *
+ * This will cause the SLPlugin process that loaded this DSO to be terminated.
+ */
+void BasicPluginBase::sendShutdownMessage(void)
+{
+	LLPluginMessage shutdownmessage(LLPLUGIN_MESSAGE_CLASS_INTERNAL, "shutdown");
+	sendMessage(shutdownmessage);
 }
 
 #if LL_WINDOWS

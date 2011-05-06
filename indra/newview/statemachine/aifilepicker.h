@@ -67,6 +67,56 @@ enum ESaveFilter
 	FFSAVE_LSL
 };
 
+/*
+
+  AIFilePicker is an AIStateMachine, that has a LLViewerPluginManager (mPluginManager)
+  to manage a plugin that runs the actual filepicker in a separate process.
+
+  The relationship with the plugin is as follows:
+
+new AIFilePicker
+
+  AIFilePicker::mPluginManager = new LLViewerPluginManager
+  
+                                             LLPluginProcessParentOwner                  LLPluginMessagePipeOwner
+                                                     |                                            | LLPluginMessagePipeOwner::mOwner = LLPluginProcessParentOwner
+                                                     |                                            | LLPluginMessagePipeOwner::mMessagePipe = LLPluginMessagePipe
+                                                     |                                            | LLPluginMessagePipeOwner::receiveMessageRaw calls
+                                                     v                                            |   LLPluginProcessParent::receiveMessageRaw
+                                             LLPluginClassBasic                                   v
+                                                     | LLPluginClassBasic::mPlugin = new LLPluginProcessParent ---> new LLPluginMessagePipe
+                                                     |   LLPluginProcessParent::mOwner = (LLPluginProcessParentOwner*)LLPluginClassBasic
+                                                     |   LLPluginProcessParent::sendMessage calls
+                                                     |     LLPluginMessagePipeOwner::writeMessageRaw calls
+                                                     |     mMessagePipe->LLPluginMessagePipe::addMessage
+                                                     |   LLPluginProcessParent::receiveMessageRaw calls
+                                                     |     LLPluginProcessParent::receiveMessage calls
+                                                     |     LLPluginProcessParentOwner::receivePluginMessage == AIPluginFilePicker::receivePluginMessage
+                                                     |
+                                                     | LLPluginClassBasic::sendMessage calls mPlugin->LLPluginProcessParent::sendMessage
+                                                     |
+                                                     v
+    LLViewerPluginManager::mPluginBase = new AIPluginFilePicker
+      AIPluginFilePicker::receivePluginMessage calls
+        AIFilePicker::receivePluginMessage
+
+      AIPluginFilePicker::mStateMachine = AIFilePicker
+
+  Where the entry point to send messages to the plugin is LLPluginClassBasic::sendMessage,
+  and the end point for messages received from the plugin is AIFilePicker::receivePluginMessage.
+
+  Termination happens by receiving the "canceled" or "done" message,
+  which sets the state to AIFilePicker_canceled or AIFilePicker_done
+  respectively, causing a call to AIStateMachine::finish(), which calls
+  AIFilePicker::finish_impl which destroys the plugin (mPluginBase)
+  and the plugin manager (mPluginManager).
+
+  AIStateMachine::finish() also calls the registered callback function,
+  which should call AIStateMachine::deleteMe(), causing the AIFilePicker
+  to be deleted.
+
+*/
+
 // A file picker state machine.
 //
 // Before calling run(), call open() to pass needed parameters.
@@ -151,7 +201,8 @@ public:
 	static std::string launcher_name(void) { return gDirUtilp->getLLPluginLauncher(); }
 	static char const* plugin_basename(void) { return "basic_plugin_filepicker"; }
 
-    /*virtual*/ void receivePluginMessage(LLPluginMessage const& message) { mStateMachine->receivePluginMessage(message); }
+	/*virtual*/ void receivePluginMessage(LLPluginMessage const& message) { mStateMachine->receivePluginMessage(message); }
+	/*virtual*/ void receivedShutdown(void) { /* Nothing -- we terminate on deletion (from AIStateMachine::mainloop) */ }
 
 private:
 	AIFilePicker* mStateMachine;

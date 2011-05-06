@@ -113,6 +113,9 @@ protected:
 	// Inherited from LLPluginProcessParentOwner.
 	/*virtual*/ void receivePluginMessage(LLPluginMessage const&);
 
+	// Inherited from LLPluginProcessParentOwner.
+	/*virtual*/ void receivedShutdown() { mPlugin->exitState(); }
+
 	//--------------------------------------
 	// Debug use only
 	//

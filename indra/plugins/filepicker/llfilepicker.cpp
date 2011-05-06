@@ -1048,7 +1048,7 @@ void LLFilePickerBase::chooser_responder(GtkWidget *widget, gint response, gpoin
 	if (response == GTK_RESPONSE_ACCEPT)
 	{
 		GSList *file_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(widget));
-		g_slist_foreach(file_list, (GFunc)add_to_selectedfiles, user_data);
+		g_slist_foreach(file_list, (GFunc)add_to_selectedfiles, picker);
 		g_slist_foreach(file_list, (GFunc)g_free, NULL);
 		g_slist_free (file_list);
 	}

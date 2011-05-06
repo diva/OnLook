@@ -79,20 +79,6 @@ extern "C" {
 	}
 #endif
 
-#ifdef LL_STANDALONE
-#include <qglobal.h>
-#elif defined(LL_LINUX)
-// We don't provide Qt headers for non-standalone, therefore define this here.
-// Our prebuilt is built with QT_NAMESPACE undefined.
-#define QT_MANGLE_NAMESPACE(name) name
-#define Q_INIT_RESOURCE(name) \
-	do { extern int QT_MANGLE_NAMESPACE(qInitResources_ ## name) ();       \
-		 QT_MANGLE_NAMESPACE(qInitResources_ ## name) (); } while (0)
-#else
-// Apparently this symbol doesn't exist in the windows and Mac tar balls provided by LL.
-#define Q_INIT_RESOURCE(name) /*nothing*/
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 class MediaPluginWebKit : 
@@ -138,6 +124,7 @@ private:
 	F32 mBackgroundR;
 	F32 mBackgroundG;
 	F32 mBackgroundB;
+	std::string mTarget;
 	
 	VolumeCatcher mVolumeCatcher;
 
@@ -326,11 +313,7 @@ private:
 		LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
 		
 		// create single browser window
-#if LLQTWEBKIT_API_VERSION >= 2
-		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight /*, mTarget*/ );	// We don't have mTarget yet.
-#else
-		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow( mWidth, mHeight );
-#endif
+		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight, mTarget);
 
 		// tell LLQtWebKit about the size of the browser window
 		LLQtWebKit::getInstance()->setSize( mBrowserWindowId, mWidth, mHeight );
@@ -537,16 +520,9 @@ private:
 	void onClickLinkHref(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_href");
-#if LLQTWEBKIT_API_VERSION >= 2
 		message.setValue("uri", event.getEventUri());
 		message.setValue("target", event.getStringValue());
 		message.setValue("uuid", event.getStringValue2());
-#else
-		// This will work as long as we don't need "uuid", which will be needed for MoaP.
-		message.setValue("uri", event.getStringValue());
-		message.setValue("target", event.getStringValue2());
-		message.setValueU32("target_type", event.getLinkType());
-#endif
 		sendMessage(message);
 	}
 	
@@ -555,11 +531,7 @@ private:
 	void onClickLinkNoFollow(const EventType& event)
 	{
 		LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER, "click_nofollow");
-#if LLQTWEBKIT_API_VERSION >= 2
 		message.setValue("uri", event.getEventUri());
-#else
-		message.setValue("uri", event.getStringValue());
-#endif
 		sendMessage(message);
 	}
 
@@ -744,9 +716,6 @@ MediaPluginWebKit::MediaPluginWebKit(LLPluginInstance::sendMessageFunction send_
 	mJavascriptEnabled = true;	// default to on
 	mPluginsEnabled = true;		// default to on
 	mUserAgent = "LLPluginMedia Web Browser";
-
-	// Initialize WebCore resource.
-	Q_INIT_RESOURCE(WebCore);
 }
 
 MediaPluginWebKit::~MediaPluginWebKit()
@@ -773,6 +742,8 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 		{
 			if(message_name == "init")
 			{
+				mTarget = message_in.getValue("target");
+
 				LLPluginMessage message("base", "init_response");
 				LLSD versions = LLSD::emptyMap();
 				versions[LLPLUGIN_MESSAGE_CLASS_BASE] = LLPLUGIN_MESSAGE_CLASS_BASE_VERSION;
@@ -1082,7 +1053,7 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 			else
 			{
 //				std::cerr << "MediaPluginWebKit::receiveMessage: unknown media message: " << message_string << std::endl;
-			};
+			}
 		}
 		else if(message_class == LLPLUGIN_MESSAGE_CLASS_MEDIA_BROWSER)
 		{

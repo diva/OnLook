@@ -53,6 +53,7 @@ public:
 	virtual ~LLPluginProcessParentOwner();
 	virtual void receivePluginMessage(const LLPluginMessage &message) = 0;
 	virtual bool receivePluginMessageEarly(const LLPluginMessage &message) {return false;};
+	virtual void receivedShutdown() = 0;
 	// This will only be called when the plugin has died unexpectedly 
 	virtual void pluginLaunchFailed() {};
 	virtual void pluginDied() {};
@@ -87,6 +88,9 @@ public:
 	
 	// Go to the proper error state
 	void errorState(void);
+
+	// Go to exit state.
+	void exitState(void) { setState(STATE_EXITING); }
 
 	void setSleepTime(F64 sleep_time, bool force_send = false);
 	F64 getSleepTime(void) const { return mSleepTime; };

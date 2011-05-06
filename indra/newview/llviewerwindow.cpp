@@ -4031,7 +4031,7 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 void LLViewerWindow::saveImageNumbered_filepicker_callback(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, bool success)
 {
 	llassert((bool)*filepicker == success);
-	if (success)
+	if (success && !filepicker->isCanceled())
 	{
 		// Copy the directory + file name
 		std::string filepath = filepicker->getFilename();
@@ -4041,7 +4041,7 @@ void LLViewerWindow::saveImageNumbered_filepicker_callback(LLPointer<LLImageForm
 
 		saveImageNumbered_continued(image, extension);
 	}
-	delete filepicker;
+	filepicker->deleteMe();
 }
 
 void LLViewerWindow::saveImageNumbered_continued(LLPointer<LLImageFormatted> image, std::string const& extension)

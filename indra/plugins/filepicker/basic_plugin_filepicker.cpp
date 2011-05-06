@@ -150,6 +150,10 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 				message.setValue("plugin_version", plugin_version);
 				sendMessage(message);
 			}
+			else if (message_name == "cleanup")
+			{
+				// We have no resources that need care. Just do nothing.
+			}
 			else if (message_name == "idle")
 			{
 				// This whole message should not have existed imho -- Aleric
@@ -213,6 +217,8 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 					message.setValueLLSD("filenames", filenames);
 					sendMessage(message);
 				}
+				// We're done. Exit the whole application.
+				sendShutdownMessage();
 			}
 			else
 			{

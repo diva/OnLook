@@ -553,6 +553,15 @@ void LLPluginProcessChild::receivePluginMessage(const std::string &message)
 				}
 			}
 		}
+		else if (message_class == LLPLUGIN_MESSAGE_CLASS_INTERNAL)
+		{
+			std::string message_name = parsed.getName();
+			if(message_name == "shutdown")
+			{
+				// The plugin is finished.
+				setState(STATE_UNLOADING);
+			}
+		}
 	}
 	
 	if(passMessage)

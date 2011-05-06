@@ -49,7 +49,6 @@
 MediaPluginBase::MediaPluginBase(LLPluginInstance::sendMessageFunction send_message_function, LLPluginInstance* plugin_instance)
 	: BasicPluginBase(send_message_function, plugin_instance)
 {
-	mDeleteMe = false;
 	mPixels = 0;
 	mWidth = 0;
 	mHeight = 0;

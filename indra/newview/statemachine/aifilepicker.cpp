@@ -314,7 +314,11 @@ void AIFilePicker::abort_impl(void)
 
 void AIFilePicker::finish_impl(void)
 {
-	mPluginManager = NULL;	// This deletes the plugin, since mPluginManager is a LLPointer.
+	if (mPluginManager)
+	{
+		mPluginManager->destroyPlugin();
+		mPluginManager = NULL;
+	}
 	mFilter.clear();		// Check that open is called before calling run (again).
 }
 

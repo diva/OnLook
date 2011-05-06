@@ -42,9 +42,8 @@
   5) Keep a list of all living audio players that we care about, adjust the volumes of all of them when we get a new setVolume() call
  */
 
-# include <set> //imprudence
-
 #include "linden_common.h"
+# include <set>
 
 #include "volume_catcher.h"
 

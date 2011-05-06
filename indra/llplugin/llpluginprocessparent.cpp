@@ -1001,6 +1001,11 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 			LL_DEBUGS("Plugin") << "cpu usage reported as " << mCPUUsage << LL_ENDL;
 			
 		}
+		else if(message_name == "shutdown")
+		{
+			LL_INFOS("Plugin") << "received shutdown message" << LL_ENDL;
+			mOwner->receivedShutdown();
+		}
 		else if(message_name == "shm_add_response")
 		{
 			// Nothing to do here.

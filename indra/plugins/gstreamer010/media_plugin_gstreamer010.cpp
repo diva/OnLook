@@ -652,7 +652,7 @@ bool
 MediaPluginGStreamer010::getTimePos(double &sec_out)
 {
 	bool got_position = false;
-	if (mPlaybin)
+	if (mDoneInit && mPlaybin)
 	{
 		gint64 pos;
 		GstFormat timefmt = GST_FORMAT_TIME;

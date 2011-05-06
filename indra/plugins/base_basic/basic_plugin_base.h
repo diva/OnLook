@@ -57,6 +57,9 @@ public:
 	// This function is actually called and then calls the member function above.
 	static void staticReceiveMessage(char const* message_string, BasicPluginBase** self_ptr);
 
+	// Shoot down the whole process.
+	void sendShutdownMessage(void);
+
 protected:
 	void sendMessage(LLPluginMessage const& message);
 
