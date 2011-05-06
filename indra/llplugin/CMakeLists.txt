@@ -24,6 +24,7 @@ include_directories(
     )
 
 set(llplugin_SOURCE_FILES
+    llpluginclassbasic.cpp
     llpluginclassmedia.cpp
     llplugincookiestore.cpp
     llplugininstance.cpp
@@ -37,6 +38,7 @@ set(llplugin_SOURCE_FILES
 set(llplugin_HEADER_FILES
     CMakeLists.txt
 
+    llpluginclassbasic.h
     llpluginclassmedia.h
     llpluginclassmediaowner.h
     llplugincookiestore.h

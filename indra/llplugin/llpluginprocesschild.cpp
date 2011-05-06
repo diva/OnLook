@@ -286,6 +286,11 @@ bool LLPluginProcessChild::isDone(void)
 	return result;
 }
 
+// This is the SLPlugin process.
+// This is not part of a DSO.
+//
+// This function is called by SLPlugin to send a message (originating from
+// SLPlugin itself) to the loaded DSO. It calls LLPluginInstance::sendMessage.
 void LLPluginProcessChild::sendMessageToPlugin(const LLPluginMessage &message)
 {
 	if (mInstance)
@@ -305,15 +310,26 @@ void LLPluginProcessChild::sendMessageToPlugin(const LLPluginMessage &message)
 	}
 }
 
+// This is the SLPlugin process (the child process).
+// This is not part of a DSO.
+//
+// This function is called by SLPlugin to send 'message' to the viewer (the parent process).
 void LLPluginProcessChild::sendMessageToParent(const LLPluginMessage &message)
 {
 	std::string buffer = message.generate();
 
 	LL_DEBUGS("Plugin") << "Sending to parent: " << buffer << LL_ENDL;
 
+	// Write the serialized message to the pipe.
 	writeMessageRaw(buffer);
 }
 
+// This is the SLPlugin process (the child process).
+// This is not part of a DSO.
+//
+// This function is called when the serialized message 'message' was received from the viewer.
+// It parses the message and handles LLPLUGIN_MESSAGE_CLASS_INTERNAL.
+// Other message classes are passed on to LLPluginInstance::sendMessage.
 void LLPluginProcessChild::receiveMessageRaw(const std::string &message)
 {
 	// Incoming message from the TCP Socket
@@ -449,7 +465,17 @@ void LLPluginProcessChild::receiveMessageRaw(const std::string &message)
 	}
 }
 
-/* virtual */ 
+// This is the SLPlugin process.
+// This is not part of a DSO.
+//
+// This function is called from LLPluginInstance::receiveMessage
+// for messages from a loaded DSO that have to be passed to the
+// viewer.
+//
+// It handles the base messages that are responses to messages sent by this
+// class, and passes the rest on to LLPluginMessagePipeOwner::writeMessageRaw
+// to be written to the pipe.
+/* virtual */
 void LLPluginProcessChild::receivePluginMessage(const std::string &message)
 {
 	LL_DEBUGS("Plugin") << "Received from plugin: " << message << LL_ENDL;

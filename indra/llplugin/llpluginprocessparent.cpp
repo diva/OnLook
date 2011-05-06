@@ -579,6 +579,9 @@ void LLPluginProcessParent::setSleepTime(F64 sleep_time, bool force_send)
 	}
 }
 
+// This is the viewer process (the parent process)
+//
+// This function is called to send a message to the plugin.
 void LLPluginProcessParent::sendMessage(const LLPluginMessage &message)
 {
 	if(message.hasValue("blocking_response"))
@@ -587,6 +590,11 @@ void LLPluginProcessParent::sendMessage(const LLPluginMessage &message)
 
 		// reset the heartbeat timer, since there will have been no heartbeats while the plugin was blocked.
 		mHeartbeat.setTimerExpirySec(mPluginLockupTimeout);
+	}
+	if (message.hasValue("gorgon"))
+	{
+		// After this message it is expected that the plugin will not send any more messages for a long time.
+		mBlocked = true;
 	}
 	
 	std::string buffer = message.generate();
@@ -635,6 +643,16 @@ void LLPluginProcessParent::setMessagePipe(LLPluginMessagePipe *message_pipe)
 		dirtyPollSet();
 	}
 }
+
+apr_status_t LLPluginProcessParent::socketError(apr_status_t error)
+{
+	mSocketError = error;
+	if (APR_STATUS_IS_EPIPE(error))
+	{
+		errorState();
+	}
+	return error;
+};
 
 //static 
 void LLPluginProcessParent::dirtyPollSet()
@@ -852,6 +870,10 @@ void LLPluginProcessParent::servicePoll()
 	}
 }
 
+// This the viewer process (the parent process).
+//
+// This function is called when a message is received from a plugin.
+// It parses the message and passes it on to LLPluginProcessParent::receiveMessage.
 void LLPluginProcessParent::receiveMessageRaw(const std::string &message)
 {
 	LL_DEBUGS("Plugin") << "Received: " << message << LL_ENDL;
@@ -862,6 +884,13 @@ void LLPluginProcessParent::receiveMessageRaw(const std::string &message)
 		if(parsed.hasValue("blocking_request"))
 		{
 			mBlocked = true;
+		}
+		if(parsed.hasValue("perseus"))
+		{
+			mBlocked = false;
+
+			// reset the heartbeat timer, since there will have been no heartbeats while the plugin was blocked.
+			mHeartbeat.setTimerExpirySec(mPluginLockupTimeout);
 		}
 
 		if(mPolledInput)
@@ -905,6 +934,12 @@ void LLPluginProcessParent::receiveMessageEarly(const LLPluginMessage &message)
 	}
 }
 
+// This is the viewer process (the parent process).
+//
+// This function is called for messages that have to
+// be written to the plugin.
+// Note that LLPLUGIN_MESSAGE_CLASS_INTERNAL messages
+// are not sent to the plugin, but are handled here.
 void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 {
 	std::string message_class = message.getClass();

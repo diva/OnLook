@@ -99,8 +99,10 @@ public:
 	// (this clears out all existing state before starting the parse)
 	// Returns -1 on failure, otherwise returns the number of key/value pairs in the message.
 	int parse(const std::string &message);
-	
-	
+
+	// For debugging purposes.
+	friend std::ostream& operator<<(std::ostream& os, LLPluginMessage const& message) { return os << message.mMessage; }
+
 private:
 	
 	LLSD mMessage;
