@@ -7733,6 +7733,7 @@ void LLAgent::sendAgentSetAppearance()
 	}
 
 
+	const bool wearing_physics = !!getWearable(WT_PHYSICS);
 	S32 transmitted_params = 0;
 	for (LLViewerVisualParam* param = (LLViewerVisualParam*)mAvatarObject->getFirstVisualParam();
 		 param;
@@ -7746,6 +7747,11 @@ void LLAgent::sendAgentSetAppearance()
 			const F32 param_value = param->getWeight();
 			const U8 new_weight = F32_to_U8(param_value, param->getMinWeight(), param->getMaxWeight());
 			msg->addU8Fast(_PREHASH_ParamValue, new_weight );
+			//A hack to prevent ruthing on older viewers when phys wearables aren't being worn.
+			if(!wearing_physics && param->getID() >= 10000)
+			{
+				break;
+			}
 			transmitted_params++;
 		}
 	}
