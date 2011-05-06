@@ -69,16 +69,11 @@
 #include "SDL/SDL_syswm.h"
 #endif
 
-class LLFilePicker
+// This class is used as base class of a singleton and is therefore not
+// allowed to have any static members or static local variables!
+class LLFilePickerBase
 {
-#ifdef LL_GTK
-	friend class LLDirPicker;
-	friend void chooser_responder(GtkWidget *, gint, gpointer);
-#endif // LL_GTK
 public:
-	// calling this before main() is undefined
-	static LLFilePicker& instance( void ) { return sInstance; }
-
 	enum ELoadFilter
 	{
 		FFLOAD_ALL = 1,
@@ -212,8 +207,6 @@ private:
 	S32 mCurrentFile;
 	BOOL mLocked;
 	BOOL mMultiFile;
-
-	static LLFilePicker sInstance;
 	
 protected:
 #if LL_GTK
@@ -221,10 +214,21 @@ protected:
 				   std::string context = "generic");
 #endif
 
+protected:
+	LLFilePickerBase();
+};
+
+// True singleton, private constructors (and no friends).
+class LLFilePicker : public LLFilePickerBase
+{
 public:
-	// don't call these directly please.
-	LLFilePicker();
-	~LLFilePicker();
+	// calling this before main() is undefined
+	static LLFilePicker& instance( void ) { return sInstance; }
+
+private:
+	static LLFilePicker sInstance;
+
+	LLFilePicker() { }
 };
 
 #endif

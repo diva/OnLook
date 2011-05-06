@@ -552,8 +552,6 @@ class LLFileTakeSnapshotToDisk : public view_listener_t
 									   6144,
 									   supersample))
 		{
-			gViewerWindow->playSnapshotAnimAndSound();
-			
 			LLPointer<LLImageFormatted> formatted;
 			switch(LLFloaterSnapshot::ESnapshotFormat(gSavedSettings.getS32("SnapshotFormat")))
 			{

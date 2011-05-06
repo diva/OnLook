@@ -220,13 +220,18 @@ class WindowsManifest(ViewerManifest):
         #    self.path("openjpeg.dll")
         #    self.end_prefix()
 
+        # Plugins - FilePicker
+        if self.prefix(src='../plugins/filepicker/%s' % self.args['configuration'], dst="llplugin"):
+            self.path("basic_plugin_filepicker.dll")
+            self.end_prefix()
+
         # Media plugins - QuickTime
-        if self.prefix(src='../media_plugins/quicktime/%s' % self.args['configuration'], dst="llplugin"):
+        if self.prefix(src='../plugins/quicktime/%s' % self.args['configuration'], dst="llplugin"):
             self.path("media_plugin_quicktime.dll")
             self.end_prefix()
 
         # Media plugins - WebKit/Qt
-        if self.prefix(src='../media_plugins/webkit/%s' % self.args['configuration'], dst="llplugin"):
+        if self.prefix(src='../plugins/webkit/%s' % self.args['configuration'], dst="llplugin"):
             self.path("media_plugin_webkit.dll")
             self.end_prefix()
             
@@ -533,8 +538,9 @@ class DarwinManifest(ViewerManifest):
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
-                    self.path("../media_plugins/quicktime/" + self.args['configuration'] + "/media_plugin_quicktime.dylib", "media_plugin_quicktime.dylib")
-                    self.path("../media_plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
+                    self.path("../plugins/filepicker/" + self.args['configuration'] + "/basic_plugin_filepicker.dylib", "basic_plugin_filepicker.dylib")
+                    self.path("../plugins/quicktime/" + self.args['configuration'] + "/media_plugin_quicktime.dylib", "media_plugin_quicktime.dylib")
+                    self.path("../plugins/webkit/" + self.args['configuration'] + "/media_plugin_webkit.dylib", "media_plugin_webkit.dylib")
                     self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
                     self.end_prefix("llplugin")              
@@ -689,8 +695,9 @@ class LinuxManifest(ViewerManifest):
 
         # plugins
         if self.prefix(src="", dst="bin/llplugin"):
-            self.path("../media_plugins/webkit/libmedia_plugin_webkit.so", "libmedia_plugin_webkit.so")
-            self.path("../media_plugins/gstreamer010/libmedia_plugin_gstreamer010.so", "libmedia_plugin_gstreamer.so")
+            self.path("../plugins/filepicker/libbasic_plugin_filepicker.so", "libbasic_plugin_filepicker.so")
+            self.path("../plugins/webkit/libmedia_plugin_webkit.so", "libmedia_plugin_webkit.so")
+            self.path("../plugins/gstreamer010/libmedia_plugin_gstreamer010.so", "libmedia_plugin_gstreamer.so")
             self.end_prefix("bin/llplugin")
 
         # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388

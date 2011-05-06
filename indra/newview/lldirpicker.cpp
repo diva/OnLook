@@ -269,48 +269,36 @@ void LLDirPicker::reset()
 
 LLDirPicker::LLDirPicker() 
 {
-	mFilePicker = new LLFilePicker();
 	reset();
 }
 
 LLDirPicker::~LLDirPicker()
 {
-	delete mFilePicker;
 }
 
 
 void LLDirPicker::reset()
 {
-	if (mFilePicker)
-		mFilePicker->reset();
+	LLFilePickerBase::reset();
 }
 
 BOOL LLDirPicker::getDir(std::string* filename)
 {
 	reset();
-	if (mFilePicker)
+	GtkWindow* picker = buildFilePicker(false, true, "dirpicker");
+	if (picker)
 	{
-		GtkWindow* picker = mFilePicker->buildFilePicker(false, true,
-								 "dirpicker");
-
-		if (picker)
-		{		   
-		   gtk_window_set_title(GTK_WINDOW(picker), LLTrans::getString("choose_the_directory").c_str());
-		   gtk_widget_show_all(GTK_WIDGET(picker));
-		   gtk_main();
-		   return (!mFilePicker->getFirstFile().empty());
-		}
+	   gtk_window_set_title(GTK_WINDOW(picker), LLTrans::getString("choose_the_directory").c_str());
+	   gtk_widget_show_all(GTK_WIDGET(picker));
+	   gtk_main();
+	   return (!getFirstFile().empty());
 	}
 	return FALSE;
 }
 
 std::string LLDirPicker::getDirName()
 {
-	if (mFilePicker)
-	{
-		return mFilePicker->getFirstFile();
-	}
-	return "";
+	return getFirstFile();
 }
 
 #else // not implemented

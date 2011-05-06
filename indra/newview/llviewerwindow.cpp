@@ -89,7 +89,7 @@
 #include "llmaniptranslate.h"
 #include "llface.h"
 #include "llfeaturemanager.h"
-#include "llfilepicker.h"
+#include "statemachine/aifilepicker.h"
 #include "llfloater.h"
 #include "llfloateractivespeakers.h"
 #include "llfloaterbuildoptions.h"
@@ -3988,27 +3988,27 @@ BOOL LLViewerWindow::mousePointOnLandGlobal(const S32 x, const S32 y, LLVector3d
 }
 
 // Saves an image to the harddrive as "SnapshotX" where X >= 1.
-BOOL LLViewerWindow::saveImageNumbered(LLImageFormatted *image)
+void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 {
 	if (!image)
 	{
-		return FALSE;
+		return;
 	}
 
-	LLFilePicker::ESaveFilter pick_type;
+	ESaveFilter pick_type;
 	std::string extension("." + image->getExtension());
 	if (extension == ".j2c")
-		pick_type = LLFilePicker::FFSAVE_J2C;
+		pick_type = FFSAVE_J2C;
 	else if (extension == ".bmp")
-		pick_type = LLFilePicker::FFSAVE_BMP;
+		pick_type = FFSAVE_BMP;
 	else if (extension == ".jpg")
-		pick_type = LLFilePicker::FFSAVE_JPEG;
+		pick_type = FFSAVE_JPEG;
 	else if (extension == ".png")
-		pick_type = LLFilePicker::FFSAVE_PNG;
+		pick_type = FFSAVE_PNG;
 	else if (extension == ".tga")
-		pick_type = LLFilePicker::FFSAVE_TGA;
+		pick_type = FFSAVE_TGA;
 	else
-		pick_type = LLFilePicker::FFSAVE_ALL; // ???
+		pick_type = FFSAVE_ALL; // ???
 	
 	// Get a base file location if needed.
 	if ( ! isSnapshotLocSet())		
@@ -4018,20 +4018,34 @@ BOOL LLViewerWindow::saveImageNumbered(LLImageFormatted *image)
 		// getSaveFile will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
 
 		// pick a directory in which to save
-		LLFilePicker& picker = LLFilePicker::instance();
-		if (!picker.getSaveFile(pick_type, proposed_name))
-		{
-			// Clicked cancel
-			return FALSE;
-		}
+		AIFilePicker* filepicker = new AIFilePicker;				// Deleted in LLViewerWindow::saveImageNumbered_filepicker_callback
+		filepicker->open(proposed_name, pick_type, "", "snapshot");
+		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_filepicker_callback, this, image, extension, filepicker, _1));
+		return;
+	}
 
+	// LLViewerWindow::sSnapshotBaseName and LLViewerWindow::sSnapshotDir already known. Go straight to saveImageNumbered_continued.
+	saveImageNumbered_continued(image, extension);
+}
+
+void LLViewerWindow::saveImageNumbered_filepicker_callback(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, bool success)
+{
+	llassert((bool)*filepicker == success);
+	if (success)
+	{
 		// Copy the directory + file name
-		std::string filepath = picker.getFirstFile();
+		std::string filepath = filepicker->getFilename();
 
 		LLViewerWindow::sSnapshotBaseName = gDirUtilp->getBaseFileName(filepath, true);
 		LLViewerWindow::sSnapshotDir = gDirUtilp->getDirName(filepath);
-	}
 
+		saveImageNumbered_continued(image, extension);
+	}
+	delete filepicker;
+}
+
+void LLViewerWindow::saveImageNumbered_continued(LLPointer<LLImageFormatted> image, std::string const& extension)
+{
 	// Look for an unused file name
 	std::string filepath;
 	S32 i = 1;
@@ -4051,7 +4065,10 @@ BOOL LLViewerWindow::saveImageNumbered(LLImageFormatted *image)
 	}
 	while( -1 != err );  // search until the file is not found (i.e., stat() gives an error).
 
-	return image->save(filepath);
+	if (image->save(filepath))
+	{
+		playSnapshotAnimAndSound();
+	}
 }
 
 void LLViewerWindow::resetSnapshotLoc()

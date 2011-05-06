@@ -57,9 +57,15 @@
 #include <commdlg.h>
 #endif
 
-class LLFilePicker;
+#if LL_LINUX || LL_SOLARIS
+#include "llfilepicker.h"
+#endif
 
 class LLDirPicker
+#if LL_LINUX || LL_SOLARIS
+	// On Linux we just implement LLDirPicker on top of LLFilePickerBase
+	: public LLFilePickerBase
+#endif
 {
 public:
 	// calling this before main() is undefined
@@ -90,19 +96,13 @@ private:
 	
 #endif
 
-#if LL_LINUX || LL_SOLARIS
-	// On Linux we just implement LLDirPicker on top of LLFilePicker
-	LLFilePicker *mFilePicker;
-#endif
-
 	std::string* mFileName;
 	std::string  mDir;
 	BOOL mLocked;
 
 	static LLDirPicker sInstance;
 	
-public:
-	// don't call these directly please.
+private:
 	LLDirPicker();
 	~LLDirPicker();
 };

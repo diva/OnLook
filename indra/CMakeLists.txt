@@ -76,8 +76,8 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}llplugin)
   add_subdirectory(${LIBS_OPEN_PREFIX}llui)
 
-  # viewer media plugins
-  add_subdirectory(${LIBS_OPEN_PREFIX}media_plugins)
+  # viewer plugins directory
+  add_subdirectory(${LIBS_OPEN_PREFIX}plugins)
 
   # llplugin testbed code (is this the right way to include it?)
   #if (NOT LINUX)

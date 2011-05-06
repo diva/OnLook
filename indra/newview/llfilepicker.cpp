@@ -70,7 +70,7 @@ LLFilePicker LLFilePicker::sInstance;
 //
 // Implementation
 //
-LLFilePicker::LLFilePicker()
+LLFilePickerBase::LLFilePickerBase()
 	: mCurrentFile(0),
 	  mLocked(FALSE)
 
@@ -108,19 +108,13 @@ LLFilePicker::LLFilePicker()
 #endif
 }
 
-LLFilePicker::~LLFilePicker()
-{
-	// nothing
-}
-
-
-const std::string LLFilePicker::getFirstFile()
+const std::string LLFilePickerBase::getFirstFile()
 {
 	mCurrentFile = 0;
 	return getNextFile();
 }
 
-const std::string LLFilePicker::getNextFile()
+const std::string LLFilePickerBase::getNextFile()
 {
 	if (mCurrentFile >= getFileCount())
 	{
@@ -133,7 +127,7 @@ const std::string LLFilePicker::getNextFile()
 	}
 }
 
-const std::string LLFilePicker::getCurFile()
+const std::string LLFilePickerBase::getCurFile()
 {
 	if (mCurrentFile >= getFileCount())
 	{
@@ -146,7 +140,7 @@ const std::string LLFilePicker::getCurFile()
 	}
 }
 
-void LLFilePicker::reset()
+void LLFilePickerBase::reset()
 {
 	mLocked = FALSE;
 	mFiles.clear();
@@ -155,7 +149,7 @@ void LLFilePicker::reset()
 
 #if LL_WINDOWS
 
-BOOL LLFilePicker::setupFilter(ELoadFilter filter)
+BOOL LLFilePickerBase::setupFilter(ELoadFilter filter)
 {
 	BOOL res = TRUE;
 	switch (filter)
@@ -220,7 +214,7 @@ BOOL LLFilePicker::setupFilter(ELoadFilter filter)
 	return res;
 }
 
-BOOL LLFilePicker::getOpenFile(ELoadFilter filter)
+BOOL LLFilePickerBase::getOpenFile(ELoadFilter filter)
 {
 	if( mLocked )
 	{
@@ -258,7 +252,7 @@ BOOL LLFilePicker::getOpenFile(ELoadFilter filter)
 	return success;
 }
 
-BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
+BOOL LLFilePickerBase::getMultipleOpenFiles(ELoadFilter filter)
 {
 	if( mLocked )
 	{
@@ -321,7 +315,7 @@ BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
 	return success;
 }
 
-BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
+BOOL LLFilePickerBase::getSaveFile(ESaveFilter filter, const std::string& filename)
 {
 	if( mLocked )
 	{
@@ -735,7 +729,7 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 
 #elif LL_DARWIN
 
-Boolean LLFilePicker::navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode)
+Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode)
 {
 	Boolean		result = true;
 	ELoadFilter filter = *((ELoadFilter*) callBackUD);
@@ -832,7 +826,7 @@ Boolean LLFilePicker::navOpenFilterProc(AEDesc *theItem, void *info, void *callB
 	return result;
 }
 
-OSStatus	LLFilePicker::doNavChooseDialog(ELoadFilter filter)
+OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter)
 {
 	OSStatus		error = noErr;
 	NavDialogRef	navRef = NULL;
@@ -887,7 +881,7 @@ OSStatus	LLFilePicker::doNavChooseDialog(ELoadFilter filter)
 	return error;
 }
 
-OSStatus	LLFilePicker::doNavSaveDialog(ESaveFilter filter, const std::string& filename)
+OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string& filename)
 {
 	OSStatus		error = noErr;
 	NavDialogRef	navRef = NULL;
@@ -1059,7 +1053,7 @@ OSStatus	LLFilePicker::doNavSaveDialog(ESaveFilter filter, const std::string& fi
 	return error;
 }
 
-BOOL LLFilePicker::getOpenFile(ELoadFilter filter)
+BOOL LLFilePickerBase::getOpenFile(ELoadFilter filter)
 {
 	if( mLocked )
 		return FALSE;
@@ -1088,7 +1082,7 @@ BOOL LLFilePicker::getOpenFile(ELoadFilter filter)
 	return success;
 }
 
-BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
+BOOL LLFilePickerBase::getMultipleOpenFiles(ELoadFilter filter)
 {
 	if( mLocked )
 		return FALSE;
@@ -1119,7 +1113,7 @@ BOOL LLFilePicker::getMultipleOpenFiles(ELoadFilter filter)
 	return success;
 }
 
-BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
+BOOL LLFilePickerBase::getSaveFile(ESaveFilter filter, const std::string& filename)
 {
 	if( mLocked )
 		return FALSE;
@@ -1152,13 +1146,13 @@ BOOL LLFilePicker::getSaveFile(ESaveFilter filter, const std::string& filename)
 # if LL_GTK
 
 // static
-void LLFilePicker::add_to_selectedfiles(gpointer data, gpointer user_data)
+void LLFilePickerBase::add_to_selectedfiles(gpointer data, gpointer user_data)
 {
 	// We need to run g_filename_to_utf8 in the user's locale
 	std::string saved_locale(setlocale(LC_ALL, NULL));
 	setlocale(LC_ALL, "");
 
-	LLFilePicker* picker = (LLFilePicker*) user_data;
+	LLFilePickerBase* picker = (LLFilePickerBase*) user_data;
 	GError *error = NULL;
 	gchar* filename_utf8 = g_filename_to_utf8((gchar*)data,
 						  -1, NULL, NULL, &error);
@@ -1189,7 +1183,7 @@ void LLFilePicker::add_to_selectedfiles(gpointer data, gpointer user_data)
 }
 
 // static
-void LLFilePicker::chooser_responder(GtkWidget *widget, gint response, gpointer user_data)
+void LLFilePickerBase::chooser_responder(GtkWidget *widget, gint response, gpointer user_data)
 {
 	LLFilePicker* picker = (LLFilePicker*)user_data;
 
@@ -1212,7 +1206,7 @@ void LLFilePicker::chooser_responder(GtkWidget *widget, gint response, gpointer 
 }
 
 
-GtkWindow* LLFilePicker::buildFilePicker(bool is_save, bool is_folder, std::string context)
+GtkWindow* LLFilePickerBase::buildFilePicker(bool is_save, bool is_folder, std::string context)
 {
 	if (LLWindowSDL::ll_try_gtk_init())
 	{
@@ -1270,7 +1264,7 @@ GtkWindow* LLFilePicker::buildFilePicker(bool is_save, bool is_folder, std::stri
 
 		g_signal_connect (GTK_FILE_CHOOSER(win),
 				  "response",
-				  G_CALLBACK(LLFilePicker::chooser_responder),
+				  G_CALLBACK(LLFilePickerBase::chooser_responder),
 				  this);
 
 		gtk_window_set_modal(GTK_WINDOW(win), TRUE);
@@ -1346,7 +1340,7 @@ static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 }
 
 
-BOOL LLFilePicker::getSaveFile( ESaveFilter filter, const std::string& filename )
+BOOL LLFilePickerBase::getSaveFile( ESaveFilter filter, const std::string& filename )
 {
 	BOOL rtn = FALSE;
 
@@ -1435,7 +1429,7 @@ BOOL LLFilePicker::getSaveFile( ESaveFilter filter, const std::string& filename 
 	return rtn;
 }
 
-BOOL LLFilePicker::getOpenFile( ELoadFilter filter )
+BOOL LLFilePickerBase::getOpenFile( ELoadFilter filter )
 {
 	BOOL rtn = FALSE;
 
@@ -1479,7 +1473,7 @@ BOOL LLFilePicker::getOpenFile( ELoadFilter filter )
 	return rtn;
 }
 
-BOOL LLFilePicker::getMultipleOpenFiles( ELoadFilter filter )
+BOOL LLFilePickerBase::getMultipleOpenFiles( ELoadFilter filter )
 {
 	BOOL rtn = FALSE;
 
@@ -1511,7 +1505,7 @@ BOOL LLFilePicker::getMultipleOpenFiles( ELoadFilter filter )
 // Hacky stubs designed to facilitate fake getSaveFile and getOpenFile with
 // static results, when we don't have a real filepicker.
 
-BOOL LLFilePicker::getSaveFile( ESaveFilter filter, const std::string& filename )
+BOOL LLFilePickerBase::getSaveFile( ESaveFilter filter, const std::string& filename )
 {
 	reset();
 	
@@ -1525,7 +1519,7 @@ BOOL LLFilePicker::getSaveFile( ESaveFilter filter, const std::string& filename 
 	return FALSE;
 }
 
-BOOL LLFilePicker::getOpenFile( ELoadFilter filter )
+BOOL LLFilePickerBase::getOpenFile( ELoadFilter filter )
 {
 	reset();
 	
@@ -1543,7 +1537,7 @@ BOOL LLFilePicker::getOpenFile( ELoadFilter filter )
 	return TRUE;
 }
 
-BOOL LLFilePicker::getMultipleOpenFiles( ELoadFilter filter )
+BOOL LLFilePickerBase::getMultipleOpenFiles( ELoadFilter filter )
 {
 	reset();
 	return FALSE;
@@ -1553,19 +1547,19 @@ BOOL LLFilePicker::getMultipleOpenFiles( ELoadFilter filter )
 
 #else // not implemented
 
-BOOL LLFilePicker::getSaveFile( ESaveFilter filter, const std::string& filename )
+BOOL LLFilePickerBase::getSaveFile( ESaveFilter filter, const std::string& filename )
 {
 	reset();	
 	return FALSE;
 }
 
-BOOL LLFilePicker::getOpenFile( ELoadFilter filter )
+BOOL LLFilePickerBase::getOpenFile( ELoadFilter filter )
 {
 	reset();
 	return FALSE;
 }
 
-BOOL LLFilePicker::getMultipleOpenFiles( ELoadFilter filter )
+BOOL LLFilePickerBase::getMultipleOpenFiles( ELoadFilter filter )
 {
 	reset();
 	return FALSE;

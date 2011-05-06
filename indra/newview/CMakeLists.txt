@@ -442,6 +442,8 @@ set(viewer_SOURCE_FILES
     llviewerkeyboard.cpp
     llviewerlayer.cpp
     llviewermedia.cpp
+    llviewermediaeventemitter.cpp
+    llviewermediaobserver.cpp
     llviewermediafocus.cpp
     llviewermedia_streamingaudio.cpp
     llviewermenu.cpp
@@ -456,6 +458,7 @@ set(viewer_SOURCE_FILES
     llviewerparceloverlay.cpp
     llviewerpartsim.cpp
     llviewerpartsource.cpp
+    llviewerpluginmanager.cpp
     llviewerregion.cpp
     llviewershadermgr.cpp
     llviewerstats.cpp
@@ -918,6 +921,7 @@ set(viewer_HEADER_FILES
     llviewerkeyboard.h
     llviewerlayer.h
     llviewermedia.h
+    llviewermediaeventemitter.h
     llviewermediaobserver.h
     llviewermediafocus.h
     llviewermenu.h
@@ -932,6 +936,7 @@ set(viewer_HEADER_FILES
     llviewerparceloverlay.h
     llviewerpartsim.h
     llviewerpartsource.h
+    llviewerpluginmanager.h
     llviewerprecompiledheaders.h
     llviewerregion.h
     llviewershadermgr.h
@@ -1007,9 +1012,11 @@ source_group("CMake Rules" FILES ViewerInstall.cmake)
 
 set(statemachine_SOURCE_FILES
     statemachine/aistatemachine.cpp
+    statemachine/aifilepicker.cpp
 	)
 set(statemachine_HEADER_FILES
 	statemachine/aistatemachine.h
+	statemachine/aifilepicker.h
 	)
 list(APPEND viewer_SOURCE_FILES ${statemachine_SOURCE_FILES})
 list(APPEND viewer_HEADER_FILES ${statemachine_HEADER_FILES})
