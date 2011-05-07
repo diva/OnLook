@@ -1791,6 +1791,7 @@ bool LLAppViewer::initConfiguration()
 	LLFirstUse::addConfigVariable("FirstSculptedPrim");
 	LLFirstUse::addConfigVariable("FirstVoice");
 	LLFirstUse::addConfigVariable("FirstMedia");
+	LLFirstUse::addConfigVariable("FirstPhysicsWearable");
 	
 // [RLVa:KB] - Checked: RLVa-1.0.3a (2009-09-10) | Added: RLVa-1.0.3a
 	//LLFirstUse::addConfigVariable(RLV_SETTING_FIRSTUSE_DETACH);
