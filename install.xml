@@ -593,9 +593,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>38a70e2d892520ed3281b0f459e4f15f</string>
+            <string>571a398f5b3f65ba2c02f48df843cc97</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/tcmalloc-1.6-min-20110317.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/tcmalloc-1.7-min-20110507.tar.bz2</uri>
           </map>
         </map>
       </map>
