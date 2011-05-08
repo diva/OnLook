@@ -227,6 +227,7 @@ void LLPluginProcessChild::idle(void)
 			
 			case STATE_DONE:
 				// just sit here.
+				LL_WARNS("Plugin") << "Calling LLPluginProcessChild::idle while in STATE_DONE!" << LL_ENDL;
 			break;
 		}
 	

@@ -100,6 +100,13 @@ public:
 	// Returns -1 on failure, otherwise returns the number of key/value pairs in the message.
 	int parse(const std::string &message);
 
+	enum LLPLUGIN_LOG_LEVEL {
+		LOG_LEVEL_DEBUG,
+		LOG_LEVEL_INFO,
+		LOG_LEVEL_WARN,
+		LOG_LEVEL_ERR,
+	};
+
 	// For debugging purposes.
 	friend std::ostream& operator<<(std::ostream& os, LLPluginMessage const& message) { return os << message.mMessage; }
 

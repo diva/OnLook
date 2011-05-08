@@ -140,7 +140,7 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 		{
 			if (message_name == "init")
 			{
-				LLPluginMessage message("base", "init_response");
+				LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_BASE, "init_response");
 				LLSD versions = LLSD::emptyMap();
 				versions[LLPLUGIN_MESSAGE_CLASS_BASE] = LLPLUGIN_MESSAGE_CLASS_BASE_VERSION;
 				versions[LLPLUGIN_MESSAGE_CLASS_BASIC] = LLPLUGIN_MESSAGE_CLASS_BASIC_VERSION;

@@ -38,6 +38,8 @@
 
 #include <sstream>
 
+#include <sstream>
+
 #include "linden_common.h"
 
 #include "llplugininstance.h"
@@ -49,13 +51,19 @@ class BasicPluginBase
 public:
 	BasicPluginBase(LLPluginInstance::sendMessageFunction send_message_function, LLPluginInstance* plugin_instance);
 	//! Basic plugin destructor.
-	virtual ~BasicPluginBase() {}
+	virtual ~BasicPluginBase() { sPluginBase = NULL; }
 
 	//! Handle received message from plugin loader shell.
 	virtual void receiveMessage(char const* message_string) = 0;
 
 	// This function is actually called and then calls the member function above.
 	static void staticReceiveMessage(char const* message_string, BasicPluginBase** self_ptr);
+
+	// Pointer to self used for logging (this object should be a singleton).
+	static BasicPluginBase* sPluginBase;
+
+	// Used for log messages. Use macros below.
+	void sendLogMessage(std::string const& message, LLPluginMessage::LLPLUGIN_LOG_LEVEL level);
 
 	// Shoot down the whole process.
 	void sendShutdownMessage(void);
@@ -86,6 +94,39 @@ int create_plugin(
 	LLPluginInstance::sendMessageFunction send_message_function, 
 	LLPluginInstance* plugin_instance, 
 	BasicPluginBase** plugin_object);
+
+#if LL_DEBUG
+#define LL_DEBUG_PLUGIN_MESSAGES 1
+#else
+#define LL_DEBUG_PLUGIN_MESSAGES 0
+#endif
+
+/** Convenience macros for calling BasicPluginBase::sendLogMessage.
+ * To log a message, use one of:
+ * @code
+ * PLS_DEBUGS << "Hello debug!" << PLS_ENDL;
+ * PLS_INFOS << "Hello info!" << PLS_ENDL;
+ * PLS_WARNS << "Hello warning!" << PLS_ENDL;
+ * PLS_ERRS << "Hello error!" << PLS_ENDL;
+ * @endcode
+ */
+#define PLS_LOG_MESSAGE(level, generate_code) \
+	do { \
+		if (generate_code && BasicPluginBase::sPluginBase) \
+	    { \
+			LLPluginMessage::LLPLUGIN_LOG_LEVEL _pls_log_msg_level = level;\
+			std::ostringstream _pls_log_msg_stream; \
+			_pls_log_msg_stream
+#define PLS_ENDL \
+			LLError::End(); \
+			BasicPluginBase::sPluginBase->sendLogMessage(_pls_log_msg_stream.str(), _pls_log_msg_level); \
+		} \
+	} while(0)
+// Only send plugin log messages of level info and lower when compiled with debugging.
+#define PLS_DEBUGS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_DEBUG, LL_DEBUG_PLUGIN_MESSAGES)
+#define PLS_INFOS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_INFO, LL_DEBUG_PLUGIN_MESSAGES)
+#define PLS_WARNS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_WARN, 1)
+#define PLS_ERRS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_ERR, 1)
 
 #endif // BASIC_PLUGIN_BASE
 

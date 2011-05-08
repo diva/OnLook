@@ -598,7 +598,16 @@ void LLPluginProcessParent::sendMessage(const LLPluginMessage &message)
 	}
 	
 	std::string buffer = message.generate();
-	LL_DEBUGS("Plugin") << "Sending: " << buffer << LL_ENDL;	
+#if LL_DEBUG
+	if (message.getName() == "mouse_event")
+	{
+		LL_DEBUGS("PluginMouseEvent") << "Sending: " << buffer << LL_ENDL;
+	}
+	else
+	{
+		LL_DEBUGS("Plugin") << "Sending: " << buffer << LL_ENDL;
+	}
+#endif
 	writeMessageRaw(buffer);
 	
 	// Try to send message immediately.
@@ -876,7 +885,7 @@ void LLPluginProcessParent::servicePoll()
 // It parses the message and passes it on to LLPluginProcessParent::receiveMessage.
 void LLPluginProcessParent::receiveMessageRaw(const std::string &message)
 {
-	LL_DEBUGS("Plugin") << "Received: " << message << LL_ENDL;
+	LL_DEBUGS("PluginRaw") << "Received: " << message << LL_ENDL;
 	
 	LLPluginMessage parsed;
 	if(parsed.parse(message) != -1)
@@ -998,8 +1007,7 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 
 			mCPUUsage = message.getValueReal("cpu_usage");
 
-			LL_DEBUGS("Plugin") << "cpu usage reported as " << mCPUUsage << LL_ENDL;
-			
+			LL_DEBUGS("PluginHeartbeat") << "cpu usage reported as " << mCPUUsage << LL_ENDL;
 		}
 		else if(message_name == "shutdown")
 		{
@@ -1023,6 +1031,30 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 				// and remove it from our map
 				mSharedMemoryRegions.erase(iter);
 			}
+		}
+		else if(message_name == "log_message")
+		{
+			std::string msg=message.getValue("message");
+			S32 level=message.getValueS32("log_level");
+
+			switch(level)
+			{
+				case LLPluginMessage::LOG_LEVEL_DEBUG:
+					LL_DEBUGS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_INFO:
+					LL_INFOS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_WARN:
+					LL_WARNS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_ERR:
+					LL_ERRS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				default:
+					break;
+			}
+
 		}
 		else
 		{

@@ -338,10 +338,12 @@ void AIFilePicker::receivePluginMessage(const LLPluginMessage &message)
 		std::string message_name = message.getName();
 		if (message_name == "canceled")
 		{
+			LL_DEBUGS("Plugin") << "received message \"canceled\"" << LL_ENDL;
 			set_state(AIFilePicker_canceled);
 		}
 		else if (message_name == "done")
 		{
+			LL_DEBUGS("Plugin") << "received message \"done\"" << LL_ENDL;
 			LLSD filenames = message.getValueLLSD("filenames");
 			mFilenames.clear();
 			for(LLSD::array_iterator filename = filenames.beginArray(); filename != filenames.endArray(); ++filename)

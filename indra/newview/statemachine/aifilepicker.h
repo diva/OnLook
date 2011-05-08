@@ -175,6 +175,9 @@ private:
 	std::string get_folder(std::string const& default_path, std::string const& context);
 
 protected:
+	// Call deleteMe(), not delete.
+	/*virtual*/ ~AIFilePicker() { LL_DEBUGS("Plugin") << "Calling AIFilePicker::~AIFilePicker()" << LL_ENDL; }
+
 	// Handle initializing the object.
 	/*virtual*/ void initialize_impl(void);
 
@@ -197,6 +200,7 @@ class AIPluginFilePicker : public LLPluginClassBasic {
 	LOG_CLASS(AIPluginFilePicker);
 public:
 	AIPluginFilePicker(AIFilePicker* state_machine) : mStateMachine(state_machine) { }
+	/*virtual*/ ~AIPluginFilePicker() { LL_DEBUGS("Plugin") << "Calling AIPluginFilePicker::~AIPluginFilePicker()" << LL_ENDL; }
 
 	static std::string launcher_name(void) { return gDirUtilp->getLLPluginLauncher(); }
 	static char const* plugin_basename(void) { return "basic_plugin_filepicker"; }

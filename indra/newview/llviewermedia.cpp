@@ -399,10 +399,12 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 		if(LLFile::stat(launcher_name, &s))
 		{
 			LL_WARNS("Media") << "Couldn't find launcher at " << launcher_name << LL_ENDL;
+			llassert(false);	// Fail in debugging mode.
 		}
 		else if(LLFile::stat(plugin_name, &s))
 		{
 			LL_WARNS("Media") << "Couldn't find plugin at " << plugin_name << LL_ENDL;
+			llassert(false);	// Fail in debugging mode.
 		}
 		else
 		{

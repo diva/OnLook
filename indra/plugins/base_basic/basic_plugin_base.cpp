@@ -41,6 +41,9 @@
 
 // TODO: Make sure that the only symbol exported from this library is LLPluginInitEntryPoint
 
+// Used for logging.
+BasicPluginBase* BasicPluginBase::sPluginBase;
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Basic plugin constructor.
 ///
@@ -49,6 +52,8 @@
 BasicPluginBase::BasicPluginBase(LLPluginInstance::sendMessageFunction send_message_function, LLPluginInstance* plugin_instance) :
 		mPluginInstance(plugin_instance), mSendMessageFunction(send_message_function), mDeleteMe(false)
 {
+	llassert(!sPluginBase);
+	sPluginBase = this;
 }
 
 /**
@@ -93,7 +98,23 @@ void BasicPluginBase::staticReceiveMessage(char const* message_string, BasicPlug
 void BasicPluginBase::sendMessage(const LLPluginMessage &message)
 {
 	std::string output = message.generate();
+	PLS_DEBUGS << "BasicPluginBase::sendMessage: Sending: " << output << PLS_ENDL;
 	mSendMessageFunction(output.c_str(), &mPluginInstance);
+}
+
+/**
+ * Send debug log message to plugin loader shell.
+ *
+ * @param[in] message Log message being sent to plugin loader shell
+ * @param[in] level Log message level, enum of LLPluginMessage::LLPLUGIN_LOG_LEVEL
+ *
+ */
+void BasicPluginBase::sendLogMessage(std::string const& message, LLPluginMessage::LLPLUGIN_LOG_LEVEL level)
+{
+	LLPluginMessage logmessage(LLPLUGIN_MESSAGE_CLASS_INTERNAL, "log_message");
+	logmessage.setValue("message", message);
+	logmessage.setValueS32("log_level",level);
+	mSendMessageFunction(logmessage.generate().c_str(), &mPluginInstance);
 }
 
 /**

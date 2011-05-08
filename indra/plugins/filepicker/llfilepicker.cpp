@@ -56,7 +56,7 @@ namespace translation
 
 	void add(std::string const& key, std::string const& translation)
 	{
-		PLS_INFOS << "Adding translation \"" << key << "\" --> \"" << translation << "\"" << PLS_ENDL;
+		PLS_DEBUGS << "Adding translation \"" << key << "\" --> \"" << translation << "\"" << PLS_ENDL;
 		translation_map[key] = translation;
 	}
 }

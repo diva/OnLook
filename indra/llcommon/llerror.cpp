@@ -46,6 +46,7 @@
 # include <unistd.h>
 #endif // !LL_WINDOWS
 #include <vector>
+#include <cstring>
 
 #include "llapp.h"
 #include "llapr.h"
@@ -1076,28 +1077,49 @@ namespace LLError
 
 		switch (site.mLevel)
 		{
-			case LEVEL_DEBUG:		prefix << "DEBUG: ";	break;
-			case LEVEL_INFO:		prefix << "INFO: ";		break;
-			case LEVEL_WARN:		prefix << "WARNING: ";	break;
-			case LEVEL_ERROR:		prefix << "ERROR: ";	break;
-			default:				prefix << "XXX: ";		break;
+			case LEVEL_DEBUG:		prefix << "DEBUG";	break;
+			case LEVEL_INFO:		prefix << "INFO";		break;
+			case LEVEL_WARN:		prefix << "WARNING";	break;
+			case LEVEL_ERROR:		prefix << "ERROR";	break;
+			default:				prefix << "XXX";		break;
 		};
-		
-		if (settings_w->printLocation)
+
+		bool need_function = true;
+		if (site.mBroadTag && *site.mBroadTag != '\0')
 		{
-			prefix << abbreviateFile(site.mFile)
-					<< "(" << site.mLine << ") : ";
+			prefix << "(\"" << site.mBroadTag << "\")";
+#if LL_DEBUG
+			// Suppress printing mFunction if mBroadTag is set, starts with
+			// "Plugin " and ends with "child": a debug message from a plugin.
+			size_t taglen = strlen(site.mBroadTag);
+			if (taglen >= 12 && strncmp(site.mBroadTag, "Plugin ", 7) == 0 &&
+				strcmp(site.mBroadTag + taglen - 5, "child") == 0)
+			{
+				need_function = false;
+			}
+#endif
 		}
+
+		prefix << ": ";
 		
-	#if LL_WINDOWS
-		// DevStudio: __FUNCTION__ already includes the full class name
-	#else
-		if (site.mClassInfo != typeid(NoClassInfo))
+		if (need_function)
 		{
-			prefix << className(site.mClassInfo) << "::";
+			if (settings_w->printLocation)
+			{
+				prefix << abbreviateFile(site.mFile)
+						<< "(" << site.mLine << ") : ";
+			}
+			
+#if LL_WINDOWS
+			// DevStudio: __FUNCTION__ already includes the full class name
+#else
+			if (need_function && site.mClassInfo != typeid(NoClassInfo))
+			{
+				prefix << className(site.mClassInfo) << "::";
+			}
+#endif
+			prefix << site.mFunction << ": ";
 		}
-	#endif
-		prefix << site.mFunction << ": ";
 
 		if (site.mPrintOnce)
 		{
