@@ -74,7 +74,7 @@ extern int errno;
 
 
 static const S32 CPUINFO_BUFFER_SIZE = 16383;
-LLCPUInfo gSysCPU;
+LL_COMMON_API  LLCPUInfo gSysCPU;
 
 #if LL_WINDOWS
 #ifndef DLLVERSIONINFO
