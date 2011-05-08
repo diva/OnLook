@@ -33,7 +33,8 @@
 #ifndef LL_LLAPPVIEWER_H
 #define LL_LLAPPVIEWER_H
 
-#include "llsys.h"	// LLOSInfo
+#include "llsys.h"				// LLOSInfo
+#include "llviewercontrol.h"	// settings_map_type
 
 class LLTextureCache;
 class LLImageDecodeThread;
@@ -140,11 +141,12 @@ public:
 	// Load settings from the location specified by loction_key.
 	// Key availale and rules for loading, are specified in 
 	// 'app_settings/settings_files.xml'
-	bool loadSettingsFromDirectory(const std::string& location_key, 
-				       bool set_defaults = false);
+	bool loadSettingsFromDirectory(AIReadAccess<settings_map_type> const& settings_r,
+	                               std::string const& location_key,
+	                               bool set_defaults = false);
 
-	std::string getSettingsFilename(const std::string& location_key,
-					const std::string& file);
+	std::string getSettingsFilename(std::string const& location_key,
+	                                std::string const& file);
 
 	// For thread debugging. 
 	// llstartup needs to control init.

@@ -36,6 +36,7 @@
 #include <map>
 #include "llcontrol.h"
 #include "lluictrl.h"
+#include "aithreadsafe.h"
 
 // Enabled this definition to compile a 'hacked' viewer that
 // allows a hacked godmode to be toggled on and off.
@@ -48,7 +49,8 @@ extern BOOL gHackGodmode;
 //setting variables are declared in this function
 void settings_setup_listeners();
 
-extern std::map<std::string, LLControlGroup*> gSettings;
+typedef std::map<std::string, LLControlGroup*> settings_map_type;
+extern AIThreadSafe<settings_map_type> gSettings;
 
 // for the graphics settings
 void create_graphics_group(LLControlGroup& group);

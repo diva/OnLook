@@ -134,10 +134,7 @@ void AscentDayCycleManager::loadPreset(const std::string & name,bool propagate)
 {
 	
 	// bugfix for SL-46920: preventing filenames that break stuff.
-	char * curl_str = curl_escape(name.c_str(), name.size());
-	std::string escaped_filename(curl_str);
-	curl_free(curl_str);
-	curl_str = NULL;
+	std::string escaped_filename = LLWeb::curlEscape(name);
 
 	escaped_filename += ".xml";
 
@@ -186,10 +183,7 @@ void AscentDayCycleManager::loadPreset(const std::string & name,bool propagate)
 void AscentDayCycleManager::savePreset(const std::string & name)
 {
 	// bugfix for SL-46920: preventing filenames that break stuff.
-	char * curl_str = curl_escape(name.c_str(), name.size());
-	std::string escaped_filename(curl_str);
-	curl_free(curl_str);
-	curl_str = NULL;
+	std::string escaped_filename = LLWeb::curlEscape(name);
 
 	escaped_filename += ".xml";
 
@@ -340,10 +334,7 @@ bool AscentDayCycleManager::removeParamSet(const std::string& name, bool delete_
 		std::string path_name(gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", ""));
 		
 		// use full curl escaped name
-		char * curl_str = curl_escape(name.c_str(), name.size());
-		std::string escaped_name(curl_str);
-		curl_free(curl_str);
-		curl_str = NULL;
+		std::string escaped_name = LLWeb::curlEscape(name);
 		
 		gDirUtilp->deleteFilesInDir(path_name, escaped_name + ".xml");
 	}

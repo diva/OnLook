@@ -985,7 +985,7 @@ bool idle_startup()
 			);
 
 		// Overwrite default user settings with user settings								 
-		LLAppViewer::instance()->loadSettingsFromDirectory("Account");
+		LLAppViewer::instance()->loadSettingsFromDirectory(AIReadAccess<settings_map_type>(gSettings), "Account");
 
 		// Need to set the LastLogoff time here if we don't have one.  LastLogoff is used for "Recent Items" calculation
 		// and startup time is close enough if we don't have a real value.
@@ -1890,6 +1890,10 @@ bool idle_startup()
 		gLLWindEnabled = gSavedSettings.getBOOL("WindEnabled");
 		
 		set_startup_status(0.40f, LLTrans::getString("LoginInitializingWorld"), gAgent.mMOTD);
+
+		// Initialize the rest of the world.
+		gViewerWindow->initWorldUI_postLogin();
+
 		display_startup();
 		// We should have an agent id by this point.
 		llassert(!(gAgentID == LLUUID::null));
