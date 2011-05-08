@@ -1935,7 +1935,7 @@
     <key>PluginAttachDebuggerToPlugins</key>
     <map>
       <key>Comment</key>
-      <string>TODO: understand what this actually does -.-sg</string>
+      <string>Opens a terminal window with a debugger and attach it, every time a new SLPlugin process is started.</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

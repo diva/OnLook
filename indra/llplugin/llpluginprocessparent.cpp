@@ -38,6 +38,9 @@
 #include "llpluginprocessparent.h"
 #include "llpluginmessagepipe.h"
 #include "llpluginmessageclasses.h"
+#if LL_LINUX
+#include <boost/program_options/parsers.hpp>
+#endif
 
 #include "llapr.h"
 
@@ -373,14 +376,12 @@ void LLPluginProcessParent::idle(void)
 				{
 					if(mDebug)
 					{
-						#if LL_DARWIN
 						// If we're set to debug, start up a gdb instance in a new terminal window and have it attach to the plugin process and continue.
-						
+						std::stringstream cmd;
+
+#if LL_DARWIN
 						// The command we're constructing would look like this on the command line:
 						// osascript -e 'tell application "Terminal"' -e 'set win to do script "gdb -pid 12345"' -e 'do script "continue" in win' -e 'end tell'
-
-						std::stringstream cmd;
-						
 						mDebugger.setExecutable("/usr/bin/osascript");
 						mDebugger.addArgument("-e");
 						mDebugger.addArgument("tell application \"Terminal\"");
@@ -392,19 +393,32 @@ void LLPluginProcessParent::idle(void)
 						mDebugger.addArgument("-e");
 						mDebugger.addArgument("end tell");
 						mDebugger.launch();
-
-						#elif LL_LINUX
-
-						std::stringstream cmd;
-
-						mDebugger.setExecutable("/usr/bin/gnome-terminal");
-						mDebugger.addArgument("--geometry=165x24-0+0");
-						mDebugger.addArgument("-e");
-						cmd << "/usr/bin/gdb -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
-						mDebugger.addArgument(cmd.str());
+#elif LL_LINUX
+						// The command we're constructing would look like this on the command line:
+						// /usr/bin/xterm -geometry 160x24-0+0 -e '/usr/bin/gdb -n /proc/12345/exe 12345'
+						// This can be changed by setting the following environment variables, for example:
+						// export LL_DEBUG_TERMINAL_COMMAND="/usr/bin/gnome-terminal --geometry=165x24-0+0 -e %s"
+						// export LL_DEBUG_GDB_PATH=/usr/bin/gdb
+						char const* env;
+						std::string const terminal_command = (env = getenv("LL_DEBUG_TERMINAL_COMMAND")) ? env : "/usr/bin/xterm -geometry 160x24+0+0 -e %s";
+						char const* const gdb_path = (env = getenv("LL_DEBUG_GDB_PATH")) ? env : "/usr/bin/gdb";
+						cmd << gdb_path << " -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
+						std::vector<std::string> tokens = boost::program_options::split_unix(terminal_command, " ");
+						std::vector<std::string>::iterator token = tokens.begin();
+						mDebugger.setExecutable(*token);
+						while (++token != tokens.end())
+						{
+								if (*token == "%s")
+								{
+									mDebugger.addArgument(cmd.str());
+								}
+								else
+								{
+									mDebugger.addArgument(*token);
+								}
+						}
 						mDebugger.launch();
-
-						#endif
+#endif
 					}
 					
 					// This will allow us to time out if the process never starts.
