@@ -63,9 +63,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>25f8a8fc4ea94169fe6222571b8d5e55</string>
+            <string>7952d45a61dc01faf1d9fd67023d96bd</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/SDL-1.2.12-linux-20081222c.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/SDL-1.2.12-linux-20081222d.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
