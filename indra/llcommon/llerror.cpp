@@ -162,7 +162,15 @@ namespace {
 					break;
 				}
 			}
+#ifdef CWDEBUG
+			// Include normal logging in libcwd's message processing.
+			// This takes care of prefixing with thread ID's, locking
+			// and allows us to (temporarily) turn off normal logging
+			// output.
+			Dout(dc::viewer, message);
+#else
 			fprintf(stderr, "%s\n", message.c_str());
+#endif
 #if LL_WINDOWS
 			fflush(stderr); //Now using a buffer. flush is required.
 #endif
@@ -1218,6 +1226,8 @@ namespace LLError
 #endif
 	void crashAndLoop(const std::string& message)
 	{
+		DoutFatal(dc::core, message);
+
 		// Now, we go kaboom!
 		int* make_me_crash = NULL;
 

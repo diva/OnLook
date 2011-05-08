@@ -98,6 +98,9 @@ static void exceptionTerminateHandler()
 
 int main( int argc, char **argv ) 
 {
+	Debug(debug::init());
+	Debug(libcw_do.on());
+
 	LLMemType mt1(LLMemType::MTYPE_STARTUP);
 
 #if LL_SOLARIS && defined(__sparc)

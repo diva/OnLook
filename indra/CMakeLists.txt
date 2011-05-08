@@ -44,6 +44,7 @@ endif(NOT STANDALONE)
 add_custom_target(prepare DEPENDS ${prepare_depends})
 
 add_subdirectory(cmake)
+add_subdirectory(${LIBS_OPEN_PREFIX}cwdebug)
 add_subdirectory(${LIBS_OPEN_PREFIX}llaudio)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
