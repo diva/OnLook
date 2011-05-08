@@ -122,6 +122,8 @@ class ViewerManifest(LLManifest):
 
     def buildtype(self):
         return self.args['buildtype']
+    def standalone(self):
+        return self.args['standalone'] == "ON"
     def grid(self):
         return self.args['grid']
     def channel(self):
@@ -759,19 +761,9 @@ class Linux_i686Manifest(LinuxManifest):
     def construct(self):
         super(Linux_i686Manifest, self).construct()
 
-        # install either the libllkdu we just built, or a prebuilt one, in
-        # decreasing order of preference.  for linux package, this goes to bin/
-        #~ try:
-            #~ self.path(self.find_existing_file('../llkdu/libllkdu.so',
-                #~ '../../libraries/i686-linux/lib_release_client/libllkdu.so'), 
-                  #~ dst='bin/libllkdu.so')
-            #~ # keep this one to preserve syntax, open source mangling removes previous lines
-            #~ pass
-        #~ except:
-            #~ print "Skipping libllkdu.so - not found"
-            #~ pass
+        self.path("../llcommon/libllcommon.so", "lib/libllcommon.so")
 
-        if self.prefix("../../libraries/i686-linux/lib_release_client", dst="lib"):
+        if (not self.standalone()) and self.prefix("../../libraries/i686-linux/lib_release_client", dst="lib"):
 
             try:
                 self.path("libkdu_v42R.so", "libkdu.so")
@@ -815,12 +807,55 @@ class Linux_i686Manifest(LinuxManifest):
                     self.path("libvivoxsdk.so")
                     self.end_prefix("lib")
 
+
 class Linux_x86_64Manifest(LinuxManifest):
     def construct(self):
         super(Linux_x86_64Manifest, self).construct()
 
-        # support file for valgrind debug tool
-        self.path("secondlife-i686.supp")
+        self.path("../llcommon/libllcommon.so", "lib64/libllcommon.so")
+
+        if (not self.standalone()) and self.prefix("../../libraries/x86_64-linux/lib_release_client", dst="lib64"):
+            self.path("libapr-1.so.0")
+            self.path("libaprutil-1.so.0")
+            self.path("libdb-4.2.so")
+            self.path("libcrypto.so.0.9.8")
+            self.path("libexpat.so.1")
+            self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
+            self.path("libssl.so.0.9.8")
+            self.path("libuuid.so", "libuuid.so.1")
+            self.path("libSDL-1.2.so.0")
+            self.path("libELFIO.so")
+            self.path("libjpeg.so.7")
+            self.path("libpng12.so.0")
+            self.path("libopenjpeg.so.2")
+            self.path("libxml2.so.2")
+            #self.path("libz.so.1") #not needed
+
+            # OpenAL
+            self.path("libopenal.so.1")
+            self.path("libalut.so.0")
+
+            self.end_prefix("lib64")
+
+            # Vivox runtimes and libs
+            if self.prefix(src="vivox-runtime/i686-linux", dst="bin"):
+                self.path("SLVoice")
+                self.end_prefix("bin")
+
+            if self.prefix(src="vivox-runtime/i686-linux", dst="lib32"):
+                #self.path("libalut.so")
+                self.path("libortp.so")
+                self.path("libvivoxsdk.so")
+                self.end_prefix("lib32")
+
+        # 32bit libs needed for voice
+        if self.prefix("../../libraries/x86_64-linux/lib_release_client/32bit-compat", dst="lib32"):
+            self.path("libalut.so")
+            self.path("libidn.so.11")
+            self.path("libopenal.so.1")
+            # self.path("libortp.so")
+            self.path("libuuid.so.1")
+            self.end_prefix("lib32")
 
 if __name__ == "__main__":
     main()

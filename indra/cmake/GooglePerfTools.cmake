@@ -25,9 +25,11 @@ else (STANDALONE)
   endif (LINUX)
 endif (STANDALONE)
 
-#if (GOOGLE_PERFTOOLS_FOUND)
-#  set(USE_GOOGLE_PERFTOOLS ON CACHE BOOL "Build with Google PerfTools support.")
-#endif (GOOGLE_PERFTOOLS_FOUND)
+if (GOOGLE_PERFTOOLS_FOUND)
+  set(USE_GOOGLE_PERFTOOLS ON CACHE BOOL "Build with Google PerfTools support.")
+else (GOOGLE_PERFTOOLS_FOUND)
+  set(USE_GOOGLE_PERFTOOLS OFF)
+endif (GOOGLE_PERFTOOLS_FOUND)
 
 # XXX Disable temporarily, until we have compilation issues on 64-bit
 # Etch sorted.
@@ -41,7 +43,7 @@ else (USE_GOOGLE_PERFTOOLS)
   set(TCMALLOC_FLAG -ULL_USE_TCMALLOC)
 endif (USE_GOOGLE_PERFTOOLS)
 
-if (NOT(DISABLE_TCMALLOC OR USE_GOOGLE_PERFTOOLS))
+if (NOT(DISABLE_TCMALLOC OR NOT USE_GOOGLE_PERFTOOLS))
   message(STATUS "Building with Google TCMalloc")
 	set(TCMALLOC_FLAG -DLL_USE_TCMALLOC=1_)
 	include_directories(${GOOGLE_PERFTOOLS_INCLUDE_DIR})

@@ -6,7 +6,7 @@ set(ZLIB_FIND_REQUIRED ON)
 include(Prebuilt)
 
 if (STANDALONE)
-  include(FindMyZLIB)
+  include(FindZLIB)
 else (STANDALONE)
   use_prebuilt_binary(zlib)
   if (WINDOWS)
