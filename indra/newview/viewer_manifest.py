@@ -263,19 +263,21 @@ class WindowsManifest(ViewerManifest):
         self.path("skins/default/xui/en-us/mime_types_windows.xml", "skins/default/xui/en-us/mime_types.xml")
 
         # Get llcommon and deps. If missing assume static linkage and continue.
-        #~ if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-          #~ try:
-            #~ self.path('llcommon.dll')
-          #~ except RuntimeError, err:
-            #~ print err.message
-            #~ print "Skipping llcommon.dll (assuming llcommon was linked statically)"
-          #~ try:
-            #~ self.path('libapr-1.dll')
-            #~ self.path('libaprutil-1.dll')
-            #~ self.path('libapriconv-1.dll')
-          #~ except RuntimeError, err:
-            #~ pass
-          #~ self.end_prefix()
+        if self.prefix(src=self.args['configuration'], dst=""):
+          try:
+            self.path('llcommon.dll')
+          except RuntimeError, err:
+            print err.message
+            print "Skipping llcommon.dll (assuming llcommon was linked statically)"
+          self.end_prefix()
+        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          try:
+            self.path('libapr-1.dll')
+            self.path('libaprutil-1.dll')
+            self.path('libapriconv-1.dll')
+          except RuntimeError, err:
+            pass
+          self.end_prefix()
         
         # For google-perftools tcmalloc allocator.
         self.path("../../libraries/i686-win32/lib/release/libtcmalloc_minimal.dll", dst="libtcmalloc_minimal.dll")
@@ -454,9 +456,6 @@ class DarwinManifest(ViewerManifest):
             self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
 
-            # hunspell library
-            #self.path("../../libraries/universal-darwin/lib_release/libhunspell-1.2.dylib", "MacOS/libhunspell-1.2.dylib");
-
             # most everything goes in the Resources directory
             if self.prefix(src="", dst="Resources"):
                 super(DarwinManifest, self).construct()
@@ -518,7 +517,8 @@ class DarwinManifest(ViewerManifest):
                 # dependencies on shared libs
                 mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
-                for libfile in ("libapr-1.0.3.7.dylib",
+                for libfile in ("libllcommon.dylib",
+                                "libapr-1.0.3.7.dylib",
                                 "libaprutil-1.0.3.8.dylib",
                                 "libexpat.0.5.0.dylib"):
                     target_lib = os.path.join('../../..', libfile)
@@ -793,7 +793,6 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libalut.so")
             self.path("libopenal.so", "libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")
-            #self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
             self.path("libtcmalloc_minimal.so.0.0.0")
             self.end_prefix("lib")
 
