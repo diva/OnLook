@@ -60,19 +60,9 @@
 class LLVBOPool : public LLGLNamePool
 {
 protected:
-	virtual GLuint allocateName()
-	{
-		GLuint name;
-		glGenBuffersARB(1, &name);
-		return name;
-	}
-
-	virtual void releaseName(GLuint name)
-	{
-		glDeleteBuffersARB(1, &name);
-	}
+	virtual GLuint allocateName();
+	virtual void releaseName(GLuint name);
 };
-
 
 //============================================================================
 // base class

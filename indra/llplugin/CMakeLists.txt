@@ -64,6 +64,8 @@ list(APPEND llplugin_SOURCE_FILES ${llplugin_HEADER_FILES})
 
 add_library (llplugin ${llplugin_SOURCE_FILES})
 
+add_dependencies(llplugin prepare)
+
 add_subdirectory(slplugin)
 
 # # Add tests

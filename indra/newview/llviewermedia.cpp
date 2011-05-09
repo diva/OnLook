@@ -987,12 +987,8 @@ void LLViewerMediaImpl::updateImagesMediaStreams()
 		return NULL;
 	}
 	
-	LLViewerMediaTexture* placeholder_image = (LLViewerMediaTexture*)LLViewerTextureManager::findTexture( mTextureId );
+	LLViewerMediaTexture* placeholder_image = (LLViewerMediaTexture*)LLViewerTextureManager::getFetchedTexture( mTextureId );
 	
-	if(!placeholder_image)
-	{
-		return NULL;
-	}
 	placeholder_image->getLastReferencedTimer()->reset();
 
 	if (mNeedsNewTexture 

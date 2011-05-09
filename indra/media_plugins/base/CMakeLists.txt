@@ -47,3 +47,5 @@ add_library(media_plugin_base
     ${media_plugin_base_SOURCE_FILES}
 )
 
+add_dependencies(media_plugin_base prepare)
+
