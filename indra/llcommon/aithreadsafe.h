@@ -36,6 +36,11 @@
 #include "llthread.h"
 #include "llerror.h"
 
+// g++ 4.2.x (and before?) have the bug that when you try to pass a temporary
+// to a function taking a const reference, it still calls the copy constructor.
+// Define this to hack around that.
+#define AI_NEED_ACCESS_CC (defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ < 3)) || (__GNUC__ < 4)))
+
 template<typename T> struct AIReadAccessConst;
 template<typename T> struct AIReadAccess;
 template<typename T> struct AIWriteAccess;
@@ -66,6 +71,10 @@ protected:
 	// Accessors.
 	T const* ptr() const { return reinterpret_cast<T const*>(mMemory); }
 	T* ptr() { return reinterpret_cast<T*>(mMemory); }
+
+#if AI_NEED_ACCESS_CC
+	int mAccessCopyCount;
+#endif
 };
 
 /**
@@ -239,12 +248,18 @@ struct AIReadAccessConst
 		  mState(readlocked)
 		{
 			mWrapper.mRWLock.rdlock();
+#if AI_NEED_ACCESS_CC
+			mWrapper.mAccessCopyCount = 1;
+#endif
 		}
 
 	//! Destruct the AI*Access object.
 	// These should never be dynamically allocated, so there is no need to make this virtual.
 	~AIReadAccessConst()
 		{
+#if AI_NEED_ACCESS_CC
+			if (--(this->mWrapper.mAccessCopyCount) > 0) return;
+#endif
 			if (mState == readlocked)
 				mWrapper.mRWLock.rdunlock();
 			else if (mState == writelocked)
@@ -267,9 +282,14 @@ protected:
 	AIThreadSafe<T>& mWrapper;	//!< Reference to the object that we provide access to.
 	state_type const mState;	//!< The lock state that mWrapper is in.
 
+#if !AI_NEED_ACCESS_CC
 private:
 	// Disallow copy constructing directly.
 	AIReadAccessConst(AIReadAccessConst const&);
+#else
+public:
+	AIReadAccessConst(AIReadAccessConst const& orig) : mWrapper(orig.mWrapper), mState(orig.mState) { mWrapper.mAccessCopyCount++; }
+#endif
 };
 
 /**
@@ -461,7 +481,13 @@ template<typename T>
 struct AIAccess
 {
 	//! Construct a AIAccess from a non-constant AIThreadSafeSimple.
-	AIAccess(AIThreadSafeSimple<T>& wrapper) : mWrapper(wrapper) { this->mWrapper.mMutex.lock(); }
+	AIAccess(AIThreadSafeSimple<T>& wrapper) : mWrapper(wrapper)
+	{
+	  this->mWrapper.mMutex.lock();
+#if AI_NEED_ACCESS_CC
+	  this->mWrapper.mAccessCopyCount = 1;
+#endif
+	}
 
 	//! Access the underlaying object for (read and) write access.
 	T* operator->() const { return this->mWrapper.ptr(); }
@@ -469,14 +495,25 @@ struct AIAccess
 	//! Access the underlaying object for (read and) write access.
 	T& operator*() const { return *this->mWrapper.ptr(); }
 
-	~AIAccess() { this->mWrapper.mMutex.unlock(); }
+	~AIAccess()
+	{
+#if AI_NEED_ACCESS_CC
+	  if (--(this->mWrapper.mAccessCopyCount) > 0) return;
+#endif
+	  this->mWrapper.mMutex.unlock();
+	}
 
 protected:
 	AIThreadSafeSimple<T>& mWrapper;	//!< Reference to the object that we provide access to.
 
+#if !AI_NEED_ACCESS_CC
 private:
 	// Disallow copy constructing directly.
 	AIAccess(AIAccess const&);
+#else
+public:
+	AIAccess(AIAccess const& orig) : mWrapper(orig.mWrapper) { this->mWrapper.mAccessCopyCount++; }
+#endif
 };
 
 #endif
