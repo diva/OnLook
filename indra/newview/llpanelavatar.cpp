@@ -1213,20 +1213,27 @@ void LLPanelAvatarPicks::onClickNew(void* data)
 }
 
 //Pick import and export - RK
+// static
 void LLPanelAvatarPicks::onClickImport(void* data)
 {
 	LLPanelAvatarPicks* self = (LLPanelAvatarPicks*)data;
-	LLPanelPick* panel_pick = new LLPanelPick(FALSE);
-	LLTabContainer* tabs =  self->getChild<LLTabContainer>("picks tab");
+	self->mPanelPick = new LLPanelPick(FALSE);
+	self->mPanelPick->importNewPick(&LLPanelAvatarPicks::onClickImport_continued, data);
+}
 
-	bool import = panel_pick->importNewPick();
-	if(tabs && import)
+// static
+void LLPanelAvatarPicks::onClickImport_continued(void* data, bool import)
+{
+	LLPanelAvatarPicks* self = (LLPanelAvatarPicks*)data;
+	LLTabContainer* tabs = self->getChild<LLTabContainer>("picks tab");
+	if(tabs && import && self->mPanelPick)
 	{
-		tabs->addTabPanel(panel_pick, panel_pick->getPickName());
+		tabs->addTabPanel(self->mPanelPick, self->mPanelPick->getPickName());
 		tabs->selectLastTab();
 	}
 }
 
+// static
 void LLPanelAvatarPicks::onClickExport(void* data)
 {
 	LLPanelAvatarPicks* self = (LLPanelAvatarPicks*)data;

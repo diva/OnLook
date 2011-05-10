@@ -45,7 +45,9 @@ enum ELoadFilter
 	FFLOAD_XML,
 	FFLOAD_SLOBJECT,
 	FFLOAD_RAW,
-	FFLOAD_TEXT
+	FFLOAD_INVGZ,
+	FFLOAD_AO,
+	FFLOAD_BLACKLIST
 };
 
 enum ESaveFilter
@@ -62,9 +64,29 @@ enum ESaveFilter
 	FFSAVE_J2C,
 	FFSAVE_PNG,
 	FFSAVE_JPEG,
-	FFSAVE_HPA,
-	FFSAVE_TEXT,
-	FFSAVE_LSL
+	FFSAVE_ANIMATN,
+	FFSAVE_OGG,
+	FFSAVE_NOTECARD,
+	FFSAVE_GESTURE,
+	FFSAVE_LSL,
+	FFSAVE_SHAPE,
+	FFSAVE_SKIN,
+	FFSAVE_HAIR,
+	FFSAVE_EYES,
+	FFSAVE_SHIRT,
+	FFSAVE_PANTS,
+	FFSAVE_SHOES,
+	FFSAVE_SOCKS,
+	FFSAVE_JACKET,
+	FFSAVE_GLOVES,
+	FFSAVE_UNDERSHIRT,
+	FFSAVE_UNDERPANTS,
+	FFSAVE_SKIRT,
+	FFSAVE_INVGZ,
+	FFSAVE_LANDMARK,
+	FFSAVE_AO,
+	FFSAVE_BLACKLIST,
+	FFSAVE_PHYSICS
 };
 
 /*
@@ -108,12 +130,9 @@ new AIFilePicker
   Termination happens by receiving the "canceled" or "done" message,
   which sets the state to AIFilePicker_canceled or AIFilePicker_done
   respectively, causing a call to AIStateMachine::finish(), which calls
-  AIFilePicker::finish_impl which destroys the plugin (mPluginBase)
-  and the plugin manager (mPluginManager).
-
-  AIStateMachine::finish() also calls the registered callback function,
-  which should call AIStateMachine::deleteMe(), causing the AIFilePicker
-  to be deleted.
+  AIFilePicker::finish_impl which destroys the plugin (mPluginBase),
+  the plugin manager (mPluginManager) and calls AIStateMachine::deleteMe()
+  causing the AIFilePicker to be deleted.
 
 */
 
@@ -140,6 +159,7 @@ public:
 	void open(ELoadFilter filter = FFLOAD_ALL, std::string const& default_path = "", std::string const& context = "openfile", bool multiple = false);
 
 	bool isCanceled(void) const { return mCanceled; }
+	bool hasFilename(void) const { return *this && !mCanceled; }
 	std::string const& getFilename(void) const;
 	std::string getFolder(void) const;
 	std::vector<std::string> const& getFilenames(void) const { return mFilenames; }
@@ -175,7 +195,7 @@ private:
 	std::string get_folder(std::string const& default_path, std::string const& context);
 
 protected:
-	// Call deleteMe(), not delete.
+	// Call finish() (or abort()), not delete.
 	/*virtual*/ ~AIFilePicker() { LL_DEBUGS("Plugin") << "Calling AIFilePicker::~AIFilePicker()" << LL_ENDL; }
 
 	// Handle initializing the object.

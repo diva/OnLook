@@ -69,6 +69,7 @@
 #include "lltimer.h"
 #include "llvfile.h"
 #include "llvolumemgr.h"
+#include "statemachine/aifilepicker.h"
 
 // newview includes
 #include "llagent.h"
@@ -1223,19 +1224,21 @@ void init_debug_world_menu(LLMenuGL* menu)
 	menu->createJumpKeys();
 }
 
-
+static void handle_export_menus_to_xml_continued(AIFilePicker* filepicker);
 void handle_export_menus_to_xml(void*)
 {
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open("", FFSAVE_XML);
+	filepicker->run(boost::bind(&handle_export_menus_to_xml_continued, filepicker));
+}
 
-	LLFilePicker& picker = LLFilePicker::instance();
-	if(!picker.getSaveFile(LLFilePicker::FFSAVE_XML))
+static void handle_export_menus_to_xml_continued(AIFilePicker* filepicker)
+{
+	if(!filepicker->hasFilename())
 	{
-		llwarns << "No file" << llendl;
 		return;
 	}
-	std::string filename = picker.getFirstFile();
-
-	llofstream out(filename);
+	llofstream out(filepicker->getFilename());
 	LLXMLNodePtr node = gMenuBarView->getXML();
 	node->writeToOstream(out);
 	out.close();
@@ -8645,6 +8648,7 @@ const LLRect LLViewerMenuHolderGL::getMenuRect() const
 	return LLRect(0, getRect().getHeight() - MENU_BAR_HEIGHT, getRect().getWidth(), STATUS_BAR_HEIGHT);
 }
 
+static void handle_save_to_xml_continued(LLFloater* frontmost, AIFilePicker* filepicker);
 void handle_save_to_xml(void*)
 {
 	LLFloater* frontmost = gFloaterView->getFrontmost();
@@ -8664,20 +8668,33 @@ void handle_save_to_xml(void*)
 	LLStringUtil::replaceChar(default_name, ':', '_');
 	LLStringUtil::replaceChar(default_name, '"', '_');
 
-	LLFilePicker& picker = LLFilePicker::instance();
-	if (picker.getSaveFile(LLFilePicker::FFSAVE_XML, default_name))
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(default_name, FFSAVE_XML);
+	filepicker->run(boost::bind(&handle_save_to_xml_continued, frontmost, filepicker));
+}
+
+static void handle_save_to_xml_continued(LLFloater* frontmost, AIFilePicker* filepicker)
+{
+	if (filepicker->hasFilename())
 	{
-		std::string filename = picker.getFirstFile();
+		std::string filename = filepicker->getFilename();
 		LLUICtrlFactory::getInstance()->saveToXML(frontmost, filename);
 	}
 }
 
+static void handle_load_from_xml_continued(AIFilePicker* filepicker);
 void handle_load_from_xml(void*)
 {
-	LLFilePicker& picker = LLFilePicker::instance();
-	if (picker.getOpenFile(LLFilePicker::FFLOAD_XML))
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(FFLOAD_XML);
+	filepicker->run(boost::bind(&handle_load_from_xml_continued, filepicker));
+}
+
+static void handle_load_from_xml_continued(AIFilePicker* filepicker)
+{
+	if (filepicker->hasFilename())
 	{
-		std::string filename = picker.getFirstFile();
+		std::string filename = filepicker->getFilename();
 		LLFloater* floater = new LLFloater("sample_floater");
 		LLUICtrlFactory::getInstance()->buildFloater(floater, filename);
 	}

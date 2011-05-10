@@ -524,7 +524,11 @@ std::string LLDir::getTempFilename() const
 std::string LLDir::getScrubbedFileName(const std::string uncleanFileName)
 {
 	std::string name(uncleanFileName);
-	const std::string illegalChars(getForbiddenFileChars());
+	std::string illegalChars(getForbiddenFileChars());
+#if LL_LINUX || LL_SOLARIS
+	// Spaces in filenames are REALLY annoying on UNIX.
+	illegalChars += ' ';
+#endif
 	// replace any illegal file chars with and underscore '_'
 	for( unsigned int i = 0; i < illegalChars.length(); i++ )
 	{

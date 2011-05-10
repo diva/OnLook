@@ -185,13 +185,9 @@ private:
 
 #if LL_DARWIN
 	NavDialogCreationOptions mNavOptions;
-	std::vector<std::string> mFileVector;
-	UInt32 mFileIndex;
 	
 	OSStatus doNavChooseDialog(ELoadFilter filter);
 	OSStatus doNavSaveDialog(ESaveFilter filter, const std::string& filename);
-	void getFilePath(SInt32 index);
-	void getFileName(SInt32 index);
 	static Boolean navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode);
 #endif
 

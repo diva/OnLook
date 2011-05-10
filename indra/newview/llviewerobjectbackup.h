@@ -56,9 +56,11 @@ public:
 
 	// Import entry point
 	void importObject(bool upload=FALSE);
+	void importObject_continued(AIFilePicker* filepicker);
 
 	// Export entry point
 	void exportObject();
+	void exportObject_continued(AIFilePicker* filepicker);
 
 	// Update map from texture worker
 	void updateMap(LLUUID uploaded_asset);

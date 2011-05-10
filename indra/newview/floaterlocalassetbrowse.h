@@ -169,6 +169,7 @@ class LocalBitmap
 
 */
 
+class AIFilePicker;
 
 class LocalAssetBrowser
 {
@@ -181,6 +182,7 @@ class LocalAssetBrowser
 		static void setLayerUpdated(bool toggle) { mLayerUpdated = toggle; }
 		static void setSculptUpdated(bool toggle) { mSculptUpdated = toggle; }
 		static void AddBitmap(void);
+		static void AddBitmap_continued(AIFilePicker* filepicker);
 		static void DelBitmap( std::vector<LLScrollListItem*>, S32 column = BITMAPLIST_COL_ID );
 
 		/* UpdateTextureCtrlList was made public cause texturectrl requests it once on spawn 

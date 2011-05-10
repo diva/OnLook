@@ -296,8 +296,8 @@ public:
 	BOOL			isSnapshotLocSet() const { return ! sSnapshotDir.empty(); }
 	void			resetSnapshotLoc() const { sSnapshotDir.clear(); }
 	void saveImageNumbered(LLPointer<LLImageFormatted> image);
-	void saveImageNumbered_filepicker_callback(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, bool success);
-	void saveImageNumbered_continued(LLPointer<LLImageFormatted> image, std::string const& extension);
+	void saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker);
+	void saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension);
 
 	// Reset the directory where snapshots are saved.
 	// Client will open directory picker on next snapshot save.

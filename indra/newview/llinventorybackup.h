@@ -11,10 +11,9 @@
 
 #include "llviewerinventory.h"
 #include "llfolderview.h"
-#include "llfilepicker.h"
+#include "statemachine/aifilepicker.h"
 #include "llviewertexture.h"
 #include "llfloater.h"
-
 
 class LLInventoryBackupOrder
 {
@@ -94,10 +93,12 @@ private:
 
 };
 
+class AIFilePicker;
+
 class LLInventoryBackup
 {
 public:
-	static LLFilePicker::ESaveFilter getSaveFilter(LLInventoryItem* item);
+	static ESaveFilter getSaveFilter(LLInventoryItem* item);
 	static std::string getExtension(LLInventoryItem* item);
 	static std::string getUniqueFilename(std::string filename, std::string extension);
 	static std::string getUniqueDirname(std::string dirname);
@@ -120,10 +121,12 @@ private:
 					S32 discard_level,
 					BOOL final,
 					void* userdata);
+	static void imageCallback_continued(LLImageRaw* src, AIFilePicker* filepicker);
 	static void assetCallback(LLVFS *vfs,
 				   const LLUUID& asset_uuid,
 				   LLAssetType::EType type,
 				   void* user_data, S32 status, LLExtStat ext_status);
+	static void assetCallback_continued(char* buffer, S32 size, AIFilePicker* filepicker);
 	static void climb(LLInventoryCategory* cat,
 							  std::vector<LLInventoryCategory*>& cats,
 							  std::vector<LLInventoryItem*>& items);

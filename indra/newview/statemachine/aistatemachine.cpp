@@ -168,8 +168,16 @@ void AIStateMachine::finish(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
   llassert(mState == bs_run || mState == bs_abort);
+  // It is possible that mIdle is false when abort or finish was called from
+  // outside multiplex_impl. However, that only may be done by the main thread.
+  llassert(!mIdle || is_main_thread());
+  if (!mIdle)
+	idle();
   mState = bs_finish;
   finish_impl();
+  // Did finish_impl call deleteMe? Then that is only the default. Remember it.
+  bool default_delete = (mState == bs_deleted);
+  mState = bs_finish;
   if (mParent)
   {
 	// It is possible that the parent is not running when the parent is in fact aborting and called
@@ -190,22 +198,21 @@ void AIStateMachine::finish(void)
   }
   // Set this already to bs_initialize now, so that (bool)*this evaluates to true.
   mState = bs_initialize;
-  // It is possible that mIdle is false when abort or finish was called from
-  // outside multiplex_impl. However, that only may be done by the main thread.
-  llassert(!mIdle || is_main_thread());
-  if (!mIdle)
-	idle();
   if (mCallback)
   {
 	mCallback->callback(!mAborted);			// This can/may call deleteMe(), in which case the whole AIStateMachine will be deleted from the mainloop.
 	delete mCallback;
 	mCallback = NULL;
   }
+  // Restore the request for deletion if we weren't started again from the callback.
+  if (default_delete && mState == bs_initialize)
+	mState = bs_deleted;
 }
 
 void AIStateMachine::deleteMe(void)
 {
-  llassert(mIdle && mState == bs_initialize);
+  // Should only be called from finish().
+  llassert(mIdle && (mState == bs_initialize || mState == bs_finish));
   mState = bs_deleted;
 }
 

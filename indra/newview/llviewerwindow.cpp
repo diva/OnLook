@@ -4015,23 +4015,22 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 	{
 		std::string proposed_name( sSnapshotBaseName );
 
-		// getSaveFile will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
+		// AIFilePicker will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
 
 		// pick a directory in which to save
-		AIFilePicker* filepicker = new AIFilePicker;				// Deleted in LLViewerWindow::saveImageNumbered_filepicker_callback
+		AIFilePicker* filepicker = new AIFilePicker;				// Deleted in LLViewerWindow::saveImageNumbered_continued1
 		filepicker->open(proposed_name, pick_type, "", "snapshot");
-		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_filepicker_callback, this, image, extension, filepicker, _1));
+		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker));
 		return;
 	}
 
-	// LLViewerWindow::sSnapshotBaseName and LLViewerWindow::sSnapshotDir already known. Go straight to saveImageNumbered_continued.
-	saveImageNumbered_continued(image, extension);
+	// LLViewerWindow::sSnapshotBaseName and LLViewerWindow::sSnapshotDir already known. Go straight to saveImageNumbered_continued2.
+	saveImageNumbered_continued2(image, extension);
 }
 
-void LLViewerWindow::saveImageNumbered_filepicker_callback(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker, bool success)
+void LLViewerWindow::saveImageNumbered_continued1(LLPointer<LLImageFormatted> image, std::string const& extension, AIFilePicker* filepicker)
 {
-	llassert((bool)*filepicker == success);
-	if (success && !filepicker->isCanceled())
+	if (filepicker->hasFilename())
 	{
 		// Copy the directory + file name
 		std::string filepath = filepicker->getFilename();
@@ -4039,12 +4038,11 @@ void LLViewerWindow::saveImageNumbered_filepicker_callback(LLPointer<LLImageForm
 		LLViewerWindow::sSnapshotBaseName = gDirUtilp->getBaseFileName(filepath, true);
 		LLViewerWindow::sSnapshotDir = gDirUtilp->getDirName(filepath);
 
-		saveImageNumbered_continued(image, extension);
+		saveImageNumbered_continued2(image, extension);
 	}
-	filepicker->deleteMe();
 }
 
-void LLViewerWindow::saveImageNumbered_continued(LLPointer<LLImageFormatted> image, std::string const& extension)
+void LLViewerWindow::saveImageNumbered_continued2(LLPointer<LLImageFormatted> image, std::string const& extension)
 {
 	// Look for an unused file name
 	std::string filepath;

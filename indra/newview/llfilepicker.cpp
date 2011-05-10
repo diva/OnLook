@@ -788,6 +788,15 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 								result = false;
 							}
 						}
+						else if (filter == FFLOAD_XML)
+						{
+							if (fileInfo.filetype != 'XML ' && 
+								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("xml"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
+							)
+							{
+								result = false;
+							}
+						}
 #ifdef _CORY_TESTING
 						else if (filter == FFLOAD_GEOMETRY)
 						{
@@ -1327,6 +1336,12 @@ static std::string add_bvh_filter_to_gtkchooser(GtkWindow *picker)
 						       LLTrans::getString("animation_files") + " (*.bvh)");
 }
 
+static std::string add_xml_filter_to_gtkchooser(GtkWindow *picker)
+{
+	return add_simple_mime_filter_to_gtkchooser(picker,  "text/xml",
+						    LLTrans::getString("xml_file") + " (*.xml)");
+}
+
 static std::string add_imageload_filter_to_gtkchooser(GtkWindow *picker)
 {
 	GtkFileFilter *gfilter = gtk_file_filter_new();
@@ -1454,6 +1469,9 @@ BOOL LLFilePickerBase::getOpenFile( ELoadFilter filter )
 		case FFLOAD_IMAGE:
 			filtername = add_imageload_filter_to_gtkchooser(picker);
 			break;
+		case FFLOAD_XML:
+			filtername = add_xml_filter_to_gtkchooser(picker);
+			break;
 		default:;
 			break;
 		}
@@ -1530,6 +1548,7 @@ BOOL LLFilePickerBase::getOpenFile( ELoadFilter filter )
 	case FFLOAD_WAV: filename += ".wav"; break;
 	case FFLOAD_IMAGE: filename += ".tga"; break;
 	case FFLOAD_ANIM: filename += ".bvh"; break;
+	case FFLOAD_XML: filename += ".xml"; break;
 	default: break;
 	}
 	mFiles.push_back(filename);

@@ -87,12 +87,52 @@ static LLFilePicker::ESaveFilter str2savefilter(std::string const& filter)
 	return LLFilePicker::FFSAVE_PNG;
   else if (filter == "jpeg")
 	return LLFilePicker::FFSAVE_JPEG;
-  else if (filter == "hpa")
-	return LLFilePicker::FFSAVE_HPA;
-  else if (filter == "text")
-	return LLFilePicker::FFSAVE_TEXT;
+  else if (filter == "animatn")
+	return LLFilePicker::FFSAVE_ANIMATN;
+  else if (filter == "ogg")
+	return LLFilePicker::FFSAVE_OGG;
+  else if (filter == "notecard")
+	return LLFilePicker::FFSAVE_NOTECARD;
+  else if (filter == "gesture")
+	return LLFilePicker::FFSAVE_GESTURE;
   else if (filter == "lsl")
 	return LLFilePicker::FFSAVE_LSL;
+  else if (filter == "shape")
+	return LLFilePicker::FFSAVE_SHAPE;
+  else if (filter == "skin")
+	return LLFilePicker::FFSAVE_SKIN;
+  else if (filter == "hair")
+	return LLFilePicker::FFSAVE_HAIR;
+  else if (filter == "eyes")
+	return LLFilePicker::FFSAVE_EYES;
+  else if (filter == "shirt")
+	return LLFilePicker::FFSAVE_SHIRT;
+  else if (filter == "pants")
+	return LLFilePicker::FFSAVE_PANTS;
+  else if (filter == "shoes")
+	return LLFilePicker::FFSAVE_SHOES;
+  else if (filter == "socks")
+	return LLFilePicker::FFSAVE_SOCKS;
+  else if (filter == "jacket")
+	return LLFilePicker::FFSAVE_JACKET;
+  else if (filter == "gloves")
+	return LLFilePicker::FFSAVE_GLOVES;
+  else if (filter == "undershirt")
+	return LLFilePicker::FFSAVE_UNDERSHIRT;
+  else if (filter == "underpants")
+	return LLFilePicker::FFSAVE_UNDERPANTS;
+  else if (filter == "skirt")
+	return LLFilePicker::FFSAVE_SKIRT;
+  else if (filter == "invgz")
+	return LLFilePicker::FFSAVE_INVGZ;
+  else if (filter == "landmark")
+	return LLFilePicker::FFSAVE_LANDMARK;
+  else if (filter == "ao")
+	return LLFilePicker::FFSAVE_AO;
+  else if (filter == "blacklist")
+	return LLFilePicker::FFSAVE_BLACKLIST;
+  else if (filter == "physics")
+	return LLFilePicker::FFSAVE_PHYSICS;
   else
 	return LLFilePicker::FFSAVE_ALL;
 }
@@ -116,8 +156,12 @@ static LLFilePicker::ELoadFilter str2loadfilter(std::string const& filter)
 	return LLFilePicker::FFLOAD_SLOBJECT;
   else if (filter == "raw")
 	return LLFilePicker::FFLOAD_RAW;
-  else if (filter == "text")
-	return LLFilePicker::FFLOAD_TEXT;
+  else if (filter == "invgz")
+	return LLFilePicker::FFLOAD_INVGZ;
+  else if (filter == "ao")
+	return LLFilePicker::FFLOAD_AO;
+  else if (filter == "blacklist")
+	return LLFilePicker::FFLOAD_BLACKLIST;
   else
 	return LLFilePicker::FFLOAD_ALL;
 }

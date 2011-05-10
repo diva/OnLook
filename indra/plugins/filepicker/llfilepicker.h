@@ -88,7 +88,11 @@ public:
 		FFLOAD_XML = 6,
 		FFLOAD_SLOBJECT = 7,
 		FFLOAD_RAW = 8,
-		FFLOAD_TEXT = 9,
+		// <edit>
+		FFLOAD_INVGZ = 9,
+		FFLOAD_AO = 10,
+		FFLOAD_BLACKLIST = 11
+		// </edit>
 	};
 
 	enum ESaveFilter
@@ -108,9 +112,32 @@ public:
 		FFSAVE_J2C = 12,
 		FFSAVE_PNG = 13,
 		FFSAVE_JPEG = 14,
-		FFSAVE_HPA = 15,
-		FFSAVE_TEXT = 16,
-		FFSAVE_LSL = 17
+		// <edit>
+		FFSAVE_ANIMATN = 15,
+		FFSAVE_OGG = 16,
+		FFSAVE_NOTECARD = 17,
+		FFSAVE_GESTURE = 18,
+		FFSAVE_LSL = 19,
+		// good grief
+		FFSAVE_SHAPE = 20,
+		FFSAVE_SKIN = 21,
+		FFSAVE_HAIR = 22,
+		FFSAVE_EYES = 23,
+		FFSAVE_SHIRT = 24,
+		FFSAVE_PANTS = 25,
+		FFSAVE_SHOES = 26,
+		FFSAVE_SOCKS = 27,
+		FFSAVE_JACKET = 28,
+		FFSAVE_GLOVES = 29,
+		FFSAVE_UNDERSHIRT = 30,
+		FFSAVE_UNDERPANTS = 31,
+		FFSAVE_SKIRT = 32,
+		FFSAVE_INVGZ = 33,
+		FFSAVE_LANDMARK = 34,
+		FFSAVE_AO = 35,
+		FFSAVE_BLACKLIST = 36,
+		FFSAVE_PHYSICS = 37,
+		// </edit>
 	};
 
 	// open the dialog. This is a modal operation
@@ -164,13 +191,9 @@ private:
 
 #if LL_DARWIN
 	NavDialogCreationOptions mNavOptions;
-	std::vector<std::string> mFileVector;
-	UInt32 mFileIndex;
 	
 	OSStatus doNavChooseDialog(ELoadFilter filter);
 	OSStatus doNavSaveDialog(ESaveFilter filter, const std::string& filename);
-	void getFilePath(SInt32 index);
-	void getFileName(SInt32 index);
 	static Boolean navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode);
 #endif	// LL_DARWIN
 

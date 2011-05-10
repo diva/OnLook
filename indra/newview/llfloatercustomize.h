@@ -64,6 +64,7 @@ class LLVisualParam;
 class LLVisualParamReset;
 class LLWearableSaveAsDialog;
 class LLPanelEditWearable;
+class AIFilePicker;
 
 /////////////////////////////////////////////////////////////////////
 // LLFloaterCustomize
@@ -110,7 +111,9 @@ public:
 	static void		onBtnMakeOutfit( void* userdata );
 	static void		onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* userdata );
 	static void		onBtnImport( void* userdata );
+	static void		onBtnImport_continued(AIFilePicker* filepicker);
 	static void		onBtnExport( void* userdata );	
+	static void		onBtnExport_continued(AIFilePicker* filepicker);
 
 	static void		onTabChanged( void* userdata, bool from_click );
 	static void		onTabPrecommit( void* userdata, bool from_click );

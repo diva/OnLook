@@ -133,8 +133,14 @@ void AIFilePicker::open(ELoadFilter filter, std::string const& default_path, std
 	  case FFLOAD_RAW:
 		  mFilter = "raw";
 		  break;
-	  case FFLOAD_TEXT:
-		  mFilter = "text";
+	  case FFLOAD_INVGZ:
+		  mFilter = "invgz";
+		  break;
+	  case FFLOAD_AO:
+		  mFilter = "ao";
+		  break;
+	  case FFLOAD_BLACKLIST:
+		  mFilter = "blacklist";
 		  break;
 	}
 }
@@ -188,14 +194,74 @@ void AIFilePicker::open(std::string const& filename, ESaveFilter filter, std::st
 		case FFSAVE_JPEG:
 			mFilter = "jpeg";
 			break;
-		case FFSAVE_HPA:
-			mFilter = "hpa";
+		case FFSAVE_ANIMATN:
+			mFilter = "animatn";
 			break;
-		case FFSAVE_TEXT:
-			mFilter = "text";
+		case FFSAVE_OGG:
+			mFilter = "ogg";
+			break;
+		case FFSAVE_NOTECARD:
+			mFilter = "notecard";
+			break;
+		case FFSAVE_GESTURE:
+			mFilter = "gesture";
 			break;
 		case FFSAVE_LSL:
 			mFilter = "lsl";
+			break;
+		case FFSAVE_SHAPE:
+			mFilter = "shape";
+			break;
+		case FFSAVE_SKIN:
+			mFilter = "skin";
+			break;
+		case FFSAVE_HAIR:
+			mFilter = "hair";
+			break;
+		case FFSAVE_EYES:
+			mFilter = "eyes";
+			break;
+		case FFSAVE_SHIRT:
+			mFilter = "shirt";
+			break;
+		case FFSAVE_PANTS:
+			mFilter = "pants";
+			break;
+		case FFSAVE_SHOES:
+			mFilter = "shoes";
+			break;
+		case FFSAVE_SOCKS:
+			mFilter = "socks";
+			break;
+		case FFSAVE_JACKET:
+			mFilter = "jacket";
+			break;
+		case FFSAVE_GLOVES:
+			mFilter = "gloves";
+			break;
+		case FFSAVE_UNDERSHIRT:
+			mFilter = "undershirt";
+			break;
+		case FFSAVE_UNDERPANTS:
+			mFilter = "underpants";
+			break;
+		case FFSAVE_SKIRT:
+			mFilter = "skirt";
+			break;
+		case FFSAVE_INVGZ:
+			mFilter = "invgz";
+			break;
+		case FFSAVE_LANDMARK:
+			mFilter = "landmark";
+			break;
+		case FFSAVE_AO:
+			mFilter = "ao";
+			break;
+		case FFSAVE_BLACKLIST:
+			mFilter = "blacklist";
+			break;
+		case FFSAVE_PHYSICS:
+			mFilter = "physics";
 			break;
 	}
 }
@@ -320,6 +386,9 @@ void AIFilePicker::finish_impl(void)
 		mPluginManager = NULL;
 	}
 	mFilter.clear();		// Check that open is called before calling run (again).
+	// The default behavior is to delete the plugin. This can be overridden in
+	// the callback by calling run() again.
+	deleteMe();
 }
 
 // This function is called when a new message is received from the plugin.
