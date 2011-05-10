@@ -1092,9 +1092,9 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 		LLViewerObject* objectp = *iter;
 
 		llassert_always(objectp);
-		llassert_always(!objectp->isDead());
-
-		if (!objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
+		llassert(!objectp->isDead());
+		
+		if (objectp->isDead() || !objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
 		{
 			continue;
 		}
