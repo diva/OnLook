@@ -51,7 +51,6 @@
 #include "lgghunspell_wrapper.h"
 
 
-
 LLPrefsAscentSys::LLPrefsAscentSys()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
@@ -66,6 +65,9 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     childSetAction("EmSpell_GetMore", onSpellGetMore, this);
     childSetAction("EmSpell_Add", onSpellAdd, this);
     childSetAction("EmSpell_Remove", onSpellRemove, this);
+
+	childSetCommitCallback("Keywords_Alert", onCommitCheckBox, this);
+
 
 	refreshValues();
 	refresh();
@@ -109,6 +111,17 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 	{
 		bool enabled = self->childGetValue("enable_clouds").asBoolean();
 		self->childSetEnabled("enable_classic_clouds", enabled);
+	}
+	else if (ctrl->getName() == "Keywords_Alert")
+	{
+		bool enabled = self->childGetValue("Keywords_Alert").asBoolean();
+		self->childSetEnabled("Keywords_Entries", enabled);
+		self->childSetEnabled("Keywords_LocalChat", enabled);
+		self->childSetEnabled("Keywords_IM", enabled);
+		self->childSetEnabled("Keywords_Highlight", enabled);
+		self->childSetEnabled("Keywords_Color", enabled);
+		self->childSetEnabled("Keywords_PlaySound", enabled);
+		self->childSetEnabled("Keywords_SoundUUID", enabled);
 	}
 }
 
@@ -204,6 +217,15 @@ void LLPrefsAscentSys::refreshValues()
 	mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
 	//Text Options ------------------------------------------------------------------------
     mSpellDisplay               = gSavedSettings.getBOOL("SpellDisplay");
+
+    mKeywordsOn                 = gSavedPerAccountSettings.getBOOL("KeywordsOn");
+	mKeywordsList               = gSavedPerAccountSettings.getString("KeywordsList");
+	mKeywordsInChat             = gSavedPerAccountSettings.getBOOL("KeywordsInChat");
+	mKeywordsInIM               = gSavedPerAccountSettings.getBOOL("KeywordsInIM");
+	mKeywordsChangeColor        = gSavedPerAccountSettings.getBOOL("KeywordsChangeColor");
+	mKeywordsColor              = gSavedPerAccountSettings.getColor4("KeywordsColor");
+	mKeywordsPlaySound          = gSavedPerAccountSettings.getBOOL("KeywordsPlaySound");
+	mKeywordsSound              = static_cast<LLUUID>(gSavedPerAccountSettings.getString("KeywordsSound"));
 }
 
 void LLPrefsAscentSys::refresh()
@@ -359,10 +381,21 @@ void LLPrefsAscentSys::refresh()
 
 		combo->setSimple(std::string(""));
 	}
+
+    childSetValue("Keywords_Alert", mKeywordsOn);
+	childSetValue("Keywords_Entries", mKeywordsList);
+	childSetValue("Keywords_LocalChat", mKeywordsInChat);
+	childSetValue("Keywords_IM", mKeywordsInIM);
+	childSetValue("Keywords_Highlight", mKeywordsChangeColor);
+	childSetValue("Keywords_PlaySound", mKeywordsPlaySound);
+	childSetValue("Keywords_SoundUUID", mKeywordsSound);
+
+	LLColorSwatchCtrl* colorctrl = getChild<LLColorSwatchCtrl>("Keywords_Color");
+	colorctrl->set(LLColor4(mKeywordsColor),TRUE);
 }
 
 void LLPrefsAscentSys::cancel()
-{
+{/*
 	//General -----------------------------------------------------------------------------
 	childSetValue("double_click_teleport_check",	mDoubleClickTeleport);
 		childSetValue("center_after_teleport_check",	mResetCameraAfterTP);
@@ -412,7 +445,18 @@ void LLPrefsAscentSys::cancel()
 
 	//Text Options ------------------------------------------------------------------------
     childSetValue("SpellDisplay", mSpellDisplay);
-}
+
+    childSetValue("Keywords_Alert", mKeywordsOn);
+	childSetValue("Keywords_Entries", mKeywordsList);
+	childSetValue("Keywords_LocalChat", mKeywordsInChat);
+	childSetValue("Keywords_IM", mKeywordsInIM);
+	childSetValue("Keywords_Highlight", mKeywordsChangeColor);
+	childSetValue("Keywords_PlaySound", mKeywordsPlaySound);
+	childSetValue("Keywords_SoundUUID", mKeywordsSound);
+
+	LLColorSwatchCtrl* colorctrl = getChild<LLColorSwatchCtrl>("Keywords_Color");
+	colorctrl->set(LLColor4(mKeywordsColor),TRUE);
+*/}
 
 void LLPrefsAscentSys::apply()
 {
@@ -549,7 +593,18 @@ void LLPrefsAscentSys::apply()
 	LLHUDEffectLookAt::sDebugLookAt						= childGetValue("show_look_at_check");
 	gSavedSettings.setBOOL("RevokePermsOnStandUp",		childGetValue("revoke_perms_on_stand_up_check"));
 	gSavedSettings.setBOOL("DisableClickSit",			childGetValue("disable_click_sit_check"));
-	
+
+
+	//Text Options ---------------------------------------------------------------------------
+    gSavedPerAccountSettings.setBOOL("KeywordsOn", childGetValue("Keywords_Alert"));
+    gSavedPerAccountSettings.setString("KeywordsList", childGetValue("Keywords_Entries"));
+    gSavedPerAccountSettings.setBOOL("KeywordsInChat", childGetValue("Keywords_LocalChat"));
+    gSavedPerAccountSettings.setBOOL("KeywordsInIM", childGetValue("Keywords_IM"));
+    gSavedPerAccountSettings.setBOOL("KeywordsChangeColor", childGetValue("Keywords_Highlight"));
+    gSavedPerAccountSettings.setColor4("KeywordsColor", childGetValue("Keywords_Color"));
+    gSavedPerAccountSettings.setBOOL("KeywordsPlaySound", childGetValue("Keywords_PlaySound"));
+    gSavedPerAccountSettings.setString("KeywordsSound", childGetValue("Keywords_SoundUUID"));
+
 	refreshValues();
 	refresh();
 }
