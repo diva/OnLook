@@ -280,6 +280,8 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 {
 	BOOL initialized_lighting = FALSE;
 	BOOL light_enabled = TRUE;
+	S32 diffuse_channel = 0;
+
 	//BOOL is_particle = FALSE;
 	BOOL use_shaders = (LLPipeline::sUnderWaterRender && gPipeline.canUseVertexShaders())
 		|| gPipeline.canUseWindLightShadersOnObjects();
@@ -360,11 +362,13 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 						if (deferred_render && current_shader != NULL)
 						{
 							gPipeline.unbindDeferredShader(*current_shader);
+							diffuse_channel = 0;
 						}
 						current_shader = target_shader;
 						if (deferred_render)
 						{
 							gPipeline.bindDeferredShader(*current_shader);
+							diffuse_channel = current_shader->enableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
 						}
 						else
 						{
@@ -373,10 +377,10 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 					}
 					else if (!use_shaders && current_shader != NULL)
 					{
-					
 						if (deferred_render)
 						{
 							gPipeline.unbindDeferredShader(*current_shader);
+							diffuse_channel = 0;
 						}
 						LLGLSLShader::bindNoShader();
 						current_shader = NULL;
@@ -390,7 +394,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 					
 					if (params.mTexture.notNull())
 					{
-						gGL.getTexUnit(0)->bind(params.mTexture.get());
+						gGL.getTexUnit(diffuse_channel)->bind(params.mTexture.get());
 						if(params.mTexture.notNull())
 						{
 							params.mTexture->addTextureStats(params.mVSize);

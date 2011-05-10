@@ -139,7 +139,7 @@ public:
 
 	// Graphical stuff for objects - maybe broken out into render class later?
 	U32 renderFootShadows();
-	U32 renderImpostor(LLColor4U color = LLColor4U(255,255,255,255));
+	U32 renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	U32 renderRigid();
 	U32 renderSkinned(EAvatarRenderPass pass);
 	U32 renderTransparent(BOOL first_pass);

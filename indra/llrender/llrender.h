@@ -369,6 +369,7 @@ private:
 
 extern F64 gGLModelView[16];
 extern F64 gGLLastModelView[16];
+extern F64 gGLLastProjection[16];
 extern F64 gGLProjection[16];
 extern S32 gGLViewport[4];
 

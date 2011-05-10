@@ -95,6 +95,7 @@ LLVOVolume::LLVOVolume(const LLUUID &id, const LLPCode pcode, LLViewerRegion *re
 	mNumFaces = 0;
 	mLODChanged = FALSE;
 	mSculptChanged = FALSE;
+	mSpotLightPriority = 0.f;
 	mIndexInTex = 0;
 }
 
@@ -614,6 +615,19 @@ void LLVOVolume::updateTextureVirtualSize()
 		}
 	}
 
+	if (getLightTextureID().notNull())
+	{
+		LLLightImageParams* params = (LLLightImageParams*) getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+		LLUUID id = params->getLightTexture();
+		mLightTexture = LLViewerTextureManager::getFetchedTexture(id);
+		if (mLightTexture.notNull())
+		{
+			F32 rad = getLightRadius();
+			mLightTexture->addTextureStats(gPipeline.calcPixelArea(getPositionAgent(),
+																	LLVector3(rad,rad,rad),
+																	*camera));
+		}
+	}
 
 	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_AREA))
 	{
@@ -1494,6 +1508,41 @@ void LLVOVolume::updateTEData()
 
 //----------------------------------------------------------------------------
 
+void LLVOVolume::setLightTextureID(LLUUID id)
+{
+	if (id.notNull())
+	{
+		if (!hasLightTexture())
+		{
+			setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE, TRUE, true);
+		}
+		LLLightImageParams* param_block = (LLLightImageParams*) getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+		if (param_block && param_block->getLightTexture() != id)
+		{
+			param_block->setLightTexture(id);
+			parameterChanged(LLNetworkData::PARAMS_LIGHT_IMAGE, true);
+		}
+	}
+	else
+	{
+		if (hasLightTexture())
+		{
+			setParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE, FALSE, true);
+			mLightTexture = NULL;
+		}
+	}
+}
+
+void LLVOVolume::setSpotLightParams(LLVector3 params)
+{
+	LLLightImageParams* param_block = (LLLightImageParams*) getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+	if (param_block && param_block->getParams() != params)
+	{
+		param_block->setParams(params);
+		parameterChanged(LLNetworkData::PARAMS_LIGHT_IMAGE, true);
+	}
+}
+
 void LLVOVolume::setIsLight(BOOL is_light)
 {
 	if (is_light != getIsLight())
@@ -1620,6 +1669,94 @@ LLColor3 LLVOVolume::getLightColor() const
 	}
 }
 
+LLUUID LLVOVolume::getLightTextureID() const
+{
+	if (getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE))
+	{
+		const LLLightImageParams *param_block = (const LLLightImageParams *)getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+		if (param_block)
+		{
+			return param_block->getLightTexture();
+		}
+	}
+
+	return LLUUID::null;
+}
+
+
+LLVector3 LLVOVolume::getSpotLightParams() const
+{
+	if (getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE))
+	{
+		const LLLightImageParams *param_block = (const LLLightImageParams *)getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+		if (param_block)
+		{
+			return param_block->getParams();
+		}
+	}
+
+	return LLVector3();
+}
+
+F32 LLVOVolume::getSpotLightPriority() const
+{
+	return mSpotLightPriority;
+}
+
+void LLVOVolume::updateSpotLightPriority()
+{
+	LLVector3 pos = mDrawable->getPositionAgent();
+	LLVector3 at(0,0,-1);
+	at *= getRenderRotation();
+
+	F32 r = getLightRadius()*0.5f;
+
+	pos += at * r;
+
+	at = LLViewerCamera::getInstance()->getAtAxis();
+
+	pos -= at * r;
+
+	mSpotLightPriority = gPipeline.calcPixelArea(pos, LLVector3(r,r,r), *LLViewerCamera::getInstance());
+
+	if (mLightTexture.notNull())
+	{
+		mLightTexture->addTextureStats(mSpotLightPriority);
+		mLightTexture->setBoostLevel(LLViewerTexture::BOOST_CLOUDS);
+	}
+}
+
+
+bool LLVOVolume::isLightSpotlight() const
+{
+	LLLightImageParams* params = (LLLightImageParams*) getParameterEntry(LLNetworkData::PARAMS_LIGHT_IMAGE);
+	if (params)
+	{
+		return params->isLightSpotlight();
+	}
+	return false;
+}
+
+
+LLViewerTexture* LLVOVolume::getLightTexture()
+{
+	LLUUID id = getLightTextureID();
+
+	if (id.notNull())
+	{
+		if (mLightTexture.isNull() || id != mLightTexture->getID())
+		{
+			mLightTexture = LLViewerTextureManager::getFetchedTexture(id);
+		}
+	}
+	else
+	{
+		mLightTexture = NULL;
+	}
+
+	return mLightTexture;
+}
+
 F32 LLVOVolume::getLightIntensity() const
 {
 	const LLLightParams *param_block = (const LLLightParams *)getParameterEntry(LLNetworkData::PARAMS_LIGHT);
@@ -1708,6 +1845,16 @@ BOOL LLVOVolume::isSculpted() const
 		return TRUE;
 	}
 	
+	return FALSE;
+}
+
+BOOL LLVOVolume::hasLightTexture() const
+{
+	if (getParameterEntryInUse(LLNetworkData::PARAMS_LIGHT_IMAGE))
+	{
+		return TRUE;
+	}
+
 	return FALSE;
 }
 

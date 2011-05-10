@@ -697,7 +697,6 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setBOOL("RenderUseImpostors", mAvatarImpostors);
 	gSavedSettings.setBOOL("RenderAvatarCloth", mAvatarCloth);
 
-	gSavedSettings.setS32("RenderLightingDetail", mLightingDetail);
 	gSavedSettings.setS32("RenderTerrainDetail", mTerrainDetail);
 
 	gSavedSettings.setF32("RenderFarClip", mRenderFarClip);

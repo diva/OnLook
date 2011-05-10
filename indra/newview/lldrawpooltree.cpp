@@ -167,6 +167,10 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_SHADOW_TREE);
 	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
+	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
+	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
+	glPolygonOffset(render_deferred_offset,render_deferred_bias);
+
 	gDeferredShadowProgram.bind();
 }
 
@@ -179,7 +183,11 @@ void LLDrawPoolTree::endShadowPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_SHADOW_TREE);
 	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
-	gDeferredShadowProgram.unbind();
+	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
+	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
+	glPolygonOffset(render_deferred_offset,render_deferred_bias);
+
+	//gDeferredShadowProgram.unbind();
 }
 
 
@@ -323,15 +331,16 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 
 			scale_mat *= rot_mat;
 
+			//TO-DO: Make these set-able?
 			const F32 THRESH_ANGLE_FOR_BILLBOARD = 7.5f; //Made LoD now a little less aggressive here -Shyotl
-			/*const F32 BLEND_RANGE_FOR_BILLBOARD = 1.5f;*/ //Unused, really
+			const F32 BLEND_RANGE_FOR_BILLBOARD = 1.5f;
 
 			F32 droop = treep->mDroop + 25.f*(1.f - treep->mTrunkBend.magVec());
 			
 			S32 stop_depth = 0;
 			F32 app_angle = treep->getAppAngle()*LLVOTree::sTreeFactor;
 			F32 alpha = 1.0;
-			S32 trunk_LOD = 0;
+			S32 trunk_LOD = LLVOTree::sMAX_NUM_TREE_LOD_LEVELS;
 
 			for (S32 j = 0; j < 4; j++)
 			{
@@ -342,8 +351,12 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 					break;
 				}
 			} 
+			if(trunk_LOD >= LLVOTree::sMAX_NUM_TREE_LOD_LEVELS)
+			{
+				continue ; //do not render.
+			}
 
-			if (app_angle < (THRESH_ANGLE_FOR_BILLBOARD/* - BLEND_RANGE_FOR_BILLBOARD*/))
+			if (app_angle < (THRESH_ANGLE_FOR_BILLBOARD - BLEND_RANGE_FOR_BILLBOARD))
 			{
 				//
 				//  Draw only the billboard 
