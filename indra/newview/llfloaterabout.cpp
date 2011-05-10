@@ -75,7 +75,6 @@
 
 
 
-extern LLCPUInfo gSysCPU;
 extern LLMemoryInfo gSysMemory;
 extern U32 gPacketsIn;
 

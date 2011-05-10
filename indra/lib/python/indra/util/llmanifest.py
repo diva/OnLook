@@ -119,7 +119,6 @@ ARGUMENTS=[
         Example use: %(name)s --arch=i686
         On Linux this would try to use Linux_i686Manifest.""",
          default=""),
-	dict(name='artwork', description='Artwork directory.', default=DEFAULT_SRCTREE),
     dict(name='build', description='Build directory.', default=DEFAULT_SRCTREE),
     dict(name='buildtype', description="""The build type used. ('Debug', 'Release', 'ReleaseSSE2' or 'RelWithDebInfo')
         Default is Release """,
@@ -127,9 +126,6 @@ ARGUMENTS=[
     dict(name='branding_id', description="""Identifier for the branding set to 
         use.  Currently, 'secondlife' or 'snowglobe')""", 
          default='secondlife'),
-    dict(name='channel',
-         description="""The channel to use for updates, packaging, settings name, etc.""",
-         default=get_channel),
     dict(name='configuration',
          description="""The build configuration used. Only used on OS X for
         now, but it could be used for other platforms as well.""",
@@ -140,12 +136,15 @@ ARGUMENTS=[
         though it's not strictly a grid, 'firstlook' is also an acceptable
         value for this parameter.""",
          default=""),
+    dict(name='channel',
+         description="""The channel to use for updates, packaging, settings name, etc.""",
+         default=get_channel),
+    dict(name='login_channel',
+         description="""The channel to use for login handshake/updates only.""",
+         default=None),
     dict(name='installer_name',
          description=""" The name of the file that the installer should be
         packaged up into. Only used on Linux at the moment.""",
-         default=None),
-    dict(name='login_channel',
-         description="""The channel to use for login handshake/updates only.""",
          default=None),
     dict(name='login_url',
          description="""The url that the login screen displays in the client.""",
@@ -160,6 +159,7 @@ ARGUMENTS=[
     dict(name='standalone',
          description='Set to ON if this is a standalone build.',
          default="OFF"),
+    dict(name='artwork', description='Artwork directory.', default=DEFAULT_SRCTREE),
     dict(name='touch',
          description="""File to touch when action is finished. Touch file will
         contain the name of the final package in a form suitable
@@ -637,9 +637,9 @@ class LLManifest(object):
         is_glob = False
 
         # look under each prefix for matching paths
-        paths = [os.path.join(self.get_src_prefix(), src),
+        paths = set([os.path.join(self.get_src_prefix(), src),
                  os.path.join(self.get_artwork_prefix(), src),
-                 os.path.join(self.get_build_prefix(), src)]
+                 os.path.join(self.get_build_prefix(), src)])
         for path in paths:
             if self.wildcard_pattern.search(path):
                 is_glob = True

@@ -70,6 +70,22 @@ BOOL LLVertexBuffer::sOmitBlank = FALSE;
 
 std::vector<U32> LLVertexBuffer::sDeleteList;
 
+
+GLuint LLVBOPool::allocateName()
+{
+	GLuint name;
+	glGenBuffersARB(1, &name);
+	LLVertexBuffer::sGLCount++;	
+	return name;
+}
+
+void LLVBOPool::releaseName(GLuint name)
+{
+	glDeleteBuffersARB(1, &name);
+	LLVertexBuffer::sGLCount--;
+}
+
+
 S32 LLVertexBuffer::sTypeOffsets[LLVertexBuffer::TYPE_MAX] =
 {
 	sizeof(LLVector3), // TYPE_VERTEX,
@@ -342,6 +358,7 @@ void LLVertexBuffer::clientCopy(F64 max_time)
 	if (!sDeleteList.empty())
 	{
 		glDeleteBuffersARB(sDeleteList.size(), (GLuint*) &(sDeleteList[0]));
+		sGLCount -= sDeleteList.size();		
 		sDeleteList.clear();
 	}
 }
@@ -432,8 +449,8 @@ void LLVertexBuffer::genBuffer()
 	{
 		BOOST_STATIC_ASSERT(sizeof(mGLBuffer) == sizeof(GLuint));
 		glGenBuffersARB(1, (GLuint*)&mGLBuffer);
+		sGLCount++;		
 	}
-	sGLCount++;
 }
 
 void LLVertexBuffer::genIndices()
@@ -450,8 +467,8 @@ void LLVertexBuffer::genIndices()
 	{
 		BOOST_STATIC_ASSERT(sizeof(mGLBuffer) == sizeof(GLuint));
 		glGenBuffersARB(1, (GLuint*)&mGLIndices);
+		sGLCount++;		
 	}
-	sGLCount++;
 }
 
 void LLVertexBuffer::releaseBuffer()
@@ -468,7 +485,6 @@ void LLVertexBuffer::releaseBuffer()
 	{
 		sDeleteList.push_back(mGLBuffer);
 	}
-	sGLCount--;
 }
 
 void LLVertexBuffer::releaseIndices()
@@ -485,7 +501,6 @@ void LLVertexBuffer::releaseIndices()
 	{
 		sDeleteList.push_back(mGLIndices);
 	}
-	sGLCount--;
 }
 
 void LLVertexBuffer::createGLBuffer()

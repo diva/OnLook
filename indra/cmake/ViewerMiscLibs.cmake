@@ -2,9 +2,9 @@
 include(Prebuilt)
 
 if (NOT STANDALONE)
-  use_prebuilt_binary(libuuid)
   use_prebuilt_binary(vivox)
   if(LINUX)
+	use_prebuilt_binary(libuuid)
     if (${ARCH} STREQUAL "x86_64")
      use_prebuilt_binary(32bitcompatibilitylibs)
 	endif (${ARCH} STREQUAL "x86_64")

@@ -219,8 +219,10 @@ struct LLAvatarTexData
 
 struct LLTextureMaskData
 {
-	LLTextureMaskData( const LLUUID& id )
-		: mAvatarID(id), mLastDiscardLevel(S32_MAX) {}
+	LLTextureMaskData( const LLUUID& id ) :
+		mAvatarID(id), 
+		mLastDiscardLevel(S32_MAX) 
+	{}
 	LLUUID				mAvatarID;
 	S32					mLastDiscardLevel;
 };
@@ -247,10 +249,9 @@ public:
 	}
 	BOOL parseXml(LLXmlTreeNode* node);
 	
-	BOOL mIsJoint;
-	
 private:
 	std::string mName;
+	BOOL mIsJoint;
 	LLVector3 mPos;
 	LLVector3 mRot;
 	LLVector3 mScale;
@@ -770,16 +771,16 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mAppearanceAnimating(FALSE),
 	mNameString(),
 	mTitle(),
-	mRenderedName(),
-	mUsedNameSystem(),
-	mClientName(),
 	mNameAway(FALSE),
 	mNameBusy(FALSE),
 	mNameMute(FALSE),
+	mNameAppearance(FALSE),
+	mRenderedName(),
+	mUsedNameSystem(),
+	mClientName(),
 	mRenderGroupTitles(sRenderGroupTitles),
 	mNameFromChatOverride(false),
 	mNameFromChatChanged(false),
-	mNameAppearance(FALSE),
 	mRenderTag(FALSE),
 	mLastRegionHandle(0),
 	mRegionCrossingCount(0),
@@ -9388,11 +9389,11 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			for( S32 i = 0; i < num_blocks; i++ )
 			{
 				
-				while( param && (!param->isTweakable()) )
+				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) ) // should not be any of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 				{
 					param = getNextVisualParam();
 				}
-						
+
 				if( !param )
 				{
 					llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Too many)." << llendl;
@@ -9407,7 +9408,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				{
 					mSupportsPhysics = true;
 				}
-				if(param->getID() == 507 && newWeight != getActualBoobGrav())
+				else if(param->getID() == 507 && newWeight != getActualBoobGrav())
 				{
 					llwarns << "Boob Grav SET to " << newWeight << " for " << getFullname() << llendl;
 					setActualBoobGrav(newWeight);
@@ -9443,15 +9444,13 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			}
 		}
 
-		while( param && (!param->isTweakable()) )
+		while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
 		{
 			param = getNextVisualParam();
 		}
 		if( param )
 		{
-			if (param->getName() == "tattoo_red")
-				llinfos << getFullname() << " does not have tattoo tinting." << llendl;
-			else if(param->getName() == "breast_physics_leftright_spring")
+			if(param->getName() == "breast_physics_mass")
 				llinfos << getFullname() << " does not have avatar physics." << llendl;
 			else
 				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;

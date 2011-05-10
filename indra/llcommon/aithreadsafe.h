@@ -308,7 +308,7 @@ protected:
 	//! Constructor used by AIWriteAccess.
 	AIReadAccess(AIThreadSafe<T>& wrapper, state_type state) : AIReadAccessConst<T>(wrapper, state) { }
 
-	friend class AIWriteAccess<T>;
+	friend struct AIWriteAccess<T>;
 };
 
 /**

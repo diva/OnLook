@@ -133,27 +133,25 @@ endif (SERVER)
 
 # Configure prebuilt binary download.  This must be done last so that
 # all subdirectories have a chance to list the packages they need.
-if(NOT STANDALONE)
-  # We need scp for proprietary downloads.
-  if(INSTALL_PROPRIETARY)
-    include(FindSCP)
-  endif(INSTALL_PROPRIETARY)
+# We need scp for proprietary downloads.
+if(INSTALL_PROPRIETARY)
+  include(FindSCP)
+endif(INSTALL_PROPRIETARY)
 
-  # The use_prebuilt_binary macro in cmake/Prebuilt.cmake records
-  # packages in the PREBUILT property of the 'prepare' target.
-  get_property(PREBUILT_PACKAGES TARGET prepare PROPERTY PREBUILT)
+# The use_prebuilt_binary macro in cmake/Prebuilt.cmake records
+# packages in the PREBUILT property of the 'prepare' target.
+get_property(PREBUILT_PACKAGES TARGET prepare PROPERTY PREBUILT)
 
-  # Create a script to download the needed binaries.
-  configure_file(${CMAKE_SOURCE_DIR}/cmake/DownloadPrebuilt.cmake.in
-                 ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake @ONLY)
+# Create a script to download the needed binaries.
+configure_file(${CMAKE_SOURCE_DIR}/cmake/DownloadPrebuilt.cmake.in
+               ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake @ONLY)
 
-  # Drive the download script at build time.  Depend on 'install.xml'
-  # to aqcuire new binaries when needed.
-  add_custom_command(
-    COMMENT "Obtaining prebuilt binaries..."
-    OUTPUT ${CMAKE_BINARY_DIR}/prepare/prebuilt
-    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake
-    DEPENDS ${CMAKE_SOURCE_DIR}/../install.xml
-            ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake
-    )
-endif(NOT STANDALONE)
+# Drive the download script at build time.  Depend on 'install.xml'
+# to aqcuire new binaries when needed.
+add_custom_command(
+  COMMENT "Obtaining prebuilt binaries..."
+  OUTPUT ${CMAKE_BINARY_DIR}/prepare/prebuilt
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake
+  DEPENDS ${CMAKE_SOURCE_DIR}/../install.xml
+          ${CMAKE_BINARY_DIR}/DownloadPrebuilt.cmake
+  )

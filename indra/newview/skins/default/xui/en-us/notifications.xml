@@ -2579,14 +2579,14 @@ Please choose the male or female avatar. You can change your mind later.
    icon="alertmodal.tga"
    name="GrantedModifyRights"
    type="alertmodal">
-You have been granted the privilege to modify [FIRST_NAME] [LAST_NAME]&apos;s objects.
+You have been granted the privilege to modify [NAME]&apos;s objects.
   </notification>
 
   <notification
    icon="alertmodal.tga"
    name="RevokedModifyRights"
    type="alertmodal">
-Your privilege to modify [FIRST_NAME] [LAST_NAME]&apos;s objects has been revoked
+Your privilege to modify [NAME]&apos;s objects has been revoked
   </notification>
 
   <notification
@@ -6939,6 +6939,29 @@ No
   <notification icon="notifytip.tga" name="BlockedGeneralObjects" type="notifytip">Blocked spam from objects owned by [OWNER] ([SOURCE])</notification>
   <notification icon="notifytip.tga" name="BlockedChatterAvatar" type="notifytip">Blocked chat-spam from avatar [FULL_NAME] ([SOURCE])</notification>
   <notification icon="notifytip.tga" name="BlockedChatterObjects" type="notifytip">Blocked chat-spam from objects owned by [OWNER] ([SOURCE])</notification>
+
+  <notification
+ icon="notify.tga"
+ name="FirstPhysicsWearable"
+ priority="high"
+ type="notify">
+By wearing a Physics Wearable certain server behavior will be enabled that many older viewers are incompatable with. On such viewers you may display incorrectly (often as 'Ruth').
+
+If you wish to keep compatability with old viewers then you must not wear a Physics Wearable during your session. If you have already worn one during this session remove it and reconnect.
+
+Click 'Wear' to attach the Physics Wearable, or click 'Cancel' if you wish to maintain compatability with legacy clients.
+    <unique/>
+    <form name="form">
+    <button
+     index="0"
+     name="Wear"
+     text="Wear"/>
+    <button
+     index="1"
+     name="Cancel"
+     text="Cancel"/>
+  </form>
+  </notification>
 
 </notifications>
 

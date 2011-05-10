@@ -827,13 +827,14 @@ void LLViewerObjectList::clearDebugText()
 void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
-	if (mDeadObjects.count(objectp->mID))
+	if (mDeadObjects.find(objectp->mID) != mDeadObjects.end())
 	{
-		llinfos << "Object " << objectp->mID << " already on dead list, ignoring cleanup!" << llendl;	
-		return;
+		llinfos << "Object " << objectp->mID << " already on dead list!" << llendl;	
 	}
-
-	mDeadObjects.insert(std::pair<LLUUID, LLPointer<LLViewerObject> >(objectp->mID, objectp));
+	else
+	{
+		mDeadObjects.insert(objectp->mID);
+	}
 
 	// Cleanup any references we have to this object
 	// Remove from object map so noone can look it up.
