@@ -41,7 +41,7 @@
 #include "aiaprpool.h"
 
 #ifdef SHOW_ASSERT
-extern bool is_main_thread(void);
+extern LL_COMMON_API bool is_main_thread(void);
 #endif
 
 class LLThread;

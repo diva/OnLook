@@ -303,7 +303,7 @@ typedef LLError::NoClassInfo _LL_CLASS_TO_LOG;
 	*/
 
 #ifdef SHOW_ASSERT
-extern bool is_main_thread();
+extern LL_COMMON_API bool is_main_thread();
 #endif
 
 #endif // LL_LLERROR_H
