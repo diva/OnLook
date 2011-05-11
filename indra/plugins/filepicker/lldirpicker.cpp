@@ -30,16 +30,12 @@
  * $/LicenseInfo$
  */
 
-#include "llviewerprecompiledheaders.h"
-
+#include "linden_common.h"
 #include "lldirpicker.h"
-//#include "llviewermessage.h"
-#include "llworld.h"
-#include "llviewerwindow.h"
-#include "llkeyboard.h"
-#include "lldir.h"
-#include "llframetimer.h"
-#include "lltrans.h"
+#include "llpreprocessor.h"
+#include "llerror.h"
+#include "basic_plugin_base.h"      // For PLS_INFOS etc.
+#include "legacy.h"
 
 #if LL_LINUX || LL_SOLARIS
 # include "llfilepicker.h"
@@ -77,9 +73,6 @@ BOOL LLDirPicker::getDir(std::string* filename)
 	}
 	BOOL success = FALSE;
 
-	// Modal, so pause agent
-	send_agent_pause();
-
    BROWSEINFO bi;
    memset(&bi, 0, sizeof(bi));
 
@@ -109,10 +102,6 @@ BOOL LLDirPicker::getDir(std::string* filename)
 
    ::OleUninitialize();
 
-	send_agent_resume();
-
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
@@ -237,20 +226,15 @@ BOOL LLDirPicker::getDir(std::string* filename)
 	
 //	mNavOptions.saveFileName 
 
-	// Modal, so pause agent
-	send_agent_pause();
 	{
 		error = doNavChooseDialog();
 	}
-	send_agent_resume();
 	if (error == noErr)
 	{
 		if (mDir.length() >  0)
 			success = true;
 	}
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 

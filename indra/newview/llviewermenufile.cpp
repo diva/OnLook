@@ -420,7 +420,7 @@ void upload_error(const std::string& error_message, const std::string& label, co
 	{
 		lldebugs << "unable to remove temp file" << llendl;
 	}
-	LLFilePicker::instance().reset();						
+	//AIFIXME? LLFilePicker::instance().reset();						
 }
 
 class LLFileEnableCloseWindow : public view_listener_t
@@ -965,7 +965,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		{
 			lldebugs << "unable to remove temp file" << llendl;
 		}
-		LLFilePicker::instance().reset();
+		//AIFIXME? LLFilePicker::instance().reset();
 	}
 }
 // <edit>

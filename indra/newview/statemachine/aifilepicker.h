@@ -38,6 +38,7 @@
 
 enum ELoadFilter
 {
+	DF_DIRECTORY,
 	FFLOAD_ALL,
 	FFLOAD_WAV,
 	FFLOAD_IMAGE,
@@ -175,7 +176,7 @@ public:
 
 private:
 	LLPointer<LLViewerPluginManager> mPluginManager;				//!< Pointer to the plugin manager.
-	// FIXME: this should be a separate, thread-safe singleton.
+	// AIFIXME: this should be a separate, thread-safe singleton.
 	typedef std::map<std::string, std::string> context_map_type;	//!< Type of mContextMap.
 	context_map_type mContextMap;									//!< Map context (ie, "snapshot" or "image") to last used folder.
 	std::string mContext;											//!< Some key to indicate the context (remembers the folder per key).

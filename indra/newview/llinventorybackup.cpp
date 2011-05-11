@@ -5,7 +5,7 @@
 #include "llinventorymodel.h"
 #include "llviewerinventory.h"
 #include "statemachine/aifilepicker.h"
-#include "lldirpicker.h"
+#include "statemachine/aidirpicker.h"
 #include "llviewertexturelist.h" // gTextureList
 #include "llagent.h" // gAgent
 #include "llviewerwindow.h" // gViewerWindow
@@ -120,35 +120,40 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	}
 
 	// Get dir name
-	LLDirPicker& picker = LLDirPicker::instance();
-	std::string filename = "New Folder";
-	if (!picker.getDir(&filename))
+	AIDirPicker* dirpicker = new AIDirPicker("New Folder");
+	dirpicker->run(boost::bind(&LLFloaterInventoryBackupSettings::onClickNext_continued, userdata, dirpicker));
+}
+
+// static
+void LLFloaterInventoryBackupSettings::onClickNext_continued(void* userdata, AIDirPicker* dirpicker)
+{
+	LLFloaterInventoryBackupSettings* floater = (LLFloaterInventoryBackupSettings*)userdata;
+	LLInventoryBackupOrder* order = floater->mOrder;
+
+	if (!dirpicker->hasDirname())
 	{
 		floater->close();
 		return;
 	}
-	filename = picker.getDirName();
+	std::string dirname = dirpicker->getDirname();
 
 	// Make local directory tree
-	LLFile::mkdir(filename);
+	LLFile::mkdir(dirname);
 	std::vector<LLInventoryCategory*>::iterator _cat_iter = order->mCats.begin();
 	std::vector<LLInventoryCategory*>::iterator _cat_end = order->mCats.end();
 	for( ; _cat_iter != _cat_end; ++_cat_iter)
 	{
-		std::string path = filename + OS_SEP + LLInventoryBackup::getPath(*_cat_iter, order->mCats);
+		std::string path = dirname + OS_SEP + LLInventoryBackup::getPath(*_cat_iter, order->mCats);
 		LLFile::mkdir(path);
 	}
 
 	// Go go backup floater
-	LLFloaterInventoryBackup* backup_floater = new LLFloaterInventoryBackup(filename, order->mCats, order->mItems);
+	LLFloaterInventoryBackup* backup_floater = new LLFloaterInventoryBackup(dirname, order->mCats, order->mItems);
 	backup_floater->center();
 
 	// Close myself
 	floater->close();
 }
-
-
-
 
 // static
 bool LLInventoryBackup::itemIsFolder(LLInventoryItem* item)

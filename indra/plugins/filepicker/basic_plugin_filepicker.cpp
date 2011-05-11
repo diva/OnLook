@@ -36,6 +36,7 @@
 #include "linden_common.h"
 #include "basic_plugin_base.h"
 #include "llfilepicker.h"
+#include "lldirpicker.h"
 
 class FilepickerPlugin : public BasicPluginBase
 {
@@ -229,9 +230,14 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 				std::string type = message_in.getValue("type");
 				std::string filter = message_in.getValue("filter");
 				std::string folder = message_in.getValue("folder");
+				bool get_directory = (filter == "directory");
 
 				bool canceled;
-				if (type == "save")
+				if (get_directory)
+				{
+					canceled = !LLDirPicker::instance().getDir(&folder);
+				}
+				else if (type == "save")
 				{
 					canceled = !LLFilePicker::instance().getSaveFile(str2savefilter(filter), message_in.getValue("default"), folder);
 				}
@@ -254,9 +260,16 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 					LLPluginMessage message(LLPLUGIN_MESSAGE_CLASS_BASIC, "done");
 					message.setValue("perseus", "unblock");
 					LLSD filenames;
-					for (std::string filename = LLFilePicker::instance().getFirstFile(); !filename.empty(); filename = LLFilePicker::instance().getNextFile())
+					if (get_directory)
 					{
-						filenames.append(filename);
+						filenames.append(LLDirPicker::instance().getDirName());
+					}
+					else
+					{
+						for (std::string filename = LLFilePicker::instance().getFirstFile(); !filename.empty(); filename = LLFilePicker::instance().getNextFile())
+						{
+							filenames.append(filename);
+						}
 					}
 					message.setValueLLSD("filenames", filenames);
 					sendMessage(message);

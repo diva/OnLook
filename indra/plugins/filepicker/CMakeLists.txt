@@ -28,12 +28,16 @@ if(NOT WORD_SIZE EQUAL 32)
   endif (NOT WORD_SIZE EQUAL 32)
 
 set(basic_plugin_filepicker_SOURCE_FILES
-    basic_plugin_filepicker.cpp
+	basic_plugin_filepicker.cpp
+	legacy.cpp
 	llfilepicker.cpp
+	lldirpicker.cpp
     )
 
 set(basic_plugin_filepicker_HEADER_FILES
+	legacy.h
 	llfilepicker.h
+	lldirpicker.h
    )
 
 set_source_files_properties(${basic_plugin_filepicker_HEADER_FILES}

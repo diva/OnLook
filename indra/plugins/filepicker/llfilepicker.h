@@ -39,37 +39,8 @@
 #ifndef LL_LLFILEPICKER_H
 #define LL_LLFILEPICKER_H
 
-#include "stdtypes.h"
-#include <string>
+#include "legacy.h"
 #include <vector>
-#include <map>
-
-#if LL_DARWIN
-#include <Carbon/Carbon.h>
-
-// AssertMacros.h does bad things.
-#undef verify
-#undef check
-#undef require
-
-#include "llstring.h"
-
-#endif
-
-// Need commdlg.h for OPENFILENAMEA
-#ifdef LL_WINDOWS
-#include <commdlg.h>
-#endif
-
-// mostly for Linux, possible on others
-#if LL_GTK
-# include "gtk/gtk.h"
-#endif // LL_GTK
-
-// also mostly for Linux, for some X11-specific filepicker usability tweaks
-#if LL_X11
-#include "SDL/SDL_syswm.h"
-#endif
 
 // This class is used as base class of a singleton and is therefore not
 // allowed to have any static members or static local variables!
@@ -245,10 +216,5 @@ private:
 
 	LLFilePicker() { }
 };
-
-namespace translation
-{
-	void add(std::string const& key, std::string const& translation);
-}
 
 #endif

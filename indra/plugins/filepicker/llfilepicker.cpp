@@ -35,92 +35,7 @@
 #include "llpreprocessor.h"
 #include "llerror.h"
 #include "basic_plugin_base.h"		// For PLS_INFOS etc.
-
-#if LL_SDL
-#include "llwindowsdl.h" // for some X/GTK utils to help with filepickers
-#endif // LL_SDL
-
-// Translation map.
-typedef std::map<std::string, std::string> translation_map_type;
-translation_map_type translation_map;
-
-// A temporary hack to minimize the number of changes from the original llfilepicker.cpp.
-#define LLTrans translation
-namespace translation
-{
-	std::string getString(char const* key)
-	{
-		translation_map_type::iterator iter = translation_map.find(key);
-		return (iter != translation_map.end()) ? iter->second : key;
-	}
-
-	void add(std::string const& key, std::string const& translation)
-	{
-		PLS_DEBUGS << "Adding translation \"" << key << "\" --> \"" << translation << "\"" << PLS_ENDL;
-		translation_map[key] = translation;
-	}
-}
-
-#if LL_GTK
-namespace LLWindowSDL {
-	bool ll_try_gtk_init(void)
-	{
-		static BOOL done_gtk_diag = FALSE;
-		static BOOL gtk_is_good = FALSE;
-		static BOOL done_setlocale = FALSE;
-		static BOOL tried_gtk_init = FALSE;
-
-		if (!done_setlocale)
-		{
-			PLS_INFOS << "Starting GTK Initialization." << PLS_ENDL;
-			//maybe_lock_display();
-			gtk_disable_setlocale();
-			//maybe_unlock_display();
-			done_setlocale = TRUE;
-		}
-
-		if (!tried_gtk_init)
-		{
-			tried_gtk_init = TRUE;
-			if (!g_thread_supported ()) g_thread_init (NULL);
-			//maybe_lock_display();
-			gtk_is_good = gtk_init_check(NULL, NULL);
-			//maybe_unlock_display();
-			if (!gtk_is_good)
-				PLS_WARNS << "GTK Initialization failed." << PLS_ENDL;
-		}
-		if (gtk_is_good && !done_gtk_diag)
-		{
-			PLS_INFOS << "GTK Initialized." << PLS_ENDL;
-			PLS_INFOS << "- Compiled against GTK version "
-				<< GTK_MAJOR_VERSION << "."
-				<< GTK_MINOR_VERSION << "."
-				<< GTK_MICRO_VERSION << PLS_ENDL;
-			PLS_INFOS << "- Running against GTK version "
-				<< gtk_major_version << "."
-				<< gtk_minor_version << "."
-				<< gtk_micro_version << PLS_ENDL;
-			//maybe_lock_display();
-			const gchar* gtk_warning = gtk_check_version(
-				GTK_MAJOR_VERSION,
-				GTK_MINOR_VERSION,
-				GTK_MICRO_VERSION);
-			//maybe_unlock_display();
-			if (gtk_warning)
-			{
-				PLS_WARNS << "- GTK COMPATIBILITY WARNING: " << gtk_warning << PLS_ENDL;
-				gtk_is_good = FALSE;
-			}
-			else
-			{
-				PLS_INFOS << "- GTK version is good." << PLS_ENDL;
-			}
-			done_gtk_diag = TRUE;
-		}
-		return gtk_is_good;
-	}
-}
-#endif
+#include "legacy.h"
 
 //
 // Globals
@@ -290,7 +205,7 @@ bool LLFilePickerBase::setupFilter(ELoadFilter filter)
 	return res;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -309,9 +224,6 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 
 	setupFilter(filter);
 	
-	// Modal, so pause agent
-	send_agent_pause();
-
 	reset();
 	
 	// NOTA BENE: hitting the file dialog triggers a window focus event, destroying the selection manager!!
@@ -321,14 +233,11 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 		std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
 		mFiles.push_back(filename);
 	}
-	send_agent_resume();
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -350,8 +259,6 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 
 	reset();
 	
-	// Modal, so pause agent
-	send_agent_pause();
 	// NOTA BENE: hitting the file dialog triggers a window focus event, destroying the selection manager!!
 	success = GetOpenFileName(&mOFN); // pauses until ok or cancel.
 	if( success )
@@ -384,14 +291,11 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 			}
 		}
 	}
-	send_agent_resume();
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
 	if( mLocked )
@@ -783,8 +687,6 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 
 	reset();
 
-	// Modal, so pause agent
-	send_agent_pause();
 	{
 		// NOTA BENE: hitting the file dialog triggers a window focus event, destroying the selection manager!!
 		success = GetSaveFileName(&mOFN);
@@ -795,10 +697,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 		}
 		gKeyboard->resetKeys();
 	}
-	send_agent_resume();
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
@@ -1137,7 +1036,7 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string
 	return error;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -1150,24 +1049,19 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 	reset();
 	
 	mNavOptions.optionFlags &= ~kNavAllowMultipleFiles;
-	// Modal, so pause agent
-	send_agent_pause();
 	{
 		error = doNavChooseDialog(filter);
 	}
-	send_agent_resume();
 	if (error == noErr)
 	{
 		if (getFileCount())
 			success = true;
 	}
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -1180,12 +1074,9 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 	reset();
 	
 	mNavOptions.optionFlags |= kNavAllowMultipleFiles;
-	// Modal, so pause agent
-	send_agent_pause();
 	{
 		error = doNavChooseDialog(filter);
 	}
-	send_agent_resume();
 	if (error == noErr)
 	{
 		if (getFileCount())
@@ -1194,12 +1085,10 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 			mLocked = TRUE;
 	}
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
 	if( mLocked )
@@ -1211,20 +1100,15 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 	
 	mNavOptions.optionFlags &= ~kNavAllowMultipleFiles;
 
-	// Modal, so pause agent
-	send_agent_pause();
 	{
 		error = doNavSaveDialog(filter, filename);
 	}
-	send_agent_resume();
 	if (error == noErr)
 	{
 		if (getFileCount())
 			success = true;
 	}
 
-	// Account for the fact that the app has been stalled.
-	LLFrameTimer::updateFrameTime();
 	return success;
 }
 
@@ -1601,7 +1485,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 	return FALSE;
 }
 
-// FIXME: Use folder
+// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	reset();

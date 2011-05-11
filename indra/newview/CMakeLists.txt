@@ -132,7 +132,6 @@ set(viewer_SOURCE_FILES
     lldebugmessagebox.cpp
     lldebugview.cpp
     lldelayedgestureerror.cpp
-    lldirpicker.cpp
     lldrawable.cpp
     lldrawpoolalpha.cpp
     lldrawpoolavatar.cpp
@@ -154,7 +153,6 @@ set(viewer_SOURCE_FILES
     llface.cpp
     llfasttimerview.cpp
     llfeaturemanager.cpp
-    llfilepicker.cpp
     llfirstuse.cpp
     llflexibleobject.cpp
     llfloaterabout.cpp
@@ -609,7 +607,6 @@ set(viewer_HEADER_FILES
     lldebugmessagebox.h
     lldebugview.h
     lldelayedgestureerror.h
-    lldirpicker.h
     lldrawable.h
     lldrawpool.h
     lldrawpoolalpha.h
@@ -632,7 +629,6 @@ set(viewer_HEADER_FILES
     llface.h
     llfasttimerview.h
     llfeaturemanager.h
-    llfilepicker.h
     llfirstuse.h
     llflexibleobject.h
     llfloaterabout.h
@@ -1017,6 +1013,7 @@ set(statemachine_SOURCE_FILES
 set(statemachine_HEADER_FILES
 	statemachine/aistatemachine.h
 	statemachine/aifilepicker.h
+	statemachine/aidirpicker.h
 	)
 list(APPEND viewer_SOURCE_FILES ${statemachine_SOURCE_FILES})
 list(APPEND viewer_HEADER_FILES ${statemachine_HEADER_FILES})

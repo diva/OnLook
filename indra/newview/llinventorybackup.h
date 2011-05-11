@@ -15,6 +15,8 @@
 #include "llviewertexture.h"
 #include "llfloater.h"
 
+class AIDirPicker;
+
 class LLInventoryBackupOrder
 {
 public:
@@ -44,6 +46,7 @@ public:
 	LLFloaterInventoryBackupSettings(LLInventoryBackupOrder* order);
 	BOOL postBuild(void);
 	static void onClickNext(void* userdata);
+	static void onClickNext_continued(void* userdata, AIDirPicker* dirpicker);
 
 	LLInventoryBackupOrder* mOrder;
 	virtual ~LLFloaterInventoryBackupSettings();

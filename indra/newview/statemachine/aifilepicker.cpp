@@ -107,6 +107,9 @@ void AIFilePicker::open(ELoadFilter filter, std::string const& default_path, std
 	mOpenType = multiple ? load_multiple : load;
 	switch(filter)
 	{
+	  case DF_DIRECTORY:
+		  mFilter = "directory";
+		  break;
 	  case FFLOAD_ALL:
 		  mFilter = "all";
 		  break;
@@ -314,7 +317,8 @@ void AIFilePicker::multiplex_impl(void)
 			static char const* key_str[] = {
 				"all_files", "sound_files", "animation_files", "image_files", "save_file_verb",
 				"targa_image_files", "bitmap_image_files", "avi_movie_file", "xaf_animation_file",
-				"xml_file", "raw_file", "compressed_image_files", "load_file_verb", "load_files"
+				"xml_file", "raw_file", "compressed_image_files", "load_file_verb", "load_files",
+				"choose_the_directory"
 			};
 			LLSD dictionary;
 			for (int key = 0; key < sizeof(key_str) / sizeof(key_str[0]); ++key)
