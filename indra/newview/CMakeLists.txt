@@ -1330,11 +1330,11 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
-    if(MSVC71)
-        set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map /MAPINFO:LINES")
-    else(MSVC71)
+    if(MSVC10)
+        set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
+    else()
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif(MSVC71)
+    endif()
     
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
