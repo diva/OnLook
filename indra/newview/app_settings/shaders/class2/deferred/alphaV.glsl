@@ -9,7 +9,6 @@ vec4 calcLighting(vec3 pos, vec3 norm, vec4 color, vec4 baseCol);
 void calcAtmospherics(vec3 inPositionEye);
 
 float calcDirectionalLight(vec3 n, vec3 l);
-float calcPointLightOrSpotLight(vec3 v, vec3 n, vec4 lp, vec3 ln, float la, float is_pointlight);
 
 vec3 atmosAmbient(vec3 light);
 vec3 atmosAffectDirectionalLight(float lightIntensity);
@@ -41,7 +40,7 @@ float calcPointLightOrSpotLight(vec3 v, vec3 n, vec4 lp, vec3 ln, float la, floa
 	//distance attenuation
 	float dist2 = d*d/(la*la);
 	float da = clamp(1.0-(dist2-1.0*(1.0-fa))/fa, 0.0, 1.0);
-	45		
+
 	// spotlight coefficient.
 	float spot = max(dot(-ln, lv), is_pointlight);
 	da *= spot*spot; // GL_SPOT_EXPONENT=2
