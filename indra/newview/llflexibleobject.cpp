@@ -39,7 +39,6 @@
 #include "llglheaders.h"
 #include "llrendersphere.h"
 #include "llviewerobject.h"
-#include "llimagegl.h"
 #include "llagent.h"
 #include "llsky.h"
 #include "llviewercamera.h"
