@@ -514,7 +514,8 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	if (LLPipeline::sRenderDeferred)
 	{
 		//allocate deferred rendering color buffers
-		const GLuint format = GL_RGBA; //GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
+		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
+		const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
 		mDeferredScreen.allocate(resX, resY, format, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
 		mDeferredDepth.allocate(resX, resY, 0, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
 		addDeferredAttachments(mDeferredScreen);
@@ -566,7 +567,8 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	{
 		if (LLPipeline::sRenderDeferred)
 		{
-			const GLuint format = GL_RGBA; //GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
+			static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
+			const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
 			mSampleBuffer.allocate(resX,resY,format,TRUE,TRUE,LLTexUnit::TT_RECT_TEXTURE,FALSE,samples);
 			addDeferredAttachments(mSampleBuffer);
 			mDeferredScreen.setSampleBuffer(&mSampleBuffer);
@@ -8767,7 +8769,8 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 	{
 		if (LLPipeline::sRenderDeferred)
 		{
-			const GLuint format = GL_RGBA; //GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
+			static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
+			const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
 			avatar->mImpostor.allocate(resX,resY,format,TRUE,TRUE);
 			addDeferredAttachments(avatar->mImpostor);
 		}
