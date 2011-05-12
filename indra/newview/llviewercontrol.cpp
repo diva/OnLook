@@ -218,7 +218,7 @@ static bool handleAvatarLODChanged(const LLSD& newvalue)
 
 static bool handleAvatarPhysicsLODChanged(const LLSD& newvalue)
 {
-	LLVOAvatar::sLODFactor = (F32) newvalue.asReal();
+	LLVOAvatar::sPhysicsLODFactor = (F32) newvalue.asReal();
 	return true;
 }
 
