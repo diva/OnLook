@@ -50,7 +50,7 @@
 #include "llpanelinput.h"
 #include "llsky.h"
 #include "llvieweraudio.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
 #include "llvoavatar.h"
@@ -75,15 +75,16 @@
 #include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
+#include "aithreadsafe.h"
 #include "llviewerobjectlist.h"
+#include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
 
 #ifdef TOGGLE_HACKED_GODLIKE_VIEWER
 BOOL 				gHackGodmode = FALSE;
 #endif
 
-
-std::map<std::string, LLControlGroup*> gSettings;
+AITHREADSAFE(settings_map_type, gSettings,);
 LLControlGroup gSavedSettings;	// saved at end of session
 LLControlGroup gSavedPerAccountSettings; // saved at end of session
 LLControlGroup gColors;			// read-only
@@ -121,6 +122,17 @@ static bool handleTerrainDetailChanged(const LLSD& newvalue)
 
 static bool handleSetShaderChanged(const LLSD& newvalue)
 {
+	// changing shader level may invalidate existing cached bump maps, as the shader type determines the format of the bump map it expects - clear and repopulate the bump cache
+	gBumpImageList.destroyGL();
+	gBumpImageList.restoreGL();
+
+	// Changing shader also changes the terrain detail to high, reflect that change here
+	if (newvalue.asBoolean())
+	{
+		// shaders enabled, set terrain detail to high
+		gSavedSettings.setS32("RenderTerrainDetail", 1);
+	}
+	// else, leave terrain detail as is
 	LLViewerShaderMgr::instance()->setShaders();
 	return true;
 }
@@ -184,6 +196,13 @@ static bool handleReleaseGLBufferChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleAnisotropicChanged(const LLSD& newvalue)
+{
+	LLImageGL::sGlobalUseAnisotropic = newvalue.asBoolean();
+	LLImageGL::dirtyTexOptions();
+	return true;
+}
+
 static bool handleVolumeLODChanged(const LLSD& newvalue)
 {
 	LLVOVolume::sLODFactor = (F32) newvalue.asReal();
@@ -192,6 +211,12 @@ static bool handleVolumeLODChanged(const LLSD& newvalue)
 }
 
 static bool handleAvatarLODChanged(const LLSD& newvalue)
+{
+	LLVOAvatar::sLODFactor = (F32) newvalue.asReal();
+	return true;
+}
+
+static bool handleAvatarPhysicsLODChanged(const LLSD& newvalue)
 {
 	LLVOAvatar::sLODFactor = (F32) newvalue.asReal();
 	return true;
@@ -262,7 +287,7 @@ static bool handleMaxPartCountChanged(const LLSD& newvalue)
 
 static bool handleVideoMemoryChanged(const LLSD& newvalue)
 {
-	gImageList.updateMaxResidentTexMem(newvalue.asInteger());
+	gTextureList.updateMaxResidentTexMem(newvalue.asInteger());
 	return true;
 }
 
@@ -549,6 +574,8 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderAnimateTrees")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _1));
 	gSavedSettings.getControl("RenderAvatarVP")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _1));
 	gSavedSettings.getControl("VertexShaderEnable")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _1));
+	gSavedSettings.getControl("RenderFSAASamples")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _1));
+	gSavedSettings.getControl("RenderAnisotropic")->getSignal()->connect(boost::bind(&handleAnisotropicChanged, _1));
 	gSavedSettings.getControl("RenderGlow")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _1));
 	gSavedSettings.getControl("RenderGlow")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _1));
 	gSavedSettings.getControl("EnableRippleWater")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _1));
@@ -562,6 +589,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderAvatarLODFactor")->getSignal()->connect(boost::bind(&handleAvatarLODChanged, _1));
 	gSavedSettings.getControl("RenderTerrainLODFactor")->getSignal()->connect(boost::bind(&handleTerrainLODChanged, _1));
 	gSavedSettings.getControl("RenderTreeLODFactor")->getSignal()->connect(boost::bind(&handleTreeLODChanged, _1));
+	gSavedSettings.getControl("RenderAvatarPhysicsLODFactor")->getSignal()->connect(boost::bind(&handleAvatarPhysicsLODChanged, _1));
 	gSavedSettings.getControl("RenderFlexTimeFactor")->getSignal()->connect(boost::bind(&handleFlexLODChanged, _1));
 	gSavedSettings.getControl("ThrottleBandwidthKBPS")->getSignal()->connect(boost::bind(&handleBandwidthChanged, _1));
 	gSavedSettings.getControl("RenderGamma")->getSignal()->connect(boost::bind(&handleGammaChanged, _1));

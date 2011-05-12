@@ -219,7 +219,7 @@ const S32 LLVFSFileBlock::SERIAL_SIZE = 34;
 LLVFS::LLVFS(const std::string& index_filename, const std::string& data_filename, const BOOL read_only, const U32 presize, const BOOL remove_after_crash)
 :	mRemoveAfterCrash(remove_after_crash)
 {
-	mDataMutex = new LLMutex(0);
+	mDataMutex = new LLMutex;
 
 	S32 i;
 	for (i = 0; i < VFSLOCK_COUNT; i++)
@@ -566,8 +566,9 @@ LLVFS::LLVFS(const std::string& index_filename, const std::string& data_filename
 		}
 	}
 
-	LL_WARNS("VFS") << "Using index file " << mIndexFilename << LL_ENDL;
-	LL_WARNS("VFS") << "Using data file " << mDataFilename << LL_ENDL;
+	// Success!
+	LL_INFOS("VFS") << "Using index file " << mIndexFilename << LL_ENDL;
+	LL_INFOS("VFS") << "Using data file " << mDataFilename << LL_ENDL;
 
 	mValid = VFSVALID_OK;
 }

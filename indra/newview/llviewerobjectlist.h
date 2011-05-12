@@ -202,8 +202,7 @@ protected:
 
 	vobj_list_t mMapObjects;
 
-	typedef std::map<LLUUID, LLPointer<LLViewerObject> > vo_map;
-	vo_map mDeadObjects;	// Need to keep multiple entries per UUID
+	std::set<LLUUID> mDeadObjects;	
 
 	std::map<LLUUID, LLPointer<LLViewerObject> > mUUIDObjectMap;
 	std::map<LLUUID, LLPointer<LLVOAvatar> > mUUIDAvatarMap;

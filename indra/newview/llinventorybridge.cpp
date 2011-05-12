@@ -77,7 +77,7 @@
 
 #include "lltooldraganddrop.h"
 
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerinventory.h"
 
 #include "llviewerobjectlist.h"
@@ -143,7 +143,7 @@ bool confirm_replace_attachment_rez(const LLSD& notification, const LLSD& respon
 
 // <edit>
 void gotImageForSaveItemAs(BOOL success, 
-											LLViewerImage *src_vi,
+											LLViewerTexture *src_vi,
 											LLImageRaw* src, 
 											LLImageRaw* aux_src, 
 											S32 discard_level,
@@ -186,6 +186,7 @@ std::string ICON_NAME[ICON_NAME_COUNT] =
 	"inv_item_skirt.tga",
 	"inv_item_alpha.tga",
 	"inv_item_tattoo.tga",
+	"inv_item_physics.png",
 
 	"inv_item_animation.tga",
 	"inv_item_gesture.tga",
@@ -879,13 +880,13 @@ void LLInvFVBridge::changeCategoryParent(LLInventoryModel* model,
 }
 
 
-const char* safe_inv_type_lookup(LLInventoryType::EType inv_type)
+const std::string &safe_inv_type_lookup(LLInventoryType::EType inv_type)
 {
-	const char* rv = LLInventoryType::lookup(inv_type);
-	if(!rv)
+	const std::string &rv = LLInventoryType::lookup(inv_type);
+	if(rv.empty())
 	{
-		const char* INVALID_TYPE = "<invalid>";
-		rv = INVALID_TYPE;
+		static const std::string INVALID_TYPE("<invalid>");
+		return INVALID_TYPE;
 	}
 	return rv;
 }
@@ -2712,6 +2713,10 @@ void LLFolderBridge::createNewEyes(void* user_data)
 	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_EYES);
 }
 
+void LLFolderBridge::createNewPhysics(void* user_data)
+{
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_PHYSICS);
+}
 // static
 void LLFolderBridge::createWearable(LLFolderBridge* bridge, EWearableType type)
 {
@@ -5452,7 +5457,7 @@ LLUIImagePtr LLLinkItemBridge::getIcon() const
 	if (LLViewerInventoryItem *item = getItem())
 	{
 		U32 attachment_point = (item->getFlags() & 0xff); // low byte of inventory flags
-		bool is_multi =  LLInventoryItem::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS & item->getFlags();
+		bool is_multi =  LLInventoryItemFlags::II_FLAGS_OBJECT_HAS_MULTIPLE_ITEMS & item->getFlags();
 
 		return get_item_icon(item->getActualType(), item->getInventoryType(), attachment_point, is_multi);
 	}

@@ -9,6 +9,7 @@ include(DirectX)
 include(ELFIO)
 include(FMOD)
 include(OPENAL)
+include(HUNSPELL)
 include(FindOpenGL)
 include(JsonCpp)
 include(LLAddBuildTest)
@@ -43,6 +44,7 @@ endif (WINDOWS)
 
 include_directories(
     ${DBUSGLIB_INCLUDE_DIRS}
+    ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
     ${JSONCPP_INCLUDE_DIRS}
     ${LLAUDIO_INCLUDE_DIRS}
@@ -68,6 +70,8 @@ set(viewer_SOURCE_FILES
     slfloatermediafilter.cpp
     floaterlocalassetbrowse.cpp
     aoremotectrl.cpp
+    lgghunspell_wrapper.cpp
+    lggdicdownload.cpp
     floaterao.cpp
     floatervoicelicense.cpp
     cofmgr.cpp
@@ -344,6 +348,7 @@ set(viewer_SOURCE_FILES
     llpanelweb.cpp
     llparcelselection.cpp
     llpatchvertexarray.cpp
+    llphysicsmotion.cpp
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
@@ -424,8 +429,8 @@ set(viewer_SOURCE_FILES
     llviewerdisplay.cpp
     llviewergenericmessage.cpp
     llviewergesture.cpp
-    llviewerimage.cpp
-    llviewerimagelist.cpp
+    #llviewerimage.cpp
+    #llviewerimagelist.cpp
     llviewerinventory.cpp
     llviewerjointattachment.cpp
     llviewerjoint.cpp
@@ -455,7 +460,9 @@ set(viewer_SOURCE_FILES
     llviewershadermgr.cpp
     llviewerstats.cpp
     llviewertexteditor.cpp
+    llviewertexture.cpp
     llviewertextureanim.cpp
+    llviewertexturelist.cpp
     llviewerthrottle.cpp
     llviewervisualparam.cpp
     llviewerwindow.cpp
@@ -558,6 +565,8 @@ set(viewer_HEADER_FILES
     hipporestrequest.h
     hippopanelgrids.h
     jcfloaterareasearch.h
+    lggdicdownload.h
+    lgghunspell_wrapper.h
     chatbar_as_cmdline.h
     qtoolalign.h
     llagent.h
@@ -814,6 +823,7 @@ set(viewer_HEADER_FILES
     llpanelweb.h
     llparcelselection.h
     llpatchvertexarray.h
+    llphysicsmotion.h
     llpolymesh.h
     llpolymorph.h
     llprefschat.h
@@ -898,8 +908,8 @@ set(viewer_HEADER_FILES
     llviewerdisplay.h
     llviewergenericmessage.h
     llviewergesture.h
-    llviewerimage.h
-    llviewerimagelist.h
+    #llviewerimage.h
+    #llviewerimagelist.h
     llviewerinventory.h
     llviewerjoint.h
     llviewerjointattachment.h
@@ -927,7 +937,9 @@ set(viewer_HEADER_FILES
     llviewershadermgr.h
     llviewerstats.h
     llviewertexteditor.h
+    llviewertexture.h
     llviewertextureanim.h
+    llviewertexturelist.h
     llviewerthrottle.h
     llviewervisualparam.h
     llviewerwindow.h
@@ -1318,11 +1330,11 @@ set(PACKAGE ${PACKAGE_DEFAULT} CACHE BOOL
     "Add a package target that builds an installer package.")
 
 if (WINDOWS)
-    if(MSVC71)
-        set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map /MAPINFO:LINES")
-    else(MSVC71)
+    if(MSVC10)
+        set(release_flags "/MAPRelease/${VIEWER_BINARY_NAME}.map")
+    else()
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
-    endif(MSVC71)
+    endif()
     
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
@@ -1437,6 +1449,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${WINDOWS_LIBRARIES}
     ${XMLRPCEPI_LIBRARIES}
     ${ELFIO_LIBRARIES}
+    ${HUNSPELL_LIBRARY}
     )
 
 if (LINUX)
@@ -1454,6 +1467,7 @@ if (LINUX)
       COMMAND ${PYTHON_EXECUTABLE}
       ARGS
         ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
+        --standalone=${STANDALONE}
         --grid=${GRID}
         --channel=${VIEWER_CHANNEL}
         --login_channel=${VIEWER_LOGIN_CHANNEL}
@@ -1578,17 +1592,17 @@ endif (LL_TESTS)
 # Don't do these for DARWIN or LINUX here -- they're taken care of by viewer_manifest.py
 if (WINDOWS)
 
-  #~ get_target_property(BUILT_LLCOMMON llcommon LOCATION)
-  #~ add_custom_command(
-      #~ TARGET ${VIEWER_BINARY_NAME} POST_BUILD
-      #~ COMMAND ${CMAKE_COMMAND}
-      #~ ARGS
-      #~ -E
-      #~ copy_if_different
-      #~ ${BUILT_LLCOMMON}
-      #~ ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
-      #~ COMMENT "Copying llcommon.dll to the runtime folder."
-      #~ )
+  get_target_property(BUILT_LLCOMMON llcommon LOCATION)
+  add_custom_command(
+      TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND}
+      ARGS
+      -E
+      copy_if_different
+      ${BUILT_LLCOMMON}
+      ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
+      COMMENT "Copying llcommon.dll to the runtime folder."
+      )
 
   get_target_property(BUILT_SLPLUGIN SLPlugin LOCATION)
   add_custom_command(

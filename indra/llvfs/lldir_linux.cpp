@@ -97,7 +97,7 @@ LLDir_Linux::LLDir_Linux()
 	mAppRODataDir = tmp_str;
 	mOSUserDir = getCurrentUserHome(tmp_str);
 	mOSUserAppDir = "";
-	mLindenUserDir = tmp_str;
+	mLindenUserDir = "";
 
 	char path [32];	/* Flawfinder: ignore */ 
 
@@ -232,6 +232,15 @@ void LLDir_Linux::initAppDirs(const std::string &app_name)
 		if (errno != EEXIST)
 		{
 			llwarns << "Couldn't create LL_PATH_MOZILLA_PROFILE dir " << getExpandedFilename(LL_PATH_MOZILLA_PROFILE,"") << llendl;
+		}
+	}
+
+	res = LLFile::mkdir(getExpandedFilename(LL_PATH_USER_SETTINGS, "dictionaries"));
+	if (res == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create LL_PATH_USER_SETTINGS/dictionaries dir " << getExpandedFilename(LL_PATH_MOZILLA_PROFILE,"") << llendl;
 		}
 	}
 

@@ -64,7 +64,7 @@
 #include "lltoolpie.h"
 #include "llkeyboard.h"
 #include "u64.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "lldatapacker.h"
 #ifdef LL_STANDALONE
 #include <zlib.h>
@@ -594,7 +594,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	{
 		num_updates = (S32) mObjects.size() - mCurLazyUpdateIndex;
 		max_value = (S32) mObjects.size();
-		gImageList.setUpdateStats(TRUE);
+		gTextureList.setUpdateStats(TRUE);
 	}
 	else
 	{
@@ -827,13 +827,14 @@ void LLViewerObjectList::clearDebugText()
 void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
-	if (mDeadObjects.count(objectp->mID))
+	if (mDeadObjects.find(objectp->mID) != mDeadObjects.end())
 	{
-		llinfos << "Object " << objectp->mID << " already on dead list, ignoring cleanup!" << llendl;	
-		return;
+		llinfos << "Object " << objectp->mID << " already on dead list!" << llendl;	
 	}
-
-	mDeadObjects.insert(std::pair<LLUUID, LLPointer<LLViewerObject> >(objectp->mID, objectp));
+	else
+	{
+		mDeadObjects.insert(objectp->mID);
+	}
 
 	// Cleanup any references we have to this object
 	// Remove from object map so noone can look it up.
@@ -1091,9 +1092,9 @@ void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 		LLViewerObject* objectp = *iter;
 
 		llassert_always(objectp);
-		llassert_always(!objectp->isDead());
-
-		if (!objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
+		llassert(!objectp->isDead());
+		
+		if (objectp->isDead() || !objectp->getRegion() || objectp->isOrphaned() || objectp->isAttachment())
 		{
 			continue;
 		}

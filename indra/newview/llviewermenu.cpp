@@ -209,7 +209,7 @@
 #include "llviewercamera.h"
 #include "llviewergenericmessage.h"
 #include "llviewergesture.h"
-#include "llviewerimagelist.h"	// gImageList
+#include "llviewertexturelist.h"	// gTextureList
 #include "llviewerinventory.h"
 #include "llviewermenufile.h"	// init_menu_file()
 #include "llviewermessage.h"
@@ -1526,7 +1526,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");
 	menu->append(item);
 	
-	item = new LLMenuItemCheckGL("Disable Textures", menu_toggle_variable, NULL, menu_check_variable, (void*)&LLViewerImage::sDontLoadVolumeTextures);
+	item = new LLMenuItemCheckGL("Disable Textures", menu_toggle_variable, NULL, menu_check_variable, (void*)&LLViewerTexture::sDontLoadVolumeTextures);
 	menu->append(item);
 	
 	item = new LLMenuItemCheckGL("HTTP Get Textures", menu_toggle_control, NULL, menu_check_control, (void*)"ImagePipelineUseHTTP");
@@ -3912,6 +3912,7 @@ class LLEditEnableCustomizeAvatar : public view_listener_t
 		return true;
 	}
 };
+
 
 class LLEditEnableChangeDisplayname : public view_listener_t
 {
@@ -6642,7 +6643,7 @@ class LLFloaterVisible : public view_listener_t
 		}
 		else if (floater_name == "teleport history")
 		{
-			new_value = gFloaterTeleportHistory->getVisible();
+			new_value = (gFloaterTeleportHistory && gFloaterTeleportHistory->getVisible());
 		}
 		else if (floater_name == "im")
 		{
@@ -7648,7 +7649,7 @@ void handle_selected_texture_info(void*)
 		{
 			if (!node->isTESelected(i)) continue;
 
-			LLViewerImage* img = node->getObject()->getTEImage(i);
+			LLViewerTexture* img = node->getObject()->getTEImage(i);
 			LLUUID image_id = img->getID();
 			faces_per_texture[image_id].push_back(i);
 			// <edit>
@@ -7664,7 +7665,7 @@ void handle_selected_texture_info(void*)
 		for (it = faces_per_texture.begin(); it != faces_per_texture.end(); ++it)
 		{
 			U8 te = it->second[0];
-			LLViewerImage* img = node->getObject()->getTEImage(te);
+			LLViewerTexture* img = node->getObject()->getTEImage(te);
 			S32 height = img->getHeight();
 			S32 width = img->getWidth();
 			S32 components = img->getComponents();
@@ -7694,7 +7695,7 @@ void handle_selected_texture_info(void*)
 
 void handle_dump_image_list(void*)
 {
-	gImageList.dump();
+	gTextureList.dump();
 }
 
 void handle_test_male(void*)
@@ -8467,7 +8468,7 @@ void handle_grab_texture(void* data)
 											name,
 											LLStringUtil::null,
 											LLSaleInfo::DEFAULT,
-											LLInventoryItem::II_FLAGS_NONE,
+											LLInventoryItemFlags::II_FLAGS_NONE,
 											creation_date_now);
 
 			item->updateServer(TRUE);
@@ -8894,6 +8895,10 @@ class LLEditEnableTakeOff : public view_listener_t
 		{
 			new_value = LLAgent::selfHasWearable((void *)WT_TATTOO);
 		}
+		if (clothing == "physics")
+		{
+			new_value = LLAgent::selfHasWearable((void *)WT_PHYSICS);
+		}
 
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b | OK
 		// Why aren't they using LLWearable::typeNameToType()? *confuzzled*
@@ -8956,6 +8961,10 @@ class LLEditTakeOff : public view_listener_t
 		else if (clothing == "tattoo")
 		{
 			LLAgent::userRemoveWearable((void*)WT_TATTOO);
+		}
+		else if (clothing == "physics")
+		{
+			LLAgent::userRemoveWearable((void*)WT_PHYSICS);
 		}
 		else if (clothing == "all")
 		{

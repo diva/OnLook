@@ -100,7 +100,7 @@ LLDir_Solaris::LLDir_Solaris()
 	mAppRODataDir = strdup(tmp_str);
 	mOSUserDir = getCurrentUserHome(tmp_str);
 	mOSUserAppDir = "";
-	mLindenUserDir = tmp_str;
+	mLindenUserDir = "";
 
 	char path [LL_MAX_PATH];	/* Flawfinder: ignore */ 
 
@@ -244,6 +244,15 @@ void LLDir_Solaris::initAppDirs(const std::string &app_name)
 		if (errno != EEXIST)
 		{
 			llwarns << "Couldn't create LL_PATH_MOZILLA_PROFILE dir " << getExpandedFilename(LL_PATH_MOZILLA_PROFILE,"") << llendl;
+		}
+	}
+
+	res = LLFile::mkdir(getExpandedFilename(LL_PATH_USER_SETTINGS, "dictionaries"));
+	if (res == -1)
+	{
+		if (errno != EEXIST)
+		{
+			llwarns << "Couldn't create LL_PATH_USER_SETTINGS/dictionaries dir " << getExpandedFilename(LL_PATH_MOZILLA_PROFILE,"") << llendl;
 		}
 	}
 

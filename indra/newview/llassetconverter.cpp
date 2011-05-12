@@ -4,7 +4,7 @@
 #include "llapr.h"
 #include "llvfile.h"
 #include "llassetconverter.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llvorbisencode.h"
 #include "llbvhloader.h"
 // static
@@ -18,7 +18,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 	else if(exten == "bmp")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
-		if (!LLViewerImageList::createUploadFile(src_filename,
+		if (!LLViewerTextureList::createUploadFile(src_filename,
 												 filename,
 												 IMG_CODEC_BMP ))
 		{
@@ -28,7 +28,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 	else if( exten == "tga")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
-		if (!LLViewerImageList::createUploadFile(src_filename,
+		if (!LLViewerTextureList::createUploadFile(src_filename,
 												 filename,
 												 IMG_CODEC_TGA ))
 		{
@@ -38,7 +38,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 	else if( exten == "jpg" || exten == "jpeg")
 	{
 		asset_type = LLAssetType::AT_TEXTURE;
-		if (!LLViewerImageList::createUploadFile(src_filename,
+		if (!LLViewerTextureList::createUploadFile(src_filename,
 												 filename,
 												 IMG_CODEC_JPEG ))
 		{
@@ -48,7 +48,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
  	else if( exten == "png")
  	{
  		asset_type = LLAssetType::AT_TEXTURE;
- 		if (!LLViewerImageList::createUploadFile(src_filename,
+ 		if (!LLViewerTextureList::createUploadFile(src_filename,
  												 filename,
  												 IMG_CODEC_PNG ))
  		{
@@ -144,7 +144,7 @@ LLAssetType::EType LLAssetConverter::convert(std::string src_filename, std::stri
 			return LLAssetType::AT_NONE;
 		}
 	}
-	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing")
+	else if(exten == "eyes" || exten == "gloves" || exten == "hair" || exten == "jacket" || exten == "pants" || exten == "shape" || exten == "shirt" || exten == "shoes" || exten == "skin" || exten == "skirt" || exten == "socks" || exten == "underpants" || exten == "undershirt" || exten == "bodypart" || exten == "clothing" || exten == "physics")
 	{
 		asset_type = LLAssetType::AT_CLOTHING;
 		if(!copyFile(src_filename, filename))

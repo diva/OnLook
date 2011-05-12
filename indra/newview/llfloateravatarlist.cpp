@@ -345,7 +345,9 @@ BOOL LLFloaterAvatarList::postBuild()
 	mAvatarList = getChild<LLScrollListCtrl>("avatar_list");
 	mAvatarList->sortByColumn("distance", TRUE);
 	mAvatarList->setCommitOnSelectionChange(TRUE);
-	childSetCommitCallback("avatar_list", onSelectName, this);
+	mAvatarList->setCallbackUserData(this);
+	mAvatarList->setCommitCallback(onSelectName);
+	mAvatarList->setDoubleClickCallback(onClickFocus);
 	refreshAvatarList();
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);

@@ -55,6 +55,7 @@
 
 extern const LLUUID ANIM_AGENT_BODY_NOISE;
 extern const LLUUID ANIM_AGENT_BREATHE_ROT;
+extern const LLUUID ANIM_AGENT_PHYSICS_MOTION;
 extern const LLUUID ANIM_AGENT_EDITING;
 extern const LLUUID ANIM_AGENT_EYE;
 extern const LLUUID ANIM_AGENT_FLY_ADJUST;
@@ -98,6 +99,9 @@ public:
 	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
 	std::string extraMetadata;
 	// </edit>
+
+	// EmeraldBoobUtils
+	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
 	
 	//--------------------------------------------------------------------
 	// LLViewerObject interface
@@ -342,8 +346,8 @@ public:
 	LLVOAvatarDefines::ETextureIndex	getBakedTE( LLTexLayerSet* layerset );
 	void			updateComposites();
 	void			onGlobalColorChanged( LLTexGlobalColor* global_color, BOOL set_by_user );
-	BOOL			getLocalTextureRaw( LLVOAvatarDefines::ETextureIndex index, LLImageRaw* image_raw_pp );
-	BOOL			getLocalTextureGL( LLVOAvatarDefines::ETextureIndex index, LLImageGL** image_gl_pp );
+	//BOOL			getLocalTextureRaw( LLVOAvatarDefines::ETextureIndex index, LLImageRaw* image_raw_pp );
+	BOOL			getLocalTextureGL( LLVOAvatarDefines::ETextureIndex index, LLViewerTexture** image_gl_pp );
 	const LLUUID&	getLocalTextureID( LLVOAvatarDefines::ETextureIndex index );
 	LLGLuint		getScratchTexName( LLGLenum format, U32* texture_bytes );
 	BOOL			bindScratchTexture( LLGLenum format );
@@ -356,7 +360,7 @@ public:
 	void			releaseUnnecessaryTextures();
 	void			requestLayerSetUploads();
 	bool			hasPendingBakedUploads();
-	static void		onLocalTextureLoaded( BOOL succcess, LLViewerImage *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
+	static void		onLocalTextureLoaded( BOOL succcess, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
 	static void		dumpArchetypeXML( void* );
 	static void		dumpScratchTextureByteCount();
 	static void		dumpBakedStatus();
@@ -387,7 +391,7 @@ public:
 	// texture compositing
 	//--------------------------------------------------------------------
 public:
-	void			setLocTexTE( U8 te, LLViewerImage* image, BOOL set_by_user );
+	void			setLocTexTE( U8 te, LLViewerTexture* image, BOOL set_by_user );
 	void			setupComposites();
 
 	typedef std::map<S32,std::string> lod_mesh_map_t;
@@ -488,7 +492,7 @@ public:
 private:
 	LLFace* mShadow0Facep;
 	LLFace* mShadow1Facep;
-	LLPointer<LLViewerImage> mShadowImagep;
+	LLPointer<LLViewerTexture> mShadowImagep;
 
 	//--------------------------------------------------------------------
 	// Keeps track of foot step state for generating sounds
@@ -629,6 +633,7 @@ public:
 	static BOOL		sDebugInvisible;
 	static BOOL		sShowAttachmentPoints;
 	static F32		sLODFactor; // user-settable LOD factor
+	static F32		sPhysicsLODFactor; // user-settable physics LOD factor
 	static BOOL		sJointDebug; // output total number of joints being touched for each avatar
 	static BOOL     sDebugAvatarRotation;
 	static F32		sAvMorphTime;
@@ -795,13 +800,13 @@ protected:
 	BOOL			isFullyBaked();
 	void			deleteLayerSetCaches(bool clearAll = true);
 	static BOOL		areAllNearbyInstancesBaked(S32& grey_avatars);
-	static void		onBakedTextureMasksLoaded(BOOL success, LLViewerImage *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
-	void			setLocalTexture(LLVOAvatarDefines::ETextureIndex i, LLViewerImage* tex, BOOL baked_version_exits);
+	static void		onBakedTextureMasksLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
+	void			setLocalTexture(LLVOAvatarDefines::ETextureIndex i, LLViewerFetchedTexture* tex, BOOL baked_version_exits);
 	void			requestLayerSetUpdate(LLVOAvatarDefines::ETextureIndex i);
-	void			addLocalTextureStats(LLVOAvatarDefines::ETextureIndex i, LLViewerImage* imagep, F32 texel_area_ratio, BOOL rendered, BOOL covered_by_baked);
-	void			addBakedTextureStats( LLViewerImage* imagep, F32 pixel_area, F32 texel_area_ratio, S32 boost_level);
-	static void		onInitialBakedTextureLoaded( BOOL success, LLViewerImage *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
-	static void		onBakedTextureLoaded(BOOL success, LLViewerImage *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
+	void			addLocalTextureStats(LLVOAvatarDefines::ETextureIndex i, LLViewerTexture* imagep, F32 texel_area_ratio, BOOL rendered, BOOL covered_by_baked);
+	void			addBakedTextureStats( LLViewerFetchedTexture* imagep, F32 pixel_area, F32 texel_area_ratio, S32 boost_level);
+	static void		onInitialBakedTextureLoaded( BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
+	static void		onBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	void			useBakedTexture(const LLUUID& id);
 	void			dumpAvatarTEs(const std::string& context);
 	void			removeMissingBakedTextures();
@@ -854,10 +859,10 @@ private:
 
 	struct LocalTextureData
 	{
-		LocalTextureData() : mIsBakedReady(FALSE), mDiscard(MAX_DISCARD_LEVEL+1), mImage(NULL)
+		LocalTextureData() : mIsBakedReady(false), mDiscard(MAX_DISCARD_LEVEL+1), mImage(NULL)
 		{}
-		LLPointer<LLViewerImage> mImage;
-		BOOL mIsBakedReady;
+		LLPointer<LLViewerFetchedTexture> mImage;
+		bool mIsBakedReady;
 		S32 mDiscard;
 	};
 	typedef std::map<LLVOAvatarDefines::ETextureIndex, LocalTextureData> localtexture_map_t;

@@ -743,9 +743,6 @@ void LLTextureCacheWorker::endWork(S32 param, bool aborted)
 
 LLTextureCache::LLTextureCache(bool threaded)
 	: LLWorkerThread("TextureCache", threaded),
-	  mWorkersMutex(NULL),
-	  mHeaderMutex(NULL),
-	  mListMutex(NULL),
 	  mHeaderAPRFile(NULL),
 	  mReadOnly(TRUE), //do not allow to change the texture cache until setReadOnly() is called.
 	  mTexturesSizeTotal(0),
@@ -915,10 +912,12 @@ void LLTextureCache::purgeCache(ELLPath location)
 		if(LLFile::isdir(mTexturesDirName))
 		{
 			std::string file_name = gDirUtilp->getExpandedFilename(location, entries_filename);
-			LLAPRFile::remove(file_name);
+			if(LLAPRFile::isExist(file_name))
+				LLAPRFile::remove(file_name);
 
 			file_name = gDirUtilp->getExpandedFilename(location, cache_filename);
-			LLAPRFile::remove(file_name);
+			if(LLAPRFile::isExist(file_name))
+				LLAPRFile::remove(file_name);
 
 			purgeAllTextures(true);
 	}
@@ -1424,7 +1423,7 @@ void LLTextureCache::readHeaderCache()
 			{
 				// Special case: cache size was reduced, need to remove entries
 				// Note: After we prune entries, we will call this again and create the LRU
-				U32 entries_to_purge = (num_entries-empty_entries) - sCacheMaxEntries;
+				U32 entries_to_purge = (num_entries - empty_entries) - sCacheMaxEntries;
 				llinfos << "Texture Cache Entries: " << num_entries << " Max: " << sCacheMaxEntries << " Empty: " << empty_entries << " Purging: " << entries_to_purge << llendl;
 				// We can exit the following loop with the given condition, since if we'd reach the end of the lru set we'd have:
 				// purge_list.size() = lru.size() = num_entries - empty_entries = entries_to_purge + sCacheMaxEntries >= entries_to_purge
@@ -1711,7 +1710,8 @@ void LLTextureCache::purgeTextureFilesTimeSliced(bool force)
 			if (mHeaderIDMap.find(curiter->first) == mHeaderIDMap.end())
 			{
 				filename = curiter->second;
-				LLAPRFile::remove(filename);
+				if(LLAPRFile::isExist(filename))
+					LLAPRFile::remove(filename);
 			}
 			else
 		{	
@@ -1963,7 +1963,7 @@ void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename, b
 			mFreeList.insert(idx);
 		}
 
-	if (remove_file)
+	if (remove_file && LLAPRFile::isExist(filename))
 	{
 		LLAPRFile::remove(filename);
 	}

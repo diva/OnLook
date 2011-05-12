@@ -49,7 +49,16 @@
 #define HEADER_ASCII "Linden Mesh 1.0"
 #define HEADER_BINARY "Linden Binary Mesh 1.0"
 
-extern LLControlGroup gSavedSettings;				// read only
+extern LLControlGroup gSavedSettings;                           // read only
+
+LLPolyMorphData *clone_morph_param_duplicate(const LLPolyMorphData *src_data,
+					     const std::string &name);
+LLPolyMorphData *clone_morph_param_direction(const LLPolyMorphData *src_data,
+					     const LLVector3 &direction,
+					     const std::string &name);
+LLPolyMorphData *clone_morph_param_cleavage(const LLPolyMorphData *src_data,
+                                            F32 scale,
+                                            const std::string &name);
 
 //-----------------------------------------------------------------------------
 // Global table of loaded LLPolyMeshes
@@ -606,8 +615,60 @@ BOOL LLPolyMeshSharedData::loadMesh( const std::string& fileName )
 					continue;
 				}
 
-				mMorphData.insert(morph_data);
-			}
+                                mMorphData.insert(morph_data);
+
+                                if (!strcmp(morphName, "Breast_Female_Cleavage"))
+                                {
+                                        mMorphData.insert(clone_morph_param_cleavage(morph_data,
+                                                                                     .75f,
+                                                                                     "Breast_Physics_LeftRight_Driven"));
+                                }
+
+                                if (!strcmp(morphName, "Breast_Female_Cleavage"))
+                                {
+                                        mMorphData.insert(clone_morph_param_duplicate(morph_data,
+										      "Breast_Physics_InOut_Driven"));
+                                }
+                                if (!strcmp(morphName, "Breast_Gravity"))
+                                {
+                                        mMorphData.insert(clone_morph_param_duplicate(morph_data,
+										      "Breast_Physics_UpDown_Driven"));
+                                }
+
+                                if (!strcmp(morphName, "Big_Belly_Torso"))
+                                {
+                                        mMorphData.insert(clone_morph_param_direction(morph_data,
+										      LLVector3(0,0,0.05f),
+										      "Belly_Physics_Torso_UpDown_Driven"));
+                                }
+
+                                if (!strcmp(morphName, "Big_Belly_Legs"))
+                                {
+                                        mMorphData.insert(clone_morph_param_direction(morph_data,
+										      LLVector3(0,0,0.05f),
+										      "Belly_Physics_Legs_UpDown_Driven"));
+                                }
+
+                                if (!strcmp(morphName, "skirt_belly"))
+                                {
+                                        mMorphData.insert(clone_morph_param_direction(morph_data,
+										      LLVector3(0,0,0.05f),
+										      "Belly_Physics_Skirt_UpDown_Driven"));
+                                }
+
+                                if (!strcmp(morphName, "Small_Butt"))
+                                {
+                                        mMorphData.insert(clone_morph_param_direction(morph_data,
+										      LLVector3(0,0,0.05f),
+										      "Butt_Physics_UpDown_Driven"));
+                                }
+                                if (!strcmp(morphName, "Small_Butt"))
+                                {
+                                        mMorphData.insert(clone_morph_param_direction(morph_data,
+										      LLVector3(0,0.03f,0),
+										      "Butt_Physics_LeftRight_Driven"));
+                                }
+                        }
 
 			S32 numRemaps;
 			if (fread(&numRemaps, sizeof(S32), 1, fp) == 1)
@@ -1154,6 +1215,57 @@ void LLPolySkeletalDistortion::apply( ESex avatar_sex )
 		mAvatar->setSkeletonSerialNum(mAvatar->getSkeletonSerialNum() + 1);
 	}
 	mLastWeight = mCurWeight;
+}
+
+
+LLPolyMorphData *clone_morph_param_duplicate(const LLPolyMorphData *src_data,
+					     const std::string &name)
+{
+        LLPolyMorphData* cloned_morph_data = new LLPolyMorphData(*src_data);
+        cloned_morph_data->mName = name;
+        for (U32 v=0; v < cloned_morph_data->mNumIndices; v++)
+        {
+                cloned_morph_data->mCoords[v] = src_data->mCoords[v];
+                cloned_morph_data->mNormals[v] = src_data->mNormals[v];
+                cloned_morph_data->mBinormals[v] = src_data->mBinormals[v];
+        }
+        return cloned_morph_data;
+}
+
+LLPolyMorphData *clone_morph_param_direction(const LLPolyMorphData *src_data,
+					     const LLVector3 &direction,
+					     const std::string &name)
+{
+        LLPolyMorphData* cloned_morph_data = new LLPolyMorphData(*src_data);
+        cloned_morph_data->mName = name;
+        for (U32 v=0; v < cloned_morph_data->mNumIndices; v++)
+        {
+                cloned_morph_data->mCoords[v] = direction;
+                cloned_morph_data->mNormals[v] = LLVector3(0,0,0);
+                cloned_morph_data->mBinormals[v] = LLVector3(0,0,0);
+        }
+        return cloned_morph_data;
+}
+
+LLPolyMorphData *clone_morph_param_cleavage(const LLPolyMorphData *src_data,
+                                            F32 scale,
+                                            const std::string &name)
+{
+        LLPolyMorphData* cloned_morph_data = new LLPolyMorphData(*src_data);
+        cloned_morph_data->mName = name;
+        for (U32 v=0; v < cloned_morph_data->mNumIndices; v++)
+        {
+                cloned_morph_data->mCoords[v] = src_data->mCoords[v]*scale;
+                cloned_morph_data->mNormals[v] = src_data->mNormals[v]*scale;
+                cloned_morph_data->mBinormals[v] = src_data->mBinormals[v]*scale;
+                if (cloned_morph_data->mCoords[v][1] < 0)
+                {
+                        cloned_morph_data->mCoords[v][1] *= -1;
+                        cloned_morph_data->mNormals[v][1] *= -1;
+                        cloned_morph_data->mBinormals[v][1] *= -1;
+                }
+        }
+        return cloned_morph_data;
 }
 
 // End

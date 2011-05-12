@@ -41,8 +41,7 @@
 #include "llfontgl.h"
 #include "llgl.h"
 #include "llui.h"
-#include "llviewerimage.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerwindow.h"
 #include "lltextparser.h"
 #include "llsd.h"
@@ -69,8 +68,7 @@ LLConsole::LLConsole(const std::string& name, const LLRect &rect,
 	mFadeTime(persist_time - FADE_DURATION),
 	mFont(LLFontGL::getFontSansSerif()),
 	mConsoleWidth(0),
-	mConsoleHeight(0),
-	mQueueMutex(NULL)
+	mConsoleHeight(0)
 {
 	mTimer.reset();
 

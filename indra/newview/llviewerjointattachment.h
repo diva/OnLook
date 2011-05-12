@@ -114,8 +114,8 @@ public:
 protected:
 	void calcLOD();
 	void setupDrawable(LLViewerObject *object);
-	
-protected:
+
+private:
 	BOOL			mVisibleInFirst;
 	LLVector3		mOriginalPos;
 	S32				mGroup;

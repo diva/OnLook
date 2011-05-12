@@ -43,7 +43,7 @@
 #include "llviewerwindow.h"
 #include "llfloatercustomize.h"
 #include "llinventorymodel.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewerinventory.h"
 #include "llviewerregion.h"
 #include "llvoavatar.h"
@@ -72,6 +72,7 @@ const std::string LLWearable::sTypeName[ WT_COUNT+1 ] =
 	"skirt",
 	"alpha",
 	"tattoo",
+	"physics",
 	"invalid"
 };
 
@@ -93,6 +94,7 @@ const std::string LLWearable::sTypeLabel[ WT_COUNT+1 ] =
 	"Skirt",
 	"Alpha",
 	"Tattoo",
+	"Physics",
 	"invalid"
 };
 
@@ -118,6 +120,7 @@ LLAssetType::EType LLWearable::typeToAssetType(EWearableType wearable_type)
 	case WT_SKIRT:
 	case WT_ALPHA:
 	case WT_TATTOO:
+	case WT_PHYSICS:		
 		return LLAssetType::AT_CLOTHING;
 	default:
 		return LLAssetType::AT_NONE;
@@ -657,7 +660,7 @@ BOOL LLWearable::isDirty()
 	{
 		if( LLVOAvatar::getTEWearableType((ETextureIndex) te ) == mType )
 		{
-			LLViewerImage* avatar_image = avatar->getTEImage( te );
+			LLViewerTexture* avatar_image = avatar->getTEImage( te );
 			if( !avatar_image )
 			{
 				llassert( 0 );
@@ -768,7 +771,7 @@ void LLWearable::writeToAvatar( BOOL set_by_user )
 		if( LLVOAvatar::getTEWearableType((ETextureIndex) te ) == mType )
 		{
 			const LLUUID& image_id = get_if_there(mTEMap, te, LLVOAvatar::getDefaultTEImageID((ETextureIndex) te ) );
-			LLViewerImage* image = gImageList.getImage( image_id );
+			LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture( image_id );
 			avatar->setLocTexTE( te, image, set_by_user );
 		}
 	}
@@ -839,7 +842,7 @@ void LLWearable::removeFromAvatar( EWearableType type, BOOL set_by_user )
 	}
 
 	// Pull textures
-	LLViewerImage* image = gImageList.getImage( IMG_DEFAULT_AVATAR );
+	LLViewerTexture* image =LLViewerTextureManager::getFetchedTexture( IMG_DEFAULT_AVATAR );
 	for( S32 te = 0; te < TEX_NUM_INDICES; te++ )
 	{
 		if( LLVOAvatar::getTEWearableType((ETextureIndex) te ) == type )
@@ -906,7 +909,7 @@ void LLWearable::readFromAvatar()
 	{
 		if( LLVOAvatar::getTEWearableType((ETextureIndex) te ) == mType )
 		{
-			LLViewerImage* image = avatar->getTEImage( te );
+			LLViewerTexture* image = avatar->getTEImage( te );
 			if( image )
 			{
 				mTEMap[te] = image->getID();

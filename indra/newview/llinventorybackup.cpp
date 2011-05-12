@@ -6,8 +6,7 @@
 #include "llviewerinventory.h"
 #include "llfilepicker.h"
 #include "lldirpicker.h"
-#include "llviewerimage.h"
-#include "llviewerimagelist.h" // gImageList
+#include "llviewertexturelist.h" // gTextureList
 #include "llagent.h" // gAgent
 #include "llviewerwindow.h" // gViewerWindow
 #include "llfloater.h"
@@ -210,6 +209,8 @@ LLFilePicker::ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item
 			return LLFilePicker::FFSAVE_UNDERPANTS;
 		case WT_UNDERSHIRT:
 			return LLFilePicker::FFSAVE_UNDERSHIRT;
+		case WT_PHYSICS:
+			return LLFilePicker::FFSAVE_PHYSICS;
 		default:
 			return LLFilePicker::FFSAVE_ALL;
 		}
@@ -294,13 +295,13 @@ void LLInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 	LLInventoryBackup::callbackdata* userdata = new LLInventoryBackup::callbackdata();
 	userdata->floater = floater;
 	userdata->item = item;
-	LLViewerImage* imagep;
+	LLViewerFetchedTexture* imagep;
 	
 	switch(item->getType())
 	{
 	case LLAssetType::AT_TEXTURE:
-		imagep = gImageList.getImage(item->getAssetUUID(), MIPMAP_TRUE, TRUE);
-		imagep->setLoadedCallbackNoAux( onImage, 0, TRUE, FALSE, userdata );
+		imagep = LLViewerTextureManager::getFetchedTexture(item->getAssetUUID(), MIPMAP_TRUE, LLViewerTexture::BOOST_UI);
+		imagep->setLoadedCallback( onImage, 0, TRUE, FALSE, userdata, NULL ); // was setLoadedCallbackNoAuth
 		break;
 	case LLAssetType::AT_NOTECARD:
 	case LLAssetType::AT_SCRIPT:
@@ -331,7 +332,7 @@ void LLInventoryBackup::download(LLInventoryItem* item, LLFloater* floater, load
 
 // static
 void LLInventoryBackup::imageCallback(BOOL success, 
-					LLViewerImage *src_vi,
+					LLViewerFetchedTexture *src_vi,
 					LLImageRaw* src, 
 					LLImageRaw* aux_src, 
 					S32 discard_level,
@@ -376,7 +377,7 @@ void LLInventoryBackup::imageCallback(BOOL success,
 	}
 	else
 	{
-		src_vi->setBoostLevel(LLViewerImageBoostLevel::BOOST_UI);
+		src_vi->setBoostLevel(LLViewerTexture::BOOST_UI);
 	}
 }
 
@@ -683,7 +684,7 @@ void LLFloaterInventoryBackup::finishItem(LLUUID itemid, std::string status)
 
 // static
 void LLFloaterInventoryBackup::imageCallback(BOOL success, 
-					LLViewerImage *src_vi,
+					LLViewerFetchedTexture *src_vi,
 					LLImageRaw* src, 
 					LLImageRaw* aux_src, 
 					S32 discard_level,
@@ -726,7 +727,7 @@ void LLFloaterInventoryBackup::imageCallback(BOOL success,
 	}
 	else
 	{
-		src_vi->setBoostLevel(LLViewerImageBoostLevel::BOOST_UI);
+		src_vi->setBoostLevel(LLViewerTexture::BOOST_UI);
 	}
 }
 

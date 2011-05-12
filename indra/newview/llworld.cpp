@@ -46,8 +46,7 @@
 #include "llregionhandle.h"
 #include "llsurface.h"
 #include "llviewercamera.h"
-#include "llviewerimage.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewernetwork.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparceloverlay.h"
@@ -114,8 +113,8 @@ LLWorld::LLWorld() :
 	*(default_texture++) = MAX_WATER_COLOR.mV[2];
 	*(default_texture++) = MAX_WATER_COLOR.mV[3];
 	
-	mDefaultWaterTexturep = new LLViewerImage(raw, FALSE);
-	gGL.getTexUnit(0)->bind(mDefaultWaterTexturep.get());
+	mDefaultWaterTexturep = LLViewerTextureManager::getLocalTexture(raw.get(), FALSE);
+	gGL.getTexUnit(0)->bind(mDefaultWaterTexturep);
 	mDefaultWaterTexturep->setAddressMode(LLTexUnit::TAM_CLAMP);
 
 }
@@ -137,10 +136,11 @@ void LLWorld::destroyClass()
 LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 {
 	LLMemType mt(LLMemType::MTYPE_REGIONS);
-	
+	llinfos << "Add region with handle: " << region_handle << " on host " << host << llendl;
 	LLViewerRegion *regionp = getRegionFromHandle(region_handle);
 	if (regionp)
 	{
+		llinfos << "Region exists, removing it " << llendl;
 		LLHost old_host = regionp->getHost();
 		// region already exists!
 		if (host == old_host && regionp->isAlive())
@@ -374,9 +374,14 @@ LLVector3d	LLWorld::clipToVisibleRegions(const LLVector3d &start_pos, const LLVe
 		clip_factor = (region_coord.mV[VY] - region_width) / delta_pos_abs.mdV[VY];
 	}
 
-	// clamp to < 256 to stay in sim
+	// clamp to within region dimensions
 	LLVector3d final_region_pos = LLVector3d(region_coord) - (delta_pos * clip_factor);
-	final_region_pos.clamp(0.0, 255.999);
+	final_region_pos.mdV[VX] = llclamp(final_region_pos.mdV[VX], 0.0,
+									   (F64)(region_width - F_ALMOST_ZERO));
+	final_region_pos.mdV[VY] = llclamp(final_region_pos.mdV[VY], 0.0,
+									   (F64)(region_width - F_ALMOST_ZERO));
+	final_region_pos.mdV[VZ] = llclamp(final_region_pos.mdV[VZ], 0.0,
+									   (F64)(LLWorld::getInstance()->getRegionMaxHeight() - F_ALMOST_ZERO));
 	return regionp->getPosGlobalFromRegion(LLVector3(final_region_pos));
 }
 
@@ -1161,7 +1166,7 @@ void LLWorld::shiftRegions(const LLVector3& offset)
 	LLViewerPartSim::getInstance()->shift(offset);
 }
 
-LLViewerImage* LLWorld::getDefaultWaterTexture()
+LLViewerTexture* LLWorld::getDefaultWaterTexture()
 {
 	return mDefaultWaterTexturep;
 }
@@ -1383,24 +1388,15 @@ void send_agent_resume()
 
 static LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3d& region_origin)
 {
-	LLVector3d pos_global;
-	LLVector3 pos_local;
-	U8 bits;
+    LLVector3d pos_global(region_origin);
+    LLVector3d pos_local;
 
-	bits = compact_local & 0xFF;
-	pos_local.mV[VZ] = F32(bits) * 4.f;
-	compact_local >>= 8;
+    pos_local.mdV[VZ] = (compact_local & 0xFFU) * 4;
+    pos_local.mdV[VY] = (compact_local >> 8) & 0xFFU;
+    pos_local.mdV[VX] = (compact_local >> 16) & 0xFFU;
 
-	bits = compact_local & 0xFF;
-	pos_local.mV[VY] = (F32)bits;
-	compact_local >>= 8;
-
-	bits = compact_local & 0xFF;
-	pos_local.mV[VX] = (F32)bits;
-
-	pos_global.setVec( pos_local );
-	pos_global += region_origin;
-	return pos_global;
+    pos_global += pos_local;
+    return pos_global;
 }
 
 void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d>* positions, const LLVector3d& relative_to, F32 radius) const
@@ -1431,6 +1427,42 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 				if(avatar_ids != NULL)
 				{
 					avatar_ids->push_back(regionp->mMapAvatarIDs.get(i));
+				}
+			}
+		}
+	}
+	// retrieve the list of close avatars from viewer objects as well
+	// for when we are above 1000m, only do this when we are retrieving
+	// uuid's too as there could be duplicates
+	if(avatar_ids != NULL)
+	{
+		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+			iter != LLCharacter::sInstances.end(); ++iter)
+		{
+			LLVOAvatar* pVOAvatar = (LLVOAvatar*) *iter;
+			if(pVOAvatar->isDead() || pVOAvatar->isSelf())
+				continue;
+			LLUUID uuid = pVOAvatar->getID();
+			if(uuid.isNull())
+				continue;
+			LLVector3d pos_global = pVOAvatar->getPositionGlobal();
+			if(dist_vec(pos_global, relative_to) <= radius)
+			{
+				bool found = false;
+				uuid_vec_t::iterator sel_iter = avatar_ids->begin();
+				for (; sel_iter != avatar_ids->end(); sel_iter++)
+				{
+					if(*sel_iter == uuid)
+					{
+						found = true;
+						break;
+					}
+				}
+				if(!found)
+				{
+					if(positions != NULL)
+						positions->push_back(pos_global);
+					avatar_ids->push_back(uuid);
 				}
 			}
 		}

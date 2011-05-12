@@ -63,7 +63,7 @@
 #include "llurlhistory.h" // OGPX : regionuri text box has a history of region uris (if FN/LN are loaded at startup)
 #include "llurlsimstring.h"
 #include "llviewerbuild.h"
-#include "llviewerimagelist.h"
+#include "llviewertexturelist.h"
 #include "llviewermenu.h"			// for handle_preferences()
 #include "llviewernetwork.h"
 #include "llviewerwindow.h"			// to link into child list
@@ -456,7 +456,7 @@ LLPanelLogin::~LLPanelLogin()
 		gResponsePtr->setParent( 0 );
 
 	//// We know we're done with the image, so be rid of it.
-	//gImageList.deleteImage( mLogoImage );
+	//gTextureList.deleteImage( mLogoImage );
 	
 	if ( gFocusMgr.getDefaultKeyboardFocus() == this )
 	{
@@ -911,20 +911,11 @@ void LLPanelLogin::loadLoginPage()
 	std::string version = llformat("%d.%d.%d (%d)",
 						LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD);
 
-	char* curl_channel = curl_escape(LL_CHANNEL, 0);
-
-	char* curl_version = curl_escape(version.c_str(), 0);
-
-	oStr << "&channel=" << curl_channel;
-	oStr << "&version=" << curl_version;
-
-	curl_free(curl_channel);
-	curl_free(curl_version);
+	oStr << "&channel=" << LLWeb::curlEscape(LL_CHANNEL);
+	oStr << "&version=" << LLWeb::curlEscape(version);
 
 	// Grid
-	char* curl_grid = curl_escape(LLViewerLogin::getInstance()->getGridLabel().c_str(), 0);
-	oStr << "&grid=" << curl_grid;
-	curl_free(curl_grid);
+	oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
 
 	if (gHippoGridManager->getConnectedGrid()->isSecondLife()) {
 		// find second life grid from login URI
@@ -938,9 +929,7 @@ void LLPanelLogin::loadLoginPage()
 				i = tmp.rfind('/');
 			if (i != std::string::npos) {
 				tmp = tmp.substr(i+1);
-				char* curl_grid = curl_escape(tmp.c_str(), 0);
-				oStr << "&grid=" << curl_grid;
-				curl_free(curl_grid);
+				oStr << "&grid=" << LLWeb::curlEscape(tmp);
 			}
 		}
 	}
@@ -997,13 +986,11 @@ void LLPanelLogin::loadLoginPage()
 		lastname = gSavedSettings.getString("LastName");
 	}
 	
-	char* curl_region = curl_escape(region.c_str(), 0);
+	std::string curl_region = LLWeb::curlEscape(region);
 
 	oStr <<"firstname=" << firstname <<
 		"&lastname=" << lastname << "&location=" << location <<	"&region=" << curl_region;
 	
-	curl_free(curl_region);
-
 	if (!password.empty())
 	{
 		oStr << "&password=" << password;

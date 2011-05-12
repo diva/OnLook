@@ -239,7 +239,7 @@ LLInventoryModel::~LLInventoryModel()
 // chain up to the category specified by UUID.
 BOOL LLInventoryModel::isObjectDescendentOf(const LLUUID& obj_id,
 											const LLUUID& cat_id,
-											const BOOL break_on_recursion)
+											const BOOL break_on_recursion) const
 {
 	LLInventoryObject* obj = getObject(obj_id);
 	int depthCounter = 0;
@@ -375,7 +375,7 @@ void LLInventoryModel::unlockDirectDescendentArrays(const LLUUID& cat_id)
 // specifies 'type' as what it defaults to containing. The category is
 // not necessarily only for that type. *NOTE: This will create a new
 // inventory category on the fly if one does not exist.
-LLUUID LLInventoryModel::findCategoryUUIDForType(LLAssetType::EType t, bool create_folder)
+const LLUUID LLInventoryModel::findCategoryUUIDForType(LLAssetType::EType t, bool create_folder)
 {
 	LLUUID rv = findCatUUID(t);
 	if(rv.isNull() && isInventoryUsable() && create_folder)
@@ -750,7 +750,7 @@ void LLInventoryModel::appendPath(const LLUUID& id, std::string& path)
 	path.append(temp);
 }
 
-bool LLInventoryModel::isInventoryUsable()
+bool LLInventoryModel::isInventoryUsable() const
 {
 	bool result = false;
 	if(gAgent.getInventoryRootID().notNull() && mIsAgentInvUsable)
@@ -1230,7 +1230,7 @@ void LLInventoryModel::removeObserver(LLInventoryObserver* observer)
 	mObservers.erase(observer);
 }
 
-BOOL LLInventoryModel::containsObserver(LLInventoryObserver* observer)
+BOOL LLInventoryModel::containsObserver(LLInventoryObserver* observer) const
 {
 	return mObservers.find(observer) != mObservers.end();
 }
@@ -1381,14 +1381,14 @@ void LLInventoryModel::fetchInventoryResponder::error(U32 status, const std::str
 	gInventory.notifyObservers("fetchinventory");
 }
 
-void LLInventoryModel::fetchDescendentsOf(const LLUUID& folder_id)
+bool LLInventoryModel::fetchDescendentsOf(const LLUUID& folder_id) const
 {
 	LLViewerInventoryCategory* cat = getCategory(folder_id);
 	if(!cat)
 	{
 		llwarns << "Asked to fetch descendents of non-existent folder: "
 				<< folder_id << llendl;
-		return;
+		return false;
 	}
 	//S32 known_descendents = 0;
 	///cat_array_t* categories = get_ptr_in_map(mParentChildCategoryTree, folder_id);
@@ -1401,10 +1401,7 @@ void LLInventoryModel::fetchDescendentsOf(const LLUUID& folder_id)
 	//{
 	//	known_descendents += items->count();
 	//}
-	if(!cat->fetchDescendents())
-	{
-		//llinfos << "Not fetching descendents" << llendl;
-	}
+	return cat->fetchDescendents();
 }
 
 //Initialize statics.
@@ -1999,7 +1996,7 @@ void LLInventoryModel::empty()
 	//mInventory.clear();
 }
 
-void LLInventoryModel::accountForUpdate(const LLCategoryUpdate& update)
+void LLInventoryModel::accountForUpdate(const LLCategoryUpdate& update) const
 {
 	LLViewerInventoryCategory* cat = getCategory(update.mCategoryID);
 	if(cat)
@@ -3799,11 +3796,11 @@ void LLInventoryModel::processMoveInventoryItem(LLMessageSystem* msg, void**)
 }
 
 // *NOTE: DEBUG functionality
-void LLInventoryModel::dumpInventory()
+void LLInventoryModel::dumpInventory() const
 {
 	LL_DEBUGS("Inventory") << "\nBegin Inventory Dump\n**********************:" << LL_ENDL;
 	LL_DEBUGS("Inventory") << "mCategroy[] contains " << mCategoryMap.size() << " items." << LL_ENDL;
-	for(cat_map_t::iterator cit = mCategoryMap.begin(); cit != mCategoryMap.end(); ++cit)
+	for(cat_map_t::const_iterator cit = mCategoryMap.begin(); cit != mCategoryMap.end(); ++cit)
 	{
 		LLViewerInventoryCategory* cat = cit->second;
 		if(cat)
@@ -3818,7 +3815,7 @@ void LLInventoryModel::dumpInventory()
 		}
 	}	
 	LL_DEBUGS("Inventory") << "mItemMap[] contains " << mItemMap.size() << " items." << LL_ENDL;
-	for(item_map_t::iterator iit = mItemMap.begin(); iit != mItemMap.end(); ++iit)
+	for(item_map_t::const_iterator iit = mItemMap.begin(); iit != mItemMap.end(); ++iit)
 	{
 		LLViewerInventoryItem* item = iit->second;
 		if(item)

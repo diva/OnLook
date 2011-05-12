@@ -75,7 +75,6 @@
 
 
 
-extern LLCPUInfo gSysCPU;
 extern LLMemoryInfo gSysMemory;
 extern U32 gPacketsIn;
 
@@ -275,7 +274,7 @@ LLFloaterAbout::LLFloaterAbout()
 
 	// TODO: Implement media plugin version query
 
-	support.append("Qt Webkit Version: 4.7.1 ");
+	support.append("Qt Webkit Version: 4.7.1 (version number hard-coded)");
 	support.append("\n");
 
 	if (gPacketsIn > 0)

@@ -7306,7 +7306,8 @@ void LLAgent::createStandardWearables(BOOL female)
 		TRUE,  //WT_UNDERPANTS
 		FALSE, //WT_SKIRT
 		FALSE, //WT_ALPHA
-		FALSE  //WT_TATTOO
+		FALSE, //WT_TATTOO
+		FALSE, //WT_PHYSICS
 	};
 
 	for( S32 i=0; i < WT_COUNT; i++ )
@@ -7732,6 +7733,8 @@ void LLAgent::sendAgentSetAppearance()
 	}
 
 
+	static bool send_physics_params = false;
+	send_physics_params |= !!getWearable(WT_PHYSICS);
 	S32 transmitted_params = 0;
 	for (LLViewerVisualParam* param = (LLViewerVisualParam*)mAvatarObject->getFirstVisualParam();
 		 param;
@@ -7739,11 +7742,16 @@ void LLAgent::sendAgentSetAppearance()
 	{
 		if (param->getGroup() == VISUAL_PARAM_GROUP_TWEAKABLE) // do not transmit params of group VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
 		{
+			//A hack to prevent ruthing on older viewers when phys wearables aren't being worn.
+			if(!send_physics_params && param->getID() >= 10000)
+			{
+				break;
+			}
 			msg->nextBlockFast(_PREHASH_VisualParam );
-			
 			// We don't send the param ids.  Instead, we assume that the receiver has the same params in the same sequence.
 			const F32 param_value = param->getWeight();
 			const U8 new_weight = F32_to_U8(param_value, param->getMinWeight(), param->getMaxWeight());
+
 			msg->addU8Fast(_PREHASH_ParamValue, new_weight );
 			transmitted_params++;
 		}
@@ -7885,6 +7893,30 @@ struct LLSetWearableData
 	LLWearable*			mNewWearable;
 };
 
+static bool isFirstPhysicsWearable(EWearableType type, LLInventoryItem *new_item, LLWearable *new_wearable)
+{
+	if (type == WT_PHYSICS && gSavedSettings.getWarning("FirstPhysicsWearable"))
+	{
+		class WearableDelayedCallback
+		{
+		public:
+			static void setDelayedWearable( const LLSD& notification, const LLSD& response, LLUUID item_id, LLWearable *wearable )
+			{
+				if(LLNotification::getSelectedOption(notification, response) == 0) //User selected wear
+				{
+					gSavedSettings.setWarning("FirstPhysicsWearable",FALSE);
+					LLInventoryItem *item = gInventory.getItem(item_id);
+					if(item)
+						gAgent.setWearable(item,wearable); //re-enter.
+				}
+			}
+		};
+		LLNotifications::instance().add("FirstPhysicsWearable",LLSD(),LLSD(),boost::bind(WearableDelayedCallback::setDelayedWearable, _1, _2, new_item->getUUID(),new_wearable));
+		return true;
+	}
+	return false;
+}
+
 BOOL LLAgent::needsReplacement(EWearableType  wearableType, S32 remove)
 {
 	return TRUE;
@@ -7918,6 +7950,7 @@ void LLAgent::setWearableOutfit(
 	wearables_to_remove[WT_SKIRT]		= remove && gRlvWearableLocks.canRemove(WT_SKIRT);
 	wearables_to_remove[WT_ALPHA]		= remove && gRlvWearableLocks.canRemove(WT_ALPHA);
 	wearables_to_remove[WT_TATTOO]		= remove && gRlvWearableLocks.canRemove(WT_TATTOO);
+	wearables_to_remove[WT_PHYSICS]		= remove && gRlvWearableLocks.canRemove(WT_PHYSICS);
 // [/RLVa:KB]
 
 	S32 count = wearables.count();
@@ -7951,6 +7984,11 @@ void LLAgent::setWearableOutfit(
 				llassert(0);
 				continue;
 			}
+		}
+
+		if (isFirstPhysicsWearable(type, new_item, new_wearable))
+		{
+			return;
 		}
 
 		mWearableEntry[ type ].mItemID = new_item->getUUID();
@@ -8016,6 +8054,11 @@ void LLAgent::setWearable( LLInventoryItem* new_item, LLWearable* new_wearable )
 		return;
 	}
 // [/RLVa:KB]
+
+	if (isFirstPhysicsWearable(type, new_item, new_wearable))
+	{
+		return;
+	}
 
 	if( old_wearable )
 	{
@@ -8199,6 +8242,7 @@ void LLAgent::userRemoveAllClothesStep2( BOOL proceed, void* userdata )
 		gAgent.removeWearable( WT_SKIRT );
 		gAgent.removeWearable( WT_ALPHA );
 		gAgent.removeWearable( WT_TATTOO );
+		gAgent.removeWearable( WT_PHYSICS );
 	}
 }
 

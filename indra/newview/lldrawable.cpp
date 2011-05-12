@@ -229,7 +229,7 @@ S32 LLDrawable::findReferences(LLDrawable *drawablep)
 	return count;
 }
 
-LLFace*	LLDrawable::addFace(LLFacePool *poolp, LLViewerImage *texturep)
+LLFace*	LLDrawable::addFace(LLFacePool *poolp, LLViewerTexture *texturep)
 {
 	LLMemType mt(LLMemType::MTYPE_DRAWABLE);
 	
@@ -253,7 +253,7 @@ LLFace*	LLDrawable::addFace(LLFacePool *poolp, LLViewerImage *texturep)
 	return face;
 }
 
-LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerImage *texturep)
+LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerTexture *texturep)
 {
 	LLMemType mt(LLMemType::MTYPE_DRAWABLE);
 	
@@ -275,7 +275,7 @@ LLFace*	LLDrawable::addFace(const LLTextureEntry *te, LLViewerImage *texturep)
 
 }
 
-void LLDrawable::setNumFaces(const S32 newFaces, LLFacePool *poolp, LLViewerImage *texturep)
+void LLDrawable::setNumFaces(const S32 newFaces, LLFacePool *poolp, LLViewerTexture *texturep)
 {
 	if (newFaces == (S32)mFaces.size())
 	{
@@ -298,7 +298,7 @@ void LLDrawable::setNumFaces(const S32 newFaces, LLFacePool *poolp, LLViewerImag
 	llassert_always(mFaces.size() == newFaces);
 }
 
-void LLDrawable::setNumFacesFast(const S32 newFaces, LLFacePool *poolp, LLViewerImage *texturep)
+void LLDrawable::setNumFacesFast(const S32 newFaces, LLFacePool *poolp, LLViewerTexture *texturep)
 {
 	if (newFaces <= (S32)mFaces.size() && newFaces >= (S32)mFaces.size()/2)
 	{
@@ -704,8 +704,8 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 				{
 					LLVector3 box = (facep->mExtents[1] - facep->mExtents[0]) * 0.25f;
 					LLVector3 v = (facep->mCenterLocal-camera.getOrigin());
-					LLVector3 at = camera.getAtAxis();
-					for (U32 j = 0; j < 3; j++)
+						const LLVector3& at = camera.getAtAxis();
+						for (U32 j = 0; j < 3; j++)
 					{
 						v.mV[j] -= box.mV[j] * at.mV[j];
 					}

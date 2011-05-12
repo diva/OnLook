@@ -212,7 +212,7 @@ void LLPanelContents::onClickNewScript(void *userdata)
 				std::string("New Script"),
 				desc,
 				LLSaleInfo::DEFAULT,
-				LLViewerInventoryItem::II_FLAGS_NONE,
+				LLInventoryItemFlags::II_FLAGS_NONE,
 				time_corrected());
 		object->saveScript(new_item, TRUE, true);
 

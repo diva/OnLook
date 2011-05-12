@@ -399,7 +399,13 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 			check_framebuffer_status();
 			
 			stop_glerror();
-			glBlitFramebufferEXT(0, 0, mResX, mResY, 0, 0, mResX, mResY, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+			if(gGLManager.mIsATI)
+			{
+				glBlitFramebufferEXT(0, 0, mResX, mResY, 0, 0, mResX, mResY, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+				glBlitFramebufferEXT(0, 0, mResX, mResY, 0, 0, mResX, mResY, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
+			}
+			else
+				glBlitFramebufferEXT(0, 0, mResX, mResY, 0, 0, mResX, mResY, GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT, GL_NEAREST);
 			stop_glerror();		
 
 			if (mTex.size() > 1)
@@ -465,7 +471,13 @@ void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, 
 			stop_glerror();
 			check_framebuffer_status();
 			stop_glerror();
-			glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+			if(gGLManager.mIsATI && mask & GL_STENCIL_BUFFER_BIT)
+			{
+				mask &= ~GL_STENCIL_BUFFER_BIT;
+				glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_STENCIL_BUFFER_BIT, filter);
+			}
+			if(mask)
+				glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 			stop_glerror();
 			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 			stop_glerror();
@@ -482,13 +494,19 @@ void LLRenderTarget::copyContentsToFramebuffer(LLRenderTarget& source, S32 srcX0
 		llerrs << "Cannot copy framebuffer contents for non FBO render targets." << llendl;
 	}
 	{
-		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source.mFBO);
+		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source.mSampleBuffer ? source.mSampleBuffer->mFBO : source.mFBO);
 		stop_glerror();
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
 		stop_glerror();
 		check_framebuffer_status();
 		stop_glerror();
-		glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+		if(gGLManager.mIsATI && mask & GL_STENCIL_BUFFER_BIT)
+		{
+			mask &= ~GL_STENCIL_BUFFER_BIT;
+			glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_STENCIL_BUFFER_BIT, filter);
+		}
+		if(mask)
+			glBlitFramebufferEXT(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 		stop_glerror();
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		stop_glerror();

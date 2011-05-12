@@ -726,15 +726,6 @@ void LLPanelAvatarWeb::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent ev
 	}
 }
 
-
-
-
-
-
-
-
-
-
 //-----------------------------------------------------------------------------
 // LLPanelAvatarAdvanced
 //-----------------------------------------------------------------------------
@@ -1434,44 +1425,6 @@ void LLPanelAvatar::onCommitKey(LLUICtrl* ctrl, void* data)
 	self->setAvatarID(av_key, LLStringUtil::null, ONLINE_STATUS_NO);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 {
 	// Online status NO could be because they are hidden
@@ -1483,13 +1436,6 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 		online_status = ONLINE_STATUS_YES;
 	}
 	
-
-
-
-
-
-
-
 	if(online_status == ONLINE_STATUS_YES)
 	{
 		mPanelSecondLife->childSetVisible("online_yes", TRUE);
@@ -1505,9 +1451,6 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 		childSetVisible("Offer Teleport...",TRUE);
 	}
 
-
-
-
 	BOOL in_prelude = gAgent.inPrelude();
 	if(gAgent.isGodlike())
 	{
@@ -1521,7 +1464,7 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 	}
 	else
 	{
-		childSetEnabled("Offer Teleport...", (online_status == ONLINE_STATUS_YES));
+		childSetEnabled("Offer Teleport...", TRUE /*(online_status == ONLINE_STATUS_YES)*/);
 		childSetToolTip("Offer Teleport...", childGetValue("TeleportNormal").asString());
 	}
 }

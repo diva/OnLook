@@ -35,7 +35,7 @@
 
 const S32 LL_VERSION_MAJOR = 1;
 const S32 LL_VERSION_MINOR = 5;
-const S32 LL_VERSION_PATCH = 6;
+const S32 LL_VERSION_PATCH = 7;
 const S32 LL_VERSION_BUILD = 1;
 
 const char * const LL_CHANNEL = "Singularity";

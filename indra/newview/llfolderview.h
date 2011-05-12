@@ -52,7 +52,7 @@
 #include "stdenums.h"
 #include "llfontgl.h"
 #include "lleditmenuhandler.h"
-#include "llviewerimage.h"
+#include "llviewertexture.h"
 #include "lldepthstack.h"
 #include "lltooldraganddrop.h"
 
@@ -97,7 +97,7 @@ public:
 	virtual void move( LLFolderViewEventListener* parent_listener ) = 0;
 	virtual BOOL isItemCopyable() const = 0;
 	virtual BOOL copyToClipboard() const = 0;
-	virtual void cutToClipboard() = 0;
+	virtual BOOL cutToClipboard() const = 0;
 	virtual BOOL isClipboardPasteable() const = 0;
 	virtual void pasteFromClipboard() = 0;
 	virtual void pasteLinkFromClipboard() = 0;

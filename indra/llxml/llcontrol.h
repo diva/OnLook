@@ -122,7 +122,7 @@ public:
 	const std::string& getComment() const { return mComment; }
 
 	eControlType type()		{ return mType; }
-	bool isType(eControlType tp) { return tp == mType; }
+	bool isType(eControlType tp) const { return tp == mType; }
 
 	void resetToDefault(bool fire_signal = false);
 
@@ -153,7 +153,8 @@ public:
 	bool isCOA()		const	{ return mIsCOA; }
 	bool isCOAParent()	const	{ return mIsCOAParent; }
 	LLControlVariable *getCOAConnection() const	{ return mCOAConnectedVar; }
-	LLControlVariable *getCOAActive();
+	LLControlVariable* getCOAActive();
+	LLControlVariable const* getCOAActive() const;
 	void setIsCOA(bool IsCOA)  { mIsCOA=IsCOA; }
 	void setCOAConnect(LLControlVariable *pConnect, bool IsParent) 
 	{
@@ -185,7 +186,8 @@ public:
 	~LLControlGroup();
 	void cleanup();
 	
-	LLPointer<LLControlVariable> getControl(const std::string& name);
+	LLControlVariable* getControl(std::string const& name);
+	LLControlVariable const* getControl(std::string const& name) const;
 
 	struct ApplyFunctor
 	{
@@ -210,7 +212,7 @@ public:
 	
 	std::string 	findString(const std::string& name);
 
-	std::string 	getString(const std::string& name);
+	std::string getString(const std::string& name) const;
 	LLWString	getWString(const std::string& name);
 	std::string	getText(const std::string& name);
 	LLVector3	getVector3(const std::string& name);
@@ -245,7 +247,7 @@ public:
 	void	setValue(const std::string& name, const LLSD& val);
 	
 	
-	BOOL    controlExists(const std::string& name);
+	BOOL    controlExists(const std::string& name) const;
 
 	// Returns number of controls loaded, 0 if failed
 	// If require_declaration is false, will auto-declare controls it finds
@@ -405,7 +407,15 @@ template <> inline void LLCachedControl<LLColor4>::setValue(const LLSD& newvalue
 	else
 		this->mCachedValue = (const LLColor4 &)newvalue;
 }
-
+template <> inline void LLCachedControl<U32>::setValue(const LLSD& newvalue)
+{
+	if(mControl->isType(TYPE_U32) || mControl->isType(TYPE_S32)) //LLSD does not support U32 fully
+		mCachedValue = (U32)newvalue.asInteger();
+	else if(this->mControl->isType(TYPE_F32))
+		mCachedValue = (U32)newvalue.asReal();
+	else
+		mCachedValue = (U32)0; //What to do...
+}
 
 //Following is actually defined in newview/llviewercontrol.cpp, but extern access is fine (Unless GCC bites me)
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out);
