@@ -127,7 +127,7 @@
 				mouse_opaque="true" name="update_tags_check" radio_style="false"
 				width="400" />
 			<button bottom_delta="0" control_name="ManualUpdate" name="update_clientdefs" follows="left|top" 
-				label="Manual Update" height="18" left_delta="340" width="100"/>
+				label="Manual Update" height="18" left_delta="340" width="110"/>
 			<!-- End of Client Tag settings -->
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 				bottom="-178" drop_shadow_visible="true" enabled="true" follows="left|top"
