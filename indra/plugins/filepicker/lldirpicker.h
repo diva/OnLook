@@ -71,7 +71,7 @@ public:
 	// calling this before main() is undefined
 	static LLDirPicker& instance( void ) { return sInstance; }
 
-	BOOL getDir(std::string* filename);
+	BOOL getDir(std::string const& filename);
 	std::string getDirName();
 
 	// clear any lists of buffers or whatever, and make sure the dir

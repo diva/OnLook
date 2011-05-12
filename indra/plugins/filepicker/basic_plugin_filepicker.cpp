@@ -232,10 +232,13 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 				std::string folder = message_in.getValue("folder");
 				bool get_directory = (filter == "directory");
 
+				// We about to completely block on running the modal File/Dir picker window, so flush any pending messages to the viewer.
+				flushMessages();
+
 				bool canceled;
 				if (get_directory)
 				{
-					canceled = !LLDirPicker::instance().getDir(&folder);
+					canceled = !LLDirPicker::instance().getDir(folder);
 				}
 				else if (type == "save")
 				{
@@ -275,6 +278,7 @@ void FilepickerPlugin::receiveMessage(char const* message_string)
 					sendMessage(message);
 				}
 				// We're done. Exit the whole application.
+				// This first flushes any messages before terminating the plugin.
 				sendShutdownMessage();
 			}
 			else

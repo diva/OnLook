@@ -104,6 +104,7 @@ LLPluginProcessParent::LLPluginProcessParent(LLPluginProcessParentOwner *owner)
 	mDebug = false;
 	mBlocked = false;
 	mPolledInput = false;
+	mReceivedShutdown = false;
 	mPollFD.client_data = NULL;
 	mPollFDPool.create();
 
@@ -165,6 +166,8 @@ void LLPluginProcessParent::errorState(void)
 {
 	if(mState < STATE_RUNNING)
 		setState(STATE_LAUNCH_FAILURE);
+	else if (mReceivedShutdown)
+		setState(STATE_EXITING);
 	else
 		setState(STATE_ERROR);
 }
@@ -1012,6 +1015,7 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 		else if(message_name == "shutdown")
 		{
 			LL_INFOS("Plugin") << "received shutdown message" << LL_ENDL;
+			mReceivedShutdown = true;
 			mOwner->receivedShutdown();
 		}
 		else if(message_name == "shm_add_response")

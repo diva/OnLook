@@ -115,6 +115,20 @@ void BasicPluginBase::sendLogMessage(std::string const& message, LLPluginMessage
 	logmessage.setValue("message", message);
 	logmessage.setValueS32("log_level",level);
 	mSendMessageFunction(logmessage.generate().c_str(), &mPluginInstance);
+	// Theoretically we should flush here (that's what PLS_ENDL means), but we don't because
+	// that interfers with how the code would act without debug messages. Instead, the developer
+	// is responsible to call flushMessages themselves at the appropriate places.
+}
+
+/**
+ * Flush all messages to the viewer.
+ *
+ * This blocks if necessary, up till 10 seconds, before it gives up.
+ */
+void BasicPluginBase::flushMessages(void)
+{
+	LLPluginMessage logmessage(LLPLUGIN_MESSAGE_CLASS_INTERNAL, "flush");
+	mSendMessageFunction(logmessage.generate().c_str(), &mPluginInstance);
 }
 
 /**
@@ -124,6 +138,9 @@ void BasicPluginBase::sendLogMessage(std::string const& message, LLPluginMessage
  */
 void BasicPluginBase::sendShutdownMessage(void)
 {
+	// Do a double flush. First flush all messages so far, then send the shutdown message,
+	// which also will try to flush itself before terminating the process.
+	flushMessages();
 	LLPluginMessage shutdownmessage(LLPLUGIN_MESSAGE_CLASS_INTERNAL, "shutdown");
 	sendMessage(shutdownmessage);
 }

@@ -28,8 +28,8 @@
  *   - Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "legacy.h"
 #include "basic_plugin_base.h"		// For PLS_INFOS etc.
+#include "legacy.h"
 
 // Translation map.
 translation_map_type translation_map;

@@ -176,9 +176,8 @@ public:
 
 private:
 	LLPointer<LLViewerPluginManager> mPluginManager;				//!< Pointer to the plugin manager.
-	// AIFIXME: this should be a separate, thread-safe singleton.
 	typedef std::map<std::string, std::string> context_map_type;	//!< Type of mContextMap.
-	context_map_type mContextMap;									//!< Map context (ie, "snapshot" or "image") to last used folder.
+	static AIThreadSafeSimple<context_map_type> sContextMap;		//!< Map context (ie, "snapshot" or "image") to last used folder.
 	std::string mContext;											//!< Some key to indicate the context (remembers the folder per key).
 
 	// Input variables (cache variable between call to open and run).
@@ -191,9 +190,9 @@ private:
 	std::vector<std::string> mFilenames;	//!< Filesnames.
 
 	// Store a folder for the given context.
-	void store_folder(std::string const& context, std::string const& folder);
+	static void store_folder(std::string const& context, std::string const& folder);
 	// Return the last folder stored for 'context', or default_path if none, or context "savefile" if empty, or $HOME if none.
-	std::string get_folder(std::string const& default_path, std::string const& context);
+	static std::string get_folder(std::string const& default_path, std::string const& context);
 
 protected:
 	// Call finish() (or abort()), not delete.

@@ -205,7 +205,6 @@ bool LLFilePickerBase::setupFilter(ELoadFilter filter)
 	return res;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -214,9 +213,9 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 	}
 	bool success = FALSE;
 
-	// don't provide default file selection
+	llutf16string tstring = utf8str_to_utf16str(folder);
+	mOFN.lpstrInitialDir = (LPCTSTR)tstring.data();
 	mFilesW[0] = '\0';
-
 	mOFN.lpstrFile = mFilesW;
 	mOFN.nMaxFile = SINGLE_FILENAME_BUFFER_SIZE;
 	mOFN.Flags = OFN_HIDEREADONLY | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR ;
@@ -237,7 +236,6 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 	return success;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -246,9 +244,9 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 	}
 	bool success = FALSE;
 
-	// don't provide default file selection
+	llutf16string tstring = utf8str_to_utf16str(folder);
+	mOFN.lpstrInitialDir = (LPCTSTR)tstring.data();
 	mFilesW[0] = '\0';
-
 	mOFN.lpstrFile = mFilesW;
 	mOFN.nFilterIndex = 1;
 	mOFN.nMaxFile = FILENAME_BUFFER_SIZE;
@@ -295,7 +293,6 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 	return success;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
 	if( mLocked )
@@ -304,11 +301,13 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 	}
 	bool success = FALSE;
 
+	llutf16string tstring = utf8str_to_utf16str(folder);
+	mOFN.lpstrInitialDir = (LPCTSTR)tstring.data();
 	mOFN.lpstrFile = mFilesW;
 	if (!filename.empty())
 	{
 		llutf16string tstring = utf8str_to_utf16str(filename);
-		wcsncpy(mFilesW, tstring.c_str(), FILENAME_BUFFER_SIZE);	}	/*Flawfinder: ignore*/
+		wcsncpy(mFilesW, tstring.data(), FILENAME_BUFFER_SIZE);	}	/*Flawfinder: ignore*/
 	else
 	{
 		mFilesW[0] = '\0';
@@ -705,8 +704,9 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 
 Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode)
 {
+	LLFilePickerBase* picker = (LLFilePickerBase*)callBackUD;
 	Boolean		result = true;
-	ELoadFilter filter = *((ELoadFilter*) callBackUD);
+	ELoadFilter filter = picker->getLoadFilter();
 	OSStatus	error = noErr;
 	
 	if (filterMode == kNavFilteringBrowserList && filter != FFLOAD_ALL && (theItem->descriptorType == typeFSRef || theItem->descriptorType == typeFSS))
@@ -788,7 +788,7 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 						}
 						else if (filter == FFLOAD_RAW)
 						{
-							if (fileInfo.filetype != '\?\?\?\?' && 
+							if (fileInfo.filetype != L'\?\?\?\?' && 
 								(fileInfo.extension && (CFStringCompare(fileInfo.extension, CFSTR("raw"), kCFCompareCaseInsensitive) != kCFCompareEqualTo))
 							)
 							{
@@ -809,23 +809,70 @@ Boolean LLFilePickerBase::navOpenFilterProc(AEDesc *theItem, void *info, void *c
 	return result;
 }
 
-OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter)
+//static
+pascal void LLFilePickerBase::doNavCallbackEvent(NavEventCallbackMessage callBackSelector,
+                                         NavCBRecPtr callBackParms, void* callBackUD)
+{
+    switch(callBackSelector)
+    {
+        case kNavCBStart:
+        {
+			LLFilePickerBase* picker = reinterpret_cast<LLFilePickerBase*>(callBackUD);
+            if (picker->getFolder().empty()) break;
+
+            OSStatus error = noErr;
+            AEDesc theLocation = {typeNull, NULL};
+            FSSpec outFSSpec;
+
+            //Convert string to a FSSpec
+            FSRef myFSRef;
+
+            const char* folder = picker->getFolder().c_str();
+
+            error = FSPathMakeRef ((UInt8*)folder,  &myFSRef,   NULL);
+
+            if (error != noErr) break;
+
+            error = FSGetCatalogInfo (&myFSRef, kFSCatInfoNone, NULL, NULL, &outFSSpec, NULL);
+
+            if (error != noErr) break;
+
+            error = AECreateDesc(typeFSS, &outFSSpec, sizeof(FSSpec), &theLocation);
+
+            if (error != noErr) break;
+
+            error = NavCustomControl(callBackParms->context,
+                            kNavCtlSetLocation, (void*)&theLocation);
+
+        }
+    }
+}
+
+OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter, std::string const& folder)
 {
 	OSStatus		error = noErr;
 	NavDialogRef	navRef = NULL;
 	NavReplyRecord	navReply;
 
 	memset(&navReply, 0, sizeof(navReply));
+
+	mLoadFilter = filter;
+	mFolder = folder;
+
+	NavEventUPP eventProc = NewNavEventUPP(doNavCallbackEvent);
 	
 	// NOTE: we are passing the address of a local variable here.  
 	//   This is fine, because the object this call creates will exist for less than the lifetime of this function.
 	//   (It is destroyed by NavDialogDispose() below.)
-	error = NavCreateChooseFileDialog(&mNavOptions, NULL, NULL, NULL, navOpenFilterProc, (void*)(&filter), &navRef);
+	error = NavCreateChooseFileDialog(&mNavOptions, NULL, eventProc, NULL, navOpenFilterProc, (void*)this, &navRef);
 
 	//gViewerWindow->mWindow->beforeDialog();
 
 	if (error == noErr)
+	{
+		PLS_FLUSH;
 		error = NavDialogRun(navRef);
+	}
 
 	//gViewerWindow->mWindow->afterDialog();
 
@@ -860,11 +907,14 @@ OSStatus	LLFilePickerBase::doNavChooseDialog(ELoadFilter filter)
 				mFiles.push_back(std::string(path));
 		}
 	}
+
+	if (eventProc)
+		DisposeNavEventUPP(eventProc);
 	
 	return error;
 }
 
-OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string& filename)
+OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
 	OSStatus		error = noErr;
 	NavDialogRef	navRef = NULL;
@@ -905,46 +955,49 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string
 			extension = CFSTR(".png");
 			break;
 		case FFSAVE_AVI:
-			type = '\?\?\?\?';
-			creator = '\?\?\?\?';
+			type = L'\?\?\?\?';
+			creator = L'\?\?\?\?';
 			extension = CFSTR(".mov");
 			break;
 
 		case FFSAVE_ANIM:
-			type = '\?\?\?\?';
-			creator = '\?\?\?\?';
+			type = L'\?\?\?\?';
+			creator = L'\?\?\?\?';
 			extension = CFSTR(".xaf");
 			break;
 
 #ifdef _CORY_TESTING
 		case FFSAVE_GEOMETRY:
-			type = '\?\?\?\?';
-			creator = '\?\?\?\?';
+			type = L'\?\?\?\?';
+			creator = L'\?\?\?\?';
 			extension = CFSTR(".slg");
 			break;
 #endif		
 		case FFSAVE_RAW:
-			type = '\?\?\?\?';
-			creator = '\?\?\?\?';
+			type = L'\?\?\?\?';
+			creator = L'\?\?\?\?';
 			extension = CFSTR(".raw");
 			break;
 
 		case FFSAVE_J2C:
-			type = '\?\?\?\?';
+			type = L'\?\?\?\?';
 			creator = 'prvw';
 			extension = CFSTR(".j2c");
 			break;
 		
 		case FFSAVE_ALL:
 		default:
-			type = '\?\?\?\?';
-			creator = '\?\?\?\?';
+			type = L'\?\?\?\?';
+			creator = L'\?\?\?\?';
 			extension = CFSTR("");
 			break;
 	}
+
+	NavEventUPP eventUPP = NewNavEventUPP(navSetDefaultFolderProc);
+	mFolder = folder;
 	
 	// Create the dialog
-	error = NavCreatePutFileDialog(&mNavOptions, type, creator, NULL, NULL, &navRef);
+	error = NavCreatePutFileDialog(&mNavOptions, type, creator, eventUPP, (void*)this, &navRef);
 	if (error == noErr)
 	{
 		CFStringRef	nameString = NULL;
@@ -981,7 +1034,10 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string
 
 	// Run the dialog
 	if (error == noErr)
+	{
+		PLS_FLUSH;
 		error = NavDialogRun(navRef);
+	}
 
 	//gViewerWindow->mWindow->afterDialog();
 
@@ -1033,10 +1089,12 @@ OSStatus	LLFilePickerBase::doNavSaveDialog(ESaveFilter filter, const std::string
 		}
 	}
 	
+	if (eventUPP)
+		DisposeNavEventUPP(eventUPP);
+
 	return error;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -1050,7 +1108,7 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 	
 	mNavOptions.optionFlags &= ~kNavAllowMultipleFiles;
 	{
-		error = doNavChooseDialog(filter);
+		error = doNavChooseDialog(filter, folder);
 	}
 	if (error == noErr)
 	{
@@ -1061,7 +1119,6 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 	return success;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string const& folder)
 {
 	if( mLocked )
@@ -1075,7 +1132,7 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 	
 	mNavOptions.optionFlags |= kNavAllowMultipleFiles;
 	{
-		error = doNavChooseDialog(filter);
+		error = doNavChooseDialog(filter, folder);
 	}
 	if (error == noErr)
 	{
@@ -1088,7 +1145,6 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 	return success;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filename, std::string const& folder)
 {
 	if( mLocked )
@@ -1101,7 +1157,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 	mNavOptions.optionFlags &= ~kNavAllowMultipleFiles;
 
 	{
-		error = doNavSaveDialog(filter, filename);
+		error = doNavSaveDialog(filter, filename, folder);
 	}
 	if (error == noErr)
 	{
@@ -1203,6 +1259,7 @@ GtkWindow* LLFilePickerBase::buildFilePicker(bool is_save, bool is_folder, std::
 
 		if (!folder.empty())
 		{
+			PLS_DEBUGS << "Calling gtk_file_chooser_set_current_folder(\"" << folder << "\")." << PLS_ENDL;
 			gtk_file_chooser_set_current_folder
 				(GTK_FILE_CHOOSER(win),
 				 folder.c_str());
@@ -1225,6 +1282,7 @@ GtkWindow* LLFilePickerBase::buildFilePicker(bool is_save, bool is_folder, std::
 				  G_CALLBACK(LLFilePickerBase::chooser_responder),
 				  this);
 
+		PLS_FLUSH;
 		gtk_window_set_modal(GTK_WINDOW(win), TRUE);
 
 		/* GTK 2.6: if (is_folder)
@@ -1383,6 +1441,7 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 		}
 
 		gtk_widget_show_all(GTK_WIDGET(picker));
+		PLS_FLUSH;
 		gtk_main();
 
 		rtn = (getFileCount() == 1);
@@ -1430,6 +1489,7 @@ bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder
 		gtk_window_set_title(GTK_WINDOW(picker), caption.c_str());
 
 		gtk_widget_show_all(GTK_WIDGET(picker));
+		PLS_FLUSH;
 		gtk_main();
 
 		rtn = (getFileCount() == 1);
@@ -1458,6 +1518,7 @@ bool LLFilePickerBase::getMultipleLoadFiles(ELoadFilter filter, std::string cons
 		gtk_window_set_title(GTK_WINDOW(picker), LLTrans::getString("load_files").c_str());
 
 		gtk_widget_show_all(GTK_WIDGET(picker));
+		PLS_FLUSH;
 		gtk_main();
 		rtn = !mFiles.empty();
 	}
@@ -1485,7 +1546,6 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 	return FALSE;
 }
 
-// AIFIXME: Use folder
 bool LLFilePickerBase::getLoadFile(ELoadFilter filter, std::string const& folder)
 {
 	reset();

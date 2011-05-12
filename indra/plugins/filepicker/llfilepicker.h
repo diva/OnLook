@@ -166,6 +166,9 @@ private:
 	OSStatus doNavChooseDialog(ELoadFilter filter);
 	OSStatus doNavSaveDialog(ESaveFilter filter, const std::string& filename);
 	static Boolean navOpenFilterProc(AEDesc *theItem, void *info, void *callBackUD, NavFilterModes filterMode);
+    static pascal void LLFilePickerBase::doNavCallbackEvent(NavEventCallbackMessage callBackSelector, NavCBRecPtr callBackParms, void* callBackUD);
+	ELoadFilter getLoadFilter(void) const { return mLoadFilter; }
+	std::string const& getFolder(void) const { return mFolder; }
 #endif	// LL_DARWIN
 
 #if LL_GTK
@@ -194,7 +197,11 @@ private:
 	S32 mCurrentFile;
 	bool mLocked;
 	bool mMultiFile;
-	
+#if LL_DARWIN
+	ELoadFilter mLoadFilter;
+	std::string mFolder;
+#endif
+
 protected:
 #if LL_GTK
 	GtkWindow* buildFilePicker(bool is_save, bool is_folder, std::string const& folder);

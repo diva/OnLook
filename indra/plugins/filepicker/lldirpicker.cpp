@@ -65,7 +65,15 @@ LLDirPicker::~LLDirPicker()
 	// nothing
 }
 
-BOOL LLDirPicker::getDir(std::string* filename)
+static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPARAM lpData)
+{
+	if (uMsg == BFFM_INITIALIZED)
+	{
+		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
+	}
+}
+
+BOOL LLDirPicker::getDir(std::string const& folder)
 {
 	if( mLocked )
 	{
@@ -73,34 +81,38 @@ BOOL LLDirPicker::getDir(std::string* filename)
 	}
 	BOOL success = FALSE;
 
-   BROWSEINFO bi;
-   memset(&bi, 0, sizeof(bi));
+	BROWSEINFO bi;
+	memset(&bi, 0, sizeof(bi));
 
-   bi.ulFlags   = BIF_USENEWUI;
-   bi.hwndOwner = (HWND)gViewerWindow->getPlatformWindow();
-   bi.lpszTitle = NULL;
+	bi.ulFlags   = BIF_USENEWUI;
+	bi.hwndOwner = (HWND)gViewerWindow->getPlatformWindow();
+	bi.lpszTitle = NULL;
+	llutf16string tstring = utf8str_to_utf16str(folder);
+	bi.lParam = (LPARAM)tstring.c_str();
+	bi.lpfn = &BrowseCallbackProc;
 
-   ::OleInitialize(NULL);
+	::OleInitialize(NULL);
 
-   LPITEMIDLIST pIDL = ::SHBrowseForFolder(&bi);
+	PLS_FLUSH;
+	LPITEMIDLIST pIDL = ::SHBrowseForFolder(&bi);
 
-   if(pIDL != NULL)
-   {
-      WCHAR buffer[_MAX_PATH] = {'\0'};
+	if(pIDL != NULL)
+	{
+	  WCHAR buffer[_MAX_PATH] = {'\0'};
 
-      if(::SHGetPathFromIDList(pIDL, buffer) != 0)
-      {
-		  	// Set the string value.
+	  if(::SHGetPathFromIDList(pIDL, buffer) != 0)
+	  {
+			// Set the string value.
 
-   			mDir = utf16str_to_utf8str(llutf16string(buffer));
-	         success = TRUE;
-      }
+			mDir = utf16str_to_utf8str(llutf16string(buffer));
+			 success = TRUE;
+	  }
 
-      // free the item id list
-      CoTaskMemFree(pIDL);
-   }
+	  // free the item id list
+	  CoTaskMemFree(pIDL);
+	}
 
-   ::OleUninitialize();
+	::OleUninitialize();
 
 	return success;
 }
@@ -147,9 +159,9 @@ pascal void LLDirPicker::doNavCallbackEvent(NavEventCallbackMessage callBackSele
 			//Convert string to a FSSpec
 			FSRef myFSRef;
 			
-			const char* filename=sInstance.mFileName->c_str();
+			const char* folder = sInstance.mFileName->c_str();
 			
-			error = FSPathMakeRef ((UInt8*)filename,	&myFSRef, 	NULL); 
+			error = FSPathMakeRef ((UInt8*)folder,	&myFSRef, 	NULL); 
 			
 			if (error != noErr) break;
 
@@ -185,7 +197,10 @@ OSStatus	LLDirPicker::doNavChooseDialog()
 	gViewerWindow->mWindow->beforeDialog();
 
 	if (error == noErr)
+	{
+		PLS_FLUSH;
 		error = NavDialogRun(navRef);
+	}
 
 	gViewerWindow->mWindow->afterDialog();
 
@@ -216,13 +231,13 @@ OSStatus	LLDirPicker::doNavChooseDialog()
 	return error;
 }
 
-BOOL LLDirPicker::getDir(std::string* filename)
+BOOL LLDirPicker::getDir(std::string const& folder)
 {
 	if( mLocked ) return FALSE;
 	BOOL success = FALSE;
 	OSStatus	error = noErr;
 	
-	mFileName = filename;
+	mFileName = folder;
 	
 //	mNavOptions.saveFileName 
 
@@ -266,14 +281,15 @@ void LLDirPicker::reset()
 	LLFilePickerBase::reset();
 }
 
-BOOL LLDirPicker::getDir(std::string* filename)
+BOOL LLDirPicker::getDir(std::string const& folder)
 {
 	reset();
-	GtkWindow* picker = buildFilePicker(false, true, "dirpicker");
+	GtkWindow* picker = buildFilePicker(false, true, folder);
 	if (picker)
 	{
 	   gtk_window_set_title(GTK_WINDOW(picker), LLTrans::getString("choose_the_directory").c_str());
 	   gtk_widget_show_all(GTK_WIDGET(picker));
+	   PLS_FLUSH;
 	   gtk_main();
 	   return (!getFirstFile().empty());
 	}
@@ -301,7 +317,7 @@ void LLDirPicker::reset()
 {
 }
 
-BOOL LLDirPicker::getDir(std::string* filename)
+BOOL LLDirPicker::getDir(std::string* folder)
 {
 	return FALSE;
 }

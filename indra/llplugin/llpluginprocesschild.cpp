@@ -556,11 +556,22 @@ void LLPluginProcessChild::receivePluginMessage(const std::string &message)
 		}
 		else if (message_class == LLPLUGIN_MESSAGE_CLASS_INTERNAL)
 		{
+			bool flush = false;
 			std::string message_name = parsed.getName();
 			if(message_name == "shutdown")
 			{
 				// The plugin is finished.
 				setState(STATE_UNLOADING);
+				flush = true;
+			}
+			else if (message_name == "flush")
+			{
+				flush = true;
+				passMessage = false;
+			}
+			if (flush)
+			{
+				flushMessages();
 			}
 		}
 	}

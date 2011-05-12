@@ -145,8 +145,8 @@ private:
 		STATE_RUNNING,			// 
 		STATE_LAUNCH_FAILURE,	// Failure before plugin loaded
 		STATE_ERROR,			// generic bailout state
-		STATE_CLEANUP,			// clean everything up
 		STATE_EXITING,			// Tried to kill process, waiting for it to exit
+		STATE_CLEANUP,			// clean everything up
 		STATE_DONE				//
 
 	};
@@ -183,6 +183,7 @@ private:
 	bool mDebug;
 	bool mBlocked;
 	bool mPolledInput;
+	bool mReceivedShutdown;
 
 	LLProcessLauncher mDebugger;
 	

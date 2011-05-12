@@ -64,31 +64,41 @@ AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mCanceled(false)
 {
 }
 
+// static
+AITHREADSAFESIMPLE(AIFilePicker::context_map_type, AIFilePicker::sContextMap, );
+
+// static
 void AIFilePicker::store_folder(std::string const& context, std::string const& folder)
 {
 	if (!folder.empty())
 	{
-		mContextMap[context] = folder;
+		LL_DEBUGS("Plugin") << "AIFilePicker::mContextMap[\"" << context << "\"] = \"" << folder << '"' << LL_ENDL;
+		AIAccess<context_map_type>(sContextMap)->operator[](context) = folder;
 	}
 }
 
+// static
 std::string AIFilePicker::get_folder(std::string const& default_path, std::string const& context)
 {
-	context_map_type::iterator iter = mContextMap.find(context);
-	if (iter != mContextMap.end())
+	AIAccess<context_map_type> wContextMap(sContextMap);
+	context_map_type::iterator iter = wContextMap->find(context);
+	if (iter != wContextMap->end())
 	{
 		return iter->second;
 	}
 	else if (!default_path.empty())
 	{
+		LL_DEBUGS("Plugin") << "context \"" << context << "\" not found. Returning default_path \"" << default_path << "\"." << LL_ENDL;
 		return default_path;
 	}
-	else if ((iter = mContextMap.find("savefile")) != mContextMap.end())
+	else if ((iter = wContextMap->find("savefile")) != wContextMap->end())
 	{
+		LL_DEBUGS("Plugin") << "context \"" << context << "\" not found and default_path empty. Returning context \"savefile\": \"" << iter->second << "\"." << LL_ENDL;
 		return iter->second;
 	}
 	else
 	{
+		LL_DEBUGS("Plugin") << "context \"" << context << "\" not found, default_path empty and context \"savefile\" not found. Returning \"$HOME\"." << LL_ENDL;
 		// This is the last resort when all else failed. Open the file chooser in directory 'home'.
 		char const* home = NULL;
 #if LL_WINDOWS
@@ -103,7 +113,7 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 void AIFilePicker::open(ELoadFilter filter, std::string const& default_path, std::string const& context, bool multiple)
 {
 	mContext = context;
-	mFolder = get_folder(default_path, context);
+	mFolder = AIFilePicker::get_folder(default_path, context);
 	mOpenType = multiple ? load_multiple : load;
 	switch(filter)
 	{
@@ -152,7 +162,7 @@ void AIFilePicker::open(std::string const& filename, ESaveFilter filter, std::st
 {
 	mFilename = filename;
 	mContext = context;
-	mFolder = get_folder(default_path, context);
+	mFolder = AIFilePicker::get_folder(default_path, context);
 	mOpenType = save;
 	switch(filter)
 	{
@@ -372,7 +382,7 @@ void AIFilePicker::multiplex_impl(void)
 		case AIFilePicker_done:
 		{
 			// Store folder of first filename as context.
-			store_folder(mContext, getFolder());
+			AIFilePicker::store_folder(mContext, getFolder());
 			finish();
 		}
 	}

@@ -36,15 +36,12 @@
 #ifndef BASIC_PLUGIN_BASE_H
 #define BASIC_PLUGIN_BASE_H
 
-#include <sstream>
-
-#include <sstream>
-
 #include "linden_common.h"
-
 #include "llplugininstance.h"
 #include "llpluginmessage.h"
 #include "llpluginmessageclasses.h"
+
+#include <sstream>
 
 class BasicPluginBase
 {
@@ -65,7 +62,10 @@ public:
 	// Used for log messages. Use macros below.
 	void sendLogMessage(std::string const& message, LLPluginMessage::LLPLUGIN_LOG_LEVEL level);
 
-	// Shoot down the whole process.
+	// Flush all messages to the viewer.
+	void flushMessages(void);
+
+	// Flush all messages and then shoot down the whole process.
 	void sendShutdownMessage(void);
 
 protected:
@@ -127,6 +127,7 @@ int create_plugin(
 #define PLS_INFOS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_INFO, LL_DEBUG_PLUGIN_MESSAGES)
 #define PLS_WARNS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_WARN, 1)
 #define PLS_ERRS PLS_LOG_MESSAGE(LLPluginMessage::LOG_LEVEL_ERR, 1)
+#define PLS_FLUSH do { BasicPluginBase::sPluginBase->flushMessages(); } while(0)
 
 #endif // BASIC_PLUGIN_BASE
 
