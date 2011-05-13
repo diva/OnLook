@@ -310,7 +310,9 @@ void LLViewerShaderMgr::setShaders()
 		S32 deferred_class = 0;
 
 		if (LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
-		    gSavedSettings.getBOOL("RenderDeferred"))
+		    gSavedSettings.getBOOL("RenderDeferred") &&
+			LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") &&
+			gSavedSettings.getBOOL("WindLightUseAtmosShaders"))
 		{
 			deferred_class = 1;
 
@@ -319,9 +321,6 @@ void LLViewerShaderMgr::setShaders()
 
 			//make sure hardware skinning is enabled
 			gSavedSettings.setBOOL("RenderAvatarVP", TRUE);
-			
-			//make sure atmospheric shaders are enabled
-			gSavedSettings.setBOOL("WindLightUseAtmosShaders", TRUE);
 		}
 		if (!(LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders")
 			  && gSavedSettings.getBOOL("WindLightUseAtmosShaders")))
