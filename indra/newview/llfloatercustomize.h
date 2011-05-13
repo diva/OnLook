@@ -131,7 +131,7 @@ protected:
 
 	LLScrollingPanelList*	mScrollingPanelList;
 	LLScrollableContainerView* mScrollContainer;
-	LLVisualParamReset*		mResetParams;
+	LLPointer<LLVisualParamReset>		mResetParams;
 
 	LLInventoryObserver* mInventoryObserver;
 

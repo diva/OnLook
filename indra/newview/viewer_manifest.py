@@ -500,6 +500,8 @@ class DarwinManifest(ViewerManifest):
                 self.path("vivox-runtime/universal-darwin/libortp.dylib", "libortp.dylib")
                 self.path("vivox-runtime/universal-darwin/libvivoxsdk.dylib", "libvivoxsdk.dylib")
                 self.path("vivox-runtime/universal-darwin/SLVoice", "SLVoice")
+
+		self.path("../llcommon/" + self.args['configuration'] + "/libllcommon.dylib", "libllcommon.dylib")
                 
                 libfile = "lib%s.dylib"
                 libdir = "../../libraries/universal-darwin/lib_release"

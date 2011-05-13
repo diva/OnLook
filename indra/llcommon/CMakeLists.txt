@@ -223,3 +223,12 @@ if (LINUX)
     set_property(TARGET llcommon PROPERTY LINK_INTERFACE_LIBRARIES "-lapr-1 -laprutil-1 -lz")
 endif (LINUX)
 
+if (DARWIN)
+    # Don't embed a full path in the library's install name
+    set_target_properties(
+        llcommon
+        PROPERTIES
+        BUILD_WITH_INSTALL_RPATH 1
+        INSTALL_NAME_DIR "@executable_path/../Resources"
+      )
+endif (DARWIN)

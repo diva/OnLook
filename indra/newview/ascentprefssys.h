@@ -98,6 +98,14 @@ protected:
 	BOOL mDisableClickSit;
 	//Text Options ------------------------------------------------------------------------
     BOOL mSpellDisplay;
+    BOOL mKeywordsOn;
+	std::string mKeywordsList;
+	BOOL mKeywordsInIM;
+	BOOL mKeywordsInChat;
+	BOOL mKeywordsChangeColor;
+	BOOL mKeywordsPlaySound;
+	LLUUID mKeywordsSound;
+	LLColor4 mKeywordsColor;
 };
 
 #endif
