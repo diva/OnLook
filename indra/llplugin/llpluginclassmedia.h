@@ -37,7 +37,6 @@
 #define LL_LLPLUGINCLASSMEDIA_H
 
 #include "llpluginclassbasic.h"
-#include "llgltypes.h"
 #include "llrect.h"
 #include "v4color.h"
 
@@ -232,9 +231,9 @@ protected:
 
 	bool		mTextureParamsReceived;		// the mRequestedTexture* fields are only valid when this is true
 	S32 		mRequestedTextureDepth;
-	LLGLenum	mRequestedTextureInternalFormat;
-	LLGLenum	mRequestedTextureFormat;
-	LLGLenum	mRequestedTextureType;
+	U32			mRequestedTextureInternalFormat;
+	U32			mRequestedTextureFormat;
+	U32			mRequestedTextureType;
 	bool		mRequestedTextureSwapBytes;
 	bool		mRequestedTextureCoordsOpenGL;
 	

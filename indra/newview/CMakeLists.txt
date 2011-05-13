@@ -22,6 +22,7 @@ include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLPlugin)
+include(AIStateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -43,6 +44,7 @@ if (WINDOWS)
 endif (WINDOWS)
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/newview
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
@@ -1006,18 +1008,6 @@ set(viewer_HEADER_FILES
 
 source_group("CMake Rules" FILES ViewerInstall.cmake)
 
-set(statemachine_SOURCE_FILES
-    statemachine/aistatemachine.cpp
-    statemachine/aifilepicker.cpp
-	)
-set(statemachine_HEADER_FILES
-	statemachine/aistatemachine.h
-	statemachine/aifilepicker.h
-	statemachine/aidirpicker.h
-	)
-list(APPEND viewer_SOURCE_FILES ${statemachine_SOURCE_FILES})
-list(APPEND viewer_HEADER_FILES ${statemachine_HEADER_FILES})
-
 if (DARWIN)
   LIST(APPEND viewer_SOURCE_FILES llappviewermacosx.cpp)
 
@@ -1434,6 +1424,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLINVENTORY_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
     ${LLPLUGIN_LIBRARIES}
+    ${AISTATEMACHINE_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}

@@ -39,7 +39,6 @@
 #include "lldir.h"
 #include "llfile.h"
 #include "llviewercontrol.h"
-#include "llnotifications.h"
 #include "llpluginclassbasic.h"
 
 class LLViewerPluginManager : public LLRefCount
@@ -64,6 +63,10 @@ public:
 
 	// Return pointer to plugin.
 	LLPluginClassBasic* getPlugin(void) const { return mPluginBase; }
+
+private:
+	// Called from createPlugin.
+	void send_plugin_failure_warning(std::string const& plugin_basename);
 
 protected:
 	LLPluginClassBasic* mPluginBase;		//!< Pointer to the base class of the underlaying plugin.
@@ -104,11 +107,7 @@ LLPluginClassBasic* LLViewerPluginManager::createPlugin(T* user_data)
 	if (mPluginBase)
 		return mPluginBase;
 
-	LL_WARNS("Plugin") << "plugin intialization failed for plugin: " << PLUGIN_TYPE::plugin_basename() << LL_ENDL;
-	LLSD args;
-	args["MIME_TYPE"] = PLUGIN_TYPE::plugin_basename();	// FIXME: Use different notification.
-	LLNotifications::instance().add("NoPlugin", args);
-
+	send_plugin_failure_warning(PLUGIN_TYPE::plugin_basename());
 	return NULL;
 }
 

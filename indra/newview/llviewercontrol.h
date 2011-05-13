@@ -35,8 +35,9 @@
 
 #include <map>
 #include "llcontrol.h"
-#include "lluictrl.h"
 #include "aithreadsafe.h"
+
+class LLUICtrl;
 
 // Enabled this definition to compile a 'hacked' viewer that
 // allows a hacked godmode to be toggled on and off.
@@ -75,8 +76,8 @@ bool handleCloudSettingsChanged(const LLSD& newvalue);
 
 
 //A template would be a little awkward to use here.. so.. a preprocessor macro. Alas. onCommitControlSetting(gSavedSettings) etc.
-inline void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name) {gSavedSettings.setValue((const char*)name,ctrl->getValue());}
-inline void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name) {gSavedPerAccountSettings.setValue((const char*)name,ctrl->getValue());}
+void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name);
+void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name);
 #define onCommitControlSetting(controlgroup) onCommitControlSetting_##controlgroup
 
 //#define TEST_CACHED_CONTROL 1

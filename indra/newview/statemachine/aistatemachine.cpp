@@ -28,16 +28,17 @@
  *   Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "../llviewerprecompiledheaders.h"
+#include "linden_common.h"
 
 #include <algorithm>
 
-#include "../llcallbacklist.h"
-#include "../llviewercontrol.h"
-
+#include "llcallbacklist.h"
+#include "llcontrol.h"
 #include "llfasttimer.h"
 #include "aithreadsafe.h"
 #include "aistatemachine.h"
+
+extern LLControlGroup gSavedSettings;
 
 // Local variables.
 namespace {

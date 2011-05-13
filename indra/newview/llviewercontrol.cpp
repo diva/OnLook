@@ -810,6 +810,16 @@ template <> eControlType get_control_type<LLSD>(const LLSD& in, LLSD& out)
 	return TYPE_LLSD; 
 }
 
+void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)
+{
+	gSavedSettings.setValue((const char*)name,ctrl->getValue());
+}
+
+void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name)
+{
+	gSavedPerAccountSettings.setValue((const char*)name,ctrl->getValue());
+}
+
 #if TEST_CACHED_CONTROL
 
 #define DECL_LLCC(T, V) static LLCachedControl<T> mySetting_##T("TestCachedControl"#T, V)

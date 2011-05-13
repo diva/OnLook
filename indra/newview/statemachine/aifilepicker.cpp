@@ -28,14 +28,14 @@
  *   Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "../llviewerprecompiledheaders.h"
-#include "../llviewermedia.h"
-#include "../lltrans.h"
+#include "linden_common.h"
+#include "lltrans.h"
 #include "llpluginclassmedia.h"
 #include "llpluginmessageclasses.h"
+#include "llsdserialize.h"
 #include "aifilepicker.h"
 #if LL_WINDOWS
-#include "../llviewerwindow.h"
+#include "llviewerwindow.h"
 #endif
 #if LL_GTK && LL_X11
 #include "llwindowsdl.h"
@@ -454,5 +454,64 @@ std::string AIFilePicker::getFolder(void) const
 {
 	// Return the folder of the first filename.
 	return gDirUtilp->getDirName(getFilename());
+}
+
+// static
+bool AIFilePicker::loadFile(std::string const& filename)
+{
+	LLSD data;
+	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, filename);
+	llifstream file(filepath);
+	if (file.is_open())
+	{
+		llinfos << "Loading filepicker context file at \"" << filepath << "\"." << llendl;
+		LLSDSerialize::fromXML(data, file);
+	}
+
+	if (!data.isMap())
+	{
+		llinfos << "File missing, ill-formed, or simply undefined; not changing the file (" << filepath << ")." << llendl;
+		return false;
+	}
+
+	AIAccess<context_map_type> wContextMap(sContextMap);
+
+	for (LLSD::map_const_iterator iter = data.beginMap(); iter != data.endMap(); ++iter)
+	{
+		wContextMap->insert(context_map_type::value_type(iter->first, iter->second.asString()));
+	}
+
+	return true;
+}
+
+// static
+bool AIFilePicker::saveFile(std::string const& filename)
+{
+	AIAccess<context_map_type> wContextMap(sContextMap);
+	if (wContextMap->empty())
+		return false;
+
+	LLSD context;
+
+	for (context_map_type::iterator iter = wContextMap->begin(); iter != wContextMap->end(); ++iter)
+	{
+		context[iter->first] = iter->second;
+	}
+
+	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, filename);
+	llofstream file;
+	file.open(filepath.c_str());
+	if (!file.is_open()) 
+	{
+		llwarns << "Unable to open filepicker context file for save: \"" << filepath << "\"." << llendl;
+		return false;
+	}
+
+	LLSDSerialize::toPrettyXML(context, file);
+
+	file.close();
+	llinfos << "Saved default paths to \"" << filepath << "\"." << llendl;
+
+	return true;
 }
 

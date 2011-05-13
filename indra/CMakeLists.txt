@@ -106,6 +106,7 @@ if (VIEWER)
     add_dependencies(viewer solaris-crash-logger)
   endif (LINUX)
 
+  add_subdirectory(${VIEWER_PREFIX}newview/statemachine)
   add_subdirectory(${VIEWER_PREFIX}newview)
   add_dependencies(viewer secondlife-bin)
 endif (VIEWER)

@@ -33,7 +33,7 @@
 
 #include "aistatemachine.h"
 #include "llpluginclassmedia.h"
-#include "../llviewermedia.h"
+#include "llviewerpluginmanager.h"
 #include <vector>
 
 enum ELoadFilter
@@ -164,6 +164,11 @@ public:
 	std::string const& getFilename(void) const;
 	std::string getFolder(void) const;
 	std::vector<std::string> const& getFilenames(void) const { return mFilenames; }
+
+	// Load the sContextMap from disk.
+	static bool loadFile(std::string const& filename);
+	// Save the sContextMap to disk.
+	static bool saveFile(std::string const& filename);
 
 private:
 	friend class AIPluginFilePicker;

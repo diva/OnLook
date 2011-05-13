@@ -33,6 +33,7 @@
 
 #include "aithreadsafe.h"
 #include "llfasttimer.h"
+#include <boost/signal.hpp>
 
 //!
 // A AIStateMachine is a base class that allows derived classes to
