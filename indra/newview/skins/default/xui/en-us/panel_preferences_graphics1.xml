@@ -207,7 +207,7 @@
 	     width="128">
 		Reflection Detail:
 	</text>
-	<combo_box bottom_delta="-20" control_name="RenderReflectionDetail" enabled = "true" follows="left|top"
+	<combo_box bottom_delta="-20" control_name="RenderReflectionDetail" enabled = "true" follows="left|top" label="Reflection Detail"
 		 left_delta="-2" mouse_opaque="true" name="ReflectionDetailCombo" width="160" height="16">
 		<combo_item type="string" length="1" name="0" value="0">
 			Terrain and Trees
