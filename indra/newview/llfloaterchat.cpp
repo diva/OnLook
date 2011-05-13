@@ -75,6 +75,7 @@
 #include "llfloaterhtml.h"
 #include "llweb.h"
 #include "llstylemap.h"
+#include "ascentkeyword.h"
 
 // linden library includes
 #include "llaudioengine.h"
@@ -592,6 +593,20 @@ LLColor4 get_text_color(const LLChat& chat)
 				// diminish far-off chat
 				text_color.mV[VALPHA] = 0.8f;
 			}
+		}
+	}
+
+	static const LLCachedControl<bool> mKeywordsChangeColor("KeywordsChangeColor", false, gSavedPerAccountSettings);
+	static const LLCachedControl<LLColor4> mKeywordsColor("KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f), gSavedPerAccountSettings);
+
+    if (gAgent.getID() != chat.mFromID)
+	{
+		if (mKeywordsChangeColor)
+		{
+    		if (AscentKeyword::hasKeyword(chat.mText, 1))
+            {
+				text_color = mKeywordsColor;
+            }
 		}
 	}
 

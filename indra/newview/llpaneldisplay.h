@@ -84,6 +84,7 @@ protected:
 	LLComboBox		*mCtrlFullScreen;               // Fullscreen resolution
 	LLCheckBoxCtrl	*mCtrlAutoDetectAspect;			// automatically detect aspect ratio
 	LLComboBox		*mCtrlAspectRatio;				// user provided aspect ratio
+	LLComboBox		*mCtrlReflectionDetail;
 
 	LLCheckBoxCtrl	*mCtrlWindowed;					// windowed mode
 	LLComboBox      *mCtrlWindowSize;               // window size for windowed mode
@@ -110,12 +111,12 @@ protected:
 	LLCheckBoxCtrl	*mCtrlWindLight;
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
 	LLCheckBoxCtrl	*mCtrlShaderEnable;
+	LLCheckBoxCtrl	*mCtrlDeferred;
+	LLCheckBoxCtrl	*mCtrlSunShadow;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
 	LLRadioGroup	*mRadioLightingDetail2;
-
 	LLRadioGroup	*mRadioTerrainDetail;
-	LLRadioGroup	*mRadioReflectionDetail;
 
 	LLTextBox		*mAspectRatioLabel1;
 	LLTextBox		*mDisplayResLabel;
@@ -151,6 +152,8 @@ protected:
 	BOOL mShaderEnable;
 	BOOL mWindLight;
 	BOOL mReflections;
+	BOOL mDeferred;
+	BOOL mSunShadow;
 	BOOL mAvatarVP;
 
 	S32 mReflectionDetail;

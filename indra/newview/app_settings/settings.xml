@@ -9,6 +9,23 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>FloaterAvatarTextRect</key>
+  <map>
+    <key>Comment</key>
+    <string>Avatar texture floater position</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Rect</string>
+    <key>Value</key>
+    <array>
+      <integer>0</integer>
+      <integer>0</integer>
+      <integer>0</integer>
+      <integer>0</integer>
+    </array>
+  </map>
+
 	<key>SianaLegacyJ2CSize</key>
 	<map>
 		<key>Comment</key>
@@ -13613,7 +13630,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+      <integer>0</integer>
     </map>
     <key>UseOutfitFolders</key>
     <map>
