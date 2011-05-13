@@ -1404,7 +1404,7 @@ void LLFloaterSnapshot::Impl::onClickDiscard(void* data)
 // static
 void LLFloaterSnapshot::Impl::onCommitSave(LLUICtrl* ctrl, void* data)
 {
-	if (ctrl->getValue().asString() == "save as")
+	if (ctrl->getValue().asString() == "saveas")
 	{
 		gViewerWindow->resetSnapshotLoc();
 	}
