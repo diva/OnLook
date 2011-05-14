@@ -490,9 +490,19 @@ void LLPanelDisplay::refreshEnabledState()
 		mCtrlAvatarCloth->setEnabled(true);
 	}
 
-	BOOL can_defer = gSavedSettings.getBOOL("RenderUseFBO");
+	//I actually recommend RenderUseFBO:FALSE for ati users when not using deferred, so RenderUseFBO shouldn't control visibility of the element.
+	// Instead, gGLManager.mHasFramebufferObject seems better as it is determined by hardware and not current user settings. -Shyotl
+	//Enabling deferred will force RenderUseFBO to TRUE.
+	BOOL can_defer = gGLManager.mHasFramebufferObject &&
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") && //Ensure it's enabled in the gpu feature table
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderAvatarVP") && //Hardware Skinning. Deferred forces RenderAvatarVP to true
+		LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable") && gSavedSettings.getBOOL("VertexShaderEnable") && //Basic Shaders
+		LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") && gSavedSettings.getBOOL("WindLightUseAtmosShaders"); //Atmospheric Shaders
+
+
 	mCtrlDeferred->setEnabled(can_defer);
 	mCtrlSunShadow->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
+	mCtrlAvatarCloth->setValue(gSavedSettings.getBOOL("RenderAvatarVP"));	//Enabling RenderDeferred changes this setting behind this floaters back.
 
 	// Vertex Shaders
 //	mCtrlShaderEnable->setEnabled(LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable"));

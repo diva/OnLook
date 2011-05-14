@@ -602,6 +602,7 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 void LLPipeline::updateRenderDeferred()
 {
 	sRenderDeferred = (gSavedSettings.getBOOL("RenderDeferred") && 
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
 		LLRenderTarget::sUseFBO &&
 		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
 		gSavedSettings.getBOOL("VertexShaderEnable") && 

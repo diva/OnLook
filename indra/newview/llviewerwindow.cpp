@@ -3385,7 +3385,7 @@ void LLViewerWindow::renderSelections( BOOL for_gl_pick, BOOL pick_parcel_walls,
 								 ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP))) )
 							{
 								LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-								if ( (pAvatar) && (pAvatar->mIsSitting) && (pAvatar->getRoot() == object->getRootEdit()) )
+								if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == object->getRootEdit()) )
 									moveable_object_selected = this_object_movable = FALSE;
 							}
 // [/RLVa:KB]
