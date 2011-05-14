@@ -2716,6 +2716,13 @@ void LLViewerFetchedTexture::saveRawImage()
 		return ;
 	}
 
+	// This shouldn't happen, but it did on Snowglobe 1.5. Better safe than sorry?
+	if (!mRawImage->getData())
+	{
+		llwarns << "mRawImage->getData() returns NULL" << llendl;
+		return;
+	}
+
 	mSavedRawDiscardLevel = mRawDiscardLevel ;
 	mSavedRawImage = new LLImageRaw(mRawImage->getData(), mRawImage->getWidth(), mRawImage->getHeight(), mRawImage->getComponents()) ;
 
