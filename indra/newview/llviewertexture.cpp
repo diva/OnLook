@@ -2681,7 +2681,12 @@ void LLViewerFetchedTexture::setCachedRawImage()
 			{
 				--i ;
 			}
-			
+			if (mRawImage->getComponents() == 5)
+			{
+				llwarns << "IMP-582: Trying to scale an image (" << mID << ") with 5 components!" << llendl;
+				mIsRawImageValid = 0;
+				return;
+			}
 			mRawImage->scale(w >> i, h >> i) ;
 		}
 		if(mCachedRawImage.notNull())
