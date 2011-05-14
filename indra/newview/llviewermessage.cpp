@@ -49,7 +49,6 @@
 #include "llchat.h"
 #include "lldbstrings.h"
 #include "lleconomy.h"
-#include "llfilepicker.h"
 #include "llfocusmgr.h"
 #include "llfollowcamparams.h"
 #include "llinstantmessage.h"

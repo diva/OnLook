@@ -72,6 +72,7 @@
 #include "llmutelist.h"
 #include "llurldispatcher.h"
 #include "llurlhistory.h"
+#include "statemachine/aifilepicker.h"
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llfont.h"
@@ -1352,6 +1353,9 @@ bool LLAppViewer::cleanup()
 
 	// Save URL history file
 	LLURLHistory::saveFile("url_history.xml");
+
+	// Save file- and dirpicker {context, default paths} map.
+	AIFilePicker::saveFile("filepicker_contexts.xml");
 
 	// save mute list. gMuteList used to also be deleted here too.
 	LLMuteList::getInstance()->cache(gAgent.getID());

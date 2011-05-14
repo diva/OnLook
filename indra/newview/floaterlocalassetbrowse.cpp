@@ -55,7 +55,7 @@ this feature is still a work in progress.
 #include <ctime>
 #include "llviewertexturelist.h"
 #include "llviewerobjectlist.h"
-#include "llfilepicker.h"
+#include "statemachine/aifilepicker.h"
 #include "llviewermenufile.h"
 #include "llfloaterimagepreview.h"
 #include "llfile.h"
@@ -453,23 +453,27 @@ LocalAssetBrowser::~LocalAssetBrowser()
 
 void LocalAssetBrowser::AddBitmap()
 {
-	LLFilePicker& picker = LLFilePicker::instance();
-	if ( !picker.getMultipleOpenFiles(LLFilePicker::FFLOAD_IMAGE) ) 
-	   { return; }
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(FFLOAD_IMAGE, "", "image", true);
+	filepicker->run(boost::bind(&LocalAssetBrowser::AddBitmap_continued, filepicker));
+}
+
+void LocalAssetBrowser::AddBitmap_continued(AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+		return;
 
 	bool change_happened = false;
-	std::string filename = picker.getFirstFile();	
-	while( !filename.empty() )
+	std::vector<std::string> const& filenames(filepicker->getFilenames());
+	for(std::vector<std::string>::const_iterator filename = filenames.begin(); filename != filenames.end(); ++filename)
 	{
-		LocalBitmap* unit = new LocalBitmap( filename );
+		LocalBitmap* unit = new LocalBitmap(*filename);
 
 		if	( unit->getIfValidBool() )
 		{
 			loaded_bitmaps.push_back( unit ); 
 			change_happened = true;
 		}
-
-		filename = picker.getNextFile();
 	}
 
 	if ( change_happened )

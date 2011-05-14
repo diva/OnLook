@@ -45,6 +45,7 @@ class LLFriendObserver;
 class LLRelationship;
 class LLScrollListItem;
 class LLScrollListCtrl;
+class AIFilePicker;
 
 /** 
  * @class LLPanelFriends
@@ -144,7 +145,9 @@ private:
 	static void onClickAddFriend(void* user_data);
 	static void onClickRemove(void* user_data);
 	static void onClickExport(void* user_data);
+	static void onClickExport_continued(void* user_data, AIFilePicker* filepicker);
 	static void onClickImport(void* user_data);
+	static void onClickImport_filepicker_continued(AIFilePicker* filepicker);
 public:
 	static void FriendImportState(LLUUID id, bool accepted);
 private:

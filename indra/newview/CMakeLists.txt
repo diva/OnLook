@@ -22,6 +22,7 @@ include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLPlugin)
+include(AIStateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -43,6 +44,7 @@ if (WINDOWS)
 endif (WINDOWS)
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/newview
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
@@ -133,7 +135,6 @@ set(viewer_SOURCE_FILES
     lldebugmessagebox.cpp
     lldebugview.cpp
     lldelayedgestureerror.cpp
-    lldirpicker.cpp
     lldrawable.cpp
     lldrawpoolalpha.cpp
     lldrawpoolavatar.cpp
@@ -155,7 +156,6 @@ set(viewer_SOURCE_FILES
     llface.cpp
     llfasttimerview.cpp
     llfeaturemanager.cpp
-    llfilepicker.cpp
     llfirstuse.cpp
     llflexibleobject.cpp
     llfloaterabout.cpp
@@ -443,6 +443,8 @@ set(viewer_SOURCE_FILES
     llviewerkeyboard.cpp
     llviewerlayer.cpp
     llviewermedia.cpp
+    llviewermediaeventemitter.cpp
+    llviewermediaobserver.cpp
     llviewermediafocus.cpp
     llviewermedia_streamingaudio.cpp
     llviewermenu.cpp
@@ -457,6 +459,7 @@ set(viewer_SOURCE_FILES
     llviewerparceloverlay.cpp
     llviewerpartsim.cpp
     llviewerpartsource.cpp
+    llviewerpluginmanager.cpp
     llviewerregion.cpp
     llviewershadermgr.cpp
     llviewerstats.cpp
@@ -608,7 +611,6 @@ set(viewer_HEADER_FILES
     lldebugmessagebox.h
     lldebugview.h
     lldelayedgestureerror.h
-    lldirpicker.h
     lldrawable.h
     lldrawpool.h
     lldrawpoolalpha.h
@@ -631,7 +633,6 @@ set(viewer_HEADER_FILES
     llface.h
     llfasttimerview.h
     llfeaturemanager.h
-    llfilepicker.h
     llfirstuse.h
     llflexibleobject.h
     llfloaterabout.h
@@ -920,6 +921,7 @@ set(viewer_HEADER_FILES
     llviewerkeyboard.h
     llviewerlayer.h
     llviewermedia.h
+    llviewermediaeventemitter.h
     llviewermediaobserver.h
     llviewermediafocus.h
     llviewermenu.h
@@ -934,6 +936,7 @@ set(viewer_HEADER_FILES
     llviewerparceloverlay.h
     llviewerpartsim.h
     llviewerpartsource.h
+    llviewerpluginmanager.h
     llviewerprecompiledheaders.h
     llviewerregion.h
     llviewershadermgr.h
@@ -1423,6 +1426,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLINVENTORY_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
     ${LLPLUGIN_LIBRARIES}
+    ${AISTATEMACHINE_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}

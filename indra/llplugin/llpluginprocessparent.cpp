@@ -38,6 +38,9 @@
 #include "llpluginprocessparent.h"
 #include "llpluginmessagepipe.h"
 #include "llpluginmessageclasses.h"
+#if LL_LINUX
+#include <boost/program_options/parsers.hpp>
+#endif
 
 #include "llapr.h"
 
@@ -101,6 +104,7 @@ LLPluginProcessParent::LLPluginProcessParent(LLPluginProcessParentOwner *owner)
 	mDebug = false;
 	mBlocked = false;
 	mPolledInput = false;
+	mReceivedShutdown = false;
 	mPollFD.client_data = NULL;
 	mPollFDPool.create();
 
@@ -162,6 +166,8 @@ void LLPluginProcessParent::errorState(void)
 {
 	if(mState < STATE_RUNNING)
 		setState(STATE_LAUNCH_FAILURE);
+	else if (mReceivedShutdown)
+		setState(STATE_EXITING);
 	else
 		setState(STATE_ERROR);
 }
@@ -373,14 +379,12 @@ void LLPluginProcessParent::idle(void)
 				{
 					if(mDebug)
 					{
-						#if LL_DARWIN
 						// If we're set to debug, start up a gdb instance in a new terminal window and have it attach to the plugin process and continue.
-						
+						std::stringstream cmd;
+
+#if LL_DARWIN
 						// The command we're constructing would look like this on the command line:
 						// osascript -e 'tell application "Terminal"' -e 'set win to do script "gdb -pid 12345"' -e 'do script "continue" in win' -e 'end tell'
-
-						std::stringstream cmd;
-						
 						mDebugger.setExecutable("/usr/bin/osascript");
 						mDebugger.addArgument("-e");
 						mDebugger.addArgument("tell application \"Terminal\"");
@@ -392,19 +396,32 @@ void LLPluginProcessParent::idle(void)
 						mDebugger.addArgument("-e");
 						mDebugger.addArgument("end tell");
 						mDebugger.launch();
-
-						#elif LL_LINUX
-
-						std::stringstream cmd;
-
-						mDebugger.setExecutable("/usr/bin/gnome-terminal");
-						mDebugger.addArgument("--geometry=165x24-0+0");
-						mDebugger.addArgument("-e");
-						cmd << "/usr/bin/gdb -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
-						mDebugger.addArgument(cmd.str());
+#elif LL_LINUX
+						// The command we're constructing would look like this on the command line:
+						// /usr/bin/xterm -geometry 160x24-0+0 -e '/usr/bin/gdb -n /proc/12345/exe 12345'
+						// This can be changed by setting the following environment variables, for example:
+						// export LL_DEBUG_TERMINAL_COMMAND="/usr/bin/gnome-terminal --geometry=165x24-0+0 -e %s"
+						// export LL_DEBUG_GDB_PATH=/usr/bin/gdb
+						char const* env;
+						std::string const terminal_command = (env = getenv("LL_DEBUG_TERMINAL_COMMAND")) ? env : "/usr/bin/xterm -geometry 160x24+0+0 -e %s";
+						char const* const gdb_path = (env = getenv("LL_DEBUG_GDB_PATH")) ? env : "/usr/bin/gdb";
+						cmd << gdb_path << " -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
+						std::vector<std::string> tokens = boost::program_options::split_unix(terminal_command, " ");
+						std::vector<std::string>::iterator token = tokens.begin();
+						mDebugger.setExecutable(*token);
+						while (++token != tokens.end())
+						{
+								if (*token == "%s")
+								{
+									mDebugger.addArgument(cmd.str());
+								}
+								else
+								{
+									mDebugger.addArgument(*token);
+								}
+						}
 						mDebugger.launch();
-
-						#endif
+#endif
 					}
 					
 					// This will allow us to time out if the process never starts.
@@ -565,6 +582,9 @@ void LLPluginProcessParent::setSleepTime(F64 sleep_time, bool force_send)
 	}
 }
 
+// This is the viewer process (the parent process)
+//
+// This function is called to send a message to the plugin.
 void LLPluginProcessParent::sendMessage(const LLPluginMessage &message)
 {
 	if(message.hasValue("blocking_response"))
@@ -574,9 +594,23 @@ void LLPluginProcessParent::sendMessage(const LLPluginMessage &message)
 		// reset the heartbeat timer, since there will have been no heartbeats while the plugin was blocked.
 		mHeartbeat.setTimerExpirySec(mPluginLockupTimeout);
 	}
+	if (message.hasValue("gorgon"))
+	{
+		// After this message it is expected that the plugin will not send any more messages for a long time.
+		mBlocked = true;
+	}
 	
 	std::string buffer = message.generate();
-	LL_DEBUGS("Plugin") << "Sending: " << buffer << LL_ENDL;	
+#if LL_DEBUG
+	if (message.getName() == "mouse_event")
+	{
+		LL_DEBUGS("PluginMouseEvent") << "Sending: " << buffer << LL_ENDL;
+	}
+	else
+	{
+		LL_DEBUGS("Plugin") << "Sending: " << buffer << LL_ENDL;
+	}
+#endif
 	writeMessageRaw(buffer);
 	
 	// Try to send message immediately.
@@ -621,6 +655,16 @@ void LLPluginProcessParent::setMessagePipe(LLPluginMessagePipe *message_pipe)
 		dirtyPollSet();
 	}
 }
+
+apr_status_t LLPluginProcessParent::socketError(apr_status_t error)
+{
+	mSocketError = error;
+	if (APR_STATUS_IS_EPIPE(error))
+	{
+		errorState();
+	}
+	return error;
+};
 
 //static 
 void LLPluginProcessParent::dirtyPollSet()
@@ -838,9 +882,13 @@ void LLPluginProcessParent::servicePoll()
 	}
 }
 
+// This the viewer process (the parent process).
+//
+// This function is called when a message is received from a plugin.
+// It parses the message and passes it on to LLPluginProcessParent::receiveMessage.
 void LLPluginProcessParent::receiveMessageRaw(const std::string &message)
 {
-	LL_DEBUGS("Plugin") << "Received: " << message << LL_ENDL;
+	LL_DEBUGS("PluginRaw") << "Received: " << message << LL_ENDL;
 	
 	LLPluginMessage parsed;
 	if(parsed.parse(message) != -1)
@@ -848,6 +896,13 @@ void LLPluginProcessParent::receiveMessageRaw(const std::string &message)
 		if(parsed.hasValue("blocking_request"))
 		{
 			mBlocked = true;
+		}
+		if(parsed.hasValue("perseus"))
+		{
+			mBlocked = false;
+
+			// reset the heartbeat timer, since there will have been no heartbeats while the plugin was blocked.
+			mHeartbeat.setTimerExpirySec(mPluginLockupTimeout);
 		}
 
 		if(mPolledInput)
@@ -891,6 +946,12 @@ void LLPluginProcessParent::receiveMessageEarly(const LLPluginMessage &message)
 	}
 }
 
+// This is the viewer process (the parent process).
+//
+// This function is called for messages that have to
+// be written to the plugin.
+// Note that LLPLUGIN_MESSAGE_CLASS_INTERNAL messages
+// are not sent to the plugin, but are handled here.
 void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 {
 	std::string message_class = message.getClass();
@@ -949,8 +1010,13 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 
 			mCPUUsage = message.getValueReal("cpu_usage");
 
-			LL_DEBUGS("Plugin") << "cpu usage reported as " << mCPUUsage << LL_ENDL;
-			
+			LL_DEBUGS("PluginHeartbeat") << "cpu usage reported as " << mCPUUsage << LL_ENDL;
+		}
+		else if(message_name == "shutdown")
+		{
+			LL_INFOS("Plugin") << "received shutdown message" << LL_ENDL;
+			mReceivedShutdown = true;
+			mOwner->receivedShutdown();
 		}
 		else if(message_name == "shm_add_response")
 		{
@@ -969,6 +1035,30 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 				// and remove it from our map
 				mSharedMemoryRegions.erase(iter);
 			}
+		}
+		else if(message_name == "log_message")
+		{
+			std::string msg=message.getValue("message");
+			S32 level=message.getValueS32("log_level");
+
+			switch(level)
+			{
+				case LLPluginMessage::LOG_LEVEL_DEBUG:
+					LL_DEBUGS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_INFO:
+					LL_INFOS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_WARN:
+					LL_WARNS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				case LLPluginMessage::LOG_LEVEL_ERR:
+					LL_ERRS("Plugin child")<<msg<<LL_ENDL;
+					break;
+				default:
+					break;
+			}
+
 		}
 		else
 		{

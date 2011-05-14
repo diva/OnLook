@@ -416,6 +416,7 @@ void LLEmbeddedItems::bindEmbeddedChars( const LLFontGL* font ) const
 
 			break;
 		  case LLAssetType::AT_SOUND:			img_name = "inv_item_sound.tga";	break;
+		  case LLAssetType::AT_CALLINGCARD:		img_name = "inv_item_callingcard_online.tga";   break;
 		  case LLAssetType::AT_LANDMARK:		
 			if (item->getFlags() & LLInventoryItemFlags::II_FLAGS_LANDMARK_VISITED)
 			{
