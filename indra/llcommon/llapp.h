@@ -256,9 +256,12 @@ protected:
 	  */
 	void stepFrame();
 
-private:
+	/**
+	 * @ brief This method is called once as soon as logging is initialized.
+	 */
 	void startErrorThread();
-	
+
+private:
 	void setupErrorHandling();		// Do platform-specific error-handling setup (signals, structured exceptions)
 	static void runErrorHandler(); // run shortly after we detect an error, ran in the relatively robust context of the LLErrorThread - preferred.
 	static void runSyncErrorHandler(); // run IMMEDIATELY when we get an error, ran in the context of the faulting thread.

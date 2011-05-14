@@ -75,6 +75,7 @@
 #include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
+#include "aithreadsafe.h"
 #include "llviewerobjectlist.h"
 #include "lldrawpoolbump.h"
 #include "emeraldboobutils.h"
@@ -83,8 +84,7 @@
 BOOL 				gHackGodmode = FALSE;
 #endif
 
-
-std::map<std::string, LLControlGroup*> gSettings;
+AITHREADSAFE(settings_map_type, gSettings,);
 LLControlGroup gSavedSettings;	// saved at end of session
 LLControlGroup gSavedPerAccountSettings; // saved at end of session
 LLControlGroup gColors;			// read-only
@@ -218,7 +218,7 @@ static bool handleAvatarLODChanged(const LLSD& newvalue)
 
 static bool handleAvatarPhysicsLODChanged(const LLSD& newvalue)
 {
-	LLVOAvatar::sLODFactor = (F32) newvalue.asReal();
+	LLVOAvatar::sPhysicsLODFactor = (F32) newvalue.asReal();
 	return true;
 }
 

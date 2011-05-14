@@ -568,7 +568,10 @@ bool LLAppViewer::init()
 	gDirUtilp->setSkinFolder("default");
 
 	initLogging();
-	
+
+	// Logging is initialized. Now it's safe to start the error thread.
+	startErrorThread();
+
 	// <edit>
 	gDeleteScheduler = new LLDeleteScheduler();
 	gBuildNewViewsScheduler = new LLBuildNewViewsScheduler();
@@ -857,7 +860,7 @@ bool LLAppViewer::mainLoop()
 	//-------------------------------------------
 
 	// Create IO Pump to use for HTTP Requests.
-	gServicePump = new LLPumpIO(gAPRPoolp);
+	gServicePump = new LLPumpIO;
 	LLHTTPClient::setPump(*gServicePump);
 	LLCurl::setCAFile(gDirUtilp->getCAFile());
 	
@@ -1120,16 +1123,6 @@ bool LLAppViewer::mainLoop()
 
 bool LLAppViewer::cleanup()
 {
-	//----------------------------------------------
-	//this test code will be removed after the test
-	//test manual call stack tracer
-	if(gSavedSettings.getBOOL("QAMode"))
-	{
-		LLError::LLCallStacks::print() ;
-	}
-	//end of the test code
-	//----------------------------------------------
-
 	//flag all elements as needing to be destroyed immediately
 	// to ensure shutdown order
 	LLMortician::setZealous(TRUE);
@@ -1588,8 +1581,9 @@ bool LLAppViewer::initLogging()
 	return true;
 }
 
-bool LLAppViewer::loadSettingsFromDirectory(const std::string& location_key,
-					    bool set_defaults)
+bool LLAppViewer::loadSettingsFromDirectory(AIReadAccess<settings_map_type> const& settings_r,
+                                            std::string const& location_key,
+                                            bool set_defaults)
 {	
 	// Find and vet the location key.
 	if(!mSettingsLocationList.has(location_key))
@@ -1616,11 +1610,13 @@ bool LLAppViewer::loadSettingsFromDirectory(const std::string& location_key,
 	LLSD files = location.get("Files");
 	for(LLSD::map_iterator itr = files.beginMap(); itr != files.endMap(); ++itr)
 	{
-		std::string settings_group = (*itr).first;
+		std::string const settings_group = (*itr).first;
+		settings_map_type::const_iterator const settings_group_iter = settings_r->find(settings_group);
+
 		llinfos << "Attempting to load settings for the group " << settings_group 
 			    << " - from location " << location_key << llendl;
 
-		if(gSettings.find(settings_group) == gSettings.end())
+		if(settings_group_iter == settings_r->end())
 		{
 			llwarns << "No matching settings group for name " << settings_group << llendl;
 			continue;
@@ -1634,11 +1630,10 @@ bool LLAppViewer::loadSettingsFromDirectory(const std::string& location_key,
 			std::string custom_name_setting = file.get("NameFromSetting");
 			// *NOTE: Regardless of the group currently being lodaed,
 			// this setting is always read from the Global settings.
-			if(gSettings[sGlobalSettingsName]->controlExists(custom_name_setting))
+			LLControlGroup const* control_group = settings_r->find(sGlobalSettingsName)->second;
+			if(control_group->controlExists(custom_name_setting))
 			{
-				std::string file_name = 
-					gSettings[sGlobalSettingsName]->getString(custom_name_setting);
-				full_settings_path = file_name;
+				full_settings_path = control_group->getString(custom_name_setting);
 			}
 		}
 
@@ -1654,7 +1649,7 @@ bool LLAppViewer::loadSettingsFromDirectory(const std::string& location_key,
 			requirement = file.get("Requirement").asInteger();
 		}
 		
-		if(!gSettings[settings_group]->loadFromFile(full_settings_path, set_defaults))
+		if(!settings_group_iter->second->loadFromFile(full_settings_path, set_defaults))
 		{
 			if(requirement == 1)
 			{
@@ -1696,10 +1691,14 @@ std::string LLAppViewer::getSettingsFilename(const std::string& location_key,
 
 bool LLAppViewer::initConfiguration()
 {	
+	// Grab and hold write locks for the entire duration of this function.
+	AIWriteAccess<settings_map_type> settings_w(gSettings);
+	settings_map_type& settings(*settings_w);
+
 	//Set up internal pointers	
-	gSettings[sGlobalSettingsName] = &gSavedSettings;
-	gSettings[sPerAccountSettingsName] = &gSavedPerAccountSettings;
-	gSettings[sCrashSettingsName] = &gCrashSettings;
+	settings[sGlobalSettingsName] = &gSavedSettings;
+	settings[sPerAccountSettingsName] = &gSavedPerAccountSettings;
+	settings[sCrashSettingsName] = &gCrashSettings;
 
 	//Load settings files list
 	std::string settings_file_list = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "settings_files.xml");
@@ -1724,7 +1723,7 @@ bool LLAppViewer::initConfiguration()
 	
 	// - load defaults
 	bool set_defaults = true;
-	if(!loadSettingsFromDirectory("Default", set_defaults))
+	if(!loadSettingsFromDirectory(settings_w, "Default", set_defaults))
 	{
 		std::ostringstream msg;
 		msg << "Second Life could not load its default settings file. \n" 
@@ -1841,7 +1840,7 @@ bool LLAppViewer::initConfiguration()
 	}
 
 	// - load overrides from user_settings 
-	loadSettingsFromDirectory("User");
+	loadSettingsFromDirectory(settings_w, "User");
 
 	// - apply command line settings 
 	clp.notify(); 
@@ -1921,7 +1920,7 @@ bool LLAppViewer::initConfiguration()
             {
                 const std::string& name = *itr;
                 const std::string& value = *(++itr);
-                LLControlVariable* c = gSettings[sGlobalSettingsName]->getControl(name);
+                LLControlVariable* c = settings[sGlobalSettingsName]->getControl(name);
                 if(c)
                 {
                     c->setValue(value, false);
@@ -3213,12 +3212,15 @@ void LLAppViewer::saveFinalSnapshot()
 		gSavedSettings.setBOOL("ShowParcelOwners", FALSE);
 		idle();
 
-		std::string snap_filename = gDirUtilp->getLindenUserDir();
-		snap_filename += gDirUtilp->getDirDelimiter();
-		snap_filename += SCREEN_LAST_FILENAME;
-		// use full pixel dimensions of viewer window (not post-scale dimensions)
-		gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, TRUE);
-		mSavedFinalSnapshot = TRUE;
+		std::string snap_filename = gDirUtilp->getLindenUserDir(true);
+		if (!snap_filename.empty())
+		{
+			snap_filename += gDirUtilp->getDirDelimiter();
+			snap_filename += SCREEN_LAST_FILENAME;
+			// use full pixel dimensions of viewer window (not post-scale dimensions)
+			gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, TRUE);
+			mSavedFinalSnapshot = TRUE;
+		}
 	}
 }
 

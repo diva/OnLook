@@ -1386,14 +1386,18 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 	else
 	{
 		//Kill everything that isn't the slider...
-		for(child_list_t::const_iterator it = getChildList()->begin();it!=getChildList()->end();)
+		child_list_t to_remove;
+		child_list_t::const_iterator it;
+		for (it = getChildList()->begin(); it != getChildList()->end(); it++)
 		{
-			if((*it)!=slider && (*it)->getName() != "panel border")
+			if ((*it) != slider && (*it)->getName() != "panel border")
 			{
-				llinfos << "removing: " << (*it)->getName() << llendl;
-				removeChild((*(it++)),TRUE);
+				to_remove.push_back(*it);
 			}
-			else ++it;
+		}
+		for (it = to_remove.begin(); it != to_remove.end(); it++)
+		{
+			removeChild(*it, TRUE);
 		}
 		slider->translate(0,PARAM_HINT_HEIGHT);
 		reshape(getRect().getWidth(),getRect().getHeight()-PARAM_HINT_HEIGHT);

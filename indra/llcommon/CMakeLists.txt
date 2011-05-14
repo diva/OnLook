@@ -13,6 +13,7 @@ include_directories(
     )
 
 set(llcommon_SOURCE_FILES
+	aiaprpool.cpp
 	imageids.cpp
 	indra_constants.cpp
     llapp.cpp
@@ -78,6 +79,8 @@ set(llcommon_SOURCE_FILES
 set(llcommon_HEADER_FILES
     CMakeLists.txt
 
+    aiaprpool.h
+    aithreadsafe.h
     bitpack.h
     ctype_workaround.h
     doublelinkedlist.h
@@ -155,6 +158,7 @@ set(llcommon_HEADER_FILES
     llqueuedthread.h
     llrand.h
     llrun.h
+    llscopedvolatileaprpool.h
     llsd.h
     llsdserialize.h
     llsdserialize_xml.h
@@ -201,7 +205,7 @@ set_source_files_properties(${llcommon_HEADER_FILES}
 
 list(APPEND llcommon_SOURCE_FILES ${llcommon_HEADER_FILES})
 
-add_library (llcommon ${llcommon_SOURCE_FILES})
+add_library (llcommon SHARED ${llcommon_SOURCE_FILES})
 add_dependencies(llcommon prepare)
 target_link_libraries(
     llcommon
@@ -212,3 +216,12 @@ target_link_libraries(
     ${WINDOWS_LIBRARIES}
     )
 
+if (DARWIN)
+    # Don't embed a full path in the library's install name
+    set_target_properties(
+        llcommon
+        PROPERTIES
+        BUILD_WITH_INSTALL_RPATH 1
+        INSTALL_NAME_DIR "@executable_path/../Resources"
+      )
+endif (DARWIN)

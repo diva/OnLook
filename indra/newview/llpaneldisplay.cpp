@@ -233,12 +233,20 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlReflections = getChild<LLCheckBoxCtrl>("Reflections");
 	mCtrlReflections->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
 	mCtrlReflections->setCallbackUserData(this);
-	mRadioReflectionDetail = getChild<LLRadioGroup>("ReflectionDetailRadio");
+	mCtrlReflectionDetail = getChild<LLComboBox>("ReflectionDetailCombo");
 	
 	// WindLight
 	mCtrlWindLight = getChild<LLCheckBoxCtrl>("WindLightUseAtmosShaders");
 	mCtrlWindLight->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
 	mCtrlWindLight->setCallbackUserData(this);
+
+	// Deferred
+	mCtrlDeferred = getChild<LLCheckBoxCtrl>("RenderDeferred");
+	mCtrlDeferred->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
+	mCtrlDeferred->setCallbackUserData(this);
+	mCtrlSunShadow = getChild<LLCheckBoxCtrl>("RenderDeferredSunShadow");
+	mCtrlSunShadow->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
+	mCtrlSunShadow->setCallbackUserData(this);
 
 	//----------------------------------------------------------------------------
 	// Enable Avatar Shaders
@@ -391,6 +399,8 @@ void LLPanelDisplay::refresh()
 	mWindLight = gSavedSettings.getBOOL("WindLightUseAtmosShaders");
 	mReflections = gSavedSettings.getBOOL("RenderWaterReflections");
 	mAvatarVP = gSavedSettings.getBOOL("RenderAvatarVP");
+	mDeferred = gSavedSettings.getBOOL("RenderDeferred");
+	mSunShadow = gSavedSettings.getBOOL("RenderDeferredSunShadow");
 
 	// reflection radio
 	mReflectionDetail = gSavedSettings.getS32("RenderReflectionDetail");
@@ -464,10 +474,7 @@ void LLPanelDisplay::refreshEnabledState()
 	bool bumpshiny = gGLManager.mHasCubeMap && LLCubeMap::sUseCubeMaps && LLFeatureManager::getInstance()->isFeatureAvailable("RenderObjectBump");
 	mCtrlBumpShiny->setEnabled(bumpshiny ? TRUE : FALSE);
 	
-	for (S32 i = 0; i < mRadioReflectionDetail->getItemCount(); ++i)
-	{
-		mRadioReflectionDetail->setIndexEnabled(i, mCtrlReflections->get() && reflections);
-	}
+	mCtrlReflectionDetail->setEnabled(mCtrlReflections->get() && reflections);
 
 	// Avatar Mode
 	S32 max_avatar_shader = LLViewerShaderMgr::instance()->mMaxAvatarShaderLevel;
@@ -482,6 +489,20 @@ void LLPanelDisplay::refreshEnabledState()
 	{
 		mCtrlAvatarCloth->setEnabled(true);
 	}
+
+	//I actually recommend RenderUseFBO:FALSE for ati users when not using deferred, so RenderUseFBO shouldn't control visibility of the element.
+	// Instead, gGLManager.mHasFramebufferObject seems better as it is determined by hardware and not current user settings. -Shyotl
+	//Enabling deferred will force RenderUseFBO to TRUE.
+	BOOL can_defer = gGLManager.mHasFramebufferObject &&
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") && //Ensure it's enabled in the gpu feature table
+		LLFeatureManager::getInstance()->isFeatureAvailable("RenderAvatarVP") && //Hardware Skinning. Deferred forces RenderAvatarVP to true
+		LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable") && gSavedSettings.getBOOL("VertexShaderEnable") && //Basic Shaders
+		LLFeatureManager::getInstance()->isFeatureAvailable("WindLightUseAtmosShaders") && gSavedSettings.getBOOL("WindLightUseAtmosShaders"); //Atmospheric Shaders
+
+
+	mCtrlDeferred->setEnabled(can_defer);
+	mCtrlSunShadow->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
+	mCtrlAvatarCloth->setValue(gSavedSettings.getBOOL("RenderAvatarVP"));	//Enabling RenderDeferred changes this setting behind this floaters back.
 
 	// Vertex Shaders
 //	mCtrlShaderEnable->setEnabled(LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable"));
@@ -538,6 +559,11 @@ void LLPanelDisplay::disableUnavailableSettings()
 
 		mCtrlAvatarCloth->setEnabled(FALSE);
 		mCtrlAvatarCloth->setValue(FALSE);
+
+		mCtrlDeferred->setEnabled(FALSE);
+		mCtrlDeferred->setValue(FALSE);
+		mCtrlSunShadow->setEnabled(FALSE);
+		mCtrlSunShadow->setValue(FALSE);
 	}
 
 	// disabled windlight
@@ -575,6 +601,15 @@ void LLPanelDisplay::disableUnavailableSettings()
 		mCtrlAvatarImpostors->setEnabled(FALSE);
 		mCtrlAvatarImpostors->setValue(FALSE);
 	}
+	// disabled deferred
+	if(!LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred"))
+	{
+		mCtrlDeferred->setEnabled(FALSE);
+		mCtrlDeferred->setValue(FALSE);
+		mCtrlSunShadow->setEnabled(FALSE);
+		mCtrlSunShadow->setValue(FALSE);
+	}
+
 }
 
 void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
@@ -610,7 +645,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mRadioLightingDetail2 != NULL);
 
 	llassert(mRadioTerrainDetail != NULL);
-	llassert(mRadioReflectionDetail != NULL);
+	llassert(mCtrlReflectionDetail != NULL);
 
 	llassert(mMeshDetailText != NULL);
 	llassert(mShaderText != NULL);
@@ -633,7 +668,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mCtrlLODFactor->setVisible(!isHidden);	
 	mCtrlFlexFactor->setVisible(!isHidden);	
 	mCtrlTreeFactor->setVisible(!isHidden);	
-	mCtrlAvatarFactor->setVisible(!isHidden);	
+	mCtrlAvatarFactor->setVisible(!isHidden);
 	mCtrlTerrainFactor->setVisible(!isHidden);
 	mCtrlSkyFactor->setVisible(!isHidden);
 	mCtrlMaxParticle->setVisible(!isHidden);
@@ -657,7 +692,10 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mRadioLightingDetail2->setVisible(!isHidden);
 
 	mRadioTerrainDetail->setVisible(!isHidden);
-	mRadioReflectionDetail->setVisible(!isHidden);
+	mCtrlReflectionDetail->setVisible(!isHidden);
+
+	mCtrlDeferred->setVisible(!isHidden);
+	mCtrlSunShadow->setVisible(!isHidden);
 
 	// text boxes
 	mShaderText->setVisible(!isHidden);
@@ -691,6 +729,8 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setBOOL("WindLightUseAtmosShaders", mWindLight);
 	gSavedSettings.setBOOL("RenderWaterReflections", mReflections);
 	gSavedSettings.setBOOL("RenderAvatarVP", mAvatarVP);
+	gSavedSettings.setBOOL("RenderDeferred", mDeferred);
+	gSavedSettings.setBOOL("RenderDeferredSunShadow", mSunShadow);
 
 	gSavedSettings.setS32("RenderReflectionDetail", mReflectionDetail);
 

@@ -509,6 +509,8 @@ void LLHUDEffectLookAt::render()
         (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject))) return;
 	if (sDebugLookAt && mSourceObject.notNull())
 	{
+		LLGLDepthTest gls_depth(GL_TRUE,GL_FALSE);
+
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 		LLVector3 target = mTargetPos + ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->mHeadp->getWorldPosition();

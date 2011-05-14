@@ -55,6 +55,7 @@
 #include "llsdserialize.h"
 #include "llstl.h"
 #include "lltimer.h"
+#include "aithreadsafe.h"
 
 extern apr_thread_mutex_t* gCallStacksLogMutexp;
 
@@ -357,11 +358,14 @@ namespace
 		void addCallSite(LLError::CallSite&);
 		void invalidateCallSites();
 		
-		static Globals& get();
+		static AIThreadSafeSimple<Globals>& get();
 			// return the one instance of the globals
 
 	private:
 		CallSiteVector callSites;
+
+		friend class AIThreadSafeSimpleDC<Globals>;		// Calls constructor.
+		friend class AIThreadSafeSimple<Globals>;		// Calls destructor.
 
 		Globals()
 			:	messageStreamInUse(false)
@@ -386,7 +390,7 @@ namespace
 		callSites.clear();
 	}
 
-	Globals& Globals::get()
+	AIThreadSafeSimple<Globals>& Globals::get()
 	{
 		/* This pattern, of returning a reference to a static function
 		   variable, is to ensure that this global is constructed before
@@ -394,8 +398,8 @@ namespace
 		   is.
 		   See C++ FAQ Lite, sections 10.12 through 10.14
 		*/
-		static Globals* globals = new Globals;		
-		return *globals;
+		static AIThreadSafeSimpleDCRootPool<Globals>* ts_globals_ptr = new AIThreadSafeSimpleDCRootPool<Globals>;
+		return *ts_globals_ptr;
 	}
 }
 
@@ -424,13 +428,16 @@ namespace LLError
 		
 		int shouldLogCallCounter;
 		
-		static Settings& get();
+		static AIThreadSafeSimple<Settings>& get();
 	
 		static void reset();
-		static Settings* saveAndReset();
-		static void restore(Settings*);
+		static AIThreadSafeSimple<Settings>* saveAndReset();
+		static void restore(AIThreadSafeSimple<Settings>*);
 		
 	private:
+		friend class AIThreadSafeBits<Settings>;		// Calls destructor.
+		friend class AIThreadSafeSimpleDC<Settings>;	// Calls constructor.
+
 		Settings()
 			:	printLocation(false),
 				defaultLevel(LLError::LEVEL_DEBUG),
@@ -446,53 +453,42 @@ namespace LLError
 			for_each(recorders.begin(), recorders.end(),
 					 DeletePointer());
 		}
-		
-		static Settings*& getPtr();
+
+		static AIThreadSafeSimple<Settings>* sSettings;
 	};
+
+	// Pointer to current AIThreadSafeSimple<Settings> object if any (NULL otherwise).
+	AIThreadSafeSimple<Settings>* Settings::sSettings;
 	
-	Settings& Settings::get()
+	AIThreadSafeSimple<Settings>& Settings::get()
 	{
-		Settings* p = getPtr();
-		if (!p)
+		if (!sSettings)
 		{
 			reset();
-			p = getPtr();
 		}
-		return *p;
+		return *sSettings;
 	}
 	
 	void Settings::reset()
 	{
-		Globals::get().invalidateCallSites();
-		
-		Settings*& p = getPtr();
-		delete p;
-		p = new Settings();
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		delete sSettings;
+		sSettings = new AIThreadSafeSimpleDC<Settings>;
 	}
 	
-	Settings* Settings::saveAndReset()
+	AIThreadSafeSimple<Settings>* Settings::saveAndReset()
 	{
-		Globals::get().invalidateCallSites();
-		
-		Settings*& p = getPtr();
-		Settings* originalSettings = p;
-		p = new Settings();
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		AIThreadSafeSimple<Settings>* originalSettings = sSettings;
+		sSettings = new AIThreadSafeSimpleDC<Settings>;
 		return originalSettings;
 	}
 	
-	void Settings::restore(Settings* originalSettings)
+	void Settings::restore(AIThreadSafeSimple<Settings>* originalSettings)
 	{
-		Globals::get().invalidateCallSites();
-		
-		Settings*& p = getPtr();
-		delete p;
-		p = originalSettings;
-	}
-	
-	Settings*& Settings::getPtr()
-	{
-		static Settings* currentSettings = NULL;
-		return currentSettings;
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		delete sSettings;
+		sSettings = originalSettings;
 	}
 }
 
@@ -596,68 +592,64 @@ namespace LLError
 		commonInit(dir);
 	}
 
+	void setPrintLocation(AIAccess<Settings> const& settings_w, bool print)
+	{
+		settings_w->printLocation = print;
+	}
+
 	void setPrintLocation(bool print)
 	{
-		Settings& s = Settings::get();
-		s.printLocation = print;
+		setPrintLocation(AIAccess<Settings>(Settings::get()), print);
 	}
 
 	void setFatalFunction(const FatalFunction& f)
 	{
-		Settings& s = Settings::get();
-		s.crashFunction = f;
+		AIAccess<Settings>(Settings::get())->crashFunction = f;
 	}
 
     FatalFunction getFatalFunction()
     {
-        Settings& s = Settings::get();
-        return s.crashFunction;
+		return AIAccess<Settings>(Settings::get())->crashFunction;
     }
 
 	void setTimeFunction(TimeFunction f)
 	{
-		Settings& s = Settings::get();
-		s.timeFunction = f;
+		AIAccess<Settings>(Settings::get())->timeFunction = f;
+	}
+
+	void setDefaultLevel(AIAccess<Settings> const& settings_w, ELevel level)
+	{
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		settings_w->defaultLevel = level;
 	}
 
 	void setDefaultLevel(ELevel level)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-		g.invalidateCallSites();
-		s.defaultLevel = level;
+		setDefaultLevel(AIAccess<Settings>(Settings::get()), level);
 	}
 
 	void setFunctionLevel(const std::string& function_name, ELevel level)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-		g.invalidateCallSites();
-		s.functionLevelMap[function_name] = level;
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		AIAccess<Settings>(Settings::get())->functionLevelMap[function_name] = level;
 	}
 
 	void setClassLevel(const std::string& class_name, ELevel level)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-		g.invalidateCallSites();
-		s.classLevelMap[class_name] = level;
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		AIAccess<Settings>(Settings::get())->classLevelMap[class_name] = level;
 	}
 
 	void setFileLevel(const std::string& file_name, ELevel level)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-		g.invalidateCallSites();
-		s.fileLevelMap[file_name] = level;
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		AIAccess<Settings>(Settings::get())->fileLevelMap[file_name] = level;
 	}
 
 	void setTagLevel(const std::string& tag_name, ELevel level)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-		g.invalidateCallSites();
-		s.tagLevelMap[tag_name] = level;
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		AIAccess<Settings>(Settings::get())->tagLevelMap[tag_name] = level;
 	}
 }
 
@@ -701,18 +693,16 @@ namespace LLError
 {
 	void configure(const LLSD& config)
 	{
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
+		AIAccess<Settings> settings_w(Settings::get());
+		AIAccess<Globals>(Globals::get())->invalidateCallSites();
+		settings_w->functionLevelMap.clear();
+		settings_w->classLevelMap.clear();
+		settings_w->fileLevelMap.clear();
+		settings_w->tagLevelMap.clear();
+		settings_w->uniqueLogMessages.clear();
 		
-		g.invalidateCallSites();
-		s.functionLevelMap.clear();
-		s.classLevelMap.clear();
-		s.fileLevelMap.clear();
-		s.tagLevelMap.clear();
-		s.uniqueLogMessages.clear();
-		
-		setPrintLocation(config["print-location"]);
-		setDefaultLevel(decodeLevel(config["default-level"]));
+		setPrintLocation(settings_w, config["print-location"]);
+		setDefaultLevel(settings_w, decodeLevel(config["default-level"]));
 		
 		LLSD sets = config["settings"];
 		LLSD::array_const_iterator a, end;
@@ -722,10 +712,10 @@ namespace LLError
 			
 			ELevel level = decodeLevel(entry["level"]);
 			
-			setLevels(s.functionLevelMap,	entry["functions"],	level);
-			setLevels(s.classLevelMap,		entry["classes"],	level);
-			setLevels(s.fileLevelMap,		entry["files"],		level);
-			setLevels(s.tagLevelMap,		entry["tags"],		level);
+			setLevels(settings_w->functionLevelMap, entry["functions"], level);
+			setLevels(settings_w->classLevelMap,	 entry["classes"],   level);
+			setLevels(settings_w->fileLevelMap,	 entry["files"],	 level);
+			setLevels(settings_w->tagLevelMap,		 entry["tags"],		 level);
 		}
 	}
 }
@@ -742,26 +732,34 @@ namespace LLError
 
 
 
-	void addRecorder(Recorder* recorder)
+	void addRecorder(AIAccess<Settings> const& settings_w, Recorder* recorder)
 	{
 		if (recorder == NULL)
 		{
 			return;
 		}
-		Settings& s = Settings::get();
-		s.recorders.push_back(recorder);
+		settings_w->recorders.push_back(recorder);
+	}
+
+	void addRecorder(Recorder* recorder)
+	{
+		addRecorder(AIAccess<Settings>(Settings::get()), recorder);
+	}
+
+	void removeRecorder(AIAccess<Settings> const& settings_w, Recorder* recorder)
+	{
+		if (recorder == NULL)
+		{
+			return;
+		}
+		settings_w->recorders.erase(
+			std::remove(settings_w->recorders.begin(), settings_w->recorders.end(), recorder),
+			settings_w->recorders.end());
 	}
 
 	void removeRecorder(Recorder* recorder)
 	{
-		if (recorder == NULL)
-		{
-			return;
-		}
-		Settings& s = Settings::get();
-		s.recorders.erase(
-			std::remove(s.recorders.begin(), s.recorders.end(), recorder),
-			s.recorders.end());
+		removeRecorder(AIAccess<Settings>(Settings::get()), recorder);
 	}
 }
 
@@ -769,12 +767,12 @@ namespace LLError
 {
 	void logToFile(const std::string& file_name)
 	{
-		LLError::Settings& s = LLError::Settings::get();
+		AIAccess<Settings> settings_w(Settings::get());
 
-		removeRecorder(s.fileRecorder);
-		delete s.fileRecorder;
-		s.fileRecorder = NULL;
-		s.fileRecorderFileName.clear();
+		removeRecorder(settings_w, settings_w->fileRecorder);
+		delete settings_w->fileRecorder;
+		settings_w->fileRecorder = NULL;
+		settings_w->fileRecorderFileName.clear();
 		
 		if (file_name.empty())
 		{
@@ -788,54 +786,51 @@ namespace LLError
 			return;
 		}
 
-		s.fileRecorderFileName = file_name;
-		s.fileRecorder = f;
-		addRecorder(f);
+		settings_w->fileRecorderFileName = file_name;
+		settings_w->fileRecorder = f;
+		addRecorder(settings_w, f);
 	}
 	
 	void logToFixedBuffer(LLLineBuffer* fixedBuffer)
 	{
-		LLError::Settings& s = LLError::Settings::get();
+		AIAccess<Settings> settings_w(Settings::get());
 
-		removeRecorder(s.fixedBufferRecorder);
-		delete s.fixedBufferRecorder;
-		s.fixedBufferRecorder = NULL;
+		removeRecorder(settings_w, settings_w->fixedBufferRecorder);
+		delete settings_w->fixedBufferRecorder;
+		settings_w->fixedBufferRecorder = NULL;
 		
 		if (!fixedBuffer)
 		{
 			return;
 		}
 		
-		s.fixedBufferRecorder = new RecordToFixedBuffer(fixedBuffer);
-		addRecorder(s.fixedBufferRecorder);
+		settings_w->fixedBufferRecorder = new RecordToFixedBuffer(fixedBuffer);
+		addRecorder(settings_w, settings_w->fixedBufferRecorder);
 	}
 
 	std::string logFileName()
 	{
-		LLError::Settings& s = LLError::Settings::get();
-		return s.fileRecorderFileName;
+		return AIAccess<Settings>(Settings::get())->fileRecorderFileName;
 	}
 }
 
 namespace
 {
-	void writeToRecorders(LLError::ELevel level, const std::string& message)
+	void writeToRecorders(AIAccess<LLError::Settings> const& settings_w, LLError::ELevel level, const std::string& message)
 	{
-		LLError::Settings& s = LLError::Settings::get();
-	
 		std::string messageWithTime;
-		
-		for (Recorders::const_iterator i = s.recorders.begin();
-			i != s.recorders.end();
+
+		for (Recorders::const_iterator i = settings_w->recorders.begin();
+			i != settings_w->recorders.end();
 			++i)
 		{
 			LLError::Recorder* r = *i;
 			
-			if (r->wantsTime()  &&  s.timeFunction != NULL)
+			if (r->wantsTime()  &&  settings_w->timeFunction != NULL)
 			{
 				if (messageWithTime.empty())
 				{
-					messageWithTime = s.timeFunction() + " " + message;
+					messageWithTime = settings_w->timeFunction() + " " + message;
 				}
 				
 				r->recordMessage(level, messageWithTime);
@@ -876,6 +871,9 @@ You get:
 	llfoo.cpp(42) : ERROR: something
 	
 */
+
+apr_thread_mutex_t* gLogMutexp;
+apr_thread_mutex_t* gCallStacksLogMutexp;
 
 namespace {
 	bool checkLevelMap(const LevelMap& map, const std::string& key,
@@ -952,10 +950,9 @@ namespace LLError
 			return false;
 		}
 		
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
+		AIAccess<Settings> settings_w(Settings::get());
 		
-		s.shouldLogCallCounter += 1;
+		settings_w->shouldLogCallCounter += 1;
 		
 		std::string class_name = className(site.mClassInfo);
 		std::string function_name = functionName(site.mFunction);
@@ -964,20 +961,20 @@ namespace LLError
 			function_name = class_name + "::" + function_name;
 		}
 
-		ELevel compareLevel = s.defaultLevel;
+		ELevel compareLevel = settings_w->defaultLevel;
 
 		// The most specific match found will be used as the log level,
 		// since the computation short circuits.
 		// So, in increasing order of importance:
 		// Default < Broad Tag < File < Class < Function < Narrow Tag
-		((site.mNarrowTag != NULL) ? checkLevelMap(s.tagLevelMap, site.mNarrowTag, compareLevel) : false)
-		|| checkLevelMap(s.functionLevelMap, function_name, compareLevel)
-		|| checkLevelMap(s.classLevelMap, class_name, compareLevel)
-		|| checkLevelMap(s.fileLevelMap, abbreviateFile(site.mFile), compareLevel)
-		|| ((site.mBroadTag != NULL) ? checkLevelMap(s.tagLevelMap, site.mBroadTag, compareLevel) : false);
+		((site.mNarrowTag != NULL) ? checkLevelMap(settings_w->tagLevelMap, site.mNarrowTag, compareLevel) : false)
+		|| checkLevelMap(settings_w->functionLevelMap, function_name, compareLevel)
+		|| checkLevelMap(settings_w->classLevelMap, class_name, compareLevel)
+		|| checkLevelMap(settings_w->fileLevelMap, abbreviateFile(site.mFile), compareLevel)
+		|| ((site.mBroadTag != NULL) ? checkLevelMap(settings_w->tagLevelMap, site.mBroadTag, compareLevel) : false);
 
 		site.mCached = true;
-		g.addCallSite(site);
+		AIAccess<Globals>(Globals::get())->addCallSite(site);
 		return site.mShouldLog = site.mLevel >= compareLevel;
 	}
 
@@ -987,16 +984,16 @@ namespace LLError
 		LogLock lock;
 		if (lock.ok())
 		{
-			Globals& g = Globals::get();
+			AIAccess<Globals> globals(Globals::get());
 
-			if (!g.messageStreamInUse)
+			if (!globals->messageStreamInUse)
 			{
-				g.messageStreamInUse = true;
-				return &g.messageStream;
+				globals->messageStreamInUse = true;
+				return &globals->messageStream;			// Returns pointer to member of unlocked object, apparently "protected" by having set globals->messageStreamInUse.
 			}
 		}
 		
-		return new std::ostringstream;
+		return new std::ostringstream;				// Holy memory leak.
 	}
 	
 	void Log::flush(std::ostringstream* out, char* message)
@@ -1017,12 +1014,12 @@ namespace LLError
 		   message[127] = '\0' ;
 	   }
 	   
-	   Globals& g = Globals::get();
-       if (out == &g.messageStream)
+	   AIAccess<Globals> globals(Globals::get());
+       if (out == &globals->messageStream)
        {
-           g.messageStream.clear();
-           g.messageStream.str("");
-           g.messageStreamInUse = false;
+           globals->messageStream.clear();
+           globals->messageStream.str("");
+           globals->messageStreamInUse = false;
        }
        else
        {
@@ -1039,20 +1036,23 @@ namespace LLError
 			return;
 		}
 		
-		Globals& g = Globals::get();
-		Settings& s = Settings::get();
-
 		std::string message = out->str();
-		if (out == &g.messageStream)
+
 		{
-			g.messageStream.clear();
-			g.messageStream.str("");
-			g.messageStreamInUse = false;
+			AIAccess<Globals> globals(Globals::get());
+			if (out == &globals->messageStream)
+			{
+				globals->messageStream.clear();
+				globals->messageStream.str("");
+				globals->messageStreamInUse = false;
+			}
+			else
+			{
+				delete out;
+			}
 		}
-		else
-		{
-			delete out;
-		}
+
+		AIAccess<Settings> settings_w(Settings::get());
 
 		if (site.mLevel == LEVEL_ERROR)
 		{
@@ -1060,7 +1060,7 @@ namespace LLError
 			fatalMessage << abbreviateFile(site.mFile)
 						<< "(" << site.mLine << ") : error";
 			
-			writeToRecorders(site.mLevel, fatalMessage.str());
+			writeToRecorders(settings_w, site.mLevel, fatalMessage.str());
 		}
 		
 		
@@ -1075,7 +1075,7 @@ namespace LLError
 			default:				prefix << "XXX: ";		break;
 		};
 		
-		if (s.printLocation)
+		if (settings_w->printLocation)
 		{
 			prefix << abbreviateFile(site.mFile)
 					<< "(" << site.mLine << ") : ";
@@ -1093,8 +1093,8 @@ namespace LLError
 
 		if (site.mPrintOnce)
 		{
-			std::map<std::string, unsigned int>::iterator messageIter = s.uniqueLogMessages.find(message);
-			if (messageIter != s.uniqueLogMessages.end())
+			std::map<std::string, unsigned int>::iterator messageIter = settings_w->uniqueLogMessages.find(message);
+			if (messageIter != settings_w->uniqueLogMessages.end())
 			{
 				messageIter->second++;
 				unsigned int num_messages = messageIter->second;
@@ -1110,14 +1110,14 @@ namespace LLError
 			else 
 			{
 				prefix << "ONCE: ";
-				s.uniqueLogMessages[message] = 1;
+				settings_w->uniqueLogMessages[message] = 1;
 			}
 		}
 
 		if (site.mPrintOnce)
 		{
-			std::map<std::string, unsigned int>::iterator messageIter = s.uniqueLogMessages.find(message);
-			if (messageIter != s.uniqueLogMessages.end())
+			std::map<std::string, unsigned int>::iterator messageIter = settings_w->uniqueLogMessages.find(message);
+			if (messageIter != settings_w->uniqueLogMessages.end())
 			{
 				messageIter->second++;
 				unsigned int num_messages = messageIter->second;
@@ -1133,18 +1133,18 @@ namespace LLError
 			else 
 			{
 				prefix << "ONCE: ";
-				s.uniqueLogMessages[message] = 1;
+				settings_w->uniqueLogMessages[message] = 1;
 			}
 		}
 		
 		prefix << message;
 		message = prefix.str();
 		
-		writeToRecorders(site.mLevel, message);
+		writeToRecorders(settings_w, site.mLevel, message);
 		
-		if (site.mLevel == LEVEL_ERROR  &&  s.crashFunction)
+		if (site.mLevel == LEVEL_ERROR  &&  settings_w->crashFunction)
 		{
-			s.crashFunction(message);
+			settings_w->crashFunction(message);
 		}
 	}
 }
@@ -1154,14 +1154,16 @@ namespace LLError
 
 namespace LLError
 {
-	Settings* saveAndResetSettings()
+	class ThreadSafeSettings { };
+
+	ThreadSafeSettings* saveAndResetSettings()
 	{
-		return Settings::saveAndReset();
+		return reinterpret_cast<ThreadSafeSettings*>(Settings::saveAndReset());
 	}
 	
-	void restoreSettings(Settings* s)
+	void restoreSettings(ThreadSafeSettings* s)
 	{
-		return Settings::restore(s);
+		Settings::restore(reinterpret_cast<AIThreadSafeSimple<Settings>*>(s));
 	}
 
 	std::string removePrefix(std::string& s, const std::string& p)
@@ -1207,8 +1209,7 @@ namespace LLError
 
 	int shouldLogCallCount()
 	{
-		Settings& s = Settings::get();
-		return s.shouldLogCallCounter;
+		return AIAccess<Settings>(Settings::get())->shouldLogCallCounter;
 	}
 
 #if LL_WINDOWS
