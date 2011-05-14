@@ -447,7 +447,7 @@ BOOL LLTaskInvFVBridge::isItemMovable()
 			else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
 			{
 				LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-				if ( (pAvatar) && (pAvatar->mIsSitting) && (pAvatar->getRoot() == pObj->getRootEdit()) )
+				if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == pObj->getRootEdit()) )
 					return FALSE;
 			}
 		}
@@ -470,7 +470,7 @@ BOOL LLTaskInvFVBridge::isItemRemovable()
 		else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
 		{
 			LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-			if ( (pAvatar) && (pAvatar->mIsSitting) && (pAvatar->getRoot() == pObjRoot) )
+			if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == pObjRoot) )
 				return FALSE;
 		}
 	}
