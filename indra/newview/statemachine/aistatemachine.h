@@ -184,7 +184,7 @@ class AIStateMachine {
 	base_state_type mState;						//!< State of the base class.
 	bool mIdle;									//!< True if this state machine is not running.
 	bool mAborted;								//!< True after calling abort() and before calling run().
-	U64 mSleep;									//!< Non-zero while the state machine is sleeping.
+	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 
 	// Callback facilities.
 	// From within an other state machine:
@@ -222,7 +222,7 @@ class AIStateMachine {
 	void idle(void);
 
 	//! Temporarily halt the state machine.
-	void yield_frame(unsigned int frames) { mSleep = -frames; }
+	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
 
 	//! Temporarily halt the state machine.
 	void yield_ms(unsigned int ms) { mSleep = get_cpu_clock_count() + LLFastTimer::countsPerSecond() * ms / 1000; }

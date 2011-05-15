@@ -9,12 +9,16 @@ include(Linking)
 include(PluginAPI)
 include(BasicPluginBase)
 include(UI)
+include(LLWindow)
+include(LLMath)
 
 include_directories(
     ${LLPLUGIN_INCLUDE_DIRS}
     ${LLCOMMON_INCLUDE_DIRS}
     ${BASIC_PLUGIN_BASE_INCLUDE_DIRS}
 	${LLUI_INCLUDE_DIRS}
+	${LLWINDOW_INCLUDE_DIRS}
+	${LLMATH_INCLUDE_DIRS}
 )
 
 ### basic_plugin_filepicker
@@ -50,11 +54,21 @@ add_library(basic_plugin_filepicker
     ${basic_plugin_filepicker_SOURCE_FILES}
 )
 
+if (WINDOWS)
+  set(WINDOWS_API_LIBRARIES
+      ole32
+	  comdlg32
+      )
+else (WINDOWS)
+  set(WINDOWS_API_LIBRARIES "")
+endif (WINDOWS)
+
 target_link_libraries(basic_plugin_filepicker
   ${LLPLUGIN_LIBRARIES}
   ${LLCOMMON_LIBRARIES}
   ${BASIC_PLUGIN_BASE_LIBRARIES}
   ${UI_LIBRARIES}
+  ${WINDOWS_API_LIBRARIES}
 )
 
 add_dependencies(basic_plugin_filepicker

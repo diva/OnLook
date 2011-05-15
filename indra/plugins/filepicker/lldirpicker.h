@@ -38,6 +38,7 @@
 #define LL_LLDIRPICKER_H
 
 #include "stdtypes.h"
+#include "legacy.h"
 
 #if LL_DARWIN
 #include <Carbon/Carbon.h>
@@ -50,11 +51,6 @@
 #include <vector>
 #include "llstring.h"
 
-#endif
-
-// Need commdlg.h for OPENDIRNAMEA
-#ifdef LL_WINDOWS
-#include <commdlg.h>
 #endif
 
 #if LL_LINUX || LL_SOLARIS

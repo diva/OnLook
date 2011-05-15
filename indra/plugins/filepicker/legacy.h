@@ -64,6 +64,8 @@ namespace LLWindowSDL {
 
 // Need commdlg.h for OPENFILENAMEA
 #ifdef LL_WINDOWS
+#include <windows.h>
+#include <WinUser.h>
 #include <commdlg.h>
 #endif
 

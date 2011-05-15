@@ -37,6 +37,9 @@
 
 #include "linden_common.h"
 #include "basic_plugin_base.h"
+#ifdef WIN32
+#include <windows.h>
+#endif
 
 
 // TODO: Make sure that the only symbol exported from this library is LLPluginInitEntryPoint

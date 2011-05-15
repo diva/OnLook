@@ -35,7 +35,6 @@
 #include "llpreprocessor.h"
 #include "llerror.h"
 #include "basic_plugin_base.h"      // For PLS_INFOS etc.
-#include "legacy.h"
 
 #if LL_LINUX || LL_SOLARIS
 # include "llfilepicker.h"
@@ -71,6 +70,7 @@ static int CALLBACK BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lParam, LPAR
 	{
 		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, lpData);
 	}
+	return (uMsg == BFFM_VALIDATEFAILED);
 }
 
 BOOL LLDirPicker::getDir(std::string const& folder)
@@ -85,7 +85,7 @@ BOOL LLDirPicker::getDir(std::string const& folder)
 	memset(&bi, 0, sizeof(bi));
 
 	bi.ulFlags   = BIF_USENEWUI;
-	bi.hwndOwner = (HWND)gViewerWindow->getPlatformWindow();
+	bi.hwndOwner = NULL;//GetCurrentProcess();
 	bi.lpszTitle = NULL;
 	llutf16string tstring = utf8str_to_utf16str(folder);
 	bi.lParam = (LPARAM)tstring.c_str();

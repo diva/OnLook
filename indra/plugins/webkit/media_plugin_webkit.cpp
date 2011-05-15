@@ -323,13 +323,7 @@ private:
 
 		// append details to agent string
 		LLQtWebKit::getInstance()->setBrowserAgentId( mUserAgent );
-
-// Viewer 2+ -- MC
-#if LL_WINDOWS
-		// Set up window open behavior
-		LLQtWebKit::getInstance()->setWindowOpenBehavior(mBrowserWindowId, LLQtWebKit::WOB_SIMULATE_BLANK_HREF_CLICK);
-#endif
-		
+	
 #if !LL_QTWEBKIT_USES_PIXMAPS
 		// don't flip bitmap
 		LLQtWebKit::getInstance()->flipWindow( mBrowserWindowId, true );

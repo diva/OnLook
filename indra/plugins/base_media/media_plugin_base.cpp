@@ -142,9 +142,3 @@ void MediaPluginBase::sendStatus()
 # define LLSYMEXPORT /**/
 #endif
 
-#ifdef WIN32
-int WINAPI DllEntryPoint( HINSTANCE hInstance, unsigned long reason, void* params )
-{
-	return 1;
-}
-#endif

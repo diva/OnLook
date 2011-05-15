@@ -3501,7 +3501,7 @@ class LLSelfSitOrStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->mIsSitting)
+		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->isSitting())
 		{
 // [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT))
@@ -3543,7 +3543,7 @@ class LLSelfEnableSitOrStand : public view_listener_t
 			stand_text = param.substr(offset+1);
 		}
 		
-		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->mIsSitting)
+		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->isSitting())
 		{
 // [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT));
@@ -3760,7 +3760,7 @@ void handle_force_ground_sit(void*)
 {
 	if (gAgent.getAvatarObject())
 	{
-		if(!gAgent.getAvatarObject()->mIsSitting)
+		if(!gAgent.getAvatarObject()->isSitting())
 		{
 			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 		} 
@@ -3961,7 +3961,7 @@ bool handle_sit_or_stand()
 // [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.1.3b) | Added: RLVa-1.2.1c | OK
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_STANDTP)) && (gAgent.getAvatarObject()) )
 		{
-			if (gAgent.getAvatarObject()->mIsSitting)
+			if (gAgent.getAvatarObject()->isSitting())
 			{
 				if (gRlvHandler.canStand())
 					gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
@@ -4078,7 +4078,7 @@ class LLWorldEnableFly : public view_listener_t
 		BOOL sitting = FALSE;
 		if (gAgent.getAvatarObject())
 		{
-			sitting = gAgent.getAvatarObject()->mIsSitting;
+			sitting = gAgent.getAvatarObject()->isSitting();
 		}
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(!sitting);
 		return true;
@@ -5161,7 +5161,7 @@ BOOL sitting_on_selection()
 		return FALSE;
 	}
 
-	return (avatar->mIsSitting && avatar->getRoot() == root_object);
+	return (avatar->isSitting() && avatar->getRoot() == root_object);
 }
 
 class LLToolsSaveToInventory : public view_listener_t
@@ -6007,7 +6007,7 @@ class LLWorldSitOnGround : public view_listener_t
 	{
 		if (gAgent.getAvatarObject())
 		{
-			if(!gAgent.getAvatarObject()->mIsSitting)
+			if(!gAgent.getAvatarObject()->isSitting())
 			{
 				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 			} 
