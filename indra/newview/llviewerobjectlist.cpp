@@ -980,6 +980,7 @@ void LLViewerObjectList::cleanDeadObjects(BOOL use_timer)
 		// No dead objects, don't need to scan object list.
 		return;
 	}
+	llwarns << "ENTERING LLViewerObjectList::cleanDeadObjects" << llendl;
 
 	S32 num_removed = 0;
 	LLViewerObject *objectp;
@@ -1008,6 +1009,7 @@ void LLViewerObjectList::cleanDeadObjects(BOOL use_timer)
 	// before blowing away the dead list.
 	mDeadObjects.clear();
 	mNumDeadObjects = 0;
+	llwarns << "LEAVING LLViewerObjectList::cleanDeadObjects" << llendl;
 }
 
 void LLViewerObjectList::updateActive(LLViewerObject *objectp)

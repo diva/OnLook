@@ -553,7 +553,7 @@ public:
 				}
 			if (LLPipeline::getRenderSoundBeacons(NULL))
 			{
-				addText(xpos, ypos, "Viewing sound beacons (yellow)");
+				addText(xpos, ypos, "Viewing sound beacons (blue/cyan/green/yellow/red)");
 				ypos += y_inc;
 			}
 		}
