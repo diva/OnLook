@@ -36,9 +36,8 @@
 #define LL_LLPLUGININSTANCE_H
 
 #include "llstring.h"
-#include "llapr.h"
 
-#include "apr_dso.h"
+struct apr_dso_handle_t; //Cannot include llapr, as it defines NOUSER for windows, which breaks including commdlg.h!
 
 /**
  * @brief LLPluginInstanceMessageListener receives messages sent from the plugin loader shell to the plugin.

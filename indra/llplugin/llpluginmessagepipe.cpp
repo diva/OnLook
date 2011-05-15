@@ -226,11 +226,11 @@ bool LLPluginMessagePipe::pumpOutput(bool flush)
 				else if (size == 0)
 				{
 					// Nothing at all was written. Increment wait time.
-					timeout_usec = std::min(flush_max_timeout, 2 * timeout_usec);
+					timeout_usec = llmin(flush_max_timeout, 2 * timeout_usec);
 				}
 				else
 				{
-					timeout_usec = std::max(flush_min_timeout, timeout_usec / 2);
+					timeout_usec = llmax(flush_min_timeout, timeout_usec / 2);
 				}
 			}
 			else if(APR_STATUS_IS_EOF(status))

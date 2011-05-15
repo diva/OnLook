@@ -71,6 +71,7 @@ namespace {
 	bool calling_mainloop;
   };
   static AITHREADSAFE(cscm_type, continued_statemachines_and_calling_mainloop, );
+
 }
 
 // static
@@ -254,7 +255,7 @@ void AIStateMachine::multiplex(U64 current_time)
 	}
 	else
 	{
-	  if (current_time < mSleep)
+	  if (current_time < (U64)mSleep)
 		return;
 	  mSleep = 0;
 	}

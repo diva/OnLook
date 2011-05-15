@@ -102,7 +102,8 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 		// This is the last resort when all else failed. Open the file chooser in directory 'home'.
 		char const* home = NULL;
 #if LL_WINDOWS
-		#warning "Attention WINDOWS DEVELOPER: Set 'home' to a sensible default directory (users Desktop?)"
+		home = getenv("HOMEPATH");
+		//#warning "Attention WINDOWS DEVELOPER: Set 'home' to a sensible default directory (users Desktop?)"
 #else
 		home = getenv("HOME");
 #endif
@@ -339,11 +340,11 @@ void AIFilePicker::multiplex_impl(void)
 #if LL_WINDOWS || (LL_GTK && LL_X11)
 			std::ostringstream window_id_str;
 #if LL_WINDOWS
-			unsigned long window_id = gViewerWindow->getPlatformWindow();
+			unsigned long window_id = (unsigned long)gViewerWindow->getPlatformWindow();
 #else
 			unsigned long window_id = LLWindowSDL::get_SDL_XWindowID();
 #endif
-			if (window_id != None)
+			if (window_id != 0)
 			{
 				window_id_str << std::hex << "0x" << window_id;
 				initialization_message.setValue("window_id", window_id_str.str());

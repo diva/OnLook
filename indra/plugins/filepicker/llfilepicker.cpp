@@ -35,7 +35,6 @@
 #include "llpreprocessor.h"
 #include "llerror.h"
 #include "basic_plugin_base.h"		// For PLS_INFOS etc.
-#include "legacy.h"
 
 //
 // Globals
@@ -694,7 +693,6 @@ bool LLFilePickerBase::getSaveFile(ESaveFilter filter, std::string const& filena
 			std::string filename = utf16str_to_utf8str(llutf16string(mFilesW));
 			mFiles.push_back(filename);
 		}
-		gKeyboard->resetKeys();
 	}
 
 	return success;

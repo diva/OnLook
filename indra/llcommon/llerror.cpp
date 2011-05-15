@@ -1248,8 +1248,9 @@ namespace LLError
 #endif
 	void crashAndLoop(const std::string& message)
 	{
+#ifdef CWDEBUG
 		DoutFatal(dc::core, message);
-
+#else
 		// Now, we go kaboom!
 		int* make_me_crash = NULL;
 
@@ -1262,6 +1263,7 @@ namespace LLError
 		
 		// this is an attempt to let Coverity and other semantic scanners know that this function won't be returning ever.
 		exit(EXIT_FAILURE);
+#endif
 	}
 #if LL_WINDOWS
 		#pragma optimize("", on)
