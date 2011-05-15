@@ -30,6 +30,13 @@
 
 #include <map>
 #include <string>
+
+#ifdef LL_WINDOWS
+#include <windows.h>
+#include <WinUser.h>
+#include <commdlg.h>
+#endif
+
 #include "stdtypes.h"				// BOOL
 
 // Translation map.
@@ -60,13 +67,6 @@ namespace LLWindowSDL {
 #undef require
 
 #include "llstring.h"
-#endif
-
-// Need commdlg.h for OPENFILENAMEA
-#ifdef LL_WINDOWS
-#include <windows.h>
-#include <WinUser.h>
-#include <commdlg.h>
 #endif
 
 // mostly for Linux, possible on others

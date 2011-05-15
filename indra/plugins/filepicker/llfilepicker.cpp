@@ -32,7 +32,6 @@
 
 #include "linden_common.h"
 #include "llfilepicker.h"
-#include "llpreprocessor.h"
 #include "llerror.h"
 #include "basic_plugin_base.h"		// For PLS_INFOS etc.
 

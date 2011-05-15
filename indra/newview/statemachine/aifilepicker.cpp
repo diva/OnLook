@@ -103,7 +103,6 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 		char const* home = NULL;
 #if LL_WINDOWS
 		home = getenv("HOMEPATH");
-		//#warning "Attention WINDOWS DEVELOPER: Set 'home' to a sensible default directory (users Desktop?)"
 #else
 		home = getenv("HOME");
 #endif

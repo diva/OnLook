@@ -32,13 +32,8 @@
 
 #include "linden_common.h"
 #include "lldirpicker.h"
-#include "llpreprocessor.h"
 #include "llerror.h"
 #include "basic_plugin_base.h"      // For PLS_INFOS etc.
-
-#if LL_LINUX || LL_SOLARIS
-# include "llfilepicker.h"
-#endif
 
 //
 // Globals
