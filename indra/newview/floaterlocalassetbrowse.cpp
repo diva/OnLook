@@ -376,6 +376,12 @@ std::vector<affected_object> LocalBitmap::getUsingObjects(bool seek_by_type, boo
 		 iter != gObjectList.mObjects.end(); iter++ )
 	{
 		LLViewerObject* obj = *iter;
+
+		if (obj->isDead())
+		{
+			continue;
+		}
+
 		affected_object shell;
 		shell.object = obj;
 		shell.local_sculptmap = false;
