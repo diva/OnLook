@@ -132,6 +132,19 @@ public:
 	bool parseCommandOptions(int argc, char** argv);
 
 	/**
+	 * @brief Keep track of live files automatically.
+	 *
+	 * *TODO: it currently uses the <code>addToEventTimer()</code> API
+	 * instead of the runner. I should probalby use the runner.
+	 *
+	 * *NOTE: DO NOT add the livefile instance to any kind of check loop.
+	 *
+	 * @param livefile A valid instance of an LLLiveFile. This LLApp
+	 * instance will delete the livefile instance.
+	 */
+	void manageLiveFile(LLLiveFile* livefile);
+
+	/**
 	 * @brief Set the options at the specified priority.
 	 *
 	 * This function completely replaces the options at the priority
@@ -285,6 +298,8 @@ private:
 	// The application options.
 	LLSD mOptions;
 
+	// The live files for this application
+	std::vector<LLLiveFile*> mLiveFiles;
 	//@}
 
 private:

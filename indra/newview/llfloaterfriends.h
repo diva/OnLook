@@ -38,7 +38,7 @@
 #include "llpanel.h"
 #include "llstring.h"
 #include "lluuid.h"
-#include "lltimer.h"
+#include "lleventtimer.h"
 #include "llcallingcard.h"
 
 class LLFriendObserver;

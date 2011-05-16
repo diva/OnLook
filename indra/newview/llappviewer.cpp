@@ -44,6 +44,7 @@
 #include "lltexteditor.h"
 #include "llalertdialog.h"
 #include "llerrorcontrol.h"
+#include "lleventtimer.h"
 #include "llviewertexturelist.h"
 #include "llgroupmgr.h"
 #include "llagent.h"

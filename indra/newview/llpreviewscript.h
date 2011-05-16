@@ -40,7 +40,7 @@
 #include "llcombobox.h"
 #include "lliconctrl.h"
 #include "llframetimer.h"
-#include "lltimer.h"
+#include "lleventtimer.h"
 
 
 class LLMessageSystem;

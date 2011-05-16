@@ -39,8 +39,9 @@
 #include "llhttpclient.h"
 #include "llhttpstatuscodes.h"
 #include "llsdserialize.h"
-#include "llsdutil.h" 
-#include "lltimer.h"
+#include "lleventtimer.h"
+#include "llsdutil.h"
+
 #include "llviewerregion.h"
 #include "message.h"
 #include "lltrans.h"
