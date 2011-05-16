@@ -182,7 +182,7 @@
 
 #include "llparcel.h"
 
-
+#include "llpolymesh.h"
 #include "llprimitive.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"
@@ -572,6 +572,13 @@ void handle_toggle_pg(void*);
 void handle_dump_attachments(void *);
 void handle_show_overlay_title(void*);
 void handle_dump_avatar_local_textures(void*);
+void handle_meshes_and_morphs(void*);
+void handle_mesh_save_llm(void* data);
+void handle_mesh_save_current_obj(void*);
+void handle_mesh_save_obj(void*);
+void handle_mesh_load_obj(void*);
+void handle_morph_save_obj(void*);
+void handle_morph_load_obj(void*);
 void handle_debug_avatar_textures(void*);
 void handle_grab_texture(void*);
 BOOL enable_grab_texture(void*);
@@ -1626,6 +1633,11 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 // <edit>
 //#endif
 // </edit>
+
+	LLMenuItemCallGL* mesh_item = new LLMenuItemCallGL("Meshes And Morphs...", handle_meshes_and_morphs);
+	mesh_item->setUserData((void*)mesh_item);  // So we can remove it later
+	menu->append(mesh_item);
+
 	menu->createJumpKeys();
 }
 
@@ -8389,6 +8401,410 @@ void handle_dump_avatar_local_textures(void*)
 	{
 		avatar->dumpLocalTextures();
 	}
+}
+
+void handle_meshes_and_morphs(void* menu_item)
+{
+	LLMenuItemCallGL* item = (LLMenuItemCallGL*) menu_item;
+	LLMenuGL* parent_menu = (LLMenuGL*) item->getParent();
+	parent_menu->remove(item);
+
+	LLMenuGL* menu = new LLMenuGL("Meshes And Morphs");
+	menu->append(new LLMenuItemCallGL("Dump Avatar Mesh Info", &LLPolyMesh::dumpDiagInfo));
+	menu->appendSeparator();
+
+	LLVOAvatar::mesh_info_t mesh_info;
+	LLVOAvatar::getMeshInfo(&mesh_info);
+
+	for(LLVOAvatar::mesh_info_t::iterator info_iter = mesh_info.begin();
+		info_iter != mesh_info.end(); ++info_iter)
+	{
+		const std::string& type = info_iter->first;
+		LLVOAvatar::lod_mesh_map_t& lod_mesh = info_iter->second;
+
+		LLMenuGL* type_menu = new LLMenuGL(type);
+
+		for(LLVOAvatar::lod_mesh_map_t::iterator lod_iter = lod_mesh.begin();
+			lod_iter != lod_mesh.end(); ++lod_iter)
+		{
+			S32 lod = lod_iter->first;
+			std::string& mesh = lod_iter->second;
+
+			std::string caption = llformat ("%s LOD %d", type.c_str(), lod);
+
+			if (lod == 0)
+			{
+				caption = type;
+			}
+
+			LLPolyMeshSharedData* mesh_shared = LLPolyMesh::getMeshData(mesh);
+
+			LLPolyMesh::morph_list_t morph_list;
+			LLPolyMesh::getMorphList(mesh, &morph_list);
+
+			LLMenuGL* lod_menu = new LLMenuGL(caption);
+			lod_menu->append(new LLMenuItemCallGL("Save LLM", handle_mesh_save_llm, NULL, (void*) mesh_shared));
+
+			LLMenuGL* action_menu = new LLMenuGL("Base Mesh");
+			action_menu->append(new LLMenuItemCallGL("Save OBJ", handle_mesh_save_obj, NULL, (void*) mesh_shared));
+
+			if (lod == 0)
+			{
+				// Since an LOD mesh has only faces, we won't enable this for
+				// LOD meshes until we add code for processing the face commands.
+
+				action_menu->append(new LLMenuItemCallGL("Load OBJ", handle_mesh_load_obj, NULL, (void*) mesh_shared));
+			}
+
+			action_menu->createJumpKeys();
+			lod_menu->appendMenu(action_menu);
+
+			action_menu = new LLMenuGL("Current Mesh");
+
+			action_menu->append(new LLMenuItemCallGL("Save OBJ", handle_mesh_save_current_obj, NULL, (void*) mesh_shared));
+
+			action_menu->createJumpKeys();
+			lod_menu->appendMenu(action_menu);
+
+			lod_menu->appendSeparator();
+
+			for(LLPolyMesh::morph_list_t::iterator morph_iter = morph_list.begin();
+				morph_iter != morph_list.end(); ++morph_iter)
+			{
+				std::string const& morph_name = morph_iter->first;
+				LLPolyMorphData* morph_data = morph_iter->second;
+
+				action_menu = new LLMenuGL(morph_name);
+
+				action_menu->append(new LLMenuItemCallGL("Save OBJ", handle_morph_save_obj, NULL, (void*) morph_data));
+				action_menu->append(new LLMenuItemCallGL("Load OBJ", handle_morph_load_obj, NULL, (void*) morph_data));
+
+				action_menu->createJumpKeys();
+				lod_menu->appendMenu(action_menu);
+			}
+
+			lod_menu->createJumpKeys();
+			type_menu->appendMenu(lod_menu);
+		}
+		type_menu->createJumpKeys();
+		menu->appendMenu(type_menu);
+	}
+
+	menu->createJumpKeys();
+	menu->updateParent(LLMenuGL::sMenuContainer);
+	parent_menu->appendMenu(menu);
+
+	LLMenuGL::sMenuContainer->hideMenus();
+	LLFloater* tear_off_menu = LLTearOffMenu::create(menu);
+	tear_off_menu->setFocus(TRUE);
+}
+
+static void handle_mesh_save_llm_continued(void* data, AIFilePicker* filepicker);
+void handle_mesh_save_llm(void* data)
+{
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(*mesh_name, FFSAVE_ALL, default_path, "mesh_llm");
+	filepicker->run(boost::bind(&handle_mesh_save_llm_continued, data, filepicker));
+}
+
+static void handle_mesh_save_llm_continued(void* data, AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	llinfos << "Selected " << selected_filename << " for mesh " << *mesh_name <<llendl;
+
+	std::string bak_filename = selected_filename + ".bak";
+
+	llstat stat_selected;
+	llstat stat_bak;
+
+	if ((LLFile::stat(selected_filename, &stat_selected) == 0)
+	&&  (LLFile::stat(bak_filename, &stat_bak) != 0))
+	{
+		// NB: stat returns non-zero if it can't read the file, for example
+		// if it doesn't exist.  LLFile has no better abstraction for
+		// testing for file existence.
+
+		// The selected file exists, but there is no backup yet, so make one.
+		if (LLFile::rename(selected_filename, bak_filename) != 0 )
+		{
+			llerrs << "can't rename: " << selected_filename << llendl;
+			return;
+		}
+	}
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "wb");
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+
+		if ((LLFile::stat(bak_filename, &stat_bak) == 0)
+		&&  (LLFile::stat(selected_filename, &stat_selected) != 0) )
+		{
+			// Rename the backup to its original name
+			if (LLFile::rename(bak_filename, selected_filename) != 0 )
+			{
+				llerrs << "can't rename: " << bak_filename << " back to " << selected_filename << llendl;
+				return;
+			}
+		}
+		return;
+	}
+
+	LLPolyMesh mesh(mesh_shared,NULL);
+	mesh.saveLLM(fp);
+	fclose(fp);
+}
+
+static void handle_mesh_save_current_obj_continued(void* data, AIFilePicker* filepicker);
+void handle_mesh_save_current_obj(void* data)
+{
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	std::string file_name = *mesh_name + "_current.obj";
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
+	filepicker->run(boost::bind(&handle_mesh_save_current_obj_continued, data, filepicker));
+}
+
+static void handle_mesh_save_current_obj_continued(void* data, AIFilePicker* filepicker)
+{
+	if(!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*)data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	llinfos << "Selected " << selected_filename << " for mesh " << *mesh_name <<llendl;
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "wb");			/*Flawfinder: ignore*/
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+		return;
+	}
+
+	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	if ( avatar )
+	{
+		LLPolyMesh* mesh = avatar->getMesh (mesh_shared);
+		mesh->saveOBJ(fp);
+	}
+	fclose(fp);
+}
+
+static void handle_mesh_save_obj_continued(void* data, AIFilePicker* filepicker);
+void handle_mesh_save_obj(void* data)
+{
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	std::string file_name = *mesh_name + ".obj";
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
+	filepicker->run(boost::bind(&handle_mesh_save_obj_continued, data, filepicker));
+}
+
+static void handle_mesh_save_obj_continued(void* data, AIFilePicker* filepicker)
+{
+	if(!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	llinfos << "Selected " << selected_filename << " for mesh " << *mesh_name <<llendl;
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "wb");			/*Flawfinder: ignore*/
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+		return;
+	}
+
+	LLPolyMesh mesh(mesh_shared,NULL);
+	mesh.saveOBJ(fp);
+	fclose(fp);
+}
+
+static void handle_mesh_load_obj_continued(void* data, AIFilePicker* filepicker);
+void handle_mesh_load_obj(void* data)
+{
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
+	filepicker->run(boost::bind(&handle_mesh_load_obj_continued, data, filepicker));
+}
+
+static void handle_mesh_load_obj_continued(void* data, AIFilePicker* filepicker)
+{
+	if(!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMeshSharedData* mesh_shared = (LLPolyMeshSharedData*) data;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+
+	llinfos << "Selected " << selected_filename << " for mesh " << *mesh_name <<llendl;
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "rb");			/*Flawfinder: ignore*/
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+		return;
+	}
+
+	LLPolyMesh mesh(mesh_shared,NULL);
+	mesh.loadOBJ(fp);
+	mesh.setSharedFromCurrent();
+	fclose(fp);
+}
+
+static void handle_morph_save_obj_continued(void* data, AIFilePicker* filepicker);
+void handle_morph_save_obj(void* data)
+{
+	LLPolyMorphData* morph_data = (LLPolyMorphData*) data;
+	LLPolyMeshSharedData* mesh_shared = morph_data->mMesh;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+	std::string const& morph_name = morph_data->getName();
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	llinfos << "Save morph OBJ " << morph_name << " of mesh " << *mesh_name <<llendl;
+
+	std::string file_name = *mesh_name + "." + morph_name + ".obj";
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
+	filepicker->run(boost::bind(&handle_morph_save_obj_continued, data, filepicker));
+}
+
+static void handle_morph_save_obj_continued(void* data, AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMorphData* morph_data = (LLPolyMorphData*)data;
+
+	llinfos << "Selected " << selected_filename << llendl;
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "wb");			/*Flawfinder: ignore*/
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+		return;
+	}
+
+	morph_data->saveOBJ(fp);
+	fclose(fp);
+}
+
+static void handle_morph_load_obj_continued(void* data, AIFilePicker* filepicker);
+void handle_morph_load_obj(void* data)
+{
+	LLPolyMorphData* morph_data = (LLPolyMorphData*) data;
+	LLPolyMeshSharedData* mesh_shared = morph_data->mMesh;
+	std::string const* mesh_name = LLPolyMesh::getSharedMeshName(mesh_shared);
+	std::string const& morph_name = morph_data->getName();
+	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
+
+	if (!mesh_name)
+	{
+		llwarns << "LPolyMesh::getSharedMeshName returned NULL" << llendl;
+		return;
+	}
+
+	llinfos << "Load morph OBJ " << morph_name << " of mesh " << *mesh_name <<llendl;
+
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
+	filepicker->run(boost::bind(&handle_morph_load_obj_continued, data, filepicker));
+}
+
+static void handle_morph_load_obj_continued(void* data, AIFilePicker* filepicker)
+{
+	if(!filepicker->hasFilename())
+	{
+		llwarns << "No file" << llendl;
+		return;
+	}
+	std::string selected_filename = filepicker->getFilename();
+	LLPolyMorphData* morph_data = (LLPolyMorphData*) data;
+	LLPolyMeshSharedData* mesh_shared = morph_data->mMesh;
+
+	llinfos << "Selected " << selected_filename <<llendl;
+
+	LLFILE* fp = LLFile::fopen(selected_filename, "rb");			/*Flawfinder: ignore*/
+	if (!fp)
+	{
+		llerrs << "can't open: " << selected_filename << llendl;
+		return;
+	}
+
+	LLPolyMesh mesh(mesh_shared,NULL);
+	mesh.loadOBJ(fp);
+	fclose(fp);
+
+	morph_data->setMorphFromMesh(&mesh);
 }
 
 void handle_debug_avatar_textures(void*)
