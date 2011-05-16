@@ -29,7 +29,7 @@ if(NOT WORD_SIZE EQUAL 32)
 	else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
 		add_definitions(-fPIC)
 	endif(WINDOWS)
-  endif (NOT WORD_SIZE EQUAL 32)
+endif (NOT WORD_SIZE EQUAL 32)
 
 set(basic_plugin_filepicker_SOURCE_FILES
 	basic_plugin_filepicker.cpp

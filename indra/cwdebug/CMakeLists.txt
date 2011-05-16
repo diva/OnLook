@@ -26,7 +26,13 @@ set(cwdebug_HEADER_FILES
 set_source_files_properties(${cwdebug_HEADER_FILES}
                             PROPERTIES HEADER_FILE_ONLY TRUE)
 
-add_definitions(-fPIC)
+if(NOT WORD_SIZE EQUAL 32)
+	if(WINDOWS)
+		add_definitions(/FIXED:NO)
+	else(WINDOWS) # not windows therefore gcc LINUX and DARWIN
+		add_definitions(-fPIC)
+	endif(WINDOWS)
+endif (NOT WORD_SIZE EQUAL 32)
 
 list(APPEND cwdebug_SOURCE_FILES ${cwdebug_HEADER_FILES})
 
