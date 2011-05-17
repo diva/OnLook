@@ -81,6 +81,7 @@ static struct ft_display_info ft_display_table[] =
 	{ LLFastTimer::FTM_MESSAGES,			" System Messages",		&LLColor4::grey1, 1 },
 	{ LLFastTimer::FTM_MOUSEHANDLER,		"  Mouse",				&LLColor4::grey1, 0 },
 	{ LLFastTimer::FTM_KEYHANDLER,			"  Keyboard",			&LLColor4::grey1, 0 },
+	{ LLFastTimer::FT_STRING_FORMAT,		" String Format",		&LLColor4::grey3, 0 },
 	{ LLFastTimer::FTM_SLEEP,				" Sleep",				&LLColor4::grey2, 0 },
 	{ LLFastTimer::FTM_IDLE,				" Idle",				&blue0, 0 },
 	{ LLFastTimer::FTM_PUMP,				"  Pump",				&LLColor4::magenta2, 1 },
