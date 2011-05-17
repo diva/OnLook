@@ -548,6 +548,7 @@ bool handleAscentSelfTag(const LLSD& newvalue)
 		gAgent.getAvatarObject()->mClientTag = "";
 	return true;
 }
+
 bool handleAscentGlobalTag(const LLSD& newvalue)
 {
 	S32 object_count = gObjectList.getNumObjects();
@@ -557,6 +558,13 @@ bool handleAscentGlobalTag(const LLSD& newvalue)
 		if (objectp && objectp->isAvatar())
 			((LLVOAvatar*)objectp)->mClientTag = "";
 	}
+	return true;
+}
+
+bool handleAscentAvatarModifier(const LLSD& newvalue)
+{
+	llinfos << "Calling gAgent.sendAgentSetAppearance() because AscentAvatar*Modifier changed." << llendl;
+	gAgent.sendAgentSetAppearance();
 	return true;
 }
 
@@ -725,6 +733,9 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
+	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
+	gSavedSettings.getControl("AscentAvatarZModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
 
     // [Ansariel: Display name support]
 	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _1));
