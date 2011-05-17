@@ -78,6 +78,7 @@ set(viewer_SOURCE_FILES
     ascentdaycyclemanager.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
+    ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
     dhparam.cpp
@@ -552,6 +553,7 @@ set(viewer_HEADER_FILES
     ascentdaycyclemanager.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
+    ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
     emerald.h
