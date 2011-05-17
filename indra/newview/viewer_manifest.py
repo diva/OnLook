@@ -212,8 +212,13 @@ class WindowsManifest(ViewerManifest):
 
         # For using FMOD for sound... DJS
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-          self.path("fmod.dll")
-          self.end_prefix()
+            try:
+                self.path("fmod.dll")
+                pass
+            except:
+                print "Skipping fmod.dll - not found"
+                pass
+            self.end_prefix()
 
         # For textures
         #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
