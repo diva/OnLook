@@ -503,7 +503,7 @@ void LLHUDEffectLookAt::setSourceObject(LLViewerObject* objectp)
 void LLHUDEffectLookAt::render()
 {
 	static const LLCachedControl<bool> private_look_at("PrivateLookAt",false);
-	static const LLCachedControl<bool> show_look_at("ShowLookAt",false);
+	static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
 
     if (private_look_at && (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject)))
         return;
@@ -569,7 +569,7 @@ void LLHUDEffectLookAt::render()
 //-----------------------------------------------------------------------------
 void LLHUDEffectLookAt::update()
 {
-	static const LLCachedControl<bool> show_look_at("ShowLookAt",false);
+	static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
 
     // If the target object is dead, set the target object to NULL
 	if (!mTargetObject.isNull() && mTargetObject->isDead())

@@ -1598,7 +1598,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	menu->append(new LLMenuItemCallGL("Slow Motion Animations", &slow_mo_animations, NULL));
 
 	LLMenuItemCheckGL* item;
-	item = new LLMenuItemCheckGL("Show Look At", menu_toggle_control, NULL, menu_check_control, (void*)"ShowLookAt");
+	item = new LLMenuItemCheckGL("Show Look At", menu_toggle_control, NULL, menu_check_control, (void*)"AscentShowLookAt");
 	menu->append(item);
 
 	menu->append(new LLMenuItemToggleGL("Show Point At", &LLHUDEffectPointAt::sDebugPointAt));
@@ -3736,19 +3736,19 @@ void handle_fake_away_status(void*)
 
 void handle_hide_typing_notification(void*)
 {
-	if (!gSavedSettings.controlExists("HideTypingNotification")) 
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
+	if (!gSavedSettings.controlExists("AscentHideTypingNotification")) 
+		gSavedSettings.declareBOOL("AscentHideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
 
-	BOOL hide = gSavedSettings.getBOOL("HideTypingNotification");
+	BOOL hide = gSavedSettings.getBOOL("AscentHideTypingNotification");
 	if (hide)
 	{
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", FALSE);
+		gSavedSettings.declareBOOL("AscentHideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
+		gSavedSettings.setBOOL("AscentHideTypingNotification", FALSE);
 	}
 	else
 	{
-		gSavedSettings.declareBOOL("HideTypingNotification", TRUE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", TRUE);
+		gSavedSettings.declareBOOL("AscentHideTypingNotification", TRUE, "Hide your 'Name is typing...' message when Instant Messaging.");
+		gSavedSettings.setBOOL("AscentHideTypingNotification", TRUE);
 	}
 
 	LLChat chat;

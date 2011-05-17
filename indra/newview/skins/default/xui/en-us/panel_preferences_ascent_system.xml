@@ -261,7 +261,7 @@ Teleport to avatar (usage: cmd name)
         tool_tip="Turns off broadcasting headturns and lookat beacons for yourself."
         mouse_opaque="true" name="private_look_at_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="ShowLookAt" enabled="true"
+      <check_box bottom_delta="-20" control_name="AscentShowLookAt" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
         label="Show others' LookAt beacons" left="10"
         tool_tip="Shows you where others are looking."

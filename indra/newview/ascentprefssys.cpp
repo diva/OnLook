@@ -136,7 +136,7 @@ void LLPrefsAscentSys::refreshValues()
     mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
     mDisablePointAtAndBeam		= gSavedSettings.getBOOL("DisablePointAtAndBeam");
     mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
-    mShowLookAt					= gSavedSettings.getBOOL("ShowLookAt");
+    mShowLookAt					= gSavedSettings.getBOOL("AscentShowLookAt");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
@@ -195,7 +195,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("BroadcastViewerEffects",        mBroadcastViewerEffects);
     gSavedSettings.setBOOL("DisablePointAtAndBeam",         mDisablePointAtAndBeam);
     gSavedSettings.setBOOL("PrivateLookAt",                 mPrivateLookAt);
-    gSavedSettings.setBOOL("ShowLookAt",                    mShowLookAt);
+    gSavedSettings.setBOOL("AscentShowLookAt",              mShowLookAt);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);

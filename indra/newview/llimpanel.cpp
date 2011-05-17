@@ -2388,7 +2388,7 @@ void LLFloaterIMPanel::setTyping(BOOL typing)
 
 void LLFloaterIMPanel::sendTypingState(BOOL typing)
 {
-	if(gSavedSettings.getBOOL("HideTypingNotification"))
+	if(gSavedSettings.getBOOL("AscentHideTypingNotification"))
 		return;
 	// Don't want to send typing indicators to multiple people, potentially too
 	// much network traffic.  Only send in person-to-person IMs.
