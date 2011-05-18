@@ -71,7 +71,6 @@ namespace {
 	bool calling_mainloop;
   };
   static AITHREADSAFE(cscm_type, continued_statemachines_and_calling_mainloop, );
-
 }
 
 // static
@@ -177,8 +176,8 @@ void AIStateMachine::finish(void)
 	idle();
   mState = bs_finish;
   finish_impl();
-  // Did finish_impl call deleteMe? Then that is only the default. Remember it.
-  bool default_delete = (mState == bs_deleted);
+  // Did finish_impl call kill()? Then that is only the default. Remember it.
+  bool default_delete = (mState == bs_killed);
   mState = bs_finish;
   if (mParent)
   {
@@ -202,20 +201,20 @@ void AIStateMachine::finish(void)
   mState = bs_initialize;
   if (mCallback)
   {
-	mCallback->callback(!mAborted);			// This can/may call deleteMe(), in which case the whole AIStateMachine will be deleted from the mainloop.
+	mCallback->callback(!mAborted);			// This can/may call kill(), in which case the whole AIStateMachine will be deleted from the mainloop.
 	delete mCallback;
 	mCallback = NULL;
   }
   // Restore the request for deletion if we weren't started again from the callback.
   if (default_delete && mState == bs_initialize)
-	mState = bs_deleted;
+	mState = bs_killed;
 }
 
-void AIStateMachine::deleteMe(void)
+void AIStateMachine::kill(void)
 {
   // Should only be called from finish().
   llassert(mIdle && (mState == bs_initialize || mState == bs_finish));
-  mState = bs_deleted;
+  mState = bs_killed;
 }
 
 // Return stringified 'state'.
@@ -229,7 +228,7 @@ char const* AIStateMachine::state_str(state_type state)
 	  AI_CASE_RETURN(bs_run);
 	  AI_CASE_RETURN(bs_abort);
 	  AI_CASE_RETURN(bs_finish);
-	  AI_CASE_RETURN(bs_deleted);
+	  AI_CASE_RETURN(bs_killed);
 	}
   }
   return state_str_impl(state);
@@ -326,7 +325,7 @@ void AIStateMachine::mainloop(void*)
 	{
 	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
 	  iter = active_statemachines.erase(iter);
-	  if (statemachine.mState == bs_deleted)
+	  if (statemachine.mState == bs_killed)
 	  {
 	  	Dout(dc::statemachine, "Deleting " << (void*)&statemachine);
 		delete &statemachine;

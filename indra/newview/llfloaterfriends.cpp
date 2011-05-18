@@ -1082,7 +1082,7 @@ void LLPanelFriends::onClickExport(void* user_data)
 {
 	std::string agn;
 	gAgent.getName(agn);
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(agn + ".friendlist", FFSAVE_ALL);
 	filepicker->run(boost::bind(&LLPanelFriends::onClickExport_continued, user_data, filepicker));
 }
@@ -1132,7 +1132,7 @@ bool LLPanelFriends::merging;
 
 void LLPanelFriends::onClickImport(void* user_data)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open();
 	filepicker->run(boost::bind(&LLPanelFriends::onClickImport_filepicker_continued, filepicker));
 }

@@ -1325,7 +1325,7 @@ void LLPanelRegionTerrainInfo::onChangeSunHour(LLUICtrl* ctrl, void*)
 void LLPanelRegionTerrainInfo::onClickDownloadRaw(void* data)
 {
 	LLPanelRegionTerrainInfo* self = (LLPanelRegionTerrainInfo*)data;
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("terrain.raw", FFSAVE_RAW);
 	filepicker->run(boost::bind(&LLPanelRegionTerrainInfo::onClickUploadRaw_continued, self, filepicker));
 }
@@ -1350,7 +1350,7 @@ void LLPanelRegionTerrainInfo::onClickDownloadRaw_continued(AIFilePicker* filepi
 void LLPanelRegionTerrainInfo::onClickUploadRaw(void* data)
 {
 	LLPanelRegionTerrainInfo* self = (LLPanelRegionTerrainInfo*)data;
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_RAW);
 	filepicker->run(boost::bind(&LLPanelRegionTerrainInfo::onClickUploadRaw_continued, self, filepicker));
 }

@@ -203,7 +203,7 @@ void LLPanelPick::initNewPick()
 //Imports a new pick from an xml - RK
 void LLPanelPick::importNewPick(void (*callback)(void*, bool), void* data)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML, "", "export");
 	filepicker->run(boost::bind(&LLPanelPick::importNewPick_continued, this, callback, data, filepicker));
 }
@@ -244,7 +244,7 @@ void LLPanelPick::importNewPick_continued(void (*callback)(void*, bool), void* d
 //Exports a pick to an XML - RK
 void LLPanelPick::exportPick()
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML, "", "export");
 	filepicker->run(boost::bind(&LLPanelPick::exportPick_continued, this, filepicker));
 }

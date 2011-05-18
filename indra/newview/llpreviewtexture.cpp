@@ -381,7 +381,7 @@ void LLPreviewTexture::saveAs()
 		return;
 
 	const LLViewerInventoryItem* item = getItem() ;
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(item ? LLDir::getScrubbedFileName(item->getName()) + ".tga" : LLStringUtil::null, FFSAVE_TGA, "", "image");
 	filepicker->run(boost::bind(&LLPreviewTexture::saveAs_continued, this, item, filepicker));
 }

@@ -459,7 +459,7 @@ LocalAssetBrowser::~LocalAssetBrowser()
 
 void LocalAssetBrowser::AddBitmap()
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_IMAGE, "", "image", true);
 	filepicker->run(boost::bind(&LocalAssetBrowser::AddBitmap_continued, filepicker));
 }

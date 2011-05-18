@@ -60,7 +60,7 @@ char const* AIFilePicker::state_str_impl(state_type run_state) const
 	return "UNKNOWN STATE";
 }
 
-AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mCanceled(false)
+AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mAutoKill(false), mCanceled(false)
 {
 }
 
@@ -400,9 +400,12 @@ void AIFilePicker::finish_impl(void)
 		mPluginManager = NULL;
 	}
 	mFilter.clear();		// Check that open is called before calling run (again).
-	// The default behavior is to delete the plugin. This can be overridden in
-	// the callback by calling run() again.
-	deleteMe();
+	if (mAutoKill)
+	{
+		// The default behavior is to delete the plugin. This can be overridden in
+		// the callback by calling run() again.
+		kill();
+	}
 }
 
 // This function is called when a new message is received from the plugin.

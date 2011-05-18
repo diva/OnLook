@@ -169,7 +169,7 @@ class AIStateMachine {
 	  bs_run,
 	  bs_abort,
 	  bs_finish,
-	  bs_deleted
+	  bs_killed
 	};
 
   public:
@@ -178,7 +178,7 @@ class AIStateMachine {
 	//! Integral value equal to the state with the lowest value.
 	static state_type const min_state = bs_initialize;
 	//! Integral value one more than the state with the highest value.
-	static state_type const max_state = bs_deleted + 1;
+	static state_type const max_state = bs_killed + 1;
 
   private:
 	base_state_type mState;						//!< State of the base class.
@@ -214,8 +214,8 @@ class AIStateMachine {
 	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
 
   protected:
-	//! The user should call 'deleteMe()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert(mState == bs_deleted); }
+	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
+	virtual ~AIStateMachine() { llassert(mState == bs_killed); }
 
   public:
 	//! Halt the state machine until cont() is called.
@@ -286,8 +286,8 @@ class AIStateMachine {
 	//! Refine state while in the bs_run state. May only be called while in the bs_run state.
 	void set_state(state_type run_state);
 
-	//! Change state to 'bs_deleted'. May only be called while in the bs_finish state.
-	void deleteMe(void);
+	//! Change state to 'bs_killed'. May only be called while in the bs_finish state.
+	void kill(void);
 
 	//---------------------------------------
 	// Other.

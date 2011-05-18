@@ -179,7 +179,7 @@ void AIFileUpload::start_filepicker(ELoadFilter filter, char const* context)
 	}
 
 	llassert(!mPicker);
-	mPicker = new AIFilePicker;
+	mPicker = AIFilePicker::create();
 	mPicker->open(filter, "", context);
 	mPicker->run(boost::bind(&AIFileUpload::filepicker_callback, this, filter));
 }
@@ -370,7 +370,7 @@ class LLFileUploadBulk : public view_listener_t
 		else					// cancel
 			return false;
 
-		AIFilePicker* filepicker = new AIFilePicker;
+		AIFilePicker* filepicker = AIFilePicker::create();
 		filepicker->open(FFLOAD_ALL, "", "openfile", true);
 		filepicker->run(boost::bind(&LLFileUploadBulk::onConfirmBulkUploadTemp_continued, enabled, filepicker));
 		return true;
@@ -586,7 +586,7 @@ class LLFileQuit : public view_listener_t
 static void handle_compress_image_continued(AIFilePicker* filepicker);
 void handle_compress_image(void*)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_IMAGE, "", "openfile", true);
 	filepicker->run(boost::bind(&handle_compress_image_continued, filepicker));
 }

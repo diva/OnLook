@@ -330,7 +330,7 @@ void LLPreviewSound::gotAssetForSave(LLVFS *vfs,
 
 	// Write it back out...
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(LLDir::getScrubbedFileName(self->getItem()->getName()) + ".ogg", FFSAVE_OGG);
 	filepicker->run(boost::bind(&LLPreviewSound::gotAssetForSave_continued, buffer, size, filepicker));
 }

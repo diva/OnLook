@@ -570,7 +570,7 @@ class LLLoadInvCacheFloater : public inventory_listener_t
 	{
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
-		AIFilePicker* filepicker = new AIFilePicker;
+		AIFilePicker* filepicker = AIFilePicker::create();
 		filepicker->open(FFLOAD_INVGZ, "", "invgz");
 		filepicker->run(boost::bind(&LLLoadInvCacheFloater::filepicker_callback, this, filepicker));
 		return true;

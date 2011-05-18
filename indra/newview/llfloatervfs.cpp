@@ -234,7 +234,7 @@ void LLFloaterVFS::setEditEnabled(bool enabled)
 void LLFloaterVFS::onClickAdd(void* user_data)
 {
 	if(!user_data) return;
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open();
 	filepicker->run(boost::bind(&LLFloaterVFS::onClickAdd_continued, user_data, filepicker));
 }

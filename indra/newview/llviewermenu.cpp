@@ -1241,7 +1241,7 @@ void init_debug_world_menu(LLMenuGL* menu)
 static void handle_export_menus_to_xml_continued(AIFilePicker* filepicker);
 void handle_export_menus_to_xml(void*)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML);
 	filepicker->run(boost::bind(&handle_export_menus_to_xml_continued, filepicker));
 }
@@ -8519,7 +8519,7 @@ void handle_mesh_save_llm(void* data)
 		return;
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(*mesh_name, FFSAVE_ALL, default_path, "mesh_llm");
 	filepicker->run(boost::bind(&handle_mesh_save_llm_continued, data, filepicker));
 }
@@ -8595,7 +8595,7 @@ void handle_mesh_save_current_obj(void* data)
 	std::string file_name = *mesh_name + "_current.obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_save_current_obj_continued, data, filepicker));
 }
@@ -8644,7 +8644,7 @@ void handle_mesh_save_obj(void* data)
 	std::string file_name = *mesh_name + ".obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_save_obj_continued, data, filepicker));
 }
@@ -8687,7 +8687,7 @@ void handle_mesh_load_obj(void* data)
 		return;
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_load_obj_continued, data, filepicker));
 }
@@ -8737,7 +8737,7 @@ void handle_morph_save_obj(void* data)
 	std::string file_name = *mesh_name + "." + morph_name + ".obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_morph_save_obj_continued, data, filepicker));
 }
@@ -8782,7 +8782,7 @@ void handle_morph_load_obj(void* data)
 
 	llinfos << "Load morph OBJ " << morph_name << " of mesh " << *mesh_name <<llendl;
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_morph_load_obj_continued, data, filepicker));
 }
@@ -9091,7 +9091,7 @@ void handle_save_to_xml(void*)
 	LLStringUtil::replaceChar(default_name, ':', '_');
 	LLStringUtil::replaceChar(default_name, '"', '_');
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(default_name, FFSAVE_XML);
 	filepicker->run(boost::bind(&handle_save_to_xml_continued, frontmost, filepicker));
 }
@@ -9108,7 +9108,7 @@ static void handle_save_to_xml_continued(LLFloater* frontmost, AIFilePicker* fil
 static void handle_load_from_xml_continued(AIFilePicker* filepicker);
 void handle_load_from_xml(void*)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML);
 	filepicker->run(boost::bind(&handle_load_from_xml_continued, filepicker));
 }
