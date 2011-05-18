@@ -79,6 +79,7 @@ LLGLSLShader		gObjectFullbrightProgram(LLViewerShaderMgr::SHADER_OBJECT);
 LLGLSLShader		gObjectFullbrightWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
  
 LLGLSLShader		gObjectFullbrightShinyProgram(LLViewerShaderMgr::SHADER_OBJECT);
+LLGLSLShader		gObjectFullbrightShinyWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
 LLGLSLShader		gObjectShinyProgram(LLViewerShaderMgr::SHADER_OBJECT);
 LLGLSLShader		gObjectShinyWaterProgram(LLViewerShaderMgr::SHADER_OBJECT);
  
@@ -580,6 +581,7 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 	shaders.push_back( make_pair( "lighting/lightShinyF.glsl",				mVertexShaderLevel[SHADER_LIGHTING] ) );
 	shaders.push_back( make_pair( "lighting/lightFullbrightShinyF.glsl",	mVertexShaderLevel[SHADER_LIGHTING] ) );
 	shaders.push_back( make_pair( "lighting/lightShinyWaterF.glsl",			mVertexShaderLevel[SHADER_LIGHTING] ) );
+	shaders.push_back( make_pair( "lighting/lightFullbrightShinyWaterF.glsl", mVertexShaderLevel[SHADER_LIGHTING] ) );
 	
 	for (U32 i = 0; i < shaders.size(); i++)
 	{
@@ -1229,6 +1231,22 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 		success = gObjectFullbrightShinyProgram.createShader(NULL, &mShinyUniforms);
 	}
 
+	if (success)
+	{
+		gObjectFullbrightShinyWaterProgram.mName = "Fullbright Shiny Water Shader";
+		gObjectFullbrightShinyWaterProgram.mFeatures.calculatesAtmospherics = true;
+		gObjectFullbrightShinyWaterProgram.mFeatures.isFullbright = true;
+		gObjectFullbrightShinyWaterProgram.mFeatures.isShiny = true;
+		gObjectFullbrightShinyWaterProgram.mFeatures.hasGamma = true;
+		gObjectFullbrightShinyWaterProgram.mFeatures.hasTransport = true;
+		gObjectFullbrightShinyWaterProgram.mFeatures.hasWaterFog = true;
+		gObjectFullbrightShinyWaterProgram.mShaderFiles.clear();
+		gObjectFullbrightShinyWaterProgram.mShaderFiles.push_back(make_pair("objects/fullbrightShinyV.glsl", GL_VERTEX_SHADER_ARB));
+		gObjectFullbrightShinyWaterProgram.mShaderFiles.push_back(make_pair("objects/fullbrightShinyWaterF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gObjectFullbrightShinyWaterProgram.mShaderLevel = mVertexShaderLevel[SHADER_OBJECT];
+		gObjectFullbrightShinyWaterProgram.mShaderGroup = LLGLSLShader::SG_WATER;
+		success = gObjectFullbrightShinyWaterProgram.createShader(NULL, &mShinyUniforms);
+	}
 
 	if( !success )
 	{
