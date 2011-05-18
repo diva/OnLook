@@ -4,6 +4,8 @@
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $/LicenseInfo$
  */
+ 
+#version 120
 
 varying vec3 vary_normal;
 

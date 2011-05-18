@@ -4,6 +4,8 @@
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $License$
  */
+ 
+#version 120
 
 #extension GL_ARB_texture_rectangle : enable
 
@@ -12,8 +14,6 @@
 uniform sampler2DRect depthMap;
 uniform sampler2DRect normalMap;
 uniform sampler2D noiseMap;
-
-uniform sampler2D		lightFunc;
 
 
 // Inputs

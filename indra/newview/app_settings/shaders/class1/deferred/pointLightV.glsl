@@ -5,6 +5,8 @@
  * $License$
  */
 
+#version 120
+
 varying vec4 vary_light;
 varying vec4 vary_fragcoord;
 

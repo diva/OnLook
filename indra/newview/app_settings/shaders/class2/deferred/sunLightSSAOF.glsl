@@ -4,6 +4,8 @@
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $License$
  */
+ 
+#version 120
 
 #extension GL_ARB_texture_rectangle : enable
 
@@ -18,8 +20,6 @@ uniform sampler2DRectShadow shadowMap3;
 uniform sampler2DShadow shadowMap4;
 uniform sampler2DShadow shadowMap5;
 uniform sampler2D noiseMap;
-
-uniform sampler2D		lightFunc;
 
 // Inputs
 uniform mat4 shadow_matrix[6];

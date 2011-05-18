@@ -1,5 +1,5 @@
 /** 
- * @file lightFullbrightShinyF.glsl
+ * @file lightFullbrightShinyWaterF.glsl
  *
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $License$
@@ -12,8 +12,9 @@ uniform samplerCube environmentMap;
 
 vec3 fullbrightShinyAtmosTransport(vec3 light);
 vec3 fullbrightScaleSoftClip(vec3 light);
+vec4 applyWaterFog(vec4 color);
 
-void fullbright_shiny_lighting()
+void fullbright_shiny_lighting_water()
 {
 	vec4 color = texture2D(diffuseMap, gl_TexCoord[0].xy);
 	color.rgb *= gl_Color.rgb;
@@ -22,11 +23,9 @@ void fullbright_shiny_lighting()
 	color.rgb = mix(color.rgb, envColor.rgb, gl_Color.a);
 
 	color.rgb = fullbrightShinyAtmosTransport(color.rgb);
-
 	color.rgb = fullbrightScaleSoftClip(color.rgb);
-
 	color.a = max(color.a, gl_Color.a);
 
-	gl_FragColor = color;
+	gl_FragColor = applyWaterFog(color);
 }
 

@@ -4,6 +4,8 @@
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $License$
  */
+ 
+#version 120
 
 #extension GL_ARB_texture_rectangle : enable
 
@@ -24,7 +26,6 @@ varying vec3 vary_position;
 varying vec3 vary_pointlight_col;
 
 uniform mat4 inv_proj;
-
 
 vec4 getPosition(vec2 pos_screen)
 {
