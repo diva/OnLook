@@ -228,6 +228,11 @@ void LLFace::setWorldMatrix(const LLMatrix4 &mat)
 	llerrs << "Faces on this drawable are not independently modifiable\n" << llendl;
 }
 
+void LLFace::setPool(LLFacePool* pool)
+{
+	mDrawPoolp = pool;
+}
+
 void LLFace::setPool(LLFacePool* new_pool, LLViewerTexture *texturep)
 {
 	LLMemType mt1(LLMemType::MTYPE_DRAWABLE);
@@ -329,8 +334,13 @@ void LLFace::setDrawable(LLDrawable *drawable)
 	mXform      = &drawable->mXform;
 }
 
-void LLFace::setSize(const S32 num_vertices, const S32 num_indices)
+void LLFace::setSize(S32 num_vertices, const S32 num_indices, bool align)
 {
+	if (align)
+	{
+		//allocate vertices in blocks of 4 for alignment
+		num_vertices = (num_vertices + 0x3) & ~0x3;
+	}
 	if (mGeomCount != num_vertices ||
 		mIndicesCount != num_indices)
 	{
@@ -339,6 +349,8 @@ void LLFace::setSize(const S32 num_vertices, const S32 num_indices)
 		mVertexBuffer = NULL;
 		mLastVertexBuffer = NULL;
 	}
+
+	llassert(verify());
 }
 
 //============================================================================
@@ -952,6 +964,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 								const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,
 								const U16 &index_offset)
 {
+	llassert(verify());
 	const LLVolumeFace &vf = volume.getVolumeFace(f);
 	S32 num_vertices = (S32)vf.mVertices.size();
 	S32 num_indices = (S32)vf.mIndices.size();
@@ -1678,3 +1691,16 @@ LLViewerTexture* LLFace::getTexture() const
 {
 		return mTexture ;
 }
+
+void LLFace::setVertexBuffer(LLVertexBuffer* buffer)
+{
+	mVertexBuffer = buffer;
+	llassert(verify());
+}
+
+void LLFace::clearVertexBuffer()
+{
+	mVertexBuffer = NULL;
+	mLastVertexBuffer = NULL;
+}
+

@@ -198,7 +198,10 @@ void LLDrawPoolAlpha::render(S32 pass)
 				simple_shader->bind();
 				pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask());
 			}
-			fullbright_shader->bind();
+			if (fullbright_shader)
+			{
+				fullbright_shader->bind();
+			}
 			pushBatches(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, getVertexDataMask());
 			LLGLSLShader::bindNoShader();
 		}
@@ -238,7 +241,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 		gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 		glColor4f(1,0,0,1);
 		LLViewerFetchedTexture::sSmokeImagep->addTextureStats(1024.f*1024.f);
-		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sSmokeImagep.get(), TRUE);
+		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sSmokeImagep, TRUE) ;
 		renderAlphaHighlight(LLVertexBuffer::MAP_VERTEX |
 							LLVertexBuffer::MAP_TEXCOORD0);
 	}

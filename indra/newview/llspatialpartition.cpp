@@ -392,7 +392,7 @@ void LLSpatialGroup::checkStates()
 void validate_draw_info(LLDrawInfo& params)
 {
 #if LL_OCTREE_PARANOIA_CHECK
-	if (params.mVertexBuffer.isNull())
+	if (!params.mVertexBuffer)
 	{
 		llerrs << "Draw batch has no vertex buffer." << llendl;
 	}
@@ -1309,8 +1309,7 @@ void LLSpatialGroup::destroyGL()
 		for (S32 j = 0; j < drawable->getNumFaces(); j++)
 		{
 			LLFace* facep = drawable->getFace(j);
-			facep->mVertexBuffer = NULL;
-			facep->mLastVertexBuffer = NULL;
+			facep->clearVertexBuffer();
 		}
 	}
 }
@@ -1519,7 +1518,6 @@ LLSpatialPartition::LLSpatialPartition(U32 data_mask, BOOL render_by_group, U32 
 	mSlopRatio = 0.25f;
 	mInfiniteFarClip = FALSE;
 
-	LLGLNamePool::registerPool(&sQueryPool);
 
 	mOctree = new LLSpatialGroup::OctreeRoot(LLVector3d(0,0,0), 
 											LLVector3d(1,1,1), 
@@ -1934,6 +1932,8 @@ public:
 
 void drawBox(const LLVector3& c, const LLVector3& r)
 {
+	LLVertexBuffer::unbind();
+
 	gGL.begin(LLRender::TRIANGLE_STRIP);
 	//left front
 	gGL.vertex3fv((c+r.scaledVec(LLVector3(-1,1,-1))).mV);
@@ -2179,7 +2179,7 @@ void pushVerts(LLSpatialGroup* group, U32 mask)
 
 void pushVerts(LLFace* face, U32 mask)
 {
-	LLVertexBuffer* buffer = face->mVertexBuffer;
+	LLVertexBuffer* buffer = face->getVertexBuffer();
 
 	if (buffer)
 	{
@@ -2309,7 +2309,7 @@ void renderOctree(LLSpatialGroup* group)
 				for (S32 j = 0; j < drawable->getNumFaces(); j++)
 				{
 					LLFace* face = drawable->getFace(j);
-					if (face->mVertexBuffer.notNull())
+					if (face->getVertexBuffer())
 					{
 						if (gFrameTimeSeconds - face->mLastUpdateTime < 0.5f)
 						{
@@ -2324,10 +2324,10 @@ void renderOctree(LLSpatialGroup* group)
 							continue;
 						}
 
-						face->mVertexBuffer->setBuffer(LLVertexBuffer::MAP_VERTEX);
+						face->getVertexBuffer()->setBuffer(LLVertexBuffer::MAP_VERTEX);
 						//drawBox((face->mExtents[0] + face->mExtents[1])*0.5f,
 						//		(face->mExtents[1]-face->mExtents[0])*0.5f);
-						face->mVertexBuffer->draw(LLRender::TRIANGLES, face->getIndicesCount(), face->getIndicesStart());
+						face->getVertexBuffer()->draw(LLRender::TRIANGLES, face->getIndicesCount(), face->getIndicesStart());
 					}
 				}
 

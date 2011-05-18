@@ -636,7 +636,7 @@ void LLPipeline::releaseGLBuffers()
 	mWaterRef.release();
 	mWaterDis.release();
 	mScreen.release();
-	mSampleBuffer.releaseSampleBuffer();
+	mSampleBuffer.release();
 	mDeferredScreen.release();
 	mDeferredDepth.release();
 	for (U32 i = 0; i < 3; i++)
@@ -5303,8 +5303,7 @@ void LLPipeline::resetVertexBuffers(LLDrawable* drawable)
 	for (S32 i = 0; i < drawable->getNumFaces(); i++)
 	{
 		LLFace* facep = drawable->getFace(i);
-		facep->mVertexBuffer = NULL;
-		facep->mLastVertexBuffer = NULL;
+		facep->clearVertexBuffer();
 	}
 }
 
