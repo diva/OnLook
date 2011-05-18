@@ -43,7 +43,6 @@
 #include "llviewercamera.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
-#include "llviewerwindow.h"
 #include "llvosky.h"
 #include "llworld.h" // To get water height
 #include "pipeline.h"
@@ -118,12 +117,13 @@ void LLDrawPoolSky::render(S32 pass)
 
 	S32 face_count = (S32)mDrawFace.size();
 
+	LLVertexBuffer::unbind();
+	glColor4f(1,1,1,1);
+
 	for (S32 i = 0; i < llmin(6, face_count); ++i)
 	{
 		renderSkyCubeFace(i);
 	}
-
-	LLGLEnable blend(GL_BLEND);
 
 	glPopMatrix();
 }

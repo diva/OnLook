@@ -64,7 +64,6 @@ LLMatrix4 gGLObliqueProjectionInverse;
 
 #define LL_GL_NAME_POOLING 0
 
-LLGLNamePool::pool_list_t LLGLNamePool::sInstances;
 std::list<LLGLUpdate*> LLGLUpdate::sGLQ;
 
 #if (LL_WINDOWS || LL_LINUX || LL_SOLARIS)  && !LL_MESA_HEADLESS
@@ -291,6 +290,7 @@ LLGLManager::LLGLManager() :
 	mHasVertexShader(FALSE),
 	mHasFragmentShader(FALSE),
 	mHasOcclusionQuery(FALSE),
+	mHasOcclusionQuery2(FALSE),
 	mHasPointParameters(FALSE),
 	mHasDrawBuffers(FALSE),
 	mHasTextureRectangle(FALSE),
@@ -623,6 +623,7 @@ void LLGLManager::initExtensions()
 	mHasARBEnvCombine = ExtensionExists("GL_ARB_texture_env_combine", gGLHExts.mSysExts);
 	mHasCompressedTextures = glh_init_extensions("GL_ARB_texture_compression");
 	mHasOcclusionQuery = ExtensionExists("GL_ARB_occlusion_query", gGLHExts.mSysExts);
+	mHasOcclusionQuery2 = ExtensionExists("GL_ARB_occlusion_query2", gGLHExts.mSysExts);
 	mHasVertexBufferObject = ExtensionExists("GL_ARB_vertex_buffer_object", gGLHExts.mSysExts);
 	mHasDepthClamp = ExtensionExists("GL_ARB_depth_clamp", gGLHExts.mSysExts) || ExtensionExists("GL_NV_depth_clamp", gGLHExts.mSysExts);
 	// mask out FBO support when packed_depth_stencil isn't there 'cause we need it for LLRenderTarget -Brad
@@ -740,6 +741,10 @@ void LLGLManager::initExtensions()
 	if (!mHasOcclusionQuery)
 	{
 		LL_INFOS("RenderInit") << "Couldn't initialize GL_ARB_occlusion_query" << LL_ENDL;
+	}
+	if (!mHasOcclusionQuery2)
+	{
+		LL_INFOS("RenderInit") << "Couldn't initialize GL_ARB_occlusion_query2" << LL_ENDL;
 	}
 	if (!mHasPointParameters)
 	{
@@ -1620,12 +1625,17 @@ void parse_gl_version( S32* major, S32* minor, S32* release, std::string* vendor
 	}
 }
 
-LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& modelview, const glh::matrix4f& projection)
+LLGLUserClipPlane::LLGLUserClipPlane(const LLPlane& p, const glh::matrix4f& modelview, const glh::matrix4f& projection, bool apply)
 {
-	mModelview = modelview;
-	mProjection = projection;
+	mApply = apply;
 
-	setPlane(p.mV[0], p.mV[1], p.mV[2], p.mV[3]);
+	if (mApply)
+	{
+		mModelview = modelview;
+		mProjection = projection;
+
+		setPlane(p[0], p[1], p[2], p[3]);
+	}
 }
 
 void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
@@ -1656,31 +1666,20 @@ void LLGLUserClipPlane::setPlane(F32 a, F32 b, F32 c, F32 d)
 
 LLGLUserClipPlane::~LLGLUserClipPlane()
 {
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	if (mApply)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+	}
 }
 
 LLGLNamePool::LLGLNamePool()
 {
 }
 
-void LLGLNamePool::registerPool(LLGLNamePool* pool)
-{
-	pool_list_t::iterator iter = std::find(sInstances.begin(), sInstances.end(), pool);
-	if (iter == sInstances.end())
-	{
-		sInstances.push_back(pool);
-	}
-}
-
 LLGLNamePool::~LLGLNamePool()
 {
-	pool_list_t::iterator iter = std::find(sInstances.begin(), sInstances.end(), this);
-	if (iter != sInstances.end())
-	{
-		sInstances.erase(iter);
-	}
 }
 
 void LLGLNamePool::upkeep()
@@ -1748,20 +1747,22 @@ void LLGLNamePool::release(GLuint name)
 //static
 void LLGLNamePool::upkeepPools()
 {
-	for (pool_list_t::iterator iter = sInstances.begin(); iter != sInstances.end(); ++iter)
+	tracker_t::LLInstanceTrackerScopedGuard guard;
+	for (tracker_t::instance_iter iter = guard.beginInstances(); iter != guard.endInstances(); ++iter)
 	{
-		LLGLNamePool* pool = *iter;
-		pool->upkeep();
+		LLGLNamePool & pool = *iter;
+		pool.upkeep();
 	}
 }
 
 //static
 void LLGLNamePool::cleanupPools()
 {
-	for (pool_list_t::iterator iter = sInstances.begin(); iter != sInstances.end(); ++iter)
+	tracker_t::LLInstanceTrackerScopedGuard guard;
+	for (tracker_t::instance_iter iter = guard.beginInstances(); iter != guard.endInstances(); ++iter)
 	{
-		LLGLNamePool* pool = *iter;
-		pool->cleanup();
+		LLGLNamePool & pool = *iter;
+		pool.cleanup();
 	}
 }
 
@@ -1844,11 +1845,15 @@ void LLGLDepthTest::checkState()
 		}
 	}
 }
-LLGLSquashToFarClip::LLGLSquashToFarClip(glh::matrix4f P)
+
+LLGLSquashToFarClip::LLGLSquashToFarClip(glh::matrix4f P, U32 layer)
 {
+
+	F32 depth = 0.99999f - 0.0001f * layer;
+
 	for (U32 i = 0; i < 4; i++)
 	{
-		P.element(2, i) = P.element(3, i) * 0.99999f;
+		P.element(2, i) = P.element(3, i) * depth;
 	}
 
 	glMatrixMode(GL_PROJECTION);

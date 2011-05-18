@@ -717,8 +717,19 @@ GLint LLGLSLShader::getUniformLocation(const string& uniform)
 			return iter->second;
 		}
 	}
-
 	return -1;
+}
+
+GLint LLGLSLShader::getAttribLocation(U32 attrib)
+{
+	if (attrib < mAttribute.size())
+	{
+		return mAttribute[attrib];
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 void LLGLSLShader::uniform1i(const string& uniform, GLint v)
