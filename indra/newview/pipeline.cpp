@@ -610,6 +610,10 @@ void LLPipeline::updateRenderDeferred()
 		gSavedSettings.getBOOL("RenderAvatarVP") &&
 		gSavedSettings.getBOOL("WindLightUseAtmosShaders") &&
 		!gUseWireframe);	
+	if (sRenderDeferred)
+	{ //must render glow when rendering deferred since post effect pass is needed to present any lighting at all
+		sRenderGlow = TRUE;
+	}
 }
 
 void LLPipeline::releaseGLBuffers()
@@ -1440,7 +1444,7 @@ F32 LLPipeline::calcPixelArea(LLVector3 center, LLVector3 size, LLCamera &camera
 	//get area of circle around node
 	F32 app_angle = atanf(size.length()/dist);
 	F32 radius = app_angle*LLDrawable::sCurPixelAngle;
-	return radius*radius * 3.14159f;
+	return radius*radius * F_PI;
 }
 
 void LLPipeline::grabReferences(LLCullResult& result)
@@ -4173,16 +4177,19 @@ void LLPipeline::setupAvatarLights(BOOL for_edit)
 		
 		light_pos.normalize();
 
+		LLLightState* light = gGL.getLight(1);
+
 		mHWLightColors[1] = diffuse;
-		glLightfv(GL_LIGHT1, GL_DIFFUSE,  diffuse.mV);
-		glLightfv(GL_LIGHT1, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(GL_LIGHT1, GL_SPECULAR, LLColor4::black.mV);
-		glLightfv(GL_LIGHT1, GL_POSITION, light_pos.mV); 
-		glLightf (GL_LIGHT1, GL_CONSTANT_ATTENUATION,  1.0f);
-		glLightf (GL_LIGHT1, GL_LINEAR_ATTENUATION, 	 0.0f);
-		glLightf (GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0f);
-		glLightf (GL_LIGHT1, GL_SPOT_EXPONENT, 		 0.0f);
-		glLightf (GL_LIGHT1, GL_SPOT_CUTOFF, 			 180.0f);
+
+		light->setDiffuse(diffuse);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
+		light->setPosition(light_pos);
+		light->setConstantAttenuation(1.f);
+		light->setLinearAttenuation(0.f);
+		light->setQuadraticAttenuation(0.f);
+		light->setSpotExponent(0.f);
+		light->setSpotCutoff(180.f);
 	}
 	else if (gAvatarBacklight) // Always true (unless overridden in a devs .ini)
 	{
@@ -4213,22 +4220,28 @@ void LLPipeline::setupAvatarLights(BOOL for_edit)
 		backlight_diffuse *= backlight_mag / max_component;
 
 		mHWLightColors[1] = backlight_diffuse;
-		glLightfv(GL_LIGHT1, GL_POSITION, backlight_pos.mV); // this is just sun/moon direction
-		glLightfv(GL_LIGHT1, GL_DIFFUSE,  backlight_diffuse.mV);
-		glLightfv(GL_LIGHT1, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(GL_LIGHT1, GL_SPECULAR, LLColor4::black.mV);
-		glLightf (GL_LIGHT1, GL_CONSTANT_ATTENUATION,  1.0f);
-		glLightf (GL_LIGHT1, GL_LINEAR_ATTENUATION,    0.0f);
-		glLightf (GL_LIGHT1, GL_QUADRATIC_ATTENUATION, 0.0f);
-		glLightf (GL_LIGHT1, GL_SPOT_EXPONENT,         0.0f);
-		glLightf (GL_LIGHT1, GL_SPOT_CUTOFF,           180.0f);
+
+		LLLightState* light = gGL.getLight(1);
+
+		light->setPosition(backlight_pos);
+		light->setDiffuse(backlight_diffuse);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
+		light->setConstantAttenuation(1.f);
+		light->setLinearAttenuation(0.f);
+		light->setQuadraticAttenuation(0.f);
+		light->setSpotExponent(0.f);
+		light->setSpotCutoff(180.f);
 	}
 	else
 	{
+		LLLightState* light = gGL.getLight(1);
+
 		mHWLightColors[1] = LLColor4::black;
-		glLightfv(GL_LIGHT1, GL_DIFFUSE,  LLColor4::black.mV);
-		glLightfv(GL_LIGHT1, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(GL_LIGHT1, GL_SPECULAR, LLColor4::black.mV);
+
+		light->setDiffuse(LLColor4::black);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
 	}
 }
 
@@ -4412,13 +4425,17 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		LLVector4 light_pos(mSunDir, 0.0f);
 		LLColor4 light_diffuse = mSunDiffuse;
 		mHWLightColors[0] = light_diffuse;
-		glLightfv(GL_LIGHT0, GL_POSITION, light_pos.mV); // this is just sun/moon direction
-		glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_diffuse.mV);
-		glLightfv(GL_LIGHT0, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(GL_LIGHT0, GL_SPECULAR, LLColor4::black.mV);
-		glLightf (GL_LIGHT0, GL_CONSTANT_ATTENUATION,  1.0f);
-		glLightf (GL_LIGHT0, GL_SPOT_EXPONENT,         0.0f);
-		glLightf (GL_LIGHT0, GL_SPOT_CUTOFF,           180.0f);
+
+		LLLightState* light = gGL.getLight(0);
+		light->setPosition(light_pos);
+		light->setDiffuse(light_diffuse);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
+		light->setConstantAttenuation(1.f);
+		light->setLinearAttenuation(0.f);
+		light->setQuadraticAttenuation(0.f);
+		light->setSpotExponent(0.f);
+		light->setSpotCutoff(180.f);
 	}
 	
 	// Light 1 = Backlight (for avatars)
@@ -4476,23 +4493,23 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 			float linatten = x / (light_radius); // % of brightness at radius
 
 			mHWLightColors[cur_light] = light_color;
-			S32 gllight = GL_LIGHT0+cur_light;
-			glLightfv(gllight, GL_POSITION, light_pos_gl.mV);
-			glLightfv(gllight, GL_DIFFUSE,  light_color.mV);
-			glLightfv(gllight, GL_AMBIENT,  LLColor4::black.mV);
-			glLightf (gllight, GL_CONSTANT_ATTENUATION,   0.0f);
-			if(sRenderDeferred)
+			LLLightState* light_state = gGL.getLight(cur_light);
+			
+			light_state->setPosition(light_pos_gl);
+			light_state->setDiffuse(light_color);
+			light_state->setAmbient(LLColor4::black);
+			light_state->setConstantAttenuation(0.f);
+			if (sRenderDeferred)
 			{
-				glLightf (gllight, GL_LINEAR_ATTENUATION,     light_radius*1.5f);
-				glLightf (gllight, GL_QUADRATIC_ATTENUATION,  light->getLightFalloff()*0.5f+1.f);
+				light_state->setLinearAttenuation(light_radius*1.5f);
+				light_state->setQuadraticAttenuation(light->getLightFalloff()*0.5f+1.f);
 			}
 			else
 			{
-				glLightf (gllight, GL_LINEAR_ATTENUATION,     linatten);
-				glLightf (gllight, GL_QUADRATIC_ATTENUATION,  0.0f);
+				light_state->setLinearAttenuation(linatten);
+				light_state->setQuadraticAttenuation(0.f);
 			}
-
-
+			
 			static const LLCachedControl<bool> render_spot_lights_in_nondeferred("RenderSpotLightsInNondeferred",false);
 			if (light->isLightSpotlight() // directional (spot-)light
 			    && (LLPipeline::sRenderDeferred || render_spot_lights_in_nondeferred)) // these are only rendered as GL spotlights if we're in deferred rendering mode *or* the setting forces them on
@@ -4501,21 +4518,21 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 				LLQuaternion quat = light->getRenderRotation();
 				LLVector3 at_axis(0,0,-1); // this matches deferred rendering's object light direction
 				at_axis *= quat;
-				//llinfos << "SPOT!!!!!!! fov: " << spotparams.mV[0] << " focus: " << spotparams.mV[1] << " dir: " << at_axis << llendl;
-				glLightfv(gllight, GL_SPOT_DIRECTION, at_axis.mV);
-				glLightf (gllight, GL_SPOT_EXPONENT,  2.0f); // 2.0 = good old dot product ^ 2
-				glLightf (gllight, GL_SPOT_CUTOFF,    90.0f); // hemisphere
-				const float specular[] = {0.f, 0.f, 0.f, 0.f};
-				glLightfv(gllight, GL_SPECULAR, specular);
+
+				light_state->setSpotDirection(at_axis);
+				light_state->setSpotCutoff(90.f);
+				light_state->setSpotExponent(2.f);
+	
+				light_state->setSpecular(LLColor4::black);
 			}
 			else // omnidirectional (point) light
 			{
-				glLightf (gllight, GL_SPOT_EXPONENT,          0.0f);
-				glLightf (gllight, GL_SPOT_CUTOFF,            180.0f);
-
+				light_state->setSpotExponent(0.f);
+				light_state->setSpotCutoff(180.f);
+				
 				// we use specular.w = 1.0 as a cheap hack for the shaders to know that this is omnidirectional rather than a spotlight
-				const float specular[] = {0.f, 0.f, 0.f, 1.f};
-				glLightfv(gllight, GL_SPECULAR, specular);
+				const LLColor4 specular(0.f, 0.f, 0.f, 1.f);
+				light_state->setSpecular(specular);				
 				//llinfos << "boring light" << llendl;
 			}
 			cur_light++;
@@ -4528,12 +4545,12 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 	for ( ; cur_light < 8 ; cur_light++)
 	{
 		mHWLightColors[cur_light] = LLColor4::black;
-		S32 gllight = GL_LIGHT0+cur_light;
-		glLightfv(gllight, GL_DIFFUSE,  LLColor4::black.mV);
-		glLightfv(gllight, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(gllight, GL_SPECULAR, LLColor4::black.mV);
-	}
+		LLLightState* light = gGL.getLight(cur_light);
 
+		light->setDiffuse(LLColor4::black);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
+	}
 	if (isAgentAvatarValid() &&
 		gAgent.getAvatarObject()->mSpecialRenderMode == 3)
 	{
@@ -4549,23 +4566,24 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		float linatten = x / (light_radius); // % of brightness at radius
 
 		mHWLightColors[2] = light_color;
-		S32 gllight = GL_LIGHT2;
-		glLightfv(gllight, GL_POSITION, light_pos_gl.mV);
-		glLightfv(gllight, GL_DIFFUSE,  light_color.mV);
-		glLightfv(gllight, GL_AMBIENT,  LLColor4::black.mV);
-		glLightfv(gllight, GL_SPECULAR, LLColor4::black.mV);
-		glLightf (gllight, GL_CONSTANT_ATTENUATION,   0.0f);
-		glLightf (gllight, GL_LINEAR_ATTENUATION,     linatten);
-		glLightf (gllight, GL_QUADRATIC_ATTENUATION,  0.0f);
-		glLightf (gllight, GL_SPOT_EXPONENT,          0.0f);
-		glLightf (gllight, GL_SPOT_CUTOFF,            180.0f);
+		LLLightState* light = gGL.getLight(2);
+
+		light->setPosition(light_pos_gl);
+		light->setDiffuse(light_color);
+		light->setAmbient(LLColor4::black);
+		light->setSpecular(LLColor4::black);
+		light->setQuadraticAttenuation(0.f);
+		light->setConstantAttenuation(0.f);
+		light->setLinearAttenuation(linatten);
+		light->setSpotExponent(0.f);
+		light->setSpotCutoff(180.f);
 	}
 
 	// Init GL state
 	glDisable(GL_LIGHTING);
-	for (S32 gllight=GL_LIGHT0; gllight<=GL_LIGHT7; gllight++)
+	for (S32 i = 0; i < 8; ++i)
 	{
-		glDisable(gllight);
+		gGL.getLight(i)->disable();
 	}
 	mLightMask = 0;
 }
@@ -4588,15 +4606,16 @@ void LLPipeline::enableLights(U32 mask)
 		{
 			for (S32 i=0; i<8; i++)
 			{
+				LLLightState* light = gGL.getLight(i);
 				if (mask & (1<<i))
 				{
-					glEnable(GL_LIGHT0 + i);
-					glLightfv(GL_LIGHT0 + i, GL_DIFFUSE,  mHWLightColors[i].mV);
+					light->enable();
+					light->setDiffuse(mHWLightColors[i]);
 				}
 				else
 				{
-					glDisable(GL_LIGHT0 + i);
-					glLightfv(GL_LIGHT0 + i, GL_DIFFUSE,  LLColor4::black.mV);
+					light->disable();
+					light->setDiffuse(LLColor4::black);
 				}
 			}
 		}
@@ -4683,7 +4702,6 @@ void LLPipeline::enableLightsFullbright(const LLColor4& color)
 void LLPipeline::disableLights()
 {
 	enableLights(0); // no lighting (full bright)
-	glColor4f(1.f, 1.f, 1.f, 1.f); // lighting color = white by default
 }
 
 //============================================================================
@@ -6231,7 +6249,8 @@ void LLPipeline::renderDeferredLighting()
 							0, 0, mDeferredDepth.getWidth(), mDeferredDepth.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);	
 		}
 
-		LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+		static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+		LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 
 		if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 		{
@@ -6792,9 +6811,7 @@ void LLPipeline::renderDeferredLighting()
 			if (count == max_count || fullscreen_lights.empty())
 			{
 				gDeferredMultiLightProgram.uniform1i("light_count", count);
-				gDeferredMultiLightProgram.uniform4fv("light[0]", count, (GLfloat*) light);
 				gDeferredMultiLightProgram.uniform4fv("light", count, (GLfloat*) light);
-				gDeferredMultiLightProgram.uniform4fv("light_col[0]", count, (GLfloat*) col);
 				gDeferredMultiLightProgram.uniform4fv("light_col", count, (GLfloat*) col);
 				gDeferredMultiLightProgram.uniform1f("far_z", far_z);
 				far_z = 0.f;
