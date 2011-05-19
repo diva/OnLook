@@ -103,7 +103,7 @@
 				control_name="AscentInstantMessageAnnounceIncoming" radio_style="false" width="270"
 				name="quickstart_im_check"
 				tool_tip="Opens an IM window when someone starts typing an IM to you. This gives you a heads up that someone is IMing you before they hit enter. "/>
-			<check_box bottom_delta="-20" control_name="HideTypingNotification" enabled="true"
+			<check_box bottom_delta="-20" control_name="AscentHideTypingNotification" enabled="true"
 				follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
 				label="Don't send '[name] is typing...' in IMs" left="10"
 				tool_tip="IM partners will not see '______ is typing...' when you're responding."

@@ -3730,29 +3730,6 @@ void handle_fake_away_status(void*)
 	}
 }
 
-void handle_hide_typing_notification(void*)
-{
-	if (!gSavedSettings.controlExists("HideTypingNotification")) 
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
-
-	BOOL hide = gSavedSettings.getBOOL("HideTypingNotification");
-	if (hide)
-	{
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", FALSE);
-	}
-	else
-	{
-		gSavedSettings.declareBOOL("HideTypingNotification", TRUE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", TRUE);
-	}
-
-	LLChat chat;
-	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	chat.mText = llformat("IM Typing Notifications: %s",(hide ? "On" : "Off"));
-	LLFloaterChat::addChat(chat);
-}
-
 void handle_force_ground_sit(void*)
 {
 	if (gAgent.getAvatarObject())
