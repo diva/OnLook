@@ -337,6 +337,7 @@ void LLPipeline::init()
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
 	LLVertexBuffer::sOmitBlank = gSavedSettings.getBOOL("SianaRenderOmitBlankVBO");
+	LLVertexBuffer::sPreferStreamDraw = gSavedSettings.getBOOL("RenderPreferStreamDraw");
 	sRenderAttachedLights = gSavedSettings.getBOOL("RenderAttachedLights");
 	sRenderAttachedParticles = gSavedSettings.getBOOL("RenderAttachedParticles");
 
@@ -2750,7 +2751,8 @@ void render_hud_elements()
 	gGL.color4f(1,1,1,1);
 	if (!LLPipeline::sReflectionRender && gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
 	{
-		LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+		static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+		LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 		gViewerWindow->renderSelections(FALSE, FALSE, FALSE); // For HUD version in render_ui_3d()
 	
 		// Draw the tracking overlays
@@ -2905,7 +2907,8 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	glMatrixMode(GL_MODELVIEW);
 
 	LLGLSPipeline gls_pipeline;
-	LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+	static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+	LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 
 	LLGLState gls_color_material(GL_COLOR_MATERIAL, mLightingDetail < 2);
 				
@@ -3141,7 +3144,8 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 		}
 	}
 
-	LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+	static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+	LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 
 	LLVertexBuffer::unbind();
 
@@ -3229,7 +3233,8 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 
 	LLGLEnable cull(GL_CULL_FACE);
 
-	LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+	static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+	LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 
 	calcNearbyLights(camera);
 	setupHWLights(NULL);
@@ -5770,7 +5775,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		gGL.getTexUnit(1)->bind(&mScreen);
 		gGL.getTexUnit(1)->activate();
 		
-		LLGLEnable multisample(GL_MULTISAMPLE_ARB);
+		static const LLCachedControl<U32> fsaa_samples("RenderFSAASamples",0);
+		LLGLEnable multisample(fsaa_samples > 0 ? GL_MULTISAMPLE_ARB : 0);
 		
 		buff->setBuffer(mask);
 		buff->drawArrays(LLRender::TRIANGLE_STRIP, 0, 3);
@@ -6468,7 +6474,6 @@ void LLPipeline::renderDeferredLighting()
 
 		gDeferredBlurLightProgram.uniform2f("delta", 1.f, 0.f);
 		gDeferredBlurLightProgram.uniform1f("dist_factor", shadow_blur_dist_factor);
-		gDeferredBlurLightProgram.uniform3fv("kern[0]", kern_length, gauss[0].mV);
 		gDeferredBlurLightProgram.uniform3fv("kern", kern_length, gauss[0].mV);
 		gDeferredBlurLightProgram.uniform1f("kern_scale", blur_size * (kern_length/2.f - 0.5f));
 
@@ -6596,6 +6601,7 @@ void LLPipeline::renderDeferredLighting()
 
 	std::list<LLVector4> light_colors;
 
+	LLVertexBuffer::unbind();
 	F32 v[24];
 	glVertexPointer(3, GL_FLOAT, 0, v);
 	static const LLCachedControl<bool> render_local("RenderDeferredLocalLights",false);
@@ -7490,6 +7496,8 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	
 	//glCullFace(GL_FRONT);
 
+	LLVertexBuffer::unbind();
+
 	{
 		//LLFastTimer ftm(FTM_SHADOW_SIMPLE);
 		LLGLDisable test(GL_ALPHA_TEST);
@@ -7556,14 +7564,13 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 	}
 
 	//get set of planes on bounding box
-	std::vector<LLPlane> bp;
-		
-	bp.push_back(LLPlane(min, LLVector3(-1,0,0)));
-	bp.push_back(LLPlane(min, LLVector3(0,-1,0)));
-	bp.push_back(LLPlane(min, LLVector3(0,0,-1)));
-	bp.push_back(LLPlane(max, LLVector3(1,0,0)));
-	bp.push_back(LLPlane(max, LLVector3(0,1,0)));
-	bp.push_back(LLPlane(max, LLVector3(0,0,1)));
+	LLPlane bp[] = { 
+		LLPlane(min, LLVector3(-1,0,0)),
+		LLPlane(min, LLVector3(0,-1,0)),
+		LLPlane(min, LLVector3(0,0,-1)),
+		LLPlane(max, LLVector3(1,0,0)),
+		LLPlane(max, LLVector3(0,1,0)),
+		LLPlane(max, LLVector3(0,0,1))};
 	
 	//potential points
 	std::vector<LLVector3> pp;
