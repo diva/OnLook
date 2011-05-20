@@ -366,7 +366,7 @@ void LLVolumeImplFlexible::doFlexibleUpdate()
 {
 	LLVolume* volume = mVO->getVolume();
 	LLPath *path = &volume->getPath();
-	if (mSimulateRes == 0)
+	if ((mSimulateRes == 0 || !mInitialized) && mVO->mDrawable->isVisible()) // if its uninitialized but not visible, what then? - Nyx
 	{
 		mVO->markForUpdate(TRUE);
 		if (!doIdleUpdate(gAgent, *LLWorld::getInstance(), 0.0))
@@ -694,7 +694,11 @@ BOOL LLVolumeImplFlexible::doUpdateGeometry(LLDrawable *drawable)
 	}
 
 	volume->updateRelativeXform();
-	doFlexibleUpdate();
+
+	if (mRenderRes > -1)
+	{
+		doFlexibleUpdate();
+	}
 	
 	// Object may have been rotated, which means it needs a rebuild.  See SL-47220
 	BOOL	rotated = FALSE;

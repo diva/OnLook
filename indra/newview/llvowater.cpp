@@ -37,7 +37,6 @@
 #include "imageids.h"
 #include "llviewercontrol.h"
 
-#include "llagent.h"
 #include "lldrawable.h"
 #include "lldrawpoolwater.h"
 #include "llface.h"
@@ -55,8 +54,6 @@ const BOOL gUseRoam = FALSE;
 
 
 ///////////////////////////////////
-
-#include "randgauss.h"
 
 template<class T> inline T LERP(T a, T b, F32 factor)
 {
