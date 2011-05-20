@@ -1816,6 +1816,11 @@ void LLPipeline::rebuildPriorityGroups()
 		
 void LLPipeline::rebuildGroups()
 {
+	if (mGroupQ2.empty())
+	{
+		return;
+	}
+
 	// Iterate through some drawables on the non-priority build queue
 	S32 size = (S32) mGroupQ2.size();
 	S32 min_count = llclamp((S32) ((F32) (size * size)/4096*0.25f), 1, size);
@@ -1825,33 +1830,28 @@ void LLPipeline::rebuildGroups()
 	std::sort(mGroupQ2.begin(), mGroupQ2.end(), LLSpatialGroup::CompareUpdateUrgency());
 
 	LLSpatialGroup::sg_vector_t::iterator iter;
+	LLSpatialGroup::sg_vector_t::iterator last_iter = mGroupQ2.begin();
+
 	for (iter = mGroupQ2.begin();
-		 iter != mGroupQ2.end(); ++iter)
+		 iter != mGroupQ2.end() && count <= min_count; ++iter)
 	{
 		LLSpatialGroup* group = *iter;
+		last_iter = iter;
 
-		if (group->isDead())
+		if (!group->isDead())
 		{
-			continue;
-		}
-
-		group->rebuildGeom();
-		
-		if (group->mSpatialPartition->mRenderByGroup)
-		{
-			count++;
-		}
+			group->rebuildGeom();
 			
-		group->clearState(LLSpatialGroup::IN_BUILD_Q2);
-
-		if (count > min_count)
-		{
-			++iter;
-			break;
+			if (group->mSpatialPartition->mRenderByGroup)
+			{
+				count++;
+			}
 		}
+
+		group->clearState(LLSpatialGroup::IN_BUILD_Q2);
 	}	
 
-	mGroupQ2.erase(mGroupQ2.begin(), iter);
+	mGroupQ2.erase(mGroupQ2.begin(), ++last_iter);
 
 	updateMovedList(mMovedBridge);
 }
