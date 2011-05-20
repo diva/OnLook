@@ -179,6 +179,10 @@ public:
 
 protected:
 	AIAPRPool mPool;
+private:
+	// Disable copy construction, as si teh bomb!!! -SG
+	LLMutex(const LLMutex&);
+	LLMutex& operator=(const LLMutex&);
 };
 
 #if APR_HAS_THREADS
