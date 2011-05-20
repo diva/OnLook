@@ -524,6 +524,10 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	
 	if (LLPipeline::sRenderDeferred)
 	{
+		S32 shadow_detail = gSavedSettings.getS32("RenderShadowDetail");
+		BOOL ssao = gSavedSettings.getBOOL("RenderDeferredSSAO");
+		bool gi = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_DEFERRED);
+
 		//allocate deferred rendering color buffers
 		static const LLCachedControl<bool> shadow_precision("DeferredHighPrecision",true);
 		const GLuint format = shadow_precision ? GL_RGBA : GL_RGBA16F_ARB;  //TO-DO: Profile 16bit format later
@@ -534,14 +538,40 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 		mScreen.allocate(resX, resY, format, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
 		mEdgeMap.allocate(resX, resY, GL_ALPHA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
 
-		for (U32 i = 0; i < 3; i++)
+		if (shadow_detail > 0 || ssao)
+		{ //only need mDeferredLight[0] for shadows OR ssao
+			mDeferredLight[0].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+		}
+		else
 		{
-			mDeferredLight[i].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+			mDeferredLight[0].release();
 		}
 
-		for (U32 i = 0; i < 2; i++)
+		if (ssao)
+		{ //only need mDeferredLight[1] for ssao
+			mDeferredLight[1].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+		}
+		else
 		{
-			mGIMapPost[i].allocate(resX,resY, GL_RGB, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+			mDeferredLight[1].release();
+		}
+
+		if (gi)
+		{ //only need mDeferredLight[2] and mGIMapPost for gi
+			mDeferredLight[2].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+			for (U32 i = 0; i < 2; i++)
+			{
+				mGIMapPost[i].allocate(resX,resY, GL_RGB, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+			}
+		}
+		else
+		{
+			mDeferredLight[2].release();
+		
+			for (U32 i = 0; i < 2; i++)
+			{
+				mGIMapPost[i].release();
+			}
 		}
 
 		F32 scale = gSavedSettings.getF32("RenderShadowResolutionScale");
@@ -550,18 +580,37 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 		//TO-DO: Test if this is actually needed.
 		U32 shadow_fmt = gGLManager.mIsATI ? GL_ALPHA : 0;
 
-		for (U32 i = 0; i < 4; i++)
-		{
-			mShadow[i].allocate(U32(resX*scale),U32(resY*scale), shadow_fmt, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+		if (shadow_detail > 0)
+		{ //allocate 4 sun shadow maps
+			for (U32 i = 0; i < 4; i++)
+			{
+				mShadow[i].allocate(U32(resX*scale),U32(resY*scale), shadow_fmt, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+			}
 		}
-
+		else
+		{
+			for (U32 i = 0; i < 4; i++)
+			{
+				mShadow[i].release();
+			}
+		}
 
 		U32 width = nhpo2(U32(resX*scale))/2;
 		U32 height = width;
 
-		for (U32 i = 4; i < 6; i++)
+		if (shadow_detail > 1)
+		{ //allocate two spot shadow maps
+			for (U32 i = 4; i < 6; i++)
+			{
+				mShadow[i].allocate(width, height, shadow_fmt, TRUE, FALSE);
+			}
+		}
+		else
 		{
-			mShadow[i].allocate(width, height, shadow_fmt, TRUE, FALSE);
+			for (U32 i = 4; i < 6; i++)
+			{
+				mShadow[i].release();
+			}
 		}
 
 		width = nhpo2(resX)/2;
@@ -570,6 +619,24 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	}
 	else
 	{
+		for (U32 i = 0; i < 3; i++)
+		{ 
+			mDeferredLight[i].release();
+		}
+		for (U32 i = 0; i < 2; i++)
+		{
+			mGIMapPost[i].release();
+		}
+		for (U32 i = 0; i < 6; i++)
+		{
+			mShadow[i].release();
+		}
+		mScreen.release();
+		mDeferredScreen.release(); //make sure to release any render targets that share a depth buffer with mDeferredScreen first
+		mDeferredDepth.release();
+		mEdgeMap.release();
+		mLuminanceMap.release();
+		
 		mScreen.allocate(resX, resY, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE);		
 	}
 	
@@ -583,6 +650,7 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			mSampleBuffer.allocate(resX,resY,format,TRUE,TRUE,LLTexUnit::TT_RECT_TEXTURE,FALSE,samples);
 			addDeferredAttachments(mSampleBuffer);
 			mDeferredScreen.setSampleBuffer(&mSampleBuffer);
+			mEdgeMap.setSampleBuffer(&mSampleBuffer);
 		}
 		else
 		{
@@ -593,13 +661,20 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 
 		stop_glerror();
 	}
-
+	else
+	{
+		mSampleBuffer.release();
+	}
+	
 	if (LLPipeline::sRenderDeferred)
 	{ //share depth buffer between deferred targets
 		mDeferredScreen.shareDepthBuffer(mScreen);
 		for (U32 i = 0; i < 3; i++)
 		{ //share stencil buffer with screen space lightmap to stencil out sky
-			mDeferredScreen.shareDepthBuffer(mDeferredLight[i]);
+			if (mDeferredLight[i].getTexture(0))
+			{
+				mDeferredScreen.shareDepthBuffer(mDeferredLight[i]);
+			}
 		}
 	}
 
@@ -3663,7 +3738,7 @@ void LLPipeline::renderDebug()
 	if (mRenderDebugMask & LLPipeline::RENDER_DEBUG_BUILD_QUEUE)
 	{
 		U32 count = 0;
-		U32 size = mBuildQ2.size();
+		U32 size = mGroupQ2.size();
 		LLColor4 col;
 
 		LLGLEnable blend(GL_BLEND);
@@ -6338,12 +6413,11 @@ void LLPipeline::renderDeferredLighting()
 			glPushMatrix();
 			glLoadIdentity();
 
-			mDeferredLight[0].bindTarget();
-
 		static const LLCachedControl<bool> render_deferred_ssao("RenderDeferredSSAO",false);
 		static const LLCachedControl<S32> render_shadow_detail("RenderShadowDetail",0);
 		if (render_deferred_ssao || render_shadow_detail > 0)
 		{
+			mDeferredLight[0].bindTarget();
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
 				//LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram, 0);
@@ -6384,15 +6458,8 @@ void LLPipeline::renderDeferredLighting()
 				
 				unbindDeferredShader(gDeferredSunProgram);
 			}
-		}
-			else
-			{
-			glClearColor(1,1,1,1);
-				mDeferredLight[0].clear(GL_COLOR_BUFFER_BIT);
-			glClearColor(0,0,0,0);
-			}
-
 			mDeferredLight[0].flush();
+		}
 
 		static const LLCachedControl<bool> render_deferred_blur_light("RenderDeferredBlurLight",false);
 		static const LLCachedControl<bool> render_shadow_gi("RenderDeferredGI",false);
@@ -8494,7 +8561,8 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 		mShadow[j].bindTarget();
 		mShadow[j].getViewport(gGLViewport);
-
+		mShadow[j].clear();
+		
 		{
 			static LLCullResult result[4];
 
@@ -8518,7 +8586,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 	if (gen_shadow > 1)
 	{
-		clear = true;
 	F32 fade_amt = gFrameIntervalSeconds * llmax(LLViewerCamera::getInstance()->getVelocityStat()->getCurrentPerSec(), 1.f);
 
 	//update shadow targets
@@ -8637,6 +8704,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 		mShadow[i+4].bindTarget();
 		mShadow[i+4].getViewport(gGLViewport);
+		mShadow[i+4].clear();
 
 		static LLCullResult result[2];
 
@@ -8646,19 +8714,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 		mShadow[i+4].flush();
  	}
-	}
-	else
-	{
-		if (clear)
-		{
-			clear = false;
-			for (U32 i = 4; i < 6; i++)
-			{
-				mShadow[i].bindTarget();
-				mShadow[i].clear();
-				mShadow[i].flush();
-			}
-		}
 	}
 
 	static const LLCachedControl<bool> camera_offset("CameraOffset",false);
