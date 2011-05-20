@@ -198,6 +198,16 @@ glh::matrix4f glh_get_current_projection()
 	return glh_copy_matrix(gGLProjection);
 }
 
+glh::matrix4f glh_get_last_modelview()
+{
+	return glh_copy_matrix(gGLLastModelView);
+}
+
+glh::matrix4f glh_get_last_projection()
+{
+	return glh_copy_matrix(gGLLastProjection);
+}
+
 void glh_copy_matrix(const glh::matrix4f& src, GLdouble* dst)
 {
 	for (U32 i = 0; i < 16; i++)
@@ -1517,7 +1527,7 @@ BOOL LLPipeline::getVisibleExtents(LLCamera& camera, LLVector3& min, LLVector3& 
 }
 
 
-void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_clip)
+void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_clip, LLPlane* planep)
 {
 	LLFastTimer t(LLFastTimer::FTM_CULL);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
@@ -1537,6 +1547,11 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 		mScreen.bindTarget();
 	}
 
+	if (sUseOcclusion > 1)
+	{
+		gGL.setColorMask(false, false);
+	}
+
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
 	glLoadMatrixd(gGLLastProjection);
@@ -1551,10 +1566,37 @@ void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_cl
 	LLGLDisable test(GL_ALPHA_TEST);
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-	if (sUseOcclusion > 1)
+
+	//setup a clip plane in projection matrix for reflection renders (prevents flickering from occlusion culling)
+	LLViewerRegion* region = gAgent.getRegion();
+	LLPlane plane;
+
+	if (planep)
 	{
-		gGL.setColorMask(false, false);
+		plane = *planep;
 	}
+	else 
+	{
+		if (region)
+		{
+			LLVector3 pnorm;
+			F32 height = region->getWaterHeight();
+			if (water_clip < 0)
+			{ //camera is above water, clip plane points up
+				pnorm.setVec(0,0,1);
+				plane.setVec(pnorm, -height);
+			}
+			else if (water_clip > 0)
+			{	//camera is below water, clip plane points down
+				pnorm = LLVector3(0,0,-1);
+				plane.setVec(pnorm, height);
+			}
+		}
+	}
+	
+	glh::matrix4f modelview = glh_get_last_modelview();
+	glh::matrix4f proj = glh_get_last_projection();
+	LLGLUserClipPlane clip(plane, modelview, proj, water_clip != 0 && LLPipeline::sReflectionRender);
 
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 
@@ -1695,33 +1737,34 @@ void LLPipeline::markOccluder(LLSpatialGroup* group)
 
 void LLPipeline::doOcclusion(LLCamera& camera)
 {
-	LLVertexBuffer::unbind();
+	if (LLPipeline::sUseOcclusion > 1 && sCull->hasOcclusionGroups())
+	{
+		LLVertexBuffer::unbind();
 
-	if (hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCCLUSION))
-	{
-		gGL.setColorMask(true, false, false, false);
-	}
-	else
-	{
-		gGL.setColorMask(false, false);
-	}
-	LLGLDisable blend(GL_BLEND);
-	LLGLDisable test(GL_ALPHA_TEST);
-	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
+		if (hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCCLUSION))
+		{
+			gGL.setColorMask(true, false, false, false);
+		}
+		else
+		{
+			gGL.setColorMask(false, false);
+		}
+		LLGLDisable blend(GL_BLEND);
+		LLGLDisable test(GL_ALPHA_TEST);
+		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+		LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 
-	LLGLDisable cull(GL_CULL_FACE);
-	if (LLPipeline::sUseOcclusion > 1)
-	{
+		LLGLDisable cull(GL_CULL_FACE);
+		
 		for (LLCullResult::sg_list_t::iterator iter = sCull->beginOcclusionGroups(); iter != sCull->endOcclusionGroups(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
 			group->doOcclusion(&camera);
 			group->clearOcclusionState(LLSpatialGroup::ACTIVE_OCCLUSION);
 		}
+	
+		gGL.setColorMask(true, false);
 	}
-
-	gGL.setColorMask(true, false);
 }
 	
 BOOL LLPipeline::updateDrawableGeom(LLDrawable* drawablep, BOOL priority)
@@ -6623,7 +6666,6 @@ void LLPipeline::renderDeferredLighting()
 	LLVertexBuffer::unbind();
 	F32 v[24];
 	glVertexPointer(3, GL_FLOAT, 0, v);
-	static const LLCachedControl<bool> render_local("RenderDeferredLocalLights",false);
 	{
 		bindDeferredShader(gDeferredLightProgram);
 		LLGLDepthTest depth(GL_TRUE, GL_FALSE);
@@ -7303,7 +7345,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 					LLPipeline::sSkipUpdate = skip_distortion_updates;
 					LLGLUserClipPlane clip_plane(plane, mat, projection);
 					LLGLDisable cull(GL_CULL_FACE);
-					updateCull(camera, ref_result, 1);
+					updateCull(camera, ref_result, -water_clip, &plane);
 					stateSort(camera, ref_result);
 					gPipeline.grabReferences(ref_result);
 					renderGeom(camera);
@@ -7352,9 +7394,11 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			{
 				//clip out geometry on the same side of water as the camera
 				mat = glh_get_current_modelview();
-				LLGLUserClipPlane clip_plane(LLPlane(-pnorm, -(pd+pad)), mat, projection);
+				LLPlane plane(-pnorm, -(pd+pad));
+
+				LLGLUserClipPlane clip_plane(plane, mat, projection);
 				static LLCullResult result;
-				updateCull(camera, result, water_clip);
+				updateCull(camera, result, water_clip, &plane);
 				stateSort(camera, result);
 
 				gGL.setColorMask(true, true);
