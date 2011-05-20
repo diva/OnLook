@@ -2,6 +2,7 @@
 
 project(llcommon)
 
+include(Cwdebug)
 include(00-Common)
 include(LLCommon)
 include(Linking)
@@ -217,7 +218,13 @@ target_link_libraries(
     ${EXPAT_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
+    ${CWDEBUG_LIBRARIES}
     )
+
+if (LINUX)
+    # When linking with llcommon later, we do not want to link with cwdebug.a again.
+    set_property(TARGET llcommon PROPERTY LINK_INTERFACE_LIBRARIES "-lapr-1 -laprutil-1 -lz")
+endif (LINUX)
 
 if (DARWIN)
     # Don't embed a full path in the library's install name

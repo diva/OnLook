@@ -67,6 +67,10 @@
 //
 void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap)
 {
+#ifdef CWDEBUG
+  	debug::init_thread();
+#endif
+
 	LLThread *threadp = (LLThread *)datap;
 
 	// Set thread state to running

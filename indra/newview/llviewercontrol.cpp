@@ -75,6 +75,7 @@
 #include "llnetmap.h"
 #include "llrender.h"
 #include "llfloaterchat.h"
+#include "statemachine/aistatemachine.h"
 #include "aithreadsafe.h"
 #include "llviewerobjectlist.h"
 #include "lldrawpoolbump.h"
@@ -119,6 +120,11 @@ static bool handleTerrainDetailChanged(const LLSD& newvalue)
 	return true;
 }
 
+bool handleStateMachineMaxTimeChanged(const LLSD& newvalue)
+{
+	AIStateMachine::updateSettings();
+	return true;
+}
 
 static bool handleSetShaderChanged(const LLSD& newvalue)
 {
@@ -539,6 +545,7 @@ bool handleAscentSelfTag(const LLSD& newvalue)
 		gAgent.getAvatarObject()->mClientTag = "";
 	return true;
 }
+
 bool handleAscentGlobalTag(const LLSD& newvalue)
 {
 	S32 object_count = gObjectList.getNumObjects();
@@ -548,6 +555,13 @@ bool handleAscentGlobalTag(const LLSD& newvalue)
 		if (objectp && objectp->isAvatar())
 			((LLVOAvatar*)objectp)->mClientTag = "";
 	}
+	return true;
+}
+
+bool handleAscentAvatarModifier(const LLSD& newvalue)
+{
+	llinfos << "Calling gAgent.sendAgentSetAppearance() because AscentAvatar*Modifier changed." << llendl;
+	gAgent.sendAgentSetAppearance();
 	return true;
 }
 
@@ -704,6 +718,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AudioLevelMic")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));
 	gSavedSettings.getControl("LipSyncEnabled")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _1));	
 	gSavedSettings.getControl("TranslateChat")->getSignal()->connect(boost::bind(&handleTranslateChatPrefsChanged, _1));
+	gSavedSettings.getControl("StateMachineMaxTime")->getSignal()->connect(boost::bind(&handleStateMachineMaxTimeChanged, _1));
 
 	gSavedSettings.getControl("CloudsEnabled")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
 	gSavedSettings.getControl("SkyUseClassicClouds")->getSignal()->connect(boost::bind(&handleCloudSettingsChanged, _1));
@@ -724,6 +739,9 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_1));
 	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
 	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_1));
+	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
+	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
+	gSavedSettings.getControl("AscentAvatarZModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _1));
 
     // [Ansariel: Display name support]
 	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _1));
@@ -807,6 +825,16 @@ template <> eControlType get_control_type<LLSD>(const LLSD& in, LLSD& out)
 { 
 	out = in;
 	return TYPE_LLSD; 
+}
+
+void onCommitControlSetting_gSavedSettings(LLUICtrl* ctrl, void* name)
+{
+	gSavedSettings.setValue((const char*)name,ctrl->getValue());
+}
+
+void onCommitControlSetting_gSavedPerAccountSettings(LLUICtrl* ctrl, void* name)
+{
+	gSavedPerAccountSettings.setValue((const char*)name,ctrl->getValue());
 }
 
 #if TEST_CACHED_CONTROL

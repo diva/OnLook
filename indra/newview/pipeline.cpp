@@ -2814,10 +2814,37 @@ void LLPipeline::postSort(LLCamera& camera)
 				LLVector3 pos = gAgent.getPosAgentFromGlobal(pos_global);
 				if (gPipeline.sRenderBeacons)
 				{
-					//pos += LLVector3(0.f, 0.f, 0.2f);
-					static const LLCachedControl<S32> debug_beacon_line_width("DebugBeaconLineWidth",1);
-					gObjectList.addDebugBeacon(pos, "", LLColor4(1.f, 1.f, 0.f, 0.5f), LLColor4(1.f, 1.f, 1.f, 0.5f), debug_beacon_line_width);
+					//<NewShinyStuff>
+					LLAudioChannel* channel = sourcep->getChannel();
+					bool const is_playing = channel && channel->isPlaying();
+					S32 width = 2;
+					LLColor4 color = LLColor4(0.f, 0.f, 1.f, 0.5f);
+					if (is_playing)
+					{
+						static const LLCachedControl<S32> debug_beacon_line_width("DebugBeaconLineWidth",1);
+					  	llassert(!sourcep->isMuted());
+						F32 gain = sourcep->getGain() * channel->getSecondaryGain();
+						if (gain == 0.f)
+						{
+						  color = LLColor4(1.f, 0.f, 0.f, 0.5f);
+						}
+						else if (gain == 1.f)
+						{
+						  color = LLColor4(0.f, 1.f, 0.f, 0.5f);
+						  width = debug_beacon_line_width;
+						}
+						else
+						{
+						  color = LLColor4(1.f, 1.f, 0.f, 0.5f);
+						  width = 1 + gain * (debug_beacon_line_width - 1);
+						}
+					}
+					else if (sourcep->isMuted())
+						color = LLColor4(0.f, 1.f, 1.f, 0.5f);
+					gObjectList.addDebugBeacon(pos, "", color, LLColor4(1.f, 1.f, 1.f, 0.5f), width);
 				}
+				//</NewShinyStuff>
+				//gObjectList.addDebugBeacon(pos, "", LLColor4(1.f, 1.f, 0.f, 0.5f), LLColor4(1.f, 1.f, 1.f, 0.5f), debug_beacon_line_width);
 			}
 			// now deal with highlights for all those seeable sound sources
 			forAllVisibleDrawables(renderSoundHighlights);

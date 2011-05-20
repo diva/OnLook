@@ -53,6 +53,7 @@ struct 	LLEntryAndEdCore;
 class LLMenuBarGL;
 class LLFloaterScriptSearch;
 class LLKeywordToken;
+class AIFilePicker;
 
 // Inner, implementation class.  LLPreviewScript and LLLiveLSLEditor each own one of these.
 class LLScriptEdCore : public LLPanel, public LLEventTimer
@@ -189,6 +190,7 @@ protected:
 	// <edit>
 	virtual BOOL canSaveAs() const;
 	virtual void saveAs();
+	void saveAs_continued(AIFilePicker* filepicker);
 	// </edit>
 
 	static void onSearchReplace(void* userdata);
@@ -261,6 +263,7 @@ protected:
 	// <edit>
 	virtual BOOL canSaveAs() const;
 	virtual void saveAs();
+	void saveAs_continued(AIFilePicker* filepicker);
 	// </edit>
 
 	static void onSearchReplace(void* userdata);

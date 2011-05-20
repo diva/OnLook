@@ -22,6 +22,7 @@ include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLPlugin)
+include(AIStateMachine)
 include(LLPrimitive)
 include(LLRender)
 include(LLUI)
@@ -43,6 +44,7 @@ if (WINDOWS)
 endif (WINDOWS)
 
 include_directories(
+    ${CMAKE_SOURCE_DIR}/newview
     ${DBUSGLIB_INCLUDE_DIRS}
     ${HUNSPELL_INCLUDE_DIR}
     ${ELFIO_INCLUDE_DIR}
@@ -133,7 +135,6 @@ set(viewer_SOURCE_FILES
     lldebugmessagebox.cpp
     lldebugview.cpp
     lldelayedgestureerror.cpp
-    lldirpicker.cpp
     lldrawable.cpp
     lldrawpoolalpha.cpp
     lldrawpoolavatar.cpp
@@ -155,7 +156,6 @@ set(viewer_SOURCE_FILES
     llface.cpp
     llfasttimerview.cpp
     llfeaturemanager.cpp
-    llfilepicker.cpp
     llfirstuse.cpp
     llflexibleobject.cpp
     llfloaterabout.cpp
@@ -443,6 +443,8 @@ set(viewer_SOURCE_FILES
     llviewerkeyboard.cpp
     llviewerlayer.cpp
     llviewermedia.cpp
+    llviewermediaeventemitter.cpp
+    llviewermediaobserver.cpp
     llviewermediafocus.cpp
     llviewermedia_streamingaudio.cpp
     llviewermenu.cpp
@@ -457,6 +459,7 @@ set(viewer_SOURCE_FILES
     llviewerparceloverlay.cpp
     llviewerpartsim.cpp
     llviewerpartsource.cpp
+    llviewerpluginmanager.cpp
     llviewerregion.cpp
     llviewershadermgr.cpp
     llviewerstats.cpp
@@ -608,7 +611,6 @@ set(viewer_HEADER_FILES
     lldebugmessagebox.h
     lldebugview.h
     lldelayedgestureerror.h
-    lldirpicker.h
     lldrawable.h
     lldrawpool.h
     lldrawpoolalpha.h
@@ -631,7 +633,6 @@ set(viewer_HEADER_FILES
     llface.h
     llfasttimerview.h
     llfeaturemanager.h
-    llfilepicker.h
     llfirstuse.h
     llflexibleobject.h
     llfloaterabout.h
@@ -920,6 +921,7 @@ set(viewer_HEADER_FILES
     llviewerkeyboard.h
     llviewerlayer.h
     llviewermedia.h
+    llviewermediaeventemitter.h
     llviewermediaobserver.h
     llviewermediafocus.h
     llviewermenu.h
@@ -934,6 +936,7 @@ set(viewer_HEADER_FILES
     llviewerparceloverlay.h
     llviewerpartsim.h
     llviewerpartsource.h
+    llviewerpluginmanager.h
     llviewerprecompiledheaders.h
     llviewerregion.h
     llviewershadermgr.h
@@ -1406,7 +1409,7 @@ if (WINDOWS)
         DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 
-    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit)
+    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
 
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
@@ -1423,6 +1426,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLINVENTORY_LIBRARIES}
     ${LLMESSAGE_LIBRARIES}
     ${LLPLUGIN_LIBRARIES}
+    ${AISTATEMACHINE_LIBRARIES}
     ${LLPRIMITIVE_LIBRARIES}
     ${LLRENDER_LIBRARIES}
     ${FREETYPE_LIBRARIES}
@@ -1485,7 +1489,7 @@ if (LINUX)
       DEPENDS secondlife-stripped ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
 
-  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer010 media_plugin_webkit)
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer010 media_plugin_webkit basic_plugin_filepicker)
 
   if (PACKAGE)
     add_custom_target(package ALL DEPENDS ${product}.tar.bz2)
@@ -1526,7 +1530,7 @@ if (DARWIN)
     DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
     )
 
-  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit)
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
 
   if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${VIEWER_BINARY_NAME}) 
@@ -1640,6 +1644,18 @@ if (WINDOWS)
           ${BUILT_QUICKTIME_PLUGIN}
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
         COMMENT "Copying Quicktime Plugin to the runtime folder."
+        )
+
+	get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
+    add_custom_command(
+        TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+        ARGS
+          -E
+          copy_if_different
+          ${BUILT_FILEPICKER_PLUGIN}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
+        COMMENT "Copying filepicker Plugin to the runtime folder."
         )
 
   # Copying the mime_types.xml file to app_settings

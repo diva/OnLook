@@ -277,6 +277,7 @@ protected:
 	LLInventoryType::EType mInvType;
 };
 
+class AIFilePicker;
 
 class LLItemBridge : public LLInvFVBridge
 {
@@ -303,7 +304,7 @@ public:
 	virtual BOOL hasChildren() const { return FALSE; }
 	virtual BOOL isUpToDate() const { return TRUE; }
 
-
+    static void showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker);
 
 	// override for LLInvFVBridge
 	virtual void clearDisplayName() { mDisplayName.clear(); }

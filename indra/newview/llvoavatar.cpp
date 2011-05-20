@@ -1182,7 +1182,6 @@ void LLVOAvatar::getMeshInfo (mesh_info_t* mesh_info)
 	return;
 }
 
-
 // static
 void LLVOAvatar::dumpBakedStatus()
 {
@@ -6851,6 +6850,22 @@ void LLVOAvatar::dirtyMesh(S32 priority)
 void LLVOAvatar::hideSkirt()
 {
 	mMeshLOD[MESH_ID_SKIRT]->setVisible(FALSE, TRUE);
+}
+
+//-----------------------------------------------------------------------------
+// getMesh( LLPolyMeshSharedData *shared_data )
+//-----------------------------------------------------------------------------
+LLPolyMesh* LLVOAvatar::getMesh( LLPolyMeshSharedData *shared_data )
+{
+	for (polymesh_map_t::iterator i = mMeshes.begin(); i != mMeshes.end(); ++i)
+	{
+		LLPolyMesh* mesh = i->second;
+		if (mesh->getSharedData() == shared_data)
+		{
+			return mesh;
+		}
+	}
+	return NULL;
 }
 
 //-----------------------------------------------------------------------------

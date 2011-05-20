@@ -180,6 +180,7 @@ public:
 		FTM_REFRESH,
 		FTM_SORT,
 		FTM_PICK,
+		FTM_STATEMACHINE,
 		
 		// Temp
 		FTM_TEMP1,

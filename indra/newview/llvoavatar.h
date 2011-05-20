@@ -600,11 +600,6 @@ public:
 	void			setLocTexTE( U8 te, LLViewerTexture* image, BOOL set_by_user );
 	void			setupComposites();
 
-	typedef std::map<S32,std::string> lod_mesh_map_t;
-	typedef std::map<std::string,lod_mesh_map_t> mesh_info_t;
-
-	static void getMeshInfo (mesh_info_t* mesh_info);
-	
 /**                    Textures
  **                                                                            **
  *******************************************************************************/
@@ -651,6 +646,7 @@ public:
 	void 			processAvatarAppearance(LLMessageSystem* mesgsys);
 	void 			hideSkirt();
 	void			startAppearanceAnimation(BOOL set_by_user, BOOL play_sound);
+	LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data);
 	
 	//--------------------------------------------------------------------
 	// Appearance morphing
@@ -662,6 +658,12 @@ private:
 	LLFrameTimer	mAppearanceMorphTimer;
 	F32				mLastAppearanceBlendTime;
 	BOOL			mAppearanceAnimSetByUser;	//1.23
+
+public:
+	typedef std::map<S32, std::string> lod_mesh_map_t;
+	typedef std::map<std::string, lod_mesh_map_t> mesh_info_t;
+
+	static void getMeshInfo(mesh_info_t* mesh_info);
 
 	//--------------------------------------------------------------------
 	// Clothing colors (convenience functions to access visual parameters)

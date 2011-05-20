@@ -337,6 +337,7 @@ public:
 	friend class LLAudioChannel;
 protected:
 	void setChannel(LLAudioChannel *channelp);
+public:
 	LLAudioChannel *getChannel() const						{ return mChannelp; }
 
 protected:
@@ -430,17 +431,22 @@ public:
 
 	friend class LLAudioEngine;
 	friend class LLAudioSource;
+
 protected:
 	virtual void play() = 0;
 	virtual void playSynced(LLAudioChannel *channelp) = 0;
 	virtual void cleanup() = 0;
+	void setWaiting(bool waiting)               { mWaiting = waiting; }
+
+public:
 	virtual bool isPlaying() = 0;
-	void setWaiting(const bool waiting)			{ mWaiting = waiting; }
 	bool isWaiting() const						{ return mWaiting; }
 
+protected:
 	virtual bool updateBuffer(); // Check to see if the buffer associated with the source changed, and update if necessary.
 	virtual void update3DPosition() = 0;
 	virtual void updateLoop() = 0; // Update your loop/completion status, for use by queueing/syncing.
+
 protected:
 	LLAudioSource	*mCurrentSourcep;
 	LLAudioBuffer	*mCurrentBufferp;

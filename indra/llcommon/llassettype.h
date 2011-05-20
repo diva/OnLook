@@ -192,4 +192,9 @@ protected:
 	~LLAssetType() {}
 };
 
+#ifdef CWDEBUG
+#include <iosfwd>
+inline std::ostream& operator<<(std::ostream& os, LLAssetType::EType type) { return os << LLAssetType::getDesc(type); }
+#endif
+
 #endif // LL_LLASSETTYPE

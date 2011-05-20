@@ -75,7 +75,7 @@
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
 
-#include "llfilepicker.h"
+#include "statemachine/aifilepicker.h"
 #include "hippogridmanager.h"
 
 using namespace LLVOAvatarDefines;
@@ -1850,14 +1850,20 @@ void LLFloaterCustomize::setCurrentWearableType( EWearableType type )
 // reX: new function
 void LLFloaterCustomize::onBtnImport( void* userdata )
 {
-	LLFilePicker& file_picker = LLFilePicker::instance();
-	if( !file_picker.getOpenFile( LLFilePicker::FFLOAD_XML ) )
-		{
-			// User canceled import.
-			return;
-		}
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open(FFLOAD_XML);
+	filepicker->run(boost::bind(&LLFloaterCustomize::onBtnImport_continued, filepicker));
+}
 
-	const std::string filename = file_picker.getFirstFile();
+void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+	{
+		// User canceled import.
+		return;
+	}
+
+	const std::string filename = filepicker->getFilename();
 
 	FILE* fp = LLFile::fopen(filename, "rb");
 
@@ -1904,8 +1910,14 @@ void LLFloaterCustomize::onBtnImport( void* userdata )
 // reX: new function
 void LLFloaterCustomize::onBtnExport( void* userdata )
 {
-	LLFilePicker& file_picker = LLFilePicker::instance();
-	if( !file_picker.getSaveFile( LLFilePicker::FFSAVE_XML ) )
+	AIFilePicker* filepicker = new AIFilePicker;
+	filepicker->open("", FFSAVE_XML);
+	filepicker->run(boost::bind(&LLFloaterCustomize::onBtnExport_continued, filepicker));
+}
+
+void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
 	{
 		// User canceled export.
 		return;
@@ -1914,7 +1926,7 @@ void LLFloaterCustomize::onBtnExport( void* userdata )
 	LLViewerInventoryItem* item;
 	BOOL is_modifiable;
 
-	const std::string filename = file_picker.getFirstFile();
+	const std::string filename = filepicker->getFilename();
 
 	FILE* fp = LLFile::fopen(filename, "wb");
 

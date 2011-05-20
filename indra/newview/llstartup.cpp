@@ -54,6 +54,7 @@
 #include "hippogridmanager.h"
 #include "hippolimits.h"
 #include "floaterao.h"
+#include "statemachine/aifilepicker.h"
 
 #include "llares.h"
 #include "llcachename.h"
@@ -635,6 +636,12 @@ bool idle_startup()
 		//-------------------------------------------------
 
 		LLStartUp::handleSocksProxy(false);
+
+		//-------------------------------------------------
+		// Load file- and dirpicker {context, default path} map.
+		//-------------------------------------------------
+
+		AIFilePicker::loadFile("filepicker_contexts.xml");
 
 		//-------------------------------------------------
 		// Init audio, which may be needed for prefs dialog

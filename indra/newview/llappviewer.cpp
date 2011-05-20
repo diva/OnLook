@@ -73,6 +73,7 @@
 #include "llmutelist.h"
 #include "llurldispatcher.h"
 #include "llurlhistory.h"
+#include "statemachine/aifilepicker.h"
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llfont.h"
@@ -1122,8 +1123,12 @@ bool LLAppViewer::mainLoop()
 	return true;
 }
 
+extern void cleanup_pose_stand(void);
+
 bool LLAppViewer::cleanup()
 {
+	cleanup_pose_stand();
+
 	//flag all elements as needing to be destroyed immediately
 	// to ensure shutdown order
 	LLMortician::setZealous(TRUE);
@@ -1353,6 +1358,9 @@ bool LLAppViewer::cleanup()
 
 	// Save URL history file
 	LLURLHistory::saveFile("url_history.xml");
+
+	// Save file- and dirpicker {context, default paths} map.
+	AIFilePicker::saveFile("filepicker_contexts.xml");
 
 	// save mute list. gMuteList used to also be deleted here too.
 	LLMuteList::getInstance()->cache(gAgent.getID());
