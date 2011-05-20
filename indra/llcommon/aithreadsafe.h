@@ -278,7 +278,11 @@ struct AIReadAccessConst
 protected:
 	//! Constructor used by AIReadAccess.
 	AIReadAccessConst(AIThreadSafe<T>& wrapper, state_type state)
-		: mWrapper(wrapper), mState(state) { }
+		: mWrapper(wrapper), mState(state) 
+#if AI_NEED_ACCESS_CC
+		  ,	mIsCopyConstructed(false)
+#endif
+	{ }
 
 	AIThreadSafe<T>& mWrapper;	//!< Reference to the object that we provide access to.
 	state_type const mState;	//!< The lock state that mWrapper is in.

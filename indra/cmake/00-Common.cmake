@@ -164,6 +164,11 @@ if (LINUX)
     add_definitions(-Wno-parentheses)
   endif (${CXX_VERSION} GREATER 429)
 
+  #gcc 4.6 has a new spammy warning
+  if(NOT ${CXX_VERSION} LESS 460)
+    add_definitions(-Wno-unused-but-set-variable)
+  endif (NOT ${CXX_VERSION} LESS 460)
+
   # End of hacks.
 
   add_definitions(

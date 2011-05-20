@@ -911,8 +911,10 @@ void LLPanelLogin::loadLoginPage()
 	std::string version = llformat("%d.%d.%d (%d)",
 						LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD);
 
-	oStr << "&channel=" << LLWeb::curlEscape(LL_CHANNEL);
-	oStr << "&version=" << LLWeb::curlEscape(version);
+	if(login_page.find("secondlife.com") == -1) {
+		oStr << "&channel=" << LLWeb::curlEscape(LL_CHANNEL);
+		oStr << "&version=" << LLWeb::curlEscape(version);
+	}
 
 	// Grid
 	oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
