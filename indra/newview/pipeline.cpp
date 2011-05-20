@@ -271,7 +271,6 @@ BOOL	LLPipeline::sRenderFrameTest = FALSE;
 BOOL	LLPipeline::sRenderAttachedLights = TRUE;
 BOOL	LLPipeline::sRenderAttachedParticles = TRUE;
 BOOL	LLPipeline::sRenderDeferred = FALSE;
-BOOL    LLPipeline::sAllowRebuildPriorityGroup = FALSE ;
 S32		LLPipeline::sVisibleLightCount = 0;
 F32		LLPipeline::sMinRenderSize = 0.f;
 
@@ -318,6 +317,8 @@ LLPipeline::LLPipeline() :
 	mRenderDebugFeatureMask(0),
 	mRenderDebugMask(0),
 	mOldRenderDebugMask(0),
+	mGroupQ1Locked(false),
+	mGroupQ2Locked(false),
 	mLastRebuildPool(NULL),
 	mAlphaPool(NULL),
 	mSkyPool(NULL),
@@ -1866,17 +1867,13 @@ void LLPipeline::updateGL()
 
 void LLPipeline::rebuildPriorityGroups()
 {
-	if(!sAllowRebuildPriorityGroup)
-	{
-		return ;
-	}
-	sAllowRebuildPriorityGroup = FALSE ;
-
 	LLTimer update_timer;
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 	
 	assertInitialized();
 
+
+	mGroupQ1Locked = true;
 	// Iterate through all drawables on the priority build queue,
 	for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ1.begin();
 		 iter != mGroupQ1.end(); ++iter)
@@ -1887,6 +1884,8 @@ void LLPipeline::rebuildPriorityGroups()
 	}
 
 	mGroupQ1.clear();
+	mGroupQ1Locked = false;
+
 }
 		
 void LLPipeline::rebuildGroups()
@@ -1896,6 +1895,7 @@ void LLPipeline::rebuildGroups()
 		return;
 	}
 
+	mGroupQ2Locked = true;
 	// Iterate through some drawables on the non-priority build queue
 	S32 size = (S32) mGroupQ2.size();
 	S32 min_count = llclamp((S32) ((F32) (size * size)/4096*0.25f), 1, size);
@@ -1927,6 +1927,8 @@ void LLPipeline::rebuildGroups()
 	}	
 
 	mGroupQ2.erase(mGroupQ2.begin(), ++last_iter);
+
+	mGroupQ2Locked = false;
 
 	updateMovedList(mMovedBridge);
 }
@@ -2217,6 +2219,8 @@ void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 		{
 			if (!group->isState(LLSpatialGroup::IN_BUILD_Q1))
 			{
+				llassert_always(!mGroupQ1Locked);
+
 				mGroupQ1.push_back(group);
 				group->setState(LLSpatialGroup::IN_BUILD_Q1);
 
@@ -2233,6 +2237,7 @@ void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 		}
 		else if (!group->isState(LLSpatialGroup::IN_BUILD_Q2 | LLSpatialGroup::IN_BUILD_Q1))
 		{
+			llassert_always(!mGroupQ2Locked);
 			//llerrs << "Non-priority updates not yet supported!" << llendl;
 			if (std::find(mGroupQ2.begin(), mGroupQ2.end(), group) != mGroupQ2.end())
 			{
@@ -3768,10 +3773,16 @@ void LLPipeline::renderDebug()
 		U32 size = mGroupQ2.size();
 		LLColor4 col;
 
+		LLVertexBuffer::unbind();
 		LLGLEnable blend(GL_BLEND);
+		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep);
 		
+		gGL.pushMatrix();
+		glLoadMatrixd(gGLModelView);
+		gGLLastMatrix = NULL;
+
 		for (LLSpatialGroup::sg_vector_t::iterator iter = mGroupQ2.begin(); iter != mGroupQ2.end(); ++iter)
 		{
 			LLSpatialGroup* group = *iter;
@@ -3793,7 +3804,7 @@ void LLPipeline::renderDebug()
 				glMultMatrixf((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
 			}
 
-			F32 alpha = (F32) (size-count)/size;
+			F32 alpha = llclamp((F32) (size-count)/size, 0.f, 1.f);
 
 			
 			LLVector2 c(1.f-alpha, alpha);
@@ -3801,7 +3812,7 @@ void LLPipeline::renderDebug()
 
 			
 			++count;
-			col.set(c.mV[0], c.mV[1], 0, alpha*0.5f+0.1f);
+			col.set(c.mV[0], c.mV[1], 0, alpha*0.5f+0.5f);
 			group->drawObjectBox(col);
 
 			if (bridge)
@@ -3809,8 +3820,10 @@ void LLPipeline::renderDebug()
 				gGL.popMatrix();
 			}
 		}
+
+		gGL.popMatrix();
 	}
-	
+
 	gGL.flush();
 }
 

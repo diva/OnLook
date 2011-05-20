@@ -317,11 +317,13 @@ BOOL LLVolumeImplFlexible::doIdleUpdate(LLAgent &agent, LLWorld &world, const F6
 		return FALSE; // (we are not initialized or updated)
 	}
 
-	if (force_update)
+	bool visible = mVO->mDrawable->isVisible();
+
+	if (force_update && visible)
 	{
 		gPipeline.markRebuild(mVO->mDrawable, LLDrawable::REBUILD_POSITION, FALSE);
 	}
-	else if	(mVO->mDrawable->isVisible() &&
+	else if	(visible &&
 		!mVO->mDrawable->isState(LLDrawable::IN_REBUILD_Q1) &&
 		mVO->getPixelArea() > 256.f)
 	{

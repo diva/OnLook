@@ -784,7 +784,6 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		{
 			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 			gFrameStats.start(LLFrameStats::STATE_SORT);
-			gPipeline.sAllowRebuildPriorityGroup = TRUE ;
 			gPipeline.stateSort(*LLViewerCamera::getInstance(), result);
 			stop_glerror();
 				
