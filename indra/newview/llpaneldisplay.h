@@ -101,18 +101,19 @@ protected:
 	LLSliderCtrl	*mCtrlFlexFactor;				// Timeslice for flexible objects
 	LLSliderCtrl	*mCtrlTreeFactor;				// Control tree cutoff distance
 	LLSliderCtrl	*mCtrlAvatarFactor;				// LOD for avatars
+	LLSliderCtrl	*mCtrlAvatarPhysicsFactor;		// Physics LOD for avatars
 	LLSliderCtrl	*mCtrlTerrainFactor;			// LOD for terrain
 	LLSliderCtrl	*mCtrlSkyFactor;				// LOD for terrain
 	LLSliderCtrl	*mCtrlMaxParticle;				// Max Particle
 	LLSliderCtrl	*mCtrlPostProcess;				// Max Particle
 
 	LLCheckBoxCtrl	*mCtrlBumpShiny;
-	LLCheckBoxCtrl	*mCtrlReflections;
 	LLCheckBoxCtrl	*mCtrlWindLight;
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
 	LLCheckBoxCtrl	*mCtrlShaderEnable;
 	LLCheckBoxCtrl	*mCtrlDeferred;
-	LLCheckBoxCtrl	*mCtrlSunShadow;
+	LLCheckBoxCtrl	*mCtrlDeferredGI;
+	LLComboBox		*mCtrlShadowDetail;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
 	LLRadioGroup	*mRadioLightingDetail2;
@@ -136,6 +137,7 @@ protected:
 	LLTextBox		*mFlexFactorText;
 	LLTextBox		*mTreeFactorText;
 	LLTextBox		*mAvatarFactorText;
+	LLTextBox		*mAvatarPhysicsFactorText;
 	LLTextBox		*mTerrainFactorText;
 	LLTextBox		*mSkyFactorText;
 	LLTextBox		*mPostProcessText;
@@ -151,12 +153,12 @@ protected:
 	BOOL mBumpShiny;
 	BOOL mShaderEnable;
 	BOOL mWindLight;
-	BOOL mReflections;
 	BOOL mDeferred;
-	BOOL mSunShadow;
+	BOOL mDeferredGI;
 	BOOL mAvatarVP;
 
 	S32 mReflectionDetail;
+	S32 mShadowDetail;
 
 	BOOL mAvatarImpostors;
 	BOOL mAvatarCloth;

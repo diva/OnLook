@@ -496,7 +496,9 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 {
         // Skip if disabled globally.
 		static const LLCachedControl<bool> avatar_physics("AvatarPhysics",false);
-        if (!avatar_physics || (!((LLVOAvatar*)mCharacter)->isSelf() && !((LLVOAvatar*)mCharacter)->mSupportsPhysics))
+		bool supports_physics = !avatar_physics || (!((LLVOAvatar*)mCharacter)->isSelf() && !((LLVOAvatar*)mCharacter)->mSupportsPhysics);
+		//Treat lod 0 as AvatarPhyiscs:FALSE. AvatarPhyiscs setting is superfluous unless we decide to hook it into param sending.
+        if (supports_physics || !LLVOAvatar::sPhysicsLODFactor)
         {
 			if(!mIsDefault)
 			{
@@ -507,6 +509,7 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 				}
 				mCharacter->updateVisualParams();
 			}
+			if(!supports_physics) //Only use emerald physics if avatarphysiscs is really off, or the client doesn't seem to support new physics.
 			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
 			return TRUE;
 		}
