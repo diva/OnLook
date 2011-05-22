@@ -959,11 +959,9 @@ S32 LLPipeline::getMaxLightingDetail() const
 
 S32 LLPipeline::setLightingDetail(S32 level)
 {
-	assertInitialized();
-
 	if (level < 0)
 	{
-		if (gSavedSettings.getBOOL("VertexShaderEnable"))
+		if (gSavedSettings.getBOOL("RenderLocalLights"))
 		{
 			level = 1;
 		}
@@ -973,15 +971,12 @@ S32 LLPipeline::setLightingDetail(S32 level)
 		}
 	}
 	level = llclamp(level, 0, getMaxLightingDetail());
-	if (level != mLightingDetail)
+	//Bugfix: If setshaders was called with RenderLocalLights off then enabling RenderLocalLights later will not work. Reloading shaders fixes this.
+	if (level != mLightingDetail && mVertexShadersLoaded)
 	{
-		mLightingDetail = level;
-
-		if (mVertexShadersLoaded == 1)
-		{
-			LLViewerShaderMgr::instance()->setShaders();
-		}
+		LLViewerShaderMgr::instance()->setShaders();
 	}
+	mLightingDetail = level;
 	return mLightingDetail;
 }
 
@@ -4794,7 +4789,6 @@ void LLPipeline::enableLightsStatic()
 	if (mLightingDetail >= 2)
 	{
 		mask |= mLightMovingMask; // Hardware moving lights
-		glColor4f(0.f, 0.f, 0.f, 1.0f); // no local lighting by default
 	}
 	else
 	{
@@ -4808,10 +4802,7 @@ void LLPipeline::enableLightsDynamic()
 	assertInitialized();
 	U32 mask = 0xff & (~2); // Local lights
 	enableLights(mask);
-	if (mLightingDetail >= 2)
-	{
-		glColor4f(0.f, 0.f, 0.f, 1.f); // no local lighting by default
-	}
+	
 
 	LLVOAvatar* avatarp = gAgent.getAvatarObject();
 
@@ -4851,10 +4842,6 @@ void LLPipeline::enableLightsFullbright(const LLColor4& color)
 	enableLights(mask);
 
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT,color.mV);
-	/*if (mLightingDetail >= 2)
-	{
-		glColor4f(0.f, 0.f, 0.f, 1.f); // no local lighting by default
-	}*/
 }
 
 void LLPipeline::disableLights()
@@ -6746,8 +6733,7 @@ void LLPipeline::renderDeferredLighting()
 		gPipeline.popRenderTypeMask();
 	}
 
-	static const LLCachedControl<bool> render_local("RenderDeferredLocalLights",false);
-	static const LLCachedControl<bool> render_fullscreen("RenderDeferredFullscreenLights",false);
+	static const LLCachedControl<bool> render_local("RenderLocalLights",false);
 
 	if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_DEFERRED) > 2)
 	{
@@ -6756,7 +6742,7 @@ void LLPipeline::renderDeferredLighting()
 		mDeferredLight[2].clear(GL_COLOR_BUFFER_BIT);
 	}
 
-	if (render_local || render_fullscreen)
+	if (render_local)
 	{
 		gGL.setSceneBlendType(LLRender::BT_ADD);
 		std::list<LLVector4> fullscreen_lights;
@@ -6768,16 +6754,18 @@ void LLPipeline::renderDeferredLighting()
 			mTargetShadowSpotLight[i] = NULL;
 		}
 
-	std::list<LLVector4> light_colors;
+		std::list<LLVector4> light_colors;
 
-	LLVertexBuffer::unbind();
-	F32 v[24];
-	glVertexPointer(3, GL_FLOAT, 0, v);
-	{
-		bindDeferredShader(gDeferredLightProgram);
-		LLGLDepthTest depth(GL_TRUE, GL_FALSE);
-		for (LLDrawable::drawable_set_t::iterator iter = mLights.begin(); iter != mLights.end(); ++iter)
-		{
+			LLVertexBuffer::unbind();
+
+			F32 v[24];
+			glVertexPointer(3, GL_FLOAT, 0, v);
+			
+			{
+				bindDeferredShader(gDeferredLightProgram);
+				LLGLDepthTest depth(GL_TRUE, GL_FALSE);
+				for (LLDrawable::drawable_set_t::iterator iter = mLights.begin(); iter != mLights.end(); ++iter)
+				{
 			LLDrawable* drawablep = *iter;
 			
 			LLVOVolume* volume = drawablep->getVOVolume();
@@ -6858,7 +6846,7 @@ void LLPipeline::renderDeferredLighting()
 						GL_UNSIGNED_BYTE, get_box_fan_indices(camera, center));
 				}
 			}
-			else if (render_fullscreen)
+			else
 			{	
 				if (volume->isLightSpotlight())
 				{

@@ -416,7 +416,7 @@
 	     width="128">
 		Lighting Detail:
 	</text>
-	<radio_group bottom_delta="-43" control_name="RenderLightingDetail" draw_border="false"
+	<radio_group bottom_delta="-43" control_name="RenderLocalLights" draw_border="false"
 	     enabled="true" follows="left|top" height="38" left_delta="0"
 	     mouse_opaque="true" name="LightingDetailRadio" width="321">
 		<radio_item type="string" length="1" bottom="-19" enabled="true" follows="left|top" height="16"

@@ -163,7 +163,7 @@ protected:
 	BOOL mAvatarImpostors;
 	BOOL mAvatarCloth;
 	S32 mAvatarMode;
-	S32 mLightingDetail;
+	BOOL mLocalLights;
 	S32 mTerrainDetail;
 
 	F32 mRenderFarClip;

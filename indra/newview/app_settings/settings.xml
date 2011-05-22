@@ -8960,9 +8960,22 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-    <key>RenderShadowNearDist</key>
-    <map>
-      <key>Comment</key>
+   
+  <key>RenderLocalLights</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether or not to render local lights.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+
+  <key>RenderShadowNearDist</key>
+  <map>
+    <key>Comment</key>
       <string>Near clip plane of shadow camera (affects precision of depth shadows).</string>
       <key>Persist</key>
       <integer>1</integer>
@@ -9096,7 +9109,7 @@
       <string>Vector3</string>
       <key>Value</key>
       <array>
-        <real>0.40</real>
+        <real>0.80</real>
         <real>1.00</real>
         <real>0.00</real>
       </array>

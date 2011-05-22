@@ -432,7 +432,7 @@ void LLPanelDisplay::refresh()
 	mPostProcess = gSavedSettings.getS32("RenderGlowResolutionPow");
 	
 	// lighting and terrain radios
-	mLightingDetail = gSavedSettings.getS32("RenderLightingDetail");
+	mLocalLights = gSavedSettings.getBOOL("RenderLocalLights");
 	mTerrainDetail =  gSavedSettings.getS32("RenderTerrainDetail");
 
 	// slider text boxes
@@ -753,6 +753,7 @@ void LLPanelDisplay::cancel()
 	gSavedSettings.setBOOL("RenderUseImpostors", mAvatarImpostors);
 	gSavedSettings.setBOOL("RenderAvatarCloth", mAvatarCloth);
 
+	gSavedSettings.setBOOL("RenderLocalLights", mLocalLights);
 	gSavedSettings.setS32("RenderTerrainDetail", mTerrainDetail);
 
 	gSavedSettings.setF32("RenderFarClip", mRenderFarClip);
