@@ -5097,7 +5097,10 @@ void LLPipeline::toggleRenderPairedTypeControl(void *data)
 	for(U8 i = 1 ;i < NUM_RENDER_TYPES; ++i)
 	{
 		if( typeflags & (1ULL<<i))
-			gPipeline.mRenderTypeEnabled[i]=on;
+		{
+			llinfos << "Toggling render type mask " << std::hex << (1ULL<<i) << (on ? " off" : " on") << std::dec << llendl;
+			gPipeline.mRenderTypeEnabled[i]=!on;
+		}
 	}	
 }
 
