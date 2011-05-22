@@ -38,6 +38,7 @@
 #include "lluuid.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
+#include "llhttpclient.h"
 
 #include <map>
 #include <set>
@@ -199,6 +200,9 @@ public:
 	void getDirectDescendentsOf(const LLUUID& cat_id,
 								cat_array_t*& categories,
 								item_array_t*& items) const;
+	// Same but only get categories.
+	void getDirectDescendentsOf(const LLUUID& cat_id,
+								cat_array_t*& categories) const;
 	
 	// Starting with the object specified, add its descendents to the
 	// array provided, but do not add the inventory object specified

@@ -184,6 +184,7 @@ class AIStateMachine {
 	base_state_type mState;						//!< State of the base class.
 	bool mIdle;									//!< True if this state machine is not running.
 	bool mAborted;								//!< True after calling abort() and before calling run().
+	bool mQueued;							//!< True when the statemachine is queued to be added back to the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 
 	// Callback facilities.
@@ -211,11 +212,11 @@ class AIStateMachine {
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mQueued(false), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert(mState == bs_killed); }
+	virtual ~AIStateMachine() { llassert(mState == bs_killed && !mQueued); }
 
   public:
 	//! Halt the state machine until cont() is called.

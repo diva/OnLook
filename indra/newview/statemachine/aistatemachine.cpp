@@ -132,6 +132,8 @@ void AIStateMachine::cont(void)
   DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
   llassert(mIdle);
   mIdle = false;
+  if (mQueued)
+	return;
   AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
   cscm_w->continued_statemachines.push_back(this);
   if (!cscm_w->calling_mainloop)
@@ -140,6 +142,7 @@ void AIStateMachine::cont(void)
 	cscm_w->calling_mainloop = true;
 	gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
   }
+  mQueued = true;
 }
 
 void AIStateMachine::set_state(state_type state)
@@ -214,6 +217,12 @@ void AIStateMachine::kill(void)
 {
   // Should only be called from finish().
   llassert(mIdle && (mState == bs_initialize || mState == bs_finish));
+  if (mState == bs_initialize)
+  {
+	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
+	cont();
+	idle();
+  }
   mState = bs_killed;
 }
 
@@ -288,6 +297,7 @@ void AIStateMachine::mainloop(void*)
 	  nonempty = true;
 	  active_statemachines.push_back(QueueElement(*iter));
 	  Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
+	  (*iter)->mQueued = false;
 	}
 	if (nonempty)
 	  AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
