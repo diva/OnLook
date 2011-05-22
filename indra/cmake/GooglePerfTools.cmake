@@ -21,7 +21,6 @@ else (STANDALONE)
     endif()
     set(GOOGLE_PERFTOOLS_INCLUDE_DIR
         ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
-    set(GOOGLE_PERFTOOLS_FOUND "YES")
   endif (LINUX)
 endif (STANDALONE)
 
