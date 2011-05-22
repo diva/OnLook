@@ -1409,7 +1409,7 @@ if (WINDOWS)
         DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 
-    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit)
+    add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
 
     if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${CMAKE_CFG_INTDIR}/touched.bat)
@@ -1489,7 +1489,7 @@ if (LINUX)
       DEPENDS secondlife-stripped ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
       )
 
-  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer010 media_plugin_webkit)
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_gstreamer010 media_plugin_webkit basic_plugin_filepicker)
 
   if (PACKAGE)
     add_custom_target(package ALL DEPENDS ${product}.tar.bz2)
@@ -1530,7 +1530,7 @@ if (DARWIN)
     DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
     )
 
-  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit)
+  add_dependencies(${VIEWER_BINARY_NAME} SLPlugin media_plugin_quicktime media_plugin_webkit basic_plugin_filepicker)
 
   if (PACKAGE)
       add_custom_target(package ALL DEPENDS ${VIEWER_BINARY_NAME}) 
@@ -1644,6 +1644,18 @@ if (WINDOWS)
           ${BUILT_QUICKTIME_PLUGIN}
           ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
         COMMENT "Copying Quicktime Plugin to the runtime folder."
+        )
+
+	get_target_property(BUILT_FILEPICKER_PLUGIN basic_plugin_filepicker LOCATION)
+    add_custom_command(
+        TARGET ${VIEWER_BINARY_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND}
+        ARGS
+          -E
+          copy_if_different
+          ${BUILT_FILEPICKER_PLUGIN}
+          ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/llplugin
+        COMMENT "Copying filepicker Plugin to the runtime folder."
         )
 
   # Copying the mime_types.xml file to app_settings
