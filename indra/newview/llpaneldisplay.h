@@ -141,6 +141,7 @@ protected:
 	LLTextBox		*mTerrainFactorText;
 	LLTextBox		*mSkyFactorText;
 	LLTextBox		*mPostProcessText;
+	LLTextBox		*mShadowDetailText;
 
 	BOOL mFSAutoDetectAspect;
 	F32 mAspectRatio;

@@ -342,6 +342,7 @@ BOOL LLPanelDisplay::postBuild()
 	mTerrainText = getChild<LLTextBox>("TerrainDetailText");
 	mLightingText = getChild<LLTextBox>("LightingDetailText");
 	mMeshDetailText = getChild<LLTextBox>("MeshDetailText");
+	mShadowDetailText = getChild<LLTextBox>("ShadowDetailText");
 
 	refresh();
 
@@ -585,7 +586,7 @@ void LLPanelDisplay::disableUnavailableSettings()
 	}
 
 	// disabled reflections
-	if(!LLFeatureManager::getInstance()->isFeatureAvailable("RenderWaterReflections"))
+	if(!LLFeatureManager::getInstance()->isFeatureAvailable("RenderReflectionDetail"))
 	{
 		mCtrlReflectionDetail->setEnabled(FALSE);
 		mCtrlReflectionDetail->setValue(FALSE);
@@ -720,6 +721,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mTerrainText->setVisible(!isHidden);
 	mDrawDistanceMeterText1->setVisible(!isHidden);
 	mDrawDistanceMeterText2->setVisible(!isHidden);
+	mShadowDetailText->setVisible(!isHidden);
 
 	// hide one meter text if we're making things visible
 	if(!isHidden)
