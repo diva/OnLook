@@ -8612,7 +8612,6 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 	
 	//hack to disable projector shadows 
-	static bool clear = true;
 	static const LLCachedControl<S32> gen_shadow("RenderShadowDetail",0);
 
 	if (gen_shadow > 1)
