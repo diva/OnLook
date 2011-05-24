@@ -33,6 +33,7 @@ set(llcommon_SOURCE_FILES
     llerror.cpp
     llerrorthread.cpp
     llevent.cpp
+    lleventtimer.cpp
     llfasttimer.cpp
     llfile.cpp
     llfindlocale.cpp
@@ -40,6 +41,7 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
+    llinstancetracker.cpp
     llindraconfigfile.cpp
     llliveappconfig.cpp
     lllivefile.cpp
@@ -123,6 +125,7 @@ set(llcommon_HEADER_FILES
     llevent.h
     lleventemitter.h
     llextendedstatus.h
+    lleventtimer.h
     llfasttimer.h
     llfile.h
     llfindlocale.h
@@ -133,6 +136,7 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
+    llinstancetracker.h
     llindraconfigfile.h
     llkeythrottle.h
     lllinkedqueue.h
@@ -189,7 +193,6 @@ set(llcommon_HEADER_FILES
     metaclasst.h
     metaproperty.h
     metapropertyt.h
-    processor.h
     reflective.h
     reflectivet.h
     roles_constants.h

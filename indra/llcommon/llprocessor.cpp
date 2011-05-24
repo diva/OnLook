@@ -47,10 +47,8 @@
 //                             solving some compiler conversion problems
 //                           - Fixed a bug at family=6, model=6 (Celeron -> P2)
 //////////////////////////////////////////////////////////////////////////////////
-
 #include "linden_common.h"
-
-#include "processor.h"
+#include "llprocessor.h"
 
 #include <memory>
 

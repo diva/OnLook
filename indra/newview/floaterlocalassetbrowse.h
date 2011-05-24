@@ -42,6 +42,7 @@ tag: vaa emerald local_asset_browser
 #include "llscrolllistctrl.h"
 #include "lltexturectrl.h"
 #include "lldrawable.h"
+#include "lleventtimer.h"
 
 
 /*=======================================*/

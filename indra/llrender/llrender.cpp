@@ -45,10 +45,12 @@ LLRender gGL;
 // Handy copies of last good GL matrices
 F64	gGLModelView[16];
 F64	gGLLastModelView[16];
+F64 gGLLastProjection[16];
 F64 gGLProjection[16];
 S32	gGLViewport[4];
 
 static const U32 LL_NUM_TEXTURE_LAYERS = 8; 
+static const U32 LL_NUM_LIGHT_UNITS = 8;
 
 static GLenum sGLTextureType[] =
 {
@@ -144,7 +146,7 @@ void LLTexUnit::activate(void)
 {
 	if (mIndex < 0) return;
 
-	if (gGL.mCurrTextureUnitIndex != mIndex || gGL.mDirty)
+	if ((S32)gGL.mCurrTextureUnitIndex != mIndex || gGL.mDirty)
 	{
 		glActiveTextureARB(GL_TEXTURE0_ARB + mIndex);
 		gGL.mCurrTextureUnitIndex = mIndex;
@@ -729,6 +731,130 @@ void LLTexUnit::debugTextureUnit(void)
 	}
 }
 
+LLLightState::LLLightState(S32 index)
+: mIndex(index),
+  mEnabled(false),
+  mConstantAtten(1.f),
+  mLinearAtten(0.f),
+  mQuadraticAtten(0.f),
+  mSpotExponent(0.f),
+  mSpotCutoff(180.f)
+{
+	if (mIndex == 0)
+	{
+		mDiffuse.set(1,1,1,1);
+		mSpecular.set(1,1,1,1);
+	}
+
+	mAmbient.set(0,0,0,1);
+	mPosition.set(0,0,1,0);
+	mSpotDirection.set(0,0,-1);
+
+}
+
+void LLLightState::enable()
+{
+	if (!mEnabled)
+	{
+		glEnable(GL_LIGHT0+mIndex);
+		mEnabled = true;
+	}
+}
+
+void LLLightState::disable()
+{
+	if (mEnabled)
+	{
+		glDisable(GL_LIGHT0+mIndex);
+		mEnabled = false;
+	}
+}
+
+void LLLightState::setDiffuse(const LLColor4& diffuse)
+{
+	if (mDiffuse != diffuse)
+	{
+		mDiffuse = diffuse;
+		glLightfv(GL_LIGHT0+mIndex, GL_DIFFUSE, mDiffuse.mV);
+	}
+}
+
+void LLLightState::setAmbient(const LLColor4& ambient)
+{
+	if (mAmbient != ambient)
+	{
+		mAmbient = ambient;
+		glLightfv(GL_LIGHT0+mIndex, GL_AMBIENT, mAmbient.mV);
+	}
+}
+
+void LLLightState::setSpecular(const LLColor4& specular)
+{
+	if (mSpecular != specular)
+	{
+		mSpecular = specular;
+		glLightfv(GL_LIGHT0+mIndex, GL_SPECULAR, mSpecular.mV);
+	}
+}
+
+void LLLightState::setPosition(const LLVector4& position)
+{
+	//always set position because modelview matrix may have changed
+	mPosition = position;
+	glLightfv(GL_LIGHT0+mIndex, GL_POSITION, mPosition.mV);
+}
+
+void LLLightState::setConstantAttenuation(const F32& atten)
+{
+	if (mConstantAtten != atten)
+	{
+		mConstantAtten = atten;
+		glLightf(GL_LIGHT0+mIndex, GL_CONSTANT_ATTENUATION, atten);
+	}
+}
+
+void LLLightState::setLinearAttenuation(const F32& atten)
+{
+	if (mLinearAtten != atten)
+	{
+		mLinearAtten = atten;
+		glLightf(GL_LIGHT0+mIndex, GL_LINEAR_ATTENUATION, atten);
+	}
+}
+
+void LLLightState::setQuadraticAttenuation(const F32& atten)
+{
+	if (mQuadraticAtten != atten)
+	{
+		mQuadraticAtten = atten;
+		glLightf(GL_LIGHT0+mIndex, GL_QUADRATIC_ATTENUATION, atten);
+	}
+}
+
+void LLLightState::setSpotExponent(const F32& exponent)
+{
+	if (mSpotExponent != exponent)
+	{
+		mSpotExponent = exponent;
+		glLightf(GL_LIGHT0+mIndex, GL_SPOT_EXPONENT, exponent);
+	}
+}
+
+void LLLightState::setSpotCutoff(const F32& cutoff)
+{
+	if (mSpotCutoff != cutoff)
+	{
+		mSpotCutoff = cutoff;
+		glLightf(GL_LIGHT0+mIndex, GL_SPOT_CUTOFF, cutoff);
+	}
+}
+
+void LLLightState::setSpotDirection(const LLVector3& direction)
+{
+	//always set direction because modelview matrix may have changed
+	mSpotDirection = direction;
+	glLightfv(GL_LIGHT0+mIndex, GL_SPOT_DIRECTION, direction.mV);
+}
 
 LLRender::LLRender()
   : mDirty(false),
@@ -749,6 +875,11 @@ LLRender::LLRender()
 		mTexUnits.push_back(new LLTexUnit(i));
 	}
 	mDummyTexUnit = new LLTexUnit(-1);
+
+	for (U32 i = 0; i < LL_NUM_LIGHT_UNITS; ++i)
+	{
+		mLightState.push_back(new LLLightState(i));
+	}
 
 	for (U32 i = 0; i < 4; i++)
 	{
@@ -777,6 +908,12 @@ void LLRender::shutdown()
 	mTexUnits.clear();
 	delete mDummyTexUnit;
 	mDummyTexUnit = NULL;
+
+	for (U32 i = 0; i < mLightState.size(); ++i)
+	{
+		delete mLightState[i];
+	}
+	mLightState.clear();
 }
 
 void LLRender::refreshState(void)
@@ -952,6 +1089,16 @@ LLTexUnit* LLRender::getTexUnit(U32 index)
 		lldebugs << "Non-existing texture unit layer requested: " << index << llendl;
 		return mDummyTexUnit;
 	}
+}
+
+LLLightState* LLRender::getLight(U32 index)
+{
+	if (index < mLightState.size())
+	{
+		return mLightState[index];
+	}
+	
+	return NULL;
 }
 
 bool LLRender::verifyTexUnitActive(U32 unitToVerify)

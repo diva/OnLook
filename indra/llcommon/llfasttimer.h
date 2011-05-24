@@ -51,6 +51,9 @@ public:
 		FTM_IDLE,
 		FTM_SLEEP,
 
+		// general timers
+		FT_STRING_FORMAT,
+
 		// common messaging components
 		FTM_PUMP,
 		FTM_CURL,

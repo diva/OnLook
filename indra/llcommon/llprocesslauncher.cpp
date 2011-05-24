@@ -68,6 +68,11 @@ void LLProcessLauncher::setWorkingDirectory(const std::string &dir)
 	mWorkingDir = dir;
 }
 
+const std::string& LLProcessLauncher::getExecutable() const
+{
+	return mExecutable;
+}
+
 void LLProcessLauncher::clearArguments()
 {
 	mLaunchArguments.clear();

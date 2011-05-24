@@ -46,16 +46,14 @@ void check_framebuffer_status()
 		{
 		case GL_FRAMEBUFFER_COMPLETE_EXT:
 			break;
-		case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-			llerrs << "WTF?" << llendl;
-			break;
 		default:
-			llerrs << "WTF?" << llendl;
+			llerrs <<"check_framebuffer_status failed" << llendl;	
+			break;
 		}
 	}
 }
 
-BOOL LLRenderTarget::sUseFBO = FALSE;
+bool LLRenderTarget::sUseFBO = false;
 
 LLRenderTarget::LLRenderTarget() :
 	mResX(0),
@@ -64,8 +62,8 @@ LLRenderTarget::LLRenderTarget() :
 	mFBO(0),
 	mDepth(0),
 	mStencil(0),
-	mUseDepth(FALSE),
-	mRenderDepth(FALSE),
+	mUseDepth(false),
+	mRenderDepth(false),
 	mUsage(LLTexUnit::TT_TEXTURE),
 	mSamples(0),
 	mSampleBuffer(NULL)
@@ -83,7 +81,7 @@ void LLRenderTarget::setSampleBuffer(LLMultisampleBuffer* buffer)
 	mSampleBuffer = buffer;
 }
 
-void LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth, BOOL stencil, LLTexUnit::eTextureType usage, BOOL use_fbo)
+void LLRenderTarget::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil, LLTexUnit::eTextureType usage, bool use_fbo)
 {
 	stop_glerror();
 	mResX = resx;
@@ -226,6 +224,7 @@ void LLRenderTarget::shareDepthBuffer(LLRenderTarget& target)
 			stop_glerror();
 			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mDepth);			
 			stop_glerror();
+			target.mStencil = true;
 		}
 		else
 		{
@@ -245,18 +244,6 @@ void LLRenderTarget::shareDepthBuffer(LLRenderTarget& target)
 
 void LLRenderTarget::release()
 {
-	if (mFBO)
-	{
-		glDeleteFramebuffersEXT(1, (GLuint *) &mFBO);
-		mFBO = 0;
-	}
-
-	if (mTex.size() > 0)
-	{
-		LLImageGL::deleteTextures(mTex.size(), &mTex[0]);
-		mTex.clear();
-	}
-
 	if (mDepth)
 	{
 		if (mStencil)
@@ -271,7 +258,33 @@ void LLRenderTarget::release()
 		}
 		mDepth = 0;
 	}
+	else if (mUseDepth && mFBO)
+	{ //detach shared depth buffer
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, mFBO);
+		if (mStencil)
+		{ //attached as a renderbuffer
+			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
+			glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, 0);
+			mStencil = false;
+		}
+		else
+		{ //attached as a texture
+			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, LLTexUnit::getInternalType(mUsage), 0, 0);
+		}
+		mUseDepth = false;
+	}
 
+	if (mFBO)
+	{
+		glDeleteFramebuffersEXT(1, (GLuint *) &mFBO);
+		mFBO = 0;
+	}
+
+	if (mTex.size() > 0)
+	{
+		LLImageGL::deleteTextures(mTex.size(), &mTex[0]);
+		mTex.clear();
+	}
 	mSampleBuffer = NULL;
 }
 
@@ -351,19 +364,19 @@ U32 LLRenderTarget::getTexture(U32 attachment) const
 	{
 		llerrs << "Invalid attachment index." << llendl;
 	}
+	if (mTex.empty())
+	{
+		return 0;
+	}
 	return mTex[attachment];
 }
 
 void LLRenderTarget::bindTexture(U32 index, S32 channel)
 {
-	if (index > mTex.size()-1)
-	{
-		llerrs << "Invalid attachment index." << llendl;
-	}
-	gGL.getTexUnit(channel)->bindManual(mUsage, mTex[index]);
+	gGL.getTexUnit(channel)->bindManual(mUsage, getTexture(index));
 }
 
-void LLRenderTarget::flush(BOOL fetch_depth)
+void LLRenderTarget::flush(bool fetch_depth)
 {
 	gGL.flush();
 	if (!mFBO)
@@ -439,6 +452,10 @@ void LLRenderTarget::flush(BOOL fetch_depth)
 void LLRenderTarget::copyContents(LLRenderTarget& source, S32 srcX0, S32 srcY0, S32 srcX1, S32 srcY1,
 						S32 dstX0, S32 dstY0, S32 dstX1, S32 dstY1, U32 mask, U32 filter)
 {
+	GLboolean write_depth = mask & GL_DEPTH_BUFFER_BIT ? TRUE : FALSE;
+
+	LLGLDepthTest depth(write_depth, write_depth);
+
 	gGL.flush();
 	if (!source.mFBO || !mFBO)
 	{
@@ -494,6 +511,10 @@ void LLRenderTarget::copyContentsToFramebuffer(LLRenderTarget& source, S32 srcX0
 		llerrs << "Cannot copy framebuffer contents for non FBO render targets." << llendl;
 	}
 	{
+		GLboolean write_depth = mask & GL_DEPTH_BUFFER_BIT ? TRUE : FALSE;
+
+		LLGLDepthTest depth(write_depth, write_depth);
+		
 		glBindFramebufferEXT(GL_READ_FRAMEBUFFER_EXT, source.mSampleBuffer ? source.mSampleBuffer->mFBO : source.mFBO);
 		stop_glerror();
 		glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER_EXT, 0);
@@ -513,9 +534,9 @@ void LLRenderTarget::copyContentsToFramebuffer(LLRenderTarget& source, S32 srcX0
 	}
 }
 
-BOOL LLRenderTarget::isComplete() const
+bool LLRenderTarget::isComplete() const
 {
-	return (!mTex.empty() || mDepth) ? TRUE : FALSE;
+	return (!mTex.empty() || mDepth) ? true : false;
 }
 
 void LLRenderTarget::getViewport(S32* viewport)
@@ -536,10 +557,10 @@ LLMultisampleBuffer::LLMultisampleBuffer()
 
 LLMultisampleBuffer::~LLMultisampleBuffer()
 {
-	releaseSampleBuffer();
+	release();
 }
 
-void LLMultisampleBuffer::releaseSampleBuffer()
+void LLMultisampleBuffer::release()
 {
 	if (mFBO)
 	{
@@ -588,12 +609,12 @@ void LLMultisampleBuffer::bindTarget(LLRenderTarget* ref)
 
 }
 
-void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth, BOOL stencil,  LLTexUnit::eTextureType usage, BOOL use_fbo )
+void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil,  LLTexUnit::eTextureType usage, bool use_fbo )
 {
 	allocate(resx,resy,color_fmt,depth,stencil,usage,use_fbo,2);
 }
 
-void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth, BOOL stencil,  LLTexUnit::eTextureType usage, BOOL use_fbo, U32 samples )
+void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil,  LLTexUnit::eTextureType usage, bool use_fbo, U32 samples )
 {
 	stop_glerror();
 	mResX = resx;
@@ -603,7 +624,7 @@ void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth
 	mUseDepth = depth;
 	mStencil = stencil;
 
-	releaseSampleBuffer();
+	release();
 
 	if (!gGLManager.mHasFramebufferMultisample)
 	{
@@ -640,11 +661,9 @@ void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, BOOL depth
 			{
 				glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mDepth);			
 			}
-			glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		}
 		
 		stop_glerror();
-
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 		stop_glerror();
 	}
@@ -683,11 +702,9 @@ void LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
 		{
 		case GL_FRAMEBUFFER_COMPLETE_EXT:
 			break;
-		case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-			llerrs << "WTF?" << llendl;
-			break;
 		default:
-			llerrs << "WTF?" << llendl;
+			llerrs << "WTF? " << std::hex << status << llendl;
+			break;
 		}
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);

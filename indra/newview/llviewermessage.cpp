@@ -63,7 +63,7 @@
 #include "llxfermanager.h"
 #include "message.h"
 #include "sound_ids.h"
-#include "lltimer.h"
+#include "lleventtimer.h"
 #include "llmd5.h"
 
 #include "llagent.h"

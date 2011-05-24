@@ -2509,7 +2509,6 @@ void LLFloaterCustomize::initWearablePanels()
 		panel->addSubpart("Breast Sway", SUBPART_PHYSICS_BREASTS_LEFTRIGHT, part);
 
 		part = new LLSubpart();
-		part->mSex = SEX_FEMALE;
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_belly_updown";
 		part->mTargetOffset.setVec(0.f, 0.f, -.05f);
