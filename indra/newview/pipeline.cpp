@@ -2818,7 +2818,7 @@ void LLPipeline::postSort(LLCamera& camera)
 					LLAudioChannel* channel = sourcep->getChannel();
 					bool const is_playing = channel && channel->isPlaying();
 					S32 width = 2;
-					LLColor4 color = LLColor4(0.f, 0.f, 1.f, 0.5f);
+					LLColor4 color = LLColor4(0.f, 0.f, 1.f, 0.5f);				// Blue: Not playing and not muted.
 					if (is_playing)
 					{
 						static const LLCachedControl<S32> debug_beacon_line_width("DebugBeaconLineWidth",1);
@@ -2826,21 +2826,21 @@ void LLPipeline::postSort(LLCamera& camera)
 						F32 gain = sourcep->getGain() * channel->getSecondaryGain();
 						if (gain == 0.f)
 						{
-						  color = LLColor4(1.f, 0.f, 0.f, 0.5f);
+						  color = LLColor4(1.f, 0.f, 0.f, 0.5f);				// Red: Playing with gain == 0. This sucks up CPU, these should be muted.
 						}
 						else if (gain == 1.f)
 						{
-						  color = LLColor4(0.f, 1.f, 0.f, 0.5f);
+						  color = LLColor4(0.f, 1.f, 0.f, 0.5f);				// Green: Playing with gain == 1.
 						  width = debug_beacon_line_width;
 						}
 						else
 						{
-						  color = LLColor4(1.f, 1.f, 0.f, 0.5f);
+						  color = LLColor4(1.f, 1.f, 0.f, 0.5f);				// Yellow: Playing with 0 < gain < 1.
 						  width = 1 + gain * (debug_beacon_line_width - 1);
 						}
 					}
 					else if (sourcep->isMuted())
-						color = LLColor4(0.f, 1.f, 1.f, 0.5f);
+						color = LLColor4(0.f, 1.f, 1.f, 0.5f);					// Cyan: Muted sound source.
 					gObjectList.addDebugBeacon(pos, "", color, LLColor4(1.f, 1.f, 1.f, 0.5f), width);
 				}
 				//</NewShinyStuff>
