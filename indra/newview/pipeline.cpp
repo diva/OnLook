@@ -548,8 +548,8 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			mDeferredLight[0].release();
 		}
 
-		if (ssao)
-		{ //only need mDeferredLight[1] for ssao
+		if (ssao || gi)
+		{ //only need mDeferredLight[1] for ssao... and GI
 			mDeferredLight[1].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
 		}
 		else
@@ -689,7 +689,6 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 void LLPipeline::updateRenderDeferred()
 {
 	sRenderDeferred = (gSavedSettings.getBOOL("RenderDeferred") && 
-		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
 		LLRenderTarget::sUseFBO &&
 		LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred") &&
 		gSavedSettings.getBOOL("VertexShaderEnable") && 
@@ -2842,9 +2841,9 @@ void LLPipeline::postSort(LLCamera& camera)
 					else if (sourcep->isMuted())
 						color = LLColor4(0.f, 1.f, 1.f, 0.5f);
 					gObjectList.addDebugBeacon(pos, "", color, LLColor4(1.f, 1.f, 1.f, 0.5f), width);
+					//</NewShinyStuff>
+					//gObjectList.addDebugBeacon(pos, "", LLColor4(1.f, 1.f, 0.f, 0.5f), LLColor4(1.f, 1.f, 1.f, 0.5f), debug_beacon_line_width);
 				}
-				//</NewShinyStuff>
-				//gObjectList.addDebugBeacon(pos, "", LLColor4(1.f, 1.f, 0.f, 0.5f), LLColor4(1.f, 1.f, 1.f, 0.5f), debug_beacon_line_width);
 			}
 			// now deal with highlights for all those seeable sound sources
 			forAllVisibleDrawables(renderSoundHighlights);
@@ -3604,6 +3603,8 @@ void LLPipeline::renderDebug()
 
 	if (hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA))
 	{
+		LLVertexBuffer::unbind();
+
 		LLGLEnable blend(GL_BLEND);
 		LLGLDepthTest depth(TRUE, FALSE);
 		LLGLDisable cull(GL_CULL_FACE);
@@ -5866,16 +5867,152 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	
 	LLVertexBuffer::unbind();
 
-	if (LLPipeline::sRenderDeferred && LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_DEFERRED) > 2)
+	if (LLPipeline::sRenderDeferred && !LLViewerCamera::getInstance()->cameraUnderWater())
 	{
-		LLGLDisable blend(GL_BLEND);
-		bindDeferredShader(gDeferredGIFinalProgram);
+		bool dof_enabled = true;
 
-		S32 channel = gDeferredGIFinalProgram.enableTexture(LLViewerShaderMgr::DEFERRED_DIFFUSE, LLTexUnit::TT_RECT_TEXTURE);
+		LLGLSLShader* shader = &gDeferredPostProgram;
+		static const LLCachedControl<bool> render_dof("RenderDepthOfField",false);
+		if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_DEFERRED) > 2)
+		{
+			shader = &gDeferredGIFinalProgram;
+			dof_enabled = false;
+		}
+		else if (LLToolMgr::getInstance()->inBuildMode() || !render_dof)
+		{ //squish focal length when in build mode (or if DoF is disabled) so DoF doesn't make editing objects difficult
+			shader = &gDeferredPostNoDoFProgram;
+			dof_enabled = false;
+		}
+		
+		
+		LLGLDisable blend(GL_BLEND);
+		bindDeferredShader(*shader);
+
+		if (dof_enabled)
+		{
+			//depth of field focal plane calculations
+
+			static F32 current_distance = 16.f;
+			static F32 start_distance = 16.f;
+			static F32 transition_time = 1.f;
+
+			LLVector3 focus_point;
+
+			/*LLViewerObject* obj = LLViewerMediaFocus::getInstance()->getFocusedObject();
+			if (obj && obj->mDrawable && obj->isSelected())
+			{ //focus on selected media object
+				S32 face_idx = LLViewerMediaFocus::getInstance()->getFocusedFace();
+				if (obj && obj->mDrawable)
+				{
+					LLFace* face = obj->mDrawable->getFace(face_idx);
+					if (face)
+					{
+						focus_point = face->getPositionAgent();
+					}
+				}
+			}*/
+		
+			if (focus_point.isExactlyZero())
+			{
+				if (LLViewerJoystick::getInstance()->getOverrideCamera())
+				{ //focus on point under cursor
+					focus_point = gDebugRaycastIntersection;
+				}
+				else if (gAgent.cameraMouselook())
+				{ //focus on point under mouselook crosshairs
+					gViewerWindow->cursorIntersect(-1, -1, 512.f, NULL, -1, FALSE,
+												  NULL,
+												  &focus_point);
+				}
+				else
+				{
+					LLViewerObject* obj = gAgent.getFocusObject();
+					if (obj)
+					{ //focus on alt-zoom target
+						focus_point = LLVector3(gAgent.getFocusGlobal()-gAgent.getRegion()->getOriginGlobal());
+					}
+					else
+					{ //focus on your avatar
+						focus_point = gAgent.getPositionAgent();
+					}
+				}
+			}
+
+			LLVector3 eye = LLViewerCamera::getInstance()->getOrigin();
+			F32 target_distance = 16.f;
+			if (!focus_point.isExactlyZero())
+			{
+				target_distance = LLViewerCamera::getInstance()->getAtAxis() * (focus_point-eye);
+			}
+
+			if (transition_time >= 1.f &&
+				fabsf(current_distance-target_distance)/current_distance > 0.01f)
+			{ //large shift happened, interpolate smoothly to new target distance
+				transition_time = 0.f;
+				start_distance = current_distance;
+			}
+			else if (transition_time < 1.f)
+			{ //currently in a transition, continue interpolating
+				static const LLCachedControl<F32> cam_focus_transition_time("CameraFocusTransitionTime",.5f);
+				transition_time += 1.f/cam_focus_transition_time*gFrameIntervalSeconds;
+				transition_time = llmin(transition_time, 1.f);
+
+				F32 t = cosf(transition_time*F_PI+F_PI)*0.5f+0.5f;
+				current_distance = start_distance + (target_distance-start_distance)*t;
+			}
+			else
+			{ //small or no change, just snap to target distance
+				current_distance = target_distance;
+			}
+
+			//convert to mm
+			F32 subject_distance = current_distance*1000.f;
+			static const LLCachedControl<F32> fnumber("CameraFNumber",9.f);
+			static const LLCachedControl<F32> default_focal_length("CameraFocalLength",50.f);
+			static const LLCachedControl<F32> cam_field_of_view("CameraFieldOfView",60.f);
+
+			F32 fov = LLViewerCamera::getInstance()->getView();
+				
+			const F32 default_fov = cam_field_of_view * F_PI/180.f;
+			//const F32 default_aspect_ratio = gSavedSettings.getF32("CameraAspectRatio");
+		
+			//F32 aspect_ratio = (F32) mScreen.getWidth()/(F32)mScreen.getHeight();
+		
+			F32 dv = 2.f*default_focal_length * tanf(default_fov/2.f);
+			//F32 dh = 2.f*default_focal_length * tanf(default_fov*default_aspect_ratio/2.f);
+
+			F32 focal_length = dv/(2*tanf(fov/2.f));
+		 
+			//F32 tan_pixel_angle = tanf(LLDrawable::sCurPixelAngle);
+	
+			// from wikipedia -- c = |s2-s1|/s2 * f^2/(N(S1-f))
+			// where	 N = fnumber
+			//			 s2 = dot distance
+			//			 s1 = subject distance
+			//			 f = focal length
+			//	
+
+			F32 blur_constant = focal_length*focal_length/(fnumber*(subject_distance-focal_length));
+			blur_constant /= 1000.f; //convert to meters for shader
+			F32 magnification = focal_length/(subject_distance-focal_length);
+
+			shader->uniform1f("focal_distance", -subject_distance/1000.f);
+			shader->uniform1f("blur_constant", blur_constant);
+			shader->uniform1f("tan_pixel_angle", tanf(1.f/LLDrawable::sCurPixelAngle));
+			shader->uniform1f("magnification", magnification);
+		}
+
+		S32 channel = shader->enableTexture(LLViewerShaderMgr::DEFERRED_DIFFUSE, LLTexUnit::TT_RECT_TEXTURE);
 		if (channel > -1)
 		{
 			mScreen.bindTexture(0, channel);
+			gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
 		}
+		//channel = shader->enableTexture(LLViewerShaderMgr::DEFERRED_DEPTH, LLTexUnit::TT_RECT_TEXTURE);
+		//if (channel > -1)
+		//{
+			//gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
+		//}
 
 		gGL.begin(LLRender::TRIANGLE_STRIP);
 		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
@@ -5889,7 +6026,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		
 		gGL.end();
 
-		unbindDeferredShader(gDeferredGIFinalProgram);
+		unbindDeferredShader(*shader);
 	}
 	else
 	{
@@ -5952,12 +6089,12 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 		gGL.getTexUnit(0)->activate();
 		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
+	}
 
-		if (LLRenderTarget::sUseFBO)
-		{ //copy depth buffer from mScreen to framebuffer
-			LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
-				0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-		}
+	if (LLRenderTarget::sUseFBO)
+	{ //copy depth buffer from mScreen to framebuffer
+		LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
+			0, 0, mScreen.getWidth(), mScreen.getHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	}
 	
 
@@ -5976,7 +6113,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRenderTarget* gi_source, LLRenderTarget* last_gi_post, U32 noise_map)
 {
-	//LLFastTimer t(FTM_BIND_DEFERRED);
+	LLFastTimer t(LLFastTimer::FTM_BIND_DEFERRED);
 
 	if (noise_map == 0xFFFFFFFF)
 	{
@@ -6083,6 +6220,14 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 			gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
 		}
 		
+		channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_GI_LIGHT, LLTexUnit::TT_RECT_TEXTURE);
+		if (channel > -1)
+		{
+			has_gi = TRUE;
+			gi_source->bindTexture(0, channel);
+			gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
+		}
+		
 		channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_GI_DEPTH);
 		if (channel > -1)
 		{
@@ -6186,13 +6331,6 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 	if (channel > -1)
 	{
 		mGlow[1].bindTexture(0, channel);
-	}
-
-	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_GI_LIGHT, LLTexUnit::TT_RECT_TEXTURE);
-	if (channel > -1)
-	{
-		gi_source->bindTexture(0, channel);
-		gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 	}
 
 	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_EDGE, LLTexUnit::TT_RECT_TEXTURE);
@@ -6389,6 +6527,7 @@ void LLPipeline::renderDeferredLighting()
 	}
 
 	{
+		LLFastTimer ftm(LLFastTimer::FTM_RENDER_DEFERRED);
 
 		LLViewerCamera* camera = LLViewerCamera::getInstance();
 		{
@@ -6449,7 +6588,7 @@ void LLPipeline::renderDeferredLighting()
 		{
 			mDeferredLight[0].bindTarget();
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
-				//LLFastTimer ftm(FTM_SUN_SHADOW);
+				LLFastTimer ftm(LLFastTimer::FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram, 0);
 
 				glClearColor(1,1,1,1);
@@ -6497,7 +6636,7 @@ void LLPipeline::renderDeferredLighting()
 			if (render_deferred_blur_light &&
 			    render_shadow_gi)
 			{
-				//LLFastTimer ftm(FTM_EDGE_DETECTION);
+				LLFastTimer ftm(LLFastTimer::FTM_EDGE_DETECTION);
 				//generate edge map
 				LLGLDisable blend(GL_BLEND);
 				LLGLDisable test(GL_ALPHA_TEST);
@@ -6540,7 +6679,7 @@ void LLPipeline::renderDeferredLighting()
 				}
 
 				{ //paint noisy GI map (bounce lighting lightmap)
-					//LLFastTimer ftm(FTM_GI_TRACE);
+					LLFastTimer ftm(LLFastTimer::FTM_GI_TRACE);
 					LLGLDisable blend(GL_BLEND);
 					LLGLDepthTest depth(GL_FALSE);
 					LLGLDisable test(GL_ALPHA_TEST);
@@ -6565,7 +6704,7 @@ void LLPipeline::renderDeferredLighting()
 				static const LLCachedControl<F32> render_gui_blur_brightness("RenderGIBlurBrightness",1.025f);
 				for (U32 i = 0; i < pass_count; ++i)
 				{ //gather/soften indirect lighting map
-					//LLFastTimer ftm(FTM_GI_GATHER);
+					LLFastTimer ftm(LLFastTimer::FTM_GI_GATHER);
 					bindDeferredShader(gDeferredPostGIProgram, 0, &mGIMapPost[0], NULL, mTrueNoiseMap);
 					F32 blur_size = render_gui_blur_size/((F32) i * render_gui_blur_increment+1.f);
 					gDeferredPostGIProgram.uniform2f("delta", 1.f, 0.f);
@@ -6601,66 +6740,81 @@ void LLPipeline::renderDeferredLighting()
 			}
 		}
 
-		if(render_deferred_ssao)
-			{ //soften direct lighting lightmap
-				//LLFastTimer ftm(FTM_SOFTEN_SHADOW);
-				//blur lightmap
+		//if (gSavedSettings.getBOOL("RenderDeferredSSAO"))
+		//Make sure to blur normal shadows, even if ssao isn't enabled...
+		if(mDeferredLight[0].getTexture(0))
+		{ 
+			LLFastTimer ftm(LLFastTimer::FTM_SOFTEN_SHADOW);
+			//blur lightmap
+			if(mDeferredLight[1].getTexture(0))
+			{
 				mDeferredLight[1].bindTarget();
 
 				glClearColor(1,1,1,1);
 				mDeferredLight[1].clear(GL_COLOR_BUFFER_BIT);
-		glClearColor(0,0,0,0);
+				glClearColor(0,0,0,0);
+			}
+			else
+				mDeferredLight[0].bindTarget();
 
-		bindDeferredShader(gDeferredBlurLightProgram);
+			bindDeferredShader(gDeferredBlurLightProgram);
 
-		static const LLCachedControl<LLVector3> go("RenderShadowGaussian",LLVector3(3.f,2.f,0.f));
-		const U32 kern_length = 4;
-		static const LLCachedControl<F32> blur_size("RenderShadowBlurSize",1.4f);
-		static const LLCachedControl<F32> shadow_blur_dist_factor("RenderShadowBlurDistFactor",.1f);
+			static const LLCachedControl<LLVector3> go("RenderShadowGaussian",LLVector3(3.f,2.f,0.f));
+			const U32 kern_length = 4;
+			static const LLCachedControl<F32> blur_size("RenderShadowBlurSize",1.4f);
+			static const LLCachedControl<F32> shadow_blur_dist_factor("RenderShadowBlurDistFactor",.1f);
 
-		// sample symmetrically with the middle sample falling exactly on 0.0
-		F32 x = 0.f;
+			// sample symmetrically with the middle sample falling exactly on 0.0
+			F32 x = 0.f;
 
-		LLVector3 gauss[32]; // xweight, yweight, offset
+			LLVector3 gauss[32]; // xweight, yweight, offset
 
-		for (U32 i = 0; i < kern_length; i++)
-		{
-			gauss[i].mV[0] = llgaussian(x, go.get().mV[0]);
-			gauss[i].mV[1] = llgaussian(x, go.get().mV[1]);
-			gauss[i].mV[2] = x;
-			x += 1.f;
-		}
+			for (U32 i = 0; i < kern_length; i++)
+			{
+				gauss[i].mV[0] = llgaussian(x, go.get().mV[0]);
+				gauss[i].mV[1] = llgaussian(x, go.get().mV[1]);
+				gauss[i].mV[2] = x;
+				x += 1.f;
+			}
 
-		gDeferredBlurLightProgram.uniform2f("delta", 1.f, 0.f);
-		gDeferredBlurLightProgram.uniform1f("dist_factor", shadow_blur_dist_factor);
-		gDeferredBlurLightProgram.uniform3fv("kern", kern_length, gauss[0].mV);
-		gDeferredBlurLightProgram.uniform1f("kern_scale", blur_size * (kern_length/2.f - 0.5f));
+			gDeferredBlurLightProgram.uniform2f("delta", 1.f, 0.f);
+			gDeferredBlurLightProgram.uniform1f("dist_factor", shadow_blur_dist_factor);
+			gDeferredBlurLightProgram.uniform3fv("kern", kern_length, gauss[0].mV);
+			gDeferredBlurLightProgram.uniform1f("kern_scale", blur_size * (kern_length/2.f - 0.5f));
+		
+			{
+				LLGLDisable blend(GL_BLEND);
+				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
+				stop_glerror();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+				stop_glerror();
+			}
+			
+			if(mDeferredLight[1].getTexture(0))
+			{
+				mDeferredLight[1].flush();
+				unbindDeferredShader(gDeferredBlurLightProgram);
 
-		{
-			LLGLDisable blend(GL_BLEND);
-			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-			stop_glerror();
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-			stop_glerror();
-		}
-	
-		mDeferredLight[1].flush();
-		unbindDeferredShader(gDeferredBlurLightProgram);
+				bindDeferredShader(gDeferredBlurLightProgram, 1);
+			}
+			else
+			{
+				mDeferredLight[0].flush();
+			}
+			
+			mDeferredLight[0].bindTarget();
 
-		bindDeferredShader(gDeferredBlurLightProgram, 1);
-		mDeferredLight[0].bindTarget();
+			gDeferredBlurLightProgram.uniform2f("delta", 0.f, 1.f);
 
-		gDeferredBlurLightProgram.uniform2f("delta", 0.f, 1.f);
-
-		{
-			LLGLDisable blend(GL_BLEND);
-			LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
-			stop_glerror();
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
-			stop_glerror();
-		}
-		mDeferredLight[0].flush();
-		unbindDeferredShader(gDeferredBlurLightProgram);
+			{
+				LLGLDisable blend(GL_BLEND);
+				LLGLDepthTest depth(GL_TRUE, GL_FALSE, GL_ALWAYS);
+				stop_glerror();
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+				stop_glerror();
+			}
+			mDeferredLight[0].flush();
+			unbindDeferredShader(gDeferredBlurLightProgram);
 	}
 
 	stop_glerror();
@@ -6693,30 +6847,30 @@ void LLPipeline::renderDeferredLighting()
 	static const LLCachedControl<bool> render_deferred_atmospheric("RenderDeferredAtmospheric",false);
 	if (render_deferred_atmospheric)
 	{ //apply sunlight contribution 
-			//LLFastTimer ftm(FTM_ATMOSPHERICS);
+			LLFastTimer ftm(LLFastTimer::FTM_ATMOSPHERICS);
 			bindDeferredShader(gDeferredSoftenProgram, 0, &mGIMapPost[0]);	
-	{
-		LLGLDepthTest depth(GL_FALSE);
-		LLGLDisable blend(GL_BLEND);
-		LLGLDisable test(GL_ALPHA_TEST);
+			{
+				LLGLDepthTest depth(GL_FALSE);
+				LLGLDisable blend(GL_BLEND);
+				LLGLDisable test(GL_ALPHA_TEST);
 
-		//full screen blit
-		glPushMatrix();
-		glLoadIdentity();
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
+				//full screen blit
+				glPushMatrix();
+				glLoadIdentity();
+				glMatrixMode(GL_PROJECTION);
+				glPushMatrix();
+				glLoadIdentity();
 
-		glVertexPointer(2, GL_FLOAT, 0, vert);
+				glVertexPointer(2, GL_FLOAT, 0, vert);
 		
-		glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
+				glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-	}
+				glPopMatrix();
+				glMatrixMode(GL_MODELVIEW);
+				glPopMatrix();
+			}
 
-	unbindDeferredShader(gDeferredSoftenProgram);
+			unbindDeferredShader(gDeferredSoftenProgram);
 	}
 	
 	{ //render sky
@@ -6843,6 +6997,7 @@ void LLPipeline::renderDeferredLighting()
 						continue;
 					}
 							
+					LLFastTimer ftm(LLFastTimer::FTM_LOCAL_LIGHTS);
 					glTexCoord4f(tc.v[0], tc.v[1], tc.v[2], s*s);
 					glColor4f(col.mV[0], col.mV[1], col.mV[2], volume->getLightFalloff()*0.5f);
 					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
@@ -6874,7 +7029,7 @@ void LLPipeline::renderDeferredLighting()
 
 				for (LLDrawable::drawable_list_t::iterator iter = spot_lights.begin(); iter != spot_lights.end(); ++iter)
 				{
-					//LLFastTimer ftm(FTM_PROJECTORS);
+					LLFastTimer ftm(LLFastTimer::FTM_PROJECTORS);
 					LLDrawable* drawablep = *iter;
 
 					LLVOVolume* volume = drawablep->getVOVolume();
@@ -6940,6 +7095,7 @@ void LLPipeline::renderDeferredLighting()
 
 		while (!fullscreen_lights.empty())
 		{
+			LLFastTimer ftm(LLFastTimer::FTM_FULLSCREEN_LIGHTS);
 			light[count] = fullscreen_lights.front();
 			fullscreen_lights.pop_front();
 			col[count] = light_colors.front();
@@ -6959,6 +7115,7 @@ void LLPipeline::renderDeferredLighting()
 				glDrawArrays(GL_TRIANGLE_STRIP, 0, 3);
 				}
 			}
+
 				unbindDeferredShader(gDeferredMultiLightProgram);
 
 				bindDeferredShader(gDeferredMultiSpotLightProgram);
@@ -6967,7 +7124,7 @@ void LLPipeline::renderDeferredLighting()
 
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
-					//LLFastTimer ftm(FTM_PROJECTORS);
+					LLFastTimer ftm(LLFastTimer::FTM_PROJECTORS);
 					LLDrawable* drawablep = *iter;
 					
 					LLVOVolume* volume = drawablep->getVOVolume();
@@ -7012,7 +7169,7 @@ void LLPipeline::renderDeferredLighting()
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
 			{ //mix various light maps (local, sun, gi)
-				//LLFastTimer ftm(FTM_POST);
+				LLFastTimer ftm(LLFastTimer::FTM_POST);
 				LLGLDisable blend(GL_BLEND);
 				LLGLDisable test(GL_ALPHA_TEST);
 				LLGLDepthTest depth(GL_FALSE);
@@ -7635,14 +7792,14 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	glLoadMatrixf(proj.m);
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glLoadMatrixf(view.m);
+	glLoadMatrixd(gGLModelView);
 
 	stop_glerror();
 	gGLLastMatrix = NULL;
 
 	{
-		LLGLDepthTest depth(GL_TRUE);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		//LLGLDepthTest depth(GL_TRUE);
+		//glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
@@ -7658,7 +7815,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	LLVertexBuffer::unbind();
 
 	{
-		//LLFastTimer ftm(FTM_SHADOW_SIMPLE);
+		LLFastTimer ftm(LLFastTimer::FTM_SHADOW_SIMPLE);
 		LLGLDisable test(GL_ALPHA_TEST);
 		gGL.getTexUnit(0)->disable();
 		for (U32 i = 0; i < sizeof(types)/sizeof(U32); ++i)
@@ -7680,7 +7837,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	}
 
 	{
-		//LLFastTimer ftm(FTM_SHADOW_ALPHA);
+		LLFastTimer ftm(LLFastTimer::FTM_SHADOW_ALPHA);
 		LLGLEnable test(GL_ALPHA_TEST);
 		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.6f);
 		renderObjects(LLRenderPass::PASS_ALPHA_SHADOW, LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_COLOR, TRUE);
@@ -7714,7 +7871,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 
 BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector3& max, std::vector<LLVector3>& fp, LLVector3 light_dir)
 {
-	//LLFastTimer t(FTM_VISIBLE_CLOUD);
+	LLFastTimer t(LLFastTimer::FTM_VISIBLE_CLOUD);
 	//get point cloud of intersection of frust and min, max
 
 	if (getVisibleExtents(camera, min, max))
@@ -7800,7 +7957,7 @@ BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector
 		0,1,
 		1,2,
 		2,3,
-		3,1,
+		3,0,
 
 		4,5,
 		5,6,
@@ -8127,6 +8284,14 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	//staic const LLCachedControl<LLVector3> shadow_near_dist("RenderShadowNearDist");
 	//LLVector3 &n = shadow_near_dist.get();
 	//F32 nearDist[] = { n.mV[0], n.mV[1], n.mV[2], n.mV[2] };
+
+	//put together a universal "near clip" plane for shadow frusta
+	/*LLPlane shadow_near_clip;
+	{
+		LLVector3 p = gAgent.getCameraPositionAgent();//gAgent.getPositionAgent();
+		p += mSunDir * gSavedSettings.getF32("RenderFarClip")*2.f;
+		shadow_near_clip.setVec(p, mSunDir);
+	}*/
 
 	LLVector3 lightDir = -mSunDir;
 	lightDir.normVec();
@@ -8555,7 +8720,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 			}
 		}
 
-		shadow_cam.setFar(128.f);
+		//shadow_cam.setFar(128.f);
 		shadow_cam.setOriginAndLookAt(eye, up, center);
 
 		shadow_cam.setOrigin(0,0,0);
@@ -8566,6 +8731,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 		LLViewerCamera::updateFrustumPlanes(shadow_cam, FALSE, FALSE, TRUE);
 
 		shadow_cam.ignoreAgentFrustumPlane(LLCamera::AGENT_PLANE_NEAR);
+		//shadow_cam.getAgentPlane(LLCamera::AGENT_PLANE_NEAR).set(shadow_near_clip);
 
 		//translate and scale to from [-1, 1] to [0, 1]
 		glh::matrix4f trans(0.5f, 0.f, 0.f, 0.5f,

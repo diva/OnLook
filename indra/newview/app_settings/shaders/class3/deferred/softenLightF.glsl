@@ -13,8 +13,7 @@ uniform sampler2DRect diffuseRect;
 uniform sampler2DRect specularRect;
 uniform sampler2DRect normalMap;
 uniform sampler2DRect lightMap;
-uniform sampler2D	  noiseMap;
-uniform samplerCube environmentMap;
+uniform sampler2DRect depthMap;
 uniform sampler2D	  lightFunc;
 uniform vec3 gi_quad;
 
@@ -43,7 +42,6 @@ uniform vec3 env_mat[3];
 uniform vec4 shadow_clip;
 uniform mat3 ssao_effect_mat;
 
-uniform sampler2DRect depthMap;
 uniform mat4 inv_proj;
 uniform vec2 screen_res;
 

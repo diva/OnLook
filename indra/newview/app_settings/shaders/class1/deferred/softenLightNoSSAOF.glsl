@@ -1,8 +1,8 @@
 /** 
  * @file softenLightF.glsl
  *
- * $LicenseInfo:firstyear=2007&license=viewerlgpl$
- * $/LicenseInfo$
+ * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
+ * $License$
  */
  
 #version 120
@@ -12,12 +12,8 @@
 uniform sampler2DRect diffuseRect;
 uniform sampler2DRect specularRect;
 uniform sampler2DRect normalMap;
-uniform sampler2DRect lightMap;
 uniform sampler2DRect depthMap;
-uniform sampler2D	  noiseMap;
-uniform samplerCube environmentMap;
 uniform sampler2D	  lightFunc;
-uniform vec3 gi_quad;
 
 uniform float blur_size;
 uniform float blur_fidelity;
@@ -41,11 +37,9 @@ uniform vec4 max_y;
 uniform vec4 glow;
 uniform float scene_light_strength;
 uniform vec3 env_mat[3];
-uniform vec4 shadow_clip;
+//uniform mat4 shadow_matrix[3];
+//uniform vec4 shadow_clip;
 uniform mat3 ssao_effect_mat;
-
-uniform mat4 inv_proj;
-uniform vec2 screen_res;
 
 varying vec4 vary_light;
 varying vec2 vary_fragcoord;
@@ -56,6 +50,9 @@ vec3 vary_SunlitColor;
 vec3 vary_AmblitColor;
 vec3 vary_AdditiveColor;
 vec3 vary_AtmosAttenuation;
+
+uniform mat4 inv_proj;
+uniform vec2 screen_res;
 
 vec4 getPosition_d(vec2 pos_screen, float depth)
 {
@@ -269,14 +266,10 @@ void main()
 	vec4 diffuse = texture2DRect(diffuseRect, tc);
 	vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
 	
-	vec2 scol_ambocc = texture2DRect(lightMap, vary_fragcoord.xy).rg;
-	float scol = max(scol_ambocc.r, diffuse.a); 
-	float ambocc = scol_ambocc.g;
-	
-	calcAtmospherics(pos.xyz, ambocc);
+	calcAtmospherics(pos.xyz, 1.0);
 	
 	vec3 col = atmosAmbient(vec3(0));
-	col += atmosAffectDirectionalLight(max(min(da, scol), diffuse.a));
+	col += atmosAffectDirectionalLight(max(min(da, 1.0), diffuse.a));
 	
 	col *= diffuse.rgb;
 	
@@ -286,7 +279,7 @@ void main()
 		//
 		vec3 refnormpersp = normalize(reflect(pos.xyz, norm.xyz));
 		float sa = dot(refnormpersp, vary_light.xyz);
-		vec3 dumbshiny = vary_SunlitColor*scol_ambocc.r*texture2D(lightFunc, vec2(sa, spec.a)).a;
+		vec3 dumbshiny = vary_SunlitColor*texture2D(lightFunc, vec2(sa, spec.a)).a;
 
 		/*
 		// screen-space cheap fakey reflection map
@@ -312,20 +305,18 @@ void main()
 				     texture2DRect(diffuseRect, ref2d + vec2(-checkoffset, 0.0)).rgb);
 		float refdepth = texture2DRect(depthMap, ref2d).a;
 		vec3 refpos = getPosition_d(ref2d, refdepth).xyz;
-		float refshad = texture2DRect(lightMap, ref2d).r;
 		vec3 refn = texture2DRect(normalMap, ref2d).rgb;
-		refn = vec3((refn.xy-0.5)*2.0,refn.z); // unpack norm
-		refn = normalize(refn);
+		refn = normalize(vec3((refn.xy-0.5)*2.0,refn.z)); // unpack norm
 		// figure out how appropriate our guess actually was
 		float refapprop = max(0.0, dot(-refnorm, normalize(pos - refpos)));
 		// darken reflections from points which face away from the reflected ray - our guess was a back-face
 		//refapprop *= step(dot(refnorm, refn), 0.0);
 		refapprop = min(refapprop, max(0.0, -dot(refnorm, refn))); // more conservative variant
-		// get appropriate light strength for guess-point
+		// get appropriate light strength for guess-point.
 		// reflect light direction to increase the illusion that
 		// these are reflections.
 		vec3 reflight = reflect(lightnorm.xyz, norm.xyz);
-		float reflit = min(max(dot(refn, reflight.xyz), 0.0), refshad);
+		float reflit = max(dot(refn, reflight.xyz), 0.0);
 		// apply sun color to guess-point, dampen according to inappropriateness of guess
 		float refmod = min(refapprop, reflit);
 		vec3 refprod = vary_SunlitColor * refcol.rgb * refmod;
