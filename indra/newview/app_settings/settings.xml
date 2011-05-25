@@ -1894,12 +1894,34 @@
         <integer>0</integer>
       </array>
     </map>
-    <key>BeaconAlwaysOn</key>
+    <key>ShowBeaconsFloater</key>
     <map>
       <key>Comment</key>
-      <string>Beacons / highlighting always on</string>
+      <string>Show beacons floater</string>
       <key>Persist</key>
       <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>BeaconsKeepVisible</key>
+    <map>
+      <key>Comment</key>
+      <string>Don't turn off BeaconsVisible when beacons floater is closed</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>BeaconsVisible</key>
+    <map>
+      <key>Comment</key>
+      <string>Show beacons / highlighting</string>
+      <key>Persist</key>
+      <integer>0</integer>
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
@@ -14036,6 +14058,17 @@
     <map>
       <key>Comment</key>
       <string>Beacon / Highlight sound generators</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
+    <key>keepbeacons</key>
+    <map>
+      <key>Comment</key>
+      <string>Keep beacons when closing floater</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

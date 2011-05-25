@@ -522,8 +522,8 @@ public:
 			ypos += y_inc;
 		}
 		// only display these messages if we are actually rendering beacons at this moment
-		static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
-		if (LLPipeline::getRenderBeacons(NULL) && beacon_always_on)
+		static const LLCachedControl<bool> beacons_visible("BeaconsVisible",false);
+		if (LLPipeline::getRenderBeacons(NULL) && beacons_visible)
 		{
 			if (LLPipeline::getRenderParticleBeacons(NULL))
 			{
