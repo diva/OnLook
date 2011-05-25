@@ -915,12 +915,29 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.flush();
+				if(LLRenderTarget::sUseFBO)
+				{
+					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mDeferredScreen, 0, 0, gPipeline.mDeferredScreen.getWidth(), 
+															  gPipeline.mDeferredScreen.getHeight(), 0, 0, 
+															  gPipeline.mDeferredScreen.getWidth(), 
+															  gPipeline.mDeferredScreen.getHeight(), 
+															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+				}
 			}
 			else if(!tiling)
 			{
 				gPipeline.mScreen.flush();
+				if(LLRenderTarget::sUseFBO)
+				{				
+					LLRenderTarget::copyContentsToFramebuffer(gPipeline.mScreen, 0, 0, gPipeline.mScreen.getWidth(), 
+															  gPipeline.mScreen.getHeight(), 0, 0, 
+															  gPipeline.mScreen.getWidth(), 
+															  gPipeline.mScreen.getHeight(), 
+															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+				}
 			}
 		}
+		gGL.flush();
 		
 		if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 		{
