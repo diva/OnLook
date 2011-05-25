@@ -2775,8 +2775,8 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	llpushcallstacks ;
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
-	static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
-	if (beacon_always_on && !sShadowRender)
+	static const LLCachedControl<bool> beacons_visible("BeaconsVisible", false);
+	if (beacons_visible && !sShadowRender)
 	{
 		if (sRenderScriptedTouchBeacons)
 		{
