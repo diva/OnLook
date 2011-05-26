@@ -48,12 +48,13 @@ public:
 	void refreshValues();
 
 protected:
-	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onSpellAdd(void* data);
     static void onSpellRemove(void* data);
     static void onSpellGetMore(void* data);
     static void onSpellEditCustom(void* data);
     static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
+	static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
+	static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
     //Chat/IM -----------------------------------------------------------------------------
     BOOL mWoLfVerticalIMTabs;

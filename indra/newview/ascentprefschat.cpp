@@ -53,7 +53,23 @@ LLPrefsAscentChat::LLPrefsAscentChat()
     childSetAction("EmSpell_Add", onSpellAdd, this);
     childSetAction("EmSpell_Remove", onSpellRemove, this);
 
-    childSetCommitCallback("Keywords_Alert", onCommitCheckBox, this);
+    childSetCommitCallback("AscentInstantMessageResponseAnyone", onCommitAutoResponse, this);
+	childSetCommitCallback("AscentInstantMessageResponseFriends", onCommitAutoResponse, this);
+	childSetCommitCallback("AscentInstantMessageResponseMuted", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageShowOnTyping", onCommitAutoResponse, this);
+	childSetCommitCallback("AscentInstantMessageShowResponded", onCommitAutoResponse, this);
+	childSetCommitCallback("AscentInstantMessageResponseRepeat", onCommitAutoResponse, this);
+	childSetCommitCallback("AscentInstantMessageResponseItem", onCommitAutoResponse, this);
+	childSetCommitCallback("im_response", onCommitAutoResponse, this);
+
+    childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsList", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsSound", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsInChat", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsInIM", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsChangeColor", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsColor", onCommitKeywords, this);
+	childSetCommitCallback("KeywordsPlaySound", onCommitKeywords, this);
 
     refreshValues();
     refresh();
@@ -64,23 +80,6 @@ LLPrefsAscentChat::~LLPrefsAscentChat()
 }
 
 //static
-void LLPrefsAscentChat::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
-{
-    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;	
-
-    if (ctrl->getName() == "Keywords_Alert")
-    {
-        bool enabled = self->childGetValue("Keywords_Alert").asBoolean();
-        self->childSetEnabled("Keywords_Entries", enabled);
-        self->childSetEnabled("Keywords_LocalChat", enabled);
-        self->childSetEnabled("Keywords_IM", enabled);
-        self->childSetEnabled("Keywords_Highlight", enabled);
-        self->childSetEnabled("Keywords_Color", enabled);
-        self->childSetEnabled("Keywords_PlaySound", enabled);
-        self->childSetEnabled("Keywords_SoundUUID", enabled);
-    }
-}
-
 void LLPrefsAscentChat::onSpellAdd(void* data)
 {
     LLPrefsAscentChat* self = (LLPrefsAscentChat*)data;
@@ -93,6 +92,7 @@ void LLPrefsAscentChat::onSpellAdd(void* data)
     self->refresh();
 }
 
+//static
 void LLPrefsAscentChat::onSpellRemove(void* data)
 {
     LLPrefsAscentChat* self = (LLPrefsAscentChat*)data;
@@ -105,16 +105,19 @@ void LLPrefsAscentChat::onSpellRemove(void* data)
     self->refresh();
 }
 
+//static
 void LLPrefsAscentChat::onSpellGetMore(void* data)
 {
     glggHunSpell->getMoreButton(data);
 }
 
+//static
 void LLPrefsAscentChat::onSpellEditCustom(void* data)
 {
     glggHunSpell->editCustomButton();
 }
 
+//static
 void LLPrefsAscentChat::onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata)
 {
     LLComboBox* box = (LLComboBox*)ctrl;
@@ -125,6 +128,49 @@ void LLPrefsAscentChat::onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata
     }
 }
 
+//static
+void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
+{
+    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;	
+
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseAnyone",  self->childGetValue("AscentInstantMessageResponseAnyone"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseFriends", self->childGetValue("AscentInstantMessageResponseFriends"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseMuted",   self->childGetValue("AscentInstantMessageResponseMuted"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowOnTyping",    self->childGetValue("AscentInstantMessageShowOnTyping"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowResponded",   self->childGetValue("AscentInstantMessageShowResponded"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseRepeat",  self->childGetValue("AscentInstantMessageResponseRepeat"));
+    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseItem",    self->childGetValue("AscentInstantMessageResponseItem"));
+    gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      self->childGetValue("im_response"));
+}
+
+//static
+void LLPrefsAscentChat::onCommitKeywords(LLUICtrl* ctrl, void* user_data)
+{
+    LLPrefsAscentChat* self = (LLPrefsAscentChat*)user_data;	
+
+    if (ctrl->getName() == "KeywordsOn")
+    {
+        bool enabled = self->childGetValue("KeywordsOn").asBoolean();
+        self->childSetEnabled("KeywordsList",        enabled);
+        self->childSetEnabled("KeywordsInChat",      enabled);
+        self->childSetEnabled("KeywordsInIM",        enabled);
+        self->childSetEnabled("KeywordsChangeColor", enabled);
+        self->childSetEnabled("KeywordsColor",       enabled);
+        self->childSetEnabled("KeywordsPlaySound",   enabled);
+        self->childSetEnabled("KeywordsSound",       enabled);
+    }
+
+    gSavedPerAccountSettings.setBOOL("KeywordsOn",          self->childGetValue("KeywordsOn"));
+    gSavedPerAccountSettings.setString("KeywordsList",      self->childGetValue("KeywordsList"));
+    gSavedPerAccountSettings.setBOOL("KeywordsInChat",      self->childGetValue("KeywordsInChat"));
+    gSavedPerAccountSettings.setBOOL("KeywordsInIM",        self->childGetValue("KeywordsInIM"));
+    gSavedPerAccountSettings.setBOOL("KeywordsChangeColor", self->childGetValue("KeywordsChangeColor"));
+    gSavedPerAccountSettings.setColor4("KeywordsColor",     self->childGetValue("KeywordsColor"));
+    gSavedPerAccountSettings.setBOOL("KeywordsPlaySound",   self->childGetValue("KeywordsPlaySound"));
+    gSavedPerAccountSettings.setString("KeywordsSound",     self->childGetValue("KeywordsSound"));
+}
+
+// Store current settings for cancel
 void LLPrefsAscentChat::refreshValues()
 {
     //Chat/IM -----------------------------------------------------------------------------
@@ -193,6 +239,7 @@ void LLPrefsAscentChat::refreshValues()
     mKeywordsSound                  = static_cast<LLUUID>(gSavedPerAccountSettings.getString("KeywordsSound"));
 }
 
+// Update controls based on current settings
 void LLPrefsAscentChat::refresh()
 {
     //Chat --------------------------------------------------------------------------------
@@ -277,28 +324,28 @@ void LLPrefsAscentChat::refresh()
         combo->setSimple(std::string(""));
     }
 
-    bool enabled = childGetValue("Keywords_Alert").asBoolean();
-    childSetEnabled("Keywords_Entries",   enabled);
-    childSetEnabled("Keywords_LocalChat", enabled);
-    childSetEnabled("Keywords_IM",        enabled);
-    childSetEnabled("Keywords_Highlight", enabled);
-    childSetEnabled("Keywords_Color",     enabled);
-    childSetEnabled("Keywords_PlaySound", enabled);
-    childSetEnabled("Keywords_SoundUUID", enabled);
+    childSetEnabled("KeywordsList",        mKeywordsOn);
+    childSetEnabled("KeywordsInChat",      mKeywordsOn);
+    childSetEnabled("KeywordsInIM",        mKeywordsOn);
+    childSetEnabled("KeywordsChangeColor", mKeywordsOn);
+    childSetEnabled("KeywordsColor",       mKeywordsOn);
+    childSetEnabled("KeywordsPlaySound",   mKeywordsOn);
+    childSetEnabled("KeywordsSound",       mKeywordsOn);
 
-    childSetValue("Keywords_Alert",     mKeywordsOn);
-    childSetValue("Keywords_Entries",   mKeywordsList);
-    childSetValue("Keywords_LocalChat", mKeywordsInChat);
-    childSetValue("Keywords_IM",        mKeywordsInIM);
-    childSetValue("Keywords_Highlight", mKeywordsChangeColor);
+    childSetValue("KeywordsOn",          mKeywordsOn);
+    childSetValue("KeywordsList",        mKeywordsList);
+    childSetValue("KeywordsInChat",      mKeywordsInChat);
+    childSetValue("KeywordsInIM",        mKeywordsInIM);
+    childSetValue("KeywordsChangeColor", mKeywordsChangeColor);
 
-    LLColorSwatchCtrl* colorctrl = getChild<LLColorSwatchCtrl>("Keywords_Color");
+    LLColorSwatchCtrl* colorctrl = getChild<LLColorSwatchCtrl>("KeywordsColor");
     colorctrl->set(LLColor4(mKeywordsColor),TRUE);
 
-    childSetValue("Keywords_PlaySound", mKeywordsPlaySound);
-    childSetValue("Keywords_SoundUUID", mKeywordsSound);
+    childSetValue("KeywordsPlaySound",   mKeywordsPlaySound);
+    childSetValue("KeywordsSound",       mKeywordsSound);
 }
 
+// Reset settings to local copy
 void LLPrefsAscentChat::cancel()
 {
     //Chat/IM -----------------------------------------------------------------------------
@@ -383,6 +430,7 @@ void LLPrefsAscentChat::cancel()
     gSavedPerAccountSettings.setString("KeywordsSound",     mKeywordsSound.asString());
 }
 
+// Update local copy so cancel has no effect
 void LLPrefsAscentChat::apply()
 {
     //Chat/IM -----------------------------------------------------------------------------
@@ -437,25 +485,6 @@ void LLPrefsAscentChat::apply()
     gSavedSettings.setString("ShortTimeFormat", short_time);
     gSavedSettings.setString("LongTimeFormat",  long_time);
     gSavedSettings.setString("TimestampFormat", timestamp);
-
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseAnyone",  mIMResponseAnyone);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseFriends", mIMResponseFriends);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseMuted",   mIMResponseMuted);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowOnTyping",    mIMShowOnTyping);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageShowResponded",   mIMShowResponded);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseRepeat",  mIMResponseRepeat);
-    gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseItem",    mIMResponseItem);
-    gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      mIMResponseText);
-
-    //Text Options ------------------------------------------------------------------------
-    gSavedPerAccountSettings.setBOOL("KeywordsOn",          mKeywordsOn);
-    gSavedPerAccountSettings.setString("KeywordsList",      mKeywordsList);
-    gSavedPerAccountSettings.setBOOL("KeywordsInChat",      mKeywordsInChat);
-    gSavedPerAccountSettings.setBOOL("KeywordsInIM",        mKeywordsInIM);
-    gSavedPerAccountSettings.setBOOL("KeywordsChangeColor", mKeywordsChangeColor);
-    gSavedPerAccountSettings.setColor4("KeywordsColor",     mKeywordsColor);
-    gSavedPerAccountSettings.setBOOL("KeywordsPlaySound",   mKeywordsPlaySound);
-    gSavedPerAccountSettings.setString("KeywordsSound",     mKeywordsSound.asString());
 
     refreshValues();
     refresh();

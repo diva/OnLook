@@ -214,8 +214,8 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mPrefsAscentSys->setDefaultBtn(default_btn);
 
 	mPrefsAscentVan = new LLPrefsAscentVan();
-	mTabContainer->addTabPanel(mPrefsAscentVan->getPanel(), mPrefsAscentVan->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
-	mPrefsAscentVan->getPanel()->setDefaultBtn(default_btn);
+	mTabContainer->addTabPanel(mPrefsAscentVan, mPrefsAscentVan->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mPrefsAscentVan->setDefaultBtn(default_btn);
 
 	if (!mTabContainer->selectTab(gSavedSettings.getS32("LastPrefTab")))
 	{

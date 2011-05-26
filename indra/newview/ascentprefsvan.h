@@ -34,10 +34,8 @@
 
 #include "llpanel.h"
 
-class LLPanel;
-class LLPrefsAscentVanImpl;
 
-class LLPrefsAscentVan
+class LLPrefsAscentVan : public LLPanel
 {
 public:
 	LLPrefsAscentVan();
@@ -45,16 +43,55 @@ public:
 
 	void apply();
 	void cancel();
+	void refresh();
+	void refreshValues();
 
-	LLPanel* getPanel();
-
-	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);	
+//	LLPanel* getPanel();
 
 protected:
-	LLPrefsAscentVanImpl& impl;
+	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);	
+	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
+    static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
+//	static void onCommitColor(LLUICtrl* ctrl, void* user_data);
+	static void onManualClientUpdate(void* data);
+	//General
+	BOOL mUseAccountSettings;
+	BOOL mShowTPScreen;
+	BOOL mPlayTPSound;
+	BOOL mShowLogScreens;
+	//Tags\Colors
+    BOOL mAscentUseTag;
+    std::string mReportClientUUID;
+	U32 mSelectedClient;
+	BOOL mShowSelfClientTag;
+	BOOL mShowSelfClientTagColor;
+    BOOL mShowFriendsTag;
+	BOOL mCustomTagOn;
+    std::string mCustomTagLabel;
+	LLColor4 mCustomTagColor;
+    BOOL mShowOthersTag;
+    BOOL mShowOthersTagColor;
+    BOOL mShowIdleTime;
+    BOOL mUseStatusColors;
+    BOOL mUpdateTagsOnLoad;
+    LLColor4 mEffectColor;
+	LLColor4 mFriendColor;
+	LLColor4 mEstateOwnerColor;
+	LLColor4 mLindenColor;
+	LLColor4 mMutedColor;
+    //Body Dynamics
+    BOOL mBreastPhysicsToggle;
+    F32 mBoobMass;
+    F32 mBoobHardness;
+    F32 mBoobVelMax;
+    F32 mBoobFriction;
+    F32 mBoobVelMin;
+    F32 mAvatarXModifier;
+    F32 mAvatarYModifier;
+    F32 mAvatarZModifier;
 
 private:
-	
+
 };
 
 #endif

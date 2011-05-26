@@ -39,61 +39,65 @@
 class LLPrefsAscentSys : public LLPanel
 {
 public:
-	LLPrefsAscentSys();
-	~LLPrefsAscentSys();
+    LLPrefsAscentSys();
+    ~LLPrefsAscentSys();
 
-	void apply();
-	void cancel();
+    void apply();
+    void cancel();
     void refresh();
-	void refreshValues();
+    void refreshValues();
 
 protected:
-	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
+    static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
+    static void onCommitCmdLine(LLUICtrl* ctrl, void* user_data);
 
     //General -----------------------------------------------------------------------------
-	BOOL mDoubleClickTeleport;
-		BOOL mResetCameraAfterTP;
-		BOOL mOffsetTPByUserHeight;
-	BOOL mPreviewAnimInWorld;
-	BOOL mSaveScriptsAsMono;
-	BOOL mAlwaysRezInGroup;
-	BOOL mBuildAlwaysEnabled;
-	BOOL mAlwaysShowFly;
-	BOOL mDisableMinZoom;
-	BOOL mPowerUser;
-	BOOL mUseSystemFolder;
-	    BOOL mUploadToSystem;
-	BOOL mFetchInventoryOnLogin;
-	BOOL mEnableLLWind;
-	BOOL mEnableClouds;
-	    BOOL mEnableClassicClouds;
-	BOOL mSpeedRez;
-	    U32 mSpeedRezInterval;
+    BOOL mDoubleClickTeleport;
+        BOOL mResetCameraAfterTP;
+        BOOL mOffsetTPByUserHeight;
+    BOOL mPreviewAnimInWorld;
+//    BOOL mSaveScriptsAsMono;
+    BOOL mAlwaysRezInGroup;
+    BOOL mBuildAlwaysEnabled;
+    BOOL mAlwaysShowFly;
+    BOOL mDisableMinZoom;
+    BOOL mPowerUser;
+    BOOL mUseSystemFolder;
+        BOOL mUploadToSystem;
+    BOOL mFetchInventoryOnLogin;
+    BOOL mEnableLLWind;
+    BOOL mEnableClouds;
+        BOOL mEnableClassicClouds;
+    BOOL mSpeedRez;
+        U32 mSpeedRezInterval;
 
     //Command Line ------------------------------------------------------------------------
     BOOL mCmdLine;
-	std::string mCmdLinePos;
-	std::string mCmdLineGround;
-	std::string mCmdLineHeight;
-	std::string mCmdLineTeleportHome;
-	std::string mCmdLineRezPlatform;
-	std::string mCmdLineCalc;
-	std::string mCmdLineClearChat;
-	std::string mCmdLineDrawDistance;
-	std::string mCmdTeleportToCam;
-	std::string mCmdLineKeyToName;
-	std::string mCmdLineOfferTp;
-	std::string mCmdLineMapTo;
-	std::string mCmdLineTP2;
+    std::string mCmdLinePos;
+    std::string mCmdLineGround;
+    std::string mCmdLineHeight;
+    std::string mCmdLineTeleportHome;
+    std::string mCmdLineRezPlatform;
+    F32 mCmdPlatformSize;
+    std::string mCmdLineCalc;
+    std::string mCmdLineClearChat;
+    std::string mCmdLineDrawDistance;
+    std::string mCmdTeleportToCam;
+    std::string mCmdLineKeyToName;
+    std::string mCmdLineOfferTp;
+    std::string mCmdLineMapTo;
+    BOOL mCmdMapToKeepPos;
+    std::string mCmdLineTP2;
 
     //Privacy -----------------------------------------------------------------------------
-	BOOL mBroadcastViewerEffects;
-	BOOL mDisablePointAtAndBeam;
-	BOOL mPrivateLookAt;
-	BOOL mShowLookAt;
-	BOOL mRevokePermsOnStandUp;
-	BOOL mDisableClickSit;
+    BOOL mBroadcastViewerEffects;
+    BOOL mDisablePointAtAndBeam;
+    BOOL mPrivateLookAt;
+    BOOL mShowLookAt;
+    BOOL mRevokePermsOnStandUp;
+    BOOL mDisableClickSit;
     BOOL mDisplayScriptJumps;
+    F32 mNumScriptDiff;
 };
 
 #endif

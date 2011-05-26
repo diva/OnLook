@@ -54,6 +54,23 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     childSetCommitCallback("system_folder_check", onCommitCheckBox, this);
     childSetCommitCallback("show_look_at_check", onCommitCheckBox, this);
     childSetCommitCallback("enable_clouds", onCommitCheckBox, this);
+    childSetCommitCallback("power_user_check", onCommitCheckBox, this);
+    childSetCommitCallback("power_user_confirm_check", onCommitCheckBox, this);
+
+    childSetCommitCallback("chat_cmd_toggle", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLinePos", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineGround", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineHeight", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineTeleportHome", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineRezPlatform", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineCalc", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineClearChat", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineDrawDistance", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdTeleportToCam", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineKeyToName", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineOfferTp", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineMapTo", onCommitCmdLine, this);
+    childSetCommitCallback("AscentCmdLineTP2", onCommitCmdLine, this);
 
     refreshValues();
     refresh();
@@ -68,7 +85,7 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 {
     LLPrefsAscentSys* self = (LLPrefsAscentSys*)user_data;	
     
-    llinfos << "Change to " << ctrl->getControlName()  << " aka " << ctrl->getName() << llendl;
+//    llinfos << "Change to " << ctrl->getControlName()  << " aka " << ctrl->getName() << llendl;
     
     if (ctrl->getName() == "speed_rez_check")   // Why is this one getControlName() and the rest are getName()?
     {
@@ -92,6 +109,81 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
         bool enabled = self->childGetValue("enable_clouds").asBoolean();
         self->childSetEnabled("enable_classic_clouds", enabled);
     }
+    else if (ctrl->getName() == "power_user_check")
+    {
+        bool enabled = self->childGetValue("power_user_check").asBoolean();
+        self->childSetEnabled("power_user_confirm_check", enabled);
+        self->childSetValue("power_user_confirm_check", false);
+    }
+    else if (ctrl->getName() == "power_user_confirm_check")
+    {
+        bool enabled = self->childGetValue("power_user_confirm_check").asBoolean();
+
+        gSavedSettings.setBOOL("AscentPowerfulWizard", enabled);
+
+        if (enabled)
+        {
+            LLVector3d lpos_global = gAgent.getPositionGlobal();
+            gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
+            LLChat chat;
+            chat.mSourceType = CHAT_SOURCE_SYSTEM;
+            chat.mText = llformat("You are bestowed with powers beyond mortal comprehension.\nUse your newfound abilities wisely.\nUnlocked:\n- Animation Priority up to 7 - Meant for animations that should override anything and everything at all times. DO NOT USE THIS FOR GENERAL ANIMATIONS.\n- Right click > Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.\n- Right Click > Explode objects - Turns an object physical, temporary, and delinks it.");
+            LLFloaterChat::addChat(chat);
+        }
+    }
+}
+
+//static
+void LLPrefsAscentSys::onCommitCmdLine(LLUICtrl* ctrl, void* user_data)
+{
+    LLPrefsAscentSys* self = (LLPrefsAscentSys*)user_data;
+
+    if (ctrl->getName() == "chat_cmd_toggle")
+    {
+        bool enabled = self->childGetValue("chat_cmd_toggle").asBoolean();
+        self->childSetEnabled("cmd_line_text_2",           enabled);
+        self->childSetEnabled("cmd_line_text_3",           enabled);
+        self->childSetEnabled("cmd_line_text_4",           enabled);
+        self->childSetEnabled("cmd_line_text_5",           enabled);
+        self->childSetEnabled("cmd_line_text_6",           enabled);
+        self->childSetEnabled("cmd_line_text_7",           enabled);
+        self->childSetEnabled("cmd_line_text_8",           enabled);
+        self->childSetEnabled("cmd_line_text_9",           enabled);
+        self->childSetEnabled("cmd_line_text_10",          enabled);
+        self->childSetEnabled("cmd_line_text_11",          enabled);
+        self->childSetEnabled("cmd_line_text_12",          enabled);
+        self->childSetEnabled("cmd_line_text_13",          enabled);
+        self->childSetEnabled("cmd_line_text_15",          enabled);
+        self->childSetEnabled("AscentCmdLinePos",          enabled);
+        self->childSetEnabled("AscentCmdLineGround",       enabled);
+        self->childSetEnabled("AscentCmdLineHeight",       enabled);
+        self->childSetEnabled("AscentCmdLineTeleportHome", enabled);
+        self->childSetEnabled("AscentCmdLineRezPlatform",  enabled);
+        self->childSetEnabled("AscentPlatformSize",        enabled);
+        self->childSetEnabled("AscentCmdLineCalc",         enabled);
+        self->childSetEnabled("AscentCmdLineClearChat",    enabled);
+        self->childSetEnabled("AscentCmdLineDrawDistance", enabled);
+        self->childSetEnabled("AscentCmdTeleportToCam",    enabled);
+        self->childSetEnabled("AscentCmdLineKeyToName",    enabled);
+        self->childSetEnabled("AscentCmdLineOfferTp",      enabled);
+        self->childSetEnabled("AscentCmdLineMapTo",        enabled);
+        self->childSetEnabled("map_to_keep_pos",           enabled);
+        self->childSetEnabled("AscentCmdLineTP2",          enabled);
+    }
+
+    gSavedSettings.setString("AscentCmdLinePos",          self->childGetValue("AscentCmdLinePos"));
+    gSavedSettings.setString("AscentCmdLineGround",       self->childGetValue("AscentCmdLineGround"));
+    gSavedSettings.setString("AscentCmdLineHeight",       self->childGetValue("AscentCmdLineHeight"));
+    gSavedSettings.setString("AscentCmdLineTeleportHome", self->childGetValue("AscentCmdLineTeleportHome"));
+    gSavedSettings.setString("AscentCmdLineRezPlatform",  self->childGetValue("AscentCmdLineRezPlatform"));
+    gSavedSettings.setString("AscentCmdLineCalc",         self->childGetValue("AscentCmdLineCalc"));
+    gSavedSettings.setString("AscentCmdLineClearChat",    self->childGetValue("AscentCmdLineClearChat"));
+    gSavedSettings.setString("AscentCmdLineDrawDistance", self->childGetValue("AscentCmdLineDrawDistance"));
+    gSavedSettings.setString("AscentCmdTeleportToCam",    self->childGetValue("AscentCmdTeleportToCam"));
+    gSavedSettings.setString("AscentCmdLineKeyToName",    self->childGetValue("AscentCmdLineKeyToName"));
+    gSavedSettings.setString("AscentCmdLineOfferTp",      self->childGetValue("AscentCmdLineOfferTp"));
+    gSavedSettings.setString("AscentCmdLineMapTo",        self->childGetValue("AscentCmdLineMapTo"));
+    gSavedSettings.setString("AscentCmdLineTP2",          self->childGetValue("AscentCmdLineTP2"));
 }
 
 void LLPrefsAscentSys::refreshValues()
@@ -101,7 +193,7 @@ void LLPrefsAscentSys::refreshValues()
         mResetCameraAfterTP		= gSavedSettings.getBOOL("OptionRotateCamAfterLocalTP");
         mOffsetTPByUserHeight	= gSavedSettings.getBOOL("OptionOffsetTPByAgentHeight");
     mPreviewAnimInWorld			= gSavedSettings.getBOOL("PreviewAnimInWorld");
-    mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
+//    mSaveScriptsAsMono			= gSavedSettings.getBOOL("SaveScriptsAsMono");
     mAlwaysRezInGroup			= gSavedSettings.getBOOL("AscentAlwaysRezInGroup");
     mBuildAlwaysEnabled			= gSavedSettings.getBOOL("AscentBuildAlwaysEnabled");
     mAlwaysShowFly				= gSavedSettings.getBOOL("AscentFlyAlwaysEnabled");
@@ -117,12 +209,13 @@ void LLPrefsAscentSys::refreshValues()
         mSpeedRezInterval			= gSavedSettings.getU32("SpeedRezInterval");
 
     //Command Line ------------------------------------------------------------------------
-    mCmdLine                    = gSavedSettings.getBOOL("chat_cmd_toggle");
+    mCmdLine                    = gSavedSettings.getBOOL("AscentCmdLine");
     mCmdLinePos                 = gSavedSettings.getString("AscentCmdLinePos");
     mCmdLineGround              = gSavedSettings.getString("AscentCmdLineGround");
     mCmdLineHeight              = gSavedSettings.getString("AscentCmdLineHeight");
     mCmdLineTeleportHome        = gSavedSettings.getString("AscentCmdLineTeleportHome");
     mCmdLineRezPlatform         = gSavedSettings.getString("AscentCmdLineRezPlatform");
+    mCmdPlatformSize            = gSavedSettings.getF32("AscentPlatformSize");
     mCmdLineCalc                = gSavedSettings.getString("AscentCmdLineCalc");
     mCmdLineClearChat           = gSavedSettings.getString("AscentCmdLineClearChat");
     mCmdLineDrawDistance        = gSavedSettings.getString("AscentCmdLineDrawDistance");
@@ -130,6 +223,7 @@ void LLPrefsAscentSys::refreshValues()
     mCmdLineKeyToName           = gSavedSettings.getString("AscentCmdLineKeyToName");
     mCmdLineOfferTp             = gSavedSettings.getString("AscentCmdLineOfferTp");
     mCmdLineMapTo               = gSavedSettings.getString("AscentCmdLineMapTo");
+    mCmdMapToKeepPos            = gSavedSettings.getBOOL("AscentMapToKeepPos");
     mCmdLineTP2                 = gSavedSettings.getString("AscentCmdLineTP2");
 
     //Privacy -----------------------------------------------------------------------------
@@ -140,6 +234,7 @@ void LLPrefsAscentSys::refreshValues()
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
+    mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
 }
 
 void LLPrefsAscentSys::refresh()
@@ -149,8 +244,51 @@ void LLPrefsAscentSys::refresh()
     childSetValue("power_user_check",				mPowerUser);
     childSetValue("power_user_confirm_check",		mPowerUser);
     childSetEnabled("temp_in_system_check",			mUseSystemFolder);
-    childSetEnabled("speed_rez_interval", mSpeedRez);
-    childSetEnabled("speed_rez_seconds", mSpeedRez);
+    childSetEnabled("speed_rez_interval",           mSpeedRez);
+    childSetEnabled("speed_rez_seconds",            mSpeedRez);
+
+    childSetEnabled("cmd_line_text_2",            mCmdLine);
+    childSetEnabled("cmd_line_text_3",            mCmdLine);
+    childSetEnabled("cmd_line_text_4",            mCmdLine);
+    childSetEnabled("cmd_line_text_5",            mCmdLine);
+    childSetEnabled("cmd_line_text_6",            mCmdLine);
+    childSetEnabled("cmd_line_text_7",            mCmdLine);
+    childSetEnabled("cmd_line_text_8",            mCmdLine);
+    childSetEnabled("cmd_line_text_9",            mCmdLine);
+    childSetEnabled("cmd_line_text_10",           mCmdLine);
+    childSetEnabled("cmd_line_text_11",           mCmdLine);
+    childSetEnabled("cmd_line_text_12",           mCmdLine);
+    childSetEnabled("cmd_line_text_13",           mCmdLine);
+    childSetEnabled("cmd_line_text_15",           mCmdLine);
+    childSetEnabled("AscentCmdLinePos",           mCmdLine);
+    childSetEnabled("AscentCmdLineGround",        mCmdLine);
+    childSetEnabled("AscentCmdLineHeight",        mCmdLine);
+    childSetEnabled("AscentCmdLineTeleportHome",  mCmdLine);
+    childSetEnabled("AscentCmdLineRezPlatform",   mCmdLine);
+    childSetEnabled("AscentPlatformSize",         mCmdLine);
+    childSetEnabled("AscentCmdLineCalc",          mCmdLine);
+    childSetEnabled("AscentCmdLineClearChat",     mCmdLine);
+    childSetEnabled("AscentCmdLineDrawDistance",  mCmdLine);
+    childSetEnabled("AscentCmdTeleportToCam",     mCmdLine);
+    childSetEnabled("AscentCmdLineKeyToName",     mCmdLine);
+    childSetEnabled("AscentCmdLineOfferTp",       mCmdLine);
+    childSetEnabled("AscentCmdLineMapTo",         mCmdLine);
+    childSetEnabled("map_to_keep_pos",            mCmdLine);
+    childSetEnabled("AscentCmdLineTP2",           mCmdLine);
+
+    childSetValue("AscentCmdLinePos",           mCmdLinePos);
+    childSetValue("AscentCmdLineGround",        mCmdLineGround);
+    childSetValue("AscentCmdLineHeight",        mCmdLineHeight);
+    childSetValue("AscentCmdLineTeleportHome",  mCmdLineTeleportHome);
+    childSetValue("AscentCmdLineRezPlatform",   mCmdLineRezPlatform);
+    childSetValue("AscentCmdLineCalc",          mCmdLineCalc);
+    childSetValue("AscentCmdLineClearChat",     mCmdLineClearChat);
+    childSetValue("AscentCmdLineDrawDistance",  mCmdLineDrawDistance);
+    childSetValue("AscentCmdTeleportToCam",     mCmdTeleportToCam);
+    childSetValue("AscentCmdLineKeyToName",     mCmdLineKeyToName);
+    childSetValue("AscentCmdLineOfferTp",       mCmdLineOfferTp);
+    childSetValue("AscentCmdLineMapTo",         mCmdLineMapTo);
+    childSetValue("AscentCmdLineTP2",           mCmdLineTP2);
 }
 
 void LLPrefsAscentSys::cancel()
@@ -160,7 +298,7 @@ void LLPrefsAscentSys::cancel()
         gSavedSettings.setBOOL("OptionRotateCamAfterLocalTP", mResetCameraAfterTP);
         gSavedSettings.setBOOL("OptionOffsetTPByAgentHeight", mOffsetTPByUserHeight);
     gSavedSettings.setBOOL("PreviewAnimInWorld", mPreviewAnimInWorld);
-    gSavedSettings.setBOOL("SaveScriptsAsMono", mSaveScriptsAsMono);
+//    gSavedSettings.setBOOL("SaveScriptsAsMono", mSaveScriptsAsMono);
     gSavedSettings.setBOOL("AscentAlwaysRezInGroup", mAlwaysRezInGroup);
     gSavedSettings.setBOOL("AscentBuildAlwaysEnabled", mBuildAlwaysEnabled);
     gSavedSettings.setBOOL("AscentFlyAlwaysEnabled", mAlwaysShowFly);
@@ -176,12 +314,13 @@ void LLPrefsAscentSys::cancel()
         gSavedSettings.setU32("SpeedRezInterval", mSpeedRezInterval);
 
     //Command Line ------------------------------------------------------------------------
-    gSavedSettings.setBOOL("chat_cmd_toggle",               mCmdLine);
+    gSavedSettings.setBOOL("AscentCmdLine",                 mCmdLine);
     gSavedSettings.setString("AscentCmdLinePos",		    mCmdLinePos);
     gSavedSettings.setString("AscentCmdLineGround",		    mCmdLineGround);
     gSavedSettings.setString("AscentCmdLineHeight",		    mCmdLineHeight);
     gSavedSettings.setString("AscentCmdLineTeleportHome",	mCmdLineTeleportHome);
     gSavedSettings.setString("AscentCmdLineRezPlatform",	mCmdLineRezPlatform);
+    gSavedSettings.setF32("AscentPlatformSize",             mCmdPlatformSize);
     gSavedSettings.setString("AscentCmdLineCalc",		    mCmdLineCalc);
     gSavedSettings.setString("AscentCmdLineClearChat",	    mCmdLineClearChat);
     gSavedSettings.setString("AscentCmdLineDrawDistance",	mCmdLineDrawDistance);
@@ -189,6 +328,7 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setString("AscentCmdLineKeyToName",		mCmdLineKeyToName);
     gSavedSettings.setString("AscentCmdLineOfferTp",		mCmdLineOfferTp);
     gSavedSettings.setString("AscentCmdLineMapTo",			mCmdLineMapTo);
+    gSavedSettings.setBOOL("AscentMapToKeepPos",            mCmdMapToKeepPos);
     gSavedSettings.setString("AscentCmdLineTP2",			mCmdLineTP2);
 
     //Privacy -----------------------------------------------------------------------------
@@ -199,40 +339,11 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
+    gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
 }
 
 void LLPrefsAscentSys::apply()
 {
-    std::string short_date, long_date, short_time, long_time, timestamp;
-    
-    //General ------------------------------------------------------------------------------
-    gSavedSettings.setBOOL("AscentPowerfulWizard", (childGetValue("power_user_check") && childGetValue("power_user_confirm_check")));
-
-    if (gSavedSettings.getBOOL("AscentPowerfulWizard") && !mPowerUser)
-    {
-        LLVector3d lpos_global = gAgent.getPositionGlobal();
-        gAudiop->triggerSound(LLUUID("58a38e89-44c6-c52b-deb8-9f1ddc527319"), gAgent.getID(), 1.0f, LLAudioEngine::AUDIO_TYPE_UI, lpos_global);
-        LLChat chat;
-        chat.mSourceType = CHAT_SOURCE_SYSTEM;
-        chat.mText = llformat("You are bestowed with powers beyond mortal comprehension.\nUse your newfound abilities wisely.\nUnlocked:\n- Animation Priority up to 7 - Meant for animations that should override anything and everything at all times. DO NOT USE THIS FOR GENERAL ANIMATIONS.\n- Right click > Destroy objects - Permanently deletes an object immediately, when you don't feel like waiting for the server to respond.\n- Right Click > Explode objects - Turns an object physical, temporary, and delinks it.");
-        LLFloaterChat::addChat(chat);
-    }
-
-    //Commandline ----------------------------------------------------------------------------
-    gSavedSettings.setString("AscentCmdLinePos",		    childGetValue("AscentCmdLinePos"));
-    gSavedSettings.setString("AscentCmdLineGround",		    childGetValue("AscentCmdLineGround"));
-    gSavedSettings.setString("AscentCmdLineHeight",		    childGetValue("AscentCmdLineHeight"));
-    gSavedSettings.setString("AscentCmdLineTeleportHome",	childGetValue("AscentCmdLineTeleportHome"));
-    gSavedSettings.setString("AscentCmdLineRezPlatform",	childGetValue("AscentCmdLineRezPlatform"));
-    gSavedSettings.setString("AscentCmdLineCalc",		    childGetValue("AscentCmdLineCalc"));
-    gSavedSettings.setString("AscentCmdLineClearChat",	    childGetValue("AscentCmdLineClearChat"));
-    gSavedSettings.setString("AscentCmdLineDrawDistance",	childGetValue("AscentCmdLineDrawDistance"));
-    gSavedSettings.setString("AscentCmdTeleportToCam",		childGetValue("AscentCmdTeleportToCam"));
-    gSavedSettings.setString("AscentCmdLineKeyToName",		childGetValue("AscentCmdLineKeyToName"));
-    gSavedSettings.setString("AscentCmdLineOfferTp",		childGetValue("AscentCmdLineOfferTp"));
-    gSavedSettings.setString("AscentCmdLineMapTo",			childGetValue("AscentCmdLineMapTo"));
-    gSavedSettings.setString("AscentCmdLineTP2",			childGetValue("AscentCmdLineTP2"));
-
     refreshValues();
     refresh();
 }

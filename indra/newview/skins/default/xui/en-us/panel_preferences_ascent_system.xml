@@ -30,7 +30,7 @@
         tool_tip="The Animation upload window will play animations on your avatar when previewing them."
         mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="true"
+      <check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="false"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Save scripts in inventory as Mono scripts instead of LSL2" left="10"
         tool_tip="Scripts will automatically be compiled in Mono when saving - Usually only possible when placed in an object."
@@ -60,15 +60,15 @@
         tool_tip="Allows the camera to get reeeaaally close to things."
         mouse_opaque="true" name="disable_camera_zoom_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="AscentPowerfulWizardCheck1" enabled="true"
+      <check_box bottom_delta="-20" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
         label="Enable Power User functionality" left="10"
         tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well."
         mouse_opaque="true" name="power_user_check" radio_style="false"
         width="400" />
-      <check_box bottom_delta="-20" control_name="AscentPowerfulWizardCheck2" enabled="true"
+      <check_box bottom_delta="-20" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Confirm Power User functionality" left="10"
+        label="Confirm Power User functionality" left="20"
         tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Ascent devs will not replace anything you break if you ruin something important. Unlike most checkboxes, you must apply/ok changes before this will activate."
         mouse_opaque="true" name="power_user_confirm_check" radio_style="false"
         width="400" />
@@ -137,37 +137,35 @@ Teleport within sim (usage: cmd x y z)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLinePos" control_name="AscentCmdLinePos" width="200"/>
+        tool_tip="" name="AscentCmdLinePos" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_3" width="512">
 Teleport to ground (usage: cmd)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineGround" control_name="AscentCmdLineGround" width="200"/>
+        tool_tip="" name="AscentCmdLineGround" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_4" width="512">
 Teleport to altitude (usage: cmd z)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineHeight" control_name="AscentCmdLineHeight" width="200"/>
+        tool_tip="" name="AscentCmdLineHeight" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_5" width="512">
 Teleport home (usage: cmd)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineTeleportHome" control_name="AscentCmdLineTeleportHome"
-        width="200"/>
+        tool_tip="" name="AscentCmdLineTeleportHome" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_6" width="512">
 Rez a platform (usage: cmd 0 - 30)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineRezPlatform" control_name="AscentCmdLineRezPlatform"
-        width="200"/>
+        tool_tip="" name="AscentCmdLineRezPlatform" width="200"/>
       <slider bottom_delta="-22" left_delta="0" name="AscentPlatformSize" control_name="AscentPlatformSize"
         decimal_digits="1" enabled="true" follows="left|top" height="18" increment="0.5"
         initial_val="5" label="Default width:" label_width="75" max_val="30" min_val="5"
@@ -178,7 +176,7 @@ Calc. expressions (usage: cmd 2 + 2)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineCalc" control_name="AscentCmdLineCalc" width="200"/>
+        tool_tip="" name="AscentCmdLineCalc" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_15" width="512">
 Clear the chat history (usage: cmd)
@@ -186,7 +184,7 @@ Clear the chat history (usage: cmd)
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
         tool_tip="Clears the Chat History to prevent lag effects from chat spammers."
-        name="AscentCmdLineClearChat" control_name="AscentCmdLineClearChat" width="200"/>
+        name="AscentCmdLineClearChat" width="200"/>
       <!-- Column Split -->
       <view_border bevel_style="none" border_thickness="1" bottom_delta="-5" follows="top|left" height="295"
         left="230" name="CmdDivisor" width="0"/>
@@ -196,38 +194,35 @@ Change Draw Distance (usage: cmd meters)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineDrawDistance" control_name="AscentCmdLineDrawDistance"
-        width="200"/>
+        tool_tip="" name="AscentCmdLineDrawDistance" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_10" width="512">
 Teleport to cam position (usage: cmd)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdTeleportToCam" control_name="AscentCmdTeleportToCam"
-        width="200"/>
+        tool_tip="" name="AscentCmdTeleportToCam" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_11" width="512">
 Get avatar name from key (usage: cmd key)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineKeyToName" control_name="AscentCmdLineKeyToName"
-        width="200"/>
+        tool_tip="" name="AscentCmdLineKeyToName" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_12" width="512">
 Offer teleport to avatar (usage: cmd key)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineOfferTp" control_name="AscentCmdLineOfferTp" width="200"/>
+        tool_tip="" name="AscentCmdLineOfferTp" width="200"/>
       <text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
         name="cmd_line_text_7" width="512">
 Teleport to sim x (usage: cmd simname)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="" name="AscentCmdLineMapTo" control_name="AscentCmdLineMapTo" width="200"/>
+        tool_tip="" name="AscentCmdLineMapTo" width="200"/>
       <check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
         initial_value="false" label="Use same position between sims" left_delta="0" mouse_opaque="true"
         name="map_to_keep_pos" radio_style="false" width="270"
@@ -239,7 +234,7 @@ Teleport to avatar (usage: cmd name)
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
         tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open."
-        name="AscentCmdLineTP2" control_name="AscentCmdLineTP2" width="200"/>
+        name="AscentCmdLineTP2" width="200"/>
     </panel>
 
     <panel border="true" left="1" bottom="-408" height="408" width="500" mouse_opaque="true"
@@ -311,7 +306,7 @@ Pivot Point
         label="Values are percent" left_delta="-5" mouse_opaque="true"
         tool_tip="Default settings are Percentages and every axis set at 50"
         name="EmPivotPercToggle" radio_style="false" width="100" control_name="AscentBuildPrefs_PivotIsPercent"/>
-      <check_box bottom_delta="60" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+      <check_box bottom_delta="60" enabled="false" follows="left|top" font="SansSerifSmall" height="16"
         initial_value="true" label="Enable highlighting of selected prims" left_delta="140"
         mouse_opaque="true" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"
         radio_style="false" width="270"/>

@@ -159,7 +159,7 @@ MM/DD/YYYY
       <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
         initial_value="false" label="Autorespond to every message" left_delta="0" mouse_opaque="true"
         name="AscentInstantMessageResponseRepeat" radio_style="false" width="270"/>
-      <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
+      <check_box bottom_delta="-20" enabled="false" follows="left|top" font="SansSerifSmall" height="16"
         initial_value="false" label="Send an item along with the response" left_delta="0"
         mouse_opaque="true" name="AscentInstantMessageResponseItem" radio_style="false"
         width="270" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
@@ -273,30 +273,30 @@ To use spellcheck, right-click a misspelled word
 
       <check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
         label="Highlight messages if any of they contain the terms" left="5" mouse_opaque="true"
-        name="Keywords_Alert" radio_style="false" width="270"/>
+        name="KeywordsOn" radio_style="false" width="270"/>
       <text bottom_delta="-20" follows="left|top" font="SansSerifSmall" height="20" left="12"
         name="keyword_txt1" width="512">
 (separated by commas)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
-        font="SansSerifSmall" height="20" left_delta="5" max_length="500" mouse_opaque="true" name="Keywords_Entries" width="300" />
+        font="SansSerifSmall" height="20" left_delta="5" max_length="500" mouse_opaque="true" name="KeywordsList" width="300" />
       <text bottom_delta="-24" follows="left|top" font="SansSerifSmall" height="20" left_delta="15" name="EmKeyw"
         width="100">Is found within:</text>
       <check_box bottom_delta="3" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Local Chat Floater" left_delta="100" mouse_opaque="true" name="Keywords_LocalChat" radio_style="false" width="270"/>
+        label="Local Chat Floater" left_delta="100" mouse_opaque="true" name="KeywordsInChat" radio_style="false" width="270"/>
       <check_box bottom_delta="-15" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Instant Message Floater" left_delta="0" mouse_opaque="true" name="Keywords_IM" radio_style="false" width="270"/>
+        label="Instant Message Floater" left_delta="0" mouse_opaque="true" name="KeywordsInIM" radio_style="false" width="270"/>
       <check_box bottom_delta="-24" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Highlight the message in this color:" left_delta="-110" mouse_opaque="true" name="Keywords_Highlight"
+        label="Highlight the message in this color:" left_delta="-110" mouse_opaque="true" name="KeywordsChangeColor"
         radio_style="false" width="270"/>
       <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom_delta="-16" can_apply_immediately="true"
-        color="1, 1, 1, 1" follows="left|top" height="35" label="" left_delta="210"
-        mouse_opaque="true" name="Keywords_Color" tool_tip="Click to open Color Picker" width="50"/>
+        color="1, 1, 1, 1" follows="left|top" height="35" label="" left_delta="210" mouse_opaque="true"
+        name="KeywordsColor" tool_tip="Click to open Color Picker" width="50"/>
       <check_box bottom_delta="-10" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Play this sound alert: (UUID)" left_delta="-210" mouse_opaque="true" name="Keywords_PlaySound"
+        label="Play this sound alert: (UUID)" left_delta="-210" mouse_opaque="true" name="KeywordsPlaySound"
         radio_style="false" width="270"/>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
-        font="SansSerifSmall" height="20" left_delta="-5" max_length="36" mouse_opaque="true" name="Keywords_SoundUUID" width="300" />
+        font="SansSerifSmall" height="20" left_delta="-5" max_length="36" mouse_opaque="true" name="KeywordsSound" width="300" />
     </panel>
 
   </tab_container>
