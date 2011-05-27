@@ -4344,6 +4344,21 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	image_width *= internal_scale;
 #endif //shy_mod
 
+	//Hack until hud ui works in high-res shots again (nameplates and hud attachments are buggered).
+	if ((image_width > window_width || image_height > window_height))
+	{
+		if(LLPipeline::sShowHUDAttachments)
+		{
+			hide_hud=true;
+			LLPipeline::sShowHUDAttachments = FALSE;
+		}
+		if(show_ui)
+		{
+			show_ui=false;
+			LLPipeline::toggleRenderDebugFeature((void*)LLPipeline::RENDER_DEBUG_FEATURE_UI);
+		}
+	}
+	
 	if(!keep_window_aspect) //image cropping
 	{		
 		F32 ratio = llmin( (F32)window_width / image_width , (F32)window_height / image_height) ;
@@ -4535,7 +4550,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	gDepthDirty = TRUE;
 
 	// POST SNAPSHOT
-	if (!gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+	if (prev_draw_ui != gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
 	{
 		LLPipeline::toggleRenderDebugFeature((void*)LLPipeline::RENDER_DEBUG_FEATURE_UI);
 	}
