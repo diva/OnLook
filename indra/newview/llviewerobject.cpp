@@ -4576,7 +4576,11 @@ LLViewerObject::ExtraParameter* LLViewerObject::createNewParameterEntry(U16 para
 		  new_block = new LLSculptParams();
 		  break;
 	  }
-
+	  case LLNetworkData::PARAMS_LIGHT_IMAGE:
+	  {
+		  new_block = new LLLightImageParams();
+		  break;
+	  }
 	  default:
 	  {
 		  llinfos << "Unknown param type." << llendl;
