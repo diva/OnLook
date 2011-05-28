@@ -305,10 +305,6 @@ BOOL gCrashOnStartup = FALSE;
 BOOL gLLErrorActivated = FALSE;
 BOOL gLogoutInProgress = FALSE;
 
-static std::string gPlaceAvatarCap;	//OGPX TODO: should belong elsewhere, as part of the llagent caps?
-
-
-
 ////////////////////////////////////////////////////////////
 // Internal globals... that should be removed.
 static std::string gArgs;
@@ -3234,18 +3230,6 @@ const std::string& LLAppViewer::getWindowTitle() const
 	return gWindowTitle;
 }
 
- // OGPX TODO: refactor caps code please, also "PlaceAvatar" is a bit dated, since
- // we have since changed the name of the cap
-void LLAppViewer::setPlaceAvatarCap(const std::string& uri)
-{
-    gPlaceAvatarCap = uri;
-}
-
-const std::string& LLAppViewer::getPlaceAvatarCap() const
-{
-	return gPlaceAvatarCap;
-}
-
 // Callback from a dialog indicating user was logged out.  
 bool finish_disconnect(const LLSD& notification, const LLSD& response)
 {
@@ -3895,39 +3879,6 @@ void LLAppViewer::idleShutdown()
 		return;
 	}
 }
-
-// OGPX : Instead of sending UDP messages to the sim, tell the Agent Domain about logoff
-//... This responder is used with rez_avatar/place when the specialized case
-//... of sending a null region name is sent to the agent domain. Null region name means
-//... log me off of agent domain. *But* what about cases where you want to be logged into
-//... agent domain, but not physically on a region? 
-class LLLogoutResponder :
-	public LLHTTPClient::Responder
-{
-public:
-	LLLogoutResponder()
-	{
-	}
-
-	~LLLogoutResponder()
-	{
-	}
-	
-	void error(U32 statusNum, const std::string& reason)
-	{		
-		// consider retries
-		llinfos << "LLLogoutResponder error "
-				<< statusNum << " " << reason << llendl;
-	}
-
-	void result(const LLSD& content)
-	{
-		// perhaps logoutReply should come through this in the future
-		llinfos << "LLLogoutResponder completed successfully" << llendl;
-	
-	}
-
-};
 
 void LLAppViewer::idleNameCache()
 {

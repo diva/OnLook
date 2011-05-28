@@ -2840,13 +2840,6 @@ void LLFloaterCustomize::updateInventoryUI()
 		}
 	}
 
-	// OGPX : In place because Assets are not currently supported in OGPX. 
-	//    This was originally added as part of OGP9 svn branch because the viewer deeply deeply 
-	//     assumes that there *will* be an inventory there. If you never get an inventory, 
-	//     Make Outfit breaks badly. 
-	// OGPX TODO: When assets/inventory are supported, the check below can be removed.
-	// OGPX test if (!gSavedSettings.getString("CmdLineRegionURI").empty()) {all_complete = FALSE;}
-
 	childSetEnabled("Make Outfit", all_complete);
 }
 
