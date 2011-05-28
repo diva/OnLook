@@ -286,6 +286,10 @@ LLSpatialGroup::~LLSpatialGroup()
 		llerrs << "Illegal deletion of LLSpatialGroup!" << llendl;
 	}*/
 
+	if (gDebugGL)
+	{
+		gPipeline.checkReferences(this);
+	}
 	if (isState(DEAD))
 	{
 		sZombieGroups--;
@@ -3313,6 +3317,11 @@ LLDrawInfo::~LLDrawInfo()
 	if (mFace)
 	{
 		mFace->setDrawInfo(NULL);
+	}
+
+	if (gDebugGL)
+	{
+		gPipeline.checkReferences(this);
 	}
 }
 

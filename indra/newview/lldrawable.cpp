@@ -118,6 +118,10 @@ void LLDrawable::initClass()
 
 void LLDrawable::destroy()
 {
+	if (gDebugGL)
+	{
+		gPipeline.checkReferences(this);
+	}
 	if (isDead())
 	{
 		sNumZombieDrawables--;

@@ -4299,7 +4299,6 @@ void process_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processObjectUpdate(mesgsys, user_data, OUT_FULL);
-	stop_glerror();
 }
 
 void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4317,7 +4316,6 @@ void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data
 
 	// Update the object...
 	gObjectList.processCompressedObjectUpdate(mesgsys, user_data, OUT_FULL_COMPRESSED);
-	stop_glerror();
 }
 
 void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4335,7 +4333,6 @@ void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processCachedObjectUpdate(mesgsys, user_data, OUT_FULL_CACHED);
-	stop_glerror();
 }
 
 

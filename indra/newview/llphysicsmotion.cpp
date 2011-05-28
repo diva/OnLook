@@ -131,7 +131,8 @@ protected:
                 {
                         return sDefaultController[controller_key];
                 }
-                return mCharacter->getVisualParamWeight((*entry).second.c_str());
+                const std::string& param_name = (*entry).second.c_str();
+                return mCharacter->getVisualParamWeight(param_name.c_str());
         }
         void setParamValue(LLViewerVisualParam *param,
                            const F32 new_value_local,

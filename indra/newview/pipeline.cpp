@@ -106,6 +106,26 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
+void check_stack_depth(S32 stack_depth)
+{
+	if (gDebugGL || gDebugSession)
+	{
+		GLint depth;
+		glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
+		if (depth != stack_depth)
+		{
+			if (gDebugSession)
+			{
+				ll_fail("GL matrix stack corrupted.");
+			}
+			else
+			{
+				llerrs << "GL matrix stack corrupted!" << llendl;
+			}
+		}
+	}
+}
+
 #ifdef _DEBUG
 // Debug indices is disabled for now for debug performance - djs 4/24/02
 //#define DEBUG_INDICES
@@ -537,7 +557,13 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 		addDeferredAttachments(mDeferredScreen);
 
 		mScreen.allocate(resX, resY, format, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
+
+#if LL_DARWIN
+		// As of OS X 10.6.7, Apple doesn't support multiple color formats in a single FBO
+		mEdgeMap.allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
+#else
 		mEdgeMap.allocate(resX, resY, GL_ALPHA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
+#endif
 
 		if (shadow_detail > 0 || ssao)
 		{ //only need mDeferredLight[0] for shadows OR ssao
@@ -562,7 +588,12 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			mDeferredLight[2].allocate(resX, resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
 			for (U32 i = 0; i < 2; i++)
 			{
+#if LL_DARWIN
+				// As of OS X 10.6.7, Apple doesn't support multiple color formats in a single FBO
+				mGIMapPost[i].allocate(resX,resY, GL_RGBA, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+#else
 				mGIMapPost[i].allocate(resX,resY, GL_RGB, FALSE, FALSE, LLTexUnit::TT_RECT_TEXTURE);
+#endif
 			}
 		}
 		else
@@ -577,9 +608,13 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 
 		F32 scale = gSavedSettings.getF32("RenderShadowResolutionScale");
 
+#if LL_DARWIN
+		U32 shadow_fmt = 0;
+#else
 		//HACK: make alpha masking work on ATI depth shadows (work around for ATI driver bug)
 		//TO-DO: Test if this is actually needed.
 		U32 shadow_fmt = gGLManager.mIsATI ? GL_ALPHA : 0;
+#endif
 
 		if (shadow_detail > 0)
 		{ //allocate 4 sun shadow maps
@@ -1531,6 +1566,184 @@ void LLPipeline::grabReferences(LLCullResult& result)
 {
 	sCull = &result;
 }
+
+void LLPipeline::clearReferences()
+{
+	sCull = NULL;
+}
+
+void check_references(LLSpatialGroup* group, LLDrawable* drawable)
+{
+	for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+	{
+		if (drawable == *i)
+		{
+			llerrs << "LLDrawable deleted while actively reference by LLPipeline." << llendl;
+		}
+	}
+}
+
+void check_references(LLDrawable* drawable, LLFace* face)
+{
+	for (S32 i = 0; i < drawable->getNumFaces(); ++i)
+	{
+		if (drawable->getFace(i) == face)
+		{
+			llerrs << "LLFace deleted while actively referenced by LLPipeline." << llendl;
+		}
+	}
+}
+
+void check_references(LLSpatialGroup* group, LLFace* face)
+{
+	for (LLSpatialGroup::element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+	{
+		LLDrawable* drawable = *i;
+		check_references(drawable, face);
+	}
+}
+
+void LLPipeline::checkReferences(LLFace* face)
+{
+#if 0
+	if (sCull)
+	{
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, face);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, face);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, face);
+		}
+
+		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		{
+			LLDrawable* drawable = *iter;
+			check_references(drawable, face);
+		}
+	}
+#endif
+}
+
+void LLPipeline::checkReferences(LLDrawable* drawable)
+{
+#if 0
+	if (sCull)
+	{
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, drawable);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, drawable);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, drawable);
+		}
+
+		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList(); iter != sCull->endVisibleList(); ++iter)
+		{
+			if (drawable == *iter)
+			{
+				llerrs << "LLDrawable deleted while actively referenced by LLPipeline." << llendl;
+			}
+		}
+	}
+#endif
+}
+
+void check_references(LLSpatialGroup* group, LLDrawInfo* draw_info)
+{
+	for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
+	{
+		LLSpatialGroup::drawmap_elem_t& draw_vec = i->second;
+		for (LLSpatialGroup::drawmap_elem_t::iterator j = draw_vec.begin(); j != draw_vec.end(); ++j)
+		{
+			LLDrawInfo* params = *j;
+			if (params == draw_info)
+			{
+				llerrs << "LLDrawInfo deleted while actively referenced by LLPipeline." << llendl;
+			}
+		}
+	}
+}
+
+
+void LLPipeline::checkReferences(LLDrawInfo* draw_info)
+{
+#if 0
+	if (sCull)
+	{
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, draw_info);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, draw_info);
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		{
+			LLSpatialGroup* group = *iter;
+			check_references(group, draw_info);
+		}
+	}
+#endif
+}
+
+void LLPipeline::checkReferences(LLSpatialGroup* group)
+{
+#if 0
+	if (sCull)
+	{
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
+		{
+			if (group == *iter)
+			{
+				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+			}
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginAlphaGroups(); iter != sCull->endAlphaGroups(); ++iter)
+		{
+			if (group == *iter)
+			{
+				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+			}
+		}
+
+		for (LLCullResult::sg_list_t::iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
+		{
+			if (group == *iter)
+			{
+				llerrs << "LLSpatialGroup deleted while actively referenced by LLPipeline." << llendl;
+			}
+		}
+	}
+#endif
+}
+
 
 BOOL LLPipeline::visibleObjectsInFrustum(LLCamera& camera)
 {
@@ -2994,6 +3207,8 @@ void LLPipeline::renderHighlights()
 	}
 }
 
+//debug use
+U32 LLPipeline::sCurRenderPoolType = 0 ;
 void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
@@ -3012,6 +3227,13 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			saved_modelview[i] = gGLModelView[i];
 			saved_projection[i] = gGLProjection[i];
 		}
+	}
+
+	S32 stack_depth = 0;
+
+	if (gDebugGL)
+	{
+		glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &stack_depth);
 	}
 
 	///////////////////////////////////////////
@@ -3120,6 +3342,9 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			
 			cur_type = poolp->getType();
 
+			//debug use
+			sCurRenderPoolType = cur_type ;
+
 			if (occlude && cur_type >= LLDrawPool::POOL_GRASS)
 			{
 				occlude = FALSE;
@@ -3152,14 +3377,9 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 					}
 					poolp->endRenderPass(i);
 					LLVertexBuffer::unbind();
-					if (gDebugGL || gDebugPipeline)
+					if (gDebugGL)
 					{
-						GLint depth;
-						glGetIntegerv(GL_MODELVIEW_STACK_DEPTH, &depth);
-						if (depth > 3)
-						{
-							llerrs << "GL matrix stack corrupted!" << llendl;
-						}
+						check_stack_depth(stack_depth);
 						std::string msg = llformat("%s pass %d", gPoolNames[cur_type].c_str(), i);
 						LLGLState::checkStates(msg);
 						LLGLState::checkTextureChannels(msg);
@@ -7458,7 +7678,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
 		LLVOAvatar* agent = gAgent.getAvatarObject();
-		if (gAgent.getCameraAnimating() || gAgent.getCameraMode() != CAMERA_MODE_MOUSELOOK)
+		if (!isAgentAvatarValid() || gAgent.getCameraAnimating() || gAgent.getCameraMode() != CAMERA_MODE_MOUSELOOK)
 		{
 			agent = NULL;
 		}

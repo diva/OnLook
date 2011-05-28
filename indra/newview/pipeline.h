@@ -207,6 +207,13 @@ public:
 	void renderGroups(LLRenderPass* pass, U32 type, U32 mask, BOOL texture);
 
 	void grabReferences(LLCullResult& result);
+	void clearReferences();
+
+	//check references will assert that there are no references in sCullResult to the provided data
+	void checkReferences(LLFace* face);
+	void checkReferences(LLDrawable* drawable);
+	void checkReferences(LLDrawInfo* draw_info);
+	void checkReferences(LLSpatialGroup* group);
 
 	void renderGeom(LLCamera& camera, BOOL forceVBOUpdate = FALSE);
 	void renderGeomDeferred(LLCamera& camera);
@@ -657,6 +664,9 @@ protected:
 public:
 	static BOOL				sRenderBeacons;
 	static BOOL				sRenderHighlight;
+
+	//debug use
+	static U32              sCurRenderPoolType ;
 };
 
 void render_bbox(const LLVector3 &min, const LLVector3 &max);

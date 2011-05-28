@@ -63,6 +63,7 @@ set(llcommon_SOURCE_FILES
     llsdutil.cpp
     llsecondlifeurls.cpp
     llstat.cpp
+    llstacktrace.cpp
     llstreamtools.cpp
     llstring.cpp
     llstringtable.cpp
@@ -92,12 +93,12 @@ set(llcommon_HEADER_FILES
     linden_common.h
     linked_lists.h
     llagentconstants.h
+    llavatarname.h
     llapp.h
     llapr.h
     llassettype.h
     llassoclist.h
     llavatarconstants.h
-    llavatarname.h
     llbase32.h
     llbase64.h
     llboost.h
@@ -173,6 +174,7 @@ set(llcommon_HEADER_FILES
     llskiplist.h
     llskipmap.h
     llstack.h
+    llstacktrace.h
     llstat.h
     llstatenums.h
     llstl.h

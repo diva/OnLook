@@ -64,6 +64,7 @@ public:
 	virtual bool mainLoop(); // Override for the application main loop.  Needs to at least gracefully notice the QUITTING state and exit.
 
 	// Application control
+	void flushVFSIO(); // waits for vfs transfers to complete
 	void forceQuit(); // Puts the viewer into 'shutting down without error' mode.
 	void requestQuit(); // Request a quit. A kinder, gentler quit.
 	void userQuit(); // The users asks to quit. Confirm, then requestQuit()
@@ -95,6 +96,7 @@ public:
 	static LLImageDecodeThread* getImageDecodeThread() { return sImageDecodeThread; }
 	static LLTextureFetch* getTextureFetch() { return sTextureFetch; }
 
+	static U32 getTextureCacheVersion();
 	const std::string& getSerialNumber() { return mSerialNumber; }
 	
 	bool getPurgeCache() const { return mPurgeCache; }
@@ -125,7 +127,7 @@ public:
     virtual void forceErrorLLError();
     virtual void forceErrorBreakpoint();
     virtual void forceErrorBadMemoryAccess();
-    virtual void forceErrorInifiniteLoop();
+    virtual void forceErrorInfiniteLoop();
     virtual void forceErrorSoftwareException();
     virtual void forceErrorDriverCrash();
 
@@ -197,8 +199,9 @@ private:
     
     void idle(); 
     void idleShutdown();
+	// update avatar SLID and display name caches
+	void idleNameCache();
     void idleNetwork();
-    void idleNameCache();
 
     void sendLogoutRequest();
     void disconnectViewer();
@@ -243,6 +246,10 @@ private:
 	bool mAgentRegionLastAlive;
 	LLUUID mAgentRegionLastID;
 
+
+	U32 mAvailPhysicalMemInKB ;
+	U32 mAvailVirtualMemInKB ;
+	
 public:
 	//some information for updater
 	typedef struct

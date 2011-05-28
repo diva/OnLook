@@ -953,9 +953,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			render_ui();
 		}		
 
-		gPipeline.rebuildGroups();
 
 		LLSpatialGroup::sNoDelete = FALSE;
+		gPipeline.clearReferences();
+
+		gPipeline.rebuildGroups();
 	}
 	
 	LLAppViewer::instance()->pingMainloopTimeout("Display:FrameStats");
@@ -1151,10 +1153,14 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
 	
-	glPushMatrix();
-	glLoadMatrixd(gGLLastModelView);
 	glh::matrix4f saved_view = glh_get_current_modelview();
-	glh_set_current_modelview(glh_copy_matrix(gGLLastModelView));
+
+	if (!gSnapshot)
+	{
+		glPushMatrix();
+		glLoadMatrixd(gGLLastModelView);
+		glh_set_current_modelview(glh_copy_matrix(gGLLastModelView));
+	}
 	
 	{
 		BOOL to_texture = gPipeline.canUseVertexShaders() &&
@@ -1212,8 +1218,11 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 		LLVertexBuffer::unbind();
 	}
 
-	glh_set_current_modelview(saved_view);
-	glPopMatrix();
+	if (!gSnapshot)
+	{
+		glh_set_current_modelview(saved_view);
+		glPopMatrix();
+	}
 
 	if (gDisplaySwapBuffers)
 	{
