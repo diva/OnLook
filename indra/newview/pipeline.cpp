@@ -2446,10 +2446,10 @@ void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 		{
 			llassert_always(!mGroupQ2Locked);
 			//llerrs << "Non-priority updates not yet supported!" << llendl;
-			if (std::find(mGroupQ2.begin(), mGroupQ2.end(), group) != mGroupQ2.end())
+			/*if (std::find(mGroupQ2.begin(), mGroupQ2.end(), group) != mGroupQ2.end())
 			{
 				llerrs << "WTF?" << llendl;
-			}
+			}*/
 			mGroupQ2.push_back(group);
 			group->setState(LLSpatialGroup::IN_BUILD_Q2);
 
@@ -2527,6 +2527,42 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 			}
 		}
 	}
+
+	if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
+	{
+		LLSpatialGroup* last_group = NULL;
+		for (LLCullResult::bridge_list_t::iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
+		{
+			LLCullResult::bridge_list_t::iterator cur_iter = i;
+			LLSpatialBridge* bridge = *cur_iter;
+			LLSpatialGroup* group = bridge->getSpatialGroup();
+
+			if (last_group == NULL)
+			{
+				last_group = group;
+			}
+
+			if (!bridge->isDead() && group && !group->isOcclusionState(LLSpatialGroup::OCCLUDED))
+			{
+				stateSort(bridge, camera);
+			}
+
+			if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD &&
+				last_group != group && last_group->changeLOD())
+			{
+				last_group->mLastUpdateDistance = last_group->mDistance;
+			}
+
+			last_group = group;
+		}
+
+		if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD &&
+			last_group && last_group->changeLOD())
+		{
+			last_group->mLastUpdateDistance = last_group->mDistance;
+		}
+	}
+
 	for (LLCullResult::sg_list_t::iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
 	{
 		LLSpatialGroup* group = *iter;
@@ -2542,19 +2578,6 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 		}
 	}
 	
-	if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
-	{
-		for (LLCullResult::bridge_list_t::iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
-		{
-			LLCullResult::bridge_list_t::iterator cur_iter = i;
-			LLSpatialBridge* bridge = *cur_iter;
-			LLSpatialGroup* group = bridge->getSpatialGroup();
-			if (!bridge->isDead() && group && !group->isOcclusionState(LLSpatialGroup::OCCLUDED))
-			{
-				stateSort(bridge, camera);
-			}
-		}
-	}
 	{
 		LLFastTimer ftm(LLFastTimer::FTM_STATESORT_DRAWABLE);
 		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList();
@@ -2586,6 +2609,11 @@ void LLPipeline::stateSort(LLSpatialGroup* group, LLCamera& camera)
 			LLDrawable* drawablep = *i;
 			stateSort(drawablep, camera);
 		}
+
+		if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
+		{ //avoid redundant stateSort calls
+			group->mLastUpdateDistance = group->mDistance;
+		}
 	}
 
 }
@@ -2593,7 +2621,7 @@ void LLPipeline::stateSort(LLSpatialGroup* group, LLCamera& camera)
 void LLPipeline::stateSort(LLSpatialBridge* bridge, LLCamera& camera)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	if (!sShadowRender && !sSkipUpdate && bridge->getSpatialGroup()->changeLOD())
+	if (/*!sShadowRender && */!sSkipUpdate && bridge->getSpatialGroup()->changeLOD())
 	{
 		bool force_update = false;
 		bridge->updateDistance(camera, force_update);
@@ -2657,10 +2685,11 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 
 	if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
 	{
-		LLSpatialGroup* group = drawablep->getSpatialGroup();
+		/*LLSpatialGroup* group = drawablep->getSpatialGroup();
 		if (!group || group->changeLOD())
 		{
-			if (drawablep->isVisible() && !sSkipUpdate)
+			if (drawablep->isVisible() && !sSkipUpdate)*/
+			if(!sSkipUpdate)
 			{
 				if (!drawablep->isActive())
 				{
@@ -2673,7 +2702,7 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 					drawablep->updateDistance(camera, force_update); // calls vobj->updateLOD() which calls LLVOAvatar::updateVisibility()
 				}
 			}
-		}
+		//}
 	}
 
 	if(!drawablep->getVOVolume())
@@ -5832,6 +5861,10 @@ void validate_framebuffer_object()
 		case GL_FRAMEBUFFER_COMPLETE_EXT:                       
 			//framebuffer OK, no error.
 			break;
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+			// frame buffer not OK: probably means unsupported depth buffer format
+			llerrs << "Framebuffer Incomplete Missing Attachment." << llendl;
+			break;
 		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
 			// frame buffer not OK: probably means unsupported depth buffer format
 			llerrs << "Framebuffer Incomplete Dimensions." << llendl;
@@ -7696,11 +7729,6 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		LLCamera camera = camera_in;
 		camera.setFar(camera.getFar()*0.87654321f);
 		LLPipeline::sReflectionRender = TRUE;
-		S32 occlusion = LLPipeline::sUseOcclusion;
-
-		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
-
-		LLPipeline::sUseOcclusion = llmin(occlusion, 1);
 		
 		gPipeline.pushRenderTypeMask();
 
@@ -7736,9 +7764,14 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 
 		if (!LLViewerCamera::getInstance()->cameraUnderWater())
 		{	//generate planar reflection map
+
+			//disable occlusion culling for reflection map for now
+			S32 occlusion = LLPipeline::sUseOcclusion;
+			LLPipeline::sUseOcclusion = 0;
 			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 			glClearColor(0,0,0,0);
 			mWaterRef.bindTarget();
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WATER0;
 			gGL.setColorMask(true, true);
 			mWaterRef.clear();
 			gGL.setColorMask(true, false);
@@ -7833,6 +7866,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			glPopMatrix();
 			mWaterRef.flush();
 			glh_set_current_modelview(current);
+			LLPipeline::sUseOcclusion = occlusion;
 		}
 
 		camera.setOrigin(camera_in.getOrigin());
@@ -7864,6 +7898,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 			LLColor4& col = LLDrawPoolWater::sWaterFogColor;
 			glClearColor(col.mV[0], col.mV[1], col.mV[2], 0.f);
 			mWaterDis.bindTarget();
+			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WATER1;
 			mWaterDis.getViewport(gGLViewport);
 			
 			if (!LLPipeline::sUnderWaterRender || LLDrawPoolWater::sNeedsReflectionUpdate)
@@ -7904,7 +7939,6 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		LLDrawPoolWater::sNeedsReflectionUpdate = FALSE;
 		LLDrawPoolWater::sNeedsDistortionUpdate = FALSE;
 		LLViewerCamera::getInstance()->setUserClipPlane(LLPlane(-pnorm, -pd));
-		LLPipeline::sUseOcclusion = occlusion;
 		
 		LLGLState::checkStates();
 		LLGLState::checkTextureChannels();
@@ -7914,6 +7948,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		{
 			agent->updateAttachmentVisibility(gAgent.getCameraMode());
 		}
+
+		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 	}
 }
 

@@ -648,10 +648,10 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				&& gSavedSettings.getBOOL("UseOcclusion") 
 				&& gGLManager.mHasOcclusionQuery) ? 2 : 0;
 
-		if (LLPipeline::sUseOcclusion && LLPipeline::sRenderDeferred)
+		/*if (LLPipeline::sUseOcclusion && LLPipeline::sRenderDeferred)
 		{ //force occlusion on for all render types if doing deferred render
 			LLPipeline::sUseOcclusion = 3;
-		}
+		}*/
 
 		LLPipeline::sFastAlpha = gSavedSettings.getBOOL("RenderFastAlpha");
 		LLPipeline::sUseFarClip = gSavedSettings.getBOOL("RenderUseFarClip");

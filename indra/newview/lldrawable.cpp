@@ -692,13 +692,15 @@ void LLDrawable::updateDistance(LLCamera& camera, bool force_update)
 		LLVOVolume* volume = getVOVolume();
 		if (volume)
 		{
-			volume->updateRelativeXform();
-			pos = volume->getRelativeXform().getTranslation();
-			if (isStatic())
+			if (getSpatialGroup())
 			{
-				pos += volume->getRegion()->getOriginAgent();
+				pos.set(getPositionGroup());
 			}
-
+			else
+			{
+				pos = getPositionAgent();
+			}
+			
 			if (isState(LLDrawable::HAS_ALPHA))
 			{
 			for (S32 i = 0; i < getNumFaces(); i++)

@@ -368,8 +368,8 @@ void LLVolumeImplFlexible::doFlexibleUpdate()
 	LLPath *path = &volume->getPath();
 	if ((mSimulateRes == 0 || !mInitialized)) // if its uninitialized but not visible, what then? - Nyx
 	{
-		if(!mVO->mDrawable->isVisible())
-			return; //avoiding the assert below...
+		//if(mInitialized && !mVO->mDrawable->isVisible())
+		//	return; //avoiding the assert below...
 		mVO->markForUpdate(TRUE);
 		if (!doIdleUpdate(gAgent, *LLWorld::getInstance(), 0.0))
 		{
