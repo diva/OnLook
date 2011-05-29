@@ -53,6 +53,7 @@ protected:
     static void onSpellGetMore(void* data);
     static void onSpellEditCustom(void* data);
     static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
+    static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
 	static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
 	static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
@@ -68,6 +69,8 @@ protected:
     U32 mLinksForChattingObjects;
     U32 mTimeFormat;
 	U32 mDateFormat;
+        U32 tempTimeFormat;
+        U32 tempDateFormat;
     BOOL mSecondsInChatAndIMs;
 
     BOOL mIMResponseAnyone;

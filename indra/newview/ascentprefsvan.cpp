@@ -54,6 +54,8 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_vanity.xml");
 
+	childSetCommitCallback("tag_spoofing_combobox", onCommitClientTag, this);
+
 	childSetCommitCallback("show_my_tag_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_self_tag_check", onCommitCheckBox, this);
 	childSetCommitCallback("show_self_tag_color_check", onCommitCheckBox, this);
@@ -62,7 +64,6 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 	childSetCommitCallback("use_status_check", onCommitCheckBox, this);
 
 	childSetCommitCallback("custom_tag_label_box", onCommitTextModified, this);
-//	childSetCommitCallback("custom_tag_color_swatch", onCommitColor, this);
 
 	childSetCommitCallback("X Modifier", onCommitUpdateAvatarOffsets);
 	childSetCommitCallback("Y Modifier", onCommitUpdateAvatarOffsets);
@@ -76,6 +77,37 @@ LLPrefsAscentVan::LLPrefsAscentVan()
 
 LLPrefsAscentVan::~LLPrefsAscentVan()
 {
+}
+
+//static
+void LLPrefsAscentVan::onCommitClientTag(LLUICtrl* ctrl, void* userdata)
+{
+	std::string client_uuid;
+	U32 client_index;
+
+	LLPrefsAscentVan* self = (LLPrefsAscentVan*)userdata;
+	LLComboBox* combo = (LLComboBox*)ctrl;
+
+    if (combo)
+	{
+		client_index = combo->getCurrentIndex();
+		//Don't rebake if it's not neccesary.
+		if (client_index != self->mSelectedClient)
+		{
+			client_uuid = combo->getSelectedValue().asString();
+			gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
+			gSavedSettings.setU32("AscentReportClientIndex",  client_index);
+
+			LLVOAvatar* avatar = gAgent.getAvatarObject();
+
+            if (avatar)
+            {
+			    // Slam pending upload count to "unstick" things
+			    bool slam_for_debug = true;
+			    avatar->forceBakeAllTextures(slam_for_debug);
+            }
+		}
+	}
 }
 
 //static
@@ -332,33 +364,6 @@ void LLPrefsAscentVan::cancel()
 // Update local copy so cancel has no effect
 void LLPrefsAscentVan::apply()
 {
-	std::string client_uuid;
-	U32 client_index;
-
-	//General -----------------------------------------------------------------------------
-
-	//Tags\Colors -------------------------------------------------------------------------
-	LLComboBox* combo = getChild<LLComboBox>("tag_spoofing_combobox");
-	if (combo)
-	{
-		client_index = combo->getCurrentIndex();
-		//Don't rebake if it's not neccesary.
-		if (client_index != mSelectedClient)
-		{
-			client_uuid = combo->getSelectedValue().asString();
-			gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
-			gSavedSettings.setU32("AscentReportClientIndex",  client_index);
-			LLVOAvatar* avatar = gAgent.getAvatarObject();
-			if (!avatar) return;
-
-			// Slam pending upload count to "unstick" things
-			bool slam_for_debug = true;
-			avatar->forceBakeAllTextures(slam_for_debug);
-		}
-	}
-
-    //Body Dynamics -----------------------------------------------------------------------
-
 	refreshValues();
     refresh();
 }

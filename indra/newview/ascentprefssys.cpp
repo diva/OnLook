@@ -87,7 +87,7 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
     
 //    llinfos << "Change to " << ctrl->getControlName()  << " aka " << ctrl->getName() << llendl;
     
-    if (ctrl->getName() == "speed_rez_check")   // Why is this one getControlName() and the rest are getName()?
+    if (ctrl->getName() == "speed_rez_check")
     {
         bool enabled = self->childGetValue("speed_rez_check").asBoolean();
         self->childSetEnabled("speed_rez_interval", enabled);

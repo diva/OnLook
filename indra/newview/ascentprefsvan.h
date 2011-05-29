@@ -49,7 +49,8 @@ public:
 //	LLPanel* getPanel();
 
 protected:
-	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);	
+	static void onCommitClientTag(LLUICtrl* ctrl, void* userdata);
+	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);
 	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
 //	static void onCommitColor(LLUICtrl* ctrl, void* user_data);
