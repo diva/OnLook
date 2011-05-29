@@ -937,7 +937,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				}
 			}
 		}
-		gGL.flush();
+		//gGL.flush();
 		
 		if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 		{
@@ -1080,7 +1080,7 @@ void render_hud_attachments()
 	glh_set_current_modelview(current_mod);
 }
 
-BOOL setup_hud_matrices()
+LLRect get_whole_screen_region()
 {
 	LLRect whole_screen = gViewerWindow->getVirtualWindowRect();
 
@@ -1097,11 +1097,10 @@ BOOL setup_hud_matrices()
 
 		whole_screen.setLeftTopAndSize(tile_x * tile_width, gViewerWindow->getWindowHeight() - (tile_y * tile_height), tile_width, tile_height);
 	}
-
-	return setup_hud_matrices(whole_screen);
+	return whole_screen;
 }
 
-BOOL setup_hud_matrices(const LLRect& screen_region)
+bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::matrix4f &model)
 {
 	LLVOAvatar* my_avatarp = gAgent.getAvatarObject();
 	if (my_avatarp && my_avatarp->hasHUDAttachment())
@@ -1110,11 +1109,10 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 		LLBBox hud_bbox = my_avatarp->getHUDBBox();
 
 		// set up transform to keep HUD objects in front of camera
-		glMatrixMode(GL_PROJECTION);
 		F32 hud_depth = llmax(1.f, hud_bbox.getExtentLocal().mV[VX] * 1.1f);
-		glh::matrix4f proj = gl_ortho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth);
+		proj = gl_ortho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, hud_depth);
 		proj.element(2,2) = -0.01f;
-
+		
 		F32 aspect_ratio = LLViewerCamera::getInstance()->getAspect();
 
 		glh::matrix4f mat;
@@ -1124,22 +1122,16 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 		mat.set_translate(
 			glh::vec3f(clamp_rescale((F32)screen_region.getCenterX(), 0.f, (F32)gViewerWindow->getWindowWidth(), 0.5f * scale_x * aspect_ratio, -0.5f * scale_x * aspect_ratio),
 						clamp_rescale((F32)screen_region.getCenterY(), 0.f, (F32)gViewerWindow->getWindowHeight(), 0.5f * scale_y, -0.5f * scale_y),
-						0.f));
+					   0.f));
 		proj *= mat;
-
-		glLoadMatrixf(proj.m);
-		glh_set_current_projection(proj);
-
-		glMatrixMode(GL_MODELVIEW);
-		glh::matrix4f model((GLfloat*) OGL_TO_CFR_ROTATION);
+		
+		glh::matrix4f tmp_model((GLfloat*) OGL_TO_CFR_ROTATION);
 		
 		mat.set_scale(glh::vec3f(zoom_level, zoom_level, zoom_level));
 		mat.set_translate(glh::vec3f(-hud_bbox.getCenterLocal().mV[VX] + (hud_depth * 0.5f), 0.f, 0.f));
-
-		model *= mat;
-		glLoadMatrixf(model.m);
-		glh_set_current_modelview(model);
-
+		
+		tmp_model *= mat;
+		model = tmp_model;		
 		return TRUE;
 	}
 	else
@@ -1148,7 +1140,34 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 	}
 }
 
+bool get_hud_matrices(glh::matrix4f &proj, glh::matrix4f &model)
+{
+	LLRect whole_screen = get_whole_screen_region();
+	return get_hud_matrices(whole_screen, proj, model);
+}
 
+BOOL setup_hud_matrices()
+{
+	LLRect whole_screen = get_whole_screen_region();
+	return setup_hud_matrices(whole_screen);
+}
+
+BOOL setup_hud_matrices(const LLRect& screen_region)
+{
+	glh::matrix4f proj, model;
+	bool result = get_hud_matrices(screen_region, proj, model);
+	if (!result) return result;
+	
+	// set up transform to keep HUD objects in front of camera
+	glMatrixMode(GL_PROJECTION);
+	glLoadMatrixf(proj.m);
+	glh_set_current_projection(proj);
+	
+	glMatrixMode(GL_MODELVIEW);
+	glLoadMatrixf(model.m);
+	glh_set_current_modelview(model);
+	return TRUE;
+}
 void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
