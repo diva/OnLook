@@ -1746,7 +1746,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	bool typing_init = false;
 	if( dialog == IM_TYPING_START && !is_muted )
 	{
-		if(!gIMMgr->hasSession(computed_session_id) && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
+		if(!gIMMgr->hasSession(computed_session_id) && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 		{
 			typing_init = true;
 			gIMMgr->addMessage(
@@ -1800,7 +1800,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 // [/RLVa:KB]
 	{
 		if((dialog == IM_NOTHING_SPECIAL && !is_auto_response) ||
-			(dialog == IM_TYPING_START && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
+			(dialog == IM_TYPING_START && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 			)
 		{
 			BOOL has = gIMMgr->hasSession(computed_session_id);
