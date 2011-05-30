@@ -35,7 +35,6 @@
 
 #define FAST_TIMER_ON 1
 
-LL_COMMON_API U64 get_cpu_clock_count();
 
 class LL_COMMON_API LLFastTimer
 {
@@ -227,7 +226,7 @@ public:
 		//gTimerBins[gCurTimerBin]++;
 		//LLTimer::sNumTimerCalls++;
 
-		U64 cpu_clocks = get_cpu_clock_count();
+		U64 cpu_clocks =  getCPUClockCount64();
 
 		sStart[sCurDepth] = cpu_clocks;
 		sCurDepth++;
@@ -242,7 +241,7 @@ public:
 		// These don't get counted, because they use CPU clockticks
 		//gTimerBins[gCurTimerBin]++;
 		//LLTimer::sNumTimerCalls++;
-		end = get_cpu_clock_count();
+		end =  getCPUClockCount64();
 
 		sCurDepth--;
 		delta = end - sStart[sCurDepth];
@@ -257,6 +256,7 @@ public:
 	static void reset();
 	static U64 countsPerSecond();
 
+	static std::string sClockType;
 public:
 	static int sCurDepth;
 	static U64 sStart[FTM_MAX_DEPTH];
@@ -266,14 +266,17 @@ public:
 	static U64 sCallAverage[FTM_NUM_TYPES];
 	static U64 sCountHistory[FTM_HISTORY_NUM][FTM_NUM_TYPES];
 	static U64 sCallHistory[FTM_HISTORY_NUM][FTM_NUM_TYPES];
-	static S32 sCurFrameIndex;
-	static S32 sLastFrameIndex;
+
 	static int sPauseHistory;
 	static int sResetHistory;
-	static F64 sCPUClockFrequency;
-    static U64 sClockResolution;
 	
-private:
+	static U32 getCPUClockCount32();
+	static U64 getCPUClockCount64();
+
+	static U64 sClockResolution;
+	static S32 sCurFrameIndex;
+	static S32 sLastFrameIndex;
+	
 	EFastTimerType mType;
 };
 
