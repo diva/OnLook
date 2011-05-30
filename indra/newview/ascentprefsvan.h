@@ -38,48 +38,45 @@
 class LLPrefsAscentVan : public LLPanel
 {
 public:
-	LLPrefsAscentVan();
-	~LLPrefsAscentVan();
+    LLPrefsAscentVan();
+    ~LLPrefsAscentVan();
 
-	void apply();
-	void cancel();
-	void refresh();
-	void refreshValues();
-
-//	LLPanel* getPanel();
+    void apply();
+    void cancel();
+    void refresh();
+    void refreshValues();
 
 protected:
-	static void onCommitClientTag(LLUICtrl* ctrl, void* userdata);
-	static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);
-	static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
+    static void onCommitClientTag(LLUICtrl* ctrl, void* userdata);
+    static void onCommitUpdateAvatarOffsets(LLUICtrl* ctrl, void* userdata);
+    static void onCommitCheckBox(LLUICtrl* ctrl, void* user_data);
     static void onCommitTextModified(LLUICtrl* ctrl, void* userdata);
-//	static void onCommitColor(LLUICtrl* ctrl, void* user_data);
-	static void onManualClientUpdate(void* data);
-	//General
-	BOOL mUseAccountSettings;
-	BOOL mShowTPScreen;
-	BOOL mPlayTPSound;
-	BOOL mShowLogScreens;
-	//Tags\Colors
+    static void onManualClientUpdate(void* data);
+    //General
+    BOOL mUseAccountSettings;
+    BOOL mShowTPScreen;
+    BOOL mPlayTPSound;
+    BOOL mShowLogScreens;
+    //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;
-	U32 mSelectedClient;
-	BOOL mShowSelfClientTag;
-	BOOL mShowSelfClientTagColor;
+    U32 mSelectedClient;
+    BOOL mShowSelfClientTag;
+    BOOL mShowSelfClientTagColor;
     BOOL mShowFriendsTag;
-	BOOL mCustomTagOn;
+    BOOL mCustomTagOn;
     std::string mCustomTagLabel;
-	LLColor4 mCustomTagColor;
+    LLColor4 mCustomTagColor;
     BOOL mShowOthersTag;
     BOOL mShowOthersTagColor;
     BOOL mShowIdleTime;
     BOOL mUseStatusColors;
     BOOL mUpdateTagsOnLoad;
     LLColor4 mEffectColor;
-	LLColor4 mFriendColor;
-	LLColor4 mEstateOwnerColor;
-	LLColor4 mLindenColor;
-	LLColor4 mMutedColor;
+    LLColor4 mFriendColor;
+    LLColor4 mEstateOwnerColor;
+    LLColor4 mLindenColor;
+    LLColor4 mMutedColor;
     //Body Dynamics
     BOOL mBreastPhysicsToggle;
     F32 mBoobMass;

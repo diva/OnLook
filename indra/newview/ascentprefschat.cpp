@@ -57,22 +57,22 @@ LLPrefsAscentChat::LLPrefsAscentChat()
     childSetCommitCallback("date_format_combobox", onCommitTimeDate, this);
 
     childSetCommitCallback("AscentInstantMessageResponseAnyone", onCommitAutoResponse, this);
-	childSetCommitCallback("AscentInstantMessageResponseFriends", onCommitAutoResponse, this);
-	childSetCommitCallback("AscentInstantMessageResponseMuted", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageResponseFriends", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageResponseMuted", onCommitAutoResponse, this);
     childSetCommitCallback("AscentInstantMessageShowOnTyping", onCommitAutoResponse, this);
-	childSetCommitCallback("AscentInstantMessageShowResponded", onCommitAutoResponse, this);
-	childSetCommitCallback("AscentInstantMessageResponseRepeat", onCommitAutoResponse, this);
-	childSetCommitCallback("AscentInstantMessageResponseItem", onCommitAutoResponse, this);
-	childSetCommitCallback("im_response", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageShowResponded", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageResponseRepeat", onCommitAutoResponse, this);
+    childSetCommitCallback("AscentInstantMessageResponseItem", onCommitAutoResponse, this);
+    childSetCommitCallback("im_response", onCommitAutoResponse, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsList", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsSound", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsList", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsSound", onCommitKeywords, this);
     childSetCommitCallback("KeywordsInChat", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsInIM", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsChangeColor", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsColor", onCommitKeywords, this);
-	childSetCommitCallback("KeywordsPlaySound", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsInIM", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsChangeColor", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsColor", onCommitKeywords, this);
+    childSetCommitCallback("KeywordsPlaySound", onCommitKeywords, this);
 
     refreshValues();
     refresh();
@@ -235,9 +235,9 @@ void LLPrefsAscentChat::refreshValues()
     //Chat/IM -----------------------------------------------------------------------------
     mWoLfVerticalIMTabs             = gSavedSettings.getBOOL("WoLfVerticalIMTabs");
     mIMAnnounceIncoming             = gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming");
-	mHideTypingNotification         = gSavedSettings.getBOOL("AscentHideTypingNotification");
+    mHideTypingNotification         = gSavedSettings.getBOOL("AscentHideTypingNotification");
     mShowGroupNameInChatIM          = gSavedSettings.getBOOL("OptionShowGroupNameInChatIM");
-	mPlayTypingSound                = gSavedSettings.getBOOL("PlayTypingSound");
+    mPlayTypingSound                = gSavedSettings.getBOOL("PlayTypingSound");
     mHideNotificationsInChat        = gSavedSettings.getBOOL("HideNotificationsInChat");
     mEnableMUPose                   = gSavedSettings.getBOOL("AscentAllowMUpose");
     mEnableOOCAutoClose             = gSavedSettings.getBOOL("AscentAutoCloseOOC");
@@ -305,10 +305,6 @@ void LLPrefsAscentChat::refreshValues()
 void LLPrefsAscentChat::refresh()
 {
     //Chat --------------------------------------------------------------------------------
-/*
-    LLRadioGroup* radioLinkOptions = getChild<LLRadioGroup>("objects_link");
-    radioLinkOptions->selectNthItem(mLinksForChattingObjects);
-*/
     // time format combobox
     LLComboBox* combo = getChild<LLComboBox>("time_format_combobox");
     if (combo)
@@ -413,9 +409,9 @@ void LLPrefsAscentChat::cancel()
     //Chat/IM -----------------------------------------------------------------------------
     gSavedSettings.setBOOL("WoLfVerticalIMTabs",                   mWoLfVerticalIMTabs);
     gSavedSettings.setBOOL("AscentInstantMessageAnnounceIncoming", mIMAnnounceIncoming);
-	gSavedSettings.setBOOL("AscentHideTypingNotification",         mHideTypingNotification);
+    gSavedSettings.setBOOL("AscentHideTypingNotification",         mHideTypingNotification);
     gSavedSettings.setBOOL("OptionShowGroupNameInChatIM",          mShowGroupNameInChatIM);
-	gSavedSettings.setBOOL("PlayTypingSound",                      mPlayTypingSound);
+    gSavedSettings.setBOOL("PlayTypingSound",                      mPlayTypingSound);
     gSavedSettings.setBOOL("HideNotificationsInChat",              mHideNotificationsInChat);
     gSavedSettings.setBOOL("AscentAllowMUpose",                    mEnableMUPose);
     gSavedSettings.setBOOL("AscentAutoCloseOOC",                   mEnableOOCAutoClose);

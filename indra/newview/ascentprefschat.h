@@ -39,13 +39,13 @@
 class LLPrefsAscentChat : public LLPanel
 {
 public:
-	LLPrefsAscentChat();
-	~LLPrefsAscentChat();
+    LLPrefsAscentChat();
+    ~LLPrefsAscentChat();
 
-	void apply();
-	void cancel();
+    void apply();
+    void cancel();
     void refresh();
-	void refreshValues();
+    void refreshValues();
 
 protected:
     static void onSpellAdd(void* data);
@@ -54,21 +54,21 @@ protected:
     static void onSpellEditCustom(void* data);
     static void onSpellBaseComboBoxCommit(LLUICtrl* ctrl, void* userdata);
     static void onCommitTimeDate(LLUICtrl* ctrl, void *userdata);
-	static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
-	static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
+    static void onCommitAutoResponse(LLUICtrl* ctrl, void* user_data);
+    static void onCommitKeywords(LLUICtrl* ctrl, void* user_data);
 
     //Chat/IM -----------------------------------------------------------------------------
     BOOL mWoLfVerticalIMTabs;
     BOOL mIMAnnounceIncoming;
-	BOOL mHideTypingNotification;
+    BOOL mHideTypingNotification;
     BOOL mShowGroupNameInChatIM;
-	BOOL mPlayTypingSound;
+    BOOL mPlayTypingSound;
     BOOL mHideNotificationsInChat;
     BOOL mEnableMUPose;
     BOOL mEnableOOCAutoClose;
     U32 mLinksForChattingObjects;
     U32 mTimeFormat;
-	U32 mDateFormat;
+    U32 mDateFormat;
         U32 tempTimeFormat;
         U32 tempDateFormat;
     BOOL mSecondsInChatAndIMs;
@@ -94,13 +94,13 @@ protected:
     //Text Options ------------------------------------------------------------------------
     BOOL mSpellDisplay;
     BOOL mKeywordsOn;
-	std::string mKeywordsList;
-	BOOL mKeywordsInChat;
+    std::string mKeywordsList;
+    BOOL mKeywordsInChat;
     BOOL mKeywordsInIM;
-	BOOL mKeywordsChangeColor;
-	LLColor4 mKeywordsColor;
+    BOOL mKeywordsChangeColor;
+    LLColor4 mKeywordsColor;
     BOOL mKeywordsPlaySound;
-	LLUUID mKeywordsSound;
+    LLUUID mKeywordsSound;
 };
 
 #endif

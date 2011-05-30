@@ -303,7 +303,6 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("AscentBuildAlwaysEnabled", mBuildAlwaysEnabled);
     gSavedSettings.setBOOL("AscentFlyAlwaysEnabled", mAlwaysShowFly);
     gSavedSettings.setBOOL("AscentDisableMinZoomDist", mDisableMinZoom);
-//  gSavedSettings.setBOOL("AscentPowerfulWizard", mPowerUser);
     gSavedSettings.setBOOL("AscentUseSystemFolder", mUseSystemFolder);
         gSavedSettings.setBOOL("AscentSystemTemporary", mUploadToSystem);
     gSavedSettings.setBOOL("FetchInventoryOnLogin", mFetchInventoryOnLogin);
