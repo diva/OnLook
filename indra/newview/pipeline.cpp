@@ -146,7 +146,7 @@ const S32 MAX_OCCLUDER_COUNT = 2;
 
 extern S32 gBoxFrame;
 extern BOOL gRenderLightGlows;
-extern BOOL gHideSelectedObjects;
+//extern BOOL gHideSelectedObjects;
 extern BOOL gDisplaySwapBuffers;
 extern BOOL gDebugGL;
 
@@ -2639,7 +2639,7 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 		return;
 	}
 	
-	if (gHideSelectedObjects)
+	if (LLSelectMgr::getInstance()->mHideSelectedObjects)
 	{
 //		if (drawablep->getVObj().notNull() &&
 //			drawablep->getVObj()->isSelected())
@@ -4159,7 +4159,7 @@ void LLPipeline::renderForSelect(std::set<LLViewerObject*>& objects, BOOL render
 		LLDrawable* drawable = vobj->mDrawable;
 		if (vobj->isDead() || 
 			vobj->isHUDAttachment() ||
-			(gHideSelectedObjects && vobj->isSelected()) ||
+			(LLSelectMgr::getInstance()->mHideSelectedObjects && vobj->isSelected()) ||
 			drawable->isDead() || 
 			!hasRenderType(drawable->getRenderType()))
 		{

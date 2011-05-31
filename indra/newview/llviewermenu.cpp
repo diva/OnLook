@@ -282,13 +282,15 @@ void handle_test_load_url(void*);
 //
 // Evil hackish imported globals
 //
-extern BOOL	gRenderLightGlows;
-extern BOOL gRenderAvatar;
-extern BOOL	gHideSelectedObjects;
+//extern BOOL	gHideSelectedObjects;
+//extern BOOL gAllowSelectAvatar;
+extern BOOL gDebugClicks;
+extern BOOL gDebugWindowProc;
+extern BOOL gDebugTextEditorTips;
+//extern BOOL gDebugSelectMgr;
+extern BOOL gDebugAvatarRotation;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;
-extern BOOL gAllowSelectAvatar;
-
 //
 // Globals
 //
@@ -1258,11 +1260,6 @@ static void handle_export_menus_to_xml_continued(AIFilePicker* filepicker)
 	out.close();
 }
 
-extern BOOL gDebugClicks;
-extern BOOL gDebugWindowProc;
-extern BOOL gDebugTextEditorTips;
-extern BOOL gDebugSelectMgr;
-
 void init_debug_ui_menu(LLMenuGL* menu)
 {
 	menu->append(new LLMenuItemCheckGL("Rotate Mini-Map", menu_toggle_control, NULL, menu_check_control, (void*)"MiniMapRotate"));
@@ -1288,7 +1285,7 @@ void init_debug_ui_menu(LLMenuGL* menu)
 		(void*)"DoubleClickTeleport"));
 	menu->appendSeparator();
 //	menu->append(new LLMenuItemCallGL( "Print Packets Lost",			&print_packets_lost, NULL, NULL, 'L', MASK_SHIFT ));
-	menu->append(new LLMenuItemToggleGL("Debug SelectMgr", &gDebugSelectMgr));
+	menu->append(new LLMenuItemCheckGL("Debug SelectMgr", menu_toggle_control, NULL, menu_check_control, (void*)"DebugSelectMgr"));
 	menu->append(new LLMenuItemToggleGL("Debug Clicks", &gDebugClicks));
 	menu->append(new LLMenuItemToggleGL("Debug Views", &LLView::sDebugRects));
 	menu->append(new LLMenuItemCheckGL("Show Name Tooltips", toggle_show_xui_names, NULL, check_show_xui_names, NULL));
@@ -1517,7 +1514,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	//menu->append(new LLMenuItemCheckGL("Cull Small Objects", toggle_cull_small, NULL, menu_check_control, (void*)"RenderCullBySize"));
 
 	menu->appendSeparator();
-	menu->append(new LLMenuItemToggleGL("Hide Selected", &gHideSelectedObjects));
+	menu->append(new LLMenuItemCheckGL("Hide Selected", menu_toggle_control, NULL, menu_check_control, (void*)"HideSelectedObjects"));
 	menu->appendSeparator();
 	menu->append(new LLMenuItemCheckGL("Tangent Basis", menu_toggle_control, NULL, menu_check_control, (void*)"ShowTangentBasis"));
 	menu->append(new LLMenuItemCallGL("Selected Texture Info", handle_selected_texture_info, NULL, NULL, 'T', MASK_CONTROL|MASK_SHIFT|MASK_ALT));
@@ -1603,7 +1600,7 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 
 	sub_menu->append(new LLMenuItemCallGL("Toggle PG", handle_toggle_pg));
 
-	sub_menu->append(new LLMenuItemToggleGL("Allow Select Avatar", &gAllowSelectAvatar));
+	sub_menu->append(new LLMenuItemCheckGL("Allow Select Avatar", menu_toggle_control, NULL, menu_check_control, (void*)"AllowSelectAvatar"));
 	sub_menu->createJumpKeys();
 
 	menu->appendMenu(sub_menu);
@@ -5338,26 +5335,7 @@ class LLToolsEnableLink : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = false;
-		// check if there are at least 2 objects selected, and that the
-		// user can modify at least one of the selected objects.
-
-		// in component mode, can't link
-		if (!gSavedSettings.getBOOL("EditLinkedParts"))
-		{
-			if(LLSelectMgr::getInstance()->selectGetAllRootsValid() && LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() >= 2)
-			{
-				struct f : public LLSelectedObjectFunctor
-				{
-					virtual bool apply(LLViewerObject* object)
-					{
-						return object->permModify();
-					}
-				} func;
-				const bool firstonly = true;
-				new_value = LLSelectMgr::getInstance()->getSelection()->applyToRootObjects(&func, firstonly);
-			}
-		}
+		bool new_value = LLSelectMgr::getInstance()->enableLinkObjects();
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -5367,45 +5345,7 @@ class LLToolsLink : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if(!LLSelectMgr::getInstance()->selectGetAllRootsValid())
-		{
-			LLNotifications::instance().add("UnableToLinkWhileDownloading");
-			return true;
-		}
-
-		S32 object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
-		if (object_count > MAX_CHILDREN_PER_TASK + 1)
-		{
-			LLSD args;
-			args["COUNT"] = llformat("%d", object_count);
-			int max = MAX_CHILDREN_PER_TASK+1;
-			args["MAX"] = llformat("%d", max);
-			LLNotifications::instance().add("UnableToLinkObjects", args);
-			return true;
-		}
-
-		if(LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() < 2)
-		{
-			LLNotifications::instance().add("CannotLinkIncompleteSet");
-			return true;
-		}
-		if(!LLSelectMgr::getInstance()->selectGetRootsModify())
-		{
-			LLNotifications::instance().add("CannotLinkModify");
-			return true;
-		}
-		LLUUID owner_id;
-		std::string owner_name;
-		if(!LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name))
-		{
-			// we don't actually care if you're the owner, but novices are
-			// the most likely to be stumped by this one, so offer the
-			// easiest and most likely solution.
-			LLNotifications::instance().add("CannotLinkDifferentOwners");
-			return true;
-		}
-		LLSelectMgr::getInstance()->sendLink();
-		return true;
+		return LLSelectMgr::getInstance()->linkObjects();
 	}
 };
 
@@ -5413,19 +5353,7 @@ class LLToolsEnableUnlink : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = LLSelectMgr::getInstance()->selectGetAllRootsValid() &&
-			LLSelectMgr::getInstance()->getSelection()->getFirstEditableObject() &&
-			!LLSelectMgr::getInstance()->getSelection()->getFirstEditableObject()->isAttachment();
-// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
-		if ( (new_value) && (!gRlvHandler.canStand()) )
-		{
-			// Allow only if the avie isn't sitting on any of the selected objects
-			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
-			if (handleSel->getFirstRootNode(&f, TRUE) != NULL)
-				new_value = false;
-		}
-// [/RLVa:KB]
+		bool new_value = LLSelectMgr::getInstance()->enableUnlinkObjects();
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -5435,18 +5363,7 @@ class LLToolsUnlink : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
-		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
-		{
-			// Allow only if the avie isn't sitting on any of the selected objects
-			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
-			if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE)) )
-				return true;
-		}
-// [/RLVa:KB]
-
-		LLSelectMgr::getInstance()->sendDelink();
+		LLSelectMgr::getInstance()->unlinkObjects();
 		return true;
 	}
 };
@@ -8303,9 +8220,8 @@ class LLToolsShowSelectionHighlights : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLSelectMgr::sRenderSelectionHighlights = !LLSelectMgr::sRenderSelectionHighlights;
-		
-		gSavedSettings.setBOOL("RenderHighlightSelections", LLSelectMgr::sRenderSelectionHighlights);
+		LLControlVariable *ctrl = gSavedSettings.getControl("RenderHighlightSelections");
+		ctrl->setValue(!ctrl->getValue().asBoolean());
 		return true;
 	}
 };
