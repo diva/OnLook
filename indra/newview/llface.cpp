@@ -184,6 +184,11 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 
 void LLFace::destroy()
 {
+	if (gDebugGL)
+	{
+		gPipeline.checkReferences(this);
+	}
+
 	if(mTexture.notNull())
 	{
 		mTexture->removeFace(this) ;
@@ -952,7 +957,7 @@ bool LLFace::canRenderAsMask()
 		 ) // do we want masks at all?
 		&&
 		(te->getColor().mV[3] == 1.0f) && // can't treat as mask if we have face alpha
-		!(LLPipeline::sRenderDeferred && te->getFullbright()) && // hack: alpha masking renders fullbright faces invisible in deferred rendering mode, need to figure out why - for now, avoid
+		//!(LLPipeline::sRenderDeferred && te->getFullbright()) && // hack: alpha masking renders fullbright faces invisible in deferred rendering mode, need to figure out why - for now, avoid
 		(te->getGlow() == 0.f) && // glowing masks are hard to implement - don't mask
 
 		getTexture()->getIsAlphaMask() // texture actually qualifies for masking (lazily recalculated but expensive)

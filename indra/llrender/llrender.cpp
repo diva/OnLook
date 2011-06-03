@@ -120,14 +120,29 @@ void LLTexUnit::refreshState(void)
 	// and we reset the cached tex unit state
 
 	glActiveTextureARB(GL_TEXTURE0_ARB + mIndex);
+
+	//
+	// Per apple spec, don't call glEnable/glDisable when index exceeds max texture units
+	// http://www.mailinglistarchive.com/html/mac-opengl@lists.apple.com/2008-07/msg00653.html
+	//
+	bool enableDisable = (mIndex < gGLManager.mNumTextureUnits);
+		
 	if (mCurrTexType != TT_NONE)
 	{
-		glEnable(sGLTextureType[mCurrTexType]);
+		if (enableDisable)
+		{
+			glEnable(sGLTextureType[mCurrTexType]);
+		}
+		
 		glBindTexture(sGLTextureType[mCurrTexType], mCurrTexture);
 	}
 	else
 	{
-		glDisable(GL_TEXTURE_2D);
+		if (enableDisable)
+		{
+			glDisable(GL_TEXTURE_2D);
+		}
+		
 		glBindTexture(GL_TEXTURE_2D, 0);	
 	}
 
@@ -165,7 +180,10 @@ void LLTexUnit::enable(eTextureType type)
 			disable(); // Force a disable of a previous texture type if it's enabled.
 		}
 		mCurrTexType = type;
-		glEnable(sGLTextureType[type]);
+		if (mIndex < gGLManager.mNumTextureUnits)
+		{
+			glEnable(sGLTextureType[type]);
+		}
 	}
 }
 
@@ -177,7 +195,11 @@ void LLTexUnit::disable(void)
 	{
 		activate();
 		unbind(mCurrTexType);
-		glDisable(sGLTextureType[mCurrTexType]);
+		if (mIndex < gGLManager.mNumTextureUnits)
+		{
+			glDisable(sGLTextureType[mCurrTexType]);
+		}
+		
 		mCurrTexType = TT_NONE;
 	}
 }
@@ -1078,6 +1100,7 @@ void LLRender::blendFunc(eBlendFactor color_sfactor, eBlendFactor color_dfactor,
 				       sGLBlendFactor[alpha_sfactor], sGLBlendFactor[alpha_dfactor]);
 	}
 }
+
 LLTexUnit* LLRender::getTexUnit(U32 index)
 {
 	if ((index >= 0) && (index < mTexUnits.size()))
@@ -1205,6 +1228,34 @@ void LLRender::flush()
 		}
 #endif
 				
+		
+		if (gDebugGL)
+		{
+			if (mMode == LLRender::QUADS)
+			{
+				if (mCount%4 != 0)
+				{
+					llerrs << "Incomplete quad rendered." << llendl;
+				}
+			}
+			
+			if (mMode == LLRender::TRIANGLES)
+			{
+				if (mCount%3 != 0)
+				{
+					llerrs << "Incomplete triangle rendered." << llendl;
+				}
+			}
+			
+			if (mMode == LLRender::LINES)
+			{
+				if (mCount%2 != 0)
+				{
+					llerrs << "Incomplete line rendered." << llendl;
+				}
+			}
+		}
+
 		mBuffer->setBuffer(immediate_mask);
 		mBuffer->drawArrays(mMode, 0, mCount);
 		

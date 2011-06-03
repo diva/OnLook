@@ -6821,6 +6821,14 @@ The URL you clicked cannot be opened from this web browser.
     You do not appear to have the proper hardware requirements for [VIEWER_NAME]. The viewer requires an OpenGL graphics card that has multitexture support. If this is the case, you may want to make sure that you have the latest drivers for your graphics card, and service packs and patches for your operating system.
   </global>
 
+  <global name="UnsupportedCPUSSE2">
+    You do not appear to have the proper hardware requirements for [VIEWER_NAME]. The viewer requires a CPU that supports SSE2
+  </global>
+  
+  <global name="UnsupportedCPUSSE">
+    You do not appear to have the proper hardware requirements for [VIEWER_NAME]. The viewer requires a CPU that supports SSE
+  </global>
+  
   <global name="UnsupportedCPUAmount">
 796
   </global>

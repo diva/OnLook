@@ -72,7 +72,7 @@ const F32 FORCE_SIMPLE_RENDER_AREA = 512.f;
 const F32 FORCE_CULL_AREA = 8.f;
 
 BOOL gAnimateTextures = TRUE;
-extern BOOL gHideSelectedObjects;
+//extern BOOL gHideSelectedObjects;
 
 F32 LLVOVolume::sLODFactor = 1.f;
 F32	LLVOVolume::sLODSlopDistanceFactor = 0.5f; //Changing this to zero, effectively disables the LOD transition slop 
@@ -2204,7 +2204,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 	if (!mbCanSelect ||
 //		(gHideSelectedObjects && isSelected()) ||
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
-		( (gHideSelectedObjects && isSelected()) && 
+		( (LLSelectMgr::getInstance()->mHideSelectedObjects && isSelected()) && 
 		  ((!rlv_handler_t::isEnabled()) || (!isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(getRootEdit()))) ) ||
 // [/RLVa:KB]
 			mDrawable->isDead() || 
@@ -2351,7 +2351,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 //	if (facep->getViewerObject()->isSelected() && gHideSelectedObjects)
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.1.3b) | Modified: RLVa-1.2.1f
 	const LLViewerObject* pObj = facep->getViewerObject();
-	if ( (pObj->isSelected() && gHideSelectedObjects) && 
+	if ( (pObj->isSelected() && LLSelectMgr::getInstance()->mHideSelectedObjects) && 
 		 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) )
 // [/RLVa:KB]
 	{

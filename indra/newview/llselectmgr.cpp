@@ -33,6 +33,7 @@
 #include "llviewerprecompiledheaders.h"
 
 // file include
+#define LLSELECTMGR_CPP
 #include "llselectmgr.h"
 
 // library includes
@@ -93,8 +94,6 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-#include "llglheaders.h"
-
 LLViewerObject* getSelectedParentObject(LLViewerObject *object) ;
 //
 // Consts
@@ -102,7 +101,6 @@ LLViewerObject* getSelectedParentObject(LLViewerObject *object) ;
 
 const S32 NUM_SELECTION_UNDO_ENTRIES = 200;
 const F32 SILHOUETTE_UPDATE_THRESHOLD_SQUARED = 0.02f;
-const S32 OWNERSHIP_COST_PER_OBJECT = 10; // Must be the same as economy_constants.price_object_claim in the database.
 const S32 MAX_ACTION_QUEUE_SIZE = 20;
 const S32 MAX_SILS_PER_FRAME = 50;
 const S32 MAX_OBJECTS_PER_PACKET = 254;
@@ -112,13 +110,12 @@ const S32 TE_SELECT_MASK_ALL = 0xFFFFFFFF;
 // Globals
 //
 
-BOOL gDebugSelectMgr = FALSE;
+//BOOL gDebugSelectMgr = FALSE;
 
-BOOL gHideSelectedObjects = FALSE;
-BOOL gAllowSelectAvatar = FALSE;
+//BOOL gHideSelectedObjects = FALSE;
+//BOOL gAllowSelectAvatar = FALSE;
 
 BOOL LLSelectMgr::sRectSelectInclusive = TRUE;
-BOOL LLSelectMgr::sRenderSelectionHighlights = TRUE;
 BOOL LLSelectMgr::sRenderHiddenSelections = TRUE;
 BOOL LLSelectMgr::sRenderLightRadius = FALSE;
 F32	LLSelectMgr::sHighlightThickness = 0.f;
@@ -134,7 +131,6 @@ LLColor4 LLSelectMgr::sHighlightInspectColor;
 LLColor4 LLSelectMgr::sHighlightParentColor;
 LLColor4 LLSelectMgr::sHighlightChildColor;
 LLColor4 LLSelectMgr::sContextSilhouetteColor;
-std::set<LLUUID> LLSelectMgr::sObjectPropertiesFamilyRequests;
 
 static LLObjectSelection *get_null_object_selection();
 template<> 
@@ -181,11 +177,17 @@ LLObjectSelection *get_null_object_selection()
 	return sNullSelection;
 }
 
+// Build time optimization, generate this function once here
+template class LLSelectMgr* LLSingleton<class LLSelectMgr>::getInstance();
 
 //-----------------------------------------------------------------------------
 // LLSelectMgr()
 //-----------------------------------------------------------------------------
 LLSelectMgr::LLSelectMgr()
+ : mHideSelectedObjects(LLCachedControl<bool>("HideSelectedObjects", false)),
+   mRenderHighlightSelections(LLCachedControl<bool>("RenderHighlightSelections", false)),
+   mAllowSelectAvatar( LLCachedControl<bool>("AllowSelectAvatar", false)),
+   mDebugSelectMgr(LLCachedControl<bool>( "DebugSelectMgr", false))
 {
 	mTEMode = FALSE;
 	mLastCameraPos.clearVec();
@@ -564,6 +566,121 @@ BOOL LLSelectMgr::removeObjectFromSelections(const LLUUID &id)
 	return object_found;
 }
 
+bool LLSelectMgr::linkObjects()
+{
+	if (!LLSelectMgr::getInstance()->selectGetAllRootsValid())
+	{
+		LLNotifications::getInstance()->add("UnableToLinkWhileDownloading");
+		return true;
+	}
+
+	S32 object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
+	if (object_count > MAX_CHILDREN_PER_TASK + 1)
+	{
+		LLSD args;
+		args["COUNT"] = llformat("%d", object_count);
+		int max = MAX_CHILDREN_PER_TASK+1;
+		args["MAX"] = llformat("%d", max);
+		LLNotifications::getInstance()->add("UnableToLinkObjects", args);
+		return true;
+	}
+
+	if (LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() < 2)
+	{
+		LLNotifications::instance().add("CannotLinkIncompleteSet");
+		return true;
+	}
+
+	if (!LLSelectMgr::getInstance()->selectGetRootsModify())
+	{
+		LLNotifications::instance().add("CannotLinkModify");
+		return true;
+	}
+
+	LLUUID owner_id;
+	std::string owner_name;
+	if (!LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name))
+	{
+		// we don't actually care if you're the owner, but novices are
+		// the most likely to be stumped by this one, so offer the
+		// easiest and most likely solution.
+		LLNotifications::instance().add("CannotLinkDifferentOwners");
+		return true;
+	}
+
+	LLSelectMgr::getInstance()->sendLink();
+
+	return true;
+}
+
+bool LLSelectMgr::unlinkObjects()
+{
+// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
+	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
+	{
+		// Allow only if the avie isn't sitting on any of the selected objects
+		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+		RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+		if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE)) )
+			return true;
+	}
+// [/RLVa:KB]
+	LLSelectMgr::getInstance()->sendDelink();
+	return true;
+}
+
+// in order to link, all objects must have the same owner, and the
+// agent must have the ability to modify all of the objects. However,
+// we're not answering that question with this method. The question
+// we're answering is: does the user have a reasonable expectation
+// that a link operation should work? If so, return true, false
+// otherwise. this allows the handle_link method to more finely check
+// the selection and give an error message when the uer has a
+// reasonable expectation for the link to work, but it will fail.
+bool LLSelectMgr::enableLinkObjects()
+{
+	bool new_value = false;
+	// check if there are at least 2 objects selected, and that the
+	// user can modify at least one of the selected objects.
+
+	// in component mode, can't link
+	if (!gSavedSettings.getBOOL("EditLinkedParts"))
+	{
+		if(LLSelectMgr::getInstance()->selectGetAllRootsValid() && LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() >= 2)
+		{
+			struct f : public LLSelectedObjectFunctor
+			{
+				virtual bool apply(LLViewerObject* object)
+				{
+					return object->permModify();
+				}
+			} func;
+			const bool firstonly = true;
+			new_value = LLSelectMgr::getInstance()->getSelection()->applyToRootObjects(&func, firstonly);
+		}
+	}
+	return new_value;
+}
+
+bool LLSelectMgr::enableUnlinkObjects()
+{
+	LLViewerObject* first_editable_object = LLSelectMgr::getInstance()->getSelection()->getFirstEditableObject();
+
+	bool new_value = LLSelectMgr::getInstance()->selectGetAllRootsValid() &&
+		first_editable_object &&
+		!first_editable_object->isAttachment();
+// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
+		if ( (new_value) && (!gRlvHandler.canStand()) )
+		{
+			// Allow only if the avie isn't sitting on any of the selected objects
+			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
+			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+			new_value = handleSel->getFirstRootNode(&f, TRUE) == NULL;
+		}
+// [/RLVa:KB]
+	return new_value;
+}
+
 void LLSelectMgr::deselectObjectAndFamily(LLViewerObject* object, BOOL send_to_sim, BOOL include_entire_object)
 {
 	// bail if nothing selected or if object wasn't selected in the first place
@@ -690,7 +807,7 @@ void LLSelectMgr::addAsFamily(std::vector<LLViewerObject*>& objects, BOOL add_to
 		
 		// Can't select yourself
 		if (objectp->mID == gAgentID
-			&& !gAllowSelectAvatar)
+			&& !LLSelectMgr::getInstance()->mAllowSelectAvatar)
 		{
 			continue;
 		}
@@ -839,7 +956,12 @@ LLObjectSelectionHandle LLSelectMgr::setHoverObject(LLViewerObject *objectp, S32
 
 LLSelectNode *LLSelectMgr::getHoverNode()
 {
-	return getHoverObjects()->getFirstRootNode();
+	return mHoverObjects->getFirstRootNode();
+}
+
+LLSelectNode *LLSelectMgr::getPrimaryHoverNode()
+{
+	return mHoverObjects->mSelectNodeMap[mHoverObjects->mPrimaryObject];
 }
 
 void LLSelectMgr::highlightObjectOnly(LLViewerObject* objectp)
@@ -854,8 +976,8 @@ void LLSelectMgr::highlightObjectOnly(LLViewerObject* objectp)
 		return;
 	}
 	
-	if ((gSavedSettings.getBOOL("SelectOwnedOnly") && !objectp->permYouOwner()) ||
-		(gSavedSettings.getBOOL("SelectMovableOnly") && !objectp->permMove()))
+	if ((gSavedSettings.getBOOL("SelectOwnedOnly") && !objectp->permYouOwner()) 
+		|| (gSavedSettings.getBOOL("SelectMovableOnly") && !objectp->permMove()))
 	{
 		// only select my own objects
 		return;
@@ -2253,6 +2375,26 @@ BOOL LLSelectMgr::selectGetAllValid()
 	return TRUE;
 }
 
+//-----------------------------------------------------------------------------
+// selectGetAllValidAndObjectsFound() - return TRUE if selections are
+// valid and objects are found.
+//
+// For EXT-3114 - same as selectGetModify() without the modify check.
+//-----------------------------------------------------------------------------
+BOOL LLSelectMgr::selectGetAllValidAndObjectsFound()
+{
+	for (LLObjectSelection::iterator iter = getSelection()->begin();
+		 iter != getSelection()->end(); iter++ )
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		if( !object || !node->mValid )
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
 
 //-----------------------------------------------------------------------------
 // selectGetModify() - return TRUE if current agent can modify all
@@ -2382,6 +2524,7 @@ BOOL LLSelectMgr::selectGetCreator(LLUUID& result_id, std::string& name)
 	}
 	if (first_id.isNull())
 	{
+		name.assign("Nobody");
 		return FALSE;
 	}
 	
@@ -2663,11 +2806,6 @@ BOOL LLSelectMgr::selectGetPerm(U8 which_perm, U32* mask_on, U32* mask_off)
 }
 
 
-
-BOOL LLSelectMgr::selectGetOwnershipCost(S32* out_cost)
-{
-	return mSelectedObjects->getOwnershipCost(*out_cost);
-}
 
 BOOL LLSelectMgr::selectGetPermissions(LLPermissions& result_perm)
 {
@@ -3517,7 +3655,7 @@ void LLSelectMgr::deselectAllIfTooFar()
 
 		if (select_dist_sq > deselect_dist_sq)
 		{
-			if (gDebugSelectMgr)
+			if (mDebugSelectMgr)
 			{
 				llinfos << "Selection manager: auto-deselecting, select_dist = " << fsqrtf(select_dist_sq) << llendl;
 				llinfos << "agent pos global = " << gAgent.getPositionGlobal() << llendl;
@@ -3596,7 +3734,7 @@ void LLSelectMgr::selectionSetObjectSaleInfo(const LLSaleInfo& sale_info)
 // Attachments
 //----------------------------------------------------------------------
 
-void LLSelectMgr::sendAttach(U8 attachment_point)
+void LLSelectMgr::sendAttach(U8 attachment_point, bool replace)
 {
 	LLViewerObject* attach_object = mSelectedObjects->getFirstRootObject();
 
@@ -3610,7 +3748,7 @@ void LLSelectMgr::sendAttach(U8 attachment_point)
 	if (0 == attachment_point ||
 		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)attachment_point, (LLViewerJointAttachment*)NULL))
 	{
-		if (attachment_point != 0 && gHippoGridManager->getConnectedGrid()->supportsInvLinks())
+		if ((!replace || attachment_point != 0) && gHippoGridManager->getConnectedGrid()->supportsInvLinks())
 		{
 			// If we know the attachment point then we got here by clicking an
 			// "Attach to..." context menu item, so we should add, not replace.
@@ -4300,10 +4438,6 @@ void LLSelectMgr::sendListToRegions(const std::string& message_name,
 
 void LLSelectMgr::requestObjectPropertiesFamily(LLViewerObject* object)
 {
-	// Remember that we asked the properties of this object.
-	sObjectPropertiesFamilyRequests.insert(object->mID);
-	//llinfos << "Registered an ObjectPropertiesFamily request for object " << object->mID << llendl;
-
 	LLMessageSystem* msg = gMessageSystem;
 
 	msg->newMessageFast(_PREHASH_RequestObjectPropertiesFamily);
@@ -4381,7 +4515,7 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 		msg->getStringFast(_PREHASH_ObjectData, _PREHASH_SitName, sit_name, i);
 
 		//unpack TE IDs
-		std::vector<LLUUID> texture_ids;
+		uuid_vec_t texture_ids;
 		S32 size = msg->getSizeFast(_PREHASH_ObjectData, i, _PREHASH_TextureID);
 		if (size > 0)
 		{
@@ -4493,8 +4627,9 @@ void LLSelectMgr::processObjectProperties(LLMessageSystem* msg, void** user_data
 // static
 void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** user_data)
 {
-	U32 request_flags;
 	LLUUID id;
+
+	U32 request_flags;
 	LLUUID creator_id;
 	LLUUID owner_id;
 	LLUUID group_id;
@@ -4525,15 +4660,6 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 	std::string desc;
 	msg->getStringFast(_PREHASH_ObjectData, _PREHASH_Description, desc);
 
-	//llinfos << "Got ObjectPropertiesFamily reply for object " << id << llendl;
-	if(sObjectPropertiesFamilyRequests.count(id) != 0 )
-	{
-		// Send to export floaters
-		//LLFloaterExport::receiveObjectProperties(id, name, desc);
-		// We got the reply, so remove the object from the list of pending requests
-		sObjectPropertiesFamilyRequests.erase(id);
-	}
-
 	// the reporter widget askes the server for info about picked objects
 	if (request_flags & (COMPLAINT_REPORT_REQUEST | BUG_REPORT_REQUEST))
 	{
@@ -4562,7 +4688,7 @@ void LLSelectMgr::processObjectPropertiesFamily(LLMessageSystem* msg, void** use
 			return (node->getObject() && node->getObject()->mID == mID);
 		}
 	} func(id);
-	LLSelectNode* node = LLSelectMgr::getInstance()->getHoverObjects()->getFirstNode(&func);
+	LLSelectNode* node = LLSelectMgr::getInstance()->mHoverObjects->getFirstNode(&func);
 
 	if (node)
 	{
@@ -4897,12 +5023,12 @@ void LLSelectMgr::updateSelectionSilhouette(LLObjectSelectionHandle object_handl
 }
 void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 {
-	if (!mRenderSilhouettes || !LLSelectMgr::sRenderSelectionHighlights)
+	if (!mRenderSilhouettes || !mRenderHighlightSelections)
 	{
 		return;
 	}
 
-	gGL.getTexUnit(0)->bind(mSilhouetteImagep.get());
+	gGL.getTexUnit(0)->bind(mSilhouetteImagep);
 	LLGLSPipelineSelection gls_select;
 	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.f);
 	LLGLEnable blend(GL_BLEND);
@@ -4932,7 +5058,8 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	if (mSelectedObjects->getNumNodes())
 	{
 		LLUUID inspect_item_id = LLFloaterInspect::getSelectedUUID();
-		
+
+		LLUUID focus_item_id = LLViewerMediaFocus::getInstance()->getSelectedUUID();
 		// <edit>
 		//for (S32 pass = 0; pass < 2; pass++)
 		//{
@@ -4948,7 +5075,11 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 				{
 					continue;
 				}
-				if(objectp->getID() == inspect_item_id)
+				if (objectp->getID() == focus_item_id)
+				{
+					node->renderOneSilhouette(gFocusMgr.getFocusColor());
+				}
+				else if(objectp->getID() == inspect_item_id)
 				{
 					node->renderOneSilhouette(sHighlightInspectColor);
 				}
@@ -5118,13 +5249,14 @@ void LLSelectNode::selectTE(S32 te_index, BOOL selected)
 	{
 		return;
 	}
-	if (selected)
-	{
-		mTESelectMask |= (0x1 << te_index);
+	S32 mask = 0x1 << te_index;
+	if(selected)
+	{	
+		mTESelectMask |= mask;
 	}
 	else
 	{
-		mTESelectMask &= ~(0x1 << te_index);
+		mTESelectMask &= ~mask;
 	}
 	mLastTESelected = te_index;
 }
@@ -5178,13 +5310,13 @@ void LLSelectNode::saveColors()
 	}
 }
 
-void LLSelectNode::saveTextures(const std::vector<LLUUID>& textures)
+void LLSelectNode::saveTextures(const uuid_vec_t& textures)
 {
 	if (mObject.notNull())
 	{
 		mSavedTextures.clear();
 
-		for (std::vector<LLUUID>::const_iterator texture_it = textures.begin();
+		for (uuid_vec_t::const_iterator texture_it = textures.begin();
 			 texture_it != textures.end(); ++texture_it)
 		{
 			mSavedTextures.push_back(*texture_it);
@@ -5477,13 +5609,21 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 
 // Update everyone who cares about the selection list
 void dialog_refresh_all()
+
 {
+	// This is the easiest place to fire the update signal, as it will
+	// make cleaning up the functions below easier.  Also, sometimes entities
+	// outside the selection manager change properties of selected objects
+	// and call into this function.  Yuck.
+	LLSelectMgr::getInstance()->mUpdateSignal();
+
 	if (gNoRender)
 	{
 		return;
 	}
 
-	//could refresh selected object info in toolbar here
+	// *TODO: Eliminate all calls into outside classes below, make those
+	// objects register with the update signal.
 
 	gFloaterTools->dirty();
 
@@ -5897,6 +6037,27 @@ void LLSelectMgr::setAgentHUDZoom(F32 target_zoom, F32 current_zoom)
 	gAgent.mHUDCurZoom = current_zoom;
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// Object selection iterator helpers
+/////////////////////////////////////////////////////////////////////////////
+bool LLObjectSelection::is_root::operator()(LLSelectNode *node)
+{
+	LLViewerObject* object = node->getObject();
+	return (object != NULL) && !node->mIndividualSelection && (object->isRootEdit() || object->isJointChild());
+}
+
+bool LLObjectSelection::is_valid_root::operator()(LLSelectNode *node)
+{
+	LLViewerObject* object = node->getObject();
+	return (object != NULL) && node->mValid && !node->mIndividualSelection && (object->isRootEdit() || object->isJointChild());
+}
+
+bool LLObjectSelection::is_root_object::operator()(LLSelectNode *node)
+{
+	LLViewerObject* object = node->getObject();
+	return (object != NULL) && (object->isRootEdit() || object->isJointChild());
+}
+
 LLObjectSelection::LLObjectSelection() : 
 	LLRefCount(),
 	mSelectType(SELECT_TYPE_WORLD)
@@ -5986,16 +6147,6 @@ LLSelectNode* LLObjectSelection::findNode(LLViewerObject* objectp)
 BOOL LLObjectSelection::isEmpty() const
 {
 	return (mList.size() == 0);
-}
-
-//-----------------------------------------------------------------------------
-// getOwnershipCost()
-//-----------------------------------------------------------------------------
-BOOL LLObjectSelection::getOwnershipCost(S32 &cost)
-{
-	S32 count = getObjectCount();
-	cost = count * OWNERSHIP_COST_PER_OBJECT;
-	return (count > 0);
 }
 
 
@@ -6136,6 +6287,29 @@ bool LLObjectSelection::applyToRootNodes(LLSelectedNodeFunctor *func, bool first
 			result = result && r;
 	}
 	return result;
+}
+
+BOOL LLObjectSelection::isMultipleTESelected()
+{
+	BOOL te_selected = FALSE;
+	// ...all faces
+	for (LLObjectSelection::iterator iter = begin();
+		 iter != end(); iter++)
+	{
+		LLSelectNode* nodep = *iter;
+		for (S32 i = 0; i < SELECT_MAX_TES; i++)
+		{
+			if(nodep->isTESelected(i))
+			{
+				if(te_selected)
+				{
+					return TRUE;
+				}
+				te_selected = TRUE;
+			}
+		}
+	}
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -6404,23 +6578,24 @@ bool LLSelectMgr::selectionMove(const LLVector3& displ,
 	if (update_position)
 	{
 		// calculate the distance of the object closest to the camera origin
-		F32 min_dist = 1e+30f;
+		F32 min_dist_squared = F32_MAX; // value will be overridden in the loop
+		
 		LLVector3 obj_pos;
 		for (LLObjectSelection::root_iterator it = getSelection()->root_begin();
 			 it != getSelection()->root_end(); ++it)
 		{
 			obj_pos = (*it)->getObject()->getPositionEdit();
 			
-			F32 obj_dist = dist_vec(obj_pos, LLViewerCamera::getInstance()->getOrigin());
-			if (obj_dist < min_dist)
+			F32 obj_dist_squared = dist_vec_squared(obj_pos, LLViewerCamera::getInstance()->getOrigin());
+			if (obj_dist_squared < min_dist_squared)
 			{
-				min_dist = obj_dist;
+				min_dist_squared = obj_dist_squared;
 			}
 		}
 		
-		// factor the distance inside the displacement vector. This will get us
+		// factor the distance into the displacement vector. This will get us
 		// equally visible movements for both close and far away selections.
-		min_dist = sqrt(min_dist) / 2;
+		F32 min_dist = sqrt((F32) sqrtf(min_dist_squared)) / 2;
 		displ_global.setVec(displ.mV[0]*min_dist, 
 							displ.mV[1]*min_dist, 
 							displ.mV[2]*min_dist);

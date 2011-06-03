@@ -60,7 +60,6 @@
 #include "llcachename.h"
 #include "llviewercontrol.h"
 #include "lldir.h"
-#include "lleventpoll.h" // OGPX for Agent Domain event queue
 #include "llerrorcontrol.h"
 #include "llfiltersd2xmlrpc.h"
 #include "llfocusmgr.h"
@@ -140,7 +139,6 @@
 #include "llpreview.h"
 #include "llpreviewscript.h"
 #include "llproductinforequest.h"
-#include "llsdhttpserver.h" // OGPX might not need when EVENTHACK is sorted
 #include "llsecondlifeurls.h"
 #include "llselectmgr.h"
 #include "llsky.h"

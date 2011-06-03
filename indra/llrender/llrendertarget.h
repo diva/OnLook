@@ -144,6 +144,8 @@ public:
 	//one renderable attachment (i.e. color buffer, depth buffer).
 	bool isComplete() const;
 
+	static LLRenderTarget* getCurrentBoundTarget() { return sBoundTarget; }
+
 protected:
 	friend class LLMultisampleBuffer;
 	U32 mResX;
@@ -157,6 +159,8 @@ protected:
 	LLTexUnit::eTextureType mUsage;
 	U32 mSamples;
 	LLMultisampleBuffer* mSampleBuffer;
+
+	static LLRenderTarget* sBoundTarget;
 	
 };
 

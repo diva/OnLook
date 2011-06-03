@@ -36,6 +36,9 @@
 #include "llrender.h"
 #include "llgl.h"
 
+LLRenderTarget* LLRenderTarget::sBoundTarget = NULL;
+
+
 
 void check_framebuffer_status()
 {
@@ -212,6 +215,16 @@ void LLRenderTarget::shareDepthBuffer(LLRenderTarget& target)
 		llerrs << "Cannot share depth buffer between non FBO render targets." << llendl;
 	}
 
+	if (target.mDepth)
+	{
+		llerrs << "Attempting to override existing depth buffer.  Detach existing buffer first." << llendl;
+	}
+
+	if (target.mUseDepth)
+	{
+		llerrs << "Attempting to override existing shared depth buffer. Detach existing buffer first." << llendl;
+	}
+
 	if (mDepth)
 	{
 		stop_glerror();
@@ -230,11 +243,6 @@ void LLRenderTarget::shareDepthBuffer(LLRenderTarget& target)
 		{
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, LLTexUnit::getInternalType(mUsage), mDepth, 0);
 			stop_glerror();
-			if (mStencil)
-			{
-				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT, LLTexUnit::getInternalType(mUsage), mDepth, 0);
-				stop_glerror();
-			}
 		}
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
@@ -285,7 +293,9 @@ void LLRenderTarget::release()
 		LLImageGL::deleteTextures(mTex.size(), &mTex[0]);
 		mTex.clear();
 	}
+
 	mSampleBuffer = NULL;
+	sBoundTarget = NULL;
 }
 
 void LLRenderTarget::bindTarget()
@@ -324,6 +334,7 @@ void LLRenderTarget::bindTarget()
 	}
 
 	glViewport(0, 0, mResX, mResY);
+	sBoundTarget = this;
 }
 
 // static
@@ -333,6 +344,7 @@ void LLRenderTarget::unbindTarget()
 	{
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
+	sBoundTarget = NULL;
 }
 
 void LLRenderTarget::clear(U32 mask_in)
@@ -399,7 +411,11 @@ void LLRenderTarget::flush(bool fetch_depth)
 	}
 	else
 	{
+		stop_glerror();
+
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+
+		stop_glerror();
 	
 		if (mSampleBuffer)
 		{
@@ -607,6 +623,7 @@ void LLMultisampleBuffer::bindTarget(LLRenderTarget* ref)
 
 	glViewport(0, 0, mResX, mResY);
 
+	sBoundTarget = this;
 }
 
 void LLMultisampleBuffer::allocate(U32 resx, U32 resy, U32 color_fmt, bool depth, bool stencil,  LLTexUnit::eTextureType usage, bool use_fbo )

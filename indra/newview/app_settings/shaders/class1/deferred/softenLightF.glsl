@@ -11,12 +11,9 @@
 
 uniform sampler2DRect diffuseRect;
 uniform sampler2DRect specularRect;
-uniform sampler2DRect positionMap;
 uniform sampler2DRect normalMap;
 uniform sampler2DRect lightMap;
 uniform sampler2DRect depthMap;
-uniform sampler2D	  noiseMap;
-uniform samplerCube environmentMap;
 uniform sampler2D	  lightFunc;
 
 uniform float blur_size;
@@ -278,7 +275,6 @@ void main()
 	
 	vec3 col = atmosAmbient(vec3(0));
 	col += atmosAffectDirectionalLight(max(min(da, scol), diffuse.a));
-	
 	col *= diffuse.rgb;
 	
 	if (spec.a > 0.0) // specular reflection
@@ -288,7 +284,6 @@ void main()
 		vec3 refnormpersp = normalize(reflect(pos.xyz, norm.xyz));
 		float sa = dot(refnormpersp, vary_light.xyz);
 		vec3 dumbshiny = vary_SunlitColor*scol_ambocc.r*texture2D(lightFunc, vec2(sa, spec.a)).a;
-
 		/*
 		// screen-space cheap fakey reflection map
 		//

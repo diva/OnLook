@@ -226,7 +226,7 @@ class AIStateMachine {
 	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
 
 	//! Temporarily halt the state machine.
-	void yield_ms(unsigned int ms) { mSleep = get_cpu_clock_count() + LLFastTimer::countsPerSecond() * ms / 1000; }
+	void yield_ms(unsigned int ms) { mSleep = LLFastTimer::getCPUClockCount64() + LLFastTimer::countsPerSecond() * ms / 1000; }
 
 	//! Continue running after calling idle.
 	void cont(void);
