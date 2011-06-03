@@ -63,7 +63,7 @@
 #include "llxfermanager.h"
 #include "message.h"
 #include "sound_ids.h"
-#include "lltimer.h"
+#include "lleventtimer.h"
 #include "llmd5.h"
 
 #include "llagent.h"
@@ -3698,19 +3698,6 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	effectp->setColor(LLColor4U(gAgent.getEffectColor()));
 	LLHUDManager::getInstance()->sendEffects();
 
-	// OGPX : when using agent domain, we get tp finish with ip of 0.0.0.0 and port 0. 
-	//    try bailing out early if tp state is PLACE_AVATAR (so legacy should still execute rest of this path)
-	//    not really wild about this, but it's a way to test if we can get TP working w/o receiving TP finish
-	//    TODO: can be removed *when* agent domain no longer sends tp finish
-	//
-    // OGPX TODO: see if we can nuke TELEPORT_PLACE_AVATAR state once TeleportFinish is 
-	//    completely removed from all SL and OS region code
-
-	if (gAgent.getTeleportState() == LLAgent::TELEPORT_PLACE_AVATAR )
-	{
-		llinfos << "Got teleport location message when doing agentd TP" << llendl;
-		return;
-	}
 	U32 location_id;
 	U32 sim_ip;
 	U16 sim_port;
@@ -3883,10 +3870,8 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 	gCacheName->setUpstream(msg->getSender());
 	gViewerThrottle.sendToSim();
 	gViewerWindow->sendShapeToSim();
-	// if this is an AgentMovementComplete message that happened as the result of a teleport,
-	// then we need to do things like chat the URL and reset the camera.
-	bool is_teleport = (gAgent.getTeleportState() & (LLAgent::TELEPORT_MOVING | LLAgent::TELEPORT_PLACE_AVATAR)); //OGPX
-	llinfos << " is_teleport =" << is_teleport << llendl;
+
+	bool is_teleport = gAgent.getTeleportState() == LLAgent::TELEPORT_MOVING;
 
 	if( is_teleport )
 	{
@@ -3922,11 +3907,6 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 			avatarp->clearChat();
 			avatarp->slamPosition();
 		}
-		// OGPX TODO: remove all usage of TELEPORT_PLACE_AVATAR state once Teleport UDP sequence finalized
-		if ( gAgent.getTeleportState() == LLAgent::TELEPORT_PLACE_AVATAR ) // unset TP state, agent domain is done. OGPX
-		{
-			gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
-		}
 
 		// add teleport destination to the list of visited places
 		gFloaterTeleportHistory->addPendingEntry(regionp->getName(), (S16)agent_pos.mV[VX], (S16)agent_pos.mV[VY], (S16)agent_pos.mV[VZ]);
@@ -3935,6 +3915,17 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 	{
 		// This is likely just the initial logging in phase.
 		gAgent.setTeleportState( LLAgent::TELEPORT_NONE );
+
+		if(LLStartUp::getStartupState() < STATE_STARTED)
+		{	// This is initial log-in, not a region crossing:
+			// Set the camera looking ahead of the AV so send_agent_update() below 
+			// will report the correct location to the server.
+			LLVector3 look_at_point = look_at;
+			look_at_point = agent_pos + look_at_point.rotVec(gAgent.getQuat());
+
+			static LLVector3 up_direction(0.0f, 0.0f, 1.0f);
+			LLViewerCamera::getInstance()->lookAt(agent_pos, look_at_point, up_direction);
+		}
 	}
 
 	if ( LLTracker::isTracking(NULL) )
@@ -4299,7 +4290,6 @@ void process_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processObjectUpdate(mesgsys, user_data, OUT_FULL);
-	stop_glerror();
 }
 
 void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4317,7 +4307,6 @@ void process_compressed_object_update(LLMessageSystem *mesgsys, void **user_data
 
 	// Update the object...
 	gObjectList.processCompressedObjectUpdate(mesgsys, user_data, OUT_FULL_COMPRESSED);
-	stop_glerror();
 }
 
 void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
@@ -4335,7 +4324,6 @@ void process_cached_object_update(LLMessageSystem *mesgsys, void **user_data)
 
 	// Update the object...
 	gObjectList.processCachedObjectUpdate(mesgsys, user_data, OUT_FULL_CACHED);
-	stop_glerror();
 }
 
 

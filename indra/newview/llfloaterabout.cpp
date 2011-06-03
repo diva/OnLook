@@ -209,6 +209,14 @@ LLFloaterAbout::LLFloaterAbout()
 	support.append( gSysCPU.getCPUString() );
 	support.append("\n");
 
+	support.append("SSE Support:");
+	if(gSysCPU.hasSSE())
+		support.append(" SSE2\n");
+	else if(gSysCPU.hasSSE())
+		support.append(" SSE\n");
+	else
+		support.append(" None\n");
+
 	U32 memory = gSysMemory.getPhysicalMemoryKB() / 1024;
 	// Moved hack adjustment to Windows memory size into llsys.cpp
 
@@ -243,21 +251,18 @@ LLFloaterAbout::LLFloaterAbout()
 
 	support.append("OpenGL Version: ");
 	support.append( (const char*) glGetString(GL_VERSION) );
-	support.append("\n");
+	support.append("\n\n");
 
-	std::string sse_ver = "None";
+	support.append("Viewer SSE Version: ");
 #if _M_IX86_FP > 0 //Windows
-	sse_ver = llformat("SSE%i", _M_IX86_FP );
+	support.append(llformat("SSE%i\n", _M_IX86_FP ));
 #elif defined(__SSE2__) //GCC
-	sse_ver = "SSE2";	
+	support.append("SSE2\n");	
 #elif defined(__SSE__) //GCC
-	sse_ver = "SSE";
+	support.append("SSE\n");
+#else
+	support.append("None\n");
 #endif
-	support.append("SSE Version: ");
-	support.append(sse_ver);
-	support.append("\n");
-
-	support.append("\n");
 
 	support.append("libcurl Version: ");
 	support.append( LLCurl::getVersionString() );

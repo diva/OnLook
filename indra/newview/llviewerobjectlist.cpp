@@ -957,7 +957,8 @@ void LLViewerObjectList::killAllObjects()
 		objectp = *iter;
 		
 		killObject(objectp);
-		llassert(objectp->isDead());
+		// Object must be dead, or it's the LLVOAvatarSelf which never dies.
+		llassert((objectp == gAgent.getAvatarObject()) || objectp->isDead());
 	}
 
 	cleanDeadObjects(FALSE);

@@ -22,6 +22,7 @@
 #include "llstartup.h"
 #include "llviewerjointattachment.h"
 #include "llviewerobject.h"
+#include "lleventtimer.h"
 
 #include "rlvcommon.h"
 #include "rlvhelper.h"

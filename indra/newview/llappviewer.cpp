@@ -44,6 +44,7 @@
 #include "lltexteditor.h"
 #include "llalertdialog.h"
 #include "llerrorcontrol.h"
+#include "lleventtimer.h"
 #include "llviewertexturelist.h"
 #include "llgroupmgr.h"
 #include "llagent.h"
@@ -304,10 +305,6 @@ BOOL gCrashOnStartup = FALSE;
 BOOL gLLErrorActivated = FALSE;
 BOOL gLogoutInProgress = FALSE;
 
-static std::string gPlaceAvatarCap;	//OGPX TODO: should belong elsewhere, as part of the llagent caps?
-
-
-
 ////////////////////////////////////////////////////////////
 // Internal globals... that should be removed.
 static std::string gArgs;
@@ -437,7 +434,6 @@ static void settings_to_globals()
 	LLFolderView::sAutoOpenTime			= llmax(0.25f, gSavedSettings.getF32("FolderAutoOpenDelay"));
 	LLToolBar::sInventoryAutoOpenTime	= gSavedSettings.getF32("InventoryAutoOpenDelay");
 	LLSelectMgr::sRectSelectInclusive	= gSavedSettings.getBOOL("RectangleSelectInclusive");
-	LLSelectMgr::sRenderSelectionHighlights = gSavedSettings.getBOOL("RenderHighlightSelections");
 	LLSelectMgr::sRenderHiddenSelections = gSavedSettings.getBOOL("RenderHiddenSelections");
 	LLSelectMgr::sRenderLightRadius = gSavedSettings.getBOOL("RenderLightRadius");
 
@@ -588,6 +584,7 @@ bool LLAppViewer::init()
     LLCurl::initClass();
 
     initThreads();
+	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ; ;
 
     writeSystemInfo();
 
@@ -735,12 +732,14 @@ bool LLAppViewer::init()
 			OSMB_OK);
 		return 1;
 	}
+	LL_INFOS("InitInfo") << "Cache initialization is done." << LL_ENDL ;
 	
 	//
 	// Initialize the window
 	//
 	gGLActive = TRUE;
 	initWindow();
+	LL_INFOS("InitInfo") << "Window is initialized." << LL_ENDL ;
 
 	// initWindow also initializes the Feature List, so now we can initialize this global.
 	LLCubeMap::sUseCubeMaps = LLFeatureManager::getInstance()->isFeatureAvailable("RenderCubeMap");
@@ -782,6 +781,32 @@ bool LLAppViewer::init()
 			OSMB_OK);
 		return 0;
 	}
+
+#if (_M_IX86_FP > 1 || defined(__SSE2__))
+	// Without SSE2 support we will crash almost immediately, warn here.
+	if (!gSysCPU.hasSSE2())
+	{
+		// can't use an alert here since we're exiting and
+		// all hell breaks lose.
+		OSMessageBox(
+			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE2"),
+			LLStringUtil::null,
+			OSMB_OK);
+		return 0;
+	}
+#else if (_M_IX86_FP == 1 || defined(__SSE__))
+	// Without SSE support we will crash almost immediately, warn here.
+	if (!gSysCPU.hasSSE())
+	{
+		// can't use an alert here since we're exiting and
+		// all hell breaks lose.
+		OSMessageBox(
+			LLNotifications::instance().getGlobalString("UnsupportedCPUSSE"),
+			LLStringUtil::null,
+			OSMB_OK);
+		return 0;
+	}
+#endif
 
 	// alert the user if they are using unsupported hardware
 	if(!gSavedSettings.getBOOL("AlertedUnsupportedHardware"))
@@ -873,13 +898,33 @@ bool LLAppViewer::mainLoop()
 	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	LLTimer frameTimer,idleTimer;
 	LLTimer debugTime;
+	LLFrameTimer memCheckTimer;
 	LLViewerJoystick* joystick(LLViewerJoystick::getInstance());
 	joystick->setNeedsReset(true);
  	
+
+	const F32 memory_check_interval = 1.0f ; //second
+
 	// Handle messages
 	while (!LLApp::isExiting())
 	{
 		LLFastTimer::reset(); // Should be outside of any timer instances
+
+		//clear call stack records
+		llclearcallstacks;
+
+		//check memory availability information
+		{
+			if(memory_check_interval < memCheckTimer.getElapsedTimeF32())
+			{
+				memCheckTimer.reset() ;
+
+				//update the availability of memory
+				LLMemoryInfo::getAvailableMemoryKB(mAvailPhysicalMemInKB, mAvailVirtualMemInKB) ;
+			}
+			llcallstacks << "Available physical mem(KB): " << mAvailPhysicalMemInKB << llcallstacksendl ;
+			llcallstacks << "Available virtual mem(KB): " << mAvailVirtualMemInKB << llcallstacksendl ;
+		}
 		try
 		{
 			LLFastTimer t(LLFastTimer::FTM_FRAME);
@@ -913,9 +958,11 @@ bool LLAppViewer::mainLoop()
 			
 #endif
 			//memory leaking simulation
-			if(LLFloaterMemLeak::getInstance())
+			LLFloaterMemLeak* mem_leak_instance =
+				LLFloaterMemLeak::getInstance();
+			if(mem_leak_instance)
 			{
-				LLFloaterMemLeak::getInstance()->idle() ;				
+				mem_leak_instance->idle() ;				
 			}			
 
 			if (!LLApp::isExiting())
@@ -1078,10 +1125,22 @@ bool LLAppViewer::mainLoop()
 		}
 		catch(std::bad_alloc)
 		{			
-			//stop memory leaking simulation
-			if(LLFloaterMemLeak::getInstance())
 			{
-				LLFloaterMemLeak::getInstance()->stop() ;				
+				llinfos << "Availabe physical memory(KB) at the beginning of the frame: " << mAvailPhysicalMemInKB << llendl ;
+				llinfos << "Availabe virtual memory(KB) at the beginning of the frame: " << mAvailVirtualMemInKB << llendl ;
+
+				LLMemoryInfo::getAvailableMemoryKB(mAvailPhysicalMemInKB, mAvailVirtualMemInKB) ;
+
+				llinfos << "Current availabe physical memory(KB): " << mAvailPhysicalMemInKB << llendl ;
+				llinfos << "Current availabe virtual memory(KB): " << mAvailVirtualMemInKB << llendl ;
+			}
+
+			//stop memory leaking simulation
+			LLFloaterMemLeak* mem_leak_instance =
+				LLFloaterMemLeak::getInstance();
+			if(mem_leak_instance)
+			{
+				mem_leak_instance->stop() ;				
 				llwarns << "Bad memory allocation in LLAppViewer::mainLoop()!" << llendl ;
 			}
 			else
@@ -1106,9 +1165,11 @@ bool LLAppViewer::mainLoop()
 			llwarns << "Bad memory allocation when saveFinalSnapshot() is called!" << llendl ;
 
 			//stop memory leaking simulation
-			if(LLFloaterMemLeak::getInstance())
+			LLFloaterMemLeak* mem_leak_instance =
+				LLFloaterMemLeak::getInstance();
+			if(mem_leak_instance)
 			{
-				LLFloaterMemLeak::getInstance()->stop() ;				
+				mem_leak_instance->stop() ;				
 			}	
 		}
 	}
@@ -1120,6 +1181,21 @@ bool LLAppViewer::mainLoop()
 	llinfos << "Exiting main_loop" << llendflush;
 
 	return true;
+}
+
+void LLAppViewer::flushVFSIO()
+{
+	while (1)
+	{
+		S32 pending = LLVFSThread::updateClass(0);
+		pending += LLLFSThread::updateClass(0);
+		if (!pending)
+		{
+			break;
+		}
+		llinfos << "Waiting for pending IO to finish: " << pending << llendflush;
+		ms_sleep(100);
+	}
 }
 
 extern void cleanup_pose_stand(void);
@@ -1234,36 +1310,31 @@ bool LLAppViewer::cleanup()
 	removeCacheFiles("*.dsf");
 	removeCacheFiles("*.bodypart");
 	removeCacheFiles("*.clothing");
+	
 	// <edit>
+	llinfos << "Cache files removed" << llendflush;
 	*/
 	// </edit>
-
-	llinfos << "Cache files removed" << llendflush;
 
 
 	cleanup_menus();
 
 	// Wait for any pending VFS IO
-	while (1)
-	{
-		S32 pending = LLVFSThread::updateClass(0);
-		pending += LLLFSThread::updateClass(0);
-		if (!pending)
-		{
-			break;
-		}
-		llinfos << "Waiting for pending IO to finish: " << pending << llendflush;
-		ms_sleep(100);
-	}
-	llinfos << "Shutting down." << llendflush;
+	flushVFSIO();
+	llinfos << "Shutting down Views" << llendflush;
 
 	// Destroy the UI
 	if( gViewerWindow)
 		gViewerWindow->shutdownViews();
 
+
+	llinfos << "Cleaning up Selections" << llendflush;
+	
 	// Clean up selection managers after UI is destroyed, as UI may be observing them.
 	// Clean up before GL is shut down because we might be holding on to objects with texture references
 	LLSelectMgr::cleanupGlobals();
+	
+	llinfos << "Shutting down OpenGL" << llendflush;
 
 	// Shut down OpenGL
 	if( gViewerWindow)
@@ -1278,10 +1349,15 @@ bool LLAppViewer::cleanup()
 		llinfos << "ViewerWindow deleted" << llendflush;
 	}
 
+	llinfos << "Cleaning up Keyboard & Joystick" << llendflush;
+	
 	// viewer UI relies on keyboard so keep it aound until viewer UI isa gone
 	delete gKeyboard;
 	gKeyboard = NULL;
 
+	
+	llinfos << "Cleaning up Objects" << llendflush;
+	
 	LLViewerObject::cleanupVOClasses();
 
 	LLWaterParamManager::cleanupClass();
@@ -1310,6 +1386,8 @@ bool LLAppViewer::cleanup()
 	}
 	LLPrimitive::cleanupVolumeManager();
 
+	llinfos << "Additional Cleanup..." << llendflush;	
+	
 	LLViewerParcelMgr::cleanupGlobals();
 
 	// *Note: this is where gViewerStats used to be deleted.
@@ -1329,8 +1407,10 @@ bool LLAppViewer::cleanup()
 	// Also after shutting down the messaging system since it has VFS dependencies
 
 	//
+	llinfos << "Cleaning up VFS" << llendflush;
 	LLVFile::cleanupClass();
-	llinfos << "VFS cleaned up" << llendflush;
+
+	llinfos << "Saving Data" << llendflush;
 
 	// Quitting with "Remember Password" turned off should always stomp your
 	// saved password, whether or not you successfully logged in.  JC
@@ -1346,10 +1426,17 @@ bool LLAppViewer::cleanup()
 	// save their rects on delete.
 	gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), TRUE);	
 
-	// PerAccountSettingsFile should be empty if no use has been logged on.
+	// PerAccountSettingsFile should be empty if no user has been logged on.
 	// *FIX:Mani This should get really saved in a "logoff" mode. 
-	gSavedPerAccountSettings.saveToFile(gSavedSettings.getString("PerAccountSettingsFile"), TRUE);
-	llinfos << "Saved settings" << llendflush;
+	if (gSavedSettings.getString("PerAccountSettingsFile").empty())
+	{
+		llinfos << "Not saving per-account settings; don't know the account name yet." << llendl;
+	}
+	else
+	{
+		gSavedPerAccountSettings.saveToFile(gSavedSettings.getString("PerAccountSettingsFile"), TRUE);
+		llinfos << "Saved settings" << llendflush;
+	}
 
 	std::string crash_settings_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, CRASH_SETTINGS_FILE);
 	// save all settings, even if equals defaults
@@ -1382,6 +1469,11 @@ bool LLAppViewer::cleanup()
 		removeCacheFiles("*.dsf");
 		removeCacheFiles("*.bodypart");
 		removeCacheFiles("*.clothing");
+		llinfos << "Cache files removed" << llendflush;
+	}
+	else
+	{
+		llinfos << "Not removing cache files. Other viewer instance detected." << llendflush;
 	}
 	// </edit>
 	
@@ -1389,6 +1481,8 @@ bool LLAppViewer::cleanup()
 
 	// Stop the plugin read thread if it's running.
 	LLPluginProcessParent::setUseReadThread(false);
+
+	llinfos << "Shutting down Threads" << llendflush;
 
 	// Let threads finish
 	LLTimer idleTimer;
@@ -1426,6 +1520,9 @@ bool LLAppViewer::cleanup()
     sTextureFetch = NULL;
 	delete sImageDecodeThread;
     sImageDecodeThread = NULL;
+
+
+	llinfos << "Cleaning up Media and Textures" << llendflush;
 
 	//Note:
 	//LLViewerMedia::cleanupClass() has to be put before gTextureList.shutdown()
@@ -1489,7 +1586,10 @@ bool LLAppViewer::cleanup()
 		llinfos << "File launched." << llendflush;
 	}
 
-    llinfos << "Goodbye" << llendflush;
+
+	ll_close_fail_log();
+
+    llinfos << "Goodbye!" << llendflush;
 
 	// return 0;
 	return true;
@@ -1957,6 +2057,14 @@ bool LLAppViewer::initConfiguration()
 	{
 		gCrashOnStartup = TRUE;
 	}
+	
+	if (clp.hasOption("debugsession"))
+	{
+		gDebugSession = TRUE;
+		gDebugGL = TRUE;
+
+		ll_init_fail_log(gDirUtilp->getExpandedFilename(LL_PATH_LOGS, "test_failures.log"));
+	}
 
 	// Handle slurl use. NOTE: Don't let SL-55321 reappear.
 
@@ -2362,7 +2470,12 @@ void LLAppViewer::writeSystemInfo()
 {
 	gDebugInfo["SLLog"] = LLError::logFileName();
 
-	
+	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
+
+	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
+	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
+	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
+	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
@@ -2426,6 +2539,8 @@ void LLAppViewer::handleSyncViewerCrash()
 void LLAppViewer::handleViewerCrash()
 {
 	llinfos << "Handle viewer crash entry." << llendl;
+
+	llinfos << "Last render pool type: " << LLPipeline::sCurRenderPoolType << llendl ;
 
 	//print out recorded call stacks if there are any.
 	LLError::LLCallStacks::print();
@@ -2872,45 +2987,54 @@ void LLAppViewer::migrateCacheDirectory()
 #endif // LL_WINDOWS || LL_DARWIN
 }
 
+//static
+U32 LLAppViewer::getTextureCacheVersion()
+{
+	//viewer texture cache version, change if the texture cache format changes.
+	static const U32 TEXTURE_CACHE_VERSION = 7;
+
+	return TEXTURE_CACHE_VERSION ;
+}
 bool LLAppViewer::initCache()
 {
 	mPurgeCache = false;
 	BOOL read_only = mSecondInstance ? TRUE : FALSE;
 	LLAppViewer::getTextureCache()->setReadOnly(read_only);
 
-	BOOL texture_cache_mismatch = FALSE ;
-	static const S32 cache_version = 7;
-	if (gSavedSettings.getS32("LocalCacheVersion") != cache_version)
+	bool texture_cache_mismatch = false;
+	if (gSavedSettings.getS32("LocalCacheVersion") != LLAppViewer::getTextureCacheVersion())
 	{
-		texture_cache_mismatch = TRUE ;
-		if (!read_only) 
+		texture_cache_mismatch = true;
+		if(!read_only)
 		{
-			gSavedSettings.setS32("LocalCacheVersion", cache_version);
+			gSavedSettings.setS32("LocalCacheVersion", LLAppViewer::getTextureCacheVersion());
 		}
 	}
 
 	if (!read_only)
 	{
-	// Purge cache if user requested it
-	if (gSavedSettings.getBOOL("PurgeCacheOnStartup") ||
-		gSavedSettings.getBOOL("PurgeCacheOnNextStartup"))
-	{
-		gSavedSettings.setBOOL("PurgeCacheOnNextStartup", false);
-		mPurgeCache = true;
-	}
+		// Purge cache if user requested it
+		if (gSavedSettings.getBOOL("PurgeCacheOnStartup") ||
+			gSavedSettings.getBOOL("PurgeCacheOnNextStartup"))
+		{
+				gSavedSettings.setBOOL("PurgeCacheOnNextStartup", false);
+				mPurgeCache = true;
+			// STORM-1141 force purgeAllTextures to get called to prevent a crash here. -brad
+			texture_cache_mismatch = true;
+			}
 	
-	// We have moved the location of the cache directory over time.
-	migrateCacheDirectory();
+		// We have moved the location of the cache directory over time.
+		migrateCacheDirectory();
 
-	// Setup and verify the cache location
-	std::string cache_location = gSavedSettings.getString("CacheLocation");
-	std::string new_cache_location = gSavedSettings.getString("NewCacheLocation");
-	if (new_cache_location != cache_location)
-	{
-		gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation"));
-		purgeCache(); // purge old cache
-		gSavedSettings.setString("CacheLocation", new_cache_location);
-	}
+		// Setup and verify the cache location
+		std::string cache_location = gSavedSettings.getString("CacheLocation");
+		std::string new_cache_location = gSavedSettings.getString("NewCacheLocation");
+		if (new_cache_location != cache_location)
+		{
+			gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation"));
+			purgeCache(); // purge old cache
+			gSavedSettings.setString("CacheLocation", new_cache_location);
+		}
 	}
 	
 	if (!gDirUtilp->setCacheDir(gSavedSettings.getString("CacheLocation")))
@@ -3105,18 +3229,6 @@ const std::string& LLAppViewer::getWindowTitle() const
 	return gWindowTitle;
 }
 
- // OGPX TODO: refactor caps code please, also "PlaceAvatar" is a bit dated, since
- // we have since changed the name of the cap
-void LLAppViewer::setPlaceAvatarCap(const std::string& uri)
-{
-    gPlaceAvatarCap = uri;
-}
-
-const std::string& LLAppViewer::getPlaceAvatarCap() const
-{
-	return gPlaceAvatarCap;
-}
-
 // Callback from a dialog indicating user was logged out.  
 bool finish_disconnect(const LLSD& notification, const LLSD& response)
 {
@@ -3237,6 +3349,7 @@ void LLAppViewer::loadNameCache()
 	// Phoenix: Wolfspirit: Loads the Display Name Cache. And set if we are using Display Names.
 	std::string filename =
 		gDirUtilp->getExpandedFilename(LL_PATH_CACHE, "avatar_name_cache.xml");
+	LL_INFOS("AvNameCache") << filename << LL_ENDL;
 	llifstream name_cache_stream(filename);
 	if(name_cache_stream.is_open())
 	{
@@ -3766,39 +3879,6 @@ void LLAppViewer::idleShutdown()
 	}
 }
 
-// OGPX : Instead of sending UDP messages to the sim, tell the Agent Domain about logoff
-//... This responder is used with rez_avatar/place when the specialized case
-//... of sending a null region name is sent to the agent domain. Null region name means
-//... log me off of agent domain. *But* what about cases where you want to be logged into
-//... agent domain, but not physically on a region? 
-class LLLogoutResponder :
-	public LLHTTPClient::Responder
-{
-public:
-	LLLogoutResponder()
-	{
-	}
-
-	~LLLogoutResponder()
-	{
-	}
-	
-	void error(U32 statusNum, const std::string& reason)
-	{		
-		// consider retries
-		llinfos << "LLLogoutResponder error "
-				<< statusNum << " " << reason << llendl;
-	}
-
-	void result(const LLSD& content)
-	{
-		// perhaps logoutReply should come through this in the future
-		llinfos << "LLLogoutResponder completed successfully" << llendl;
-	
-	}
-
-};
-
 void LLAppViewer::idleNameCache()
 {
 	// Neither old nor new name cache can function before agent has a region
@@ -3921,7 +4001,6 @@ void LLAppViewer::idleNetwork()
 		llpushcallstacks ;
 		LLTimer check_message_timer;
 		//  Read all available packets from network 
-		stop_glerror();
 		const S64 frame_count = gFrameCount;  // U32->S64
 		F32 total_time = 0.0f;
    		while (gMessageSystem->checkAllMessages(frame_count, gServicePump)) 
@@ -3933,7 +4012,6 @@ void LLAppViewer::idleNetwork()
 				// server going down, so this is OK.
 				break;
 			}
-			stop_glerror();
 
 			total_decoded++;
 			gPacketsIn++;
@@ -3953,6 +4031,7 @@ void LLAppViewer::idleNetwork()
 				break;
 #endif
 		}
+
 		// Handle per-frame message system processing.
 		gMessageSystem->processAcks();
 
@@ -3973,8 +4052,6 @@ void LLAppViewer::idleNetwork()
 
 		// we want to clear the control after sending out all necessary agent updates
 		gAgent.resetControlFlags();
-		stop_glerror();
-
 		
 		// Decode enqueued messages...
 		S32 remaining_possible_decodes = MESSAGE_MAX_PER_FRAME - total_decoded;
@@ -4129,7 +4206,7 @@ void LLAppViewer::forceErrorBadMemoryAccess()
     return;
 }
 
-void LLAppViewer::forceErrorInifiniteLoop()
+void LLAppViewer::forceErrorInfiniteLoop()
 {
     while(true)
     {

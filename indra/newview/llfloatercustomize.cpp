@@ -2509,7 +2509,6 @@ void LLFloaterCustomize::initWearablePanels()
 		panel->addSubpart("Breast Sway", SUBPART_PHYSICS_BREASTS_LEFTRIGHT, part);
 
 		part = new LLSubpart();
-		part->mSex = SEX_FEMALE;
 		part->mTargetJoint = "mTorso";
 		part->mEditGroup = "physics_belly_updown";
 		part->mTargetOffset.setVec(0.f, 0.f, -.05f);
@@ -2840,13 +2839,6 @@ void LLFloaterCustomize::updateInventoryUI()
 			childSetVisible("panel_container", is_vis);
 		}
 	}
-
-	// OGPX : In place because Assets are not currently supported in OGPX. 
-	//    This was originally added as part of OGP9 svn branch because the viewer deeply deeply 
-	//     assumes that there *will* be an inventory there. If you never get an inventory, 
-	//     Make Outfit breaks badly. 
-	// OGPX TODO: When assets/inventory are supported, the check below can be removed.
-	// OGPX test if (!gSavedSettings.getString("CmdLineRegionURI").empty()) {all_complete = FALSE;}
 
 	childSetEnabled("Make Outfit", all_complete);
 }

@@ -311,9 +311,9 @@ void AIStateMachine::mainloop(void*)
 	AIStateMachine& statemachine(iter->statemachine());
 	if (!statemachine.mIdle)
 	{
-	  U64 start = get_cpu_clock_count();
+	  U64 start = LLFastTimer::getCPUClockCount64();
 	  iter->statemachine().multiplex(start);
-	  U64 delta = get_cpu_clock_count() - start;
+	  U64 delta = LLFastTimer::getCPUClockCount64() - start;
 	  iter->add(delta);
 	  total_clocks += delta;
 	  if (total_clocks >= max_count)

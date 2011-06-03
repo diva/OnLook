@@ -108,7 +108,7 @@ void LLFloaterHardwareSettings::refreshEnabledState()
 		childSetEnabled("vbo_stream", LLVertexBuffer::sEnableVBOs);
 	}
 
-	childSetEnabled("fbo",gGLManager.mHasFramebufferObject);
+	childSetEnabled("fbo",gGLManager.mHasFramebufferObject && !LLPipeline::sRenderDeferred);
 
 	// if no windlight shaders, turn off nighttime brightness, gamma, and fog distance
 	childSetEnabled("gamma", !gPipeline.canUseWindLightShaders());
