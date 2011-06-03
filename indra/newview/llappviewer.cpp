@@ -794,7 +794,7 @@ bool LLAppViewer::init()
 			OSMB_OK);
 		return 0;
 	}
-#else if (_M_IX86_FP == 1 || defined(__SSE__))
+#elif (_M_IX86_FP == 1 || defined(__SSE__))
 	// Without SSE support we will crash almost immediately, warn here.
 	if (!gSysCPU.hasSSE())
 	{
