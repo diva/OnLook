@@ -2,8 +2,19 @@
 <llsd>
 	<map>
 		<!-- Ascent-Specific Settings -->
-		
-		<key>SianaRenderOmitBlankVBO</key>
+
+    <key>SingularityBoldGroupModerator</key>
+    <map>
+      <key>Comment</key>
+      <string>Should group moderator chat be displayed in bold</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <key>SianaRenderOmitBlankVBO</key>
 		<map>
 			<key>Comment</key>
 			<string>Optimization: omit prefilling VBOs with zeroes. Default: OFF</string>
