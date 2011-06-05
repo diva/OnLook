@@ -1746,7 +1746,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	bool typing_init = false;
 	if( dialog == IM_TYPING_START && !is_muted )
 	{
-		if(!gIMMgr->hasSession(computed_session_id) && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
+		if(!gIMMgr->hasSession(computed_session_id) && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 		{
 			typing_init = true;
 			gIMMgr->addMessage(
@@ -1800,7 +1800,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 // [/RLVa:KB]
 	{
 		if((dialog == IM_NOTHING_SPECIAL && !is_auto_response) ||
-			(dialog == IM_TYPING_START && gSavedPerAccountSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
+			(dialog == IM_TYPING_START && gSavedSettings.getBOOL("AscentInstantMessageAnnounceIncoming"))
 			)
 		{
 			BOOL has = gIMMgr->hasSession(computed_session_id);
@@ -3024,6 +3024,10 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	LLViewerObject*	chatter;
 
 	msg->getString("ChatData", "FromName", from_name);
+    if (from_name.empty())
+    {
+        from_name = "(no name)";
+    }
 	chat.mFromName = from_name;
 	
 	msg->getUUID("ChatData", "SourceID", from_id);
@@ -5255,6 +5259,10 @@ void process_money_balance_reply( LLMessageSystem* msg, void** )
 		LLSD args;
 		args["MESSAGE"] = desc;
 		LLNotifications::instance().add("SystemMessage", args);
+
+		// Also send notification to chat -- MC
+		LLChat chat(desc);
+		LLFloaterChat::addChat(desc);
 
 		// Once the 'recent' container gets large enough, chop some
 		// off the beginning.

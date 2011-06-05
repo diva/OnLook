@@ -357,8 +357,9 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	}
 	
 	//it's cheaper to check if wind is enabled first
+	static const LLCachedControl<bool> enable_wind("WindEnabled",false); 
 	static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
-	if (gLLWindEnabled && render_animate_trees)
+	if (enable_wind && render_animate_trees)
 	{
 		F32 mass_inv; 
 
@@ -401,7 +402,7 @@ BOOL LLVOTree::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 		}
 	} 
 
-	if (!gLLWindEnabled || !render_animate_trees)
+	if (!enable_wind || !render_animate_trees)
 	{
 		if (mReferenceBuffer.isNull())
 		{

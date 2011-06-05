@@ -78,6 +78,7 @@ set(viewer_SOURCE_FILES
     ascentdaycyclemanager.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
+    ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
     dhparam.cpp
@@ -552,6 +553,7 @@ set(viewer_HEADER_FILES
     ascentdaycyclemanager.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
+    ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
     emerald.h
@@ -1229,9 +1231,13 @@ set(viewer_APPSETTINGS_FILES
     app_settings/low_graphics.xml
     app_settings/mid_graphics.xml
     app_settings/settings.xml
+    app_settings/settings_ascent.xml
+    app_settings/settings_ascent_coa.xml
     app_settings/settings_crash_behavior.xml
     app_settings/settings_files.xml
     app_settings/settings_per_account.xml
+    app_settings/settings_sh.xml
+    app_settings/settings_rlv.xml
     app_settings/std_bump.ini
     app_settings/trees.xml
     app_settings/ultra_graphics.xml

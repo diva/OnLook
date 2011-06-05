@@ -502,7 +502,6 @@ void LLPanelDisplay::refreshEnabledState()
 
 	mCtrlDeferred->setEnabled(can_defer);
 	mCtrlSunShadow->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
-	mCtrlAvatarCloth->setValue(gSavedSettings.getBOOL("RenderAvatarVP"));	//Enabling RenderDeferred changes this setting behind this floaters back.
 
 	// Vertex Shaders
 //	mCtrlShaderEnable->setEnabled(LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable"));

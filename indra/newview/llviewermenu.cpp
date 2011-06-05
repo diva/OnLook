@@ -1596,7 +1596,11 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	menu->append(new LLMenuItemCallGL("Reload Vertex Shader", &reload_vertex_shader, NULL));
 	menu->append(new LLMenuItemToggleGL("Animation Info", &LLVOAvatar::sShowAnimationDebug));
 	menu->append(new LLMenuItemCallGL("Slow Motion Animations", &slow_mo_animations, NULL));
-	menu->append(new LLMenuItemToggleGL("Show Look At", &LLHUDEffectLookAt::sDebugLookAt));
+
+	LLMenuItemCheckGL* item;
+	item = new LLMenuItemCheckGL("Show Look At", menu_toggle_control, NULL, menu_check_control, (void*)"AscentShowLookAt");
+	menu->append(item);
+
 	menu->append(new LLMenuItemToggleGL("Show Point At", &LLHUDEffectPointAt::sDebugPointAt));
 	menu->append(new LLMenuItemToggleGL("Debug Joint Updates", &LLVOAvatar::sJointDebug));
 	menu->append(new LLMenuItemToggleGL("Disable LOD", &LLViewerJoint::sDisableLOD));
@@ -3728,29 +3732,6 @@ void handle_fake_away_status(void*)
 		gSavedSettings.setBOOL("FakeAway", TRUE);
 		gAgent.sendAnimationRequest(ANIM_AGENT_AWAY, ANIM_REQUEST_START);
 	}
-}
-
-void handle_hide_typing_notification(void*)
-{
-	if (!gSavedSettings.controlExists("HideTypingNotification")) 
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
-
-	BOOL hide = gSavedSettings.getBOOL("HideTypingNotification");
-	if (hide)
-	{
-		gSavedSettings.declareBOOL("HideTypingNotification", FALSE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", FALSE);
-	}
-	else
-	{
-		gSavedSettings.declareBOOL("HideTypingNotification", TRUE, "Hide your 'Name is typing...' message when Instant Messaging.");
-		gSavedSettings.setBOOL("HideTypingNotification", TRUE);
-	}
-
-	LLChat chat;
-	chat.mSourceType = CHAT_SOURCE_SYSTEM;
-	chat.mText = llformat("IM Typing Notifications: %s",(hide ? "On" : "Off"));
-	LLFloaterChat::addChat(chat);
 }
 
 void handle_force_ground_sit(void*)
