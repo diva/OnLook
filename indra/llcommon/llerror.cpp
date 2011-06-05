@@ -46,6 +46,7 @@
 # include <unistd.h>
 #endif // !LL_WINDOWS
 #include <vector>
+#include <cstring>
 
 #include "llapp.h"
 #include "llapr.h"
@@ -162,7 +163,15 @@ namespace {
 					break;
 				}
 			}
+#ifdef CWDEBUG
+			// Include normal logging in libcwd's message processing.
+			// This takes care of prefixing with thread ID's, locking
+			// and allows us to (temporarily) turn off normal logging
+			// output.
+			Dout(dc::viewer, message);
+#else
 			fprintf(stderr, "%s\n", message.c_str());
+#endif
 #if LL_WINDOWS
 			fflush(stderr); //Now using a buffer. flush is required.
 #endif
@@ -1068,28 +1077,49 @@ namespace LLError
 
 		switch (site.mLevel)
 		{
-			case LEVEL_DEBUG:		prefix << "DEBUG: ";	break;
-			case LEVEL_INFO:		prefix << "INFO: ";		break;
-			case LEVEL_WARN:		prefix << "WARNING: ";	break;
-			case LEVEL_ERROR:		prefix << "ERROR: ";	break;
-			default:				prefix << "XXX: ";		break;
+			case LEVEL_DEBUG:		prefix << "DEBUG";	break;
+			case LEVEL_INFO:		prefix << "INFO";		break;
+			case LEVEL_WARN:		prefix << "WARNING";	break;
+			case LEVEL_ERROR:		prefix << "ERROR";	break;
+			default:				prefix << "XXX";		break;
 		};
-		
-		if (settings_w->printLocation)
+
+		bool need_function = true;
+		if (site.mBroadTag && *site.mBroadTag != '\0')
 		{
-			prefix << abbreviateFile(site.mFile)
-					<< "(" << site.mLine << ") : ";
+			prefix << "(\"" << site.mBroadTag << "\")";
+#if LL_DEBUG
+			// Suppress printing mFunction if mBroadTag is set, starts with
+			// "Plugin " and ends with "child": a debug message from a plugin.
+			size_t taglen = strlen(site.mBroadTag);
+			if (taglen >= 12 && strncmp(site.mBroadTag, "Plugin ", 7) == 0 &&
+				strcmp(site.mBroadTag + taglen - 5, "child") == 0)
+			{
+				need_function = false;
+			}
+#endif
 		}
+
+		prefix << ": ";
 		
-	#if LL_WINDOWS
-		// DevStudio: __FUNCTION__ already includes the full class name
-	#else
-		if (site.mClassInfo != typeid(NoClassInfo))
+		if (need_function)
 		{
-			prefix << className(site.mClassInfo) << "::";
+			if (settings_w->printLocation)
+			{
+				prefix << abbreviateFile(site.mFile)
+						<< "(" << site.mLine << ") : ";
+			}
+			
+#if LL_WINDOWS
+			// DevStudio: __FUNCTION__ already includes the full class name
+#else
+			if (need_function && site.mClassInfo != typeid(NoClassInfo))
+			{
+				prefix << className(site.mClassInfo) << "::";
+			}
+#endif
+			prefix << site.mFunction << ": ";
 		}
-	#endif
-		prefix << site.mFunction << ": ";
 
 		if (site.mPrintOnce)
 		{
@@ -1218,6 +1248,9 @@ namespace LLError
 #endif
 	void crashAndLoop(const std::string& message)
 	{
+#ifdef CWDEBUG
+		DoutFatal(dc::core, message);
+#else
 		// Now, we go kaboom!
 		int* make_me_crash = NULL;
 
@@ -1230,6 +1263,7 @@ namespace LLError
 		
 		// this is an attempt to let Coverity and other semantic scanners know that this function won't be returning ever.
 		exit(EXIT_FAILURE);
+#endif
 	}
 #if LL_WINDOWS
 		#pragma optimize("", on)

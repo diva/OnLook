@@ -44,6 +44,7 @@ endif(NOT STANDALONE)
 add_custom_target(prepare DEPENDS ${prepare_depends})
 
 add_subdirectory(cmake)
+add_subdirectory(${LIBS_OPEN_PREFIX}cwdebug)
 add_subdirectory(${LIBS_OPEN_PREFIX}llaudio)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcharacter)
 add_subdirectory(${LIBS_OPEN_PREFIX}llcommon)
@@ -75,8 +76,8 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}llplugin)
   add_subdirectory(${LIBS_OPEN_PREFIX}llui)
 
-  # viewer media plugins
-  add_subdirectory(${LIBS_OPEN_PREFIX}media_plugins)
+  # viewer plugins directory
+  add_subdirectory(${LIBS_OPEN_PREFIX}plugins)
 
   # llplugin testbed code (is this the right way to include it?)
   #if (NOT LINUX)
@@ -105,6 +106,7 @@ if (VIEWER)
     add_dependencies(viewer solaris-crash-logger)
   endif (LINUX)
 
+  add_subdirectory(${VIEWER_PREFIX}newview/statemachine)
   add_subdirectory(${VIEWER_PREFIX}newview)
   add_dependencies(viewer secondlife-bin)
 endif (VIEWER)

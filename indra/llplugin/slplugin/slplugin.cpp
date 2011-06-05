@@ -183,6 +183,13 @@ int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 int main(int argc, char **argv)
 #endif
 {
+#ifdef CWDEBUG
+	Debug( libcw_do.margin().assign("SLPlugin ", 9) );
+	Debug(debug::init());
+	// Uncomment this to automatically open a terminal with gdb. Requires SNOW-173.
+	//Debug(attach_gdb());
+#endif
+
 	// Set up llerror logging
 	{
 		LLError::initForApplication(".");

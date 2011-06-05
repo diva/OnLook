@@ -34,6 +34,7 @@
 #define LL_LLHUDEFFECTLOOKAT_H
 
 #include "llhudeffect.h"
+#include "llframetimer.h"
 
 class LLViewerObject;
 class LLVOAvatar;

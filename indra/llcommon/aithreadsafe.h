@@ -51,6 +51,14 @@ template<typename T> struct AIReadAccess;
 template<typename T> struct AIWriteAccess;
 template<typename T> struct AIAccess;
 
+#if LL_WINDOWS
+template<typename T> class AIThreadSafeBits;
+template<typename T>
+struct AIThreadSafeWindowsHack {
+	AIThreadSafeWindowsHack(AIThreadSafeBits<T>& var, T* object);
+};
+#endif
+
 template<typename T>
 class AIThreadSafeBits
 {
@@ -73,6 +81,9 @@ public:
 	void* memory() const { return const_cast<long*>(&mMemory[0]); }
 
 protected:
+#if LL_WINDOWS
+	template<typename T2> friend struct AIThreadSafeWindowsHack;
+#endif
 	// Accessors.
 	T const* ptr() const { return reinterpret_cast<T const*>(mMemory); }
 	T* ptr() { return reinterpret_cast<T*>(mMemory); }
@@ -168,7 +179,12 @@ protected:
 
 public:
 	// Only for use by AITHREADSAFE, see below.
-	AIThreadSafe(T* object) { llassert(object == AIThreadSafeBits<T>::ptr()); }
+	AIThreadSafe(T* object)
+	{
+#if !LL_WINDOWS
+		llassert(object == AIThreadSafeBits<T>::ptr());
+#endif
+	}
 };
 
 /**
@@ -191,7 +207,18 @@ public:
  * Note: This macro does not allow to allocate such object on the heap.
  *       If that is needed, have a look at AIThreadSafeDC.
  */
+#if LL_WINDOWS
+template<typename T>
+AIThreadSafeWindowsHack<T>::AIThreadSafeWindowsHack(AIThreadSafeBits<T>& var, T* object)
+{
+	llassert(object == var.ptr());
+}
+#define AITHREADSAFE(type, var, paramlist) \
+  AIThreadSafe<type> var(NULL); \
+  AIThreadSafeWindowsHack<type> dummy_##var(var, new (var.memory()) type paramlist)
+#else
 #define AITHREADSAFE(type, var, paramlist) AIThreadSafe<type> var(new (var.memory()) type paramlist)
+#endif
 
 /**
  * @brief A wrapper class for objects that need to be accessed by more than one thread.
@@ -278,11 +305,11 @@ struct AIReadAccessConst
 protected:
 	//! Constructor used by AIReadAccess.
 	AIReadAccessConst(AIThreadSafe<T>& wrapper, state_type state)
-		: mWrapper(wrapper), mState(state) 
+		: mWrapper(wrapper), mState(state)
 #if AI_NEED_ACCESS_CC
 		  ,	mIsCopyConstructed(false)
 #endif
-	{ }
+		{ }
 
 	AIThreadSafe<T>& mWrapper;	//!< Reference to the object that we provide access to.
 	state_type const mState;	//!< The lock state that mWrapper is in.
@@ -376,7 +403,8 @@ protected:
 	// Locking control.
 	LLMutex mMutex;
 
-	// For use by AIThreadSafeSimpleDC
+	friend struct AIRegisteredStateMachinesList;
+	// For use by AIThreadSafeSimpleDC and AIRegisteredStateMachinesList.
 	AIThreadSafeSimple(void) { }
 	AIThreadSafeSimple(AIAPRPool& parent) : mMutex(parent) { }
 

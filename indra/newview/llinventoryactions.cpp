@@ -91,6 +91,7 @@
 #include "llinventorybackup.h"
 //#include "llcheats.h"
 //#include "llnotecardmagic.h"
+#include "statemachine/aifilepicker.h"
 // </edit>
 
 const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
@@ -569,13 +570,18 @@ class LLLoadInvCacheFloater : public inventory_listener_t
 	{
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
-		LLFilePicker& file_picker = LLFilePicker::instance();
-		if(file_picker.getOpenFile( LLFilePicker::FFLOAD_INVGZ ))
-		{
-			std::string file_name = file_picker.getFirstFile();
-			LLLocalInventory::loadInvCache(file_name);
-		}
+		AIFilePicker* filepicker = AIFilePicker::create();
+		filepicker->open(FFLOAD_INVGZ, "", "invgz");
+		filepicker->run(boost::bind(&LLLoadInvCacheFloater::filepicker_callback, this, filepicker));
 		return true;
+	}
+
+	void filepicker_callback(AIFilePicker* filepicker)
+	{
+		if(filepicker->hasFilename())
+		{
+			LLLocalInventory::loadInvCache(filepicker->getFilename());
+		}
 	}
 };
 

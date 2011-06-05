@@ -38,6 +38,7 @@
 #include "lluuid.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
+#include "llhttpclient.h"
 
 #include <map>
 #include <set>
@@ -199,6 +200,9 @@ public:
 	void getDirectDescendentsOf(const LLUUID& cat_id,
 								cat_array_t*& categories,
 								item_array_t*& items) const;
+	// Same but only get categories.
+	void getDirectDescendentsOf(const LLUUID& cat_id,
+								cat_array_t*& categories) const;
 	
 	// Starting with the object specified, add its descendents to the
 	// array provided, but do not add the inventory object specified
@@ -382,13 +386,9 @@ public:
 	// during authentication. return true if everything parsed.
 	typedef std::map<std::string, std::string> response_t;
 	typedef std::vector<response_t> options_t;
-	// OGPX : Two loadSkeleton(), one for the XML-RPC logins, one for LLSD
-	//... The concept of a skeleton being different from the cap that 
-	//... we do inventory queries on should be examined, and the usage of
-	//... the skeleton in querying the wearables needs to be examined as well.
-	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
-	bool loadMeat(const options_t& options, const LLUUID& owner_id);
 
+	//OGPX really screwed with the login process. This is needed until it's all sorted out.
+	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
 /**                    Mutators
  **                                                                            **
  *******************************************************************************/

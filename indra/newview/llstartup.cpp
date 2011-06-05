@@ -54,12 +54,12 @@
 #include "hippogridmanager.h"
 #include "hippolimits.h"
 #include "floaterao.h"
+#include "statemachine/aifilepicker.h"
 
 #include "llares.h"
 #include "llcachename.h"
 #include "llviewercontrol.h"
 #include "lldir.h"
-#include "lleventpoll.h" // OGPX for Agent Domain event queue
 #include "llerrorcontrol.h"
 #include "llfiltersd2xmlrpc.h"
 #include "llfocusmgr.h"
@@ -139,7 +139,6 @@
 #include "llpreview.h"
 #include "llpreviewscript.h"
 #include "llproductinforequest.h"
-#include "llsdhttpserver.h" // OGPX might not need when EVENTHACK is sorted
 #include "llsecondlifeurls.h"
 #include "llselectmgr.h"
 #include "llsky.h"
@@ -634,6 +633,12 @@ bool idle_startup()
 		//-------------------------------------------------
 
 		LLStartUp::handleSocksProxy(false);
+
+		//-------------------------------------------------
+		// Load file- and dirpicker {context, default path} map.
+		//-------------------------------------------------
+
+		AIFilePicker::loadFile("filepicker_contexts.xml");
 
 		//-------------------------------------------------
 		// Init audio, which may be needed for prefs dialog
@@ -2024,7 +2029,7 @@ bool idle_startup()
 			LLFloaterActiveSpeakers::showInstance();
 		}
 
-		if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
+		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
 		{
 			LLFloaterBeacons::showInstance();
 		}

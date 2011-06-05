@@ -505,7 +505,7 @@ void LLPanelObject::getState( )
 	if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP))) )
 	{
 		LLVOAvatar* pAvatar = gAgent.getAvatarObject();
-		if ( (pAvatar) && (pAvatar->mIsSitting) && (pAvatar->getRoot() == objectp->getRootEdit()) )
+		if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == objectp->getRootEdit()) )
 			enable_move = enable_scale = enable_rotate = FALSE;
 	}
 // [/RLVa:KB]

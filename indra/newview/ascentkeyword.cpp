@@ -33,6 +33,7 @@
 
 #include "ascentkeyword.h"
 #include "llviewercontrol.h"
+#include "llui.h"
 #include <boost/regex.hpp>
 
 

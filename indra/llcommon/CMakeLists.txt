@@ -2,6 +2,7 @@
 
 project(llcommon)
 
+include(Cwdebug)
 include(00-Common)
 include(LLCommon)
 include(Linking)
@@ -32,6 +33,7 @@ set(llcommon_SOURCE_FILES
     llerror.cpp
     llerrorthread.cpp
     llevent.cpp
+    lleventtimer.cpp
     llfasttimer.cpp
     llfile.cpp
     llfindlocale.cpp
@@ -39,6 +41,7 @@ set(llcommon_SOURCE_FILES
     llformat.cpp
     llframetimer.cpp
     llheartbeat.cpp
+    llinstancetracker.cpp
     llindraconfigfile.cpp
     llliveappconfig.cpp
     lllivefile.cpp
@@ -60,6 +63,7 @@ set(llcommon_SOURCE_FILES
     llsdutil.cpp
     llsecondlifeurls.cpp
     llstat.cpp
+    llstacktrace.cpp
     llstreamtools.cpp
     llstring.cpp
     llstringtable.cpp
@@ -89,12 +93,12 @@ set(llcommon_HEADER_FILES
     linden_common.h
     linked_lists.h
     llagentconstants.h
+    llavatarname.h
     llapp.h
     llapr.h
     llassettype.h
     llassoclist.h
     llavatarconstants.h
-    llavatarname.h
     llbase32.h
     llbase64.h
     llboost.h
@@ -122,6 +126,7 @@ set(llcommon_HEADER_FILES
     llevent.h
     lleventemitter.h
     llextendedstatus.h
+    lleventtimer.h
     llfasttimer.h
     llfile.h
     llfindlocale.h
@@ -132,6 +137,7 @@ set(llcommon_HEADER_FILES
     llheartbeat.h
     llhttpstatuscodes.h
     llindexedqueue.h
+    llinstancetracker.h
     llindraconfigfile.h
     llkeythrottle.h
     lllinkedqueue.h
@@ -168,6 +174,7 @@ set(llcommon_HEADER_FILES
     llskiplist.h
     llskipmap.h
     llstack.h
+    llstacktrace.h
     llstat.h
     llstatenums.h
     llstl.h
@@ -188,7 +195,6 @@ set(llcommon_HEADER_FILES
     metaclasst.h
     metaproperty.h
     metapropertyt.h
-    processor.h
     reflective.h
     reflectivet.h
     roles_constants.h
@@ -214,7 +220,13 @@ target_link_libraries(
     ${EXPAT_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
+    ${CWDEBUG_LIBRARIES}
     )
+
+if (LINUX)
+    # When linking with llcommon later, we do not want to link with cwdebug.a again.
+    set_property(TARGET llcommon PROPERTY LINK_INTERFACE_LIBRARIES "-lapr-1 -laprutil-1 -lz")
+endif (LINUX)
 
 if (DARWIN)
     # Don't embed a full path in the library's install name

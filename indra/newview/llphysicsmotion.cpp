@@ -131,7 +131,8 @@ protected:
                 {
                         return sDefaultController[controller_key];
                 }
-                return mCharacter->getVisualParamWeight((*entry).second.c_str());
+                const std::string& param_name = (*entry).second.c_str();
+                return mCharacter->getVisualParamWeight(param_name.c_str());
         }
         void setParamValue(LLViewerVisualParam *param,
                            const F32 new_value_local,
@@ -496,7 +497,9 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 {
         // Skip if disabled globally.
 		static const LLCachedControl<bool> avatar_physics("AvatarPhysics",false);
-        if (!avatar_physics || (!((LLVOAvatar*)mCharacter)->isSelf() && !((LLVOAvatar*)mCharacter)->mSupportsPhysics))
+		bool supports_physics = !avatar_physics || (!((LLVOAvatar*)mCharacter)->isSelf() && !((LLVOAvatar*)mCharacter)->mSupportsPhysics);
+		//Treat lod 0 as AvatarPhyiscs:FALSE. AvatarPhyiscs setting is superfluous unless we decide to hook it into param sending.
+        if (supports_physics || !LLVOAvatar::sPhysicsLODFactor)
         {
 			if(!mIsDefault)
 			{
@@ -507,6 +510,7 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 				}
 				mCharacter->updateVisualParams();
 			}
+			if(!supports_physics) //Only use emerald physics if avatarphysiscs is really off, or the client doesn't seem to support new physics.
 			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
 			return TRUE;
 		}

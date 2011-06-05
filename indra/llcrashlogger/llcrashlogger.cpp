@@ -29,13 +29,15 @@
 * COMPLETENESS OR PERFORMANCE.
 * $/LicenseInfo$
 */
+
+#include "linden_common.h"
+
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
 #include <map>
 
 #include "llcrashlogger.h"
-#include "linden_common.h"
 #include "llstring.h"
 #include "indra_constants.h"	// CRASH_BEHAVIOR_ASK, CRASH_SETTING_NAME
 #include "llerror.h"

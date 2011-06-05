@@ -99,6 +99,7 @@
 //#include "llcheats.h"
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
+#include "statemachine/aifilepicker.h"
 // </edit>
 
 // Editing wearables from inventory is an include-hungry feature -.- -SG
@@ -1106,28 +1107,24 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 	else if("reupload" == action)
 	{
 		LLInventoryItem* item = model->getItem(mUUID);
-		if(!item) return;
-
-		LLFilePicker& picker = LLFilePicker::instance();
-		std::string filename;
-
-		switch(item->getType())
+		if (item && item->getType() == LLAssetType::AT_TEXTURE)
 		{
-		case LLAssetType::AT_TEXTURE:
-			if(!picker.getOpenFile(LLFilePicker::FFLOAD_IMAGE))
-				return;
-			filename = picker.getFirstFile();
-			if(!filename.empty())
-			{
-				LLFloaterImagePreview* floaterp = new LLFloaterImagePreview(filename, item);
-				LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_image_preview.xml");
-			}
-			break;
-		default:
-			break;
+		  AIFilePicker* filepicker = AIFilePicker::create();
+		  filepicker->open(FFLOAD_IMAGE, "", "image");
+		  filepicker->run(boost::bind(&LLItemBridge::showFloaterImagePreview, item, filepicker));
 		}
 	}
 	// </edit>
+}
+
+// static
+void LLItemBridge::showFloaterImagePreview(LLInventoryItem* item, AIFilePicker* filepicker)
+{
+	if (filepicker->hasFilename())
+	{
+		LLFloaterImagePreview* floaterp = new LLFloaterImagePreview(filepicker->getFilename(), item);
+		LLUICtrlFactory::getInstance()->buildFloater(floaterp, "floater_image_preview.xml");
+	}
 }
 
 void LLItemBridge::selectItem()

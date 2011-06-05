@@ -56,7 +56,7 @@
 #include "llagent.h"
 #include "llappviewer.h" 
 #include "llassetuploadresponders.h"
-#include "llfilepicker.h"
+#include "statemachine/aifilepicker.h"
 #include "llfloateranimpreview.h"
 #include "llfloaterbuycurrency.h"
 #include "llfloaterimagepreview.h"
@@ -341,14 +341,20 @@ void LLObjectBackup::exportObject()
 	mThisGroup.clear();
 
 	// Open the file save dialog
-	LLFilePicker& file_picker = LLFilePicker::instance();
-	if (!file_picker.getSaveFile(LLFilePicker::FFSAVE_XML))
+	AIFilePicker* filepicker = AIFilePicker::create();
+	filepicker->open("", FFSAVE_XML);
+	filepicker->run(boost::bind(&LLObjectBackup::exportObject_continued, this, filepicker));
+}
+
+void LLObjectBackup::exportObject_continued(AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
 	{
 		// User canceled save.
 		return;
 	}
 
-	mFileName = file_picker.getCurFile();
+	mFileName = filepicker->getFilename();
 	mFolder = gDirUtilp->getDirName(mFileName);
 
 	mNonExportedTextures = TEXTURE_OK;
@@ -733,14 +739,19 @@ void LLObjectBackup::importObject(bool upload)
 	mRetexture = upload;
 
 	// Open the file open dialog
-	LLFilePicker& file_picker = LLFilePicker::instance();
-	if (!file_picker.getOpenFile(LLFilePicker::FFLOAD_XML))
-	{
-		// User canceled save.
-		return;
-	}
+	AIFilePicker* filepicker = AIFilePicker::create();
+	filepicker->open(FFLOAD_XML, "", "import");
+	filepicker->run(boost::bind(&LLObjectBackup::importObject_continued, this, filepicker));
 
-	std::string file_name = file_picker.getFirstFile().c_str();
+	return;
+}
+
+void LLObjectBackup::importObject_continued(AIFilePicker* filepicker)
+{
+	if (!filepicker->hasFilename())
+		return;
+
+	std::string file_name = filepicker->getFilename();
 	mFolder = gDirUtilp->getDirName(file_name);
 	llifstream import_file(file_name);
 	LLSDSerialize::fromXML(mLLSD, import_file);
@@ -762,7 +773,7 @@ void LLObjectBackup::importObject(bool upload)
 
 	if (mObjects <= 0) {
 		LLSD args;
-		args["MESSAGE"] = std::string("Object import failed.\nThe XML file has an incompatble format or does not contain any objects.");
+		args["MESSAGE"] = std::string("Object import failed.\nThe XML file has an incompatible format or does not contain any objects.");
 		LLNotifications::instance().add("GenericAlert", args);
 		llwarns << "Trying to import illegal XML object file." << llendl;
 		return;
