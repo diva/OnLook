@@ -39,9 +39,17 @@
 #include "llsdserialize.h"
 #include "llnametable.h"
 #include "llframetimer.h"
-#include "llapp.h"
 
 #if LL_WINDOWS   //For windows platform.
+
+#include <windows.h>
+
+namespace {
+	inline DWORD getpid() {
+		return GetCurrentProcessId();
+	}
+}
+
 bool isProcessAlive(U32 pid)
 {
 	return (bool) GetProcessVersion((DWORD)pid);
@@ -63,11 +71,11 @@ class LLPidLockFile
 			mAutosave(false),
 			mSaving(false),
 			mWaiting(false),
-			mPID(LLApp::getPid()),
+			mPID(getpid()),
 			mNameTable(NULL),
 			mClean(true)
 		{
-			mLockName = gDirUtilp->getTempDir() + "/savelock";
+			mLockName = gDirUtilp->getTempDir() + gDirUtilp->getDirDelimiter() + "savelock";
 		}
 		bool requestLock(LLNameTable<void *> *name_table, bool autosave,
 						bool force_immediate=FALSE, F32 timeout=300.0);

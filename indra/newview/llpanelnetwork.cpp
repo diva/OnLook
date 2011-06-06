@@ -186,12 +186,14 @@ void LLPanelNetwork::onClickSetCache_continued(void* user_data, AIDirPicker* dir
 void LLPanelNetwork::onClickResetCache(void* user_data)
 {
  	LLPanelNetwork* self = (LLPanelNetwork*)user_data;
-	if (!gSavedSettings.getString("CacheLocation").empty())
+	if (gDirUtilp->getCacheDir(false) == gDirUtilp->getCacheDir(true))
 	{
-		gSavedSettings.setString("NewCacheLocation", "");
-		LLNotifications::instance().add("CacheWillBeMoved");
+		// The cache location was already the default.
+		return;
 	}
-	std::string cache_location = gDirUtilp->getCacheDir(true);
+	gSavedSettings.setString("NewCacheLocation", "");
+	LLNotifications::instance().add("CacheWillBeMoved");
+	std::string cache_location = gDirUtilp->getCacheDir(false);
 	self->childSetText("cache_location", cache_location);
 }
 
