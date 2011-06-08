@@ -41,6 +41,7 @@
 
 #include "llmemtype.h"
 
+#include "lldiriterator.h"
 #include "llviewernetwork.h"
 #include "llviewercontrol.h"
 #include "llmd5.h"
@@ -406,7 +407,8 @@ void LLAppViewerMacOSX::handleCrashReporting(bool reportFreeze)
 			std::string pathname = std::string(path) + std::string("/CrashReporter/");
 			std::string mask = "Second Life*";
 			std::string file_name;
-			while(gDirUtilp->getNextFileInDir(pathname, mask, file_name, false))
+			LLDirIterator iter(pathname, mask);
+			while(iter.next(file_name))
 			{
 				LLFile::remove(pathname + file_name);
 			}

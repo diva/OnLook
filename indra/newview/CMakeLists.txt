@@ -185,7 +185,6 @@ set(viewer_SOURCE_FILES
     llfloatercolorpicker.cpp
     llfloatercustomize.cpp
     llfloaterdaycycle.cpp
-    llfloaterdickdongs.cpp
     llfloaterdirectory.cpp
     llfloatereditui.cpp
     llfloaterenvsettings.cpp
@@ -662,7 +661,6 @@ set(viewer_HEADER_FILES
     llfloatercolorpicker.h
     llfloatercustomize.h
     llfloaterdaycycle.h
-    llfloaterdickdongs.h
     llfloaterdirectory.h
     llfloatereditui.h
     llfloaterenvsettings.h

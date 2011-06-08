@@ -59,6 +59,7 @@
 #include "llviewercontrol.h"
 #include "llvoavatar.h"
 #include "llsdutil.h"
+#include "statemachine/aievent.h"
 // <edit>
 #include "llappviewer.h" // gLostItemsRoot
 // </edit>
@@ -347,6 +348,13 @@ void LLInventoryModel::getDirectDescendentsOf(const LLUUID& cat_id,
 {
 	categories = get_ptr_in_map(mParentChildCategoryTree, cat_id);
 	items = get_ptr_in_map(mParentChildItemTree, cat_id);
+}
+
+// Same but just categories.
+void LLInventoryModel::getDirectDescendentsOf(const LLUUID& cat_id,
+											  cat_array_t*& categories) const
+{
+	categories = get_ptr_in_map(mParentChildCategoryTree, cat_id);
 }
 
 // SJB: Added version to lock the arrays to catch potential logic bugs
@@ -1719,7 +1727,6 @@ void LLInventoryModel::startBackgroundFetch(const LLUUID& cat_id)
 {
 	if (!sAllFoldersFetched)
 	{
-		sBackgroundFetchActive = TRUE;
 		if (cat_id.isNull())
 		{
 			if (!sFullFetchStarted)
@@ -1727,15 +1734,29 @@ void LLInventoryModel::startBackgroundFetch(const LLUUID& cat_id)
 				sFullFetchStarted = TRUE;
 				sFetchQueue.push_back(gInventoryLibraryRoot);
 				sFetchQueue.push_back(gAgent.getInventoryRootID());
-				gIdleCallbacks.addFunction(&LLInventoryModel::backgroundFetch, NULL);
+				if (!sBackgroundFetchActive)
+				{
+					sBackgroundFetchActive = TRUE;
+					gIdleCallbacks.addFunction(&LLInventoryModel::backgroundFetch, NULL);
+				}
 			}
 		}
 		else
 		{
 			// specific folder requests go to front of queue
-			if (sFetchQueue.empty() || sFetchQueue.front() != cat_id)
+			// Remove it from the queue first, to avoid getting it twice.
+			if (!sFetchQueue.empty() && sFetchQueue.front() != cat_id)
 			{
-				sFetchQueue.push_front(cat_id);
+				std::deque<LLUUID>::iterator old_entry = std::find(sFetchQueue.begin(), sFetchQueue.end(), cat_id);
+				if (old_entry != sFetchQueue.end())
+				{
+					sFetchQueue.erase(old_entry);
+				}
+			}
+			sFetchQueue.push_front(cat_id);
+			if (!sBackgroundFetchActive)
+			{
+				sBackgroundFetchActive = TRUE;
 				gIdleCallbacks.addFunction(&LLInventoryModel::backgroundFetch, NULL);
 			}
 		}
@@ -1745,9 +1766,12 @@ void LLInventoryModel::startBackgroundFetch(const LLUUID& cat_id)
 //static
 void LLInventoryModel::findLostItems()
 {
-	sBackgroundFetchActive = TRUE;
     sFetchQueue.push_back(LLUUID::null);
-    gIdleCallbacks.addFunction(&LLInventoryModel::backgroundFetch, NULL);
+	if (!sBackgroundFetchActive)
+	{
+		sBackgroundFetchActive = TRUE;
+		gIdleCallbacks.addFunction(&LLInventoryModel::backgroundFetch, NULL);
+	}
 }
 
 //static
@@ -1759,7 +1783,11 @@ void LLInventoryModel::stopBackgroundFetch()
 		gIdleCallbacks.deleteFunction(&LLInventoryModel::backgroundFetch, NULL);
 		sBulkFetchCount=0;
 		sMinTimeBetweenFetches=0.0f;
-//		sFullFetchStarted=FALSE;
+		if (!sAllFoldersFetched)
+		{
+			// We didn't finish this, so set it to FALSE in order to be able to start it again.
+			sFullFetchStarted=FALSE;
+		}
 	}
 }
 
@@ -2629,6 +2657,7 @@ void LLInventoryModel::buildParentChildMap()
 			// root of the agent's inv found.
 			// The inv tree is built.
 			mIsAgentInvUsable = true;
+			AIEvent::trigger(AIEvent::LLInventoryModel_mIsAgentInvUsable_true);
 		}
 	}
 	llinfos << " finished buildParentChildMap " << llendl;

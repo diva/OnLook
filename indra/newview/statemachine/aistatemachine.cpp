@@ -71,7 +71,6 @@ namespace {
 	bool calling_mainloop;
   };
   static AITHREADSAFE(cscm_type, continued_statemachines_and_calling_mainloop, );
-
 }
 
 // static
@@ -133,6 +132,8 @@ void AIStateMachine::cont(void)
   DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
   llassert(mIdle);
   mIdle = false;
+  if (mQueued)
+	return;
   AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
   cscm_w->continued_statemachines.push_back(this);
   if (!cscm_w->calling_mainloop)
@@ -141,6 +142,7 @@ void AIStateMachine::cont(void)
 	cscm_w->calling_mainloop = true;
 	gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
   }
+  mQueued = true;
 }
 
 void AIStateMachine::set_state(state_type state)
@@ -177,8 +179,8 @@ void AIStateMachine::finish(void)
 	idle();
   mState = bs_finish;
   finish_impl();
-  // Did finish_impl call deleteMe? Then that is only the default. Remember it.
-  bool default_delete = (mState == bs_deleted);
+  // Did finish_impl call kill()? Then that is only the default. Remember it.
+  bool default_delete = (mState == bs_killed);
   mState = bs_finish;
   if (mParent)
   {
@@ -202,20 +204,26 @@ void AIStateMachine::finish(void)
   mState = bs_initialize;
   if (mCallback)
   {
-	mCallback->callback(!mAborted);			// This can/may call deleteMe(), in which case the whole AIStateMachine will be deleted from the mainloop.
+	mCallback->callback(!mAborted);			// This can/may call kill(), in which case the whole AIStateMachine will be deleted from the mainloop.
 	delete mCallback;
 	mCallback = NULL;
   }
   // Restore the request for deletion if we weren't started again from the callback.
   if (default_delete && mState == bs_initialize)
-	mState = bs_deleted;
+	mState = bs_killed;
 }
 
-void AIStateMachine::deleteMe(void)
+void AIStateMachine::kill(void)
 {
   // Should only be called from finish().
   llassert(mIdle && (mState == bs_initialize || mState == bs_finish));
-  mState = bs_deleted;
+  if (mState == bs_initialize)
+  {
+	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
+	cont();
+	idle();
+  }
+  mState = bs_killed;
 }
 
 // Return stringified 'state'.
@@ -229,7 +237,7 @@ char const* AIStateMachine::state_str(state_type state)
 	  AI_CASE_RETURN(bs_run);
 	  AI_CASE_RETURN(bs_abort);
 	  AI_CASE_RETURN(bs_finish);
-	  AI_CASE_RETURN(bs_deleted);
+	  AI_CASE_RETURN(bs_killed);
 	}
   }
   return state_str_impl(state);
@@ -289,6 +297,7 @@ void AIStateMachine::mainloop(void*)
 	  nonempty = true;
 	  active_statemachines.push_back(QueueElement(*iter));
 	  Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
+	  (*iter)->mQueued = false;
 	}
 	if (nonempty)
 	  AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
@@ -326,7 +335,7 @@ void AIStateMachine::mainloop(void*)
 	{
 	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
 	  iter = active_statemachines.erase(iter);
-	  if (statemachine.mState == bs_deleted)
+	  if (statemachine.mState == bs_killed)
 	  {
 	  	Dout(dc::statemachine, "Deleting " << (void*)&statemachine);
 		delete &statemachine;

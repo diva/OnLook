@@ -650,7 +650,6 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mPostProcessText != NULL);
 
 	llassert(mCtrlBumpShiny != NULL);
-	llassert(mCtrlReflections != NULL);
 	llassert(mCtrlWindLight != NULL);
 	llassert(mCtrlAvatarVP != NULL);
 	llassert(mCtrlShaderEnable != NULL);

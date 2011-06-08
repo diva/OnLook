@@ -403,7 +403,8 @@ protected:
 	// Locking control.
 	LLMutex mMutex;
 
-	// For use by AIThreadSafeSimpleDC
+	friend struct AIRegisteredStateMachinesList;
+	// For use by AIThreadSafeSimpleDC and AIRegisteredStateMachinesList.
 	AIThreadSafeSimple(void) { }
 	AIThreadSafeSimple(AIAPRPool& parent) : mMutex(parent) { }
 

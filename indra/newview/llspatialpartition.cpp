@@ -1075,7 +1075,7 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	sNodeCount++;
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 
-	mExtents[0] = mExtents[1] = mObjectBounds[0] = mObjectBounds[0] = mObjectBounds[1] = 
+	mExtents[0] = mExtents[1] = mObjectBounds[0] = mObjectBounds[1] = 
 		mObjectExtents[0] = mObjectExtents[1] = mViewAngle;
 
 	sg_assert(mOctreeNode->getListenerCount() == 0);

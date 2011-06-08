@@ -2035,7 +2035,7 @@ bool idle_startup()
 			LLFloaterActiveSpeakers::showInstance();
 		}
 
-		if (gSavedSettings.getBOOL("BeaconAlwaysOn"))
+		if (gSavedSettings.getBOOL("ShowBeaconsFloater"))
 		{
 			LLFloaterBeacons::showInstance();
 		}

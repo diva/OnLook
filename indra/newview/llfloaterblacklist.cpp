@@ -241,7 +241,7 @@ void LLFloaterBlacklist::saveToDisk()
 //static
 void LLFloaterBlacklist::onClickSave(void* user_data)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("untitled.blacklist", FFSAVE_BLACKLIST);
 	filepicker->run(boost::bind(&LLFloaterBlacklist::onClickSave_continued, filepicker));
 }
@@ -266,7 +266,7 @@ void LLFloaterBlacklist::onClickSave_continued(AIFilePicker* filepicker)
 //static
 void LLFloaterBlacklist::onClickLoad(void* user_data)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_BLACKLIST);
 	filepicker->run(boost::bind(&LLFloaterBlacklist::onClickLoad_continued, filepicker));
 }

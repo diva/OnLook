@@ -721,7 +721,7 @@ void LLPreviewNotecard::saveAs()
 		default_filename = LLDir::getScrubbedFileName(item->getName()) + ".notecard";
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(default_filename, FFSAVE_NOTECARD);
 	filepicker->run(boost::bind(&LLPreviewNotecard::saveAs_continued, this, filepicker));
 }

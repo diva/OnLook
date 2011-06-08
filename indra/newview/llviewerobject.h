@@ -73,6 +73,7 @@ class LLViewerPartSourceScript;
 class LLViewerRegion;
 class LLViewerObjectMedia;
 class LLVOInventoryListener;
+class LLPartSysData;
 
 typedef enum e_object_update_type
 {

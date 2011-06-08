@@ -111,7 +111,6 @@
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
 #include "llfloaterdaycycle.h"
-//#include "llfloaterdickdongs.h" No need for the custom floater right now, I think. -HgB
 #include "llfloaterdirectory.h"
 #include "llfloatereditui.h"
 #include "llfloaterchatterbox.h"
@@ -1243,7 +1242,7 @@ void init_debug_world_menu(LLMenuGL* menu)
 static void handle_export_menus_to_xml_continued(AIFilePicker* filepicker);
 void handle_export_menus_to_xml(void*)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML);
 	filepicker->run(boost::bind(&handle_export_menus_to_xml_continued, filepicker));
 }
@@ -6522,10 +6521,10 @@ class LLShowFloater : public view_listener_t
 		{
 			LLFloaterActiveSpeakers::toggleInstance(LLSD());
 		}
-		/*else if (floater_name == "beacons")
+		else if (floater_name == "beacons")
 		{
-			LLFloaterBeacons::toggleInstance(LLSD()); NO
-		}*/
+			LLFloaterBeacons::toggleInstance(LLSD());
+		}
 		else if (floater_name == "perm prefs")
 		{
 			LLFloaterPerms::toggleInstance(LLSD());
@@ -6589,14 +6588,10 @@ class LLFloaterVisible : public view_listener_t
 		{
 			new_value = LLFloaterActiveSpeakers::instanceVisible(LLSD());
 		}
-		/*else if (floater_name == "beacons")
+		else if (floater_name == "beacons")
 		{
-			new_value = LLFloaterBeacons::instanceVisible(LLSD()); Oh man fuck this floater so much.
+			new_value = LLFloaterBeacons::instanceVisible(LLSD());
 		}
-		else if (floater_name == "dickdongs")
-		{
-			new_value = LLFloaterDickDongs::instanceVisible(LLSD()); Not needed any more.
-		}*/
 		else if (floater_name == "inventory")
 		{
 			LLInventoryView* iv = LLInventoryView::getActiveInventory(); 
@@ -8412,7 +8407,7 @@ void handle_mesh_save_llm(void* data)
 		return;
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(*mesh_name, FFSAVE_ALL, default_path, "mesh_llm");
 	filepicker->run(boost::bind(&handle_mesh_save_llm_continued, data, filepicker));
 }
@@ -8488,7 +8483,7 @@ void handle_mesh_save_current_obj(void* data)
 	std::string file_name = *mesh_name + "_current.obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_save_current_obj_continued, data, filepicker));
 }
@@ -8537,7 +8532,7 @@ void handle_mesh_save_obj(void* data)
 	std::string file_name = *mesh_name + ".obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_save_obj_continued, data, filepicker));
 }
@@ -8580,7 +8575,7 @@ void handle_mesh_load_obj(void* data)
 		return;
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_mesh_load_obj_continued, data, filepicker));
 }
@@ -8630,7 +8625,7 @@ void handle_morph_save_obj(void* data)
 	std::string file_name = *mesh_name + "." + morph_name + ".obj";
 	std::string default_path = gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "");
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(file_name, FFSAVE_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_morph_save_obj_continued, data, filepicker));
 }
@@ -8675,7 +8670,7 @@ void handle_morph_load_obj(void* data)
 
 	llinfos << "Load morph OBJ " << morph_name << " of mesh " << *mesh_name <<llendl;
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_ALL, default_path, "mesh_obj");
 	filepicker->run(boost::bind(&handle_morph_load_obj_continued, data, filepicker));
 }
@@ -8984,7 +8979,7 @@ void handle_save_to_xml(void*)
 	LLStringUtil::replaceChar(default_name, ':', '_');
 	LLStringUtil::replaceChar(default_name, '"', '_');
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(default_name, FFSAVE_XML);
 	filepicker->run(boost::bind(&handle_save_to_xml_continued, frontmost, filepicker));
 }
@@ -9001,7 +8996,7 @@ static void handle_save_to_xml_continued(LLFloater* frontmost, AIFilePicker* fil
 static void handle_load_from_xml_continued(AIFilePicker* filepicker);
 void handle_load_from_xml(void*)
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML);
 	filepicker->run(boost::bind(&handle_load_from_xml_continued, filepicker));
 }
@@ -9481,1103 +9476,11 @@ class LLWorldDayCycle : public view_listener_t
 	}
 };
 
-
-
 static void addMenu(view_listener_t *menu, const std::string& name)
 {
 	sMenus.push_back(menu);
 	menu->registerListener(gMenuHolder, name);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Chalice - Old beacon style
-class LLViewBeaconWidth : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string width = userdata.asString();
-		if(width == "1")
-		{
-			gSavedSettings.setS32("DebugBeaconLineWidth", 1);
-		}
-		else if(width == "4")
-		{
-			gSavedSettings.setS32("DebugBeaconLineWidth", 4);
-		}
-		else if(width == "16")
-		{
-			gSavedSettings.setS32("DebugBeaconLineWidth", 16);
-		}
-		else if(width == "32")
-		{
-			gSavedSettings.setS32("DebugBeaconLineWidth", 32);
-		}
-
-		return true;
-	}
-};
-
-//PURPLESL - Old beacon style
-class LLViewToggleBeacon : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string beacon = userdata.asString();
-		if (beacon == "scriptsbeacon")
-		{
-			LLPipeline::toggleRenderScriptedBeacons(NULL);
-			gSavedSettings.setBOOL( "scriptsbeacon", LLPipeline::getRenderScriptedBeacons(NULL) );
-			// toggle the other one off if it's on
-			if (LLPipeline::getRenderScriptedBeacons(NULL) && LLPipeline::getRenderScriptedTouchBeacons(NULL))
-			{
-				LLPipeline::toggleRenderScriptedTouchBeacons(NULL);
-				gSavedSettings.setBOOL( "scripttouchbeacon", LLPipeline::getRenderScriptedTouchBeacons(NULL) );
-			}
-		}
-		else if (beacon == "physicalbeacon")
-		{
-			LLPipeline::toggleRenderPhysicalBeacons(NULL);
-			gSavedSettings.setBOOL( "physicalbeacon", LLPipeline::getRenderPhysicalBeacons(NULL) );
-		}
-		else if (beacon == "soundsbeacon")
-		{
-			LLPipeline::toggleRenderSoundBeacons(NULL);
-			gSavedSettings.setBOOL( "soundsbeacon", LLPipeline::getRenderSoundBeacons(NULL) );
-		}
-		else if (beacon == "particlesbeacon")
-		{
-			LLPipeline::toggleRenderParticleBeacons(NULL);
-			gSavedSettings.setBOOL( "particlesbeacon", LLPipeline::getRenderParticleBeacons(NULL) );
-		}
-		else if (beacon == "scripttouchbeacon")
-		{
-			LLPipeline::toggleRenderScriptedTouchBeacons(NULL);
-			gSavedSettings.setBOOL( "scripttouchbeacon", LLPipeline::getRenderScriptedTouchBeacons(NULL) );
-			// toggle the other one off if it's on
-			if (LLPipeline::getRenderScriptedBeacons(NULL) && LLPipeline::getRenderScriptedTouchBeacons(NULL))
-			{
-				LLPipeline::toggleRenderScriptedBeacons(NULL);
-				gSavedSettings.setBOOL( "scriptsbeacon", LLPipeline::getRenderScriptedBeacons(NULL) );
-			}
-		}
-		else if (beacon == "renderbeacons")
-		{
-			LLPipeline::toggleRenderBeacons(NULL);
-			gSavedSettings.setBOOL( "renderbeacons", LLPipeline::getRenderBeacons(NULL) );
-			// toggle the other one on if it's not
-			if (!LLPipeline::getRenderBeacons(NULL) && !LLPipeline::getRenderHighlights(NULL))
-			{
-				LLPipeline::toggleRenderHighlights(NULL);
-				gSavedSettings.setBOOL( "renderhighlights", LLPipeline::getRenderHighlights(NULL) );
-			}
-		}
-		else if (beacon == "renderhighlights")
-		{
-			LLPipeline::toggleRenderHighlights(NULL);
-			gSavedSettings.setBOOL( "renderhighlights", LLPipeline::getRenderHighlights(NULL) );
-			// toggle the other one on if it's not
-			if (!LLPipeline::getRenderBeacons(NULL) && !LLPipeline::getRenderHighlights(NULL))
-			{
-				LLPipeline::toggleRenderBeacons(NULL);
-				gSavedSettings.setBOOL( "renderbeacons", LLPipeline::getRenderBeacons(NULL) );
-			}
-		}
-			
-		return true;
-	}
-};
-//PURPLESL - Old beacon style
-class LLViewCheckBeaconEnabled : public view_listener_t
-{
-	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
-	{
-		std::string beacon = userdata["data"].asString();
-		bool new_value = false;
-		if (beacon == "scriptsbeacon")
-		{
-			new_value = gSavedSettings.getBOOL( "scriptsbeacon");
-			LLPipeline::setRenderScriptedBeacons(new_value);
-		}
-		else if (beacon == "physicalbeacon")
-		{
-			new_value = gSavedSettings.getBOOL( "physicalbeacon");
-			LLPipeline::setRenderPhysicalBeacons(new_value);
-		}
-		else if (beacon == "soundsbeacon")
-		{
-			new_value = gSavedSettings.getBOOL( "soundsbeacon");
-			LLPipeline::setRenderSoundBeacons(new_value);
-		}
-		else if (beacon == "particlesbeacon")
-		{
-			new_value = gSavedSettings.getBOOL( "particlesbeacon");
-			LLPipeline::setRenderParticleBeacons(new_value);
-		}
-		else if (beacon == "scripttouchbeacon")
-		{
-			new_value = gSavedSettings.getBOOL( "scripttouchbeacon");
-			LLPipeline::setRenderScriptedTouchBeacons(new_value);
-		}
-		else if (beacon == "renderbeacons")
-		{
-			new_value = gSavedSettings.getBOOL( "renderbeacons");
-			LLPipeline::setRenderBeacons(new_value);
-		}
-		else if (beacon == "renderhighlights")
-		{
-			new_value = gSavedSettings.getBOOL( "renderhighlights");
-			LLPipeline::setRenderHighlights(new_value);
-		}
-		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
-		return true;
-	}
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void initialize_menus()
 {
@@ -10650,8 +9553,6 @@ void initialize_menus()
 	addMenu(new LLViewLookAtLastChatter(), "View.LookAtLastChatter");
 	addMenu(new LLViewShowHoverTips(), "View.ShowHoverTips");
 	addMenu(new LLViewHighlightTransparent(), "View.HighlightTransparent");
-	addMenu(new LLViewToggleBeacon(), "View.ToggleBeacon");
-	addMenu(new LLViewBeaconWidth(), "View.BeaconWidth");
 	addMenu(new LLViewToggleRenderType(), "View.ToggleRenderType");
 	addMenu(new LLViewShowHUDAttachments(), "View.ShowHUDAttachments");
 	addMenu(new LLZoomer(1.2f), "View.ZoomOut");
@@ -10669,7 +9570,6 @@ void initialize_menus()
 	addMenu(new LLViewCheckJoystickFlycam(), "View.CheckJoystickFlycam");
 	addMenu(new LLViewCheckShowHoverTips(), "View.CheckShowHoverTips");
 	addMenu(new LLViewCheckHighlightTransparent(), "View.CheckHighlightTransparent");
-	addMenu(new LLViewCheckBeaconEnabled(), "View.CheckBeaconEnabled");
 	addMenu(new LLViewCheckRenderType(), "View.CheckRenderType");
 	addMenu(new LLViewCheckHUDAttachments(), "View.CheckHUDAttachments");
 

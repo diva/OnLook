@@ -13,7 +13,9 @@ include(LLWindow)
 include(LLUI)
 include(LLRender)
 include(LLImage)
-
+include(LLCharacter)
+include(LLInventory)
+include(LLPrimitive)
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/newview
@@ -27,11 +29,16 @@ include_directories(
 	${LLUI_INCLUDE_DIRS}
 	${LLRENDER_INCLUDE_DIRS}
 	${LLIMAGE_INCLUDE_DIRS}
+	${LLCHARACTER_INCLUDE_DIRS}
+	${LLINVENTORY_INCLUDE_DIRS}
+	${LLPRIMITIVE_INCLUDE_DIRS}
     )
 
 set(statemachine_SOURCE_FILES
     aistatemachine.cpp
     aifilepicker.cpp
+    aifetchinventoryfolder.cpp
+    aievent.cpp
     )
 
 set(statemachine_HEADER_FILES
@@ -39,6 +46,8 @@ set(statemachine_HEADER_FILES
     aistatemachine.h
     aifilepicker.h
     aidirpicker.h
+    aifetchinventoryfolder.h
+    aievent.h
     )
 
 set_source_files_properties(${statemachine_HEADER_FILES}

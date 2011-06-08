@@ -1110,7 +1110,7 @@ void LLItemBridge::performAction(LLFolderView* folder, LLInventoryModel* model, 
 		LLInventoryItem* item = model->getItem(mUUID);
 		if (item && item->getType() == LLAssetType::AT_TEXTURE)
 		{
-		  AIFilePicker* filepicker = new AIFilePicker;
+		  AIFilePicker* filepicker = AIFilePicker::create();
 		  filepicker->open(FFLOAD_IMAGE, "", "image");
 		  filepicker->run(boost::bind(&LLItemBridge::showFloaterImagePreview, item, filepicker));
 		}

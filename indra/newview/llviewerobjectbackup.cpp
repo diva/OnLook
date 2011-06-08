@@ -341,7 +341,7 @@ void LLObjectBackup::exportObject()
 	mThisGroup.clear();
 
 	// Open the file save dialog
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML);
 	filepicker->run(boost::bind(&LLObjectBackup::exportObject_continued, this, filepicker));
 }
@@ -739,7 +739,7 @@ void LLObjectBackup::importObject(bool upload)
 	mRetexture = upload;
 
 	// Open the file open dialog
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML, "", "import");
 	filepicker->run(boost::bind(&LLObjectBackup::importObject_continued, this, filepicker));
 

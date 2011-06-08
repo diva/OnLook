@@ -1704,7 +1704,7 @@ void LLPreviewLSL::saveAs()
 		default_filename = LLDir::getScrubbedFileName(item->getName()) + ".lsl";
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(default_filename, FFSAVE_LSL);
 	filepicker->run(boost::bind(&LLPreviewLSL::saveAs_continued, this, filepicker));
 }
@@ -2655,7 +2655,7 @@ void LLLiveLSLEditor::saveAs()
 		default_filename = LLDir::getScrubbedFileName(item->getName());
 	}
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(default_filename, FFSAVE_LSL);
 	filepicker->run(boost::bind(&LLLiveLSLEditor::saveAs_continued, this, filepicker));
 }

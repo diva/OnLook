@@ -1850,7 +1850,7 @@ void LLFloaterCustomize::setCurrentWearableType( EWearableType type )
 // reX: new function
 void LLFloaterCustomize::onBtnImport( void* userdata )
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(FFLOAD_XML);
 	filepicker->run(boost::bind(&LLFloaterCustomize::onBtnImport_continued, filepicker));
 }
@@ -1910,7 +1910,7 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 // reX: new function
 void LLFloaterCustomize::onBtnExport( void* userdata )
 {
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open("", FFSAVE_XML);
 	filepicker->run(boost::bind(&LLFloaterCustomize::onBtnExport_continued, filepicker));
 }

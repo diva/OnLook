@@ -92,7 +92,7 @@ F32 LLCamera::getMaxView() const
 
 // ---------------- LLCamera::setFoo() member functions ----------------
 
-void LLCamera::setUserClipPlane(LLPlane& plane)
+void LLCamera::setUserClipPlane(LLPlane const& plane)
 {
 	mPlaneCount = 7;
 	mAgentPlanes[6] = plane;

@@ -524,8 +524,8 @@ public:
 			ypos += y_inc;
 		}
 		// only display these messages if we are actually rendering beacons at this moment
-		static const LLCachedControl<bool> beacon_always_on("BeaconAlwaysOn",false);
-		if (LLPipeline::getRenderBeacons(NULL) && beacon_always_on)
+		static const LLCachedControl<bool> beacons_visible("BeaconsVisible",false);
+		if (LLPipeline::getRenderBeacons(NULL) && beacons_visible)
 		{
 			if (LLPipeline::getRenderParticleBeacons(NULL))
 			{
@@ -4023,7 +4023,7 @@ void LLViewerWindow::saveImageNumbered(LLPointer<LLImageFormatted> image)
 		// AIFilePicker will append an appropriate extension to the proposed name, based on the ESaveFilter constant passed in.
 
 		// pick a directory in which to save
-		AIFilePicker* filepicker = new AIFilePicker;				// Deleted in LLViewerWindow::saveImageNumbered_continued1
+		AIFilePicker* filepicker = AIFilePicker::create();				// Deleted in LLViewerWindow::saveImageNumbered_continued1
 		filepicker->open(proposed_name, pick_type, "", "snapshot");
 		filepicker->run(boost::bind(&LLViewerWindow::saveImageNumbered_continued1, this, image, extension, filepicker));
 		return;

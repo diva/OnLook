@@ -357,7 +357,7 @@ void LLInventoryBackup::imageCallback(BOOL success,
 			return;
 		}
 
-		AIFilePicker* filepicker = new AIFilePicker;
+		AIFilePicker* filepicker = AIFilePicker::create();
 		filepicker->open(LLDir::getScrubbedFileName(item->getName()), getSaveFilter(item));
 		filepicker->run(boost::bind(&LLInventoryBackup::imageCallback_continued, src, filepicker));
 	}
@@ -421,7 +421,7 @@ void LLInventoryBackup::assetCallback(LLVFS *vfs,
 
 	// Write it back out...
 
-	AIFilePicker* filepicker = new AIFilePicker;
+	AIFilePicker* filepicker = AIFilePicker::create();
 	filepicker->open(LLDir::getScrubbedFileName(item->getName()), getSaveFilter(item));
 	filepicker->run(boost::bind(&LLInventoryBackup::assetCallback_continued, buffer, size, filepicker));
 }
