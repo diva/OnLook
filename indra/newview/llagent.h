@@ -45,14 +45,11 @@
 #include "llvoavatardefines.h"
 #include "llviewerinventory.h"
 #include "llinventorymodel.h"
+#include "v3dmath.h"
 
-// Ventrella
-#include "llfollowcam.h"
-// end Ventrella
-
-const BOOL ANIMATE = TRUE;
-const U8 AGENT_STATE_TYPING =	0x04;			//  Typing indication
-const U8 AGENT_STATE_EDITING =  0x10;			//  Set when agent has objects selected
+extern const BOOL 	ANIMATE;
+extern const U8 	AGENT_STATE_TYPING;  // Typing indication
+extern const U8 	AGENT_STATE_EDITING; // Set when agent has objects selected
 
 class LLChat;
 class LLVOAvatar;
@@ -693,7 +690,7 @@ public:
 	const LLColor4		&getEffectColor();
 	void				setEffectColor(const LLColor4 &color);
 private:
-	LLColor4 mEffectColor;
+	LLColor4 *mEffectColor;
 
 /**                    Rendering
  **                                                                            **

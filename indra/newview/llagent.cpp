@@ -111,36 +111,22 @@
 
 using namespace LLVOAvatarDefines;
 
-//drone wandering constants
-const F32 MAX_WANDER_TIME = 20.f;						// seconds
-const F32 MAX_HEADING_HALF_ERROR = 0.2f;				// radians
-const F32 WANDER_MAX_SLEW_RATE = 2.f * DEG_TO_RAD;		// radians / frame
-const F32 WANDER_TARGET_MIN_DISTANCE = 10.f;			// meters
+const BOOL ANIMATE = TRUE;
+const U8 AGENT_STATE_TYPING =	0x04;
+const U8 AGENT_STATE_EDITING =  0x10;
 
 // Autopilot constants
-const F32 AUTOPILOT_HEADING_HALF_ERROR = 10.f * DEG_TO_RAD;	// radians
-const F32 AUTOPILOT_MAX_SLEW_RATE = 1.f * DEG_TO_RAD;		// radians / frame
-const F32 AUTOPILOT_STOP_DISTANCE = 2.f;					// meters
 const F32 AUTOPILOT_HEIGHT_ADJUST_DISTANCE = 8.f;			// meters
 const F32 AUTOPILOT_MIN_TARGET_HEIGHT_OFF_GROUND = 1.f;	// meters
 const F32 AUTOPILOT_MAX_TIME_NO_PROGRESS = 1.5f;		// seconds
 
-// face editing constants
-const LLVector3d FACE_EDIT_CAMERA_OFFSET(0.4f, -0.05f, 0.07f);
-const LLVector3d FACE_EDIT_TARGET_OFFSET(0.f, 0.f, 0.05f);
-
+const F32 MAX_VELOCITY_AUTO_LAND_SQUARED = 4.f * 4.f;
+const F64 CHAT_AGE_FAST_RATE = 3.0;
 
 // fidget constants
 const F32 MIN_FIDGET_TIME = 8.f; // seconds
 const F32 MAX_FIDGET_TIME = 20.f; // seconds
 
-const F32 MAX_VELOCITY_AUTO_LAND_SQUARED = 4.f * 4.f;
-
-const F32 MAX_FOCUS_OFFSET = 20.f;
-
-const F32 MIN_RADIUS_ALPHA_SIZZLE = 0.5f;
-
-const F64 CHAT_AGE_FAST_RATE = 3.0;
 
 // The agent instance.
 LLAgent gAgent;
@@ -256,7 +242,7 @@ LLAgent::LLAgent() :
 	mAutoPilotFinishedCallback(NULL),
 	mAutoPilotCallbackData(NULL),
 
-	mEffectColor(0.f, 1.f, 1.f, 1.f),
+	mEffectColor(new LLColor4(0.f, 1.f, 1.f, 1.f)),
 
 	mHaveHomePosition(FALSE),
 	mHomeRegionHandle( 0 ),
@@ -271,8 +257,7 @@ LLAgent::LLAgent() :
 
 	mPendingLure(NULL)
 {
-	U32 i;
-	for (i = 0; i < TOTAL_CONTROLS; i++)
+	for (U32 i = 0; i < TOTAL_CONTROLS; i++)
 	{
 		mControlsTakenCount[i] = 0;
 		mControlsTakenPassedOnCount[i] = 0;
@@ -292,7 +277,7 @@ void LLAgent::init()
 
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
-	mEffectColor = gSavedSettings.getColor4("EffectColor");
+	*mEffectColor = gSavedSettings.getColor4("EffectColor");
 	
 	mInitialized = TRUE;
 }
@@ -318,6 +303,8 @@ LLAgent::~LLAgent()
 
 	delete mAgentAccess;
 	mAgentAccess = NULL;
+	delete mEffectColor;
+	mEffectColor = NULL;
 }
 
 
@@ -2777,12 +2764,12 @@ void LLAgent::getName(std::string& name)
 
 const LLColor4 &LLAgent::getEffectColor()
 {
-	return mEffectColor;
+	return *mEffectColor;
 }
 
 void LLAgent::setEffectColor(const LLColor4 &color)
 {
-	mEffectColor = color;
+	*mEffectColor = color;
 }
 
 void LLAgent::initOriginGlobal(const LLVector3d &origin_global)
