@@ -73,7 +73,7 @@
 
 // newview includes
 #include "llagent.h"
-
+#include "llagentcamera.h"
 #include "jcfloaterareasearch.h"
 
 #include "llagentpilot.h"
@@ -2018,7 +2018,7 @@ bool toggle_build_mode()
 		else
 		{
 			// manually disable edit mode, but do not affect the camera
-			gAgent.resetView(false);
+			gAgentCamera.resetView(false);
 			gFloaterTools->close();
 			gViewerWindow->showCursor();			
 		}
@@ -2027,7 +2027,7 @@ bool toggle_build_mode()
 	}
 	else
 	{
-		ECameraMode camMode = gAgent.getCameraMode();
+		ECameraMode camMode = gAgentCamera.getCameraMode();
 		if (CAMERA_MODE_MOUSELOOK == camMode ||	CAMERA_MODE_CUSTOMIZE_AVATAR == camMode)
 		{
 			// pull the user out of mouselook or appearance mode when entering build mode
@@ -2042,13 +2042,13 @@ bool toggle_build_mode()
 				handle_toggle_flycam();
 			}
 				
-			if (gAgent.getFocusOnAvatar())
+			if (gAgentCamera.getFocusOnAvatar())
 			{
 				// zoom in if we're looking at the avatar
-				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-				gAgent.setFocusGlobal(gAgent.getPositionGlobal() + 2.0 * LLVector3d(gAgent.getAtAxis()));
-				gAgent.cameraZoomIn(0.666f);
-				gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+				gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+				gAgentCamera.setFocusGlobal(gAgent.getPositionGlobal() + 2.0 * LLVector3d(gAgent.getAtAxis()));
+				gAgentCamera.cameraZoomIn(0.666f);
+				gAgentCamera.cameraOrbitOver( 30.f * DEG_TO_RAD );
 			}
 		}
 
@@ -2065,7 +2065,7 @@ bool toggle_build_mode()
 		// Could be first use
 		LLFirstUse::useBuild();
 
-		gAgent.resetView(false);
+		gAgentCamera.resetView(false);
 
 		// avoid spurious avatar movements
 		LLViewerJoystick::getInstance()->setNeedsReset();
@@ -2128,18 +2128,18 @@ class LLObjectBuild : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit() && gSavedSettings.getBOOL("EditCameraMovement") )
+		if (gAgentCamera.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit() && gSavedSettings.getBOOL("EditCameraMovement") )
 		{
 			// zoom in if we're looking at the avatar
-			gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
-			gAgent.cameraZoomIn(0.666f);
-			gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+			gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.cameraZoomIn(0.666f);
+			gAgentCamera.cameraOrbitOver( 30.f * DEG_TO_RAD );
 			gViewerWindow->moveCursorToCenter();
 		}
 		else if ( gSavedSettings.getBOOL("EditCameraMovement") )
 		{
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 			gViewerWindow->moveCursorToCenter();
 		}
 
@@ -2175,7 +2175,7 @@ class LLObjectEdit : public view_listener_t
 		}
 // [/RLVa:KB]
 
-		if (gAgent.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit())
+		if (gAgentCamera.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit())
 		{
 			LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
 
@@ -2183,19 +2183,19 @@ class LLObjectEdit : public view_listener_t
 			{
 				// always freeze camera in space, even if camera doesn't move
 				// so, for example, follow cam scripts can't affect you when in build mode
-				gAgent.setFocusGlobal(gAgent.calcFocusPositionTargetGlobal(), LLUUID::null);
-				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+				gAgentCamera.setFocusGlobal(gAgentCamera.calcFocusPositionTargetGlobal(), LLUUID::null);
+				gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
 			}
 			else
 			{
-				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+				gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
 				LLViewerObject* selected_objectp = selection->getFirstRootObject();
 				if (selected_objectp)
 				{
 				// zoom in on object center instead of where we clicked, as we need to see the manipulator handles
-					gAgent.setFocusGlobal(selected_objectp->getPositionGlobal(), selected_objectp->getID());
-				gAgent.cameraZoomIn(0.666f);
-				gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+					gAgentCamera.setFocusGlobal(selected_objectp->getPositionGlobal(), selected_objectp->getID());
+				gAgentCamera.cameraZoomIn(0.666f);
+				gAgentCamera.cameraOrbitOver( 30.f * DEG_TO_RAD );
 				gViewerWindow->moveCursorToCenter();
 			}
 		}
@@ -2268,19 +2268,19 @@ class LLLandBuild : public view_listener_t
 	{
 		LLViewerParcelMgr::getInstance()->deselectLand();
 
-		if (gAgent.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit() && gSavedSettings.getBOOL("EditCameraMovement") )
+		if (gAgentCamera.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit() && gSavedSettings.getBOOL("EditCameraMovement") )
 		{
 			// zoom in if we're looking at the avatar
-			gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
-			gAgent.cameraZoomIn(0.666f);
-			gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+			gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.cameraZoomIn(0.666f);
+			gAgentCamera.cameraOrbitOver( 30.f * DEG_TO_RAD );
 			gViewerWindow->moveCursorToCenter();
 		}
 		else if ( gSavedSettings.getBOOL("EditCameraMovement")  )
 		{
 			// otherwise just move focus
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 			gViewerWindow->moveCursorToCenter();
 		}
 
@@ -2793,12 +2793,12 @@ bool handle_go_to()
 
 		if (gAgent.getAvatarObject() && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
 		{
-			gAgent.setFocusGlobal(gAgent.getFocusTargetGlobal(), gAgent.getAvatarObject()->getID());
+			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgent.getAvatarObject()->getID());
 		}
 		else 
 		{
 			// Snap camera back to behind avatar
-			gAgent.setFocusOnAvatar(TRUE, ANIMATE);
+			gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
 		}
 
 		// Could be first use
@@ -3327,7 +3327,7 @@ bool callback_leave_group(const LLSD& notification, const LLSD& response)
 		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		msg->nextBlockFast(_PREHASH_GroupData);
-		msg->addUUIDFast(_PREHASH_GroupID, gAgent.mGroupID );
+		msg->addUUIDFast(_PREHASH_GroupID, gAgent.getGroupID() );
 		gAgent.sendReliableMessage();
 	}
 	return false;
@@ -3338,7 +3338,7 @@ void handle_leave_group(void *)
 	if (gAgent.getGroupID() != LLUUID::null)
 	{
 		LLSD args;
-		args["GROUP"] = gAgent.mGroupName;
+		args["GROUP"] = gAgent.getGroupName();
 		LLNotifications::instance().add("GroupLeaveConfirmMember", args, LLSD(), callback_leave_group);
 	}
 }
@@ -3481,10 +3481,10 @@ void handle_show_notifications_console(void *)
 
 void handle_dump_group_info(void *)
 {
-	llinfos << "group   " << gAgent.mGroupName << llendl;
-	llinfos << "ID      " << gAgent.mGroupID << llendl;
+	llinfos << "group   " << gAgent.getGroupName() << llendl;
+	llinfos << "ID      " << gAgent.getGroupID() << llendl;
 	llinfos << "powers " << gAgent.mGroupPowers << llendl;
-	llinfos << "title   " << gAgent.mGroupTitle << llendl;
+	llinfos << "title   " << gAgent.getGroupTitle() << llendl;
 	//llinfos << "insig   " << gAgent.mGroupInsigniaID << llendl;
 }
 
@@ -4173,7 +4173,7 @@ void reset_view_final( BOOL proceed, void* );
 
 void handle_reset_view()
 {
-	if( (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgent.getCameraMode()) && gFloaterCustomize )
+	if( (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode()) && gFloaterCustomize )
 	{
 		// Show dialog box if needed.
 		gFloaterCustomize->askToSaveIfDirty( reset_view_final, NULL );
@@ -4201,14 +4201,14 @@ void reset_view_final( BOOL proceed, void* )
 		return;
 	}
 
-	gAgent.resetView(TRUE, TRUE);
+	gAgentCamera.resetView(TRUE, TRUE);
 }
 
 class LLViewLookAtLastChatter : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		gAgent.lookAtLastChat();
+		gAgentCamera.lookAtLastChat();
 		return true;
 	}
 };
@@ -4217,13 +4217,13 @@ class LLViewMouselook : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (!gAgent.cameraMouselook())
+		if (!gAgentCamera.cameraMouselook())
 		{
-			gAgent.changeCameraToMouselook();
+			gAgentCamera.changeCameraToMouselook();
 		}
 		else
 		{
-			gAgent.changeCameraToDefault();
+			gAgentCamera.changeCameraToDefault();
 		}
 		return true;
 	}
@@ -4510,9 +4510,9 @@ void handle_show_overlay_title(void*)
 
 void derez_objects(EDeRezDestination dest, const LLUUID& dest_id)
 {
-	if(gAgent.cameraMouselook())
+	if(gAgentCamera.cameraMouselook())
 	{
-		gAgent.changeCameraToDefault();
+		gAgentCamera.changeCameraToDefault();
 	}
 	//gInventoryView->setPanelOpen(TRUE);
 
@@ -5633,7 +5633,7 @@ class LLViewEnableLastChatter : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		// *TODO: add check that last chatter is in range
-		bool new_value = (gAgent.cameraThirdPerson() && gAgent.getLastChatter().notNull());
+		bool new_value = (gAgentCamera.cameraThirdPerson() && gAgent.getLastChatter().notNull());
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -5766,7 +5766,7 @@ void print_agent_nvpairs(void*)
 		llinfos << "Can't find agent object" << llendl;
 	}
 
-	llinfos << "Camera at " << gAgent.getCameraPositionGlobal() << llendl;
+	llinfos << "Camera at " << gAgentCamera.getCameraPositionGlobal() << llendl;
 }
 
 void show_debug_menus()
@@ -6051,7 +6051,7 @@ class LLToolsLookAtSelection : public view_listener_t
 		BOOL zoom = (userdata.asString() == "zoom");
 		if (!LLSelectMgr::getInstance()->getSelection()->isEmpty())
 		{
-			gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+			gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
 
 			LLBBox selection_bbox = LLSelectMgr::getInstance()->getBBoxOfSelection();
 			F32 angle_of_view = llmax(0.1f, LLViewerCamera::getInstance()->getAspect() > 1.f ? LLViewerCamera::getInstance()->getView() * LLViewerCamera::getInstance()->getAspect() : LLViewerCamera::getInstance()->getView());
@@ -6067,13 +6067,13 @@ class LLToolsLookAtSelection : public view_listener_t
 			}
 			if (zoom)
 			{
-				gAgent.setCameraPosAndFocusGlobal(LLSelectMgr::getInstance()->getSelectionCenterGlobal() + LLVector3d(obj_to_cam * distance), 
+				gAgentCamera.setCameraPosAndFocusGlobal(LLSelectMgr::getInstance()->getSelectionCenterGlobal() + LLVector3d(obj_to_cam * distance), 
 												LLSelectMgr::getInstance()->getSelectionCenterGlobal(), 
 												object_id );
 			}
 			else
 			{
-				gAgent.setFocusGlobal( LLSelectMgr::getInstance()->getSelectionCenterGlobal(), object_id );
+				gAgentCamera.setFocusGlobal( LLSelectMgr::getInstance()->getSelectionCenterGlobal(), object_id );
 			}
 		}
 		return true;
@@ -6370,7 +6370,7 @@ class LLShowFloater : public view_listener_t
 		{
 			if (gAgent.areWearablesLoaded())
 			{
-				gAgent.changeCameraToCustomizeAvatar();
+				gAgentCamera.changeCameraToCustomizeAvatar();
 			}
 		}
 		// Phoenix: Wolfspirit: Enabled Show Floater out of viewer menu
@@ -6740,16 +6740,16 @@ void handle_focus(void *)
 		return;
 	}
 
-	if (gAgent.getFocusOnAvatar())
+	if (gAgentCamera.getFocusOnAvatar())
 	{
 		// zoom in if we're looking at the avatar
-		gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-		gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
-		gAgent.cameraZoomIn(0.666f);
+		gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+		gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
+		gAgentCamera.cameraZoomIn(0.666f);
 	}
 	else
 	{
-		gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+		gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 	}
 
 	gViewerWindow->moveCursorToCenter();
@@ -6770,18 +6770,18 @@ class LLLandEdit : public view_listener_t
 		}
 // [/RLVa:KB]
 
-		if (gAgent.getFocusOnAvatar() && gSavedSettings.getBOOL("EditCameraMovement") )
+		if (gAgentCamera.getFocusOnAvatar() && gSavedSettings.getBOOL("EditCameraMovement") )
 		{
 			// zoom in if we're looking at the avatar
-			gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 
-			gAgent.cameraOrbitOver( F_PI * 0.25f );
+			gAgentCamera.cameraOrbitOver( F_PI * 0.25f );
 			gViewerWindow->moveCursorToCenter();
 		}
 		else if ( gSavedSettings.getBOOL("EditCameraMovement") )
 		{
-			gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+			gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 			gViewerWindow->moveCursorToCenter();
 		}
 
@@ -6819,17 +6819,17 @@ BOOL enable_buy_land(void*)
 
 void handle_move(void*)
 {
-	if (gAgent.getFocusOnAvatar())
+	if (gAgentCamera.getFocusOnAvatar())
 	{
 		// zoom in if we're looking at the avatar
-		gAgent.setFocusOnAvatar(FALSE, ANIMATE);
-		gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+		gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
+		gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 
-		gAgent.cameraZoomIn(0.666f);
+		gAgentCamera.cameraZoomIn(0.666f);
 	}
 	else
 	{
-		gAgent.setFocusGlobal(LLToolPie::getInstance()->getPick());
+		gAgentCamera.setFocusGlobal(LLToolPie::getInstance()->getPick());
 	}
 
 	gViewerWindow->moveCursorToCenter();
@@ -6933,7 +6933,7 @@ void confirm_replace_attachment(S32 option, void* user_data)
 			walkToSpot -= delta;
 
 			gAgent.startAutoPilotGlobal(gAgent.getPosGlobalFromAgent(walkToSpot), "Attach", NULL, near_attach_object, user_data, stop_distance);
-			gAgent.clearFocusObject();
+			gAgentCamera.clearFocusObject();
 		}
 	}
 }
@@ -8032,7 +8032,7 @@ class LLToolsEnableSaveToObjectInventory : public view_listener_t
 
 BOOL enable_not_thirdperson(void*)
 {
-	return !gAgent.cameraThirdPerson();
+	return !gAgentCamera.cameraThirdPerson();
 }
 
 
@@ -8059,7 +8059,7 @@ class LLViewEnableMouselook : public view_listener_t
 	{
 		// You can't go directly from customize avatar to mouselook.
 		// TODO: write code with appropriate dialogs to handle this transition.
-		bool new_value = (CAMERA_MODE_CUSTOMIZE_AVATAR != gAgent.getCameraMode() && !gSavedSettings.getBOOL("FreezeTime"));
+		bool new_value = (CAMERA_MODE_CUSTOMIZE_AVATAR != gAgentCamera.getCameraMode() && !gSavedSettings.getBOOL("FreezeTime"));
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}

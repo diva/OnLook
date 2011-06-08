@@ -34,6 +34,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llagentcamera.h"
 
 #include "rlvhandler.h"
 #include "rlvinventory.h"
@@ -1153,7 +1154,7 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 					// Get rid of the build floater if it's open [copy/paste from toggle_build_mode()]
 					if (gFloaterTools->getVisible())
 					{
-						gAgent.resetView(FALSE);
+						gAgentCamera.resetView(FALSE);
 						gFloaterTools->close();
 						gViewerWindow->showCursor();
 					}

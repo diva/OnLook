@@ -39,6 +39,7 @@
 #include "llquantize.h"
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llassetuploadresponders.h"
 #include "llviewerwindow.h"
 #include "llfloatercustomize.h"

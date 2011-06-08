@@ -39,6 +39,7 @@
 #include "lldir.h"
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llviewercontrol.h"
 #include "llfirstuse.h"
 #include "llfloater.h"
@@ -1060,7 +1061,7 @@ void LLToolDragAndDrop::pickCallback(const LLPickInfo& pick_info)
 	gViewerWindow->getWindow()->setCursor( cursor );
 
 	LLToolDragAndDrop::getInstance()->mLastHitPos = pick_info.mPosGlobal;
-	LLToolDragAndDrop::getInstance()->mLastCameraPos = gAgent.getCameraPositionGlobal();
+	LLToolDragAndDrop::getInstance()->mLastCameraPos = gAgentCamera.getCameraPositionGlobal();
 }
 
 // static

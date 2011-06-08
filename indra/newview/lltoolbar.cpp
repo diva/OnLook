@@ -41,6 +41,7 @@
 #include "llparcel.h"
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llbutton.h"
 #include "llfocusmgr.h"
 #include "llviewercontrol.h"
@@ -289,7 +290,7 @@ void LLToolBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 void LLToolBar::refresh()
 {
 	BOOL show = gSavedSettings.getBOOL("ShowToolBar");
-	BOOL mouselook = gAgent.cameraMouselook();
+	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);
 
 	BOOL sitting = FALSE;
@@ -469,7 +470,7 @@ void LLToolBar::onClickAppearance(void*)
 {
 	if (gAgent.areWearablesLoaded())
 	{
-		gAgent.changeCameraToCustomizeAvatar();
+		gAgentCamera.changeCameraToCustomizeAvatar();
 	}
 }
 

@@ -40,6 +40,7 @@
 // For Listeners
 #include "llaudioengine.h"
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llavatarnamecache.h"
 #include "llconsole.h"
 #include "lldrawpoolterrain.h"
@@ -109,7 +110,7 @@ static bool handleRenderAvatarMouselookChanged(const LLSD& newvalue)
 static bool handleRenderFarClipChanged(const LLSD& newvalue)
 {
 	F32 draw_distance = (F32) newvalue.asReal();
-	gAgent.mDrawDistance = draw_distance;
+	gAgentCamera.mDrawDistance = draw_distance; //Force it to a sane value. I've had drawdistance get knocked down to 0.. and BAD things happen.
 	LLWorld::getInstance()->setLandFarClip(draw_distance);
 	return true;
 }

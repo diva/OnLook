@@ -34,6 +34,7 @@
 
 #include "imageids.h"
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llcrc.h"
 #include "lldir.h"
 #include "llglheaders.h"
@@ -189,7 +190,7 @@ void LLTexLayerSetBuffer::cancelUpload()
 // do we need to upload, and do we have sufficient data to create an uploadable composite?
 BOOL LLTexLayerSetBuffer::needsUploadNow() const
 {
-	BOOL upload = mNeedsUpload && mTexLayerSet->isLocalTextureDataFinal() && (gAgent.mNumPendingQueries == 0);
+	BOOL upload = mNeedsUpload && mTexLayerSet->isLocalTextureDataFinal() && gAgentQueryManager.hasNoPendingQueries();
 	return (upload && (LLFrameTimer::getTotalTime() > mUploadAfter));
 }
 
@@ -2006,7 +2007,7 @@ void LLTexLayerParamAlpha::setWeight(F32 weight, BOOL set_by_user)
 		LLVOAvatar* avatar = mTexLayer->getTexLayerSet()->getAvatar();
 		if( avatar->getSex() & getSex() )
 		{
-			if ( gAgent.cameraCustomizeAvatar() )
+			if ( gAgentCamera.cameraCustomizeAvatar() )
 			{
 				set_by_user = FALSE;
 			}

@@ -41,6 +41,7 @@
 
 #include "cofmgr.h"
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llcallingcard.h"
 #include "llcheckboxctrl.h"		// for radio buttons
 #include "llradiogroup.h"
@@ -3931,23 +3932,23 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 		LLViewerParcelMgr::getInstance()->deselectLand();
 		LLSelectMgr::getInstance()->deselectAll();
 
-		if (gAgent.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit())
+		if (gAgentCamera.getFocusOnAvatar() && !LLToolMgr::getInstance()->inEdit())
 		{
 			if (objectp->isHUDAttachment() || !gSavedSettings.getBOOL("EditCameraMovement"))
 			{
 				// always freeze camera in space, even if camera doesn't move
 				// so, for example, follow cam scripts can't affect you when in build mode
-				gAgent.setFocusGlobal(gAgent.calcFocusPositionTargetGlobal(), LLUUID::null);
-				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+				gAgentCamera.setFocusGlobal(gAgentCamera.calcFocusPositionTargetGlobal(), LLUUID::null);
+				gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
 			}
 			else
 			{
-				gAgent.setFocusOnAvatar(FALSE, ANIMATE);
+				gAgentCamera.setFocusOnAvatar(FALSE, ANIMATE);
 
 				// zoom in on object center instead of where we clicked, as we need to see the manipulator handles
-				gAgent.setFocusGlobal(objectp->getPositionGlobal(), objectp->getID());
-				gAgent.cameraZoomIn(0.666f);
-				gAgent.cameraOrbitOver( 30.f * DEG_TO_RAD );
+				gAgentCamera.setFocusGlobal(objectp->getPositionGlobal(), objectp->getID());
+				gAgentCamera.cameraZoomIn(0.666f);
+				gAgentCamera.cameraOrbitOver( 30.f * DEG_TO_RAD );
 				gViewerWindow->moveCursorToCenter();
 			}
 		}
@@ -5380,10 +5381,10 @@ void LLWearableBridge::editOnAvatar()
 		// Set the tab to the right wearable.
 		LLFloaterCustomize::setCurrentWearableType( wearable->getType() );
 
-		if( CAMERA_MODE_CUSTOMIZE_AVATAR != gAgent.getCameraMode() )
+		if( CAMERA_MODE_CUSTOMIZE_AVATAR != gAgentCamera.getCameraMode() )
 		{
 			// Start Avatar Customization
-			gAgent.changeCameraToCustomizeAvatar();
+			gAgentCamera.changeCameraToCustomizeAvatar();
 		}
 	}
 }
