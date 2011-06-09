@@ -33,7 +33,7 @@
 
 #include "aithreadsafe.h"
 #include "llfasttimer.h"
-#include <boost/signal.hpp>
+#include <boost/signals2.hpp>
 
 //!
 // A AIStateMachine is a base class that allows derived classes to
@@ -194,12 +194,12 @@ class AIStateMachine {
 	bool mAbortParent;							//!< If true, abort parent on abort(). Otherwise continue as normal.
 	// From outside a state machine:
 	struct callback_type {
-	  typedef boost::signal<void (bool)> signal_type;
+	  typedef boost::signals2::signal<void (bool)> signal_type;
 	  callback_type(signal_type::slot_type const& slot) { connection = signal.connect(slot); }
 	  ~callback_type() { connection.disconnect(); }
 	  void callback(bool success) const { signal(success); }
 	private:
-	  boost::signals::connection connection;
+	  boost::signals2::connection connection;
 	  signal_type signal;
 	};
 	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.

@@ -1517,7 +1517,7 @@ BOOL LLFace::verify(const U32* indices_array) const
 			// but present this info.
 			// To clean up the log, the geometry could be cleared, or the
 			// face could otherwise be marked for no ::verify.
-			llinfos << "Face with no vertex buffer and " << mGeomCount << " mGeomCount" << llendl;
+			//AIFIXME: llinfos << "Face with no vertex buffer and " << mGeomCount << " mGeomCount" << llendl;
 		}
 		return TRUE;
 	}

@@ -55,7 +55,7 @@
 #endif
 
 #include <boost/bind.hpp>
-#include <boost/signal.hpp>
+#include <boost/signals2.hpp>
 
 #if LL_WINDOWS
 # if (_MSC_VER >= 1300 && _MSC_VER < 1400)
@@ -95,7 +95,7 @@ typedef enum e_control_type
 class LLControlVariable : public LLRefCount
 {
 	friend class LLControlGroup;
-	typedef boost::signal<void(const LLSD&)> signal_t;
+	typedef boost::signals2::signal<void(const LLSD&)> signal_t;
 
 private:
 	std::string		mName;
@@ -295,7 +295,7 @@ class LLCachedControl
 private:
     T mCachedValue;
     LLPointer<LLControlVariable> mControl;
-    boost::signals::connection mConnection;
+    boost::signals2::connection mConnection;
 	LLControlGroup *mControlGroup;
 
 public:
