@@ -195,14 +195,14 @@
             <key>md5sum</key>
             <string>2cad51575b429be4fdadb5d63da1c739</string>
             <key>url</key>
-            <uri>https:/github.com/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
+			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
           </map>
            <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>a2d2fff5cc5555ffd9865daedfcd0dd5</string>
             <key>url</key>
-            <uri>https:/github.com/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
+			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
