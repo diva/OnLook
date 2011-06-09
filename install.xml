@@ -193,16 +193,16 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>bb8552f22769da81593f7d47a51d83d8</string>
+            <string>2cad51575b429be4fdadb5d63da1c739</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-darwin-20100226.tar.bz2</uri>
+            <uri>https:/github.com/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
           </map>
            <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>4db3d74e40d149eeec06f4d97a609bb1</string>
+            <string>a2d2fff5cc5555ffd9865daedfcd0dd5</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-linux-20100624.tar.bz2</uri>
+            <uri>https:/github.com/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
