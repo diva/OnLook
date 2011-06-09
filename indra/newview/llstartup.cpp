@@ -687,6 +687,8 @@ bool idle_startup()
 				if(init)
 				{
 					gAudiop->setMuted(TRUE);
+					if(gSavedSettings.getBOOL("AllowLargeSounds"))
+						gAudiop->setAllowLargeSounds(true);
 				}
 				else
 				{

@@ -583,6 +583,12 @@ static bool handlePhoenixNameSystemChanged(const LLSD& newvalue)
 }
 // [/Ansariel: Display name support]
 
+static bool handleAllowLargeSounds(const LLSD& newvalue)
+{
+	if(gAudiop)
+		gAudiop->setAllowLargeSounds(newvalue.asBoolean());
+	return true;
+}
 ////////////////////////////////////////////////////////////////////////////
 void settings_setup_listeners()
 {
@@ -754,6 +760,8 @@ void settings_setup_listeners()
     // [Ansariel: Display name support]
 	gSavedSettings.getControl("PhoenixNameSystem")->getSignal()->connect(boost::bind(&handlePhoenixNameSystemChanged, _1));
     // [/Ansariel: Display name support]
+
+	gSavedSettings.getControl("AllowLargeSounds")->getSignal()->connect(boost::bind(&handleAllowLargeSounds, _1));
 }
 
 template <> eControlType get_control_type<U32>(const U32& in, LLSD& out) 
