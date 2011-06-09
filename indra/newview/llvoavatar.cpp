@@ -43,6 +43,7 @@
 
 #include "cofmgr.h"
 #include "llagent.h" //  Get state values from here
+#include "llagentwearables.h"
 #include "llanimationstates.h"
 #include "llagentcamera.h"
 #include "llviewercontrol.h"
@@ -780,6 +781,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	{
 		mIsSelf = TRUE;
 		gAgent.setAvatarObject(this);
+		gAgentWearables.setAvatarObject(this);
 		lldebugs << "Marking avatar as self " << id << llendl;
 	}
 	else
@@ -4777,7 +4779,7 @@ void LLVOAvatar::updateVisibility()
 
 		if(isSelf())
 		{
-			if( !gAgent.areWearablesLoaded())
+			if( !gAgentWearables.areWearablesLoaded())
 			{
 				visible = FALSE;
 			}

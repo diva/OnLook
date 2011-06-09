@@ -49,6 +49,7 @@
 #include "llgroupmgr.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 #include "llwindow.h"
 #include "llviewerstats.h"
 #include "llmd5.h"
@@ -4236,6 +4237,7 @@ void LLAppViewer::disconnectViewer()
 	// close inventory interface, close all windows
 	LLInventoryView::cleanup();
 
+	gAgentWearables.cleanup();
 	gAgentCamera.cleanup();
 	// Also writes cached agent settings to gSavedSettings
 	gAgent.cleanup();

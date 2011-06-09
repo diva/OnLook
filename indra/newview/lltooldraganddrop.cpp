@@ -1938,7 +1938,7 @@ BOOL LLToolDragAndDrop::isInventoryGiveAcceptable(LLInventoryItem* item)
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_CLOTHING:
 		// <edit>		
-		/*if(!copyable && gAgent.isWearingItem(item->getUUID()))
+		/*if(!copyable && gAgentWearables.isWearingItem(item->getUUID()))
 		{
 			acceptable = FALSE;
 		}*/
@@ -2038,7 +2038,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 		break;
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_CLOTHING:
-		if(gAgent.isWearingItem(item->getUUID()))
+		if(gAgentWearables.isWearingItem(item->getUUID()))
 		{
 			worn = TRUE;
 		}
@@ -2559,7 +2559,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearItem(
 		{
 			// Don't wear anything until initial wearables are loaded, can
 			// destroy clothing items.
-			if (!gAgent.areWearablesLoaded()) 
+			if (!gAgentWearables.areWearablesLoaded()) 
 			{
 				LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
 				return ACCEPT_NO;
@@ -2654,7 +2654,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearCategory(
 	{
 		// Don't wear anything until initial wearables are loaded, can
 		// destroy clothing items.
-		if (!gAgent.areWearablesLoaded()) 
+		if (!gAgentWearables.areWearablesLoaded()) 
 		{
 			LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
 			return ACCEPT_NO;

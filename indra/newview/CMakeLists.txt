@@ -105,6 +105,7 @@ set(viewer_SOURCE_FILES
     llagentdata.cpp
     llagentlanguage.cpp
     llagentpilot.cpp
+    llagentwearables.cpp
     llanimstatelabels.cpp
     llappviewer.cpp
     llassetconverter.cpp
@@ -579,6 +580,7 @@ set(viewer_HEADER_FILES
     llagentdata.h
     llagentlanguage.h
     llagentpilot.h
+    llagentwearables.h
     llanimstatelabels.h
     llappearance.h
     llappviewer.h

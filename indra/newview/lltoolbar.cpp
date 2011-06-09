@@ -468,7 +468,7 @@ void LLToolBar::onClickChat(void* user_data)
 // static
 void LLToolBar::onClickAppearance(void*)
 {
-	if (gAgent.areWearablesLoaded())
+	if (gAgentWearables.areWearablesLoaded())
 	{
 		gAgentCamera.changeCameraToCustomizeAvatar();
 	}

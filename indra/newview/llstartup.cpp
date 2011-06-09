@@ -87,6 +87,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 #include "llagentpilot.h"
 #include "llfloateravatarlist.h"
 #include "llfloateravatarpicker.h"
@@ -2839,7 +2840,7 @@ bool idle_startup()
 		else
 		{
 			// OK to just get the wearables
-			if ( gAgent.areWearablesLoaded() )
+			if ( gAgentWearables.areWearablesLoaded() )
 			{
 				// We have our clothing, proceed.
 				//llinfos << "wearables loaded" << llendl;
@@ -3522,7 +3523,7 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	//					LLFloaterRate::processReputationIndividualReply);
 
 	msg->setHandlerFuncFast(_PREHASH_AgentWearablesUpdate,
-						LLAgent::processAgentInitialWearablesUpdate );
+						LLAgentWearables::processAgentInitialWearablesUpdate );
 
 	msg->setHandlerFunc("ScriptControlChange",
 						LLAgent::processScriptControlChange );
@@ -3669,7 +3670,7 @@ void LLStartUp::loadInitialOutfit( const std::string& outfit_folder_name,
 									has_name);
 	if (0 == cat_array.count())
 	{
-		gAgent.createStandardWearables(gender);
+		gAgentWearables.createStandardWearables(gender);
 	}
 	else
 	{
@@ -3794,6 +3795,11 @@ void LLStartUp::setStartupState( EStartupState state )
 
 void reset_login()
 {
+	gAgentWearables.cleanup();
+	gAgentCamera.cleanup();
+	gAgent.cleanup();
+	LLWorld::getInstance()->destroyClass();
+
 	// OGPX : Save URL history file
 	// This needs to be done on login failure because it gets read on *every* login attempt 
 	LLURLHistory::saveFile("url_history.xml");

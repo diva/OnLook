@@ -35,6 +35,7 @@
 #include "imageids.h"
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 #include "llcrc.h"
 #include "lldir.h"
 #include "llglheaders.h"
@@ -82,7 +83,7 @@ LLBakedUploadData::LLBakedUploadData( LLVOAvatar* avatar,
 	mStartTime = LLFrameTimer::getTotalTime();		// Record starting time
 	for( S32 i = 0; i < WT_COUNT; i++ )
 	{
-		LLWearable* wearable = gAgent.getWearable( (EWearableType)i);
+		LLWearable* wearable = gAgentWearables.getWearable( (EWearableType)i);
 		if( wearable )
 		{
 			mWearableAssets[i] = wearable->getID();

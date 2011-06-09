@@ -35,6 +35,7 @@
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 
 #include "rlvhandler.h"
 #include "rlvinventory.h"
@@ -740,7 +741,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 			LLUUID idCompositeItem;
 			if ((type = LLWearable::typeNameToType(strComposite)) != WT_INVALID)
 			{
-				idCompositeItem = gAgent.getWearableItem(type);
+				idCompositeItem = gAgentWearables.getWearableItemID(type);
 			}
 			else if ((idxAttachPt = getAttachPointIndex(strComposite, true)) != 0)
 			{
@@ -840,7 +841,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 						LLViewerInventoryCategory* pFolder;
 						if ( (!isWearable(wtType)) ||
 							 ( (gAgent.getWearable(wtType)) && (!isRemovable(wtType)) ) || 
-							 ( (gRlvHandler.getCompositeInfo(gAgent.getWearableItem(wtType), NULL, &pFolder)) &&
+							 ( (gRlvHandler.getCompositeInfo(gAgentWearables.getWearableItemID(wtType), NULL, &pFolder)) &&
 							   (pFolder->getUUID() != pItem->getParentUUID()) && (!gRlvHandler.canTakeOffComposite(pFolder)) ) )
 						{
 							return false;
@@ -2003,7 +2004,7 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 		{
 			// We never hide body parts, even if they're "locked" and we're hiding locked layers
 			// (nor do we hide a layer if the issuing object is the only one that has this layer locked)
-			bool fWorn = (gAgent.getWearable(wtRlvTypes[idxType])) && 
+			bool fWorn = (gAgentWearables.getWearable(wtRlvTypes[idxType])) && 
 				( (!RlvSettings::getHideLockedLayers()) || 
 				  (LLAssetType::AT_BODYPART == LLWearable::typeToAssetType(wtRlvTypes[idxType])) ||
 				  (RlvForceWear::isForceRemovable(wtRlvTypes[idxType], true, rlvCmd.getObjectID())) );
@@ -2031,7 +2032,7 @@ ERlvCmdRet RlvHandler::onGetOutfitNames(const RlvCommand& rlvCmd, std::string& s
 		switch (rlvCmd.getBehaviourType())
 		{
 			case RLV_BHVR_GETOUTFITNAMES:		// Every layer that's worn
-				fAdd = (gAgent.getWearable(wtType) != NULL);
+				fAdd = (gAgentWearables.getWearable(wtType) != NULL);
 				break;
 /*
 			case RLV_BHVR_GETADDOUTFITNAMES:	// Every layer that can be worn on (but ignore any locks set by the issuer)

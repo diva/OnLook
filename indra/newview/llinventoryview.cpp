@@ -1986,7 +1986,7 @@ public:
 	virtual bool operator()(LLInventoryCategory* cat,
 							LLInventoryItem* item)
 	{
-		return !gAgent.isWearingItem(item->getUUID());
+		return !gAgentWearables.isWearingItem(item->getUUID());
 	}
 };
 
