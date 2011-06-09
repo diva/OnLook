@@ -744,12 +744,11 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 				callback(handle, LLWorldMap::getInstance()->mSLURL, image_id, LLWorldMap::getInstance()->mSLURLTeleport);
 			}
 		}
-		if(LLAgent::lure_show)
+		if(	gAgent.mPendingLure &&
+			(U16)(gAgent.mPendingLure->mPosGlobal.mdV[0] / REGION_WIDTH_UNITS) == x_regions &&
+			(U16)(gAgent.mPendingLure->mPosGlobal.mdV[1] / REGION_WIDTH_UNITS) == y_regions )
 		{
-			if((x_regions == LLAgent::lure_global_x) && (y_regions == LLAgent::lure_global_y))
-			{
-				gAgent.onFoundLureDestination();
-			}
+			gAgent.onFoundLureDestination();
 		}
 	}
 

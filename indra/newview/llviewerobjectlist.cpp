@@ -46,6 +46,7 @@
 #include "llviewerwindow.h"
 #include "llnetmap.h"
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "pipeline.h"
 #include "llspatialpartition.h"
 #include "llhoverview.h"
@@ -292,7 +293,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 {
 	LLFastTimer t(LLFastTimer::FTM_PROCESS_OBJECTS);	
 	
-	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 	LLViewerObject *objectp;
 	S32			num_objects;
 	U32			local_id;
@@ -621,7 +622,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	}
 
 	// Focused
-	objectp = gAgent.getFocusObject();
+	objectp = gAgentCamera.getFocusObject();
 	if (objectp)
 	{
 		objectp->boostTexturePriority();
@@ -1340,7 +1341,7 @@ void LLViewerObjectList::renderPickList(const LLRect& screen_rect, BOOL pick_par
 	gViewerWindow->renderSelections( TRUE, pick_parcel_wall, FALSE );
 
 	//fix for DEV-19335.  Don't pick hud objects when customizing avatar (camera mode doesn't play nice with nametags).
-	if (!gAgent.cameraCustomizeAvatar())
+	if (!gAgentCamera.cameraCustomizeAvatar())
 	{
 		// render pickable ui elements, like names, etc.
 		LLHUDObject::renderAllForSelect();

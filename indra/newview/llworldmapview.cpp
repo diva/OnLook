@@ -42,6 +42,7 @@
 #include "llrender.h"
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
 #include "llviewercontrol.h"
@@ -327,7 +328,7 @@ void LLWorldMapView::draw()
 
 	const S32 width = getRect().getWidth();
 	const S32 height = getRect().getHeight();
-	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 
 	LLLocalClipRect clip(getLocalRect());
 	{
@@ -634,7 +635,7 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 	const F32 half_width = F32(width) / 2.0f;
 	const F32 half_height = F32(height) / 2.0f;
 	F32 layer_alpha = 1.f;
-	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 	
 	// Draw one image per layer
 	for (U32 layer_idx=0; layer_idx<LLWorldMap::getInstance()->mMapLayers[LLWorldMap::getInstance()->mCurrentMap].size(); ++layer_idx)
@@ -758,7 +759,7 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		}
 
 		LLVector3d origin_global = from_region_handle(handle);
-		LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+		LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 
 		// Find x and y position relative to camera's center.
 		LLVector3d rel_region_pos = origin_global - camera_global;
@@ -1304,7 +1305,7 @@ bool LLWorldMapView::drawMipmapLevel(S32 width, S32 height, S32 level, bool load
 
 LLVector3 LLWorldMapView::globalPosToView( const LLVector3d& global_pos )
 {
-	LLVector3d relative_pos_global = global_pos - gAgent.getCameraPositionGlobal();
+	LLVector3d relative_pos_global = global_pos - gAgentCamera.getCameraPositionGlobal();
 	LLVector3 pos_local;
 	pos_local.setVec(relative_pos_global);  // convert to floats from doubles
 
@@ -1400,7 +1401,7 @@ LLVector3d LLWorldMapView::viewPosToGlobal( S32 x, S32 y )
 	
 	LLVector3d pos_global;
 	pos_global.setVec( pos_local );
-	pos_global += gAgent.getCameraPositionGlobal();
+	pos_global += gAgentCamera.getCameraPositionGlobal();
 	if(gAgent.isGodlike())
 	{
 		pos_global.mdV[VZ] = GODLY_TELEPORT_HEIGHT; // Godly height should always be 200.
@@ -2038,7 +2039,7 @@ U32 LLWorldMapView::updateVisibleBlocks()
 		return 0;
 	}
 
-	LLVector3d camera_global = gAgent.getCameraPositionGlobal();
+	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 	
 	F32 pixels_per_region = sMapScale;
 	const S32 width = getRect().getWidth();

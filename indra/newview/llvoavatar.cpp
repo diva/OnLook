@@ -43,6 +43,9 @@
 
 #include "cofmgr.h"
 #include "llagent.h" //  Get state values from here
+#include "llagentwearables.h"
+#include "llanimationstates.h"
+#include "llagentcamera.h"
 #include "llviewercontrol.h"
 #include "lldrawpoolavatar.h"
 #include "lldriverparam.h"
@@ -778,6 +781,7 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	{
 		mIsSelf = TRUE;
 		gAgent.setAvatarObject(this);
+		gAgentWearables.setAvatarObject(this);
 		lldebugs << "Marking avatar as self " << id << llendl;
 	}
 	else
@@ -1185,7 +1189,7 @@ void LLVOAvatar::getMeshInfo (mesh_info_t* mesh_info)
 // static
 void LLVOAvatar::dumpBakedStatus()
 {
-	LLVector3d camera_pos_global = gAgent.getCameraPositionGlobal();
+	LLVector3d camera_pos_global = gAgentCamera.getCameraPositionGlobal();
 
 	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
 		 iter != LLCharacter::sInstances.end(); ++iter)
@@ -2336,7 +2340,7 @@ void LLVOAvatar::restoreMeshData()
 
 	if (isSelf())
 	{
-		updateAttachmentVisibility(gAgent.getCameraMode());
+		updateAttachmentVisibility(gAgentCamera.getCameraMode());
 	}
 	else
 	{
@@ -2762,7 +2766,7 @@ BOOL LLVOAvatar::detachAttachmentIntoInventory(const LLUUID &item_id)
 void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
 {
 	// disable voice visualizer when in mouselook
-	mVoiceVisualizer->setVoiceEnabled( voice_enabled && !(isSelf() && gAgent.cameraMouselook()) );
+	mVoiceVisualizer->setVoiceEnabled( voice_enabled && !(isSelf() && gAgentCamera.cameraMouselook()) );
 	if ( voice_enabled )
 	{
 		//----------------------------------------------------------------
@@ -3505,7 +3509,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	if (isSelf())
 	{
 		render_name = render_name
-						&& !gAgent.cameraMouselook()
+						&& !gAgentCamera.cameraMouselook()
 						&& (visible_chat || !render_name_hide_self);
 	}
 
@@ -4152,10 +4156,10 @@ void LLVOAvatar::idleUpdateTractorBeam()
 	{
 		LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
 
-		if (gAgent.mPointAt.notNull())
+		if (gAgentCamera.mPointAt.notNull())
 		{
 			// get point from pointat effect
-			mBeam->setPositionGlobal(gAgent.mPointAt->getPointAtPosGlobal());
+			mBeam->setPositionGlobal(gAgentCamera.mPointAt->getPointAtPosGlobal());
 			mBeam->triggerLocal();
 		}
 		else if (selection->getFirstRootObject() && 
@@ -4474,7 +4478,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 				}
 			}
 			LLVector3 fwdDir = lerp(primDir, velDir, clamp_rescale(speed, 0.5f, 2.0f, 0.0f, 1.0f));
-			if (isSelf() && gAgent.cameraMouselook())
+			if (isSelf() && gAgentCamera.cameraMouselook())
 			{
 				// make sure fwdDir stays in same general direction as primdir
 				if (gAgent.getFlying())
@@ -4513,7 +4517,7 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 			// When moving very slow, the pelvis is allowed to deviate from the
 			// forward direction to allow it to hold it's position while the torso
 			// and head turn.  Once in motion, it must conform however.
-			BOOL self_in_mouselook = isSelf() && gAgent.cameraMouselook();
+			BOOL self_in_mouselook = isSelf() && gAgentCamera.cameraMouselook();
 
 			LLVector3 pelvisDir( mRoot.getWorldMatrix().getFwdRow4().mV );
 			F32 pelvis_rot_threshold = clamp_rescale(speed, 0.1f, 1.0f, PELVIS_ROT_THRESHOLD_SLOW, PELVIS_ROT_THRESHOLD_FAST);
@@ -4775,7 +4779,7 @@ void LLVOAvatar::updateVisibility()
 
 		if(isSelf())
 		{
-			if( !gAgent.areWearablesLoaded())
+			if( !gAgentWearables.areWearablesLoaded())
 			{
 				visible = FALSE;
 			}
@@ -6624,7 +6628,7 @@ BOOL LLVOAvatar::updateJointLODs()
 	{
 		if (isSelf())
 		{
-			if(gAgent.cameraCustomizeAvatar() || gAgent.cameraMouselook())
+			if(gAgentCamera.cameraCustomizeAvatar() || gAgentCamera.cameraMouselook())
 			{
 				mAdjustedPixelArea = MAX_PIXEL_AREA;
 			}
@@ -6769,7 +6773,7 @@ void LLVOAvatar::updateShadowFaces()
 
 			// Render sprite
 			sprite.setNormal(normal);
-			if (isSelf() && gAgent.getCameraMode() == CAMERA_MODE_MOUSELOOK)
+			if (isSelf() && gAgentCamera.getCameraMode() == CAMERA_MODE_MOUSELOOK)
 			{
 				sprite.setColor(0.f, 0.f, 0.f, 0.f);
 			}
@@ -6802,7 +6806,7 @@ void LLVOAvatar::updateShadowFaces()
 
 			// Render sprite
 			sprite.setNormal(normal);
-			if (isSelf() && gAgent.getCameraMode() == CAMERA_MODE_MOUSELOOK)
+			if (isSelf() && gAgentCamera.getCameraMode() == CAMERA_MODE_MOUSELOOK)
 			{
 				sprite.setColor(0.f, 0.f, 0.f, 0.f);
 			}
@@ -6897,7 +6901,7 @@ BOOL LLVOAvatar::setParent(LLViewerObject* parent)
 		ret = LLViewerObject::setParent(parent);
 		if (isSelf())
 		{
-			gAgent.resetCamera();
+			gAgentCamera.resetCamera();
 		}
 	}
 	else
@@ -6993,7 +6997,7 @@ BOOL LLVOAvatar::attachObject(LLViewerObject *viewer_object)
 
 			if (isSelf())
 			{
-				updateAttachmentVisibility(gAgent.getCameraMode());
+				updateAttachmentVisibility(gAgentCamera.getCameraMode());
 				
 				// Then make sure the inventory is in sync with the avatar.
 				gInventory.addChangedMask( LLInventoryObserver::LABEL, item_id );
@@ -7017,7 +7021,7 @@ BOOL LLVOAvatar::attachObject(LLViewerObject *viewer_object)
 
 	if (isSelf())
 	{
-		updateAttachmentVisibility(gAgent.getCameraMode());
+		updateAttachmentVisibility(gAgentCamera.getCameraMode());
 		
 // [RLVa:KB] - Checked: 2010-08-22 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a
 		// NOTE: RLVa event handlers should be invoked *after* LLVOAvatar::attachObject() calls LLViewerJointAttachment::addObject()
@@ -7276,13 +7280,13 @@ void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 		LLFirstUse::useSit();
 
 		gAgent.setFlying(FALSE);
-		gAgent.setThirdPersonHeadOffset(LLVector3::zero);
+		gAgentCamera.setThirdPersonHeadOffset(LLVector3::zero);
 		//interpolate to new camera position
-		gAgent.startCameraAnimation();
+		gAgentCamera.startCameraAnimation();
 		// make sure we are not trying to autopilot
 		gAgent.stopAutoPilot();
-		gAgent.setupSitCamera();
-		if (gAgent.mForceMouselook) gAgent.changeCameraToMouselook();
+		gAgentCamera.setupSitCamera();
+		if (gAgentCamera.getForceMouselook()) gAgentCamera.changeCameraToMouselook();
 	}
 }
 
@@ -7355,9 +7359,9 @@ void LLVOAvatar::getOffObject()
 
 		//reset orientation
 //		mRoot.setRotation(avWorldRot);
-		gAgent.setThirdPersonHeadOffset(LLVector3(0.f, 0.f, 1.f));
+		gAgentCamera.setThirdPersonHeadOffset(LLVector3(0.f, 0.f, 1.f));
 
-		gAgent.setSitCamera(LLUUID::null);
+		gAgentCamera.setSitCamera(LLUUID::null);
 
 		if (!sit_object->permYouOwner() && gSavedSettings.getBOOL("RevokePermsOnStandUp"))
 		{
@@ -7527,11 +7531,11 @@ void LLVOAvatar::onLocalTextureLoaded( BOOL success, LLViewerFetchedTexture *src
 			   discard_level < local_tex_data.mDiscard)
 			{
 				local_tex_data.mDiscard = discard_level;
-				if ( self->isSelf() && !gAgent.cameraCustomizeAvatar() )
+				if ( self->isSelf() && !gAgentCamera.cameraCustomizeAvatar() )
 				{
 					self->requestLayerSetUpdate( index );
 				}
-				else if( self->isSelf() && gAgent.cameraCustomizeAvatar() )
+				else if( self->isSelf() && gAgentCamera.cameraCustomizeAvatar() )
 				{
 					LLVisualParamHint::requestHintUpdates();
 				}
@@ -8153,7 +8157,7 @@ void LLVOAvatar::setLocTexTE( U8 te, LLViewerTexture* image, BOOL set_by_user )
 	setTEImage( te, image );
 	updateMeshTextures();
 
-	if( gAgent.cameraCustomizeAvatar() )
+	if( gAgentCamera.cameraCustomizeAvatar() )
 	{
 		LLVisualParamHint::requestHintUpdates();
 	}
@@ -8190,7 +8194,7 @@ void LLVOAvatar::updateMeshTextures()
 		}
 	}
 
-	const BOOL self_customizing = isSelf() && gAgent.cameraCustomizeAvatar(); // During face edit mode, we don't use baked textures
+	const BOOL self_customizing = isSelf() && gAgentCamera.cameraCustomizeAvatar(); // During face edit mode, we don't use baked textures
 	const BOOL other_culled = !isSelf() && mCulled;
 
 	std::vector<bool> is_layer_baked;
@@ -8346,11 +8350,11 @@ void LLVOAvatar::setLocalTexture( ETextureIndex index, LLViewerFetchedTexture* t
 				if (tex_discard >= 0 && tex_discard <= desired_discard)
 				{
 					local_tex_data.mDiscard = tex_discard;
-					if( isSelf() && !gAgent.cameraCustomizeAvatar() )
+					if( isSelf() && !gAgentCamera.cameraCustomizeAvatar() )
 					{
 						requestLayerSetUpdate( index );
 					}
-					else if( isSelf() && gAgent.cameraCustomizeAvatar() )
+					else if( isSelf() && gAgentCamera.cameraCustomizeAvatar() )
 					{
 						LLVisualParamHint::requestHintUpdates();
 					}

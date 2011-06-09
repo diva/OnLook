@@ -55,6 +55,7 @@
 
 // newview includes
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "lldrawable.h"
 #include "lldrawpoolalpha.h"
 #include "lldrawpoolavatar.h"
@@ -4692,7 +4693,7 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
 		// mNearbyLight (and all light_set_t's) are sorted such that
 		// begin() == the closest light and rbegin() == the farthest light
 		const S32 MAX_LOCAL_LIGHTS = 6;
-// 		LLVector3 cam_pos = gAgent.getCameraPositionAgent();
+// 		LLVector3 cam_pos = gAgentCamera.getCameraPositionAgent();
 		LLVector3 cam_pos = LLViewerJoystick::getInstance()->getOverrideCamera() ?
 						camera.getOrigin() : 
 						gAgent.getPositionAgent();
@@ -6172,7 +6173,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				{ //focus on point under cursor
 					focus_point = gDebugRaycastIntersection;
 				}
-				else if (gAgent.cameraMouselook())
+				else if (gAgentCamera.cameraMouselook())
 				{ //focus on point under mouselook crosshairs
 					gViewerWindow->cursorIntersect(-1, -1, 512.f, NULL, -1, FALSE,
 												  NULL,
@@ -6180,10 +6181,10 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				}
 				else
 				{
-					LLViewerObject* obj = gAgent.getFocusObject();
+					LLViewerObject* obj = gAgentCamera.getFocusObject();
 					if (obj)
 					{ //focus on alt-zoom target
-						focus_point = LLVector3(gAgent.getFocusGlobal()-gAgent.getRegion()->getOriginGlobal());
+						focus_point = LLVector3(gAgentCamera.getFocusGlobal()-gAgent.getRegion()->getOriginGlobal());
 					}
 					else
 					{ //focus on your avatar
@@ -7711,7 +7712,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
 		LLVOAvatar* agent = gAgent.getAvatarObject();
-		if (!isAgentAvatarValid() || gAgent.getCameraAnimating() || gAgent.getCameraMode() != CAMERA_MODE_MOUSELOOK)
+		if (!isAgentAvatarValid() || gAgentCamera.getCameraAnimating() || gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK)
 		{
 			agent = NULL;
 		}
@@ -7946,7 +7947,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 
 		if (agent)
 		{
-			agent->updateAttachmentVisibility(gAgent.getCameraMode());
+			agent->updateAttachmentVisibility(gAgentCamera.getCameraMode());
 		}
 
 		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
@@ -8545,7 +8546,7 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 	//put together a universal "near clip" plane for shadow frusta
 	/*LLPlane shadow_near_clip;
 	{
-		LLVector3 p = gAgent.getCameraPositionAgent();//gAgent.getPositionAgent();
+		LLVector3 p = gAgentCamera.getCameraPositionAgent();//gAgent.getPositionAgent();
 		p += mSunDir * gSavedSettings.getF32("RenderFarClip")*2.f;
 		shadow_near_clip.setVec(p, mSunDir);
 	}*/
