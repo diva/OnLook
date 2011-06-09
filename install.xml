@@ -561,16 +561,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>c829b638b6eef71ca63418cb9aea46a2</string>
+            <string>2cd3f6499f8444f1d119d097e4047252</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gstreamer-linux-20080613.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>befc7520fe01250f39458f65c29bc584</string>
+            <string>7e6fc4e185e8444a07b58ba7c0df255a</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gstreamer-linux64-20080909.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux64-20091230.tar.bz2</uri>
           </map>
         </map>
       </map>

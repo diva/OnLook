@@ -5,6 +5,7 @@ project(llcommon)
 include(Cwdebug)
 include(00-Common)
 include(LLCommon)
+include(APR)
 include(Linking)
 
 include_directories(
