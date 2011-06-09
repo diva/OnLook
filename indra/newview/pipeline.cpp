@@ -6710,7 +6710,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 	static const LLCachedControl<F32> render_gi_luminance("RenderGILuminance",.075f);
 	static const LLCachedControl<F32> render_gi_blur_edge_weight("RenderGIBlurEdgeWeight",.8f);
 	static const LLCachedControl<F32> render_gi_blur_brightness("RenderGIBlurBrightness",1.025f);
-	static const LLCachedControl<F32> render_gi_render_gi_noise("RenderGINoise",.7);
+	static const LLCachedControl<F32> render_gi_render_gi_noise("RenderGINoise",.7f);
 	static const LLCachedControl<F32> render_gi_attenuation("RenderGIAttenuation",.1f);
 	static const LLCachedControl<F32> render_gi_ambiance("RenderGIAmbiance",.5f);
 	static const LLCachedControl<F32> render_edge_depth_cutoff("RenderEdgeDepthCutoff",.01f);
