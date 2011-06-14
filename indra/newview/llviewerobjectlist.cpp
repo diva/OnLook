@@ -931,21 +931,24 @@ BOOL LLViewerObjectList::killObject(LLViewerObject *objectp)
 
 void LLViewerObjectList::killObjects(LLViewerRegion *regionp)
 {
+	LLTimer kill_timer;
 	LLViewerObject *objectp;
 
-	
+	S32 count = 0;
 	for (vobj_list_t::iterator iter = mObjects.begin(); iter != mObjects.end(); ++iter)
 	{
 		objectp = *iter;
 		
 		if (objectp->mRegionp == regionp)
 		{
+			++count;
 			killObject(objectp);
 		}
 	}
 
 	// Have to clean right away because the region is becoming invalid.
 	cleanDeadObjects(FALSE);
+	llinfos << "Removed " << count << " objects for region " << regionp->getName() << ". (" << kill_timer.getElapsedTimeF64()*1000.0 << "ms)" << llendl;
 }
 
 void LLViewerObjectList::killAllObjects()

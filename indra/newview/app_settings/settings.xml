@@ -9,6 +9,17 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>AllowLargeSounds</key>
+  <map>
+    <key>Comment</key>
+    <string>Bypass stricter sound size/sample checks, which were introduced in SL2.x, for sound decoding.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
   <key>FloaterAvatarTextRect</key>
   <map>
     <key>Comment</key>

@@ -929,6 +929,8 @@ void LLPipeline::restoreGL()
 			}
 		}
 	}
+
+	resetLocalLights(); //Default all gl light parameters. Fixes light brightness problems on fullscren toggle
 }
 
 
@@ -4679,6 +4681,29 @@ static F32 calc_light_dist(LLVOVolume* light, const LLVector3& cam_pos, F32 max_
 	return dist;
 }
 
+//Default all gl light parameters. Used upon restoreGL. Fixes brightness problems on fullscren toggle
+void LLPipeline::resetLocalLights()
+{
+	glEnable(GL_LIGHTING);
+	for (S32 i = 0; i < 8; ++i)
+	{
+		LLLightState *pLight = gGL.getLight(i);
+		pLight->enable();
+		pLight->setAmbient(LLColor4::black);
+		pLight->setConstantAttenuation(0.f);
+		pLight->setDiffuse(LLColor4::black);
+		pLight->setLinearAttenuation(0.f);
+		pLight->setPosition(LLVector4(0.f,0.f,0.f,0.f));
+		pLight->setQuadraticAttenuation(0.f);
+		pLight->setSpecular(LLColor4::black);
+		pLight->setSpotCutoff(0.f);
+		pLight->setSpotDirection(LLVector3(0.f,0.f,0.f));
+		pLight->setSpotExponent(0.f);
+		pLight->disable();
+	}
+	glDisable(GL_LIGHTING);
+}
+
 void LLPipeline::calcNearbyLights(LLCamera& camera)
 {
 	assertInitialized();
@@ -4712,6 +4737,7 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
 				LLVOVolume* volight = drawable->getVOVolume();
 				if (!volight || !drawable->isState(LLDrawable::LIGHT))
 				{
+					setLight(drawable,false);	//remove from mLight list
 					drawable->clearState(LLDrawable::NEARBY_LIGHT);
 					continue;
 				}
