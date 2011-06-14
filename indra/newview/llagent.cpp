@@ -4101,8 +4101,8 @@ void LLAgent::onFoundLureDestination(LLSimInfo *siminfo)
 		siminfo = LLWorldMap::getInstance()->simInfoFromPosGlobal(mPendingLure->mPosGlobal);
 	if(siminfo)
 	{
-		const std::string sim_name = siminfo->mName;
-		const std::string maturity = LLViewerRegion::accessToString(siminfo->mAccess);
+		const std::string sim_name = siminfo->getName();
+		const std::string maturity = LLViewerRegion::accessToString(siminfo->getAccess());
 
 		llinfos << mPendingLure->mAvatarName << "'s teleport lure is to " << sim_name << " (" << maturity << ")" << llendl;
 		LLStringUtil::format_map_t args;
