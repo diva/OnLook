@@ -1717,14 +1717,7 @@ void LLPanelAvatar::resetGroupList()
 				row["id"] = id ;
 				row["columns"][0]["value"] = group_string;
 				row["columns"][0]["font"] = "SANSSERIF_SMALL";
-				if (group_data.mListInProfile)
-				{
-					row["columns"][0]["color"] = gColors.getColor("DefaultListText").getValue();
-				}
-				else
-				{
-					row["columns"][0]["color"] = gColors.getColor("ScrollUnselectedColor").getValue();
-				}
+				row["columns"][0]["font-style"] = group_data.mListInProfile ? "BOLD" : "NORMAL";
 				row["columns"][0]["width"] = 0;
 				group_list->addElement(row);
 			}
