@@ -631,7 +631,6 @@ bool LLAppViewer::init()
 	gSavedSettings.setS32("NumSessions", mNumSessions);
 
 	gSavedSettings.setString("HelpLastVisitedURL",gSavedSettings.getString("HelpHomeURL"));
-	LLHUDEffectLookAt::sDebugLookAt = gSavedSettings.getBOOL("AscentShowLookAt");
 
 	if (gSavedSettings.getBOOL("VerboseLogs"))
 	{

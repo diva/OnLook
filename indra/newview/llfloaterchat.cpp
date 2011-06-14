@@ -115,6 +115,7 @@ LLFloaterChat::LLFloaterChat(const LLSD& seed)
 	childSetValue("translate chat", gSavedSettings.getBOOL("TranslateChat"));
 	childSetVisible("Chat History Editor with mute",FALSE);
 	childSetAction("toggle_active_speakers_btn", onClickToggleActiveSpeakers, this);
+	childSetAction("chat_history_open", onClickChatHistoryOpen, this);
 	setDefaultBtn("Chat");
 }
 
@@ -664,6 +665,16 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 		(!self->childIsVisible("active_speakers_panel")) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) );
 // [/RLVa:KB]
 	//self->childSetVisible("active_speakers_panel", !self->childIsVisible("active_speakers_panel"));
+}
+
+// static
+void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
+{
+	char command[256];
+	sprintf(command, "\"%s\\%s\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), "chat.txt");
+	gViewerWindow->getWindow()->ShellEx(command);
+
+	llinfos << command << llendl;
 }
 
 //static 
