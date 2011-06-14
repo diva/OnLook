@@ -734,7 +734,7 @@ void LLNotificationChannelBase::connectChanged(const LLStandardSignal::slot_type
 	// only about new notifications
 	for (LLNotificationSet::iterator it = mItems.begin(); it != mItems.end(); ++it)
 	{
-		slot.get_slot_function()(LLSD().with("sigtype", "load").with("id", (*it)->id()));
+		slot(LLSD().with("sigtype", "load").with("id", (*it)->id()));
 	}
 	// and then connect the signal so that all future notifications will also be
 	// forwarded.

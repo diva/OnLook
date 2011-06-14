@@ -80,6 +80,7 @@ set(viewer_SOURCE_FILES
     ascentdaycyclemanager.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
+    ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
     dhparam.cpp
@@ -555,6 +556,7 @@ set(viewer_HEADER_FILES
     ascentdaycyclemanager.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
+    ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
     emerald.h
@@ -1232,9 +1234,13 @@ set(viewer_APPSETTINGS_FILES
     app_settings/low_graphics.xml
     app_settings/mid_graphics.xml
     app_settings/settings.xml
+    app_settings/settings_ascent.xml
+    app_settings/settings_ascent_coa.xml
     app_settings/settings_crash_behavior.xml
     app_settings/settings_files.xml
     app_settings/settings_per_account.xml
+    app_settings/settings_sh.xml
+    app_settings/settings_rlv.xml
     app_settings/std_bump.ini
     app_settings/trees.xml
     app_settings/ultra_graphics.xml
@@ -1442,11 +1448,11 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${BOOST_FILESYSTEM_LIBRARY}
     ${BOOST_PROGRAM_OPTIONS_LIBRARY}
     ${BOOST_REGEX_LIBRARY}
-    ${BOOST_SIGNALS_LIBRARY}
     ${BOOST_SYSTEM_LIBRARY}
     ${DBUSGLIB_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${FMODWRAPPER_LIBRARY}
+    ${APRUTIL_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${JSONCPP_LIBRARIES}
     ${SDL_LIBRARY}

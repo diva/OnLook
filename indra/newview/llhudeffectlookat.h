@@ -86,7 +86,6 @@ protected:
 	void setTargetPosGlobal(const LLVector3d &target_pos_global);
 
 public:
-	static BOOL sDebugLookAt;
 
 private:
 	ELookAtType					mTargetType;

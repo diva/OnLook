@@ -193,16 +193,16 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>bb8552f22769da81593f7d47a51d83d8</string>
+            <string>2cad51575b429be4fdadb5d63da1c739</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-darwin-20100226.tar.bz2</uri>
+			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
           </map>
            <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>4db3d74e40d149eeec06f4d97a609bb1</string>
+            <string>a2d2fff5cc5555ffd9865daedfcd0dd5</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/boost-1.39.0-linux-20100624.tar.bz2</uri>
+			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -561,16 +561,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>c829b638b6eef71ca63418cb9aea46a2</string>
+            <string>2cd3f6499f8444f1d119d097e4047252</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gstreamer-linux-20080613.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>befc7520fe01250f39458f65c29bc584</string>
+            <string>7e6fc4e185e8444a07b58ba7c0df255a</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gstreamer-linux64-20080909.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux64-20091230.tar.bz2</uri>
           </map>
         </map>
       </map>
