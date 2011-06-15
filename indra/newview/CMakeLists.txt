@@ -102,9 +102,11 @@ set(viewer_SOURCE_FILES
     qtoolalign.cpp
     llagent.cpp
     llagentaccess.cpp
+    llagentcamera.cpp
     llagentdata.cpp
     llagentlanguage.cpp
     llagentpilot.cpp
+    llagentwearables.cpp
     llanimstatelabels.cpp
     llappviewer.cpp
     llassetconverter.cpp
@@ -576,9 +578,11 @@ set(viewer_HEADER_FILES
     qtoolalign.h
     llagent.h
     llagentaccess.h
+    llagentcamera.h
     llagentdata.h
     llagentlanguage.h
     llagentpilot.h
+    llagentwearables.h
     llanimstatelabels.h
     llappearance.h
     llappviewer.h
