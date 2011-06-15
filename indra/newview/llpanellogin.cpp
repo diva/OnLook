@@ -126,6 +126,17 @@ static std::string nameJoin(const std::string& first,const std::string& last) {
 	}
 }
 
+static std::string getDisplayString(const std::string& first, const std::string& last, const std::string& grid) {
+	if(grid == gHippoGridManager->getDefaultGridNick())
+		return nameJoin(first, last);
+	else
+		return nameJoin(first, last) + " (" + grid + ")";
+}
+
+static std::string getDisplayString(const LLSavedLoginEntry& entry) {
+	return getDisplayString(entry.getFirstName(), entry.getLastName(), entry.getGrid());
+}
+
 class LLLoginRefreshHandler : public LLCommandHandler
 {
 public:
@@ -477,8 +488,8 @@ void LLPanelLogin::setLoginHistory(LLSavedLogins const& login_history)
 	     i != saved_login_entries.rend(); ++i)
 	{
 		LLSD e = i->asLLSD();
-		if (e.isMap())
-			login_combo->add(nameJoin(i->getFirstName(), i->getLastName()), e);
+		if (e.isMap() && gHippoGridManager->getGrid(i->getGrid()))
+			login_combo->add(getDisplayString(*i), e);
 	}
 }
 
@@ -701,6 +712,12 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 	login_combo->setLabel(fullname);
 	sInstance->childSetText("name_combo", fullname);
+
+	std::string grid = entry.getGrid();
+	if(!grid.empty() && gHippoGridManager->getGrid(grid)) {
+		gHippoGridManager->setCurrentGrid(grid);
+		LLPanelLogin::refreshLoginPage();
+	}
 	
 	if (entry.getPassword().empty())
 	{
