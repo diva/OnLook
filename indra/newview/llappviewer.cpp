@@ -585,9 +585,10 @@ bool LLAppViewer::init()
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
     LLCurl::initClass();
+	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
-	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ; ;
+	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
 
     writeSystemInfo();
 
@@ -700,7 +701,8 @@ bool LLAppViewer::init()
 		// Early out from user choice.
 		return false;
 	}
-
+	LL_INFOS("InitInfo") << "Hardware test initialization done." << LL_ENDL ;
+	
 	// Always fetch the Ethernet MAC address, needed both for login
 	// and password load.
 	LLUUID::getNodeID(gMACAddress);
@@ -2369,8 +2371,9 @@ bool LLAppViewer::initWindow()
 		// Set this flag in case we crash while initializing GL
 		gSavedSettings.setBOOL("RenderInitError", TRUE);
 		gSavedSettings.saveToFile( gSavedSettings.getString("ClientSettingsFile"), TRUE );
-	
+
 		gPipeline.init();
+		LL_INFOS("AppInit") << "gPipeline Initialized" << LL_ENDL;
 		stop_glerror();
 		gViewerWindow->initGLDefaults();
 
@@ -2398,7 +2401,7 @@ bool LLAppViewer::initWindow()
 	// show viewer window
 	//gViewerWindow->mWindow->show();
 
-	
+	LL_INFOS("AppInit") << "Window initialization done." << LL_ENDL;
 	return true;
 }
 
