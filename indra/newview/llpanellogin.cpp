@@ -1243,7 +1243,10 @@ void LLPanelLogin::onLoginComboLostFocus(LLFocusableElement* fe, void*)
 			{
 				clearPassword();
 			}
-			onSelectLoginEntry(combo, NULL);
+			else
+			{
+				onSelectLoginEntry(combo, NULL);
+			}
 		}
 	}
 }
