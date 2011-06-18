@@ -1428,6 +1428,7 @@ void LLAgent::stopAutoPilot(BOOL user_cancel)
 		if (mAutoPilotFinishedCallback)
 		{
 			mAutoPilotFinishedCallback(!user_cancel && dist_vec_squared(gAgent.getPositionGlobal(), mAutoPilotTargetGlobal) < (mAutoPilotStopDistance * mAutoPilotStopDistance), mAutoPilotCallbackData);
+			mAutoPilotFinishedCallback = NULL;
 		}
 		mLeaderID = LLUUID::null;
 

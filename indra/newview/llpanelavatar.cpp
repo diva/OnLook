@@ -1385,6 +1385,11 @@ BOOL LLPanelAvatar::postBuild(void)
 	childSetVisible("csr_btn", FALSE);
 	childSetEnabled("csr_btn", FALSE);
 
+	//This text never changes. We simply toggle visibility.
+	childSetVisible("online_yes", FALSE);
+	childSetColor("online_yes",LLColor4::green);
+	childSetValue("online_yes","Currently Online");
+
 	return TRUE;
 }
 
@@ -1443,12 +1448,7 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 		online_status = ONLINE_STATUS_YES;
 	}
 	
-	if(online_status == ONLINE_STATUS_YES)
-	{
-		mPanelSecondLife->childSetVisible("online_yes", TRUE);
-		mPanelSecondLife->childSetColor("online_yes",LLColor4::green);
-		mPanelSecondLife->childSetValue("online_yes","Currently Online");
-	}
+	mPanelSecondLife->childSetVisible("online_yes", online_status == ONLINE_STATUS_YES);
 
 	// Since setOnlineStatus gets called after setAvatarID
 	// need to make sure that "Offer Teleport" doesn't get set
