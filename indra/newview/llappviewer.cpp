@@ -1569,6 +1569,7 @@ bool LLAppViewer::cleanup()
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
+	LLUserAuth::getInstance()->reset(); //reset before LLCurl::cleanupClass, else LLCURL::sHandleMutex == NULL
 	// *NOTE:Mani - The following call is not thread safe. 
 	LLCurl::cleanupClass();
 	llinfos << "LLCurl cleaned up." << llendflush;
