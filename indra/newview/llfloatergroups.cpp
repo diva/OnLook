@@ -198,15 +198,9 @@ LLPanelGroups::~LLPanelGroups()
 // clear the group list, and get a fresh set of info.
 void LLPanelGroups::reset()
 {
-	LLCtrlListInterface *group_list = childGetListInterface("group list");
-	if (group_list)
-	{
-		group_list->operateOnAll(LLCtrlListInterface::OP_DELETE);
-	}
 	childSetTextArg("groupcount", "[COUNT]", llformat("%d",gAgent.mGroups.count()));
 	childSetTextArg("groupcount", "[MAX]", llformat("%d", gHippoLimits->getMaxAgentGroups()));
 	
-
 	const std::string none_text = getString("none");
 	init_group_list(getChild<LLScrollListCtrl>("group list"), gAgent.getGroupID(), none_text);
 	enableButtons();
@@ -489,6 +483,10 @@ void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const s
 	LLCtrlListInterface *group_list = ctrl->getListInterface();
 	if (!group_list) return;
 
+	const LLUUID selected_id	= group_list->getSelectedValue();
+	const S32	selected_idx	= group_list->getFirstSelectedIndex();
+	const S32	scroll_pos		= ctrl->getScrollPos();
+
 	group_list->operateOnAll(LLCtrlListInterface::OP_DELETE);
 
 	for(S32 i = 0; i < count; ++i)
@@ -497,10 +495,10 @@ void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const s
 		LLGroupData* group_datap = &gAgent.mGroups.get(i);
 		if ((powers_mask == GP_ALL_POWERS) || ((group_datap->mPowers & powers_mask) != 0))
 		{
-			std::string style = "NORMAL";
+			std::string style = group_datap->mListInProfile ? "BOLD" : "NORMAL";
 			if(highlight_id == id)
 			{
-				style = "BOLD";
+				style.append("|ITALIC");
 			}
 
 			LLSD element;
@@ -519,7 +517,7 @@ void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const s
 		std::string style = "NORMAL";
 		if (highlight_id.isNull())
 		{
-			style = "BOLD";
+			style = "ITALIC";
 		}
 		LLSD element;
 		element["id"] = LLUUID::null;
@@ -531,6 +529,13 @@ void init_group_list(LLScrollListCtrl* ctrl, const LLUUID& highlight_id, const s
 		group_list->addElement(element, ADD_TOP);
 	}
 
-	group_list->selectByValue(highlight_id);
+	if(selected_id.notNull())
+		group_list->selectByValue(selected_id);
+	else
+		group_list->selectByValue(highlight_id);			//highlight is actually active group
+	if(selected_idx!=group_list->getFirstSelectedIndex())	//if index changed then our stored pos is pointless.
+		ctrl->scrollToShowSelected();
+	else
+		ctrl->setScrollPos(scroll_pos);
 }
 
