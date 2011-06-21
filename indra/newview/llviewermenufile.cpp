@@ -476,7 +476,7 @@ class LLFileMinimizeAllWindows : public view_listener_t
 };
 // </edit>
 
-class LLFileSaveTexture : public view_listener_t
+class LLFileSavePreview : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
@@ -1266,12 +1266,11 @@ void init_menu_file()
 	// <edit>
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
 	// </edit>
-	(new LLFileSaveTexture())->registerListener(gMenuHolder, "File.SaveTexture");
+	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
-	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
