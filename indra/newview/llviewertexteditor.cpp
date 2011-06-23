@@ -59,6 +59,7 @@
 #include "llnotecard.h"
 #include "llmemorystream.h"
 #include "llmenugl.h"
+#include "llviewerassettype.h"
 
 #include "llappviewer.h" // for gPacificDaylightTime
 
@@ -835,7 +836,7 @@ BOOL LLViewerTextEditor::handleHover(S32 x, S32 y, MASK mask)
 			if( LLToolDragAndDrop::getInstance()->isOverThreshold( screen_x, screen_y ) )
 			{
 				LLToolDragAndDrop::getInstance()->beginDrag(
-					LLAssetType::lookupDragAndDropType( mDragItem->getType() ),
+					LLViewerAssetType::lookupDragAndDropType( mDragItem->getType() ),
 					mDragItem->getUUID(),
 					LLToolDragAndDrop::SOURCE_NOTECARD,
 					getSourceID(), mObjectID);

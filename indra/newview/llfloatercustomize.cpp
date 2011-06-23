@@ -723,7 +723,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 
 		LLUUID folder_id;
 		// regular UI, items get created in normal folder
-		folder_id = gInventory.findCategoryUUIDForType(asset_type);
+		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(asset_type));
 
 		// Only auto wear the new item if the AutoWearNewClothing checkbox is selected.
 		LLPointer<LLInventoryCallback> cb = option == 0 ? 

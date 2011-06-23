@@ -300,7 +300,7 @@ void LLFloaterLandmark::onBtnNew(void* userdata)
 	}
 
 	LLUUID folder_id;
-	folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+	folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 	std::string pos_string;
 	gAgent.buildLocationString(pos_string);
 
@@ -326,7 +326,7 @@ void LLFloaterLandmark::onBtnDelete(void* userdata)
 	if(item)
 	{
 		// Move the item to the trash
-		LLUUID trash_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH);
+		LLUUID trash_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
 		if (item->getParentUUID() != trash_id)
 		{
 			LLInventoryModel::update_list_t update;

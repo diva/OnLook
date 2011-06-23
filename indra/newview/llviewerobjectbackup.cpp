@@ -1110,7 +1110,7 @@ void LLObjectBackup::updateMap(LLUUID uploaded_asset)
 
 void myupload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_type,
 						 std::string name, std::string desc, S32 compression_info,
-						 LLAssetType::EType destination_folder_type,
+						 LLFolderType::EType destination_folder_type,
 						 LLInventoryType::EType inv_type, U32 next_owner_perm,
 						 const std::string& display_name,
 						 LLAssetStorage::LLStoreAssetCallback callback,
@@ -1132,7 +1132,7 @@ void myupload_new_resource(const LLTransactionID &tid, LLAssetType::EType asset_
 	if (!url.empty())
 	{
 		LLSD body;
-		body["folder_id"] = gInventory.findCategoryUUIDForType((destination_folder_type == LLAssetType::AT_NONE) ? asset_type : destination_folder_type);
+		body["folder_id"] = gInventory.findCategoryUUIDForType((destination_folder_type == LLFolderType::FT_NONE) ? LLFolderType::assetTypeToFolderType(asset_type) : destination_folder_type);
 		body["asset_type"] = LLAssetType::lookup(asset_type);
 		body["inventory_type"] = LLInventoryType::lookup(inv_type);
 		body["name"] = name;
@@ -1203,6 +1203,6 @@ void LLObjectBackup::uploadNextAsset()
 	}
 
 	 myupload_new_resource(tid, LLAssetType::AT_TEXTURE, struid, struid, 0,
-		LLAssetType::AT_TEXTURE, LLInventoryType::defaultForAssetType(LLAssetType::AT_TEXTURE),
+		LLFolderType::FT_TEXTURE, LLInventoryType::defaultForAssetType(LLAssetType::AT_TEXTURE),
 		0x0, "Uploaded texture", NULL, NULL);
 }

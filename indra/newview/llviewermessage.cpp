@@ -113,6 +113,7 @@
 #include "lltoolbar.h"
 #include "lltoolmgr.h"
 #include "lltrans.h"
+#include "llfoldertype.h"
 #include "llui.h"			// for make_ui_sound
 #include "lluploaddialog.h"
 #include "llviewercamera.h"
@@ -304,16 +305,16 @@ template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner)
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
-	LLUUID fid;
 	LLMessageSystem* msg = gMessageSystem;
 	const LLSD& payload = notification["payload"];
 	switch(option)
 	{
 	case 0:
+	{
 		// accept
 		LLAvatarTracker::formFriendship(payload["from_id"]);
 
-		fid = gInventory.findCategoryUUIDForType(LLAssetType::AT_CALLINGCARD);
+		const LLUUID fid = gInventory.findCategoryUUIDForType(LLFolderType::FT_CALLINGCARD);
 
 		// This will also trigger an onlinenotification if the user is online
 		msg->newMessageFast(_PREHASH_AcceptFriendship);
@@ -326,6 +327,7 @@ bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 		msg->addUUIDFast(_PREHASH_FolderID, fid);
 		msg->sendReliable(LLHost(payload["sender"].asString()));
 		break;
+	}
 	case 1:
 		// decline
 		// We no longer notify other viewers, but we DO still send
@@ -862,8 +864,7 @@ public:
 	virtual void done()
 	{
 		LL_DEBUGS("Messaging") << "LLDiscardAgentOffer::done()" << LL_ENDL;
-		LLUUID trash_id;
-		trash_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH);
+		const LLUUID trash_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
 		bool notify = false;
 		if(trash_id.notNull() && mObjectID.notNull())
 		{
@@ -1024,12 +1025,12 @@ void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
 		}
 		//Trash Check
 		LLUUID trash_id;
-		trash_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH);
+		trash_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
 		if(gInventory.isObjectDescendentOf(item->getUUID(), trash_id))
 		{
 			return;
 		}
-		LLUUID lost_and_found_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LOST_AND_FOUND);
+		LLUUID lost_and_found_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
 		//BOOL inventory_has_focus = gFocusMgr.childHasKeyboardFocus(view);
 		BOOL user_is_away = gAwayTimer.getStarted();
 
@@ -1070,14 +1071,14 @@ bool highlight_offered_object(const LLUUID& obj_id)
 		const LLViewerInventoryCategory *parent = gInventory.getFirstNondefaultParent(obj_id);
 		if (parent)
 		{
-			const LLAssetType::EType parent_type = parent->getPreferredType();
+			const LLFolderType::EType parent_type = parent->getPreferredType();
 			switch (parent_type)
 			{
-				case LLAssetType::AT_TRASH:
-				case LLAssetType::AT_LOST_AND_FOUND:
-				case LLAssetType::AT_CURRENT_OUTFIT:
-				case LLAssetType::AT_OUTFIT:
-				case LLAssetType::AT_MY_OUTFITS:
+				case LLFolderType::FT_TRASH:
+				case LLFolderType::FT_LOST_AND_FOUND:
+				case LLFolderType::FT_CURRENT_OUTFIT:
+				case LLFolderType::FT_OUTFIT:
+				case LLFolderType::FT_MY_OUTFITS:
 					return false;
 				default:
 					break;
@@ -2190,7 +2191,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				info->mFromGroup = from_group;
 				info->mTransactionID = session_id;
 				info->mType = (LLAssetType::EType) asset_type;
-				info->mFolderID = gInventory.findCategoryUUIDForType(info->mType);
+				info->mFolderID = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(info->mType));
 				std::string from_name;
 
 				from_name += "A group member named ";
@@ -2331,7 +2332,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			info->mFromID = from_id;
 			info->mFromGroup = from_group;
 			info->mTransactionID = session_id;
-			info->mFolderID = gInventory.findCategoryUUIDForType(info->mType);
+			info->mFolderID = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(info->mType));
 
 			if (dialog == IM_TASK_INVENTORY_OFFERED)
 			{
@@ -2831,7 +2832,7 @@ bool callingcard_offer_callback(const LLSD& notification, const LLSD& response)
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		msg->nextBlockFast(_PREHASH_TransactionBlock);
 		msg->addUUIDFast(_PREHASH_TransactionID, notification["payload"]["transaction_id"].asUUID());
-		fid = gInventory.findCategoryUUIDForType(LLAssetType::AT_CALLINGCARD);
+		fid = gInventory.findCategoryUUIDForType(LLFolderType::FT_CALLINGCARD);
 		msg->nextBlockFast(_PREHASH_FolderData);
 		msg->addUUIDFast(_PREHASH_FolderID, fid);
 		msg->sendReliable(LLHost(notification["payload"]["sender"].asString()));
@@ -3653,10 +3654,10 @@ BOOL LLPostTeleportNotifiers::tick()
 		// get callingcards and landmarks available to the user arriving.
 		LLInventoryFetchDescendentsObserver::folder_ref_t folders;
 		LLUUID folder_id;
-		folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_CALLINGCARD);
+		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_CALLINGCARD);
 		if(folder_id.notNull()) 
 			folders.push_back(folder_id);
-		folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		if(folder_id.notNull()) 
 			folders.push_back(folder_id);
 		if(!folders.empty())
@@ -5943,15 +5944,14 @@ void container_inventory_arrived(LLViewerObject* object,
 		// create a new inventory category to put this in
 		LLUUID cat_id;
 		cat_id = gInventory.createNewCategory(gAgent.getInventoryRootID(),
-											  LLAssetType::AT_NONE,
+											   LLFolderType::FT_NONE,
 											  std::string("Acquired Items")); //TODO: Translate
 
 		LLInventoryObject::object_list_t::const_iterator it = inventory->begin();
 		LLInventoryObject::object_list_t::const_iterator end = inventory->end();
 		for ( ; it != end; ++it)
 		{
-			if ((*it)->getType() != LLAssetType::AT_CATEGORY &&
-				(*it)->getType() != LLAssetType::AT_ROOT_CATEGORY)
+			if ((*it)->getType() != LLAssetType::AT_CATEGORY)
 			{
 				LLInventoryObject* obj = (LLInventoryObject*)(*it);
 				LLInventoryItem* item = (LLInventoryItem*)(obj);
@@ -5984,16 +5984,15 @@ void container_inventory_arrived(LLViewerObject* object,
 	{
 		// we're going to get one fake root category as well as the
 		// one actual object
-		InventoryObjectList::iterator it = inventory->begin();
+		LLInventoryObject::object_list_t::iterator it = inventory->begin();
 
-		if ((*it)->getType() == LLAssetType::AT_CATEGORY ||
-			(*it)->getType() == LLAssetType::AT_ROOT_CATEGORY)
+		if ((*it)->getType() == LLAssetType::AT_CATEGORY)
 		{
 			++it;
 		}
 
 		LLInventoryItem* item = (LLInventoryItem*)((LLInventoryObject*)(*it));
-		LLUUID category = gInventory.findCategoryUUIDForType(item->getType());
+		const LLUUID category = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(item->getType()));
 
 		LLUUID item_id;
 		item_id.generate();
@@ -6295,7 +6294,7 @@ void handle_lure(const LLUUID& invitee)
 }
 
 // Prompt for a message to the invited user.
-void handle_lure(LLDynamicArray<LLUUID>& ids) 
+void handle_lure(const uuid_vec_t& ids)
 {
 	if (ids.empty()) return;
 
@@ -6308,7 +6307,7 @@ void handle_lure(LLDynamicArray<LLUUID>& ids)
 	//edit_args["REGION"] = gAgent.getRegion()->getName();
 
 	LLSD payload;
-	for (LLDynamicArray<LLUUID>::iterator it = ids.begin();
+	for (uuid_vec_t::const_iterator it = ids.begin();
 		it != ids.end();
 		++it)
 	{

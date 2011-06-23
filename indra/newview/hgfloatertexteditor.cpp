@@ -270,7 +270,7 @@ void HGFloaterTextEditor::onClickUpload(void* user_data)
 			item->getName(), 
 			item->getDescription(), 
 			0, 
-			item->getType(), 
+			LLFolderType::assetTypeToFolderType(item->getType()), 
 			item->getInventoryType(), 
 			LLFloaterPerms::getNextOwnerPerms(), LLFloaterPerms::getGroupPerms(), LLFloaterPerms::getEveryonePerms(),
 			item->getName(),  

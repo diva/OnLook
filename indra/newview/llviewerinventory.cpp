@@ -382,7 +382,7 @@ EWearableType LLViewerInventoryItem::getWearableType() const
 
 LLViewerInventoryCategory::LLViewerInventoryCategory(const LLUUID& uuid,
 													 const LLUUID& parent_uuid,
-													 LLAssetType::EType pref,
+													 LLFolderType::EType pref,
 													 const std::string& name,
 													 const LLUUID& owner_id) :
 	LLInventoryCategory(uuid, parent_uuid, pref, name),
@@ -441,7 +441,7 @@ void LLViewerInventoryCategory::updateParentOnServer(BOOL restamp) const
 void LLViewerInventoryCategory::updateServer(BOOL is_new) const
 {
 	// communicate that change with the server.
-	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLAssetType::AT_OUTFIT != mPreferredType) )
+	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
 		LLNotifications::instance().add("CannotModifyProtectedCategories");
 		return;
@@ -465,7 +465,7 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	llinfos << "Removing inventory category " << mUUID << " from server."
 			<< llendl;
 	// communicate that change with the server.
-	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLAssetType::AT_OUTFIT != mPreferredType) )
+	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
 		LLNotifications::instance().add("CannotRemoveProtectedCategories");
 		return;
@@ -584,7 +584,7 @@ bool LLViewerInventoryCategory::importFileLocal(LLFILE* fp)
 		}
 		else if(0 == strcmp("pref_type", keyword))
 		{
-			mPreferredType = LLAssetType::lookup(valuestr);
+			mPreferredType = LLFolderType::assetTypeToFolderType(LLAssetType::lookup(valuestr));
 		}
 		else if(0 == strcmp("name", keyword))
 		{
@@ -622,7 +622,7 @@ bool LLViewerInventoryCategory::exportFileLocal(LLFILE* fp) const
 	mParentUUID.toString(uuid_str);
 	fprintf(fp, "\t\tparent_id\t%s\n", uuid_str.c_str());
 	fprintf(fp, "\t\ttype\t%s\n", LLAssetType::lookup(mType));
-	fprintf(fp, "\t\tpref_type\t%s\n", LLAssetType::lookup(mPreferredType));
+	fprintf(fp, "\t\tpref_type\t%s\n", LLFolderType::lookup(mPreferredType).c_str());
 	fprintf(fp, "\t\tname\t%s|\n", mName.c_str());
 	mOwnerID.toString(uuid_str);
 	fprintf(fp, "\t\towner_id\t%s\n", uuid_str.c_str());
@@ -932,7 +932,7 @@ void copy_inventory_from_notecard(const LLUUID& object_id, const LLUUID& notecar
 			body["notecard-id"] = notecard_inv_id;
 			body["object-id"] = object_id;
 			body["item-id"] = src->getUUID();
-			body["folder-id"] = gInventory.findCategoryUUIDForType(src->getType());
+			body["folder-id"] = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(src->getType()));
 			body["callback-id"] = (LLSD::Integer)callback_id;
 
 			LLHTTPClient::post(url, body, new LLCopyInventoryFromNotecardResponder());

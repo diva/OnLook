@@ -425,6 +425,7 @@ set(viewer_SOURCE_FILES
     llvelocitybar.cpp
     llviewchildren.cpp
     llviewerassetstorage.cpp
+    llviewerassettype.cpp
     llvieweraudio.cpp
     llviewercamera.cpp
     llviewercontrol.cpp
@@ -906,6 +907,7 @@ set(viewer_HEADER_FILES
     llvelocitybar.h
     llviewchildren.h
     llviewerassetstorage.h
+    llviewerassettype.h
     llvieweraudio.h
     llviewerbuild.h
     llviewercamera.h

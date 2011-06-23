@@ -2363,7 +2363,7 @@ bool idle_startup()
 			system_folder->setUUID(system_folder_id);
 			gSystemFolderRoot = system_folder_id;
 			system_folder->setParent(LLUUID::null);
-			system_folder->setPreferredType(LLAssetType::AT_NONE);
+			system_folder->setPreferredType(LLFolderType::FT_NONE);
 			gInventory.addCategory(system_folder);
 
 			LLViewerInventoryCategory* settings_folder = new LLViewerInventoryCategory(gAgent.getID());
@@ -2373,7 +2373,7 @@ bool idle_startup()
 			settings_folder->setUUID(settings_folder_id);
 			gSystemFolderSettings = settings_folder_id;
 			settings_folder->setParent(gSystemFolderRoot);
-			settings_folder->setPreferredType(LLAssetType::AT_NONE);
+			settings_folder->setPreferredType(LLFolderType::FT_NONE);
 			gInventory.addCategory(settings_folder);
 
 			LLViewerInventoryCategory* assets_folder = new LLViewerInventoryCategory(gAgent.getID());
@@ -2383,7 +2383,7 @@ bool idle_startup()
 			assets_folder->setUUID(assets_folder_id);
 			gSystemFolderAssets = assets_folder_id;
 			assets_folder->setParent(gSystemFolderRoot);
-			assets_folder->setPreferredType(LLAssetType::AT_NONE);
+			assets_folder->setPreferredType(LLFolderType::FT_NONE);
 			gInventory.addCategory(assets_folder);
 		}
 		// </edit>
