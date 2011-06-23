@@ -780,61 +780,80 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 		mBtnInfo->setVisible(is_member && !mAllowEdit);
 	}
 
-	if (mCtrlReceiveNotices)
+	if(gc == GC_ALL || gc == GC_PROPERTIES)
 	{
-		mCtrlReceiveNotices->setVisible(is_member);
-		if (is_member)
+		if (mCtrlReceiveNotices)
 		{
-			mCtrlReceiveNotices->setEnabled(mAllowEdit);
+			mCtrlReceiveNotices->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlReceiveNotices->setEnabled(mAllowEdit);
+				if(!mCtrlReceiveNotices->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlReceiveNotices->set(agent_gdatap.mAcceptNotices);
+					mCtrlReceiveNotices->resetDirty();
+				}
+			}
 		}
-		//mCtrlReceiveNotices->resetDirty(); Don't resetDirty. This ctrl is decoupled from update.
-	}
 
-	if (mCtrlListGroup)
-	{
-		mCtrlListGroup->setVisible(is_member);
-		if (is_member)
-			mCtrlListGroup->setEnabled(mAllowEdit);
-		//mCtrlReceiveChat->resetDirty(); Don't resetDirty. This ctrl is decoupled from update.
-	}
+		if (mCtrlListGroup)
+		{
+			mCtrlListGroup->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlListGroup->setEnabled(mAllowEdit);
+				if(!mCtrlListGroup->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlListGroup->set(agent_gdatap.mListInProfile);
+					mCtrlListGroup->resetDirty();
+				}
+			}
+		}
 
-	if (mCtrlReceiveChat)
-	{
-		mCtrlReceiveChat->setVisible(is_member);
-		mCtrlReceiveChat->setEnabled(TRUE);
-		//mCtrlReceiveChat->resetDirty(); Don't resetDirty. This ctrl is decoupled from update.
-	}
+		if (mCtrlReceiveChat)
+		{
+			mCtrlReceiveChat->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlReceiveChat->setEnabled(mAllowEdit);
+				if(!mCtrlReceiveChat->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlReceiveChat->set(!gIMMgr->getIgnoreGroup(mGroupID));
+					mCtrlReceiveChat->resetDirty();
+				}
+			}
+		}
 
-
-	if (mInsignia) mInsignia->setEnabled(mAllowEdit && can_change_ident);
-	if (mEditCharter) mEditCharter->setEnabled(mAllowEdit && can_change_ident);
+		if (mInsignia) mInsignia->setEnabled(mAllowEdit && can_change_ident);
+		if (mEditCharter) mEditCharter->setEnabled(mAllowEdit && can_change_ident);
 	
-	if (mGroupName) mGroupName->setText(gdatap->mName);
-	if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
-	if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
+		if (mGroupName) mGroupName->setText(gdatap->mName);
+		if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
+		if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
 
-	LLNameEditor* key_edit = getChild<LLNameEditor>("group_key");
-	if(key_edit)
-	{
-		key_edit->setText(gdatap->getID().asString());
-	}
-
-	if (mInsignia)
-	{
-		if (gdatap->mInsigniaID.notNull())
+		LLNameEditor* key_edit = getChild<LLNameEditor>("group_key");
+		if(key_edit)
 		{
-			mInsignia->setImageAssetID(gdatap->mInsigniaID);
+			key_edit->setText(gdatap->getID().asString());
 		}
-		else
-		{
-			mInsignia->setImageAssetID(mDefaultIconID);
-		}
-	}
 
-	if (mEditCharter)
-	{
-		mEditCharter->setText(gdatap->mCharter);
-		mEditCharter->resetDirty();
+		if (mInsignia)
+		{
+			if (gdatap->mInsigniaID.notNull())
+			{
+				mInsignia->setImageAssetID(gdatap->mInsigniaID);
+			}
+			else
+			{
+				mInsignia->setImageAssetID(mDefaultIconID);
+			}
+		}
+
+		if (mEditCharter)
+		{
+			mEditCharter->setText(gdatap->mCharter);
+			mEditCharter->resetDirty();
+		}
 	}
 	
 	if (mListVisibleMembers)

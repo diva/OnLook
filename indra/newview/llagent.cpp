@@ -2488,8 +2488,6 @@ BOOL LLAgent::setGroupContribution(const LLUUID& group_id, S32 contribution)
 	return FALSE;
 }
 
-void update_group_floaters(const LLUUID& group_id);
-
 BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOOL list_in_profile)
 {
 	S32 count = mGroups.count();
