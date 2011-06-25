@@ -3605,10 +3605,8 @@ void LLAppViewer::idle()
 		// *FIX: (???) SAMANTHA
 		if (viewer_stats_timer.getElapsedTimeF32() >= SEND_STATS_PERIOD && !gDisconnected)
 		{
-			// <edit> we are not transmitting session stats
-			//llinfos << "Transmitting sessions stats" << llendl;
-			//send_stats();
-			// </edit>
+			llinfos << "Transmitting sessions stats" << llendl;
+			send_stats();
 			viewer_stats_timer.reset();
 		}
 
