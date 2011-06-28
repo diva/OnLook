@@ -221,7 +221,6 @@ LLGroupMgrGroupData::LLGroupMgrGroupData(const LLUUID& id) :
 	mOpenEnrollment(FALSE), 
 	mMembershipFee(0),
 	mAllowPublish(FALSE),
-	mListInProfile(FALSE),
 	mMaturePublish(FALSE),
 	mChanged(FALSE),
 	mMemberCount(0),

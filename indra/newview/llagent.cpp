@@ -2493,10 +2493,11 @@ BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOO
 	S32 count = mGroups.count();
 	for(S32 i = 0; i < count; ++i)
 	{
-		if(mGroups.get(i).mID == group_id)
+		LLGroupData &group = mGroups.get(i);
+		if(group.mID == group_id)
 		{
-			mGroups.get(i).mAcceptNotices = accept_notices;
-			mGroups.get(i).mListInProfile = list_in_profile;
+			group.mAcceptNotices = accept_notices;
+			group.mListInProfile = list_in_profile;
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("SetGroupAcceptNotices");
 			msg->nextBlock("AgentData");
@@ -2508,6 +2509,9 @@ BOOL LLAgent::setUserGroupFlags(const LLUUID& group_id, BOOL accept_notices, BOO
 			msg->nextBlock("NewData");
 			msg->addBOOL("ListInProfile", list_in_profile);
 			sendReliableMessage();
+
+			update_group_floaters(group.mID);
+
 			return TRUE;
 		}
 	}

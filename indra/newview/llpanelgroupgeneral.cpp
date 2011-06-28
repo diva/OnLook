@@ -220,6 +220,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mCtrlReceiveNotices->setCallbackUserData(this);
 		mCtrlReceiveNotices->set(accept_notices);
 		mCtrlReceiveNotices->setEnabled(data.mID.notNull());
+		mCtrlReceiveNotices->resetDirty();
 	}
 
 	mCtrlReceiveChat = getChild<LLCheckBoxCtrl>("receive_chat", recurse);
@@ -229,6 +230,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 		mCtrlReceiveChat->setCallbackUserData(this);
 		mCtrlReceiveChat->set(!gIMMgr->getIgnoreGroup(mGroupID));
 		mCtrlReceiveChat->setEnabled(mGroupID.notNull());
+		mCtrlReceiveChat->resetDirty();
 	}
 	
 	mCtrlListGroup = getChild<LLCheckBoxCtrl>("list_groups_in_profile", recurse);
@@ -549,9 +551,17 @@ bool LLPanelGroupGeneral::apply(std::string& mesg)
 	BOOL receive_notices = false;
 	BOOL list_in_profile = false;
 	if (mCtrlReceiveNotices)
+	{
 		receive_notices = mCtrlReceiveNotices->get();
+		mCtrlReceiveNotices->resetDirty();	//resetDirty() here instead of in update because this is where the settings
+											//are actually being applied. onCommitUserOnly doesn't call updateChanged directly.
+	}
 	if (mCtrlListGroup) 
+	{
 		list_in_profile = mCtrlListGroup->get();
+		mCtrlListGroup->resetDirty();		//resetDirty() here instead of in update because this is where the settings
+											//are actually being applied. onCommitUserOnly doesn't call updateChanged directly.
+	}
 
 	gAgent.setUserGroupFlags(mGroupID, receive_notices, list_in_profile);
 
@@ -561,6 +571,7 @@ bool LLPanelGroupGeneral::apply(std::string& mesg)
 		gIMMgr->updateIgnoreGroup(mGroupID, !receive_chat);
 		// Save here too in case we crash somewhere down the road -- MC
 		gIMMgr->saveIgnoreGroup();
+		mCtrlReceiveChat->resetDirty();
 	}
 
 	mChanged = FALSE;
@@ -769,53 +780,80 @@ void LLPanelGroupGeneral::update(LLGroupChange gc)
 		mBtnInfo->setVisible(is_member && !mAllowEdit);
 	}
 
-	if (mCtrlReceiveNotices)
+	if(gc == GC_ALL || gc == GC_PROPERTIES)
 	{
-		mCtrlReceiveNotices->setVisible(is_member);
-		if (is_member)
+		if (mCtrlReceiveNotices)
 		{
-			mCtrlReceiveNotices->setEnabled(mAllowEdit);
+			mCtrlReceiveNotices->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlReceiveNotices->setEnabled(mAllowEdit);
+				if(!mCtrlReceiveNotices->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlReceiveNotices->set(agent_gdatap.mAcceptNotices);
+					mCtrlReceiveNotices->resetDirty();
+				}
+			}
 		}
-		mCtrlReceiveNotices->resetDirty();
-	}
 
-	if (mCtrlReceiveChat)
-	{
-		mCtrlReceiveChat->setVisible(is_member);
-		mCtrlReceiveChat->setEnabled(TRUE);
-		mCtrlReceiveChat->resetDirty();
-	}
+		if (mCtrlListGroup)
+		{
+			mCtrlListGroup->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlListGroup->setEnabled(mAllowEdit);
+				if(!mCtrlListGroup->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlListGroup->set(agent_gdatap.mListInProfile);
+					mCtrlListGroup->resetDirty();
+				}
+			}
+		}
 
+		if (mCtrlReceiveChat)
+		{
+			mCtrlReceiveChat->setVisible(is_member);
+			if (is_member)
+			{
+				mCtrlReceiveChat->setEnabled(mAllowEdit);
+				if(!mCtrlReceiveChat->isDirty())	//If the user hasn't edited this then refresh it. Value may have changed in groups panel, etc.
+				{
+					mCtrlReceiveChat->set(!gIMMgr->getIgnoreGroup(mGroupID));
+					mCtrlReceiveChat->resetDirty();
+				}
+			}
+		}
 
-	if (mInsignia) mInsignia->setEnabled(mAllowEdit && can_change_ident);
-	if (mEditCharter) mEditCharter->setEnabled(mAllowEdit && can_change_ident);
+		if (mInsignia) mInsignia->setEnabled(mAllowEdit && can_change_ident);
+		if (mEditCharter) mEditCharter->setEnabled(mAllowEdit && can_change_ident);
 	
-	if (mGroupName) mGroupName->setText(gdatap->mName);
-	if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
-	if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
+		if (mGroupName) mGroupName->setText(gdatap->mName);
+		if (mGroupNameEditor) mGroupNameEditor->setVisible(FALSE);
+		if (mFounderName) mFounderName->setNameID(gdatap->mFounderID,FALSE);
 
-	LLNameEditor* key_edit = getChild<LLNameEditor>("group_key");
-	if(key_edit)
-	{
-		key_edit->setText(gdatap->getID().asString());
-	}
-
-	if (mInsignia)
-	{
-		if (gdatap->mInsigniaID.notNull())
+		LLNameEditor* key_edit = getChild<LLNameEditor>("group_key");
+		if(key_edit)
 		{
-			mInsignia->setImageAssetID(gdatap->mInsigniaID);
+			key_edit->setText(gdatap->getID().asString());
 		}
-		else
-		{
-			mInsignia->setImageAssetID(mDefaultIconID);
-		}
-	}
 
-	if (mEditCharter)
-	{
-		mEditCharter->setText(gdatap->mCharter);
-		mEditCharter->resetDirty();
+		if (mInsignia)
+		{
+			if (gdatap->mInsigniaID.notNull())
+			{
+				mInsignia->setImageAssetID(gdatap->mInsigniaID);
+			}
+			else
+			{
+				mInsignia->setImageAssetID(mDefaultIconID);
+			}
+		}
+
+		if (mEditCharter)
+		{
+			mEditCharter->setText(gdatap->mCharter);
+			mEditCharter->resetDirty();
+		}
 	}
 	
 	if (mListVisibleMembers)

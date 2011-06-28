@@ -274,6 +274,7 @@ public:
 	/*virtual*/ void userSetShape(const LLRect& new_rect);
 	
 	void setImage(const std::string &image_name);
+	void setImageOverlay(const std::string &overlay_image, LLFontGL::HAlign alignment = LLFontGL::HCENTER, const LLColor4& color = LLColor4::white);
 	LLScrollListColumn* getColumn() { return mColumn; }
 	void setHasResizableElement(BOOL resizable);
 	void updateResizeBars();
@@ -294,6 +295,10 @@ private:
 	LLUIString			mDescendingText;
 	BOOL				mShowSortOptions;
 	BOOL				mHasResizableElement;
+
+	LLPointer<LLUIImage>	mImageOverlay;
+	LLFontGL::HAlign		mImageOverlayAlignment;
+	LLColor4				mImageOverlayColor;
 };
 
 class LLScrollListItem
@@ -467,6 +472,7 @@ public:
 
 	void			swapWithNext(S32 index);
 	void			swapWithPrevious(S32 index);
+	void			moveToFront(S32 index);
 
 	void			setCanSelect(BOOL can_select)		{ mCanSelect = can_select; }
 	virtual BOOL	getCanSelect() const				{ return mCanSelect; }
