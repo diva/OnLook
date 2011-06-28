@@ -142,9 +142,6 @@ std::string glob_to_regex(const std::string& glob)
 
 		switch (c)
 		{
-			case '.':
-				regex+="\\.";
-				break;
 			case '*':
 				if (glob.begin() == i)
 				{
@@ -177,6 +174,14 @@ std::string glob_to_regex(const std::string& glob)
 			case '!':
 				regex+= square_brace_open ? '^' : c;
 				break;
+			case '.':	// This collection have different regex meaning
+			case '^':	// And so need escaping
+			case '(':
+			case ')':
+			case '+':
+			case '|':
+			case '$':
+				regex+='\\';
 			default:
 				regex+=c;
 				break;
