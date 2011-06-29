@@ -1125,14 +1125,14 @@ void LLPanelObject::getState( )
 		//top_shear_x_visible		= FALSE;
 		//top_shear_y_visible		= FALSE;
 		//advanced_cut_visible	= TRUE;
-		//advanced_is_dimple		= TRUE;
+		advanced_is_dimple		= TRUE;
 		//twist_min				= OBJECT_TWIST_MIN;
 		//twist_max				= OBJECT_TWIST_MAX;
 		//twist_inc				= OBJECT_TWIST_INC;
 		// Just like the others except no radius
 		size_is_hole 			= TRUE;
 		skew_visible			= TRUE;
-		advanced_cut_visible	= TRUE;
+		//advanced_cut_visible	= TRUE;
 		taper_visible			= TRUE;
 		radius_offset_visible	= FALSE;
 		revolutions_visible		= TRUE;
@@ -1145,8 +1145,9 @@ void LLPanelObject::getState( )
 	case MI_TEST_PRISM:
 	case MI_TEST_HEMICYLINDER:
 		cut_visible				= FALSE;
-		advanced_cut_visible	= TRUE;
-		taper_visible			= FALSE;
+		//advanced_cut_visible	= TRUE;
+        advanced_is_slice       = TRUE;
+		//taper_visible			= FALSE;
 		radius_offset_visible	= FALSE;
 		revolutions_visible		= FALSE;
 		top_shear_x_visible		= FALSE;
