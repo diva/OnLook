@@ -1087,9 +1087,6 @@ LLPointer<LLImageJ2C> LLViewerTextureList::convertToUploadFile(LLPointer<LLImage
 	return compressedImage;
 }
 
-const S32 MIN_VIDEO_RAM = 32;
-const S32 MAX_VIDEO_RAM = 512; // 512MB max for performance reasons.
-
 // Returns min setting for TextureMemory (in MB)
 S32 LLViewerTextureList::getMinVideoRamSetting()
 {
