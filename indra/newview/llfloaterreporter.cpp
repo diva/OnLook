@@ -937,12 +937,12 @@ void LLFloaterReporter::takeScreenshot()
 	if (BUG_REPORT == mReportType)
 	{
 		mResourceDatap->mAssetInfo.mType = LLAssetType::AT_TEXTURE;
-		mResourceDatap->mPreferredLocation = LLAssetType::EType(-1);
+		mResourceDatap->mPreferredLocation = LLFolderType::EType(-1);
 	}
 	else if (COMPLAINT_REPORT == mReportType)
 	{
 		mResourceDatap->mAssetInfo.mType = LLAssetType::AT_TEXTURE;
-		mResourceDatap->mPreferredLocation = LLAssetType::EType(-2);
+		mResourceDatap->mPreferredLocation = LLFolderType::EType(-2);
 	}
 	else
 	{

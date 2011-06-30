@@ -4345,19 +4345,19 @@ BOOL enable_deed_object_to_group(void*)
  * No longer able to support viewer side manipulations in this way
  *
 void god_force_inv_owner_permissive(LLViewerObject* object,
-									InventoryObjectList* inventory,
+									LLInventoryObject::object_list_t* inventory,
 									S32 serial_num,
 									void*)
 {
 	typedef std::vector<LLPointer<LLViewerInventoryItem> > item_array_t;
 	item_array_t items;
 
-	InventoryObjectList::const_iterator inv_it = inventory->begin();
-	InventoryObjectList::const_iterator inv_end = inventory->end();
+	LLInventoryObject::object_list_t::const_iterator inv_it = inventory->begin();
+	LLInventoryObject::object_list_t::const_iterator inv_end = inventory->end();
 	for ( ; inv_it != inv_end; ++inv_it)
 	{
 		if(((*inv_it)->getType() != LLAssetType::AT_CATEGORY)
-		   && ((*inv_it)->getType() != LLAssetType::AT_ROOT_CATEGORY))
+		   && ((*inv_it)->getType() != LLFolderType::FT_ROOT_CATEGORY))
 		{
 			LLInventoryObject* obj = *inv_it;
 			LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem((LLViewerInventoryItem*)obj);
@@ -4686,7 +4686,7 @@ class LLToolsTakeCopy : public view_listener_t
 		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (!rlvCanDeleteOrReturn()) ) return true;
 // [/RLVa:KB]
 
-		const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_OBJECT);
+		const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OBJECT);
 		derez_objects(DRD_ACQUIRE_TO_AGENT_INVENTORY, category_id);
 
 		return true;
@@ -4781,7 +4781,7 @@ class LLObjectEnableReturn : public view_listener_t
 void force_take_copy(void*)
 {
 	if (LLSelectMgr::getInstance()->getSelection()->isEmpty()) return;
-	const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_OBJECT);
+	const LLUUID& category_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OBJECT);
 	derez_objects(DRD_FORCE_TO_GOD_INVENTORY, category_id);
 }
 
@@ -4846,7 +4846,7 @@ void handle_take()
 		{
 		        // check trash
 			LLUUID trash;
-			trash = gInventory.findCategoryUUIDForType(LLAssetType::AT_TRASH);
+			trash = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
 			if(category_id == trash || gInventory.isObjectDescendentOf(category_id, trash))
 			{
 				category_id.setNull();
@@ -4862,7 +4862,7 @@ void handle_take()
 	}
 	if(category_id.isNull())
 	{
-		category_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_OBJECT);
+		category_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_OBJECT);
 	}
 	LLSD payload;
 	payload["folder_id"] = category_id;
@@ -6032,7 +6032,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		}
 
 		LLUUID folder_id;
-		folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		std::string pos_string;
 		gAgent.buildLocationString(pos_string);
 		
@@ -8733,7 +8733,7 @@ void handle_grab_texture(void* data)
 		LL_INFOS("texture") << "Adding baked texture " << asset_id << " to inventory." << llendl;
 		LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
 		LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
-		LLUUID folder_id(gInventory.findCategoryUUIDForType(asset_type));
+		LLUUID folder_id(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
 		if(folder_id.notNull())
 		{
 			std::string name = "Baked ";

@@ -488,7 +488,7 @@ void LLPreviewNotecard::onClickGetItems(void* user_data)
 						gMessageSystem->addUUIDFast(_PREHASH_ObjectID, preview->getObjectID());
 						gMessageSystem->nextBlockFast(_PREHASH_InventoryData);
 						gMessageSystem->addUUIDFast(_PREHASH_ItemID, item->getUUID());
-						gMessageSystem->addUUIDFast(_PREHASH_FolderID, gInventory.findCategoryUUIDForType(item->getType()));
+						gMessageSystem->addUUIDFast(_PREHASH_FolderID, gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(item->getType())));
 						gAgent.sendReliableMessage();
 					}
 				}

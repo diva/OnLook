@@ -33,12 +33,13 @@
 #ifndef LL_LLINVENTORY_H
 #define LL_LLINVENTORY_H
 
-#include "llassetstorage.h"
 #include "lldarray.h"
+#include "llfoldertype.h"
 #include "llinventorytype.h"
 #include "llinventorydefines.h"
 #include "llmemtype.h"
 #include "llpermissions.h"
+#include "llmemory.h"
 #include "llsaleinfo.h"
 #include "llsd.h"
 #include "lluuid.h"
@@ -242,10 +243,6 @@ protected:
 	time_t mCreationDate; // seconds from 1/1/1970, UTC
 };
 
-BOOL item_dictionary_sort(LLInventoryItem* a,LLInventoryItem* b);
-BOOL item_date_sort(LLInventoryItem* a, LLInventoryItem* b);
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLInventoryCategory
 //
@@ -265,7 +262,7 @@ public:
 public:
 	MEM_TYPE_NEW(LLMemType::MTYPE_INVENTORY);
 	LLInventoryCategory(const LLUUID& uuid, const LLUUID& parent_uuid,
-						LLAssetType::EType preferred_type,
+						LLFolderType::EType preferred_type,
 						const std::string& name);
 	LLInventoryCategory();
 	LLInventoryCategory(const LLInventoryCategory* other);
@@ -277,8 +274,8 @@ protected:
 	// Accessors And Mutators
 	//--------------------------------------------------------------------
 public:
-	LLAssetType::EType getPreferredType() const;
-	void setPreferredType(LLAssetType::EType type);
+	LLFolderType::EType getPreferredType() const;
+	void setPreferredType(LLFolderType::EType type);
 	LLSD asLLSD() const;
 	bool fromLLSD(const LLSD& sd);
 
@@ -302,7 +299,7 @@ public:
 	// Member Variables
 	//--------------------------------------------------------------------
 protected:
-	LLAssetType::EType	mPreferredType;	// Type that this category was "meant" to hold (although it may hold any type).		
+	LLFolderType::EType	mPreferredType; // Type that this category was "meant" to hold (although it may hold any type).	
 };
 
 
@@ -382,8 +379,6 @@ struct SetNotForSale
 		item->setSaleInfo(LLSaleInfo::DEFAULT);
 	}
 };
-
-typedef std::list<LLPointer<LLInventoryObject> > InventoryObjectList;
 
 // These functions convert between structured data and an inventroy
 // item, appropriate for serialization.

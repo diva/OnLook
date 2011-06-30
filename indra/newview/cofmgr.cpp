@@ -183,7 +183,7 @@ public:
 void LLCOFMgr::checkCOF()
 {
 	const LLUUID idCOF = getCOF();
-	const LLUUID idLAF = gInventory.findCategoryUUIDForType(LLAssetType::AT_LOST_AND_FOUND);
+	const LLUUID idLAF = gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
 
 	// Check COF for non-links and move them to Lost&Found
 	LLInventoryModel::cat_array_t* pFolders; LLInventoryModel::item_array_t* pItems;
@@ -486,7 +486,7 @@ void LLCOFMgr::addBOFLink(const LLUUID &idFolder, LLPointer<LLInventoryCallback>
 	purgeBOFLink();
 
 	const LLViewerInventoryCategory* pFolder = gInventory.getCategory(idFolder);
-	if ( (pFolder) && (LLAssetType::AT_OUTFIT == pFolder->getPreferredType()) )
+	if ( (pFolder) && (LLFolderType::FT_OUTFIT == pFolder->getPreferredType()) )
 		link_inventory_item(gAgent.getID(), idFolder, getCOF(), pFolder->getName(), "", LLAssetType::AT_LINK_FOLDER, cb);
 }
 
@@ -501,7 +501,7 @@ void LLCOFMgr::purgeBOFLink()
 			continue;
 
 		const LLViewerInventoryCategory* pLinkFolder = pItem->getLinkedCategory();
-		if ( (pLinkFolder) && (LLAssetType::AT_OUTFIT == pLinkFolder->getPreferredType()) )
+		if ( (pLinkFolder) && (LLFolderType::FT_OUTFIT == pLinkFolder->getPreferredType()) )
 			gInventory.purgeObject(pItem->getUUID());
 	}
 }

@@ -438,7 +438,7 @@ void RlvRenameOnWearObserver::doneIdle()
 					else
 					{
 						// "No modify" item with a non-renameable parent: create a new folder named and move the item into it
-						LLUUID idAttachFolder = gInventory.createNewCategory(pFolder->getUUID(), LLAssetType::AT_NONE, strFolderName);
+						LLUUID idAttachFolder = gInventory.createNewCategory(pFolder->getUUID(), LLFolderType::FT_NONE, strFolderName);
 						move_inventory_item(gAgent.getID(), gAgent.getSessionID(), pItem->getUUID(), idAttachFolder, std::string(), NULL);
 					}
 				}
@@ -712,7 +712,7 @@ bool RlvWearableItemCollector::onCollectItem(const LLInventoryItem* pItem)
 				const LLUUID& idLinkedFolder = pItem->getLinkedUUID();
 				LLViewerInventoryCategory* pLinkedFolder = gInventory.getCategory(idLinkedFolder);
 				// Link can't point to an outfit folder, or start a second level of indirection, or have the base folder as an ancestor
-				if ( (pLinkedFolder) && (LLAssetType::AT_OUTFIT != pLinkedFolder->getPreferredType()) &&
+				if ( (pLinkedFolder) && (LLFolderType::FT_OUTFIT != pLinkedFolder->getPreferredType()) &&
 					 (gInventory.isObjectDescendentOf(pItem->getUUID(), m_idFolder)) && 
 					 (!gInventory.isObjectDescendentOf(idLinkedFolder, m_idFolder)) )
 				{

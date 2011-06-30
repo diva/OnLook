@@ -310,7 +310,7 @@ void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 		LLFirstUse::useMap();
 
 		// Start speculative download of landmarks
-		LLUUID landmark_folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+		LLUUID landmark_folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		gInventory.startBackgroundFetch(landmark_folder_id);
 
 		gFloaterWorldMap->childSetFocus("location", TRUE);
