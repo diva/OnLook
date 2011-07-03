@@ -678,6 +678,9 @@ bool LLAppViewer::init()
 
 	LLViewerJointMesh::updateVectorize();
 
+	// load MIME type -> media impl mappings
+	LLMIMETypes::parseMIMETypes( std::string("mime_types.xml") ); 
+
 	// Copy settings to globals. *TODO: Remove or move to appropriage class initializers
 	settings_to_globals();
 	// Setup settings listeners
@@ -2113,13 +2116,13 @@ bool LLAppViewer::initConfiguration()
         }
     }
 
-	const LLControlVariable* skinfolder = gSavedSettings.getControl("SkinCurrent");
-	if(skinfolder && LLStringUtil::null != skinfolder->getValue().asString())
-	{   
-		gDirUtilp->setSkinFolder(skinfolder->getValue().asString());
-	}
+    const LLControlVariable* skinfolder = gSavedSettings.getControl("SkinCurrent");
+    if(skinfolder && LLStringUtil::null != skinfolder->getValue().asString())
+    {   
+        gDirUtilp->setSkinFolder(skinfolder->getValue().asString());
+    }
 
-	mYieldTime = gSavedSettings.getS32("YieldTime");
+    mYieldTime = gSavedSettings.getS32("YieldTime");
              
 	// XUI:translate
 	gSecondLife = "Singularity Viewer";
@@ -2389,9 +2392,6 @@ bool LLAppViewer::initWindow()
 
 	LLTrans::parseStrings("strings.xml");
 	LLUITrans::parseStrings("ui_strings.xml");
-
-	// load MIME type -> media impl mappings
-	LLMIMETypes::parseMIMETypes( std::string("mime_types.xml") ); 	
 
 	// Show watch cursor
 	gViewerWindow->setCursor(UI_CURSOR_WAIT);
