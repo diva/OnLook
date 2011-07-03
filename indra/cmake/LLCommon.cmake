@@ -5,6 +5,12 @@ include(Boost)
 include(EXPAT)
 include(ZLIB)
 
+if (DARWIN)
+  include(CMakeFindFrameworks)
+  find_library(CORESERVICES_LIBRARY CoreServices)
+endif (DARWIN)
+
+
 set(LLCOMMON_INCLUDE_DIRS
     ${LIBS_OPEN_DIR}/cwdebug
     ${LIBS_OPEN_DIR}/llcommon

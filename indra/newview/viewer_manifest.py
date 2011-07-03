@@ -461,10 +461,10 @@ class DarwinManifest(ViewerManifest):
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib_release/libhunspell-1.2.dylib", dst="MacOS/libhunspell-1.2.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
 
             # most everything goes in the Resources directory
             if self.prefix(src="", dst="Resources"):
@@ -520,8 +520,11 @@ class DarwinManifest(ViewerManifest):
                 self.path(self.args['configuration'] + "/libfmodwrapper.dylib", "libfmodwrapper.dylib")
                 
                 # our apps
-                self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                #self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                try:
+                  self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
+                  self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                except:
+                	pass
 
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
@@ -536,12 +539,15 @@ class DarwinManifest(ViewerManifest):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %
                                      {'target': target_lib,
-                                      'link' : os.path.join(mac_crash_logger_res_path, libfile)}
-                                     )
-                    self.run_command("ln -sf %(target)r %(link)r" %
-                                     {'target': target_lib,
                                       'link' : os.path.join(slplugin_res_path, libfile)}
                                      )
+                    try:
+                        self.run_command("ln -sf %(target)r %(link)r" %
+                                     {'target': target_lib,
+                                      'link' : os.path.join(mac_crash_logger_res_path, libfile)}
+                                     )
+                    except:
+                        pass
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
