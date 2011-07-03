@@ -85,9 +85,6 @@ class ViewerManifest(LLManifest):
                         self.path("*.png")
                         self.path("textures.xml")
                         self.end_prefix("default/textures")
-                self.exclude("default/xui/en_us/mime_types_windows.xml")
-                self.exclude("default/xui/en_us/mime_types_mac.xml")
-                self.exclude("default/xui/en_us/mime_types_linux.xml")
                 self.path("default/xui/*/*.xml")
                 self.path("Default.xml")
                 self.path("default/*.xml")
@@ -268,9 +265,6 @@ class WindowsManifest(ViewerManifest):
             self.path("qkrcodecs4.dll")
             self.path("qtwcodecs4.dll")
             self.end_prefix()
-
-        # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-        self.path("skins/default/xui/en-us/mime_types_windows.xml", "skins/default/xui/en-us/mime_types.xml")
 
         # Get llcommon and deps. If missing assume static linkage and continue.
         if self.prefix(src=self.args['configuration'], dst=""):
@@ -555,9 +549,6 @@ class DarwinManifest(ViewerManifest):
 
                     self.end_prefix("llplugin")              
 
-                # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-                self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
-
                 # command line arguments for connecting to the proper grid
                 self.put_in_file(self.flags_list(), 'arguments.txt')
 
@@ -709,9 +700,6 @@ class LinuxManifest(ViewerManifest):
             self.path("../plugins/webkit/libmedia_plugin_webkit.so", "libmedia_plugin_webkit.so")
             self.path("../plugins/gstreamer010/libmedia_plugin_gstreamer010.so", "libmedia_plugin_gstreamer.so")
             self.end_prefix("bin/llplugin")
-
-        # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-        self.path("skins/default/xui/en-us/mime_types_linux.xml", "skins/default/xui/en-us/mime_types.xml")
 
         self.path("featuretable_linux.txt")
 
