@@ -541,13 +541,10 @@ class DarwinManifest(ViewerManifest):
                                      {'target': target_lib,
                                       'link' : os.path.join(slplugin_res_path, libfile)}
                                      )
-                    try:
-                        self.run_command("ln -sf %(target)r %(link)r" %
-                                     {'target': target_lib,
-                                      'link' : os.path.join(mac_crash_logger_res_path, libfile)}
-                                     )
-                    except:
-                        pass
+                    #self.run_command("ln -sf %(target)r %(link)r" %
+                    #                 {'target': target_lib,
+                    #                  'link' : os.path.join(mac_crash_logger_res_path, libfile)}
+                    #                 )
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
