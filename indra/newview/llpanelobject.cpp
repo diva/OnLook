@@ -476,7 +476,7 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
-	BOOL enable_move	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_move	= objectp->permMove() && (!objectp->isAttachment() && objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
 	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_link	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
@@ -491,15 +491,6 @@ void LLPanelObject::getState( )
 		enable_scale = FALSE;
 		enable_rotate = FALSE;
 	}
-
-
-
-
-
-
-
-
-
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 	if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP))) )
@@ -2200,7 +2191,8 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 	// won't get dumped by the simulator.
 	LLVector3d new_pos_global = regionp->getPosGlobalFromRegion(newpos);
 
-	if ( LLWorld::getInstance()->positionRegionValidGlobal(new_pos_global) )
+	if (LLWorld::getInstance()->positionRegionValidGlobal(new_pos_global) ||
+        mObject->isAttachment())
 	{
 		// send only if the position is changed, that is, the delta vector is not zero
 		LLVector3d old_pos_global = mObject->getPositionGlobal();
@@ -2638,9 +2630,9 @@ void LLPanelObject::onPastePos(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], 0.f, 256.f);
-	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], 0.f, 256.f);
-	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], 0.f, 4096.f);
+	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, 256.f);
+	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, 256.f);
+	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, 4096.f);
 	
 	self->mCtrlPosX->set( mClipboardPos.mV[VX] );
 	self->mCtrlPosY->set( mClipboardPos.mV[VY] );
@@ -2717,9 +2709,9 @@ void LLPanelObject::onPastePosClip(void* user_data)
 	std::string stringVec = wstring_to_utf8str(temp_string); 
 	if(!getvectorfromclip(stringVec, &mClipboardPos)) return;
 	
-	mClipboardPos.mV[VX] = llclamp(mClipboardPos.mV[VX], 0.f, 256.f);
-	mClipboardPos.mV[VY] = llclamp(mClipboardPos.mV[VY], 0.f, 256.f);
-	mClipboardPos.mV[VZ] = llclamp(mClipboardPos.mV[VZ], 0.f, 4096.f);
+	mClipboardPos.mV[VX] = llclamp(mClipboardPos.mV[VX], -3.5f, 256.f);
+	mClipboardPos.mV[VY] = llclamp(mClipboardPos.mV[VY], -3.5f, 256.f);
+	mClipboardPos.mV[VZ] = llclamp(mClipboardPos.mV[VZ], -3.5f, 4096.f);
 	
 	self->mCtrlPosX->set( mClipboardPos.mV[VX] );
 	self->mCtrlPosY->set( mClipboardPos.mV[VY] );
