@@ -679,7 +679,13 @@ bool LLAppViewer::init()
 	LLViewerJointMesh::updateVectorize();
 
 	// load MIME type -> media impl mappings
-	LLMIMETypes::parseMIMETypes( std::string("mime_types.xml") ); 
+#if LL_WINDOWS
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_windows.xml") );
+#elif LL_DARWIN
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_mac.xml") );
+#elif LL_LINUX
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_linux.xml") );
+#endif
 
 	// Copy settings to globals. *TODO: Remove or move to appropriage class initializers
 	settings_to_globals();
@@ -1569,6 +1575,7 @@ bool LLAppViewer::cleanup()
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
+	LLUserAuth::getInstance()->reset(); //reset before LLCurl::cleanupClass, else LLCURL::sHandleMutex == NULL
 	// *NOTE:Mani - The following call is not thread safe. 
 	LLCurl::cleanupClass();
 	llinfos << "LLCurl cleaned up." << llendflush;

@@ -126,7 +126,6 @@ LLToolBar::LLToolBar()
 BOOL LLToolBar::postBuild()
 {
 	childSetCommitCallback("communicate_btn", onClickCommunicate, this);
-	childSetControlName("communicate_btn", "ShowCommunicate");
 
 	childSetAction("chat_btn", onClickChat, this);
 	childSetControlName("chat_btn", "ChatVisible");

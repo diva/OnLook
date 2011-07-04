@@ -1689,6 +1689,10 @@ void LLPanelAvatar::resetGroupList()
 		LLScrollListCtrl* group_list = mPanelSecondLife->getChild<LLScrollListCtrl>("groups");
 		if (group_list)
 		{
+			const LLUUID selected_id	= group_list->getSelectedValue();
+			const S32	selected_idx	= group_list->getFirstSelectedIndex();
+			const S32	scroll_pos		= group_list->getScrollPos();
+
 			group_list->deleteAllItems();
 			
 			S32 count = gAgent.mGroups.count();
@@ -1717,11 +1721,19 @@ void LLPanelAvatar::resetGroupList()
 				row["id"] = id ;
 				row["columns"][0]["value"] = group_string;
 				row["columns"][0]["font"] = "SANSSERIF_SMALL";
-				row["columns"][0]["font-style"] = group_data.mListInProfile ? "BOLD" : "NORMAL";
+				std::string font_style = group_data.mListInProfile ? "BOLD" : "NORMAL";
+				if(group_data.mID == gAgent.getGroupID())
+					font_style.append("|ITALIC");
+				row["columns"][0]["font-style"] = font_style;
 				row["columns"][0]["width"] = 0;
-				group_list->addElement(row);
+				group_list->addElement(row,ADD_SORTED);
 			}
-			group_list->sortByColumnIndex(0, TRUE);
+			if(selected_id.notNull())
+				group_list->selectByValue(selected_id);
+			if(selected_idx!=group_list->getFirstSelectedIndex()) //if index changed then our stored pos is pointless.
+				group_list->scrollToShowSelected();
+			else
+				group_list->setScrollPos(scroll_pos);
 		}
 	}
 }
@@ -2248,22 +2260,23 @@ void LLPanelAvatar::processAvatarGroupsReply(LLMessageSystem *msg, void**)
 						}
 					}
 					// Set normal color if not found or if group is visible in profile
-					if (!group_data || group_data->mListInProfile)
+					if (group_data)
 					{
-						row["columns"][0]["font-style"] = "BOLD";
+						std::string font_style = group_data->mListInProfile ? "BOLD" : "NORMAL";
+						if(group_data->mID == gAgent.getGroupID())
+							font_style.append("|ITALIC");
+						row["columns"][0]["font-style"] = font_style;
 					}
+					else
+						row["columns"][0]["font-style"] = "NORMAL";
 				}
 				
-
-
-
 				if (group_list)
 				{
-					group_list->addElement(row);
+					group_list->addElement(row,ADD_SORTED);
 				}
 			}
 		}
-		if(group_list) group_list->sortByColumnIndex(0, TRUE);
 	}
 }
 

@@ -154,16 +154,13 @@ std::string build_extensions_string(ELoadFilter filter)
 }
 
 class AIFileUpload {
-  protected:
-	AIFilePicker* mPicker;
-
   public:
-    AIFileUpload(void) : mPicker(NULL) { }
-	virtual ~AIFileUpload() { llassert(!mPicker); if (mPicker) { mPicker->abort(); mPicker = NULL; } }
+    AIFileUpload(void) { }
+	virtual ~AIFileUpload() { }
 
   public:
 	bool is_valid(std::string const& filename, ELoadFilter type);
-	void filepicker_callback(ELoadFilter type);
+	void filepicker_callback(ELoadFilter type, AIFilePicker* picker);
 	void start_filepicker(ELoadFilter type, char const* context);
 
   protected:
@@ -179,21 +176,22 @@ void AIFileUpload::start_filepicker(ELoadFilter filter, char const* context)
 		// display();
 	}
 
-	llassert(!mPicker);
-	mPicker = AIFilePicker::create();
-	mPicker->open(filter, "", context);
-	mPicker->run(boost::bind(&AIFileUpload::filepicker_callback, this, filter));
+	AIFilePicker* picker = AIFilePicker::create();
+	picker->open(filter, "", context);
+	// Note that when the call back is called then we're still in the main loop of
+	// the viewer and therefore the AIFileUpload still exists, since that is only
+	// destructed at the end of main when exiting the viewer.
+	picker->run(boost::bind(&AIFileUpload::filepicker_callback, this, filter, picker));
 }
 
-void AIFileUpload::filepicker_callback(ELoadFilter type)
+void AIFileUpload::filepicker_callback(ELoadFilter type, AIFilePicker* picker)
 {
-	if (mPicker->hasFilename())
+	if (picker->hasFilename())
 	{
-	  std::string filename = mPicker->getFilename();
+	  std::string filename = picker->getFilename();
 	  if (is_valid(filename, type))
 		handle_event(filename);
 	}
-	mPicker = NULL;
 }
 
 bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
@@ -478,7 +476,7 @@ class LLFileMinimizeAllWindows : public view_listener_t
 };
 // </edit>
 
-class LLFileSaveTexture : public view_listener_t
+class LLFileSavePreview : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
@@ -1268,12 +1266,11 @@ void init_menu_file()
 	// <edit>
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
 	// </edit>
-	(new LLFileSaveTexture())->registerListener(gMenuHolder, "File.SaveTexture");
+	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
-	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }
