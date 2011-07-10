@@ -1163,7 +1163,7 @@ void LLViewerRegion::cacheFullUpdate(LLViewerObject* objectp, LLDataPackerBinary
 // AND the CRC matches. JC
 LLDataPacker *LLViewerRegion::getDP(U32 local_id, U32 crc)
 {
-	llassert(mCacheLoaded);
+	//llassert(mCacheLoaded); unnecessary and annoyijng, davep agrees
 
 	LLVOCacheEntry* entry = get_if_there(mCacheMap, local_id, (LLVOCacheEntry*)NULL);
 

@@ -8,6 +8,40 @@
 		<string>settings_sh.xml</string>
 		<string>settings_rlv.xml</string>
 	</array>
+	
+  <key>HTTPRequestRate</key>
+  <map>
+    <key>Comment</key>
+    <string>Number of HTTP texture requests fired per second.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>30</integer>
+  </map>
+  <key>HTTPMaxRequests</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum number of simultaneous HTTP requests in progress.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>32</integer>
+  </map>
+  <key>HTTPMinRequests</key>
+  <map>
+    <key>Comment</key>
+    <string>Attempt to maintain at least this many HTTP requests in progress by ignoring bandwidth</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>2</integer>
+  </map>
 
   <key>AllowLargeSounds</key>
   <map>
