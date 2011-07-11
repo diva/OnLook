@@ -3095,7 +3095,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// RELEASE-RLVa: if this code changes, remember to change the code down below as well
 		if ( (chat.mSourceType == CHAT_SOURCE_OBJECT && chat.mChatType != CHAT_TYPE_DEBUG_MSG) && 
 			 (gSavedSettings.getBOOL("EffectScriptChatParticles")) && 
-			 ((!rlv_handler_t::isEnabled()) || (CHAT_TYPE_OWNER != chat.mChatType)) )
+			 (CHAT_TYPE_OWNER != chat.mChatType) )
 // [/RLVa:KB]
 		{
 			LLPointer<LLViewerPartSourceChat> psc = new LLViewerPartSourceChat(chatter->getPositionAgent());
@@ -3429,8 +3429,9 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 #endif //shy_mod
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-10 (RLVa-1.0.0g)
 				// Copy/paste from above
-				if ( (chatter) && (chat.mSourceType == CHAT_SOURCE_OBJECT && chat.mChatType != CHAT_TYPE_DEBUG_MSG) && 
-					 (gSavedSettings.getBOOL("EffectScriptChatParticles")) )
+				if ( chatter && (chat.mSourceType == CHAT_SOURCE_OBJECT && chat.mChatType != CHAT_TYPE_DEBUG_MSG) && 
+					 (gSavedSettings.getBOOL("EffectScriptChatParticles")) && 
+					 (CHAT_TYPE_OWNER != chat.mChatType) ) 
 				{
 					LLPointer<LLViewerPartSourceChat> psc = new LLViewerPartSourceChat(chatter->getPositionAgent());
 					psc->setSourceObject(chatter);
