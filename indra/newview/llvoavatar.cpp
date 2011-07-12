@@ -3523,9 +3523,10 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	}
 
 	// check attachments for nameplate override
+	static const LLCachedControl<bool> allow_nameplate_override ("CCSAllowNameplateOverride", true);
 	std::string nameplate;
 	attachment_map_t::iterator it, end=mAttachmentPoints.end();
-	for (it=mAttachmentPoints.begin(); it!=end; ++it) {
+	if (allow_nameplate_override) for (it=mAttachmentPoints.begin(); it!=end; ++it) {
 		// get attached object
 		LLViewerJointAttachment *atm = it->second;
 		if (!atm) continue;
@@ -8416,6 +8417,22 @@ void LLVOAvatar::setCompositeUpdatesEnabled( BOOL b )
 		}
 	}
 }
+
+void LLVOAvatar::setNameFromChat(const std::string &text) {
+	static const LLCachedControl<bool> allow_nameplate_override ("CCSAllowNameplateOverride", true);
+	if(allow_nameplate_override) {
+		mNameFromChatOverride = true;
+		mNameFromChatChanged = true;
+		mNameFromChatText = text;
+	}
+}
+
+void LLVOAvatar::clearNameFromChat() {
+	mNameFromChatOverride = false;
+	mNameFromChatChanged = true;
+	mNameFromChatText = "";
+}
+
 
 void LLVOAvatar::addChat(const LLChat& chat)
 {
