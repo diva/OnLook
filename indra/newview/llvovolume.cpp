@@ -63,6 +63,8 @@
 #include "llworld.h"
 #include "llselectmgr.h"
 #include "pipeline.h"
+#include "llvocache.h"
+
 // [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.0d)
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -235,10 +237,12 @@ U32 LLVOVolume::processUpdateMessage(LLMessageSystem *mesgsys,
 				// Well, crap, there's something bogus in the data that we're unpacking.
 				dp->dumpBufferToLog();
 				llwarns << "Flushing cache files" << llendl;
-				std::string mask;
-				mask = gDirUtilp->getDirDelimiter() + "*.slc";
-				gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE,""), mask);
-// 				llerrs << "Bogus TE data in " << getID() << ", crashing!" << llendl;
+
+				if(LLVOCache::hasInstance() && getRegion())
+				{
+					LLVOCache::getInstance()->removeEntry(getRegion()->getHandle()) ;
+				}
+				
 				llwarns << "Bogus TE data in " << getID() << llendl;
 			}
 			else if (res2 & (TEM_CHANGE_TEXTURE|TEM_CHANGE_COLOR))
