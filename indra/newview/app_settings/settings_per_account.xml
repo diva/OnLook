@@ -215,6 +215,17 @@
 				<string />
 			</array>
 		</map>
+		<key>AscentInstantMessageResponse</key>
+		<map>
+			<key>Comment</key>
+			<string>Auto response to instant messages</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>This is an autoresponse!</string>
+		</map>
 		<key>AscentInstantMessageResponseAnyone</key>
 		<map>
 			<key>Comment</key>
