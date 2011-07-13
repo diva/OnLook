@@ -297,7 +297,9 @@ private:
 	bool			mDragOnLeft;
 
 	BOOL			mButtonsEnabled[BUTTON_COUNT];
+protected:
 	LLButton*		mButtons[BUTTON_COUNT];
+private:
 	F32				mButtonScale;
 	BOOL			mAutoFocus;
 	LLHandle<LLFloater> mSnappedTo;
