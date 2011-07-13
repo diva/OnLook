@@ -42,7 +42,7 @@
 #include "llvoicevisualizer.h"
 #include "llviewercamera.h"
 #include "llviewerobject.h"
-#include "llimagegl.h"
+#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llvoiceclient.h"
 #include "llrender.h"
@@ -130,13 +130,13 @@ LLVoiceVisualizer::LLVoiceVisualizer( const U8 type )
 	
 	const char* sound_level_img[] = 
 	{
-		"041ee5a0-cb6a-9ac5-6e49-41e9320507d5.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c",
-		"29de489d-0491-fb00-7dab-f9e686d31e83.j2c"
+		"voice_meter_dot.j2c",
+		"voice_meter_rings.j2c",
+		"voice_meter_rings.j2c",
+		"voice_meter_rings.j2c",
+		"voice_meter_rings.j2c",
+		"voice_meter_rings.j2c",
+		"voice_meter_rings.j2c"
 	};
 
 	for (int i=0; i<NUM_VOICE_SYMBOL_WAVES; i++)
