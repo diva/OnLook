@@ -67,9 +67,6 @@
 
 #include "llstoredmessage.h"
 #include "llsocks5.h"
-// <edit>
-#include "llnetcanary.h"
-// </edit>
 
 const U32 MESSAGE_MAX_STRINGS_LENGTH = 64;
 const U32 MESSAGE_NUMBER_OF_HASH_BUCKETS = 8192;
