@@ -396,13 +396,10 @@ void LLPanelGroupInvite::addUsers(std::vector<LLUUID>& agent_ids)
 		if(avatarp)
 		{
 			std::string fullname;
-			LLSD args;
 			LLNameValue* nvfirst = avatarp->getNVPair("FirstName");
 			LLNameValue* nvlast = avatarp->getNVPair("LastName");
 			if(nvfirst && nvlast)
 			{
-				args["FIRST"] = std::string(nvfirst->getString());
-				args["LAST"] = std::string(nvlast->getString());
 				fullname = std::string(nvfirst->getString()) + " " + std::string(nvlast->getString());
 			}
 			if (!fullname.empty())

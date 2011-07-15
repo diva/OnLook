@@ -3273,10 +3273,8 @@ class LLAvatarGiveCard : public view_listener_t
 			LLNameValue* nvlast = dest->getNVPair("LastName");
 			if(nvfirst && nvlast)
 			{
-				args["FIRST"] = nvfirst->getString();
-				args["LAST"] = nvlast->getString();
-				old_args["FIRST"] = nvfirst->getString();
-				old_args["LAST"] = nvlast->getString();
+				args["NAME"] = std::string(nvfirst->getString()) + " " + nvlast->getString();
+				old_args["NAME"] = std::string(nvfirst->getString()) + " " + nvlast->getString();
 				found_name = true;
 			}
 			LLViewerRegion* region = dest->getRegion();
@@ -3878,16 +3876,11 @@ void request_friendship(const LLUUID& dest_id)
 	if(dest && dest->isAvatar())
 	{
 		std::string fullname;
-		LLSD args;
 		LLNameValue* nvfirst = dest->getNVPair("FirstName");
 		LLNameValue* nvlast = dest->getNVPair("LastName");
 		if(nvfirst && nvlast)
 		{
-			args["FIRST"] = nvfirst->getString();
-			args["LAST"] = nvlast->getString();
-			fullname = nvfirst->getString();
-			fullname += " ";
-			fullname += nvlast->getString();
+			fullname = std::string(nvfirst->getString()) + " " + nvlast->getString();
 		}
 		if (!fullname.empty())
 		{

@@ -1290,6 +1290,22 @@ void LLViewerParcelMgr::sendParcelPropertiesUpdate(LLParcel* parcel, bool use_ag
 
 void LLViewerParcelMgr::requestHoverParcelProperties(const LLVector3d& pos)
 {
+	static U32 last_west, last_south;
+	// only request parcel info if position has changed outside of the
+	// last parcel grid step
+	U32 west_parcel_step = (U32) floor( pos.mdV[VX] / PARCEL_GRID_STEP_METERS );
+	U32 south_parcel_step = (U32) floor( pos.mdV[VY] / PARCEL_GRID_STEP_METERS );
+	
+	if ((west_parcel_step == last_west) && (south_parcel_step == last_south))
+	{
+		return;
+	}
+	else 
+	{
+		last_west = west_parcel_step;
+		last_south = south_parcel_step;
+	}
+
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal( pos );
 	if (!region)
 	{
@@ -2002,10 +2018,9 @@ void LLViewerParcelMgr::deedLandToGroup()
 	args["GROUP_NAME"] = group_name;
 	if(mCurrentParcel->getContributeWithDeed())
 	{
-		std::string first_name, last_name;
-		gCacheName->getName(mCurrentParcel->getOwnerID(), first_name, last_name);
-		args["FIRST_NAME"] = first_name;
-		args["LAST_NAME"] = last_name;
+		std::string full_name;
+		gCacheName->getFullName(mCurrentParcel->getOwnerID(),full_name);
+		args["NAME"] = full_name;
 		LLNotifications::instance().add("DeedLandToGroupWithContribution",args, LLSD(), deedAlertCB);
 	}
 	else

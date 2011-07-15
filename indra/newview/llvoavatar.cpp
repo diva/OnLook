@@ -3782,7 +3782,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			if(LLAvatarNameCache::useDisplayNames() && LLAvatarNameCache::get(getID(), &av_name)) dnhasloaded=true;
 			
 			std::string usedname;
-			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsDummy 
+			if(dnhasloaded && !av_name.mIsDisplayNameDefault && !av_name.mIsTemporaryName 
 				&& av_name.mDisplayName != av_name.getLegacyName())
 			{
 					usedname = av_name.mDisplayName;

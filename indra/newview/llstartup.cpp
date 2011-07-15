@@ -279,11 +279,11 @@ void release_start_screen();
 void reset_login();
 void apply_udp_blacklist(const std::string& csv);
 
-void callback_cache_name(const LLUUID& id, const std::string& firstname, const std::string& lastname, BOOL is_group, void* data)
+void callback_cache_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
-	LLNameListCtrl::refreshAll(id, firstname, lastname, is_group);
-	LLNameBox::refreshAll(id, firstname, lastname, is_group);
-	LLNameEditor::refreshAll(id, firstname, lastname, is_group);
+	LLNameListCtrl::refreshAll(id, full_name);
+	LLNameBox::refreshAll(id, full_name, is_group);
+	LLNameEditor::refreshAll(id, full_name, is_group);
 
 	// TODO: Actually be intelligent about the refresh.
 	// For now, just brute force refresh the dialogs.
@@ -2076,21 +2076,7 @@ bool idle_startup()
 
 		gXferManager->registerCallbacks(gMessageSystem);
 
-		if ( gCacheName == NULL )
-		{
-			gCacheName = new LLCacheName(gMessageSystem);
-			gCacheName->addObserver(callback_cache_name);
-	
-			// Load stored cache if possible
-            LLAppViewer::instance()->loadNameCache();
-		}
-
-		// Start cache in not-running state until we figure out if we have
-		// capabilities for display name lookup
-		LLAvatarNameCache::initClass(false);	
-		S32 phoenix_name_system = gSavedSettings.getS32("PhoenixNameSystem");
-		if(phoenix_name_system <= 0 || phoenix_name_system > 2) LLAvatarNameCache::setUseDisplayNames(false);
-		else LLAvatarNameCache::setUseDisplayNames(true);
+		LLStartUp::initNameCache();
 
 		// *Note: this is where gWorldMap used to be initialized.
 
@@ -3838,6 +3824,35 @@ void LLStartUp::multimediaInit()
 	LLViewerParcelMedia::initClass();
 }
 
+
+void LLStartUp::initNameCache()
+{
+	// Can be called multiple times
+	if ( gCacheName ) return;
+
+	gCacheName = new LLCacheName(gMessageSystem);
+	gCacheName->addObserver(&callback_cache_name);
+	gCacheName->localizeCacheName("waiting", LLTrans::getString("AvatarNameWaiting"));
+	gCacheName->localizeCacheName("nobody", LLTrans::getString("AvatarNameNobody"));
+	gCacheName->localizeCacheName("none", LLTrans::getString("GroupNameNone"));
+	// Load stored cache if possible
+	LLAppViewer::instance()->loadNameCache();
+
+	// Start cache in not-running state until we figure out if we have
+	// capabilities for display name lookup
+	LLAvatarNameCache::initClass(false);
+	S32 phoenix_name_system = gSavedSettings.getS32("PhoenixNameSystem");
+	if(phoenix_name_system <= 0 || phoenix_name_system > 2) LLAvatarNameCache::setUseDisplayNames(false);
+	else LLAvatarNameCache::setUseDisplayNames(true);
+}
+
+void LLStartUp::cleanupNameCache()
+{
+	LLAvatarNameCache::cleanupClass();
+
+	delete gCacheName;
+	gCacheName = NULL;
+}
 bool LLStartUp::dispatchURL()
 {
 	// ok, if we've gotten this far and have a startup URL

@@ -6902,16 +6902,15 @@ void LLVoiceClient::notifyFriendObservers()
 
 void LLVoiceClient::lookupName(const LLUUID &id)
 {
-	gCacheName->getName(id, onAvatarNameLookup);
+	gCacheName->get(id, false, boost::bind(&LLVoiceClient::onAvatarNameLookup,_1,_2));
 }
 
 //static
-void LLVoiceClient::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
+void LLVoiceClient::onAvatarNameLookup(const LLUUID& id, const std::string& full_name)
 {
 	if(gVoiceClient)
 	{
-		std::string name = llformat("%s %s", first.c_str(), last.c_str());
-		gVoiceClient->avatarNameResolved(id, name);
+		gVoiceClient->avatarNameResolved(id, full_name);
 	}
 }
 

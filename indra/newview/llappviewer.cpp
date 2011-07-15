@@ -33,7 +33,6 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llappviewer.h"
-#include "llprimitive.h"
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
@@ -79,12 +78,16 @@
 #include "llfirstuse.h"
 #include "llrender.h"
 #include "llfont.h"
-#include "llimagej2c.h"
 #include "llvocache.h"
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"
-	
+
+// Linden library includes
+#include "llavatarnamecache.h"
+#include "lldiriterator.h"
+#include "llimagej2c.h"
+#include "llprimitive.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -117,7 +120,6 @@
 #include "lltoolmgr.h"
 #include "llassetstorage.h"
 #include "llpolymesh.h"
-#include "llcachename.h"
 #include "llaudioengine.h"
 #include "llstreamingaudio.h"
 #include "llviewermenu.h"
@@ -181,8 +183,6 @@
 #include "llviewerthrottle.h"
 #include "llparcel.h"
 
-#include "lldiriterator.h"
-#include "llavatarnamecache.h"
 #include "llinventoryview.h"
 
 #include "llcommandlineparser.h"
@@ -1257,10 +1257,7 @@ bool LLAppViewer::cleanup()
 
 	LLPolyMesh::freeAllMeshes();
 
-	LLAvatarNameCache::cleanupClass();
-
-	delete gCacheName;
-	gCacheName = NULL;
+	LLStartUp::cleanupNameCache();
 
 	// Note: this is where gLocalSpeakerMgr and gActiveSpeakerMgr used to be deleted.
 
@@ -3455,12 +3452,14 @@ void LLAppViewer::loadNameCache()
 
 	// Try to load from the legacy format. This should go away after a
 	// while. Phoenix 2008-01-30
+#if 0
 	LLFILE* name_cache_fp = LLFile::fopen(name_cache, "r");		// Flawfinder: ignore
 	if (name_cache_fp)
 	{
 		gCacheName->importFile(name_cache_fp);
 		fclose(name_cache_fp);
 	}
+#endif
 }
 
 void LLAppViewer::saveNameCache()
@@ -3658,9 +3657,6 @@ void LLAppViewer::idle()
 	{
 		LLFastTimer t(LLFastTimer::FTM_NETWORK);
 	
-		// Phoenix: Wolfspirit: Prepare the namecache.
-		idleNameCache();
-
 	    ////////////////////////////////////////////////
 	    //
 	    // Network processing
@@ -3668,6 +3664,7 @@ void LLAppViewer::idle()
 	    // NOTE: Starting at this point, we may still have pointers to "dead" objects
 	    // floating throughout the various object lists.
 	    //
+		idleNameCache();
     
 	    gFrameStats.start(LLFrameStats::IDLE_NETWORK);
 		stop_glerror();
@@ -4012,11 +4009,9 @@ void LLAppViewer::idleNameCache()
 	if (had_capability != have_capability)
 	{
 		// name tags are persistant on screen, so make sure they refresh
-		//LLVOAvatar::invalidateNameTags();
+		LLVOAvatar::invalidateNameTags();	//Should this be commented out?
 	}
-	
 
-	// Phoenix: Wolfspirit: Check if we are using Display Names and set it. Then idle the cache.
 	LLAvatarNameCache::idle();
 }
 
@@ -4081,8 +4076,6 @@ void LLAppViewer::idleNetwork()
 	{
 		LLFastTimer t(LLFastTimer::FTM_IDLE_NETWORK); // decode
 		
-		// deal with any queued name requests and replies.
-		gCacheName->processPending();
 		llpushcallstacks ;
 		LLTimer check_message_timer;
 		//  Read all available packets from network 

@@ -193,9 +193,7 @@ extern BOOL gDebugClicks;
 void open_offer(const std::vector<LLUUID>& items, const std::string& from_name);
 bool highlight_offered_object(const LLUUID& obj_id);
 bool check_offer_throttle(const std::string& from_name, bool check_only);
-void callbackCacheEstateOwnerName(const LLUUID& id,
-								  const std::string& first, const std::string& last,
-								  BOOL is_group, void*);
+void callbackCacheEstateOwnerName(const LLUUID& id, const std::string& full_name,  bool is_group);
 
 //inventory offer throttle globals
 LLFrameTimer gThrottleTimer;
@@ -1090,23 +1088,18 @@ bool highlight_offered_object(const LLUUID& obj_id)
 }
 
 void inventory_offer_mute_callback(const LLUUID& blocked_id,
-								   const std::string& first_name,
-								   const std::string& last_name,
-								   BOOL is_group,
-								   void* user_data)
+								   const std::string& full_name,
+								   bool is_group )
 {
-	std::string from_name;
+	std::string from_name = full_name;
 	LLMute::EType type;
-
 	if (is_group)
 	{
 		type = LLMute::GROUP;
-		from_name = first_name;
 	}
 	else
 	{
 		type = LLMute::AGENT;
-		from_name = first_name + " " + last_name;
 	}
 
 	LLMute mute(blocked_id, from_name, type);
@@ -1182,7 +1175,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 	// * we can't build two messages at once.
 	if (2 == button)
 	{
-		gCacheName->get(mFromID, mFromGroup, inventory_offer_mute_callback, this);
+		gCacheName->get(mFromID, mFromGroup, boost::bind(&inventory_offer_mute_callback,_1,_2,_3));
 	}
 
 	LLMessageSystem* msg = gMessageSystem;
@@ -1233,11 +1226,10 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		}
 		else
 		{
-			std::string first_name, last_name;
-			if (gCacheName->getName(mFromID, first_name, last_name))
+			std::string full_name;
+			if (gCacheName->getFullName(mFromID, full_name))
 			{
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
-				std::string full_name = first_name + " " + last_name;
 				if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(mFromID)) )
 				{
 					full_name = RlvStrings::getAnonym(full_name);
@@ -1521,37 +1513,35 @@ void inventory_offer_handler(LLOfferInfo* info, BOOL from_task)
 	// Name cache callbacks don't store userdata, so can't save
 	// off the LLOfferInfo.  Argh.
 	BOOL name_found = FALSE;
+	payload["from_id"] = info->mFromID;
+	args["OBJECTFROMNAME"] = info->mFromName;
+	args["NAME"] = info->mFromName;
+	
 	if (info->mFromGroup)
 	{
 		std::string group_name;
 		if (gCacheName->getGroupName(info->mFromID, group_name))
 		{
-			args["FIRST"] = group_name;
-			args["LAST"] = "";
+			args["NAME"] = group_name;
 			name_found = TRUE;
 		}
 	}
 	else
 	{
-		std::string first_name, last_name;
-		if (gCacheName->getName(info->mFromID, first_name, last_name))
+		std::string full_name;
+		if (gCacheName->getFullName(info->mFromID, full_name))
 		{
 // [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-08 (RLVa-1.0.0e)
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) && (RlvUtil::isNearbyAgent(info->mFromID)) )
 			{
-				first_name = RlvStrings::getAnonym(first_name.append(" ").append(last_name));
-				last_name.clear();
+				full_name = RlvStrings::getAnonym(full_name);
 			}
 // [/RLVa:KB]
-			args["FIRST"] = first_name;
-			args["LAST"] = last_name;
+			args["NAME"] = full_name;
 			name_found = TRUE;
 		}
 	}
 
-	payload["from_id"] = info->mFromID;
-	args["OBJECTFROMNAME"] = info->mFromName;
-	args["NAME"] = info->mFromName;
 
 	LLNotification::Params p("ObjectGiveItem");
 	p.substitutions(args).payload(payload).functor(boost::bind(&LLOfferInfo::inventory_offer_callback, info, _1, _2));
@@ -1705,7 +1695,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	if(chat.mSourceType == CHAT_SOURCE_AGENT)
 	{
 		LLSD args;
-		args["FULL_NAME"] = name;
+		args["NAME"] = name;
 		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
 		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockGeneralSpam","SGSpamTime","SGSpamCount");
 		if(d==IM_FROM_TASK||d==IM_GOTO_URL||d==IM_FROM_TASK_AS_ALERT||d==IM_TASK_INVENTORY_OFFERED||d==IM_TASK_INVENTORY_ACCEPTED||d==IM_TASK_INVENTORY_DECLINED)
@@ -2881,9 +2871,8 @@ void process_offer_callingcard(LLMessageSystem* msg, void**)
 		LLNameValue* nvlast  = source->getNVPair("LastName");
 		if (nvfirst && nvlast)
 		{
-			args["FIRST"] = nvfirst->getString();
-			args["LAST"] = nvlast->getString();
 			source_name = std::string(nvfirst->getString()) + " " + nvlast->getString();
+			args["NAME"] = source_name;
 		}
 	}
 
@@ -3078,7 +3067,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	if (chatter)
 	{
 		LLSD args;
-		args["FULL_NAME"] = from_name;
+		args["NAME"] = from_name;
 		static SH_SpamHandler<LLUUID> avatar_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
 		static SH_SpamHandler<LLUUID> object_spam_check("SGBlockChatSpam","SGChatSpamTime","SGChatSpamCount");
 		if(	(chatter->isAvatar()	&&	avatar_spam_check.isBlocked(from_id,from_id,"BlockedChatterAvatar",args)) ||
@@ -5504,7 +5493,7 @@ void handle_show_mean_events(void *)
 	LLFloaterBump::show(NULL);
 }
 
-void mean_name_callback(const LLUUID &id, const std::string& first, const std::string& last, BOOL always_false, void* data)
+void mean_name_callback(const LLUUID &id, const std::string& full_name, bool is_group)
 {
 	if (gNoRender)
 	{
@@ -5526,8 +5515,7 @@ void mean_name_callback(const LLUUID &id, const std::string& first, const std::s
 		LLMeanCollisionData *mcd = *iter;
 		if (mcd->mPerp == id)
 		{
-			mcd->mFirstName = first;
-			mcd->mLastName = last;
+			mcd->mFullName = full_name;
 		}
 	}
 }
@@ -5581,8 +5569,7 @@ void process_mean_collision_alert_message(LLMessageSystem *msgsystem, void **use
 		{
 			LLMeanCollisionData *mcd = new LLMeanCollisionData(gAgentID, perp, time, type, mag);
 			gMeanCollisionList.push_front(mcd);
-			const BOOL is_group = FALSE;
-			gCacheName->get(perp, is_group, mean_name_callback);
+			gCacheName->get(perp, false, boost::bind(&mean_name_callback, _1, _2, _3));
 		}
 	}
 }
@@ -6277,8 +6264,10 @@ bool handle_lure_callback(const LLSD& notification, const LLSD& response)
 			it != notification["payload"]["ids"].endArray();
 			++it)
 		{
+			LLUUID target_id = it->asUUID();
+
 			msg->nextBlockFast(_PREHASH_TargetData);
-			msg->addUUIDFast(_PREHASH_TargetID, it->asUUID());
+			msg->addUUIDFast(_PREHASH_TargetID, target_id);
 		}
 		gAgent.sendReliableMessage();
 	}
@@ -6529,8 +6518,7 @@ void process_script_dialog(LLMessageSystem* msg, void**)
 	LLNotificationPtr notification;
 	if (!first_name.empty())
 	{
-		args["FIRST"] = first_name;
-		args["LAST"] = last_name;
+		args["NAME"] = LLCacheName::buildFullName(first_name, last_name);
 
 		static SH_SpamHandler<std::string> spam_check("SGBlockDialogSpam","SGSpamTime","SGSpamCount");
 		if(spam_check.isBlocked(first_name + " " + last_name,object_id,"BlockedDialogs",args))
@@ -6577,7 +6565,7 @@ static LLNotificationFunctorRegistration callback_load_url_reg("LoadWebPage", ca
 
 // We've got the name of the person who owns the object hurling the url.
 // Display confirmation dialog.
-void callback_load_url_name(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* data)
+void callback_load_url_name(const LLUUID& id, const std::string& full_name, bool is_group)
 {
 	std::vector<LLSD>::iterator it;
 	for (it = gLoadUrlList.begin(); it != gLoadUrlList.end(); )
@@ -6590,11 +6578,11 @@ void callback_load_url_name(const LLUUID& id, const std::string& first, const st
 			std::string owner_name;
 			if (is_group)
 			{
-				owner_name = first + " (group)";
+				owner_name = full_name + " (group)";
 			}
 			else
 			{
-				owner_name = first + " " + last;
+				owner_name = full_name;
 			}
 
 			// For legacy name-only mutes.
@@ -6654,7 +6642,8 @@ void process_load_url(LLMessageSystem* msg, void**)
 	// Add to list of pending name lookups
 	gLoadUrlList.push_back(payload);
 
-	gCacheName->get(owner_id, owner_is_group, callback_load_url_name);
+	gCacheName->get(owner_id, owner_is_group,
+		boost::bind(&callback_load_url_name, _1, _2, _3));
 }
 
 
@@ -6750,7 +6739,8 @@ void process_covenant_reply(LLMessageSystem* msg, void**)
 	LLPanelLandCovenant::updateLastModified(last_modified);
 	LLFloaterBuyLand::updateLastModified(last_modified);
 
-	gCacheName->getName(estate_owner_id, callbackCacheEstateOwnerName);
+	gCacheName->get(estate_owner_id, false,
+		boost::bind(&callbackCacheEstateOwnerName, _1, _2, _3));
 	
 	// load the actual covenant asset data
 	const BOOL high_priority = TRUE;
@@ -6785,8 +6775,8 @@ void process_covenant_reply(LLMessageSystem* msg, void**)
 }
 
 void callbackCacheEstateOwnerName(const LLUUID& id,
-								  const std::string& first, const std::string& last,
-								  BOOL is_group, void*)
+								  const std::string& full_name,
+								  bool is_group)
 {
 	std::string name;
 	
@@ -6796,7 +6786,7 @@ void callbackCacheEstateOwnerName(const LLUUID& id,
 	}
 	else
 	{
-		name = first + " " + last;
+		name = full_name;
 	}
 	LLPanelEstateCovenant::updateEstateOwnerName(name);
 	LLPanelLandCovenant::updateEstateOwnerName(name);

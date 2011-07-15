@@ -449,11 +449,7 @@ void LLFloaterAvatarList::updateAvatarList()
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
 				{
-					if (gCacheName->getName(avid, first, last))
-					{
-						name = first + " " + last;
-					}
-					else
+					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::get above...
 					{
 						continue;
 					}
@@ -497,11 +493,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (gCacheName->getName(avid, first, last))
-				{
-					name = first + " " + last;
-				}
-				else
+				if (!gCacheName->getFullName(avid, name))
 				{
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
