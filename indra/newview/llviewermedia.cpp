@@ -690,7 +690,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		{
 			// FIXME: figure out how to really discover the type for these schemes
 			// We use "data" internally for a text/html url for loading the login screen
-			if(initializeMedia("text/html"))
+			if(initializeMedia("text/html") && (plugin = getMediaPlugin()))
 			{
 				plugin->loadURI( url );
 			}
@@ -698,7 +698,7 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		else
 		{
 			// This catches 'rtsp://' urls
-			if(initializeMedia(scheme))
+			if(initializeMedia(scheme) && (plugin = getMediaPlugin()))
 			{
 				plugin->loadURI( url );
 			}
