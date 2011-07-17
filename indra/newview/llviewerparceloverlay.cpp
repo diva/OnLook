@@ -202,12 +202,12 @@ void LLViewerParcelOverlay::updateOverlayTexture()
 		return;
 	}
 	// Can do this because gColors are actually stored as LLColor4U
-	const LLColor4U avail = gColors.getColor4U("PropertyColorAvail");
-	const LLColor4U owned = gColors.getColor4U("PropertyColorOther");
-	const LLColor4U group = gColors.getColor4U("PropertyColorGroup");
-	const LLColor4U self  = gColors.getColor4U("PropertyColorSelf");
-	const LLColor4U for_sale  = gColors.getColor4U("PropertyColorForSale");
-	const LLColor4U auction  = gColors.getColor4U("PropertyColorAuction");
+	const LLColor4U avail = gColors.getColor4("PropertyColorAvail");
+	const LLColor4U owned = gColors.getColor4("PropertyColorOther");
+	const LLColor4U group = gColors.getColor4("PropertyColorGroup");
+	const LLColor4U self  = gColors.getColor4("PropertyColorSelf");
+	const LLColor4U for_sale  = gColors.getColor4("PropertyColorForSale");
+	const LLColor4U auction  = gColors.getColor4("PropertyColorAuction");
 
 	// Create the base texture.
 	U8 *raw = mImageRaw->getData();
@@ -315,11 +315,11 @@ void LLViewerParcelOverlay::updatePropertyLines()
 	S32 row, col;
 
 	// Can do this because gColors are actually stored as LLColor4U
-	const LLColor4U self_coloru  = gColors.getColor4U("PropertyColorSelf");
-	const LLColor4U other_coloru = gColors.getColor4U("PropertyColorOther");
-	const LLColor4U group_coloru = gColors.getColor4U("PropertyColorGroup");
-	const LLColor4U for_sale_coloru = gColors.getColor4U("PropertyColorForSale");
-	const LLColor4U auction_coloru = gColors.getColor4U("PropertyColorAuction");
+	const LLColor4U self_coloru  = gColors.getColor4("PropertyColorSelf");
+	const LLColor4U other_coloru = gColors.getColor4("PropertyColorOther");
+	const LLColor4U group_coloru = gColors.getColor4("PropertyColorGroup");
+	const LLColor4U for_sale_coloru = gColors.getColor4("PropertyColorForSale");
+	const LLColor4U auction_coloru = gColors.getColor4("PropertyColorAuction");
 
 	// Build into dynamic arrays, then copy into static arrays.
 	LLDynamicArray<LLVector3, 256> new_vertex_array;

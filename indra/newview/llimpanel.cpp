@@ -1595,8 +1595,8 @@ BOOL LLFloaterIMPanel::inviteToSession(const LLDynamicArray<LLUUID>& ids)
 
 void LLFloaterIMPanel::addHistoryLine(const std::string &utf8msg, LLColor4 incolor, bool log_to_file, const LLUUID& source, const std::string& name)
 {
-	static const LLCachedControl<bool> mKeywordsChangeColor("KeywordsChangeColor", false, gSavedPerAccountSettings);
-	static const LLCachedControl<LLColor4> mKeywordsColor("KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f), gSavedPerAccountSettings);
+	static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
+	static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
 
     if (gAgent.getID() != source)
 	{

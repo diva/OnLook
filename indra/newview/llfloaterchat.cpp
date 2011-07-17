@@ -597,8 +597,8 @@ LLColor4 get_text_color(const LLChat& chat)
 		}
 	}
 
-	static const LLCachedControl<bool> mKeywordsChangeColor("KeywordsChangeColor", false, gSavedPerAccountSettings);
-	static const LLCachedControl<LLColor4> mKeywordsColor("KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f), gSavedPerAccountSettings);
+	static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
+	static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
 
     if (gAgent.getID() != chat.mFromID)
 	{

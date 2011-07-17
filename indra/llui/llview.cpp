@@ -2820,7 +2820,7 @@ bool LLView::setControlValue(const LLSD& value)
 	std::string ctrlname = getControlName();
 	if (!ctrlname.empty())
 	{
-		LLUI::sConfigGroup->setValue(ctrlname, value);
+		LLUI::sConfigGroup->setUntypedValue(ctrlname, value);
 		return true;
 	}
 	return false;
@@ -2848,7 +2848,7 @@ void LLView::setControlName(const std::string& control_name, LLView *context)
 		if (control)
 		{
 			mControlName = control_name;
-			mControlConnection = control->getSignal()->connect(boost::bind(&controlListener, _1, getHandle(), std::string("value")));
+			mControlConnection = control->getSignal()->connect(boost::bind(&controlListener, _2, getHandle(), std::string("value")));
 			setValue(control->getValue());
 		}
 	}

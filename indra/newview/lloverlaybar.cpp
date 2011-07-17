@@ -196,9 +196,9 @@ BOOL LLOverlayBar::postBuild()
 	sAdvSettingsPopup = gSavedSettings.getBOOL("wlfAdvSettingsPopup");
 	sChatVisible = gSavedSettings.getBOOL("ChatVisible");
 
-	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(&updateAdvSettingsPopup);
-	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(&updateChatVisible);
-	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(&updateAORemote);
+	gSavedSettings.getControl("wlfAdvSettingsPopup")->getSignal()->connect(boost::bind(&updateAdvSettingsPopup,_2));
+	gSavedSettings.getControl("ChatVisible")->getSignal()->connect(boost::bind(&updateChatVisible,_2));
+	gSavedSettings.getControl("EnableAORemote")->getSignal()->connect(boost::bind(&updateAORemote,_2));
 	childSetVisible("AdvSettings_container", !sAdvSettingsPopup);
 	childSetVisible("AdvSettings_container_exp", sAdvSettingsPopup);
 	childSetVisible("ao_remote_container", gSavedSettings.getBOOL("EnableAORemote"));	

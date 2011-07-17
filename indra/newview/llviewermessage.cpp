@@ -240,7 +240,7 @@ public:
 		mFrequency(pFreqCtrl, 5),
 		mEnabled(false)
 	{
-		gSavedSettings.getControl(pToggleCtrl)->getSignal()->connect(boost::bind(&SH_SpamHandler::CtrlToggle, this, _1));
+		gSavedSettings.getControl(pToggleCtrl)->getSignal()->connect(boost::bind(&SH_SpamHandler::CtrlToggle, this, _2));
 		CtrlToggle(gSavedSettings.getBOOL(pToggleCtrl));
 	}
 	bool CtrlToggle(const LLSD& newvalue)

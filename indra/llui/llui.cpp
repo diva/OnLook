@@ -1579,7 +1579,7 @@ void LLUI::initClass(LLControlGroup* config,
 	LLFontGL::sShadowColor = colors->getColor("ColorDropShadow");
 
 	LLUI::sShowXUINames = LLUI::sConfigGroup->getBOOL("ShowXUINames");
-	LLUI::sConfigGroup->getControl("ShowXUINames")->getSignal()->connect(&handleShowXUINamesChanged);
+	LLUI::sConfigGroup->getControl("ShowXUINames")->getSignal()->connect(boost::bind(&handleShowXUINamesChanged,_2));
 }
 
 void LLUI::cleanupClass()

@@ -817,7 +817,7 @@ void LLMenuItemCallGL::setEnabledControl(std::string enabled_control, LLView *co
 			control = context->findControl(enabled_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("enabled")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("enabled")));
 		setEnabled(control->getValue());
 	}
 }
@@ -834,7 +834,7 @@ void LLMenuItemCallGL::setVisibleControl(std::string visible_control, LLView *co
 			control = context->findControl(visible_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("visible")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("visible")));
 		setVisible(control->getValue());
 	}
 }
@@ -990,7 +990,7 @@ void LLMenuItemCheckGL::setCheckedControl(std::string checked_control, LLView *c
 			control = context->findControl(checked_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("value")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("value")));
 		mChecked = control->getValue();
 	}
 }
