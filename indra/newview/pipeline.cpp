@@ -6070,7 +6070,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	tc2.setVec(2,2);
 
 	// power of two between 1 and 1024
-	static const LLCachedControl<U32> glowResPow("RenderGlowResolutionPow",9);
+	static const LLCachedControl<S32> glowResPow("RenderGlowResolutionPow",9);
 	const U32 glow_res = llmax(1, 
 		llmin(1024, 1 << glowResPow));
 
@@ -6717,7 +6717,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 	static const LLCachedControl<F32> render_shadow_noise("RenderShadowNoise",-.0001f);
 	static const LLCachedControl<F32> render_shadow_blur_size("RenderShadowBlurSize",.7f);
 	static const LLCachedControl<F32> render_ssao_scale("RenderSSAOScale",500);
-	static const LLCachedControl<S32> render_ssao_max_scale("RenderSSAOMaxScale",200);
+	static const LLCachedControl<U32> render_ssao_max_scale("RenderSSAOMaxScale",200);
 	static const LLCachedControl<F32> render_ssao_factor("RenderSSAOFactor",.3f);
 	static const LLCachedControl<LLVector3> render_ssao_effect("RenderSSAOEffect",LLVector3(.4f,1.f,0.f));
 	static const LLCachedControl<F32> render_deferred_alpha_soft("RenderDeferredAlphaSoften",.75f);
