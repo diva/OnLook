@@ -2005,8 +2005,8 @@ void LLViewerWindow::initWorldUI_postLogin()
 		gFloaterWorldMap->setVisible(FALSE);
 
 		// open teleport history floater and hide it initially
-		gFloaterTeleportHistory = new LLFloaterTeleportHistory();
-		gFloaterTeleportHistory->setVisible(FALSE);
+		LLFloaterTeleportHistory::getInstance()->setVisible(FALSE);
+		LLFloaterTeleportHistory::loadFile("teleport_history.xml");
 
 		LLFloaterChatterBox::createInstance(LLSD());
 	}

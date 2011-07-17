@@ -79,6 +79,7 @@
 #include "llrender.h"
 #include "llfont.h"
 #include "llvocache.h"
+#include "llfloaterteleporthistory.h"
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"
@@ -1449,6 +1450,8 @@ bool LLAppViewer::cleanup()
 
 	// Save file- and dirpicker {context, default paths} map.
 	AIFilePicker::saveFile("filepicker_contexts.xml");
+
+	LLFloaterTeleportHistory::saveFile("teleport_history.xml");
 
 	// save mute list. gMuteList used to also be deleted here too.
 	LLMuteList::getInstance()->cache(gAgent.getID());

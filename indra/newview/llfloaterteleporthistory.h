@@ -43,10 +43,10 @@
 #include "llfloater.h"
 #include "llscrolllistctrl.h"
 
-class LLFloaterTeleportHistory : public LLFloater
+class LLFloaterTeleportHistory : public LLFloater, public LLUISingleton<LLFloaterTeleportHistory, LLFloaterTeleportHistory>
 {
 public:
-	LLFloaterTeleportHistory();
+	LLFloaterTeleportHistory(const LLSD& seed);
 	virtual ~LLFloaterTeleportHistory();
 
 	/// @brief: reimplemented to check for selection changes in the places list scrolllist
@@ -65,6 +65,8 @@ public:
 	/// @brief: adds the destination to the list of visited places
 	void addEntry(std::string parcelName);
 
+	static void loadFile(const std::string &file_name);
+	static void saveFile(const std::string &file_name);
 private:
 	enum HISTORY_COLUMN_ORDER
 	{
@@ -93,9 +95,21 @@ private:
 	std::string mPendingSimString;
 	std::string mPendingTimeString;
 	std::string mPendingSLURL;
+
+public:
+	// visibility policy for LLUISingleton
+	static bool visible(LLFloater* instance, const LLSD& key)
+	{
+		return VisibilityPolicy<LLFloater>::visible(instance, key);
+	}
+	static void show(LLFloater* instance, const LLSD& key)
+	{
+		VisibilityPolicy<LLFloater>::show(instance, key);
+	}
+	static void hide(LLFloater* instance, const LLSD& key)
+	{
+		VisibilityPolicy<LLFloater>::hide(instance, key);
+	}
 };
-
-// globals
-extern LLFloaterTeleportHistory* gFloaterTeleportHistory;
-
 #endif
+

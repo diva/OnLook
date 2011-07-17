@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>TeleportHistoryMaxEntries</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum number of entries to allow in teleport history list.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>100</integer>
+  </map>
+  
   <key>AllowLargeSounds</key>
   <map>
     <key>Comment</key>
