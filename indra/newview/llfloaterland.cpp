@@ -1491,7 +1491,6 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 	S32		object_count;
 	U32		most_recent_time = 0;
 	BOOL	is_online = 0;
-	U32		flags = 0x0;
 	std::string object_count_str;
 	//BOOL b_need_refresh = FALSE;
 
@@ -1512,10 +1511,7 @@ void LLPanelLandObjects::processParcelObjectOwnersReply(LLMessageSystem *msg, vo
 		msg->getUUIDFast(_PREHASH_Data, _PREHASH_OwnerID,		owner_id,		i);
 		msg->getBOOLFast(_PREHASH_Data, _PREHASH_IsGroupOwned,	is_group_owned,	i);
 		msg->getS32Fast (_PREHASH_Data, _PREHASH_Count,			object_count,	i);
-		//Trying a different approach to getting the Online flag. -HgB
-		//msg->getBOOLFast(_PREHASH_Data, _PREHASH_OnlineStatus,	is_online,		i);
-		msg->getU32Fast(_PREHASH_PropertiesData, _PREHASH_Flags, flags);
-		is_online = (flags & AVATAR_ONLINE);
+		msg->getBOOLFast(_PREHASH_Data, _PREHASH_OnlineStatus,	is_online,		i);
 		if(msg->has("DataExtended"))
 		{
 			msg->getU32("DataExtended", "TimeStamp", most_recent_time, i);
