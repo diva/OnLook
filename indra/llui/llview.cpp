@@ -678,7 +678,7 @@ BOOL LLView::canSnapTo(const LLView* other_view)
 }
 
 // virtual
-void LLView::snappedTo(const LLView* snap_view)
+void LLView::setSnappedTo(const LLView* snap_view)
 {
 }
 
@@ -2135,7 +2135,12 @@ const LLCtrlQuery & LLView::getFocusRootsQuery()
 }
 
 
-void	LLView::userSetShape(const LLRect& new_rect)
+void	LLView::setShape(const LLRect& new_rect, bool by_user)
+{
+	handleReshape(new_rect, by_user);
+}
+
+void	LLView::handleReshape(const LLRect& new_rect, bool by_user)
 {
 	reshape(new_rect.getWidth(), new_rect.getHeight());
 	translate(new_rect.mLeft - getRect().mLeft, new_rect.mBottom - getRect().mBottom);

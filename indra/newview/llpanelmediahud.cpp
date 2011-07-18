@@ -368,7 +368,7 @@ void LLPanelMediaHUD::updateShape()
 		media_hud_rect.setCenterAndSize(media_hud_rect.getCenterX(), media_hud_rect.getCenterY(),
 			llmax(MIN_HUD_WIDTH, media_hud_rect.getWidth()), llmax(MIN_HUD_HEIGHT, media_hud_rect.getHeight()));
 
-		userSetShape(media_hud_rect);
+		setShape(media_hud_rect);
 
 		// Test mouse position to see if the cursor is stationary
 		LLCoordWindow cursor_pos_window;
