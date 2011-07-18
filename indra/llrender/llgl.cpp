@@ -1330,10 +1330,6 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 		}
 	}
 
-	GLint maxTextureUnits = 0;
-	glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &maxTextureUnits);
-	stop_glerror();
-
 	static const char* label[] =
 	{
 		"GL_TEXTURE_2D",
@@ -1366,7 +1362,7 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 	glh::matrix4f identity;
 	identity.identity();
 
-	for (GLint i = 1; i < maxTextureUnits; i++)
+	for (GLint i = 1; i < gGLManager.mNumTextureUnits; i++)
 	{
 		gGL.getTexUnit(i)->activate();
 		glClientActiveTextureARB(GL_TEXTURE0_ARB+i);
@@ -1426,8 +1422,27 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 				gFailLog << "Texture matrix " << i << " is not identity." << std::endl;
 			}
 		}
+
+		{
+			GLint tex = 0;
+			stop_glerror();
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex);
+			stop_glerror();
+
+			if (tex != 0)
+			{
+				error = TRUE;
+				LL_WARNS("RenderState") << "Texture channel " << i << " still has texture " << tex << " bound." << llendl;
+
+				if (gDebugSession)
+				{
+					gFailLog << "Texture channel " << i << " still has texture " << tex << " bound." << std::endl;
+				}
+			}
+		}
 	}
 
+	stop_glerror();
 	gGL.getTexUnit(0)->activate();
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	stop_glerror();
