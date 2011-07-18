@@ -43,7 +43,7 @@
 #include "llfloater.h"
 #include "llscrolllistctrl.h"
 
-class LLFloaterTeleportHistory : public LLFloater, public LLUISingleton<LLFloaterTeleportHistory, LLFloaterTeleportHistory>
+class LLFloaterTeleportHistory : public LLFloater, public LLUISingleton<LLFloaterTeleportHistory, VisibilityPolicy<LLFloater>>
 {
 public:
 	LLFloaterTeleportHistory(const LLSD& seed);
@@ -95,21 +95,6 @@ private:
 	std::string mPendingSimString;
 	std::string mPendingTimeString;
 	std::string mPendingSLURL;
-
-public:
-	// visibility policy for LLUISingleton
-	static bool visible(LLFloater* instance, const LLSD& key)
-	{
-		return VisibilityPolicy<LLFloater>::visible(instance, key);
-	}
-	static void show(LLFloater* instance, const LLSD& key)
-	{
-		VisibilityPolicy<LLFloater>::show(instance, key);
-	}
-	static void hide(LLFloater* instance, const LLSD& key)
-	{
-		VisibilityPolicy<LLFloater>::hide(instance, key);
-	}
 };
 #endif
 
