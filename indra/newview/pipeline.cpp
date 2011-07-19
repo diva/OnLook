@@ -4692,7 +4692,7 @@ static F32 calc_light_dist(LLVOVolume* light, const LLVector3& cam_pos, F32 max_
 	{
 		return max_dist;
 	}
-	F32 dist = fsqrtf(dist2);
+	F32 dist = (F32) sqrt(dist2);
 	dist *= 1.f / inten;
 	dist -= radius;
 	if (selected)

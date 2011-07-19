@@ -496,7 +496,7 @@ void LLVOTree::updateTextures()
 	{
 		if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_AREA))
 		{
-			setDebugText(llformat("%4.0f", fsqrtf(mPixelArea)));
+			setDebugText(llformat("%4.0f", (F32) sqrt(mPixelArea)));
 		}
 		mTreeImagep->addTextureStats(mPixelArea);
 	}
