@@ -94,7 +94,9 @@ public:
 	void updateApparentAngles(LLAgent &agent);
 	void update(LLAgent &agent, LLWorld &world);
 
+	
 	void shiftObjects(const LLVector3 &offset);
+	void repartitionObjects();
 
 	bool hasMapObjectInRegion(LLViewerRegion* regionp) ;
 	void clearAllMapObjectsInRegion(LLViewerRegion* regionp) ;

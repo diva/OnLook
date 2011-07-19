@@ -102,7 +102,7 @@ public:
 	LLVOVolume*	getVOVolume() const; // cast mVObjp tp LLVOVolume if OK
 
 	const LLMatrix4&      getWorldMatrix() const		{ return mXform.getWorldMatrix(); }
-	const LLMatrix4&	  getRenderMatrix() const		{ return isRoot() ? getWorldMatrix() : getParent()->getWorldMatrix(); }
+	const LLMatrix4&	  getRenderMatrix() const;
 	void				  setPosition(LLVector3 v) const { }
 	const LLVector3&	  getPosition() const			{ return mXform.getPosition(); }
 	const LLVector3&      getWorldPosition() const		{ return mXform.getPositionW(); }
@@ -279,6 +279,7 @@ public:
 		CLEAR_INVISIBLE = 0x20000000, // clear FORCE_INVISIBLE next draw frame
 		REBUILD_SHADOW =  0x40000000,
 		HAS_ALPHA		= 0x80000000,
+		PARTITION_MOVE	= 0x10000000,
 	} EDrawableFlags;
 
 	LLXformMatrix       mXform;

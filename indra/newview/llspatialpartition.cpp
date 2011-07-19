@@ -63,6 +63,13 @@ const F32 SG_OCCLUSION_FUDGE = 0.25f;
 
 static U32 sZombieGroups = 0;
 U32 LLSpatialGroup::sNodeCount = 0;
+
+#define LL_TRACK_PENDING_OCCLUSION_QUERIES 0
+
+std::set<GLuint> LLSpatialGroup::sPendingQueries;
+
+U32 gOctreeMaxCapacity;
+
 BOOL LLSpatialGroup::sNoDelete = FALSE;
 
 static F32 sLastMaxTexPriority = 1.f;
@@ -80,6 +87,9 @@ protected:
 
 	virtual void releaseName(GLuint name)
 	{
+#if LL_TRACK_PENDING_OCCLUSION_QUERIES
+		LLSpatialGroup::sPendingQueries.erase(name);
+#endif
 		glDeleteQueriesARB(1, &name);
 	}
 };
@@ -191,7 +201,7 @@ static U8 sOcclusionIndices[] =
 		b000, b110, b100, b101, b001, b011, b010, b110,
 };
 
-U8* get_box_fan_indices(LLCamera* camera, const LLVector3& center)
+U8* get_box_fan_indices_ptr(LLCamera* camera, const LLVector3& center)
 {
 	LLVector3 d = center - camera->getOrigin();
 
@@ -473,7 +483,7 @@ BOOL LLSpatialGroup::updateInGroup(LLDrawable *drawablep, BOOL immediate)
 	if (mOctreeNode->isInside(drawablep->getPositionGroup()) && 
 		(mOctreeNode->contains(drawablep) ||
 		 (drawablep->getBinRadius() > mOctreeNode->getSize().mdV[0] &&
-				parent && parent->getElementCount() >= LL_OCTREE_MAX_CAPACITY)))
+				parent && parent->getElementCount() >= gOctreeMaxCapacity)))
 	{
 		unbound();
 		setState(OBJECT_DIRTY);
@@ -1442,6 +1452,9 @@ void LLSpatialGroup::checkOcclusion()
 			if (!isOcclusionState(DISCARD_QUERY) && mOcclusionQuery[LLViewerCamera::sCurCameraID])
 			{
 				glGetQueryObjectuivARB(mOcclusionQuery[LLViewerCamera::sCurCameraID], GL_QUERY_RESULT_ARB, &res);	
+#if LL_TRACK_PENDING_OCCLUSION_QUERIES
+					sPendingQueries.erase(mOcclusionQuery[LLViewerCamera::sCurCameraID]);
+#endif
 				}
 				else if (mOcclusionQuery[LLViewerCamera::sCurCameraID])
 				{ //delete the query to avoid holding onto hundreds of pending queries
@@ -1525,6 +1538,10 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 #else
 					U32 mode = GL_SAMPLES_PASSED_ARB;
 #endif
+					
+#if LL_TRACK_PENDING_OCCLUSION_QUERIES
+					sPendingQueries.insert(mOcclusionQuery[LLViewerCamera::sCurCameraID]);
+#endif
 
 					{
 						//LLFastTimer t(FTM_PUSH_OCCLUSION_VERTS);
@@ -1543,7 +1560,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 							else
 							{
 								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-											GL_UNSIGNED_BYTE, get_box_fan_indices(camera, mBounds[0]));
+											GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, mBounds[0]));
 							}
 						}
 						else
@@ -1559,7 +1576,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 							else
 							{
 								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-											GL_UNSIGNED_BYTE, get_box_fan_indices(camera, mBounds[0]));
+											GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, mBounds[0]));
 							}
 						}
 						
@@ -2512,7 +2529,7 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 			gGL.color4f(0.f, 0.75f, 0.f, 0.5f);
 			pushBufferVerts(group, LLVertexBuffer::MAP_VERTEX);
 		}
-		else if (camera && group->mOcclusionVerts)
+		/*else if (camera && group->mOcclusionVerts)
 		{
 			LLVertexBuffer::unbind();
 			glVertexPointer(3, GL_FLOAT, 0, group->mOcclusionVerts);
@@ -2524,7 +2541,7 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 			glColor4f(1.0f, 1.f, 1.f, 1.0f);
 			glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8, GL_UNSIGNED_BYTE, get_box_fan_indices(camera, group->mBounds[0]));
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
+		}*/
 	}
 }
 
