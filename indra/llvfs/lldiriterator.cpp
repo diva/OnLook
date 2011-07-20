@@ -63,10 +63,10 @@ LLDirIterator::Impl::Impl(const std::string &dirname, const std::string &mask)
 	{
 		mIter = fs::directory_iterator(dir_path);
 	}
-#if BOOST_FILESYSTEM_VERSION == 2
-	catch (fs::basic_filesystem_error<fs::path>& e)
-#else
+#if BOOST_FILESYSTEM_VERSION >= 3
 	catch (fs::filesystem_error& e)
+#else
+	catch (fs::basic_filesystem_error<fs::path>& e)
 #endif
 	{
 		llerrs << e.what() << llendl;
@@ -112,10 +112,10 @@ bool LLDirIterator::Impl::next(std::string &fname)
 	while (mIter != end_itr && !found)
 	{
 		boost::smatch match;
-#if BOOST_FILESYSTEM_VERSION == 2
-		std::string name = mIter->path().filename();
-#else
+#if BOOST_FILESYSTEM_VERSION >= 3
 		std::string name = mIter->path().filename().string();
+#else
+		std::string name = mIter->path().filename();
 #endif
 		if (found = boost::regex_match(name, match, mFilterExp))
 		{
@@ -142,9 +142,6 @@ std::string glob_to_regex(const std::string& glob)
 
 		switch (c)
 		{
-			case '.':
-				regex+="\\.";
-				break;
 			case '*':
 				if (glob.begin() == i)
 				{
@@ -177,6 +174,14 @@ std::string glob_to_regex(const std::string& glob)
 			case '!':
 				regex+= square_brace_open ? '^' : c;
 				break;
+			case '.':	// This collection have different regex meaning
+			case '^':	// And so need escaping
+			case '(':
+			case ')':
+			case '+':
+			case '|':
+			case '$':
+				regex+='\\';
 			default:
 				regex+=c;
 				break;

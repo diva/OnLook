@@ -225,6 +225,7 @@ target_link_libraries(
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
     ${CWDEBUG_LIBRARIES}
+    ${CORESERVICES_LIBRARY}
     )
 
 if (LINUX)

@@ -472,6 +472,30 @@ public:
 LLMutex* SGHostBlackList::sMutex = 0;
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
 
+//call every time a connection is opened
+//return true if connecting allowed
+static bool sgConnectionThrottle() {
+	static LLMutex mutex;
+	LLMutexLock lock(&mutex);
+	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
+	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
+	S32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
+	const S32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
+	U64 now = LLTimer::getTotalTime();
+	std::deque<U64> timestamps;
+	while(!timestamps.empty() && (timestamps[0]<=now-timestep)) {
+		timestamps.pop_front();
+	}
+	if(timestamps.size() < max_connections) {
+		//llinfos << "throttle pass" << llendl;
+		timestamps.push_back(now);
+		return true;
+	} else {
+		//llinfos << "throttle fail" << llendl;
+		return false;
+	}
+}
+
 #if HTTP_METRICS
 // Cross-thread messaging for asset metrics.
 
@@ -1250,11 +1274,12 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			//1, not openning too many file descriptors at the same time;
 			//2, control the traffic of http so udp gets bandwidth.
 			//
-			static const S32 MAX_NUM_OF_HTTP_REQUESTS_IN_QUEUE = 32;
-			static const S32 NUM_REQUESTS_TILL_THRESHOLDING = 2;
-			if((mFetcher->getNumHTTPRequests() > MAX_NUM_OF_HTTP_REQUESTS_IN_QUEUE) ||
+			static const LLCachedControl<S32> max_http_requests("HTTPMaxRequests", 32);
+			static const LLCachedControl<S32> min_http_requests("HTTPMinRequests", 2);
+			if((mFetcher->getNumHTTPRequests() > max_http_requests) ||
 			   ((mFetcher->getTextureBandwidth() > mFetcher->mMaxBandwidth) &&
-				 mFetcher->getNumHTTPRequests() > NUM_REQUESTS_TILL_THRESHOLDING))
+				(mFetcher->getNumHTTPRequests() > min_http_requests)) ||
+			    !sgConnectionThrottle())
 			{
 				return false ; //wait.
 			}
@@ -2058,8 +2083,8 @@ bool LLTextureFetch::createRequest(const std::string& url, const LLUUID& id, con
 		unlockQueue() ;
 
 		worker->lockWorkMutex();
-	worker->mActiveCount++;
-	worker->mNeedsAux = needs_aux;
+		worker->mActiveCount++;
+		worker->mNeedsAux = needs_aux;
 		worker->setCanUseHTTP(can_use_http) ;
 		worker->unlockWorkMutex();
 	}
@@ -2709,8 +2734,8 @@ bool LLTextureFetch::receiveImageHeader(const LLHost& host, const LLUUID& id, U8
 		res = worker->insertPacket(0, data, data_size);
 		worker->setPriority(LLWorkerThread::PRIORITY_HIGH | worker->mWorkPriority);
 		worker->mState = LLTextureFetchWorker::LOAD_FROM_SIMULATOR;
-	worker->unlockWorkMutex();
-	return res;
+		worker->unlockWorkMutex();
+		return res;
 }
 
 bool LLTextureFetch::receiveImagePacket(const LLHost& host, const LLUUID& id, U16 packet_num, U16 data_size, U8* data)

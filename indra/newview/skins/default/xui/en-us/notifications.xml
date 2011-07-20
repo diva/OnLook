@@ -1,5 +1,13 @@
 <?xml version="1.0" ?><notifications>
 
+  <global name="VIEWER_NAME">
+    Singularity Viewer
+  </global>
+
+  <global name="VIEWER_SITE">
+    http://www.singularityviewer.org/
+  </global>
+  
   <global name="skipnexttime">
 
 		Don&apos;t show me this again
@@ -1885,6 +1893,15 @@ Unable to deed land:
 Multiple parcels selected.
 
 Try selecting a single parcel.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="DeedToGroupFail"
+   type="notifytip">
+    Deed to group failed.
+    <tag>group</tag>
+    <tag>fail</tag>
   </notification>
 
   <notification

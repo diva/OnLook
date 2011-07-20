@@ -400,7 +400,7 @@ void LLPreviewAnim::gotAssetForSave(LLVFS *vfs,
 // static
 void LLPreviewAnim::gotAssetForSave_continued(char* buffer, S32 size, AIFilePicker* filepicker)
 {
-	if (!filepicker->hasFilename())
+	if (filepicker->hasFilename())
 	{
 		std::string filename = filepicker->getFilename();
 		std::ofstream export_file(filename.c_str(), std::ofstream::binary);

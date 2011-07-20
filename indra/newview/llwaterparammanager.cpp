@@ -298,6 +298,11 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 
 		mWaterPlane = LLVector4(enorm.v[0], enorm.v[1], enorm.v[2], -ep.dot(enorm));
 
+		if((mWaterPlane.mV[3] >= 0.f) == LLViewerCamera::getInstance()->cameraUnderWater()) //Sign borkage..
+		{
+			mWaterPlane.scaleVec(LLVector4(-1.f,-1.f,-1.f,-1.f));
+		}
+
 		LLVector3 sunMoonDir;
 		if (gSky.getSunDirection().mV[2] > LLSky::NIGHTTIME_ELEVATION_COS) 	 
 		{ 	 

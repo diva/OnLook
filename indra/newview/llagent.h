@@ -873,4 +873,5 @@ extern std::string gAuthString;
 extern LLUUID gReSitTargetID;
 extern LLVector3 gReSitOffset;
 // </edit>
+void update_group_floaters(const LLUUID& group_id);
 #endif

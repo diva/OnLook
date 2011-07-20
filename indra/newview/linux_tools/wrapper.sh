@@ -68,6 +68,13 @@ if [ "$GTK_IM_MODULE" = "scim" ]; then
     export GTK_IM_MODULE=xim
 fi
 
+# Work around for a crash bug when restarting OpenGL after a change in the
+# graphic settings (anti-aliasing, VBO, FSAA, full screen mode, UI scale).
+# When you enable this work around, you can change the settings without
+# crashing, but you will have to restart the viewer after changing them
+# because the display still gets corrupted.
+export LL_OPENGL_RESTART_CRASH_BUG=x
+
 ## - Automatically work around the ATI mouse cursor crash bug:
 ## (this workaround is disabled as most fglrx users do not see the bug)
 #if lsmod | grep fglrx &>/dev/null ; then

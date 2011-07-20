@@ -559,8 +559,8 @@ public:
 
 	void			setCompositeUpdatesEnabled(BOOL b);
 
-	void setNameFromChat(const std::string &text) { mNameFromChatOverride = mNameFromChatChanged = true; mNameFromChatText = text; }
-	void clearNameFromChat() { mNameFromChatOverride = false; mNameFromChatChanged = true; mNameFromChatText = ""; }
+	void setNameFromChat(const std::string &text);
+	void clearNameFromChat();
 
 public:
 	
