@@ -530,13 +530,14 @@ LLPreview* LLPreview::getFirstPreviewForSource(const LLUUID& source_id)
 	return NULL;
 }
 
-void LLPreview::userSetShape(const LLRect& new_rect)
+void LLPreview::handleReshape(const LLRect& new_rect, bool by_user)
 {
-	if(new_rect.getWidth() != getRect().getWidth() || new_rect.getHeight() != getRect().getHeight())
+	if(by_user 
+		&& (new_rect.getWidth() != getRect().getWidth() || new_rect.getHeight() != getRect().getHeight()))
 	{
 		userResized();
 	}
-	LLFloater::userSetShape(new_rect);
+	LLFloater::handleReshape(new_rect, by_user);
 }
 
 //
@@ -559,14 +560,14 @@ void LLMultiPreview::open()		/*Flawfinder: ignore*/
 }
 
 
-void LLMultiPreview::userSetShape(const LLRect& new_rect)
+void LLMultiPreview::handleReshape(const LLRect& new_rect, bool by_user)
 {
 	if(new_rect.getWidth() != getRect().getWidth() || new_rect.getHeight() != getRect().getHeight())
 	{
 		LLPreview* frontmost_preview = (LLPreview*)mTabContainer->getCurrentPanel();
 		if (frontmost_preview) frontmost_preview->userResized();
 	}
-	LLFloater::userSetShape(new_rect);
+	LLFloater::handleReshape(new_rect, by_user);
 }
 
 

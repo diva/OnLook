@@ -33,9 +33,9 @@
 
 #include "llagentaccess.h"
 #include "indra_constants.h"
-#include "llcontrolgroupreader.h"
+#include "llcontrol.h"
 
-LLAgentAccess::LLAgentAccess(LLControlGroupReader& savedSettings) :
+LLAgentAccess::LLAgentAccess(LLControlGroup& savedSettings) :
 	mSavedSettings(savedSettings),
 	mAccess(SIM_ACCESS_PG),
 	mAdminOverride(false),

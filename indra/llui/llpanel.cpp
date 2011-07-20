@@ -506,7 +506,7 @@ BOOL LLPanel::initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *f
 		// override rectangle with embedding parameters as provided
 		createRect(node, new_rect, parent);
 		setOrigin(new_rect.mLeft, new_rect.mBottom);
-		reshape(new_rect.getWidth(), new_rect.getHeight());
+		setShape(new_rect);
 		// optionally override follows flags from including nodes
 		parseFollowsFlags(node);
 	}

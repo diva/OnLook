@@ -2566,10 +2566,8 @@ void LLPanelEstateInfo::setAccessAllowedEnabled(bool enable_agent,
 // static
 void LLPanelEstateInfo::callbackCacheName(
 	const LLUUID& id,
-	const std::string& first,
-	const std::string& last,
-	BOOL is_group,
-	void*)
+	const std::string& full_name,
+	bool is_group)
 {
 	LLPanelEstateInfo* self = LLFloaterRegionInfo::getPanelEstate();
 	if (!self) return;
@@ -2582,7 +2580,7 @@ void LLPanelEstateInfo::callbackCacheName(
 	}
 	else
 	{
-		name = first + " " + last;
+		name = full_name;
 	}
 
 	self->setOwnerName(name);
@@ -3081,8 +3079,7 @@ bool LLDispatchEstateUpdateInfo::operator()(
 	LLUUID owner_id(strings[1]);
 	regionp->setOwner(owner_id);
 	// Update estate owner name in UI
-	const BOOL is_group = FALSE;
-	gCacheName->get(owner_id, is_group, LLPanelEstateInfo::callbackCacheName);
+	gCacheName->get(owner_id, false, boost::bind(&LLPanelEstateInfo::callbackCacheName,_1,_2,_3));
 
 	U32 estate_id = strtoul(strings[2].c_str(), NULL, 10);
 	panel->setEstateID(estate_id);

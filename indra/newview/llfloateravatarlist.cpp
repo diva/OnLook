@@ -449,11 +449,7 @@ void LLFloaterAvatarList::updateAvatarList()
 				//duped for lower section
 				if (name.empty() || (name.compare(" ") == 0))// || (name.compare(gCacheName->getDefaultName()) == 0))
 				{
-					if (gCacheName->getName(avid, first, last))
-					{
-						name = first + " " + last;
-					}
-					else
+					if (!gCacheName->getFullName(avid, name)) //seems redudant with LLAvatarNameCache::get above...
 					{
 						continue;
 					}
@@ -497,11 +493,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					continue;
 				}
 
-				if (gCacheName->getName(avid, first, last))
-				{
-					name = first + " " + last;
-				}
-				else
+				if (!gCacheName->getFullName(avid, name))
 				{
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
@@ -716,7 +708,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 			estate_owner = parent_estate->getOwner();
 		}
 
-		static const LLCachedControl<LLColor4> unselected_color("ScrollUnselectedColor",LLColor4(LLColor4U(0, 0, 0, 204)), gColors );
+		static const LLCachedControl<LLColor4> unselected_color(gColors, "ScrollUnselectedColor",LLColor4(LLColor4U(0, 0, 0, 204)) );
 
 		LLColor4 name_color = unselected_color;
 
@@ -837,7 +829,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		//element["columns"][LIST_METADATA]["column"] = "metadata";
 		//element["columns"][LIST_METADATA]["type"] = "text";
 
-		static const LLCachedControl<LLColor4> avatar_name_color("AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)), gColors );
+		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 		LLColor4 client_color(avatar_name_color);
 		std::string client;
 		LLVOAvatar *avatarp = gObjectList.findAvatar(av_id);

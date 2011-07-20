@@ -54,6 +54,7 @@
 #include "llviewerstats.h"
 #include "llvlcomposition.h"
 #include "llvoavatar.h"
+#include "llvocache.h"
 #include "llvowater.h"
 #include "message.h"
 #include "pipeline.h"
@@ -128,6 +129,10 @@ void LLWorld::destroyClass()
 	{
 		LLViewerRegion* region_to_delete = *region_it++;
 		removeRegion(region_to_delete->getHost());
+	}
+	if(LLVOCache::hasInstance())
+	{
+		LLVOCache::getInstance()->destroyClass() ;
 	}
 	LLViewerPartSim::getInstance()->destroyClass();
 }
@@ -265,6 +270,7 @@ void LLWorld::removeRegion(const LLHost &host)
 		llwarns << "Disabling region " << regionp->getName() << " that agent is in!" << llendl;
 		LLAppViewer::instance()->forceDisconnect("You have been disconnected from the region you were in.");
 
+		regionp->saveObjectCache() ; //force to save objects here in case that the object cache is about to be destroyed.
 		return;
 	}
 
@@ -279,6 +285,10 @@ void LLWorld::removeRegion(const LLHost &host)
 	delete regionp;
 
 	updateWaterObjects();
+
+	//double check all objects of this region are removed.
+	gObjectList.clearAllMapObjectsInRegion(regionp) ;
+	//llassert_always(!gObjectList.hasMapObjectInRegion(regionp)) ;
 }
 
 
@@ -594,7 +604,7 @@ void LLWorld::updateVisibilities()
 		region_list_t::iterator curiter = iter++;
 		LLViewerRegion* regionp = *curiter;
 		F32 height = regionp->getLand().getMaxZ() - regionp->getLand().getMinZ();
-		F32 radius = 0.5f*fsqrtf(height * height + diagonal_squared);
+		F32 radius = 0.5f*(F32) sqrt(height * height + diagonal_squared);
 		if (!regionp->getLand().hasZData()
 			|| LLViewerCamera::getInstance()->sphereInFrustum(regionp->getCenterAgent(), radius))
 		{
@@ -615,7 +625,7 @@ void LLWorld::updateVisibilities()
 		}
 
 		F32 height = regionp->getLand().getMaxZ() - regionp->getLand().getMinZ();
-		F32 radius = 0.5f*fsqrtf(height * height + diagonal_squared);
+		F32 radius = 0.5f*(F32) sqrt(height * height + diagonal_squared);
 		if (LLViewerCamera::getInstance()->sphereInFrustum(regionp->getCenterAgent(), radius))
 		{
 			regionp->calculateCameraDistance();

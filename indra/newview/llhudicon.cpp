@@ -275,8 +275,10 @@ BOOL LLHUDIcon::lineSegmentIntersect(const LLVector3& start, const LLVector3& en
 	F32 t = 0.f;
 	LLVector3 dir = end-start;
 
-	if (LLTriangleRayIntersect(upper_right, upper_left, lower_right, start, dir, NULL, NULL, &t, FALSE) ||
-		LLTriangleRayIntersect(upper_left, lower_left, lower_right, start, dir, NULL, NULL, &t, FALSE))
+	F32 a,b;
+
+	if (LLTriangleRayIntersect(upper_right, upper_left, lower_right, start, dir, a, b, t, FALSE) ||
+		LLTriangleRayIntersect(upper_left, lower_left, lower_right, start, dir, a, b, t, FALSE))
 	{
 		if (intersection)
 		{

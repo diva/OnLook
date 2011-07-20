@@ -1051,7 +1051,9 @@ LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
 		break;
 
 	case LLAssetType::AT_OBJECT:
-		if(!(inv_type == LLInventoryType::IT_OBJECT || inv_type == LLInventoryType::IT_ATTACHMENT))
+		if(!(inv_type == LLInventoryType::IT_OBJECT || inv_type == LLInventoryType::IT_ATTACHMENT) 
+			|| inv_type == LLInventoryType::IT_TEXTURE )	//There's an abundance of objects in inv that have texture (0) as their inv type, right out of unpack. 
+															//May have been bug either in an old client, or server version. Either way... it causes a lot of spam over something ultimately harmless.
 		{
 				llwarns << LLAssetType::lookup(asset_type) << " asset has inventory type " << LLInventoryType::lookupHumanReadable(inv_type) << " on uuid " << uuid << llendl;
 		}

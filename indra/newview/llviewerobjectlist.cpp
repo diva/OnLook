@@ -167,13 +167,13 @@ U64 LLViewerObjectList::getIndex(const U32 local_id,
 	return (((U64)index) << 32) | (U64)local_id;
 }
 
-BOOL LLViewerObjectList::removeFromLocalIDTable(const LLViewerObject &object)
+BOOL LLViewerObjectList::removeFromLocalIDTable(const LLViewerObject* objectp)
 {
-	if(object.getRegion())
+	if(objectp && objectp->getRegion())
 	{
-		U32 local_id = object.mLocalID;
-		U32 ip = object.getRegion()->getHost().getAddress();
-		U32 port = object.getRegion()->getHost().getPort();
+		U32 local_id = objectp->mLocalID;		
+		U32 ip = objectp->getRegion()->getHost().getAddress();
+		U32 port = objectp->getRegion()->getHost().getPort();
 		U64 ipport = (((U64)ip) << 32) | (U64)port;
 		U32 index = sIPAndPortToIndex[ipport];
 		
@@ -188,7 +188,7 @@ BOOL LLViewerObjectList::removeFromLocalIDTable(const LLViewerObject &object)
 		}
 		
 		// Found existing entry
-		if (iter->second == object.getID())
+		if (iter->second == objectp->getID())
 		{   // Full UUIDs match, so remove the entry
 			sIndexAndLocalIDToUUID.erase(iter);
 			return TRUE;
@@ -364,9 +364,11 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			mesgsys->getU32Fast(_PREHASH_ObjectData, _PREHASH_CRC, crc, i);
 		
 			// Lookup data packer and add this id to cache miss lists if necessary.
-			cached_dpp = regionp->getDP(id, crc);
+			U8 cache_miss_type = LLViewerRegion::CACHE_MISS_TYPE_NONE;
+			cached_dpp = regionp->getDP(id, crc, cache_miss_type);
 			if (cached_dpp)
 			{
+				// Cache Hit.
 				cached_dpp->reset();
 				cached_dpp->unpackUUID(fullid, "ID");
 				cached_dpp->unpackU32(local_id, "LocalID");
@@ -374,6 +376,11 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			}
 			else
 			{
+				// Cache Miss.
+				#if LL_RECORD_VIEWER_STATS
+				LLViewerStatsRecorder::instance()->recordCacheMissEvent(id, update_type, cache_miss_type);
+				#endif
+
 				continue; // no data packer, skip this object
 			}
 		}
@@ -465,7 +472,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			//			<< ", regionp " << (U32) regionp << ", object region " << (U32) objectp->getRegion()
 			//			<< llendl;
 			//}
-			removeFromLocalIDTable(*objectp);
+			removeFromLocalIDTable(objectp);
 			setUUIDAndLocal(fullid,
 							local_id,
 							gMessageSystem->getSenderIP(),
@@ -530,6 +537,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			llwarns << "Dead object " << objectp->mID << " in UUID map 1!" << llendl;
 		}
 
+		bool bCached = false;
 		if (compressed)
 		{
 			if (update_type != OUT_TERSE_IMPROVED)
@@ -539,6 +547,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			processUpdateCore(objectp, user_data, i, update_type, &compressed_dp, justCreated);
 			if (update_type != OUT_TERSE_IMPROVED)
 			{
+				bCached = true;
 				objectp->mRegionp->cacheFullUpdate(objectp, compressed_dp);
 			}
 		}
@@ -557,7 +566,7 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 		}
 		
 		objectp->setLastUpdateType(update_type);
-		objectp->setLastUpdateCached(cached);
+		objectp->setLastUpdateCached(bCached);
 	}
 
 	LLVOAvatar::cullAvatarsByPixelArea();
@@ -858,7 +867,7 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 	//				<< objectp->getRegion()->getHost().getPort() << llendl;
 	//}	
 	
-	removeFromLocalIDTable(*objectp);
+	removeFromLocalIDTable(objectp);
 
 	if (objectp->onActiveList())
 	{
@@ -1108,6 +1117,78 @@ void LLViewerObjectList::shiftObjects(const LLVector3 &offset)
 	LLWorld::getInstance()->shiftRegions(offset);
 }
 
+void LLViewerObjectList::repartitionObjects()
+{
+	for (vobj_list_t::iterator iter = mObjects.begin(); iter != mObjects.end(); ++iter)
+	{
+		LLViewerObject* objectp = *iter;
+		if (!objectp->isDead())
+		{
+			LLDrawable* drawable = objectp->mDrawable;
+			if (drawable && !drawable->isDead())
+			{
+				drawable->updateBinRadius();
+				drawable->updateSpatialExtents();
+				drawable->movePartition();
+			}
+		}
+	}
+}
+
+//debug code
+bool LLViewerObjectList::hasMapObjectInRegion(LLViewerRegion* regionp) 
+{
+	for (vobj_list_t::iterator iter = mMapObjects.begin(); iter != mMapObjects.end(); ++iter)
+	{
+		LLViewerObject* objectp = *iter;
+
+		if(objectp->isDead() || objectp->getRegion() == regionp)
+		{
+			return true ;
+		}
+	}
+
+	return false ;
+}
+
+//make sure the region is cleaned up.
+void LLViewerObjectList::clearAllMapObjectsInRegion(LLViewerRegion* regionp) 
+{
+	std::set<LLViewerObject*> dead_object_list ;
+	std::set<LLViewerObject*> region_object_list ;
+	for (vobj_list_t::iterator iter = mMapObjects.begin(); iter != mMapObjects.end(); ++iter)
+	{
+		LLViewerObject* objectp = *iter;
+
+		if(objectp->isDead())
+		{
+			dead_object_list.insert(objectp) ;			
+		}
+		else if(objectp->getRegion() == regionp)
+		{
+			region_object_list.insert(objectp) ;
+		}
+	}
+
+	if(dead_object_list.size() > 0)
+	{
+		llwarns << "There are " << dead_object_list.size() << " dead objects on the map!" << llendl ;
+
+		for(std::set<LLViewerObject*>::iterator iter = dead_object_list.begin(); iter != dead_object_list.end(); ++iter)
+		{
+			cleanupReferences(*iter) ;
+		}
+	}
+	if(region_object_list.size() > 0)
+	{
+		llwarns << "There are " << region_object_list.size() << " objects not removed from the deleted region!" << llendl ;
+
+		for(std::set<LLViewerObject*>::iterator iter = region_object_list.begin(); iter != region_object_list.end(); ++iter)
+		{
+			(*iter)->markDead() ;
+		}
+	}
+}
 void LLViewerObjectList::renderObjectsForMap(LLNetMap &netmap)
 {
 	LLColor4 above_water_color = gColors.getColor( "NetMapOtherOwnAboveWater" );

@@ -46,6 +46,7 @@
 #include "llviewertexturelist.h"
 #include "llvolume.h"
 #include "pipeline.h"
+#include "llvector4a.h"
 #include "llviewerregion.h"
 
 LLVOTextBubble::LLVOTextBubble(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)

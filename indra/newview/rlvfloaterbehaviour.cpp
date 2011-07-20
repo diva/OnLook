@@ -103,10 +103,9 @@ void RlvFloaterBehaviour::refreshAll()
 					if (strLookup.find("???") == std::string::npos)
 						strBhvr.assign(itCmd->getBehaviour()).append(":").append(strLookup);
 				}
-				else if (m_PendingLookup.end() == std::find(m_PendingLookup.begin(), m_PendingLookup.end(), idOption))
+				else if (m_PendingLookup.end() == m_PendingLookup.find(idOption))
 				{
-					gCacheName->get(idOption, FALSE, onAvatarNameLookup, this);
-					m_PendingLookup.push_back(idOption);
+					m_PendingLookup[idOption] = gCacheName->get(idOption, false, boost::bind(&RlvFloaterBehaviour::onAvatarNameLookup,this,_1));
 				}
 			}
 
@@ -139,10 +138,10 @@ void RlvFloaterBehaviour::onClose(bool fQuitting)
 	LLFloater::setVisible(FALSE);
 
 	gRlvHandler.removeBehaviourObserver(this);
-
-	for (std::list<LLUUID>::const_iterator itLookup = m_PendingLookup.begin(); itLookup != m_PendingLookup.end(); ++itLookup)
+		
+	for (std::map<LLUUID, boost::signals2::connection>::const_iterator itLookup = m_PendingLookup.begin(); itLookup != m_PendingLookup.end(); ++itLookup)
 	{
-		gCacheName->cancelCallback(*itLookup, onAvatarNameLookup, this);
+		itLookup->second.disconnect();
 	}
 	m_PendingLookup.clear();
 }
@@ -164,15 +163,16 @@ void RlvFloaterBehaviour::changed(const RlvCommand& /*rlvCmd*/, bool /*fInternal
 
 // ============================================================================
 
-void RlvFloaterBehaviour::onAvatarNameLookup(const LLUUID& uuid, const std::string& strFirst, const std::string& strLast, BOOL fGroup, void* pParam)
+void RlvFloaterBehaviour::onAvatarNameLookup(const LLUUID& uuid)
 {
-	RlvFloaterBehaviour* pSelf = (RlvFloaterBehaviour*)pParam;
+	std::map<LLUUID, boost::signals2::connection>::const_iterator itLookup = m_PendingLookup.find(uuid);
+	if (itLookup != m_PendingLookup.end())
+	{
+		itLookup->second.disconnect();
+		m_PendingLookup.erase(itLookup);
+	}
 
-	std::list<LLUUID>::iterator itLookup = std::find(pSelf->m_PendingLookup.begin(), pSelf->m_PendingLookup.end(), uuid);
-	if (itLookup != pSelf->m_PendingLookup.end())
-		pSelf->m_PendingLookup.erase(itLookup);
-
-	pSelf->refreshAll();
+	refreshAll();
 }
 
 // ============================================================================

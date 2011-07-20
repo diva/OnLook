@@ -2005,8 +2005,8 @@ void LLViewerWindow::initWorldUI_postLogin()
 		gFloaterWorldMap->setVisible(FALSE);
 
 		// open teleport history floater and hide it initially
-		gFloaterTeleportHistory = new LLFloaterTeleportHistory();
-		gFloaterTeleportHistory->setVisible(FALSE);
+		LLFloaterTeleportHistory::getInstance()->setVisible(FALSE);
+		LLFloaterTeleportHistory::loadFile("teleport_history.xml");
 
 		LLFloaterChatterBox::createInstance(LLSD());
 	}
@@ -3069,7 +3069,7 @@ BOOL LLViewerWindow::handlePerFrameHover()
 		LLRect notify_box_rect = gNotifyBoxView->getRect();
 		notify_box_rect.mBottom = bar_rect.mBottom;
 		gNotifyBoxView->reshape(notify_box_rect.getWidth(), notify_box_rect.getHeight());
-		gNotifyBoxView->setRect(notify_box_rect);
+		gNotifyBoxView->setShape(notify_box_rect);
 
 		// make sure floaters snap to visible rect by adjusting floater view rect
 		LLRect floater_rect = gFloaterView->getRect();
@@ -3079,7 +3079,7 @@ BOOL LLViewerWindow::handlePerFrameHover()
 			// Don't bounce the floaters up and down.
 			gFloaterView->reshapeFloater(floater_rect.getWidth(), floater_rect.getHeight(), 
 										 TRUE, ADJUST_VERTICAL_NO);
-			gFloaterView->setRect(floater_rect);
+			gFloaterView->setShape(floater_rect);
 		}
 
 		// snap floaters to top of chat bar/button strip

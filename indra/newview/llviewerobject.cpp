@@ -150,9 +150,9 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 	case LL_VO_SKY:
 	  res = new LLVOSky(id, pcode, regionp); break;
 	case LL_VO_VOID_WATER:
-	  res = new LLVOVoidWater(id, pcode, regionp); break;
+		res = new LLVOVoidWater(id, pcode, regionp); break;
 	case LL_VO_WATER:
-	  res = new LLVOWater(id, pcode, regionp); break;
+		res = new LLVOWater(id, pcode, regionp); break;
 	case LL_VO_GROUND:
 	  res = new LLVOGround(id, pcode, regionp); break;
 	case LL_VO_PART_GROUP:
@@ -649,14 +649,13 @@ BOOL LLViewerObject::setDrawableParent(LLDrawable* parentp)
 	}
 
 	BOOL ret = mDrawable->mXform.setParent(parentp ? &parentp->mXform : NULL);
-	if (!ret)
+	if(!ret)
 	{
 		return FALSE ;
 	}
 	LLDrawable* old_parent = mDrawable->mParent;
-
 	mDrawable->mParent = parentp; 
-	
+
 	gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, TRUE);
 	if(	(old_parent != parentp && old_parent)
 		|| (parentp && parentp->isActive()))
@@ -836,6 +835,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
 					((LLVOAvatar*)this)->setFootPlane(collision_plane);
 					count += sizeof(LLVector4);
+					// fall through
 				case 60:
 					this_update_precision = 32;
 					// this is a terse update
@@ -875,6 +875,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
 					((LLVOAvatar*)this)->setFootPlane(collision_plane);
 					count += sizeof(LLVector4);
+					// fall through
 				case 32:
 					this_update_precision = 16;
 					test_pos_parent.quantize16(-0.5f*size, 1.5f*size, MIN_HEIGHT, MAX_HEIGHT);
@@ -1180,6 +1181,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
 					((LLVOAvatar*)this)->setFootPlane(collision_plane);
 					count += sizeof(LLVector4);
+					// fall through
 				case 60:
 					// this is a terse 32 update
 					// pos
@@ -1219,6 +1221,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					htonmemcpy(collision_plane.mV, &data[count], MVT_LLVector4, sizeof(LLVector4));
 					((LLVOAvatar*)this)->setFootPlane(collision_plane);
 					count += sizeof(LLVector4);
+					// fall through
 				case 32:
 					// this is a terse 16 update
 					this_update_precision = 16;
@@ -2909,22 +2912,28 @@ void LLViewerObject::setScale(const LLVector3 &scale, BOOL damped)
 	}
 }
 
-void LLViewerObject::updateSpatialExtents(LLVector3& newMin, LLVector3 &newMax)
+void LLViewerObject::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
 {
-	LLVector3 center = getRenderPosition();
-	LLVector3 size = getScale();
-	newMin.setVec(center-size);
-	newMax.setVec(center+size);
-	if(mDrawable.notNull())
-		mDrawable->setPositionGroup((newMin + newMax) * 0.5f);
+	if(mDrawable.isNull())
+		return;
+	LLVector4a center;
+	center.load3(getRenderPosition().mV);
+	LLVector4a size;
+	size.load3(getScale().mV);
+	newMin.setSub(center, size);
+	newMax.setAdd(center, size);
+	
+	mDrawable->setPositionGroup(center);
 }
 
 F32 LLViewerObject::getBinRadius()
 {
 	if (mDrawable.notNull())
 	{
-		const LLVector3* ext = mDrawable->getSpatialExtents();
-		return (ext[1]-ext[0]).magVec();
+		const LLVector4a* ext = mDrawable->getSpatialExtents();
+		LLVector4a diff;
+		diff.setSub(ext[1], ext[0]);
+		return diff.getLength3().getF32();
 	}
 	
 	return getScale().magVec();
@@ -3516,12 +3525,21 @@ BOOL LLViewerObject::lineSegmentBoundingBox(const LLVector3& start, const LLVect
 		return FALSE;
 	}
 
-	const LLVector3* ext = mDrawable->getSpatialExtents();
+	const LLVector4a* ext = mDrawable->getSpatialExtents();
 
-	LLVector3 center = (ext[1]+ext[0])*0.5f;
-	LLVector3 size = (ext[1]-ext[0])*0.5f;
+	//VECTORIZE THIS
+	LLVector4a center;
+	center.setAdd(ext[1], ext[0]);
+	center.mul(0.5f);
+	LLVector4a size;
+	size.setSub(ext[1], ext[0]);
+	size.mul(0.5f);
 
-	return LLLineSegmentBoxIntersect(start, end, center, size);
+	LLVector4a starta, enda;
+	starta.load3(start.mV);
+	enda.load3(end.mV);
+
+	return LLLineSegmentBoxIntersect(starta, enda, center, size);
 }
 
 U8 LLViewerObject::getMediaType() const
@@ -3742,7 +3760,7 @@ void LLViewerObject::sendTEUpdate() const
 		msg->addString("MediaURL", NULL);
 	}
 
-	// JAMESDEBUG TODO send media type
+	// TODO send media type
 
 	packTEMessage(msg);
 
@@ -3753,7 +3771,7 @@ void LLViewerObject::sendTEUpdate() const
 void LLViewerObject::setTE(const U8 te, const LLTextureEntry &texture_entry)
 {
 	LLPrimitive::setTE(te, texture_entry);
-// JAMESDEBUG This doesn't work, don't get any textures.
+//  This doesn't work, don't get any textures.
 //	if (mDrawable.notNull() && mDrawable->isVisible())
 //	{
 		const LLUUID& image_id = getTE(te)->getID();
@@ -3927,7 +3945,7 @@ S32 LLViewerObject::setTEFullbright(const U8 te, const U8 fullbright)
 
 S32 LLViewerObject::setTEMediaFlags(const U8 te, const U8 media_flags)
 {
-	// JAMESDEBUG this might need work for media type
+	// this might need work for media type
 	S32 retval = 0;
 	const LLTextureEntry *tep = getTE(te);
 	if (!tep)

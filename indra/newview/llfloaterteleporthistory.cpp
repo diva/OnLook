@@ -49,11 +49,9 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 #include "llweb.h"
+#include "llsdserialize.h"
 
-// globals
-LLFloaterTeleportHistory* gFloaterTeleportHistory;
-
-LLFloaterTeleportHistory::LLFloaterTeleportHistory()
+LLFloaterTeleportHistory::LLFloaterTeleportHistory(const LLSD& seed)
 :	LLFloater(std::string("teleporthistory")),
 	mPlacesList(NULL),
 	mID(0)
@@ -171,10 +169,18 @@ void LLFloaterTeleportHistory::addEntry(std::string parcelName)
 		value["columns"][LIST_SIMSTRING]["value"] = mPendingSimString;
 
 		// add the new list entry on top of the list, deselect all and disable the buttons
+		const S32 max_entries = gSavedSettings.getS32("TeleportHistoryMaxEntries");
+		S32 num_entries = mPlacesList->getItemCount();
+		while(num_entries >= max_entries)
+		{
+			mPlacesList->deleteItems(LLSD(mID - num_entries--));
+		}
+
 		mPlacesList->addElement(value, ADD_TOP);
 		mPlacesList->deselectAllItems(TRUE);
 		setButtonsEnabled(FALSE);
 		mID++;
+		saveFile("teleport_history.xml");	//Comment out to disable saving after every teleport.
 	}
 	else
 	{
@@ -190,6 +196,95 @@ void LLFloaterTeleportHistory::setButtonsEnabled(BOOL on)
 	childSetEnabled("teleport", on);
 	childSetEnabled("show_on_map", on);
 	childSetEnabled("copy_slurl", on);
+}
+//static
+void LLFloaterTeleportHistory::loadFile(const std::string &file_name)
+{
+	LLFloaterTeleportHistory *pFloaterHistory = LLFloaterTeleportHistory::findInstance();
+	if(!pFloaterHistory)
+		return;
+
+	LLScrollListCtrl* pScrollList = pFloaterHistory->mPlacesList;
+	if(!pScrollList)
+		return;
+
+	std::string temp_str(gDirUtilp->getLindenUserDir() + gDirUtilp->getDirDelimiter() + file_name);
+
+	llifstream file(temp_str);
+
+	if (file.is_open())
+	{
+		llinfos << "Loading "<< file_name << " file at " << temp_str << llendl;
+		LLSD data;
+		LLSDSerialize::fromXML(data, file);
+		if (data.isUndefined())
+		{
+			llinfos << "file missing, ill-formed, "
+				"or simply undefined; not reading the"
+				" file" << llendl;
+		}
+		else
+		{
+			const S32 max_entries = gSavedSettings.getS32("TeleportHistoryMaxEntries");
+			const S32 num_entries = llmin(max_entries,(const S32)data.size());
+			pScrollList->clear();
+			for(S32 i = 0; i < num_entries; i++) //Lower entry = newer
+			{
+				pScrollList->addElement(data[i], ADD_BOTTOM);
+			}
+			pScrollList->deselectAllItems(TRUE);
+			pFloaterHistory->mID = pScrollList->getItemCount();
+			pFloaterHistory->setButtonsEnabled(FALSE);
+		}
+	}
+}
+//static
+void LLFloaterTeleportHistory::saveFile(const std::string &file_name)
+{
+	LLFloaterTeleportHistory *pFloaterHistory = LLFloaterTeleportHistory::findInstance();
+	if(!pFloaterHistory)
+		return;
+
+	std::string temp_str = gDirUtilp->getLindenUserDir(true);
+	if( temp_str.empty() )
+	{
+		llinfos << "Can't save teleport history - no user directory set yet." << llendl;
+		return;
+	}
+	temp_str += gDirUtilp->getDirDelimiter() + file_name;
+	llofstream export_file(temp_str);
+	if (!export_file.good())
+	{
+		llwarns << "Unable to open " << file_name << " for output." << llendl;
+		return;
+	}
+	llinfos << "Writing "<< file_name << " file at " << temp_str << llendl;
+
+	LLSD elements;
+	LLScrollListCtrl* pScrollList = pFloaterHistory->mPlacesList;
+	if (pScrollList)
+	{
+		std::vector<LLScrollListItem*> data_list = pScrollList->getAllData();
+		struct SortByAge {
+		  bool operator() (LLScrollListItem* i,LLScrollListItem* j) { return (i->getValue().asInteger()>j->getValue().asInteger());}
+		} sorter;
+		std::sort(data_list.begin(),data_list.end(),sorter);//Re-sort. Column sorting may have mucked the list up. Newer entries in front.
+		for (std::vector<LLScrollListItem*>::iterator itr = data_list.begin(); itr != data_list.end(); ++itr)
+		{
+			//Pack into LLSD mimicing one passed to addElement
+			LLSD data_entry;
+			//id is actually reverse of the indexing of the element LLSD. Higher id = newer.
+			data_entry["id"] = pScrollList->getItemCount() - elements.size() - 1;	
+			for(S32 i = 0; i < (*itr)->getNumColumns(); ++i)	
+			{
+				data_entry["columns"][i]["column"]=pScrollList->getColumn(i)->mName;
+				data_entry["columns"][i]["value"]=(*itr)->getColumn(i)->getValue();
+			}
+			elements.append(data_entry);
+		}
+	}
+	LLSDSerialize::toXML(elements, export_file);
+	export_file.close();
 }
 
 // virtual

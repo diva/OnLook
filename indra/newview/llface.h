@@ -159,7 +159,8 @@ public:
 	BOOL getGeometryVolume(const LLVolume& volume,
 						const S32 &f,
 						const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,
-						const U16 &index_offset);
+						const U16 &index_offset,
+						bool force_rebuild = false);
 
 	// For avatar
 	U16			 getGeometryAvatar(
@@ -211,6 +212,8 @@ public:
 	void setVertexBuffer(LLVertexBuffer* buffer);
 	void clearVertexBuffer(); //sets mVertexBuffer and mLastVertexBuffer to NULL
 	LLVertexBuffer* getVertexBuffer()	const	{ return mVertexBuffer; }
+public: //aligned members
+	LLVector4a		mExtents[2];
 
 private:	
 	F32         adjustPartialOverlapPixelArea(F32 cos_angle_to_view_dir, F32 radius );
@@ -223,7 +226,6 @@ public:
 	
 	LLVector3		mCenterLocal;
 	LLVector3		mCenterAgent;
-	LLVector3		mExtents[2];
 	LLVector2		mTexExtents[2];
 	F32				mDistance;
 	F32			mLastUpdateTime;

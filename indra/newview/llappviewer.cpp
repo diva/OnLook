@@ -33,7 +33,6 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llappviewer.h"
-#include "llprimitive.h"
 
 #include "hippogridmanager.h"
 #include "hippolimits.h"
@@ -78,12 +77,19 @@
 #include "statemachine/aifilepicker.h"
 #include "llfirstuse.h"
 #include "llrender.h"
+#include "llvector4a.h"
 #include "llfont.h"
-#include "llimagej2c.h"
+#include "llvocache.h"
+#include "llfloaterteleporthistory.h"
 
 #include "llweb.h"
 #include "llsecondlifeurls.h"
-	
+
+// Linden library includes
+#include "llavatarnamecache.h"
+#include "lldiriterator.h"
+#include "llimagej2c.h"
+#include "llprimitive.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -116,7 +122,6 @@
 #include "lltoolmgr.h"
 #include "llassetstorage.h"
 #include "llpolymesh.h"
-#include "llcachename.h"
 #include "llaudioengine.h"
 #include "llstreamingaudio.h"
 #include "llviewermenu.h"
@@ -180,8 +185,6 @@
 #include "llviewerthrottle.h"
 #include "llparcel.h"
 
-#include "lldiriterator.h"
-#include "llavatarnamecache.h"
 #include "llinventoryview.h"
 
 #include "llcommandlineparser.h"
@@ -560,6 +563,8 @@ bool LLAppViewer::init()
 	// we run the "program crashed last time" error handler below.
 	//
 	
+	// initialize SSE options
+	LLVector4a::initClass();
 	// Need to do this initialization before we do anything else, since anything
 	// that touches files should really go through the lldir API
 	gDirUtilp->initAppDirs("SecondLife");
@@ -624,7 +629,9 @@ bool LLAppViewer::init()
 	// OS-specific login dialogs
 	/////////////////////////////////////////////////
 
-	//test_cached_control();
+#if TEST_CACHED_CONTROL
+	test_cached_control();
+#endif
 
 	// track number of times that app has run
 	mNumSessions = gSavedSettings.getS32("NumSessions");
@@ -1262,15 +1269,14 @@ bool LLAppViewer::cleanup()
 
 	LLPolyMesh::freeAllMeshes();
 
-	LLAvatarNameCache::cleanupClass();
-
-	delete gCacheName;
-	gCacheName = NULL;
+	LLStartUp::cleanupNameCache();
 
 	// Note: this is where gLocalSpeakerMgr and gActiveSpeakerMgr used to be deleted.
 
 	LLWorldMap::getInstance()->reset(); // release any images
-	
+
+	LLCalc::cleanUp();
+
 	llinfos << "Global stuff deleted" << llendflush;
 
 	if (gAudiop)
@@ -1458,6 +1464,8 @@ bool LLAppViewer::cleanup()
 	// Save file- and dirpicker {context, default paths} map.
 	AIFilePicker::saveFile("filepicker_contexts.xml");
 
+	LLFloaterTeleportHistory::saveFile("teleport_history.xml");
+
 	// save mute list. gMuteList used to also be deleted here too.
 	LLMuteList::getInstance()->cache(gAgent.getID());
 
@@ -1558,6 +1566,8 @@ bool LLAppViewer::cleanup()
 	}
 #endif
 
+	llinfos << "Misc Cleanup" << llendflush;
+	
 	// For safety, the LLVFS has to be deleted *after* LLVFSThread. This should be cleaned up.
 	// (LLVFS doesn't know about LLVFSThread so can't kill pending requests) -Steve
 	delete gStaticVFS;
@@ -1572,6 +1582,7 @@ bool LLAppViewer::cleanup()
 	
 	LLWatchdog::getInstance()->cleanup();
 
+	llinfos << "Shutting down message system" << llendflush;
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
@@ -1821,7 +1832,7 @@ bool LLAppViewer::initConfiguration()
 
 	//Load settings files list
 	std::string settings_file_list = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "settings_files.xml");
-	LLControlGroup settings_control;
+	LLControlGroup settings_control("groups");
 	llinfos << "Loading settings file list" << settings_file_list << llendl;
 	if (0 == settings_control.loadFromFile(settings_file_list))
 	{
@@ -1883,7 +1894,7 @@ bool LLAppViewer::initConfiguration()
 	gSavedSettings.setBOOL("WatchdogEnabled", FALSE);
 #endif
 
-	gCrashSettings.getControl(CRASH_BEHAVIOR_SETTING)->getSignal()->connect(boost::bind(&handleCrashSubmitBehaviorChanged, _1));	
+	gCrashSettings.getControl(CRASH_BEHAVIOR_SETTING)->getSignal()->connect(boost::bind(&handleCrashSubmitBehaviorChanged, _2));	
 
 	// These are warnings that appear on the first experience of that condition.
 	// They are already set in the settings_default.xml file, but still need to be added to LLFirstUse
@@ -3047,11 +3058,23 @@ U32 LLAppViewer::getTextureCacheVersion()
 
 	return TEXTURE_CACHE_VERSION ;
 }
+
+//static
+U32 LLAppViewer::getObjectCacheVersion() 
+{
+	// Viewer object cache version, change if object update
+	// format changes. JC
+	const U32 INDRA_OBJECT_CACHE_VERSION = 14;
+
+	return INDRA_OBJECT_CACHE_VERSION;
+}
+
 bool LLAppViewer::initCache()
 {
 	mPurgeCache = false;
 	BOOL read_only = mSecondInstance ? TRUE : FALSE;
-	LLAppViewer::getTextureCache()->setReadOnly(read_only);
+	LLAppViewer::getTextureCache()->setReadOnly(read_only) ;
+	LLVOCache::getInstance()->setReadOnly(read_only);
 
 	bool texture_cache_mismatch = false;
 	if (gSavedSettings.getS32("LocalCacheVersion") != LLAppViewer::getTextureCacheVersion())
@@ -3130,6 +3153,8 @@ bool LLAppViewer::initCache()
 
 	S64 extra = LLAppViewer::getTextureCache()->initCache(LL_PATH_CACHE, texture_cache_size, texture_cache_mismatch);
 	texture_cache_size -= extra;
+
+	LLVOCache::getInstance()->initCache(LL_PATH_CACHE, gSavedSettings.getU32("CacheNumberOfRegionsForObjects"), getObjectCacheVersion()) ;
 
 	LLSplashScreen::update("Initializing VFS...");
 	
@@ -3287,8 +3312,9 @@ bool LLAppViewer::initCache()
 
 void LLAppViewer::purgeCache()
 {
-	LL_INFOS("AppCache") << "Purging Cache and Texture Cache..." << LL_ENDL;
+	LL_INFOS("AppCache") << "Purging Cache and Texture Cache..." << llendl;
 	LLAppViewer::getTextureCache()->purgeCache(LL_PATH_CACHE);
+	LLVOCache::getInstance()->removeCache(LL_PATH_CACHE);
 	std::string mask = "*.*";
 	gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE, ""), mask);
 }
@@ -3442,12 +3468,14 @@ void LLAppViewer::loadNameCache()
 
 	// Try to load from the legacy format. This should go away after a
 	// while. Phoenix 2008-01-30
+#if 0
 	LLFILE* name_cache_fp = LLFile::fopen(name_cache, "r");		// Flawfinder: ignore
 	if (name_cache_fp)
 	{
 		gCacheName->importFile(name_cache_fp);
 		fclose(name_cache_fp);
 	}
+#endif
 }
 
 void LLAppViewer::saveNameCache()
@@ -3645,9 +3673,6 @@ void LLAppViewer::idle()
 	{
 		LLFastTimer t(LLFastTimer::FTM_NETWORK);
 	
-		// Phoenix: Wolfspirit: Prepare the namecache.
-		idleNameCache();
-
 	    ////////////////////////////////////////////////
 	    //
 	    // Network processing
@@ -3655,6 +3680,7 @@ void LLAppViewer::idle()
 	    // NOTE: Starting at this point, we may still have pointers to "dead" objects
 	    // floating throughout the various object lists.
 	    //
+		idleNameCache();
     
 	    gFrameStats.start(LLFrameStats::IDLE_NETWORK);
 		stop_glerror();
@@ -3999,11 +4025,9 @@ void LLAppViewer::idleNameCache()
 	if (had_capability != have_capability)
 	{
 		// name tags are persistant on screen, so make sure they refresh
-		//LLVOAvatar::invalidateNameTags();
+		LLVOAvatar::invalidateNameTags();	//Should this be commented out?
 	}
-	
 
-	// Phoenix: Wolfspirit: Check if we are using Display Names and set it. Then idle the cache.
 	LLAvatarNameCache::idle();
 }
 
@@ -4068,8 +4092,6 @@ void LLAppViewer::idleNetwork()
 	{
 		LLFastTimer t(LLFastTimer::FTM_IDLE_NETWORK); // decode
 		
-		// deal with any queued name requests and replies.
-		gCacheName->processPending();
 		llpushcallstacks ;
 		LLTimer check_message_timer;
 		//  Read all available packets from network 
@@ -4251,7 +4273,10 @@ void LLAppViewer::disconnectViewer()
 
 	// This is where we used to call gObjectList.destroy() and then delete gWorldp.
 	// Now we just ask the LLWorld singleton to cleanly shut down.
-	LLWorld::getInstance()->destroyClass();
+	if(LLWorld::instanceExists())
+	{
+		LLWorld::getInstance()->destroyClass();
+	}
 
 	// call all self-registered classes
 	LLDestroyClassList::instance().fireCallbacks();

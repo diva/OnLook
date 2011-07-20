@@ -105,18 +105,18 @@ void RlvSettings::initClass()
 		#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 		fCompositeFolders = rlvGetSettingBOOL(RLV_SETTING_ENABLECOMPOSITES, FALSE);
 		if (gSavedSettings.controlExists(RLV_SETTING_ENABLECOMPOSITES))
-			gSavedSettings.getControl(RLV_SETTING_ENABLECOMPOSITES)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _1, &fCompositeFolders));
+			gSavedSettings.getControl(RLV_SETTING_ENABLECOMPOSITES)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _2, &fCompositeFolders));
 		#endif // RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 
 		fLegacyNaming = rlvGetSettingBOOL(RLV_SETTING_ENABLELEGACYNAMING, TRUE);
 		if (gSavedSettings.controlExists(RLV_SETTING_ENABLELEGACYNAMING))
-			gSavedSettings.getControl(RLV_SETTING_ENABLELEGACYNAMING)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _1, &fLegacyNaming));
+			gSavedSettings.getControl(RLV_SETTING_ENABLELEGACYNAMING)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _2, &fLegacyNaming));
 
 		fNoSetEnv = rlvGetSettingBOOL(RLV_SETTING_NOSETENV, FALSE);
 
 		fShowNameTags = rlvGetSettingBOOL(RLV_SETTING_SHOWNAMETAGS, FALSE);
 		if (gSavedSettings.controlExists(RLV_SETTING_SHOWNAMETAGS))
-			gSavedSettings.getControl(RLV_SETTING_SHOWNAMETAGS)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _1, &fShowNameTags));
+			gSavedSettings.getControl(RLV_SETTING_SHOWNAMETAGS)->getSignal()->connect(boost::bind(&onChangedSettingBOOL, _2, &fShowNameTags));
 
 		fInitialized = true;
 	}
