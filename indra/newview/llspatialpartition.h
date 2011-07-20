@@ -58,7 +58,7 @@ S32 AABBSphereIntersect(const LLVector3& min, const LLVector3& max, const LLVect
 S32 AABBSphereIntersectR2(const LLVector3& min, const LLVector3& max, const LLVector3 &origin, const F32 &radius_squared);
 
 // get index buffer for binary encoded axis vertex buffer given a box at center being viewed by given camera
-U8* get_box_fan_indices(LLCamera* camera, const LLVector3& center);
+U8* get_box_fan_indices_ptr(LLCamera* camera, const LLVector3& center);
 
 class LLDrawInfo : public LLRefCount 
 {
@@ -156,6 +156,7 @@ class LLSpatialGroup : public LLOctreeListener<LLDrawable>
 	friend class LLSpatialPartition;
 	friend class LLOctreeStateCheck;
 public:
+	static std::set<GLuint> sPendingQueries; //pending occlusion queries
 	static U32 sNodeCount;
 	static BOOL sNoDelete; //deletion of spatial groups and draw info not allowed if TRUE
 

@@ -365,6 +365,7 @@ void LLPipeline::init()
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
+	gOctreeMaxCapacity = gSavedSettings.getU32("OctreeMaxNodeCapacity");
 	sDynamicLOD = gSavedSettings.getBOOL("RenderDynamicLOD");
 	sRenderBump = gSavedSettings.getBOOL("RenderObjectBump");
 	LLVertexBuffer::sUseStreamDraw = gSavedSettings.getBOOL("ShyotlRenderUseStreamVBO");
@@ -2413,6 +2414,31 @@ void LLPipeline::markGLRebuild(LLGLUpdate* glu)
 	}
 }
 
+void LLPipeline::markPartitionMove(LLDrawable* drawable)
+{
+	if (!drawable->isState(LLDrawable::PARTITION_MOVE) && 
+		!drawable->getPositionGroup().isExactlyZero())
+	{
+		drawable->setState(LLDrawable::PARTITION_MOVE);
+		mPartitionQ.push_back(drawable);
+	}
+}
+
+void LLPipeline::processPartitionQ()
+{
+	for (LLDrawable::drawable_list_t::iterator iter = mPartitionQ.begin(); iter != mPartitionQ.end(); ++iter)
+	{
+		LLDrawable* drawable = *iter;
+		if (!drawable->isDead())
+		{
+			drawable->updateBinRadius();
+			drawable->movePartition();
+		}
+		drawable->clearState(LLDrawable::PARTITION_MOVE);
+	}
+
+	mPartitionQ.clear();
+}
 void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
@@ -7282,7 +7308,7 @@ void LLPipeline::renderDeferredLighting()
 					glTexCoord4f(tc.v[0], tc.v[1], tc.v[2], s*s);
 					glColor4f(col.mV[0], col.mV[1], col.mV[2], volume->getLightFalloff()*0.5f);
 					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-						GL_UNSIGNED_BYTE, get_box_fan_indices(camera, center));
+						GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, center));
 				}
 			}
 			else
@@ -7346,7 +7372,7 @@ void LLPipeline::renderDeferredLighting()
 					glTexCoord4f(tc.v[0], tc.v[1], tc.v[2], s*s);
 					glColor4f(col.mV[0], col.mV[1], col.mV[2], volume->getLightFalloff()*0.5f);
 					glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-							GL_UNSIGNED_BYTE, get_box_fan_indices(camera, center));
+							GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, center));
 				}
 				gDeferredSpotLightProgram.disableTexture(LLViewerShaderMgr::DEFERRED_PROJECTION);
 				unbindDeferredShader(gDeferredSpotLightProgram);

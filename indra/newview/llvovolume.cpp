@@ -519,7 +519,7 @@ void LLVOVolume::updateTextureVirtualSize()
 
 		if (isHUDAttachment())
 		{
-			F32 area = (F32) LLViewerCamera::getInstance()->getScreenPixelArea();
+			F32 area = (F32) camera->getScreenPixelArea();
 			vsize = area;
 			imagep->setBoostLevel(LLViewerTexture::BOOST_HUD);
  			face->setPixelArea(area); // treat as full screen
@@ -654,7 +654,8 @@ void LLVOVolume::updateTextureVirtualSize()
 
 BOOL LLVOVolume::isActive() const
 {
-	return !mStatic || mTextureAnimp || (mVolumeImpl && mVolumeImpl->isActive());
+	return !mStatic || mTextureAnimp || (mVolumeImpl && mVolumeImpl->isActive()) || 
+		(mDrawable.notNull() && mDrawable->isActive());
 }
 
 BOOL LLVOVolume::setMaterial(const U8 material)
@@ -918,7 +919,7 @@ BOOL LLVOVolume::calcLOD()
 	}
 	
 	// DON'T Compensate for field of view changing on FOV zoom.
-	distance *= 3.14159f/3.f;
+	distance *= F_PI/3.f;
 
 	cur_detail = computeLODDetail(llround(distance, 0.01f), 
 									llround(radius, 0.01f));
@@ -948,6 +949,15 @@ BOOL LLVOVolume::updateLOD()
 	{
 		gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_VOLUME, FALSE);
 		mLODChanged = TRUE;
+	}
+	else
+	{
+		F32 new_radius = getBinRadius();
+		F32 old_radius = mDrawable->getBinRadius();
+		if (new_radius < old_radius * 0.9f || new_radius > old_radius*1.1f)
+		{
+			gPipeline.markPartitionMove(mDrawable);
+		}
 	}
 
 	lod_changed |= LLViewerObject::updateLOD();
@@ -2070,6 +2080,16 @@ F32 LLVOVolume::getBinRadius()
 {
 	F32 radius;
 	
+	F32 scale = 1.f;
+
+	static const LLCachedControl<S32> size_factor_setting("OctreeStaticObjectSizeFactor", 4);
+	static const LLCachedControl<S32> attachment_size_factor_setting("OctreeAttachmentSizeFactor", 4);
+	static const LLCachedControl<LLVector3> distance_factor_setting("OctreeDistanceFactor",LLVector3::zero);
+	static const LLCachedControl<LLVector3> alpha_distance_factor_setting("OctreeAlphaDistanceFactor",LLVector3(.1f,0.f,0.f));
+	const S32 size_factor = llmax(size_factor_setting.get(),1);
+	const S32 attachment_size_factor = llmax(size_factor_setting.get(),1);
+	const LLVector3& distance_factor = distance_factor_setting;
+	const LLVector3& alpha_distance_factor = alpha_distance_factor_setting;
 	const LLVector3* ext = mDrawable->getSpatialExtents();
 	
 	BOOL shrink_wrap = mDrawable->isAnimating();
@@ -2099,6 +2119,8 @@ F32 LLVOVolume::getBinRadius()
 		radius = llmin(bounds.mV[1], bounds.mV[2]);
 		radius = llmin(radius, bounds.mV[0]);
 		radius *= 0.5f;
+		radius *= 1.f+mDrawable->mDistanceWRTCamera*alpha_distance_factor[1];
+		radius += mDrawable->mDistanceWRTCamera*alpha_distance_factor[0];
 	}
 	else if (shrink_wrap)
 	{
@@ -2106,27 +2128,22 @@ F32 LLVOVolume::getBinRadius()
 	}
 	else if (mDrawable->isStatic())
 	{
-		/*if (mDrawable->getRadius() < 2.0f)
-		{
-			radius = 16.f;
-		}
-		else
-		{
-			radius = llmax(mDrawable->getRadius(), 32.f);
-		}*/
-
-		radius = (((S32) mDrawable->getRadius())/2+1)*8;
+		radius = llmax((S32) mDrawable->getRadius(), 1)*size_factor;
+		radius *= 1.f + mDrawable->mDistanceWRTCamera * distance_factor[1];
+		radius += mDrawable->mDistanceWRTCamera * distance_factor[0];
 	}
 	else if (mDrawable->getVObj()->isAttachment())
 	{
-		radius = (((S32) (mDrawable->getRadius()*4)+1))*2;
+		radius = llmax((S32) mDrawable->getRadius(),1)*attachment_size_factor;
 	}
 	else
 	{
-		radius = 8.f;
+		radius = mDrawable->getRadius();
+		radius *= 1.f + mDrawable->mDistanceWRTCamera * distance_factor[1];
+		radius += mDrawable->mDistanceWRTCamera * distance_factor[0];
 	}
 
-	return llclamp(radius, 0.5f, 256.f);
+	return llclamp(radius*scale, 0.5f, 256.f);
 }
 
 const LLVector3 LLVOVolume::getPivotPositionAgent() const

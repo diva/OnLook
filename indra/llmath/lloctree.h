@@ -44,13 +44,14 @@
 #define OCT_ERRS LL_WARNS("OctreeErrors")
 #endif
 
+extern U32 gOctreeMaxCapacity;
 #if LL_DEBUG
 #define LL_OCTREE_PARANOIA_CHECK 0
 #else
 #define LL_OCTREE_PARANOIA_CHECK 0
 #endif
 
-#define LL_OCTREE_MAX_CAPACITY 128
+//#define LL_OCTREE_MAX_CAPACITY 128
 
 template <class T> class LLOctreeNode;
 
@@ -314,16 +315,14 @@ public:
 		//is it here?
 		if (isInside(data->getPositionGroup()))
 		{
-			if (getElementCount() < LL_OCTREE_MAX_CAPACITY &&
-				(contains(data->getBinRadius()) ||
-				(data->getBinRadius() > getSize().mdV[0] &&
-				parent && parent->getElementCount() >= LL_OCTREE_MAX_CAPACITY))) 
+			if ((getElementCount() < gOctreeMaxCapacity && contains(data->getBinRadius()) ||
+				(data->getBinRadius() > getSize()[0] &&	parent && parent->getElementCount() >= gOctreeMaxCapacity))) 
 			{ //it belongs here
 #if LL_OCTREE_PARANOIA_CHECK
 				//if this is a redundant insertion, error out (should never happen)
 				if (mData.find(data) != mData.end())
 				{
-					llerrs << "Redundant octree insertion detected. " << data << llendl;
+					llwarns << "Redundant octree insertion detected. " << data << llendl;
 					return false;
 				}
 #endif
@@ -341,7 +340,7 @@ public:
 					child = getChild(i);
 					if (child->isInside(data->getPositionGroup()))
 					{
-						llassert(child->getElementCount() <= LL_OCTREE_MAX_CAPACITY);
+						llassert(child->getElementCount() <= gOctreeMaxCapacity);
 						child->insert(data);
 						return false;
 					}
