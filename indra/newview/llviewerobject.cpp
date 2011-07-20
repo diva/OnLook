@@ -2914,6 +2914,8 @@ void LLViewerObject::setScale(const LLVector3 &scale, BOOL damped)
 
 void LLViewerObject::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
 {
+	if(mDrawable.isNull())
+		return;
 	LLVector4a center;
 	center.load3(getRenderPosition().mV);
 	LLVector4a size;

@@ -3819,7 +3819,7 @@ S32 LLVolume::lineSegmentIntersect(const LLVector4a& start, const LLVector4a& en
 				LLVector4a pos[3];
 				pos[0].load3(face.mVertices[index1].mPosition.mV);
 				pos[1].load3(face.mVertices[index2].mPosition.mV);
-				pos[2].load3(face.mVertices[index2].mPosition.mV);
+				pos[2].load3(face.mVertices[index3].mPosition.mV);
 				if (LLTriangleRayIntersect(pos[0],
 										   pos[1],
 										   pos[2],
@@ -4973,7 +4973,7 @@ BOOL LLVolumeFace::createCap(LLVolume* volume, BOOL partial_build)
 
 	LLVector4a pos[2];
 	pos[0].load3(mVertices[0].mPosition.mV);
-	pos[1].load3(mVertices[0].mPosition.mV);
+	pos[1].load3(mVertices[1].mPosition.mV);
 	LLVector4a normal;
 	LLVector4a d0, d1;
 	

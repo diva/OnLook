@@ -692,7 +692,7 @@ public:
 
 		if (lt != 0x7)
 		{
-			OCT_ERRS << "!!! ELEMENT EXCEEDS RANGE OF SPATIAL PARTITION !!!" << llendl;
+			//OCT_ERRS << "!!! ELEMENT EXCEEDS RANGE OF SPATIAL PARTITION !!!" << llendl;
 			return false;
 		}
 

@@ -191,7 +191,7 @@ public:
 	void setSpatialExtents(const LLVector4a& min, const LLVector4a& max);
 
 	void setPositionGroup(const LLVector4a& pos);
-	
+
 	void setRenderType(S32 type) 				{ mRenderType = type; }
 	BOOL isRenderType(S32 type) 				{ return mRenderType == type; }
 	S32  getRenderType()						{ return mRenderType; }

@@ -927,7 +927,7 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 	LLVector4a normal4a; 
 	normal4a.load3(vf.mVertices[0].mNormal.mV);
 	LLVector4a binormal4a;
-	binormal4a.load3(vf.mVertices[0].mNormal.mV);
+	binormal4a.load3(vf.mVertices[0].mBinormal.mV);
 	LLVector2 projected_binormal;
 	planarProjection(projected_binormal, normal4a, *vf.mCenter, binormal4a);
 	projected_binormal -= LLVector2(0.5f, 0.5f); // this normally happens in xform()
