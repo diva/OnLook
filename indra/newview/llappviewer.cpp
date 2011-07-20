@@ -77,6 +77,7 @@
 #include "statemachine/aifilepicker.h"
 #include "llfirstuse.h"
 #include "llrender.h"
+#include "llvector4a.h"
 #include "llfont.h"
 #include "llvocache.h"
 #include "llfloaterteleporthistory.h"
@@ -562,6 +563,8 @@ bool LLAppViewer::init()
 	// we run the "program crashed last time" error handler below.
 	//
 	
+	// initialize SSE options
+	LLVector4a::initClass();
 	// Need to do this initialization before we do anything else, since anything
 	// that touches files should really go through the lldir API
 	gDirUtilp->initAppDirs("SecondLife");

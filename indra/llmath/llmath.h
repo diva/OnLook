@@ -35,7 +35,7 @@
 
 #include <cmath>
 #include <cstdlib>
-#include <complex>
+#include <vector>
 #include "lldefs.h"
 #include "llstl.h" // *TODO: Remove when LLString is gone
 #include "llstring.h" // *TODO: Remove when LLString is gone
@@ -541,4 +541,7 @@ inline void ll_remove_outliers(std::vector<VEC_TYPE>& data, F32 k)
 		data.erase(data.begin(), data.begin()+i);
 	}
 }
+
+// Include simd math header
+#include "llsimdmath.h"
 #endif

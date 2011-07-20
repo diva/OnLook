@@ -49,6 +49,8 @@ class LLVolume;
 //#include "vmath.h"
 #include "v2math.h"
 #include "v3math.h"
+#include "v3dmath.h"
+#include "v4math.h"
 #include "llquaternion.h"
 #include "llstrider.h"
 #include "v4coloru.h"
@@ -786,20 +788,6 @@ public:
 class LLVolumeFace
 {
 public:
-	LLVolumeFace() : 
-		mID(0),
-		mTypeMask(0),
-		mHasBinormals(FALSE),
-		mBeginS(0),
-		mBeginT(0),
-		mNumS(0),
-		mNumT(0)
-	{
-	}
-
-	BOOL create(LLVolume* volume, BOOL partial_build = FALSE);
-	void createBinormals();
-
 	class VertexData
 	{
 	public:
@@ -808,6 +796,14 @@ public:
 		LLVector3 mBinormal;
 		LLVector2 mTexCoord;
 	};
+	LLVolumeFace();
+	LLVolumeFace(const LLVolumeFace& src);
+	LLVolumeFace& operator=(const LLVolumeFace& rhs);
+
+	~LLVolumeFace();
+	BOOL create(LLVolume* volume, BOOL partial_build = FALSE);
+	void createBinormals();
+
 
 	enum
 	{
@@ -827,7 +823,6 @@ public:
 public:
 	S32 mID;
 	U32 mTypeMask;
-	LLVector3 mCenter;
 	BOOL mHasBinormals;
 
 	// Only used for INNER/OUTER faces
@@ -836,8 +831,9 @@ public:
 	S32 mNumS;
 	S32 mNumT;
 
-	LLVector3 mExtents[2]; //minimum and maximum point of face
-	LLVector2 mTexCoordExtents[2]; //minimum and maximum of texture coordinates of the face.
+	LLVector4a* mExtents; //minimum and maximum point of face
+	LLVector4a* mCenter;
+	LLVector2   mTexCoordExtents[2]; //minimum and maximum of texture coordinates of the face.
 
 	std::vector<VertexData> mVertices;
 	std::vector<U16>	mIndices;
@@ -898,6 +894,7 @@ public:
 	BOOL isUnique() const									{ return mUnique; }
 
 	S32 getSculptLevel() const                              { return mSculptLevel; }
+	void setSculptLevel(S32 level)							{ mSculptLevel = level; }
 	
 	S32 *getTriangleIndices(U32 &num_indices) const;
 
@@ -922,6 +919,13 @@ public:
 							 LLVector3* normal = NULL,               // return the surface normal at the intersection point
 							 LLVector3* bi_normal = NULL             // return the surface bi-normal at the intersection point
 		);
+
+	S32 lineSegmentIntersect(const LLVector4a& start, const LLVector4a& end, 
+								   S32 face = 1,
+								   LLVector3* intersection = NULL,
+								   LLVector2* tex_coord = NULL,
+								   LLVector3* normal = NULL,
+								   LLVector3* bi_normal = NULL);
 	
 	// The following cleans up vertices and triangles,
 	// getting rid of degenerate triangles and duplicate vertices,
@@ -986,8 +990,15 @@ LLVector3 calc_binormal_from_triangle(
 
 BOOL LLLineSegmentBoxIntersect(const F32* start, const F32* end, const F32* center, const F32* size);
 BOOL LLLineSegmentBoxIntersect(const LLVector3& start, const LLVector3& end, const LLVector3& center, const LLVector3& size);
+BOOL LLLineSegmentBoxIntersect(const LLVector4a& start, const LLVector4a& end, const LLVector4a& center, const LLVector4a& size);
+
 BOOL LLTriangleRayIntersect(const LLVector3& vert0, const LLVector3& vert1, const LLVector3& vert2, const LLVector3& orig, const LLVector3& dir,
-							F32* intersection_a, F32* intersection_b, F32* intersection_t, BOOL two_sided);
+							F32& intersection_a, F32& intersection_b, F32& intersection_t, BOOL two_sided);
+
+BOOL LLTriangleRayIntersect(const LLVector4a& vert0, const LLVector4a& vert1, const LLVector4a& vert2, const LLVector4a& orig, const LLVector4a& dir,
+							F32& intersection_a, F32& intersection_b, F32& intersection_t);
+BOOL LLTriangleRayIntersectTwoSided(const LLVector4a& vert0, const LLVector4a& vert1, const LLVector4a& vert2, const LLVector4a& orig, const LLVector4a& dir,
+							F32& intersection_a, F32& intersection_b, F32& intersection_t);
 	
 	
 

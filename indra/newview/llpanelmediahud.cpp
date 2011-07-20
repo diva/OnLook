@@ -301,7 +301,7 @@ void LLPanelMediaHUD::updateShape()
 		{
 			const LLVolumeFace& vf = volume->getVolumeFace(nodep->getLastSelectedTE());
 
-			const LLVector3* ext = vf.mExtents;
+			const LLVector3* ext = (LLVector3*)vf.mExtents->getF32ptr();
 
 			LLVector3 center = (ext[0]+ext[1])*0.5f;
 			LLVector3 size = (ext[1]-ext[0])*0.5f;

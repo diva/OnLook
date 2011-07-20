@@ -41,6 +41,7 @@
 #include "v4math.h"
 #include "m4math.h"
 #include "v4coloru.h"
+#include "llvector4a.h"
 #include "llquaternion.h"
 #include "xform.h"
 #include "llmemtype.h"
@@ -62,7 +63,6 @@ class LLViewerTexture;
 
 // Can have multiple silhouettes for each object
 const U32 SILHOUETTE_HIGHLIGHT = 0;
-
 
 // All data for new renderer goes into this class.
 class LLDrawable : public LLRefCount
@@ -107,7 +107,7 @@ public:
 	const LLVector3&	  getPosition() const			{ return mXform.getPosition(); }
 	const LLVector3&      getWorldPosition() const		{ return mXform.getPositionW(); }
 	const LLVector3		  getPositionAgent() const;
-	const LLVector3d&	  getPositionGroup() const		{ return mPositionGroup; }
+	const LLVector4a&	  getPositionGroup() const		{ return mPositionGroup; }
 	const LLVector3&	  getScale() const				{ return mCurrentScale; }
 	void				  setScale(const LLVector3& scale) { mCurrentScale = scale; }
 	const LLQuaternion&   getWorldRotation() const		{ return mXform.getWorldRotation(); }
@@ -168,7 +168,7 @@ public:
 		
 	void updateSpecialHoverCursor(BOOL enabled);
 
-	virtual void shiftPos(const LLVector3 &shift_vector);
+	virtual void shiftPos(const LLVector4a &shift_vector);
 
 	S32 getGeneration() const					{ return mGeneration; }
 
@@ -186,11 +186,12 @@ public:
 	const LLVector3& getBounds(LLVector3& min, LLVector3& max) const;
 	virtual void updateSpatialExtents();
 	virtual void updateBinRadius();
-	const LLVector3* getSpatialExtents() const;
-	void setSpatialExtents(LLVector3 min, LLVector3 max);
-	void setPositionGroup(const LLVector3d& pos);
-	void setPositionGroup(const LLVector3& pos) { setPositionGroup(LLVector3d(pos)); }
+	const LLVector4a* getSpatialExtents() const;
+	void setSpatialExtents(const LLVector3& min, const LLVector3& max);
+	void setSpatialExtents(const LLVector4a& min, const LLVector4a& max);
 
+	void setPositionGroup(const LLVector4a& pos);
+	
 	void setRenderType(S32 type) 				{ mRenderType = type; }
 	BOOL isRenderType(S32 type) 				{ return mRenderType == type; }
 	S32  getRenderType()						{ return mRenderType; }
@@ -282,6 +283,11 @@ public:
 		PARTITION_MOVE	= 0x10000000,
 	} EDrawableFlags;
 
+private: //aligned members
+	LLVector4a		mExtents[2];
+	LLVector4a		mPositionGroup;
+	
+public:
 	LLXformMatrix       mXform;
 
 	// vis data
@@ -293,7 +299,7 @@ public:
 
 	static S32 getCurrentFrame() { return sCurVisible; }
 	static S32 getMinVisFrameRange();
-	
+
 	void setSpatialBridge(LLSpatialBridge* bridge) { mSpatialBridge = (LLDrawable*) bridge; }
 	LLSpatialBridge* getSpatialBridge() { return (LLSpatialBridge*) (LLDrawable*) mSpatialBridge; }
 	
@@ -311,8 +317,6 @@ private:
 	
 	mutable U32		mVisible;
 	F32				mRadius;
-	LLVector3		mExtents[2];
-	LLVector3d		mPositionGroup;
 	F32				mBinRadius;
 	S32				mGeneration;
 	

@@ -31,6 +31,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+
+#define LLVIEWERCAMERA_CPP
 #include "llviewercamera.h"
 
 #include <iomanip> // for setprecision
@@ -39,6 +41,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llmatrix4a.h"
 #include "llviewercontrol.h"
 #include "lldrawable.h"
 #include "llface.h"
@@ -760,6 +763,11 @@ BOOL LLViewerCamera::areVertsVisible(LLViewerObject* volumep, BOOL all_verts)
 	
 	LLMatrix4 render_mat(vo_volume->getRenderRotation(), LLVector4(vo_volume->getRenderPosition()));
 
+	LLMatrix4a render_mata;
+	render_mata.loadu(render_mat);
+	LLMatrix4a mata;
+	mata.loadu(mat);
+
 	num_faces = volume->getNumVolumeFaces();
 	for (i = 0; i < num_faces; i++)
 	{
@@ -767,14 +775,18 @@ BOOL LLViewerCamera::areVertsVisible(LLViewerObject* volumep, BOOL all_verts)
 				
 		for (U32 v = 0; v < face.mVertices.size(); v++)
 		{
-			LLVector4 vec = LLVector4(face.mVertices[v].mPosition) * mat;
+			LLVector4a src_vec;
+			src_vec.load3(face.mVertices[v].mPosition.mV);
+			LLVector4a vec;
+			mata.affineTransform(src_vec, vec);
 
 			if (drawablep->isActive())
 			{
-				vec = vec * render_mat;	
+				LLVector4a t = vec;
+				render_mata.affineTransform(t, vec);
 			}
 
-			BOOL in_frustum = pointInFrustum(LLVector3(vec)) > 0;
+			BOOL in_frustum = pointInFrustum(LLVector3(vec.getF32ptr())) > 0;
 
 			if (( !in_frustum && all_verts) ||
 				 (in_frustum && !all_verts))

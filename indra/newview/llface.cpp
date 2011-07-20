@@ -39,6 +39,7 @@
 #include "llviewercontrol.h"
 #include "llvolume.h"
 #include "m3math.h"
+#include "llmatrix4a.h"
 #include "v3color.h"
 
 #include "lldrawpoolbump.h"
@@ -73,35 +74,43 @@ The resulting texture coordinate <u,v> is:
 	u = 2(B dot P)
 	v = 2(T dot P)
 */
-void planarProjection(LLVector2 &tc, const LLVector3& normal,
-					  const LLVector3 &mCenter, const LLVector3& vec)
-{	//DONE!
-	LLVector3 binormal;
-	float d = normal * LLVector3(1,0,0);
+void planarProjection(LLVector2 &tc, const LLVector4a& normal,
+					  const LLVector4a &center, const LLVector4a& vec)
+{	
+	LLVector4a binormal;
+	F32 d = normal[0];
+
 	if (d >= 0.5f || d <= -0.5f)
 	{
-		binormal = LLVector3(0,1,0);
-		if (normal.mV[0] < 0)
+		if (d < 0)
 		{
-			binormal = -binormal;
+			binormal.set(0,-1,0);
+		}
+		else
+		{
+			binormal.set(0, 1, 0);
 		}
 	}
 	else
 	{
-        binormal = LLVector3(1,0,0);
-		if (normal.mV[1] > 0)
+        if (normal[1] > 0)
 		{
-			binormal = -binormal;
+			binormal.set(-1,0,0);
+		}
+		else
+		{
+			binormal.set(1,0,0);
 		}
 	}
-	LLVector3 tangent = binormal % normal;
+	LLVector4a tangent;
+	tangent.setCross3(binormal,normal);
 
-	tc.mV[1] = -((tangent*vec)*2 - 0.5f);
-	tc.mV[0] = 1.0f+((binormal*vec)*2 - 0.5f);
+	tc.mV[1] = -((tangent.dot3(vec).getF32())*2 - 0.5f);
+	tc.mV[0] = 1.0f+((binormal.dot3(vec).getF32())*2 - 0.5f);
 }
 
-void sphericalProjection(LLVector2 &tc, const LLVector3& normal,
-						 const LLVector3 &mCenter, const LLVector3& vec)
+void sphericalProjection(LLVector2 &tc, const LLVector4a& normal,
+						 const LLVector4a &mCenter, const LLVector4a& vec)
 {	//BROKEN
 	/*tc.mV[0] = acosf(vd.mNormal * LLVector3(1,0,0))/3.14159f;
 	
@@ -112,7 +121,7 @@ void sphericalProjection(LLVector2 &tc, const LLVector3& normal,
 	}*/
 }
 
-void cylindricalProjection(LLVector2 &tc, const LLVector3& normal, const LLVector3 &mCenter, const LLVector3& vec)
+void cylindricalProjection(LLVector2 &tc, const LLVector4a& normal, const LLVector4a &mCenter, const LLVector4a& vec)
 {	//BROKEN
 	/*LLVector3 binormal;
 	float d = vd.mNormal * LLVector3(1,0,0);
@@ -687,96 +696,148 @@ static void xform(LLVector2 &tex_coord, F32 cosAng, F32 sinAng, F32 offS, F32 of
 }
 
 
+bool less_than_max_mag(const LLVector4a& vec)
+{
+	LLVector4a MAX_MAG;
+	MAX_MAG.splat(1024.f*1024.f);
+
+	LLVector4a val;
+	val.setAbs(vec);
+
+	S32 lt = val.lessThan(MAX_MAG).getGatheredBits() & 0x7;
+	
+	return lt == 0x7;
+}
+
 BOOL LLFace::genVolumeBBoxes(const LLVolume &volume, S32 f,
-								const LLMatrix4& mat_vert, const LLMatrix3& mat_normal, BOOL global_volume)
+								const LLMatrix4& mat_vert_in, const LLMatrix3& mat_normal_in, BOOL global_volume)
 {
 	LLMemType mt1(LLMemType::MTYPE_DRAWABLE);
 
 	//get bounding box
 	if (mDrawablep->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION))
 	{
+		//VECTORIZE THIS
+		LLMatrix4a mat_vert;
+		mat_vert.loadu(mat_vert_in);
+
+		LLMatrix4a mat_normal;
+		mat_normal.loadu(mat_normal_in);
+
 		//if (mDrawablep->isState(LLDrawable::REBUILD_VOLUME))
 		//{ //vertex buffer no longer valid
 		//	mVertexBuffer = NULL;
 		//	mLastVertexBuffer = NULL;
 		//}
 
-		LLVector3 min,max;
+		//VECTORIZE THIS
+		LLVector4a min,max;
 	
 		if (f >= volume.getNumVolumeFaces())
 		{
-			min = LLVector3(-1,-1,-1);
-			max = LLVector3(1,1,1);
+			llwarns << "Generating bounding box for invalid face index!" << llendl;
+			f = 0;
 		}
-		else
-		{
-			const LLVolumeFace &face = volume.getVolumeFace(f);
-			min = face.mExtents[0];
-			max = face.mExtents[1];
-		}
+
+		const LLVolumeFace &face = volume.getVolumeFace(f);
+		min = face.mExtents[0];
+		max = face.mExtents[1];
+		
+		llassert(less_than_max_mag(min));
+		llassert(less_than_max_mag(max));
 
 		//min, max are in volume space, convert to drawable render space
-		LLVector3 center = ((min + max) * 0.5f)*mat_vert;
-		LLVector3 size = ((max-min) * 0.5f);
+		LLVector4a center;
+		LLVector4a t;
+		t.setAdd(min, max);
+		t.mul(0.5f);
+		mat_vert.affineTransform(t, center);
+		LLVector4a size;
+		size.setSub(max, min);
+		size.mul(0.5f);
+
+		llassert(less_than_max_mag(min));
+		llassert(less_than_max_mag(max));
+
 		if (!global_volume)
 		{
-			size.scaleVec(mDrawablep->getVObj()->getScale());
+			//VECTORIZE THIS
+			LLVector4a scale;
+			scale.load3(mDrawablep->getVObj()->getScale().mV);
+			size.mul(scale);
 		}
 
-		LLMatrix3 mat = mat_normal;
-		LLVector3 x = mat.getFwdRow();
-		LLVector3 y = mat.getLeftRow();
-		LLVector3 z = mat.getUpRow();
-		x.normVec();
-		y.normVec();
-		z.normVec();
-
-		mat.setRows(x,y,z);
-
-		LLQuaternion rotation = LLQuaternion(mat);
+		mat_normal.mMatrix[0].normalize3fast();
+		mat_normal.mMatrix[1].normalize3fast();
+		mat_normal.mMatrix[2].normalize3fast();
 		
-		LLVector3 v[4];
-		//get 4 corners of bounding box
-		v[0] = (size * rotation);
-		v[1] = (LLVector3(-size.mV[0], -size.mV[1], size.mV[2]) * rotation);
-		v[2] = (LLVector3(size.mV[0], -size.mV[1], -size.mV[2]) * rotation);
-		v[3] = (LLVector3(-size.mV[0], size.mV[1], -size.mV[2]) * rotation);
+		LLVector4a v[4];
 
-		LLVector3& newMin = mExtents[0];
-		LLVector3& newMax = mExtents[1];
+		//get 4 corners of bounding box
+		mat_normal.rotate(size,v[0]);
+
+		//VECTORIZE THIS
+		LLVector4a scale;
+		
+		scale.set(-1.f, -1.f, 1.f);
+		scale.mul(size);
+		mat_normal.rotate(scale, v[1]);
+		
+		scale.set(1.f, -1.f, -1.f);
+		scale.mul(size);
+		mat_normal.rotate(scale, v[2]);
+		
+		scale.set(-1.f, 1.f, -1.f);
+		scale.mul(size);
+		mat_normal.rotate(scale, v[3]);
+
+		LLVector4a& newMin = mExtents[0];
+		LLVector4a& newMax = mExtents[1];
 		
 		newMin = newMax = center;
 		
+		llassert(less_than_max_mag(center));
+		
 		for (U32 i = 0; i < 4; i++)
 		{
-			for (U32 j = 0; j < 3; j++)
-			{
-				F32 delta = fabsf(v[i].mV[j]);
-				F32 min = center.mV[j] - delta;
-				F32 max = center.mV[j] + delta;
-				
-				if (min < newMin.mV[j])
-				{
-					newMin.mV[j] = min;
-				}
-				
-				if (max > newMax.mV[j])
-				{
-					newMax.mV[j] = max;
-				}
-			}
+			LLVector4a delta;
+			delta.setAbs(v[i]);
+			LLVector4a min;
+			min.setSub(center, delta);
+			LLVector4a max;
+			max.setAdd(center, delta);
+
+			newMin.setMin(newMin,min);
+			newMax.setMax(newMax,max);
+
+			llassert(less_than_max_mag(newMin));
+			llassert(less_than_max_mag(newMax));
 		}
 
 		if (!mDrawablep->isActive())
 		{
-			LLVector3 offset = mDrawablep->getRegion()->getOriginAgent();
-			newMin += offset;
-			newMax += offset;
+			LLVector4a offset;
+			offset.load3(mDrawablep->getRegion()->getOriginAgent().mV);
+			newMin.add(offset);
+			newMax.add(offset);
+			
+			llassert(less_than_max_mag(newMin));
+			llassert(less_than_max_mag(newMax));
 		}
 
-		mCenterLocal = (newMin+newMax)*0.5f;
-		LLVector3 tmp = (newMin - newMax) ;
-		mBoundingSphereRadius = tmp.length() * 0.5f ;
+		t.setAdd(newMin, newMax);
+		t.mul(0.5f);
+
+		llassert(less_than_max_mag(t));
+		
+		//VECTORIZE THIS
+		mCenterLocal.set(t.getF32ptr());
+		
+		llassert(less_than_max_mag(newMin));
+		llassert(less_than_max_mag(newMax));
+
+		t.setSub(newMax,newMin);
+		mBoundingSphereRadius = t.getLength3().getF32()*0.5f;
 
 		updateCenterAgent();
 	}
@@ -803,18 +864,26 @@ LLVector2 LLFace::surfaceToTexture(LLVector2 surface_coord, LLVector3 position, 
 		return surface_coord;
 	}
 
+	//VECTORIZE THIS
 	// see if we have a non-default mapping
     U8 texgen = getTextureEntry()->getTexGen();
 	if (texgen != LLTextureEntry::TEX_GEN_DEFAULT)
 	{
-		LLVector3 center = mDrawablep->getVOVolume()->getVolume()->getVolumeFace(mTEOffset).mCenter;
+		LLVector4a& center = *(mDrawablep->getVOVolume()->getVolume()->getVolumeFace(mTEOffset).mCenter);
 		
-		LLVector3 scale  = (mDrawablep->getVOVolume()->isVolumeGlobal()) ? LLVector3(1,1,1) : mVObjp->getScale();
-		LLVector3 volume_position = mDrawablep->getVOVolume()->agentPositionToVolume(position);
-		volume_position.scaleVec(scale);
+		LLVector4a volume_position;
+		volume_position.load3(mDrawablep->getVOVolume()->agentPositionToVolume(position).mV);
 		
-		LLVector3 volume_normal   = mDrawablep->getVOVolume()->agentDirectionToVolume(normal);
-		volume_normal.normalize();
+		if (!mDrawablep->getVOVolume()->isVolumeGlobal())
+		{
+			LLVector4a scale;
+			scale.load3(mVObjp->getScale().mV);
+			volume_position.mul(scale);
+		}
+		
+		LLVector4a volume_normal;
+		volume_normal.load3(mDrawablep->getVOVolume()->agentDirectionToVolume(normal).mV);
+		volume_normal.normalize3fast();
 		
 		switch (texgen)
 		{
@@ -855,17 +924,23 @@ void LLFace::getPlanarProjectedParams(LLQuaternion* face_rot, LLVector3* face_po
 {
 	const LLMatrix4& vol_mat = getWorldMatrix();
 	const LLVolumeFace& vf = getViewerObject()->getVolume()->getVolumeFace(mTEOffset);
-	LLVector3 normal = vf.mVertices[0].mNormal;
-	LLVector3 binormal = vf.mVertices[0].mBinormal;
+	LLVector4a normal4a; 
+	normal4a.load3(vf.mVertices[0].mNormal.mV);
+	LLVector4a binormal4a;
+	binormal4a.load3(vf.mVertices[0].mNormal.mV);
 	LLVector2 projected_binormal;
-	planarProjection(projected_binormal, normal, vf.mCenter, binormal);
+	planarProjection(projected_binormal, normal4a, *vf.mCenter, binormal4a);
 	projected_binormal -= LLVector2(0.5f, 0.5f); // this normally happens in xform()
 	*scale = projected_binormal.length();
 	// rotate binormal to match what planarProjection() thinks it is,
-	// then find face's rotation from normal and rotated binormal:
+	// then find rotation from that:
 	projected_binormal.normalize();
 	F32 ang = acos(projected_binormal.mV[VY]);
 	ang = (projected_binormal.mV[VX] < 0.f) ? -ang : ang;
+
+	//VECTORIZE THIS
+	LLVector3 binormal(binormal4a.getF32ptr());
+	LLVector3 normal(normal4a.getF32ptr());
 	binormal.rotVec(ang, normal);
 	LLQuaternion local_rot( binormal % normal, binormal, normal );
 	*face_rot = local_rot * vol_mat.quaternion();
@@ -967,7 +1042,8 @@ bool LLFace::canRenderAsMask()
 BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 							   const S32 &f,
 								const LLMatrix4& mat_vert, const LLMatrix3& mat_normal,
-								const U16 &index_offset)
+								const U16 &index_offset,
+								bool force_rebuild)
 {
 	llassert(verify());
 	const LLVolumeFace &vf = volume.getVolumeFace(f);
@@ -1220,6 +1296,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		mVObjp->getVolume()->genBinormals(f);
 	}
 
+	LLVector4a scalea;
+	scalea.load3(scale.mV);
+
 	for (S32 i = 0; i < num_vertices; i++)
 	{
 		if (rebuild_tcoord)
@@ -1228,20 +1307,22 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		
 			if (texgen != LLTextureEntry::TEX_GEN_DEFAULT)
 			{
-				LLVector3 vec = vf.mVertices[i].mPosition; 
-			
-				vec.scaleVec(scale);
+				LLVector4a vec;
+				vec.load3(vf.mVertices[i].mPosition.mV); 
+				vec.mul(scalea);
+				LLVector4a norm;
+				norm.load3(vf.mVertices[i].mNormal.mV);
 
 				switch (texgen)
 				{
 					case LLTextureEntry::TEX_GEN_PLANAR:
-						planarProjection(tc, vf.mVertices[i].mNormal, vf.mCenter, vec);
+						planarProjection(tc, norm, *(vf.mCenter), vec);
 						break;
 					case LLTextureEntry::TEX_GEN_SPHERICAL:
-						sphericalProjection(tc, vf.mVertices[i].mNormal, vf.mCenter, vec);
+						sphericalProjection(tc, norm, *(vf.mCenter), vec);
 						break;
 					case LLTextureEntry::TEX_GEN_CYLINDRICAL:
-						cylindricalProjection(tc, vf.mVertices[i].mNormal, vf.mCenter, vec);
+						cylindricalProjection(tc, norm, *(vf.mCenter), vec);
 						break;
 					default:
 						break;
@@ -1386,20 +1467,32 @@ F32 LLFace::getTextureVirtualSize()
 
 BOOL LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 {
+	//VECTORIZE THIS
 	//get area of circle around face
-	LLVector3 center = getPositionAgent();
-	LLVector3 size = (mExtents[1] - mExtents[0]) * 0.5f;
+	LLVector4a center;
+	center.load3(getPositionAgent().mV);
+	LLVector4a size;
+	size.setSub(mExtents[1], mExtents[0]);
+	size.mul(0.5f);
+
 	LLViewerCamera* camera = LLViewerCamera::getInstance();
-	
-	F32 size_squared = size.lengthSquared() ;
-	LLVector3 lookAt = center - camera->getOrigin();
-	F32 dist = lookAt.normVec() ;
+
+	F32 size_squared = size.dot3(size).getF32();
+	LLVector4a lookAt;
+	LLVector4a t;
+	t.load3(camera->getOrigin().mV);
+	lookAt.setSub(center, t);
+	F32 dist = lookAt.getLength3().getF32();
+	dist = llmax(dist-size.getLength3().getF32(), 0.f);
+	lookAt.normalize3fast() ;	
 
 	//get area of circle around node
-	F32 app_angle = atanf(fsqrtf(size_squared) / dist);
+	F32 app_angle = atanf((F32) sqrt(size_squared) / dist);
 	radius = app_angle*LLDrawable::sCurPixelAngle;
 	mPixelArea = radius*radius * 3.14159f;
-	cos_angle_to_view_dir = lookAt * camera->getXAxis();
+	LLVector4a x_axis;
+	x_axis.load3(camera->getXAxis().mV);
+	cos_angle_to_view_dir = lookAt.dot3(x_axis).getF32();
 
 	if(dist < mBoundingSphereRadius) //camera is very close
 	{

@@ -35,6 +35,7 @@
 
 #include "lltreenode.h"
 #include "v3math.h"
+#include "llvector4a.h"
 #include <vector>
 #include <set>
 
@@ -85,6 +86,7 @@ template <class T>
 class LLOctreeNode : public LLTreeNode<T>
 {
 public:
+
 	typedef LLOctreeTraveler<T>									oct_traveler;
 	typedef LLTreeTraveler<T>									tree_traveler;
 	typedef typename std::set<LLPointer<T> >					element_list;
@@ -174,7 +176,7 @@ public:
 		{
 			return false;
 		}
-		
+
 		return true;
 	}
 	

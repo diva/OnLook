@@ -56,6 +56,7 @@
 #include "llflexibleobject.h"
 #include "llsky.h"
 #include "lltexturefetch.h"
+#include "llvector4a.h"
 #include "llviewercamera.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
@@ -509,7 +510,7 @@ void LLVOVolume::updateTextureVirtualSize()
 		const LLTextureEntry *te = face->getTextureEntry();
 		LLViewerTexture *imagep = face->getTexture();
 		if (!imagep || !te ||			
-			face->mExtents[0] == face->mExtents[1])
+			face->mExtents[0].equals3(face->mExtents[1]))
 		{
 			continue;
 		}
@@ -1066,10 +1067,14 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 {
 	BOOL res = TRUE;
 
-	LLVector3 min,max;
+	LLVector4a min,max;
+
+	min.clear();
+	max.clear();
 
 	BOOL rebuild = mDrawable->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION);
 
+	LLVolume* volume = getVolume();
 	for (S32 i = 0; i < getVolume()->getNumFaces(); i++)
 	{
 		LLFace *face = mDrawable->getFace(i);
@@ -1077,7 +1082,7 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 		{
 			continue;
 		}
-		res &= face->genVolumeBBoxes(*getVolume(), i,
+		res &= face->genVolumeBBoxes(*volume, i,
 										mRelativeXform, mRelativeXformInvTrans,
 										(mVolumeImpl && mVolumeImpl->isVolumeGlobal()) || force_global);
 		
@@ -1090,17 +1095,8 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 			}
 			else
 			{
-				for (U32 i = 0; i < 3; i++)
-				{
-					if (face->mExtents[0].mV[i] < min.mV[i])
-					{
-						min.mV[i] = face->mExtents[0].mV[i];
-					}
-					if (face->mExtents[1].mV[i] > max.mV[i])
-					{
-						max.mV[i] = face->mExtents[1].mV[i];
-					}
-				}
+				min.setMin(min, face->mExtents[0]);
+				max.setMax(max, face->mExtents[1]);
 			}
 		}
 	}
@@ -1108,7 +1104,9 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 	if (rebuild)
 	{
 		mDrawable->setSpatialExtents(min,max);
-		mDrawable->setPositionGroup((min+max)*0.5f);	
+		min.add(max);
+		min.mul(0.5f);
+		mDrawable->setPositionGroup(min);	
 	}
 
 	updateRadius();
@@ -1339,12 +1337,12 @@ void LLVOVolume::updateFaceSize(S32 idx)
 	LLFace* facep = mDrawable->getFace(idx);
 	if (idx >= getVolume()->getNumVolumeFaces())
 	{
-		facep->setSize(0,0);
+		facep->setSize(0,0, true);
 	}
 	else
 	{
 		const LLVolumeFace& vol_face = getVolume()->getVolumeFace(idx);
-		facep->setSize(vol_face.mVertices.size(), vol_face.mIndices.size());
+		facep->setSize(vol_face.mVertices.size(), vol_face.mIndices.size(),true);
 	}
 }
 
@@ -2072,7 +2070,7 @@ void LLVOVolume::setSelected(BOOL sel)
 	}
 }
 
-void LLVOVolume::updateSpatialExtents(LLVector3& newMin, LLVector3& newMax)
+void LLVOVolume::updateSpatialExtents(LLVector4a& min, LLVector4a& max)
 {		
 }
 
@@ -2090,7 +2088,7 @@ F32 LLVOVolume::getBinRadius()
 	const S32 attachment_size_factor = llmax(size_factor_setting.get(),1);
 	const LLVector3& distance_factor = distance_factor_setting;
 	const LLVector3& alpha_distance_factor = alpha_distance_factor_setting;
-	const LLVector3* ext = mDrawable->getSpatialExtents();
+	const LLVector4a* ext = mDrawable->getSpatialExtents();
 	
 	BOOL shrink_wrap = mDrawable->isAnimating();
 	BOOL alpha_wrap = FALSE;
@@ -2124,7 +2122,10 @@ F32 LLVOVolume::getBinRadius()
 	}
 	else if (shrink_wrap)
 	{
-		radius = (ext[1]-ext[0]).length()*0.5f;
+		LLVector4a rad;
+		rad.setSub(ext[1], ext[0]);
+		
+		radius = rad.getLength3().getF32()*0.5f;
 	}
 	else if (mDrawable->isStatic())
 	{
@@ -2155,7 +2156,7 @@ const LLVector3 LLVOVolume::getPivotPositionAgent() const
 	return LLViewerObject::getPivotPositionAgent();
 }
 
-void LLVOVolume::onShift(const LLVector3 &shift_vector)
+void LLVOVolume::onShift(const LLVector4a &shift_vector)
 {
 	if (mVolumeImpl)
 	{
@@ -2927,7 +2928,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			{
 				facep->updateRebuildFlags();
 				if (!LLPipeline::sDelayVBUpdate)
-				{
+				{ //copy face geometry into vertex buffer
 					LLDrawable* drawablep = facep->getDrawable();
 					LLVOVolume* vobj = drawablep->getVOVolume();
 					LLVolume* volume = vobj->getVolume();
@@ -3122,7 +3123,7 @@ void LLGeometryManager::addGeometryCount(LLSpatialGroup* group, U32 &vertex_coun
 			{
 				vertex_count += facep->getGeomCount();
 				index_count += facep->getIndicesCount();
-
+				llassert(facep->getIndicesCount() < 65536);
 				//remember face (for sorting)
 				mFaceList.push_back(facep);
 			}
@@ -3144,7 +3145,7 @@ LLHUDPartition::LLHUDPartition()
 	mLODPeriod = 1;
 }
 
-void LLHUDPartition::shift(const LLVector3 &offset)
+void LLHUDPartition::shift(const LLVector4a &offset)
 {
 	//HUD objects don't shift with region crossing.  That would be silly.
 }

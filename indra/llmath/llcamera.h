@@ -37,6 +37,7 @@
 #include "llmath.h"
 #include "llcoordframe.h"
 #include "llplane.h"
+#include "llvector4a.h"
 
 const F32 DEFAULT_FIELD_OF_VIEW 	= 60.f * DEG_TO_RAD;
 const F32 DEFAULT_ASPECT_RATIO 		= 640.f / 480.f;
@@ -143,7 +144,7 @@ public:
 	virtual ~LLCamera();
 	
 
-	void setUserClipPlane(LLPlane const& plane);
+	void setUserClipPlane(LLPlane& plane);
 	void disableUserClipPlane();
 	virtual void setView(F32 vertical_fov_rads);
 	void setViewHeightInPixels(S32 height);
