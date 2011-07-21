@@ -40,7 +40,7 @@
 #include "llglheaders.h"
 #include "llmemtype.h"
 #include "llrender.h"
-
+#include "llvector4a.h"
 #include "llcontrol.h"
 
 //============================================================================
@@ -488,6 +488,8 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 
 	mTypeMask = typemask;
 	mStride = stride;
+	mAlignedOffset = 0;
+	mAlignedIndexOffset = 0;
 	sCount++;
 }
 
@@ -619,8 +621,8 @@ void LLVertexBuffer::createGLBuffer()
 	else
 	{
 		static int gl_buffer_idx = 0;
-		mGLBuffer = ++gl_buffer_idx;
-		mMappedData = new U8[size];
+		mGLBuffer = ++gl_buffer_idx;	
+		mMappedData = (U8*) ll_aligned_malloc_16(size);
 		if(!sOmitBlank) memset((void*)mMappedData, 0, size);
 	}
 }
@@ -642,15 +644,20 @@ void LLVertexBuffer::createGLIndices()
 
 	mEmpty = TRUE;
 
+	//pad by 16 bytes for aligned copies
+	size += 16;
+
 	if (useVBOs())
 	{
+		//pad by another 16 bytes for VBO pointer adjustment
+		size += 16;
 		mMappedIndexData = NULL;
 		genIndices();
 		mResized = TRUE;
 	}
 	else
 	{
-		mMappedIndexData = new U8[size];
+		mMappedIndexData = (U8*) ll_aligned_malloc_16(size);
 		if(!sOmitBlank) memset((void*)mMappedIndexData, 0, size);
 		static int gl_buffer_idx = 0;
 		mGLIndices = ++gl_buffer_idx;
@@ -674,7 +681,7 @@ void LLVertexBuffer::destroyGLBuffer()
 		}
 		else
 		{
-			delete [] mMappedData;
+			ll_aligned_free_16((void*)mMappedData);
 			mMappedData = NULL;
 			mEmpty = TRUE;
 		}
@@ -703,7 +710,7 @@ void LLVertexBuffer::destroyGLIndices()
 		}
 		else
 		{
-			delete [] mMappedIndexData;
+			ll_aligned_free_16((void*)mMappedIndexData);
 			mMappedIndexData = NULL;
 			mEmpty = TRUE;
 		}
@@ -728,7 +735,7 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 	}
 
 	mRequestedNumVerts = nverts;
-	
+
 	if (!mDynamicSize)
 	{
 		mNumVerts = nverts;
@@ -779,6 +786,7 @@ void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 	{
 		llerrs << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
 	}
+
 	updateNumVerts(nverts);
 	updateNumIndices(nindices);
 	
@@ -840,7 +848,7 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 				if (!useVBOs())
 				{
 					volatile U8* old = mMappedData;
-					mMappedData = new U8[newsize];
+					mMappedData =  (U8*) ll_aligned_malloc_16(newsize);
 					if (old)
 					{	
 						memcpy((void*)mMappedData, (void*)old, llmin(newsize, oldsize));
@@ -849,7 +857,7 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 							memset((void*)(mMappedData+oldsize), 0, newsize-oldsize);
 						}
 
-						delete [] old;
+						ll_aligned_free_16((void*)old);
 					}
 					else
 					{
@@ -877,7 +885,7 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 				{
 					//delete old buffer, keep GL buffer for now
 					volatile U8* old = mMappedIndexData;
-					mMappedIndexData = new U8[new_index_size];
+					mMappedIndexData = (U8*) ll_aligned_malloc_16(new_index_size);
 					
 					if (old)
 					{	
@@ -886,7 +894,7 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 						{
 							memset((void*)(mMappedIndexData+old_index_size), 0, new_index_size - old_index_size);
 						}
-						delete [] old;
+						ll_aligned_free_16((void*)old);
 					}
 					else
 					{
@@ -924,8 +932,8 @@ void LLVertexBuffer::freeClientBuffer()
 {
 	if(useVBOs() && sDisableVBOMapping && (mMappedData || mMappedIndexData))
 	{
-		delete[] mMappedData ;
-		delete[] mMappedIndexData ;
+		ll_aligned_free_16((void*)mMappedData) ;
+		ll_aligned_free_16((void*)mMappedIndexData) ;
 		mMappedData = NULL ;
 		mMappedIndexData = NULL ;
 	}
@@ -935,9 +943,8 @@ void LLVertexBuffer::allocateClientVertexBuffer()
 {
 	if(!mMappedData)
 	{
-		U32 size = getSize() ;
-		mMappedData = new U8[size];
-		memset((void*)mMappedData, 0, size);
+		mMappedData = (U8*)ll_aligned_malloc_16(getSize());
+		if (!sOmitBlank) memset((void*)mMappedData, 0, getSize());
 	}
 }
 
@@ -945,9 +952,8 @@ void LLVertexBuffer::allocateClientIndexBuffer()
 {
 	if(!mMappedIndexData)
 	{
-		U32 size = getIndicesSize();
-		mMappedIndexData = new U8[size];
-		memset((void*)mMappedIndexData, 0, size);
+		mMappedIndexData = (U8*)ll_aligned_malloc_16(getIndicesSize());
+		if (!sOmitBlank) memset((void*)mMappedIndexData, 0, getIndicesSize());
 	}
 }
 
@@ -977,7 +983,12 @@ volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 access)
 			}
 			else
 			{
-				mMappedData = (U8*) glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+				U8* src = NULL;
+				{
+					src = (U8*) glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+				}
+				mMappedData = LL_NEXT_ALIGNED_ADDRESS<U8>(src);
+				mAlignedOffset = mMappedData - src;
 			}
 			stop_glerror();
 		}
@@ -1049,7 +1060,13 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 access)
 			}
 			else
 			{
-				mMappedIndexData = (U8*) glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+				U8* src = NULL;
+				{
+					src = (U8*) glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+				}
+
+				mMappedIndexData = src; //LL_NEXT_ALIGNED_ADDRESS<U8>(src);
+				mAlignedIndexOffset = mMappedIndexData - src;
 				stop_glerror();
 			}
 		}
@@ -1165,29 +1182,30 @@ template <class T,S32 type> struct VertexBufferStrider
 	{
 		if (type == LLVertexBuffer::TYPE_INDEX)
 		{
-			S32 stride = sizeof(T);
+			volatile U8* ptr = vbo.mapIndexBuffer();
 
-			if (vbo.mapIndexBuffer() == NULL)
+			if (ptr == NULL)
 			{
 				llwarns << "mapIndexBuffer failed!" << llendl;
 				return FALSE;
 			}
 
-			strider = (T*)(vbo.getMappedIndices() + index*stride);
+			strider = (T*)(ptr + index*sizeof(T));
 			strider.setStride(0);
 			return TRUE;
 		}
 		else if (vbo.hasDataType(type))
 		{
 			S32 stride = vbo.getStride();
+			volatile U8* ptr = vbo.mapVertexBuffer(type);
 
-			if (vbo.mapVertexBuffer(type) == NULL)
+			if (ptr == NULL)
 			{
 				llwarns << "mapVertexBuffer failed!" << llendl;
 				return FALSE;
 			}
 
-			strider = (T*)(vbo.getMappedData() + vbo.getOffset(type) + index*stride);
+			strider = (T*)(ptr + vbo.getOffset(type) + index*stride);
 			strider.setStride(stride);
 			return TRUE;
 		}
@@ -1466,7 +1484,7 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	stop_glerror();
-	volatile U8* base = useVBOs() ? NULL : mMappedData;
+	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
 	S32 stride = mStride;
 
 	if ((data_mask & mTypeMask) != data_mask)

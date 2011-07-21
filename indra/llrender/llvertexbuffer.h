@@ -228,6 +228,8 @@ protected:
 	S32		mRequestedNumVerts;  // Number of vertices requested
 	S32		mRequestedNumIndices;  // Number of indices requested
 
+	ptrdiff_t mAlignedOffset;
+	ptrdiff_t mAlignedIndexOffset;
 	S32		mStride;
 	U32		mTypeMask;
 	S32		mUsage;			// GL usage
@@ -272,7 +274,7 @@ public:
 	static S32 sTypeOffsets[TYPE_MAX];
 	static U32 sGLMode[LLRender::NUM_MODES];
 	static U32 sGLRenderBuffer;
-	static U32 sGLRenderIndices;	
+	static U32 sGLRenderIndices;
 	static BOOL sVBOActive;
 	static BOOL sIBOActive;
 	static U32 sLastMask;
