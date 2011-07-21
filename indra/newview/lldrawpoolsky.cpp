@@ -70,6 +70,7 @@ void LLDrawPoolSky::prerender()
 void LLDrawPoolSky::render(S32 pass)
 {
 	gGL.flush();
+
 	if (mDrawFace.empty())
 	{
 		return;

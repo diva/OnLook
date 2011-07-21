@@ -81,6 +81,7 @@ public:
 		llerrs << "Illegal operation!" << llendl;
 		return *this;
 	}
+
 	static LLVBOPool sStreamVBOPool;
 	static LLVBOPool sDynamicVBOPool;
 	static LLVBOPool sStreamIBOPool;
@@ -91,11 +92,12 @@ public:
 	static BOOL	sUseStreamDraw;
 	static BOOL sOmitBlank;
 	static BOOL	sPreferStreamDraw;
-	
+
 	static void initClass(bool use_vbo, bool no_vbo_mapping);
 	static void cleanupClass();
 	static void setupClientArrays(U32 data_mask);
 	static void drawArrays(U32 mode, const std::vector<LLVector3>& pos, const std::vector<LLVector3>& norm);
+
  	static void clientCopy(F64 max_time = 0.005); //copy data from client to GL
 	static void unbind(); //unbind any bound vertex buffer
 
@@ -197,8 +199,8 @@ public:
 	S32 getRequestedVerts() const			{ return mRequestedNumVerts; }
 	S32 getRequestedIndices() const			{ return mRequestedNumIndices; }
 
-	volatile U8* getIndicesPointer() const			{ return useVBOs() ? NULL : mMappedIndexData; }
-	volatile U8* getVerticesPointer() const			{ return useVBOs() ? NULL : mMappedData; }
+	volatile U8* getIndicesPointer() const			{ return useVBOs() ? (U8*) mAlignedIndexOffset : mMappedIndexData; }
+	volatile U8* getVerticesPointer() const			{ return useVBOs() ? (U8*) mAlignedOffset : mMappedData; }
 	S32 getStride() const					{ return mStride; }
 	S32 getTypeMask() const					{ return mTypeMask; }
 	BOOL hasDataType(S32 type) const		{ return ((1 << type) & getTypeMask()) ? TRUE : FALSE; }
@@ -246,21 +248,6 @@ protected:
 	BOOL	mDynamicSize;	// if TRUE, buffer has been resized at least once (and should be padded)
 	S32		mOffsets[TYPE_MAX];
 
-	class DirtyRegion
-	{
-	public:
-		U32 mIndex;
-		U32 mCount;
-		U32 mIndicesIndex;
-		U32 mIndicesCount;
-
-		DirtyRegion(U32 vi, U32 vc, U32 ii, U32 ic)
-			: mIndex(vi), mCount(vc), mIndicesIndex(ii), mIndicesCount(ic)
-		{ }	
-	};
-
-	std::vector<DirtyRegion> mDirtyRegions; //vector of dirty regions to rebuild
-
 public:
 	static S32 sCount;
 	static S32 sGLCount;
@@ -271,7 +258,7 @@ public:
 		
 	static BOOL sDisableVBOMapping; //disable glMapBufferARB
 	static BOOL sEnableVBOs;
-	static S32 sTypeOffsets[TYPE_MAX];
+	static S32 sTypeSize[TYPE_MAX];
 	static U32 sGLMode[LLRender::NUM_MODES];
 	static U32 sGLRenderBuffer;
 	static U32 sGLRenderIndices;

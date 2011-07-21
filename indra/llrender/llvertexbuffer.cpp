@@ -88,7 +88,7 @@ void LLVBOPool::releaseName(GLuint name)
 }
 
 
-S32 LLVertexBuffer::sTypeOffsets[LLVertexBuffer::TYPE_MAX] =
+S32 LLVertexBuffer::sTypeSize[LLVertexBuffer::TYPE_MAX] =
 {
 	sizeof(LLVector4), // TYPE_VERTEX,
 	sizeof(LLVector4), // TYPE_NORMAL,
@@ -506,7 +506,7 @@ S32 LLVertexBuffer::calcStride(const U32& typemask, S32* offsets)
 			{
 				offsets[i] = stride;
 			}
-			stride += sTypeOffsets[i];
+			stride += sTypeSize[i];
 		}
 	}
 
@@ -690,7 +690,7 @@ void LLVertexBuffer::destroyGLBuffer()
 	}
 	
 	mGLBuffer = 0;
-	unbind();
+	//unbind();
 }
 
 void LLVertexBuffer::destroyGLIndices()
@@ -719,7 +719,7 @@ void LLVertexBuffer::destroyGLIndices()
 	}
 
 	mGLIndices = 0;
-	unbind();
+	//unbind();
 }
 
 void LLVertexBuffer::updateNumVerts(S32 nverts)
@@ -1277,7 +1277,7 @@ void LLVertexBuffer::setStride(S32 type, S32 new_stride)
 		llerrs << "LLVertexBuffer::setOffset called with mNumVerts = " << mNumVerts << llendl;
 	}
 	// This code assumes that setStride() will only be called once per VBO per type.
-	S32 delta = new_stride - sTypeOffsets[type];
+	S32 delta = new_stride - sTypeSize[type];
 	for (S32 i=type+1; i<TYPE_MAX; i++)
 	{
 		if (mTypeMask & (1<<i))
