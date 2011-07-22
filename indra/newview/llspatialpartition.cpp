@@ -2378,9 +2378,8 @@ void pushVerts(LLVolume* volume)
 	for (S32 i = 0; i < volume->getNumVolumeFaces(); ++i)
 	{
 		const LLVolumeFace& face = volume->getVolumeFace(i);
-		glVertexPointer(3, GL_FLOAT, 16, face.mVertices[i].mPosition.mV);
-		//This probably doesn't work.
-		glDrawElements(GL_TRIANGLES, face.mIndices.size(), GL_UNSIGNED_SHORT, (GLvoid*)face.mIndices[i]);
+		glVertexPointer(3, GL_FLOAT, 16, face.mPositions);
+		glDrawElements(GL_TRIANGLES, face.mNumIndices, GL_UNSIGNED_SHORT, face.mIndices);
 	}
 }
 

@@ -40,8 +40,13 @@ class LLPathParams;
 class LLVolumeParams;
 class LLProfile;
 class LLPath;
+
+template <class T> class LLOctreeNode;
+
+class LLVector4a;
 class LLVolumeFace;
 class LLVolume;
+class LLVolumeTriangle;
 
 #include "lldarray.h"
 #include "lluuid.h"
@@ -800,20 +805,84 @@ class LLVolumeFace
 public:
 	class VertexData
 	{
+		enum 
+		{
+			POSITION = 0,
+			NORMAL = 1
+		};
+
+	private:
+		void init();
 	public:
-		LLVector3 mPosition;
-		LLVector3 mNormal;
-		LLVector3 mBinormal;
+		VertexData();
+		VertexData(const VertexData& rhs);
+		const VertexData& operator=(const VertexData& rhs);
+
+		~VertexData();
+		LLVector4a& getPosition();
+		LLVector4a& getNormal();
+		const LLVector4a& getPosition() const;
+		const LLVector4a& getNormal() const;
+		void setPosition(const LLVector4a& pos);
+		void setNormal(const LLVector4a& norm);
+		
+
 		LLVector2 mTexCoord;
+
+		bool operator<(const VertexData& rhs) const;
+		bool operator==(const VertexData& rhs) const;
+		bool compareNormal(const VertexData& rhs, F32 angle_cutoff) const;
+
+	private:
+		LLVector4a* mData;
 	};
+
 	LLVolumeFace();
 	LLVolumeFace(const LLVolumeFace& src);
 	LLVolumeFace& operator=(const LLVolumeFace& rhs);
 
 	~LLVolumeFace();
+private:
+	void freeData();
+public:
+
 	BOOL create(LLVolume* volume, BOOL partial_build = FALSE);
 	void createBinormals();
+	
+	void appendFace(const LLVolumeFace& face, LLMatrix4& transform, LLMatrix4& normal_tranform);
 
+	void resizeVertices(S32 num_verts);
+	void allocateBinormals(S32 num_verts);
+	void resizeIndices(S32 num_indices);
+	void fillFromLegacyData(std::vector<LLVolumeFace::VertexData>& v, std::vector<U16>& idx);
+
+	void pushVertex(const VertexData& cv);
+	void pushVertex(const LLVector4a& pos, const LLVector4a& norm, const LLVector2& tc);
+	void pushIndex(const U16& idx);
+
+	void swapData(LLVolumeFace& rhs);
+
+	void getVertexData(U16 indx, LLVolumeFace::VertexData& cv);
+
+	class VertexMapData : public LLVolumeFace::VertexData
+	{
+	public:
+		U16 mIndex;
+
+		bool operator==(const LLVolumeFace::VertexData& rhs) const;
+
+		struct ComparePosition
+		{
+			bool operator()(const LLVector3& a, const LLVector3& b) const;
+		};
+
+		typedef std::map<LLVector3, std::vector<VertexMapData>, VertexMapData::ComparePosition > PointMap;
+	};
+
+	void optimize(F32 angle_cutoff = 2.f);
+	void cacheOptimize();
+
+	void createOctree(F32 scaler = 0.25f, const LLVector4a& center = LLVector4a(0,0,0), const LLVector4a& size = LLVector4a(0.5f,0.5f,0.5f));
 
 	enum
 	{
@@ -833,7 +902,6 @@ public:
 public:
 	S32 mID;
 	U32 mTypeMask;
-	BOOL mHasBinormals;
 
 	// Only used for INNER/OUTER faces
 	S32 mBeginS;
@@ -845,9 +913,17 @@ public:
 	LLVector4a* mCenter;
 	LLVector2   mTexCoordExtents[2]; //minimum and maximum of texture coordinates of the face.
 
-	std::vector<VertexData> mVertices;
-	std::vector<U16>	mIndices;
+	S32 mNumVertices;
+	S32 mNumIndices;
+
+	LLVector4a* mPositions;
+	LLVector4a* mNormals;
+	LLVector4a* mBinormals;
+	LLVector2*  mTexCoords;
+	U16* mIndices;
+
 	std::vector<S32>	mEdge;
+	LLOctreeNode<LLVolumeTriangle>* mOctree;
 
 private:
 	BOOL createUnCutCubeCap(LLVolume* volume, BOOL partial_build = FALSE);
@@ -882,7 +958,7 @@ public:
 	
 	U8 getProfileType()	const								{ return mParams.getProfileParams().getCurveType(); }
 	U8 getPathType() const									{ return mParams.getPathParams().getCurveType(); }
-	S32	getNumFaces() const									{ return (S32)mProfilep->mFaces.size(); }
+	S32	getNumFaces() const;
 	S32 getNumVolumeFaces() const							{ return mVolumeFaces.size(); }
 	F32 getDetail() const									{ return mDetail; }
 	const LLVolumeParams& getParams() const					{ return mParams; }
@@ -965,6 +1041,9 @@ public:
 	LLVector3			mLODScaleBias;		// vector for biasing LOD based on scale
 	
 	void sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components, const U8* sculpt_data, S32 sculpt_level);
+	void copyVolumeFaces(const LLVolume* volume);
+	void cacheOptimize();
+
 private:
 	void sculptGenerateMapVertices(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components, const U8* sculpt_data, U8 sculpt_type);
 	F32 sculptGetSurfaceArea();
@@ -993,12 +1072,13 @@ protected:
 
 std::ostream& operator<<(std::ostream &s, const LLVolumeParams &volume_params);
 
-LLVector3 calc_binormal_from_triangle(
-		const LLVector3& pos0,
+void calc_binormal_from_triangle(
+		LLVector4a& binormal,
+		const LLVector4a& pos0,
 		const LLVector2& tex0,
-		const LLVector3& pos1,
+		const LLVector4a& pos1,
 		const LLVector2& tex1,
-		const LLVector3& pos2,
+		const LLVector4a& pos2,
 		const LLVector2& tex2);
 
 BOOL LLLineSegmentBoxIntersect(const F32* start, const F32* end, const F32* center, const F32* size);

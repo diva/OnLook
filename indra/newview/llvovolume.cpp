@@ -1342,7 +1342,9 @@ void LLVOVolume::updateFaceSize(S32 idx)
 	else
 	{
 		const LLVolumeFace& vol_face = getVolume()->getVolumeFace(idx);
-		facep->setSize(vol_face.mVertices.size(), vol_face.mIndices.size(),true);
+		facep->setSize(vol_face.mNumVertices, vol_face.mNumIndices, 
+						true); // <--- volume faces should be padded for 16-byte alignment
+		
 	}
 }
 
@@ -2033,6 +2035,49 @@ const LLMatrix4 LLVOVolume::getRenderMatrix() const
 	return mDrawable->getWorldMatrix();
 }
 
+
+U32 LLVOVolume::getTriangleCount()
+{
+	U32 count = 0;
+	LLVolume* volume = getVolume();
+	if (volume)
+	{
+		count = volume->getNumTriangles();
+	}
+
+	return count;
+}
+
+U32 LLVOVolume::getHighLODTriangleCount()
+{
+	U32 ret = 0;
+
+	LLVolume* volume = getVolume();
+
+	if (!isSculpted())
+	{
+		LLVolume* ref = LLPrimitive::getVolumeManager()->refVolume(volume->getParams(), 3);
+		ret = ref->getNumTriangles();
+		LLPrimitive::getVolumeManager()->unrefVolume(ref);
+	}
+	/*else if (isMesh())
+	{
+		LLVolume* ref = LLPrimitive::getVolumeManager()->refVolume(volume->getParams(), 3);
+		if (ref->isTetrahedron() || ref->getNumVolumeFaces() == 0)
+		{
+			gMeshRepo.loadMesh(this, volume->getParams(), LLModel::LOD_HIGH);
+		}
+		ret = ref->getNumTriangles();
+		LLPrimitive::getVolumeManager()->unrefVolume(ref);
+	}*/
+	else
+	{ //default sculpts have a constant number of triangles
+		ret = 31*2*31;  //31 rows of 31 columns of quads for a 32x32 vertex patch
+	}
+
+	return ret;
+}
+
 //static
 void LLVOVolume::preUpdateGeom()
 {
@@ -2070,7 +2115,7 @@ void LLVOVolume::setSelected(BOOL sel)
 	}
 }
 
-void LLVOVolume::updateSpatialExtents(LLVector4a& min, LLVector4a& max)
+void LLVOVolume::updateSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 {		
 }
 
@@ -2805,6 +2850,32 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 	}
 }
 
+struct CompareBatchBreakerModified
+{
+	bool operator()(const LLFace* const& lhs, const LLFace* const& rhs)
+	{
+		const LLTextureEntry* lte = lhs->getTextureEntry();
+		const LLTextureEntry* rte = rhs->getTextureEntry();
+
+		if (lte->getBumpmap() != rte->getBumpmap())
+		{
+			return lte->getBumpmap() < rte->getBumpmap();
+		}
+		else if (lte->getFullbright() != rte->getFullbright())
+		{
+			return lte->getFullbright() < rte->getFullbright();
+		}
+		else  if (lte->getGlow() != rte->getGlow())
+		{
+			return lte->getGlow() < rte->getGlow();
+		}
+		else
+		{
+			return lhs->getTexture() < rhs->getTexture();
+		}
+		
+	}
+};
 void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort)
 {
 	//calculate maximum number of vertices to store in a single buffer
@@ -2815,7 +2886,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 	if (!distance_sort)
 	{
 		//sort faces by things that break batches
-		std::sort(faces.begin(), faces.end(), LLFace::CompareBatchBreaker());
+		std::sort(faces.begin(), faces.end(), CompareBatchBreakerModified());
 	}
 	else
 	{
@@ -2859,7 +2930,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		U32 index_count = facep->getIndicesCount();
 		U32 geom_count = facep->getGeomCount();
 
-		//sum up vertices needed for this texture
+		//sum up vertices needed for this render batch
 		std::vector<LLFace*>::iterator i = face_iter;
 		++i;
 		
@@ -2880,7 +2951,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 	
 		//create/delete/resize vertex buffer if needed
 		LLVertexBuffer* buffer = NULL;
-		LLSpatialGroup::buffer_texture_map_t::iterator found_iter = group->mBufferMap[mask].find(tex);
+		LLSpatialGroup::buffer_texture_map_t::iterator found_iter = group->mBufferMap[mask].find(*face_iter);
 		
 		if (found_iter != group->mBufferMap[mask].end())
 		{
@@ -2911,7 +2982,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			}
 		}
 
-		buffer_map[mask][tex].push_back(buffer);
+		buffer_map[mask][*face_iter].push_back(buffer);
 
 		//add face geometry
 

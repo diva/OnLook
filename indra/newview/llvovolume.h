@@ -118,6 +118,8 @@ public:
 	/*virtual*/	const LLMatrix4	getRenderMatrix() const;
 
 
+	/*virtual*/ U32		getTriangleCount();
+	/*virtual*/ U32		getHighLODTriangleCount();
 	/*virtual*/ BOOL lineSegmentIntersect(const LLVector3& start, const LLVector3& end, 
 										  S32 face = -1,                        // which face to check, -1 = ALL_SIDES
 										  BOOL pick_transparent = FALSE,

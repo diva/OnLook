@@ -216,7 +216,7 @@ void LLVOTextBubble::updateFaceSize(S32 idx)
 	else
 	{
 		const LLVolumeFace& vol_face = getVolume()->getVolumeFace(idx);
-		face->setSize(vol_face.mVertices.size(), vol_face.mIndices.size());
+		face->setSize(vol_face.mNumVertices, vol_face.mNumIndices);
 	}
 }
 
@@ -234,19 +234,27 @@ void LLVOTextBubble::getGeometry(S32 idx,
 
 	const LLVolumeFace& face = getVolume()->getVolumeFace(idx);
 	
-	LLVector3 pos = getPositionAgent();
+	LLVector4a pos;
+	pos.load3(getPositionAgent().mV);
+
+	LLVector4a scale;
+	scale.load3(getScale().mV);
+
 	LLColor4U color = LLColor4U(getTE(idx)->getColor());
 	U32 offset = mDrawable->getFace(idx)->getGeomIndex();
 	
-	for (U32 i = 0; i < face.mVertices.size(); i++)
+	for (U32 i = 0; i < (U32)face.mNumVertices; i++)
 	{
-		*verticesp++ = face.mVertices[i].mPosition.scaledVec(getScale()) + pos;
-		*normalsp++ = face.mVertices[i].mNormal;
-		*texcoordsp++ = face.mVertices[i].mTexCoord;
+		LLVector4a vertpos;
+		vertpos.setMul(face.mPositions[i],scale);
+		vertpos.add(pos);
+		(verticesp++)->set(vertpos.getF32ptr());
+		(normalsp++)->set(face.mNormals[i].getF32ptr());
+		*texcoordsp++ = face.mTexCoords[i];
 		*colorsp++ = color;
 	}
 	
-	for (U32 i = 0; i < face.mIndices.size(); i++)
+	for (U32 i = 0; i < (U32)face.mNumIndices; i++)
 	{
 		*indicesp++ = face.mIndices[i] + offset;
 	}
