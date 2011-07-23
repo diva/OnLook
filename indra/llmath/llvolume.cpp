@@ -3980,7 +3980,6 @@ S32 LLVolume::getNumTriangles() const
 //-----------------------------------------------------------------------------
 void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 										  std::vector<LLVector3> &normals,
-										  std::vector<S32> &segments,
 										  const LLVector3& obj_cam_vec_in,
 										  const LLMatrix4& mat_in,
 										  const LLMatrix3& norm_mat_in,
@@ -3999,7 +3998,6 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 
 	vertices.clear();
 	normals.clear();
-	segments.clear();
 
 	S32 cur_index = 0;
 	//for each face
@@ -4084,13 +4082,11 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 				vertices.push_back(face.mVertices[j].getPosition() + face.mVertices[j].getNormal()*0.1f);
 				normals.push_back(LLVector3(0,0,1));
 				normals.push_back(LLVector3(0,0,1));
-				segments.push_back(vertices.size());
 #if DEBUG_SILHOUETTE_BINORMALS
 				vertices.push_back(face.mVertices[j].getPosition());
 				vertices.push_back(face.mVertices[j].getPosition() + face.mVertices[j].mBinormal*0.1f);
 				normals.push_back(LLVector3(0,0,1));
 				normals.push_back(LLVector3(0,0,1));
-				segments.push_back(vertices.size());
 #endif
 			}
 						
@@ -4196,7 +4192,6 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 						t.normalize3fast();
 						normals.push_back(LLVector3(t[0], t[1], t[2]));
 
-						segments.push_back(vertices.size());
 					}
 				}		
 			}

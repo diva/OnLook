@@ -2440,27 +2440,29 @@ void LLVOAvatar::updateMeshData()
 
 			bool terse_update = false;
 
+			facep->setGeomIndex(0);
+			facep->setIndicesIndex(0);
+		
+			LLVertexBuffer* buff = facep->getVertexBuffer();
 			if(!facep->getVertexBuffer())
 			{
-				LLVertexBuffer *buff = new LLVertexBufferAvatar();
+				buff = new LLVertexBufferAvatar();
 				buff->allocateBuffer(num_vertices, num_indices, TRUE);
 				facep->setVertexBuffer(buff);
 			}
 			else
 			{
-				if (facep->getVertexBuffer()->getRequestedIndices() == num_indices &&
-					facep->getVertexBuffer()->getRequestedVerts() == num_vertices)
+				if (buff->getRequestedIndices() == num_indices &&
+					buff->getRequestedVerts() == num_vertices)
 				{
 					terse_update = true;
 				}
 				else
 				{
-					facep->getVertexBuffer()->resizeBuffer(num_vertices, num_indices) ;
+					buff->resizeBuffer(num_vertices, num_indices);
 				}
 			}
-		
-			facep->setGeomIndex(0);
-			facep->setIndicesIndex(0);
+			
 		
 			// This is a hack! Avatars have their own pool, so we are detecting
 			//   the case of more than one avatar in the pool (thus > 0 instead of >= 0)
@@ -2475,7 +2477,7 @@ void LLVOAvatar::updateMeshData()
 			}
 
 			stop_glerror();
-			facep->getVertexBuffer()->setBuffer(0);
+			buff->setBuffer(0);
 
 			if(!f_num)
 			{
@@ -3237,7 +3239,7 @@ void LLVOAvatar::idleUpdateLoadingEffect()
 			particle_parameters.mPartImageID                 = cloud->getID();
 			particle_parameters.mMaxAge                      = 0.f;
 			particle_parameters.mPattern                     = LLPartSysData::LL_PART_SRC_PATTERN_ANGLE_CONE;
-			particle_parameters.mInnerAngle                  = 3.14159f;
+			particle_parameters.mInnerAngle                  = F_PI;
 			particle_parameters.mOuterAngle                  = 0.f;
 			particle_parameters.mBurstRate                   = 0.02f;
 			particle_parameters.mBurstRadius                 = 0.0f;
@@ -7140,7 +7142,8 @@ void LLVOAvatar::lazyAttach()
 void LLVOAvatar::resetHUDAttachments()
 {
 	for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
-		 iter != mAttachmentPoints.end(); iter++)
+		 iter != mAttachmentPoints.end();
+		 ++iter)
 	{
 		LLViewerJointAttachment* attachment = iter->second;
 		if (attachment->getIsHUDAttachment())

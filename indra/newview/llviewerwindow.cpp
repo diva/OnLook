@@ -421,6 +421,29 @@ public:
 				addText(xpos, ypos, "Shaders Disabled");
 				ypos += y_inc;
 			}
+
+			if (gGLManager.mHasATIMemInfo)
+			{
+				S32 meminfo[4];
+				glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, meminfo);
+
+				addText(xpos, ypos, llformat("%.2f MB Texture Memory Free", meminfo[0]/1024.f));
+				ypos += y_inc;
+
+				if (gGLManager.mHasVertexBufferObject)
+				{
+					glGetIntegerv(GL_VBO_FREE_MEMORY_ATI, meminfo);
+					addText(xpos, ypos, llformat("%.2f MB VBO Memory Free", meminfo[0]/1024.f));
+					ypos += y_inc;
+				}
+			}
+			else if (gGLManager.mHasNVXMemInfo)
+			{
+				S32 free_memory;
+				glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &free_memory);
+				addText(xpos, ypos, llformat("%.2f MB Video Memory Free", free_memory/1024.f));
+				ypos += y_inc;
+			}
 			addText(xpos, ypos, llformat("%d MB Vertex Data", LLVertexBuffer::sAllocatedBytes/(1024*1024)));
 			ypos += y_inc;
 
@@ -468,6 +491,12 @@ public:
 			addText(xpos,ypos, llformat("%d/%d Nodes visible", gPipeline.mNumVisibleNodes, LLSpatialGroup::sNodeCount));
 			
 			ypos += y_inc;
+
+			if (!LLSpatialGroup::sPendingQueries.empty())
+			{
+				addText(xpos,ypos, llformat("%d Queries pending", LLSpatialGroup::sPendingQueries.size()));
+				ypos += y_inc;
+			}
 
 
 			addText(xpos,ypos, llformat("%d Avatars visible", LLVOAvatar::sNumVisibleAvatars));

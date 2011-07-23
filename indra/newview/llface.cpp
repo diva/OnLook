@@ -367,6 +367,24 @@ void LLFace::setSize(S32 num_vertices, const S32 num_indices, bool align)
 	llassert(verify());
 }
 
+void LLFace::setGeomIndex(U16 idx) 
+{ 
+	if (mGeomIndex != idx)
+	{
+		mGeomIndex = idx; 
+		mVertexBuffer = NULL;
+	}
+}
+
+void LLFace::setIndicesIndex(S32 idx) 
+{ 
+	if (mIndicesIndex != idx)
+	{
+		mIndicesIndex = idx; 
+		mVertexBuffer = NULL;
+	}
+}
+
 //============================================================================
 
 U16 LLFace::getGeometryAvatar(
@@ -1505,7 +1523,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			LLVector4a normal;
 			mat_normal.rotate(vf.mNormals[i], normal);
 			normal.normalize3fast();
-				normals[i].set(normal.getF32ptr());
+			normals[i].set(normal.getF32ptr());
 		}
 	}
 		
@@ -1516,7 +1534,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			LLVector4a binormal;
 			mat_normal.rotate(vf.mBinormals[i], binormal);
 			binormal.normalize3fast();
-				binormals[i].set(binormal.getF32ptr());
+			binormals[i].set(binormal.getF32ptr());
 		}
 	}
 	
