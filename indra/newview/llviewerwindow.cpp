@@ -39,6 +39,9 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llpanellogin.h"
 #include "llviewerkeyboard.h"
 #include "llviewerwindow.h"
@@ -506,6 +509,24 @@ public:
 			addText(xpos,ypos, llformat("%d Lights visible", LLPipeline::sVisibleLightCount));
 			
 			ypos += y_inc;
+
+#if MESH_ENABLED
+			if (gSavedSettings.getBOOL("MeshEnabled"))
+			{
+				addText(xpos, ypos, llformat("%.3f MB Mesh Data Received", LLMeshRepository::sBytesReceived/(1024.f*1024.f)));
+				
+				ypos += y_inc;
+				
+				addText(xpos, ypos, llformat("%d/%d Mesh HTTP Requests/Retries", LLMeshRepository::sHTTPRequestCount,
+					LLMeshRepository::sHTTPRetryCount));
+				
+				ypos += y_inc;
+
+				addText(xpos, ypos, llformat("%.3f/%.3f MB Mesh Cache Read/Write ", LLMeshRepository::sCacheBytesRead/(1024.f*1024.f), LLMeshRepository::sCacheBytesWritten/(1024.f*1024.f)));
+
+				ypos += y_inc;
+			}
+#endif //MESH_ENABLED
 
 			LLVertexBuffer::sBindCount = LLImageGL::sBindCount = 
 				LLVertexBuffer::sSetCount = LLImageGL::sUniqueCount = 

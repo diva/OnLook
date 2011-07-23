@@ -63,6 +63,10 @@
 #include "llkeyframefallmotion.h"
 #include "llkeyframestandmotion.h"
 #include "llkeyframewalkmotion.h"
+#if MESH_ENABLED
+#include "llmanipscale.h"  // for get_default_max_prim_scale()
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llmutelist.h"
 #include "llnotify.h"
 #include "llquantize.h"
@@ -1618,7 +1622,11 @@ void LLVOAvatar::getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 			if (attached_object && !attached_object->isHUDAttachment())
 			{
 				LLDrawable* drawable = attached_object->mDrawable;
-				if (drawable)
+				if (drawable
+#if MESH_ENABLED
+				&& !drawable->isState(LLDrawable::RIGGED))
+#endif //MESH_ENABLED
+				)
 				{
 					LLSpatialBridge* bridge = drawable->getSpatialBridge();
 					if (bridge)
@@ -4943,6 +4951,7 @@ bool LLVOAvatar::shouldAlphaMask()
 
 }
 
+
 //------------------------------------------------------------------------
 // needsRenderBeam()
 //------------------------------------------------------------------------
@@ -7161,6 +7170,56 @@ void LLVOAvatar::resetHUDAttachments()
 		}
 	}
 }
+
+#if MESH_ENABLED
+void LLVOAvatar::rebuildRiggedAttachments( void )
+{
+	for ( attachment_map_t::iterator iter = mAttachmentPoints.begin(); iter != mAttachmentPoints.end(); ++iter )
+	{
+		LLViewerJointAttachment* pAttachment = iter->second;
+		LLViewerJointAttachment::attachedobjs_vec_t::iterator attachmentIterEnd = pAttachment->mAttachedObjects.end();
+		
+		for ( LLViewerJointAttachment::attachedobjs_vec_t::iterator attachmentIter = pAttachment->mAttachedObjects.begin();
+			 attachmentIter != attachmentIterEnd; ++attachmentIter)
+		{
+			const LLViewerObject* pAttachedObject =  *attachmentIter;
+			if ( pAttachment && pAttachedObject->mDrawable.notNull() )
+			{
+				gPipeline.markRebuild(pAttachedObject->mDrawable);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// cleanupAttachedMesh()
+//-----------------------------------------------------------------------------
+void LLVOAvatar::cleanupAttachedMesh( LLViewerObject* pVO )
+{
+	//If a VO has a skin that we'll reset the joint positions to their default
+	if ( pVO && pVO->mDrawable )
+	{
+		LLVOVolume* pVObj = pVO->mDrawable->getVOVolume();
+		if ( pVObj )
+		{
+			const LLMeshSkinInfo* pSkinData = gMeshRepo.getSkinInfo( pVObj->getVolume()->getParams().getSculptID() );
+			if ( pSkinData )
+			{
+				const int jointCnt = pSkinData->mJointNames.size();
+				bool fullRig = ( jointCnt>=20 ) ? true : false;
+				if ( fullRig )
+				{
+					const int bindCnt = pSkinData->mAlternateBindMatrix.size();							
+					if ( bindCnt > 0 )
+					{
+						LLVOAvatar::resetJointPositionsToDefault();
+					}
+				}
+			}				
+		}
+	}	
+}
+#endif //MESH_ENABLED
 
 //-----------------------------------------------------------------------------
 // detachObject()
@@ -10508,6 +10567,13 @@ BOOL LLVOAvatar::updateLOD()
 	return res;
 }
 
+#if MESH_ENABLED
+void LLVOAvatar::updateLODRiggedAttachments( void )
+{
+	updateLOD();
+	rebuildRiggedAttachments();
+}
+#endif //MESH_ENABLED
 U32 LLVOAvatar::getPartitionType() const
 { 
 	// Avatars merely exist as drawables in the bridge partition

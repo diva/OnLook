@@ -52,6 +52,9 @@
 #include "llwindow.h"
 #include "llviewerstats.h"
 #include "llmd5.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llpumpio.h"
 #include "llimpanel.h"
 #include "llmimetypes.h"
@@ -1110,6 +1113,9 @@ bool LLAppViewer::mainLoop()
 						break;
 					}
 				}
+#if MESH_ENABLED
+				gMeshRepo.update() ;
+#endif //MESH_ENABLED
 				if ((LLStartUp::getStartupState() >= STATE_CLEANUP) &&
 					(frameTimer.getElapsedTimeF64() > FRAME_STALL_THRESHOLD))
 				{
@@ -1232,6 +1238,11 @@ bool LLAppViewer::cleanup()
 	LLError::logToFixedBuffer(NULL);
 
 	llinfos << "Cleaning Up" << llendflush;
+
+#if MESH_ENABLED
+	// shut down mesh streamer
+	gMeshRepo.shutdown();
+#endif //MESH_ENABLED
 
 	// Must clean up texture references before viewer window is destroyed.
 	if(LLHUDManager::instanceExists())
@@ -1655,6 +1666,11 @@ bool LLAppViewer::initThreads()
 	LLAppViewer::sTextureFetch = new LLTextureFetch(LLAppViewer::getTextureCache(), sImageDecodeThread, enable_threads && true);
 	LLImage::initClass();
 
+
+#if MESH_ENABLED
+	// Mesh streaming and caching
+	gMeshRepo.init();
+#endif //MESH_ENABLED
 	// *FIX: no error handling here!
 	return true;
 }

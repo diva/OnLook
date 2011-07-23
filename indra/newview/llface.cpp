@@ -205,7 +205,17 @@ void LLFace::destroy()
 	
 	if (mDrawPoolp)
 	{
-		mDrawPoolp->removeFace(this);
+#if MESH_ENABLED
+		if (this->isState(LLFace::RIGGED) && mDrawPoolp->getType() == LLDrawPool::POOL_AVATAR)
+		{
+			((LLDrawPoolAvatar*) mDrawPoolp)->removeRiggedFace(this);
+		}
+		else
+#endif //MESH_ENABLED
+		{
+			mDrawPoolp->removeFace(this);
+		}
+
 		mDrawPoolp = NULL;
 	}
 
@@ -550,11 +560,40 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 		}
 
 		glColor4fv(color.mV);
-		mVertexBuffer->setBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
-#if !LL_RELEASE_FOR_DOWNLOAD
-		LLGLState::checkClientArrays("", LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
-#endif
-		mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
+#if MESH_ENABLED
+		if (mDrawablep->isState(LLDrawable::RIGGED))
+		{
+			LLVOVolume* volume = mDrawablep->getVOVolume();
+			if (volume)
+			{
+				LLRiggedVolume* rigged = volume->getRiggedVolume();
+				if (rigged)
+				{
+					LLGLEnable offset(GL_POLYGON_OFFSET_FILL);
+					glPolygonOffset(-1.f, -1.f);
+					glMultMatrixf((F32*) volume->getRelativeXform().mMatrix);
+					const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
+					LLVertexBuffer::unbind();
+					glVertexPointer(3, GL_FLOAT, 16, vol_face.mPositions);
+					if (vol_face.mTexCoords)
+					{
+						glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+						glTexCoordPointer(2, GL_FLOAT, 8, vol_face.mTexCoords);
+					}
+					glDrawElements(GL_TRIANGLES, vol_face.mNumIndices, GL_UNSIGNED_SHORT, vol_face.mIndices);
+					glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+				}
+			}
+		}
+		else
+#endif //MESH_ENABLED
+		{
+			mVertexBuffer->setBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
+	#if !LL_RELEASE_FOR_DOWNLOAD
+			LLGLState::checkClientArrays("", LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
+	#endif
+			mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
+		}
 
 		gGL.popMatrix();
 	}
@@ -733,7 +772,11 @@ BOOL LLFace::genVolumeBBoxes(const LLVolume &volume, S32 f,
 	LLMemType mt1(LLMemType::MTYPE_DRAWABLE);
 
 	//get bounding box
-	if (mDrawablep->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION))
+	if (mDrawablep->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION
+#if MESH_ENABLED
+		| LLDrawable::REBUILD_RIGGED
+#endif //MESH_ENABLED
+		))
 	{
 		//VECTORIZE THIS
 		LLMatrix4a mat_vert;
@@ -1096,6 +1139,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLStrider<LLColor4U> colors;
 	LLStrider<LLVector3> binormals;
 	LLStrider<U16> indicesp;
+#if MESH_ENABLED
+	LLStrider<LLVector3> weights;
+#endif //MESH_ENABLED
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
 	
@@ -1115,7 +1161,9 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	bool rebuild_tcoord = full_rebuild || mDrawablep->isState(LLDrawable::REBUILD_TCOORD);
 	bool rebuild_normal = rebuild_pos && mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_NORMAL);
 	bool rebuild_binormal = rebuild_pos && mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_BINORMAL);
-
+#if MESH_ENABLED
+	bool rebuild_weights = rebuild_pos && mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_WEIGHT4);
+#endif //MESH_ENABLED
 
 	const LLTextureEntry *tep = mVObjp->getTE(f);
 	if (!tep) rebuild_color = FALSE;	// can't get color when tep is NULL
@@ -1133,6 +1181,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	{
 		mVertexBuffer->getBinormalStrider(binormals, mGeomIndex);
 	}
+#if MESH_ENABLED
+	if (rebuild_weights)
+	{
+		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
+	}
+#endif //MESH_ENABLED
 
 	if (rebuild_tcoord)
 	{
@@ -1538,6 +1592,15 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 	}
 	
+#if MESH_ENABLED
+	if (rebuild_weights && vf.mWeights)
+	{
+		for (S32 i = 0; i < num_vertices; i++)
+		{
+			weights[i].set(weights.getF32ptr());
+		}
+	}
+#endif //MESH_ENABLED
 
 	if (rebuild_color)
 	{
@@ -1959,3 +2022,68 @@ void LLFace::clearVertexBuffer()
 	mLastVertexBuffer = NULL;
 }
 
+#if MESH_ENABLED
+//static
+U32 LLFace::getRiggedDataMask(U32 type)
+{
+	static const U32 rigged_data_mask[] = {
+		LLDrawPoolAvatar::RIGGED_SIMPLE_MASK,
+		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_MASK,
+		LLDrawPoolAvatar::RIGGED_SHINY_MASK,
+		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY_MASK,
+		LLDrawPoolAvatar::RIGGED_GLOW_MASK,
+		LLDrawPoolAvatar::RIGGED_ALPHA_MASK,
+		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_ALPHA_MASK,
+		LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,						 
+		LLDrawPoolAvatar::RIGGED_DEFERRED_SIMPLE_MASK,
+	};
+
+	llassert(type < sizeof(rigged_data_mask)/sizeof(U32));
+
+	return rigged_data_mask[type];
+}
+
+U32 LLFace::getRiggedVertexBufferDataMask() const
+{
+	U32 data_mask = 0;
+	for (U32 i = 0; i < mRiggedIndex.size(); ++i)
+	{
+		if (mRiggedIndex[i] > -1)
+		{
+			data_mask |= LLFace::getRiggedDataMask(i);
+		}
+	}
+
+	return data_mask;
+}
+
+S32 LLFace::getRiggedIndex(U32 type) const
+{
+	if (mRiggedIndex.empty())
+	{
+		return -1;
+	}
+
+	llassert(type < mRiggedIndex.size());
+
+	return mRiggedIndex[type];
+}
+
+void LLFace::setRiggedIndex(U32 type, S32 index)
+{
+	if (mRiggedIndex.empty())
+	{
+		mRiggedIndex.resize(LLDrawPoolAvatar::NUM_RIGGED_PASSES);
+		for (U32 i = 0; i < mRiggedIndex.size(); ++i)
+		{
+			mRiggedIndex[i] = -1;
+		}
+	}
+
+	llassert(type < mRiggedIndex.size());
+
+	mRiggedIndex[type] = index;
+}
+
+
+#endif //MESH_ENABLED

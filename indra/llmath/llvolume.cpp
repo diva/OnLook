@@ -2079,6 +2079,14 @@ LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL ge
 	mFaceMask = 0x0;
 	mDetail = detail;
 	mSculptLevel = -2;
+#if MESH_ENABLED
+	mIsTetrahedron = FALSE;
+	mLODScaleBias.setVec(1,1,1);
+	mHullPoints = NULL;
+	mHullIndices = NULL;
+	mNumHullPoints = 0;
+	mNumHullIndices = 0;
+#endif //MESH_ENABLED
 	
 	// set defaults
 	if (mParams.getPathParams().getCurveType() == LL_PCODE_PATH_FLEXIBLE)
@@ -2386,9 +2394,461 @@ bool LLVolumeFace::VertexData::compareNormal(const LLVolumeFace::VertexData& rhs
 	return retval;
 }
 
+#if MESH_ENABLED
+bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
+{
+	//input stream is now pointing at a zlib compressed block of LLSD
+	//decompress block
+	LLSD mdl;
+	if (!unzip_llsd(mdl, is, size))
+	{
+		llwarns << "not a valid mesh asset!" << llendl;
+		return false;
+	}
+	
+	{
+		U32 face_count = mdl.size();
 
+		if (face_count == 0)
+		{ //no faces unpacked, treat as failed decode
+			llwarns << "found no faces!" << llendl;
+			return false;
+		}
+
+		mVolumeFaces.resize(face_count);
+
+		for (U32 i = 0; i < face_count; ++i)
+		{
+			LLVolumeFace& face = mVolumeFaces[i];
+
+			if (mdl[i].has("NoGeometry"))
+			{ //face has no geometry, continue
+				face.resizeIndices(3);
+				face.resizeVertices(1);
+				memset(face.mPositions, 0, sizeof(LLVector4a));
+				memset(face.mNormals, 0, sizeof(LLVector4a));
+				memset(face.mTexCoords, 0, sizeof(LLVector2));
+				memset(face.mIndices, 0, sizeof(U16)*3);
+				continue;
+			}
+
+			LLSD::Binary pos = mdl[i]["Position"];
+			LLSD::Binary norm = mdl[i]["Normal"];
+			LLSD::Binary tc = mdl[i]["TexCoord0"];
+			LLSD::Binary idx = mdl[i]["TriangleList"];
+
+			
+
+			//copy out indices
+			face.resizeIndices(idx.size()/2);
+			
+			if (idx.empty() || face.mNumIndices < 3)
+			{ //why is there an empty index list?
+				llwarns <<"Empty face present!" << llendl;
+				continue;
+			}
+
+			U16* indices = (U16*) &(idx[0]);
+			U32 count = idx.size()/2;
+			for (U32 j = 0; j < count; ++j)
+			{
+				face.mIndices[j] = indices[j];
+			}
+
+			//copy out vertices
+			U32 num_verts = pos.size()/(3*2);
+			face.resizeVertices(num_verts);
+
+			LLVector3 minp;
+			LLVector3 maxp;
+			LLVector2 min_tc; 
+			LLVector2 max_tc; 
+		
+			minp.setValue(mdl[i]["PositionDomain"]["Min"]);
+			maxp.setValue(mdl[i]["PositionDomain"]["Max"]);
+			LLVector4a min_pos, max_pos;
+			min_pos.load3(minp.mV);
+			max_pos.load3(maxp.mV);
+
+			min_tc.setValue(mdl[i]["TexCoord0Domain"]["Min"]);
+			max_tc.setValue(mdl[i]["TexCoord0Domain"]["Max"]);
+
+			LLVector4a pos_range;
+			pos_range.setSub(max_pos, min_pos);
+			LLVector2 tc_range2 = max_tc - min_tc;
+			LLVector4a tc_range;
+			tc_range.set(tc_range2[0], tc_range2[1], tc_range2[0], tc_range2[1]);
+			LLVector4a min_tc4(min_tc[0], min_tc[1], min_tc[0], min_tc[1]);
+
+			LLVector4a* pos_out = face.mPositions;
+			LLVector4a* norm_out = face.mNormals;
+			LLVector4a* tc_out = (LLVector4a*) face.mTexCoords;
+
+			{
+				U16* v = (U16*) &(pos[0]);
+				for (U32 j = 0; j < num_verts; ++j)
+				{
+					pos_out->set((F32) v[0], (F32) v[1], (F32) v[2]);
+					pos_out->div(65535.f);
+					pos_out->mul(pos_range);
+					pos_out->add(min_pos);
+					pos_out++;
+					v += 3;
+				}
+
+			}
+
+			{
+				U16* n = (U16*) &(norm[0]);
+				if(n)
+				{
+					for (U32 j = 0; j < num_verts; ++j)
+					{
+						norm_out->set((F32) n[0], (F32) n[1], (F32) n[2]);
+						norm_out->div(65535.f);
+						norm_out->mul(2.f);
+						norm_out->sub(1.f);
+						norm_out++;
+						n += 3;
+					}
+				}
+			}
+
+			{
+				U16* t = (U16*) &(tc[0]);
+				if(t)
+				{
+					for (U32 j = 0; j < num_verts; j+=2)
+					{
+						if (j < num_verts-1)
+						{
+							tc_out->set((F32) t[0], (F32) t[1], (F32) t[2], (F32) t[3]);
+						}
+						else
+						{
+							tc_out->set((F32) t[0], (F32) t[1], 0.f, 0.f);
+						}
+
+						t += 4;
+
+						tc_out->div(65535.f);
+						tc_out->mul(tc_range);
+						tc_out->add(min_tc4);
+
+						tc_out++;
+					}
+				}
+			}
+
+			if (mdl[i].has("Weights"))
+			{
+				face.allocateWeights(num_verts);
+
+				LLSD::Binary weights = mdl[i]["Weights"];
+
+				U32 idx = 0;
+
+				U32 cur_vertex = 0;
+				while (idx < weights.size() && cur_vertex < num_verts)
+				{
+					const U8 END_INFLUENCES = 0xFF;
+					U8 joint = weights[idx++];
+
+					U32 cur_influence = 0;
+					LLVector4 wght(0,0,0,0);
+
+					while (joint != END_INFLUENCES && idx < weights.size())
+					{
+						U16 influence = weights[idx++];
+						influence |= ((U16) weights[idx++] << 8);
+
+						F32 w = llclamp((F32) influence / 65535.f, 0.f, 0.99999f);
+						wght.mV[cur_influence++] = (F32) joint + w;
+
+						if (cur_influence >= 4)
+						{
+							joint = END_INFLUENCES;
+						}
+						else
+						{
+							joint = weights[idx++];
+						}
+					}
+
+					face.mWeights[cur_vertex].loadua(wght.mV);
+
+					cur_vertex++;
+				}
+
+				if (cur_vertex != num_verts || idx != weights.size())
+				{
+					llwarns << "Vertex weight count does not match vertex count!" << llendl;
+				}
+					
+			}
+
+			// modifier flags?
+			bool do_mirror = (mParams.getSculptType() & LL_SCULPT_FLAG_MIRROR);
+			bool do_invert = (mParams.getSculptType() &LL_SCULPT_FLAG_INVERT);
+			
+			
+			// translate to actions:
+			bool do_reflect_x = false;
+			bool do_reverse_triangles = false;
+			bool do_invert_normals = false;
+			
+			if (do_mirror)
+			{
+				do_reflect_x = true;
+				do_reverse_triangles = !do_reverse_triangles;
+			}
+			
+			if (do_invert)
+			{
+				do_invert_normals = true;
+				do_reverse_triangles = !do_reverse_triangles;
+			}
+			
+			// now do the work
+
+			if (do_reflect_x)
+			{
+				LLVector4a* p = (LLVector4a*) face.mPositions;
+				LLVector4a* n = (LLVector4a*) face.mNormals;
+				
+				for (S32 i = 0; i < face.mNumVertices; i++)
+				{
+					p[i].mul(-1.0f);
+					n[i].mul(-1.0f);
+				}
+			}
+
+			if (do_invert_normals)
+			{
+				LLVector4a* n = (LLVector4a*) face.mNormals;
+				
+				for (S32 i = 0; i < face.mNumVertices; i++)
+				{
+					n[i].mul(-1.0f);
+				}
+			}
+
+			if (do_reverse_triangles)
+			{
+				for (U32 j = 0; j < face.mNumIndices; j += 3)
+				{
+					// swap the 2nd and 3rd index
+					S32 swap = face.mIndices[j+1];
+					face.mIndices[j+1] = face.mIndices[j+2];
+					face.mIndices[j+2] = swap;
+				}
+			}
+
+			//calculate bounding box
+			LLVector4a& min = face.mExtents[0];
+			LLVector4a& max = face.mExtents[1];
+
+			if (face.mNumVertices < 3)
+			{ //empty face, use a dummy 1cm (at 1m scale) bounding box
+				min.splat(-0.005f);
+				max.splat(0.005f);
+			}
+			else
+			{
+				min = max = face.mPositions[0];
+
+				for (S32 i = 1; i < face.mNumVertices; ++i)
+				{
+					min.setMin(min, face.mPositions[i]);
+					max.setMax(max, face.mPositions[i]);
+				}
+			}
+		}
+	}
+	
+	mSculptLevel = 0;  // success!
+
+	cacheOptimize();
+
+	return true;
+}
+
+void tetrahedron_set_normal(LLVolumeFace::VertexData* cv)
+{
+	LLVector4a v0;
+	v0.setSub(cv[1].getPosition(), cv[0].getNormal());
+	LLVector4a v1;
+	v1.setSub(cv[2].getNormal(), cv[0].getPosition());
+	
+	cv[0].getNormal().setCross3(v0,v1);
+	cv[0].getNormal().normalize3fast();
+	cv[1].setNormal(cv[0].getNormal());
+	cv[2].setNormal(cv[1].getNormal());
+}
+
+BOOL LLVolume::isTetrahedron()
+{
+	return mIsTetrahedron;
+}
+
+void LLVolume::makeTetrahedron()
+{
+	mVolumeFaces.clear();
+
+	LLVolumeFace face;
+
+	F32 x = 0.25f;
+	LLVector4a p[] = 
+	{ //unit tetrahedron corners
+		LLVector4a(x,x,x),
+		LLVector4a(-x,-x,x),
+		LLVector4a(-x,x,-x),
+		LLVector4a(x,-x,-x)
+	};
+
+	face.mExtents[0].splat(-x);
+	face.mExtents[1].splat(x);
+	
+	LLVolumeFace::VertexData cv[3];
+
+	//set texture coordinates
+	cv[0].mTexCoord = LLVector2(0,0);
+	cv[1].mTexCoord = LLVector2(1,0);
+	cv[2].mTexCoord = LLVector2(0.5f, 0.5f*F_SQRT3);
+
+
+	//side 1
+	cv[0].setPosition(p[1]);
+	cv[1].setPosition(p[0]);
+	cv[2].setPosition(p[2]);
+
+	tetrahedron_set_normal(cv);
+
+	face.resizeVertices(12);
+	face.resizeIndices(12);
+
+	LLVector4a* v = (LLVector4a*) face.mPositions;
+	LLVector4a* n = (LLVector4a*) face.mNormals;
+	LLVector2* tc = (LLVector2*) face.mTexCoords;
+
+	v[0] = cv[0].getPosition();
+	v[1] = cv[1].getPosition();
+	v[2] = cv[2].getPosition();
+	v += 3;
+
+	n[0] = cv[0].getNormal();
+	n[1] = cv[1].getNormal();
+	n[2] = cv[2].getNormal();
+	n += 3;
+
+	tc[0] = cv[0].mTexCoord;
+	tc[1] = cv[1].mTexCoord;
+	tc[2] = cv[2].mTexCoord;
+	tc += 3;
+
+	
+	//side 2
+	cv[0].setPosition(p[3]);
+	cv[1].setPosition(p[0]);
+	cv[2].setPosition(p[1]);
+
+	tetrahedron_set_normal(cv);
+
+	v[0] = cv[0].getPosition();
+	v[1] = cv[1].getPosition();
+	v[2] = cv[2].getPosition();
+	v += 3;
+
+	n[0] = cv[0].getNormal();
+	n[1] = cv[1].getNormal();
+	n[2] = cv[2].getNormal();
+	n += 3;
+
+	tc[0] = cv[0].mTexCoord;
+	tc[1] = cv[1].mTexCoord;
+	tc[2] = cv[2].mTexCoord;
+	tc += 3;
+	
+	//side 3
+	cv[0].setPosition(p[3]);
+	cv[1].setPosition(p[1]);
+	cv[2].setPosition(p[2]);
+
+	tetrahedron_set_normal(cv);
+
+	v[0] = cv[0].getPosition();
+	v[1] = cv[1].getPosition();
+	v[2] = cv[2].getPosition();
+	v += 3;
+
+	n[0] = cv[0].getNormal();
+	n[1] = cv[1].getNormal();
+	n[2] = cv[2].getNormal();
+	n += 3;
+
+	tc[0] = cv[0].mTexCoord;
+	tc[1] = cv[1].mTexCoord;
+	tc[2] = cv[2].mTexCoord;
+	tc += 3;
+	
+	//side 4
+	cv[0].setPosition(p[2]);
+	cv[1].setPosition(p[0]);
+	cv[2].setPosition(p[3]);
+
+	tetrahedron_set_normal(cv);
+
+	v[0] = cv[0].getPosition();
+	v[1] = cv[1].getPosition();
+	v[2] = cv[2].getPosition();
+	v += 3;
+
+	n[0] = cv[0].getNormal();
+	n[1] = cv[1].getNormal();
+	n[2] = cv[2].getNormal();
+	n += 3;
+
+	tc[0] = cv[0].mTexCoord;
+	tc[1] = cv[1].mTexCoord;
+	tc[2] = cv[2].mTexCoord;
+	tc += 3;
+	
+	//set index buffer
+	for (U16 i = 0; i < 12; i++)
+	{
+		face.mIndices[i] = i;
+	}
+	
+	mVolumeFaces.push_back(face);
+	mSculptLevel = 0;
+	mIsTetrahedron = TRUE;
+}
+
+void LLVolume::copyVolumeFaces(const LLVolume* volume)
+{
+	mVolumeFaces = volume->mVolumeFaces;
+	mSculptLevel = 0;
+	mIsTetrahedron = FALSE;
+}
+
+void LLVolume::cacheOptimize()
+{
+	for (S32 i = 0; i < mVolumeFaces.size(); ++i)
+	{
+		mVolumeFaces[i].cacheOptimize();
+	}
+}
+#endif //MESH_ENABLED
 S32	LLVolume::getNumFaces() const
 {
+#if MESH_ENABLED
+	U8 sculpt_type = (mParams.getSculptType() & LL_SCULPT_TYPE_MASK);
+
+	if (sculpt_type == LL_SCULPT_TYPE_MESH)
+	{
+		return LL_SCULPT_MESH_MAX_FACES;
+	}
+#endif //MESH_ENABLED
 	return (S32)mProfilep->mFaces.size();
 }
 
@@ -2853,6 +3313,13 @@ bool LLVolumeParams::isSculpt() const
 {
 	return mSculptID.notNull();
 }
+
+#if MESH_ENABLED
+bool LLVolumeParams::isMeshSculpt() const
+{
+	return isSculpt() && ((mSculptType & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH);
+}
+#endif //MESH_ENABLED
 
 bool LLVolumeParams::operator==(const LLVolumeParams &params) const
 {
@@ -3999,6 +4466,13 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 	vertices.clear();
 	normals.clear();
 
+#if MESH_ENABLED
+	if ((mParams.getSculptType() & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH)
+	{
+		return;
+	}
+#endif //MESH_ENABLED
+
 	S32 cur_index = 0;
 	//for each face
 	for (face_list_t::iterator iter = mVolumeFaces.begin();
@@ -4191,7 +4665,6 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 						norm_mat.rotate(n[v2], t);
 						t.normalize3fast();
 						normals.push_back(LLVector3(t[0], t[1], t[2]));
-
 					}
 				}		
 			}
@@ -5072,6 +5545,9 @@ LLVolumeFace::LLVolumeFace(const LLVolumeFace& src)
 	mBinormals(NULL),
 	mTexCoords(NULL),
 	mIndices(NULL),
+#if MESH_ENABLED
+	mWeights(NULL),
+#endif //MESH_ENABLED
 	mOctree(NULL)
 { 
 	mExtents = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*3);
@@ -5128,6 +5604,18 @@ LLVolumeFace& LLVolumeFace::operator=(const LLVolumeFace& src)
 			mBinormals = NULL;
 		}
 
+#if MESH_ENABLED
+		if (src.mWeights)
+		{
+			allocateWeights(src.mNumVertices);
+			LLVector4a::memcpyNonAliased16((F32*) mWeights, (F32*) src.mWeights, vert_size);
+		}
+		else
+		{
+			ll_aligned_free_16(mWeights);
+			mWeights = NULL;
+		}
+#endif //MESH_ENABLED
 	}
 	if (mNumIndices)
 	{
@@ -5160,6 +5648,10 @@ void LLVolumeFace::freeData()
 	mIndices = NULL;
 	ll_aligned_free_16(mBinormals);
 	mBinormals = NULL;
+#if MESH_ENABLED
+	ll_aligned_free_16(mWeights);
+	mWeights = NULL;
+#endif //MESH_ENABLED
 
 	delete mOctree;
 	mOctree = NULL;
@@ -5685,6 +6177,13 @@ void LLVolumeFace::cacheOptimize()
 	S32 size = ((num_verts*sizeof(LLVector2)) + 0xF) & ~0xF;
 	LLVector2* tc = (LLVector2*) ll_aligned_malloc_16(size);
 
+#if MESH_ENABLED
+	LLVector4a* wght = NULL;
+	if (mWeights)
+	{
+		wght = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
+	}
+#endif //MESH_ENABLED
 
 	LLVector4a* binorm = NULL;
 	if (mBinormals)
@@ -5708,6 +6207,12 @@ void LLVolumeFace::cacheOptimize()
 			pos[cur_idx] = mPositions[idx];
 			norm[cur_idx] = mNormals[idx];
 			tc[cur_idx] = mTexCoords[idx];
+#if MESH_ENABLED
+			if (mWeights)
+			{
+				wght[cur_idx] = mWeights[idx];
+			}
+#endif //MESH_ENABLED
 			if (mBinormals)
 			{
 				binorm[cur_idx] = mBinormals[idx];
@@ -5725,11 +6230,17 @@ void LLVolumeFace::cacheOptimize()
 	ll_aligned_free_16(mPositions);
 	ll_aligned_free_16(mNormals);
 	ll_aligned_free_16(mTexCoords);
+#if MESH_ENABLED
+	ll_aligned_free_16(mWeights);
+#endif //MESH_ENABLED
 	ll_aligned_free_16(mBinormals);
 
 	mPositions = pos;
 	mNormals = norm;
 	mTexCoords = tc;
+#if MESH_ENABLED
+	mWeights = wght;
+#endif //MESH_ENABLED
 	mBinormals = binorm;
 
 	//std::string result = llformat("ACMR pre/post: %.3f/%.3f  --  %d triangles %d breaks", pre_acmr, post_acmr, mNumIndices/3, breaks);
@@ -6512,6 +7023,14 @@ void LLVolumeFace::allocateBinormals(S32 num_verts)
 	mBinormals = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
 }
 
+#if MESH_ENABLED
+void LLVolumeFace::allocateWeights(S32 num_verts)
+{
+	ll_aligned_free_16(mWeights);
+	mWeights = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
+}
+#endif //MESH_ENABLED
+
 void LLVolumeFace::resizeIndices(S32 num_indices)
 {
 	ll_aligned_free_16(mIndices);
@@ -6673,8 +7192,9 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 	{
 		resizeVertices(num_vertices);
 		resizeIndices(num_indices);
-
-		//if ((volume->getParams().getSculptType() & LL_SCULPT_TYPE_MASK) != LL_SCULPT_TYPE_MESH)
+#if MESH_ENABLED
+		if ((volume->getParams().getSculptType() & LL_SCULPT_TYPE_MASK) != LL_SCULPT_TYPE_MESH)
+#endif //MESH_ENABLED
 		{
 			mEdge.resize(num_indices);
 		}

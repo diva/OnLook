@@ -2999,7 +2999,12 @@ void LLViewerObject::boostTexturePriority(BOOL boost_children /* = TRUE */)
  		getTEImage(i)->setBoostLevel(LLViewerTexture::BOOST_SELECTED);
 	}
 
-	if (isSculpted())
+
+	if (isSculpted()
+#if MESH_ENABLED
+	&& !isMesh()
+#endif //MESH_ENABLED
+	)
 	{
 		LLSculptParams *sculpt_params = (LLSculptParams *)getParameterEntry(LLNetworkData::PARAMS_SCULPT);
 		LLUUID sculpt_id = sculpt_params->getSculptTexture();
@@ -3239,6 +3244,16 @@ const LLVector3 LLViewerObject::getPositionEdit() const
 
 const LLVector3 LLViewerObject::getRenderPosition() const
 {
+#if MESH_ENABLED
+	if (mDrawable.notNull() && mDrawable->isState(LLDrawable::RIGGED))
+	{
+		LLVOAvatar* avatar = getAvatar();
+		if (avatar)
+		{
+			return avatar->getPositionAgent();
+		}
+	}
+#endif //MESH_ENABLED
 	if (mDrawable.isNull() || mDrawable->getGeneration() < 0)
 	{
 		return getPositionAgent();
@@ -3257,6 +3272,12 @@ const LLVector3 LLViewerObject::getPivotPositionAgent() const
 const LLQuaternion LLViewerObject::getRenderRotation() const
 {
 	LLQuaternion ret;
+#if MESH_ENABLED
+	if (mDrawable.notNull() && mDrawable->isState(LLDrawable::RIGGED))
+	{
+		return ret;
+	}
+#endif //MESH_ENABLED
 	if (mDrawable.isNull() || mDrawable->isStatic())
 	{
 		ret = getRotationEdit();

@@ -5457,6 +5457,111 @@ BOOL LLSelectNode::allowOperationOnNode(PermissionBit op, U64 group_proxy_power)
 	return (mPermissions->allowOperationBy(op, proxy_agent_id, group_id));
 }
 
+#if MESH_ENABLED
+void pushWireframe(LLDrawable* drawable)
+{
+	if (drawable->isState(LLDrawable::RIGGED))
+	{ //render straight from rigged volume if this is a rigged attachment
+		LLVOVolume* vobj = drawable->getVOVolume();
+		if (vobj)
+		{
+			vobj->updateRiggedVolume();
+			LLRiggedVolume* rigged_volume = vobj->getRiggedVolume();
+			if (rigged_volume)
+			{
+				LLVertexBuffer::unbind();
+				gGL.pushMatrix();
+				glMultMatrixf((F32*) vobj->getRelativeXform().mMatrix);
+				for (S32 i = 0; i < rigged_volume->getNumVolumeFaces(); ++i)
+				{
+					const LLVolumeFace& face = rigged_volume->getVolumeFace(i);
+					glVertexPointer(3, GL_FLOAT, 16, face.mPositions);
+					glDrawElements(GL_TRIANGLES, face.mNumIndices, GL_UNSIGNED_SHORT, face.mIndices);
+				}
+				gGL.popMatrix();
+			}
+		}
+	}
+	else
+	{
+		for (S32 i = 0; i < drawable->getNumFaces(); ++i)
+		{
+			LLFace* face = drawable->getFace(i);
+			if (face->verify())
+			{
+				pushVerts(face, LLVertexBuffer::MAP_VERTEX);
+			}
+		}
+	}
+}
+
+void LLSelectNode::renderOneWireframe(const LLColor4& color)
+{
+	LLViewerObject* objectp = getObject();
+	if (!objectp)
+	{
+		return;
+	}
+
+	LLDrawable* drawable = objectp->mDrawable;
+	if(!drawable)
+	{
+		return;
+	}
+
+	glMatrixMode(GL_MODELVIEW);
+	gGL.pushMatrix();
+	
+	BOOL is_hud_object = objectp->isHUDAttachment();
+
+	if (drawable->isActive())
+	{
+		glLoadMatrixd(gGLModelView);
+		glMultMatrixf((F32*) objectp->getRenderMatrix().mMatrix);
+	}
+	else if (!is_hud_object)
+	{
+		glLoadIdentity();
+		glMultMatrixd(gGLModelView);
+		LLVector3 trans = objectp->getRegion()->getOriginAgent();		
+		glTranslatef(trans.mV[0], trans.mV[1], trans.mV[2]);		
+	}
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
+	if (LLSelectMgr::sRenderHiddenSelections) // && gFloaterTools && gFloaterTools->getVisible())
+	{
+		gGL.blendFunc(LLRender::BF_SOURCE_COLOR, LLRender::BF_ONE);
+		LLGLEnable fog(GL_FOG);
+		glFogi(GL_FOG_MODE, GL_LINEAR);
+		float d = (LLViewerCamera::getInstance()->getPointOfInterest()-LLViewerCamera::getInstance()->getOrigin()).magVec();
+		LLColor4 fogCol = color * (F32)llclamp((LLSelectMgr::getInstance()->getSelectionCenterGlobal()-gAgentCamera.getCameraPositionGlobal()).magVec()/(LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal().magVec()*4), 0.0, 1.0);
+		glFogf(GL_FOG_START, d);
+		glFogf(GL_FOG_END, d*(1 + (LLViewerCamera::getInstance()->getView() / LLViewerCamera::getInstance()->getDefaultFOV())));
+		glFogfv(GL_FOG_COLOR, fogCol.mV);
+
+		LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_GEQUAL);
+		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+		{
+			glColor4f(color.mV[VRED], color.mV[VGREEN], color.mV[VBLUE], 0.4f);
+			pushWireframe(drawable);
+		}
+	}
+
+	gGL.flush();
+	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+
+	glColor4f(color.mV[VRED]*2, color.mV[VGREEN]*2, color.mV[VBLUE]*2, LLSelectMgr::sHighlightAlpha*2);
+	LLGLEnable offset(GL_POLYGON_OFFSET_LINE);
+	glPolygonOffset(3.f, 3.f);
+	glLineWidth(3.f);
+	pushWireframe(drawable);
+	glLineWidth(1.f);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	gGL.popMatrix();
+}
+#endif MESH_ENABLED
+
 //-----------------------------------------------------------------------------
 // renderOneSilhouette()
 //-----------------------------------------------------------------------------
@@ -5473,6 +5578,15 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 	{
 		return;
 	}
+
+#if MESH_ENABLED
+	LLVOVolume* vobj = drawable->getVOVolume();
+	if (vobj && vobj->isMesh())
+	{
+		renderOneWireframe(color);
+		return;
+	}
+#endif //MESH_ENABLED
 
 	if (!mSilhouetteExists)
 	{

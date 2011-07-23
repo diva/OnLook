@@ -1495,6 +1495,11 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	}
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetTexture");
+#if MESH_ENABLED
+	capabilityNames.append("GetMesh");
+	capabilityNames.append("GetObjectCost");
+	capabilityNames.append("GetObjectPhysicsData");
+#endif //MESH_ENABLED
 	capabilityNames.append("GroupProposalBallot");
 
 	capabilityNames.append("HomeLocation");

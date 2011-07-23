@@ -124,6 +124,9 @@ public:
 	/*virtual*/ BOOL idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 	virtual BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
+#if MESH_ENABLED
+	void					updateLODRiggedAttachments( void );
+#endif //MESH_ENABLED
 	/*virtual*/ BOOL 		isActive() const; // Whether this object needs to do an idleUpdate.
 	/*virtual*/ void 		updateTextures();
 	/*virtual*/ S32 		setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
@@ -722,12 +725,18 @@ public:
 	void 				clampAttachmentPositions();
 	BOOL attachObject(LLViewerObject *viewer_object);
 	BOOL detachObject(LLViewerObject *viewer_object);
+#if MESH_ENABLED
+	void				cleanupAttachedMesh( LLViewerObject* pVO );
+#endif //MESH_ENABLED
 	static LLVOAvatar* findAvatarFromAttachment( LLViewerObject* obj );
 protected:
 // [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
 	LLViewerJointAttachment* getTargetAttachmentPoint(const LLViewerObject* viewer_object) const;
 // [/RLVa:KB]
 	void 				lazyAttach();
+#if MESH_ENABLED
+	void				rebuildRiggedAttachments( void );
+#endif //MESH_ENABLED
 
 	//--------------------------------------------------------------------
 	// Map of attachment points, by ID
