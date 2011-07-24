@@ -2110,11 +2110,17 @@ void LLFloaterSnapshot::draw()
 	}
 }
 
+void LLFloaterSnapshot::onOpen()
+{
+	gSavedSettings.setBOOL("SnapshotBtnState", TRUE);
+}
+
 void LLFloaterSnapshot::onClose(bool app_quitting)
 {
 	gSnapshotFloaterView->setEnabled(FALSE);
 	// Set invisible so it doesn't eat tooltips. JC
 	gSnapshotFloaterView->setVisible(FALSE);
+	gSavedSettings.setBOOL("SnapshotBtnState", FALSE);
 	destroy();
 }
 
