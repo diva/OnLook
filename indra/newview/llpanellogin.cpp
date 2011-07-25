@@ -712,6 +712,7 @@ void LLPanelLogin::setFields(const LLSavedLoginEntry& entry, bool takeFocus)
 	std::string fullname = nameJoin(entry.getFirstName(), entry.getLastName()); 
 	LLComboBox* login_combo = sInstance->getChild<LLComboBox>("name_combo");
 	login_combo->setTextEntry(fullname);
+	login_combo->resetTextDirty();
 	//sInstance->childSetText("name_combo", fullname);
 
 	std::string grid = entry.getGrid();
