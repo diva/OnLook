@@ -607,7 +607,7 @@ void LLPanelLogin::giveFocus()
 	if( sInstance )
 	{
 		// Grab focus and move cursor to first blank input field
-		std::string first = sInstance->childGetText("name_combo");
+		std::string first = sInstance->getChild<LLComboBox>("name_combo")->getTextEntry();
 		std::string pass = sInstance->childGetText("password_edit");
 
 		BOOL have_first = !first.empty();
@@ -1238,16 +1238,10 @@ void LLPanelLogin::onLoginComboLostFocus(LLFocusableElement* fe, void*)
 	if (sInstance)
 	{
 		LLComboBox* combo = sInstance->getChild<LLComboBox>("name_combo");
-		if(fe == combo)
+		if(fe == combo && combo->isTextDirty())
 		{
-			if (combo->isTextDirty())
-			{
-				clearPassword();
-			}
-			else
-			{
-				onSelectLoginEntry(combo, NULL);
-			}
+			clearPassword();
+			combo->resetTextDirty();
 		}
 	}
 }
