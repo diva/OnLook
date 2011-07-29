@@ -88,7 +88,10 @@ void AIFetchInventoryFolder::initialize_impl(void)
   mNeedNotifyObservers = false;
   set_state(AIFetchInventoryFolder_checkFolderExists);
   if (!gInventory.isInventoryUsable())
+  {
+	// This immediately calls this->idle(), and then when the event occurs cont().
 	AIEvent::Register(AIEvent::LLInventoryModel_mIsAgentInvUsable_true, this);
+  }
 }
 
 void AIFetchInventoryFolder::multiplex_impl(void)
