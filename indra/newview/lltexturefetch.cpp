@@ -479,8 +479,8 @@ static bool sgConnectionThrottle() {
 	LLMutexLock lock(&mutex);
 	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
 	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
-	S32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
-	const S32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
+	U32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
+	const U32 timestep = USEC_PER_SEC/THROTTLE_TIMESTEPS_PER_SECOND;
 	U64 now = LLTimer::getTotalTime();
 	std::deque<U64> timestamps;
 	while(!timestamps.empty() && (timestamps[0]<=now-timestep)) {
