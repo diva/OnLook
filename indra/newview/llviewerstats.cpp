@@ -707,7 +707,7 @@ void send_stats()
 	agent["ping"] = gAvgSimPing;
 	agent["meters_traveled"] = gAgent.getDistanceTraveled();
 	agent["regions_visited"] = gAgent.getRegionsVisited();
-	agent["mem_use"] = getCurrentRSS() / 1024.0;
+	agent["mem_use"] = LLMemory::getCurrentRSS() / 1024.0;
 
 	LLSD &system = body["system"];
 	

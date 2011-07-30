@@ -3789,10 +3789,21 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+   <key>DebugShowMemory</key>
+    <map>
+      <key>Comment</key>
+      <string>Show Total Allocated Memory</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>DebugShowRenderInfo</key>
     <map>
       <key>Comment</key>
-      <string>Show depth buffer contents</string>
+      <string>Show stats about current scene</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
