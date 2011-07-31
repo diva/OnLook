@@ -163,7 +163,7 @@ static struct ft_display_info ft_display_table[] =
 #if MESH_ENABLED
 	{ LLFastTimer::FTM_MESH_UPDATE,			"    Mesh Update",  &LLColor4::orange4, 0 },
 	{ LLFastTimer::FTM_MESH_LOCK1,			"     Lock 1",		&LLColor4::orange5, 0 },
-	{ LLFastTimer::FTM_MESH_LOCK2,			"	  Lock 2",		&LLColor4::orange6, 0 },
+	{ LLFastTimer::FTM_MESH_LOCK2,			"     Lock 2",		&LLColor4::orange6, 0 },
 	{ LLFastTimer::FTM_LOAD_MESH_LOD,		"     Load LOD",	&LLColor4::yellow3, 0 },
 #endif //MESH_ENABLED
 	{ LLFastTimer::FTM_REBUILD_OCCLUSION_VB,"    Occlusion",		&LLColor4::cyan5, 0 },
