@@ -319,6 +319,18 @@ extern LLGLSLShader			gObjectFullbrightShinyWaterProgram;
 extern LLGLSLShader			gObjectShinyProgram;
 extern LLGLSLShader			gObjectShinyWaterProgram;
 
+#if MESH_ENABLED
+extern LLGLSLShader			gSkinnedObjectSimpleProgram;
+extern LLGLSLShader			gSkinnedObjectFullbrightProgram;
+extern LLGLSLShader			gSkinnedObjectFullbrightShinyProgram;
+extern LLGLSLShader			gSkinnedObjectShinySimpleProgram;
+
+extern LLGLSLShader			gSkinnedObjectSimpleWaterProgram;
+extern LLGLSLShader			gSkinnedObjectFullbrightWaterProgram;
+extern LLGLSLShader			gSkinnedObjectFullbrightShinyWaterProgram;
+extern LLGLSLShader			gSkinnedObjectShinySimpleWaterProgram;
+#endif //MESH_ENABLED
+
 //environment shaders
 extern LLGLSLShader			gTerrainProgram;
 extern LLGLSLShader			gTerrainWaterProgram;
@@ -350,6 +362,11 @@ extern LLGLSLShader			gDeferredImpostorProgram;
 extern LLGLSLShader			gDeferredEdgeProgram;
 extern LLGLSLShader			gDeferredWaterProgram;
 extern LLGLSLShader			gDeferredDiffuseProgram;
+#if MESH_ENABLED
+extern LLGLSLShader			gDeferredSkinnedDiffuseProgram;
+extern LLGLSLShader			gDeferredSkinnedBumpProgram;
+extern LLGLSLShader			gDeferredSkinnedAlphaProgram;
+#endif //MESH_ENABLED
 extern LLGLSLShader			gDeferredBumpProgram;
 extern LLGLSLShader			gDeferredTerrainProgram;
 extern LLGLSLShader			gDeferredTreeProgram;
@@ -368,6 +385,9 @@ extern LLGLSLShader			gDeferredPostGIProgram;
 extern LLGLSLShader			gDeferredPostProgram;
 extern LLGLSLShader			gDeferredPostNoDoFProgram;
 extern LLGLSLShader			gDeferredAvatarShadowProgram;
+#if MESH_ENABLED
+extern LLGLSLShader			gDeferredAttachmentShadowProgram;
+#endif //MESH_ENABLED
 extern LLGLSLShader			gDeferredAlphaProgram;
 extern LLGLSLShader			gDeferredFullbrightProgram;
 extern LLGLSLShader			gDeferredAvatarAlphaProgram;

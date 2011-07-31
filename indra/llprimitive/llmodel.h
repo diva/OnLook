@@ -32,8 +32,10 @@
 #include "v4math.h"
 #include "m4math.h"
 
+#if MESH_IMPORT
 class daeElement;
 class domMesh;
+#endif //MESH_IMPORT
 
 #define MAX_MODEL_FACES 8
 
@@ -137,16 +139,20 @@ public:
 		const LLModel::Decomposition& decomp,
 		BOOL upload_skin,
 		BOOL upload_joints,
-		BOOL nowrite = FALSE);
+		BOOL nowrite = FALSE,
+		BOOL as_slm = FALSE);
 
 	static LLSD writeModelToStream(
 		std::ostream& ostr,
 		LLSD& mdl,
-		BOOL nowrite = FALSE);
+		BOOL nowrite = FALSE, BOOL as_slm = FALSE);
 
+#if MESH_IMPORT
 	static LLModel* loadModelFromDomMesh(domMesh* mesh);
 	static std::string getElementLabel(daeElement* element);
+#endif //MESH_IMPORT
 	std::string getName() const;
+	std::string getMetric() const {return mMetric;}
 	EModelStatus getStatus() const {return mStatus;}
 	static std::string getStatusString(U32 status) ;
 
@@ -171,6 +177,11 @@ public:
 	void optimizeVolumeFaces();
 	void offsetMesh( const LLVector3& pivotPoint );
 	void getNormalizedScaleTranslation(LLVector3& scale_out, LLVector3& translation_out);
+	
+	//reorder face list based on mMaterialList in this and reference so 
+	//order matches that of reference (material ordering touchup)
+	void matchMaterialOrder(LLModel* reference);
+
 	std::vector<std::string> mMaterialList;
 
 	//data used for skin weights
@@ -211,6 +222,22 @@ public:
 		}
 	};
 
+	
+	struct JointPositionalCompare
+	{
+		//Are the doubles the same w/in epsilon specified tolerance
+		bool areEqual( double a, double b )
+		{
+			const float epsilon = 1e-5f;
+			return (abs((int)(a - b)) < epsilon) && (a < b);
+		}
+		//Make sure that we return false for any values that are within the tolerance for equivalence
+		bool operator() ( const LLVector3& a, const LLVector3& b )
+		{
+			 return ( areEqual( a[0],b[0]) && areEqual( a[1],b[1] ) && areEqual( a[2],b[2]) ) ? false : true;		
+		}
+	};
+
 	//copy of position array for this model -- mPosition[idx].mV[X,Y,Z]
 	std::vector<LLVector3> mPosition;
 
@@ -227,6 +254,8 @@ public:
 	
 	std::string mRequestedLabel; // name requested in UI, if any.
 	std::string mLabel; // name computed from dae.
+
+	std::string mMetric; // user-supplied metric data for upload
 
 	LLVector3 mNormalizedScale;
 	LLVector3 mNormalizedTranslation;
@@ -250,8 +279,10 @@ public:
 
 	EModelStatus mStatus ;
 protected:
+#if MESH_IMPORT
 	void addVolumeFacesFromDomMesh(domMesh* mesh);
 	virtual BOOL createVolumeFacesFromDomMesh(domMesh *mesh);
+#endif //MESH_IMPORT
 };
 
 #endif //LL_LLMODEL_H

@@ -42,6 +42,7 @@
 #include "llmatrix4a.h"
 #include "v3color.h"
 
+#include "lldrawpoolavatar.h"
 #include "lldrawpoolbump.h"
 #include "llgl.h"
 #include "llrender.h"
@@ -153,6 +154,9 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 {
 	mLastUpdateTime = gFrameTimeSeconds;
 	mLastMoveTime = 0.f;
+#if MESH_ENABLED
+	mLastSkinTime = gFrameTimeSeconds;
+#endif //MESH_ENABLED
 	mVSize = 0.f;
 	mPixelArea = 16.f;
 	mState      = GLOBAL;
@@ -1140,7 +1144,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	LLStrider<LLVector3> binormals;
 	LLStrider<U16> indicesp;
 #if MESH_ENABLED
-	LLStrider<LLVector3> weights;
+	LLStrider<LLVector4> weights;
 #endif //MESH_ENABLED
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
@@ -1597,7 +1601,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	{
 		for (S32 i = 0; i < num_vertices; i++)
 		{
-			weights[i].set(weights.getF32ptr());
+			weights[i].set(*(weights.get()));
 		}
 	}
 #endif //MESH_ENABLED

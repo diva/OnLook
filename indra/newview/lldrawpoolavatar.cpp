@@ -37,16 +37,23 @@
 
 #include "llvoavatar.h"
 #include "m3math.h"
+#include "llmatrix4a.h"
 
-#include "llagent.h"
+#include "llagent.h" //for gAgent.needsRenderAvatar()
 #include "lldrawable.h"
+#include "lldrawpoolbump.h"
 #include "llface.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llsky.h"
 #include "llviewercamera.h"
 #include "llviewerregion.h"
 #include "noise.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
+#include "llvovolume.h"
+#include "llvolume.h"
 #include "llappviewer.h"
 #include "llrendersphere.h"
 #include "llviewerpartsim.h"
@@ -59,6 +66,10 @@ LLGLSLShader* LLDrawPoolAvatar::sVertexProgram = NULL;
 BOOL	LLDrawPoolAvatar::sSkipOpaque = FALSE;
 BOOL	LLDrawPoolAvatar::sSkipTransparent = FALSE;
 S32 	LLDrawPoolAvatar::sDiffuseChannel = 0;
+
+#if MESH_ENABLED
+static bool is_deferred_render = false;
+#endif //MESH_ENABLED
 
 extern BOOL gUseGLPick;
 
@@ -157,6 +168,9 @@ LLMatrix4& LLDrawPoolAvatar::getModelView()
 void LLDrawPoolAvatar::beginDeferredPass(S32 pass)
 {
 	sSkipTransparent = TRUE;
+#if MESH_ENABLED
+	is_deferred_render = true;
+#endif //MESH_ENABLED
 
 	if (LLPipeline::sImpostorRender)
 	{ //impostor pass does not have rigid or impostor rendering
@@ -187,7 +201,11 @@ void LLDrawPoolAvatar::beginDeferredPass(S32 pass)
 
 void LLDrawPoolAvatar::endDeferredPass(S32 pass)
 {
+
 	sSkipTransparent = FALSE;
+#if MESH_ENABLED
+	is_deferred_render = false;
+#endif //MESH_ENABLED
 
 	if (LLPipeline::sImpostorRender)
 	{
@@ -1406,7 +1424,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 		LLMatrix4a bind_shape_matrix;
 		bind_shape_matrix.loadu(skin->mBindShapeMatrix);
 
-		for (U32 j = 0; j < buffer->getRequestedVerts(); ++j)
+		for (U32 j = 0; j < (U32)buffer->getRequestedVerts(); ++j)
 		{
 			LLMatrix4a final_mat;
 			final_mat.clear();
@@ -1458,7 +1476,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 
 void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 {
-	if (avatar->isSelf() && !gAgent.needsRenderAvatar())
+	if (avatar->isSelf() && !gAgent.needsRenderAvatar() || !gMeshRepo.meshRezEnabled())
 	{
 		return;
 	}
@@ -1495,7 +1513,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 			continue;
 		}
 
-		const LLMeshSkinInfo* skin = gMeshRepo.getSkinInfo(mesh_id);
+		const LLMeshSkinInfo* skin = gMeshRepo.getSkinInfo(mesh_id, vobj);
 		if (!skin)
 		{
 			continue;
@@ -1754,7 +1772,7 @@ void LLDrawPoolAvatar::removeRiggedFace(LLFace* facep)
 		
 		if (index > -1)
 		{
-			if (mRiggedFace[i].size() > index && mRiggedFace[i][index] == facep)
+			if ((S32)mRiggedFace[i].size() > index && mRiggedFace[i][index] == facep)
 			{
 				facep->setRiggedIndex(i,-1);
 				mRiggedFace[i].erase(mRiggedFace[i].begin()+index);

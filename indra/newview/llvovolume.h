@@ -266,12 +266,6 @@ public:
 	// Returns 'true' iff the media data for this object is in flight
 	bool isMediaDataBeingFetched() const;
 
-	// Returns the "last fetched" media version, or -1 if not fetched yet
-	S32 getLastFetchedMediaVersion() const { return mLastFetchedMediaVersion; }
-
-	void addMDCImpl() { ++mMDCImplCount; }
-	void removeMDCImpl() { --mMDCImplCount; }
-	S32 getMDCImplCount() { return mMDCImplCount; }
 	
 
 	//rigged volume update (for raycasting)

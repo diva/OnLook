@@ -152,6 +152,16 @@ BOOL LLShaderMgr::attachShaderFeatures(LLGLSLShader * shader)
 			return FALSE;
 		}
 	}
+
+#if MESH_ENABLED
+	if (features->hasObjectSkinning)
+	{
+		if (!shader->attachObject("avatar/objectSkinV.glsl"))
+		{
+			return FALSE;
+		}
+	}
+#endif //MESH_ENABLED
 	
 	///////////////////////////////////////
 	// Attach Fragment Shader Features Next

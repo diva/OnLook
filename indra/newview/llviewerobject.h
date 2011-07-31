@@ -63,6 +63,7 @@ class LLWorld;
 class LLNameValue;
 class LLNetMap;
 class LLMessageSystem;
+class LLPartSysData;
 class LLPrimitive;
 class LLPipeline;
 class LLTextureEntry;
@@ -73,7 +74,7 @@ class LLViewerPartSourceScript;
 class LLViewerRegion;
 class LLViewerObjectMedia;
 class LLVOInventoryListener;
-class LLPartSysData;
+class LLVOAvatar;
 
 typedef enum e_object_update_type
 {
@@ -172,6 +173,7 @@ public:
 	void			setOnActiveList(BOOL on_active)		{ mOnActiveList = on_active; }
 
 	virtual BOOL	isAttachment() const { return FALSE; }
+	virtual LLVOAvatar* getAvatar() const;  //get the avatar this object is attached to, or NULL if object is not an attachment
 	virtual BOOL	isHUDAttachment() const { return FALSE; }
 	virtual void 	updateRadius() {};
 	virtual F32 	getVObjRadius() const; // default implemenation is mDrawable->getRadius()
@@ -220,6 +222,9 @@ public:
 
 	virtual BOOL isFlexible() const					{ return FALSE; }
 	virtual BOOL isSculpted() const 				{ return FALSE; }
+#if MESH_ENABLED
+	virtual BOOL isMesh() const						{ return FALSE; }
+#endif //MESH_ENABLED
 
 	// This method returns true if the object is over land owned by
 	// the agent.

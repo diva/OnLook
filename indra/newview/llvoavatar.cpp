@@ -725,10 +725,16 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mTexHairColor( NULL ),
 	mTexEyeColor( NULL ),
 	mNeedsSkin(FALSE),
+#if MESH_ENABLED
+	mLastSkinTime(0.f),
+#endif //MESH_ENABLED
 	mUpdatePeriod(1),
 	mFullyLoadedInitialized(FALSE),
 	mHasBakedHair( FALSE ),
 	mSupportsAlphaLayers(FALSE),
+#if MESH_ENABLED
+	mHasPelvisOffset( FALSE ),
+#endif //MESH_ENABLED
 	mFirstSetActualBoobGravRan( false ),
 	mSupportsPhysics( false )
 	//mFirstSetActualButtGravRan( false ),
@@ -838,6 +844,12 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 
 	mRuthTimer.reset();
 
+#if MESH_ENABLED
+	mPelvisOffset = LLVector3(0.0f,0.0f,0.0f);
+	mLastPelvisToFoot = 0.0f;
+	mPelvisFixup = 0.0f;
+	mLastPelvisFixup = 0.0f;
+#endif //MESH_ENABLED
 	//-------------------------------------------------------------------------
 	// initialize joint, mesh and shape members
 	//-------------------------------------------------------------------------
@@ -1527,6 +1539,16 @@ const LLVector3 LLVOAvatar::getRenderPosition() const
 	}
 	else if (isRoot() || !mDrawable->getParent())
 	{
+#if MESH_ENABLED
+		if ( mHasPelvisOffset )
+		{
+			//Apply a pelvis fixup (as defined by the avs skin)
+			LLVector3 pos = mDrawable->getPositionAgent();
+			pos[VZ] += mPelvisFixup;
+			return pos;
+		}
+		else
+#endif //MESH_ENABLED
 		return mDrawable->getPositionAgent();
 	}
 	else
@@ -1624,7 +1646,7 @@ void LLVOAvatar::getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax)
 				LLDrawable* drawable = attached_object->mDrawable;
 				if (drawable
 #if MESH_ENABLED
-				&& !drawable->isState(LLDrawable::RIGGED))
+				&& !drawable->isState(LLDrawable::RIGGED)
 #endif //MESH_ENABLED
 				)
 				{
@@ -2881,9 +2903,20 @@ void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
 		// here we get the approximate head position and set as sound source for the voice symbol
 		// (the following version uses a tweak of "mHeadOffset" which handle sitting vs. standing)
 		//--------------------------------------------------------------------------------------------
+#if MESH_ENABLED
+	if( !mIsSitting )
+	{
+		LLVector3 tagPos = mRoot.getWorldPosition();
+		tagPos[VZ] -= mPelvisToFoot;
+		tagPos[VZ] += ( mBodySize[VZ] + 0.125f );
+		mVoiceVisualizer->setVoiceSourceWorldPosition( tagPos );
+	}
+	else
+#endif //MESH_ENABLED
+	{
 		LLVector3 headOffset = LLVector3( 0.0f, 0.0f, mHeadOffset.mV[2] );
 		mVoiceVisualizer->setVoiceSourceWorldPosition( mRoot.getWorldPosition() + headOffset );
-		
+	}
 	}//if ( voiceEnabled )
 }
 
@@ -4801,7 +4834,43 @@ void LLVOAvatar::updateHeadOffset()
 		mHeadOffset = lerp(midEyePt, mHeadOffset,  u);
 	}
 }
-
+#if MESH_ENABLED
+//------------------------------------------------------------------------
+// setPelvisOffset
+//------------------------------------------------------------------------
+void LLVOAvatar::setPelvisOffset( bool hasOffset, const LLVector3& offsetAmount, F32 pelvisFixup ) 
+{
+	mHasPelvisOffset = hasOffset;
+	if ( mHasPelvisOffset )
+	{
+		//Store off last pelvis to foot value
+		mLastPelvisToFoot = mPelvisToFoot;
+		mPelvisOffset	  = offsetAmount;
+		mLastPelvisFixup  = mPelvisFixup;
+		mPelvisFixup	  = pelvisFixup;
+	}
+}
+//------------------------------------------------------------------------
+// postPelvisSetRecalc
+//------------------------------------------------------------------------
+void LLVOAvatar::postPelvisSetRecalc( void )
+{	
+	computeBodySize(); 
+	mRoot.touch();
+	mRoot.updateWorldMatrixChildren();	
+	dirtyMesh();
+	updateHeadOffset();
+}
+//------------------------------------------------------------------------
+// pelisPoke
+//------------------------------------------------------------------------
+void LLVOAvatar::setPelvisOffset( F32 pelvisFixupAmount )
+{	
+	mHasPelvisOffset  = true;
+	mLastPelvisFixup  = mPelvisFixup;	
+	mPelvisFixup	  = pelvisFixupAmount;	
+}
+#endif //MESH_ENABLED
 //------------------------------------------------------------------------
 // updateVisibility()
 //------------------------------------------------------------------------
@@ -5020,6 +5089,9 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 				mMeshLOD[MESH_ID_HAIR]->updateJointGeometry();
 			}
 			mNeedsSkin = FALSE;
+#if MESH_ENABLED
+			mLastSkinTime = gFrameTimeSeconds;
+#endif //MESH_ENABLED
 			
 			LLVertexBuffer* vb = mDrawable->getFace(0)->getVertexBuffer();
 			if (vb)
@@ -6006,13 +6078,89 @@ LLJoint *LLVOAvatar::getJoint( const std::string &name )
 	}
 	return jointp;
 }
+#if MESH_ENABLED
+//-----------------------------------------------------------------------------
+// resetJointPositions
+//-----------------------------------------------------------------------------
+void LLVOAvatar::resetJointPositions( void )
+{
+	for(S32 i = 0; i < (S32)mNumJoints; ++i)
+	{
+		mSkeleton[i].restoreOldXform();
+		mSkeleton[i].setId( LLUUID::null );
+	}
+	mHasPelvisOffset = false;
+	mPelvisFixup	 = mLastPelvisFixup;
+}
+//-----------------------------------------------------------------------------
+// resetSpecificJointPosition
+//-----------------------------------------------------------------------------
+void LLVOAvatar::resetSpecificJointPosition( const std::string& name )
+{
+	LLJoint* pJoint = mRoot.findJoint( name );
+	
+	if ( pJoint  && pJoint->doesJointNeedToBeReset() )
+	{
+		pJoint->restoreOldXform();
+		pJoint->setId( LLUUID::null );
+		//If we're reseting the pelvis position make sure not to apply offset
+		if ( name == "mPelvis" )
+		{
+			mHasPelvisOffset = false;
+		}
+	}
+	else
+	{
+		llinfos<<"Did not find "<< name.c_str()<<llendl;
+	}
+}
+//-----------------------------------------------------------------------------
+// resetJointPositionsToDefault
+//-----------------------------------------------------------------------------
+void LLVOAvatar::resetJointPositionsToDefault( void )
+{
+	const LLVector3& avPos = getCharacterPosition();
+	
+	//Reposition the pelvis
+	LLJoint* pPelvis = mRoot.findJoint("mPelvis");
+	if ( pPelvis )
+	{
+		pPelvis->setPosition( avPos + pPelvis->getPosition() );
+	}
+	else 
+	{
+		llwarns<<"Can't get pelvis joint."<<llendl;	
+		return;
+	}
+
+	//Subsequent joints are relative to pelvis
+	for( S32 i = 0; i < (S32)mNumJoints; ++i )
+	{
+		LLJoint* pJoint = (LLJoint*)&mSkeleton[i];
+		if ( pJoint->doesJointNeedToBeReset() )
+		{
+
+			pJoint->setId( LLUUID::null );
+			//restore joints to default positions, however skip over the pelvis
+			if ( pJoint && pPelvis != pJoint )
+			{
+				pJoint->restoreOldXform();
+			}
+		}
+	}
+	//make sure we don't apply the joint offset
+	mHasPelvisOffset = false;
+	mPelvisFixup	 = mLastPelvisFixup;
+	postPelvisSetRecalc();
+}
+#endif //MESH_ENABLED
 
 //-----------------------------------------------------------------------------
 // getCharacterPosition()
 //-----------------------------------------------------------------------------
 LLVector3 LLVOAvatar::getCharacterPosition()
 {
-	if (mDrawable && mDrawable.notNull())
+	if (mDrawable.notNull())
 	{
 		return mDrawable->getPositionAgent();
 	}
@@ -7202,7 +7350,7 @@ void LLVOAvatar::cleanupAttachedMesh( LLViewerObject* pVO )
 		LLVOVolume* pVObj = pVO->mDrawable->getVOVolume();
 		if ( pVObj )
 		{
-			const LLMeshSkinInfo* pSkinData = gMeshRepo.getSkinInfo( pVObj->getVolume()->getParams().getSculptID() );
+			const LLMeshSkinInfo* pSkinData = gMeshRepo.getSkinInfo( pVObj->getVolume()->getParams().getSculptID(), pVObj );
 			if ( pSkinData )
 			{
 				const int jointCnt = pSkinData->mJointNames.size();

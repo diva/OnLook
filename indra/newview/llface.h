@@ -239,6 +239,9 @@ public:
 	LLVector2		mTexExtents[2];
 	F32				mDistance;
 	F32			mLastUpdateTime;
+#if MESH_ENABLED
+	F32			mLastSkinTime;
+#endif //MESH_ENABLED
 	F32			mLastMoveTime;
 	LLMatrix4*	mTextureMatrix;
 	LLDrawInfo* mDrawInfo;

@@ -63,6 +63,9 @@ LLShaderFeatures::LLShaderFeatures()
 : calculatesLighting(false), isShiny(false), isFullbright(false), hasWaterFog(false),
 hasTransport(false), hasSkinning(false), hasAtmospherics(false), isSpecular(false),
 hasGamma(false), hasLighting(false), calculatesAtmospherics(false)
+#if MESH_ENABLED
+, hasObjectSkinning(false)
+#endif //MESH_ENABLED
 {
 }
 

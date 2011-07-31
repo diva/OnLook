@@ -70,10 +70,11 @@
 #include "llmatrix4a.h"
 #include "llagent.h"
 #if MESH_ENABLED
-#include "lldrawpoolavatar.h
+#include "lldrawpoolavatar.h"
 #include "llmeshrepository.h"
 #include "lldatapacker.h"
 #include "llvoavatar.h"
+#include "llfloatertools.h"
 #endif //MESH_ENABLED
 #include "llvocache.h"
 
@@ -755,7 +756,6 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 		// if it's a mesh
 		if ((volume_params.getSculptType() & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH)
 		{ //meshes might not have all LODs, get the force detail to best existing LOD
-
 			LLUUID mesh_id = volume_params.getSculptID();
 
 			//profile and path params don't matter for meshes
@@ -801,6 +801,8 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 	if (is404)
 	{
 		setIcon(LLViewerTextureManager::getFetchedTextureFromFile("icons/Inv_Mesh.png", TRUE, LLViewerTexture::BOOST_UI));
+		//render prim proxy when mesh loading attempts give up
+		volume_params.setSculptID(LLUUID::null, LL_SCULPT_TYPE_NONE);
 	}
 #endif //MESH_ENABLED
 	if ((LLPrimitive::setVolume(volume_params, lod, (mVolumeImpl && mVolumeImpl->isVolumeUnique()))) || mSculptChanged)
@@ -992,8 +994,16 @@ BOOL LLVOVolume::calcLOD()
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
 		LLVOAvatar* avatar = getAvatar(); 
-		distance = avatar->mDrawable->mDistanceWRTCamera;
-		radius = avatar->getBinRadius();
+		if(avatar)
+		{
+			distance = avatar->mDrawable->mDistanceWRTCamera;
+			radius = avatar->getBinRadius();
+		}
+		else
+		{
+			distance = mDrawable->mDistanceWRTCamera;
+			radius = getVolume()->mLODScaleBias.scaledVec(getScale()).length();
+		}
 	}
 	else
 #endif //MESH_ENABLED
@@ -1182,7 +1192,7 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 #if !MESH_ENABLED
 	LLVolume* volume = getVolume();
 #endif //!MESH_ENABLED
-	for (S32 i = 0; i < getVolume()->getNumFaces(); i++)
+	for (S32 i = 0; i < getVolume()->getNumVolumeFaces(); i++)
 	{
 		LLFace *face = mDrawable->getFace(i);
 		if (!face)
@@ -1347,7 +1357,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 	if (mDrawable->isState(LLDrawable::REBUILD_RIGGED))
 	{
 		{
-			LLFastTimer t(FTM_UPDATE_RIGGED_VOLUME);
+			LLFastTimer t2(LLFastTimer::FTM_UPDATE_RIGGED_VOLUME);
 			updateRiggedVolume();
 		}
 		genBBoxes(FALSE);
@@ -2022,6 +2032,7 @@ BOOL LLVOVolume::isSculpted() const
 #if MESH_ENABLED
 BOOL LLVOVolume::isMesh() const
 {
+	
 	if (isSculpted())
 	{
 		LLSculptParams *sculpt_params = (LLSculptParams *)getParameterEntry(LLNetworkData::PARAMS_SCULPT);
@@ -2452,9 +2463,10 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 #if MESH_ENABLED
 	if (mDrawable->isState(LLDrawable::RIGGED))
 	{
-		if (LLFloater::isVisible(gFloaterTools) && getAvatar()->isSelf())
+		if (gFloaterTools->getVisible() && getAvatar()->isSelf())
 		{
-			gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_RIGGED, TRUE);
+			updateRiggedVolume();
+			genBBoxes(FALSE);
 			volume = mRiggedVolume;
 			transform = false;
 		}
@@ -2591,7 +2603,7 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 #if MESH_ENABLED
 bool LLVOVolume::treatAsRigged()
 {
-	return LLFloater::isVisible(gFloaterTools) && 
+	return gFloaterTools->getVisible() && 
 			isAttachment() && 
 			getAvatar() &&
 			getAvatar()->isSelf() &&
@@ -2627,7 +2639,7 @@ void LLVOVolume::updateRiggedVolume()
 
 	LLVolume* volume = getVolume();
 
-	const LLMeshSkinInfo* skin = gMeshRepo.getSkinInfo(volume->getParams().getSculptID());
+	const LLMeshSkinInfo* skin = gMeshRepo.getSkinInfo(volume->getParams().getSculptID(), this);
 
 	if (!skin)
 	{
@@ -2655,8 +2667,8 @@ void LLVOVolume::updateRiggedVolume()
 }
 
 
-static LLFastTimer::DeclareTimer FTM_SKIN_RIGGED("Skin");
-static LLFastTimer::DeclareTimer FTM_RIGGED_OCTREE("Octree");
+//static LLFastTimer::DeclareTimer FTM_SKIN_RIGGED("Skin");
+//static LLFastTimer::DeclareTimer FTM_RIGGED_OCTREE("Octree");
 
 void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, const LLVolume* volume)
 {
@@ -2711,9 +2723,9 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		LLVector4a* pos = dst_face.mPositions;
 
 		{
-			LLFastTimer t(FTM_SKIN_RIGGED);
+			LLFastTimer t(LLFastTimer::FTM_SKIN_RIGGED);
 
-			for (U32 j = 0; j < dst_face.mNumVertices; ++j)
+			for (U32 j = 0; j < (U32)dst_face.mNumVertices; ++j)
 			{
 				LLMatrix4a final_mat;
 				final_mat.clear();
@@ -2760,7 +2772,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 			min = pos[0];
 			max = pos[1];
 
-			for (U32 j = 1; j < dst_face.mNumVertices; ++j)
+			for (U32 j = 1; j < (U32)dst_face.mNumVertices; ++j)
 			{
 				min.setMin(min, pos[j]);
 				max.setMax(max, pos[j]);
@@ -2772,7 +2784,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		}
 
 		{
-			LLFastTimer t(FTM_RIGGED_OCTREE);
+			LLFastTimer t(LLFastTimer::FTM_RIGGED_OCTREE);
 			delete dst_face.mOctree;
 			dst_face.mOctree = NULL;
 
@@ -2864,8 +2876,11 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	else
 	{
 		model_mat = &(drawable->getRegion()->mRenderMatrix);
+		if (model_mat->isIdentity())
+		{
+			model_mat = NULL;
+		}
 	}
-
 
 	U8 bump = (type == LLRenderPass::PASS_BUMP || type == LLRenderPass::PASS_POST_BUMP) ? facep->getTextureEntry()->getBumpmap() : 0;
 	
@@ -3030,7 +3045,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		LLVOVolume* vobj = drawablep->getVOVolume();
 
 #if MESH_ENABLED
-		if (vobj->getVolume() && vobj->getVolume()->isTetrahedron())
+		if (vobj->getVolume() && vobj->getVolume()->isTetrahedron() || (vobj->isMesh() && !gMeshRepo.meshRezEnabled()))
 		{
 			continue;
 		}
@@ -3044,9 +3059,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 #if MESH_ENABLED
 		bool rigged = vobj->isAttachment() && 
 					vobj->isMesh() && 
-					gMeshRepo.getSkinInfo(vobj->getVolume()->getParams().getSculptID());
-
-		bool bake_sunlight = LLPipeline::sBakeSunlight && drawablep->isStatic();
+					gMeshRepo.getSkinInfo(vobj->getVolume()->getParams().getSculptID(), vobj);
 
 		bool is_rigged = false;
 #endif //MESH_ENABLED
@@ -3085,7 +3098,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 				if ( pAvatarVO )
 				{
 					LLUUID currentId = vobj->getVolume()->getParams().getSculptID();
-					const LLMeshSkinInfo*  pSkinData = gMeshRepo.getSkinInfo( currentId );
+					const LLMeshSkinInfo*  pSkinData = gMeshRepo.getSkinInfo( currentId, vobj );
 					
 					if ( pSkinData )
 					{
@@ -3362,8 +3375,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	}
 
 	genDrawInfo(group, simple_mask, simple_faces);
-	genDrawInfo(group, bump_mask, bump_faces);
 	genDrawInfo(group, fullbright_mask, fullbright_faces);
+	genDrawInfo(group, bump_mask, bump_faces, FALSE);
 	genDrawInfo(group, alpha_mask, alpha_faces, TRUE);
 
 	if (!LLPipeline::sDelayVBUpdate)

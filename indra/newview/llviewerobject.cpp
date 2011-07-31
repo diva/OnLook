@@ -4582,6 +4582,12 @@ void LLViewerObject::adjustAudioGain(const F32 gain)
 
 bool LLViewerObject::unpackParameterEntry(U16 param_type, LLDataPacker *dp)
 {
+#if MESH_ENABLED
+	if (LLNetworkData::PARAMS_MESH == param_type)
+	{
+		param_type = LLNetworkData::PARAMS_SCULPT;
+	}
+#endif //MESH_ENABLED
 	ExtraParameter* param = getExtraParameterEntryCreate(param_type);
 	if (param)
 	{
@@ -4623,7 +4629,7 @@ LLViewerObject::ExtraParameter* LLViewerObject::createNewParameterEntry(U16 para
 	  }
 	  default:
 	  {
-		  llinfos << "Unknown param type." << llendl;
+		  llinfos << "Unknown param type. (" << llformat("0x%2x",param_type) << ")" << llendl;
 		  break;
 	  }
 	};
@@ -5363,3 +5369,20 @@ const LLUUID &LLViewerObject::extractAttachmentItemID()
 	return getAttachmentItemID();
 }
 
+//virtual
+LLVOAvatar* LLViewerObject::getAvatar() const
+{
+	if (isAttachment())
+	{
+		LLViewerObject* vobj = (LLViewerObject*) getParent();
+
+		while (vobj && !vobj->isAvatar())
+		{
+			vobj = (LLViewerObject*) vobj->getParent();
+		}
+
+		return (LLVOAvatar*) vobj;
+	}
+
+	return NULL;
+}

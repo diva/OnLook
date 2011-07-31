@@ -958,7 +958,12 @@ class LLVolume : public LLRefCount
 {
 	friend class LLVolumeLODGroup;
 
+#if MESH_ENABLED
+protected:
+#endif //MESH_ENABLED
+#if !MESH_ENABLED
 private:
+#endif //!MESH_ENABLED
 	LLVolume(const LLVolume&);  // Don't implement
 	~LLVolume(); // use unref
 

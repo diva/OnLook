@@ -17,7 +17,7 @@ include_directories(
 
 set(llprimitive_SOURCE_FILES
     llmaterialtable.cpp
-    #llmodel.cpp
+    llmodel.cpp
     llprimitive.cpp
     llprimtexturelist.cpp
     lltextureanim.cpp
@@ -33,7 +33,7 @@ set(llprimitive_HEADER_FILES
 
     legacy_object_types.h
     llmaterialtable.h
-    #llmodel.h
+    llmodel.h
     llprimitive.h
     llprimtexturelist.h
     lltextureanim.h
