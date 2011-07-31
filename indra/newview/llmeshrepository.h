@@ -349,7 +349,7 @@ public:
 
 	virtual void run();
 
-	void loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod, bool do_lock = true);
+	void loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
 	bool fetchMeshHeader(const LLVolumeParams& mesh_params);
 	bool fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod);
 	bool headerReceived(const LLVolumeParams& mesh_params, U8* data, S32 data_size);

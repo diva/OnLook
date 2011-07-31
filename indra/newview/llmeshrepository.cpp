@@ -603,7 +603,7 @@ void LLMeshRepoThread::loadMeshPhysicsShape(const LLUUID& mesh_id)
 }
 
 
-void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod, bool do_lock)
+void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 { //protected by mSignal, no locking needed here
 
 	mesh_header_map::iterator iter = mMeshHeader.find(mesh_params.getSculptID());
@@ -611,11 +611,8 @@ void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod, b
 	{ //if we have the header, request LOD byte range
 		LODRequest req(mesh_params, lod);
 		{
-			if(do_lock)
-				mMutex->lock();
+			LLMutexLock lock(mMutex);
 			mLODReqQ.push(req);
-			if(do_lock)
-				mMutex->unlock();
 		}
 	}
 	else
@@ -631,12 +628,9 @@ void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod, b
 		}
 		else
 		{ //if no header request is pending, fetch header
-			if(do_lock)
-				mMutex->lock();
+			LLMutexLock lock(mMutex);
 			mHeaderReqQ.push(req);
 			mPendingLOD[mesh_params].push_back(lod);
-			if(do_lock)
-				mMutex->unlock();
 		}
 	}
 }
@@ -1604,10 +1598,10 @@ void LLMeshRepoThread::notifyLoadedMeshes()
 {//called via gMeshRepo.notifyLoadedMeshes(). mMutex already locked
 	while (!mLoadedQ.empty())
 	{
-		//mMutex->lock();
+		mMutex->lock();
 		LoadedMesh mesh = mLoadedQ.front();
 		mLoadedQ.pop();
-		//mMutex->unlock();
+		mMutex->unlock();
 		
 		if (mesh.mVolume && mesh.mVolume->getNumVolumeFaces() > 0)
 		{
@@ -1622,10 +1616,10 @@ void LLMeshRepoThread::notifyLoadedMeshes()
 
 	while (!mUnavailableQ.empty())
 	{
-		//mMutex->lock();
+		mMutex->lock();
 		LODRequest req = mUnavailableQ.front();
 		mUnavailableQ.pop();
-		//mMutex->unlock();
+		mMutex->unlock();
 		
 		gMeshRepo.notifyMeshUnavailable(req.mMeshParams, req.mLOD);
 	}
@@ -2405,7 +2399,7 @@ void LLMeshRepository::notifyLoadedMeshes()
 		{
 			LLFastTimer t(LLFastTimer::FTM_LOAD_MESH_LOD);
 			LLMeshRepoThread::LODRequest& request = mPendingRequests.front();
-			mThread->loadMeshLOD(request.mMeshParams, request.mLOD, false);
+			mThread->loadMeshLOD(request.mMeshParams, request.mLOD);
 			mPendingRequests.erase(mPendingRequests.begin());
 			push_count--;
 		}
