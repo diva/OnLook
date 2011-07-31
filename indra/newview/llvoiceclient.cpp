@@ -1120,6 +1120,7 @@ LLVoiceClient::LLVoiceClient()
 	mSpeakerVolume = 0;
 	mMicVolume = 0;
 
+	mNextAudioSession = NULL;
 	mAudioSession = NULL;
 	mAudioSessionChanged = false;
 
