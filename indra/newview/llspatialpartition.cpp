@@ -119,7 +119,11 @@ void sg_assert(BOOL expr)
 void validate_drawable(LLDrawable* drawablep)
 {
 	F64 rad = drawablep->getBinRadius();
-	const LLVector3* ext = drawablep->getSpatialExtents();
+	LLVector4a const* exta = drawablep->getSpatialExtents();
+
+	LLVector3 ext[2];
+	ext[0].set(exta[0].getF32ptr());
+	ext[1].set(exta[1].getF32ptr());
 
 	if (rad < 0 || rad > 4096 ||
 		(ext[1]-ext[0]).magVec() > 4096)
