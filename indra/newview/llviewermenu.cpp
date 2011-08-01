@@ -252,6 +252,7 @@
 #include "floaterao.h"
 #include "slfloatermediafilter.h"
 #include "llviewerobjectbackup.h"
+#include "llagentui.h"
 
 #include "hippogridmanager.h"
 
@@ -6027,7 +6028,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		LLUUID folder_id;
 		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		std::string pos_string;
-		gAgent.buildLocationString(pos_string);
+		LLAgentUI::buildLocationString(pos_string);
 		
 		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 							  folder_id, LLTransactionID::tnull,

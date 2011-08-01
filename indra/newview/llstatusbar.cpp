@@ -69,6 +69,7 @@
 #include "llviewerthrottle.h"
 #include "lluictrlfactory.h"
 #include "llvoiceclient.h"	// for gVoiceClient
+#include "llagentui.h"
 
 #include "lltoolmgr.h"
 #include "llfocusmgr.h"
@@ -495,11 +496,10 @@ void LLStatusBar::refresh()
 		mRegionDetails.mPing = region->getNetDetailsForLCD();
 		if (parcel)
 		{
-			location_name = region->getName()
-				+ llformat(" %d, %d, %d (%s) - %s", 
-						   pos_x, pos_y, pos_z,
-						   region->getSimAccessString().c_str(),
-						   parcel->getName().c_str());
+			if (!LLAgentUI::buildLocationString(location_name, LLAgentUI::LOCATION_FORMAT_FULL)) 
+			{
+				location_name = "???";
+			}
 
 			// keep these around for the LCD to use
 			mRegionDetails.mRegionName = region->getName();
