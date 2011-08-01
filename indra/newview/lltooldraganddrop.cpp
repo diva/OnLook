@@ -98,7 +98,7 @@ public:
 	virtual bool operator()(LLInventoryCategory* cat,
 							LLInventoryItem* item)
 	{
-		if(cat && (cat->getPreferredType() == LLAssetType::AT_NONE))
+		if(cat && (cat->getPreferredType() == LLFolderType::FT_NONE))
 		{
 			return true;
 		}
@@ -115,7 +115,7 @@ public:
 							LLInventoryItem* item)
 	{
 		if(item) return true;
-		if(cat && (cat->getPreferredType() == LLAssetType::AT_NONE))
+		if(cat && (cat->getPreferredType() == LLFolderType::FT_NONE))
 		{
 			return true;
 		}

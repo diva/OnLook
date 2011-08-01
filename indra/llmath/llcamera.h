@@ -144,7 +144,7 @@ public:
 	virtual ~LLCamera();
 	
 
-	void setUserClipPlane(LLPlane& plane);
+	void setUserClipPlane(const LLPlane& plane);
 	void disableUserClipPlane();
 	virtual void setView(F32 vertical_fov_rads);
 	void setViewHeightInPixels(S32 height);

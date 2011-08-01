@@ -165,7 +165,7 @@ void RlvFloaterBehaviour::changed(const RlvCommand& /*rlvCmd*/, bool /*fInternal
 
 void RlvFloaterBehaviour::onAvatarNameLookup(const LLUUID& uuid)
 {
-	std::map<LLUUID, boost::signals2::connection>::const_iterator itLookup = m_PendingLookup.find(uuid);
+	std::map<LLUUID, boost::signals2::connection>::iterator itLookup = m_PendingLookup.find(uuid);
 	if (itLookup != m_PendingLookup.end())
 	{
 		itLookup->second.disconnect();
