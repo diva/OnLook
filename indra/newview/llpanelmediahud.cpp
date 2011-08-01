@@ -396,9 +396,8 @@ void LLPanelMediaHUD::updateShape()
 			}
 		}
 		// If we need to start fading the UI (and we have not already started)
-		else if(! mFadeTimer.getStarted())
+		else if (!mFadeTimer.getStarted())
 		{
-			mFadeTimer.reset();
 			mFadeTimer.start();
 		}
 	}
