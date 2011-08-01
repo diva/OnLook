@@ -228,7 +228,6 @@ LLSnapshotLivePreview::LLSnapshotLivePreview (const LLRect& rect) :
 	mSnapshotBufferType(LLViewerWindow::SNAPSHOT_TYPE_COLOR)
 {
 	setSnapshotQuality(gSavedSettings.getS32("SnapshotQuality"));
-	mSnapshotDelayTimer.setTimerExpirySec(0.0f);
 	mSnapshotDelayTimer.start();
 // 	gIdleCallbacks.addFunction( &LLSnapshotLivePreview::onIdle, (void*)this );
 	sList.insert(this);
@@ -349,8 +348,7 @@ void LLSnapshotLivePreview::updateSnapshot(BOOL new_snapshot, BOOL new_thumbnail
 	mShineAnimTimer.stop();
 	if (new_snapshot)
 	{
-		mSnapshotDelayTimer.start();
-		mSnapshotDelayTimer.setTimerExpirySec(delay);
+		mSnapshotDelayTimer.start(delay);
 	}
 	if(new_thumbnail)
 	{
@@ -753,7 +751,7 @@ BOOL LLSnapshotLivePreview::onIdle( void* snapshot_preview )
 
 	// see if it's time yet to snap the shot and bomb out otherwise.
 	previewp->mSnapshotActive = 
-		(previewp->mSnapshotDelayTimer.getStarted() &&	previewp->mSnapshotDelayTimer.hasExpired())
+		(previewp->mSnapshotDelayTimer.getStarted() && previewp->mSnapshotDelayTimer.hasExpired())
 		&& !LLToolCamera::getInstance()->hasMouseCapture(); // don't take snapshots while ALT-zoom active
 	if ( ! previewp->mSnapshotActive)
 	{

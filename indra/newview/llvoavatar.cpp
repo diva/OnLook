@@ -3817,7 +3817,7 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 			//idle text
 			std::string idle_string;
-			if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120 && gSavedSettings.getBOOL("AscentShowIdleTime"))
+			if(!mIsSelf && mIdleTimer.getElapsedTimeF32() > 120.f && gSavedSettings.getBOOL("AscentShowIdleTime"))
 			{
 				idle_string = getIdleTime();
 			}

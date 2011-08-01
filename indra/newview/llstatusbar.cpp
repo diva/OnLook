@@ -683,8 +683,7 @@ void LLStatusBar::setBalance(S32 balance)
 
 	if( balance != mBalance )
 	{
-		mBalanceTimer->reset();
-		mBalanceTimer->setTimerExpirySec( ICON_TIMER_EXPIRY );
+		mBalanceTimer->reset(ICON_TIMER_EXPIRY);
 		mBalance = balance;
 	}
 }
@@ -728,8 +727,7 @@ void LLStatusBar::setHealth(S32 health)
 			}
 		}
 
-		mHealthTimer->reset();
-		mHealthTimer->setTimerExpirySec( ICON_TIMER_EXPIRY );
+		mHealthTimer->reset(ICON_TIMER_EXPIRY);
 	}
 
 	mHealth = health;
