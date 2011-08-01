@@ -431,7 +431,6 @@ void LLViewerShaderMgr::setShaders()
 			// Load all shaders to set max levels
 			loadShadersEnvironment();
 			loadShadersWater();
-			loadShadersObject();
 			loadShadersWindLight();
 			loadShadersEffects();
 			loadShadersInterface();
@@ -440,7 +439,7 @@ void LLViewerShaderMgr::setShaders()
 			mVertexShaderLevel[SHADER_AVATAR] = 3;
 			mMaxAvatarShaderLevel = 3;
 						
-			if (gSavedSettings.getBOOL("RenderAvatarVP"))
+			if (gSavedSettings.getBOOL("RenderAvatarVP") && loadShadersObject())
 			{
 				BOOL avatar_cloth = gSavedSettings.getBOOL("RenderAvatarCloth");
 				S32 avatar_class = 1;
@@ -474,13 +473,25 @@ void LLViewerShaderMgr::setShaders()
 			else
 			{
 				mVertexShaderLevel[SHADER_AVATAR] = 0;
-				gSavedSettings.setBOOL("RenderAvatarCloth", FALSE);
+				mVertexShaderLevel[SHADER_DEFERRED] = 0;
+
+				if (gSavedSettings.getBOOL("RenderAvatarVP"))
+				{
+					gSavedSettings.setBOOL("RenderDeferred", FALSE);
+					gSavedSettings.setBOOL("RenderAvatarCloth", FALSE);
+					gSavedSettings.setBOOL("RenderAvatarVP", FALSE);
+				}
+
 				loadShadersAvatar(); // unloads
+				loadShadersObject();
 			}
 
 			if (!loadShadersDeferred())
 			{
 				gSavedSettings.setBOOL("RenderDeferred", FALSE);
+				reentrance = false;
+				setShaders();
+				return;
 			}
 		}
 		else
@@ -841,7 +852,7 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	if (mVertexShaderLevel[SHADER_DEFERRED] == 0)
 	{
 		unloadShaderClass(SHADER_DEFERRED);
-		return FALSE;
+		return TRUE;
 	}
 
 	mVertexShaderLevel[SHADER_AVATAR] = 1;
@@ -1045,7 +1056,8 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	if (success)
 	{
 		std::string fragment;
-
+		
+		//Keep this! Fixes shadow softening with ssao off.
 		if (mVertexShaderLevel[SHADER_DEFERRED] < 2 && !gSavedSettings.getBOOL("RenderDeferredSSAO"))
 		{
 			fragment = "deferred/softenLightNoSSAOF.glsl";
@@ -1083,6 +1095,20 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		gDeferredAvatarShadowProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
 		success = gDeferredAvatarShadowProgram.createShader(&mAvatarAttribs, &mAvatarUniforms);
 	}
+
+#if MESH_ENABLED
+	if (success)
+	{
+		gDeferredAttachmentShadowProgram.mName = "Deferred Attachment Shadow Shader";
+		gDeferredAttachmentShadowProgram.mFeatures.hasObjectSkinning = true;
+		gDeferredAttachmentShadowProgram.mShaderFiles.clear();
+		gDeferredAttachmentShadowProgram.mShaderFiles.push_back(make_pair("deferred/attachmentShadowV.glsl", GL_VERTEX_SHADER_ARB));
+		gDeferredAttachmentShadowProgram.mShaderFiles.push_back(make_pair("deferred/attachmentShadowF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gDeferredAttachmentShadowProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
+		success = gDeferredAttachmentShadowProgram.createShader(NULL, NULL);
+	}
+#endif //MESH_ENABLED
+
 	if (success)
 	{
 		gTerrainProgram.mName = "Deferred Terrain Shader";
@@ -1216,7 +1242,7 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 	if (mVertexShaderLevel[SHADER_OBJECT] == 0)
 	{
 		unloadShaderClass(SHADER_OBJECT);
-		return FALSE;
+		return TRUE;
 	}
 
 	if (success)
