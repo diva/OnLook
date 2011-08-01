@@ -58,6 +58,21 @@ public:
 	Object* operator ++(int)       { Object* old = mObjectp; mBytep += mSkip; return old; }
 	Object* operator +=(int i)     { mBytep += mSkip*i; return mObjectp; }
 	Object& operator[](U32 index)  { return *(Object*)(mBytep + (mSkip * index)); }
+	void assignArray(U8* buff, size_t elem_size, size_t elem_count)
+	{
+		llassert_always(sizeof(Object) <= elem_size);
+		if(sizeof(Object) == mSkip && sizeof(Object) == elem_size)	//No stride. No difference in element size.
+			LLVector4a::memcpyNonAliased16((F32*) mBytep, (F32*) buff, elem_size * elem_count);
+		else
+		{
+			for(U32 i=0;i<elem_count;i++)
+			{
+				memcpy(mBytep,buff,sizeof(Object));
+				mBytep+=mSkip;
+				buff+=elem_size;
+			}
+		}
+	}
 };
 
 #endif // LL_LLSTRIDER_H

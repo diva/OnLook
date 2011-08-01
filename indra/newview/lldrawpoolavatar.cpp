@@ -1403,9 +1403,9 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 			buffer->getNormalStrider(normal);
 		}
 
-		LLVector4a* pos = (LLVector4a*) position.get();
+		//LLVector4a* pos = (LLVector4a*) position.get();
 
-		LLVector4a* norm = has_normal ? (LLVector4a*) normal.get() : NULL;
+		//LLVector4a* norm = has_normal ? (LLVector4a*) normal.get() : NULL;
 		
 		//build matrix palette
 		LLMatrix4a mp[64];
@@ -1461,14 +1461,14 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 			LLVector4a dst;
 			bind_shape_matrix.affineTransform(v, t);
 			final_mat.affineTransform(t, dst);
-			pos[j] = dst;
+			position[j].set(dst.getF32ptr());
 
-			if (norm)
+			if (has_normal && normal.get())
 			{
 				LLVector4a& n = vol_face.mNormals[j];
 				bind_shape_matrix.rotate(n, t);
 				final_mat.rotate(t, dst);
-				norm[j] = dst;
+				normal[j].set(dst.getF32ptr());
 			}
 		}
 	}

@@ -1371,17 +1371,16 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			{
 				if (!do_tex_mat)
 				{
-					/*if (!do_xform)
+					if (!do_xform)
 					{
-						LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, num_vertices*2*sizeof(F32));
+						tex_coords.assignArray((U8*) vf.mTexCoords, sizeof(vf.mTexCoords[0]), num_vertices);
 					}
-					else*/
+					else
 					{
 						for (S32 i = 0; i < num_vertices; i++)
 						{	
 							LLVector2 tc(vf.mTexCoords[i]);
-							if(do_xform)
-								xform(tc, cos_ang, sin_ang, os, ot, ms, mt);
+							xform(tc, cos_ang, sin_ang, os, ot, ms, mt);
 							*tex_coords++ = tc;	
 						}
 					}
@@ -1589,10 +1588,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (rebuild_weights && vf.mWeights)
 	{
 		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
-		{
-			weights[i].set(vf.mWeights[i].getF32ptr());
-		}
+		weights.assignArray((U8*) vf.mWeights, sizeof(vf.mWeights[0]), num_vertices);
 		//mVertexBuffer->setBuffer(0);
 	}
 #endif //MESH_ENABLED
