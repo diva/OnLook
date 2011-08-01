@@ -324,7 +324,6 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 
 				LLRenderPass::applyModelMatrix(params);
 
-				{
 					if (params.mFullbright)
 					{
 						// Turn off lighting if it hasn't already been so.
@@ -394,6 +393,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 						params.mGroup->rebuildMesh();
 					}
 
+					bool tex_setup = false;
 					
 					if (params.mTexture.notNull())
 					{
@@ -404,13 +404,13 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 						}
 						if (params.mTextureMatrix)
 						{
+							tex_setup = true;
 							gGL.getTexUnit(0)->activate();
 							glMatrixMode(GL_TEXTURE);
 							glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
 							gPipeline.mTextureMatrixOps++;
 						}
 					}
-				}
 				params.mVertexBuffer->setBuffer(mask);
 				params.mVertexBuffer->drawRange(LLRender::TRIANGLES, params.mStart, params.mEnd, params.mCount, params.mOffset);
 				gPipeline.addTrianglesDrawn(params.mCount/3);
@@ -435,7 +435,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 					gGL.blendFunc(mColorSFactor, mColorDFactor, mAlphaSFactor, mAlphaDFactor);
 				}
 			
-				if (params.mTextureMatrix && params.mTexture.notNull())
+				if (tex_setup)
 				{
 					gGL.getTexUnit(0)->activate();
 					glLoadIdentity();

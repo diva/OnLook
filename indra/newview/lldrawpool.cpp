@@ -471,6 +471,8 @@ void LLRenderPass::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture)
 {
 	applyModelMatrix(params);
 
+	bool tex_setup = false;
+
 	if (texture)
 	{
 		if (params.mTexture.notNull())
@@ -479,6 +481,7 @@ void LLRenderPass::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture)
 			gGL.getTexUnit(0)->bind(params.mTexture, TRUE) ;
 			if (params.mTextureMatrix)
 			{
+				tex_setup = true;
 				glMatrixMode(GL_TEXTURE);
 				glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
 				gPipeline.mTextureMatrixOps++;
@@ -501,7 +504,7 @@ void LLRenderPass::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture)
 		gPipeline.addTrianglesDrawn(params.mCount/3);
 	}
 
-	if (params.mTextureMatrix && texture && params.mTexture.notNull())
+	if (tex_setup)
 	{
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);

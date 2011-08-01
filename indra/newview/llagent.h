@@ -253,7 +253,6 @@ public:
 	const LLHost&	getRegionHost() const;
 	BOOL			inPrelude();
 	std::string		getSLURL() const; //Return uri for current region
-	void buildLocationString(std::string& str); //Build a description string for current location
 	
 	// <edit>
 	struct SHLureRequest

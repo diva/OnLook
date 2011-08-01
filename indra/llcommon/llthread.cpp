@@ -62,6 +62,21 @@
 // 
 //----------------------------------------------------------------------------
 
+#if !LL_DARWIN
+U32 ll_thread_local sThreadID = 0;
+#endif 
+
+U32 LLThread::sIDIter = 0;
+
+LL_COMMON_API void assert_main_thread()
+{
+	static U32 s_thread_id = LLThread::currentID();
+	if (LLThread::currentID() != s_thread_id)
+	{
+		llerrs << "Illegal execution outside main thread." << llendl;
+	}
+}
+
 //
 // Handed to the APR thread creation function
 //
@@ -73,8 +88,10 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 
 	LLThread *threadp = (LLThread *)datap;
 
-	// Set thread state to running
-	threadp->mStatus = RUNNING;
+#if !LL_DARWIN
+	sThreadID = threadp->mID;
+#endif
+
 
 	// Create a thread local data.
 	AIThreadLocalData::create(threadp);
@@ -98,6 +115,7 @@ LLThread::LLThread(std::string const& name) :
 	mStatus(STOPPED),
 	mThreadLocalData(NULL)
 {
+	mID = ++sIDIter;
 	mRunCondition = new LLCondition;
 }
 
@@ -119,7 +137,7 @@ void LLThread::shutdown()
 			// First, set the flag that indicates that we're ready to die
 			setQuitting();
 
-			llinfos << "LLThread::~LLThread() Killing thread " << mName << " Status: " << mStatus << llendl;
+			llinfos << "LLThread::shutdown() Killing thread " << mName << " Status: " << mStatus << llendl;
 			// Now wait a bit for the thread to exit
 			// It's unclear whether I should even bother doing this - this destructor
 			// should netver get called unless we're already stopped, really...
@@ -142,20 +160,38 @@ void LLThread::shutdown()
 		{
 			// This thread just wouldn't stop, even though we gave it time
 			llwarns << "LLThread::shutdown() exiting thread before clean exit!" << llendl;
+			// Put a stake in its heart.
+			apr_thread_exit(mAPRThreadp, -1);
 			return;
 		}
 		mAPRThreadp = NULL;
 	}
 
 	delete mRunCondition;
+	mRunCondition = 0;
 }
 
 void LLThread::start()
 {
-	apr_thread_create(&mAPRThreadp, NULL, staticRun, (void *)this, tldata().mRootPool());
+	llassert(isStopped());
+	
+	// Set thread state to running
+	mStatus = RUNNING;
 
-	// We won't bother joining
-	apr_thread_detach(mAPRThreadp);
+	apr_status_t status =
+		apr_thread_create(&mAPRThreadp, NULL, staticRun, (void *)this, tldata().mRootPool());
+
+	if(status == APR_SUCCESS)
+	{	
+		// We won't bother joining
+		apr_thread_detach(mAPRThreadp);
+	}
+	else
+	{
+		mStatus = STOPPED;
+		llwarns << "failed to start thread " << mName << llendl;
+		ll_apr_warn_status(status);
+	}
 }
 
 //============================================================================
@@ -318,6 +354,55 @@ AIThreadLocalData& AIThreadLocalData::tldata(void)
 
 //============================================================================
 
+void LLMutexBase::lock() 
+{ 
+#if LL_DARWIN
+	if (mLockingThread == LLThread::currentID())
+#else
+	if (mLockingThread == sThreadID)
+#endif
+	{ //redundant lock
+		mCount++;
+		return;
+	}
+
+	apr_thread_mutex_lock(mAPRMutexp);
+	
+#if MUTEX_DEBUG
+	// Have to have the lock before we can access the debug info
+	U32 id = LLThread::currentID();
+	if (mIsLocked[id] != FALSE)
+		llerrs << "Already locked in Thread: " << id << llendl;
+	mIsLocked[id] = TRUE;
+#endif
+
+#if LL_DARWIN
+	mLockingThread = LLThread::currentID();
+#else
+	mLockingThread = sThreadID;
+#endif
+}
+
+void LLMutexBase::unlock()
+{
+	if (mCount > 0)
+	{ //not the root unlock
+		mCount--;
+		return;
+	}
+	
+#if MUTEX_DEBUG
+	// Access the debug info while we have the lock
+	U32 id = LLThread::currentID();
+	if (mIsLocked[id] != TRUE)
+		llerrs << "Not locked in Thread: " << id << llendl;	
+	mIsLocked[id] = FALSE;
+#endif
+
+	mLockingThread = NO_THREAD;
+	apr_thread_mutex_unlock(mAPRMutexp);
+}
+	
 bool LLMutexBase::isLocked()
 {
   	if (!tryLock())
@@ -328,6 +413,11 @@ bool LLMutexBase::isLocked()
 	return false;
 }
 
+U32 LLMutexBase::lockingThread() const
+{
+	return mLockingThread;
+}
+
 //============================================================================
 
 LLCondition::LLCondition(AIAPRPool& parent) : LLMutex(parent)
@@ -335,14 +425,25 @@ LLCondition::LLCondition(AIAPRPool& parent) : LLMutex(parent)
 	apr_thread_cond_create(&mAPRCondp, mPool());
 }
 
+
 LLCondition::~LLCondition()
 {
 	apr_thread_cond_destroy(mAPRCondp);
 	mAPRCondp = NULL;
 }
 
+
 void LLCondition::wait()
 {
+	if (!isLocked())
+	{ //mAPRMutexp MUST be locked before calling apr_thread_cond_wait
+		apr_thread_mutex_lock(mAPRMutexp);
+#if MUTEX_DEBUG
+		// avoid asserts on destruction in non-release builds
+		U32 id = LLThread::currentID();
+		mIsLocked[id] = TRUE;
+#endif
+	}
 	apr_thread_cond_wait(mAPRCondp, mAPRMutexp);
 }
 

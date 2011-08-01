@@ -772,10 +772,9 @@ BOOL LLViewerCamera::areVertsVisible(LLViewerObject* volumep, BOOL all_verts)
 	{
 		const LLVolumeFace& face = volume->getVolumeFace(i);
 				
-		for (U32 v = 0; v < face.mVertices.size(); v++)
+		for (U32 v = 0; v < (U32)face.mNumVertices; v++)
 		{
-			LLVector4a src_vec;
-			src_vec.load3(face.mVertices[v].mPosition.mV);
+			const LLVector4a& src_vec = face.mPositions[v];
 			LLVector4a vec;
 			mata.affineTransform(src_vec, vec);
 

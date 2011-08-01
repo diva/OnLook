@@ -34,7 +34,6 @@
 #include "llvolume.h"
 #include "llvector4a.h"
 
-#if 0 //MESH
 class LLVolumeTriangle : public LLRefCount
 {
 public:
@@ -131,5 +130,5 @@ class LLVolumeOctreeValidate : public LLOctreeTraveler<LLVolumeTriangle>
 {
 	virtual void visit(const LLOctreeNode<LLVolumeTriangle>* branch);
 };
-#endif //0
+
 #endif

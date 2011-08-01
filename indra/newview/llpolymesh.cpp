@@ -1426,20 +1426,24 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 		S32 f1 = faces[f][1];
 		S32 f2 = faces[f][2];
 
-		LLVector3& v0 = coords[f0];
-		LLVector3& v1 = coords[f1];
-		LLVector3& v2 = coords[f2];
-
+		LLVector4a v0;
+		LLVector4a v1;
+		LLVector4a v2;
+		v0.load3(coords[f0].mV);;
+		v1.load3(coords[f1].mV);;
+		v2.load3(coords[f2].mV);;
 		LLVector2& t0 = tex[f0];
 		LLVector2& t1 = tex[f1];
 		LLVector2& t2 = tex[f2];
 
-		LLVector3 binorm = calc_binormal_from_triangle(v0, t0, v1, t1, v2, t2);
-		binorm.normVec();
+		LLVector4a binorm;
+		calc_binormal_from_triangle(binorm, v0, t0, v1, t1, v2, t2);
+		binorm.normalize3fast();
 
-		binormals[f0] += binorm;
-		binormals[f1] += binorm;
-		binormals[f2] += binorm;
+		LLVector3 binormdelta(binorm.getF32ptr());
+		binormals[f0] += binormdelta;
+		binormals[f1] += binormdelta;
+		binormals[f2] += binormdelta;
 	}
 
 	for ( v=0; v<nverts; v++)

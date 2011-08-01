@@ -69,7 +69,7 @@
 #include "llspatialpartition.h"
 #include "stringize.h"
 #include "llviewercontrol.h"
-
+#include "llsdserialize.h"
 
 extern BOOL gNoRender;
 
@@ -1142,6 +1142,20 @@ void LLViewerRegion::getInfo(LLSD& info)
 	info["Region"]["Handle"]["y"] = (LLSD::Integer)y;
 }
 
+void LLViewerRegion::getSimulatorFeatures(LLSD& sim_features)
+{
+	sim_features = mSimulatorFeatures;
+}
+
+void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
+{
+	std::stringstream str;
+	
+	LLSDSerialize::toPrettyXML(sim_features, str);
+	llinfos << str.str() << llendl;
+	mSimulatorFeatures = sim_features;
+}
+
 LLViewerRegion::eCacheUpdateResult LLViewerRegion::cacheFullUpdate(LLViewerObject* objectp, LLDataPackerBinaryBuffer &dp)
 {
 	U32 local_id = objectp->getLocalID();
@@ -1495,6 +1509,11 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	}
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetTexture");
+#if MESH_ENABLED
+	capabilityNames.append("GetMesh");
+	capabilityNames.append("GetObjectCost");
+	capabilityNames.append("GetObjectPhysicsData");
+#endif //MESH_ENABLED
 	capabilityNames.append("GroupProposalBallot");
 
 	capabilityNames.append("HomeLocation");
@@ -1515,6 +1534,7 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	capabilityNames.append("SendUserReport");
 	capabilityNames.append("SendUserReportWithScreenshot");
 	capabilityNames.append("ServerReleaseNotes");
+	capabilityNames.append("SimulatorFeatures");
 	capabilityNames.append("SetDisplayName");
 	capabilityNames.append("StartGroupProposal");
 	capabilityNames.append("TextureStats");
@@ -1539,6 +1559,42 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	LLHTTPClient::post(url, capabilityNames, mImpl->mHttpResponderPtr);
 }
 
+class SimulatorFeaturesReceived : public LLHTTPClient::Responder
+{
+	LOG_CLASS(SimulatorFeaturesReceived);
+public:
+    SimulatorFeaturesReceived(LLViewerRegion* region)
+	: mRegion(region)
+    { }
+	
+	
+    void error(U32 statusNum, const std::string& reason)
+    {
+		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
+    }
+	
+    void result(const LLSD& content)
+    {
+		if(!mRegion) //region is removed or responder is not created.
+		{
+			return ;
+		}
+		
+		mRegion->setSimulatorFeatures(content);
+	}
+	
+    static boost::intrusive_ptr<SimulatorFeaturesReceived> build(
+																 LLViewerRegion* region)
+    {
+		return boost::intrusive_ptr<SimulatorFeaturesReceived>(
+															   new SimulatorFeaturesReceived(region));
+    }
+	
+private:
+	LLViewerRegion* mRegion;
+};
+
+
 void LLViewerRegion::setCapability(const std::string& name, const std::string& url)
 {
 	if(name == "EventQueueGet")
@@ -1550,6 +1606,11 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	else if(name == "UntrustedSimulatorMessage")
 	{
 		LLHTTPSender::setSender(mImpl->mHost, new LLCapHTTPSender(url));
+	}
+	else if (name == "SimulatorFeatures")
+	{
+		// kick off a request for simulator features
+		LLHTTPClient::get(url, new SimulatorFeaturesReceived(this));
 	}
 	else
 	{
@@ -1584,6 +1645,21 @@ bool LLViewerRegion::capabilitiesReceived() const
 void LLViewerRegion::setCapabilitiesReceived(bool received)
 {
 	mCapabilitiesReceived = received;
+
+	// Tell interested parties that we've received capabilities,
+	// so that they can safely use getCapability().
+	if (received)
+	{
+		mCapabilitiesReceivedSignal(getRegionID());
+
+		// This is a single-shot signal. Forget callbacks to save resources.
+		mCapabilitiesReceivedSignal.disconnect_all_slots();
+	}
+}
+
+boost::signals2::connection LLViewerRegion::setCapabilitiesReceivedCallback(const caps_received_signal_t::slot_type& cb)
+{
+	return mCapabilitiesReceivedSignal.connect(cb);
 }
 
 void LLViewerRegion::logActiveCapabilities() const
@@ -1628,3 +1704,18 @@ std::string LLViewerRegion::getDescription() const
 {
     return stringize(*this);
 }
+
+#if MESH_ENABLED
+bool LLViewerRegion::meshUploadEnabled() const
+{
+	return (mSimulatorFeatures.has("MeshUploadEnabled") &&
+		mSimulatorFeatures["MeshUploadEnabled"].asBoolean());
+}
+
+bool LLViewerRegion::meshRezEnabled() const
+{
+	return (mSimulatorFeatures.has("MeshRezEnabled") &&
+				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
+}
+#endif //MESH_ENABLED
+

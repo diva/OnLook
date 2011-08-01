@@ -671,6 +671,192 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	LLVOAvatar::cullAvatarsByPixelArea();
 }
 
+#if MESH_ENABLED
+
+class LLObjectCostResponder : public LLCurl::Responder
+{
+public:
+	LLObjectCostResponder(const LLSD& object_ids)
+		: mObjectIDs(object_ids)
+	{
+	}
+
+	// Clear's the global object list's pending
+	// request list for all objects requested
+	void clear_object_list_pending_requests()
+	{
+		// TODO*: No more hard coding
+		for (
+			LLSD::array_iterator iter = mObjectIDs.beginArray();
+			iter != mObjectIDs.endArray();
+			++iter)
+		{
+			gObjectList.onObjectCostFetchFailure(iter->asUUID());
+		}
+	}
+
+	void error(U32 statusNum, const std::string& reason)
+	{
+		llwarns
+			<< "Transport error requesting object cost "
+			<< "HTTP status: " << statusNum << ", reason: "
+			<< reason << "." << llendl;
+
+		// TODO*: Error message to user
+		// For now just clear the request from the pending list
+		clear_object_list_pending_requests();
+	}
+
+	void result(const LLSD& content)
+	{
+		if ( !content.isMap() || content.has("error") )
+		{
+			// Improper response or the request had an error,
+			// show an error to the user?
+			llwarns
+				<< "Application level error when fetching object "
+				<< "cost.  Message: " << content["error"]["message"].asString()
+				<< ", identifier: " << content["error"]["identifier"].asString()
+				<< llendl;
+
+			// TODO*: Adaptively adjust request size if the
+			// service says we've requested too many and retry
+
+			// TODO*: Error message if not retrying
+			clear_object_list_pending_requests();
+			return;
+		}
+
+		// Success, grab the resource cost and linked set costs
+		// for an object if one was returned
+		for (
+			LLSD::array_iterator iter = mObjectIDs.beginArray();
+			iter != mObjectIDs.endArray();
+			++iter)
+		{
+			LLUUID object_id = iter->asUUID();
+
+			// Check to see if the request contains data for the object
+			if ( content.has(iter->asString()) )
+			{
+				F32 link_cost =
+					content[iter->asString()]["linked_set_resource_cost"].asReal();
+				F32 object_cost =
+					content[iter->asString()]["resource_cost"].asReal();
+
+				F32 physics_cost = content[iter->asString()]["physics_cost"].asReal();
+				F32 link_physics_cost = content[iter->asString()]["linked_set_physics_cost"].asReal();
+
+				gObjectList.updateObjectCost(object_id, object_cost, link_cost, physics_cost, link_physics_cost);
+			}
+			else
+			{
+				// TODO*: Give user feedback about the missing data?
+				gObjectList.onObjectCostFetchFailure(object_id);
+			}
+		}
+	}
+
+private:
+	LLSD mObjectIDs;
+};
+
+
+class LLPhysicsFlagsResponder : public LLCurl::Responder
+{
+public:
+	LLPhysicsFlagsResponder(const LLSD& object_ids)
+		: mObjectIDs(object_ids)
+	{
+	}
+
+	// Clear's the global object list's pending
+	// request list for all objects requested
+	void clear_object_list_pending_requests()
+	{
+		// TODO*: No more hard coding
+		for (
+			LLSD::array_iterator iter = mObjectIDs.beginArray();
+			iter != mObjectIDs.endArray();
+			++iter)
+		{
+			gObjectList.onPhysicsFlagsFetchFailure(iter->asUUID());
+		}
+	}
+
+	void error(U32 statusNum, const std::string& reason)
+	{
+		llwarns
+			<< "Transport error requesting object physics flags "
+			<< "HTTP status: " << statusNum << ", reason: "
+			<< reason << "." << llendl;
+
+		// TODO*: Error message to user
+		// For now just clear the request from the pending list
+		clear_object_list_pending_requests();
+	}
+
+	void result(const LLSD& content)
+	{
+		if ( !content.isMap() || content.has("error") )
+		{
+			// Improper response or the request had an error,
+			// show an error to the user?
+			llwarns
+				<< "Application level error when fetching object "
+				<< "physics flags.  Message: " << content["error"]["message"].asString()
+				<< ", identifier: " << content["error"]["identifier"].asString()
+				<< llendl;
+
+			// TODO*: Adaptively adjust request size if the
+			// service says we've requested too many and retry
+
+			// TODO*: Error message if not retrying
+			clear_object_list_pending_requests();
+			return;
+		}
+
+		// Success, grab the resource cost and linked set costs
+		// for an object if one was returned
+		for (
+			LLSD::array_iterator iter = mObjectIDs.beginArray();
+			iter != mObjectIDs.endArray();
+			++iter)
+		{
+			LLUUID object_id = iter->asUUID();
+
+			// Check to see if the request contains data for the object
+			if ( content.has(iter->asString()) )
+			{
+				const LLSD& data = content[iter->asString()];
+
+				S32 shape_type = data["PhysicsShapeType"].asInteger();
+
+				gObjectList.updatePhysicsShapeType(object_id, shape_type);
+
+				if (data.has("Density"))
+				{
+					F32 density = data["Density"].asReal();
+					F32 friction = data["Friction"].asReal();
+					F32 restitution = data["Restitution"].asReal();
+					F32 gravity_multiplier = data["GravityMultiplier"].asReal();
+					
+					gObjectList.updatePhysicsProperties(object_id, 
+						density, friction, restitution, gravity_multiplier);
+				}
+			}
+			else
+			{
+				// TODO*: Give user feedback about the missing data?
+				gObjectList.onPhysicsFlagsFetchFailure(object_id);
+			}
+		}
+	}
+
+private:
+	LLSD mObjectIDs;
+};
+#endif //MESH_ENABLED
 
 void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 {
@@ -763,6 +949,10 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 		}
 	}
 
+#if MESH_ENABLED
+	fetchObjectCosts();
+	fetchPhysicsFlags();
+#endif //MESH_ENABLED
 	mNumSizeCulled = 0;
 	mNumVisCulled = 0;
 
@@ -827,6 +1017,124 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	mNumSizeCulledStat.addValue(mNumSizeCulled);
 	mNumVisCulledStat.addValue(mNumVisCulled);
 }
+
+#if MESH_ENABLED
+void LLViewerObjectList::fetchObjectCosts()
+{
+	// issue http request for stale object physics costs
+	if (!mStaleObjectCost.empty())
+	{
+		LLViewerRegion* regionp = gAgent.getRegion();
+
+		if (regionp)
+		{
+			std::string url = regionp->getCapability("GetObjectCost");
+
+			if (!url.empty())
+			{
+				LLSD id_list;
+				U32 object_index = 0;
+
+				U32 count = 0;
+
+				for (
+					std::set<LLUUID>::iterator iter = mStaleObjectCost.begin();
+					iter != mStaleObjectCost.end();
+					)
+				{
+					// Check to see if a request for this object
+					// has already been made.
+					if ( mPendingObjectCost.find(*iter) ==
+						 mPendingObjectCost.end() )
+					{
+						mPendingObjectCost.insert(*iter);
+						id_list[object_index++] = *iter;
+					}
+
+					mStaleObjectCost.erase(iter++);
+
+					if (count++ >= 450)
+					{
+						break;
+					}
+				}
+									
+				if ( id_list.size() > 0 )
+				{
+					LLSD post_data = LLSD::emptyMap();
+
+					post_data["object_ids"] = id_list;
+					LLHTTPClient::post(
+						url,
+						post_data,
+						new LLObjectCostResponder(id_list));
+				}
+			}
+			else
+			{
+				mStaleObjectCost.clear();
+				mPendingObjectCost.clear();
+			}
+		}
+	}
+}
+
+void LLViewerObjectList::fetchPhysicsFlags()
+{
+	// issue http request for stale object physics flags
+	if (!mStalePhysicsFlags.empty())
+	{
+		LLViewerRegion* regionp = gAgent.getRegion();
+
+		if (regionp)
+		{
+			std::string url = regionp->getCapability("GetObjectPhysicsData");
+
+			if (!url.empty())
+			{
+				LLSD id_list;
+				U32 object_index = 0;
+
+				for (
+					std::set<LLUUID>::iterator iter = mStalePhysicsFlags.begin();
+					iter != mStalePhysicsFlags.end();
+					++iter)
+				{
+					// Check to see if a request for this object
+					// has already been made.
+					if ( mPendingPhysicsFlags.find(*iter) ==
+						 mPendingPhysicsFlags.end() )
+					{
+						mPendingPhysicsFlags.insert(*iter);
+						id_list[object_index++] = *iter;
+					}
+				}
+
+				// id_list should now contain all
+				// requests in mStalePhysicsFlags before, so clear
+				// it now
+				mStalePhysicsFlags.clear();
+
+				if ( id_list.size() > 0 )
+				{
+					LLSD post_data = LLSD::emptyMap();
+
+					post_data["object_ids"] = id_list;
+					LLHTTPClient::post(
+						url,
+						post_data,
+						new LLPhysicsFlagsResponder(id_list));
+				}
+			}
+			else
+			{
+				mStalePhysicsFlags.clear();
+				mPendingPhysicsFlags.clear();
+			}
+		}
+	}
+}
+#endif //MESH_ENABLED
 
 void LLViewerObjectList::clearDebugText()
 {
@@ -1084,6 +1392,84 @@ void LLViewerObjectList::updateActive(LLViewerObject *objectp)
 	}
 }
 
+#if MESH_ENABLED
+void LLViewerObjectList::updateObjectCost(LLViewerObject* object)
+{
+	if (!object->isRoot())
+	{ //always fetch cost for the parent when fetching cost for children
+		mStaleObjectCost.insert(((LLViewerObject*)object->getParent())->getID());
+	}
+	mStaleObjectCost.insert(object->getID());
+}
+
+void LLViewerObjectList::updateObjectCost(const LLUUID& object_id, F32 object_cost, F32 link_cost, F32 physics_cost, F32 link_physics_cost)
+{
+	mPendingObjectCost.erase(object_id);
+
+	LLViewerObject* object = findObject(object_id);
+	if (object)
+	{
+		object->setObjectCost(object_cost);
+		object->setLinksetCost(link_cost);
+		object->setPhysicsCost(physics_cost);
+		object->setLinksetPhysicsCost(link_physics_cost);
+	}
+}
+
+void LLViewerObjectList::onObjectCostFetchFailure(const LLUUID& object_id)
+{
+	//llwarns << "Failed to fetch object cost for object: " << object_id << llendl;
+	mPendingObjectCost.erase(object_id);
+}
+
+void LLViewerObjectList::updateQuota( const LLUUID& objectId, const SelectionQuota& quota  )
+{
+	LLViewerObject* pVO = findObject( objectId );
+	if ( pVO )
+	{
+		pVO->updateQuota( quota );
+	}
+}
+
+void LLViewerObjectList::updatePhysicsFlags(const LLViewerObject* object)
+{
+	mStalePhysicsFlags.insert(object->getID());
+}
+
+void LLViewerObjectList::updatePhysicsShapeType(const LLUUID& object_id, S32 type)
+{
+	mPendingPhysicsFlags.erase(object_id);
+	LLViewerObject* object = findObject(object_id);
+	if (object)
+	{
+		object->setPhysicsShapeType(type);
+	}
+}
+
+void LLViewerObjectList::updatePhysicsProperties(const LLUUID& object_id, 
+												F32 density,
+												F32 friction,
+												F32 restitution,
+												F32 gravity_multiplier)
+{
+	mPendingPhysicsFlags.erase(object_id);
+
+	LLViewerObject* object = findObject(object_id);
+	if (object)
+	{
+		object->setPhysicsDensity(density);
+		object->setPhysicsFriction(friction);
+		object->setPhysicsGravity(gravity_multiplier);
+		object->setPhysicsRestitution(restitution);
+	}
+}
+
+void LLViewerObjectList::onPhysicsFlagsFetchFailure(const LLUUID& object_id)
+{
+	//llwarns << "Failed to fetch physics flags for object: " << object_id << llendl;
+	mPendingPhysicsFlags.erase(object_id);
+}
+#endif //MESH_ENABLED
 
 
 void LLViewerObjectList::shiftObjects(const LLVector3 &offset)

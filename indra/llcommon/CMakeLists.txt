@@ -58,12 +58,14 @@ set(llcommon_SOURCE_FILES
     llprocessor.cpp
     llqueuedthread.cpp
     llrand.cpp
+    llrefcount.cpp
     llrun.cpp
     llsd.cpp
     llsdserialize.cpp
     llsdserialize_xml.cpp
     llsdutil.cpp
     llsecondlifeurls.cpp
+    llsingleton.cpp
     llstat.cpp
     llstacktrace.cpp
     llstreamtools.cpp
@@ -94,6 +96,7 @@ set(llcommon_HEADER_FILES
     indra_constants.h
     linden_common.h
     linked_lists.h
+    llaccountingquota.h
     llagentconstants.h
     llavatarname.h
     llapp.h
@@ -159,6 +162,7 @@ set(llcommon_HEADER_FILES
     llmortician.h
     llnametable.h
     lloptioninterface.h
+    llpointer.h
     llpreprocessor.h
     llpriqueuemap.h
     llprocesslauncher.h
@@ -168,6 +172,8 @@ set(llcommon_HEADER_FILES
     llqueuedthread.h
     llrand.h
     llrun.h
+    llrefcount.h
+    llsafehandle.h
     llscopedvolatileaprpool.h
     llsd.h
     llsdserialize.h
@@ -175,6 +181,7 @@ set(llcommon_HEADER_FILES
     llsdutil.h
     llsecondlifeurls.h
     llsimplehash.h
+    llsingleton.h
     llskiplist.h
     llskipmap.h
     llstack.h
@@ -205,6 +212,7 @@ set(llcommon_HEADER_FILES
     stdenums.h
     stdtypes.h
     string_table.h
+    stringize.h
     timer.h
     timing.h
     u64.h

@@ -38,13 +38,18 @@
 #include "llviewerobjectlist.h"
 #include "llvovolume.h"
 #include "llvolume.h"
+#include "llvolumeoctree.h"
 #include "llviewercamera.h"
 #include "llface.h"
+#include "llfloatertools.h"
 #include "llviewercontrol.h"
 #include "llagent.h"
 #include "llviewerregion.h"
 #include "llcamera.h"
 #include "pipeline.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llrender.h"
 #include "lloctree.h"
 #include "llvoavatar.h"
@@ -2378,9 +2383,8 @@ void pushVerts(LLVolume* volume)
 	for (S32 i = 0; i < volume->getNumVolumeFaces(); ++i)
 	{
 		const LLVolumeFace& face = volume->getVolumeFace(i);
-		glVertexPointer(3, GL_FLOAT, 16, face.mVertices[i].mPosition.mV);
-		//This probably doesn't work.
-		glDrawElements(GL_TRIANGLES, face.mIndices.size(), GL_UNSIGNED_SHORT, (GLvoid*)face.mIndices[i]);
+		glVertexPointer(3, GL_FLOAT, 16, face.mPositions);
+		glDrawElements(GL_TRIANGLES, face.mNumIndices, GL_UNSIGNED_SHORT, face.mIndices);
 	}
 }
 
@@ -3468,7 +3472,31 @@ public:
 			if (vobj)
 			{
 				LLVector3 intersection;
-				if (vobj->lineSegmentIntersect(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mBinormal))
+				bool skip_check = false;
+#if MESH_ENABLED
+				if (vobj->isAvatar())
+				{
+					LLVOAvatar* avatar = (LLVOAvatar*) vobj;
+					if (avatar->isSelf() && gFloaterTools->getVisible())
+					{
+						LLViewerObject* hit = avatar->lineSegmentIntersectRiggedAttachments(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mBinormal);
+						if (hit)
+						{
+							mEnd = intersection;
+							if (mIntersection)
+							{
+								*mIntersection = intersection;
+							}
+							
+							mHit = hit->mDrawable;
+							skip_check = true;
+						}
+
+					}
+				}
+#endif //MESH_ENABLED
+
+				if (!skip_check && vobj->lineSegmentIntersect(mStart, mEnd, -1, mPickTransparent, mFaceHit, &intersection, mTexCoord, mNormal, mBinormal))
 				{
 					mEnd = intersection;  // shorten ray so we only find CLOSER hits
 					if (mIntersection)

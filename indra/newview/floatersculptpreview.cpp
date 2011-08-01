@@ -730,8 +730,8 @@ void LLPreviewSculpted::setPreviewTarget(LLImageRaw* imagep, F32 distance)
 	}
 
 	const LLVolumeFace &vf = mVolume->getVolumeFace(0);
-	U32 num_indices = vf.mIndices.size();
-	U32 num_vertices = vf.mVertices.size();
+	U32 num_indices = vf.mNumIndices;
+	U32 num_vertices = vf.mNumVertices;
 
 	mVertexBuffer = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_NORMAL, 0);
 	mVertexBuffer->allocateBuffer(num_vertices, num_indices, TRUE);
@@ -747,8 +747,8 @@ void LLPreviewSculpted::setPreviewTarget(LLImageRaw* imagep, F32 distance)
 	// build vertices and normals
 	for (U32 i = 0; (S32)i < num_vertices; i++)
 	{
-		*(vertex_strider++) = vf.mVertices[i].mPosition;
-		LLVector3 normal = vf.mVertices[i].mNormal;
+		(vertex_strider++)->set(vf.mPositions[i].getF32ptr());
+		LLVector3 normal(vf.mNormals[i].getF32ptr());
 		normal.normalize();
 		*(normal_strider++) = normal;
 	}
@@ -812,7 +812,7 @@ BOOL LLPreviewSculpted::render()
 	LLViewerCamera::getInstance()->setPerspective(FALSE, mOrigin.mX, mOrigin.mY, mFullWidth, mFullHeight, FALSE);
 
 	const LLVolumeFace &vf = mVolume->getVolumeFace(0);
-	U32 num_indices = vf.mIndices.size();
+	U32 num_indices = vf.mNumIndices;
 	
 	mVertexBuffer->setBuffer(LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_NORMAL);
 

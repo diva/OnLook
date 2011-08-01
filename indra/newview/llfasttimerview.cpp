@@ -127,6 +127,11 @@ static struct ft_display_info ft_display_table[] =
 	{ LLFastTimer::FTM_UPDATE_TEXTURES,		"  Textures",		&LLColor4::pink2, 0 },
 	{ LLFastTimer::FTM_GEO_UPDATE,			"  Geo Update",	&LLColor4::blue3, 1 },
 	{ LLFastTimer::FTM_UPDATE_PRIMITIVES,	"   Volumes",		&LLColor4::blue4, 0 },
+#if MESH_ENABLED
+	{ LLFastTimer::FTM_UPDATE_RIGGED_VOLUME,"    Rigged",		&LLColor4::red3, 0 },
+	{ LLFastTimer::FTM_SKIN_RIGGED,			"     Skin",		&LLColor4::green1, 0 },
+	{ LLFastTimer::FTM_RIGGED_OCTREE,		"     Octree",		&LLColor4::green5, 0 },
+#endif //MESH_ENABLED
 	{ LLFastTimer::FTM_GEN_VOLUME,			"    Gen Volume",	&LLColor4::yellow3, 0 },
 	{ LLFastTimer::FTM_GEN_FLEX,			"    Flexible",	&LLColor4::yellow4, 0 },
 	{ LLFastTimer::FTM_GEN_TRIANGLES,		"    Triangles",	&LLColor4::yellow5, 0 },
@@ -155,6 +160,12 @@ static struct ft_display_info ft_display_table[] =
 	{ LLFastTimer::FTM_STATESORT,			"  State Sort",	&LLColor4::orange1, 1 },
 	{ LLFastTimer::FTM_STATESORT_DRAWABLE,	"   Drawable",		&LLColor4::orange2, 0 },
 	{ LLFastTimer::FTM_STATESORT_POSTSORT,	"   Post Sort",	&LLColor4::orange3, 0 },
+#if MESH_ENABLED
+	{ LLFastTimer::FTM_MESH_UPDATE,			"    Mesh Update",  &LLColor4::orange4, 0 },
+	{ LLFastTimer::FTM_MESH_LOCK1,			"     Lock 1",		&LLColor4::orange5, 0 },
+	{ LLFastTimer::FTM_MESH_LOCK2,			"     Lock 2",		&LLColor4::orange6, 0 },
+	{ LLFastTimer::FTM_LOAD_MESH_LOD,		"     Load LOD",	&LLColor4::yellow3, 0 },
+#endif //MESH_ENABLED
 	{ LLFastTimer::FTM_REBUILD_OCCLUSION_VB,"    Occlusion",		&LLColor4::cyan5, 0 },
 	{ LLFastTimer::FTM_REBUILD_VBO,			"    VBO Rebuild",	&LLColor4::red4, 0 },
 	{ LLFastTimer::FTM_REBUILD_VOLUME_VB,	"     Volume",		&LLColor4::blue1, 0 },

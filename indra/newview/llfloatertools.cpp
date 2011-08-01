@@ -81,8 +81,13 @@
 #include "llviewercontrol.h"
 #include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
+#if MESH_ENABLED
+#include "llaccountingquotamanager.h"
+#include "llmeshrepository.h"
+#endif
 
 #include "qtoolalign.h" //Thank Qarl!
+
 
 // Globals
 LLFloaterTools *gFloaterTools = NULL;
@@ -511,9 +516,23 @@ void LLFloaterTools::refresh()
 	childSetTextArg("link_num_obj_count",  "[DESC]", desc_string);	
 	childSetTextArg("link_num_obj_count",  "[NUM]", value_string);
 	
-	std::string prim_count_string;
-	LLResMgr::getInstance()->getIntegerString(prim_count_string, LLSelectMgr::getInstance()->getSelection()->getObjectCount());
-	childSetTextArg("prim_count", "[COUNT]", prim_count_string);
+	LLStringUtil::format_map_t selection_args;
+	selection_args["COUNT"] = llformat("%.1d", (S32)prim_count);
+#if MESH_ENABLED
+	if(gMeshRepo.meshRezEnabled())
+	{
+		F32 link_cost  = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
+		LLStringUtil::format_map_t prim_equiv_args;
+		prim_equiv_args["SEL_WEIGHT"] = llformat("%.1d", (S32)link_cost);
+		selection_args["PE_STRING"] = getString("status_selectprimequiv", prim_equiv_args);
+	}
+	else
+#endif //MESH_ENABLED
+	{
+		selection_args["PE_STRING"] = "";
+	}
+	std::string prim_count_string = getString("status_selectcount",selection_args);
+	childSetText("prim_count", prim_count_string);
 
 	// Refresh child tabs
 	mPanelPermissions->refresh();

@@ -48,6 +48,9 @@ public:
 	bool hasWaterFog; // implies no gamma
 	bool hasTransport; // implies no lighting (it's possible to have neither though)
 	bool hasSkinning;	
+#if MESH_ENABLED
+	bool hasObjectSkinning;
+#endif //MESH_ENABLED
 	bool hasAtmospherics;
 	bool hasGamma;
 

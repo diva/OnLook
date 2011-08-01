@@ -238,17 +238,10 @@ void LLSliderCtrl::onEditorCommit( LLUICtrl* caller, void *userdata )
 		val = (F32) atof( text.c_str() );
 		if( self->mSlider->getMinValue() <= val && val <= self->mSlider->getMaxValue() )
 		{
-			if( self->mValidateCallback )
+			self->setValue( val );
+			if( (!self->mValidateCallback	|| self->mValidateCallback( self, self->mCallbackUserData )) &&
+				(!self->mValidateSignal		|| (*(self->mValidateSignal))( self, val )))
 			{
-				self->setValue( val );  // set the value temporarily so that the callback can retrieve it.
-				if( self->mValidateCallback( self, self->mCallbackUserData ) )
-				{
-					success = TRUE;
-				}
-			}
-			else
-			{
-				self->setValue( val );
 				success = TRUE;
 			}
 		}
@@ -279,17 +272,10 @@ void LLSliderCtrl::onSliderCommit( LLUICtrl* caller, void *userdata )
 	F32 saved_val = self->mValue;
 	F32 new_val = self->mSlider->getValueF32();
 
-	if( self->mValidateCallback )
+	self->mValue = new_val;  // set the value temporarily so that the callback can retrieve it.
+	if( (!self->mValidateCallback	|| self->mValidateCallback( self, self->mCallbackUserData )) &&
+		(!self->mValidateSignal		|| (*(self->mValidateSignal))( self, new_val )))
 	{
-		self->mValue = new_val;  // set the value temporarily so that the callback can retrieve it.
-		if( self->mValidateCallback( self, self->mCallbackUserData ) )
-		{
-			success = TRUE;
-		}
-	}
-	else
-	{
-		self->mValue = new_val;
 		success = TRUE;
 	}
 

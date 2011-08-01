@@ -299,7 +299,7 @@ public:
 	{
 		if (data == NULL)
 		{
-			//OCT_ERRS << "!!! INVALID ELEMENT ADDED TO OCTREE BRANCH !!!" << llendl;
+			OCT_ERRS << "!!! INVALID ELEMENT ADDED TO OCTREE BRANCH !!!" << llendl;
 			return false;
 		}
 		LLOctreeNode<T>* parent = getOctParent();
@@ -389,7 +389,7 @@ public:
 		else 
 		{
 			//it's not in here, give it to the root
-			//OCT_ERRS << "Octree insertion failed, starting over from root!" << llendl;
+			OCT_ERRS << "Octree insertion failed, starting over from root!" << llendl;
 
 			oct_node* node = this;
 
@@ -590,7 +590,7 @@ public:
 			}
 		}
 
-		//OCT_ERRS << "Octree failed to delete requested child." << llendl;
+		OCT_ERRS << "Octree failed to delete requested child." << llendl;
 	}
 
 protected:	
@@ -670,13 +670,13 @@ public:
 	{
 		if (data == NULL) 
 		{
-			//OCT_ERRS << "!!! INVALID ELEMENT ADDED TO OCTREE ROOT !!!" << llendl;
+			OCT_ERRS << "!!! INVALID ELEMENT ADDED TO OCTREE ROOT !!!" << llendl;
 			return false;
 		}
 		
 		if (data->getBinRadius() > 4096.0)
 		{
-			//OCT_ERRS << "!!! ELEMENT EXCEEDS MAXIMUM SIZE IN OCTREE ROOT !!!" << llendl;
+			OCT_ERRS << "!!! ELEMENT EXCEEDS MAXIMUM SIZE IN OCTREE ROOT !!!" << llendl;
 			return false;
 		}
 		
@@ -692,7 +692,7 @@ public:
 
 		if (lt != 0x7)
 		{
-			//OCT_ERRS << "!!! ELEMENT EXCEEDS RANGE OF SPATIAL PARTITION !!!" << llendl;
+			OCT_ERRS << "!!! ELEMENT EXCEEDS RANGE OF SPATIAL PARTITION !!!" << llendl;
 			return false;
 		}
 

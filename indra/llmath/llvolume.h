@@ -40,8 +40,13 @@ class LLPathParams;
 class LLVolumeParams;
 class LLProfile;
 class LLPath;
+
+template <class T> class LLOctreeNode;
+
+class LLVector4a;
 class LLVolumeFace;
 class LLVolume;
+class LLVolumeTriangle;
 
 #include "lldarray.h"
 #include "lluuid.h"
@@ -186,12 +191,21 @@ const U8 LL_SCULPT_TYPE_SPHERE    = 1;
 const U8 LL_SCULPT_TYPE_TORUS     = 2;
 const U8 LL_SCULPT_TYPE_PLANE     = 3;
 const U8 LL_SCULPT_TYPE_CYLINDER  = 4;
-
+#if MESH_ENABLED
+const U8 LL_SCULPT_TYPE_MESH      = 5;
+const U8 LL_SCULPT_TYPE_MASK      = LL_SCULPT_TYPE_SPHERE | LL_SCULPT_TYPE_TORUS | LL_SCULPT_TYPE_PLANE |
+	LL_SCULPT_TYPE_CYLINDER | LL_SCULPT_TYPE_MESH;
+#endif //MESH_ENABLED
+#if !MESH_ENABLED
 const U8 LL_SCULPT_TYPE_MASK      = LL_SCULPT_TYPE_SPHERE | LL_SCULPT_TYPE_TORUS | LL_SCULPT_TYPE_PLANE | LL_SCULPT_TYPE_CYLINDER;
+#endif //!MESH_ENABLED
 
 const U8 LL_SCULPT_FLAG_INVERT    = 64;
 const U8 LL_SCULPT_FLAG_MIRROR    = 128;
 
+#if MESH_ENABLED
+const S32 LL_SCULPT_MESH_MAX_FACES = 8;
+#endif //MESH_ENABLED
 
 class LLProfileParams
 {
@@ -578,6 +592,9 @@ public:
 	BOOL importLegacyStream(std::istream& input_stream);
 	BOOL exportLegacyStream(std::ostream& output_stream) const;
 
+	LLSD sculptAsLLSD() const;
+	bool sculptFromLLSD(LLSD& sd);
+	
 	LLSD asLLSD() const;
 	operator LLSD() const { return asLLSD(); }
 	bool fromLLSD(LLSD& sd);
@@ -637,7 +654,10 @@ public:
 	const F32&  getSkew() const			{ return mPathParams.getSkew();			}
 	const LLUUID& getSculptID() const	{ return mSculptID;						}
 	const U8& getSculptType() const     { return mSculptType;                   }
-
+	bool isSculpt() const;
+ #if MESH_ENABLED
+ 	bool isMeshSculpt() const;
+ #endif //MESH_ENABLED
 	BOOL isConvex() const;
 
 	// 'begin' and 'end' should be in range [0, 1] (they will be clamped)
@@ -686,6 +706,9 @@ public:
 	BOOL isFlat(S32 face) const							{ return (mFaces[face].mCount == 2); }
 	BOOL isOpen() const									{ return mOpen; }
 	void setDirty()										{ mDirty     = TRUE; }
+
+	static S32 getNumPoints(const LLProfileParams& params, BOOL path_open, F32 detail = 1.0f, S32 split = 0,
+				  BOOL is_sculpted = FALSE, S32 sculpt_size = 0);
 	BOOL generate(const LLProfileParams& params, BOOL path_open, F32 detail = 1.0f, S32 split = 0,
 				  BOOL is_sculpted = FALSE, S32 sculpt_size = 0);
 	BOOL isConcave() const								{ return mConcave; }
@@ -710,6 +733,7 @@ public:
 
 protected:
 	void genNormals(const LLProfileParams& params);
+	static S32 getNumNGonPoints(const LLProfileParams& params, S32 sides, F32 offset=0.0f, F32 bevel = 0.0f, F32 ang_scale = 1.f, S32 split = 0);
 	void genNGon(const LLProfileParams& params, S32 sides, F32 offset=0.0f, F32 bevel = 0.0f, F32 ang_scale = 1.f, S32 split = 0);
 
 	Face* addHole(const LLProfileParams& params, BOOL flat, F32 sides, F32 offset, F32 box_hollow, F32 ang_scale, S32 split = 0);
@@ -752,6 +776,9 @@ public:
 
 	virtual ~LLPath();
 
+	static S32 getNumPoints(const LLPathParams& params, F32 detail);
+	static S32 getNumNGonPoints(const LLPathParams& params, S32 sides, F32 offset=0.0f, F32 end_scale = 1.f, F32 twist_scale = 1.f);
+
 	void genNGon(const LLPathParams& params, S32 sides, F32 offset=0.0f, F32 end_scale = 1.f, F32 twist_scale = 1.f);
 	virtual BOOL generate(const LLPathParams& params, F32 detail=1.0f, S32 split = 0,
 						  BOOL is_sculpted = FALSE, S32 sculpt_size = 0);
@@ -790,20 +817,87 @@ class LLVolumeFace
 public:
 	class VertexData
 	{
+		enum 
+		{
+			POSITION = 0,
+			NORMAL = 1
+		};
+
+	private:
+		void init();
 	public:
-		LLVector3 mPosition;
-		LLVector3 mNormal;
-		LLVector3 mBinormal;
+		VertexData();
+		VertexData(const VertexData& rhs);
+		const VertexData& operator=(const VertexData& rhs);
+
+		~VertexData();
+		LLVector4a& getPosition();
+		LLVector4a& getNormal();
+		const LLVector4a& getPosition() const;
+		const LLVector4a& getNormal() const;
+		void setPosition(const LLVector4a& pos);
+		void setNormal(const LLVector4a& norm);
+		
+
 		LLVector2 mTexCoord;
+
+		bool operator<(const VertexData& rhs) const;
+		bool operator==(const VertexData& rhs) const;
+		bool compareNormal(const VertexData& rhs, F32 angle_cutoff) const;
+
+	private:
+		LLVector4a* mData;
 	};
+
 	LLVolumeFace();
 	LLVolumeFace(const LLVolumeFace& src);
 	LLVolumeFace& operator=(const LLVolumeFace& rhs);
 
 	~LLVolumeFace();
+private:
+	void freeData();
+public:
+
 	BOOL create(LLVolume* volume, BOOL partial_build = FALSE);
 	void createBinormals();
+	
+	void appendFace(const LLVolumeFace& face, LLMatrix4& transform, LLMatrix4& normal_tranform);
 
+	void resizeVertices(S32 num_verts);
+	void allocateBinormals(S32 num_verts);
+ #if MESH_ENABLED
+	void allocateWeights(S32 num_verts);
+ #endif //MESH_ENABLED
+	void resizeIndices(S32 num_indices);
+	void fillFromLegacyData(std::vector<LLVolumeFace::VertexData>& v, std::vector<U16>& idx);
+
+	void pushVertex(const VertexData& cv);
+	void pushVertex(const LLVector4a& pos, const LLVector4a& norm, const LLVector2& tc);
+	void pushIndex(const U16& idx);
+
+	void swapData(LLVolumeFace& rhs);
+
+	void getVertexData(U16 indx, LLVolumeFace::VertexData& cv);
+
+	class VertexMapData : public LLVolumeFace::VertexData
+	{
+	public:
+		U16 mIndex;
+
+		bool operator==(const LLVolumeFace::VertexData& rhs) const;
+
+		struct ComparePosition
+		{
+			bool operator()(const LLVector3& a, const LLVector3& b) const;
+		};
+
+		typedef std::map<LLVector3, std::vector<VertexMapData>, VertexMapData::ComparePosition > PointMap;
+	};
+
+	void optimize(F32 angle_cutoff = 2.f);
+	void cacheOptimize();
+
+	void createOctree(F32 scaler = 0.25f, const LLVector4a& center = LLVector4a(0,0,0), const LLVector4a& size = LLVector4a(0.5f,0.5f,0.5f));
 
 	enum
 	{
@@ -823,7 +917,6 @@ public:
 public:
 	S32 mID;
 	U32 mTypeMask;
-	BOOL mHasBinormals;
 
 	// Only used for INNER/OUTER faces
 	S32 mBeginS;
@@ -835,9 +928,25 @@ public:
 	LLVector4a* mCenter;
 	LLVector2   mTexCoordExtents[2]; //minimum and maximum of texture coordinates of the face.
 
-	std::vector<VertexData> mVertices;
-	std::vector<U16>	mIndices;
+	S32 mNumVertices;
+	S32 mNumIndices;
+
+	LLVector4a* mPositions;
+	LLVector4a* mNormals;
+	LLVector4a* mBinormals;
+	LLVector2*  mTexCoords;
+	U16* mIndices;
+
 	std::vector<S32>	mEdge;
+
+ #if MESH_ENABLED
+	//list of skin weights for rigged volumes
+	// format is mWeights[vertex_index].mV[influence] = <joint_index>.<weight>
+	// mWeights.size() should be empty or match mVertices.size()  
+	LLVector4a* mWeights;
+ #endif //MESH_ENABLED
+ 
+	LLOctreeNode<LLVolumeTriangle>* mOctree;
 
 private:
 	BOOL createUnCutCubeCap(LLVolume* volume, BOOL partial_build = FALSE);
@@ -849,7 +958,12 @@ class LLVolume : public LLRefCount
 {
 	friend class LLVolumeLODGroup;
 
+#if MESH_ENABLED
+protected:
+#endif //MESH_ENABLED
+#if !MESH_ENABLED
 private:
+#endif //!MESH_ENABLED
 	LLVolume(const LLVolume&);  // Don't implement
 	~LLVolume(); // use unref
 
@@ -872,7 +986,7 @@ public:
 	
 	U8 getProfileType()	const								{ return mParams.getProfileParams().getCurveType(); }
 	U8 getPathType() const									{ return mParams.getPathParams().getCurveType(); }
-	S32	getNumFaces() const									{ return (S32)mProfilep->mFaces.size(); }
+	S32	getNumFaces() const;
 	S32 getNumVolumeFaces() const							{ return mVolumeFaces.size(); }
 	F32 getDetail() const									{ return mDetail; }
 	const LLVolumeParams& getParams() const					{ return mParams; }
@@ -895,15 +1009,17 @@ public:
 
 	S32 getSculptLevel() const                              { return mSculptLevel; }
 	void setSculptLevel(S32 level)							{ mSculptLevel = level; }
-	
+
 	S32 *getTriangleIndices(U32 &num_indices) const;
 
 	// returns number of triangle indeces required for path/profile mesh
 	S32 getNumTriangleIndices() const;
+	static void getLoDTriangleCounts(const LLVolumeParams& params, S32* counts);
+
+	S32 getNumTriangles() const;
 
 	void generateSilhouetteVertices(std::vector<LLVector3> &vertices, 
 									std::vector<LLVector3> &normals, 
-									std::vector<S32> &segments, 
 									const LLVector3& view_vec,
 									const LLMatrix4& mat,
 									const LLMatrix3& norm_mat,
@@ -952,6 +1068,9 @@ public:
 	LLVector3			mLODScaleBias;		// vector for biasing LOD based on scale
 	
 	void sculpt(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components, const U8* sculpt_data, S32 sculpt_level);
+	void copyVolumeFaces(const LLVolume* volume);
+	void cacheOptimize();
+
 private:
 	void sculptGenerateMapVertices(U16 sculpt_width, U16 sculpt_height, S8 sculpt_components, const U8* sculpt_data, U8 sculpt_type);
 	F32 sculptGetSurfaceArea();
@@ -962,11 +1081,20 @@ private:
 protected:
 	BOOL generate();
 	void createVolumeFaces();
+#if MESH_ENABLED
+public:
+	virtual bool unpackVolumeFaces(std::istream& is, S32 size);
 
+	virtual void makeTetrahedron();
+	virtual BOOL isTetrahedron();
+#endif //MESH_ENABLED
  protected:
 	BOOL mUnique;
 	F32 mDetail;
 	S32 mSculptLevel;
+#if MESH_ENABLED
+	BOOL mIsTetrahedron;
+#endif //MESH_ENABLED
 	
 	LLVolumeParams mParams;
 	LLPath *mPathp;
@@ -976,16 +1104,25 @@ protected:
 	BOOL mGenerateSingleFace;
 	typedef std::vector<LLVolumeFace> face_list_t;
 	face_list_t mVolumeFaces;
+	
+#if MESH_ENABLED
+public:
+	LLVector4a* mHullPoints;
+	U16* mHullIndices;
+	S32 mNumHullPoints;
+	S32 mNumHullIndices;
+#endif //MESH_ENABLED
 };
 
 std::ostream& operator<<(std::ostream &s, const LLVolumeParams &volume_params);
 
-LLVector3 calc_binormal_from_triangle(
-		const LLVector3& pos0,
+void calc_binormal_from_triangle(
+		LLVector4a& binormal,
+		const LLVector4a& pos0,
 		const LLVector2& tex0,
-		const LLVector3& pos1,
+		const LLVector4a& pos1,
 		const LLVector2& tex1,
-		const LLVector3& pos2,
+		const LLVector4a& pos2,
 		const LLVector2& tex2);
 
 BOOL LLLineSegmentBoxIntersect(const F32* start, const F32* end, const F32* center, const F32* size);

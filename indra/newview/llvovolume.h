@@ -44,11 +44,26 @@
 class LLViewerTextureAnim;
 class LLDrawPool;
 class LLSelectNode;
+class LLVOAvatar;
+class LLMeshSkinInfo;
 
 enum LLVolumeInterfaceType
 {
 	INTERFACE_FLEXIBLE = 1,
 };
+
+#if MESH_ENABLED
+class LLRiggedVolume : public LLVolume
+{
+public:
+	LLRiggedVolume(const LLVolumeParams& params)
+		: LLVolume(params, 0.f)
+	{
+	}
+
+	void update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, const LLVolume* src_volume);
+};
+#endif //MESH_ENABLED
 
 // Base class for implementations of the volume - Primitive, Flexible Object, etc.
 class LLVolumeInterface
@@ -118,6 +133,8 @@ public:
 	/*virtual*/	const LLMatrix4	getRenderMatrix() const;
 
 
+	/*virtual*/ U32		getTriangleCount();
+	/*virtual*/ U32		getHighLODTriangleCount();
 	/*virtual*/ BOOL lineSegmentIntersect(const LLVector3& start, const LLVector3& end, 
 										  S32 face = -1,                        // which face to check, -1 = ALL_SIDES
 										  BOOL pick_transparent = FALSE,
@@ -179,6 +196,12 @@ public:
 				void	updateSculptTexture();
 				void    setIndexInTex(S32 index) { mIndexInTex = index ;}
 				void	sculpt();
+#if MESH_ENABLED
+	 static     void    rebuildMeshAssetCallback(LLVFS *vfs,
+														  const LLUUID& asset_uuid,
+														  LLAssetType::EType type,
+														  void* user_data, S32 status, LLExtStat ext_status);
+#endif //MESH_ENABLED
 				void	updateRelativeXform();
 	/*virtual*/ BOOL	updateGeometry(LLDrawable *drawable);
 	/*virtual*/ void	updateFaceSize(S32 idx);
@@ -225,6 +248,9 @@ public:
 	U32 getVolumeInterfaceID() const;
 	virtual BOOL isFlexible() const;
 	virtual BOOL isSculpted() const;
+#if MESH_ENABLED
+	virtual BOOL isMesh() const;
+#endif //MESH_ENABLED
 	virtual BOOL hasLightTexture() const;
 
 	BOOL isVolumeGlobal() const;
@@ -234,6 +260,29 @@ public:
 	// tag: vaa emerald local_asset_browser
 	void setSculptChanged(BOOL has_changed) { mSculptChanged = has_changed; }
 			
+#if MESH_ENABLED
+	void notifyMeshLoaded();
+	
+	// Returns 'true' iff the media data for this object is in flight
+	bool isMediaDataBeingFetched() const;
+
+	
+
+	//rigged volume update (for raycasting)
+	void updateRiggedVolume();
+	LLRiggedVolume* getRiggedVolume();
+
+	//returns true if volume should be treated as a rigged volume
+	// - Build tools are open
+	// - object is an attachment
+	// - object is attached to self
+	// - object is rendered as rigged
+	bool treatAsRigged();
+
+	//clear out rigged volume and revert back to non-rigged state for picking/LOD/distance updates
+	void clearRiggedVolume();
+#endif //MESH_ENABLED
+
 protected:
 	S32	computeLODDetail(F32	distance, F32 radius);
 	BOOL calcLOD();
@@ -260,7 +309,9 @@ private:
 	LLPointer<LLViewerFetchedTexture> mSculptTexture;
 	LLPointer<LLViewerFetchedTexture> mLightTexture;
 	S32 mIndexInTex;
-	
+#if MESH_ENABLED
+	LLPointer<LLRiggedVolume> mRiggedVolume;
+#endif //MESH_ENABLED	
 	// statics
 public:
 	static F32 sLODSlopDistanceFactor;// Changing this to zero, effectively disables the LOD transition slop 

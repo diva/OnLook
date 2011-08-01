@@ -74,8 +74,6 @@ BOOL LLLineSegmentBoxIntersect(const LLVector4a& start, const LLVector4a& end, c
 	return (grt & 0x7) ? false : true;
 }
 
-
-#if 0 //MESH
 LLVolumeOctreeListener::LLVolumeOctreeListener(LLOctreeNode<LLVolumeTriangle>* node)
 {
 	node->addListener(this);
@@ -122,7 +120,7 @@ void LLOctreeTriangleRayIntersect::traverse(const LLOctreeNode<LLVolumeTriangle>
 	if (LLLineSegmentBoxIntersect(mStart.getF32ptr(), mEnd.getF32ptr(), vl->mBounds[0].getF32ptr(), vl->mBounds[1].getF32ptr()))
 	{
 		node->accept(this);
-		for (S32 i = 0; i < node->getChildCount(); ++i)
+		for (U32 i = 0; i < node->getChildCount(); ++i)
 		{
 			traverse(node->getChild(i));
 		}
@@ -253,5 +251,5 @@ void LLVolumeOctreeValidate::visit(const LLOctreeNode<LLVolumeTriangle>* branch)
 		}
 	}
 }
-#endif
+
 

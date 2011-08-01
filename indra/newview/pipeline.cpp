@@ -70,6 +70,9 @@
 #include "llgldbg.h"
 #include "llhudmanager.h"
 #include "lllightconstants.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llresmgr.h"
 #include "llselectmgr.h"
 #include "llsky.h"
@@ -2108,6 +2111,9 @@ void LLPipeline::rebuildPriorityGroups()
 	
 	assertInitialized();
 
+#if MESH_ENABLED
+	gMeshRepo.notifyLoadedMeshes();
+#endif //MESH_ENABLED
 
 	mGroupQ1Locked = true;
 	// Iterate through all drawables on the priority build queue,

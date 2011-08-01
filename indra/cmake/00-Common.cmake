@@ -295,6 +295,7 @@ endif (STANDALONE)
 
 if(1 EQUAL 1)
 	add_definitions(-DOPENSIM_RULES=1)
+	add_definitions(-DMESH_ENABLED=1)
 endif(1 EQUAL 1)
 
 if(SERVER)

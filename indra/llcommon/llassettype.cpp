@@ -105,6 +105,9 @@ LLAssetDictionary::LLAssetDictionary()
 	//addEntry(LLAssetType::AT_CURRENT_OUTFIT,	new AssetEntry("FOLDER_LINK",		"current",	"current outfit",	false,		false,		false));
 	//addEntry(LLAssetType::AT_OUTFIT,			new AssetEntry("OUTFIT",			"outfit", 	"outfit",			false,		false,		false));
 	//addEntry(LLAssetType::AT_MY_OUTFITS,		new AssetEntry("MY_OUTFITS",		"my_otfts",	"my outfits",		false,		false,		false));
+#if MESH_ENABLED
+	addEntry(LLAssetType::AT_MESH,              new AssetEntry("MESH",              "mesh",     "mesh",             false, false, false));
+#endif //MESH_ENABLED
 	addEntry(LLAssetType::AT_NONE, 				new AssetEntry("NONE",				"-1",		NULL,		  		false,		false,		false));
 };		
 

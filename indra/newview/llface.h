@@ -83,6 +83,9 @@ public:
 		HUD_RENDER		= 0x0008,
 		USE_FACE_COLOR	= 0x0010,
 		TEXTURE_ANIM	= 0x0020, 
+#if MESH_ENABLED
+		RIGGED			= 0x0040,
+#endif //MESH_ENABLED
 	};
 
 	static void initClass();
@@ -202,8 +205,8 @@ public:
 	BOOL		verify(const U32* indices_array = NULL) const;
 	void		printDebugInfo() const;
 
-	void		setGeomIndex(U16 idx) { mGeomIndex = idx; }
-	void		setIndicesIndex(S32 idx) { mIndicesIndex = idx; }
+	void		setGeomIndex(U16 idx); 
+	void		setIndicesIndex(S32 idx);
 	void		setDrawInfo(LLDrawInfo* draw_info);
 
 	F32         getTextureVirtualSize() ;
@@ -212,6 +215,13 @@ public:
 	void setVertexBuffer(LLVertexBuffer* buffer);
 	void clearVertexBuffer(); //sets mVertexBuffer and mLastVertexBuffer to NULL
 	LLVertexBuffer* getVertexBuffer()	const	{ return mVertexBuffer; }
+#if MESH_ENABLED
+	U32 getRiggedVertexBufferDataMask() const;
+	S32 getRiggedIndex(U32 type) const;
+	void setRiggedIndex(U32 type, S32 index);
+
+	static U32 getRiggedDataMask(U32 type);
+#endif //MESH_ENABLED
 public: //aligned members
 	LLVector4a		mExtents[2];
 
@@ -229,6 +239,9 @@ public:
 	LLVector2		mTexExtents[2];
 	F32				mDistance;
 	F32			mLastUpdateTime;
+#if MESH_ENABLED
+	F32			mLastSkinTime;
+#endif //MESH_ENABLED
 	F32			mLastMoveTime;
 	LLMatrix4*	mTextureMatrix;
 	LLDrawInfo* mDrawInfo;
@@ -264,6 +277,10 @@ private:
 	S32			mTEOffset;
 
 	S32			mReferenceIndex;
+#if MESH_ENABLED
+	std::vector<S32> mRiggedIndex;
+#endif //MESH_ENABLED
+
 	F32			mVSize;
 	F32			mPixelArea;
 

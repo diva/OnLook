@@ -222,6 +222,8 @@ void LLDrawPoolTerrain::render(S32 pass)
 			sShader->unbind();
 			sShader = &gObjectFullbrightProgram;
 			sShader->bind();
+			LLGLEnable polyOffset(GL_POLYGON_OFFSET_FILL);
+			glPolygonOffset(-1.0f, -1.0f);
 			renderOwnership();
 			sShader = old_shader;
 			sShader->bind();

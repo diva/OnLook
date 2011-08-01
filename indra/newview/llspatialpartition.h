@@ -71,6 +71,18 @@ protected:
 	~LLDrawInfo();	
 	
 public:
+
+	LLDrawInfo(const LLDrawInfo& rhs)
+	{
+		*this = rhs;
+	}
+
+	const LLDrawInfo& operator=(const LLDrawInfo& rhs)
+	{
+		llerrs << "Illegal operation!" << llendl;
+		return *this;
+	}
+
 	LLDrawInfo(U16 start, U16 end, U32 count, U32 offset, 
 				LLViewerTexture* image, LLVertexBuffer* buffer, 
 				BOOL fullbright = FALSE, U8 bump = 0, BOOL particle = FALSE, F32 part_size = 0);
@@ -164,6 +176,18 @@ class LLSpatialGroup : public LLOctreeListener<LLDrawable>
 	friend class LLSpatialPartition;
 	friend class LLOctreeStateCheck;
 public:
+
+	LLSpatialGroup(const LLSpatialGroup& rhs)
+	{
+		*this = rhs;
+	}
+
+	const LLSpatialGroup& operator=(const LLSpatialGroup& rhs)
+	{
+		llerrs << "Illegal operation!" << llendl;
+		return *this;
+	}
+
 	static std::set<GLuint> sPendingQueries; //pending occlusion queries
 	static U32 sNodeCount;
 	static BOOL sNoDelete; //deletion of spatial groups and draw info not allowed if TRUE
@@ -173,7 +197,7 @@ public:
 	typedef std::vector<LLPointer<LLDrawInfo> > drawmap_elem_t; 
 	typedef std::map<U32, drawmap_elem_t > draw_map_t;	
 	typedef std::vector<LLPointer<LLVertexBuffer> > buffer_list_t;
-	typedef std::map<LLPointer<LLViewerTexture>, buffer_list_t> buffer_texture_map_t;
+	typedef std::map<LLFace*, buffer_list_t> buffer_texture_map_t;
 	typedef std::map<U32, buffer_texture_map_t> buffer_map_t;
 
 	typedef LLOctreeListener<LLDrawable>	BaseType;

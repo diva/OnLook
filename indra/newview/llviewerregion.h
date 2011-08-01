@@ -96,6 +96,8 @@ public:
 		NUM_PARTITIONS
 	} eObjectPartitions;
 
+	typedef boost::signals2::signal<void(const LLUUID& region_id)> caps_received_signal_t;
+
 	LLViewerRegion(const U64 &handle,
 				   const LLHost &host,
 				   const U32 surface_grid_width,
@@ -240,6 +242,7 @@ public:
 	// has region received its final (not seed) capability list?
 	bool capabilitiesReceived() const;
 	void setCapabilitiesReceived(bool received);
+	boost::signals2::connection setCapabilitiesReceivedCallback(const caps_received_signal_t::slot_type& cb);
 
 	static bool isSpecialCapabilityName(const std::string &name);
 	void logActiveCapabilities() const;
@@ -279,6 +282,13 @@ public:
 
 	void getInfo(LLSD& info);
 	
+#if MESH_ENABLED
+	bool meshRezEnabled() const;
+	bool meshUploadEnabled() const;
+#endif //MESH_ENABLED
+
+	void getSimulatorFeatures(LLSD& info);	
+	void setSimulatorFeatures(const LLSD& info);
 
 	typedef enum
 	{
@@ -406,8 +416,11 @@ private:
 
 	bool	mAlive;					// can become false if circuit disconnects
 	bool	mCapabilitiesReceived;
+	caps_received_signal_t mCapabilitiesReceivedSignal;
 
 	BOOL mReleaseNotesRequested;
+	
+	LLSD mSimulatorFeatures;
 };
 
 inline BOOL LLViewerRegion::getAllowDamage() const
