@@ -811,7 +811,7 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 		
 		if (mVolumeImpl)
 		{
-			mVolumeImpl->onSetVolume(volume_params, detail); //mLOD ?
+			mVolumeImpl->onSetVolume(volume_params, mLOD); //detail ?
 		}
 		
 		updateSculptTexture();

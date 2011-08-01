@@ -1173,37 +1173,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (!tep) rebuild_color = FALSE;	// can't get color when tep is NULL
 	U8  bump_code = tep ? tep->getBumpmap() : 0;
 
-	if (rebuild_pos)
-	{
-		mVertexBuffer->getVertexStrider(vertices, mGeomIndex);
-	}
-	if (rebuild_normal)
-	{
-		mVertexBuffer->getNormalStrider(normals, mGeomIndex);
-	}
-	if (rebuild_binormal)
-	{
-		mVertexBuffer->getBinormalStrider(binormals, mGeomIndex);
-	}
-#if MESH_ENABLED
-	if (rebuild_weights)
-	{
-		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
-	}
-#endif //MESH_ENABLED
-
-	if (rebuild_tcoord)
-	{
-		mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex);
-		if (bump_code && mVertexBuffer->hasDataType(LLVertexBuffer::TYPE_TEXCOORD1))
-		{
-			mVertexBuffer->getTexCoord1Strider(tex_coords2, mGeomIndex);
-		}
-	}
-	if (rebuild_color)
-	{	
-		mVertexBuffer->getColorStrider(colors, mGeomIndex);
-	}
 
 	
 	BOOL is_static = mDrawablep->isStatic();
@@ -1249,6 +1218,8 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		{
 			indicesp[i] = vf.mIndices[i] + index_offset;
 		}
+
+		//mVertexBuffer->setBuffer(0);
 	}
 	
 	LLMatrix4a mat_normal;
@@ -1394,6 +1365,8 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 		if (!do_bump)
 		{ //not in atlas or not bump mapped, might be able to do a cheap update
+			mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex);
+
 			if (texgen != LLTextureEntry::TEX_GEN_PLANAR)
 			{
 				if (!do_tex_mat)
@@ -1467,9 +1440,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					}
 				}
 			}
+
+			//mVertexBuffer->setBuffer(0);
 		}
 		else
 		{ //either bump mapped or in atlas, just do the whole expensive loop
+			mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex);
 
 			std::vector<LLVector2> bump_tc;
 		
@@ -1523,9 +1499,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				}
 			}
 
+			//mVertexBuffer->setBuffer(0);
+
 
 			if (do_bump)
 			{
+				mVertexBuffer->getTexCoord1Strider(tex_coords2, mGeomIndex);
 		
 				for (S32 i = 0; i < num_vertices; i++)
 				{
@@ -1553,13 +1532,16 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					tc += LLVector2( bump_s_primary_light_ray.dot3(tangent).getF32(), bump_t_primary_light_ray.dot3(binormal).getF32() );
 					
 					*tex_coords2++ = tc;
-				}	
+				}
+
+				//mVertexBuffer->setBuffer(0);
 			}
 		}
 	}
 
 	if (rebuild_pos)
 	{
+		mVertexBuffer->getVertexStrider(vertices, mGeomIndex);
 		LLMatrix4a mat_vert;
 		mat_vert.loadu(mat_vert_in);
 		
@@ -1572,10 +1554,12 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 			
 			
+		//mVertexBuffer->setBuffer(0);
 	}
 		
 	if (rebuild_normal)
 	{
+		mVertexBuffer->getNormalStrider(normals, mGeomIndex);
 		for (S32 i = 0; i < num_vertices; i++)
 		{	
 			LLVector4a normal;
@@ -1583,10 +1567,13 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			normal.normalize3fast();
 			normals[i].set(normal.getF32ptr());
 		}
+
+		//mVertexBuffer->setBuffer(0);
 	}
 		
 	if (rebuild_binormal)
 	{
+		mVertexBuffer->getBinormalStrider(binormals, mGeomIndex);
 		for (S32 i = 0; i < num_vertices; i++)
 		{	
 			LLVector4a binormal;
@@ -1594,24 +1581,31 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			binormal.normalize3fast();
 			binormals[i].set(binormal.getF32ptr());
 		}
+
+		//mVertexBuffer->setBuffer(0);
 	}
 	
 #if MESH_ENABLED
 	if (rebuild_weights && vf.mWeights)
 	{
+		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
 		for (S32 i = 0; i < num_vertices; i++)
 		{
-			weights[i].set(*(weights.get()));
+			weights[i].set(vf.mWeights[i].getF32ptr());
 		}
+		//mVertexBuffer->setBuffer(0);
 	}
 #endif //MESH_ENABLED
 
 	if (rebuild_color)
 	{
+		mVertexBuffer->getColorStrider(colors, mGeomIndex);
 		for (S32 i = 0; i < num_vertices; i++)
 		{
 			colors[i] = color;	
 		}
+
+		//mVertexBuffer->setBuffer(0);
 	}
 
 	if (rebuild_tcoord)
