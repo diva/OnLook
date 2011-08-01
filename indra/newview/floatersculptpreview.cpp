@@ -753,11 +753,11 @@ void LLPreviewSculpted::setPreviewTarget(LLImageRaw* imagep, F32 distance)
 		*(normal_strider++) = normal;
 	}
 
+	//build vertices
+	vertex_strider.assignArray((U8*)vf.mPositions,sizeof(vf.mPositions[0]),num_indices);
+
 	// build indices
-	for (U16 i = 0; i < num_indices; i++)
-	{
-		*(index_strider++) = vf.mIndices[i];
-	}
+	index_strider.assignArray((U8*)vf.mIndices,sizeof(vf.mIndices[0]),num_indices);
 }
 
 
