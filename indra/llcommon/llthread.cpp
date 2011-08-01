@@ -99,10 +99,20 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// Run the user supplied function
 	threadp->run();
 
-	llinfos << "LLThread::staticRun() Exiting: " << threadp->mName << llendl;
+	// Setting mStatus to STOPPED is done non-thread-safe, so it's
+	// possible that the thread is deleted by another thread at
+	// the moment it happens... therefore make a copy here.
+	char const* name = threadp->mName;
 	
 	// We're done with the run function, this thread is done executing now.
 	threadp->mStatus = STOPPED;
+
+	// Only now print this info [doing that before setting mStatus
+	// to STOPPED makes it much more likely that another thread runs
+	// after the LLCurl::Multi::run() function exits and we actually
+	// change this variable (which really SHOULD have been inside
+	// the critical area of the mSignal lock)].
+	llinfos << "LLThread::staticRun() Exiting: " << name << llendl;
 
 	return NULL;
 }
