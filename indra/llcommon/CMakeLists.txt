@@ -96,6 +96,7 @@ set(llcommon_HEADER_FILES
     indra_constants.h
     linden_common.h
     linked_lists.h
+    llaccountingquota.h
     llagentconstants.h
     llavatarname.h
     llapp.h

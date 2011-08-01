@@ -100,6 +100,7 @@ set(viewer_SOURCE_FILES
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
+    llaccountingquotamanager.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentcamera.cpp
@@ -579,6 +580,7 @@ set(viewer_HEADER_FILES
     lgghunspell_wrapper.h
     chatbar_as_cmdline.h
     qtoolalign.h
+    llaccountingquotamanager.h
     llagent.h
     llagentaccess.h
     llagentcamera.h

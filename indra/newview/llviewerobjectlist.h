@@ -44,6 +44,7 @@
 #include "llviewerobject.h"
 #include "llvoavatar.h"
 
+class LLCamera;
 class LLNetMap;
 class LLDebugBeacon;
 
@@ -94,6 +95,25 @@ public:
 	void updateApparentAngles(LLAgent &agent);
 	void update(LLAgent &agent, LLWorld &world);
 
+#if MESH_ENABLED
+	void fetchObjectCosts();
+	void fetchPhysicsFlags();
+
+	void updateObjectCost(LLViewerObject* object);
+	void updateObjectCost(const LLUUID& object_id, F32 object_cost, F32 link_cost, F32 physics_cost, F32 link_physics_cost);
+	void onObjectCostFetchFailure(const LLUUID& object_id);
+
+	void updatePhysicsFlags(const LLViewerObject* object);
+	void onPhysicsFlagsFetchFailure(const LLUUID& object_id);
+	void updatePhysicsShapeType(const LLUUID& object_id, S32 type);
+	void updatePhysicsProperties(const LLUUID& object_id,
+									F32 density,
+									F32 friction,
+									F32 restitution,
+									F32 gravity_multiplier);
+
+	void updateQuota( const LLUUID& objectId, const SelectionQuota& costs );
+#endif //MESH_ENABLED
 	
 	void shiftObjects(const LLVector3 &offset);
 	void repartitionObjects();
@@ -211,6 +231,16 @@ protected:
 
 	std::map<LLUUID, LLPointer<LLViewerObject> > mUUIDObjectMap;
 	std::map<LLUUID, LLPointer<LLVOAvatar> > mUUIDAvatarMap;
+
+#if MESH_ENABLED
+	//set of objects that need to update their cost
+	std::set<LLUUID> mStaleObjectCost;
+	std::set<LLUUID> mPendingObjectCost;
+
+	//set of objects that need to update their physics flags
+	std::set<LLUUID> mStalePhysicsFlags;
+	std::set<LLUUID> mPendingPhysicsFlags;
+#endif //MESH_ENABLED
 
 	std::vector<LLDebugBeacon> mDebugBeacons;
 

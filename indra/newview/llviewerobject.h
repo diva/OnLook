@@ -49,6 +49,9 @@
 #include "v3dmath.h"
 #include "v3math.h"
 #include "llvertexbuffer.h"
+#if MESH_ENABLED
+#include "llaccountingquota.h"
+#endif //MESH_ENABLED
 
 class LLAgent;			// TODO: Get rid of this.
 class LLAudioSource;
@@ -327,6 +330,23 @@ public:
 	
 	virtual void setScale(const LLVector3 &scale, BOOL damped = FALSE);
 
+#if MESH_ENABLED
+	virtual F32 getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL);
+	virtual U32 getTriangleCount();
+	virtual U32 getHighLODTriangleCount();
+
+	void setObjectCost(F32 cost);
+	F32 getObjectCost();
+	
+	void setLinksetCost(F32 cost);
+	F32 getLinksetCost();
+	
+	void setPhysicsCost(F32 cost);
+	F32 getPhysicsCost();
+	
+	void setLinksetPhysicsCost(F32 cost);
+	F32 getLinksetPhysicsCost();
+#endif //MESH_ENABLED
 	void sendShapeUpdate();
 
 //	U8 getState()							{ return mState; }
@@ -460,6 +480,14 @@ public:
 	inline BOOL		flagCameraDecoupled() const		{ return ((mFlags & FLAGS_CAMERA_DECOUPLED) != 0); }
 	inline BOOL		flagObjectMove() const			{ return ((mFlags & FLAGS_OBJECT_MOVE) != 0); }
 
+#if MESH_ENABLED
+	U8       getPhysicsShapeType() const;
+	inline F32      getPhysicsGravity() const       { return mPhysicsGravity; }
+	inline F32      getPhysicsFriction() const      { return mPhysicsFriction; }
+	inline F32      getPhysicsDensity() const       { return mPhysicsDensity; }
+	inline F32      getPhysicsRestitution() const   { return mPhysicsRestitution; }
+#endif //MESH_ENABLED
+
 	bool getIncludeInSearch() const;
 	void setIncludeInSearch(bool include_in_search);
 
@@ -473,8 +501,15 @@ public:
 	void			setRegion(LLViewerRegion *regionp);
 	virtual void	updateRegion(LLViewerRegion *regionp) {}
 
-	void updateFlags();
+	void updateFlags(BOOL physics_changed = FALSE);
 	BOOL setFlags(U32 flag, BOOL state);
+#if MESH_ENABLED
+	void setPhysicsShapeType(U8 type);
+	void setPhysicsGravity(F32 gravity);
+	void setPhysicsFriction(F32 friction);
+	void setPhysicsDensity(F32 density);
+	void setPhysicsRestitution(F32 restitution);
+#endif //MESH_ENABLED
 	
 	virtual void dump() const;
 	static U32		getNumZombieObjects()			{ return sNumZombieObjects; }
@@ -532,6 +567,15 @@ public:
 		LL_VO_HUD_PART_GROUP =		LL_PCODE_APP | 0xc0,
 	} EVOType;
 
+#if MESH_ENABLED
+	typedef enum e_physics_shape_types
+	{
+		PHYSICS_SHAPE_PRIM = 0,
+		PHYSICS_SHAPE_NONE,
+		PHYSICS_SHAPE_CONVEX_HULL,
+	} EPhysicsShapeType;
+#endif //MESH_ENABLED
+
 	LLUUID			mID;
 
 	// unique within region, not unique across regions
@@ -549,6 +593,15 @@ public:
 
 	// Grabbed from UPDATE_FLAGS
 	U32				mFlags;
+
+#if MESH_ENABLED
+	// Sent to sim in UPDATE_FLAGS, received in ObjectPhysicsProperties
+	U8              mPhysicsShapeType;
+	F32             mPhysicsGravity;
+	F32             mPhysicsFriction;
+	F32             mPhysicsDensity;
+	F32             mPhysicsRestitution;
+#endif //MESH_ENABLED
 
 	// Pipeline classes
 	LLPointer<LLDrawable> mDrawable;
@@ -603,6 +656,12 @@ protected:
 	void unpackParticleSource(LLDataPacker &dp, const LLUUID& owner_id);
 	void deleteParticleSource();
 	void setParticleSource(const LLPartSysData& particle_parameters, const LLUUID& owner_id);
+
+#if MESH_ENABLED
+public:
+	void  updateQuota(  const SelectionQuota& quota );
+	const SelectionQuota& getQuota( void ) { return mSelectionQuota; }
+#endif //MESH_ENABLED
 
 private:
 	void setNameValueList(const std::string& list);		// clears nv pairs and then individually adds \n separated NV pairs from \0 terminated string
@@ -659,6 +718,17 @@ protected:
 	U8				mState;	// legacy
 	LLViewerObjectMedia* mMedia;	// NULL if no media associated
 	U8 mClickAction;
+#if MESH_ENABLED
+	F32 mObjectCost; //resource cost of this object or -1 if unknown
+	F32 mLinksetCost;
+	F32 mPhysicsCost;
+	F32 mLinksetPhysicsCost;
+
+	SelectionQuota mSelectionQuota;
+	
+	bool mCostStale;
+	mutable bool mPhysicsShapeUnknown;
+#endif //MESH_ENABLED
 
 	static			U32			sNumZombieObjects;			// Objects which are dead, but not deleted
 

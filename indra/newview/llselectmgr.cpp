@@ -1992,6 +1992,103 @@ BOOL LLSelectMgr::selectionGetGlow(F32 *glow)
 	return identical;
 }
 
+#if MESH_ENABLED
+void LLSelectMgr::selectionSetPhysicsType(U8 type)
+{
+	struct f : public LLSelectedObjectFunctor
+	{
+		U8 mType;
+		f(const U8& t) : mType(t) {}
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->setPhysicsShapeType(mType);
+				object->updateFlags(TRUE);
+			}
+			return true;
+		}
+	} sendfunc(type);
+	getSelection()->applyToObjects(&sendfunc);
+}
+
+void LLSelectMgr::selectionSetFriction(F32 friction)
+{
+	struct f : public LLSelectedObjectFunctor
+	{
+		F32 mFriction;
+		f(const F32& friction) : mFriction(friction) {}
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->setPhysicsFriction(mFriction);
+				object->updateFlags(TRUE);
+			}
+			return true;
+		}
+	} sendfunc(friction);
+	getSelection()->applyToObjects(&sendfunc);
+}
+
+void LLSelectMgr::selectionSetGravity(F32 gravity )
+{
+	struct f : public LLSelectedObjectFunctor
+	{
+		F32 mGravity;
+		f(const F32& gravity) : mGravity(gravity) {}
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->setPhysicsGravity(mGravity);
+				object->updateFlags(TRUE);
+			}
+			return true;
+		}
+	} sendfunc(gravity);
+	getSelection()->applyToObjects(&sendfunc);
+}
+
+void LLSelectMgr::selectionSetDensity(F32 density )
+{
+	struct f : public LLSelectedObjectFunctor
+	{
+		F32 mDensity;
+		f(const F32& density ) : mDensity(density) {}
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->setPhysicsDensity(mDensity);
+				object->updateFlags(TRUE);
+			}
+			return true;
+		}
+	} sendfunc(density);
+	getSelection()->applyToObjects(&sendfunc);
+}
+
+void LLSelectMgr::selectionSetRestitution(F32 restitution)
+{
+	struct f : public LLSelectedObjectFunctor
+	{
+		F32 mRestitution;
+		f(const F32& restitution ) : mRestitution(restitution) {}
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				object->setPhysicsRestitution(mRestitution);
+				object->updateFlags(TRUE);
+			}
+			return true;
+		}
+	} sendfunc(restitution);
+	getSelection()->applyToObjects(&sendfunc);
+}
+#endif //MESH_ENABLED
+
 //-----------------------------------------------------------------------------
 // selectionSetMaterial()
 //-----------------------------------------------------------------------------
@@ -3831,6 +3928,27 @@ void LLSelectMgr::sendDelink()
 	{
 		return;
 	}
+
+#if MESH_ENABLED
+	struct f : public LLSelectedObjectFunctor
+	{ //on delink, any modifyable object should
+		f() {}
+
+		virtual bool apply(LLViewerObject* object)
+		{
+			if (object->permModify())
+			{
+				if (object->getPhysicsShapeType() == LLViewerObject::PHYSICS_SHAPE_NONE)
+				{
+					object->setPhysicsShapeType(LLViewerObject::PHYSICS_SHAPE_CONVEX_HULL);
+					object->updateFlags();
+				}
+			}
+			return true;
+		}
+	} sendfunc;
+	getSelection()->applyToObjects(&sendfunc);
+#endif //MESH_ENABLED
 
 	// Delink needs to send individuals so you can unlink a single object from
 	// a linked set.
@@ -6276,6 +6394,176 @@ S32 LLObjectSelection::getObjectCount()
 	S32 count = mList.size();
 	return count;
 }
+
+#if MESH_ENABLED
+F32 LLObjectSelection::getSelectedObjectCost()
+{
+	cleanupNodes();
+	F32 cost = 0.f;
+
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			cost += object->getObjectCost();
+		}
+	}
+
+	return cost;
+}
+
+F32 LLObjectSelection::getSelectedLinksetCost()
+{
+	cleanupNodes();
+	F32 cost = 0.f;
+
+	std::set<LLViewerObject*> me_roots;
+
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			LLViewerObject* root = static_cast<LLViewerObject*>(object->getRoot());
+			if (root)
+			{
+				if (me_roots.find(root) == me_roots.end())
+				{
+					me_roots.insert(root);
+					cost += root->getLinksetCost();
+				}
+			}
+		}
+	}
+
+	return cost;
+}
+
+F32 LLObjectSelection::getSelectedPhysicsCost()
+{
+	cleanupNodes();
+	F32 cost = 0.f;
+
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			cost += object->getPhysicsCost();
+		}
+	}
+
+	return cost;
+}
+
+F32 LLObjectSelection::getSelectedLinksetPhysicsCost()
+{
+	cleanupNodes();
+	F32 cost = 0.f;
+
+	std::set<LLViewerObject*> me_roots;
+
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			LLViewerObject* root = static_cast<LLViewerObject*>(object->getRoot());
+			if (root)
+			{
+				if (me_roots.find(root) == me_roots.end())
+				{
+					me_roots.insert(root);
+					cost += root->getLinksetPhysicsCost();
+				}
+			}
+		}
+	}
+
+	return cost;
+}
+
+F32 LLObjectSelection::getSelectedObjectStreamingCost(S32* total_bytes, S32* visible_bytes)
+{
+	F32 cost = 0.f;
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			S32 bytes = 0;
+			S32 visible = 0;
+			cost += object->getStreamingCost(&bytes, &visible);
+
+			if (total_bytes)
+			{
+				*total_bytes += bytes;
+			}
+
+			if (visible_bytes)
+			{
+				*visible_bytes += visible;
+			}
+		}
+	}
+
+	return cost;
+}
+
+U32 LLObjectSelection::getSelectedObjectTriangleCount()
+{
+	U32 count = 0;
+	for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+	{
+		LLSelectNode* node = *iter;
+		LLViewerObject* object = node->getObject();
+		
+		if (object)
+		{
+			count += object->getTriangleCount();
+		}
+	}
+
+	return count;
+}
+
+/*S32 LLObjectSelection::getSelectedObjectRenderCost()
+{
+       S32 cost = 0;
+       LLVOVolume::texture_cost_t textures;
+       for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+       {
+               LLSelectNode* node = *iter;
+               LLVOVolume* object = (LLVOVolume*)node->getObject();
+
+               if (object)
+               {
+                       cost += object->getRenderCost(textures);
+               }
+
+               for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+               {
+                       // add the cost of each individual texture in the linkset
+                       cost += iter->second;
+               }
+               textures.clear();
+       }
+
+
+       return cost;
+}*/
+#endif //MESH_ENABLED
 
 
 //-----------------------------------------------------------------------------

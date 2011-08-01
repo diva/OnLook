@@ -284,6 +284,16 @@ public:
 
 	// count members
 	S32 getObjectCount();
+#if MESH_ENABLED
+	F32 getSelectedObjectCost();
+	F32 getSelectedLinksetCost();
+	F32 getSelectedPhysicsCost();
+	F32 getSelectedLinksetPhysicsCost();
+	S32 getSelectedObjectRenderCost();
+	
+	F32 getSelectedObjectStreamingCost(S32* total_bytes = NULL, S32* visible_bytes = NULL);
+	U32 getSelectedObjectTriangleCount();
+#endif //MESH_ENABLED
 	S32 getTECount();
 	S32 getRootObjectCount();
 
@@ -505,6 +515,13 @@ public:
 	bool selectionGetIncludeInSearch(bool* include_in_search_out); // true if all selected objects have same
 	BOOL selectionGetGlow(F32 *glow);
 
+#if MESH_ENABLED
+	void selectionSetPhysicsType(U8 type);
+	void selectionSetGravity(F32 gravity);
+	void selectionSetFriction(F32 friction);
+	void selectionSetDensity(F32 density);
+	void selectionSetRestitution(F32 restitution);
+#endif //MESH_ENABLED
 	void selectionSetMaterial(U8 material);
 	void selectionSetImage(const LLUUID& imageid); // could be item or asset id
 	void selectionSetColor(const LLColor4 &color);

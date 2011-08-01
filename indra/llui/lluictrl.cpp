@@ -93,6 +93,8 @@ void LLUICtrl::onCommit()
 	{
 		mCommitCallback( this, mCallbackUserData );
 	}
+	if (mCommitSignal)
+		(*mCommitSignal)(this, getValue());
 }
 
 //virtual
