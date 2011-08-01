@@ -49,7 +49,7 @@ void LLAgentUI::buildFullname(std::string& name)
 
 /*
 //static
-void LLAgentUI::buildSLURL(LLSLURL& slurl, const bool escaped /*= true*//*)
+void LLAgentUI::buildSLURL(LLSLURL& slurl, const bool escaped /= true/ )
 {
       LLSLURL return_slurl;
       LLViewerRegion *regionp = gAgent.getRegion();

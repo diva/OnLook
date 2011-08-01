@@ -112,7 +112,7 @@ public:
 #if MESH_ENABLED
 		PARAMS_RESERVED = 0x50, // Used on server-side
 		PARAMS_MESH     = 0x60,
-#endif MESH_ENABLED
+#endif //MESH_ENABLED
 	};
 	
 public:

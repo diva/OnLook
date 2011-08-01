@@ -1355,7 +1355,7 @@ LLModel* LLModel::loadModelFromDomMesh(domMesh *mesh)
 	ret->mLabel = getElementLabel(mesh);
 	return ret;
 }
-#endif MESH_IMPORT
+#endif //MESH_IMPORT
 
 std::string LLModel::getName() const
 {
