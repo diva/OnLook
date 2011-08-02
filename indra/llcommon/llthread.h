@@ -128,7 +128,7 @@ protected:
 	LLCondition*		mRunCondition;
 
 	apr_thread_t		*mAPRThreadp;
-	EThreadStatus		mStatus;
+	volatile EThreadStatus		mStatus;
 	U32					mID;
 
 	friend void AIThreadLocalData::create(LLThread* threadp);

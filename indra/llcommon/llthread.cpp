@@ -102,7 +102,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// Setting mStatus to STOPPED is done non-thread-safe, so it's
 	// possible that the thread is deleted by another thread at
 	// the moment it happens... therefore make a copy here.
-	char const* name = threadp->mName;
+	volatile char const* name = threadp->mName.c_str();
 	
 	// We're done with the run function, this thread is done executing now.
 	threadp->mStatus = STOPPED;
