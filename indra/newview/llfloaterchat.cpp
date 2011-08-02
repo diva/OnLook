@@ -497,6 +497,10 @@ void LLFloaterChat::addChat(const LLChat& chat,
 //static
 void LLFloaterChat::triggerAlerts(const std::string& text)
 {
+	// Cannot instantiate LLTextParser before logging in.
+	if (gDirUtilp->getLindenUserDir(true).empty())
+	  return;
+
 	LLTextParser* parser = LLTextParser::getInstance();
 //    bool spoken=FALSE;
 	for (S32 i=0;i<parser->mHighlights.size();i++)

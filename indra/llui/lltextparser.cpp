@@ -245,15 +245,14 @@ LLSD LLTextParser::loadFromDisk()
 bool LLTextParser::saveToDisk(LLSD highlights)
 {
 	mHighlights=highlights;
-	std::string filename=getFileName();
-	if (filename.empty())
+	if (gDirUtilp->getLindenUserDir(true).empty())
 	{
-		llwarns << "LLTextParser::saveToDisk() no valid user directory." << llendl; 
-		return FALSE;
+		// User didn't login, so nothing to save.
+		return false;
 	}	
 	llofstream file;
-	file.open(filename.c_str());
+	file.open(getFileName().c_str());
 	LLSDSerialize::toPrettyXML(mHighlights, file);
 	file.close();
-	return TRUE;
+	return true;
 }
