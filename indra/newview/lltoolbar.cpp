@@ -134,7 +134,7 @@ BOOL LLToolBar::postBuild()
 	childSetControlName("appearance_btn", "");
 
 	childSetAction("radar_list_btn", onClickRadarList, this);
-	childSetControlName("radar_list_btn", "RadarListBtnState");
+	childSetControlName("radar_list_btn", "ShowRadar");
 
 	childSetAction("fly_btn", onClickFly, this);
 	childSetControlName("fly_btn", "FlyBtnState");
@@ -143,7 +143,7 @@ BOOL LLToolBar::postBuild()
 	childSetControlName("sit_btn", "SitBtnState");
 
 	childSetAction("snapshot_btn", onClickSnapshot, this);
-	childSetControlName("snapshot_btn", "");
+	childSetControlName("snapshot_btn", "SnapshotBtnState");
 
 	childSetAction("directory_btn", onClickDirectory, this);
 	childSetControlName("directory_btn", "ShowDirectory");

@@ -229,7 +229,10 @@ void LLFloaterAvatarList::createInstance(bool visible)
 	sInstance = new LLFloaterAvatarList();
 	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
 	if(!visible)
+	{
 		sInstance->setVisible(FALSE);
+		gSavedSettings.setBOOL("ShowRadar", FALSE);
+	}
 }
 //static
 void LLFloaterAvatarList::toggle(void*)

@@ -12383,6 +12383,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <key>SnapshotBtnState</key>
+    <map>
+      <key>Comment</key>
+      <string/>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>0</integer>
+    </map>
     <key>SnapshotFormat</key>
     <map>
       <key>Comment</key>
@@ -14325,17 +14336,6 @@
         <integer>981</integer>
         <integer>473</integer>
       </array>
-    </map>
-    <key>RadarListBtnState</key>
-    <map>
-      <key>Comment</key>
-      <string/>
-      <key>Persist</key>
-      <integer>0</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
     </map>
     <key>WindEnabled</key>
     <map>
