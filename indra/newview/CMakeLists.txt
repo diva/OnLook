@@ -1613,6 +1613,13 @@ endif (LL_TESTS)
 if (WINDOWS)
 
   get_target_property(BUILT_LLCOMMON llcommon LOCATION)
+
+    set_target_properties(llcommon
+        PROPERTIES
+        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT"
+        LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\""
+        )
+
   add_custom_command(
       TARGET ${VIEWER_BINARY_NAME} POST_BUILD
       COMMAND ${CMAKE_COMMAND}
