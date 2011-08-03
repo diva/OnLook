@@ -70,6 +70,7 @@
 #include "stringize.h"
 #include "llviewercontrol.h"
 #include "llsdserialize.h"
+#include "llviewerparcelmgr.h"
 
 extern BOOL gNoRender;
 
@@ -269,6 +270,8 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	if (!gNoRender)
 	{
 		mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
+		//Re-init the parcel mgr for this sim
+	    LLViewerParcelMgr::getInstance()->init(region_width_meters);
 	}
 	else
 	{
