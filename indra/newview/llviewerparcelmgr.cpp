@@ -1349,7 +1349,7 @@ void LLViewerParcelMgr::processParcelOverlay(LLMessageSystem *msg, void **user)
 		return;
 	}
 
-	S32 parcels_per_edge = LLViewerParcelMgr::getInstance()->mParcelsPerEdge;
+	//S32 parcels_per_edge = LLViewerParcelMgr::getInstance()->mParcelsPerEdge;
 	S32 expected_size = 1024;
 	if (packed_overlay_size != expected_size)
 	{
