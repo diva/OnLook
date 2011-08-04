@@ -70,6 +70,11 @@
 #include "stringize.h"
 #include "llviewercontrol.h"
 #include "llsdserialize.h"
+#include "llviewerparcelmgr.h"
+
+// Viewer object cache version, change if object update
+// format changes. JC
+const U32 INDRA_OBJECT_CACHE_VERSION = 14;
 
 extern BOOL gNoRender;
 
@@ -267,6 +272,8 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	if (!gNoRender)
 	{
 		mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
+		//Re-init the parcel mgr for this sim
+	    LLViewerParcelMgr::getInstance()->init(region_width_meters);
 	}
 	else
 	{
