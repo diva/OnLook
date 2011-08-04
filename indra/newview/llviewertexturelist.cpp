@@ -608,11 +608,15 @@ void LLViewerTextureList::updateImages(F32 max_time)
 {
 	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
+	S32 global_raw_memory;
+	{
+		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);
+	}
 	sNumImagesStat.addValue(sNumImages);
 	sNumRawImagesStat.addValue(LLImageRaw::sRawImageCount);
 	sGLTexMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sGlobalTextureMemoryInBytes));
 	sGLBoundMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sBoundTextureMemoryInBytes));
-	sRawMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageRaw::sGlobalRawMemory));
+	sRawMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(global_raw_memory));
 	sFormattedMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageFormatted::sGlobalFormattedMemory));
 	
 	updateImagesDecodePriorities();
