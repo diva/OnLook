@@ -386,9 +386,13 @@ public:
 	// during authentication. return true if everything parsed.
 	typedef std::map<std::string, std::string> response_t;
 	typedef std::vector<response_t> options_t;
-
-	//OGPX really screwed with the login process. This is needed until it's all sorted out.
+	// OGPX : Two loadSkeleton(), one for the XML-RPC logins, one for LLSD
+	//... The concept of a skeleton being different from the cap that 
+	//... we do inventory queries on should be examined, and the usage of
+	//... the skeleton in querying the wearables needs to be examined as well.
 	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
+	bool loadMeat(const options_t& options, const LLUUID& owner_id);
+
 /**                    Mutators
  **                                                                            **
  *******************************************************************************/
