@@ -2207,6 +2207,33 @@ const LLMatrix4 LLVOVolume::getRenderMatrix() const
 	return mDrawable->getWorldMatrix();
 }
 
+#if MESH_ENABLED
+F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes)
+{
+	F32 radius = getScale().length()*0.5f;
+
+	if (isMesh())
+	{	
+		LLSD& header = gMeshRepo.getMeshHeader(getVolume()->getParams().getSculptID());
+
+		return LLMeshRepository::getStreamingCost(header, radius, bytes, visible_bytes, mLOD);
+	}
+	else
+	{
+		LLVolume* volume = getVolume();
+		S32 counts[4];
+		LLVolume::getLoDTriangleCounts(volume->getParams(), counts);
+
+		LLSD header;
+		header["lowest_lod"]["size"] = counts[0] * 10;
+		header["low_lod"]["size"] = counts[1] * 10;
+		header["medium_lod"]["size"] = counts[2] * 10;
+		header["high_lod"]["size"] = counts[3] * 10;
+
+		return LLMeshRepository::getStreamingCost(header, radius);
+	}	
+}
+#endif //MESH_ENABLED
 
 U32 LLVOVolume::getTriangleCount()
 {
@@ -3403,6 +3430,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 
 void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 {
+	llassert(group);
 	static int warningsCount = 20;
 	if (group && group->isState(LLSpatialGroup::MESH_DIRTY) && !group->isState(LLSpatialGroup::GEOM_DIRTY))
 	{
@@ -3414,15 +3442,16 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 
-			if (drawablep->isDead() || drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
+			if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
 			{
 				continue;
 			}
 
-			if (drawablep->isState(LLDrawable::REBUILD_ALL))
+			if (!drawablep->isDead() && drawablep->isState(LLDrawable::REBUILD_ALL) )
 			{
 				LLVOVolume* vobj = drawablep->getVOVolume();
 				vobj->preRebuild();
+
 				LLVolume* volume = vobj->getVolume();
 				for (S32 i = 0; i < drawablep->getNumFaces(); ++i)
 				{
@@ -3489,6 +3518,8 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 		group->clearState(LLSpatialGroup::MESH_DIRTY | LLSpatialGroup::NEW_DRAWINFO);
 	}
+
+	llassert(!group || !group->isState(LLSpatialGroup::NEW_DRAWINFO));
 }
 
 struct CompareBatchBreakerModified

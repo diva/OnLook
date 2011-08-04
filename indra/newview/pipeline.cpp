@@ -7905,17 +7905,15 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 					gPipeline.pushRenderTypeMask();
 					gPipeline.andRenderTypeMask(LLPipeline::RENDER_TYPE_SKY,
 												LLPipeline::RENDER_TYPE_WL_SKY,
+												LLPipeline::RENDER_TYPE_WL_CLOUDS,
 												LLPipeline::END_RENDER_TYPES);
+
 					static LLCullResult result;
 					updateCull(camera, result);
 					stateSort(camera, result);
-					andRenderTypeMask(LLPipeline::RENDER_TYPE_SKY,
-										LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
-										LLPipeline::RENDER_TYPE_WL_CLOUDS,
-										LLPipeline::RENDER_TYPE_WL_SKY,
-										LLPipeline::END_RENDER_TYPES);
 
 					renderGeom(camera, TRUE);
+
 					gPipeline.popRenderTypeMask();
 				}
 
@@ -7925,7 +7923,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 					gPipeline.pushRenderTypeMask();
 					if (detail < 4)
 					{
-						clearRenderTypeMask(LLPipeline::RENDER_TYPE_PARTICLES, END_RENDER_TYPES);
+						clearRenderTypeMask(LLPipeline::RENDER_TYPE_PARTICLES, LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS, END_RENDER_TYPES);
 						if (detail < 3)
 						{
 								clearRenderTypeMask(LLPipeline::RENDER_TYPE_AVATAR, END_RENDER_TYPES);
@@ -7940,7 +7938,6 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 									LLPipeline::RENDER_TYPE_VOIDWATER,
 									LLPipeline::RENDER_TYPE_GROUND,
 									LLPipeline::RENDER_TYPE_SKY,
-									LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS,
 									LLPipeline::RENDER_TYPE_WL_CLOUDS,
 									LLPipeline::END_RENDER_TYPES);
 					static const LLCachedControl<bool> skip_distortion_updates("SkipReflectOcclusionUpdates",false);
