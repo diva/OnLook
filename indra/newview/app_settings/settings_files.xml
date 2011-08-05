@@ -81,7 +81,7 @@
             <key>PerAccount</key>
             <map>
               <key>Name</key>
-              <string>settings_sg_per_account.xml</string>
+              <string>settings_per_account.xml</string>
             </map>
           </map>
         </map>
