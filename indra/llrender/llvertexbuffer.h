@@ -213,8 +213,6 @@ public:
 
 	void setStride(S32 type, S32 new_stride);
 	
-	void markDirty(U32 vert_index, U32 vert_count, U32 indices_index, U32 indices_count);
-
 	void draw(U32 mode, U32 count, U32 indices_offset) const;
 	void drawArrays(U32 mode, U32 offset, U32 count) const;
 	void drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indices_offset) const;

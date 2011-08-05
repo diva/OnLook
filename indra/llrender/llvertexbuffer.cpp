@@ -1192,12 +1192,14 @@ template <class T,S32 type> struct VertexBufferStrider
 
 			strider = (T*)(ptr + index*sizeof(T));
 			strider.setStride(0);
+			strider.setTypeSize(0);
 			return TRUE;
 		}
 		else if (vbo.hasDataType(type))
 		{
 			S32 stride = vbo.getStride();
 			volatile U8* ptr = vbo.mapVertexBuffer(type);
+			S32 size = LLVertexBuffer::sTypeSize[type];
 
 			if (ptr == NULL)
 			{
@@ -1207,6 +1209,7 @@ template <class T,S32 type> struct VertexBufferStrider
 
 			strider = (T*)(ptr + vbo.getOffset(type) + index*stride);
 			strider.setStride(stride);
+			strider.setTypeSize(size);
 			return TRUE;
 		}
 		else
@@ -1575,11 +1578,3 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 	llglassertok();
 }
 
-void LLVertexBuffer::markDirty(U32 vert_index, U32 vert_count, U32 indices_index, U32 indices_count)
-{
-	// TODO: use GL_APPLE_flush_buffer_range here
-	/*if (useVBOs() && !mFilthy)
-	{
-	
-	}*/
-}

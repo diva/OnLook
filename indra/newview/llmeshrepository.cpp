@@ -3180,7 +3180,8 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 	return;
 #endif //!MESH_IMPORT	
 #if MESH_IMPORT
-
+	LLConvexDecomposition* decomp = LLConvexDecomposition::getInstance();
+	
 	if (decomp == NULL)
 	{
 		//stub. do nothing.
