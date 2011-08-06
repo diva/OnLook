@@ -653,8 +653,8 @@ void LLWorld::updateRegions(F32 max_update_time)
 	BOOL did_one = FALSE;
 	
 	// Perform idle time updates for the regions (and associated surfaces)
-	for (region_list_t::iterator iter = mRegionList.begin();
-		 iter != mRegionList.end(); ++iter)
+	for (region_list_t::iterator iter = mActiveRegionList.begin()/*mRegionList.begin()*/;
+		 iter != mActiveRegionList.end()/*mRegionList.end()*/; ++iter)
 	{
 		LLViewerRegion* regionp = *iter;
 		F32 max_time = max_update_time - update_timer.getElapsedTimeF32();
