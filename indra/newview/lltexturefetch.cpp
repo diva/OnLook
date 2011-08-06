@@ -1144,7 +1144,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 			if (region)
 			{
-				std::string http_url = region->getCapability("GetTexture");
+				std::string http_url = region->getHttpUrl() ;
 				if (!http_url.empty())
 				{
 					mUrl = http_url + "/?texture_id=" + mID.asString().c_str();
@@ -2348,6 +2348,7 @@ void LLTextureFetch::commonUpdate()
 #endif
 
 	// Update Curl on same thread as mCurlGetRequest was constructed
+	llassert_always(mCurlGetRequest);
 	S32 processed = mCurlGetRequest->process();
 	if (processed > 0)
 	{
