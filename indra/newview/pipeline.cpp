@@ -2416,7 +2416,7 @@ void LLPipeline::markGLRebuild(LLGLUpdate* glu)
 void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	//assert_main_thread();
+	//llassert(is_main_thread());
 
 	if (group && !group->isDead() && group->mSpatialPartition)
 	{
