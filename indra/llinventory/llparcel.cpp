@@ -1354,13 +1354,3 @@ LLParcel::ECategory category_ui_string_to_category(const std::string& s)
     // is a distinct option from "None" and "Other"
     return LLParcel::C_ANY;
 }
-
-#if MESH_ENABLED
-void LLParcel::updateQuota( const LLUUID& objectId,  const ParcelQuota& quota )
-{
-	if ( mID == objectId )
-	{
-		mQuota = quota;
-	}
-}
-#endif //MESH_ENABLED

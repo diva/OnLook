@@ -101,6 +101,8 @@ public:
 	{
 	}
 
+	void buildCapabilityNames(LLSD& capabilityNames);
+
 	// The surfaces and other layers
 	LLSurface*	mLandp;
 
@@ -1480,6 +1482,82 @@ void LLViewerRegion::unpackRegionHandshake()
 	msg->sendReliable(host);
 }
 
+
+void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
+{
+	//capabilityNames.append("AttachmentResources"); //Script limits (llfloaterscriptlimits.cpp)
+	//capabilityNames.append("AvatarPickerSearch"); //Display name/SLID lookup (llfloateravatarpicker.cpp)
+	capabilityNames.append("ChatSessionRequest");
+	capabilityNames.append("CopyInventoryFromNotecard");
+	capabilityNames.append("DispatchRegionInfo");
+	capabilityNames.append("EstateChangeInfo");
+	capabilityNames.append("EventQueueGet");
+	/*capabilityNames.append("EnvironmentSettings");
+	capabilityNames.append("ObjectMedia");
+	capabilityNames.append("ObjectMediaNavigate");*/
+	
+	if (false)//gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
+	{
+		capabilityNames.append("FetchLib");
+		capabilityNames.append("FetchLibDescendents");
+		capabilityNames.append("FetchInventory");
+		capabilityNames.append("FetchInventoryDescendents");
+	}
+
+	capabilityNames.append("GetDisplayNames");
+	capabilityNames.append("GetTexture");
+#if MESH_ENABLED
+	capabilityNames.append("GetMesh");
+	capabilityNames.append("GetObjectCost");
+	capabilityNames.append("GetObjectPhysicsData");
+#endif //MESH_ENABLED
+	capabilityNames.append("GroupProposalBallot");
+
+	capabilityNames.append("HomeLocation");
+	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
+	capabilityNames.append("MapLayer");
+	capabilityNames.append("MapLayerGod");
+#if MESH_IMPORT
+	capabilityNames.append("MeshUploadFlag");
+#endif //MESH_IMPORT
+	capabilityNames.append("NewFileAgentInventory");
+	capabilityNames.append("ParcelPropertiesUpdate");
+	capabilityNames.append("ParcelMediaURLFilterList");
+	capabilityNames.append("ParcelNavigateMedia");
+	capabilityNames.append("ParcelVoiceInfoRequest");
+	capabilityNames.append("ProductInfoRequest");
+	capabilityNames.append("ProvisionVoiceAccountRequest");
+	capabilityNames.append("RemoteParcelRequest");
+	capabilityNames.append("RequestTextureDownload");
+	capabilityNames.append("ResourceCostSelected"); //Unreferenced?
+	capabilityNames.append("SearchStatRequest");
+	capabilityNames.append("SearchStatTracking");
+	capabilityNames.append("SendPostcard");
+	capabilityNames.append("SendUserReport");
+	capabilityNames.append("SendUserReportWithScreenshot");
+	capabilityNames.append("ServerReleaseNotes");
+	//capabilityNames.append("SimConsole");
+	capabilityNames.append("SimulatorFeatures");
+	capabilityNames.append("SetDisplayName");
+	//capabilityNames.append("SimConsoleAsync");
+	capabilityNames.append("StartGroupProposal");
+	capabilityNames.append("TextureStats");
+	capabilityNames.append("UntrustedSimulatorMessage");
+	capabilityNames.append("UpdateAgentInformation");
+	capabilityNames.append("UpdateAgentLanguage");
+	capabilityNames.append("UpdateGestureAgentInventory");
+	capabilityNames.append("UpdateNotecardAgentInventory");
+	capabilityNames.append("UpdateScriptAgent");
+	capabilityNames.append("UpdateGestureTaskInventory");
+	capabilityNames.append("UpdateNotecardTaskInventory");
+	capabilityNames.append("UpdateScriptTask");
+	capabilityNames.append("UploadBakedTexture");
+	//capabilityNames.append("ViewerMetrics");
+	capabilityNames.append("ViewerStartAuction");
+	capabilityNames.append("ViewerStats");
+	// Please add new capabilities alphabetically to reduce
+	// merge conflicts.
+}
 void LLViewerRegion::setSeedCapability(const std::string& url)
 {
 	if (getCapability("Seed") == url)
@@ -1495,63 +1573,9 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	setCapability("Seed", url);
 
 	LLSD capabilityNames = LLSD::emptyArray();
-	capabilityNames.append("ChatSessionRequest");
-	capabilityNames.append("CopyInventoryFromNotecard");
-	capabilityNames.append("DispatchRegionInfo");
-	capabilityNames.append("EstateChangeInfo");
-	capabilityNames.append("EventQueueGet");
-	if (false)//gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
-	{
-		capabilityNames.append("FetchLib");
-		capabilityNames.append("FetchLibDescendents");
-		capabilityNames.append("FetchInventory");
-		capabilityNames.append("FetchInventoryDescendents");
-	}
-	capabilityNames.append("GetDisplayNames");
-	capabilityNames.append("GetTexture");
-#if MESH_ENABLED
-	capabilityNames.append("GetMesh");
-	capabilityNames.append("GetObjectCost");
-	capabilityNames.append("GetObjectPhysicsData");
-#endif //MESH_ENABLED
-	capabilityNames.append("GroupProposalBallot");
-
-	capabilityNames.append("HomeLocation");
-	capabilityNames.append("MapLayer");
-	capabilityNames.append("MapLayerGod");
-	capabilityNames.append("NewFileAgentInventory");
-	capabilityNames.append("ParcelPropertiesUpdate");
-	capabilityNames.append("ParcelMediaURLFilterList");
-	capabilityNames.append("ParcelNavigateMedia");
-	capabilityNames.append("ParcelVoiceInfoRequest");
-	capabilityNames.append("ProductInfoRequest");
-	capabilityNames.append("ProvisionVoiceAccountRequest");
-	capabilityNames.append("RemoteParcelRequest");
-	capabilityNames.append("RequestTextureDownload");
-	capabilityNames.append("SearchStatRequest");
-	capabilityNames.append("SearchStatTracking");
-	capabilityNames.append("SendPostcard");
-	capabilityNames.append("SendUserReport");
-	capabilityNames.append("SendUserReportWithScreenshot");
-	capabilityNames.append("ServerReleaseNotes");
-	capabilityNames.append("SimulatorFeatures");
-	capabilityNames.append("SetDisplayName");
-	capabilityNames.append("StartGroupProposal");
-	capabilityNames.append("TextureStats");
-	capabilityNames.append("UntrustedSimulatorMessage");
-	capabilityNames.append("UpdateAgentInformation");
-	capabilityNames.append("UpdateAgentLanguage");
-	capabilityNames.append("UpdateGestureAgentInventory");
-	capabilityNames.append("UpdateNotecardAgentInventory");
-	capabilityNames.append("UpdateScriptAgent");
-	capabilityNames.append("UpdateGestureTaskInventory");
-	capabilityNames.append("UpdateNotecardTaskInventory");
-	capabilityNames.append("UpdateScriptTask");
-	capabilityNames.append("UploadBakedTexture");
-	capabilityNames.append("ViewerStartAuction");
-	capabilityNames.append("ViewerStats");
-	// Please add new capabilities alphabetically to reduce
-	// merge conflicts.
+	
+	mImpl->buildCapabilityNames(capabilityNames);
+	
 
 	llinfos << "posting to seed " << url << llendl;
 

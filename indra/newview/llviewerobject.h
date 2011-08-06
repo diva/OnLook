@@ -49,9 +49,6 @@
 #include "v3dmath.h"
 #include "v3math.h"
 #include "llvertexbuffer.h"
-#if MESH_ENABLED
-#include "llaccountingquota.h"
-#endif //MESH_ENABLED
 
 class LLAgent;			// TODO: Get rid of this.
 class LLAudioSource;
@@ -657,11 +654,7 @@ protected:
 	void deleteParticleSource();
 	void setParticleSource(const LLPartSysData& particle_parameters, const LLUUID& owner_id);
 
-#if MESH_ENABLED
 public:
-	void  updateQuota(  const SelectionQuota& quota );
-	const SelectionQuota& getQuota( void ) { return mSelectionQuota; }
-#endif //MESH_ENABLED
 
 private:
 	void setNameValueList(const std::string& list);		// clears nv pairs and then individually adds \n separated NV pairs from \0 terminated string
@@ -724,8 +717,6 @@ protected:
 	F32 mPhysicsCost;
 	F32 mLinksetPhysicsCost;
 
-	SelectionQuota mSelectionQuota;
-	
 	bool mCostStale;
 	mutable bool mPhysicsShapeUnknown;
 #endif //MESH_ENABLED

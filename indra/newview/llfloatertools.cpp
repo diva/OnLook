@@ -82,7 +82,6 @@
 #include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
 #if MESH_ENABLED
-#include "llaccountingquotamanager.h"
 #include "llmeshrepository.h"
 #endif
 
