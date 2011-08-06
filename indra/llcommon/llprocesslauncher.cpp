@@ -328,7 +328,11 @@ int LLProcessLauncher::launch(void)
 		apr_file_t* out;
 		AIAPRPool pool;
 		pool.create();
+#if(APR_VERSION_MAJOR==1 && APR_VERSION_MINOR>=3 || APR_VERSION_MAJOR>1)
 		apr_status_t status = apr_file_pipe_create_ex(&in, &out, APR_FULL_BLOCK, pool());
+#else
+		apr_status_t status = apr_file_pipe_create(&in, &out, pool());
+#endif
 		assert(status == APR_SUCCESS);
 		bool success = (status == APR_SUCCESS);
 		if (success)
