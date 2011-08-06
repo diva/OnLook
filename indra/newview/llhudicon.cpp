@@ -73,6 +73,7 @@ LLHUDIcon::LLHUDIcon(const U8 type) :
 			mScale(0.1f),
 			mHidden(FALSE)
 {
+	llassert(this);
 	sIconInstances.push_back(this);
 }
 
@@ -333,7 +334,7 @@ LLHUDIcon* LLHUDIcon::lineSegmentIntersectAll(const LLVector3& start, const LLVe
 	for(icon_it = sIconInstances.begin(); icon_it != sIconInstances.end(); ++icon_it)
 	{
 		LLHUDIcon* icon = *icon_it;
-		if (icon->lineSegmentIntersect(start, local_end, &position))
+		if (icon && icon->lineSegmentIntersect(start, local_end, &position))
 		{
 			ret = icon;
 			if (intersection)

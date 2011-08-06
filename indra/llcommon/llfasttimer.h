@@ -267,7 +267,6 @@ public:
 	static void reset();
 	static U64 countsPerSecond();
 
-	static std::string sClockType;
 public:
 	static int sCurDepth;
 	static U64 sStart[FTM_MAX_DEPTH];

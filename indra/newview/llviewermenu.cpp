@@ -2864,15 +2864,10 @@ class LLObjectExport : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
-		if (!object) return true;
-
-		LLVOAvatar* avatar = find_avatar_from_object(object); 
-
-		if (!avatar)
+		if (object)
 		{
 			LLObjectBackup::getInstance()->exportObject();
 		}
-
 		return true;
 	}
 };

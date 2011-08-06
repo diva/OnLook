@@ -722,14 +722,17 @@ CURLMsg* LLCurl::Multi::info_read(S32* msgs_in_queue)
 
 void LLCurl::Multi::perform()
 {
+	mSignal->lock();
 	if (mPerformState == PERFORM_STATE_READY)
 	{
 		mSignal->signal();
 	}
+	mSignal->unlock();
 }
 
 void LLCurl::Multi::run()
 {
+	mSignal->lock();
 	while (!mQuitting)
 	{
 		mSignal->wait();
@@ -753,6 +756,7 @@ void LLCurl::Multi::run()
 			mPerformState = PERFORM_STATE_COMPLETED;
 		}
 	}
+	mSignal->unlock();
 }
 
 S32 LLCurl::Multi::process()
@@ -879,12 +883,16 @@ LLCurlRequest::~LLCurlRequest()
 	for (curlmulti_set_t::iterator iter = mMultiSet.begin(); iter != mMultiSet.end(); ++iter)
 	{
 		LLCurl::Multi* multi = *iter;
+		multi->mSignal->lock();
 		multi->mQuitting = true;
 		while (!multi->isStopped())
 		{
 			multi->mSignal->signal();
+			multi->mSignal->unlock();
 			apr_sleep(1000);
+			multi->mSignal->lock();
 		}
+		multi->mSignal->unlock();
 	}
 	for_each(mMultiSet.begin(), mMultiSet.end(), DeletePointer());
 }
@@ -1023,12 +1031,16 @@ S32 LLCurlRequest::process()
 		if (multi != mActiveMulti && tres == 0 && multi->mQueued == 0)
 		{
 			mMultiSet.erase(curiter);
+			multi->mSignal->lock();
 			multi->mQuitting = true;
 			while (!multi->isStopped())
 			{
 				multi->mSignal->signal();
+				multi->mSignal->unlock();
 				apr_sleep(1000);
+				multi->mSignal->unlock();
 			}
+			multi->mSignal->unlock();
 
 			delete multi;
 		}
@@ -1071,12 +1083,16 @@ LLCurlEasyRequest::LLCurlEasyRequest()
 
 LLCurlEasyRequest::~LLCurlEasyRequest()
 {
+	mMulti->mSignal->lock();
 	mMulti->mQuitting = true;
 	while (!mMulti->isStopped())
 	{
 		mMulti->mSignal->signal();
+		mMulti->mSignal->unlock();
 		apr_sleep(1000);
+		mMulti->mSignal->lock();
 	}
+	mMulti->mSignal->unlock();
 	delete mMulti;
 }
 	

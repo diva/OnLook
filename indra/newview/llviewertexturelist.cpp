@@ -1091,8 +1091,12 @@ LLPointer<LLImageJ2C> LLViewerTextureList::convertToUploadFile(LLPointer<LLImage
 S32 LLViewerTextureList::getMinVideoRamSetting()
 {
 	S32 system_ram = (S32)BYTES_TO_MEGA_BYTES(gSysMemory.getPhysicalMemoryClamped());
-	//min texture mem sets to 64M if total physical mem is more than 1.5GB
-	return (system_ram > 1500) ? 64 : MIN_VIDEO_RAM_IN_MEGA_BYTES ;
+	if (system_ram > 2000)
+		return 128;
+	else if (system_ram > 1000)
+		return 64;
+	else
+		return MIN_VIDEO_RAM_IN_MEGA_BYTES;
 }
 
 //static

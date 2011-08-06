@@ -34,6 +34,8 @@
 
 #include "linden_common.h"
 
+#include <algorithm>
+
 //MK
 #include "llworld.h"
 #include "lleventpoll.h"
@@ -238,6 +240,13 @@ void LLFloaterTeleportHistory::loadFile(const std::string &file_name)
 		}
 	}
 }
+
+struct SortByAge{
+  inline bool operator() (LLScrollListItem* const i,LLScrollListItem* const j) const {
+	  return (i->getValue().asInteger()>j->getValue().asInteger());
+  }
+};
+
 //static
 void LLFloaterTeleportHistory::saveFile(const std::string &file_name)
 {
@@ -265,10 +274,7 @@ void LLFloaterTeleportHistory::saveFile(const std::string &file_name)
 	if (pScrollList)
 	{
 		std::vector<LLScrollListItem*> data_list = pScrollList->getAllData();
-		struct SortByAge {
-		  bool operator() (LLScrollListItem* i,LLScrollListItem* j) { return (i->getValue().asInteger()>j->getValue().asInteger());}
-		} sorter;
-		std::sort(data_list.begin(),data_list.end(),sorter);//Re-sort. Column sorting may have mucked the list up. Newer entries in front.
+		std::sort(data_list.begin(),data_list.end(),SortByAge());//Re-sort. Column sorting may have mucked the list up. Newer entries in front.
 		for (std::vector<LLScrollListItem*>::iterator itr = data_list.begin(); itr != data_list.end(); ++itr)
 		{
 			//Pack into LLSD mimicing one passed to addElement

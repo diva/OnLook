@@ -5678,7 +5678,7 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	gGL.popMatrix();
 }
-#endif MESH_ENABLED
+#endif //MESH_ENABLED
 
 //-----------------------------------------------------------------------------
 // renderOneSilhouette()

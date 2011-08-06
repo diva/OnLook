@@ -543,24 +543,29 @@ void LLVOVolume::updateTextureVirtualSize()
 			vsize = face->getTextureVirtualSize();
 			if (isAttachment())
 			{
-				// Rez attachments faster and at full details !
 				if (permYouOwner())
 				{
-					// Our attachments must really rez fast and fully:
-					// we shouldn't have to zoom on them to get the textures
-					// fully loaded !
-					imagep->setBoostLevel(LLViewerTexture::BOOST_HUD);
-					imagep->dontDiscard();
+					imagep->setBoostLevel(LLViewerTexture::BOOST_HIGH);
 				}
 			}
 		}
 
 		mPixelArea = llmax(mPixelArea, face->getPixelArea());		
-
+		
 		if (face->mTextureMatrix != NULL)
 		{
+			// Animating textures also rez badly in Snowglobe because the
+			// actual displayed area is only a fraction (corresponding to one
+			// frame) of the animating texture. Let's fix that here:
+			if (mTextureAnimp && mTextureAnimp->mScaleS > 0.0f && mTextureAnimp->mScaleT > 0.0f)
+			{
+				// Adjust to take into account the actual frame size which is only a
+				// portion of the animating texture
+				vsize = vsize / mTextureAnimp->mScaleS / mTextureAnimp->mScaleT;
+			}
+			
 			if ((vsize < MIN_TEX_ANIM_SIZE && old_size > MIN_TEX_ANIM_SIZE) ||
-				(vsize > MIN_TEX_ANIM_SIZE && old_size < MIN_TEX_ANIM_SIZE))
+			        (vsize > MIN_TEX_ANIM_SIZE && old_size < MIN_TEX_ANIM_SIZE))
 			{
 				gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_TCOORD, FALSE);
 			}
