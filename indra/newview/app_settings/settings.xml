@@ -39,7 +39,7 @@
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
-    <string>U32</string>
+    <string>S32</string>
     <key>Value</key>
     <integer>32</integer>
   </map>
@@ -50,7 +50,7 @@
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
-    <string>U32</string>
+    <string>S32</string>
     <key>Value</key>
     <integer>2</integer>
   </map>
