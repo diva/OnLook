@@ -100,7 +100,7 @@ std::string AIFilePicker::get_folder(std::string const& default_path, std::strin
 	{
 		// This is the last resort when all else failed. Open the file chooser in directory 'home'.
 #if LL_WINDOWS
-		char const* envname = "HOMEPATH";
+		char const* envname = "USERPROFILE";
 #else
 		char const* envname = "HOME";
 #endif
