@@ -35,6 +35,8 @@
 #include "u64.h"
 
 #include "llframetimer.h"
+#include "aiframetimer.h"
+#include "aiaprpool.h"
 
 // Local constants.
 static F64 const USEC_PER_SECOND = 1000000.0;
@@ -44,47 +46,46 @@ static F64 const USEC_TO_SEC_F64 = 0.000001;
 U64 const LLFrameTimer::sStartTotalTime = totalTime();				// Application start in microseconds since epoch.
 U64 LLFrameTimer::sTotalTime = LLFrameTimer::sStartTotalTime;		// Current time in microseconds since epoch, updated at least once per frame.
 F64 LLFrameTimer::sTotalSeconds =									// Current time in seconds since epoch, updated together with LLFrameTimer::sTotalTime.
-        U64_to_F64(LLFrameTimer::sTotalTime) * USEC_TO_SEC_F64;
+		U64_to_F64(LLFrameTimer::sTotalTime) * USEC_TO_SEC_F64;
 F64 LLFrameTimer::sFrameTime = 0.0;									// Current time in seconds since application start, updated together with LLFrameTimer::sTotalTime.
 // Updated exactly once per frame:
 S32 LLFrameTimer::sFrameCount = 0;									// Current frame number (number of frames since application start).
 U64 LLFrameTimer::sPrevTotalTime = LLFrameTimer::sStartTotalTime;	// Previous (frame) time in microseconds since epoch, updated once per frame.
 U64 LLFrameTimer::sFrameDeltaTime = 0;								// Microseconds between last two calls to LLFrameTimer::updateFrameTimeAndCount.
+// Mutex for the above.
+apr_thread_mutex_t* LLFrameTimer::sGlobalMutex;
 
 // static
-void LLFrameTimer::updateFrameTime()
+void LLFrameTimer::global_initialization(void)
 {
+	apr_thread_mutex_create(&sGlobalMutex, APR_THREAD_MUTEX_UNNESTED, AIAPRRootPool::get()());
+}
+
+// static
+void LLFrameTimer::updateFrameTime(void)
+{
+	llassert(is_main_thread());
 	sTotalTime = totalTime();
 	sTotalSeconds = U64_to_F64(sTotalTime) * USEC_TO_SEC_F64;
-	sFrameTime = U64_to_F64(sTotalTime - sStartTotalTime) * USEC_TO_SEC_F64;
-} 
+	F64 new_frame_time = U64_to_F64(sTotalTime - sStartTotalTime) * USEC_TO_SEC_F64;
+	apr_thread_mutex_lock(sGlobalMutex);
+	sFrameTime = new_frame_time;
+	apr_thread_mutex_unlock(sGlobalMutex);
+}
 
 // static
-void LLFrameTimer::updateFrameTimeAndCount()
+void LLFrameTimer::updateFrameTimeAndCount(void)
 {
 	updateFrameTime();
 	sFrameDeltaTime = sTotalTime - sPrevTotalTime;
 	sPrevTotalTime = sTotalTime;
 	++sFrameCount;
-}
 
-void LLFrameTimer::reset(F32 expiration)
-{
-	llassert(!mPaused);
-	mStartTime = sFrameTime;
-	mExpiry = sFrameTime + expiration;
-}
-
-void LLFrameTimer::start(F32 expiration)
-{
-	reset(expiration);
-	mRunning = true;							// Start, if not already started.
-}
-
-void LLFrameTimer::stop()
-{
-	llassert(!mPaused);
-	mRunning = false;
+	// Handle AIFrameTimer expiration and callbacks.
+	if (AIFrameTimer::sNextExpiration <= sFrameTime)
+	{
+		AIFrameTimer::handleExpiration(sFrameTime);
+	}
 }
 
 // Don't combine pause/unpause with start/stop
@@ -95,38 +96,38 @@ void LLFrameTimer::stop()
 //  foo.unpause() // unpauses
 //  F32 elapsed = foo.getElapsedTimeF32() // does not include time between pause() and unpause()
 //  Note: elapsed would also be valid with no unpause() call (= time run until pause() called)
-void LLFrameTimer::pause()
+void LLFrameTimer::pause(void)
 {
+	llassert(is_main_thread());
 	if (!mPaused)
 	{
+		// Only the main thread writes to sFrameTime, so there is no need for locking.
 		mStartTime = sFrameTime - mStartTime;	// Abuse mStartTime to store the elapsed time so far.
 	}
 	mPaused = true;
 }
 
-void LLFrameTimer::unpause()
+void LLFrameTimer::unpause(void)
 {
+	llassert(is_main_thread());
 	if (mPaused)
 	{
+		// Only the main thread writes to sFrameTime, so there is no need for locking.
 		mStartTime = sFrameTime - mStartTime;	// Set mStartTime consistent with the elapsed time so far.
 	}
 	mPaused = false;
 }
 
-void LLFrameTimer::setTimerExpirySec(F32 expiration)
-{
-	llassert(!mPaused);
-	mExpiry = mStartTime + expiration;
-}
-
 void LLFrameTimer::setExpiryAt(F64 seconds_since_epoch)
 {
+	llassert(is_main_thread());
 	llassert(!mPaused);
+	// Only the main thread writes to sFrameTime, so there is no need for locking.
 	mStartTime = sFrameTime;
 	mExpiry = seconds_since_epoch - (USEC_TO_SEC_F64 * sStartTotalTime);
 }
 
-F64 LLFrameTimer::expiresAt() const
+F64 LLFrameTimer::expiresAt(void) const
 {
 	F64 expires_at = U64_to_F64(sStartTotalTime) * USEC_TO_SEC_F64;
 	expires_at += mExpiry;
@@ -135,31 +136,47 @@ F64 LLFrameTimer::expiresAt() const
 
 bool LLFrameTimer::checkExpirationAndReset(F32 expiration)
 {
-	if (hasExpired())
+	llassert(!mPaused);
+  	F64 frame_time = getElapsedSeconds();
+	if (frame_time >= mExpiry)
 	{
-		reset(expiration);
+		mStartTime = frame_time;
+		mExpiry = mStartTime + expiration;
 		return true;
 	}
 	return false;
 }
 
-// static
-F32 LLFrameTimer::getFrameDeltaTimeF32()
+F32 LLFrameTimer::getElapsedTimeAndResetF32(void)
 {
+  llassert(mRunning && !mPaused);
+  F64 frame_time = getElapsedSeconds();
+  F32 elapsed_time = (F32)(frame_time - mStartTime);
+  mExpiry = mStartTime = frame_time;
+  return elapsed_time;
+}
+
+// static 
+// Return number of seconds between the last two frames.
+F32 LLFrameTimer::getFrameDeltaTimeF32(void)
+{
+	llassert(is_main_thread());
+	// Only the main thread writes to sFrameDeltaTime, so there is no need for locking.
 	return (F32)(U64_to_F64(sFrameDeltaTime) * USEC_TO_SEC_F64); 
 }
 
-
-//	static 
+// static 
 // Return seconds since the current frame started
-F32  LLFrameTimer::getCurrentFrameTime()
+F32 LLFrameTimer::getCurrentFrameTime(void)
 {
+	llassert(is_main_thread());
+	// Only the main thread writes to sTotalTime, so there is no need for locking.
 	U64 frame_time = totalTime() - sTotalTime;
 	return (F32)(U64_to_F64(frame_time) * USEC_TO_SEC_F64); 
 }
 
 // Glue code to avoid full class .h file #includes
-F32  getCurrentFrameTime()
+F32 getCurrentFrameTime(void)
 {
 	return (F32)(LLFrameTimer::getCurrentFrameTime());
 }
