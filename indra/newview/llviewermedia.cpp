@@ -682,9 +682,16 @@ void LLViewerMediaImpl::navigateTo(const std::string& url, const std::string& mi
 		LLURI uri(url);
 		std::string scheme = uri.scheme();
 
-		if(scheme.empty() || "http" == scheme || "https" == scheme)
+		if(scheme.empty() || ("http" == scheme || "https" == scheme))
 		{
-			LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
+			if(mime_type.empty())
+			{
+				LLHTTPClient::getHeaderOnly( url, new LLMimeDiscoveryResponder(this));
+			}
+			else if(initializeMedia(mime_type) && (plugin = getMediaPlugin()))
+			{
+				plugin->loadURI( url );
+			}
 		}
 		else if("data" == scheme || "file" == scheme || "about" == scheme)
 		{
