@@ -227,14 +227,10 @@ void LLWaterParamManager::propagateParameters(void)
 	if(gPipeline.canUseVertexShaders())
 	{
 		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = LLViewerShaderMgr::instance()->endShaders();
-		for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter)
+		end_shaders = mShaderList.end();
+		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
 		{
-			if (shaders_iter->mProgramObject != 0
-				&& shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER)
-			{
-				shaders_iter->mUniformsDirty = TRUE;
-			}
+			shaders_iter->mUniformsDirty = TRUE;
 		}
 	}
 
@@ -257,6 +253,28 @@ void LLWaterParamManager::updateShaderUniforms(LLGLSLShader * shader)
 		shader->uniform1f("waterFogDensity", getFogDensity());
 		shader->uniform1f("waterFogKS", mWaterFogKS);
 		shader->uniform4f("distance_multiplier", 0, 0, 0, 0);
+	}
+}
+
+void LLWaterParamManager::updateShaderLinks()
+{
+	mShaderList.clear();
+	LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
+	end_shaders = LLViewerShaderMgr::instance()->endShaders();
+	for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter)
+	{
+		if (shaders_iter->mProgramObject != 0
+			&& shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER)
+		{
+			if(	glGetUniformLocationARB(shaders_iter->mProgramObject,"lightnorm")>=0		||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"camPosLocal")>=0		||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogColor")>=0	||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterPlane")>=0		||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogDensity")>=0	||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogKS")>=0		||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"distance_multiplier")>=0)
+			mShaderList.push_back(&(*shaders_iter));
+		}
 	}
 }
 
@@ -316,14 +334,10 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 		mWaterFogKS = 1.f/llmax(sunMoonDir.mV[2], WATER_FOG_LIGHT_CLAMP);
 
 		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = LLViewerShaderMgr::instance()->endShaders();
-		for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter)
+		end_shaders = mShaderList.end();
+		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
 		{
-			if (shaders_iter->mProgramObject != 0
-				&& shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER)
-			{
-				shaders_iter->mUniformsDirty = TRUE;
-			}
+			shaders_iter->mUniformsDirty = TRUE;
 		}
 	}
 }

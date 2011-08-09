@@ -286,6 +286,25 @@ void LLWLParamManager::updateShaderUniforms(LLGLSLShader * shader)
 	
 }
 
+void LLWLParamManager::updateShaderLinks()
+{
+	mShaderList.clear();
+	LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
+	end_shaders = LLViewerShaderMgr::instance()->endShaders();
+	for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter)
+	{
+		if (shaders_iter->mProgramObject != 0
+			&& (gPipeline.canUseWindLightShaders() || shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER))
+		{
+			if(	glGetUniformLocationARB(shaders_iter->mProgramObject,"lightnorm")>=0			||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"camPosLocal")>=0			||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"scene_light_strength")>=0	||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"cloud_pos_density1")>=0)
+			mShaderList.push_back(&(*shaders_iter));
+		}
+	}
+}
+
 void LLWLParamManager::propagateParameters(void)
 {
 	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WLPARAM);
@@ -338,15 +357,10 @@ void LLWLParamManager::propagateParameters(void)
 
 	// bind the variables for all shaders only if we're using WindLight
 	LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-	end_shaders = LLViewerShaderMgr::instance()->endShaders();
-	for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter) 
+	end_shaders = mShaderList.end();
+	for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter) 
 	{
-		if (shaders_iter->mProgramObject != 0
-			&& (gPipeline.canUseWindLightShaders()
-				|| shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER))
-		{
-			shaders_iter->mUniformsDirty = TRUE;
-		}
+		shaders_iter->mUniformsDirty = TRUE;
 	}
 
 	// get the cfr version of the sun's direction
@@ -401,15 +415,10 @@ void LLWLParamManager::update(LLViewerCamera * cam)
 		mRotatedLightDir = LLVector4(lightNorm3, 0.f);
 
 		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = LLViewerShaderMgr::instance()->endShaders();
-		for(shaders_iter = LLViewerShaderMgr::instance()->beginShaders(); shaders_iter != end_shaders; ++shaders_iter)
+		end_shaders = mShaderList.end();
+		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
 		{
-			if (shaders_iter->mProgramObject != 0
-				&& (gPipeline.canUseWindLightShaders()
-				|| shaders_iter->mShaderGroup == LLGLSLShader::SG_WATER))
-			{
-				shaders_iter->mUniformsDirty = TRUE;
-			}
+			shaders_iter->mUniformsDirty = TRUE;
 		}
 	}
 }

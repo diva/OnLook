@@ -537,6 +537,10 @@ void LLViewerShaderMgr::setShaders()
 	{
 		gViewerWindow->setCursor(UI_CURSOR_ARROW);
 	}
+
+	LLWaterParamManager::instance()->updateShaderLinks();
+	LLWLParamManager::instance()->updateShaderLinks();
+
 	gPipeline.createGLBuffers();
 	reentrance = false;
 }
