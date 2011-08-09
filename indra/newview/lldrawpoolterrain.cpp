@@ -905,28 +905,6 @@ void LLDrawPoolTerrain::renderOwnership()
 	glMatrixMode(GL_MODELVIEW);
 }
 
-
-void LLDrawPoolTerrain::renderForSelect()
-{
-	if (mDrawFace.empty())
-	{
-		return;
-	}
-
-	
-	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-
-	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
-		 iter != mDrawFace.end(); iter++)
-	{
-		LLFace *facep = *iter;
-		if (!facep->getDrawable()->isDead() && (facep->getDrawable()->getVObj()->mGLName))
-		{
-			facep->renderForSelect(LLVertexBuffer::MAP_VERTEX);
-		}
-	}
-}
-
 void LLDrawPoolTerrain::dirtyTextures(const std::set<LLViewerFetchedTexture*>& textures)
 {
 	LLViewerFetchedTexture* tex = LLViewerTextureManager::staticCastToFetchedTexture(mTexturep) ;

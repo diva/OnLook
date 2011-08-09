@@ -819,12 +819,6 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1 + PARCEL_GRID_STEP_METERS;
 				y2 = y1;
 
-				if (gRenderForSelect)
-				{
-					LLColor4U color((U8)(GL_NAME_PARCEL_WALL >> 16), (U8)(GL_NAME_PARCEL_WALL >> 8), (U8)GL_NAME_PARCEL_WALL);
-					gGL.color4ubv(color.mV);
-				}
-				else
 				{
 					dy = (pos_y - y1) + DIST_OFFSET;
 					
@@ -865,12 +859,6 @@ void LLViewerParcelMgr::renderCollisionSegments(U8* segments, BOOL use_pass, LLV
 				x2 = x1;
 				y2 = y1 + PARCEL_GRID_STEP_METERS;
 
-				if (gRenderForSelect)
-				{
-					LLColor4U color((U8)(GL_NAME_PARCEL_WALL >> 16), (U8)(GL_NAME_PARCEL_WALL >> 8), (U8)GL_NAME_PARCEL_WALL);
-					gGL.color4ubv(color.mV);
-				}
-				else
 				{					
 					dx = (pos_x - x1) + DIST_OFFSET;
 		

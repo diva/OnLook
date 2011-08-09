@@ -3586,77 +3586,6 @@ void LLViewerWindow::schedulePick(LLPickInfo& pick_info)
 	}
 	llassert_always(pick_info.mScreenRegion.notEmpty());
 	mPicks.push_back(pick_info);
-	
-	/*S32 scaled_x = llround((F32)pick_info.mMousePt.mX * mDisplayScale.mV[VX]);
-	S32 scaled_y = llround((F32)pick_info.mMousePt.mY * mDisplayScale.mV[VY]);
-
-	// Default to not hitting anything
-	LLCamera pick_camera;
-	pick_camera.setOrigin(LLViewerCamera::getInstance()->getOrigin());
-	pick_camera.setOriginAndLookAt(LLViewerCamera::getInstance()->getOrigin(),
-								   LLViewerCamera::getInstance()->getUpAxis(),
-								   LLViewerCamera::getInstance()->getOrigin() + mouseDirectionGlobal(pick_info.mMousePt.mX, pick_info.mMousePt.mY));
-	pick_camera.setView(0.5f*DEG_TO_RAD);
-	pick_camera.setNear(LLViewerCamera::getInstance()->getNear());
-	pick_camera.setFar(LLViewerCamera::getInstance()->getFar());
-	pick_camera.setAspect(1.f);
-
-	// save our drawing state
-	// *TODO: should we be saving using the new method here using
-	// glh_get_current_projection/glh_set_current_projection? -brad
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	// clear work area
-	{
-		LLGLState scissor_state(GL_SCISSOR_TEST);
-		scissor_state.enable();
-		glScissor(pick_info.mScreenRegion.mLeft, pick_info.mScreenRegion.mBottom, pick_info.mScreenRegion.getWidth(), pick_info.mScreenRegion.getHeight());
-		glClearColor(0.f, 0.f, 0.f, 0.f);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	}
-	
-	// build perspective transform and picking viewport
-	// Perform pick on a PICK_DIAMETER x PICK_DIAMETER pixel region around cursor point.
-	// Don't limit the select distance for this pick.
-	LLViewerCamera::getInstance()->setPerspective(FOR_SELECTION, scaled_x - PICK_HALF_WIDTH, scaled_y - PICK_HALF_WIDTH, PICK_DIAMETER, PICK_DIAMETER, FALSE);
-
-	// render for object picking
-
-	// make viewport big enough to handle antialiased frame buffers
-	gGLViewport[0] = pick_info.mScreenRegion.mLeft;
-	gGLViewport[1] = pick_info.mScreenRegion.mBottom;
-	gGLViewport[2] = pick_info.mScreenRegion.getWidth();
-	gGLViewport[3] = pick_info.mScreenRegion.getHeight();
-
-	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
-	LLViewerCamera::updateFrustumPlanes(pick_camera);
-	stop_glerror();
-
-	// Draw the objects so the user can select them.
-	// The starting ID is 1, since land is zero.
-	LLRect pick_region;
-	pick_region.setOriginAndSize(pick_info.mMousePt.mX - PICK_HALF_WIDTH,
-								 pick_info.mMousePt.mY - PICK_HALF_WIDTH, PICK_DIAMETER, PICK_DIAMETER);
-	gObjectList.renderObjectsForSelect(pick_camera, pick_region, FALSE, pick_info.mPickTransparent);
-
-	stop_glerror();
-
-	// restore drawing state
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	setup3DRender();
-	setup2DRender();
-	setupViewport();*/
 
 	// delay further event processing until we receive results of pick
 	mWindow->delayInputProcessing();
@@ -4524,17 +4453,6 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		{
 			gDisplaySwapBuffers = FALSE;
 			gDepthDirty = TRUE;
-			if (type == SNAPSHOT_TYPE_OBJECT_ID)
-			{
-				glClearColor(0.f, 0.f, 0.f, 0.f);
-				glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-				LLViewerCamera::getInstance()->setZoomParameters(scale_factor, subimage_x+(subimage_y*llceil(scale_factor)));
-				setup3DRender();
-				setupViewport();
-				gObjectList.renderPickList(gViewerWindow->getVirtualWindowRect(), FALSE, FALSE);
-			}
-			else
 			{
 				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
 				display(do_rebuild, scale_factor, subfield, TRUE, is_tiling);
@@ -4563,7 +4481,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 					LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
 				}
 				
-				if (type == SNAPSHOT_TYPE_OBJECT_ID || type == SNAPSHOT_TYPE_COLOR)
+				if (type == SNAPSHOT_TYPE_COLOR)
 				{
 					glReadPixels(
 						subimage_x_offset, 

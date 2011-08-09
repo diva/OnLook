@@ -160,8 +160,6 @@ static S32 sDelayedVBOEnable = 0;
 
 BOOL	gAvatarBacklight = FALSE;
 
-BOOL	gRenderForSelect = FALSE;
-
 BOOL	gDebugPipeline = FALSE;
 LLPipeline gPipeline;
 const LLMatrix4* gGLLastMatrix = NULL;
@@ -3409,12 +3407,6 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 		}
 	}
 
-	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_PICKING))
-	{
-		LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderForSelect");
-		gObjectList.renderObjectsForSelect(camera, gViewerWindow->getVirtualWindowRect());
-	}
-	else
 	{
 		LLFastTimer t(LLFastTimer::FTM_POOLS);
 		
@@ -4139,185 +4131,6 @@ void LLPipeline::renderDebug()
 	}
 
 	gGL.flush();
-}
-
-void LLPipeline::renderForSelect(std::set<LLViewerObject*>& objects, BOOL render_transparent, const LLRect& screen_rect)
-{
-	assertInitialized();
-
-	gGL.setColorMask(true, false);
-	gPipeline.resetDrawOrders();
-
-	for (std::set<LLViewerObject*>::iterator iter = objects.begin(); iter != objects.end(); ++iter)
-	{
-		stateSort((*iter)->mDrawable, *LLViewerCamera::getInstance());
-	}
-
-	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	
-	
-	
-	glMatrixMode(GL_MODELVIEW);
-
-	LLGLSDefault gls_default;
-	LLGLSObjectSelect gls_object_select;
-	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-	LLGLDepthTest gls_depth(GL_TRUE,GL_TRUE);
-	disableLights();
-	
-	LLVertexBuffer::unbind();
-
-	//for each drawpool
-	LLGLState::checkStates();
-	LLGLState::checkTextureChannels();
-	LLGLState::checkClientArrays();
-	U32 last_type = 0;
-	
-	// If we don't do this, we crash something on changing graphics settings
-	// from Medium -> Low, because we unload all the shaders and the 
-	// draw pools aren't aware.  I don't know if this has to be a separate
-	// loop before actual rendering. JC
-	for (pool_set_t::iterator iter = mPools.begin(); iter != mPools.end(); ++iter)
-	{
-		LLDrawPool *poolp = *iter;
-		if (poolp->isFacePool() && hasRenderType(poolp->getType()))
-		{
-			poolp->prerender();
-		}
-	}
-	for (pool_set_t::iterator iter = mPools.begin(); iter != mPools.end(); ++iter)
-	{
-		LLDrawPool *poolp = *iter;
-		if (poolp->isFacePool() && hasRenderType(poolp->getType()))
-		{
-			LLFacePool* face_pool = (LLFacePool*) poolp;
-			face_pool->renderForSelect();
-			LLVertexBuffer::unbind();
-			gGLLastMatrix = NULL;
-			glLoadMatrixd(gGLModelView);
-
-			if (poolp->getType() != last_type)
-			{
-				last_type = poolp->getType();
-				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
-			}
-		}
-	}	
-
-	LLGLEnable alpha_test(GL_ALPHA_TEST);
-	if (render_transparent)
-	{
-		gGL.setAlphaRejectSettings(LLRender::CF_GREATER_EQUAL, 0.f);
-	}
-	else
-	{
-		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.2f);
-	}
-
-	gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_VERT_COLOR);
-	gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_ALPHA, LLTexUnit::TBS_VERT_ALPHA);
-
-	U32 prim_mask = LLVertexBuffer::MAP_VERTEX | 
-					LLVertexBuffer::MAP_TEXCOORD0;
-
-	for (std::set<LLViewerObject*>::iterator i = objects.begin(); i != objects.end(); ++i)
-	{
-		LLViewerObject* vobj = *i;
-		LLDrawable* drawable = vobj->mDrawable;
-		if (vobj->isDead() || 
-			vobj->isHUDAttachment() ||
-			(LLSelectMgr::getInstance()->mHideSelectedObjects && vobj->isSelected()) ||
-			drawable->isDead() || 
-			!hasRenderType(drawable->getRenderType()))
-		{
-			continue;
-		}
-
-		for (S32 j = 0; j < drawable->getNumFaces(); ++j)
-		{
-			LLFace* facep = drawable->getFace(j);
-			if (!facep->getPool())
-			{
-				facep->renderForSelect(prim_mask);
-			}
-		}
-	}
-
-	// pick HUD objects
-	LLVOAvatar* avatarp = gAgent.getAvatarObject();
-	if (avatarp && sShowHUDAttachments)
-	{
-		glh::matrix4f save_proj(glh_get_current_projection());
-		glh::matrix4f save_model(glh_get_current_modelview());
-
-		setup_hud_matrices(screen_rect);
-		for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
-			 iter != avatarp->mAttachmentPoints.end(); )
-		{
-			LLVOAvatar::attachment_map_t::iterator curiter = iter++;
-			LLViewerJointAttachment* attachmentp = curiter->second;
-			if (attachmentp->getIsHUDAttachment())
-			{
-				for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachmentp->mAttachedObjects.begin();
-					 attachment_iter != attachmentp->mAttachedObjects.end();
-					 ++attachment_iter)
-				{
-					if (LLViewerObject* objectp = (*attachment_iter))
-					{
-						LLDrawable* drawable = objectp->mDrawable;
-						if (drawable->isDead())
-						{
-							continue;
-						}
-
-						for (S32 j = 0; j < drawable->getNumFaces(); ++j)
-						{
-							LLFace* facep = drawable->getFace(j);
-							if (!facep->getPool())
-							{
-								facep->renderForSelect(prim_mask);
-							}
-						}
-
-						//render child faces
-						LLViewerObject::const_child_list_t& child_list = objectp->getChildren();
-						for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
-							 iter != child_list.end(); iter++)
-						{
-							LLViewerObject* child = *iter;
-							LLDrawable* child_drawable = child->mDrawable;
-							for (S32 l = 0; l < child_drawable->getNumFaces(); ++l)
-							{
-								LLFace* facep = child_drawable->getFace(l);
-								if (!facep->getPool())
-								{
-									facep->renderForSelect(prim_mask);
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-
-		glMatrixMode(GL_PROJECTION);
-		glLoadMatrixf(save_proj.m);
-		glh_set_current_projection(save_proj);
-
-		glMatrixMode(GL_MODELVIEW);
-		glLoadMatrixf(save_model.m);
-		glh_set_current_modelview(save_model);
-
-	
-	}
-
-	gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
-	
-	LLVertexBuffer::unbind();
-	
-	gGL.setColorMask(true, true);
 }
 
 void LLPipeline::rebuildPools()

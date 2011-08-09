@@ -1660,12 +1660,6 @@ void LLViewerObjectList::renderObjectBounds(const LLVector3 &center)
 {
 }
 
-void LLViewerObjectList::renderObjectsForSelect(LLCamera &camera, const LLRect& screen_rect, BOOL pick_parcel_wall, BOOL render_transparent)
-{
-	generatePickList(camera);
-	renderPickList(screen_rect, pick_parcel_wall, render_transparent);
-}
-
 void LLViewerObjectList::generatePickList(LLCamera &camera)
 {
 		LLViewerObject *objectp;
@@ -1787,34 +1781,6 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 
 			LLHUDIcon::generatePickIDs(i * step, step);
 	}
-}
-
-void LLViewerObjectList::renderPickList(const LLRect& screen_rect, BOOL pick_parcel_wall, BOOL render_transparent)
-{
-	gRenderForSelect = TRUE;
-		
-	gPipeline.renderForSelect(mSelectPickList, render_transparent, screen_rect);
-
-	//
-	// Render pass for selected objects
-	//
-	gGL.color4f(1,1,1,1);	
-	gViewerWindow->renderSelections( TRUE, pick_parcel_wall, FALSE );
-
-	//fix for DEV-19335.  Don't pick hud objects when customizing avatar (camera mode doesn't play nice with nametags).
-	if (!gAgentCamera.cameraCustomizeAvatar())
-	{
-		// render pickable ui elements, like names, etc.
-		LLHUDObject::renderAllForSelect();
-	}
-	
-	gGL.flush();
-	LLVertexBuffer::unbind();
-
-	gRenderForSelect = FALSE;
-
-	//llinfos << "Rendered " << count << " for select" << llendl;
-	//llinfos << "Took " << pick_timer.getElapsedTimeF32()*1000.f << "ms to pick" << llendl;
 }
 
 LLViewerObject *LLViewerObjectList::getSelectedObject(const U32 object_id)
