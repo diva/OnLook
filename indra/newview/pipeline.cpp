@@ -3477,8 +3477,8 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 						check_stack_depth(stack_depth);
 						std::string msg = llformat("%s pass %d", gPoolNames[cur_type].c_str(), i);
 						LLGLState::checkStates(msg);
-						LLGLState::checkTextureChannels(msg);
-						LLGLState::checkClientArrays(msg);
+						//LLGLState::checkTextureChannels(msg);
+						//LLGLState::checkClientArrays(msg);
 					}
 				}
 			}
@@ -3516,63 +3516,66 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 
 	LLVertexBuffer::unbind();
 	LLGLState::checkStates();
-	LLGLState::checkTextureChannels();
-	LLGLState::checkClientArrays();
+	//LLGLState::checkTextureChannels();
+	//LLGLState::checkClientArrays();
 
 	
 
-	stop_glerror();
+	//stop_glerror();
 		
-	LLGLState::checkStates();
-	LLGLState::checkTextureChannels();
-	LLGLState::checkClientArrays();
-
-	LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderHighlights");
-
-	if (!sReflectionRender)
+	//LLGLState::checkStates();
+	//LLGLState::checkTextureChannels();
+	//LLGLState::checkClientArrays();
+	if (!LLPipeline::sImpostorRender)
 	{
-		renderHighlights();
-	}
-
-	// Contains a list of the faces of objects that are physical or
-	// have touch-handlers.
-	mHighlightFaces.clear();
-
-	LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderDebug");
 	
-	renderDebug();
+		LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderHighlights");
 
-	LLVertexBuffer::unbind();
-	
-	if (!LLPipeline::sReflectionRender && !LLPipeline::sRenderDeferred)
-	{
-		if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+		if (!sReflectionRender)
 		{
-			// Render debugging beacons.
-			gObjectList.renderObjectBeacons();
-			gObjectList.resetObjectBeacons();
+			renderHighlights();
+		}
+
+		// Contains a list of the faces of objects that are physical or
+		// have touch-handlers.
+		mHighlightFaces.clear();
+
+		LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderDebug");
+	
+		renderDebug();
+
+		LLVertexBuffer::unbind();
+	
+		if (!LLPipeline::sReflectionRender && !LLPipeline::sRenderDeferred)
+		{
+			if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
+			{
+				// Render debugging beacons.
+				gObjectList.renderObjectBeacons();
+				gObjectList.resetObjectBeacons();
+			}
+			else
+			{
+				// Make sure particle effects disappear
+				LLHUDObject::renderAllForTimer();
+			}
 		}
 		else
 		{
 			// Make sure particle effects disappear
 			LLHUDObject::renderAllForTimer();
 		}
-	}
-	else
-	{
-		// Make sure particle effects disappear
-		LLHUDObject::renderAllForTimer();
-	}
 
-	LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderGeomEnd");
+		LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderGeomEnd");
 
-	//HACK: preserve/restore matrices around HUD render
-	if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
-	{
-		for (U32 i = 0; i < 16; i++)
+		//HACK: preserve/restore matrices around HUD render
+		if (gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_HUD))
 		{
-			gGLModelView[i] = saved_modelview[i];
-			gGLProjection[i] = saved_projection[i];
+			for (U32 i = 0; i < 16; i++)
+			{
+				gGLModelView[i] = saved_modelview[i];
+				gGLProjection[i] = saved_projection[i];
+			}
 		}
 	}
 
@@ -3662,8 +3665,8 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 						llerrs << "GL matrix stack corrupted!" << llendl;
 					}
 					LLGLState::checkStates();
-					LLGLState::checkTextureChannels();
-					LLGLState::checkClientArrays();
+					//LLGLState::checkTextureChannels();
+					//LLGLState::checkClientArrays();
 				}
 			}
 		}
@@ -3756,8 +3759,8 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 						llerrs << "GL matrix stack corrupted!" << llendl;
 					}
 					LLGLState::checkStates();
-					LLGLState::checkTextureChannels();
-					LLGLState::checkClientArrays();
+					//LLGLState::checkTextureChannels();
+					//LLGLState::checkClientArrays();
 				}
 			}
 		}
@@ -3831,8 +3834,8 @@ void LLPipeline::renderGeomShadow(LLCamera& camera)
 				LLVertexBuffer::unbind();
 
 				LLGLState::checkStates();
-				LLGLState::checkTextureChannels();
-				LLGLState::checkClientArrays();
+				//LLGLState::checkTextureChannels();
+				//LLGLState::checkClientArrays();
 			}
 		}
 		else
@@ -6212,9 +6215,9 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	
 	LLVertexBuffer::unbind();
 
-	if (LLPipeline::sRenderDeferred && !LLViewerCamera::getInstance()->cameraUnderWater())
+	if (LLPipeline::sRenderDeferred)
 	{
-		bool dof_enabled = true;
+		bool dof_enabled = !LLViewerCamera::getInstance()->cameraUnderWater();
 
 		LLGLSLShader* shader = &gDeferredPostProgram;
 		static const LLCachedControl<bool> render_dof("RenderDepthOfField",false);
@@ -6465,7 +6468,7 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 		noise_map = mNoiseMap;
 	}
 
-	LLGLState::checkTextureChannels();
+	//LLGLState::checkTextureChannels();
 
 	shader.bind();
 	S32 channel = 0;
@@ -6614,12 +6617,6 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, LLRen
 			shader.uniformMatrix4fv("gi_norm_mat", 1, FALSE, mGINormalMatrix.m);
 		}
 	}
-	
-	/*channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_POSITION, LLTexUnit::TT_RECT_TEXTURE);
-	if (channel > -1)
-	{
-		mDeferredScreen.bindTexture(3, channel);
-	}*/
 
 	channel = shader.enableTexture(LLViewerShaderMgr::DEFERRED_DEPTH, LLTexUnit::TT_RECT_TEXTURE);
 	if (channel > -1)
@@ -8033,8 +8030,8 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		LLViewerCamera::getInstance()->setUserClipPlane(LLPlane(-pnorm, -pd));
 		
 		LLGLState::checkStates();
-		LLGLState::checkTextureChannels();
-		LLGLState::checkClientArrays();
+		//LLGLState::checkTextureChannels();
+		//LLGLState::checkClientArrays();
 
 		if (agent)
 		{
@@ -9261,6 +9258,10 @@ void LLPipeline::generateSunShadow(LLCamera& camera)
 
 		mShadow[i+4].flush();
  	}
+	}
+	else
+	{ //no spotlight shadows
+		mShadowSpotLight[0] = mShadowSpotLight[1] = NULL;
 	}
 
 	static const LLCachedControl<bool> camera_offset("CameraOffset",false);

@@ -2863,6 +2863,26 @@ LLVolumeBridge::LLVolumeBridge(LLDrawable* drawablep)
 	mSlopRatio = 0.25f;
 }
 
+bool can_batch_texture(LLFace* facep)
+{
+	if (facep->getTextureEntry()->getBumpmap())
+	{ //bump maps aren't worked into texture batching yet
+		return false;
+	}
+
+	if (facep->getTexture() && facep->getTexture()->getPrimaryFormat() == GL_ALPHA)
+	{ //can't batch invisiprims
+		return false;
+	}
+
+	if (facep->isState(LLFace::TEXTURE_ANIM) && facep->getVirtualSize() > MIN_TEX_ANIM_SIZE)
+	{ //texture animation breaks batches
+		return false;
+	}
+	
+	return true;
+}
+
 void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep, U32 type)
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
@@ -2918,6 +2938,31 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	
 	LLViewerTexture* tex = facep->getTexture();
 
+
+	U8 index = facep->getTextureIndex();
+
+	bool batchable = false;
+
+	if (index < 255 && idx >= 0)
+	{
+		if (index < draw_vec[idx]->mTextureList.size())
+		{
+			if (draw_vec[idx]->mTextureList[index].isNull())
+			{
+				batchable = true;
+				draw_vec[idx]->mTextureList[index] = tex;
+			}
+			else if (draw_vec[idx]->mTextureList[index] == tex)
+			{ //this face's texture index can be used with this batch
+				batchable = true;
+			}
+		}
+		else
+		{ //texture list can be expanded to fit this texture index
+			batchable = true;
+		}
+	}
+	
 	U8 glow = 0;
 		
 	if (type == LLRenderPass::PASS_GLOW || type==LLRenderPass::PASS_ALPHA) //Alpha pass now handles glow internally
@@ -2933,7 +2978,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	if (idx >= 0 && 
 		draw_vec[idx]->mVertexBuffer == facep->getVertexBuffer() &&
 		draw_vec[idx]->mEnd == facep->getGeomIndex()-1 &&
-		(LLPipeline::sTextureBindTest || draw_vec[idx]->mTexture == tex) &&
+		(LLPipeline::sTextureBindTest || draw_vec[idx]->mTexture == tex || batchable) &&
 #if LL_DARWIN
 		draw_vec[idx]->mEnd - draw_vec[idx]->mStart + facep->getGeomCount() <= (U32) gGLManager.mGLMaxVertexRange &&
 		draw_vec[idx]->mCount + facep->getIndicesCount() <= (U32) gGLManager.mGLMaxIndexRange &&
@@ -2947,6 +2992,12 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_vec[idx]->mCount += facep->getIndicesCount();
 		draw_vec[idx]->mEnd += facep->getGeomCount();
 		draw_vec[idx]->mVSize = llmax(draw_vec[idx]->mVSize, facep->getVirtualSize());
+
+		if (index >= draw_vec[idx]->mTextureList.size())
+		{
+			draw_vec[idx]->mTextureList.resize(index+1);
+			draw_vec[idx]->mTextureList[index] = tex;
+		}
 		draw_vec[idx]->validate();
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[0]);
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[1]);
@@ -2971,6 +3022,12 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		}
 		draw_info->mExtents[0] = facep->mExtents[0];
 		draw_info->mExtents[1] = facep->mExtents[1];
+
+		if (index < 255)
+		{ //initialize texture list for texture batching
+			draw_info->mTextureList.resize(index+1);
+			draw_info->mTextureList[index] = tex;
+		}
 		draw_info->validate();
 	}
 }
@@ -3401,15 +3458,24 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	U32 bump_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 	U32 fullbright_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 
-	if (LLPipeline::sRenderDeferred)
+	bool batch_textures = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_OBJECT) > 1;
+
+	if (batch_textures)
 	{
 		bump_mask |= LLVertexBuffer::MAP_BINORMAL;
+		genDrawInfo(group, simple_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, simple_faces, FALSE, TRUE);
+		genDrawInfo(group, fullbright_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, fullbright_faces, FALSE, TRUE);
+		genDrawInfo(group, bump_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, bump_faces, FALSE, TRUE);
+		genDrawInfo(group, alpha_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, alpha_faces, TRUE, TRUE);
 	}
-
-	genDrawInfo(group, simple_mask, simple_faces);
-	genDrawInfo(group, fullbright_mask, fullbright_faces);
-	genDrawInfo(group, bump_mask, bump_faces, FALSE);
-	genDrawInfo(group, alpha_mask, alpha_faces, TRUE);
+	else
+	{
+		genDrawInfo(group, simple_mask, simple_faces);
+		genDrawInfo(group, fullbright_mask, fullbright_faces);
+		genDrawInfo(group, bump_mask, bump_faces, FALSE, TRUE);
+		genDrawInfo(group, alpha_mask, alpha_faces, TRUE);
+	}
+	
 
 	if (!LLPipeline::sDelayVBUpdate)
 	{
@@ -3443,6 +3509,8 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 		group->mBuilt = 1.f;
 		
+		std::set<LLVertexBuffer*> mapped_buffers;
+
 		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
@@ -3461,33 +3529,29 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 				for (S32 i = 0; i < drawablep->getNumFaces(); ++i)
 				{
 					LLFace* face = drawablep->getFace(i);
-					if (face && face->getVertexBuffer())
+					if (face)
 					{
-						face->getGeometryVolume(*volume, face->getTEOffset(), 
-							vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex());
+						LLVertexBuffer* buff = face->getVertexBuffer();
+						if (buff)
+						{
+							face->getGeometryVolume(*volume, face->getTEOffset(), 
+								vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex());
+
+							if (buff->isLocked())
+							{
+								mapped_buffers.insert(buff);
+							}
+						}
 					}
 				}
-
+				
 				drawablep->clearState(LLDrawable::REBUILD_ALL);
 			}
 		}
 		
-		//unmap all the buffers
-		for (LLSpatialGroup::buffer_map_t::iterator i = group->mBufferMap.begin(); i != group->mBufferMap.end(); ++i)
+		for (std::set<LLVertexBuffer*>::iterator iter = mapped_buffers.begin(); iter != mapped_buffers.end(); ++iter)
 		{
-			LLSpatialGroup::buffer_texture_map_t& map = i->second;
-			for (LLSpatialGroup::buffer_texture_map_t::iterator j = map.begin(); j != map.end(); ++j)
-			{
-				LLSpatialGroup::buffer_list_t& list = j->second;
-				for (LLSpatialGroup::buffer_list_t::iterator k = list.begin(); k != list.end(); ++k)
-				{
-					LLVertexBuffer* buffer = *k;
-					if (buffer->isLocked())
-					{
-						buffer->setBuffer(0);
-					}
-				}
-			}
+			(*iter)->setBuffer(0);
 		}
 		
 		// don't forget alpha
@@ -3553,7 +3617,8 @@ struct CompareBatchBreakerModified
 		
 	}
 };
-void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort)
+
+void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort, BOOL batch_textures)
 {
 	//calculate maximum number of vertices to store in a single buffer
 	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
@@ -3583,6 +3648,20 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		buffer_index = -1;
 	}
 
+	S32 texture_index_channels = gGLManager.mNumTextureImageUnits-1; //always reserve one for shiny for now just for simplicity
+	
+	if (gGLManager.mGLVersion < 3.1f)
+	{
+		texture_index_channels = 1;
+	}
+
+	if (LLPipeline::sRenderDeferred && distance_sort)
+	{
+		texture_index_channels = gDeferredAlphaProgram.mFeatures.mIndexedTextureChannels;
+	}
+
+	texture_index_channels = llmin(texture_index_channels, (S32) gSavedSettings.getU32("RenderMaxTextureIndex"));
+	
 	while (face_iter != faces.end())
 	{
 		//pull off next face
@@ -3611,19 +3690,96 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		std::vector<LLFace*>::iterator i = face_iter;
 		++i;
 		
-		while (i != faces.end() && 
-			(LLPipeline::sTextureBindTest || (distance_sort || (*i)->getTexture() == tex)))
+		std::vector<LLViewerTexture*> texture_list;
+
+		if (batch_textures)
 		{
-			facep = *i;
-			
-			if (geom_count + facep->getGeomCount() > max_vertices)
-			{ //cut vertex buffers on geom count too big
-				break;
+			U8 cur_tex = 0;
+			facep->setTextureIndex(cur_tex);
+			texture_list.push_back(tex);
+
+			//if (can_batch_texture(facep))
+			{
+				while (i != faces.end())
+				{
+					facep = *i;
+					if (facep->getTexture() != tex)
+					{
+						if (distance_sort)
+						{ //textures might be out of order, see if texture exists in current batch
+							bool found = false;
+							for (U32 tex_idx = 0; tex_idx < texture_list.size(); ++tex_idx)
+							{
+								if (facep->getTexture() == texture_list[tex_idx])
+								{
+									cur_tex = tex_idx;
+									found = true;
+									break;
+								}
+							}
+
+							if (!found)
+							{
+								cur_tex = texture_list.size();
+							}
+						}
+						else
+						{
+							cur_tex++;
+						}
+
+						if (!can_batch_texture(facep))
+						{ //face is bump mapped or has an animated texture matrix -- can't 
+							//batch more than 1 texture at a time
+							break;
+						}
+
+						if (cur_tex >= texture_index_channels)
+						{ //cut batches when index channels are depleted
+							break;
+						}
+
+						tex = facep->getTexture();
+
+						texture_list.push_back(tex);
+					}
+
+					if (geom_count + facep->getGeomCount() > max_vertices)
+					{ //cut batches on geom count too big
+						break;
+					}
+
+					++i;
+					index_count += facep->getIndicesCount();
+					geom_count += facep->getGeomCount();
+
+					facep->setTextureIndex(cur_tex);
+				}
 			}
 
-			++i;
-			index_count += facep->getIndicesCount();
-			geom_count += facep->getGeomCount();
+			tex = texture_list[0];
+		}
+		else
+		{
+			while (i != faces.end() && 
+				(LLPipeline::sTextureBindTest || (distance_sort || (*i)->getTexture() == tex)))
+			{
+				facep = *i;
+			
+
+				//face has no texture index
+				facep->mDrawInfo = NULL;
+				facep->setTextureIndex(255);
+
+				if (geom_count + facep->getGeomCount() > max_vertices)
+				{ //cut batches on geom count too big
+					break;
+				}
+
+				++i;
+				index_count += facep->getIndicesCount();
+				geom_count += facep->getGeomCount();
+			}
 		}
 	
 		//create/delete/resize vertex buffer if needed
@@ -3673,8 +3829,15 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			facep->setGeomIndex(index_offset);
 			facep->setVertexBuffer(buffer);	
 			
+			if (batch_textures && facep->getTextureIndex() == 255)
 			{
+				llerrs << "Invalid texture index." << llendl;
+			}
+			
+			{
+				//for debugging, set last time face was updated vs moved
 				facep->updateRebuildFlags();
+
 				if (!LLPipeline::sDelayVBUpdate)
 				{ //copy face geometry into vertex buffer
 					LLDrawable* drawablep = facep->getDrawable();
@@ -3702,6 +3865,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			}
 
 			const LLTextureEntry* te = facep->getTextureEntry();
+			tex = facep->getTexture();
 
 			BOOL is_alpha = (facep->getPoolType() == LLDrawPool::POOL_ALPHA) ? TRUE : FALSE;
 		

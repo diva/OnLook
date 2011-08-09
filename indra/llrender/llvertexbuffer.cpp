@@ -1152,7 +1152,7 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index)
 void LLVertexBuffer::unmapBuffer(S32 type)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
-	if (!useVBOs())
+	if (!useVBOs() || type == -2)
 	{
 		return ; //nothing to unmap
 	}
@@ -1605,7 +1605,14 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 	}
 	if (data_mask & MAP_VERTEX)
 	{
-		glVertexPointer(3,GL_FLOAT, getStride(TYPE_VERTEX), (void*)(base + 0));
+		if (data_mask & MAP_TEXTURE_INDEX)
+		{
+			glVertexPointer(4,GL_FLOAT, getStride(TYPE_VERTEX), (void*)(base + 0));
+		}
+		else
+		{
+			glVertexPointer(3,GL_FLOAT, getStride(TYPE_VERTEX), (void*)(base + 0));
+		}
 	}
 
 	llglassertok();

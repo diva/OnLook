@@ -763,6 +763,11 @@ void LLVOSky::calcSkyColorWLVert(LLVector3 & Pn, LLColor3 & vary_HazeColor, LLCo
 	// project the direction ray onto the sky dome.
 	F32 phi = acos(Pn[1]);
 	F32 sinA = sin(F_PI - phi);
+	if (fabsf(sinA) < 0.01f)
+	{ //avoid division by zero
+		sinA = 0.01f;
+	}
+
 	F32 Plen = dome_radius * sin(F_PI + phi + asin(dome_offset_ratio * sinA)) / sinA;
 
 	Pn *= Plen;
@@ -1489,6 +1494,7 @@ BOOL LLVOSky::updateHeavenlyBodyGeometry(LLDrawable *drawable, const S32 f, cons
 		facep->setVertexBuffer(buff);
 	}
 
+	llassert(facep->getVertexBuffer()->getNumIndices() == 6);
 	index_offset = facep->getGeometry(verticesp,normalsp,texCoordsp, indicesp);
 
 	if (-1 == index_offset)

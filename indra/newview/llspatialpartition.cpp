@@ -3094,6 +3094,29 @@ public:
 			{
 				renderAgentTarget(avatar);
 			}
+			
+			if (gDebugGL)
+			{
+				for (U32 i = 0; i < (U32)drawable->getNumFaces(); ++i)
+				{
+					LLFace* facep = drawable->getFace(i);
+					U8 index = facep->getTextureIndex();
+					if (facep->mDrawInfo)
+					{
+						if (index < 255)
+						{
+							if (facep->mDrawInfo->mTextureList.size() <= index)
+							{
+								llerrs << "Face texture index out of bounds." << llendl;
+							}
+							else if (facep->mDrawInfo->mTextureList[index] != facep->getTexture())
+							{
+								llerrs << "Face texture index incorrect." << llendl;
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)

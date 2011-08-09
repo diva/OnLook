@@ -5,7 +5,7 @@
  * $License$
  */
  
-#version 120
+
 
 uniform vec4 lightnorm;
 uniform vec4 waterPlane;

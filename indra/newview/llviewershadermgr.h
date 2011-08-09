@@ -308,16 +308,25 @@ extern LLVector4			gShinyOrigin;
 //object shaders
 extern LLGLSLShader			gObjectSimpleProgram;
 extern LLGLSLShader			gObjectSimpleWaterProgram;
+extern LLGLSLShader			gObjectSimpleNonIndexedProgram;
+extern LLGLSLShader			gObjectSimpleNonIndexedWaterProgram;
 extern LLGLSLShader			gObjectFullbrightProgram;
 extern LLGLSLShader			gObjectFullbrightWaterProgram;
+extern LLGLSLShader			gObjectFullbrightNonIndexedProgram;
+extern LLGLSLShader			gObjectFullbrightNonIndexedWaterProgram;
 
 extern LLGLSLShader			gObjectSimpleLODProgram;
 extern LLGLSLShader			gObjectFullbrightLODProgram;
 
 extern LLGLSLShader			gObjectFullbrightShinyProgram;
 extern LLGLSLShader			gObjectFullbrightShinyWaterProgram;
+extern LLGLSLShader			gObjectFullbrightShinyNonIndexedProgram;
+extern LLGLSLShader			gObjectFullbrightShinyNonIndexedWaterProgram;
+
 extern LLGLSLShader			gObjectShinyProgram;
 extern LLGLSLShader			gObjectShinyWaterProgram;
+extern LLGLSLShader			gObjectShinyNonIndexedProgram;
+extern LLGLSLShader			gObjectShinyNonIndexedWaterProgram;
 
 #if MESH_ENABLED
 extern LLGLSLShader			gSkinnedObjectSimpleProgram;
@@ -362,8 +371,9 @@ extern LLGLSLShader			gDeferredImpostorProgram;
 extern LLGLSLShader			gDeferredEdgeProgram;
 extern LLGLSLShader			gDeferredWaterProgram;
 extern LLGLSLShader			gDeferredDiffuseProgram;
-#if MESH_ENABLED
+extern LLGLSLShader			gDeferredNonIndexedDiffuseProgram;
 extern LLGLSLShader			gDeferredSkinnedDiffuseProgram;
+#if MESH_ENABLED
 extern LLGLSLShader			gDeferredSkinnedBumpProgram;
 extern LLGLSLShader			gDeferredSkinnedAlphaProgram;
 #endif //MESH_ENABLED

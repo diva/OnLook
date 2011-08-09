@@ -53,6 +53,8 @@ public:
 #endif //MESH_ENABLED
 	bool hasAtmospherics;
 	bool hasGamma;
+	S32 mIndexedTextureChannels;
+	bool disableTextureIndex;
 
 	// char numLights;
 	
@@ -71,6 +73,8 @@ public:
 	};
 	
 	LLGLSLShader(S32 shader_class);
+
+	static GLhandleARB sCurBoundShader;
 
 	void unload();
 	BOOL createShader(std::vector<std::string> * attributes,

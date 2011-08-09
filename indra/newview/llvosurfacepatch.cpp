@@ -60,8 +60,6 @@ public:
 		LLVertexBuffer(MAP_VERTEX | MAP_NORMAL | MAP_TEXCOORD0 | MAP_TEXCOORD1 | MAP_COLOR, GL_DYNAMIC_DRAW_ARB)
 	{
 		//texture coordinates 2 and 3 exist, but use the same data as texture coordinate 1
-		mOffsets[TYPE_TEXCOORD3] = mOffsets[TYPE_TEXCOORD2] = mOffsets[TYPE_TEXCOORD1];
-		mTypeMask |= MAP_TEXCOORD2 | MAP_TEXCOORD3;
 	};
 
 	// virtual
@@ -381,6 +379,8 @@ void LLVOSurfacePatch::updateMainGeometry(LLFace *facep,
 	U32 patch_size, render_stride;
 	S32 num_vertices, num_indices;
 	U32 index;
+
+	llassert(mLastStride > 0);
 
 	render_stride = mLastStride;
 	patch_size = mPatchp->getSurface()->getGridsPerPatchEdge();

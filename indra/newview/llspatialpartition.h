@@ -93,7 +93,9 @@ public:
 	LLVector4a mExtents[2];
 	
 	LLPointer<LLVertexBuffer> mVertexBuffer;
-	LLPointer<LLViewerTexture> mTexture;
+	LLPointer<LLViewerTexture>     mTexture;
+	std::vector<LLPointer<LLViewerTexture> > mTextureList;
+
 	LLColor4U mGlowColor;
 	S32 mDebugColor;
 	const LLMatrix4* mTextureMatrix;
@@ -644,7 +646,7 @@ public:
 	virtual void rebuildGeom(LLSpatialGroup* group);
 	virtual void rebuildMesh(LLSpatialGroup* group);
 	virtual void getGeometry(LLSpatialGroup* group);
-	void genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort = FALSE);
+	void genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort = FALSE, BOOL batch_textures = FALSE);
 	void registerFace(LLSpatialGroup* group, LLFace* facep, U32 type);
 
 };

@@ -72,14 +72,14 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 	
 	if (LLPipeline::sUnderWaterRender)
 	{
-		shader = &gObjectSimpleWaterProgram;
+		shader = &gObjectSimpleNonIndexedWaterProgram;
 	}
 	else
 	{
-		shader = &gObjectSimpleProgram;
+		shader = &gObjectSimpleNonIndexedProgram;
 	}
 
-	if (gPipeline.canUseWindLightShadersOnObjects())
+	if (gPipeline.canUseVertexShaders())
 	{
 		shader->bind();
 	}

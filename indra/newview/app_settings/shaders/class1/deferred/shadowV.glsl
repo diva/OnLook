@@ -5,7 +5,7 @@
  * $License$
  */
  
-#version 120
+
 
 varying vec4 post_pos;
 

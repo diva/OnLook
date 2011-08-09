@@ -173,6 +173,7 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mIndexInTex = 0;
 	mTexture		= NULL;
 	mTEOffset		= -1;
+	mTextureIndex = 255;
 
 	setDrawable(drawablep);
 	mVObjp = objp;
@@ -387,6 +388,26 @@ void LLFace::setGeomIndex(U16 idx)
 	{
 		mGeomIndex = idx; 
 		mVertexBuffer = NULL;
+	}
+}
+
+void LLFace::setTextureIndex(U8 index)
+{
+	if (index != mTextureIndex)
+	{
+		mTextureIndex = index;
+
+		if (mTextureIndex != 255)
+		{
+			mDrawablep->setState(LLDrawable::REBUILD_POSITION);
+		}
+		else
+		{
+			if (mDrawInfo && !mDrawInfo->mTextureList.empty())
+			{
+				llerrs << "Face with no texture index references indexed texture draw info." << llendl;
+			}
+		}
 	}
 }
 
@@ -1546,13 +1567,19 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		
 		LLVector4a* src = vf.mPositions;
 		LLVector4a position;
+		F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
 		for (S32 i = 0; i < num_vertices; i++)
 		{
 			mat_vert.affineTransform(src[i], position);
+			//Still using getF32ptr() because if the array is strided then theres no guarantee vertices will aligned, which LLVector4a requires.
 			vertices[i].set(position.getF32ptr());
+			((LLVector4*)&vertices[i])->mV[3] = index; 
 		}
-			
-			
+		for (S32 i = num_vertices; i < mGeomCount; i++)
+		{
+			*(LLVector4*)&vertices[i]=*(LLVector4*)&(vertices[num_vertices-1]);
+		}
+					
 		//mVertexBuffer->setBuffer(0);
 	}
 		
@@ -1564,7 +1591,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			LLVector4a normal;
 			mat_normal.rotate(vf.mNormals[i], normal);
 			normal.normalize3fast();
-			normals[i].set(normal.getF32ptr());
+			*(LLVector4a*)&(normals[i]) = normal;
 		}
 
 		//mVertexBuffer->setBuffer(0);
@@ -1578,7 +1605,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			LLVector4a binormal;
 			mat_normal.rotate(vf.mBinormals[i], binormal);
 			binormal.normalize3fast();
-			binormals[i].set(binormal.getF32ptr());
+			*(LLVector4a*)&(binormals[i]) = binormal;
 		}
 
 		//mVertexBuffer->setBuffer(0);
