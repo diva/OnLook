@@ -1274,9 +1274,9 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			//1, not openning too many file descriptors at the same time;
 			//2, control the traffic of http so udp gets bandwidth.
 			//
-			static const LLCachedControl<S32> max_http_requests("HTTPMaxRequests", 32);
-			static const LLCachedControl<S32> min_http_requests("HTTPMinRequests", 2);
-			if((mFetcher->getNumHTTPRequests() > max_http_requests) ||
+			static const LLCachedControl<U32> max_http_requests("HTTPMaxRequests", 32);
+			static const LLCachedControl<U32> min_http_requests("HTTPMinRequests", 2);
+			if(((U32)mFetcher->getNumHTTPRequests() > max_http_requests) ||
 			   ((mFetcher->getTextureBandwidth() > mFetcher->mMaxBandwidth) &&
 				((U32)mFetcher->getNumHTTPRequests() > min_http_requests)) ||
 			    !sgConnectionThrottle())
