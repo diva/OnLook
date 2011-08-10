@@ -50,6 +50,8 @@ LLPointer<LLViewerTexture> LLDrawPoolWLSky::sCloudNoiseTexture = NULL;
 
 LLPointer<LLImageRaw> LLDrawPoolWLSky::sCloudNoiseRawImage = NULL;
 
+static LLGLSLShader* cloud_shader = NULL;
+static LLGLSLShader* sky_shader = NULL;
 
 
 LLDrawPoolWLSky::LLDrawPoolWLSky(void) :
@@ -64,13 +66,24 @@ LLDrawPoolWLSky::LLDrawPoolWLSky(void) :
 		llerrs << "Error: Failed to load cloud noise image " << cloudNoiseFilename << llendl;
 	}
 
-	cloudNoiseFile->load(cloudNoiseFilename);
+	if(cloudNoiseFile->load(cloudNoiseFilename))
+	{
+		sCloudNoiseRawImage = new LLImageRaw();
 
-	sCloudNoiseRawImage = new LLImageRaw();
+		if(cloudNoiseFile->decode(sCloudNoiseRawImage, 0.0f))
+		{
+			//debug use			
+			lldebugs << "cloud noise raw image width: " << sCloudNoiseRawImage->getWidth() << " : height: " << sCloudNoiseRawImage->getHeight() << " : components: " << 
+				(S32)sCloudNoiseRawImage->getComponents() << " : data size: " << sCloudNoiseRawImage->getDataSize() << llendl ;
+			llassert_always(sCloudNoiseRawImage->getData()) ;
 
-	cloudNoiseFile->decode(sCloudNoiseRawImage, 0.0f);
-
-	sCloudNoiseTexture = LLViewerTextureManager::getLocalTexture(sCloudNoiseRawImage.get(), TRUE);
+			sCloudNoiseTexture = LLViewerTextureManager::getLocalTexture(sCloudNoiseRawImage.get(), TRUE);
+		}
+		else
+		{
+			sCloudNoiseRawImage = NULL ;
+		}
+	}
 
 	LLWLParamManager::instance()->propagateParameters();
 }
@@ -89,6 +102,15 @@ LLViewerTexture *LLDrawPoolWLSky::getDebugTexture()
 
 void LLDrawPoolWLSky::beginRenderPass( S32 pass )
 {
+	sky_shader =
+		LLPipeline::sUnderWaterRender ?
+			&gObjectSimpleWaterProgram :
+			&gWLSkyProgram;
+
+	cloud_shader =
+			LLPipeline::sUnderWaterRender ?
+				&gObjectSimpleWaterProgram :
+				&gWLCloudProgram;
 }
 
 void LLDrawPoolWLSky::endRenderPass( S32 pass )
@@ -134,19 +156,14 @@ void LLDrawPoolWLSky::renderSkyHaze(F32 camHeightLocal) const
 {
 	if (gPipeline.canUseWindLightShaders() && gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SKY))
 	{
-		LLGLSLShader* shader =
-			LLPipeline::sUnderWaterRender ?
-				&gObjectSimpleWaterProgram :
-				&gWLSkyProgram;
-
 		LLGLDisable blend(GL_BLEND);
 
-		shader->bind();
+		sky_shader->bind();
 
 		/// Render the skydome
-		renderDome(camHeightLocal, shader);	
+		renderDome(camHeightLocal, sky_shader);	
 
-		shader->unbind();
+		sky_shader->unbind();
 	}
 }
 
@@ -182,43 +199,51 @@ void LLDrawPoolWLSky::renderStars(void) const
 
 	gGL.pushMatrix();
 	glRotatef(gFrameTimeSeconds*0.01f, 0.f, 0.f, 1.f);
-	gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_COLOR, LLTexUnit::TBS_VERT_COLOR);
-	gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT_X2, LLTexUnit::TBS_CONST_ALPHA, LLTexUnit::TBS_TEX_ALPHA);
-	/*//Old
-	gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_PREV_COLOR);
-	gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT_X2, LLTexUnit::TBS_PREV_ALPHA, LLTexUnit::TBS_CONST_ALPHA);	*/
-	glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, star_alpha.mV);
-	
+	// gl_FragColor.rgb = gl_Color.rgb;
+	// gl_FragColor.a = gl_Color.a * star_alpha.a;
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gCustomAlphaProgram.bind();
+		gCustomAlphaProgram.uniform1f("custom_alpha", star_alpha.mV[3]);
+	}
+	else
+	{
+		gGL.getTexUnit(0)->setTextureColorBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_COLOR, LLTexUnit::TBS_VERT_COLOR);
+		gGL.getTexUnit(0)->setTextureAlphaBlend(LLTexUnit::TBO_MULT_X2, LLTexUnit::TBS_CONST_ALPHA, LLTexUnit::TBS_TEX_ALPHA);
+		glTexEnvfv(GL_TEXTURE_ENV, GL_TEXTURE_ENV_COLOR, star_alpha.mV);
+	}
+
 	gSky.mVOWLSkyp->drawStars();
 
-	gGL.popMatrix(); //New
-	//glPointSize(1.f);
-	
-	// and disable the combiner states
-	gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
+	gGL.popMatrix();
+
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gCustomAlphaProgram.unbind();
+	}
+	else
+	{
+		// and disable the combiner states
+		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
+	}
 }
 
 void LLDrawPoolWLSky::renderSkyClouds(F32 camHeightLocal) const
 {
-	if (gPipeline.canUseWindLightShaders() && gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_WL_CLOUDS))
+	if (gPipeline.canUseWindLightShaders() && gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_WL_CLOUDS) && sCloudNoiseTexture.notNull())
 	{
-		LLGLSLShader* shader =
-			LLPipeline::sUnderWaterRender ?
-				&gObjectSimpleWaterProgram :
-				&gWLCloudProgram;
-
 		LLGLEnable blend(GL_BLEND);
 		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 
 		gGL.getTexUnit(0)->bind(sCloudNoiseTexture);
 
-		shader->bind();
+		cloud_shader->bind();
 
 		/// Render the skydome
-		renderDome(camHeightLocal, shader);
+		renderDome(camHeightLocal, cloud_shader);
 
-		shader->unbind();
+		cloud_shader->unbind();
 	}
 }
 
@@ -244,6 +269,10 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 
 	if (gSky.mVOSkyp->getMoon().getDraw() && face->getGeomCount())
 	{
+		if (gPipeline.canUseVertexShaders())
+		{
+			gUIProgram.bind();
+		}
 		// *NOTE: even though we already bound this texture above for the
 		// stars register combiners, we bind again here for defensive reasons,
 		// since LLImageGL::bind detects that it's a noop, and optimizes it out.
@@ -259,6 +288,11 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 		
 		LLFacePool::LLOverrideFaceColor color_override(this, color);
 		face->renderIndexed();
+
+		if (gPipeline.canUseVertexShaders())
+		{
+			gUIProgram.unbind();
+		}
 	}
 }
 
@@ -330,5 +364,8 @@ void LLDrawPoolWLSky::cleanupGL()
 //static
 void LLDrawPoolWLSky::restoreGL()
 {
-	sCloudNoiseTexture = LLViewerTextureManager::getLocalTexture(sCloudNoiseRawImage.get(), TRUE);
+	if(sCloudNoiseRawImage.notNull())
+	{
+		sCloudNoiseTexture = LLViewerTextureManager::getLocalTexture(sCloudNoiseRawImage.get(), TRUE);
+	}
 }

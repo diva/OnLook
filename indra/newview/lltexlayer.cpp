@@ -266,10 +266,16 @@ BOOL LLTexLayerSetBuffer::render()
 	BOOL upload_now = needsUploadNow(); 
 	BOOL success = TRUE;
 
+	//hack to use fixed function when updating tex layer sets
+	bool no_ff = LLGLSLShader::sNoFixedFunction;
+	LLGLSLShader::sNoFixedFunction = false;
+
 	// Composite the color data
 	LLGLSUIDefault gls_ui;
 	success &= mTexLayerSet->render( mOrigin.mX, mOrigin.mY, mFullWidth, mFullHeight );
 	gGL.flush();
+
+	LLGLSLShader::sNoFixedFunction = no_ff;
 
 	if( upload_now )
 	{

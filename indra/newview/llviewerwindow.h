@@ -193,12 +193,27 @@ public:
 	const LLRect&	getWindowRect()		const	{ return mWindowRect; };
 	S32				getWindowDisplayHeight()	const;
 	S32				getWindowDisplayWidth()	const;
+	//Temporary wrappers.
+	const LLRect&	getWindowRectRaw()			const	{ return getWindowRect(); }
+	S32				getWindowHeightRaw()		const	{ return getWindowDisplayHeight(); }
+	S32				getWindowWidthRaw()			const	{ return getWindowDisplayWidth(); }
+	const LLRect&	getWorldviewRectRaw()		const	{ return getWindowRect(); }
+	S32				getWorldViewHeightRaw()		const	{ return getWindowDisplayHeight(); }
+	S32				getWorldViewWidthRaw()		const	{ return getWindowDisplayWidth(); }
 
 	// Window in scaled pixels (via UI scale), use this for
 	// UI elements checking size.
 	const LLRect&	getVirtualWindowRect()		const	{ return mVirtualWindowRect; };
 	S32				getWindowHeight()	const;
 	S32				getWindowWidth()	const;
+	//Temporary wrappers.
+	const LLRect&	getWindowRectScaled()		const	{ return getVirtualWindowRect(); }
+	S32				getWindowHeightScaled()		const	{ return getWindowHeight(); };
+	S32				getWindowWidthScaled()		const	{ return getWindowWidth(); };
+	const LLRect&	getWorldViewRectScaled()	const	{ return getVirtualWindowRect(); }
+	S32				getWorldViewHeightScaled()	const	{ return getWindowHeight(); };
+	S32				getWorldViewWidthScaled()	const	{ return getWindowWidth(); };
+
 
 	LLWindow*		getWindow()			const	{ return mWindow; }
 	void*			getPlatformWindow() const	{ return mWindow->getPlatformWindow(); }

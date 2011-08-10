@@ -2401,6 +2401,10 @@ void LLViewerWindow::draw()
 	// Draw all nested UI views.
 	// No translation needed, this view is glued to 0,0
 
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.bind();
+	}
 	gGL.pushMatrix();
 	{
 		// scale view by UI global scale factor and aspect ratio correction factor
@@ -2492,6 +2496,10 @@ void LLViewerWindow::draw()
 	}
 	gGL.popMatrix();
 
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.unbind();
+	}
 #if LL_DEBUG
 	LLView::sIsDrawing = FALSE;
 #endif

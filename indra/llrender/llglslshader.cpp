@@ -55,6 +55,14 @@ using std::make_pair;
 using std::string;
 
 GLhandleARB LLGLSLShader::sCurBoundShader = 0;
+bool LLGLSLShader::sNoFixedFunction = false;
+
+//UI shader -- declared here so llui_libtest will link properly
+//Singu note: Not using llui_libtest... and LLViewerShaderMgr is a part of newview. So, 
+// these are declared in newview/llviewershadermanager.cpp just like every other shader.
+//LLGLSLShader	gUIProgram(LLViewerShaderMgr::SHADER_INTERFACE);
+//LLGLSLShader	gSolidColorProgram(LLViewerShaderMgr::SHADER_INTERFACE);
+
 BOOL shouldChange(const LLVector4& v1, const LLVector4& v2)
 {
 	return v1 != v2;
@@ -395,6 +403,7 @@ BOOL LLGLSLShader::link(BOOL suppress_errors)
 
 void LLGLSLShader::bind()
 {
+	gGL.flush();
 	if (gGLManager.mHasShaderObjects)
 	{
 		glUseProgramObjectARB(mProgramObject);
@@ -409,6 +418,7 @@ void LLGLSLShader::bind()
 
 void LLGLSLShader::unbind()
 {
+	gGL.flush();
 	if (gGLManager.mHasShaderObjects)
 	{
 		stop_glerror();

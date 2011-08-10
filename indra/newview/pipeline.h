@@ -91,8 +91,11 @@ public:
 	void resetVertexBuffers();
 	void resizeScreenTexture();
 	void releaseGLBuffers();
+	void releaseScreenBuffers();
 	void createGLBuffers();
+
 	void allocateScreenBuffer(U32 resX, U32 resY);
+	bool allocateScreenBuffer(U32 resX, U32 resY, U32 samples);
 
 	void resetVertexBuffers(LLDrawable* drawable);
 	void setUseVBO(BOOL use_vbo);

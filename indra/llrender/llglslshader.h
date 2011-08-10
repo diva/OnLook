@@ -75,6 +75,7 @@ public:
 	LLGLSLShader(S32 shader_class);
 
 	static GLhandleARB sCurBoundShader;
+	static bool sNoFixedFunction;
 
 	void unload();
 	BOOL createShader(std::vector<std::string> * attributes,
@@ -149,5 +150,10 @@ public:
 	std::vector< std::pair< std::string, GLenum > > mShaderFiles;
 	std::string mName;
 };
+
+//UI shader (declared here so llui_libtest will link properly)
+extern LLGLSLShader			gUIProgram;
+//output vec4(color.rgb,color.a*tex0[tc0].a)
+extern LLGLSLShader			gSolidColorProgram;
 
 #endif

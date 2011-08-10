@@ -305,6 +305,14 @@ inline bool operator != (LLViewerShaderMgr::shader_iter const & a, LLViewerShade
 
 extern LLVector4			gShinyOrigin;
 
+//utility shaders
+extern LLGLSLShader			gOcclusionProgram;
+extern LLGLSLShader			gCustomAlphaProgram;
+extern LLGLSLShader			gGlowCombineProgram;
+
+//output tex0[tc0] + tex1[tc1]
+extern LLGLSLShader			gTwoTextureAddProgram;
+								
 //object shaders
 extern LLGLSLShader			gObjectSimpleProgram;
 extern LLGLSLShader			gObjectSimpleWaterProgram;
@@ -314,6 +322,7 @@ extern LLGLSLShader			gObjectFullbrightProgram;
 extern LLGLSLShader			gObjectFullbrightWaterProgram;
 extern LLGLSLShader			gObjectFullbrightNonIndexedProgram;
 extern LLGLSLShader			gObjectFullbrightNonIndexedWaterProgram;
+extern LLGLSLShader			gObjectBumpProgram;
 
 extern LLGLSLShader			gObjectSimpleLODProgram;
 extern LLGLSLShader			gObjectFullbrightLODProgram;
@@ -401,7 +410,9 @@ extern LLGLSLShader			gDeferredAttachmentShadowProgram;
 extern LLGLSLShader			gDeferredAlphaProgram;
 extern LLGLSLShader			gDeferredFullbrightProgram;
 extern LLGLSLShader			gDeferredAvatarAlphaProgram;
-
+extern LLGLSLShader			gDeferredWLSkyProgram;
+extern LLGLSLShader			gDeferredWLCloudProgram;
+extern LLGLSLShader			gDeferredStarProgram;
 extern LLGLSLShader			gLuminanceGatherProgram;
 
 //current avatar shader parameter pointer

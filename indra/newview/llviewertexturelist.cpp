@@ -125,7 +125,7 @@ void LLViewerTextureList::doPreloadImages()
 	
 	// Set the "white" image
 	LLViewerFetchedTexture::sWhiteImagep = LLViewerTextureManager::getFetchedTextureFromFile("white.tga", MIPMAP_NO, LLViewerFetchedTexture::BOOST_UI);
-	
+	LLTexUnit::sWhiteTexture = LLViewerFetchedTexture::sWhiteImagep->getTexName();
 	LLUIImageList* image_list = LLUIImageList::getInstance();
 
 	image_list->initFromFile();
@@ -677,10 +677,7 @@ void LLViewerTextureList::updateImagesDecodePriorities()
 			const F32 LAZY_FLUSH_TIMEOUT = 30.f; // stop decoding
 			const F32 MAX_INACTIVE_TIME  = 50.f; // actually delete
 			S32 min_refs = 3; // 1 for mImageList, 1 for mUUIDMap, 1 for local reference
-			if (imagep->hasCallbacks())
-			{
-				min_refs++; // Add an extra reference if we're on the loaded callback list
-			}
+			
 			S32 num_refs = imagep->getNumRefs();
 			if (num_refs == min_refs)
 			{

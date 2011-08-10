@@ -3515,10 +3515,10 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 
-			if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
+			/*if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
 			{
 				continue;
-			}
+			}*/
 
 			if (!drawablep->isDead() && drawablep->isState(LLDrawable::REBUILD_ALL) )
 			{

@@ -1400,6 +1400,8 @@ BOOL LLImageGL::readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compre
 
 void LLImageGL::deleteDeadTextures()
 {
+	bool reset = false;
+
 	while (!sDeadTextureList.empty())
 	{
 		GLuint tex = sDeadTextureList.front();
@@ -1412,11 +1414,21 @@ void LLImageGL::deleteDeadTextures()
 			{
 				tex_unit->unbind(tex_unit->getCurrType());
 				stop_glerror();
+
+				if (i > 0)
+				{
+					reset = true;
+				}
 			}
 		}
 		
 		glDeleteTextures(1, &tex);
 		stop_glerror();
+	}
+
+	if (reset)
+	{
+		gGL.getTexUnit(0)->activate();
 	}
 }
 		
