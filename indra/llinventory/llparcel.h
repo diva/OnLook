@@ -40,9 +40,6 @@
 #include "llpermissions.h"
 #include "lltimer.h"
 #include "v3math.h"
-#if MESH_ENABLED
-#include "llaccountingquota.h"
-#endif //MESH_ENABLED
 
 // Grid out of which parcels taken is stepped every 4 meters.
 const F32 PARCEL_GRID_STEP_METERS	= 4.f;
@@ -602,10 +599,7 @@ public:
 	BOOL	getPreviouslyGroupOwned() const	{ return mPreviouslyGroupOwned; }
 	BOOL	getSellWithObjects() const		{ return (mParcelFlags & PF_SELL_PARCEL_OBJECTS) ? TRUE : FALSE; }
 
-#if MESH_ENABLED
-	void		 updateQuota( const LLUUID& objectId, const ParcelQuota& quota );
-	const	ParcelQuota& getQuota( void ) { return mQuota; }	
-#endif //MESH_ENABLED
+
 protected:
 	LLUUID mID;
 	LLUUID				mOwnerID;
@@ -678,9 +672,6 @@ protected:
 	BOOL				mRegionPushOverride;
 	BOOL				mRegionDenyAnonymousOverride;
 	BOOL				mRegionDenyAgeUnverifiedOverride;
-#if MESH_ENABLED
-	ParcelQuota			mQuota;
-#endif //MESH_ENABLED
 
 public:
 	// HACK, make private

@@ -484,13 +484,15 @@ void LLWorldMapView::draw()
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
 	// Infohubs
-	if (gSavedSettings.getBOOL("MapShowInfohubs"))   //(sMapScale >= sThresholdB)
+	static const LLCachedControl<bool> map_show_infohubs("MapShowInfohubs");
+	if (map_show_infohubs)   //(sMapScale >= sThresholdB)
 	{
 		drawGenericItems(LLWorldMap::getInstance()->mInfohubs, sInfohubImage);
 	}
 
 	// Telehubs
-	if (gSavedSettings.getBOOL("MapShowTelehubs"))   //(sMapScale >= sThresholdB)
+	static const LLCachedControl<bool> map_show_telehubs("MapShowTelehubs");
+	if (map_show_telehubs)   //(sMapScale >= sThresholdB)
 	{
 		drawGenericItems(LLWorldMap::getInstance()->mTelehubs, sTelehubImage);
 	}
@@ -502,7 +504,8 @@ void LLWorldMapView::draw()
 		drawImage(home, sHomeImage);
 	}
 
-	if (gSavedSettings.getBOOL("MapShowLandForSale"))
+	static const LLCachedControl<bool> map_show_land_for_sale("MapShowLandForSale");
+	if (map_show_land_for_sale)
 	{
 		drawGenericItems(LLWorldMap::getInstance()->mLandForSale, sForSaleImage);
 		// for 1.23, we're showing normal land and adult land in the same UI; you don't
@@ -514,12 +517,7 @@ void LLWorldMapView::draw()
 		}
 	}
 	
-	if (gSavedSettings.getBOOL("MapShowPGEvents") ||
-		gSavedSettings.getBOOL("MapShowMatureEvents") ||
-		gSavedSettings.getBOOL("MapShowAdultEvents") )
-	{
-		drawEvents();
-	}
+	drawEvents();
 
 	// Now draw your avatar after all that other stuff.
 	LLVector3d pos_global = gAgent.getPositionGlobal();
@@ -541,7 +539,8 @@ void LLWorldMapView::draw()
 
 	// Draw icons for the avatars in each region.
 	// Drawn after your avatar so you can see nearby people.
-	if (gSavedSettings.getBOOL("MapShowPeople"))
+	static const LLCachedControl<bool> map_show_people("MapShowPeople");
+	if (map_show_people)
 	{
 		drawAgents();
 	}
@@ -887,7 +886,8 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 				gGL.vertex3f(right, top, 0.f);
 			gGL.end();
 
-			if (gSavedSettings.getBOOL("MapShowLandForSale") && overlayimage && overlayimage->hasGLTexture())
+			static const LLCachedControl<bool> map_show_land_for_sale("MapShowLandForSale");
+			if (map_show_land_for_sale && overlayimage && overlayimage->hasGLTexture())
 			{
 				gGL.getTexUnit(0)->bind(overlayimage);
 				gGL.color4f(1.f, 1.f, 1.f, alpha);
@@ -1057,9 +1057,13 @@ void LLWorldMapView::drawEvents()
 	bool mature_enabled = gAgent.canAccessMature();
 	bool adult_enabled = gAgent.canAccessAdult();
 
-	BOOL show_pg = gSavedSettings.getBOOL("MapShowPGEvents");
-	BOOL show_mature = mature_enabled && gSavedSettings.getBOOL("MapShowMatureEvents");
-	BOOL show_adult = adult_enabled && gSavedSettings.getBOOL("MapShowAdultEvents");
+	static const LLCachedControl<bool> map_show_pg_events("MapShowPGEvents");
+	static const LLCachedControl<bool> map_show_mature_events("MapShowMatureEvents");
+	static const LLCachedControl<bool> map_show_adult_events("MapShowAdultEvents");
+
+	BOOL show_pg = map_show_pg_events;
+	BOOL show_mature = mature_enabled && map_show_mature_events;
+	BOOL show_adult = adult_enabled && map_show_adult_events;
 
     // First the non-selected events
     LLWorldMap::item_info_list_t::const_iterator e;
@@ -1874,8 +1878,9 @@ void LLWorldMapView::handleClick(S32 x, S32 y, MASK mask,
 	}
 
 	// Select event you clicked on
-	if (gSavedSettings.getBOOL("MapShowPGEvents"))
-					{
+	static const LLCachedControl<bool> map_show_pg_events("MapShowPGEvents");
+	if (map_show_pg_events)
+	{
 		for (it = LLWorldMap::getInstance()->mPGEvents.begin(); it != LLWorldMap::getInstance()->mPGEvents.end(); ++it)
 		{
 			LLItemInfo& event = *it;
@@ -1889,7 +1894,8 @@ void LLWorldMapView::handleClick(S32 x, S32 y, MASK mask,
 						}
 					}
 				}
-	if (gSavedSettings.getBOOL("MapShowMatureEvents"))
+	static const LLCachedControl<bool> map_show_mature_events("MapShowMatureEvents");
+	if (map_show_mature_events)
 				{
 		for (it = LLWorldMap::getInstance()->mMatureEvents.begin(); it != LLWorldMap::getInstance()->mMatureEvents.end(); ++it)
 					{
@@ -1904,7 +1910,8 @@ void LLWorldMapView::handleClick(S32 x, S32 y, MASK mask,
 						}
 					}
 				}
-	if (gSavedSettings.getBOOL("MapShowAdultEvents"))
+	static const LLCachedControl<bool> map_show_adult_events("MapShowAdultEvents");
+	if (map_show_adult_events)
 				{
 		for (it = LLWorldMap::getInstance()->mAdultEvents.begin(); it != LLWorldMap::getInstance()->mAdultEvents.end(); ++it)
 					{
@@ -1919,8 +1926,8 @@ void LLWorldMapView::handleClick(S32 x, S32 y, MASK mask,
 						}
 					}
 				}
-
-				if (gSavedSettings.getBOOL("MapShowLandForSale"))
+	static const LLCachedControl<bool> map_show_land_for_sale("MapShowLandForSale");
+				if (map_show_land_for_sale)
 				{
 		for (it = LLWorldMap::getInstance()->mLandForSale.begin(); it != LLWorldMap::getInstance()->mLandForSale.end(); ++it)
 					{

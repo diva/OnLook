@@ -100,7 +100,7 @@ set(viewer_SOURCE_FILES
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
-    llaccountingquotamanager.cpp
+    llaccountingcostmanager.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentcamera.cpp
@@ -580,7 +580,7 @@ set(viewer_HEADER_FILES
     lgghunspell_wrapper.h
     chatbar_as_cmdline.h
     qtoolalign.h
-    llaccountingquotamanager.h
+    llaccountingcostmanager.h
     llagent.h
     llagentaccess.h
     llagentcamera.h
@@ -1613,6 +1613,13 @@ endif (LL_TESTS)
 if (WINDOWS)
 
   get_target_property(BUILT_LLCOMMON llcommon LOCATION)
+
+    set_target_properties(llcommon
+        PROPERTIES
+        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT"
+        LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\""
+        )
+
   add_custom_command(
       TARGET ${VIEWER_BINARY_NAME} POST_BUILD
       COMMAND ${CMAKE_COMMAND}

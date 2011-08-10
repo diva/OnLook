@@ -35,7 +35,9 @@
 
 #include <new>
 #include <cstdlib>
+#if !LL_WINDOWS
 #include <stdint.h>		// uintptr_t
+#endif
 
 #include "llerror.h"
 

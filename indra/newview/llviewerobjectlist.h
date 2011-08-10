@@ -112,7 +112,6 @@ public:
 									F32 restitution,
 									F32 gravity_multiplier);
 
-	void updateQuota( const LLUUID& objectId, const SelectionQuota& costs );
 #endif //MESH_ENABLED
 	
 	void shiftObjects(const LLVector3 &offset);

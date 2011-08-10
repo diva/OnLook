@@ -2212,6 +2212,33 @@ const LLMatrix4 LLVOVolume::getRenderMatrix() const
 	return mDrawable->getWorldMatrix();
 }
 
+#if MESH_ENABLED
+F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes)
+{
+	F32 radius = getScale().length()*0.5f;
+
+	if (isMesh())
+	{	
+		LLSD& header = gMeshRepo.getMeshHeader(getVolume()->getParams().getSculptID());
+
+		return LLMeshRepository::getStreamingCost(header, radius, bytes, visible_bytes, mLOD);
+	}
+	else
+	{
+		LLVolume* volume = getVolume();
+		S32 counts[4];
+		LLVolume::getLoDTriangleCounts(volume->getParams(), counts);
+
+		LLSD header;
+		header["lowest_lod"]["size"] = counts[0] * 10;
+		header["low_lod"]["size"] = counts[1] * 10;
+		header["medium_lod"]["size"] = counts[2] * 10;
+		header["high_lod"]["size"] = counts[3] * 10;
+
+		return LLMeshRepository::getStreamingCost(header, radius);
+	}	
+}
+#endif //MESH_ENABLED
 
 U32 LLVOVolume::getTriangleCount()
 {
@@ -2920,7 +2947,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_vec[idx]->mCount += facep->getIndicesCount();
 		draw_vec[idx]->mEnd += facep->getGeomCount();
 		draw_vec[idx]->mVSize = llmax(draw_vec[idx]->mVSize, facep->getVirtualSize());
-		validate_draw_info(*draw_vec[idx]);
+		draw_vec[idx]->validate();
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[0]);
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[1]);
 	}
@@ -2944,7 +2971,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		}
 		draw_info->mExtents[0] = facep->mExtents[0];
 		draw_info->mExtents[1] = facep->mExtents[1];
-		validate_draw_info(*draw_info);
+		draw_info->validate();
 	}
 }
 
@@ -3026,8 +3053,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 
 	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
 	static const LLCachedControl<S32> render_max_node_size("RenderMaxNodeSize",8192);
-	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
-	U32 max_total = (render_max_node_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
+	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcVertexSize(group->mSpatialPartition->mVertexDataMask);
+	U32 max_total = (render_max_node_size*1024)/LLVertexBuffer::calcVertexSize(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
 
 	U32 cur_total = 0;
@@ -3408,6 +3435,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 
 void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 {
+	llassert(group);
 	static int warningsCount = 20;
 	if (group && group->isState(LLSpatialGroup::MESH_DIRTY) && !group->isState(LLSpatialGroup::GEOM_DIRTY))
 	{
@@ -3419,15 +3447,16 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 
-			if (drawablep->isDead() || drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
+			if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
 			{
 				continue;
 			}
 
-			if (drawablep->isState(LLDrawable::REBUILD_ALL))
+			if (!drawablep->isDead() && drawablep->isState(LLDrawable::REBUILD_ALL) )
 			{
 				LLVOVolume* vobj = drawablep->getVOVolume();
 				vobj->preRebuild();
+
 				LLVolume* volume = vobj->getVolume();
 				for (S32 i = 0; i < drawablep->getNumFaces(); ++i)
 				{
@@ -3494,6 +3523,8 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 		group->clearState(LLSpatialGroup::MESH_DIRTY | LLSpatialGroup::NEW_DRAWINFO);
 	}
+
+	llassert(!group || !group->isState(LLSpatialGroup::NEW_DRAWINFO));
 }
 
 struct CompareBatchBreakerModified
@@ -3526,7 +3557,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 {
 	//calculate maximum number of vertices to store in a single buffer
 	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
-	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcStride(group->mSpatialPartition->mVertexDataMask);
+	U32 max_vertices = (render_max_vbo_size*1024)/LLVertexBuffer::calcVertexSize(group->mSpatialPartition->mVertexDataMask);
 	max_vertices = llmin(max_vertices, (U32) 65535);
 
 	if (!distance_sort)
@@ -3652,12 +3683,8 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 					U32 te_idx = facep->getTEOffset();
 
-					if (facep->getGeometryVolume(*volume, te_idx, 
-						vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), index_offset))
-					{
-						buffer->markDirty(facep->getGeomIndex(), facep->getGeomCount(), 
-							facep->getIndicesStart(), facep->getIndicesCount());
-					}
+					facep->getGeometryVolume(*volume, te_idx, 
+						vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), index_offset);
 				}
 			}
 
@@ -3683,9 +3710,9 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				// can we safely treat this as an alpha mask?
 				if (facep->canRenderAsMask())
 				{
-					const LLDrawable* drawablep = facep->getDrawable();
-					const LLVOVolume* vobj = drawablep ? drawablep->getVOVolume() : NULL;
-					if (te->getFullbright() || (vobj && vobj->isHUDAttachment()))
+					//const LLDrawable* drawablep = facep->getDrawable();
+					//const LLVOVolume* vobj = drawablep ? drawablep->getVOVolume() : NULL;
+					if (te->getFullbright() /*|| (vobj && vobj->isHUDAttachment())*/)
 					{
 						registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK);
 					}

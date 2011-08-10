@@ -115,27 +115,6 @@ void sg_assert(BOOL expr)
 #endif
 }
 
-#if LL_DEBUG
-void validate_drawable(LLDrawable* drawablep)
-{
-	F64 rad = drawablep->getBinRadius();
-	LLVector4a const* exta = drawablep->getSpatialExtents();
-
-	LLVector3 ext[2];
-	ext[0].set(exta[0].getF32ptr());
-	ext[1].set(exta[1].getF32ptr());
-
-	if (rad < 0 || rad > 4096 ||
-		(ext[1]-ext[0]).magVec() > 4096)
-	{
-		llwarns << "Invalid drawable found in octree." << llendl;
-	}
-}
-#else
-#define validate_drawable(x)
-#endif
-
-
 S32 AABBSphereIntersect(const LLVector3& min, const LLVector3& max, const LLVector3 &origin, const F32 &rad)
 {
 	return AABBSphereIntersectR2(min, max, origin, rad*rad);
@@ -281,38 +260,70 @@ U8* get_box_fan_indices_ptr(LLCamera* camera, const LLVector4a& center)
 						
 void LLSpatialGroup::buildOcclusion()
 {
-	if (!mOcclusionVerts)
+	if (mOcclusionVerts.isNull())
 	{
-		mOcclusionVerts = new F32[8*3];
-	}
 
-	LLVector3 bounds[2];
-	bounds[0].set(mBounds[0].getF32ptr());
-	bounds[1].set(mBounds[1].getF32ptr());
-	LLVector3 r = bounds[1] + LLVector3(SG_OCCLUSION_FUDGE, SG_OCCLUSION_FUDGE, SG_OCCLUSION_FUDGE);
-
-	for (U32 k = 0; k < 3; k++)
-	{
-		r.mV[k] = llmin(bounds[1].mV[k]+0.25f, r.mV[k]);
-	}
-
-	F32* v = mOcclusionVerts;
-	F32* c = bounds[0].mV;
-	F32* s = r.mV;
+		mOcclusionVerts = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX, 
+			LLVertexBuffer::sUseStreamDraw ? mBufferUsage : 0); //if GL has a hard time with VBOs, don't use them for occlusion culling.
+		mOcclusionVerts->allocateBuffer(8, 64, true);
 	
-	//vertex positions are encoded so the 3 bits of their vertex index 
-	//correspond to their axis facing, with bit position 3,2,1 matching
-	//axis facing x,y,z, bit set meaning positive facing, bit clear 
-	//meaning negative facing
-	v[0] = c[0]-s[0]; v[1]  = c[1]-s[1]; v[2]  = c[2]-s[2];  // 0 - 0000 
-	v[3] = c[0]-s[0]; v[4]  = c[1]-s[1]; v[5]  = c[2]+s[2];  // 1 - 0001
-	v[6] = c[0]-s[0]; v[7]  = c[1]+s[1]; v[8]  = c[2]-s[2];  // 2 - 0010
-	v[9] = c[0]-s[0]; v[10] = c[1]+s[1]; v[11] = c[2]+s[2];  // 3 - 0011
-																					   
-	v[12] = c[0]+s[0]; v[13] = c[1]-s[1]; v[14] = c[2]-s[2]; // 4 - 0100
-	v[15] = c[0]+s[0]; v[16] = c[1]-s[1]; v[17] = c[2]+s[2]; // 5 - 0101
-	v[18] = c[0]+s[0]; v[19] = c[1]+s[1]; v[20] = c[2]-s[2]; // 6 - 0110
-	v[21] = c[0]+s[0]; v[22] = c[1]+s[1]; v[23] = c[2]+s[2]; // 7 - 0111
+		LLStrider<U16> idx;
+		mOcclusionVerts->getIndexStrider(idx);
+		for (U32 i = 0; i < 64; i++)
+		{
+			*idx++ = sOcclusionIndices[i];
+		}
+	}
+
+	LLVector4a fudge;
+	fudge.splat(SG_OCCLUSION_FUDGE);
+
+	LLVector4a r;
+	r.setAdd(mBounds[1], fudge);
+
+	LLStrider<LLVector3> pos;
+	
+	{
+		//LLFastTimer t(LLFastTimer::FTM_BUILD_OCCLUSION);
+		mOcclusionVerts->getVertexStrider(pos);
+	}
+
+	{
+		LLVector4a* v = (LLVector4a*) pos.get();
+
+		const LLVector4a& c = mBounds[0];
+		const LLVector4a& s = r;
+		
+		static const LLVector4a octant[] =
+		{
+			LLVector4a(-1.f, -1.f, -1.f),
+			LLVector4a(-1.f, -1.f, 1.f),
+			LLVector4a(-1.f, 1.f, -1.f),
+			LLVector4a(-1.f, 1.f, 1.f),
+
+			LLVector4a(1.f, -1.f, -1.f),
+			LLVector4a(1.f, -1.f, 1.f),
+			LLVector4a(1.f, 1.f, -1.f),
+			LLVector4a(1.f, 1.f, 1.f),
+		};
+
+		//vertex positions are encoded so the 3 bits of their vertex index 
+		//correspond to their axis facing, with bit position 3,2,1 matching
+		//axis facing x,y,z, bit set meaning positive facing, bit clear 
+		//meaning negative facing
+		
+		for (S32 i = 0; i < 8; ++i)
+		{
+			LLVector4a p;
+			p.setMul(s, octant[i]);
+			p.add(c);
+			v[i] = p;
+		}
+	}
+	
+	{
+		mOcclusionVerts->setBuffer(0);
+	}
 
 	clearState(LLSpatialGroup::OCCLUSION_DIRTY);
 }
@@ -378,7 +389,6 @@ LLSpatialGroup::~LLSpatialGroup()
 		}
 	}
 
-	delete [] mOcclusionVerts;
 	mOcclusionVerts = NULL;
 
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
@@ -473,52 +483,6 @@ void LLSpatialGroup::checkStates()
 #endif
 }
 
-void validate_draw_info(LLDrawInfo& params)
-{
-#if LL_OCTREE_PARANOIA_CHECK
-	if (!params.mVertexBuffer)
-	{
-		llerrs << "Draw batch has no vertex buffer." << llendl;
-	}
-	
-	//bad range
-	if (params.mStart >= params.mEnd)
-	{
-		llerrs << "Draw batch has invalid range." << llendl;
-	}
-	
-	if (params.mEnd >= (U32) params.mVertexBuffer->getNumVerts())
-	{
-		llerrs << "Draw batch has buffer overrun error." << llendl;
-	}
-	
-	if (params.mOffset + params.mCount > (U32) params.mVertexBuffer->getNumIndices())
-	{
-		llerrs << "Draw batch has index buffer ovverrun error." << llendl;
-	}
-	
-	//bad indices
-	U16* indicesp = (U16*) params.mVertexBuffer->getIndicesPointer();
-	if (indicesp)
-	{
-		for (U32 i = params.mOffset; i < params.mOffset+params.mCount; i++)
-		{
-			if (indicesp[i] < (U16)params.mStart)
-			{
-				llerrs << "Draw batch has vertex buffer index out of range error (index too low). "
-					   << "indicesp["<<i<<"]="<<indicesp[i]<< llendl;
-			}
-			
-			if (indicesp[i] > (U16)params.mEnd)
-			{
-				llerrs << "Draw batch has vertex buffer index out of range error (index too high)."
-				       << "indicesp["<<i<<"]="<<indicesp[i]<< llendl;
-			}
-		}
-	} //Complains -SG
-#endif
-}
-
 void LLSpatialGroup::validateDrawMap()
 {
 #if LL_OCTREE_PARANOIA_CHECK
@@ -528,8 +492,8 @@ void LLSpatialGroup::validateDrawMap()
 		for (drawmap_elem_t::iterator j = draw_vec.begin(); j != draw_vec.end(); ++j)
 		{
 			LLDrawInfo& params = **j;
-			
-			validate_draw_info(params);
+		
+			params.validate();
 		}
 	}
 #endif
@@ -540,7 +504,6 @@ BOOL LLSpatialGroup::updateInGroup(LLDrawable *drawablep, BOOL immediate)
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 		
 	drawablep->updateSpatialExtents();
-	validate_drawable(drawablep);
 
 	OctreeNode* parent = mOctreeNode->getOctParent();
 	
@@ -552,7 +515,6 @@ BOOL LLSpatialGroup::updateInGroup(LLDrawable *drawablep, BOOL immediate)
 		unbound();
 		setState(OBJECT_DIRTY);
 		//setState(GEOM_DIRTY);
-		validate_drawable(drawablep);
 		return TRUE;
 	}
 		
@@ -570,7 +532,6 @@ BOOL LLSpatialGroup::addObject(LLDrawable *drawablep, BOOL add_all, BOOL from_oc
 	else
 	{
 		drawablep->setSpatialGroup(this);
-		validate_drawable(drawablep);
 		setState(OBJECT_DIRTY | GEOM_DIRTY);
 		setOcclusionState(LLSpatialGroup::DISCARD_QUERY, LLSpatialGroup::STATE_MODE_ALL_CAMERAS);
 		gPipeline.markRebuild(this, TRUE);
@@ -843,7 +804,7 @@ void LLSpatialGroup::shift(const LLVector4a &offset)
 		gPipeline.markRebuild(this, TRUE);
 	}
 
-	if (mOcclusionVerts)
+	if (mOcclusionVerts.notNull())
 	{
 		setState(OCCLUSION_DIRTY);
 	}
@@ -878,24 +839,16 @@ void LLSpatialGroup::setState(eSpatialState state)
 //	if (LLSpatialPartition::sFreezeState)
 //		return;
 	mState |= state; 
-
-	if (state > LLSpatialGroup::STATE_MASK)
-	{
-		llerrs << "WTF?" << llendl;
-	} 
+	
+	llassert(state <= LLSpatialGroup::STATE_MASK);
 }	
 
 void LLSpatialGroup::setState(eSpatialState state, S32 mode) 
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
-//	if (LLSpatialPartition::sFreezeState)
-//		return;
-	
-	if (state > LLSpatialGroup::STATE_MASK)
-	{
-		llerrs << "WTF?" << llendl;
-	}
 
+	llassert(state <= LLSpatialGroup::STATE_MASK);
+	
 	if (mode > STATE_MODE_SINGLE)
 	{
 		if (mode == STATE_MODE_DIFF)
@@ -941,25 +894,14 @@ public:
 
 void LLSpatialGroup::clearState(eSpatialState state)
 {
-//	if (LLSpatialPartition::sFreezeState)
-//		return;
-	if (state > LLSpatialGroup::STATE_MASK)
-	{
-		llerrs << "WTF?" << llendl;
-	}
+	llassert(state <= LLSpatialGroup::STATE_MASK);
 
 	mState &= ~state; 
 }
 
 void LLSpatialGroup::clearState(eSpatialState state, S32 mode)
 {
-
-//	if (LLSpatialPartition::sFreezeState)
-//		return;
-	if (state > LLSpatialGroup::STATE_MASK)
-	{
-		llerrs << "WTF?" << llendl;
-	}
+	llassert(state <= LLSpatialGroup::STATE_MASK);
 
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	
@@ -984,10 +926,7 @@ void LLSpatialGroup::clearState(eSpatialState state, S32 mode)
 
 BOOL LLSpatialGroup::isState(eSpatialState state) const
 { 
-	if (state > LLSpatialGroup::STATE_MASK)
-	{
-		llerrs << "LLSpatialGroup::isState passed invalid state '" << state << "'" << llendl;
-	}
+	llassert(state <= LLSpatialGroup::STATE_MASK);
 
 	return mState & state ? TRUE : FALSE; 
 }
@@ -1125,7 +1064,7 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	mOctreeNode(node),
 	mSpatialPartition(part),
 	mVertexBuffer(NULL), 
-	mBufferUsage(GL_STATIC_DRAW_ARB),
+	mBufferUsage(part->mBufferUsage),
 	mDistance(0.f),
 	mDepth(0.f),
 	mLastUpdateDistance(-1.f), 
@@ -1403,7 +1342,6 @@ void LLSpatialGroup::destroyGL()
 		}
 	}
 
-	delete [] mOcclusionVerts;
 	mOcclusionVerts = NULL;
 
 	for (LLSpatialGroup::element_iter i = getData().begin(); i != getData().end(); ++i)
@@ -1577,7 +1515,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 						mOcclusionQuery[LLViewerCamera::sCurCameraID] = sQueryPool.allocate();
 					}
 
-					if (!mOcclusionVerts || isState(LLSpatialGroup::OCCLUSION_DIRTY))
+					if (mOcclusionVerts.isNull() || isState(LLSpatialGroup::OCCLUSION_DIRTY))
 					{
 						buildOcclusion();
 					}
@@ -1604,37 +1542,32 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 					{
 						//LLFastTimer t(FTM_PUSH_OCCLUSION_VERTS);
 						glBeginQueryARB(mode, mOcclusionQuery[LLViewerCamera::sCurCameraID]);					
-						glVertexPointer(3, GL_FLOAT, 0, mOcclusionVerts);
+					
+						mOcclusionVerts->setBuffer(LLVertexBuffer::MAP_VERTEX);
+
 						if (!use_depth_clamp && mSpatialPartition->mDrawableType == LLDrawPool::POOL_VOIDWATER)
 						{
 							LLGLSquashToFarClip squash(glh_get_current_projection(), 1);
 							if (camera->getOrigin().isExactlyZero())
 							{ //origin is invalid, draw entire box
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-										GL_UNSIGNED_BYTE, sOcclusionIndices);
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-										GL_UNSIGNED_BYTE, sOcclusionIndices+b111*8);
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, 0);
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, b111*8);				
 							}
 							else
 							{
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-											GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, mBounds[0]));
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, get_box_fan_indices(camera, mBounds[0]));
 							}
 						}
 						else
 						{
 							if (camera->getOrigin().isExactlyZero())
 							{ //origin is invalid, draw entire box
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-										GL_UNSIGNED_BYTE, sOcclusionIndices);
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-										GL_UNSIGNED_BYTE, sOcclusionIndices+b111*8);
-
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, 0);
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, b111*8);				
 							}
 							else
 							{
-								glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8,
-											GL_UNSIGNED_BYTE, get_box_fan_indices_ptr(camera, mBounds[0]));
+								mOcclusionVerts->drawRange(LLRender::TRIANGLE_FAN, 0, 7, 8, get_box_fan_indices(camera, mBounds[0]));
 							}
 						}
 						
@@ -1693,7 +1626,6 @@ LLSpatialGroup *LLSpatialPartition::put(LLDrawable *drawablep, BOOL was_visible)
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 		
 	drawablep->updateSpatialExtents();
-	validate_drawable(drawablep);
 
 	//keep drawable from being garbage collected
 	LLPointer<LLDrawable> ptr = drawablep;
@@ -1992,11 +1924,8 @@ public:
 
 	virtual void processGroup(LLSpatialGroup* group)
 	{
-		if (group->isState(LLSpatialGroup::DIRTY) || group->getData().empty())
-		{
-			llerrs << "WTF?" << llendl;
-		}
-
+		llassert(!group->isState(LLSpatialGroup::DIRTY) && !group->getData().empty())
+		
 		if (mRes < 2)
 		{
 			if (mCamera->AABBInFrustum(group->mObjectBounds[0], group->mObjectBounds[1]) > 0)
@@ -2360,6 +2289,8 @@ void pushVerts(LLSpatialGroup* group, U32 mask)
 
 void pushVerts(LLFace* face, U32 mask)
 {
+	llassert(face->verify());
+
 	LLVertexBuffer* buffer = face->getVertexBuffer();
 
 	if (buffer)
@@ -3163,7 +3094,6 @@ public:
 			{
 				renderAgentTarget(avatar);
 			}
-			
 		}
 		
 		for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
@@ -3554,18 +3484,9 @@ LLDrawInfo::LLDrawInfo(U16 start, U16 end, U32 count, U32 offset,
 	mFace(NULL),
 	mDistance(0.f)
 {
-	mDebugColor = (rand() << 16) + rand();
-	if (mStart >= mVertexBuffer->getRequestedVerts() ||
-		mEnd >= mVertexBuffer->getRequestedVerts())
-	{
-		llerrs << "Invalid draw info vertex range." << llendl;
-	}
+	mVertexBuffer->validateRange(mStart, mEnd, mCount, mOffset);
 
-	if (mOffset >= (U32) mVertexBuffer->getRequestedIndices() ||
-		mOffset + mCount > (U32) mVertexBuffer->getRequestedIndices())
-	{
-		llerrs << "Invalid draw info index range." << llendl;
-	}
+	mDebugColor = (rand() << 16) + rand();
 }
 
 LLDrawInfo::~LLDrawInfo()	
@@ -3584,6 +3505,11 @@ LLDrawInfo::~LLDrawInfo()
 	{
 		gPipeline.checkReferences(this);
 	}
+}
+
+void LLDrawInfo::validate()
+{
+	mVertexBuffer->validateRange(mStart, mEnd, mCount, mOffset);
 }
 
 LLVertexBuffer* LLGeometryManager::createVertexBuffer(U32 type_mask, U32 usage)
