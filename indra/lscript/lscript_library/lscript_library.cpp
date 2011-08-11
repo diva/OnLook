@@ -462,23 +462,22 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "llGetLinkNumberOfSides", "i", "i");
 
     // IDEVO Name lookup calls, see lscript_avatar_names.h
-    addFunction(10.f, 0.f, dummy_func, "llGetUsername", "s", "k");
-    addFunction(10.f, 0.f, dummy_func, "llRequestUsername", "k", "k");
-    addFunction(10.f, 0.f, dummy_func, "llGetDisplayName", "s", "k");
+	addFunction(10.f, 0.f, dummy_func, "llGetUsername", "s", "k");
+	addFunction(10.f, 0.f, dummy_func, "llRequestUsername", "k", "k");
+	addFunction(10.f, 0.f, dummy_func, "llGetDisplayName", "s", "k");
 	addFunction(10.f, 0.f, dummy_func, "llRequestDisplayName", "k", "k");
-
 	addFunction(10.f, 0.f, dummy_func, "llGetEnv", "s", "s");
 	addFunction(10.f, 0.f, dummy_func, "llRegionSayTo", NULL, "kis");
 
   // Adding missing (more recent) LSL functions.
 
-  addFunction(10.f, 0.f, dummy_func, "llCastRay", "l", "vvl");
-  addFunction(10.f, 0.f, dummy_func, "llGetSPMaxMemory", "i", NULL);
-  addFunction(10.f, 0.f, dummy_func, "llGetUsedMemory", "i", NULL);
-  addFunction(10.f, 0.f, dummy_func, "llGodLikeRezObject", NULL, "kv");
-  addFunction(10.f, 0.f, dummy_func, "llScriptProfiler", NULL, "i");
-  addFunction(10.f, 0.f, dummy_func, "llSetInventoryPermMask", NULL, "sii");
-  addFunction(10.f, 0.f, dummy_func, "llSetObjectPermMask", NULL, "ii");
+	addFunction(10.f, 0.f, dummy_func, "llCastRay", "l", "vvl");
+	addFunction(10.f, 0.f, dummy_func, "llGetSPMaxMemory", "i", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llGetUsedMemory", "i", NULL);
+	addFunction(10.f, 0.f, dummy_func, "llGodLikeRezObject", NULL, "kv");
+	addFunction(10.f, 0.f, dummy_func, "llScriptProfiler", NULL, "i");
+	addFunction(10.f, 0.f, dummy_func, "llSetInventoryPermMask", NULL, "sii");
+	addFunction(10.f, 0.f, dummy_func, "llSetObjectPermMask", NULL, "ii");
 
 	// energy, sleep, dummy_func, name, return type, parameters, help text, gods-only
 
@@ -599,6 +598,26 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "lsSetWindlightScene", "i", "l");
 	addFunction(10.f, 0.f, dummy_func, "lsSetWindlightSceneTargeted", "i", "lk");
 	addFunction(10.f, 0.f, dummy_func, "lsGetWindlightScene", "l", "l");
+
+	// New OSSL functions 08-10-2011
+	addFunction(10.f, 0.f, dummy_func, "osNpcSaveAppearance", "k", "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcLoadAppearance", NULL, "ks");
+	addFunction(10.f, 0.f, dummy_func, "osNpcMoveToTarget", NULL, "kvi");
+	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveTo", NULL, "k");
+	addFunction(10.f, 0.f, dummy_func, "osOwnerSaveAppearance", "k", "s");
+
+	addFunction(10.f, 0.f, dummy_func, "llSetMemoryLimit", "i", "i");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkMedia", "i", "iil");
+	addFunction(10.f, 0.f, dummy_func, "llGetLinkMedia", "l", "iil");
+	addFunction(10.f, 0.f, dummy_func, "llClearLinkMedia", "i", "ii");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkCamera", NULL, "ivv");
+	addFunction(10.f, 0.f, dummy_func, "llSetContentType", NULL, "ki");
+	addFunction(10.f, 0.f, dummy_func, "llLinkSitTarget", NULL, "ivr");
+	addFunction(10.f, 0.f, dummy_func, "llAvatarOnLinkSitTarget", "k", "i");
+	/* No info on these functions yet....
+	 * addFunction(10.f, 0.f, dummy_func, "llSetVelocity", "", "");
+	 * addFunction(10.f, 0.f, dummy_func, "llSetRotationalVelocity", "", "");
+	 */
 }
 
 LLScriptLibraryFunction::LLScriptLibraryFunction(F32 eu, F32 st, void (*exec_func)(LLScriptLibData *, LLScriptLibData *, const LLUUID &), const char *name, const char *ret_type, const char *args, BOOL god_only)
