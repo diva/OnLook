@@ -251,7 +251,8 @@ void LLVOTextBubble::getGeometry(S32 idx,
 	{
 		LLVector4a t;
 		t.setMul(face.mPositions[i],scale);
-		((LLVector4a*)(verticesp++))->setAdd(t,pos);
+		t.add(pos);
+		(verticesp++)->set(t.getF32ptr());
 		*colorsp++ = color;
 	}
 	
