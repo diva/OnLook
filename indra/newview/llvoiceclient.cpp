@@ -1652,9 +1652,9 @@ void LLVoiceClient::stateMachine()
                     }
 #else
                     // *FIX:Mani - Using the executable dir instead 
-					// of mAppRODataDir, the working directory from which the
+                    // of mAppRODataDir, the working directory from which the
                     // app is launched.
-					//std::string exe_path = gDirUtilp->getAppRODataDir();
+                    //std::string exe_path = gDirUtilp->getAppRODataDir();
 					std::string exe_path = gDirUtilp->getExecutableDir();
 					exe_path += gDirUtilp->getDirDelimiter();
 #if LL_WINDOWS
