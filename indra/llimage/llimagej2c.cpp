@@ -28,7 +28,7 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
-#if LL_LINUX
+#if LL_LINUX && defined(LL_STANDALONE)
 #include <dlfcn.h>
 #include <apr_portable.h>
 #endif
@@ -90,7 +90,7 @@ void LLImageJ2C::openDSO()
 	j2cimpl_dso_memory_pool.create();
 
 	//attempt to load the shared library
-#if LL_LINUX
+#if LL_LINUX && defined(LL_STANDALONE)
     void *dso_handle = dlopen(dso_path.c_str(), RTLD_NOW | RTLD_GLOBAL);
     rv = (!dso_handle)?APR_EDSOOPEN:apr_os_dso_handle_put(&j2cimpl_dso_handle,
             dso_handle, j2cimpl_dso_memory_pool());
