@@ -190,20 +190,20 @@ public:
 	LLView*			getRootView()		const	{ return mRootView; }
 
 	// Window in raw pixels as seen on screen.
-	const LLRect&	getWindowRect()		const	{ return mWindowRect; };
+	const LLRect&	getWindowRect()		const	{ return mWindowRectRaw; };
 	S32				getWindowDisplayHeight()	const;
 	S32				getWindowDisplayWidth()	const;
 	//Temporary wrappers.
 	const LLRect&	getWindowRectRaw()			const	{ return getWindowRect(); }
 	S32				getWindowHeightRaw()		const	{ return getWindowDisplayHeight(); }
 	S32				getWindowWidthRaw()			const	{ return getWindowDisplayWidth(); }
-	const LLRect&	getWorldviewRectRaw()		const	{ return getWindowRect(); }
+	const LLRect&	getWorldViewRectRaw()		const	{ return getWindowRect(); }
 	S32				getWorldViewHeightRaw()		const	{ return getWindowDisplayHeight(); }
 	S32				getWorldViewWidthRaw()		const	{ return getWindowDisplayWidth(); }
 
 	// Window in scaled pixels (via UI scale), use this for
 	// UI elements checking size.
-	const LLRect&	getVirtualWindowRect()		const	{ return mVirtualWindowRect; };
+	const LLRect&	getVirtualWindowRect()		const	{ return mWindowRectScaled; };
 	S32				getWindowHeight()	const;
 	S32				getWindowWidth()	const;
 	//Temporary wrappers.
@@ -236,7 +236,8 @@ public:
 	const LLPickInfo&	getLastPick() const { return mLastPick; }
 	const LLPickInfo&	getHoverPick() const { return mHoverPick; }
 
-	void			setupViewport(S32 x_offset = 0, S32 y_offset = 0);
+	void			setup2DViewport(S32 x_offset = 0, S32 y_offset = 0);
+	void			setup3DViewport(S32 x_offset = 0, S32 y_offset = 0);
 	void			setup3DRender();
 	void			setup2DRender();
 
@@ -341,7 +342,9 @@ public:
 									LLVector3 *intersection = NULL,
 									LLVector2 *uv = NULL,
 									LLVector3 *normal = NULL,
-									LLVector3 *binormal = NULL);
+									LLVector3 *binormal = NULL,
+									LLVector3* start = NULL,
+									LLVector3* end = NULL);
 	
 	
 	// Returns a pointer to the last object hit
@@ -396,9 +399,9 @@ protected:
 	BOOL			mActive;
 	BOOL			mWantFullscreen;
 	BOOL			mShowFullscreenProgress;
-	LLRect			mWindowRect;
-	LLRect			mVirtualWindowRect;
-	LLView*			mRootView;					// a view of size mWindowRect, containing all child views
+	LLRect			mWindowRectRaw;
+	LLRect			mWindowRectScaled;
+	LLView*			mRootView;					// a view of size mWindowRectRaw, containing all child views
 	LLVector2		mDisplayScale;
 
 	LLCoordGL		mCurrentMousePoint;			// last mouse position in GL coords

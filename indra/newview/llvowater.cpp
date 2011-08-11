@@ -286,6 +286,11 @@ void LLVOWater::updateSpatialExtents(LLVector4a &newMin, LLVector4a& newMax)
 
 U32 LLVOWater::getPartitionType() const
 { 
+	if (mIsEdgePatch)
+	{
+		return LLViewerRegion::PARTITION_VOIDWATER;
+	}
+
 	return LLViewerRegion::PARTITION_WATER; 
 }
 
@@ -304,6 +309,7 @@ LLWaterPartition::LLWaterPartition()
 
 LLVoidWaterPartition::LLVoidWaterPartition()
 {
+	mOcclusionEnabled = FALSE;
 	mDrawableType = LLPipeline::RENDER_TYPE_VOIDWATER;
 	mPartitionType = LLViewerRegion::PARTITION_VOIDWATER;
 }

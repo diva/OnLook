@@ -1,8 +1,8 @@
 /** 
  * @file multiPointLightF.glsl
  *
- * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
- * $License$
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
+ * $/LicenseInfo$
  */
 
 
@@ -36,7 +36,7 @@ uniform mat4 inv_proj;
 
 vec4 getPosition(vec2 pos_screen)
 {
-	float depth = texture2DRect(depthMap, pos_screen.xy).a;
+	float depth = texture2DRect(depthMap, pos_screen.xy).r;
 	vec2 sc = pos_screen.xy*2.0;
 	sc /= screen_res;
 	sc -= vec2(1.0,1.0);
@@ -123,4 +123,6 @@ void main()
 	
 	gl_FragColor.rgb = out_col;
 	gl_FragColor.a = 0.0;
+	
+	//gl_FragColor = vec4(0.1, 0.025, 0.025/4.0, 0.0);
 }

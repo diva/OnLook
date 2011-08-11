@@ -1133,12 +1133,13 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 	{
 		std::string fragment;
 		
-		//Keep this! Fixes shadow softening with ssao off.
+		/*//Keep this! Fixes shadow softening with ssao off.
+		//Disabled for now.
 		if (mVertexShaderLevel[SHADER_DEFERRED] < 2 && !gSavedSettings.getBOOL("RenderDeferredSSAO"))
 		{
 			fragment = "deferred/softenLightNoSSAOF.glsl";
 		}
-		else
+		else*/
 		{
 			fragment = "deferred/softenLightF.glsl";
 		}
@@ -1148,6 +1149,12 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 		gDeferredSoftenProgram.mShaderFiles.push_back(make_pair("deferred/softenLightV.glsl", GL_VERTEX_SHADER_ARB));
 		gDeferredSoftenProgram.mShaderFiles.push_back(make_pair(fragment, GL_FRAGMENT_SHADER_ARB));
 		gDeferredSoftenProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
+
+		if (gSavedSettings.getBOOL("RenderDeferredSSAO"))
+		{ //if using SSAO, take screen space light map into account as if shadows are enabled
+			gDeferredSoftenProgram.mShaderLevel = llmax(gDeferredSoftenProgram.mShaderLevel, 2);
+		}
+				
 		success = gDeferredSoftenProgram.createShader(NULL, NULL);
 	}
 
@@ -1292,16 +1299,6 @@ BOOL LLViewerShaderMgr::loadShadersDeferred()
 
 	if (mVertexShaderLevel[SHADER_DEFERRED] > 2)
 	{
-		if (success)
-		{
-			gDeferredPostProgram.mName = "Deferred Post Shader";
-			gDeferredPostProgram.mShaderFiles.clear();
-			gDeferredPostProgram.mShaderFiles.push_back(make_pair("deferred/postDeferredV.glsl", GL_VERTEX_SHADER_ARB));
-			gDeferredPostProgram.mShaderFiles.push_back(make_pair("deferred/postDeferredF.glsl", GL_FRAGMENT_SHADER_ARB));
-			gDeferredPostProgram.mShaderLevel = mVertexShaderLevel[SHADER_DEFERRED];
-			success = gDeferredPostProgram.createShader(NULL, NULL);
-		}
-
 		if (success)
 		{
 			gDeferredPostGIProgram.mName = "Deferred Post GI Shader";

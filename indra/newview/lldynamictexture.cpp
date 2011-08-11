@@ -123,7 +123,7 @@ void LLViewerDynamicTexture::preRender(BOOL clear_depth)
 		// force rendering to on-screen portion of frame buffer
 		LLCoordScreen window_pos;
 		gViewerWindow->getWindow()->getPosition( &window_pos );
-		mOrigin.set(0, gViewerWindow->getWindowDisplayHeight() - mFullHeight);  // top left corner
+		mOrigin.set(0, gViewerWindow->getWindowHeightRaw() - mFullHeight);  // top left corner
 
 		if (window_pos.mX < 0)
 		{
@@ -178,7 +178,7 @@ void LLViewerDynamicTexture::postRender(BOOL success)
 	}
 
 	// restore viewport
-	gViewerWindow->setupViewport();
+	gViewerWindow->setup2DViewport();
 
 	// restore camera
 	LLViewerCamera* camera = LLViewerCamera::getInstance();

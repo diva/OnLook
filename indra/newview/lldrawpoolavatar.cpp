@@ -431,7 +431,6 @@ void LLDrawPoolAvatar::endShadowPass(S32 pass)
 			sVertexProgram->unbind();
 			disable_vertex_weighting(sVertexProgram->mAttribute[LLViewerShaderMgr::AVATAR_WEIGHT]);
 		}
-		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	}
 
 #if MESH_ENABLED

@@ -243,14 +243,15 @@ void LLVOTextBubble::getGeometry(S32 idx,
 	LLColor4U color = LLColor4U(getTE(idx)->getColor());
 	U32 offset = mDrawable->getFace(idx)->getGeomIndex();
 	
+	normalsp.assignArray((U8*)face.mNormals, sizeof(face.mNormals[0]), face.mNumVertices);
+	texcoordsp.assignArray((U8*)face.mTexCoords, sizeof(face.mTexCoords[0]), face.mNumVertices);
+
+
 	for (U32 i = 0; i < (U32)face.mNumVertices; i++)
 	{
-		LLVector4a vertpos;
-		vertpos.setMul(face.mPositions[i],scale);
-		vertpos.add(pos);
-		(verticesp++)->set(vertpos.getF32ptr());
-		(normalsp++)->set(face.mNormals[i].getF32ptr());
-		*texcoordsp++ = face.mTexCoords[i];
+		LLVector4a t;
+		t.setMul(face.mPositions[i],scale);
+		((LLVector4a*)(verticesp++))->setAdd(t,pos);
 		*colorsp++ = color;
 	}
 	

@@ -71,7 +71,7 @@ vec4 getPosition_d(vec2 pos_screen, float depth)
 
 vec4 getPosition(vec2 pos_screen)
 { //get position in screen space (world units) given window coordinate and depth map
-	float depth = texture2DRect(depthMap, pos_screen.xy).a;
+	float depth = texture2DRect(depthMap, pos_screen.xy).r;
 	return getPosition_d(pos_screen, depth);
 }
 
@@ -258,7 +258,7 @@ vec3 scaleSoftClip(vec3 light)
 void main() 
 {
 	vec2 tc = vary_fragcoord.xy;
-	float depth = texture2DRect(depthMap, tc.xy).a;
+	float depth = texture2DRect(depthMap, tc.xy).r;
 	vec3 pos = getPosition_d(tc, depth).xyz;
 	vec3 norm = texture2DRect(normalMap, tc).xyz;
 	norm = vec3((norm.xy-0.5)*2.0,norm.z); // unpack norm
@@ -267,34 +267,49 @@ void main()
 	float da = max(dot(norm.xyz, vary_light.xyz), 0.0);
 	
 	vec4 diffuse = texture2DRect(diffuseRect, tc);
-	vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
-	
-	vec2 scol_ambocc = texture2DRect(lightMap, vary_fragcoord.xy).rg;
-	float scol = max(scol_ambocc.r, diffuse.a); 
-	float ambocc = scol_ambocc.g;
-	
-	calcAtmospherics(pos.xyz, ambocc);
-	
-	vec3 col = atmosAmbient(vec3(0));
-	col += atmosAffectDirectionalLight(max(min(da, scol), diffuse.a));
-	
-	col *= diffuse.rgb;
-	
-	if (spec.a > 0.0) // specular reflection
-	{
-		// the old infinite-sky shiny reflection
-		//
-		vec3 refnormpersp = normalize(reflect(pos.xyz, norm.xyz));
-		float sa = dot(refnormpersp, vary_light.xyz);
-		vec3 dumbshiny = vary_SunlitColor*scol_ambocc.r*texture2D(lightFunc, vec2(sa, spec.a)).a;
 
-		// add the two types of shiny together
-		col += dumbshiny * spec.rgb;
-	}
+	vec3 col;
+	float bloom = 0.0;
+
+	if (diffuse.a < 0.9)
+	{
+		vec4 spec = texture2DRect(specularRect, vary_fragcoord.xy);
+		
+		vec2 scol_ambocc = texture2DRect(lightMap, vary_fragcoord.xy).rg;
+		float scol = max(scol_ambocc.r, diffuse.a); 
+		float ambocc = scol_ambocc.g;
 	
-	col = atmosLighting(col);
-	col = scaleSoftClip(col);
+		calcAtmospherics(pos.xyz, ambocc);
+	
+		col = atmosAmbient(vec3(0));
+		col += atmosAffectDirectionalLight(max(min(da, scol), diffuse.a));
+	
+		col *= diffuse.rgb;
+	
+		if (spec.a > 0.0) // specular reflection
+		{
+			// the old infinite-sky shiny reflection
+			//
+			vec3 refnormpersp = normalize(reflect(pos.xyz, norm.xyz));
+			float sa = dot(refnormpersp, vary_light.xyz);
+			vec3 dumbshiny = vary_SunlitColor*scol_ambocc.r*texture2D(lightFunc, vec2(sa, spec.a)).a;
+
+			// add the two types of shiny together
+			vec3 spec_contrib = dumbshiny * spec.rgb;
+			bloom = dot(spec_contrib, spec_contrib);
+			col += spec_contrib;
+		}
+			
+		col = atmosLighting(col);
+		col = scaleSoftClip(col);
+
+		col = mix(col, diffuse.rgb, diffuse.a);
+	}
+	else
+	{
+		col = diffuse.rgb;
+	}
 		
 	gl_FragColor.rgb = col;
-	gl_FragColor.a = 0.0;
+	gl_FragColor.a = bloom;
 }

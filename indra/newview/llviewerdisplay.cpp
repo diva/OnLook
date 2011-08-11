@@ -586,7 +586,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		}
 	}
 
-	gViewerWindow->setupViewport();
+	gViewerWindow->setup3DViewport();
 
 	gPipeline.resetFrameStats();	// Reset per-frame statistics.
 	if (!gDisconnected)
@@ -619,6 +619,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		gPipeline.createObjects(max_geom_update_time);
 		gPipeline.processPartitionQ();
 		gPipeline.updateGeom(max_geom_update_time);
+		stop_glerror();
 		gPipeline.updateGL();
 		stop_glerror();
 		
@@ -731,7 +732,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				glLoadMatrixf(proj.m);
 				glMatrixMode(GL_MODELVIEW);
 				glLoadMatrixf(mod.m);
-				gViewerWindow->setupViewport();
+				gViewerWindow->setup3DViewport();
 
 				LLGLState::checkStates();
 				LLGLState::checkTextureChannels();
@@ -886,7 +887,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.bindTarget();
-				glClearColor(0,0,0,0);
+				glClearColor(1,0,1,1);
 				gPipeline.mDeferredScreen.clear();
 			}
 			else if(!tiling)

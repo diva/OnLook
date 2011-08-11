@@ -235,6 +235,8 @@ LLVector2       gDebugRaycastTexCoord;
 LLVector3       gDebugRaycastNormal;
 LLVector3       gDebugRaycastBinormal;
 S32				gDebugRaycastFaceHit;
+LLVector3		gDebugRaycastStart;
+LLVector3		gDebugRaycastEnd;
 
 // HUD display lines in lower right
 BOOL				gDisplayWindInfo = FALSE;
@@ -305,7 +307,7 @@ public:
 		mTextColor = LLColor4( 0.86f, 0.86f, 0.86f, 1.f );
 
 		// Draw stuff growing up from right lower corner of screen
-		U32 xpos = mWindow->getWindowWidth() - 350;
+		U32 xpos = mWindow->getWorldViewWidthScaled() - 350;
 		U32 ypos = 64;
 		const U32 y_inc = 20;
 
@@ -1517,8 +1519,8 @@ LLViewerWindow::LLViewerWindow(
 	mActive(TRUE),
 	mWantFullscreen(fullscreen),
 	mShowFullscreenProgress(FALSE),
-	mWindowRect(0, height, width, 0),
-	mVirtualWindowRect(0, height, width, 0),
+	mWindowRectRaw(0, height, width, 0),
+	mWindowRectScaled(0, height, width, 0),
 	mLeftMouseDown(FALSE),
 	mRightMouseDown(FALSE),
 	mToolTip(NULL),
@@ -1596,8 +1598,8 @@ LLViewerWindow::LLViewerWindow(
 	{
 		LLCoordWindow size;
 		mWindow->getSize(&size);
-		mWindowRect.set(0, size.mY, size.mX, 0);
-		mVirtualWindowRect.set(0, llround((F32)size.mY / mDisplayScale.mV[VY]), llround((F32)size.mX / mDisplayScale.mV[VX]), 0);
+		mWindowRectRaw.set(0, size.mY, size.mX, 0);
+		mWindowRectScaled.set(0, llround((F32)size.mY / mDisplayScale.mV[VY]), llround((F32)size.mX / mDisplayScale.mV[VX]), 0);
 	}
 	
 	LLFontManager::initClass();
@@ -1652,7 +1654,7 @@ LLViewerWindow::LLViewerWindow(
 	gBumpImageList.init();
 
 	// Create container for all sub-views
-	mRootView = new LLRootView("root", mVirtualWindowRect, FALSE);
+	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
 
 	if (!gNoRender)
 	{
@@ -1661,8 +1663,8 @@ LLViewerWindow::LLViewerWindow(
 	}
 
 	// Make avatar head look forward at start
-	mCurrentMousePoint.mX = getWindowWidth() / 2;
-	mCurrentMousePoint.mY = getWindowHeight() / 2;
+	mCurrentMousePoint.mX = getWindowWidthScaled() / 2;
+	mCurrentMousePoint.mY = getWindowHeightScaled() / 2;
 
 	gShowOverlayTitle = gSavedSettings.getBOOL("ShowOverlayTitle");
 	mOverlayTitle = gSavedSettings.getString("OverlayTitle");
@@ -1709,8 +1711,8 @@ void LLViewerWindow::initGLDefaults()
 
 void LLViewerWindow::initBase()
 {
-	S32 height = getWindowHeight();
-	S32 width = getWindowWidth();
+	S32 height = getWindowHeightScaled();
+	S32 width = getWindowWidthScaled();
 
 	LLRect full_window(0, height, width, 0);
 
@@ -2196,8 +2198,8 @@ void LLViewerWindow::sendShapeToSim()
 	msg->addU32Fast(_PREHASH_CircuitCode, gMessageSystem->mOurCircuitCode);
 	msg->nextBlockFast(_PREHASH_HeightWidthBlock);
 	msg->addU32Fast(_PREHASH_GenCounter, 0);
-	U16 height16 = (U16) mWindowRect.getHeight();
-	U16 width16 = (U16) mWindowRect.getWidth();
+	U16 height16 = (U16) mWindowRectRaw.getHeight();
+	U16 width16 = (U16) mWindowRectRaw.getWidth();
 	msg->addU16Fast(_PREHASH_Height, height16);
 	msg->addU16Fast(_PREHASH_Width, width16);
 	gAgent.sendReliableMessage();
@@ -2236,18 +2238,18 @@ void LLViewerWindow::reshape(S32 width, S32 height)
 		}
 
 		// update our window rectangle
-		mWindowRect.mRight = mWindowRect.mLeft + width;
-		mWindowRect.mTop = mWindowRect.mBottom + height;
+		mWindowRectRaw.mRight = mWindowRectRaw.mLeft + width;
+		mWindowRectRaw.mTop = mWindowRectRaw.mBottom + height;
 		calcDisplayScale();
 	
 		BOOL display_scale_changed = mDisplayScale != LLUI::sGLScaleFactor;
 		LLUI::setScaleFactor(mDisplayScale);
 
 		// update our window rectangle
-		mVirtualWindowRect.mRight = mVirtualWindowRect.mLeft + llround((F32)width / mDisplayScale.mV[VX]);
-		mVirtualWindowRect.mTop = mVirtualWindowRect.mBottom + llround((F32)height / mDisplayScale.mV[VY]);
+		mWindowRectScaled.mRight = mWindowRectScaled.mLeft + llround((F32)width / mDisplayScale.mV[VX]);
+		mWindowRectScaled.mTop = mWindowRectScaled.mBottom + llround((F32)height / mDisplayScale.mV[VY]);
 
-		setupViewport();
+		setup2DViewport();
 
 		// Inform lower views of the change
 		// round up when converting coordinates to make sure there are no gaps at edge of window
@@ -2392,8 +2394,8 @@ void LLViewerWindow::draw()
 		microsecondsToTimecodeString(gFrameTime,text);
 		const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
 		font->renderUTF8(text, 0,
-						llround((getWindowWidth()/2)-100.f),
-						llround((getWindowHeight()-60.f)),
+						llround((getWindowWidthScaled()/2)-100.f),
+						llround((getWindowHeightScaled()-60.f)),
 			LLColor4( 1.f, 1.f, 1.f, 1.f ),
 			LLFontGL::LEFT, LLFontGL::TOP);
 	}
@@ -2420,8 +2422,8 @@ void LLViewerWindow::draw()
 			int pos_y = sub_region / llceil(zoom_factor);
 			int pos_x = sub_region - (pos_y*llceil(zoom_factor));
 			// offset for this tile
-			glTranslatef((F32)getWindowWidth() * -(F32)pos_x, 
-						(F32)getWindowHeight() * -(F32)pos_y, 
+			glTranslatef((F32)getWindowWidthScaled() * -(F32)pos_x, 
+						(F32)getWindowHeightScaled() * -(F32)pos_y, 
 						0.f);
 			glScalef(zoom_factor, zoom_factor, 1.f);
 			LLUI::sGLScaleFactor *= zoom_factor;
@@ -2486,8 +2488,8 @@ void LLViewerWindow::draw()
 			const S32 DIST_FROM_TOP = 20;
 			LLFontGL::getFontSansSerifBig()->renderUTF8(
 				mOverlayTitle, 0,
-				llround( getWindowWidth() * 0.5f),
-				getWindowHeight() - DIST_FROM_TOP,
+				llround( getWindowWidthScaled() * 0.5f),
+				getWindowHeightScaled() - DIST_FROM_TOP,
 				LLColor4(1, 1, 1, 0.4f),
 				LLFontGL::HCENTER, LLFontGL::TOP);
 		}
@@ -2810,6 +2812,10 @@ void LLViewerWindow::handleScrollWheel(S32 clicks)
 	}
 
 	// Zoom the camera in and out behavior
+
+	if(top_ctrl == 0 
+		&& getWorldViewRectScaled().pointInRect(mCurrentMousePoint.mX, mCurrentMousePoint.mY) 
+		&& gAgentCamera.isInitialized())
 	gAgentCamera.handleScrollWheel(clicks);
 
 	return;
@@ -2817,8 +2823,8 @@ void LLViewerWindow::handleScrollWheel(S32 clicks)
 
 void LLViewerWindow::moveCursorToCenter()
 {
-	S32 x = mVirtualWindowRect.getWidth() / 2;
-	S32 y = mVirtualWindowRect.getHeight() / 2;
+		S32 x = getWorldViewWidthScaled() / 2;
+		S32 y = getWorldViewHeightScaled() / 2;
 	
 	//on a forced move, all deltas get zeroed out to prevent jumping
 	mCurrentMousePoint.set(x,y);
@@ -2843,15 +2849,28 @@ BOOL LLViewerWindow::handlePerFrameHover()
 
 	S32 x = mCurrentMousePoint.mX;
 	S32 y = mCurrentMousePoint.mY;
+
 	MASK mask = gKeyboard->currentMask(TRUE);
 
+	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_RAYCAST))
+	{
+		gDebugRaycastFaceHit = -1;
+		gDebugRaycastObject = cursorIntersect(-1, -1, 512.f, NULL, -1, FALSE,
+											  &gDebugRaycastFaceHit,
+											  &gDebugRaycastIntersection,
+											  &gDebugRaycastTexCoord,
+											  &gDebugRaycastNormal,
+											  &gDebugRaycastBinormal,
+											  &gDebugRaycastStart,
+											  &gDebugRaycastEnd);
+	}
 	//RN: fix for asynchronous notification of mouse leaving window not working
 	LLCoordWindow mouse_pos;
 	mWindow->getCursorPosition(&mouse_pos);
 	if (mouse_pos.mX < 0 || 
 		mouse_pos.mY < 0 ||
-		mouse_pos.mX > mWindowRect.getWidth() ||
-		mouse_pos.mY > mWindowRect.getHeight())
+		mouse_pos.mX > mWindowRectRaw.getWidth() ||
+		mouse_pos.mY > mWindowRectRaw.getHeight())
 	{
 		mMouseInWindow = FALSE;
 	}
@@ -3239,16 +3258,6 @@ BOOL LLViewerWindow::handlePerFrameHover()
 		LLSelectMgr::getInstance()->deselectUnused();
 	}
 
-	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_RAYCAST))
-	{
-		gDebugRaycastFaceHit = -1;
-		gDebugRaycastObject = cursorIntersect(-1, -1, 512.f, NULL, -1, FALSE,
-											  &gDebugRaycastFaceHit,
-											  &gDebugRaycastIntersection,
-											  &gDebugRaycastTexCoord,
-											  &gDebugRaycastNormal,
-											  &gDebugRaycastBinormal);
-	}
 
 
 	// per frame picking - for tooltips and changing cursor over interactive objects
@@ -3294,9 +3303,9 @@ void LLViewerWindow::saveLastMouse(const LLCoordGL &point)
 	{
 		mCurrentMousePoint.mX = 0;
 	}
-	else if (point.mX > getWindowWidth())
+	else if (point.mX > getWindowWidthScaled())
 	{
-		mCurrentMousePoint.mX = getWindowWidth();
+		mCurrentMousePoint.mX = getWindowWidthScaled();
 	}
 	else
 	{
@@ -3307,9 +3316,9 @@ void LLViewerWindow::saveLastMouse(const LLCoordGL &point)
 	{
 		mCurrentMousePoint.mY = 0;
 	}
-	else if (point.mY > getWindowHeight() )
+	else if (point.mY > getWindowHeightScaled() )
 	{
-		mCurrentMousePoint.mY = getWindowHeight();
+		mCurrentMousePoint.mY = getWindowHeightScaled();
 	}
 	else
 	{
@@ -3566,8 +3575,8 @@ void LLViewerWindow::pickAsync(S32 x, S32 y_from_bot, MASK mask, void (*callback
 
 		if (mPickScreenRegion.mLeft < 0) mPickScreenRegion.translate(-mPickScreenRegion.mLeft, 0);
 		if (mPickScreenRegion.mBottom < 0) mPickScreenRegion.translate(0, -mPickScreenRegion.mBottom);
-		if (mPickScreenRegion.mRight > mWindowRect.getWidth() ) mPickScreenRegion.translate(mWindowRect.getWidth() - mPickScreenRegion.mRight, 0);
-		if (mPickScreenRegion.mTop > mWindowRect.getHeight() ) mPickScreenRegion.translate(0, mWindowRect.getHeight() - mPickScreenRegion.mTop);
+		if (mPickScreenRegion.mRight > mWindowRectRaw.getWidth() ) mPickScreenRegion.translate(mWindowRectRaw.getWidth() - mPickScreenRegion.mRight, 0);
+		if (mPickScreenRegion.mTop > mWindowRectRaw.getHeight() ) mPickScreenRegion.translate(0, mWindowRectRaw.getHeight() - mPickScreenRegion.mTop);
 	}
 
 	// set frame buffer region for picking results
@@ -3683,7 +3692,9 @@ LLViewerObject* LLViewerWindow::cursorIntersect(S32 mouse_x, S32 mouse_y, F32 de
 												LLVector3 *intersection,
 												LLVector2 *uv,
 												LLVector3 *normal,
-												LLVector3 *binormal)
+												LLVector3 *binormal,
+												LLVector3* start,
+												LLVector3* end)
 {
 	S32 x = mouse_x;
 	S32 y = mouse_y;
@@ -3715,7 +3726,22 @@ LLViewerObject* LLViewerWindow::cursorIntersect(S32 mouse_x, S32 mouse_y, F32 de
 	LLVector3 mouse_world_start = mouse_point_global;
 	LLVector3 mouse_world_end   = mouse_point_global + mouse_direction_global * depth;
 
-	
+	if (!LLViewerJoystick::getInstance()->getOverrideCamera())
+	{ //always set raycast intersection to mouse_world_end unless
+		//flycam is on (for DoF effect)
+		gDebugRaycastIntersection = mouse_world_end;
+	}
+
+	if (start)
+	{
+		*start = mouse_world_start;
+	}
+
+	if (end)
+	{
+		*end = mouse_world_end;
+	}
+
 	LLViewerObject* found = NULL;
 
 	if (this_object)  // check only this object
@@ -3787,16 +3813,16 @@ LLVector3 LLViewerWindow::mouseDirectionGlobal(const S32 x, const S32 y) const
 	// find vertical field of view
 	F32			fov = LLViewerCamera::getInstance()->getView();
 
-	// find screen resolution
-	S32			height = getWindowHeight();
-	S32			width = getWindowWidth();
+	// find world view center in scaled ui coordinates
+	F32			center_x = getWorldViewRectScaled().getCenterX();
+	F32			center_y = getWorldViewRectScaled().getCenterY();
 
 	// calculate pixel distance to screen
-	F32			distance = (height / 2.f) / (tan(fov / 2.f));
+	F32			distance = ((F32)getWorldViewHeightScaled() * 0.5f) / (tan(fov / 2.f));
 
 	// calculate click point relative to middle of screen
-	F32			click_x = x - width / 2.f;
-	F32			click_y = y - height / 2.f;
+	F32			click_x = x - center_x;
+	F32			click_y = y - center_y;
 
 	// compute mouse vector
 	LLVector3	mouse_vector =	distance * LLViewerCamera::getInstance()->getAtAxis()
@@ -3811,12 +3837,15 @@ LLVector3 LLViewerWindow::mouseDirectionGlobal(const S32 x, const S32 y) const
 LLVector3 LLViewerWindow::mousePointHUD(const S32 x, const S32 y) const
 {
 	// find screen resolution
-	S32			height = getWindowHeight();
-	S32			width = getWindowWidth();
+	S32			height = getWorldViewHeightScaled();
+
+	// find world view center
+	F32			center_x = getWorldViewRectScaled().getCenterX();
+	F32			center_y = getWorldViewRectScaled().getCenterY();
 
 	// remap with uniform scale (1/height) so that top is -0.5, bottom is +0.5
-	F32 hud_x = -((F32)x - (F32)width/2.f)  / height;
-	F32 hud_y = ((F32)y - (F32)height/2.f) / height;
+	F32 hud_x = -((F32)x - center_x)  / height;
+	F32 hud_y = ((F32)y - center_y) / height;
 
 	return LLVector3(0.f, hud_x/gAgentCamera.mHUDCurZoom, hud_y/gAgentCamera.mHUDCurZoom);
 }
@@ -3830,12 +3859,16 @@ LLVector3 LLViewerWindow::mouseDirectionCamera(const S32 x, const S32 y) const
 	F32			fov_width = fov_height * LLViewerCamera::getInstance()->getAspect();
 
 	// find screen resolution
-	S32			height = getWindowHeight();
-	S32			width = getWindowWidth();
+	S32			height = getWorldViewHeightScaled();
+	S32			width = getWorldViewWidthScaled();
+
+	// find world view center
+	F32			center_x = getWorldViewRectScaled().getCenterX();
+	F32			center_y = getWorldViewRectScaled().getCenterY();
 
 	// calculate click point relative to middle of screen
-	F32			click_x = (((F32)x / (F32)width) - 0.5f) * fov_width * -1.f;
-	F32			click_y = (((F32)y / (F32)height) - 0.5f) * fov_height;
+	F32			click_x = (((F32)x - center_x) / (F32)width) * fov_width * -1.f;
+	F32			click_y = (((F32)y - center_y) / (F32)height) * fov_height;
 
 	// compute mouse vector
 	LLVector3	mouse_vector =	LLVector3(0.f, 0.f, -1.f);
@@ -4086,8 +4119,8 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		||(size.mY != new_height + BORDERHEIGHT))
 	{
 		// use actual display dimensions, not virtual UI dimensions
-		S32 x = gViewerWindow->getWindowDisplayWidth();
-		S32 y = gViewerWindow->getWindowDisplayHeight();
+		S32 x = gViewerWindow->getWindowWidthRaw();
+		S32 y = gViewerWindow->getWindowHeightRaw();
 		BORDERWIDTH = size.mX - x;
 		BORDERHEIGHT = size.mY- y;
 		LLCoordScreen new_size(new_width + BORDERWIDTH, 
@@ -4185,9 +4218,9 @@ BOOL LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 	S32 w = preview_width ;
 	S32 h = preview_height ;
 	LLVector2 display_scale = mDisplayScale ;
-	mDisplayScale.setVec((F32)w / mWindowRect.getWidth(), (F32)h / mWindowRect.getHeight()) ;
+	mDisplayScale.setVec((F32)w / mWindowRectRaw.getWidth(), (F32)h / mWindowRectRaw.getHeight()) ;
 	LLRect window_rect = mWindowRect;
-	mWindowRect.set(0, h, w, 0);
+	mWindowRectRaw.set(0, h, w, 0);
 	
 	gDisplaySwapBuffers = FALSE;
 	gDepthDirty = TRUE;
@@ -4316,10 +4349,11 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		LLPipeline::sShowHUDAttachments = FALSE;
 	}
 
+
 	// Copy screen to a buffer
 	// crop sides or top and bottom, if taking a snapshot of different aspect ratio
 	// from window
-	LLRect window_rect = mWindowRect;
+	LLRect window_rect = show_ui ? getWindowRectRaw() : getWorldViewRectRaw(); 
 
 	S32 snapshot_width = window_rect.getWidth();
 	S32 snapshot_height = window_rect.getHeight();
@@ -4386,7 +4420,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 					window_width = snapshot_width;
 					window_height = snapshot_height;
 					scale_factor = 1.f;
-					mWindowRect.set(0, snapshot_height, snapshot_width, 0);
+					mWindowRectRaw.set(0, snapshot_height, snapshot_width, 0);
 					target.bindTarget();			
 				}
 			}
@@ -4640,41 +4674,55 @@ void LLViewerWindow::drawMouselookInstructions()
 
 S32	LLViewerWindow::getWindowHeight()	const 	
 { 
-	return mVirtualWindowRect.getHeight(); 
+	return mWindowRectScaled.getHeight(); 
 }
 
 S32	LLViewerWindow::getWindowWidth() const 	
 { 
-	return mVirtualWindowRect.getWidth(); 
+	return mWindowRectScaled.getWidth(); 
 }
 
 S32	LLViewerWindow::getWindowDisplayHeight()	const 	
 { 
-	return mWindowRect.getHeight(); 
+	return mWindowRectRaw.getHeight(); 
 }
 
 S32	LLViewerWindow::getWindowDisplayWidth() const 	
 { 
-	return mWindowRect.getWidth(); 
-}
-
-void LLViewerWindow::setupViewport(S32 x_offset, S32 y_offset)
-{
-	gGLViewport[0] = x_offset;
-	gGLViewport[1] = y_offset;
-	gGLViewport[2] = mWindowRect.getWidth();
-	gGLViewport[3] = mWindowRect.getHeight();
-	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
-}
-
-void LLViewerWindow::setup3DRender()
-{
-	LLViewerCamera::getInstance()->setPerspective(NOT_FOR_SELECTION, 0, 0,  mWindowRect.getWidth(), mWindowRect.getHeight(), FALSE, LLViewerCamera::getInstance()->getNear(), MAX_FAR_CLIP*2.f);
+	return mWindowRectRaw.getWidth(); 
 }
 
 void LLViewerWindow::setup2DRender()
 {
-	gl_state_for_2d(mWindowRect.getWidth(), mWindowRect.getHeight());
+	// setup ortho camera
+	gl_state_for_2d(mWindowRectRaw.getWidth(), mWindowRectRaw.getHeight());
+	setup2DViewport();
+}
+
+void LLViewerWindow::setup2DViewport(S32 x_offset, S32 y_offset)
+{
+	gGLViewport[0] = mWindowRectRaw.mLeft + x_offset;
+	gGLViewport[1] = mWindowRectRaw.mBottom + y_offset;
+	gGLViewport[2] = mWindowRectRaw.getWidth();
+	gGLViewport[3] = mWindowRectRaw.getHeight();
+	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
+}
+
+
+void LLViewerWindow::setup3DRender()
+{
+	// setup perspective camera
+	LLViewerCamera::getInstance()->setPerspective(NOT_FOR_SELECTION, getWindowRectRaw().mLeft, getWindowRectRaw().mBottom,  getWindowRectRaw().getWidth(), getWindowRectRaw().getHeight(), FALSE, LLViewerCamera::getInstance()->getNear(), MAX_FAR_CLIP*2.f);
+	setup3DViewport();
+}
+
+void LLViewerWindow::setup3DViewport(S32 x_offset, S32 y_offset)
+{
+	gGLViewport[0] = getWindowRectRaw().mLeft + x_offset;
+	gGLViewport[1] = getWindowRectRaw().mBottom + y_offset;
+	gGLViewport[2] = getWindowRectRaw().getWidth();
+	gGLViewport[3] = getWindowRectRaw().getHeight();
+	glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
 }
 
 
@@ -4927,7 +4975,7 @@ BOOL LLViewerWindow::checkSettings()
 			getWindow()->setNativeAspectRatio(gSavedSettings.getF32("FullScreenAspectRatio"));
 		}
 		
-		reshape(getWindowDisplayWidth(), getWindowDisplayHeight());
+		reshape(getWindowWidthRaw(), getWindowHeightRaw());
 
 		// force aspect ratio
 		if (mIsFullscreenChecked)
@@ -5161,7 +5209,7 @@ void LLViewerWindow::calcDisplayScale()
 	F32 ui_scale_factor = gSavedSettings.getF32("UIScaleFactor");
 	LLVector2 display_scale;
 	display_scale.setVec(llmax(1.f / mWindow->getPixelAspectRatio(), 1.f), llmax(mWindow->getPixelAspectRatio(), 1.f));
-	F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRect.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
+	F32 height_normalization = gSavedSettings.getBOOL("UIAutoScale") ? ((F32)mWindowRectRaw.getHeight() / display_scale.mV[VY]) / 768.f : 1.f;
 	if(mWindow->getFullscreen())
 	{
 		display_scale *= (ui_scale_factor * height_normalization);
@@ -5179,8 +5227,8 @@ void LLViewerWindow::calcDisplayScale()
 
 	if (mWindow->getFullscreen())
 	{
-		display_scale.mV[0] = llround(display_scale.mV[0], 2.0f/(F32) mWindowRect.getWidth());
-		display_scale.mV[1] = llround(display_scale.mV[1], 2.0f/(F32) mWindowRect.getHeight());
+		display_scale.mV[0] = llround(display_scale.mV[0], 2.0f/(F32) mWindowRectRaw.getWidth());
+		display_scale.mV[1] = llround(display_scale.mV[1], 2.0f/(F32) mWindowRectRaw.getHeight());
 	}
 	
 	if (display_scale != mDisplayScale)
@@ -5204,7 +5252,7 @@ S32 LLViewerWindow::getChatConsoleBottomPad()
 
 LLRect LLViewerWindow::getChatConsoleRect()
 {
-	LLRect full_window(0, getWindowHeight(), getWindowWidth(), 0);
+	LLRect full_window(0, getWindowHeightScaled(), getWindowWidthScaled(), 0);
 	LLRect console_rect = full_window;
 
 	const S32 CONSOLE_PADDING_TOP = 24;
@@ -5225,7 +5273,7 @@ LLRect LLViewerWindow::getChatConsoleRect()
 	{
 		// Make console rect somewhat narrow so having inventory open is
 		// less of a problem.
-		console_rect.mRight  = console_rect.mLeft + 2 * getWindowWidth() / 3;
+		console_rect.mRight  = console_rect.mLeft + 2 * getWindowWidthScaled() / 3;
 	}
 
 	return console_rect;
@@ -5374,9 +5422,9 @@ void LLPickInfo::fetchResults()
 	//glReadPixels(mScreenRegion.mLeft, mScreenRegion.mBottom, mScreenRegion.getWidth(), mScreenRegion.getHeight(), GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, mPickDepthBuffer );
 
 	// find pick region that is fully onscreen
-	LLCoordGL scaled_pick_point;;
-	scaled_pick_point.mX = llclamp(llround((F32)mMousePt.mX * gViewerWindow->getDisplayScale().mV[VX]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayWidth() - PICK_HALF_WIDTH);
-	scaled_pick_point.mY = llclamp(llround((F32)mMousePt.mY * gViewerWindow->getDisplayScale().mV[VY]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayHeight() - PICK_HALF_WIDTH);
+	//LLCoordGL scaled_pick_point;;
+	//scaled_pick_point.mX = llclamp(llround((F32)mMousePt.mX * gViewerWindow->getDisplayScale().mV[VX]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayWidth() - PICK_HALF_WIDTH);
+	//scaled_pick_point.mY = llclamp(llround((F32)mMousePt.mY * gViewerWindow->getDisplayScale().mV[VY]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayHeight() - PICK_HALF_WIDTH);
 	//S32 pixel_index = PICK_HALF_WIDTH * PICK_DIAMETER + PICK_HALF_WIDTH;
 	//S32 pick_id = (U32)mPickBuffer[(pixel_index * 4) + 0] << 16 | (U32)mPickBuffer[(pixel_index * 4) + 1] << 8 | (U32)mPickBuffer[(pixel_index * 4) + 2];
 	//F32 depth = mPickDepthBuffer[pixel_index];

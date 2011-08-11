@@ -117,6 +117,17 @@ void LLDrawPoolWLSky::endRenderPass( S32 pass )
 {
 }
 
+void LLDrawPoolWLSky::beginDeferredPass(S32 pass)
+{
+	sky_shader = &gDeferredWLSkyProgram;
+	cloud_shader = &gDeferredWLCloudProgram;
+}
+
+void LLDrawPoolWLSky::endDeferredPass(S32 pass)
+{
+
+}
+
 void LLDrawPoolWLSky::renderDome(F32 camHeightLocal, LLGLSLShader * shader) const
 {
 	LLVector3 const & origin = LLViewerCamera::getInstance()->getOrigin();
@@ -294,6 +305,53 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 			gUIProgram.unbind();
 		}
 	}
+}
+
+void LLDrawPoolWLSky::renderDeferred(S32 pass)
+{
+	if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SKY))
+	{
+		return;
+	}
+	LLFastTimer ftm(LLFastTimer::FTM_RENDER_WL_SKY);
+
+	const F32 camHeightLocal = LLWLParamManager::instance()->getDomeOffset() * LLWLParamManager::instance()->getDomeRadius();
+
+	LLGLSNoFog disableFog;
+	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
+	LLGLDisable clip(GL_CLIP_PLANE0);
+
+	gGL.setColorMask(true, false);
+
+	LLGLSquashToFarClip far_clip(glh_get_current_projection());
+
+	renderSkyHaze(camHeightLocal);
+
+	LLVector3 const & origin = LLViewerCamera::getInstance()->getOrigin();
+	glPushMatrix();
+
+		
+		glTranslatef(origin.mV[0], origin.mV[1], origin.mV[2]);
+
+		gDeferredStarProgram.bind();
+		// *NOTE: have to bind a texture here since register combiners blending in
+		// renderStars() requires something to be bound and we might as well only
+		// bind the moon's texture once.		
+		gGL.getTexUnit(0)->bind(gSky.mVOSkyp->mFace[LLVOSky::FACE_MOON]->getTexture());
+
+		renderHeavenlyBodies();
+
+		renderStars();
+		
+		gDeferredStarProgram.unbind();
+
+	glPopMatrix();
+
+	renderSkyClouds(camHeightLocal);
+
+	gGL.setColorMask(true, true);
+	//gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+
 }
 
 void LLDrawPoolWLSky::render(S32 pass)
