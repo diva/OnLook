@@ -2312,4 +2312,19 @@ key osOwnerSaveAppearance(string notecardName)
 Saves the owner's appearance to a notecard inside the prim that holds the script.
 (OpenSim only.)
   </string>
+  <string name="LSLTipText_osNpcGetRot">
+rotation osNpcGetRot(key npc)
+Retrieves the rotation of an NPC
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcSetRot">
+osNpcSetRot(key npc, rotation rot)
+Sets an NPC's rotation.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osAgentSaveAppearance">
+key osOwnerSaveAppearance(key avatarId, string notecardName)
+Saves an avatar's appearance to a notecard inside the prim that holds the script.
+(OpenSim only.)
+  </string>
 </strings>

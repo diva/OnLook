@@ -605,6 +605,12 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osNpcMoveToTarget", NULL, "kvi");
 	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveTo", NULL, "k");
 	addFunction(10.f, 0.f, dummy_func, "osOwnerSaveAppearance", "k", "s");
+	
+	<!-- More new stuffs -->
+	addFunction(10.f, 0.f, dummy_func, "osNpcGetRot", "r", "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcSetRot", NULL, "kr");
+	addFunction(10.f, 0.f, dummy_func, "osAgentSaveAppearance", "k", "ks");
+	
 
 	addFunction(10.f, 0.f, dummy_func, "llSetMemoryLimit", "i", "i");
 	addFunction(10.f, 0.f, dummy_func, "llSetLinkMedia", "i", "iil");
