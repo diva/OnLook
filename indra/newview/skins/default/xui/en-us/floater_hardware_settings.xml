@@ -55,34 +55,13 @@
 		font="SansSerifSmall" h_pad="0" halign="left" height="12"
 		left="10" mouse_opaque="true" name="Enable VBO:" v_pad="0"
 		width="128">
-		Vertex Buffer Object:
+		Enable VBO:
 	</text>
 	<check_box bottom_delta="-5" control_name="RenderVBOEnable" enabled="true" follows="left|top"
 		font="SansSerifSmall" height="16" initial_value="true"
 		label="Enable OpenGL Vertex Buffer Objects" left="148"
 		mouse_opaque="true" name="vbo" radio_style="false"
 		tool_tip="Enabling this on modern hardware gives a performance gain.  However, older hardware often has poor implementations of VBOs and you may get crashes when this is enabled."
-		width="220" />
-
-	<check_box bottom_delta="0" name="stream_vbo" enabled="true" follows="left|top"
-		font="SansSerifSmall" height="16" initial_value="true"
-		label="Stream VBO" left_delta="240"
-		mouse_opaque="true" radio_style="false"
-		tool_tip="This option is usually best kept off for ATI cards (watch your FPS rate and see how it fares)."
-		width="150" />
-
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
-		bottom_delta="-16" drop_shadow_visible="true" enabled="true" follows="left|top"
-		font="SansSerifSmall" h_pad="0" halign="left" height="12"
-		left="10" mouse_opaque="true" name="Enable Occlusion" v_pad="0"
-		width="128">
-		Occlusion:
-	</text>
-	<check_box bottom_delta="-5" control_name="UseOcclusion" enabled="true" follows="left|top"
-		font="SansSerifSmall" height="16" initial_value="true"
-		label="Enable Object-Object Occlusion" left="148"
-		mouse_opaque="true" name="occlusion" radio_style="false"
-		tool_tip="Speeds up rendering on hardware supporting it."
 		width="315" />
 	<check_box bottom_delta="-18" control_name="ShyotlRenderUseStreamVBO" enabled="true" follows="left|top"
 		font="SansSerifSmall" height="16" initial_value="false"
