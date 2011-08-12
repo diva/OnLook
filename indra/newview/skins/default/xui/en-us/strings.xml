@@ -2302,11 +2302,6 @@ osNpcMoveToTarget(key npc, vector position, integer options)
 Moves the NPC to a target at a given vector, using options to walk or to fly there.
 (OpenSim only.)
   </string>
-  <string name="LSLTipText_osNpcStopMoveTo">
-osNpcStopMoveTo(key npc)
-Makes an NPC stop moving to a target.
-(OpenSim only.)
-  </string>
   <string name="LSLTipText_osOwnerSaveAppearance">
 key osOwnerSaveAppearance(string notecardName)
 Saves the owner's appearance to a notecard inside the prim that holds the script.
@@ -2325,6 +2320,26 @@ Sets an NPC's rotation.
   <string name="LSLTipText_osAgentSaveAppearance">
 key osOwnerSaveAppearance(key avatarId, string notecardName)
 Saves an avatar's appearance to a notecard inside the prim that holds the script.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcGetPos">
+vector osNpcGetPos(key npc)
+Retrieves the vector of an NPC's position within a region.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcStopMoveToTarget">
+osNpcStopMoveToTarget(key npc)
+Makes an NPC stop moving to a target.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osGetWindParam">
+float osGetWindParam(string plugin, string param)
+Gets the value of param property for plugin module.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osSetWindParam">
+osSetWindParam(string plugin, string param, float value)
+Sets value of param property for plugin module.
 (OpenSim only.)
   </string>
 </strings>

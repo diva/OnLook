@@ -478,12 +478,19 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "llScriptProfiler", NULL, "i");
 	addFunction(10.f, 0.f, dummy_func, "llSetInventoryPermMask", NULL, "sii");
 	addFunction(10.f, 0.f, dummy_func, "llSetObjectPermMask", NULL, "ii");
-
-	// energy, sleep, dummy_func, name, return type, parameters, help text, gods-only
-
-	// IF YOU ADD NEW SCRIPT CALLS, YOU MUST PUT THEM AT THE END OF THIS LIST.
-	// Otherwise the bytecode numbers for each call will be wrong, and all
-	// existing scripts will crash.
+	// Even more recent
+	addFunction(10.f, 0.f, dummy_func, "llSetMemoryLimit", "i", "i");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkMedia", "i", "iil");
+	addFunction(10.f, 0.f, dummy_func, "llGetLinkMedia", "l", "iil");
+	addFunction(10.f, 0.f, dummy_func, "llClearLinkMedia", "i", "ii");
+	addFunction(10.f, 0.f, dummy_func, "llSetLinkCamera", NULL, "ivv");
+	addFunction(10.f, 0.f, dummy_func, "llSetContentType", NULL, "ki");
+	addFunction(10.f, 0.f, dummy_func, "llLinkSitTarget", NULL, "ivr");
+	addFunction(10.f, 0.f, dummy_func, "llAvatarOnLinkSitTarget", "k", "i");
+	/* No info on these new functions yet....
+	 * addFunction(10.f, 0.f, dummy_func, "llSetVelocity", "", "");
+	 * addFunction(10.f, 0.f, dummy_func, "llSetRotationalVelocity", "", "");
+	 */
 
 	// REGARDING OSSL FUNCTIONS
 	// These additions should be posted underneath the llFunctions
@@ -495,6 +502,8 @@ void LLScriptLibrary::init()
 	// OSSL corrections and syntax additions added + set in same order as found in OSSL_stub.cs of OpenSim Source (Updated PM October-21-2010
 	// based on OpenSimulator Ver. 0.7.x DEV/Master Git # a7acb650d400a280a7b9edabd304376dff9c81af - a7acb65-r/14142
 	// Updates by WhiteStar Magic
+	
+	// It should be noted though, that the order of OSSL functions is not important for correct functionality. 
 
 	addFunction(10.f, 0.f, dummy_func, "osSetRegionWaterHeight", NULL, "f");
 	addFunction(10.f, 0.f, dummy_func, "osSetRegionSunSettings", NULL, "iif");
@@ -582,12 +591,15 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osUnixTimeToTimestamp", "s", "i");
 	addFunction(10.f, 0.f, dummy_func, "osSetPenColor", NULL, "ss");
 	addFunction(10.f, 0.f, dummy_func, "osGetSunParam","f", "s");
-	addFunction(10.f, 0.f, dummy_func, "osSetSunParam", "sf", NULL);
+	addFunction(10.f, 0.f, dummy_func, "osSetSunParam", NULL, "sf");
 	addFunction(10.f, 0.f, dummy_func, "osSetParcelDetails", NULL, "vl");
 	addFunction(10.f, 0.f, dummy_func, "osGetTerrainHeight", "f", "ii");
 	addFunction(10.f, 0.f, dummy_func, "osSetTerrainHeight", NULL, "iif");
 	addFunction(10.f, 0.f, dummy_func, "osGetAvatarList", "l", NULL);
 	addFunction(10.f, 0.f, dummy_func, "osTeleportOwner", NULL, "svv");
+	addFunction(10.f, 0.f, dummy_func, "osGetWindParam","f", "ss");
+	addFunction(10.f, 0.f, dummy_func, "osSetWindParam", NULL, "ssf");
+	
 
 	// LightShare functions
 	addFunction(10.f, 0.f, dummy_func, "cmSetWindlightScene", "i", "l");
@@ -603,27 +615,15 @@ void LLScriptLibrary::init()
 	addFunction(10.f, 0.f, dummy_func, "osNpcSaveAppearance", "k", "ks");
 	addFunction(10.f, 0.f, dummy_func, "osNpcLoadAppearance", NULL, "ks");
 	addFunction(10.f, 0.f, dummy_func, "osNpcMoveToTarget", NULL, "kvi");
-	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveTo", NULL, "k");
 	addFunction(10.f, 0.f, dummy_func, "osOwnerSaveAppearance", "k", "s");
-	
-	<!-- More new stuffs -->
+
+	// More new stuffs
 	addFunction(10.f, 0.f, dummy_func, "osNpcGetRot", "r", "k");
 	addFunction(10.f, 0.f, dummy_func, "osNpcSetRot", NULL, "kr");
 	addFunction(10.f, 0.f, dummy_func, "osAgentSaveAppearance", "k", "ks");
-	
+	addFunction(10.f, 0.f, dummy_func, "osNpcGetPos", "v", "k");
+	addFunction(10.f, 0.f, dummy_func, "osNpcStopMoveToTarget", NULL, "k");
 
-	addFunction(10.f, 0.f, dummy_func, "llSetMemoryLimit", "i", "i");
-	addFunction(10.f, 0.f, dummy_func, "llSetLinkMedia", "i", "iil");
-	addFunction(10.f, 0.f, dummy_func, "llGetLinkMedia", "l", "iil");
-	addFunction(10.f, 0.f, dummy_func, "llClearLinkMedia", "i", "ii");
-	addFunction(10.f, 0.f, dummy_func, "llSetLinkCamera", NULL, "ivv");
-	addFunction(10.f, 0.f, dummy_func, "llSetContentType", NULL, "ki");
-	addFunction(10.f, 0.f, dummy_func, "llLinkSitTarget", NULL, "ivr");
-	addFunction(10.f, 0.f, dummy_func, "llAvatarOnLinkSitTarget", "k", "i");
-	/* No info on these functions yet....
-	 * addFunction(10.f, 0.f, dummy_func, "llSetVelocity", "", "");
-	 * addFunction(10.f, 0.f, dummy_func, "llSetRotationalVelocity", "", "");
-	 */
 }
 
 LLScriptLibraryFunction::LLScriptLibraryFunction(F32 eu, F32 st, void (*exec_func)(LLScriptLibData *, LLScriptLibData *, const LLUUID &), const char *name, const char *ret_type, const char *args, BOOL god_only)
