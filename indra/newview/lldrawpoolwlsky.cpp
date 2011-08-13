@@ -40,6 +40,8 @@
 #include "llviewercamera.h"
 #include "llimage.h"
 #include "llwlparammanager.h"
+#include "llviewershadermgr.h"
+#include "llglslshader.h"
 #include "llsky.h"
 #include "llvowlsky.h"
 #include "llviewerregion.h"
@@ -245,8 +247,7 @@ void LLDrawPoolWLSky::renderSkyClouds(F32 camHeightLocal) const
 	{
 		LLGLEnable blend(GL_BLEND);
 		gGL.setSceneBlendType(LLRender::BT_ALPHA);
-		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
-
+		
 		gGL.getTexUnit(0)->bind(sCloudNoiseTexture);
 
 		cloud_shader->bind();

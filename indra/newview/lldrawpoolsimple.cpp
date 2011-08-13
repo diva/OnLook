@@ -183,7 +183,6 @@ void LLDrawPoolSimple::endRenderPass(S32 pass)
 void LLDrawPoolSimple::render(S32 pass)
 {
 	LLGLDisable blend(GL_BLEND);
-	LLGLDisable alpha_test(GL_ALPHA_TEST);
 	
 	{ //render simple
 		LLFastTimer t(LLFastTimer::FTM_RENDER_SIMPLE);
@@ -203,6 +202,7 @@ void LLDrawPoolSimple::render(S32 pass)
 		}
 		else
 		{
+			LLGLDisable alpha_test(GL_ALPHA_TEST);
 			renderTexture(LLRenderPass::PASS_SIMPLE, getVertexDataMask());
 		}
 		
@@ -257,19 +257,21 @@ void LLDrawPoolGrass::beginRenderPass(S32 pass)
 
 	if (LLPipeline::sUnderWaterRender)
 	{
-		simple_shader = &gObjectSimpleNonIndexedWaterProgram;
+		simple_shader = &gObjectAlphaMaskNonIndexedWaterProgram;
 	}
 	else
 	{
-		simple_shader = &gObjectSimpleNonIndexedProgram;
+		simple_shader = &gObjectAlphaMaskNonIndexedProgram;
 	}
 
 	if (mVertexShaderLevel > 0)
 	{
 		simple_shader->bind();
+		simple_shader->setAlphaRange(0.5f, 1.f);
 	}
 	else 
 	{
+		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
 		// don't use shaders!
 		if (gGLManager.mHasShaderObjects)
 		{
@@ -287,22 +289,23 @@ void LLDrawPoolGrass::endRenderPass(S32 pass)
 	{
 		simple_shader->unbind();
 	}
+	else
+	{
+		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	}
 }
 
 void LLDrawPoolGrass::render(S32 pass)
 {
 	LLGLDisable blend(GL_BLEND);
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
-
+	
 	{
 		LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
 		LLGLEnable test(GL_ALPHA_TEST);
 		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		//render grass
 		LLRenderPass::renderTexture(LLRenderPass::PASS_GRASS, getVertexDataMask());
-	}			
-
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	}
 }
 
 void LLDrawPoolGrass::beginDeferredPass(S32 pass)
@@ -317,17 +320,13 @@ void LLDrawPoolGrass::endDeferredPass(S32 pass)
 
 void LLDrawPoolGrass::renderDeferred(S32 pass)
 {
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.f);
-
 	{
-		LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
-		gDeferredTreeProgram.bind();
-		LLGLEnable test(GL_ALPHA_TEST);
+		//LLFastTimer t(FTM_RENDER_GRASS_DEFERRED);
+		gDeferredNonIndexedDiffuseAlphaMaskProgram.bind();
+		gDeferredNonIndexedDiffuseAlphaMaskProgram.setAlphaRange(0.5f, 1.f);
 		//render grass
 		LLRenderPass::renderTexture(LLRenderPass::PASS_GRASS, getVertexDataMask());
 	}			
-
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 }
 
 

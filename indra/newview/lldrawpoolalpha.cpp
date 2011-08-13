@@ -95,16 +95,13 @@ void LLDrawPoolAlpha::endDeferredPass(S32 pass)
 
 void LLDrawPoolAlpha::renderDeferred(S32 pass)
 {
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.f);
-	{
-		LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
-		gDeferredTreeProgram.bind();
-		LLGLEnable test(GL_ALPHA_TEST);
-		//render alpha masked objects
-		LLRenderPass::renderTexture(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask());
-		gDeferredTreeProgram.unbind();
-	}			
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
+	gDeferredDiffuseAlphaMaskProgram.bind();
+	gDeferredDiffuseAlphaMaskProgram.setAlphaRange(0.33f, 1.f);
+
+	//render alpha masked objects
+	LLRenderPass::pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
+	gDeferredDiffuseAlphaMaskProgram.unbind();			
 }
 
 
@@ -131,7 +128,7 @@ void LLDrawPoolAlpha::beginPostDeferredPass(S32 pass)
 	if (pass == 0)
 	{
 		simple_shader = &gDeferredAlphaProgram;
-		fullbright_shader = &gObjectFullbrightProgram;
+		fullbright_shader = &gObjectFullbrightAlphaMaskProgram;
 
 		//prime simple shader (loads shadow relevant uniforms)
 		gPipeline.bindDeferredShader(*simple_shader);
@@ -145,8 +142,10 @@ void LLDrawPoolAlpha::beginPostDeferredPass(S32 pass)
 		gPipeline.mDeferredDepth.bindTarget();
 		simple_shader = NULL;
 		fullbright_shader = NULL;
-		gObjectFullbrightProgram.bind();
+		gObjectFullbrightAlphaMaskProgram.bind();
+		gObjectFullbrightAlphaMaskProgram.setAlphaRange(0.33f, 1.f);
 	}
+
 	deferred_render = TRUE;
 	if (mVertexShaderLevel > 0)
 	{
@@ -163,8 +162,9 @@ void LLDrawPoolAlpha::endPostDeferredPass(S32 pass)
 	{
 		gPipeline.mDeferredDepth.flush();
 		gPipeline.mScreen.bindTarget();
-		gObjectFullbrightProgram.unbind();
+		gObjectFullbrightAlphaMaskProgram.unbind();
 	}
+
 	deferred_render = FALSE;
 	endRenderPass(pass);
 }
@@ -180,13 +180,13 @@ void LLDrawPoolAlpha::beginRenderPass(S32 pass)
 	
 	if (LLPipeline::sUnderWaterRender)
 	{
-		simple_shader = &gObjectSimpleWaterProgram;
-		fullbright_shader = &gObjectFullbrightWaterProgram;
+		simple_shader = &gObjectSimpleWaterAlphaMaskProgram;
+		fullbright_shader = &gObjectFullbrightWaterAlphaMaskProgram;
 	}
 	else
 	{
-		simple_shader = &gObjectSimpleProgram;
-		fullbright_shader = &gObjectFullbrightProgram;
+		simple_shader = &gObjectSimpleAlphaMaskProgram;
+		fullbright_shader = &gObjectFullbrightAlphaMaskProgram;
 	}
 
 	if (mVertexShaderLevel > 0)
@@ -223,7 +223,7 @@ void LLDrawPoolAlpha::render(S32 pass)
 	{
 		gGL.setColorMask(true, true);
 	}
-	if (LLPipeline::sFastAlpha && !deferred_render)
+	if (LLPipeline::sFastAlpha)
 	{
 		mColorSFactor = LLRender::BF_ONE;  // }
 		mColorDFactor = LLRender::BF_ZERO; // } these are like disabling blend on the color channels, but we're still blending on the alpha channel so that we can suppress glow
@@ -231,29 +231,32 @@ void LLDrawPoolAlpha::render(S32 pass)
 		mAlphaDFactor = LLRender::BF_ZERO; // block (zero-out) glow where the alpha test succeeds
 		gGL.blendFunc(mColorSFactor, mColorDFactor, mAlphaSFactor, mAlphaDFactor);
 
-		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.33f);
 		if (mVertexShaderLevel > 0)
 		{
-			if (!LLPipeline::sRenderDeferred)
+			if (!LLPipeline::sRenderDeferred || !deferred_render)
 			{
 				simple_shader->bind();
+				simple_shader->setAlphaRange(0.33f, 1.f);
+
 				pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
 			}
 			if (fullbright_shader)
 			{
 				fullbright_shader->bind();
+				fullbright_shader->setAlphaRange(0.33f, 1.f);
 			}
 			pushBatches(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
 			//LLGLSLShader::bindNoShader();
 		}
 		else
 		{
+			gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.33f); //OK
 			gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 			pushBatches(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, getVertexDataMask());
 			gPipeline.enableLightsDynamic();
 			pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask());
+			gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT); //OK
 		}
-		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	}
 
 	LLGLDepthTest depth(GL_TRUE, LLDrawPoolWater::sSkipScreenCopy || 
@@ -261,7 +264,6 @@ void LLDrawPoolAlpha::render(S32 pass)
 
 	if (deferred_render && pass == 1)
 	{
-		gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.33f);
 		gGL.blendFunc(LLRender::BF_SOURCE_ALPHA, LLRender::BF_ONE_MINUS_SOURCE_ALPHA);
 	}
 	else
@@ -272,13 +274,33 @@ void LLDrawPoolAlpha::render(S32 pass)
 		mAlphaDFactor = LLRender::BF_ONE_MINUS_SOURCE_ALPHA;       // }
 		gGL.blendFunc(mColorSFactor, mColorDFactor, mAlphaSFactor, mAlphaDFactor);
 
-		if (LLPipeline::sImpostorRender)
+		if (mVertexShaderLevel > 0)
 		{
-			gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
+			if (LLPipeline::sImpostorRender)
+			{
+				fullbright_shader->bind();
+				fullbright_shader->setAlphaRange(0.5f, 1.f);
+				simple_shader->bind();
+				simple_shader->setAlphaRange(0.5f, 1.f);
+			}				
+			else
+			{
+				fullbright_shader->bind();
+				fullbright_shader->setAlphaRange(0.f, 1.f);
+				simple_shader->bind();
+				simple_shader->setAlphaRange(0.f, 1.f);
+			}
 		}
 		else
 		{
-			gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+			if (LLPipeline::sImpostorRender)
+			{
+				gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f); //OK
+			}
+			else
+			{
+				gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT); //OK
+			}
 		}
 	}
 
@@ -295,7 +317,6 @@ void LLDrawPoolAlpha::render(S32 pass)
 
 	if (deferred_render && pass == 1)
 	{
-		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	}
 
