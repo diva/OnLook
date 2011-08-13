@@ -41,6 +41,7 @@
 // Local constants.
 static F64 const USEC_PER_SECOND = 1000000.0;
 static F64 const USEC_TO_SEC_F64 = 0.000001;
+static F64 const NEVER = 1e16;
 
 // Static members
 U64 const LLFrameTimer::sStartTotalTime = totalTime();				// Application start in microseconds since epoch.
@@ -59,6 +60,7 @@ apr_thread_mutex_t* LLFrameTimer::sGlobalMutex;
 void LLFrameTimer::global_initialization(void)
 {
 	apr_thread_mutex_create(&sGlobalMutex, APR_THREAD_MUTEX_UNNESTED, AIAPRRootPool::get()());
+	AIFrameTimer::sNextExpiration = NEVER;
 }
 
 // static
