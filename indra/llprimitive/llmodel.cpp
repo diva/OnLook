@@ -1019,10 +1019,16 @@ void LLModel::setVolumeFaceData(
 	face.resizeVertices(num_verts);
 	face.resizeIndices(num_indices);
 
-	LLVector4a::memcpyNonAliased16((F32*) face.mPositions, (F32*) pos.get(), num_verts*4*sizeof(F32));
+	if(pos.getSkip() == sizeof(LLVector4a))
+		LLVector4a::memcpyNonAliased16((F32*) face.mPositions, (F32*) pos.get(), num_verts*4*sizeof(F32));
+	else 
+		for(U32 i=0;i<num_verts;++i)	face.mPositions[i].load3(pos[i].mV);
 	if (norm.get())
 	{
-		LLVector4a::memcpyNonAliased16((F32*) face.mNormals, (F32*) norm.get(), num_verts*4*sizeof(F32));
+		if(norm.getSkip() == sizeof(LLVector4a))
+			LLVector4a::memcpyNonAliased16((F32*) face.mNormals, (F32*) norm.get(), num_verts*4*sizeof(F32));
+		else
+			for(U32 i=0;i<num_verts;++i)	face.mNormals[i].load3(norm[i].mV);
 	}
 	else
 	{
@@ -1032,7 +1038,10 @@ void LLModel::setVolumeFaceData(
 
 	if (tc.get())
 	{
-		LLVector4a::memcpyNonAliased16((F32*) face.mTexCoords, (F32*) tc.get(), num_verts*2*sizeof(F32));
+		if(tc.getSkip() == sizeof(LLVector2))
+			LLVector4a::memcpyNonAliased16((F32*) face.mTexCoords, (F32*) tc.get(), num_verts*2*sizeof(F32));
+		else
+			for(U32 i=0;i<num_verts;++i)	face.mTexCoords[i] = tc[i].mV;
 	}
 	else
 	{
