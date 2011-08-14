@@ -1797,7 +1797,6 @@ bool idle_startup()
 			{
 				gSavedSettings.setString("MapServerURL", map_server_url);
 				LLWorldMap::gotMapServerURL(true);
-				llinfos << "Got Map server URL: " << map_server_url << llendl;
 			}
 			
 			// Override grid info with anything sent in the login response

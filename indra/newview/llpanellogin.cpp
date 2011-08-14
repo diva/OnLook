@@ -109,7 +109,12 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 		return false;
 	first = fragments[0];
 	if (fragments.size() == 1)
-		last = "resident";
+	{
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+			last = "resident";
+		else
+			last = "";
+	}
 	else
 		last = fragments[1];
 	return (fragments.size() <= 2);

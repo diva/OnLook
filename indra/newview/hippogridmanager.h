@@ -23,6 +23,7 @@ class HippoGridInfo
 public:
 	enum Platform {
 		PLATFORM_OTHER = 0,
+		PLATFORM_AURORA,
 		PLATFORM_OPENSIM,
 		PLATFORM_SECONDLIFE,
 		PLATFORM_LAST
