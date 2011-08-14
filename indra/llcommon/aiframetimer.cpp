@@ -45,8 +45,7 @@ LLMutex AIFrameTimer::sMutex;
 // 3) The object is inserted in the list (operator<(AIRunningFrameTimer const&, AIRunningFrameTimer const&)).
 // 4) The object is initialized (AIRunningFrameTimer::init).
 // 5) The lock is released.
-// This assures that the object is not yet shared at the moment
-// that it is initialized (assignment to mConnection is not thread-safe).
+// This assures that the object is not yet shared at the moment that it is initialized.
 
 void AIFrameTimer::create(F64 expiration, signal_type::slot_type const& slot)
 {
@@ -60,17 +59,25 @@ void AIFrameTimer::create(F64 expiration, signal_type::slot_type const& slot)
 
 void AIFrameTimer::cancel(void)
 {
+	// In order to stop us from returning from cancel() while
+	// the callback function is being called (which is done
+	// in AIFrameTimer::handleExpiration after obtaining the
+	// mHandle.mMutex lock), we start with trying to obtain
+	// it here and as such wait till the callback function
+	// returned.
     mHandle.mMutex.lock();
+	// Next we have to grab this lock in order to stop
+	// AIFrameTimer::handleExpiration from even entering
+	// in the case we manage to get it first.
     sMutex.lock();
-    mHandle.mMutex.unlock();
     if (mHandle.mRunningTimer != sTimerList.end())
 	{
-		timer_list_type::iterator running_timer = mHandle.mRunningTimer;
+		sTimerList.erase(mHandle.mRunningTimer);
 		mHandle.mRunningTimer = sTimerList.end();
-		sTimerList.erase(running_timer);
 		sNextExpiration = sTimerList.empty() ? NEVER : sTimerList.begin()->expiration();
 	}
     sMutex.unlock();
+    mHandle.mMutex.unlock();
 }
 
 void AIFrameTimer::handleExpiration(F64 current_frame_time)
@@ -125,9 +132,8 @@ void AIFrameTimer::handleExpiration(F64 current_frame_time)
 		// handle.mRunningTimer equals sTimerList.end(), exits the function and
 		// (possibly) deletes the callback object.
 		//
-		// Note that if the other thread actually obtained the sMutex and
-		// released handle.mMutex again, then we can't be here: this is still
-		// inside the critical area of sMutex.
+		// Note that if the other thread actually obtained the sMutex then we
+		// can't be here: this is still inside the critical area of sMutex.
 		if (handle.mMutex.tryLock())			// If this fails then another thread is in the process of cancelling this timer, so do nothing.
 		{
 			sMutex.unlock();

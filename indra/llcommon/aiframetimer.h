@@ -93,7 +93,7 @@ class LL_COMMON_API AIFrameTimer
 													// and cancellation by the thread owning the AIFrameTimer (by calling
 													// AIFrameTimer::cancel).
 
-		// Construction for a not-running timer.
+		// Constructor for a not-running timer.
 		Handle(void) : mRunningTimer(sTimerList.end()) { }
 
 		// Actual initialization used by AIFrameTimer::create.
@@ -113,10 +113,7 @@ class LL_COMMON_API AIFrameTimer
 	Handle mHandle;
 
   public:
-	// Construct an AIFrameTimer that is not initialized.
-	//
-	// The call to end() is deliberately not put inside a critical area because it's a read-only
-	// operation on something that is never written to while there are threads.
+	// Construct an AIFrameTimer that is not running.
 	AIFrameTimer(void) { }
 
 	// Construction of a running AIFrameTimer with expiration time expiration in seconds, and callback slot.
