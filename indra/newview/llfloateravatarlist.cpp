@@ -59,6 +59,10 @@
 #include "llviewermenu.h"
 //</edit>
 
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
+
 /**
  * @brief How long to keep people who are gone in the list and in memory.
  */
@@ -237,18 +241,14 @@ void LLFloaterAvatarList::createInstance(bool visible)
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
-#ifdef LL_RRINTERFACE_H //MK
-	if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-	{
-		if (sInstance && sInstance->getVisible())
-		{	
-			sInstance->close(false);
-		}
-	}
-#endif //mk
 	if (sInstance)
 	{
-		if (sInstance->getVisible())
+		if (sInstance->getVisible()
+// [RLVa:KB]
+			|| gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)
+// [/RLVa:KB]
+			)
+
 		{
 			sInstance->close(false);
 		}
@@ -266,12 +266,10 @@ void LLFloaterAvatarList::toggle(void*)
 //static
 void LLFloaterAvatarList::showInstance()
 {
-#ifdef LL_RRINTERFACE_H //MK
-	if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-	{
+// [RLVa:KB]
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		return;
-	}
-#endif //mk
+// [/RLVa:KB]
 	if (sInstance)
 	{
 		if (!sInstance->getVisible())
@@ -457,12 +455,6 @@ void LLFloaterAvatarList::updateAvatarList()
 						continue;
 					}
 				}
-#ifdef LL_RRINTERFACE_H //MK
-				if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-				{
-					name = gAgent.mRRInterface.getDummyName(name);
-				}
-#endif //mk
 
 				if (avid.isNull())
 				{
@@ -501,12 +493,6 @@ void LLFloaterAvatarList::updateAvatarList()
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
 				}
-#ifdef LL_RRINTERFACE_H //MK
-				if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-				{
-					name = gAgent.mRRInterface.getDummyName(name);
-				}
-#endif //mk
 
 				if (mAvatars.count(avid) > 0)
 				{

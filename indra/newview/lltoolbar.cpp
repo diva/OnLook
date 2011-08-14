@@ -477,11 +477,6 @@ void LLToolBar::onClickAppearance(void*)
 void LLToolBar::onClickRadarList(void*)
 {
 	LLFloaterAvatarList::toggle(0);
-	bool vis = false;
-	if(LLFloaterAvatarList::getInstance())
-	{
-		vis = (bool)LLFloaterAvatarList::getInstance()->getVisible();
-	}
 }
 
 

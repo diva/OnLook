@@ -2646,9 +2646,6 @@ bool idle_startup()
 		gForegroundTime.reset();
 
 		if (gSavedSettings.getBOOL("FetchInventoryOnLogin")
-#ifdef LL_RRINTERFACE_H //MK
-			|| gRRenabled
-#endif //mk
 			)
 		{
 			// Fetch inventory in the background

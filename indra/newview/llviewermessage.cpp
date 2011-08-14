@@ -3113,18 +3113,20 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
 	U32 links_for_chatting_objects = gSavedSettings.getU32("LinksForChattingObjects");
 	if (links_for_chatting_objects != 0 && chatter && chat.mSourceType == CHAT_SOURCE_OBJECT &&
-#ifdef LL_RRINTERFACE_H //MK
-		(!gRRenabled || !gAgent.mRRInterface.mContainsShownames) &&
-#endif //mk
-		(!is_owned_by_me || links_for_chatting_objects == 2))
+		(!is_owned_by_me || links_for_chatting_objects == 2)
+// [RLVa:KB]
+		&& !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)
+// [/RLVa:KB]
+		)
 	{
 		LLSD query_string;
 		query_string["name"]  = from_name;
 		query_string["owner"] = owner_id;
-#ifdef LL_RRINTERFACE_H //MK
-		if (!gRRenabled || !gAgent.mRRInterface.mContainsShowloc)
+
+// [RLVa:KB]
+		if( !gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC) )
+// [/RLVa:KB]
 		{
-#endif //mk
 			// Compute the object SLURL.
 			LLVector3 pos = chatter->getPositionRegion();
 			S32 x = llround((F32)fmod((F64)pos.mV[VX], (F64)REGION_WIDTH_METERS));
@@ -3133,9 +3135,8 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			std::ostringstream location;
 			location << chatter->getRegion()->getName() << "/" << x << "/" << y << "/" << z;
 			query_string["slurl"] = location.str();
-#ifdef LL_RRINTERFACE_H //MK
 		}
-#endif //mk
+
 		std::ostringstream link;
 		link << "secondlife:///app/objectim/" << from_id << LLURI::mapToQueryString(query_string);
 		chat.mURL = link.str();
@@ -3199,30 +3200,23 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		// [Ansariel/Henri: Display name support]
 		if (chatter && chatter->isAvatar())
 		{
-#ifdef LL_RRINTERFACE_H //MK
-            if (!gRRenabled || !gAgent.mRRInterface.mContainsShownames)
+			if (LLAvatarNameCache::useDisplayNames())
 			{
-#endif //mk
-				if (LLAvatarNameCache::useDisplayNames())
+				LLAvatarName avatar_name;
+				if (LLAvatarNameCache::get(from_id, &avatar_name))
 				{
-					LLAvatarName avatar_name;
-					if (LLAvatarNameCache::get(from_id, &avatar_name))
+					static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+					if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
 					{
-						static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-						{
-							from_name = avatar_name.mDisplayName;
-						}
-						else
-						{
-							from_name = avatar_name.getCompleteName();
-						}
+						from_name = avatar_name.mDisplayName;
 					}
-					chat.mFromName = from_name;
+					else
+					{
+						from_name = avatar_name.getCompleteName();
+					}
 				}
-#ifdef LL_RRINTERFACE_H //MK
+				chat.mFromName = from_name;
 			}
-#endif //mk
 		}
 		// [/Ansariel/Henri: Display name support]
 

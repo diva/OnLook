@@ -2773,9 +2773,6 @@ bool handle_go_to()
 	std::string val;
 	LLVector3d pos = LLToolPie::getInstance()->getPick().mPosGlobal;
 	if (gSavedSettings.getBOOL("DoubleClickTeleport")
-#ifdef LL_RRINTERFACE_H //MK
-		 && !(gRRenabled && gAgent.mRRInterface.contains ("tploc"))
-#endif //mk
 		)
 	{
 		LLVector3d hips_offset(0.0f, 0.0f, 1.2f);
@@ -5637,11 +5634,6 @@ class LLViewToggleRadar: public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		LLFloaterAvatarList::toggle(0);
-		bool vis = false;
-		if(LLFloaterAvatarList::getInstance())
-		{
-			vis = (bool)LLFloaterAvatarList::getInstance()->getVisible();
-		}
 		return true;
 	}
 };
