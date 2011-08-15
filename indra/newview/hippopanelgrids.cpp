@@ -77,6 +77,7 @@ class HippoPanelGridsImpl : public HippoPanelGrids
 		static void onClickDefault(void *data);
 		static void onClickGridInfo(void *data);
 		static void onClickHelpRenderCompat(void *data);
+		static void onClickAdvanced(void *data);
 };
 
 
@@ -148,6 +149,7 @@ BOOL HippoPanelGridsImpl::postBuild()
 	childSetAction("btn_default", onClickDefault, this);
 	childSetAction("btn_gridinfo", onClickGridInfo, this);
 	childSetAction("btn_help_render_compat", onClickHelpRenderCompat, this);
+	childSetAction("btn_advanced", onClickAdvanced, this);
 	
 	childSetCommitCallback("grid_selector", onSelectGrid, this);
 	childSetCommitCallback("platform", onSelectPlatform, this);
@@ -330,7 +332,9 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		mCurGrid = gridnick;
 		gridInfo = new HippoGridInfo(gridnick);
 		gHippoGridManager->addGrid(gridInfo);
-		
+	    gridInfo->retrieveGridInfo();
+		refresh();
+		return true;
 	} else {
 		
 		llwarns << "Illegal state " << mState << '.' << llendl;
@@ -490,6 +494,54 @@ void HippoPanelGridsImpl::onClickGridInfo(void *data)
 {
 	HippoPanelGridsImpl *self = (HippoPanelGridsImpl*)data;
 	self->retrieveGridInfo();
+}
+
+// static
+void HippoPanelGridsImpl::onClickAdvanced(void *data)
+{
+	HippoPanelGridsImpl *self = (HippoPanelGridsImpl*)data;
+	if(self->mState != NORMAL)
+	{
+		self->retrieveGridInfo();
+	}
+	if(self->childIsVisible("loginpage_label"))
+	{
+		self->childSetVisible("loginpage_label", false);
+		self->childSetVisible("loginpage", false);
+		self->childSetVisible("helperuri_label", false);
+		self->childSetVisible("helperuri", false);
+		self->childSetVisible("website_label", false);
+		self->childSetVisible("website", false);
+		self->childSetVisible("support_label", false);
+		self->childSetVisible("support", false);
+		self->childSetVisible("register_label", false);
+		self->childSetVisible("register", false);
+		self->childSetVisible("password_label", false);
+		self->childSetVisible("password", false);
+		self->childSetVisible("search_label", false);
+		self->childSetVisible("search", false);
+		self->childSetVisible("render_compat", false);
+		self->childSetVisible("btn_help_render_compat", false);
+	}
+	else
+	{
+		self->childSetVisible("loginpage_label", true);
+		self->childSetVisible("loginpage", true);
+		self->childSetVisible("helperuri_label", true);
+		self->childSetVisible("helperuri", true);
+		self->childSetVisible("website_label", true);
+		self->childSetVisible("website", true);
+		self->childSetVisible("support_label", true);
+		self->childSetVisible("support", true);
+		self->childSetVisible("register_label", true);
+		self->childSetVisible("register", true);
+		self->childSetVisible("password_label", true);
+		self->childSetVisible("password", true);
+		self->childSetVisible("search_label", true);
+		self->childSetVisible("search", true);
+		self->childSetVisible("render_compat", true);
+		self->childSetVisible("btn_help_render_compat", true);
+	}
 }
 
 // static

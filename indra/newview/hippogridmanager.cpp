@@ -207,7 +207,7 @@ void HippoGridInfo::setPlatform(const std::string& platform)
 	else 
 	{
 		setPlatform(PLATFORM_OTHER);
-		llwarns << "Unknown platform '" << platform << "'." << llendl;
+		llwarns << "Unknown platform '" << platform << "' for " << mGridName << "." << llendl;
 	}
 }
 
