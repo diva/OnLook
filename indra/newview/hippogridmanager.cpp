@@ -39,10 +39,9 @@ HippoGridInfo HippoGridInfo::FALLBACK_GRIDINFO("");
 // ********************************************************************
 // Initialize
 
-HippoGridInfo::HippoGridInfo(const std::string& gridNick) :
-	mPlatform(PLATFORM_OPENSIM),
-	mGridNick(gridNick),
-	mGridName(LLStringUtil::null),
+HippoGridInfo::HippoGridInfo(const std::string& gridName) :
+	mPlatform(PLATFORM_AURORA),
+	mGridName(gridName),
 	mLoginUri(LLStringUtil::null),
 	mLoginPage(LLStringUtil::null),
 	mHelperUri(LLStringUtil::null),
@@ -64,8 +63,6 @@ HippoGridInfo::HippoGridInfo(const std::string& gridNick) :
 	mRealCurrencySymbol("US$"),
 	mDirectoryFee(30)
 {
-	std::string nick = gridNick;
-	mGridNick = sanitizeGridNick( nick );
 }
 
 
@@ -85,11 +82,6 @@ bool HippoGridInfo::isOpenSimulator() const
 bool HippoGridInfo::isSecondLife() const
 {
 	return (mPlatform == HippoGridInfo::PLATFORM_SECONDLIFE);
-}
-
-const std::string& HippoGridInfo::getGridNick() const
-{
-	return mGridNick;
 }
 
 const std::string& HippoGridInfo::getGridName() const
@@ -270,7 +262,7 @@ void HippoGridInfo::setSearchUrl(const std::string& url)
 
 void HippoGridInfo::setGridMessage(const std::string& message)
 {
-	mGridMessage = url;
+	mGridMessage = message;
 }
 
 void HippoGridInfo::setFirstName(const std::string& firstName)
@@ -410,9 +402,7 @@ std::string HippoGridInfo::getSearchUrl(SearchType ty, bool is_web) const
 void HippoGridInfo::onXmlElementStart(void* userData, const XML_Char* name, const XML_Char** atts)
 {
 	HippoGridInfo* self = (HippoGridInfo*)userData;
-	if (strcasecmp(name, "gridnick") == 0)
-		self->mXmlState = XML_GRIDNICK;
-	else if (strcasecmp(name, "gridname") == 0)
+	if (strcasecmp(name, "gridname") == 0)
 		self->mXmlState = XML_GRIDNAME;
 	else if (strcasecmp(name, "platform") == 0)
 		self->mXmlState = XML_PLATFORM;
@@ -449,13 +439,6 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 	HippoGridInfo* self = (HippoGridInfo*)userData;
 	switch (self->mXmlState) 
 	{
-		case XML_GRIDNICK: 
-		{
-			if (self->mGridNick == "") self->mGridNick.assign(s, len);
-			self->mGridNick = sanitizeGridNick(self->mGridNick);
-			break;
-		}
-
 		case XML_PLATFORM: 
 		{
 			std::string platform(s, len);
@@ -581,27 +564,6 @@ const char* HippoGridInfo::getPlatformString(Platform platform)
 	return platformStrings[platform];
 }
 
-
-// static
-std::string HippoGridInfo::sanitizeGridNick(std::string &gridnick)
-{
-	std::string tmp;
-	int size = gridnick.size();
-	for (int i=0; i<size; i++) 
-	{
-		char c = gridnick[i];
-		if ((c == '_') || isalnum(c)) 
-		{
-			tmp += tolower(c);
-		} 
-		else if (isspace(c)) 
-		{
-			tmp += "_";
-		}
-	}
-	return tmp;
-}
-
 // static
 std::string HippoGridInfo::sanitizeUri(std::string &uri)
 {
@@ -621,7 +583,6 @@ std::string HippoGridInfo::sanitizeUri(std::string &uri)
 
 void HippoGridInfo::initFallback()
 {
-	FALLBACK_GRIDINFO.mGridNick = "localhost";
 	FALLBACK_GRIDINFO.setPlatform(PLATFORM_OPENSIM);
 	FALLBACK_GRIDINFO.setGridName("Local Host");
 	FALLBACK_GRIDINFO.setLoginUri("http://127.0.0.1:9000/");
@@ -656,8 +617,8 @@ void HippoGridInfo::setSupportsInvLinks(bool b) {
 HippoGridManager::HippoGridManager() :
     mConnectedGrid(0),
     mDefaultGridsVersion(0),
-	mCurrentGrid("osgrid"),
-	mDefaultGrid("osgrid")
+	mCurrentGrid("Local Host"),
+	mDefaultGrid("Local Host")
 {
 }
 
@@ -757,7 +718,7 @@ void HippoGridManager::setCurrentGridAsConnected()
 void HippoGridManager::addGrid(HippoGridInfo* grid)
 {
 	if (!grid) return;
-	const std::string& nick = grid->getGridNick();
+	const std::string& nick = grid->getGridName();
 	if (nick == "") 
 	{
 		llwarns << "Ignoring to try adding grid with empty nick." << llendl;
@@ -925,16 +886,16 @@ void HippoGridManager::parseData(LLSD &gridInfo, bool mergeIfNewer)
 		{
 			mDefaultGridsVersion = gridMap["default_grids_version"];
 		} 
-		else if (gridMap.has("gridnick") && gridMap.has("loginuri")) 
+		else if (gridMap.has("gridname") && gridMap.has("loginuri")) 
 		{
-			std::string gridnick = gridMap["gridnick"];
+			std::string gridname = gridMap["gridname"];
 			HippoGridInfo* grid;
-			GridIterator it = mGridInfo.find(gridnick);
+			GridIterator it = mGridInfo.find(gridname);
 			bool newGrid = (it == mGridInfo.end());
 			if (newGrid) 
 			{
 				// create new grid info
-				grid = new HippoGridInfo(gridnick);
+				grid = new HippoGridInfo(gridname);
 			} 
 			else 
 			{
@@ -977,7 +938,6 @@ void HippoGridManager::saveFile()
 	for (it = mGridInfo.begin(); it != end; ++it, i++) 
 	{
 		HippoGridInfo* grid = it->second;
-		gridInfo[i]["gridnick"] = grid->getGridNick();
 		gridInfo[i]["platform"] = HippoGridInfo::getPlatformString(grid->getPlatform());
 		gridInfo[i]["gridname"] = grid->getGridName();
 		gridInfo[i]["loginuri"] = grid->getLoginUri();

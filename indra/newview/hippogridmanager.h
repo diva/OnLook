@@ -34,12 +34,11 @@ public:
 		SEARCH_ALL_TEMPLATE
 	};
 
-	explicit HippoGridInfo(const std::string& gridNick);
+	explicit HippoGridInfo(const std::string& gridName);
 
 	Platform           getPlatform();
 	bool isOpenSimulator() const;
 	bool isSecondLife() const;
-	const std::string& getGridNick()        const;
 	const std::string& getGridName()        const;
 	const std::string& getGridOwner()       const;	
 	const std::string& getLoginUri()        const;
@@ -95,14 +94,12 @@ public:
 	bool retrieveGridInfo();
 
 	static const char* getPlatformString(Platform platform);
-	static std::string sanitizeGridNick(std::string &gridnick);
 
 	static HippoGridInfo FALLBACK_GRIDINFO;
 	static void initFallback();
 
 private:
 	Platform mPlatform;
-	std::string mGridNick;
 	std::string mGridName;
 	std::string mLoginUri;
 	std::string mLoginPage;
@@ -128,7 +125,7 @@ private:
 	// for parsing grid info XML
 	enum XmlState 
 	{
-		XML_VOID, XML_GRIDNICK, XML_PLATFORM, XML_GRIDNAME,
+		XML_VOID, XML_PLATFORM, XML_GRIDNAME,
 		XML_LOGINURI, XML_LOGINPAGE, XML_HELPERURI,
 		XML_WEBSITE, XML_SUPPORT, XML_REGISTER, XML_PASSWORD, XML_SEARCH, XML_MESSAGE
 	};

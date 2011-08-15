@@ -860,7 +860,7 @@ void LLPanelLogin::updateGridCombo()
 	}
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it) {
-		const std::string &grid = it->second->getGridNick();
+		const std::string &grid = it->second->getGridName();
 		if (grid != defaultGrid) {
 			grids->add(grid);
 			if (grid == currentGrid) selectIndex = i;
