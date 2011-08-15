@@ -54,6 +54,7 @@ HippoGridInfo::HippoGridInfo(const std::string& gridNick) :
 	mFirstName(LLStringUtil::null),
 	mLastName(LLStringUtil::null),
 	mAvatarPassword(LLStringUtil::null),
+	mGridMessage(""),
 	mXmlState(XML_VOID),
 	mVoiceConnector("SLVoice"),
 	mRenderCompat(true),
@@ -143,6 +144,11 @@ const std::string& HippoGridInfo::getPasswordUrl() const
 const std::string& HippoGridInfo::getSearchUrl() const
 {
 	return mSearchUrl;
+}
+
+const std::string& HippoGridInfo::getGridMessage() const
+{
+	return mGridMessage;
 }
 
 const std::string& HippoGridInfo::getFirstName() const
@@ -260,6 +266,11 @@ void HippoGridInfo::setPasswordUrl(const std::string& url)
 void HippoGridInfo::setSearchUrl(const std::string& url)
 {
 	mSearchUrl = url;
+}
+
+void HippoGridInfo::setGridMessage(const std::string& message)
+{
+	mGridMessage = url;
 }
 
 void HippoGridInfo::setFirstName(const std::string& firstName)
@@ -421,6 +432,8 @@ void HippoGridInfo::onXmlElementStart(void* userData, const XML_Char* name, cons
 		self->mXmlState = XML_PASSWORD;
 	else if (strcasecmp(name, "search") == 0)
 		self->mXmlState = XML_SEARCH;
+	else if (strcasecmp(name, "message") == 0)
+		self->mXmlState = XML_MESSAGE;
 }
 
 //static
@@ -477,6 +490,7 @@ void HippoGridInfo::onXmlCharacterData(void* userData, const XML_Char* s, int le
 		case XML_SUPPORT: self->mSupportUrl.assign(s, len); break;
 		case XML_REGISTER: self->mRegisterUrl.assign(s, len); break;
 		case XML_PASSWORD: self->mPasswordUrl.assign(s, len); break;
+		case XML_MESSAGE: self->mGridMessage.assign(s, len); break;
 
 		case XML_VOID: break;
 	}

@@ -51,6 +51,7 @@ public:
 	const std::string& getPasswordUrl()     const;
 	// Returns the url base used for the Web Search tab
 	const std::string& getSearchUrl()       const;
+	const std::string& getGridMessage()     const;
 	const std::string& getFirstName()       const;
 	const std::string& getLastName()        const;
 	const std::string& getAvatarPassword()  const;
@@ -77,6 +78,7 @@ public:
 	void setPasswordUrl(const std::string& url);
 	// sets the url base used for the Web Search tab
 	void setSearchUrl(const std::string& url);
+	void setGridMessage(const std::string& message);
 	void setRenderCompat(bool compat);
 	void setMaxAgentGroups(int max)                   { mMaxAgentGroups = max;   }
 	void setFirstName(const std::string& firstName);
@@ -121,13 +123,14 @@ private:
 	std::string mCurrencySymbol;
 	std::string mRealCurrencySymbol;
 	int mDirectoryFee;
+	std::string mGridMessage;
 
 	// for parsing grid info XML
 	enum XmlState 
 	{
 		XML_VOID, XML_GRIDNICK, XML_PLATFORM, XML_GRIDNAME,
 		XML_LOGINURI, XML_LOGINPAGE, XML_HELPERURI,
-		XML_WEBSITE, XML_SUPPORT, XML_REGISTER, XML_PASSWORD, XML_SEARCH
+		XML_WEBSITE, XML_SUPPORT, XML_REGISTER, XML_PASSWORD, XML_SEARCH, XML_MESSAGE
 	};
 	XmlState mXmlState;
 
