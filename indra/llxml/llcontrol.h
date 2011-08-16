@@ -407,7 +407,8 @@ private:
 		// Add a listener to the controls signal...
 		// and store the connection...
 		mConnection = controlp->getSignal()->connect(
-			boost::bind(&LLControlCache<T>::handleValueChange, this, _2)
+			boost::bind(&LLControlCache<T>::handleValueChange, this, _2),
+			boost::signals2::at_front //make sure cachedctrl slots are inserted before anything else.
 			);
 		mType = controlp->type();
 		mControl = controlp;
