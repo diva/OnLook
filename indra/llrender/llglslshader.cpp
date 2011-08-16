@@ -37,6 +37,7 @@
 #include "llshadermgr.h"
 #include "llfile.h"
 #include "llrender.h"
+#include "llcontrol.h"
 
 #if LL_DARWIN
 #include "OpenGL/OpenGL.h"
@@ -131,11 +132,12 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	// Create program
 	mProgramObject = glCreateProgramObjectARB();
 
-	if (gGLManager.mGLVersion < 3.1f)
+	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
 	{ //force indexed texture channels to 1 if GL version is old (performance improvement for drivers with poor branching shader model support)
 		mFeatures.mIndexedTextureChannels = llmin(mFeatures.mIndexedTextureChannels, 1);
 	}
-
+	
 	//compile new source
 	vector< pair<string,GLenum> >::iterator fileIter = mShaderFiles.begin();
 	for ( ; fileIter != mShaderFiles.end(); fileIter++ )
@@ -161,7 +163,7 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 		return FALSE;
 	}
 
-	if (gGLManager.mGLVersion < 3.1f)
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
 	{ //attachShaderFeatures may have set the number of indexed texture channels, so set to 1 again
 		mFeatures.mIndexedTextureChannels = llmin(mFeatures.mIndexedTextureChannels, 1);
 	}

@@ -654,7 +654,8 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 	shaders.reserve(13);
 	S32 ch = gGLManager.mNumTextureImageUnits-1;
 
-	if (gGLManager.mGLVersion < 3.1f)
+	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
 	{ //force to 1 texture index channel for old drivers
 		ch = 1;
 	}
