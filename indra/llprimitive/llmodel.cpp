@@ -1019,13 +1019,13 @@ void LLModel::setVolumeFaceData(
 	face.resizeVertices(num_verts);
 	face.resizeIndices(num_indices);
 
-	if(pos.getSkip() == sizeof(LLVector4a))
+	if(!pos.isStrided())
 		LLVector4a::memcpyNonAliased16((F32*) face.mPositions, (F32*) pos.get(), num_verts*4*sizeof(F32));
 	else 
 		for(U32 i=0;i<num_verts;++i)	face.mPositions[i].load3(pos[i].mV);
 	if (norm.get())
 	{
-		if(norm.getSkip() == sizeof(LLVector4a))
+		if(!norm.isStrided())
 			LLVector4a::memcpyNonAliased16((F32*) face.mNormals, (F32*) norm.get(), num_verts*4*sizeof(F32));
 		else
 			for(U32 i=0;i<num_verts;++i)	face.mNormals[i].load3(norm[i].mV);
@@ -1038,7 +1038,7 @@ void LLModel::setVolumeFaceData(
 
 	if (tc.get())
 	{
-		if(tc.getSkip() == sizeof(LLVector2))
+		if(!tc.isStrided())
 			LLVector4a::memcpyNonAliased16((F32*) face.mTexCoords, (F32*) tc.get(), num_verts*2*sizeof(F32));
 		else
 			for(U32 i=0;i<num_verts;++i)	face.mTexCoords[i] = tc[i].mV;

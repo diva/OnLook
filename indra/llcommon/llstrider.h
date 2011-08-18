@@ -52,6 +52,7 @@ public:
 	void setStride (S32 skipBytes)	{ mSkip = (skipBytes ? skipBytes : sizeof(Object));}
 	void setTypeSize (S32 typeBytes){ mTypeSize = (typeBytes ? typeBytes : sizeof(Object)); }
 
+	bool isStrided() const		   { return mTypeSize != mSkip; } 
 	void skip(const U32 index)     { mBytep += mSkip*index;}
 	U32 getSkip() const			   { return mSkip; }
 	Object* get()                  { return mObjectp; }
@@ -70,7 +71,7 @@ public:
 		//stride == sizeof(element) implies entire buffer is unstrided and thus memcpy-able, provided source buffer elements match in size.
 		//Because LLStrider is often passed an LLVector3 even if the reprensentation is LLVector4 in the vertex buffer, mTypeSize is set to 
 		//the TRUE vbo datatype size via VertexBufferStrider::get
-		if(mTypeSize == mSkip && mTypeSize == elem_size)	
+		if(!isStrided() && mTypeSize == elem_size)	
 		{
 			if(bytes >= sizeof(LLVector4) * 4)	//Should be able to pull at least 3 16byte blocks from this. Smaller isn't really beneficial.
 			{
