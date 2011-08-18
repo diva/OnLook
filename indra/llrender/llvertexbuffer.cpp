@@ -66,6 +66,7 @@ BOOL LLVertexBuffer::sIBOActive = FALSE;
 U32 LLVertexBuffer::sAllocatedBytes = 0;
 BOOL LLVertexBuffer::sMapped = FALSE;
 BOOL LLVertexBuffer::sUseStreamDraw = TRUE;
+U32 LLVertexBuffer::sForceStrideMode = 0;
 BOOL LLVertexBuffer::sOmitBlank = FALSE;
 BOOL LLVertexBuffer::sPreferStreamDraw = FALSE;
 S32	LLVertexBuffer::sWeight4Loc = -1;
@@ -263,7 +264,8 @@ void LLVertexBuffer::setupClientArrays(U32 data_mask)
 void LLVertexBuffer::drawArrays(U32 mode, const std::vector<LLVector3>& pos, const std::vector<LLVector3>& norm)
 {
 	U32 count = pos.size();
-	llassert(norm.size() >= pos.size());
+	llassert_always(norm.size() >= pos.size());
+	llassert_always(count > 0) ;
 
 	unbind();
 	
@@ -448,7 +450,7 @@ void LLVertexBuffer::clientCopy(F64 max_time)
 
 //----------------------------------------------------------------------------
 
-LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
+LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage, bool strided) :
 	LLRefCount(),
 
 	mNumVerts(0),
@@ -466,7 +468,9 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 	mFilthy(FALSE),
 	mEmpty(TRUE),
 	mResized(FALSE),
-	mDynamicSize(FALSE)
+	mDynamicSize(FALSE),
+	mIsStrided(strided),
+	mStride(0)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	if (!sEnableVBOs)
@@ -483,20 +487,27 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 	{
 		mUsage = GL_STREAM_DRAW_ARB;
 	}
-	
-	S32 stride = calcStride(typemask, mOffsets);
+
+	//zero out offsets
+	for (U32 i = 0; i < TYPE_MAX; i++)
+	{
+		mOffsets[i] = 0;
+	}
 
 	mTypeMask = typemask;
-	mStride = stride;
+	mSize = 0;
 	mAlignedOffset = 0;
 	mAlignedIndexOffset = 0;
+
+	if(sForceStrideMode)
+		mIsStrided = sForceStrideMode == 1;
+
 	sCount++;
 }
 
-//static
-S32 LLVertexBuffer::calcStride(const U32& typemask, S32* offsets)
+S32 LLVertexBuffer::calcOffsets(const U32& typemask, S32* offsets, S32 num_vertices)
 {
-	S32 stride = 0;
+	S32 offset = 0;
 	for (S32 i=0; i<TYPE_MAX; i++)
 	{
 		U32 mask = 1<<i;
@@ -504,13 +515,50 @@ S32 LLVertexBuffer::calcStride(const U32& typemask, S32* offsets)
 		{
 			if (offsets)
 			{
-				offsets[i] = stride;
+				offsets[i] = offset;
 			}
-			stride += sTypeSize[i];
+			if(mIsStrided)
+			{
+				offset += sTypeSize[i];
+			}
+			else
+			{
+				offset += LLVertexBuffer::sTypeSize[i]*num_vertices;
+				offset = (offset + 0xF) & ~0xF;
+			}
+		}
+	}
+	if(mIsStrided)
+	{
+		mStride = offset;
+		return mStride * num_vertices + 16;
+	}
+	else
+	{
+		mStride = -1;	//Stride is invalid with unstrided arrays.
+		return offset + 16;
+	}
+}
+
+//static 
+S32 LLVertexBuffer::calcVertexSize(const U32& typemask)
+{
+	S32 size = 0;
+	for (S32 i = 0; i < TYPE_MAX; i++)
+	{
+		U32 mask = 1<<i;
+		if (typemask & mask)
+		{
+			size += LLVertexBuffer::sTypeSize[i];
 		}
 	}
 
-	return stride;
+	return size;
+}
+
+S32 LLVertexBuffer::getSize() const
+{
+	return mSize;
 }
 
 // protected, use unref()
@@ -750,7 +798,7 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 		}
 		mNumVerts = nverts;
 	}
-
+	mSize = calcOffsets(mTypeMask, mOffsets, mNumVerts);
 }
 
 void LLVertexBuffer::updateNumIndices(S32 nindices)
@@ -958,7 +1006,7 @@ void LLVertexBuffer::allocateClientIndexBuffer()
 }
 
 // Map for data access
-volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 access)
+volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	if (mFinal)
@@ -1031,10 +1079,10 @@ volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 access)
 		sMappedCount++;
 	}
 	
-	return mMappedData;
+	return mMappedData+mOffsets[type]+ (mIsStrided ? mStride : sTypeSize[type])*index;
 }
 
-volatile U8* LLVertexBuffer::mapIndexBuffer(S32 access)
+volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	if (mFinal)
@@ -1064,6 +1112,9 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 access)
 				{
 					src = (U8*) glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
 				}
+
+				llassert(src != NULL);
+
 
 				mMappedIndexData = src; //LL_NEXT_ALIGNED_ADDRESS<U8>(src);
 				mAlignedIndexOffset = mMappedIndexData - src;
@@ -1095,7 +1146,7 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 access)
 		sMappedCount++;
 	}
 
-	return mMappedIndexData ;
+	return mMappedIndexData + sizeof(U16)*index;
 }
 
 void LLVertexBuffer::unmapBuffer(S32 type)
@@ -1182,7 +1233,7 @@ template <class T,S32 type> struct VertexBufferStrider
 	{
 		if (type == LLVertexBuffer::TYPE_INDEX)
 		{
-			volatile U8* ptr = vbo.mapIndexBuffer();
+			volatile U8* ptr = vbo.mapIndexBuffer(index);
 
 			if (ptr == NULL)
 			{
@@ -1190,14 +1241,16 @@ template <class T,S32 type> struct VertexBufferStrider
 				return FALSE;
 			}
 
-			strider = (T*)(ptr + index*sizeof(T));
+			strider = (T*)ptr;
 			strider.setStride(0);
+			strider.setTypeSize(0);
 			return TRUE;
 		}
 		else if (vbo.hasDataType(type))
 		{
-			S32 stride = vbo.getStride();
-			volatile U8* ptr = vbo.mapVertexBuffer(type);
+			S32 stride = vbo.getStride(type);
+			
+			volatile U8* ptr = vbo.mapVertexBuffer(type,index);
 
 			if (ptr == NULL)
 			{
@@ -1205,8 +1258,11 @@ template <class T,S32 type> struct VertexBufferStrider
 				return FALSE;
 			}
 
-			strider = (T*)(ptr + vbo.getOffset(type) + index*stride);
+
+			strider = (T*)ptr;
+			
 			strider.setStride(stride);
+			strider.setTypeSize(LLVertexBuffer::sTypeSize[type]);
 			return TRUE;
 		}
 		else
@@ -1267,25 +1323,6 @@ bool LLVertexBuffer::getWeight4Strider(LLStrider<LLVector4>& strider, S32 index)
 bool LLVertexBuffer::getClothWeightStrider(LLStrider<LLVector4>& strider, S32 index)
 {
 	return VertexBufferStrider<LLVector4,TYPE_CLOTHWEIGHT>::get(*this, strider, index);
-}
-
-void LLVertexBuffer::setStride(S32 type, S32 new_stride)
-{
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
-	if (mNumVerts)
-	{
-		llerrs << "LLVertexBuffer::setOffset called with mNumVerts = " << mNumVerts << llendl;
-	}
-	// This code assumes that setStride() will only be called once per VBO per type.
-	S32 delta = new_stride - sTypeSize[type];
-	for (S32 i=type+1; i<TYPE_MAX; i++)
-	{
-		if (mTypeMask & (1<<i))
-		{
-			mOffsets[i] += delta;
-		}
-	}
-	mStride += delta;
 }
 
 //----------------------------------------------------------------------------
@@ -1485,7 +1522,6 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	stop_glerror();
 	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
-	S32 stride = mStride;
 
 	if ((data_mask & mTypeMask) != data_mask)
 	{
@@ -1518,68 +1554,60 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask) const
 
 	if (data_mask & MAP_NORMAL)
 	{
-		glNormalPointer(GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_NORMAL]));
+		glNormalPointer(GL_FLOAT, getStride(TYPE_NORMAL), (void*)(base + mOffsets[TYPE_NORMAL]));
 	}
 	if (data_mask & MAP_TEXCOORD3)
 	{
 		glClientActiveTextureARB(GL_TEXTURE3_ARB);
-		glTexCoordPointer(2,GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_TEXCOORD3]));
+		glTexCoordPointer(2,GL_FLOAT, getStride(TYPE_TEXCOORD3), (void*)(base + mOffsets[TYPE_TEXCOORD3]));
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
 	if (data_mask & MAP_TEXCOORD2)
 	{
 		glClientActiveTextureARB(GL_TEXTURE2_ARB);
-		glTexCoordPointer(2,GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_TEXCOORD2]));
+		glTexCoordPointer(2,GL_FLOAT, getStride(TYPE_TEXCOORD2), (void*)(base + mOffsets[TYPE_TEXCOORD2]));
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
 	if (data_mask & MAP_TEXCOORD1)
 	{
 		glClientActiveTextureARB(GL_TEXTURE1_ARB);
-		glTexCoordPointer(2,GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_TEXCOORD1]));
+		glTexCoordPointer(2,GL_FLOAT, getStride(TYPE_TEXCOORD1), (void*)(base + mOffsets[TYPE_TEXCOORD1]));
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
 	if (data_mask & MAP_BINORMAL)
 	{
 		glClientActiveTextureARB(GL_TEXTURE2_ARB);
-		glTexCoordPointer(3,GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_BINORMAL]));
+		glTexCoordPointer(3,GL_FLOAT, getStride(TYPE_BINORMAL), (void*)(base + mOffsets[TYPE_BINORMAL]));
 		glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	}
 	if (data_mask & MAP_TEXCOORD0)
 	{
-		glTexCoordPointer(2,GL_FLOAT, stride, (void*)(base + mOffsets[TYPE_TEXCOORD0]));
+		glTexCoordPointer(2,GL_FLOAT, getStride(TYPE_TEXCOORD0), (void*)(base + mOffsets[TYPE_TEXCOORD0]));
 	}
 	if (data_mask & MAP_COLOR)
 	{
-		glColorPointer(4, GL_UNSIGNED_BYTE, stride, (void*)(base + mOffsets[TYPE_COLOR]));
+		glColorPointer(4, GL_UNSIGNED_BYTE, getStride(TYPE_COLOR), (void*)(base + mOffsets[TYPE_COLOR]));
 	}
 	
 	if (data_mask & MAP_WEIGHT)
 	{
-		glVertexAttribPointerARB(1, 1, GL_FLOAT, FALSE, stride, (void*)(base + mOffsets[TYPE_WEIGHT]));
+		glVertexAttribPointerARB(1, 1, GL_FLOAT, FALSE, getStride(TYPE_WEIGHT), (void*)(base + mOffsets[TYPE_WEIGHT]));
 	}
 
 	if (data_mask & MAP_WEIGHT4 && sWeight4Loc != -1)
 	{
-		glVertexAttribPointerARB(sWeight4Loc, 4, GL_FLOAT, FALSE, stride, (void*)(base+mOffsets[TYPE_WEIGHT4]));
+		glVertexAttribPointerARB(sWeight4Loc, 4, GL_FLOAT, FALSE, getStride(TYPE_WEIGHT4), (void*)(base+mOffsets[TYPE_WEIGHT4]));
 	}
 
 	if (data_mask & MAP_CLOTHWEIGHT)
 	{
-		glVertexAttribPointerARB(4, 4, GL_FLOAT, TRUE,  stride, (void*)(base + mOffsets[TYPE_CLOTHWEIGHT]));
+		glVertexAttribPointerARB(4, 4, GL_FLOAT, TRUE,  getStride(TYPE_CLOTHWEIGHT), (void*)(base + mOffsets[TYPE_CLOTHWEIGHT]));
 	}
 	if (data_mask & MAP_VERTEX)
 	{
-		glVertexPointer(3,GL_FLOAT, stride, (void*)(base + 0));
+		glVertexPointer(3,GL_FLOAT, getStride(TYPE_VERTEX), (void*)(base + 0));
 	}
 
 	llglassertok();
 }
 
-void LLVertexBuffer::markDirty(U32 vert_index, U32 vert_count, U32 indices_index, U32 indices_count)
-{
-	// TODO: use GL_APPLE_flush_buffer_range here
-	/*if (useVBOs() && !mFilthy)
-	{
-	
-	}*/
-}

@@ -769,29 +769,23 @@ LLPolyMesh::LLPolyMesh(LLPolyMeshSharedData *shared_data, LLPolyMesh *reference_
 	}
 	else
 	{
-#if 1	// Allocate memory without initializing every vector
+		// Allocate memory without initializing every vector
 		// NOTE: This makes asusmptions about the size of LLVector[234]
 		int nverts = mSharedData->mNumVertices;
-		int nfloats = nverts * (3*5 + 2 + 4);
-		mVertexData = new F32[nfloats];
+		int nfloats = nverts * (2*4 + 3*3 + 2 + 4);
+		//use 16 byte aligned vertex data to make LLPolyMesh SSE friendly
+		mVertexData = (F32*) ll_aligned_malloc_16(nfloats*4);
 		int offset = 0;
-		mCoords = 				(LLVector3*)(mVertexData + offset); offset += 3*nverts;
-		mNormals = 				(LLVector3*)(mVertexData + offset); offset += 3*nverts;
-		mScaledNormals = 		(LLVector3*)(mVertexData + offset); offset += 3*nverts;
-		mBinormals = 			(LLVector3*)(mVertexData + offset); offset += 3*nverts;
+		mCoords				= 	(LLVector4*)(mVertexData + offset); offset += 4*nverts;
+		mNormals			=	(LLVector4*)(mVertexData + offset); offset += 4*nverts;
+		mClothingWeights	= 	(LLVector4*)(mVertexData + offset); offset += 4*nverts;
+		mTexCoords			= 	(LLVector2*)(mVertexData + offset); offset += 2*nverts;
+
+		// these members don't need to be 16-byte aligned, but the first one might be
+		// read during an aligned memcpy of mTexCoords
+		mScaledNormals =                (LLVector3*)(mVertexData + offset); offset += 3*nverts;
+		mBinormals =                    (LLVector3*)(mVertexData + offset); offset += 3*nverts;
 		mScaledBinormals = 		(LLVector3*)(mVertexData + offset); offset += 3*nverts;
-		mTexCoords = 			(LLVector2*)(mVertexData + offset); offset += 2*nverts;
-		mClothingWeights = 	(LLVector4*)(mVertexData + offset); offset += 4*nverts;
-#else
-		mCoords = new LLVector3[mSharedData->mNumVertices];
-		mNormals = new LLVector3[mSharedData->mNumVertices];
-		mScaledNormals = new LLVector3[mSharedData->mNumVertices];
-		mBinormals = new LLVector3[mSharedData->mNumVertices];
-		mScaledBinormals = new LLVector3[mSharedData->mNumVertices];
-		mTexCoords = new LLVector2[mSharedData->mNumVertices];
-		mClothingWeights = new LLVector4[mSharedData->mNumVertices];
-		memset(mClothingWeights, 0, sizeof(LLVector4) * mSharedData->mNumVertices);
-#endif
 		initializeForMorph();
 	}
 }
@@ -806,19 +800,11 @@ LLPolyMesh::~LLPolyMesh()
 	for (i = 0; i < mJointRenderData.count(); i++)
 	{
 		delete mJointRenderData[i];
-		mJointRenderData[i] = NULL;
-	}
-#if 0 // These are now allocated as one big uninitialized chunk
-	delete [] mCoords;
-	delete [] mNormals;
-	delete [] mScaledNormals;
-	delete [] mBinormals;
-	delete [] mScaledBinormals;
-	delete [] mClothingWeights;
-	delete [] mTexCoords;
-#else
-	delete [] mVertexData;
-#endif
+                mJointRenderData[i] = NULL;
+        }
+
+		ll_aligned_free_16(mVertexData);
+
 }
 
 
@@ -1242,7 +1228,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 	int nfaces = mSharedData->mNumFaces;
 	int i;
 
-	LLVector3* coords = getWritableCoords();
+	LLVector4* coords = getWritableCoords();
 	for ( i=0; i<nverts; i++) {
 		std::string outstring = llformat("v %f %f %f\n",
 										 coords[i][0],
@@ -1254,7 +1240,7 @@ BOOL LLPolyMesh::saveOBJ(LLFILE *fp)
 		}
 	}
 
-	LLVector3* normals = getWritableNormals();
+	LLVector4* normals = getWritableNormals();
 	for ( i=0; i<nverts; i++) {
 		std::string outstring = llformat("vn %f %f %f\n",
 										 normals[i][0],
@@ -1311,8 +1297,8 @@ BOOL LLPolyMesh::loadOBJ(LLFILE *fp)
 	int nnormals   = 0;
 	int ntexcoords = 0;
 
-	LLVector3* coords    = getWritableCoords();
-	LLVector3* normals   = getWritableNormals();
+	LLVector4* coords    = getWritableCoords();
+	LLVector4* normals   = getWritableNormals();
 	LLVector3* binormals = getWritableBinormals();
 	LLVector2* tex       = getWritableTexCoords();
 	LLPolyFace* faces    = getFaces();
@@ -1467,8 +1453,8 @@ BOOL LLPolyMesh::setSharedFromCurrent()
 	LLPolyMesh delta(mSharedData, NULL);
 	U32 nverts = delta.getNumVertices();
 
-	LLVector3 *delta_coords     = delta.getWritableCoords();
-	LLVector3 *delta_normals    = delta.getWritableNormals();
+	LLVector4 *delta_coords     = delta.getWritableCoords();
+	LLVector4 *delta_normals    = delta.getWritableNormals();
 	LLVector3 *delta_binormals  = delta.getWritableBinormals();
 	LLVector2 *delta_tex_coords = delta.getWritableTexCoords();
 
@@ -1497,8 +1483,8 @@ BOOL LLPolyMesh::setSharedFromCurrent()
 		LLPolyMesh* mesh = avatarp->getMesh(mSharedData);
 		if (mesh)
 		{
-			LLVector3 *mesh_coords           = mesh->getWritableCoords();
-			LLVector3 *mesh_normals          = mesh->getWritableNormals();
+			LLVector4 *mesh_coords           = mesh->getWritableCoords();
+			LLVector4 *mesh_normals          = mesh->getWritableNormals();
 			LLVector3 *mesh_binormals        = mesh->getWritableBinormals();
 			LLVector2 *mesh_tex_coords       = mesh->getWritableTexCoords();
 			LLVector3 *mesh_scaled_normals   = mesh->getScaledNormals();
@@ -1509,10 +1495,10 @@ BOOL LLPolyMesh::setSharedFromCurrent()
 				mesh_coords[vert_index]           -= delta_coords[vert_index];
 				mesh_tex_coords[vert_index]       -= delta_tex_coords[vert_index];
 
-				mesh_scaled_normals[vert_index]   -= delta_normals[vert_index];
+				mesh_scaled_normals[vert_index]   -= LLVector3(delta_normals[vert_index]);
 				LLVector3 normalized_normal        = mesh_scaled_normals[vert_index];
 				normalized_normal.normVec();
-				mesh_normals[vert_index]           = normalized_normal;
+				mesh_normals[vert_index]           = LLVector4(normalized_normal);
 
 				mesh_scaled_binormals[vert_index] -= delta_binormals[vert_index];
 				LLVector3 tangent                  = mesh_scaled_binormals[vert_index] % normalized_normal;
@@ -1616,7 +1602,7 @@ void LLPolyMesh::dumpDiagInfo(void*)
 //-----------------------------------------------------------------------------
 // getWritableCoords()
 //-----------------------------------------------------------------------------
-LLVector3 *LLPolyMesh::getWritableCoords()
+LLVector4 *LLPolyMesh::getWritableCoords()
 {
 	return mCoords;
 }
@@ -1624,7 +1610,7 @@ LLVector3 *LLPolyMesh::getWritableCoords()
 //-----------------------------------------------------------------------------
 // getWritableNormals()
 //-----------------------------------------------------------------------------
-LLVector3 *LLPolyMesh::getWritableNormals()
+LLVector4 *LLPolyMesh::getWritableNormals()
 {
 	return mNormals;
 }
@@ -1679,8 +1665,12 @@ void LLPolyMesh::initializeForMorph()
 	if (!mSharedData)
 		return;
 
-	memcpy(mCoords, mSharedData->mBaseCoords, sizeof(LLVector3) * mSharedData->mNumVertices);	/*Flawfinder: ignore*/
-	memcpy(mNormals, mSharedData->mBaseNormals, sizeof(LLVector3) * mSharedData->mNumVertices);	/*Flawfinder: ignore*/
+	for (U32 i = 0; i < (U32)mSharedData->mNumVertices; ++i)
+	{
+		mCoords[i] = LLVector4(mSharedData->mBaseCoords[i]);
+		mNormals[i] = LLVector4(mSharedData->mBaseNormals[i]);
+	}
+
 	memcpy(mScaledNormals, mSharedData->mBaseNormals, sizeof(LLVector3) * mSharedData->mNumVertices);	/*Flawfinder: ignore*/
 	memcpy(mBinormals, mSharedData->mBaseBinormals, sizeof(LLVector3) * mSharedData->mNumVertices);	/*Flawfinder: ignore*/
 	memcpy(mScaledBinormals, mSharedData->mBaseBinormals, sizeof(LLVector3) * mSharedData->mNumVertices);		/*Flawfinder: ignore*/

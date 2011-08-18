@@ -61,6 +61,8 @@ public:
 	class Easy;
 	class Multi;
 
+	static bool sMultiThreaded;
+
 	struct TransferInfo
 	{
 		TransferInfo() : mSizeDownload(0.0), mTotalTime(0.0), mSpeedDownload(0.0) {}
@@ -164,7 +166,7 @@ public:
 	/**
 	 * @ brief Initialize LLCurl class
 	 */
-	static void initClass();
+	static void initClass(bool multi_threaded = false);
 
 	/**
 	 * @ brief Cleanup LLCurl class
@@ -206,8 +208,8 @@ public:
 
 	void get(const std::string& url, LLCurl::ResponderPtr responder);
 	bool getByteRange(const std::string& url, const headers_t& headers, S32 offset, S32 length, LLCurl::ResponderPtr responder);
-	bool post(const std::string& url, const headers_t& headers, const LLSD& data, LLCurl::ResponderPtr responder);
-	bool post(const std::string& url, const headers_t& headers, const std::string& data, LLCurl::ResponderPtr responder);
+	bool post(const std::string& url, const headers_t& headers, const LLSD& data, LLCurl::ResponderPtr responder, S32 time_out = 0);
+	bool post(const std::string& url, const headers_t& headers, const std::string& data, LLCurl::ResponderPtr responder, S32 time_out = 0);
 	
 	S32  process();
 	S32  getQueued();

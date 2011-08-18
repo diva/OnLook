@@ -64,6 +64,9 @@ class LLFloaterMediaBrowser :
 public:
 	LLFloaterMediaBrowser(const LLSD& media_data);
 
+
+	void geometryChanged(S32 x, S32 y, S32 width, S32 height);
+	
 	/*virtual*/ BOOL postBuild();
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void draw();

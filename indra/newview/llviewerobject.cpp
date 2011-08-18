@@ -5627,10 +5627,4 @@ public:
 LLHTTPRegistration<ObjectPhysicsProperties>
 	gHTTPRegistrationObjectPhysicsProperties("/message/ObjectPhysicsProperties");
 
-
-void LLViewerObject::updateQuota( const SelectionQuota& quota )
-{
-	//update quotas
-	mSelectionQuota = quota;
-}
 #endif //MESH_ENABLED

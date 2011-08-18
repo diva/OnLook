@@ -88,6 +88,7 @@ public:
 				BOOL fullbright = FALSE, U8 bump = 0, BOOL particle = FALSE, F32 part_size = 0);
 	
 
+	void validate();
 
 	LLVector4a mExtents[2];
 	
@@ -361,9 +362,9 @@ public:
 	F32 mBuilt;
 	OctreeNode* mOctreeNode;
 	LLSpatialPartition* mSpatialPartition;
-
+	
 	LLPointer<LLVertexBuffer> mVertexBuffer;
-	F32*					mOcclusionVerts;
+	LLPointer<LLVertexBuffer> mOcclusionVerts;
 	GLuint					mOcclusionQuery[LLViewerCamera::NUM_CAMERAS];
 
 	U32 mBufferUsage;
@@ -693,8 +694,6 @@ public:
 	LLHUDPartition();
 	virtual void shift(const LLVector4a &offset);
 };
-
-void validate_draw_info(LLDrawInfo& params);
 
 extern const F32 SG_BOX_SIDE;
 extern const F32 SG_BOX_OFFSET;
