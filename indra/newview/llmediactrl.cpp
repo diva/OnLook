@@ -966,6 +966,11 @@ void LLMediaCtrl::handleMediaEvent(LLPluginClassMedia* self, EMediaEvent event)
 			LL_DEBUGS("Media") <<  "Media event:  MEDIA_EVENT_NAME_CHANGED" << LL_ENDL;
 		};
 		break;
+		
+		default:
+		{
+			LL_WARNS("Media") <<  "Media event:  unknown event type" << LL_ENDL;
+		};		
 	};
 
 	// chain all events to any potential observers of this object.

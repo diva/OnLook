@@ -4062,7 +4062,7 @@ void LLTexturePipelineTester::LLTextureTestSession::reset()
 
 	mInstantPerformanceListCounter = 0 ;
 }
-#endif 0
+#endif //0
 //----------------------------------------------------------------------------------------------
 //end of LLTexturePipelineTester
 //----------------------------------------------------------------------------------------------
