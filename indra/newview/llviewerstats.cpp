@@ -362,12 +362,16 @@ void reset_statistics()
 
 void output_statistics(void*)
 {
+	S32 global_raw_memory;
+	{
+		global_raw_memory = *AIAccess<S32>(LLImageRaw::sGlobalRawMemory);
+	}
 	llinfos << "Number of orphans: " << gObjectList.getOrphanCount() << llendl;
 	llinfos << "Number of dead objects: " << gObjectList.mNumDeadObjects << llendl;
 	llinfos << "Num images: " << gTextureList.getNumImages() << llendl;
 	llinfos << "Texture usage: " << LLImageGL::sGlobalTextureMemoryInBytes << llendl;
 	llinfos << "Texture working set: " << LLImageGL::sBoundTextureMemoryInBytes << llendl;
-	llinfos << "Raw usage: " << LLImageRaw::sGlobalRawMemory << llendl;
+	llinfos << "Raw usage: " << global_raw_memory << llendl;
 	llinfos << "Formatted usage: " << LLImageFormatted::sGlobalFormattedMemory << llendl;
 	llinfos << "Zombie Viewer Objects: " << LLViewerObject::getNumZombieObjects() << llendl;
 	llinfos << "Number of lights: " << gPipeline.getLightCount() << llendl;

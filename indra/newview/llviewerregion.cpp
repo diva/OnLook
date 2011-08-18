@@ -72,10 +72,6 @@
 #include "llsdserialize.h"
 #include "llviewerparcelmgr.h"
 
-// Viewer object cache version, change if object update
-// format changes. JC
-const U32 INDRA_OBJECT_CACHE_VERSION = 14;
-
 extern BOOL gNoRender;
 
 #ifdef LL_WINDOWS

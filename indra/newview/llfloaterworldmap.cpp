@@ -502,17 +502,26 @@ void LLFloaterWorldMap::draw()
 	getDragHandle()->setMouseOpaque(TRUE);
 
 	//RN: snaps to zoom value because interpolation caused jitter in the text rendering
-	if (!mZoomTimer.getStarted() && mCurZoomVal != (F32)childGetValue("zoom slider").asReal())
+	F32 interp = 1.f;
+	if (!mZoomTimer.getStarted())
 	{
-		mZoomTimer.start();
+		mCurZoomValInterpolationStart = mCurZoomVal;
+		if (mCurZoomVal < (F32)childGetValue("zoom slider").asReal())
+		{
+			mZoomTimer.start();
+		}
 	}
-	F32 interp = mZoomTimer.getElapsedTimeF32() / MAP_ZOOM_TIME;
-	if (interp > 1.f)
+	if (mZoomTimer.getStarted())
+	{
+	    interp = mZoomTimer.getElapsedTimeF32() / MAP_ZOOM_TIME;
+	}
+	if (interp >= 1.f)
 	{
 		interp = 1.f;
 		mZoomTimer.stop();
 	}
-	mCurZoomVal = lerp(mCurZoomVal, (F32)childGetValue("zoom slider").asReal(), interp);
+	// Interpolate between mCurZoomValInterpolationStart and "zoom slider".
+	mCurZoomVal = lerp(mCurZoomValInterpolationStart, (F32)childGetValue("zoom slider").asReal(), interp);
 	F32 map_scale = 256.f*pow(2.f, mCurZoomVal);
 	LLWorldMapView::setScale( map_scale );
 

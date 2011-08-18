@@ -446,8 +446,7 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 		}
 		else
 		{
-			self->mSavedFileTimer.reset();
-			self->mSavedFileTimer.setTimerExpirySec( SECONDS_TO_SHOW_FILE_SAVED_MSG );
+			self->mSavedFileTimer.reset(SECONDS_TO_SHOW_FILE_SAVED_MSG);
 		}
 
 		self->mSaveFileName.clear();

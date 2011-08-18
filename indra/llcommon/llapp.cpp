@@ -249,15 +249,6 @@ LLSD LLApp::getOptionData(OptionPriority level)
 	return mOptions[level];
 }
 
-void LLApp::stepFrame()
-{
-	LLFrameTimer::updateFrameTime();
-	LLFrameTimer::updateFrameCount();
-	LLEventTimer::updateClass();
-	mRunner.run();
-}
-
-
 void LLApp::setupErrorHandling()
 {
 	// Error handling is done by starting up an error handling thread, which just sleeps and
