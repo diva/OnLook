@@ -139,9 +139,6 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mCollisionParcel = new LLParcel();
 	mBlockedImage = LLViewerTextureManager::getFetchedTextureFromFile("noentrylines.j2c");
 	mPassImage = LLViewerTextureManager::getFetchedTextureFromFile("noentrypasslines.j2c");
-
-    init(256);
-
 } 
 
 //moved this stuff out of the constructor and into a function that we can call again after we get the region size.
@@ -149,7 +146,7 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 //on a single grid properly - Patrick Sapinski (2/10/2011)
 void LLViewerParcelMgr::init(F32 region_size)
 {
-	mParcelsPerEdge = S32(	REGION_WIDTH_METERS / PARCEL_GRID_STEP_METERS );
+	mParcelsPerEdge = S32(	region_size / PARCEL_GRID_STEP_METERS );
 	mHighlightSegments = new U8[(mParcelsPerEdge+1)*(mParcelsPerEdge+1)];
 	resetSegments(mHighlightSegments);
 

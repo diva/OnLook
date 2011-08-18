@@ -176,6 +176,7 @@ void LLSurface::create(const S32 grids_per_edge,
 	mNumberOfPatches = mPatchesPerEdge * mPatchesPerEdge;
 	mMetersPerGrid = width / ((F32)(mGridsPerEdge - 1));
 	mMetersPerEdge = mMetersPerGrid * (mGridsPerEdge - 1);
+	sTextureSize = width;
 
 	mOriginGlobal.setVec(origin_global);
 
