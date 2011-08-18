@@ -1717,7 +1717,7 @@ void LLMeshRepository::cacheOutgoingMesh(LLMeshUploadData& data, LLSD& header)
 		if (data.mModel[i].notNull())
 		{
 			LLPointer<LLVolume> volume = new LLVolume(volume_params, LLVolumeLODGroup::getVolumeScaleFromDetail(i));
-			volume->copyVolumeFaces(data.mModel[i]);
+			volume->setMeshAssetLoaded(TRUE);
 		}
 	}
 
@@ -2184,11 +2184,6 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 
 	if (volume)
 	{
-		if (volume->getNumVolumeFaces() == 0 && !volume->isTetrahedron())
-		{
-			volume->makeTetrahedron();
-		}
-
 		LLVolumeParams params = volume->getParams();
 
 		LLVolumeLODGroup* group = LLPrimitive::getVolumeManager()->getGroup(params);
@@ -2199,7 +2194,7 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 			if (last_lod >= 0)
 			{
 				LLVolume* lod = group->refLOD(last_lod);
-				if (lod && !lod->isTetrahedron() && lod->getNumVolumeFaces() > 0)
+				if (lod && !lod->isMeshAssetLoaded() && lod->getNumVolumeFaces() > 0)
 				{
 					group->derefLOD(lod);
 					return last_lod;
@@ -2211,7 +2206,7 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 			for (S32 i = detail-1; i >= 0; --i)
 			{
 				LLVolume* lod = group->refLOD(i);
-				if (lod && !lod->isTetrahedron() && lod->getNumVolumeFaces() > 0)
+				if (lod && !lod->isMeshAssetLoaded() && lod->getNumVolumeFaces() > 0)
 				{
 					group->derefLOD(lod);
 					return i;
@@ -2224,7 +2219,7 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 			for (S32 i = detail+1; i < 4; ++i)
 			{
 				LLVolume* lod = group->refLOD(i);
-				if (lod && !lod->isTetrahedron() && lod->getNumVolumeFaces() > 0)
+				if (lod && !lod->isMeshAssetLoaded() && lod->getNumVolumeFaces() > 0)
 				{
 					group->derefLOD(lod);
 					return i;
@@ -2493,7 +2488,6 @@ void LLMeshRepository::notifyMeshLoaded(const LLVolumeParams& mesh_params, LLVol
 		if (volume->getNumVolumeFaces() <= 0)
 		{
 			llwarns << "Mesh loading returned empty volume." << llendl;
-			volume->makeTetrahedron();
 		}
 		
 		{ //update system volume
@@ -2501,6 +2495,7 @@ void LLMeshRepository::notifyMeshLoaded(const LLVolumeParams& mesh_params, LLVol
 			if (sys_volume)
 			{
 				sys_volume->copyVolumeFaces(volume);
+				sys_volume->setMeshAssetLoaded(TRUE);
 				LLPrimitive::getVolumeManager()->unrefVolume(sys_volume);
 			}
 			else

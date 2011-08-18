@@ -2080,7 +2080,7 @@ LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL ge
 	mDetail = detail;
 	mSculptLevel = -2;
 #if MESH_ENABLED
-	mIsTetrahedron = FALSE;
+	mIsMeshAssetLoaded = FALSE;
 	mLODScaleBias.setVec(1,1,1);
 	mHullPoints = NULL;
 	mHullIndices = NULL;
@@ -2103,7 +2103,7 @@ LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL ge
 
 	generate();
 	
-	if (mParams.getSculptID().isNull() && mParams.getSculptType() == LL_SCULPT_TYPE_NONE)
+	if (mParams.getSculptID().isNull() && mParams.getSculptType() == LL_SCULPT_TYPE_NONE || mParams.getSculptType() == LL_SCULPT_TYPE_MESH)
 	{
 		createVolumeFaces();
 	}
@@ -2712,173 +2712,21 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 	return true;
 }
 
-void tetrahedron_set_normal(LLVolumeFace::VertexData* cv)
+		
+BOOL LLVolume::isMeshAssetLoaded()
 {
-	LLVector4a v0;
-	v0.setSub(cv[1].getPosition(), cv[0].getNormal());
-	LLVector4a v1;
-	v1.setSub(cv[2].getNormal(), cv[0].getPosition());
-	
-	cv[0].getNormal().setCross3(v0,v1);
-	cv[0].getNormal().normalize3fast();
-	cv[1].setNormal(cv[0].getNormal());
-	cv[2].setNormal(cv[1].getNormal());
+	return mIsMeshAssetLoaded;
 }
 
-BOOL LLVolume::isTetrahedron()
+void LLVolume::setMeshAssetLoaded(BOOL loaded)
 {
-	return mIsTetrahedron;
-}
-
-void LLVolume::makeTetrahedron()
-{
-	mVolumeFaces.clear();
-
-	LLVolumeFace face;
-
-	F32 x = 0.25f;
-	LLVector4a p[] = 
-	{ //unit tetrahedron corners
-		LLVector4a(x,x,x),
-		LLVector4a(-x,-x,x),
-		LLVector4a(-x,x,-x),
-		LLVector4a(x,-x,-x)
-	};
-
-	face.mExtents[0].splat(-x);
-	face.mExtents[1].splat(x);
-	
-	LLVolumeFace::VertexData cv[3];
-
-	//set texture coordinates
-	cv[0].mTexCoord = LLVector2(0,0);
-	cv[1].mTexCoord = LLVector2(1,0);
-	cv[2].mTexCoord = LLVector2(0.5f, 0.5f*F_SQRT3);
-
-
-	//side 1
-	cv[0].setPosition(p[1]);
-	cv[1].setPosition(p[0]);
-	cv[2].setPosition(p[2]);
-
-	tetrahedron_set_normal(cv);
-
-	face.resizeVertices(12);
-	face.resizeIndices(12);
-
-	LLVector4a* v = (LLVector4a*) face.mPositions;
-	LLVector4a* n = (LLVector4a*) face.mNormals;
-	LLVector2* tc = (LLVector2*) face.mTexCoords;
-
-	v[0] = cv[0].getPosition();
-	v[1] = cv[1].getPosition();
-	v[2] = cv[2].getPosition();
-	v += 3;
-
-	n[0] = cv[0].getNormal();
-	n[1] = cv[1].getNormal();
-	n[2] = cv[2].getNormal();
-	n += 3;
-
-	if(tc)
-	{
-		tc[0] = cv[0].mTexCoord;
-		tc[1] = cv[1].mTexCoord;
-		tc[2] = cv[2].mTexCoord;
-		tc += 3;
-	}
-	
-	//side 2
-	cv[0].setPosition(p[3]);
-	cv[1].setPosition(p[0]);
-	cv[2].setPosition(p[1]);
-
-	tetrahedron_set_normal(cv);
-
-	v[0] = cv[0].getPosition();
-	v[1] = cv[1].getPosition();
-	v[2] = cv[2].getPosition();
-	v += 3;
-
-	n[0] = cv[0].getNormal();
-	n[1] = cv[1].getNormal();
-	n[2] = cv[2].getNormal();
-	n += 3;
-
-	if(tc)
-	{
-		tc[0] = cv[0].mTexCoord;
-		tc[1] = cv[1].mTexCoord;
-		tc[2] = cv[2].mTexCoord;
-		tc += 3;
-	}
-
-	//side 3
-	cv[0].setPosition(p[3]);
-	cv[1].setPosition(p[1]);
-	cv[2].setPosition(p[2]);
-
-	tetrahedron_set_normal(cv);
-
-	v[0] = cv[0].getPosition();
-	v[1] = cv[1].getPosition();
-	v[2] = cv[2].getPosition();
-	v += 3;
-
-	n[0] = cv[0].getNormal();
-	n[1] = cv[1].getNormal();
-	n[2] = cv[2].getNormal();
-	n += 3;
-
-	if(tc)
-	{
-		tc[0] = cv[0].mTexCoord;
-		tc[1] = cv[1].mTexCoord;
-		tc[2] = cv[2].mTexCoord;
-		tc += 3;
-	}
-	
-	//side 4
-	cv[0].setPosition(p[2]);
-	cv[1].setPosition(p[0]);
-	cv[2].setPosition(p[3]);
-
-	tetrahedron_set_normal(cv);
-
-	v[0] = cv[0].getPosition();
-	v[1] = cv[1].getPosition();
-	v[2] = cv[2].getPosition();
-	v += 3;
-
-	n[0] = cv[0].getNormal();
-	n[1] = cv[1].getNormal();
-	n[2] = cv[2].getNormal();
-	n += 3;
-
-	if(tc)
-	{
-		tc[0] = cv[0].mTexCoord;
-		tc[1] = cv[1].mTexCoord;
-		tc[2] = cv[2].mTexCoord;
-		tc += 3;
-	}
-	
-	//set index buffer
-	for (U16 i = 0; i < 12; i++)
-	{
-		face.mIndices[i] = i;
-	}
-	
-	mVolumeFaces.push_back(face);
-	mSculptLevel = 0;
-	mIsTetrahedron = TRUE;
+	mIsMeshAssetLoaded = loaded;
 }
 
 void LLVolume::copyVolumeFaces(const LLVolume* volume)
 {
 	mVolumeFaces = volume->mVolumeFaces;
 	mSculptLevel = 0;
-	mIsTetrahedron = FALSE;
 }
 
 void LLVolume::cacheOptimize()
@@ -2889,19 +2737,11 @@ void LLVolume::cacheOptimize()
 	}
 }
 #endif //MESH_ENABLED
+
 S32	LLVolume::getNumFaces() const
 {
-#if MESH_ENABLED
-	U8 sculpt_type = (mParams.getSculptType() & LL_SCULPT_TYPE_MASK);
-
-	if (sculpt_type == LL_SCULPT_TYPE_MESH)
-	{
-		return LL_SCULPT_MESH_MAX_FACES;
-	}
-#endif //MESH_ENABLED
 	return (S32)mProfilep->mFaces.size();
 }
-
 
 void LLVolume::createVolumeFaces()
 {
@@ -7301,7 +7141,7 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 		resizeVertices(num_vertices);
 		resizeIndices(num_indices);
 #if MESH_ENABLED
-		if ((volume->getParams().getSculptType() & LL_SCULPT_TYPE_MASK) != LL_SCULPT_TYPE_MESH)
+		if (!volume->isMeshAssetLoaded())
 #endif //MESH_ENABLED
 		{
 			mEdge.resize(num_indices);

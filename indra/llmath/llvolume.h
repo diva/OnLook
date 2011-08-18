@@ -1085,15 +1085,15 @@ protected:
 public:
 	virtual bool unpackVolumeFaces(std::istream& is, S32 size);
 
-	virtual void makeTetrahedron();
-	virtual BOOL isTetrahedron();
+	virtual void setMeshAssetLoaded(BOOL loaded);
+	virtual BOOL isMeshAssetLoaded();
 #endif //MESH_ENABLED
  protected:
 	BOOL mUnique;
 	F32 mDetail;
 	S32 mSculptLevel;
 #if MESH_ENABLED
-	BOOL mIsTetrahedron;
+	BOOL mIsMeshAssetLoaded;
 #endif //MESH_ENABLED
 	
 	LLVolumeParams mParams;
