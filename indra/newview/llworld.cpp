@@ -439,9 +439,9 @@ BOOL LLWorld::positionRegionValidGlobal(const LLVector3d &pos_global)
 
 
 // Allow objects to go up to their radius underground.
-F32 LLWorld::getMinAllowedZ(LLViewerObject* object)
+F32 LLWorld::getMinAllowedZ(LLViewerObject* object, const LLVector3d &global_pos)
 {
-	F32 land_height = resolveLandHeightGlobal(object->getPositionGlobal());
+	F32 land_height = resolveLandHeightGlobal(global_pos);
 	F32 radius = 0.5f * object->getScale().length();
 	return land_height - radius;
 }

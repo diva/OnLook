@@ -2154,7 +2154,7 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 		
 	// Clamp the Z height
 	const F32 height = newpos.mV[VZ];
-	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject);
+	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject, mObject->getPositionGlobal());
 	// <edit>
 	//const F32 max_height = LLWorld::getInstance()->getRegionMaxHeight();
 	const F32 max_height = F32(340282346638528859811704183484516925440.0f);
