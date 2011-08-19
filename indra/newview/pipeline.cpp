@@ -7875,8 +7875,11 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 					LLGLDisable cull(GL_CULL_FACE);
 					updateCull(camera, ref_result, -water_clip, &plane);
 					stateSort(camera, ref_result);
-					gPipeline.grabReferences(ref_result);
-					renderGeom(camera);
+					if (LLDrawPoolWater::sNeedsDistortionUpdate)
+					{
+						gPipeline.grabReferences(ref_result);
+						renderGeom(camera);
+					}
 					LLPipeline::sSkipUpdate = FALSE;
 					gPipeline.popRenderTypeMask();
 				}

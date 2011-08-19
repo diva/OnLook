@@ -2967,17 +2967,7 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		}
 	}
 	
-	U8 glow = 0;
-		
-	if (type == LLRenderPass::PASS_GLOW || type==LLRenderPass::PASS_ALPHA) //Alpha pass now handles glow internally
-	{
-		glow = (U8) (facep->getTextureEntry()->getGlow() * 255);
-	}
-
-	if (!facep->getVertexBuffer())
-	{
-		llerrs << "WTF?" << llendl;
-	}
+	U8 glow = (U8) (facep->getTextureEntry()->getGlow() * 255);
 
 	if (idx >= 0 && 
 		draw_vec[idx]->mVertexBuffer == facep->getVertexBuffer() &&
