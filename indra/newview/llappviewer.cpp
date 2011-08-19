@@ -3993,6 +3993,44 @@ void LLAppViewer::idleShutdown()
 	}
 }
 
+void LLAppViewer::sendLogoutRequest()
+{
+	if(!mLogoutRequestSent && gMessageSystem)
+	{
+
+		LLMessageSystem* msg = gMessageSystem;
+		msg->newMessageFast(_PREHASH_LogoutRequest);
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
+		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gAgent.sendReliableMessage();
+
+		gLogoutTimer.reset();
+		gLogoutMaxTime = LOGOUT_REQUEST_TIME;
+		mLogoutRequestSent = TRUE;
+		
+		if(gVoiceClient)
+			gVoiceClient->leaveChannel();
+
+		//Set internal status variables and marker files
+		gLogoutInProgress = TRUE;
+		mLogoutMarkerFileName = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,LOGOUT_MARKER_FILE_NAME);
+		
+		LLAPRFile outfile ;
+		outfile.open(mLogoutMarkerFileName, LL_APR_W, LLAPRFile::global);
+		mLogoutMarkerFile =  outfile.getFileHandle() ;
+		if (mLogoutMarkerFile)
+		{
+			llinfos << "Created logout marker file " << mLogoutMarkerFileName << llendl;
+    		apr_file_close(mLogoutMarkerFile);
+		}
+		else
+		{
+			llwarns << "Cannot create logout marker file " << mLogoutMarkerFileName << llendl;
+		}		
+	}
+}
+
 void LLAppViewer::idleNameCache()
 {
 	// Neither old nor new name cache can function before agent has a region
@@ -4045,43 +4083,6 @@ void LLAppViewer::idleNameCache()
 	}
 
 	LLAvatarNameCache::idle();
-}
-
-void LLAppViewer::sendLogoutRequest()
-{
-	if(!mLogoutRequestSent)
-	{
-
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessageFast(_PREHASH_LogoutRequest);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gAgent.sendReliableMessage();
-
-		gLogoutTimer.reset();
-		gLogoutMaxTime = LOGOUT_REQUEST_TIME;
-		mLogoutRequestSent = TRUE;
-		
-		gVoiceClient->leaveChannel();
-
-		//Set internal status variables and marker files
-		gLogoutInProgress = TRUE;
-		mLogoutMarkerFileName = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,LOGOUT_MARKER_FILE_NAME);
-		
-		LLAPRFile outfile ;
-		outfile.open(mLogoutMarkerFileName, LL_APR_W, LLAPRFile::global);
-		mLogoutMarkerFile =  outfile.getFileHandle() ;
-		if (mLogoutMarkerFile)
-		{
-			llinfos << "Created logout marker file " << mLogoutMarkerFileName << llendl;
-    		apr_file_close(mLogoutMarkerFile);
-		}
-		else
-		{
-			llwarns << "Cannot create logout marker file " << mLogoutMarkerFileName << llendl;
-		}		
-	}
 }
 
 //
