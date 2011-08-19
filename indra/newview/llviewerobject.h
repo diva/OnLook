@@ -545,6 +545,9 @@ private:
 	ExtraParameter* getExtraParameterEntryCreate(U16 param_type);
 	bool unpackParameterEntry(U16 param_type, LLDataPacker *dp);
 	
+	// Motion prediction between updates
+	void interpolateLinearMotion(const F64 & time, const F32 & dt);
+
 public:
 	//
 	// Viewer-side only types - use the LL_PCODE_APP mask.
@@ -735,8 +738,24 @@ protected:
 	mutable LLVector3		mPositionRegion;
 	mutable LLVector3		mPositionAgent;
 
+	static void setPhaseOutUpdateInterpolationTime(F32 value)	{ sPhaseOutUpdateInterpolationTime = (F64) value;	}
+	static void setMaxUpdateInterpolationTime(F32 value)		{ sMaxUpdateInterpolationTime = (F64) value;	}
+
+	static void	setVelocityInterpolate(BOOL value)		{ sVelocityInterpolate = value;	}
+	static void	setPingInterpolate(BOOL value)			{ sPingInterpolate = value;	}
+
 private:	
 	static S32 sNumObjects;
+
+	static F64 sPhaseOutUpdateInterpolationTime;	// For motion interpolation
+	static F64 sMaxUpdateInterpolationTime;			// For motion interpolation
+
+	static BOOL sVelocityInterpolate;
+	static BOOL sPingInterpolate;
+
+	//--------------------------------------------------------------------
+	// For objects that are attachments
+	//--------------------------------------------------------------------
 public:
 // <edit>
 	S32 getAttachmentPoint();
@@ -815,8 +834,5 @@ public:
 
 	virtual void updateDrawable(BOOL force_damped);
 };
-
-extern BOOL gVelocityInterpolate;
-extern BOOL gPingInterpolate;
 
 #endif

@@ -597,33 +597,30 @@ void LLViewerObjectList::dirtyAllObjectInventory()
 void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 {
 	S32 i;
-	S32 const objects_size = mObjects.size();
+	S32 num_objects = 0;
 	LLViewerObject *objectp;
 
 	S32 num_updates, max_value;
-	// The list can have shrinked since mCurLazyUpdateIndex was last updated.
-	if (mCurLazyUpdateIndex >= objects_size)
-	{
-		mCurLazyUpdateIndex = 0;
-	}
 	if (NUM_BINS - 1 == mCurBin)
 	{
-		num_updates = objects_size - mCurLazyUpdateIndex;
-		max_value = objects_size;
+		num_updates = (S32) mObjects.size() - mCurLazyUpdateIndex;
+		max_value = (S32) mObjects.size();
 		gTextureList.setUpdateStats(TRUE);
 	}
 	else
 	{
-		num_updates = (objects_size / NUM_BINS) + 1;
-		max_value = llmin(objects_size, mCurLazyUpdateIndex + num_updates);
+		num_updates = ((S32) mObjects.size() / NUM_BINS) + 1;
+		max_value = llmin((S32) mObjects.size(), mCurLazyUpdateIndex + num_updates);
 	}
 
-	if (!gNoRender)
+
+	// Slam priorities for textures that we care about (hovered, selected, and focused)
+	// Hovered
+	// Assumes only one level deep of parenting
+	LLSelectNode* nodep = LLSelectMgr::instance().getHoverNode();
+	if (nodep)
 	{
-		// Slam priorities for textures that we care about (hovered, selected, and focused)
-		// Hovered
-		// Assumes only one level deep of parenting
-		objectp = gHoverView->getLastHoverObject();
+		objectp = nodep->getObject();
 		if (objectp)
 		{
 			objectp->boostTexturePriority();
@@ -654,6 +651,8 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 		objectp = mObjects[i];
 		if (!objectp->isDead())
 		{
+			num_objects++;
+
 			//  Update distance & gpw 
 			objectp->setPixelAreaAndAngle(agent); // Also sets the approx. pixel area
 			objectp->updateTextures();	// Update the image levels of textures for this object.
@@ -661,7 +660,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	}
 
 	mCurLazyUpdateIndex = max_value;
-	if (mCurLazyUpdateIndex == objects_size)
+	if (mCurLazyUpdateIndex == mObjects.size())
 	{
 		mCurLazyUpdateIndex = 0;
 	}
@@ -861,9 +860,24 @@ private:
 void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
+
 	// Update globals
-	gVelocityInterpolate = gSavedSettings.getBOOL("VelocityInterpolate");
-	gPingInterpolate = gSavedSettings.getBOOL("PingInterpolate");
+	LLViewerObject::setVelocityInterpolate( gSavedSettings.getBOOL("VelocityInterpolate") );
+	LLViewerObject::setPingInterpolate( gSavedSettings.getBOOL("PingInterpolate") );
+	
+	F32 interp_time = gSavedSettings.getF32("InterpolationTime");
+	F32 phase_out_time = gSavedSettings.getF32("InterpolationPhaseOut");
+	if (interp_time < 0.0 || 
+		phase_out_time < 0.0 ||
+		phase_out_time > interp_time)
+	{
+		llwarns << "Invalid values for InterpolationTime or InterpolationPhaseOut, resetting to defaults" << llendl;
+		interp_time = 3.0f;
+		phase_out_time = 1.0f;
+	}
+	LLViewerObject::setPhaseOutUpdateInterpolationTime( interp_time );
+	LLViewerObject::setMaxUpdateInterpolationTime( phase_out_time );
+
 	gAnimateTextures = gSavedSettings.getBOOL("AnimateTextures");
 
 	// update global timer
