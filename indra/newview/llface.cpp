@@ -1080,15 +1080,15 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 	}
 
-	LLStrider<LLVector3> vertices;
+	LLStrider<LLVector3> vert;
 	LLStrider<LLVector2> tex_coords;
 	LLStrider<LLVector2> tex_coords2;
-	LLStrider<LLVector3> normals;
+	LLStrider<LLVector3> norm;
 	LLStrider<LLColor4U> colors;
-	LLStrider<LLVector3> binormals;
+	LLStrider<LLVector3> binorm;
 	LLStrider<U16> indicesp;
 #if MESH_ENABLED
-	LLStrider<LLVector4> weights;
+	LLStrider<LLVector4> wght;
 #endif //MESH_ENABLED
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
@@ -1116,8 +1116,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	const LLTextureEntry *tep = mVObjp->getTE(f);
 	if (!tep) rebuild_color = FALSE;	// can't get color when tep is NULL
 	U8  bump_code = tep ? tep->getBumpmap() : 0;
-
-
 	
 	BOOL is_static = mDrawablep->isStatic();
 	BOOL is_global = is_static;
@@ -1157,7 +1155,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
     // INDICES
 	if (full_rebuild)
 	{
-		mVertexBuffer->getIndexStrider(indicesp, mIndicesIndex, mIndicesCount, map_range);
+		mVertexBuffer->getIndexStrider(indicesp, mIndicesIndex);
 
 		__m128i* dst = (__m128i*) indicesp.get();
 		__m128i* src = (__m128i*) vf.mIndices;
@@ -1174,11 +1172,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		for (S32 i = end*8; i < num_indices; ++i)
 		{
 			indicesp[i] = vf.mIndices[i]+index_offset;
-		}
-
-		if (map_range)
-		{
-			mVertexBuffer->setBuffer(0);
 		}
 	}
 	
@@ -1400,7 +1393,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				}
 			}
 
-			//mVertexBuffer->setBuffer(0);
 		}
 		else
 		{ //either bump mapped or in atlas, just do the whole expensive loop
@@ -1458,8 +1450,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				}
 			}
 
-			//mVertexBuffer->setBuffer(0);
-
 
 			if (do_bump)
 			{
@@ -1493,7 +1483,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					*tex_coords2++ = tc;
 				}
 
-				//mVertexBuffer->setBuffer(0);
 			}
 		}
 	}
@@ -1501,74 +1490,158 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (rebuild_pos)
 	{
 		llassert(num_vertices > 0);
-		mVertexBuffer->getVertexStrider(vertices, mGeomIndex);
+		mVertexBuffer->getVertexStrider(vert, mGeomIndex);
 		LLMatrix4a mat_vert;
 		mat_vert.loadu(mat_vert_in);
 		
 		LLVector4a* src = vf.mPositions;
-		LLVector4a position;
-		F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
-		for (S32 i = 0; i < num_vertices; i++)
+
+		if(!vert.isStrided())
 		{
-			mat_vert.affineTransform(src[i], position);
-			//Still using getF32ptr() because if the array is strided then theres no guarantee vertices will aligned, which LLVector4a requires
-			vertices[i].set(position.getF32ptr()); //This assignment and the one below are oddly sensitive. Suspect something's off around here.
-			vertices[i].mV[3] = index;
+			LLVector4a* vertices = (LLVector4a*) vert.get();
+
+			LLVector4a* dst = vertices;
+
+			LLVector4a* end = dst+num_vertices;
+			do
+			{	
+				mat_vert.affineTransform(*src++, *dst++);
+			}
+			while(dst < end);
+
+			F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
+			F32 *index_dst = (F32*) vertices;
+			F32 *index_end = (F32*) end;
+
+			index_dst += 3;
+			index_end += 3;
+			do
+			{
+				*index_dst = index;
+				index_dst += 4;
+			}
+			while (index_dst < index_end);
+		
+			S32 aligned_pad_vertices = mGeomCount - num_vertices;
+			LLVector4a* last_vec = end - 1;
+			while (aligned_pad_vertices > 0)
+			{
+				--aligned_pad_vertices;
+				*dst++ = *last_vec;
+			}
+
 		}
-		for (S32 i = num_vertices; i < mGeomCount; i++)
+		else
 		{
-			memcpy(vertices[i].mV,vertices[num_vertices-1].mV,sizeof(LLVector4));
+			LLVector4a position;
+			F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
+			for (S32 i = 0; i < num_vertices; i++)
+			{
+				mat_vert.affineTransform(src[i], position);
+				//Still using getF32ptr() because if the array is strided then theres no guarantee vertices will aligned, which LLVector4a requires
+				vert[i].set(position.getF32ptr()); //This assignment and the one below are oddly sensitive. Suspect something's off around here.
+				vert[i].mV[3] = index;
+			}
+			for (S32 i = num_vertices; i < mGeomCount; i++)
+			{
+				memcpy(vert[i].mV,vert[num_vertices-1].mV,sizeof(LLVector4));
+			}
 		}
-					
-		//mVertexBuffer->setBuffer(0);
 	}
 		
 	if (rebuild_normal)
 	{
-		mVertexBuffer->getNormalStrider(normals, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
-		{	
-			LLVector4a normal;
-			mat_normal.rotate(vf.mNormals[i], normal);
-			normal.normalize3fast();
-			normals[i].set(normal.getF32ptr());
+		mVertexBuffer->getNormalStrider(norm, mGeomIndex);
+		if(!norm.isStrided())
+		{
+			LLVector4a* normals = (LLVector4a*) norm.get();
+	
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a normal;
+				mat_normal.rotate(vf.mNormals[i], normal);
+				normal.normalize3fast();
+				normals[i] = normal;
+			}
 		}
-
-		//mVertexBuffer->setBuffer(0);
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a normal;
+				mat_normal.rotate(vf.mNormals[i], normal);
+				normal.normalize3fast();
+				norm[i].set(normal.getF32ptr());
+			}
+		}
 	}
 		
 	if (rebuild_binormal)
 	{
-		mVertexBuffer->getBinormalStrider(binormals, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
-		{	
-			LLVector4a binormal;
-			mat_normal.rotate(vf.mBinormals[i], binormal);
-			binormal.normalize3fast();
-			binormals[i].set(binormal.getF32ptr());
+		mVertexBuffer->getBinormalStrider(binorm, mGeomIndex);
+		if(!binorm.isStrided())
+		{
+			LLVector4a* binormals = (LLVector4a*) binorm.get();
+		
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a binormal;
+				mat_normal.rotate(vf.mBinormals[i], binormal);
+				binormal.normalize3fast();
+				binormals[i] = binormal;
+			}
 		}
-
-		//mVertexBuffer->setBuffer(0);
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a binormal;
+				mat_normal.rotate(vf.mBinormals[i], binormal);
+				binormal.normalize3fast();
+				binorm[i].set(binormal.getF32ptr());
+			}
+		}
 	}
 	
 #if MESH_ENABLED
 	if (rebuild_weights && vf.mWeights)
 	{
-		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
-		weights.assignArray((U8*) vf.mWeights, sizeof(vf.mWeights[0]), num_vertices);
-		//mVertexBuffer->setBuffer(0);
+		mVertexBuffer->getWeight4Strider(wght, mGeomIndex);
+		wght.assignArray((U8*) vf.mWeights, sizeof(vf.mWeights[0]), num_vertices);
 	}
 #endif //MESH_ENABLED
 
 	if (rebuild_color)
 	{
 		mVertexBuffer->getColorStrider(colors, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
+		if(!colors.isStrided())
 		{
-			colors[i] = color;	
-		}
+			LLVector4a src;
 
-		//mVertexBuffer->setBuffer(0);
+			U32 vec[4];
+			vec[0] = vec[1] = vec[2] = vec[3] = color.mAll;
+		
+			src.loadua((F32*) vec);
+
+			LLVector4a* dst = (LLVector4a*) colors.get();
+			S32 num_vecs = num_vertices/4;
+			if (num_vertices%4 > 0)
+			{
+				++num_vecs;
+			}
+
+			for (S32 i = 0; i < num_vecs; i++)
+			{	
+				dst[i] = src;
+			}
+		}
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{
+				colors[i] = color;	
+			}
+		}
 	}
 
 	if (rebuild_tcoord)
