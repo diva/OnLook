@@ -160,6 +160,8 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	{
 		mAgentParcelOverlay[i] = 0;
 	}
+
+	mTeleportInProgress = TRUE; // the initial parcel update is treated like teleport
 }
 
 
@@ -651,14 +653,13 @@ LLParcel *LLViewerParcelMgr::getAgentParcel() const
 }
 
 // Return whether the agent can build on the land they are on
-BOOL LLViewerParcelMgr::agentCanBuild() const
+bool LLViewerParcelMgr::allowAgentBuild() const
 {
 	if (mAgentParcel)
 	{
-		return (gAgent.isGodlike()
-				|| (mAgentParcel->allowModifyBy(
-						gAgent.getID(),
-						gAgent.getGroupID())));
+		return (gAgent.isGodlike() ||
+				(mAgentParcel->allowModifyBy(gAgent.getID(), gAgent.getGroupID())) ||
+				(isParcelOwnedByAgent(mAgentParcel, GP_LAND_ALLOW_CREATE)));
 	}
 	else
 	{
@@ -666,19 +667,53 @@ BOOL LLViewerParcelMgr::agentCanBuild() const
 	}
 }
 
-BOOL LLViewerParcelMgr::agentCanTakeDamage() const
+// Return whether anyone can build on the given parcel
+bool LLViewerParcelMgr::allowAgentBuild(const LLParcel* parcel) const
 {
-	return mAgentParcel->getAllowDamage();
+	return parcel->getAllowModify();
 }
 
-BOOL LLViewerParcelMgr::agentCanFly() const
+bool LLViewerParcelMgr::allowAgentVoice() const
 {
-	return TRUE;
+	return allowAgentVoice(gAgent.getRegion(), mAgentParcel);
 }
 
-F32 LLViewerParcelMgr::agentDrawDistance() const
+bool LLViewerParcelMgr::allowAgentVoice(const LLViewerRegion* region, const LLParcel* parcel) const
 {
-	return 512.f;
+	return region && region->isVoiceEnabled()
+		&& parcel	&& parcel->getParcelFlagAllowVoice();
+}
+
+bool LLViewerParcelMgr::allowAgentFly(const LLViewerRegion* region, const LLParcel* parcel) const
+{
+	return region && !region->getBlockFly()
+		&& parcel && parcel->getAllowFly();
+}
+
+// Can the agent be pushed around by LLPushObject?
+bool LLViewerParcelMgr::allowAgentPush(const LLViewerRegion* region, const LLParcel* parcel) const
+{
+	return region && !region->getRestrictPushObject()
+		&& parcel && !parcel->getRestrictPushObject();
+}
+
+bool LLViewerParcelMgr::allowAgentScripts(const LLViewerRegion* region, const LLParcel* parcel) const
+{
+	// *NOTE: This code does not take into account group-owned parcels
+	// and the flag to allow group-owned scripted objects to run.
+	// This mirrors the traditional menu bar parcel icon code, but is not
+	// technically correct.
+	return region
+		&& !(region->getRegionFlags() & REGION_FLAGS_SKIP_SCRIPTS)
+		&& !(region->getRegionFlags() & REGION_FLAGS_ESTATE_SKIP_SCRIPTS)
+		&& parcel
+		&& parcel->getAllowOtherScripts();
+}
+
+bool LLViewerParcelMgr::allowAgentDamage(const LLViewerRegion* region, const LLParcel* parcel) const
+{
+	return (region && region->getAllowDamage())
+		|| (parcel && parcel->getAllowDamage());
 }
 
 BOOL LLViewerParcelMgr::isOwnedAt(const LLVector3d& pos_global) const
@@ -1167,10 +1202,11 @@ void LLViewerParcelMgr::sendParcelBuy(ParcelBuyInfo* info)
 	msg->sendReliable(info->mHost);
 }
 
-void LLViewerParcelMgr::deleteParcelBuy(ParcelBuyInfo*& info)
+void LLViewerParcelMgr::deleteParcelBuy(ParcelBuyInfo* *info)
 {
-	delete info;
-	info = NULL;
+	// Must be here because ParcelBuyInfo is local to this .cpp file
+	delete *info;
+	*info = NULL;
 }
 
 void LLViewerParcelMgr::sendParcelDeed(const LLUUID& group_id)
@@ -1288,9 +1324,15 @@ void LLViewerParcelMgr::sendParcelPropertiesUpdate(LLParcel* parcel, bool use_ag
 }
 
 
-void LLViewerParcelMgr::requestHoverParcelProperties(const LLVector3d& pos)
+void LLViewerParcelMgr::setHoverParcel(const LLVector3d& pos)
 {
 	static U32 last_west, last_south;
+
+	// only request parcel info when tooltip is shown
+	if (!gSavedSettings.getBOOL("ShowLandHoverTip"))
+	{
+		return;
+	}
 	// only request parcel info if position has changed outside of the
 	// last parcel grid step
 	U32 west_parcel_step = (U32) floor( pos.mdV[VX] / PARCEL_GRID_STEP_METERS );
@@ -1542,9 +1584,19 @@ void LLViewerParcelMgr::processParcelProperties(LLMessageSystem *msg, void **use
 
 			LLViewerParcelMgr::getInstance()->writeAgentParcelFromBitmap(bitmap);
 			delete[] bitmap;
+
+			// Let interesting parties know about agent parcel change.
+			LLViewerParcelMgr* instance = LLViewerParcelMgr::getInstance();
+
+			instance->mAgentParcelChangedSignal();
+
+			if (instance->mTeleportInProgress)
+			{
+				instance->mTeleportInProgress = FALSE;
+				instance->mTeleportFinishedSignal(gAgent.getPositionGlobal());
+			}
 		}
 	}
-
 	// Add any pending entry to the TP history now that we got the *new* parcel name.
 	LLFloaterTeleportHistory::getInstance()->addEntry(LLViewerParcelMgr::getInstance()->getAgentParcelName());
 
@@ -2156,7 +2208,10 @@ bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
 		= parcelOwner == (forGroup ? gAgent.getGroupID() : gAgent.getID());
 	
 	bool isAuthorized
-		= (authorizeBuyer.isNull() || (gAgent.getID() == authorizeBuyer));
+			= (authorizeBuyer.isNull()
+				|| (gAgent.getID() == authorizeBuyer)
+				|| (gAgent.hasPowerInGroup(authorizeBuyer,GP_LAND_DEED)
+					&& gAgent.hasPowerInGroup(authorizeBuyer,GP_LAND_SET_SALE_INFO)));
 	
 	return isForSale && !isOwner && isAuthorized  && isEmpowered;
 }
@@ -2477,4 +2532,53 @@ LLViewerTexture* LLViewerParcelMgr::getBlockedImage() const
 LLViewerTexture* LLViewerParcelMgr::getPassImage() const
 {
 	return sPassImage;
+}
+
+boost::signals2::connection LLViewerParcelMgr::addAgentParcelChangedCallback(parcel_changed_callback_t cb)
+{
+	return mAgentParcelChangedSignal.connect(cb);
+}
+/*
+ * Set finish teleport callback. You can use it to observe all  teleport events.
+ * NOTE:
+ * After local( in one region) teleports we
+ *  cannot rely on gAgent.getPositionGlobal(),
+ *  so the new position gets passed explicitly.
+ *  Use args of this callback to get global position of avatar after teleport event.
+ */
+boost::signals2::connection LLViewerParcelMgr::setTeleportFinishedCallback(teleport_finished_callback_t cb)
+{
+	return mTeleportFinishedSignal.connect(cb);
+}
+
+boost::signals2::connection LLViewerParcelMgr::setTeleportFailedCallback(parcel_changed_callback_t cb)
+{
+	return mTeleportFailedSignal.connect(cb);
+}
+
+/* Ok, we're notified that teleport has been finished.
+ * We should now propagate the notification via mTeleportFinishedSignal
+ * to all interested parties.
+ */
+void LLViewerParcelMgr::onTeleportFinished(bool local, const LLVector3d& new_pos)
+{
+	// Treat only teleports within the same parcel as local (EXT-3139).
+	if (local && LLViewerParcelMgr::getInstance()->inAgentParcel(new_pos))
+	{
+		// Local teleport. We already have the agent parcel data.
+		// Emit the signal immediately.
+		getInstance()->mTeleportFinishedSignal(new_pos);
+	}
+	else
+	{
+		// Non-local teleport (inter-region or between different parcels of the same region).
+		// The agent parcel data has not been updated yet.
+		// Let's wait for the update and then emit the signal.
+		mTeleportInProgress = TRUE;
+	}
+}
+
+void LLViewerParcelMgr::onTeleportFailed()
+{
+	mTeleportFailedSignal();
 }
