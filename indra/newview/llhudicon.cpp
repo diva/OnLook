@@ -334,7 +334,8 @@ LLHUDIcon* LLHUDIcon::lineSegmentIntersectAll(const LLVector3& start, const LLVe
 	for(icon_it = sIconInstances.begin(); icon_it != sIconInstances.end(); ++icon_it)
 	{
 		LLHUDIcon* icon = *icon_it;
-		if (icon && icon->lineSegmentIntersect(start, local_end, &position))
+		llassert(icon);
+		if (icon->lineSegmentIntersect(start, local_end, &position))
 		{
 			ret = icon;
 			if (intersection)
