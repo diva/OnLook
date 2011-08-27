@@ -64,6 +64,12 @@ protected:
 	virtual void releaseName(GLuint name);
 };
 
+class LLGLFence
+{
+public:
+	virtual void placeFence() = 0;
+	virtual void wait() = 0;
+};
 
 //============================================================================
 // base class
@@ -254,6 +260,12 @@ protected:
 	BOOL	mResized;		// if TRUE, client buffer has been resized and GL buffer has not
 	BOOL	mDynamicSize;	// if TRUE, buffer has been resized at least once (and should be padded)
 	S32		mOffsets[TYPE_MAX];
+
+	mutable LLGLFence* mFence;
+
+	void placeFence() const;
+	void waitFence() const;
+
 
 public:
 	static S32 sCount;

@@ -42,6 +42,7 @@
 #include "llrender.h"
 #include "llvector4a.h"
 #include "llcontrol.h"
+#include "llglslshader.h"
 
 //============================================================================
 
@@ -88,6 +89,59 @@ void LLVBOPool::releaseName(GLuint name)
 	LLVertexBuffer::sGLCount--;
 }
 
+const U32 FENCE_WAIT_TIME_NANOSECONDS = 10000;  //1 ms
+
+class LLGLSyncFence : public LLGLFence
+{
+public:
+#ifdef GL_ARB_sync
+	GLsync mSync;
+#endif
+	
+	LLGLSyncFence()
+	{
+#ifdef GL_ARB_sync
+		mSync = 0;
+#endif
+	}
+
+	virtual ~LLGLSyncFence()
+	{
+#ifdef GL_ARB_sync
+		if (mSync)
+		{
+			glDeleteSync(mSync);
+		}
+#endif
+	}
+
+	void placeFence()
+	{
+#ifdef GL_ARB_sync
+		if (mSync)
+		{
+			glDeleteSync(mSync);
+		}
+		mSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+#endif
+	}
+
+	void wait()
+	{
+#ifdef GL_ARB_sync
+		if (mSync)
+		{
+			while (glClientWaitSync(mSync, 0, FENCE_WAIT_TIME_NANOSECONDS) == GL_TIMEOUT_EXPIRED)
+			{ //track the number of times we've waited here
+				static S32 waits = 0;
+				waits++;
+			}
+		}
+#endif
+	}
+
+
+};
 
 S32 LLVertexBuffer::sTypeSize[LLVertexBuffer::TYPE_MAX] =
 {
@@ -334,6 +388,7 @@ void LLVertexBuffer::drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indi
 	glDrawRangeElements(sGLMode[mode], start, end, count, GL_UNSIGNED_SHORT, 
 		idx);
 	stop_glerror();
+	placeFence();
 }
 
 void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
@@ -365,6 +420,7 @@ void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
 	glDrawElements(sGLMode[mode], count, GL_UNSIGNED_SHORT,
 		((U16*) getIndicesPointer()) + indices_offset);
 	stop_glerror();
+	placeFence();
 }
 
 void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
@@ -390,6 +446,7 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 	stop_glerror();
 	glDrawArrays(sGLMode[mode], first, count);
 	stop_glerror();
+	placeFence();
 }
 
 //static
@@ -470,7 +527,8 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage, bool strided) :
 	mResized(FALSE),
 	mDynamicSize(FALSE),
 	mIsStrided(strided),
-	mStride(0)
+	mStride(0),
+	mFence(NULL)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	if (!sEnableVBOs)
@@ -570,8 +628,39 @@ LLVertexBuffer::~LLVertexBuffer()
 	destroyGLIndices();
 	sCount--;
 
+	if (mFence)
+	{
+		delete mFence;
+	}
+	
+	mFence = NULL;
+
 	llassert_always(!mMappedData && !mMappedIndexData) ;
 };
+
+void LLVertexBuffer::placeFence() const
+{
+	/*if (!mFence && useVBOs())
+	{
+		if (gGLManager.mHasSync)
+		{
+			mFence = new LLGLSyncFence();
+		}
+	}
+
+	if (mFence)
+	{
+		mFence->placeFence();
+	}*/
+}
+
+void LLVertexBuffer::waitFence() const
+{
+	/*if (mFence)
+	{
+		mFence->wait();
+	}*/
+}
 
 //----------------------------------------------------------------------------
 

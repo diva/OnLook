@@ -321,6 +321,7 @@ void LLDrawPoolGrass::endDeferredPass(S32 pass)
 void LLDrawPoolGrass::renderDeferred(S32 pass)
 {
 	{
+		LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
 		//LLFastTimer t(FTM_RENDER_GRASS_DEFERRED);
 		gDeferredNonIndexedDiffuseAlphaMaskProgram.bind();
 		gDeferredNonIndexedDiffuseAlphaMaskProgram.setAlphaRange(0.5f, 1.f);

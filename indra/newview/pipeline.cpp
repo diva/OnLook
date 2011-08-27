@@ -5866,25 +5866,25 @@ void apply_cube_face_rotation(U32 face)
 void validate_framebuffer_object()
 {                                                           
 	GLenum status;                                            
-	status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT); 
+	status = glCheckFramebufferStatus(GL_FRAMEBUFFER_EXT); 
 	switch(status) 
 	{                                          
-		case GL_FRAMEBUFFER_COMPLETE_EXT:                       
+		case GL_FRAMEBUFFER_COMPLETE:                       
 			//framebuffer OK, no error.
 			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+		case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
 			// frame buffer not OK: probably means unsupported depth buffer format
 			llerrs << "Framebuffer Incomplete Missing Attachment." << llendl;
 			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+		case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:	//May not work on mac. Remove/ifdef if that's the case, for now. GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS missing from glext.h.
 			// frame buffer not OK: probably means unsupported depth buffer format
 			llerrs << "Framebuffer Incomplete Dimensions." << llendl;
 			break;
-		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+		case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
 			// frame buffer not OK: probably means unsupported depth buffer format
 			llerrs << "Framebuffer Incomplete Attachment." << llendl;
 			break; 
-		case GL_FRAMEBUFFER_UNSUPPORTED_EXT:                    
+		case GL_FRAMEBUFFER_UNSUPPORTED:                    
 			/* choose different formats */                        
 			llerrs << "Framebuffer unsupported." << llendl;
 			break;                                                
@@ -6113,7 +6113,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	if (LLRenderTarget::sUseFBO)
 	{
 		LLFastTimer ftm(LLFastTimer::FTM_RENDER_BLOOM_FBO);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	gGLViewport[0] = gViewerWindow->getWorldViewRectRaw().mLeft;
@@ -6937,7 +6937,7 @@ void LLPipeline::renderDeferredLighting()
 						mLuminanceMap.flush();
 						gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_TEXTURE, mLuminanceMap.getTexture(), true);
 						gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_TRILINEAR);
-						glGenerateMipmapEXT(GL_TEXTURE_2D);
+						glGenerateMipmap(GL_TEXTURE_2D);
 					}
 				}
 
