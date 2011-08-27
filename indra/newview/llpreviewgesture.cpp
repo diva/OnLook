@@ -39,6 +39,7 @@
 // libraries
 #include "lldatapacker.h"
 #include "lldarray.h"
+#include "llinventorydefines.h"
 #include "llstring.h"
 #include "lldir.h"
 #include "llmultigesture.h"

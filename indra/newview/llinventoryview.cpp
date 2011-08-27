@@ -36,6 +36,7 @@
 
 #include "llinventoryview.h"
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 
 #include "message.h"
 

@@ -40,6 +40,7 @@
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
 #include "lldir.h"
+#include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"

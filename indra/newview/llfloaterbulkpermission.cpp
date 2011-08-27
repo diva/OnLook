@@ -35,6 +35,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llfloaterbulkpermission.h"
 #include "llfloaterperms.h" // for utilities
+#include "llinventorydefines.h"
 #include "llagent.h"
 #include "llchat.h"
 #include "llviewerwindow.h"

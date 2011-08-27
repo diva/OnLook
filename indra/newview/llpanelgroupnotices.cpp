@@ -39,6 +39,7 @@
 #include "llinventory.h"
 #include "llviewerinventory.h"
 #include "llinventorymodel.h"
+#include "llinventorydefines.h"
 #include "llinventoryview.h"
 #include "llagent.h"
 #include "lltooldraganddrop.h"

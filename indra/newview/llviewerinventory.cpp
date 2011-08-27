@@ -46,6 +46,7 @@
 #include "llgesturemgr.h"
 
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 #include "llinventoryview.h"
 
 #include "llviewerregion.h"

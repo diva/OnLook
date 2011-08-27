@@ -150,10 +150,11 @@ public:
 	};
 
 	LLAPRFile() ;
-	LLAPRFile(const std::string& filename, apr_int32_t flags, access_t access_type);
+	LLAPRFile(const std::string& filename, apr_int32_t flags, access_t access_type = LLAPRFile::global);
 	~LLAPRFile() ;
 
-	apr_status_t open(const std::string& filename, apr_int32_t flags, access_t access_type, S32* sizep = NULL);
+	apr_status_t open(const std::string& filename, apr_int32_t flags, access_t access_type = LLAPRFile::global, S32* sizep = NULL);
+	apr_status_t open(const std::string& filename, apr_int32_t flags, BOOL use_global_pool); //use global pool.
 	apr_status_t close() ;
 
 	// Returns actual offset, -1 if seek fails

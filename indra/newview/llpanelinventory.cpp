@@ -50,6 +50,7 @@
 #include "llfontgl.h"
 #include "llassetstorage.h"
 #include "llinventory.h"
+#include "llinventorydefines.h"
 
 #include "llagent.h"
 #include "llcallbacklist.h"

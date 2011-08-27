@@ -39,6 +39,7 @@
 #include "llcompilequeue.h"
 #include "llfloaterbuycurrency.h"
 #include "llnotify.h"
+#include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llpermissionsflags.h"

@@ -49,6 +49,7 @@
 #include "llsdutil.h"
 #include "llsdutil_math.h"
 #include "lltransactiontypes.h"
+#include "llinventorydefines.h"
 
 // newview includes
 #include "llagent.h"

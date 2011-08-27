@@ -167,6 +167,7 @@
 #include "llimagebmp.h"
 #include "llimagej2c.h"
 #include "llimagetga.h"
+#include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"

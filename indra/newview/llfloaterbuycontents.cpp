@@ -46,6 +46,7 @@
 #include "llalertdialog.h"
 #include "llcheckboxctrl.h"
 #include "llinventorymodel.h"	// for gInventory
+#include "llinventorydefines.h"
 #include "llinventoryview.h"	// for get_item_icon
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"

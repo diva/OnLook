@@ -196,6 +196,7 @@ set(llcommon_HEADER_FILES
     llsys.h
     llthread.h
     lltimer.h
+    lltreeiterators.h
     lluri.h
     lluuid.h
     lluuidhashmap.h
@@ -232,6 +233,7 @@ target_link_libraries(
     ${EXPAT_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${WINDOWS_LIBRARIES}
+    ${BOOST_REGEX_LIBRARY}
     ${CWDEBUG_LIBRARIES}
     ${CORESERVICES_LIBRARY}
     )

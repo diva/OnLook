@@ -49,6 +49,7 @@
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llmutelist.h"

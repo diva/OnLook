@@ -35,6 +35,7 @@
 #include "llpreviewnotecard.h"
 
 #include "llinventory.h"
+#include "llinventorydefines.h"
 
 #include "llagent.h"
 #include "llagentcamera.h"

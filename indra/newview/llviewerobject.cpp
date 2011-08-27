@@ -45,6 +45,7 @@
 #include "llfontgl.h"
 #include "llframetimer.h"
 #include "llinventory.h"
+#include "llinventorydefines.h"
 #include "llmaterialtable.h"
 #include "llmutelist.h"
 #include "llnamevalue.h"

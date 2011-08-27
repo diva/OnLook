@@ -432,12 +432,9 @@ public:
 	void completeSale(U32& type, U8& flags, LLUUID& to_id);
 	void clearSale();
 
-	// this function returns TRUE if the parcel needs conversion to a
-	// lease from a non-owned-status state.
-	BOOL getRecordTransaction() const { return mRecordTransaction; }
-	void setRecordTransaction(BOOL record) { mRecordTransaction = record; }
 
 	BOOL isMediaResetTimerExpired(const U64& time);
+
 
 	// more accessors
 	U32		getParcelFlags() const			{ return mParcelFlags; }
@@ -473,7 +470,9 @@ public:
 					{ return (mParcelFlags & PF_ALLOW_FLY) ? TRUE : FALSE; }
 
 	BOOL	getAllowLandmark() const
-					{ return (mParcelFlags & PF_ALLOW_LANDMARK) ? TRUE : FALSE; }
+					{ return TRUE; }
+					//Perhaps revert for opensim?
+					//{ return (mParcelFlags & PF_ALLOW_LANDMARK) ? TRUE : FALSE; }
 
 	BOOL	getAllowGroupScripts() const
 					{ return (mParcelFlags & PF_ALLOW_GROUP_SCRIPTS) ? TRUE : FALSE; }
@@ -619,8 +618,6 @@ protected:
 	LLTimer mMediaResetTimer;
 
 	S32 mGraceExtension;
-	BOOL mRecordTransaction;
-	
 
 	// This value is non-zero if there is an auction associated with
 	// the parcel.
