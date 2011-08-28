@@ -4179,7 +4179,7 @@ void LLAppViewer::idleNetwork()
 		}
 	}
 	llpushcallstacks ;
-	gObjectList.mNumNewObjectsStat.addValue(gObjectList.mNumNewObjects);
+	LLViewerStats::getInstance()->mNumNewObjectsStat.addValue(gObjectList.mNumNewObjects);
 
 	// Retransmit unacknowledged packets.
 	gXferManager->retransmitUnackedPackets();

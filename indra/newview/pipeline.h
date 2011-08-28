@@ -443,7 +443,6 @@ public:
 	S32						 mMeanBatchSize;
 	S32						 mTrianglesDrawn;
 	S32						 mNumVisibleNodes;
-	LLStat                   mTrianglesDrawnStat;
 	S32						 mVerticesRelit;
 
 	S32						 mLightingChanges;

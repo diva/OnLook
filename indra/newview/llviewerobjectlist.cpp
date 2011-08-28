@@ -1026,10 +1026,10 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	}
 	*/
 
-	mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
-	mNumActiveObjectsStat.addValue(num_active_objects);
-	mNumSizeCulledStat.addValue(mNumSizeCulled);
-	mNumVisCulledStat.addValue(mNumVisCulled);
+	LLViewerStats::getInstance()->mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
+	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(num_active_objects);
+	LLViewerStats::getInstance()->mNumSizeCulledStat.addValue(mNumSizeCulled);
+	LLViewerStats::getInstance()->mNumVisCulledStat.addValue(mNumVisCulled);
 }
 
 #if MESH_ENABLED

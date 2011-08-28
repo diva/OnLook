@@ -72,12 +72,6 @@ void (*LLViewerTextureList::sUUIDCallback)(void **, const LLUUID&) = NULL;
 U32 LLViewerTextureList::sTextureBits = 0;
 U32 LLViewerTextureList::sTexturePackets = 0;
 S32 LLViewerTextureList::sNumImages = 0;
-LLStat LLViewerTextureList::sNumImagesStat(32, TRUE);
-LLStat LLViewerTextureList::sNumRawImagesStat(32, TRUE);
-LLStat LLViewerTextureList::sGLTexMemStat(32, TRUE);
-LLStat LLViewerTextureList::sGLBoundMemStat(32, TRUE);
-LLStat LLViewerTextureList::sRawMemStat(32, TRUE);
-LLStat LLViewerTextureList::sFormattedMemStat(32, TRUE);
 
 LLViewerTextureList gTextureList;
 
@@ -608,12 +602,12 @@ void LLViewerTextureList::updateImages(F32 max_time)
 {
 	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
-	sNumImagesStat.addValue(sNumImages);
-	sNumRawImagesStat.addValue(LLImageRaw::sRawImageCount);
-	sGLTexMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sGlobalTextureMemoryInBytes));
-	sGLBoundMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sBoundTextureMemoryInBytes));
-	sRawMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageRaw::sGlobalRawMemory));
-	sFormattedMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageFormatted::sGlobalFormattedMemory));
+	LLViewerStats::getInstance()->mNumImagesStat.addValue(sNumImages);
+	LLViewerStats::getInstance()->mNumRawImagesStat.addValue(LLImageRaw::sRawImageCount);
+	LLViewerStats::getInstance()->mGLTexMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sGlobalTextureMemoryInBytes));
+	LLViewerStats::getInstance()->mGLBoundMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageGL::sBoundTextureMemoryInBytes));
+	LLViewerStats::getInstance()->mRawMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageRaw::sGlobalRawMemory));
+	LLViewerStats::getInstance()->mFormattedMemStat.addValue((F32)BYTES_TO_MEGA_BYTES(LLImageFormatted::sGlobalFormattedMemory));
 	
 	updateImagesDecodePriorities();
 

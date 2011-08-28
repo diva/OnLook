@@ -85,6 +85,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h" // for audio debugging.
+#include "llviewerstats.h"
 #include "llviewerwindow.h" // For getSpinAxis
 #include "llvoavatar.h"
 #include "llvoground.h"
@@ -391,7 +392,7 @@ void LLPipeline::init()
 	getPool(LLDrawPool::POOL_BUMP);
 	getPool(LLDrawPool::POOL_GLOW);
 
-	mTrianglesDrawnStat.reset();
+	LLViewerStats::getInstance()->mTrianglesDrawnStat.reset();
 	resetFrameStats();
 
 	for (U32 i = 0; i < NUM_RENDER_TYPES; ++i)
@@ -1443,7 +1444,7 @@ void LLPipeline::resetFrameStats()
 {
 	assertInitialized();
 
-	mTrianglesDrawnStat.addValue(mTrianglesDrawn/1000.f);
+	LLViewerStats::getInstance()->mTrianglesDrawnStat.addValue(mTrianglesDrawn/1000.f);
 
 	if (mBatchCount > 0)
 	{

@@ -3604,14 +3604,29 @@ void LLAgent::setTeleportState(ETeleportState state)
 	{
 		LLFloaterSnapshot::hide(0);
 	}
-	if (mTeleportState == TELEPORT_NONE)
-	{
-		mbTeleportKeepsLookAt = false;
-	}
-	if ((mTeleportState == TELEPORT_MOVING))
-	{
+
+	switch (mTeleportState)
+	
+	{	
+		case TELEPORT_NONE:
+			mbTeleportKeepsLookAt = false;
+			break;
+
+		case TELEPORT_MOVING:
 		// We're outa here. Save "back" slurl.
 		mTeleportSourceSLURL = getSLURL();
+			break;
+
+		case TELEPORT_ARRIVING:
+		// First two position updates after a teleport tend to be weird
+		LLViewerStats::getInstance()->mAgentPositionSnaps.mCountOfNextUpdatesToIgnore = 2;
+
+		// Let the interested parties know we've teleported.
+		LLViewerParcelMgr::getInstance()->onTeleportFinished(false, getPositionGlobal());
+			break;
+
+		default:
+			break;
 	}
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Version: 1.23.4 | Checked: 2009-07-07 (RLVa-1.0.0d) | Added: RLVa-0.2.0b
 	if ( (rlv_handler_t::isEnabled()) && (TELEPORT_NONE == mTeleportState) )
