@@ -171,7 +171,7 @@ void LLDrawPoolTree::endDeferredPass(S32 pass)
 void LLDrawPoolTree::beginShadowPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_SHADOW_TREE);
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.5f);
+
 	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
@@ -187,12 +187,10 @@ void LLDrawPoolTree::renderShadow(S32 pass)
 void LLDrawPoolTree::endShadowPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_SHADOW_TREE);
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
-	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
-	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
-	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 
-	//gDeferredShadowProgram.unbind();
+	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredSpotShadowOffset",1.f);
+	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredSpotShadowBias",1.f);
+	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 }
 
 void LLDrawPoolTree::renderTree(BOOL selecting)

@@ -328,8 +328,8 @@ public:
 	virtual void setScale(const LLVector3 &scale, BOOL damped = FALSE);
 
 #if MESH_ENABLED
-	virtual F32 getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL);
-	virtual U32 getTriangleCount();
+	virtual F32 getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL, F32* unscaled_value = NULL) const;
+	virtual U32 getTriangleCount() const;
 	virtual U32 getHighLODTriangleCount();
 
 	void setObjectCost(F32 cost);

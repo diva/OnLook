@@ -1717,6 +1717,7 @@ void LLMeshRepository::cacheOutgoingMesh(LLMeshUploadData& data, LLSD& header)
 		if (data.mModel[i].notNull())
 		{
 			LLPointer<LLVolume> volume = new LLVolume(volume_params, LLVolumeLODGroup::getVolumeScaleFromDetail(i));
+			volume->copyVolumeFaces(data.mModel[i]);
 			volume->setMeshAssetLoaded(TRUE);
 		}
 	}
@@ -2552,7 +2553,7 @@ S32 LLMeshRepository::getActualMeshLOD(const LLVolumeParams& mesh_params, S32 lo
 	return mThread->getActualMeshLOD(mesh_params, lod);
 }
 
-const LLMeshSkinInfo* LLMeshRepository::getSkinInfo(const LLUUID& mesh_id, LLVOVolume* requesting_obj)
+const LLMeshSkinInfo* LLMeshRepository::getSkinInfo(const LLUUID& mesh_id, const LLVOVolume* requesting_obj)
 {
 	if (mesh_id.notNull())
 	{
@@ -2813,7 +2814,7 @@ void LLMeshRepository::uploadError(LLSD& args)
 }
 
 //static
-F32 LLMeshRepository::getStreamingCost(LLSD& header, F32 radius, S32* bytes, S32* bytes_visible, S32 lod)
+F32 LLMeshRepository::getStreamingCost(LLSD& header, F32 radius, S32* bytes, S32* bytes_visible, S32 lod, F32 *unscaled_value)
 {
 	F32 max_distance = 512.f;
 
@@ -2821,10 +2822,15 @@ F32 LLMeshRepository::getStreamingCost(LLSD& header, F32 radius, S32* bytes, S32
 	F32 dlow = llmin(radius/0.06f, max_distance);
 	F32 dmid = llmin(radius/0.24f, max_distance);
 	
-	F32 METADATA_DISCOUNT = (F32) gSavedSettings.getU32("MeshMetaDataDiscount");  //discount 128 bytes to cover the cost of LLSD tags and compression domain overhead
-	F32 MINIMUM_SIZE = (F32) gSavedSettings.getU32("MeshMinimumByteSize"); //make sure nothing is "free"
+	static const LLCachedControl<U32> mesh_meta_data_discount("MeshMetaDataDiscount");
+	static const LLCachedControl<U32> mesh_minimum_byte_size("MeshMinimumByteSize");
+	static const LLCachedControl<U32> mesh_bytes_per_triangle("MeshBytesPerTriangle");
+	static const LLCachedControl<U32> mesh_triangle_budget("MeshTriangleBudget");
 
-	F32 bytes_per_triangle = (F32) gSavedSettings.getU32("MeshBytesPerTriangle");
+	F32 METADATA_DISCOUNT = (F32) mesh_meta_data_discount.get();  //discount 128 bytes to cover the cost of LLSD tags and compression domain overhead
+	F32 MINIMUM_SIZE = (F32) mesh_minimum_byte_size.get(); //make sure nothing is "free"
+
+	F32 bytes_per_triangle = (F32) mesh_bytes_per_triangle.get();
 
 	S32 bytes_lowest = header["lowest_lod"]["size"].asInteger();
 	S32 bytes_low = header["low_lod"]["size"].asInteger();
@@ -2902,7 +2908,12 @@ F32 LLMeshRepository::getStreamingCost(LLSD& header, F32 radius, S32* bytes, S32
 					   triangles_low*low_area +
 					  triangles_lowest*lowest_area;
 
-	return weighted_avg/gSavedSettings.getU32("MeshTriangleBudget")*15000.f;
+	if (unscaled_value)
+	{
+		*unscaled_value = weighted_avg;
+	}
+
+	return weighted_avg/mesh_triangle_budget*15000.f;
 }
 
 
@@ -3204,32 +3215,33 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 		llwarns << "Could not execute decomposition stage when attempting to create single hull." << llendl;
 		make_box(mCurRequest);
 	}
-
-	mMutex->lock();
-	mCurRequest->mHull.clear();
-	mCurRequest->mHull.resize(1);
-	mCurRequest->mHullMesh.clear();
-	mMutex->unlock();
-
-	std::vector<LLVector3> p;
-	LLCDHull hull;
-		
-	// if LLConvexDecomposition is a stub, num_hulls should have been set to 0 above, and we should not reach this code
-	decomp->getSingleHull(&hull);
-
-	const F32* v = hull.mVertexBase;
-
-	for (S32 j = 0; j < hull.mNumVertices; ++j)
+	else
 	{
-		LLVector3 vert(v[0], v[1], v[2]); 
-		p.push_back(vert);
-		v = (F32*) (((U8*) v) + hull.mVertexStrideBytes);
-	}
+		mMutex->lock();
+		mCurRequest->mHull.clear();
+		mCurRequest->mHull.resize(1);
+		mCurRequest->mHullMesh.clear();
+		mMutex->unlock();
+
+		std::vector<LLVector3> p;
+		LLCDHull hull;
+		
+		// if LLConvexDecomposition is a stub, num_hulls should have been set to 0 above, and we should not reach this code
+		decomp->getSingleHull(&hull);
+
+		const F32* v = hull.mVertexBase;
+
+		for (S32 j = 0; j < hull.mNumVertices; ++j)
+		{
+			LLVector3 vert(v[0], v[1], v[2]); 
+			p.push_back(vert);
+			v = (F32*) (((U8*) v) + hull.mVertexStrideBytes);
+		}
 						
-	mMutex->lock();
-	mCurRequest->mHull[0] = p;
-	mMutex->unlock();	
-			
+		mMutex->lock();
+		mCurRequest->mHull[0] = p;
+		mMutex->unlock();	
+	}		
 #else
 	setMeshData(mesh, false);
 

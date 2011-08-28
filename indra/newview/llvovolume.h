@@ -90,6 +90,7 @@ public:
 // Class which embodies all Volume objects (with pcode LL_PCODE_VOLUME)
 class LLVOVolume : public LLViewerObject
 {
+	LOG_CLASS(LLVOVolume);
 protected:
 	virtual				~LLVOVolume();
 
@@ -131,11 +132,12 @@ public:
 	const LLMatrix4&	getRelativeXform() const				{ return mRelativeXform; }
 	const LLMatrix3&	getRelativeXformInvTrans() const		{ return mRelativeXformInvTrans; }
 	/*virtual*/	const LLMatrix4	getRenderMatrix() const;
-
+	typedef std::map<LLUUID, S32> texture_cost_t;
+	U32 	getRenderCost(texture_cost_t &textures) const;
 #if MESH_ENABLED
-	/*virtual*/	F32		getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL);
+	/*virtual*/	F32		getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL, F32* unscaled_value = NULL) const;
 #endif //MESH_ENABLED
-	/*virtual*/ U32		getTriangleCount();
+	/*virtual*/ U32		getTriangleCount() const;
 	/*virtual*/ U32		getHighLODTriangleCount();
 	/*virtual*/ BOOL lineSegmentIntersect(const LLVector3& start, const LLVector3& end, 
 										  S32 face = -1,                        // which face to check, -1 = ALL_SIDES
@@ -210,7 +212,7 @@ public:
 	/*virtual*/ BOOL	updateLOD();
 				void	updateRadius();
 	/*virtual*/ void	updateTextures();
-				void	updateTextureVirtualSize();
+				void	updateTextureVirtualSize(bool forced = false);
 
 				void	updateFaceFlags();
 				void	regenFaces();
@@ -291,7 +293,13 @@ protected:
 	LLFace* addFace(S32 face_index);
 	void updateTEData();
 
+	// stats tracking for render complexity
+	static S32 mRenderComplexity_last;
+	static S32 mRenderComplexity_current;
 public:
+
+	static S32 getRenderComplexityMax() {return mRenderComplexity_last;}
+	static void updateRenderComplexity();
 	LLViewerTextureAnim *mTextureAnimp;
 	U8 mTexAnimMode;
 private:
