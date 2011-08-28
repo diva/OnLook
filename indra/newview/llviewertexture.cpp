@@ -104,7 +104,6 @@ S32 LLViewerTexture::sMaxSmallImageSize = MAX_CACHED_RAW_IMAGE_AREA ;
 BOOL LLViewerTexture::sFreezeImageScalingDown = FALSE ;
 F32 LLViewerTexture::sCurrentTime = 0.0f ;
 //BOOL LLViewerTexture::sUseTextureAtlas        = FALSE ;
-BOOL LLViewerTexture::sDontLoadVolumeTextures = FALSE ;
 
 const F32 desired_discard_bias_min = -2.0f; // -max number of levels to improve image quality by
 const F32 desired_discard_bias_max = (F32)MAX_DISCARD_LEVEL; // max number of levels to reduce image quality by
@@ -1537,7 +1536,7 @@ void LLViewerFetchedTexture::processTextureStats()
 	{
 		updateVirtualSize() ;
 		
-		static LLCachedControl<bool> textures_fullres("TextureLoadFullRes",false);
+		static LLCachedControl<bool> textures_fullres(gSavedSettings,"TextureLoadFullRes");
 		
 		if (textures_fullres)
 		{
@@ -1825,7 +1824,7 @@ S32 LLViewerFetchedTexture::getCurrentDiscardLevelForFetching()
 
 bool LLViewerFetchedTexture::updateFetch()
 {
-	static LLCachedControl<bool> textures_decode_disabled("TextureDecodeDisabled",false);
+	static LLCachedControl<bool> textures_decode_disabled(gSavedSettings,"TextureDecodeDisabled");
 	if(textures_decode_disabled)
 	{
 		return false ;
@@ -2027,11 +2026,11 @@ bool LLViewerFetchedTexture::updateFetch()
 			c = mComponents;
 		}
 
-		/*const U32 override_tex_discard_level = gSavedSettings.getU32("TextureDiscardLevel");
+		const U32 override_tex_discard_level = gSavedSettings.getU32("TextureDiscardLevel");
 		if (override_tex_discard_level != 0)
 		{
 			desired_discard = override_tex_discard_level;
-		}*/
+		}
 		
 		// bypass texturefetch directly by pulling from LLTextureCache
 		bool fetch_request_created = false;
@@ -3014,8 +3013,8 @@ BOOL LLViewerLODTexture::isUpdateFrozen()
 void LLViewerLODTexture::processTextureStats()
 {
 	updateVirtualSize() ;
-
-	static LLCachedControl<bool> textures_fullres("TextureLoadFullRes", false);
+	
+	static LLCachedControl<bool> textures_fullres(gSavedSettings,"TextureLoadFullRes");
 	
 	if (textures_fullres)
 	{

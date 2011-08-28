@@ -336,7 +336,6 @@ public:
 	static BOOL sFreezeImageScalingDown ;//do not scale down image res if set.
 	static F32  sCurrentTime ;
 	//static BOOL sUseTextureAtlas ;
-	static BOOL sDontLoadVolumeTextures ;
 
 	static LLPointer<LLViewerTexture> sNullImagep; // Null texture for non-textured objects.
 };

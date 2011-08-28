@@ -502,8 +502,10 @@ void LLVOVolume::updateTextureVirtualSize()
 	{
 		return;
 	}
-	
-	if (LLViewerTexture::sDontLoadVolumeTextures || LLAppViewer::getTextureFetch()->mDebugPause)
+
+	static LLCachedControl<bool> dont_load_textures(gSavedSettings,"TextureDisable");
+		
+	if (dont_load_textures || LLAppViewer::getTextureFetch()->mDebugPause) // || !mDrawable->isVisible())
 	{
 		return;
 	}
