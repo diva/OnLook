@@ -1191,6 +1191,7 @@ void LLViewerFetchedTexture::init(bool firstinit)
 	mSavedRawDiscardLevel = -1 ;
 	mDesiredSavedRawDiscardLevel = -1 ;
 	mLastReferencedSavedRawImageTime = 0.0f ;
+	mKeptSavedRawImageTime = 0.f ;
 	mLastCallBackActiveTime = 0.f;
 }
 
@@ -1450,9 +1451,16 @@ BOOL LLViewerFetchedTexture::createTexture(S32 usename/*= 0*/)
 			mOrigWidth = mRawImage->getWidth();
 			mOrigHeight = mRawImage->getHeight();
 
-			// leave black border, do not scale image content
-			mRawImage->expandToPowerOfTwo(MAX_IMAGE_SIZE, FALSE);
 			
+			if (mBoostLevel == BOOST_PREVIEW)
+			{ 
+				mRawImage->biasedScaleToPowerOfTwo(1024);
+			}
+			else
+			{ // leave black border, do not scale image content
+				mRawImage->expandToPowerOfTwo(MAX_IMAGE_SIZE, FALSE);
+			}
+		
 			mFullWidth = mRawImage->getWidth();
 			mFullHeight = mRawImage->getHeight();
 			setTexelsPerImage();
@@ -2738,8 +2746,16 @@ void LLViewerFetchedTexture::saveRawImage()
 	mLastReferencedSavedRawImageTime = sCurrentTime ;
 }
 
-void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard) 
+void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard, F32 kept_time) 
 { 
+	mKeptSavedRawImageTime = kept_time ;
+	mLastReferencedSavedRawImageTime = sCurrentTime ;
+
+	if(mSavedRawDiscardLevel > -1 && mSavedRawDiscardLevel <= desired_discard)
+	{
+		return ; //raw imge is ready.
+	}
+
 	if(!mForceToSaveRawImage || mDesiredSavedRawDiscardLevel < 0 || mDesiredSavedRawDiscardLevel > desired_discard)
 	{
 		mForceToSaveRawImage = TRUE ;
@@ -2760,6 +2776,14 @@ void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard)
 }
 void LLViewerFetchedTexture::destroySavedRawImage()
 {
+	if(mLastReferencedSavedRawImageTime < mKeptSavedRawImageTime)
+	{
+		return ; //keep the saved raw image.
+	}
+
+	mForceToSaveRawImage  = FALSE ;
+	mSaveRawImage = FALSE ;
+
 	clearCallbackEntryList() ;
 	
 	mSavedRawImage = NULL ;
@@ -2768,6 +2792,7 @@ void LLViewerFetchedTexture::destroySavedRawImage()
 	mSavedRawDiscardLevel = -1 ;
 	mDesiredSavedRawDiscardLevel = -1 ;
 	mLastReferencedSavedRawImageTime = 0.0f ;
+	mKeptSavedRawImageTime = 0.f ;
 }
 
 LLImageRaw* LLViewerFetchedTexture::getSavedRawImage() 
