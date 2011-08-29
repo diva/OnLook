@@ -41,6 +41,8 @@
 #include "llparcel.h"
 #include "llvfile.h"
 #include "llvfs.h"
+#include "llwindow.h"
+#include "message.h"
 
 #include "llagent.h"
 #include "llcombobox.h"

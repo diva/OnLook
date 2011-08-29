@@ -44,9 +44,11 @@
 
 #include "v3dmath.h"
 #include "v2math.h"
-#include "llwindow.h"
+#include "llcursortypes.h"
+#include "llwindowcallbacks.h"
 #include "lltimer.h"
 #include "llstat.h"
+#include "llmousehandler.h"
 #include "llalertdialog.h"
 #include "llnotifications.h"
 
@@ -58,8 +60,9 @@ class LLTool;
 class LLVelocityBar;
 class LLTextBox;
 class LLImageRaw;
+class LLImageFormatted;
 class LLHUDIcon;
-class LLMouseHandler;
+class LLWindow;
 class AIFilePicker;
 
 #define PICK_HALF_WIDTH 5
@@ -67,6 +70,17 @@ class AIFilePicker;
 
 class LLPickInfo
 {
+public:
+	typedef enum e_pick_type
+	{
+		PICK_OBJECT,
+		PICK_FLORA,
+		PICK_LAND,
+		PICK_ICON,
+		PICK_PARCEL_WALL,
+		PICK_INVALID
+	} EPickType;
+
 public:
 	LLPickInfo();
 	LLPickInfo(const LLCoordGL& mouse_pos, 
@@ -80,19 +94,10 @@ public:
 	void fetchResults();
 	LLPointer<LLViewerObject> getObject() const;
 	LLUUID getObjectID() const { return mObjectID; }
+	bool isValid() const { return mPickType != PICK_INVALID; }
 	void drawPickBuffer() const;
 
 	static bool isFlora(LLViewerObject* object);
-
-	typedef enum e_pick_type
-	{
-		PICK_OBJECT,
-		PICK_FLORA,
-		PICK_LAND,
-		PICK_ICON,
-		PICK_PARCEL_WALL,
-		PICK_INVALID
-	} EPickType;
 
 public:
 	LLCoordGL		mMousePt;
@@ -216,9 +221,9 @@ public:
 
 
 	LLWindow*		getWindow()			const	{ return mWindow; }
-	void*			getPlatformWindow() const	{ return mWindow->getPlatformWindow(); }
-	void*			getMediaWindow() 	const	{ return mWindow->getMediaWindow(); }
-	void			focusClient()		const	{ return mWindow->focusClient(); };
+	void*			getPlatformWindow() const;
+	void*			getMediaWindow() 	const;
+	void			focusClient()		const;
 
 	LLCoordGL		getLastMouse()		const	{ return mLastMousePoint; }
 	S32				getLastMouseX()		const	{ return mLastMousePoint.mX; }

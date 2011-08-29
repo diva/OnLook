@@ -35,6 +35,7 @@
 #include "lltoolgun.h"
 
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llviewercontrol.h"

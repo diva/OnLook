@@ -54,6 +54,7 @@
 #include "llviewertexturelist.h"
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvoavatar.h"
 #include "llvoiceclient.h"
 #include "llvosky.h"

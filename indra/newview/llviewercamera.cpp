@@ -34,18 +34,10 @@
 
 #include "llviewercamera.h"
 
-#include <iomanip> // for setprecision
-
-#include "llquaternion.h"
-
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llmatrix4a.h"
 #include "llviewercontrol.h"
-#include "lldrawable.h"
-#include "llface.h"
-#include "llgl.h"
-#include "llglheaders.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
@@ -53,6 +45,17 @@
 #include "llworld.h"
 #include "lltoolmgr.h"
 #include "llviewerjoystick.h"
+
+// Linden library includes
+#include "lldrawable.h"
+#include "llface.h"
+#include "llgl.h"
+#include "llglheaders.h"
+#include "llquaternion.h"
+#include "llwindow.h"			// getPixelAspectRatio()
+
+// System includes
+#include <iomanip> // for setprecision
 
 U32 LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 

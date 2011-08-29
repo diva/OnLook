@@ -1222,11 +1222,16 @@ void LLViewerWindow::handleMouseMove(LLWindow *window,  LLCoordGL pos, MASK mask
 
 	LLCoordGL prev_saved_mouse_point = mCurrentMousePoint;
 	LLCoordGL mouse_point(x, y);
+
+	if (mouse_point != mCurrentMousePoint)
+	{
+		gMouseIdleTimer.reset();
+	}
 	saveLastMouse(mouse_point);
 	BOOL mouse_actually_moved = !gFocusMgr.getMouseCapture() &&  // mouse is not currenty captured
 			((prev_saved_mouse_point.mX != mCurrentMousePoint.mX) || (prev_saved_mouse_point.mY != mCurrentMousePoint.mY)); // mouse moved from last recorded position
 
-	gMouseIdleTimer.reset();
+	
 
 	mWindow->showCursorFromMouseMove();
 
@@ -1574,6 +1579,7 @@ LLViewerWindow::LLViewerWindow(
 	S32 width, S32 height,
 	BOOL fullscreen, BOOL ignore_pixel_depth)
 	:
+	mWindow(NULL),
 	mActive(TRUE),
 	mWantFullscreen(fullscreen),
 	mShowFullscreenProgress(FALSE),
@@ -1608,15 +1614,33 @@ LLViewerWindow::LLViewerWindow(
 	resetSnapshotLoc();
 
 	// create window
-	mWindow = LLWindowManager::createWindow(
+	mWindow = LLWindowManager::createWindow(this,
 		title, name, x, y, width, height, 0,
 		fullscreen, 
 		gNoRender,
 		gSavedSettings.getBOOL("DisableVerticalSync"),
 		!gNoRender,
 		ignore_pixel_depth,
-		gSavedSettings.getU32("RenderFSAASamples"));
+		gSavedSettings.getBOOL("RenderUseFBO") ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
 
+	if (NULL == mWindow)
+	{
+		LLSplashScreen::update("Graphics Initialization Failed. Please Update Your Graphics Driver!");
+	
+		LL_WARNS("Window") << "Failed to create window, to be shutting Down, be sure your graphics driver is updated." << llendl ;
+
+		ms_sleep(5000) ; //wait for 5 seconds.
+		LLSplashScreen::update("Shutting down...");
+#if LL_LINUX || LL_SOLARIS
+		llwarns << "Unable to create window, be sure screen is set at 32-bit color and your graphics driver is configured correctly.  See README-linux.txt or README-solaris.txt for further information."
+				<< llendl;
+#else
+		LL_WARNS("Window") << "Unable to create window, be sure screen is set at 32-bit color in Control Panels->Display->Settings"
+				<< LL_ENDL;
+#endif
+        LLAppViewer::instance()->fastQuit(1);
+	}
+	
 	if (!LLAppViewer::instance()->restoreErrorTrap())
 	{
 		LL_WARNS("Window") << " Someone took over my signal/exception handler (post createWindow)!" << LL_ENDL;
@@ -1631,19 +1655,6 @@ LLViewerWindow::LLViewerWindow(
 		gSavedSettings.setS32("FullScreenWidth",scr.mX);
 		gSavedSettings.setS32("FullScreenHeight",scr.mY);
     }
-
-	if (NULL == mWindow)
-	{
-		LLSplashScreen::update("Shutting down...");
-#if LL_LINUX || LL_SOLARIS
-		llwarns << "Unable to create window, be sure screen is set at 32-bit color and your graphics driver is configured correctly.  See README-linux.txt or README-solaris.txt for further information."
-				<< llendl;
-#else
-		LL_WARNS("Window") << "Unable to create window, be sure screen is set at 32-bit color in Control Panels->Display->Settings"
-				<< LL_ENDL;
-#endif
-        LLAppViewer::instance()->forceExit(1);
-	}
 	
 	// Get the real window rect the window was created with (since there are various OS-dependent reasons why
 	// the size of a window or fullscreen context may have been adjusted slightly...)
@@ -1698,12 +1709,8 @@ LLViewerWindow::LLViewerWindow(
 		mInitAlert = "DisplaySettingsNoShaders";
 		LLFeatureManager::getInstance()->setGraphicsLevel(0, false);
 		gSavedSettings.setU32("RenderQualityPerformance", 0);		
-		
 	}
 		
-	// set callbacks
-	mWindow->setCallbacks(this);
-
 	// Init the image list.  Must happen after GL is initialized and before the images that
 	// LLViewerWindow needs are requested.
 	LLImageGL::initClass(LLViewerTexture::MAX_GL_IMAGE_CATEGORY) ;
@@ -4729,7 +4736,20 @@ void LLViewerWindow::drawMouselookInstructions()
 		LLFontGL::LEFT, LLFontGL::TOP);
 }
 
+void* LLViewerWindow::getPlatformWindow() const
+{
+	return mWindow->getPlatformWindow();
+}
 
+void* LLViewerWindow::getMediaWindow() 	const
+{
+	return mWindow->getMediaWindow();
+}
+
+void LLViewerWindow::focusClient()		const
+{
+	return mWindow->focusClient();
+}
 S32	LLViewerWindow::getWindowHeight()	const 	
 { 
 	return mWindowRectScaled.getHeight(); 
@@ -4793,10 +4813,7 @@ void LLViewerWindow::setShowProgress(const BOOL show)
 	}
 }
 
-BOOL LLViewerWindow::getShowProgress() const
-{
-	return (mProgressView && mProgressView->getVisible());
-}
+
 
 
 void LLViewerWindow::moveProgressViewToFront()
@@ -4806,6 +4823,11 @@ void LLViewerWindow::moveProgressViewToFront()
 		mRootView->removeChild( mProgressView );
 		mRootView->addChild( mProgressView );
 	}
+}
+
+BOOL LLViewerWindow::getShowProgress() const
+{
+	return (mProgressView && mProgressView->getVisible());
 }
 
 void LLViewerWindow::setProgressString(const std::string& string)

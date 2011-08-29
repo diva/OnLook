@@ -60,6 +60,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llhudrender.h"
 #include "llworld.h"
 #include "v2math.h"

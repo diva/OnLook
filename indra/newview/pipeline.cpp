@@ -52,6 +52,7 @@
 #include "llui.h" 
 #include "llglheaders.h"
 #include "llrender.h"
+#include "llwindow.h"
 
 // newview includes
 #include "llagent.h"

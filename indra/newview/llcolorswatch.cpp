@@ -37,12 +37,12 @@
 
 // Linden library includes
 #include "v4color.h"
+#include "llwindow.h"	// setCursor()
 
 // Project includes
 #include "llui.h"
 #include "llrender.h"
 #include "lluiconstants.h"
-#include "llviewerwindow.h"
 #include "llviewercontrol.h"
 #include "llbutton.h"
 #include "lltextbox.h"

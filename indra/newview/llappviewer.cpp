@@ -2868,6 +2868,23 @@ void LLAppViewer::forceQuit()
 	LLApp::setQuitting(); 
 }
 
+//TODO: remove
+void LLAppViewer::fastQuit(S32 error_code)
+{
+	// finish pending transfers
+	flushVFSIO();
+	// let sim know we're logging out
+	sendLogoutRequest();
+	// flush network buffers by shutting down messaging system
+	end_messaging_system();
+	// figure out the error code
+	S32 final_error_code = error_code ? error_code : (S32)isError();
+	// this isn't a crash	
+	removeMarkerFile();
+	// get outta here
+	_exit(final_error_code);	
+}
+
 void LLAppViewer::requestQuit()
 {
 	llinfos << "requestQuit" << llendl;
@@ -2943,13 +2960,6 @@ void LLAppViewer::earlyExit(const std::string& name, const LLSD& substitutions)
 	LLNotifications::instance().add(name, substitutions, LLSD(), finish_early_exit);
 }
 
-void LLAppViewer::forceExit(S32 arg)
-{
-    removeMarkerFile();
-    
-    // *FIX:Mani - This kind of exit hardly seems appropriate.
-    exit(arg);
-}
 
 void LLAppViewer::abortQuit()
 {

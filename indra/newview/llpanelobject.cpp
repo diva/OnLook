@@ -67,6 +67,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvovolume.h"
 #include "llworld.h"
 #include "pipeline.h"

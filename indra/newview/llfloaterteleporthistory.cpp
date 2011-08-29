@@ -50,6 +50,7 @@
 #include "llurlsimstring.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llweb.h"
 #include "llsdserialize.h"
 // [RLVa:KB]

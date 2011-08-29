@@ -61,6 +61,7 @@
 #include "llviewerstats.h"
 #include "llviewercamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llviewermenufile.h"	// upload_new_resource()
 #include "llfloaterpostcard.h"
 #include "llcheckboxctrl.h"

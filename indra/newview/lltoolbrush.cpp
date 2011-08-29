@@ -43,6 +43,7 @@
 #include "llagent.h"
 #include "llcallbacklist.h"
 #include "llviewercontrol.h"
+#include "llwindow.h"
 #include "llfloatertools.h"
 #include "llregionposition.h"
 #include "llstatusbar.h"

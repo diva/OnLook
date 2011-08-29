@@ -44,6 +44,7 @@
 #include "llvoavatar.h"
 #include "llviewerobject.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llnetmap.h"
 #include "llagent.h"
 #include "llagentcamera.h"

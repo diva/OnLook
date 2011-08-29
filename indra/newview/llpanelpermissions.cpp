@@ -44,6 +44,7 @@
 #include "llstring.h"
 
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "llbutton.h"

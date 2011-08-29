@@ -22,6 +22,7 @@
 
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llscrolllistctrl.h"
 #include "llradiogroup.h"
 #include "llviewercontrol.h"
