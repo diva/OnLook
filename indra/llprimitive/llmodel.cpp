@@ -28,6 +28,7 @@
 
 #if MESH_ENABLED
 #include "llmodel.h"
+#include "llmemory.h"
 #if MESH_IMPORT
 #include "llconvexdecomposition.h"
 #endif //MESH_IMPORT
