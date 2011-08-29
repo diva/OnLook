@@ -47,6 +47,7 @@
 #include "llbuffer.h"
 #include "lliopipe.h"
 #include "llsd.h"
+#include "llthread.h"
 
 class LLMutex;
 
