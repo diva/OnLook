@@ -69,6 +69,15 @@ bool LLAgentAccess::isGodlike() const
 #endif
 }
 
+bool LLAgentAccess::isGodlikeWithoutAdminMenuFakery() const
+{
+#ifdef HACKED_GODLIKE_VIEWER
+	return true;
+#else
+	return mGodLevel > GOD_NOT;
+#endif
+}
+
 U8 LLAgentAccess::getGodLevel() const
 {
 #ifdef HACKED_GODLIKE_VIEWER
@@ -163,6 +172,20 @@ int LLAgentAccess::convertTextToMaturity(char text)
 void LLAgentAccess::setMaturity(char text)
 {
 	mAccess = LLAgentAccess::convertTextToMaturity(text);
+	U32 preferred_access = mSavedSettings.getU32("PreferredMaturity");
+	while (!canSetMaturity(preferred_access))
+	{
+		if (preferred_access == SIM_ACCESS_ADULT)
+		{
+			preferred_access = SIM_ACCESS_MATURE;
+		}
+		else
+		{
+			// Mature or invalid access gets set to PG
+			preferred_access = SIM_ACCESS_PG;
+		}
+	}
+	mSavedSettings.setU32("PreferredMaturity", preferred_access);
 }
 
 void LLAgentAccess::setTransition()
@@ -175,3 +198,14 @@ bool LLAgentAccess::isInTransition() const
 	return mAOTransition;
 }
 
+bool LLAgentAccess::canSetMaturity(S32 maturity)
+{
+	if (isGodlike()) // Gods can always set their Maturity level
+		return true;
+	if (isAdult()) // Adults can always set their Maturity level
+		return true;
+	if (maturity == SIM_ACCESS_PG || (maturity == SIM_ACCESS_MATURE && isMature()))
+		return true;
+	else
+		return false;
+}

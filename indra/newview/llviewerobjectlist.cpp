@@ -38,6 +38,7 @@
 #include "timing.h"
 #include "llfasttimer.h"
 #include "llrender.h"
+#include "llwindow.h"		// decBusyCount()
 
 #include "llviewercontrol.h"
 #include "llface.h"
@@ -62,6 +63,7 @@
 #include "llresmgr.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
+#include "llvovolume.h"
 #include "lltoolmgr.h"
 #include "lltoolpie.h"
 #include "llkeyboard.h"
@@ -970,6 +972,9 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 #endif //MESH_ENABLED
 	mNumSizeCulled = 0;
 	mNumVisCulled = 0;
+
+	// update max computed render cost
+	LLVOVolume::updateRenderComplexity();
 
 	// compute all sorts of time-based stats
 	// don't factor frames that were paused into the stats

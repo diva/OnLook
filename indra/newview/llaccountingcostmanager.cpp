@@ -65,34 +65,25 @@ public:
 		{
 			llwarns	<< "Error on fetched data"<< llendl;
 			clearPendingRequests();
-			return;
 		}
-		
-		bool containsSelection = content.has("selected");
-		if ( containsSelection )
+		else if (content.has("selected"))
 		{
-			S32 dataCount = content["selected"].size();
+			F32 physicsCost		= 0.0f;
+			F32 networkCost		= 0.0f;
+			F32 simulationCost	= 0.0f;
+
+			//LLTransactionID transactionID;
 				
-			for(S32 i = 0; i < dataCount; i++)
-			{
+			//transactionID	= content["selected"][i]["local_id"].asUUID();
+			physicsCost		= content["selected"]["physics"].asReal();
+			networkCost		= content["selected"]["streaming"].asReal();
+			simulationCost	= content["selected"]["simulation"].asReal();
 				
-				F32 physicsCost		= 0.0f;
-				F32 networkCost		= 0.0f;
-				F32 simulationCost	= 0.0f;
+			SelectionCost selectionCost( /*transactionID,*/ physicsCost, networkCost, simulationCost );
 					
-				//LLTransactionID transactionID;
-					
-				//transactionID	= content["selected"][i]["local_id"].asUUID();
-				physicsCost		= content["selected"][i]["physics"].asReal();
-				networkCost		= content["selected"][i]["streaming"].asReal();
-				simulationCost	= content["selected"][i]["simulation"].asReal();
-					
-				SelectionCost selectionCost( /*transactionID,*/ physicsCost, networkCost, simulationCost );
-					
-				//How do you want to handle the updating of the invoking object/ui element?
-				
-			}
 		}
+
+		clearPendingRequests();
 	}
 	
 private:
@@ -116,7 +107,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const st
 			// Check to see if a request for this object has already been made.
 			if ( mPendingObjectQuota.find( *IDIter ) ==	mPendingObjectQuota.end() )
 			{
-				mObjectList.insert( *IDIter );	
+				mPendingObjectQuota.insert( *IDIter );
 				objectList[objectIndex++] = *IDIter;
 			}
 		}
@@ -134,7 +125,7 @@ void LLAccountingCostManager::fetchCosts( eSelectionType selectionType, const st
 			else
 			if ( selectionType == Prims ) 
 			{ 
-				keystr="prim_roots"; 
+				keystr="selected_prims";
 			}
 			else 
 			{

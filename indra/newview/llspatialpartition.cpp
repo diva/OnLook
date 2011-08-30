@@ -1530,7 +1530,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 					LLGLEnable clamp(use_depth_clamp ? GL_DEPTH_CLAMP : 0);	
 
 #if !LL_DARWIN					
-					U32 mode = gGLManager.mHasOcclusionQuery2 ? /*GL_ANY_SAMPLES_PASSED*/0x8C2F : GL_SAMPLES_PASSED_ARB;
+					U32 mode = gGLManager.mHasOcclusionQuery2 ? GL_ANY_SAMPLES_PASSED : GL_SAMPLES_PASSED_ARB;
 #else
 					U32 mode = GL_SAMPLES_PASSED_ARB;
 #endif

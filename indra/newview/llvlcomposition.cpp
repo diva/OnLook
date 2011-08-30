@@ -39,6 +39,7 @@
 #include "v3math.h"
 #include "llsurface.h"
 #include "lltextureview.h"
+#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
 #include "noise.h"

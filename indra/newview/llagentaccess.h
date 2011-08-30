@@ -48,6 +48,7 @@ public:
 
 	void setGodLevel(U8 god_level);
 	bool isGodlike() const;
+	bool isGodlikeWithoutAdminMenuFakery() const;
 	U8 getGodLevel() const;
 	
 	
@@ -71,6 +72,7 @@ public:
 	
 	void setTransition();	// sets the transition bit, which defaults to false
 	bool isInTransition() const;
+	bool canSetMaturity(S32 maturity);
 	
 private:
 	U8 mAccess;	// SIM_ACCESS_MATURE etc

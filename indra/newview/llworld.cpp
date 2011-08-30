@@ -46,6 +46,7 @@
 #include "llregionhandle.h"
 #include "llsurface.h"
 #include "llviewercamera.h"
+#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llviewernetwork.h"
 #include "llviewerobjectlist.h"
