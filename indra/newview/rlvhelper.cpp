@@ -954,7 +954,7 @@ void RlvBehaviourNotifyHandler::sendNotification(const std::string& strText, con
 // Checked: 2009-06-03 (RLVa-0.2.0h) | Added: RLVa-0.2.0h
 void RlvWLSnapshot::restoreSnapshot(const RlvWLSnapshot* pWLSnapshot)
 {
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 	if ( (pWLSnapshot) && (pWLParams) )
 	{
 		pWLParams->mAnimator.mIsRunning = pWLSnapshot->fIsRunning;
@@ -975,7 +975,7 @@ RlvWLSnapshot* RlvWLSnapshot::takeSnapshot()
 	}
 
 	RlvWLSnapshot* pWLSnapshot = NULL;
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 	if (pWLParams)
 	{
 		pWLSnapshot = new RlvWLSnapshot();

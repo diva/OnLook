@@ -75,9 +75,9 @@ LLFloaterWindLight::LLFloaterWindLight() : LLFloater(std::string("windlight floa
 
 	if(comboBox != NULL) {
 		
-		std::map<std::string, LLWLParamSet>::iterator mIt = 
-			LLWLParamManager::instance()->mParamList.begin();
-		for(; mIt != LLWLParamManager::instance()->mParamList.end(); mIt++) 
+		std::map<std::string, LLWLParamSet>::const_iterator mIt = 
+			LLWLParamManager::getInstance()->getPresets().begin();
+		for(; mIt != LLWLParamManager::getInstance()->getPresets().end(); mIt++) 
 		{
 			comboBox->add(mIt->first);
 		}
@@ -141,7 +141,7 @@ void LLFloaterWindLight::initCallbacks(void) {
 
 	initHelpBtn("WLClassicCloudsHelp", "HelpClassicClouds");
 
-	LLWLParamManager * param_mgr = LLWLParamManager::instance();
+	LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
 
 	// blue horizon
 	childSetCommitCallback("WLBlueHorizonR", onColorControlRMoved, &param_mgr->mBlueHorizon);
@@ -267,14 +267,14 @@ bool LLFloaterWindLight::newPromptCallback(const LLSD& notification, const LLSD&
 
 		// add the current parameters to the list
 		// see if it's there first
-		std::map<std::string, LLWLParamSet>::iterator mIt = 
-			LLWLParamManager::instance()->mParamList.find(text);
+		std::map<std::string, LLWLParamSet>::const_iterator mIt = 
+			LLWLParamManager::getInstance()->getPresets().find(text);
 
 		// if not there, add a new one
-		if(mIt == LLWLParamManager::instance()->mParamList.end()) 
+		if(mIt == LLWLParamManager::getInstance()->getPresets().end()) 
 		{
-			LLWLParamManager::instance()->addParamSet(text, 
-				LLWLParamManager::instance()->mCurParams);
+			LLWLParamManager::getInstance()->addParamSet(text, 
+				LLWLParamManager::getInstance()->mCurParams);
 			comboBox->add(text);
 			comboBox->sortByName();
 
@@ -292,7 +292,7 @@ bool LLFloaterWindLight::newPromptCallback(const LLSD& notification, const LLSD&
 				keyCombo->add(text);
 				keyCombo->sortByName();
 			}
-			LLWLParamManager::instance()->savePreset(text);
+			LLWLParamManager::getInstance()->savePreset(text);
 
 		// otherwise, send a message to the user
 		} 
@@ -308,7 +308,7 @@ void LLFloaterWindLight::syncMenu()
 {
 	bool err;
 
-	LLWLParamManager * param_mgr = LLWLParamManager::instance();
+	LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
 
 	LLWLParamSet& currentParams = param_mgr->mCurParams;
 	//std::map<std::string, LLVector4> & currentParams = param_mgr->mCurParams.mParamValues;
@@ -518,9 +518,9 @@ void LLFloaterWindLight::onColorControlRMoved(LLUICtrl* ctrl, void* userData)
 		}
 	}
 
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
 
-	LLWLParamManager::instance()->propagateParameters();
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onColorControlGMoved(LLUICtrl* ctrl, void* userData)
@@ -554,9 +554,9 @@ void LLFloaterWindLight::onColorControlGMoved(LLUICtrl* ctrl, void* userData)
 		}
 	}
 
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
 
-	LLWLParamManager::instance()->propagateParameters();
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onColorControlBMoved(LLUICtrl* ctrl, void* userData)
@@ -590,9 +590,9 @@ void LLFloaterWindLight::onColorControlBMoved(LLUICtrl* ctrl, void* userData)
 		}
 	}
 
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
 
-	LLWLParamManager::instance()->propagateParameters();
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
@@ -679,8 +679,8 @@ void LLFloaterWindLight::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
 	}
 
 	// now update the current parameters and send them to shaders
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
-	LLWLParamManager::instance()->propagateParameters();
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 /// GLOW SPECIFIC CODE
@@ -694,8 +694,8 @@ void LLFloaterWindLight::onGlowRMoved(LLUICtrl* ctrl, void* userData)
 	// scaled by 20
 	colorControl->r = (2 - sldrCtrl->getValueF32()) * 20;
 
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
-	LLWLParamManager::instance()->propagateParameters();
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 /// \NOTE that we want NEGATIVE (-) B
@@ -709,8 +709,8 @@ void LLFloaterWindLight::onGlowBMoved(LLUICtrl* ctrl, void* userData)
 	/// \NOTE that we want NEGATIVE (-) B and NOT by 20 as 20 is too big
 	colorControl->b = -sldrCtrl->getValueF32() * 5;
 
-	colorControl->update(LLWLParamManager::instance()->mCurParams);
-	LLWLParamManager::instance()->propagateParameters();
+	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
@@ -722,8 +722,8 @@ void LLFloaterWindLight::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
 
 	floatControl->x = sldrCtrl->getValueF32() / floatControl->mult;
 
-	floatControl->update(LLWLParamManager::instance()->mCurParams);
-	LLWLParamManager::instance()->propagateParameters();
+	floatControl->update(LLWLParamManager::getInstance()->mCurParams);
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onBoolToggle(LLUICtrl* ctrl, void* userData)
@@ -750,7 +750,7 @@ void LLFloaterWindLight::onSunMoved(LLUICtrl* ctrl, void* userData)
 	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
 	
 	// get the two angles
-	LLWLParamManager * param_mgr = LLWLParamManager::instance();
+	LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
 
 	param_mgr->mCurParams.setSunAngle(F_TWO_PI * sunSldr->getValueF32());
 	param_mgr->mCurParams.setEastAngle(F_TWO_PI * eastSldr->getValueF32());
@@ -775,7 +775,7 @@ void LLFloaterWindLight::onFloatTweakMoved(LLUICtrl* ctrl, void* userData)
 	F32 * tweak = static_cast<F32 *>(userData);
 
 	(*tweak) = sldrCtrl->getValueF32();
-	LLWLParamManager::instance()->propagateParameters();
+	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onStarAlphaMoved(LLUICtrl* ctrl, void* userData)
@@ -784,7 +784,7 @@ void LLFloaterWindLight::onStarAlphaMoved(LLUICtrl* ctrl, void* userData)
 
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
 
-	LLWLParamManager::instance()->mCurParams.setStarBrightness(sldrCtrl->getValueF32());
+	LLWLParamManager::getInstance()->mCurParams.setStarBrightness(sldrCtrl->getValueF32());
 }
 
 void LLFloaterWindLight::onNewPreset(void* userData)
@@ -813,7 +813,7 @@ void LLFloaterWindLight::onSavePreset(void* userData)
 		return;
 	}
 
-	LLWLParamManager::instance()->mCurParams.mName = 
+	LLWLParamManager::getInstance()->mCurParams.mName = 
 		comboBox->getSelectedItemLabel();
 
 	LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
@@ -825,7 +825,7 @@ bool LLFloaterWindLight::saveAlertCallback(const LLSD& notification, const LLSD&
 	// if they choose save, do it.  Otherwise, don't do anything
 	if(option == 0) 
 	{
-		LLWLParamManager * param_mgr = LLWLParamManager::instance();
+		LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
 
 		param_mgr->setParamSet(param_mgr->mCurParams.mName, param_mgr->mCurParams);
 		
@@ -882,7 +882,7 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 			return false;
 		}
 
-		LLWLParamManager::instance()->removeParamSet(name, true);
+		LLWLParamManager::getInstance()->removeParamSet(name, true);
 		
 		// remove and choose another
 		S32 new_index = combo_box->getCurrentIndex();
@@ -922,7 +922,7 @@ void LLFloaterWindLight::onChangePresetName(LLUICtrl* ctrl, void * userData)
 		return;
 	}
 	
-	LLWLParamManager::instance()->loadPreset(
+	LLWLParamManager::getInstance()->loadPreset(
 		combo_box->getSelectedValue().asString());
 	sWindLight->syncMenu();
 }
@@ -939,7 +939,7 @@ void LLFloaterWindLight::onCloudScrollXMoved(LLUICtrl* ctrl, void* userData)
 
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
 	// *HACK  all cloud scrolling is off by an additive of 10. 
-	LLWLParamManager::instance()->mCurParams.setCloudScrollX(sldrCtrl->getValueF32() + 10.0f);
+	LLWLParamManager::getInstance()->mCurParams.setCloudScrollX(sldrCtrl->getValueF32() + 10.0f);
 }
 
 void LLFloaterWindLight::onCloudScrollYMoved(LLUICtrl* ctrl, void* userData)
@@ -949,7 +949,7 @@ void LLFloaterWindLight::onCloudScrollYMoved(LLUICtrl* ctrl, void* userData)
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
 
 	// *HACK  all cloud scrolling is off by an additive of 10. 
-	LLWLParamManager::instance()->mCurParams.setCloudScrollY(sldrCtrl->getValueF32() + 10.0f);
+	LLWLParamManager::getInstance()->mCurParams.setCloudScrollY(sldrCtrl->getValueF32() + 10.0f);
 }
 
 void LLFloaterWindLight::onCloudScrollXToggled(LLUICtrl* ctrl, void* userData)
@@ -959,7 +959,7 @@ void LLFloaterWindLight::onCloudScrollXToggled(LLUICtrl* ctrl, void* userData)
 	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
 
 	bool lock = cbCtrl->get();
-	LLWLParamManager::instance()->mCurParams.setEnableCloudScrollX(!lock);
+	LLWLParamManager::getInstance()->mCurParams.setEnableCloudScrollX(!lock);
 
 	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>( 
 		"WLCloudScrollX");
@@ -981,7 +981,7 @@ void LLFloaterWindLight::onCloudScrollYToggled(LLUICtrl* ctrl, void* userData)
 
 	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
 	bool lock = cbCtrl->get();
-	LLWLParamManager::instance()->mCurParams.setEnableCloudScrollY(!lock);
+	LLWLParamManager::getInstance()->mCurParams.setEnableCloudScrollY(!lock);
 
 	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>( 
 		"WLCloudScrollY");
@@ -998,6 +998,6 @@ void LLFloaterWindLight::onCloudScrollYToggled(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::deactivateAnimator()
 {
-	LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-	LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 }

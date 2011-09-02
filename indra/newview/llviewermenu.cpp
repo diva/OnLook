@@ -9359,51 +9359,51 @@ class LLWorldEnvSettings : public view_listener_t
 		if (tod == "sunrise")
 		{
 			// set the value, turn off animation
-			LLWLParamManager::instance()->mAnimator.setDayTime(0.25);
-			LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.25);
+			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 			// then call update once
-			LLWLParamManager::instance()->mAnimator.update(
-				LLWLParamManager::instance()->mCurParams);
+			LLWLParamManager::getInstance()->mAnimator.update(
+				LLWLParamManager::getInstance()->mCurParams);
 		}
 		else if (tod == "noon")
 		{
 			// set the value, turn off animation
-			LLWLParamManager::instance()->mAnimator.setDayTime(0.567);
-			LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.567);
+			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 			// then call update once
-			LLWLParamManager::instance()->mAnimator.update(
-				LLWLParamManager::instance()->mCurParams);
+			LLWLParamManager::getInstance()->mAnimator.update(
+				LLWLParamManager::getInstance()->mCurParams);
 		}
 		else if (tod == "sunset")
 		{
 			// set the value, turn off animation
-			LLWLParamManager::instance()->mAnimator.setDayTime(0.75);
-			LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.75);
+			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 			// then call update once
-			LLWLParamManager::instance()->mAnimator.update(
-				LLWLParamManager::instance()->mCurParams);
+			LLWLParamManager::getInstance()->mAnimator.update(
+				LLWLParamManager::getInstance()->mCurParams);
 		}
 		else if (tod == "midnight")
 		{
 			// set the value, turn off animation
-			LLWLParamManager::instance()->mAnimator.setDayTime(0.0);
-			LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.0);
+			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 			// then call update once
-			LLWLParamManager::instance()->mAnimator.update(
-				LLWLParamManager::instance()->mCurParams);
+			LLWLParamManager::getInstance()->mAnimator.update(
+				LLWLParamManager::getInstance()->mCurParams);
 		}
 		else
 		{
-			LLWLParamManager::instance()->mAnimator.mIsRunning = true;
-			LLWLParamManager::instance()->mAnimator.mUseLindenTime = true;	
+			LLWLParamManager::getInstance()->mAnimator.mIsRunning = true;
+			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = true;	
 		}
 		return true;
 	}

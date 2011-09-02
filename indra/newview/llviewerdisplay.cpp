@@ -191,8 +191,8 @@ void display_update_camera(bool tiling=false)
 	gViewerWindow->setup3DRender();
 	
 	// update all the sky/atmospheric/water settings
-	LLWLParamManager::instance()->update(LLViewerCamera::getInstance());
-	LLWaterParamManager::instance()->update(LLViewerCamera::getInstance());
+	LLWLParamManager::getInstance()->update(LLViewerCamera::getInstance());
+	LLWaterParamManager::getInstance()->update(LLViewerCamera::getInstance());
 
 	// Update land visibility too
 	LLWorld::getInstance()->setLandFarClip(final_far);

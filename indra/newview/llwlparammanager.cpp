@@ -61,9 +61,10 @@
 #include "llfloaterdaycycle.h"
 #include "llfloaterenvsettings.h"
 
-#include "curl/curl.h"
+#include "llviewershadermgr.h"
+#include "llglslshader.h"
 
-LLWLParamManager * LLWLParamManager::sInstance = NULL;
+#include "curl/curl.h"
 
 LLWLParamManager::LLWLParamManager() :
 
@@ -423,18 +424,6 @@ void LLWLParamManager::update(LLViewerCamera * cam)
 	}
 }
 
-// static
-void LLWLParamManager::initClass(void)
-{
-	instance();
-}
-
-// static
-void LLWLParamManager::cleanupClass()
-{
-	delete sInstance;
-	sInstance = NULL;
-}
 
 void LLWLParamManager::resetAnimator(F32 curTime, bool run)
 {
@@ -546,27 +535,22 @@ bool LLWLParamManager::removeParamSet(const std::string& name, bool delete_from_
 }
 
 
-// static
-LLWLParamManager * LLWLParamManager::instance()
+// virtual static
+void LLWLParamManager::initSingleton()
 {
-	if(NULL == sInstance)
-	{
-		sInstance = new LLWLParamManager();
 
-		sInstance->loadPresets(LLStringUtil::null);
+	loadPresets(LLStringUtil::null);
 
-		// load the day
-		sInstance->mDay.loadDayCycle(gSavedSettings.getString("AscentActiveDayCycle"));
+	// load the day
+	mDay.loadDayCycle(gSavedSettings.getString("AscentActiveDayCycle"));
 
-		// *HACK - sets cloud scrolling to what we want... fix this better in the future
-		sInstance->getParamSet("Default", sInstance->mCurParams);
+	// *HACK - sets cloud scrolling to what we want... fix this better in the future
+	getParamSet("Default", mCurParams);
 
-		// set it to noon
-		sInstance->resetAnimator(0.5, true);
+	// set it to noon
+	resetAnimator(0.5, true);
 
-		// but use linden time sets it to what the estate is
-		sInstance->mAnimator.mUseLindenTime = true;
-	}
+	// but use linden time sets it to what the estate is
+	mAnimator.mUseLindenTime = true;
 
-	return sInstance;
 }

@@ -567,8 +567,8 @@ void LLViewerShaderMgr::setShaders()
 		gViewerWindow->setCursor(UI_CURSOR_ARROW);
 	}
 
-	LLWaterParamManager::instance()->updateShaderLinks();
-	LLWLParamManager::instance()->updateShaderLinks();
+	LLWaterParamManager::getInstance()->updateShaderLinks();
+	LLWLParamManager::getInstance()->updateShaderLinks();
 
 	gPipeline.createGLBuffers();
 	reentrance = false;
@@ -2197,8 +2197,8 @@ std::string LLViewerShaderMgr::getShaderDirPrefix(void)
 
 void LLViewerShaderMgr::updateShaderUniforms(LLGLSLShader * shader)
 {
-	LLWLParamManager::instance()->updateShaderUniforms(shader);
-	LLWaterParamManager::instance()->updateShaderUniforms(shader);
+	LLWLParamManager::getInstance()->updateShaderUniforms(shader);
+	LLWaterParamManager::getInstance()->updateShaderUniforms(shader);
 }
 
 /*static*/ void LLShaderMgr::unloadShaderClass(int shader_class)

@@ -3746,17 +3746,17 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 */
 
 	//Reset the windlight profile to default
-	//LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-	//LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	//LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+	//LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 	LLWLParamSet wl_backup;
-	if(LLWLParamManager::instance()->getParamSet("LightShare-Backup", wl_backup)) {
-		LLWLParamManager::instance()->propagateParameters();
-		LLWLParamManager::instance()->removeParamSet("LightShare-Backup", true);
+	if(LLWLParamManager::getInstance()->getParamSet("LightShare-Backup", wl_backup)) {
+		LLWLParamManager::getInstance()->propagateParameters();
+		LLWLParamManager::getInstance()->removeParamSet("LightShare-Backup", true);
 	}
 	LLWaterParamSet backup;
-	if(LLWaterParamManager::instance()->getParamSet("LightShare-Backup", backup)) {
-		LLWaterParamManager::instance()->propagateParameters();
-		LLWaterParamManager::instance()->removeParamSet("LightShare-Backup", true);
+	if(LLWaterParamManager::getInstance()->getParamSet("LightShare-Backup", backup)) {
+		LLWaterParamManager::getInstance()->propagateParameters();
+		LLWaterParamManager::getInstance()->removeParamSet("LightShare-Backup", true);
 	}
 
 	// now, use the circuit info to tell simulator about us!

@@ -1925,9 +1925,7 @@ bool idle_startup()
 
 		// init the shader managers
 		LLPostProcess::initClass();
-		LLWLParamManager::initClass();
 		AscentDayCycleManager::initClass();
-		LLWaterParamManager::initClass();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
 		LLViewerObject::initVOClasses();

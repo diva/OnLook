@@ -77,9 +77,9 @@ LLFloaterDayCycle::LLFloaterDayCycle() : LLFloater(std::string("Day Cycle Floate
 
 	if(keyCombo != NULL) 
 	{
-		std::map<std::string, LLWLParamSet>::iterator mIt = 
-			LLWLParamManager::instance()->mParamList.begin();
-		for(; mIt != LLWLParamManager::instance()->mParamList.end(); mIt++) 
+		std::map<std::string, LLWLParamSet>::const_iterator mIt = 
+			LLWLParamManager::getInstance()->getPresets().begin();
+		for(; mIt != LLWLParamManager::getInstance()->getPresets().end(); mIt++) 
 		{
 			keyCombo->add(std::string(mIt->first));
 		}
@@ -181,11 +181,11 @@ void LLFloaterDayCycle::initCallbacks(void)
 
 void LLFloaterDayCycle::syncMenu()
 {
-//	std::map<std::string, LLVector4> & currentParams = LLWLParamManager::instance()->mCurParams.mParamValues;
+//	std::map<std::string, LLVector4> & currentParams = LLWLParamManager::getInstance()->mCurParams.mParamValues;
 	
 	// set time
 	LLMultiSliderCtrl* sldr = LLFloaterDayCycle::sDayCycle->getChild<LLMultiSliderCtrl>("WLTimeSlider");
-	sldr->setCurSliderValue((F32)LLWLParamManager::instance()->mAnimator.getDayTime() * sHoursPerDay);
+	sldr->setCurSliderValue((F32)LLWLParamManager::getInstance()->mAnimator.getDayTime() * sHoursPerDay);
 
 	LLSpinCtrl* secSpin = sDayCycle->getChild<LLSpinCtrl>("WLLengthOfDaySec");
 	LLSpinCtrl* minSpin = sDayCycle->getChild<LLSpinCtrl>("WLLengthOfDayMin");
@@ -195,7 +195,7 @@ void LLFloaterDayCycle::syncMenu()
 	F32 hours, min, sec;
 
 	// get the current rate
-	curRate = LLWLParamManager::instance()->mDay.mDayRate;
+	curRate = LLWLParamManager::getInstance()->mDay.mDayRate;
 	hours = (F32)((int)(curRate / 60 / 60));
 	curRate -= (hours * 60 * 60);
 	min = (F32)((int)(curRate / 60));
@@ -207,7 +207,7 @@ void LLFloaterDayCycle::syncMenu()
 	secSpin->setValue(sec);
 
 	// turn off Use Estate Time button if it's already being used
-	if(	LLWLParamManager::instance()->mAnimator.mUseLindenTime == true)
+	if(	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime == true)
 	{
 		LLFloaterDayCycle::sDayCycle->childDisable("WLUseLindenTime");
 	} 
@@ -227,8 +227,8 @@ void LLFloaterDayCycle::syncSliderTrack()
 
 	// add sliders
 	std::map<F32, std::string>::iterator mIt = 
-		LLWLParamManager::instance()->mDay.mTimeMap.begin();
-	for(; mIt != LLWLParamManager::instance()->mDay.mTimeMap.end(); mIt++) 
+		LLWLParamManager::getInstance()->mDay.mTimeMap.begin();
+	for(; mIt != LLWLParamManager::getInstance()->mDay.mTimeMap.end(); mIt++) 
 	{
 		addSliderKey(mIt->first * sHoursPerDay, mIt->second);
 	}
@@ -252,22 +252,22 @@ void LLFloaterDayCycle::syncTrack()
 		"WLTimeSlider");
 
 	// create a new animation track
-	LLWLParamManager::instance()->mDay.clearKeys();
+	LLWLParamManager::getInstance()->mDay.clearKeys();
 	
 	// add the keys one by one
 	std::map<std::string, LLWLSkyKey>::iterator mIt = sSliderToKey.begin();
 	for(; mIt != sSliderToKey.end(); mIt++) 
 	{
-		LLWLParamManager::instance()->mDay.addKey(mIt->second.time / sHoursPerDay, 
+		LLWLParamManager::getInstance()->mDay.addKey(mIt->second.time / sHoursPerDay, 
 			mIt->second.presetName);
 	}
 	
 	// set the param manager's track to the new one
-	LLWLParamManager::instance()->resetAnimator(
+	LLWLParamManager::getInstance()->resetAnimator(
 		tSldr->getCurSliderValue() / sHoursPerDay, false);
 
-	LLWLParamManager::instance()->mAnimator.update(
-		LLWLParamManager::instance()->mCurParams);
+	LLWLParamManager::getInstance()->mAnimator.update(
+		LLWLParamManager::getInstance()->mCurParams);
 }
 
 // static
@@ -339,7 +339,7 @@ void LLFloaterDayCycle::onSavePreset(void* userData)
 		return;
 	}
 
-	LLWLParamManager::instance()->mCurParams.mName = 
+	LLWLParamManager::getInstance()->mCurParams.mName = 
 		comboBox->getSelectedItemLabel();
 
 	LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
@@ -353,7 +353,7 @@ bool LLFloaterDayCycle::saveAlertCallback(const LLSD& notification, const LLSD& 
 	{
 		LLComboBox* combo_box = sDayCycle->getChild<LLComboBox>("DayCyclePresetsCombo");
 		// comment this back in to save to file
-		LLWLParamManager::instance()->mDay.saveDayCycle(combo_box->getSelectedValue().asString());
+		LLWLParamManager::getInstance()->mDay.saveDayCycle(combo_box->getSelectedValue().asString());
 	}
 	return false;
 }
@@ -483,7 +483,7 @@ bool LLFloaterDayCycle::newPromptCallback(const LLSD& notification, const LLSD& 
 				keyCombo->add(text);
 				keyCombo->sortByName();
 			}
-			LLWLParamManager::instance()->mDay.saveDayCycle(text);
+			LLWLParamManager::getInstance()->mDay.saveDayCycle(text);
 
 		// otherwise, send a message to the user
 		} 
@@ -505,7 +505,7 @@ void LLFloaterDayCycle::onChangePresetName(LLUICtrl* ctrl, void * userData)
 		return;
 	}
 
-	LLWLParamManager::instance()->mDay.loadDayCycle(combo_box->getSelectedValue().asString());
+	LLWLParamManager::getInstance()->mDay.loadDayCycle(combo_box->getSelectedValue().asString());
 	gSavedSettings.setString("AscentActiveDayCycle", combo_box->getSelectedValue().asString());
 	// sync it all up
 	syncSliderTrack();
@@ -515,12 +515,12 @@ void LLFloaterDayCycle::onChangePresetName(LLUICtrl* ctrl, void * userData)
 	LLMultiSliderCtrl* tSldr;
 	tSldr = sDayCycle->getChild<LLMultiSliderCtrl>( 
 		"WLTimeSlider");
-	LLWLParamManager::instance()->resetAnimator(
+	LLWLParamManager::getInstance()->resetAnimator(
 		tSldr->getCurSliderValue() / sHoursPerDay, false);
 
 	// and draw it
-	LLWLParamManager::instance()->mAnimator.update(
-		LLWLParamManager::instance()->mCurParams);
+	LLWLParamManager::getInstance()->mAnimator.update(
+		LLWLParamManager::getInstance()->mCurParams);
 }
 
 void LLFloaterDayCycle::onRunAnimSky(void* userData)
@@ -539,13 +539,13 @@ void LLFloaterDayCycle::onRunAnimSky(void* userData)
 	tSldr = sDayCycle->getChild<LLMultiSliderCtrl>("WLTimeSlider");
 
 	// turn off linden time
-	LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 	// set the param manager's track to the new one
-	LLWLParamManager::instance()->resetAnimator(
+	LLWLParamManager::getInstance()->resetAnimator(
 		tSldr->getCurSliderValue() / sHoursPerDay, true);
 
-	llassert_always(LLWLParamManager::instance()->mAnimator.mTimeTrack.size() == sldr->getValue().size());
+	llassert_always(LLWLParamManager::getInstance()->mAnimator.mTimeTrack.size() == sldr->getValue().size());
 }
 
 void LLFloaterDayCycle::onStopAnimSky(void* userData)
@@ -556,8 +556,8 @@ void LLFloaterDayCycle::onStopAnimSky(void* userData)
 	}
 
 	// turn off animation and using linden time
-	LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-	LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 }
 
 void LLFloaterDayCycle::onUseLindenTime(void* userData)
@@ -566,13 +566,13 @@ void LLFloaterDayCycle::onUseLindenTime(void* userData)
 	LLComboBox* box = dc->getChild<LLComboBox>("DayCyclePresetsCombo");
 	box->selectByValue("");	
 
-	LLWLParamManager::instance()->mAnimator.mIsRunning = true;
-	LLWLParamManager::instance()->mAnimator.mUseLindenTime = true;	
+	LLWLParamManager::getInstance()->mAnimator.mIsRunning = true;
+	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = true;	
 }
 
 void LLFloaterDayCycle::onLoadDayCycle(void* userData)
 {
-	//LLWLParamManager::instance()->mDay.loadDayCycle("Default.xml");
+	//LLWLParamManager::getInstance()->mDay.loadDayCycle("Default.xml");
 	
 	// sync it all up
 	syncSliderTrack();
@@ -582,17 +582,17 @@ void LLFloaterDayCycle::onLoadDayCycle(void* userData)
 	LLMultiSliderCtrl* tSldr;
 	tSldr = sDayCycle->getChild<LLMultiSliderCtrl>( 
 		"WLTimeSlider");
-	LLWLParamManager::instance()->resetAnimator(
+	LLWLParamManager::getInstance()->resetAnimator(
 		tSldr->getCurSliderValue() / sHoursPerDay, false);
 
 	// and draw it
-	LLWLParamManager::instance()->mAnimator.update(
-		LLWLParamManager::instance()->mCurParams);
+	LLWLParamManager::getInstance()->mAnimator.update(
+		LLWLParamManager::getInstance()->mCurParams);
 }
 
 void LLFloaterDayCycle::onSaveDayCycle(void* userData)
 {
-	//LLWLParamManager::instance()->mDay.saveDayCycle("Default.xml");
+	//LLWLParamManager::getInstance()->mDay.saveDayCycle("Default.xml");
 }
 
 
@@ -605,13 +605,13 @@ void LLFloaterDayCycle::onTimeSliderMoved(LLUICtrl* ctrl, void* userData)
 	F32 val = sldr->getCurSliderValue() / sHoursPerDay;
 	
 	// set the value, turn off animation
-	LLWLParamManager::instance()->mAnimator.setDayTime((F64)val);
-	LLWLParamManager::instance()->mAnimator.mIsRunning = false;
-	LLWLParamManager::instance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.setDayTime((F64)val);
+	LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
+	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
 
 	// then call update once
-	LLWLParamManager::instance()->mAnimator.update(
-		LLWLParamManager::instance()->mCurParams);
+	LLWLParamManager::getInstance()->mAnimator.update(
+		LLWLParamManager::getInstance()->mCurParams);
 }
 
 void LLFloaterDayCycle::onKeyTimeMoved(LLUICtrl* ctrl, void* userData)
@@ -736,7 +736,7 @@ void LLFloaterDayCycle::onTimeRateChanged(LLUICtrl* ctrl, void* userData)
 	if(time <= 0) {
 		time = 1;
 	}
-	LLWLParamManager::instance()->mDay.mDayRate = time;
+	LLWLParamManager::getInstance()->mDay.mDayRate = time;
 
 	syncTrack();
 }

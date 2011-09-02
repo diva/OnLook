@@ -73,6 +73,7 @@
 #include "lldrawpoolavatar.h"
 #include "llmeshrepository.h"
 #include "lldatapacker.h"
+#include "llviewershadermgr.h"
 #include "llvoavatar.h"
 #include "llfloatertools.h"
 #endif //MESH_ENABLED
