@@ -2414,7 +2414,7 @@ bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 	LLSD mdl;
 	if (!unzip_llsd(mdl, is, size))
 	{
-		llwarns << "not a valid mesh asset!" << llendl;
+		LL_DEBUGS("MeshStreaming") << "Failed to unzip LLSD blob for LoD, will probably fetch from sim again." << llendl;
 		return false;
 	}
 	
@@ -2740,8 +2740,9 @@ void LLVolume::cacheOptimize()
 
 S32	LLVolume::getNumFaces() const
 {
-	return (S32)mProfilep->mFaces.size();
+	return mIsMeshAssetLoaded ? getNumVolumeFaces() : (S32)mProfilep->mFaces.size();
 }
+
 
 void LLVolume::createVolumeFaces()
 {
