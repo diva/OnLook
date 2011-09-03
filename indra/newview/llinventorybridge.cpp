@@ -226,7 +226,7 @@ BOOL get_is_item_worn(const LLInventoryItem *item)
 				return TRUE;
 			break;
 		case LLAssetType::AT_GESTURE:
-			if (gGestureManager.isGestureActive(item->getLinkedUUID()))
+			if (LLGestureMgr::instance().isGestureActive(item->getLinkedUUID()))
 				return TRUE;
 			break;
 		default:
@@ -362,7 +362,7 @@ void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batc
 		{
 			if(LLAssetType::AT_GESTURE == item->getType())
 			{
-				gGestureManager.deactivateGesture(item->getUUID());
+				LLGestureMgr::instance().deactivateGesture(item->getUUID());
 			}
 		}
 	}
@@ -378,7 +378,7 @@ void LLInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batc
 			{
 				if(LLAssetType::AT_GESTURE == descendent_items[j]->getType())
 				{
-					gGestureManager.deactivateGesture(descendent_items[j]->getUUID());
+					LLGestureMgr::instance().deactivateGesture(descendent_items[j]->getUUID());
 				}
 			}
 		}
@@ -1838,9 +1838,9 @@ BOOL LLFolderBridge::dragCategoryIntoFolder(LLInventoryCategory* inv_cat,
 					{
 						LLInventoryItem* item = descendent_items[i];
 						if (item->getType() == LLAssetType::AT_GESTURE
-							&& gGestureManager.isGestureActive(item->getUUID()))
+							&& LLGestureMgr::instance().isGestureActive(item->getUUID()))
 						{
-							gGestureManager.deactivateGesture(item->getUUID());
+							LLGestureMgr::instance().deactivateGesture(item->getUUID());
 						}
 					}
 				}
@@ -2403,9 +2403,9 @@ BOOL LLFolderBridge::removeItem()
 	{
 		LLInventoryItem* item = descendent_items[i];
 		if (item->getType() == LLAssetType::AT_GESTURE
-			&& gGestureManager.isGestureActive(item->getUUID()))
+			&& LLGestureMgr::instance().isGestureActive(item->getUUID()))
 		{
-			gGestureManager.deactivateGesture(item->getUUID());
+			LLGestureMgr::instance().deactivateGesture(item->getUUID());
 		}
 	}
 
@@ -3020,9 +3020,9 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 		if(accept && drop)
 		{
 			if (inv_item->getType() == LLAssetType::AT_GESTURE
-				&& gGestureManager.isGestureActive(inv_item->getUUID()) && move_is_into_trash)
+				&& LLGestureMgr::instance().isGestureActive(inv_item->getUUID()) && move_is_into_trash)
 			{
-				gGestureManager.deactivateGesture(inv_item->getUUID());
+				LLGestureMgr::instance().deactivateGesture(inv_item->getUUID());
 			}
 			// If an item is being dragged between windows, unselect
 			// everything in the active window so that we don't follow
@@ -3749,7 +3749,7 @@ LLFontGL::StyleFlags LLGestureBridge::getLabelStyle() const
 {
 	U8 font = LLFontGL::NORMAL;
 
-	if (gGestureManager.isGestureActive(mUUID))
+	if (LLGestureMgr::instance().isGestureActive(mUUID))
 	{
 		font |= LLFontGL::BOLD;
 	}
@@ -3765,7 +3765,7 @@ LLFontGL::StyleFlags LLGestureBridge::getLabelStyle() const
 
 std::string LLGestureBridge::getLabelSuffix() const
 {
-	if( gGestureManager.isGestureActive(mUUID) )
+	if( LLGestureMgr::instance().isGestureActive(mUUID) )
 	{
 		return LLItemBridge::getLabelSuffix() + " (active)";
 	}
@@ -3780,7 +3780,7 @@ void LLGestureBridge::performAction(LLFolderView* folder, LLInventoryModel* mode
 {
 	if ("activate" == action)
 	{
-		gGestureManager.activateGesture(mUUID);
+		LLGestureMgr::instance().activateGesture(mUUID);
 
 		LLViewerInventoryItem* item = gInventory.getItem(mUUID);
 		if (!item) return;
@@ -3792,7 +3792,7 @@ void LLGestureBridge::performAction(LLFolderView* folder, LLInventoryModel* mode
 	}
 	else if ("deactivate" == action)
 	{
-		gGestureManager.deactivateGesture(mUUID);
+		LLGestureMgr::instance().deactivateGesture(mUUID);
 
 		LLViewerInventoryItem* item = gInventory.getItem(mUUID);
 		if (!item) return;
@@ -3838,7 +3838,7 @@ BOOL LLGestureBridge::removeItem()
 	const LLUUID item_id = mUUID;
 	
 	// Force close the preview window, if it exists
-	gGestureManager.deactivateGesture(item_id);
+	LLGestureMgr::instance().deactivateGesture(item_id);
 	
 	// If deactivateGesture deleted *this, then return out immediately.
 	if (!model->getObject(item_id))
@@ -3868,7 +3868,7 @@ void LLGestureBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		getClipboardEntries(true, items, disabled_items, flags);
 
 		items.push_back(std::string("Gesture Separator"));
-		if (gGestureManager.isGestureActive(getUUID()))
+		if (LLGestureMgr::instance().isGestureActive(getUUID()))
 		{
 		items.push_back(std::string("Deactivate"));
 	}
@@ -4864,7 +4864,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 		{
 			llinfos << "Activating " << gest_count << " gestures" << llendl;
 
-			gGestureManager.activateGestures(gest_item_array);
+			LLGestureMgr::instance().activateGestures(gest_item_array);
 
 			// Update the inventory item labels to reflect the fact
 			// they are active.
@@ -5170,7 +5170,7 @@ void remove_inventory_category_from_avatar_step2( BOOL proceed, void* userdata)
 				LLViewerInventoryItem *gest_item = gest_item_array.get(i);
 				if (get_is_item_worn(gest_item->getUUID()))
 				{
-					gGestureManager.deactivateGesture( gest_item_array.get(i)->getLinkedUUID() );
+					LLGestureMgr::instance().deactivateGesture( gest_item_array.get(i)->getLinkedUUID() );
 					gInventory.updateItem( gest_item );
 					gInventory.notifyObservers();
 				}

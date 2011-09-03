@@ -335,7 +335,7 @@ bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
 			case LLAssetType::AT_OBJECT:
 				return (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->isWearingAttachment(pItem->getUUID()));
 			case LLAssetType::AT_GESTURE:
-				return gGestureManager.isGestureActive(pItem->getUUID());
+				return LLGestureMgr::instance().isGestureActive(pItem->getUUID());
 			case LLAssetType::AT_LINK:
 				return isWearingItem(gInventory.getItem(pItem->getLinkedUUID()));
 			default:
@@ -784,7 +784,7 @@ void RlvForceWear::done()
 		for (S32 idxGesture = 0, cntGesture = m_remGestures.count(); idxGesture < cntGesture; idxGesture++)
 		{
 			LLViewerInventoryItem* pItem = m_remGestures.get(idxGesture);
-			gGestureManager.deactivateGesture(pItem->getUUID());
+			LLGestureMgr::instance().deactivateGesture(pItem->getUUID());
 			gInventory.updateItem(pItem);
 			gInventory.notifyObservers();
 		}
@@ -877,7 +877,7 @@ void RlvForceWear::done()
 	// Process gestures
 	if (m_addGestures.size())
 	{
-		gGestureManager.activateGestures(m_addGestures);
+		LLGestureMgr::instance().activateGestures(m_addGestures);
 		for (S32 idxGesture = 0, cntGesture = m_addGestures.count(); idxGesture < cntGesture; idxGesture++)
 			gInventory.updateItem(m_addGestures.get(idxGesture));
 		gInventory.notifyObservers();

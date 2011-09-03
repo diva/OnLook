@@ -296,7 +296,7 @@ BOOL LLPreviewGesture::canClose()
 // virtual
 void LLPreviewGesture::onClose(bool app_quitting)
 {
-	gGestureManager.stopGesture(mPreviewGesture);
+	LLGestureMgr::instance().stopGesture(mPreviewGesture);
 	LLPreview::onClose(app_quitting);
 }
 
@@ -328,13 +328,13 @@ bool LLPreviewGesture::handleSaveChangesDialog(const LLSD& notification, const L
 	switch(option)
 	{
 	case 0:  // "Yes"
-		gGestureManager.stopGesture(mPreviewGesture);
+		LLGestureMgr::instance().stopGesture(mPreviewGesture);
 		mCloseAfterSave = TRUE;
 		onClickSave(this);
 		break;
 
 	case 1:  // "No"
-		gGestureManager.stopGesture(mPreviewGesture);
+		LLGestureMgr::instance().stopGesture(mPreviewGesture);
 		mDirty = FALSE; // Force the dirty flag because user has clicked NO on confirm save dialog...
 		close();
 		break;
@@ -841,7 +841,7 @@ void LLPreviewGesture::refresh()
 	
 	mOptionsText->setText(optionstext);
 
-	BOOL active = gGestureManager.isGestureActive(mItemUUID);
+	BOOL active = LLGestureMgr::instance().isGestureActive(mItemUUID);
 	mActiveCheck->set(active);
 
 	// Can only preview if there are steps
@@ -1195,10 +1195,10 @@ void LLPreviewGesture::saveIfNeeded()
 
 		// If this gesture is active, then we need to update the in-memory
 		// active map with the new pointer.
-		if (!delayedUpload && gGestureManager.isGestureActive(mItemUUID))
+		if (!delayedUpload && LLGestureMgr::instance().isGestureActive(mItemUUID))
 		{
 			// gesture manager now owns the pointer
-			gGestureManager.replaceGesture(mItemUUID, gesture, asset_id);
+			LLGestureMgr::instance().replaceGesture(mItemUUID, gesture, asset_id);
 
 			// replaceGesture may deactivate other gestures so let the
 			// inventory know.
@@ -1721,13 +1721,13 @@ void LLPreviewGesture::onClickDelete(void* data)
 void LLPreviewGesture::onCommitActive(LLUICtrl* ctrl, void* data)
 {
 	LLPreviewGesture* self = (LLPreviewGesture*)data;
-	if (!gGestureManager.isGestureActive(self->mItemUUID))
+	if (!LLGestureMgr::instance().isGestureActive(self->mItemUUID))
 	{
-		gGestureManager.activateGesture(self->mItemUUID);
+		LLGestureMgr::instance().activateGesture(self->mItemUUID);
 	}
 	else
 	{
-		gGestureManager.deactivateGesture(self->mItemUUID);
+		LLGestureMgr::instance().deactivateGesture(self->mItemUUID);
 	}
 
 	// Make sure the (active) label in the inventory gets updated.
@@ -1766,14 +1766,14 @@ void LLPreviewGesture::onClickPreview(void* data)
 		self->mPreviewBtn->setLabel(self->getString("stop_txt"));
 
 		// play it, and delete when done
-		gGestureManager.playGesture(self->mPreviewGesture);
+		LLGestureMgr::instance().playGesture(self->mPreviewGesture);
 
 		self->refresh();
 	}
 	else
 	{
 		// Will call onDonePreview() below
-		gGestureManager.stopGesture(self->mPreviewGesture);
+		LLGestureMgr::instance().stopGesture(self->mPreviewGesture);
 
 		self->refresh();
 	}
