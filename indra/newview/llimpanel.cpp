@@ -42,6 +42,7 @@
 #include "llstring.h"
 #include "message.h"
 #include "lltextbox.h"
+#include "llnotificationsutil.h"
 
 #include "llagent.h"
 #include "llbutton.h"
@@ -394,13 +395,13 @@ void LLVoiceChannel::setChannelInfo(
 	{
 		if (mURI.empty())
 		{
-			LLNotifications::instance().add("VoiceChannelJoinFailed", mNotifyArgs);
+			LLNotificationsUtil::add("VoiceChannelJoinFailed", mNotifyArgs);
 			llwarns << "Received empty URI for channel " << mSessionName << llendl;
 			deactivate();
 		}
 		else if (mCredentials.empty())
 		{
-			LLNotifications::instance().add("VoiceChannelJoinFailed", mNotifyArgs);
+			LLNotificationsUtil::add("VoiceChannelJoinFailed", mNotifyArgs);
 			llwarns << "Received empty credentials for channel " << mSessionName << llendl;
 			deactivate();
 		}
@@ -444,7 +445,7 @@ void LLVoiceChannel::handleStatusChange(EStatusType type)
 	{
 	case STATUS_LOGIN_RETRY:
 		//mLoginNotificationHandle = LLNotifyBox::showXml("VoiceLoginRetry")->getHandle();
-		LLNotifications::instance().add("VoiceLoginRetry");
+		LLNotificationsUtil::add("VoiceLoginRetry");
 		break;
 	case STATUS_LOGGED_IN:
 		//if (!mLoginNotificationHandle.isDead())
@@ -462,7 +463,7 @@ void LLVoiceChannel::handleStatusChange(EStatusType type)
 		{
 			// if forceably removed from channel
 			// update the UI and revert to default channel
-			LLNotifications::instance().add("VoiceChannelDisconnected", mNotifyArgs);
+			LLNotificationsUtil::add("VoiceChannelDisconnected", mNotifyArgs);
 			deactivate();
 		}
 		mIgnoreNextSessionLeave = FALSE;
@@ -954,12 +955,12 @@ void LLVoiceChannelP2P::handleStatusChange(EStatusType type)
 			if (mState == STATE_RINGING)
 			{
 				// other user declined call
-				LLNotifications::instance().add("P2PCallDeclined", mNotifyArgs);
+				LLNotificationsUtil::add("P2PCallDeclined", mNotifyArgs);
 			}
 			else
 			{
 				// other user hung up
-				LLNotifications::instance().add("VoiceChannelDisconnectedP2P", mNotifyArgs);
+				LLNotificationsUtil::add("VoiceChannelDisconnectedP2P", mNotifyArgs);
 			}
 			deactivate();
 		}
@@ -977,7 +978,7 @@ void LLVoiceChannelP2P::handleError(EStatusType type)
 	switch(type)
 	{
 	case ERROR_NOT_AVAILABLE:
-		LLNotifications::instance().add("P2PCallNoAnswer", mNotifyArgs);
+		LLNotificationsUtil::add("P2PCallNoAnswer", mNotifyArgs);
 		break;
 	default:
 		break;

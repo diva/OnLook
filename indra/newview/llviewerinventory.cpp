@@ -33,6 +33,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llviewerinventory.h"
 
+#include "llnotificationsutil.h"
 #include "message.h"
 #include "indra_constants.h"
 
@@ -193,7 +194,7 @@ void LLViewerInventoryItem::updateServer(BOOL is_new) const
 		// *FIX: deal with this better.
 		llwarns << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
-	 	LLNotifications::instance().add("IncompleteInventoryItem");
+	 	LLNotificationsUtil::add("IncompleteInventoryItem");
 		return;
 	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);
@@ -444,7 +445,7 @@ void LLViewerInventoryCategory::updateServer(BOOL is_new) const
 	// communicate that change with the server.
 	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotModifyProtectedCategories");
+		LLNotificationsUtil::add("CannotModifyProtectedCategories");
 		return;
 	}
 
@@ -468,7 +469,7 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	// communicate that change with the server.
 	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotRemoveProtectedCategories");
+		LLNotificationsUtil::add("CannotRemoveProtectedCategories");
 		return;
 	}
 

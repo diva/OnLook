@@ -62,7 +62,7 @@
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
 #include "llinventorymodel.h"	// gInventory
-#include "llnotify.h"
+#include "llnotificationsutil.h"
 #include "llresourcedata.h"
 #include "llselectmgr.h"
 #include "llstatusbar.h"
@@ -561,7 +561,7 @@ void LLObjectBackup::exportWorker(void *userdata)
 			if (LLObjectBackup::getInstance()->mNonExportedTextures == LLObjectBackup::TEXTURE_OK)
 			{
 				LL_INFOS("ObjectBackup") << "Export successful and complete." << LL_ENDL;
-				LLNotifications::instance().add("ExportSuccessful");
+				LLNotificationsUtil::add("ExportSuccessful");
 			}
 			else
 			{
@@ -589,7 +589,7 @@ void LLObjectBackup::exportWorker(void *userdata)
 				}
 				LLSD args;
 				args["REASON"] = reason;
-				LLNotifications::instance().add("ExportPartial", args);
+				LLNotificationsUtil::add("ExportPartial", args);
 			}
 			LLObjectBackup::getInstance()->close();
 			break;
@@ -597,7 +597,7 @@ void LLObjectBackup::exportWorker(void *userdata)
 		case EXPORT_FAILED:
 			gIdleCallbacks.deleteFunction(exportWorker);
 			LL_WARNS("ObjectBackup") << "Export process aborted." << LL_ENDL;
-			LLNotifications::instance().add("ExportFailed");
+			LLNotificationsUtil::add("ExportFailed");
 			LLObjectBackup::getInstance()->close();
 			break;
 	}

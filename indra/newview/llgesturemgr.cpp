@@ -43,6 +43,7 @@
 #include "lldatapacker.h"
 #include "llinventory.h"
 #include "llmultigesture.h"
+#include "llnotificationsutil.h"
 #include "llstl.h"
 #include "llstring.h"	// todo: remove
 #include "llvfile.h"
@@ -53,7 +54,6 @@
 #include "llchatbar.h"
 #include "lldelayedgestureerror.h"
 #include "llinventorymodel.h"
-#include "llnotify.h"
 #include "llviewermessage.h"
 #include "llvoavatar.h"
 #include "llviewerstats.h"
@@ -994,7 +994,7 @@ void LLGestureMgr::onLoadComplete(LLVFS *vfs,
 					// we're done with this set of deactivations
 					LLSD args;
 					args["NAMES"] = self.mDeactivateSimilarNames;
-					LLNotifications::instance().add("DeactivatedGesturesTrigger", args);
+					LLNotificationsUtil::add("DeactivatedGesturesTrigger", args);
 				}
 			}
 

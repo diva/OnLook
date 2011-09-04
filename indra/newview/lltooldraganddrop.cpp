@@ -35,6 +35,8 @@
 #include "message.h"
 #include "lltooldraganddrop.h"
 
+#include "llnotificationsutil.h"
+
 #include "llinstantmessage.h"
 #include "lldir.h"
 
@@ -1087,7 +1089,7 @@ BOOL LLToolDragAndDrop::handleDropTextureProtections(LLViewerObject* hit_obj,
 		hit_obj->fetchInventoryFromServer();
 		LLSD args;
 		args["ERROR_MESSAGE"] = "Unable to add texture.\nPlease wait a few seconds and try again.";
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 		return FALSE;
 	}
 	if (hit_obj->getInventoryItemByAsset(item->getAssetUUID()))
@@ -1580,7 +1582,7 @@ void LLToolDragAndDrop::giveInventory(const LLUUID& to_agent,
 		LLSD payload;
 		payload["agent_id"] = to_agent;
 		payload["item_id"] = item->getUUID();
-		LLNotifications::instance().add("CannotCopyWarning", LLSD(), payload, 
+		LLNotificationsUtil::add("CannotCopyWarning", LLSD(), payload, 
 		        &LLToolDragAndDrop::handleCopyProtectedItem);
 	}
 }
@@ -1604,12 +1606,12 @@ bool LLToolDragAndDrop::handleCopyProtectedItem(const LLSD& notification, const 
 		}
 		else
 		{
-			LLNotifications::instance().add("CannotGiveItem");		
+			LLNotificationsUtil::add("CannotGiveItem");		
 		}
 		break;
 
 	default: // no, cancel, whatever, who cares, not yes.
-		LLNotifications::instance().add("TransactionCancelled");
+		LLNotificationsUtil::add("TransactionCancelled");
 		break;
 	}
 	return false;
@@ -1709,18 +1711,18 @@ void LLToolDragAndDrop::giveInventoryCategory(const LLUUID& to_agent,
 	}
 	if(!complete)
 	{
-		LLNotifications::instance().add("IncompleteInventory");
+		LLNotificationsUtil::add("IncompleteInventory");
 		return;
 	}
  	count = items.count() + cats.count();
  	if(count > MAX_ITEMS)
   	{
-		LLNotifications::instance().add("TooManyItems");
+		LLNotificationsUtil::add("TooManyItems");
   		return;
   	}
  	else if(count == 0)
   	{
-		LLNotifications::instance().add("NoItems");
+		LLNotificationsUtil::add("NoItems");
   		return;
   	}
 	else
@@ -1738,7 +1740,7 @@ void LLToolDragAndDrop::giveInventoryCategory(const LLUUID& to_agent,
 			LLSD payload;
 			payload["agent_id"] = to_agent;
 			payload["folder_id"] = cat->getUUID();
-			LLNotifications::instance().add("CannotCopyCountItems", args, payload, &LLToolDragAndDrop::handleCopyProtectedCategory);
+			LLNotificationsUtil::add("CannotCopyCountItems", args, payload, &LLToolDragAndDrop::handleCopyProtectedCategory);
 		}
 	}
 }
@@ -1774,12 +1776,12 @@ bool LLToolDragAndDrop::handleCopyProtectedCategory(const LLSD& notification, co
 		}
 		else
 		{
-			LLNotifications::instance().add("CannotGiveCategory");
+			LLNotificationsUtil::add("CannotGiveCategory");
 		}
 		break;
 
 	default: // no, cancel, whatever, who cares, not yes.
-		LLNotifications::instance().add("TransactionCancelled");
+		LLNotificationsUtil::add("TransactionCancelled");
 		break;
 	}
 	return false;
@@ -1811,12 +1813,12 @@ void LLToolDragAndDrop::commitGiveInventoryCategory(const LLUUID& to_agent,
  	S32 count = items.count() + cats.count();
  	if(count > MAX_ITEMS)
   	{
-		LLNotifications::instance().add("TooManyItems");
+		LLNotificationsUtil::add("TooManyItems");
   		return;
   	}
  	else if(count == 0)
   	{
-		LLNotifications::instance().add("NoItems");
+		LLNotificationsUtil::add("NoItems");
   		return;
   	}
 	else
@@ -2562,7 +2564,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearItem(
 			// destroy clothing items.
 			if (!gAgentWearables.areWearablesLoaded()) 
 			{
-				LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
+				LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 				return ACCEPT_NO;
 			}
 
@@ -2657,7 +2659,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearCategory(
 		// destroy clothing items.
 		if (!gAgentWearables.areWearablesLoaded()) 
 		{
-			LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
+			LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 			return ACCEPT_NO;
 		}
 	}

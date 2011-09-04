@@ -49,6 +49,7 @@
 #include "llfloaterdaycycle.h"
 #include "llboost.h"
 #include "llmultisliderctrl.h"
+#include "llnotificationsutil.h"
 
 #include "v4math.h"
 #include "llviewerdisplay.h"
@@ -219,7 +220,7 @@ bool LLFloaterWater::newPromptCallback(const LLSD& notification, const LLSD& res
 		} 
 		else 
 		{
-			LLNotifications::instance().add("ExistsWaterPresetAlert");
+			LLNotificationsUtil::add("ExistsWaterPresetAlert");
 		}
 	}
 	return false;
@@ -592,7 +593,7 @@ void LLFloaterWater::onNormalMapPicked(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWater::onNewPreset(void* userData)
 {
-	LLNotifications::instance().add("NewWaterPreset", LLSD(),  LLSD(), newPromptCallback);
+	LLNotificationsUtil::add("NewWaterPreset", LLSD(),  LLSD(), newPromptCallback);
 }
 
 void LLFloaterWater::onSavePreset(void* userData)
@@ -614,11 +615,11 @@ void LLFloaterWater::onSavePreset(void* userData)
 		comboBox->getSelectedItemLabel());
 	if(sIt != sDefaultPresets.end() && !gSavedSettings.getBOOL("WaterEditPresets")) 
 	{
-		LLNotifications::instance().add("WLNoEditDefault");
+		LLNotificationsUtil::add("WLNoEditDefault");
 		return;
 	}
 
-	LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+	LLNotificationsUtil::add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
 }
 
 bool LLFloaterWater::saveAlertCallback(const LLSD& notification, const LLSD& response)
@@ -650,7 +651,7 @@ void LLFloaterWater::onDeletePreset(void* userData)
 
 	LLSD args;
 	args["SKY"] = combo_box->getSelectedValue().asString();
-	LLNotifications::instance().add("WLDeletePresetAlert", args, LLSD(), deleteAlertCallback);
+	LLNotificationsUtil::add("WLDeletePresetAlert", args, LLSD(), deleteAlertCallback);
 }
 
 bool LLFloaterWater::deleteAlertCallback(const LLSD& notification, const LLSD& response)
@@ -677,7 +678,7 @@ bool LLFloaterWater::deleteAlertCallback(const LLSD& notification, const LLSD& r
 		std::set<std::string>::iterator sIt = sDefaultPresets.find(name);
 		if(sIt != sDefaultPresets.end()) 
 		{
-			LLNotifications::instance().add("WaterNoEditDefault");
+			LLNotificationsUtil::add("WaterNoEditDefault");
 			return false;
 		}
 

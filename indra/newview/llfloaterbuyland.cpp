@@ -47,7 +47,7 @@
 #include "llframetimer.h"
 #include "lliconctrl.h"
 #include "lllineeditor.h"
-#include "llnotify.h"
+#include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llstatusbar.h"
 #include "lltextbox.h"
@@ -215,7 +215,7 @@ void LLFloaterBuyLand::buyLand(
 {
 	if(is_for_group && !gAgent.hasPowerInActiveGroup(GP_LAND_DEED))
 	{
-		LLNotifications::instance().add("OnlyOfficerCanBuyLand");
+		LLNotificationsUtil::add("OnlyOfficerCanBuyLand");
 		return;
 	}
 
@@ -991,7 +991,7 @@ BOOL LLFloaterBuyLandUI::canClose()
 	if (!can_close)
 	{
 		// explain to user why they can't do this, see DEV-9605
-		LLNotifications::instance().add("CannotCloseFloaterBuyLand");
+		LLNotificationsUtil::add("CannotCloseFloaterBuyLand");
 	}
 	return can_close;
 }

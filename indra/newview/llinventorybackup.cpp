@@ -13,7 +13,7 @@
 #include "lluictrlfactory.h"
 #include "llscrolllistctrl.h"
 #include "llimagetga.h"
-
+#include "llnotificationsutil.h"
 
 std::list<LLFloaterInventoryBackup*> LLFloaterInventoryBackup::sInstances;
 
@@ -115,7 +115,7 @@ void LLFloaterInventoryBackupSettings::onClickNext(void* userdata)
 	{
 		LLSD args;
 		args["ERROR_MESSAGE"] = "No items passed the filter \\o/";
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 		return;
 	}
 
@@ -353,7 +353,7 @@ void LLInventoryBackup::imageCallback(BOOL success,
 		{
 			LLSD args;
 			args["ERROR_MESSAGE"] = "Download didn't work on " + item->getName() + ".";
-			LLNotifications::instance().add("ErrorMessage", args);
+			LLNotificationsUtil::add("ErrorMessage", args);
 			return;
 		}
 
@@ -379,13 +379,13 @@ void LLInventoryBackup::imageCallback_continued(LLImageRaw* src, AIFilePicker* f
 	{
 		LLSD args;
 		args["ERROR_MESSAGE"] = "Couldn't encode file.";
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 	}
 	else if( !image_tga->save( filename ) )
 	{
 		LLSD args;
 		args["ERROR_MESSAGE"] = "Couldn't write file.";
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 	}
 }
 
@@ -402,7 +402,7 @@ void LLInventoryBackup::assetCallback(LLVFS *vfs,
 	{
 		LLSD args;
 		args["ERROR_MESSAGE"] = "Download didn't work on " + item->getName() + ".";
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 		return;
 	}
 

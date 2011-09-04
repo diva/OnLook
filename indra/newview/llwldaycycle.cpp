@@ -102,7 +102,7 @@ void LLWLDayCycle::loadDayCycle(const std::string & fileName)
 				// alert the user
 				LLSD args;
 				args["SKY"] = day_data[i][1].asString();
-				LLNotifications::instance().add("WLMissingSky", args);
+				LLNotifications::instance().add("WLMissingSky", args, LLSD());
 				continue;
 			}
 			

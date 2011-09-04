@@ -53,6 +53,7 @@
 #include "llviewerstats.h"
 #include "lluictrlfactory.h"
 #include "llselectmgr.h"
+#include "llnotificationsutil.h"
 
 #include "roles_constants.h" // for GP_OBJECT_MANIPULATE
 
@@ -153,7 +154,7 @@ void LLFloaterBulkPermission::onApplyBtn(void* user_data)
 
 void LLFloaterBulkPermission::onHelpBtn(void* user_data)
 {
-	LLNotifications::instance().add("HelpBulkPermission");
+	LLNotificationsUtil::add("HelpBulkPermission");
 }
 
 void LLFloaterBulkPermission::onCloseBtn(void* user_data)

@@ -45,6 +45,7 @@
 #include "llfloater.h"
 #include "llfloaterworldmap.h"
 #include "llinventorymodel.h"
+#include "llnotificationsutil.h"
 #include "llsecondlifeurls.h"
 #include "lltextbox.h"
 #include "llviewertexteditor.h"
@@ -262,7 +263,7 @@ void LLPanelEvent::onClickLandmark(void* data)
 // static
 void LLPanelEvent::onClickCreateEvent(void* data)
 {
-	LLNotifications::instance().add("PromptGoToEventsPage", LLSD(), LLSD(), callbackCreateEventWebPage); 
+	LLNotificationsUtil::add("PromptGoToEventsPage", LLSD(), LLSD(), callbackCreateEventWebPage); 
 }
 
 // static

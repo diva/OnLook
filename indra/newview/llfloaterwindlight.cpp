@@ -48,6 +48,7 @@
 #include "lllineeditor.h"
 #include "llfloaterdaycycle.h"
 #include "llboost.h"
+#include "llnotificationsutil.h"
 
 #include "v4math.h"
 #include "llviewerdisplay.h"
@@ -298,7 +299,7 @@ bool LLFloaterWindLight::newPromptCallback(const LLSD& notification, const LLSD&
 		} 
 		else 
 		{
-			LLNotifications::instance().add("ExistsSkyPresetAlert");
+			LLNotificationsUtil::add("ExistsSkyPresetAlert");
 		}
 	}
 	return false;
@@ -789,7 +790,7 @@ void LLFloaterWindLight::onStarAlphaMoved(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::onNewPreset(void* userData)
 {
-	LLNotifications::instance().add("NewSkyPreset", LLSD(), LLSD(), newPromptCallback);
+	LLNotificationsUtil::add("NewSkyPreset", LLSD(), LLSD(), newPromptCallback);
 }
 
 void LLFloaterWindLight::onSavePreset(void* userData)
@@ -809,14 +810,14 @@ void LLFloaterWindLight::onSavePreset(void* userData)
 		comboBox->getSelectedItemLabel());
 	if(sIt != sDefaultPresets.end() && !gSavedSettings.getBOOL("SkyEditPresets")) 
 	{
-		LLNotifications::instance().add("WLNoEditDefault");
+		LLNotificationsUtil::add("WLNoEditDefault");
 		return;
 	}
 
 	LLWLParamManager::getInstance()->mCurParams.mName = 
 		comboBox->getSelectedItemLabel();
 
-	LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+	LLNotificationsUtil::add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
 }
 
 bool LLFloaterWindLight::saveAlertCallback(const LLSD& notification, const LLSD& response)
@@ -847,7 +848,7 @@ void LLFloaterWindLight::onDeletePreset(void* userData)
 
 	LLSD args;
 	args["SKY"] = combo_box->getSelectedValue().asString();
-	LLNotifications::instance().add("WLDeletePresetAlert", args, LLSD(), 
+	LLNotificationsUtil::add("WLDeletePresetAlert", args, LLSD(), 
 									boost::bind(&LLFloaterWindLight::deleteAlertCallback, sWindLight, _1, _2));
 }
 
@@ -878,7 +879,7 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 		std::set<std::string>::iterator sIt = sDefaultPresets.find(name);
 		if(sIt != sDefaultPresets.end()) 
 		{
-			LLNotifications::instance().add("WLNoEditDefault");
+			LLNotificationsUtil::add("WLNoEditDefault");
 			return false;
 		}
 

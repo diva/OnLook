@@ -54,6 +54,7 @@
 #include "llmorphview.h"
 #include "llmoveview.h"
 #include "llchatbar.h"
+#include "llnotificationsutil.h"
 #include "llnotify.h"
 #include "llparcel.h"
 #include "llrendersphere.h"
@@ -1444,11 +1445,11 @@ void LLAgent::stopAutoPilot(BOOL user_cancel)
 		if (user_cancel && !mAutoPilotBehaviorName.empty())
 		{
 			if (mAutoPilotBehaviorName == "Sit")
-				LLNotifications::instance().add("CancelledSit");
+				LLNotificationsUtil::add("CancelledSit");
 			else if (mAutoPilotBehaviorName == "Attach")
-				LLNotifications::instance().add("CancelledAttach");
+				LLNotificationsUtil::add("CancelledAttach");
 			else
-				LLNotifications::instance().add("Cancelled");
+				LLNotificationsUtil::add("Cancelled");
 		}
 	}
 }

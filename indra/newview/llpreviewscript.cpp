@@ -45,6 +45,7 @@
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 
+#include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "llscrollbar.h"
 #include "llscrollcontainer.h"
@@ -708,7 +709,7 @@ BOOL LLScriptEdCore::canClose()
 	else
 	{
 		// Bring up view-modal dialog: Save changes? Yes, No, Cancel
-		LLNotifications::instance().add("SaveChanges", LLSD(), LLSD(), boost::bind(&LLScriptEdCore::handleSaveChangesDialog, this, _1, _2));
+		LLNotificationsUtil::add("SaveChanges", LLSD(), LLSD(), boost::bind(&LLScriptEdCore::handleSaveChangesDialog, this, _1, _2));
 		return FALSE;
 	}
 }
@@ -766,7 +767,7 @@ void LLScriptEdCore::onBtnHelp(void* userdata)
 	LLScriptEdCore* corep = (LLScriptEdCore*)userdata;
 	LLSD payload;
 	payload["help_url"] = corep->mHelpURL;
-	LLNotifications::instance().add("WebLaunchLSLGuide", LLSD(), payload, onHelpWebDialog);
+	LLNotificationsUtil::add("WebLaunchLSLGuide", LLSD(), payload, onHelpWebDialog);
 }
 
 // static 
@@ -925,7 +926,7 @@ void LLScriptEdCore::onBtnUndoChanges( void* userdata )
 	LLScriptEdCore* self = (LLScriptEdCore*) userdata;
 	if( !self->mEditor->tryToRevertToPristineState() )
 	{
-		LLNotifications::instance().add("ScriptCannotUndo", LLSD(), LLSD(), boost::bind(&LLScriptEdCore::handleReloadFromServerDialog, self, _1, _2));
+		LLNotificationsUtil::add("ScriptCannotUndo", LLSD(), LLSD(), boost::bind(&LLScriptEdCore::handleReloadFromServerDialog, self, _1, _2));
 	}
 }
 
@@ -1563,7 +1564,7 @@ void LLPreviewLSL::onSaveComplete(const LLUUID& asset_uuid, void* user_data, S32
 		llwarns << "Problem saving script: " << status << llendl;
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("SaveScriptFailReason", args);
+		LLNotificationsUtil::add("SaveScriptFailReason", args);
 	}
 	delete info;
 }
@@ -1601,7 +1602,7 @@ void LLPreviewLSL::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* user_d
 		llwarns << "Problem saving LSL Bytecode (Preview)" << llendl;
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("SaveBytecodeFailReason", args);
+		LLNotificationsUtil::add("SaveBytecodeFailReason", args);
 	}
 	delete instance_uuid;
 }
@@ -1647,15 +1648,15 @@ void LLPreviewLSL::onLoadComplete( LLVFS *vfs, const LLUUID& asset_uuid, LLAsset
 			if( LL_ERR_ASSET_REQUEST_NOT_IN_DATABASE == status ||
 				LL_ERR_FILE_EMPTY == status)
 			{
-				LLNotifications::instance().add("ScriptMissing");
+				LLNotificationsUtil::add("ScriptMissing");
 			}
 			else if (LL_ERR_INSUFFICIENT_PERMISSIONS == status)
 			{
-				LLNotifications::instance().add("ScriptNoPermissions");
+				LLNotificationsUtil::add("ScriptNoPermissions");
 			}
 			else
 			{
-				LLNotifications::instance().add("UnableToLoadScript");
+				LLNotificationsUtil::add("UnableToLoadScript");
 			}
 
 			preview->mAssetStatus = PREVIEW_ASSET_ERROR;
@@ -1995,15 +1996,15 @@ void LLLiveLSLEditor::onLoadComplete(LLVFS *vfs, const LLUUID& asset_id,
 			if( LL_ERR_ASSET_REQUEST_NOT_IN_DATABASE == status ||
 				LL_ERR_FILE_EMPTY == status)
 			{
-				LLNotifications::instance().add("ScriptMissing");
+				LLNotificationsUtil::add("ScriptMissing");
 			}
 			else if (LL_ERR_INSUFFICIENT_PERMISSIONS == status)
 			{
-				LLNotifications::instance().add("ScriptNoPermissions");
+				LLNotificationsUtil::add("ScriptNoPermissions");
 			}
 			else
 			{
-				LLNotifications::instance().add("UnableToLoadScript");
+				LLNotificationsUtil::add("UnableToLoadScript");
 			}
 			instance->mAssetStatus = PREVIEW_ASSET_ERROR;
 		}
@@ -2097,7 +2098,7 @@ void LLLiveLSLEditor::onRunningCheckboxClicked( LLUICtrl*, void* userdata )
 	else
 	{
 		runningCheckbox->set(!running);
-		LLNotifications::instance().add("CouldNotStartStopScript");
+		LLNotificationsUtil::add("CouldNotStartStopScript");
 	}
 }
 
@@ -2127,7 +2128,7 @@ void LLLiveLSLEditor::onReset(void *userdata)
 	}
 	else
 	{
-		LLNotifications::instance().add("CouldNotStartStopScript"); 
+		LLNotificationsUtil::add("CouldNotStartStopScript"); 
 	}
 }
 
@@ -2221,7 +2222,7 @@ void LLLiveLSLEditor::saveIfNeeded()
 	LLViewerObject* object = gObjectList.findObject(mObjectID);
 	if(!object)
 	{
-		LLNotifications::instance().add("SaveScriptFailObjectNotFound");
+		LLNotificationsUtil::add("SaveScriptFailObjectNotFound");
 		return;
 	}
 
@@ -2229,7 +2230,7 @@ void LLLiveLSLEditor::saveIfNeeded()
 	{
 		// $NOTE: While the error message may not be exactly correct,
 		// it's pretty close.
-		LLNotifications::instance().add("SaveScriptFailObjectNotFound");
+		LLNotificationsUtil::add("SaveScriptFailObjectNotFound");
 		return;
 	}
 
@@ -2433,7 +2434,7 @@ void LLLiveLSLEditor::onSaveTextComplete(const LLUUID& asset_uuid, void* user_da
 		llwarns << "Unable to save text for a script." << llendl;
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("CompileQueueSaveText", args);
+		LLNotificationsUtil::add("CompileQueueSaveText", args);
 	}
 	else
 	{
@@ -2494,7 +2495,7 @@ void LLLiveLSLEditor::onSaveBytecodeComplete(const LLUUID& asset_uuid, void* use
 
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("CompileQueueSaveBytecode", args);
+		LLNotificationsUtil::add("CompileQueueSaveBytecode", args);
 	}
 
 	std::string filepath = gDirUtilp->getExpandedFilename(LL_PATH_CACHE,asset_uuid.asString());

@@ -45,7 +45,7 @@
 #include "lleconomy.h"
 #include "llimagej2c.h"
 #include "llhost.h"
-#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llsd.h"
 #include "llsdutil_math.h"
 #include "llsdserialize.h"
@@ -2355,7 +2355,7 @@ void LLMeshRepository::notifyLoadedMeshes()
 	//popup queued error messages from background threads
 	while (!mUploadErrorQ.empty())
 	{
-		LLNotifications::instance().add("MeshUploadError", mUploadErrorQ.front());
+		LLNotificationsUtil::add("MeshUploadError", mUploadErrorQ.front());
 		mUploadErrorQ.pop();
 	}
 

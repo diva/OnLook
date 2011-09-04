@@ -46,7 +46,8 @@
 
 #include "llagent.h"
 #include "llcombobox.h"
-#include "llnotify.h"	
+#include "llnotifications.h"
+#include "llnotificationsutil.h"	
 #include "llviewertexturelist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
@@ -240,7 +241,7 @@ void LLFloaterAuction::onClickOK(void* data)
 								   FALSE);
 		self->getWindow()->incBusyCount();
 
-		LLNotifications::instance().add("UploadingAuctionSnapshot");
+		LLNotificationsUtil::add("UploadingAuctionSnapshot");
 
 	}
 	LLMessageSystem* msg = gMessageSystem;
@@ -279,13 +280,13 @@ void auction_tga_upload_done(const LLUUID& asset_id, void* user_data, S32 status
 
 	if (0 == status)
 	{
-		LLNotifications::instance().add("UploadWebSnapshotDone");
+		LLNotificationsUtil::add("UploadWebSnapshotDone");
 	}
 	else
 	{
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("UploadAuctionSnapshotFail", args);
+		LLNotificationsUtil::add("UploadAuctionSnapshotFail", args);
 	}
 }
 
@@ -300,12 +301,12 @@ void auction_j2c_upload_done(const LLUUID& asset_id, void* user_data, S32 status
 
 	if (0 == status)
 	{
-		LLNotifications::instance().add("UploadSnapshotDone");
+		LLNotificationsUtil::add("UploadSnapshotDone");
 	}
 	else
 	{
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(status));
-		LLNotifications::instance().add("UploadAuctionSnapshotFail", args);
+		LLNotificationsUtil::add("UploadAuctionSnapshotFail", args);
 	}
 }

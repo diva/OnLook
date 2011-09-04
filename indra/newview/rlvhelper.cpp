@@ -20,6 +20,7 @@
 #include "llgesturemgr.h"
 #include "llinventoryview.h"
 #include "llinventorybridge.h"
+#include "llnotificationsutil.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
@@ -351,7 +352,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 	// [See LLWearableBridge::wearOnAvatar(): don't wear anything until initial wearables are loaded, can destroy clothing items]
 	if (!gAgentWearables.areWearablesLoaded())
 	{
-		LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
+		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
 	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
@@ -1043,7 +1044,7 @@ bool rlvCanDeleteOrReturn()
 			LLSD args;
 			args["MESSAGE"] = llformat("RestrainedLove Support will be %s after you restart", 
 				(rlv_handler_t::isEnabled()) ? "disabled" : "enabled" );
-			LLNotifications::instance().add("GenericAlert", args);
+			LLNotificationsUtil::add("GenericAlert", args);
 		#endif
 	}
 	// Checked: 2009-07-08 (RLVa-1.0.0e)

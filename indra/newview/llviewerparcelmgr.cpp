@@ -39,6 +39,8 @@
 #include "indra_constants.h"
 #include "llcachename.h"
 #include "llgl.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llsecondlifeurls.h"
 #include "message.h"
@@ -523,7 +525,7 @@ LLParcelSelectionHandle LLViewerParcelMgr::selectLand(const LLVector3d &corner1,
 
 	if (region != region_other)
 	{
-		LLNotifications::instance().add("CantSelectLandFromMultipleRegions");
+		LLNotificationsUtil::add("CantSelectLandFromMultipleRegions");
 		mSelected = FALSE;
 		notifyObservers();
 		return NULL;
@@ -952,7 +954,7 @@ void LLViewerParcelMgr::sendParcelGodForceOwner(const LLUUID& owner_id)
 {
 	if (!mSelected)
 	{
-		LLNotifications::instance().add("CannotSetLandOwnerNothingSelected");
+		LLNotificationsUtil::add("CannotSetLandOwnerNothingSelected");
 		return;
 	}
 
@@ -967,7 +969,7 @@ void LLViewerParcelMgr::sendParcelGodForceOwner(const LLUUID& owner_id)
 	if (!region)
 	{
 		// TODO: Add a force owner version of this alert.
-		LLNotifications::instance().add("CannotContentifyNoRegion");
+		LLNotificationsUtil::add("CannotContentifyNoRegion");
 		return;
 	}
 
@@ -975,7 +977,7 @@ void LLViewerParcelMgr::sendParcelGodForceOwner(const LLUUID& owner_id)
 	LLViewerRegion *region2 = LLWorld::getInstance()->getRegionFromPosGlobal( east_north_region_check );
 	if (region != region2)
 	{
-		LLNotifications::instance().add("CannotSetLandOwnerMultipleRegions");
+		LLNotificationsUtil::add("CannotSetLandOwnerMultipleRegions");
 		return;
 	}
 
@@ -1020,13 +1022,13 @@ void LLViewerParcelMgr::sendParcelGodForceToContent()
 {
 	if (!mSelected)
 	{
-		LLNotifications::instance().add("CannotContentifyNothingSelected");
+		LLNotificationsUtil::add("CannotContentifyNothingSelected");
 		return;
 	}
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal( mWestSouth );
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotContentifyNoRegion");
+		LLNotificationsUtil::add("CannotContentifyNoRegion");
 		return;
 	}
 
@@ -1044,14 +1046,14 @@ void LLViewerParcelMgr::sendParcelRelease()
 {
 	if (!mSelected)
 	{
-        LLNotifications::instance().add("CannotReleaseLandNothingSelected");
+        LLNotificationsUtil::add("CannotReleaseLandNothingSelected");
 		return;
 	}
 
 	LLViewerRegion *region = LLWorld::getInstance()->getRegionFromPosGlobal( mWestSouth );
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotReleaseLandNoRegion");
+		LLNotificationsUtil::add("CannotReleaseLandNoRegion");
 		return;
 	}
 
@@ -1106,14 +1108,14 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 {
 	if (!mSelected || !mCurrentParcel)
 	{
-		LLNotifications::instance().add("CannotBuyLandNothingSelected");
+		LLNotificationsUtil::add("CannotBuyLandNothingSelected");
 		return NULL;
 	}
 
 	LLViewerRegion *region = LLWorld::getInstance()->getRegionFromPosGlobal( mWestSouth );
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotBuyLandNoRegion");
+		LLNotificationsUtil::add("CannotBuyLandNoRegion");
 		return NULL;
 	}
 	
@@ -1131,7 +1133,7 @@ LLViewerParcelMgr::ParcelBuyInfo* LLViewerParcelMgr::setupParcelBuy(
 
 		if (region != region2)
 		{
-			LLNotifications::instance().add("CantBuyLandAcrossMultipleRegions");
+			LLNotificationsUtil::add("CantBuyLandAcrossMultipleRegions");
 			return NULL;
 		}
 	}
@@ -1213,18 +1215,18 @@ void LLViewerParcelMgr::sendParcelDeed(const LLUUID& group_id)
 {
 	if (!mSelected || !mCurrentParcel)
 	{
-		LLNotifications::instance().add("CannotDeedLandNothingSelected");
+		LLNotificationsUtil::add("CannotDeedLandNothingSelected");
 		return;
 	}
 	if(group_id.isNull())
 	{
-		LLNotifications::instance().add("CannotDeedLandNoGroup");
+		LLNotificationsUtil::add("CannotDeedLandNoGroup");
 		return;
 	}
 	LLViewerRegion *region = LLWorld::getInstance()->getRegionFromPosGlobal( mWestSouth );
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotDeedLandNoRegion");
+		LLNotificationsUtil::add("CannotDeedLandNoRegion");
 		return;
 	}
 
@@ -2073,11 +2075,11 @@ void LLViewerParcelMgr::deedLandToGroup()
 		std::string full_name;
 		gCacheName->getFullName(mCurrentParcel->getOwnerID(),full_name);
 		args["NAME"] = full_name;
-		LLNotifications::instance().add("DeedLandToGroupWithContribution",args, LLSD(), deedAlertCB);
+		LLNotificationsUtil::add("DeedLandToGroupWithContribution",args, LLSD(), deedAlertCB);
 	}
 	else
 	{
-		LLNotifications::instance().add("DeedLandToGroup",args, LLSD(), deedAlertCB);
+		LLNotificationsUtil::add("DeedLandToGroup",args, LLSD(), deedAlertCB);
 	}
 }
 
@@ -2103,26 +2105,26 @@ void LLViewerParcelMgr::startReleaseLand()
 {
 	if (!mSelected)
 	{
-		LLNotifications::instance().add("CannotReleaseLandNothingSelected");
+		LLNotificationsUtil::add("CannotReleaseLandNothingSelected");
 		return;
 	}
 
 	if (mRequestResult == PARCEL_RESULT_NO_DATA)
 	{
-		LLNotifications::instance().add("CannotReleaseLandWatingForServer");
+		LLNotificationsUtil::add("CannotReleaseLandWatingForServer");
 		return;
 	}
 
 	if (mRequestResult == PARCEL_RESULT_MULTIPLE)
 	{
-		LLNotifications::instance().add("CannotReleaseLandSelected");
+		LLNotificationsUtil::add("CannotReleaseLandSelected");
 		return;
 	}
 
 	if (!isParcelOwnedByAgent(mCurrentParcel, GP_LAND_RELEASE)
 		&& !(gAgent.canManageEstate()))
 	{
-		LLNotifications::instance().add("CannotReleaseLandDontOwn");
+		LLNotificationsUtil::add("CannotReleaseLandDontOwn");
 		return;
 	}
 
@@ -2130,7 +2132,7 @@ void LLViewerParcelMgr::startReleaseLand()
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal(parcel_center);
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotReleaseLandRegionNotFound");
+		LLNotificationsUtil::add("CannotReleaseLandRegionNotFound");
 		return;
 	}
 /*
@@ -2139,21 +2141,21 @@ void LLViewerParcelMgr::startReleaseLand()
 	{
 		LLSD args;
 		args["REGION"] = region->getName();
-		LLNotifications::instance().add("CannotReleaseLandNoTransfer", args);
+		LLNotificationsUtil::add("CannotReleaseLandNoTransfer", args);
 		return;
 	}
 */
 
 	if (!mCurrentParcelSelection->mWholeParcelSelected)
 	{
-		LLNotifications::instance().add("CannotReleaseLandPartialSelection");
+		LLNotificationsUtil::add("CannotReleaseLandPartialSelection");
 		return;
 	}
 
 	// Compute claim price
 	LLSD args;
 	args["AREA"] = llformat("%d",mCurrentParcel->getArea());
-	LLNotifications::instance().add("ReleaseLandWarning", args, LLSD(), releaseAlertCB);
+	LLNotificationsUtil::add("ReleaseLandWarning", args, LLSD(), releaseAlertCB);
 }
 
 bool LLViewerParcelMgr::canAgentBuyParcel(LLParcel* parcel, bool forGroup) const
@@ -2231,13 +2233,13 @@ void LLViewerParcelMgr::startDivideLand()
 {
 	if (!mSelected)
 	{
-		LLNotifications::instance().add("CannotDivideLandNothingSelected");
+		LLNotificationsUtil::add("CannotDivideLandNothingSelected");
 		return;
 	}
 
 	if (mCurrentParcelSelection->mWholeParcelSelected)
 	{
-		LLNotifications::instance().add("CannotDivideLandPartialSelection");
+		LLNotificationsUtil::add("CannotDivideLandPartialSelection");
 		return;
 	}
 
@@ -2245,7 +2247,7 @@ void LLViewerParcelMgr::startDivideLand()
 	payload["west_south_border"] = ll_sd_from_vector3d(mWestSouth);
 	payload["east_north_border"] = ll_sd_from_vector3d(mEastNorth);
 
-	LLNotifications::instance().add("LandDivideWarning", LLSD(), payload, callbackDivideLand);
+	LLNotificationsUtil::add("LandDivideWarning", LLSD(), payload, callbackDivideLand);
 }
 
 // static
@@ -2259,7 +2261,7 @@ bool LLViewerParcelMgr::callbackDivideLand(const LLSD& notification, const LLSD&
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal(parcel_center);
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotDivideLandNoRegion");
+		LLNotificationsUtil::add("CannotDivideLandNoRegion");
 		return false;
 	}
 
@@ -2288,19 +2290,19 @@ void LLViewerParcelMgr::startJoinLand()
 {
 	if (!mSelected)
 	{
-		LLNotifications::instance().add("CannotJoinLandNothingSelected");
+		LLNotificationsUtil::add("CannotJoinLandNothingSelected");
 		return;
 	}
 
 	if (mCurrentParcelSelection->mWholeParcelSelected)
 	{
-		LLNotifications::instance().add("CannotJoinLandEntireParcelSelected");
+		LLNotificationsUtil::add("CannotJoinLandEntireParcelSelected");
 		return;
 	}
 
 	if (!mCurrentParcelSelection->mSelectedMultipleOwners)
 	{
-		LLNotifications::instance().add("CannotJoinLandSelection");
+		LLNotificationsUtil::add("CannotJoinLandSelection");
 		return;
 	}
 
@@ -2308,7 +2310,7 @@ void LLViewerParcelMgr::startJoinLand()
 	payload["west_south_border"] = ll_sd_from_vector3d(mWestSouth);
 	payload["east_north_border"] = ll_sd_from_vector3d(mEastNorth);
 
-	LLNotifications::instance().add("JoinLandWarning", LLSD(), payload, callbackJoinLand);
+	LLNotificationsUtil::add("JoinLandWarning", LLSD(), payload, callbackJoinLand);
 }
 
 // static
@@ -2322,7 +2324,7 @@ bool LLViewerParcelMgr::callbackJoinLand(const LLSD& notification, const LLSD& r
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal(parcel_center);
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotJoinLandNoRegion");
+		LLNotificationsUtil::add("CannotJoinLandNoRegion");
 		return false;
 	}
 
@@ -2351,19 +2353,19 @@ void LLViewerParcelMgr::startDeedLandToGroup()
 {
 	if (!mSelected || !mCurrentParcel)
 	{
-		LLNotifications::instance().add("CannotDeedLandNothingSelected");
+		LLNotificationsUtil::add("CannotDeedLandNothingSelected");
 		return;
 	}
 
 	if (mRequestResult == PARCEL_RESULT_NO_DATA)
 	{
-		LLNotifications::instance().add("CannotDeedLandWaitingForServer");
+		LLNotificationsUtil::add("CannotDeedLandWaitingForServer");
 		return;
 	}
 
 	if (mRequestResult == PARCEL_RESULT_MULTIPLE)
 	{
-		LLNotifications::instance().add("CannotDeedLandMultipleSelected");
+		LLNotificationsUtil::add("CannotDeedLandMultipleSelected");
 		return;
 	}
 
@@ -2371,7 +2373,7 @@ void LLViewerParcelMgr::startDeedLandToGroup()
 	LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal(parcel_center);
 	if (!region)
 	{
-		LLNotifications::instance().add("CannotDeedLandNoRegion");
+		LLNotificationsUtil::add("CannotDeedLandNoRegion");
 		return;
 	}
 
@@ -2383,7 +2385,7 @@ void LLViewerParcelMgr::startDeedLandToGroup()
 		{
 			LLSD args;
 			args["REGION"] = region->getName();
-			LLNotifications::instance().add("CannotDeedLandNoTransfer", args);
+			LLNotificationsUtil::add("CannotDeedLandNoTransfer", args);
 			return;
 		}
 	}

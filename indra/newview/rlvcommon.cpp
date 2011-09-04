@@ -18,6 +18,7 @@
 #include "llagent.h"
 #include "llappviewer.h"
 #include "llavatarnamecache.h"
+#include "llnotificationsutil.h"
 #include "lluictrlfactory.h"
 #include "llversionviewer.h"
 #include "llviewermenu.h"
@@ -43,7 +44,7 @@ void RlvNotifications::notifyBehaviour(ERlvBehaviour eBhvr, ERlvParamType eType)
 	{
 		LLSD argsNotify;
 		argsNotify["MESSAGE"] = strMsg;
-		LLNotifications::instance().add("SystemMessageTip", argsNotify);
+		LLNotificationsUtil::add("SystemMessageTip", argsNotify);
 	}
 }
 #endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
@@ -53,7 +54,7 @@ void RlvNotifications::notifyBlocked(const std::string& strRlvString)
 {
 	LLSD argsNotify;
 	argsNotify["MESSAGE"] = RlvStrings::getString(strRlvString);
-	LLNotifications::instance().add("SystemMessageTip", argsNotify);
+	LLNotificationsUtil::add("SystemMessageTip", argsNotify);
 }
 
 // Checked: 2009-11-11 (RLVa-1.1.0a) | Added: RLVa-1.1.0a
@@ -65,7 +66,7 @@ void RlvNotifications::notifyBlockedViewXXX(const char* pstrAssetType)
 
 	LLSD argsNotify;
 	argsNotify["MESSAGE"] = strMsg;
-	LLNotifications::instance().add("SystemMessageTip", argsNotify);
+	LLNotificationsUtil::add("SystemMessageTip", argsNotify);
 }
 
 // Checked: 2009-11-13 (RLVa-1.1.0b) | Modified: RLVa-1.1.0b
@@ -437,7 +438,7 @@ void RlvUtil::notifyFailedAssertion(const std::string& strAssert, const std::str
 
 	LLSD argsNotify;
 	argsNotify["MESSAGE"] = llformat("RLVa assertion failure: %s (%s - %d)", strAssert.c_str(), strFile.c_str(), nLine);
-	LLNotifications::instance().add("SystemMessageTip", argsNotify);
+	LLNotificationsUtil::add("SystemMessageTip", argsNotify);
 }
 
 // Checked: 2010-03-27 (RLVa-1.1.3a) | Modified: RLVa-1.2.0b

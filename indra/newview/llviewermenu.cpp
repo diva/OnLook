@@ -44,6 +44,8 @@
 #include "indra_constants.h"
 #include "llassetstorage.h"
 
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llchat.h"
 #include "llfeaturemanager.h"
 #include "llfocusmgr.h"
@@ -3005,14 +3007,14 @@ class LLAvatarFreeze : public view_listener_t
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
 				args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
 // [/RLVa:KB]
-				LLNotifications::instance().add("FreezeAvatarFullname",
+				LLNotificationsUtil::add("FreezeAvatarFullname",
 							args,
 							payload,
 							callback_freeze);
 			}
 			else
 			{
-				LLNotifications::instance().add("FreezeAvatar",
+				LLNotificationsUtil::add("FreezeAvatar",
 							LLSD(),
 							payload,
 							callback_freeze);
@@ -3147,14 +3149,14 @@ class LLAvatarEject : public view_listener_t
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
 					args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
 // [/RLVa:KB]
-    				LLNotifications::instance().add("EjectAvatarFullname",
+    				LLNotificationsUtil::add("EjectAvatarFullname",
     							args,
     							payload,
     							callback_eject);
 				}
 				else
 				{
-    				LLNotifications::instance().add("EjectAvatarFullname",
+    				LLNotificationsUtil::add("EjectAvatarFullname",
     							LLSD(),
     							payload,
     							callback_eject);
@@ -3170,14 +3172,14 @@ class LLAvatarEject : public view_listener_t
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.0.0e | OK
 					args["AVATAR_NAME"] = (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)) ? fullname : RlvStrings::getAnonym(fullname);
 // [/RLVa:KB]
-    				LLNotifications::instance().add("EjectAvatarFullnameNoBan",
+    				LLNotificationsUtil::add("EjectAvatarFullnameNoBan",
     							args,
     							payload,
     							callback_eject);
 				}
 				else
 				{
-    				LLNotifications::instance().add("EjectAvatarNoBan",
+    				LLNotificationsUtil::add("EjectAvatarNoBan",
     							LLSD(),
     							payload,
     							callback_eject);
@@ -3290,11 +3292,11 @@ class LLAvatarGiveCard : public view_listener_t
 				transaction_id.generate();
 				msg->addUUIDFast(_PREHASH_TransactionID, transaction_id);
 				msg->sendReliable(dest_host);
-				LLNotifications::instance().add("OfferedCard", args);
+				LLNotificationsUtil::add("OfferedCard", args);
 			}
 			else
 			{
-				LLNotifications::instance().add("CantOfferCallingCard", old_args);
+				LLNotificationsUtil::add("CantOfferCallingCard", old_args);
 			}
 		}
 		return true;
@@ -3335,7 +3337,7 @@ void handle_leave_group(void *)
 	{
 		LLSD args;
 		args["GROUP"] = gAgent.getGroupName();
-		LLNotifications::instance().add("GroupLeaveConfirmMember", args, LLSD(), callback_leave_group);
+		LLNotificationsUtil::add("GroupLeaveConfirmMember", args, LLSD(), callback_leave_group);
 	}
 }
 
@@ -3398,7 +3400,7 @@ void handle_buy_object(LLSaleInfo sale_info)
 {
 	if(!LLSelectMgr::getInstance()->selectGetAllRootsValid())
 	{
-		LLNotifications::instance().add("UnableToBuyWhileDownloading");
+		LLNotificationsUtil::add("UnableToBuyWhileDownloading");
 		return;
 	}
 
@@ -3407,7 +3409,7 @@ void handle_buy_object(LLSaleInfo sale_info)
 	BOOL owners_identical = LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 	if (!owners_identical)
 	{
-		LLNotifications::instance().add("CannotBuyObjectsFromDifferentOwners");
+		LLNotificationsUtil::add("CannotBuyObjectsFromDifferentOwners");
 		return;
 	}
 
@@ -3417,7 +3419,7 @@ void handle_buy_object(LLSaleInfo sale_info)
 	valid &= LLSelectMgr::getInstance()->selectGetAggregatePermissions(ag_perm);
 	if(!valid || !sale_info.isForSale() || !perm.allowTransferTo(gAgent.getID()))
 	{
-		LLNotifications::instance().add("ObjectNotForSale");
+		LLNotificationsUtil::add("ObjectNotForSale");
 		return;
 	}
 
@@ -3630,12 +3632,12 @@ void set_god_level(U8 god_level)
 	if(god_level > GOD_NOT)
 	{
 		args["LEVEL"] = llformat("%d",(S32)god_level);
-		LLNotifications::instance().add("EnteringGodMode", args);
+		LLNotificationsUtil::add("EnteringGodMode", args);
 	}
 	else
 	{
 		args["LEVEL"] = llformat("%d",(S32)old_god_level);
-		LLNotifications::instance().add("LeavingGodMode", args);
+		LLNotificationsUtil::add("LeavingGodMode", args);
 	}
 
 
@@ -3882,7 +3884,7 @@ void request_friendship(const LLUUID& dest_id)
 		}
 		else
 		{
-			LLNotifications::instance().add("CantOfferFriendship");
+			LLNotificationsUtil::add("CantOfferFriendship");
 		}
 	}
 }
@@ -4282,7 +4284,7 @@ void disabled_duplicate(void*)
 {
 	if (LLSelectMgr::getInstance()->getSelection()->getPrimaryObject())
 	{
-		LLNotifications::instance().add("CopyFailed");
+		LLNotificationsUtil::add("CopyFailed");
 	}
 }
 
@@ -4415,7 +4417,7 @@ void handle_claim_public_land(void*)
 {
 	if (LLViewerParcelMgr::getInstance()->getSelectionRegion() != gAgent.getRegion())
 	{
-		LLNotifications::instance().add("ClaimPublicLand");
+		LLNotificationsUtil::add("ClaimPublicLand");
 		return;
 	}
 
@@ -4693,7 +4695,7 @@ class LLObjectReturn : public view_listener_t
 
 		mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
 
-		LLNotifications::instance().add("ReturnToOwner", LLSD(), LLSD(), boost::bind(&LLObjectReturn::onReturnToOwner, this, _1, _2));
+		LLNotificationsUtil::add("ReturnToOwner", LLSD(), LLSD(), boost::bind(&LLObjectReturn::onReturnToOwner, this, _1, _2));
 		return true;
 	}
 
@@ -5084,7 +5086,7 @@ void show_buy_currency(const char* extra)
 		args["EXTRA"] = extra;
 	}
 	args["URL"] = BUY_CURRENCY_URL;
-	LLNotifications::instance().add("PromptGoToCurrencyPage", args, LLSD(), callback_show_buy_currency);
+	LLNotificationsUtil::add("PromptGoToCurrencyPage", args, LLSD(), callback_show_buy_currency);
 }
 
 void handle_buy_currency(void*)
@@ -5976,7 +5978,7 @@ class LLWorldSetBusy : public view_listener_t
 		else
 		{
 			gAgent.setBusy();
-			LLNotifications::instance().add("BusyModeSet");
+			LLNotificationsUtil::add("BusyModeSet");
 		}
 		return true;
 	}
@@ -6009,7 +6011,7 @@ class LLWorldCreateLandmark : public view_listener_t
 		if (!agent_parcel->getAllowLandmark()
 			&& !LLViewerParcelMgr::isParcelOwnedByAgent(agent_parcel, GP_LAND_ALLOW_LANDMARK))
 		{
-			LLNotifications::instance().add("CannotCreateLandmarkNotOwner");
+			LLNotificationsUtil::add("CannotCreateLandmarkNotOwner");
 			return true;
 		}
 
@@ -8952,7 +8954,7 @@ void handle_save_to_xml(void*)
 	LLFloater* frontmost = gFloaterView->getFrontmost();
 	if (!frontmost)
 	{
-        LLNotifications::instance().add("NoFrontmostFloater");
+        LLNotificationsUtil::add("NoFrontmostFloater");
 		return;
 	}
 

@@ -56,6 +56,7 @@
 #include "llfloaterpreference.h"
 #include "llfocusmgr.h"
 #include "lllineeditor.h"
+#include "llnotificationsutil.h"
 #include "llstartup.h"
 #include "lltextbox.h"
 #include "llui.h"
@@ -1111,9 +1112,9 @@ void LLPanelLogin::onClickConnect(void *)
 		else
 		{
 			if (gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty()) {
-				LLNotifications::instance().add("MustHaveAccountToLogInNoLinks");
+				LLNotificationsUtil::add("MustHaveAccountToLogInNoLinks");
 			} else {
-				LLNotifications::instance().add("MustHaveAccountToLogIn", LLSD(), LLSD(),
+				LLNotificationsUtil::add("MustHaveAccountToLogIn", LLSD(), LLSD(),
 												LLPanelLogin::newAccountAlertCallback);
 			}
 		}
@@ -1207,7 +1208,7 @@ void LLPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
 {
 	if (gKeyboard->getKeyDown(KEY_CAPSLOCK) && sCapslockDidNotification == FALSE)
 	{
-		LLNotifications::instance().add("CapsKeyOn");
+		LLNotificationsUtil::add("CapsKeyOn");
 		sCapslockDidNotification = TRUE;
 	}
 }

@@ -191,6 +191,9 @@
 #include "llviewernetwork.h"
 #include "llpostprocess.h"
 
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
+
 #include "llfloatertest.h" // HACK!
 #include "llfloaternotificationsconsole.h"
 
@@ -5217,7 +5220,7 @@ BOOL LLViewerWindow::changeDisplaySettings(BOOL fullscreen, LLCoordScreen size, 
 		LLSD args;
 		args["RESX"] = llformat("%d",size.mX);
 		args["RESY"] = llformat("%d",size.mY);
-		LLNotifications::instance().add("ResolutionSwitchFail", args);
+		LLNotificationsUtil::add("ResolutionSwitchFail", args);
 		size = old_size; // for reshape below
 	}
 

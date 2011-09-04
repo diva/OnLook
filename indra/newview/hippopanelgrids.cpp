@@ -41,7 +41,7 @@
 #include "llstartup.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
-
+#include "llnotificationsutil.h"
 
 
 // ********************************************************************
@@ -307,13 +307,13 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		HippoGridInfo::sanitizeGridNick(gridnick);
 		childSetValue("gridnick", (gridnick != "")? gridnick: "<required>");
 		if (gridnick == "") {
-			LLNotifications::instance().add("GridsNoNick");
+			LLNotificationsUtil::add("GridsNoNick");
 			return false;
 		}
 		if (gHippoGridManager->getGrid(gridnick)) {
 			LLSD args;
 			args["NAME"] = gridnick;
-			LLNotifications::instance().add("GridExists", args);
+			LLNotificationsUtil::add("GridExists", args);
 			return false;
 		}
 		
@@ -322,7 +322,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		if ((loginuri == "") || (loginuri == "<required>")) {
 			LLSD args;
 			args["NAME"] = gridnick;
-			LLNotifications::instance().add("GridsNoLoginUri", args);
+			LLNotificationsUtil::add("GridsNoLoginUri", args);
 			return false;
 		}
 		
@@ -380,7 +380,7 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 {
 	std::string loginuri = childGetValue("loginuri");
 	if ((loginuri == "") || (loginuri == "<required>")) {
-		LLNotifications::instance().add("GridInfoNoLoginUri");
+		LLNotificationsUtil::add("GridInfoNoLoginUri");
 		return;
 	}
 	
@@ -415,7 +415,7 @@ void HippoPanelGridsImpl::retrieveGridInfo()
 		if (grid->getPasswordUrl() != "") childSetText("password", grid->getPasswordUrl());
 		if (grid->getSearchUrl() != "") childSetText("search", grid->getSearchUrl());
 	} else {
-		LLNotifications::instance().add("GridInfoError");
+		LLNotificationsUtil::add("GridInfoError");
 	}
 	
 	if (cleanupGrid) delete grid;
@@ -495,5 +495,5 @@ void HippoPanelGridsImpl::onClickGridInfo(void *data)
 // static
 void HippoPanelGridsImpl::onClickHelpRenderCompat(void *data)
 {
-	LLNotifications::instance().add("HelpRenderCompat");
+	LLNotificationsUtil::add("HelpRenderCompat");
 }

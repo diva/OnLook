@@ -53,6 +53,7 @@
 #include "llcombobox.h"
 #include "llfocusmgr.h"
 #include "llmanipscale.h"
+#include "llnotificationsutil.h"
 #include "llpanelinventory.h"
 #include "llpreviewscript.h"
 #include "llresmgr.h"
@@ -2544,7 +2545,7 @@ void LLPanelObject::onCommitSculptType(LLUICtrl *ctrl, void* userdata)
 // static
 void LLPanelObject::onClickBuildConstants(void *)
 {
-	LLNotifications::instance().add("ClickBuildConstants");
+	LLNotificationsUtil::add("ClickBuildConstants");
 }
 
 std::string shortfloat(F32 in)

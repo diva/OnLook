@@ -41,6 +41,7 @@
 #include "llcategory.h"
 #include "llclickaction.h"
 #include "llfocusmgr.h"
+#include "llnotificationsutil.h"
 #include "llstring.h"
 
 #include "llviewerwindow.h"
@@ -1194,7 +1195,7 @@ void LLPanelPermissions::onCommitClickAction(LLUICtrl* ctrl, void*)
 		LLSelectMgr::getInstance()->selectGetSaleInfo(sale_info);
 		if (!sale_info.isForSale())
 		{
-			LLNotifications::instance().add("CantSetBuyObject");
+			LLNotificationsUtil::add("CantSetBuyObject");
 
 			// Set click action back to its old value
 			U8 click_action = 0;
@@ -1212,7 +1213,7 @@ void LLPanelPermissions::onCommitClickAction(LLUICtrl* ctrl, void*)
 		if (!can_pay)
 		{
 			// Warn, but do it anyway.
-			LLNotifications::instance().add("ClickActionNotPayable");
+			LLNotificationsUtil::add("ClickActionNotPayable");
 		}
 	}
 	LLSelectMgr::getInstance()->selectionSetClickAction(click_action);

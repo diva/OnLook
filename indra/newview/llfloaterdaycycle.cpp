@@ -41,6 +41,8 @@
 #include "llsliderctrl.h"
 #include "llmultislider.h"
 #include "llmultisliderctrl.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llspinctrl.h"
 #include "llcheckboxctrl.h"
 #include "lluictrlfactory.h"
@@ -315,7 +317,7 @@ void LLFloaterDayCycle::onClose(bool app_quitting)
 
 void LLFloaterDayCycle::onNewPreset(void* userData)
 {
-	LLNotifications::instance().add("NewDaycyclePreset", LLSD(), LLSD(), newPromptCallback);
+	LLNotificationsUtil::add("NewDaycyclePreset", LLSD(), LLSD(), newPromptCallback);
 }
 
 void LLFloaterDayCycle::onSavePreset(void* userData)
@@ -335,14 +337,14 @@ void LLFloaterDayCycle::onSavePreset(void* userData)
 		comboBox->getSelectedItemLabel());
 	if(sIt != sDefaultPresets.end() && !gSavedSettings.getBOOL("SkyEditPresets")) 
 	{
-		LLNotifications::instance().add("WLNoEditDefault");
+		LLNotificationsUtil::add("WLNoEditDefault");
 		return;
 	}
 
 	LLWLParamManager::getInstance()->mCurParams.mName = 
 		comboBox->getSelectedItemLabel();
 
-	LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+	LLNotificationsUtil::add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
 }
 
 bool LLFloaterDayCycle::saveAlertCallback(const LLSD& notification, const LLSD& response)
@@ -370,7 +372,7 @@ void LLFloaterDayCycle::onDeletePreset(void* userData)
 
 	LLSD args;
 	args["SKY"] = combo_box->getSelectedValue().asString();
-	LLNotifications::instance().add("WLDeletePresetAlert", args, LLSD(), 
+	LLNotificationsUtil::add("WLDeletePresetAlert", args, LLSD(), 
 									boost::bind(&LLFloaterDayCycle::deleteAlertCallback, sDayCycle, _1, _2));
 }
 
@@ -401,7 +403,7 @@ bool LLFloaterDayCycle::deleteAlertCallback(const LLSD& notification, const LLSD
 		std::set<std::string>::iterator sIt = sDefaultPresets.find(name);
 		if(sIt != sDefaultPresets.end()) 
 		{
-			LLNotifications::instance().add("WLNoEditDefault");
+			LLNotificationsUtil::add("WLNoEditDefault");
 			return false;
 		}
 
@@ -489,7 +491,7 @@ bool LLFloaterDayCycle::newPromptCallback(const LLSD& notification, const LLSD& 
 		} 
 		else 
 		{
-			LLNotifications::instance().add("ExistsSkyPresetAlert");
+			LLNotificationsUtil::add("ExistsSkyPresetAlert");
 		}
 	}
 	return false;

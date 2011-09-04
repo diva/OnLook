@@ -26,6 +26,7 @@
 #include "llscrolllistctrl.h"
 #include "llradiogroup.h"
 #include "llviewercontrol.h"
+#include "llnotificationsutil.h"
 
 #include "llvoavatar.h"
 #include "llimview.h"
@@ -1274,7 +1275,7 @@ void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
                 {
                         LLSD args;
 			args["MESSAGE"] = "An object owned by you has request the keys from your radar.\nWould you like to enable announcing keys to objects in the sim?";
-			LLNotifications::instance().add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
+			LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
                 }
         }
 }
@@ -1502,7 +1503,7 @@ void LLFloaterAvatarList::onClickFreeze(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("FreezeAvatarFullname", args, payload, callbackFreeze);
+	LLNotificationsUtil::add("FreezeAvatarFullname", args, payload, callbackFreeze);
 }
 
 //static
@@ -1511,7 +1512,7 @@ void LLFloaterAvatarList::onClickEject(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("EjectAvatarFullname", args, payload, callbackEject);
+	LLNotificationsUtil::add("EjectAvatarFullname", args, payload, callbackEject);
 }
 
 //static
@@ -1550,7 +1551,7 @@ void LLFloaterAvatarList::onClickEjectFromEstate(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("EstateKickUser", args, payload, callbackEjectFromEstate);
+	LLNotificationsUtil::add("EstateKickUser", args, payload, callbackEjectFromEstate);
 }
 
 //static

@@ -46,6 +46,7 @@
 #include "llpermissions.h"
 #include "llsaleinfo.h"
 #include "llparcel.h"
+#include "llnotificationsutil.h"
 
 #include "llviewerwindow.h"		// alertXml
 #include "llviewercontrol.h"
@@ -296,7 +297,7 @@ void LLFloaterLandmark::onBtnNew(void* userdata)
 	if (!agent_parcel->getAllowLandmark()
 		&& !LLViewerParcelMgr::isParcelOwnedByAgent(agent_parcel, GP_LAND_ALLOW_LANDMARK))
 	{
-		LLNotifications::instance().add("CannotCreateLandmarkNotOwner");
+		LLNotificationsUtil::add("CannotCreateLandmarkNotOwner");
 		return;
 	}
 

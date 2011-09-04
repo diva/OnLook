@@ -47,6 +47,7 @@
 #include "llfloaterurlentry.h"
 #include "llfocusmgr.h"
 #include "lllineeditor.h"
+#include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "lltextbox.h"
 #include "llradiogroup.h"
@@ -197,5 +198,5 @@ void LLPanelLandAudio::onCommitAny(LLUICtrl*, void *userdata)
 // static 
 void LLPanelLandAudio::onClickSoundHelp(void*)
 { 
-	LLNotifications::instance().add("ClickSoundHelpLand");
+	LLNotificationsUtil::add("ClickSoundHelpLand");
 } 

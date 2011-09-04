@@ -48,6 +48,7 @@
 #include "llinventorymodel.h"	// for gInventory
 #include "llinventorydefines.h"
 #include "llinventoryview.h"	// for get_item_icon
+#include "llnotificationsutil.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
 #include "llviewerobject.h"
@@ -87,7 +88,7 @@ void LLFloaterBuyContents::show(const LLSaleInfo& sale_info)
 
 	if (selection->getRootObjectCount() != 1)
 	{
-		LLNotifications::instance().add("BuyContentsOneOnly");
+		LLNotificationsUtil::add("BuyContentsOneOnly");
 		return;
 	}
 
@@ -117,7 +118,7 @@ void LLFloaterBuyContents::show(const LLSaleInfo& sale_info)
 	BOOL owners_identical = LLSelectMgr::getInstance()->selectGetOwner(owner_id, owner_name);
 	if (!owners_identical)
 	{
-		LLNotifications::instance().add("BuyContentsOneOwner");
+		LLNotificationsUtil::add("BuyContentsOneOwner");
 		return;
 	}
 
