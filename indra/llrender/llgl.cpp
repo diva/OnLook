@@ -1567,7 +1567,7 @@ void LLGLState::checkTextureChannels(const std::string& msg)
 
 void LLGLState::checkClientArrays(const std::string& msg, U32 data_mask)
 {
-	if (!gDebugGL)
+	if (!gDebugGL || LLGLSLShader::sNoFixedFunction)
 	{
 		return;
 	}
