@@ -357,11 +357,10 @@ void LLWLParamManager::propagateParameters(void)
 	mCurParams.set("lightnorm", mLightDir);
 
 	// bind the variables for all shaders only if we're using WindLight
-	LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-	end_shaders = mShaderList.end();
-	for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter) 
+	std::vector<LLGLSLShader*>::iterator shaders_iter=mShaderList.begin();
+	for(; shaders_iter != mShaderList.end(); ++shaders_iter)
 	{
-		shaders_iter->mUniformsDirty = TRUE;
+		(*shaders_iter)->mUniformsDirty = TRUE;
 	}
 
 	// get the cfr version of the sun's direction
@@ -415,11 +414,10 @@ void LLWLParamManager::update(LLViewerCamera * cam)
 		lightNorm3 *= LLQuaternion(-(camYaw + camYawDelta), LLVector3(0.f, 1.f, 0.f));
 		mRotatedLightDir = LLVector4(lightNorm3, 0.f);
 
-		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = mShaderList.end();
-		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
+		std::vector<LLGLSLShader*>::iterator shaders_iter=mShaderList.begin();
+		for(; shaders_iter != mShaderList.end(); ++shaders_iter)
 		{
-			shaders_iter->mUniformsDirty = TRUE;
+			(*shaders_iter)->mUniformsDirty = TRUE;
 		}
 	}
 }

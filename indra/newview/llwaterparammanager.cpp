@@ -224,11 +224,10 @@ void LLWaterParamManager::propagateParameters(void)
 	// bind the variables only if we're using shaders
 	if(gPipeline.canUseVertexShaders())
 	{
-		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = mShaderList.end();
-		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
+		std::vector<LLGLSLShader*>::iterator shaders_iter=mShaderList.begin();
+		for(; shaders_iter != mShaderList.end(); ++shaders_iter)
 		{
-			shaders_iter->mUniformsDirty = TRUE;
+			(*shaders_iter)->mUniformsDirty = TRUE;
 		}
 	}
 
@@ -331,11 +330,10 @@ void LLWaterParamManager::update(LLViewerCamera * cam)
 		sunMoonDir.normVec();
 		mWaterFogKS = 1.f/llmax(sunMoonDir.mV[2], WATER_FOG_LIGHT_CLAMP);
 
-		LLViewerShaderMgr::shader_iter shaders_iter, end_shaders;
-		end_shaders = mShaderList.end();
-		for(shaders_iter = mShaderList.begin(); shaders_iter != end_shaders; ++shaders_iter)
+		std::vector<LLGLSLShader*>::iterator shaders_iter=mShaderList.begin();
+		for(; shaders_iter != mShaderList.end(); ++shaders_iter)
 		{
-			shaders_iter->mUniformsDirty = TRUE;
+			(*shaders_iter)->mUniformsDirty = TRUE;
 		}
 	}
 }

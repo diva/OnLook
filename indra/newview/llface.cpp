@@ -1540,7 +1540,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				mat_vert.affineTransform(src[i], position);
 				//Still using getF32ptr() because if the array is strided then theres no guarantee vertices will aligned, which LLVector4a requires
 				vert[i].set(position.getF32ptr()); //This assignment and the one below are oddly sensitive. Suspect something's off around here.
-				vert[i].mV[3] = index;
+				*(vert[i].mV+3) = index;
 			}
 			for (S32 i = num_vertices; i < mGeomCount; i++)
 			{
