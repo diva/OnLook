@@ -90,6 +90,8 @@ public:
 	LLViewerParcelMgr();
 	~LLViewerParcelMgr();
 
+	void init(F32 region_size);
+
 	static void cleanupGlobals();
 
 	BOOL	selectionEmpty() const;

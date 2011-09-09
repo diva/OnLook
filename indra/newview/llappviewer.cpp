@@ -3557,8 +3557,7 @@ void LLAppViewer::idle()
 	// Update frame timers
 	static LLTimer idle_timer;
 
-	LLFrameTimer::updateFrameTime();
-	LLFrameTimer::updateFrameCount();
+	LLFrameTimer::updateFrameTimeAndCount();
 	LLEventTimer::updateClass();
 	LLCriticalDamp::updateInterpolants();
 	LLMortician::updateClass();

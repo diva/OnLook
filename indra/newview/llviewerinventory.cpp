@@ -392,7 +392,7 @@ LLViewerInventoryCategory::LLViewerInventoryCategory(const LLUUID& uuid,
 	mVersion(LLViewerInventoryCategory::VERSION_UNKNOWN),
 	mDescendentCount(LLViewerInventoryCategory::DESCENDENT_COUNT_UNKNOWN)
 {
-	mDescendentsRequested.reset();
+	mDescendentsRequested.stop();
 }
 
 LLViewerInventoryCategory::LLViewerInventoryCategory(const LLUUID& owner_id) :
@@ -400,7 +400,7 @@ LLViewerInventoryCategory::LLViewerInventoryCategory(const LLUUID& owner_id) :
 	mVersion(LLViewerInventoryCategory::VERSION_UNKNOWN),
 	mDescendentCount(LLViewerInventoryCategory::DESCENDENT_COUNT_UNKNOWN)
 {
-	mDescendentsRequested.reset();
+	mDescendentsRequested.stop();
 }
 
 LLViewerInventoryCategory::LLViewerInventoryCategory(const LLViewerInventoryCategory* other)
@@ -491,12 +491,12 @@ bool LLViewerInventoryCategory::fetchDescendents()
 	// <edit>
 	if((mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))) return false;
 	// </edit>
-	if((VERSION_UNKNOWN == mVersion)
-	   && mDescendentsRequested.hasExpired())	//Expired check prevents multiple downloads.
+	if (VERSION_UNKNOWN == mVersion &&
+	    (!mDescendentsRequested.getStarted() ||
+		 mDescendentsRequested.hasExpired()))	// Expired check prevents multiple downloads.
 	{
 		const F32 FETCH_TIMER_EXPIRY = 10.0f;
-		mDescendentsRequested.reset();
-		mDescendentsRequested.setTimerExpirySec(FETCH_TIMER_EXPIRY);
+		mDescendentsRequested.start(FETCH_TIMER_EXPIRY);
 
 		// bitfield
 		// 1 = by date
