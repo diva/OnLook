@@ -1971,6 +1971,7 @@ BOOL LLViewerShaderMgr::loadShadersAvatar()
 		gAvatarProgram.mFeatures.hasGamma = true;
 		gAvatarProgram.mFeatures.hasAtmospherics = true;
 		gAvatarProgram.mFeatures.hasLighting = true;
+		gAvatarProgram.mFeatures.hasAlphaMask = true;
 		gAvatarProgram.mFeatures.disableTextureIndex = true;
 		gAvatarProgram.mShaderFiles.clear();
 		gAvatarProgram.mShaderFiles.push_back(make_pair("avatar/avatarV.glsl", GL_VERTEX_SHADER_ARB));
