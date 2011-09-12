@@ -268,7 +268,9 @@ BOOL LLTexLayerSetBuffer::render()
 
 	//hack to use fixed function when updating tex layer sets
 	bool no_ff = LLGLSLShader::sNoFixedFunction;
-	LLGLSLShader::sNoFixedFunction = false;
+	static const LLCachedControl<bool> force_fixed_functions("ShyotlUseLegacyTextureBaking",true);
+	if(force_fixed_functions)
+		LLGLSLShader::sNoFixedFunction = false;
 
 	// Composite the color data
 	LLGLSUIDefault gls_ui;

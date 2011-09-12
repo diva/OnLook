@@ -215,7 +215,9 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 	LLVertexBuffer::unbind();
 	
 	bool no_ff = LLGLSLShader::sNoFixedFunction;
-	LLGLSLShader::sNoFixedFunction = false;
+	static const LLCachedControl<bool> force_fixed_functions("ShyotlUseLegacyDynamicTexture",false);
+	if(force_fixed_functions)
+		LLGLSLShader::sNoFixedFunction = false;
 
 	BOOL result = FALSE;
 	BOOL ret = FALSE ;
