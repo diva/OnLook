@@ -2064,6 +2064,7 @@ void LLFace::clearVertexBuffer()
 
 #if MESH_ENABLED
 //static
+//do NOT screw the the order of these. Must match order of LLDrawPoolAvatar::eRiggedPass. Order differs from LL's.
 U32 LLFace::getRiggedDataMask(U32 type)
 {
 	static const U32 rigged_data_mask[] = {
@@ -2071,11 +2072,13 @@ U32 LLFace::getRiggedDataMask(U32 type)
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_MASK,
 		LLDrawPoolAvatar::RIGGED_SHINY_MASK,
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY_MASK,
-		LLDrawPoolAvatar::RIGGED_GLOW_MASK,
+		//LLDrawPoolAvatar::RIGGED_GLOW_MASK,
 		LLDrawPoolAvatar::RIGGED_ALPHA_MASK,
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_ALPHA_MASK,
-		LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,						 
+		LLDrawPoolAvatar::RIGGED_GLOW_MASK,
+		//LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,
 		LLDrawPoolAvatar::RIGGED_DEFERRED_SIMPLE_MASK,
+		LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,
 	};
 
 	llassert(type < sizeof(rigged_data_mask)/sizeof(U32));
