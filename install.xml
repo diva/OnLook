@@ -16,16 +16,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>8b743e6e9ea9f3070e6becf07b50f090</string>
+            <string>2fc9a86782ec8dcc719ddc78026e7ba2</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>8b743e6e9ea9f3070e6becf07b50f090</string>
+            <string>2fc9a86782ec8dcc719ddc78026e7ba2</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
           </map>
         </map>
       </map>
