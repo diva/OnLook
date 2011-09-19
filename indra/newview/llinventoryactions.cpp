@@ -43,10 +43,12 @@
 #include "llagent.h"
 #include "llcallingcard.h"
 #include "llcheckboxctrl.h"		// for radio buttons
+#include "llnotificationsutil.h"
 #include "llradiogroup.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
 #include "llui.h"
+
 
 #include "llviewercontrol.h"
 #include "llfirstuse.h"
@@ -289,7 +291,7 @@ class LLEmptyTrash : public inventory_panel_listener_t
 	{
 		LLInventoryModel* model = mPtr->getModel();
 		if(!model) return false;
-		LLNotifications::instance().add("ConfirmEmptyTrash", LLSD(), LLSD(), boost::bind(&LLEmptyTrash::callback_empty_trash, this, _1, _2));
+		LLNotificationsUtil::add("ConfirmEmptyTrash", LLSD(), LLSD(), boost::bind(&LLEmptyTrash::callback_empty_trash, this, _1, _2));
 		return true;
 	}
 
@@ -313,7 +315,7 @@ class LLEmptyLostAndFound : public inventory_panel_listener_t
 	{
 		LLInventoryModel* model = mPtr->getModel();
 		if(!model) return false;
-		LLNotifications::instance().add("ConfirmEmptyLostAndFound", LLSD(), LLSD(), boost::bind(&LLEmptyLostAndFound::callback_empty_lost_and_found, this, _1, _2));
+		LLNotificationsUtil::add("ConfirmEmptyLostAndFound", LLSD(), LLSD(), boost::bind(&LLEmptyLostAndFound::callback_empty_lost_and_found, this, _1, _2));
 		return true;
 	}
 

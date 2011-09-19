@@ -62,6 +62,7 @@
 #include "llfirstuse.h"
 #include "llviewerwindow.h"
 #include "llviewercamera.h"
+#include "llnotificationsutil.h"
 
 #include "llfloaterfriends.h"  //VIVOX, inorder to refresh communicate panel
 #include "llfloaterchat.h"		// for LLFloaterChat::addChat()
@@ -1120,6 +1121,7 @@ LLVoiceClient::LLVoiceClient()
 	mSpeakerVolume = 0;
 	mMicVolume = 0;
 
+	mNextAudioSession = NULL;
 	mAudioSession = NULL;
 	mAudioSessionChanged = false;
 
@@ -7039,7 +7041,7 @@ class LLViewerRequiredVoiceVersion : public LLHTTPNode
 				if (!sAlertedUser)
 				{
 					//sAlertedUser = TRUE;
-					LLNotifications::instance().add("VoiceVersionMismatch");
+					LLNotificationsUtil::add("VoiceVersionMismatch");
 					gSavedSettings.setBOOL("EnableVoiceChat", FALSE); // toggles listener
 				}
 			}

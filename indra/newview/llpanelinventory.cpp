@@ -50,6 +50,8 @@
 #include "llfontgl.h"
 #include "llassetstorage.h"
 #include "llinventory.h"
+#include "llinventorydefines.h"
+#include "llnotificationsutil.h"
 
 #include "llagent.h"
 #include "llcallbacklist.h"
@@ -232,7 +234,7 @@ void LLTaskInvFVBridge::buyItem()
 	LLViewerObject* obj;
 	if( ( obj = gObjectList.findObject( mPanel->getTaskUUID() ) ) && obj->isAttachment() )
 	{
-		LLNotifications::instance().add("Cannot_Purchase_an_Attachment");
+		LLNotificationsUtil::add("Cannot_Purchase_an_Attachment");
 		llinfos << "Attempt to purchase an attachment" << llendl;
 		delete inv;
 	}
@@ -532,7 +534,7 @@ BOOL LLTaskInvFVBridge::removeItem()
 				LLSD payload;
 				payload["task_id"] = mPanel->getTaskUUID();
 				payload["inventory_ids"].append(mUUID);
-				LLNotifications::instance().add("RemoveItemWarn", LLSD(), payload, boost::bind(&remove_task_inventory_callback, _1, _2, mPanel));
+				LLNotificationsUtil::add("RemoveItemWarn", LLSD(), payload, boost::bind(&remove_task_inventory_callback, _1, _2, mPanel));
 				return FALSE;
 			}
 		}
@@ -562,7 +564,7 @@ void LLTaskInvFVBridge::removeBatch(LLDynamicArray<LLFolderViewEventListener*>& 
 			LLTaskInvFVBridge* itemp = (LLTaskInvFVBridge*)batch[i];
 			payload["inventory_ids"].append(itemp->getUUID());
 		}
-		LLNotifications::instance().add("RemoveItemWarn", LLSD(), payload, boost::bind(&remove_task_inventory_callback, _1, _2, mPanel));
+		LLNotificationsUtil::add("RemoveItemWarn", LLSD(), payload, boost::bind(&remove_task_inventory_callback, _1, _2, mPanel));
 		
 	}
 	else

@@ -41,6 +41,7 @@
 #include "llrender.h"
 #include "lldrawable.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "lluictrlfactory.h"
 #include "llbutton.h"
 #include "llface.h"
@@ -301,7 +302,7 @@ void LLPanelMediaHUD::updateShape()
 		{
 			const LLVolumeFace& vf = volume->getVolumeFace(nodep->getLastSelectedTE());
 
-			const LLVector3* ext = vf.mExtents;
+			const LLVector3* ext = (LLVector3*)vf.mExtents->getF32ptr();
 
 			LLVector3 center = (ext[0]+ext[1])*0.5f;
 			LLVector3 size = (ext[1]-ext[0])*0.5f;
@@ -396,9 +397,8 @@ void LLPanelMediaHUD::updateShape()
 			}
 		}
 		// If we need to start fading the UI (and we have not already started)
-		else if(! mFadeTimer.getStarted())
+		else if (!mFadeTimer.getStarted())
 		{
-			mFadeTimer.reset();
 			mFadeTimer.start();
 		}
 	}

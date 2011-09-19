@@ -54,6 +54,7 @@
 #include "llviewertexturelist.h"
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvoavatar.h"
 #include "llvoiceclient.h"
 #include "llvosky.h"
@@ -522,6 +523,30 @@ bool handleVectorizeChanged(const LLSD& newvalue)
 	return true;
 }
 
+bool handleVelocityInterpolate(const LLSD& newvalue)
+{
+	LLMessageSystem* msg = gMessageSystem;
+	if ( newvalue.asBoolean() )
+	{
+		msg->newMessageFast(_PREHASH_VelocityInterpolateOn);
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gAgent.sendReliableMessage();
+		llinfos << "Velocity Interpolation On" << llendl;
+	}
+	else
+	{
+		msg->newMessageFast(_PREHASH_VelocityInterpolateOff);
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gAgent.sendReliableMessage();
+		llinfos << "Velocity Interpolation Off" << llendl;
+	}
+	return true;
+}
+
 bool handleVoiceClientPrefsChanged(const LLSD& newvalue)
 {
 	if(gVoiceClient)
@@ -610,6 +635,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("OctreeMaxNodeCapacity")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeAlphaDistanceFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
 	gSavedSettings.getControl("OctreeAttachmentSizeFactor")->getSignal()->connect(boost::bind(&handleRepartition, _2));
+	gSavedSettings.getControl("RenderMaxTextureIndex")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("RenderAnimateTrees")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("RenderAvatarVP")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("VertexShaderEnable")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
@@ -646,6 +672,9 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderMaxVBOSize")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	//See LL jira VWR-3258 comment section. Implemented by LL in 2.1 -Shyotl
 	gSavedSettings.getControl("ShyotlRenderUseStreamVBO")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
+	gSavedSettings.getControl("ShyotlRenderVBOStrideMode")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
+	gSavedSettings.getControl("ShyotlUseLegacyRenderPath")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
+	gSavedSettings.getControl("ShyotlUseLegacyTextureBatching")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("SianaRenderOmitBlankVBO")->getSignal()->connect(boost::bind(&handleResetVertexBuffersChanged, _2));
 	gSavedSettings.getControl("RenderUseFBO")->getSignal()->connect(boost::bind(&handleRenderUseFBOChanged, _2));
 	gSavedSettings.getControl("RenderDeferredNoise")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
@@ -746,6 +775,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("VoiceOutputAudioDevice")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _2));
 	gSavedSettings.getControl("AudioLevelMic")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _2));
 	gSavedSettings.getControl("LipSyncEnabled")->getSignal()->connect(boost::bind(&handleVoiceClientPrefsChanged, _2));	
+	gSavedSettings.getControl("VelocityInterpolate")->getSignal()->connect(boost::bind(&handleVelocityInterpolate, _2));
 	gSavedSettings.getControl("TranslateChat")->getSignal()->connect(boost::bind(&handleTranslateChatPrefsChanged, _2));
 	gSavedSettings.getControl("StateMachineMaxTime")->getSignal()->connect(boost::bind(&handleStateMachineMaxTimeChanged, _2));
 

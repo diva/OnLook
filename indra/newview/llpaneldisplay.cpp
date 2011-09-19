@@ -120,7 +120,7 @@ BOOL LLPanelDisplay::postBuild()
 	// radio set for fullscreen size
 	
 	mCtrlWindowed = getChild<LLCheckBoxCtrl>( "windowed mode");
-	mCtrlWindowed->setCommitCallback(onCommitWindowedMode);
+	mCtrlWindowed->setCommitCallback(&LLPanelDisplay::onCommitWindowedMode);
 	mCtrlWindowed->setCallbackUserData(this);
 
 	mAspectRatioLabel1 = getChild<LLTextBox>("AspectRatioLabel1");
@@ -215,7 +215,7 @@ BOOL LLPanelDisplay::postBuild()
 
 	// radio performance box
 	mCtrlSliderQuality = getChild<LLSliderCtrl>("QualityPerformanceSelection");
-	mCtrlSliderQuality->setSliderMouseUpCallback(onChangeQuality);
+	mCtrlSliderQuality->setSliderMouseUpCallback(boost::bind(&LLPanelDisplay::onChangeQuality,mCtrlSliderQuality,this));
 	mCtrlSliderQuality->setCallbackUserData(this);
 
 	mCtrlCustomSettings = getChild<LLCheckBoxCtrl>("CustomSettings");

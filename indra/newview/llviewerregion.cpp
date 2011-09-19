@@ -69,7 +69,8 @@
 #include "llspatialpartition.h"
 #include "stringize.h"
 #include "llviewercontrol.h"
-
+#include "llsdserialize.h"
+#include "llviewerparcelmgr.h"
 
 extern BOOL gNoRender;
 
@@ -100,6 +101,8 @@ public:
 		                        //gAgent.getID(), gAgent.getSessionID())
 	{
 	}
+
+	void buildCapabilityNames(LLSD& capabilityNames);
 
 	// The surfaces and other layers
 	LLSurface*	mLandp;
@@ -239,9 +242,9 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 	mCacheLoaded(FALSE),
 	mCacheDirty(FALSE),
 	mReleaseNotesRequested(FALSE),
-	mCapabilitiesReceived(false)
+	mCapabilitiesReceived(false),
+	mWidth(region_width_meters)
 {
-	mWidth = region_width_meters;
 	mImpl->mOriginGlobal = from_region_handle(handle); 
 	updateRenderMatrix();
 
@@ -253,7 +256,7 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 		mImpl->mCompositionp =
 			new LLVLComposition(mImpl->mLandp,
 								grids_per_region_edge,
-								region_width_meters / grids_per_region_edge);
+								mWidth / grids_per_region_edge);
 		mImpl->mCompositionp->setSurface(mImpl->mLandp);
 
 		// Create the surfaces
@@ -266,7 +269,9 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 
 	if (!gNoRender)
 	{
-		mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
+		mParcelOverlay = new LLViewerParcelOverlay(this, mWidth);
+		//Re-init the parcel mgr for this sim
+	    LLViewerParcelMgr::getInstance()->init(mWidth);
 	}
 	else
 	{
@@ -1142,6 +1147,20 @@ void LLViewerRegion::getInfo(LLSD& info)
 	info["Region"]["Handle"]["y"] = (LLSD::Integer)y;
 }
 
+void LLViewerRegion::getSimulatorFeatures(LLSD& sim_features)
+{
+	sim_features = mSimulatorFeatures;
+}
+
+void LLViewerRegion::setSimulatorFeatures(const LLSD& sim_features)
+{
+	std::stringstream str;
+	
+	LLSDSerialize::toPrettyXML(sim_features, str);
+	llinfos << str.str() << llendl;
+	mSimulatorFeatures = sim_features;
+}
+
 LLViewerRegion::eCacheUpdateResult LLViewerRegion::cacheFullUpdate(LLViewerObject* objectp, LLDataPackerBinaryBuffer &dp)
 {
 	U32 local_id = objectp->getLocalID();
@@ -1466,6 +1485,82 @@ void LLViewerRegion::unpackRegionHandshake()
 	msg->sendReliable(host);
 }
 
+
+void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
+{
+	//capabilityNames.append("AttachmentResources"); //Script limits (llfloaterscriptlimits.cpp)
+	//capabilityNames.append("AvatarPickerSearch"); //Display name/SLID lookup (llfloateravatarpicker.cpp)
+	capabilityNames.append("ChatSessionRequest");
+	capabilityNames.append("CopyInventoryFromNotecard");
+	capabilityNames.append("DispatchRegionInfo");
+	capabilityNames.append("EstateChangeInfo");
+	capabilityNames.append("EventQueueGet");
+	/*capabilityNames.append("EnvironmentSettings");
+	capabilityNames.append("ObjectMedia");
+	capabilityNames.append("ObjectMediaNavigate");*/
+	
+	if (false)//gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
+	{
+		capabilityNames.append("FetchLib");
+		capabilityNames.append("FetchLibDescendents");
+		capabilityNames.append("FetchInventory");
+		capabilityNames.append("FetchInventoryDescendents");
+	}
+
+	capabilityNames.append("GetDisplayNames");
+	capabilityNames.append("GetTexture");
+#if MESH_ENABLED
+	capabilityNames.append("GetMesh");
+	capabilityNames.append("GetObjectCost");
+	capabilityNames.append("GetObjectPhysicsData");
+#endif //MESH_ENABLED
+	capabilityNames.append("GroupProposalBallot");
+
+	capabilityNames.append("HomeLocation");
+	//capabilityNames.append("LandResources"); //Script limits (llfloaterscriptlimits.cpp)
+	capabilityNames.append("MapLayer");
+	capabilityNames.append("MapLayerGod");
+#if MESH_IMPORT
+	capabilityNames.append("MeshUploadFlag");
+#endif //MESH_IMPORT
+	capabilityNames.append("NewFileAgentInventory");
+	capabilityNames.append("ParcelPropertiesUpdate");
+	capabilityNames.append("ParcelMediaURLFilterList");
+	capabilityNames.append("ParcelNavigateMedia");
+	capabilityNames.append("ParcelVoiceInfoRequest");
+	capabilityNames.append("ProductInfoRequest");
+	capabilityNames.append("ProvisionVoiceAccountRequest");
+	capabilityNames.append("RemoteParcelRequest");
+	capabilityNames.append("RequestTextureDownload");
+	capabilityNames.append("ResourceCostSelected"); //Unreferenced?
+	capabilityNames.append("SearchStatRequest");
+	capabilityNames.append("SearchStatTracking");
+	capabilityNames.append("SendPostcard");
+	capabilityNames.append("SendUserReport");
+	capabilityNames.append("SendUserReportWithScreenshot");
+	capabilityNames.append("ServerReleaseNotes");
+	//capabilityNames.append("SimConsole");
+	capabilityNames.append("SimulatorFeatures");
+	capabilityNames.append("SetDisplayName");
+	//capabilityNames.append("SimConsoleAsync");
+	capabilityNames.append("StartGroupProposal");
+	capabilityNames.append("TextureStats");
+	capabilityNames.append("UntrustedSimulatorMessage");
+	capabilityNames.append("UpdateAgentInformation");
+	capabilityNames.append("UpdateAgentLanguage");
+	capabilityNames.append("UpdateGestureAgentInventory");
+	capabilityNames.append("UpdateNotecardAgentInventory");
+	capabilityNames.append("UpdateScriptAgent");
+	capabilityNames.append("UpdateGestureTaskInventory");
+	capabilityNames.append("UpdateNotecardTaskInventory");
+	capabilityNames.append("UpdateScriptTask");
+	capabilityNames.append("UploadBakedTexture");
+	//capabilityNames.append("ViewerMetrics");
+	capabilityNames.append("ViewerStartAuction");
+	capabilityNames.append("ViewerStats");
+	// Please add new capabilities alphabetically to reduce
+	// merge conflicts.
+}
 void LLViewerRegion::setSeedCapability(const std::string& url)
 {
 	if (getCapability("Seed") == url)
@@ -1481,63 +1576,51 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	setCapability("Seed", url);
 
 	LLSD capabilityNames = LLSD::emptyArray();
-	capabilityNames.append("ChatSessionRequest");
-	capabilityNames.append("CopyInventoryFromNotecard");
-	capabilityNames.append("DispatchRegionInfo");
-	capabilityNames.append("EstateChangeInfo");
-	capabilityNames.append("EventQueueGet");
-	if (false)//gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
-	{
-		capabilityNames.append("FetchLib");
-		capabilityNames.append("FetchLibDescendents");
-		capabilityNames.append("FetchInventory");
-		capabilityNames.append("FetchInventoryDescendents");
-	}
-	capabilityNames.append("GetDisplayNames");
-	capabilityNames.append("GetTexture");
-	capabilityNames.append("GroupProposalBallot");
-
-	capabilityNames.append("HomeLocation");
-	capabilityNames.append("MapLayer");
-	capabilityNames.append("MapLayerGod");
-	capabilityNames.append("NewFileAgentInventory");
-	capabilityNames.append("ParcelPropertiesUpdate");
-	capabilityNames.append("ParcelMediaURLFilterList");
-	capabilityNames.append("ParcelNavigateMedia");
-	capabilityNames.append("ParcelVoiceInfoRequest");
-	capabilityNames.append("ProductInfoRequest");
-	capabilityNames.append("ProvisionVoiceAccountRequest");
-	capabilityNames.append("RemoteParcelRequest");
-	capabilityNames.append("RequestTextureDownload");
-	capabilityNames.append("SearchStatRequest");
-	capabilityNames.append("SearchStatTracking");
-	capabilityNames.append("SendPostcard");
-	capabilityNames.append("SendUserReport");
-	capabilityNames.append("SendUserReportWithScreenshot");
-	capabilityNames.append("ServerReleaseNotes");
-	capabilityNames.append("SetDisplayName");
-	capabilityNames.append("StartGroupProposal");
-	capabilityNames.append("TextureStats");
-	capabilityNames.append("UntrustedSimulatorMessage");
-	capabilityNames.append("UpdateAgentInformation");
-	capabilityNames.append("UpdateAgentLanguage");
-	capabilityNames.append("UpdateGestureAgentInventory");
-	capabilityNames.append("UpdateNotecardAgentInventory");
-	capabilityNames.append("UpdateScriptAgent");
-	capabilityNames.append("UpdateGestureTaskInventory");
-	capabilityNames.append("UpdateNotecardTaskInventory");
-	capabilityNames.append("UpdateScriptTask");
-	capabilityNames.append("UploadBakedTexture");
-	capabilityNames.append("ViewerStartAuction");
-	capabilityNames.append("ViewerStats");
-	// Please add new capabilities alphabetically to reduce
-	// merge conflicts.
+	
+	mImpl->buildCapabilityNames(capabilityNames);
+	
 
 	llinfos << "posting to seed " << url << llendl;
 
 	mImpl->mHttpResponderPtr = BaseCapabilitiesComplete::build(this) ;
 	LLHTTPClient::post(url, capabilityNames, mImpl->mHttpResponderPtr);
 }
+
+class SimulatorFeaturesReceived : public LLHTTPClient::Responder
+{
+	LOG_CLASS(SimulatorFeaturesReceived);
+public:
+    SimulatorFeaturesReceived(LLViewerRegion* region)
+	: mRegion(region)
+    { }
+	
+	
+    void error(U32 statusNum, const std::string& reason)
+    {
+		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
+    }
+	
+    void result(const LLSD& content)
+    {
+		if(!mRegion) //region is removed or responder is not created.
+		{
+			return ;
+		}
+		
+		mRegion->setSimulatorFeatures(content);
+	}
+	
+    static boost::intrusive_ptr<SimulatorFeaturesReceived> build(
+																 LLViewerRegion* region)
+    {
+		return boost::intrusive_ptr<SimulatorFeaturesReceived>(
+															   new SimulatorFeaturesReceived(region));
+    }
+	
+private:
+	LLViewerRegion* mRegion;
+};
+
 
 void LLViewerRegion::setCapability(const std::string& name, const std::string& url)
 {
@@ -1550,6 +1633,11 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	else if(name == "UntrustedSimulatorMessage")
 	{
 		LLHTTPSender::setSender(mImpl->mHost, new LLCapHTTPSender(url));
+	}
+	else if (name == "SimulatorFeatures")
+	{
+		// kick off a request for simulator features
+		LLHTTPClient::get(url, new SimulatorFeaturesReceived(this));
 	}
 	else
 	{
@@ -1584,6 +1672,21 @@ bool LLViewerRegion::capabilitiesReceived() const
 void LLViewerRegion::setCapabilitiesReceived(bool received)
 {
 	mCapabilitiesReceived = received;
+
+	// Tell interested parties that we've received capabilities,
+	// so that they can safely use getCapability().
+	if (received)
+	{
+		mCapabilitiesReceivedSignal(getRegionID());
+
+		// This is a single-shot signal. Forget callbacks to save resources.
+		mCapabilitiesReceivedSignal.disconnect_all_slots();
+	}
+}
+
+boost::signals2::connection LLViewerRegion::setCapabilitiesReceivedCallback(const caps_received_signal_t::slot_type& cb)
+{
+	return mCapabilitiesReceivedSignal.connect(cb);
 }
 
 void LLViewerRegion::logActiveCapabilities() const
@@ -1628,3 +1731,18 @@ std::string LLViewerRegion::getDescription() const
 {
     return stringize(*this);
 }
+
+#if MESH_ENABLED
+bool LLViewerRegion::meshUploadEnabled() const
+{
+	return (mSimulatorFeatures.has("MeshUploadEnabled") &&
+		mSimulatorFeatures["MeshUploadEnabled"].asBoolean());
+}
+
+bool LLViewerRegion::meshRezEnabled() const
+{
+	return (mSimulatorFeatures.has("MeshRezEnabled") &&
+				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
+}
+#endif //MESH_ENABLED
+

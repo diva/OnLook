@@ -48,6 +48,12 @@ class LLThread;
 class LLMutex;
 class LLCondition;
 
+#if LL_WINDOWS
+#define ll_thread_local __declspec(thread)
+#else
+#define ll_thread_local __thread
+#endif
+
 class LL_COMMON_API AIThreadLocalData
 {
 private:
@@ -66,6 +72,9 @@ public:
 
 class LL_COMMON_API LLThread
 {
+private:
+	static U32 sIDIter;
+	
 public:
 	typedef enum e_thread_status
 	{
@@ -106,6 +115,8 @@ public:
 	// Return thread-local data for the current thread.
 	static AIThreadLocalData& tldata(void) { return AIThreadLocalData::tldata(); }
 
+	U32 getID() const { return mID; }
+
 private:
 	BOOL				mPaused;
 	
@@ -117,7 +128,8 @@ protected:
 	LLCondition*		mRunCondition;
 
 	apr_thread_t		*mAPRThreadp;
-	EThreadStatus		mStatus;
+	volatile EThreadStatus		mStatus;
+	U32					mID;
 
 	friend void AIThreadLocalData::create(LLThread* threadp);
 	AIThreadLocalData*  mThreadLocalData;
@@ -151,16 +163,26 @@ protected:
 class LL_COMMON_API LLMutexBase
 {
 public:
-	void lock() { apr_thread_mutex_lock(mAPRMutexp); }
-	void unlock() { apr_thread_mutex_unlock(mAPRMutexp); }
+	typedef enum
+	{
+		NO_THREAD = 0xFFFFFFFF
+	} e_locking_thread;
+
+	LLMutexBase() : mLockingThread(NO_THREAD), mCount(0) {}
+	
+	void lock();		//blocks
+	void unlock();
 	// Returns true if lock was obtained successfully.
 	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
 
 	bool isLocked(); 	// non-blocking, but does do a lock/unlock so not free
+	U32 lockingThread() const; //get ID of locking thread
 
 protected:
 	// mAPRMutexp is initialized and uninitialized in the derived class.
 	apr_thread_mutex_t* mAPRMutexp;
+	mutable U32			mCount;
+	mutable U32			mLockingThread;
 };
 
 class LL_COMMON_API LLMutex : public LLMutexBase
@@ -349,6 +371,7 @@ void LLThread::unlockData()
 {
 	mRunCondition->unlock();
 }
+
 
 //============================================================================
 

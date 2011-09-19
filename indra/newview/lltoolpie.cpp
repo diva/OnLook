@@ -63,6 +63,7 @@
 #include "llviewerobject.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llviewermedia.h"
 #include "llviewermediafocus.h"
 #include "llvoavatar.h"

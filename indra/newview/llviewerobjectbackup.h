@@ -107,7 +107,7 @@ private:
 	LLUUID validateTextureID(LLUUID asset_id);
 
 	// Convert a selection list of objects to LLSD
-	LLSD primsToLLSD(LLViewerObject::child_list_t child_list);
+	LLSD primsToLLSD(LLViewerObject::child_list_t child_list, bool is_attachment);
 
 	// Start the import process
 	void importFirstObject();
@@ -176,3 +176,4 @@ private:
 	LLVector3 mAgentPos;
 	LLQuaternion mAgentRot;
 };
+

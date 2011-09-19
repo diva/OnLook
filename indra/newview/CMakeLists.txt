@@ -100,12 +100,14 @@ set(viewer_SOURCE_FILES
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
+    llaccountingcostmanager.cpp
     llagent.cpp
     llagentaccess.cpp
     llagentcamera.cpp
     llagentdata.cpp
     llagentlanguage.cpp
     llagentpilot.cpp
+    llagentui.cpp
     llagentwearables.cpp
     llanimstatelabels.cpp
     llappviewer.cpp
@@ -114,7 +116,6 @@ set(viewer_SOURCE_FILES
     llassetuploadqueue.cpp
     llattachmentsmgr.cpp
     llaudiosourcevo.cpp
-    llbbox.cpp
     llbox.cpp
     llbuildnewviewsscheduler.cpp
     llcallbacklist.cpp
@@ -293,6 +294,7 @@ set(viewer_SOURCE_FILES
     llmediaremotectrl.cpp
     llmemoryview.cpp
     llmenucommands.cpp
+    llmeshrepository.cpp
     llmimetypes.cpp
     llmorphview.cpp
     llmoveview.cpp
@@ -577,12 +579,14 @@ set(viewer_HEADER_FILES
     lgghunspell_wrapper.h
     chatbar_as_cmdline.h
     qtoolalign.h
+    llaccountingcostmanager.h
     llagent.h
     llagentaccess.h
     llagentcamera.h
     llagentdata.h
     llagentlanguage.h
     llagentpilot.h
+    llagentui.h
     llagentwearables.h
     llanimstatelabels.h
     llappearance.h
@@ -592,7 +596,6 @@ set(viewer_HEADER_FILES
     llassetuploadqueue.h
     llattachmentsmgr.h
     llaudiosourcevo.h
-    llbbox.h
     llbox.h
     llbuildnewviewsscheduler.h
     llcallbacklist.h
@@ -771,6 +774,7 @@ set(viewer_HEADER_FILES
     llmediaremotectrl.h
     llmemoryview.h
     llmenucommands.h
+    llmeshrepository.h
     llmimetypes.h
     llmorphview.h
     llmoveview.h
@@ -1226,6 +1230,7 @@ set_source_files_properties(${viewer_XUI_FILES}
 list(APPEND viewer_SOURCE_FILES ${viewer_XUI_FILES})
 
 set(viewer_APPSETTINGS_FILES
+    viewer_manifest.py
     app_settings/anim.ini
     app_settings/cmd_line.xml
     app_settings/grass.xml
@@ -1607,6 +1612,13 @@ endif (LL_TESTS)
 if (WINDOWS)
 
   get_target_property(BUILT_LLCOMMON llcommon LOCATION)
+
+    set_target_properties(llcommon
+        PROPERTIES
+        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT"
+        LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\""
+        )
+
   add_custom_command(
       TARGET ${VIEWER_BINARY_NAME} POST_BUILD
       COMMAND ${CMAKE_COMMAND}

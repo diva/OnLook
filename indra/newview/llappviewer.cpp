@@ -52,6 +52,9 @@
 #include "llwindow.h"
 #include "llviewerstats.h"
 #include "llmd5.h"
+#if MESH_ENABLED
+#include "llmeshrepository.h"
+#endif //MESH_ENABLED
 #include "llpumpio.h"
 #include "llimpanel.h"
 #include "llmimetypes.h"
@@ -77,6 +80,7 @@
 #include "statemachine/aifilepicker.h"
 #include "llfirstuse.h"
 #include "llrender.h"
+#include "llvector4a.h"
 #include "llfont.h"
 #include "llvocache.h"
 #include "llfloaterteleporthistory.h"
@@ -89,6 +93,8 @@
 #include "lldiriterator.h"
 #include "llimagej2c.h"
 #include "llprimitive.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include <boost/bind.hpp>
 
 #if LL_WINDOWS
@@ -562,6 +568,8 @@ bool LLAppViewer::init()
 	// we run the "program crashed last time" error handler below.
 	//
 	
+	// initialize SSE options
+	LLVector4a::initClass();
 	// Need to do this initialization before we do anything else, since anything
 	// that touches files should really go through the lldir API
 	gDirUtilp->initAppDirs("SecondLife");
@@ -586,7 +594,7 @@ bool LLAppViewer::init()
 
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
-    LLCurl::initClass();
+    LLCurl::initClass(gSavedSettings.getBOOL("CurlUseMultipleThreads"));
 	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
@@ -683,7 +691,13 @@ bool LLAppViewer::init()
 	LLViewerJointMesh::updateVectorize();
 
 	// load MIME type -> media impl mappings
-	LLMIMETypes::parseMIMETypes( std::string("mime_types.xml") ); 
+#if LL_WINDOWS
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_windows.xml") );
+#elif LL_DARWIN
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_mac.xml") );
+#elif LL_LINUX
+	LLMIMETypes::parseMIMETypes( std::string("mime_types_linux.xml") );
+#endif
 
 	// Copy settings to globals. *TODO: Remove or move to appropriage class initializers
 	settings_to_globals();
@@ -855,7 +869,7 @@ bool LLAppViewer::init()
 
 		if (LLFeatureManager::getInstance()->getGPUClass() == GPU_CLASS_UNKNOWN)
 		{
-			LLNotifications::instance().add("UnknownGPU");
+			LLNotificationsUtil::add("UnknownGPU");
 		} 
 			
 		if(unsupported)
@@ -864,7 +878,7 @@ bool LLAppViewer::init()
 				|| gSavedSettings.getBOOL("WarnUnsupportedHardware"))
 			{
 				args["MINSPECS"] = minSpecs;
-				LLNotifications::instance().add("UnsupportedHardware", args );
+				LLNotificationsUtil::add("UnsupportedHardware", args );
 			}
 
 		}
@@ -1107,6 +1121,9 @@ bool LLAppViewer::mainLoop()
 						break;
 					}
 				}
+#if MESH_ENABLED
+				gMeshRepo.update() ;
+#endif //MESH_ENABLED
 				if ((LLStartUp::getStartupState() >= STATE_CLEANUP) &&
 					(frameTimer.getElapsedTimeF64() > FRAME_STALL_THRESHOLD))
 				{
@@ -1229,6 +1246,11 @@ bool LLAppViewer::cleanup()
 	LLError::logToFixedBuffer(NULL);
 
 	llinfos << "Cleaning Up" << llendflush;
+
+#if MESH_ENABLED
+	// shut down mesh streamer
+	gMeshRepo.shutdown();
+#endif //MESH_ENABLED
 
 	// Must clean up texture references before viewer window is destroyed.
 	if(LLHUDManager::instanceExists())
@@ -1367,8 +1389,6 @@ bool LLAppViewer::cleanup()
 	
 	LLViewerObject::cleanupVOClasses();
 
-	LLWaterParamManager::cleanupClass();
-	LLWLParamManager::cleanupClass();
 	LLPostProcess::cleanupClass();
 
 	LLTracker::cleanupInstance();
@@ -1652,6 +1672,11 @@ bool LLAppViewer::initThreads()
 	LLAppViewer::sTextureFetch = new LLTextureFetch(LLAppViewer::getTextureCache(), sImageDecodeThread, enable_threads && true);
 	LLImage::initClass();
 
+
+#if MESH_ENABLED
+	// Mesh streaming and caching
+	gMeshRepo.init();
+#endif //MESH_ENABLED
 	// *FIX: no error handling here!
 	return true;
 }
@@ -2609,7 +2634,7 @@ void LLAppViewer::handleViewerCrash()
 	gDebugInfo["CurrentPath"] = gDirUtilp->getCurPath();
 	gDebugInfo["SessionLength"] = F32(LLFrameTimer::getElapsedSeconds());
 	gDebugInfo["StartupState"] = LLStartUp::getStartupStateString();
-	gDebugInfo["RAMInfo"]["Allocated"] = (LLSD::Integer) getCurrentRSS() >> 10;
+	gDebugInfo["RAMInfo"]["Allocated"] = (LLSD::Integer) LLMemory::getCurrentRSS() >> 10;
 	gDebugInfo["FirstLogin"] = (LLSD::Boolean) gAgent.isFirstLogin();
 	gDebugInfo["FirstRunThisInstall"] = gSavedSettings.getBOOL("FirstRunThisInstall");
 
@@ -2843,6 +2868,23 @@ void LLAppViewer::forceQuit()
 	LLApp::setQuitting(); 
 }
 
+//TODO: remove
+void LLAppViewer::fastQuit(S32 error_code)
+{
+	// finish pending transfers
+	flushVFSIO();
+	// let sim know we're logging out
+	sendLogoutRequest();
+	// flush network buffers by shutting down messaging system
+	end_messaging_system();
+	// figure out the error code
+	S32 final_error_code = error_code ? error_code : (S32)isError();
+	// this isn't a crash	
+	removeMarkerFile();
+	// get outta here
+	_exit(final_error_code);	
+}
+
 void LLAppViewer::requestQuit()
 {
 	llinfos << "requestQuit" << llendl;
@@ -2885,7 +2927,7 @@ void LLAppViewer::requestQuit()
 
 static bool finish_quit(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	if (option == 0)
 	{
@@ -2902,7 +2944,9 @@ void LLAppViewer::userQuit()
 		requestQuit();
 	}
 	else
-	LLNotifications::instance().add("ConfirmQuit");
+	{
+		LLNotificationsUtil::add("ConfirmQuit");
+	}
 }
 
 static bool finish_early_exit(const LLSD& notification, const LLSD& response)
@@ -2915,16 +2959,9 @@ void LLAppViewer::earlyExit(const std::string& name, const LLSD& substitutions)
 {
    	llwarns << "app_early_exit: " << name << llendl;
 	gDoDisconnect = TRUE;
-	LLNotifications::instance().add(name, substitutions, LLSD(), finish_early_exit);
+	LLNotificationsUtil::add(name, substitutions, LLSD(), finish_early_exit);
 }
 
-void LLAppViewer::forceExit(S32 arg)
-{
-    removeMarkerFile();
-    
-    // *FIX:Mani - This kind of exit hardly seems appropriate.
-    exit(arg);
-}
 
 void LLAppViewer::abortQuit()
 {
@@ -3323,7 +3360,7 @@ const std::string& LLAppViewer::getWindowTitle() const
 // Callback from a dialog indicating user was logged out.  
 bool finish_disconnect(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	if (1 == option)
 	{
@@ -3363,12 +3400,12 @@ void LLAppViewer::forceDisconnect(const std::string& mesg)
 	{
 		// Tell users what happened
 		args["ERROR_MESSAGE"] = big_reason;
-		LLNotifications::instance().add("ErrorMessage", args, LLSD(), &finish_forced_disconnect);
+		LLNotificationsUtil::add("ErrorMessage", args, LLSD(), &finish_forced_disconnect);
 	}
 	else
 	{
 		args["MESSAGE"] = big_reason;
-		LLNotifications::instance().add("YouHaveBeenLoggedOut", args, LLSD(), &finish_disconnect );
+		LLNotificationsUtil::add("YouHaveBeenLoggedOut", args, LLSD(), &finish_disconnect );
 	}
 }
 
@@ -3520,8 +3557,7 @@ void LLAppViewer::idle()
 	// Update frame timers
 	static LLTimer idle_timer;
 
-	LLFrameTimer::updateFrameTime();
-	LLFrameTimer::updateFrameCount();
+	LLFrameTimer::updateFrameTimeAndCount();
 	LLEventTimer::updateClass();
 	LLCriticalDamp::updateInterpolants();
 	LLMortician::updateClass();
@@ -3723,7 +3759,7 @@ void LLAppViewer::idle()
 
 	{
 		// Handle pending gesture processing
-		gGestureManager.update();
+		LLGestureMgr::instance().update();
 
 		gAgent.updateAgentPosition(gFrameDTClamped, yaw, current_mouse.mX, current_mouse.mY);
 	}
@@ -3968,6 +4004,44 @@ void LLAppViewer::idleShutdown()
 	}
 }
 
+void LLAppViewer::sendLogoutRequest()
+{
+	if(!mLogoutRequestSent && gMessageSystem)
+	{
+
+		LLMessageSystem* msg = gMessageSystem;
+		msg->newMessageFast(_PREHASH_LogoutRequest);
+		msg->nextBlockFast(_PREHASH_AgentData);
+		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
+		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+		gAgent.sendReliableMessage();
+
+		gLogoutTimer.reset();
+		gLogoutMaxTime = LOGOUT_REQUEST_TIME;
+		mLogoutRequestSent = TRUE;
+		
+		if(gVoiceClient)
+			gVoiceClient->leaveChannel();
+
+		//Set internal status variables and marker files
+		gLogoutInProgress = TRUE;
+		mLogoutMarkerFileName = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,LOGOUT_MARKER_FILE_NAME);
+		
+		LLAPRFile outfile ;
+		outfile.open(mLogoutMarkerFileName, LL_APR_W, LLAPRFile::global);
+		mLogoutMarkerFile =  outfile.getFileHandle() ;
+		if (mLogoutMarkerFile)
+		{
+			llinfos << "Created logout marker file " << mLogoutMarkerFileName << llendl;
+    		apr_file_close(mLogoutMarkerFile);
+		}
+		else
+		{
+			llwarns << "Cannot create logout marker file " << mLogoutMarkerFileName << llendl;
+		}		
+	}
+}
+
 void LLAppViewer::idleNameCache()
 {
 	// Neither old nor new name cache can function before agent has a region
@@ -4020,43 +4094,6 @@ void LLAppViewer::idleNameCache()
 	}
 
 	LLAvatarNameCache::idle();
-}
-
-void LLAppViewer::sendLogoutRequest()
-{
-	if(!mLogoutRequestSent)
-	{
-
-		LLMessageSystem* msg = gMessageSystem;
-		msg->newMessageFast(_PREHASH_LogoutRequest);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		gAgent.sendReliableMessage();
-
-		gLogoutTimer.reset();
-		gLogoutMaxTime = LOGOUT_REQUEST_TIME;
-		mLogoutRequestSent = TRUE;
-		
-		gVoiceClient->leaveChannel();
-
-		//Set internal status variables and marker files
-		gLogoutInProgress = TRUE;
-		mLogoutMarkerFileName = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,LOGOUT_MARKER_FILE_NAME);
-		
-		LLAPRFile outfile ;
-		outfile.open(mLogoutMarkerFileName, LL_APR_W, LLAPRFile::global);
-		mLogoutMarkerFile =  outfile.getFileHandle() ;
-		if (mLogoutMarkerFile)
-		{
-			llinfos << "Created logout marker file " << mLogoutMarkerFileName << llendl;
-    		apr_file_close(mLogoutMarkerFile);
-		}
-		else
-		{
-			llwarns << "Cannot create logout marker file " << mLogoutMarkerFileName << llendl;
-		}		
-	}
 }
 
 //
@@ -4153,7 +4190,7 @@ void LLAppViewer::idleNetwork()
 		}
 	}
 	llpushcallstacks ;
-	gObjectList.mNumNewObjectsStat.addValue(gObjectList.mNumNewObjects);
+	LLViewerStats::getInstance()->mNumNewObjectsStat.addValue(gObjectList.mNumNewObjects);
 
 	// Retransmit unacknowledged packets.
 	gXferManager->retransmitUnackedPackets();

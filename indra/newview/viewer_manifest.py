@@ -85,9 +85,6 @@ class ViewerManifest(LLManifest):
                         self.path("*.png")
                         self.path("textures.xml")
                         self.end_prefix("default/textures")
-                self.exclude("default/xui/en_us/mime_types_windows.xml")
-                self.exclude("default/xui/en_us/mime_types_mac.xml")
-                self.exclude("default/xui/en_us/mime_types_linux.xml")
                 self.path("default/xui/*/*.xml")
                 self.path("Default.xml")
                 self.path("default/*.xml")
@@ -268,9 +265,6 @@ class WindowsManifest(ViewerManifest):
             self.path("qkrcodecs4.dll")
             self.path("qtwcodecs4.dll")
             self.end_prefix()
-
-        # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-        self.path("skins/default/xui/en-us/mime_types_windows.xml", "skins/default/xui/en-us/mime_types.xml")
 
         # Get llcommon and deps. If missing assume static linkage and continue.
         if self.prefix(src=self.args['configuration'], dst=""):
@@ -461,10 +455,10 @@ class DarwinManifest(ViewerManifest):
             # copy additional libs in <bundle>/Contents/MacOS/
             self.path("../../libraries/universal-darwin/lib_release/libhunspell-1.2.dylib", dst="MacOS/libhunspell-1.2.dylib")
             self.path("../../libraries/universal-darwin/lib_release/libndofdev.dylib", dst="MacOS/libndofdev.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
-            self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbisenc.2.dylib", dst="MacOS/libvorbisenc.2.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbisfile.3.dylib", dst="MacOS/libvorbisfile.3.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libvorbis.0.dylib", dst="MacOS/libvorbis.0.dylib")
+            #self.path("../../libraries/universal-darwin/lib_release/libogg.0.dylib", dst="MacOS/libogg.0.dylib")
 
             # most everything goes in the Resources directory
             if self.prefix(src="", dst="Resources"):
@@ -520,8 +514,11 @@ class DarwinManifest(ViewerManifest):
                 self.path(self.args['configuration'] + "/libfmodwrapper.dylib", "libfmodwrapper.dylib")
                 
                 # our apps
-                self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
-                #self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                try:
+                  self.path("../mac_crash_logger/" + self.args['configuration'] + "/mac-crash-logger.app", "mac-crash-logger.app")
+                  self.path("../mac_updater/" + self.args['configuration'] + "/mac-updater.app", "mac-updater.app")
+                except:
+                	pass
 
                 # plugin launcher
                 self.path("../llplugin/slplugin/" + self.args['configuration'] + "/SLPlugin.app", "SLPlugin.app")
@@ -536,12 +533,12 @@ class DarwinManifest(ViewerManifest):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %
                                      {'target': target_lib,
-                                      'link' : os.path.join(mac_crash_logger_res_path, libfile)}
-                                     )
-                    self.run_command("ln -sf %(target)r %(link)r" %
-                                     {'target': target_lib,
                                       'link' : os.path.join(slplugin_res_path, libfile)}
                                      )
+                    #self.run_command("ln -sf %(target)r %(link)r" %
+                    #                 {'target': target_lib,
+                    #                  'link' : os.path.join(mac_crash_logger_res_path, libfile)}
+                    #                 )
 
                 # plugins
                 if self.prefix(src="", dst="llplugin"):
@@ -551,9 +548,6 @@ class DarwinManifest(ViewerManifest):
                     self.path("../../libraries/universal-darwin/lib_release/libllqtwebkit.dylib", "libllqtwebkit.dylib")
 
                     self.end_prefix("llplugin")              
-
-                # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-                self.path("skins/default/xui/en-us/mime_types_mac.xml", "skins/default/xui/en-us/mime_types.xml")
 
                 # command line arguments for connecting to the proper grid
                 self.put_in_file(self.flags_list(), 'arguments.txt')
@@ -706,9 +700,6 @@ class LinuxManifest(ViewerManifest):
             self.path("../plugins/webkit/libmedia_plugin_webkit.so", "libmedia_plugin_webkit.so")
             self.path("../plugins/gstreamer010/libmedia_plugin_gstreamer010.so", "libmedia_plugin_gstreamer.so")
             self.end_prefix("bin/llplugin")
-
-        # Per platform MIME config on the cheap.  See SNOW-307 / DEV-41388
-        self.path("skins/default/xui/en-us/mime_types_linux.xml", "skins/default/xui/en-us/mime_types.xml")
 
         self.path("featuretable_linux.txt")
 

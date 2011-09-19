@@ -191,6 +191,10 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 	return status;
 }
 
+apr_status_t LLAPRFile::open(const std::string& filename, apr_int32_t flags, BOOL use_global_pool)
+{
+	return open(filename, flags, use_global_pool ? LLAPRFile::global : LLAPRFile::local);
+}
 // File I/O
 S32 LLAPRFile::read(void *buf, S32 nbytes)
 {

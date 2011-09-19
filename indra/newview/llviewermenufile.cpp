@@ -77,6 +77,7 @@
 #include "llassetuploadresponders.h"
 #include "lleconomy.h"
 #include "llhttpclient.h"
+#include "llnotificationsutil.h"
 #include "llmemberlistener.h"
 #include "llsdserialize.h"
 #include "llstring.h"
@@ -154,16 +155,13 @@ std::string build_extensions_string(ELoadFilter filter)
 }
 
 class AIFileUpload {
-  protected:
-	AIFilePicker* mPicker;
-
   public:
-    AIFileUpload(void) : mPicker(NULL) { }
-	virtual ~AIFileUpload() { llassert(!mPicker); if (mPicker) { mPicker->abort(); mPicker = NULL; } }
+    AIFileUpload(void) { }
+	virtual ~AIFileUpload() { }
 
   public:
 	bool is_valid(std::string const& filename, ELoadFilter type);
-	void filepicker_callback(ELoadFilter type);
+	void filepicker_callback(ELoadFilter type, AIFilePicker* picker);
 	void start_filepicker(ELoadFilter type, char const* context);
 
   protected:
@@ -179,21 +177,22 @@ void AIFileUpload::start_filepicker(ELoadFilter filter, char const* context)
 		// display();
 	}
 
-	llassert(!mPicker);
-	mPicker = AIFilePicker::create();
-	mPicker->open(filter, "", context);
-	mPicker->run(boost::bind(&AIFileUpload::filepicker_callback, this, filter));
+	AIFilePicker* picker = AIFilePicker::create();
+	picker->open(filter, "", context);
+	// Note that when the call back is called then we're still in the main loop of
+	// the viewer and therefore the AIFileUpload still exists, since that is only
+	// destructed at the end of main when exiting the viewer.
+	picker->run(boost::bind(&AIFileUpload::filepicker_callback, this, filter, picker));
 }
 
-void AIFileUpload::filepicker_callback(ELoadFilter type)
+void AIFileUpload::filepicker_callback(ELoadFilter type, AIFilePicker* picker)
 {
-	if (mPicker->hasFilename())
+	if (picker->hasFilename())
 	{
-	  std::string filename = mPicker->getFilename();
+	  std::string filename = picker->getFilename();
 	  if (is_valid(filename, type))
 		handle_event(filename);
 	}
-	mPicker = NULL;
 }
 
 bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
@@ -208,7 +207,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 		// No extension
 		LLSD args;
 		args["FILE"] = short_name;
-		LLNotifications::instance().add("NoFileExtension", args);
+		LLNotificationsUtil::add("NoFileExtension", args);
 		return false;
 	}
 	else
@@ -251,7 +250,7 @@ bool AIFileUpload::is_valid(std::string const& filename, ELoadFilter type)
 			LLSD args;
 			args["EXTENSION"] = ext;
 			args["VALIDS"] = valid_extensions;
-			LLNotifications::instance().add("InvalidFileExtension", args);
+			LLNotificationsUtil::add("InvalidFileExtension", args);
 			return false;
 		}
 	}//end else (non-null extension)
@@ -356,7 +355,7 @@ class LLFileUploadBulk : public view_listener_t
 		if(expected_upload_cost)
 			msg.append(llformat("\nWARNING: Each upload costs L$%d if it's not temporary.",expected_upload_cost));
 		args["MESSAGE"] = msg;
-		LLNotifications::instance().add("GenericAlertYesNoCancel", args, LLSD(), onConfirmBulkUploadTemp);
+		LLNotificationsUtil::add("GenericAlertYesNoCancel", args, LLSD(), onConfirmBulkUploadTemp);
 		return true;
 	}
 
@@ -478,7 +477,7 @@ class LLFileMinimizeAllWindows : public view_listener_t
 };
 // </edit>
 
-class LLFileSaveTexture : public view_listener_t
+class LLFileSavePreview : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
@@ -961,7 +960,7 @@ void upload_new_resource(const std::string& src_filename, std::string name,
 		llwarns << error_message << llendl;
 		LLSD args;
 		args["ERROR_MESSAGE"] = error_message;
-		LLNotifications::instance().add("ErrorMessage", args);
+		LLNotificationsUtil::add("ErrorMessage", args);
 		if(LLFile::remove(filename) == -1)
 		{
 			lldebugs << "unable to remove temp file" << llendl;
@@ -1023,7 +1022,7 @@ void temp_upload_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		LLSD args;
 		args["FILE"] = LLInventoryType::lookupHumanReadable(data->mInventoryType);
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(result));
-		LLNotifications::instance().add("CannotUploadReason", args);
+		LLNotificationsUtil::add("CannotUploadReason", args);
 	}
 
 	LLUploadDialog::modalUploadFinished();
@@ -1116,7 +1115,7 @@ void upload_done_callback(const LLUUID& uuid, void* user_data, S32 result, LLExt
 		LLSD args;
 		args["FILE"] = LLInventoryType::lookupHumanReadable(data->mInventoryType);
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(result));
-		LLNotifications::instance().add("CannotUploadReason", args);
+		LLNotificationsUtil::add("CannotUploadReason", args);
 	}
 
 	LLUploadDialog::modalUploadFinished();
@@ -1275,12 +1274,11 @@ void init_menu_file()
 	// <edit>
 	(new LLFileMinimizeAllWindows())->registerListener(gMenuHolder, "File.MinimizeAllWindows");
 	// </edit>
-	(new LLFileSaveTexture())->registerListener(gMenuHolder, "File.SaveTexture");
+	(new LLFileSavePreview())->registerListener(gMenuHolder, "File.SavePreview");
 	(new LLFileTakeSnapshot())->registerListener(gMenuHolder, "File.TakeSnapshot");
 	(new LLFileTakeSnapshotToDisk())->registerListener(gMenuHolder, "File.TakeSnapshotToDisk");
 	(new LLFileQuit())->registerListener(gMenuHolder, "File.Quit");
 	(new LLFileLogOut())->registerListener(gMenuHolder, "File.LogOut");
-	//Emerald has a second llFileSaveTexture here... Same as the original. Odd. -HgB
 	(new LLFileEnableUpload())->registerListener(gMenuHolder, "File.EnableUpload");
 	(new LLFileEnableSaveAs())->registerListener(gMenuHolder, "File.EnableSaveAs");
 }

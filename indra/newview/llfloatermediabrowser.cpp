@@ -45,13 +45,14 @@
 #include "llweb.h"
 #include "llui.h"
 #include "roles_constants.h"
+#include "llwindow.h"
 
 #include "llurlhistory.h"
 #include "llmediactrl.h"
 #include "llviewermedia.h"
 #include "llviewerparcelmedia.h"
 #include "llcombobox.h"
-
+#include "llnotificationsutil.h"
 
 // TEMP
 #include "llsdutil.h"
@@ -60,6 +61,28 @@ LLFloaterMediaBrowser::LLFloaterMediaBrowser(const LLSD& media_data)
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_media_browser.xml");
 
+}
+
+	
+void LLFloaterMediaBrowser::geometryChanged(S32 x, S32 y, S32 width, S32 height)
+{	
+	// Make sure the layout of the browser control is updated, so this calculation is correct.
+	LLLayoutStack::updateClass();
+		
+	// TODO: need to adjust size and constrain position to make sure floaters aren't moved outside the window view, etc.
+	LLCoordWindow window_size;
+	getWindow()->getSize(&window_size);
+
+	// Adjust width and height for the size of the chrome on the Media Browser window.
+	width += getRect().getWidth() - mBrowser->getRect().getWidth();
+	height += getRect().getHeight() - mBrowser->getRect().getHeight();
+	
+	LLRect geom;
+	geom.setOriginAndSize(x, window_size.mY - (y + height), width, height);
+
+	lldebugs << "geometry change: " << geom << llendl;
+	
+	handleReshape(geom,false);
 }
 
 void LLFloaterMediaBrowser::draw()
@@ -105,6 +128,7 @@ BOOL LLFloaterMediaBrowser::postBuild()
 	mAddressCombo = getChild<LLComboBox>("address");
 	mAddressCombo->setCommitCallback(onEnterAddress);
 	mAddressCombo->setCallbackUserData(this);
+	mAddressCombo->sortByName();
 
 	childSetAction("back", onClickBack, this);
 	childSetAction("forward", onClickForward, this);
@@ -146,7 +170,10 @@ void LLFloaterMediaBrowser::buildURLHistory()
 	}
 
 	// initialize URL history in the plugin
-	mBrowser->getMediaPlugin()->initializeUrlHistory(browser_history);
+	if(mBrowser && mBrowser->getMediaPlugin())
+	{
+		mBrowser->getMediaPlugin()->initializeUrlHistory(browser_history);
+	}
 }
 
 std::string LLFloaterMediaBrowser::getSupportURL()
@@ -170,6 +197,15 @@ void LLFloaterMediaBrowser::handleMediaEvent(LLPluginClassMedia* self, EMediaEve
 		// This is the event these flags are sent with.
 		childSetEnabled("back", self->getHistoryBackAvailable());
 		childSetEnabled("forward", self->getHistoryForwardAvailable());
+	}
+	else if(event == MEDIA_EVENT_CLOSE_REQUEST)
+	{
+		// The browser instance wants its window closed.
+		close();
+	}
+	else if(event == MEDIA_EVENT_GEOMETRY_CHANGE)
+	{
+		geometryChanged(self->getGeometryX(), self->getGeometryY(), self->getGeometryWidth(), self->getGeometryHeight());
 	}
 }
 void LLFloaterMediaBrowser::setCurrentURL(const std::string& url)
@@ -213,7 +249,15 @@ void LLFloaterMediaBrowser::onClickRefresh(void* user_data)
 	LLFloaterMediaBrowser* self = (LLFloaterMediaBrowser*)user_data;
 
 	self->mAddressCombo->remove(0);
-	self->mBrowser->navigateTo(self->mCurrentURL);
+	if( self->mBrowser->getMediaPlugin() &&  self->mBrowser->getMediaPlugin()->pluginSupportsMediaBrowser())
+	{
+		bool ignore_cache = true;
+		self->mBrowser->getMediaPlugin()->browse_reload( ignore_cache );
+	}
+	else
+	{
+		self->mBrowser->navigateTo(self->mCurrentURL);
+	}
 }
 
 //static 
@@ -371,7 +415,7 @@ void LLViewerHtmlHelp::show(std::string url)
 		LLSD notificationData;
 		notificationData["url"] = url;                                                                     	    
 
-		LLNotifications::instance().add("ClickOpenF1Help", notificationData, LLSD(), onClickF1HelpLoadURL);	    
+		LLNotificationsUtil::add("ClickOpenF1Help", notificationData, LLSD(), onClickF1HelpLoadURL);	    
 		floater_html->close();
 	}
 	else

@@ -22,9 +22,11 @@
 
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llscrolllistctrl.h"
 #include "llradiogroup.h"
 #include "llviewercontrol.h"
+#include "llnotificationsutil.h"
 
 #include "llvoavatar.h"
 #include "llimview.h"
@@ -58,6 +60,10 @@
 //<edit>
 #include "llviewermenu.h"
 //</edit>
+
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 /**
  * @brief How long to keep people who are gone in the list and in memory.
@@ -229,23 +235,22 @@ void LLFloaterAvatarList::createInstance(bool visible)
 	sInstance = new LLFloaterAvatarList();
 	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
 	if(!visible)
+	{
 		sInstance->setVisible(FALSE);
+		gSavedSettings.setBOOL("ShowRadar", FALSE);
+	}
 }
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
-#ifdef LL_RRINTERFACE_H //MK
-	if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-	{
-		if (sInstance && sInstance->getVisible())
-		{	
-			sInstance->close(false);
-		}
-	}
-#endif //mk
 	if (sInstance)
 	{
-		if (sInstance->getVisible())
+		if (sInstance->getVisible()
+// [RLVa:KB]
+			|| gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)
+// [/RLVa:KB]
+			)
+
 		{
 			sInstance->close(false);
 		}
@@ -263,12 +268,10 @@ void LLFloaterAvatarList::toggle(void*)
 //static
 void LLFloaterAvatarList::showInstance()
 {
-#ifdef LL_RRINTERFACE_H //MK
-	if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-	{
+// [RLVa:KB]
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		return;
-	}
-#endif //mk
+// [/RLVa:KB]
 	if (sInstance)
 	{
 		if (!sInstance->getVisible())
@@ -454,12 +457,6 @@ void LLFloaterAvatarList::updateAvatarList()
 						continue;
 					}
 				}
-#ifdef LL_RRINTERFACE_H //MK
-				if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-				{
-					name = gAgent.mRRInterface.getDummyName(name);
-				}
-#endif //mk
 
 				if (avid.isNull())
 				{
@@ -498,12 +495,6 @@ void LLFloaterAvatarList::updateAvatarList()
 					//name = gCacheName->getDefaultName();
 					continue; //prevent (Loading...)
 				}
-#ifdef LL_RRINTERFACE_H //MK
-				if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
-				{
-					name = gAgent.mRRInterface.getDummyName(name);
-				}
-#endif //mk
 
 				if (mAvatars.count(avid) > 0)
 				{
@@ -1284,7 +1275,7 @@ void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
                 {
                         LLSD args;
 			args["MESSAGE"] = "An object owned by you has request the keys from your radar.\nWould you like to enable announcing keys to objects in the sim?";
-			LLNotifications::instance().add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
+			LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
                 }
         }
 }
@@ -1512,7 +1503,7 @@ void LLFloaterAvatarList::onClickFreeze(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("FreezeAvatarFullname", args, payload, callbackFreeze);
+	LLNotificationsUtil::add("FreezeAvatarFullname", args, payload, callbackFreeze);
 }
 
 //static
@@ -1521,7 +1512,7 @@ void LLFloaterAvatarList::onClickEject(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["AVATAR_NAME"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("EjectAvatarFullname", args, payload, callbackEject);
+	LLNotificationsUtil::add("EjectAvatarFullname", args, payload, callbackEject);
 }
 
 //static
@@ -1560,7 +1551,7 @@ void LLFloaterAvatarList::onClickEjectFromEstate(void *userdata)
 	LLSD args;
 	LLSD payload;
 	args["EVIL_USER"] = ((LLFloaterAvatarList*)userdata)->getSelectedNames();
-	LLNotifications::instance().add("EstateKickUser", args, payload, callbackEjectFromEstate);
+	LLNotificationsUtil::add("EstateKickUser", args, payload, callbackEjectFromEstate);
 }
 
 //static

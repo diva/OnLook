@@ -56,6 +56,7 @@
 #include "lllineeditor.h"
 #include "llmenucommands.h"
 #include "llmenugl.h"
+#include "llnotificationsutil.h"
 #include "llpanelavatar.h"
 #include "llpanelevent.h"
 #include "llpanelgroup.h"
@@ -72,7 +73,6 @@
 #include "llviewertexturelist.h"
 #include "llviewermessage.h"
 #include "lluictrlfactory.h"
-#include "llnotify.h"
 
 #include <string>
 #include <sstream>
@@ -596,7 +596,7 @@ void LLPanelDirBrowser::processDirPlacesReply(LLMessageSystem* msg, void**)
 		msg->getU32("StatusData", "Status", status);
 		if (status & STATUS_SEARCH_PLACES_BANNEDWORD)
 		{
-			LLNotifications::instance().add("SearchWordBanned");
+			LLNotificationsUtil::add("SearchWordBanned");
 		}
 	}
 
@@ -690,7 +690,7 @@ void LLPanelDirBrowser::processDirEventsReply(LLMessageSystem* msg, void**)
 		msg->getU32("StatusData", "Status", status);
 		if (status & STATUS_SEARCH_EVENTS_BANNEDWORD)
 		{
-			LLNotifications::instance().add("SearchWordBanned");
+			LLNotificationsUtil::add("SearchWordBanned");
 		}
 	}
 
@@ -926,7 +926,7 @@ void LLPanelDirBrowser::processDirClassifiedReply(LLMessageSystem* msg, void**)
 		msg->getU32("StatusData", "Status", status);
 		if (status & STATUS_SEARCH_CLASSIFIEDS_BANNEDWORD)
 		{
-			LLNotifications::instance().add("SearchWordBanned");
+			LLNotificationsUtil::add("SearchWordBanned");
 		}
 	}
 

@@ -43,7 +43,7 @@
 #include "llfloater.h"
 #include "llscrolllistctrl.h"
 
-class LLFloaterTeleportHistory : public LLFloater, public LLUISingleton<LLFloaterTeleportHistory, VisibilityPolicy<LLFloater>>
+class LLFloaterTeleportHistory : public LLFloater, public LLUISingleton<LLFloaterTeleportHistory, VisibilityPolicy<LLFloater> >
 {
 public:
 	LLFloaterTeleportHistory(const LLSD& seed);

@@ -307,7 +307,7 @@ std::string RlvExtGetSet::onGetEnv(std::string strSetting)
 		LLFloaterWindLight::instance()->syncMenu();
 	}
 
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 
 	F32 nValue = 0.0f;
 	if ("daytime" == strSetting)
@@ -380,7 +380,7 @@ ERlvCmdRet RlvExtGetSet::onSetEnv(std::string strSetting, const std::string& str
 		LLFloaterWindLight::instance()->syncMenu();
 	}
 
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 	WLFloatControl* pFloat = NULL;
 	WLColorControl* pColour = NULL;
 

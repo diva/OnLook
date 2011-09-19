@@ -67,7 +67,7 @@
 #include "llfloaterchat.h"
 #include "llimpanel.h"
 #include "llimview.h"
-#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "lluistring.h"
 #include "llviewerobject.h" 
 #include "llviewerobjectlist.h"
@@ -302,7 +302,7 @@ BOOL LLMuteList::add(const LLMute& mute, U32 flags)
 	if ((mute.mType == LLMute::AGENT)
 		&& isLinden(mute.mName) && (flags & LLMute::flagTextChat || flags == 0))
 	{
-		LLNotifications::instance().add("MuteLinden");
+		LLNotificationsUtil::add("MuteLinden");
 		return FALSE;
 	}
 	

@@ -18,6 +18,7 @@
 
 #include "lluictrlfactory.h"
 #include "llcombobox.h"
+#include "llnotificationsutil.h"
 
 #include "llagent.h" // gAgent
 #include "llviewerwindow.h" // alertXml
@@ -315,7 +316,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 
 			LLSD args;
 			args["ERROR_MESSAGE"] = message.str();
-			LLNotifications::instance().add("ErrorMessage", args);
+			LLNotificationsUtil::add("ErrorMessage", args);
 		}
 		conflicting_cats.clear();// srsly dont think this is need but w/e :D
 	}

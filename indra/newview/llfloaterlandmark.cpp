@@ -35,6 +35,7 @@
 #include "llfloaterlandmark.h"
 
 #include "llagent.h"
+#include "llagentui.h"
 #include "llcheckboxctrl.h"
 #include "llviewerparcelmgr.h"
 #include "llfolderview.h"
@@ -45,6 +46,7 @@
 #include "llpermissions.h"
 #include "llsaleinfo.h"
 #include "llparcel.h"
+#include "llnotificationsutil.h"
 
 #include "llviewerwindow.h"		// alertXml
 #include "llviewercontrol.h"
@@ -295,18 +297,19 @@ void LLFloaterLandmark::onBtnNew(void* userdata)
 	if (!agent_parcel->getAllowLandmark()
 		&& !LLViewerParcelMgr::isParcelOwnedByAgent(agent_parcel, GP_LAND_ALLOW_LANDMARK))
 	{
-		LLNotifications::instance().add("CannotCreateLandmarkNotOwner");
+		LLNotificationsUtil::add("CannotCreateLandmarkNotOwner");
 		return;
 	}
 
-	LLUUID folder_id;
-	folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
-	std::string pos_string;
-	gAgent.buildLocationString(pos_string);
+	std::string landmark_name, landmark_desc;
+
+	LLAgentUI::buildLocationString(landmark_name, LLAgentUI::LOCATION_FORMAT_LANDMARK);
+	LLAgentUI::buildLocationString(landmark_desc, LLAgentUI::LOCATION_FORMAT_FULL);
+	const LLUUID folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 
 	create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
 		folder_id, LLTransactionID::tnull,
-		pos_string, pos_string, // name, desc
+		landmark_name, landmark_desc, // name, desc
 		LLAssetType::AT_LANDMARK,
 		LLInventoryType::IT_LANDMARK,
 		NOT_WEARABLE, PERM_ALL, 

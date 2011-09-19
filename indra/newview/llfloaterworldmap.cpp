@@ -43,6 +43,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
@@ -52,6 +53,7 @@
 #include "llfirstuse.h"
 #include "llfocusmgr.h"
 #include "lllandmarklist.h"
+#include "llnotificationsutil.h"
 #include "lllineeditor.h"
 #include "llpreviewlandmark.h"
 #include "llregionhandle.h"
@@ -502,17 +504,26 @@ void LLFloaterWorldMap::draw()
 	getDragHandle()->setMouseOpaque(TRUE);
 
 	//RN: snaps to zoom value because interpolation caused jitter in the text rendering
-	if (!mZoomTimer.getStarted() && mCurZoomVal != (F32)childGetValue("zoom slider").asReal())
+	F32 interp = 1.f;
+	if (!mZoomTimer.getStarted())
 	{
-		mZoomTimer.start();
+		mCurZoomValInterpolationStart = mCurZoomVal;
+		if (mCurZoomVal < (F32)childGetValue("zoom slider").asReal())
+		{
+			mZoomTimer.start();
+		}
 	}
-	F32 interp = mZoomTimer.getElapsedTimeF32() / MAP_ZOOM_TIME;
-	if (interp > 1.f)
+	if (mZoomTimer.getStarted())
+	{
+	    interp = mZoomTimer.getElapsedTimeF32() / MAP_ZOOM_TIME;
+	}
+	if (interp >= 1.f)
 	{
 		interp = 1.f;
 		mZoomTimer.stop();
 	}
-	mCurZoomVal = lerp(mCurZoomVal, (F32)childGetValue("zoom slider").asReal(), interp);
+	// Interpolate between mCurZoomValInterpolationStart and "zoom slider".
+	mCurZoomVal = lerp(mCurZoomValInterpolationStart, (F32)childGetValue("zoom slider").asReal(), interp);
 	F32 map_scale = 256.f*pow(2.f, mCurZoomVal);
 	LLWorldMapView::setScale( map_scale );
 
@@ -1331,7 +1342,7 @@ void LLFloaterWorldMap::onCopySLURL(void* data)
 	LLSD args;
 	args["SLURL"] = self->mSLURL;
 
-	LLNotifications::instance().add("CopySLURL", args);
+	LLNotificationsUtil::add("CopySLURL", args);
 }
 
 void LLFloaterWorldMap::onCheckEvents(LLUICtrl*, void* data)
