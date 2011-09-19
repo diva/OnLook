@@ -43,6 +43,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
@@ -52,6 +53,7 @@
 #include "llfirstuse.h"
 #include "llfocusmgr.h"
 #include "lllandmarklist.h"
+#include "llnotificationsutil.h"
 #include "lllineeditor.h"
 #include "llpreviewlandmark.h"
 #include "llregionhandle.h"
@@ -1340,7 +1342,7 @@ void LLFloaterWorldMap::onCopySLURL(void* data)
 	LLSD args;
 	args["SLURL"] = self->mSLURL;
 
-	LLNotifications::instance().add("CopySLURL", args);
+	LLNotificationsUtil::add("CopySLURL", args);
 }
 
 void LLFloaterWorldMap::onCheckEvents(LLUICtrl*, void* data)

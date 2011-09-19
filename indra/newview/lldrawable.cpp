@@ -87,7 +87,7 @@ LLDynamicArrayPtr<LLPointer<LLDrawable> > LLDrawable::sDeadList;
 void LLDrawable::incrementVisible() 
 {
 	sCurVisible++;
-	sCurPixelAngle = (F32) gViewerWindow->getWindowDisplayHeight()/LLViewerCamera::getInstance()->getView();
+	sCurPixelAngle = (F32) gViewerWindow->getWindowHeightRaw()/LLViewerCamera::getInstance()->getView();
 }
 void LLDrawable::init()
 {
@@ -202,16 +202,22 @@ void LLDrawable::cleanupReferences()
 {
 	LLFastTimer t(LLFastTimer::FTM_PIPELINE);
 	
-	std::for_each(mFaces.begin(), mFaces.end(), DeletePointer());
-	mFaces.clear();
+	{
+		//LLFastTimer t(FTM_DELETE_FACES);
+		std::for_each(mFaces.begin(), mFaces.end(), DeletePointer());
+		mFaces.clear();
+	}
 
 	gObjectList.removeDrawable(this);
 	
 	gPipeline.unlinkDrawable(this);
 	
-	// Cleanup references to other objects
-	mVObjp = NULL;
-	mParent = NULL;
+	{
+		//LLFastTimer t(FTM_DEREF_DRAWABLE);
+		// Cleanup references to other objects
+		mVObjp = NULL;
+		mParent = NULL;
+	}
 }
 
 void LLDrawable::cleanupDeadDrawables()

@@ -72,6 +72,8 @@
 #include "llmemorystream.h"
 #include "llmessageconfig.h"
 #include "llmoveview.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llregionhandle.h"
 #include "llsd.h"
 #include "llsdserialize.h"
@@ -424,12 +426,12 @@ bool idle_startup()
 
 		if (LLFeatureManager::getInstance()->isSafe())
 		{
-			LLNotifications::instance().add("DisplaySetToSafe");
+			LLNotificationsUtil::add("DisplaySetToSafe");
 		}
 		else if ((gSavedSettings.getS32("LastFeatureVersion") < LLFeatureManager::getInstance()->getVersion()) &&
 				 (gSavedSettings.getS32("LastFeatureVersion") != 0))
 		{
-			LLNotifications::instance().add("DisplaySetToRecommended");
+			LLNotificationsUtil::add("DisplaySetToRecommended");
 		}
 		else if (!gViewerWindow->getInitAlert().empty())
 		{
@@ -1873,7 +1875,7 @@ bool idle_startup()
 				// Bounce back to the login screen.
 				LLSD args;
 				args["ERROR_MESSAGE"] = emsg.str();
-				LLNotifications::instance().add("ErrorMessage", args, LLSD(), login_alert_done);
+				LLNotificationsUtil::add("ErrorMessage", args, LLSD(), login_alert_done);
 				reset_login();
 				gSavedSettings.setBOOL("AutoLogin", FALSE);
 				show_connect_box = true;
@@ -1893,7 +1895,7 @@ bool idle_startup()
 			// Bounce back to the login screen.
 			LLSD args;
 			args["ERROR_MESSAGE"] = emsg.str();
-			LLNotifications::instance().add("ErrorMessage", args, LLSD(), login_alert_done);
+			LLNotificationsUtil::add("ErrorMessage", args, LLSD(), login_alert_done);
 			reset_login();
 			gSavedSettings.setBOOL("AutoLogin", FALSE);
 			show_connect_box = true;
@@ -1936,9 +1938,7 @@ bool idle_startup()
 
 		// init the shader managers
 		LLPostProcess::initClass();
-		LLWLParamManager::initClass();
 		AscentDayCycleManager::initClass();
-		LLWaterParamManager::initClass();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
 		LLViewerObject::initVOClasses();
@@ -2628,7 +2628,7 @@ bool idle_startup()
 						// Could schedule and delay these for later.
 						const BOOL no_inform_server = FALSE;
 						const BOOL no_deactivate_similar = FALSE;
-						gGestureManager.activateGestureWithAsset(item_id, asset_id,
+						LLGestureMgr::instance().activateGestureWithAsset(item_id, asset_id,
 											 no_inform_server,
 											 no_deactivate_similar);
 						// We need to fetch the inventory items for these gestures
@@ -2657,9 +2657,6 @@ bool idle_startup()
 		gForegroundTime.reset();
 
 		if (gSavedSettings.getBOOL("FetchInventoryOnLogin")
-#ifdef LL_RRINTERFACE_H //MK
-			|| gRRenabled
-#endif //mk
 			)
 		{
 			// Fetch inventory in the background
@@ -2707,7 +2704,7 @@ bool idle_startup()
 					args["TYPE"] = "home";
 					args["HELP"] = "You may want to set a new home location.";
 				}
-				LLNotifications::instance().add("AvatarMoved", args);
+				LLNotificationsUtil::add("AvatarMoved", args);
 			}
 			else
 			{
@@ -2808,7 +2805,7 @@ bool idle_startup()
 			// initial outfit, but if the load hasn't started
 			// already then something is wrong so fall back
 			// to generic outfits. JC
-			LLNotifications::instance().add("WelcomeChooseSex", LLSD(), LLSD(),
+			LLNotificationsUtil::add("WelcomeChooseSex", LLSD(), LLSD(),
 				callback_choose_gender);
 			LLStartUp::setStartupState( STATE_CLEANUP );
 			return TRUE;
@@ -2816,7 +2813,7 @@ bool idle_startup()
 		
 		if (wearables_time > MAX_WEARABLES_TIME)
 		{
-			LLNotifications::instance().add("ClothingLoading");
+			LLNotificationsUtil::add("ClothingLoading");
 			LLViewerStats::getInstance()->incStat(LLViewerStats::ST_WEARABLES_TOO_LONG);
 			LLStartUp::setStartupState( STATE_CLEANUP );
 			return TRUE;
@@ -3104,7 +3101,7 @@ void LLStartUp::deletePasswordFromDisk()
 
 void show_first_run_dialog()
 {
-	LLNotifications::instance().add("FirstRun", LLSD(), LLSD(), first_run_dialog_callback);
+	LLNotificationsUtil::add("FirstRun", LLSD(), LLSD(), first_run_dialog_callback);
 }
 
 bool first_run_dialog_callback(const LLSD& notification, const LLSD& response)
@@ -3391,7 +3388,7 @@ void use_circuit_callback(void**, S32 result)
 		{
 			// Make sure user knows something bad happened. JC
 			LL_WARNS("AppInit") << "Backing up to login screen!" << LL_ENDL;
-			LLNotifications::instance().add("LoginPacketNeverReceived", LLSD(), LLSD(), login_alert_status);
+			LLNotificationsUtil::add("LoginPacketNeverReceived", LLSD(), LLSD(), login_alert_status);
 			reset_login();
 		}
 		else
@@ -3978,33 +3975,33 @@ bool LLStartUp::handleSocksProxy(bool reportOK)
 			case SOCKS_OK:
 				if (reportOK == true)
 				{
-					LLNotifications::instance().add("SOCKS_CONNECT_OK", subs);
+					LLNotificationsUtil::add("SOCKS_CONNECT_OK", subs);
 				}
 				return true;
 				break;
 
 			case SOCKS_CONNECT_ERROR: // TCP Fail
-				LLNotifications::instance().add("SOCKS_CONNECT_ERROR", subs);
+				LLNotificationsUtil::add("SOCKS_CONNECT_ERROR", subs);
 				break;
 
 			case SOCKS_NOT_PERMITTED: // Socks5 server rule set refused connection
-				LLNotifications::instance().add("SOCKS_NOT_PERMITTED", subs);
+				LLNotificationsUtil::add("SOCKS_NOT_PERMITTED", subs);
 				break;
 					
 			case SOCKS_NOT_ACCEPTABLE: // Selected authentication is not acceptable to server
-				LLNotifications::instance().add("SOCKS_NOT_ACCEPTABLE", subs);
+				LLNotificationsUtil::add("SOCKS_NOT_ACCEPTABLE", subs);
 				break;
 
 			case SOCKS_AUTH_FAIL: // Authentication failed
-				LLNotifications::instance().add("SOCKS_AUTH_FAIL", subs);
+				LLNotificationsUtil::add("SOCKS_AUTH_FAIL", subs);
 				break;
 
 			case SOCKS_UDP_FWD_NOT_GRANTED: // UDP forward request failed
-				LLNotifications::instance().add("SOCKS_UDP_FWD_NOT_GRANTED", subs);
+				LLNotificationsUtil::add("SOCKS_UDP_FWD_NOT_GRANTED", subs);
 				break;
 
 			case SOCKS_HOST_CONNECT_FAILED: // Failed to open a TCP channel to the socks server
-				LLNotifications::instance().add("SOCKS_HOST_CONNECT_FAILED", subs);
+				LLNotificationsUtil::add("SOCKS_HOST_CONNECT_FAILED", subs);
 				break;		
 		}
 

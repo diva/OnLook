@@ -78,9 +78,7 @@ LLMultiSliderCtrl::LLMultiSliderCtrl(const std::string& name, const LLRect& rect
 	  mEditor( NULL ),
 	  mTextBox( NULL ),
 	  mTextEnabledColor( LLUI::sColorsGroup->getColor( "LabelTextColor" ) ),
-	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) ),
-	  mSliderMouseUpCallback( NULL ),
-	  mSliderMouseDownCallback( NULL )
+	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) )
 {
 	S32 top = getRect().getHeight();
 	S32 bottom = 0;
@@ -421,37 +419,14 @@ void LLMultiSliderCtrl::setPrecision(S32 precision)
 	updateText();
 }
 
-void LLMultiSliderCtrl::setSliderMouseDownCallback( void (*slider_mousedown_callback)(LLUICtrl* caller, void* userdata) )
+boost::signals2::connection LLMultiSliderCtrl::setSliderMouseDownCallback( const commit_signal_t::slot_type& cb )
 {
-	mSliderMouseDownCallback = slider_mousedown_callback;
-	mMultiSlider->setMouseDownCallback( LLMultiSliderCtrl::onSliderMouseDown );
+	return mMultiSlider->setMouseDownCallback( cb );
 }
 
-// static
-void LLMultiSliderCtrl::onSliderMouseDown(LLUICtrl* caller, void* userdata)
+boost::signals2::connection LLMultiSliderCtrl::setSliderMouseUpCallback( const commit_signal_t::slot_type& cb )
 {
-	LLMultiSliderCtrl* self = (LLMultiSliderCtrl*) userdata;
-	if( self->mSliderMouseDownCallback )
-	{
-		self->mSliderMouseDownCallback( self, self->mCallbackUserData );
-	}
-}
-
-
-void LLMultiSliderCtrl::setSliderMouseUpCallback( void (*slider_mouseup_callback)(LLUICtrl* caller, void* userdata) )
-{
-	mSliderMouseUpCallback = slider_mouseup_callback;
-	mMultiSlider->setMouseUpCallback( LLMultiSliderCtrl::onSliderMouseUp );
-}
-
-// static
-void LLMultiSliderCtrl::onSliderMouseUp(LLUICtrl* caller, void* userdata)
-{
-	LLMultiSliderCtrl* self = (LLMultiSliderCtrl*) userdata;
-	if( self->mSliderMouseUpCallback )
-	{
-		self->mSliderMouseUpCallback( self, self->mCallbackUserData );
-	}
+	return mMultiSlider->setMouseUpCallback( cb );
 }
 
 void LLMultiSliderCtrl::onTabInto()

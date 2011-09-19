@@ -61,6 +61,7 @@
 #include "llviewerstats.h"
 #include "llviewercamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llviewermenufile.h"	// upload_new_resource()
 #include "llfloaterpostcard.h"
 #include "llcheckboxctrl.h"
@@ -76,6 +77,7 @@
 #include "llimagepng.h"
 #include "llimagebmp.h"
 #include "llimagej2c.h"
+#include "llnotificationsutil.h"
 #include "llvfile.h"
 #include "llvfs.h"
 
@@ -996,7 +998,7 @@ void LLSnapshotLivePreview::saveTexture()
 	}
 	else
 	{
-		LLNotifications::instance().add("ErrorEncodingSnapshot");
+		LLNotificationsUtil::add("ErrorEncodingSnapshot");
 		llwarns << "Error encoding snapshot" << llendl;
 	}
 
@@ -1135,8 +1137,6 @@ LLViewerWindow::ESnapshotType LLFloaterSnapshot::Impl::getLayerType(LLFloaterSna
 		type = LLViewerWindow::SNAPSHOT_TYPE_COLOR;
 	else if (id == "depth")
 		type = LLViewerWindow::SNAPSHOT_TYPE_DEPTH;
-	else if (id == "objects")
-		type = LLViewerWindow::SNAPSHOT_TYPE_OBJECT_ID;
 	return type;
 }
 

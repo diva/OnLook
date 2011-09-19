@@ -45,6 +45,7 @@
 #include "llfontgl.h"
 #include "llframetimer.h"
 #include "llinventory.h"
+#include "llinventorydefines.h"
 #include "llmaterialtable.h"
 #include "llmutelist.h"
 #include "llnamevalue.h"
@@ -78,6 +79,7 @@
 #include "llviewerparceloverlay.h"
 #include "llviewerpartsource.h"
 #include "llviewerregion.h"
+#include "llviewerstats.h"
 #include "llviewertextureanim.h"
 #include "llviewerwindow.h" // For getSpinAxis
 #include "llvoavatar.h"
@@ -106,8 +108,8 @@
 
 //#define DEBUG_UPDATE_TYPE
 
-BOOL gVelocityInterpolate = TRUE;
-BOOL gPingInterpolate = TRUE; 
+BOOL		LLViewerObject::sVelocityInterpolate = TRUE;
+BOOL		LLViewerObject::sPingInterpolate = TRUE; 
 
 U32			LLViewerObject::sNumZombieObjects = 0;
 S32			LLViewerObject::sNumObjects = 0;
@@ -117,6 +119,10 @@ LLColor4	LLViewerObject::sNoEditSelectColor(	1.0f, 0.f, 0.f, 0.3f);	// Can't edi
 S32			LLViewerObject::sAxisArrowLength(50);
 BOOL		LLViewerObject::sPulseEnabled(FALSE);
 BOOL		LLViewerObject::sUseSharedDrawables(FALSE); // TRUE
+
+// sMaxUpdateInterpolationTime must be greater than sPhaseOutUpdateInterpolationTime
+F64			LLViewerObject::sMaxUpdateInterpolationTime = 3.0;		// For motion interpolation: after X seconds with no updates, don't predict object motion
+F64			LLViewerObject::sPhaseOutUpdateInterpolationTime = 2.0;	// For motion interpolation: after Y seconds with no updates, taper off motion prediction
 
 // static
 LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
@@ -1899,9 +1905,9 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 	}
 
-	new_rot.normalize();
+	new_rot.normQuat();
 
-	if (gPingInterpolate)
+	if (sPingInterpolate)
 	{ 
 		LLCircuitData *cdp = gMessageSystem->mCircuitInfo.findCircuit(mesgsys->getSender());
 		if (cdp)
@@ -1973,6 +1979,12 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 			LLVOAvatar *avatar = (LLVOAvatar*)mParent;
 
 			avatar->clampAttachmentPositions();
+		}
+		
+		// If we're snapping the position by more than 0.5m, update LLViewerStats::mAgentPositionSnaps
+		if ( isAvatar() && gAgent.getAvatarObject() == this && (mag_sqr > 0.25f) )
+		{
+			LLViewerStats::getInstance()->mAgentPositionSnaps.push( diff.length() );
 		}
 	}
 
@@ -2064,7 +2076,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 
 //	U32 ping_delay = mesgsys->mCircuitInfo.getPingDelay();
 	mLastInterpUpdateSecs = LLFrameTimer::getElapsedSeconds();
-	mLastMessageUpdateSecs = LLFrameTimer::getElapsedSeconds();
+	mLastMessageUpdateSecs = mLastInterpUpdateSecs;
 	if (mDrawable.notNull())
 	{
 		// Don't clear invisibility flag on update if still orphaned!
@@ -2101,7 +2113,7 @@ BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 
 	// CRO - don't velocity interp linked objects!
 	// Leviathan - but DO velocity interp joints
-	if (!mStatic && gVelocityInterpolate && !isSelected())
+	if (!mStatic && sVelocityInterpolate && !isSelected())
 	{
 		// calculate dt from last update
 		F32 dt_raw = (F32)(time - mLastInterpUpdateSecs);
@@ -2191,46 +2203,168 @@ BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 			return TRUE;
 		}
 		else
-		{
-			// linear motion
-			// PHYSICS_TIMESTEP is used below to correct for the fact that the velocity in object
-			// updates represents the average velocity of the last timestep, rather than the final velocity.
-			// the time dilation above should guarantee that dt is never less than PHYSICS_TIMESTEP, theoretically
-			// 
-			// There is a problem here if dt is negative. . .
-
-			// *TODO: should also wrap linear accel/velocity in check
-			// to see if object is selected, instead of explicitly
-			// zeroing it out	
-			LLVector3 accel = getAcceleration();
-			LLVector3 vel 	= getVelocity();
-			
-			if (!(accel.isExactlyZero() && vel.isExactlyZero()))
-			{
-				LLVector3 pos 	= (vel + (0.5f * (dt-PHYSICS_TIMESTEP)) * accel) * dt;	
-			
-				// region local  
-				setPositionRegion(pos + getPositionRegion());
-				setVelocity(vel + accel*dt);	
-				
-				// for objects that are spinning but not translating, make sure to flag them as having moved
-				setChanged(MOVED | SILHOUETTE);
-			}
-			
-			mLastInterpUpdateSecs = time;
+		{	// Move object based on it's velocity and rotation
+			interpolateLinearMotion(time, dt);
 		}
-	}
-
-	if (gNoRender)
-	{
-		// Skip drawable stuff if not rendering.
-		return TRUE;
 	}
 
 	updateDrawable(FALSE);
 
 	return TRUE;
 }
+
+
+// Move an object due to idle-time viewer side updates by iterpolating motion
+void LLViewerObject::interpolateLinearMotion(const F64 & time, const F32 & dt)
+{
+	// linear motion
+	// PHYSICS_TIMESTEP is used below to correct for the fact that the velocity in object
+	// updates represents the average velocity of the last timestep, rather than the final velocity.
+	// the time dilation above should guarantee that dt is never less than PHYSICS_TIMESTEP, theoretically
+	// 
+	// *TODO: should also wrap linear accel/velocity in check
+	// to see if object is selected, instead of explicitly
+	// zeroing it out	
+
+	F64 time_since_last_update = time - mLastMessageUpdateSecs;
+	if (time_since_last_update <= 0.0 || dt <= 0.f)
+	{
+		return;
+	}
+
+	LLVector3 accel = getAcceleration();
+	LLVector3 vel 	= getVelocity();
+	
+	if (sMaxUpdateInterpolationTime <= 0.0)
+	{	// Old code path ... unbounded, simple interpolation
+		if (!(accel.isExactlyZero() && vel.isExactlyZero()))
+		{
+			LLVector3 pos   = (vel + (0.5f * (dt-PHYSICS_TIMESTEP)) * accel) * dt;  
+		
+			// region local  
+			setPositionRegion(pos + getPositionRegion());
+			setVelocity(vel + accel*dt);	
+			
+			// for objects that are spinning but not translating, make sure to flag them as having moved
+			setChanged(MOVED | SILHOUETTE);
+		}
+	}
+	else if (!accel.isExactlyZero() || !vel.isExactlyZero())		// object is moving
+	{	// Object is moving, and hasn't been too long since we got an update from the server
+		
+		// Calculate predicted position and velocity
+		LLVector3 new_pos = (vel + (0.5f * (dt-PHYSICS_TIMESTEP)) * accel) * dt;	
+		LLVector3 new_v = accel * dt;
+
+		if (time_since_last_update > sPhaseOutUpdateInterpolationTime &&
+			sPhaseOutUpdateInterpolationTime > 0.0)
+		{	// Haven't seen a viewer update in a while, check to see if the ciruit is still active
+			if (mRegionp)
+			{	// The simulator will NOT send updates if the object continues normally on the path
+				// predicted by the velocity and the acceleration (often gravity) sent to the viewer
+				// So check to see if the circuit is blocked, which means the sim is likely in a long lag
+				LLCircuitData *cdp = gMessageSystem->mCircuitInfo.findCircuit( mRegionp->getHost() );
+				if (cdp)
+				{
+					// Find out how many seconds since last packet arrived on the circuit
+					F64 time_since_last_packet = LLMessageSystem::getMessageTimeSeconds() - cdp->getLastPacketInTime();
+
+					if (!cdp->isAlive() ||		// Circuit is dead or blocked
+						 cdp->isBlocked() ||	// or doesn't seem to be getting any packets
+						 (time_since_last_packet > sPhaseOutUpdateInterpolationTime))
+					{
+						// Start to reduce motion interpolation since we haven't seen a server update in a while
+						F64 time_since_last_interpolation = time - mLastInterpUpdateSecs;
+						F64 phase_out = 1.0;
+						if (time_since_last_update > sMaxUpdateInterpolationTime)
+						{	// Past the time limit, so stop the object
+							phase_out = 0.0;
+							//llinfos << "Motion phase out to zero" << llendl;
+
+							// Kill angular motion as well.  Note - not adding this due to paranoia
+							// about stopping rotation for llTargetOmega objects and not having it restart
+							// setAngularVelocity(LLVector3::zero);
+						}
+						else if (mLastInterpUpdateSecs - mLastMessageUpdateSecs > sPhaseOutUpdateInterpolationTime)
+						{	// Last update was already phased out a bit
+							phase_out = (sMaxUpdateInterpolationTime - time_since_last_update) / 
+										(sMaxUpdateInterpolationTime - time_since_last_interpolation);
+							//llinfos << "Continuing motion phase out of " << (F32) phase_out << llendl;
+						}
+						else
+						{	// Phase out from full value
+							phase_out = (sMaxUpdateInterpolationTime - time_since_last_update) / 
+										(sMaxUpdateInterpolationTime - sPhaseOutUpdateInterpolationTime);
+							//llinfos << "Starting motion phase out of " << (F32) phase_out << llendl;
+						}
+						phase_out = llclamp(phase_out, 0.0, 1.0);
+
+						new_pos = new_pos * ((F32) phase_out);
+						new_v = new_v * ((F32) phase_out);
+					}
+				}
+			}
+		}
+
+		new_pos = new_pos + getPositionRegion();
+		new_v = new_v + vel;
+
+
+		// Clamp interpolated position to minimum underground and maximum region height
+		LLVector3d new_pos_global = mRegionp->getPosGlobalFromRegion(new_pos);
+		F32 min_height;
+		if (isAvatar())
+		{	// Make a better guess about AVs not going underground
+			min_height = LLWorld::getInstance()->resolveLandHeightGlobal(new_pos_global);
+			min_height += (0.5f * getScale().mV[VZ]);
+		}
+		else
+		{	// This will put the object underground, but we can't tell if it will stop 
+			// at ground level or not
+			min_height = LLWorld::getInstance()->getMinAllowedZ(this, new_pos_global);
+		}
+
+		new_pos.mV[VZ] = llmax(min_height, new_pos.mV[VZ]);
+		new_pos.mV[VZ] = llmin(LLWorld::getInstance()->getRegionMaxHeight(), new_pos.mV[VZ]);
+
+		// Check to see if it's going off the region
+		LLVector3 temp(new_pos);
+		if (temp.clamp(0.f, mRegionp->getWidth()))
+		{	// Going off this region, so see if we might end up on another region
+			LLVector3d old_pos_global = mRegionp->getPosGlobalFromRegion(getPositionRegion());
+			new_pos_global = mRegionp->getPosGlobalFromRegion(new_pos);		// Re-fetch in case it got clipped above
+
+			// Clip the positions to known regions
+			LLVector3d clip_pos_global = LLWorld::getInstance()->clipToVisibleRegions(old_pos_global, new_pos_global);
+			if (clip_pos_global != new_pos_global)
+			{	// Was clipped, so this means we hit a edge where there is no region to enter
+				
+				//llinfos << "Hit empty region edge, clipped predicted position to " << mRegionp->getPosRegionFromGlobal(clip_pos_global)
+				//	<< " from " << new_pos << llendl;
+				new_pos = mRegionp->getPosRegionFromGlobal(clip_pos_global);
+				
+				// Stop motion and get server update for bouncing on the edge
+				new_v.clear();
+				setAcceleration(LLVector3::zero);
+			}
+			else
+			{	// Let predicted movement cross into another region
+				//llinfos << "Predicting region crossing to " << new_pos << llendl;
+			}
+		}
+
+		// Set new position and velocity
+		setPositionRegion(new_pos);
+		setVelocity(new_v);	
+		
+		// for objects that are spinning but not translating, make sure to flag them as having moved
+		setChanged(MOVED | SILHOUETTE);
+	}		
+
+	// Update the last time we did anything
+	mLastInterpUpdateSecs = time;
+}
+
 
 
 BOOL LLViewerObject::setData(const U8 *datap, const U32 data_size)
@@ -2930,6 +3064,8 @@ void LLViewerObject::setScale(const LLVector3 &scale, BOOL damped)
 		{
 			if (!mOnMap)
 			{
+				llassert_always(LLWorld::getInstance()->getRegionFromHandle(getRegion()->getHandle()));
+
 				gObjectList.addToMap(this);
 				mOnMap = TRUE;
 			}
@@ -3031,12 +3167,12 @@ F32 LLViewerObject::getLinksetPhysicsCost()
 	return mLinksetPhysicsCost;
 }
 
-F32 LLViewerObject::getStreamingCost(S32* bytes, S32* visible_bytes)
+F32 LLViewerObject::getStreamingCost(S32* bytes, S32* visible_bytes, F32* unscaled_value) const
 {
 	return 0.f;
 }
 
-U32 LLViewerObject::getTriangleCount()
+U32 LLViewerObject::getTriangleCount() const
 {
 	return 0;
 }

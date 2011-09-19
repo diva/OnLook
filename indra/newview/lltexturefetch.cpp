@@ -308,9 +308,9 @@ public:
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 	{
-		static LLCachedControl<bool> log_to_viewer_log("LogTextureDownloadsToViewerLog",false);
-		static LLCachedControl<bool> log_to_sim("LogTextureDownloadsToSimulator",false);
-		static bool log_texture_traffic = false;
+		static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
+		static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
+		static LLCachedControl<bool> log_texture_traffic(gSavedSettings,"LogTextureNetworkTraffic") ;
 
 		if (log_to_viewer_log || log_to_sim)
 		{
@@ -661,7 +661,6 @@ public:
  * Corresponds to LLTextureFetch::commandSendMetrics()
  */
 
-#if HTTP_METRICS
 class TFReqSendMetrics : public LLTextureFetch::TFRequest
 {
 public:
@@ -705,7 +704,6 @@ public:
 	const LLUUID mAgentID;
 	LLViewerAssetStats * mMainStats;
 };
-#endif
 
 /*
  * Examines the merged viewer metrics report and if found to be too long,
@@ -1131,7 +1129,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 
 	if (mState == LOAD_FROM_NETWORK)
 	{
-		static const LLCachedControl<bool> use_http("ImagePipelineUseHTTP", false);
+		static LLCachedControl<bool> use_http(gSavedSettings,"ImagePipelineUseHTTP");
 
 // 		if (mHost != LLHost::invalid) use_http = false;
 		if (use_http && mCanUseHTTP && mUrl.empty())	// get http url.
@@ -1486,7 +1484,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 	
 	if (mState == DECODE_IMAGE)
 	{
-		static LLCachedControl<bool> textures_decode_disabled("TextureDecodeDisabled", false);
+		static LLCachedControl<bool> textures_decode_disabled(gSavedSettings,"TextureDecodeDisabled");
 		if(textures_decode_disabled)
 		{
 			// for debug use, don't decode
@@ -2360,12 +2358,13 @@ void LLTextureFetch::commonUpdate()
 //virtual
 S32 LLTextureFetch::update(U32 max_time_ms)
 {
+	static LLCachedControl<F32> band_width(gSavedSettings,"ThrottleBandwidthKBPS");
+
 	{
 		mNetworkQueueMutex.lock() ;
-		static const LLCachedControl<F32> max_bandwidth("ThrottleBandwidthKBPS", 2000);
-		mMaxBandwidth = max_bandwidth;
-	
-		gTextureList.sTextureBits += mHTTPTextureBits;
+		mMaxBandwidth = band_width ;
+
+		gTextureList.sTextureBits += mHTTPTextureBits ;
 		mHTTPTextureBits = 0 ;
 
 		mNetworkQueueMutex.unlock() ;
@@ -2567,8 +2566,8 @@ void LLTextureFetch::sendRequestListToSimulators()
 // 				llinfos << "IMAGE REQUEST: " << req->mID << " Discard: " << req->mDesiredDiscard
 // 						<< " Packet: " << packet << " Priority: " << req->mImagePriority << llendl;
 
-				static LLCachedControl<bool> log_to_viewer_log("LogTextureDownloadsToViewerLog",false);
-				static LLCachedControl<bool> log_to_sim("LogTextureDownloadsToSimulator",false);
+				static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
+				static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
 				if (log_to_viewer_log || log_to_sim)
 				{
 					mTextureInfo.setRequestStartTime(req->mID, LLTimer::getTotalTime());
@@ -2789,8 +2788,8 @@ bool LLTextureFetch::receiveImagePacket(const LLHost& host, const LLUUID& id, U1
 
 	if(packet_num >= (worker->mTotalPackets - 1))
 	{
-		static LLCachedControl<bool> log_to_viewer_log("LogTextureDownloadsToViewerLog",false);
-		static LLCachedControl<bool> log_to_sim("LogTextureDownloadsToSimulator",false);
+		static LLCachedControl<bool> log_to_viewer_log(gSavedSettings,"LogTextureDownloadsToViewerLog");
+		static LLCachedControl<bool> log_to_sim(gSavedSettings,"LogTextureDownloadsToSimulator");
 
 		if (log_to_viewer_log || log_to_sim)
 		{

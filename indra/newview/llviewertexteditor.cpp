@@ -36,6 +36,7 @@
 #include "llaudioengine.h"
 #include "llagent.h"
 #include "llinventory.h"
+#include "llinventorydefines.h"
 #include "llinventorymodel.h"
 #include "llinventoryview.h"
 #include "llinventorybridge.h"	// for landmark prefix string

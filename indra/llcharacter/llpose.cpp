@@ -163,8 +163,6 @@ void LLPose::setWeight(F32 weight)
 		// there was a crash here
 		// </edit>
 		llassert_always(iter->second.notNull());
-		if(!iter->second) //uhoh...
-			continue;
 		iter->second->setWeight(weight);
 	}
 	mWeight = weight;

@@ -400,6 +400,11 @@ void LLSpatialGroup::clearDrawMap()
 	mDrawMap.clear();
 }
 
+BOOL LLSpatialGroup::isHUDGroup() 
+{
+	return mSpatialPartition && mSpatialPartition->isHUDPartition() ; 
+}
+
 BOOL LLSpatialGroup::isRecentlyVisible() const
 {
 	return (LLDrawable::getCurrentFrame() - mVisible[LLViewerCamera::sCurCameraID]) < LLDrawable::getMinVisFrameRange() ;
@@ -1530,7 +1535,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 					LLGLEnable clamp(use_depth_clamp ? GL_DEPTH_CLAMP : 0);	
 
 #if !LL_DARWIN					
-					U32 mode = gGLManager.mHasOcclusionQuery2 ? /*GL_ANY_SAMPLES_PASSED*/0x8C2F : GL_SAMPLES_PASSED_ARB;
+					U32 mode = gGLManager.mHasOcclusionQuery2 ? GL_ANY_SAMPLES_PASSED : GL_SAMPLES_PASSED_ARB;
 #else
 					U32 mode = GL_SAMPLES_PASSED_ARB;
 #endif
@@ -3094,6 +3099,29 @@ public:
 			{
 				renderAgentTarget(avatar);
 			}
+			
+			if (gDebugGL)
+			{
+				for (U32 i = 0; i < (U32)drawable->getNumFaces(); ++i)
+				{
+					LLFace* facep = drawable->getFace(i);
+					U8 index = facep->getTextureIndex();
+					if (facep->mDrawInfo)
+					{
+						if (index < 255)
+						{
+							if (facep->mDrawInfo->mTextureList.size() <= index)
+							{
+								llerrs << "Face texture index out of bounds." << llendl;
+							}
+							else if (facep->mDrawInfo->mTextureList[index] != facep->getTexture())
+							{
+								llerrs << "Face texture index incorrect." << llendl;
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
@@ -3292,6 +3320,10 @@ void LLSpatialGroup::drawObjectBox(LLColor4 col)
 	drawBox(mObjectBounds[0], size);
 }
 
+bool LLSpatialPartition::isHUDPartition() 
+{ 
+	return mPartitionType == LLViewerRegion::PARTITION_HUD ;
+} 
 
 BOOL LLSpatialPartition::isVisible(const LLVector3& v)
 {

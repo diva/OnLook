@@ -41,7 +41,7 @@
 #include "llviewerinventory.h"
 //#include "llfloaterchat.h"
 #include "llviewerstats.h"
-#include "llnotify.h"
+#include "llnotificationsutil.h"
 
 // Globals
 LLWearableList gWearableList; // Globally constructed; be careful that there's no dependency with gAgent.
@@ -191,16 +191,16 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 		args["TYPE"] = LLAssetType::lookupHumanReadable(data->mAssetType);
 		if (isNewWearable)
 		{
-			LLNotifications::instance().add("InvalidWearable");
+			LLNotificationsUtil::add("InvalidWearable");
 		}
 		else if (data->mName.empty())
 		{
-			LLNotifications::instance().add("FailedToFindWearableUnnamed", args);
+			LLNotificationsUtil::add("FailedToFindWearableUnnamed", args);
 		}
 		else
 		{
 			args["DESC"] = data->mName;
-			LLNotifications::instance().add("FailedToFindWearable", args);
+			LLNotificationsUtil::add("FailedToFindWearable", args);
 		}
 	}
 	// Always call callback; wearable will be NULL if we failed

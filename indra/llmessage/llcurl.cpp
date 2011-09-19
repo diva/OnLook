@@ -771,6 +771,8 @@ void LLCurl::Multi::run()
 void LLCurl::Multi::doPerform()
 {
 	S32 q = 0;
+	if (mThreaded)
+		mSignal->unlock();
 	for (S32 call_count = 0;
 			call_count < MULTI_PERFORM_CALL_REPEAT;
 			call_count += 1)
@@ -783,6 +785,8 @@ void LLCurl::Multi::doPerform()
 		}
 	
 	}
+	if (mThreaded)
+		mSignal->lock();
 	mQueued = q;
 	mPerformState = PERFORM_STATE_COMPLETED;
 }

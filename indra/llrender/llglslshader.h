@@ -53,6 +53,9 @@ public:
 #endif //MESH_ENABLED
 	bool hasAtmospherics;
 	bool hasGamma;
+	S32 mIndexedTextureChannels;
+	bool disableTextureIndex;
+	bool hasAlphaMask;
 
 	// char numLights;
 	
@@ -71,6 +74,10 @@ public:
 	};
 	
 	LLGLSLShader(S32 shader_class);
+
+	static GLhandleARB sCurBoundShader;
+	static LLGLSLShader* sCurBoundShaderPtr;
+	static bool sNoFixedFunction;
 
 	void unload();
 	BOOL createShader(std::vector<std::string> * attributes,
@@ -107,6 +114,8 @@ public:
 	void uniformMatrix2fv(const std::string& uniform, U32 count, GLboolean transpose, const GLfloat *v);
 	void uniformMatrix3fv(const std::string& uniform, U32 count, GLboolean transpose, const GLfloat *v);
 	void uniformMatrix4fv(const std::string& uniform, U32 count, GLboolean transpose, const GLfloat *v);
+
+	void setAlphaRange(F32 minimum, F32 maximum);
 
 	void vertexAttrib4f(U32 index, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
 	void vertexAttrib4fv(U32 index, GLfloat* v);
@@ -145,5 +154,10 @@ public:
 	std::vector< std::pair< std::string, GLenum > > mShaderFiles;
 	std::string mName;
 };
+
+//UI shader (declared here so llui_libtest will link properly)
+extern LLGLSLShader			gUIProgram;
+//output vec4(color.rgb,color.a*tex0[tc0].a)
+extern LLGLSLShader			gSolidColorProgram;
 
 #endif

@@ -51,8 +51,24 @@ LLDirIterator::Impl::Impl(const std::string &dirname, const std::string &mask)
 {
 	fs::path dir_path(dirname);
 
-	// Check if path exists.
-	if (!fs::exists(dir_path))
+	bool is_dir = false;
+
+	// Check if path is a directory.
+	try
+	{
+		is_dir = fs::is_directory(dir_path);
+	}
+#if BOOST_FILESYSTEM_VERSION >= 3
+	catch (fs::filesystem_error& e)
+#else
+	catch (fs::basic_filesystem_error<fs::path>& e)
+#endif
+	{
+		llwarns << e.what() << llendl;
+		return;
+	}
+
+	if (!is_dir)
 	{
 		llwarns << "Invalid path: \"" << dir_path.string() << "\"" << llendl;
 		return;

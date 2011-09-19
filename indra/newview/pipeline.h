@@ -91,8 +91,11 @@ public:
 	void resetVertexBuffers();
 	void resizeScreenTexture();
 	void releaseGLBuffers();
+	void releaseScreenBuffers();
 	void createGLBuffers();
+
 	void allocateScreenBuffer(U32 resX, U32 resY);
+	bool allocateScreenBuffer(U32 resX, U32 resY, U32 samples);
 
 	void resetVertexBuffers(LLDrawable* drawable);
 	void setUseVBO(BOOL use_vbo);
@@ -237,7 +240,6 @@ public:
 	void renderHighlights();
 	void renderDebug();
 
-	void renderForSelect(std::set<LLViewerObject*>& objects, BOOL render_transparent, const LLRect& screen_rect);
 	void rebuildPools(); // Rebuild pools
 
 	void findReferences(LLDrawable *drawablep);	// Find the lists which have references to this object
@@ -441,7 +443,6 @@ public:
 	S32						 mMeanBatchSize;
 	S32						 mTrianglesDrawn;
 	S32						 mNumVisibleNodes;
-	LLStat                   mTrianglesDrawnStat;
 	S32						 mVerticesRelit;
 
 	S32						 mLightingChanges;
@@ -680,7 +681,6 @@ void render_bbox(const LLVector3 &min, const LLVector3 &max);
 void render_hud_elements();
 
 extern LLPipeline gPipeline;
-extern BOOL gRenderForSelect;
 extern BOOL gDebugPipeline;
 extern const LLMatrix4* gGLLastMatrix;
 

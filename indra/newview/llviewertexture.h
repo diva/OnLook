@@ -338,7 +338,6 @@ public:
 	static BOOL sFreezeImageScalingDown ;//do not scale down image res if set.
 	static F32  sCurrentTime ;
 	//static BOOL sUseTextureAtlas ;
-	static BOOL sDontLoadVolumeTextures ;
 
 	static LLPointer<LLViewerTexture> sNullImagep; // Null texture for non-textured objects.
 };
@@ -476,7 +475,7 @@ public:
 	S32         getCachedRawImageLevel() const {return mCachedRawDiscardLevel;}
 	BOOL        isCachedRawImageReady() const {return mCachedRawImageReady ;}
 	BOOL        isRawImageValid()const { return mIsRawImageValid ; }	
-	void        forceToSaveRawImage(S32 desired_discard = 0) ;
+	void        forceToSaveRawImage(S32 desired_discard = 0, F32 kept_time = 0.f) ;
 	/*virtual*/ void setCachedRawImage(S32 discard_level, LLImageRaw* imageraw) ;
 	void        destroySavedRawImage() ;
 	LLImageRaw* getSavedRawImage() ;
@@ -562,6 +561,7 @@ protected:
 	S32 mSavedRawDiscardLevel;
 	S32 mDesiredSavedRawDiscardLevel;
 	F32 mLastReferencedSavedRawImageTime ;
+	F32 mKeptSavedRawImageTime ;
 
 	//a small version of the copy of the raw image (<= 64 * 64)
 	LLPointer<LLImageRaw> mCachedRawImage;

@@ -64,6 +64,12 @@ protected:
 	virtual void releaseName(GLuint name);
 };
 
+class LLGLFence
+{
+public:
+	virtual void placeFence() = 0;
+	virtual void wait() = 0;
+};
 
 //============================================================================
 // base class
@@ -127,6 +133,9 @@ public:
 		TYPE_CLOTHWEIGHT,
 		TYPE_MAX,
 		TYPE_INDEX,
+		
+		//no actual additional data, but indicates position.w is texture index
+		TYPE_TEXTURE_INDEX,
 	};
 	enum {
 		MAP_VERTEX = (1<<TYPE_VERTEX),
@@ -141,6 +150,7 @@ public:
 		MAP_WEIGHT = (1<<TYPE_WEIGHT),
 		MAP_WEIGHT4 = (1<<TYPE_WEIGHT4),
 		MAP_CLOTHWEIGHT = (1<<TYPE_CLOTHWEIGHT),
+		MAP_TEXTURE_INDEX = (1<<TYPE_TEXTURE_INDEX),
 	};
 	
 protected:
@@ -250,6 +260,12 @@ protected:
 	BOOL	mResized;		// if TRUE, client buffer has been resized and GL buffer has not
 	BOOL	mDynamicSize;	// if TRUE, buffer has been resized at least once (and should be padded)
 	S32		mOffsets[TYPE_MAX];
+
+	mutable LLGLFence* mFence;
+
+	void placeFence() const;
+	void waitFence() const;
+
 
 public:
 	static S32 sCount;

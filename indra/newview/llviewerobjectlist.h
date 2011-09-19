@@ -135,9 +135,7 @@ public:
 	void updateAvatarVisibility();
 
 	// Selection related stuff
-	void renderObjectsForSelect(LLCamera &camera, const LLRect& screen_rect, BOOL pick_parcel_wall = FALSE, BOOL render_transparent = TRUE);
 	void generatePickList(LLCamera &camera);
-	void renderPickList(const LLRect& screen_rect, BOOL pick_parcel_wall, BOOL render_transparent);
 
 	LLViewerObject *getSelectedObject(const U32 object_id);
 
@@ -175,17 +173,6 @@ public:
 
 
 	U32	mCurBin; // Current bin we're working on...
-
-	//////////////////////
-	//
-	// Statistics data
-	//
-	//
-	LLStat mNumObjectsStat;
-	LLStat mNumActiveObjectsStat;
-	LLStat mNumNewObjectsStat;
-	LLStat mNumSizeCulledStat;
-	LLStat mNumVisCulledStat;
 
 	S32 mNumNewObjects;
 

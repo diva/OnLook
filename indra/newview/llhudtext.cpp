@@ -239,15 +239,6 @@ void LLHUDText::render()
 	}
 }
 
-void LLHUDText::renderForSelect()
-{
-	if (!mOnHUDAttachment)
-	{
-		LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
-		renderText(TRUE);
-	}
-}
-
 void LLHUDText::renderText(BOOL for_select)
 {
 	if (!mVisible || mHidden)

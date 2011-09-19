@@ -46,6 +46,7 @@
 #include "llregionhandle.h"
 #include "llsurface.h"
 #include "llviewercamera.h"
+#include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llviewernetwork.h"
 #include "llviewerobjectlist.h"
@@ -441,9 +442,9 @@ BOOL LLWorld::positionRegionValidGlobal(const LLVector3d &pos_global)
 
 
 // Allow objects to go up to their radius underground.
-F32 LLWorld::getMinAllowedZ(LLViewerObject* object)
+F32 LLWorld::getMinAllowedZ(LLViewerObject* object, const LLVector3d &global_pos)
 {
-	F32 land_height = resolveLandHeightGlobal(object->getPositionGlobal());
+	F32 land_height = resolveLandHeightGlobal(global_pos);
 	F32 radius = 0.5f * object->getScale().length();
 	return land_height - radius;
 }
@@ -1425,6 +1426,8 @@ static LLVector3d unpackLocalToGlobalPosition(U32 compact_local, const LLVector3
 
 void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d>* positions, const LLVector3d& relative_to, F32 radius) const
 {
+	F32 radius_squared = radius * radius;
+	
 	if(avatar_ids != NULL)
 	{
 		avatar_ids->clear();
@@ -1433,6 +1436,33 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 	{
 		positions->clear();
 	}
+	// get the list of avatars from the character list first, so distances are correct
+	// when agent is above 1020m and other avatars are nearby
+	for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
+		iter != LLCharacter::sInstances.end(); ++iter)
+	{
+		LLVOAvatar* pVOAvatar = (LLVOAvatar*) *iter;
+		if(!pVOAvatar->isDead() && !pVOAvatar->isSelf())
+		{
+			LLUUID uuid = pVOAvatar->getID();
+			if(!uuid.isNull())
+			{
+				LLVector3d pos_global = pVOAvatar->getPositionGlobal();
+				if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
+				{
+					if(positions != NULL)
+					{
+						positions->push_back(pos_global);
+					}
+					if(avatar_ids !=NULL)
+					{
+						avatar_ids->push_back(uuid);
+					}
+				}
+			}
+		}
+	}
+	// region avatars added for situations where radius is greater than RenderFarClip
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
 		iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 	{
@@ -1442,50 +1472,16 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 		for (S32 i = 0; i < count; i++)
 		{
 			LLVector3d pos_global = unpackLocalToGlobalPosition(regionp->mMapAvatars.get(i), origin_global);
-			if(dist_vec(pos_global, relative_to) <= radius)
+			if(dist_vec_squared(pos_global, relative_to) <= radius_squared)
 			{
-				if(positions != NULL)
-				{
-					positions->push_back(pos_global);
-				}
-				if(avatar_ids != NULL)
-				{
-					avatar_ids->push_back(regionp->mMapAvatarIDs.get(i));
-				}
-			}
-		}
-	}
-	// retrieve the list of close avatars from viewer objects as well
-	// for when we are above 1000m, only do this when we are retrieving
-	// uuid's too as there could be duplicates
-	if(avatar_ids != NULL)
-	{
-		for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
-			iter != LLCharacter::sInstances.end(); ++iter)
-		{
-			LLVOAvatar* pVOAvatar = (LLVOAvatar*) *iter;
-			if(pVOAvatar->isDead() || pVOAvatar->isSelf())
-				continue;
-			LLUUID uuid = pVOAvatar->getID();
-			if(uuid.isNull())
-				continue;
-			LLVector3d pos_global = pVOAvatar->getPositionGlobal();
-			if(dist_vec(pos_global, relative_to) <= radius)
-			{
-				bool found = false;
-				uuid_vec_t::iterator sel_iter = avatar_ids->begin();
-				for (; sel_iter != avatar_ids->end(); sel_iter++)
-				{
-					if(*sel_iter == uuid)
-					{
-						found = true;
-						break;
-					}
-				}
-				if(!found)
+				LLUUID uuid = regionp->mMapAvatarIDs.get(i);
+				// if this avatar doesn't already exist in the list, add it
+				if(uuid.notNull() && avatar_ids!=NULL && std::find(avatar_ids->begin(), avatar_ids->end(), uuid) == avatar_ids->end())
 				{
 					if(positions != NULL)
+					{
 						positions->push_back(pos_global);
+					}
 					avatar_ids->push_back(uuid);
 				}
 			}

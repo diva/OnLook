@@ -55,7 +55,7 @@
 #include "llfloateravatarinfo.h"
 #include "llinventorymodel.h"
 #include "llnamelistctrl.h"
-#include "llnotify.h"
+#include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "llimview.h"
 #include "lluictrlfactory.h"
@@ -820,7 +820,7 @@ void LLPanelFriends::onMaximumSelect(void* user_data)
 {
 	LLSD args;
 	args["MAX_SELECT"] = llformat("%d", MAX_FRIEND_SELECT);
-	LLNotifications::instance().add("MaxListSelectMessage", args);
+	LLNotificationsUtil::add("MaxListSelectMessage", args);
 };
 
 // static
@@ -942,7 +942,7 @@ void LLPanelFriends::requestFriendship(const LLUUID& target_id, const std::strin
 // static
 bool LLPanelFriends::callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if (option == 0)
 	{
 		requestFriendship(notification["payload"]["id"].asUUID(), 
@@ -985,7 +985,7 @@ void LLPanelFriends::requestFriendshipDialog(const LLUUID& id,
 {
 	if(id == gAgentID)
 	{
-		LLNotifications::instance().add("AddSelfFriend");
+		LLNotificationsUtil::add("AddSelfFriend");
 		return;
 	}
 
@@ -999,11 +999,11 @@ void LLPanelFriends::requestFriendshipDialog(const LLUUID& id,
 	{
 		// Old and busted server version, doesn't support friend
 		// requests with messages.
-    	LLNotifications::instance().add("AddFriend", args, payload, &callbackAddFriend);
+    	LLNotificationsUtil::add("AddFriend", args, payload, &callbackAddFriend);
 	}
 	else
 	{
-    	LLNotifications::instance().add("AddFriendWithMessage", args, payload, &callbackAddFriendWithMessage);
+    	LLNotificationsUtil::add("AddFriendWithMessage", args, payload, &callbackAddFriendWithMessage);
 	}
 }
 
@@ -1325,14 +1325,14 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& ids, EGrantRevoke command
 
 			if (command == GRANT)
 			{
-				LLNotifications::instance().add("GrantModifyRights", 
+				LLNotificationsUtil::add("GrantModifyRights", 
 					args, 
 					LLSD(), 
 					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, rights));
 			}
 			else
 			{
-				LLNotifications::instance().add("RevokeModifyRights", 
+				LLNotificationsUtil::add("RevokeModifyRights", 
 					args, 
 					LLSD(), 
 					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, rights));
@@ -1342,14 +1342,14 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& ids, EGrantRevoke command
 		{
 			if (command == GRANT)
 			{
-				LLNotifications::instance().add("GrantModifyRightsMultiple", 
+				LLNotificationsUtil::add("GrantModifyRightsMultiple", 
 					args, 
 					LLSD(), 
 					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, rights));
 			}
 			else
 			{
-				LLNotifications::instance().add("RevokeModifyRightsMultiple", 
+				LLNotificationsUtil::add("RevokeModifyRightsMultiple", 
 					args, 
 					LLSD(), 
 					boost::bind(&LLPanelFriends::modifyRightsConfirmation, this, _1, _2, rights));
@@ -1360,7 +1360,7 @@ void LLPanelFriends::confirmModifyRights(rights_map_t& ids, EGrantRevoke command
 
 bool LLPanelFriends::modifyRightsConfirmation(const LLSD& notification, const LLSD& response, rights_map_t* rights)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if(0 == option)
 	{
 		sendRightsGrant(*rights);
@@ -1504,7 +1504,7 @@ void LLPanelFriends::sendRightsGrant(rights_map_t& ids)
 // static
 bool LLPanelFriends::handleRemove(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 
 	const LLSD& ids = notification["payload"]["ids"];
 	for(LLSD::array_const_iterator itr = ids.beginArray(); itr != ids.endArray(); ++itr)

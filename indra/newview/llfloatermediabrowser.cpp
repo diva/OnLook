@@ -45,13 +45,14 @@
 #include "llweb.h"
 #include "llui.h"
 #include "roles_constants.h"
+#include "llwindow.h"
 
 #include "llurlhistory.h"
 #include "llmediactrl.h"
 #include "llviewermedia.h"
 #include "llviewerparcelmedia.h"
 #include "llcombobox.h"
-
+#include "llnotificationsutil.h"
 
 // TEMP
 #include "llsdutil.h"
@@ -414,7 +415,7 @@ void LLViewerHtmlHelp::show(std::string url)
 		LLSD notificationData;
 		notificationData["url"] = url;                                                                     	    
 
-		LLNotifications::instance().add("ClickOpenF1Help", notificationData, LLSD(), onClickF1HelpLoadURL);	    
+		LLNotificationsUtil::add("ClickOpenF1Help", notificationData, LLSD(), onClickF1HelpLoadURL);	    
 		floater_html->close();
 	}
 	else

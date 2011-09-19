@@ -50,6 +50,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llworld.h"
 #include "llui.h"
 

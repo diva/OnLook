@@ -73,6 +73,7 @@
 #include "lldrawpoolavatar.h"
 #include "llmeshrepository.h"
 #include "lldatapacker.h"
+#include "llviewershadermgr.h"
 #include "llvoavatar.h"
 #include "llfloatertools.h"
 #endif //MESH_ENABLED
@@ -93,6 +94,8 @@ F32 LLVOVolume::sLODFactor = 1.f;
 F32	LLVOVolume::sLODSlopDistanceFactor = 0.5f; //Changing this to zero, effectively disables the LOD transition slop 
 F32 LLVOVolume::sDistanceFactor = 1.0f;
 S32 LLVOVolume::sNumLODChanges = 0;
+S32 LLVOVolume::mRenderComplexity_last = 0;
+S32 LLVOVolume::mRenderComplexity_current = 0;
 
 LLVOVolume::LLVOVolume(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	: LLViewerObject(id, pcode, regionp),
@@ -489,21 +492,29 @@ BOOL LLVOVolume::isVisible() const
 
 	return FALSE ;
 }
-void LLVOVolume::updateTextureVirtualSize()
+
+void LLVOVolume::updateTextureVirtualSize(bool forced)
 {
 	// Update the pixel area of all faces
 
-	if(!isVisible() || mDrawable.isNull())
-	{
+	if(mDrawable.isNull())
 		return;
+	if(!forced)
+	{
+		if(!isVisible())
+		{
+			return;
+		}
+
+		if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SIMPLE))
+		{
+			return;
+		}
 	}
 
-	if (!gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_SIMPLE))
-	{
-		return;
-	}
-	
-	if (LLViewerTexture::sDontLoadVolumeTextures || LLAppViewer::getTextureFetch()->mDebugPause)
+	static LLCachedControl<bool> dont_load_textures(gSavedSettings,"TextureDisable");
+		
+	if (dont_load_textures || LLAppViewer::getTextureFetch()->mDebugPause) // || !mDrawable->isVisible())
 	{
 		return;
 	}
@@ -557,12 +568,12 @@ void LLVOVolume::updateTextureVirtualSize()
 			// Animating textures also rez badly in Snowglobe because the
 			// actual displayed area is only a fraction (corresponding to one
 			// frame) of the animating texture. Let's fix that here:
-			if (mTextureAnimp && mTextureAnimp->mScaleS > 0.0f && mTextureAnimp->mScaleT > 0.0f)
+		/*	if (mTextureAnimp && mTextureAnimp->mScaleS > 0.0f && mTextureAnimp->mScaleT > 0.0f)
 			{
 				// Adjust to take into account the actual frame size which is only a
 				// portion of the animating texture
 				vsize = vsize / mTextureAnimp->mScaleS / mTextureAnimp->mScaleT;
-			}
+			}*/
 			
 			if ((vsize < MIN_TEX_ANIM_SIZE && old_size > MIN_TEX_ANIM_SIZE) ||
 			        (vsize > MIN_TEX_ANIM_SIZE && old_size < MIN_TEX_ANIM_SIZE))
@@ -576,13 +587,17 @@ void LLVOVolume::updateTextureVirtualSize()
 			if (vsize < min_vsize) min_vsize = vsize;
 			if (vsize > max_vsize) max_vsize = vsize;
 		}
-// 		else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY))
-// 		{
-// 			F32 pri = imagep->getDecodePriority();
-// 			pri = llmax(pri, 0.0f);
-// 			if (pri < min_vsize) min_vsize = pri;
-// 			if (pri > max_vsize) max_vsize = pri;
-// 		}
+		else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY))
+		{
+			LLViewerFetchedTexture* img = LLViewerTextureManager::staticCastToFetchedTexture(imagep) ;
+			if(img)
+			{
+				F32 pri = img->getDecodePriority();
+				pri = llmax(pri, 0.0f);
+				if (pri < min_vsize) min_vsize = pri;
+				if (pri > max_vsize) max_vsize = pri;
+			}
+		}
 		else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_FACE_AREA))
 		{
 			F32 pri = mPixelArea;
@@ -655,10 +670,10 @@ void LLVOVolume::updateTextureVirtualSize()
 	{
 		setDebugText(llformat("%.0f:%.0f", (F32) sqrt(min_vsize),(F32) sqrt(max_vsize)));
 	}
-// 	else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY))
-// 	{
-// 		setDebugText(llformat("%.0f:%.0f", (F32) sqrt(min_vsize),(F32) sqrt(max_vsize)));
-// 	}
+ 	else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY))
+ 	{
+ 		setDebugText(llformat("%.0f:%.0f", (F32) sqrt(min_vsize),(F32) sqrt(max_vsize)));
+ 	}
 	else if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_FACE_AREA))
 	{
 		setDebugText(llformat("%.0f:%.0f", (F32) sqrt(min_vsize),(F32) sqrt(max_vsize)));
@@ -763,9 +778,6 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 		{ //meshes might not have all LODs, get the force detail to best existing LOD
 			LLUUID mesh_id = volume_params.getSculptID();
 
-			//profile and path params don't matter for meshes
-			volume_params.setType(LL_PCODE_PROFILE_SQUARE, LL_PCODE_PATH_LINE);
-
 			lod = gMeshRepo.getActualMeshLOD(volume_params, lod);
 			if (lod == -1)
 			{
@@ -828,7 +840,7 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 			// if it's a mesh
 			if ((volume_params.getSculptType() & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH)
 			{
-				if (getVolume()->getNumVolumeFaces() == 0 || getVolume()->isTetrahedron())
+				if (!getVolume()->isMeshAssetLoaded())
 				{ 
 					//load request not yet issued, request pipeline load this mesh
 					LLUUID asset_id = volume_params.getSculptID();
@@ -996,19 +1008,11 @@ BOOL LLVOVolume::calcLOD()
 	F32 distance;
 
 #if MESH_ENABLED
-	if (mDrawable->isState(LLDrawable::RIGGED))
+	if (mDrawable->isState(LLDrawable::RIGGED) && getAvatar())
 	{
 		LLVOAvatar* avatar = getAvatar(); 
-		if(avatar)
-		{
-			distance = avatar->mDrawable->mDistanceWRTCamera;
-			radius = avatar->getBinRadius();
-		}
-		else
-		{
-			distance = mDrawable->mDistanceWRTCamera;
-			radius = getVolume()->mLODScaleBias.scaledVec(getScale()).length();
-		}
+		distance = avatar->mDrawable->mDistanceWRTCamera;
+		radius = avatar->getBinRadius();
 	}
 	else
 #endif //MESH_ENABLED
@@ -1436,11 +1440,16 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 			compiled = TRUE;
 			sNumLODChanges += new_num_faces ;
 	
+			if((S32)getNumTEs() != getVolume()->getNumFaces())
+			{
+				setNumTEs(getVolume()->getNumFaces()); //mesh loading may change number of faces.
+			}
+
 			drawable->setState(LLDrawable::REBUILD_VOLUME); // for face->genVolumeTriangles()
 
 			{
 				LLFastTimer t(LLFastTimer::FTM_GEN_TRIANGLES);
-				if (new_num_faces != old_num_faces)
+				if (new_num_faces != old_num_faces || mNumFaces != (S32)getNumTEs())
 				{
 					regenFaces();
 				}
@@ -2212,8 +2221,270 @@ const LLMatrix4 LLVOVolume::getRenderMatrix() const
 	return mDrawable->getWorldMatrix();
 }
 
+// Returns a base cost and adds textures to passed in set.
+// total cost is returned value + 5 * size of the resulting set.
+// Cannot include cost of textures, as they may be re-used in linked
+// children, and cost should only be increased for unique textures  -Nyx
+U32 LLVOVolume::getRenderCost(texture_cost_t &textures) const
+{
+	// Get access to params we'll need at various points.  
+	// Skip if this is object doesn't have a volume (e.g. is an avatar).
+	BOOL has_volume = (getVolume() != NULL);
+	LLVolumeParams volume_params;
+	LLPathParams path_params;
+	LLProfileParams profile_params;
+
+	U32 num_triangles = 0;
+
+	// per-prim costs
+	static const U32 ARC_PARTICLE_COST = 1; // determined experimentally
+	static const U32 ARC_PARTICLE_MAX = 2048; // default values
+	static const U32 ARC_TEXTURE_COST = 16; // multiplier for texture resolution - performance tested
+	static const U32 ARC_LIGHT_COST = 500; // static cost for light-producing prims 
+	static const U32 ARC_MEDIA_FACE_COST = 1500; // static cost per media-enabled face 
+
+
+	// per-prim multipliers
+	static const F32 ARC_GLOW_MULT = 1.5f; // tested based on performance
+	static const F32 ARC_BUMP_MULT = 1.25f; // tested based on performance
+	static const F32 ARC_FLEXI_MULT = 5; // tested based on performance
+	static const F32 ARC_SHINY_MULT = 1.6f; // tested based on performance
+	static const F32 ARC_INVISI_COST = 1.2f; // tested based on performance
+	static const F32 ARC_WEIGHTED_MESH = 1.2f; // tested based on performance
+
+	static const F32 ARC_PLANAR_COST = 1.0f; // tested based on performance to have negligible impact
+	static const F32 ARC_ANIM_TEX_COST = 4.f; // tested based on performance
+	static const F32 ARC_ALPHA_COST = 4.f; // 4x max - based on performance
+
+	F32 shame = 0;
+
+	U32 invisi = 0;
+	U32 shiny = 0;
+	U32 glow = 0;
+	U32 alpha = 0;
+	U32 flexi = 0;
+	U32 animtex = 0;
+	U32 particles = 0;
+	U32 bump = 0;
+	U32 planar = 0;
+	U32 weighted_mesh = 0;
+	U32 produces_light = 0;
+	U32 media_faces = 0;
+
+	const LLDrawable* drawablep = mDrawable;
+	U32 num_faces = drawablep->getNumFaces();
+
+	if (has_volume)
+	{
+		volume_params = getVolume()->getParams();
+		path_params = volume_params.getPathParams();
+		profile_params = volume_params.getProfileParams();
+
+		F32 weighted_triangles = -1.0;
+		getStreamingCost(NULL, NULL, &weighted_triangles);
+
+		if (weighted_triangles > 0.0)
+		{
+			num_triangles = (U32)(weighted_triangles); 
+		}
+	}
+
+	if (num_triangles == 0)
+	{
+		num_triangles = 4;
+	}
+
+	if (isSculpted())
+	{
+		if (isMesh())
+		{
+			// base cost is dependent on mesh complexity
+			// note that 3 is the highest LOD as of the time of this coding.
+			S32 size = gMeshRepo.getMeshSize(volume_params.getSculptID(),3);
+			if ( size > 0)
+			{
+				if (gMeshRepo.getSkinInfo(volume_params.getSculptID(), this))
+				{
+					// weighted attachment - 1 point for every 3 bytes
+					weighted_mesh = 1;
+				}
+
+			}
+			else
+			{
+				// something went wrong - user should know their content isn't render-free
+				return 0;
+			}
+		}
+		else
+		{
+			const LLSculptParams *sculpt_params = (LLSculptParams *) getParameterEntry(LLNetworkData::PARAMS_SCULPT);
+			LLUUID sculpt_id = sculpt_params->getSculptTexture();
+			if (textures.find(sculpt_id) == textures.end())
+			{
+				LLViewerFetchedTexture *texture = LLViewerTextureManager::getFetchedTexture(sculpt_id);
+				if (texture)
+				{
+					S32 texture_cost = 256 + (S32)(ARC_TEXTURE_COST * (texture->getFullHeight() / 128.f + texture->getFullWidth() / 128.f));
+					textures.insert(texture_cost_t::value_type(sculpt_id, texture_cost));
+				}
+			}
+		}
+	}
+
+	if (isFlexible())
+	{
+		flexi = 1;
+	}
+	if (isParticleSource())
+	{
+		particles = 1;
+	}
+
+	if (getIsLight())
+	{
+		produces_light = 1;
+	}
+
+	for (U32 i = 0; i < num_faces; ++i)
+	{
+		const LLFace* face = drawablep->getFace(i);
+		const LLTextureEntry* te = face->getTextureEntry();
+		const LLViewerTexture* img = face->getTexture();
+
+		if (img)
+		{
+			if (textures.find(img->getID()) == textures.end())
+			{
+				S32 texture_cost = 256 + (S32)(ARC_TEXTURE_COST * (img->getFullHeight() / 128.f + img->getFullWidth() / 128.f));
+				textures.insert(texture_cost_t::value_type(img->getID(), texture_cost));
+			}
+		}
+
+		if (face->getPoolType() == LLDrawPool::POOL_ALPHA)
+		{
+			alpha = 1;
+		}
+		else if (img && img->getPrimaryFormat() == GL_ALPHA)
+		{
+			invisi = 1;
+		}
+		/*if (face->hasMedia())
+		{
+			media_faces++;
+		}*/
+
+		if (te)
+		{
+			if (te->getBumpmap())
+			{
+				// bump is a multiplier, don't add per-face
+				bump = 1;
+			}
+			if (te->getShiny())
+			{
+				// shiny is a multiplier, don't add per-face
+				shiny = 1;
+			}
+			if (te->getGlow() > 0.f)
+			{
+				// glow is a multiplier, don't add per-face
+				glow = 1;
+			}
+			if (face->mTextureMatrix != NULL)
+			{
+				animtex = 1;
+			}
+			if (te->getTexGen())
+			{
+				planar = 1;
+			}
+		}
+	}
+
+	// shame currently has the "base" cost of 1 point per 15 triangles, min 2.
+	shame = num_triangles  * 5.f;
+	shame = shame < 2.f ? 2.f : shame;
+
+	// multiply by per-face modifiers
+	if (planar)
+	{
+		shame *= planar * ARC_PLANAR_COST;
+	}
+
+	if (animtex)
+	{
+		shame *= animtex * ARC_ANIM_TEX_COST;
+	}
+
+	if (alpha)
+	{
+		shame *= alpha * ARC_ALPHA_COST;
+	}
+
+	if(invisi)
+	{
+		shame *= invisi * ARC_INVISI_COST;
+	}
+
+	if (glow)
+	{
+		shame *= glow * ARC_GLOW_MULT;
+	}
+
+	if (bump)
+	{
+		shame *= bump * ARC_BUMP_MULT;
+	}
+
+	if (shiny)
+	{
+		shame *= shiny * ARC_SHINY_MULT;
+	}
+
+
+	// multiply shame by multipliers
+	if (weighted_mesh)
+	{
+		shame *= weighted_mesh * ARC_WEIGHTED_MESH;
+	}
+
+	if (flexi)
+	{
+		shame *= flexi * ARC_FLEXI_MULT;
+	}
+
+
+	// add additional costs
+	if (particles)
+	{
+		const LLPartSysData *part_sys_data = &(mPartSourcep->mPartSysData);
+		const LLPartData *part_data = &(part_sys_data->mPartData);
+		U32 num_particles = (U32)(part_sys_data->mBurstPartCount * llceil( part_data->mMaxAge / part_sys_data->mBurstRate));
+		num_particles = num_particles > ARC_PARTICLE_MAX ? ARC_PARTICLE_MAX : num_particles;
+		F32 part_size = (llmax(part_data->mStartScale[0], part_data->mEndScale[0]) + llmax(part_data->mStartScale[1], part_data->mEndScale[1])) / 2.f;
+		shame += num_particles * part_size * ARC_PARTICLE_COST;
+	}
+
+	if (produces_light)
+	{
+		shame += ARC_LIGHT_COST;
+	}
+
+	if (media_faces)
+	{
+		shame += media_faces * ARC_MEDIA_FACE_COST;
+	}
+
+	if (shame > mRenderComplexity_current)
+	{
+		mRenderComplexity_current = (S32)shame;
+	}
+
+	return (U32)shame;
+}
 #if MESH_ENABLED
-F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes)
+F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes, F32* unscaled_value) const
 {
 	F32 radius = getScale().length()*0.5f;
 
@@ -2221,7 +2492,7 @@ F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes)
 	{	
 		LLSD& header = gMeshRepo.getMeshHeader(getVolume()->getParams().getSculptID());
 
-		return LLMeshRepository::getStreamingCost(header, radius, bytes, visible_bytes, mLOD);
+		return LLMeshRepository::getStreamingCost(header, radius, bytes, visible_bytes, mLOD, unscaled_value);
 	}
 	else
 	{
@@ -2235,12 +2506,18 @@ F32 LLVOVolume::getStreamingCost(S32* bytes, S32* visible_bytes)
 		header["medium_lod"]["size"] = counts[2] * 10;
 		header["high_lod"]["size"] = counts[3] * 10;
 
-		return LLMeshRepository::getStreamingCost(header, radius);
+		return LLMeshRepository::getStreamingCost(header, radius, NULL, NULL, -1, unscaled_value);
 	}	
 }
 #endif //MESH_ENABLED
+//static 
+void LLVOVolume::updateRenderComplexity()
+{
+	mRenderComplexity_last = mRenderComplexity_current;
+	mRenderComplexity_current = 0;
+}
 
-U32 LLVOVolume::getTriangleCount()
+U32 LLVOVolume::getTriangleCount() const
 {
 	U32 count = 0;
 	LLVolume* volume = getVolume();
@@ -2268,7 +2545,7 @@ U32 LLVOVolume::getHighLODTriangleCount()
 	else if (isMesh())
 	{
 		LLVolume* ref = LLPrimitive::getVolumeManager()->refVolume(volume->getParams(), 3);
-		if (ref->isTetrahedron() || ref->getNumVolumeFaces() == 0)
+		if (!ref->isMeshAssetLoaded() || ref->getNumVolumeFaces() == 0)
 		{
 			gMeshRepo.loadMesh(this, volume->getParams(), LLModel::LOD_HIGH);
 		}
@@ -2562,8 +2839,15 @@ BOOL LLVOVolume::lineSegmentIntersect(const LLVector3& start, const LLVector3& e
 			end_face = face+1;
 		}
 
+		bool special_cursor = specialHoverCursor();
 		for (S32 i = start_face; i < end_face; ++i)
 		{
+			if (!special_cursor && !pick_transparent && getTE(i)->getColor().mV[3] == 0.f)
+			{ //don't attempt to pick completely transparent faces unless
+				//pick_transparent is true
+				continue;
+			}
+
 			face_hit = volume->lineSegmentIntersect(v_start, v_end, i,
 													&p, &tc, &n, &bn);
 			
@@ -2863,6 +3147,26 @@ LLVolumeBridge::LLVolumeBridge(LLDrawable* drawablep)
 	mSlopRatio = 0.25f;
 }
 
+bool can_batch_texture(LLFace* facep)
+{
+	if (facep->getTextureEntry()->getBumpmap())
+	{ //bump maps aren't worked into texture batching yet
+		return false;
+	}
+
+	if (facep->getTexture() && facep->getTexture()->getPrimaryFormat() == GL_ALPHA)
+	{ //can't batch invisiprims
+		return false;
+	}
+
+	if (facep->isState(LLFace::TEXTURE_ANIM) && facep->getVirtualSize() > MIN_TEX_ANIM_SIZE)
+	{ //texture animation breaks batches
+		return false;
+	}
+	
+	return true;
+}
+
 void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep, U32 type)
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
@@ -2918,22 +3222,37 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 	
 	LLViewerTexture* tex = facep->getTexture();
 
-	U8 glow = 0;
-		
-	if (type == LLRenderPass::PASS_GLOW || type==LLRenderPass::PASS_ALPHA) //Alpha pass now handles glow internally
-	{
-		glow = (U8) (facep->getTextureEntry()->getGlow() * 255);
-	}
 
-	if (!facep->getVertexBuffer())
+	U8 index = facep->getTextureIndex();
+
+	bool batchable = false;
+
+	if (index < 255 && idx >= 0)
 	{
-		llerrs << "WTF?" << llendl;
+		if (index < draw_vec[idx]->mTextureList.size())
+		{
+			if (draw_vec[idx]->mTextureList[index].isNull())
+			{
+				batchable = true;
+				draw_vec[idx]->mTextureList[index] = tex;
+			}
+			else if (draw_vec[idx]->mTextureList[index] == tex)
+			{ //this face's texture index can be used with this batch
+				batchable = true;
+			}
+		}
+		else
+		{ //texture list can be expanded to fit this texture index
+			batchable = true;
+		}
 	}
+	
+	U8 glow = (U8) (facep->getTextureEntry()->getGlow() * 255);
 
 	if (idx >= 0 && 
 		draw_vec[idx]->mVertexBuffer == facep->getVertexBuffer() &&
 		draw_vec[idx]->mEnd == facep->getGeomIndex()-1 &&
-		(LLPipeline::sTextureBindTest || draw_vec[idx]->mTexture == tex) &&
+		(LLPipeline::sTextureBindTest || draw_vec[idx]->mTexture == tex || batchable) &&
 #if LL_DARWIN
 		draw_vec[idx]->mEnd - draw_vec[idx]->mStart + facep->getGeomCount() <= (U32) gGLManager.mGLMaxVertexRange &&
 		draw_vec[idx]->mCount + facep->getIndicesCount() <= (U32) gGLManager.mGLMaxIndexRange &&
@@ -2947,6 +3266,12 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		draw_vec[idx]->mCount += facep->getIndicesCount();
 		draw_vec[idx]->mEnd += facep->getGeomCount();
 		draw_vec[idx]->mVSize = llmax(draw_vec[idx]->mVSize, facep->getVirtualSize());
+
+		if (index >= draw_vec[idx]->mTextureList.size())
+		{
+			draw_vec[idx]->mTextureList.resize(index+1);
+			draw_vec[idx]->mTextureList[index] = tex;
+		}
 		draw_vec[idx]->validate();
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[0]);
 		update_min_max(draw_vec[idx]->mExtents[0], draw_vec[idx]->mExtents[1], facep->mExtents[1]);
@@ -2971,6 +3296,12 @@ void LLVolumeGeometryManager::registerFace(LLSpatialGroup* group, LLFace* facep,
 		}
 		draw_info->mExtents[0] = facep->mExtents[0];
 		draw_info->mExtents[1] = facep->mExtents[1];
+
+		if (index < 255)
+		{ //initialize texture list for texture batching
+			draw_info->mTextureList.resize(index+1);
+			draw_info->mTextureList[index] = tex;
+		}
 		draw_info->validate();
 	}
 }
@@ -3077,13 +3408,14 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		LLVOVolume* vobj = drawablep->getVOVolume();
 
 #if MESH_ENABLED
-		if (vobj->getVolume() && vobj->getVolume()->isTetrahedron() || (vobj->isMesh() && !gMeshRepo.meshRezEnabled()))
+		if (vobj->isMesh() &&
+			(vobj->getVolume() && !vobj->getVolume()->isMeshAssetLoaded() || !gMeshRepo.meshRezEnabled()))
 		{
 			continue;
 		}
 #endif //MESH_ENABLED
 		llassert_always(vobj);
-		vobj->updateTextureVirtualSize();
+		vobj->updateTextureVirtualSize(true);
 		vobj->preRebuild();
 
 		drawablep->clearState(LLDrawable::HAS_ALPHA);
@@ -3401,15 +3733,24 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	U32 bump_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1 | LLVertexBuffer::MAP_NORMAL | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 	U32 fullbright_mask = LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_COLOR;
 
-	if (LLPipeline::sRenderDeferred)
+	bool batch_textures = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_OBJECT) > 1;
+
+	if (batch_textures)
 	{
 		bump_mask |= LLVertexBuffer::MAP_BINORMAL;
+		genDrawInfo(group, simple_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, simple_faces, FALSE, TRUE);
+		genDrawInfo(group, fullbright_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, fullbright_faces, FALSE, TRUE);
+		genDrawInfo(group, bump_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, bump_faces, FALSE, TRUE);
+		genDrawInfo(group, alpha_mask | LLVertexBuffer::MAP_TEXTURE_INDEX, alpha_faces, TRUE, TRUE);
 	}
-
-	genDrawInfo(group, simple_mask, simple_faces);
-	genDrawInfo(group, fullbright_mask, fullbright_faces);
-	genDrawInfo(group, bump_mask, bump_faces, FALSE);
-	genDrawInfo(group, alpha_mask, alpha_faces, TRUE);
+	else
+	{
+		genDrawInfo(group, simple_mask, simple_faces);
+		genDrawInfo(group, fullbright_mask, fullbright_faces);
+		genDrawInfo(group, bump_mask, bump_faces, FALSE, TRUE);
+		genDrawInfo(group, alpha_mask, alpha_faces, TRUE);
+	}
+	
 
 	if (!LLPipeline::sDelayVBUpdate)
 	{
@@ -3443,14 +3784,16 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 		group->mBuilt = 1.f;
 		
+		std::set<LLVertexBuffer*> mapped_buffers;
+
 		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
 		{
 			LLDrawable* drawablep = *drawable_iter;
 
-			if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
+			/*if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
 			{
 				continue;
-			}
+			}*/
 
 			if (!drawablep->isDead() && drawablep->isState(LLDrawable::REBUILD_ALL) )
 			{
@@ -3461,33 +3804,29 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 				for (S32 i = 0; i < drawablep->getNumFaces(); ++i)
 				{
 					LLFace* face = drawablep->getFace(i);
-					if (face && face->getVertexBuffer())
+					if (face)
 					{
-						face->getGeometryVolume(*volume, face->getTEOffset(), 
-							vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex());
+						LLVertexBuffer* buff = face->getVertexBuffer();
+						if (buff)
+						{
+							face->getGeometryVolume(*volume, face->getTEOffset(), 
+								vobj->getRelativeXform(), vobj->getRelativeXformInvTrans(), face->getGeomIndex());
+
+							if (buff->isLocked())
+							{
+								mapped_buffers.insert(buff);
+							}
+						}
 					}
 				}
-
+				
 				drawablep->clearState(LLDrawable::REBUILD_ALL);
 			}
 		}
 		
-		//unmap all the buffers
-		for (LLSpatialGroup::buffer_map_t::iterator i = group->mBufferMap.begin(); i != group->mBufferMap.end(); ++i)
+		for (std::set<LLVertexBuffer*>::iterator iter = mapped_buffers.begin(); iter != mapped_buffers.end(); ++iter)
 		{
-			LLSpatialGroup::buffer_texture_map_t& map = i->second;
-			for (LLSpatialGroup::buffer_texture_map_t::iterator j = map.begin(); j != map.end(); ++j)
-			{
-				LLSpatialGroup::buffer_list_t& list = j->second;
-				for (LLSpatialGroup::buffer_list_t::iterator k = list.begin(); k != list.end(); ++k)
-				{
-					LLVertexBuffer* buffer = *k;
-					if (buffer->isLocked())
-					{
-						buffer->setBuffer(0);
-					}
-				}
-			}
+			(*iter)->setBuffer(0);
 		}
 		
 		// don't forget alpha
@@ -3553,7 +3892,8 @@ struct CompareBatchBreakerModified
 		
 	}
 };
-void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort)
+
+void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort, BOOL batch_textures)
 {
 	//calculate maximum number of vertices to store in a single buffer
 	static const LLCachedControl<S32> render_max_vbo_size("RenderMaxVBOSize", 512);
@@ -3571,6 +3911,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		std::sort(faces.begin(), faces.end(), LLFace::CompareDistanceGreater());
 	}
 				
+	bool hud_group = group->isHUDGroup() ;
 	std::vector<LLFace*>::iterator face_iter = faces.begin();
 	
 	LLSpatialGroup::buffer_map_t buffer_map;
@@ -3583,6 +3924,21 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		buffer_index = -1;
 	}
 
+	S32 texture_index_channels = gGLManager.mNumTextureImageUnits-1; //always reserve one for shiny for now just for simplicity
+	
+	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
+	{
+		texture_index_channels = 1;
+	}
+
+	if (LLPipeline::sRenderDeferred && distance_sort)
+	{
+		texture_index_channels = gDeferredAlphaProgram.mFeatures.mIndexedTextureChannels;
+	}
+
+	texture_index_channels = llmin(texture_index_channels, (S32) gSavedSettings.getU32("RenderMaxTextureIndex"));
+	
 	while (face_iter != faces.end())
 	{
 		//pull off next face
@@ -3611,19 +3967,96 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		std::vector<LLFace*>::iterator i = face_iter;
 		++i;
 		
-		while (i != faces.end() && 
-			(LLPipeline::sTextureBindTest || (distance_sort || (*i)->getTexture() == tex)))
+		std::vector<LLViewerTexture*> texture_list;
+
+		if (batch_textures)
 		{
-			facep = *i;
-			
-			if (geom_count + facep->getGeomCount() > max_vertices)
-			{ //cut vertex buffers on geom count too big
-				break;
+			U8 cur_tex = 0;
+			facep->setTextureIndex(cur_tex);
+			texture_list.push_back(tex);
+
+			//if (can_batch_texture(facep))
+			{
+				while (i != faces.end())
+				{
+					facep = *i;
+					if (facep->getTexture() != tex)
+					{
+						if (distance_sort)
+						{ //textures might be out of order, see if texture exists in current batch
+							bool found = false;
+							for (U32 tex_idx = 0; tex_idx < texture_list.size(); ++tex_idx)
+							{
+								if (facep->getTexture() == texture_list[tex_idx])
+								{
+									cur_tex = tex_idx;
+									found = true;
+									break;
+								}
+							}
+
+							if (!found)
+							{
+								cur_tex = texture_list.size();
+							}
+						}
+						else
+						{
+							cur_tex++;
+						}
+
+						if (!can_batch_texture(facep))
+						{ //face is bump mapped or has an animated texture matrix -- can't 
+							//batch more than 1 texture at a time
+							break;
+						}
+
+						if (cur_tex >= texture_index_channels)
+						{ //cut batches when index channels are depleted
+							break;
+						}
+
+						tex = facep->getTexture();
+
+						texture_list.push_back(tex);
+					}
+
+					if (geom_count + facep->getGeomCount() > max_vertices)
+					{ //cut batches on geom count too big
+						break;
+					}
+
+					++i;
+					index_count += facep->getIndicesCount();
+					geom_count += facep->getGeomCount();
+
+					facep->setTextureIndex(cur_tex);
+				}
 			}
 
-			++i;
-			index_count += facep->getIndicesCount();
-			geom_count += facep->getGeomCount();
+			tex = texture_list[0];
+		}
+		else
+		{
+			while (i != faces.end() && 
+				(LLPipeline::sTextureBindTest || (distance_sort || (*i)->getTexture() == tex)))
+			{
+				facep = *i;
+			
+
+				//face has no texture index
+				facep->mDrawInfo = NULL;
+				facep->setTextureIndex(255);
+
+				if (geom_count + facep->getGeomCount() > max_vertices)
+				{ //cut batches on geom count too big
+					break;
+				}
+
+				++i;
+				index_count += facep->getIndicesCount();
+				geom_count += facep->getGeomCount();
+			}
 		}
 	
 		//create/delete/resize vertex buffer if needed
@@ -3673,8 +4106,15 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			facep->setGeomIndex(index_offset);
 			facep->setVertexBuffer(buffer);	
 			
+			if (batch_textures && facep->getTextureIndex() == 255)
 			{
+				llerrs << "Invalid texture index." << llendl;
+			}
+			
+			{
+				//for debugging, set last time face was updated vs moved
 				facep->updateRebuildFlags();
+
 				if (!LLPipeline::sDelayVBUpdate)
 				{ //copy face geometry into vertex buffer
 					LLDrawable* drawablep = facep->getDrawable();
@@ -3702,6 +4142,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			}
 
 			const LLTextureEntry* te = facep->getTextureEntry();
+			tex = facep->getTexture();
 
 			BOOL is_alpha = (facep->getPoolType() == LLDrawPool::POOL_ALPHA) ? TRUE : FALSE;
 		
@@ -3741,7 +4182,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 					registerFace(group, facep, LLRenderPass::PASS_INVISI_SHINY);
 					registerFace(group, facep, LLRenderPass::PASS_INVISIBLE);
 				}
-				else if (LLPipeline::sRenderDeferred)
+				else if (LLPipeline::sRenderDeferred && !hud_group)
 				{ //deferred rendering
 					if (te->getFullbright())
 					{ //register in post deferred fullbright shiny pass
@@ -3779,7 +4220,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				else if (fullbright)
 				{ //fullbright
 					registerFace(group, facep, LLRenderPass::PASS_FULLBRIGHT);
-					if (LLPipeline::sRenderDeferred && LLPipeline::sRenderBump && te->getBumpmap())
+					if (LLPipeline::sRenderDeferred && !hud_group && LLPipeline::sRenderBump && te->getBumpmap())
 					{ //if this is the deferred render and a bump map is present, register in post deferred bump
 						registerFace(group, facep, LLRenderPass::PASS_POST_BUMP);
 					}
@@ -3805,7 +4246,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 			}
 			
 			//not sure why this is here, and looks like it might cause bump mapped objects to get rendered redundantly -- davep 5/11/2010
-			if (!is_alpha && !LLPipeline::sRenderDeferred)
+			if (!is_alpha && (hud_group || !LLPipeline::sRenderDeferred))
 			{
 				llassert((mask & LLVertexBuffer::MAP_NORMAL) || fullbright);
 				facep->setPoolType((fullbright) ? LLDrawPool::POOL_FULLBRIGHT : LLDrawPool::POOL_SIMPLE);

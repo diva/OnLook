@@ -76,7 +76,6 @@ public:
 	/*virtual*/ void endRenderPass(S32 pass);
 	/*virtual*/ void prerender();
 	/*virtual*/ void render(S32 pass = 0);
-	/*virtual*/ void renderForSelect();
 
 	/*virtual*/ S32 getNumDeferredPasses();
 	/*virtual*/ void beginDeferredPass(S32 pass);
@@ -154,18 +153,20 @@ public:
 	void renderDeferredRiggedSimple(LLVOAvatar* avatar);
 	void renderDeferredRiggedBump(LLVOAvatar* avatar);
 
-
+	//do NOT screw the the order of these. They are ordered in a way such that they cleanly align with render passes in drawpoolavatar.
 	typedef enum
 	{
 		RIGGED_SIMPLE = 0,
 		RIGGED_FULLBRIGHT,
 		RIGGED_SHINY,
 		RIGGED_FULLBRIGHT_SHINY,
-		RIGGED_GLOW,
+		//RIGGED_GLOW,
 		RIGGED_ALPHA,
 		RIGGED_FULLBRIGHT_ALPHA,
-		RIGGED_DEFERRED_BUMP,
+		RIGGED_GLOW,
+		//RIGGED_DEFERRED_BUMP,
 		RIGGED_DEFERRED_SIMPLE,
+		RIGGED_DEFERRED_BUMP,
 		NUM_RIGGED_PASSES,
 		RIGGED_UNKNOWN,
 	} eRiggedPass;

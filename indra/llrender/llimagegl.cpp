@@ -1400,21 +1400,35 @@ BOOL LLImageGL::readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compre
 
 void LLImageGL::deleteDeadTextures()
 {
+	bool reset = false;
+
 	while (!sDeadTextureList.empty())
 	{
 		GLuint tex = sDeadTextureList.front();
 		sDeadTextureList.pop_front();
-		for (int i = 0; i < gGLManager.mNumTextureUnits; i++)
+		for (int i = 0; i < gGLManager.mNumTextureImageUnits; i++)
 		{
-			if (sCurrentBoundTextures[i] == tex)
+			LLTexUnit* tex_unit = gGL.getTexUnit(i);
+
+			if (tex_unit->getCurrTexture() == tex)
 			{
-				gGL.getTexUnit(i)->unbind(LLTexUnit::TT_TEXTURE);
+				tex_unit->unbind(tex_unit->getCurrType());
 				stop_glerror();
+
+				if (i > 0)
+				{
+					reset = true;
+				}
 			}
 		}
 		
 		glDeleteTextures(1, &tex);
 		stop_glerror();
+	}
+
+	if (reset)
+	{
+		gGL.getTexUnit(0)->activate();
 	}
 }
 		

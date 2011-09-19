@@ -747,15 +747,13 @@ void LLPreviewSculpted::setPreviewTarget(LLImageRaw* imagep, F32 distance)
 	// build vertices and normals
 	for (U32 i = 0; (S32)i < num_vertices; i++)
 	{
-		(vertex_strider++)->set(vf.mPositions[i].getF32ptr());
-		LLVector3 normal(vf.mNormals[i].getF32ptr());
-		normal.normalize();
-		*(normal_strider++) = normal;
+		LLVector4a normal = vf.mNormals[i];
+		normal.normalize3();
+		(normal_strider++)->set(normal.getF32ptr());
 	}
 
 	//build vertices
-	vertex_strider.assignArray((U8*)vf.mPositions,sizeof(vf.mPositions[0]),num_indices);
-
+	vertex_strider.assignArray((U8*)vf.mPositions,sizeof(vf.mPositions[0]),num_vertices);
 	// build indices
 	index_strider.assignArray((U8*)vf.mIndices,sizeof(vf.mIndices[0]),num_indices);
 }

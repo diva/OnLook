@@ -41,6 +41,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llagentwearables.h"
+#include "llnotificationsutil.h"
 #include "llassetuploadresponders.h"
 #include "llviewerwindow.h"
 #include "llfloatercustomize.h"
@@ -1021,7 +1022,7 @@ void LLWearable::saveNewAsset()
 		
 		LLSD args;
 		args["NAME"] = mName;
-		LLNotifications::instance().add("CannotSaveWearableOutOfSpace", args);
+		LLNotificationsUtil::add("CannotSaveWearableOutOfSpace", args);
 		return;
 	}
 
@@ -1069,7 +1070,7 @@ void LLWearable::onSaveNewAssetComplete(const LLUUID& new_asset_id, void* userda
 		llwarns << buffer << " Status: " << status << llendl;
 		LLSD args;
 		args["NAME"] = type_name;
-		LLNotifications::instance().add("CannotSaveToAssetStore", args);
+		LLNotificationsUtil::add("CannotSaveToAssetStore", args);
 	}
 
 	// Delete temp file

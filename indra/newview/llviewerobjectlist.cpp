@@ -38,12 +38,14 @@
 #include "timing.h"
 #include "llfasttimer.h"
 #include "llrender.h"
+#include "llwindow.h"		// decBusyCount()
 
 #include "llviewercontrol.h"
 #include "llface.h"
 #include "llvoavatar.h"
 #include "llviewerobject.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llnetmap.h"
 #include "llagent.h"
 #include "llagentcamera.h"
@@ -61,6 +63,7 @@
 #include "llresmgr.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
+#include "llvovolume.h"
 #include "lltoolmgr.h"
 #include "lltoolpie.h"
 #include "llkeyboard.h"
@@ -597,33 +600,30 @@ void LLViewerObjectList::dirtyAllObjectInventory()
 void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 {
 	S32 i;
-	S32 const objects_size = mObjects.size();
+	S32 num_objects = 0;
 	LLViewerObject *objectp;
 
 	S32 num_updates, max_value;
-	// The list can have shrinked since mCurLazyUpdateIndex was last updated.
-	if (mCurLazyUpdateIndex >= objects_size)
-	{
-		mCurLazyUpdateIndex = 0;
-	}
 	if (NUM_BINS - 1 == mCurBin)
 	{
-		num_updates = objects_size - mCurLazyUpdateIndex;
-		max_value = objects_size;
+		num_updates = (S32) mObjects.size() - mCurLazyUpdateIndex;
+		max_value = (S32) mObjects.size();
 		gTextureList.setUpdateStats(TRUE);
 	}
 	else
 	{
-		num_updates = (objects_size / NUM_BINS) + 1;
-		max_value = llmin(objects_size, mCurLazyUpdateIndex + num_updates);
+		num_updates = ((S32) mObjects.size() / NUM_BINS) + 1;
+		max_value = llmin((S32) mObjects.size(), mCurLazyUpdateIndex + num_updates);
 	}
 
-	if (!gNoRender)
+
+	// Slam priorities for textures that we care about (hovered, selected, and focused)
+	// Hovered
+	// Assumes only one level deep of parenting
+	LLSelectNode* nodep = LLSelectMgr::instance().getHoverNode();
+	if (nodep)
 	{
-		// Slam priorities for textures that we care about (hovered, selected, and focused)
-		// Hovered
-		// Assumes only one level deep of parenting
-		objectp = gHoverView->getLastHoverObject();
+		objectp = nodep->getObject();
 		if (objectp)
 		{
 			objectp->boostTexturePriority();
@@ -654,6 +654,8 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 		objectp = mObjects[i];
 		if (!objectp->isDead())
 		{
+			num_objects++;
+
 			//  Update distance & gpw 
 			objectp->setPixelAreaAndAngle(agent); // Also sets the approx. pixel area
 			objectp->updateTextures();	// Update the image levels of textures for this object.
@@ -661,7 +663,7 @@ void LLViewerObjectList::updateApparentAngles(LLAgent &agent)
 	}
 
 	mCurLazyUpdateIndex = max_value;
-	if (mCurLazyUpdateIndex == objects_size)
+	if (mCurLazyUpdateIndex == mObjects.size())
 	{
 		mCurLazyUpdateIndex = 0;
 	}
@@ -861,9 +863,24 @@ private:
 void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
+
 	// Update globals
-	gVelocityInterpolate = gSavedSettings.getBOOL("VelocityInterpolate");
-	gPingInterpolate = gSavedSettings.getBOOL("PingInterpolate");
+	LLViewerObject::setVelocityInterpolate( gSavedSettings.getBOOL("VelocityInterpolate") );
+	LLViewerObject::setPingInterpolate( gSavedSettings.getBOOL("PingInterpolate") );
+	
+	F32 interp_time = gSavedSettings.getF32("InterpolationTime");
+	F32 phase_out_time = gSavedSettings.getF32("InterpolationPhaseOut");
+	if (interp_time < 0.0 || 
+		phase_out_time < 0.0 ||
+		phase_out_time > interp_time)
+	{
+		llwarns << "Invalid values for InterpolationTime or InterpolationPhaseOut, resetting to defaults" << llendl;
+		interp_time = 3.0f;
+		phase_out_time = 1.0f;
+	}
+	LLViewerObject::setPhaseOutUpdateInterpolationTime( interp_time );
+	LLViewerObject::setMaxUpdateInterpolationTime( phase_out_time );
+
 	gAnimateTextures = gSavedSettings.getBOOL("AnimateTextures");
 
 	// update global timer
@@ -956,6 +973,9 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	mNumSizeCulled = 0;
 	mNumVisCulled = 0;
 
+	// update max computed render cost
+	LLVOVolume::updateRenderComplexity();
+
 	// compute all sorts of time-based stats
 	// don't factor frames that were paused into the stats
 	if (! mWasPaused)
@@ -1012,10 +1032,10 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	}
 	*/
 
-	mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
-	mNumActiveObjectsStat.addValue(num_active_objects);
-	mNumSizeCulledStat.addValue(mNumSizeCulled);
-	mNumVisCulledStat.addValue(mNumVisCulled);
+	LLViewerStats::getInstance()->mNumObjectsStat.addValue((S32) mObjects.size() - mNumDeadObjects);
+	LLViewerStats::getInstance()->mNumActiveObjectsStat.addValue(num_active_objects);
+	LLViewerStats::getInstance()->mNumSizeCulledStat.addValue(mNumSizeCulled);
+	LLViewerStats::getInstance()->mNumVisCulledStat.addValue(mNumVisCulled);
 }
 
 #if MESH_ENABLED
@@ -1660,12 +1680,6 @@ void LLViewerObjectList::renderObjectBounds(const LLVector3 &center)
 {
 }
 
-void LLViewerObjectList::renderObjectsForSelect(LLCamera &camera, const LLRect& screen_rect, BOOL pick_parcel_wall, BOOL render_transparent)
-{
-	generatePickList(camera);
-	renderPickList(screen_rect, pick_parcel_wall, render_transparent);
-}
-
 void LLViewerObjectList::generatePickList(LLCamera &camera)
 {
 		LLViewerObject *objectp;
@@ -1787,34 +1801,6 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 
 			LLHUDIcon::generatePickIDs(i * step, step);
 	}
-}
-
-void LLViewerObjectList::renderPickList(const LLRect& screen_rect, BOOL pick_parcel_wall, BOOL render_transparent)
-{
-	gRenderForSelect = TRUE;
-		
-	gPipeline.renderForSelect(mSelectPickList, render_transparent, screen_rect);
-
-	//
-	// Render pass for selected objects
-	//
-	gGL.color4f(1,1,1,1);	
-	gViewerWindow->renderSelections( TRUE, pick_parcel_wall, FALSE );
-
-	//fix for DEV-19335.  Don't pick hud objects when customizing avatar (camera mode doesn't play nice with nametags).
-	if (!gAgentCamera.cameraCustomizeAvatar())
-	{
-		// render pickable ui elements, like names, etc.
-		LLHUDObject::renderAllForSelect();
-	}
-	
-	gGL.flush();
-	LLVertexBuffer::unbind();
-
-	gRenderForSelect = FALSE;
-
-	//llinfos << "Rendered " << count << " for select" << llendl;
-	//llinfos << "Took " << pick_timer.getElapsedTimeF32()*1000.f << "ms to pick" << llendl;
 }
 
 LLViewerObject *LLViewerObjectList::getSelectedObject(const U32 object_id)

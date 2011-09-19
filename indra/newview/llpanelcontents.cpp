@@ -45,6 +45,7 @@
 #include "llpermissionsflags.h"
 #include "lleconomy.h"
 #include "material_codes.h"
+#include "llinventorydefines.h"
 
 // project includes
 #include "llui.h"

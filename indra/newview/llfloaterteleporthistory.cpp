@@ -50,8 +50,12 @@
 #include "llurlsimstring.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llweb.h"
 #include "llsdserialize.h"
+// [RLVa:KB]
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 LLFloaterTeleportHistory::LLFloaterTeleportHistory(const LLSD& seed)
 :	LLFloater(std::string("teleporthistory")),
@@ -103,12 +107,11 @@ BOOL LLFloaterTeleportHistory::postBuild()
 
 void LLFloaterTeleportHistory::addPendingEntry(std::string regionName, S16 x, S16 y, S16 z)
 {
-#ifdef LL_RRINTERFACE_H //MK
-	if (gRRenabled && gAgent.mRRInterface.mContainsShowloc)
-	{
+// [RLVa:KB]
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
 		return;
-	}
-#endif //mk
+// [/RLVa:KB]
+
 
 	// Set pending entry timestamp
 	U32 utc_time;

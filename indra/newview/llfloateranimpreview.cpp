@@ -37,6 +37,7 @@
 #include "llbvhloader.h"
 #include "lldatapacker.h"
 #include "lldir.h"
+#include "llnotificationsutil.h"
 #include "llvfile.h"
 #include "llapr.h"
 #include "llstring.h"
@@ -1444,7 +1445,7 @@ void LLFloaterAnimPreview::onBtnOK(void* userdata)
 			else
 			{
 				llwarns << "Failure writing animation data." << llendl;
-				LLNotifications::instance().add("WriteAnimationFail");
+				LLNotificationsUtil::add("WriteAnimationFail");
 			}
 		}
 

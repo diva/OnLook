@@ -543,7 +543,7 @@ void LLHUDEffectLookAt::render()
 		const LLFontGL* font = LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF);
 		LLGLEnable gl_blend(GL_BLEND);
 		glPushMatrix();
-		gViewerWindow->setupViewport();
+		gViewerWindow->setup2DViewport();
 		hud_render_utf8text(text,
 			target + shadow_offset,
 			*font,

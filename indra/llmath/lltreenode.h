@@ -34,7 +34,8 @@
 
 #include "stdtypes.h"
 #include "xform.h"
-#include "llmemory.h"
+#include "llpointer.h"
+#include "llrefcount.h"
 #include <vector>
 
 template <class T> class LLTreeNode;

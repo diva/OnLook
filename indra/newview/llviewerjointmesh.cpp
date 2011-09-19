@@ -68,7 +68,6 @@ extern PFNGLWEIGHTPOINTERARBPROC glWeightPointerARB;
 extern PFNGLWEIGHTFVARBPROC glWeightfvARB;
 extern PFNGLVERTEXBLENDARBPROC glVertexBlendARB;
 #endif
-extern BOOL gRenderForSelect;
 
 static LLPointer<LLVertexBuffer> sRenderBuffer = NULL;
 static const U32 sRenderMask = LLVertexBuffer::MAP_VERTEX |
@@ -533,17 +532,14 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	//----------------------------------------------------------------
 	// setup current color
 	//----------------------------------------------------------------
-	if (!gRenderForSelect)
-	{
-		if (is_dummy)
-			glColor4fv(LLVOAvatar::getDummyColor().mV);
-		else
-			glColor4fv(mColor.mV);
-	}
+	if (is_dummy)
+		glColor4fv(LLVOAvatar::getDummyColor().mV);
+	else
+		glColor4fv(mColor.mV);
 
 	stop_glerror();
 	
-	LLGLSSpecular specular(LLColor4(1.f,1.f,1.f,1.f), (mFace->getPool()->getVertexShaderLevel() > 0  && !gRenderForSelect) ? 0.f : mShiny);
+	LLGLSSpecular specular(LLColor4(1.f,1.f,1.f,1.f), (mFace->getPool()->getVertexShaderLevel() > 0) ? 0.f : mShiny);
 
 	//----------------------------------------------------------------
 	// setup current texture
@@ -596,19 +592,6 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	else
 	{
 		gGL.getTexUnit(diffuse_channel)->bind(LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR));
-	}
-	
-	if (gRenderForSelect)
-	{
-		if (isTransparent())
-		{
-			gGL.getTexUnit(diffuse_channel)->setTextureColorBlend(LLTexUnit::TBO_REPLACE, LLTexUnit::TBS_PREV_COLOR);
-			gGL.getTexUnit(diffuse_channel)->setTextureAlphaBlend(LLTexUnit::TBO_MULT, LLTexUnit::TBS_TEX_ALPHA, LLTexUnit::TBS_CONST_ALPHA);
-		}
-		else
-		{
-			gGL.getTexUnit(diffuse_channel)->unbind(LLTexUnit::TT_TEXTURE);
-		}
 	}
 	
 	mFace->getVertexBuffer()->setBuffer(sRenderMask);
@@ -729,8 +712,7 @@ void LLViewerJointMesh::updateFaceData(LLFace *face, F32 pixel_area, BOOL damp_w
 			verticesp.assignArray((U8*)mMesh->getCoords(), sizeof(mMesh->getCoords()[0]), num_verts);
 			//LLVector4a::memcpyNonAliased16(n, (F32*) mMesh->getNormals(), words*sizeof(F32));
 			normalsp.assignArray((U8*)mMesh->getNormals(), sizeof(mMesh->getNormals()[0]), num_verts);
-						
-			
+
 			if (!terse_update)
 			{
 				vertex_weightsp += mMesh->mFaceVertexOffset;
@@ -746,7 +728,7 @@ void LLViewerJointMesh::updateFaceData(LLFace *face, F32 pixel_area, BOOL damp_w
 				//LLVector4a::memcpyNonAliased16(vw, (F32*) mMesh->getWeights(), num_verts*sizeof(F32));	
 				vertex_weightsp.assignArray((U8*)mMesh->getWeights(), sizeof(mMesh->getWeights()[0]), num_verts);
 				//LLVector4a::memcpyNonAliased16(cw, (F32*) mMesh->getClothingWeights(), num_verts*4*sizeof(F32));
-				clothing_weightsp.assignArray((U8*)mMesh->getClothingWeights(), sizeof(mMesh->getClothingWeights()[0]), num_verts);	
+				clothing_weightsp.assignArray((U8*)mMesh->getClothingWeights(), sizeof(mMesh->getClothingWeights()[0]), num_verts);
 			}
 
 			const U32 idx_count = mMesh->getNumFaces()*3;
@@ -789,16 +771,16 @@ void LLViewerJointMesh::updateGeometryOriginal(LLFace *mFace, LLPolyMesh *mMesh)
 	buffer->getVertexStrider(o_vertices,  0);
 	buffer->getNormalStrider(o_normals,   0);
 
-	F32* __restrict vert = o_vertices[0].mV;
-	F32* __restrict norm = o_normals[0].mV;
+	//F32* __restrict vert = o_vertices[0].mV;
+	//F32* __restrict norm = o_normals[0].mV;
 
 	const F32* __restrict weights = mMesh->getWeights();
 	const LLVector4a* __restrict coords = (LLVector4a*) mMesh->getCoords();
 	const LLVector4a* __restrict normals = (LLVector4a*) mMesh->getNormals();
 
-	U32 offset = mMesh->mFaceVertexOffset*4;
-	vert += offset;
-	norm += offset;
+	U32 offset = mMesh->mFaceVertexOffset;
+	o_vertices += offset;
+	o_normals += offset;
 
 	for (U32 index = 0; index < mMesh->getNumVertices(); index++)
 	{
@@ -816,17 +798,21 @@ void LLViewerJointMesh::updateGeometryOriginal(LLFace *mFace, LLPolyMesh *mMesh)
 
 			LLVector4a res;
 			gBlendMat.affineTransform(coords[index], res);
-			res.store4a(vert+index*4);
+			(o_vertices++)->set(res.getF32ptr());
+			//res.store4a(vert+index*4);
 			gBlendMat.rotate(normals[index], res);
-			res.store4a(norm+index*4);
+			(o_normals++)->set(res.getF32ptr());
+			//res.store4a(norm+index*4);
 		}
 		else
 		{  // No lerp required in this case.
 			LLVector4a res;
 			gJointMatAligned[joint].affineTransform(coords[index], res);
-			res.store4a(vert+index*4);
+			(o_vertices++)->set(res.getF32ptr());
+			//res.store4a(vert+index*4);
 			gJointMatAligned[joint].rotate(normals[index], res);
-			res.store4a(norm+index*4);
+			(o_normals++)->set(res.getF32ptr());
+			//res.store4a(norm+index*4);
 		}
 	}
 
@@ -869,30 +855,32 @@ void LLViewerJointMesh::updateVectorize()
 	LL_INFOS("AppInit") << "Vectorization         : " << ( vectorizeEnable ? "ENABLED" : "DISABLED" ) << LL_ENDL ;
 	LL_INFOS("AppInit") << "Vector Processor      : " << vp << LL_ENDL ;
 	LL_INFOS("AppInit") << "Vectorized Skinning   : " << ( vectorizeSkin ? "ENABLED" : "DISABLED" ) << LL_ENDL ;
+
+	sUpdateGeometryFunc = &updateGeometryOriginal;
+
 	if(vectorizeEnable && vectorizeSkin)
 	{
 		switch(sVectorizeProcessor)
 		{
 			case 2:
-				sUpdateGeometryFunc = &updateGeometrySSE2;
 				if(!supportsSSE2())
 					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE2)" << LL_ENDL ;
+				else
+					sUpdateGeometryFunc = &updateGeometrySSE2;
 				break;
 			case 1:
-				sUpdateGeometryFunc = &updateGeometrySSE;
 				if(!supportsSSE())
 					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE)" << LL_ENDL ;
+				else
+					sUpdateGeometryFunc = &updateGeometrySSE;
 				break;
 			default:
-				sUpdateGeometryFunc = &updateGeometryVectorized;
 				if(!gSysCPU.hasAltivec())
 					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (Altivec)" << LL_ENDL ;
+				else
+					sUpdateGeometryFunc = &updateGeometryVectorized;
 				break;
 		}
-	}
-	else
-	{
-		sUpdateGeometryFunc = &updateGeometryOriginal;
 	}
 }
 

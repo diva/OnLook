@@ -54,6 +54,7 @@
 #include "lluictrlfactory.h"
 #include "llviewborder.h"
 #include "llbutton.h"
+#include "llnotificationsutil.h"
 
 // LLLayoutStack
 #include "llresizebar.h"
@@ -1049,7 +1050,7 @@ void LLPanel::childDisplayNotFound()
 	mNewExpectedMembers.clear();
 	LLSD args;
 	args["CONTROLS"] = msg;
-	LLNotifications::instance().add("FloaterNotFound", args);
+	LLNotificationsUtil::add("FloaterNotFound", args);
 }
 
 void LLPanel::storeRectControl()

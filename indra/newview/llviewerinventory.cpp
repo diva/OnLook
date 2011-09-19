@@ -33,6 +33,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llviewerinventory.h"
 
+#include "llnotificationsutil.h"
 #include "message.h"
 #include "indra_constants.h"
 
@@ -46,6 +47,7 @@
 #include "llgesturemgr.h"
 
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 #include "llinventoryview.h"
 
 #include "llviewerregion.h"
@@ -192,7 +194,7 @@ void LLViewerInventoryItem::updateServer(BOOL is_new) const
 		// *FIX: deal with this better.
 		llwarns << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
-	 	LLNotifications::instance().add("IncompleteInventoryItem");
+	 	LLNotificationsUtil::add("IncompleteInventoryItem");
 		return;
 	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);
@@ -443,7 +445,7 @@ void LLViewerInventoryCategory::updateServer(BOOL is_new) const
 	// communicate that change with the server.
 	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotModifyProtectedCategories");
+		LLNotificationsUtil::add("CannotModifyProtectedCategories");
 		return;
 	}
 
@@ -467,7 +469,7 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	// communicate that change with the server.
 	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotRemoveProtectedCategories");
+		LLNotificationsUtil::add("CannotRemoveProtectedCategories");
 		return;
 	}
 
@@ -719,13 +721,12 @@ void RezAttachmentCallback::fire(const LLUUID& inv_item)
 	}
 }
 
-extern LLGestureManager gGestureManager;
 void ActivateGestureCallback::fire(const LLUUID& inv_item)
 {
 	if (inv_item.isNull())
 		return;
 
-	gGestureManager.activateGesture(inv_item);
+	LLGestureMgr::instance().activateGesture(inv_item);
 }
 
 void CreateGestureCallback::fire(const LLUUID& inv_item)
@@ -733,7 +734,7 @@ void CreateGestureCallback::fire(const LLUUID& inv_item)
 	if (inv_item.isNull())
 		return;
 
-	gGestureManager.activateGesture(inv_item);
+	LLGestureMgr::instance().activateGesture(inv_item);
 	
 	LLViewerInventoryItem* item = gInventory.getItem(inv_item);
 	if (!item) return;

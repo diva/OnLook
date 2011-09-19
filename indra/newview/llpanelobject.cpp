@@ -53,6 +53,7 @@
 #include "llcombobox.h"
 #include "llfocusmgr.h"
 #include "llmanipscale.h"
+#include "llnotificationsutil.h"
 #include "llpanelinventory.h"
 #include "llpreviewscript.h"
 #include "llresmgr.h"
@@ -67,6 +68,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvovolume.h"
 #include "llworld.h"
 #include "pipeline.h"
@@ -2154,7 +2156,7 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 		
 	// Clamp the Z height
 	const F32 height = newpos.mV[VZ];
-	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject);
+	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject, mObject->getPositionGlobal());
 	// <edit>
 	//const F32 max_height = LLWorld::getInstance()->getRegionMaxHeight();
 	const F32 max_height = F32(340282346638528859811704183484516925440.0f);
@@ -2543,7 +2545,7 @@ void LLPanelObject::onCommitSculptType(LLUICtrl *ctrl, void* userdata)
 // static
 void LLPanelObject::onClickBuildConstants(void *)
 {
-	LLNotifications::instance().add("ClickBuildConstants");
+	LLNotificationsUtil::add("ClickBuildConstants");
 }
 
 std::string shortfloat(F32 in)

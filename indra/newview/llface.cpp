@@ -173,6 +173,7 @@ void LLFace::init(LLDrawable* drawablep, LLViewerObject* objp)
 	mIndexInTex = 0;
 	mTexture		= NULL;
 	mTEOffset		= -1;
+	mTextureIndex = 255;
 
 	setDrawable(drawablep);
 	mVObjp = objp;
@@ -390,6 +391,26 @@ void LLFace::setGeomIndex(U16 idx)
 	}
 }
 
+void LLFace::setTextureIndex(U8 index)
+{
+	if (index != mTextureIndex)
+	{
+		mTextureIndex = index;
+
+		if (mTextureIndex != 255)
+		{
+			mDrawablep->setState(LLDrawable::REBUILD_POSITION);
+		}
+		else
+		{
+			if (mDrawInfo && !mDrawInfo->mTextureList.empty())
+			{
+				llerrs << "Face with no texture index references indexed texture draw info." << llendl;
+			}
+		}
+	}
+}
+
 void LLFace::setIndicesIndex(S32 idx) 
 { 
 	if (mIndicesIndex != idx)
@@ -457,83 +478,6 @@ void LLFace::updateCenterAgent()
 	}
 }
 
-void LLFace::renderForSelect(U32 data_mask)
-{
-	if(mDrawablep.isNull() || mVertexBuffer.isNull())
-	{
-		return;
-	}
-
-	LLSpatialGroup* group = mDrawablep->getSpatialGroup();
-	if (!group || group->isState(LLSpatialGroup::GEOM_DIRTY))
-	{
-		return;
-	}
-
-	if (mVObjp->mGLName)
-	{
-		S32 name = mVObjp->mGLName;
-
-		LLColor4U color((U8)(name >> 16), (U8)(name >> 8), (U8)name);
-#if 0 // *FIX: Postponing this fix until we have texcoord pick info...
-		if (mTEOffset != -1)
-		{
-			color.mV[VALPHA] = (U8)(getTextureEntry()->getColor().mV[VALPHA] * 255.f);
-		}
-#endif
-		glColor4ubv(color.mV);
-
-		if (!getPool())
-		{
-			switch (getPoolType())
-			{
-			case LLDrawPool::POOL_ALPHA:
-				gGL.getTexUnit(0)->bind(getTexture());
-				break;
-			default:
-				gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-				break;
-			}
-		}
-
-		mVertexBuffer->setBuffer(data_mask);
-#if !LL_RELEASE_FOR_DOWNLOAD
-		LLGLState::checkClientArrays("", data_mask);
-#endif
-		if (mTEOffset != -1)
-		{
-			// mask off high 4 bits (16 total possible faces)
-			color.mV[0] &= 0x0f;
-			color.mV[0] |= (mTEOffset & 0x0f) << 4;
-			glColor4ubv(color.mV);
-		}
-
-		if (mIndicesCount)
-		{
-			if (isState(GLOBAL))
-			{
-				if (mDrawablep->getVOVolume())
-				{
-					glPushMatrix();
-					glMultMatrixf((float*) mDrawablep->getRegion()->mRenderMatrix.mMatrix);
-					mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
-					glPopMatrix();
-				}
-				else
-				{
-					mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
-				}
-			}
-			else
-			{
-				glPushMatrix();
-				glMultMatrixf((float*)getRenderMatrix().mMatrix);
-				mVertexBuffer->draw(LLRender::TRIANGLES, mIndicesCount, mIndicesIndex);
-				glPopMatrix();
-			}
-		}
-	}
-}
 void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 {
 	if (mDrawablep->getSpatialGroup() == NULL)
@@ -1136,15 +1080,15 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 	}
 
-	LLStrider<LLVector3> vertices;
+	LLStrider<LLVector3> vert;
 	LLStrider<LLVector2> tex_coords;
 	LLStrider<LLVector2> tex_coords2;
-	LLStrider<LLVector3> normals;
+	LLStrider<LLVector3> norm;
 	LLStrider<LLColor4U> colors;
-	LLStrider<LLVector3> binormals;
+	LLStrider<LLVector3> binorm;
 	LLStrider<U16> indicesp;
 #if MESH_ENABLED
-	LLStrider<LLVector4> weights;
+	LLStrider<LLVector4> wght;
 #endif //MESH_ENABLED
 
 	BOOL full_rebuild = force_rebuild || mDrawablep->isState(LLDrawable::REBUILD_VOLUME);
@@ -1172,8 +1116,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	const LLTextureEntry *tep = mVObjp->getTE(f);
 	if (!tep) rebuild_color = FALSE;	// can't get color when tep is NULL
 	U8  bump_code = tep ? tep->getBumpmap() : 0;
-
-
 	
 	BOOL is_static = mDrawablep->isStatic();
 	BOOL is_global = is_static;
@@ -1214,12 +1156,23 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	if (full_rebuild)
 	{
 		mVertexBuffer->getIndexStrider(indicesp, mIndicesIndex);
-		for (U32 i = 0; i < (U32) num_indices; i++)
+
+		__m128i* dst = (__m128i*) indicesp.get();
+		__m128i* src = (__m128i*) vf.mIndices;
+		__m128i offset = _mm_set1_epi16(index_offset);
+
+		S32 end = num_indices/8;
+		
+		for (S32 i = 0; i < end; i++)
 		{
-			indicesp[i] = vf.mIndices[i] + index_offset;
+			__m128i res = _mm_add_epi16(src[i], offset);
+			_mm_storeu_si128(dst+i, res);
 		}
 
-		//mVertexBuffer->setBuffer(0);
+		for (S32 i = end*8; i < num_indices; ++i)
+		{
+			indicesp[i] = vf.mIndices[i]+index_offset;
+		}
 	}
 	
 	LLMatrix4a mat_normal;
@@ -1440,7 +1393,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				}
 			}
 
-			//mVertexBuffer->setBuffer(0);
 		}
 		else
 		{ //either bump mapped or in atlas, just do the whole expensive loop
@@ -1498,8 +1450,6 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 				}
 			}
 
-			//mVertexBuffer->setBuffer(0);
-
 
 			if (do_bump)
 			{
@@ -1533,75 +1483,165 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 					*tex_coords2++ = tc;
 				}
 
-				//mVertexBuffer->setBuffer(0);
 			}
 		}
 	}
 
 	if (rebuild_pos)
 	{
-		mVertexBuffer->getVertexStrider(vertices, mGeomIndex);
+		llassert(num_vertices > 0);
+		mVertexBuffer->getVertexStrider(vert, mGeomIndex);
 		LLMatrix4a mat_vert;
 		mat_vert.loadu(mat_vert_in);
 		
 		LLVector4a* src = vf.mPositions;
-		LLVector4a position;
-		for (S32 i = 0; i < num_vertices; i++)
+
+		if(!vert.isStrided())
 		{
-			mat_vert.affineTransform(src[i], position);
-			vertices[i].set(position.getF32ptr());
+			LLVector4a* vertices = (LLVector4a*) vert.get();
+
+			LLVector4a* dst = vertices;
+
+			LLVector4a* end = dst+num_vertices;
+			do
+			{	
+				mat_vert.affineTransform(*src++, *dst++);
+			}
+			while(dst < end);
+
+			F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
+			F32 *index_dst = (F32*) vertices;
+			F32 *index_end = (F32*) end;
+
+			index_dst += 3;
+			index_end += 3;
+			do
+			{
+				*index_dst = index;
+				index_dst += 4;
+			}
+			while (index_dst < index_end);
+		
+			S32 aligned_pad_vertices = mGeomCount - num_vertices;
+			LLVector4a* last_vec = end - 1;
+			while (aligned_pad_vertices > 0)
+			{
+				--aligned_pad_vertices;
+				*dst++ = *last_vec;
+			}
+
 		}
-			
-			
-		//mVertexBuffer->setBuffer(0);
+		else
+		{
+			LLVector4a position;
+			F32 index = (F32) (mTextureIndex < 255 ? mTextureIndex : 0);
+			for (S32 i = 0; i < num_vertices; i++)
+			{
+				mat_vert.affineTransform(src[i], position);
+				//Still using getF32ptr() because if the array is strided then theres no guarantee vertices will aligned, which LLVector4a requires
+				vert[i].set(position.getF32ptr()); //This assignment and the one below are oddly sensitive. Suspect something's off around here.
+				*(vert[i].mV+3) = index;
+			}
+			for (S32 i = num_vertices; i < mGeomCount; i++)
+			{
+				memcpy(vert[i].mV,vert[num_vertices-1].mV,sizeof(LLVector4));
+			}
+		}
 	}
 		
 	if (rebuild_normal)
 	{
-		mVertexBuffer->getNormalStrider(normals, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
-		{	
-			LLVector4a normal;
-			mat_normal.rotate(vf.mNormals[i], normal);
-			normal.normalize3fast();
-			normals[i].set(normal.getF32ptr());
+		mVertexBuffer->getNormalStrider(norm, mGeomIndex);
+		if(!norm.isStrided())
+		{
+			LLVector4a* normals = (LLVector4a*) norm.get();
+	
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a normal;
+				mat_normal.rotate(vf.mNormals[i], normal);
+				normal.normalize3fast();
+				normals[i] = normal;
+			}
 		}
-
-		//mVertexBuffer->setBuffer(0);
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a normal;
+				mat_normal.rotate(vf.mNormals[i], normal);
+				normal.normalize3fast();
+				norm[i].set(normal.getF32ptr());
+			}
+		}
 	}
 		
 	if (rebuild_binormal)
 	{
-		mVertexBuffer->getBinormalStrider(binormals, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
-		{	
-			LLVector4a binormal;
-			mat_normal.rotate(vf.mBinormals[i], binormal);
-			binormal.normalize3fast();
-			binormals[i].set(binormal.getF32ptr());
+		mVertexBuffer->getBinormalStrider(binorm, mGeomIndex);
+		if(!binorm.isStrided())
+		{
+			LLVector4a* binormals = (LLVector4a*) binorm.get();
+		
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a binormal;
+				mat_normal.rotate(vf.mBinormals[i], binormal);
+				binormal.normalize3fast();
+				binormals[i] = binormal;
+			}
 		}
-
-		//mVertexBuffer->setBuffer(0);
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{	
+				LLVector4a binormal;
+				mat_normal.rotate(vf.mBinormals[i], binormal);
+				binormal.normalize3fast();
+				binorm[i].set(binormal.getF32ptr());
+			}
+		}
 	}
 	
 #if MESH_ENABLED
 	if (rebuild_weights && vf.mWeights)
 	{
-		mVertexBuffer->getWeight4Strider(weights, mGeomIndex);
-		weights.assignArray((U8*) vf.mWeights, sizeof(vf.mWeights[0]), num_vertices);
-		//mVertexBuffer->setBuffer(0);
+		mVertexBuffer->getWeight4Strider(wght, mGeomIndex);
+		wght.assignArray((U8*) vf.mWeights, sizeof(vf.mWeights[0]), num_vertices);
 	}
 #endif //MESH_ENABLED
 
 	if (rebuild_color)
 	{
 		mVertexBuffer->getColorStrider(colors, mGeomIndex);
-		for (S32 i = 0; i < num_vertices; i++)
+		if(!colors.isStrided())
 		{
-			colors[i] = color;	
-		}
+			LLVector4a src;
 
-		//mVertexBuffer->setBuffer(0);
+			U32 vec[4];
+			vec[0] = vec[1] = vec[2] = vec[3] = color.mAll;
+		
+			src.loadua((F32*) vec);
+
+			LLVector4a* dst = (LLVector4a*) colors.get();
+			S32 num_vecs = num_vertices/4;
+			if (num_vertices%4 > 0)
+			{
+				++num_vecs;
+			}
+
+			for (S32 i = 0; i < num_vecs; i++)
+			{	
+				dst[i] = src;
+			}
+		}
+		else
+		{
+			for (S32 i = 0; i < num_vertices; i++)
+			{
+				colors[i] = color;	
+			}
+		}
 	}
 
 	if (rebuild_tcoord)
@@ -1724,7 +1764,7 @@ BOOL LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 //the projection of the face partially overlaps with the screen
 F32 LLFace::adjustPartialOverlapPixelArea(F32 cos_angle_to_view_dir, F32 radius )
 {
-	F32 screen_radius = (F32)llmax(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight()) ;
+	F32 screen_radius = (F32)llmax(gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw()) ;
 	F32 center_angle = acosf(cos_angle_to_view_dir) ;
 	F32 d = center_angle * LLDrawable::sCurPixelAngle ;
 
@@ -1830,10 +1870,10 @@ BOOL LLFace::verify(const U32* indices_array) const
 	}
 	
 	// First, check whether the face data fits within the pool's range.
-	if ((mGeomIndex + mGeomCount) > mVertexBuffer->getNumVerts())
+	if ((mGeomIndex + mGeomCount) > mVertexBuffer->getRequestedVerts())
 	{
 		ok = FALSE;
-		llinfos << "Face not within pool range!" << llendl;
+		llinfos << "Face references invalid vertices!" << llendl;
 	}
 
 	S32 indices_count = (S32)getIndicesCount();
@@ -1849,6 +1889,12 @@ BOOL LLFace::verify(const U32* indices_array) const
 		llinfos << "Face has bogus indices count" << llendl;
 	}
 	
+	if (mIndicesIndex + mIndicesCount > (U32)mVertexBuffer->getRequestedIndices())
+	{
+		ok = FALSE;
+		llinfos << "Face references invalid indices!" << llendl;
+	}
+
 #if 0
 	S32 geom_start = getGeomStart();
 	S32 geom_count = mGeomCount;
@@ -2018,6 +2064,7 @@ void LLFace::clearVertexBuffer()
 
 #if MESH_ENABLED
 //static
+//do NOT screw the the order of these. Must match order of LLDrawPoolAvatar::eRiggedPass. Order differs from LL's.
 U32 LLFace::getRiggedDataMask(U32 type)
 {
 	static const U32 rigged_data_mask[] = {
@@ -2025,11 +2072,13 @@ U32 LLFace::getRiggedDataMask(U32 type)
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_MASK,
 		LLDrawPoolAvatar::RIGGED_SHINY_MASK,
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_SHINY_MASK,
-		LLDrawPoolAvatar::RIGGED_GLOW_MASK,
+		//LLDrawPoolAvatar::RIGGED_GLOW_MASK,
 		LLDrawPoolAvatar::RIGGED_ALPHA_MASK,
 		LLDrawPoolAvatar::RIGGED_FULLBRIGHT_ALPHA_MASK,
-		LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,						 
+		LLDrawPoolAvatar::RIGGED_GLOW_MASK,
+		//LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,
 		LLDrawPoolAvatar::RIGGED_DEFERRED_SIMPLE_MASK,
+		LLDrawPoolAvatar::RIGGED_DEFERRED_BUMP_MASK,
 	};
 
 	llassert(type < sizeof(rigged_data_mask)/sizeof(U32));

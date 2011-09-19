@@ -45,7 +45,7 @@
 #include "llviewercontrol.h"
 #include "llviewermedia.h"
 #include "llviewerwindow.h"
-#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "llweb.h"
 #include "llrender.h"
 #include "llpluginclassmedia.h"
@@ -1042,7 +1042,7 @@ void LLMediaCtrl::onClickLinkNoFollow( LLPluginClassMedia* self )
 		&& !mTrusted)
 	{
 		// block handling of this secondlife:///app/ URL
-		LLNotifications::instance().add("UnableToOpenCommandURL");
+		LLNotificationsUtil::add("UnableToOpenCommandURL");
 		return;
 	}
 

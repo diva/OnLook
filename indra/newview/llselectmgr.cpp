@@ -42,6 +42,7 @@
 #include "lleconomy.h"
 #include "llgl.h"
 #include "llrender.h"
+#include "llnotifications.h"
 #include "llpermissions.h"
 #include "llpermissionsflags.h"
 #include "llundo.h"
@@ -67,6 +68,7 @@
 #include "llinventorymodel.h"
 #include "llmenugl.h"
 #include "llmutelist.h"
+#include "llnotificationsutil.h"
 #include "llstatusbar.h"
 #include "llsurface.h"
 #include "lltool.h"
@@ -571,7 +573,7 @@ bool LLSelectMgr::linkObjects()
 {
 	if (!LLSelectMgr::getInstance()->selectGetAllRootsValid())
 	{
-		LLNotifications::getInstance()->add("UnableToLinkWhileDownloading");
+		LLNotificationsUtil::add("UnableToLinkWhileDownloading");
 		return true;
 	}
 
@@ -582,19 +584,19 @@ bool LLSelectMgr::linkObjects()
 		args["COUNT"] = llformat("%d", object_count);
 		int max = MAX_CHILDREN_PER_TASK+1;
 		args["MAX"] = llformat("%d", max);
-		LLNotifications::getInstance()->add("UnableToLinkObjects", args);
+		LLNotificationsUtil::add("UnableToLinkObjects", args);
 		return true;
 	}
 
 	if (LLSelectMgr::getInstance()->getSelection()->getRootObjectCount() < 2)
 	{
-		LLNotifications::instance().add("CannotLinkIncompleteSet");
+		LLNotificationsUtil::add("CannotLinkIncompleteSet");
 		return true;
 	}
 
 	if (!LLSelectMgr::getInstance()->selectGetRootsModify())
 	{
-		LLNotifications::instance().add("CannotLinkModify");
+		LLNotificationsUtil::add("CannotLinkModify");
 		return true;
 	}
 
@@ -605,7 +607,7 @@ bool LLSelectMgr::linkObjects()
 		// we don't actually care if you're the owner, but novices are
 		// the most likely to be stumped by this one, so offer the
 		// easiest and most likely solution.
-		LLNotifications::instance().add("CannotLinkDifferentOwners");
+		LLNotificationsUtil::add("CannotLinkDifferentOwners");
 		return true;
 	}
 
@@ -5155,7 +5157,6 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 
 	gGL.getTexUnit(0)->bind(mSilhouetteImagep);
 	LLGLSPipelineSelection gls_select;
-	gGL.setAlphaRejectSettings(LLRender::CF_GREATER, 0.f);
 	LLGLEnable blend(GL_BLEND);
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
 
@@ -5271,7 +5272,6 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 	}
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 }
 
 void LLSelectMgr::generateSilhouette(LLSelectNode* nodep, const LLVector3& view_point)
@@ -6538,31 +6538,77 @@ U32 LLObjectSelection::getSelectedObjectTriangleCount()
 	return count;
 }
 
-/*S32 LLObjectSelection::getSelectedObjectRenderCost()
+
+S32 LLObjectSelection::getSelectedObjectRenderCost()
 {
        S32 cost = 0;
        LLVOVolume::texture_cost_t textures;
+       typedef std::set<LLUUID> uuid_list_t;
+       uuid_list_t computed_objects;
+
+	   typedef std::list<LLPointer<LLViewerObject> > child_list_t;
+	   typedef const child_list_t const_child_list_t;
+
+	   // add render cost of complete linksets first, to get accurate texture counts
        for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
        {
                LLSelectNode* node = *iter;
+			   
                LLVOVolume* object = (LLVOVolume*)node->getObject();
 
-               if (object)
+               if (object && object->isRootEdit())
                {
-                       cost += object->getRenderCost(textures);
-               }
+				   cost += object->getRenderCost(textures);
+				   computed_objects.insert(object->getID());
 
-               for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
-               {
-                       // add the cost of each individual texture in the linkset
-                       cost += iter->second;
+				   const_child_list_t children = object->getChildren();
+				   for (const_child_list_t::const_iterator child_iter = children.begin();
+						 child_iter != children.end();
+						 ++child_iter)
+				   {
+					   LLViewerObject* child_obj = *child_iter;
+					   LLVOVolume *child = dynamic_cast<LLVOVolume*>( child_obj );
+					   if (child)
+					   {
+						   cost += child->getRenderCost(textures);
+						   computed_objects.insert(child->getID());
+					   }
+				   }
+
+				   for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+				   {
+					   // add the cost of each individual texture in the linkset
+					   cost += iter->second;
+				   }
+
+				   textures.clear();
                }
-               textures.clear();
        }
+	
+	   // add any partial linkset objects, texture cost may be slightly misleading
+		for (list_t::iterator iter = mList.begin(); iter != mList.end(); ++iter)
+		{
+			LLSelectNode* node = *iter;
+			LLVOVolume* object = (LLVOVolume*)node->getObject();
 
+			if (object && computed_objects.find(object->getID()) == computed_objects.end()  )
+			{
+					cost += object->getRenderCost(textures);
+					computed_objects.insert(object->getID());
+			}
+
+			for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+			{
+				// add the cost of each individual texture in the linkset
+				cost += iter->second;
+			}
+
+			textures.clear();
+		}
 
        return cost;
-}*/
+}
+
 #endif //MESH_ENABLED
 
 

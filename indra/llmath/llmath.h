@@ -37,8 +37,8 @@
 #include <cstdlib>
 #include <vector>
 #include "lldefs.h"
-#include "llstl.h" // *TODO: Remove when LLString is gone
-#include "llstring.h" // *TODO: Remove when LLString is gone
+//#include "llstl.h" // *TODO: Remove when LLString is gone
+//#include "llstring.h" // *TODO: Remove when LLString is gone
 // lltut.h uses is_approx_equal_fraction(). This was moved to its own header
 // file in llcommon so we can use lltut.h for llcommon tests without making
 // llcommon depend on llmath.
@@ -515,6 +515,12 @@ inline void ll_remove_outliers(std::vector<VEC_TYPE>& data, F32 k)
 
 	VEC_TYPE Q1 = data[data.size()/4];
 	VEC_TYPE Q3 = data[data.size()-data.size()/4-1];
+
+	if ((F32)(Q3-Q1) < 1.f)
+	{
+		// not enough variation to detect outliers
+		return;
+	}
 
 	VEC_TYPE min = (VEC_TYPE) ((F32) Q1-k * (F32) (Q3-Q1));
 	VEC_TYPE max = (VEC_TYPE) ((F32) Q3+k * (F32) (Q3-Q1));

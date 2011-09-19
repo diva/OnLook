@@ -76,9 +76,7 @@ LLSliderCtrl::LLSliderCtrl(const std::string& name, const LLRect& rect,
 	  mEditor( NULL ),
 	  mTextBox( NULL ),
 	  mTextEnabledColor( LLUI::sColorsGroup->getColor( "LabelTextColor" ) ),
-	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) ),
-	  mSliderMouseUpCallback( NULL ),
-	  mSliderMouseDownCallback( NULL )
+	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) )
 {
 	S32 top = getRect().getHeight();
 	S32 bottom = 0;
@@ -352,37 +350,14 @@ void LLSliderCtrl::setPrecision(S32 precision)
 	updateText();
 }
 
-void LLSliderCtrl::setSliderMouseDownCallback( void (*slider_mousedown_callback)(LLUICtrl* caller, void* userdata) )
+boost::signals2::connection LLSliderCtrl::setSliderMouseDownCallback( const commit_signal_t::slot_type& cb )
 {
-	mSliderMouseDownCallback = slider_mousedown_callback;
-	mSlider->setMouseDownCallback( LLSliderCtrl::onSliderMouseDown );
+	return mSlider->setMouseDownCallback( cb );
 }
 
-// static
-void LLSliderCtrl::onSliderMouseDown(LLUICtrl* caller, void* userdata)
+boost::signals2::connection LLSliderCtrl::setSliderMouseUpCallback( const commit_signal_t::slot_type& cb )
 {
-	LLSliderCtrl* self = (LLSliderCtrl*) userdata;
-	if( self->mSliderMouseDownCallback )
-	{
-		self->mSliderMouseDownCallback( self, self->mCallbackUserData );
-	}
-}
-
-
-void LLSliderCtrl::setSliderMouseUpCallback( void (*slider_mouseup_callback)(LLUICtrl* caller, void* userdata) )
-{
-	mSliderMouseUpCallback = slider_mouseup_callback;
-	mSlider->setMouseUpCallback( LLSliderCtrl::onSliderMouseUp );
-}
-
-// static
-void LLSliderCtrl::onSliderMouseUp(LLUICtrl* caller, void* userdata)
-{
-	LLSliderCtrl* self = (LLSliderCtrl*) userdata;
-	if( self->mSliderMouseUpCallback )
-	{
-		self->mSliderMouseUpCallback( self, self->mCallbackUserData );
-	}
+	return mSlider->setMouseUpCallback( cb );
 }
 
 void LLSliderCtrl::onTabInto()

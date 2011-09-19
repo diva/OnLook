@@ -39,6 +39,7 @@
 #include "llcombobox.h"
 #include "llgroupmgr.h"
 #include "llnamelistctrl.h"
+#include "llnotificationsutil.h"
 #include "llspinctrl.h"
 #include "lltextbox.h"
 #include "llviewerobject.h"
@@ -161,7 +162,7 @@ void LLPanelGroupInvite::impl::submitInvitations()
 		{
 			LLSD args;
 			args["MESSAGE"] = mOwnerWarning;
-			LLNotifications::instance().add("GenericAlertYesCancel", args, LLSD(), boost::bind(&LLPanelGroupInvite::impl::inviteOwnerCallback, this, _1, _2));
+			LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(), boost::bind(&LLPanelGroupInvite::impl::inviteOwnerCallback, this, _1, _2));
 			return; // we'll be called again if user confirms
 		}
 	}

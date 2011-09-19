@@ -101,6 +101,8 @@ public:
 	U16				getGeomCount()		const	{ return mGeomCount; }		// vertex count for this face
 	U16				getGeomIndex()		const	{ return mGeomIndex; }		// index into draw pool
 	U16				getGeomStart()		const	{ return mGeomIndex; }		// index into draw pool
+	void			setTextureIndex(U8 index);
+	U8				getTextureIndex() const		{ return mTextureIndex; }
 	void			setTexture(LLViewerTexture* tex) ;
 	void            switchTexture(LLViewerTexture* new_texture);
 	void            dirtyTexture();
@@ -194,7 +196,6 @@ public:
 	void		updateCenterAgent(); // Update center when xform has changed.
 	void		renderSelectedUV();
 
-	void		renderForSelect(U32 data_mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0);
 	void		renderSelected(LLViewerTexture *image, const LLColor4 &color);
 
 	F32			getKey()					const	{ return mDistance; }
@@ -260,6 +261,7 @@ private:
 	
 	U16			mGeomCount;			// vertex count for this face
 	U16			mGeomIndex;			// index into draw pool
+	U8			mTextureIndex;		// index of texture channel to use for pseudo-atlasing
 	U32			mIndicesCount;
 	U32			mIndicesIndex;		// index into draw pool for indices (yeah, I know!)
 	S32			mIndexInTex ;

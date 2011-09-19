@@ -41,6 +41,7 @@
 #include "llrender.h"
 #include "lldrawable.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "lluictrlfactory.h"
 #include "llbutton.h"
 #include "llface.h"

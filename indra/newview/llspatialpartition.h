@@ -93,7 +93,9 @@ public:
 	LLVector4a mExtents[2];
 	
 	LLPointer<LLVertexBuffer> mVertexBuffer;
-	LLPointer<LLViewerTexture> mTexture;
+	LLPointer<LLViewerTexture>     mTexture;
+	std::vector<LLPointer<LLViewerTexture> > mTextureList;
+
 	LLColor4U mGlowColor;
 	S32 mDebugColor;
 	const LLMatrix4* mTextureMatrix;
@@ -271,6 +273,7 @@ public:
 
 	LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part);
 
+	BOOL isHUDGroup() ;
 	BOOL isDead()							{ return isState(DEAD); }
 	BOOL isState(eSpatialState state) const;	//Using enum type here and below to force type-safeness.
 	BOOL isOcclusionState(eOcclusionState state) const	{ return mOcclusionState[LLViewerCamera::sCurCameraID] & state ? TRUE : FALSE; }
@@ -436,6 +439,7 @@ public:
 	S32 cull(LLCamera &camera, std::vector<LLDrawable *>* results = NULL, BOOL for_select = FALSE); // Cull on arbitrary frustum
 	
 	BOOL isVisible(const LLVector3& v);
+	bool isHUDPartition() ;
 	
 	virtual LLSpatialBridge* asBridge() { return NULL; }
 	virtual BOOL isBridge() { return asBridge() != NULL; }
@@ -644,7 +648,7 @@ public:
 	virtual void rebuildGeom(LLSpatialGroup* group);
 	virtual void rebuildMesh(LLSpatialGroup* group);
 	virtual void getGeometry(LLSpatialGroup* group);
-	void genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort = FALSE);
+	void genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort = FALSE, BOOL batch_textures = FALSE);
 	void registerFace(LLSpatialGroup* group, LLFace* facep, U32 type);
 
 };

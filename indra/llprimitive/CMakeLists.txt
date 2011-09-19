@@ -33,6 +33,7 @@ set(llprimitive_HEADER_FILES
 
     legacy_object_types.h
     llmaterialtable.h
+    llmediaentry.h
     llmodel.h
     llprimitive.h
     llprimtexturelist.h

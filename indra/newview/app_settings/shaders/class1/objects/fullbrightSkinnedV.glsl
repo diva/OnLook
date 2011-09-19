@@ -5,12 +5,10 @@
  * $License$
  */
 
-#version 120
+
 
 void calcAtmospherics(vec3 inPositionEye);
 mat4 getObjectSkinnedTransform();
-
-attribute vec4 object_weight;
 
 void main()
 {

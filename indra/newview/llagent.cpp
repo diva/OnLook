@@ -54,6 +54,7 @@
 #include "llmorphview.h"
 #include "llmoveview.h"
 #include "llchatbar.h"
+#include "llnotificationsutil.h"
 #include "llnotify.h"
 #include "llparcel.h"
 #include "llrendersphere.h"
@@ -248,7 +249,8 @@ LLAgent::LLAgent() :
 	mFirstLogin(FALSE),
 	mGenderChosen(FALSE),
 	mAppearanceSerialNum(0),
-
+	mMouselookModeInSignal(NULL),
+	mMouselookModeOutSignal(NULL),
 	mPendingLure(NULL)
 {
 	for (U32 i = 0; i < TOTAL_CONTROLS; i++)
@@ -294,6 +296,11 @@ void LLAgent::cleanup()
 LLAgent::~LLAgent()
 {
 	cleanup();
+
+	delete mMouselookModeInSignal;
+	mMouselookModeInSignal = NULL;
+	delete mMouselookModeOutSignal;
+	mMouselookModeOutSignal = NULL;
 
 	delete mAgentAccess;
 	mAgentAccess = NULL;
@@ -544,7 +551,7 @@ void LLAgent::setFlying(BOOL fly)
 {
 	if (isAgentAvatarValid())
 	{
-		if(mAvatarObject->mSignaledAnimations.find(ANIM_AGENT_STANDUP) != mAvatarObject->mSignaledAnimations.end())
+		if(fly && mAvatarObject->mSignaledAnimations.find(ANIM_AGENT_STANDUP) != mAvatarObject->mSignaledAnimations.end())
 		{
 			return;
 		}
@@ -1438,11 +1445,11 @@ void LLAgent::stopAutoPilot(BOOL user_cancel)
 		if (user_cancel && !mAutoPilotBehaviorName.empty())
 		{
 			if (mAutoPilotBehaviorName == "Sit")
-				LLNotifications::instance().add("CancelledSit");
+				LLNotificationsUtil::add("CancelledSit");
 			else if (mAutoPilotBehaviorName == "Attach")
-				LLNotifications::instance().add("CancelledAttach");
+				LLNotificationsUtil::add("CancelledAttach");
 			else
-				LLNotifications::instance().add("Cancelled");
+				LLNotificationsUtil::add("Cancelled");
 		}
 	}
 }
@@ -1846,6 +1853,11 @@ void LLAgent::endAnimationUpdateUI()
 
 		LLToolMgr::getInstance()->setCurrentToolset(gBasicToolset);
 
+
+		if (mMouselookModeOutSignal)
+		{
+			(*mMouselookModeOutSignal)();
+		}
 		// Only pop if we have pushed...
 		if (TRUE == mViewsPushed)
 		{
@@ -1938,6 +1950,10 @@ void LLAgent::endAnimationUpdateUI()
 
 		mViewsPushed = TRUE;
 
+		if (mMouselookModeInSignal)
+		{
+			(*mMouselookModeInSignal)();
+		}
 		gFloaterView->pushVisibleAll(FALSE, get_skip_list());
 
 		if( gMorphView )
@@ -2028,6 +2044,17 @@ void LLAgent::endAnimationUpdateUI()
 	gAgentCamera.updateLastCamera();
 }
 
+boost::signals2::connection LLAgent::setMouselookModeInCallback( const camera_signal_t::slot_type& cb )
+{
+	if (!mMouselookModeInSignal) mMouselookModeInSignal = new camera_signal_t();
+	return mMouselookModeInSignal->connect(cb);
+}
+
+boost::signals2::connection LLAgent::setMouselookModeOutCallback( const camera_signal_t::slot_type& cb )
+{
+	if (!mMouselookModeOutSignal) mMouselookModeOutSignal = new camera_signal_t();
+	return mMouselookModeOutSignal->connect(cb);
+}
 
 //-----------------------------------------------------------------------------
 // heardChat()
@@ -2196,6 +2223,11 @@ void LLAgent::onAnimStop(const LLUUID& id)
 bool LLAgent::isGodlike() const
 {
 	return mAgentAccess->isGodlike();
+}
+
+bool LLAgent::isGodlikeWithoutAdminMenuFakery() const
+{
+	return mAgentAccess->isGodlikeWithoutAdminMenuFakery();
 }
 
 U8 LLAgent::getGodLevel() const
@@ -3202,7 +3234,7 @@ void LLAgent::processAgentCachedTextureResponse(LLMessageSystem *mesgsys, void *
 {
 	gAgentQueryManager.mNumPendingQueries--;
 
-	if (!isAgentAvatarValid())
+	if (!isAgentAvatarValid() || gAgent.getAvatarObject()->isDead())
 	{
 		llwarns << "No avatar for user in cached texture update!" << llendl;
 		return;
@@ -3604,14 +3636,29 @@ void LLAgent::setTeleportState(ETeleportState state)
 	{
 		LLFloaterSnapshot::hide(0);
 	}
-	if (mTeleportState == TELEPORT_NONE)
-	{
-		mbTeleportKeepsLookAt = false;
-	}
-	if ((mTeleportState == TELEPORT_MOVING))
-	{
+
+	switch (mTeleportState)
+	
+	{	
+		case TELEPORT_NONE:
+			mbTeleportKeepsLookAt = false;
+			break;
+
+		case TELEPORT_MOVING:
 		// We're outa here. Save "back" slurl.
 		mTeleportSourceSLURL = getSLURL();
+			break;
+
+		case TELEPORT_ARRIVING:
+		// First two position updates after a teleport tend to be weird
+		LLViewerStats::getInstance()->mAgentPositionSnaps.mCountOfNextUpdatesToIgnore = 2;
+
+		// Let the interested parties know we've teleported.
+		LLViewerParcelMgr::getInstance()->onTeleportFinished(false, getPositionGlobal());
+			break;
+
+		default:
+			break;
 	}
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Version: 1.23.4 | Checked: 2009-07-07 (RLVa-1.0.0d) | Added: RLVa-0.2.0b
 	if ( (rlv_handler_t::isEnabled()) && (TELEPORT_NONE == mTeleportState) )
@@ -3928,6 +3975,16 @@ void LLAgent::sendAgentDataUpdateRequest()
 	sendReliableMessage();
 }
 
+void LLAgent::sendAgentUserInfoRequest()
+{
+	if(getID().isNull())
+		return; // not logged in
+	gMessageSystem->newMessageFast(_PREHASH_UserInfoRequest);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, getID());
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, getSessionID());
+	sendReliableMessage();
+}
 
 void LLAgent::observeFriends()
 {
@@ -3991,6 +4048,18 @@ void LLAgent::parseTeleportMessages(const std::string& xml_filename)
 	}//end for (all message sets in xml file)
 }
 
+
+void LLAgent::sendAgentUpdateUserInfo(bool im_via_email, const std::string& directory_visibility )
+{
+	gMessageSystem->newMessageFast(_PREHASH_UpdateUserInfo);
+	gMessageSystem->nextBlockFast(_PREHASH_AgentData);
+	gMessageSystem->addUUIDFast(_PREHASH_AgentID, getID());
+	gMessageSystem->addUUIDFast(_PREHASH_SessionID, getSessionID());
+	gMessageSystem->nextBlockFast(_PREHASH_UserData);
+	gMessageSystem->addBOOLFast(_PREHASH_IMViaEMail, im_via_email);
+	gMessageSystem->addString("DirectoryVisibility", directory_visibility);
+	gAgent.sendReliableMessage();
+}
 // Draw a representation of current autopilot target
 void LLAgent::renderAutoPilotTarget()
 {

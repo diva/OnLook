@@ -108,7 +108,6 @@ S32 LLViewerTexture::sMaxSmallImageSize = MAX_CACHED_RAW_IMAGE_AREA ;
 BOOL LLViewerTexture::sFreezeImageScalingDown = FALSE ;
 F32 LLViewerTexture::sCurrentTime = 0.0f ;
 //BOOL LLViewerTexture::sUseTextureAtlas        = FALSE ;
-BOOL LLViewerTexture::sDontLoadVolumeTextures = FALSE ;
 
 const F32 desired_discard_bias_min = -2.0f; // -max number of levels to improve image quality by
 const F32 desired_discard_bias_max = (F32)MAX_DISCARD_LEVEL; // max number of levels to reduce image quality by
@@ -1206,6 +1205,7 @@ void LLViewerFetchedTexture::init(bool firstinit)
 	mSavedRawDiscardLevel = -1 ;
 	mDesiredSavedRawDiscardLevel = -1 ;
 	mLastReferencedSavedRawImageTime = 0.0f ;
+	mKeptSavedRawImageTime = 0.f ;
 	mLastCallBackActiveTime = 0.f;
 }
 
@@ -1465,9 +1465,16 @@ BOOL LLViewerFetchedTexture::createTexture(S32 usename/*= 0*/)
 			mOrigWidth = mRawImage->getWidth();
 			mOrigHeight = mRawImage->getHeight();
 
-			// leave black border, do not scale image content
-			mRawImage->expandToPowerOfTwo(MAX_IMAGE_SIZE, FALSE);
 			
+			if (mBoostLevel == BOOST_PREVIEW)
+			{ 
+				mRawImage->biasedScaleToPowerOfTwo(1024);
+			}
+			else
+			{ // leave black border, do not scale image content
+				mRawImage->expandToPowerOfTwo(MAX_IMAGE_SIZE, FALSE);
+			}
+		
 			mFullWidth = mRawImage->getWidth();
 			mFullHeight = mRawImage->getHeight();
 			setTexelsPerImage();
@@ -1551,7 +1558,7 @@ void LLViewerFetchedTexture::processTextureStats()
 	{
 		updateVirtualSize() ;
 		
-		static LLCachedControl<bool> textures_fullres("TextureLoadFullRes",false);
+		static LLCachedControl<bool> textures_fullres(gSavedSettings,"TextureLoadFullRes");
 		
 		if (textures_fullres)
 		{
@@ -1839,7 +1846,7 @@ S32 LLViewerFetchedTexture::getCurrentDiscardLevelForFetching()
 
 bool LLViewerFetchedTexture::updateFetch()
 {
-	static LLCachedControl<bool> textures_decode_disabled("TextureDecodeDisabled",false);
+	static LLCachedControl<bool> textures_decode_disabled(gSavedSettings,"TextureDecodeDisabled");
 	if(textures_decode_disabled)
 	{
 		return false ;
@@ -2043,11 +2050,11 @@ bool LLViewerFetchedTexture::updateFetch()
 			c = mComponents;
 		}
 
-		/*const U32 override_tex_discard_level = gSavedSettings.getU32("TextureDiscardLevel");
+		const U32 override_tex_discard_level = gSavedSettings.getU32("TextureDiscardLevel");
 		if (override_tex_discard_level != 0)
 		{
 			desired_discard = override_tex_discard_level;
-		}*/
+		}
 		
 		// bypass texturefetch directly by pulling from LLTextureCache
 		bool fetch_request_created = false;
@@ -2755,8 +2762,16 @@ void LLViewerFetchedTexture::saveRawImage()
 	mLastReferencedSavedRawImageTime = sCurrentTime ;
 }
 
-void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard) 
+void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard, F32 kept_time) 
 { 
+	mKeptSavedRawImageTime = kept_time ;
+	mLastReferencedSavedRawImageTime = sCurrentTime ;
+
+	if(mSavedRawDiscardLevel > -1 && mSavedRawDiscardLevel <= desired_discard)
+	{
+		return ; //raw imge is ready.
+	}
+
 	if(!mForceToSaveRawImage || mDesiredSavedRawDiscardLevel < 0 || mDesiredSavedRawDiscardLevel > desired_discard)
 	{
 		mForceToSaveRawImage = TRUE ;
@@ -2777,6 +2792,14 @@ void LLViewerFetchedTexture::forceToSaveRawImage(S32 desired_discard)
 }
 void LLViewerFetchedTexture::destroySavedRawImage()
 {
+	if(mLastReferencedSavedRawImageTime < mKeptSavedRawImageTime)
+	{
+		return ; //keep the saved raw image.
+	}
+
+	mForceToSaveRawImage  = FALSE ;
+	mSaveRawImage = FALSE ;
+
 	clearCallbackEntryList() ;
 	
 	mSavedRawImage = NULL ;
@@ -2785,6 +2808,7 @@ void LLViewerFetchedTexture::destroySavedRawImage()
 	mSavedRawDiscardLevel = -1 ;
 	mDesiredSavedRawDiscardLevel = -1 ;
 	mLastReferencedSavedRawImageTime = 0.0f ;
+	mKeptSavedRawImageTime = 0.f ;
 }
 
 LLImageRaw* LLViewerFetchedTexture::getSavedRawImage() 
@@ -3030,8 +3054,8 @@ BOOL LLViewerLODTexture::isUpdateFrozen()
 void LLViewerLODTexture::processTextureStats()
 {
 	updateVirtualSize() ;
-
-	static LLCachedControl<bool> textures_fullres("TextureLoadFullRes", false);
+	
+	static LLCachedControl<bool> textures_fullres(gSavedSettings,"TextureLoadFullRes");
 	
 	if (textures_fullres)
 	{
