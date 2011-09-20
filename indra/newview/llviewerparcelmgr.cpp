@@ -130,7 +130,11 @@ LLViewerParcelMgr::LLViewerParcelMgr()
 	mCollisionBanned(0),
 	mCollisionTimer(),
 	mMediaParcelId(0),
-	mMediaRegionId(0)
+	mMediaRegionId(0),
+	mHighlightSegments(NULL),
+	mCollisionSegments(NULL),
+	mAgentParcelOverlay(NULL),
+	mParcelsPerEdge(0)
 {
 	mCurrentParcel = new LLParcel();
 	mCurrentParcelSelection = new LLParcelSelection(mCurrentParcel);
