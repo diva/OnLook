@@ -1,6 +1,6 @@
 /**
- * @file aiaprpool.h
- * @brief Implementation of AIAPRPool.
+ * @file LLAPRPool.h
+ * @brief Implementation of LLAPRPool.
  *
  * Copyright (c) 2010, Aleric Inglewood.
  *
@@ -34,11 +34,15 @@
  *     of subpools by threads other than the parent pool owner.
  */
 
-#ifndef AIAPRPOOL_H
-#define AIAPRPOOL_H
+#ifndef LL_LLAPRPOOL_H
+#define LL_LLAPRPOOL_H
 
 #ifdef LL_WINDOWS
+#pragma warning(push)
+#pragma warning(disable:4996)
+#include <winsock2.h>
 #include <ws2tcpip.h>		// Needed before including apr_portable.h
+#pragma warning(pop)
 #endif
 
 #include "apr_portable.h"
@@ -53,27 +57,27 @@ extern void ll_init_apr();
  * Usage of this class should be restricted to passing it to libapr-1 function calls that need it.
  *
  */
-class LL_COMMON_API AIAPRPool
+class LL_COMMON_API LLAPRPool
 {
 protected:
 	apr_pool_t* mPool;					//!< Pointer to the underlaying pool. NULL if not initialized.
-	AIAPRPool* mParent;			//!< Pointer to the parent pool, if any. Only valid when mPool is non-zero.
+	LLAPRPool* mParent;			//!< Pointer to the parent pool, if any. Only valid when mPool is non-zero.
 	apr_os_thread_t mOwner;				//!< The thread that owns this memory pool. Only valid when mPool is non-zero.
 
 public:
 	//! Construct an uninitialized (destructed) pool.
-	AIAPRPool(void) : mPool(NULL) { }
+	LLAPRPool(void) : mPool(NULL) { }
 
     //! Construct a subpool from an existing pool.
 	// This is not a copy-constructor, this class doesn't have one!
-	AIAPRPool(AIAPRPool& parent) : mPool(NULL) { create(parent); }
+	LLAPRPool(LLAPRPool& parent) : mPool(NULL) { create(parent); }
 
 	//! Destruct the memory pool (free all of it's subpools and allocated memory).
-	~AIAPRPool() { destroy(); }
+	~LLAPRPool() { destroy(); }
 
 protected:
-	// Create a pool that is allocated from the Operating System. Only used by AIAPRRootPool.
-	AIAPRPool(int) : mPool(NULL), mParent(NULL), mOwner(apr_os_thread_current())
+	// Create a pool that is allocated from the Operating System. Only used by LLAPRRootPool.
+	LLAPRPool(int) : mPool(NULL), mParent(NULL), mOwner(apr_os_thread_current())
 	{
 		apr_status_t const apr_pool_create_status = apr_pool_create(&mPool, NULL);
 		llassert_always(apr_pool_create_status == APR_SUCCESS);
@@ -84,15 +88,15 @@ protected:
 public:
 	//! Create a subpool from parent. May only be called for an uninitialized/destroyed pool.
 	// The default parameter causes the root pool of the current thread to be used.
-	void create(AIAPRPool& parent = *static_cast<AIAPRPool*>(NULL));
+	void create(LLAPRPool& parent = *static_cast<LLAPRPool*>(NULL));
 
 	//! Destroy the (sub)pool, if any.
 	void destroy(void);
 
 	// Use some safebool idiom (http://www.artima.com/cppsource/safebool.html) rather than operator bool.
-	typedef apr_pool_t* const AIAPRPool::* const bool_type;
-	//! Return true if the pool is initialized.
-	operator bool_type() const { return mPool ? &AIAPRPool::mPool : 0; }
+	typedef LLAPRPool* const LLAPRPool::* const bool_type;
+	/// Return true if the pool is initialized.
+	operator bool_type() const { return mPool ? &LLAPRPool::mParent : 0; }
 
 	// Painful, but we have to either provide access to this, or wrap
 	// every APR function call that needs a apr_pool_t* to be passed.
@@ -133,7 +137,7 @@ public:
 
 private:
 	bool parent_is_being_destructed(void);
-	static apr_status_t s_plain_cleanup(void* userdata) { return static_cast<AIAPRPool*>(userdata)->plain_cleanup(); }
+	static apr_status_t s_plain_cleanup(void* userdata) { return static_cast<LLAPRPool*>(userdata)->plain_cleanup(); }
 
 	apr_status_t plain_cleanup(void)
 	{
@@ -148,30 +152,30 @@ private:
 	}
 };
 
-class AIAPRInitialization
+class LLAPRInitialization
 {
 public:
-	AIAPRInitialization(void);
+	LLAPRInitialization(void);
 };
 
 /**
  * @brief Root memory pool (allocates memory from the operating system).
  *
- * This class should only be used by AIThreadLocalData and AIThreadSafeSimpleDCRootPool_pbase
+ * This class should only be used by LLThreadLocalData and AIThreadSafeSimpleDCRootPool_pbase
  * (and LLMutexRootPool when APR_HAS_THREADS isn't defined).
  */
-class LL_COMMON_API AIAPRRootPool : public AIAPRInitialization, public AIAPRPool
+class LL_COMMON_API LLAPRRootPool : public LLAPRInitialization, public LLAPRPool
 {
 private:
-	friend class AIThreadLocalData;
+	friend class LLThreadLocalData;
 	friend class AIThreadSafeSimpleDCRootPool_pbase;
 #if !APR_HAS_THREADS
 	friend class LLMutexRootPool;
 #endif
 	//! Construct a root memory pool.
-	//  Should only be used by AIThreadLocalData and AIThreadSafeSimpleDCRootPool_pbase.
-	AIAPRRootPool(void);
-	~AIAPRRootPool();
+	//  Should only be used by LLThreadLocalData and AIThreadSafeSimpleDCRootPool_pbase.
+	LLAPRRootPool(void);
+	~LLAPRRootPool();
 
 private:
 	// Keep track of how many root pools exist and when the last one is destructed.
@@ -179,10 +183,10 @@ private:
 	static apr_uint32_t volatile sCount;
 
 public:
-	// Return a global root pool that is independent of AIThreadLocalData.
+	// Return a global root pool that is independent of LLThreadLocalData.
 	// Normally you should not use this. Only use for early initialization
 	// (before main) and deinitialization (after main).
-	static AIAPRRootPool& get(void);
+	static LLAPRRootPool& get(void);
 
 #if APR_POOL_DEBUG
 	void grab_ownership(void)
@@ -194,11 +198,11 @@ public:
 #endif
 
 private:
-	// Used for constructing the Special Global Root Pool (returned by AIAPRRootPool::get).
+	// Used for constructing the Special Global Root Pool (returned by LLAPRRootPool::get).
 	// It is the same as the default constructor but omits to increment sCount. As a result,
-	// we must be sure that at least one other AIAPRRootPool is created before termination
-	// of the application (which is the case: we create one AIAPRRootPool per thread).
-	AIAPRRootPool(int) : AIAPRInitialization(), AIAPRPool(0) { }
+	// we must be sure that at least one other LLAPRRootPool is created before termination
+	// of the application (which is the case: we create one LLAPRRootPool per thread).
+	LLAPRRootPool(int) : LLAPRInitialization(), LLAPRPool(0) { }
 };
 
 //! Volatile memory pool
@@ -210,29 +214,33 @@ private:
 // the system memory to be allocated more efficiently and not
 // get scattered through RAM.
 //
-class LL_COMMON_API AIVolatileAPRPool : protected AIAPRPool
+class LL_COMMON_API LLVolatileAPRPool : protected LLAPRPool
 {
 public:
-	AIVolatileAPRPool(void) : mNumActiveRef(0), mNumTotalRef(0) { }
+	LLVolatileAPRPool(void) : mNumActiveRef(0), mNumTotalRef(0) { }
 
-	apr_pool_t* getVolatileAPRPool(void)
-	{
-		if (!mPool) create();
-		++mNumActiveRef;
-		++mNumTotalRef;
-		return AIAPRPool::operator()();
-	}
 	void clearVolatileAPRPool(void);
 
 	bool isOld(void) const { return mNumTotalRef > FULL_VOLATILE_APR_POOL; }
 	bool isUnused() const { return mNumActiveRef == 0; }
 
 private:
+	friend class LLScopedVolatileAPRPool;
+	friend class LLAPRFile;
+	apr_pool_t* getVolatileAPRPool(void)	// The use of apr_pool_t is OK here.
+	{
+		if (!mPool) create();
+		++mNumActiveRef;
+		++mNumTotalRef;
+		return LLAPRPool::operator()();
+	}
+
+private:
 	S32 mNumActiveRef;	// Number of active uses of the pool.
 	S32 mNumTotalRef;	// Number of total uses of the pool since last creation.
 
-	// Maximum number of references to AIVolatileAPRPool until the pool is recreated.
+	// Maximum number of references to LLVolatileAPRPool until the pool is recreated.
 	static S32 const FULL_VOLATILE_APR_POOL = 1024;
 };
 
-#endif // AIAPRPOOL_H
+#endif // LLAPRPool_H

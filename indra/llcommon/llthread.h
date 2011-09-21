@@ -33,12 +33,11 @@
 #ifndef LL_LLTHREAD_H
 #define LL_LLTHREAD_H
 
-#include "llapr.h"
 #include "llapp.h"
+#include "llapr.h"
 #include "llmemory.h"
-
 #include "apr_thread_cond.h"
-#include "aiaprpool.h"
+#include "llaprpool.h"
 
 #ifdef SHOW_ASSERT
 extern LL_COMMON_API bool is_main_thread(void);
@@ -54,20 +53,20 @@ class LLCondition;
 #define ll_thread_local __thread
 #endif
 
-class LL_COMMON_API AIThreadLocalData
+class LL_COMMON_API LLThreadLocalData
 {
 private:
 	static apr_threadkey_t* sThreadLocalDataKey;
 
 public:
 	// Thread-local memory pool.
-	AIAPRRootPool mRootPool;
-	AIVolatileAPRPool mVolatileAPRPool;
+	LLAPRRootPool mRootPool;
+	LLVolatileAPRPool mVolatileAPRPool;
 
 	static void init(void);
 	static void destroy(void* thread_local_data);
 	static void create(LLThread* pthread);
-	static AIThreadLocalData& tldata(void);
+	static LLThreadLocalData& tldata(void);
 };
 
 class LL_COMMON_API LLThread
@@ -113,7 +112,7 @@ public:
 	void start(void);
 
 	// Return thread-local data for the current thread.
-	static AIThreadLocalData& tldata(void) { return AIThreadLocalData::tldata(); }
+	static LLThreadLocalData& tldata(void) { return LLThreadLocalData::tldata(); }
 
 	U32 getID() const { return mID; }
 
@@ -131,8 +130,8 @@ protected:
 	volatile EThreadStatus		mStatus;
 	U32					mID;
 
-	friend void AIThreadLocalData::create(LLThread* threadp);
-	AIThreadLocalData*  mThreadLocalData;
+	friend void LLThreadLocalData::create(LLThread* threadp);
+	LLThreadLocalData*  mThreadLocalData;
 
 	void setQuitting();
 	
@@ -188,7 +187,7 @@ protected:
 class LL_COMMON_API LLMutex : public LLMutexBase
 {
 public:
-	LLMutex(AIAPRPool& parent = LLThread::tldata().mRootPool) : mPool(parent)
+	LLMutex(LLAPRPool& parent = LLThread::tldata().mRootPool) : mPool(parent)
 	{
 		apr_thread_mutex_create(&mAPRMutexp, APR_THREAD_MUTEX_UNNESTED, mPool());
 	}
@@ -200,7 +199,7 @@ public:
 	}
 
 protected:
-	AIAPRPool mPool;
+	LLAPRPool mPool;
 private:
 	// Disable copy construction, as si teh bomb!!! -SG
 	LLMutex(const LLMutex&);
@@ -230,7 +229,7 @@ public:
 	}
 
 protected:
-	AIAPRRootPool mRootPool;
+	LLAPRRootPool mRootPool;
 };
 #endif // APR_HAS_THREADS
 
@@ -238,7 +237,7 @@ protected:
 class LL_COMMON_API LLCondition : public LLMutex
 {
 public:
-	LLCondition(AIAPRPool& parent = LLThread::tldata().mRootPool);
+	LLCondition(LLAPRPool& parent = LLThread::tldata().mRootPool);
 	~LLCondition();
 	
 	void wait();		// blocks
@@ -268,7 +267,7 @@ private:
 class AIRWLock
 {
 public:
-	AIRWLock(AIAPRPool& parent = LLThread::tldata().mRootPool) :
+	AIRWLock(LLAPRPool& parent = LLThread::tldata().mRootPool) :
 		mWriterWaitingMutex(parent), mNoHoldersCondition(parent), mHoldersCount(0), mWriterIsWaiting(false) { }
 
 private:

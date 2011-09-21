@@ -168,7 +168,7 @@ protected:
 	apr_socket_t* mSocket;
 
 	// Our memory pool.
-	AIAPRPool mPool;
+	LLAPRPool mPool;
 
 	// The port if we know it.
 	U16 mPort;

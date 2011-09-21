@@ -15,11 +15,11 @@ include_directories(
     )
 
 set(llcommon_SOURCE_FILES
-	aiaprpool.cpp
 	imageids.cpp
 	indra_constants.cpp
     llapp.cpp
     llapr.cpp
+    llaprpool.cpp
     llassettype.cpp
 	llavatarname.cpp
     llbase32.cpp
@@ -60,6 +60,7 @@ set(llcommon_SOURCE_FILES
     llrand.cpp
     llrefcount.cpp
     llrun.cpp
+    llscopedvolatileaprpool.h
     llsd.cpp
     llsdserialize.cpp
     llsdserialize_xml.cpp
@@ -73,6 +74,7 @@ set(llcommon_SOURCE_FILES
     llstringtable.cpp
     llsys.cpp
     llthread.cpp
+    llthreadsafequeue.cpp
     lltimer.cpp
     lluri.cpp
     lluuid.cpp
@@ -87,7 +89,6 @@ set(llcommon_SOURCE_FILES
 set(llcommon_HEADER_FILES
     CMakeLists.txt
 
-    aiaprpool.h
     aithreadsafe.h
     bitpack.h
     ctype_workaround.h
@@ -101,6 +102,7 @@ set(llcommon_HEADER_FILES
     llavatarname.h
     llapp.h
     llapr.h
+    llaprpool.h
     llassettype.h
     llassoclist.h
     llavatarconstants.h
@@ -171,10 +173,10 @@ set(llcommon_HEADER_FILES
     llptrskipmap.h
     llqueuedthread.h
     llrand.h
+    llrefcount.h
     llrun.h
     llrefcount.h
     llsafehandle.h
-    llscopedvolatileaprpool.h
     llsd.h
     llsdserialize.h
     llsdserialize_xml.h
@@ -195,6 +197,7 @@ set(llcommon_HEADER_FILES
     llstringtable.h
     llsys.h
     llthread.h
+    llthreadsafequeue.h
     lltimer.h
     lltreeiterators.h
     lluri.h

@@ -36,7 +36,7 @@
 #include <apr_file_io.h>
 #include <apr_thread_proc.h>
 #include "llprocesslauncher.h"
-#include "aiaprpool.h"
+#include "llaprpool.h"
 
 #include <iostream>
 #if LL_DARWIN || LL_LINUX
@@ -346,7 +346,7 @@ int LLProcessLauncher::launch(void)
 		// Set up a pipe to the child process for error reporting.
 		apr_file_t* in;
 		apr_file_t* out;
-		AIAPRPool pool;
+		LLAPRPool pool;
 		pool.create();
 #if(APR_VERSION_MAJOR==1 && APR_VERSION_MINOR>=3 || APR_VERSION_MAJOR>1)
 		apr_status_t status = apr_file_pipe_create_ex(&in, &out, APR_FULL_BLOCK, pool());

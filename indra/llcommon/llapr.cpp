@@ -151,15 +151,15 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 		if (access_type == short_lived)
 		{
 			// Use a "volatile" thread-local pool.
-			mVolatileFilePoolp = &AIThreadLocalData::tldata().mVolatileAPRPool;
+			mVolatileFilePoolp = &LLThreadLocalData::tldata().mVolatileAPRPool;
 			// Access the pool and increment it's reference count.
-			// The reference count of AIVolatileAPRPool objects will be decremented
+			// The reference count of LLVolatileAPRPool objects will be decremented
 			// again in LLAPRFile::close by calling mVolatileFilePoolp->clearVolatileAPRPool().
 			apr_file_open_pool = mVolatileFilePoolp->getVolatileAPRPool();
 		}
 		else
 		{
-			mRegularFilePoolp = new AIAPRPool(AIThreadLocalData::tldata().mRootPool);
+			mRegularFilePoolp = new LLAPRPool(LLThreadLocalData::tldata().mRootPool);
 			apr_file_open_pool = (*mRegularFilePoolp)();
 		}
 		status = apr_file_open(&mFile, filename.c_str(), flags, APR_OS_DEFAULT, apr_file_open_pool);

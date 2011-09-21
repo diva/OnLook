@@ -1,5 +1,5 @@
 /**
- * @file aiaprpool.cpp
+ * @file LLAPRPool.cpp
  *
  * Copyright (c) 2010, Aleric Inglewood.
  *
@@ -36,18 +36,18 @@
 #include "linden_common.h"
 
 #include "llerror.h"
-#include "aiaprpool.h"
+#include "llaprpool.h"
 #include "llthread.h"
 
 // Create a subpool from parent.
-void AIAPRPool::create(AIAPRPool& parent)
+void LLAPRPool::create(LLAPRPool& parent)
 {
 	llassert(!mPool);			// Must be non-initialized.
 	mParent = &parent;
 	if (!mParent)				// Using the default parameter?
 	{
 		// By default use the root pool of the current thread.
-		mParent = &AIThreadLocalData::tldata().mRootPool;
+		mParent = &LLThreadLocalData::tldata().mRootPool;
 	}
 	llassert(mParent->mPool);	// Parent must be initialized.
 #if APR_HAS_THREADS
@@ -72,7 +72,7 @@ void AIAPRPool::create(AIAPRPool& parent)
 }
 
 // Destroy the (sub)pool, if any.
-void AIAPRPool::destroy(void)
+void LLAPRPool::destroy(void)
 {
 	// Only do anything if we are not already (being) destroyed.
 	if (mPool)
@@ -92,12 +92,12 @@ void AIAPRPool::destroy(void)
 	}
 }
 
-bool AIAPRPool::parent_is_being_destructed(void)
+bool LLAPRPool::parent_is_being_destructed(void)
 {
 	return mParent && (!mParent->mPool || mParent->parent_is_being_destructed());
 }
 
-AIAPRInitialization::AIAPRInitialization(void)
+LLAPRInitialization::LLAPRInitialization(void)
 {
 	static bool apr_initialized = false;
 
@@ -109,13 +109,13 @@ AIAPRInitialization::AIAPRInitialization(void)
 	apr_initialized = true;
 }
 
-bool AIAPRRootPool::sCountInitialized = false;
-apr_uint32_t volatile AIAPRRootPool::sCount;
+bool LLAPRRootPool::sCountInitialized = false;
+apr_uint32_t volatile LLAPRRootPool::sCount;
 
-extern apr_thread_mutex_t* gLogMutexp;
-extern apr_thread_mutex_t* gCallStacksLogMutexp;
+apr_thread_mutex_t* gLogMutexp;
+apr_thread_mutex_t* gCallStacksLogMutexp;
 
-AIAPRRootPool::AIAPRRootPool(void) : AIAPRInitialization(), AIAPRPool(0)
+LLAPRRootPool::LLAPRRootPool(void) : LLAPRInitialization(), LLAPRPool(0)
 {
 	// sCountInitialized don't need locking because when we get here there is still only a single thread.
 	if (!sCountInitialized)
@@ -130,14 +130,14 @@ AIAPRRootPool::AIAPRRootPool(void) : AIAPRInitialization(), AIAPRPool(0)
 		sCountInitialized = true;
 
 		// Initialize thread-local APR pool support.
-		// Because this recursively calls AIAPRRootPool::AIAPRRootPool(void)
+		// Because this recursively calls LLAPRRootPool::LLAPRRootPool(void)
 		// it must be done last, so that sCount is already initialized.
-		AIThreadLocalData::init();
+		LLThreadLocalData::init();
 	}
 	apr_atomic_inc32(&sCount);
 }
 
-AIAPRRootPool::~AIAPRRootPool()
+LLAPRRootPool::~LLAPRRootPool()
 {
 	if (!apr_atomic_dec32(&sCount))
 	{
@@ -161,21 +161,21 @@ AIAPRRootPool::~AIAPRRootPool()
 			gCallStacksLogMutexp = NULL;
 		}
 
-		// Must destroy ALL, and therefore this last AIAPRRootPool, before terminating APR.
-		static_cast<AIAPRRootPool*>(this)->destroy();
+		// Must destroy ALL, and therefore this last LLAPRRootPool, before terminating APR.
+		static_cast<LLAPRRootPool*>(this)->destroy();
 
 		apr_terminate();
 	}
 }
 
 //static
-AIAPRRootPool& AIAPRRootPool::get(void)
+LLAPRRootPool& LLAPRRootPool::get(void)
 {
-  static AIAPRRootPool global_APRpool(0);		// This is what used to be gAPRPoolp.
+  static LLAPRRootPool global_APRpool(0);		// This is what used to be gAPRPoolp.
   return global_APRpool;
 }
 
-void AIVolatileAPRPool::clearVolatileAPRPool()
+void LLVolatileAPRPool::clearVolatileAPRPool()
 {
 	llassert_always(mNumActiveRef > 0);
 	if (--mNumActiveRef == 0)

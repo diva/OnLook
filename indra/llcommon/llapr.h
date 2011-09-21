@@ -48,8 +48,8 @@
 #include "apr_atomic.h"
 #include "llstring.h"
 
-class AIAPRPool;
-class AIVolatileAPRPool;
+class LLAPRPool;
+class LLVolatileAPRPool;
 
 /** 
  * @class LLScopedLock
@@ -140,8 +140,8 @@ class LL_COMMON_API LLAPRFile : boost::noncopyable
 	// make this non copyable since a copy closes the file
 private:
 	apr_file_t* mFile ;
-	AIVolatileAPRPool* mVolatileFilePoolp;	// (Thread local) APR pool currently in use.
-	AIAPRPool* mRegularFilePoolp;		// ...or a regular pool.
+	LLVolatileAPRPool* mVolatileFilePoolp;	// (Thread local) APR pool currently in use.
+	LLAPRPool* mRegularFilePoolp;		// ...or a regular pool.
 
 public:
 	enum access_t {
