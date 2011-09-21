@@ -495,7 +495,8 @@ bool LLTextureCacheRemoteWorker::doRead()
 			mReadData = data;
 
 			// Read the data at last
-			S32 bytes_read = LLAPRFile::readEx(filename, mReadData + data_offset,
+			S32 bytes_read = LLAPRFile::readEx(filename, 
+											 mReadData + data_offset,
 											 file_offset, file_size);
 			if (bytes_read != file_size)
 			{
@@ -646,7 +647,9 @@ bool LLTextureCacheRemoteWorker::doWrite()
 			// build the cache file name from the UUID
 			std::string filename = mCache->getTextureFileName(mID);			
 // 			llinfos << "Writing Body: " << filename << " Bytes: " << file_offset+file_size << llendl;
-			S32 bytes_written = LLAPRFile::writeEx(filename, mWriteData + TEXTURE_CACHE_ENTRY_SIZE, 0, file_size);
+			S32 bytes_written = LLAPRFile::writeEx(	filename, 
+													mWriteData + TEXTURE_CACHE_ENTRY_SIZE,
+													0, file_size);
 			if (bytes_written <= 0)
 			{
 				llwarns << "LLTextureCacheWorker: "  << mID
