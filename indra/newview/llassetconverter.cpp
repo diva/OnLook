@@ -9,7 +9,7 @@
 #include "llwearable.h"
 #include "llbvhloader.h"
 #include <boost/bind.hpp>
-struct
+struct conversion_s
 {
 	std::string extension;
 	LLAssetType::EType type;
