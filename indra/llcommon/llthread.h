@@ -97,7 +97,7 @@ public:
 	// Called from MAIN THREAD.
 	void pause();
 	void unpause();
-	bool isPaused() { return isStopped() || mPaused == TRUE; }
+	bool isPaused() { return isStopped() || mPaused; }
 	
 	// Cause the thread to wake up and check its condition
 	void wake();
@@ -117,7 +117,7 @@ public:
 	U32 getID() const { return mID; }
 
 private:
-	BOOL				mPaused;
+	bool				mPaused;
 	
 	// static function passed to APR thread creation routine
 	static void *APR_THREAD_FUNC staticRun(apr_thread_t *apr_threadp, void *datap);
@@ -159,6 +159,16 @@ protected:
 
 //============================================================================
 
+#define MUTEX_DEBUG (LL_DEBUG || LL_RELEASE_WITH_DEBUG_INFO)
+
+#ifdef MUTEX_DEBUG
+// We really shouldn't be using recursive locks. Make sure of that in debug mode.
+#define MUTEX_FLAG APR_THREAD_MUTEX_UNNESTED
+#else
+// Use the fastest platform-optimal lock behavior (can be recursive or non-recursive).
+#define MUTEX_FLAG APR_THREAD_MUTEX_DEFAULT
+#endif
+
 class LL_COMMON_API LLMutexBase
 {
 public:
@@ -167,15 +177,17 @@ public:
 		NO_THREAD = 0xFFFFFFFF
 	} e_locking_thread;
 
-	LLMutexBase() : mLockingThread(NO_THREAD), mCount(0) {}
+	LLMutexBase() ;
 	
 	void lock();		//blocks
 	void unlock();
 	// Returns true if lock was obtained successfully.
 	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
 
-	bool isLocked(); 	// non-blocking, but does do a lock/unlock so not free
-	U32 lockingThread() const; //get ID of locking thread
+	// non-blocking, but does do a lock/unlock so not free
+	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
+	// get ID of locking thread
+	U32 lockingThread() const { return mLockingThread; }
 
 protected:
 	// mAPRMutexp is initialized and uninitialized in the derived class.
@@ -189,11 +201,12 @@ class LL_COMMON_API LLMutex : public LLMutexBase
 public:
 	LLMutex(LLAPRPool& parent = LLThread::tldata().mRootPool) : mPool(parent)
 	{
-		apr_thread_mutex_create(&mAPRMutexp, APR_THREAD_MUTEX_UNNESTED, mPool());
+		apr_thread_mutex_create(&mAPRMutexp, MUTEX_FLAG, mPool());
 	}
 	~LLMutex()
 	{
-		llassert(!isLocked()); // better not be locked!
+		//this assertion erroneously triggers whenever an LLCondition is destroyed
+		//llassert(!isLocked()); // better not be locked!
 		apr_thread_mutex_destroy(mAPRMutexp);
 		mAPRMutexp = NULL;
 	}
@@ -215,7 +228,7 @@ class LL_COMMON_API LLMutexRootPool : public LLMutexBase
 public:
 	LLMutexRootPool(void)
 	{
-		apr_thread_mutex_create(&mAPRMutexp, APR_THREAD_MUTEX_UNNESTED, mRootPool());
+		apr_thread_mutex_create(&mAPRMutexp, MUTEX_FLAG, mRootPool());
 	}
 	~LLMutexRootPool()
 	{
