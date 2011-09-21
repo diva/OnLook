@@ -102,12 +102,12 @@ LLAPRFile::LLAPRFile()
 {
 }
 
-LLAPRFile::LLAPRFile(const std::string& filename, apr_int32_t flags, access_t access_type)
+LLAPRFile::LLAPRFile(const std::string& filename, apr_int32_t flags, S32* sizep, access_t access_type)
 	: mFile(NULL),
 	  mVolatileFilePoolp(NULL),
 	  mRegularFilePoolp(NULL)
 {
-	open(filename, flags, access_type);
+	open(filename, flags, access_type, sizep);
 }
 
 LLAPRFile::~LLAPRFile()
@@ -147,7 +147,8 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 	apr_status_t status;
 	{
 		apr_pool_t* apr_file_open_pool;
-		if (access_type == local)
+										// This is a temporary variable for a pool that is passed directly to apr_file_open below.
+		if (access_type == short_lived)
 		{
 			// Use a "volatile" thread-local pool.
 			mVolatileFilePoolp = &AIThreadLocalData::tldata().mVolatileAPRPool;
@@ -193,7 +194,7 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 
 apr_status_t LLAPRFile::open(const std::string& filename, apr_int32_t flags, BOOL use_global_pool)
 {
-	return open(filename, flags, use_global_pool ? LLAPRFile::global : LLAPRFile::local);
+	return open(filename, flags, use_global_pool ? LLAPRFile::long_lived : LLAPRFile::short_lived);
 }
 // File I/O
 S32 LLAPRFile::read(void *buf, S32 nbytes)

@@ -994,7 +994,9 @@ LLAPRFile* LLTextureCache::openHeaderEntriesFile(bool readonly, S32 offset)
 {
 	llassert_always(mHeaderAPRFile == NULL);
 	apr_int32_t flags = readonly ? APR_READ|APR_BINARY : APR_READ|APR_WRITE|APR_BINARY;
-	mHeaderAPRFile = new LLAPRFile(mHeaderEntriesFileName, flags, LLAPRFile::local);
+	// All code calling openHeaderEntriesFile, immediately calls closeHeaderEntriesFile,
+	// so this file is very short-lived.
+	mHeaderAPRFile = new LLAPRFile(mHeaderEntriesFileName, flags);
 	if(offset > 0)
 	{
 	mHeaderAPRFile->seek(APR_SET, offset);

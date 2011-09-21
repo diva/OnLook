@@ -145,15 +145,15 @@ private:
 
 public:
 	enum access_t {
-		global,		// Use a global pool for long-lived file accesses. This should really only happen from the main thread.
-		local		// Use a thread-local volatile pool for short file accesses.
+		long_lived,		// Use a global pool for long-lived file accesses.
+		short_lived		// Use a volatile pool for short-lived file accesses.
 	};
 
 	LLAPRFile() ;
-	LLAPRFile(const std::string& filename, apr_int32_t flags, access_t access_type = LLAPRFile::global);
+	LLAPRFile(const std::string& filename, apr_int32_t flags, S32* sizep = NULL, access_t access_type = short_lived);
 	~LLAPRFile() ;
 
-	apr_status_t open(const std::string& filename, apr_int32_t flags, access_t access_type = LLAPRFile::global, S32* sizep = NULL);
+	apr_status_t open(const std::string& filename, apr_int32_t flags, access_t access_type = short_lived, S32* sizep = NULL);
 	apr_status_t open(const std::string& filename, apr_int32_t flags, BOOL use_global_pool); //use global pool.
 	apr_status_t close() ;
 

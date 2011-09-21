@@ -2677,8 +2677,7 @@ void LLAppViewer::handleViewerCrash()
 		else crash_file_name = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,ERROR_MARKER_FILE_NAME);
 		llinfos << "Creating crash marker file " << crash_file_name << llendl;
 		
-		LLAPRFile crash_file ;
-		crash_file.open(crash_file_name, LL_APR_W, LLAPRFile::local);
+		LLAPRFile crash_file(crash_file_name, LL_APR_W);
 		if (crash_file.getFileHandle())
 		{
 			LL_INFOS("MarkerFile") << "Created crash marker file " << crash_file_name << LL_ENDL;
@@ -2749,8 +2748,7 @@ bool LLAppViewer::anotherInstanceRunning()
 	if (LLAPRFile::isExist(marker_file, LL_APR_RB))
 	{
 		// File exists, try opening with write permissions
-		LLAPRFile outfile ;
-		outfile.open(marker_file, LL_APR_WB, LLAPRFile::global);
+		LLAPRFile outfile(marker_file, LL_APR_WB);
 		apr_file_t* fMarker = outfile.getFileHandle() ; 
 		if (!fMarker)
 		{
@@ -2827,7 +2825,7 @@ void LLAppViewer::initMarkerFile()
 	
 	// Create the marker file for this execution & lock it
 	apr_status_t s;
-	s = mMarkerFile.open(mMarkerFileName, LL_APR_W, LLAPRFile::global);
+	s = mMarkerFile.open(mMarkerFileName, LL_APR_W, LLAPRFile::long_lived);
 
 	if (s == APR_SUCCESS && mMarkerFile.getFileHandle())
 	{
@@ -4027,8 +4025,7 @@ void LLAppViewer::sendLogoutRequest()
 		gLogoutInProgress = TRUE;
 		mLogoutMarkerFileName = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,LOGOUT_MARKER_FILE_NAME);
 		
-		LLAPRFile outfile ;
-		outfile.open(mLogoutMarkerFileName, LL_APR_W, LLAPRFile::global);
+		LLAPRFile outfile(mLogoutMarkerFileName, LL_APR_W);
 		mLogoutMarkerFile =  outfile.getFileHandle() ;
 		if (mLogoutMarkerFile)
 		{

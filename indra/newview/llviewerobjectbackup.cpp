@@ -1252,8 +1252,7 @@ void LLObjectBackup::uploadNextAsset()
 	uuid = tid.makeAssetID(gAgent.getSecureSessionID());
 
 	S32 file_size;
-	LLAPRFile outfile;
-	outfile.open(filename, LL_APR_RB, LLAPRFile::local, &file_size);
+	LLAPRFile outfile(filename, LL_APR_RB, &file_size);
 	if (outfile.getFileHandle())
 	{
 		const S32 buf_size = 65536;	

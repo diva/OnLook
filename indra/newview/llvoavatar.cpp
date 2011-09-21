@@ -9939,8 +9939,7 @@ void LLVOAvatar::useBakedTexture( const LLUUID& id )
 void LLVOAvatar::dumpArchetypeXML( void* )
 {
 	LLVOAvatar* avatar = gAgent.getAvatarObject();
-	LLAPRFile outfile ;
-	outfile.open(gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER,"new archetype.xml"), LL_APR_WB, LLAPRFile::global);
+	LLAPRFile outfile(gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "new archetype.xml"), LL_APR_WB);
 	apr_file_t* file = outfile.getFileHandle() ;
 	if( !file )
 	{

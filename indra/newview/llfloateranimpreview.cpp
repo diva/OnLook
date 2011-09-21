@@ -325,8 +325,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 		// now load bvh file
 		S32 file_size;
 		
-		LLAPRFile infile ;
-		infile.open(mFilenameAndPath, LL_APR_RB, LLAPRFile::global, &file_size);
+		LLAPRFile infile(mFilenameAndPath, LL_APR_RB, &file_size);
 		
 		if (!infile.getFileHandle())
 		{
@@ -422,8 +421,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 	else if(exten == "animatn")
 	{
 		S32 file_size;
-		LLAPRFile raw_animatn;
-		raw_animatn.open(mFilenameAndPath, LL_APR_RB, LLAPRFile::global, &file_size);
+		LLAPRFile raw_animatn(mFilenameAndPath, LL_APR_RB, &file_size);
 
 		if (!raw_animatn.getFileHandle())
 		{
