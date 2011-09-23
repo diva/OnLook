@@ -243,6 +243,7 @@ LLSocket::~LLSocket()
 	{
 		ll_debug_socket("Destroying socket", mSocket);
 		apr_socket_close(mSocket);
+		mSocket = NULL;
 	}
 }
 
@@ -604,7 +605,6 @@ LLIOPipe::EStatus LLIOServerSocket::process_impl(
 		{
 			chain.push_back(LLIOPipe::ptr_t(new LLIOSocketWriter(llsocket)));
 			pump->addChain(chain, mResponseTimeout);
-			status = STATUS_OK;
 		}
 		else
 		{
