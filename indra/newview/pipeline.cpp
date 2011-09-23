@@ -3878,6 +3878,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 		occlude = FALSE;
 		gGLLastMatrix = NULL;
 		glLoadMatrixd(gGLModelView);
+		LLGLSLShader::bindNoShader();
 		doOcclusion(camera);
 		gGLLastMatrix = NULL;
 		glLoadMatrixd(gGLModelView);
@@ -9410,7 +9411,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 	{ //create alpha mask based on depth buffer (grey out if muted)
 		if (LLPipeline::sRenderDeferred)
 		{
-			GLuint buff = GL_COLOR_ATTACHMENT0_EXT;
+			GLuint buff = GL_COLOR_ATTACHMENT0;
 			glDrawBuffersARB(1, &buff);
 		}
 
