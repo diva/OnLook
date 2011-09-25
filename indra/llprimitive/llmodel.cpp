@@ -1929,10 +1929,66 @@ bool LLModel::loadModel(std::istream& is)
 
 }
 
-void LLModel::matchMaterialOrder(LLModel* ref)
+bool LLModel::isMaterialListSubset( LLModel* ref )
 {
-	llassert(ref->mMaterialList.size() == mMaterialList.size());
+	S32 refCnt = ref->mMaterialList.size();
+	S32 modelCnt = mMaterialList.size();
+	
+	for (S32 src = 0; src < modelCnt; ++src)
+	{				
+		bool foundRef = false;
+		
+		for (S32 dst = 0; dst < refCnt; ++dst)
+		{
+			//llinfos<<mMaterialList[src]<<" "<<ref->mMaterialList[dst]<<llendl;
+			foundRef = mMaterialList[src] == ref->mMaterialList[dst];									
+				
+			if ( foundRef )
+			{	
+				break;
+			}										
+		}
+		if (!foundRef)
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
 
+bool LLModel::needToAddFaces( LLModel* ref, int& refFaceCnt, int& modelFaceCnt )
+{
+	bool changed = false;
+	if ( refFaceCnt< modelFaceCnt )
+	{
+		refFaceCnt += modelFaceCnt - refFaceCnt;
+		changed = true;
+	}
+	else 
+	if ( modelFaceCnt < refFaceCnt )
+	{
+		modelFaceCnt += refFaceCnt - modelFaceCnt;
+		changed = true;
+	}
+	
+	return changed;
+}
+
+bool LLModel::matchMaterialOrder(LLModel* ref, int& refFaceCnt, int& modelFaceCnt )
+{
+	//Is this a subset?
+	//LODs cannot currently add new materials, e.g.
+	//1. ref = a,b,c lod1 = d,e => This is not permitted
+	//2. ref = a,b,c lod1 = c => This would be permitted
+	
+	bool isASubset = isMaterialListSubset( ref );
+	if ( !isASubset )
+	{
+		llinfos<<"Material of model is not a subset of reference."<<llendl;
+		return false;
+	}
+	
 	std::map<std::string, U32> index_map;
 	
 	//build a map of material slot names to face indexes
@@ -1978,6 +2034,7 @@ void LLModel::matchMaterialOrder(LLModel* ref)
 
 	//override material list with reference model ordering
 	mMaterialList = ref->mMaterialList;
+	return true;
 }
 
 
