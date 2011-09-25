@@ -53,6 +53,7 @@
 #include "llcombobox.h"
 #include "llfocusmgr.h"
 #include "llmanipscale.h"
+#include "llnotificationsutil.h"
 #include "llpanelinventory.h"
 #include "llpreviewscript.h"
 #include "llresmgr.h"
@@ -67,6 +68,7 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llvovolume.h"
 #include "llworld.h"
 #include "pipeline.h"
@@ -726,7 +728,7 @@ void LLPanelObject::getState( )
 	BOOL enabled = FALSE;
 	BOOL hole_enabled = FALSE;
 	F32 scale_x=1.f, scale_y=1.f;
-	
+	BOOL isMesh = FALSE;
 	if( !objectp || !objectp->getVolume() || !editable || !single_volume)
 	{
 		// Clear out all geometry fields.
@@ -1391,15 +1393,9 @@ void LLPanelObject::getState( )
 	mCtrlSculptTexture->setVisible(sculpt_texture_visible);
 	mLabelSculptType->setVisible(sculpt_texture_visible);
 	mCtrlSculptType->setVisible(sculpt_texture_visible);
-	mCtrlSculptMirror->setVisible(sculpt_texture_visible);
-	mCtrlSculptInvert->setVisible(sculpt_texture_visible);
-
-
-	
 
 
 	// sculpt texture
-
 	if (selected_item == MI_SCULPT)
 	{
         LLUUID id;
@@ -1413,36 +1409,37 @@ void LLPanelObject::getState( )
 				mSculptTextureRevert = sculpt_params->getSculptTexture();
 				mSculptTypeRevert    = sculpt_params->getSculptType();
 			}
-		
+			U8 sculpt_type = sculpt_params->getSculptType();
+			U8 sculpt_stitching = sculpt_type & LL_SCULPT_TYPE_MASK;
+			BOOL sculpt_invert = sculpt_type & LL_SCULPT_FLAG_INVERT;
+			BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;		
+#if MESH_ENABLED
+			isMesh = (sculpt_stitching == LL_SCULPT_TYPE_MESH);
+#endif //MESH_ENABLED
+
 			LLTextureCtrl*  mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
 			if(mTextureCtrl)
 			{
 				mTextureCtrl->setTentative(FALSE);
-				mTextureCtrl->setEnabled(editable);
+				mTextureCtrl->setEnabled(editable && !isMesh);
 				if (editable)
 					mTextureCtrl->setImageAssetID(sculpt_params->getSculptTexture());
 				else
 					mTextureCtrl->setImageAssetID(LLUUID::null);
 			}
 
-
-
-
-			U8 sculpt_type = sculpt_params->getSculptType();
-			U8 sculpt_stitching = sculpt_type & LL_SCULPT_TYPE_MASK;
-			BOOL sculpt_invert = sculpt_type & LL_SCULPT_FLAG_INVERT;
-			BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;
+			mComboBaseType->setEnabled(!isMesh);
 			
 			if (mCtrlSculptType)
 			{
 				mCtrlSculptType->setCurrentByIndex(sculpt_stitching);
-				mCtrlSculptType->setEnabled(editable);
+				mCtrlSculptType->setEnabled(editable && !isMesh);
 			}
 
 			if (mCtrlSculptMirror)
 			{
 				mCtrlSculptMirror->set(sculpt_mirror);
-				mCtrlSculptMirror->setEnabled(editable);
+				mCtrlSculptMirror->setEnabled(editable && !isMesh);
 			}
 
 			if (mCtrlSculptInvert)
@@ -1455,18 +1452,16 @@ void LLPanelObject::getState( )
 			{
 				mLabelSculptType->setEnabled(TRUE);
 			}
+
 		}
 	}
-
-
-
-
-
 	else
 	{
-		mSculptTextureRevert = LLUUID::null;
+		mSculptTextureRevert = LLUUID::null;		
 	}
 
+	mCtrlSculptMirror->setVisible(sculpt_texture_visible && !isMesh);
+	mCtrlSculptInvert->setVisible(sculpt_texture_visible && !isMesh);
 	
 	//----------------------------------------------------------------------------
 
@@ -2161,7 +2156,7 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 		
 	// Clamp the Z height
 	const F32 height = newpos.mV[VZ];
-	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject);
+	const F32 min_height = LLWorld::getInstance()->getMinAllowedZ(mObject, mObject->getPositionGlobal());
 	// <edit>
 	//const F32 max_height = LLWorld::getInstance()->getRegionMaxHeight();
 	const F32 max_height = F32(340282346638528859811704183484516925440.0f);
@@ -2254,6 +2249,20 @@ void LLPanelObject::sendSculpt()
 	if (mCtrlSculptType)
 		sculpt_type |= mCtrlSculptType->getCurrentIndex();
 
+	bool enabled = true;
+#if MESH_ENABLED
+	enabled = sculpt_type != LL_SCULPT_TYPE_MESH;
+#endif //MESH_ENABLED
+
+	if (mCtrlSculptMirror)
+	{
+		mCtrlSculptMirror->setEnabled(enabled ? TRUE : FALSE);
+	}
+	if (mCtrlSculptInvert)
+	{
+		mCtrlSculptInvert->setEnabled(enabled ? TRUE : FALSE);
+	}
+	
 	if ((mCtrlSculptMirror) && (mCtrlSculptMirror->get()))
 		sculpt_type |= LL_SCULPT_FLAG_MIRROR;
 
@@ -2536,7 +2545,7 @@ void LLPanelObject::onCommitSculptType(LLUICtrl *ctrl, void* userdata)
 // static
 void LLPanelObject::onClickBuildConstants(void *)
 {
-	LLNotifications::instance().add("ClickBuildConstants");
+	LLNotificationsUtil::add("ClickBuildConstants");
 }
 
 std::string shortfloat(F32 in)

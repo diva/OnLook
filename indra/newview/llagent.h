@@ -47,6 +47,8 @@
 #include "llinventorymodel.h"
 #include "v3dmath.h"
 
+#include <boost/signals2.hpp>
+
 extern const BOOL 	ANIMATE;
 extern const U8 	AGENT_STATE_TYPING;  // Typing indication
 extern const U8 	AGENT_STATE_EDITING; // Set when agent has objects selected
@@ -108,8 +110,7 @@ public:
 	//--------------------------------------------------------------------
 public:
 	LLAgent();
-	~LLAgent();
-
+	virtual 		~LLAgent();
 	void			init();
 	void			cleanup();
 
@@ -253,7 +254,6 @@ public:
 	const LLHost&	getRegionHost() const;
 	BOOL			inPrelude();
 	std::string		getSLURL() const; //Return uri for current region
-	void buildLocationString(std::string& str); //Build a description string for current location
 	
 	// <edit>
 	struct SHLureRequest
@@ -454,6 +454,14 @@ public:
 	void			unpauseAnimation() { mPauseRequest = NULL; }
 	BOOL			getCustomAnim() const { return mCustomAnim; }
 	void			setCustomAnim(BOOL anim) { mCustomAnim = anim; }
+	
+	typedef boost::signals2::signal<void ()> camera_signal_t;
+	boost::signals2::connection setMouselookModeInCallback( const camera_signal_t::slot_type& cb );
+	boost::signals2::connection setMouselookModeOutCallback( const camera_signal_t::slot_type& cb );
+
+private:
+	camera_signal_t* mMouselookModeInSignal;
+	camera_signal_t* mMouselookModeOutSignal;
 	BOOL            mCustomAnim; 		// Current animation is ANIM_AGENT_CUSTOMIZE ?
 	LLPointer<LLPauseRequestHandle> mPauseRequest;
 	BOOL			mViewsPushed; 		// Keep track of whether or not we have pushed views
@@ -500,8 +508,16 @@ public:
 	// Autopilot
 	//--------------------------------------------------------------------
 public:
-	BOOL				getAutoPilot() const	{ return mAutoPilot; }
-	LLVector3d			getAutoPilotTargetGlobal() const	{ return mAutoPilotTargetGlobal; }
+	BOOL			getAutoPilot() const				{ return mAutoPilot; }
+	LLVector3d		getAutoPilotTargetGlobal() const 	{ return mAutoPilotTargetGlobal; }
+	LLUUID			getAutoPilotLeaderID() const		{ return mLeaderID; }
+	F32				getAutoPilotStopDistance() const	{ return mAutoPilotStopDistance; }
+	F32				getAutoPilotTargetDist() const		{ return mAutoPilotTargetDist; }
+	BOOL			getAutoPilotUseRotation() const		{ return mAutoPilotUseRotation; }
+	LLVector3		getAutoPilotTargetFacing() const	{ return mAutoPilotTargetFacing; }
+	F32				getAutoPilotRotationThreshold() const	{ return mAutoPilotRotationThreshold; }
+	std::string		getAutoPilotBehaviorName() const	{ return mAutoPilotBehaviorName; }
+
 	void			startAutoPilotGlobal(const LLVector3d &pos_global, 
 										 const std::string& behavior_name = std::string(), 
 										 const LLQuaternion *target_rotation = NULL, 
@@ -621,6 +637,7 @@ private:
 	//--------------------------------------------------------------------
 public:
 	bool			isGodlike() const;
+	bool			isGodlikeWithoutAdminMenuFakery() const;
 	U8				getGodLevel() const;
 	void			setAdminOverride(BOOL b);
 	void			setGodLevel(U8 god_level);
@@ -774,7 +791,10 @@ public:
 	void			sendReliableMessage();
 	void			sendAgentSetAppearance();
 	void 			sendAgentDataUpdateRequest();
-	
+	void 			sendAgentUserInfoRequest();
+	// IM to Email and Online visibility
+	void			sendAgentUpdateUserInfo(bool im_to_email, const std::string& directory_visibility);
+
 	//--------------------------------------------------------------------
 	// Receive
 	//--------------------------------------------------------------------

@@ -34,6 +34,7 @@
 #define LL_LLINVENTORYMODEL_H
 
 #include "llassettype.h"
+#include "llfoldertype.h"
 #include "lldarray.h"
 #include "lluuid.h"
 #include "llpermissionsflags.h"
@@ -243,7 +244,7 @@ public:
 	//    NOTE: If create_folder is true, this will create a new inventory category 
 	//    on the fly if one does not exist. *NOTE: if find_in_library is true it 
 	//    will search in the user's library folder instead of "My Inventory"
-	const LLUUID findCategoryUUIDForType(LLAssetType::EType preferred_type, 
+	const LLUUID findCategoryUUIDForType(LLFolderType::EType preferred_type, 
 										 bool create_folder = true 
 										 /*,bool find_in_library = false*/);
 	
@@ -372,7 +373,7 @@ public:
 	// Returns the UUID of the new category. If you want to use the default 
 	// name based on type, pass in a NULL to the 'name' parameter.
 	LLUUID createNewCategory(const LLUUID& parent_id,
-							 LLAssetType::EType preferred_type,
+							 LLFolderType::EType preferred_type,
 							 const std::string& name);
 							 
 	// Internal methods that add inventory and make sure that all of
@@ -386,13 +387,9 @@ public:
 	// during authentication. return true if everything parsed.
 	typedef std::map<std::string, std::string> response_t;
 	typedef std::vector<response_t> options_t;
-	// OGPX : Two loadSkeleton(), one for the XML-RPC logins, one for LLSD
-	//... The concept of a skeleton being different from the cap that 
-	//... we do inventory queries on should be examined, and the usage of
-	//... the skeleton in querying the wearables needs to be examined as well.
-	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
-	bool loadMeat(const options_t& options, const LLUUID& owner_id);
 
+	//OGPX really screwed with the login process. This is needed until it's all sorted out.
+	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
 /**                    Mutators
  **                                                                            **
  *******************************************************************************/
@@ -496,7 +493,7 @@ protected:
 
 	// Internal method which looks for a category with the specified
 	// preferred type. Returns LLUUID::null if not found
- 	LLUUID findCatUUID(LLAssetType::EType preferred_type);
+ 	LLUUID findCatUUID(LLFolderType::EType preferred_type);
 
 	// Empty the entire contents
 

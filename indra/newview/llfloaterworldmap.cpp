@@ -43,6 +43,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llbutton.h"
 #include "llcallingcard.h"
 #include "llcolorscheme.h"
@@ -52,6 +53,7 @@
 #include "llfirstuse.h"
 #include "llfocusmgr.h"
 #include "lllandmarklist.h"
+#include "llnotificationsutil.h"
 #include "lllineeditor.h"
 #include "llpreviewlandmark.h"
 #include "llregionhandle.h"
@@ -310,7 +312,7 @@ void LLFloaterWorldMap::show(void*, BOOL center_on_target)
 		LLFirstUse::useMap();
 
 		// Start speculative download of landmarks
-		LLUUID landmark_folder_id = gInventory.findCategoryUUIDForType(LLAssetType::AT_LANDMARK);
+		LLUUID landmark_folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		gInventory.startBackgroundFetch(landmark_folder_id);
 
 		gFloaterWorldMap->childSetFocus("location", TRUE);
@@ -1340,7 +1342,7 @@ void LLFloaterWorldMap::onCopySLURL(void* data)
 	LLSD args;
 	args["SLURL"] = self->mSLURL;
 
-	LLNotifications::instance().add("CopySLURL", args);
+	LLNotificationsUtil::add("CopySLURL", args);
 }
 
 void LLFloaterWorldMap::onCheckEvents(LLUICtrl*, void* data)

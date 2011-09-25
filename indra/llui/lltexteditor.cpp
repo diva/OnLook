@@ -4095,7 +4095,7 @@ void LLTextEditor::appendHighlightedText(const std::string &new_text,
 		
 		if (highlight && stylep)
 		{
-			LLSD pieces = highlight->parsePartialLineHighlights(new_text, stylep->getColor(), highlight_part);
+			LLSD pieces = highlight->parsePartialLineHighlights(new_text, stylep->getColor(), (LLTextParser::EHighlightPosition)highlight_part);
 			bool lprepend=prepend_newline;
 			for (S32 i=0;i<pieces.size();i++)
 			{

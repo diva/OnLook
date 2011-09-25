@@ -124,10 +124,13 @@ public:
 	/*virtual*/ BOOL idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 	virtual BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
+#if MESH_ENABLED
+	void					updateLODRiggedAttachments( void );
+#endif //MESH_ENABLED
 	/*virtual*/ BOOL 		isActive() const; // Whether this object needs to do an idleUpdate.
 	/*virtual*/ void 		updateTextures();
 	/*virtual*/ S32 		setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
-	/*virtual*/ void 		onShift(const LLVector3& shift_vector);
+	/*virtual*/ void 		onShift(const LLVector4a& shift_vector);
 	virtual U32    	 	 	getPartitionType() const;
 	virtual const  	 	 	LLVector3 getRenderPosition() const;
 	virtual void   	 	 	updateDrawable(BOOL force_damped);
@@ -135,8 +138,8 @@ public:
 	/*virtual*/ BOOL 		updateGeometry(LLDrawable *drawable);
 	/*virtual*/ void 		setPixelAreaAndAngle(LLAgent &agent);
 	virtual void   	 	 	updateRegion(LLViewerRegion *regionp);
-	void 					updateSpatialExtents(LLVector3& newMin, LLVector3 &newMax);
-	void 					getSpatialExtents(LLVector3& newMin, LLVector3& newMax);	
+	void 					updateSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
+	void 					getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);	
 	/*virtual*/ BOOL lineSegmentIntersect(const LLVector3& start, const LLVector3& end,
 												 S32 face = -1,                    // which face to check, -1 = ALL_SIDES
 												 BOOL pick_transparent = FALSE,
@@ -145,7 +148,17 @@ public:
 												 LLVector2* tex_coord = NULL,      // return the texture coordinates of the intersection point
 												 LLVector3* normal = NULL,         // return the surface normal at the intersection point
 												 LLVector3* bi_normal = NULL);     // return the surface bi-normal at the intersection point
+#if MESH_ENABLED
+	LLViewerObject*	lineSegmentIntersectRiggedAttachments(const LLVector3& start, const LLVector3& end,
+												 S32 face = -1,                    // which face to check, -1 = ALL_SIDES
+												 BOOL pick_transparent = FALSE,
+												 S32* face_hit = NULL,             // which face was hit
+												 LLVector3* intersection = NULL,   // return the intersection point
+												 LLVector2* tex_coord = NULL,      // return the texture coordinates of the intersection point
+												 LLVector3* normal = NULL,         // return the surface normal at the intersection point
+												 LLVector3* bi_normal = NULL);     // return the surface bi-normal at the intersection point
 
+#endif //MESH_ENABLED
 	//--------------------------------------------------------------------
 	// LLCharacter interface and related
 	//--------------------------------------------------------------------
@@ -168,6 +181,11 @@ public:
 	virtual LLJoint*		getJoint(const std::string &name);
 	virtual LLJoint*     	getRootJoint() { return &mRoot; }
 
+#if MESH_ENABLED
+	void					resetJointPositions( void );
+	void					resetJointPositionsToDefault( void );
+	void					resetSpecificJointPosition( const std::string& name );
+#endif //MESH_ENABLED
 	virtual const char*		getAnimationPrefix() { return "avatar"; }
 	virtual const LLUUID&   getID();
 	virtual LLVector3		getVolumePos(S32 joint_index, LLVector3& volume_offset);
@@ -196,6 +214,10 @@ public:
 public:
  	bool			isSelf() const { return mIsSelf; } // True if this avatar is for this viewer's agent
 	bool			isBuilt() const { return mIsBuilt; }
+
+private: //aligned members
+	LLVector4a	mImpostorExtents[2];
+
 private:
 	BOOL			mSupportsAlphaLayers; // For backwards compatibility, TRUE for 1.23+ clients
 
@@ -282,7 +304,18 @@ private:
 public:
 	void				updateHeadOffset();
 	F32					getPelvisToFoot() const { return mPelvisToFoot; }
+#if MESH_ENABLED
+	void				setPelvisOffset( bool hasOffset, const LLVector3& translation, F32 offset ) ;
+	bool				hasPelvisOffset( void ) { return mHasPelvisOffset; }
+	void				postPelvisSetRecalc( void );
+	void				setPelvisOffset( F32 pelvixFixupAmount );
 
+	bool				mHasPelvisOffset;
+	LLVector3			mPelvisOffset;
+	F32					mLastPelvisToFoot;
+	F32					mPelvisFixup;
+	F32					mLastPelvisFixup;
+#endif //MESH_ENABLED
 	LLVector3			mHeadOffset; // current head position
 	LLViewerJoint		mRoot;
 protected:
@@ -351,6 +384,10 @@ public:
 	U32 		renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	U32 		renderRigid();
 	U32 		renderSkinned(EAvatarRenderPass pass);
+#if MESH_ENABLED
+	F32			getLastSkinTime() { return mLastSkinTime; }
+	U32			renderSkinnedAttachments();
+#endif //MESH_ENABLED
 	U32 		renderTransparent(BOOL first_pass);
 	void 		renderCollisionVolumes();
 	static void	deleteCachedImages(bool clearAll=true);
@@ -362,6 +399,9 @@ private:
 	bool		shouldAlphaMask();
 
 	BOOL 		mNeedsSkin; // avatar has been animated and verts have not been updated
+#if MESH_ENABLED
+	F32			mLastSkinTime; //value of gFrameTimeSeconds at last skin update
+#endif //MESH_ENABLED
 	S32	 		mUpdatePeriod;
 	S32  		mNumInitFaces; //number of faces generated when creating the avatar drawable, does not inculde splitted faces due to long vertex buffer.
 
@@ -393,7 +433,7 @@ public:
 	BOOL 	    needsImpostorUpdate() const;
 	const LLVector3& getImpostorOffset() const;
 	const LLVector2& getImpostorDim() const;
-	void 		getImpostorValues(LLVector3* extents, LLVector3& angle, F32& distance) const;
+	void 		getImpostorValues(LLVector4a* extents, LLVector3& angle, F32& distance) const;
 	void 		cacheImpostorValues();
 	void 		setImpostorDim(const LLVector2& dim);
 	static void	resetImpostors();
@@ -404,7 +444,6 @@ private:
 	LLVector3	mImpostorOffset;
 	LLVector2	mImpostorDim;
 	BOOL		mNeedsAnimUpdate;
-	LLVector3	mImpostorExtents[2];
 	LLVector3	mImpostorAngle;
 	F32			mImpostorDistance;
 	F32			mImpostorPixelArea;
@@ -719,12 +758,18 @@ public:
 	void 				clampAttachmentPositions();
 	BOOL attachObject(LLViewerObject *viewer_object);
 	BOOL detachObject(LLViewerObject *viewer_object);
+#if MESH_ENABLED
+	void				cleanupAttachedMesh( LLViewerObject* pVO );
+#endif //MESH_ENABLED
 	static LLVOAvatar* findAvatarFromAttachment( LLViewerObject* obj );
 protected:
 // [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
 	LLViewerJointAttachment* getTargetAttachmentPoint(const LLViewerObject* viewer_object) const;
 // [/RLVa:KB]
 	void 				lazyAttach();
+#if MESH_ENABLED
+	void				rebuildRiggedAttachments( void );
+#endif //MESH_ENABLED
 
 	//--------------------------------------------------------------------
 	// Map of attachment points, by ID

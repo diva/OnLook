@@ -47,7 +47,7 @@ typedef const char* (*EngineInfoLLImageJ2CFunction)();
 CreateLLImageJ2CFunction j2cimpl_create_func;
 DestroyLLImageJ2CFunction j2cimpl_destroy_func;
 EngineInfoLLImageJ2CFunction j2cimpl_engineinfo_func;
-AIAPRPool j2cimpl_dso_memory_pool;
+LLAPRPool j2cimpl_dso_memory_pool;
 apr_dso_handle_t *j2cimpl_dso_handle;
 
 //Declare the prototype for theses functions here, their functionality
@@ -473,8 +473,7 @@ BOOL LLImageJ2C::loadAndValidate(const std::string &filename)
 	resetLastError();
 
 	S32 file_size = 0;
-	LLAPRFile infile ;
-	infile.open(filename, LL_APR_RB, LLAPRFile::global, &file_size);
+	LLAPRFile infile(filename, LL_APR_RB, &file_size);
 	apr_file_t* apr_file = infile.getFileHandle() ;
 	if (!apr_file)
 	{

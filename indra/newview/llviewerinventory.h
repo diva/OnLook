@@ -169,7 +169,7 @@ protected:
 	
 public:
 	LLViewerInventoryCategory(const LLUUID& uuid, const LLUUID& parent_uuid,
-							  LLAssetType::EType preferred_type,
+							  LLFolderType::EType preferred_type,
 							  const std::string& name,
 							  const LLUUID& owner_id);
 	LLViewerInventoryCategory(const LLUUID& owner_id);

@@ -35,6 +35,7 @@
 #include "llinventorytype.h"
 #include "lldictionary.h"
 #include "llmemory.h"
+#include "llsingleton.h"
 
 static const std::string empty_string;
 
@@ -122,7 +123,7 @@ DEFAULT_ASSET_FOR_INV_TYPE[LLAssetType::AT_COUNT] =
 	LLInventoryType::IT_NONE,			// AT_FAVORITE
 	LLInventoryType::IT_NONE,			// AT_LINK
 	LLInventoryType::IT_NONE,			// AT_LINK_FOLDER
-	LLInventoryType::IT_NONE,			// FT_ENSEMBLE_START
+	/*LLInventoryType::IT_NONE,			// FT_ENSEMBLE_START
 	LLInventoryType::IT_NONE,			// 
 	LLInventoryType::IT_NONE,			// 
 	LLInventoryType::IT_NONE,			// 
@@ -144,7 +145,7 @@ DEFAULT_ASSET_FOR_INV_TYPE[LLAssetType::AT_COUNT] =
 	LLInventoryType::IT_NONE,			// FT_ENSEMBLE_END
 	LLInventoryType::IT_NONE,			// AT_CURRENT_OUTFIT
 	LLInventoryType::IT_NONE,			// AT_OUTFIT
-	LLInventoryType::IT_NONE			// AT_MY_OUTFITS
+	LLInventoryType::IT_NONE			// AT_MY_OUTFITS*/
 };
 
 // static

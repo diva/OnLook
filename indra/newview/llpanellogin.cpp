@@ -56,6 +56,7 @@
 #include "llfloaterpreference.h"
 #include "llfocusmgr.h"
 #include "lllineeditor.h"
+#include "llnotificationsutil.h"
 #include "llstartup.h"
 #include "lltextbox.h"
 #include "llui.h"
@@ -109,7 +110,12 @@ static bool nameSplit(const std::string& full, std::string& first, std::string& 
 		return false;
 	first = fragments[0];
 	if (fragments.size() == 1)
-		last = "resident";
+	{
+		if (gHippoGridManager->getConnectedGrid()->isSecondLife())
+			last = "resident";
+		else
+			last = "";
+	}
 	else
 		last = fragments[1];
 	return (fragments.size() <= 2);
@@ -855,7 +861,7 @@ void LLPanelLogin::updateGridCombo()
 	}
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it) {
-		const std::string &grid = it->second->getGridNick();
+		const std::string &grid = it->second->getGridName();
 		if (grid != defaultGrid) {
 			grids->add(grid);
 			if (grid == currentGrid) selectIndex = i;
@@ -1111,9 +1117,9 @@ void LLPanelLogin::onClickConnect(void *)
 		else
 		{
 			if (gHippoGridManager->getConnectedGrid()->getRegisterUrl().empty()) {
-				LLNotifications::instance().add("MustHaveAccountToLogInNoLinks");
+				LLNotificationsUtil::add("MustHaveAccountToLogInNoLinks");
 			} else {
-				LLNotifications::instance().add("MustHaveAccountToLogIn", LLSD(), LLSD(),
+				LLNotificationsUtil::add("MustHaveAccountToLogIn", LLSD(), LLSD(),
 												LLPanelLogin::newAccountAlertCallback);
 			}
 		}
@@ -1207,7 +1213,7 @@ void LLPanelLogin::onPassKey(LLLineEditor* caller, void* user_data)
 {
 	if (gKeyboard->getKeyDown(KEY_CAPSLOCK) && sCapslockDidNotification == FALSE)
 	{
-		LLNotifications::instance().add("CapsKeyOn");
+		LLNotificationsUtil::add("CapsKeyOn");
 		sCapslockDidNotification = TRUE;
 	}
 }

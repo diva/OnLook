@@ -40,8 +40,9 @@
 #include "llfolderview.h"
 #include "llgesturemgr.h"
 #include "llinventorybridge.h"
+#include "llinventoryview.h"
 #include "llmd5.h"
-#include "llnotifications.h"
+#include "llnotificationsutil.h"
 #include "lltexlayer.h"
 #include "llviewerregion.h"
 #include "llvoavatar.h"
@@ -333,7 +334,7 @@ void LLAgentWearables::saveWearableAs(
 	if (save_in_lost_and_found)
 	{
 		category_id = gInventory.findCategoryUUIDForType(
-			LLAssetType::AT_LOST_AND_FOUND);
+			LLFolderType::FT_LOST_AND_FOUND);
 	}
 	else
 	{
@@ -723,7 +724,7 @@ void LLAgentWearables::onInitialWearableAssetArrived( LLWearable* wearable, void
 void LLAgentWearables::recoverMissingWearable( EWearableType type )
 {
 	// Try to recover by replacing missing wearable with a new one.
-	LLNotifications::instance().add("ReplacedMissingWearable");
+	LLNotificationsUtil::add("ReplacedMissingWearable");
 	lldebugs << "Wearable " << LLWearable::typeToTypeLabel( type ) << " could not be downloaded.  Replaced inventory item with default wearable." << llendl;
 	LLWearable* new_wearable = gWearableList.createNewWearable(type);
 
@@ -735,7 +736,7 @@ void LLAgentWearables::recoverMissingWearable( EWearableType type )
 	// (We used to overwrite the "not found" one, but that could potentially
 	// destory content.) JC
 	LLUUID lost_and_found_id = 
-		gInventory.findCategoryUUIDForType(LLAssetType::AT_LOST_AND_FOUND);
+		gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
 	LLPointer<LLInventoryCallback> cb =
 		new addWearableToAgentInventoryCallback(
 			LLPointer<LLRefCount>(NULL),
@@ -862,8 +863,8 @@ void LLAgentWearables::makeNewOutfit(
 	BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders") &&
 					   gHippoGridManager->getConnectedGrid()->supportsInvLinks();
 
-	LLAssetType::EType typeDest = (fUseOutfits) ? LLAssetType::AT_MY_OUTFITS : LLAssetType::AT_CLOTHING;
-	LLAssetType::EType typeFolder = (fUseOutfits) ? LLAssetType::AT_OUTFIT : LLAssetType::AT_NONE;
+	LLFolderType::EType typeDest = (fUseOutfits) ? LLFolderType::FT_MY_OUTFITS : LLFolderType::FT_CLOTHING;
+	LLFolderType::EType typeFolder = (fUseOutfits) ? LLFolderType::FT_OUTFIT : LLFolderType::FT_NONE;
 
 	// First, make a folder for the outfit.
 	LLUUID folder_id = gInventory.createNewCategory(gInventory.findCategoryUUIDForType(typeDest), typeFolder, new_folder_name);
@@ -1103,7 +1104,7 @@ void LLAgentWearables::removeWearable( EWearableType type )
 			LLSD payload;
 			payload["wearable_type"] = (S32)type;
 			// Bring up view-modal dialog: Save changes? Yes, No, Cancel
-			LLNotifications::instance().add("WearableSave", LLSD(), payload, &LLAgentWearables::onRemoveWearableDialog);
+			LLNotificationsUtil::add("WearableSave", LLSD(), payload, &LLAgentWearables::onRemoveWearableDialog);
 			return;
 		}
 		else
@@ -1116,7 +1117,7 @@ void LLAgentWearables::removeWearable( EWearableType type )
 // static 
 bool LLAgentWearables::onRemoveWearableDialog(const LLSD& notification, const LLSD& response )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	EWearableType type = (EWearableType)notification["payload"]["wearable_type"].asInteger();
 	switch( option )
 	{
@@ -1219,7 +1220,7 @@ static bool isFirstPhysicsWearable(EWearableType type, LLInventoryItem *new_item
 				}
 			}
 		};
-		LLNotifications::instance().add("FirstPhysicsWearable",LLSD(),LLSD(),boost::bind(WearableDelayedCallback::setDelayedWearable, _1, _2, new_item->getUUID(),new_wearable));
+		LLNotificationsUtil::add("FirstPhysicsWearable",LLSD(),LLSD(),boost::bind(WearableDelayedCallback::setDelayedWearable, _1, _2, new_item->getUUID(),new_wearable));
 		return true;
 	}
 	return false;
@@ -1383,7 +1384,7 @@ void LLAgentWearables::setWearableItem( LLInventoryItem* new_item, LLWearable* n
 			// Bring up modal dialog: Save changes? Yes, No, Cancel
 			LLSD payload;
 			payload["item_id"] = new_item->getUUID();
-			LLNotifications::instance().add( "WearableSave", LLSD(), payload, boost::bind(LLAgentWearables::onSetWearableDialog, _1, _2, new_wearable));
+			LLNotificationsUtil::add( "WearableSave", LLSD(), payload, boost::bind(LLAgentWearables::onSetWearableDialog, _1, _2, new_wearable));
 			return;
 		}
 	}
@@ -1394,7 +1395,7 @@ void LLAgentWearables::setWearableItem( LLInventoryItem* new_item, LLWearable* n
 // static 
 bool LLAgentWearables::onSetWearableDialog( const LLSD& notification, const LLSD& response, LLWearable* wearable )
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	LLInventoryItem* new_item = gInventory.getItem( notification["payload"]["item_id"].asUUID());
 	if( !new_item )
 	{

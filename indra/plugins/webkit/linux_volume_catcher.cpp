@@ -50,7 +50,7 @@ extern "C" {
 #include <pulse/subscribe.h>
 #include <pulse/glib-mainloop.h> // There's no special reason why we want the *glib* PA mainloop, but the generic polling implementation seems broken.
 
-#include "aiaprpool.h"
+#include "llaprpool.h"
 #include "apr_dso.h"
 }
 
@@ -66,7 +66,7 @@ extern "C" {
 #undef LL_PA_SYM
 
 static bool sSymsGrabbed = false;
-static AIAPRPool sSymPADSOMemoryPool;
+static LLAPRPool sSymPADSOMemoryPool;
 static apr_dso_handle_t *sSymPADSOHandleG = NULL;
 
 bool grab_pa_syms(std::string pulse_dso_name)

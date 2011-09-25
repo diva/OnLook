@@ -52,7 +52,7 @@ LLPluginProcessParentOwner::~LLPluginProcessParentOwner()
 
 bool LLPluginProcessParent::sUseReadThread = false;
 apr_pollset_t *LLPluginProcessParent::sPollSet = NULL;
-AIAPRPool LLPluginProcessParent::sPollSetPool;
+LLAPRPool LLPluginProcessParent::sPollSetPool;
 bool LLPluginProcessParent::sPollsetNeedsRebuild = false;
 LLMutex *LLPluginProcessParent::sInstancesMutex;
 std::list<LLPluginProcessParent*> LLPluginProcessParent::sInstances;
@@ -285,7 +285,7 @@ void LLPluginProcessParent::idle(void)
 					APR_INET,
 					0,	// port 0 = ephemeral ("find me a port")
 					0,
-					AIAPRRootPool::get()());
+					LLAPRRootPool::get()());
 					
 				if(ll_apr_warn_status(status))
 				{
@@ -993,6 +993,7 @@ void LLPluginProcessParent::receiveMessage(const LLPluginMessage &message)
 				}
 				
 				// Send initial sleep time
+				llassert_always(mSleepTime != 0.f);
 				setSleepTime(mSleepTime, true);			
 
 				setState(STATE_RUNNING);

@@ -62,6 +62,7 @@
 #include "llfirstuse.h"
 #include "llviewerwindow.h"
 #include "llviewercamera.h"
+#include "llnotificationsutil.h"
 
 #include "llfloaterfriends.h"  //VIVOX, inorder to refresh communicate panel
 #include "llfloaterchat.h"		// for LLFloaterChat::addChat()
@@ -1120,6 +1121,7 @@ LLVoiceClient::LLVoiceClient()
 	mSpeakerVolume = 0;
 	mMicVolume = 0;
 
+	mNextAudioSession = NULL;
 	mAudioSession = NULL;
 	mAudioSessionChanged = false;
 
@@ -6902,16 +6904,15 @@ void LLVoiceClient::notifyFriendObservers()
 
 void LLVoiceClient::lookupName(const LLUUID &id)
 {
-	gCacheName->getName(id, onAvatarNameLookup);
+	gCacheName->get(id, false, boost::bind(&LLVoiceClient::onAvatarNameLookup,_1,_2));
 }
 
 //static
-void LLVoiceClient::onAvatarNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* user_data)
+void LLVoiceClient::onAvatarNameLookup(const LLUUID& id, const std::string& full_name)
 {
 	if(gVoiceClient)
 	{
-		std::string name = llformat("%s %s", first.c_str(), last.c_str());
-		gVoiceClient->avatarNameResolved(id, name);
+		gVoiceClient->avatarNameResolved(id, full_name);
 	}
 }
 
@@ -7040,7 +7041,7 @@ class LLViewerRequiredVoiceVersion : public LLHTTPNode
 				if (!sAlertedUser)
 				{
 					//sAlertedUser = TRUE;
-					LLNotifications::instance().add("VoiceVersionMismatch");
+					LLNotificationsUtil::add("VoiceVersionMismatch");
 					gSavedSettings.setBOOL("EnableVoiceChat", FALSE); // toggles listener
 				}
 			}

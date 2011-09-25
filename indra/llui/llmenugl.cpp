@@ -77,11 +77,6 @@ S32 MENU_BAR_WIDTH = 0;
 /// Local function declarations, constants, enums, and typedefs
 ///============================================================================
 
-const std::string SEPARATOR_NAME("separator");
-const std::string TEAROFF_SEPARATOR_LABEL( "~~~~~~~~~~~" );
-const std::string SEPARATOR_LABEL( "-----------" );
-const std::string VERTICAL_SEPARATOR_LABEL( "|" );
-
 const S32 LABEL_BOTTOM_PAD_PIXELS = 2;
 
 const U32 LEFT_PAD_PIXELS = 3;
@@ -101,7 +96,12 @@ const U32 SEPARATOR_HEIGHT_PIXELS = 8;
 const S32 TEAROFF_SEPARATOR_HEIGHT_PIXELS = 10;
 const S32 MENU_ITEM_PADDING = 4;
 
-const std::string BOOLEAN_TRUE_PREFIX( "\xe2\x9c\x93" ); // U+2714 -- MC
+const std::string SEPARATOR_NAME("separator");
+const std::string SEPARATOR_LABEL( "-----------" );
+const std::string VERTICAL_SEPARATOR_LABEL( "|" );
+const std::string TEAROFF_SEPARATOR_LABEL( "~~~~~~~~~~~" );
+
+const std::string BOOLEAN_TRUE_PREFIX( "\xE2\x9C\x94" ); // U+2714 HEAVY CHECK MARK
 const std::string BRANCH_SUFFIX( "\xE2\x96\xB6" ); // U+25B6 BLACK RIGHT-POINTING TRIANGLE
 const std::string ARROW_UP  ("^^^^^^^");
 const std::string ARROW_DOWN("vvvvvvv");
@@ -817,7 +817,7 @@ void LLMenuItemCallGL::setEnabledControl(std::string enabled_control, LLView *co
 			control = context->findControl(enabled_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("enabled")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("enabled")));
 		setEnabled(control->getValue());
 	}
 }
@@ -834,7 +834,7 @@ void LLMenuItemCallGL::setVisibleControl(std::string visible_control, LLView *co
 			control = context->findControl(visible_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("visible")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("visible")));
 		setVisible(control->getValue());
 	}
 }
@@ -990,7 +990,7 @@ void LLMenuItemCheckGL::setCheckedControl(std::string checked_control, LLView *c
 			control = context->findControl(checked_control);
 			llassert_always(control);
 		}
-		control->getSignal()->connect(boost::bind(&LLView::controlListener, _1, getHandle(), std::string("value")));
+		control->getSignal()->connect(boost::bind(&LLView::controlListener, _2, getHandle(), std::string("value")));
 		mChecked = control->getValue();
 	}
 }

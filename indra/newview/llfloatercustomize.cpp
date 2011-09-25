@@ -75,6 +75,7 @@
 #include "llviewermessage.h"
 #include "llviewercontrol.h"
 #include "lluictrlfactory.h"
+#include "llnotificationsutil.h"
 
 #include "statemachine/aifilepicker.h"
 #include "hippogridmanager.h"
@@ -708,7 +709,7 @@ void LLPanelEditWearable::onBtnCreateNew( void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLSD payload;
 	payload["wearable_type"] = (S32)self->getType();
-	LLNotifications::instance().add("AutoWearNewClothing", LLSD(), payload, &onSelectAutoWearOption);
+	LLNotificationsUtil::add("AutoWearNewClothing", LLSD(), payload, &onSelectAutoWearOption);
 }
 
 bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const LLSD& response)
@@ -723,7 +724,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 
 		LLUUID folder_id;
 		// regular UI, items get created in normal folder
-		folder_id = gInventory.findCategoryUUIDForType(asset_type);
+		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(asset_type));
 
 		// Only auto wear the new item if the AutoWearNewClothing checkbox is selected.
 		LLPointer<LLInventoryCallback> cb = option == 0 ? 
@@ -2723,7 +2724,7 @@ void LLFloaterCustomize::askToSaveIfDirty( void(*next_step_callback)(BOOL procee
 		mNextStepAfterSaveUserdata = userdata;
 
 		// Bring up view-modal dialog: Save changes? Yes, No, Cancel
-		LLNotifications::instance().add("SaveClothingBodyChanges", LLSD(), LLSD(),
+		LLNotificationsUtil::add("SaveClothingBodyChanges", LLSD(), LLSD(),
 			boost::bind(&LLFloaterCustomize::onSaveDialog, this, _1, _2));
 		return;
 	}

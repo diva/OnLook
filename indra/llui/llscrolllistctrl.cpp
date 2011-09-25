@@ -3833,7 +3833,7 @@ BOOL LLColumnHeader::handleDoubleClick(S32 x, S32 y, MASK mask)
 		// reshape column to max content width
 		LLRect column_rect = getRect();
 		column_rect.mRight = column_rect.mLeft + mColumn->mMaxContentWidth;
-		userSetShape(column_rect);
+		setShape(column_rect,true);
 	}
 	else
 	{
@@ -4045,7 +4045,7 @@ LLView*	LLColumnHeader::findSnapEdge(S32& new_edge_val, const LLCoordGL& mouse_d
 	return this;
 }
 
-void LLColumnHeader::userSetShape(const LLRect& new_rect)
+void LLColumnHeader::handleReshape(const LLRect& new_rect, bool by_user)
 {
 	S32 new_width = new_rect.getWidth();
 	S32 delta_width = new_width - (getRect().getWidth() /*+ mColumn->mParentCtrl->getColumnPadding()*/);

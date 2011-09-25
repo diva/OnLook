@@ -61,6 +61,7 @@
 #include "llviewerstats.h"
 #include "llviewercamera.h"
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "llviewermenufile.h"	// upload_new_resource()
 #include "llfloaterpostcard.h"
 #include "llcheckboxctrl.h"
@@ -68,6 +69,7 @@
 #include "lltoolfocus.h"
 #include "lltoolmgr.h"
 #include "llworld.h"
+#include "llagentui.h"
 
 #include "llgl.h"
 #include "llglheaders.h"
@@ -75,6 +77,7 @@
 #include "llimagepng.h"
 #include "llimagebmp.h"
 #include "llimagej2c.h"
+#include "llnotificationsutil.h"
 #include "llvfile.h"
 #include "llvfs.h"
 
@@ -973,9 +976,9 @@ void LLSnapshotLivePreview::saveTexture()
 	{
 		LLVFile::writeFile(formatted->getData(), formatted->getDataSize(), gVFS, new_asset_id, LLAssetType::AT_TEXTURE);
 		std::string pos_string;
-		gAgent.buildLocationString(pos_string);
+		LLAgentUI::buildLocationString(pos_string, LLAgentUI::LOCATION_FORMAT_FULL);
 		std::string who_took_it;
-		gAgent.buildFullname(who_took_it);
+		LLAgentUI::buildFullname(who_took_it);
 		LLAssetStorage::LLStoreAssetCallback callback = NULL;
 		S32 expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 		void *userdata = NULL;
@@ -984,7 +987,7 @@ void LLSnapshotLivePreview::saveTexture()
 				    "Snapshot : " + pos_string,
 				    "Taken by " + who_took_it + " at " + pos_string,
 				    0,
-				    LLAssetType::AT_SNAPSHOT_CATEGORY,
+				    LLFolderType::FT_SNAPSHOT_CATEGORY,
 				    LLInventoryType::IT_SNAPSHOT,
 				    PERM_ALL,  // Note: Snapshots to inventory is a special case of content upload
 				    LLFloaterPerms::getGroupPerms(), // that is more permissive than other uploads
@@ -995,7 +998,7 @@ void LLSnapshotLivePreview::saveTexture()
 	}
 	else
 	{
-		LLNotifications::instance().add("ErrorEncodingSnapshot");
+		LLNotificationsUtil::add("ErrorEncodingSnapshot");
 		llwarns << "Error encoding snapshot" << llendl;
 	}
 
@@ -1134,8 +1137,6 @@ LLViewerWindow::ESnapshotType LLFloaterSnapshot::Impl::getLayerType(LLFloaterSna
 		type = LLViewerWindow::SNAPSHOT_TYPE_COLOR;
 	else if (id == "depth")
 		type = LLViewerWindow::SNAPSHOT_TYPE_DEPTH;
-	else if (id == "objects")
-		type = LLViewerWindow::SNAPSHOT_TYPE_OBJECT_ID;
 	return type;
 }
 

@@ -38,8 +38,8 @@
 #include "lluuid.h"
 #include "llparcelflags.h"
 #include "llpermissions.h"
-#include "v3math.h"
 #include "lltimer.h"
+#include "v3math.h"
 
 // Grid out of which parcels taken is stepped every 4 meters.
 const F32 PARCEL_GRID_STEP_METERS	= 4.f;
@@ -136,9 +136,15 @@ class LLSD;
 class LLAccessEntry
 {
 public:
-	LLUUID		mID;
-	S32			mTime;
-	U32			mFlags;
+	LLAccessEntry()
+	:	mID(),
+		mTime(0),
+		mFlags(0)
+	{}
+
+	LLUUID		mID;		// Agent ID
+	S32			mTime;		// Time (unix seconds) when entry expires
+	U32			mFlags;		// Not used - currently should always be zero
 };
 
 typedef std::map<LLUUID,LLAccessEntry>::iterator access_map_iterator;
@@ -427,12 +433,9 @@ public:
 	void completeSale(U32& type, U8& flags, LLUUID& to_id);
 	void clearSale();
 
-	// this function returns TRUE if the parcel needs conversion to a
-	// lease from a non-owned-status state.
-	BOOL getRecordTransaction() const { return mRecordTransaction; }
-	void setRecordTransaction(BOOL record) { mRecordTransaction = record; }
 
 	BOOL isMediaResetTimerExpired(const U64& time);
+
 
 	// more accessors
 	U32		getParcelFlags() const			{ return mParcelFlags; }
@@ -468,7 +471,9 @@ public:
 					{ return (mParcelFlags & PF_ALLOW_FLY) ? TRUE : FALSE; }
 
 	BOOL	getAllowLandmark() const
-					{ return (mParcelFlags & PF_ALLOW_LANDMARK) ? TRUE : FALSE; }
+					{ return TRUE; }
+					//Perhaps revert for opensim?
+					//{ return (mParcelFlags & PF_ALLOW_LANDMARK) ? TRUE : FALSE; }
 
 	BOOL	getAllowGroupScripts() const
 					{ return (mParcelFlags & PF_ALLOW_GROUP_SCRIPTS) ? TRUE : FALSE; }
@@ -594,6 +599,7 @@ public:
 	BOOL	getPreviouslyGroupOwned() const	{ return mPreviouslyGroupOwned; }
 	BOOL	getSellWithObjects() const		{ return (mParcelFlags & PF_SELL_PARCEL_OBJECTS) ? TRUE : FALSE; }
 
+
 protected:
 	LLUUID mID;
 	LLUUID				mOwnerID;
@@ -613,8 +619,6 @@ protected:
 	LLTimer mMediaResetTimer;
 
 	S32 mGraceExtension;
-	BOOL mRecordTransaction;
-	
 
 	// This value is non-zero if there is an auction associated with
 	// the parcel.
@@ -666,7 +670,6 @@ protected:
 	BOOL				mRegionPushOverride;
 	BOOL				mRegionDenyAnonymousOverride;
 	BOOL				mRegionDenyAgeUnverifiedOverride;
-
 
 public:
 	// HACK, make private

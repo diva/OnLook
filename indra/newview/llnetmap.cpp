@@ -362,7 +362,7 @@ void LLNetMap::draw()
 		// Draw avatars
 //		LLColor4 mapcolor = gAvatarMapColor;
 
-		static const LLCachedControl<LLColor4>	standard_color("MapAvatar",LLColor4(0.f,1.f,0.f,1.f),gColors);
+		static const LLCachedControl<LLColor4>	standard_color(gColors,"MapAvatar",LLColor4(0.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	friend_color_stored("AscentFriendColor",LLColor4(1.f,1.f,0.f,1.f));
 		static const LLCachedControl<LLColor4>	em_color("AscentEstateOwnerColor",LLColor4(1.f,0.6f,1.f,1.f));
 		static const LLCachedControl<LLColor4>	linden_color("AscentLindenColor",LLColor4(0.f,0.f,1.f,1.f));
@@ -638,33 +638,22 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
             }
             else
             {
-#ifdef LL_RRINTERFACE_H //MK
-    			if (gRRenabled && gAgent.mRRInterface.mContainsShownames)
+				if (LLAvatarNameCache::useDisplayNames())
     			{
-	    			fullname = gAgent.mRRInterface.getDummyName(fullname);
-		    	}
-			    else
-			    {
-#endif //mk
-				    if (LLAvatarNameCache::useDisplayNames())
-    				{
-	    				LLAvatarName avatar_name;
-		    			if (LLAvatarNameCache::get(mClosestAgentToCursor, &avatar_name))
-			    		{
-							static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
-    						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
-					    	{
-						    	fullname = avatar_name.mDisplayName;
-    						}
-	    					else
-		    				{
-			    				fullname = avatar_name.getCompleteName(true);
-				    		}
-					    }
-    				}
-#ifdef LL_RRINTERFACE_H //MK
-			    }
-#endif //mk
+					LLAvatarName avatar_name;
+					if (LLAvatarNameCache::get(mClosestAgentToCursor, &avatar_name))
+					{
+						static const LLCachedControl<S32> phoenix_name_system("PhoenixNameSystem", 0);
+						if (phoenix_name_system == 2 || (phoenix_name_system == 1 && avatar_name.mIsDisplayNameDefault))
+						{
+							fullname = avatar_name.mDisplayName;
+						}
+						else
+						{
+							fullname = avatar_name.getCompleteName(true);
+						}
+					}
+				}
                 msg.append(fullname);
             }
             // [/Ansariel: Display name support]

@@ -39,6 +39,7 @@
 #include "llview.h"
 
 #include "llviewerwindow.h"
+#include "llwindow.h"
 #include "lltoolcomp.h"
 #include "lltoolfocus.h"
 #include "llfocusmgr.h"

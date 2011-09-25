@@ -37,6 +37,7 @@
 #include "llbvhloader.h"
 #include "lldatapacker.h"
 #include "lldir.h"
+#include "llnotificationsutil.h"
 #include "llvfile.h"
 #include "llapr.h"
 #include "llstring.h"
@@ -324,8 +325,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 		// now load bvh file
 		S32 file_size;
 		
-		LLAPRFile infile ;
-		infile.open(mFilenameAndPath, LL_APR_RB, LLAPRFile::global, &file_size);
+		LLAPRFile infile(mFilenameAndPath, LL_APR_RB, &file_size);
 		
 		if (!infile.getFileHandle())
 		{
@@ -421,8 +421,7 @@ BOOL LLFloaterAnimPreview::postBuild()
 	else if(exten == "animatn")
 	{
 		S32 file_size;
-		LLAPRFile raw_animatn;
-		raw_animatn.open(mFilenameAndPath, LL_APR_RB, LLAPRFile::global, &file_size);
+		LLAPRFile raw_animatn(mFilenameAndPath, LL_APR_RB, &file_size);
 
 		if (!raw_animatn.getFileHandle())
 		{
@@ -1435,7 +1434,7 @@ void LLFloaterAnimPreview::onBtnOK(void* userdata)
 						    name,
 						    desc,
 						    0,
-						    LLAssetType::AT_NONE,
+						    LLFolderType::FT_ANIMATION,
 						    LLInventoryType::IT_ANIMATION,
 						    LLFloaterPerms::getNextOwnerPerms(), LLFloaterPerms::getGroupPerms(), LLFloaterPerms::getEveryonePerms(),
 						    name,
@@ -1444,7 +1443,7 @@ void LLFloaterAnimPreview::onBtnOK(void* userdata)
 			else
 			{
 				llwarns << "Failure writing animation data." << llendl;
-				LLNotifications::instance().add("WriteAnimationFail");
+				LLNotificationsUtil::add("WriteAnimationFail");
 			}
 		}
 

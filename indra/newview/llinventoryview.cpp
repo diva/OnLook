@@ -36,6 +36,7 @@
 
 #include "llinventoryview.h"
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 
 #include "message.h"
 
@@ -74,6 +75,7 @@
 #include "lltooldraganddrop.h"
 #include "llviewertexturelist.h"
 #include "llviewerinventory.h"
+#include "llviewerassettype.h"
 #include "llviewerobjectlist.h"
 #include "llviewerwindow.h"
 #include "llwearablelist.h"
@@ -2065,7 +2067,7 @@ void LLInventoryPanel::closeAllFolders()
 
 void LLInventoryPanel::openDefaultFolderForType(LLAssetType::EType type)
 {
-	LLUUID category_id = mInventory->findCategoryUUIDForType(type);
+	LLUUID category_id = mInventory->findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(type));
 	LLOpenFolderByID opener(category_id);
 	mFolders->applyFunctorRecursively(opener);
 }
@@ -2099,7 +2101,7 @@ void LLInventoryPanel::createNewItem(const std::string& name,
 									U32 next_owner_perm)
 {
 	std::string desc;
-	LLAssetType::generateDescriptionFor(asset_type, desc);
+	LLViewerAssetType::generateDescriptionFor(asset_type, desc);
 	next_owner_perm = (next_owner_perm) ? next_owner_perm : PERM_MOVE | PERM_TRANSFER;
 
 	

@@ -33,6 +33,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "llviewerinventory.h"
 
+#include "llnotificationsutil.h"
 #include "message.h"
 #include "indra_constants.h"
 
@@ -46,6 +47,7 @@
 #include "llgesturemgr.h"
 
 #include "llinventorybridge.h"
+#include "llinventorydefines.h"
 #include "llinventoryview.h"
 
 #include "llviewerregion.h"
@@ -192,7 +194,7 @@ void LLViewerInventoryItem::updateServer(BOOL is_new) const
 		// *FIX: deal with this better.
 		llwarns << "LLViewerInventoryItem::updateServer() - for incomplete item"
 			   << llendl;
-	 	LLNotifications::instance().add("IncompleteInventoryItem");
+	 	LLNotificationsUtil::add("IncompleteInventoryItem");
 		return;
 	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);
@@ -274,7 +276,6 @@ void LLViewerInventoryItem::setTransactionID(const LLTransactionID& transaction_
 // virtual
 void LLViewerInventoryItem::packMessage(LLMessageSystem* msg) const
 {
-	LL_INFOS("Inventory") << " UDP Rez/UpdateObject of UUID " << mUUID << " parent = " << mParentUUID << " type= " << mType << " transaction= "<< mTransactionID << LL_ENDL; // OGPX
 	msg->addUUIDFast(_PREHASH_ItemID, mUUID);
 	msg->addUUIDFast(_PREHASH_FolderID, mParentUUID);
 	mPermissions.packMessage(msg);
@@ -383,7 +384,7 @@ EWearableType LLViewerInventoryItem::getWearableType() const
 
 LLViewerInventoryCategory::LLViewerInventoryCategory(const LLUUID& uuid,
 													 const LLUUID& parent_uuid,
-													 LLAssetType::EType pref,
+													 LLFolderType::EType pref,
 													 const std::string& name,
 													 const LLUUID& owner_id) :
 	LLInventoryCategory(uuid, parent_uuid, pref, name),
@@ -442,9 +443,9 @@ void LLViewerInventoryCategory::updateParentOnServer(BOOL restamp) const
 void LLViewerInventoryCategory::updateServer(BOOL is_new) const
 {
 	// communicate that change with the server.
-	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLAssetType::AT_OUTFIT != mPreferredType) )
+	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotModifyProtectedCategories");
+		LLNotificationsUtil::add("CannotModifyProtectedCategories");
 		return;
 	}
 
@@ -466,9 +467,9 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	llinfos << "Removing inventory category " << mUUID << " from server."
 			<< llendl;
 	// communicate that change with the server.
-	if ( (LLAssetType::AT_NONE != mPreferredType) && (LLAssetType::AT_OUTFIT != mPreferredType) )
+	if ( (LLFolderType::FT_NONE != mPreferredType) && (LLFolderType::FT_OUTFIT != mPreferredType) )
 	{
-		LLNotifications::instance().add("CannotRemoveProtectedCategories");
+		LLNotificationsUtil::add("CannotRemoveProtectedCategories");
 		return;
 	}
 
@@ -504,15 +505,28 @@ bool LLViewerInventoryCategory::fetchDescendents()
 		// This comes from LLInventoryFilter from llfolderview.h
 		U32 sort_order = gSavedSettings.getU32("InventorySortOrder") & 0x1;
 
-		std::string url = gAgent.getRegion()->getCapability("WebFetchInventoryDescendents");
+		// *NOTE: For bug EXT-2879, originally commented out
+		// gAgent.getRegion()->getCapability in order to use the old
+		// message-based system.  This has been uncommented now that
+		// AIS folks are aware of the issue and have a fix in process.
+		// see ticket for details.
 
+		std::string url;
+		if (gAgent.getRegion())
+		{
+			url = gAgent.getRegion()->getCapability("FetchInventoryDescendents");
+		}
+		else
+		{
+			llwarns << "agent region is null" << llendl;
+		}
 		if (!url.empty()) //Capability found.  Build up LLSD and use it.
 		{
 			LLInventoryModel::startBackgroundFetch(mUUID);			
 		}
 		else
 		{	//Deprecated, but if we don't have a capability, use the old system.
-			llinfos << "WebFetchInventoryDescendents or agent/inventory capability not found.  Using deprecated UDP message." << llendl;
+			//llinfos << "FetchInventoryDescendents capability not found.  Using deprecated UDP message." << llendl;
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("FetchInventoryDescendents");
 			msg->nextBlock("AgentData");
@@ -572,7 +586,7 @@ bool LLViewerInventoryCategory::importFileLocal(LLFILE* fp)
 		}
 		else if(0 == strcmp("pref_type", keyword))
 		{
-			mPreferredType = LLAssetType::lookup(valuestr);
+			mPreferredType = LLFolderType::assetTypeToFolderType(LLAssetType::lookup(valuestr));
 		}
 		else if(0 == strcmp("name", keyword))
 		{
@@ -610,7 +624,7 @@ bool LLViewerInventoryCategory::exportFileLocal(LLFILE* fp) const
 	mParentUUID.toString(uuid_str);
 	fprintf(fp, "\t\tparent_id\t%s\n", uuid_str.c_str());
 	fprintf(fp, "\t\ttype\t%s\n", LLAssetType::lookup(mType));
-	fprintf(fp, "\t\tpref_type\t%s\n", LLAssetType::lookup(mPreferredType));
+	fprintf(fp, "\t\tpref_type\t%s\n", LLFolderType::lookup(mPreferredType).c_str());
 	fprintf(fp, "\t\tname\t%s|\n", mName.c_str());
 	mOwnerID.toString(uuid_str);
 	fprintf(fp, "\t\towner_id\t%s\n", uuid_str.c_str());
@@ -707,13 +721,12 @@ void RezAttachmentCallback::fire(const LLUUID& inv_item)
 	}
 }
 
-extern LLGestureManager gGestureManager;
 void ActivateGestureCallback::fire(const LLUUID& inv_item)
 {
 	if (inv_item.isNull())
 		return;
 
-	gGestureManager.activateGesture(inv_item);
+	LLGestureMgr::instance().activateGesture(inv_item);
 }
 
 void CreateGestureCallback::fire(const LLUUID& inv_item)
@@ -721,7 +734,7 @@ void CreateGestureCallback::fire(const LLUUID& inv_item)
 	if (inv_item.isNull())
 		return;
 
-	gGestureManager.activateGesture(inv_item);
+	LLGestureMgr::instance().activateGesture(inv_item);
 	
 	LLViewerInventoryItem* item = gInventory.getItem(inv_item);
 	if (!item) return;
@@ -920,7 +933,7 @@ void copy_inventory_from_notecard(const LLUUID& object_id, const LLUUID& notecar
 			body["notecard-id"] = notecard_inv_id;
 			body["object-id"] = object_id;
 			body["item-id"] = src->getUUID();
-			body["folder-id"] = gInventory.findCategoryUUIDForType(src->getType());
+			body["folder-id"] = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(src->getType()));
 			body["callback-id"] = (LLSD::Integer)callback_id;
 
 			LLHTTPClient::post(url, body, new LLCopyInventoryFromNotecardResponder());

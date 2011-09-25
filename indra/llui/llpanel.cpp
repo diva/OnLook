@@ -54,6 +54,7 @@
 #include "lluictrlfactory.h"
 #include "llviewborder.h"
 #include "llbutton.h"
+#include "llnotificationsutil.h"
 
 // LLLayoutStack
 #include "llresizebar.h"
@@ -506,7 +507,7 @@ BOOL LLPanel::initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *f
 		// override rectangle with embedding parameters as provided
 		createRect(node, new_rect, parent);
 		setOrigin(new_rect.mLeft, new_rect.mBottom);
-		reshape(new_rect.getWidth(), new_rect.getHeight());
+		setShape(new_rect);
 		// optionally override follows flags from including nodes
 		parseFollowsFlags(node);
 	}
@@ -1049,7 +1050,7 @@ void LLPanel::childDisplayNotFound()
 	mNewExpectedMembers.clear();
 	LLSD args;
 	args["CONTROLS"] = msg;
-	LLNotifications::instance().add("FloaterNotFound", args);
+	LLNotificationsUtil::add("FloaterNotFound", args);
 }
 
 void LLPanel::storeRectControl()

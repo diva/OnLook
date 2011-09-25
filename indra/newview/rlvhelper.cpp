@@ -20,6 +20,7 @@
 #include "llgesturemgr.h"
 #include "llinventoryview.h"
 #include "llinventorybridge.h"
+#include "llnotificationsutil.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
@@ -335,7 +336,7 @@ bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
 			case LLAssetType::AT_OBJECT:
 				return (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->isWearingAttachment(pItem->getUUID()));
 			case LLAssetType::AT_GESTURE:
-				return gGestureManager.isGestureActive(pItem->getUUID());
+				return LLGestureMgr::instance().isGestureActive(pItem->getUUID());
 			case LLAssetType::AT_LINK:
 				return isWearingItem(gInventory.getItem(pItem->getLinkedUUID()));
 			default:
@@ -351,7 +352,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 	// [See LLWearableBridge::wearOnAvatar(): don't wear anything until initial wearables are loaded, can destroy clothing items]
 	if (!gAgentWearables.areWearablesLoaded())
 	{
-		LLNotifications::instance().add("CanNotChangeAppearanceUntilLoaded");
+		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
 	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
@@ -784,7 +785,7 @@ void RlvForceWear::done()
 		for (S32 idxGesture = 0, cntGesture = m_remGestures.count(); idxGesture < cntGesture; idxGesture++)
 		{
 			LLViewerInventoryItem* pItem = m_remGestures.get(idxGesture);
-			gGestureManager.deactivateGesture(pItem->getUUID());
+			LLGestureMgr::instance().deactivateGesture(pItem->getUUID());
 			gInventory.updateItem(pItem);
 			gInventory.notifyObservers();
 		}
@@ -877,7 +878,7 @@ void RlvForceWear::done()
 	// Process gestures
 	if (m_addGestures.size())
 	{
-		gGestureManager.activateGestures(m_addGestures);
+		LLGestureMgr::instance().activateGestures(m_addGestures);
 		for (S32 idxGesture = 0, cntGesture = m_addGestures.count(); idxGesture < cntGesture; idxGesture++)
 			gInventory.updateItem(m_addGestures.get(idxGesture));
 		gInventory.notifyObservers();
@@ -954,7 +955,7 @@ void RlvBehaviourNotifyHandler::sendNotification(const std::string& strText, con
 // Checked: 2009-06-03 (RLVa-0.2.0h) | Added: RLVa-0.2.0h
 void RlvWLSnapshot::restoreSnapshot(const RlvWLSnapshot* pWLSnapshot)
 {
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 	if ( (pWLSnapshot) && (pWLParams) )
 	{
 		pWLParams->mAnimator.mIsRunning = pWLSnapshot->fIsRunning;
@@ -975,7 +976,7 @@ RlvWLSnapshot* RlvWLSnapshot::takeSnapshot()
 	}
 
 	RlvWLSnapshot* pWLSnapshot = NULL;
-	LLWLParamManager* pWLParams = LLWLParamManager::instance();
+	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
 	if (pWLParams)
 	{
 		pWLSnapshot = new RlvWLSnapshot();
@@ -1043,7 +1044,7 @@ bool rlvCanDeleteOrReturn()
 			LLSD args;
 			args["MESSAGE"] = llformat("RestrainedLove Support will be %s after you restart", 
 				(rlv_handler_t::isEnabled()) ? "disabled" : "enabled" );
-			LLNotifications::instance().add("GenericAlert", args);
+			LLNotificationsUtil::add("GenericAlert", args);
 		#endif
 	}
 	// Checked: 2009-07-08 (RLVa-1.0.0e)
