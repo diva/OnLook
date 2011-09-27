@@ -604,11 +604,14 @@ LLColor4 get_text_color(const LLChat& chat)
 	static const LLCachedControl<bool> mKeywordsChangeColor(gSavedPerAccountSettings, "KeywordsChangeColor", false);
 	static const LLCachedControl<LLColor4> mKeywordsColor(gSavedPerAccountSettings, "KeywordsColor", LLColor4(1.f, 1.f, 1.f, 1.f));
 
-    if (gAgent.getID() != chat.mFromID)
+    if ((gAgent.getID() != chat.mFromID) && (chat.mSourceType != CHAT_SOURCE_SYSTEM))
 	{
 		if (mKeywordsChangeColor)
 		{
-    		if (AscentKeyword::hasKeyword(chat.mText, 1))
+            std::string shortmsg(chat.mText);
+            shortmsg.erase(0, chat.mFromName.length());
+
+    		if (AscentKeyword::hasKeyword(shortmsg, 1))
             {
 				text_color = mKeywordsColor;
             }
