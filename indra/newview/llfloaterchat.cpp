@@ -220,6 +220,11 @@ void add_timestamped_line(LLViewerTextEditor* edit, LLChat chat, const LLColor4&
 		chat.mURL = llformat("secondlife:///app/agent/%s/about",chat.mFromID.asString().c_str());
 	}
 
+	if(chat.mSourceType == CHAT_SOURCE_OBJECT && !chat.mFromName.length())
+	{
+		chat.mFromName = "(no name)";
+		line = chat.mFromName + line;
+	}
 	// If the chat line has an associated url, link it up to the name.
 	if (!chat.mURL.empty()
 		&& (line.length() > chat.mFromName.length() && line.find(chat.mFromName,0) == 0))
