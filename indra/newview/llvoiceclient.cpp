@@ -37,7 +37,7 @@
 
 #include "llsdutil.h"
 
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llbufferstream.h"
 #include "llfile.h"
 #ifdef LL_STANDALONE
@@ -5673,7 +5673,7 @@ void LLVoiceClient::updatePosition(void)
 	
 	if(gVoiceClient)
 	{
-		LLVOAvatar *agent = gAgent.getAvatarObject();
+		LLVOAvatar *agent = gAgentAvatarp;
 		LLViewerRegion *region = gAgent.getRegion();
 		if(region && agent)
 		{

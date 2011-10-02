@@ -145,6 +145,8 @@ public:
 	BOOL isOrphaned() const								{ return mOrphaned; }
 	BOOL isParticleSource() const;
 
+	virtual LLVOAvatar* asAvatar();
+
 	static void initVOClasses();
 	static void cleanupVOClasses();
 

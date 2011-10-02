@@ -45,7 +45,7 @@
 #include "llnotificationsutil.h"
 #include "lltexlayer.h"
 #include "llviewerregion.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
 
@@ -288,7 +288,7 @@ void LLAgentWearables::saveWearable( EWearableType type, BOOL send_update )
 			return;
 		}
 		
-		gAgent.getAvatarObject()->wearableUpdated( type );
+		gAgentAvatarp->wearableUpdated( type );
 
 		if( send_update )
 		{
@@ -584,7 +584,7 @@ void LLAgentWearables::processAgentInitialWearablesUpdate( LLMessageSystem* mesg
 	LLUUID agent_id;
 	gMessageSystem->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar && (agent_id == avatar->getID()) )
 	{
 		gMessageSystem->getU32Fast(_PREHASH_AgentData, _PREHASH_SerialNum, gAgentQueryManager.mUpdateSerialNum );
@@ -663,7 +663,7 @@ void LLAgentWearables::onInitialWearableAssetArrived( LLWearable* wearable, void
 {
 	EWearableType type = (EWearableType)(intptr_t)userdata;
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( !avatar )
 	{
 		return;
@@ -778,7 +778,7 @@ void LLAgentWearables::createStandardWearables(BOOL female)
 
 	if (!isAgentAvatarValid()) return;
 
-	gAgent.getAvatarObject()->setSex(female ? SEX_FEMALE : SEX_MALE);
+	gAgentAvatarp->setSex(female ? SEX_FEMALE : SEX_MALE);
 
 	const BOOL create[WT_COUNT] = 
 	{
@@ -844,7 +844,7 @@ void LLAgentWearables::createStandardWearablesAllDone()
 	gAgent.sendAgentSetAppearance();
 
 	// Treat this as the first texture entry message, if none received yet
-	gAgent.getAvatarObject()->onFirstTEMessageReceived();
+	gAgentAvatarp->onFirstTEMessageReceived();
 }
 
 void LLAgentWearables::makeNewOutfit( 
@@ -853,7 +853,7 @@ void LLAgentWearables::makeNewOutfit(
 	const LLDynamicArray<S32>& attachments_to_include,
 	BOOL rename_clothing)
 {
-	if (!gAgent.getAvatarObject())
+	if (!gAgentAvatarp)
 	{
 		return;
 	}
@@ -981,7 +981,7 @@ void LLAgentWearables::makeNewOutfit(
 		for( S32 i = 0; i < attachments_to_include.count(); i++ )
 		{
 			S32 attachment_pt = attachments_to_include[i];
-			LLViewerJointAttachment* attachment = get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, attachment_pt, (LLViewerJointAttachment*)NULL );
+			LLViewerJointAttachment* attachment = get_if_there(gAgentAvatarp->mAttachmentPoints, attachment_pt, (LLViewerJointAttachment*)NULL );
 			if(!attachment) continue;
 			for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
 				 attachment_iter != attachment->mAttachedObjects.end();
@@ -1570,7 +1570,7 @@ void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj
 	// already wearing and in request set -> leave alone.
 	// not wearing and in request set -> put on.
 
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar) return;
 
 	std::set<LLUUID> requested_item_ids;
@@ -1643,7 +1643,7 @@ void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj
 
 void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remove)
 {
-	if (!gAgent.getAvatarObject()) return;
+	if (!gAgentAvatarp) return;
 
 // [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.1.3b) | Modified: RLVa-1.2.0a
 	// RELEASE-RLVa: [SL-2.0.0] Check our callers and verify that erasing elements from the passed vector won't break random things
@@ -1694,7 +1694,7 @@ void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remo
 
 void LLAgentWearables::userRemoveAllAttachments( void* userdata )
 {
-	LLVOAvatar* avatarp = gAgent.getAvatarObject();
+	LLVOAvatar* avatarp = gAgentAvatarp;
 	if(!avatarp)
 	{
 		llwarns << "No avatar found." << llendl;

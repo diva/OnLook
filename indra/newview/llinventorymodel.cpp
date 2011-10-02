@@ -3544,7 +3544,7 @@ bool LLInventoryCollectFunctor::itemTransferCommonlyAllowed(LLInventoryItem* ite
 		break;
 
 	case LLAssetType::AT_OBJECT:
-		my_avatar = gAgent.getAvatarObject();
+		my_avatar = gAgentAvatarp;
 		if(my_avatar && !my_avatar->isWearingAttachment(item->getUUID()))
 		{
 			allowed = true;

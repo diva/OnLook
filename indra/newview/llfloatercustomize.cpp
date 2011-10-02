@@ -43,7 +43,7 @@
 #include "llagent.h"
 #include "llagentwearables.h"
 #include "lltoolmorph.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llradiogroup.h"
 #include "lltoolmgr.h"
 #include "llviewermenu.h"
@@ -206,7 +206,7 @@ public:
 		}
 
 		// NOTE: .xml needs to be updated if attachments are added or their names are changed!
-		LLVOAvatar* avatar = gAgent.getAvatarObject();
+		LLVOAvatar* avatar = gAgentAvatarp;
 		if( avatar )
 		{
 			for (LLVOAvatar::attachment_map_t::iterator iter = avatar->mAttachmentPoints.begin(); 
@@ -586,7 +586,7 @@ void LLPanelEditWearable::setSubpart( ESubpart subpart )
 	{
 		// Update the thumbnails we display
 		LLFloaterCustomize::param_map sorted_params;
-		LLVOAvatar* avatar = gAgent.getAvatarObject();
+		LLVOAvatar* avatar = gAgentAvatarp;
 		ESex avatar_sex = avatar->getSex();
 		LLViewerInventoryItem* item;
 		item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(mType);
@@ -639,7 +639,7 @@ void LLPanelEditWearable::setSubpart( ESubpart subpart )
 		gFloaterCustomize->childSetEnabled("Import", can_import);
 
 		// Update the camera
-		gMorphView->setCameraTargetJoint( gAgent.getAvatarObject()->getJoint( part->mTargetJoint ) );
+		gMorphView->setCameraTargetJoint( gAgentAvatarp->getJoint( part->mTargetJoint ) );
 		gMorphView->setCameraTargetOffset( part->mTargetOffset );
 		gMorphView->setCameraOffset( part->mCameraOffset );
 		gMorphView->setCameraDistToDefault();
@@ -688,7 +688,7 @@ void LLPanelEditWearable::onBtnSaveAs( void* userdata )
 void LLPanelEditWearable::onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog, void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar )
 	{
 		gAgentWearables.saveWearableAs( self->getType(), save_as_dialog->getItemName(), FALSE );
@@ -715,7 +715,7 @@ void LLPanelEditWearable::onBtnCreateNew( void* userdata )
 bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const LLSD& response)
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if(avatar)
 	{
 		// Create a new wearable in the default folder for the wearable's asset type.
@@ -741,7 +741,7 @@ bool LLPanelEditWearable::textureIsInvisible(ETextureIndex te)
 {
 	if (gAgentWearables.getWearable(mType))
 	{
-		LLVOAvatar *avatar = gAgent.getAvatarObject();
+		LLVOAvatar *avatar = gAgentAvatarp;
 		if (avatar)
 		{
 			const LLTextureEntry* current_te = avatar->getTE(te);
@@ -763,7 +763,7 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, void* userdata)
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLCheckBoxCtrl* checkbox_ctrl = (LLCheckBoxCtrl*) ctrl;
-	LLVOAvatar *avatar = gAgent.getAvatarObject();
+	LLVOAvatar *avatar = gAgentAvatarp;
 	if (!avatar)
 	{
 		return;
@@ -813,7 +813,7 @@ void LLPanelEditWearable::onColorCommit( LLUICtrl* ctrl, void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLColorSwatchCtrl* color_ctrl = (LLColorSwatchCtrl*) ctrl;
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( self && color_ctrl && avatar )
 	{
 		std::map<std::string, S32>::const_iterator cl_itr = self->mColorList.find(ctrl->getName());
@@ -846,7 +846,7 @@ void LLPanelEditWearable::initPreviousTextureList()
 
 void LLPanelEditWearable::initPreviousTextureListEntry(ETextureIndex te)
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar)
 	{
 		return;
@@ -872,7 +872,7 @@ void LLPanelEditWearable::addTextureDropTarget( ETextureIndex te, const std::str
 		texture_ctrl->setNonImmediateFilterPermMask(PERM_NONE);//PERM_COPY | PERM_TRANSFER);
 	}
 	mTextureList[name] = te;
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (avatar)
 	{
 		LLWearable* wearable = gAgentWearables.getWearable(mType);
@@ -893,7 +893,7 @@ void LLPanelEditWearable::onTextureCommit( LLUICtrl* ctrl, void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLTextureCtrl* texture_ctrl = (LLTextureCtrl*) ctrl;
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar )
 	{
 		ETextureIndex te = (ETextureIndex)(self->mTextureList[ctrl->getName()]);
@@ -951,7 +951,7 @@ void LLPanelEditWearable::draw()
 		return;
 	}
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( !avatar )
 	{
 		return;
@@ -1219,7 +1219,7 @@ void LLPanelEditWearable::onCommitSexChange( LLUICtrl*, void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar)
 	{
 		return;
@@ -1509,7 +1509,7 @@ void updateAvatarHeightDisplay()
 {
        if (gFloaterCustomize)
         {
-               LLVOAvatar* avatar = gAgent.getAvatarObject();
+               LLVOAvatar* avatar = gAgentAvatarp;
                F32 avatar_size = (avatar->mBodySize.mV[VZ]) + (F32)0.17; //mBodySize is actually quite a bit off.
                gFloaterCustomize->getChild<LLTextBox>("HeightTextM")->setValue(llformat("%.2f", avatar_size) + "m");
                F32 feet = avatar_size / 0.3048;
@@ -1525,13 +1525,13 @@ void LLScrollingPanelParam::onSliderMoved(LLUICtrl* ctrl, void* userdata)
 	LLScrollingPanelParam* self = (LLScrollingPanelParam*) userdata;
 	LLViewerVisualParam* param = self->mParam;
 
-	F32 current_weight = gAgent.getAvatarObject()->getVisualParamWeight( param );
+	F32 current_weight = gAgentAvatarp->getVisualParamWeight( param );
 	F32 new_weight = self->percentToWeight( (F32)slider->getValue().asReal() );
 	if (current_weight != new_weight )
 	{
 		updateAvatarHeightDisplay();
-		gAgent.getAvatarObject()->setVisualParamWeight( param, new_weight, FALSE);
-		gAgent.getAvatarObject()->updateVisualParams();
+		gAgentAvatarp->setVisualParamWeight( param, new_weight, FALSE);
+		gAgentAvatarp->updateVisualParams();
 	}
 }
 
@@ -1566,7 +1566,7 @@ void LLScrollingPanelParam::onHintMaxMouseDown( void* userdata )
 void LLScrollingPanelParam::onHintMouseDown( LLVisualParamHint* hint )
 {
 	// morph towards this result
-	F32 current_weight = gAgent.getAvatarObject()->getVisualParamWeight( hint->getVisualParam() );
+	F32 current_weight = gAgentAvatarp->getVisualParamWeight( hint->getVisualParam() );
 
 	// if we have maxed out on this morph, we shouldn't be able to click it
 	if( hint->getVisualParamWeight() != current_weight )
@@ -1592,7 +1592,7 @@ void LLScrollingPanelParam::onHintMaxHeldDown( void* userdata )
 	
 void LLScrollingPanelParam::onHintHeldDown( LLVisualParamHint* hint )
 {
-	F32 current_weight = gAgent.getAvatarObject()->getVisualParamWeight( hint->getVisualParam() );
+	F32 current_weight = gAgentAvatarp->getVisualParamWeight( hint->getVisualParam() );
 
 	if (current_weight != hint->getVisualParamWeight() )
 	{
@@ -1619,8 +1619,8 @@ void LLScrollingPanelParam::onHintHeldDown( LLVisualParamHint* hint )
 			if (slider->getMinValue() < new_percent
 				&& new_percent < slider->getMaxValue())
 			{
-				gAgent.getAvatarObject()->setVisualParamWeight( hint->getVisualParam(), new_weight, TRUE);
-				gAgent.getAvatarObject()->updateVisualParams();
+				gAgentAvatarp->setVisualParamWeight( hint->getVisualParam(), new_weight, TRUE);
+				gAgentAvatarp->updateVisualParams();
 
 				slider->setValue( weightToPercent( new_weight ) );
 			}
@@ -1635,7 +1635,7 @@ void LLScrollingPanelParam::onHintMinMouseUp( void* userdata )
 
 	F32 elapsed_time = self->mMouseDownTimer.getElapsedTimeF32();
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (avatar)
 	{
 		LLVisualParamHint* hint = self->mHintMin;
@@ -1643,7 +1643,7 @@ void LLScrollingPanelParam::onHintMinMouseUp( void* userdata )
 		if (elapsed_time < PARAM_STEP_TIME_THRESHOLD)
 		{
 			// step in direction
-			F32 current_weight = gAgent.getAvatarObject()->getVisualParamWeight( hint->getVisualParam() );
+			F32 current_weight = gAgentAvatarp->getVisualParamWeight( hint->getVisualParam() );
 			F32 range = self->mHintMax->getVisualParamWeight() - self->mHintMin->getVisualParamWeight();
 			// step a fraction in the negative directiona
 			F32 new_weight = current_weight - (range / 10.f);
@@ -1670,7 +1670,7 @@ void LLScrollingPanelParam::onHintMaxMouseUp( void* userdata )
 
 	F32 elapsed_time = self->mMouseDownTimer.getElapsedTimeF32();
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (avatar)
 	{
 		LLVisualParamHint* hint = self->mHintMax;
@@ -1678,7 +1678,7 @@ void LLScrollingPanelParam::onHintMaxMouseUp( void* userdata )
 		if (elapsed_time < PARAM_STEP_TIME_THRESHOLD)
 		{
 			// step in direction
-			F32 current_weight = gAgent.getAvatarObject()->getVisualParamWeight( hint->getVisualParam() );
+			F32 current_weight = gAgentAvatarp->getVisualParamWeight( hint->getVisualParam() );
 			F32 range = self->mHintMax->getVisualParamWeight() - self->mHintMin->getVisualParamWeight();
 			// step a fraction in the negative direction
 			F32 new_weight = current_weight + (range / 10.f);
@@ -1741,7 +1741,7 @@ LLFloaterCustomize::LLFloaterCustomize()
 {
 	memset(&mWearablePanelList[0],0,sizeof(char*)*WT_COUNT); //Initialize to 0
 
-	gSavedSettings.setU32("AvatarSex", (gAgent.getAvatarObject()->getSex() == SEX_MALE) );
+	gSavedSettings.setU32("AvatarSex", (gAgentAvatarp->getSex() == SEX_MALE) );
 
 	mResetParams = new LLVisualParamReset();
 	
@@ -1900,8 +1900,8 @@ void LLFloaterCustomize::onBtnImport_continued(AIFilePicker* filepicker)
 				llwarns << "Bad parameters list: early end of file" << llendl;
 				return;
 			}
-			gAgent.getAvatarObject()->setVisualParamWeight( param_id, param_weight, TRUE);
-			gAgent.getAvatarObject()->updateVisualParams();
+			gAgentAvatarp->setVisualParamWeight( param_id, param_weight, TRUE);
+			gAgentAvatarp->updateVisualParams();
 		}
 	}
 
@@ -1989,7 +1989,7 @@ void LLFloaterCustomize::onBtnOk( void* userdata )
 	LLFloaterCustomize* floater = (LLFloaterCustomize*) userdata;
 	gAgentWearables.saveAllWearables();
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if ( avatar )
 	{
 		avatar->invalidateAll();
@@ -2006,7 +2006,7 @@ void LLFloaterCustomize::onBtnOk( void* userdata )
 // static
 void LLFloaterCustomize::onBtnMakeOutfit( void* userdata )
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if(avatar)
 	{
 		LLMakeOutfitDialog* dialog = new LLMakeOutfitDialog( onMakeOutfitCommit, NULL );
@@ -2033,7 +2033,7 @@ void LLFloaterCustomize::onBtnMakeOutfit( void* userdata )
 // static
 void LLFloaterCustomize::onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* userdata )
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if(avatar)
 	{
 		LLDynamicArray<S32> wearables_to_include;
@@ -2695,7 +2695,7 @@ void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh,
 void LLFloaterCustomize::setWearable(EWearableType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete)
 {
 	llassert( type < WT_COUNT );
-	gSavedSettings.setU32("AvatarSex", (gAgent.getAvatarObject()->getSex() == SEX_MALE) );
+	gSavedSettings.setU32("AvatarSex", (gAgentAvatarp->getSex() == SEX_MALE) );
 	
 	LLPanelEditWearable* panel = mWearablePanelList[ type ];
 	if( panel )

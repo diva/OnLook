@@ -623,7 +623,7 @@ bool LLSelectMgr::unlinkObjects()
 	{
 		// Allow only if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+		RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
 		if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE)) )
 			return true;
 	}
@@ -677,7 +677,7 @@ bool LLSelectMgr::enableUnlinkObjects()
 		{
 			// Allow only if the avie isn't sitting on any of the selected objects
 			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+			RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
 			new_value = handleSel->getFirstRootNode(&f, TRUE) == NULL;
 		}
 // [/RLVa:KB]
@@ -1610,7 +1610,7 @@ void LLSelectMgr::selectionSetImage(const LLUUID& imageid)
 				{
 				// </edit>
 					LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-					effectp->setSourceObject(gAgent.getAvatarObject());
+					effectp->setSourceObject(gAgentAvatarp);
 					effectp->setTargetObject(object);
 					effectp->setDuration(LL_HUD_DUR_SHORT);
 					effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -3852,7 +3852,7 @@ void LLSelectMgr::sendAttach(U8 attachment_point, bool replace)
 	BOOL build_mode = LLToolMgr::getInstance()->inEdit();
 	// Special case: Attach to default location for this object.
 	if (0 == attachment_point ||
-		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)attachment_point, (LLViewerJointAttachment*)NULL))
+		get_if_there(gAgentAvatarp->mAttachmentPoints, (S32)attachment_point, (LLViewerJointAttachment*)NULL))
 	{
 		if ((!replace || attachment_point != 0) && gHippoGridManager->getConnectedGrid()->supportsInvLinks())
 		{
@@ -5162,7 +5162,7 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 
 	if (isAgentAvatarValid() && for_hud)
 	{
-			LLVOAvatar* avatar = gAgent.getAvatarObject();
+			LLVOAvatar* avatar = gAgentAvatarp;
 		LLBBox hud_bbox = avatar->getHUDBBox();
 
 		F32 cur_zoom = gAgentCamera.mHUDCurZoom;
@@ -5938,7 +5938,7 @@ void LLSelectMgr::updateSelectionCenter()
 
 		if (mSelectedObjects->mSelectType == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 		{
-			mPauseRequest = gAgent.getAvatarObject()->requestPause();
+			mPauseRequest = gAgentAvatarp->requestPause();
 		}
 		else
 		{
@@ -5972,7 +5972,7 @@ void LLSelectMgr::updateSelectionCenter()
 			LLViewerObject* object = node->getObject();
 			if (!object)
 				continue;
-			LLViewerObject *myAvatar = gAgent.getAvatarObject();
+			LLViewerObject *myAvatar = gAgentAvatarp;
 			LLViewerObject *root = object->getRootEdit();
 			if (mSelectedObjects->mSelectType == SELECT_TYPE_WORLD && // not an attachment
 				!root->isChild(myAvatar) && // not the object you're sitting on

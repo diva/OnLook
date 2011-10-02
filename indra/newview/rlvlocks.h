@@ -28,7 +28,7 @@
 #include "llagentwearables.h"
 #include "llviewerjointattachment.h"
 #include "llviewerobject.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "lleventtimer.h"
 
 #include "rlvdefines.h"
@@ -283,13 +283,13 @@ extern RlvWearableLocks gRlvWearableLocks;
 // Checked: 2010-03-03 (RLVa-1.1.3a) | Modified: RLVa-0.2.0d
 inline LLViewerJointAttachment* RlvAttachPtLookup::getAttachPoint(const std::string& strText)
 {
-	return (gAgent.getAvatarObject()) ? get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, getAttachPointIndex(strText), (LLViewerJointAttachment*)NULL) : NULL;
+	return (gAgentAvatarp) ? get_if_there(gAgentAvatarp->mAttachmentPoints, getAttachPointIndex(strText), (LLViewerJointAttachment*)NULL) : NULL;
 }
 
 // Checked: 2010-03-03 (RLVa-1.1.3a) | Modified: RLVa-1.0.1b
 inline LLViewerJointAttachment* RlvAttachPtLookup::getAttachPoint(const LLInventoryItem* pItem)
 {
-	return (gAgent.getAvatarObject()) ? get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, getAttachPointIndex(pItem), (LLViewerJointAttachment*)NULL) : NULL;
+	return (gAgentAvatarp) ? get_if_there(gAgentAvatarp->mAttachmentPoints, getAttachPointIndex(pItem), (LLViewerJointAttachment*)NULL) : NULL;
 }
 
 // Checked: 2010-03-03 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
@@ -341,7 +341,7 @@ inline ERlvWearMask RlvAttachmentLocks::canAttach(const LLViewerJointAttachment*
 inline bool RlvAttachmentLocks::canDetach(const LLInventoryItem* pItem) const
 {
 	const LLViewerObject* pAttachObj = 
-		((pItem) && (gAgent.getAvatarObject())) ? gAgent.getAvatarObject()->getWornAttachment(pItem->getLinkedUUID()) : NULL;
+		((pItem) && (gAgentAvatarp)) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
 	return (pAttachObj) && (!isLockedAttachment(pAttachObj));
 }
 

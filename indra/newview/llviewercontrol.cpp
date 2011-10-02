@@ -55,7 +55,7 @@
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
 #include "llwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvoiceclient.h"
 #include "llvosky.h"
 #include "llvotree.h"
@@ -583,8 +583,8 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 
 bool handleAscentSelfTag(const LLSD& newvalue)
 {
-	if(gAgent.getAvatarObject())
-		gAgent.getAvatarObject()->mClientTag = "";
+	if(gAgentAvatarp)
+		gAgentAvatarp->mClientTag = "";
 	return true;
 }
 

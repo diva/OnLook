@@ -478,6 +478,7 @@ set(viewer_SOURCE_FILES
     llvlmanager.cpp
     llvoavatar.cpp
     llvoavatardefines.cpp
+    llvoavatarself.cpp
     llvocache.cpp
     llvoclouds.cpp
     llvograss.cpp
@@ -960,6 +961,7 @@ set(viewer_HEADER_FILES
     llvlmanager.h
     llvoavatar.h
     llvoavatardefines.h
+    llvoavatarself.h
     llvocache.h
     llvoclouds.h
     llvograss.h

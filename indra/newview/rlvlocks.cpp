@@ -35,7 +35,7 @@ void RlvAttachPtLookup::initLookupTable()
 	static bool fInitialized = false;
 	if (!fInitialized)
 	{
-		LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+		LLVOAvatar* pAvatar = gAgentAvatarp;
 		if (pAvatar)
 		{
 			std::string strAttachPtName;
@@ -58,7 +58,7 @@ void RlvAttachPtLookup::initLookupTable()
 // Checked: 2010-03-03 (RLVa-1.1.3a) | Added: RLVa-0.2.2a
 S32 RlvAttachPtLookup::getAttachPointIndex(const LLViewerJointAttachment* pAttachPt)
 {
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (pAvatar)
 	{
 		for (LLVOAvatar::attachment_map_t::const_iterator itAttach = pAvatar->mAttachmentPoints.begin(); 
@@ -361,7 +361,7 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 // Checked: 2010-08-22 (RLVa-1.1.3a) | Modified: RLVa-1.2.1a
 void RlvAttachmentLocks::updateLockedHUD()
 {
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return;
 
@@ -436,7 +436,7 @@ void RlvAttachmentLockWatchdog::RlvWearInfo::dumpInstance() const
 		for (std::map<S32, uuid_vec_t>::const_iterator itAttachPt = attachPts.begin(); itAttachPt != attachPts.end(); ++itAttachPt)
 		{
 			const LLViewerJointAttachment* pAttachPt =
-				get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, itAttachPt->first, (LLViewerJointAttachment*)NULL);
+				get_if_there(gAgentAvatarp->mAttachmentPoints, itAttachPt->first, (LLViewerJointAttachment*)NULL);
 			if (!itAttachPt->second.empty())
 			{
 				for (uuid_vec_t::const_iterator itAttach = itAttachPt->second.begin(); itAttach != itAttachPt->second.end(); ++itAttach)
@@ -485,7 +485,7 @@ void RlvAttachmentLockWatchdog::detach(const LLViewerObject* pAttachObj)
 		// HACK-RLVa: force the region to send out an ObjectUpdate for the old attachment so obsolete viewers will remember it exists
 		S32 idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachObj);
 		const LLViewerJointAttachment* pAttachPt = 
-			(gAgent.getAvatarObject()) ? get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)idxAttachPt, (LLViewerJointAttachment*)NULL) : NULL;
+			(gAgentAvatarp) ? get_if_there(gAgentAvatarp->mAttachmentPoints, (S32)idxAttachPt, (LLViewerJointAttachment*)NULL) : NULL;
 		if ( (pAttachPt) && (!pAttachPt->getIsHUDAttachment()) && (pAttachPt->mAttachedObjects.size() > 1) )
 		{
 			for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator itAttachObj = pAttachPt->mAttachedObjects.begin();
@@ -507,7 +507,7 @@ void RlvAttachmentLockWatchdog::detach(const LLViewerObject* pAttachObj)
 void RlvAttachmentLockWatchdog::detach(S32 idxAttachPt, const LLViewerObject* pAttachObjExcept /*=NULL*/)
 {
 	const LLViewerJointAttachment* pAttachPt = 
-		(gAgent.getAvatarObject()) ? get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, (S32)idxAttachPt, (LLViewerJointAttachment*)NULL) : NULL;
+		(gAgentAvatarp) ? get_if_there(gAgentAvatarp->mAttachmentPoints, (S32)idxAttachPt, (LLViewerJointAttachment*)NULL) : NULL;
 	if (!pAttachPt)
 		return;
 
@@ -561,7 +561,7 @@ void RlvAttachmentLockWatchdog::onAttach(const LLViewerObject* pAttachObj, const
 {
 	S32 idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachObj);
 	const LLUUID& idAttachItem = (pAttachObj) ? pAttachObj->getAttachmentItemID() : LLUUID::null;
-	RLV_ASSERT( (!gAgent.getAvatarObject()) || ((idxAttachPt) && (idAttachItem.notNull())) );
+	RLV_ASSERT( (!gAgentAvatarp) || ((idxAttachPt) && (idAttachItem.notNull())) );
 	if ( (!idxAttachPt) || (idAttachItem.isNull()) )
 		return;
 
@@ -652,7 +652,7 @@ void RlvAttachmentLockWatchdog::onDetach(const LLViewerObject* pAttachObj, const
 {
 	S32 idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachPt);
 	const LLUUID& idAttachItem = (pAttachObj) ? pAttachObj->getAttachmentItemID() : LLUUID::null;
-	RLV_ASSERT( (!gAgent.getAvatarObject()) || ((idxAttachPt) && (idAttachItem.notNull())) );
+	RLV_ASSERT( (!gAgentAvatarp) || ((idxAttachPt) && (idAttachItem.notNull())) );
 	if ( (!idxAttachPt) || (idAttachItem.isNull()) )
 		return;
 
@@ -758,7 +758,7 @@ void RlvAttachmentLockWatchdog::onWearAttachment(const LLUUID& idItem, ERlvWearM
 {
 	// We only need to keep track of user wears if there's actually anything locked
 	RLV_ASSERT(idItem.notNull());
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if ( (idItem.isNull()) || (!pAvatar) || (!gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
 		return;
 

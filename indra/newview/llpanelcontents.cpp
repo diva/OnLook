@@ -137,7 +137,7 @@ void LLPanelContents::getState(LLViewerObject *objectp )
 			// Only check the first (non-)root object because nothing else would result in enabling the button (see below)
 			LLViewerObject* pObj = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject(TRUE);
 
-			LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+			LLVOAvatar* pAvatar = gAgentAvatarp;
 			editable = (pObj) && (pAvatar) && ((!pAvatar->isSitting()) || (pAvatar->getRoot() != pObj->getRootEdit()));
 		}
 	}
@@ -186,7 +186,7 @@ void LLPanelContents::onClickNewScript(void *userdata)
 			}
 			else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
 			{
-				LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+				LLVOAvatar* pAvatar = gAgentAvatarp;
 				if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == object->getRootEdit()) )
 					return;				// .. or in a linkset the avie is sitting on under @unsit=n/@sittp=n
 			}

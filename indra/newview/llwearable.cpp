@@ -49,7 +49,7 @@
 #include "llviewertexturelist.h"
 #include "llviewerinventory.h"
 #include "llviewerregion.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llwearable.h"
 
 using namespace LLVOAvatarDefines;
@@ -521,7 +521,7 @@ BOOL LLWearable::importFile( LLFILE* file )
 // since this wearable was created.
 BOOL LLWearable::isOldVersion()
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -588,7 +588,7 @@ BOOL LLWearable::isOldVersion()
 // only if those values are the same as the defaults.
 BOOL LLWearable::isDirty()
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -692,7 +692,7 @@ BOOL LLWearable::isDirty()
 
 void LLWearable::setParamsToDefaults()
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -724,7 +724,7 @@ void LLWearable::setTexturesToDefaults()
 // Updates the user's avatar's appearance
 void LLWearable::writeToAvatar( BOOL set_by_user )
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -818,7 +818,7 @@ void LLWearable::writeToAvatar( BOOL set_by_user )
 // static 
 void LLWearable::removeFromAvatar( EWearableType type, BOOL set_by_user )
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -873,7 +873,7 @@ void LLWearable::removeFromAvatar( EWearableType type, BOOL set_by_user )
 // Updates asset from the user's avatar
 void LLWearable::readFromAvatar()
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{
@@ -930,7 +930,7 @@ void LLWearable::readFromAvatar()
 // Definition version is current: removes obsolete enties and creates default values for new ones.
 void LLWearable::copyDataFrom( LLWearable* src )
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	llassert( avatar );
 	if( !avatar )
 	{

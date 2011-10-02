@@ -148,7 +148,7 @@ void RlvInventory::fetchWornItems()
 	}
 
 	// Fetch all currently worn attachments
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (pAvatar)
 	{
 		for (LLVOAvatar::attachment_map_t::const_iterator itAttachPt = pAvatar->mAttachmentPoints.begin(); 
@@ -363,7 +363,7 @@ void RlvRenameOnWearObserver::done()
 // Checked: 2010-03-14 (RLVa-1.1.3a) | Added: RLVa-1.2.0a
 void RlvRenameOnWearObserver::doneIdle()
 {
-	const LLViewerInventoryCategory* pRlvRoot = NULL; LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	const LLViewerInventoryCategory* pRlvRoot = NULL; LLVOAvatar* pAvatar = gAgentAvatarp;
 	if ( (RlvSettings::getEnableSharedWear()) || (!RlvSettings::getSharedInvAutoRename()) || (LLStartUp::getStartupState() < STATE_STARTED) || 
 		 (!pAvatar) || ((pRlvRoot = RlvInventory::instance().getSharedRoot()) == NULL) )
 	{

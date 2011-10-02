@@ -293,9 +293,9 @@ void LLToolBar::refresh()
 	setVisible(show && !mouselook);
 
 	BOOL sitting = FALSE;
-	if (gAgent.getAvatarObject())
+	if (gAgentAvatarp)
 	{
-		sitting = gAgent.getAvatarObject()->isSitting();
+		sitting = gAgentAvatarp->isSitting();
 	}
 
 	childSetEnabled("fly_btn", (gAgent.canFly() || gAgent.getFlying() || gSavedSettings.getBOOL("AscentFlyAlwaysEnabled")) && !sitting );

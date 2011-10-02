@@ -4271,7 +4271,7 @@ void LLPipeline::rebuildPools()
 
 	if (isAgentAvatarValid())
 	{
-		gAgent.getAvatarObject()->rebuildHUD();
+		gAgentAvatarp->rebuildHUD();
 	}
 }
 
@@ -4963,7 +4963,7 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		light->setSpecular(LLColor4::black);
 	}
 	if (isAgentAvatarValid() &&
-		gAgent.getAvatarObject()->mSpecialRenderMode == 3)
+		gAgentAvatarp->mSpecialRenderMode == 3)
 	{
 		LLColor4  light_color = LLColor4::white;
 		light_color.mV[3] = 0.0f;
@@ -5067,7 +5067,7 @@ void LLPipeline::enableLightsDynamic()
 	enableLights(mask);
 	
 
-	LLVOAvatar* avatarp = gAgent.getAvatarObject();
+	LLVOAvatar* avatarp = gAgentAvatarp;
 
 	if (avatarp && getLightingDetail() <= 0)
 	{
@@ -7735,7 +7735,7 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 {
 	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
-		LLVOAvatar* agent = gAgent.getAvatarObject();
+		LLVOAvatar* agent = gAgentAvatarp;
 		if (!isAgentAvatarValid() || gAgentCamera.getCameraAnimating() || gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK)
 		{
 			agent = NULL;

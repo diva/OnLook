@@ -79,7 +79,7 @@
 #include "llviewerinventory.h"
 #include "llviewerobjectlist.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
 #include "llviewermessage.h" 
@@ -660,7 +660,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		LLUUID id = *selected_items.begin();
 
 		std::string joint_name = userdata.asString();
-		LLVOAvatar *avatarp = gAgent.getAvatarObject();
+		LLVOAvatar *avatarp = gAgentAvatarp;
 		LLViewerJointAttachment* attachmentp = NULL;
 		for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
 			 iter != avatarp->mAttachmentPoints.end(); )

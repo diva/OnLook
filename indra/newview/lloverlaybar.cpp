@@ -324,11 +324,11 @@ void LLOverlayBar::refresh()
 	}
 
 	BOOL sitting = FALSE;
-	if (gAgent.getAvatarObject())
+	if (gAgentAvatarp)
 	{
-//		sitting = gAgent.getAvatarObject()->isSitting();
+//		sitting = gAgentAvatarp->isSitting();
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-		sitting = gAgent.getAvatarObject()->isSitting() && !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT);
+		sitting = gAgentAvatarp->isSitting() && !gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT);
 // [/RLVa:KB]
 	}
 	button = getChild<LLButton>("Stand Up");
@@ -450,7 +450,7 @@ void LLOverlayBar::onClickMouselook(void*)
 void LLOverlayBar::onClickStandUp(void*)
 {
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->isSitting()) )
+	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) && (gAgentAvatarp->isSitting()) )
 	{
 		return;
 	}

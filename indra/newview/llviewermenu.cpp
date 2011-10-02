@@ -2401,9 +2401,9 @@ class LLSelfEnableRemoveAllAttachments : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		bool new_value = false;
-		if (gAgent.getAvatarObject())
+		if (gAgentAvatarp)
 		{
-			LLVOAvatar* avatarp = gAgent.getAvatarObject();
+			LLVOAvatar* avatarp = gAgentAvatarp;
 			for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
 				 iter != avatarp->mAttachmentPoints.end(); )
 			{
@@ -2796,9 +2796,9 @@ bool handle_go_to()
 
 		LLViewerParcelMgr::getInstance()->deselectLand();
 
-		if (gAgent.getAvatarObject() && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
+		if (gAgentAvatarp && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
 		{
-			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgent.getAvatarObject()->getID());
+			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentAvatarp->getID());
 		}
 		else 
 		{
@@ -3515,7 +3515,7 @@ class LLSelfSitOrStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->isSitting())
+		if (gAgentAvatarp && gAgentAvatarp->isSitting())
 		{
 // [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT))
@@ -3543,7 +3543,7 @@ class LLSelfEnableSitOrStand : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = gAgent.getAvatarObject() && !gAgent.getFlying();
+		bool new_value = gAgentAvatarp && !gAgent.getFlying();
 //		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 
 		std::string label;
@@ -3557,7 +3557,7 @@ class LLSelfEnableSitOrStand : public view_listener_t
 			stand_text = param.substr(offset+1);
 		}
 		
-		if (gAgent.getAvatarObject() && gAgent.getAvatarObject()->isSitting())
+		if (gAgentAvatarp && gAgentAvatarp->isSitting())
 		{
 // [RLVa:KB] - Alternate: Snowglobe-1.3.X | Checked: 2009-12-29 (RLVa-1.1.0k) | Added: RLVa-1.1.0k | OK
 			new_value &= (!gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT));
@@ -3749,9 +3749,9 @@ void handle_fake_away_status(void*)
 
 void handle_force_ground_sit(void*)
 {
-	if (gAgent.getAvatarObject())
+	if (gAgentAvatarp)
 	{
-		if(!gAgent.getAvatarObject()->isSitting())
+		if(!gAgentAvatarp->isSitting())
 		{
 			gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 		} 
@@ -3894,8 +3894,8 @@ class LLEditEnableCustomizeAvatar : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = (gAgent.getAvatarObject() && 
-						  gAgent.getAvatarObject()->isFullyLoaded() &&
+		bool new_value = (gAgentAvatarp && 
+						  gAgentAvatarp->isFullyLoaded() &&
 						  gAgentWearables.areWearablesLoaded());
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
@@ -3945,9 +3945,9 @@ bool handle_sit_or_stand()
 	if (object && object->getPCode() == LL_PCODE_VOLUME)
 	{
 // [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.1.3b) | Added: RLVa-1.2.1c | OK
-		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_STANDTP)) && (gAgent.getAvatarObject()) )
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_STANDTP)) && (gAgentAvatarp) )
 		{
-			if (gAgent.getAvatarObject()->isSitting())
+			if (gAgentAvatarp->isSitting())
 			{
 				if (gRlvHandler.canStand())
 					gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
@@ -4011,9 +4011,9 @@ class LLLandSit : public view_listener_t
 		LLVector3d posGlobal = LLToolPie::getInstance()->getPick().mPosGlobal;
 		
 		LLQuaternion target_rot;
-		if (gAgent.getAvatarObject())
+		if (gAgentAvatarp)
 		{
-			target_rot = gAgent.getAvatarObject()->getRotation();
+			target_rot = gAgentAvatarp->getRotation();
 		}
 		else
 		{
@@ -4062,9 +4062,9 @@ class LLWorldEnableFly : public view_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		BOOL sitting = FALSE;
-		if (gAgent.getAvatarObject())
+		if (gAgentAvatarp)
 		{
-			sitting = gAgent.getAvatarObject()->isSitting();
+			sitting = gAgentAvatarp->isSitting();
 		}
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(!sitting);
 		return true;
@@ -5141,7 +5141,7 @@ BOOL sitting_on_selection()
 	}
 
 	// Need to determine if avatar is sitting on this object
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar)
 	{
 		return FALSE;
@@ -5744,7 +5744,7 @@ void print_agent_nvpairs(void*)
 
 	llinfos << "Agent Name Value Pairs" << llendl;
 
-	objectp = gAgent.getAvatarObject();
+	objectp = gAgentAvatarp;
 	if (objectp)
 	{
 		objectp->printNameValuePairs();
@@ -5906,9 +5906,9 @@ class LLWorldSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		if (gAgent.getAvatarObject())
+		if (gAgentAvatarp)
 		{
-			if(!gAgent.getAvatarObject()->isSitting())
+			if(!gAgentAvatarp->isSitting())
 			{
 				gAgent.setControlFlags(AGENT_CONTROL_SIT_ON_GROUND);
 			} 
@@ -5945,7 +5945,7 @@ class LLWorldEnableSitOnGround : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		bool new_value = (gAgent.getAvatarObject());
+		bool new_value = (gAgentAvatarp);
 		gMenuHolder->findControl(userdata["control"].asString())->setValue(new_value);
 		return true;
 	}
@@ -6837,7 +6837,7 @@ private:
 			S32 index = userdata.asInteger();
 			LLViewerJointAttachment* attachment_point = NULL;
 			if (index > 0)
-				attachment_point = get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, index, (LLViewerJointAttachment*)NULL);
+				attachment_point = get_if_there(gAgentAvatarp->mAttachmentPoints, index, (LLViewerJointAttachment*)NULL);
 
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f | OK
 			// RELEASE-RLVa: [SL-2.2.0] If 'index != 0' then the object will be "add attached" [see LLSelectMgr::sendAttach()]
@@ -6871,8 +6871,8 @@ void near_attach_object(BOOL success, void *user_data)
 		U8 attachment_id = 0;
 		if (attachment)
 		{
-			for (LLVOAvatar::attachment_map_t::iterator iter = gAgent.getAvatarObject()->mAttachmentPoints.begin();
-				 iter != gAgent.getAvatarObject()->mAttachmentPoints.end(); ++iter)
+			for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin();
+				 iter != gAgentAvatarp->mAttachmentPoints.end(); ++iter)
 			{
 				if (iter->second == attachment)
 				{
@@ -7168,7 +7168,7 @@ class LLAttachmentEnableDrop : public view_listener_t
 		if ( object )
 		{
     		S32 attachmentID  = ATTACHMENT_ID_FROM_STATE(object->getState());
-			attachment_pt = get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, attachmentID, (LLViewerJointAttachment*)NULL);
+			attachment_pt = get_if_there(gAgentAvatarp->mAttachmentPoints, attachmentID, (LLViewerJointAttachment*)NULL);
 
 			if ( attachment_pt )
 			{
@@ -7639,7 +7639,7 @@ void handle_toggle_pg(void*)
 
 void handle_dump_attachments(void*)
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( !avatar )
 	{
 		llinfos << "NO AVATAR" << llendl;
@@ -7851,8 +7851,8 @@ class LLToolsEnableTakeCopy : public view_listener_t
 //						return (!obj->permCopy() || obj->isAttachment());
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 						return (!obj->permCopy() || obj->isAttachment()) || 
-							   ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgent.getAvatarObject()) && 
-							     (gAgent.getAvatarObject()->getRoot() == obj) );
+							   ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) && 
+							     (gAgentAvatarp->getRoot() == obj) );
 // [/RLVa:KB]
 					}
 				} func;
@@ -8268,19 +8268,19 @@ void slow_mo_animations(void*)
 	static BOOL slow_mo = FALSE;
 	if (slow_mo)
 	{
-		gAgent.getAvatarObject()->setAnimTimeFactor(1.f);
+		gAgentAvatarp->setAnimTimeFactor(1.f);
 		slow_mo = FALSE;
 	}
 	else
 	{
-		gAgent.getAvatarObject()->setAnimTimeFactor(0.2f);
+		gAgentAvatarp->setAnimTimeFactor(0.2f);
 		slow_mo = TRUE;
 	}
 }
 
 void handle_dump_avatar_local_textures(void*)
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar )
 	{
 		avatar->dumpLocalTextures();
@@ -8497,7 +8497,7 @@ static void handle_mesh_save_current_obj_continued(void* data, AIFilePicker* fil
 		return;
 	}
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if ( avatar )
 	{
 		LLPolyMesh* mesh = avatar->getMesh (mesh_shared);
@@ -8710,7 +8710,7 @@ void handle_debug_avatar_textures(void*)
 void handle_grab_texture(void* data)
 {
 	ETextureIndex index = (ETextureIndex)((intptr_t)data);
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if ( avatar )
 	{
 		const LLUUID& asset_id = avatar->grabLocalTexture(index);
@@ -8803,7 +8803,7 @@ void handle_grab_texture(void* data)
 BOOL enable_grab_texture(void* data)
 {
 	ETextureIndex index = (ETextureIndex)((intptr_t)data);
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if ( avatar )
 	{
 		return avatar->canGrabLocalTexture(index);
@@ -9044,7 +9044,7 @@ void handle_buy_currency_test(void*)
 
 void handle_rebake_textures(void*)
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar) return;
 
 	// Slam pending upload count to "unstick" things

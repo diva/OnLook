@@ -334,7 +334,7 @@ bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
 			case LLAssetType::AT_CLOTHING:
 				return gAgentWearables.isWearingItem(pItem->getUUID());
 			case LLAssetType::AT_OBJECT:
-				return (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->isWearingAttachment(pItem->getUUID()));
+				return (gAgentAvatarp) && (gAgentAvatarp->isWearingAttachment(pItem->getUUID()));
 			case LLAssetType::AT_GESTURE:
 				return LLGestureMgr::instance().isGestureActive(pItem->getUUID());
 			case LLAssetType::AT_LINK:
@@ -355,7 +355,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return;
 
@@ -641,7 +641,7 @@ void RlvForceWear::addAttachment(const LLViewerInventoryItem* pItem, EWearAction
 {
 	// Remove it from 'm_remAttachments' if it's queued for detaching
 	const LLViewerObject* pAttachObj = 
-		(gAgent.getAvatarObject()) ? gAgent.getAvatarObject()->getWornAttachment(pItem->getLinkedUUID()) : NULL;
+		(gAgentAvatarp) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
 	if ( (pAttachObj) && (isRemAttachment(pAttachObj)) )
 		m_remAttachments.erase(std::remove(m_remAttachments.begin(), m_remAttachments.end(), pAttachObj), m_remAttachments.end());
 
@@ -1017,11 +1017,11 @@ bool rlvCanDeleteOrReturn()
 			fIsAllowed = false;
 	}
 	
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgent.getAvatarObject()) )
+	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) )
 	{
 		// We'll allow if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+		RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
 		if ( (handleSel.notNull()) && (handleSel->getFirstRootNode(&f, TRUE)) )
 			fIsAllowed = false;
 	}

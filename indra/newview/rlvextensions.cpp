@@ -218,8 +218,8 @@ std::string RlvExtGetSet::onGetPseudoDebug(const std::string& strSetting)
 		}
 		else
 		{
-			if (gAgent.getAvatarObject())
-				return llformat("%d", (gAgent.getAvatarObject()->getSex() == SEX_MALE)); // [See LLFloaterCustomize::LLFloaterCustomize()]
+			if (gAgentAvatarp)
+				return llformat("%d", (gAgentAvatarp->getSex() == SEX_MALE)); // [See LLFloaterCustomize::LLFloaterCustomize()]
 		}
 	}
 	return std::string();

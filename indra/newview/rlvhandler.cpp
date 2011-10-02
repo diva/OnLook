@@ -746,7 +746,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 			else if ((idxAttachPt = getAttachPointIndex(strComposite, true)) != 0)
 			{
 				LLVOAvatar* pAvatar; LLViewerJointAttachment* pAttachmentPt;
-				if ( ((pAvatar = gAgent.getAvatarObject()) != NULL) && 
+				if ( ((pAvatar = gAgentAvatarp) != NULL) && 
 					 ((pAttachmentPt = get_if_there(pAvatar->mAttachmentPoints, idxAttachPt, (LLViewerJointAttachment*)NULL)) != NULL) )
 				{
 					idCompositeItem = pAttachmentPt->getItemID();
@@ -765,7 +765,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 	bool RlvHandler::canTakeOffComposite(const LLInventoryCategory* pFolder) const
 	{
 		// Sanity check - if there's no folder or no avatar then there is nothing to take off
-		LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+		LLVOAvatar* pAvatar = gAgentAvatarp;
 		if ( (!pFolder) || (!pAvatar) )
 			return false;
 		// Sanity check - if nothing is locked then we can definitely take it off
@@ -808,7 +808,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 	bool RlvHandler::canWearComposite(const LLInventoryCategory* pFolder) const
 	{
 		// Sanity check - if there's no folder or no avatar then there is nothing to wear
-		LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+		LLVOAvatar* pAvatar = gAgentAvatarp;
 		if ( (!pFolder) || (!pAvatar) )
 			return false;
 		// Sanity check - if nothing is locked then we can definitely wear it
@@ -1292,7 +1292,7 @@ ERlvCmdRet RlvHandler::onAddRemAttach(const RlvCommand& rlvCmd, bool& fRefCount)
 	if ( (!idxAttachPt) && (!rlvCmd.getOption().empty())  )
 		return RLV_RET_FAILED_OPTION;
 
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return RLV_RET_FAILED;
 
@@ -1431,7 +1431,7 @@ ERlvCmdRet RlvHandler::processForceCommand(const RlvCommand& rlvCmd) const
 		case RLV_BHVR_UNSIT:		// @unsit=force							- Checked: 2010-03-18 (RLVa-1.2.0c) | Modified: RLVa-0.2.0g
 			{
 				VERIFY_OPTION(rlvCmd.getOption().empty());
-				LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+				LLVOAvatar* pAvatar = gAgentAvatarp;
 				if ( (pAvatar) && (pAvatar->isSitting()) && (!hasBehaviourExcept(RLV_BHVR_UNSIT, rlvCmd.getObjectID())) )
 				{
 					gAgent.setControlFlags(AGENT_CONTROL_STAND_UP);
@@ -1522,7 +1522,7 @@ ERlvCmdRet RlvHandler::onForceRemAttach(const RlvCommand& rlvCmd) const
 	RLV_ASSERT(RLV_TYPE_FORCE == rlvCmd.getParamType());
 	RLV_ASSERT( (RLV_BHVR_REMATTACH == rlvCmd.getBehaviourType()) || (RLV_BHVR_DETACH == rlvCmd.getBehaviourType()) );
 
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return RLV_RET_FAILED;
 
@@ -1577,9 +1577,9 @@ ERlvCmdRet RlvHandler::onForceSit(const RlvCommand& rlvCmd) const
 
 	if (!canSit(pObj))
 		return RLV_RET_FAILED_LOCK;
-	else if ( (hasBehaviour(RLV_BHVR_STANDTP)) && (gAgent.getAvatarObject()) )
+	else if ( (hasBehaviour(RLV_BHVR_STANDTP)) && (gAgentAvatarp) )
 	{
-		if (gAgent.getAvatarObject()->isSitting())
+		if (gAgentAvatarp->isSitting())
 			return RLV_RET_FAILED_LOCK;
 		m_posSitSource = gAgent.getPositionGlobal();
 	}
@@ -1693,7 +1693,7 @@ ERlvCmdRet RlvHandler::processReplyCommand(const RlvCommand& rlvCmd) const
 		case RLV_BHVR_GETSITID:			// @getsitid=<channel>					- Checked: 2009-11-26 (RLVa-1.1.0f)
 			{
 				// NOTE: RLV 1.16.1 returns a NULL UUID if we're not sitting
-				LLVOAvatar* pAvatar = gAgent.getAvatarObject(); LLUUID idSitObj;
+				LLVOAvatar* pAvatar = gAgentAvatarp; LLUUID idSitObj;
 				if ( (pAvatar) && (pAvatar->isSitting()) )
 				{
 					// LLVOAvatar inherits from 2 classes so make sure we get the right vfptr
@@ -1795,7 +1795,7 @@ ERlvCmdRet RlvHandler::onGetAttach(const RlvCommand& rlvCmd, std::string& strRep
 	RLV_ASSERT(RLV_TYPE_REPLY == rlvCmd.getParamType());
 	RLV_ASSERT(RLV_BHVR_GETATTACH == rlvCmd.getBehaviourType());
 
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return RLV_RET_FAILED;
 
@@ -1829,7 +1829,7 @@ ERlvCmdRet RlvHandler::onGetAttachNames(const RlvCommand& rlvCmd, std::string& s
 	RLV_ASSERT( (RLV_BHVR_GETATTACHNAMES == rlvCmd.getBehaviourType()) || (RLV_BHVR_GETADDATTACHNAMES == rlvCmd.getBehaviourType()) || 
 		        (RLV_BHVR_GETREMATTACHNAMES == rlvCmd.getBehaviourType()) );
 
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return RLV_RET_FAILED;
 
@@ -1910,7 +1910,7 @@ struct rlv_wear_info { U32 cntWorn, cntTotal, cntChildWorn, cntChildTotal; };
 ERlvCmdRet RlvHandler::onGetInvWorn(const RlvCommand& rlvCmd, std::string& strReply) const
 {
 	// Sanity check - gAgentAvatarp can't be NULL [see RlvForceWearLegacy::isWearingItem()]
-	if (!gAgent.getAvatarObject())
+	if (!gAgentAvatarp)
 		return RLV_RET_FAILED;
 	// Sanity check - folder should exist
 	LLViewerInventoryCategory* pFolder = RlvInventory::instance().getSharedFolder(rlvCmd.getOption());
