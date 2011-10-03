@@ -125,7 +125,7 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 			bool res = wearable->importFile( fp );
 			if (!res)
 			{
-				if (wearable->getType() == WT_COUNT)
+				if (wearable->getType() == LLWearableType::WT_COUNT)
 				{
 					isNewWearable = TRUE;
 				}
@@ -271,7 +271,7 @@ LLWearable* LLWearableList::createCopy( LLWearable* old_wearable )
 	return wearable;
 }
 
-LLWearable* LLWearableList::createNewWearable( EWearableType type )
+LLWearable* LLWearableList::createNewWearable( LLWearableType::EType type )
 {
 	lldebugs << "LLWearableList::createNewWearable()" << llendl;
 

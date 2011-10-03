@@ -47,10 +47,10 @@ LLAssetType::EType LLAssetConverter::convert(const std::string &src_filename, co
 						conversion_list[i].type : LLAssetType::AT_NONE;
 		}
 	}
-	EWearableType wear_type = LLWearable::typeNameToType(exten);
-	if(wear_type != WT_NONE && copyFile(src_filename, filename))
+	LLWearableType::EType wear_type = LLWearableType::typeNameToType(exten);
+	if(wear_type != LLWearableType::WT_NONE && copyFile(src_filename, filename))
 	{
-		return  LLWearable::typeToAssetType(wear_type);
+		return  LLWearableType::getAssetType(wear_type);
 	}
 
 	llwarns << "Unhandled extension" << llendl;

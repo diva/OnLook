@@ -392,13 +392,13 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 	}
 	else
 	{
-		EWearableType wear_type = LLWearable::typeNameToType(type);
-		if(wear_type != WT_INVALID)
-	{
-			LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearable::typeToAssetType(LLWearable::typeNameToType(type)));
-			LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);
-			LLFolderBridge::createWearable(parent_id, wear_type);
-	}
+		LLWearableType::EType wear_type = LLWearableType::typeNameToType(type);
+		if(wear_type != LLWearableType::WT_INVALID)
+		{
+				LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearableType::getAssetType(wear_type));
+				LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);
+				LLFolderBridge::createWearable(parent_id, wear_type);
+		}
 	}
 	ptr->getRootFolder()->setNeedsAutoRename(TRUE);	
 }

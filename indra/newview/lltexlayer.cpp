@@ -81,12 +81,12 @@ LLBakedUploadData::LLBakedUploadData( LLVOAvatar* avatar,
 	mID(id)
 { 
 	mStartTime = LLFrameTimer::getTotalTime();		// Record starting time
-	for( S32 i = 0; i < WT_COUNT; i++ )
+	for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 	{
-		LLWearable* wearable = gAgentWearables.getWearable( (EWearableType)i);
+		LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)i);
 		if( wearable )
 		{
-			mWearableAssets[i] = wearable->getID();
+			mWearableAssets[i] = wearable->getAssetID();
 		}
 	}
 }
@@ -223,7 +223,7 @@ BOOL LLTexLayerSetBuffer::needsRender()
 	BOOL needs_update = (mNeedsUpdate || upload_now) && !avatar->getIsAppearanceAnimating();
 	if (needs_update)
 	{
-		BOOL invalid_skirt = avatar->getBakedTE(mTexLayerSet) == TEX_SKIRT_BAKED && !avatar->isWearingWearableType(WT_SKIRT);
+		BOOL invalid_skirt = avatar->getBakedTE(mTexLayerSet) == TEX_SKIRT_BAKED && !avatar->isWearingWearableType(LLWearableType::WT_SKIRT);
 		if (invalid_skirt)
 		{
 			// we were trying to create a skirt texture
@@ -2059,8 +2059,8 @@ BOOL LLTexLayerParamAlpha::getSkip()
 		}
 	}
 
-	EWearableType type = (EWearableType)getWearableType();
-	if( (type != WT_INVALID) && !avatar->isWearingWearableType( type ) )
+	LLWearableType::EType type = (LLWearableType::EType)getWearableType();
+	if( (type != LLWearableType::WT_INVALID) && !avatar->isWearingWearableType( type ) )
 	{
 		return TRUE;
 	}
