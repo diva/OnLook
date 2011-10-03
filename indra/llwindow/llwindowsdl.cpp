@@ -1372,7 +1372,7 @@ BOOL LLWindowSDL::pasteTextFromPrimary(LLWString &dst)
 
 BOOL LLWindowSDL::copyTextToPrimary(const LLWString &s)
 {
-	return FALSE;  // unsupported
+	return FALSE; // unsupported
 }
 
 #endif // LL_GTK
