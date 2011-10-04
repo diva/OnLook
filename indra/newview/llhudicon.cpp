@@ -213,7 +213,7 @@ BOOL LLHUDIcon::lineSegmentIntersect(const LLVector3& start, const LLVector3& en
 	if (mHidden)
 		return FALSE;
 
-	if (mSourceObject.isNull() || mImagep.isNull())
+	if (mSourceObject.isNull() || mImagep.isNull() || mSourceObject->mDrawable.isNull())
 	{
 		markDead();
 		return FALSE;
