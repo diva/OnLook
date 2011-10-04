@@ -165,7 +165,7 @@ U8* LLImageBase::allocateData(S32 size)
 	{
 		deleteData(); // virtual
 		mBadBufferAllocation = FALSE ;
-		mData = new U8[size];
+		mData = new (std::nothrow) U8[size];
 		if (!mData)
 		{
 			llwarns << "allocate image data: " << size << llendl;
@@ -186,7 +186,7 @@ U8* LLImageBase::reallocateData(S32 size)
 		return mData;
 
 	LLMemType mt1((LLMemType::EMemType)mMemType);
-	U8 *new_datap = new U8[size];
+	U8 *new_datap = new (std::nothrow) U8[size];
 	if (!new_datap)
 	{
 		llwarns << "Out of memory in LLImageBase::reallocateData" << llendl;
@@ -349,7 +349,7 @@ BOOL LLImageRaw::resize(U16 width, U16 height, S8 components)
 U8 * LLImageRaw::getSubImage(U32 x_pos, U32 y_pos, U32 width, U32 height) const
 {
 	LLMemType mt1((LLMemType::EMemType)mMemType);
-	U8 *data = new U8[width*height*getComponents()];
+	U8 *data = new (std::nothrow) U8[width*height*getComponents()];
 
 	// Should do some simple bounds checking
 	if (!data)
@@ -433,7 +433,7 @@ void LLImageRaw::verticalFlip()
 {
 	LLMemType mt1((LLMemType::EMemType)mMemType);
 	S32 row_bytes = getWidth() * getComponents();
-	U8* line_buffer = new U8[row_bytes];
+	U8* line_buffer = new (std::nothrow) U8[row_bytes];
 	if (!line_buffer )
 	{
 		llerrs << "Out of memory in LLImageRaw::verticalFlip()" << llendl;
@@ -578,7 +578,7 @@ void LLImageRaw::compositeScaled4onto3(LLImageRaw* src)
 
 	// Vertical: scale but no composite
 	S32 temp_data_size = src->getWidth() * dst->getHeight() * src->getComponents();
-	U8* temp_buffer = new U8[ temp_data_size ];
+	U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
 	if (!temp_buffer )
 	{
 		llerrs << "Out of memory in LLImageRaw::compositeScaled4onto3()" << llendl;
@@ -835,7 +835,7 @@ void LLImageRaw::copyScaled( LLImageRaw* src )
 	// Vertical
 	S32 temp_data_size = src->getWidth() * dst->getHeight() * getComponents();
 	llassert_always(temp_data_size > 0);
-	U8* temp_buffer = new U8[ temp_data_size ];
+	U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
 	if (!temp_buffer )
 	{
 		llerrs << "Out of memory in LLImageRaw::copyScaled()" << llendl;
@@ -880,7 +880,7 @@ BOOL LLImageRaw::scaleDownWithoutBlending( S32 new_width, S32 new_height)
 	ratio_x -= 1.0f ;
 	ratio_y -= 1.0f ;
 
-	U8* new_data = new U8[new_data_size] ;
+	U8* new_data = new (std::nothrow) U8[new_data_size] ;
 	llassert_always(new_data != NULL) ;
 
 	U8* old_data = getData() ;
@@ -923,7 +923,7 @@ BOOL LLImageRaw::scale( S32 new_width, S32 new_height, BOOL scale_image_data )
 		// Vertical
 		S32 temp_data_size = old_width * new_height * getComponents();
 		llassert_always(temp_data_size > 0);
-		U8* temp_buffer = new U8[ temp_data_size ];
+		U8* temp_buffer = new (std::nothrow) U8[ temp_data_size ];
 		if (!temp_buffer )
 		{
 			llerrs << "Out of memory in LLImageRaw::scale()" << llendl;
@@ -951,7 +951,7 @@ BOOL LLImageRaw::scale( S32 new_width, S32 new_height, BOOL scale_image_data )
 	{
 		// copy	out	existing image data
 		S32	temp_data_size = old_width * old_height	* getComponents();
-		U8*	temp_buffer	= new U8[ temp_data_size ];
+		U8*	temp_buffer	= new (std::nothrow) U8[ temp_data_size ];
 		if (!temp_buffer)
 		{
 			llwarns << "Out of memory in LLImageRaw::scale: old (w, h, c) = (" << old_width << ", " << old_height << ", " << (S32)getComponents() << 
