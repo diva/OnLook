@@ -31,7 +31,6 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-indra/newview/llfloatertools.cpp
 
 #include "llfloatertools.h"
 

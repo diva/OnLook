@@ -1432,7 +1432,7 @@ void LLAgentWearables::setWearableFinal( LLInventoryItem* new_item, LLWearable* 
 	const LLWearableType::EType type = new_wearable->getType();
 
 	// Replace the old wearable with a new one.
-	llassert( new_item->getAssetUUID() == new_wearable->getID() );
+	llassert( new_item->getAssetUUID() == new_wearable->getAssetID() );
 	LLUUID old_item_id = mWearableEntry[ type ].mItemID;
 	mWearableEntry[ type ].mItemID = new_item->getUUID();
 	mWearableEntry[ type ].mWearable = new_wearable;
