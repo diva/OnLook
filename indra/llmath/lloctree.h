@@ -332,7 +332,6 @@ public:
 					child = getChild(i);
 					if (child->isInside(data->getPositionGroup()))
 					{
-						llassert(child->getElementCount() <= gOctreeMaxCapacity);
 						child->insert(data);
 						return false;
 					}
