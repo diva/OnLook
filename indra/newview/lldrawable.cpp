@@ -1028,8 +1028,8 @@ BOOL LLDrawable::isVisible() const
 	{
 		return TRUE;
 	}
-	
-#if 0
+
+#if 1
 	//disabling this code fixes DEV-20105.  Leaving in place in case some other bug pops up as a a result.
 	//should be safe to just always ask the spatial group for visibility.
 	if (isActive())
