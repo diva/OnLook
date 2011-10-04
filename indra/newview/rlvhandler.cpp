@@ -739,7 +739,7 @@ bool RlvHandler::redirectChatOrEmote(const std::string& strUTF8Text) const
 		if ( (getCompositeInfo(idItem, &strComposite, &pFolder)) && (cstrItemType != strComposite) )
 		{
 			LLUUID idCompositeItem;
-			if ((type = LLWearable::typeNameToType(strComposite)) != LLWearableType::WT_INVALID)
+			if ((type = LLWearable::typeNameToType(strComposite)) != LLWearableType::WT_NONE)
 			{
 				idCompositeItem = gAgentWearables.getWearableItemID(type);
 			}
@@ -1989,7 +1989,7 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 
 	// (Compatibility: RLV-1.16.1 will execute @getoutfit=<channel> if <layer> is invalid while we just return failure)
 	LLWearableType::EType wtType = LLWearableType::typeNameToType(rlvCmd.getOption());
-	if ( (LLWearableType::WT_INVALID == wtType) && (!rlvCmd.getOption().empty()) )
+	if ( (LLWearableType::WT_NONE == wtType) && (!rlvCmd.getOption().empty()) )
 		return RLV_RET_FAILED_OPTION;
 
 	const LLWearableType::EType wtRlvTypes[] =
@@ -1998,9 +1998,9 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 			LLWearableType::WT_UNDERPANTS, LLWearableType::WT_UNDERSHIRT, LLWearableType::WT_SKIN, LLWearableType::WT_EYES, LLWearableType::WT_HAIR, LLWearableType::WT_SHAPE, LLWearableType::WT_ALPHA, LLWearableType::WT_TATTOO, LLWearableType::WT_PHYSICS
 		};
 
-	for (int idxType = 0, cntType = sizeof(wtRlvTypes) / sizeof(LLWearableType::EType); idxType < cntType; idxType++)
+	for (int idxType = 0; idxType < sizeof(wtRlvTypes) / sizeof(wtRlvTypes[0]); ++idxType)
 	{
-		if ( (LLWearableType::WT_INVALID == wtType) || (wtRlvTypes[idxType] == wtType) )
+		if ( (LLWearableType::WT_NONE == wtType) || (wtRlvTypes[idxType] == wtType) )
 		{
 			// We never hide body parts, even if they're "locked" and we're hiding locked layers
 			// (nor do we hide a layer if the issuing object is the only one that has this layer locked)
