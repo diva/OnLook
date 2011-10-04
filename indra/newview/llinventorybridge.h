@@ -258,7 +258,7 @@ public:
 							EDragAndDropType cargo_type,
 							void* cargo_data) { return FALSE; }
 	virtual LLInventoryType::EType getInventoryType() const { return mInvType; }
-	virtual EWearableType getWearableType() const { return WT_NONE; }
+	virtual LLWearableType::EType getWearableType() const { return LLWearableType::WT_NONE; }
 
 protected:
 	virtual void addTrashContextMenuOptions(menuentry_vec_t &items,
@@ -373,8 +373,8 @@ public:
 	virtual BOOL isClipboardPasteable() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
 
-	static void createWearable(LLFolderBridge* bridge, EWearableType type);
-	static void createWearable(LLUUID parent_folder_id, EWearableType type);
+	static void createWearable(LLFolderBridge* bridge, LLWearableType::EType type);
+	static void createWearable(LLUUID parent_folder_id, LLWearableType::EType type);
 
 	LLViewerInventoryCategory* getCategory() const;
 
@@ -588,7 +588,7 @@ public:
 					 const LLUUID& uuid, 
 					 LLAssetType::EType asset_type, 
 					 LLInventoryType::EType inv_type, 
-					 EWearableType wearable_type);
+					 LLWearableType::EType wearable_type);
 	virtual LLUIImagePtr getIcon() const;
 	virtual void	performAction(LLFolderView* folder, LLInventoryModel* model, std::string action);
 	virtual void	openItem();
@@ -596,7 +596,7 @@ public:
 	virtual std::string getLabelSuffix() const;
 	virtual BOOL	isItemRemovable();
 	virtual BOOL renameItem(const std::string& new_name);
-	virtual EWearableType getWearableType() const { return mWearableType; }
+	virtual LLWearableType::EType getWearableType() const { return mWearableType; }
 
 	static void		onWearOnAvatar( void* userdata );	// Access to wearOnAvatar() from menu
 	static BOOL		canWearOnAvatar( void* userdata );
@@ -612,7 +612,7 @@ public:
 	static void		onRemoveFromAvatarArrived( LLWearable* wearable, void* userdata );
 protected:
 	LLAssetType::EType mAssetType;
-	EWearableType  mWearableType;
+	LLWearableType::EType  mWearableType;
 };
 
 class LLLinkItemBridge : public LLItemBridge

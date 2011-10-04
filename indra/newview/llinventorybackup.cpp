@@ -166,7 +166,7 @@ bool LLInventoryBackup::itemIsFolder(LLInventoryItem* item)
 ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item)
 {
 	LLAssetType::EType type = item->getType();
-	EWearableType wear = (EWearableType)(item->getFlags() & 0xFF);
+	LLWearableType::EType wear = (LLWearableType::EType)(item->getFlags() & 0xFF);
 	switch(type)
 	{
 	case LLAssetType::AT_TEXTURE:
@@ -188,33 +188,33 @@ ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item)
 	case LLAssetType::AT_CLOTHING:
 		switch(wear)
 		{
-		case WT_EYES:
+		case LLWearableType::WT_EYES:
 			return FFSAVE_EYES;
-		case WT_GLOVES:
+		case LLWearableType::WT_GLOVES:
 			return FFSAVE_GLOVES;
-		case WT_HAIR:
+		case LLWearableType::WT_HAIR:
 			return FFSAVE_HAIR;
-		case WT_JACKET:
+		case LLWearableType::WT_JACKET:
 			return FFSAVE_JACKET;
-		case WT_PANTS:
+		case LLWearableType::WT_PANTS:
 			return FFSAVE_PANTS;
-		case WT_SHAPE:
+		case LLWearableType::WT_SHAPE:
 			return FFSAVE_SHAPE;
-		case WT_SHIRT:
+		case LLWearableType::WT_SHIRT:
 			return FFSAVE_SHIRT;
-		case WT_SHOES:
+		case LLWearableType::WT_SHOES:
 			return FFSAVE_SHOES;
-		case WT_SKIN:
+		case LLWearableType::WT_SKIN:
 			return FFSAVE_SKIN;
-		case WT_SKIRT:
+		case LLWearableType::WT_SKIRT:
 			return FFSAVE_SKIRT;
-		case WT_SOCKS:
+		case LLWearableType::WT_SOCKS:
 			return FFSAVE_SOCKS;
-		case WT_UNDERPANTS:
+		case LLWearableType::WT_UNDERPANTS:
 			return FFSAVE_UNDERPANTS;
-		case WT_UNDERSHIRT:
+		case LLWearableType::WT_UNDERSHIRT:
 			return FFSAVE_UNDERSHIRT;
-		case WT_PHYSICS:
+		case LLWearableType::WT_PHYSICS:
 			return FFSAVE_PHYSICS;
 		default:
 			return FFSAVE_ALL;
@@ -228,7 +228,7 @@ ESaveFilter LLInventoryBackup::getSaveFilter(LLInventoryItem* item)
 std::string LLInventoryBackup::getExtension(LLInventoryItem* item)
 {
 	LLAssetType::EType type = item->getType();
-	EWearableType wear = (EWearableType)(item->getFlags() & 0xFF);
+	LLWearableType::EType wear = (LLWearableType::EType)(item->getFlags() & 0xFF);
 	std::string scratch;
 	switch(type)
 	{
@@ -249,7 +249,7 @@ std::string LLInventoryBackup::getExtension(LLInventoryItem* item)
 		return ".landmark";
 	case LLAssetType::AT_BODYPART:
 	case LLAssetType::AT_CLOTHING:
-		scratch = LLWearable::typeToTypeName(wear);
+		scratch = LLWearableType::getTypeName(wear);
 		if(scratch == "invalid")
 		{
 			if(type == LLAssetType::AT_BODYPART)

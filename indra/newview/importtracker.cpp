@@ -306,7 +306,7 @@ struct InventoryImportInfo
 	U32 localid;
 	LLAssetType::EType type;
 	LLInventoryType::EType inv_type;
-	EWearableType wear_type;
+	LLWearableType::EType wear_type;
 	LLTransactionID tid;
 	LLUUID assetid;
 	std::string name;

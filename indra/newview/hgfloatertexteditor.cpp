@@ -290,7 +290,7 @@ void HGFloaterTextEditor::onClickUpload(void* user_data)
 									fake_asset_id.asString(),
 									item->getType(),
 									item->getInventoryType(),
-									(EWearableType)item->getFlags(),
+									(LLWearableType::EType)item->getFlags(),
 									PERM_ITEM_UNRESTRICTED,
 									new NewResourceItemCallback);
 	}

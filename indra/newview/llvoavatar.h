@@ -287,6 +287,7 @@ public:
 protected:
 	bool 			sendAvatarTexturesRequest();
 	void			updateRuthTimer(bool loading);
+	F32 			calcMorphAmount();
 private:
 	BOOL			mFullyLoaded;
 	BOOL			mPreviousFullyLoaded;
@@ -483,11 +484,6 @@ public:
 private:
 	static S32  sFreezeCounter;
 
-	//--------------------------------------------------------------------
-	// Internal functions
-	//--------------------------------------------------------------------
-protected:
-	BOOL needsRenderBeam();
 /**                    Rendering
  **                                                                            **
  *******************************************************************************/
@@ -512,11 +508,12 @@ protected:
 	// Baked textures
 	//--------------------------------------------------------------------
 public:
+	void			releaseComponentTextures(); // ! BACKWARDS COMPATIBILITY !
 protected:
 	static void		onBakedTextureMasksLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	static void		onInitialBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	static void		onBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
-	void			removeMissingBakedTextures();
+	virtual void	removeMissingBakedTextures();
 	void			useBakedTexture(const LLUUID& id);
 
 	struct BakedTextureData
@@ -549,8 +546,8 @@ protected:
 	// Composites
 	//--------------------------------------------------------------------
 public:
-	void			invalidateComposite( LLTexLayerSet* layerset, BOOL set_by_user );
-	void			invalidateAll();
+	virtual void	invalidateComposite(LLTexLayerSet* layerset, BOOL upload_result);
+	virtual void	invalidateAll();
 
 	//--------------------------------------------------------------------
 	// Static texture/mesh/baked dictionary
@@ -624,16 +621,14 @@ public:
 	static void		processRebakeAvatarTextures(LLMessageSystem* msg, void**);
 	void			setNewBakedTexture( LLVOAvatarDefines::ETextureIndex i, const LLUUID& uuid );
 	void			setCachedBakedTexture( LLVOAvatarDefines::ETextureIndex i, const LLUUID& uuid );
-	void			releaseUnnecessaryTextures();
 	void			requestLayerSetUploads();
+	void 			requestLayerSetUpload(LLVOAvatarDefines::EBakedTextureIndex i);
 	bool			hasPendingBakedUploads();
 	static void		onLocalTextureLoaded( BOOL succcess, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
-	static enum EWearableType	getTEWearableType(LLVOAvatarDefines::ETextureIndex te );
-	static LLUUID			getDefaultTEImageID(LLVOAvatarDefines::ETextureIndex te );
 	static void		onChangeSelfInvisible(BOOL newvalue);
 	void			setInvisible(BOOL newvalue);
 
-	void			wearableUpdated(EWearableType type, BOOL upload_result = TRUE);
+	void			wearableUpdated(LLWearableType::EType type, BOOL upload_result = TRUE);
 
 	//--------------------------------------------------------------------
 	// texture compositing
@@ -653,12 +648,12 @@ public:
 
 public:
 	void 			updateMeshTextures();
-	void 			updateSexDependentLayerSets(BOOL set_by_user);
+	void 			updateSexDependentLayerSets(BOOL upload_bake);
 	void 			dirtyMesh(); // Dirty the avatar mesh
 	void 			updateMeshData();
 protected:
 	void 			releaseMeshData();
-	void 			restoreMeshData();
+	virtual void 	restoreMeshData();
 private:
 	void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
 	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
@@ -752,7 +747,7 @@ public:
  **/
 
 public:
-	BOOL			isWearingWearableType( EWearableType type ) const;
+	BOOL			isWearingWearableType( LLWearableType::EType type ) const;
 	
 	//--------------------------------------------------------------------
 	// Attachments

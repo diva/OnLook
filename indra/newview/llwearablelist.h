@@ -54,7 +54,7 @@ public:
 	LLWearable*			createWearableMatchedToInventoryItem( LLWearable* old_wearable, LLViewerInventoryItem* item );
 	LLWearable*			createCopyFromAvatar( LLWearable* old_wearable, const std::string& new_name = std::string() );
 	LLWearable*			createCopy( LLWearable* old_wearable );
-	LLWearable*			createNewWearable( EWearableType type );
+	LLWearable*			createNewWearable( LLWearableType::EType type );
 	
 	// Callback
 	static void	 	    processGetAssetReply(const char* filename, const LLAssetID& assetID, void* user_data, S32 status, LLExtStat ext_status);

@@ -470,6 +470,40 @@ void LLVOAvatarSelf::stopMotionFromSource(const LLUUID& source_id)
 	}
 }
 //virtual
+void LLVOAvatarSelf::removeMissingBakedTextures()
+{
+	BOOL removed = FALSE;
+	for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
+	{
+		const S32 te = mBakedTextureDatas[i].mTextureIndex;
+		const LLViewerTexture* tex = getTEImage(te);
+
+		// Replace with default if we can't find the asset, assuming the
+		// default is actually valid (which it should be unless something
+		// is seriously wrong).
+		if (!tex || tex->isMissingAsset())
+		{
+			LLViewerTexture *imagep = LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR);
+			if (imagep)
+			{
+				setTEImage(te, imagep);
+				removed = TRUE;
+			}
+		}
+	}
+
+	if (removed)
+	{
+		for(U32 i = 0; i < mBakedTextureDatas.size(); i++)
+		{
+			invalidateComposite(mBakedTextureDatas[i].mTexLayerSet, FALSE);
+		}
+		updateMeshTextures();
+		requestLayerSetUploads();
+	}
+}
+
+//virtual
 void LLVOAvatarSelf::updateRegion(LLViewerRegion *regionp)
 {
 	// Save the global position

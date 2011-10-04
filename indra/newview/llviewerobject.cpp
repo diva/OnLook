@@ -143,8 +143,6 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 				lldebugs << "Marking avatar as self " << id << llendl;
 				gAgentAvatarp = new LLVOAvatarSelf(id, pcode, regionp);
 				gAgentAvatarp->initInstance();
-				//gAgentCamera.setAvatarObject(this);
-				//gAgentWearables.setAvatarObject(this);
 			}
 			else 
 			{

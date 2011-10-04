@@ -3254,15 +3254,31 @@ void LLAgent::processAgentCachedTextureResponse(LLMessageSystem *mesgsys, void *
 		mesgsys->getUUIDFast(_PREHASH_WearableData, _PREHASH_TextureID, texture_id, texture_block);
 		mesgsys->getU8Fast(_PREHASH_WearableData, _PREHASH_TextureIndex, texture_index, texture_block);
 
-		if (texture_id.notNull() 
-			&& (S32)texture_index < BAKED_NUM_INDICES 
-			&& gAgentQueryManager.mActiveCacheQueries[ texture_index ] == query_id)
+
+		if ((S32)texture_index < TEX_NUM_INDICES )
 		{
-			//llinfos << "Received cached texture " << (U32)texture_index << ": " << texture_id << llendl;
-			gAgentAvatarp->setCachedBakedTexture(getTextureIndex((EBakedTextureIndex)texture_index), texture_id);
-			//avatarp->setTETexture( LLVOAvatar::sBakedTextureIndices[texture_index], texture_id );
-			gAgentQueryManager.mActiveCacheQueries[ texture_index ] = 0;
-			num_results++;
+			const LLVOAvatarDictionary::TextureEntry *texture_entry = LLVOAvatarDictionary::instance().getTexture((ETextureIndex)texture_index);
+			if (texture_entry)
+			{
+				EBakedTextureIndex baked_index = texture_entry->mBakedTextureIndex;
+
+				if (gAgentQueryManager.mActiveCacheQueries[baked_index] == query_id)
+				{
+					if (texture_id.notNull())
+					{
+						//llinfos << "Received cached texture " << (U32)texture_index << ": " << texture_id << llendl;
+						gAgentAvatarp->setCachedBakedTexture((ETextureIndex)texture_index, texture_id);
+						//gAgentAvatarp->setTETexture( LLVOAvatar::sBakedTextureIndices[texture_index], texture_id );
+						gAgentQueryManager.mActiveCacheQueries[baked_index] = 0;
+						num_results++;
+					}
+					else
+					{
+						// no cache of this bake. request upload.
+						gAgentAvatarp->requestLayerSetUpload(baked_index);
+					}
+				}
+			}
 		}
 	}
 
@@ -3833,10 +3849,10 @@ void LLAgent::sendAgentSetAppearance()
 
 	for(U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++ )
 	{
-		const ETextureIndex texture_index = getTextureIndex((EBakedTextureIndex)baked_index);
+		const ETextureIndex texture_index = LLVOAvatarDictionary::bakedToLocalTextureIndex((EBakedTextureIndex)baked_index);
 
 		// if we're not wearing a skirt, we don't need the texture to be baked
-		if (texture_index == TEX_SKIRT_BAKED && !gAgentAvatarp->isWearingWearableType(WT_SKIRT))
+		if (texture_index == TEX_SKIRT_BAKED && !gAgentAvatarp->isWearingWearableType(LLWearableType::WT_SKIRT))
 		{
 			continue;
 		}
@@ -3855,28 +3871,16 @@ void LLAgent::sendAgentSetAppearance()
 		llinfos << "TAT: Sending cached texture data" << llendl;
 		for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
 		{
-			const LLVOAvatarDictionary::WearableDictionaryEntry *wearable_dict = LLVOAvatarDictionary::getInstance()->getWearable((EBakedTextureIndex)baked_index);
-			LLUUID hash;
-			for (U8 i=0; i < wearable_dict->mWearablesVec.size(); i++)
-			{
-				// EWearableType wearable_type = gBakedWearableMap[baked_index][wearable_num];
-				const EWearableType wearable_type = wearable_dict->mWearablesVec[i];
-				const LLWearable* wearable = gAgentWearables.getWearable(wearable_type);
-				if (wearable)
-				{
-					hash ^= wearable->getID();
-				}
-			}
+
+			const LLUUID hash = gAgentWearables.computeBakedTextureHash((EBakedTextureIndex) baked_index, true);		
 			if (hash.notNull())
 			{
-				hash ^= wearable_dict->mHashID;
+				const ETextureIndex texture_index = LLVOAvatarDictionary::bakedToLocalTextureIndex((EBakedTextureIndex)baked_index);
+
+				msg->nextBlockFast(_PREHASH_WearableData);
+				msg->addUUIDFast(_PREHASH_CacheID, hash);
+				msg->addU8Fast(_PREHASH_TextureIndex, (U8)texture_index);
 			}
-
-			const ETextureIndex texture_index = getTextureIndex((EBakedTextureIndex)baked_index);
-
-			msg->nextBlockFast(_PREHASH_WearableData);
-			msg->addUUIDFast(_PREHASH_CacheID, hash);
-			msg->addU8Fast(_PREHASH_TextureIndex, (U8)texture_index);
 		}
 		msg->nextBlockFast(_PREHASH_ObjectData);
 
@@ -3930,7 +3934,7 @@ void LLAgent::sendAgentSetAppearance()
 
 
 	static bool send_physics_params = false;
-	send_physics_params |= !!gAgentWearables.getWearable(WT_PHYSICS);
+	send_physics_params |= !!gAgentWearables.getWearable(LLWearableType::WT_PHYSICS);
 	S32 transmitted_params = 0;
 	for (LLViewerVisualParam* param = (LLViewerVisualParam*)gAgentAvatarp->getFirstVisualParam();
 		 param;
