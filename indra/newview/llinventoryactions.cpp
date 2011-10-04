@@ -393,7 +393,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 	else
 	{
 		LLWearableType::EType wear_type = LLWearableType::typeNameToType(type);
-		if(wear_type != LLWearableType::WT_INVALID)
+		if(wear_type != LLWearableType::WT_NONE)
 		{
 				LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearableType::getAssetType(wear_type));
 				LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);

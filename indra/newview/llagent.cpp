@@ -55,7 +55,6 @@
 #include "llmoveview.h"
 #include "llchatbar.h"
 #include "llnotificationsutil.h"
-#include "llnotify.h"
 #include "llparcel.h"
 #include "llrendersphere.h"
 #include "llsdutil.h"

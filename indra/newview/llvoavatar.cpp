@@ -207,11 +207,14 @@ const LLColor4 DUMMY_COLOR = LLColor4(0.5,0.5,0.5,1.0);
 
 const F32 DERUTHING_TIMEOUT_SECONDS = 30.f;
 
+//Singu note: FADE and ALWAYS are swapped around from LL's source to match our preference panel.
+//	Changing the "RenderName" order would cause confusion when 'always' setting suddenly gets
+//	interpreted as 'fade', and vice versa.
 enum ERenderName
 {
 	RENDER_NAME_NEVER,
-	RENDER_NAME_ALWAYS,	
-	RENDER_NAME_FADE
+	RENDER_NAME_FADE,
+	RENDER_NAME_ALWAYS
 };
 
 //-----------------------------------------------------------------------------

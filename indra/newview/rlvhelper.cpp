@@ -188,7 +188,7 @@ RlvCommandOptionGeneric::RlvCommandOptionGeneric(const std::string& strOption)
 
 	if (!(m_fEmpty = strOption.empty()))														// <option> could be an empty string
 	{
-		if ((wtType = LLWearableType::typeNameToType(strOption)) != LLWearableType::WT_INVALID)
+		if ((wtType = LLWearableType::typeNameToType(strOption)) != LLWearableType::WT_NONE)
 			m_varOption = wtType;																// ... or specify a clothing layer
 		else if ((pAttachPt = RlvAttachPtLookup::getAttachPoint(strOption)) != NULL)
 			m_varOption = pAttachPt;															// ... or specify an attachment point
