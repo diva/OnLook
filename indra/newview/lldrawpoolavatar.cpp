@@ -69,7 +69,7 @@ S32 	LLDrawPoolAvatar::sDiffuseChannel = 0;
 
 #if MESH_ENABLED
 static bool is_deferred_render = false;
-static bool is_skipped_pass = false;
+//static bool is_skipped_pass = false;
 #endif //MESH_ENABLED
 
 extern BOOL gUseGLPick;
@@ -175,11 +175,11 @@ void LLDrawPoolAvatar::beginDeferredPass(S32 pass)
 		pass += 2;
 	}
 
-	if(pass >= 3 && mRiggedFace[pass + 4].empty())
+	/*if(pass >= 3 && mRiggedFace[pass + 4].empty())
 	{
 		is_skipped_pass = true;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
@@ -216,11 +216,11 @@ void LLDrawPoolAvatar::endDeferredPass(S32 pass)
 		pass += 2;
 	}
 
-	if(is_skipped_pass)
+/*	if(is_skipped_pass)
 	{
 		is_skipped_pass = false;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
@@ -261,11 +261,11 @@ S32 LLDrawPoolAvatar::getNumPostDeferredPasses()
 
 void LLDrawPoolAvatar::beginPostDeferredPass(S32 pass)
 {
-	if(pass >= 1 && mRiggedFace[pass + (S32)(pass != 1)].empty())
+	/*if(pass >= 1 && mRiggedFace[pass + (S32)(pass != 1)].empty())
 	{
 		is_skipped_pass = true;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
@@ -326,11 +326,11 @@ void LLDrawPoolAvatar::endDeferredRiggedAlpha()
 #endif //MESH_ENABLED
 void LLDrawPoolAvatar::endPostDeferredPass(S32 pass)
 {
-	if(is_skipped_pass)
+	/*if(is_skipped_pass)
 	{
 		is_skipped_pass = false;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
@@ -544,8 +544,8 @@ S32 LLDrawPoolAvatar::getNumDeferredPasses()
 void LLDrawPoolAvatar::render(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_CHARACTERS);
-	if(is_skipped_pass)
-		return;
+	//if(is_skipped_pass)
+	//	return;
 
 	if (LLPipeline::sImpostorRender)
 	{
@@ -572,11 +572,11 @@ void LLDrawPoolAvatar::beginRenderPass(S32 pass)
 		pass += 2;
 	}
 
-	if(pass >= 3 && mRiggedFace[pass - 3].empty())
+	/*if(pass >= 3 && mRiggedFace[pass - 3].empty())
 	{
 		is_skipped_pass = true;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
@@ -624,11 +624,11 @@ void LLDrawPoolAvatar::endRenderPass(S32 pass)
 		pass += 2;		
 	}
 
-	if(is_skipped_pass)
+	/*if(is_skipped_pass)
 	{
 		is_skipped_pass = false;
 		return;
-	}
+	}*/
 
 	switch (pass)
 	{
