@@ -84,7 +84,7 @@ public:
 	BOOL			isWearableModifiable(const LLUUID& item_id) const;
 
 	BOOL			isWearableCopyable(LLWearableType::EType type) const;
-	BOOL			areWearablesLoaded() const { return mWearablesLoaded; };
+	BOOL			areWearablesLoaded() const;
 	//void			updateWearablesLoaded();
 	//void			checkWearablesLoaded() const;
 	//bool			canMoveWearable(const LLUUID& item_id, bool closer_to_body);

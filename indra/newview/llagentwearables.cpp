@@ -486,6 +486,13 @@ BOOL LLAgentWearables::isWearableCopyable(LLWearableType::EType type) const
 	return FALSE;
 }
 
+BOOL LLAgentWearables::areWearablesLoaded() const
+{
+	if(gSavedSettings.getBOOL("RenderUnloadedAvatar"))
+		return TRUE;
+	return mWearablesLoaded;
+}
+
 U32 LLAgentWearables::getWearablePermMask(LLWearableType::EType type) const
 {
 	LLUUID item_id = getWearableItemID(type);
