@@ -588,6 +588,7 @@ BOOL LLInventoryView::postBuild()
 
 	childSetAction("Inventory.ResetAll",onResetAll,this);
 	childSetAction("Inventory.ExpandAll",onExpandAll,this);
+	childSetAction("collapse_btn", onCollapseAll, this);
 
 	//panel->getFilter()->markDefault();
 	return TRUE;
@@ -1353,6 +1354,19 @@ void LLInventoryView::onExpandAll(void* userdata)
 	self->mActivePanel->openAllFolders();
 }
 
+
+//static
+void LLInventoryView::onCollapseAll(void* userdata)
+{
+	LLInventoryView* self = (LLInventoryView*) userdata;
+	self->mActivePanel = (LLInventoryPanel*)self->childGetVisibleTab("inventory filter tabs");
+
+	if (!self->mActivePanel)
+	{
+		return;
+	}
+	self->mActivePanel->closeAllFolders();
+}
 
 //static
 void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
