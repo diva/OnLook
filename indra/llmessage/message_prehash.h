@@ -43,6 +43,8 @@ extern F32 gPrehashVersionNumber;
 extern char * _PREHASH_X;
 extern char * _PREHASH_Y;
 extern char * _PREHASH_Z;
+extern char * _PREHASH_SizeX;
+extern char * _PREHASH_SizeY;
 extern char * _PREHASH_AddFlags;
 extern char * _PREHASH_FailureInfo;
 extern char * _PREHASH_MapData;
