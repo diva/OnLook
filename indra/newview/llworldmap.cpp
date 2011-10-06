@@ -674,8 +674,8 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 	{
 		U16 x_regions;
 		U16 y_regions;
-		U16 x_size;
-		U16 y_size;
+		U16 x_size = 256;
+		U16 y_size = 256;
 		std::string name;
 		U8 accesscode;
 		U32 region_flags;
@@ -690,8 +690,11 @@ void LLWorldMap::processMapBlockReply(LLMessageSystem* msg, void**)
 		msg->getU8Fast(_PREHASH_Data, _PREHASH_WaterHeight, water_height, block);
 		msg->getU8Fast(_PREHASH_Data, _PREHASH_Agents, agents, block);
 		msg->getUUIDFast(_PREHASH_Data, _PREHASH_MapImageID, image_id, block);
-		msg->getU16Fast(_PREHASH_Data, _PREHASH_SizeX, x_size, block);
-		msg->getU16Fast(_PREHASH_Data, _PREHASH_SizeY, y_size, block);
+		if(msg->getNumberOfBlocksFast(_PREHASH_Size) > 0)
+		{
+			msg->getU16Fast(_PREHASH_Size, _PREHASH_SizeX, x_size, block);
+			msg->getU16Fast(_PREHASH_Size, _PREHASH_SizeY, y_size, block);
+		}
 		if(x_size == 0 || (x_size % 16) != 0|| (y_size % 16) != 0)
 		{
 			x_size = 256;
