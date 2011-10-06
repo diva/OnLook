@@ -29,11 +29,12 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
+#include "llviewerprecompiledheaders.h"
+
 #if LL_LINUX && defined(LL_STANDALONE)
 #include <glib.h>
 #endif
 
-#include "llviewerprecompiledheaders.h"
 #include "llvoiceclient.h"
 
 #include <boost/tokenizer.hpp>
