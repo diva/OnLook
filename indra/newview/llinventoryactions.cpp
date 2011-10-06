@@ -79,7 +79,7 @@
 #include "llviewerinventory.h"
 #include "llviewerobjectlist.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llwearable.h"
 #include "llwearablelist.h"
 #include "llviewermessage.h" 
@@ -392,13 +392,13 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 	}
 	else
 	{
-		EWearableType wear_type = LLWearable::typeNameToType(type);
-		if(wear_type != WT_INVALID)
-	{
-			LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearable::typeToAssetType(LLWearable::typeNameToType(type)));
-			LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);
-			LLFolderBridge::createWearable(parent_id, wear_type);
-	}
+		LLWearableType::EType wear_type = LLWearableType::typeNameToType(type);
+		if(wear_type != LLWearableType::WT_NONE)
+		{
+				LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearableType::getAssetType(wear_type));
+				LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);
+				LLFolderBridge::createWearable(parent_id, wear_type);
+		}
 	}
 	ptr->getRootFolder()->setNeedsAutoRename(TRUE);	
 }
@@ -660,7 +660,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		LLUUID id = *selected_items.begin();
 
 		std::string joint_name = userdata.asString();
-		LLVOAvatar *avatarp = gAgent.getAvatarObject();
+		LLVOAvatar *avatarp = gAgentAvatarp;
 		LLViewerJointAttachment* attachmentp = NULL;
 		for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
 			 iter != avatarp->mAttachmentPoints.end(); )

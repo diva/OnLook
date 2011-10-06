@@ -895,6 +895,7 @@ bool LLAppViewer::init()
 
 	LLViewerJoystick::getInstance()->init(false);
 
+	gGLActive = FALSE;
 	return true;
 }
 
@@ -1894,8 +1895,18 @@ bool LLAppViewer::initConfiguration()
 	gSavedSettings.setString("VersionChannelName", LL_CHANNEL);
 
 #ifndef	LL_RELEASE_FOR_DOWNLOAD
-        gSavedSettings.setBOOL("ShowConsoleWindow", TRUE);
-        gSavedSettings.setBOOL("AllowMultipleViewers", TRUE);
+	// provide developer build only overrides for these control variables that are not
+	// persisted to settings.xml
+	LLControlVariable* c = gSavedSettings.getControl("ShowConsoleWindow");
+	if (c)
+	{
+		c->setValue(true, false);
+	}
+	c = gSavedSettings.getControl("AllowMultipleViewers");
+	if (c)
+	{
+		c->setValue(true, false);
+	}
 #endif
 
 	//*FIX:Mani - Set default to disabling watchdog mainloop 
@@ -1952,10 +1963,8 @@ bool LLAppViewer::initConfiguration()
 
 	if(!initParseCommandLine(clp))
 	{
-		llwarns	
-			<< "Error parsing command line options.	Command	Line options ignored." 
-			<< llendl;
-
+		llwarns	<< "Error parsing command line options.	Command	Line options ignored."  << llendl;
+		
 		llinfos	<< "Command	line usage:\n" << clp << llendl;
 
 		std::ostringstream msg;
@@ -3464,7 +3473,7 @@ void LLAppViewer::saveFinalSnapshot()
 			snap_filename += gDirUtilp->getDirDelimiter();
 			snap_filename += SCREEN_LAST_FILENAME;
 			// use full pixel dimensions of viewer window (not post-scale dimensions)
-			gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight(), FALSE, TRUE);
+			gViewerWindow->saveSnapshot(snap_filename, gViewerWindow->getWindowWidthRaw(), gViewerWindow->getWindowHeightRaw(), FALSE, TRUE);
 			mSavedFinalSnapshot = TRUE;
 		}
 	}

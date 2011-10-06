@@ -52,7 +52,7 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llxmltree.h"
 #include "pipeline.h"
 #include "v4coloru.h"
@@ -81,12 +81,12 @@ LLBakedUploadData::LLBakedUploadData( LLVOAvatar* avatar,
 	mID(id)
 { 
 	mStartTime = LLFrameTimer::getTotalTime();		// Record starting time
-	for( S32 i = 0; i < WT_COUNT; i++ )
+	for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 	{
-		LLWearable* wearable = gAgentWearables.getWearable( (EWearableType)i);
+		LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)i);
 		if( wearable )
 		{
-			mWearableAssets[i] = wearable->getID();
+			mWearableAssets[i] = wearable->getAssetID();
 		}
 	}
 }
@@ -223,7 +223,7 @@ BOOL LLTexLayerSetBuffer::needsRender()
 	BOOL needs_update = (mNeedsUpdate || upload_now) && !avatar->getIsAppearanceAnimating();
 	if (needs_update)
 	{
-		BOOL invalid_skirt = avatar->getBakedTE(mTexLayerSet) == TEX_SKIRT_BAKED && !avatar->isWearingWearableType(WT_SKIRT);
+		BOOL invalid_skirt = avatar->getBakedTE(mTexLayerSet) == TEX_SKIRT_BAKED && !avatar->isWearingWearableType(LLWearableType::WT_SKIRT);
 		if (invalid_skirt)
 		{
 			// we were trying to create a skirt texture
@@ -407,7 +407,7 @@ void LLTexLayerSetBuffer::readBackAndUpload()
 			{
 				// baked_upload_data is owned by the responder and deleted after the request completes
 				LLBakedUploadData* baked_upload_data =
-					new LLBakedUploadData( gAgent.getAvatarObject(), this->mTexLayerSet, this, asset_id );
+					new LLBakedUploadData( gAgentAvatarp, this->mTexLayerSet, this, asset_id );
 				mUploadID = asset_id;
 				
 				// Upload the image
@@ -465,8 +465,8 @@ void LLTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 
 	if ((result == 0) &&
 		isAgentAvatarValid() &&
-		!gAgent.getAvatarObject()->isDead() &&
-		(baked_upload_data->mAvatar == gAgent.getAvatarObject()) && // Sanity check: only the user's avatar should be uploading textures.
+		!gAgentAvatarp->isDead() &&
+		(baked_upload_data->mAvatar == gAgentAvatarp) && // Sanity check: only the user's avatar should be uploading textures.
 		(baked_upload_data->mTexLayerSet->hasComposite()))
 	{
 		LLTexLayerSetBuffer* layerset_buffer = baked_upload_data->mTexLayerSet->getComposite();
@@ -492,10 +492,10 @@ void LLTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 
 			if (result >= 0)
 			{
-				ETextureIndex baked_te = gAgent.getAvatarObject()->getBakedTE(layerset_buffer->mTexLayerSet);
+				ETextureIndex baked_te = gAgentAvatarp->getBakedTE(layerset_buffer->mTexLayerSet);
 				U64 now = LLFrameTimer::getTotalTime();		// Record starting time
 				llinfos << "Baked texture upload took " << (S32)((now - baked_upload_data->mStartTime) / 1000) << " ms" << llendl;
-				gAgent.getAvatarObject()->setNewBakedTexture(baked_te, uuid);
+				gAgentAvatarp->setNewBakedTexture(baked_te, uuid);
 			}
 			else
 			{	
@@ -520,7 +520,7 @@ void LLTexLayerSetBuffer::onTextureUploadComplete(const LLUUID& uuid,
 			llinfos << "Received baked texture out of date, ignored." << llendl;
 		}
 
-		gAgent.getAvatarObject()->dirtyMesh();
+		gAgentAvatarp->dirtyMesh();
 	}
  	else
  	{
@@ -2059,8 +2059,8 @@ BOOL LLTexLayerParamAlpha::getSkip()
 		}
 	}
 
-	EWearableType type = (EWearableType)getWearableType();
-	if( (type != WT_INVALID) && !avatar->isWearingWearableType( type ) )
+	LLWearableType::EType type = (LLWearableType::EType)getWearableType();
+	if( (type != LLWearableType::WT_INVALID) && !avatar->isWearingWearableType( type ) )
 	{
 		return TRUE;
 	}

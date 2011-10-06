@@ -715,7 +715,7 @@ void LLStatusBar::setHealth(S32 health)
 		{
 			LLVOAvatar *me;
 
-			if ((me = gAgent.getAvatarObject()))
+			if ((me = gAgentAvatarp))
 			{
 				if (me->getSex() == SEX_FEMALE)
 				{

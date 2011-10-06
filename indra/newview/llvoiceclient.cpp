@@ -29,6 +29,9 @@
  * COMPLETENESS OR PERFORMANCE.
  * $/LicenseInfo$
  */
+#if LL_LINUX && defined(LL_STANDALONE)
+#include <glib.h>
+#endif
 
 #include "llviewerprecompiledheaders.h"
 #include "llvoiceclient.h"
@@ -37,7 +40,7 @@
 
 #include "llsdutil.h"
 
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llbufferstream.h"
 #include "llfile.h"
 #ifdef LL_STANDALONE
@@ -1637,10 +1640,23 @@ void LLVoiceClient::stateMachine()
 				{
 					// Launch the voice daemon
 					
-					// *FIX:Mani - Using the executable dir instead 
-					// of mAppRODataDir, the working directory from which the app
-					// is launched.
-					//std::string exe_path = gDirUtilp->getAppRODataDir();
+#if LL_LINUX && defined(LL_STANDALONE)
+                    // Look for the vivox daemon in the executable path list
+                    // using glib first.
+                    char *voice_path = g_find_program_in_path ("SLVoice");
+                    std::string exe_path;
+                    if (voice_path) {
+                        exe_path = llformat("%s", voice_path);
+                        free(voice_path);
+                    } else {
+                        exe_path = gDirUtilp->getExecutableDir() +
+                                gDirUtilp->getDirDelimiter() + "SLVoice";
+                    }
+#else
+                    // *FIX:Mani - Using the executable dir instead 
+                    // of mAppRODataDir, the working directory from which the
+                    // app is launched.
+                    //std::string exe_path = gDirUtilp->getAppRODataDir();
 					std::string exe_path = gDirUtilp->getExecutableDir();
 					exe_path += gDirUtilp->getDirDelimiter();
 #if LL_WINDOWS
@@ -1649,6 +1665,7 @@ void LLVoiceClient::stateMachine()
 					exe_path += "../Resources/SLVoice";
 #else
 					exe_path += "SLVoice";
+#endif
 #endif
 					// See if the vivox executable exists
 					llstat s;
@@ -5673,7 +5690,7 @@ void LLVoiceClient::updatePosition(void)
 	
 	if(gVoiceClient)
 	{
-		LLVOAvatar *agent = gAgent.getAvatarObject();
+		LLVOAvatar *agent = gAgentAvatarp;
 		LLViewerRegion *region = gAgent.getRegion();
 		if(region && agent)
 		{

@@ -42,7 +42,7 @@
 
 #include "llviewercontrol.h"
 #include "llface.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llviewerobject.h"
 #include "llviewerwindow.h"
 #include "llwindow.h"
@@ -1240,7 +1240,7 @@ void LLViewerObjectList::removeDrawable(LLDrawable* drawablep)
 BOOL LLViewerObjectList::killObject(LLViewerObject *objectp)
 {
 	// Don't commit suicide just because someone thinks you are on a ledge. -SG
-	if (objectp == gAgent.getAvatarObject())
+	if (objectp == gAgentAvatarp)
 	{
 		objectp->setRegion(gAgent.getRegion());
 		return FALSE;
@@ -1299,7 +1299,7 @@ void LLViewerObjectList::killAllObjects()
 		
 		killObject(objectp);
 		// Object must be dead, or it's the LLVOAvatarSelf which never dies.
-		llassert((objectp == gAgent.getAvatarObject()) || objectp->isDead());
+		llassert((objectp == gAgentAvatarp) || objectp->isDead());
 	}
 
 	cleanDeadObjects(FALSE);
@@ -1746,7 +1746,7 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 		// add all hud objects to pick list
 		if (isAgentAvatarValid())
 		{
-			LLVOAvatar* avatarp = gAgent.getAvatarObject();
+			LLVOAvatar* avatarp = gAgentAvatarp;
 			for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
 				 iter != avatarp->mAttachmentPoints.end(); )
 			{

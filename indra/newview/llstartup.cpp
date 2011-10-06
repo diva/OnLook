@@ -2743,7 +2743,7 @@ bool idle_startup()
 		if (gAgent.isFirstLogin()
 			&& !sInitialOutfit.empty()    // registration set up an outfit
 			&& !sInitialOutfitGender.empty() // and a gender
-			&& gAgent.getAvatarObject()	  // can't wear clothes without object
+			&& gAgentAvatarp	  // can't wear clothes without object
 			&& !gAgent.isGenderChosen() ) // nothing already loading
 		{
 			// Start loading the wearables, textures, gestures
@@ -2758,7 +2758,7 @@ bool idle_startup()
 		if (gAgent.isFirstLogin()
 			&& !sInitialOutfit.empty()    // registration set up an outfit
 			&& !sInitialOutfitGender.empty() // and a gender
-			&& gAgent.getAvatarObject()	  // can't wear clothes without object
+			&& gAgentAvatarp	  // can't wear clothes without object
 			&& !gAgent.isGenderChosen() ) // nothing already loading
 		{
 			// Start loading the wearables, textures, gestures
@@ -2766,7 +2766,7 @@ bool idle_startup()
 		}
 
 		// wait precache-delay and for agent's avatar or a lot longer.
-		if(((timeout_frac > 1.f) && gAgent.getAvatarObject())
+		if(((timeout_frac > 1.f) && gAgentAvatarp)
 		   || (timeout_frac > 3.f))
 		{
 			LLStartUp::setStartupState( STATE_WEARABLES_WAIT );
@@ -2822,8 +2822,8 @@ bool idle_startup()
 		if (gAgent.isFirstLogin())
 		{
 			// wait for avatar to be completely loaded
-			if (gAgent.getAvatarObject()
-				&& gAgent.getAvatarObject()->isFullyLoaded())
+			if (gAgentAvatarp
+				&& gAgentAvatarp->isFullyLoaded())
 			{
 				//llinfos << "avatar fully loaded" << llendl;
 				LLStartUp::setStartupState( STATE_CLEANUP );

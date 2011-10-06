@@ -84,6 +84,8 @@ class LLVOAvatar :
 	public LLViewerObject,
 	public LLCharacter
 {
+public:
+	friend class LLVOAvatarSelf;
 protected:
 	struct LLVOAvatarXmlInfo;
 
@@ -94,9 +96,10 @@ protected:
 
 public:
 	LLVOAvatar(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp);
-	/*virtual*/ void markDead();
+	virtual void		markDead();
 	static void			initClass(); // Initialize data that's only init'd once per class.
 	static void			cleanupClass();	// Cleanup data that's only init'd once per class.
+	virtual void 		initInstance(); // Called after construction to initialize the class.
 protected:
 	virtual				~LLVOAvatar();
 	BOOL				loadSkeletonNode();
@@ -116,31 +119,32 @@ protected:
 	//--------------------------------------------------------------------
 public:
 	virtual void			updateGL();
+	virtual	LLVOAvatar*		asAvatar();
 	virtual U32    	 	 	processUpdateMessage(LLMessageSystem *mesgsys,
 													 void **user_data,
 													 U32 block_num,
 													 const EObjectUpdateType update_type,
 													 LLDataPacker *dp);
-	/*virtual*/ BOOL idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
+	virtual BOOL   	 	 	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 	virtual BOOL   	 	 	updateLOD();
 	BOOL  	 	 	 	 	updateJointLODs();
 #if MESH_ENABLED
 	void					updateLODRiggedAttachments( void );
 #endif //MESH_ENABLED
-	/*virtual*/ BOOL 		isActive() const; // Whether this object needs to do an idleUpdate.
-	/*virtual*/ void 		updateTextures();
-	/*virtual*/ S32 		setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
-	/*virtual*/ void 		onShift(const LLVector4a& shift_vector);
+	virtual BOOL   	 	 	isActive() const; // Whether this object needs to do an idleUpdate.
+	virtual void   	 	 	updateTextures();
+	virtual S32    	 	 	setTETexture(const U8 te, const LLUUID& uuid); // If setting a baked texture, need to request it from a non-local sim.
+	virtual void   	 	 	onShift(const LLVector4a& shift_vector);
 	virtual U32    	 	 	getPartitionType() const;
 	virtual const  	 	 	LLVector3 getRenderPosition() const;
 	virtual void   	 	 	updateDrawable(BOOL force_damped);
-	/*virtual*/ LLDrawable* createDrawable(LLPipeline *pipeline);
-	/*virtual*/ BOOL 		updateGeometry(LLDrawable *drawable);
-	/*virtual*/ void 		setPixelAreaAndAngle(LLAgent &agent);
+	virtual LLDrawable* 	createDrawable(LLPipeline *pipeline);
+	virtual BOOL   	 	 	updateGeometry(LLDrawable *drawable);
+	virtual void   	 	 	setPixelAreaAndAngle(LLAgent &agent);
 	virtual void   	 	 	updateRegion(LLViewerRegion *regionp);
-	void 					updateSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
-	void 					getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);	
-	/*virtual*/ BOOL lineSegmentIntersect(const LLVector3& start, const LLVector3& end,
+	virtual void   	 	 	updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax);
+	virtual void   	 	 	getSpatialExtents(LLVector4a& newMin, LLVector4a& newMax);
+	virtual BOOL   	 	 	lineSegmentIntersect(const LLVector3& start, const LLVector3& end,
 												 S32 face = -1,                    // which face to check, -1 = ALL_SIDES
 												 BOOL pick_transparent = FALSE,
 												 S32* face_hit = NULL,             // which face was hit
@@ -170,7 +174,7 @@ public:
 	virtual LLJoint*		getCharacterJoint(U32 num);
 	virtual BOOL			allocateCharacterJoints(U32 num);
 
-	LLUUID 					remapMotionID(const LLUUID& id);
+	virtual LLUUID			remapMotionID(const LLUUID& id);
 	virtual BOOL			startMotion(const LLUUID& id, F32 time_offset = 0.f);
 	virtual BOOL			stopMotion(const LLUUID& id, BOOL stop_immediate = FALSE);
 	virtual void			stopMotionFromSource(const LLUUID& source_id);
@@ -212,7 +216,7 @@ public:
  **/
 
 public:
- 	bool			isSelf() const { return mIsSelf; } // True if this avatar is for this viewer's agent
+	virtual bool 	isSelf() const { return false; } // True if this avatar is for this viewer's agent
 	bool			isBuilt() const { return mIsBuilt; }
 
 private: //aligned members
@@ -225,10 +229,10 @@ private:
 	// Updates
 	//--------------------------------------------------------------------
 public:
-	BOOL updateCharacter(LLAgent &agent);
+	virtual BOOL 	updateCharacter(LLAgent &agent);
 	void 			idleUpdateVoiceVisualizer(bool voice_enabled);
 	void 			idleUpdateMisc(bool detailed_update);
-	void idleUpdateAppearanceAnimation();
+	virtual void	idleUpdateAppearanceAnimation();
 	void 			idleUpdateLipSync(bool voice_enabled);
 	void 			idleUpdateLoadingEffect();
 	void 			idleUpdateWindEffect();
@@ -239,7 +243,6 @@ public:
 	static void		invalidateNameTags();
 	void 			idleUpdateRenderCost();
 	void 			idleUpdateBelowWater();
-	void 			idleUpdateTractorBeam();	//1.23
 	void 			idleUpdateBoobEffect();	//Emerald
 	
 	void updateAttachmentVisibility(U32 camera_mode);	//Agent only
@@ -284,6 +287,7 @@ public:
 protected:
 	bool 			sendAvatarTexturesRequest();
 	void			updateRuthTimer(bool loading);
+	F32 			calcMorphAmount();
 private:
 	BOOL			mFullyLoaded;
 	BOOL			mPreviousFullyLoaded;
@@ -321,7 +325,7 @@ public:
 protected:
 	static BOOL			parseSkeletonFile(const std::string& filename);
 	void				buildCharacter();
-	BOOL 				loadAvatar();
+	virtual BOOL		loadAvatar();
 
 	BOOL				setupBone(const LLVOAvatarBoneInfo* info, LLViewerJoint* parent, S32 &current_volume_num, S32 &current_joint_num);
 	BOOL				buildSkeleton(const LLVOAvatarSkeletonInfo *info);
@@ -480,11 +484,6 @@ public:
 private:
 	static S32  sFreezeCounter;
 
-	//--------------------------------------------------------------------
-	// Internal functions
-	//--------------------------------------------------------------------
-protected:
-	BOOL needsRenderBeam();
 /**                    Rendering
  **                                                                            **
  *******************************************************************************/
@@ -509,11 +508,12 @@ protected:
 	// Baked textures
 	//--------------------------------------------------------------------
 public:
+	void			releaseComponentTextures(); // ! BACKWARDS COMPATIBILITY !
 protected:
 	static void		onBakedTextureMasksLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	static void		onInitialBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
 	static void		onBakedTextureLoaded(BOOL success, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata);
-	void			removeMissingBakedTextures();
+	virtual void	removeMissingBakedTextures();
 	void			useBakedTexture(const LLUUID& id);
 
 	struct BakedTextureData
@@ -546,8 +546,8 @@ protected:
 	// Composites
 	//--------------------------------------------------------------------
 public:
-	void			invalidateComposite( LLTexLayerSet* layerset, BOOL set_by_user );
-	void			invalidateAll();
+	virtual void	invalidateComposite(LLTexLayerSet* layerset, BOOL upload_result);
+	virtual void	invalidateAll();
 
 	//--------------------------------------------------------------------
 	// Static texture/mesh/baked dictionary
@@ -621,16 +621,14 @@ public:
 	static void		processRebakeAvatarTextures(LLMessageSystem* msg, void**);
 	void			setNewBakedTexture( LLVOAvatarDefines::ETextureIndex i, const LLUUID& uuid );
 	void			setCachedBakedTexture( LLVOAvatarDefines::ETextureIndex i, const LLUUID& uuid );
-	void			releaseUnnecessaryTextures();
 	void			requestLayerSetUploads();
+	void 			requestLayerSetUpload(LLVOAvatarDefines::EBakedTextureIndex i);
 	bool			hasPendingBakedUploads();
 	static void		onLocalTextureLoaded( BOOL succcess, LLViewerFetchedTexture *src_vi, LLImageRaw* src, LLImageRaw* aux_src, S32 discard_level, BOOL final, void* userdata );
-	static enum EWearableType	getTEWearableType(LLVOAvatarDefines::ETextureIndex te );
-	static LLUUID			getDefaultTEImageID(LLVOAvatarDefines::ETextureIndex te );
 	static void		onChangeSelfInvisible(BOOL newvalue);
 	void			setInvisible(BOOL newvalue);
 
-	void			wearableUpdated(EWearableType type, BOOL upload_result = TRUE);
+	void			wearableUpdated(LLWearableType::EType type, BOOL upload_result = TRUE);
 
 	//--------------------------------------------------------------------
 	// texture compositing
@@ -650,12 +648,12 @@ public:
 
 public:
 	void 			updateMeshTextures();
-	void 			updateSexDependentLayerSets(BOOL set_by_user);
+	void 			updateSexDependentLayerSets(BOOL upload_bake);
 	void 			dirtyMesh(); // Dirty the avatar mesh
 	void 			updateMeshData();
 protected:
 	void 			releaseMeshData();
-	void 			restoreMeshData();
+	virtual void 	restoreMeshData();
 private:
 	void 			dirtyMesh(S32 priority); // Dirty the avatar mesh, with priority
 	S32 			mDirtyMesh; // 0 -- not dirty, 1 -- morphed, 2 -- LOD
@@ -749,7 +747,7 @@ public:
  **/
 
 public:
-	BOOL			isWearingWearableType( EWearableType type ) const;
+	BOOL			isWearingWearableType( LLWearableType::EType type ) const;
 	
 	//--------------------------------------------------------------------
 	// Attachments
@@ -954,6 +952,7 @@ public:
 	// Sitting
 	//--------------------------------------------------------------------
 public:
+	void			sitDown(BOOL bSitting);
 	BOOL			isSitting() const {return mIsSitting;}
 	void 			sitOnObject(LLViewerObject *sit_object);
 	void 			getOffObject();
@@ -996,7 +995,6 @@ private:
 public:
 	LLFrameTimer	mChatTimer;
 	LLPointer<LLHUDText>		mNameText;
-private:
 private:
 	LLFrameTimer	mTimeVisible;
 	std::deque<LLChat> mChats;
@@ -1228,10 +1226,6 @@ private:
 	//--------------------------------------------------------------------
 	// Private member variables.
 	//--------------------------------------------------------------------
-	BOOL mIsSelf; // True if this avatar is for this viewer's agent
-
-	LLViewerJoint *mScreenp; // special purpose joint for HUD attachments
-
 	// Scratch textures used for compositing
 	static LLMap< LLGLenum, LLGLuint*> sScratchTexNames;
 	static LLMap< LLGLenum, F32*> sScratchTexLastBindTime;
@@ -1243,8 +1237,6 @@ private:
 	static void resolveClient(LLColor4& avatar_name_color, std::string& client, LLVOAvatar* avatar);
 	friend class LLFloaterAvatarList;
 
-	LLPointer<LLHUDEffectSpiral> mBeam;
-	LLFrameTimer mBeamTimer;
 	
 	U64		  mLastRegionHandle;
 	LLFrameTimer mRegionCrossingTimer;
@@ -1263,7 +1255,7 @@ inline BOOL LLVOAvatar::isTextureDefined(U8 te) const
 
 inline BOOL LLVOAvatar::isTextureVisible(U8 te) const
 {
-	return ((isTextureDefined(te) || mIsSelf)
+	return ((isTextureDefined(te) || isSelf())
 			&& (getTEImage(te)->getID() != IMG_INVISIBLE 
 				|| LLDrawPoolAlpha::sShowDebugAlpha));
 }

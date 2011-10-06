@@ -183,12 +183,12 @@ void RlvCommand::initLookupTable()
 // Checked: 2010-09-28 (RLVa-1.1.3a) | Added: RLVa-1.2.1c
 RlvCommandOptionGeneric::RlvCommandOptionGeneric(const std::string& strOption)
 {
-	EWearableType wtType(WT_INVALID); LLUUID idOption; ERlvAttachGroupType eAttachGroup(RLV_ATTACHGROUP_INVALID);
+	LLWearableType::EType wtType(LLWearableType::WT_INVALID); LLUUID idOption; ERlvAttachGroupType eAttachGroup(RLV_ATTACHGROUP_INVALID);
 	LLViewerJointAttachment* pAttachPt = NULL; LLViewerInventoryCategory* pFolder = NULL;
 
 	if (!(m_fEmpty = strOption.empty()))														// <option> could be an empty string
 	{
-		if ((wtType = LLWearable::typeNameToType(strOption)) != WT_INVALID)
+		if ((wtType = LLWearableType::typeNameToType(strOption)) != LLWearableType::WT_NONE)
 			m_varOption = wtType;																// ... or specify a clothing layer
 		else if ((pAttachPt = RlvAttachPtLookup::getAttachPoint(strOption)) != NULL)
 			m_varOption = pAttachPt;															// ... or specify an attachment point
@@ -212,7 +212,7 @@ RlvCommandOptionGetPath::RlvCommandOptionGetPath(const RlvCommand& rlvCmd)
 	RlvCommandOptionGeneric rlvCmdOption(rlvCmd.getOption());
 	if (rlvCmdOption.isWearableType())			// <option> can be a clothing layer
 	{
-		EWearableType wtType = rlvCmdOption.getWearableType();
+		LLWearableType::EType wtType = rlvCmdOption.getWearableType();
 		m_idItems.push_back(gAgentWearables.getWearableItemID(wtType));
 	}
 	else if (rlvCmdOption.isAttachmentPoint())	// ... or it can specify an attachment point
@@ -334,7 +334,7 @@ bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
 			case LLAssetType::AT_CLOTHING:
 				return gAgentWearables.isWearingItem(pItem->getUUID());
 			case LLAssetType::AT_OBJECT:
-				return (gAgent.getAvatarObject()) && (gAgent.getAvatarObject()->isWearingAttachment(pItem->getUUID()));
+				return (gAgentAvatarp) && (gAgentAvatarp->isWearingAttachment(pItem->getUUID()));
 			case LLAssetType::AT_GESTURE:
 				return LLGestureMgr::instance().isGestureActive(pItem->getUUID());
 			case LLAssetType::AT_LINK:
@@ -355,7 +355,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
-	LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return;
 
@@ -563,7 +563,7 @@ bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComp
 }
 
 // Checked: 2010-03-19 (RLVa-1.1.3b) | Added: RLVa-1.2.0a
-bool RlvForceWear::isForceRemovable(EWearableType wtType, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
+bool RlvForceWear::isForceRemovable(LLWearableType::EType wtType, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
 {
 	// Wearable type can be removed by an RLV command if there's at least one currently worn wearable that can be removed
 	if (isForceRemovable(gAgentWearables.getWearable(wtType), fCheckComposite, idExcept))
@@ -598,7 +598,7 @@ void RlvForceWear::forceRemove(const LLWearable* pWearable)
 }
 
 // Checked: 2010-03-19 (RLVa-1.1.3a) | Added: RLVa-1.2.0a
-void RlvForceWear::forceRemove(EWearableType wtType)
+void RlvForceWear::forceRemove(LLWearableType::EType wtType)
 {
 	forceRemove(gAgentWearables.getWearable(wtType));
 }
@@ -641,7 +641,7 @@ void RlvForceWear::addAttachment(const LLViewerInventoryItem* pItem, EWearAction
 {
 	// Remove it from 'm_remAttachments' if it's queued for detaching
 	const LLViewerObject* pAttachObj = 
-		(gAgent.getAvatarObject()) ? gAgent.getAvatarObject()->getWornAttachment(pItem->getLinkedUUID()) : NULL;
+		(gAgentAvatarp) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
 	if ( (pAttachObj) && (isRemAttachment(pAttachObj)) )
 		m_remAttachments.erase(std::remove(m_remAttachments.begin(), m_remAttachments.end(), pAttachObj), m_remAttachments.end());
 
@@ -1017,11 +1017,11 @@ bool rlvCanDeleteOrReturn()
 			fIsAllowed = false;
 	}
 	
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgent.getAvatarObject()) )
+	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) )
 	{
 		// We'll allow if the avie isn't sitting on any of the selected objects
 		LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsSittingOn f(gAgent.getAvatarObject()->getRoot());
+		RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
 		if ( (handleSel.notNull()) && (handleSel->getFirstRootNode(&f, TRUE)) )
 			fIsAllowed = false;
 	}

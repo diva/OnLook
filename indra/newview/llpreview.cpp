@@ -47,8 +47,11 @@
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
 #include "lldbstrings.h"
+#include "llfloatersearchreplace.h"
+#include "llpreviewnotecard.h"
+#include "llpreviewscript.h"
 #include "llagent.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llselectmgr.h"
 #include "llinventoryview.h"
 #include "llviewerinventory.h"
@@ -228,7 +231,7 @@ void LLPreview::onCommit()
 			// update the object itself.
 			if( item->getType() == LLAssetType::AT_OBJECT )
 			{
-				LLVOAvatar* avatar = gAgent.getAvatarObject();
+				LLVOAvatar* avatar = gAgentAvatarp;
 				if( avatar )
 				{
 					LLViewerObject* obj = avatar->getWornAttachment( item->getUUID() );
@@ -578,6 +581,24 @@ void LLMultiPreview::tabOpen(LLFloater* opened_floater, bool from_click)
 	if (opened_preview && opened_preview->getAssetStatus() == LLPreview::PREVIEW_ASSET_UNLOADED)
 	{
 		opened_preview->loadAsset();
+	}
+
+	LLFloater* search_floater = LLFloaterSearchReplace::getInstance();
+	if (search_floater && search_floater->getDependee() == this)
+	{
+		LLPreviewNotecard* notecard_preview; LLPreviewLSL* script_preview;
+		if ((notecard_preview = dynamic_cast<LLPreviewNotecard*>(opened_preview)) != NULL)
+		{
+			LLFloaterSearchReplace::show(notecard_preview->getEditor());
+		}
+		else if ((script_preview = dynamic_cast<LLPreviewLSL*>(opened_preview)) != NULL)
+		{
+			LLFloaterSearchReplace::show(script_preview->getEditor());
+		}
+		else
+		{
+			search_floater->setVisible(FALSE);
+		}
 	}
 }
 

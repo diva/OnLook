@@ -87,7 +87,6 @@ struct LLGroupData
 	std::string mName;
 };
 
-BOOL isAgentAvatarValid();
 
 // forward declarations
 
@@ -113,12 +112,6 @@ public:
 	virtual 		~LLAgent();
 	void			init();
 	void			cleanup();
-
-//Avatar object decoupled from agent in v2. Access changed to global gAgentAvatarp pointer. Stuff below will vanish.
-	void			setAvatarObject(LLVOAvatar *avatar); //Legacy
- 	LLVOAvatar	   *getAvatarObject() const			{ return mAvatarObject; }
-private:
-	LLPointer<LLVOAvatar> mAvatarObject;
 
 	//--------------------------------------------------------------------
 	// Login
@@ -525,8 +518,8 @@ public:
 										 F32 stop_distance = 0.f, F32 rotation_threshold = 0.03f);
 	void 			startFollowPilot(const LLUUID &leader_id);
 	void			stopAutoPilot(BOOL user_cancel = FALSE);
-	void 			setAutoPilotGlobal(const LLVector3d &pos_global);
-	void			autoPilot(F32 *delta_yaw);			// autopilot walking action, angles in radians
+	void 			setAutoPilotTargetGlobal(const LLVector3d &target_global);
+	void			autoPilot(F32 *delta_yaw); 			// Autopilot walking action, angles in radians
 	void			renderAutoPilotTarget();
 private:
 	BOOL			mAutoPilot;

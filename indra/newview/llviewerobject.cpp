@@ -82,7 +82,7 @@
 #include "llviewerstats.h"
 #include "llviewertextureanim.h"
 #include "llviewerwindow.h" // For getSpinAxis
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvoclouds.h"
 #include "llvograss.h"
 #include "llvoground.h"
@@ -135,7 +135,29 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 	case LL_PCODE_VOLUME:
 	  res = new LLVOVolume(id, pcode, regionp); break;
 	case LL_PCODE_LEGACY_AVATAR:
-	  res = new LLVOAvatar(id, pcode, regionp); break;
+	{
+		if (id == gAgentID)
+		{
+			if (!gAgentAvatarp)
+			{
+				lldebugs << "Marking avatar as self " << id << llendl;
+				gAgentAvatarp = new LLVOAvatarSelf(id, pcode, regionp);
+				gAgentAvatarp->initInstance();
+			}
+			else 
+			{
+				gAgentAvatarp->updateRegion(regionp);
+			}
+			res = gAgentAvatarp;
+		}
+		else
+		{
+			LLVOAvatar *avatar = new LLVOAvatar(id, pcode, regionp); 
+			avatar->initInstance();
+			res = avatar;
+		}
+		break;
+	}
 	case LL_PCODE_LEGACY_GRASS:
 	  res = new LLVOGrass(id, pcode, regionp); break;
 	case LL_PCODE_LEGACY_PART_SYS:
@@ -396,7 +418,7 @@ void LLViewerObject::markDead()
 			if (isAgentAvatarValid())
 			{
 				// stop motions associated with this object
-				gAgent.getAvatarObject()->stopMotionFromSource(mID);
+				gAgentAvatarp->stopMotionFromSource(mID);
 			}
 		}
 
@@ -1982,7 +2004,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 		}
 		
 		// If we're snapping the position by more than 0.5m, update LLViewerStats::mAgentPositionSnaps
-		if ( isAvatar() && gAgent.getAvatarObject() == this && (mag_sqr > 0.25f) )
+		if ( asAvatar() && asAvatar()->isSelf() && (mag_sqr > 0.25f) )
 		{
 			LLViewerStats::getInstance()->mAgentPositionSnaps.push( diff.length() );
 		}
@@ -4574,6 +4596,11 @@ void LLViewerObject::updateText()
 	}
 }
 
+LLVOAvatar* LLViewerObject::asAvatar()
+{
+	return NULL;
+}
+
 BOOL LLViewerObject::isParticleSource() const
 {
 	return !mPartSourcep.isNull() && !mPartSourcep->isDead();
@@ -5650,7 +5677,7 @@ std::string LLViewerObject::getAttachmentPointName()
 	S32 point = getAttachmentPoint();
 	if((point > 0) && (point < 39))
 	{
-		return gAgent.getAvatarObject()->mAttachmentPoints[point]->getName();
+		return gAgentAvatarp->mAttachmentPoints[point]->getName();
 	}
 	return llformat("unsupported point %d", point);
 }

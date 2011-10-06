@@ -39,7 +39,7 @@
 #include "message.h"
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "lldrawable.h"
 #include "llviewerobjectlist.h"
 #include "llrendersphere.h"
@@ -506,7 +506,7 @@ void LLHUDEffectLookAt::render()
 	static const LLCachedControl<bool> private_look_at("PrivateLookAt",false);
 	static const LLCachedControl<bool> show_look_at("AscentShowLookAt", false);
 
-    if (private_look_at && (gAgent.getAvatarObject() == ((LLVOAvatar*)(LLViewerObject*)mSourceObject)))
+    if (private_look_at && (gAgentAvatarp == ((LLVOAvatar*)(LLViewerObject*)mSourceObject)))
         return;
 
 	if (show_look_at && mSourceObject.notNull())

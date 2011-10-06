@@ -200,6 +200,7 @@ std::string ICON_NAME[ICON_NAME_COUNT] =
 
 	"inv_link_item.tga",
 	"inv_link_folder.tga"
+	"inv_item_mesh.png"
 };
 
 struct LLWearInfo
@@ -218,7 +219,7 @@ BOOL get_is_item_worn(const LLInventoryItem *item)
 	{
 		case LLAssetType::AT_OBJECT:
 		{
-			if (isAgentAvatarValid() && gAgent.getAvatarObject()->isWearingAttachment(item->getLinkedUUID()))
+			if (isAgentAvatarValid() && gAgentAvatarp->isWearingAttachment(item->getLinkedUUID()))
 				return TRUE;
 			break;
 		}
@@ -1101,7 +1102,7 @@ LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
 		{
 				llwarns << LLAssetType::lookup(asset_type) << " asset has inventory type " << LLInventoryType::lookupHumanReadable(inv_type) << " on uuid " << uuid << llendl;
 		}
-		new_listener = new LLWearableBridge(inventory, uuid, asset_type, inv_type, (EWearableType)flags);
+		new_listener = new LLWearableBridge(inventory, uuid, asset_type, inv_type, (LLWearableType::EType)flags);
 		break;
 
 	case LLAssetType::AT_CATEGORY:
@@ -1118,6 +1119,13 @@ LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
 	case LLAssetType::AT_LINK_FOLDER:
 		// Only should happen for broken links.
 		new_listener = new LLLinkItemBridge(inventory, uuid);
+		break;
+    case LLAssetType::AT_MESH:
+		if(!(inv_type == LLInventoryType::IT_MESH))
+		{
+			llwarns << LLAssetType::lookup(asset_type) << " asset has inventory type " << LLInventoryType::lookupHumanReadable(inv_type) << " on uuid " << uuid << llendl;
+		}
+		new_listener = new LLMeshBridge(inventory, uuid);
 		break;
 	default:
 		llinfos << "Unhandled asset type (llassetstorage.h): "
@@ -1644,7 +1652,7 @@ BOOL LLFolderBridge::isItemRemovable()
 		return FALSE;
 	}
 
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( !avatar )
 	{
 		return FALSE;
@@ -2819,85 +2827,85 @@ void LLFolderBridge::createNewCategory(void* user_data)
 
 void LLFolderBridge::createNewShirt(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SHIRT);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SHIRT);
 }
 
 void LLFolderBridge::createNewPants(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_PANTS);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_PANTS);
 }
 
 void LLFolderBridge::createNewShoes(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SHOES);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SHOES);
 }
 
 void LLFolderBridge::createNewSocks(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SOCKS);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SOCKS);
 }
 
 void LLFolderBridge::createNewJacket(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_JACKET);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_JACKET);
 }
 
 void LLFolderBridge::createNewSkirt(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SKIRT);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SKIRT);
 }
 
 void LLFolderBridge::createNewGloves(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_GLOVES);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_GLOVES);
 }
 
 void LLFolderBridge::createNewUndershirt(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_UNDERSHIRT);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_UNDERSHIRT);
 }
 
 void LLFolderBridge::createNewUnderpants(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_UNDERPANTS);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_UNDERPANTS);
 }
 
 void LLFolderBridge::createNewAlpha(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_ALPHA);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_ALPHA);
 }
 
 void LLFolderBridge::createNewTattoo(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_TATTOO);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_TATTOO);
 }
 
 void LLFolderBridge::createNewShape(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SHAPE);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SHAPE);
 }
 
 void LLFolderBridge::createNewSkin(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_SKIN);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_SKIN);
 }
 
 void LLFolderBridge::createNewHair(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_HAIR);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_HAIR);
 }
 
 void LLFolderBridge::createNewEyes(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_EYES);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_EYES);
 }
 
 void LLFolderBridge::createNewPhysics(void* user_data)
 {
-	LLFolderBridge::createWearable((LLFolderBridge*)user_data, WT_PHYSICS);
+	LLFolderBridge::createWearable((LLFolderBridge*)user_data, LLWearableType::WT_PHYSICS);
 }
 // static
-void LLFolderBridge::createWearable(LLFolderBridge* bridge, EWearableType type)
+void LLFolderBridge::createWearable(LLFolderBridge* bridge, LLWearableType::EType type)
 {
 	if(!bridge) return;
 	LLUUID parent_id = bridge->getUUID();
@@ -2907,7 +2915,7 @@ void LLFolderBridge::createWearable(LLFolderBridge* bridge, EWearableType type)
 // Separate function so can be called by global menu as well as right-click
 // menu.
 // static
-void LLFolderBridge::createWearable(LLUUID parent_id, EWearableType type)
+void LLFolderBridge::createWearable(LLUUID parent_id, LLWearableType::EType type)
 {
 	LLWearable* wearable = gWearableList.createNewWearable(type);
 	LLAssetType::EType asset_type = wearable->getAssetType();
@@ -4003,7 +4011,7 @@ BOOL LLObjectBridge::isItemRemovable()
 		return TRUE;
 	}
 	// <edit>
-	//LLVOAvatar* avatar = gAgent.getAvatarObject();
+	//LLVOAvatar* avatar = gAgentAvatarp;
 	//if(!avatar) return FALSE;
 	//if(avatar->isWearingAttachment(mUUID)) return FALSE;
 	// </edit>
@@ -4065,7 +4073,7 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 	{
 		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
 			return;
-		LLVOAvatar* avatarp = gAgent.getAvatarObject();
+		LLVOAvatar* avatarp = gAgentAvatarp;
 		if (!avatarp)
 			return;
 		LLViewerObject* objectp = avatarp->getWornAttachment(mUUID);
@@ -4115,7 +4123,7 @@ void LLObjectBridge::performAction(LLFolderView* folder, LLInventoryModel* model
 
 void LLObjectBridge::openItem()
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar)
 	{
 		return;
@@ -4135,7 +4143,7 @@ void LLObjectBridge::openItem()
 
 std::string LLObjectBridge::getLabelSuffix() const
 {
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar && avatar->isWearingAttachment( mUUID ) )
 	{
 		std::string attachment_point_name = avatar->getAttachedPointName(mUUID);
@@ -4169,10 +4177,10 @@ void rez_attachment(LLViewerInventoryItem* item, LLViewerJointAttachment* attach
 // [/RLVa:KB]
 
 	S32 attach_pt = 0;
-	if (gAgent.getAvatarObject() && attachment)
+	if (gAgentAvatarp && attachment)
 	{
-		for (LLVOAvatar::attachment_map_t::iterator iter = gAgent.getAvatarObject()->mAttachmentPoints.begin();
-			 iter != gAgent.getAvatarObject()->mAttachmentPoints.end(); ++iter)
+		for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin();
+			 iter != gAgentAvatarp->mAttachmentPoints.end(); ++iter)
 		{
 			if (iter->second == attachment)
 			{
@@ -4209,7 +4217,7 @@ void rez_attachment(LLViewerInventoryItem* item, LLViewerJointAttachment* attach
 
 bool confirm_replace_attachment_rez(const LLSD& notification, const LLSD& response)
 {
-	if (!gAgent.getAvatarObject()->canAttachMoreObjects())
+	if (!gAgentAvatarp->canAttachMoreObjects())
 	{
 		LLSD args;
 		args["MAX_ATTACHMENTS"] = llformat("%d", MAX_AGENT_ATTACHMENTS);
@@ -4259,7 +4267,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		LLInventoryItem* item = getItem();
 		if(item)
 		{
-			LLVOAvatar *avatarp = gAgent.getAvatarObject();
+			LLVOAvatar *avatarp = gAgentAvatarp;
 			if( !avatarp )
 			{
 				return;
@@ -4386,7 +4394,7 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 		model->updateItem(new_item);
 		model->notifyObservers();
 
-		LLVOAvatar* avatar = gAgent.getAvatarObject();
+		LLVOAvatar* avatar = gAgentAvatarp;
 		if( avatar )
 		{
 			LLViewerObject* obj = avatar->getWornAttachment( item->getUUID() );
@@ -4450,7 +4458,7 @@ LLWearableBridge::LLWearableBridge(LLInventoryPanel* inventory,
 								   const LLUUID& uuid, 
 								   LLAssetType::EType asset_type, 
 								   LLInventoryType::EType inv_type, 
-								   EWearableType wearable_type) :
+								   LLWearableType::EType wearable_type) :
 	LLItemBridge(inventory, /*root,*/ uuid),
 	mAssetType( asset_type ),
 	mWearableType(wearable_type)
@@ -4982,7 +4990,7 @@ void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void* data)
 			 iter != holder->mFoundList.end(); ++iter)
 		{
 			LLFoundData* data = *iter;
-			if(wearable->getID() == data->mAssetID)
+			if(wearable->getAssetID() == data->mAssetID)
 			{
 				data->mWearable = wearable;
 				break;
@@ -5010,7 +5018,7 @@ void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, B
 
 	// For each wearable type, find the first instance in the category
 	// that we recursed through.
-	for( S32 i = 0; i < WT_COUNT; i++ )
+	for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		for (LLWearableHoldingPattern::found_list_t::iterator iter = holder->mFoundList.begin();
 			 iter != holder->mFoundList.end(); ++iter)
@@ -5021,7 +5029,7 @@ void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, B
 			{
 				LLViewerInventoryItem* item;
 				item = (LLViewerInventoryItem*)gInventory.getLinkedItem(data->mItemID);
-				if( item && (item->getAssetUUID() == wearable->getID()) )
+				if( item && (item->getAssetUUID() == wearable->getAssetID()) )
 				{
 				//RN: after discussing with Brashears, I disabled this code
 				//Metadata should reside in the item, not the asset
@@ -5454,7 +5462,7 @@ void LLWearableBridge::onWearOnAvatarArrived( LLWearable* wearable, void* userda
 		item = (LLViewerInventoryItem*)gInventory.getItem(*item_id);
 		if(item)
 		{
-			if(item->getAssetUUID() == wearable->getID())
+			if(item->getAssetUUID() == wearable->getAssetID())
 			{
 				//RN: after discussing with Brashears, I disabled this code
 				//Metadata should reside in the item, not the asset
@@ -5560,9 +5568,9 @@ void LLWearableBridge::onRemoveFromAvatarArrived(LLWearable* wearable,
 	{
 		if( get_is_item_worn( item_id ) )
 		{
-			EWearableType type = wearable->getType();
+			LLWearableType::EType type = wearable->getType();
 	
-			if( !(type==WT_SHAPE || type==WT_SKIN || type==WT_HAIR || type==WT_EYES) ) //&&
+			if( !(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES) ) //&&
 				//!((!gAgent.isTeen()) && ( type==WT_UNDERPANTS || type==WT_UNDERSHIRT )) )
 			{
 				gAgentWearables.removeWearable( type );
@@ -5683,5 +5691,61 @@ const LLUUID &LLLinkFolderBridge::getFolderID() const
 		}
 	}
 	return LLUUID::null;
+}
+
+// +=================================================+
+// |        LLMeshBridge                             |
+// +=================================================+
+
+LLUIImagePtr LLMeshBridge::getIcon() const
+{
+	return get_item_icon(LLAssetType::AT_TEXTURE, LLInventoryType::IT_TEXTURE, 0, FALSE);
+}
+
+void LLMeshBridge::openItem()
+{
+	LLViewerInventoryItem* item = getItem();
+	
+	if (item)
+	{
+		// open mesh
+	}
+}
+
+void LLMeshBridge::previewItem()
+{
+	LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		// preview mesh
+	}
+}
+
+
+void LLMeshBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
+{
+	lldebugs << "LLMeshBridge::buildContextMenu()" << llendl;
+	std::vector<std::string> items;
+	std::vector<std::string> disabled_items;
+
+	if(isItemInTrash())
+	{
+		items.push_back(std::string("Purge Item"));
+		if (!isItemRemovable())
+		{
+			disabled_items.push_back(std::string("Purge Item"));
+		}
+
+		items.push_back(std::string("Restore Item"));
+	}
+	else
+	{
+		items.push_back(std::string("Properties"));
+
+		getClipboardEntries(true, items, disabled_items, flags);
+	}
+
+
+	hide_context_entries(menu, items, disabled_items);
 }
 

@@ -60,7 +60,7 @@
 #include "llviewermenu.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llfloaterproperties.h"
 
 // RN: HACK
@@ -4690,7 +4690,7 @@ BOOL LLInventoryFilter::check(LLFolderViewItem* item)
 	BOOL passed = (0x1 << listener->getInventoryType() & mFilterOps.mFilterTypes || listener->getInventoryType() == LLInventoryType::IT_NONE)
 					&& (mFilterSubString.size() == 0 || mSubStringMatchOffset != std::string::npos)
 					&& (mFilterWorn == false || gAgentWearables.isWearingItem(item_id) ||
-						(gAgent.getAvatarObject() && gAgent.getAvatarObject()->isWearingAttachment(item_id)))
+						(gAgentAvatarp && gAgentAvatarp->isWearingAttachment(item_id)))
 					&& ((listener->getPermissionMask() & mFilterOps.mPermissions) == mFilterOps.mPermissions)
 					&& (listener->getCreationDate() >= earliest && listener->getCreationDate() <= mFilterOps.mMaxDate);
 	return passed;

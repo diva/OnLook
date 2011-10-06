@@ -55,7 +55,7 @@
 #include "lldelayedgestureerror.h"
 #include "llinventorymodel.h"
 #include "llviewermessage.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llviewerstats.h"
 
 #include "chatbar_as_cmdline.h"
@@ -711,7 +711,7 @@ void LLGestureMgr::stepGesture(LLMultiGesture* gesture)
 	{
 		return;
 	}
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if (!avatar) return;
 
 	// Of the ones that started playing, have any stopped?
@@ -906,7 +906,7 @@ void LLGestureMgr::runStep(LLMultiGesture* gesture, LLGestureStep* step)
 			if ( cmd_line_chat(chat_text, CHAT_TYPE_NORMAL))
 			{
 #if SHY_MOD //Command handler
-				if(!SHCommandHandler::handleCommand(true, chat_text, gAgentID, gAgent.getAvatarObject()))//returns true if handled
+				if(!SHCommandHandler::handleCommand(true, chat_text, gAgentID, gAgentAvatarp))//returns true if handled
 #endif //shy_mod
 				gChatBar->sendChatFromViewer(chat_text, CHAT_TYPE_NORMAL, animate);
 			}

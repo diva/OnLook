@@ -55,7 +55,7 @@
 #include "llselectmgr.h"
 #include "llstatusbar.h"
 #include "llui.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llviewercamera.h"
 #include "llviewerobject.h"
 #include "llviewerobject.h"
@@ -738,7 +738,7 @@ void LLManipRotate::renderSnapGuides()
 	LLVector3 test_axis = constraint_axis;
 
 	BOOL constrain_to_ref_object = FALSE;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgent.getAvatarObject())
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
 	{
 		test_axis = test_axis * ~grid_rotation;
 	}
@@ -765,7 +765,7 @@ void LLManipRotate::renderSnapGuides()
 	}
 
 	LLVector3 projected_snap_axis = world_snap_axis;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgent.getAvatarObject())
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
 	{
 		projected_snap_axis = projected_snap_axis * grid_rotation;
 	}
@@ -1282,7 +1282,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 	LLVector3 axis2;
 
 	LLVector3 test_axis = constraint_axis;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgent.getAvatarObject())
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
 	{
 		test_axis = test_axis * ~grid_rotation;
 	}
@@ -1306,7 +1306,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 		axis1 = LLVector3::x_axis;
 	}
 
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgent.getAvatarObject())
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
 	{
 		axis1 = axis1 * grid_rotation;
 	}

@@ -316,10 +316,8 @@ void validate_framebuffer_object();
 
 bool addDeferredAttachments(LLRenderTarget& target)
 {
-	bool ret1 = target.addColorAttachment(GL_RGBA);
-	bool ret2 = target.addColorAttachment(GL_RGBA);
-	return ret1 && //specular
-	ret2; //normal+z
+	return target.addColorAttachment(GL_RGBA) && //specular
+			target.addColorAttachment(GL_RGBA); //normal+z	
 }
 
 LLPipeline::LLPipeline() :
@@ -2390,7 +2388,8 @@ void LLPipeline::markVisible(LLDrawable *drawablep, LLCamera& camera)
 					llassert(vobj); // trying to catch a bad assumption
 					if (vobj) // this test may not be needed, see above
 					{
-						if (vobj->isAvatar() && ((LLVOAvatar*)vobj)->isImpostor())
+						const LLVOAvatar* av = vobj->asAvatar();
+						if (av && av->isImpostor())
 						{
 								return;
 						}
@@ -2839,6 +2838,7 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 
 	if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD)
 	{
+		llassert_always(drawablep->isVisible());
 		/*LLSpatialGroup* group = drawablep->getSpatialGroup();
 		if (!group || group->changeLOD())
 		{
@@ -4271,7 +4271,7 @@ void LLPipeline::rebuildPools()
 
 	if (isAgentAvatarValid())
 	{
-		gAgent.getAvatarObject()->rebuildHUD();
+		gAgentAvatarp->rebuildHUD();
 	}
 }
 
@@ -4962,8 +4962,8 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 		light->setAmbient(LLColor4::black);
 		light->setSpecular(LLColor4::black);
 	}
-	if (isAgentAvatarValid() &&
-		gAgent.getAvatarObject()->mSpecialRenderMode == 3)
+	if (gAgentAvatarp &&
+		gAgentAvatarp->mSpecialRenderMode == 3)
 	{
 		LLColor4  light_color = LLColor4::white;
 		light_color.mV[3] = 0.0f;
@@ -5066,16 +5066,13 @@ void LLPipeline::enableLightsDynamic()
 	U32 mask = 0xff & (~2); // Local lights
 	enableLights(mask);
 	
-
-	LLVOAvatar* avatarp = gAgent.getAvatarObject();
-
-	if (avatarp && getLightingDetail() <= 0)
+	if (isAgentAvatarValid() && getLightingDetail() <= 0)
 	{
-		if (avatarp->mSpecialRenderMode == 0) // normal
+		if (gAgentAvatarp->mSpecialRenderMode == 0) // normal
 		{
 			gPipeline.enableLightsAvatar();
 		}
-		else if (avatarp->mSpecialRenderMode >= 1)  // anim preview
+		else if (gAgentAvatarp->mSpecialRenderMode >= 1)  // anim preview
 		{
 			gPipeline.enableLightsAvatarEdit(LLColor4(0.7f, 0.6f, 0.3f, 1.f));
 		}
@@ -7735,15 +7732,15 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 {
 	if (LLPipeline::sWaterReflections && assertInitialized() && LLDrawPoolWater::sNeedsReflectionUpdate)
 	{
-		LLVOAvatar* agent = gAgent.getAvatarObject();
+		BOOL skip_avatar_update = FALSE;
 		if (!isAgentAvatarValid() || gAgentCamera.getCameraAnimating() || gAgentCamera.getCameraMode() != CAMERA_MODE_MOUSELOOK)
 		{
-			agent = NULL;
+			skip_avatar_update = TRUE;
 		}
 
-		if (agent)
+		if (!skip_avatar_update)
 		{
-			agent->updateAttachmentVisibility(CAMERA_MODE_THIRD_PERSON);
+			gAgentAvatarp->updateAttachmentVisibility(CAMERA_MODE_THIRD_PERSON);
 		}
 		LLVertexBuffer::unbind();
 
@@ -7969,9 +7966,9 @@ void LLPipeline::generateWaterReflection(LLCamera& camera_in)
 		//LLGLState::checkTextureChannels();
 		//LLGLState::checkClientArrays();
 
-		if (agent)
+		if (!skip_avatar_update)
 		{
-			agent->updateAttachmentVisibility(gAgentCamera.getCameraMode());
+			gAgentAvatarp->updateAttachmentVisibility(gAgentCamera.getCameraMode());
 		}
 
 		LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;

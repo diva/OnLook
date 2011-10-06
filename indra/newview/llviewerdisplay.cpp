@@ -364,9 +364,9 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		const F32 TELEPORT_ARRIVAL_DELAY = 2.f; // Time to preload the world before raising the curtain after we've actually already arrived.
 
 		S32 attach_count = 0;
-		if (gAgent.getAvatarObject())
+		if (gAgentAvatarp)
 		{
-			attach_count = gAgent.getAvatarObject()->getAttachmentCount();
+			attach_count = gAgentAvatarp->getAttachmentCount();
 		}
 		F32 teleport_save_time = TELEPORT_EXPIRY + TELEPORT_EXPIRY_PER_ATTACHMENT * attach_count;
 		F32 teleport_elapsed = gTeleportDisplayTimer.getElapsedTimeF32();
@@ -1128,7 +1128,7 @@ LLRect get_whole_screen_region()
 
 bool get_hud_matrices(const LLRect& screen_region, glh::matrix4f &proj, glh::matrix4f &model)
 {
-	LLVOAvatar* my_avatarp = gAgent.getAvatarObject();
+	LLVOAvatar* my_avatarp = gAgentAvatarp;
 	if (my_avatarp && my_avatarp->hasHUDAttachment())
 	{
 		F32 zoom_level = gAgentCamera.mHUDCurZoom;

@@ -39,11 +39,11 @@ std::string rlvGetItemNameFromObjID(const LLUUID& idObj, bool fIncludeAttachPt =
 	const LLViewerInventoryItem* pItem = ((pObjRoot) && (pObjRoot->isAttachment())) ? gInventory.getItem(pObjRoot->getAttachmentItemID()) : NULL;
 
 	std::string strItemName = (pItem) ? pItem->getName() : idObj.asString();
-	if ( (!fIncludeAttachPt) || (!pObj) || (!pObj->isAttachment()) || (!gAgent.getAvatarObject()) )
+	if ( (!fIncludeAttachPt) || (!pObj) || (!pObj->isAttachment()) || (!gAgentAvatarp) )
 		return strItemName;
 
 	const LLViewerJointAttachment* pAttachPt = 
-		get_if_there(gAgent.getAvatarObject()->mAttachmentPoints, RlvAttachPtLookup::getAttachPointIndex(pObjRoot), (LLViewerJointAttachment*)NULL);
+		get_if_there(gAgentAvatarp->mAttachmentPoints, RlvAttachPtLookup::getAttachPointIndex(pObjRoot), (LLViewerJointAttachment*)NULL);
 	std::string strAttachPtName = (pAttachPt) ? pAttachPt->getName() : std::string("Unknown");
 	return llformat("%s (%s, %s)", strItemName.c_str(), strAttachPtName.c_str(), (pObj == pObjRoot) ? "root" : "child");
 }
@@ -70,7 +70,7 @@ void RlvFloaterBehaviour::refreshAll()
 		return;
 	pBhvrList->operateOnAll(LLCtrlListInterface::OP_DELETE);
 
-	if (!gAgent.getAvatarObject())
+	if (!gAgentAvatarp)
 		return;
 
 	//

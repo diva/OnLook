@@ -69,6 +69,7 @@
 
 // Library headers from llcommon project:
 #include "bitpack.h"
+#include "lldeleteutils.h"
 #include "imageids.h"
 #include "indra_constants.h"
 //#include "linden_common.h"

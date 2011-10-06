@@ -1281,7 +1281,7 @@ void LLToolDragAndDrop::dropScript(LLViewerObject* hit_obj,
  		// </edit>
 		// VEFFECT: SetScript
 			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-			effectp->setSourceObject(gAgent.getAvatarObject());
+			effectp->setSourceObject(gAgentAvatarp);
 			effectp->setTargetObject(hit_obj);
 			effectp->setDuration(LL_HUD_DUR_SHORT);
 			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -1471,7 +1471,7 @@ void LLToolDragAndDrop::dropObject(LLViewerObject* raycast_target,
 		// </edit>
 		// VEFFECT: DropObject
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setSourceObject(gAgentAvatarp);
 		effectp->setPositionGlobal(mLastHitPos);
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -1539,7 +1539,7 @@ void LLToolDragAndDrop::dropInventory(LLViewerObject* hit_obj,
 		// </edit>
 		// VEFFECT: AddToInventory
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setSourceObject(gAgentAvatarp);
 		effectp->setTargetObject(hit_obj);
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -1655,7 +1655,7 @@ void LLToolDragAndDrop::commitGiveInventoryItem(const LLUUID& to_agent,
 		// </edit>
 		// VEFFECT: giveInventory
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setSourceObject(gAgentAvatarp);
 		effectp->setTargetObject(gObjectList.findObject(to_agent));
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -1684,7 +1684,7 @@ void LLToolDragAndDrop::giveInventoryCategory(const LLUUID& to_agent,
 	llinfos << "LLToolDragAndDrop::giveInventoryCategory() - "
 			<< cat->getUUID() << llendl;
 
-	LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	LLVOAvatar* my_avatar = gAgentAvatarp;
 	if( !my_avatar )
 	{
 		return;
@@ -1878,7 +1878,7 @@ void LLToolDragAndDrop::commitGiveInventoryCategory(const LLUUID& to_agent,
  			// </edit>
 			// VEFFECT: giveInventoryCategory
 			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-			effectp->setSourceObject(gAgent.getAvatarObject());
+			effectp->setSourceObject(gAgentAvatarp);
 			effectp->setTargetObject(gObjectList.findObject(to_agent));
 			effectp->setDuration(LL_HUD_DUR_SHORT);
 			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -1913,7 +1913,7 @@ BOOL LLToolDragAndDrop::isInventoryGiveAcceptable(LLInventoryItem* item)
 	if(item->getPermissions().allowCopyBy(gAgent.getID())) copyable = TRUE;
 	
 	// <edit>
-	/*LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	/*LLVOAvatar* my_avatar = gAgentAvatarp;
 	if(!my_avatar)
 	{
 		return FALSE;
@@ -1972,7 +1972,7 @@ BOOL LLToolDragAndDrop::isInventoryGroupGiveAcceptable(LLInventoryItem* item)
 		return FALSE;
 	}
 
-	LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	LLVOAvatar* my_avatar = gAgentAvatarp;
 	if(!my_avatar)
 	{
 		return FALSE;
@@ -2033,7 +2033,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 	switch(item->getType())
 	{
 	case LLAssetType::AT_OBJECT:
-		my_avatar = gAgent.getAvatarObject();
+		my_avatar = gAgentAvatarp;
 		if(my_avatar && my_avatar->isWearingAttachment(item->getUUID()))
 		{
 				worn = TRUE;
@@ -2071,7 +2071,7 @@ EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LL
 		}
 		else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
 		{
-			LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+			LLVOAvatar* pAvatar = gAgentAvatarp;
 			if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == pObjRoot) )
 				return ACCEPT_NO_LOCKED;	// ... or on a linkset the avie is sitting on under @unsit=n/@sittp=n
 		}
@@ -2204,7 +2204,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 
 	// must not be already wearing it
 	// <edit>
-	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//LLVOAvatar* my_avatar = gAgentAvatarp;
 	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
 	//{
 	//	return ACCEPT_NO;
@@ -2273,7 +2273,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezObjectOnLand(
 	if(!item || !item->isComplete()) return ACCEPT_NO;
 
 	// <edit>
-	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//LLVOAvatar* my_avatar = gAgentAvatarp;
 	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
 	//{
 	//	return ACCEPT_NO;
@@ -2349,7 +2349,7 @@ EAcceptance LLToolDragAndDrop::dad3dRezObjectOnObject(
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
 	// <edit>
-	//LLVOAvatar* my_avatar = gAgent.getAvatarObject();
+	//LLVOAvatar* my_avatar = gAgentAvatarp;
 	//if( !my_avatar || my_avatar->isWearingAttachment( item->getUUID() ) )
 	//{
 	//	return ACCEPT_NO;
@@ -2508,7 +2508,7 @@ EAcceptance LLToolDragAndDrop::dad3dTextureObject(
 		
 		// VEFFECT: SetTexture
 		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgent.getAvatarObject());
+		effectp->setSourceObject(gAgentAvatarp);
 		effectp->setTargetObject(obj);
 		effectp->setDuration(LL_HUD_DUR_SHORT);
 		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
@@ -2858,7 +2858,7 @@ EAcceptance LLToolDragAndDrop::dad3dGiveInventoryObject(
 		// cannot give away no-transfer objects
 		return ACCEPT_NO;
 	}
-	LLVOAvatar* avatar = gAgent.getAvatarObject();
+	LLVOAvatar* avatar = gAgentAvatarp;
 	if(avatar && avatar->isWearingAttachment( item->getUUID() ) )
 	{
 		// You can't give objects that are attached to you

@@ -486,7 +486,7 @@ void LLChatBar::sendChat( EChatType type )
 			{
 				// Chat with animation
 #if SHY_MOD //Command handler
-				if(!SHCommandHandler::handleCommand(true, utf8_revised_text, gAgentID, (LLViewerObject*)gAgent.getAvatarObject()))//returns true if handled
+				if(!SHCommandHandler::handleCommand(true, utf8_revised_text, gAgentID, (LLViewerObject*)gAgentAvatarp))//returns true if handled
 #endif //shy_mod
 				sendChatFromViewer(utf8_revised_text, nType, TRUE);
 			}

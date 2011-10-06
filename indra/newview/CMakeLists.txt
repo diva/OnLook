@@ -232,6 +232,7 @@ set(viewer_SOURCE_FILES
     llfloaterproperties.cpp
     llfloaterregioninfo.cpp
     llfloaterreporter.cpp
+    llfloatersearchreplace.cpp
     llfloaterscriptdebug.cpp
     llfloatersellland.cpp
     llfloatersettingsdebug.cpp
@@ -478,6 +479,7 @@ set(viewer_SOURCE_FILES
     llvlmanager.cpp
     llvoavatar.cpp
     llvoavatardefines.cpp
+    llvoavatarself.cpp
     llvocache.cpp
     llvoclouds.cpp
     llvograss.cpp
@@ -499,6 +501,7 @@ set(viewer_SOURCE_FILES
     llwaterparamset.cpp
     llwearable.cpp
     llwearablelist.cpp
+    llwearabletype.cpp
     llweb.cpp
     llmediactrl.cpp
     llwind.cpp
@@ -713,6 +716,7 @@ set(viewer_HEADER_FILES
     llfloaterproperties.h
     llfloaterregioninfo.h
     llfloaterreporter.h
+    llfloatersearchreplace.h
     llfloaterscriptdebug.h
     llfloatersellland.h
     llfloatersettingsdebug.h
@@ -960,6 +964,7 @@ set(viewer_HEADER_FILES
     llvlmanager.h
     llvoavatar.h
     llvoavatardefines.h
+    llvoavatarself.h
     llvocache.h
     llvoclouds.h
     llvograss.h
@@ -982,6 +987,7 @@ set(viewer_HEADER_FILES
     llwaterparamset.h
     llwearable.h
     llwearablelist.h
+    llwearabletype.h
     llweb.h
     llmediactrl.h
     llwind.h

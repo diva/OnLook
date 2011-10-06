@@ -20,7 +20,7 @@
 #include "llagentwearables.h"
 #include "llcommonutils.h"
 #include "llerror.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "rlvviewer2.h"
 
 // ============================================================================
@@ -80,16 +80,16 @@ public:
 		}
 
 		// Add all currently worn wearables
-		for (S32 idxType = 0; idxType < WT_COUNT; idxType++)
+		for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++)
 		{
-			const LLUUID& idItem = gAgentWearables.getWearableItemID((EWearableType)idxType);
+			const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType);
 			if (idItem.isNull())
 				continue;
 			idItems.push_back(idItem);
 		}
 
 		// Add all currently worn attachments
-		const LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+		const LLVOAvatar* pAvatar = gAgentAvatarp;
 		if (pAvatar)
 		{
 			for (LLVOAvatar::attachment_map_t::const_iterator itAttachPt = pAvatar->mAttachmentPoints.begin(); 
@@ -335,7 +335,7 @@ void LLCOFMgr::linkPendingAttachments()
    for (uuid_vec_t::const_iterator itPending = m_PendingAttachLinks.begin(); itPending != m_PendingAttachLinks.end(); ++itPending)
 	{
 		const LLUUID& idAttachItem = *itPending;
-		if ( (gAgent.getAvatarObject()->isWearingAttachment(idAttachItem)) && (!isLinkInCOF(idAttachItem)) )
+		if ( (gAgentAvatarp->isWearingAttachment(idAttachItem)) && (!isLinkInCOF(idAttachItem)) )
 		{
 			if (!cb)
 				cb = new LLLinkAttachmentCallback();
@@ -354,13 +354,13 @@ void LLCOFMgr::onLinkAttachmentComplete(const LLUUID& idItem)
 		m_PendingAttachLinks.erase(itPending);
 
 	// It may have been detached already in which case we should remove the COF link
-	if ( (gAgent.getAvatarObject()) && (!gAgent.getAvatarObject()->isWearingAttachment(idItemBase)) )
+	if ( (gAgentAvatarp) && (!gAgentAvatarp->isWearingAttachment(idItemBase)) )
 		removeCOFItemLinks(idItemBase);
 }
 
 void LLCOFMgr::updateAttachments()
 {
-	/*const*/ LLVOAvatar* pAvatar = gAgent.getAvatarObject();
+	/*const*/ LLVOAvatar* pAvatar = gAgentAvatarp;
 	if (!pAvatar)
 		return;
 
@@ -457,9 +457,9 @@ void LLCOFMgr::synchWearables()
 
 	// Grab the item UUIDs of all currently worn wearables
 	uuid_vec_t newItems;
-	for (S32 idxType = 0; idxType < WT_COUNT; idxType++)
+	for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++)
 	{
-		const LLUUID& idItem = gAgentWearables.getWearableItemID((EWearableType)idxType);
+		const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType);
 		if (idItem.isNull())
 			continue;
 		newItems.push_back(idItem);
