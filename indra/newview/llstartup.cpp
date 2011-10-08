@@ -2743,7 +2743,7 @@ bool idle_startup()
 		if (gAgent.isFirstLogin()
 			&& !sInitialOutfit.empty()    // registration set up an outfit
 			&& !sInitialOutfitGender.empty() // and a gender
-			&& gAgentAvatarp	  // can't wear clothes without object
+			&& isAgentAvatarValid()	  // can't wear clothes without object
 			&& !gAgent.isGenderChosen() ) // nothing already loading
 		{
 			// Start loading the wearables, textures, gestures
@@ -2766,7 +2766,7 @@ bool idle_startup()
 		}
 
 		// wait precache-delay and for agent's avatar or a lot longer.
-		if(((timeout_frac > 1.f) && gAgentAvatarp)
+		if(((timeout_frac > 1.f) && isAgentAvatarValid())
 		   || (timeout_frac > 3.f))
 		{
 			LLStartUp::setStartupState( STATE_WEARABLES_WAIT );
@@ -2822,7 +2822,7 @@ bool idle_startup()
 		if (gAgent.isFirstLogin())
 		{
 			// wait for avatar to be completely loaded
-			if (gAgentAvatarp
+			if (isAgentAvatarValid()
 				&& gAgentAvatarp->isFullyLoaded())
 			{
 				//llinfos << "avatar fully loaded" << llendl;
@@ -2889,7 +2889,6 @@ bool idle_startup()
 		// Start automatic replay if the flag is set.
 		if (gSavedSettings.getBOOL("StatsAutoRun"))
 		{
-			LLUUID id;
 			LL_DEBUGS("AppInit") << "Starting automatic playback" << LL_ENDL;
 			gAgentPilot.startPlayback();
 		}

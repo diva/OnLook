@@ -763,8 +763,8 @@ public:
 	S32 getAttachmentPoint();
 	std::string getAttachmentPointName();
 // </edit>
-	const LLUUID &getAttachmentItemID() const { return mAttachmentItemID; }
-	void setAttachmentItemID(const LLUUID &id) { mAttachmentItemID = id; }
+	const LLUUID &getAttachmentItemID() const;
+	void setAttachmentItemID(const LLUUID &id);
 	const LLUUID &extractAttachmentItemID(); // find&set the inventory item ID of the attached object
 	EObjectUpdateType getLastUpdateType() const;
 	void setLastUpdateType(EObjectUpdateType last_update_type);

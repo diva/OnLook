@@ -140,7 +140,6 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 		{
 			if (!gAgentAvatarp)
 			{
-				lldebugs << "Marking avatar as self " << id << llendl;
 				gAgentAvatarp = new LLVOAvatarSelf(id, pcode, regionp);
 				gAgentAvatarp->initInstance();
 			}
@@ -5682,6 +5681,17 @@ std::string LLViewerObject::getAttachmentPointName()
 	return llformat("unsupported point %d", point);
 }
 // </edit>
+
+const LLUUID &LLViewerObject::getAttachmentItemID() const
+{
+	return mAttachmentItemID;
+}
+
+void LLViewerObject::setAttachmentItemID(const LLUUID &id)
+{
+	mAttachmentItemID = id;
+}
+
 EObjectUpdateType LLViewerObject::getLastUpdateType() const
 {
 	return mLastUpdateType;
@@ -5725,7 +5735,7 @@ LLVOAvatar* LLViewerObject::getAvatar() const
 	{
 		LLViewerObject* vobj = (LLViewerObject*) getParent();
 
-		while (vobj && !vobj->isAvatar())
+		while (vobj && !vobj->asAvatar())
 		{
 			vobj = (LLViewerObject*) vobj->getParent();
 		}

@@ -279,9 +279,6 @@ public:
 	F32 getFogDensity(void);
 	LLColor4 getFogColor(void);
 
-	// singleton pattern implementation
-	static LLWaterParamManager * instance();
-
 public:
 
 	LLWaterParamSet mCurParams;
@@ -323,7 +320,7 @@ private:
 	
 
 	// list of all the parameters, listed by name
-	std::map<std::string, LLWaterParamSet> mParamList;
+	preset_map_t mParamList;
 
 	std::vector<LLGLSLShader *> mShaderList;
 };

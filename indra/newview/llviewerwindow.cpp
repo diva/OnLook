@@ -363,7 +363,7 @@ public:
 			agent_center_text = llformat("AgentCenter  %f %f %f",
 										 (F32)(tvector.mdV[VX]), (F32)(tvector.mdV[VY]), (F32)(tvector.mdV[VZ]));
 
-			if (gAgentAvatarp)
+			if (isAgentAvatarValid())
 			{
 				tvector = gAgent.getPosGlobalFromAgent(gAgentAvatarp->mRoot.getWorldPosition());
 				agent_root_center_text = llformat("AgentRootCenter %f %f %f",
