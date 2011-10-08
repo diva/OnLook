@@ -546,7 +546,6 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	{
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Disconnected");
 		render_ui();
-		render_disconnected_background();
 	}
 	
 	//////////////////////////
