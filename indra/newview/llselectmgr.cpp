@@ -113,8 +113,6 @@ const S32 TE_SELECT_MASK_ALL = 0xFFFFFFFF;
 // Globals
 //
 
-//BOOL gDebugSelectMgr = FALSE;
-
 //BOOL gHideSelectedObjects = FALSE;
 //BOOL gAllowSelectAvatar = FALSE;
 

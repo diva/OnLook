@@ -220,9 +220,6 @@ extern S32 gJamesInt;
 LLViewerWindow	*gViewerWindow = NULL;
 LLVelocityBar	*gVelocityBar = NULL;
 
-
-BOOL			gDebugSelect = FALSE;
-
 LLFrameTimer	gMouseIdleTimer;
 LLFrameTimer	gAwayTimer;
 LLFrameTimer	gAwayTriggerTimer;
@@ -3634,27 +3631,8 @@ void LLViewerWindow::pickAsync(S32 x, S32 y_from_bot, MASK mask, void (*callback
 		pick_transparent = TRUE;
 	}
 
-	// center initial pick frame buffer region under mouse cursor
-	// since that area is guaranteed to be onscreen and hence a valid
-	// part of the framebuffer
-	if (mPicks.empty())
-	{
-		mPickScreenRegion.setCenterAndSize(x, y_from_bot, PICK_DIAMETER, PICK_DIAMETER);
-
-		if (mPickScreenRegion.mLeft < 0) mPickScreenRegion.translate(-mPickScreenRegion.mLeft, 0);
-		if (mPickScreenRegion.mBottom < 0) mPickScreenRegion.translate(0, -mPickScreenRegion.mBottom);
-		if (mPickScreenRegion.mRight > mWindowRectRaw.getWidth() ) mPickScreenRegion.translate(mWindowRectRaw.getWidth() - mPickScreenRegion.mRight, 0);
-		if (mPickScreenRegion.mTop > mWindowRectRaw.getHeight() ) mPickScreenRegion.translate(0, mWindowRectRaw.getHeight() - mPickScreenRegion.mTop);
-	}
-
-	// set frame buffer region for picking results
-	// stack multiple picks left to right
-	LLRect screen_region = mPickScreenRegion;
-	screen_region.translate(mPicks.size() * PICK_DIAMETER, 0);
-
-	LLPickInfo pick(LLCoordGL(x, y_from_bot), screen_region, mask, pick_transparent, get_surface_info, callback);
-
-	schedulePick(pick);
+	LLPickInfo pick_info(LLCoordGL(x, y_from_bot), mask, pick_transparent, get_surface_info, callback);
+	schedulePick(pick_info);
 }
 
 void LLViewerWindow::schedulePick(LLPickInfo& pick_info)
@@ -3669,7 +3647,6 @@ void LLViewerWindow::schedulePick(LLPickInfo& pick_info)
 	
 		return;
 	}
-	llassert_always(pick_info.mScreenRegion.notEmpty());
 	mPicks.push_back(pick_info);
 
 	// delay further event processing until we receive results of pick
@@ -3720,11 +3697,10 @@ LLPickInfo LLViewerWindow::pickImmediate(S32 x, S32 y_from_bot,  BOOL pick_trans
 		return LLPickInfo();
 	}
 
-	pickAsync(x, y_from_bot, gKeyboard->currentMask(TRUE), NULL, pick_transparent);
-	// assume that pickAsync put the results in the back of the mPicks list
-	mLastPick = mPicks.back();
+	// shortcut queueing in mPicks and just update mLastPick in place
+	MASK	key_mask = gKeyboard->currentMask(TRUE);
+	mLastPick = LLPickInfo(LLCoordGL(x, y_from_bot), key_mask, pick_transparent, TRUE, NULL);
 	mLastPick.fetchResults();
-	mPicks.pop_back();
 
 	return mLastPick;
 }
@@ -5281,12 +5257,6 @@ F32 LLViewerWindow::getDisplayAspectRatio() const
 	}
 }
 
-
-void LLViewerWindow::drawPickBuffer() const
-{
-	mHoverPick.drawPickBuffer();
-}
-
 void LLViewerWindow::calcDisplayScale()
 {
 	F32 ui_scale_factor = gSavedSettings.getF32("UIScaleFactor");
@@ -5456,13 +5426,11 @@ LLPickInfo::LLPickInfo()
 }
 
 LLPickInfo::LLPickInfo(const LLCoordGL& mouse_pos, 
-					   const LLRect& screen_region,
 						MASK keyboard_mask, 
 						BOOL pick_transparent,
 						BOOL pick_uv_coords,
 						void (*pick_callback)(const LLPickInfo& pick_info))
 	: mMousePt(mouse_pos),
-	  mScreenRegion(screen_region),
 	  mKeyMask(keyboard_mask),
 	  mPickCallback(pick_callback),
 	  mPickType(PICK_INVALID),
@@ -5475,10 +5443,6 @@ LLPickInfo::LLPickInfo(const LLCoordGL& mouse_pos,
 	  mBinormal(),
 	  mHUDIcon(NULL),
 	  mPickTransparent(pick_transparent)
-{
-}
-
-LLPickInfo::~LLPickInfo()
 {
 }
 
@@ -5500,59 +5464,14 @@ void LLPickInfo::fetchResults()
 									NULL, -1, mPickTransparent, &face_hit,
 									&intersection, &uv, &normal, &binormal);
 	
-	// read back colors and depth values from buffer
-	//glReadPixels(mScreenRegion.mLeft, mScreenRegion.mBottom, mScreenRegion.getWidth(), mScreenRegion.getHeight(), GL_RGBA, GL_UNSIGNED_BYTE, mPickBuffer);
-	//glReadPixels(mScreenRegion.mLeft, mScreenRegion.mBottom, mScreenRegion.getWidth(), mScreenRegion.getHeight(), GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, mPickDepthBuffer );
-
-	// find pick region that is fully onscreen
-	//LLCoordGL scaled_pick_point;;
-	//scaled_pick_point.mX = llclamp(llround((F32)mMousePt.mX * gViewerWindow->getDisplayScale().mV[VX]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayWidth() - PICK_HALF_WIDTH);
-	//scaled_pick_point.mY = llclamp(llround((F32)mMousePt.mY * gViewerWindow->getDisplayScale().mV[VY]), PICK_HALF_WIDTH, gViewerWindow->getWindowDisplayHeight() - PICK_HALF_WIDTH);
-	//S32 pixel_index = PICK_HALF_WIDTH * PICK_DIAMETER + PICK_HALF_WIDTH;
-	//S32 pick_id = (U32)mPickBuffer[(pixel_index * 4) + 0] << 16 | (U32)mPickBuffer[(pixel_index * 4) + 1] << 8 | (U32)mPickBuffer[(pixel_index * 4) + 2];
-	//F32 depth = mPickDepthBuffer[pixel_index];
-
-	//S32 x_offset = mMousePt.mX - llround((F32)scaled_pick_point.mX / gViewerWindow->getDisplayScale().mV[VX]);
-	//S32 y_offset = mMousePt.mY - llround((F32)scaled_pick_point.mY / gViewerWindow->getDisplayScale().mV[VY]);
-
 	mPickPt = mMousePt;
 
-	// we hit nothing, scan surrounding pixels for something useful
-	/*if (!pick_id)
-	{
-		S32 closest_distance = 10000;
-		//S32 closest_pick_name = 0;
-		for (S32 col = 0; col < PICK_DIAMETER; col++)
-		{
-			for (S32 row = 0; row < PICK_DIAMETER; row++)
-			{
-				S32 distance_squared = (llabs(col - x_offset - PICK_HALF_WIDTH) * llabs(col - x_offset - PICK_HALF_WIDTH)) + (llabs(row - y_offset - PICK_HALF_WIDTH) * llabs(row - y_offset - PICK_HALF_WIDTH));
-				pixel_index = row * PICK_DIAMETER + col;
-				S32 test_name = (U32)mPickBuffer[(pixel_index * 4) + 0] << 16 | (U32)mPickBuffer[(pixel_index * 4) + 1] << 8 | (U32)mPickBuffer[(pixel_index * 4) + 2];
-				if (test_name && distance_squared < closest_distance)
-				{
-					closest_distance = distance_squared;
-					pick_id = test_name;
-					depth = mPickDepthBuffer[pixel_index];
-					mPickPt.mX = mMousePt.mX + (col - PICK_HALF_WIDTH);
-					mPickPt.mY = mMousePt.mY + (row - PICK_HALF_WIDTH);
-				}
-			}
-		}
-	}*/
-
-
 	U32 te_offset = face_hit > -1 ? face_hit : 0;
-	//pick_id &= 0x000fffff;
 
 	//unproject relative clicked coordinate from window coordinate using GL
 	
 	LLViewerObject* objectp = hit_object;
 
-	//if (pick_id == (S32)GL_NAME_PARCEL_WALL)
-	//{
-	//	mPickType = PICK_PARCEL_WALL;
-	//}
 	if (hit_icon && 
 		(!objectp || 
 		icon_dist < (LLViewerCamera::getInstance()->getOrigin()-intersection).magVec()))
@@ -5596,20 +5515,6 @@ void LLPickInfo::fetchResults()
 			mObjectID = objectp->mID;
 			mObjectFace = (te_offset == NO_FACE) ? -1 : (S32)te_offset;
 
-			/*glh::matrix4f newModel((F32*)LLViewerCamera::getInstance()->getModelview().mMatrix);
-
-			for(U32 i = 0; i < 16; ++i)
-			{
-				modelview[i] = newModel.m[i];
-				projection[i] = LLViewerCamera::getInstance()->getProjection().mMatrix[i/4][i%4];
-			}
-			glGetIntegerv( GL_VIEWPORT, viewport );
-
-			winX = ((F32)mPickPt.mX) * gViewerWindow->getDisplayScale().mV[VX];
-			winY = ((F32)mPickPt.mY) * gViewerWindow->getDisplayScale().mV[VY];
-
-			gluUnProject( winX, winY, depth, modelview, projection, viewport, &posX, &posY, &posZ);*/
-
 			mPosGlobal = gAgent.getPosGlobalFromAgent(intersection);
 			
 			if (mWantSurfaceInfo)
@@ -5641,49 +5546,6 @@ void LLPickInfo::updateXYCoords()
 			mXYCoords.mX = llround(mUVCoords.mV[VX] * (F32)imagep->getWidth());
 			mXYCoords.mY = llround((1.f - mUVCoords.mV[VY]) * (F32)imagep->getHeight());
 		}
-	}
-}
-
-void LLPickInfo::drawPickBuffer() const
-{
-	if (mPickBuffer)
-	{
-		gGL.pushMatrix();
-		LLGLDisable no_blend(GL_BLEND);
-		LLGLDisable no_alpha_test(GL_ALPHA_TEST);
-		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-		glPixelZoom(10.f, 10.f);
-		LLVector2 display_scale = gViewerWindow->getDisplayScale();
-		glRasterPos2f(((F32)mMousePt.mX * display_scale.mV[VX] + 10.f), 
-			((F32)mMousePt.mY * display_scale.mV[VY] + 10.f));
-		glDrawPixels(PICK_DIAMETER, PICK_DIAMETER, GL_RGBA, GL_UNSIGNED_BYTE, mPickBuffer);
-		glPixelZoom(1.f, 1.f);
-		gGL.color4fv(LLColor4::white.mV);
-		gl_rect_2d(llround((F32)mMousePt.mX * display_scale.mV[VX] - (F32)(PICK_HALF_WIDTH)), 
-			llround((F32)mMousePt.mY * display_scale.mV[VY] + (F32)(PICK_HALF_WIDTH)),
-			llround((F32)mMousePt.mX * display_scale.mV[VX] + (F32)(PICK_HALF_WIDTH)),
-			llround((F32)mMousePt.mY * display_scale.mV[VY] - (F32)(PICK_HALF_WIDTH)),
-			FALSE);
-		gl_line_2d(llround((F32)mMousePt.mX * display_scale.mV[VX] - (F32)(PICK_HALF_WIDTH)), 
-			llround((F32)mMousePt.mY * display_scale.mV[VY] + (F32)(PICK_HALF_WIDTH)),
-			llround((F32)mMousePt.mX * display_scale.mV[VX] + 10.f), 
-			llround((F32)mMousePt.mY * display_scale.mV[VY] + (F32)(PICK_DIAMETER) * 10.f + 10.f));
-		gl_line_2d(llround((F32)mMousePt.mX * display_scale.mV[VX] + (F32)(PICK_HALF_WIDTH)),
-			llround((F32)mMousePt.mY * display_scale.mV[VY] - (F32)(PICK_HALF_WIDTH)),
-			llround((F32)mMousePt.mX * display_scale.mV[VX] + (F32)(PICK_DIAMETER) * 10.f + 10.f), 
-			llround((F32)mMousePt.mY * display_scale.mV[VY] + 10.f));
-		gGL.translatef(10.f, 10.f, 0.f);
-		gl_rect_2d(llround((F32)mPickPt.mX * display_scale.mV[VX]), 
-			llround((F32)mPickPt.mY * display_scale.mV[VY] + (F32)(PICK_DIAMETER) * 10.f),
-			llround((F32)mPickPt.mX * display_scale.mV[VX] + (F32)(PICK_DIAMETER) * 10.f),
-			llround((F32)mPickPt.mY * display_scale.mV[VY]),
-			FALSE);
-		gl_rect_2d(llround((F32)mPickPt.mX * display_scale.mV[VX]), 
-			llround((F32)mPickPt.mY * display_scale.mV[VY] + 10.f),
-			llround((F32)mPickPt.mX * display_scale.mV[VX] + 10.f),
-			llround((F32)mPickPt.mY * display_scale.mV[VY]),
-			FALSE);
-		gGL.popMatrix();
 	}
 }
 

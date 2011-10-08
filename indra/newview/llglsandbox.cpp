@@ -73,9 +73,6 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-
-extern BOOL gDebugSelect;
-
 // Returns true if you got at least one object
 void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 {

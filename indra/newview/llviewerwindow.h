@@ -84,18 +84,15 @@ public:
 public:
 	LLPickInfo();
 	LLPickInfo(const LLCoordGL& mouse_pos, 
-		const LLRect& screen_region,
 		MASK keyboard_mask, 
 		BOOL pick_transparent, 
 		BOOL pick_surface_info,
 		void (*pick_callback)(const LLPickInfo& pick_info));
-	~LLPickInfo();
 
 	void fetchResults();
 	LLPointer<LLViewerObject> getObject() const;
 	LLUUID getObjectID() const { return mObjectID; }
 	bool isValid() const { return mPickType != PICK_INVALID; }
-	void drawPickBuffer() const;
 
 	static bool isFlora(LLViewerObject* object);
 
@@ -118,16 +115,12 @@ public:
 	LLVector3		mNormal;
 	LLVector3		mBinormal;
 	BOOL			mPickTransparent;
-	LLRect			mScreenRegion;
 	void		    getSurfaceInfo();
 
 private:
 	void			updateXYCoords();
 
 	BOOL			mWantSurfaceInfo;   // do we populate mUVCoord, mNormal, mBinormal?
-	U8				mPickBuffer[PICK_DIAMETER * PICK_DIAMETER * 4];
-	F32				mPickDepthBuffer[PICK_DIAMETER * PICK_DIAMETER];
-	BOOL			mPickParcelWall;
 
 };
 
@@ -381,8 +374,6 @@ public:
 	const LLVector2& getDisplayScale() const { return mDisplayScale; }
 	void			calcDisplayScale();
 
-	void			drawPickBuffer() const;
-
 private:
 	bool                    shouldShowToolTipFor(LLMouseHandler *mh);
 	static bool onAlert(const LLSD& notify);
@@ -493,8 +484,6 @@ extern LLViewerWindow*	gViewerWindow;
 extern LLFrameTimer		gMouseIdleTimer;		// how long has it been since the mouse last moved?
 extern LLFrameTimer		gAwayTimer;				// tracks time before setting the avatar away state to true
 extern LLFrameTimer		gAwayTriggerTimer;		// how long the avatar has been away
-
-extern BOOL				gDebugSelect;
 
 extern BOOL				gDebugFastUIRender;
 extern LLViewerObject*  gDebugRaycastObject;
