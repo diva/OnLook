@@ -10273,9 +10273,7 @@ std::string LLVOAvatar::getFullname() const
 	LLNameValue* last  = getNVPair("LastName");
 	if (first && last)
 	{
-		name += first->getString();
-		name += " ";
-		name += last->getString();
+		name = LLCacheName::buildFullName( first->getString(), last->getString() );
 	}
 
 	return name;
