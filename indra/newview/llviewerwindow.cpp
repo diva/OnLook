@@ -1689,6 +1689,7 @@ LLViewerWindow::LLViewerWindow(
 	}
 	LLVertexBuffer::initClass(gSavedSettings.getBOOL("RenderVBOEnable"), gSavedSettings.getBOOL("RenderVBOMappingDisable"));
 	LL_INFOS("RenderInit") << "LLVertexBuffer initialization done." << LL_ENDL ;
+	gGL.init() ;
 
 	if (LLFeatureManager::getInstance()->isSafe()
 		|| (gSavedSettings.getS32("LastFeatureVersion") != LLFeatureManager::getInstance()->getVersion())
