@@ -5132,7 +5132,12 @@ void LLVOAvatar::updateTextures()
 	}
 	else
 	{
-		render_avatar = isVisible() && !mCulled;
+		if(!isVisible())
+		{
+			return ;//do not update for invisible avatar.
+		}
+
+		render_avatar = !mCulled; //visible and not culled.
 	}
 
 	std::vector<bool> layer_baked;
