@@ -181,6 +181,11 @@ void RlvAttachmentLocks::addAttachmentLock(const LLUUID& idAttachObj, const LLUU
 #endif // RLV_RELEASE
 
 	m_AttachObjRem.insert(std::pair<LLUUID, LLUUID>(idAttachObj, idRlvObj));
+	if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//OK
+	{
+		gInventory.addChangedMask(LLInventoryObserver::LABEL, pObj->getAttachmentItemID());
+		gInventory.notifyObservers();
+	}
 	updateLockedHUD();
 }
 
@@ -197,6 +202,27 @@ void RlvAttachmentLocks::addAttachmentPointLock(S32 idxAttachPt, const LLUUID& i
 	if (eLock & RLV_LOCK_REMOVE)
 	{
 		m_AttachPtRem.insert(std::pair<S32, LLUUID>(idxAttachPt, idRlvObj));
+		LLVOAvatar* pAvatar = gAgentAvatarp;
+		if (pAvatar)
+		{
+			bool need_update = false;
+			LLVOAvatar::attachment_map_t::iterator iter = pAvatar->mAttachmentPoints.find(idxAttachPt);
+			if (iter != pAvatar->mAttachmentPoints.end())
+			{
+				for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = iter->second->mAttachedObjects.begin();
+						attachment_iter != iter->second->mAttachedObjects.end();++attachment_iter)
+				{
+					LLViewerObject* attached_object = (*attachment_iter);
+					if(attached_object)
+					{
+						gInventory.addChangedMask(LLInventoryObserver::LABEL, attached_object->getAttachmentItemID());
+						need_update = true;
+					}
+				}
+			}
+			if(need_update)
+				gInventory.notifyObservers();
+		}
 		updateLockedHUD();
 	}
 	if (eLock & RLV_LOCK_ADD)
@@ -314,6 +340,11 @@ void RlvAttachmentLocks::removeAttachmentLock(const LLUUID& idAttachObj, const L
 		if (idRlvObj == itAttachObj->second)
 		{
 			m_AttachObjRem.erase(itAttachObj);
+			if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//OK
+			{
+				gInventory.addChangedMask(LLInventoryObserver::LABEL, pObj->getAttachmentItemID());
+				gInventory.notifyObservers();
+			}
 			updateLockedHUD();
 			break;
 		}
@@ -331,6 +362,7 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 
 	if (eLock & RLV_LOCK_REMOVE)
 	{
+		bool removed_entry = false;
 		RLV_ASSERT( m_AttachPtRem.lower_bound(idxAttachPt) != m_AttachPtRem.upper_bound(idxAttachPt) ); // The lock should always exist
 		for (rlv_attachptlock_map_t::iterator itAttachPt = m_AttachPtRem.lower_bound(idxAttachPt), 
 				endAttachPt = m_AttachPtRem.upper_bound(idxAttachPt); itAttachPt != endAttachPt; ++itAttachPt)
@@ -338,8 +370,36 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 			if (idRlvObj == itAttachPt->second)
 			{
 				m_AttachPtRem.erase(itAttachPt);
+				removed_entry = true;
 				updateLockedHUD();
 				break;
+			}
+		}
+		if(removed_entry)
+		{
+			if(m_AttachPtRem.find(idxAttachPt) == m_AttachPtRem.end())
+			{
+				LLVOAvatar* pAvatar = gAgentAvatarp;
+				if (pAvatar)
+				{
+					bool need_update = false;
+					LLVOAvatar::attachment_map_t::iterator iter = pAvatar->mAttachmentPoints.find(idxAttachPt);
+					if (iter != pAvatar->mAttachmentPoints.end())
+					{
+						for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = iter->second->mAttachedObjects.begin();
+								attachment_iter != iter->second->mAttachedObjects.end();++attachment_iter)
+						{
+							LLViewerObject* attached_object = (*attachment_iter);
+							if(attached_object)
+							{
+								gInventory.addChangedMask(LLInventoryObserver::LABEL, attached_object->getAttachmentItemID());
+								need_update = true;
+							}
+						}
+						if(need_update)
+							gInventory.notifyObservers();
+					}
+				}
 			}
 		}
 	}
@@ -814,7 +874,15 @@ void RlvWearableLocks::addWearableTypeLock(LLWearableType::EType eType, const LL
 
 	// NOTE: m_WearableTypeXXX can contain duplicate <eType, idRlvObj> pairs (ie @remoutfit:shirt=n,remoutfit=n from the same object)
 	if (eLock & RLV_LOCK_REMOVE)
+	{
 		m_WearableTypeRem.insert(std::pair<LLWearableType::EType, LLUUID>(eType, idRlvObj));
+		LLUUID item_id = gAgentWearables.getWearableItemID(eType);
+		if(item_id.notNull())
+		{
+			gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
+			gInventory.notifyObservers();
+		}
+	}
 	if (eLock & RLV_LOCK_ADD)
 		m_WearableTypeAdd.insert(std::pair<LLWearableType::EType, LLUUID>(eType, idRlvObj));
 }
@@ -889,13 +957,27 @@ void RlvWearableLocks::removeWearableTypeLock(LLWearableType::EType eType, const
 	if (eLock & RLV_LOCK_REMOVE)
 	{
 		RLV_ASSERT( m_WearableTypeRem.lower_bound(eType) != m_WearableTypeRem.upper_bound(eType) ); // The lock should always exist
+		bool removed_entry = false;
 		for (rlv_wearabletypelock_map_t::iterator itWearableType = m_WearableTypeRem.lower_bound(eType), 
 				endWearableType = m_WearableTypeRem.upper_bound(eType); itWearableType != endWearableType; ++itWearableType)
 		{
 			if (idRlvObj == itWearableType->second)
 			{
 				m_WearableTypeRem.erase(itWearableType);
+				removed_entry = true;
 				break;
+			}
+		}
+		if(removed_entry)
+		{
+			if(m_WearableTypeRem.find(eType) == m_WearableTypeRem.end())
+			{
+				LLUUID item_id = gAgentWearables.getWearableItemID(eType);
+				if(item_id.notNull())
+				{
+					gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
+					gInventory.notifyObservers();
+				}
 			}
 		}
 	}

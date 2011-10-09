@@ -4140,6 +4140,14 @@ std::string LLObjectBridge::getLabelSuffix() const
 	{
 		std::string attachment_point_name = avatar->getAttachedPointName(mUUID);
 		LLStringUtil::toLower(attachment_point_name);
+		LLViewerObject* pObj = (rlv_handler_t::isEnabled()) ? avatar->getWornAttachment( mUUID ) : NULL;
+// [RLVa:KB]
+		if ( pObj && (gRlvAttachmentLocks.isLockedAttachment(pObj) || 
+					gRlvAttachmentLocks.isLockedAttachmentPoint(RlvAttachPtLookup::getAttachPointIndex(pObj),RLV_LOCK_REMOVE)))
+		{
+			return LLItemBridge::getLabelSuffix() + std::string(" (locked to ") + attachment_point_name + std::string(")");
+		}
+// [/RLVa:KB]
 		return LLItemBridge::getLabelSuffix() + std::string(" (worn on ") + attachment_point_name + std::string(")");
 	}
 	else
@@ -4147,11 +4155,21 @@ std::string LLObjectBridge::getLabelSuffix() const
 		// <edit> testzone attachpt
 		if(avatar)
 		{
-			std::map<S32, LLUUID>::iterator iter = avatar->mUnsupportedAttachmentPoints.begin();
-			std::map<S32, LLUUID>::iterator end = avatar->mUnsupportedAttachmentPoints.end();
+			std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = avatar->mUnsupportedAttachmentPoints.begin();
+			std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = avatar->mUnsupportedAttachmentPoints.end();
 			for( ; iter != end; ++iter)
-				if((*iter).second == mUUID)
+				if((*iter).second.first == mUUID)
+				{
+// [RLVa:KB]
+					LLViewerObject* pObj = (rlv_handler_t::isEnabled()) ? gObjectList.findObject((*iter).second.second) : NULL;
+					if ( pObj && (gRlvAttachmentLocks.isLockedAttachment(pObj) || 
+								gRlvAttachmentLocks.isLockedAttachmentPoint(RlvAttachPtLookup::getAttachPointIndex(pObj),RLV_LOCK_REMOVE)))
+					{
+						return LLItemBridge::getLabelSuffix() + std::string(" (locked to unsupported point %d)", (*iter).first);
+					}
+// [/RLVa:KB]
 					return LLItemBridge::getLabelSuffix() + llformat(" (worn on unsupported point %d)", (*iter).first);
+				}
 		}
 		// </edit>
 		return LLItemBridge::getLabelSuffix();
@@ -5215,6 +5233,10 @@ std::string LLWearableBridge::getLabelSuffix() const
 {
 	if (get_is_item_worn(getItem()))
 	{
+		if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canRemove(getItem())) )
+		{
+			return LLItemBridge::getLabelSuffix() + " (locked)";
+		}
 		return LLItemBridge::getLabelSuffix() + " (worn)";
 	}
 	else

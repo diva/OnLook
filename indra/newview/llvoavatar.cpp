@@ -6858,7 +6858,7 @@ BOOL LLVOAvatar::attachObject(LLViewerObject *viewer_object)
 		}
 		if(!item_id.isNull())
 		{
-			mUnsupportedAttachmentPoints[attachmentID] = item_id;
+			mUnsupportedAttachmentPoints[attachmentID] = std::pair<LLUUID,LLUUID>(item_id,viewer_object->getID());
 			if (viewer_object->isSelected())
 			{
 				LLSelectMgr::getInstance()->updateSelectionCenter();
@@ -7128,11 +7128,11 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 	}
 	if(!item_id.isNull())
 	{
-		std::map<S32, LLUUID>::iterator iter = mUnsupportedAttachmentPoints.begin();
-		std::map<S32, LLUUID>::iterator end = mUnsupportedAttachmentPoints.end();
+		std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = mUnsupportedAttachmentPoints.begin();
+		std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = mUnsupportedAttachmentPoints.end();
 		for( ; iter != end; ++iter)
 		{
-			if((*iter).second == item_id)
+			if((*iter).second.first == item_id)
 			{
 				mUnsupportedAttachmentPoints.erase((*iter).first);
 				if (isSelf())
@@ -7376,10 +7376,10 @@ BOOL LLVOAvatar::isWearingAttachment( const LLUUID& inv_item_id )
 // <edit> testzone attachpt
 BOOL LLVOAvatar::isWearingUnsupportedAttachment( const LLUUID& inv_item_id )
 {
-	std::map<S32, LLUUID>::iterator end = mUnsupportedAttachmentPoints.end();
-	for(std::map<S32, LLUUID>::iterator iter = mUnsupportedAttachmentPoints.begin(); iter != end; ++iter)
+	std::map<S32, std::pair<LLUUID,LLUUID> >::iterator end = mUnsupportedAttachmentPoints.end();
+	for(std::map<S32, std::pair<LLUUID,LLUUID> >::iterator iter = mUnsupportedAttachmentPoints.begin(); iter != end; ++iter)
 	{
-		if((*iter).second == inv_item_id)
+		if((*iter).second.first == inv_item_id)
 		{
 			return TRUE;
 		}
