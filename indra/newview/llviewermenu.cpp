@@ -291,7 +291,6 @@ void handle_test_load_url(void*);
 extern BOOL gDebugClicks;
 extern BOOL gDebugWindowProc;
 extern BOOL gDebugTextEditorTips;
-//extern BOOL gDebugSelectMgr;
 extern BOOL gDebugAvatarRotation;
 extern BOOL gShowOverlayTitle;
 extern BOOL gOcclusionCull;

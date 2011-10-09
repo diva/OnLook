@@ -5132,7 +5132,12 @@ void LLVOAvatar::updateTextures()
 	}
 	else
 	{
-		render_avatar = isVisible() && !mCulled;
+		if(!isVisible())
+		{
+			return ;//do not update for invisible avatar.
+		}
+
+		render_avatar = !mCulled; //visible and not culled.
 	}
 
 	std::vector<bool> layer_baked;
@@ -5799,19 +5804,6 @@ void LLVOAvatar::resetSpecificJointPosition( const std::string& name )
 //-----------------------------------------------------------------------------
 void LLVOAvatar::resetJointPositionsToDefault( void )
 {
-	const LLVector3& avPos = getCharacterPosition();
-	
-	//Reposition the pelvis
-	LLJoint* pPelvis = mRoot.findJoint("mPelvis");
-	if ( pPelvis )
-	{
-		pPelvis->setPosition( avPos + pPelvis->getPosition() );
-	}
-	else 
-	{
-		llwarns<<"Can't get pelvis joint."<<llendl;	
-		return;
-	}
 
 	//Subsequent joints are relative to pelvis
 	for( S32 i = 0; i < (S32)mNumJoints; ++i )
@@ -5822,7 +5814,7 @@ void LLVOAvatar::resetJointPositionsToDefault( void )
 
 			pJoint->setId( LLUUID::null );
 			//restore joints to default positions, however skip over the pelvis
-			if ( pJoint && pPelvis != pJoint )
+			if ( pJoint )
 			{
 				pJoint->restoreOldXform();
 			}
@@ -6165,7 +6157,8 @@ BOOL LLVOAvatar::loadSkeletonNode ()
 	mRoot.addChild( &mSkeleton[0] );
 
 	for (std::vector<LLViewerJoint *>::iterator iter = mMeshLOD.begin();
-		iter != mMeshLOD.end(); iter++)
+		 iter != mMeshLOD.end(); 
+		 ++iter)
 	{
 		LLViewerJoint *joint = (LLViewerJoint *) *iter;
 		joint->mUpdateXform = FALSE;
@@ -6201,7 +6194,8 @@ BOOL LLVOAvatar::loadSkeletonNode ()
 	{
 		LLVOAvatarXmlInfo::skeletal_distortion_info_list_t::iterator iter;
 		for (iter = sAvatarXmlInfo->mSkeletalDistortionInfoList.begin();
-			 iter != sAvatarXmlInfo->mSkeletalDistortionInfoList.end(); iter++)
+			 iter != sAvatarXmlInfo->mSkeletalDistortionInfoList.end(); 
+			 ++iter)
 		{
 			LLPolySkeletalDistortionInfo *info = *iter;
 			LLPolySkeletalDistortion *param = new LLPolySkeletalDistortion(this);
@@ -6221,7 +6215,8 @@ BOOL LLVOAvatar::loadSkeletonNode ()
 	{
 		LLVOAvatarXmlInfo::attachment_info_list_t::iterator iter;
 		for (iter = sAvatarXmlInfo->mAttachmentInfoList.begin();
-			 iter != sAvatarXmlInfo->mAttachmentInfoList.end(); iter++)
+			 iter != sAvatarXmlInfo->mAttachmentInfoList.end(); 
+			 ++iter)
 		{
 			LLVOAvatarXmlInfo::LLVOAvatarAttachmentInfo *info = *iter;
 			if (!isSelf() && info->mJointName == "mScreen")
@@ -6301,8 +6296,8 @@ BOOL LLVOAvatar::loadSkeletonNode ()
 BOOL LLVOAvatar::loadMeshNodes()
 {
 	for (LLVOAvatarXmlInfo::mesh_info_list_t::const_iterator meshinfo_iter = sAvatarXmlInfo->mMeshInfoList.begin();
-		 meshinfo_iter != sAvatarXmlInfo->mMeshInfoList.end();
-		 meshinfo_iter++)
+		 meshinfo_iter != sAvatarXmlInfo->mMeshInfoList.end(); 
+		 ++meshinfo_iter)
 	{
 		const LLVOAvatarXmlInfo::LLVOAvatarMeshInfo *info = *meshinfo_iter;
 		const std::string &type = info->mType;
@@ -6318,7 +6313,7 @@ BOOL LLVOAvatar::loadMeshNodes()
 				mesh = &mHairMesh0; */
 		for (LLVOAvatarDictionary::Meshes::const_iterator mesh_iter = LLVOAvatarDictionary::getInstance()->getMeshes().begin();
 			 mesh_iter != LLVOAvatarDictionary::getInstance()->getMeshes().end();
-			 mesh_iter++)
+			 ++mesh_iter)
 		{
 			const EMeshIndex mesh_index = mesh_iter->first;
 			const LLVOAvatarDictionary::MeshEntry *mesh_dict = mesh_iter->second;
@@ -6389,8 +6384,8 @@ BOOL LLVOAvatar::loadMeshNodes()
 		mesh->setLOD( info->mMinPixelArea );
 
 		for (LLVOAvatarXmlInfo::LLVOAvatarMeshInfo::morph_info_list_t::const_iterator xmlinfo_iter = info->mPolyMorphTargetInfoList.begin();
-			 xmlinfo_iter != info->mPolyMorphTargetInfoList.end();
-			 xmlinfo_iter++)
+			 xmlinfo_iter != info->mPolyMorphTargetInfoList.end(); 
+			 ++xmlinfo_iter)
 		{
 			const LLVOAvatarXmlInfo::LLVOAvatarMeshInfo::morph_info_pair_t *info_pair = &(*xmlinfo_iter);
 			LLPolyMorphTarget *param = new LLPolyMorphTarget(mesh->getMesh());
@@ -7033,6 +7028,14 @@ void LLVOAvatar::cleanupAttachedMesh( LLViewerObject* pVO )
 					if ( bindCnt > 0 )
 					{
 						LLVOAvatar::resetJointPositionsToDefault();
+						//Need to handle the repositioning of the cam, updating rig data etc during outfit editing 
+						//This handles the case where we detach a replacement rig.
+						if ( gAgentCamera.cameraCustomizeAvatar() )
+						{
+							gAgent.unpauseAnimation();
+							//Still want to refocus on head bone
+							gAgentCamera.changeCameraToCustomizeAvatar();
+						}
 					}
 				}
 			}				
@@ -7046,12 +7049,12 @@ void LLVOAvatar::cleanupAttachedMesh( LLViewerObject* pVO )
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 {
-	for (attachment_map_t::iterator iter = mAttachmentPoints.begin();
-		 iter != mAttachmentPoints.end(); )
+	for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
+		 iter != mAttachmentPoints.end();
+		 ++iter)
 	{
-		attachment_map_t::iterator curiter = iter++;
-		LLViewerJointAttachment* attachment = curiter->second;
-		// only one object per attachment point for now
+		LLViewerJointAttachment* attachment = iter->second;
+		
 		if (attachment->isObjectAttached(viewer_object))
 		{
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
@@ -7069,7 +7072,7 @@ BOOL LLVOAvatar::detachObject(LLViewerObject *viewer_object)
 				}
 			}
 // [/RLVa:KB]
-
+			cleanupAttachedMesh( viewer_object );
 			LLUUID item_id = viewer_object->getAttachmentItemID();
 			attachment->removeObject(viewer_object);
 			if (isSelf())
@@ -7606,20 +7609,18 @@ void LLVOAvatar::invalidateAll()
 	updateMeshTextures();
 }
 
-void LLVOAvatar::onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL set_by_user )
+void LLVOAvatar::onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL upload_bake )
 {
 	if (global_color == mTexSkinColor)
 	{
-//		llinfos << "invalidateComposite cause: onGlobalColorChanged( skin color )" << llendl; 
-		invalidateComposite( mBakedTextureDatas[BAKED_HEAD].mTexLayerSet,  set_by_user );
-		invalidateComposite( mBakedTextureDatas[BAKED_UPPER].mTexLayerSet,	set_by_user );
-		invalidateComposite( mBakedTextureDatas[BAKED_LOWER].mTexLayerSet,	set_by_user );
+		invalidateComposite( mBakedTextureDatas[BAKED_HEAD].mTexLayerSet, upload_bake );
+		invalidateComposite( mBakedTextureDatas[BAKED_UPPER].mTexLayerSet, upload_bake );
+		invalidateComposite( mBakedTextureDatas[BAKED_LOWER].mTexLayerSet, upload_bake );
 	}
 	else if (global_color == mTexHairColor)
 	{
-//		llinfos << "invalidateComposite cause: onGlobalColorChanged( hair color )" << llendl; 
-		invalidateComposite( mBakedTextureDatas[BAKED_HEAD].mTexLayerSet,  set_by_user );
-		invalidateComposite( mBakedTextureDatas[BAKED_HAIR].mTexLayerSet,  set_by_user );
+		invalidateComposite( mBakedTextureDatas[BAKED_HEAD].mTexLayerSet, upload_bake );
+		invalidateComposite( mBakedTextureDatas[BAKED_HAIR].mTexLayerSet, upload_bake );
 		
 		// ! BACKWARDS COMPATIBILITY !
 		// Fix for dealing with avatars from viewers that don't bake hair.
@@ -7631,11 +7632,11 @@ void LLVOAvatar::onGlobalColorChanged(const LLTexGlobalColor* global_color, BOOL
 				mBakedTextureDatas[BAKED_HAIR].mMeshes[i]->setColor( color.mV[VX], color.mV[VY], color.mV[VZ], color.mV[VW] );
 			}
 		}
-	}
+	} 
 	else if (global_color == mTexEyeColor)
 	{
 //		llinfos << "invalidateComposite cause: onGlobalColorChanged( eyecolor )" << llendl; 
-		invalidateComposite( mBakedTextureDatas[BAKED_EYES].mTexLayerSet,  set_by_user );
+		invalidateComposite( mBakedTextureDatas[BAKED_EYES].mTexLayerSet,  upload_bake );
 	}
 	updateMeshTextures();
 }
@@ -8728,14 +8729,14 @@ BOOL LLVOAvatar::teToColorParams( ETextureIndex te, const char* param_name[3] )
 	return TRUE;
 }
 
-void LLVOAvatar::setClothesColor( ETextureIndex te, const LLColor4& new_color, BOOL set_by_user )
+void LLVOAvatar::setClothesColor( ETextureIndex te, const LLColor4& new_color, BOOL upload_bake )
 {
 	const char* param_name[3];
 	if( teToColorParams( te, param_name ) )
 	{
-		setVisualParamWeight( param_name[0], new_color.mV[VX], set_by_user );
-		setVisualParamWeight( param_name[1], new_color.mV[VY], set_by_user );
-		setVisualParamWeight( param_name[2], new_color.mV[VZ], set_by_user );
+		setVisualParamWeight( param_name[0], new_color.mV[VX], upload_bake );
+		setVisualParamWeight( param_name[1], new_color.mV[VY], upload_bake );
+		setVisualParamWeight( param_name[2], new_color.mV[VZ], upload_bake );
 	}
 }
 
@@ -8752,8 +8753,11 @@ LLColor4 LLVOAvatar::getClothesColor( ETextureIndex te )
 	return color;
 }
 
-
-
+// static
+LLColor4 LLVOAvatar::getDummyColor()
+{
+	return DUMMY_COLOR;
+}
 
 void LLVOAvatar::dumpAvatarTEs( const std::string& context ) const
 {
@@ -8765,31 +8769,31 @@ void LLVOAvatar::dumpAvatarTEs( const std::string& context ) const
 		 iter != LLVOAvatarDictionary::getInstance()->getTextures().end();
 		 ++iter)
 	{
-		const LLVOAvatarDictionary::TextureEntry *text_dict = iter->second;
+		const LLVOAvatarDictionary::TextureEntry *texture_dict = iter->second;
 		const LLViewerTexture* te_image = getTEImage(iter->first);
 		if( !te_image )
 		{
-			llinfos << "       " << text_dict->mName << ": null ptr" << llendl;
+			llinfos << "       " << texture_dict->mName << ": null ptr" << llendl;
 		}
 		else if( te_image->getID().isNull() )
 		{
-			llinfos << "       " << text_dict->mName << ": null UUID" << llendl;
+			llinfos << "       " << texture_dict->mName << ": null UUID" << llendl;
 		}
 		else if( te_image->getID() == IMG_DEFAULT )
 		{
-			llinfos << "       " << text_dict->mName << ": IMG_DEFAULT" << llendl;
+			llinfos << "       " << texture_dict->mName << ": IMG_DEFAULT" << llendl;
 		}
 		else if (te_image->getID() == IMG_INVISIBLE)
 		{
-			llinfos << "       " << text_dict->mName << ": IMG_INVISIBLE" << llendl;
+			llinfos << "       " << texture_dict->mName << ": IMG_INVISIBLE" << llendl;
 		}
 		else if( te_image->getID() == IMG_DEFAULT_AVATAR )
 		{
-			llinfos << "       " << text_dict->mName << ": IMG_DEFAULT_AVATAR" << llendl;
+			llinfos << "       " << texture_dict->mName << ": IMG_DEFAULT_AVATAR" << llendl;
 		}
 		else
 		{
-			llinfos << "       " << text_dict->mName << ": " << te_image->getID() << llendl;
+			llinfos << "       " << texture_dict->mName << ": " << te_image->getID() << llendl;
 		}
 	}
 }
@@ -8848,11 +8852,6 @@ void LLVOAvatar::setInvisible(BOOL newvalue)
 		requestLayerSetUploads();
 		gAgent.sendAgentSetAppearance();
 	}
-}
-
-LLColor4 LLVOAvatar::getDummyColor()
-{
-	return DUMMY_COLOR;
 }
 
 // Unlike most wearable functions, this works for both self and other.
@@ -9528,7 +9527,7 @@ void LLVOAvatar::dumpArchetypeXML( void* )
 		const std::string& wearable_name = LLWearableType::getTypeName( (LLWearableType::EType) type );
 		apr_file_printf( file, "\n\t\t<!-- wearable: %s -->\n", wearable_name.c_str() );
 
-		for( LLVisualParam* param = avatar->getFirstVisualParam(); param; param = avatar->getNextVisualParam() )
+		for( LLVisualParam* param = gAgentAvatarp->getFirstVisualParam(); param; param = gAgentAvatarp->getNextVisualParam() )
 		{
 			LLViewerVisualParam* viewer_param = (LLViewerVisualParam*)param;
 			if( (viewer_param->getWearableType() == type) && 
@@ -10274,9 +10273,7 @@ std::string LLVOAvatar::getFullname() const
 	LLNameValue* last  = getNVPair("LastName");
 	if (first && last)
 	{
-		name += first->getString();
-		name += " ";
-		name += last->getString();
+		name = LLCacheName::buildFullName( first->getString(), last->getString() );
 	}
 
 	return name;
@@ -10523,10 +10520,10 @@ const std::string LLVOAvatar::getBakedStatusForPrintout() const
 		 ++iter)
 	{
 		const ETextureIndex index = iter->first;
-		const LLVOAvatarDictionary::TextureEntry *text_dict = iter->second;
-		if (text_dict->mIsBakedTexture)
+		const LLVOAvatarDictionary::TextureEntry *texture_dict = iter->second;
+		if (texture_dict->mIsBakedTexture)
 		{
-			line += text_dict->mName;
+			line += texture_dict->mName;
 			if (isTextureDefined(index))
 			{
 				line += "_baked";
