@@ -1077,3 +1077,9 @@ LLViewerInventoryCategory *LLViewerInventoryItem::getLinkedCategory() const
 	}
 	return NULL;
 }
+void LLViewerInventoryItem::onCallingCardNameLookup(const LLUUID& id, const std::string& name, bool is_group)
+{
+	rename(name);
+	gInventory.addChangedMask(LLInventoryObserver::LABEL, getUUID());
+	gInventory.notifyObservers();
+}

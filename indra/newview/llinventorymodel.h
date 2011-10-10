@@ -131,6 +131,7 @@ public:
 public:
 	LLInventoryModel();
 	~LLInventoryModel();
+	void cleanupInventory();
 //<edit>
 //protected:
 //</edit>
@@ -375,7 +376,7 @@ public:
 	LLUUID createNewCategory(const LLUUID& parent_id,
 							 LLFolderType::EType preferred_type,
 							 const std::string& name);
-							 
+
 	// Internal methods that add inventory and make sure that all of
 	// the internal data structures are consistent. These methods
 	// should be passed pointers of newly created objects, and the
@@ -446,10 +447,13 @@ public:
  **/
 
 public:
-	// Call to explicitly update everyone on a new state.  The optional argument
-	// 'service_name' is used by Agent Inventory Service [DEV-20328]
-	void notifyObservers(const std::string service_name="");
+	// Called by the idle loop.  Only updates if new state is detected.  Call 
+	// notifyObservers() manually to update regardless of whether state change 
+	// has been indicated.
+	void idleNotifyObservers();
 
+	// Call to explicitly update everyone on a new state.
+	void notifyObservers();
 	// Allows outsiders to tell the inventory if something has
 	// been changed 'under the hood', but outside the control of the
 	// inventory. The next notify will include that notification.
@@ -459,6 +463,9 @@ protected:
 	// Updates all linked items pointing to this id.
 	void addChangedMaskForLinks(const LLUUID& object_id, U32 mask);
 private:
+	// Flag set when notifyObservers is being called, to look for bugs
+	// where it's called recursively.
+	BOOL mIsNotifyObservers;
 	// Variables used to track what has changed since the last notify.
 	U32 mModifyMask;
 	changed_items_t mChangedItemIDs;

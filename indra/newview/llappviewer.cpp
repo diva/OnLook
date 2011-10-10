@@ -3743,6 +3743,7 @@ void LLAppViewer::idle()
 		gEventNotifier.update();
 		
 		gIdleCallbacks.callFunctions();
+		gInventory.idleNotifyObservers();
 	}
 	
 	if (gDisconnected)
