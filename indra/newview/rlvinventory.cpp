@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
+#include "llcallbacklist.h"
 #include "llstartup.h"
 #include "llviewerobject.h"
 #include "llvoavatar.h"
