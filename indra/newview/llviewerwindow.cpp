@@ -190,6 +190,7 @@
 #include "llviewerjoystick.h"
 #include "llviewernetwork.h"
 #include "llpostprocess.h"
+#include "llwearablelist.h"
 
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
@@ -2183,6 +2184,8 @@ void LLViewerWindow::shutdownGL()
 
 	gSky.cleanup();
 	stop_glerror();
+
+	LLWearableList::instance().cleanup() ;
 
 	gTextureList.shutdown();
 	stop_glerror();

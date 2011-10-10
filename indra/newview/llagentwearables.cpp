@@ -247,7 +247,7 @@ void LLAgentWearables::saveWearable( LLWearableType::EType type, BOOL send_updat
 	LLWearable* old_wearable = mWearableEntry[(S32)type].mWearable;
 	if( old_wearable && (old_wearable->isDirty() || old_wearable->isOldVersion()) )
 	{
-		LLWearable* new_wearable = gWearableList.createCopyFromAvatar( old_wearable );
+		LLWearable* new_wearable = LLWearableList::instance().createCopyFromAvatar( old_wearable );
 		mWearableEntry[(S32)type].mWearable = new_wearable;
 
 		LLInventoryItem* item = gInventory.getItem(mWearableEntry[(S32)type].mItemID);
@@ -297,10 +297,9 @@ void LLAgentWearables::saveWearable( LLWearableType::EType type, BOOL send_updat
 	}
 }
 
-void LLAgentWearables::saveWearableAs(
-	LLWearableType::EType type,
-	const std::string& new_name,
-	BOOL save_in_lost_and_found)
+void LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
+									  const std::string& new_name,
+									  BOOL save_in_lost_and_found)
 {
 	if(!isWearableCopyable(type))
 	{
@@ -321,7 +320,7 @@ void LLAgentWearables::saveWearableAs(
 	}
 	std::string trunc_name(new_name);
 	LLStringUtil::truncate(trunc_name, DB_INV_ITEM_NAME_STR_LEN);
-	LLWearable* new_wearable = gWearableList.createCopyFromAvatar(
+	LLWearable* new_wearable = LLWearableList::instance().createCopyFromAvatar(
 		old_wearable,
 		trunc_name);
 	LLPointer<LLInventoryCallback> cb =
@@ -356,7 +355,7 @@ void LLAgentWearables::saveWearableAs(
 	{
 		std::string old_name = old_wearable->getName();
 		old_wearable->setName( new_name );
-		LLWearable* new_wearable = gWearableList.createCopyFromAvatar( old_wearable );
+		LLWearable* new_wearable = LLWearableList::instance().createCopyFromAvatar( old_wearable );
 		old_wearable->setName( old_name );
 			
 		LLUUID category_id;
@@ -435,7 +434,7 @@ void LLAgentWearables::setWearableName( const LLUUID& item_id, const std::string
 
 			std::string old_name = old_wearable->getName();
 			old_wearable->setName( new_name );
-			LLWearable* new_wearable = gWearableList.createCopy( old_wearable );
+			LLWearable* new_wearable = LLWearableList::instance().createCopy(old_wearable);
 			LLInventoryItem* item = gInventory.getItem(item_id);
 			if(item)
 			{
@@ -589,8 +588,9 @@ void LLAgentWearables::processAgentInitialWearablesUpdate( LLMessageSystem* mesg
 	{
 		gMessageSystem->getU32Fast(_PREHASH_AgentData, _PREHASH_SerialNum, gAgentQueryManager.mUpdateSerialNum );
 		
+		const S32 NUM_BODY_PARTS = 4;
 		S32 num_wearables = gMessageSystem->getNumberOfBlocksFast(_PREHASH_WearableData);
-		if( num_wearables < 4 )
+		if (num_wearables < NUM_BODY_PARTS)
 		{
 			// Transitional state.  Avatars should always have at least their body parts (hair, eyes, shape and skin).
 			// The fact that they don't have any here (only a dummy is sent) implies that this account existed
@@ -600,9 +600,8 @@ void LLAgentWearables::processAgentInitialWearablesUpdate( LLMessageSystem* mesg
 
 		//lldebugs << "processAgentInitialWearablesUpdate()" << llendl;
 		// Add wearables
-		LLUUID asset_id_array[ LLWearableType::WT_COUNT ];
-		S32 i;
-		for( i=0; i < num_wearables; i++ )
+		std::pair<LLUUID, LLUUID> asset_id_array[ LLWearableType::WT_COUNT ];
+		for (S32 i=0; i < num_wearables; i++)
 		{
 			U8 type_u8 = 0;
 			gMessageSystem->getU8Fast(_PREHASH_WearableData, _PREHASH_WearableType, type_u8, i );
@@ -630,7 +629,7 @@ void LLAgentWearables::processAgentInitialWearablesUpdate( LLMessageSystem* mesg
 				}
 
 				gAgentWearables.mWearableEntry[type].mItemID = item_id;
-				asset_id_array[type] = asset_id;
+				asset_id_array[type] = std::pair<LLUUID, LLUUID>(asset_id,item_id);
 			}
 
 			LL_DEBUGS("Wearables") << "       " << LLWearableType::getTypeLabel(type) << " " << asset_id << " item id " << gAgentWearables.mWearableEntry[type].mItemID.asString() << LL_ENDL;
@@ -639,13 +638,14 @@ void LLAgentWearables::processAgentInitialWearablesUpdate( LLMessageSystem* mesg
 		LLCOFMgr::instance().fetchCOF();
 
 		// now that we have the asset ids...request the wearable assets
-		for( i = 0; i < LLWearableType::WT_COUNT; i++ )
+		for(S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 		{
-			LL_DEBUGS("Wearables") << "      fetching " << asset_id_array[i] << LL_ENDL;
-			if( !gAgentWearables.mWearableEntry[i].mItemID.isNull() )
+			LL_DEBUGS("Wearables") << "      fetching " << asset_id_array[i].first << LL_ENDL;
+			const LLUUID item_id = asset_id_array[i].second;
+			if( !item_id.isNull() )
 			{
-				gWearableList.getAsset( 
-					asset_id_array[i],
+				LLWearableList::instance().getAsset( 
+					asset_id_array[i].first,
 					LLStringUtil::null,
 					LLWearableType::getAssetType( (LLWearableType::EType) i ), 
 					LLAgentWearables::onInitialWearableAssetArrived, (void*)(intptr_t)i );
@@ -726,7 +726,7 @@ void LLAgentWearables::recoverMissingWearable( LLWearableType::EType type )
 	// Try to recover by replacing missing wearable with a new one.
 	LLNotificationsUtil::add("ReplacedMissingWearable");
 	lldebugs << "Wearable " << LLWearableType::getTypeLabel( type ) << " could not be downloaded.  Replaced inventory item with default wearable." << llendl;
-	LLWearable* new_wearable = gWearableList.createNewWearable(type);
+	LLWearable* new_wearable = LLWearableList::instance().createNewWearable(type);
 
 	S32 type_s32 = (S32) type;
 	mWearableEntry[type_s32].mWearable = new_wearable;
@@ -735,8 +735,7 @@ void LLAgentWearables::recoverMissingWearable( LLWearableType::EType type )
 	// Add a new one in the lost and found folder.
 	// (We used to overwrite the "not found" one, but that could potentially
 	// destory content.) JC
-	LLUUID lost_and_found_id = 
-		gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
+	const LLUUID lost_and_found_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LOST_AND_FOUND);
 	LLPointer<LLInventoryCallback> cb =
 		new addWearableToAgentInventoryCallback(
 			LLPointer<LLRefCount>(NULL),
@@ -812,7 +811,7 @@ void LLAgentWearables::createStandardWearables(BOOL female)
 				donecb = new createStandardWearablesAllDoneCallback;
 			}
 			llassert( mWearableEntry[i].mWearable == NULL );
-			LLWearable* wearable = gWearableList.createNewWearable((LLWearableType::EType)i);
+			LLWearable* wearable = LLWearableList::instance().createNewWearable((LLWearableType::EType)i);
 			mWearableEntry[i].mWearable = wearable;
 			// no need to update here...
 			LLPointer<LLInventoryCallback> cb =
@@ -913,7 +912,7 @@ void LLAgentWearables::makeNewOutfit(
 
 					if (fUseLinks || isWearableCopyable((LLWearableType::EType)index))
 					{
-						LLWearable* new_wearable = gWearableList.createCopy(old_wearable);
+						LLWearable* new_wearable = LLWearableList::instance().createCopy(old_wearable);
 						if (rename_clothing)
 						{
 							new_wearable->setName(new_name);
@@ -1171,8 +1170,9 @@ void LLAgentWearables::copyWearableToInventory( LLWearableType::EType type )
 		// Save the old wearable if it has changed.
 		if( wearable->isDirty() )
 		{
-			wearable = gWearableList.createCopyFromAvatar( wearable );
-			mWearableEntry[ type ].mWearable = wearable;
+			LLWearable * new_wearable = LLWearableList::instance().createCopyFromAvatar( wearable );
+			mWearableEntry[ type ].mWearable = new_wearable;
+			wearable = new_wearable;
 		}
 
 		// Make a new entry in the inventory.  (Put it in the same folder as the original item if possible.)

@@ -2909,7 +2909,7 @@ void LLFolderBridge::createWearable(LLFolderBridge* bridge, LLWearableType::ETyp
 // static
 void LLFolderBridge::createWearable(LLUUID parent_id, LLWearableType::EType type)
 {
-	LLWearable* wearable = gWearableList.createNewWearable(type);
+	LLWearable* wearable = LLWearableList::instance().createNewWearable(type);
 	LLAssetType::EType asset_type = wearable->getAssetType();
 	LLInventoryType::EType inv_type = LLInventoryType::IT_WEARABLE;
 	create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
@@ -4484,7 +4484,7 @@ void wear_inventory_item_on_avatar( LLInventoryItem* item )
 		lldebugs << "wear_inventory_item_on_avatar( " << item->getName()
 				 << " )" << llendl;
 			
-		gWearableList.getAsset(item->getAssetUUID(),
+		LLWearableList::instance().getAsset(item->getAssetUUID(),
 							   item->getName(),
 							   item->getType(),
 							   LLWearableBridge::onWearOnAvatarArrived,
@@ -4606,8 +4606,8 @@ void LLOutfitObserver::done()
 			name = cat->getName();
 		}
 		LLViewerInventoryItem* item = NULL;
-		item_ref_t::iterator it = mComplete.begin();
-		item_ref_t::iterator end = mComplete.end();
+		uuid_vec_t::iterator it = mComplete.begin();
+		uuid_vec_t::iterator end = mComplete.end();
 		LLUUID pid;
 		for(; it < end; ++it)
 		{
@@ -4924,7 +4924,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 // [/RLVa:KB]
 
 				found = found_container.get(i);
-				gWearableList.getAsset(found->mAssetID,
+				LLWearableList::instance().getAsset(found->mAssetID,
 										found->mName,
 									   found->mAssetType,
 									   wear_inventory_category_on_avatar_loop,
@@ -5046,7 +5046,7 @@ void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, B
 				//And this code does not handle failed asset uploads properly
 //					if(!wearable->isMatchedToInventoryItem(item ))
 //					{
-//						wearable = gWearableList.createWearableMatchedToInventoryItem( wearable, item );
+//						wearable = LLWearableList::instance().createWearableMatchedToInventoryItem( wearable, item );
 //						// Now that we have an asset that matches the
 //						// item, update the item to point to the new
 //						// asset.
@@ -5162,7 +5162,7 @@ void remove_inventory_category_from_avatar_step2( BOOL proceed, void* userdata)
 				if ( (pWearable) && ( (!rlv_handler_t::isEnabled()) || (gRlvWearableLocks.canRemove(pWearable->getType())) ) )
 // [/RLVa:KB]
 				{
-					gWearableList.getAsset(				item->getAssetUUID(),
+					LLWearableList::instance().getAsset(				item->getAssetUUID(),
 														item->getName(),
 														item->getType(),
 														LLWearableBridge::onRemoveFromAvatarArrived,
@@ -5269,7 +5269,7 @@ void LLWearableBridge::performAction(LLFolderView* folder, LLInventoryModel* mod
 			LLViewerInventoryItem* item = getItem();
 			if (item)
 			{
-				gWearableList.getAsset(item->getAssetUUID(),
+				LLWearableList::instance().getAsset(item->getAssetUUID(),
 										item->getName(),
 									item->getType(),
 									LLWearableBridge::onRemoveFromAvatarArrived,
@@ -5484,7 +5484,7 @@ void LLWearableBridge::onWearOnAvatarArrived( LLWearable* wearable, void* userda
 
 //				if(!wearable->isMatchedToInventoryItem(item))
 //				{
-//					LLWearable* new_wearable = gWearableList.createWearableMatchedToInventoryItem( wearable, item );
+//					LLWearable* new_wearable = LLWearableList::instance().createWearableMatchedToInventoryItem( wearable, item );
 //
 //					// Now that we have an asset that matches the
 //					// item, update the item to point to the new
@@ -5563,7 +5563,7 @@ void LLWearableBridge::onRemoveFromAvatar(void* user_data)
 		LLViewerInventoryItem* item = self->getItem();
 		if (item)
 		{
-			gWearableList.getAsset(item->getAssetUUID(),
+			LLWearableList::instance().getAsset(item->getAssetUUID(),
 									item->getName(),
 								   item->getType(),
 								   onRemoveFromAvatarArrived,

@@ -845,14 +845,14 @@ void RlvForceWear::done()
 			return;
 		}
 
-		// If all the assets are available locally then "pWearData" will be freed *before* the last "gWearableList.getAsset()" call returns
+		// If all the assets are available locally then "pWearData" will be freed *before* the last "LLWearableList::instance().getAsset()" call returns
 		bool fContinue = true; LLWearableHoldingPattern::found_list_t::const_iterator itWearable = pWearData->mFoundList.begin();
 		while ( (fContinue) && (itWearable != pWearData->mFoundList.end()) )
 		{
 			const LLFoundData* pFound = *itWearable;
 			++itWearable;
 			fContinue = (itWearable != pWearData->mFoundList.end());
-			gWearableList.getAsset(pFound->mAssetID, pFound->mName, pFound->mAssetType, wear_inventory_category_on_avatar_loop, (void*)pWearData);
+			LLWearableList::instance().getAsset(pFound->mAssetID, pFound->mName, pFound->mAssetType, wear_inventory_category_on_avatar_loop, (void*)pWearData);
 		}
 
 		m_addWearables.clear();
