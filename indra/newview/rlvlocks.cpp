@@ -422,7 +422,7 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 void RlvAttachmentLocks::updateLockedHUD()
 {
 	LLVOAvatar* pAvatar = gAgentAvatarp;
-	if (!pAvatar)
+	if (!pAvatar || pAvatar->isDead())
 		return;
 
 	m_fHasLockedHUD = false;
