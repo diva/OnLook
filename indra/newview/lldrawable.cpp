@@ -1313,6 +1313,12 @@ void LLSpatialBridge::setVisible(LLCamera& camera_in, std::vector<LLDrawable*>* 
 				return;
 			}
 		}
+		else
+		{
+			static const LLCachedControl<bool> draw_orphans("ShyotlDrawOrphanAttachments",false);
+			if(!draw_orphans)
+				return;
+		}
 	}
 	
 
@@ -1384,6 +1390,12 @@ void LLSpatialBridge::updateDistance(LLCamera& camera_in, bool force_update)
 				{
 					return;
 				}
+			}
+			else
+			{
+				static const LLCachedControl<bool> draw_orphans("ShyotlDrawOrphanAttachments",false);
+				if(!draw_orphans)
+					return;
 			}
 		}
 
