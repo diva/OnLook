@@ -108,7 +108,17 @@ public:
 	static void			setCurrentDefinitionVersion( S32 version ) { LLWearable::sCurrentDefinitionVersion = version; }
 
 	friend std::ostream& operator<<(std::ostream &s, const LLWearable &w);
+	void				setItemID(const LLUUID& item_id);
 
+	// Something happened that requires the wearable's label to be updated (e.g. worn/unworn).
+	void				setLabelUpdated() const;
+
+	// the wearable was worn. make sure the name of the wearable object matches the LLViewerInventoryItem,
+	// not the wearable asset itself.
+	void				refreshName();
+
+private:
+	typedef std::map<S32, LLUUID> te_map_t;
 
 	static S32			sCurrentDefinitionVersion;	// Depends on the current state of the avatar_lad.xml.
 	S32					mDefinitionVersion;			// Depends on the state of the avatar_lad.xml when this asset was created.
@@ -122,8 +132,9 @@ public:
 
 	typedef std::map<S32, F32> param_map_t;
 	param_map_t mVisualParamMap;	// maps visual param id to weight
-	typedef std::map<S32, LLUUID> te_map_t;
+	
 	te_map_t mTEMap;				// maps TE to Image ID
+	LLUUID				mItemID;  // ID of the inventory item in the agent's inventory	
 };
 
 #endif  // LL_LLWEARABLE_H
