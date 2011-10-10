@@ -391,6 +391,11 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 				object = (LLViewerObject*)object->getParent();
 			}
 
+			if (!object)
+			{
+				return TRUE; // unexpected, but escape
+			}
+
 			// Object is an avatar, so check for mute by id.
 			LLVOAvatar* avatar = (LLVOAvatar*)object;
 			std::string name = avatar->getFullname();
