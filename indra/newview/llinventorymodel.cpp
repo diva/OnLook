@@ -153,7 +153,10 @@ const char* NEW_CATEGORY_NAMES[LLFolderType::FT_COUNT] =
 	"Current Outfit",	// FT_CURRENT_OUTFIT = 46,
 	"New Outfit",		// FT_OUTFIT = 47,
 	"My Outfits",		// FT_MY_OUTFITS = 48,
-	"Inbox"				// FT_INBOX = 49,
+	"Mesh",				// FT_MESH = 49,
+	"Inbox",			// FT_INBOX = 50,
+	"Outbox",			// FT_OUTBOX = 51,
+	"Basic Root"		// FT_BASIC_ROOT = 52
 };
 
 struct InventoryIDPtrLess
