@@ -514,8 +514,6 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 				((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
 			return TRUE;
 		}
-		if(!avatar_physics)
-			return TRUE;
         
 		mIsDefault = false;
 
