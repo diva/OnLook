@@ -524,7 +524,7 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 	{
 		name.assign(pname);
 	}
-	if(preferred_type < LLFolderType::FT_TEXTURE || preferred_type > LLFolderType::FT_INBOX)
+	else if(preferred_type < (LLFolderType::EType)0 || preferred_type >= LLFolderType::FT_COUNT)
 		name.assign(NEW_CATEGORY_NAME);
 	else
 		name.assign(NEW_CATEGORY_NAMES[preferred_type]);
