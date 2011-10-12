@@ -276,8 +276,6 @@ LLTimer gLogoutTimer;
 static const F32 LOGOUT_REQUEST_TIME = 6.f;  // this will be cut short by the LogoutReply msg.
 F32 gLogoutMaxTime = LOGOUT_REQUEST_TIME;
 
-LLUUID gInventoryLibraryOwner;
-LLUUID gInventoryLibraryRoot;
 // <edit>
 LLUUID gSystemFolderRoot;
 LLUUID gSystemFolderSettings;
@@ -4289,10 +4287,13 @@ void LLAppViewer::disconnectViewer()
 	if (!gNoRender)
 	{
 		// save inventory if appropriate
-		gInventory.cache(gAgent.getInventoryRootID(), gAgent.getID());
-		if(gInventoryLibraryRoot.notNull() && gInventoryLibraryOwner.notNull())
+		gInventory.cache(gInventory.getRootFolderID(), gAgent.getID());
+		if (gInventory.getLibraryRootFolderID().notNull()
+			&& gInventory.getLibraryOwnerID().notNull())
 		{
-			gInventory.cache(gInventoryLibraryRoot, gInventoryLibraryOwner);
+			gInventory.cache(
+				gInventory.getLibraryRootFolderID(),
+				gInventory.getLibraryOwnerID());
 		}
 	}
 

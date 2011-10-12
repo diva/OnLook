@@ -1264,7 +1264,7 @@ void LLPreviewLSL::loadAsset()
 	const LLInventoryItem* item = gInventory.getItem(mItemUUID);
 	BOOL is_library = item
 		&& !gInventory.isObjectDescendentOf(mItemUUID,
-											gAgent.getInventoryRootID());
+											gInventory.getRootFolderID());
 	if(!item)
 	{
 		// do the more generic search.

@@ -1716,8 +1716,8 @@ bool idle_startup()
 				it = options[0].find("folder_id");
 				if(it != options[0].end())
 				{
-					gAgent.setInventoryRootID(LLUUID((*it).second));
-					//gInventory.mock(gAgent.getInventoryRootID());
+					gInventory.setRootFolderID(LLUUID((*it).second));
+					//gInventory.mock(gInventory.getRootFolderID());
 				}
 			}
 
@@ -2318,7 +2318,7 @@ bool idle_startup()
 			it = options[0].find("folder_id");
 			if(it != options[0].end())
 			{
-				gInventoryLibraryRoot.set((*it).second);
+				gInventory.setLibraryRootFolderID(LLUUID((*it).second));
 			}
 		}
  		options.clear();
@@ -2330,14 +2330,14 @@ bool idle_startup()
 			it = options[0].find("agent_id");
 			if(it != options[0].end())
 			{
-				gInventoryLibraryOwner.set((*it).second);
+				gInventory.setLibraryOwnerID(LLUUID((*it).second));
 			}
 		}
  		options.clear();
  		if(LLUserAuth::getInstance()->getOptions("inventory-skel-lib", options)
-			&& gInventoryLibraryOwner.notNull())
+			&& gInventory.getLibraryOwnerID().notNull())
  		{
- 			if(!gInventory.loadSkeleton(options, gInventoryLibraryOwner))
+ 			if(!gInventory.loadSkeleton(options, gInventory.getLibraryOwnerID()))
  			{
  				LL_WARNS("AppInit") << "Problem loading inventory-skel-lib" << LL_ENDL;
  			}

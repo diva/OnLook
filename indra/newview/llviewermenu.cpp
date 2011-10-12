@@ -4841,7 +4841,7 @@ void handle_take()
 			}
 
 			// check library
-			if(gInventory.isObjectDescendentOf(category_id, gInventoryLibraryRoot))
+			if(gInventory.isObjectDescendentOf(category_id, gInventory.getLibraryRootFolderID()))
 			{
 				category_id.setNull();
 			}

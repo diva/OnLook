@@ -5975,7 +5975,7 @@ void container_inventory_arrived(LLViewerObject* object,
 	{
 		// create a new inventory category to put this in
 		LLUUID cat_id;
-		cat_id = gInventory.createNewCategory(gAgent.getInventoryRootID(),
+		cat_id = gInventory.createNewCategory(gInventory.getRootFolderID(),
 											   LLFolderType::FT_NONE,
 											  std::string("Acquired Items")); //TODO: Translate
 

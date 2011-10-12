@@ -158,6 +158,8 @@ public:
 	// *NOTE:Mani Fix this for login abstraction!!
 	void handleLoginComplete();
 
+
+	void purgeCache(); // Clear the local cache. 
 protected:
 	virtual bool initWindow(); // Initialize the viewer's window.
 	virtual bool initLogging(); // Initialize log files, logging system, return false on failure.
@@ -178,7 +180,6 @@ private:
 	bool initConfiguration(); // Initialize settings from the command line/config file.
 
 	bool initCache(); // Initialize local client cache.
-	void purgeCache(); // Clear the local cache. 
 
 	// We have switched locations of both Mac and Windows cache, make sure
 	// files migrate and old cache is cleared out.
@@ -311,8 +312,6 @@ extern LLTimer gLogoutTimer;
 extern F32 gSimLastTime; 
 extern F32 gSimFrames;
 
-extern LLUUID gInventoryLibraryOwner;
-extern LLUUID gInventoryLibraryRoot;
 // <edit>
 extern LLUUID gSystemFolderRoot;
 extern LLUUID gSystemFolderSettings;
