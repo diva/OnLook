@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
+#include "llcallbacklist.h"
 #include "llstartup.h"
 #include "llviewerobject.h"
 #include "llvoavatar.h"
@@ -142,7 +143,7 @@ void RlvInventory::fetchWornItems()
 	// Fetch all currently worn clothing layers and body parts
 	for (int type = 0; type < LLWearableType::WT_COUNT; type++)
 	{
-		const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type);
+		const LLUUID idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type);
 		if (idItem.notNull())
 			idItems.push_back(idItem);
 	}

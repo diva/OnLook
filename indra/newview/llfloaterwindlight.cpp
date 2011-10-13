@@ -473,7 +473,7 @@ void LLFloaterWindLight::show()
 bool LLFloaterWindLight::isOpen()
 {
 	if (sWindLight != NULL) {
-		return true;
+		return sWindLight->getVisible();
 	}
 	return false;
 }

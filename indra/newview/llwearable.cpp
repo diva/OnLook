@@ -730,7 +730,7 @@ void LLWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload_bake 
 	}
 
 	gAgentAvatarp->updateVisualParams();
-	gAgentAvatarp->updateMeshTextures();
+	gAgentAvatarp->wearableUpdated(type, FALSE);
 
 //	if( upload_bake )
 //	{
@@ -797,6 +797,15 @@ void LLWearable::copyDataFrom( LLWearable* src )
 	}
 }
 
+void LLWearable::setItemID(const LLUUID& item_id)
+{
+	mItemID = item_id;
+}
+
+const LLUUID& LLWearable::getItemID() const
+{
+	return mItemID;
+}
 void LLWearable::setType(LLWearableType::EType type) 
 { 
 	mType = type; 
@@ -859,6 +868,20 @@ void LLWearable::readFromAvatar()
 }
 
 
+void LLWearable::setLabelUpdated() const
+{ 
+	gInventory.addChangedMask(LLInventoryObserver::LABEL, getItemID());
+}
+
+void LLWearable::refreshName()
+{
+	LLUUID item_id = getItemID();
+	LLInventoryItem* item = gInventory.getItem(item_id);
+	if( item )
+	{
+		mName = item->getName();
+	}
+}
 
 struct LLWearableSaveData
 {

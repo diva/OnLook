@@ -805,7 +805,7 @@ public:
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
 	// <edit>
-	std::map<S32, LLUUID> mUnsupportedAttachmentPoints;
+	std::map<S32, std::pair<LLUUID/*inv*/,LLUUID/*object*/> > mUnsupportedAttachmentPoints;
 	// </edit>
 	
 /**                    Wearables

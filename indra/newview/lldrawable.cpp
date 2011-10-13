@@ -1029,7 +1029,7 @@ BOOL LLDrawable::isVisible() const
 		return TRUE;
 	}
 
-#if 1
+#if 0
 	//disabling this code fixes DEV-20105.  Leaving in place in case some other bug pops up as a a result.
 	//should be safe to just always ask the spatial group for visibility.
 	if (isActive())
@@ -1313,6 +1313,12 @@ void LLSpatialBridge::setVisible(LLCamera& camera_in, std::vector<LLDrawable*>* 
 				return;
 			}
 		}
+		else
+		{
+			static const LLCachedControl<bool> draw_orphans("ShyotlDrawOrphanAttachments",false);
+			if(!draw_orphans)
+				return;
+		}
 	}
 	
 
@@ -1384,6 +1390,12 @@ void LLSpatialBridge::updateDistance(LLCamera& camera_in, bool force_update)
 				{
 					return;
 				}
+			}
+			else
+			{
+				static const LLCachedControl<bool> draw_orphans("ShyotlDrawOrphanAttachments",false);
+				if(!draw_orphans)
+					return;
 			}
 		}
 

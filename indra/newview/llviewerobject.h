@@ -158,10 +158,15 @@ public:
 	virtual BOOL	idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time);
 
 	// Types of media we can associate
-	enum { MEDIA_TYPE_NONE = 0, MEDIA_TYPE_WEB_PAGE = 1 };
+	enum { MEDIA_NONE = 0, MEDIA_SET = 1 };
 
 	// Return codes for processUpdateMessage
-	enum { MEDIA_URL_REMOVED = 0x1, MEDIA_URL_ADDED = 0x2, MEDIA_URL_UPDATED = 0x4, INVALID_UPDATE = 0x80000000 };
+	enum { 
+		MEDIA_URL_REMOVED = 0x1, 
+		MEDIA_URL_ADDED = 0x2, 
+		MEDIA_URL_UPDATED = 0x4, 
+		INVALID_UPDATE = 0x80000000 
+	};
 
 	virtual U32		processUpdateMessage(LLMessageSystem *mesgsys,
 										void **user_data,
@@ -546,6 +551,10 @@ private:
 	ExtraParameter* getExtraParameterEntry(U16 param_type) const;
 	ExtraParameter* getExtraParameterEntryCreate(U16 param_type);
 	bool unpackParameterEntry(U16 param_type, LLDataPacker *dp);
+
+    // This function checks to see if the given media URL has changed its version
+    // and the update wasn't due to this agent's last action.
+    U32 checkMediaURL(const std::string &media_url);
 	
 	// Motion prediction between updates
 	void interpolateLinearMotion(const F64 & time, const F32 & dt);
@@ -763,8 +772,8 @@ public:
 	S32 getAttachmentPoint();
 	std::string getAttachmentPointName();
 // </edit>
-	const LLUUID &getAttachmentItemID() const { return mAttachmentItemID; }
-	void setAttachmentItemID(const LLUUID &id) { mAttachmentItemID = id; }
+	const LLUUID &getAttachmentItemID() const;
+	void setAttachmentItemID(const LLUUID &id);
 	const LLUUID &extractAttachmentItemID(); // find&set the inventory item ID of the attached object
 	EObjectUpdateType getLastUpdateType() const;
 	void setLastUpdateType(EObjectUpdateType last_update_type);
@@ -812,8 +821,8 @@ public:
 class LLAlphaObject : public LLViewerObject
 {
 public:
-	LLAlphaObject(const LLUUID &id, const LLPCode type, LLViewerRegion *regionp)
-	: LLViewerObject(id,type,regionp) 
+	LLAlphaObject(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
+	: LLViewerObject(id,pcode,regionp) 
 	{ mDepth = 0.f; }
 
 	virtual F32 getPartSize(S32 idx);

@@ -488,7 +488,6 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 			
 			if (objectp->getRegion() != regionp)
 			{    // Object changed region, so update it
-				objectp->setRegion(regionp);
 				objectp->updateRegion(regionp); // for LLVOAvatar
 			}
 		}
@@ -1239,8 +1238,9 @@ void LLViewerObjectList::removeDrawable(LLDrawable* drawablep)
 
 BOOL LLViewerObjectList::killObject(LLViewerObject *objectp)
 {
-	// Don't commit suicide just because someone thinks you are on a ledge. -SG
-	if (objectp == gAgentAvatarp)
+	// Don't ever kill gAgentAvatarp, just force it to the agent's region
+	// unless region is NULL which is assumed to mean you are logging out.
+	if ((objectp == gAgentAvatarp) && gAgent.getRegion())
 	{
 		objectp->setRegion(gAgent.getRegion());
 		return FALSE;
@@ -1746,22 +1746,21 @@ void LLViewerObjectList::generatePickList(LLCamera &camera)
 		// add all hud objects to pick list
 		if (isAgentAvatarValid())
 		{
-			LLVOAvatar* avatarp = gAgentAvatarp;
-			for (LLVOAvatar::attachment_map_t::iterator iter = avatarp->mAttachmentPoints.begin(); 
-				 iter != avatarp->mAttachmentPoints.end(); )
+			for (LLVOAvatar::attachment_map_t::iterator iter = gAgentAvatarp->mAttachmentPoints.begin(); 
+				 iter != gAgentAvatarp->mAttachmentPoints.end(); )
 			{
 				LLVOAvatar::attachment_map_t::iterator curiter = iter++;
-				LLViewerJointAttachment* attachmentp = curiter->second;
-				if (attachmentp->getIsHUDAttachment())
+				LLViewerJointAttachment* attachment = curiter->second;
+				if (attachment->getIsHUDAttachment())
 				{
-					for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachmentp->mAttachedObjects.begin();
-						 attachment_iter != attachmentp->mAttachedObjects.end();
+					for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
+						 attachment_iter != attachment->mAttachedObjects.end();
 						 ++attachment_iter)
 					{
-						if (LLViewerObject* objectp = (*attachment_iter))
+						if (LLViewerObject* attached_object = (*attachment_iter))
 						{
-							mSelectPickList.insert(objectp);		
-							LLViewerObject::const_child_list_t& child_list = objectp->getChildren();
+							mSelectPickList.insert(attached_object);
+							LLViewerObject::const_child_list_t& child_list = attached_object->getChildren();
 							for (LLViewerObject::child_list_t::const_iterator iter = child_list.begin();
 								 iter != child_list.end(); iter++)
 							{

@@ -37,11 +37,19 @@
 #include "lluuid.h"
 #include "llassetstorage.h"
 
-class LLWearableList
+// Globally constructed; be careful that there's no dependency with gAgent.
+/* 
+   BUG: mList's system of mapping between assetIDs and wearables is flawed
+   since LLWearable* has an associated itemID, and you can have multiple 
+   inventory items pointing to the same asset (i.e. more than one ItemID
+   per assetID).  EXT-6252
+*/
+class LLWearableList : public LLSingleton<LLWearableList>
 {
 public:
 	LLWearableList()	{}
 	~LLWearableList();
+	void cleanup() ;
 
 	S32					getLength() { return mList.size(); }
 
@@ -62,9 +70,7 @@ public:
 protected:
 	LLWearable* generateNewWearable(); // used for the create... functions
 private:
-	std::map< LLUUID, LLWearable* > mList;
+	std::map<LLUUID, LLWearable*> mList;
 };
-
-extern LLWearableList gWearableList;
 
 #endif  // LL_LLWEARABLELIST_H

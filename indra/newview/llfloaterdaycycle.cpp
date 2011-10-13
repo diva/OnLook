@@ -288,7 +288,7 @@ bool LLFloaterDayCycle::isOpen()
 {
 	if (sDayCycle != NULL) 
 	{
-		return true;
+		return sDayCycle->getVisible();
 	}
 	return false;
 }

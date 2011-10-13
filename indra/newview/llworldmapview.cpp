@@ -644,7 +644,7 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		{
 			continue; // better to draw nothing than the missing asset image
 		}
-		
+
 		LLVector3d origin_global((F64)layer->LayerExtents.mLeft * REGION_WIDTH_METERS, (F64)layer->LayerExtents.mBottom * REGION_WIDTH_METERS, 0.f);
 
 		// Find x and y position relative to camera's center.
@@ -674,7 +674,8 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		}
 		
 		current_image->setBoostLevel(LLViewerTexture::BOOST_MAP_VISIBLE);
-		current_image->setKnownDrawSize(llround(pix_width * LLUI::sGLScaleFactor.mV[VX]), llround(pix_height * LLUI::sGLScaleFactor.mV[VY]));
+		current_image->setKnownDrawSize(llround(pix_width * LLUI::sGLScaleFactor.mV[VX]), 
+			llround(pix_height * LLUI::sGLScaleFactor.mV[VY]));
 		
 		if (!current_image->hasGLTexture())
 		{
@@ -762,8 +763,8 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		// When the view isn't panned, 0,0 = center of rectangle
 		F32 bottom =	sPanY + half_height + relative_y;
 		F32 left =		sPanX + half_width + relative_x;
-		F32 top =		bottom + sMapScale ;
-		F32 right =		left + sMapScale ;
+		F32 top =		bottom + sMapScale * ((F32)info->getSizeY() / 256.f);
+		F32 right =		left + sMapScale * ((F32)info->getSizeX() / 256.f);
 
 		// Switch to world map texture (if available for this region) if either:
 		// 1. Tiles are zoomed out small enough, or
@@ -815,7 +816,8 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 				 (textures_requested_this_tick < MAX_REQUEST_PER_TICK)))
 			{
 				textures_requested_this_tick++;
-				if (use_web_map_tiles)
+				if (use_web_map_tiles && info->getSizeX() == REGION_WIDTH_UNITS &&
+					info->getSizeY() == REGION_WIDTH_UNITS)
 				{
 					LLVector3d region_pos = info->getGlobalOrigin();
 					info->mCurrentImage = LLWorldMap::loadObjectsTile((U32)(region_pos.mdV[VX] / REGION_WIDTH_UNITS), (U32)(region_pos.mdV[VY] / REGION_WIDTH_UNITS));
@@ -852,13 +854,15 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		if (simimage != NULL)
 		{
 			simimage->setBoostLevel(LLViewerTexture::BOOST_MAP);
-			simimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
+			simimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_UNITS)),
+				llround(draw_size * LLUI::sGLScaleFactor.mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_UNITS)));
 		}
 
 		if (overlayimage != NULL)
 		{
 			overlayimage->setBoostLevel(LLViewerTexture::BOOST_MAP);
-			overlayimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX]), llround(draw_size * LLUI::sGLScaleFactor.mV[VY]));
+			overlayimage->setKnownDrawSize(llround(draw_size * LLUI::sGLScaleFactor.mV[VX] * ((F32)info->getSizeX() / REGION_WIDTH_UNITS)),
+				llround(draw_size * LLUI::sGLScaleFactor.mV[VY] * ((F32)info->getSizeY() / REGION_WIDTH_UNITS)));
 		}
 			
 // 		LLTextureView::addDebugImage(simimage);
@@ -1255,8 +1259,17 @@ bool LLWorldMapView::drawMipmapLevel(S32 width, S32 height, S32 level, bool load
 					F32 left   = pos_screen[VX];
 					F32 bottom = pos_screen[VY];
 					// Compute the NE corner coordinates of the tile now
-					pos_global[VX] += tile_width;
-					pos_global[VY] += tile_width;
+					LLSimInfo* simInfo = LLWorldMap::instance().simInfoFromHandle(to_region_handle(grid_x, grid_y));
+					if(simInfo != NULL)
+					{
+						pos_global[VX] += ((F32)tile_width * ((F32)simInfo->getSizeX() / REGION_WIDTH_METERS));
+						pos_global[VY] += ((F32)tile_width * ((F32)simInfo->getSizeY() / REGION_WIDTH_METERS));
+					}
+					else
+					{
+						pos_global[VX] += tile_width;
+						pos_global[VY] += tile_width;
+					}
 					pos_screen = globalPosToView (pos_global);
 					F32 right  = pos_screen[VX];
 					F32 top    = pos_screen[VY];
@@ -1283,11 +1296,6 @@ bool LLWorldMapView::drawMipmapLevel(S32 width, S32 height, S32 level, bool load
 					drawTileOutline(level, top, left, bottom, right);
 #endif // DEBUG_DRAW_TILE
 				}
-				//else
-				//{
-				//	Waiting for a tile -> the level is not complete
-				//	LL_INFOS("World Map") << "Unfetched tile. level = " << level << LL_ENDL;
-				//}
 			}
 			else
 			{

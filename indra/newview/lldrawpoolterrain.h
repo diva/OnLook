@@ -35,8 +35,6 @@
 
 #include "lldrawpool.h"
 
-class LLViewerFetchedTexture;
-
 class LLDrawPoolTerrain : public LLFacePool
 {
 	LLPointer<LLViewerTexture> mTexturep;

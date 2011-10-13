@@ -240,7 +240,6 @@ void LLNetMap::draw()
 		}
 
 		// figure out where agent is
-		S32 region_width = llround(LLWorld::getInstance()->getRegionWidthInMeters());
 		LLColor4 this_region_color = gColors.getColor( "NetMapThisRegion" );
 		LLColor4 live_region_color = gColors.getColor( "NetMapLiveRegion" );
 		LLColor4 dead_region_color = gColors.getColor( "NetMapDeadRegion" );
@@ -249,6 +248,7 @@ void LLNetMap::draw()
 			 iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 		{
 			LLViewerRegion* regionp = *iter;
+			S32 region_width = llround(regionp->getWidth());
 			// Find x and y position relative to camera's center.
 			LLVector3 origin_agent = regionp->getOriginAgent();
 			LLVector3 rel_region_pos = origin_agent - gAgentCamera.getCameraPositionAgent();
@@ -328,8 +328,6 @@ void LLNetMap::draw()
 
 		LLVector3 map_center_agent = gAgent.getPosAgentFromGlobal(mObjectImageCenterGlobal);
 		map_center_agent -= gAgentCamera.getCameraPositionAgent();
-		map_center_agent.mV[VX] *= mScale/region_width;
-		map_center_agent.mV[VY] *= mScale/region_width;
 
 		gGL.getTexUnit(0)->bind(mObjectImagep);
 		F32 image_half_width = 0.5f*mObjectMapPixels;
@@ -685,7 +683,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 // [/RLVa:KB]
 		//msg.append( region->getName() );
 
-#ifndef LL_RELEASE_FOR_DOWNLOAD
+//#ifndef LL_RELEASE_FOR_DOWNLOAD
 		std::string buffer;
 		msg.append("\n");
 		buffer = region->getHost().getHostName();
@@ -693,7 +691,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 		msg.append("\n");
 		buffer = region->getHost().getString();
 		msg.append(buffer);
-#endif
+//#endif
 		msg.append("\n");
 		msg.append(getToolTip());
 

@@ -1739,6 +1739,46 @@ llSetObjectPermMask( integer mask, integer value )
 Sets the given permission mask to the new value on the root object the task is attached to.
 (Requires god mode)
   </string>
+  <string name="LSLTipText_llSetMemoryLimit">
+integer llSetMemoryLimit( integer limit )
+Request ''limit'' bytes to be reserved for this script.
+  </string>
+  <string name="LSLTipText_llSetLinkMedia">
+integer llSetLinkMedia( integer link, integer face, list params )
+Set the media params for a particular face on the linked prim(s) without a delay.
+  </string>
+  <string name="LSLTipText_llGetLinkMedia">
+list llGetLinkMedia( integer link, integer face, list params )
+Returns a list with the media params for a particular face on a linked prim, given the desired list of named params.
+  </string>
+  <string name="LSLTipText_llClearLinkMedia">
+integer llClearLinkMedia( integer link, integer face )
+Clears the media and all params from the given face on the linked prim(s).
+  </string>
+  <string name="LSLTipText_llSetLinkCamera">
+llSetLinkCamera( integer link, vector eye, vector at )
+Sets the camera eye offset, and the offset that the camera is looking at, for avatars that sit on the linked prim.
+  </string>
+  <string name="LSLTipText_llSetContentType">
+llSetContentType( key request_id, integer content_type )
+Set the Internet media type of an LSL HTTP server response.
+  </string>
+  <string name="LSLTipText_llLinkSitTarget">
+llLinkSitTarget( integer link, vector offset, rotation rot );
+Set the sit location for the linked prim(s). The sit location is relative to the prim's position and rotation.
+  </string>
+  <string name="LSLTipText_llAvatarOnLinkSitTarget">
+key llAvatarOnLinkSitTarget( integer link )
+Returns a key that is the UUID of the user seated on the prim.
+  </string>
+
+<!-- No info on these functions yet....
+  <string name="LSLTipText_llSetVelocity">
+  </string>
+  <string name="LSLTipText_llSetRotationalVelocity">
+  </string>
+-->
+
 
 <!-- Addition of OSSL commands for use in OpenSimulator based regions, including Aurora -->
   <string name="LSLTipText_osSetRegionWaterHeight">
@@ -2243,5 +2283,63 @@ Set the current WindLight scene directed at a specific avatar. Estate managers a
 list lsGetWindlightScene(list rules)
 Get the current WindLight settings.
 (Reguires LightShare)
+  </string>
+
+  <!-- New OSSL Functions as of 8-10-2011 -->
+  <string name="LSLTipText_osNpcSaveAppearance">
+key osNpcSaveAppearance(key npc, string notecardName)
+Saves the NPC's appearance to a notecard.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcLoadAppearance">
+osNpcLoadAppearance(key npc, string notecardName)
+Loads the NPC's appearance from a notecard with appearance data.
+Notecards can also be loaded by UUID.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcMoveToTarget">
+osNpcMoveToTarget(key npc, vector position, integer options)
+Moves the NPC to a target at a given vector, using options to walk or to fly there.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osOwnerSaveAppearance">
+key osOwnerSaveAppearance(string notecardName)
+Saves the owner's appearance to a notecard inside the prim that holds the script.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcGetRot">
+rotation osNpcGetRot(key npc)
+Retrieves the rotation of an NPC
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcSetRot">
+osNpcSetRot(key npc, rotation rot)
+Sets an NPC's rotation.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osAgentSaveAppearance">
+key osOwnerSaveAppearance(key avatarId, string notecardName)
+Saves an avatar's appearance to a notecard inside the prim that holds the script.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcGetPos">
+vector osNpcGetPos(key npc)
+Retrieves the vector of an NPC's position within a region.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osNpcStopMoveToTarget">
+osNpcStopMoveToTarget(key npc)
+Makes an NPC stop moving to a target.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osGetWindParam">
+float osGetWindParam(string plugin, string param)
+Gets the value of param property for plugin module.
+(OpenSim only.)
+  </string>
+  <string name="LSLTipText_osSetWindParam">
+osSetWindParam(string plugin, string param, float value)
+Sets value of param property for plugin module.
+(OpenSim only.)
   </string>
 </strings>

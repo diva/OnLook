@@ -113,8 +113,6 @@ const S32 TE_SELECT_MASK_ALL = 0xFFFFFFFF;
 // Globals
 //
 
-//BOOL gDebugSelectMgr = FALSE;
-
 //BOOL gHideSelectedObjects = FALSE;
 //BOOL gAllowSelectAvatar = FALSE;
 
@@ -1882,7 +1880,7 @@ void LLSelectMgr::selectionSetFullbright(U8 fullbright)
 void LLSelectMgr::selectionSetMediaTypeAndURL(U8 media_type, const std::string& media_url)
 {
 	U8 media_flags = LLTextureEntry::MF_NONE;
-	if (media_type == LLViewerObject::MEDIA_TYPE_WEB_PAGE)
+	if (media_type == LLViewerObject::MEDIA_SET)
 	{
 		media_flags = LLTextureEntry::MF_HAS_MEDIA;
 	}
