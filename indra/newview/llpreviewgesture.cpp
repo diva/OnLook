@@ -612,7 +612,7 @@ void LLPreviewGesture::addAnimations()
 													PERM_ITEM_UNRESTRICTED,
 													gAgent.getID(),
 													gAgent.getGroupID());
-	gInventory.collectDescendentsIf(gAgent.getInventoryRootID(),
+	gInventory.collectDescendentsIf(gInventory.getRootFolderID(),
 									cats,
 									items,
 									LLInventoryModel::EXCLUDE_TRASH,
@@ -657,7 +657,7 @@ void LLPreviewGesture::addSounds()
 													PERM_ITEM_UNRESTRICTED,
 													gAgent.getID(),
 													gAgent.getGroupID());
-	gInventory.collectDescendentsIf(gAgent.getInventoryRootID(),
+	gInventory.collectDescendentsIf(gInventory.getRootFolderID(),
 									cats,
 									items,
 									LLInventoryModel::EXCLUDE_TRASH,

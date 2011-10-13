@@ -835,15 +835,12 @@ private:
  **                    Depreciated stuff. Move when ready.
  **/
 public:
-	const LLUUID&	getInventoryRootID() const 	{ return mInventoryRootID; }
-	void			setInventoryRootID(const LLUUID &id) { mInventoryRootID = id; }
 	//What's this t-posed stuff from?
 	static BOOL			isTPosed() { return mForceTPose; }
 	static void			setTPosed(BOOL TPose) { mForceTPose = TPose; }
 	static void			toggleTPosed();
 	
 private:
-	LLUUID			mInventoryRootID;
  	static BOOL 	mForceTPose;
 	
 

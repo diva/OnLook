@@ -736,11 +736,11 @@ BOOL LLFolderViewItem::handleHover( S32 x, S32 y, MASK mask )
 
 				// *TODO: push this into listener and remove
 				// dependency on llagent
-				if(mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gAgent.getInventoryRootID()))
+				if(mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gInventory.getRootFolderID()))
 				{
 					src = LLToolDragAndDrop::SOURCE_AGENT;
 				}
-				else if (mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gInventoryLibraryRoot))
+				else if (mListener && gInventory.isObjectDescendentOf(mListener->getUUID(), gInventory.getLibraryRootFolderID()))
 				{
 					src = LLToolDragAndDrop::SOURCE_LIBRARY;
 				}
@@ -2793,7 +2793,7 @@ U32 LLFolderView::getSearchType() const
 BOOL LLFolderView::addFolder( LLFolderViewFolder* folder)
 {
 	// enforce sort order of My Inventory followed by Library
-	if (folder->getListener()->getUUID() == gInventoryLibraryRoot)
+	if (folder->getListener()->getUUID() == gInventory.getLibraryRootFolderID())
 	{
 		mFolders.push_back(folder);
 	}
@@ -3203,7 +3203,7 @@ void LLFolderView::sanitizeSelection()
 		else
 		{
 			// nothing selected to start with, so pick "My Inventory" as best guess
-			new_selection = getItemByID(gAgent.getInventoryRootID());
+			new_selection = getItemByID(gInventory.getRootFolderID());
 		}
 
 		if (new_selection)

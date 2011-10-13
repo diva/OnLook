@@ -432,29 +432,15 @@ void LLInventoryModel::unlockDirectDescendentArrays(const LLUUID& cat_id)
 // not necessarily only for that type. *NOTE: This will create a new
 // inventory category on the fly if one does not exist.
 const LLUUID LLInventoryModel::findCategoryUUIDForType(LLFolderType::EType preferred_type, 
-													   bool create_folder//, 
-													   /*bool find_in_library*/)
+													   bool create_folder, 
+													   bool find_in_library)
 {
-	LLUUID rv = findCatUUID(preferred_type);
-	if(rv.isNull() && isInventoryUsable() && create_folder)
-	{
-		LLUUID root_id = gAgent.getInventoryRootID();
-		if(root_id.notNull())
-		{
-			rv = createNewCategory(root_id, preferred_type, LLStringUtil::null);
-		}
-	}
-	return rv;
-}
-
-// Internal method which looks for a category with the specified
-// preferred type. Returns LLUUID::null if not found.
-LLUUID LLInventoryModel::findCatUUID(LLFolderType::EType preferred_type)
-{
-	const LLUUID &root_id = gAgent.getInventoryRootID();
+	LLUUID rv = LLUUID::null;
+	
+	const LLUUID &root_id = (find_in_library) ? gInventory.getLibraryRootFolderID() : gInventory.getRootFolderID();
 	if(LLFolderType::FT_ROOT_INVENTORY == preferred_type)
 	{
-		return root_id;
+		rv = root_id;
 	}
 	else if (root_id.notNull())
 	{
@@ -467,17 +453,26 @@ LLUUID LLInventoryModel::findCatUUID(LLFolderType::EType preferred_type)
 			{
 				if(cats->get(i)->getPreferredType() == preferred_type)
 				{
-					return cats->get(i)->getUUID();
+					rv = cats->get(i)->getUUID();
+					break;
 				}
 			}
 		}
 	}
-	return LLUUID::null;
+	
+	if(rv.isNull() && isInventoryUsable() && (create_folder && !find_in_library))
+	{
+		if(root_id.notNull())
+		{
+			return createNewCategory(root_id, preferred_type, LLStringUtil::null);
+		}
+	}
+	return rv;
 }
 
 LLUUID LLInventoryModel::findCategoryByName(std::string name)
 {
-	LLUUID root_id = gAgent.getInventoryRootID();
+	LLUUID root_id = gInventory.getRootFolderID();
 	if(root_id.notNull())
 	{
 		cat_array_t* cats = NULL;
@@ -674,7 +669,7 @@ void LLInventoryModel::addChangedMaskForLinks(const LLUUID& object_id, U32 mask)
 	LLInventoryModel::cat_array_t cat_array;
 	LLInventoryModel::item_array_t item_array;
 	LLLinkedItemIDMatches is_linked_item_match(object_id);
-	collectDescendentsIf(gAgent.getInventoryRootID(),
+	collectDescendentsIf(gInventory.getRootFolderID(),
 						 cat_array,
 						 item_array,
 						 LLInventoryModel::INCLUDE_TRASH,
@@ -724,7 +719,7 @@ LLInventoryModel::item_array_t LLInventoryModel::collectLinkedItems(const LLUUID
 	item_array_t items;
 	LLInventoryModel::cat_array_t cat_array;
 	LLLinkedItemIDMatches is_linked_item_match(id);
-	collectDescendentsIf((start_folder_id == LLUUID::null ? gAgent.getInventoryRootID() : start_folder_id),
+	collectDescendentsIf((start_folder_id == LLUUID::null ? gInventory.getRootFolderID() : start_folder_id),
 						 cat_array,
 						 items,
 						 LLInventoryModel::INCLUDE_TRASH,
@@ -756,7 +751,7 @@ void LLInventoryModel::appendPath(const LLUUID& id, std::string& path)
 bool LLInventoryModel::isInventoryUsable() const
 {
 	bool result = false;
-	if(gAgent.getInventoryRootID().notNull() && mIsAgentInvUsable)
+	if(gInventory.getRootFolderID().notNull() && mIsAgentInvUsable)
 	{
 		result = true;
 	}
@@ -1768,8 +1763,8 @@ void LLInventoryModel::startBackgroundFetch(const LLUUID& cat_id)
 			if (!sFullFetchStarted)
 			{
 				sFullFetchStarted = TRUE;
-				sFetchQueue.push_back(gInventoryLibraryRoot);
-				sFetchQueue.push_back(gAgent.getInventoryRootID());
+				sFetchQueue.push_back(gInventory.getLibraryRootFolderID());
+				sFetchQueue.push_back(gInventory.getRootFolderID());
 				if (!sBackgroundFetchActive)
 				{
 					sBackgroundFetchActive = TRUE;
@@ -2584,7 +2579,7 @@ void LLInventoryModel::buildParentChildMap()
 			else
 			{
 				// it's a protected folder.
-				cat->setParent(gAgent.getInventoryRootID());
+				cat->setParent(gInventory.getRootFolderID());
 			}
 			cat->updateServer(TRUE);
 			catsp = getUnlockedCatArray(cat->getParentUUID());
@@ -2684,7 +2679,7 @@ void LLInventoryModel::buildParentChildMap()
 		}
 	}
 
-	const LLUUID& agent_inv_root_id = gAgent.getInventoryRootID();
+	const LLUUID& agent_inv_root_id = gInventory.getRootFolderID();
 	if (agent_inv_root_id.notNull())
 	{
 		cat_array_t* catsp = get_ptr_in_map(mParentChildCategoryTree, agent_inv_root_id);
@@ -3551,6 +3546,58 @@ void LLInventoryModel::processMoveInventoryItem(LLMessageSystem* msg, void**)
 	{
 		gInventory.notifyObservers();
 	}
+}
+
+
+void LLInventoryModel::removeItem(const LLUUID& item_id)
+{
+	LLViewerInventoryItem* item = getItem(item_id);
+	const LLUUID new_parent = findCategoryUUIDForType(LLFolderType::FT_TRASH);
+	if(item && new_parent.notNull() && item->getParentUUID() != new_parent)
+	{
+		LLInventoryModel::update_list_t update;
+		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(), -1);
+		update.push_back(old_folder);
+		LLInventoryModel::LLCategoryUpdate new_folder(new_parent, 1);
+		update.push_back(new_folder);
+		accountForUpdate(update);
+
+		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
+		new_item->setParent(new_parent);
+		new_item->updateParentOnServer(TRUE);
+		updateItem(new_item);
+		notifyObservers();
+	}
+}
+
+const LLUUID &LLInventoryModel::getRootFolderID() const
+{
+	return mRootFolderID;
+}
+
+void LLInventoryModel::setRootFolderID(const LLUUID& val)
+{
+	mRootFolderID = val;
+}
+
+const LLUUID &LLInventoryModel::getLibraryRootFolderID() const
+{
+	return mLibraryRootFolderID;
+}
+
+void LLInventoryModel::setLibraryRootFolderID(const LLUUID& val)
+{
+	mLibraryRootFolderID = val;
+}
+
+const LLUUID &LLInventoryModel::getLibraryOwnerID() const
+{
+	return mLibraryOwnerID;
+}
+
+void LLInventoryModel::setLibraryOwnerID(const LLUUID& val)
+{
+	mLibraryOwnerID = val;
 }
 
 // *NOTE: DEBUG functionality
