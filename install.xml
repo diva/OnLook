@@ -927,9 +927,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>5d743c93b970abe685b185de83001a6e</string>
+            <string>6e422a3548597a043223de9e9384c734</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/llqtwebkit-linux-qt4.6-20100923.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-linux-20111013.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
