@@ -1286,13 +1286,13 @@ void LLPanelDirBrowser::onKeystrokeName(LLLineEditor* line, void* data)
 }
 
 // setup results when shown
-void LLPanelDirBrowser::onVisibilityChange(BOOL new_visibility)
+void LLPanelDirBrowser::handleVisibilityChange(BOOL new_visibility)
 {
 	if (new_visibility)
 	{
 		onCommitList(NULL, this);
 	}
-	LLPanel::onVisibilityChange(new_visibility);
+	LLPanel::handleVisibilityChange(new_visibility);
 }
 
 S32 LLPanelDirBrowser::showNextButton(S32 rows)

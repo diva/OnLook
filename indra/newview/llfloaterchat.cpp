@@ -169,7 +169,7 @@ void LLFloaterChat::onClose(bool app_quitting)
 	setVisible(FALSE);
 }
 
-void LLFloaterChat::onVisibilityChange(BOOL new_visibility)
+void LLFloaterChat::handleVisibilityChange(BOOL new_visibility)
 {
 	// Hide the chat overlay when our history is visible.
 	updateConsoleVisibility();
@@ -180,7 +180,7 @@ void LLFloaterChat::onVisibilityChange(BOOL new_visibility)
 		LLFloaterChatterBox::getInstance()->setFloaterFlashing(this, FALSE);
 	}
 
-	LLFloater::onVisibilityChange(new_visibility);
+	LLFloater::handleVisibilityChange(new_visibility);
 }
 
 void LLFloaterChat::setMinimized(BOOL minimized)

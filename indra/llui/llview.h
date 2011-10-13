@@ -94,7 +94,7 @@ virtual void	setEnabled(BOOL enabled)	{ mEnabled = enabled; }
 		LLCheckBoxCtrl, LLComboBox, LLLineEditor, LLMenuGL, LLRadioGroup, etc
 virtual BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text ) { return FALSE; }
 		LLUICtrl, LLButton, LLCheckBoxCtrl, LLLineEditor, LLMenuGL, LLSliderCtrl
-virtual void	onVisibilityChange ( BOOL curVisibilityIn );
+virtual void	handleVisibilityChange ( BOOL curVisibilityIn );
 		LLMenuGL
 virtual LLRect getSnapRect() const	{ return mRect; } *TODO: Make non virtual
 		LLFloater
@@ -342,7 +342,7 @@ public:
 
 	virtual BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
 
-	virtual void	onVisibilityChange ( BOOL curVisibilityIn );
+	virtual void	handleVisibilityChange ( BOOL curVisibilityIn );
 
 	void			pushVisible(BOOL visible)	{ mLastVisible = mVisible; setVisible(visible); }
 	void			popVisible()				{ setVisible(mLastVisible); mLastVisible = TRUE; }

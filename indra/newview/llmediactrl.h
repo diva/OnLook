@@ -133,7 +133,7 @@ class LLMediaCtrl :
 		virtual BOOL handleUnicodeCharHere(llwchar uni_char);
 		virtual void reshape( S32 width, S32 height, BOOL called_from_parent = TRUE);
 		virtual void draw();
-		virtual void onVisibilityChange ( BOOL curVisibilityIn );
+		virtual void handleVisibilityChange ( BOOL curVisibilityIn );
 
 		// focus overrides
 		void onFocusLost();

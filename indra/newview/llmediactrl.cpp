@@ -407,7 +407,7 @@ BOOL LLMediaCtrl::handleUnicodeCharHere(llwchar uni_char)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-void LLMediaCtrl::onVisibilityChange ( BOOL new_visibility )
+void LLMediaCtrl::handleVisibilityChange ( BOOL new_visibility )
 {
 	// set state of frequent updates automatically if visibility changes
 	if ( new_visibility )
@@ -418,7 +418,7 @@ void LLMediaCtrl::onVisibilityChange ( BOOL new_visibility )
 	{
 		mFrequentUpdates = false;
 	}
-	LLUICtrl::onVisibilityChange(new_visibility);
+	LLUICtrl::handleVisibilityChange(new_visibility);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

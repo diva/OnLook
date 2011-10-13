@@ -2050,7 +2050,7 @@ void LLFloaterIMPanel::onClose(bool app_quitting)
 	destroy();
 }
 
-void LLFloaterIMPanel::onVisibilityChange(BOOL new_visibility)
+void LLFloaterIMPanel::handleVisibilityChange(BOOL new_visibility)
 {
 	if (new_visibility)
 	{
