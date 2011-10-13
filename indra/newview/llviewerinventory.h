@@ -145,6 +145,8 @@ public:
 	LLViewerInventoryItem *getLinkedItem() const;
 	LLViewerInventoryCategory *getLinkedCategory() const;
 
+	// callback
+	void onCallingCardNameLookup(const LLUUID& id, const std::string& name, bool is_group);
 protected:
 	BOOL mIsComplete;
 	LLTransactionID mTransactionID;

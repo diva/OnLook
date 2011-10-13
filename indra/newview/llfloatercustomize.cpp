@@ -719,7 +719,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 	if(avatar)
 	{
 		// Create a new wearable in the default folder for the wearable's asset type.
-		LLWearable* wearable = gWearableList.createNewWearable( (LLWearableType::EType)notification["payload"]["wearable_type"].asInteger() );
+		LLWearable* wearable = LLWearableList::instance().createNewWearable( (LLWearableType::EType)notification["payload"]["wearable_type"].asInteger() );
 		LLAssetType::EType asset_type = wearable->getAssetType();
 
 		LLUUID folder_id;

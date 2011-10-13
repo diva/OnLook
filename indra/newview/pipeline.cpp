@@ -2382,6 +2382,8 @@ void LLPipeline::markVisible(LLDrawable *drawablep, LLCamera& camera)
 					root->getVObj()->isAttachment())
 			{
 				LLDrawable* rootparent = root->getParent();
+				static const LLCachedControl<bool> draw_orphans("ShyotlDrawOrphanAttachments",false);
+
 				if (rootparent) // this IS sometimes NULL
 				{
 					LLViewerObject *vobj = rootparent->getVObj();
@@ -2389,12 +2391,16 @@ void LLPipeline::markVisible(LLDrawable *drawablep, LLCamera& camera)
 					if (vobj) // this test may not be needed, see above
 					{
 						const LLVOAvatar* av = vobj->asAvatar();
-						if (av && av->isImpostor())
+						if (av && av->isImpostor() )
 						{
-								return;
+							return;
 						}
+						else if(!draw_orphans && (!av || av->isDead()))
+							return;
 					}
 				}
+				else if(!draw_orphans)
+					return;
 			}
 			sCull->pushBridge((LLSpatialBridge*) drawablep);
 		}

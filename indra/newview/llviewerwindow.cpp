@@ -190,6 +190,7 @@
 #include "llviewerjoystick.h"
 #include "llviewernetwork.h"
 #include "llpostprocess.h"
+#include "llwearablelist.h"
 
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
@@ -573,6 +574,57 @@ public:
 
 			addText(xpos,ypos, llformat("%d Lights visible", LLPipeline::sVisibleLightCount));
 			
+			ypos += y_inc;
+
+			S32 total_objects = gObjectList.getNumObjects();
+			S32 ID_objects = gObjectList.mUUIDObjectMap.size();
+			S32 dead_objects = gObjectList.mNumDeadObjects;
+			S32 dead_object_list = gObjectList.mDeadObjects.size();
+			S32 dead_object_check = 0;
+			S32 total_avatars = 0;
+			S32 ID_avatars = gObjectList.mUUIDAvatarMap.size();
+			S32 dead_avatar_list = 0;
+			S32 dead_avatar_check = 0;
+
+			S32 orphan_parents = gObjectList.getOrphanParentCount();
+			S32 orphan_parents_check = gObjectList.mOrphanParents.size();
+			S32 orphan_children = gObjectList.mOrphanChildren.size();
+			S32 orphan_total = gObjectList.getOrphanCount();
+			S32 orphan_child_attachments = 0;
+
+			for(U32 i = 0;i<gObjectList.mObjects.size();++i)
+			{
+				LLViewerObject *obj = gObjectList.mObjects[i];
+				if(obj)
+				{
+					if(obj->isAvatar())
+						++total_avatars;
+					if(obj->isDead())
+					{
+						++dead_object_check;
+						if(obj->isAvatar())
+							++dead_avatar_check;
+					}
+				}
+			}
+			for(std::set<LLUUID>::iterator it = gObjectList.mDeadObjects.begin();it!=gObjectList.mDeadObjects.end();++it)
+			{
+				LLViewerObject *obj = gObjectList.findObject(*it);
+				if(obj && obj->isAvatar())
+					++dead_avatar_list;
+			}
+			for(std::vector<LLViewerObjectList::OrphanInfo>::iterator it = gObjectList.mOrphanChildren.begin();it!=gObjectList.mOrphanChildren.end();++it)
+			{
+				LLViewerObject *obj = gObjectList.findObject(it->mChildInfo);
+				if(obj && obj->isAttachment())
+					++orphan_child_attachments;
+			}
+			addText(xpos,ypos, llformat("%d|%d (%d|%d|%d) Objects", total_objects, ID_objects, dead_objects, dead_object_list,dead_object_check));
+			ypos += y_inc;
+			addText(xpos,ypos, llformat("%d|%d (%d|%d) Avatars", total_avatars, ID_avatars, dead_avatar_list,dead_avatar_check));
+			ypos += y_inc;
+			addText(xpos,ypos, llformat("%d (%d|%d %d %d) Orphans", orphan_total, orphan_parents, orphan_parents_check,orphan_children, orphan_child_attachments));
+
 			ypos += y_inc;
 
 #if MESH_ENABLED
@@ -1940,6 +1992,8 @@ void LLViewerWindow::shutdownGL()
 
 	gSky.cleanup();
 	stop_glerror();
+
+	LLWearableList::instance().cleanup() ;
 
 	gTextureList.shutdown();
 	stop_glerror();

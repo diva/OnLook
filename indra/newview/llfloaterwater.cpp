@@ -316,7 +316,7 @@ void LLFloaterWater::show()
 bool LLFloaterWater::isOpen()
 {
 	if (sWaterMenu != NULL) {
-		return true;
+		return sWaterMenu->getVisible();
 	}
 	return false;
 }

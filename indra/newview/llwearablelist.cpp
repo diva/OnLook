@@ -43,18 +43,13 @@
 #include "llviewerstats.h"
 #include "llnotificationsutil.h"
 
-// Globals
-LLWearableList gWearableList; // Globally constructed; be careful that there's no dependency with gAgent.
-
-
+// Callback struct
 struct LLWearableArrivedData
 {
-	LLWearableArrivedData( 
-		LLAssetType::EType asset_type,
+	LLWearableArrivedData(LLAssetType::EType asset_type,
 		const std::string& wearable_name,
 		void(*asset_arrived_callback)(LLWearable*, void* userdata),
-		void* userdata ) 
-		:
+						  void* userdata) :
 		mAssetType( asset_type ),
 		mCallback( asset_arrived_callback ), 
 		mUserdata( userdata ),
@@ -76,6 +71,11 @@ struct LLWearableArrivedData
 
 LLWearableList::~LLWearableList()
 {
+	llassert_always(mList.empty()) ;
+}
+
+void LLWearableList::cleanup() 
+{
 	for_each(mList.begin(), mList.end(), DeletePairedPointer());
 	mList.clear();
 }
@@ -90,8 +90,7 @@ void LLWearableList::getAsset( const LLAssetID& assetID, const std::string& wear
 	}
 	else
 	{
-		gAssetStorage->getAssetData(
-			assetID,
+		gAssetStorage->getAssetData(assetID,
 			asset_type,
 			LLWearableList::processGetAssetReply,
 			(void*)new LLWearableArrivedData( asset_type, wearable_name, asset_arrived_callback, userdata ),
@@ -110,8 +109,7 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 	{
 		LL_WARNS("Wearable") << "Bad Wearable Asset: missing file." << LL_ENDL;
 	}
-	else
-	if( status >= 0 )
+	else if (status >= 0)
 	{
 		// read the file
 		LLFILE* fp = LLFile::fopen(std::string(filename), "rb");		/*Flawfinder: ignore*/
@@ -180,7 +178,7 @@ void LLWearableList::processGetAssetReply( const char* filename, const LLAssetID
 
 	if (wearable) // success
 	{
-		gWearableList.mList[ uuid ] = wearable;
+		LLWearableList::instance().mList[ uuid ] = wearable;
 		LL_DEBUGS("Wearable") << "processGetAssetReply()" << LL_ENDL;
 		LL_DEBUGS("Wearable") << wearable << LL_ENDL;
 	}

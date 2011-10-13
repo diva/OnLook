@@ -201,7 +201,7 @@ public:
 	S32 mNumUnknownKills;
 	S32 mNumDeadObjects;
 	S32 mMinNumDeadObjects;
-protected:
+//protected:
 	std::vector<U64>	mOrphanParents;	// LocalID/ip,port of orphaned objects
 	std::vector<OrphanInfo> mOrphanChildren;	// UUID's of orphaned objects
 	S32 mNumOrphans;
