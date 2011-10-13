@@ -139,18 +139,16 @@ public:
 		// Inventory folder link
 		AT_LINK_FOLDER = 25,
 	
-		//AT_CURRENT_OUTFIT = 46,
+		AT_CURRENT_OUTFIT = 46,
 
-		//AT_OUTFIT = 47,
+		AT_OUTFIT = 47,
 
-		//AT_MY_OUTFITS = 48,
+		AT_MY_OUTFITS = 48,
 
-#if MESH_ENABLED
 		AT_MESH = 49,
 		    // Mesh data in our proprietary SLM format
 
 		AT_COUNT = 50,
-#endif //MESH_ENABLED
 		// +*********************************************+
 		// |  TO ADD AN ELEMENT TO THIS ENUM:            |
 		// +*********************************************+
@@ -160,10 +158,6 @@ public:
 		// | 4. ADD TO LLAssetType::mAssetTypeHumanNames |
 		// +*********************************************+
 
-		//AT_COUNT = 49,
-#if !MESH_ENABLED
-		AT_COUNT = 26,
-#endif //!MESH_ENABLED
 		AT_NONE = -1
 	};
 

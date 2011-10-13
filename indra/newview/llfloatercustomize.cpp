@@ -2694,7 +2694,7 @@ void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh,
 
 void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete)
 {
-	llassert( type < WT_COUNT );
+	llassert( type < LLWearableType::WT_COUNT );
 	gSavedSettings.setU32("AvatarSex", (gAgentAvatarp->getSex() == SEX_MALE) );
 	
 	LLPanelEditWearable* panel = mWearablePanelList[ type ];

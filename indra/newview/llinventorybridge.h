@@ -85,6 +85,7 @@ enum EInventoryIcon
 
 	LINKITEM_ICON_NAME,
 	LINKFOLDER_ICON_NAME,
+	MESH_ICON_NAME,
 
 	ICON_NAME_COUNT
 };
@@ -644,6 +645,21 @@ public:
 protected:
 	const LLUUID &getFolderID() const;
 	static std::string sPrefix;
+};
+
+class LLMeshBridge : public LLItemBridge
+{
+    friend class LLInvFVBridge;
+public:
+    virtual LLUIImagePtr getIcon() const;
+    virtual void openItem();
+    virtual void previewItem();
+    virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
+
+protected:
+    LLMeshBridge(LLInventoryPanel* inventory, 
+             const LLUUID& uuid) :
+                       LLItemBridge(inventory, uuid) {}
 };
 
 void rez_attachment(LLViewerInventoryItem* item, 

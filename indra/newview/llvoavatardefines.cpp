@@ -42,6 +42,7 @@ using namespace LLVOAvatarDefines;
 
 /*********************************************************************************
  * Edit this function to add/remove/change textures and mesh definitions for avatars.
+ * If these are changed, they MUST be changed in floater_avatar_textures.xml as well!
  */
 
 LLVOAvatarDictionary::Textures::Textures()

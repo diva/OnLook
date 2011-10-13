@@ -153,6 +153,10 @@ public:
 	};
 
 	static F32 sTreeFactor;			// Tree level of detail factor
+
+	typedef std::map<std::string, S32> SpeciesNames;
+	static SpeciesNames sSpeciesNames;
+
 	static const S32 sMAX_NUM_TREE_LOD_LEVELS ;
 
 	friend class LLDrawPoolTree;
