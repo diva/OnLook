@@ -400,7 +400,6 @@ class SGHostBlackList{
 		int errorCount;
 	};
 
-	static LLMutex* sMutex;
 	typedef std::vector<BlackListEntry> blacklist_t;
 	//Why is it a vector? because using std::map for just 1-2 values is insane-ish.
 	typedef blacklist_t::iterator iter;
@@ -423,22 +422,10 @@ class SGHostBlackList{
 		return blacklist.end();
 	}
 
-	static void lock() {
-		if (!sMutex)
-			sMutex = new LLMutex;
-		sMutex->lock();
-	}
-
-	static void unlock() {
-		sMutex->unlock();
-	}
-
 public:
 	static bool isBlacklisted(std::string url) {
-		lock();
 		iter found = find(url);
 		bool r = (found != blacklist.end()) && (found->errorCount > MAX_ERRORCOUNT);
-		unlock();
 		return r;
 	}
 
@@ -450,7 +437,6 @@ public:
 		entry.timeUntil = LLTimer::getTotalTime() + timeout*1000;
 		entry.reason = reason;
 		entry.errorCount = 0;
-		lock();
 		iter found = find(entry.host);
 		if(found != blacklist.end()) {
 			entry.errorCount = found->errorCount + 1;
@@ -465,18 +451,14 @@ public:
 			}
 		}
 		else blacklist.push_back(entry);
-		unlock();
 	}
 };
 
-LLMutex* SGHostBlackList::sMutex = 0;
 SGHostBlackList::blacklist_t SGHostBlackList::blacklist;
 
 //call every time a connection is opened
 //return true if connecting allowed
 static bool sgConnectionThrottle() {
-	static LLMutex mutex;
-	LLMutexLock lock(&mutex);
 	const U32 THROTTLE_TIMESTEPS_PER_SECOND = 10;
 	static const LLCachedControl<U32> max_connections_per_second("HTTPRequestRate", 30);
 	U32 max_connections = max_connections_per_second/THROTTLE_TIMESTEPS_PER_SECOND;
