@@ -624,7 +624,7 @@ bool RlvForceWear::isStrippable(const LLInventoryItem* pItem)
 		}
 
 		LLViewerInventoryCategory* pFolder = gInventory.getCategory(pItem->getParentUUID());
-		while ( (pFolder) && (gAgent.getInventoryRootID() != pFolder->getParentUUID()) )
+		while ( (pFolder) && (gInventory.getRootFolderID() != pFolder->getParentUUID()) )
 		{
 			if (std::string::npos != pFolder->getName().find(RLV_FOLDER_FLAG_NOSTRIP))
 				return false;

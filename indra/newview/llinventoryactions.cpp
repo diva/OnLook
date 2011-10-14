@@ -357,7 +357,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 		}
 		else
 		{
-			category = model->createNewCategory(gAgent.getInventoryRootID(),
+			category = model->createNewCategory(gInventory.getRootFolderID(),
 												LLFolderType::FT_NONE, LLStringUtil::null);
 		}
 		model->notifyObservers();
@@ -679,7 +679,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		}
 		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(id);
 
-		if(item && gInventory.isObjectDescendentOf(id, gAgent.getInventoryRootID()))
+		if(item && gInventory.isObjectDescendentOf(id, gInventory.getRootFolderID()))
 		{
 			rez_attachment(item, attachmentp);
 		}

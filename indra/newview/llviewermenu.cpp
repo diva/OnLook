@@ -4841,7 +4841,7 @@ void handle_take()
 			}
 
 			// check library
-			if(gInventory.isObjectDescendentOf(category_id, gInventoryLibraryRoot))
+			if(gInventory.isObjectDescendentOf(category_id, gInventory.getLibraryRootFolderID()))
 			{
 				category_id.setNull();
 			}
@@ -6427,11 +6427,6 @@ class LLShowFloater : public view_listener_t
 		}
 		else if (floater_name == "about land")
 		{
-			if (LLViewerParcelMgr::getInstance()->selectionEmpty())
-			{
-				LLViewerParcelMgr::getInstance()->selectParcelAt(gAgent.getPositionGlobal());
-			}
-
 			LLFloaterLand::showInstance();
 		}
 		else if (floater_name == "buy land")

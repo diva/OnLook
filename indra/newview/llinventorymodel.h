@@ -147,6 +147,23 @@ private:
 	bool mIsAgentInvUsable; // used to handle an invalid inventory state
 
 	//--------------------------------------------------------------------
+	// Root Folders
+	//--------------------------------------------------------------------
+public:
+	// The following are set during login with data from the server
+	void setRootFolderID(const LLUUID& id);
+	void setLibraryOwnerID(const LLUUID& id);
+	void setLibraryRootFolderID(const LLUUID& id);
+
+	const LLUUID &getRootFolderID() const;
+	const LLUUID &getLibraryOwnerID() const;
+	const LLUUID &getLibraryRootFolderID() const;
+private:
+	LLUUID mRootFolderID;
+	LLUUID mLibraryRootFolderID;
+	LLUUID mLibraryOwnerID;	
+	
+	//--------------------------------------------------------------------
 	// Structure
 	//--------------------------------------------------------------------
 public:
@@ -246,8 +263,8 @@ public:
 	//    on the fly if one does not exist. *NOTE: if find_in_library is true it 
 	//    will search in the user's library folder instead of "My Inventory"
 	const LLUUID findCategoryUUIDForType(LLFolderType::EType preferred_type, 
-										 bool create_folder = true 
-										 /*,bool find_in_library = false*/);
+										 bool create_folder = true, 
+										 bool find_in_library = false);
 	
 	// Get whatever special folder this object is a child of, if any.
 	const LLViewerInventoryCategory *getFirstNondefaultParent(const LLUUID& obj_id) const;
@@ -326,6 +343,7 @@ public:
 	// consistent internal state. No cache accounting, observer
 	// notification, or server update is performed.
 	void deleteObject(const LLUUID& id);
+	void removeItem(const LLUUID& item_id);
 	
 	// Delete a particular inventory object by ID, and delete it from
 	// the server. Also updates linked items.
@@ -490,28 +508,6 @@ public:
 	static bool isEverythingFetched();
 	static void backgroundFetch(void*); // background fetch idle function
 	static void incrBulkFetch(S16 fetching) {  sBulkFetchCount+=fetching; if (sBulkFetchCount<0) sBulkFetchCount=0; }
-protected:
-
-	// Internal methods which add inventory and make sure that all of
-	// the internal data structures are consistent. These methods
-	// should be passed pointers of newly created objects, and the
-	// instance will take over the memory management from there.
-// <edit>
-
-	// Internal method which looks for a category with the specified
-	// preferred type. Returns LLUUID::null if not found
- 	LLUUID findCatUUID(LLFolderType::EType preferred_type);
-
-	// Empty the entire contents
-
-	// Given the current state of the inventory items, figure out the
-	// clone information. *FIX: This is sub-optimal, since we can
-	// insert this information snurgically, but this makes sure the
-	// implementation works before we worry about optimization.
-	//void recalculateCloneInformation();
-
-	// file import/export.
-// <edit>
 /**                    Notifications
  **                                                                            **
  *******************************************************************************/
