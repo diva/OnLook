@@ -63,7 +63,7 @@ const S32 MAX_TEXTURE_DIMENSION = 2048;
 static LLRegisterWidget<LLMediaCtrl> r("web_browser");
 
 LLMediaCtrl::LLMediaCtrl( const std::string& name, const LLRect& rect ) :
-	LLPanel( name, rect, FALSE ),
+	LLUICtrl( name, rect, FALSE, NULL, NULL),
 	LLInstanceTracker<LLMediaCtrl, LLUUID>(LLUUID::generateNewID()),
 	mTextureDepthBytes( 4 ),
 	mWebBrowserImage( 0 ),
@@ -341,7 +341,7 @@ void LLMediaCtrl::onFocusLost()
 
 BOOL LLMediaCtrl::postBuild ()
 {
-	setVisibleCallback(boost::bind(&LLMediaCtrl::onVisibilityChange, this, _2));
+	//setVisibleCallback(boost::bind(&LLMediaCtrl::onVisibilityChange, this, _2));
 	return true;
 }
 
@@ -395,6 +395,9 @@ void LLMediaCtrl::handleVisibilityChange ( BOOL new_visibility )
 	{
 		mMediaSource->setVisible( new_visibility );
 	}
+	LLUICtrl::handleVisibilityChange( new_visibility );
+	//Hack due to not being derived from LLPanel yet
+	LLMediaCtrl::onVisibilityChange(LLSD(new_visibility));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
