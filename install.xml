@@ -544,16 +544,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>1d7acbc5b578b3b5cfc739d2f454b18c</string>
+            <string>b190d8a0dce8dd8b514d2adb2c74b8d8</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/google-linux-110103.tar.bz2</uri>
+			<uri>http://sldev.free.fr/libraries/google-perftools-1.8.3-linux-20110924.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>571a398f5b3f65ba2c02f48df843cc97</string>
+            <string>4f787437a5e063ccde6637dfb1ebc01d</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/tcmalloc-1.7-min-20110507.tar.bz2</uri>
+			<uri>https://bitbucket.org/Ansariel/phoenix-prebuilts/downloads/google_perftools-1.8-windows-20111005.tar.bz2</uri>
           </map>
         </map>
       </map>
