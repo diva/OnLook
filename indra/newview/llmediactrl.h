@@ -46,7 +46,7 @@ class LLUICtrlFactory;
 ////////////////////////////////////////////////////////////////////////////////
 //
 class LLMediaCtrl :
-	public LLUICtrl,
+	public LLPanel,
 	public LLViewerMediaObserver,
 	public LLViewerMediaEventEmitter,
 	public LLInstanceTracker<LLMediaCtrl, LLUUID>
@@ -133,7 +133,7 @@ class LLMediaCtrl :
 		virtual BOOL handleUnicodeCharHere(llwchar uni_char);
 		virtual void reshape( S32 width, S32 height, BOOL called_from_parent = TRUE);
 		virtual void draw();
-		virtual void handleVisibilityChange ( BOOL curVisibilityIn );
+		virtual BOOL postBuild();
 
 		// focus overrides
 		void onFocusLost();
@@ -150,6 +150,7 @@ class LLMediaCtrl :
 		void convertInputCoords(S32& x, S32& y);
 
 	private:
+		void onVisibilityChange ( const LLSD& new_visibility );
 		static bool onClickLinkExternalTarget( const LLSD&, const LLSD& );
 
 		const S32 mTextureDepthBytes;

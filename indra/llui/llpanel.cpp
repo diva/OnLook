@@ -80,6 +80,7 @@ void LLPanel::init()
 
 	mPanelHandle.bind(this);
 	setTabStop(FALSE);
+	mVisibleSignal = NULL;
 }
 
 LLPanel::LLPanel()
@@ -123,6 +124,7 @@ LLPanel::LLPanel(const std::string& name, const std::string& rect_control, BOOL 
 LLPanel::~LLPanel()
 {
 	storeRectControl();
+	delete mVisibleSignal;
 }
 
 // virtual
@@ -362,6 +364,13 @@ BOOL LLPanel::checkRequirements()
 	}
 
 	return TRUE;
+}
+
+void LLPanel::handleVisibilityChange ( BOOL new_visibility )
+{
+	LLUICtrl::handleVisibilityChange ( new_visibility );
+	if (mVisibleSignal)
+		(*mVisibleSignal)(this, LLSD(new_visibility) ); // Pass BOOL as LLSD
 }
 
 void LLPanel::setFocus(BOOL b)
@@ -1007,6 +1016,16 @@ void LLPanel::childSetControlName(const std::string& id, const std::string& cont
 	{
 		view->setControlName(control_name, NULL);
 	}
+}
+
+boost::signals2::connection LLPanel::setVisibleCallback( const commit_signal_t::slot_type& cb )
+{
+	if (!mVisibleSignal)
+	{
+		mVisibleSignal = new commit_signal_t();
+	}
+
+	return mVisibleSignal->connect(cb);
 }
 
 //virtual

@@ -63,7 +63,7 @@ const S32 MAX_TEXTURE_DIMENSION = 2048;
 static LLRegisterWidget<LLMediaCtrl> r("web_browser");
 
 LLMediaCtrl::LLMediaCtrl( const std::string& name, const LLRect& rect ) :
-	LLUICtrl( name, rect, FALSE, NULL, NULL ),
+	LLPanel( name, rect, FALSE ),
 	LLInstanceTracker<LLMediaCtrl, LLUUID>(LLUUID::generateNewID()),
 	mTextureDepthBytes( 4 ),
 	mWebBrowserImage( 0 ),
@@ -338,6 +338,15 @@ void LLMediaCtrl::onFocusLost()
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+
+BOOL LLMediaCtrl::postBuild ()
+{
+	setVisibleCallback(boost::bind(&LLMediaCtrl::onVisibilityChange, this, _2));
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
 BOOL LLMediaCtrl::handleKeyHere( KEY key, MASK mask )
 {
 	BOOL result = FALSE;
@@ -390,6 +399,7 @@ void LLMediaCtrl::handleVisibilityChange ( BOOL new_visibility )
 
 ////////////////////////////////////////////////////////////////////////////////
 //
+
 BOOL LLMediaCtrl::handleUnicodeCharHere(llwchar uni_char)
 {
 	BOOL result = FALSE;
@@ -407,10 +417,10 @@ BOOL LLMediaCtrl::handleUnicodeCharHere(llwchar uni_char)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-void LLMediaCtrl::handleVisibilityChange ( BOOL new_visibility )
+void LLMediaCtrl::onVisibilityChange ( const LLSD& new_visibility )
 {
 	// set state of frequent updates automatically if visibility changes
-	if ( new_visibility )
+	if ( new_visibility.asBoolean() )
 	{
 		mFrequentUpdates = true;
 	}
@@ -418,7 +428,6 @@ void LLMediaCtrl::handleVisibilityChange ( BOOL new_visibility )
 	{
 		mFrequentUpdates = false;
 	}
-	LLUICtrl::handleVisibilityChange(new_visibility);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
