@@ -105,6 +105,7 @@ void LLFloaterMediaBrowser::draw()
 			media_playing = media_plugin->getStatus() == LLPluginClassMediaOwner::MEDIA_PLAYING;
 		}
 	}
+	childSetVisible("time_controls", show_time_controls);
 	childSetVisible("rewind", show_time_controls);
 	childSetVisible("play", show_time_controls && ! media_playing);
 	childSetVisible("pause", show_time_controls && media_playing);
@@ -139,7 +140,6 @@ BOOL LLFloaterMediaBrowser::postBuild()
 	childSetAction("pause", onClickPlay, this);
 	childSetAction("seek", onClickSeek, this);
 	childSetAction("go", onClickGo, this);
-	childSetAction("close", onClickClose, this);
 	childSetAction("open_browser", onClickOpenWebBrowser, this);
 	childSetAction("assign", onClickAssign, this);
 
@@ -282,14 +282,6 @@ void LLFloaterMediaBrowser::onClickGo(void* user_data)
 	LLFloaterMediaBrowser* self = (LLFloaterMediaBrowser*)user_data;
 
 	self->mBrowser->navigateTo(self->mAddressCombo->getValue().asString());
-}
-
-//static 
-void LLFloaterMediaBrowser::onClickClose(void* user_data)
-{
-	LLFloaterMediaBrowser* self = (LLFloaterMediaBrowser*)user_data;
-
-	self->close();
 }
 
 //static 

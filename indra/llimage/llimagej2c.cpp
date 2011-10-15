@@ -376,7 +376,7 @@ S32 LLImageJ2C::calcDataSizeJ2C(S32 w, S32 h, S32 comp, S32 discard_level, F32 r
 		discard_level--;
 	}
 	S32 bytes = (S32)((F32)(w*h*comp)*rate);
-	bytes = llmax(bytes, calcHeaderSizeJ2C());
+	//bytes = llmax(bytes, calcHeaderSizeJ2C());
 	return bytes;
 }
 
@@ -396,9 +396,11 @@ S32 LLImageJ2C::calcDataSize(S32 discard_level)
 		static const LLCachedControl<S32> offset("SianaJ2CSizeOffset", 0);
 		
 		S32 size = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), discard_level, mRate);
-		S32 size_d0 = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), discard_level, mRate);
-		
-		return pow(size/size_d0, exponent)*size_d0 + offset;
+		S32 size_d0 = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), 0, mRate);
+		llassert_always(size_d0);
+		S32 bytes = pow(size/size_d0, exponent)*size_d0 + offset;
+		bytes = llmax(bytes, calcHeaderSizeJ2C());
+		return bytes;
 	}
 
 	discard_level = llclamp(discard_level, 0, MAX_DISCARD_LEVEL);
@@ -412,6 +414,7 @@ S32 LLImageJ2C::calcDataSize(S32 discard_level)
 		while ( level >= 0 )
 		{
 			mDataSizes[level] = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), level, mRate);
+			mDataSizes[level] = llmax(mDataSizes[level], calcHeaderSizeJ2C());
 			level--;
 		}
 
