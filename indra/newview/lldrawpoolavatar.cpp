@@ -826,7 +826,8 @@ void LLDrawPoolAvatar::beginSkinned()
 		}
 	}
 
-	if (LLGLSLShader::sNoFixedFunction)
+	//if (LLGLSLShader::sNoFixedFunction)	//Singu Note: sNoFixedFunction being false does not imply shaders are off, unlike in V3.
+	if (gPipeline.canUseVertexShaders())	//Check if shaders are REALLY used.
 	{
 		sVertexProgram->setAlphaRange(0.2f, 1.f);
 	}
