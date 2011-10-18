@@ -426,9 +426,6 @@ void LLViewerShaderMgr::setShaders()
 				deferred_class = 1;
 			}
 
-			//make sure framebuffer objects are enabled
-			gSavedSettings.setBOOL("RenderUseFBO", TRUE);
-
 			//make sure hardware skinning is enabled
 			gSavedSettings.setBOOL("RenderAvatarVP", TRUE);
 		}
@@ -655,7 +652,8 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 	S32 ch = gGLManager.mNumTextureImageUnits-1;
 
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
+	static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false); //Legacy does not jive with new batching.
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing || use_legacy_path)
 	{ //force to 1 texture index channel for old drivers
 		ch = 1;
 	}
