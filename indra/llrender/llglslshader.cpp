@@ -38,6 +38,7 @@
 #include "llfile.h"
 #include "llrender.h"
 #include "llcontrol.h"
+#include "llvertexbuffer.h"
 
 #if LL_DARWIN
 #include "OpenGL/OpenGL.h"
@@ -260,6 +261,13 @@ void LLGLSLShader::attachObjects(GLhandleARB* objects, S32 count)
 
 BOOL LLGLSLShader::mapAttributes(const vector<string> * attributes)
 {
+	//before linking, make sure reserved attributes always have consistent locations
+	for (U32 i = 0; i < LLShaderMgr::instance()->mReservedAttribs.size(); i++)
+	{
+		const char* name = LLShaderMgr::instance()->mReservedAttribs[i].c_str();
+		glBindAttribLocationARB(mProgramObject, i, (const GLcharARB *) name);
+	}
+	
 	//link the program
 	BOOL res = link();
 
@@ -333,7 +341,7 @@ void LLGLSLShader::mapUniform(GLint index, const vector<string> * uniforms)
 		for (S32 i = 0; i < (S32) LLShaderMgr::instance()->mReservedUniforms.size(); i++)
 		{
 			if ( (mUniform[i] == -1)
-				&& (LLShaderMgr::instance()->mReservedUniforms[i].compare(0, length, name, LLShaderMgr::instance()->mReservedUniforms[i].length()) == 0))
+				&& (LLShaderMgr::instance()->mReservedUniforms[i] == name))
 			{
 				//found it
 				mUniform[i] = location;
@@ -347,7 +355,7 @@ void LLGLSLShader::mapUniform(GLint index, const vector<string> * uniforms)
 			for (U32 i = 0; i < uniforms->size(); i++)
 			{
 				if ( (mUniform[i+LLShaderMgr::instance()->mReservedUniforms.size()] == -1)
-					&& ((*uniforms)[i].compare(0, length, name, (*uniforms)[i].length()) == 0))
+					&& ((*uniforms)[i] == name))
 				{
 					//found it
 					mUniform[i+LLShaderMgr::instance()->mReservedUniforms.size()] = location;
@@ -411,6 +419,7 @@ void LLGLSLShader::bind()
 	gGL.flush();
 	if (gGLManager.mHasShaderObjects)
 	{
+		LLVertexBuffer::unbind();
 		glUseProgramObjectARB(mProgramObject);
 		sCurBoundShader = mProgramObject;
 		sCurBoundShaderPtr = this;
@@ -436,6 +445,7 @@ void LLGLSLShader::unbind()
 				stop_glerror();
 			}
 		}
+		LLVertexBuffer::unbind();
 		glUseProgramObjectARB(0);
 		sCurBoundShader = 0;
 		sCurBoundShaderPtr = NULL;
@@ -445,6 +455,7 @@ void LLGLSLShader::unbind()
 
 void LLGLSLShader::bindNoShader(void)
 {
+	LLVertexBuffer::unbind();
 	if (gGLManager.mHasShaderObjects)
 	{
 		glUseProgramObjectARB(0);
