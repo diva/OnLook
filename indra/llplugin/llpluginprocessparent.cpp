@@ -409,7 +409,7 @@ void LLPluginProcessParent::idle(void)
 						cmd << gdb_path << " -n /proc/" << mProcess.getProcessID() << "/exe " << mProcess.getProcessID();
 
                         typedef boost::tokenizer< boost::escaped_list_separator<
-                                char>, typename std::basic_string<
+                                char>, std::basic_string<
                                 char>::const_iterator, 
                                 std::basic_string<char> >  tokenizerT;
 
@@ -418,7 +418,7 @@ void LLPluginProcessParent::idle(void)
                                 boost::escaped_list_separator< char >("\\",
                                 " ", "'\""));
                         std::vector< std::basic_string<char> > tokens;
-                        for (typename tokenizerT::iterator
+                        for (tokenizerT::iterator
                                 cur_token(tok.begin()), end_token(tok.end());
                                 cur_token != end_token; ++cur_token) {
                             if (!cur_token->empty())
