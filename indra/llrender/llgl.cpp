@@ -68,6 +68,16 @@ BOOL gGLActive = FALSE;
 
 std::ofstream gFailLog;
 
+void* gl_get_proc_address(const char *pStr)
+{
+	void* pPtr = (void*)GLH_EXT_GET_PROC_ADDRESS(pStr);
+	if(!pPtr)
+		llinfos << "Failed to find symbol '" << pStr << "'" << llendl;
+	return pPtr;
+}
+#undef GLH_EXT_GET_PROC_ADDRESS
+#define GLH_EXT_GET_PROC_ADDRESS(p)   gl_get_proc_address(p) 
+
 void ll_init_fail_log(std::string filename)
 {
 	gFailLog.open(filename.c_str());
