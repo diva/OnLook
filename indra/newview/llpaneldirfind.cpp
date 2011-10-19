@@ -194,13 +194,13 @@ void LLPanelDirFind::draw()
 // When we show any browser-based view, we want to hide all
 // the right-side XUI detail panels.
 // virtual
-void LLPanelDirFind::onVisibilityChange(BOOL new_visibility)
+void LLPanelDirFind::handleVisibilityChange(BOOL new_visibility)
 {
 	if (new_visibility)
 	{
 		mFloaterDirectory->hideAllDetailPanels();
 	}
-	LLPanel::onVisibilityChange(new_visibility);
+	LLPanel::handleVisibilityChange(new_visibility);
 }
 
 // virtual

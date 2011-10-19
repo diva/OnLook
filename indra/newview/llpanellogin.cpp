@@ -942,7 +942,6 @@ void LLPanelLogin::loadLoginPage()
 	}
 
 	// Grid
-	oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
 
 	if (gHippoGridManager->getConnectedGrid()->isSecondLife()) {
 		// find second life grid from login URI
@@ -960,6 +959,11 @@ void LLPanelLogin::loadLoginPage()
 			}
 		}
 	}
+	else
+	{
+		oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
+	}
+		
 	
 	gViewerWindow->setMenuBackgroundColor(false, !LLViewerLogin::getInstance()->isInProductionGrid());
 	gLoginMenuBarView->setBackgroundColor(gMenuBarView->getBackgroundColor());

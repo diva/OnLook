@@ -85,7 +85,6 @@ public:
 	static void onClickBack(void* user_data);
 	static void onClickForward(void* user_data);
 	static void onClickGo(void* user_data);
-	static void onClickClose(void* user_data);
 	static void onClickOpenWebBrowser(void* user_data);
 	static void onClickAssign(void* user_data);
 	static void onClickRewind(void* user_data);

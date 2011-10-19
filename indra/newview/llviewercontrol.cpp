@@ -445,17 +445,34 @@ static bool handleRenderLocalLightsChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleRenderDeferredChanged(const LLSD& newvalue)
+{
+	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
+	bool old_deferred = !newvalue.asBoolean() && can_defer;
+	LLRenderTarget::sUseFBO = (newvalue.asBoolean() && can_defer) || gSavedSettings.getBOOL("RenderUseFBO");
+	if (gPipeline.isInit())
+	{
+		gPipeline.updateRenderDeferred();
+		gPipeline.releaseGLBuffers();
+		gPipeline.createGLBuffers();
+		gPipeline.resetVertexBuffers();
+		if (old_deferred != newvalue.asBoolean())
+		{
+			LLViewerShaderMgr::instance()->setShaders();
+		}
+	}
+	return true;
+}
+
 static bool handleRenderUseFBOChanged(const LLSD& newvalue)
 {
-	LLRenderTarget::sUseFBO = newvalue.asBoolean();
+	bool can_defer = LLFeatureManager::getInstance()->isFeatureAvailable("RenderDeferred");
+	LLRenderTarget::sUseFBO = newvalue.asBoolean() || (gSavedSettings.getBOOL("RenderDeferred") && can_defer);
 	if (gPipeline.isInit())
 	{
 		gPipeline.releaseGLBuffers();
 		gPipeline.createGLBuffers();
-		if (LLPipeline::sRenderDeferred && LLRenderTarget::sUseFBO)
-		{
-			LLViewerShaderMgr::instance()->setShaders();
-		}
+		gPipeline.resetVertexBuffers();
 	}
 	return true;
 }
@@ -682,7 +699,7 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("RenderDebugGL")->getSignal()->connect(boost::bind(&handleRenderDebugGLChanged, _2));
 	gSavedSettings.getControl("RenderDebugPipeline")->getSignal()->connect(boost::bind(&handleRenderDebugPipelineChanged, _2));
 	gSavedSettings.getControl("RenderResolutionDivisor")->getSignal()->connect(boost::bind(&handleRenderResolutionDivisorChanged, _2));
-	gSavedSettings.getControl("RenderDeferred")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
+	gSavedSettings.getControl("RenderDeferred")->getSignal()->connect(boost::bind(&handleRenderDeferredChanged, _2));
 	gSavedSettings.getControl("RenderShadowDetail")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderDeferredSSAO")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderDeferredGI")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
