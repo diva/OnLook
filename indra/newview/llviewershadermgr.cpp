@@ -1605,19 +1605,19 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 
 	if (success)
 	{
-		gObjectSimpleAlphaMaskProgram.mName = "Simple Alpha Mask Shader";
-		gObjectSimpleAlphaMaskProgram.mFeatures.calculatesLighting = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.calculatesAtmospherics = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.hasGamma = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.hasAtmospherics = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.hasLighting = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.hasAlphaMask = true;
-		gObjectSimpleAlphaMaskProgram.mFeatures.mIndexedTextureChannels = 0;
-		gObjectSimpleAlphaMaskProgram.mShaderFiles.clear();
-		gObjectSimpleAlphaMaskProgram.mShaderFiles.push_back(make_pair("objects/simpleV.glsl", GL_VERTEX_SHADER_ARB));
-		gObjectSimpleAlphaMaskProgram.mShaderFiles.push_back(make_pair("objects/simpleF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gObjectSimpleAlphaMaskProgram.mShaderLevel = mVertexShaderLevel[SHADER_OBJECT];
-		success = gObjectSimpleAlphaMaskProgram.createShader(NULL, NULL);
+		gObjectSimpleWaterProgram.mName = "Simple Water Shader";
+		gObjectSimpleWaterProgram.mFeatures.calculatesLighting = true;
+		gObjectSimpleWaterProgram.mFeatures.calculatesAtmospherics = true;
+		gObjectSimpleWaterProgram.mFeatures.hasWaterFog = true;
+		gObjectSimpleWaterProgram.mFeatures.hasAtmospherics = true;
+		gObjectSimpleWaterProgram.mFeatures.hasLighting = true;
+		gObjectSimpleWaterProgram.mFeatures.mIndexedTextureChannels = 0;
+		gObjectSimpleWaterProgram.mShaderFiles.clear();
+		gObjectSimpleWaterProgram.mShaderFiles.push_back(make_pair("objects/simpleV.glsl", GL_VERTEX_SHADER_ARB));
+		gObjectSimpleWaterProgram.mShaderFiles.push_back(make_pair("objects/simpleWaterF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gObjectSimpleWaterProgram.mShaderLevel = mVertexShaderLevel[SHADER_OBJECT];
+		gObjectSimpleWaterProgram.mShaderGroup = LLGLSLShader::SG_WATER;
+		success = gObjectSimpleWaterProgram.createShader(NULL, NULL);
 	}
 	
 	if (success)
@@ -1636,23 +1636,24 @@ BOOL LLViewerShaderMgr::loadShadersObject()
 		success = gObjectBumpProgram.createShader(NULL, NULL);
 	}
 	
+	
 	if (success)
 	{
-		gObjectSimpleWaterProgram.mName = "Simple Water Shader";
-		gObjectSimpleWaterProgram.mFeatures.calculatesLighting = true;
-		gObjectSimpleWaterProgram.mFeatures.calculatesAtmospherics = true;
-		gObjectSimpleWaterProgram.mFeatures.hasWaterFog = true;
-		gObjectSimpleWaterProgram.mFeatures.hasAtmospherics = true;
-		gObjectSimpleWaterProgram.mFeatures.hasLighting = true;
-		gObjectSimpleWaterProgram.mFeatures.mIndexedTextureChannels = 0;
-		gObjectSimpleWaterProgram.mShaderFiles.clear();
-		gObjectSimpleWaterProgram.mShaderFiles.push_back(make_pair("objects/simpleV.glsl", GL_VERTEX_SHADER_ARB));
-		gObjectSimpleWaterProgram.mShaderFiles.push_back(make_pair("objects/simpleWaterF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gObjectSimpleWaterProgram.mShaderLevel = mVertexShaderLevel[SHADER_OBJECT];
-		gObjectSimpleWaterProgram.mShaderGroup = LLGLSLShader::SG_WATER;
-		success = gObjectSimpleWaterProgram.createShader(NULL, NULL);
+		gObjectSimpleAlphaMaskProgram.mName = "Simple Alpha Mask Shader";
+		gObjectSimpleAlphaMaskProgram.mFeatures.calculatesLighting = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.calculatesAtmospherics = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.hasGamma = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.hasAtmospherics = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.hasLighting = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.hasAlphaMask = true;
+		gObjectSimpleAlphaMaskProgram.mFeatures.mIndexedTextureChannels = 0;
+		gObjectSimpleAlphaMaskProgram.mShaderFiles.clear();
+		gObjectSimpleAlphaMaskProgram.mShaderFiles.push_back(make_pair("objects/simpleV.glsl", GL_VERTEX_SHADER_ARB));
+		gObjectSimpleAlphaMaskProgram.mShaderFiles.push_back(make_pair("objects/simpleF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gObjectSimpleAlphaMaskProgram.mShaderLevel = mVertexShaderLevel[SHADER_OBJECT];
+		success = gObjectSimpleAlphaMaskProgram.createShader(NULL, NULL);
 	}
-	
+
 	if (success)
 	{
 		gObjectSimpleWaterAlphaMaskProgram.mName = "Simple Water Alpha Mask Shader";
