@@ -136,6 +136,12 @@ void LLWorld::destroyClass()
 		LLVOCache::getInstance()->destroyClass() ;
 	}
 	LLViewerPartSim::getInstance()->destroyClass();
+
+	mDefaultWaterTexturep = NULL ;
+	for (S32 i = 0; i < 8; i++)
+	{
+		mEdgeWaterObjects[i] = NULL;
+	}
 }
 
 
@@ -172,11 +178,11 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host,
 
 	U32 iindex = 0;
 	U32 jindex = 0;
-	mWidth = region_size_x;
-	mWidthInMeters = mWidth * mScale; 
+	mWidth = region_size_x;	//MegaRegion
+	mWidthInMeters = mWidth * mScale; //MegaRegion
 	from_region_handle(region_handle, &iindex, &jindex);
-	S32 x = (S32)(iindex/256);
-	S32 y = (S32)(jindex/256);
+	S32 x = (S32)(iindex/256); //MegaRegion
+	S32 y = (S32)(jindex/256); //MegaRegion
 	llinfos << "Adding new region (" << x << ":" << y << ")" << llendl;
 	llinfos << "Host: " << host << llendl;
 
@@ -194,6 +200,7 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host,
 		llerrs << "Unable to create new region!" << llendl;
 	}
 
+	//Classic clouds
 	regionp->mCloudLayer.create(regionp);
 	regionp->mCloudLayer.setWidth((F32)mWidth);
 	regionp->mCloudLayer.setWindPointer(&regionp->mWind);
