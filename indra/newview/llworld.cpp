@@ -597,25 +597,25 @@ void LLWorld::updateVisibilities()
 {
 	F32 cur_far_clip = LLViewerCamera::getInstance()->getFar();
 
-	LLViewerCamera::getInstance()->setFar(mLandFarClip);
-
-	F32 diagonal_squared = F_SQRT2 * F_SQRT2 * mWidth * mWidth;
 	// Go through the culled list and check for visible regions
 	for (region_list_t::iterator iter = mCulledRegionList.begin();
-		 iter != mCulledRegionList.end(); )
+			iter != mCulledRegionList.end(); )
 	{
 		region_list_t::iterator curiter = iter++;
 		LLViewerRegion* regionp = *curiter;
-		F32 height = regionp->getLand().getMaxZ() - regionp->getLand().getMinZ();
-		F32 radius = 0.5f*(F32) sqrt(height * height + diagonal_squared);
-		if (!regionp->getLand().hasZData()
-			|| LLViewerCamera::getInstance()->sphereInFrustum(regionp->getCenterAgent(), radius))
+                
+		LLSpatialPartition* part = regionp->getSpatialPartition(LLViewerRegion::PARTITION_TERRAIN);
+		if (part)
 		{
-			mCulledRegionList.erase(curiter);
-			mVisibleRegionList.push_back(regionp);
+			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
+			if (LLViewerCamera::getInstance()->AABBInFrustum(group->mBounds[0], group->mBounds[1]))
+			{
+				mCulledRegionList.erase(curiter);
+				mVisibleRegionList.push_back(regionp);
+			}
 		}
-	}
-	
+    }
+        
 	// Update all of the visible regions 
 	for (region_list_t::iterator iter = mVisibleRegionList.begin();
 		 iter != mVisibleRegionList.end(); )
@@ -627,20 +627,23 @@ void LLWorld::updateVisibilities()
 			continue;
 		}
 
-		F32 height = regionp->getLand().getMaxZ() - regionp->getLand().getMinZ();
-		F32 radius = 0.5f*(F32) sqrt(height * height + diagonal_squared);
-		if (LLViewerCamera::getInstance()->sphereInFrustum(regionp->getCenterAgent(), radius))
+    	LLSpatialPartition* part = regionp->getSpatialPartition(LLViewerRegion::PARTITION_TERRAIN);
+		if (part)
 		{
-			regionp->calculateCameraDistance();
-			if (!gNoRender)
+			LLSpatialGroup* group = (LLSpatialGroup*) part->mOctree->getListener(0);
+			if (LLViewerCamera::getInstance()->AABBInFrustum(group->mBounds[0], group->mBounds[1]))
 			{
-				regionp->getLand().updatePatchVisibilities(gAgent);
+				regionp->calculateCameraDistance();
+				if (!gNoRender)
+				{
+					regionp->getLand().updatePatchVisibilities(gAgent);
+				}
 			}
-		}
-		else
-		{
-			mVisibleRegionList.erase(curiter);
-			mCulledRegionList.push_back(regionp);
+			else
+			{
+				mVisibleRegionList.erase(curiter);
+				mCulledRegionList.push_back(regionp);
+			}
 		}
 	}
 
