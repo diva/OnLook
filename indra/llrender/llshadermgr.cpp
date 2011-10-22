@@ -36,6 +36,8 @@
 
 #include "llfile.h"
 #include "llrender.h"
+#include "llcontrol.h"	//for LLCachedControl
+#include "lldir.h"		//for gDirUtilp
 
 #if LL_DARWIN
 #include "OpenGL/OpenGL.h"
@@ -701,6 +703,8 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		}
 	}
 
+	std::string error_str;
+
 	if (error == GL_NO_ERROR)
 	{
 		//check for errors
@@ -714,6 +718,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 				//an error occured, print log
 				LL_WARNS("ShaderLoading") << "GLSL Compilation Error: (" << error << ") in " << filename << LL_ENDL;
 				dumpObjectLog(ret);
+				error_str = get_object_log(ret);
 
 				std::stringstream ostr;
 				//dump shader source for debugging
@@ -731,6 +736,32 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 	else
 	{
 		ret = 0;
+	}
+	static const LLCachedControl<bool> dump_raw_shaders("ShyotlDumpRawShaders",false);
+	if(dump_raw_shaders || ret)
+	{
+		std::stringstream ostr;
+		for (GLuint i = 0; i < count; i++)
+		{
+			ostr << text[i];
+		}
+
+		std::string delim = gDirUtilp->getDirDelimiter();
+		std::string shader_name = filename.substr(filename.find_last_of("/")+1);			//shader_name.glsl
+		shader_name = shader_name.substr(0,shader_name.find_last_of("."));					//shader_name
+		std::string maindir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump"+delim);
+		//mkdir is NOT recursive. Step through the folders one by one.
+		LLFile::mkdir(maindir);																//..Roaming/SecondLife/logs/shader_dump/
+		LLFile::mkdir(maindir+="class" + llformat("%i",gpu_class) + delim);					//..shader_dump/class1/
+		LLFile::mkdir(maindir+=filename.substr(0,filename.find_last_of("/")+1));			//..shader_dump/class1/windlight/
+
+		LLAPRFile file(maindir + shader_name + (ret ? "" : llformat("_FAILED(%i)",error)) + ".glsl", LL_APR_W);
+		file.write(ostr.str().c_str(),ostr.str().length());
+		if(!error_str.empty())
+		{
+			LLAPRFile file2(maindir + shader_name + "_ERROR" + ".txt", LL_APR_W);
+			file.write(error_str.c_str(),error_str.length());
+		}
 	}
 	stop_glerror();
 
