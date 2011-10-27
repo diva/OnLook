@@ -1,7 +1,7 @@
 # -*- cmake -*-
 include(Prebuilt)
 
-if (NOT STANDALONE)
+if (NOT STANDALONE OR DARWIN)
   use_prebuilt_binary(glext)
   # possible glh_linear should have its own .cmake file instead
   #use_prebuilt_binary(glh_linear)
