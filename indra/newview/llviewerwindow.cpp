@@ -962,6 +962,17 @@ BOOL LLViewerWindow::handleMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask)
 
 BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK mask)
 {
+	//From Phoenix
+	gSavedSettings.setBOOL("zmm_rightmousedown",1);
+    if(gAgentCamera.cameraMouselook()&&gSavedSettings.getBOOL("zmm_isinml")==0)
+	{
+		llinfos << "zmmisinml set to true" << llendl;
+		gSavedSettings.setBOOL("zmm_isinml",1);
+		F32 deffov=LLViewerCamera::getInstance()->getDefaultFOV();
+		gSavedSettings.setF32("zmm_deffov",deffov);
+		LLViewerCamera::getInstance()->setDefaultFOV(gSavedSettings.getF32("zmm_deffov")/gSavedSettings.getF32("zmm_mlfov"));
+	}
+	
 	S32 x = pos.mX;
 	S32 y = pos.mY;
 	x = llround((F32)x / mDisplayScale.mV[VX]);
@@ -991,6 +1002,14 @@ BOOL LLViewerWindow::handleRightMouseDown(LLWindow *window,  LLCoordGL pos, MASK
 
 BOOL LLViewerWindow::handleRightMouseUp(LLWindow *window,  LLCoordGL pos, MASK mask)
 {
+	gSavedSettings.setBOOL("zmm_rightmousedown",0);
+	if(gSavedSettings.getBOOL("zmm_isinml")==1)
+	{
+		llinfos << "zmmisinml set to false" << llendl;
+		gSavedSettings.setBOOL("zmm_isinml",0);
+		LLViewerCamera::getInstance()->setDefaultFOV(gSavedSettings.getF32("zmm_deffov"));
+    }
+    
 	BOOL down = FALSE;
 	return handleAnyMouseClick(window,pos,mask,LLMouseHandler::CLICK_RIGHT,down);
 }
