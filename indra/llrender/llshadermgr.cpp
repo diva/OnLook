@@ -608,7 +608,8 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			text[count++] = strdup(decl.c_str());
 		}
 
-		text[count++] = strdup("varying float vary_texture_index;\n");
+		if(texture_index_channels != 1)
+			text[count++] = strdup("varying float vary_texture_index;\n");
 		text[count++] = strdup("vec4 diffuseLookup(vec2 texcoord)\n");
 		text[count++] = strdup("{\n");
 		
