@@ -1154,3 +1154,20 @@ void LLWorldMap::dropImagePriorities()
 		info->dropImagePriority();
 	}
 }
+
+LLPointer<LLViewerFetchedTexture> LLSimInfo::getLandForSaleImage ()
+{
+	if (mOverlayImage.isNull() && mMapImageID[2].notNull())
+	{
+		// Fetch the image if it hasn't been done yet (unlikely but...)
+		mOverlayImage = LLViewerTextureManager::getFetchedTexture(mMapImageID[2], MIPMAP_TRUE, LLViewerTexture::BOOST_MAP, LLViewerTexture::LOD_TEXTURE);
+		mOverlayImage->setAddressMode(LLTexUnit::TAM_CLAMP);
+	}
+	if (!mOverlayImage.isNull())
+	{
+		// Boost the fetch level when we try to access that image
+		mOverlayImage->setBoostLevel(LLViewerTexture::BOOST_MAP);
+	}
+	return mOverlayImage;
+}
+
