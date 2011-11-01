@@ -82,7 +82,7 @@ LLIconDictionary::LLIconDictionary()
 	addEntry(LLInventoryIcon::ICONNAME_ANIMATION, 				new IconEntry("inv_item_animation.tga"));
 	addEntry(LLInventoryIcon::ICONNAME_GESTURE, 				new IconEntry("inv_item_gesture.tga"));
 
-	addEntry(LLInventoryIcon::ICONNAME_CLOTHING_PHYSICS, 		new IconEntry("inv_item_physics.png"));
+        addEntry(LLInventoryIcon::ICONNAME_CLOTHING_PHYSICS, 		new IconEntry("inv_item_physics.tga"));
 
 	addEntry(LLInventoryIcon::ICONNAME_LINKITEM, 				new IconEntry("inv_link_item.tga"));
 	addEntry(LLInventoryIcon::ICONNAME_LINKFOLDER, 				new IconEntry("inv_link_folder.tga"));

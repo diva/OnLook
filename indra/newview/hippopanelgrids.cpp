@@ -294,12 +294,11 @@ bool HippoPanelGridsImpl::saveCurGrid()
 {
 	HippoGridInfo *gridInfo = 0;
 	
-	if (mState == NORMAL) {
-		
-		gridInfo = gHippoGridManager->getGrid(mCurGrid);
-	    gridInfo->retrieveGridInfo();
-		refresh();
-	} else if ((mState == ADD_NEW) || (mState == ADD_COPY)) {
+	gridInfo = gHippoGridManager->getGrid(mCurGrid);
+	gridInfo->retrieveGridInfo();
+	refresh();
+
+	if ((mState == ADD_NEW) || (mState == ADD_COPY)) {
 		
 		// check nickname
 		std::string gridname = childGetValue("gridname");
