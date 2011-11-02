@@ -370,6 +370,11 @@ private:
  **                                                                            **
  *******************************************************************************/
  
+//Custom
+public:
+	F32				getMouseLookDuration()	const { return mMouselookTimer.getElapsedTimeF32(); }
+private:
+	LLTimer			mMouselookTimer;
 };
 
 extern LLAgentCamera gAgentCamera;
