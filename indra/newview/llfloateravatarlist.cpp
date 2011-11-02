@@ -1044,7 +1044,7 @@ void LLFloaterAvatarList::focusOnCurrent()
 		{
 			removeFocusFromAll();
 			entry->setFocus(TRUE);
-			gAgentCamera.lookAtObject(mFocusedAvatar, CAMERA_POSITION_OBJECT);
+			gAgentCamera.lookAtObject(mFocusedAvatar, false);
 			return;
 		}
 	}
@@ -1084,7 +1084,7 @@ void LLFloaterAvatarList::focusOnPrev(BOOL marked_only)
 		removeFocusFromAll();
 		prev->setFocus(TRUE);
 		mFocusedAvatar = prev->getID();
-		gAgentCamera.lookAtObject(mFocusedAvatar, CAMERA_POSITION_OBJECT);
+		gAgentCamera.lookAtObject(mFocusedAvatar, false);
 	}
 }
 
@@ -1129,7 +1129,7 @@ void LLFloaterAvatarList::focusOnNext(BOOL marked_only)
 		removeFocusFromAll();
 		next->setFocus(TRUE);
 		mFocusedAvatar = next->getID();
-		gAgentCamera.lookAtObject(mFocusedAvatar, CAMERA_POSITION_OBJECT);
+		gAgentCamera.lookAtObject(mFocusedAvatar, false);
 	}
 }
 
