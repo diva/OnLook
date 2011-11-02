@@ -364,7 +364,7 @@ LLVector3 LLManip::getPivotPoint()
 	{
 		if(pivot_as_percent)
 			offset = ((offset * .01f) - LLVector3(.5f,.5f,.5f)).scaleVec(mObjectSelection->getFirstRootObject(TRUE)->getScale());				
-		return mObjectSelection->getFirstObject()->getPivotPositionAgent() + offset * mObjectSelection->getFirstRootObject(TRUE)->getRotation();
+		return mObjectSelection->getFirstRootObject(TRUE)->getPivotPositionAgent() + offset * mObjectSelection->getFirstRootObject(TRUE)->getRotation();
 	}
 	if(pivot_as_percent)
 		offset = ((offset * .01f) - LLVector3(.5f,.5f,.5f)).scaleVec(LLSelectMgr::getInstance()->getBBoxOfSelection().getExtentLocal());			
