@@ -328,6 +328,8 @@ void LLNetMap::draw()
 
 		LLVector3 map_center_agent = gAgent.getPosAgentFromGlobal(mObjectImageCenterGlobal);
 		map_center_agent -= gAgentCamera.getCameraPositionAgent();
+		map_center_agent.mV[0] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
+		map_center_agent.mV[1] *= mScale/LLWorld::getInstance()->getRegionWidthInMeters();
 
 		gGL.getTexUnit(0)->bind(mObjectImagep);
 		F32 image_half_width = 0.5f*mObjectMapPixels;
