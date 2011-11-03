@@ -97,6 +97,7 @@ public:
 
 	void clearImage();					// Clears the reference to the Land for sale image for that region
 	void dropImagePriority();			// Drops the boost level of the Land for sale image for that region
+	LLPointer<LLViewerFetchedTexture> getLandForSaleImage();	// Get the overlay image, fetch it if necessary
 	void updateAgentCount(F64 time);	// Send an item request for agent count on that region if time's up
 	// Setters
 	void setName(std::string& name) { mName = name; }
