@@ -661,6 +661,10 @@ public:
 	static int 		convertTextToMaturity(char text); 
 	bool 			sendMaturityPreferenceToServer(int preferredMaturity); // ! "U8" instead of "int"?
 
+	// Maturity callbacks for PreferredMaturity control variable
+	void 			handleMaturity(const LLSD& newvalue);
+	bool 			validateMaturity(const LLSD& newvalue);
+
 
 
 /**                    Access
