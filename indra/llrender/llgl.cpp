@@ -68,6 +68,7 @@ BOOL gGLActive = FALSE;
 
 std::ofstream gFailLog;
 
+#if !LL_DARWIN //Darwin doesn't load extensions that way! -SG
 void* gl_get_proc_address(const char *pStr)
 {
 	void* pPtr = (void*)GLH_EXT_GET_PROC_ADDRESS(pStr);
@@ -77,6 +78,7 @@ void* gl_get_proc_address(const char *pStr)
 }
 #undef GLH_EXT_GET_PROC_ADDRESS
 #define GLH_EXT_GET_PROC_ADDRESS(p)   gl_get_proc_address(p) 
+#endif //!LL_DARWIN
 
 void ll_init_fail_log(std::string filename)
 {

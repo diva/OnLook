@@ -265,6 +265,9 @@ void LLAgent::init()
 //	LLDebugVarMessageBox::show("Camera Lag", &CAMERA_FOCUS_HALF_LIFE, 0.5f, 0.01f);
 
 	*mEffectColor = gSavedSettings.getColor4("EffectColor");
+
+	gSavedSettings.getControl("PreferredMaturity")->getValidateSignal()->connect(boost::bind(&LLAgent::validateMaturity, this, _2));
+	gSavedSettings.getControl("PreferredMaturity")->getSignal()->connect(boost::bind(&LLAgent::handleMaturity, this, _2));
 	
 	mInitialized = TRUE;
 }
@@ -2377,6 +2380,15 @@ const LLAgentAccess& LLAgent::getAgentAccess()
 	return *mAgentAccess;
 }
 
+bool LLAgent::validateMaturity(const LLSD& newvalue)
+{
+	return mAgentAccess->canSetMaturity(newvalue.asInteger());
+}
+
+void LLAgent::handleMaturity(const LLSD& newvalue)
+{
+	sendMaturityPreferenceToServer(newvalue.asInteger());
+}
 
 void LLAgent::buildFullname(std::string& name) const
 {

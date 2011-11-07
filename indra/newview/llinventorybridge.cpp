@@ -797,7 +797,7 @@ void LLInvFVBridge::addDeleteContextMenuOptions(menuentry_vec_t &items,
 	}
 
 	// "Remove link" and "Delete" are the same operation.
-	if (obj && obj->getIsLinkType() && !get_is_item_worn(mUUID))
+	if (obj && obj->getIsLinkType() /* && !get_is_item_worn(mUUID)*/)
 	{
 		items.push_back(std::string("Remove Link"));
 	}
@@ -4289,7 +4289,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 				
 				if (!avatarp->canAttachMoreObjects())
 				{
-					disabled_items.push_back(std::string("Object Wea"));
+					disabled_items.push_back(std::string("Object Wear"));
 					disabled_items.push_back(std::string("Object Add"));
 					disabled_items.push_back(std::string("Attach To"));
 					disabled_items.push_back(std::string("Attach To HUD"));

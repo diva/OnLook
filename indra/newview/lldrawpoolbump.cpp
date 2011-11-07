@@ -793,8 +793,7 @@ void LLDrawPoolBump::endBump(U32 pass)
 	else
 	{
 		// Disable texture blending on unit 1
-		gGL.getTexUnit(1)->activate();
-                gGL.getTexUnit(1)->disable();
+		gGL.getTexUnit(1)->disable();
 		gGL.getTexUnit(1)->setTextureBlendType(LLTexUnit::TB_MULT);
 
 		// Disable texture blending on unit 0
@@ -1375,11 +1374,16 @@ void LLDrawPoolBump::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL 
 			}
 			else
 			{
-				gGL.getTexUnit(1)->activate();
+				if (!gPipeline.canUseVertexShaders())
+				{
+					gGL.getTexUnit(1)->activate();
+					glMatrixMode(GL_TEXTURE);
+					glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
+				}
+				gGL.getTexUnit(0)->activate();
 				glMatrixMode(GL_TEXTURE);
 				glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
 				gPipeline.mTextureMatrixOps++;
-				gGL.getTexUnit(0)->activate();
 			}
 
 			glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
@@ -1416,9 +1420,14 @@ void LLDrawPoolBump::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL 
 		}
 		else
 		{
-			gGL.getTexUnit(1)->activate();
-			glLoadIdentity();
+			if (!gPipeline.canUseVertexShaders())
+			{
+				gGL.getTexUnit(1)->activate();
+				glMatrixMode(GL_TEXTURE);
+				glLoadIdentity();
+			}
 			gGL.getTexUnit(0)->activate();
+			glMatrixMode(GL_TEXTURE);
 		}
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
@@ -1429,7 +1438,7 @@ void LLDrawPoolInvisible::render(S32 pass)
 { //render invisiprims
 	LLFastTimer t(LLFastTimer::FTM_RENDER_INVISIBLE);
   
-	if (gPipeline.canUseVertexShaders())
+	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gOcclusionProgram.bind();
 	}
@@ -1441,7 +1450,7 @@ void LLDrawPoolInvisible::render(S32 pass)
 	gGL.setColorMask(true, false);
 	glStencilMask(0xFFFFFFFF);
 
-	if (gPipeline.canUseVertexShaders())
+	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gOcclusionProgram.unbind();
 	}
