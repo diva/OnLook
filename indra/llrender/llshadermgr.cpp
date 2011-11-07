@@ -675,32 +675,41 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		{
 			LL_WARNS("ShaderLoading") << "GL ERROR in glCreateShaderObjectARB: " << error << LL_ENDL;
 			glDeleteObjectARB(ret); //no longer need handle
+			ret=0;
 		}
 	}
 	
 	//load source
-	glShaderSourceARB(ret, count, (const GLcharARB**) text, NULL);
-
-	if (gDebugGL)
+	if(ret)
 	{
-		error = glGetError();
-		if (error != GL_NO_ERROR)
+		glShaderSourceARB(ret, count, (const GLcharARB**) text, NULL);
+
+		if (gDebugGL)
 		{
-			LL_WARNS("ShaderLoading") << "GL ERROR in glShaderSourceARB: " << error << LL_ENDL;
-			glDeleteObjectARB(ret); //no longer need handle
+			error = glGetError();
+			if (error != GL_NO_ERROR)
+			{
+				LL_WARNS("ShaderLoading") << "GL ERROR in glShaderSourceARB: " << error << LL_ENDL;
+				glDeleteObjectARB(ret); //no longer need handle
+				ret=0;
+			}
 		}
 	}
 
 	//compile source
-	glCompileShaderARB(ret);
-
-	if (gDebugGL)
+	if(ret)
 	{
-		error = glGetError();
-		if (error != GL_NO_ERROR)
+		glCompileShaderARB(ret);
+
+		if (gDebugGL)
 		{
-			LL_WARNS("ShaderLoading") << "GL ERROR in glCompileShaderARB: " << error << LL_ENDL;
-			glDeleteObjectARB(ret); //no longer need handle
+			error = glGetError();
+			if (error != GL_NO_ERROR)
+			{
+				LL_WARNS("ShaderLoading") << "GL ERROR in glCompileShaderARB: " << error << LL_ENDL;
+				glDeleteObjectARB(ret); //no longer need handle
+				ret=0;
+			}
 		}
 	}
 
@@ -733,13 +742,12 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 				ret = 0;
 			}	
 		}
+		if(ret)
+			dumpObjectLog(ret,false);
 	}
-	else
-	{
-		ret = 0;
-	}
+
 	static const LLCachedControl<bool> dump_raw_shaders("ShyotlDumpRawShaders",false);
-	if(dump_raw_shaders || ret)
+	if(dump_raw_shaders || !ret)
 	{
 		std::stringstream ostr;
 		for (GLuint i = 0; i < count; i++)
