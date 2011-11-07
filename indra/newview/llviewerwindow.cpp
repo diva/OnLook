@@ -4501,6 +4501,20 @@ void LLViewerWindow::destroyWindow()
 
 void LLViewerWindow::drawMouselookInstructions()
 {
+	static const F32 INSTRUCTIONS_OPAQUE_TIME = 10.f;
+	static const F32 INSTRUCTIONS_FADE_TIME = 5.f;
+
+	F32 mouselook_duration = gAgentCamera.getMouseLookDuration();
+	if( mouselook_duration >= (INSTRUCTIONS_OPAQUE_TIME+INSTRUCTIONS_OPAQUE_TIME) )
+		return;
+
+	F32 alpha = 1.f;
+
+	if( mouselook_duration > INSTRUCTIONS_OPAQUE_TIME)	//instructions are fading
+	{
+		alpha = (F32) sqrt(1.f-pow(((mouselook_duration-INSTRUCTIONS_OPAQUE_TIME)/INSTRUCTIONS_FADE_TIME),2.f));
+	}
+
 	// Draw instructions for mouselook ("Press ESC to leave Mouselook" in a box at the top of the screen.)
 	const std::string instructions = "Press ESC to leave Mouselook.";
 	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
@@ -4515,7 +4529,7 @@ void LLViewerWindow::drawMouselookInstructions()
 
 	{
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-		gGL.color4f( 0.9f, 0.9f, 0.9f, 1.0f );
+		gGL.color4f( 0.9f, 0.9f, 0.9f, alpha );
 		gl_rect_2d( instructions_rect );
 	}
 	
@@ -4523,7 +4537,7 @@ void LLViewerWindow::drawMouselookInstructions()
 		instructions, 0,
 		instructions_rect.mLeft + INSTRUCTIONS_PAD,
 		instructions_rect.mTop - INSTRUCTIONS_PAD,
-		LLColor4( 0.0f, 0.0f, 0.0f, 1.f ),
+		LLColor4( 0.0f, 0.0f, 0.0f, alpha ),
 		LLFontGL::LEFT, LLFontGL::TOP);
 }
 
