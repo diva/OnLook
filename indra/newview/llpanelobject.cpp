@@ -2659,9 +2659,9 @@ void LLPanelObject::onPasteSize(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, 10.f);	
-	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, 10.f);	
-	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, 10.f);
+	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, 64.f);	
+	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, 64.f);	
+	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, 64.f);
 	
 	self->mCtrlScaleX->set( mClipboardSize.mV[VX] );
 	self->mCtrlScaleY->set( mClipboardSize.mV[VY] );
