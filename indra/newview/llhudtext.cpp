@@ -108,8 +108,8 @@ LLHUDText::LLHUDText(const U8 type) :
 {
 	mColor = LLColor4(1.f, 1.f, 1.f, 1.f);
 	mDoFade = TRUE;
-	mFadeDistance = 8.f;
-	mFadeRange = 4.f;
+	mFadeDistance = gSavedSettings.getF32("SGTextFadeDistance");
+	mFadeRange = mFadeDistance/2.f;
 	mZCompare = TRUE;
 	mDropShadow = TRUE;
 	mOffscreen = FALSE;

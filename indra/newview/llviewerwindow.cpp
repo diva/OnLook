@@ -4500,7 +4500,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		gPipeline.resetDrawOrders();
 	}
 
-	if (high_res && (show_ui || !hide_hud))
+	if (high_res)
 	{
 		send_agent_resume();
 	}

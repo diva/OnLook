@@ -738,6 +738,7 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 	}
 
 	// HACK to avoid assert: error checking system makes sure that the cursor is set during every handleHover.  This is actually a no-op since the cursor is hidden.
+	gViewerWindow->hideCursor();
 	gViewerWindow->setCursor(UI_CURSOR_ARROW);  
 
 	lldebugst(LLERR_USER_INPUT) << "hover handled by LLToolGrab (active) [cursor hidden]" << llendl;		

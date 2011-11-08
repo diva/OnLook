@@ -3127,7 +3127,7 @@ void dumpVFSCaches()
 U32 LLAppViewer::getTextureCacheVersion()
 {
 	//viewer texture cache version, change if the texture cache format changes.
-	static const U32 TEXTURE_CACHE_VERSION = 7;
+	static const U32 TEXTURE_CACHE_VERSION = 8;
 
 	return TEXTURE_CACHE_VERSION ;
 }

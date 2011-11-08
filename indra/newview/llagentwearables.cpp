@@ -1130,6 +1130,9 @@ void LLAgentWearables::makeNewOutfit(
 			if( old_wearable )
 			{
 				LLViewerInventoryItem* item = gInventory.getItem(getWearableItemID((LLWearableType::EType)index));
+				llassert(item);
+				if (!item)
+					continue;
 				if (fUseOutfits)
 				{
 					std::string strOrdering = llformat("@%d", item->getWearableType() * 100);

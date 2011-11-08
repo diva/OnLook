@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>SGTextFadeDistance</key>
+  <map>
+    <key>Comment</key>
+    <string>Distance after which HUD text starts to fade</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <integer>8.0</integer>
+  </map>
+
   <key>CCSAllowNameplateOverride</key>
   <map>
     <key>Comment</key>
@@ -519,42 +531,7 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-  </map>
-    <key>ShyotlRenderVBOStrideMode</key>
-    <map>
-      <key>Comment</key>
-      <string>0 = Standard behavior
-1 = Force strided VBOs
-2 = Force unstrided(dense) VBOs</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>U32</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>ShyotlUseLegacyRenderPath</key>
-    <map>
-      <key>Comment</key>
-      <string>Use deprecated pre-3.x OpenGL api calls.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>ShyotlUseLegacyTextureBatching</key>
-    <map>
-      <key>Comment</key>
-      <string>Disable usage of extra samplers in shaders. Decreases batch sizes, however also reduces branching in shaders drastcially.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>  
+	</map>
     <key>ResetFocusOnSelfClick</key>
 		<map>
 		<key>Comment</key>
