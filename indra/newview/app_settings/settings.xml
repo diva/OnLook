@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>SGTextFadeDistance</key>
+  <map>
+    <key>Comment</key>
+    <string>Distance after which HUD text starts to fade</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <integer>8.0</integer>
+  </map>
+
   <key>CCSAllowNameplateOverride</key>
   <map>
     <key>Comment</key>
