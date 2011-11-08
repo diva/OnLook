@@ -396,8 +396,14 @@ void LLNetMap::draw()
 			LLViewerRegion* avatar_region = LLWorld::getInstance()->getRegionFromPosGlobal(positions[i]);
 			LLUUID estate_owner = avatar_region? avatar_region->getOwner() : LLUUID::null;
 
+			// MOYMOD Minimap custom av colors.
+			boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(avatar_ids[i]);
+			if(it != mm_MarkerColors.end())
+			{
+				avColor = it->second;
+			}
 			//Lindens are always more Linden than your friend, make that take precedence
-			if(LLMuteList::getInstance()->isLinden(avName))
+			else if(LLMuteList::getInstance()->isLinden(avName))
 			{
 				avColor = linden_color;
 			}
@@ -410,15 +416,6 @@ void LLNetMap::draw()
 			else if(is_agent_friend(avatar_ids[i]))
 			{
 				avColor = friend_color;
-			}
-			else 
-			{
-				// MOYMOD Minimap custom av colors.
-				boost::unordered_map<const LLUUID,LLColor4>::const_iterator it = mm_MarkerColors.find(avatar_ids[i]);
-				if(it != mm_MarkerColors.end())
-				{
-					avColor = it->second;
-				}
 			}
 
 			LLWorldMapView::drawAvatar(
