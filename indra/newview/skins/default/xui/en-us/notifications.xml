@@ -3693,7 +3693,7 @@ Does this group contain Mature content?
    label="Confirm restart"
    name="ConfirmRestart"
    type="alert">
-Do you really want to restart this region in 2 minutes?
+Do you really want to restart this region?
     <usetemplate
      name="okcancelbuttons"
      notext="Cancel"
