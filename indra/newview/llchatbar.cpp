@@ -91,6 +91,7 @@ void toggleChatHistory(void* user_data);
 // [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d) | Modified: RLVa-0.2.2a
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
 // [/RLVa:KB]
+void really_send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32 channel);
 
 
 class LLChatBarGestureObserver : public LLGestureManagerObserver
@@ -160,7 +161,6 @@ BOOL LLChatBar::postBuild()
 		mInputEditor->setPassDelete(TRUE);
 		mInputEditor->setReplaceNewlinesWithSpaces(FALSE);
 
-		mInputEditor->setMaxTextLength(DB_CHAT_MSG_STR_LEN);
 		mInputEditor->setEnableLineHistory(TRUE);
 	}
 
@@ -662,10 +662,6 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 	S32 channel = 0;
 	LLWString out_text = stripChannelNumber(wtext, &channel);
 	std::string utf8_out_text = wstring_to_utf8str(out_text);
-	if (!utf8_out_text.empty())
-	{
-		utf8_out_text = utf8str_truncate(utf8_out_text, MAX_MSG_STR_LEN);
-	}
 
 	std::string utf8_text = wstring_to_utf8str(wtext);
 	utf8_text = utf8str_trim(utf8_text);
@@ -774,6 +770,60 @@ void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channe
 	}
 // [/RLVa:KB]
 
+	// Split messages that are too long, same code like in llimpanel.cpp
+	U32 split = MAX_MSG_BUF_SIZE - 1;
+	U32 pos = 0;
+	U32 total = utf8_out_text.length();
+
+    // Don't break null messages
+	if (total == 0)
+	{
+		really_send_chat_from_viewer(utf8_out_text, type, channel);
+	}
+
+	while (pos < total)
+	{
+		U32 next_split = split;
+
+		if (pos + next_split > total)
+		{
+			next_split = total - pos;
+		}
+		else
+		{
+			// don't split utf-8 bytes
+			while (U8(utf8_out_text[pos + next_split]) != 0x20	// space
+				&& U8(utf8_out_text[pos + next_split]) != 0x21	// !
+				&& U8(utf8_out_text[pos + next_split]) != 0x2C	// ,
+				&& U8(utf8_out_text[pos + next_split]) != 0x2E	// .
+				&& U8(utf8_out_text[pos + next_split]) != 0x3F	// ?
+				&& next_split > 0)
+			{
+				--next_split;
+			}
+
+			if (next_split == 0)
+			{
+				next_split = split;
+				LL_WARNS("Splitting") << "utf-8 couldn't be split correctly" << LL_ENDL;
+			}
+			else
+			{
+				++next_split;
+			}
+		}
+
+		std::string send = utf8_out_text.substr(pos, next_split);
+		pos += next_split;
+
+		really_send_chat_from_viewer(send, type, channel);
+	}
+}
+
+
+// This should do nothing other than send chat, with no other processing.
+void really_send_chat_from_viewer(const std::string& utf8_out_text, EChatType type, S32 channel)
+{
 	LLMessageSystem* msg = gMessageSystem;
 	// <edit>
 	if(channel >= 0)

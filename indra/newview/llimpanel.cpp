@@ -1236,7 +1236,6 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 	// [/Ansariel: Display name support]
 	
 
-	mInputEditor->setMaxTextLength(DB_IM_MSG_STR_LEN);
 	// enable line history support for instant message bar
 	mInputEditor->setEnableLineHistory(TRUE);
 
@@ -2192,8 +2191,6 @@ void LLFloaterIMPanel::sendMsg()
 				}
 			}
 
-			utf8text = utf8str_truncate(utf8text, MAX_MSG_BUF_SIZE - 1);
-
 			std::string prefix = utf8text.substr(0, 4);
 			if (prefix != "/me " && prefix != "/me'")
 				if (mRPMode) utf8text = "[[" + utf8text + "]]";
@@ -2236,10 +2233,52 @@ void LLFloaterIMPanel::sendMsg()
 
 			if ( mSessionInitialized )
 			{
-				deliver_message(utf8text,
-								mSessionUUID,
-								mOtherParticipantUUID,
-								mDialog);
+				// Split messages that are too long, same code like in llimpanel.cpp
+				U32 split = MAX_MSG_BUF_SIZE - 1;
+				U32 pos = 0;
+				U32 total = utf8text.length();
+
+				while (pos < total)
+				{
+					U32 next_split = split;
+
+					if (pos + next_split > total)
+					{
+						next_split = total - pos;
+					}
+					else
+					{
+						// don't split utf-8 bytes
+						while (U8(utf8text[pos + next_split]) != 0x20	// space
+							&& U8(utf8text[pos + next_split]) != 0x21	// !
+							&& U8(utf8text[pos + next_split]) != 0x2C	// ,
+							&& U8(utf8text[pos + next_split]) != 0x2E	// .
+							&& U8(utf8text[pos + next_split]) != 0x3F	// ?
+							&& next_split > 0)
+						{
+							--next_split;
+						}
+
+						if (next_split == 0)
+						{
+							next_split = split;
+							LL_WARNS("Splitting") << "utf-8 couldn't be split correctly" << LL_ENDL;
+						}
+						else
+						{
+							++next_split;
+						}
+					}
+
+					std::string send = utf8text.substr(pos, next_split);
+					pos += next_split;
+LL_WARNS("Splitting") << "Pos: " << pos << " next_split: " << next_split << LL_ENDL;
+
+					deliver_message(send,
+									mSessionUUID,
+									mOtherParticipantUUID,
+									mDialog);
+				}
 
 				// local echo
 				if((mDialog == IM_NOTHING_SPECIAL) && 
