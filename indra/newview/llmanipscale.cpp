@@ -68,6 +68,7 @@
 #if MESH_ENABLED
 #include "llmeshrepository.h"
 #endif //MESH_ENABLED
+#include "hippolimits.h"
 
 
 const F32 MAX_MANIP_SELECT_DISTANCE_SQUARED = 11.f * 11.f;
@@ -98,6 +99,9 @@ const LLManip::EManipPart MANIPULATOR_IDS[NUM_MANIPULATORS] =
 
 F32 get_default_max_prim_scale(bool is_flora) 
 {
+//CF: both scales are 256, so what?, I now use gridmanagersetting
+	return gHippoLimits->getMaxPrimScale();
+#if 0
 	// a bit of a hack, but if it's foilage, we don't want to use the
 	// new larger scale which would result in giant trees and grass
 #if MESH_ENABLED
@@ -114,6 +118,7 @@ F32 get_default_max_prim_scale(bool is_flora)
 #if !MESH_ENABLED
 	return DEFAULT_MAX_PRIM_SCALE;
 #endif //!MESH_ENABLED
+#endif //0
 }
 
 // static

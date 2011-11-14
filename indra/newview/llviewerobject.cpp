@@ -2336,7 +2336,8 @@ void LLViewerObject::interpolateLinearMotion(const F64 & time, const F32 & dt)
 		}
 
 		new_pos.mV[VZ] = llmax(min_height, new_pos.mV[VZ]);
-		new_pos.mV[VZ] = llmin(LLWorld::getInstance()->getRegionMaxHeight(), new_pos.mV[VZ]);
+		//Removing check to allow high altitude flight games -SG
+		//new_pos.mV[VZ] = llmin(LLWorld::getInstance()->getRegionMaxHeight(), new_pos.mV[VZ]);
 
 		// Check to see if it's going off the region
 		LLVector3 temp(new_pos);
