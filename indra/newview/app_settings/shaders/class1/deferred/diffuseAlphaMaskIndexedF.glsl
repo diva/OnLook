@@ -8,13 +8,12 @@
 varying vec3 vary_normal;
 
 uniform float minimum_alpha;
-uniform float maximum_alpha;
 
 void main() 
 {
 	vec4 col = diffuseLookup(gl_TexCoord[0].xy) * gl_Color;
 	
-	if (col.a < minimum_alpha || col.a > maximum_alpha)
+	if (col.a < minimum_alpha)
 	{
 		discard;
 	}

@@ -6,7 +6,6 @@
  */
  
 uniform float minimum_alpha;
-uniform float maximum_alpha;
 
 uniform sampler2D diffuseMap;
 
@@ -16,7 +15,7 @@ void main()
 {
 	float alpha = texture2D(diffuseMap, gl_TexCoord[0].xy).a * gl_Color.a;
 
-	if (alpha < minimum_alpha || alpha > maximum_alpha)
+	if (alpha < minimum_alpha)
 	{
 		discard;
 	}

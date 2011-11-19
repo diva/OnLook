@@ -8129,7 +8129,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	{
 		LLFastTimer ftm(LLFastTimer::FTM_SHADOW_ALPHA);
 		gDeferredShadowAlphaMaskProgram.bind();
-		gDeferredShadowAlphaMaskProgram.setAlphaRange(0.6f, 1.f);
+		gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.6f);
 		renderObjects(LLRenderPass::PASS_ALPHA_SHADOW, LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_COLOR, TRUE);
 		glColor4f(1,1,1,1);
 		renderObjects(LLRenderPass::PASS_GRASS, LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0, TRUE);

@@ -80,7 +80,7 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 	if (gPipeline.canUseVertexShaders())
 	{
 		shader->bind();
-		shader->setAlphaRange(0.5f, 1.f);
+		shader->setMinimumAlpha(0.5f);
 	}
 	else
 	{
@@ -149,7 +149,7 @@ void LLDrawPoolTree::beginDeferredPass(S32 pass)
 		
 	shader = &gDeferredNonIndexedDiffuseAlphaMaskProgram;
 	shader->bind();
-	shader->setAlphaRange(0.5f, 1.f);
+	shader->setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderDeferred(S32 pass)
@@ -175,7 +175,7 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredShadowAlphaMaskProgram.bind();
-	gDeferredShadowAlphaMaskProgram.setAlphaRange(0.5f, 1.f);
+	gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderShadow(S32 pass)

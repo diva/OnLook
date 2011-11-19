@@ -6,7 +6,6 @@
  */
  
 uniform float minimum_alpha;
-uniform float maximum_alpha;
 
 uniform sampler2D diffuseMap;
 uniform sampler2D normalMap;
@@ -15,7 +14,7 @@ uniform sampler2D specularMap;
 void main() 
 {
 	vec4 col = texture2D(diffuseMap, gl_TexCoord[0].xy);
-	if (col.a < minimum_alpha || col.a > maximum_alpha)
+	if (col.a < minimum_alpha)
 	{
 		discard;
 	}
