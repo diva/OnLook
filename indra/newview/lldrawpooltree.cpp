@@ -80,7 +80,7 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 	if (gPipeline.canUseVertexShaders())
 	{
 		shader->bind();
-		shader->setAlphaRange(0.5f, 1.f);
+		shader->setMinimumAlpha(0.5f);
 	}
 	else
 	{
@@ -149,7 +149,7 @@ void LLDrawPoolTree::beginDeferredPass(S32 pass)
 		
 	shader = &gDeferredNonIndexedDiffuseAlphaMaskProgram;
 	shader->bind();
-	shader->setAlphaRange(0.5f, 1.f);
+	shader->setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderDeferred(S32 pass)
@@ -175,7 +175,7 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredShadowAlphaMaskProgram.bind();
-	gDeferredShadowAlphaMaskProgram.setAlphaRange(0.5f, 1.f);
+	gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderShadow(S32 pass)
@@ -233,13 +233,10 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			}
 			
 			gGLLastMatrix = NULL;
-			glLoadMatrixd(gGLModelView);
+			glLoadMatrixf(gGLModelView);
 			//glPushMatrix();
-			F32 mat[16];
-			for (U32 i = 0; i < 16; i++)
-				mat[i] = (F32) gGLModelView[i];
 
-			LLMatrix4 matrix(mat);
+			LLMatrix4 matrix(gGLModelView);
 			
 			// Translate to tree base  HACK - adjustment in Z plants tree underground
 			const LLVector3 &pos_agent = treep->getPositionAgent();

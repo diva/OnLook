@@ -54,6 +54,8 @@ void hud_render_utf8text(const std::string &str, const LLVector3 &pos_agent,
 	hud_render_text(wstr, pos_agent, font, style, x_offset, y_offset, color, orthographic);
 }
 
+int glProjectf(const LLVector3& object, const F32* modelview, const F32* projection, const LLRect& viewport, LLVector3& windowCoordinate);
+
 void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 					const LLFontGL &font,
 					const U8 style,
@@ -103,17 +105,15 @@ void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 
 	//get the render_pos in screen space
 	
-	F64 winX, winY, winZ;
-	LLRect world_view_rect = gViewerWindow->getWorldViewRectRaw();
-	S32	viewport[4];
-	viewport[0] = world_view_rect.mLeft;
-	viewport[1] = world_view_rect.mBottom;
-	viewport[2] = world_view_rect.getWidth();
-	viewport[3] = world_view_rect.getHeight();
-	gluProject(render_pos.mV[0], render_pos.mV[1], render_pos.mV[2],
-				gGLModelView, gGLProjection, (GLint*) viewport,
-				&winX, &winY, &winZ);
-		
+	LLVector3 window_coordinates;
+	F32& winX = window_coordinates.mV[VX];
+	F32& winY = window_coordinates.mV[VY];
+	F32& winZ = window_coordinates.mV[VZ];
+
+	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
+	
+	glProjectf(render_pos, gGLModelView, gGLProjection, world_view_rect, window_coordinates);
+
 	//fonts all render orthographically, set up projection``
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();

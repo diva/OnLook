@@ -97,7 +97,7 @@ void LLDrawPoolAlpha::renderDeferred(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
 	gDeferredDiffuseAlphaMaskProgram.bind();
-	gDeferredDiffuseAlphaMaskProgram.setAlphaRange(0.33f, 1.f);
+	gDeferredDiffuseAlphaMaskProgram.setMinimumAlpha(0.33f);
 
 	//render alpha masked objects
 	LLRenderPass::pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
@@ -143,7 +143,7 @@ void LLDrawPoolAlpha::beginPostDeferredPass(S32 pass)
 		simple_shader = NULL;
 		fullbright_shader = NULL;
 		gObjectFullbrightAlphaMaskProgram.bind();
-		gObjectFullbrightAlphaMaskProgram.setAlphaRange(0.33f, 1.f);
+		gObjectFullbrightAlphaMaskProgram.setMinimumAlpha(0.33f);
 	}
 
 	deferred_render = TRUE;
@@ -236,14 +236,14 @@ void LLDrawPoolAlpha::render(S32 pass)
 			if (!LLPipeline::sRenderDeferred || !deferred_render)
 			{
 				simple_shader->bind();
-				simple_shader->setAlphaRange(0.33f, 1.f);
+				simple_shader->setMinimumAlpha(0.33f);
 
 				pushBatches(LLRenderPass::PASS_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
 			}
 			if (fullbright_shader)
 			{
 				fullbright_shader->bind();
-				fullbright_shader->setAlphaRange(0.33f, 1.f);
+				fullbright_shader->setMinimumAlpha(0.33f);
 			}
 			pushBatches(LLRenderPass::PASS_FULLBRIGHT_ALPHA_MASK, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
 			//LLGLSLShader::bindNoShader();
@@ -279,16 +279,16 @@ void LLDrawPoolAlpha::render(S32 pass)
 			if (LLPipeline::sImpostorRender)
 			{
 				fullbright_shader->bind();
-				fullbright_shader->setAlphaRange(0.5f, 1.f);
+				fullbright_shader->setMinimumAlpha(0.5f);
 				simple_shader->bind();
-				simple_shader->setAlphaRange(0.5f, 1.f);
+				simple_shader->setMinimumAlpha(0.5f);
 			}				
 			else
 			{
 				fullbright_shader->bind();
-				fullbright_shader->setAlphaRange(0.f, 1.f);
+				fullbright_shader->setMinimumAlpha(0.f);
 				simple_shader->bind();
-				simple_shader->setAlphaRange(0.f, 1.f);
+				simple_shader->setMinimumAlpha(0.f);
 			}
 		}
 		else

@@ -4868,9 +4868,6 @@ void LLSelectMgr::processForceObjectSelect(LLMessageSystem* msg, void**)
 	LLSelectMgr::getInstance()->highlightObjectAndFamily(objects);
 }
 
-
-extern LLGLdouble	gGLModelView[16];
-
 void LLSelectMgr::updateSilhouettes()
 {
 	S32 num_sils_genned = 0;
@@ -5632,13 +5629,13 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 
 	if (drawable->isActive())
 	{
-		glLoadMatrixd(gGLModelView);
+		glLoadMatrixf(gGLModelView);
 		glMultMatrixf((F32*) objectp->getRenderMatrix().mMatrix);
 	}
 	else if (!is_hud_object)
 	{
 		glLoadIdentity();
-		glMultMatrixd(gGLModelView);
+		glMultMatrixf(gGLModelView);
 		LLVector3 trans = objectp->getRegion()->getOriginAgent();		
 		glTranslatef(trans.mV[0], trans.mV[1], trans.mV[2]);		
 	}
@@ -5721,7 +5718,7 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 	if (!is_hud_object)
 	{
 		glLoadIdentity();
-		glMultMatrixd(gGLModelView);
+		glMultMatrixf(gGLModelView);
 	}
 	
 	

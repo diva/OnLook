@@ -462,7 +462,7 @@ void LLRenderPass::applyModelMatrix(LLDrawInfo& params)
 	if (params.mModelMatrix != gGLLastMatrix)
 	{
 		gGLLastMatrix = params.mModelMatrix;
-		glLoadMatrixd(gGLModelView);
+		glLoadMatrixf(gGLModelView);
 		if (params.mModelMatrix)
 		{
 			glMultMatrixf((GLfloat*) params.mModelMatrix->mMatrix);

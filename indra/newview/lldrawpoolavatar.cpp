@@ -678,7 +678,7 @@ void LLDrawPoolAvatar::beginImpostor()
 	if (LLGLSLShader::sNoFixedFunction)
 	{
 		gImpostorProgram.bind();
-		gImpostorProgram.setAlphaRange(0.01f, 1.f);
+		gImpostorProgram.setMinimumAlpha(0.01f);
 	}
 
 	gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
@@ -710,7 +710,7 @@ void LLDrawPoolAvatar::beginRigid()
 		if (sVertexProgram != NULL)
 		{	//eyeballs render with the specular shader
 			sVertexProgram->bind();
-			sVertexProgram->setAlphaRange(0.2f, 1.f);
+			sVertexProgram->setMinimumAlpha(0.2f);
 		}
 	}
 	else
@@ -743,7 +743,7 @@ void LLDrawPoolAvatar::beginDeferredImpostor()
 	sDiffuseChannel = sVertexProgram->enableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
 				
 	sVertexProgram->bind();
-	sVertexProgram->setAlphaRange(0.01f, 1.f);
+	sVertexProgram->setMinimumAlpha(0.01f);
 }
 
 void LLDrawPoolAvatar::endDeferredImpostor()
@@ -829,7 +829,7 @@ void LLDrawPoolAvatar::beginSkinned()
 	//if (LLGLSLShader::sNoFixedFunction)	//Singu Note: sNoFixedFunction being false does not imply shaders are off, unlike in V3.
 	if (gPipeline.canUseVertexShaders())	//Check if shaders are REALLY used.
 	{
-		sVertexProgram->setAlphaRange(0.2f, 1.f);
+		sVertexProgram->setMinimumAlpha(0.2f);
 	}
 }
 

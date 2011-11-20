@@ -1009,10 +1009,9 @@ void LLGLSLShader::uniformMatrix4fv(const string& uniform, U32 count, GLboolean 
 }
 
 		
-void LLGLSLShader::setAlphaRange(F32 minimum, F32 maximum)
+void LLGLSLShader::setMinimumAlpha(F32 minimum)
 {
 	uniform1f("minimum_alpha", minimum);
-	uniform1f("maximum_alpha", maximum);
 }
 
 void LLGLSLShader::vertexAttrib4f(U32 index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
