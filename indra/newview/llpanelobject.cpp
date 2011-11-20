@@ -80,8 +80,6 @@
 #include "hippolimits.h"
 
 
-
-
 // [RLVa:KB]
 #include "rlvhandler.h"
 // [/RLVa:KB]
@@ -562,6 +560,9 @@ void LLPanelObject::getState( )
 	mBtnCopySize->setEnabled( enable_scale );
 	mBtnPasteSize->setEnabled( enable_scale );
 	mBtnPasteSizeClip->setEnabled( enable_scale );
+	mCtrlScaleX->setMaxValue(gHippoLimits->getMaxPrimScale());
+	mCtrlScaleY->setMaxValue(gHippoLimits->getMaxPrimScale());
+	mCtrlScaleZ->setMaxValue(gHippoLimits->getMaxPrimScale());
 
 	LLQuaternion object_rot = objectp->getRotationEdit();
 	object_rot.getEulerAngles(&(mCurEulerDegrees.mV[VX]), &(mCurEulerDegrees.mV[VY]), &(mCurEulerDegrees.mV[VZ]));
@@ -2118,9 +2119,9 @@ void LLPanelObject::sendScale(BOOL btn_down)
 
 	LLVector3 delta = newscale - mObject->getScale();
 	//Saw this changed in some viewers to be more touchy than this, but it would likely cause more updates and higher lag for the client. -HgB
-	if (delta.magVec() >= 0.0005f)
+	if (delta.magVec() >= 0.0001f) //CF: just a bit more touchy
 	{
-		// scale changed by more than 1/2 millimeter
+		// scale changed by more than 1/10 millimeter
 
 		// check to see if we aren't scaling the textures
 		// (in which case the tex coord's need to be recomputed)
@@ -2192,9 +2193,9 @@ void LLPanelObject::sendPosition(BOOL btn_down)
 		// send only if the position is changed, that is, the delta vector is not zero
 		LLVector3d old_pos_global = mObject->getPositionGlobal();
 		LLVector3d delta = new_pos_global - old_pos_global;
-		// moved more than 1/2 millimeter
+		// moved more than 1/10 millimeter
 		//Saw this changed in some viewers to be more touchy than this, but it would likely cause more updates and higher lag for the client. -HgB
-		if (delta.magVec() >= 0.0005f)
+		if (delta.magVec() >= 0.0001f) //CF: just a bit more touchy
 		{			
 			if (mRootObject != mObject)
 			{
@@ -2639,8 +2640,9 @@ void LLPanelObject::onPastePos(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, 256.f);
-	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, 256.f);
+	float region_width = LLWorld::getInstance()->getRegionWidthInMeters();
+	mClipboardPos.mV[VX] = llclamp( mClipboardPos.mV[VX], -3.5f, region_width);
+	mClipboardPos.mV[VY] = llclamp( mClipboardPos.mV[VY], -3.5f, region_width);
 	mClipboardPos.mV[VZ] = llclamp( mClipboardPos.mV[VZ], -3.5f, 4096.f);
 	
 	self->mCtrlPosX->set( mClipboardPos.mV[VX] );
@@ -2659,9 +2661,9 @@ void LLPanelObject::onPasteSize(void* user_data)
 	
 	LLPanelObject* self = (LLPanelObject*) user_data;
 	LLCalc* calcp = LLCalc::getInstance();
-	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, 64.f);	
-	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, 64.f);	
-	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, 64.f);
+	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, gHippoLimits->getMaxPrimScale());	
+	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, gHippoLimits->getMaxPrimScale());	
+	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, gHippoLimits->getMaxPrimScale());
 	
 	self->mCtrlScaleX->set( mClipboardSize.mV[VX] );
 	self->mCtrlScaleY->set( mClipboardSize.mV[VY] );
@@ -2742,9 +2744,9 @@ void LLPanelObject::onPasteSizeClip(void* user_data)
 	std::string stringVec = wstring_to_utf8str(temp_string); 
 	if(!getvectorfromclip(stringVec, &mClipboardSize)) return;
 	
-	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, 10.f);	
-	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, 10.f);	
-	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, 10.f);
+	mClipboardSize.mV[VX] = llclamp(mClipboardSize.mV[VX], 0.01f, gHippoLimits->getMaxPrimScale());	
+	mClipboardSize.mV[VY] = llclamp(mClipboardSize.mV[VY], 0.01f, gHippoLimits->getMaxPrimScale());	
+	mClipboardSize.mV[VZ] = llclamp(mClipboardSize.mV[VZ], 0.01f, gHippoLimits->getMaxPrimScale());
 	
 	self->mCtrlScaleX->set( mClipboardSize.mV[VX] );
 	self->mCtrlScaleY->set( mClipboardSize.mV[VY] );

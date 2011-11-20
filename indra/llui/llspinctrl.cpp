@@ -157,6 +157,34 @@ F32 clamp_precision(F32 value, S32 decimal_precision)
 }
 
 
+F32 get_increment(F32 inc, S32 decimal_precision) //CF: finetune increments
+{
+	if(gKeyboard->getKeyDown(KEY_ALT))
+		inc = inc * 10.f;
+	else if(gKeyboard->getKeyDown(KEY_CONTROL)) {
+		if (llround(inc * 1000.f) == 25) // 0.025 gets 0.05 here
+			inc = inc * 0.2f;
+		else
+			inc = inc * 0.1f;
+	}
+	else if(gKeyboard->getKeyDown(KEY_SHIFT)) {
+		if (decimal_precision == 2 && llround(inc) == 1) // for rotations, finest step is 0.05
+			inc = inc * 0.05f;
+		else
+			inc = inc * 0.01f;
+	}
+
+	if (decimal_precision == 1 && inc < 0.1f) // clamp inc to precision
+		inc = 0.1f;
+	else if (decimal_precision == 2 && inc < 0.01f)
+		inc = 0.01f;
+	else if (decimal_precision == 3 && inc < 0.001f)
+		inc = 0.001f;
+
+	return inc;
+}
+
+
 // static
 void LLSpinCtrl::onUpBtn( void *userdata )
 {
@@ -164,7 +192,7 @@ void LLSpinCtrl::onUpBtn( void *userdata )
 	if( self->getEnabled() )
 	{
 		// use getValue()/setValue() to force reload from/to control
-		F32 val = (F32)self->getValue().asReal() + self->mIncrement;
+		F32 val = (F32)self->getValue().asReal() + get_increment(self->mIncrement, self->mPrecision);
 		val = clamp_precision(val, self->mPrecision);
 		val = llmin( val, self->mMaxValue );
 		
@@ -191,7 +219,7 @@ void LLSpinCtrl::onDownBtn( void *userdata )
 
 	if( self->getEnabled() )
 	{
-		F32 val = (F32)self->getValue().asReal() - self->mIncrement;
+		F32 val = (F32)self->getValue().asReal() - get_increment(self->mIncrement, self->mPrecision);
 		val = clamp_precision(val, self->mPrecision);
 		val = llmax( val, self->mMinValue );
 
