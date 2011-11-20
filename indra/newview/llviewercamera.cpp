@@ -471,13 +471,73 @@ void LLViewerCamera::projectScreenToPosAgent(const S32 screen_x, const S32 scree
 	pos_agent->setVec( (F32)x, (F32)y, (F32)z );
 }
 
+//Based off of http://www.opengl.org/wiki/GluProject_and_gluUnProject_code 
+int glProjectf(const LLVector3& object, const F32* modelview, const F32* projection, const LLRect& viewport, LLVector3& windowCoordinate)
+{
+	const LLVector4a obj_vector(object.mV[VX],object.mV[VY],object.mV[VZ]);
+	LLVector4a temp_matrix;
+
+	const LLMatrix4a &view_matrix=*(LLMatrix4a*)modelview;
+	const LLMatrix4a &proj_matrix=*(LLMatrix4a*)projection;
+
+	view_matrix.affineTransform(obj_vector, temp_matrix);
+
+	//Passing temp_matrix as v and res is safe. res not altered until after all other calculations
+	proj_matrix.rotate4(temp_matrix, temp_matrix);
+
+	if(temp_matrix[VW]==0.0)
+       return 0;
+
+	temp_matrix.div(temp_matrix[VW]);
+	
+	//Map x, y to range 0-1
+	temp_matrix.mul(.5f);
+	temp_matrix.add(.5f);
+
+	//Window coordinates
+	windowCoordinate[0]=temp_matrix[VX]*viewport.getWidth()+viewport.mLeft;
+	windowCoordinate[1]=temp_matrix[VY]*viewport.getHeight()+viewport.mBottom;
+	//This is only correct when glDepthRange(0.0, 1.0)
+	windowCoordinate[2]=temp_matrix[VZ];	
+	
+	return 1;
+}
+
+void MultiplyMatrices4by4OpenGL_FLOAT(LLMatrix4a& dest_matrix, const LLMatrix4a& input_matrix1, const LLMatrix4a& input_matrix2)
+{
+	input_matrix1.rotate4(input_matrix2.mMatrix[VX],dest_matrix.mMatrix[VX]);
+	input_matrix1.rotate4(input_matrix2.mMatrix[VY],dest_matrix.mMatrix[VY]);
+	input_matrix1.rotate4(input_matrix2.mMatrix[VZ],dest_matrix.mMatrix[VZ]);
+	input_matrix1.rotate4(input_matrix2.mMatrix[VW],dest_matrix.mMatrix[VW]);
+
+	//Those four lines do this:
+	/*
+	result[0]=matrix1[0]*matrix2[0]+matrix1[4]*matrix2[1]+matrix1[8]*matrix2[2]+matrix1[12]*matrix2[3];
+	result[1]=matrix1[1]*matrix2[0]+matrix1[5]*matrix2[1]+matrix1[9]*matrix2[2]+matrix1[13]*matrix2[3];
+	result[2]=matrix1[2]*matrix2[0]+matrix1[6]*matrix2[1]+matrix1[10]*matrix2[2]+matrix1[14]*matrix2[3];
+	result[3]=matrix1[3]*matrix2[0]+matrix1[7]*matrix2[1]+matrix1[11]*matrix2[2]+matrix1[15]*matrix2[3];
+	result[4]=matrix1[0]*matrix2[4]+matrix1[4]*matrix2[5]+matrix1[8]*matrix2[6]+matrix1[12]*matrix2[7];
+	result[5]=matrix1[1]*matrix2[4]+matrix1[5]*matrix2[5]+matrix1[9]*matrix2[6]+matrix1[13]*matrix2[7];
+	result[6]=matrix1[2]*matrix2[4]+matrix1[6]*matrix2[5]+matrix1[10]*matrix2[6]+matrix1[14]*matrix2[7];
+	result[7]=matrix1[3]*matrix2[4]+matrix1[7]*matrix2[5]+matrix1[11]*matrix2[6]+matrix1[15]*matrix2[7];
+	result[8]=matrix1[0]*matrix2[8]+matrix1[4]*matrix2[9]+matrix1[8]*matrix2[10]+matrix1[12]*matrix2[11];
+	result[9]=matrix1[1]*matrix2[8]+matrix1[5]*matrix2[9]+matrix1[9]*matrix2[10]+matrix1[13]*matrix2[11];
+	result[10]=matrix1[2]*matrix2[8]+matrix1[6]*matrix2[9]+matrix1[10]*matrix2[10]+matrix1[14]*matrix2[11];
+	result[11]=matrix1[3]*matrix2[8]+matrix1[7]*matrix2[9]+matrix1[11]*matrix2[10]+matrix1[15]*matrix2[11];
+	result[12]=matrix1[0]*matrix2[12]+matrix1[4]*matrix2[13]+matrix1[8]*matrix2[14]+matrix1[12]*matrix2[15];
+	result[13]=matrix1[1]*matrix2[12]+matrix1[5]*matrix2[13]+matrix1[9]*matrix2[14]+matrix1[13]*matrix2[15];
+	result[14]=matrix1[2]*matrix2[12]+matrix1[6]*matrix2[13]+matrix1[10]*matrix2[14]+matrix1[14]*matrix2[15];
+	result[15]=matrix1[3]*matrix2[12]+ matrix1[7]*matrix2[13]+matrix1[11]*matrix2[14]+matrix1[15]*matrix2[15];
+	*/
+}
+
 // Uses the last GL matrices set in set_perspective to project a point from
 // the agent's region space to screen coordinates.  Returns TRUE if point in within
 // the current window.
 BOOL LLViewerCamera::projectPosAgentToScreen(const LLVector3 &pos_agent, LLCoordGL &out_point, const BOOL clamp) const
 {
 	BOOL in_front = TRUE;
-	GLdouble	x, y, z;			// object's window coords, GL-style
+	LLVector3 window_coordinates;
 
 	LLVector3 dir_to_point = pos_agent - getOrigin();
 	dir_to_point /= dir_to_point.magVec();
@@ -495,24 +555,12 @@ BOOL LLViewerCamera::projectPosAgentToScreen(const LLVector3 &pos_agent, LLCoord
 	}
 
 	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
-	S32	viewport[4];
-	viewport[0] = world_view_rect.mLeft;
-	viewport[1] = world_view_rect.mBottom;
-	viewport[2] = world_view_rect.getWidth();
-	viewport[3] = world_view_rect.getHeight();
 
-	F64 mdlv[16];
-	F64 proj[16];
+	if (GL_TRUE ==	glProjectf(pos_agent, gGLModelView, gGLProjection, world_view_rect, window_coordinates))
+	{
+		F32 &x = window_coordinates.mV[VX];
+		F32 &y = window_coordinates.mV[VY];
 
-	for (U32 i = 0; i < 16; i++)
-	{
-		mdlv[i] = (F64) gGLModelView[i];
-		proj[i] = (F64) gGLProjection[i];
-	}
-	if (GL_TRUE == gluProject(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ],
-								mdlv, proj, (GLint*)viewport,
-								&x, &y, &z))
-	{
 		// convert screen coordinates to virtual UI coordinates
 		x /= gViewerWindow->getDisplayScale().mV[VX];
 		y /= gViewerWindow->getDisplayScale().mV[VY];
@@ -606,27 +654,13 @@ BOOL LLViewerCamera::projectPosAgentToScreenEdge(const LLVector3 &pos_agent,
 	}
 
 	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
-	S32	viewport[4];
-	viewport[0] = world_view_rect.mLeft;
-	viewport[1] = world_view_rect.mBottom;
-	viewport[2] = world_view_rect.getWidth();
-	viewport[3] = world_view_rect.getHeight();
-	GLdouble	x, y, z;			// object's window coords, GL-style
+	LLVector3 window_coordinates;
 
-	F64 mdlv[16];
-	F64 proj[16];
-
-	for (U32 i = 0; i < 16; i++)
+	if (GL_TRUE == glProjectf(pos_agent, gGLModelView, gGLProjection, world_view_rect, window_coordinates))
 	{
-		mdlv[i] = (F64) gGLModelView[i];
-		proj[i] = (F64) gGLProjection[i];
-	}
+		F32 &x = window_coordinates.mV[VX];
+		F32 &y = window_coordinates.mV[VY];
 
-	if (GL_TRUE == gluProject(pos_agent.mV[VX], pos_agent.mV[VY],
-							  pos_agent.mV[VZ], mdlv,
-							  proj, (GLint*)viewport,
-							  &x, &y, &z))
-	{
 		x /= gViewerWindow->getDisplayScale().mV[VX];
 		y /= gViewerWindow->getDisplayScale().mV[VY];
 		// should now have the x,y coords of grab_point in screen space
