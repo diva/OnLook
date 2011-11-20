@@ -2911,7 +2911,7 @@ void renderRaycast(LLDrawable* drawablep)
 
 		// draw intersection point
 		glPushMatrix();
-		glLoadMatrixd(gGLModelView);
+		glLoadMatrixf(gGLModelView);
 		LLVector3 translate = gDebugRaycastIntersection;
 		glTranslatef(translate.mV[0], translate.mV[1], translate.mV[2]);
 		LLCoordFrame orient;
@@ -3004,7 +3004,7 @@ public:
 				gGL.flush();
 				glPushMatrix();
 				gGLLastMatrix = NULL;
-				glLoadMatrixd(gGLModelView);
+				glLoadMatrixf(gGLModelView);
 				renderVisibility(group, mCamera);
 				stop_glerror();
 				gGLLastMatrix = NULL;

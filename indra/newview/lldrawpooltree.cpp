@@ -233,13 +233,10 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			}
 			
 			gGLLastMatrix = NULL;
-			glLoadMatrixd(gGLModelView);
+			glLoadMatrixf(gGLModelView);
 			//glPushMatrix();
-			F32 mat[16];
-			for (U32 i = 0; i < 16; i++)
-				mat[i] = (F32) gGLModelView[i];
 
-			LLMatrix4 matrix(mat);
+			LLMatrix4 matrix(gGLModelView);
 			
 			// Translate to tree base  HACK - adjustment in Z plants tree underground
 			const LLVector3 &pos_agent = treep->getPositionAgent();

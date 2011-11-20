@@ -1200,7 +1200,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 	if (!gSnapshot)
 	{
 		glPushMatrix();
-		glLoadMatrixd(gGLLastModelView);
+		glLoadMatrixf(gGLLastModelView);
 		glh_set_current_modelview(glh_copy_matrix(gGLLastModelView));
 	}
 	

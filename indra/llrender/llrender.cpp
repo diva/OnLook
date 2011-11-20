@@ -44,11 +44,12 @@
 LLRender gGL;
 
 // Handy copies of last good GL matrices
-F64	gGLModelView[16];
-F64	gGLLastModelView[16];
-F64 gGLLastProjection[16];
-F64 gGLProjection[16];
-S32	gGLViewport[4];
+//Would be best to migrate these to LLMatrix4a and LLVector4a, but that's too divergent right now.
+LL_ALIGN_16(F32	gGLModelView[16]);
+LL_ALIGN_16(F32	gGLLastModelView[16]);
+LL_ALIGN_16(F32 gGLLastProjection[16]);
+LL_ALIGN_16(F32 gGLProjection[16]);
+LL_ALIGN_16(S32	gGLViewport[4]);
 
 U32 LLTexUnit::sWhiteTexture = 0;
 

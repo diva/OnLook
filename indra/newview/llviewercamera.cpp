@@ -219,8 +219,15 @@ void LLViewerCamera::calcProjection(const F32 far_distance) const
 void LLViewerCamera::updateFrustumPlanes(LLCamera& camera, BOOL ortho, BOOL zflip, BOOL no_hacks)
 {
 	GLint* viewport = (GLint*) gGLViewport;
-	GLdouble* model = gGLModelView;
-	GLdouble* proj = gGLProjection;
+	F64 model[16];
+	F64 proj[16];
+
+	for (U32 i = 0; i < 16; i++)
+	{
+		model[i] = (F64) gGLModelView[i];
+		proj[i] = (F64) gGLProjection[i];
+	}
+
 	GLdouble objX,objY,objZ;
 
 	LLVector3 frust[8];
@@ -444,11 +451,20 @@ void LLViewerCamera::setPerspective(BOOL for_selection,
 // screen coordinates to the agent's region.
 void LLViewerCamera::projectScreenToPosAgent(const S32 screen_x, const S32 screen_y, LLVector3* pos_agent) const
 {
-
 	GLdouble x, y, z;
+
+	F64 mdlv[16];
+	F64 proj[16];
+
+	for (U32 i = 0; i < 16; i++)
+	{
+		mdlv[i] = (F64) gGLModelView[i];
+		proj[i] = (F64) gGLProjection[i];
+	}
+
 	gluUnProject(
 		GLdouble(screen_x), GLdouble(screen_y), 0.0,
-		gGLModelView, gGLProjection, (GLint*)gGLViewport,
+		mdlv, proj, (GLint*)gGLViewport,
 		&x,
 		&y,
 		&z );
@@ -478,15 +494,23 @@ BOOL LLViewerCamera::projectPosAgentToScreen(const LLVector3 &pos_agent, LLCoord
 		}
 	}
 
-	LLRect world_view_rect = gViewerWindow->getWorldViewRectRaw();
+	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
 	S32	viewport[4];
 	viewport[0] = world_view_rect.mLeft;
 	viewport[1] = world_view_rect.mBottom;
 	viewport[2] = world_view_rect.getWidth();
 	viewport[3] = world_view_rect.getHeight();
 
+	F64 mdlv[16];
+	F64 proj[16];
+
+	for (U32 i = 0; i < 16; i++)
+	{
+		mdlv[i] = (F64) gGLModelView[i];
+		proj[i] = (F64) gGLProjection[i];
+	}
 	if (GL_TRUE == gluProject(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ],
-								gGLModelView, gGLProjection, (GLint*)viewport,
+								mdlv, proj, (GLint*)viewport,
 								&x, &y, &z))
 	{
 		// convert screen coordinates to virtual UI coordinates
@@ -581,16 +605,26 @@ BOOL LLViewerCamera::projectPosAgentToScreenEdge(const LLVector3 &pos_agent,
 		in_front = FALSE;
 	}
 
-	LLRect world_view_rect = gViewerWindow->getWorldViewRectRaw();
+	const LLRect& world_view_rect = gViewerWindow->getWorldViewRectRaw();
 	S32	viewport[4];
 	viewport[0] = world_view_rect.mLeft;
 	viewport[1] = world_view_rect.mBottom;
 	viewport[2] = world_view_rect.getWidth();
 	viewport[3] = world_view_rect.getHeight();
 	GLdouble	x, y, z;			// object's window coords, GL-style
+
+	F64 mdlv[16];
+	F64 proj[16];
+
+	for (U32 i = 0; i < 16; i++)
+	{
+		mdlv[i] = (F64) gGLModelView[i];
+		proj[i] = (F64) gGLProjection[i];
+	}
+
 	if (GL_TRUE == gluProject(pos_agent.mV[VX], pos_agent.mV[VY],
-							  pos_agent.mV[VZ], gGLModelView,
-							  gGLProjection, (GLint*)viewport,
+							  pos_agent.mV[VZ], mdlv,
+							  proj, (GLint*)viewport,
 							  &x, &y, &z))
 	{
 		x /= gViewerWindow->getDisplayScale().mV[VX];
