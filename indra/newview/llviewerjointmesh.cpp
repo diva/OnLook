@@ -533,9 +533,9 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	// setup current color
 	//----------------------------------------------------------------
 	if (is_dummy)
-		glColor4fv(LLVOAvatar::getDummyColor().mV);
+		gGL.diffuseColor4fv(LLVOAvatar::getDummyColor().mV);
 	else
-		glColor4fv(mColor.mV);
+		gGL.diffuseColor4fv(mColor.mV);
 
 	stop_glerror();
 	
@@ -553,11 +553,11 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 
 		if (mIsTransparent)
 		{
-			glColor4f(1.f, 1.f, 1.f, 1.f);
+			gGL.diffuseColor4f(1.f, 1.f, 1.f, 1.f);
 		}
 		else
 		{
-			glColor4f(0.7f, 0.6f, 0.3f, 1.f);
+			gGL.diffuseColor4f(0.7f, 0.6f, 0.3f, 1.f);
 			gGL.getTexUnit(diffuse_channel)->setTextureColorBlend(LLTexUnit::TBO_LERP_TEX_ALPHA, LLTexUnit::TBS_TEX_COLOR, LLTexUnit::TBS_PREV_COLOR);
 		}
 	}
@@ -591,7 +591,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	}
 	else
 	{
-		gGL.getTexUnit(diffuse_channel)->bind(LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR));
+		gGL.getTexUnit(diffuse_channel)->bind(LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT));
 	}
 	
 	mFace->getVertexBuffer()->setBuffer(sRenderMask);
@@ -615,11 +615,11 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 	}
 	else
 	{
-		glPushMatrix();
+		gGL.pushMatrix();
 		LLMatrix4 jointToWorld = getWorldMatrix();
-		glMultMatrixf((GLfloat*)jointToWorld.mMatrix);
+		gGL.multMatrix((GLfloat*)jointToWorld.mMatrix);
 		mFace->getVertexBuffer()->drawRange(LLRender::TRIANGLES, start, end, count, offset);
-		glPopMatrix();
+		gGL.popMatrix();
 	}
 	gPipeline.addTrianglesDrawn(count/3);
 

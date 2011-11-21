@@ -134,12 +134,12 @@ void LLManipRotate::render()
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.pushMatrix();
 	if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 	{
 		F32 zoom = gAgentCamera.mHUDCurZoom;
-		glScalef(zoom, zoom, zoom);
+		gGL.scalef(zoom, zoom, zoom);
 	}
 
 
@@ -149,7 +149,7 @@ void LLManipRotate::render()
 	LLColor4 highlight_inside( 0.7f, 0.7f, 0.f, 0.5f );
 	F32 width_meters = WIDTH_PIXELS * mRadiusMeters / RADIUS_PIXELS;
 
-	glPushMatrix();
+	gGL.pushMatrix();
 	{
 		// are we in the middle of a constrained drag?
 		if (mManipPart >= LL_ROT_X && mManipPart <= LL_ROT_Z)
@@ -160,11 +160,11 @@ void LLManipRotate::render()
 		{
 			LLGLEnable cull_face(GL_CULL_FACE);
 			LLGLDepthTest gls_depth(GL_FALSE);
-			glPushMatrix();
+			gGL.pushMatrix();
 			{
 				// Draw "sphere" (intersection of sphere with tangent cone that has apex at camera)
-				glTranslatef( mCenterToProfilePlane.mV[VX], mCenterToProfilePlane.mV[VY], mCenterToProfilePlane.mV[VZ] );
-				glTranslatef( center.mV[VX], center.mV[VY], center.mV[VZ] );
+				gGL.translatef( mCenterToProfilePlane.mV[VX], mCenterToProfilePlane.mV[VY], mCenterToProfilePlane.mV[VZ] );
+				gGL.translatef( center.mV[VX], center.mV[VY], center.mV[VZ] );
 
 				// Inverse change of basis vectors
 				LLVector3 forward = mCenterToCamNorm;
@@ -181,14 +181,14 @@ void LLManipRotate::render()
 				LLMatrix4 mat;
 				mat.initRows(a, b, c, LLVector4(0.f, 0.f, 0.f, 1.f));
 
-				glMultMatrixf( &mat.mMatrix[0][0] );
+				gGL.multMatrix( &mat.mMatrix[0][0] );
 
-				glRotatef( -90, 0.f, 1.f, 0.f);
+				gGL.rotatef( -90, 0.f, 1.f, 0.f);
 				LLColor4 color;
 				if (mManipPart == LL_ROT_ROLL || mHighlightedPart == LL_ROT_ROLL)
 				{
 					color.setVec(0.8f, 0.8f, 0.8f, 0.8f);
-					glScalef(mManipulatorScales.mV[VW], mManipulatorScales.mV[VW], mManipulatorScales.mV[VW]);
+					gGL.scalef(mManipulatorScales.mV[VW], mManipulatorScales.mV[VW], mManipulatorScales.mV[VW]);
 				}
 				else
 				{
@@ -206,10 +206,10 @@ void LLManipRotate::render()
 				GLdouble plane_eqn[] = { 0, 0, 1, 0 };
 				glClipPlane( GL_CLIP_PLANE0, plane_eqn );
 			}
-			glPopMatrix();
+			gGL.popMatrix();
 		}
 
-		glTranslatef( center.mV[VX], center.mV[VY], center.mV[VZ] );
+		gGL.translatef( center.mV[VX], center.mV[VY], center.mV[VZ] );
 
 		LLQuaternion rot;
 		F32 angle_radians, x, y, z;
@@ -221,41 +221,41 @@ void LLManipRotate::render()
 		LLSelectMgr::getInstance()->getGrid(grid_origin, grid_rotation, grid_scale);
 
 		grid_rotation.getAngleAxis(&angle_radians, &x, &y, &z);
-		glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+		gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 
 
 		if (mManipPart == LL_ROT_Z)
 		{
 			mManipulatorScales = lerp(mManipulatorScales, LLVector4(1.f, 1.f, SELECTED_MANIPULATOR_SCALE, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-			glPushMatrix();
+			gGL.pushMatrix();
 			{
 				// selected part
-				glScalef(mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ]);
+				gGL.scalef(mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ]);
 				renderActiveRing( mRadiusMeters, width_meters, LLColor4( 0.f, 0.f, 1.f, 1.f) , LLColor4( 0.f, 0.f, 1.f, 0.3f ));
 			}
-			glPopMatrix();
+			gGL.popMatrix();
 		}
 		else if (mManipPart == LL_ROT_Y)
 		{
 			mManipulatorScales = lerp(mManipulatorScales, LLVector4(1.f, SELECTED_MANIPULATOR_SCALE, 1.f, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-			glPushMatrix();
+			gGL.pushMatrix();
 			{
-				glRotatef( 90.f, 1.f, 0.f, 0.f );
-				glScalef(mManipulatorScales.mV[VY], mManipulatorScales.mV[VY], mManipulatorScales.mV[VY]);
+				gGL.rotatef( 90.f, 1.f, 0.f, 0.f );
+				gGL.scalef(mManipulatorScales.mV[VY], mManipulatorScales.mV[VY], mManipulatorScales.mV[VY]);
 				renderActiveRing( mRadiusMeters, width_meters, LLColor4( 0.f, 1.f, 0.f, 1.f), LLColor4( 0.f, 1.f, 0.f, 0.3f));
 			}
-			glPopMatrix();
+			gGL.popMatrix();
 		}
 		else if (mManipPart == LL_ROT_X)
 		{
 			mManipulatorScales = lerp(mManipulatorScales, LLVector4(SELECTED_MANIPULATOR_SCALE, 1.f, 1.f, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-			glPushMatrix();
+			gGL.pushMatrix();
 			{
-				glRotatef( 90.f, 0.f, 1.f, 0.f );
-				glScalef(mManipulatorScales.mV[VX], mManipulatorScales.mV[VX], mManipulatorScales.mV[VX]);
+				gGL.rotatef( 90.f, 0.f, 1.f, 0.f );
+				gGL.scalef(mManipulatorScales.mV[VX], mManipulatorScales.mV[VX], mManipulatorScales.mV[VX]);
 				renderActiveRing( mRadiusMeters, width_meters, LLColor4( 1.f, 0.f, 0.f, 1.f), LLColor4( 1.f, 0.f, 0.f, 0.3f));
 			}
-			glPopMatrix();
+			gGL.popMatrix();
 		}
 		else if (mManipPart == LL_ROT_ROLL)
 		{
@@ -275,12 +275,12 @@ void LLManipRotate::render()
 			// First pass: centers. Second pass: sides.
 			for( S32 i=0; i<2; i++ )
 			{
-				glPushMatrix();
+				gGL.pushMatrix();
 				{
 					if (mHighlightedPart == LL_ROT_Z)
 					{
 						mManipulatorScales = lerp(mManipulatorScales, LLVector4(1.f, 1.f, SELECTED_MANIPULATOR_SCALE, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-						glScalef(mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ]);
+						gGL.scalef(mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ], mManipulatorScales.mV[VZ]);
 						// hovering over part
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 0.f, 0.f, 1.f, 1.f ), LLColor4( 0.f, 0.f, 1.f, 0.5f ), CIRCLE_STEPS, i);
 					}
@@ -290,15 +290,15 @@ void LLManipRotate::render()
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 0.f, 0.f, 0.8f, 0.8f ), LLColor4( 0.f, 0.f, 0.8f, 0.4f ), CIRCLE_STEPS, i);
 					}
 				}
-				glPopMatrix();
+				gGL.popMatrix();
 
-				glPushMatrix();
+				gGL.pushMatrix();
 				{
-					glRotatef( 90.f, 1.f, 0.f, 0.f );
+					gGL.rotatef( 90.f, 1.f, 0.f, 0.f );
 					if (mHighlightedPart == LL_ROT_Y)
 					{
 						mManipulatorScales = lerp(mManipulatorScales, LLVector4(1.f, SELECTED_MANIPULATOR_SCALE, 1.f, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-						glScalef(mManipulatorScales.mV[VY], mManipulatorScales.mV[VY], mManipulatorScales.mV[VY]);
+						gGL.scalef(mManipulatorScales.mV[VY], mManipulatorScales.mV[VY], mManipulatorScales.mV[VY]);
 						// hovering over part
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 0.f, 1.f, 0.f, 1.f ), LLColor4( 0.f, 1.f, 0.f, 0.5f ), CIRCLE_STEPS, i);
 					}
@@ -308,15 +308,15 @@ void LLManipRotate::render()
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 0.f, 0.8f, 0.f, 0.8f ), LLColor4( 0.f, 0.8f, 0.f, 0.4f ), CIRCLE_STEPS, i);
 					}						
 				}
-				glPopMatrix();
+				gGL.popMatrix();
 
-				glPushMatrix();
+				gGL.pushMatrix();
 				{
-					glRotatef( 90.f, 0.f, 1.f, 0.f );
+					gGL.rotatef( 90.f, 0.f, 1.f, 0.f );
 					if (mHighlightedPart == LL_ROT_X)
 					{
 						mManipulatorScales = lerp(mManipulatorScales, LLVector4(SELECTED_MANIPULATOR_SCALE, 1.f, 1.f, 1.f), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
-						glScalef(mManipulatorScales.mV[VX], mManipulatorScales.mV[VX], mManipulatorScales.mV[VX]);
+						gGL.scalef(mManipulatorScales.mV[VX], mManipulatorScales.mV[VX], mManipulatorScales.mV[VX]);
 	
 						// hovering over part
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 1.f, 0.f, 0.f, 1.f ), LLColor4( 1.f, 0.f, 0.f, 0.5f ), CIRCLE_STEPS, i);
@@ -327,7 +327,7 @@ void LLManipRotate::render()
 						gl_ring( mRadiusMeters, width_meters, LLColor4( 0.8f, 0.f, 0.f, 0.8f ), LLColor4( 0.8f, 0.f, 0.f, 0.4f ), CIRCLE_STEPS, i);
 					}
 				}
-				glPopMatrix();
+				gGL.popMatrix();
 
 				if (mHighlightedPart == LL_ROT_ROLL)
 				{
@@ -336,8 +336,8 @@ void LLManipRotate::render()
 			}
 		}
 	}
-	glPopMatrix();
-	glPopMatrix();
+	gGL.popMatrix();
+	gGL.popMatrix();
 
 	LLVector3 euler_angles;
 	LLQuaternion object_rot = first_object->getRotationEdit();
@@ -738,7 +738,7 @@ void LLManipRotate::renderSnapGuides()
 	LLVector3 test_axis = constraint_axis;
 
 	BOOL constrain_to_ref_object = FALSE;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 	{
 		test_axis = test_axis * ~grid_rotation;
 	}
@@ -765,7 +765,7 @@ void LLManipRotate::renderSnapGuides()
 	}
 
 	LLVector3 projected_snap_axis = world_snap_axis;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 	{
 		projected_snap_axis = projected_snap_axis * grid_rotation;
 	}
@@ -800,14 +800,14 @@ void LLManipRotate::renderSnapGuides()
 		for (S32 pass = 0; pass < 3; pass++)
 		{
 			// render snap guide ring
-			glPushMatrix();
+			gGL.pushMatrix();
 			
 			LLQuaternion snap_guide_rot;
 			F32 angle_radians, x, y, z;
 			snap_guide_rot.shortestArc(LLVector3::z_axis, getConstraintAxis());
 			snap_guide_rot.getAngleAxis(&angle_radians, &x, &y, &z);
-			glTranslatef(center.mV[VX], center.mV[VY], center.mV[VZ]);
-			glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+			gGL.translatef(center.mV[VX], center.mV[VY], center.mV[VZ]);
+			gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 
 			LLColor4 line_color = setupSnapGuideRenderPass(pass);
 
@@ -830,7 +830,7 @@ void LLManipRotate::renderSnapGuides()
 			{
 				gl_circle_2d(0.f, 0.f, mRadiusMeters * SNAP_GUIDE_INNER_RADIUS, CIRCLE_STEPS, FALSE);
 			}
-			glPopMatrix();
+			gGL.popMatrix();
 
 			for (S32 i = 0; i < 64; i++)
 			{
@@ -1282,7 +1282,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 	LLVector3 axis2;
 
 	LLVector3 test_axis = constraint_axis;
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 	{
 		test_axis = test_axis * ~grid_rotation;
 	}
@@ -1306,7 +1306,7 @@ LLQuaternion LLManipRotate::dragConstrained( S32 x, S32 y )
 		axis1 = LLVector3::x_axis;
 	}
 
-	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && gAgentAvatarp)
+	if (mObjectSelection->getSelectType() == SELECT_TYPE_ATTACHMENT && isAgentAvatarValid())
 	{
 		axis1 = axis1 * grid_rotation;
 	}

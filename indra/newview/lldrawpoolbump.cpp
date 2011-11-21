@@ -771,7 +771,7 @@ void LLDrawPoolBump::renderBump(U32 pass)
 	LLGLDisable fog(GL_FOG);
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_LEQUAL);
 	LLGLEnable blend(GL_BLEND);
-	glColor4f(1,1,1,1);
+	gGL.diffuseColor4f(1,1,1,1);
 	/// Get rid of z-fighting with non-bump pass.
 	LLGLEnable polyOffset(GL_POLYGON_OFFSET_FILL);
 	glPolygonOffset(-1.0f, -1.0f);
@@ -1370,23 +1370,23 @@ void LLDrawPoolBump::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL 
 			if (mShiny)
 			{
 				gGL.getTexUnit(0)->activate();
-				glMatrixMode(GL_TEXTURE);
+				gGL.matrixMode(LLRender::MM_TEXTURE);
 			}
 			else
 			{
 				if (!gPipeline.canUseVertexShaders())
 				{
 					gGL.getTexUnit(1)->activate();
-					glMatrixMode(GL_TEXTURE);
-					glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
+					gGL.matrixMode(LLRender::MM_TEXTURE);
+					gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
 				}
 				gGL.getTexUnit(0)->activate();
-				glMatrixMode(GL_TEXTURE);
-				glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
+				gGL.matrixMode(LLRender::MM_TEXTURE);
+				gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
 				gPipeline.mTextureMatrixOps++;
 			}
 
-			glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
+			gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
 			gPipeline.mTextureMatrixOps++;
 
 			tex_setup = true;
@@ -1423,14 +1423,14 @@ void LLDrawPoolBump::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL 
 			if (!gPipeline.canUseVertexShaders())
 			{
 				gGL.getTexUnit(1)->activate();
-				glMatrixMode(GL_TEXTURE);
-				glLoadIdentity();
+				gGL.matrixMode(LLRender::MM_TEXTURE);
+				gGL.loadIdentity();
 			}
 			gGL.getTexUnit(0)->activate();
-			glMatrixMode(GL_TEXTURE);
+			gGL.matrixMode(LLRender::MM_TEXTURE);
 		}
-		glLoadIdentity();
-		glMatrixMode(GL_MODELVIEW);
+		gGL.loadIdentity();
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 	}
 }
 

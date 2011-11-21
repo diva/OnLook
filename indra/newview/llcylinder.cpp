@@ -159,8 +159,8 @@ void LLCylinder::renderface(F32 pixel_area, S32 face)
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.pushMatrix();
 
 	S32 level_of_detail;
 
@@ -192,15 +192,15 @@ void LLCylinder::renderface(F32 pixel_area, S32 face)
 	switch(face)
 	{
 	case 0:
-		glTranslatef(0.f, 0.f, -0.5f);
+		gGL.translatef(0.f, 0.f, -0.5f);
 		drawSide(level_of_detail);
 		break;
 	case 1:
-		glTranslatef(0.0f, 0.f, 0.5f);
+		gGL.translatef(0.0f, 0.f, 0.5f);
 		drawTop(level_of_detail);
 		break;
 	case 2:
-		glTranslatef(0.0f, 0.f, -0.5f);
+		gGL.translatef(0.0f, 0.f, -0.5f);
 		drawBottom(level_of_detail);
 		break;
 	default:
@@ -208,8 +208,8 @@ void LLCylinder::renderface(F32 pixel_area, S32 face)
 		break;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.popMatrix();
 }
 
 
@@ -250,17 +250,17 @@ void LLCone::render(S32 level_of_detail)
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.pushMatrix();
 
 	// center object at 0
-	glTranslatef(0.f, 0.f, - height / 2.0f);
+	gGL.translatef(0.f, 0.f, - height / 2.0f);
 
 	drawSide(level_of_detail);
 	drawBottom(level_of_detail);
 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.popMatrix();
 }
 
 
@@ -278,19 +278,19 @@ void LLCone::renderface(S32 level_of_detail, S32 face)
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.pushMatrix();
 
 	LLVertexBuffer::unbind();
 	
 	switch(face)
 	{
 	case 0:
-		glTranslatef(0.f, 0.f, -0.5f);
+		gGL.translatef(0.f, 0.f, -0.5f);
 		drawSide(level_of_detail);
 		break;
 	case 1:
-		glTranslatef(0.f, 0.f, -0.5f);
+		gGL.translatef(0.f, 0.f, -0.5f);
 		drawBottom(level_of_detail);
 		break;
 	default:
@@ -298,6 +298,6 @@ void LLCone::renderface(S32 level_of_detail, S32 face)
 		break;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.popMatrix();
 }

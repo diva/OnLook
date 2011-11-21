@@ -1083,12 +1083,12 @@ BOOL LLManipTranslate::handleMouseUp(S32 x, S32 y, MASK mask)
 
 void LLManipTranslate::render()
 {
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	if (mObjectSelection->getSelectType() == SELECT_TYPE_HUD)
 	{
 		F32 zoom = gAgentCamera.mHUDCurZoom;
-		glScalef(zoom, zoom, zoom);
+		gGL.scalef(zoom, zoom, zoom);
 	}
 	{
 		LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
@@ -1537,7 +1537,7 @@ void LLManipTranslate::renderSnapGuides()
 		
 		F32 sz = mGridSizeMeters;
 		F32 tiles = sz;
-		glMatrixMode(GL_TEXTURE);
+		gGL.matrixMode(LLRender::MM_TEXTURE);
 		gGL.pushMatrix();
 		usc = 1.0f/usc;
 		vsc = 1.0f/vsc;
@@ -1551,7 +1551,7 @@ void LLManipTranslate::renderSnapGuides()
 			vsc *= 0.5f;
 		}
 
-		glScalef(usc, vsc, 1.0f);
+		gGL.scalef(usc, vsc, 1.0f);
 		gGL.translatef(u, v, 0);
 		
 		float a = line_alpha;
@@ -1584,7 +1584,7 @@ void LLManipTranslate::renderSnapGuides()
 					renderGrid(u,v,tiles,1,1,1,a);
 
 					gGL.popMatrix();
-					glMatrixMode(GL_MODELVIEW);
+					gGL.matrixMode(LLRender::MM_MODELVIEW);
 					gGL.popMatrix();
 				}
 
@@ -1683,7 +1683,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		glStencilFunc(GL_ALWAYS, 0, stencil_mask);
 		gGL.setColorMask(false, false);
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-		glColor4f(1,1,1,1);
+		gGL.diffuseColor4f(1,1,1,1);
 
 		//setup clip plane
 		normal = normal * grid_rotation;
@@ -1870,7 +1870,7 @@ void LLManipTranslate::renderTranslationHandles()
 	mGridSizeMeters = gSavedSettings.getF32("GridDrawSize");
 	mConeSize = mArrowLengthMeters / 4.f;
 
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	{
 		gGL.translatef(selection_center.mV[VX], selection_center.mV[VY], selection_center.mV[VZ]);
@@ -1926,9 +1926,9 @@ void LLManipTranslate::renderTranslationHandles()
 			{
 				// render YZ plane manipulator
 				gGL.pushMatrix();
-				glScalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
+				gGL.scalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
 				gGL.translatef(0.f, mPlaneManipOffsetMeters, mPlaneManipOffsetMeters);
-				glScalef(mPlaneScales.mV[VX], mPlaneScales.mV[VX], mPlaneScales.mV[VX]);
+				gGL.scalef(mPlaneScales.mV[VX], mPlaneScales.mV[VX], mPlaneScales.mV[VX]);
 				if (mHighlightedPart == LL_YZ_PLANE)
 				{
 					color1.setVec(0.f, 1.f, 0.f, 1.f);
@@ -1980,9 +1980,9 @@ void LLManipTranslate::renderTranslationHandles()
 			{
 				// render XZ plane manipulator
 				gGL.pushMatrix();
-				glScalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
+				gGL.scalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
 				gGL.translatef(mPlaneManipOffsetMeters, 0.f, mPlaneManipOffsetMeters);
-				glScalef(mPlaneScales.mV[VY], mPlaneScales.mV[VY], mPlaneScales.mV[VY]);
+				gGL.scalef(mPlaneScales.mV[VY], mPlaneScales.mV[VY], mPlaneScales.mV[VY]);
 				if (mHighlightedPart == LL_XZ_PLANE)
 				{
 					color1.setVec(0.f, 0.f, 1.f, 1.f);
@@ -2036,7 +2036,7 @@ void LLManipTranslate::renderTranslationHandles()
 			{
 				// render XY plane manipulator
 				gGL.pushMatrix();
-				glScalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
+				gGL.scalef(mPlaneManipPositions.mV[VX], mPlaneManipPositions.mV[VY], mPlaneManipPositions.mV[VZ]);
 				
 /*				 			  Y
 				 			  ^
@@ -2061,7 +2061,7 @@ void LLManipTranslate::renderTranslationHandles()
 					v2 = LLVector3(mPlaneManipOffsetMeters * ( PLANE_TICK_SIZE * 0.25f), mPlaneManipOffsetMeters * ( PLANE_TICK_SIZE * 0.25f), 0.f);
 					v3 = LLVector3(mPlaneManipOffsetMeters * (-PLANE_TICK_SIZE * 0.75f), mPlaneManipOffsetMeters * ( PLANE_TICK_SIZE * 0.25f), 0.f);
 #endif
-					glScalef(mPlaneScales.mV[VZ], mPlaneScales.mV[VZ], mPlaneScales.mV[VZ]);
+					gGL.scalef(mPlaneScales.mV[VZ], mPlaneScales.mV[VZ], mPlaneScales.mV[VZ]);
 					if (mHighlightedPart == LL_XY_PLANE)
 					{
 						color1.setVec(1.f, 0.f, 0.f, 1.f);
@@ -2233,7 +2233,7 @@ void LLManipTranslate::renderArrow(S32 which_arrow, S32 selected_arrow, F32 box_
 		}
 		
 		gGL.translatef(vec.mV[0], vec.mV[1], vec.mV[2]);
-		glScalef(handle_size, handle_size, handle_size);
+		gGL.scalef(handle_size, handle_size, handle_size);
 
 		F32 rot = 0.0f;
 		LLVector3 axis;
@@ -2257,9 +2257,9 @@ void LLManipTranslate::renderArrow(S32 which_arrow, S32 selected_arrow, F32 box_
 			break;
 		}
 
-		glColor4fv(color.mV);
-		glRotatef(rot, axis.mV[0], axis.mV[1], axis.mV[2]);
-		glScalef(mArrowScales.mV[index], mArrowScales.mV[index], mArrowScales.mV[index] * 1.5f);
+		gGL.diffuseColor4fv(color.mV);
+		gGL.rotatef(rot, axis.mV[0], axis.mV[1], axis.mV[2]);
+		gGL.scalef(mArrowScales.mV[index], mArrowScales.mV[index], mArrowScales.mV[index] * 1.5f);
 
 		gCone.render(CONE_LOD_HIGHEST);
 

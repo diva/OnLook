@@ -717,7 +717,7 @@ void LLMediaCtrl::draw()
 		{
 			if (mIgnoreUIScale)
 			{
-				glLoadIdentity();
+				gGL.loadIdentity();
 				// font system stores true screen origin, need to scale this by UI scale factor
 				// to get render origin for this view (with unit scale)
 				gGL.translatef(floorf(LLFontGL::sCurOrigin.mX * LLUI::sGLScaleFactor.mV[VX]), 

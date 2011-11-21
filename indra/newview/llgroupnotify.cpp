@@ -337,18 +337,18 @@ void LLGroupNotifyBox::draw()
 
 	if (mAnimating && display_time < ANIMATION_TIME)
 	{
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
+		gGL.pushMatrix();
 
 		S32 height = getRect().getHeight();
 		F32 fraction = display_time / ANIMATION_TIME;
 		F32 voffset = (1.f - fraction) * height;
 
-		glTranslatef(0.f, voffset, 0.f);
+		gGL.translatef(0.f, voffset, 0.f);
 
 		LLPanel::draw();
 
-		glPopMatrix();
+		gGL.popMatrix();
 	}
 	else
 	{

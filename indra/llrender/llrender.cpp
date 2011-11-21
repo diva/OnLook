@@ -1027,6 +1027,15 @@ void LLRender::scalef(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 	glScalef(x,y,z);
 }
 
+void LLRender::ortho(F32 left, F32 right, F32 bottom, F32 top, F32 zNear, F32 zFar)
+{
+	glOrtho(left, right, bottom, top, zNear, zFar);
+}
+
+void LLRender::rotatef(const GLfloat& a, const GLfloat& x, const GLfloat& y, const GLfloat& z)
+{
+	glRotatef(a,x,y,z);
+}
 void LLRender::pushMatrix()
 {
 	flush();
@@ -1037,6 +1046,38 @@ void LLRender::popMatrix()
 {
 	flush();
 	glPopMatrix();
+}
+
+void LLRender::loadMatrix(const GLfloat* m)
+{
+	glLoadMatrixf(m);
+}
+
+
+void LLRender::multMatrix(const GLfloat* m)
+{
+	glMultMatrixf(m);
+}
+
+void LLRender::matrixMode(U32 mode)
+{
+	static GLenum modes[] = 
+	{
+		GL_MODELVIEW,
+		GL_PROJECTION,
+		GL_TEXTURE,
+		GL_TEXTURE,
+		GL_TEXTURE,
+		GL_TEXTURE,
+		GL_TEXTURE,
+		GL_TEXTURE,
+	};
+	glMatrixMode(modes[mode]);
+}
+
+void LLRender::loadIdentity()
+{
+	glLoadIdentity();
 }
 
 void LLRender::setColorMask(bool writeColor, bool writeAlpha)
@@ -1207,6 +1248,11 @@ LLLightState* LLRender::getLight(U32 index)
 	}
 	
 	return NULL;
+}
+
+void LLRender::setAmbientLightColor(const LLColor4& color)
+{
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT,color.mV);
 }
 
 bool LLRender::verifyTexUnitActive(U32 unitToVerify)
@@ -1504,6 +1550,31 @@ void LLRender::color3f(const GLfloat& r, const GLfloat& g, const GLfloat& b)
 void LLRender::color3fv(const GLfloat* c)
 { 
 	color4f(c[0],c[1],c[2],1);
+}
+
+void LLRender::diffuseColor3f(F32 r, F32 g, F32 b)
+{
+	glColor3f(r,g,b);
+}
+
+void LLRender::diffuseColor3fv(const F32* c)
+{
+	glColor3fv(c);
+}
+
+void LLRender::diffuseColor4f(F32 r, F32 g, F32 b, F32 a)
+{
+	glColor4f(r,g,b,a);
+}
+
+void LLRender::diffuseColor4fv(const F32* c)
+{
+	glColor4fv(c);
+}
+
+void LLRender::diffuseColor4ubv(const U8* c)
+{
+	glColor4ubv(c);
 }
 
 void LLRender::debugTexUnits(void)

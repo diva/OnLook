@@ -1472,28 +1472,28 @@ void LLScrollingPanelParam::draw()
 	// Draw the hints over the "less" and "more" buttons.
 	if(mHintMin)
 	{
-		glPushMatrix();
+		gGL.pushMatrix();
 		{
 			const LLRect& r = mHintMin->getRect();
 			F32 left = (F32)(r.mLeft + BTN_BORDER);
 			F32 bot  = (F32)(r.mBottom + BTN_BORDER);
-			glTranslatef(left, bot, 0.f);
+			gGL.translatef(left, bot, 0.f);
 			mHintMin->draw();
 		}
-		glPopMatrix();
+		gGL.popMatrix();
 	}
 
 	if(mHintMax)
 	{
-		glPushMatrix();
+		gGL.pushMatrix();
 		{
 			const LLRect& r = mHintMax->getRect();
 			F32 left = (F32)(r.mLeft + BTN_BORDER);
 			F32 bot  = (F32)(r.mBottom + BTN_BORDER);
-			glTranslatef(left, bot, 0.f);
+			gGL.translatef(left, bot, 0.f);
 			mHintMax->draw();
 		}
-		glPopMatrix();
+		gGL.popMatrix();
 	}
 
 

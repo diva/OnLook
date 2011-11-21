@@ -423,7 +423,7 @@ S32 LLFontGL::render(const LLWString &wstr,
 	}
 
 	gGL.pushMatrix();
-	glLoadIdentity();
+	gGL.loadIdentity();
 	gGL.translatef(floorf(sCurOrigin.mX*sScaleX), floorf(sCurOrigin.mY*sScaleY), sCurOrigin.mZ);
 
 	// this code snaps the text origin to a pixel grid to start with
@@ -562,9 +562,9 @@ S32 LLFontGL::render(const LLWString &wstr,
 			if (!label.empty())
 			{
 				gGL.pushMatrix();
-				//glLoadIdentity();
+				//gGL.loadIdentity();
 				//gGL.translatef(sCurOrigin.mX, sCurOrigin.mY, 0.0f);
-				//glScalef(sScaleX, sScaleY, 1.f);
+				//gGL.scalef(sScaleX, sScaleY, 1.f);
 				getFontExtChar()->render(label, 0,
 									 /*llfloor*/((ext_x + (F32)ext_image->getWidth() + EXT_X_BEARING) / sScaleX), 
 									 /*llfloor*/(cur_y / sScaleY),
@@ -672,9 +672,9 @@ S32 LLFontGL::render(const LLWString &wstr,
 		// recursively render ellipses at end of string
 		// we've already reserved enough room
 		gGL.pushMatrix();
-		//glLoadIdentity();
+		//gGL.loadIdentity();
 		//gGL.translatef(sCurOrigin.mX, sCurOrigin.mY, 0.0f);
-		//glScalef(sScaleX, sScaleY, 1.f);
+		//gGL.scalef(sScaleX, sScaleY, 1.f);
 		renderUTF8(std::string("..."), 
 				0,
 				cur_x / sScaleX, (F32)y,

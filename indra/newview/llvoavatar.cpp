@@ -5070,9 +5070,9 @@ U32 LLVOAvatar::renderFootShadows()
 	//render foot shadows
 	LLGLEnable blend(GL_BLEND);
 	gGL.getTexUnit(0)->bind(mShadowImagep.get(), TRUE);
-	glColor4fv(mShadow0Facep->getRenderColor().mV);
+	gGL.diffuseColor4fv(mShadow0Facep->getRenderColor().mV);
 	mShadow0Facep->renderIndexed(foot_mask);
-	glColor4fv(mShadow1Facep->getRenderColor().mV);
+	gGL.diffuseColor4fv(mShadow1Facep->getRenderColor().mV);
 	mShadow1Facep->renderIndexed(foot_mask);
 	
 	return num_indices;

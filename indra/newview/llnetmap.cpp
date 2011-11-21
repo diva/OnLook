@@ -213,7 +213,7 @@ void LLNetMap::draw()
 			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 			LLLocalClipRect clip(getLocalRect());
 
-			glMatrixMode(GL_MODELVIEW);
+			gGL.matrixMode(LLRender::MM_MODELVIEW);
 
 			// Draw background rectangle
 			if(isBackgroundVisible())

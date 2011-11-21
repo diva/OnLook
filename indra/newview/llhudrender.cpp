@@ -115,9 +115,9 @@ void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 	glProjectf(render_pos, gGLModelView, gGLProjection, world_view_rect, window_coordinates);
 
 	//fonts all render orthographically, set up projection``
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_PROJECTION);
+	gGL.pushMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	LLUI::pushMatrix();
 		
@@ -127,7 +127,7 @@ void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 	winX -= world_view_rect.mLeft;
 	winY -= world_view_rect.mBottom;
 	LLUI::loadIdentity();
-	glLoadIdentity();
+	gGL.loadIdentity();
 	LLUI::translate((F32) winX*1.0f/LLFontGL::sScaleX, (F32) winY*1.0f/(LLFontGL::sScaleY), -(((F32) winZ*2.f)-1.f));
 	F32 right_x;
 	
@@ -135,7 +135,7 @@ void hud_render_text(const LLWString &wstr, const LLVector3 &pos_agent,
 	LLUI::popMatrix();
 	gGL.popMatrix();
 	
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_PROJECTION);
+	gGL.popMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 }
