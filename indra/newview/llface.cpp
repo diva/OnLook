@@ -500,14 +500,15 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 		gGL.pushMatrix();
 		if (mDrawablep->isActive())
 		{
-			glMultMatrixf((GLfloat*)mDrawablep->getRenderMatrix().mMatrix);
+			gGL.multMatrix((GLfloat*)mDrawablep->getRenderMatrix().mMatrix);
 		}
 		else
 		{
-			glMultMatrixf((GLfloat*)mDrawablep->getRegion()->mRenderMatrix.mMatrix);
+			gGL.multMatrix((GLfloat*)mDrawablep->getRegion()->mRenderMatrix.mMatrix);
 		}
 
-		glColor4fv(color.mV);
+		gGL.diffuseColor4fv(color.mV);
+	
 #if MESH_ENABLED
 		if (mDrawablep->isState(LLDrawable::RIGGED))
 		{
@@ -519,7 +520,7 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 				{
 					LLGLEnable offset(GL_POLYGON_OFFSET_FILL);
 					glPolygonOffset(-1.f, -1.f);
-					glMultMatrixf((F32*) volume->getRelativeXform().mMatrix);
+					gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
 					const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
 					LLVertexBuffer::unbind();
 					glVertexPointer(3, GL_FLOAT, 16, vol_face.mPositions);
@@ -567,17 +568,17 @@ void LLFace::renderSelectedUV()
 
 	// add green dither pattern on top of red/blue gradient
 	gGL.blendFunc(LLRender::BF_ONE, LLRender::BF_ONE);
-	glMatrixMode(GL_TEXTURE);
-	glPushMatrix();
+	gGL.matrixMode(LLRender::MM_TEXTURE);
+	gGL.pushMatrix();
 	// make green pattern repeat once per texel in red/blue texture
-	glScalef(256.f, 256.f, 1.f);
-	glMatrixMode(GL_MODELVIEW);
+	gGL.scalef(256.f, 256.f, 1.f);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 
 	renderSelected(green_imagep, LLColor4::white);
 
-	glMatrixMode(GL_TEXTURE);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_TEXTURE);
+	gGL.popMatrix();
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.blendFunc(LLRender::BF_SOURCE_ALPHA, LLRender::BF_ONE_MINUS_SOURCE_ALPHA);
 }
 */
@@ -1953,7 +1954,7 @@ void LLFace::renderSetColor() const
 	{
 		const LLColor4* color = &(getRenderColor());
 		
-		glColor4fv(color->mV);
+		gGL.diffuseColor4fv(color->mV);
 	}
 }
 
@@ -1983,10 +1984,10 @@ S32 LLFace::renderElements(const U16 *index_array) const
 	}
 	else
 	{
-		glPushMatrix();
-		glMultMatrixf((float*)getRenderMatrix().mMatrix);
+		gGL.pushMatrix();
+		gGL.multMatrix((float*)getRenderMatrix().mMatrix);
 		ret = pushVertices(index_array);
-		glPopMatrix();
+		gGL.popMatrix();
 	}
 	
 	return ret;

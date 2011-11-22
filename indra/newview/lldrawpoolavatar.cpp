@@ -421,7 +421,7 @@ void LLDrawPoolAvatar::beginShadowPass(S32 pass)
 		}
 		//gGL.setAlphaRejectSettings(LLRender::CF_GREATER_EQUAL, 0.2f);
 		
-		glColor4f(1,1,1,1);
+		
 
 		if ((sShaderLevel > 0))  // for hardware blending
 		{
@@ -429,6 +429,8 @@ void LLDrawPoolAvatar::beginShadowPass(S32 pass)
 			sVertexProgram->bind();
 			enable_vertex_weighting(sVertexProgram->mAttribute[LLViewerShaderMgr::AVATAR_WEIGHT]);
 		}
+
+		gGL.diffuseColor4f(1,1,1,1);
 	}
 #if MESH_ENABLED
 	else
@@ -562,11 +564,6 @@ void LLDrawPoolAvatar::beginRenderPass(S32 pass)
 	//reset vertex buffer mappings
 	LLVertexBuffer::unbind();
 
-	if (pass == 0)
-	{ //make sure no stale colors are left over from a previous render
-		glColor4f(1,1,1,1);
-	}
-
 	if (LLPipeline::sImpostorRender)
 	{ //impostor render does not have impostors or rigid rendering
 		pass += 2;
@@ -612,6 +609,11 @@ void LLDrawPoolAvatar::beginRenderPass(S32 pass)
 		beginRiggedGlow();
 		break;
 #endif //MESH_ENABLED
+	}
+
+	if (pass == 0)
+	{ //make sure no stale colors are left over from a previous render
+		gGL.diffuseColor4f(1,1,1,1);
 	}
 }
 
@@ -1638,7 +1640,7 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 
 			if (glow)
 			{
-				glColor4f(0,0,0,face->getTextureEntry()->getGlow());
+				gGL.diffuseColor4f(0,0,0,face->getTextureEntry()->getGlow());
 			}
 
 			gGL.getTexUnit(sDiffuseChannel)->bind(face->getTexture());
@@ -1649,11 +1651,11 @@ void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 
 			if (face->mTextureMatrix)
 			{
-				glMatrixMode(GL_TEXTURE);
-				glLoadMatrixf((F32*) face->mTextureMatrix->mMatrix);
+				gGL.matrixMode(LLRender::MM_TEXTURE);
+				gGL.loadMatrix((F32*) face->mTextureMatrix->mMatrix);
 				buff->drawRange(LLRender::TRIANGLES, start, end, count, offset);
-				glLoadIdentity();
-				glMatrixMode(GL_MODELVIEW);
+				gGL.loadIdentity();
+				gGL.matrixMode(LLRender::MM_MODELVIEW);
 			}
 			else
 			{

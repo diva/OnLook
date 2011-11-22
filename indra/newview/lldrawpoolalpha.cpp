@@ -331,7 +331,8 @@ void LLDrawPoolAlpha::render(S32 pass)
 		{
 			gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
 		}
-		glColor4f(1,0,0,1);
+		gGL.diffuseColor4f(1,0,0,1);
+		
 		LLViewerFetchedTexture::sSmokeImagep->addTextureStats(1024.f*1024.f);
 		gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sSmokeImagep, TRUE) ;
 		renderAlphaHighlight(LLVertexBuffer::MAP_VERTEX |
@@ -478,8 +479,8 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 						{
 							tex_setup = true;
 							gGL.getTexUnit(0)->activate();
-							glMatrixMode(GL_TEXTURE);
-							glLoadMatrixf((GLfloat*) params.mTextureMatrix->mMatrix);
+							gGL.matrixMode(LLRender::MM_TEXTURE);
+							gGL.loadMatrix((GLfloat*) params.mTextureMatrix->mMatrix);
 							gPipeline.mTextureMatrixOps++;
 						}
 					}
@@ -502,7 +503,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 
 					// glow doesn't use vertex colors from the mesh data
 					params.mVertexBuffer->setBuffer(mask & ~LLVertexBuffer::MAP_COLOR);
-					glColor4ubv(params.mGlowColor.mV);
+					gGL.diffuseColor4ubv(params.mGlowColor.mV);
 
 					// do the actual drawing, again
 					params.mVertexBuffer->drawRange(LLRender::TRIANGLES, params.mStart, params.mEnd, params.mCount, params.mOffset);
@@ -515,8 +516,8 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 				if (tex_setup)
 				{
 					gGL.getTexUnit(0)->activate();
-					glLoadIdentity();
-					glMatrixMode(GL_MODELVIEW);
+					gGL.loadIdentity();
+					gGL.matrixMode(LLRender::MM_MODELVIEW);
 				}
 			}
 		}

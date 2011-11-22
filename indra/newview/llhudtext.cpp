@@ -554,7 +554,7 @@ void LLHUDText::renderText(BOOL for_select)
 		}
 	}
 	/// Reset the default color to white.  The renderer expects this to be the default. 
-	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+	gGL.diffuseColor4fv(LLColor4::white.mV);
 	if (for_select)
 	{
 		gGL.getTexUnit(0)->enable(LLTexUnit::TT_TEXTURE);

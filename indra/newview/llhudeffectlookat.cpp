@@ -516,10 +516,10 @@ void LLHUDEffectLookAt::render()
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
 		LLVector3 target = mTargetPos + ((LLVOAvatar*)(LLViewerObject*)mSourceObject)->mHeadp->getWorldPosition();
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.pushMatrix();
 		gGL.translatef(target.mV[VX], target.mV[VY], target.mV[VZ]);
-		glScalef(0.3f, 0.3f, 0.3f);
+		gGL.scalef(0.3f, 0.3f, 0.3f);
 		gGL.begin(LLRender::LINES);
 		{
 			LLColor3 color = (*mAttentions)[mTargetType].mColor;
@@ -542,7 +542,7 @@ void LLHUDEffectLookAt::render()
 		offset *= 0.5f;
 		const LLFontGL* font = LLResMgr::getInstance()->getRes(LLFONT_SANSSERIF);
 		LLGLEnable gl_blend(GL_BLEND);
-		glPushMatrix();
+		gGL.pushMatrix();
 		gViewerWindow->setup2DViewport();
 		hud_render_utf8text(text,
 			target + shadow_offset,
@@ -560,7 +560,7 @@ void LLHUDEffectLookAt::render()
 			0.0f,
 			(*mAttentions)[mTargetType].mColor,
 			FALSE);
-		glPopMatrix();
+		gGL.popMatrix();
 		// </edit>
 	}
 }
