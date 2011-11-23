@@ -430,10 +430,10 @@ F32 pulse_func(F32 t, F32 z)
 		return 0.f;
 	}
 	
-	t *= 3.14159f;
+	t *= F_PI;
 	z -= t*64.f - 256.f;
 	
-	F32 a = cosf(z*3.14159/512.f)*10.0f;
+	F32 a = cosf(z*F_PI/512.f)*10.0f;
 	a = llmax(a, 9.9f);
 	a -= 9.9f;
 	a *= 10.f;
@@ -447,7 +447,7 @@ void draw_shockwave(F32 center_z, F32 t, S32 steps, LLColor4 color)
 		return;
 	}
 	
-	t *= 0.6284f/3.14159f;
+	t *= 0.6284f/F_PI;
 	
 	t -= (F32) (S32) t;	
 
@@ -520,9 +520,10 @@ void LLTracker::renderBeacon(LLVector3d pos_global,
 	LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE);
 	
 	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-		glTranslatef(pos_agent.mV[0], pos_agent.mV[1], pos_agent.mV[2]);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.pushMatrix();
+	{
+		gGL.translatef(pos_agent.mV[0], pos_agent.mV[1], pos_agent.mV[2]);
 		
 		draw_shockwave(1024.f, gRenderStartTime.getElapsedTimeF32(), 32, fogged_color);
 
@@ -574,9 +575,8 @@ void LLTracker::renderBeacon(LLVector3d pos_global,
 			
 			gGL.end();
 		}
-							
-		//gCylinder.render(1000);
-	glPopMatrix();
+	}
+	gGL.popMatrix();
 
 	std::string text;
 	text = llformat( "%.0f m", to_vec.magVec());

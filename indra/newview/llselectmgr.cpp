@@ -4868,9 +4868,6 @@ void LLSelectMgr::processForceObjectSelect(LLMessageSystem* msg, void**)
 	LLSelectMgr::getInstance()->highlightObjectAndFamily(objects);
 }
 
-
-extern LLGLdouble	gGLModelView[16];
-
 void LLSelectMgr::updateSilhouettes()
 {
 	S32 num_sils_genned = 0;
@@ -5166,18 +5163,18 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 		F32 cur_zoom = gAgentCamera.mHUDCurZoom;
 
 		// set up transform to encompass bounding box of HUD
-		glMatrixMode(GL_PROJECTION);
+		gGL.matrixMode(LLRender::MM_PROJECTION);
 		gGL.pushMatrix();
-		glLoadIdentity();
+		gGL.loadIdentity();
 		F32 depth = llmax(1.f, hud_bbox.getExtentLocal().mV[VX] * 1.1f);
-		glOrtho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, depth);
+		gGL.ortho(-0.5f * LLViewerCamera::getInstance()->getAspect(), 0.5f * LLViewerCamera::getInstance()->getAspect(), -0.5f, 0.5f, 0.f, depth);
 
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.pushMatrix();
-		glLoadIdentity();
-		glLoadMatrixf(OGL_TO_CFR_ROTATION);		// Load Cory's favorite reference frame
-		glTranslatef(-hud_bbox.getCenterLocal().mV[VX] + (depth *0.5f), 0.f, 0.f);
-		glScalef(cur_zoom, cur_zoom, cur_zoom);
+		gGL.loadIdentity();
+		gGL.loadMatrix(OGL_TO_CFR_ROTATION);		// Load Cory's favorite reference frame
+		gGL.translatef(-hud_bbox.getCenterLocal().mV[VX] + (depth *0.5f), 0.f, 0.f);
+		gGL.scalef(cur_zoom, cur_zoom, cur_zoom);
 	}
 	if (mSelectedObjects->getNumNodes())
 	{
@@ -5261,10 +5258,10 @@ void LLSelectMgr::renderSilhouettes(BOOL for_hud)
 
 	if (isAgentAvatarValid() && for_hud)
 	{
-		glMatrixMode(GL_PROJECTION);
+		gGL.matrixMode(LLRender::MM_PROJECTION);
 		gGL.popMatrix();
 
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.popMatrix();
 		stop_glerror();
 	}
@@ -5587,7 +5584,7 @@ void pushWireframe(LLDrawable* drawable)
 			{
 				LLVertexBuffer::unbind();
 				gGL.pushMatrix();
-				glMultMatrixf((F32*) vobj->getRelativeXform().mMatrix);
+				gGL.multMatrix((F32*) vobj->getRelativeXform().mMatrix);
 				for (S32 i = 0; i < rigged_volume->getNumVolumeFaces(); ++i)
 				{
 					const LLVolumeFace& face = rigged_volume->getVolumeFace(i);
@@ -5625,22 +5622,23 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
+
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	
 	BOOL is_hud_object = objectp->isHUDAttachment();
 
 	if (drawable->isActive())
 	{
-		glLoadMatrixd(gGLModelView);
-		glMultMatrixf((F32*) objectp->getRenderMatrix().mMatrix);
+		gGL.loadMatrix(gGLModelView);
+		gGL.multMatrix((F32*) objectp->getRenderMatrix().mMatrix);
 	}
 	else if (!is_hud_object)
 	{
-		glLoadIdentity();
-		glMultMatrixd(gGLModelView);
+		gGL.loadIdentity();
+		gGL.multMatrix(gGLModelView);
 		LLVector3 trans = objectp->getRegion()->getOriginAgent();		
-		glTranslatef(trans.mV[0], trans.mV[1], trans.mV[2]);		
+		gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);		
 	}
 	
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -5659,7 +5657,7 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 		LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_GEQUAL);
 		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 		{
-			glColor4f(color.mV[VRED], color.mV[VGREEN], color.mV[VBLUE], 0.4f);
+			gGL.diffuseColor4f(color.mV[VRED], color.mV[VGREEN], color.mV[VBLUE], 0.4f);
 			pushWireframe(drawable);
 		}
 	}
@@ -5667,7 +5665,8 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 	gGL.flush();
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 
-	glColor4f(color.mV[VRED]*2, color.mV[VGREEN]*2, color.mV[VBLUE]*2, LLSelectMgr::sHighlightAlpha*2);
+	gGL.diffuseColor4f(color.mV[VRED]*2, color.mV[VGREEN]*2, color.mV[VBLUE]*2, LLSelectMgr::sHighlightAlpha*2);
+	
 	LLGLEnable offset(GL_POLYGON_OFFSET_LINE);
 	glPolygonOffset(3.f, 3.f);
 	glLineWidth(3.f);
@@ -5716,18 +5715,18 @@ void LLSelectNode::renderOneSilhouette(const LLColor4 &color)
 		return;
 	}
 
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	if (!is_hud_object)
 	{
-		glLoadIdentity();
-		glMultMatrixd(gGLModelView);
+		gGL.loadIdentity();
+		gGL.multMatrix(gGLModelView);
 	}
 	
 	
 	if (drawable->isActive())
 	{
-		glMultMatrixf((F32*) objectp->getRenderMatrix().mMatrix);
+		gGL.multMatrix((F32*) objectp->getRenderMatrix().mMatrix);
 	}
 
 	LLVolume *volume = objectp->getVolume();
@@ -5970,10 +5969,10 @@ void LLSelectMgr::updateSelectionCenter()
 			LLViewerObject* object = node->getObject();
 			if (!object)
 				continue;
-			LLViewerObject *myAvatar = gAgentAvatarp;
+			
 			LLViewerObject *root = object->getRootEdit();
 			if (mSelectedObjects->mSelectType == SELECT_TYPE_WORLD && // not an attachment
-				!root->isChild(myAvatar) && // not the object you're sitting on
+				!root->isChild(gAgentAvatarp) && // not the object you're sitting on
 				!object->isAvatar()) // not another avatar
 			{
 				mShowSelection = TRUE;

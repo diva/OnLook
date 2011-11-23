@@ -1371,7 +1371,7 @@ void LLView::draw()
 			localRectToScreen(viewp->getRect(),&screenRect);
 			if ( rootRect.overlaps(screenRect) )
 			{
-				glMatrixMode(GL_MODELVIEW);
+				gGL.matrixMode(LLRender::MM_MODELVIEW);
 				LLUI::pushMatrix();
 				{
 					LLUI::translate((F32)viewp->getRect().mLeft, (F32)viewp->getRect().mBottom, 0.f);
@@ -1465,7 +1465,7 @@ void LLView::drawChild(LLView* childp, S32 x_offset, S32 y_offset, BOOL force_dr
 		if ((childp->getVisible() && childp->getRect().isValid()) 
 			|| force_draw)
 		{
-			glMatrixMode(GL_MODELVIEW);
+			gGL.matrixMode(LLRender::MM_MODELVIEW);
 			LLUI::pushMatrix();
 			{
 				LLUI::translate((F32)childp->getRect().mLeft + x_offset, (F32)childp->getRect().mBottom + y_offset, 0.f);

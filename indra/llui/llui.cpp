@@ -131,11 +131,11 @@ void gl_state_for_2d(S32 width, S32 height)
 	F32 window_width = (F32) width;//gViewerWindow->getWindowWidth();
 	F32 window_height = (F32) height;//gViewerWindow->getWindowHeight();
 
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0.0f, llmax(window_width, 1.f), 0.0f, llmax(window_height,1.f), -1.0f, 1.0f);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
+	gGL.matrixMode(LLRender::MM_PROJECTION);
+	gGL.loadIdentity();
+	gGL.ortho(0.0f, llmax(window_width, 1.f), 0.0f, llmax(window_height,1.f), -1.0f, 1.0f);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
+	gGL.loadIdentity();
 	stop_glerror();
 }
 
@@ -169,7 +169,7 @@ void gl_rect_2d_offset_local( S32 left, S32 top, S32 right, S32 bottom, S32 pixe
 	bottom += LLFontGL::sCurOrigin.mY;
 	top += LLFontGL::sCurOrigin.mY;
 
-	glLoadIdentity();
+	gGL.loadIdentity();
 	gl_rect_2d(llfloor((F32)left * LLUI::sGLScaleFactor.mV[VX]) - pixel_offset,
 				llfloor((F32)top * LLUI::sGLScaleFactor.mV[VY]) + pixel_offset,
 				llfloor((F32)right * LLUI::sGLScaleFactor.mV[VX]) + pixel_offset,
@@ -1630,7 +1630,7 @@ void LLUI::popMatrix()
 //static 
 void LLUI::loadIdentity()
 {
-	glLoadIdentity();
+	gGL.loadIdentity();
 	LLFontGL::sCurOrigin.mX = 0;
 	LLFontGL::sCurOrigin.mY = 0;
 	LLFontGL::sCurOrigin.mZ = 0;

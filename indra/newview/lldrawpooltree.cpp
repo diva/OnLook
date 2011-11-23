@@ -80,7 +80,8 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 	if (gPipeline.canUseVertexShaders())
 	{
 		shader->bind();
-		shader->setAlphaRange(0.5f, 1.f);
+		shader->setMinimumAlpha(0.5f);
+		gGL.diffuseColor4f(1,1,1,1);
 	}
 	else
 	{
@@ -149,7 +150,7 @@ void LLDrawPoolTree::beginDeferredPass(S32 pass)
 		
 	shader = &gDeferredNonIndexedDiffuseAlphaMaskProgram;
 	shader->bind();
-	shader->setAlphaRange(0.5f, 1.f);
+	shader->setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderDeferred(S32 pass)
@@ -175,7 +176,7 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
 	gDeferredShadowAlphaMaskProgram.bind();
-	gDeferredShadowAlphaMaskProgram.setAlphaRange(0.5f, 1.f);
+	gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderShadow(S32 pass)
@@ -202,7 +203,7 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 		
 	U32 indices_drawn = 0;
 
-	glMatrixMode(GL_MODELVIEW);
+	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	
 	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
 		 iter != mDrawFace.end(); iter++)
@@ -233,17 +234,14 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			}
 			
 			gGLLastMatrix = NULL;
-			glLoadMatrixd(gGLModelView);
-			//glPushMatrix();
-			F32 mat[16];
-			for (U32 i = 0; i < 16; i++)
-				mat[i] = (F32) gGLModelView[i];
+			gGL.loadMatrix(gGLModelView);
+			//gGL.pushMatrix();
 
-			LLMatrix4 matrix(mat);
+			LLMatrix4 matrix(gGLModelView);
 			
 			// Translate to tree base  HACK - adjustment in Z plants tree underground
 			const LLVector3 &pos_agent = treep->getPositionAgent();
-			//glTranslatef(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
+			//gGL.translatef(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
 			LLMatrix4 trans_mat;
 			trans_mat.setTranslation(pos_agent.mV[VX], pos_agent.mV[VY], pos_agent.mV[VZ] - 0.1f);
 			trans_mat *= matrix;
@@ -314,7 +312,7 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 				indices_drawn += treep->drawBranchPipeline(scale_mat, indicesp, trunk_LOD, stop_depth, treep->mDepth, treep->mTrunkDepth, 1.0, treep->mTwist, droop, treep->mBranches, alpha);
 			}
 			
-			//glPopMatrix();
+			//gGL.popMatrix();
 		}
 	}
 }

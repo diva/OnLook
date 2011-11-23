@@ -117,21 +117,21 @@ void LLDrawPoolSky::render(S32 pass)
 	
 	LLGLDisable clip(GL_CLIP_PLANE0);
 
-	glPushMatrix();
+	gGL.pushMatrix();
 	LLVector3 origin = LLViewerCamera::getInstance()->getOrigin();
-	glTranslatef(origin.mV[0], origin.mV[1], origin.mV[2]);
+	gGL.translatef(origin.mV[0], origin.mV[1], origin.mV[2]);
 
 	S32 face_count = (S32)mDrawFace.size();
 
 	LLVertexBuffer::unbind();
-	glColor4f(1,1,1,1);
+	gGL.diffuseColor4f(1,1,1,1);
 
 	for (S32 i = 0; i < llmin(6, face_count); ++i)
 	{
 		renderSkyCubeFace(i);
 	}
 
-	glPopMatrix();
+	gGL.popMatrix();
 }
 
 void LLDrawPoolSky::renderSkyCubeFace(U8 side)
@@ -149,9 +149,10 @@ void LLDrawPoolSky::renderSkyCubeFace(U8 side)
 
 	if (LLSkyTex::doInterpolate())
 	{
+		
 		LLGLEnable blend(GL_BLEND);
 		mSkyTex[side].bindTexture(FALSE);
-		glColor4f(1, 1, 1, LLSkyTex::getInterpVal()); // lighting is disabled
+		gGL.diffuseColor4f(1, 1, 1, LLSkyTex::getInterpVal()); // lighting is disabled
 		face.renderIndexed();
 	}
 }

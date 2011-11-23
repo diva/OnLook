@@ -126,7 +126,7 @@ void LLDrawPoolGlow::render(S32 pass)
 
 void LLDrawPoolGlow::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL batch_textures)
 {
-	glColor4ubv(params.mGlowColor.mV);
+	gGL.diffuseColor4ubv(params.mGlowColor.mV);
 	LLRenderPass::pushBatch(params, mask, texture, batch_textures);
 }
 
@@ -267,7 +267,7 @@ void LLDrawPoolGrass::beginRenderPass(S32 pass)
 	if (mVertexShaderLevel > 0)
 	{
 		simple_shader->bind();
-		simple_shader->setAlphaRange(0.5f, 1.f);
+		simple_shader->setMinimumAlpha(0.5f);
 	}
 	else 
 	{
@@ -324,7 +324,7 @@ void LLDrawPoolGrass::renderDeferred(S32 pass)
 		LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
 		//LLFastTimer t(FTM_RENDER_GRASS_DEFERRED);
 		gDeferredNonIndexedDiffuseAlphaMaskProgram.bind();
-		gDeferredNonIndexedDiffuseAlphaMaskProgram.setAlphaRange(0.5f, 1.f);
+		gDeferredNonIndexedDiffuseAlphaMaskProgram.setMinimumAlpha(0.5f);
 		//render grass
 		LLRenderPass::renderTexture(LLRenderPass::PASS_GRASS, getVertexDataMask());
 	}			

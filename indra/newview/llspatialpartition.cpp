@@ -2298,7 +2298,7 @@ void pushVerts(LLFace* face, U32 mask)
 
 	LLVertexBuffer* buffer = face->getVertexBuffer();
 
-	if (buffer)
+	if (buffer && (face->getGeomCount() >= 3))
 	{
 		buffer->setBuffer(mask);
 		U16 start = face->getGeomStart();
@@ -2390,7 +2390,7 @@ void pushVertsColorCoded(LLSpatialGroup* group, U32 mask)
 		{
 			params = *j;
 			LLRenderPass::applyModelMatrix(*params);
-			glColor4f(colors[col].mV[0], colors[col].mV[1], colors[col].mV[2], 0.5f);
+			gGL.diffuseColor4f(colors[col].mV[0], colors[col].mV[1], colors[col].mV[2], 0.5f);
 			params->mVertexBuffer->setBuffer(mask);
 			params->mVertexBuffer->drawRange(params->mParticle ? LLRender::POINTS : LLRender::TRIANGLES,
 				params->mStart, params->mEnd, params->mCount, params->mOffset);
@@ -2424,7 +2424,7 @@ void renderOctree(LLSpatialGroup* group)
 			LLGLDepthTest gl_depth(FALSE, FALSE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-			gGL.color4f(1,0,0,group->mBuilt);
+			gGL.diffuseColor4f(1,0,0,group->mBuilt);
 			gGL.flush();
 			glLineWidth(5.f);
 			drawBoxOutline(group->mObjectBounds[0], group->mObjectBounds[1]);
@@ -2436,9 +2436,9 @@ void renderOctree(LLSpatialGroup* group)
 				LLDrawable* drawable = *i;
 				if (!group->mSpatialPartition->isBridge())
 				{
-					glPushMatrix();
+					gGL.pushMatrix();
 					LLVector3 trans = drawable->getRegion()->getOriginAgent();
-					glTranslatef(trans.mV[0], trans.mV[1], trans.mV[2]);
+					gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);
 				}
 				
 				for (S32 j = 0; j < drawable->getNumFaces(); j++)
@@ -2448,11 +2448,11 @@ void renderOctree(LLSpatialGroup* group)
 					{
 						if (gFrameTimeSeconds - face->mLastUpdateTime < 0.5f)
 						{
-							glColor4f(0, 1, 0, group->mBuilt);
+							gGL.diffuseColor4f(0, 1, 0, group->mBuilt);
 						}
 						else if (gFrameTimeSeconds - face->mLastMoveTime < 0.5f)
 						{
-							glColor4f(1, 0, 0, group->mBuilt);
+							gGL.diffuseColor4f(1, 0, 0, group->mBuilt);
 						}
 						else
 						{
@@ -2468,11 +2468,11 @@ void renderOctree(LLSpatialGroup* group)
 
 				if (!group->mSpatialPartition->isBridge())
 				{
-					glPopMatrix();
+					gGL.popMatrix();
 				}
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			gGL.color4f(1,1,1,1);
+			gGL.diffuseColor4f(1,1,1,1);
 		}
 	}
 	else
@@ -2488,7 +2488,7 @@ void renderOctree(LLSpatialGroup* group)
 		}
 	}
 
-	gGL.color4fv(col.mV);
+	gGL.diffuseColor4fv(col.mV);
 	LLVector4a fudge;
 	fudge.splat(0.001f);
 	LLVector4a size = group->mObjectBounds[1];
@@ -2510,11 +2510,11 @@ void renderOctree(LLSpatialGroup* group)
 
 		if (group->mOctreeNode->isLeaf())
 		{
-			gGL.color4f(1,1,1,1);
+			gGL.diffuseColor4f(1,1,1,1);
 		}
 		else
 		{
-			gGL.color4f(0,1,1,1);
+			gGL.diffuseColor4f(0,1,1,1);
 		}
 						
 		drawBoxOutline(group->mBounds[0],group->mBounds[1]);
@@ -2523,7 +2523,7 @@ void renderOctree(LLSpatialGroup* group)
 		//draw bounding box for draw info
 		if (group->mSpatialPartition->mRenderByGroup)
 		{
-			gGL.color4f(1.0f, 0.75f, 0.25f, 0.6f);
+			gGL.diffuseColor4f(1.0f, 0.75f, 0.25f, 0.6f);
 			for (LLSpatialGroup::draw_map_t::iterator i = group->mDrawMap.begin(); i != group->mDrawMap.end(); ++i)
 			{
 				for (LLSpatialGroup::drawmap_elem_t::iterator j = i->second.begin(); j != i->second.end(); ++j)
@@ -2558,8 +2558,8 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 	if (render_objects)
 	{
 		LLGLDepthTest depth_under(GL_TRUE, GL_FALSE, GL_GREATER);
-		glColor4f(0, 0.5f, 0, 0.5f);
-		gGL.color4f(0, 0.5f, 0, 0.5f);
+		gGL.diffuseColor4f(0, 0.5f, 0, 0.5f);
+		gGL.color4f(0, 0.5f, 0, 0.5f);	//???
 		pushBufferVerts(group, LLVertexBuffer::MAP_VERTEX);
 	}
 
@@ -2568,8 +2568,8 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 
 		if (render_objects)
 		{
-			glColor4f(0.f, 0.5f, 0.f,1.f);
-			gGL.color4f(0.f, 0.5f, 0.f, 1.f);
+			gGL.diffuseColor4f(0.f, 0.5f, 0.f,1.f);
+			gGL.color4f(0.f, 0.5f, 0.f, 1.f);	//???
 			pushBufferVerts(group, LLVertexBuffer::MAP_VERTEX);
 		}
 
@@ -2577,7 +2577,7 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 
 		if (render_objects)
 		{
-			glColor4f(0.f, 0.75f, 0.f,0.5f);
+			gGL.diffuseColor4f(0.f, 0.75f, 0.f,0.5f);
 			gGL.color4f(0.f, 0.75f, 0.f, 0.5f);
 			pushBufferVerts(group, LLVertexBuffer::MAP_VERTEX);
 		}
@@ -2586,11 +2586,11 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 			LLVertexBuffer::unbind();
 			glVertexPointer(3, GL_FLOAT, 0, group->mOcclusionVerts);
 
-			glColor4f(1.0f, 0.f, 0.f, 0.5f);
+			gGL.diffuseColor4f(1.0f, 0.f, 0.f, 0.5f);
 			glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8, GL_UNSIGNED_BYTE, get_box_fan_indices(camera, group->mBounds[0]));
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			
-			glColor4f(1.0f, 1.f, 1.f, 1.0f);
+			gGL.diffuseColor4f(1.0f, 1.f, 1.f, 1.0f);
 			glDrawRangeElements(GL_TRIANGLE_FAN, 0, 7, 8, GL_UNSIGNED_BYTE, get_box_fan_indices(camera, group->mBounds[0]));
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}*/
@@ -2599,7 +2599,7 @@ void renderVisibility(LLSpatialGroup* group, LLCamera* camera)
 
 void renderCrossHairs(LLVector3 position, F32 size, LLColor4 color)
 {
-	gGL.color4fv(color.mV);
+	gGL.diffuseColor4fv(color.mV);
 	gGL.begin(LLRender::LINES);
 	{
 		gGL.vertex3fv((position - LLVector3(size, 0.f, 0.f)).mV);
@@ -2623,23 +2623,23 @@ void renderUpdateType(LLDrawable* drawablep)
 	switch (vobj->getLastUpdateType())
 	{
 	case OUT_FULL:
-		glColor4f(0,1,0,0.5f);
+		gGL.diffuseColor4f(0,1,0,0.5f);
 		break;
 	case OUT_TERSE_IMPROVED:
-		glColor4f(0,1,1,0.5f);
+		gGL.diffuseColor4f(0,1,1,0.5f);
 		break;
 	case OUT_FULL_COMPRESSED:
 		if (vobj->getLastUpdateCached())
 		{
-			glColor4f(1,0,0,0.5f);
+			gGL.diffuseColor4f(1,0,0,0.5f);
 		}
 		else
 		{
-			glColor4f(1,1,0,0.5f);
+			gGL.diffuseColor4f(1,1,0,0.5f);
 		}
 		break;
 	case OUT_FULL_CACHED:
-		glColor4f(0,0,1,0.5f);
+		gGL.diffuseColor4f(0,0,1,0.5f);
 		break;
 	default:
 		llwarns << "Unknown update_type " << vobj->getLastUpdateType() << llendl;
@@ -2833,7 +2833,7 @@ void renderTextureAnim(LLDrawInfo* params)
 	}
 	
 	LLGLEnable blend(GL_BLEND);
-	glColor4f(1,1,0,0.5f);
+	gGL.diffuseColor4f(1,1,0,0.5f);
 	pushVerts(params, LLVertexBuffer::MAP_VERTEX);
 }
 
@@ -2855,7 +2855,7 @@ void renderLights(LLDrawable* drawablep)
 	if (drawablep->getNumFaces())
 	{
 		LLGLEnable blend(GL_BLEND);
-		glColor4f(0,1,1,0.5f);
+		gGL.diffuseColor4f(0,1,1,0.5f);
 
 		for (S32 i = 0; i < drawablep->getNumFaces(); i++)
 		{
@@ -2910,15 +2910,15 @@ void renderRaycast(LLDrawable* drawablep)
 		}
 
 		// draw intersection point
-		glPushMatrix();
-		glLoadMatrixd(gGLModelView);
+		gGL.pushMatrix();
+		gGL.loadMatrix(gGLModelView);
 		LLVector3 translate = gDebugRaycastIntersection;
-		glTranslatef(translate.mV[0], translate.mV[1], translate.mV[2]);
+		gGL.translatef(translate.mV[0], translate.mV[1], translate.mV[2]);
 		LLCoordFrame orient;
 		orient.lookDir(gDebugRaycastNormal, gDebugRaycastBinormal);
 		LLMatrix4 rotation;
 		orient.getRotMatrixToParent(rotation);
-		glMultMatrixf((float*)rotation.mMatrix);
+		gGL.multMatrix((float*)rotation.mMatrix);
 		
 		gGL.color4f(1,0,0,0.5f);
 		drawBox(LLVector3(0, 0, 0), LLVector3(0.1f, 0.022f, 0.022f));
@@ -2926,7 +2926,7 @@ void renderRaycast(LLDrawable* drawablep)
 		drawBox(LLVector3(0, 0, 0), LLVector3(0.021f, 0.1f, 0.021f));
 		gGL.color4f(0,0,1,0.5f);
 		drawBox(LLVector3(0, 0, 0), LLVector3(0.02f, 0.02f, 0.1f));
-		glPopMatrix();
+		gGL.popMatrix();
 
 			// draw bounding box of prim
 			const LLVector4a* ext = drawablep->getSpatialExtents();
@@ -3002,13 +3002,13 @@ public:
 				group->rebuildMesh();
 
 				gGL.flush();
-				glPushMatrix();
+				gGL.pushMatrix();
 				gGLLastMatrix = NULL;
-				glLoadMatrixd(gGLModelView);
+				gGL.loadMatrix(gGLModelView);
 				renderVisibility(group, mCamera);
 				stop_glerror();
 				gGLLastMatrix = NULL;
-				glPopMatrix();
+				gGL.popMatrix();
 				gGL.color4f(1,1,1,1);
 			}
 		}

@@ -741,7 +741,10 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 		{
 			if (mAutoGenMips)
 			{
-				glTexParameteri(LLTexUnit::getInternalType(mBindTarget), GL_GENERATE_MIPMAP_SGIS, TRUE);
+				if (!gGLManager.mHasFramebufferObject)
+				{
+					glTexParameteri(LLTexUnit::getInternalType(mBindTarget), GL_GENERATE_MIPMAP_SGIS, TRUE);
+				}
 				stop_glerror();
 				{
 // 					LLFastTimer t2(LLFastTimer::FTM_TEMP4);
@@ -769,6 +772,12 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 						glPixelStorei(GL_UNPACK_SWAP_BYTES, 0);
 						stop_glerror();
 					}
+				}
+
+				if (gGLManager.mHasFramebufferObject)
+				{
+					//GL_EXT_framebuffer_object implies glGenerateMipmap
+					glGenerateMipmap(LLTexUnit::getInternalType(mBindTarget));
 				}
 			}
 			else

@@ -483,7 +483,7 @@ void LLNotifyBox::draw()
 
 	if (mAnimating && display_time < ANIMATION_TIME)
 	{
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		LLUI::pushMatrix();
 
 		S32 height = getRect().getHeight();

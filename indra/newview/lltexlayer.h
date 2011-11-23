@@ -236,8 +236,8 @@ public:
 	virtual void destroyGLTexture() ;
 
 private:
-	void					pushProjection();
-	void					popProjection();
+	void					pushProjection() const;
+	void					popProjection() const;
 	BOOL					needsUploadNow() const;
 
 private:

@@ -632,7 +632,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			}
 
 			text[count++] = strdup("\t}\n");
-			text[count++] = strdup("\treturn vec4(0,0,0,0);\n");
+			text[count++] = strdup("\treturn vec4(1,0,1,1);\n");
 			text[count++] = strdup("}\n");
 		}
 		else
@@ -655,7 +655,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 				text[count++] = strdup(if_str.c_str());
 			}
 
-			text[count++] = strdup("\treturn vec4(0,0,0,0);\n");
+			text[count++] = strdup("\treturn vec4(1,0,1,1);\n");
 			text[count++] = strdup("}\n");
 		}			
 	}

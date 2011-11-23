@@ -312,6 +312,18 @@ public:
 		BF_UNDEF
 	} eBlendFactor;
 
+	typedef enum
+	{
+		MM_MODELVIEW = 0,
+		MM_PROJECTION,
+		MM_TEXTURE0,
+		MM_TEXTURE1,
+		MM_TEXTURE2,
+		MM_TEXTURE3,
+		NUM_MATRIX_MODES,
+		MM_TEXTURE
+	} eMatrixMode;
+
 	LLRender();
 	~LLRender();
 	void init() ;
@@ -323,8 +335,15 @@ public:
 
 	void translatef(const GLfloat& x, const GLfloat& y, const GLfloat& z);
 	void scalef(const GLfloat& x, const GLfloat& y, const GLfloat& z);
+	void rotatef(const GLfloat& a, const GLfloat& x, const GLfloat& y, const GLfloat& z);
+	void ortho(F32 left, F32 right, F32 bottom, F32 top, F32 zNear, F32 zFar);
+
 	void pushMatrix();
 	void popMatrix();
+	void loadMatrix(const GLfloat* m);
+	void loadIdentity();
+	void multMatrix(const GLfloat* m);
+	void matrixMode(U32 mode);	
 
 	void flush();
 
@@ -347,9 +366,16 @@ public:
 	void color3fv(const GLfloat* c);
 	void color4ubv(const GLubyte* c);
 
+	void diffuseColor3f(F32 r, F32 g, F32 b);
+	void diffuseColor3fv(const F32* c);
+	void diffuseColor4f(F32 r, F32 g, F32 b, F32 a);
+	void diffuseColor4fv(const F32* c);
+	void diffuseColor4ubv(const U8* c);
+
 	void vertexBatchPreTransformed(LLVector3* verts, S32 vert_count);
 	void vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, S32 vert_count);
 	void vertexBatchPreTransformed(LLVector3* verts, LLVector2* uvs, LLColor4U*, S32 vert_count);
+
 	void setColorMask(bool writeColor, bool writeAlpha);
 	void setColorMask(bool writeColorR, bool writeColorG, bool writeColorB, bool writeAlpha);
 	void setSceneBlendType(eBlendType type);
@@ -363,6 +389,7 @@ public:
 		       eBlendFactor alpha_sfactor, eBlendFactor alpha_dfactor);
 
 	LLLightState* getLight(U32 index);
+	void setAmbientLightColor(const LLColor4& color);
 
 	LLTexUnit* getTexUnit(U32 index);
 
@@ -408,10 +435,10 @@ private:
 	F32				mMaxAnisotropy;
 };
 
-extern F64 gGLModelView[16];
-extern F64 gGLLastModelView[16];
-extern F64 gGLLastProjection[16];
-extern F64 gGLProjection[16];
+extern F32 gGLModelView[16];
+extern F32 gGLLastModelView[16];
+extern F32 gGLLastProjection[16];
+extern F32 gGLProjection[16];
 extern S32 gGLViewport[4];
 
 extern LLRender gGL;
