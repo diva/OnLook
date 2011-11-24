@@ -354,7 +354,14 @@ void LLViewerShaderMgr::setShaders()
 
 	{
 		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		boost::filesystem::remove_all(dumpdir);
+		try 
+		{
+			boost::filesystem::remove_all(dumpdir);
+		}
+		catch(const boost::filesystem::filesystem_error& e)
+		{
+			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
+		}
 	}
 
 	LLGLSLShader::sIndexedTextureChannels = llmax(llmin(gGLManager.mNumTextureImageUnits, (S32) gSavedSettings.getU32("RenderMaxTextureIndex")), 1);
@@ -379,9 +386,9 @@ void LLViewerShaderMgr::setShaders()
 		LLShaderMgr::instance()->mDefinitions["textureCube"]	= "texture";
 		LLShaderMgr::instance()->mDefinitions["texture2DLod"]	= "textureLod";
 		LLShaderMgr::instance()->mDefinitions["texture2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2D"]		= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DProj"]	= "textureProj";
+		LLShaderMgr::instance()->mDefinitions["shadow2D(a,b)"]		= "vec2(texture(a,b))";		//Shadow lookups only return a single float.
+		LLShaderMgr::instance()->mDefinitions["shadow2DRect(a,b)"]	= "vec2(texture(a,b))";
+		LLShaderMgr::instance()->mDefinitions["shadow2DProj(a,b)"]	= "vec2(textureProj(a,b))";
 		LLShaderMgr::instance()->mDefinitions["ftransform()"]	= "gl_ModelViewProjectionMatrix * gl_Vertex";
 	}
 
