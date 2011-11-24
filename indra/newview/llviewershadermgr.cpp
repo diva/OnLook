@@ -386,9 +386,9 @@ void LLViewerShaderMgr::setShaders()
 		LLShaderMgr::instance()->mDefinitions["textureCube"]	= "texture";
 		LLShaderMgr::instance()->mDefinitions["texture2DLod"]	= "textureLod";
 		LLShaderMgr::instance()->mDefinitions["texture2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2D"]		= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DProj"]	= "textureProj";
+		LLShaderMgr::instance()->mDefinitions["shadow2D(a,b)"]		= "vec2(texture(a,b))";		//Shadow lookups only return a single float.
+		LLShaderMgr::instance()->mDefinitions["shadow2DRect(a,b)"]	= "vec2(texture(a,b))";
+		LLShaderMgr::instance()->mDefinitions["shadow2DProj(a,b)"]	= "vec2(textureProj(a,b))";
 		LLShaderMgr::instance()->mDefinitions["ftransform()"]	= "gl_ModelViewProjectionMatrix * gl_Vertex";
 	}
 
