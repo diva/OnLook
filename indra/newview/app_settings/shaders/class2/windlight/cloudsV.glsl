@@ -12,9 +12,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Output parameters
-varying vec4 vary_CloudColorSun;
-varying vec4 vary_CloudColorAmbient;
-varying float vary_CloudDensity;
+VARYING vec4 vary_CloudColorSun;
+VARYING vec4 vary_CloudColorAmbient;
+VARYING float vary_CloudDensity;
 
 // Inputs
 uniform vec3 camPosLocal;

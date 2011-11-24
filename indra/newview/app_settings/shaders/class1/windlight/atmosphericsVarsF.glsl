@@ -7,7 +7,7 @@
  
 
 
-varying vec3 vary_PositionEye;
+VARYING vec3 vary_PositionEye;
 
 vec3 getPositionEye()
 {

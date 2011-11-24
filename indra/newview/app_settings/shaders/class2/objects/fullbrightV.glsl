@@ -9,7 +9,7 @@
 
 void calcAtmospherics(vec3 inPositionEye);
 
-varying float vary_texture_index;
+VARYING float vary_texture_index;
 
 void main()
 {

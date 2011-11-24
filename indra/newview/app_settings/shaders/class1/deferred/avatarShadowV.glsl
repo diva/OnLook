@@ -9,9 +9,9 @@
 
 mat4 getSkinnedTransform();
 
-attribute vec4 weight;
+ATTRIBUTE vec4 weight;
 
-varying vec4 post_pos;
+VARYING vec4 post_pos;
 
 void main()
 {

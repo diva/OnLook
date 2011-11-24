@@ -17,13 +17,13 @@ vec3 atmosAffectDirectionalLight(float lightIntensity);
 vec3 scaleDownLight(vec3 light);
 vec3 scaleUpLight(vec3 light);
 
-varying vec3 vary_ambient;
-varying vec3 vary_directional;
-varying vec3 vary_fragcoord;
-varying vec3 vary_position;
-varying vec3 vary_light;
-varying vec3 vary_pointlight_col;
-varying float vary_texture_index;
+VARYING vec3 vary_ambient;
+VARYING vec3 vary_directional;
+VARYING vec3 vary_fragcoord;
+VARYING vec3 vary_position;
+VARYING vec3 vary_light;
+VARYING vec3 vary_pointlight_col;
+VARYING float vary_texture_index;
 
 uniform float near_clip;
 uniform float shadow_offset;

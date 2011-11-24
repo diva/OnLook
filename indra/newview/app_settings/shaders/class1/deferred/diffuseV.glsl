@@ -7,8 +7,8 @@
  
 
 
-varying vec3 vary_normal;
-varying float vary_texture_index;
+VARYING vec3 vary_normal;
+VARYING float vary_texture_index;
 
 void main()
 {
