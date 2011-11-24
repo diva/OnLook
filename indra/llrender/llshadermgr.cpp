@@ -768,8 +768,8 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		file.write(ostr.str().c_str(),ostr.str().length());
 		if(!error_str.empty())
 		{
-			LLAPRFile file2(maindir + shader_name + "_ERROR" + ".txt", LL_APR_W);
-			file.write(error_str.c_str(),error_str.length());
+			LLAPRFile file2(maindir + shader_name + "_ERROR.txt", LL_APR_W);
+			file2.write(error_str.c_str(),error_str.length());
 		}
 	}
 	stop_glerror();
