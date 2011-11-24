@@ -236,7 +236,7 @@ void LLNetMap::draw()
 		{
 			// rotate subsequent draws to agent rotation
 			rotation = atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] );
-			glRotatef( rotation * RAD_TO_DEG, 0.f, 0.f, 1.f);
+			gGL.rotatef( rotation * RAD_TO_DEG, 0.f, 0.f, 1.f);
 		}
 
 		// figure out where agent is
@@ -497,7 +497,7 @@ void LLNetMap::draw()
 			// If we don't rotate the map, we have to rotate the frustum.
 			gGL.pushMatrix();
 				gGL.translatef( ctr_x, ctr_y, 0 );
-				glRotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
+				gGL.rotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
 				gGL.begin( LLRender::TRIANGLES  );
 					gGL.vertex2f( 0, 0 );
 					gGL.vertex2f( -half_width_pixels, far_clip_pixels );

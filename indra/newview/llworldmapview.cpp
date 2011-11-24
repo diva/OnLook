@@ -1155,7 +1155,7 @@ void LLWorldMapView::drawFrustum()
 	// Since we don't rotate the map, we have to rotate the frustum.
 	gGL.pushMatrix();
 		gGL.translatef( ctr_x, ctr_y, 0 );
-		glRotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
+		gGL.rotatef( atan2( LLViewerCamera::getInstance()->getAtAxis().mV[VX], LLViewerCamera::getInstance()->getAtAxis().mV[VY] ) * RAD_TO_DEG, 0.f, 0.f, -1.f);
 
 		// Draw triangle with more alpha in far pixels to make it 
 		// fade out in distance.
