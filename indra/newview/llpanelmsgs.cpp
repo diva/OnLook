@@ -60,6 +60,8 @@ BOOL LLPanelMsgs::postBuild()
 	childSetAction("enable_popup", onClickEnablePopup, this);
 	childSetAction("reset_dialogs_btn", onClickResetDialogs, this);
 	childSetAction("skip_dialogs_btn", onClickSkipDialogs, this);
+	childSetAction("skip_frst_btn", onClickSkipFirstTime, this);
+
 	buildLists();
 
 	childSetValue("accept_new_inventory", gSavedSettings.getBOOL("AutoAcceptNewInventory"));
@@ -245,4 +247,12 @@ bool callback_skip_dialogs(const LLSD& notification, const LLSD& response, LLPan
 void LLPanelMsgs::onClickSkipDialogs(void* user_data)
 {
 	LLNotificationsUtil::add("SkipShowNextTimeDialogs", LLSD(), LLSD(), boost::bind(&callback_skip_dialogs, _1, _2, (LLPanelMsgs*)user_data));
+}
+
+// static
+void LLPanelMsgs::onClickSkipFirstTime(void* user_data)
+{
+	LLFirstUse::disableFirstUse();
+	LLPanelMsgs* panelp = (LLPanelMsgs*)user_data;
+	if(panelp) panelp->buildLists();
 }
