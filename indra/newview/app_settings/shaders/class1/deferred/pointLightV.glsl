@@ -7,8 +7,8 @@
 
 
 
-varying vec4 vary_light;
-varying vec4 vary_fragcoord;
+VARYING vec4 vary_light;
+VARYING vec4 vary_fragcoord;
 
 void main()
 {

@@ -7,7 +7,7 @@
  
 
 
-varying vec2 vary_fragcoord;
+VARYING vec2 vary_fragcoord;
 
 uniform vec2 screen_res;
 

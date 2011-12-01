@@ -11,7 +11,7 @@ void calcAtmospherics(vec3 inPositionEye);
 
 uniform vec4 origin;
 
-varying float vary_texture_index;
+VARYING float vary_texture_index;
 
 void main()
 {

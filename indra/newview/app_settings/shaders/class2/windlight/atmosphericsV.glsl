@@ -7,7 +7,7 @@
  
 
 
-// varying param funcs
+// VARYING param funcs
 void setSunlitColor(vec3 v);
 void setAmblitColor(vec3 v);
 void setAdditiveColor(vec3 v);
@@ -16,8 +16,8 @@ void setPositionEye(vec3 v);
 
 vec3 getAdditiveColor();
 
-//varying vec4 vary_CloudUVs;
-//varying float vary_CloudDensity;
+//VARYING vec4 vary_CloudUVs;
+//VARYING float vary_CloudDensity;
 
 // Inputs
 uniform vec4 morphFactor;

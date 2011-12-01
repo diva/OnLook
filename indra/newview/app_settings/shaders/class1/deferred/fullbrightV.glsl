@@ -14,7 +14,7 @@ vec3 atmosAffectDirectionalLight(float lightIntensity);
 vec3 scaleDownLight(vec3 light);
 vec3 scaleUpLight(vec3 light);
 
-varying float vary_texture_index;
+VARYING float vary_texture_index;
 
 void main()
 {

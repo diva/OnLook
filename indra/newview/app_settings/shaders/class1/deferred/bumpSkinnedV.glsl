@@ -7,9 +7,9 @@
 
 
 
-varying vec3 vary_mat0;
-varying vec3 vary_mat1;
-varying vec3 vary_mat2;
+VARYING vec3 vary_mat0;
+VARYING vec3 vary_mat1;
+VARYING vec3 vary_mat2;
 
 mat4 getObjectSkinnedTransform();
 

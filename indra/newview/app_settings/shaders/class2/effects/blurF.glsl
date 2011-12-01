@@ -11,7 +11,7 @@
 uniform sampler2DRect RenderTexture;
 uniform float bloomStrength;
 
-varying vec4 gl_TexCoord[gl_MaxTextureCoords];
+VARYING vec4 gl_TexCoord[gl_MaxTextureCoords];
 
 float blurWeights[4] = float[4](.05,.1,.2,.3);
 

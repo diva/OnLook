@@ -20,7 +20,7 @@ uniform sampler2D		depthGIMap;
 uniform sampler2D		lightFunc;
 
 // Inputs
-varying vec2 vary_fragcoord;
+VARYING vec2 vary_fragcoord;
 
 uniform vec2 screen_res;
 

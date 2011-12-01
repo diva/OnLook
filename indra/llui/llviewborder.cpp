@@ -246,7 +246,7 @@ void LLViewBorder::drawTextureTrapezoid( F32 degrees, S32 width, S32 length, F32
 	gGL.pushMatrix();
 	{
 		gGL.translatef(start_x, start_y, 0.f);
-		glRotatef( degrees, 0, 0, 1 );
+		gGL.rotatef( degrees, 0, 0, 1 );
 
 		gGL.begin(LLRender::QUADS);
 		{

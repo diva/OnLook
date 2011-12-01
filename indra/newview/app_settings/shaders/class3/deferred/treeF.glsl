@@ -9,7 +9,7 @@
 
 uniform sampler2D diffuseMap;
 
-varying vec3 vary_normal;
+VARYING vec3 vary_normal;
 
 void main() 
 {

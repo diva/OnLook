@@ -11,9 +11,9 @@
 // The fragment shader for the sky
 /////////////////////////////////////////////////////////////////////////
 
-varying vec4 vary_CloudColorSun;
-varying vec4 vary_CloudColorAmbient;
-varying float vary_CloudDensity;
+VARYING vec4 vary_CloudColorSun;
+VARYING vec4 vary_CloudColorAmbient;
+VARYING float vary_CloudDensity;
 
 uniform sampler2D cloud_noise_texture;
 uniform vec4 cloud_pos_density1;

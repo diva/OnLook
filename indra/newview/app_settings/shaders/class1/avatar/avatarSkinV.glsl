@@ -7,7 +7,7 @@
  
 
 
-attribute vec4 weight;  //1
+ATTRIBUTE vec4 weight;  //1
 
 uniform vec4 matrixPalette[45];
 

@@ -7,7 +7,7 @@
  
 
 
-varying vec3 vary_normal;
+VARYING vec3 vary_normal;
 
 vec4 texgen_object(vec4  vpos, vec4 tc, mat4 mat, vec4 tp0, vec4 tp1)
 {

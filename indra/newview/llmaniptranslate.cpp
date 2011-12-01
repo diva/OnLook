@@ -1533,7 +1533,7 @@ void LLManipTranslate::renderSnapGuides()
 		F32 x,y,z,angle_radians;
 		grid_rotation.getAngleAxis(&angle_radians, &x, &y, &z);
 		gGL.translatef(selection_center.mV[VX], selection_center.mV[VY], selection_center.mV[VZ]);
-		glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+		gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 		
 		F32 sz = mGridSizeMeters;
 		F32 tiles = sz;
@@ -1741,7 +1741,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 	F32 x,y,z,angle_radians;
 	grid_rotation.getAngleAxis(&angle_radians, &x, &y, &z);
 	gGL.translatef(selection_center.mV[VX], selection_center.mV[VY], selection_center.mV[VZ]);
-	glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+	gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 	
 	F32 sz = mGridSizeMeters;
 	F32 tiles = sz;
@@ -1878,7 +1878,7 @@ void LLManipTranslate::renderTranslationHandles()
 		F32 angle_radians, x, y, z;
 		grid_rotation.getAngleAxis(&angle_radians, &x, &y, &z);
 
-		glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+		gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 
 		LLQuaternion invRotation = grid_rotation;
 		invRotation.conjQuat();

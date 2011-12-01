@@ -20,9 +20,9 @@ uniform sampler2DRect depthMap;
 uniform vec3 env_mat[3];
 uniform float sun_wash;
 
-varying vec4 vary_light;
+VARYING vec4 vary_light;
 
-varying vec4 vary_fragcoord;
+VARYING vec4 vary_fragcoord;
 uniform vec2 screen_res;
 
 uniform mat4 inv_proj;

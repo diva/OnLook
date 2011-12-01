@@ -7,7 +7,7 @@
 
 
 
-attribute vec4 object_weight;  
+ATTRIBUTE vec4 object_weight;  
 
 uniform mat4 matrixPalette[32];
 

@@ -11,11 +11,11 @@ vec4 calcLighting(vec3 pos, vec3 norm, vec4 color, vec4 baseCol);
 mat4 getSkinnedTransform();
 void calcAtmospherics(vec3 inPositionEye);
 
-attribute vec4 clothing; //4
+ATTRIBUTE vec4 clothing; //4
 
-attribute vec4 gWindDir;		//7
-attribute vec4 gSinWaveParams; //3
-attribute vec4 gGravity;		//5
+ATTRIBUTE vec4 gWindDir;		//7
+ATTRIBUTE vec4 gSinWaveParams; //3
+ATTRIBUTE vec4 gGravity;		//5
 
 const vec4 gMinMaxConstants = vec4(1.0, 0.166666, 0.0083143, .00018542);	 // #minimax-generated coefficients
 const vec4 gPiConstants	= vec4(0.159154943, 6.28318530, 3.141592653, 1.5707963); //	# {1/2PI, 2PI, PI, PI/2}

@@ -24,8 +24,8 @@ uniform float ssao_max_radius;
 uniform float ssao_factor;
 uniform float ssao_factor_inv;
 
-varying vec2 vary_fragcoord;
-varying vec4 vary_light;
+VARYING vec2 vary_fragcoord;
+VARYING vec4 vary_light;
 
 uniform mat4 inv_proj;
 uniform vec2 screen_res;

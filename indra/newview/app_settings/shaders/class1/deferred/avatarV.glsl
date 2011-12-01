@@ -9,9 +9,9 @@
 
 mat4 getSkinnedTransform();
 
-attribute vec4 weight;
+ATTRIBUTE vec4 weight;
 
-varying vec3 vary_normal;
+VARYING vec3 vary_normal;
 
 void main()
 {
