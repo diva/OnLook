@@ -1186,7 +1186,7 @@ void rotate_quat(LLQuaternion& rotation)
 {
 	F32 angle_radians, x, y, z;
 	rotation.getAngleAxis(&angle_radians, &x, &y, &z);
-	glRotatef(angle_radians * RAD_TO_DEG, x, y, z);
+	gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 }
 
 void flush_glerror()

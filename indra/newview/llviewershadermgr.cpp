@@ -354,7 +354,14 @@ void LLViewerShaderMgr::setShaders()
 
 	{
 		const std::string dumpdir = gDirUtilp->getExpandedFilename(LL_PATH_LOGS,"shader_dump")+gDirUtilp->getDirDelimiter();
-		boost::filesystem::remove_all(dumpdir);
+		try 
+		{
+			boost::filesystem::remove_all(dumpdir);
+		}
+		catch(const boost::filesystem::filesystem_error& e)
+		{
+			llinfos << "boost::filesystem::remove_all(\""+dumpdir+"\") failed: '" + e.code().message() + "'" << llendl;
+		}
 	}
 
 	LLGLSLShader::sIndexedTextureChannels = llmax(llmin(gGLManager.mNumTextureImageUnits, (S32) gSavedSettings.getU32("RenderMaxTextureIndex")), 1);
@@ -373,17 +380,6 @@ void LLViewerShaderMgr::setShaders()
 	LLShaderMgr::instance()->mDefinitions.clear();
 	LLShaderMgr::instance()->mDefinitions["samples"] = llformat("%d", gSavedSettings.getU32("RenderFSAASamples")/*gGLManager.getNumFBOFSAASamples(gSavedSettings.getU32("RenderFSAASamples"))*/);
 	LLShaderMgr::instance()->mDefinitions["NUM_TEX_UNITS"] = llformat("%d", gGLManager.mNumTextureImageUnits);
-	if(gGLManager.mGLVersion >= 3.f)
-	{
-		LLShaderMgr::instance()->mDefinitions["texture2D"]		= "texture";
-		LLShaderMgr::instance()->mDefinitions["textureCube"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["texture2DLod"]	= "textureLod";
-		LLShaderMgr::instance()->mDefinitions["texture2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2D"]		= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DRect"]	= "texture";
-		LLShaderMgr::instance()->mDefinitions["shadow2DProj"]	= "textureProj";
-		LLShaderMgr::instance()->mDefinitions["ftransform()"]	= "gl_ModelViewProjectionMatrix * gl_Vertex";
-	}
 
 	initAttribsAndUniforms();
 	gPipeline.releaseGLBuffers();

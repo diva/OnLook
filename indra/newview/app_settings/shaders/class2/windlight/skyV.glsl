@@ -12,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Output parameters
-varying vec4 vary_HazeColor;
+VARYING vec4 vary_HazeColor;
 
 // Inputs
 uniform vec3 camPosLocal;

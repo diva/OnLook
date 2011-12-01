@@ -32,9 +32,9 @@ uniform float far_clip;
 uniform vec3 proj_origin; //origin of projection to be used for angular attenuation
 uniform float sun_wash;
 
-varying vec4 vary_light;
+VARYING vec4 vary_light;
 
-varying vec4 vary_fragcoord;
+VARYING vec4 vary_fragcoord;
 uniform vec2 screen_res;
 
 uniform mat4 inv_proj;

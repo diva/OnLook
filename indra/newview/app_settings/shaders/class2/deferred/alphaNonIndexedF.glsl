@@ -24,11 +24,11 @@ uniform vec2 shadow_res;
 vec3 atmosLighting(vec3 light);
 vec3 scaleSoftClip(vec3 light);
 
-varying vec3 vary_ambient;
-varying vec3 vary_directional;
-varying vec3 vary_fragcoord;
-varying vec3 vary_position;
-varying vec3 vary_pointlight_col;
+VARYING vec3 vary_ambient;
+VARYING vec3 vary_directional;
+VARYING vec3 vary_fragcoord;
+VARYING vec3 vary_position;
+VARYING vec3 vary_pointlight_col;
 
 uniform float shadow_bias;
 

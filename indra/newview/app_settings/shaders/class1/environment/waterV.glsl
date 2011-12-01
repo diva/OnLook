@@ -15,9 +15,9 @@ uniform float time;
 uniform vec3 eyeVec;
 uniform float waterHeight;
 
-varying vec4 refCoord;
-varying vec4 littleWave;
-varying vec4 view;
+VARYING vec4 refCoord;
+VARYING vec4 littleWave;
+VARYING vec4 view;
 
 float wave(vec2 v, float t, float f, vec2 d, float s) 
 {

@@ -13,7 +13,7 @@ uniform sampler2D detail_2;
 uniform sampler2D detail_3;
 uniform sampler2D alpha_ramp;
 
-varying vec3 vary_normal;
+VARYING vec3 vary_normal;
 
 void main()
 {

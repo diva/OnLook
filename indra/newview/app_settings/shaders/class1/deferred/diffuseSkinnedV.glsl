@@ -7,7 +7,7 @@
 
 
 
-varying vec3 vary_normal;
+VARYING vec3 vary_normal;
 
 mat4 getObjectSkinnedTransform();
 

@@ -9,8 +9,8 @@
 
 uniform vec2 screen_res;
 
-varying vec4 vary_light;
-varying vec2 vary_fragcoord;
+VARYING vec4 vary_light;
+VARYING vec2 vary_fragcoord;
 void main()
 {
 	//transform vertex

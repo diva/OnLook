@@ -11,7 +11,7 @@
 // The fragment shader for the sky
 /////////////////////////////////////////////////////////////////////////
 
-varying vec4 vary_HazeColor;
+VARYING vec4 vary_HazeColor;
 
 uniform sampler2D cloud_noise_texture;
 uniform vec4 gamma;
