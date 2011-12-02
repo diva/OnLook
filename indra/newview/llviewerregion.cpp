@@ -1732,17 +1732,29 @@ std::string LLViewerRegion::getDescription() const
     return stringize(*this);
 }
 
-#if MESH_ENABLED
 bool LLViewerRegion::meshUploadEnabled() const
 {
-	return (mSimulatorFeatures.has("MeshUploadEnabled") &&
-		mSimulatorFeatures["MeshUploadEnabled"].asBoolean());
+	if (getCapability("SimulatorFeatures").empty())
+	{
+		return !getCapability("MeshUploadFlag").empty();
+	}
+	else
+	{
+		return (mSimulatorFeatures.has("MeshUploadEnabled") &&
+				mSimulatorFeatures["MeshUploadEnabled"].asBoolean());
+	}
 }
 
 bool LLViewerRegion::meshRezEnabled() const
 {
-	return (mSimulatorFeatures.has("MeshRezEnabled") &&
+	if (getCapability("SimulatorFeatures").empty())
+	{
+		return !getCapability("GetMesh").empty();
+	}
+	else
+	{
+		return (mSimulatorFeatures.has("MeshRezEnabled") &&
 				mSimulatorFeatures["MeshRezEnabled"].asBoolean());
+	}
 }
-#endif //MESH_ENABLED
 

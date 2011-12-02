@@ -4163,8 +4163,6 @@ static F32 CheckMessagesMaxTime = CHECK_MESSAGES_DEFAULT_MAX_TIME;
 void LLAppViewer::idleNetwork()
 {
 	pingMainloopTimeout("idleNetwork");
-	LLError::LLCallStacks::clear() ;
-	llpushcallstacks ;
 
 	gObjectList.mNumNewObjects = 0;
 	S32 total_decoded = 0;
@@ -4259,15 +4257,14 @@ void LLAppViewer::idleNetwork()
 	{
 		LLUUID this_region_id = agent_region->getRegionID();
 		bool this_region_alive = agent_region->isAlive();
-		if ((mAgentRegionLastAlive && !this_region_alive) // newly dead
-		    && (mAgentRegionLastID == this_region_id)) // same region
+		if (mAgentRegionLastAlive && !this_region_alive // newly dead
+		    && mAgentRegionLastID == this_region_id) // same region
 		{
 			forceDisconnect(LLTrans::getString("AgentLostConnection"));
 		}
 		mAgentRegionLastID = this_region_id;
 		mAgentRegionLastAlive = this_region_alive;
 	}
-	llpushcallstacks ;
 }
 
 void LLAppViewer::disconnectViewer()

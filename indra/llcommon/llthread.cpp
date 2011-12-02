@@ -111,7 +111,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// after the LLCurl::Multi::run() function exits and we actually
 	// change this variable (which really SHOULD have been inside
 	// the critical area of the mSignal lock)].
-	llinfos << "LLThread::staticRun() Exiting: " << name << llendl;
+	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
 
 	return NULL;
 }
