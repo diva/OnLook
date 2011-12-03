@@ -26,7 +26,6 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#if MESH_ENABLED
 #include "apr_pools.h"
 #include "apr_dso.h"
 #include "llhttpstatuscodes.h"
@@ -3333,7 +3332,6 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 		completeCurrent();
 		
 	}
-#endif //MESH_IMPORT
 }
 
 
