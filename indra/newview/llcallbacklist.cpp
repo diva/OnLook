@@ -180,12 +180,6 @@ private:
 	bool_func_t mCallable;
 };
 
-void doOnIdleRepeating(bool_func_t callable)
-{
-	OnIdleCallbackRepeating* cb_functor = new OnIdleCallbackRepeating(callable);
-	gIdleCallbacks.addFunction(&OnIdleCallbackRepeating::onIdle,cb_functor);
-}
-
 #ifdef _DEBUG
 
 void test1(void *data)

@@ -1607,6 +1607,17 @@ Unable to upload [FILE] due to the following reason: [REASON]
 Please try again later.
   </notification>
 
+   <notification
+    icon="alertmodal.tga"
+    name="UploadCostConfirmation"
+    type="alertmodal">
+This upload will cost L$[PRICE], do you wish to continue with the upload?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="Upload"/>
+  </notification>
+
   <notification
    icon="alertmodal.tga"
    name="CannotCreateLandmarkNotOwner"
@@ -6828,6 +6839,13 @@ The region you have entered is running a different simulator version. Click this
    priority="high"
    type="notifytip">
 The URL you clicked cannot be opened from this web browser.
+  </notification>
+
+  <notification
+    name="RegionCapabilityRequestError"
+    icon="alert.tga"
+    type="alert">
+    Could not get region capability &apos;[CAPABILITY]&apos;.
   </notification>
 
   <global name="UnsupportedCPU">

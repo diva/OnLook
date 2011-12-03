@@ -128,7 +128,7 @@ public:
 	LLImportMaterial() 
 		: mFullbright(false) 
 	{ 
-		mDiffuseColor.set(1,1,1,1);
+		mDiffuseColor.set(1, 1, 1, 1);
 	}
 
 	LLImportMaterial(LLSD& data);
@@ -246,10 +246,10 @@ public:
 	static S32 sActiveLODRequests;
 	static U32 sMaxConcurrentRequests;
 
-	LLCurlRequest* mCurlRequest;
-	LLMutex*	mMutex;
-	LLMutex*	mHeaderMutex;
-	LLCondition* mSignal;
+	LLCurlRequest*	mCurlRequest;
+	LLMutex*		mMutex;
+	LLMutex*		mHeaderMutex;
+	LLCondition*	mSignal;
 
 	bool mWaiting;
 
@@ -464,6 +464,9 @@ private:
 
 class LLMeshRepository
 {
+private:
+	S32 mMeshUploadTimeOut ; //maximum time in seconds to execute an uploading request.
+
 public:
 
 	//metrics
@@ -587,4 +590,3 @@ public:
 extern LLMeshRepository gMeshRepo;
 
 #endif
-
