@@ -30,6 +30,7 @@ RenderAvatarPhysicsLODFactor 1	1.0
 RenderAvatarMaxVisible      1   12
 RenderAvatarVP				1	1
 RenderCubeMap				1	1
+RenderDelayVBUpdate			1	0
 RenderFarClip				1	256
 RenderFlexTimeFactor		1	1.0
 RenderFogRatio				1	4.0
@@ -46,6 +47,7 @@ RenderTransparentWater		1	1
 RenderTreeLODFactor			1	1.0
 RenderUseImpostors			1	1
 RenderVBOEnable				1	1
+RenderVBOMappingDisable		1	1
 RenderVolumeLODFactor		1	2.0
 UseStartScreen				1	1
 UseOcclusion				1	1
@@ -61,9 +63,10 @@ RenderDeferredSSAO			1	1
 RenderShadowDetail			1	2
 WatchdogDisabled				1	1
 ShyotlRenderUseStreamVBO			1	1
-RenderDeferredGI			1	0
-RenderFastAlpha				1	1
-RenderUseFBO				1	1
+RenderFSAASamples			1	16
+RenderMaxTextureIndex		1	16
+RenderUseFBO				1	0
+
 
 //
 // Low Graphics Settings
@@ -78,24 +81,23 @@ RenderAvatarVP				1	0
 RenderFarClip				1	64
 RenderFlexTimeFactor		1	0
 RenderGlowResolutionPow		1	8
-RenderMaxPartCount			1	1024
+RenderMaxPartCount			1	512
 RenderObjectBump			1	0
 RenderLocalLights			1	0
 RenderReflectionDetail		1	0
 RenderTerrainDetail			1	0
 RenderTerrainLODFactor		1	1
 RenderTransparentWater		1	0
-RenderTreeLODFactor			1	0.25
+RenderTreeLODFactor			1	0
 RenderUseImpostors			1	1
-RenderVolumeLODFactor		1	0.5
+RenderVolumeLODFactor		1	1.125
 VertexShaderEnable			1	0
 WindLightUseAtmosShaders	1	0
 WLSkyDetail					1	48
 RenderDeferred				1	0
 RenderDeferredSSAO			1	0
 RenderShadowDetail			1	0
-RenderDeferredGI			0	0
-RenderFastAlpha				1	1
+RenderFSAASamples			1	0
 RenderUseFBO				1	0
 
 //
@@ -105,7 +107,7 @@ list Mid
 RenderAnisotropic			1	0
 RenderAvatarCloth			1	0
 RenderAvatarLODFactor		1	0.5
-RenderAvatarPhysicsLODFactor 	1	0.5
+RenderAvatarPhysicsLODFactor 1	0.75
 RenderAvatarVP				1	1
 RenderFarClip				1	96
 RenderFlexTimeFactor		1	1.0
@@ -126,8 +128,7 @@ WLSkyDetail					1	48
 RenderDeferred				1	0
 RenderDeferredSSAO			1	0
 RenderShadowDetail			1	0
-RenderDeferredGI			1	0
-RenderFastAlpha				1	0
+RenderFSAASamples			1	0
 RenderUseFBO				1	0
 
 
@@ -138,7 +139,7 @@ list High
 RenderAnisotropic			1	1
 RenderAvatarCloth			1	0
 RenderAvatarLODFactor		1	1.0
-RenderAvatarPhysicsLODFactor 1	.75
+RenderAvatarPhysicsLODFactor 1	1.0
 RenderAvatarVP				1	1
 RenderFarClip				1	128
 RenderFlexTimeFactor		1	1.0
@@ -159,8 +160,7 @@ WLSkyDetail					1	48
 RenderDeferred				1	0
 RenderDeferredSSAO			1	0
 RenderShadowDetail			1	0
-RenderDeferredGI			1	0
-RenderFastAlpha				1	0
+RenderFSAASamples			1	2
 RenderUseFBO				1	0
 
 //
@@ -188,11 +188,10 @@ VertexShaderEnable			1	1
 WindLightUseAtmosShaders	1	1
 WLSkyDetail					1	128
 RenderDeferred				1	1
-RenderDeferredSSAO			1	0
-RenderShadowDetail			1	0
-RenderDeferredGI			1	0
-RenderFastAlpha				1	0
-RenderUseFBO				1	1
+RenderDeferredSSAO			1	1
+RenderShadowDetail			1	2
+RenderFSAASamples			1	2
+RenderUseFBO				1	0
 
 //
 // Class Unknown Hardware (unknown)
@@ -250,6 +249,14 @@ RenderDeferred				0	0
 RenderDeferredSSAO			0	0
 RenderShadowDetail			0	0
 
+//
+// GL_ARB_map_buffer_range exists
+//
+list MapBufferRange
+RenderVBOMappingDisable		1	1
+
+
+//
 // "Default" setups for safe, low, medium, high
 //
 list safe
@@ -264,10 +271,10 @@ RenderUseImpostors			0	0
 RenderVBOEnable				1	0
 RenderReflectionDetail		0	0
 WindLightUseAtmosShaders	0	0
-RenderUseFBO				0	0
 RenderDeferred				0	0
 RenderDeferredSSAO			0	0
 RenderShadowDetail			0	0
+RenderUseFBO				0	0
 
 //
 // CPU based feature masks
@@ -291,15 +298,14 @@ RenderVBOEnable				1	0
 
 list OpenGLPre30
 RenderDeferred				0	0
+RenderMaxTextureIndex		1	1
+
 list Intel
 RenderAnisotropic			1	0
 RenderVBOEnable				1	0
-RenderLocalLights			1	0
-RenderDeferred				1	0
 
 list GeForce2
 RenderAnisotropic			1	0
-RenderLocalLights		1	0
 RenderMaxPartCount			1	2048
 RenderTerrainDetail			1	0
 RenderVBOEnable				1	1

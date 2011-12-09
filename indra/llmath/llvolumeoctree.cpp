@@ -74,6 +74,7 @@ BOOL LLLineSegmentBoxIntersect(const LLVector4a& start, const LLVector4a& end, c
 	return (grt & 0x7) ? false : true;
 }
 
+
 LLVolumeOctreeListener::LLVolumeOctreeListener(LLOctreeNode<LLVolumeTriangle>* node)
 {
 	node->addListener(this);

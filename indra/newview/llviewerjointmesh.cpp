@@ -2,31 +2,25 @@
  * @file llviewerjointmesh.cpp
  * @brief Implementation of LLViewerJointMesh class
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -465,7 +459,10 @@ void LLViewerJointMesh::uploadJointMatrices()
 			}
 		}
 		stop_glerror();
-		glUniform4fvARB(gAvatarMatrixParam, 45, mat);
+		if (LLGLSLShader::sCurBoundShaderPtr)
+		{
+			LLGLSLShader::sCurBoundShaderPtr->uniform4fv(LLViewerShaderMgr::AVATAR_MATRIX, 45, mat);
+		}
 		stop_glerror();
 	}
 	else
@@ -518,7 +515,8 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 {
 	if (!mValid || !mMesh || !mFace || !mVisible || 
 		!mFace->getVertexBuffer() ||
-		mMesh->getNumFaces() == 0) 
+		mMesh->getNumFaces() == 0 ||
+		(LLGLSLShader::sNoFixedFunction && LLGLSLShader::sCurBoundShaderPtr == NULL))
 	{
 		return 0;
 	}
@@ -539,7 +537,7 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 
 	stop_glerror();
 	
-	LLGLSSpecular specular(LLColor4(1.f,1.f,1.f,1.f), (mFace->getPool()->getVertexShaderLevel() > 0) ? 0.f : mShiny);
+	LLGLSSpecular specular(LLColor4(1.f,1.f,1.f,1.f), (mFace->getPool()->getVertexShaderLevel() > 0 || LLGLSLShader::sNoFixedFunction) ? 0.f : mShiny);
 
 	//----------------------------------------------------------------
 	// setup current texture
@@ -587,19 +585,21 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 		}
 		gGL.getTexUnit(diffuse_channel)->bind(mTexture);
 		gGL.getTexUnit(diffuse_channel)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
-
 	}
 	else
 	{
 		gGL.getTexUnit(diffuse_channel)->bind(LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT));
 	}
 	
-	mFace->getVertexBuffer()->setBuffer(sRenderMask);
+	
+	U32 mask = sRenderMask;
 
 	U32 start = mMesh->mFaceVertexOffset;
 	U32 end = start + mMesh->mFaceVertexCount - 1;
 	U32 count = mMesh->mFaceIndexCount;
 	U32 offset = mMesh->mFaceIndexOffset;
+
+	LLVertexBuffer* buff = mFace->getVertexBuffer();
 
 	if (mMesh->hasWeights())
 	{
@@ -609,19 +609,26 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 			{
 				uploadJointMatrices();
 			}
+			mask = mask | LLVertexBuffer::MAP_WEIGHT;
+			if (mFace->getPool()->getVertexShaderLevel() > 1)
+			{
+				mask = mask | LLVertexBuffer::MAP_CLOTHWEIGHT;
+			}
 		}
 		
-		mFace->getVertexBuffer()->drawRange(LLRender::TRIANGLES, start, end, count, offset);
+		buff->setBuffer(mask);
+		buff->drawRange(LLRender::TRIANGLES, start, end, count, offset);
 	}
 	else
 	{
 		gGL.pushMatrix();
 		LLMatrix4 jointToWorld = getWorldMatrix();
 		gGL.multMatrix((GLfloat*)jointToWorld.mMatrix);
-		mFace->getVertexBuffer()->drawRange(LLRender::TRIANGLES, start, end, count, offset);
+		buff->setBuffer(mask);
+		buff->drawRange(LLRender::TRIANGLES, start, end, count, offset);
 		gGL.popMatrix();
 	}
-	gPipeline.addTrianglesDrawn(count/3);
+	gPipeline.addTrianglesDrawn(count);
 
 	triangle_count += count;
 	
@@ -644,7 +651,9 @@ U32 LLViewerJointMesh::drawShape( F32 pixelArea, BOOL first_pass, BOOL is_dummy)
 //-----------------------------------------------------------------------------
 void LLViewerJointMesh::updateFaceSizes(U32 &num_vertices, U32& num_indices, F32 pixel_area)
 {
+	//bump num_vertices to next multiple of 4
 	num_vertices = (num_vertices + 0x3) & ~0x3;
+
 	// Do a pre-alloc pass to determine sizes of data.
 	if (mMesh && mValid)
 	{
@@ -666,6 +675,8 @@ void LLViewerJointMesh::updateFaceSizes(U32 &num_vertices, U32& num_indices, F32
 
 void LLViewerJointMesh::updateFaceData(LLFace *face, F32 pixel_area, BOOL damp_wind, bool terse_update)
 {
+	//IF THIS FUNCTION BREAKS, SEE LLPOLYMESH CONSTRUCTOR AND CHECK ALIGNMENT OF INPUT ARRAYS
+
 	mFace = face;
 
 	if (!mFace->getVertexBuffer())
@@ -697,43 +708,39 @@ void LLViewerJointMesh::updateFaceData(LLFace *face, F32 pixel_area, BOOL damp_w
 
 		if (num_verts)
 		{
-			face->getGeometryAvatar(verticesp, normalsp, tex_coordsp, vertex_weightsp, clothing_weightsp);
 			face->getVertexBuffer()->getIndexStrider(indicesp);
-
+			face->getGeometryAvatar(verticesp, normalsp, tex_coordsp, vertex_weightsp, clothing_weightsp);
+			
 			verticesp += mMesh->mFaceVertexOffset;
 			normalsp += mMesh->mFaceVertexOffset;
 			
-			//F32* v = (F32*) verticesp.get();
-			//F32* n = (F32*) normalsp.get();
+			F32* v = (F32*) verticesp.get();
+			F32* n = (F32*) normalsp.get();
 			
-			//U32 words = num_verts*4;
+			U32 words = num_verts*4;
 
-			//LLVector4a::memcpyNonAliased16(v, (F32*) mMesh->getCoords(), words*sizeof(F32));
-			verticesp.assignArray((U8*)mMesh->getCoords(), sizeof(mMesh->getCoords()[0]), num_verts);
-			//LLVector4a::memcpyNonAliased16(n, (F32*) mMesh->getNormals(), words*sizeof(F32));
-			normalsp.assignArray((U8*)mMesh->getNormals(), sizeof(mMesh->getNormals()[0]), num_verts);
-
+			LLVector4a::memcpyNonAliased16(v, (F32*) mMesh->getCoords(), words*sizeof(F32));
+			LLVector4a::memcpyNonAliased16(n, (F32*) mMesh->getNormals(), words*sizeof(F32));
+						
+			
 			if (!terse_update)
 			{
 				vertex_weightsp += mMesh->mFaceVertexOffset;
 				clothing_weightsp += mMesh->mFaceVertexOffset;
 				tex_coordsp += mMesh->mFaceVertexOffset;
 		
-				//F32* tc = (F32*) tex_coordsp.get();
-				//F32* vw = (F32*) vertex_weightsp.get();
-				//F32* cw = (F32*) clothing_weightsp.get();	
+				F32* tc = (F32*) tex_coordsp.get();
+				F32* vw = (F32*) vertex_weightsp.get();
+				F32* cw = (F32*) clothing_weightsp.get();	
 
-				//LLVector4a::memcpyNonAliased16(tc, (F32*) mMesh->getTexCoords(), num_verts*2*sizeof(F32));
-				tex_coordsp.assignArray((U8*)mMesh->getTexCoords(), sizeof(mMesh->getTexCoords()[0]), num_verts);
-				//LLVector4a::memcpyNonAliased16(vw, (F32*) mMesh->getWeights(), num_verts*sizeof(F32));	
-				vertex_weightsp.assignArray((U8*)mMesh->getWeights(), sizeof(mMesh->getWeights()[0]), num_verts);
-				//LLVector4a::memcpyNonAliased16(cw, (F32*) mMesh->getClothingWeights(), num_verts*4*sizeof(F32));
-				clothing_weightsp.assignArray((U8*)mMesh->getClothingWeights(), sizeof(mMesh->getClothingWeights()[0]), num_verts);
+				LLVector4a::memcpyNonAliased16(tc, (F32*) mMesh->getTexCoords(), num_verts*2*sizeof(F32));
+				LLVector4a::memcpyNonAliased16(vw, (F32*) mMesh->getWeights(), num_verts*sizeof(F32));	
+				LLVector4a::memcpyNonAliased16(cw, (F32*) mMesh->getClothingWeights(), num_verts*4*sizeof(F32));	
 			}
 
 			const U32 idx_count = mMesh->getNumFaces()*3;
 
-				indicesp += mMesh->mFaceIndexOffset;
+			indicesp += mMesh->mFaceIndexOffset;
 
 			U16* __restrict idx = indicesp.get();
 			S32* __restrict src_idx = (S32*) mMesh->getFaces();	
@@ -761,7 +768,7 @@ BOOL LLViewerJointMesh::updateLOD(F32 pixel_area, BOOL activate)
 }
 
 // static
-void LLViewerJointMesh::updateGeometryOriginal(LLFace *mFace, LLPolyMesh *mMesh)
+void LLViewerJointMesh::updateGeometry(LLFace *mFace, LLPolyMesh *mMesh)
 {
 	LLStrider<LLVector3> o_vertices;
 	LLStrider<LLVector3> o_normals;
@@ -771,16 +778,16 @@ void LLViewerJointMesh::updateGeometryOriginal(LLFace *mFace, LLPolyMesh *mMesh)
 	buffer->getVertexStrider(o_vertices,  0);
 	buffer->getNormalStrider(o_normals,   0);
 
-	//F32* __restrict vert = o_vertices[0].mV;
-	//F32* __restrict norm = o_normals[0].mV;
+	F32* __restrict vert = o_vertices[0].mV;
+	F32* __restrict norm = o_normals[0].mV;
 
 	const F32* __restrict weights = mMesh->getWeights();
 	const LLVector4a* __restrict coords = (LLVector4a*) mMesh->getCoords();
 	const LLVector4a* __restrict normals = (LLVector4a*) mMesh->getNormals();
 
-	U32 offset = mMesh->mFaceVertexOffset;
-	o_vertices += offset;
-	o_normals += offset;
+	U32 offset = mMesh->mFaceVertexOffset*4;
+	vert += offset;
+	norm += offset;
 
 	for (U32 index = 0; index < mMesh->getNumVertices(); index++)
 	{
@@ -798,90 +805,21 @@ void LLViewerJointMesh::updateGeometryOriginal(LLFace *mFace, LLPolyMesh *mMesh)
 
 			LLVector4a res;
 			gBlendMat.affineTransform(coords[index], res);
-			(o_vertices++)->set(res.getF32ptr());
-			//res.store4a(vert+index*4);
+			res.store4a(vert+index*4);
 			gBlendMat.rotate(normals[index], res);
-			(o_normals++)->set(res.getF32ptr());
-			//res.store4a(norm+index*4);
+			res.store4a(norm+index*4);
 		}
 		else
 		{  // No lerp required in this case.
 			LLVector4a res;
 			gJointMatAligned[joint].affineTransform(coords[index], res);
-			(o_vertices++)->set(res.getF32ptr());
-			//res.store4a(vert+index*4);
+			res.store4a(vert+index*4);
 			gJointMatAligned[joint].rotate(normals[index], res);
-			(o_normals++)->set(res.getF32ptr());
-			//res.store4a(norm+index*4);
+			res.store4a(norm+index*4);
 		}
 	}
 
-	buffer->setBuffer(0);
-}
-
-const U32 UPDATE_GEOMETRY_CALL_MASK			= 0x1FFF; // 8K samples before overflow
-const U32 UPDATE_GEOMETRY_CALL_OVERFLOW		= ~UPDATE_GEOMETRY_CALL_MASK;
-static bool sUpdateGeometryCallPointer		= false;
-static F64 sUpdateGeometryGlobalTime		= 0.0 ;
-static F64 sUpdateGeometryElapsedTime		= 0.0 ;
-static F64 sUpdateGeometryElapsedTimeOff	= 0.0 ;
-static F64 sUpdateGeometryElapsedTimeOn		= 0.0 ;
-static F64 sUpdateGeometryRunAvgOff[10];
-static F64 sUpdateGeometryRunAvgOn[10];
-static U32 sUpdateGeometryRunCount			= 0 ;
-static U32 sUpdateGeometryCalls				= 0 ;
-static U32 sUpdateGeometryLastProcessor		= 0 ;
-static BOOL sVectorizePerfTest 				= FALSE;
-static U32 sVectorizeProcessor 				= 0;
-
-//static
-void (*LLViewerJointMesh::sUpdateGeometryFunc)(LLFace* face, LLPolyMesh* mesh);
-
-//static
-void LLViewerJointMesh::updateVectorize()
-{
-	sVectorizePerfTest = gSavedSettings.getBOOL("VectorizePerfTest");
-	sVectorizeProcessor = gSavedSettings.getU32("VectorizeProcessor");
-	BOOL vectorizeEnable = gSavedSettings.getBOOL("VectorizeEnable");
-	BOOL vectorizeSkin = gSavedSettings.getBOOL("VectorizeSkin");
-
-	std::string vp;
-	switch(sVectorizeProcessor)
-	{
-		case 2: vp = "SSE2"; break;					// *TODO: replace the magic #s
-		case 1: vp = "SSE"; break;
-		default: vp = "COMPILER DEFAULT"; break;
-	}
-	LL_INFOS("AppInit") << "Vectorization         : " << ( vectorizeEnable ? "ENABLED" : "DISABLED" ) << LL_ENDL ;
-	LL_INFOS("AppInit") << "Vector Processor      : " << vp << LL_ENDL ;
-	LL_INFOS("AppInit") << "Vectorized Skinning   : " << ( vectorizeSkin ? "ENABLED" : "DISABLED" ) << LL_ENDL ;
-
-	sUpdateGeometryFunc = &updateGeometryOriginal;
-
-	if(vectorizeEnable && vectorizeSkin)
-	{
-		switch(sVectorizeProcessor)
-		{
-			case 2:
-				if(!supportsSSE2())
-					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE2)" << LL_ENDL ;
-				else
-					sUpdateGeometryFunc = &updateGeometrySSE2;
-				break;
-			case 1:
-				if(!supportsSSE())
-					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (SSE)" << LL_ENDL ;
-				else
-					sUpdateGeometryFunc = &updateGeometrySSE;
-				break;
-			default:
-				if(!gSysCPU.hasAltivec())
-					LL_INFOS("AppInit") << "VectorizeProcessor set to unsupported implementation! (Altivec)" << LL_ENDL ;
-				else
-					sUpdateGeometryFunc = &updateGeometryVectorized;
-				break;
-		}
-	}
+	buffer->flush();
 }
 
 void LLViewerJointMesh::updateJointGeometry()
@@ -896,129 +834,8 @@ void LLViewerJointMesh::updateJointGeometry()
 		return;
 	}
 
-	if (!sVectorizePerfTest)
-	{
-		// Once we've measured performance, just run the specified
-		// code version.
-		if(sUpdateGeometryFunc == updateGeometryOriginal)
-			uploadJointMatrices();
-		sUpdateGeometryFunc(mFace, mMesh);
-	}
-	else
-	{
-		// At startup, measure the amount of time in skinning and choose
-		// the fastest one.
-		LLTimer ug_timer ;
-		
-		if (sUpdateGeometryCallPointer)
-		{
-			if(sUpdateGeometryFunc == updateGeometryOriginal)
-				uploadJointMatrices();
-			// call accelerated version for this processor
-			sUpdateGeometryFunc(mFace, mMesh);
-		}
-		else
-		{
-			uploadJointMatrices();
-			updateGeometryOriginal(mFace, mMesh);
-		}
-	
-		sUpdateGeometryElapsedTime += ug_timer.getElapsedTimeF64();
-		++sUpdateGeometryCalls;
-		if(0 != (sUpdateGeometryCalls & UPDATE_GEOMETRY_CALL_OVERFLOW))
-		{
-			F64 time_since_app_start = ug_timer.getElapsedSeconds();
-			if(sUpdateGeometryGlobalTime == 0.0 
-				|| sUpdateGeometryLastProcessor != sVectorizeProcessor)
-			{
-				sUpdateGeometryGlobalTime		= time_since_app_start;
-				sUpdateGeometryElapsedTime		= 0;
-				sUpdateGeometryCalls			= 0;
-				sUpdateGeometryRunCount			= 0;
-				sUpdateGeometryLastProcessor	= sVectorizeProcessor;
-				sUpdateGeometryCallPointer		= false;
-				return;
-			}
-			F64 percent_time_in_function = 
-				( sUpdateGeometryElapsedTime * 100.0 ) / ( time_since_app_start - sUpdateGeometryGlobalTime ) ;
-			sUpdateGeometryGlobalTime = time_since_app_start;
-			if (!sUpdateGeometryCallPointer)
-			{
-				// First set of run data is with vectorization off.
-				sUpdateGeometryCallPointer = true;
-				llinfos << "profile (avg of " << sUpdateGeometryCalls << " samples) = "
-					<< "vectorize off " << percent_time_in_function
-					<< "% of time with "
-					<< (sUpdateGeometryElapsedTime / (F64)sUpdateGeometryCalls)
-					<< " seconds per call "
-					<< llendl;
-				sUpdateGeometryRunAvgOff[sUpdateGeometryRunCount] = percent_time_in_function;
-				sUpdateGeometryElapsedTimeOff += sUpdateGeometryElapsedTime;
-				sUpdateGeometryCalls = 0;
-			}
-			else
-			{
-				// Second set of run data is with vectorization on.
-				sUpdateGeometryCallPointer = false;
-				llinfos << "profile (avg of " << sUpdateGeometryCalls << " samples) = "
-					<< "VEC on " << percent_time_in_function
-					<< "% of time with "
-					<< (sUpdateGeometryElapsedTime / (F64)sUpdateGeometryCalls)
-					<< " seconds per call "
-					<< llendl;
-				sUpdateGeometryRunAvgOn[sUpdateGeometryRunCount] = percent_time_in_function ;
-				sUpdateGeometryElapsedTimeOn += sUpdateGeometryElapsedTime;
-
-				sUpdateGeometryCalls = 0;
-				sUpdateGeometryRunCount++;
-				F64 a = 0.0, b = 0.0;
-				for(U32 i = 0; i<sUpdateGeometryRunCount; i++)
-				{
-					a += sUpdateGeometryRunAvgOff[i];
-					b += sUpdateGeometryRunAvgOn[i];
-				}
-				a /= sUpdateGeometryRunCount;
-				b /= sUpdateGeometryRunCount;
-				F64 perf_boost = ( sUpdateGeometryElapsedTimeOff - sUpdateGeometryElapsedTimeOn ) / sUpdateGeometryElapsedTimeOn;
-				llinfos << "run averages (" << (F64)sUpdateGeometryRunCount
-					<< "/10) vectorize off " << a
-					<< "% : vectorize type " << sVectorizeProcessor
-					<< " " << b
-					<< "% : performance boost " 
-					<< perf_boost * 100.0
-					<< "%"
-					<< llendl ;
-				if(sUpdateGeometryRunCount == 10)
-				{
-					// In case user runs test again, force reset of data on
-					// next run.
-					sUpdateGeometryGlobalTime = 0.0;
-
-					// We have data now on which version is faster.  Switch to that
-					// code and save the data for next run.
-					gSavedSettings.setBOOL("VectorizePerfTest", FALSE);
-
-					if (perf_boost > 0.0)
-					{
-						llinfos << "Vectorization improves avatar skinning performance, "
-							<< "keeping on for future runs."
-							<< llendl;
-						gSavedSettings.setBOOL("VectorizeSkin", TRUE);
-					}
-					else
-					{
-						// SIMD decreases performance, fall back to original code
-						llinfos << "Vectorization decreases avatar skinning performance, "
-							<< "switching back to original code."
-							<< llendl;
-
-						gSavedSettings.setBOOL("VectorizeSkin", FALSE);
-					}
-				}
-			}
-			sUpdateGeometryElapsedTime = 0.0f;
-		}
-	}
+	uploadJointMatrices();
+	updateGeometry(mFace, mMesh);
 }
 
 void LLViewerJointMesh::dump()

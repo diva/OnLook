@@ -140,10 +140,10 @@ set(viewer_SOURCE_FILES
     lldebugview.cpp
     lldelayedgestureerror.cpp
     lldrawable.cpp
+    lldrawpool.cpp
     lldrawpoolalpha.cpp
     lldrawpoolavatar.cpp
     lldrawpoolbump.cpp
-    lldrawpool.cpp
     lldrawpoolground.cpp
     lldrawpoolsimple.cpp
     lldrawpoolsky.cpp
@@ -270,6 +270,7 @@ set(viewer_SOURCE_FILES
     llhudeffecttrail.cpp
     llhudicon.cpp
     llhudmanager.cpp
+    llhudnametag.cpp
     llhudobject.cpp
     llhudrender.cpp
     llhudtext.cpp
@@ -439,12 +440,9 @@ set(viewer_SOURCE_FILES
     #llviewerimage.cpp
     #llviewerimagelist.cpp
     llviewerinventory.cpp
-    llviewerjointattachment.cpp
     llviewerjoint.cpp
+    llviewerjointattachment.cpp
     llviewerjointmesh.cpp
-    llviewerjointmesh_sse2.cpp
-    llviewerjointmesh_sse.cpp
-    llviewerjointmesh_vec.cpp
     llviewerjoystick.cpp
     llviewerkeyboard.cpp
     llviewerlayer.cpp
@@ -534,20 +532,6 @@ set(viewer_SOURCE_FILES
 # This gets renamed in the packaging step
 set(VIEWER_BINARY_NAME "secondlife-bin" CACHE STRING
     "The name of the viewer executable to create.")
-
-if ((LINUX OR DARWIN) AND NOT DARWIN_PPC)
-  # We can't set these flags for Darwin, because they get passed to
-  # the PPC compiler.  Ugh.
-
-  set_source_files_properties(
-      llviewerjointmesh_sse.cpp
-      PROPERTIES COMPILE_FLAGS "-msse -mfpmath=sse"
-      )
-  set_source_files_properties(
-      llviewerjointmesh_sse2.cpp
-      PROPERTIES COMPILE_FLAGS "-msse2 -mfpmath=sse"
-      )
-endif ((LINUX OR DARWIN) AND NOT DARWIN_PPC)
 
 set(viewer_HEADER_FILES
     CMakeLists.txt
@@ -754,6 +738,7 @@ set(viewer_HEADER_FILES
     llhudeffecttrail.h
     llhudicon.h
     llhudmanager.h
+    llhudnametag.h
     llhudobject.h
     llhudrender.h
     llhudtext.h

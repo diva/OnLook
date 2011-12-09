@@ -246,6 +246,7 @@ void LLWaterParamManager::updateShaderUniforms(LLGLSLShader * shader)
 		shader->uniform4fv(LLViewerShaderMgr::LIGHTNORM, 1, LLWLParamManager::getInstance()->getRotatedLightDir().mV);
 		shader->uniform3fv("camPosLocal", 1, LLViewerCamera::getInstance()->getOrigin().mV);
 		shader->uniform4fv("waterFogColor", 1, LLDrawPoolWater::sWaterFogColor.mV);
+		shader->uniform1f("waterFogEnd", LLDrawPoolWater::sWaterFogEnd);
 		shader->uniform4fv("waterPlane", 1, mWaterPlane.mV);
 		shader->uniform1f("waterFogDensity", getFogDensity());
 		shader->uniform1f("waterFogKS", mWaterFogKS);
@@ -266,6 +267,7 @@ void LLWaterParamManager::updateShaderLinks()
 			if(	glGetUniformLocationARB(shaders_iter->mProgramObject,"lightnorm")>=0		||
 				glGetUniformLocationARB(shaders_iter->mProgramObject,"camPosLocal")>=0		||
 				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogColor")>=0	||
+				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogEnd")>=0		||
 				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterPlane")>=0		||
 				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogDensity")>=0	||
 				glGetUniformLocationARB(shaders_iter->mProgramObject,"waterFogKS")>=0		||

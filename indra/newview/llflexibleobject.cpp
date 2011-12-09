@@ -720,7 +720,10 @@ BOOL LLVolumeImplFlexible::doUpdateGeometry(LLDrawable *drawable)
 		volume->regenFaces();
 		volume->mDrawable->setState(LLDrawable::REBUILD_VOLUME);
 		volume->dirtySpatialGroup();
-		doFlexibleRebuild();
+		{
+			//LLFastTimer t(FTM_FLEXIBLE_REBUILD);
+			doFlexibleRebuild();
+		}
 		volume->genBBoxes(isVolumeGlobal());
 	}
 	else if (!mUpdated || rotated)

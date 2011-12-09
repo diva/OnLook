@@ -3166,9 +3166,16 @@ void LLViewerLODTexture::processTextureStats()
 	{
 		mDesiredDiscardLevel = llmin(mDesiredDiscardLevel, (S8)mDesiredSavedRawDiscardLevel) ;
 	}
+	else if(LLPipeline::sMemAllocationThrottled)//release memory of large textures by decrease their resolutions.
+	{
+		if(scaleDown())
+		{
+			mDesiredDiscardLevel = mCachedRawDiscardLevel ;
+		}
+	}
 }
 
-void LLViewerLODTexture::scaleDown()
+bool LLViewerLODTexture::scaleDown()
 {
 	if(hasGLTexture() && mCachedRawDiscardLevel > getDiscardLevel())
 	{		
@@ -3181,7 +3188,9 @@ void LLViewerLODTexture::scaleDown()
 			tester->setStablizingTime() ;
 		}
 #endif
+		return true ;
 	}
+	return false ;
 }
 //----------------------------------------------------------------------------------------------
 //end of LLViewerLODTexture

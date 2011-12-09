@@ -218,7 +218,8 @@ void LLNetMap::draw()
 			// Draw background rectangle
 			if(isBackgroundVisible())
 			{
-				gGL.color4fv(isBackgroundOpaque() ? getBackgroundColor().mV : getTransparentColor().mV);
+				LLColor4 background_color = isBackgroundOpaque() ? getBackgroundColor().mV : getTransparentColor().mV;
+				gGL.color4fv( background_color.mV );
 				gl_rect_2d(0, getRect().getHeight(), getRect().getWidth(), 0);
 			}
 		}
@@ -231,7 +232,7 @@ void LLNetMap::draw()
 
 		gGL.translatef( (F32) center_sw_left, (F32) center_sw_bottom, 0.f);
 		
-		BOOL rotate_map = gSavedSettings.getBOOL( "MiniMapRotate" );
+		static LLCachedControl<bool> rotate_map("MiniMapRotate", true);
 		if (rotate_map)
 		{
 			// rotate subsequent draws to agent rotation
@@ -305,14 +306,14 @@ void LLNetMap::draw()
 		// Redraw object layer periodically
 		if (mUpdateNow || (map_timer.getElapsedTimeF32() > 0.5f))
 		{
-			mUpdateNow = FALSE;
+			mUpdateNow = false;
 
 			// Locate the centre of the object layer, accounting for panning
 			LLVector3 new_center = globalPosToView(gAgentCamera.getCameraPositionGlobal(), rotate_map);	
-			new_center.mV[0] -= mCurPanX;
-			new_center.mV[1] -= mCurPanY;
-			new_center.mV[2] = 0.f;
-			mObjectImageCenterGlobal = viewPosToGlobal(llround(new_center.mV[0]), llround(new_center.mV[1]), rotate_map);
+			new_center.mV[VX] -= mCurPanX;
+			new_center.mV[VY] -= mCurPanY;
+			new_center.mV[VZ] = 0.f;
+			mObjectImageCenterGlobal = viewPosToGlobal(llround(new_center.mV[VX]), llround(new_center.mV[VY]), rotate_map);
 
 			// Create the base texture.
 			U8 *default_texture = mObjectRawImagep->getData();
@@ -352,7 +353,7 @@ void LLNetMap::draw()
 		// Mouse pointer in local coordinates
 		S32 local_mouse_x;
 		S32 local_mouse_y;
-		LLUI::getCursorPositionLocal(this, &local_mouse_x, &local_mouse_y);
+		LLUI::getMousePositionLocal(this, &local_mouse_x, &local_mouse_y);
 		mClosestAgentToCursor.setNull();
 		F32 closest_dist = F32_MAX;
 		F32 min_pick_dist = mDotRadius * MIN_PICK_SCALE; 
@@ -900,7 +901,7 @@ BOOL LLNetMap::handleMouseUp( S32 x, S32 y, MASK mask )
 			LLRect clip_rect = getRect();
 			clip_rect.stretch(-8);
 			clip_rect.clipPointToRect(mMouseDownX, mMouseDownY, local_x, local_y);
-			LLUI::setCursorPositionLocal(this, local_x, local_y);
+			LLUI::setMousePositionLocal(this, local_x, local_y);
 
 			// finish the pan
 			mPanning = FALSE;

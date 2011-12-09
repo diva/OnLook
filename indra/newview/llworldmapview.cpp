@@ -448,6 +448,7 @@ void LLWorldMapView::draw()
 					LLColor4::white,
 					LLFontGL::LEFT,
 					LLFontGL::BASELINE,
+					LLFontGL::NORMAL,
 					LLFontGL::DROP_SHADOW);
 			
 			// If map texture is still loading,
@@ -463,6 +464,7 @@ void LLWorldMapView::draw()
 						LLColor4::white,
 						LLFontGL::LEFT,
 						LLFontGL::BASELINE,
+						LLFontGL::NORMAL,
 						LLFontGL::DROP_SHADOW);			
 			}*/
 		}
@@ -1379,7 +1381,9 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 			text_x, 
 			text_y,
 			LLColor4::white, LLFontGL::HCENTER,
-			LLFontGL::BASELINE, LLFontGL::DROP_SHADOW);
+			LLFontGL::BASELINE, 
+			LLFontGL::NORMAL, 
+			LLFontGL::DROP_SHADOW);
 
 		if (tooltip != "")
 		{
@@ -1390,7 +1394,9 @@ void LLWorldMapView::drawTracking(const LLVector3d& pos_global, const LLColor4& 
 				text_x, 
 				text_y,
 				LLColor4::white, LLFontGL::HCENTER,
-				LLFontGL::BASELINE, LLFontGL::DROP_SHADOW);
+				LLFontGL::BASELINE, 
+				LLFontGL::NORMAL, 
+				LLFontGL::DROP_SHADOW);
 		}
 	}
 }
@@ -1591,6 +1597,7 @@ void LLWorldMapView::drawIconName(F32 x_pixels,
 		color,
 		LLFontGL::HCENTER,
 		LLFontGL::TOP,
+		LLFontGL::NORMAL,
 		LLFontGL::DROP_SHADOW);
 
 	text_y -= llround(LLFontGL::getFontSansSerif()->getLineHeight());
@@ -1602,6 +1609,7 @@ void LLWorldMapView::drawIconName(F32 x_pixels,
 		color,
 		LLFontGL::HCENTER,
 		LLFontGL::TOP,
+		LLFontGL::NORMAL,
 		LLFontGL::DROP_SHADOW);
 }
 
@@ -2004,7 +2012,7 @@ BOOL LLWorldMapView::handleMouseUp( S32 x, S32 y, MASK mask )
 			LLRect clip_rect = getRect();
 			clip_rect.stretch(-8);
 			clip_rect.clipPointToRect(mMouseDownX, mMouseDownY, local_x, local_y);
-			LLUI::setCursorPositionLocal(this, local_x, local_y);
+			LLUI::setMousePositionLocal(this, local_x, local_y);
 
 			// finish the pan
 			mPanning = FALSE;

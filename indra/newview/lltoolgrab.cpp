@@ -1021,7 +1021,7 @@ void LLToolGrab::onMouseCaptureLost()
 			// ...move cursor "naturally", as if it had moved when hidden
 			S32 x = mGrabPick.mMousePt.mX + mAccumDeltaX;
 			S32 y = mGrabPick.mMousePt.mY + mAccumDeltaY;
-			LLUI::setCursorPositionScreen(x, y);
+			LLUI::setMousePositionScreen(x, y);
 		}
 		else if (mHasMoved)
 		{
@@ -1031,13 +1031,13 @@ void LLToolGrab::onMouseCaptureLost()
 			LLCoordGL gl_point;
 			if (LLViewerCamera::getInstance()->projectPosAgentToScreen(grab_point_agent, gl_point))
 			{
-				LLUI::setCursorPositionScreen(gl_point.mX, gl_point.mY);
+				LLUI::setMousePositionScreen(gl_point.mX, gl_point.mY);
 			}
 		}
 		else
 		{
 			// ...move cursor back to click position
-			LLUI::setCursorPositionScreen(mGrabPick.mMousePt.mX, mGrabPick.mMousePt.mY);
+			LLUI::setMousePositionScreen(mGrabPick.mMousePt.mX, mGrabPick.mMousePt.mY);
 		}
 
 		gViewerWindow->showCursor();

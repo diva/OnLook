@@ -26,7 +26,6 @@
 
 #include "llviewerprecompiledheaders.h"
 
-#if MESH_ENABLED
 #include "apr_pools.h"
 #include "apr_dso.h"
 #include "llhttpstatuscodes.h"
@@ -3608,5 +3607,5 @@ bool LLMeshRepository::meshRezEnabled()
 	}
 	return false;
 }
-#endif //MESH_ENABLED
+
 

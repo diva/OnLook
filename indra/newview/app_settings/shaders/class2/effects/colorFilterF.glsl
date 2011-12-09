@@ -4,7 +4,10 @@
  * Copyright (c) 2007-$CurrentYear$, Linden Research, Inc.
  * $License$
  */
-
+ 
+#ifdef DEFINE_GL_FRAGCOLOR
+out vec4 gl_FragColor;
+#endif
 
 #extension GL_ARB_texture_rectangle : enable
 
@@ -17,9 +20,11 @@ uniform vec3  lumWeights;
 
 uniform float gamma;
 
+VARYING vec2 vary_texcoord0;
+
 void main(void) 
 {
-	vec3 color = vec3(texture2DRect(RenderTexture, gl_TexCoord[0].st));
+	vec3 color = vec3(texture2DRect(RenderTexture, vary_texcoord0.st));
 
 	/// Apply gamma
 	color = pow(color, vec3(1.0/gamma));

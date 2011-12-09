@@ -78,11 +78,9 @@
 #include "lldrawpool.h"
 #include "lluictrlfactory.h"
 #include "lltexturectrl.h"
-#if MESH_ENABLED
 // For mesh physics
 #include "llviewercontrol.h"
 #include "llmeshrepository.h"
-#endif //MESH_ENABLED
 
 // "Features" Tab
 
@@ -142,7 +140,6 @@ BOOL	LLPanelVolume::postBuild()
 		getChild<LLUICtrl>("Light Ambiance")->setValidateBeforeCommit( precommitValidate);
 	}
 
-#if MESH_ENABLED
 	// PHYSICS Parameters
 	{
 		// Label
@@ -168,7 +165,6 @@ BOOL	LLPanelVolume::postBuild()
 		mSpinPhysicsRestitution = getChild<LLSpinCtrl>("Physics Restitution");
 		mSpinPhysicsRestitution->setCommitCallback(boost::bind(&LLPanelVolume::sendPhysicsRestitution, this, _1, mSpinPhysicsRestitution));
 	}
-#endif //MESH_ENABLED
 	// Start with everyone disabled
 	clearCtrls();
 
@@ -335,11 +331,7 @@ void LLPanelVolume::getState( )
 	getChild<LLUICtrl>("Flexible1D Checkbox Ctrl")->setValue(is_flexible);
 	if (is_flexible || (volobjp && volobjp->canBeFlexible()))
 	{
-		getChildView("Flexible1D Checkbox Ctrl")->setEnabled(editable && single_volume && volobjp 
-#if MESH_ENABLED
-		&& !volobjp->isMesh()
-#endif //MESH_ENABLED
-		);
+		getChildView("Flexible1D Checkbox Ctrl")->setEnabled(editable && single_volume && volobjp && !volobjp->isMesh());
 	}
 	else
 	{
@@ -397,7 +389,6 @@ void LLPanelVolume::getState( )
 		getChildView("FlexForceZ")->setEnabled(false);
 	}
 	
-#if MESH_ENABLED
 	// Physics properties
 	
 	mComboPhysicsShapeLabel->setEnabled(editable);
@@ -446,7 +437,6 @@ void LLPanelVolume::getState( )
 	mComboPhysicsShapeType->add(getString("Convex Hull"), LLSD(2));	
 	mComboPhysicsShapeType->setValue(LLSD(objectp->getPhysicsShapeType()));
 	mComboPhysicsShapeType->setEnabled(editable);
-#endif //MESH_ENABLED
 
 	mObject = objectp;
 	mRootObject = root_objectp;
@@ -481,7 +471,6 @@ void LLPanelVolume::refresh()
 	getChildView("Light Ambiance")->setVisible( visible);
 	getChildView("light texture control")->setVisible( visible);
 	
-#if MESH_ENABLED
 	bool enable_mesh = false;
 
 	LLSD sim_features;
@@ -500,7 +489,6 @@ void LLPanelVolume::refresh()
 	getChildView("Physics Restitution")->setVisible(enable_mesh);
 	
     /* TODO: add/remove individual physics shape types as per the PhysicsShapeTypes simulator features */
-#endif //MESH_ENABLED
 }
 
 
@@ -548,12 +536,10 @@ void LLPanelVolume::clearCtrls()
 	getChildView("FlexForceY")->setEnabled(false);
 	getChildView("FlexForceZ")->setEnabled(false);
 
-#if MESH_ENABLED
 	mSpinPhysicsGravity->setEnabled(FALSE);
 	mSpinPhysicsFriction->setEnabled(FALSE);
 	mSpinPhysicsDensity->setEnabled(FALSE);
 	mSpinPhysicsRestitution->setEnabled(FALSE);
-#endif //MESH_ENABLED
 }
 
 //
@@ -606,7 +592,6 @@ void LLPanelVolume::sendIsFlexible()
 	llinfos << "update flexible sent" << llendl;
 }
 
-#if MESH_ENABLED
 void LLPanelVolume::sendPhysicsShapeType(LLUICtrl* ctrl, void* userdata)
 {
 	U8 type = ctrl->getValue().asInteger();
@@ -648,7 +633,6 @@ void LLPanelVolume::refreshCost()
 		obj->getObjectCost();
 	}
 }
-#endif //MESH_ENABLED
 
 void LLPanelVolume::onLightCancelColor(LLUICtrl* ctrl, void* userdata)
 {

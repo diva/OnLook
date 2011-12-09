@@ -39,9 +39,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
-#if MESH_ENABLED
 #include "llmeshrepository.h"
-#endif //MESH_ENABLED
 #include "llpanellogin.h"
 #include "llviewerkeyboard.h"
 #include "llviewerwindow.h"
@@ -229,7 +227,6 @@ LLFrameTimer	gAlphaFadeTimer;
 BOOL			gShowOverlayTitle = FALSE;
 BOOL			gPickTransparent = TRUE;
 
-BOOL			gDebugFastUIRender = FALSE;
 LLViewerObject*  gDebugRaycastObject = NULL;
 LLVector3       gDebugRaycastIntersection;
 LLVector2       gDebugRaycastTexCoord;
@@ -461,12 +458,12 @@ public:
 				ypos += y_inc;
 			}
 
-#if MESH_ENABLED
 			//show streaming cost/triangle count of known prims in current region OR selection
 			//Note: This is SUPER slow
 			{
 				F32 cost = 0.f;
 				S32 count = 0;
+				S32 vcount = 0;
 				S32 object_count = 0;
 				S32 total_bytes = 0;
 				S32 visible_bytes = 0;
@@ -488,7 +485,9 @@ public:
 								S32 bytes = 0;	
 								S32 visible = 0;
 								cost += object->getStreamingCost(&bytes, &visible);
-								count += object->getTriangleCount();
+								S32 vt = 0;
+								count += object->getTriangleCount(&vt);
+								vcount += vt;
 								total_bytes += bytes;
 								visible_bytes += visible;
 							}
@@ -499,21 +498,20 @@ public:
 				{
 					label = "Selection";
 					cost = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectStreamingCost(&total_bytes, &visible_bytes);
-					count = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectTriangleCount();
+					count = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectTriangleCount(&vcount);
 					object_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 				}
 					
 				addText(xpos,ypos, llformat("%s streaming cost: %.1f", label, cost));
 				ypos += y_inc;
 
-				addText(xpos, ypos, llformat("    %.3f KTris, %.1f/%.1f KB, %d objects",
-										count/1000.f, visible_bytes/1024.f, total_bytes/1024.f, object_count));
+				addText(xpos, ypos, llformat("    %.3f KTris, %.3f KVerts, %.1f/%.1f KB, %d objects",
+										count/1000.f, vcount/1000.f, visible_bytes/1024.f, total_bytes/1024.f, object_count));
 				ypos += y_inc;
 			
 			}
-#endif //MESH_ENABLED
 
-			addText(xpos, ypos, llformat("%d MB Vertex Data", LLVertexBuffer::sAllocatedBytes/(1024*1024)));
+			addText(xpos, ypos, llformat("%d MB Vertex Data (%d MB Pooled)", LLVertexBuffer::sAllocatedBytes/(1024*1024), LLVBOPool::sBytesPooled/(1024*1024)));
 			ypos += y_inc;
 
 			addText(xpos, ypos, llformat("%d Vertex Buffers", LLVertexBuffer::sGLCount));
@@ -627,7 +625,6 @@ public:
 
 			ypos += y_inc;
 
-#if MESH_ENABLED
 			if (gMeshRepo.meshRezEnabled())
 			{
 				addText(xpos, ypos, llformat("%.3f MB Mesh Data Received", LLMeshRepository::sBytesReceived/(1024.f*1024.f)));
@@ -643,7 +640,6 @@ public:
 
 				ypos += y_inc;
 			}
-#endif //MESH_ENABLED
 
 			LLVertexBuffer::sBindCount = LLImageGL::sBindCount = 
 				LLVertexBuffer::sSetCount = LLImageGL::sUniqueCount = 
@@ -692,6 +688,17 @@ public:
 			addText(xpos, ypos, llformat("%d %d %d %d", color[0], color[1], color[2], color[3]));
 			ypos += y_inc;
 		}
+
+		static const LLCachedControl<bool> DebugShowPrivateMem("DebugShowPrivateMem",false);
+		if (DebugShowPrivateMem)
+		{
+			LLPrivateMemoryPoolManager::getInstance()->updateStatistics() ;
+			addText(xpos, ypos, llformat("Total Reserved(KB): %d", LLPrivateMemoryPoolManager::getInstance()->mTotalReservedSize / 1024));
+			ypos += y_inc;
+
+			addText(xpos, ypos, llformat("Total Allocated(KB): %d", LLPrivateMemoryPoolManager::getInstance()->mTotalAllocatedSize / 1024));
+			ypos += y_inc;
+		}
 		// only display these messages if we are actually rendering beacons at this moment
 		static const LLCachedControl<bool> beacons_visible("BeaconsVisible",false);
 		if (LLPipeline::getRenderBeacons(NULL) && beacons_visible)
@@ -738,7 +745,7 @@ public:
 			const Line& line = *iter;
 			LLFontGL::getFontMonospace()->renderUTF8(line.text, 0, (F32)line.x, (F32)line.y, mTextColor,
 											 LLFontGL::LEFT, LLFontGL::TOP,
-											 LLFontGL::NORMAL, S32_MAX, S32_MAX, NULL, FALSE);
+											 LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE);
 		}
 		mLineList.clear();
 	}
@@ -1432,6 +1439,12 @@ LLViewerWindow::LLViewerWindow(
 		ignore_pixel_depth,
 		gSavedSettings.getBOOL("RenderUseFBO") ? 0 : gSavedSettings.getU32("RenderFSAASamples")); //don't use window level anti-aliasing if FBOs are enabled
 
+	if (!LLViewerShaderMgr::sInitialized)
+	{ //immediately initialize shaders
+		LLViewerShaderMgr::sInitialized = TRUE;
+		LLViewerShaderMgr::instance()->setShaders();
+	}
+
 	if (NULL == mWindow)
 	{
 		LLSplashScreen::update("Graphics Initialization Failed. Please Update Your Graphics Driver!");
@@ -1556,30 +1569,30 @@ LLViewerWindow::LLViewerWindow(
 void LLViewerWindow::initGLDefaults()
 {
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
-	glColorMaterial( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
 
-	glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,LLColor4::black.mV);
-	glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,LLColor4::white.mV);
-	
+	if (!LLGLSLShader::sNoFixedFunction)
+	{ //initialize fixed function state
+		glColorMaterial( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE );
+
+		glMaterialfv(GL_FRONT_AND_BACK,GL_AMBIENT,LLColor4::black.mV);
+		glMaterialfv(GL_FRONT_AND_BACK,GL_DIFFUSE,LLColor4::white.mV);
+
+		// lights for objects
+		glShadeModel( GL_SMOOTH );
+
+		gGL.getTexUnit(0)->enable(LLTexUnit::TT_TEXTURE);
+		gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
+	}
+
 	glPixelStorei(GL_PACK_ALIGNMENT,1);
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
-	gGL.getTexUnit(0)->enable(LLTexUnit::TT_TEXTURE);
-
-	// lights for objects
-	glShadeModel( GL_SMOOTH );
-
 	gGL.setAmbientLightColor(LLColor4::black);
-	
-	gGL.getTexUnit(0)->setTextureBlendType(LLTexUnit::TB_MULT);
-
+		
 	glCullFace(GL_BACK);
 
 	// RN: Need this for translation and stretch manip.
-	gCone.prerender();
 	gBox.prerender();
-	gSphere.prerender();
-	gCylinder.prerender();
 }
 
 void LLViewerWindow::initBase()
@@ -2013,7 +2026,7 @@ void LLViewerWindow::shutdownGL()
 	llinfos << "Cleaning up select manager" << llendl;
 	LLSelectMgr::getInstance()->cleanup();
 
-	LLVertexBuffer::cleanupClass();
+
 
 	llinfos << "Stopping GL during shutdown" << llendl;
 	if (!gNoRender)
@@ -2023,6 +2036,10 @@ void LLViewerWindow::shutdownGL()
 	}
 
 	gGL.shutdown();
+
+	LLVertexBuffer::cleanupClass();
+
+	llinfos << "LLVertexBuffer cleaned." << llendl ;
 }
 
 // shutdownViews() and shutdownGL() need to be called first
@@ -2135,7 +2152,7 @@ void LLViewerWindow::reshape(S32 width, S32 height)
 		// clear font width caches
 		if (display_scale_changed)
 		{
-			LLHUDText::reshape();
+			LLHUDObject::reshapeAll();
 		}
 
 		sendShapeToSim();
@@ -2230,6 +2247,10 @@ void LLViewerWindow::drawDebugText()
 {
 	gGL.color4f(1,1,1,1);
 	gGL.pushMatrix();
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.bind();
+	}
 	{
 		// scale view by UI global scale factor and aspect ratio correction factor
 		gGL.scalef(mDisplayScale.mV[VX], mDisplayScale.mV[VY], 1.f);
@@ -2237,6 +2258,10 @@ void LLViewerWindow::drawDebugText()
 	}
 	gGL.popMatrix();
 	gGL.flush();
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.unbind();
+	}
 }
 
 void LLViewerWindow::draw()
@@ -2267,7 +2292,7 @@ void LLViewerWindow::draw()
 		gGL.loadIdentity();
 
 		microsecondsToTimecodeString(gFrameTime,text);
-		const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+		const LLFontGL* font = LLFontGL::getFontSansSerif();
 		font->renderUTF8(text, 0,
 						llround((getWindowWidthScaled()/2)-100.f),
 						llround((getWindowHeightScaled()-60.f)),
@@ -2707,7 +2732,7 @@ void LLViewerWindow::moveCursorToCenter()
 	mLastMousePoint.set(x,y);
 	mCurrentMouseDelta.set(0,0);	
 
-	LLUI::setCursorPositionScreen(x, y);	
+	LLUI::setMousePositionScreen(x, y);	
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -3286,13 +3311,13 @@ void LLViewerWindow::renderSelections( BOOL for_gl_pick, BOOL pick_parcel_walls,
 						LLColor4 color(vovolume->getLightColor(), .5f);
 						gGL.color4fv(color.mV);
 					
-						F32 pixel_area = 100000.f;
+						//F32 pixel_area = 100000.f;
 						// Render Outside
-						gSphere.render(pixel_area);
+						gSphere.render();
 
 						// Render Inside
 						glCullFace(GL_FRONT);
-						gSphere.render(pixel_area);
+						gSphere.render();
 						glCullFace(GL_BACK);
 					
 						gGL.popMatrix();
@@ -3969,7 +3994,7 @@ static S32 BORDERWIDTH = 0;
 void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 {
 	LLCoordScreen size;
-	gViewerWindow->mWindow->getSize(&size);
+	gViewerWindow->getWindow()->getSize(&size);
 	if (  (size.mX != new_width + BORDERWIDTH)
 		||(size.mY != new_height + BORDERHEIGHT))
 	{
@@ -3990,7 +4015,7 @@ void LLViewerWindow::movieSize(S32 new_width, S32 new_height)
 		}
 		else
 		{
-			gViewerWindow->mWindow->setSize(new_size);
+			gViewerWindow->getWindow()->setSize(new_size);
 		}
 	}
 }
@@ -4183,6 +4208,19 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	{
 		return FALSE;
 	}
+	//check if there is enough memory for the snapshot image
+	if(LLPipeline::sMemAllocationThrottled)
+	{
+		return FALSE ; //snapshot taking is disabled due to memory restriction.
+	}
+	if(image_width * image_height > (1 << 22)) //if snapshot image is larger than 2K by 2K
+	{
+		if(!LLMemory::tryToAlloc(NULL, image_width * image_height * 3))
+		{
+			llwarns << "No enough memory to take the snapshot with size (w : h): " << image_width << " : " << image_height << llendl ;
+			return FALSE ; //there is no enough memory for taking this snapshot.
+		}
+	}
 
 	// PRE SNAPSHOT
 	gDisplaySwapBuffers = FALSE;
@@ -4327,7 +4365,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		{
 		//rescale fonts
 		initFonts(scale_factor);
-		LLHUDText::reshape();
+		LLHUDObject::reshapeAll();
 		}
 	}
 
@@ -4441,7 +4479,7 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 	if (high_res && (show_ui || !hide_hud))
 	{
 		initFonts(1.f);
-		LLHUDText::reshape();
+		LLHUDObject::reshapeAll();
 	}
 
 	// Pre-pad image to number of pixels such that the line length is a multiple of 4 bytes (for BMP encoding)
@@ -4718,10 +4756,7 @@ void LLViewerWindow::stopGL(BOOL save_state)
 			gPipeline.destroyGL();
 		}
 		
-		gCone.cleanupGL();
 		gBox.cleanupGL();
-		gSphere.cleanupGL();
-		gCylinder.cleanupGL();
 		
 		if(gPostProcess)
 		{

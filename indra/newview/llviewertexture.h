@@ -607,7 +607,7 @@ public:
 
 private:
 	void init(bool firstinit) ;
-	void scaleDown() ;		
+	bool scaleDown() ;		
 
 private:
 	F32 mDiscardVirtualSize;		// Virtual size used to calculate desired discard	

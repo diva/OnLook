@@ -52,6 +52,7 @@
 #include "lltextbox.h"
 #include "lluictrl.h"
 #include "lluictrlfactory.h"
+#include "lluiimage.h"
 #include "llviewborder.h"
 #include "llbutton.h"
 #include "llnotificationsutil.h"

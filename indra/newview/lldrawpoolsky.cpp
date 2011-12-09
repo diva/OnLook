@@ -85,12 +85,14 @@ void LLDrawPoolSky::render(S32 pass)
 	// use a shader only underwater
 	if(mVertexShaderLevel > 0 && LLPipeline::sUnderWaterRender)
 	{
-		mShader = &gObjectFullbrightWaterProgram;
-		mShader->bind();
+		return;
+		//mShader = &gObjectFullbrightWaterProgram;
+		//mShader->bind();
 	}
-	else if (LLGLSLShader::sNoFixedFunction)
+
+	if (LLGLSLShader::sNoFixedFunction)
 	{ //just use the UI shader (generic single texture no lighting)
-		gUIProgram.bind();
+		gOneTextureNoColorProgram.bind();
 	}
 	else
 	{

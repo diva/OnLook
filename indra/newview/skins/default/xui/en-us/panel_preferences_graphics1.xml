@@ -191,10 +191,10 @@
 	     initial_value="true" label="Deferred Shading" left_delta="0"
 	     mouse_opaque="true" name="RenderDeferred" radio_style="false"
 	     width="256" />
-  <check_box bottom_delta="-17" control_name="RenderDeferredGI" enabled="true"
+  <check_box bottom_delta="-17" control_name="RenderDepthOfField" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="true" label="Global Illumination (Experimental!)" left_delta="0"
-	     mouse_opaque="true" name="RenderDeferredGI" radio_style="false"
+	     initial_value="true" label="Depth of Field" left_delta="0"
+	     mouse_opaque="true" name="RenderDepthOfField" radio_style="false"
 	     width="256" />
 	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom_delta="-17" drop_shadow_visible="true" enabled="true" follows="left|top"

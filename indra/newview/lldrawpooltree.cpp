@@ -70,11 +70,11 @@ void LLDrawPoolTree::beginRenderPass(S32 pass)
 		
 	if (LLPipeline::sUnderWaterRender)
 	{
-		shader = &gObjectAlphaMaskNonIndexedWaterProgram;
+		shader = &gTreeWaterProgram;
 	}
 	else
 	{
-		shader = &gObjectAlphaMaskNonIndexedProgram;
+		shader = &gTreeProgram;
 	}
 
 	if (gPipeline.canUseVertexShaders())
@@ -102,26 +102,24 @@ void LLDrawPoolTree::render(S32 pass)
 	LLGLState test(GL_ALPHA_TEST, LLGLSLShader::sNoFixedFunction ? 0 : 1);
 	LLOverrideFaceColor color(this, 1.f, 1.f, 1.f, 1.f);
 
-	static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
+	/*static const LLCachedControl<bool> render_animate_trees("RenderAnimateTrees",false); 
 	if (render_animate_trees)
 	{
 		renderTree();
 	}
-	else
-	{
-		gGL.getTexUnit(sDiffTex)->bind(mTexturep);
+	else*/
+	gGL.getTexUnit(sDiffTex)->bind(mTexturep);
 					
-		for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
+	for (std::vector<LLFace*>::iterator iter = mDrawFace.begin();
 			 iter != mDrawFace.end(); iter++)
+	{
+		LLFace *face = *iter;
+		LLVertexBuffer* buff = face->getVertexBuffer();
+		if(buff)
 		{
-			LLFace *face = *iter;
-			LLVertexBuffer* buff = face->getVertexBuffer();
-			if(buff)
-			{
-				buff->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
-				buff->drawRange(LLRender::TRIANGLES, 0, buff->getRequestedVerts()-1, buff->getRequestedIndices(), 0); 
-				gPipeline.addTrianglesDrawn(buff->getRequestedIndices());
-			}
+			buff->setBuffer(LLDrawPoolTree::VERTEX_DATA_MASK);
+			buff->drawRange(LLRender::TRIANGLES, 0, buff->getNumVerts()-1, buff->getNumIndices(), 0); 
+			gPipeline.addTrianglesDrawn(buff->getNumIndices());
 		}
 	}
 }
@@ -148,7 +146,7 @@ void LLDrawPoolTree::beginDeferredPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_TREES);
 		
-	shader = &gDeferredNonIndexedDiffuseAlphaMaskProgram;
+	shader = &gDeferredTreeProgram;
 	shader->bind();
 	shader->setMinimumAlpha(0.5f);
 }
@@ -175,8 +173,8 @@ void LLDrawPoolTree::beginShadowPass(S32 pass)
 	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredTreeShadowOffset",1.f);
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredTreeShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
-	gDeferredShadowAlphaMaskProgram.bind();
-	gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.5f);
+	gDeferredTreeShadowProgram.bind();
+	gDeferredTreeShadowProgram.setMinimumAlpha(0.5f);
 }
 
 void LLDrawPoolTree::renderShadow(S32 pass)
@@ -191,9 +189,10 @@ void LLDrawPoolTree::endShadowPass(S32 pass)
 	static const LLCachedControl<F32> render_deferred_offset("RenderDeferredSpotShadowOffset",1.f);
 	static const LLCachedControl<F32> render_deferred_bias("RenderDeferredSpotShadowBias",1.f);
 	glPolygonOffset(render_deferred_offset,render_deferred_bias);
-	gDeferredShadowAlphaMaskProgram.unbind();
+	gDeferredTreeShadowProgram.unbind();
 }
 
+/*
 void LLDrawPoolTree::renderTree(BOOL selecting)
 {
 	LLGLState normalize(GL_NORMALIZE, TRUE);
@@ -315,7 +314,7 @@ void LLDrawPoolTree::renderTree(BOOL selecting)
 			//gGL.popMatrix();
 		}
 	}
-}
+}*/
 
 BOOL LLDrawPoolTree::verify() const
 {

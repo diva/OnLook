@@ -52,9 +52,7 @@
 #include "llwindow.h"
 #include "llviewerstats.h"
 #include "llmd5.h"
-#if MESH_ENABLED
 #include "llmeshrepository.h"
-#endif //MESH_ENABLED
 #include "llpumpio.h"
 #include "llimpanel.h"
 #include "llmimetypes.h"
@@ -194,6 +192,8 @@
 
 #include "llcommandlineparser.h"
 #include "llprogressview.h"
+
+#include "llmemory.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -464,6 +464,7 @@ static void settings_to_globals()
 
 	LLSurface::setTextureSize(gSavedSettings.getU32("RegionTextureSize"));
 	
+	LLRender::sGLCoreProfile = gSavedSettings.getBOOL("RenderGLCoreProfile");
 	LLImageGL::sGlobalUseAnisotropic	= gSavedSettings.getBOOL("RenderAnisotropic");
 	LLVOVolume::sLODFactor				= gSavedSettings.getF32("RenderVolumeLODFactor");
 	LLVOVolume::sDistanceFactor			= 1.f-LLVOVolume::sLODFactor * 0.1f;
@@ -500,35 +501,9 @@ static void settings_modify()
 	LLVOAvatar::sUseImpostors			= gSavedSettings.getBOOL("RenderUseImpostors");
 	LLVOSurfacePatch::sLODFactor		= gSavedSettings.getF32("RenderTerrainLODFactor");
 	LLVOSurfacePatch::sLODFactor *= LLVOSurfacePatch::sLODFactor; //square lod factor to get exponential range of [1,4]
-	gDebugGL = gSavedSettings.getBOOL("RenderDebugGL");
+	gDebugGL = gSavedSettings.getBOOL("RenderDebugGL") || gDebugSession;
 	gDebugPipeline = gSavedSettings.getBOOL("RenderDebugPipeline");
 	gAuditTexture = gSavedSettings.getBOOL("AuditTexture");
-
-	if (gSysCPU.hasAltivec()) //for mac. No intrinsics used. No real risk of breaking compat.
-	{
-		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
-		gSavedSettings.setU32("VectorizeProcessor", 0 );
-	}
-
-	//Slightly confusing, but with linux llviewerjointmesh_sse(2) are compiled with relevent sse flags set.
-	//However, on windows or mac said files are only compiled with sse(2) if the entire project is.
-	else if (gSysCPU.hasSSE2() && LLViewerJointMesh::supportsSSE2())
-	{
-		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
-		gSavedSettings.setU32("VectorizeProcessor", 2 );
-	}
-	else if (gSysCPU.hasSSE() && LLViewerJointMesh::supportsSSE())
-	{
-		gSavedSettings.setBOOL("VectorizeEnable", TRUE );
-		gSavedSettings.setU32("VectorizeProcessor", 1 );
-	}
-	else // This build target doesn't support SSE, don't test/run.
-	{
-		gSavedSettings.setBOOL("VectorizePerfTest", FALSE );
-		gSavedSettings.setBOOL("VectorizeEnable", FALSE );
-		gSavedSettings.setU32("VectorizeProcessor", 0 );
-		gSavedSettings.setBOOL("VectorizeSkin", FALSE);
-	}
 }
 
 //virtual
@@ -562,6 +537,7 @@ LLTextureFetch* LLAppViewer::sTextureFetch = NULL;
 
 LLAppViewer::LLAppViewer() : 
 	mMarkerFile(),
+	mLogoutMarkerFile(NULL),
 	mReportedCrash(false),
 	mNumSessions(0),
 	mPurgeCache(false),
@@ -625,6 +601,12 @@ bool LLAppViewer::init()
     if (!initConfiguration())
 		return false;
 
+	LL_INFOS("InitInfo") << "Configuration initialized." << LL_ENDL ;
+
+	//set the max heap size.
+	initMaxHeapSize() ;
+
+	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
     LLCurl::initClass(gSavedSettings.getBOOL("CurlUseMultipleThreads"));
@@ -720,8 +702,6 @@ bool LLAppViewer::init()
 	LLGroupMgr::parseRoleActions("role_actions.xml");
 
 	LLAgent::parseTeleportMessages("teleport_strings.xml");
-
-	LLViewerJointMesh::updateVectorize();
 
 	// load MIME type -> media impl mappings
 #if LL_WINDOWS
@@ -932,6 +912,88 @@ bool LLAppViewer::init()
 	return true;
 }
 
+void LLAppViewer::initMaxHeapSize()
+{
+	//set the max heap size.
+	//here is some info regarding to the max heap size:
+	//------------------------------------------------------------------------------------------
+	// OS       | setting | SL address bits | max manageable memory space | max heap size
+	// Win 32   | default | 32-bit          | 2GB                         | < 1.7GB
+	// Win 32   | /3G     | 32-bit          | 3GB                         | < 1.7GB or 2.7GB
+	// Win 64   | default | 32-bit          | 2GB                         | < 1.7GB
+	// Win 64   | LAA     | 32-bit          | 3GB                         | < 3.7GB
+	//Linux 32  | default | 32-bit          | 3GB                         | < 2.7GB
+	//Linux 32  |HUGEMEM  | 32-bit          | 4GB                         | < 3.7GB
+	//64-bit OS |default  | 32-bit          | 4GB                         | < 3.7GB
+	//64-bit OS |default  | 64-bit          | N/A (> 4GB)                 | N/A (> 4GB)
+	//------------------------------------------------------------------------------------------
+	//currently SL is built under 32-bit setting, we set its max heap size no more than 1.6 GB.
+
+	//F32 max_heap_size_gb = llmin(1.6f, (F32)gSavedSettings.getF32("MaxHeapSize")) ;
+	
+	F32 max_heap_size_gb = gSavedSettings.getF32("MaxHeapSize") ;
+	
+	//This is all a bunch of CRAP. We run LAA on windows. 64bit windows supports LAA out of the box. 32bit does not, unless PAE is on.
+#if LL_WINDOWS
+	//http://msdn.microsoft.com/en-us/library/windows/desktop/ms684139%28v=vs.85%29.aspx
+	//Easier than GetNativeSystemInfo.
+	BOOL bWow64Process = FALSE;
+	typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
+	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(GetModuleHandle(TEXT("kernel32")),"IsWow64Process");
+	
+	HKEY hKey;
+	 
+    if(fnIsWow64Process && fnIsWow64Process(GetCurrentProcess(), &bWow64Process) && bWow64Process)
+	{
+		max_heap_size_gb = 3.7;
+	}
+	else if(ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management"), &hKey))
+	{
+        DWORD dwSize = sizeof(DWORD);
+		DWORD dwResult = 0;
+        if(ERROR_SUCCESS == RegQueryValueEx(hKey, TEXT("PhysicalAddressExtension"), NULL, NULL, (LPBYTE)&dwResult, &dwSize))
+        {
+			if(dwResult)
+				max_heap_size_gb = 3.7;
+		}
+		RegCloseKey(hKey);
+	}
+#endif
+
+	BOOL enable_mem_failure_prevention = (BOOL)gSavedSettings.getBOOL("MemoryFailurePreventionEnabled") ;
+
+	LLMemory::initMaxHeapSizeGB(max_heap_size_gb, enable_mem_failure_prevention) ;
+}
+
+void LLAppViewer::checkMemory()
+{
+	const static F32 MEMORY_CHECK_INTERVAL = 1.0f ; //second
+	//const static F32 MAX_QUIT_WAIT_TIME = 30.0f ; //seconds
+	//static F32 force_quit_timer = MAX_QUIT_WAIT_TIME + MEMORY_CHECK_INTERVAL ;
+
+	if(!gGLManager.mDebugGPU)
+	{
+		return ;
+	}
+
+	if(MEMORY_CHECK_INTERVAL > mMemCheckTimer.getElapsedTimeF32())
+	{
+		return ;
+	}
+	mMemCheckTimer.reset() ;
+
+		//update the availability of memory
+		LLMemory::updateMemoryInfo() ;
+
+	bool is_low = LLMemory::isMemoryPoolLow() ;
+
+	LLPipeline::throttleNewMemoryAllocation(is_low) ;		
+	
+	if(is_low)
+	{
+		LLMemory::logMemoryInfo() ;
+	}
+}
 bool LLAppViewer::mainLoop()
 {
 	mMainloopTimeout = new LLWatchdogTimeout();
@@ -959,7 +1021,6 @@ bool LLAppViewer::mainLoop()
 	joystick->setNeedsReset(true);
  	
 
-	const F32 memory_check_interval = 1.0f ; //second
 
 	// Handle messages
 	while (!LLApp::isExiting())
@@ -970,17 +1031,8 @@ bool LLAppViewer::mainLoop()
 		llclearcallstacks;
 
 		//check memory availability information
-		{
-			if(memory_check_interval < memCheckTimer.getElapsedTimeF32())
-			{
-				memCheckTimer.reset() ;
-
-				//update the availability of memory
-				LLMemoryInfo::getAvailableMemoryKB(mAvailPhysicalMemInKB, mAvailVirtualMemInKB) ;
-			}
-			llcallstacks << "Available physical mem(KB): " << mAvailPhysicalMemInKB << llcallstacksendl ;
-			llcallstacks << "Available virtual mem(KB): " << mAvailVirtualMemInKB << llcallstacksendl ;
-		}
+		checkMemory() ;
+		
 		try
 		{
 			LLFastTimer t(LLFastTimer::FTM_FRAME);
@@ -1155,9 +1207,7 @@ bool LLAppViewer::mainLoop()
 						break;
 					}
 				}
-#if MESH_ENABLED
 				gMeshRepo.update() ;
-#endif //MESH_ENABLED
 				if ((LLStartUp::getStartupState() >= STATE_CLEANUP) &&
 					(frameTimer.getElapsedTimeF64() > FRAME_STALL_THRESHOLD))
 				{
@@ -1184,15 +1234,7 @@ bool LLAppViewer::mainLoop()
 		}
 		catch(std::bad_alloc)
 		{			
-			{
-				llinfos << "Availabe physical memory(KB) at the beginning of the frame: " << mAvailPhysicalMemInKB << llendl ;
-				llinfos << "Availabe virtual memory(KB) at the beginning of the frame: " << mAvailVirtualMemInKB << llendl ;
-
-				LLMemoryInfo::getAvailableMemoryKB(mAvailPhysicalMemInKB, mAvailVirtualMemInKB) ;
-
-				llinfos << "Current availabe physical memory(KB): " << mAvailPhysicalMemInKB << llendl ;
-				llinfos << "Current availabe virtual memory(KB): " << mAvailVirtualMemInKB << llendl ;
-			}
+			LLMemory::logMemoryInfo(TRUE) ;
 
 			//stop memory leaking simulation
 			LLFloaterMemLeak* mem_leak_instance =
@@ -1281,10 +1323,8 @@ bool LLAppViewer::cleanup()
 
 	llinfos << "Cleaning Up" << llendflush;
 
-#if MESH_ENABLED
 	// shut down mesh streamer
 	gMeshRepo.shutdown();
-#endif //MESH_ENABLED
 
 	// Must clean up texture references before viewer window is destroyed.
 	if(LLHUDManager::instanceExists())
@@ -1659,7 +1699,12 @@ bool LLAppViewer::cleanup()
 	}
 
 
+	//release all private memory pools.
+	LLPrivateMemoryPoolManager::destroyClass() ;
+
 	ll_close_fail_log();
+
+	MEM_TRACK_RELEASE
 
     llinfos << "Goodbye!" << llendflush;
 
@@ -1711,11 +1756,8 @@ bool LLAppViewer::initThreads()
 	LLAppViewer::sTextureFetch = new LLTextureFetch(LLAppViewer::getTextureCache(), sImageDecodeThread, enable_threads && true);
 	LLImage::initClass();
 
-
-#if MESH_ENABLED
 	// Mesh streaming and caching
 	gMeshRepo.init();
-#endif //MESH_ENABLED
 	// *FIX: no error handling here!
 	return true;
 }
@@ -2628,6 +2670,7 @@ void LLAppViewer::handleViewerCrash()
 
 	llinfos << "Last render pool type: " << LLPipeline::sCurRenderPoolType << llendl ;
 
+	LLMemory::logMemoryInfo(true) ;
 	//print out recorded call stacks if there are any.
 	LLError::LLCallStacks::print();
 

@@ -51,6 +51,7 @@
 #include "llmousehandler.h"
 #include "llalertdialog.h"
 #include "llmousehandler.h"
+#include "llhandle.h"
 #include "llnotifications.h"
 
 class LLView;
@@ -489,19 +490,19 @@ extern LLFrameTimer		gMouseIdleTimer;		// how long has it been since the mouse l
 extern LLFrameTimer		gAwayTimer;				// tracks time before setting the avatar away state to true
 extern LLFrameTimer		gAwayTriggerTimer;		// how long the avatar has been away
 
-extern BOOL				gDebugFastUIRender;
 extern LLViewerObject*  gDebugRaycastObject;
 extern LLVector3        gDebugRaycastIntersection;
 extern LLVector2        gDebugRaycastTexCoord;
 extern LLVector3        gDebugRaycastNormal;
 extern LLVector3        gDebugRaycastBinormal;
 extern S32				gDebugRaycastFaceHit;
-
-extern S32 CHAT_BAR_HEIGHT; 
+extern LLVector3		gDebugRaycastStart;
+extern LLVector3		gDebugRaycastEnd;
 
 extern BOOL			gDisplayCameraPos;
 extern BOOL			gDisplayWindInfo;
 extern BOOL			gDisplayNearestWater;
 extern BOOL			gDisplayFOV;
 
+extern S32 CHAT_BAR_HEIGHT;
 #endif

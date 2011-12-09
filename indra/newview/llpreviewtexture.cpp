@@ -275,7 +275,7 @@ void LLPreviewTexture::draw()
 		if ( mImage.notNull() )
 		{
 			// Draw the texture
-			glColor3f( 1.f, 1.f, 1.f );
+			gGL.diffuseColor3f( 1.f, 1.f, 1.f );
 			gl_draw_scaled_image(interior.mLeft,
 								interior.mBottom,
 								interior.getWidth(),
@@ -325,6 +325,7 @@ void LLPreviewTexture::draw()
 					interior.mLeft + 4, 
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
+					LLFontGL::NORMAL,
 					LLFontGL::DROP_SHADOW);
 				
 				F32 data_progress = mImage->getDownloadProgress();
@@ -361,6 +362,7 @@ void LLPreviewTexture::draw()
 					interior.mLeft + 4,
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
+					LLFontGL::NORMAL,
 					LLFontGL::DROP_SHADOW);
 			}
 		}

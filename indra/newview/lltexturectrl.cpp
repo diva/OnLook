@@ -1572,6 +1572,7 @@ void LLTextureCtrl::draw()
 			LLColor4::white,
 			LLFontGL::LEFT,
 			LLFontGL::BASELINE,
+			LLFontGL::NORMAL,
 			LLFontGL::DROP_SHADOW);
 	}
 
