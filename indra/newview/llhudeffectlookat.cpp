@@ -339,15 +339,15 @@ void LLHUDEffectLookAt::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	
 	htonmemcpy(source_id.mData, &(packed_data[SOURCE_AVATAR]), MVT_LLUUID, 16);
 
+	LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
+	if (avatarp)
 	{
-		LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
-		if (avatarp)
-			setSourceObject(avatarp);
-		else
-		{
-			//llwarns << "Could not find source avatar for lookat effect" << llendl;
-			return;
-		}
+		setSourceObject(avatarp);
+	}
+	else
+	{
+		//llwarns << "Could not find source avatar for lookat effect" << llendl;
+		return;
 	}
 
 	htonmemcpy(target_id.mData, &(packed_data[TARGET_OBJECT]), MVT_LLUUID, 16);

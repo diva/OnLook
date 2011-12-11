@@ -356,6 +356,10 @@ void LLWorldMapView::draw()
 	gGL.flush();	
 	LLFontGL* font = LLFontGL::getFontSansSerifSmall();
 
+
+	gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
+	gGL.setColorMask(true, true);
+
 	// Draw the region name in the lower left corner	
 	for (LLWorldMap::sim_info_map_t::const_iterator it = LLWorldMap::getInstance()->getRegionMap().begin();
 		 it != LLWorldMap::getInstance()->getRegionMap().end(); ++it)
