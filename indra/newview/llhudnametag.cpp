@@ -112,6 +112,7 @@ LLHUDNameTag::LLHUDNameTag(const U8 type)
 {
 	LLPointer<LLHUDNameTag> ptr(this);
 	sTextObjects.insert(ptr);
+	mBubbleImage = LLUI::getUIImage("Rounded_Rect.png");
 }
 
 LLHUDNameTag::~LLHUDNameTag()
@@ -296,9 +297,6 @@ void LLHUDNameTag::renderText(BOOL for_select)
 
 	mOffsetY = lltrunc(mHeight * ((mVertAlignment == ALIGN_VERT_CENTER) ? 0.5f : 1.f));
 
-	// *TODO: cache this image
-	LLUIImagePtr imagep = LLUI::getUIImage("rounded_square.tga");
-
 // *TODO: make this a per-text setting
 	static const LLCachedControl<LLColor4> background_chat_color("BackgroundChatColor", LLColor4(0,0,0,1.f));
 	static const LLCachedControl<F32> chat_bubble_opacity("ChatBubbleOpacity", .5);
@@ -331,7 +329,7 @@ void LLHUDNameTag::renderText(BOOL for_select)
 	
 	LLViewerCamera::getInstance()->getPixelVectors(mPositionAgent, y_pixel_vec, x_pixel_vec);
 
-	LLVector2 border_scale_vec((F32)border_width / (F32)imagep->getTextureWidth(), (F32)border_height / (F32)imagep->getTextureHeight());
+	LLVector2 border_scale_vec((F32)border_width / (F32)mBubbleImage->getTextureWidth(), (F32)border_height / (F32)mBubbleImage->getTextureHeight());
 	LLVector3 width_vec = mWidth * x_pixel_vec;
 	LLVector3 height_vec = mHeight * y_pixel_vec;
 	LLVector3 scaled_border_width = (F32)llfloor(border_scale * (F32)border_width) * x_pixel_vec;
@@ -379,11 +377,11 @@ void LLHUDNameTag::renderText(BOOL for_select)
 			}
 			else
 			{
-				gGL.getTexUnit(0)->bind(imagep->getImage());
+				gGL.getTexUnit(0)->bind(mBubbleImage->getImage());
 				
 				gGL.color4fv(bg_color.mV);
 				gl_segmented_rect_3d_tex(border_scale_vec, scaled_border_width, scaled_border_height, width_vec, height_vec);
-		
+				
 				if ( mLabelSegments.size())
 				{
 					LLUI::pushMatrix();

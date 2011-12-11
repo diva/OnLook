@@ -37,6 +37,7 @@
 #include "llrect.h"
 //#include "llframetimer.h"
 #include "llfontgl.h"
+#include "lluiimage.h"
 #include <set>
 #include <vector>
 
@@ -173,6 +174,8 @@ private:
 	EVertAlignment	mVertAlignment;
 	S32				mLOD;
 	BOOL			mHidden;
+	
+	LLPointer<LLUIImage> 	mBubbleImage;
 
 	static BOOL    sDisplayText ;
 	static std::set<LLPointer<LLHUDNameTag> > sTextObjects;
