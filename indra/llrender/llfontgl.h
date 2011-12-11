@@ -90,14 +90,8 @@ public:
 	LLFontGL();
 	~LLFontGL();
 
-	void init(); // Internal init, or reinitialization
+
 	void reset(); // Reset a font after GL cleanup.  ONLY works on an already loaded font.
-
-
-	static BOOL initDefaultFonts(F32 screen_dpi, F32 x_scale, F32 y_scale,
-								 const std::string& app_dir,
-								 const std::vector<std::string>& xui_paths,
-								 bool create_gl_textures = true);
 
 	void destroyGL();
 
@@ -172,6 +166,8 @@ public:
 	void	   addEmbeddedChar( llwchar wc, LLTexture* image, const std::string& label) const;
 	void	   addEmbeddedChar( llwchar wc, LLTexture* image, const LLWString& label) const;
 	void	   removeEmbeddedChar( llwchar wc ) const;
+
+	static void initClass(F32 screen_dpi, F32 x_scale, F32 y_scale,	 const std::string& app_dir, const std::vector<std::string>& xui_paths,	 bool create_gl_textures = true);
 
 	// Load sans-serif, sans-serif-small, etc.
 	// Slow, requires multiple seconds to load fonts.

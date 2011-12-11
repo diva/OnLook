@@ -125,31 +125,6 @@ bool findOrCreateFont(LLFontGL*& fontp, const LLFontDescriptor& desc)
 	return (fontp != NULL);
 }
 
-// static
-BOOL LLFontGL::initDefaultFonts(F32 screen_dpi, F32 x_scale, F32 y_scale,
-								const std::string& app_dir,
-								const std::vector<std::string>& xui_paths,
-								bool create_gl_textures)
-{
-	sVertDPI = (F32)llfloor(screen_dpi * y_scale);
-	sHorizDPI = (F32)llfloor(screen_dpi * x_scale);
-	sScaleX = x_scale;
-	sScaleY = y_scale;
-	sAppDir = app_dir;
-
-	// Font registry init
-	if (!sFontRegistry)
-	{
-		sFontRegistry = new LLFontRegistry(xui_paths,create_gl_textures);
-		sFontRegistry->parseFontInfo("fonts.xml");
-	}
-	else
-	{
-		sFontRegistry->reset();
-	}
-
-	return loadDefaultFonts();
-}
 
 void LLFontGL::destroyGL()
 {
@@ -953,6 +928,27 @@ void LLFontGL::removeEmbeddedChar( llwchar wc ) const
 	{
 		delete iter->second;
 		mEmbeddedChars.erase(wc);
+	}
+}
+
+// static
+void LLFontGL::initClass(F32 screen_dpi, F32 x_scale, F32 y_scale, const std::string& app_dir, const std::vector<std::string>& xui_paths, bool create_gl_textures)
+{
+	sVertDPI = (F32)llfloor(screen_dpi * y_scale);
+	sHorizDPI = (F32)llfloor(screen_dpi * x_scale);
+	sScaleX = x_scale;
+	sScaleY = y_scale;
+	sAppDir = app_dir;
+
+	// Font registry init
+	if (!sFontRegistry)
+	{
+		sFontRegistry = new LLFontRegistry(xui_paths,create_gl_textures);
+		sFontRegistry->parseFontInfo("fonts.xml");
+	}
+	else
+	{
+		sFontRegistry->reset();
 	}
 }
 

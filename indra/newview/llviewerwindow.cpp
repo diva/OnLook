@@ -1541,14 +1541,19 @@ LLViewerWindow::LLViewerWindow(
 	LLViewerTextureManager::init() ;
 	gBumpImageList.init();
 
-	// Create container for all sub-views
-	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
-
+	// Init font system, but don't actually load the fonts yet
+	// because our window isn't onscreen and they take several
+	// seconds to parse.
 	if (!gNoRender)
 	{
-		// Init default fonts
-		initFonts();
+	LLFontGL::initClass( gSavedSettings.getF32("FontScreenDPI"),
+								mDisplayScale.mV[VX],
+								mDisplayScale.mV[VY],
+								gDirUtilp->getAppRODataDir(),
+								LLUICtrlFactory::getXUIPaths());
 	}
+	// Create container for all sub-views
+	mRootView = new LLRootView("root", mWindowRectScaled, FALSE);
 
 	// Make avatar head look forward at start
 	mCurrentMousePoint.mX = getWindowWidthScaled() / 2;
@@ -4828,11 +4833,13 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 void LLViewerWindow::initFonts(F32 zoom_factor)
 {
 	LLFontGL::destroyAllGL();
-	LLFontGL::initDefaultFonts( gSavedSettings.getF32("FontScreenDPI"),
+	// Initialize with possibly different zoom factor
+	LLFontGL::initClass( gSavedSettings.getF32("FontScreenDPI"),
 								mDisplayScale.mV[VX] * zoom_factor,
 								mDisplayScale.mV[VY] * zoom_factor,
 								gDirUtilp->getAppRODataDir(),
 								LLUICtrlFactory::getXUIPaths());
+	LLFontGL::loadDefaultFonts();
 }
 void LLViewerWindow::toggleFullscreen(BOOL show_progress)
 {

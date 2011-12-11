@@ -1987,10 +1987,18 @@ bool idle_startup()
 	if (STATE_MULTIMEDIA_INIT == LLStartUp::getStartupState())
 	{
 		LLStartUp::multimediaInit();
-		LLStartUp::setStartupState( STATE_SEED_GRANTED_WAIT );
+		LLStartUp::setStartupState( STATE_FONT_INIT );
 		return FALSE;
 	}
 
+	// Loading fonts takes several seconds
+	if (STATE_FONT_INIT == LLStartUp::getStartupState())
+	{
+		LLStartUp::fontInit();
+		LLStartUp::setStartupState( STATE_SEED_GRANTED_WAIT );
+		return FALSE;
+	}
+	
 	//---------------------------------------------------------------------
 	// Wait for Seed Cap Grant
 	//---------------------------------------------------------------------
@@ -3757,6 +3765,7 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_LOGIN_DOWNLOADING );
 		RTNENUM( STATE_LOGIN_PROCESS_RESPONSE );
 		RTNENUM( STATE_WORLD_INIT );
+		RTNENUM( STATE_FONT_INIT );
 		RTNENUM( STATE_SEED_GRANTED_WAIT );
 		RTNENUM( STATE_SEED_CAP_GRANTED );
 		RTNENUM( STATE_WORLD_WAIT );
@@ -3831,6 +3840,15 @@ void LLStartUp::multimediaInit()
 	LLViewerParcelMedia::initClass();
 }
 
+void LLStartUp::fontInit()
+{
+	LL_DEBUGS("AppInit") << "Initializing fonts...." << LL_ENDL;
+	std::string msg = LLTrans::getString("LoginInitializingFonts");
+	set_startup_status(0.45f, msg.c_str(), gAgent.mMOTD.c_str());
+	display_startup();
+
+	LLFontGL::loadDefaultFonts();
+}
 
 void LLStartUp::initNameCache()
 {
