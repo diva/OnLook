@@ -52,6 +52,8 @@ LL_ALIGN_16(F32 gGLLastProjection[16]);
 LL_ALIGN_16(F32 gGLProjection[16]);
 LL_ALIGN_16(S32	gGLViewport[4]);
 
+U32 LLRender::sUICalls = 0;
+U32 LLRender::sUIVerts = 0;
 U32 LLTexUnit::sWhiteTexture = 0;
 bool LLRender::sGLCoreProfile = false;
 
@@ -1459,6 +1461,88 @@ const glh::matrix4f& LLRender::getProjectionMatrix()
 	return mMatrix[MM_PROJECTION][mMatIdx[MM_PROJECTION]];
 }
 
+void LLRender::translateUI(F32 x, F32 y, F32 z)
+{
+	if (mUIOffset.empty())
+	{
+		llerrs << "Need to push a UI translation frame before offsetting" << llendl;
+	}
+
+	mUIOffset.back().mV[0] += x;
+	mUIOffset.back().mV[1] += y;
+	mUIOffset.back().mV[2] += z;
+}
+
+void LLRender::scaleUI(F32 x, F32 y, F32 z)
+{
+	if (mUIScale.empty())
+	{
+		llerrs << "Need to push a UI transformation frame before scaling." << llendl;
+	}
+
+	mUIScale.back().scaleVec(LLVector3(x,y,z));
+}
+
+void LLRender::pushUIMatrix()
+{
+	if (mUIOffset.empty())
+	{
+		mUIOffset.push_back(LLVector3(0,0,0));
+	}
+	else
+	{
+		mUIOffset.push_back(mUIOffset.back());
+	}
+	
+	if (mUIScale.empty())
+	{
+		mUIScale.push_back(LLVector3(1,1,1));
+	}
+	else
+	{
+		mUIScale.push_back(mUIScale.back());
+	}
+}
+
+void LLRender::popUIMatrix()
+{
+	if (mUIOffset.empty())
+	{
+		llerrs << "UI offset stack blown." << llendl;
+	}
+	mUIOffset.pop_back();
+	mUIScale.pop_back();
+}
+
+LLVector3 LLRender::getUITranslation()
+{
+	if (mUIOffset.empty())
+	{
+		return LLVector3(0,0,0);
+	}
+	return mUIOffset.back();
+}
+
+LLVector3 LLRender::getUIScale()
+{
+	if (mUIScale.empty())
+	{
+		return LLVector3(1,1,1);
+	}
+	return mUIScale.back();
+}
+
+
+void LLRender::loadUIIdentity()
+{
+	if (mUIOffset.empty())
+	{
+		llerrs << "Need to push UI translation frame before clearing offset." << llendl;
+	}
+	mUIOffset.back().setVec(0,0,0);
+	mUIScale.back().setVec(1,1,1);
+}
+
 void LLRender::setColorMask(bool writeColor, bool writeAlpha)
 {
 	setColorMask(writeColor, writeColor, writeColor, writeAlpha);
@@ -1752,6 +1836,11 @@ void LLRender::flush()
 		}
 #endif
 				
+		if (!mUIOffset.empty())
+		{
+			sUICalls++;
+			sUIVerts += mCount;
+		}
 		
 		if (gDebugGL)
 		{
@@ -1832,15 +1921,16 @@ void LLRender::vertex3f(const GLfloat& x, const GLfloat& y, const GLfloat& z)
 		return;
 	}
 
-	//if (mUIOffset.empty())
+	if (mUIOffset.empty())
 	{
 		mVerticesp[mCount] = LLVector3(x,y,z);
 	}
-	/*else
+	else
 	{
 		LLVector3 vert = (LLVector3(x,y,z)+mUIOffset.back()).scaledVec(mUIScale.back());
 		mVerticesp[mCount] = vert;
-	}*/
+	}
+
 	if (mMode == LLRender::QUADS && LLRender::sGLCoreProfile)
 	{
 		mQuadCycle++;

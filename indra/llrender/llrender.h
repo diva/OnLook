@@ -358,6 +358,14 @@ public:
 	void syncMatrices();
 	void syncLightState();
 
+	void translateUI(F32 x, F32 y, F32 z);
+	void scaleUI(F32 x, F32 y, F32 z);
+	void pushUIMatrix();
+	void popUIMatrix();
+	void loadUIIdentity();
+	LLVector3 getUITranslation();
+	LLVector3 getUIScale();
+
 	void flush();
 
 	void begin(const GLuint& mode);
@@ -422,7 +430,8 @@ public:
 	};
 
 public:
-
+	static U32 sUICalls;
+	static U32 sUIVerts;
 	static bool sGLCoreProfile;
 	
 private:
