@@ -563,7 +563,9 @@ void LLHUDNameTag::setString(const std::string &text_utf8)
 //[RLVa:KB] - Checked: 2010-03-02 (RLVa-1.2.0a) | Modified: RLVa-1.0.0f
 // NOTE: setString() is only called for debug beacons and the floating name tags (which we don't want to censor
 //		because you'd see "(Region hidden) LastName" if you happen to go to a sim who's name is your first name :p
-	std::string text(text_utf8);
+
+	//Disabled because logic in LLVOAvatar::idleUpdateNameTag should be handling this.
+	/*std::string text(text_utf8);
 	if (rlv_handler_t::isEnabled())
 	{
 		if (gRlvHandler.canShowHoverText(mSourceObject))
@@ -575,11 +577,11 @@ void LLHUDNameTag::setString(const std::string &text_utf8)
 		{
 			text = "";
 		}
-	}
+	}*/
 //[/RLVa:KB]
 	
 	mTextSegments.clear();
-	addLine(text, mColor);
+	addLine(text_utf8, mColor);
 }
 
 void LLHUDNameTag::clearString()
