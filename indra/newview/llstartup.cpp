@@ -1937,7 +1937,6 @@ bool idle_startup()
 		LLDrawable::initClass();
 
 		// init the shader managers
-		LLPostProcess::initClass();
 		AscentDayCycleManager::initClass();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering

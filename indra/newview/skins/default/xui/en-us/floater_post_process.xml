@@ -134,7 +134,7 @@
 			</text>
 			<slider bottom_delta="-30" can_edit_text="true" control_name="NightVisionNoiseSize"
 			     decimal_digits="3" follows="left" height="18" increment="0.1"
-			     initial_val="1" label="" left="14" max_val="100" min_val="1"
+			     initial_val="1" label="" left="14" max_val="100" min_val=".1"
 			     mouse_opaque="true" name="NightVisionNoiseSize" show_text="true"
 			     value="1.0" width="200" />
 			<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"

@@ -70,12 +70,6 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 	childSetCommitCallback("NightVisionNoiseSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"noise_size");
 	childSetCommitCallback("NightVisionNoiseStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"noise_strength");
 
-	/// Bloom Callbacks
-	/*childSetCommitCallback("BloomToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_bloom");
-	childSetCommitCallback("BloomExtract", &LLFloaterPostProcess::onFloatControlMoved, (char*)"extract_low");
-	childSetCommitCallback("BloomSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_width");
-	childSetCommitCallback("BloomStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"bloom_strength");*/
-
 	// Gauss Blur Callbacks
 	childSetCommitCallback("GaussBlurToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_gauss_blur");
 	childSetCommitCallback("GaussBlurPasses", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gauss_blur_passes");
@@ -117,7 +111,7 @@ void LLFloaterPostProcess::onBoolToggle(LLUICtrl* ctrl, void* userData)
 	
 	// check the bool
 	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
-	gPostProcess->tweaks[boolVariableName] = cbCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[boolVariableName] = cbCtrl->getValue();
 }
 
 // Float Moved
@@ -125,7 +119,7 @@ void LLFloaterPostProcess::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
 {
 	char const * floatVariableName = (char const *)userData;
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	gPostProcess->tweaks[floatVariableName] = sldrCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[floatVariableName] = sldrCtrl->getValue();
 }
 
 // Color Moved
@@ -133,7 +127,7 @@ void LLFloaterPostProcess::onColorControlRMoved(LLUICtrl* ctrl, void* userData)
 {
 	char const * floatVariableName = (char const *)userData;
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	gPostProcess->tweaks[floatVariableName][0] = sldrCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[floatVariableName][0] = sldrCtrl->getValue();
 }
 
 // Color Moved
@@ -141,7 +135,7 @@ void LLFloaterPostProcess::onColorControlGMoved(LLUICtrl* ctrl, void* userData)
 {
 	char const * floatVariableName = (char const *)userData;
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	gPostProcess->tweaks[floatVariableName][1] = sldrCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[floatVariableName][1] = sldrCtrl->getValue();
 }
 
 // Color Moved
@@ -149,7 +143,7 @@ void LLFloaterPostProcess::onColorControlBMoved(LLUICtrl* ctrl, void* userData)
 {
 	char const * floatVariableName = (char const *)userData;
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	gPostProcess->tweaks[floatVariableName][2] = sldrCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[floatVariableName][2] = sldrCtrl->getValue();
 }
 
 // Color Moved
@@ -157,7 +151,7 @@ void LLFloaterPostProcess::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
 {
 	char const * floatVariableName = (char const *)userData;
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	gPostProcess->tweaks[floatVariableName][3] = sldrCtrl->getValue();
+	LLPostProcess::getInstance()->tweaks[floatVariableName][3] = sldrCtrl->getValue();
 }
 
 void LLFloaterPostProcess::onLoadEffect(void* userData)
@@ -166,7 +160,7 @@ void LLFloaterPostProcess::onLoadEffect(void* userData)
 
 	LLSD::String effectName(comboBox->getSelectedValue().asString());
 
-	gPostProcess->setSelectedEffect(effectName);
+	LLPostProcess::getInstance()->setSelectedEffect(effectName);
 
 	sPostProcess->syncMenu();
 }
@@ -177,7 +171,7 @@ void LLFloaterPostProcess::onSaveEffect(void* userData)
 
 	std::string effectName(editBox->getValue().asString());
 
-	if (gPostProcess->mAllEffects.has(effectName))
+	if (LLPostProcess::getInstance()->mAllEffects.has(effectName))
 	{
 		LLSD payload;
 		payload["effect_name"] = effectName;
@@ -185,7 +179,7 @@ void LLFloaterPostProcess::onSaveEffect(void* userData)
 	}
 	else
 	{
-		gPostProcess->saveEffect(effectName);
+		LLPostProcess::getInstance()->saveEffect(effectName);
 		sPostProcess->syncMenu();
 	}
 }
@@ -207,7 +201,7 @@ bool LLFloaterPostProcess::saveAlertCallback(const LLSD& notification, const LLS
 	// if they choose save, do it.  Otherwise, don't do anything
 	if (option == 0)
 	{
-		gPostProcess->saveEffect(notification["payload"]["effect_name"].asString());
+		LLPostProcess::getInstance()->saveEffect(notification["payload"]["effect_name"].asString());
 
 		sPostProcess->syncMenu();
 	}
@@ -241,39 +235,34 @@ void LLFloaterPostProcess::syncMenu()
 	comboBox->removeall();
 
 	LLSD::map_const_iterator currEffect;
-	for(currEffect = gPostProcess->mAllEffects.beginMap();
-		currEffect != gPostProcess->mAllEffects.endMap();
+	for(currEffect = LLPostProcess::getInstance()->mAllEffects.beginMap();
+		currEffect != LLPostProcess::getInstance()->mAllEffects.endMap();
 		++currEffect) 
 	{
 		comboBox->add(currEffect->first);
 	}
 
 	// set the current effect as selected.
-	comboBox->selectByValue(gPostProcess->getSelectedEffect());
+	comboBox->selectByValue(LLPostProcess::getInstance()->getSelectedEffect());
 
 	/// Sync Color Filter Menu
-	childSetValue("ColorFilterToggle", gPostProcess->tweaks.useColorFilter());
-	childSetValue("ColorFilterGamma", gPostProcess->tweaks.getGamma());
-	childSetValue("ColorFilterBrightness", gPostProcess->tweaks.brightness());
-	childSetValue("ColorFilterSaturation", gPostProcess->tweaks.saturation());
-	childSetValue("ColorFilterContrast", gPostProcess->tweaks.contrast());
-	childSetValue("ColorFilterBaseR", gPostProcess->tweaks.contrastBaseR());
-	childSetValue("ColorFilterBaseG", gPostProcess->tweaks.contrastBaseG());
-	childSetValue("ColorFilterBaseB", gPostProcess->tweaks.contrastBaseB());
-	childSetValue("ColorFilterBaseI", gPostProcess->tweaks.contrastBaseIntensity());
+	childSetValue("ColorFilterToggle", LLPostProcess::getInstance()->tweaks.useColorFilter());
+	childSetValue("ColorFilterGamma", LLPostProcess::getInstance()->tweaks.getGamma());
+	childSetValue("ColorFilterBrightness", LLPostProcess::getInstance()->tweaks.brightness());
+	childSetValue("ColorFilterSaturation", LLPostProcess::getInstance()->tweaks.saturation());
+	childSetValue("ColorFilterContrast", LLPostProcess::getInstance()->tweaks.contrast());
+	childSetValue("ColorFilterBaseR", LLPostProcess::getInstance()->tweaks.contrastBaseR());
+	childSetValue("ColorFilterBaseG", LLPostProcess::getInstance()->tweaks.contrastBaseG());
+	childSetValue("ColorFilterBaseB", LLPostProcess::getInstance()->tweaks.contrastBaseB());
+	childSetValue("ColorFilterBaseI", LLPostProcess::getInstance()->tweaks.contrastBaseIntensity());
 	
 	/// Sync Night Vision Menu
-	childSetValue("NightVisionToggle", gPostProcess->tweaks.useNightVisionShader());
-	childSetValue("NightVisionBrightMult", gPostProcess->tweaks.brightMult());
-	childSetValue("NightVisionNoiseSize", gPostProcess->tweaks.noiseSize());
-	childSetValue("NightVisionNoiseStrength", gPostProcess->tweaks.noiseStrength());
+	childSetValue("NightVisionToggle", LLPostProcess::getInstance()->tweaks.useNightVisionShader());
+	childSetValue("NightVisionBrightMult", LLPostProcess::getInstance()->tweaks.brightMult());
+	childSetValue("NightVisionNoiseSize", LLPostProcess::getInstance()->tweaks.noiseSize());
+	childSetValue("NightVisionNoiseStrength", LLPostProcess::getInstance()->tweaks.noiseStrength());
 
-	/// Sync Bloom Menu
-	/*childSetValue("BloomToggle", LLSD(gPostProcess->tweaks.useBloomShader()));
-	childSetValue("BloomExtract", gPostProcess->tweaks.extractLow());
-	childSetValue("BloomSize", gPostProcess->tweaks.bloomWidth());
-	childSetValue("BloomStrength", gPostProcess->tweaks.bloomStrength());*/
-
-	childSetValue("GaussBlurToggle", gPostProcess->tweaks.useGaussBlurFilter());
-	childSetValue("GaussBlurPasses", gPostProcess->tweaks.getGaussBlurPasses());
+	/// Sync Gaussian Blur Menu
+	childSetValue("GaussBlurToggle", LLPostProcess::getInstance()->tweaks.useGaussBlurFilter());
+	childSetValue("GaussBlurPasses", LLPostProcess::getInstance()->tweaks.getGaussBlurPasses());
 }

@@ -830,8 +830,7 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 	//if (success)
 	{
 		vector<string> shaderUniforms;
-		shaderUniforms.reserve(7);
-		shaderUniforms.push_back("RenderTexture");
+		shaderUniforms.reserve(6);
 		shaderUniforms.push_back("gamma");
 		shaderUniforms.push_back("brightness");
 		shaderUniforms.push_back("contrast");
@@ -842,18 +841,20 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gPostColorFilterProgram.mName = "Color Filter Shader (Post)";
 		gPostColorFilterProgram.mShaderFiles.clear();
 		gPostColorFilterProgram.mShaderFiles.push_back(make_pair("effects/colorFilterF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gPostColorFilterProgram.mShaderFiles.push_back(make_pair("effects/onetexturenocolor.glsl", GL_VERTEX_SHADER_ARB));
+		gPostColorFilterProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolorV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostColorFilterProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		/*success = */gPostColorFilterProgram.createShader(NULL, &shaderUniforms);
+		if(gPostColorFilterProgram.createShader(NULL, &shaderUniforms))
+		{
+			gPostColorFilterProgram.bind();
+			gPostColorFilterProgram.uniform1i("tex0", 0);
+		}
 	}
 
 	//load Night Vision Shader
 	//if (success)
 	{
 		vector<string> shaderUniforms;
-		shaderUniforms.reserve(5);
-		shaderUniforms.push_back("RenderTexture");
-		shaderUniforms.push_back("NoiseTexture");
+		shaderUniforms.reserve(3);
 		shaderUniforms.push_back("brightMult");
 		shaderUniforms.push_back("noiseStrength");
 		shaderUniforms.push_back("lumWeights");
@@ -861,27 +862,33 @@ BOOL LLViewerShaderMgr::loadShadersEffects()
 		gPostNightVisionProgram.mName = "Night Vision Shader (Post)";
 		gPostNightVisionProgram.mShaderFiles.clear();
 		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("effects/nightVisionF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("interface/twotextureadd.glsl", GL_VERTEX_SHADER_ARB));
+		gPostNightVisionProgram.mShaderFiles.push_back(make_pair("interface/twotextureaddV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostNightVisionProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		/*success = */gPostNightVisionProgram.createShader(NULL, &shaderUniforms);
+		if(gPostNightVisionProgram.createShader(NULL, &shaderUniforms))
+		{
+			gPostNightVisionProgram.bind();
+			gPostNightVisionProgram.uniform1i("tex0", 0);
+			gPostNightVisionProgram.uniform1i("tex1", 1);
+		}
 	}
 
 	//if (success)
 	{
 		vector<string> shaderUniforms;
-		shaderUniforms.reserve(2);
-		shaderUniforms.push_back("RenderTexture");
+		shaderUniforms.reserve(1);
 		shaderUniforms.push_back("horizontalPass");
 
 		gPostGaussianBlurProgram.mName = "Gaussian Blur Shader (Post)";
 		gPostGaussianBlurProgram.mShaderFiles.clear();
 		gPostGaussianBlurProgram.mShaderFiles.push_back(make_pair("effects/gaussBlurF.glsl", GL_FRAGMENT_SHADER_ARB));
-		gPostGaussianBlurProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolor.glsl", GL_VERTEX_SHADER_ARB));
+		gPostGaussianBlurProgram.mShaderFiles.push_back(make_pair("interface/onetexturenocolorV.glsl", GL_VERTEX_SHADER_ARB));
 		gPostGaussianBlurProgram.mShaderLevel = mVertexShaderLevel[SHADER_EFFECT];
-		/*success = */gPostGaussianBlurProgram.createShader(NULL, &shaderUniforms);
+		if(gPostGaussianBlurProgram.createShader(NULL, &shaderUniforms))
+		{
+			gPostGaussianBlurProgram.bind();
+			gPostGaussianBlurProgram.uniform1i("tex0", 0);
+		}
 	}
-
-	
 	#endif
 
 	return success;

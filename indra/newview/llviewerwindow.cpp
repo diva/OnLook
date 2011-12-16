@@ -4763,9 +4763,9 @@ void LLViewerWindow::stopGL(BOOL save_state)
 		
 		gBox.cleanupGL();
 		
-		if(gPostProcess)
+		if(LLPostProcess::instanceExists())
 		{
-			gPostProcess->invalidate();
+			LLPostProcess::getInstance()->invalidate();
 		}
 
 		gTextureList.destroyGL(save_state);
