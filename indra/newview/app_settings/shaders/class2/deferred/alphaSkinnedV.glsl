@@ -39,8 +39,6 @@ float calcDirectionalLight(vec3 n, vec3 l);
 mat4 getObjectSkinnedTransform();
 vec3 atmosAmbient(vec3 light);
 vec3 atmosAffectDirectionalLight(float lightIntensity);
-vec3 scaleDownLight(vec3 light);
-vec3 scaleUpLight(vec3 light);
 
 VARYING vec3 vary_ambient;
 VARYING vec3 vary_directional;

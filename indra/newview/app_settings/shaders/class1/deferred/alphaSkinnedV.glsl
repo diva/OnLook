@@ -30,7 +30,6 @@ ATTRIBUTE vec3 normal;
 ATTRIBUTE vec4 diffuse_color;
 ATTRIBUTE vec2 texcoord0;
 
-vec4 calcLighting(vec3 pos, vec3 norm, vec4 color, vec4 baseCol);
 mat4 getObjectSkinnedTransform();
 void calcAtmospherics(vec3 inPositionEye);
 
