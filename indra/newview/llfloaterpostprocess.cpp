@@ -43,7 +43,11 @@
 #include "llcombobox.h"
 #include "lllineeditor.h"
 #include "llviewerwindow.h"
-
+#if LL_MSVC
+// disable boost::lexical_cast warning
+#pragma warning (disable:4702)
+#endif
+#include <boost/lexical_cast.hpp>
 
 LLFloaterPostProcess* LLFloaterPostProcess::sPostProcess = NULL;
 
@@ -52,27 +56,31 @@ LLFloaterPostProcess::LLFloaterPostProcess() : LLFloater(std::string("Post-Proce
 {
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_post_process.xml");
 
-	/// Color Filter Callbacks
-	childSetCommitCallback("ColorFilterToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_color_filter");
-	childSetCommitCallback("ColorFilterGamma", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gamma");
-	childSetCommitCallback("ColorFilterBrightness", &LLFloaterPostProcess::onFloatControlMoved, (char*)"brightness");
-	childSetCommitCallback("ColorFilterSaturation", &LLFloaterPostProcess::onFloatControlMoved, (char*)"saturation");
-	childSetCommitCallback("ColorFilterContrast", &LLFloaterPostProcess::onFloatControlMoved, (char*)"contrast");
+	LLTabContainer *panel_list = getChild<LLTabContainer>("Post-Process Tabs",false,false);	//Contains a tab for each shader
+	if(panel_list)
+	{
+		//Iterate down tabs to access each panel
+		for(S32 i = 0; i<panel_list->getTabCount(); ++i)	
+		{
+			//Get the panel via index
+			LLPanel *shader_panel = panel_list->getPanelByIndex(i);		
 
-	childSetCommitCallback("ColorFilterBaseR", &LLFloaterPostProcess::onColorControlRMoved, (char*)"contrast_base");
-	childSetCommitCallback("ColorFilterBaseG", &LLFloaterPostProcess::onColorControlGMoved, (char*)"contrast_base");
-	childSetCommitCallback("ColorFilterBaseB", &LLFloaterPostProcess::onColorControlBMoved, (char*)"contrast_base");
-	childSetCommitCallback("ColorFilterBaseI", &LLFloaterPostProcess::onColorControlIMoved, (char*)"contrast_base");
+			//'Extra' panel controls loading/saving. No uniforms should be altered in this panel.
+			if(shader_panel->getName() == "Extras")	
+				continue;
 
-	/// Night Vision Callbacks
-	childSetCommitCallback("NightVisionToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_night_vision");
-	childSetCommitCallback("NightVisionBrightMult", &LLFloaterPostProcess::onFloatControlMoved, (char*)"brightness_multiplier");
-	childSetCommitCallback("NightVisionNoiseSize", &LLFloaterPostProcess::onFloatControlMoved, (char*)"noise_size");
-	childSetCommitCallback("NightVisionNoiseStrength", &LLFloaterPostProcess::onFloatControlMoved, (char*)"noise_strength");
-
-	// Gauss Blur Callbacks
-	childSetCommitCallback("GaussBlurToggle", &LLFloaterPostProcess::onBoolToggle, (char*)"enable_gauss_blur");
-	childSetCommitCallback("GaussBlurPasses", &LLFloaterPostProcess::onFloatControlMoved, (char*)"gauss_blur_passes");
+			//Iterate down children elements of each panel.
+			for ( child_list_const_iter_t child_it = shader_panel->getChildList()->begin(); child_it != shader_panel->getChildList()->end(); ++child_it)
+			{
+				//Hacky, but for now checkboxes and sliders are assumed to link to shader uniforms.
+				if(dynamic_cast<LLSliderCtrl*>(*child_it) || dynamic_cast<LLCheckBoxCtrl*>(*child_it))
+				{
+					LLUICtrl *ctrl = dynamic_cast<LLUICtrl*>(*child_it);
+					ctrl->setCommitCallback(boost::bind(&LLFloaterPostProcess::onControlChanged, _1, (void*)ctrl->getName().c_str()));
+				}
+			}
+		}
+	}
 
 	// Effect loading and saving.
 	LLComboBox* comboBox = getChild<LLComboBox>("PPEffectsCombo");
@@ -104,54 +112,20 @@ LLFloaterPostProcess* LLFloaterPostProcess::instance()
 	return sPostProcess;
 }
 
-// Bool Toggle
-void LLFloaterPostProcess::onBoolToggle(LLUICtrl* ctrl, void* userData)
-{
-	char const * boolVariableName = (char const *)userData;
-	
-	// check the bool
-	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[boolVariableName] = cbCtrl->getValue();
-}
 
-// Float Moved
-void LLFloaterPostProcess::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterPostProcess::onControlChanged(LLUICtrl* ctrl, void* userData)
 {
-	char const * floatVariableName = (char const *)userData;
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[floatVariableName] = sldrCtrl->getValue();
-}
-
-// Color Moved
-void LLFloaterPostProcess::onColorControlRMoved(LLUICtrl* ctrl, void* userData)
-{
-	char const * floatVariableName = (char const *)userData;
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[floatVariableName][0] = sldrCtrl->getValue();
-}
-
-// Color Moved
-void LLFloaterPostProcess::onColorControlGMoved(LLUICtrl* ctrl, void* userData)
-{
-	char const * floatVariableName = (char const *)userData;
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[floatVariableName][1] = sldrCtrl->getValue();
-}
-
-// Color Moved
-void LLFloaterPostProcess::onColorControlBMoved(LLUICtrl* ctrl, void* userData)
-{
-	char const * floatVariableName = (char const *)userData;
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[floatVariableName][2] = sldrCtrl->getValue();
-}
-
-// Color Moved
-void LLFloaterPostProcess::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
-{
-	char const * floatVariableName = (char const *)userData;
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	LLPostProcess::getInstance()->tweaks[floatVariableName][3] = sldrCtrl->getValue();
+	char const *VariableName = (char const *)userData;
+	char buf[256];
+	S32 elem=0;
+	if(sscanf(VariableName,"%255[^[][%d]", buf, &elem) == 2)
+	{
+		LLPostProcess::getInstance()->tweaks[buf][elem] = ctrl->getValue();
+	}
+	else
+	{
+		LLPostProcess::getInstance()->tweaks[VariableName] = ctrl->getValue();
+	}
 }
 
 void LLFloaterPostProcess::onLoadEffect(void* userData)
@@ -245,24 +219,23 @@ void LLFloaterPostProcess::syncMenu()
 	// set the current effect as selected.
 	comboBox->selectByValue(LLPostProcess::getInstance()->getSelectedEffect());
 
-	/// Sync Color Filter Menu
-	childSetValue("ColorFilterToggle", LLPostProcess::getInstance()->tweaks.useColorFilter());
-	childSetValue("ColorFilterGamma", LLPostProcess::getInstance()->tweaks.getGamma());
-	childSetValue("ColorFilterBrightness", LLPostProcess::getInstance()->tweaks.brightness());
-	childSetValue("ColorFilterSaturation", LLPostProcess::getInstance()->tweaks.saturation());
-	childSetValue("ColorFilterContrast", LLPostProcess::getInstance()->tweaks.contrast());
-	childSetValue("ColorFilterBaseR", LLPostProcess::getInstance()->tweaks.contrastBaseR());
-	childSetValue("ColorFilterBaseG", LLPostProcess::getInstance()->tweaks.contrastBaseG());
-	childSetValue("ColorFilterBaseB", LLPostProcess::getInstance()->tweaks.contrastBaseB());
-	childSetValue("ColorFilterBaseI", LLPostProcess::getInstance()->tweaks.contrastBaseIntensity());
-	
-	/// Sync Night Vision Menu
-	childSetValue("NightVisionToggle", LLPostProcess::getInstance()->tweaks.useNightVisionShader());
-	childSetValue("NightVisionBrightMult", LLPostProcess::getInstance()->tweaks.brightMult());
-	childSetValue("NightVisionNoiseSize", LLPostProcess::getInstance()->tweaks.noiseSize());
-	childSetValue("NightVisionNoiseStrength", LLPostProcess::getInstance()->tweaks.noiseStrength());
-
-	/// Sync Gaussian Blur Menu
-	childSetValue("GaussBlurToggle", LLPostProcess::getInstance()->tweaks.useGaussBlurFilter());
-	childSetValue("GaussBlurPasses", LLPostProcess::getInstance()->tweaks.getGaussBlurPasses());
+	LLSD &tweaks = LLPostProcess::getInstance()->tweaks;
+	//Iterate down all uniforms handled by post-process shaders. Update any linked ui elements.
+	for (LLSD::map_const_iterator it = tweaks.beginMap(); it != tweaks.endMap(); ++it)
+	{
+		if(it->second.isArray())
+		{
+			//llsd["uniform"][0]=>"uniform[0]"
+			//llsd["uniform"][1]=>"uniform[1]"
+			for(S32 i=0;i<it->second.size();++i)
+			{
+				childSetValue(it->first+"["+boost::lexical_cast<std::string>(i)+"]",it->second[i]);
+			}
+		}
+		else
+		{
+			//llsd["uniform"]=>"uniform"
+			childSetValue(it->first,it->second);
+		}
+	}
 }
