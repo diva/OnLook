@@ -677,7 +677,7 @@ bool idle_startup()
 #endif // !LL_WINDOWS
 			    )
 			{
-				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX();
+				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX(gSavedSettings.getBOOL("SHEnableFMODExProfiler"));
 			}
 #endif
 

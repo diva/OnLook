@@ -46,13 +46,14 @@ namespace FMOD
 	class Channel;
 	class Sound;
 	class DSP;
+	class SoundGroup;
 }
 
 //Interfaces
 class LLAudioEngine_FMODEX : public LLAudioEngine 
 {
 public:
-	LLAudioEngine_FMODEX();
+	LLAudioEngine_FMODEX(bool enable_profiler);
 	virtual ~LLAudioEngine_FMODEX();
 
 	// initialization/startup/shutdown
@@ -69,6 +70,8 @@ public:
 
 	typedef F32 MIXBUFFERFORMAT;
 
+	FMOD::System *getSystem()				const {return mSystem;}
+	FMOD::SoundGroup *getWorldSoundGroup()	const {return mWorldSoundGroup;}
 protected:
 	/*virtual*/ LLAudioBuffer *createBuffer(); // Get a free buffer, or flush an existing one if you have to.
 	/*virtual*/ LLAudioChannel *createChannel(); // Create a new audio channel.
@@ -77,20 +80,19 @@ protected:
 
 	bool mInited;
 
-	// On Windows, userdata is the HWND of the application window.
-	void* mUserData;
-
 	LLWindGen<MIXBUFFERFORMAT> *mWindGen;
 
 	FMOD::DSP *mWindDSP;
 	FMOD::System *mSystem;
+	FMOD::SoundGroup *mWorldSoundGroup;
+	bool mEnableProfiler;
 };
 
 
 class LLAudioChannelFMODEX : public LLAudioChannel
 {
 public:
-	LLAudioChannelFMODEX(FMOD::System *system);
+	LLAudioChannelFMODEX(LLAudioEngine_FMODEX *audioengine);
 	virtual ~LLAudioChannelFMODEX();
 
 protected:
@@ -105,7 +107,8 @@ protected:
 
 	void set3DMode(bool use3d);
 protected:
-	FMOD::System *mSystem;
+	LLAudioEngine_FMODEX *getEngine()	const {return mEnginep;}
+	LLAudioEngine_FMODEX *mEnginep;
 	FMOD::Channel *mChannelp;
 	S32 mLastSamplePos;
 };
@@ -114,7 +117,7 @@ protected:
 class LLAudioBufferFMODEX : public LLAudioBuffer
 {
 public:
-	LLAudioBufferFMODEX(FMOD::System *system);
+	LLAudioBufferFMODEX(LLAudioEngine_FMODEX *audioengine);
 	virtual ~LLAudioBufferFMODEX();
 
 	/*virtual*/ bool loadWAV(const std::string& filename);
@@ -123,8 +126,9 @@ public:
 
 	void set3DMode(bool use3d);
 protected:
-	FMOD::Sound *getSound()	{ return mSoundp; }
-	FMOD::System *mSystem;
+	LLAudioEngine_FMODEX *getEngine()	const {return mEnginep;}
+	LLAudioEngine_FMODEX *mEnginep;
+	FMOD::Sound *getSound()				const{ return mSoundp; }
 	FMOD::Sound *mSoundp;
 };
 

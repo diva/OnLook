@@ -72,12 +72,13 @@ bool attemptDelayLoad()
 
 FMOD_RESULT F_CALLBACK windCallback(FMOD_DSP_STATE *dsp_state, float *inbuffer, float *outbuffer, unsigned int length, int inchannels, int outchannels);
 
-LLAudioEngine_FMODEX::LLAudioEngine_FMODEX()
+LLAudioEngine_FMODEX::LLAudioEngine_FMODEX(bool enable_profiler)
 {
 	mInited = false;
 	mWindGen = NULL;
 	mWindDSP = NULL;
 	mSystem = NULL;
+	mEnableProfiler = enable_profiler;
 }
 
 
@@ -145,7 +146,7 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 			Set the user selected speaker mode.
 			*/
 			result = mSystem->setSpeakerMode(speakermode);
-			Check_FMOD_Error(result, "FMOD::System::getDriverCaps");
+			Check_FMOD_Error(result, "FMOD::System::setSpeakerMode");
 			if (caps & FMOD_CAPS_HARDWARE_EMULATED)
 			{
 				/*
@@ -170,11 +171,13 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	}
 #endif //LL_WINDOWS
 
-	// Reserve one extra channel for the http stream.
-	result = mSystem->setHardwareChannels(num_channels + 1);
+	// Only static sounds (not wind, not stream) can possibly be hardware. Only reserve for those.
+	result = mSystem->setHardwareChannels(num_channels);
 	Check_FMOD_Error(result,"FMOD::System::setHardwareChannels");
 
 	U32 fmod_flags = FMOD_INIT_NORMAL;
+	if(mEnableProfiler)
+		fmod_flags |= FMOD_INIT_ENABLE_PROFILE;
 
 #if LL_LINUX
 	// If we don't set an output method, Linux FMOD always
@@ -301,6 +304,13 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	if (!getStreamingAudioImpl()) // no existing implementation added
 		setStreamingAudioImpl(new LLStreamingAudio_FMODEX(mSystem));
 
+	result = mSystem->createSoundGroup("World Sounds", &mWorldSoundGroup);
+	if(!Check_FMOD_Error(result, "Error creating 'World Sounds' group."))
+	{
+		mWorldSoundGroup->setMaxAudible(num_channels);
+		mWorldSoundGroup->setMaxAudibleBehavior(FMOD_SOUNDGROUP_BEHAVIOR_MUTE);
+	}
+
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() FMOD initialized correctly" << LL_ENDL;
 
 	mInited = true;
@@ -352,63 +362,17 @@ void LLAudioEngine_FMODEX::shutdown()
 
 LLAudioBuffer * LLAudioEngine_FMODEX::createBuffer()
 {
-	return new LLAudioBufferFMODEX(mSystem);
+	return new LLAudioBufferFMODEX(this);
 }
 
 
 LLAudioChannel * LLAudioEngine_FMODEX::createChannel()
 {
-	return new LLAudioChannelFMODEX(mSystem);
+	return new LLAudioChannelFMODEX(this);
 }
 
 bool LLAudioEngine_FMODEX::initWind()
 {
-	if (!mWindGen)
-	{
-		int samplerate;
-		FMOD_SOUND_FORMAT format;
-		mSystem->getSoftwareFormat(&samplerate,&format,NULL,NULL,NULL,NULL);
-
-		//May need to check format. eg, PCM16 may require 16bit LLWindGen.
-
-		/*bool enable;
-		
-		FMOD_SOUND_FORMAT format;
-		mSystem->getFormat(0,&format,0,0);
-		switch (format)
-		{
-			case FSOUND_MIXER_MMXP5:
-			case FSOUND_MIXER_MMXP6:
-			case FSOUND_MIXER_QUALITY_MMXP5:
-			case FSOUND_MIXER_QUALITY_MMXP6:
-				enable = (typeid(MIXBUFFERFORMAT) == typeid(S16));
-				break;
-			case FSOUND_MIXER_BLENDMODE:
-				enable = (typeid(MIXBUFFERFORMAT) == typeid(S32));
-				break;
-			case FSOUND_MIXER_QUALITY_FPU:
-				enable = (typeid(MIXBUFFERFORMAT) == typeid(F32));
-				break;
-			default:
-				// FSOUND_GetMixer() does not return a valid mixer type on Darwin
-				LL_INFOS("AppInit") << "Unknown FMOD mixer type, assuming default" << LL_ENDL;
-				enable = true;
-				break;
-		}
-		
-		if (enable)
-		{
-			mWindGen = new LLWindGen<MIXBUFFERFORMAT>(FSOUND_GetOutputRate());
-		}
-		else
-		{
-			LL_WARNS("AppInit") << "Incompatible FMOD mixer type, wind noise disabled" << LL_ENDL;
-		}*/
-
-		
-		mWindGen = new LLWindGen<MIXBUFFERFORMAT>(samplerate);
-	}
-
 	mNextWindUpdate = 0.0;
 
 	if (!mWindDSP)
@@ -417,15 +381,22 @@ bool LLAudioEngine_FMODEX::initWind()
 		memset(&dspdesc, 0, sizeof(FMOD_DSP_DESCRIPTION));	//Set everything to zero
 		strncpy(dspdesc.name,"Wind Unit", sizeof(dspdesc.name));	//Set name to "Wind Unit"
 		dspdesc.read = &windCallback; //Assign callback.
-		dspdesc.userdata = (void*)mWindGen;
-		Check_FMOD_Error(mSystem->createDSP(&dspdesc, &mWindDSP), "FMOD::createDSP");
+		if(Check_FMOD_Error(mSystem->createDSP(&dspdesc, &mWindDSP), "FMOD::createDSP"))
+			return false;
+
+		if(mWindGen)
+			delete mWindGen;
+	
+		float frequency = 44100;
+		mWindDSP->getDefaults(&frequency,0,0,0);
+		mWindGen = new LLWindGen<MIXBUFFERFORMAT>((U32)frequency);
+		mWindDSP->setUserData((void*)mWindGen);
 	}
 	if (mWindDSP)
 	{
-		mSystem->addDSP(mWindDSP, NULL);
+		mSystem->playDSP(FMOD_CHANNEL_FREE, mWindDSP, false, 0);
 		return true;
 	}
-	
 	return false;
 }
 
@@ -437,6 +408,11 @@ void LLAudioEngine_FMODEX::cleanupWind()
 		mWindDSP->remove();
 		mWindDSP->release();
 		mWindDSP = NULL;
+	}
+	if(mWorldSoundGroup)
+	{
+		mWorldSoundGroup->release();
+		mWorldSoundGroup = NULL;
 	}
 
 	delete mWindGen;
@@ -504,7 +480,7 @@ void LLAudioEngine_FMODEX::setInternalGain(F32 gain)
 // LLAudioChannelFMODEX implementation
 //
 
-LLAudioChannelFMODEX::LLAudioChannelFMODEX(FMOD::System *system) : LLAudioChannel(), mSystem(system), mChannelp(NULL), mLastSamplePos(0)
+LLAudioChannelFMODEX::LLAudioChannelFMODEX(LLAudioEngine_FMODEX *audioengine) : LLAudioChannel(), mEnginep(audioengine), mChannelp(NULL), mLastSamplePos(0)
 {
 }
 
@@ -537,8 +513,16 @@ bool LLAudioChannelFMODEX::updateBuffer()
 
 		// Actually play the sound.  Start it off paused so we can do all the necessary
 		// setup.
-		FMOD_RESULT result = mSystem->playSound(FMOD_CHANNEL_FREE, soundp, true, &mChannelp);
-		Check_FMOD_Error(result, "FMOD::System::playSound");
+		FMOD_RESULT result = getEngine()->getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, true, &mChannelp);
+		if(!Check_FMOD_Error(result, "FMOD::System::playSound") &&
+			mCurrentSourcep &&
+			(mCurrentSourcep->getType() == LLAudioEngine::AUDIO_TYPE_SFX ||
+			mCurrentSourcep->getType() == LLAudioEngine::AUDIO_TYPE_AMBIENT))
+		{
+			FMOD::SoundGroup *world_group = getEngine()->getWorldSoundGroup();
+			if(world_group)
+				soundp->setSoundGroup(world_group);
+		}
 
 		//llinfos << "Setting up channel " << std::hex << mChannelID << std::dec << llendl;
 	}
@@ -696,7 +680,7 @@ bool LLAudioChannelFMODEX::isPlaying()
 //
 
 
-LLAudioBufferFMODEX::LLAudioBufferFMODEX(FMOD::System *system) : mSystem(system), mSoundp(NULL)
+LLAudioBufferFMODEX::LLAudioBufferFMODEX(LLAudioEngine_FMODEX *audioengine) : mEnginep(audioengine), mSoundp(NULL)
 {
 }
 
@@ -734,45 +718,16 @@ bool LLAudioBufferFMODEX::loadWAV(const std::string& filename)
 		mSoundp = NULL;
 	}
 
-	bool creation_attempted = false;
-	FMOD_RESULT result = FMOD_OK;
-
-	FMOD_MODE base_mode = FMOD_SOFTWARE | FMOD_LOOP_NORMAL;
+	FMOD_MODE base_mode = FMOD_LOOP_NORMAL;
 
 	// Load up the wav file into an fmod sample
 #if LL_WINDOWS
-	// MikeS. - Loading the sound file manually and then handing it over to FMOD,
-	//	since FMOD uses posix IO internally,
-	// which doesn't work with unicode file paths.
-	LLFILE* sound_file = LLFile::fopen(filename,"rb");	/* Flawfinder: ignore */
-	if (sound_file)
-	{
-		fseek(sound_file,0,SEEK_END);
-		U32	file_length = ftell(sound_file);	//Find the length of the file by seeking to the end and getting the offset
-		size_t	read_count;
-		fseek(sound_file,0,SEEK_SET);	//Seek back to the beginning
-		char*	buffer = new char[file_length];
-		llassert(buffer);
-		read_count = fread((void*)buffer,file_length,1,sound_file);//Load it..
-		if(ferror(sound_file)==0 && (read_count == 1))
-		{//No read error, and we got 1 chunk of our size...
-
-			FMOD_CREATESOUNDEXINFO info;
-			memset(&info, 0, sizeof(info));
-			info.cbsize = sizeof(info);
-			info.length = file_length;
-			result = mSystem->createSound(buffer, base_mode | FMOD_OPENMEMORY , &info, &mSoundp);
-			creation_attempted = true;
-		}
-		delete[] buffer;
-		fclose(sound_file);
-	}
+	FMOD_RESULT result = getEngine()->getSystem()->createSound((const char*)utf8str_to_utf16str(filename).c_str(), base_mode | FMOD_UNICODE, 0, &mSoundp);
 #else
-	result = mSystem->createSound(filename.c_str(), base_mode, 0, &mSoundp);
-	creation_attempted = true;
+	FMOD_RESULT result = getEngine()->getSystem()->createSound(filename.c_str(), base_mode | FMOD_SOFTWARE, 0, &mSoundp);
 #endif
 
-	if (creation_attempted && result != FMOD_OK)
+	if (result != FMOD_OK)
 	{
 		// We failed to load the file for some reason.
 		llwarns << "Could not load data '" << filename << "': " << FMOD_ErrorString(result) << llendl;
