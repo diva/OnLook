@@ -7,7 +7,15 @@ include(Boost)
 include(DBusGlib)
 include(DirectX)
 include(ELFIO)
-include(FMOD)
+if(FMODEX)
+	include(FMODEX)
+	if(FMODEX)
+		set(FMOD OFF)
+	endif(FMODEX)
+endif(FMODEX)
+if(NOT FMODEX)
+	include(FMOD)
+endif(NOT FMODEX)
 include(OPENAL)
 include(HUNSPELL)
 include(FindOpenGL)
@@ -1168,7 +1176,6 @@ if (WINDOWS)
         comdlg32
         ${DINPUT_LIBRARY}
         ${DXGUID_LIBRARY}
-        fmodvc
         gdi32
         kernel32
         odbc32
@@ -1181,6 +1188,13 @@ if (WINDOWS)
         Vfw32
         winspool
         )
+
+	if(FMODEX)
+		list(APPEND viewer_LIBRARIES ${FMODEX_LIBRARY})
+	endif(FMODEX)
+	if(FMOD)
+		list(APPEND viewer_LIBRARIES ${FMOD_LIBRARY})
+	endif(FMOD)
 
     find_library(INTEL_MEMOPS_LIBRARY
                  NAMES ll_intel_memops
@@ -1288,13 +1302,23 @@ if (OPENAL)
   set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_OPENAL")
 endif (OPENAL)
 
-if (FMOD)
-  set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
+if (FMOD OR FMODEX)
+  if(FMODEX)
+	set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMODEX")
+  endif(FMODEX)
+  if(FMOD)
+    set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
+  endif(FMOD)
 
   if (NOT WINDOWS)
     set(fmodwrapper_SOURCE_FILES fmodwrapper.cpp)
     add_library(fmodwrapper SHARED ${fmodwrapper_SOURCE_FILES})
-    set(fmodwrapper_needed_LIBRARIES ${FMOD_LIBRARY})
+	if(FMODEX)
+		set(fmodwrapper_needed_LIBRARIES ${FMODEX_LIBRARY})
+	endif(FMODEX)
+	if(FMOD)
+		set(fmodwrapper_needed_LIBRARIES "${fmodwrapper_needed_LIBRARIES} ${FMOD_LIBRARY}")
+	endif(FMOD)
     if (DARWIN)
       list(APPEND fmodwrapper_needed_LIBRARIES ${CARBON_LIBRARY})
       set_target_properties(
@@ -1308,7 +1332,7 @@ if (FMOD)
     set(FMODWRAPPER_LIBRARY fmodwrapper)
     target_link_libraries(fmodwrapper ${fmodwrapper_needed_LIBRARIES})
   endif (NOT WINDOWS)
-endif (FMOD)
+endif (FMOD OR FMODEX)
 
 set_source_files_properties(llstartup.cpp PROPERTIES COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS}")
 
@@ -1347,9 +1371,13 @@ if (WINDOWS)
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
     endif()
     
+if (FMODEX)
+	set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
+endif (FMODEX)
+
     set_target_properties(${VIEWER_BINARY_NAME}
         PROPERTIES
-        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT /SUBSYSTEM:WINDOWS ${GOOGLE_PERFTOOLS_LINKER_FLAGS}"
+        LINK_FLAGS "/debug /NODEFAULTLIB:LIBCMT /SUBSYSTEM:WINDOWS ${GOOGLE_PERFTOOLS_LINKER_FLAGS} ${EXTRA_LINKER_FLAGS}"
         LINK_FLAGS_DEBUG "/NODEFAULTLIB:\"LIBCMT;LIBCMTD;MSVCRT\""
         LINK_FLAGS_RELEASE ${release_flags}
         )

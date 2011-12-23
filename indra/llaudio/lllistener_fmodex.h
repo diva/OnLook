@@ -1,10 +1,11 @@
 /** 
- * @file fmodwrapper.cpp
- * @brief dummy source file for building a shared library to wrap libfmod.a
+ * @file listener_fmod.h
+ * @brief Description of LISTENER class abstracting the audio support
+ * as an FMOD 3D implementation (windows and Linux)
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
+ * $LicenseInfo:firstyear=2002&license=viewergpl$
  * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
+ * Copyright (c) 2002-2009, Linden Research, Inc.
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -30,26 +31,41 @@
  * $/LicenseInfo$
  */
 
-extern "C"
+#ifndef LL_LISTENER_FMODEX_H
+#define LL_LISTENER_FMODEX_H
+
+#include "lllistener.h"
+
+//Stubs
+namespace FMOD
 {
-#if LL_FMODEX
-	void FSOUND_Sound_Init(void);
-#endif
-#if LL_FMOD
-	void FSOUND_Init(void);
-#endif
+	class System;
 }
 
-void* fmodwrapper(void)
+//Interfaces
+class LLListener_FMODEX : public LLListener
 {
-	// When building the fmodwrapper library, the linker doesn't seem to want to bring in libfmod.a unless I explicitly
-	// reference at least one symbol in the library.  This seemed like the simplest way.
-	void *ret = NULL;
-#if LL_FMODEX
-	ret = (void*)&FSOUND_Sound_Init;
+ public:  
+	LLListener_FMODEX(FMOD::System *system);
+	virtual ~LLListener_FMODEX();
+	virtual void init();  
+
+	virtual void translate(LLVector3 offset);
+	virtual void setPosition(LLVector3 pos);
+	virtual void setVelocity(LLVector3 vel);
+	virtual void orient(LLVector3 up, LLVector3 at);
+	virtual void commitDeferredChanges();
+
+	virtual void setDopplerFactor(F32 factor);
+	virtual F32 getDopplerFactor();
+	virtual void setRolloffFactor(F32 factor);
+	virtual F32 getRolloffFactor();
+ protected:
+	 FMOD::System *mSystem;
+	 F32 mDopplerFactor;
+	 F32 mRolloffFactor;
+};
+
 #endif
-#if LL_FMOD
-	ret = (void*)&FSOUND_Init;
-#endif
-	return ret;
-}
+
+

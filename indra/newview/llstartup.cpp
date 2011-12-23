@@ -43,7 +43,11 @@
 #include "llviewermedia_streamingaudio.h"
 #include "llaudioengine.h"
 
-#ifdef LL_FMOD
+#if LL_FMODEX
+# include "llaudioengine_fmodex.h"
+#endif
+
+#if LL_FMOD
 # include "llaudioengine_fmod.h"
 #endif
 
@@ -663,6 +667,17 @@ bool idle_startup()
 			    )
 			{
 				gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
+			}
+#endif
+
+#ifdef LL_FMODEX		
+			if (!gAudiop
+#if !LL_WINDOWS
+			    && NULL == getenv("LL_BAD_FMODEX_DRIVER")
+#endif // !LL_WINDOWS
+			    )
+			{
+				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX();
 			}
 #endif
 
