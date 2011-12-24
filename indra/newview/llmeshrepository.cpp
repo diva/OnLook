@@ -3326,12 +3326,12 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 			}
 		}
 	}
-#endif
 
 	{
 		completeCurrent();
 		
 	}
+#endif
 }
 
 
