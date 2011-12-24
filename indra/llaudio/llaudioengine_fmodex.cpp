@@ -305,13 +305,6 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 	if (!getStreamingAudioImpl()) // no existing implementation added
 		setStreamingAudioImpl(new LLStreamingAudio_FMODEX(mSystem));
 
-	result = mSystem->createSoundGroup("World Sounds", &mWorldSoundGroup);
-	if(!Check_FMOD_Error(result, "Error creating 'World Sounds' group."))
-	{
-		mWorldSoundGroup->setMaxAudible(num_channels);
-		mWorldSoundGroup->setMaxAudibleBehavior(FMOD_SOUNDGROUP_BEHAVIOR_MUTE);
-	}
-
 	LL_DEBUGS("AppInit") << "LLAudioEngine_FMODEX::init() FMOD initialized correctly" << LL_ENDL;
 
 	mInited = true;
@@ -363,13 +356,13 @@ void LLAudioEngine_FMODEX::shutdown()
 
 LLAudioBuffer * LLAudioEngine_FMODEX::createBuffer()
 {
-	return new LLAudioBufferFMODEX(this);
+	return new LLAudioBufferFMODEX(mSystem);
 }
 
 
 LLAudioChannel * LLAudioEngine_FMODEX::createChannel()
 {
-	return new LLAudioChannelFMODEX(this);
+	return new LLAudioChannelFMODEX(mSystem);
 }
 
 bool LLAudioEngine_FMODEX::initWind()
@@ -410,11 +403,6 @@ void LLAudioEngine_FMODEX::cleanupWind()
 		mWindDSP->remove();
 		mWindDSP->release();
 		mWindDSP = NULL;
-	}
-	if(mWorldSoundGroup)
-	{
-		mWorldSoundGroup->release();
-		mWorldSoundGroup = NULL;
 	}
 
 	delete mWindGen;
@@ -482,7 +470,7 @@ void LLAudioEngine_FMODEX::setInternalGain(F32 gain)
 // LLAudioChannelFMODEX implementation
 //
 
-LLAudioChannelFMODEX::LLAudioChannelFMODEX(LLAudioEngine_FMODEX *audioengine) : LLAudioChannel(), mEnginep(audioengine), mChannelp(NULL), mLastSamplePos(0)
+LLAudioChannelFMODEX::LLAudioChannelFMODEX(FMOD::System *system) : LLAudioChannel(), mSystemp(system), mChannelp(NULL), mLastSamplePos(0)
 {
 }
 
@@ -516,17 +504,7 @@ bool LLAudioChannelFMODEX::updateBuffer()
 		// setup.
 		if(!mChannelp)
 		{
-			if(mCurrentSourcep)
-			{
-				S32 type = mCurrentSourcep->getType();
-				if(type == LLAudioEngine::AUDIO_TYPE_SFX || type == LLAudioEngine::AUDIO_TYPE_AMBIENT)
-				{
-					FMOD::SoundGroup *world_group = getEngine()->getWorldSoundGroup();
-					if(world_group)
-						soundp->setSoundGroup(world_group);
-				}
-			}
-			FMOD_RESULT result = getEngine()->getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, false, &mChannelp);
+			FMOD_RESULT result = getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, false, &mChannelp);
 			Check_FMOD_Error(result, "FMOD::System::playSound");
 		}
 
@@ -686,7 +664,7 @@ bool LLAudioChannelFMODEX::isPlaying()
 //
 
 
-LLAudioBufferFMODEX::LLAudioBufferFMODEX(LLAudioEngine_FMODEX *audioengine) : mEnginep(audioengine), mSoundp(NULL)
+LLAudioBufferFMODEX::LLAudioBufferFMODEX(FMOD::System *system) : mSystemp(system), mSoundp(NULL)
 {
 }
 
@@ -731,9 +709,9 @@ bool LLAudioBufferFMODEX::loadWAV(const std::string& filename)
 	exinfo.suggestedsoundtype = FMOD_SOUND_TYPE_WAV;	//Hint to speed up loading.
 	// Load up the wav file into an fmod sample
 #if LL_WINDOWS
-	FMOD_RESULT result = getEngine()->getSystem()->createSound((const char*)utf8str_to_utf16str(filename).c_str(), base_mode | FMOD_UNICODE, &exinfo, &mSoundp);
+	FMOD_RESULT result = getSystem()->createSound((const char*)utf8str_to_utf16str(filename).c_str(), base_mode | FMOD_UNICODE, &exinfo, &mSoundp);
 #else
-	FMOD_RESULT result = getEngine()->getSystem()->createSound(filename.c_str(), base_mode, &exinfo, &mSoundp);
+	FMOD_RESULT result = getSystem()->createSound(filename.c_str(), base_mode, &exinfo, &mSoundp);
 #endif
 
 	if (result != FMOD_OK)

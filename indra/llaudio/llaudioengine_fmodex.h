@@ -46,7 +46,6 @@ namespace FMOD
 	class Channel;
 	class Sound;
 	class DSP;
-	class SoundGroup;
 }
 
 //Interfaces
@@ -71,7 +70,6 @@ public:
 	typedef F32 MIXBUFFERFORMAT;
 
 	FMOD::System *getSystem()				const {return mSystem;}
-	FMOD::SoundGroup *getWorldSoundGroup()	const {return mWorldSoundGroup;}
 protected:
 	/*virtual*/ LLAudioBuffer *createBuffer(); // Get a free buffer, or flush an existing one if you have to.
 	/*virtual*/ LLAudioChannel *createChannel(); // Create a new audio channel.
@@ -84,7 +82,6 @@ protected:
 
 	FMOD::DSP *mWindDSP;
 	FMOD::System *mSystem;
-	FMOD::SoundGroup *mWorldSoundGroup;
 	bool mEnableProfiler;
 };
 
@@ -92,7 +89,7 @@ protected:
 class LLAudioChannelFMODEX : public LLAudioChannel
 {
 public:
-	LLAudioChannelFMODEX(LLAudioEngine_FMODEX *audioengine);
+	LLAudioChannelFMODEX(FMOD::System *audioengine);
 	virtual ~LLAudioChannelFMODEX();
 
 protected:
@@ -107,8 +104,8 @@ protected:
 
 	void set3DMode(bool use3d);
 protected:
-	LLAudioEngine_FMODEX *getEngine()	const {return mEnginep;}
-	LLAudioEngine_FMODEX *mEnginep;
+	FMOD::System *getSystem()	const {return mSystemp;}
+	FMOD::System *mSystemp;
 	FMOD::Channel *mChannelp;
 	S32 mLastSamplePos;
 };
@@ -117,16 +114,16 @@ protected:
 class LLAudioBufferFMODEX : public LLAudioBuffer
 {
 public:
-	LLAudioBufferFMODEX(LLAudioEngine_FMODEX *audioengine);
+	LLAudioBufferFMODEX(FMOD::System *audioengine);
 	virtual ~LLAudioBufferFMODEX();
 
 	/*virtual*/ bool loadWAV(const std::string& filename);
 	/*virtual*/ U32 getLength();
 	friend class LLAudioChannelFMODEX;
 protected:
-	LLAudioEngine_FMODEX *getEngine()	const {return mEnginep;}
-	LLAudioEngine_FMODEX *mEnginep;
-	FMOD::Sound *getSound()				const{ return mSoundp; }
+	FMOD::System *getSystem()	const {return mSystemp;}
+	FMOD::System *mSystemp;
+	FMOD::Sound *getSound()		const{ return mSoundp; }
 	FMOD::Sound *mSoundp;
 };
 
