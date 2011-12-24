@@ -70,9 +70,7 @@ public:
 	static void 	onCommitLight(			LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitIsFlexible(		LLUICtrl* ctrl, void* userdata);
 	static void 	onCommitFlexible(		LLUICtrl* ctrl, void* userdata);
-#if MESH_ENABLED
 	static void     onCommitPhysicsParam(       LLUICtrl* ctrl, void* userdata);
-#endif //MESH_ENABLED
 
 	static void		onLightCancelColor(LLUICtrl* ctrl, void* userdata);
 	static void		onLightSelectColor(LLUICtrl* ctrl, void* userdata);
@@ -83,18 +81,14 @@ public:
 
 protected:
 	void			getState();
-#if MESH_ENABLED
 	void			refreshCost();
-#endif //MESH_ENABLED
 
 protected:
-#if MESH_ENABLED
 	void            sendPhysicsShapeType(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsGravity(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsFriction(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsRestitution(LLUICtrl* ctrl, void* userdata);
 	void            sendPhysicsDensity(LLUICtrl* ctrl, void* userdata);
-#endif //MESH_ENABLED
 /*
 	LLTextBox*		mLabelSelectSingleMessage;
 	// Light
@@ -119,14 +113,12 @@ protected:
 	LLUUID			mLightSavedTexture;
 	LLPointer<LLViewerObject> mObject;
 	LLPointer<LLViewerObject> mRootObject;
-#if MESH_ENABLED
 	LLTextBox*		mComboPhysicsShapeLabel;
 	LLComboBox*     mComboPhysicsShapeType;
 	LLSpinCtrl*     mSpinPhysicsGravity;
 	LLSpinCtrl*     mSpinPhysicsFriction;
 	LLSpinCtrl*     mSpinPhysicsDensity;
 	LLSpinCtrl*     mSpinPhysicsRestitution;
-#endif //MESH_ENABLED
 };
 
 #endif

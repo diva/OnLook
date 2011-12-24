@@ -74,12 +74,9 @@ BOOL shouldChange(const LLVector4& v1, const LLVector4& v2)
 
 LLShaderFeatures::LLShaderFeatures()
 : calculatesLighting(false), isShiny(false), isFullbright(false), hasWaterFog(false),
-hasTransport(false), hasSkinning(false), hasAtmospherics(false), isSpecular(false),
-hasGamma(false), hasLighting(false), calculatesAtmospherics(false)
-, mIndexedTextureChannels(0), disableTextureIndex(false), hasAlphaMask(false)
-#if MESH_ENABLED
-, hasObjectSkinning(false)
-#endif //MESH_ENABLED
+hasTransport(false), hasSkinning(false), hasObjectSkinning(false), hasAtmospherics(false), isSpecular(false),
+hasGamma(false), hasLighting(false), isAlphaLighting(false), calculatesAtmospherics(false), mIndexedTextureChannels(0), disableTextureIndex(false),
+hasAlphaMask(false)
 {
 }
 
@@ -126,6 +123,12 @@ void LLGLSLShader::unload()
 BOOL LLGLSLShader::createShader(vector<string> * attributes,
 								vector<string> * uniforms)
 {
+	//reloading, reset matrix hash values
+	for (U32 i = 0; i < LLRender::NUM_MATRIX_MODES; ++i)
+	{
+		mMatHash[i] = 0xFFFFFFFF;
+	}
+	mLightHash = 0xFFFFFFFF;
 	llassert_always(!mShaderFiles.empty());
 	BOOL success = TRUE;
 
@@ -135,8 +138,8 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	mProgramObject = glCreateProgramObjectARB();
 
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-	static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false);	//Legacy does not jive with new batching.
-	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing || use_legacy_path)
+	//static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false);	//Legacy does not jive with new batching.
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing /*|| use_legacy_path*/)
 	{ //force indexed texture channels to 1 if GL version is old (performance improvement for drivers with poor branching shader model support)
 		mFeatures.mIndexedTextureChannels = llmin(mFeatures.mIndexedTextureChannels, 1);
 	}
@@ -263,11 +266,11 @@ void LLGLSLShader::attachObjects(GLhandleARB* objects, S32 count)
 BOOL LLGLSLShader::mapAttributes(const vector<string> * attributes)
 {
 	//before linking, make sure reserved attributes always have consistent locations
-	/*for (U32 i = 0; i < LLShaderMgr::instance()->mReservedAttribs.size(); i++)
+	for (U32 i = 0; i < LLShaderMgr::instance()->mReservedAttribs.size(); i++)
 	{
 		const char* name = LLShaderMgr::instance()->mReservedAttribs[i].c_str();
 		glBindAttribLocationARB(mProgramObject, i, (const GLcharARB *) name);
-	}*/
+	}
 	
 	//link the program
 	BOOL res = link();
@@ -808,13 +811,17 @@ GLint LLGLSLShader::getUniformLocation(const string& uniform)
 		}
 	}
 
-	/*if (gDebugGL)
+	return ret;
+}
+
+GLint LLGLSLShader::getUniformLocation(U32 index)
+{
+	GLint ret = -1;
+	if (mProgramObject > 0)
 	{
-		if (ret == -1 && ret != glGetUniformLocationARB(mProgramObject, uniform.c_str()))
-		{
-			llerrs << "Uniform map invalid." << llendl;
-		}
-	}*/
+		llassert(index < mUniform.size());
+		return mUniform[index];
+	}
 
 	return ret;
 }
@@ -970,7 +977,9 @@ void LLGLSLShader::uniform4fv(const string& uniform, U32 count, const GLfloat* v
 		std::map<GLint, LLVector4>::iterator iter = mValue.find(location);
 		if (iter == mValue.end() || shouldChange(iter->second,vec) || count != 1)
 		{
+			stop_glerror();
 			glUniform4fvARB(location, count, v);
+			stop_glerror();
 			mValue[location] = vec;
 		}
 	}
@@ -1008,11 +1017,6 @@ void LLGLSLShader::uniformMatrix4fv(const string& uniform, U32 count, GLboolean 
 	}
 }
 
-		
-void LLGLSLShader::setMinimumAlpha(F32 minimum)
-{
-	uniform1f("minimum_alpha", minimum);
-}
 
 void LLGLSLShader::vertexAttrib4f(U32 index, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
 {
@@ -1028,4 +1032,10 @@ void LLGLSLShader::vertexAttrib4fv(U32 index, GLfloat* v)
 	{
 		glVertexAttrib4fvARB(mAttribute[index], v);
 	}
+}
+
+void LLGLSLShader::setMinimumAlpha(F32 minimum)
+{
+	gGL.flush();
+	uniform1f(LLShaderMgr::MINIMUM_ALPHA, minimum);
 }

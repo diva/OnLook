@@ -1136,8 +1136,8 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 
 				// Clear/restore the object's hover text as needed
 				LLViewerObject* pObj = gObjectList.findObject(idException);
-				if ( (pObj) && (pObj->mText.notNull()) && (!pObj->mText->getObjectText().empty()) )
-					pObj->mText->setStringUTF8( (RLV_TYPE_ADD == eType) ? "" : pObj->mText->getObjectText());
+				if ( (pObj) && (pObj->mText.notNull()) && (!pObj->mText->getPreFilteredText().empty()) )
+					pObj->mText->setString( (RLV_TYPE_ADD == eType) ? "" : pObj->mText->getPreFilteredText());
 			}
 			break;
 		case RLV_BHVR_EDIT:					// @edit=n|y						- Checked: 2009-12-05 (RLVa-1.1.0h) | Modified: RLVa-1.1.0h

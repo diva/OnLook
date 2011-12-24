@@ -25,7 +25,6 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-#if MESH_ENABLED
 #include "llaccountingcostmanager.h"
 #include "llagent.h"
 #include "llcurl.h"
@@ -160,5 +159,3 @@ void LLAccountingCostManager::removePendingObject( const LLUUID& objectID )
 	mPendingObjectQuota.erase( objectID );
 }
 //===============================================================================
-#endif //MESH_ENABLED
-

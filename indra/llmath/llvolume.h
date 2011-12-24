@@ -191,21 +191,14 @@ const U8 LL_SCULPT_TYPE_SPHERE    = 1;
 const U8 LL_SCULPT_TYPE_TORUS     = 2;
 const U8 LL_SCULPT_TYPE_PLANE     = 3;
 const U8 LL_SCULPT_TYPE_CYLINDER  = 4;
-#if MESH_ENABLED
 const U8 LL_SCULPT_TYPE_MESH      = 5;
 const U8 LL_SCULPT_TYPE_MASK      = LL_SCULPT_TYPE_SPHERE | LL_SCULPT_TYPE_TORUS | LL_SCULPT_TYPE_PLANE |
 	LL_SCULPT_TYPE_CYLINDER | LL_SCULPT_TYPE_MESH;
-#endif //MESH_ENABLED
-#if !MESH_ENABLED
-const U8 LL_SCULPT_TYPE_MASK      = LL_SCULPT_TYPE_SPHERE | LL_SCULPT_TYPE_TORUS | LL_SCULPT_TYPE_PLANE | LL_SCULPT_TYPE_CYLINDER;
-#endif //!MESH_ENABLED
 
 const U8 LL_SCULPT_FLAG_INVERT    = 64;
 const U8 LL_SCULPT_FLAG_MIRROR    = 128;
 
-#if MESH_ENABLED
 const S32 LL_SCULPT_MESH_MAX_FACES = 8;
-#endif //MESH_ENABLED
 
 class LLProfileParams
 {
@@ -655,9 +648,7 @@ public:
 	const LLUUID& getSculptID() const	{ return mSculptID;						}
 	const U8& getSculptType() const     { return mSculptType;                   }
 	bool isSculpt() const;
- #if MESH_ENABLED
- 	bool isMeshSculpt() const;
- #endif //MESH_ENABLED
+	bool isMeshSculpt() const;
 	BOOL isConvex() const;
 
 	// 'begin' and 'end' should be in range [0, 1] (they will be clamped)
@@ -865,9 +856,7 @@ public:
 
 	void resizeVertices(S32 num_verts);
 	void allocateBinormals(S32 num_verts);
- #if MESH_ENABLED
 	void allocateWeights(S32 num_verts);
- #endif //MESH_ENABLED
 	void resizeIndices(S32 num_indices);
 	void fillFromLegacyData(std::vector<LLVolumeFace::VertexData>& v, std::vector<U16>& idx);
 
@@ -939,12 +928,10 @@ public:
 
 	std::vector<S32>	mEdge;
 
- #if MESH_ENABLED
 	//list of skin weights for rigged volumes
 	// format is mWeights[vertex_index].mV[influence] = <joint_index>.<weight>
 	// mWeights.size() should be empty or match mVertices.size()  
 	LLVector4a* mWeights;
- #endif //MESH_ENABLED
  
 	LLOctreeNode<LLVolumeTriangle>* mOctree;
 
@@ -958,12 +945,7 @@ class LLVolume : public LLRefCount
 {
 	friend class LLVolumeLODGroup;
 
-#if MESH_ENABLED
 protected:
-#endif //MESH_ENABLED
-#if !MESH_ENABLED
-private:
-#endif //!MESH_ENABLED
 	LLVolume(const LLVolume&);  // Don't implement
 	~LLVolume(); // use unref
 
@@ -1081,37 +1063,32 @@ private:
 protected:
 	BOOL generate();
 	void createVolumeFaces();
-#if MESH_ENABLED
 public:
 	virtual bool unpackVolumeFaces(std::istream& is, S32 size);
 
 	virtual void setMeshAssetLoaded(BOOL loaded);
 	virtual BOOL isMeshAssetLoaded();
-#endif //MESH_ENABLED
+
  protected:
 	BOOL mUnique;
 	F32 mDetail;
 	S32 mSculptLevel;
-#if MESH_ENABLED
 	BOOL mIsMeshAssetLoaded;
-#endif //MESH_ENABLED
 	
 	LLVolumeParams mParams;
 	LLPath *mPathp;
 	LLProfile *mProfilep;
 	std::vector<Point> mMesh;
-
+	
 	BOOL mGenerateSingleFace;
 	typedef std::vector<LLVolumeFace> face_list_t;
 	face_list_t mVolumeFaces;
-	
-#if MESH_ENABLED
+
 public:
 	LLVector4a* mHullPoints;
 	U16* mHullIndices;
 	S32 mNumHullPoints;
 	S32 mNumHullIndices;
-#endif //MESH_ENABLED
 };
 
 std::ostream& operator<<(std::ostream &s, const LLVolumeParams &volume_params);

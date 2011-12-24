@@ -282,10 +282,8 @@ public:
 
 	void getInfo(LLSD& info);
 	
-#if MESH_ENABLED
 	bool meshRezEnabled() const;
 	bool meshUploadEnabled() const;
-#endif //MESH_ENABLED
 
 	void getSimulatorFeatures(LLSD& info);	
 	void setSimulatorFeatures(const LLSD& info);

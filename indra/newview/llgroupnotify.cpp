@@ -135,7 +135,7 @@ LLGroupNotifyBox::LLGroupNotifyBox(const std::string& subject,
 			: LLTextBox(name, rect, text, font)
 		{
 			setHAlign(LLFontGL::RIGHT);
-			setFontStyle(LLFontGL::DROP_SHADOW_SOFT);
+			setFontShadow(LLFontGL::DROP_SHADOW_SOFT);
 			setBorderVisible(FALSE);
 			setColor( gColors.getColor("GroupNotifyTextColor") );
 			setBackgroundColor( gColors.getColor("GroupNotifyBoxColor") );

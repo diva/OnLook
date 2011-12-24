@@ -243,9 +243,9 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlDeferred = getChild<LLCheckBoxCtrl>("RenderDeferred");
 	mCtrlDeferred->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
 	mCtrlDeferred->setCallbackUserData(this);
-	mCtrlDeferredGI = getChild<LLCheckBoxCtrl>("RenderDeferredGI");
-	mCtrlDeferredGI->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
-	mCtrlDeferredGI->setCallbackUserData(this);
+	mCtrlDeferredDoF = getChild<LLCheckBoxCtrl>("RenderDepthOfField");
+	mCtrlDeferredDoF->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
+	mCtrlDeferredDoF->setCallbackUserData(this);
 	mCtrlShadowDetail = getChild<LLComboBox>("ShadowDetailCombo");
 	mCtrlShadowDetail->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
 	mCtrlShadowDetail->setCallbackUserData(this);
@@ -411,7 +411,7 @@ void LLPanelDisplay::refresh()
 	mWindLight = gSavedSettings.getBOOL("WindLightUseAtmosShaders");
 	mAvatarVP = gSavedSettings.getBOOL("RenderAvatarVP");
 	mDeferred = gSavedSettings.getBOOL("RenderDeferred");
-	mDeferredGI = gSavedSettings.getBOOL("RenderDeferredGI");
+	mDeferredDoF = gSavedSettings.getBOOL("RenderDepthOfField");
 
 	// reflection radio
 	mReflectionDetail = gSavedSettings.getS32("RenderReflectionDetail");
@@ -515,8 +515,7 @@ void LLPanelDisplay::refreshEnabledState()
 
 	mCtrlDeferred->setEnabled(can_defer);
 	mCtrlShadowDetail->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
-	//GI won't do anything with shadows off, but disabling it here is less than intuitive. Ignore shadow setting for now.
-	mCtrlDeferredGI->setEnabled(mCtrlShadowDetail->getEnabled()/* && gSavedSettings.getS32("RenderShadowDetail") > 0*/); 
+	mCtrlDeferredDoF->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred")); 
 
 	// Disable max non-impostors slider if avatar impostors are off
 	mCtrlNonImpostors->setEnabled(gSavedSettings.getBOOL("RenderUseImpostors"));
@@ -579,8 +578,8 @@ void LLPanelDisplay::disableUnavailableSettings()
 
 		mCtrlDeferred->setEnabled(FALSE);
 		mCtrlDeferred->setValue(FALSE);
-		mCtrlDeferredGI->setEnabled(FALSE);
-		mCtrlDeferredGI->setValue(FALSE);
+		mCtrlDeferredDoF->setEnabled(FALSE);
+		mCtrlDeferredDoF->setValue(FALSE);
 		mCtrlShadowDetail->setEnabled(FALSE);
 		mCtrlShadowDetail->setValue(FALSE);
 	}
@@ -626,8 +625,8 @@ void LLPanelDisplay::disableUnavailableSettings()
 	{
 		mCtrlDeferred->setEnabled(FALSE);
 		mCtrlDeferred->setValue(FALSE);
-		mCtrlDeferredGI->setEnabled(FALSE);
-		mCtrlDeferredGI->setValue(FALSE);
+		mCtrlDeferredDoF->setEnabled(FALSE);
+		mCtrlDeferredDoF->setValue(FALSE);
 		mCtrlShadowDetail->setEnabled(FALSE);
 		mCtrlShadowDetail->setValue(FALSE);
 	}
@@ -719,7 +718,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mCtrlReflectionDetail->setVisible(!isHidden);
 
 	mCtrlDeferred->setVisible(!isHidden);
-	mCtrlDeferredGI->setVisible(!isHidden);
+	mCtrlDeferredDoF->setVisible(!isHidden);
 	mCtrlShadowDetail->setVisible(!isHidden);
 
 	// text boxes
@@ -756,7 +755,7 @@ void LLPanelDisplay::cancel()
 
 	gSavedSettings.setBOOL("RenderAvatarVP", mAvatarVP);
 	gSavedSettings.setBOOL("RenderDeferred", mDeferred);
-	gSavedSettings.setBOOL("RenderDeferredGI", mDeferredGI);
+	gSavedSettings.setBOOL("RenderDepthOfField", mDeferredDoF);
 
 	gSavedSettings.setS32("RenderReflectionDetail", mReflectionDetail);
 	gSavedSettings.setS32("RenderShadowDetail", mShadowDetail);

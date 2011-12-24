@@ -59,6 +59,7 @@
 #include "llviewercamera.h"
 #include "llviewerobject.h"
 #include "llviewerobject.h"
+#include "llviewershadermgr.h"
 #include "llviewerwindow.h"
 #include "llworld.h"
 #include "pipeline.h"
@@ -117,7 +118,7 @@ void LLManipRotate::handleSelect()
 void LLManipRotate::render()
 {
 	LLGLSUIDefault gls_ui;
-	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+	gGL.getTexUnit(0)->bind(LLViewerFetchedTexture::sWhiteImagep);
 	LLGLDepthTest gls_depth(GL_TRUE);
 	LLGLEnable gl_blend(GL_BLEND);
 	LLGLEnable gls_alpha_test(GL_ALPHA_TEST);
@@ -158,6 +159,11 @@ void LLManipRotate::render()
 		}
 		else
 		{
+			if (LLGLSLShader::sNoFixedFunction)
+			{
+				gDebugProgram.bind();
+			}
+
 			LLGLEnable cull_face(GL_CULL_FACE);
 			LLGLDepthTest gls_depth(GL_FALSE);
 			gGL.pushMatrix();
@@ -194,19 +200,25 @@ void LLManipRotate::render()
 				{
 					color.setVec( 0.7f, 0.7f, 0.7f, 0.6f );
 				}
+				gGL.diffuseColor4fv(color.mV);
 				gl_washer_2d(mRadiusMeters + width_meters, mRadiusMeters, CIRCLE_STEPS, color, color);
 
 
 				if (mManipPart == LL_NO_PART)
 				{
 					gGL.color4f( 0.7f, 0.7f, 0.7f, 0.3f );
+					gGL.diffuseColor4f(0.7f, 0.7f, 0.7f, 0.3f);
 					gl_circle_2d( 0, 0,  mRadiusMeters, CIRCLE_STEPS, TRUE );
 				}
 				
-				GLdouble plane_eqn[] = { 0, 0, 1, 0 };
-				glClipPlane( GL_CLIP_PLANE0, plane_eqn );
+				gGL.flush();
 			}
 			gGL.popMatrix();
+
+			if (LLGLSLShader::sNoFixedFunction)
+			{
+				gUIProgram.bind();
+			}
 		}
 
 		gGL.translatef( center.mV[VX], center.mV[VY], center.mV[VZ] );
@@ -223,6 +235,11 @@ void LLManipRotate::render()
 		grid_rotation.getAngleAxis(&angle_radians, &x, &y, &z);
 		gGL.rotatef(angle_radians * RAD_TO_DEG, x, y, z);
 
+
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gDebugProgram.bind();
+		}
 
 		if (mManipPart == LL_ROT_Z)
 		{
@@ -334,7 +351,14 @@ void LLManipRotate::render()
 					mManipulatorScales = lerp(mManipulatorScales, LLVector4(1.f, 1.f, 1.f, SELECTED_MANIPULATOR_SCALE), LLCriticalDamp::getInterpolant(MANIPULATOR_SCALE_HALF_LIFE));
 				}
 			}
+			
 		}
+
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gUIProgram.bind();
+		}
+		
 	}
 	gGL.popMatrix();
 	gGL.popMatrix();

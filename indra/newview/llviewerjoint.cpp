@@ -549,7 +549,7 @@ void LLViewerJointCollisionVolume::renderCollision()
 	gGL.pushMatrix();
 	gGL.multMatrix( &mXform.getWorldMatrix().mMatrix[0][0] );
 
-	gGL.color3f( 0.f, 0.f, 1.f );
+	gGL.diffuseColor3f( 0.f, 0.f, 1.f );
 	
 	gGL.begin(LLRender::LINES);
 	

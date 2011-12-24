@@ -273,7 +273,7 @@ BOOL LLVOPartGroup::updateGeometry(LLDrawable *drawable)
 }
 
 void LLVOPartGroup::getGeometry(S32 idx,
-								LLStrider<LLVector3>& verticesp,
+								LLStrider<LLVector4a>& verticesp,
 								LLStrider<LLVector3>& normalsp, 
 								LLStrider<LLVector2>& texcoordsp,
 								LLStrider<LLColor4U>& colorsp, 
@@ -351,20 +351,14 @@ void LLVOPartGroup::getGeometry(S32 idx,
 	ppapu.setAdd(part_pos_agent, up);
 	ppamu.setSub(part_pos_agent, up);
 
-	LLVector4a vtx[4];
-	vtx[0].setSub(ppapu, right);
-	vtx[1].setSub(ppamu, right);
-	vtx[2].setAdd(ppapu, right);
-	vtx[3].setAdd(ppamu, right);
-
-	verticesp->set(vtx[0].getF32ptr());
-	*((verticesp++)->mV+3) = 0.f;
-	verticesp->set(vtx[1].getF32ptr());
-	*((verticesp++)->mV+3) = 0.f;
-	verticesp->set(vtx[2].getF32ptr());
-	*((verticesp++)->mV+3) = 0.f;
-	verticesp->set(vtx[3].getF32ptr());
-	*((verticesp++)->mV+3) = 0.f;
+	verticesp->setSub(ppapu, right);
+	(*verticesp++).getF32ptr()[3] = 0.f;
+	verticesp->setSub(ppamu, right);
+	(*verticesp++).getF32ptr()[3] = 0.f;
+	verticesp->setAdd(ppapu, right);
+	(*verticesp++).getF32ptr()[3] = 0.f;
+	verticesp->setAdd(ppamu, right);
+	(*verticesp++).getF32ptr()[3] = 0.f;
 
 	//*verticesp++ = part_pos_agent + up - right;
 	//*verticesp++ = part_pos_agent - up - right;
@@ -483,7 +477,7 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
 	LLVertexBuffer* buffer = group->mVertexBuffer;
 
 	LLStrider<U16> indicesp;
-	LLStrider<LLVector3> verticesp;
+	LLStrider<LLVector4a> verticesp;
 	LLStrider<LLVector3> normalsp;
 	LLStrider<LLVector2> texcoordsp;
 	LLStrider<LLColor4U> colorsp;
@@ -543,7 +537,7 @@ void LLParticlePartition::getGeometry(LLSpatialGroup* group)
 		}
 	}
 
-	buffer->setBuffer(0);
+	buffer->flush();
 	mFaceList.clear();
 }
 

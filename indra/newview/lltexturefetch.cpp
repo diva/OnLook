@@ -914,7 +914,7 @@ void LLTextureFetchWorker::setImagePriority(F32 priority)
 
 void LLTextureFetchWorker::resetFormattedData()
 {
-	delete[] mBuffer;
+	FREE_MEM(LLImageBase::getPrivatePool(), mBuffer);
 	mBuffer = NULL;
 	mBufferSize = 0;
 	if (mFormattedImage.notNull())
@@ -992,7 +992,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		mSentRequest = UNSENT;
 		mDecoded  = FALSE;
 		mWritten  = FALSE;
-		delete[] mBuffer;
+		FREE_MEM(LLImageBase::getPrivatePool(), mBuffer);
 		mBuffer = NULL;
 		mBufferSize = 0;
 		mHaveAllData = FALSE;
@@ -1428,7 +1428,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			llassert_always(mBufferSize == cur_size + mRequestedSize);
 			if(!mBufferSize)//no data received.
 			{
-				delete[] mBuffer; 
+				FREE_MEM(LLImageBase::getPrivatePool(), mBuffer); 
 				mBuffer = NULL;
 
 				//abort.
@@ -1456,7 +1456,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 				mFileSize = mBufferSize + 1 ; //flag the file is not fully loaded.
 			}
 			
-			U8* buffer = new U8[mBufferSize];
+			U8* buffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mBufferSize);
 			if (cur_size > 0)
 			{
 				memcpy(buffer, mFormattedImage->getData(), cur_size);
@@ -1465,7 +1465,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			// NOTE: setData releases current data and owns new data (buffer)
 			mFormattedImage->setData(buffer, mBufferSize);
 			// delete temp data
-			delete[] mBuffer; // Note: not 'buffer' (assigned in setData())
+			FREE_MEM(LLImageBase::getPrivatePool(), mBuffer); // Note: not 'buffer' (assigned in setData())
 			mBuffer = NULL;
 			mBufferSize = 0;
 			mLoadedDiscard = mRequestedDiscard;
@@ -1762,7 +1762,7 @@ bool LLTextureFetchWorker::processSimulatorPackets()
 			if (buffer_size > cur_size)
 			{
 				/// We have new data
-				U8* buffer = new U8[buffer_size];
+				U8* buffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), buffer_size);
 				S32 offset = 0;
 				if (cur_size > 0 && mFirstPacket > 0)
 				{
@@ -1814,7 +1814,7 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 		if (data_size > 0)
 		{
 			// *TODO: set the formatted image data here directly to avoid the copy
-			mBuffer = new U8[data_size];
+			mBuffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), data_size);
 			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
 			mBufferSize += data_size;
 			if (data_size < mRequestedSize && mRequestedDiscard == 0)

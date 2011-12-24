@@ -26,7 +26,6 @@
 
 #include "linden_common.h"
 
-#if MESH_ENABLED
 #include "llmodel.h"
 #include "llmemory.h"
 #if MESH_IMPORT
@@ -1020,16 +1019,10 @@ void LLModel::setVolumeFaceData(
 	face.resizeVertices(num_verts);
 	face.resizeIndices(num_indices);
 
-	if(!pos.isStrided())
-		LLVector4a::memcpyNonAliased16((F32*) face.mPositions, (F32*) pos.get(), num_verts*4*sizeof(F32));
-	else 
-		for(U32 i=0;i<num_verts;++i)	face.mPositions[i].load3(pos[i].mV);
+	LLVector4a::memcpyNonAliased16((F32*) face.mPositions, (F32*) pos.get(), num_verts*4*sizeof(F32));
 	if (norm.get())
 	{
-		if(!norm.isStrided())
-			LLVector4a::memcpyNonAliased16((F32*) face.mNormals, (F32*) norm.get(), num_verts*4*sizeof(F32));
-		else
-			for(U32 i=0;i<num_verts;++i)	face.mNormals[i].load3(norm[i].mV);
+		LLVector4a::memcpyNonAliased16((F32*) face.mNormals, (F32*) norm.get(), num_verts*4*sizeof(F32));
 	}
 	else
 	{
@@ -1039,10 +1032,7 @@ void LLModel::setVolumeFaceData(
 
 	if (tc.get())
 	{
-		if(!tc.isStrided())
-			LLVector4a::memcpyNonAliased16((F32*) face.mTexCoords, (F32*) tc.get(), num_verts*2*sizeof(F32));
-		else
-			for(U32 i=0;i<num_verts;++i)	face.mTexCoords[i] = tc[i].mV;
+		LLVector4a::memcpyNonAliased16((F32*) face.mTexCoords, (F32*) tc.get(), num_verts*2*sizeof(F32));
 	}
 	else
 	{
@@ -2471,4 +2461,4 @@ void LLModel::Decomposition::merge(const LLModel::Decomposition* rhs)
 		mPhysicsShapeMesh = rhs->mPhysicsShapeMesh;
 	}
 }
-#endif //MESH_ENABLED
+

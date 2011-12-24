@@ -104,7 +104,9 @@ public:
 		mMatrix[2].setAdd(a.mMatrix[2],d2);
 		mMatrix[3].setAdd(a.mMatrix[3],d3);
 	}
-
+	
+	//Singu Note: Don't mess with this. It's intentionally different from LL's. 
+	// Note how res isn't manipulated until the very end.
 	inline void rotate(const LLVector4a& v, LLVector4a& res) const
 	{
 		LLVector4a x,y,z;

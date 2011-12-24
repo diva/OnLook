@@ -113,7 +113,7 @@ protected:
 	LLCheckBoxCtrl	*mCtrlAvatarVP;
 	LLCheckBoxCtrl	*mCtrlShaderEnable;
 	LLCheckBoxCtrl	*mCtrlDeferred;
-	LLCheckBoxCtrl	*mCtrlDeferredGI;
+	LLCheckBoxCtrl	*mCtrlDeferredDoF;
 	LLComboBox		*mCtrlShadowDetail;
 	LLCheckBoxCtrl	*mCtrlAvatarImpostors;
 	LLCheckBoxCtrl	*mCtrlAvatarCloth;
@@ -156,7 +156,7 @@ protected:
 	BOOL mShaderEnable;
 	BOOL mWindLight;
 	BOOL mDeferred;
-	BOOL mDeferredGI;
+	BOOL mDeferredDoF;
 	BOOL mAvatarVP;
 
 	S32 mReflectionDetail;

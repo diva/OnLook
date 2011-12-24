@@ -116,6 +116,7 @@ void LLImageGL::checkTexSize(bool forced) const
 			glGetIntegerv(GL_VIEWPORT, vp) ;
 			llcallstacks << "viewport: " << vp[0] << " : " << vp[1] << " : " << vp[2] << " : " << vp[3] << llcallstacksendl ;
 		}
+
 		GLint texname;
 		glGetIntegerv(GL_TEXTURE_BINDING_2D, &texname);
 		BOOL error = FALSE;
@@ -1040,8 +1041,75 @@ void LLImageGL::deleteTextures(S32 numTextures, U32 *textures, bool immediate)
 // static
 void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels)
 {
-	glTexImage2D(target, miplevel, intformat, width, height, 0, pixformat, pixtype, pixels);
+	bool use_scratch = false;
+	U32* scratch = NULL;
+	if (LLRender::sGLCoreProfile)
+	{
+		if (pixformat == GL_ALPHA && pixtype == GL_UNSIGNED_BYTE) 
+		{ //GL_ALPHA is deprecated, convert to RGBA
+			use_scratch = true;
+			scratch = new U32[width*height];
+
+			U32 pixel_count = (U32) (width*height);
+			for (U32 i = 0; i < pixel_count; i++)
+			{
+				U8* pix = (U8*) &scratch[i];
+				pix[0] = pix[1] = pix[2] = 0;
+				pix[3] = ((U8*) pixels)[i];
+			}				
+			
+			pixformat = GL_RGBA;
+			intformat = GL_RGBA8;
+		}
+
+		if (pixformat == GL_LUMINANCE_ALPHA && pixtype == GL_UNSIGNED_BYTE) 
+		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGBA
+			use_scratch = true;
+			scratch = new U32[width*height];
+
+			U32 pixel_count = (U32) (width*height);
+			for (U32 i = 0; i < pixel_count; i++)
+			{
+				U8 lum = ((U8*) pixels)[i*2+0];
+				U8 alpha = ((U8*) pixels)[i*2+1];
+
+				U8* pix = (U8*) &scratch[i];
+				pix[0] = pix[1] = pix[2] = lum;
+				pix[3] = alpha;
+			}				
+			
+			pixformat = GL_RGBA;
+			intformat = GL_RGBA8;
+		}
+
+		if (pixformat == GL_LUMINANCE && pixtype == GL_UNSIGNED_BYTE) 
+		{ //GL_LUMINANCE_ALPHA is deprecated, convert to RGB
+			use_scratch = true;
+			scratch = new U32[width*height];
+
+			U32 pixel_count = (U32) (width*height);
+			for (U32 i = 0; i < pixel_count; i++)
+			{
+				U8 lum = ((U8*) pixels)[i];
+				
+				U8* pix = (U8*) &scratch[i];
+				pix[0] = pix[1] = pix[2] = lum;
+				pix[3] = 255;
+			}				
+			
+			pixformat = GL_RGBA;
+			intformat = GL_RGB8;
+		}
+	}
+
 	stop_glerror();
+	glTexImage2D(target, miplevel, intformat, width, height, 0, pixformat, pixtype, use_scratch ? scratch : pixels);
+	stop_glerror();
+
+	if (use_scratch)
+	{
+		delete [] scratch;
+	}
 }
 
 //create an empty GL texture: just create a texture name
@@ -1153,6 +1221,7 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S
 BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_hasmips, S32 usename)
 {
 	llassert(data_in);
+	stop_glerror();
 
 	if (discard_level < 0)
 	{
@@ -1180,10 +1249,12 @@ BOOL LLImageGL::createGLTexture(S32 discard_level, const U8* data_in, BOOL data_
 		LLImageGL::generateTextures(1, &mTexName);
 		stop_glerror();
 		{
-// 			LLFastTimer t1(LLFastTimer::FTM_TEMP6);
 			llverify(gGL.getTexUnit(0)->bind(this));
+			stop_glerror();
 			glTexParameteri(LLTexUnit::getInternalType(mBindTarget), GL_TEXTURE_BASE_LEVEL, 0);
+			stop_glerror();
 			glTexParameteri(LLTexUnit::getInternalType(mBindTarget), GL_TEXTURE_MAX_LEVEL,  mMaxDiscardLevel-discard_level);
+			stop_glerror();
 		}
 	}
 	if (!mTexName)

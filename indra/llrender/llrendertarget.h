@@ -70,6 +70,7 @@ class LLRenderTarget
 public:
 	//whether or not to use FBO implementation
 	static bool sUseFBO; 
+	static U32 sBytesAllocated;
 
 	LLRenderTarget();
 	virtual ~LLRenderTarget();
@@ -157,7 +158,6 @@ protected:
 	bool mUseDepth;
 	bool mRenderDepth;
 	LLTexUnit::eTextureType mUsage;
-	U32 mSamples;
 	LLMultisampleBuffer* mSampleBuffer;
 
 	static LLRenderTarget* sBoundTarget;
@@ -166,6 +166,7 @@ protected:
 
 class LLMultisampleBuffer : public LLRenderTarget
 {
+	U32 mSamples;
 public:
 	LLMultisampleBuffer();
 	virtual ~LLMultisampleBuffer();

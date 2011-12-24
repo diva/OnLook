@@ -866,7 +866,8 @@ LLParcel* LLViewerParcelMgr::getCollisionParcel() const
 
 void LLViewerParcelMgr::render()
 {
-	if (mSelected && mRenderSelection)
+	static const LLCachedControl<bool> RenderParcelSelection("RenderParcelSelection");
+	if (mSelected && mRenderSelection && RenderParcelSelection)
 	{
 		// Rendering is done in agent-coordinates, so need to supply
 		// an appropriate offset to the render code.
@@ -886,7 +887,8 @@ void LLViewerParcelMgr::renderParcelCollision()
 		mRenderCollision = FALSE;
 	}
 
-	if (mRenderCollision && gSavedSettings.getBOOL("ShowBanLines"))
+	static const LLCachedControl<bool> ShowBanLines("ShowBanLines");
+	if (mRenderCollision && ShowBanLines)
 	{
 		LLViewerRegion* regionp = gAgent.getRegion();
 		if (regionp)

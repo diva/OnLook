@@ -162,7 +162,6 @@ public:
 	friend class LLDrawPoolTree;
 protected:
 	LLVector3		mTrunkBend;		// Accumulated wind (used for blowing trees)
-	LLVector3		mTrunkVel;		// 
 	LLVector3		mWind;
 
 	LLPointer<LLVertexBuffer> mReferenceBuffer; //reference geometry for generating tree mesh

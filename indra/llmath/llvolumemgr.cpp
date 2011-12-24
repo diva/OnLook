@@ -154,7 +154,7 @@ void LLVolumeMgr::unrefVolume(LLVolume *volumep)
 	volume_lod_group_map_t::iterator iter = mVolumeLODGroups.find(params);
 	if( iter == mVolumeLODGroups.end() )
 	{
-		llwarns << "Warning! Tried to cleanup unknown volume type! " << *params << llendl;
+		llerrs << "Warning! Tried to cleanup unknown volume type! " << *params << llendl;
 		if (mDataMutex)
 		{
 			mDataMutex->unlock();

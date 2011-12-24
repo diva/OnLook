@@ -123,14 +123,19 @@ void render_disconnected_background();
 void display_startup()
 {
 	if (   !gViewerWindow->getActive()
-		|| !gViewerWindow->mWindow->getVisible() 
-		|| gViewerWindow->mWindow->getMinimized()
+		|| !gViewerWindow->getWindow()->getVisible() 
+		|| gViewerWindow->getWindow()->getMinimized()
 		|| gNoRender )
 	{
 		return; 
 	}
 
 	gPipeline.updateGL();
+
+	// Update images?
+	//gImageList.updateImages(0.01f);
+	LLTexUnit::sWhiteTexture = LLViewerFetchedTexture::sWhiteImagep->getTexName();
+
 	LLGLSDefault gls_default;
 
 	// Required for HTML update in login screen
@@ -163,7 +168,7 @@ void display_startup()
 	LLGLState::checkStates();
 	LLGLState::checkTextureChannels();
 
-	gViewerWindow->mWindow->swapBuffers();
+	gViewerWindow->getWindow()->swapBuffers();
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
@@ -223,6 +228,7 @@ void display_stats()
 		gMemoryAllocated = LLMemory::getCurrentRSS();
 		U32 memory = (U32)(gMemoryAllocated / (1024*1024));
 		llinfos << llformat("MEMORY: %d MB", memory) << llendl;
+		LLMemory::logMemoryInfo(TRUE) ;
 		gRecentMemoryTime.reset();
 	}
 }
@@ -236,7 +242,8 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	{ //skip render on frames where window has been resized
 		gGL.flush();
 		glClear(GL_COLOR_BUFFER_BIT);
-		gViewerWindow->mWindow->swapBuffers();
+		gViewerWindow->getWindow()->swapBuffers();
+		LLPipeline::refreshCachedSettings();
 		gPipeline.resizeScreenTexture();
 		gResizeScreenTexture = FALSE;
 		gWindowResized = FALSE;
@@ -264,23 +271,31 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	LLGLState::checkStates();
 	LLGLState::checkTextureChannels();
 	
+	stop_glerror();
+
 	gPipeline.disableLights();
 	
+	stop_glerror();
+
 	// Don't draw if the window is hidden or minimized.
 	// In fact, must explicitly check the minimized state before drawing.
 	// Attempting to draw into a minimized window causes a GL error. JC
 	if (   !gViewerWindow->getActive()
-		|| !gViewerWindow->mWindow->getVisible() 
-		|| gViewerWindow->mWindow->getMinimized() )
+		|| !gViewerWindow->getWindow()->getVisible() 
+		|| gViewerWindow->getWindow()->getMinimized() )
 	{
 		// Clean up memory the pools may have allocated
 		if (rebuild)
 		{
 			gFrameStats.start(LLFrameStats::REBUILD);
+			stop_glerror();
 			gPipeline.rebuildPools();
+			stop_glerror();
 		}
 
+		stop_glerror();
 		gViewerWindow->returnEmptyPicks();
+		stop_glerror();
 		return; 
 	}
 
@@ -643,22 +658,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLDrawable::incrementVisible();
 
 		LLSpatialGroup::sNoDelete = TRUE;
-		LLPipeline::sUseOcclusion = 
-				(!gUseWireframe
-				&& LLFeatureManager::getInstance()->isFeatureAvailable("UseOcclusion") 
-				&& gSavedSettings.getBOOL("UseOcclusion") 
-				&& gGLManager.mHasOcclusionQuery) ? 2 : 0;
 		LLTexUnit::sWhiteTexture = LLViewerFetchedTexture::sWhiteImagep->getTexName();
 
 		/*if (LLPipeline::sUseOcclusion && LLPipeline::sRenderDeferred)
 		{ //force occlusion on for all render types if doing deferred render
 			LLPipeline::sUseOcclusion = 3;
 		}*/
-
-		LLPipeline::sFastAlpha = gSavedSettings.getBOOL("RenderFastAlpha");
-		LLPipeline::sUseFarClip = gSavedSettings.getBOOL("RenderUseFarClip");
-		LLVOAvatar::sMaxVisible = (U32)gSavedSettings.getS32("RenderAvatarMaxVisible");
-		LLPipeline::sDelayVBUpdate = gSavedSettings.getBOOL("RenderDelayVBUpdate");
 
 		S32 occlusion = LLPipeline::sUseOcclusion;
 		if (gDepthDirty)
@@ -686,10 +691,6 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Swap");
 		
 		{ 
-			{
- 				LLFastTimer ftm(LLFastTimer::FTM_CLIENT_COPY);
-				LLVertexBuffer::clientCopy(0.016);
-			}
 
 			if (gResizeScreenTexture)
 			{
@@ -722,7 +723,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				glh::matrix4f mod = glh_get_current_modelview();
 				glViewport(0,0,512,512);
 				LLVOAvatar::updateFreezeCounter() ;
-				LLVOAvatar::updateImpostors();
+
+				if(!LLPipeline::sMemAllocationThrottled)
+				{		
+					LLVOAvatar::updateImpostors();
+				}
 
 				glh_set_current_projection(proj);
 				glh_set_current_modelview(mod);
@@ -872,7 +877,6 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		//}
 
 		LLPipeline::sUnderWaterRender = LLViewerCamera::getInstance()->cameraUnderWater() ? TRUE : FALSE;
-		LLPipeline::updateRenderDeferred();
 		
 		LLGLState::checkStates();
 		LLGLState::checkClientArrays();
@@ -891,6 +895,11 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			else if(!tiling)
 			{
 				gPipeline.mScreen.bindTarget();
+				if (LLPipeline::sUnderWaterRender && !gPipeline.canUseWindLightShaders())
+				{
+					const LLColor4 &col = LLDrawPoolWater::sWaterFogColor;
+					glClearColor(col.mV[0], col.mV[1], col.mV[2], 0.f);
+				}
 				gPipeline.mScreen.clear();
 			}
 			
@@ -1216,7 +1225,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 		/// and then display it again with compositor effects.
 		/// Using render to texture would be faster/better, but I don't have a 
 		/// grasp of their full display stack just yet.
-		gPostProcess->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
+		LLPostProcess::getInstance()->apply(gViewerWindow->getWindowDisplayWidth(), gViewerWindow->getWindowDisplayHeight());
 		
 		render_hud_elements();
 		render_hud_attachments();
@@ -1268,7 +1277,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 	if (gDisplaySwapBuffers)
 	{
 		LLFastTimer t(LLFastTimer::FTM_SWAP);
-		gViewerWindow->mWindow->swapBuffers();
+		gViewerWindow->getWindow()->swapBuffers();
 	}
 	gDisplaySwapBuffers = TRUE;
 }
@@ -1360,14 +1369,19 @@ void render_ui_3d()
 
 	// Debugging stuff goes before the UI.
 
+	stop_glerror();
+	
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.bind();
+	}
+
 	// Coordinate axes
 	if (gSavedSettings.getBOOL("ShowAxes"))
 	{
 		draw_axes();
 	}
 
-	stop_glerror();
-		
 	gViewerWindow->renderSelections(FALSE, FALSE, TRUE); // Non HUD call in render_hud_elements
 	stop_glerror();
 }
@@ -1425,6 +1439,11 @@ void render_ui_2d()
 
 void render_disconnected_background()
 {
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.bind();
+	}
+
 	gGL.color4f(1,1,1,1);
 	if (!gDisconnectedImagep && gDisconnected)
 	{
@@ -1494,6 +1513,12 @@ void render_disconnected_background()
 		gGL.popMatrix();
 	}
 	gGL.flush();
+
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.unbind();
+	}
+
 }
 
 void display_cleanup()

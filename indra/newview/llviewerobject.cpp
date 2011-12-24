@@ -206,18 +206,15 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mGLName(0),
 	mbCanSelect(TRUE),
 	mFlags(0),
-#if MESH_ENABLED
 	mPhysicsShapeType(0),
 	mPhysicsGravity(0),
 	mPhysicsFriction(0),
 	mPhysicsDensity(0),
 	mPhysicsRestitution(0),
-#endif //MESH_ENABLED
 	mDrawable(),
 	mCreateSelected(FALSE),
 	mRenderMedia(FALSE),
 	mBestUpdatePrecision(0),
-	mIsNameAttachment(false),
 	mText(),
 	mLastInterpUpdateSecs(0.f),
 	mLastMessageUpdateSecs(0.f),
@@ -245,14 +242,12 @@ LLViewerObject::LLViewerObject(const LLUUID &id, const LLPCode pcode, LLViewerRe
 	mState(0),
 	mMedia(NULL),
 	mClickAction(0),
-#if MESH_ENABLED
 	mObjectCost(0),
 	mLinksetCost(0),
 	mPhysicsCost(0),
 	mLinksetPhysicsCost(0.f),
 	mCostStale(true),
 	mPhysicsShapeUnknown(true),
-#endif //MESH_ENABLED
 	mAttachmentItemID(LLUUID::null),
 	mLastUpdateType(OUT_UNKNOWN),
 	mLastUpdateCached(FALSE)
@@ -870,14 +865,13 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 #ifdef DEBUG_UPDATE_TYPE
 				llinfos << "Full:" << getID() << llendl;
 #endif
-#if MESH_ENABLED
 				//clear cost and linkset cost
 				mCostStale = true;
 				if (isSelected())
 				{
 					gFloaterTools->dirty();
 				}
-#endif //MESH_ENABLED
+
 				LLUUID audio_uuid;
 				LLUUID owner_id;	// only valid if audio_uuid or particle system is not null
 				F32    gain;
@@ -1132,13 +1126,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					// alpha was flipped so that it zero encoded better
 					coloru.mV[3] = 255 - coloru.mV[3];
 					mText->setColor(LLColor4(coloru));
-					mText->setStringUTF8(temp_string);
-// [RLVa:KB] - Checked: 2009-07-09 (RLVa-1.0.0f) | Added: RLVa-1.0.0f
-					if (rlv_handler_t::isEnabled())
-					{
-						mText->setObjectText(temp_string);
-					}
-// [/RLVa:KB]
+					mText->setString(temp_string);
 					
 					if (mDrawable.notNull())
 					{
@@ -1449,15 +1437,13 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 #ifdef DEBUG_UPDATE_TYPE
 				llinfos << "CompFull:" << getID() << llendl;
 #endif
-
-#if MESH_ENABLED
 				mCostStale = true;
 
 				if (isSelected())
 				{
 					gFloaterTools->dirty();
 				}
-#endif //MESH_ENABLED
+	
 				dp->unpackU32(crc, "CRC");
 				mTotalCRC = crc;
 				dp->unpackU8(material, "Material");
@@ -1539,14 +1525,7 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 					dp->unpackBinaryDataFixed(coloru.mV, 4, "Color");
 					coloru.mV[3] = 255 - coloru.mV[3];
 					mText->setColor(LLColor4(coloru));
-					mText->setStringUTF8(temp_string);
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-09 (RLVa-1.0.0f) | Added: RLVa-1.0.0f
-					if (rlv_handler_t::isEnabled())
-					{
-						mText->setObjectText(temp_string);
-					}
-// [/RLVa:KB]
-
+					mText->setString(temp_string);
 					setChanged(TEXTURE);
 				}
 				else if(mText.notNull())
@@ -3093,7 +3072,6 @@ void LLViewerObject::setScale(const LLVector3 &scale, BOOL damped)
 	}
 }
 
-#if MESH_ENABLED
 void LLViewerObject::setObjectCost(F32 cost)
 {
 	mObjectCost = cost;
@@ -3184,7 +3162,7 @@ F32 LLViewerObject::getStreamingCost(S32* bytes, S32* visible_bytes, F32* unscal
 	return 0.f;
 }
 
-U32 LLViewerObject::getTriangleCount() const
+U32 LLViewerObject::getTriangleCount(S32* vcount) const
 {
 	return 0;
 }
@@ -3193,7 +3171,6 @@ U32 LLViewerObject::getHighLODTriangleCount()
 {
 	return 0;
 }
-#endif //MESH_ENABLED
 
 void LLViewerObject::updateSpatialExtents(LLVector4a& newMin, LLVector4a &newMax)
 {
@@ -3282,12 +3259,7 @@ void LLViewerObject::boostTexturePriority(BOOL boost_children /* = TRUE */)
  		getTEImage(i)->setBoostLevel(LLViewerTexture::BOOST_SELECTED);
 	}
 
-
-	if (isSculpted()
-#if MESH_ENABLED
-	&& !isMesh()
-#endif //MESH_ENABLED
-	)
+	if (isSculpted() && !isMesh())
 	{
 		LLSculptParams *sculpt_params = (LLSculptParams *)getParameterEntry(LLNetworkData::PARAMS_SCULPT);
 		LLUUID sculpt_id = sculpt_params->getSculptTexture();
@@ -3527,7 +3499,6 @@ const LLVector3 LLViewerObject::getPositionEdit() const
 
 const LLVector3 LLViewerObject::getRenderPosition() const
 {
-#if MESH_ENABLED
 	if (mDrawable.notNull() && mDrawable->isState(LLDrawable::RIGGED))
 	{
 		LLVOAvatar* avatar = getAvatar();
@@ -3536,7 +3507,7 @@ const LLVector3 LLViewerObject::getRenderPosition() const
 			return avatar->getPositionAgent();
 		}
 	}
-#endif //MESH_ENABLED
+
 	if (mDrawable.isNull() || mDrawable->getGeneration() < 0)
 	{
 		return getPositionAgent();
@@ -3555,12 +3526,11 @@ const LLVector3 LLViewerObject::getPivotPositionAgent() const
 const LLQuaternion LLViewerObject::getRenderRotation() const
 {
 	LLQuaternion ret;
-#if MESH_ENABLED
 	if (mDrawable.notNull() && mDrawable->isState(LLDrawable::RIGGED))
 	{
 		return ret;
 	}
-#endif //MESH_ENABLED
+	
 	if (mDrawable.isNull() || mDrawable->isStatic())
 	{
 		ret = getRotationEdit();
@@ -4503,7 +4473,7 @@ void LLViewerObject::setDebugText(const std::string &utf8text)
 		mText->setOnHUDAttachment(isHUDAttachment());
 	}
 	mText->setColor(LLColor4::white);
-	mText->setStringUTF8(utf8text);
+	mText->setString(utf8text);
 	mText->setZCompare(FALSE);
 	mText->setDoFade(FALSE);
 	updateText();
@@ -4870,12 +4840,10 @@ void LLViewerObject::adjustAudioGain(const F32 gain)
 
 bool LLViewerObject::unpackParameterEntry(U16 param_type, LLDataPacker *dp)
 {
-#if MESH_ENABLED
 	if (LLNetworkData::PARAMS_MESH == param_type)
 	{
 		param_type = LLNetworkData::PARAMS_SCULPT;
 	}
-#endif //MESH_ENABLED
 	ExtraParameter* param = getExtraParameterEntryCreate(param_type);
 	if (param)
 	{
@@ -5361,7 +5329,6 @@ void LLViewerObject::updateFlags(BOOL physics_changed)
 	gMessageSystem->addBOOL("IsTemporary", flagTemporaryOnRez() );
 	gMessageSystem->addBOOL("IsPhantom", flagPhantom() );
 	gMessageSystem->addBOOL("CastsShadows", flagCastShadows() );
-#if MESH_ENABLED
 	if (physics_changed)
 	{
 		gMessageSystem->nextBlock("ExtraPhysics");
@@ -5371,7 +5338,6 @@ void LLViewerObject::updateFlags(BOOL physics_changed)
 		gMessageSystem->addF32("Restitution", getPhysicsRestitution() );
 		gMessageSystem->addF32("GravityMultiplier", getPhysicsGravity() );
 	}
-#endif //MESH_ENABLED
 	gMessageSystem->sendReliable( regionp->getHost() );
 }
 
@@ -5404,7 +5370,6 @@ BOOL LLViewerObject::setFlags(U32 flags, BOOL state)
 	return setit;
 }
 
-#if MESH_ENABLED
 void LLViewerObject::setPhysicsShapeType(U8 type)
 {
 	mPhysicsShapeUnknown = false;
@@ -5442,7 +5407,6 @@ U8 LLViewerObject::getPhysicsShapeType() const
 
 	return mPhysicsShapeType; 
 }
-#endif //MESH_ENABLED
 
 void LLViewerObject::applyAngularVelocity(F32 dt)
 {
@@ -5737,7 +5701,7 @@ LLVOAvatar* LLViewerObject::getAvatar() const
 	return NULL;
 }
 
-#if MESH_ENABLED
+
 class ObjectPhysicsProperties : public LLHTTPNode
 {
 public:
@@ -5791,4 +5755,3 @@ public:
 LLHTTPRegistration<ObjectPhysicsProperties>
 	gHTTPRegistrationObjectPhysicsProperties("/message/ObjectPhysicsProperties");
 
-#endif //MESH_ENABLED

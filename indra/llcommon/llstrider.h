@@ -42,17 +42,17 @@ template <class Object> class LLStrider
 		U8*		mBytep;
 	};
 	U32     mSkip;
-	U32		mTypeSize;
+	//U32		mTypeSize;
 public:
 
-	LLStrider()  { mObjectp = NULL; mTypeSize = mSkip = sizeof(Object); } 
+	LLStrider()  { mObjectp = NULL; /*mTypeSize = */mSkip = sizeof(Object); } 
 	~LLStrider() { } 
 
 	const LLStrider<Object>& operator =  (Object *first)    { mObjectp = first; return *this;}
 	void setStride (S32 skipBytes)	{ mSkip = (skipBytes ? skipBytes : sizeof(Object));}
-	void setTypeSize (S32 typeBytes){ mTypeSize = (typeBytes ? typeBytes : sizeof(Object)); }
+	//void setTypeSize (S32 typeBytes){ mTypeSize = (typeBytes ? typeBytes : sizeof(Object)); }
 
-	bool isStrided() const		   { return mTypeSize != mSkip; } 
+	//bool isStrided() const		   { return mTypeSize != mSkip; } 
 	void skip(const U32 index)     { mBytep += mSkip*index;}
 	U32 getSkip() const			   { return mSkip; }
 	Object* get()                  { return mObjectp; }
@@ -61,7 +61,7 @@ public:
 	Object* operator ++(int)       { Object* old = mObjectp; mBytep += mSkip; return old; }
 	Object* operator +=(int i)     { mBytep += mSkip*i; return mObjectp; }
 	Object& operator[](U32 index)  { return *(Object*)(mBytep + (mSkip * index)); }
-	void assignArray(U8* __restrict source, const size_t elem_size, const size_t elem_count)
+	/*void assignArray(U8* __restrict source, const size_t elem_size, const size_t elem_count)
 	{
 		llassert_always(sizeof(Object) <= elem_size);
 
@@ -125,7 +125,7 @@ public:
 				source+=elem_size;
 			}
 		}
-	}
+	}*/
 };
 
 #endif // LL_LLSTRIDER_H

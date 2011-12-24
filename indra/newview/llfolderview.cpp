@@ -989,7 +989,7 @@ void LLFolderViewItem::draw()
 			
 			LLColor4 filter_color = mLastFilterGeneration >= getRoot()->getFilter()->getCurrentGeneration() ? LLColor4(0.5f, 0.8f, 0.5f, 1.f) : LLColor4(0.8f, 0.5f, 0.5f, 1.f);
 			sSmallFont->renderUTF8(mStatusText, 0, text_left, y, filter_color,
-							LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL,
+							LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
 							S32_MAX, S32_MAX, &right_x, FALSE );
 			text_left = right_x;
 		}
@@ -999,17 +999,17 @@ void LLFolderViewItem::draw()
 		{
 			// *TODO: Translate
 			sFont->renderUTF8( std::string("Loading... "), 0, text_left, y, sSearchStatusColor,
-						LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, S32_MAX, S32_MAX, &right_x, FALSE);
+						LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, &right_x, FALSE);
 			text_left = right_x;
 		}
 
 		sFont->renderUTF8( mLabel, 0, text_left, y, color,
-							LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle,
+							LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, 
 							S32_MAX, S32_MAX, &right_x, FALSE );
 		if (!mLabelSuffix.empty())
 		{
 			sFont->renderUTF8( mLabelSuffix, 0, right_x, y, sSuffixColor,
-								LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle,
+								LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, 
 								S32_MAX, S32_MAX, &right_x, FALSE );
 		}
 
@@ -1033,7 +1033,7 @@ void LLFolderViewItem::draw()
 				F32 match_string_left = text_left + sFont->getWidthF32(combined_string, 0, mStringMatchOffset);
 				F32 y = (F32)getRect().getHeight() - sFont->getLineHeight() - (F32)TEXT_PAD;
 				sFont->renderUTF8( combined_string, mStringMatchOffset, match_string_left, y,
-								sFilterTextColor, LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle,
+								sFilterTextColor, LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, 
 								filter_string_length, S32_MAX, &right_x, FALSE );
 			}
 		}
@@ -3273,7 +3273,7 @@ void LLFolderView::draw()
 										mFilter.getCurrentGeneration(), mFilter.getMinRequiredGeneration(), mFilter.getMustPassGeneration());
 		sSmallFont->renderUTF8(current_filter_string, 0, 2, 
 			getRect().getHeight() - sSmallFont->getLineHeight(), LLColor4(0.5f, 0.5f, 0.8f, 1.f), 
-			LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, S32_MAX, S32_MAX, NULL, FALSE );
+			LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,  S32_MAX, S32_MAX, NULL, FALSE );
 	}
 
 	// if cursor has moved off of me during drag and drop
@@ -3320,12 +3320,12 @@ void LLFolderView::draw()
 		if (gInventory.backgroundFetchActive() || mCompletedFilterGeneration < mFilter.getMinRequiredGeneration())
 		{
 			mStatusText = std::string("Searching..."); // *TODO:translate
-			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, S32_MAX, S32_MAX, NULL, FALSE );
+			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 		else
 		{
 			mStatusText = std::string("No matching items found in inventory."); // *TODO:translate
-			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, S32_MAX, S32_MAX, NULL, FALSE );
+			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 	}
 

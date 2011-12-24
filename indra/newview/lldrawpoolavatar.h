@@ -110,8 +110,7 @@ public:
 	
 	void beginPostDeferredAlpha();
 	void endPostDeferredAlpha();
-	
-#if MESH_ENABLED
+
 	void beginRiggedSimple();
 	void beginRiggedFullbright();
 	void beginRiggedFullbrightShiny();
@@ -141,6 +140,7 @@ public:
 									  const LLMeshSkinInfo* skin, 
 									  LLVolume* volume,
 									  const LLVolumeFace& vol_face);
+	void updateRiggedVertexBuffers(LLVOAvatar* avatar);
 
 	void renderRigged(LLVOAvatar* avatar, U32 type, bool glow = false);
 	void renderRiggedSimple(LLVOAvatar* avatar);
@@ -153,20 +153,17 @@ public:
 	void renderDeferredRiggedSimple(LLVOAvatar* avatar);
 	void renderDeferredRiggedBump(LLVOAvatar* avatar);
 
-	//do NOT screw the the order of these. They are ordered in a way such that they cleanly align with render passes in drawpoolavatar.
 	typedef enum
 	{
 		RIGGED_SIMPLE = 0,
 		RIGGED_FULLBRIGHT,
 		RIGGED_SHINY,
 		RIGGED_FULLBRIGHT_SHINY,
-		//RIGGED_GLOW,
+		RIGGED_GLOW,
 		RIGGED_ALPHA,
 		RIGGED_FULLBRIGHT_ALPHA,
-		RIGGED_GLOW,
-		//RIGGED_DEFERRED_BUMP,
-		RIGGED_DEFERRED_SIMPLE,
 		RIGGED_DEFERRED_BUMP,
+		RIGGED_DEFERRED_SIMPLE,
 		NUM_RIGGED_PASSES,
 		RIGGED_UNKNOWN,
 	} eRiggedPass;
@@ -186,6 +183,7 @@ public:
 		RIGGED_FULLBRIGHT_SHINY_MASK = RIGGED_SIMPLE_MASK,							 
 		RIGGED_GLOW_MASK = LLVertexBuffer::MAP_VERTEX | 
 							 LLVertexBuffer::MAP_TEXCOORD0 |
+							 LLVertexBuffer::MAP_EMISSIVE |
 							 LLVertexBuffer::MAP_WEIGHT4,
 		RIGGED_ALPHA_MASK = RIGGED_SIMPLE_MASK,
 		RIGGED_FULLBRIGHT_ALPHA_MASK = RIGGED_FULLBRIGHT_MASK,
@@ -207,12 +205,11 @@ public:
 
 	std::vector<LLFace*> mRiggedFace[NUM_RIGGED_PASSES];
 
-#endif //MESH_ENABLED
-		
 	/*virtual*/ LLViewerTexture *getDebugTexture();
 	/*virtual*/ LLColor3 getDebugColor() const; // For AGP debug display
 
 	void renderAvatars(LLVOAvatar *single_avatar, S32 pass = -1); // renders only one avatar if single_avatar is not null.
+
 
 	static BOOL sSkipOpaque;
 	static BOOL sSkipTransparent;
@@ -225,7 +222,6 @@ class LLVertexBufferAvatar : public LLVertexBuffer
 {
 public:
 	LLVertexBufferAvatar();
-	virtual void setupVertexBuffer(U32 data_mask) const;
 };
 
 extern S32 AVATAR_OFFSET_POS;

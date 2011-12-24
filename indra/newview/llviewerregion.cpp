@@ -1192,6 +1192,7 @@ LLViewerRegion::eCacheUpdateResult LLViewerRegion::cacheFullUpdate(LLViewerObjec
 	eCacheUpdateResult result = CACHE_UPDATE_ADDED;
 	if (mImpl->mCacheMap.size() > MAX_OBJECT_CACHE_ENTRIES)
 	{
+		delete mImpl->mCacheMap.begin()->second ;
 		mImpl->mCacheMap.erase(mImpl->mCacheMap.begin());
 		result = CACHE_UPDATE_REPLACED;
 		
@@ -1509,11 +1510,9 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 
 	capabilityNames.append("GetDisplayNames");
 	capabilityNames.append("GetTexture");
-#if MESH_ENABLED
 	capabilityNames.append("GetMesh");
 	capabilityNames.append("GetObjectCost");
 	capabilityNames.append("GetObjectPhysicsData");
-#endif //MESH_ENABLED
 	capabilityNames.append("GroupProposalBallot");
 
 	capabilityNames.append("HomeLocation");

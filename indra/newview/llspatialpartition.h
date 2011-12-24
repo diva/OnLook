@@ -38,6 +38,8 @@
 #include "llmemory.h"
 #include "lldrawable.h"
 #include "lloctree.h"
+#include "llpointer.h"
+#include "llrefcount.h"
 #include "llvertexbuffer.h"
 #include "llgltypes.h"
 #include "llcubemap.h"
@@ -96,7 +98,6 @@ public:
 	LLPointer<LLViewerTexture>     mTexture;
 	std::vector<LLPointer<LLViewerTexture> > mTextureList;
 
-	LLColor4U mGlowColor;
 	S32 mDebugColor;
 	const LLMatrix4* mTextureMatrix;
 	const LLMatrix4* mModelMatrix;
@@ -112,6 +113,7 @@ public:
 	LLSpatialGroup* mGroup;
 	LLFace* mFace; //associated face
 	F32 mDistance;
+	U32 mDrawMode;
 
 	struct CompareTexture
 	{
@@ -148,6 +150,17 @@ public:
 			return lhs.get() != rhs.get() 
 						&& (lhs.isNull() || (rhs.notNull() && (lhs->mTexture.get() > rhs->mTexture.get() ||
 															   (lhs->mTexture.get() == rhs->mTexture.get() && lhs->mModelMatrix > rhs->mModelMatrix))));
+		}
+
+	};
+
+	struct CompareMatrixTexturePtr
+	{
+		bool operator()(const LLPointer<LLDrawInfo>& lhs, const LLPointer<LLDrawInfo>& rhs)	
+		{
+			return lhs.get() != rhs.get() 
+				&& (lhs.isNull() || (rhs.notNull() && (lhs->mModelMatrix > rhs->mModelMatrix ||
+													   (lhs->mModelMatrix == rhs->mModelMatrix && lhs->mTexture.get() > rhs->mTexture.get()))));
 		}
 
 	};
@@ -643,14 +656,20 @@ public:
 //class for wrangling geometry out of volumes (implemented in LLVOVolume.cpp)
 class LLVolumeGeometryManager: public LLGeometryManager
 {
-public:
+ public:
+	typedef enum
+	{
+		NONE = 0,
+		BATCH_SORT,
+		DISTANCE_SORT
+	} eSortType;
+
 	virtual ~LLVolumeGeometryManager() { }
 	virtual void rebuildGeom(LLSpatialGroup* group);
 	virtual void rebuildMesh(LLSpatialGroup* group);
 	virtual void getGeometry(LLSpatialGroup* group);
 	void genDrawInfo(LLSpatialGroup* group, U32 mask, std::vector<LLFace*>& faces, BOOL distance_sort = FALSE, BOOL batch_textures = FALSE);
 	void registerFace(LLSpatialGroup* group, LLFace* facep, U32 type);
-
 };
 
 //spatial partition that uses volume geometry manager (implemented in LLVOVolume.cpp)

@@ -86,19 +86,14 @@ protected:
 
 	// explicit transformation members
 	LLXformMatrix		mXform;
-#if MESH_ENABLED
 	LLXformMatrix		mOldXform;
 	LLXformMatrix		mDefaultXform;
 
 	LLUUID				mId;
-#endif //MESH_ENABLED
 public:
 	U32				mDirtyFlags;
 	BOOL			mUpdateXform;
-	
-#if MESH_ENABLED
 	BOOL			mResetAfterRestoreOldXform;
-#endif //MESH_ENABLED
 
 	// describes the skin binding pose
 	LLVector3		mSkinOffset;
@@ -188,8 +183,6 @@ public:
 	S32 getJointNum() const { return mJointNum; }
 	void setJointNum(S32 joint_num) { mJointNum = joint_num; }
 
-#if MESH_ENABLED
-	
 	void restoreOldXform( void );
 	void restoreToDefaultXform( void );
 	void setDefaultFromCurrentXform( void );
@@ -204,7 +197,6 @@ public:
 	const BOOL doesJointNeedToBeReset( void ) const { return mResetAfterRestoreOldXform; }
 	//Setter for joint reset flag
 	void setJointToBeReset( BOOL val ) { mResetAfterRestoreOldXform = val; }
-#endif //MESH_ENABLED
 
 	// <edit>
 	std::string exportString(U32 tabs = 0);

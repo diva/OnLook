@@ -369,6 +369,7 @@ public:
 	{
 		if(!group.controlExists(name))
 		{
+			//llerrs << "Control named " << name << " not found." << llendl;
 			if(!declareTypedControl(group, name, default_value, comment))
 			{
 				llerrs << "The control could not be created!!!" << llendl;
@@ -384,7 +385,7 @@ public:
 	{
 		if(!group.controlExists(name))
 		{
-			llerrs << "Control named " << name << "not found." << llendl;
+			llerrs << "Control named " << name << " not found." << llendl;
 		}
 
 		bindToControl(group, name);

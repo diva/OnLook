@@ -106,12 +106,12 @@ void LLDrawPoolWLSky::beginRenderPass( S32 pass )
 {
 	sky_shader =
 		LLPipeline::sUnderWaterRender ?
-			&gObjectSimpleWaterProgram :
+			&gObjectFullbrightNoColorWaterProgram :
 			&gWLSkyProgram;
 
 	cloud_shader =
 			LLPipeline::sUnderWaterRender ?
-				&gObjectSimpleWaterProgram :
+				&gObjectFullbrightNoColorWaterProgram :
 				&gWLCloudProgram;
 }
 
@@ -281,10 +281,6 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 
 	if (gSky.mVOSkyp->getMoon().getDraw() && face->getGeomCount())
 	{
-		if (LLGLSLShader::sNoFixedFunction)
-		{
-			gUIProgram.bind();
-		}
 		// *NOTE: even though we already bound this texture above for the
 		// stars register combiners, we bind again here for defensive reasons,
 		// since LLImageGL::bind detects that it's a noop, and optimizes it out.
@@ -298,12 +294,18 @@ void LLDrawPoolWLSky::renderHeavenlyBodies()
 			
 		color.mV[3] = llclamp(a, 0.f, 1.f);
 		
+		if (gPipeline.canUseVertexShaders())
+		{
+			gHighlightProgram.bind();
+		}
+
 		LLFacePool::LLOverrideFaceColor color_override(this, color);
+		
 		face->renderIndexed();
 
-		if (LLGLSLShader::sNoFixedFunction)
+		if (gPipeline.canUseVertexShaders())
 		{
-			gUIProgram.unbind();
+			gHighlightProgram.unbind();
 		}
 	}
 }
