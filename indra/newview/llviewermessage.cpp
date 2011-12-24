@@ -1613,6 +1613,57 @@ bool goto_url_callback(const LLSD& notification, const LLSD& response)
 }
 static LLNotificationFunctorRegistration goto_url_callback_reg("GotoURL", goto_url_callback);
 
+// Strip out "Resident" for display, but only if the message came from a user
+// (rather than a script)
+static std::string clean_name_from_im(const std::string& name, EInstantMessage type)
+{
+	switch(type)
+	{
+	case IM_NOTHING_SPECIAL:
+	case IM_MESSAGEBOX:
+	case IM_GROUP_INVITATION:
+	case IM_INVENTORY_OFFERED:
+	case IM_INVENTORY_ACCEPTED:
+	case IM_INVENTORY_DECLINED:
+	case IM_GROUP_VOTE:
+	case IM_GROUP_MESSAGE_DEPRECATED:
+	//IM_TASK_INVENTORY_OFFERED
+	//IM_TASK_INVENTORY_ACCEPTED
+	//IM_TASK_INVENTORY_DECLINED
+	case IM_NEW_USER_DEFAULT:
+	case IM_SESSION_INVITE:
+	case IM_SESSION_P2P_INVITE:
+	case IM_SESSION_GROUP_START:
+	case IM_SESSION_CONFERENCE_START:
+	case IM_SESSION_SEND:
+	case IM_SESSION_LEAVE:
+	//IM_FROM_TASK
+	case IM_BUSY_AUTO_RESPONSE:
+	case IM_CONSOLE_AND_CHAT_HISTORY:
+	case IM_LURE_USER:
+	case IM_LURE_ACCEPTED:
+	case IM_LURE_DECLINED:
+	case IM_GODLIKE_LURE_USER:
+	case IM_YET_TO_BE_USED:
+	case IM_GROUP_ELECTION_DEPRECATED:
+	//IM_GOTO_URL
+	//IM_FROM_TASK_AS_ALERT
+	case IM_GROUP_NOTICE:
+	case IM_GROUP_NOTICE_INVENTORY_ACCEPTED:
+	case IM_GROUP_NOTICE_INVENTORY_DECLINED:
+	case IM_GROUP_INVITATION_ACCEPT:
+	case IM_GROUP_INVITATION_DECLINE:
+	case IM_GROUP_NOTICE_REQUESTED:
+	case IM_FRIENDSHIP_OFFERED:
+	case IM_FRIENDSHIP_ACCEPTED:
+	case IM_FRIENDSHIP_DECLINED_DEPRECATED:
+	//IM_TYPING_START
+	//IM_TYPING_STOP
+		return LLCacheName::cleanFullName(name);
+	default:
+		return name;
+	}
+}
 
 void process_improved_im(LLMessageSystem *msg, void **user_data)
 {
@@ -1654,6 +1705,15 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	msg->getBinaryDataFast(  _PREHASH_MessageBlock, _PREHASH_BinaryBucket, binary_bucket, 0, 0, MTUBYTES);
 	binary_bucket_size = msg->getSizeFast(_PREHASH_MessageBlock, _PREHASH_BinaryBucket);
 	EInstantMessage dialog = (EInstantMessage)d;
+
+    // make sure that we don't have an empty or all-whitespace name
+	LLStringUtil::trim(name);
+	if (name.empty())
+	{
+        name = LLTrans::getString("Unnamed");
+	}
+	// IDEVO convert new-style "Resident" names for display
+	name = clean_name_from_im(name, dialog);
 
 	// <edit>
 	llinfos << "RegionID: " << region_id.asString() << llendl;
@@ -2997,8 +3057,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
     {
         from_name = "(no name)";
     }
-	chat.mFromName = from_name;
-	
+
 	msg->getUUID("ChatData", "SourceID", from_id);
 	chat.mFromID = from_id;
 	
@@ -3025,6 +3084,27 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 	chat.mAudible = (EChatAudible)audible_temp;
 	
 	chat.mTime = LLFrameTimer::getElapsedSeconds();
+
+	// IDEVO Correct for new-style "Resident" names
+	if (chat.mSourceType == CHAT_SOURCE_AGENT)
+	{
+		// I don't know if it's OK to change this here, if
+		// anything downstream does lookups by name, for instance
+
+		LLAvatarName av_name;
+		if (LLAvatarNameCache::get(from_id, &av_name))
+		{
+			chat.mFromName = av_name.mDisplayName;
+		}
+		else
+		{
+			chat.mFromName = LLCacheName::cleanFullName(from_name);
+		}
+	}
+	else
+	{
+		chat.mFromName = from_name;
+	}
 
 	BOOL is_busy = gAgent.getBusy();
 
