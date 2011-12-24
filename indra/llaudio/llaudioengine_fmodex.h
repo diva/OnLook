@@ -123,8 +123,6 @@ public:
 	/*virtual*/ bool loadWAV(const std::string& filename);
 	/*virtual*/ U32 getLength();
 	friend class LLAudioChannelFMODEX;
-
-	void set3DMode(bool use3d);
 protected:
 	LLAudioEngine_FMODEX *getEngine()	const {return mEnginep;}
 	LLAudioEngine_FMODEX *mEnginep;
