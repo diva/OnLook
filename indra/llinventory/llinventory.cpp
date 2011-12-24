@@ -226,7 +226,7 @@ BOOL LLInventoryObject::importLegacyStream(std::istream& input_stream)
 }
 
 // exportFile should be replaced with exportLegacyStream
-// not sure whether exportLegacyStream(llofstream(fp)) would work, fp may need to get icramented...
+// not sure whether exportLegacyStream(llofstream(fp)) would work, fp may need to get incremented...
 BOOL LLInventoryObject::exportFile(LLFILE* fp, BOOL) const
 {
 	std::string uuid_str;
