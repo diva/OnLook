@@ -60,19 +60,7 @@ set(openjpeg_HEADER_FILES
 )
 
 IF(WINDOWS)
-   # On Visual Studio 8 MS deprecated C. This removes all 1.276E1265 security warnings
-   add_definitions(
-     -d_crt_far_mappings_no_deprecate
-     -d_crt_is_wctype_no_deprecate
-     -d_crt_managed_fp_no_deprecate
-     -d_crt_nonstdc_no_deprecate
-     -d_crt_secure_no_deprecate
-     -d_crt_secure_no_deprecate_globals
-     -d_crt_seterrormode_beep_sleep_no_deprecate
-     -d_crt_time_functions_no_deprecate
-     -d_crt_vcclrit_no_deprecate
-     -d_scl_secure_no_deprecate
-   )
+   add_definitions(-D_CRT_SECURE_NO_WARNINGS)
    add_definitions(-DOPJ_STATIC)
 ENDIF(WINDOWS)
 
