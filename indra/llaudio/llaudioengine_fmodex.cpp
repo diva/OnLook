@@ -504,7 +504,7 @@ bool LLAudioChannelFMODEX::updateBuffer()
 		// setup.
 		if(!mChannelp)
 		{
-			FMOD_RESULT result = getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, false, &mChannelp);
+			FMOD_RESULT result = getSystem()->playSound(FMOD_CHANNEL_FREE, soundp, true, &mChannelp);
 			Check_FMOD_Error(result, "FMOD::System::playSound");
 		}
 
