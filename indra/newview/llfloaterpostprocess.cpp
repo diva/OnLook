@@ -120,7 +120,7 @@ void LLFloaterPostProcess::onControlChanged(LLUICtrl* ctrl, void* userData)
 	S32 elem=0;
 	if(sscanf(VariableName,"%255[^[][%d]", buf, &elem) == 2)
 	{
-		LLPostProcess::getInstance()->tweaks[buf][elem] = ctrl->getValue();
+		LLPostProcess::getInstance()->tweaks[(const char*)buf][elem] = ctrl->getValue();
 	}
 	else
 	{
