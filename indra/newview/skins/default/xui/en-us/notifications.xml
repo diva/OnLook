@@ -4341,6 +4341,13 @@ Warning: The Pay Object click action has been set, but it will only work if a sc
 
   <notification
    icon="alertmodal.tga"
+   name="PaymentBlockedButtonMismatch"
+   type="alertmodal">
+Payment stopped: the price paid does not match any of the pay buttons set for this object.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="OpenObjectCannotCopy"
    type="alertmodal">
 There are no items in this object that you are allowed to copy.

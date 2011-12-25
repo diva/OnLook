@@ -39,6 +39,7 @@
 #include "lluictrl.h"
 #include "llbutton.h"
 #include "lllineeditor.h"
+#include "lluiimage.h"
 #include "llviewborder.h"
 #include "lluistring.h"
 #include "v4color.h"

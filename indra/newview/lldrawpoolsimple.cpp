@@ -50,7 +50,7 @@ static LLGLSLShader* fullbright_shader = NULL;
 
 void LLDrawPoolGlow::beginPostDeferredPass(S32 pass)
 {
-	gDeferredFullbrightProgram.bind();
+	gDeferredEmissiveProgram.bind();
 }
 
 void LLDrawPoolGlow::renderPostDeferred(S32 pass)
@@ -78,9 +78,22 @@ void LLDrawPoolGlow::renderPostDeferred(S32 pass)
 
 void LLDrawPoolGlow::endPostDeferredPass(S32 pass)
 {
-	gDeferredFullbrightProgram.unbind();
+	gDeferredEmissiveProgram.unbind();
 	LLRenderPass::endRenderPass(pass);
 }
+
+S32 LLDrawPoolGlow::getNumPasses()
+{
+	if (LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_OBJECT) > 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void LLDrawPoolGlow::render(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_GLOW);
@@ -94,39 +107,29 @@ void LLDrawPoolGlow::render(S32 pass)
 	
 	U32 shader_level = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_OBJECT);
 
-	if (shader_level > 0 && fullbright_shader)
-	{
-		fullbright_shader->bind();
-	}
-	else
-	{
-		gPipeline.enableLightsFullbright(LLColor4(1,1,1,1));
-	}
+	//should never get here without basic shaders enabled
+	llassert(shader_level > 0);
+	
+	LLGLSLShader* shader = LLPipeline::sUnderWaterRender ? &gObjectEmissiveWaterProgram : &gObjectEmissiveProgram;
+	shader->bind();
 
 	LLGLDepthTest depth(GL_TRUE, GL_FALSE);
 	gGL.setColorMask(false, true);
 
-	if (shader_level > 1)
-	{
-		pushBatches(LLRenderPass::PASS_GLOW, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
-	}
-	else
-	{
-		renderTexture(LLRenderPass::PASS_GLOW, getVertexDataMask());
-	}
+	pushBatches(LLRenderPass::PASS_GLOW, getVertexDataMask() | LLVertexBuffer::MAP_TEXTURE_INDEX, TRUE, TRUE);
 	
 	gGL.setColorMask(true, false);
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
 	
 	if (shader_level > 0 && fullbright_shader)
 	{
-		fullbright_shader->unbind();
+		shader->unbind();
 	}
 }
 
 void LLDrawPoolGlow::pushBatch(LLDrawInfo& params, U32 mask, BOOL texture, BOOL batch_textures)
 {
-	gGL.diffuseColor4ubv(params.mGlowColor.mV);
+	//gGL.diffuseColor4ubv(params.mGlowColor.mV);
 	LLRenderPass::pushBatch(params, mask, texture, batch_textures);
 }
 
@@ -254,6 +257,7 @@ void LLDrawPoolGrass::prerender()
 void LLDrawPoolGrass::beginRenderPass(S32 pass)
 {
 	LLFastTimer t(LLFastTimer::FTM_RENDER_GRASS);
+	stop_glerror();
 
 	if (LLPipeline::sUnderWaterRender)
 	{

@@ -35,7 +35,7 @@
 
 #include "lluictrl.h"
 #include "v4color.h"
-
+#include "lluiimage.h"
 
 class LLSlider : public LLUICtrl
 {

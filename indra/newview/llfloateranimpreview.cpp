@@ -696,7 +696,7 @@ BOOL LLFloaterAnimPreview::handleHover(S32 x, S32 y, MASK mask)
 
 		mAnimPreview->requestUpdate();
 
-		LLUI::setCursorPositionLocal(this, mLastMouseX, mLastMouseY);
+		LLUI::setMousePositionLocal(this, mLastMouseX, mLastMouseY);
 	}
 
 	if (!mPreviewRect.pointInRect(x, y) || !mAnimPreview)
@@ -1524,6 +1524,11 @@ BOOL	LLPreviewAnimation::render()
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
 	gGL.pushMatrix();
 	gGL.loadIdentity();
+
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gUIProgram.bind();
+	}
 
 	LLGLSUIDefault def;
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);

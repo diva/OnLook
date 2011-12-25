@@ -43,7 +43,11 @@
 #include "llviewermedia_streamingaudio.h"
 #include "llaudioengine.h"
 
-#ifdef LL_FMOD
+#if LL_FMODEX
+# include "llaudioengine_fmodex.h"
+#endif
+
+#if LL_FMOD
 # include "llaudioengine_fmod.h"
 #endif
 
@@ -663,6 +667,17 @@ bool idle_startup()
 			    )
 			{
 				gAudiop = (LLAudioEngine *) new LLAudioEngine_OpenAL();
+			}
+#endif
+
+#ifdef LL_FMODEX		
+			if (!gAudiop
+#if !LL_WINDOWS
+			    && NULL == getenv("LL_BAD_FMODEX_DRIVER")
+#endif // !LL_WINDOWS
+			    )
+			{
+				gAudiop = (LLAudioEngine *) new LLAudioEngine_FMODEX(gSavedSettings.getBOOL("SHEnableFMODExProfiler"));
 			}
 #endif
 
@@ -1937,7 +1952,6 @@ bool idle_startup()
 		LLDrawable::initClass();
 
 		// init the shader managers
-		LLPostProcess::initClass();
 		AscentDayCycleManager::initClass();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering
@@ -1987,10 +2001,18 @@ bool idle_startup()
 	if (STATE_MULTIMEDIA_INIT == LLStartUp::getStartupState())
 	{
 		LLStartUp::multimediaInit();
-		LLStartUp::setStartupState( STATE_SEED_GRANTED_WAIT );
+		LLStartUp::setStartupState( STATE_FONT_INIT );
 		return FALSE;
 	}
 
+	// Loading fonts takes several seconds
+	if (STATE_FONT_INIT == LLStartUp::getStartupState())
+	{
+		LLStartUp::fontInit();
+		LLStartUp::setStartupState( STATE_SEED_GRANTED_WAIT );
+		return FALSE;
+	}
+	
 	//---------------------------------------------------------------------
 	// Wait for Seed Cap Grant
 	//---------------------------------------------------------------------
@@ -3757,6 +3779,7 @@ std::string LLStartUp::startupStateToString(EStartupState state)
 		RTNENUM( STATE_LOGIN_DOWNLOADING );
 		RTNENUM( STATE_LOGIN_PROCESS_RESPONSE );
 		RTNENUM( STATE_WORLD_INIT );
+		RTNENUM( STATE_FONT_INIT );
 		RTNENUM( STATE_SEED_GRANTED_WAIT );
 		RTNENUM( STATE_SEED_CAP_GRANTED );
 		RTNENUM( STATE_WORLD_WAIT );
@@ -3831,6 +3854,15 @@ void LLStartUp::multimediaInit()
 	LLViewerParcelMedia::initClass();
 }
 
+void LLStartUp::fontInit()
+{
+	LL_DEBUGS("AppInit") << "Initializing fonts...." << LL_ENDL;
+	std::string msg = LLTrans::getString("LoginInitializingFonts");
+	set_startup_status(0.45f, msg.c_str(), gAgent.mMOTD.c_str());
+	display_startup();
+
+	LLFontGL::loadDefaultFonts();
+}
 
 void LLStartUp::initNameCache()
 {

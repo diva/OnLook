@@ -573,9 +573,7 @@ BOOL LLAgentCamera::calcCameraMinDistance(F32 &obj_min_distance)
 	BOOL soft_limit = FALSE; // is the bounding box to be treated literally (volumes) or as an approximation (avatars)
 
 	if (!mFocusObject || mFocusObject->isDead() || 
-#if MESH_ENABLED
 		mFocusObject->isMesh() ||
-#endif //MESH_ENABLED
 		gSavedSettings.getBOOL("DisableCameraConstraints"))
 	{
 		obj_min_distance = 0.f;

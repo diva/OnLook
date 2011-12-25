@@ -140,9 +140,7 @@ public:
 	BOOL isTESelected(S32 te_index);
 	S32 getLastSelectedTE();
 	S32 getTESelectMask() { return mTESelectMask; }
-#if MESH_ENABLED
 	void renderOneWireframe(const LLColor4& color);
-#endif
 	void renderOneSilhouette(const LLColor4 &color);
 	void setTransient(BOOL transient) { mTransient = transient; }
 	BOOL isTransient() { return mTransient; }
@@ -285,7 +283,6 @@ public:
 
 	// count members
 	S32 getObjectCount();
-#if MESH_ENABLED
 	F32 getSelectedObjectCost();
 	F32 getSelectedLinksetCost();
 	F32 getSelectedPhysicsCost();
@@ -293,8 +290,8 @@ public:
 	S32 getSelectedObjectRenderCost();
 	
 	F32 getSelectedObjectStreamingCost(S32* total_bytes = NULL, S32* visible_bytes = NULL);
-	U32 getSelectedObjectTriangleCount();
-#endif //MESH_ENABLED
+	U32 getSelectedObjectTriangleCount(S32* vcount = NULL);
+
 	S32 getTECount();
 	S32 getRootObjectCount();
 
@@ -516,13 +513,11 @@ public:
 	bool selectionGetIncludeInSearch(bool* include_in_search_out); // true if all selected objects have same
 	BOOL selectionGetGlow(F32 *glow);
 
-#if MESH_ENABLED
 	void selectionSetPhysicsType(U8 type);
 	void selectionSetGravity(F32 gravity);
 	void selectionSetFriction(F32 friction);
 	void selectionSetDensity(F32 density);
 	void selectionSetRestitution(F32 restitution);
-#endif //MESH_ENABLED
 	void selectionSetMaterial(U8 material);
 	void selectionSetImage(const LLUUID& imageid); // could be item or asset id
 	void selectionSetColor(const LLColor4 &color);

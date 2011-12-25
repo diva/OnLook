@@ -45,8 +45,10 @@
 #include "v4coloru.h"
 #include "v4math.h"
 #include "llstrider.h"
-#include "llmemory.h"
+#include "llpointer.h"
 #include "llglheaders.h"
+#include "llmatrix4a.h"
+#include "glh/glh_linear.h"
 
 class LLVertexBuffer;
 class LLCubeMap;
@@ -54,11 +56,14 @@ class LLImageGL;
 class LLRenderTarget;
 class LLTexture ;
 
+#define LL_MATRIX_STACK_DEPTH 32
+
 class LLTexUnit
 {
 	friend class LLRender;
 public:
 	static U32 sWhiteTexture;
+
 	typedef enum
 	{
 		TT_TEXTURE = 0,			// Standard 2D Texture
@@ -240,6 +245,8 @@ public:
 	void setSpotDirection(const LLVector3& direction);
 
 protected:
+	friend class LLRender;
+
 	S32 mIndex;
 	bool mEnabled;
 	LLColor4 mDiffuse;
@@ -345,6 +352,20 @@ public:
 	void multMatrix(const GLfloat* m);
 	void matrixMode(U32 mode);	
 
+	const glh::matrix4f& getModelviewMatrix();
+	const glh::matrix4f& getProjectionMatrix();
+
+	void syncMatrices();
+	void syncLightState();
+
+	void translateUI(F32 x, F32 y, F32 z);
+	void scaleUI(F32 x, F32 y, F32 z);
+	void pushUIMatrix();
+	void popUIMatrix();
+	void loadUIIdentity();
+	LLVector3 getUITranslation();
+	LLVector3 getUIScale();
+
 	void flush();
 
 	void begin(const GLuint& mode);
@@ -409,9 +430,23 @@ public:
 	};
 
 public:
-
+	static U32 sUICalls;
+	static U32 sUIVerts;
+	static bool sGLCoreProfile;
+	
 private:
-	bool				mDirty;
+	friend class LLLightState;
+
+	U32 mMatrixMode;
+	U32 mMatIdx[NUM_MATRIX_MODES];
+	U32 mMatHash[NUM_MATRIX_MODES];
+	glh::matrix4f mMatrix[NUM_MATRIX_MODES][LL_MATRIX_STACK_DEPTH];
+	U32 mCurMatHash[NUM_MATRIX_MODES];
+	U32 mLightHash;
+	LLColor4 mAmbientLightColor;
+	
+	bool			mDirty;
+	U32				mQuadCycle;
 	U32				mCount;
 	U32				mMode;
 	U32				mCurrTextureUnitIndex;
@@ -433,6 +468,10 @@ private:
 	eBlendFactor mCurrBlendAlphaDFactor;
 
 	F32				mMaxAnisotropy;
+
+	std::vector<LLVector3> mUIOffset;
+	std::vector<LLVector3> mUIScale;
+
 };
 
 extern F32 gGLModelView[16];

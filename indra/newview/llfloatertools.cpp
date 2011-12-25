@@ -81,9 +81,7 @@
 #include "llviewercontrol.h"
 #include "llviewerjoystick.h"
 #include "lluictrlfactory.h"
-#if MESH_ENABLED
 #include "llmeshrepository.h"
-#endif
 
 #include "qtoolalign.h" //Thank Qarl!
 
@@ -522,7 +520,6 @@ void LLFloaterTools::refresh()
 	
 	LLStringUtil::format_map_t selection_args;
 	selection_args["COUNT"] = llformat("%.1d", (S32)prim_count);
-#if MESH_ENABLED
 	if(gMeshRepo.meshRezEnabled())
 	{
 		F32 link_cost  = LLSelectMgr::getInstance()->getSelection()->getSelectedObjectCost();
@@ -531,7 +528,6 @@ void LLFloaterTools::refresh()
 		selection_args["PE_STRING"] = getString("status_selectprimequiv", prim_equiv_args);
 	}
 	else
-#endif //MESH_ENABLED
 	{
 		selection_args["PE_STRING"] = "";
 	}

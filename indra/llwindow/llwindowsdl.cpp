@@ -71,6 +71,8 @@ extern BOOL gDebugWindowProc;
 
 const S32 MAX_NUM_RESOLUTIONS = 200;
 
+const S32 MIN_WINDOW_WIDTH = 1024;
+const S32 MIN_WINDOW_HEIGHT = 768;
 // static variable for ATI mouse cursor crash work-around:
 static bool ATIbug = false;
 
@@ -1002,7 +1004,6 @@ void LLWindowSDL::swapBuffers()
 {
 	if (mWindow)
 	{	
-		glFinish();
 		SDL_GL_SwapBuffers();
 	}
 }
@@ -1858,11 +1859,15 @@ void LLWindowSDL::gatherInput()
                 break;
 
             case SDL_VIDEORESIZE:  // *FIX: handle this?
+            {
 		llinfos << "Handling a resize event: " << event.resize.w <<
 			"x" << event.resize.h << llendl;
 
+		S32 width = llmax(event.resize.w, MIN_WINDOW_WIDTH);
+		S32 height = llmax(event.resize.h, MIN_WINDOW_HEIGHT);
+
 		// *FIX: I'm not sure this is necessary!
-		mWindow = SDL_SetVideoMode(event.resize.w, event.resize.h, 32, mSDLFlags);
+		mWindow = SDL_SetVideoMode(width, height, 32, mSDLFlags);
 		if (!mWindow)
 		{
 			// *FIX: More informative dialog?
@@ -1876,9 +1881,9 @@ void LLWindowSDL::gatherInput()
                 break;
 		}
 		
-		mCallbacks->handleResize(this, event.resize.w, event.resize.h );
+		mCallbacks->handleResize(this, width, height);
                 break;
-
+            }
             case SDL_ACTIVEEVENT:
                 if (event.active.state & SDL_APPINPUTFOCUS)
                 {
@@ -2127,14 +2132,14 @@ void LLWindowSDL::captureMouse()
 	// window, and in a less obnoxious way than SDL_WM_GrabInput
 	// which would confine the cursor to the window too.
 
-	//llinfos << "LLWindowSDL::captureMouse" << llendl;
+	lldebugs << "LLWindowSDL::captureMouse" << llendl;
 }
 
 void LLWindowSDL::releaseMouse()
 {
 	// see LWindowSDL::captureMouse()
 	
-	//llinfos << "LLWindowSDL::releaseMouse" << llendl;
+	lldebugs << "LLWindowSDL::releaseMouse" << llendl;
 }
 
 void LLWindowSDL::hideCursor()

@@ -39,13 +39,11 @@
 
 #include <iostream>
 #include "apr_base64.h"
-#if MESH_ENABLED
 #ifdef LL_STANDALONE
 # include <zlib.h>
 #else
 # include "zlib/zlib.h"  // for davep's dirty little zip functions
 #endif
-#endif //MESH_ENABLED
 
 #if !LL_WINDOWS
 #include <netinet/in.h> // htonl & ntohl
@@ -1999,8 +1997,6 @@ std::ostream& operator<<(std::ostream& s, const LLSD& llsd)
 	return s;
 }
 
-#if MESH_ENABLED
-
 //dirty little zippers -- yell at davep if these are horrid
 
 //return a string containing gzipped bytes of binary serialized LLSD
@@ -2176,4 +2172,3 @@ bool unzip_llsd(LLSD& data, std::istream& is, S32 size)
 	free(result);
 	return true;
 }
-#endif //MESH_ENABLED

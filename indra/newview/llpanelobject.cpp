@@ -1414,9 +1414,7 @@ void LLPanelObject::getState( )
 			U8 sculpt_stitching = sculpt_type & LL_SCULPT_TYPE_MASK;
 			BOOL sculpt_invert = sculpt_type & LL_SCULPT_FLAG_INVERT;
 			BOOL sculpt_mirror = sculpt_type & LL_SCULPT_FLAG_MIRROR;		
-#if MESH_ENABLED
 			isMesh = (sculpt_stitching == LL_SCULPT_TYPE_MESH);
-#endif //MESH_ENABLED
 
 			LLTextureCtrl*  mTextureCtrl = getChild<LLTextureCtrl>("sculpt texture control");
 			if(mTextureCtrl)
@@ -2251,9 +2249,7 @@ void LLPanelObject::sendSculpt()
 		sculpt_type |= mCtrlSculptType->getCurrentIndex();
 
 	bool enabled = true;
-#if MESH_ENABLED
 	enabled = sculpt_type != LL_SCULPT_TYPE_MESH;
-#endif //MESH_ENABLED
 
 	if (mCtrlSculptMirror)
 	{

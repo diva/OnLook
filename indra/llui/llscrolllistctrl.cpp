@@ -445,6 +445,7 @@ void LLScrollListText::draw(const LLColor4& color, const LLColor4& highlight_col
 						mFontAlignment,
 						LLFontGL::BOTTOM, 
 						mFontStyle,
+						LLFontGL::NO_SHADOW,
 						string_chars, 
 						getWidth(),
 						&right_x, 
@@ -3741,7 +3742,7 @@ void LLColumnHeader::draw()
 		// Unselected image assignments
 		S32 local_mouse_x;
 		S32 local_mouse_y;
-		LLUI::getCursorPositionLocal(mButton, &local_mouse_x, &local_mouse_y);
+		LLUI::getMousePositionLocal(mButton, &local_mouse_x, &local_mouse_y);
 
 		BOOL pressed = pressed_by_keyboard
 					|| (mButton->hasMouseCapture() && mButton->pointInView(local_mouse_x, local_mouse_y)) 

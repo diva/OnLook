@@ -43,6 +43,7 @@
 #include "llviewerdisplay.h"
 #include "llrender.h"
 #include "llglslshader.h"
+#include "pipeline.h"
 
 // static
 LLViewerDynamicTexture::instance_list_t LLViewerDynamicTexture::sInstances[ LLViewerDynamicTexture::ORDER_COUNT ];
@@ -206,7 +207,7 @@ void LLViewerDynamicTexture::postRender(BOOL success)
 BOOL LLViewerDynamicTexture::updateAllInstances()
 {
 	sNumRenders = 0;
-	if (gGLManager.mIsDisabled)
+	if (gGLManager.mIsDisabled || LLPipeline::sMemAllocationThrottled)
 	{
 		return TRUE;
 	}
@@ -214,11 +215,6 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 	LLGLSLShader::bindNoShader();
 	LLVertexBuffer::unbind();
 	
-	bool no_ff = LLGLSLShader::sNoFixedFunction;
-	static const LLCachedControl<bool> force_fixed_functions("ShyotlUseLegacyDynamicTexture",false);
-	if(force_fixed_functions)
-		LLGLSLShader::sNoFixedFunction = false;
-
 	BOOL result = FALSE;
 	BOOL ret = FALSE ;
 	for( S32 order = 0; order < ORDER_COUNT; order++ )
@@ -248,8 +244,6 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 			}
 		}
 	}
-
-	LLGLSLShader::sNoFixedFunction = no_ff;
 
 	return ret;
 }

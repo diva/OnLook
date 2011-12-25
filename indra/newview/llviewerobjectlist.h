@@ -95,7 +95,6 @@ public:
 	void updateApparentAngles(LLAgent &agent);
 	void update(LLAgent &agent, LLWorld &world);
 
-#if MESH_ENABLED
 	void fetchObjectCosts();
 	void fetchPhysicsFlags();
 
@@ -112,8 +111,6 @@ public:
 									F32 restitution,
 									F32 gravity_multiplier);
 
-#endif //MESH_ENABLED
-	
 	void shiftObjects(const LLVector3 &offset);
 	void repartitionObjects();
 
@@ -218,7 +215,6 @@ public:
 	std::map<LLUUID, LLPointer<LLViewerObject> > mUUIDObjectMap;
 	std::map<LLUUID, LLPointer<LLVOAvatar> > mUUIDAvatarMap;
 
-#if MESH_ENABLED
 	//set of objects that need to update their cost
 	std::set<LLUUID> mStaleObjectCost;
 	std::set<LLUUID> mPendingObjectCost;
@@ -226,7 +222,6 @@ public:
 	//set of objects that need to update their physics flags
 	std::set<LLUUID> mStalePhysicsFlags;
 	std::set<LLUUID> mPendingPhysicsFlags;
-#endif //MESH_ENABLED
 
 	std::vector<LLDebugBeacon> mDebugBeacons;
 

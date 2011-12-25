@@ -30,7 +30,7 @@
 
 #include "llassettype.h"
 #include "llinventorytype.h"
-#include "llui.h"
+#include "lluiimage.h"
 
 class LLInventoryIcon
 {

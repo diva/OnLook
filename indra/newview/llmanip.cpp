@@ -467,36 +467,36 @@ void LLManip::renderXYZ(const LLVector3 &vec)
 	gViewerWindow->setup3DRender();
 
 	{
-		const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+		LLFontGL* font = LLFontGL::getFontSansSerif();
 		LLLocale locale(LLLocale::USER_LOCALE);
 		LLGLDepthTest gls_depth(GL_FALSE);
 		// render drop shadowed text
 		feedback_string = llformat("X: %.3f", vec.mV[VX]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, -102.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -102.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
 
 		feedback_string = llformat("Y: %.3f", vec.mV[VY]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, -27.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -27.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
 		
 		feedback_string = llformat("Z: %.3f", vec.mV[VZ]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, 48.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 48.f + 1.f, (F32)vertical_offset - 1.f, LLColor4::black, FALSE);
 
 		// render text on top
 		feedback_string = llformat("X: %.3f", vec.mV[VX]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, -102.f, (F32)vertical_offset, LLColor4(1.f, 0.5f, 0.5f, 1.f), FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -102.f, (F32)vertical_offset, LLColor4(1.f, 0.5f, 0.5f, 1.f), FALSE);
 
-		glColor3f(0.5f, 1.f, 0.5f);
+		gGL.diffuseColor3f(0.5f, 1.f, 0.5f);
 		feedback_string = llformat("Y: %.3f", vec.mV[VY]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, -27.f, (F32)vertical_offset, LLColor4(0.5f, 1.f, 0.5f, 1.f), FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -27.f, (F32)vertical_offset, LLColor4(0.5f, 1.f, 0.5f, 1.f), FALSE);
 		
-		glColor3f(0.5f, 0.5f, 1.f);
+		gGL.diffuseColor3f(0.5f, 0.5f, 1.f);
 		feedback_string = llformat("Z: %.3f", vec.mV[VZ]);
-		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, 48.f, (F32)vertical_offset, LLColor4(0.5f, 0.5f, 1.f, 1.f), FALSE);
+		hud_render_text(utf8str_to_wstring(feedback_string), camera_pos, *font, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 48.f, (F32)vertical_offset, LLColor4(0.5f, 0.5f, 1.f, 1.f), FALSE);
 	}
 }
 
 void LLManip::renderTickText(const LLVector3& pos, const std::string& text, const LLColor4 &color)
 {
-	const LLFontGL* big_fontp = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
+	const LLFontGL* big_fontp = LLFontGL::getFontSansSerif();
 
 	BOOL hud_selection = mObjectSelection->getSelectType() == SELECT_TYPE_HUD;
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -515,9 +515,9 @@ void LLManip::renderTickText(const LLVector3& pos, const std::string& text, cons
 	LLColor4 shadow_color = LLColor4::black;
 	shadow_color.mV[VALPHA] = color.mV[VALPHA] * 0.5f;
 	gViewerWindow->setup3DViewport(1, -1);
-	hud_render_utf8text(text, render_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(text), 3.f, shadow_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
+	hud_render_utf8text(text, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,  -0.5f * big_fontp->getWidthF32(text), 3.f, shadow_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
 	gViewerWindow->setup3DViewport();
-	hud_render_utf8text(text, render_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(text), 3.f, color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
+	hud_render_utf8text(text, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(text), 3.f, color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
 
 	gGL.popMatrix();
 }
@@ -526,8 +526,8 @@ void LLManip::renderTickValue(const LLVector3& pos, F32 value, const std::string
 {
 	LLLocale locale(LLLocale::USER_LOCALE);
 
-	const LLFontGL* big_fontp = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
-	const LLFontGL* small_fontp = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF_SMALL );
+	const LLFontGL* big_fontp = LLFontGL::getFontSansSerif();
+	const LLFontGL* small_fontp = LLFontGL::getFontSansSerifSmall();
 
 	std::string val_string;
 	std::string fraction_string;
@@ -577,19 +577,19 @@ void LLManip::renderTickValue(const LLVector3& pos, F32 value, const std::string
 		fraction_string = llformat("%c%02d%s", LLResMgr::getInstance()->getDecimalPoint(), fractional_portion, suffix.c_str());
 
 		gViewerWindow->setup3DViewport(1, -1);
-		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, -1.f * big_fontp->getWidthF32(val_string), 3.f, shadow_color, hud_selection);
-		hud_render_utf8text(fraction_string, render_pos, *small_fontp, LLFontGL::NORMAL, 1.f, 3.f, shadow_color, hud_selection);
+		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -1.f * big_fontp->getWidthF32(val_string), 3.f, shadow_color, hud_selection);
+		hud_render_utf8text(fraction_string, render_pos, *small_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 1.f, 3.f, shadow_color, hud_selection);
 
 		gViewerWindow->setup3DViewport();
-		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, -1.f * big_fontp->getWidthF32(val_string), 3.f, color, hud_selection);
-		hud_render_utf8text(fraction_string, render_pos, *small_fontp, LLFontGL::NORMAL, 1.f, 3.f, color, hud_selection);
+		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -1.f * big_fontp->getWidthF32(val_string), 3.f, color, hud_selection);
+		hud_render_utf8text(fraction_string, render_pos, *small_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 1.f, 3.f, color, hud_selection);
 	}
 	else
 	{
 		gViewerWindow->setup3DViewport(1, -1);
-		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(val_string), 3.f, shadow_color, hud_selection);
+		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(val_string), 3.f, shadow_color, hud_selection);
 		gViewerWindow->setup3DViewport();
-		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(val_string), 3.f, color, hud_selection);
+		hud_render_utf8text(val_string, render_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(val_string), 3.f, color, hud_selection);
 	}
 	gGL.popMatrix();
 }

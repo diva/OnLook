@@ -411,11 +411,6 @@ void toggle_cull_small(void *);
 void toggle_show_xui_names(void *);
 BOOL check_show_xui_names(void *);
 
-void run_vectorize_perf_test(void *)
-{
-	gSavedSettings.setBOOL("VectorizePerfTest", TRUE);
-}
-
 // Debug UI
 void handle_web_search_demo(void*);
 void handle_web_browser_test(void*);
@@ -1492,8 +1487,6 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 													&LLPipeline::toggleRenderDebugControl,
 													(void*)LLPipeline::RENDER_DEBUG_UPDATE_TYPE));
 
-	sub_menu->append(new LLMenuItemCallGL("Vectorize Perf Test", &run_vectorize_perf_test));
-
 	sub_menu = new LLMenuGL("Render Tests");
 
 	sub_menu->append(new LLMenuItemCheckGL("Camera Offset", 
@@ -1537,7 +1530,10 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	item = new LLMenuItemCheckGL("Debug Pipeline", menu_toggle_control, NULL, menu_check_control, (void*)"RenderDebugPipeline");
 	menu->append(item);
 	
-	item = new LLMenuItemCheckGL("Fast Alpha", menu_toggle_control, NULL, menu_check_control, (void*)"RenderFastAlpha");
+	item = new LLMenuItemCheckGL("Automatic Alpha Masks (non-deferred)", menu_toggle_control, NULL, menu_check_control, (void*)"RenderAutoMaskAlphaNonDeferred");
+	menu->append(item);
+
+	item = new LLMenuItemCheckGL("Automatic Alpha Masks (deferred)", menu_toggle_control, NULL, menu_check_control, (void*)"RenderAutoMaskAlphaDeferred");
 	menu->append(item);
 	
 	item = new LLMenuItemCheckGL("Animate Textures", menu_toggle_control, NULL, menu_check_control, (void*)"AnimateTextures");

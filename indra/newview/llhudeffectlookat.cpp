@@ -339,15 +339,15 @@ void LLHUDEffectLookAt::unpackData(LLMessageSystem *mesgsys, S32 blocknum)
 	
 	htonmemcpy(source_id.mData, &(packed_data[SOURCE_AVATAR]), MVT_LLUUID, 16);
 
+	LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
+	if (avatarp)
 	{
-		LLVOAvatar *avatarp = gObjectList.findAvatar(source_id);
-		if (avatarp)
-			setSourceObject(avatarp);
-		else
-		{
-			//llwarns << "Could not find source avatar for lookat effect" << llendl;
-			return;
-		}
+		setSourceObject(avatarp);
+	}
+	else
+	{
+		//llwarns << "Could not find source avatar for lookat effect" << llendl;
+		return;
 	}
 
 	htonmemcpy(target_id.mData, &(packed_data[TARGET_OBJECT]), MVT_LLUUID, 16);
@@ -548,6 +548,7 @@ void LLHUDEffectLookAt::render()
 			target + shadow_offset,
 			*font,
 			LLFontGL::NORMAL,
+			LLFontGL::NO_SHADOW,
 			-0.5f * font->getWidthF32(text) + 2.0f,
 			-2.0f,
 			LLColor4::black,
@@ -556,6 +557,7 @@ void LLHUDEffectLookAt::render()
 			target + offset,
 			*font,
 			LLFontGL::NORMAL,
+			LLFontGL::NO_SHADOW,
 			-0.5f * font->getWidthF32(text),
 			0.0f,
 			(*mAttentions)[mTargetType].mColor,

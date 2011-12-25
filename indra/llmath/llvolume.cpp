@@ -2079,15 +2079,13 @@ LLVolume::LLVolume(const LLVolumeParams &params, const F32 detail, const BOOL ge
 	mFaceMask = 0x0;
 	mDetail = detail;
 	mSculptLevel = -2;
-#if MESH_ENABLED
 	mIsMeshAssetLoaded = FALSE;
 	mLODScaleBias.setVec(1,1,1);
 	mHullPoints = NULL;
 	mHullIndices = NULL;
 	mNumHullPoints = 0;
 	mNumHullIndices = 0;
-#endif //MESH_ENABLED
-	
+
 	// set defaults
 	if (mParams.getPathParams().getCurveType() == LL_PCODE_PATH_FLEXIBLE)
 	{
@@ -2139,12 +2137,10 @@ LLVolume::~LLVolume()
 	mProfilep = NULL;
 	mVolumeFaces.clear();
 
-#if MESH_ENABLED
 	ll_aligned_free_16(mHullPoints);
 	mHullPoints = NULL;
 	ll_aligned_free_16(mHullIndices);
 	mHullIndices = NULL;
-#endif //MESH_ENABLED
 }
 
 BOOL LLVolume::generate()
@@ -2406,7 +2402,6 @@ bool LLVolumeFace::VertexData::compareNormal(const LLVolumeFace::VertexData& rhs
 	return retval;
 }
 
-#if MESH_ENABLED
 bool LLVolume::unpackVolumeFaces(std::istream& is, S32 size)
 {
 	//input stream is now pointing at a zlib compressed block of LLSD
@@ -2736,7 +2731,7 @@ void LLVolume::cacheOptimize()
 		mVolumeFaces[i].cacheOptimize();
 	}
 }
-#endif //MESH_ENABLED
+
 
 S32	LLVolume::getNumFaces() const
 {
@@ -3205,12 +3200,10 @@ bool LLVolumeParams::isSculpt() const
 	return mSculptID.notNull();
 }
 
-#if MESH_ENABLED
 bool LLVolumeParams::isMeshSculpt() const
 {
 	return isSculpt() && ((mSculptType & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH);
 }
-#endif //MESH_ENABLED
 
 bool LLVolumeParams::operator==(const LLVolumeParams &params) const
 {
@@ -4367,13 +4360,11 @@ void LLVolume::generateSilhouetteVertices(std::vector<LLVector3> &vertices,
 	vertices.clear();
 	normals.clear();
 
-#if MESH_ENABLED
 	if ((mParams.getSculptType() & LL_SCULPT_TYPE_MASK) == LL_SCULPT_TYPE_MESH)
 	{
 		return;
 	}
-#endif //MESH_ENABLED
-
+	
 	S32 cur_index = 0;
 	//for each face
 	for (face_list_t::iterator iter = mVolumeFaces.begin();
@@ -5424,9 +5415,7 @@ LLVolumeFace::LLVolumeFace() :
 	mBinormals(NULL),
 	mTexCoords(NULL),
 	mIndices(NULL),
-#if MESH_ENABLED
 	mWeights(NULL),
-#endif //MESH_ENABLED
 	mOctree(NULL)
 {
 	mExtents = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*3);
@@ -5449,9 +5438,7 @@ LLVolumeFace::LLVolumeFace(const LLVolumeFace& src)
 	mBinormals(NULL),
 	mTexCoords(NULL),
 	mIndices(NULL),
-#if MESH_ENABLED
 	mWeights(NULL),
-#endif //MESH_ENABLED
 	mOctree(NULL)
 { 
 	mExtents = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*3);
@@ -5517,7 +5504,6 @@ LLVolumeFace& LLVolumeFace::operator=(const LLVolumeFace& src)
 			mBinormals = NULL;
 		}
 
-#if MESH_ENABLED
 		if (src.mWeights)
 		{
 			allocateWeights(src.mNumVertices);
@@ -5528,8 +5514,8 @@ LLVolumeFace& LLVolumeFace::operator=(const LLVolumeFace& src)
 			ll_aligned_free_16(mWeights);
 			mWeights = NULL;
 		}
-#endif //MESH_ENABLED
 	}
+
 	if (mNumIndices)
 	{
 		S32 idx_size = (mNumIndices*sizeof(U16)+0xF) & ~0xF;
@@ -5561,10 +5547,8 @@ void LLVolumeFace::freeData()
 	mIndices = NULL;
 	ll_aligned_free_16(mBinormals);
 	mBinormals = NULL;
-#if MESH_ENABLED
 	ll_aligned_free_16(mWeights);
 	mWeights = NULL;
-#endif //MESH_ENABLED
 
 	delete mOctree;
 	mOctree = NULL;
@@ -6135,13 +6119,11 @@ void LLVolumeFace::cacheOptimize()
 	S32 size = ((num_verts*sizeof(LLVector2)) + 0xF) & ~0xF;
 	LLVector2* tc = (LLVector2*) ll_aligned_malloc_16(size);
 
-#if MESH_ENABLED
 	LLVector4a* wght = NULL;
 	if (mWeights)
 	{
 		wght = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
 	}
-#endif //MESH_ENABLED
 
 	LLVector4a* binorm = NULL;
 	if (mBinormals)
@@ -6165,12 +6147,10 @@ void LLVolumeFace::cacheOptimize()
 			pos[cur_idx] = mPositions[idx];
 			norm[cur_idx] = mNormals[idx];
 			tc[cur_idx] = mTexCoords[idx];
-#if MESH_ENABLED
 			if (mWeights)
 			{
 				wght[cur_idx] = mWeights[idx];
 			}
-#endif //MESH_ENABLED
 			if (mBinormals)
 			{
 				binorm[cur_idx] = mBinormals[idx];
@@ -6188,17 +6168,13 @@ void LLVolumeFace::cacheOptimize()
 	ll_aligned_free_16(mPositions);
 	ll_aligned_free_16(mNormals);
 	ll_aligned_free_16(mTexCoords);
-#if MESH_ENABLED
 	ll_aligned_free_16(mWeights);
-#endif //MESH_ENABLED
 	ll_aligned_free_16(mBinormals);
 
 	mPositions = pos;
 	mNormals = norm;
 	mTexCoords = tc;
-#if MESH_ENABLED
 	mWeights = wght;
-#endif //MESH_ENABLED
 	mBinormals = binorm;
 
 	//std::string result = llformat("ACMR pre/post: %.3f/%.3f  --  %d triangles %d breaks", pre_acmr, post_acmr, mNumIndices/3, breaks);
@@ -6286,6 +6262,7 @@ void LLVolumeFace::swapData(LLVolumeFace& rhs)
 	llswap(rhs.mNumVertices, mNumVertices);
 	llswap(rhs.mNumIndices, mNumIndices);
 }
+
 void	LerpPlanarVertex(LLVolumeFace::VertexData& v0,
 				   LLVolumeFace::VertexData& v1,
 				   LLVolumeFace::VertexData& v2,
@@ -6981,14 +6958,11 @@ void LLVolumeFace::allocateBinormals(S32 num_verts)
 	mBinormals = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
 }
 
-#if MESH_ENABLED
 void LLVolumeFace::allocateWeights(S32 num_verts)
 {
-
 	ll_aligned_free_16(mWeights);
 	mWeights = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*num_verts);
 }
-#endif //MESH_ENABLED
 
 void LLVolumeFace::resizeIndices(S32 num_indices)
 {
@@ -7151,9 +7125,8 @@ BOOL LLVolumeFace::createSide(LLVolume* volume, BOOL partial_build)
 	{
 		resizeVertices(num_vertices);
 		resizeIndices(num_indices);
-#if MESH_ENABLED
+
 		if (!volume->isMeshAssetLoaded())
-#endif //MESH_ENABLED
 		{
 			mEdge.resize(num_indices);
 		}

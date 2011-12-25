@@ -47,6 +47,7 @@
 
 #include "lleditmenuhandler.h"
 #include "lluictrl.h"
+#include "lluiimage.h"
 #include "lluistring.h"
 #include "llviewborder.h"
 

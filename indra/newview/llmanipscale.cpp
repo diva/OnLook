@@ -65,9 +65,7 @@
 #include "llworld.h"
 #include "v2math.h"
 #include "llvoavatar.h"
-#if MESH_ENABLED
 #include "llmeshrepository.h"
-#endif //MESH_ENABLED
 #include "hippolimits.h"
 
 
@@ -101,24 +99,6 @@ F32 get_default_max_prim_scale(bool is_flora)
 {
 //CF: both scales are 256, so what?, I now use gridmanagersetting
 	return gHippoLimits->getMaxPrimScale();
-#if 0
-	// a bit of a hack, but if it's foilage, we don't want to use the
-	// new larger scale which would result in giant trees and grass
-#if MESH_ENABLED
-	if (gMeshRepo.meshRezEnabled() &&
-		!is_flora)
-	{
-		return DEFAULT_MAX_PRIM_SCALE;
-	}
-	else
-	{	
-		return DEFAULT_MAX_PRIM_SCALE_NO_MESH;
-	}
-#endif //MESH_ENABLED
-#if !MESH_ENABLED
-	return DEFAULT_MAX_PRIM_SCALE;
-#endif //!MESH_ENABLED
-#endif //0
 }
 
 // static
@@ -1858,10 +1838,10 @@ void LLManipScale::renderSnapGuides(const LLBBox& bbox)
 				std::string help_text = "Move mouse cursor over ruler";
 				LLColor4 help_text_color = LLColor4::white;
 				help_text_color.mV[VALPHA] = clamp_rescale(mHelpTextTimer.getElapsedTimeF32(), sHelpTextVisibleTime, sHelpTextVisibleTime + sHelpTextFadeTime, grid_alpha, 0.f);
-				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
+				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
 				help_text = "to snap to grid";
 				help_text_pos -= LLViewerCamera::getInstance()->getUpAxis() * mSnapRegimeOffset * 0.4f;
-				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
+				hud_render_utf8text(help_text, help_text_pos, *big_fontp, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, -0.5f * big_fontp->getWidthF32(help_text), 3.f, help_text_color, mObjectSelection->getSelectType() == SELECT_TYPE_HUD);
 			}
 		}
 	}

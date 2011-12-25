@@ -2,12 +2,32 @@
  * @file alphaF.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2007, Linden Research, Inc.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
  
-
-
 #extension GL_ARB_texture_rectangle : enable
+
+#ifdef DEFINE_GL_FRAGCOLOR
+out vec4 gl_FragColor;
+#endif
 
 uniform sampler2DRectShadow shadowMap0;
 uniform sampler2DRectShadow shadowMap1;
@@ -29,6 +49,8 @@ VARYING vec3 vary_directional;
 VARYING vec3 vary_fragcoord;
 VARYING vec3 vary_position;
 VARYING vec3 vary_pointlight_col;
+VARYING vec2 vary_texcoord0;
+VARYING vec4 vertex_color;
 
 uniform float shadow_bias;
 
@@ -105,9 +127,9 @@ void main()
 		}
 	}
 	
-	vec4 diff = texture2D(diffuseMap,gl_TexCoord[0].xy);
+	vec4 diff = texture2D(diffuseMap,vary_texcoord0.xy);
 
-	vec4 col = vec4(vary_ambient + vary_directional.rgb*shadow, gl_Color.a);
+	vec4 col = vec4(vary_ambient + vary_directional.rgb*shadow, vertex_color.a);
 	vec4 color = diff * col;
 	
 	color.rgb = atmosLighting(color.rgb);
@@ -116,10 +138,6 @@ void main()
 
 	color.rgb += diff.rgb * vary_pointlight_col.rgb;
 
-	//gl_FragColor = gl_Color;
-	gl_FragColor = color;
-	//gl_FragColor.r = 0.0;
-	//gl_FragColor = vec4(1,shadow,1,1);
-	
+	gl_FragColor = color;	
 }
 

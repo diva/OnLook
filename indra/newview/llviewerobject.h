@@ -229,9 +229,7 @@ public:
 
 	virtual BOOL isFlexible() const					{ return FALSE; }
 	virtual BOOL isSculpted() const 				{ return FALSE; }
-#if MESH_ENABLED
 	virtual BOOL isMesh() const						{ return FALSE; }
-#endif //MESH_ENABLED
 
 	// This method returns true if the object is over land owned by
 	// the agent.
@@ -334,9 +332,8 @@ public:
 	
 	virtual void setScale(const LLVector3 &scale, BOOL damped = FALSE);
 
-#if MESH_ENABLED
 	virtual F32 getStreamingCost(S32* bytes = NULL, S32* visible_bytes = NULL, F32* unscaled_value = NULL) const;
-	virtual U32 getTriangleCount() const;
+	virtual U32 getTriangleCount(S32* vcount = NULL) const;
 	virtual U32 getHighLODTriangleCount();
 
 	void setObjectCost(F32 cost);
@@ -350,7 +347,7 @@ public:
 	
 	void setLinksetPhysicsCost(F32 cost);
 	F32 getLinksetPhysicsCost();
-#endif //MESH_ENABLED
+
 	void sendShapeUpdate();
 
 //	U8 getState()							{ return mState; }
@@ -484,13 +481,11 @@ public:
 	inline BOOL		flagCameraDecoupled() const		{ return ((mFlags & FLAGS_CAMERA_DECOUPLED) != 0); }
 	inline BOOL		flagObjectMove() const			{ return ((mFlags & FLAGS_OBJECT_MOVE) != 0); }
 
-#if MESH_ENABLED
 	U8       getPhysicsShapeType() const;
 	inline F32      getPhysicsGravity() const       { return mPhysicsGravity; }
 	inline F32      getPhysicsFriction() const      { return mPhysicsFriction; }
 	inline F32      getPhysicsDensity() const       { return mPhysicsDensity; }
 	inline F32      getPhysicsRestitution() const   { return mPhysicsRestitution; }
-#endif //MESH_ENABLED
 
 	bool getIncludeInSearch() const;
 	void setIncludeInSearch(bool include_in_search);
@@ -507,13 +502,11 @@ public:
 
 	void updateFlags(BOOL physics_changed = FALSE);
 	BOOL setFlags(U32 flag, BOOL state);
-#if MESH_ENABLED
 	void setPhysicsShapeType(U8 type);
 	void setPhysicsGravity(F32 gravity);
 	void setPhysicsFriction(F32 friction);
 	void setPhysicsDensity(F32 density);
 	void setPhysicsRestitution(F32 restitution);
-#endif //MESH_ENABLED
 	
 	virtual void dump() const;
 	static U32		getNumZombieObjects()			{ return sNumZombieObjects; }
@@ -578,14 +571,12 @@ public:
 		LL_VO_HUD_PART_GROUP =		LL_PCODE_APP | 0xc0,
 	} EVOType;
 
-#if MESH_ENABLED
 	typedef enum e_physics_shape_types
 	{
 		PHYSICS_SHAPE_PRIM = 0,
 		PHYSICS_SHAPE_NONE,
 		PHYSICS_SHAPE_CONVEX_HULL,
 	} EPhysicsShapeType;
-#endif //MESH_ENABLED
 
 	LLUUID			mID;
 
@@ -605,14 +596,13 @@ public:
 	// Grabbed from UPDATE_FLAGS
 	U32				mFlags;
 
-#if MESH_ENABLED
 	// Sent to sim in UPDATE_FLAGS, received in ObjectPhysicsProperties
 	U8              mPhysicsShapeType;
 	F32             mPhysicsGravity;
 	F32             mPhysicsFriction;
 	F32             mPhysicsDensity;
 	F32             mPhysicsRestitution;
-#endif //MESH_ENABLED
+
 
 	// Pipeline classes
 	LLPointer<LLDrawable> mDrawable;
@@ -725,7 +715,6 @@ protected:
 	U8				mState;	// legacy
 	LLViewerObjectMedia* mMedia;	// NULL if no media associated
 	U8 mClickAction;
-#if MESH_ENABLED
 	F32 mObjectCost; //resource cost of this object or -1 if unknown
 	F32 mLinksetCost;
 	F32 mPhysicsCost;
@@ -733,7 +722,6 @@ protected:
 
 	bool mCostStale;
 	mutable bool mPhysicsShapeUnknown;
-#endif //MESH_ENABLED
 
 	static			U32			sNumZombieObjects;			// Objects which are dead, but not deleted
 
@@ -827,7 +815,7 @@ public:
 
 	virtual F32 getPartSize(S32 idx);
 	virtual void getGeometry(S32 idx,
-								LLStrider<LLVector3>& verticesp,
+								LLStrider<LLVector4a>& verticesp,
 								LLStrider<LLVector3>& normalsp, 
 								LLStrider<LLVector2>& texcoordsp,
 								LLStrider<LLColor4U>& colorsp, 

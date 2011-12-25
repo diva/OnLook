@@ -117,7 +117,7 @@ void LLDragHandleTop::setTitle(const std::string& title)
 	const LLFontGL* font = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF );
 	LLTextBox* titlebox = new LLTextBox( std::string("Drag Handle Title"), getRect(), trimmed_title, font );
 	titlebox->setFollows(FOLLOWS_TOP | FOLLOWS_LEFT | FOLLOWS_RIGHT);
-	titlebox->setFontStyle(LLFontGL::DROP_SHADOW_SOFT);
+	titlebox->setFontShadow(LLFontGL::DROP_SHADOW_SOFT);
 	
 	setTitleBox(titlebox);
 	reshapeTitleBox();
