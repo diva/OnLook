@@ -234,13 +234,13 @@ endif (DARWIN)
 
 
 if (LINUX OR DARWIN)
-  set(GCC_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-non-virtual-dtor -Woverloaded-virtual")
+  set(GCC_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
 
   if (NOT GCC_DISABLE_FATAL_WARNINGS)
     set(GCC_WARNINGS "${GCC_WARNINGS} -Werror")
   endif (NOT GCC_DISABLE_FATAL_WARNINGS)
 
-  set(GCC_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder")
+  set(GCC_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
 
   set(CMAKE_C_FLAGS "${GCC_WARNINGS} ${CMAKE_C_FLAGS}")
   set(CMAKE_CXX_FLAGS "${GCC_CXX_WARNINGS} ${CMAKE_CXX_FLAGS}")
@@ -273,10 +273,6 @@ if(1 EQUAL 1)
 	add_definitions(-DOPENSIM_RULES=1)
 	add_definitions(-DMESH_ENABLED=1)
 endif(1 EQUAL 1)
-
-if(SERVER)
-  include_directories(${LIBS_PREBUILT_DIR}/include/havok)
-endif(SERVER)
 
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASESSE2
     "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING
