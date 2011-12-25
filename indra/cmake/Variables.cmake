@@ -110,6 +110,17 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 
+if (WINDOWS)
+  set(PREBUILT_TYPE windows)
+elseif(DARWIN)
+  set(PREBUILT_TYPE darwin)
+elseif(LINUX AND WORD_SIZE EQUAL 32)
+  set(PREBUILT_TYPE linux)
+elseif(LINUX AND WORD_SIZE EQUAL 64)
+  set(PREBUILT_TYPE linux64)
+endif(WINDOWS)
+
+
 # Default deploy grid
 set(GRID agni CACHE STRING "Target Grid")
 

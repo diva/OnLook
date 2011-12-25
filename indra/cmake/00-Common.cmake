@@ -274,10 +274,6 @@ if(1 EQUAL 1)
 	add_definitions(-DMESH_ENABLED=1)
 endif(1 EQUAL 1)
 
-if(SERVER)
-  include_directories(${LIBS_PREBUILT_DIR}/include/havok)
-endif(SERVER)
-
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASESSE2
     "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING
     "Flags used for linking binaries under SSE2 build."
