@@ -3820,8 +3820,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 	std::string version_channel;
 	msg->getString("SimData", "ChannelVersion", version_channel);
 
-	LLVOAvatar* avatarp = gAgentAvatarp;
-	if (!avatarp)
+	if (!isAgentAvatarValid())
 	{
 		// Could happen if you were immediately god-teleported away on login,
 		// maybe other cases.  Continue, but warn.
@@ -3882,7 +3881,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		gAgent.sendAgentSetAppearance();
 
 // [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-		if ( (avatarp) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+		if ( (gAgentAvatarp) && (!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
 // [/RLVa:KB]
 //		if (avatarp)
 		{
@@ -3892,9 +3891,9 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
  			LLFloaterChat::addChatHistory(chat);
 
 			// Set the new position
-			avatarp->setPositionAgent(agent_pos);
-			avatarp->clearChat();
-			avatarp->slamPosition();
+			gAgentAvatarp->setPositionAgent(agent_pos);
+			gAgentAvatarp->clearChat();
+			gAgentAvatarp->slamPosition();
 		}
 
 		// add teleport destination to the list of visited places
@@ -3968,9 +3967,9 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 		gAgent.clearBusy();
 	}
 
-	if (avatarp)
+	if (isAgentAvatarValid())
 	{
-		avatarp->mFootPlane.clearVec();
+		gAgentAvatarp->mFootPlane.clearVec();
 	}
 	
 	// send walk-vs-run status
