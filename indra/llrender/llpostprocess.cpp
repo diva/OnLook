@@ -304,10 +304,6 @@ void LLPostProcess::doEffects(void)
 	/// Copy the screen buffer to the render texture
 	copyFrameBuffer();
 
-	/// Clear the frame buffer.
-	//glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT);
-
 	//Disable depth. Set blendmode to replace.
 	LLGLDepthTest depth(GL_FALSE);
 	LLGLEnable blend(GL_BLEND);

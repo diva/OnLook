@@ -945,7 +945,7 @@ void LLAppViewer::initMaxHeapSize()
 	 
     if(fnIsWow64Process && fnIsWow64Process(GetCurrentProcess(), &bWow64Process) && bWow64Process)
 	{
-		max_heap_size_gb = 3.7;
+		max_heap_size_gb = 3.7f;
 	}
 	else if(ERROR_SUCCESS == RegOpenKey(HKEY_LOCAL_MACHINE, TEXT("SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Memory Management"), &hKey))
 	{
@@ -954,7 +954,7 @@ void LLAppViewer::initMaxHeapSize()
         if(ERROR_SUCCESS == RegQueryValueEx(hKey, TEXT("PhysicalAddressExtension"), NULL, NULL, (LPBYTE)&dwResult, &dwSize))
         {
 			if(dwResult)
-				max_heap_size_gb = 3.7;
+				max_heap_size_gb = 3.7f;
 		}
 		RegCloseKey(hKey);
 	}
