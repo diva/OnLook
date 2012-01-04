@@ -346,7 +346,7 @@ void LLStreamingAudio_FMODEX::setGain(F32 vol)
 	if(	mFMODInternetStreamChannelp->getWaveData(&local_array[0],count,0) == FMOD_OK &&
 		mFMODInternetStreamChannelp->getWaveData(&arr[0],count,1) == FMOD_OK )
 	{
-		for(S32 i = count;i>=0;i-=stride)
+		for(S32 i = count-1;i>=0;i-=stride)
 		{
 			arr[i] += local_array[i];
 			arr[i] *= .5f;

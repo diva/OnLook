@@ -106,6 +106,8 @@ void SHFloaterMediaTicker::drawOscilloscope() //called via draw.
 {
 	if(!mVisualizer || !gAudiop->getStreamingAudioImpl()->supportsWaveData())
 		return;
+	if(mPlayState == STATE_PAUSED)
+		return;
 
 	static const S32 NUM_LINE_STRIPS = 64;			//How many lines to draw. 64 is more than enough.
 	static const S32 WAVE_DATA_STEP_SIZE = 4;		//Increase to provide more history at expense of cpu/memory.
@@ -127,16 +129,8 @@ void SHFloaterMediaTicker::drawOscilloscope() //called via draw.
 	gGL.pushMatrix();
 		gGL.translatef((F32)root_rect.mLeft, (F32)root_rect.mBottom + height*.5f, 0.f);
 		gGL.begin( LLRender::LINE_STRIP );
-		if((mPlayState != STATE_PAUSED))
-		{
-			for(S32 i = NUM_WAVE_DATA_VALUES; i>=0;i-=WAVE_DATA_STEP_SIZE)
+			for(S32 i = NUM_WAVE_DATA_VALUES-1; i>=0;i-=WAVE_DATA_STEP_SIZE)
 				gGL.vertex2f((F32)i * width_scale, buf[i]*height_scale);
-		}
-		else
-		{
-			gGL.vertex2f(0.f, 0.f);
-			gGL.vertex2f(root_rect.getWidth(), 0.f);
-		}
 		gGL.end();
 	gGL.popMatrix();
 	gGL.flush();
