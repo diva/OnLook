@@ -7,7 +7,11 @@
 	     width="234" />
 	<icon bottom="-17" color="0, 0, 0, .2" follows="top|right" height="1"
 	     image_name="white.tga" left="2" mouse_opaque="false" name="ticker_background"
-	     width="234" />
+	     width="175" />
+	<locate bottom="-32" height="31" left="176" name="visualizer_box" width="60"/>
+	<icon bottom="-33" color="0, 0, 0, .2" follows="top|right" height="33"
+	     image_name="ticker_visualizer_grid.tga" left="176" mouse_opaque="false" name="visualizer_grid"
+	     width="60" />
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-17" drop_shadow_visible="true" follows="top|right"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="4"
@@ -17,7 +21,7 @@
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-17" drop_shadow_visible="true" follows="top|right"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
-	     mouse_opaque="true" name="artist_text" v_pad="0" width="185">
+	     mouse_opaque="true" name="artist_text" v_pad="0" width="125">
 	</text>
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-32" drop_shadow_visible="true" follows="top|right"
@@ -28,7 +32,7 @@
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-32" drop_shadow_visible="true" follows="top|right"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
-	     mouse_opaque="true" name="title_text" v_pad="0" width="185">
+	     mouse_opaque="true" name="title_text" v_pad="0" width="125">
 	</text>
 	
 	<string name="paused">

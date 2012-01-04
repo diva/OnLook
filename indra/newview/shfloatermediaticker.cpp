@@ -23,8 +23,11 @@ SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloa
 	mTitleText(NULL),
 	mVisualizer(NULL)
 {
-	setIsChrome(TRUE);									
-	LLUICtrlFactory::getInstance()->buildFloater(this, "sh_floater_media_ticker.xml");
+	setIsChrome(TRUE);
+	if(gAudiop->getStreamingAudioImpl()->supportsWaveData())
+		LLUICtrlFactory::getInstance()->buildFloater(this, "sh_floater_media_ticker_visualizer.xml");
+	else
+		LLUICtrlFactory::getInstance()->buildFloater(this, "sh_floater_media_ticker.xml");
 }
 
 /*virtual*/ BOOL SHFloaterMediaTicker::postBuild()
@@ -35,25 +38,10 @@ SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloa
 	mVisualizer =	getChild<LLUICtrl>("visualizer_box",true,false);
 	mszLoading	=	getString("loading");
 	mszPaused	=	getString("paused");
+	mOscillatorColor = gColors.getColor("SHMediaTickerOscillatorColor");
 	
 	if(mArtistText)	mArtistText->setText(mszPaused);
 	if(mTitleText)	mTitleText->setText(mszPaused);
-
-	if(!gAudiop->getStreamingAudioImpl()->supportsWaveData())	//Can't visualize. Extend textboxes.
-	{
-		if(mArtistText)
-		{
-			LLRect text_rect = mArtistText->getRect();
-			text_rect.mRight = llmax(mTickerBackground->getRect().mRight-2,text_rect.mRight);
-			mArtistText->setRect(text_rect);
-		}
-		if(mTitleText)
-		{
-			LLRect text_rect = mTitleText->getRect();
-			text_rect.mRight = llmax(mTickerBackground->getRect().mRight-2,text_rect.mRight);
-			mArtistText->setRect(text_rect);
-		}
-	}
 
 	return LLFloater::postBuild();
 }
@@ -125,7 +113,7 @@ void SHFloaterMediaTicker::drawOscilloscope() //called via draw.
 	F32 width_scale = root_rect.getWidth() / (F32)NUM_WAVE_DATA_VALUES;
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
-	gGL.color4f(0.f,0.f,0.f,.75f);
+	gGL.color4fv(mOscillatorColor.mV);
 	gGL.pushMatrix();
 		gGL.translatef((F32)root_rect.mLeft, (F32)root_rect.mBottom + height*.5f, 0.f);
 		gGL.begin( LLRender::LINE_STRIP );

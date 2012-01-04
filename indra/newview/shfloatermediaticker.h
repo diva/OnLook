@@ -41,6 +41,8 @@ private:
 	S32 mTitleScrollChars;
 	S32 mCurScrollChar;
 
+	LLColor4 mOscillatorColor;
+
 	//UI elements
 	LLIconCtrl* mTickerBackground;
 	LLTextBox* mArtistText;
