@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="false" can_resize="false"
+     height="32" min_height="32" min_width="256" name="mediaticker" rect_control="SHMediaTickerRect" control_name="SHShowMediaTicker"
+     title="" width="256">
+	<icon bottom="-30" color="1, 1, 1, 1" follows="top|right" height="28"
+	     image_name="ticker_background_small.tga" left="2" mouse_opaque="false" name="ticker_background"
+	     width="234" />
+	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-18" drop_shadow_visible="true" follows="top|right"
+	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="4"
+	     mouse_opaque="true" name="artist_label" v_pad="0" width="50">
+		Artist:
+	</text>
+	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-18" drop_shadow_visible="true" follows="top|right"
+	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
+	     mouse_opaque="true" name="artist_text" v_pad="0" width="125">
+	</text>
+	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-32" drop_shadow_visible="true" follows="top|right"
+	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="4"
+	     mouse_opaque="true" name="title_label" v_pad="0" width="50">
+		Title:
+	</text>
+	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom="-32" drop_shadow_visible="true" follows="top|right"
+	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
+	     mouse_opaque="true" name="title_text" v_pad="0" width="125">
+	</text>
+	
+	<locate bottom="-28" height="24" left="177" name="visualizer_box" width="58"/>
+	
+	<string name="paused">
+		(not playing)
+	</string>
+	<string name="loading">
+		(loading...)
+	</string>		
+</floater>
