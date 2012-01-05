@@ -37,6 +37,8 @@ private:
 	std::string mszArtist;
 	std::string mszTitle;
 	LLTimer mScrollTimer;
+	LLTimer mLoadTimer;
+	LLTimer mUpdateTimer;
 	S32 mArtistScrollChars;
 	S32 mTitleScrollChars;
 	S32 mCurScrollChar;

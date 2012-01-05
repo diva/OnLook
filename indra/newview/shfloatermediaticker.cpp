@@ -14,7 +14,7 @@
 
 
 SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloaterMediaTicker>()*/,
-	mPlayState(STATE_PAUSED), 
+	mPlayState(STATE_PLAYING), 
 	mArtistScrollChars(0), 
 	mTitleScrollChars(0), 
 	mCurScrollChar(0),
@@ -40,8 +40,7 @@ SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloa
 	mszPaused	=	getString("paused");
 	mOscillatorColor = gColors.getColor("SHMediaTickerOscillatorColor");
 	
-	if(mArtistText)	mArtistText->setText(mszPaused);
-	if(mTitleText)	mTitleText->setText(mszPaused);
+	setPaused(true);
 
 	return LLFloater::postBuild();
 }
@@ -90,24 +89,38 @@ void SHFloaterMediaTicker::updateTickerText() //called via draw.
 	bool dirty = setPaused(stream_paused);
 	if(!stream_paused)
 	{
-		const LLSD* metadata = gAudiop->getStreamingAudioImpl()->getMetaData();
-		LLSD artist = metadata ? metadata->get("ARTIST") : LLSD();
-		LLSD title = metadata ? metadata->get("TITLE") : LLSD();
+		if(dirty || mUpdateTimer.getElapsedTimeF64() >= .5f)
+		{
+			mUpdateTimer.reset();
+			const LLSD* metadata = gAudiop->getStreamingAudioImpl()->getMetaData();
+			LLSD artist = metadata ? metadata->get("ARTIST") : LLSD();
+			LLSD title = metadata ? metadata->get("TITLE") : LLSD();
 	
-		dirty |= setArtist(artist.isDefined() ? artist.asString() : mszLoading);
-		dirty |= setTitle(title.isDefined() ? title.asString() : mszLoading);
-
-		if(dirty)
-			resetTicker();
-		else iterateTickerOffset();
+			dirty |= setArtist(artist.isDefined() ? artist.asString() : mszLoading);
+			dirty |= setTitle(title.isDefined() ? title.asString() : mszLoading);
+			if(artist.isDefined() && title.isDefined())
+				mLoadTimer.stop();
+			else if(dirty)
+				mLoadTimer.reset();
+			else if(mLoadTimer.getStarted() && mLoadTimer.getElapsedTimeF64() > 10.f) //It has been 10 seconds.. give up.
+			{
+				if(!artist.isDefined())
+					dirty |= setArtist("");
+				if(!title.isDefined())
+					dirty |= setTitle("");
+				mLoadTimer.stop();
+			}
+		}
 	}
+	if(dirty)
+		resetTicker();
+	else 
+		iterateTickerOffset();
 }
 
 void SHFloaterMediaTicker::drawOscilloscope() //called via draw.
 {
 	if(!mVisualizer || !gAudiop->getStreamingAudioImpl()->supportsWaveData())
-		return;
-	if(mPlayState == STATE_PAUSED)
 		return;
 
 	static const S32 NUM_LINE_STRIPS = 64;			//How many lines to draw. 64 is more than enough.
@@ -116,22 +129,26 @@ void SHFloaterMediaTicker::drawOscilloscope() //called via draw.
 	static const S32 NUM_WAVE_DATA_VALUES = NUM_LINE_STRIPS*WAVE_DATA_STEP_SIZE;	//Actual buffer size. Don't toy with this. Change above vars to tweak.
 	static F32 buf[NUM_WAVE_DATA_VALUES];
 
-	if(!gAudiop->getStreamingAudioImpl()->getWaveData(&buf[0],NUM_WAVE_DATA_VALUES,WAVE_DATA_STEP_SIZE))
-		return;
-
 	LLRect root_rect = mVisualizer->getRect();
 
 	F32 height = root_rect.getHeight();
 	F32 height_scale = height / 2.f;	//WaveData ranges from 1 to -1, so height_scale = height / 2
-	F32 width_scale = root_rect.getWidth() / (F32)NUM_WAVE_DATA_VALUES;
+	F32 width = root_rect.getWidth();
+	F32 width_scale = width / (F32)NUM_WAVE_DATA_VALUES;
 
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	gGL.color4fv(mOscillatorColor.mV);
 	gGL.pushMatrix();
 		gGL.translatef((F32)root_rect.mLeft, (F32)root_rect.mBottom + height*.5f, 0.f);
 		gGL.begin( LLRender::LINE_STRIP );
-			for(S32 i = NUM_WAVE_DATA_VALUES-1; i>=0;i-=WAVE_DATA_STEP_SIZE)
-				gGL.vertex2f((F32)i * width_scale, buf[i]*height_scale);
+			if(mPlayState == STATE_PAUSED || !gAudiop->getStreamingAudioImpl()->getWaveData(&buf[0],NUM_WAVE_DATA_VALUES,WAVE_DATA_STEP_SIZE))
+			{
+				gGL.vertex2i(0,0);
+				gGL.vertex2i((S32)width,0);
+			}
+			else
+				for(S32 i = NUM_WAVE_DATA_VALUES-1; i>=0;i-=WAVE_DATA_STEP_SIZE)
+					gGL.vertex2f((F32)i * width_scale, buf[i]*height_scale);
 		gGL.end();
 	gGL.popMatrix();
 	gGL.flush();
@@ -144,8 +161,8 @@ bool SHFloaterMediaTicker::setPaused(bool pause)
 	mPlayState = pause ? STATE_PAUSED : STATE_PLAYING;
 	if(pause)
 	{
-		if(mArtistText)	mArtistText->setText(mszPaused);
-		if(mTitleText)	mTitleText->setText(mszPaused);
+		setArtist(mszPaused);
+		setTitle(mszPaused);
 	}
 	return true;
 }
