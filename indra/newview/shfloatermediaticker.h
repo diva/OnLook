@@ -13,7 +13,7 @@ public:
 	/*virtual*/ void draw();
 	/*virtual*/ void onOpen();
 	/*virtual*/ void onClose(bool app_quitting);
-
+	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
 	static void showInstance();	//use to create.
 private:
 	void updateTickerText(); //called via draw.

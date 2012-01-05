@@ -69,7 +69,20 @@ SHFloaterMediaTicker::SHFloaterMediaTicker() : LLFloater()/*, LLSingleton<SHFloa
 		delete this;
 	}
 }
-
+/*virtual*/void SHFloaterMediaTicker::reshape(S32 width, S32 height, BOOL called_from_parent/*=TRUE*/)
+{
+	//disable height change.
+	bool width_changed = (getRect().getWidth() != width);
+	LLFloater::reshape(width,getRect().getHeight(), called_from_parent);
+	if(width_changed)
+	{
+		if(mTitleText)
+			mTitleScrollChars = countExtraChars(mTitleText,mszTitle);
+		if(mArtistText)
+			mArtistScrollChars = countExtraChars(mArtistText,mszArtist);
+		resetTicker();
+	}
+}
 void SHFloaterMediaTicker::updateTickerText() //called via draw.
 {
 	bool stream_paused = gAudiop->getStreamingAudioImpl()->isPlaying() != 1;	//will return 1 if playing.
