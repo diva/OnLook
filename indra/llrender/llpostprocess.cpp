@@ -373,7 +373,7 @@ void LLPostProcess::createScreenTexture()
 	{
 		gGL.getTexUnit(0)->bindManual(LLTexUnit::TT_RECT_TEXTURE, mSceneRenderTexture->getTexName());
 		LLImageGL::setManualImage(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB, mScreenWidth, mScreenHeight, GL_RGB, GL_UNSIGNED_BYTE, &data[0]);
-		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
+		gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
 		gGL.getTexUnit(0)->setTextureAddressMode(LLTexUnit::TAM_CLAMP);
 	}
 }
