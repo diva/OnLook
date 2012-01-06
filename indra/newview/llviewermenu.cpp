@@ -7368,9 +7368,7 @@ class LLAvatarSendIM : public view_listener_t
 			gIMMgr->setFloaterOpen(TRUE);
 			//EInstantMessage type = have_agent_callingcard(gLastHitObjectID)
 			//	? IM_SESSION_ADD : IM_SESSION_CARDLESS_START;
-			gIMMgr->addSession(name,
-								IM_NOTHING_SPECIAL,
-								avatar->getID());
+			gIMMgr->addSession(LLCacheName::cleanFullName(name),IM_NOTHING_SPECIAL,avatar->getID());
 		}
 		return true;
 	}
