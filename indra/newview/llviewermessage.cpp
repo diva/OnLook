@@ -2171,7 +2171,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_MESSAGEBOX:
 		{
 			// This is a block, modeless dialog.
-			//*TODO:translate
+			// *TODO:translate
 			args["MESSAGE"] = message;
 			LLNotificationsUtil::add("SystemMessage", args);
 		}
