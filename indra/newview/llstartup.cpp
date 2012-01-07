@@ -214,6 +214,7 @@
 #include "ascentdaycyclemanager.h"
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
+#include "shfloatermediaticker.h"
 // </edit>
 
 #include "llavatarnamecache.h"
@@ -2053,6 +2054,10 @@ bool idle_startup()
 		{
 			LLFloaterAvatarList::createInstance(false);
 		}
+		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
+		{
+			SHFloaterMediaTicker::showInstance();
+		}
 		// </edit>
 		if (gSavedSettings.getBOOL("ShowCameraControls"))
 		{
@@ -2072,6 +2077,8 @@ bool idle_startup()
 		{
 			LLFloaterBeacons::showInstance();
 		}
+		
+
 		
 		if (!gNoRender)
 		{
