@@ -85,6 +85,7 @@ public:
 		return getString(xml_desc, empty);
 	}
 	
+	static void setDefaultArg(const std::string& name, const std::string& value);
 
 private:
 	typedef std::map<std::string, LLTransTemplate > template_map_t;

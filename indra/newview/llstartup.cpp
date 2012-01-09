@@ -990,7 +990,8 @@ bool idle_startup()
 		}
 		
 		gHippoGridManager->setCurrentGridAsConnected();
-		gHippoLimits->setLimits();		
+		gHippoLimits->setLimits();
+		LLTrans::setDefaultArg("CURRENCY",gHippoGridManager->getConnectedGrid()->getCurrencySymbol());	//replace [CURRENCY] with OS$, not L$ for instance.
 
 		// create necessary directories
 		// *FIX: these mkdir's should error check
