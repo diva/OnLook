@@ -5,6 +5,7 @@
      that are returned from one component and may appear in many places-->
 <strings>
 
+	<string name="CURRENCY">L$</string>
 	<string name="hippo_label_free">free</string>
 	<string name="hippo_label_week">week</string>
 	<string name="TeleportOfferMaturity">

@@ -113,3 +113,7 @@ std::string LLTrans::getString(const std::string &xml_desc, const LLStringUtil::
 	}
 }
 
+void LLTrans::setDefaultArg(const std::string& name, const std::string& value)
+{
+	sDefaultArgs[name] = value;
+}
