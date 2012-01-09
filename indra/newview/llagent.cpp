@@ -1215,7 +1215,7 @@ void LLAgent::setAFK()
 		gAwayTimer.start();
 		if (gAFKMenu)
 		{
-			//*TODO:Translate
+			// *TODO:Translate
 			gAFKMenu->setLabel(std::string("Set Not Away"));
 		}
 	}
@@ -1241,7 +1241,7 @@ void LLAgent::clearAFK()
 		LL_INFOS("AFK") << "Clearing Away" << LL_ENDL;
 		if (gAFKMenu)
 		{
-			//*TODO:Translate
+			// *TODO:Translate
 			gAFKMenu->setLabel(std::string("Set Away"));
 		}
 	}
@@ -1264,7 +1264,7 @@ void LLAgent::setBusy()
 	mIsBusy = TRUE;
 	if (gBusyMenu)
 	{
-		//*TODO:Translate
+		// *TODO:Translate
 		gBusyMenu->setLabel(std::string("Set Not Busy"));
 	}
 	LLFloaterMute::getInstance()->updateButtons();
@@ -1279,7 +1279,7 @@ void LLAgent::clearBusy()
 	sendAnimationRequest(ANIM_AGENT_BUSY, ANIM_REQUEST_STOP);
 	if (gBusyMenu)
 	{
-		//*TODO:Translate
+		// *TODO:Translate
 		gBusyMenu->setLabel(std::string("Set Busy"));
 	}
 	LLFloaterMute::getInstance()->updateButtons();
