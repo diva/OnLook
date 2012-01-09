@@ -263,6 +263,9 @@ static bool gUseCircuitCallbackCalled = false;
 EStartupState LLStartUp::gStartupState = STATE_FIRST;
 
 
+static U64 gFirstSimHandle = 0;
+static LLHost gFirstSim;
+static std::string gFirstSimSeedCap;
 //
 // local function declaration
 //
@@ -374,9 +377,6 @@ bool idle_startup()
 	static std::string password;
 	static std::vector<const char*> requested_options;
 
-	static U64 first_sim_handle = 0;
-	static LLHost first_sim;
-	static std::string first_sim_seed_cap;
 	static U32 first_sim_size_x = 256;
 	static U32 first_sim_size_y = 256;
 
@@ -823,7 +823,6 @@ bool idle_startup()
 		set_startup_status(0.03f, msg.c_str(), gAgent.mMOTD.c_str());
 		display_startup();
 		// LLViewerMedia::initBrowser();
-
 		LLStartUp::setStartupState( STATE_LOGIN_SHOW );
 		return FALSE;
 	}
@@ -1135,7 +1134,7 @@ bool idle_startup()
 
 		// Display the startup progress bar.
 		gViewerWindow->setShowProgress(!gSavedSettings.getBOOL("AscentDisableLogoutScreens"));
-		gViewerWindow->setProgressCancelButtonVisible(TRUE, std::string("Quit")); // *TODO: Translate
+		gViewerWindow->setProgressCancelButtonVisible(TRUE, LLTrans::getString("Quit"));
 
 		// Poke the VFS, which could potentially block for a while if
 		// Windows XP is acting up
@@ -1220,9 +1219,7 @@ bool idle_startup()
 		}
 		auth_method = "login_to_simulator";
 		
-		LLStringUtil::format_map_t args;
-		args["[APP_NAME]"] = LLAppViewer::instance()->getSecondLifeTitle();
-		auth_desc = LLTrans::getString("LoginInProgress", args);
+		auth_desc = LLTrans::getString("LoginInProgress");
 		LLStartUp::setStartupState( STATE_XMLRPC_LEGACY_LOGIN ); // XMLRPC
 	}
 
@@ -1365,7 +1362,7 @@ bool idle_startup()
 		LL_DEBUGS("AppInit") << "STATE_LOGIN_NO_DATA_YET" << LL_ENDL;
 		// If we get here we have gotten past the potential stall
 		// in curl, so take "may appear frozen" out of progress bar. JC
-		auth_desc = "Logging in...";
+		auth_desc = LLTrans::getString("LoginInProgressNoFrozen");
 		set_startup_status(progress, auth_desc, auth_message);
 		// Process messages to keep from dropping circuit.
 		LLMessageSystem* msg = gMessageSystem;
@@ -1431,7 +1428,7 @@ bool idle_startup()
 			}
 			else
 			{
-				emsg << "Login failed.\n";
+				emsg << LLTrans::getString("LoginFailed") + "\n";
 				reason_response = LLUserAuth::getInstance()->getResponse("reason");
 				message_response = LLUserAuth::getInstance()->getResponse("message");
 
@@ -1571,7 +1568,7 @@ bool idle_startup()
 			text = LLUserAuth::getInstance()->getResponse("secure_session_id");
 			if(!text.empty()) gAgent.mSecureSessionID.set(text);
 
-			text = LLUserAuth::getInstance()->getResponse("firsst_name");
+			text = LLUserAuth::getInstance()->getResponse("first_name");
 			if(!text.empty()) 
 			{
 				// Remove quotes from string.  Login.cgi sends these to force
@@ -1663,10 +1660,10 @@ bool idle_startup()
 			if(!sim_ip_str.empty() && !sim_port_str.empty())
 			{
 				U32 sim_port = strtoul(sim_port_str.c_str(), NULL, 10);
-				first_sim.set(sim_ip_str, sim_port);
-				if (first_sim.isOk())
+				gFirstSim.set(sim_ip_str, sim_port);
+				if (gFirstSim.isOk())
 				{
-					gMessageSystem->enableCircuit(first_sim, TRUE);
+					gMessageSystem->enableCircuit(gFirstSim, TRUE);
 				}
 			}
 			std::string region_x_str = LLUserAuth::getInstance()->getResponse("region_x");
@@ -1675,7 +1672,7 @@ bool idle_startup()
 			{
 				U32 region_x = strtoul(region_x_str.c_str(), NULL, 10);
 				U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
-				first_sim_handle = to_region_handle(region_x, region_y);
+				gFirstSimHandle = to_region_handle(region_x, region_y);
 			}
 
 			text = LLUserAuth::getInstance()->getResponse("region_size_x");
@@ -1698,7 +1695,7 @@ bool idle_startup()
 			}
 
 			text = LLUserAuth::getInstance()->getResponse("seed_capability");
-			if (!text.empty()) first_sim_seed_cap = text;
+			if (!text.empty()) gFirstSimSeedCap = text;
 						
 			text = LLUserAuth::getInstance()->getResponse("seconds_since_epoch");
 			if(!text.empty())
@@ -1874,7 +1871,7 @@ bool idle_startup()
 			if(gAgentID.notNull()
 			   && gAgentSessionID.notNull()
 			   && gMessageSystem->mOurCircuitCode
-			   && first_sim.isOk())
+			   && gFirstSim.isOk())
 			// OGPX : Inventory root might be null in OGP.
 //			   && gAgent.mInventoryRootID.notNull())
 			{
@@ -1970,14 +1967,14 @@ bool idle_startup()
 		// This is necessary because creating objects before this is set will result in a
 		// bad mPositionAgent cache.
 
-		gAgent.initOriginGlobal(from_region_handle(first_sim_handle));
+		gAgent.initOriginGlobal(from_region_handle(gFirstSimHandle));
 
-		LLWorld::getInstance()->addRegion(first_sim_handle, first_sim, first_sim_size_x, first_sim_size_y);
+		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim, first_sim_size_x, first_sim_size_y);
 
-		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(first_sim_handle);
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
 		LL_INFOS("AppInit") << "Adding initial simulator " << regionp->getOriginGlobal() << LL_ENDL;
 		
-		regionp->setSeedCapability(first_sim_seed_cap);
+		regionp->setSeedCapability(gFirstSimSeedCap);
 		LL_DEBUGS("AppInit") << "Waiting for seed grant ...." << LL_ENDL;
 		
 		// Set agent's initial region to be the one we just created.
@@ -2019,6 +2016,25 @@ bool idle_startup()
 	//---------------------------------------------------------------------
 	if(STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState())
 	{
+		/*LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
+		if (regionp->capabilitiesReceived())
+		{
+			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
+		}
+		else
+		{
+			U32 num_retries = regionp->getNumSeedCapRetries();
+			if (num_retries > 0)
+			{
+				LLStringUtil::format_map_t args;
+				args["[NUMBER]"] = llformat("%d", num_retries + 1);
+				set_startup_status(0.4f, LLTrans::getString("LoginRetrySeedCapGrant", args), gAgent.mMOTD);
+			}
+			else
+			{
+				set_startup_status(0.4f, LLTrans::getString("LoginRequestSeedCapGrant"), gAgent.mMOTD);
+			}
+		}*/
 		return FALSE;
 	}
 
@@ -2215,16 +2231,16 @@ bool idle_startup()
 
 		gUseCircuitCallbackCalled = FALSE;
 
-		msg->enableCircuit(first_sim, TRUE);
+		msg->enableCircuit(gFirstSim, TRUE);
 		// now, use the circuit info to tell simulator about us!
-		LL_INFOS("AppInit") << "viewer: UserLoginLocationReply() Enabling " << first_sim << " with code " << msg->mOurCircuitCode << LL_ENDL;
+		LL_INFOS("AppInit") << "viewer: UserLoginLocationReply() Enabling " << gFirstSim << " with code " << msg->mOurCircuitCode << LL_ENDL;
 		msg->newMessageFast(_PREHASH_UseCircuitCode);
 		msg->nextBlockFast(_PREHASH_CircuitCode);
 		msg->addU32Fast(_PREHASH_Code, msg->mOurCircuitCode);
 		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 		msg->addUUIDFast(_PREHASH_ID, gAgent.getID());
 		msg->sendReliable(
-			first_sim,
+			gFirstSim,
 			MAX_TIMEOUT_COUNT,
 			FALSE,
 			TIMEOUT_SECONDS,
