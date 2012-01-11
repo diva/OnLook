@@ -45,6 +45,7 @@
 #include "lltoolfocus.h"
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
+#include "lllslconstants.h"
 
 //
 // Constants
@@ -60,12 +61,14 @@ const F32 YAW_NUDGE_RATE = 0.05f;  // fraction of normal speed
 
 LLViewerKeyboard gViewerKeyboard;
 
+bool isCrouch = 0; //Shouldn't start crouched.
+
 void agent_jump( EKeystate s )
 {
 	if( KEYSTATE_UP == s  ) return;
 	F32 time = gKeyboard->getCurKeyElapsedTime();
 	S32 frame_count = llround(gKeyboard->getCurKeyElapsedFrameCount());
-
+	if(isCrouch) isCrouch=0;
 	if( time < FLY_TIME 
 		|| frame_count <= FLY_FRAMES 
 		|| gAgent.upGrabbed()
@@ -77,6 +80,23 @@ void agent_jump( EKeystate s )
 	{
 		gAgent.setFlying(TRUE);
 		gAgent.moveUp(1);
+	}
+}
+void agent_toggle_down( EKeystate s )
+{
+	if(KEYSTATE_UP == s) return;
+	else if(KEYSTATE_DOWN == s && !(gAgent.getControlFlags() & AGENT_SITTING))
+		if(isCrouch) isCrouch=0;
+		else if(!gAgent.getFlying())
+		{
+			isCrouch=1;
+			gAgent.moveUp(-1);
+		}
+		else
+			gAgent.moveUp(-1);
+	else
+	{
+		gAgent.moveUp(-1);
 	}
 }
 
@@ -226,6 +246,7 @@ void agent_toggle_fly( EKeystate s )
 	if (KEYSTATE_DOWN == s )
 	{
 		gAgent.toggleFlying();
+		if(isCrouch) isCrouch=0;
 	}
 }
 
@@ -530,6 +551,7 @@ void bind_keyboard_functions()
 	gViewerKeyboard.bindNamedFunction("push_backward", agent_push_backward);
 	gViewerKeyboard.bindNamedFunction("look_up", agent_look_up);
 	gViewerKeyboard.bindNamedFunction("look_down", agent_look_down);
+	gViewerKeyboard.bindNamedFunction("toggle_down", agent_toggle_down);
 	gViewerKeyboard.bindNamedFunction("toggle_fly", agent_toggle_fly);
 	gViewerKeyboard.bindNamedFunction("turn_left", agent_turn_left);
 	gViewerKeyboard.bindNamedFunction("turn_right", agent_turn_right);
