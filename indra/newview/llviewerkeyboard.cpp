@@ -97,6 +97,7 @@ void agent_toggle_down( EKeystate s )
 	else
 	{
 		gAgent.moveUp(-1);
+		if(isCrouch) isCrouch=0;
 	}
 }
 
