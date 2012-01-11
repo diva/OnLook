@@ -378,6 +378,7 @@ void init_default_trans_args()
 	default_trans_args.insert("SECOND_LIFE_GRID");
 	default_trans_args.insert("SUPPORT_SITE");
 	default_trans_args.insert("CURRENCY");
+	default_trans_args.insert("GRID_OWNER");
 }
 
 //----------------------------------------------------------------------------

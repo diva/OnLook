@@ -5,6 +5,7 @@
      that are returned from one component and may appear in many places-->
 <strings>
 	<string name="CURRENCY">L$</string>
+	<string name="GRID_OWNER">Linden Lab</string>
 	<string name="SECOND_LIFE">
 		Second Life
 	</string>
@@ -153,7 +154,7 @@
 		Toucher
 	</string>
 	<string name="TooltipFlagL$">
-		L$
+		[CURRENCY]
 	</string>
 	<string name="TooltipFlagDropInventory">
 		Laisser tomber l&apos;inventaire
@@ -171,7 +172,7 @@
 		Copie autorisée
 	</string>
 	<string name="TooltipForSaleL$">
-		À vendre : [AMOUNT] L$
+		À vendre : [AMOUNT] [CURRENCY]
 	</string>
 	<string name="TooltipForSaleMsg">
 		À vendre : [MESSAGE]

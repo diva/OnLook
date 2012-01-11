@@ -6,6 +6,8 @@
 <strings>
 
 	<string name="CURRENCY">L$</string>
+	<string name="GRID_OWNER">Linden Lab</string>
+
 	<string name="hippo_label_free">free</string>
 	<string name="hippo_label_week">week</string>
 	<string name="TeleportOfferMaturity">
@@ -76,7 +78,7 @@
 	<string name="TooltipFlagScript">Script</string>
 	<string name="TooltipFlagPhysics">Physics</string>
 	<string name="TooltipFlagTouch">Touch</string>
-	<string name="TooltipFlagL$">L$</string>
+	<string name="TooltipFlagL$">[CURRENCY]</string>
 	<string name="TooltipFlagDropInventory">Drop Inventory</string>
 	<string name="TooltipFlagPhantom">Phantom</string>
 	<string name="TooltipFlagTemporary">Temporary</string>
