@@ -439,7 +439,7 @@ void LLAgent::moveUp(S32 direction)
 		setControlFlags(AGENT_CONTROL_UP_NEG | AGENT_CONTROL_FAST_UP);
 	}
 
-	gAgentCamera.resetView();
+	if (!isCrouch) gAgentCamera.resetView();
 }
 
 //-----------------------------------------------------------------------------
