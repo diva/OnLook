@@ -85,7 +85,19 @@ public:
 		return getString(xml_desc, empty);
 	}
 	
+	// get the default args
+	static const LLStringUtil::format_map_t& getDefaultArgs()
+	{
+		return sDefaultArgs;
+	}
+
 	static void setDefaultArg(const std::string& name, const std::string& value);
+
+	// insert default args into an arg list
+	static void getArgs(LLStringUtil::format_map_t& args)
+	{
+		args.insert(sDefaultArgs.begin(), sDefaultArgs.end());
+	}
 
 private:
 	typedef std::map<std::string, LLTransTemplate > template_map_t;
