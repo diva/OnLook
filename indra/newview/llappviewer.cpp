@@ -1098,9 +1098,12 @@ bool LLAppViewer::mainLoop()
 					&& !gFocusMgr.focusLocked())
 				{
 					joystick->scanJoystick();
-					if(isCrouch)
-						gAgent.moveUp(-1);
 					gKeyboard->scanKeyboard();
+					if(isCrouch)
+					{
+						gAgent.moveUp(-1);
+					}
+
 				}
 
 				// Update state based on messages, user input, object idle.
