@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel bg_visible="false" border="false" border_visible="false" bottom="1"
+<panel bg_visible="false" border="false" border_visible="false" bottom="0"
      follows="left|bottom" height="220" left="0" name="Adv_Settings"
      use_bounding_rect="true" width="220" >
-	<panel bottom="0" filename="panel_bg_tab.xml" height="185" left="0" width="205" />
+	<panel bottom="1" filename="panel_bg_tab.xml" height="185" left="0" width="205" />
 	<slider bottom="160" left="10" control_name="RenderFarClip"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="8" label="Draw Dist.:" can_edit_text="true"
@@ -32,14 +32,14 @@
 		name="cmd_line_text_7" width="512">
 		Windlight Sky Preset:
 	</text>
-	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" left="40" follows="left|top" height="18" width="150" max_chars="20" 
+	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" left="9" follows="left|top" height="18" width="190" max_chars="20" 
 		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Sky." />
 	<text bottom_delta="-18" follows="left|bottom" font="SansSerifSmall" height="16" left="10"
 		name="cmd_line_text_7" width="512">
 		Windlight Water Preset:
 	</text>
-	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" left="40" follows="left|top" height="18" width="150" max_chars="20" 
-		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Sky." />
-	<button bottom="1" height="22" label="" left="5" name="expand" scale_image="true" toggle="true"
+	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" left="9" follows="left|top" height="18" width="150" max_chars="20" 
+		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Water." />
+	<button bottom="0" height="22" label="" left="172" name="expand" scale_image="true" toggle="true"
 		tool_tip="Hide the Settings Panel" width="22" />
 </panel>
