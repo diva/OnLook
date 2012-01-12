@@ -1201,7 +1201,6 @@ BOOL LLFloater::handleMiddleMouseDown(S32 x, S32 y, MASK mask)
 	return LLPanel::handleMiddleMouseDown( x, y, mask );
 }
 
-
 // virtual
 BOOL LLFloater::handleDoubleClick(S32 x, S32 y, MASK mask)
 {
@@ -1209,6 +1208,22 @@ BOOL LLFloater::handleDoubleClick(S32 x, S32 y, MASK mask)
 	setMinimized(FALSE);
 	return was_minimized || LLPanel::handleDoubleClick(x, y, mask);
 }
+
+// virtual
+BOOL LLFloater::handleKeyHere(KEY key, MASK mask)
+{
+	if (key == 'W' && mask == MASK_CONTROL)
+	{
+		if (canClose() && isCloseable())
+		{
+			close();
+		}
+		return TRUE;
+	}
+
+	return LLPanel::handleKeyHere(key, mask);
+}
+
 
 void LLFloater::bringToFront( S32 x, S32 y )
 {

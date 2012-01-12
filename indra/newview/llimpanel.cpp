@@ -1776,9 +1776,7 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 		}
 	}
 
-	// May need to call base class LLPanel::handleKeyHere if not handled
-	// in order to tab between buttons.  JNC 1.2.2002
-	return handled;
+	return LLFloater::handleKeyHere(key, mask);
 }
 
 BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
