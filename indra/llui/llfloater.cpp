@@ -1663,7 +1663,7 @@ void LLFloater::updateButtons()
 		mButtons[i]->setEnabled(mButtonsEnabled[i]);
 
 		if (mButtonsEnabled[i] 
-			//*HACK: always render close button for hosted floaters
+			// *HACK: always render close button for hosted floaters
 			// so that users don't accidentally hit the button when closing multiple windows
 			// in the chatterbox
 			|| (i == BUTTON_CLOSE && mButtonScale != 1.f))

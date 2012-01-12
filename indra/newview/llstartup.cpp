@@ -3239,7 +3239,7 @@ void update_app(BOOL mandatory, const std::string& auth_msg)
 
 	std::ostringstream message;
 
-	//*TODO:translate
+	// *TODO:translate
 	std::string msg;
 	if (!auth_msg.empty())
 	{

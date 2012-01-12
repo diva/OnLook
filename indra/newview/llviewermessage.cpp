@@ -1656,7 +1656,7 @@ static std::string clean_name_from_im(const std::string& name, EInstantMessage t
 	case IM_FRIENDSHIP_OFFERED:
 	case IM_FRIENDSHIP_ACCEPTED:
 	case IM_FRIENDSHIP_DECLINED_DEPRECATED:
-	//IM_TYPING_START
+	case IM_TYPING_START:
 	//IM_TYPING_STOP
 		return LLCacheName::cleanFullName(name);
 	default:
@@ -2170,7 +2170,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 	case IM_MESSAGEBOX:
 		{
 			// This is a block, modeless dialog.
-			//*TODO:translate
+			// *TODO:translate
 			args["MESSAGE"] = message;
 			LLNotificationsUtil::add("SystemMessage", args);
 		}
@@ -3887,7 +3887,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 
 	LL_DEBUGS("Messaging") << "process_agent_movement_complete()" << LL_ENDL;
 
-	// *TODO: check timestamp to make sure the movement compleation
+	// *TODO: check timestamp to make sure the movement completion
 	// makes sense.
 	LLVector3 agent_pos;
 	msg->getVector3Fast(_PREHASH_Data, _PREHASH_Position, agent_pos);

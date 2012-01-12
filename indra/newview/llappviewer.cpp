@@ -1098,6 +1098,8 @@ bool LLAppViewer::mainLoop()
 					&& !gFocusMgr.focusLocked())
 				{
 					joystick->scanJoystick();
+					if(isCrouch)
+						gAgent.moveUp(-1);
 					gKeyboard->scanKeyboard();
 				}
 
@@ -2002,7 +2004,7 @@ bool LLAppViewer::initConfiguration()
 	}
 #endif
 
-	//*FIX:Mani - Set default to disabling watchdog mainloop 
+	// *FIX:Mani - Set default to disabling watchdog mainloop 
 	// timeout for mac and linux. There is no call stack info 
 	// on these platform to help debug.
 #ifndef	LL_RELEASE_FOR_DOWNLOAD
@@ -2403,7 +2405,7 @@ bool LLAppViewer::initConfiguration()
 void LLAppViewer::checkForCrash(void)
 {
 #if LL_SEND_CRASH_REPORTS
-	//*NOTE:Mani The current state of the crash handler has the MacOSX
+	// *NOTE:Mani The current state of the crash handler has the MacOSX
 	// sending all crash reports as freezes, in order to let 
 	// the MacOSX CrashRepoter generate stacks before spawning the 
 	// SL crash logger.
