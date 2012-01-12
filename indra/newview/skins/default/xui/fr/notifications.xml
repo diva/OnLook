@@ -1291,6 +1291,10 @@ Télécharger vers le dossier Applications ?
 		Pour apprendre à utiliser JIRA, consultez le Wiki de [SECOND_LIFE].
 		<usetemplate ignoretext="Lors de l&apos;ouverture du navigateur web pour consulter la page Wiki sur le JIRA" name="okcancelignore" notext="Annuler" yestext="Aller sur cette page"/>
 	</notification>
+	<notification name="WebLaunchSinguIssue">
+		Pour signaler des bugs et autres problèmes avec Singularity, utilisez le Google Issue Tracker.
+		<usetemplate ignoretext="Lors de l&apos;ouverture du navigateur web pour consulter le Google Issue Tracker" name="okcancelignore" notext="Annuler" yestext="Aller sur cette page"/>
+	</notification>
 	<notification name="WebLaunchSupportWiki">
 		Visitez le blog officiel des Lindens pour les dernières nouvelles et informations.
 		<usetemplate ignoretext="Lors de l&apos;ouverture du navigateur web pour consulter le blog" name="okcancelignore" notext="Annuler" yestext="Aller à la page"/>
