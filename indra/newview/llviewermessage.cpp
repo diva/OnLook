@@ -774,7 +774,6 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 			delete_context_data = FALSE;
 			LLSD args;
 			args["COST"] = llformat("%d", fee);
-			args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
 			// Set the fee for next time to 0, so that we don't keep
 			// asking about a fee.
 			LLSD next_payload = notification["payload"];
@@ -3921,7 +3920,7 @@ void process_agent_movement_complete(LLMessageSystem* msg, void**)
 			<< x << ":" << y 
 			<< " current pos " << gAgent.getPositionGlobal()
 			<< LL_ENDL;
-		LLAppViewer::instance()->forceDisconnect("You were sent to an invalid region.");
+		LLAppViewer::instance()->forceDisconnect(LLTrans::getString("SentToInvalidRegion"));
 		return;
 
 	}

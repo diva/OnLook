@@ -962,7 +962,9 @@ void gl_rect_2d_checkerboard(const LLRect& parent_screen_rect, const LLRect& rec
 	F32 offs_y = (parent_screen_rect.mBottom + rect.mBottom) / image_height;
 	LLRectf uv_rect(offs_x,offs_y+scale_y,offs_x+scale_x,offs_y);
 
-	gl_draw_scaled_image(rect.mLeft,rect.mBottom,rect.getWidth(),rect.getHeight(),checkboard_image->getImage(), UI_VERTEX_COLOR, uv_rect);
+	LLColor4 color=UI_VERTEX_COLOR;
+	color.mV[VALPHA] = alpha;
+	gl_draw_scaled_image(rect.mLeft,rect.mBottom,rect.getWidth(),rect.getHeight(),checkboard_image->getImage(), color, uv_rect);
 	
 	gGL.flush();
 }
