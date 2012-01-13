@@ -5,7 +5,7 @@
 	<button bottom="-22" height="22" image_overlay="active_speakers.tga" label="" left="2"
 	     name="speakers_btn"
 	     tool_tip="Show list of residents using voice chat around you" width="38" />
-	<button bottom="-22" height="22" label="Talk" left_delta="40" name="push_to_talk"
+	<button bottom="-22" height="22" pad_left="16" label="Talk" left_delta="40" name="push_to_talk"
 	     tab_stop="false" tool_tip="Hold the button to talk" width="60" />
 	<button bottom="-19" height="16" image_selected="ptt_lock_on.tga"
 	     image_unselected="ptt_lock_off.tga" label="" left_delta="4" name="ptt_lock"
