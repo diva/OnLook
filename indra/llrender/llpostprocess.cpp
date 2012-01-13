@@ -105,7 +105,7 @@ LLPostProcess::LLPostProcess(void) :
 	}
 
 	setSelectedEffect("default");
-	//*/
+	// */
 }
 
 LLPostProcess::~LLPostProcess(void)

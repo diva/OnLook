@@ -30,7 +30,7 @@
  * $/LicenseInfo$
  */
 
-//*****************************************************************************
+// *****************************************************************************
 //
 // This file contains the opengl based menu implementation.
 //
@@ -39,7 +39,7 @@
 // column is used for displaying boolean values for toggle and check
 // controls. The right column is used for submenus.
 //
-//*****************************************************************************
+// *****************************************************************************
 
 //#include "llviewerprecompiledheaders.h"
 #include "linden_common.h"

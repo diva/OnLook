@@ -41,6 +41,7 @@ set(llui_SOURCE_FILES
     lllineeditor.cpp
     llmenugl.cpp
     llmodaldialog.cpp
+    llmultifloater.cpp 
     llmultislider.cpp
     llmultisliderctrl.cpp
     llnotifications.cpp
@@ -101,6 +102,7 @@ set(llui_HEADER_FILES
     llmemberlistener.h
     llmenugl.h
     llmodaldialog.h
+    llmultifloater.h 
     llmultisliderctrl.h
     llmultislider.h
     llnotificationptr.h
