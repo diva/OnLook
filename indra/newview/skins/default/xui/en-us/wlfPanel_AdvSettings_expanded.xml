@@ -21,7 +21,7 @@
 	<slider bottom_delta="-20" left="5" control_name="RenderAvatarMaxVisible"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="1" label="Max Avs:" can_edit_text="true"
-		label_width="53" max_val="50" min_val="1" val_width="36" mouse_opaque="true"
+		label_width="53" max_val="50" min_val="1" mouse_opaque="true"
 		name="RenderAvatarMaxVisible" show_text="true" width="189" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
 	<slider bottom_delta="-20" left="5" control_name="RenderMaxNodeSize"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
