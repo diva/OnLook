@@ -60,6 +60,7 @@
 #include "llhudmanager.h"
 #include "llinventorybridge.h"
 #include "llinventoryview.h"
+#include "llinventoryfunctions.h"
 #include "llhudnametag.h"
 #include "llhudtext.h"				// for mText/mDebugText
 #include "llkeyframefallmotion.h"

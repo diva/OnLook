@@ -170,7 +170,7 @@
 #include "llimagej2c.h"
 #include "llimagetga.h"
 #include "llinventorydefines.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"
 #include "llpanellogin.h"
@@ -7179,7 +7179,7 @@ class LLAttachmentEnableDrop : public view_listener_t
 						// if a fetch is already out there (being sent from a slow sim)
 						// we refetch and there are 2 fetches
 						LLWornItemFetchedObserver* wornItemFetched = new LLWornItemFetchedObserver();
-						LLInventoryFetchObserver::item_ref_t items; //add item to the inventory item to be fetched
+						uuid_vec_t items; //add item to the inventory item to be fetched
 
 						items.push_back((*attachment_iter)->getAttachmentItemID());
 

@@ -25,6 +25,7 @@
 #include "llfirstuse.h"
 
 #include "llinventory.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "roles_constants.h"
 #include "llviewerregion.h"

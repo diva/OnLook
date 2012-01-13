@@ -53,6 +53,7 @@
 #include "llbutton.h"
 //#include "llinventory.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"

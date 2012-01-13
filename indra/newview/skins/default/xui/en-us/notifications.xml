@@ -1885,7 +1885,7 @@ No Group selected.
    type="alertmodal">
 Unable to deed land:
 Cannot find the region this land is in.
-Please use Tools -&gt; Report Bug to report this.
+Please use Help -&gt; Bug Reporting -&gt; Report Bug to report this.
   </notification>
 
   <notification
@@ -1976,7 +1976,7 @@ Parcels you own appear in green.
 Unable to abandon land:
 Cannot find the region this land is in.
 
-Please use Tools -&gt; Report Bug to report this.
+Please use Help -&gt; Bug Reporting -&gt; Report Bug to report this.
   </notification>
 
   <notification
@@ -2050,7 +2050,7 @@ Divide land?
 Unable to divide land:
 Cannot find the region this land is in.
 
-Please use Tools -&gt; Report Bug to report this.
+Please use Help -&gt; Bug Reporting -&gt; Report Bug to report this.
   </notification>
 
   <notification
@@ -2060,7 +2060,7 @@ Please use Tools -&gt; Report Bug to report this.
 Unable to join land:
 Cannot find the region this land is in.
 
-Please use Tools -&gt; Report Bug to report this.
+Please use Help -&gt; Bug Reporting -&gt; Report Bug to report this.
   </notification>
 
   <notification
@@ -2177,7 +2177,7 @@ Unable to save &apos;[NAME]&apos; to wearable file.  You will need to free up so
 Unable to save [NAME] to central asset store.
 This is usually a temporary failure. Please customize and save the wearable again in a few minutes.
 
-If this problem persists, please click on the &apos;Tools &gt; Report Bug&apos; pull down menu
+If this problem persists, please click on the &apos;Help -&gt; Bug Reporting &gt; Report Bug&apos; pull down menu
 and provide details about your network setup.
   </notification>
 
@@ -2943,6 +2943,18 @@ Visit the [SECOND_LIFE] QA Wiki.
 Visit the [SECOND_LIFE] Public Issue Tracker, where you can report bugs and other issues.
     <usetemplate
      ignoretext="When launching web browser to view the Public Issue Tracker"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="Go to page"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="WebLaunchSinguIssue"
+   type="alertmodal">
+Visit the Singularity Issue Tracker, to report bugs and issues with Singularity Viewer.
+    <usetemplate
+     ignoretext="When launching web browser to view Singularity Issue Tracker"
      name="okcancelignore"
      notext="Cancel"
      yestext="Go to page"/>

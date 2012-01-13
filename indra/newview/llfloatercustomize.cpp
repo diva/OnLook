@@ -52,7 +52,8 @@
 #include "llsliderctrl.h"
 #include "lltabcontainervertical.h"
 #include "llviewerwindow.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
+#include "llinventoryobserver.h"
 #include "llinventoryicon.h"
 #include "lltextbox.h"
 #include "lllineeditor.h"
@@ -1041,7 +1042,7 @@ void LLPanelEditWearable::draw()
 			
 		std::string path;
 		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType() );
-		gInventory.appendPath(item_id, path);
+		append_path(item_id, path);
 		childSetVisible("path", TRUE);
 		childSetTextArg("path", "[PATH]", path);
 
@@ -1054,7 +1055,7 @@ void LLPanelEditWearable::draw()
 
 		std::string path;
 		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType() );
-		gInventory.appendPath(item_id, path);
+		append_path(item_id, path);
 		childSetVisible("path", TRUE);
 		childSetTextArg("path", "[PATH]", path);
 
@@ -2785,7 +2786,7 @@ public:
 void LLFloaterCustomize::fetchInventory()
 {
 	// Fetch currently worn items
-	LLInventoryFetchObserver::item_ref_t ids;
+	uuid_vec_t ids;
 	LLUUID item_id;
 	for(S32 type = (S32)LLWearableType::WT_SHAPE; type < (S32)LLWearableType::WT_COUNT; ++type)
 	{

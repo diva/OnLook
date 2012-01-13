@@ -455,21 +455,32 @@ LLView* LLSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory
 	U32 precision = 3;
 	node->getAttributeU32("decimal_digits", precision);
 
+	S32 value_width = 0;
+	node->getAttributeS32("val_width", value_width);
+
 	S32 text_left = 0;
 	if (show_text)
 	{
-		// calculate the size of the text box (log max_value is number of digits - 1 so plus 1)
-		if ( max_value )
-			text_left = font->getWidth(std::string("0")) * ( static_cast < S32 > ( log10  ( max_value ) ) + precision + 1 );
+		if(value_width > 0)	
+		{
+			//Fixed width. Be wary of precision and sign causing text to take more space than expected!
+			text_left = value_width;
+		}
+		else
+		{
+			// calculate the size of the text box (log max_value is number of digits - 1 so plus 1)
+			if ( max_value )
+				text_left = font->getWidth(std::string("0")) * ( static_cast < S32 > ( log10  ( max_value ) ) + precision + 1 );
 
-		if ( increment < 1.0f )
-			text_left += font->getWidth(std::string("."));	// (mostly) take account of decimal point in value
+			if ( increment < 1.0f )
+				text_left += font->getWidth(std::string("."));	// (mostly) take account of decimal point in value
 
-		if ( min_value < 0.0f || max_value < 0.0f )
-			text_left += font->getWidth(std::string("-"));	// (mostly) take account of minus sign 
+			if ( min_value < 0.0f || max_value < 0.0f )
+				text_left += font->getWidth(std::string("-"));	// (mostly) take account of minus sign 
 
-		// padding to make things look nicer
-		text_left += 8;
+			// padding to make things look nicer
+			text_left += 8;
+		}
 	}
 
 	LLUICtrlCallback callback = NULL;

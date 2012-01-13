@@ -53,7 +53,7 @@
 #include "llfloatergroupinfo.h"
 #include "llimview.h"
 #include "llinventory.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"
@@ -1776,7 +1776,7 @@ BOOL LLFloaterIMPanel::handleKeyHere( KEY key, MASK mask )
 		}
 	}
 
-	return LLFloater::handleKeyHere(key, mask);
+	return handled || LLFloater::handleKeyHere(key, mask);
 }
 
 BOOL LLFloaterIMPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,

@@ -40,6 +40,7 @@
 #include "llinventory.h"
 #include "llfolderview.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llmemberlistener.h"
 #include "llcombobox.h"
 #include "lluictrlfactory.h"
