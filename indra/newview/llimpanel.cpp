@@ -53,7 +53,7 @@
 #include "llfloatergroupinfo.h"
 #include "llimview.h"
 #include "llinventory.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "llfloateractivespeakers.h"
 #include "llfloateravatarinfo.h"

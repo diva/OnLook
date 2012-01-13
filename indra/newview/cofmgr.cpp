@@ -20,6 +20,8 @@
 #include "llagentwearables.h"
 #include "llcommonutils.h"
 #include "llerror.h"
+#include "llinventoryfunctions.h"
+#include "llinventoryobserver.h"
 #include "llvoavatarself.h"
 #include "rlvviewer2.h"
 

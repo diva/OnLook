@@ -40,6 +40,7 @@
 #include "llviewerinventory.h"
 #include "lltabcontainer.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include <map>
 
 class LLLineEditor;

@@ -36,44 +36,20 @@
 #include "llassettype.h"
 #include "llfoldertype.h"
 #include "lldarray.h"
+#include "llhttpclient.h"
 #include "lluuid.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
-#include "llhttpclient.h"
+
+#include "llmd5.h"
 
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryObserver
-//
-// This class is designed to be a simple abstract base class which can
-// relay messages when the inventory changes.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLInventoryObserver;
 
-class LLInventoryObserver
-{
-public:
-	// This enumeration is a way to refer to what changed in a more
-	// human readable format. You can mask the value provided by
-	// chaged() to see if the observer is interested in the change.
-	enum 
-	{
-		NONE = 0,
-		LABEL = 1,			// name changed
-		INTERNAL = 2,		// internal change, eg, asset uuid different
-		ADD = 4,			// something added
-		REMOVE = 8,			// something deleted
-		STRUCTURE = 16,		// structural change, eg, item or folder moved
-		CALLING_CARD = 32,	// online, grant status, cancel, etc change
-		ALL = 0xffffffff
-	};
-	virtual ~LLInventoryObserver() {};
-	virtual void changed(U32 mask) = 0;
-	std::string mMessageName; // used by Agent Inventory Service only. [DEV-20328]
-};
 class LLInventoryObject;
 class LLInventoryItem;
 class LLInventoryCategory;
@@ -223,6 +199,9 @@ public:
 	void getDirectDescendentsOf(const LLUUID& cat_id,
 								cat_array_t*& categories) const;
 	
+	// Compute a hash of direct descendent names (for detecting child name changes)
+	LLMD5 hashDirectDescendentNames(const LLUUID& cat_id) const;
+
 	// Starting with the object specified, add its descendents to the
 	// array provided, but do not add the inventory object specified
 	// by id. There is no guaranteed order. 
@@ -381,10 +360,6 @@ public:
 	//void requestFromServer(const LLUUID& agent_id);
 
 
-	// Generates a string containing the path to the item specified by
-	// item_id.
-	void appendPath(const LLUUID& id, std::string& path);
-
 	//--------------------------------------------------------------------
 	// Creation
 	//--------------------------------------------------------------------
@@ -524,6 +499,9 @@ public:
 	// Callbacks
 	//--------------------------------------------------------------------
 public:
+	// Trigger a notification and empty the folder type (FT_TRASH or FT_LOST_AND_FOUND) if confirmed
+	void emptyFolderType(const std::string notification, LLFolderType::EType folder_type);
+	bool callbackEmptyFolderType(const LLSD& notification, const LLSD& response, LLFolderType::EType preferred_type);
 	static void registerCallbacks(LLMessageSystem* msg);
 
 	//--------------------------------------------------------------------
@@ -544,9 +522,12 @@ protected:
 	//--------------------------------------------------------------------
 public:
 	static void processUpdateCreateInventoryItem(LLMessageSystem* msg, void**);
+	static void removeInventoryItem(LLUUID agent_id, LLMessageSystem* msg, const char* msg_label);
 	static void processRemoveInventoryItem(LLMessageSystem* msg, void**);
 	static void processUpdateInventoryFolder(LLMessageSystem* msg, void**);
+	static void removeInventoryFolder(LLUUID agent_id, LLMessageSystem* msg);
 	static void processRemoveInventoryFolder(LLMessageSystem* msg, void**);
+	static void processRemoveInventoryObjects(LLMessageSystem* msg, void**);
 	static void processSaveAssetIntoInventory(LLMessageSystem* msg, void**);
 	static void processBulkUpdateInventory(LLMessageSystem* msg, void**);
 	static void processInventoryDescendents(LLMessageSystem* msg, void**);
@@ -596,385 +577,6 @@ public:
 
 // a special inventory model for the agent
 extern LLInventoryModel gInventory;
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryCollectFunctor
-//
-// Base class for LLInventoryModel::collectDescendentsIf() method
-// which accepts an instance of one of these objects to use as the
-// function to determine if it should be added. Derive from this class
-// and override the () operator to return TRUE if you want to collect
-// the category or item passed in.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryCollectFunctor
-{
-public:
-	virtual ~LLInventoryCollectFunctor(){};
-	virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item) = 0;
-
-	static bool itemTransferCommonlyAllowed(LLInventoryItem* item);
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLAssetIDMatches
-//
-// This functor finds inventory items pointing to the specified asset
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class LLViewerInventoryItem;
-
-class LLAssetIDMatches : public LLInventoryCollectFunctor
-{
-public:
-	LLAssetIDMatches(const LLUUID& asset_id) : mAssetID(asset_id) {}
-	virtual ~LLAssetIDMatches() {}
-	bool operator()(LLInventoryCategory* cat, LLInventoryItem* item);
-	
-protected:
-	LLUUID mAssetID;
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLLinkedItemIDMatches
-//
-// This functor finds inventory items linked to the specific inventory id.
-// Assumes the inventory id is itself not a linked item.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class LLLinkedItemIDMatches : public LLInventoryCollectFunctor
-{
-public:
-	LLLinkedItemIDMatches(const LLUUID& item_id) : mBaseItemID(item_id) {}
-	virtual ~LLLinkedItemIDMatches() {}
-	bool operator()(LLInventoryCategory* cat, LLInventoryItem* item);
-	
-protected:
-	LLUUID mBaseItemID;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLIsType
-//
-// Implementation of a LLInventoryCollectFunctor which returns TRUE if
-// the type is the type passed in during construction.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLIsType : public LLInventoryCollectFunctor
-{
-public:
-	LLIsType(LLAssetType::EType type) : mType(type) {}
-	virtual ~LLIsType() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-protected:
-	LLAssetType::EType mType;
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLIsNotType
-//
-// Implementation of a LLInventoryCollectFunctor which returns FALSE if the
-// type is the type passed in during construction, otherwise false.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLIsNotType : public LLInventoryCollectFunctor
-{
-public:
-	LLIsNotType(LLAssetType::EType type) : mType(type) {}
-	virtual ~LLIsNotType() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-protected:
-	LLAssetType::EType mType;
-};
-
-class LLIsTypeWithPermissions : public LLInventoryCollectFunctor
-{
-public:
-	LLIsTypeWithPermissions(LLAssetType::EType type, const PermissionBit perms, const LLUUID &agent_id, const LLUUID &group_id) 
-		: mType(type), mPerm(perms), mAgentID(agent_id), mGroupID(group_id) {}
-	virtual ~LLIsTypeWithPermissions() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-protected:
-	LLAssetType::EType mType;
-	PermissionBit mPerm;
-	LLUUID			mAgentID;
-	LLUUID			mGroupID;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLIsClone
-//
-// Implementation of a LLInventoryCollectFunctor which returns TRUE if
-// the object is a clone of the item passed in during
-// construction.
-//
-// *NOTE: Since clone information is determined based off of asset id
-// (or creator with calling cards), if the id is NULL, it has no
-// clones - even itself.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-//class LLIsClone : public LLInventoryCollectFunctor
-//{
-//public:
-//	LLIsClone(LLViewerInventoryItem* item) : mItem(item) {}
-//	virtual ~LLIsClone() {}
-//	virtual bool operator()(LLViewerInventoryCategory* cat,
-//							LLViewerInventoryItem* item);
-//protected:
-//	LLPointer<LLViewerInventoryItem> mItem;
-//};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLBuddyCollector
-//
-// Simple class that collects calling cards that are not null, and not
-// the agent. Duplicates are possible.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLBuddyCollector : public LLInventoryCollectFunctor
-{
-public:
-	LLBuddyCollector() {}
-	virtual ~LLBuddyCollector() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLUniqueBuddyCollector
-//
-// Simple class that collects calling cards that are not null, and not
-// the agent. Duplicates are discarded.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLUniqueBuddyCollector : public LLInventoryCollectFunctor
-{
-public:
-	LLUniqueBuddyCollector() {}
-	virtual ~LLUniqueBuddyCollector() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-
-protected:
-	std::set<LLUUID> mSeen;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLParticularBuddyCollector
-//
-// Simple class that collects calling cards that match a particular uuid
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLParticularBuddyCollector : public LLInventoryCollectFunctor
-{
-public:
-	LLParticularBuddyCollector(const LLUUID& id) : mBuddyID(id) {}
-	virtual ~LLParticularBuddyCollector() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-protected:
-	LLUUID mBuddyID;
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLNameCategoryCollector
-//
-// Collects categories based on case-insensitive match of prefix
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLNameCategoryCollector : public LLInventoryCollectFunctor
-{
-public:
-	LLNameCategoryCollector(const std::string& name) : mName(name) {}
-	virtual ~LLNameCategoryCollector() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-protected:
-	std::string mName;
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryCompletionObserver
-//
-// Class which can be used as a base class for doing something when
-// when all observed items are locally complete. This class implements
-// the changed() method of LLInventoryObserver and declares a new
-// method named done() which is called when all watched items have
-// complete information in the inventory model.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryCompletionObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryCompletionObserver() {}
-	virtual void changed(U32 mask);
-
-	void watchItem(const LLUUID& id);
-
-protected:
-	virtual void done() = 0;
-
-	typedef std::vector<LLUUID> item_ref_t;
-	item_ref_t mComplete;
-	item_ref_t mIncomplete;
-};
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryFetchObserver
-//
-// This class is much like the LLInventoryCompletionObserver, except
-// that it handles all the the fetching necessary. Override the done()
-// method to do the thing you want.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryFetchObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryFetchObserver() {}
-	virtual void changed(U32 mask);
-
-	typedef std::vector<LLUUID> item_ref_t;
-
-	bool isEverythingComplete() const;
-	void fetchItems(const item_ref_t& ids);
-	virtual void done() = 0;
-
-protected:
-	item_ref_t mComplete;
-	item_ref_t mIncomplete;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryFetchDescendentsObserver
-//
-// This class is much like the LLInventoryCompletionObserver, except
-// that it handles fetching based on category. Override the done()
-// method to do the thing you want.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class LLInventoryFetchDescendentsObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryFetchDescendentsObserver() {}
-	virtual void changed(U32 mask);
-
-	typedef std::vector<LLUUID> folder_ref_t;
-	void fetchDescendents(const folder_ref_t& ids);
-	bool isEverythingComplete() const;
-	virtual void done() = 0;
-
-protected:
-	bool isComplete(LLViewerInventoryCategory* cat);
-	folder_ref_t mIncompleteFolders;
-	folder_ref_t mCompleteFolders;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryFetchComboObserver
-//
-// This class does an appropriate combination of fetch descendents and
-// item fetches based on completion of categories and items. Much like
-// the fetch and fetch descendents, this will call done() when everything
-// has arrived.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class LLInventoryFetchComboObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryFetchComboObserver() : mDone(false) {}
-	virtual void changed(U32 mask);
-
-	typedef std::vector<LLUUID> folder_ref_t;
-	typedef std::vector<LLUUID> item_ref_t;
-	void fetch(const folder_ref_t& folder_ids, const item_ref_t& item_ids);
-
-	virtual void done() = 0;
-
-protected:
-	bool mDone;
-	folder_ref_t mCompleteFolders;
-	folder_ref_t mIncompleteFolders;
-	item_ref_t mCompleteItems;
-	item_ref_t mIncompleteItems;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryExistenceObserver
-//
-// This class is used as a base class for doing somethign when all the
-// observed item ids exist in the inventory somewhere. You can derive
-// a class from this class and implement the done() method to do
-// something useful.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryExistenceObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryExistenceObserver() {}
-	virtual void changed(U32 mask);
-
-	void watchItem(const LLUUID& id);
-
-protected:
-	virtual void done() = 0;
-
-	typedef std::vector<LLUUID> item_ref_t;
-	item_ref_t mExist;
-	item_ref_t mMIA;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryAddedObserver
-//
-// This class is used as a base class for doing something when 
-// a new item arrives in inventory.
-// It does not watch for a certain UUID, rather it acts when anything is added
-// Derive a class from this class and implement the done() method to do
-// something useful.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryAddedObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryAddedObserver() : mAdded() {}
-	virtual void changed(U32 mask);
-
-protected:
-	virtual void done() = 0;
-
-	typedef std::vector<LLUUID> item_ref_t;
-	item_ref_t mAdded;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryTransactionObserver
-//
-// Class which can be used as a base class for doing something when an
-// inventory transaction completes.
-//
-// *NOTE: This class is not quite complete. Avoid using unless you fix up it's
-// functionality gaps.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLInventoryTransactionObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryTransactionObserver(const LLTransactionID& transaction_id);
-	virtual void changed(U32 mask);
-
-protected:
-	typedef std::vector<LLUUID> folder_ref_t;
-	typedef std::vector<LLUUID> item_ref_t;
-	virtual void done(const folder_ref_t& folders, const item_ref_t& items) = 0;
-
-	LLTransactionID mTransactionID;
-};
-
 
 #endif // LL_LLINVENTORYMODEL_H
 

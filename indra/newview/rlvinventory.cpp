@@ -178,7 +178,7 @@ void RlvInventory::fetchWornItem(const LLUUID& idItem)
 { 
 	if (idItem.notNull()) 
 	{
-		LLInventoryFetchObserver::item_ref_t idItems; 
+		uuid_vec_t idItems; 
 		idItems.push_back(idItem);
 		RlvItemFetcher itemFetcher;
 		itemFetcher.fetchItems(idItems);

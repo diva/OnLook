@@ -62,6 +62,7 @@
 #include "llfloaternamedesc.h"
 #include "llfloatersnapshot.h"
 #include "llinventorymodel.h"	// gInventory
+#include "llinventoryfunctions.h"
 #include "llnotificationsutil.h"
 #include "llresourcedata.h"
 #include "llselectmgr.h"

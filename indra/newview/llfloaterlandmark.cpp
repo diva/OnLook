@@ -40,7 +40,7 @@
 #include "llviewerparcelmgr.h"
 #include "llfolderview.h"
 #include "llinventory.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "llviewerinventory.h"
 #include "llpermissions.h"

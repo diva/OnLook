@@ -46,7 +46,7 @@
 #include "llassetuploadresponders.h"
 #include "llviewerwindow.h"
 #include "llfloatercustomize.h"
-#include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llviewertexturelist.h"
 #include "llviewerinventory.h"
 #include "llviewerregion.h"

@@ -45,7 +45,7 @@
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llinventory.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "lllineeditor.h"
 #include "llui.h"

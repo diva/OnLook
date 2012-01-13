@@ -32,6 +32,7 @@
 #include "aifetchinventoryfolder.h"
 #include "aievent.h"
 #include "llagent.h"
+#include "llinventoryobserver.h"
 
 enum fetchinventoryfolder_state_type {
   AIFetchInventoryFolder_checkFolderExists = AIStateMachine::max_state,

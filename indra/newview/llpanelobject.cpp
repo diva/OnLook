@@ -52,6 +52,7 @@
 #include "llcolorswatch.h"
 #include "llcombobox.h"
 #include "llfocusmgr.h"
+#include "llinventoryfunctions.h"
 #include "llmanipscale.h"
 #include "llnotificationsutil.h"
 #include "llpanelinventory.h"
