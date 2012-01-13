@@ -57,7 +57,7 @@
 #include "llfolderview.h"
 #include "llgesturemgr.h"
 #include "lliconctrl.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryclipboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"

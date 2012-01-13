@@ -53,7 +53,7 @@
 #include "llagent.h"
 #include "llchatbar.h"
 #include "lldelayedgestureerror.h"
-#include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llviewermessage.h"
 #include "llvoavatarself.h"
 #include "llviewerstats.h"

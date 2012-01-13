@@ -128,7 +128,7 @@
 #include "llhttpclient.h"
 #include "llimagebmp.h"
 #include "llimview.h" // for gIMMgr
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"
 #include "llloginhandler.h"			// gLoginHandler, SLURL support

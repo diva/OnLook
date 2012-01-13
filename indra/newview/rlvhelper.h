@@ -20,7 +20,7 @@
 #include "llagent.h"
 #include "llboost.h"
 #include "llgesturemgr.h"
-#include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llviewerinventory.h"
 #include "llvoavatar.h"
 #include "llwlparamset.h"

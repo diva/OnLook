@@ -37,6 +37,7 @@
 #include "llinventoryview.h"
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryicon.h"
 
 #include "message.h"
@@ -181,39 +182,6 @@ struct LLWearInfo
 	BOOL	mAppend;
 	BOOL	mReplace;
 };
-
-BOOL get_is_item_worn(const LLInventoryItem *item)
-{
-	if (!item)
-		return FALSE;
-
-	switch(item->getType())
-	{
-		case LLAssetType::AT_OBJECT:
-		{
-			if (isAgentAvatarValid() && gAgentAvatarp->isWearingAttachment(item->getLinkedUUID()))
-				return TRUE;
-			break;
-		}
-		case LLAssetType::AT_BODYPART:
-		case LLAssetType::AT_CLOTHING:
-			if(gAgentWearables.isWearingItem(item->getLinkedUUID()))
-				return TRUE;
-			break;
-		case LLAssetType::AT_GESTURE:
-			if (LLGestureMgr::instance().isGestureActive(item->getLinkedUUID()))
-				return TRUE;
-			break;
-		default:
-			break;
-	}
-	return FALSE;
-}
-
-BOOL get_is_item_worn(const LLUUID& id)
-{
-	return get_is_item_worn(gInventory.getItem(id));
-}
 
 // [RLVa:KB] - Made this part of LLWearableHoldingPattern
 //BOOL gAddToOutfit = FALSE;
@@ -4664,7 +4632,7 @@ void LLOutfitFetch::done()
 
 	LLOutfitObserver* outfit;
 	outfit = new LLOutfitObserver(mCompleteFolders.front(), mCopyItems, mAppend);
-	LLInventoryFetchObserver::item_ref_t ids;
+	uuid_vec_t ids;
 	for(S32 i = 0; i < count; ++i)
 	{
 		ids.push_back(item_array.get(i)->getUUID());

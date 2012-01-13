@@ -25,42 +25,8 @@
 #define RLV_VIEWER2_H
 
 #include "llcallbacklist.h"
-#include "llinventorymodel.h"
 
 #include "boost/function.hpp"
-
-// ============================================================================
-// From llinventoryobserver.h
-
-class LLInventoryFetchItemsObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryFetchItemsObserver(const LLUUID& item_id = LLUUID::null); 
-	LLInventoryFetchItemsObserver(const uuid_vec_t& item_ids); 
-
-	BOOL isFinished() const;
-
-	virtual void startFetch();
-	virtual void changed(U32 mask);
-	virtual void done() {};
-protected:
-	uuid_vec_t mComplete;
-	uuid_vec_t mIncomplete;
-	uuid_vec_t mIDs;
-private:
-	LLTimer mFetchingPeriod;
-
-	/**
-	 * Period of waiting a notification when requested items get added into inventory.
-	 */
-	static const F32 FETCH_TIMER_EXPIRY;
-};
-
-// ============================================================================
-// From llinventoryfunctions.cpp
-
-void change_item_parent(LLInventoryModel* model, LLViewerInventoryItem* item, const LLUUID& new_parent_id, BOOL restamp);
-void change_category_parent(LLInventoryModel* model, LLViewerInventoryCategory* cat, const LLUUID& new_parent_id, BOOL restamp);
 
 // ============================================================================
 

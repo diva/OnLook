@@ -1309,7 +1309,7 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 #endif // RLV_EXTENSION_GIVETORLV_A2A
 // [/RLVa:KB]
 
-			LLInventoryFetchObserver::item_ref_t items;
+			uuid_vec_t items;
 			items.push_back(mObjectID);
 			LLOpenAgentOffer* open_agent_offer = new LLOpenAgentOffer(from_string);
 			open_agent_offer->fetchItems(items);

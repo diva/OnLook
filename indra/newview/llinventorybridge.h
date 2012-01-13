@@ -37,6 +37,7 @@
 #include "llfloaterproperties.h"
 #include "llfolderview.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 //#include "llinventoryview.h"
 #include "llviewercontrol.h"
 #include "llwearable.h"

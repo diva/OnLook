@@ -290,8 +290,10 @@ set(viewer_SOURCE_FILES
     llinventorybackup.cpp
     llinventorybridge.cpp
     llinventoryclipboard.cpp
+    llinventoryfunctions.cpp
     llinventoryicon.cpp
     llinventorymodel.cpp
+    llinventoryobserver.cpp
     llinventoryview.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
@@ -759,8 +761,10 @@ set(viewer_HEADER_FILES
     llinventorybackup.h
     llinventorybridge.h
     llinventoryclipboard.h
+    llinventoryfunctions.h
     llinventoryicon.h
     llinventorymodel.h
+    llinventoryobserver.h
     llinventoryview.h
     lljoystickbutton.h
     lllandmarklist.h

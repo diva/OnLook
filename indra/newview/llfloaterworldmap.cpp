@@ -70,6 +70,7 @@
 #include "llappviewer.h"
 #include "llmapimagetype.h"
 #include "llweb.h"
+#include "llinventoryfunctions.h"
 
 #include "llglheaders.h"
 
