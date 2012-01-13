@@ -2,43 +2,43 @@
 <panel bg_visible="false" border="false" border_visible="false" bottom="0"
      follows="left|bottom" height="220" left="0" name="Adv_Settings"
      use_bounding_rect="true" width="220" >
-	<panel bottom="1" filename="panel_bg_tab.xml" height="185" left="0" width="205" />
-	<slider bottom="160" left="10" control_name="RenderFarClip"
+	<panel bottom="1" filename="panel_bg_tab.xml" height="185" left="0" width="197" />
+	<slider bottom="160" left="5" control_name="RenderFarClip"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="8" label="Draw Dist.:" can_edit_text="true"
-		label_width="55" max_val="1024" min_val="24" mouse_opaque="true"
-		name="DrawDistance" show_text="true" width="195" tool_tip="Change your Draw Distance"/>
-	<slider bottom_delta="-20" left_delta="-0" control_name="ThrottleBandwidthKBPS"
+		label_width="53" max_val="1024" min_val="24" mouse_opaque="true"
+		name="DrawDistance" show_text="true" width="189" tool_tip="Change your Draw Distance"/>
+	<slider bottom_delta="-20" left="5" control_name="ThrottleBandwidthKBPS"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="50" label="Bandwidth:" can_edit_text="true"
-		label_width="60" max_val="5000" min_val="50" mouse_opaque="true"
-		name="max_bandwidth" show_text="true" width="195" tool_tip="Set your Network bandwidth in kbps (kilobits per second)"/>
-	<slider bottom_delta="-20" left_delta="-0" control_name="RenderMaxPartCount"
+		label_width="53" max_val="5000" min_val="50" mouse_opaque="true"
+		name="max_bandwidth" show_text="true" width="189" tool_tip="Set your Network bandwidth in kbps (kilobits per second)"/>
+	<slider bottom_delta="-20" left="5" control_name="RenderMaxPartCount"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="256" label="Particles:" can_edit_text="true"
-		label_width="55" max_val="8192" min_val="0" mouse_opaque="true"
-		name="MaxParticleCount" show_text="true" width="195" tool_tip="Amount of particles to render"/>
-	<slider bottom_delta="-20" left_delta="0" control_name="RenderAvatarMaxVisible"
+		label_width="53" max_val="8192" min_val="0" mouse_opaque="true"
+		name="MaxParticleCount" show_text="true" width="189" tool_tip="Amount of particles to render"/>
+	<slider bottom_delta="-20" left="5" control_name="RenderAvatarMaxVisible"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
-		increment="1" label="Max Avatars:" can_edit_text="true"
-		label_width="65" max_val="50" min_val="1" mouse_opaque="true"
-		name="RenderAvatarMaxVisible" show_text="true" width="195" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
-	<slider bottom_delta="-20" left_delta="-0" control_name="RenderMaxNodeSize"
+		increment="1" label="Max Avs:" can_edit_text="true"
+		label_width="53" max_val="0050" min_val="1" mouse_opaque="true"
+		name="RenderAvatarMaxVisible" show_text="true" width="189" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
+	<slider bottom_delta="-20" left="5" control_name="RenderMaxNodeSize"
 		decimal_digits="0" enabled="true" follows="left|bottom" height="20"
 		increment="64" label="Max Node:" can_edit_text="true"
-		label_width="55" max_val="16382" min_val="64" mouse_opaque="true"
-		name="RenderMaxNodeSize" show_text="true" width="195" tool_tip="Maximum memory size limit for rendering NEW objects, in Kb. Anything over the limit will not be rendered. [Default 4096]"/>
-	<text bottom_delta="-18" follows="left|top" font="SansSerifSmall" height="16" left_delta="0"
-		name="cmd_line_text_7" width="512">
+		label_width="53" max_val="16382" min_val="64" mouse_opaque="true"
+		name="RenderMaxNodeSize" show_text="true" width="189" tool_tip="Maximum memory size limit for rendering NEW objects, in Kb. Anything over the limit will not be rendered. [Default 4096]"/>
+	<text bottom_delta="-17" follows="left|top" font="SansSerifSmall" height="16" left="5"
+		name="cmd_line_text_7" width="189">
 		Windlight Sky Preset:
 	</text>
-	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" left="9" follows="left|top" height="18" width="190" max_chars="20" 
+	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" left="5" follows="left|top" height="18" width="189" max_chars="20" 
 		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Sky." />
-	<text bottom_delta="-18" follows="left|bottom" font="SansSerifSmall" height="16" left="10"
-		name="cmd_line_text_7" width="512">
+	<text bottom_delta="-17" follows="left|bottom" font="SansSerifSmall" height="16" left="5"
+		name="cmd_line_text_7" width="189">
 		Windlight Water Preset:
 	</text>
-	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" left="9" follows="left|top" height="18" width="150" max_chars="20" 
+	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" left="5" follows="left|bottom" height="18" width="166" max_chars="20" 
 		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Water." />
 	<button bottom="0" height="22" label="" left="172" name="expand" scale_image="true" toggle="true"
 		tool_tip="Hide the Settings Panel" width="22" />
