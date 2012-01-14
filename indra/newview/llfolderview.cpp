@@ -48,6 +48,7 @@
 #include "llfoldervieweventlistener.h"
 #include "llinventoryclipboard.h" // *TODO: remove this once hack below gone.
 #include "llinventoryview.h"// hacked in for the bonus context menu items.
+#include "llinventoryfunctions.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"

@@ -18,6 +18,7 @@
 #include "llagent.h"
 #include "llcallbacklist.h"
 #include "llstartup.h"
+#include "llviewerfoldertype.h"
 #include "llviewerobject.h"
 #include "llvoavatar.h"
 
@@ -28,9 +29,6 @@
 #include "rlvhandler.h"
 
 #include "boost/algorithm/string.hpp"
-
-// Only defined in llinventorymodel.cpp
-extern const char* NEW_CATEGORY_NAME;
 
 // ============================================================================
 // Static variable initialization
@@ -394,6 +392,7 @@ void RlvRenameOnWearObserver::doneIdle()
 			continue;
 		}
 
+		static const std::string &new_category_name = LLViewerFolderType::lookupNewCategoryName(LLFolderType::FT_NONE);
 		for (S32 idxItem = 0, cntItem = items.count(); idxItem < cntItem; idxItem++)
 		{
 			LLViewerInventoryItem* pItem = items.get(idxItem);
@@ -428,7 +427,7 @@ void RlvRenameOnWearObserver::doneIdle()
 					std::string strFolderName = ".(" + strAttachPt + ")";
 
 					// Rename the item's parent folder if it's called "New Folder", isn't directly under #RLV and contains exactly 1 object
-					if ( (NEW_CATEGORY_NAME == pFolder->getName()) && 
+					if ( (new_category_name == pFolder->getName()) && 
 						 (pFolder->getParentUUID() != pRlvRoot->getUUID()) && 
 						 (1 == RlvInventory::getDirectDescendentsCount(pFolder, LLAssetType::AT_OBJECT)) )
 					{

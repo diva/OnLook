@@ -1883,29 +1883,6 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 	return accept;
 }
 
-class LLFindWearables : public LLInventoryCollectFunctor
-{
-public:
-	LLFindWearables() {}
-	virtual ~LLFindWearables() {}
-	virtual bool operator()(LLInventoryCategory* cat,
-							LLInventoryItem* item);
-};
-
-bool LLFindWearables::operator()(LLInventoryCategory* cat,
-								 LLInventoryItem* item)
-{
-	if(item)
-	{
-		if((item->getType() == LLAssetType::AT_CLOTHING)
-		   || (item->getType() == LLAssetType::AT_BODYPART))
-		{
-			return TRUE;
-		}
-	}
-	return FALSE;
-}
-
 //Used by LLFolderBridge as callback for directory recursion.
 class LLRightClickInventoryFetchObserver : public LLInventoryFetchObserver
 {

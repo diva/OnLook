@@ -446,6 +446,7 @@ set(viewer_SOURCE_FILES
     llviewercamera.cpp
     llviewercontrol.cpp
     llviewerdisplay.cpp
+    llviewerfoldertype.cpp
     llviewergenericmessage.cpp
     llviewergesture.cpp
     #llviewerimage.cpp
@@ -735,6 +736,7 @@ set(viewer_HEADER_FILES
     llfloaterwindlight.h
     llfloaterworldmap.h
     llfolderview.h
+    llfoldervieweventlistener.h
     llfollowcam.h
     llframestats.h
     llframestatview.h
@@ -923,6 +925,7 @@ set(viewer_HEADER_FILES
     llviewercamera.h
     llviewercontrol.h
     llviewerdisplay.h
+    llviewerfoldertype.h
     llviewergenericmessage.h
     llviewergesture.h
     #llviewerimage.h

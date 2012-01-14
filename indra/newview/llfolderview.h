@@ -70,6 +70,7 @@ class LLMenuGL;
 class LLFolderViewItem;
 class LLFolderView;
 class LLInventoryModel;
+class LLFolderViewFunctor;
 class LLScrollableContainerView;
 class LLFolderViewEventListener;
 
@@ -100,13 +101,6 @@ public:
 class LLFolderViewItem;
 class LLFolderViewFolder;
 
-class LLFolderViewFunctor
-{
-public:
-	virtual ~LLFolderViewFunctor() {}
-	virtual void doFolder(LLFolderViewFolder* folder) = 0;
-	virtual void doItem(LLFolderViewItem* item) = 0;
-};
 
 class LLInventoryFilter
 {
