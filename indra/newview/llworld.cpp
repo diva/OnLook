@@ -80,12 +80,12 @@ const S32 WORLD_PATCH_SIZE = 16;
 
 extern LLColor4U MAX_WATER_COLOR;
 
-U32 LLWorld::mWidth = 256;
+const U32 LLWorld::mWidth = 256;
 
 // meters/point, therefore mWidth * mScale = meters per edge
 const F32 LLWorld::mScale = 1.f;
 
-F32 LLWorld::mWidthInMeters = mWidth * mScale;
+const F32 LLWorld::mWidthInMeters = mWidth * mScale;
 
 //
 // Functions
@@ -146,7 +146,7 @@ void LLWorld::destroyClass()
 }
 
 
-LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host, const U32 &region_size_x, const U32 &region_size_y)
+LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host)
 {
 	LLMemType mt(LLMemType::MTYPE_REGIONS);
 	llinfos << "Add region with handle: " << region_handle << " on host " << host << llendl;
@@ -179,11 +179,9 @@ LLViewerRegion* LLWorld::addRegion(const U64 &region_handle, const LLHost &host,
 
 	U32 iindex = 0;
 	U32 jindex = 0;
-	mWidth = region_size_x;	//MegaRegion
-	mWidthInMeters = mWidth * mScale; //MegaRegion
 	from_region_handle(region_handle, &iindex, &jindex);
-	S32 x = (S32)(iindex/256); //MegaRegion
-	S32 y = (S32)(jindex/256); //MegaRegion
+ 	S32 x = (S32)(iindex/mWidth);
+ 	S32 y = (S32)(jindex/mWidth);
 	llinfos << "Adding new region (" << x << ":" << y << ")" << llendl;
 	llinfos << "Host: " << host << llendl;
 
@@ -837,7 +835,7 @@ F32 LLWorld::getLandFarClip() const
 
 void LLWorld::setLandFarClip(const F32 far_clip)
 {
-	static S32 const rwidth = (S32)getRegionWidthInMeters();
+	static S32 const rwidth = (S32)REGION_WIDTH_U32;
 	S32 const n1 = (llceil(mLandFarClip) - 1) / rwidth;
 	S32 const n2 = (llceil(far_clip) - 1) / rwidth;
 	bool need_water_objects_update = n1 != n2;
@@ -1267,21 +1265,9 @@ void process_enable_simulator(LLMessageSystem *msg, void **user_data)
 	// which simulator should we modify?
 	LLHost sim(ip_u32, port);
 
-	U32 region_size_x = 256;
-    msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeX, region_size_x);
-
-    U32 region_size_y = 256;
-    msg->getU32Fast(_PREHASH_SimulatorInfo, _PREHASH_RegionSizeY, region_size_y);
-
-    if (region_size_y == 0 || region_size_x == 0)
-    {
-        region_size_x = 256;
-        region_size_y = 256;
-    }
-
 	// Viewer trusts the simulator.
 	msg->enableCircuit(sim, TRUE);
-	LLWorld::getInstance()->addRegion(handle, sim, region_size_x, region_size_y);
+	LLWorld::getInstance()->addRegion(handle, sim);
 
 	// give the simulator a message it can use to get ip and port
 	llinfos << "simulator_enable() Enabling " << sim << " with code " << msg->getOurCircuitCode() << llendl;

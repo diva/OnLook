@@ -235,7 +235,7 @@ void	decode_patch_group_header(LLBitPack &bitpack, LLGroupHeader *gopp)
 	gPatchSize = gopp->patch_size; 
 }
 
-void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph, BOOL b_large_patch)
+void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph)
 {
 	U8 retvalu8;
 
@@ -274,18 +274,15 @@ void	decode_patch_header(LLBitPack &bitpack, LLPatchHeader *ph, BOOL b_large_pat
 #endif
 	ph->range = retvalu16;
 
-	retvalu32 = 0;
+	retvalu16 = 0;
 #ifdef LL_BIG_ENDIAN
 	ret = (U8 *)&retvalu16;
 	bitpack.bitUnpack(&(ret[1]), 8);
 	bitpack.bitUnpack(&(ret[0]), 2);
 #else
-	if (b_large_patch)
-	    bitpack.bitUnpack((U8 *)&retvalu32, 32);
-	else
-        bitpack.bitUnpack((U8 *)&retvalu32, 10); 
+	bitpack.bitUnpack((U8 *)&retvalu16, 10);
 #endif
-	ph->patchids = retvalu32;
+	ph->patchids = retvalu16;
 
 	gWordBits = (ph->quant_wbits & 0xf) + 2;
 }

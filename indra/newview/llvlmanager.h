@@ -65,7 +65,6 @@ protected:
 	U32 mLandBits;
 	U32 mWindBits;
 	U32 mCloudBits;
-	U32 mWaterBits;
 };
 
 class LLVLData
