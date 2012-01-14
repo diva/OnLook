@@ -35,7 +35,7 @@
 
 #include "llcallingcard.h"
 #include "llfloaterproperties.h"
-#include "llfolderview.h"
+#include "llfoldervieweventlistener.h"
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
 //#include "llinventoryview.h"
@@ -302,7 +302,11 @@ public:
 
 	virtual LLFolderType::EType getPreferredType() const;
 	virtual LLUIImagePtr getIcon() const;
+	virtual LLUIImagePtr getOpenIcon() const;
+	static LLUIImagePtr getIcon(LLFolderType::EType preferred_type);
+
 	virtual BOOL renameItem(const std::string& new_name);
+
 	virtual BOOL removeItem();
 	virtual void pasteFromClipboard();
 	virtual void pasteLinkFromClipboard();
@@ -322,6 +326,7 @@ public:
 	static void createWearable(LLUUID parent_folder_id, LLWearableType::EType type);
 
 	LLViewerInventoryCategory* getCategory() const;
+	LLHandle<LLFolderBridge> getHandle() { mHandle.bind(this); return mHandle; }
 
 protected:
 	// menu callbacks
@@ -350,15 +355,17 @@ protected:
 	void modifyOutfit(BOOL append, BOOL replace = FALSE);
 	menuentry_vec_t getMenuItems() { return mItems; } // returns a copy of current menu items
 public:
-	static LLFolderBridge* sSelf;
+	static LLHandle<LLFolderBridge> sSelf;
 	static void staticFolderOptionsMenu();
 	void folderOptionsMenu();
+
 private:
 	BOOL			mCallingCards;
 	BOOL			mWearables;
-	LLMenuGL*		mMenu;
+	LLHandle<LLView>	mMenu;
 	menuentry_vec_t		mItems;
 	menuentry_vec_t		mDisabledItems;
+	LLRootHandle<LLFolderBridge> mHandle;
 };
 
 

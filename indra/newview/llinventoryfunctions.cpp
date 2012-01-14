@@ -106,7 +106,10 @@ void change_item_parent(LLInventoryModel* model,
 						const LLUUID& new_parent_id,
 						BOOL restamp)
 {
-	if (item->getParentUUID() != new_parent_id)
+	// <edit>
+	bool send_parent_update = gInventory.isObjectDescendentOf(item->getUUID(), gInventory.getRootFolderID());
+	// </edit>
+	if(item->getParentUUID() != new_parent_id)
 	{
 		LLInventoryModel::update_list_t update;
 		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(),-1);
@@ -117,6 +120,9 @@ void change_item_parent(LLInventoryModel* model,
 
 		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
 		new_item->setParent(new_parent_id);
+		// <edit>
+		if(send_parent_update)
+		// </edit>
 		new_item->updateParentOnServer(restamp);
 		model->updateItem(new_item);
 		model->notifyObservers();
@@ -150,6 +156,27 @@ void change_category_parent(LLInventoryModel* model,
 	new_cat->setParent(new_parent_id);
 	new_cat->updateParentOnServer(restamp);
 	model->updateCategory(new_cat);
+	model->notifyObservers();
+}
+
+
+void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name)
+{
+	LLViewerInventoryCategory* cat;
+
+	if (!model ||
+		!get_is_category_renameable(model, cat_id) ||
+		(cat = model->getCategory(cat_id)) == NULL ||
+		cat->getName() == new_name)
+	{
+		return;
+	}
+
+	LLPointer<LLViewerInventoryCategory> new_cat = new LLViewerInventoryCategory(cat);
+	new_cat->rename(new_name);
+	new_cat->updateServer(FALSE);
+	model->updateCategory(new_cat);
+
 	model->notifyObservers();
 }
 
@@ -308,6 +335,57 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 	return FALSE;
 }
 
+BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
+{
+	if (!model)
+	{
+		return FALSE;
+	}
+
+	// Can't delete an item that's in the library.
+	if(!model->isObjectDescendentOf(id, gInventory.getRootFolderID()))
+	{
+		return FALSE;
+	}
+
+	// Disable delete from COF folder; have users explicitly choose "detach/take off",
+	// unless the item is not worn but in the COF (i.e. is bugged).
+	if (LLCOFMgr::instance().getIsProtectedCOFItem(id))
+	{
+		if (get_is_item_worn(id))
+		{
+			return FALSE;
+		}
+	}
+
+	const LLInventoryObject *obj = model->getItem(id);
+	if (obj && obj->getIsLinkType())
+	{
+		return TRUE;
+	}
+	if (get_is_item_worn(id))
+	{
+		return FALSE;
+	}
+	return TRUE;
+}
+
+BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
+{
+	if (!model)
+	{
+		return FALSE;
+	}
+
+	LLViewerInventoryCategory* cat = model->getCategory(id);
+
+	if (cat && !LLFolderType::lookupIsProtectedType(cat->getPreferredType()) &&
+		cat->getOwnerID() == gAgent.getID())
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
 
 
 ///----------------------------------------------------------------------------

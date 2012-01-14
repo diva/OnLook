@@ -31,7 +31,8 @@ public:
 	static const LLUUID getCOF() { return gInventory.findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT); }
 	static void         getDescendentsOfAssetType(const LLUUID& idCat, LLInventoryModel::item_array_t& items, 
 	                                              LLAssetType::EType typeAsset, bool fFollowFolderLinks);
-	bool                isLinkInCOF(const LLUUID& idItem);
+	bool                isLinkInCOF(const LLUUID& idItem) const;
+	BOOL getIsProtectedCOFItem(const LLUUID& obj_id) const;
 protected:
 	void addCOFItemLink(const LLUUID& idItem, LLPointer<LLInventoryCallback> cb = NULL);
 	void addCOFItemLink(const LLInventoryItem* pItem, LLPointer<LLInventoryCallback> cb = NULL);

@@ -47,6 +47,11 @@ BOOL get_is_item_worn(const LLUUID& id);
 // Could this item be worn (correct type + not already being worn)
 BOOL get_can_item_be_worn(const LLUUID& id);
 
+BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id);
+
+BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id);
+
+BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id);
 
 void change_item_parent(LLInventoryModel* model,
 									 LLViewerInventoryItem* item,
@@ -57,6 +62,8 @@ void change_category_parent(LLInventoryModel* model,
 	LLViewerInventoryCategory* cat,
 	const LLUUID& new_parent_id,
 	BOOL restamp);
+void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name);
+
 // Generates a string containing the path to the item specified by item_id.
 void append_path(const LLUUID& id, std::string& path);
 

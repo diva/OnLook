@@ -50,6 +50,7 @@
 #include "llviewerinventory.h"
 #include "llviewermessage.h"
 #include "llfoldertype.h"
+#include "llviewerfoldertype.h"
 #include "llviewerwindow.h"
 #include "llviewerregion.h"
 #include "llappviewer.h"
@@ -77,6 +78,8 @@
 #include "process.h"
 #endif
 
+const F32 MAX_TIME_FOR_SINGLE_FETCH = 10.f;
+const S32 MAX_FETCH_RETRIES = 10;
 BOOL LLInventoryModel::sBackgroundFetchActive = FALSE;
 BOOL LLInventoryModel::sAllFoldersFetched = FALSE;
 BOOL LLInventoryModel::sFullFetchStarted = FALSE;
@@ -90,6 +93,7 @@ S16 LLInventoryModel::sBulkFetchCount = 0;
 // RN: for some reason, using std::queue in the header file confuses the compiler which things it's an xmlrpc_queue
 static std::deque<LLUUID> sFetchQueue;
 
+
 // Increment this if the inventory contents change in a non-backwards-compatible way.
 // For viewers with link items support, former caches are incorrect.
 const S32 LLInventoryModel::sCurrentInvCacheVersion = 2;
@@ -99,67 +103,8 @@ const S32 LLInventoryModel::sCurrentInvCacheVersion = 2;
 ///----------------------------------------------------------------------------
 
 //BOOL decompress_file(const char* src_filename, const char* dst_filename);
-const F32 MAX_TIME_FOR_SINGLE_FETCH = 10.f;
-const S32 MAX_FETCH_RETRIES = 10;
-const char CACHE_FORMAT_STRING[] = "%s.inv"; 
-const char* NEW_CATEGORY_NAME = "New Folder";
 
-const char* NEW_CATEGORY_NAMES[LLFolderType::FT_COUNT] =
-{
-	"Textures",			// FT_TEXTURE = 0,
-	"Sounds",			// FT_SOUND = 1, 
-	"Calling Cards",	// FT_CALLINGCARD = 2,
-	"Landmarks",		// FT_LANDMARK = 3,
-	"Scripts",			// AT_SCRIPT (deprecated?)
-	"Clothing",			// FT_CLOTHING = 5,
-	"Objects",			// FT_OBJECT = 6,
-	"Notecards",		// FT_NOTECARD = 7,
-	"New Folder",		// FT_ROOT_INVENTORY = 8,
-	"Inventory",		// AT_ROOT_CATEGORY
-	"Scripts",			// FT_LSL_TEXT = 10,
-	"Scripts",			// AT_LSL_BYTECODE
-	"Uncompressed Images",	// AT_TEXTURE_TGA
-	"Body Parts",		// FT_BODYPART = 13,
-	"Trash",			// FT_TRASH = 14,
-	"Photo Album",		// FT_SNAPSHOT_CATEGORY = 15,
-	"Lost And Found",	// FT_LOST_AND_FOUND = 16,
-	"Uncompressed Sounds",	// AT_SOUND_WAV
-	"Uncompressed Images",	// AT_IMAGE_TGA
-	"Uncompressed Images",	// AT_IMAGE_JPEG
-	"Animations",		// FT_ANIMATION = 20,
-	"Gestures",			// FT_GESTURE = 21,
-	"New Folder",		// AT_SIMSTATE
-	"Favorites",		// FT_FAVORITE = 23,
-	"New Folder",
-	"New Folder",
-	"New Ensemble",		// FT_ENSEMBLE_START = 26,
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",
-	"New Ensemble",		// FT_ENSEMBLE_END = 45,
-	"Current Outfit",	// FT_CURRENT_OUTFIT = 46,
-	"New Outfit",		// FT_OUTFIT = 47,
-	"My Outfits",		// FT_MY_OUTFITS = 48,
-	"Mesh",				// FT_MESH = 49,
-	"Inbox",			// FT_INBOX = 50,
-	"Outbox",			// FT_OUTBOX = 51,
-	"Basic Root"		// FT_BASIC_ROOT = 52
-};
+const char CACHE_FORMAT_STRING[] = "%s.inv"; 
 
 struct InventoryIDPtrLess
 {
@@ -600,10 +545,10 @@ LLUUID LLInventoryModel::createNewCategory(const LLUUID& parent_id,
 	{
 		name.assign(pname);
 	}
-	else if(preferred_type < (LLFolderType::EType)0 || preferred_type >= LLFolderType::FT_COUNT)
-		name.assign(NEW_CATEGORY_NAME);
 	else
-		name.assign(NEW_CATEGORY_NAMES[preferred_type]);
+	{
+		name.assign(LLViewerFolderType::lookupNewCategoryName(preferred_type));
+	}
 
 	if ( callback && user_data )  //callback required for acked message.
 	{
@@ -996,10 +941,10 @@ U32 LLInventoryModel::updateItem(const LLViewerInventoryItem* item)
 
 		}
 	}
-	/*else if (new_item->getType() == LLAssetType::AT_GESTURE)
+	else if (new_item->getType() == LLAssetType::AT_GESTURE)
 	{
 		mask |= LLInventoryObserver::GESTURE;
-	}*/
+	}
 	addChangedMask(mask, new_item->getUUID());
 	return mask;
 }

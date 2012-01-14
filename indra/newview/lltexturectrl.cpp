@@ -44,6 +44,7 @@
 #include "lldraghandle.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
+#include "llfoldervieweventlistener.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryview.h"
