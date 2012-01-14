@@ -65,6 +65,7 @@
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llgesturemgr.h"
+#include "llgiveinventory.h" 
 #include "lliconctrl.h"
 #include "llinventorymodel.h"
 #include "llinventoryclipboard.h"
@@ -3468,7 +3469,7 @@ BOOL LLCallingCardBridge::dragOrDrop(MASK mask, BOOL drop,
 					rv = TRUE;
 					if(drop)
 					{
-						LLToolDragAndDrop::giveInventory(item->getCreatorUUID(),
+						LLGiveInventory::doGiveInventoryItem(item->getCreatorUUID(),
 														 (LLInventoryItem*)cargo_data);
 					}
 				}
@@ -3489,7 +3490,7 @@ BOOL LLCallingCardBridge::dragOrDrop(MASK mask, BOOL drop,
 					rv = TRUE;
 					if(drop)
 					{
-						LLToolDragAndDrop::giveInventoryCategory(
+						LLGiveInventory::doGiveInventoryCategory(
 							item->getCreatorUUID(),
 							inv_cat);
 					}

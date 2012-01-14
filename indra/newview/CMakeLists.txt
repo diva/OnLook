@@ -266,6 +266,7 @@ set(viewer_SOURCE_FILES
     llframestats.cpp
     llframestatview.cpp
     llgesturemgr.cpp
+    llgiveinventory.cpp
     llgivemoney.cpp
     llglsandbox.cpp
     llgroupmgr.cpp
@@ -741,6 +742,7 @@ set(viewer_HEADER_FILES
     llframestats.h
     llframestatview.h
     llgesturemgr.h
+    llgiveinventory.h
     llgivemoney.h
     llgroupmgr.h
     llgroupnotify.h
