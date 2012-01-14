@@ -264,7 +264,7 @@ void LLCOFMgr::addCOFItemLink(const LLInventoryItem* pItem, LLPointer<LLInventor
 	link_inventory_item(gAgent.getID(), pItem->getLinkedUUID(), getCOF(), pItem->getName(), strDescr, LLAssetType::AT_LINK, cb);
 }
 
-bool LLCOFMgr::isLinkInCOF(const LLUUID& idItem)
+bool LLCOFMgr::isLinkInCOF(const LLUUID& idItem) const
 {
 	 LLInventoryModel::cat_array_t folders; LLInventoryModel::item_array_t items;
 	 LLLinkedItemIDMatches f(gInventory.getLinkedItemID(idItem));
@@ -285,6 +285,34 @@ void LLCOFMgr::removeCOFItemLinks(const LLUUID& idItem)
 		if ( (pItem->getIsLinkType()) && (idItem == pItem->getLinkedUUID()) )
 			gInventory.purgeObject(pItem->getUUID());
 	}
+}
+
+BOOL LLCOFMgr::getIsProtectedCOFItem(const LLUUID& obj_id) const
+{
+	if (!isLinkInCOF(obj_id)) return FALSE;
+
+	// If a non-link somehow ended up in COF, allow deletion.
+	const LLInventoryObject *obj = gInventory.getObject(obj_id);
+	if (obj && !obj->getIsLinkType())
+	{
+		return FALSE;
+	}
+
+	// For now, don't allow direct deletion from the COF.  Instead, force users
+	// to choose "Detach" or "Take Off".
+	return TRUE;
+	/*
+	const LLInventoryObject *obj = gInventory.getObject(obj_id);
+	if (!obj) return FALSE;
+
+	// Can't delete bodyparts, since this would be equivalent to removing the item.
+	if (obj->getType() == LLAssetType::AT_BODYPART) return TRUE;
+
+	// Can't delete the folder link, since this is saved for bookkeeping.
+	if (obj->getActualType() == LLAssetType::AT_LINK_FOLDER) return TRUE;
+
+	return FALSE;
+	*/
 }
 
 // ============================================================================

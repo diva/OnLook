@@ -266,6 +266,7 @@ set(viewer_SOURCE_FILES
     llframestats.cpp
     llframestatview.cpp
     llgesturemgr.cpp
+    llgiveinventory.cpp
     llgivemoney.cpp
     llglsandbox.cpp
     llgroupmgr.cpp
@@ -446,6 +447,7 @@ set(viewer_SOURCE_FILES
     llviewercamera.cpp
     llviewercontrol.cpp
     llviewerdisplay.cpp
+    llviewerfoldertype.cpp
     llviewergenericmessage.cpp
     llviewergesture.cpp
     #llviewerimage.cpp
@@ -735,10 +737,12 @@ set(viewer_HEADER_FILES
     llfloaterwindlight.h
     llfloaterworldmap.h
     llfolderview.h
+    llfoldervieweventlistener.h
     llfollowcam.h
     llframestats.h
     llframestatview.h
     llgesturemgr.h
+    llgiveinventory.h
     llgivemoney.h
     llgroupmgr.h
     llgroupnotify.h
@@ -923,6 +927,7 @@ set(viewer_HEADER_FILES
     llviewercamera.h
     llviewercontrol.h
     llviewerdisplay.h
+    llviewerfoldertype.h
     llviewergenericmessage.h
     llviewergesture.h
     #llviewerimage.h

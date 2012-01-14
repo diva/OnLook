@@ -167,6 +167,8 @@
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 
+#include "llgiveinventory.h"
+
 #include <boost/tokenizer.hpp>
 
 #if LL_WINDOWS // For Windows specific error handler
@@ -1972,7 +1974,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 									position,
 									false);
 						}
-						LLToolDragAndDrop::giveInventory(from_id, item);
+						LLGiveInventory::doGiveInventoryItem(from_id, item);
 					}
 				}
 			}

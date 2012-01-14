@@ -47,6 +47,11 @@ BOOL get_is_item_worn(const LLUUID& id);
 // Could this item be worn (correct type + not already being worn)
 BOOL get_can_item_be_worn(const LLUUID& id);
 
+BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id);
+
+BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id);
+
+BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id);
 
 void change_item_parent(LLInventoryModel* model,
 									 LLViewerInventoryItem* item,
@@ -57,6 +62,10 @@ void change_category_parent(LLInventoryModel* model,
 	LLViewerInventoryCategory* cat,
 	const LLUUID& new_parent_id,
 	BOOL restamp);
+
+void remove_category(LLInventoryModel* model, const LLUUID& cat_id);
+void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name);
+
 // Generates a string containing the path to the item specified by item_id.
 void append_path(const LLUUID& id, std::string& path);
 
@@ -252,6 +261,42 @@ public:
 protected:
 	std::string mName;
 };
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLFindWearables
+//
+// Collects wearables based on item type.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLFindWearables : public LLInventoryCollectFunctor
+{
+public:
+	LLFindWearables() {}
+	virtual ~LLFindWearables() {}
+	virtual bool operator()(LLInventoryCategory* cat,
+							LLInventoryItem* item);
+};
+
+/**                    Inventory Collector Functions
+ **                                                                            **
+ *******************************************************************************/
+class LLFolderViewItem;
+class LLFolderViewFolder;
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLFolderViewFunctor
+//
+// Simple abstract base class for applying a functor to folders and
+// items in a folder view hierarchy. This is suboptimal for algorithms
+// that only work folders or only work on items, but I'll worry about
+// that later when it's determined to be too slow.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLFolderViewFunctor
+{
+public:
+	virtual ~LLFolderViewFunctor() {}
+	virtual void doFolder(LLFolderViewFolder* folder) = 0;
+	virtual void doItem(LLFolderViewItem* item) = 0;
+};
+
 class LLInventoryState
 {
 public:
@@ -260,6 +305,49 @@ public:
 	static LLUUID sWearNewClothingTransactionID;	// wear all clothing in this transaction	
 };
 
+class LLSelectFirstFilteredItem : public LLFolderViewFunctor
+{
+public:
+	LLSelectFirstFilteredItem() : mItemSelected(FALSE) {}
+	virtual ~LLSelectFirstFilteredItem() {}
+	virtual void doFolder(LLFolderViewFolder* folder);
+	virtual void doItem(LLFolderViewItem* item);
+	BOOL wasItemSelected() { return mItemSelected; }
+protected:
+	BOOL	mItemSelected;
+};
+
+class LLOpenFilteredFolders : public LLFolderViewFunctor
+{
+public:
+	LLOpenFilteredFolders()  {}
+	virtual ~LLOpenFilteredFolders() {}
+	virtual void doFolder(LLFolderViewFolder* folder);
+	virtual void doItem(LLFolderViewItem* item);
+};
+
+class LLSaveFolderState : public LLFolderViewFunctor
+{
+public:
+	LLSaveFolderState() : mApply(FALSE) {}
+	virtual ~LLSaveFolderState() {}
+	virtual void doFolder(LLFolderViewFolder* folder);
+	virtual void doItem(LLFolderViewItem* item) {}
+	void setApply(BOOL apply);
+	void clearOpenFolders() { mOpenFolders.clear(); }
+protected:
+	std::set<LLUUID> mOpenFolders;
+	BOOL mApply;
+};
+
+class LLOpenFoldersWithSelection : public LLFolderViewFunctor
+{
+public:
+	LLOpenFoldersWithSelection() {}
+	virtual ~LLOpenFoldersWithSelection() {}
+	virtual void doFolder(LLFolderViewFolder* folder);
+	virtual void doItem(LLFolderViewItem* item);
+};
 
 #endif // LL_LLINVENTORYFUNCTIONS_H
 

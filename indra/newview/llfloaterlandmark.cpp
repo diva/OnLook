@@ -39,6 +39,7 @@
 #include "llcheckboxctrl.h"
 #include "llviewerparcelmgr.h"
 #include "llfolderview.h"
+#include "llfoldervieweventlistener.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryview.h"

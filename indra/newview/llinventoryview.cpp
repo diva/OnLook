@@ -413,49 +413,6 @@ void LLInventoryViewFinder::selectNoTypes(void* user_data)
 ///----------------------------------------------------------------------------
 /// LLInventoryView
 ///----------------------------------------------------------------------------
-void LLSaveFolderState::setApply(BOOL apply)
-{
-	mApply = apply; 
-	// before generating new list of open folders, clear the old one
-	if(!apply) 
-	{
-		clearOpenFolders(); 
-	}
-}
-
-void LLSaveFolderState::doFolder(LLFolderViewFolder* folder)
-{
-	if(mApply)
-	{
-		// we're applying the open state
-		LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
-		if(!bridge) return;
-		LLUUID id(bridge->getUUID());
-		if(mOpenFolders.find(id) != mOpenFolders.end())
-		{
-			folder->setOpen(TRUE);
-		}
-		else
-		{
-			// keep selected filter in its current state, this is less jarring to user
-			if (!folder->isSelected())
-			{
-				folder->setOpen(FALSE);
-			}
-		}
-	}
-	else
-	{
-		// we're recording state at this point
-		if(folder->isOpen())
-		{
-			LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
-			if(!bridge) return;
-			mOpenFolders.insert(bridge->getUUID());
-		}
-	}
-}
-
 // Default constructor
 LLInventoryView::LLInventoryView(const std::string& name,
 								 const std::string& rect,
@@ -665,71 +622,6 @@ void LLInventoryView::draw()
         }
 
 	LLFloater::draw();
-}
-
-void LLOpenFilteredFolders::doItem(LLFolderViewItem *item)
-{
-	if (item->getFiltered())
-	{
-		item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-	}
-}
-
-void LLOpenFilteredFolders::doFolder(LLFolderViewFolder* folder)
-{
-	if (folder->getFiltered() && folder->getParentFolder())
-	{
-		folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-	}
-	// if this folder didn't pass the filter, and none of its descendants did
-	else if (!folder->getFiltered() && !folder->hasFilteredDescendants())
-	{
-		folder->setOpenArrangeRecursively(FALSE, LLFolderViewFolder::RECURSE_NO);
-	}
-}
-
-void LLSelectFirstFilteredItem::doItem(LLFolderViewItem *item)
-{
-	if (item->getFiltered() && !mItemSelected)
-	{
-		item->getRoot()->setSelection(item, FALSE, FALSE);
-		if (item->getParentFolder())
-		{
-			item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-		}
-		item->getRoot()->scrollToShowSelection();
-		mItemSelected = TRUE;
-	}
-}
-
-void LLSelectFirstFilteredItem::doFolder(LLFolderViewFolder* folder)
-{
-	if (folder->getFiltered() && !mItemSelected)
-	{
-		folder->getRoot()->setSelection(folder, FALSE, FALSE);
-		if (folder->getParentFolder())
-		{
-			folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-		}
-		folder->getRoot()->scrollToShowSelection();
-		mItemSelected = TRUE;
-	}
-}
-
-void LLOpenFoldersWithSelection::doItem(LLFolderViewItem *item)
-{
-	if (item->getParentFolder() && item->isSelected())
-	{
-		item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-	}
-}
-
-void LLOpenFoldersWithSelection::doFolder(LLFolderViewFolder* folder)
-{
-	if (folder->getParentFolder() && folder->isSelected())
-	{
-		folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
-	}
 }
 
 void LLInventoryView::startSearch()

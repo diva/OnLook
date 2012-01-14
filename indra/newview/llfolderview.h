@@ -70,65 +70,9 @@ class LLMenuGL;
 class LLFolderViewItem;
 class LLFolderView;
 class LLInventoryModel;
+class LLFolderViewFunctor;
 class LLScrollableContainerView;
-
-class LLFolderViewEventListener
-{
-public:
-	virtual ~LLFolderViewEventListener( void ) {}
-	virtual const std::string& getName() const = 0;
-	virtual const std::string& getDisplayName() const = 0;
-	virtual const LLUUID& getUUID() const = 0;
-	virtual time_t getCreationDate() const = 0;	// UTC seconds
-	virtual PermissionMask getPermissionMask() const = 0;
-	virtual LLUIImagePtr getIcon() const = 0;
-	virtual LLFontGL::StyleFlags getLabelStyle() const = 0;
-	virtual std::string getLabelSuffix() const = 0;
-	virtual void openItem( void ) = 0;
-	virtual void previewItem( void ) = 0;
-	virtual void selectItem(void) = 0;
-	virtual void showProperties(void) = 0;
-	virtual BOOL isItemRenameable() const = 0;
-	virtual BOOL renameItem(const std::string& new_name) = 0;
-	virtual BOOL isItemMovable( void ) = 0;		// Can be moved to another folder
-	virtual BOOL isItemRemovable( void ) = 0;	// Can be destroyed
-	virtual BOOL removeItem() = 0;
-	virtual void removeBatch(LLDynamicArray<LLFolderViewEventListener*>& batch) = 0;
-	virtual void move( LLFolderViewEventListener* parent_listener ) = 0;
-	virtual BOOL isItemCopyable() const = 0;
-	virtual BOOL copyToClipboard() const = 0;
-	virtual BOOL cutToClipboard() const = 0;
-	virtual BOOL isClipboardPasteable() const = 0;
-	virtual void pasteFromClipboard() = 0;
-	virtual void pasteLinkFromClipboard() = 0;
-	virtual void buildContextMenu(LLMenuGL& menu, U32 flags) = 0;
-	virtual BOOL isUpToDate() const = 0;
-	virtual BOOL hasChildren() const = 0;
-	virtual LLInventoryType::EType getInventoryType() const = 0;
-	virtual void performAction(LLFolderView* folder, LLInventoryModel* model, std::string action) {}
-
-	// This method should be called when a drag begins. returns TRUE
-	// if the drag can begin, otherwise FALSE.
-	virtual BOOL startDrag(EDragAndDropType* type, LLUUID* id) const = 0;
-
-	// This method will be called to determine if a drop can be
-	// performed, and will set drop to TRUE if a drop is
-	// requested. Returns TRUE if a drop is possible/happened,
-	// otherwise FALSE.
-	virtual BOOL dragOrDrop(MASK mask, BOOL drop,
-							EDragAndDropType cargo_type,
-							void* cargo_data) = 0;
-
-	// This method is called when the object being referenced by the
-	// bridge is actually dropped. This allows for cleanup of the old
-	// view, reference counting, etc.
-//	virtual void dropped() = 0;
-
-	// this method accesses the parent and arranges and sets it as
-	// specified.
-	void arrangeAndSet(LLFolderViewItem* focus, BOOL set_selection,
-		BOOL take_keyboard_focus = TRUE);
-};
+class LLFolderViewEventListener;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,13 +101,6 @@ public:
 class LLFolderViewItem;
 class LLFolderViewFolder;
 
-class LLFolderViewFunctor
-{
-public:
-	virtual ~LLFolderViewFunctor() {}
-	virtual void doFolder(LLFolderViewFolder* folder) = 0;
-	virtual void doItem(LLFolderViewItem* item) = 0;
-};
 
 class LLInventoryFilter
 {
