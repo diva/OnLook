@@ -43,6 +43,7 @@
 #include "llagent.h"
 #include "llcallingcard.h"
 #include "llcheckboxctrl.h"		// for radio buttons
+#include "llfoldervieweventlistener.h"
 #include "llnotificationsutil.h"
 #include "llradiogroup.h"
 #include "llspinctrl.h"
@@ -410,7 +411,7 @@ class LLDoCreate : public inventory_panel_listener_t
 		LLInventoryModel* model = mPtr->getModel();
 		if(!model) return false;
 		std::string type = userdata.asString();
-		do_create(model, mPtr, type, LLFolderBridge::sSelf);
+		do_create(model, mPtr, type, LLFolderBridge::sSelf.get());
 		return true;
 	}
 };

@@ -214,17 +214,16 @@ LLAssetType::EType LLAssetType::lookupHumanReadable(const std::string& readable_
 bool LLAssetType::lookupCanLink(EType asset_type)
 {
 	//Check that enabling all these other types as linkable doesn't break things.
-	/*const LLAssetDictionary *dict = LLAssetDictionary::getInstance();
+	const LLAssetDictionary *dict = LLAssetDictionary::getInstance();
 	const AssetEntry *entry = dict->lookup(asset_type);
 	if (entry)
 	{
 		return entry->mCanLink;
 	}
 	return false;
-	*/
 	
-	return (asset_type == AT_CLOTHING || asset_type == AT_OBJECT || asset_type == AT_CATEGORY ||
-			asset_type == AT_BODYPART || asset_type == AT_GESTURE);
+	/*return (asset_type == AT_CLOTHING || asset_type == AT_OBJECT || asset_type == AT_CATEGORY ||
+			asset_type == AT_BODYPART || asset_type == AT_GESTURE);*/
 }
 
 // static

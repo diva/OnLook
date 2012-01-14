@@ -49,6 +49,7 @@
 #include "lldarray.h"
 #include "llfontgl.h"
 #include "llassetstorage.h"
+#include "llfoldervieweventlistener.h"
 #include "llinventory.h"
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"

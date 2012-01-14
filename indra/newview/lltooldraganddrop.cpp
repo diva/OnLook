@@ -48,8 +48,10 @@
 #include "llfloatertools.h"
 #include "llfocusmgr.h"
 #include "llgesturemgr.h"
-#include "llhudeffecttrail.h"
+#include "llgiveinventory.h"
 #include "llhudmanager.h"
+#include "llhudeffecttrail.h"
+#include "llimview.h"
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
@@ -68,18 +70,15 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvolume.h"
 #include "llworld.h"
 #include "object_flags.h"
-#include "llimview.h"
 // <edit>
 #include "llappviewer.h" // System Folders
 #include "llparcel.h" // always rez
 #include "llviewerparcelmgr.h" // always rez
 // </edit>
-#include "object_flags.h"
-#include "llimview.h"
 
 // [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a)
 #include "rlvhandler.h"
@@ -145,46 +144,23 @@ bool LLDroppableItem::operator()(LLInventoryCategory* cat,
 				 LLInventoryItem* item)
 {
 	bool allowed = false;
-	if(item)
+	if (item)
 	{
 		allowed = itemTransferCommonlyAllowed(item);
 
-		if(allowed
+		if (allowed
 		   && mIsTransfer
 		   && !item->getPermissions().allowOperationBy(PERM_TRANSFER,
 							       gAgent.getID()))
 		{
 			allowed = false;
 		}
-		if(allowed && !item->getPermissions().allowCopyBy(gAgent.getID()))
+		if (allowed && !item->getPermissions().allowCopyBy(gAgent.getID()))
 		{
 			++mCountLosing;
 		}
 	}
 	return allowed;
-}
-
-class LLUncopyableItems : public LLInventoryCollectFunctor
-{
-public:
-	LLUncopyableItems() {}
-	virtual ~LLUncopyableItems() {}
-	virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item);
-};
-
-bool LLUncopyableItems::operator()(LLInventoryCategory* cat,
-				   LLInventoryItem* item)
-{
-	bool uncopyable = false;
-	if(item)
-	{
-		if (itemTransferCommonlyAllowed(item) &&
-		   !item->getPermissions().allowCopyBy(gAgent.getID()))
-		{
-			uncopyable = true;
-		}
-	}
-	return uncopyable;
 }
 
 class LLDropCopyableItems : public LLInventoryCollectFunctor
@@ -209,43 +185,6 @@ bool LLDropCopyableItems::operator()(
 		{
 			// whoops, can't copy it - don't allow it.
 			allowed = false;
-		}
-	}
-	return allowed;
-}
-
-class LLGiveable : public LLInventoryCollectFunctor
-{
-public:
-	LLGiveable() : mCountLosing(0) {}
-	virtual ~LLGiveable() {}
-	virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item);
-
-	S32 countNoCopy() const { return mCountLosing; }
-protected:
-	S32 mCountLosing;
-};
-
-bool LLGiveable::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
-{
-	// All categories can be given.
-	if (cat)
-		return true;
-
-	bool allowed = false;
-	if(item)
-	{
-		allowed = itemTransferCommonlyAllowed(item);
-		if(allowed &&
-		   !item->getPermissions().allowOperationBy(PERM_TRANSFER,
-							    gAgent.getID()))
-		{
-			allowed = FALSE;
-		}
-		if(allowed &&
-		   !item->getPermissions().allowCopyBy(gAgent.getID()))
-		{
-			++mCountLosing;
 		}
 	}
 	return allowed;
@@ -558,8 +497,8 @@ void LLToolDragAndDrop::beginDrag(EDragAndDropType type,
 			LLViewerInventoryCategory::cat_array_t cats;
 			LLViewerInventoryItem::item_array_t items;
 			LLNoPreferredTypeOrItem is_not_preferred;
-			LLInventoryFetchComboObserver::folder_ref_t folder_ids;
-			LLInventoryFetchComboObserver::item_ref_t item_ids;
+			uuid_vec_t folder_ids;
+			uuid_vec_t item_ids;
 			if(is_not_preferred(cat, NULL))
 			{
 				folder_ids.push_back(cargo_id);
@@ -649,9 +588,9 @@ void LLToolDragAndDrop::beginMultiDrag(
 		}
 		if(!cat_ids.empty())
 		{
-			LLInventoryFetchComboObserver::folder_ref_t folder_ids;
-			LLInventoryFetchComboObserver::item_ref_t item_ids;
-			std::back_insert_iterator<LLInventoryFetchDescendentsObserver::folder_ref_t> copier(folder_ids);
+			uuid_vec_t folder_ids;
+			uuid_vec_t item_ids;
+			std::back_insert_iterator<uuid_vec_t> copier(folder_ids);
 			std::copy(cat_ids.begin(), cat_ids.end(), copier);
 			LLCategoryFireAndForget fetcher;
 			fetcher.fetch(folder_ids, item_ids);
@@ -1561,447 +1500,6 @@ struct LLGiveInventoryInfo
 	{}
 };
 
-void LLToolDragAndDrop::giveInventory(const LLUUID& to_agent,
-									  LLInventoryItem* item,
-									  const LLUUID& im_session_id)
-									  
-{
-	llinfos << "LLToolDragAndDrop::giveInventory()" << llendl;
-	if(!isInventoryGiveAcceptable(item))
-	{
-		return;
-	}
-	if(item->getPermissions().allowCopyBy(gAgent.getID()))
-	{
-		// just give it away.
-		LLToolDragAndDrop::commitGiveInventoryItem(to_agent, item, im_session_id);
-	}
-	else
-	{
-		// ask if the agent is sure.
-		LLSD payload;
-		payload["agent_id"] = to_agent;
-		payload["item_id"] = item->getUUID();
-		LLNotificationsUtil::add("CannotCopyWarning", LLSD(), payload, 
-		        &LLToolDragAndDrop::handleCopyProtectedItem);
-	}
-}
-// static
-bool LLToolDragAndDrop::handleCopyProtectedItem(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-	LLInventoryItem* item = NULL;
-	switch(option)
-	{
-	case 0:  // "Yes"
-		item = gInventory.getItem(notification["payload"]["item_id"].asUUID());
-		if(item)
-		{
-			LLToolDragAndDrop::commitGiveInventoryItem(notification["payload"]["agent_id"].asUUID(),
-													   item);
-			// delete it for now - it will be deleted on the server
-			// quickly enough.
-			gInventory.deleteObject(notification["payload"]["item_id"].asUUID());
-			gInventory.notifyObservers();
-		}
-		else
-		{
-			LLNotificationsUtil::add("CannotGiveItem");		
-		}
-		break;
-
-	default: // no, cancel, whatever, who cares, not yes.
-		LLNotificationsUtil::add("TransactionCancelled");
-		break;
-	}
-	return false;
-}
-
-// static
-void LLToolDragAndDrop::commitGiveInventoryItem(const LLUUID& to_agent,
-												LLInventoryItem* item,
-												const LLUUID& im_session_id)
-{
-	if(!item) return;
-	std::string name;
-	gAgent.buildFullname(name);
-	LLUUID transaction_id;
-	transaction_id.generate();
-	const S32 BUCKET_SIZE = sizeof(U8) + UUID_BYTES;
-	U8 bucket[BUCKET_SIZE];
-	bucket[0] = (U8)item->getType();
-	memcpy(&bucket[1], &(item->getUUID().mData), UUID_BYTES);		/* Flawfinder: ignore */
-	pack_instant_message(
-		gMessageSystem,
-		gAgent.getID(),
-		FALSE,
-		gAgent.getSessionID(),
-		to_agent,
-		name,
-		item->getName(),
-		IM_ONLINE,
-		IM_INVENTORY_OFFERED,
-		transaction_id,
-		0,
-		LLUUID::null,
-		gAgent.getPositionAgent(),
-		NO_TIMESTAMP,
-		bucket,
-		BUCKET_SIZE);
-	gAgent.sendReliableMessage(); 
-	// <edit>
-	if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
-	{
-		// </edit>
-		// VEFFECT: giveInventory
-		LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-		effectp->setSourceObject(gAgentAvatarp);
-		effectp->setTargetObject(gObjectList.findObject(to_agent));
-		effectp->setDuration(LL_HUD_DUR_SHORT);
-		effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-	// <edit>
-	}
-	// </edit>
-	gFloaterTools->dirty();
-
-	LLMuteList::getInstance()->autoRemove(to_agent, LLMuteList::AR_INVENTORY);
-
-	// If this item was given by drag-and-drop into an IM panel, log this action in the IM panel chat.
-	if (im_session_id != LLUUID::null)
-	{
-		LLSD args;
-		gIMMgr->addSystemMessage(im_session_id, "inventory_item_offered", args);
-	}
-
-}
-
-void LLToolDragAndDrop::giveInventoryCategory(const LLUUID& to_agent,
-											  LLInventoryCategory* cat,
-											  const LLUUID& im_session_id)
-
-{
-	if(!cat) return;
-	llinfos << "LLToolDragAndDrop::giveInventoryCategory() - "
-			<< cat->getUUID() << llendl;
-
-	LLVOAvatar* my_avatar = gAgentAvatarp;
-	if( !my_avatar )
-	{
-		return;
-	}
-
-	// Test out how many items are being given.
-	LLViewerInventoryCategory::cat_array_t cats;
-	LLViewerInventoryItem::item_array_t items;
-	LLGiveable giveable;
-	gInventory.collectDescendentsIf(cat->getUUID(),
-									cats,
-									items,
-									LLInventoryModel::EXCLUDE_TRASH,
-									giveable);
-	S32 count = cats.count();
-	bool complete = true;
-	for(S32 i = 0; i < count; ++i)
-	{
-		if(!gInventory.isCategoryComplete(cats.get(i)->getUUID()))
-		{
-			complete = false;
-			break;
-		}
-	}
-	if(!complete)
-	{
-		LLNotificationsUtil::add("IncompleteInventory");
-		return;
-	}
- 	count = items.count() + cats.count();
- 	if(count > MAX_ITEMS)
-  	{
-		LLNotificationsUtil::add("TooManyItems");
-  		return;
-  	}
- 	else if(count == 0)
-  	{
-		LLNotificationsUtil::add("NoItems");
-  		return;
-  	}
-	else
-	{
-		if(0 == giveable.countNoCopy())
-		{
-			LLToolDragAndDrop::commitGiveInventoryCategory(to_agent, cat, im_session_id);
-		}
-		else 
-		{
-			LLGiveInventoryInfo* info = NULL;
-			info = new LLGiveInventoryInfo(to_agent, cat->getUUID(), im_session_id);
-			LLSD args;
-			args["COUNT"] = llformat("%d",giveable.countNoCopy());
-			LLSD payload;
-			payload["agent_id"] = to_agent;
-			payload["folder_id"] = cat->getUUID();
-			LLNotificationsUtil::add("CannotCopyCountItems", args, payload, &LLToolDragAndDrop::handleCopyProtectedCategory);
-		}
-	}
-}
-
-
-// static
-bool LLToolDragAndDrop::handleCopyProtectedCategory(const LLSD& notification, const LLSD& response)
-{
-	S32 option = LLNotification::getSelectedOption(notification, response);
-	LLInventoryCategory* cat = NULL;
-	switch(option)
-	{
-	case 0:  // "Yes"
-		cat = gInventory.getCategory(notification["payload"]["folder_id"].asUUID());
-		if(cat)
-		{
-			LLToolDragAndDrop::commitGiveInventoryCategory(notification["payload"]["agent_id"].asUUID(),
-														   cat);
-			LLViewerInventoryCategory::cat_array_t cats;
-			LLViewerInventoryItem::item_array_t items;
-			LLUncopyableItems remove;
-			gInventory.collectDescendentsIf(cat->getUUID(),
-											cats,
-											items,
-											LLInventoryModel::EXCLUDE_TRASH,
-											remove);
-			S32 count = items.count();
-			for(S32 i = 0; i < count; ++i)
-			{
-				gInventory.deleteObject(items.get(i)->getUUID());
-			}
-			gInventory.notifyObservers();
-		}
-		else
-		{
-			LLNotificationsUtil::add("CannotGiveCategory");
-		}
-		break;
-
-	default: // no, cancel, whatever, who cares, not yes.
-		LLNotificationsUtil::add("TransactionCancelled");
-		break;
-	}
-	return false;
-}
-
-// static
-void LLToolDragAndDrop::commitGiveInventoryCategory(const LLUUID& to_agent,
-													LLInventoryCategory* cat,
-													const LLUUID& im_session_id)
-
-{
-	if(!cat) return;
-	llinfos << "LLToolDragAndDrop::commitGiveInventoryCategory() - "
-			<< cat->getUUID() << llendl;
-
-	// Test out how many items are being given.
-	LLViewerInventoryCategory::cat_array_t cats;
-	LLViewerInventoryItem::item_array_t items;
-	LLGiveable giveable;
-	gInventory.collectDescendentsIf(cat->getUUID(),
-									cats,
-									items,
-									LLInventoryModel::EXCLUDE_TRASH,
-									giveable);
-
-	// MAX ITEMS is based on (sizeof(uuid)+2) * count must be <
-	// MTUBYTES or 18 * count < 1200 => count < 1200/18 =>
-	// 66. I've cut it down a bit from there to give some pad.
- 	S32 count = items.count() + cats.count();
- 	if(count > MAX_ITEMS)
-  	{
-		LLNotificationsUtil::add("TooManyItems");
-  		return;
-  	}
- 	else if(count == 0)
-  	{
-		LLNotificationsUtil::add("NoItems");
-  		return;
-  	}
-	else
-	{
-		std::string name;
-		gAgent.buildFullname(name);
-		LLUUID transaction_id;
-		transaction_id.generate();
-		S32 bucket_size = (sizeof(U8) + UUID_BYTES) * (count + 1);
-		U8* bucket = new U8[bucket_size];
-		U8* pos = bucket;
-		U8 type = (U8)cat->getType();
-		memcpy(pos, &type, sizeof(U8));		/* Flawfinder: ignore */
-		pos += sizeof(U8);
-		memcpy(pos, &(cat->getUUID()), UUID_BYTES);		/* Flawfinder: ignore */
-		pos += UUID_BYTES;
-		S32 i;
-		count = cats.count();
-		for(i = 0; i < count; ++i)
-		{
-			memcpy(pos, &type, sizeof(U8));		/* Flawfinder: ignore */
-			pos += sizeof(U8);
-			memcpy(pos, &(cats.get(i)->getUUID()), UUID_BYTES);		/* Flawfinder: ignore */
-			pos += UUID_BYTES;
-		}
-		count = items.count();
-		for(i = 0; i < count; ++i)
-		{
-			type = (U8)items.get(i)->getType();
-			memcpy(pos, &type, sizeof(U8));		/* Flawfinder: ignore */
-			pos += sizeof(U8);
-			memcpy(pos, &(items.get(i)->getUUID()), UUID_BYTES);		/* Flawfinder: ignore */
-			pos += UUID_BYTES;
-		}
-		pack_instant_message(
-			gMessageSystem,
-			gAgent.getID(),
-			FALSE,
-			gAgent.getSessionID(),
-			to_agent,
-			name,
-			cat->getName(),
-			IM_ONLINE,
-			IM_INVENTORY_OFFERED,
-			transaction_id,
-			0,
-			LLUUID::null,
-			gAgent.getPositionAgent(),
-			NO_TIMESTAMP,
-			bucket,
-			bucket_size);
-		gAgent.sendReliableMessage();
-		delete[] bucket;
-		// <edit>
- 		if (gSavedSettings.getBOOL("BroadcastViewerEffects"))
-		{
- 			// </edit>
-			// VEFFECT: giveInventoryCategory
-			LLHUDEffectSpiral *effectp = (LLHUDEffectSpiral *)LLHUDManager::getInstance()->createViewerEffect(LLHUDObject::LL_HUD_EFFECT_BEAM, TRUE);
-			effectp->setSourceObject(gAgentAvatarp);
-			effectp->setTargetObject(gObjectList.findObject(to_agent));
-			effectp->setDuration(LL_HUD_DUR_SHORT);
-			effectp->setColor(LLColor4U(gAgent.getEffectColor()));
-			// <edit>
-		}
-		// </edit>
-		gFloaterTools->dirty();
-
-		LLMuteList::getInstance()->autoRemove(to_agent, LLMuteList::AR_INVENTORY);
-
-		// If this item was given by drag-and-drop into an IM panel, log this action in the IM panel chat.
-		if (im_session_id != LLUUID::null)
-		{
-			LLSD args;
-			gIMMgr->addSystemMessage(im_session_id, "inventory_item_offered", args);
-		}
-	}
-}
-
-// static
-BOOL LLToolDragAndDrop::isInventoryGiveAcceptable(LLInventoryItem* item)
-{
-	if(!item)
-	{
-		return FALSE;
-	}
-	if(!item->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID()))
-	{
-		return FALSE;
-	}
-	BOOL copyable = FALSE;
-	if(item->getPermissions().allowCopyBy(gAgent.getID())) copyable = TRUE;
-	
-	// <edit>
-	/*LLVOAvatar* my_avatar = gAgentAvatarp;
-	if(!my_avatar)
-	{
-		return FALSE;
-	}*/
-	// </edit>
-
-	// <edit>
-	//BOOL acceptable = FALSE;
-	BOOL acceptable = TRUE;
-	// Might also look at what's down below
-	// </edit>
-	switch(item->getType())
-	{
-	case LLAssetType::AT_CALLINGCARD:
-		acceptable = FALSE;
-		break;
-	case LLAssetType::AT_OBJECT:
-		// <edit>		
-		/*if(my_avatar->isWearingAttachment(item->getUUID()))
-		{
-			acceptable = FALSE;
-		}*/
-		// </edit>
-		break;
-	case LLAssetType::AT_BODYPART:
-	case LLAssetType::AT_CLOTHING:
-		// <edit>		
-		/*if(!copyable && gAgentWearables.isWearingItem(item->getUUID()))
-		{
-			acceptable = FALSE;
-		}*/
-		// </edit>
-		break;
-	default:
-		break;
-	}
-	return acceptable;
-}
-
-// Static
-BOOL LLToolDragAndDrop::isInventoryGroupGiveAcceptable(LLInventoryItem* item)
-{
-	if(!item)
-	{
-		return FALSE;
-	}
-
-	// These permissions are double checked in the simulator in
-	// LLGroupNoticeInventoryItemFetch::result().
-	if(!item->getPermissions().allowOperationBy(PERM_TRANSFER, gAgent.getID()))
-	{
-		return FALSE;
-	}
-	if(!item->getPermissions().allowCopyBy(gAgent.getID()))
-	{
-		return FALSE;
-	}
-
-	LLVOAvatar* my_avatar = gAgentAvatarp;
-	if(!my_avatar)
-	{
-		return FALSE;
-	}
-
-	BOOL acceptable = TRUE;
-	// <edit>
-	/*
-	// </edit>
-	switch(item->getType())
-	{
-	case LLAssetType::AT_CALLINGCARD:
-		acceptable = FALSE;
-		break;
-	case LLAssetType::AT_OBJECT:
-		if(my_avatar->isWearingAttachment(item->getUUID()))
-		{
-			acceptable = FALSE;
-		}
-		break;
-	default:
-		break;
-	}
-	// <edit>
-	*/
-	// </edit>
-	return acceptable;
-}
-
 // accessor that looks at permissions, copyability, and names of
 // inventory items to determine if a drop would be ok.
 EAcceptance LLToolDragAndDrop::willObjectAcceptInventory(LLViewerObject* obj, LLInventoryItem* item)
@@ -2117,13 +1615,13 @@ bool LLToolDragAndDrop::handleGiveDragAndDrop(LLUUID dest_agent, LLUUID session_
 	{
 		LLViewerInventoryItem* inv_item = (LLViewerInventoryItem*)cargo_data;
 		if(gInventory.getItem(inv_item->getUUID())
-		   && LLToolDragAndDrop::isInventoryGiveAcceptable(inv_item))
+		   && LLGiveInventory::isInventoryGiveAcceptable(inv_item))
 		{
 			// *TODO: get multiple object transfers working
 			*accept = ACCEPT_YES_COPY_SINGLE;
 			if(drop)
 			{
-				LLToolDragAndDrop::giveInventory(dest_agent, inv_item, session_id);
+				LLGiveInventory::doGiveInventoryItem(dest_agent, inv_item, session_id);
 			}
 		}
 		else
@@ -2145,7 +1643,7 @@ bool LLToolDragAndDrop::handleGiveDragAndDrop(LLUUID dest_agent, LLUUID session_
 			*accept = ACCEPT_YES_COPY_SINGLE;
 			if(drop)
 			{
-				LLToolDragAndDrop::giveInventoryCategory(dest_agent, inv_cat, session_id);
+				LLGiveInventory::doGiveInventoryCategory(dest_agent, inv_cat, session_id);
 			}
 		}
 		else
@@ -2868,7 +2366,7 @@ EAcceptance LLToolDragAndDrop::dad3dGiveInventoryObject(
 	{
 		if(drop)
 		{
-			giveInventory(obj->getID(), item );
+			LLGiveInventory::doGiveInventoryItem(obj->getID(), item );
 		}
 		// *TODO: deal with all the issues surrounding multi-object
 		// inventory transfers.
@@ -2888,13 +2386,13 @@ EAcceptance LLToolDragAndDrop::dad3dGiveInventory(
 	LLViewerInventoryCategory* cat;
 	locateInventory(item, cat);
 	if(!item || !item->isComplete()) return ACCEPT_NO;
-	if(!isInventoryGiveAcceptable(item))
+	if(!LLGiveInventory::isInventoryGiveAcceptable(item))
 	{
 		return ACCEPT_NO;
 	}
 	if(drop && obj)
 	{
-		giveInventory(obj->getID(), item);
+		LLGiveInventory::doGiveInventoryItem(obj->getID(), item);
 	}
 	// *TODO: deal with all the issues surrounding multi-object
 	// inventory transfers.
@@ -2911,7 +2409,7 @@ EAcceptance LLToolDragAndDrop::dad3dGiveInventoryCategory(
 		LLViewerInventoryCategory* cat;
 		locateInventory(item, cat);
 		if(!cat) return ACCEPT_NO;
-		giveInventoryCategory(obj->getID(), cat);
+		LLGiveInventory::doGiveInventoryCategory(obj->getID(), cat);
 	}
 	// *TODO: deal with all the issues surrounding multi-object
 	// inventory transfers.

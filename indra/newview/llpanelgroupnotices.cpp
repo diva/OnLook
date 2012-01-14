@@ -36,10 +36,12 @@
 
 #include "llview.h"
 
+#include "llavatarnamecache.h"
 #include "llinventory.h"
 #include "llviewerinventory.h"
-#include "llinventorymodel.h"
 #include "llinventorydefines.h"
+#include "llinventoryfunctions.h"
+#include "llinventorymodel.h"
 #include "llinventoryicon.h"
 #include "llagent.h"
 #include "lltooldraganddrop.h"
@@ -49,7 +51,6 @@
 #include "llbutton.h"
 #include "lliconctrl.h"
 #include "llcheckboxctrl.h"
-#include "llnotificationsutil.h"
 #include "llscrolllistctrl.h"
 #include "lltextbox.h"
 
@@ -57,6 +58,8 @@
 #include "llviewerwindow.h"
 #include "llviewercontrol.h"
 #include "llviewermessage.h"
+#include "llnotificationsutil.h"
+#include "llgiveinventory.h"
 
 const S32 NOTICE_DATE_STRING_SIZE = 30;
 
@@ -140,7 +143,7 @@ BOOL LLGroupDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 		{
 			LLViewerInventoryItem* inv_item = (LLViewerInventoryItem*)cargo_data;
 			if(gInventory.getItem(inv_item->getUUID())
-				&& LLToolDragAndDrop::isInventoryGroupGiveAcceptable(inv_item))
+				&& LLGiveInventory::isInventoryGroupGiveAcceptable(inv_item))
 			{
 				// *TODO: get multiple object transfers working
 				*accept = ACCEPT_YES_COPY_SINGLE;

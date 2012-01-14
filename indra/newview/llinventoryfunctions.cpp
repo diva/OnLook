@@ -106,7 +106,10 @@ void change_item_parent(LLInventoryModel* model,
 						const LLUUID& new_parent_id,
 						BOOL restamp)
 {
-	if (item->getParentUUID() != new_parent_id)
+	// <edit>
+	bool send_parent_update = gInventory.isObjectDescendentOf(item->getUUID(), gInventory.getRootFolderID());
+	// </edit>
+	if(item->getParentUUID() != new_parent_id)
 	{
 		LLInventoryModel::update_list_t update;
 		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(),-1);
@@ -117,6 +120,9 @@ void change_item_parent(LLInventoryModel* model,
 
 		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
 		new_item->setParent(new_parent_id);
+		// <edit>
+		if(send_parent_update)
+		// </edit>
 		new_item->updateParentOnServer(restamp);
 		model->updateItem(new_item);
 		model->notifyObservers();
@@ -150,6 +156,59 @@ void change_category_parent(LLInventoryModel* model,
 	new_cat->setParent(new_parent_id);
 	new_cat->updateParentOnServer(restamp);
 	model->updateCategory(new_cat);
+	model->notifyObservers();
+}
+
+/*void remove_category(LLInventoryModel* model, const LLUUID& cat_id)
+{
+	if (!model || !get_is_category_removable(model, cat_id))
+	{
+		return;
+	}
+
+	// Look for any gestures and deactivate them
+	LLInventoryModel::cat_array_t	descendent_categories;
+	LLInventoryModel::item_array_t	descendent_items;
+	gInventory.collectDescendents(cat_id, descendent_categories, descendent_items, FALSE);
+
+	for (LLInventoryModel::item_array_t::const_iterator iter = descendent_items.begin();
+		 iter != descendent_items.end();
+		 ++iter)
+	{
+		const LLViewerInventoryItem* item = (*iter);
+		const LLUUID& item_id = item->getUUID();
+		if (item->getType() == LLAssetType::AT_GESTURE
+			&& LLGestureMgr::instance().isGestureActive(item_id))
+		{
+			LLGestureMgr::instance().deactivateGesture(item_id);
+		}
+	}
+
+	LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
+	if (cat)
+	{
+		const LLUUID trash_id = model->findCategoryUUIDForType(LLFolderType::FT_TRASH);
+		change_category_parent(model, cat, trash_id, TRUE);
+	}
+}*/
+
+void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name)
+{
+	LLViewerInventoryCategory* cat;
+
+	if (!model ||
+		!get_is_category_renameable(model, cat_id) ||
+		(cat = model->getCategory(cat_id)) == NULL ||
+		cat->getName() == new_name)
+	{
+		return;
+	}
+
+	LLPointer<LLViewerInventoryCategory> new_cat = new LLViewerInventoryCategory(cat);
+	new_cat->rename(new_name);
+	new_cat->updateServer(FALSE);
+	model->updateCategory(new_cat);
+
 	model->notifyObservers();
 }
 
@@ -308,6 +367,101 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 	return FALSE;
 }
 
+BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
+{
+	if (!model)
+	{
+		return FALSE;
+	}
+
+	// Can't delete an item that's in the library.
+	if(!model->isObjectDescendentOf(id, gInventory.getRootFolderID()))
+	{
+		return FALSE;
+	}
+
+	// Disable delete from COF folder; have users explicitly choose "detach/take off",
+	// unless the item is not worn but in the COF (i.e. is bugged).
+	if (LLCOFMgr::instance().getIsProtectedCOFItem(id))
+	{
+		if (get_is_item_worn(id))
+		{
+			return FALSE;
+		}
+	}
+
+	const LLInventoryObject *obj = model->getItem(id);
+	if (obj && obj->getIsLinkType())
+	{
+		return TRUE;
+	}
+	if (get_is_item_worn(id))
+	{
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/*BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
+{
+	// NOTE: This function doesn't check the folder's children.
+	// See LLFolderBridge::isItemRemovable for a function that does
+	// consider the children.
+
+	if (!model)
+	{
+		return FALSE;
+	}
+
+	if (!model->isObjectDescendentOf(id, gInventory.getRootFolderID()))
+	{
+		return FALSE;
+	}
+
+	if (!isAgentAvatarValid()) return FALSE;
+
+	const LLInventoryCategory* category = model->getCategory(id);
+	if (!category)
+	{
+		return FALSE;
+	}
+
+	const LLFolderType::EType folder_type = category->getPreferredType();
+	
+	if (LLFolderType::lookupIsProtectedType(folder_type))
+	{
+		return FALSE;
+	}
+
+	// Can't delete the outfit that is currently being worn.
+	if (folder_type == LLFolderType::FT_OUTFIT)
+	{
+		const LLViewerInventoryItem *base_outfit_link = LLAppearanceMgr::instance().getBaseOutfitLink();
+		if (base_outfit_link && (category == base_outfit_link->getLinkedCategory()))
+		{
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}*/
+
+BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
+{
+	if (!model)
+	{
+		return FALSE;
+	}
+
+	LLViewerInventoryCategory* cat = model->getCategory(id);
+
+	if (cat && !LLFolderType::lookupIsProtectedType(cat->getPreferredType()) &&
+		cat->getOwnerID() == gAgent.getID())
+	{
+		return TRUE;
+	}
+	return FALSE;
+}
 
 
 ///----------------------------------------------------------------------------
@@ -458,6 +612,21 @@ bool LLNameCategoryCollector::operator()(
 	}
 	return false;
 }
+
+bool LLFindWearables::operator()(LLInventoryCategory* cat,
+								 LLInventoryItem* item)
+{
+	if(item)
+	{
+		if((item->getType() == LLAssetType::AT_CLOTHING)
+		   || (item->getType() == LLAssetType::AT_BODYPART))
+		{
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 ///----------------------------------------------------------------------------
 /// LLAssetIDMatches 
 ///----------------------------------------------------------------------------
@@ -474,4 +643,112 @@ bool LLLinkedItemIDMatches::operator()(LLInventoryCategory* cat, LLInventoryItem
 	return (item && 
 			(item->getIsLinkType()) &&
 			(item->getLinkedUUID() == mBaseItemID)); // A linked item's assetID will be the compared-to item's itemID.
+}
+
+void LLSaveFolderState::setApply(BOOL apply)
+{
+	mApply = apply; 
+	// before generating new list of open folders, clear the old one
+	if(!apply) 
+	{
+		clearOpenFolders(); 
+	}
+}
+
+void LLSaveFolderState::doFolder(LLFolderViewFolder* folder)
+{
+	if(mApply)
+	{
+		// we're applying the open state
+		LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
+		if(!bridge) return;
+		LLUUID id(bridge->getUUID());
+		if(mOpenFolders.find(id) != mOpenFolders.end())
+		{
+			folder->setOpen(TRUE);
+		}
+		else
+		{
+			// keep selected filter in its current state, this is less jarring to user
+			if (!folder->isSelected())
+			{
+				folder->setOpen(FALSE);
+			}
+		}
+	}
+	else
+	{
+		// we're recording state at this point
+		if(folder->isOpen())
+		{
+			LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
+			if(!bridge) return;
+			mOpenFolders.insert(bridge->getUUID());
+		}
+	}
+}
+
+void LLOpenFilteredFolders::doItem(LLFolderViewItem *item)
+{
+	if (item->getFiltered())
+	{
+		item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+	}
+}
+
+void LLOpenFilteredFolders::doFolder(LLFolderViewFolder* folder)
+{
+	if (folder->getFiltered() && folder->getParentFolder())
+	{
+		folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+	}
+	// if this folder didn't pass the filter, and none of its descendants did
+	else if (!folder->getFiltered() && !folder->hasFilteredDescendants())
+	{
+		folder->setOpenArrangeRecursively(FALSE, LLFolderViewFolder::RECURSE_NO);
+	}
+}
+
+void LLSelectFirstFilteredItem::doItem(LLFolderViewItem *item)
+{
+	if (item->getFiltered() && !mItemSelected)
+	{
+		item->getRoot()->setSelection(item, FALSE, FALSE);
+		if (item->getParentFolder())
+		{
+			item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+		}
+		item->getRoot()->scrollToShowSelection();
+		mItemSelected = TRUE;
+	}
+}
+
+void LLSelectFirstFilteredItem::doFolder(LLFolderViewFolder* folder)
+{
+	if (folder->getFiltered() && !mItemSelected)
+	{
+		folder->getRoot()->setSelection(folder, FALSE, FALSE);
+		if (folder->getParentFolder())
+		{
+			folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+		}
+		folder->getRoot()->scrollToShowSelection();
+		mItemSelected = TRUE;
+	}
+}
+
+void LLOpenFoldersWithSelection::doItem(LLFolderViewItem *item)
+{
+	if (item->getParentFolder() && item->isSelected())
+	{
+		item->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+	}
+}
+
+void LLOpenFoldersWithSelection::doFolder(LLFolderViewFolder* folder)
+{
+	if (folder->getParentFolder() && folder->isSelected())
+	{
+		folder->getParentFolder()->setOpenArrangeRecursively(TRUE, LLFolderViewFolder::RECURSE_UP);
+	}
 }
