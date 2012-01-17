@@ -176,7 +176,6 @@ void LLSurface::create(const S32 grids_per_edge,
 	mNumberOfPatches = mPatchesPerEdge * mPatchesPerEdge;
 	mMetersPerGrid = width / ((F32)(mGridsPerEdge - 1));
 	mMetersPerEdge = mMetersPerGrid * (mGridsPerEdge - 1);
-	sTextureSize = width;
 
 	mOriginGlobal.setVec(origin_global);
 
@@ -300,7 +299,7 @@ void LLSurface::initTextures()
 		mWaterObjp = (LLVOWater *)gObjectList.createObjectViewer(LLViewerObject::LL_VO_WATER, mRegionp);
 		gPipeline.createObject(mWaterObjp);
 		LLVector3d water_pos_global = from_region_handle(mRegionp->getHandle());
-		water_pos_global += LLVector3d(mRegionp->getWidth()/2, mRegionp->getWidth()/2, DEFAULT_WATER_HEIGHT);
+		water_pos_global += LLVector3d(128.0, 128.0, DEFAULT_WATER_HEIGHT);
 		mWaterObjp->setPositionGlobal(water_pos_global);
 	}
 }
@@ -330,8 +329,8 @@ void LLSurface::setOriginGlobal(const LLVector3d &origin_global)
 	// Hack!
 	if (mWaterObjp.notNull() && mWaterObjp->mDrawable.notNull())
 	{
-		const F64 x = origin_global.mdV[VX] + (F64)mRegionp->getWidth()/2;
-		const F64 y = origin_global.mdV[VY] + (F64)mRegionp->getWidth()/2;
+		const F64 x = origin_global.mdV[VX] + 128.0;
+		const F64 y = origin_global.mdV[VY] + 128.0;
 		const F64 z = mWaterObjp->getPositionGlobal().mdV[VZ];
 
 		LLVector3d water_origin_global(x, y, z);
@@ -692,22 +691,14 @@ void LLSurface::decompressDCTPatch(LLBitPack &bitpack, LLGroupHeader *gopp, BOOL
 
 	while (1)
 	{
-		decode_patch_header(bitpack, &ph, b_large_patch);
+		decode_patch_header(bitpack, &ph);
 		if (ph.quant_wbits == END_OF_PATCHES)
 		{
 			break;
 		}
 
-		if (b_large_patch)
-		{
-            i = ph.patchids >> 16; //x
-			j = ph.patchids & 0xFFFF; //y
-        }
-		else
-        {
-            i = ph.patchids >> 5; //x
-			j = ph.patchids & 0x1F; //y
-        }
+		i = ph.patchids >> 5;
+		j = ph.patchids & 0x1F;
 
 		if ((i >= mPatchesPerEdge) || (j >= mPatchesPerEdge))
 		{
