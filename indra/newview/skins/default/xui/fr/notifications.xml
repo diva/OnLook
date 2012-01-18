@@ -70,10 +70,10 @@
        text="$canceltext"/>
     </form>
   </template>
-	<notification functor="GenericAcknowledge" label="Message d&apos;alerte inconnu" name="MissingAlert">
-		Votre version de Second Life ne peut afficher ce message d&apos;erreur.
+	<notification functor="GenericAcknowledge" label="Message de notification inconnu" name="MissingAlert">
+		Votre version de [APP_NAME] ne peut afficher ce message de notification.  Veuillez vous assurer que vous avez bien la toute dernière version du client.
 
-Détails de l&apos;erreur : L&apos;alerte, appelée &apos;[_NAME]&apos; est introuvable dans notifications.xml.
+Détails de l&apos;erreur : La notification, appelée &apos;[_NAME]&apos;, est introuvable dans notifications.xml.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	<notification name="FloaterNotFound">
@@ -94,11 +94,11 @@ Détails de l&apos;erreur : L&apos;alerte, appelée &apos;[_NAME]&apos; est int
 		<usetemplate name="okcancelbuttons" notext="Annuler" yestext="Oui"/>
 	</notification>
 	<notification name="BadInstallation">
-		Une erreur est survenue lors de la mise à jour de Second Life. Veuillez télécharger la dernière version depuis PheonixViewer.com.
+		Une erreur est survenue lors de la mise à jour de [APP_NAME]. Veuillez télécharger la dernière version depuis SingularityViewer.org.
 		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	<notification name="LoginFailedNoNetwork">
-		Erreur réseau : impossible d&apos;établir une connexion. 
+		Erreur réseau : impossible d&apos;établir une connexion à [SECOND_LIFE_GRID].
 &apos;[DIAGNOSTIC]&apos;
 Veuillez vérifier votre connexion.
 		<usetemplate name="okbutton" yestext="OK"/>
@@ -502,7 +502,9 @@ La qualité des graphiques peut être augmentée à la section Préférences &gt
 		Le terraformage est interdit dans la région [REGION].
 	</notification>
 	<notification name="CannotCopyWarning">
-		Vous n&apos;êtes pas autorisé à copier cet objet et il disparaîtra de votre inventaire si vous le donnez. Souhaitez-vous vraiment offrir cet objet ?
+		Vous n&apos;êtes pas autorisé à copier les articles suivants :
+[ITEMS].
+Ceux-ci disparaîtront donc de votre inventaire si vous les donnez. Voulez-vous vraiment offrir ces articles ?
 		<usetemplate name="okcancelbuttons" notext="Non" yestext="Oui"/>
 	</notification>
 	<notification name="CannotGiveItem">
@@ -615,6 +617,10 @@ Assurez-vous que le fichier a l&apos;extension correcte.
 		Impossible de trouver les données dans l&apos;en-tête WAV :
 [FILE]
 	</notification>
+	<notification name="SoundFileInvalidChunkSize">
+		Taille de fragment incorrecte dans le fichier WAV :
+[FILE]
+	</notification>
 	<notification name="SoundFileInvalidTooLong">
 		Le fichier audio est trop long (10 secondes maximum) :
 [FILE]
@@ -643,7 +649,7 @@ Assurez-vous que le fichier a l&apos;extension correcte.
 		Impossible de créer le fichier de sortie : [FILE]
 	</notification>
 	<notification name="DoNotSupportBulkAnimationUpload">
-		Actuellement, nous ne prenons pas en charge le chargement de lots de fichiers d&apos;animation.
+		Actuellement, [APP_NAME] ne prend pas en charge le chargement de lots de fichiers d&apos;animation.
 	</notification>
 	<notification name="CannotUploadReason">
 		Impossible de charger [FILE] suite au problème suivant : [REASON]
@@ -1217,45 +1223,45 @@ Veuillez choisir un objet à vendre et réessayer.
 [DOWNLOAD_PATH].
 	</notification>
 	<notification name="DownloadWindowsMandatory">
-		Une nouvelle version de [SECOND_LIFE] est disponible.
+		Une nouvelle version de [APP_NAME] est disponible.
 [MESSAGE]
-Pour utiliser [SECOND_LIFE] vous devez télécharger cette mise à jour.
+Pour utiliser [APP_NAME], vous devez télécharger cette mise à jour.
 		<usetemplate name="okcancelbuttons" notext="Quitter" yestext="Télécharger"/>
 	</notification>
 	<notification name="DownloadWindows">
-		Une mise à jour de [SECOND_LIFE] est disponible.
+		Une mise à jour de [APP_NAME] est disponible.
 [MESSAGE]
 Cette mise à jour n&apos;est pas requise mais si vous voulez une meilleure performance et plus de stabilité, nous vous recommandons de l&apos;installer.
 		<usetemplate name="okcancelbuttons" notext="Continuer" yestext="Télécharger"/>
 	</notification>
 	<notification name="DownloadWindowsReleaseForDownload">
-		Une mise à jour de [SECOND_LIFE] est disponible.
+		Une mise à jour de [APP_NAME] est disponible.
 [MESSAGE]
 Cette mise à jour n&apos;est pas requise mais si vous voulez une meilleure performance et plus de stabilité, nous vous recommandons de l&apos;installer.
 		<usetemplate name="okcancelbuttons" notext="Continuer" yestext="Télécharger"/>
 	</notification>
 	<notification name="DownloadMacMandatory">
-		Une nouvelle version de [SECOND_LIFE] est disponible.
+		Une nouvelle version de [APP_NAME] est disponible.
 [MESSAGE]
-Pour utiliser [SECOND_LIFE] vous devez télécharger cette mise à jour.
+Pour utiliser [APP_NAME], vous devez télécharger cette mise à jour.
 
-Télécharger vers le dossier Applications ?
+Télécharger vers le dossier Applications ?
 		<usetemplate name="okcancelbuttons" notext="Quitter" yestext="Télécharger"/>
 	</notification>
 	<notification name="DownloadMac">
-		Une mise à jour de [SECOND_LIFE] est disponible.
+		Une mise à jour de [APP_NAME] est disponible.
 [MESSAGE]
 Cette mise à jour n&apos;est pas requise mais si vous voulez une meilleure performance et plus de stabilité, nous vous recommandons de l&apos;installer.
 
-Télécharger vers le dossier Applications ?
+Télécharger vers le dossier Applications ?
 		<usetemplate name="okcancelbuttons" notext="Continuer" yestext="Télécharger"/>
 	</notification>
 	<notification name="DownloadMacReleaseForDownload">
-		Une mise à jour de [SECOND_LIFE] est disponible.
+		Une mise à jour de [APP_NAME] est disponible.
 [MESSAGE]
 Cette mise à jour n&apos;est pas requise mais si vous voulez une meilleure performance et plus de stabilité, nous vous recommandons de l&apos;installer.
 
-Télécharger vers le dossier Applications ?
+Télécharger vers le dossier Applications ?
 		<usetemplate name="okcancelbuttons" notext="Continuer" yestext="Télécharger"/>
 	</notification>
 	<notification name="DeedObjectToGroup">
