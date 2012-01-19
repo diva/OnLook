@@ -193,15 +193,6 @@ struct LLWearInfo
 // |        LLInvFVBridge                            |
 // +=================================================+
 
-/*virtual*/ void LLInventoryPanelObserver::changed(U32 mask) 
-{
-	mIP->modelChanged(mask);
-}
-
-// +=================================================+
-// |        LLInvFVBridge                            |
-// +=================================================+
-
 LLInvFVBridge::LLInvFVBridge(LLInventoryPanel* inventory, 
 							 //LLFolderView* root,
 							 const LLUUID& uuid) :
