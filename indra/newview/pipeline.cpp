@@ -3432,6 +3432,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	gFrameStats.start(LLFrameStats::RENDER_GEOM);
 
 	// Initialize lots of GL state to "safe" values
+	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	gGL.matrixMode(LLRender::MM_TEXTURE);
 	gGL.loadIdentity();
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
