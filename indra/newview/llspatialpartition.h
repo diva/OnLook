@@ -46,7 +46,7 @@
 #include "lldrawpool.h"
 #include "llface.h"
 #include "llviewercamera.h"
-
+#include "llvector4a.h"
 #include <queue>
 
 #define SG_STATE_INHERIT_MASK (OCCLUDED)
@@ -368,6 +368,7 @@ protected:
 
 	U32 mState;
 	U32 mOcclusionState[LLViewerCamera::NUM_CAMERAS];
+	U32 mOcclusionIssued[LLViewerCamera::NUM_CAMERAS];
 	S32 mLODHash;
 	static S32 sLODSeed;
 

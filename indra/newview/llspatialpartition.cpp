@@ -34,6 +34,10 @@
 
 #include "llspatialpartition.h"
 
+#include "llappviewer.h"
+#include "lltexturecache.h"
+#include "lltexturefetch.h"
+#include "llimageworker.h"
 #include "llviewerwindow.h"
 #include "llviewerobjectlist.h"
 #include "llvovolume.h"
@@ -43,14 +47,13 @@
 #include "llface.h"
 #include "llfloatertools.h"
 #include "llviewercontrol.h"
-#include "llagent.h"
 #include "llviewerregion.h"
 #include "llcamera.h"
 #include "pipeline.h"
 #include "llmeshrepository.h"
 #include "llrender.h"
 #include "lloctree.h"
-#include "llvoavatar.h"
+#include "llphysicsshapebuilderutil.h"
 #include "llvoavatar.h"
 #include "llvolumemgr.h"
 #include "llglslshader.h"
@@ -262,7 +265,7 @@ U8* get_box_fan_indices_ptr(LLCamera* camera, const LLVector4a& center)
 						
 void LLSpatialGroup::buildOcclusion()
 {
-	if (mOcclusionVerts.isNull())
+	//if (mOcclusionVerts.isNull())
 	{
 
 		mOcclusionVerts = new LLVertexBuffer(LLVertexBuffer::MAP_VERTEX, 
@@ -608,7 +611,9 @@ void LLSpatialPartition::rebuildGeom(LLSpatialGroup* group)
 	if (vertex_count > 0 && index_count > 0)
 	{ //create vertex buffer containing volume geometry for this node
 		group->mBuilt = 1.f;
-		if (group->mVertexBuffer.isNull() || (group->mBufferUsage != group->mVertexBuffer->getUsage() && LLVertexBuffer::sEnableVBOs))
+		if (group->mVertexBuffer.isNull() ||
+			!group->mVertexBuffer->isWriteable() ||
+			(group->mBufferUsage != group->mVertexBuffer->getUsage() && LLVertexBuffer::sEnableVBOs))
 		{
 			group->mVertexBuffer = createVertexBuffer(mVertexDataMask, group->mBufferUsage);
 			group->mVertexBuffer->allocateBuffer(vertex_count, index_count, true);
@@ -1106,6 +1111,7 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	for (U32 i = 0; i < LLViewerCamera::NUM_CAMERAS; i++)
 	{
 		mOcclusionQuery[i] = 0;
+		mOcclusionIssued[i] = 0;
 		mOcclusionState[i] = parent ? SG_STATE_INHERIT_MASK & parent->mOcclusionState[i] : 0;
 		mVisible[i] = 0;
 	}
@@ -1440,10 +1446,27 @@ void LLSpatialGroup::checkOcclusion()
 		}
 		else if (isOcclusionState(QUERY_PENDING))
 		{	//otherwise, if a query is pending, read it back
+
 			GLuint available = 0;
 			if (mOcclusionQuery[LLViewerCamera::sCurCameraID])
 			{
 				glGetQueryObjectuivARB(mOcclusionQuery[LLViewerCamera::sCurCameraID], GL_QUERY_RESULT_AVAILABLE_ARB, &available);
+
+				if (mOcclusionIssued[LLViewerCamera::sCurCameraID] < gFrameCount)
+				{ //query was issued last frame, wait until it's available
+					S32 max_loop = 1024;
+					//LLFastTimer t(LLFastTimer::FTM_OCCLUSION_WAIT);
+					while (!available && max_loop-- > 0)
+					{
+						F32 max_time = llmin(gFrameIntervalSeconds*10.f, 1.f);
+						//do some usefu work while we wait
+						LLAppViewer::getTextureCache()->update(max_time); // unpauses the texture cache thread
+						LLAppViewer::getImageDecodeThread()->update(max_time); // unpauses the image thread
+						LLAppViewer::getTextureFetch()->update(max_time); // unpauses the texture fetch thread
+						
+						glGetQueryObjectuivARB(mOcclusionQuery[LLViewerCamera::sCurCameraID], GL_QUERY_RESULT_AVAILABLE_ARB, &available);
+					}
+				}
 			}
 			else
 			{
@@ -1549,6 +1572,8 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 
 					{
 						//LLFastTimer t(FTM_PUSH_OCCLUSION_VERTS);
+						//store which frame this query was issued on
+						mOcclusionIssued[LLViewerCamera::sCurCameraID] = gFrameCount;
 						glBeginQueryARB(mode, mOcclusionQuery[LLViewerCamera::sCurCameraID]);					
 					
 						mOcclusionVerts->setBuffer(LLVertexBuffer::MAP_VERTEX);
@@ -2987,11 +3012,7 @@ void renderRaycast(LLDrawable* drawablep)
 				for (S32 i = 0; i < volume->getNumVolumeFaces(); ++i)
 				{
 					const LLVolumeFace& face = volume->getVolumeFace(i);
-					if (!face.mOctree)
-					{
-						((LLVolumeFace*) &face)->createOctree(); 
-					}
-
+					
 					gGL.pushMatrix();
 					gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);					
 					gGL.multMatrix((F32*) vobj->getRelativeXform().mMatrix);
@@ -3014,9 +3035,6 @@ void renderRaycast(LLDrawable* drawablep)
 					LLVector4a dir;
 					dir.setSub(enda, starta);
 
-					F32 t = 1.f;
-
-					LLRenderOctreeRaycast render(starta, dir, &t);
 					gGL.flush();
 					glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);				
 
@@ -3028,8 +3046,20 @@ void renderRaycast(LLDrawable* drawablep)
 						gGL.syncMatrices();
 						glDrawElements(GL_TRIANGLES, face.mNumIndices, GL_UNSIGNED_SHORT, face.mIndices);
 					}
-						
-					render.traverse(face.mOctree);
+					
+					if (!volume->isUnique())
+					{
+						F32 t = 1.f;
+
+						if (!face.mOctree)
+						{
+							((LLVolumeFace*) &face)->createOctree(); 
+						}
+
+						LLRenderOctreeRaycast render(starta, dir, &t);
+					
+						render.traverse(face.mOctree);
+					}
 					gGL.popMatrix();		
 					glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 				}
