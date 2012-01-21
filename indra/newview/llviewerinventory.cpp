@@ -220,9 +220,9 @@ void LLViewerInventoryItem::fetchFromServer(void) const
 		std::string url; 
 
 		if( ALEXANDRIA_LINDEN_ID.getString() == mPermissions.getOwner().getString())
-			url = gAgent.getRegion()->getCapability("FetchLib");
+			url = gAgent.getRegion()->getCapability("FetchLib2");
 		else	
-			url = gAgent.getRegion()->getCapability("FetchInventory");
+			url = gAgent.getRegion()->getCapability("FetchInventory2");
 
 		if (!url.empty())
 		{
@@ -500,7 +500,7 @@ bool LLViewerInventoryCategory::fetchDescendents()
 		std::string url;
 		if (gAgent.getRegion())
 		{
-			url = gAgent.getRegion()->getCapability("FetchInventoryDescendents");
+			url = gAgent.getRegion()->getCapability("FetchInventoryDescendents2");
 		}
 		else
 		{

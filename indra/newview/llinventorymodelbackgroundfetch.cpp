@@ -185,8 +185,8 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 	if (mBackgroundFetchActive && gAgent.getRegion())
 	{
 		// If we'll be using the capability, we'll be sending batches and the background thing isn't as important.
-		std::string url = gAgent.getRegion()->getCapability("FetchInventoryDescendents");   
-		if (false /*gSavedSettings.getBOOL("UseHTTPInventory")*/ && !url.empty()) 
+		std::string url = gAgent.getRegion()->getCapability("FetchInventoryDescendents2");   
+		if (gSavedSettings.getBOOL("UseHTTPInventory") && !url.empty()) 
 		{
 			bulkFetch(url);
 			return;
@@ -605,7 +605,7 @@ void LLInventoryModelBackgroundFetch::bulkFetch(std::string url)
 		}
 		if (body_lib["folders"].size())
 		{
-			std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents");
+			std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents2");
 			
 			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(body_lib, recursive_cats);
 			LLHTTPClient::post(url_lib, body_lib, fetcher, 300.0);

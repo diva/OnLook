@@ -1501,12 +1501,12 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("ObjectMedia");
 	capabilityNames.append("ObjectMediaNavigate");*/
 	
-	if (false)//gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
+	if (gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
 	{
-		capabilityNames.append("FetchLib");
-		capabilityNames.append("FetchLibDescendents");
-		capabilityNames.append("FetchInventory");
-		capabilityNames.append("FetchInventoryDescendents");
+		capabilityNames.append("FetchLib2");
+		capabilityNames.append("FetchLibDescendents2");
+		capabilityNames.append("FetchInventory2");
+		capabilityNames.append("FetchInventoryDescendents2");
 	}
 
 	capabilityNames.append("GetDisplayNames");
