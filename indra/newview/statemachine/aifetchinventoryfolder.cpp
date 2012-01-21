@@ -33,6 +33,7 @@
 #include "aievent.h"
 #include "llagent.h"
 #include "llinventoryobserver.h"
+#include "llinventorymodelbackgroundfetch.h"
 
 enum fetchinventoryfolder_state_type {
   AIFetchInventoryFolder_checkFolderExists = AIStateMachine::max_state,
@@ -154,7 +155,7 @@ void AIFetchInventoryFolder::multiplex_impl(void)
 	  // mFolderUUID is now valid.
 	  mExists = true;
 	  if (!mFetchContents ||							// No request to fetch contents.
-		  LLInventoryModel::isEverythingFetched())		// No need to fetch contents.
+		  LLInventoryModelBackgroundFetch::instance().isEverythingFetched())		// No need to fetch contents.
 	  {
 		// We're done.
 		finish();

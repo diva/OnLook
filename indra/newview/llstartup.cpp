@@ -129,6 +129,7 @@
 #include "llimagebmp.h"
 #include "llimview.h" // for gIMMgr
 #include "llinventoryfunctions.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "llinventoryview.h"
 #include "llkeyboard.h"
 #include "llloginhandler.h"			// gLoginHandler, SLURL support
@@ -2712,7 +2713,7 @@ bool idle_startup()
 			)
 		{
 			// Fetch inventory in the background
-			gInventory.startBackgroundFetch();
+			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
 		}
 
 		// HACK: Inform simulator of window size.
@@ -2777,7 +2778,7 @@ bool idle_startup()
 		}
 
         //DEV-17797.  get null folder.  Any items found here moved to Lost and Found
-        LLInventoryModel::findLostItems();
+        LLInventoryModelBackgroundFetch::instance().findLostItems();
 
 		LLStartUp::setStartupState( STATE_PRECACHE );
 		timeout.reset();

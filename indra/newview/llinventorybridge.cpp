@@ -39,6 +39,7 @@
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryicon.h"
+#include "llinventorymodelbackgroundfetch.h"
 
 #include "message.h"
 
@@ -802,7 +803,7 @@ BOOL LLInvFVBridge::startDrag(EDragAndDropType* type, LLUUID* id) const
 
 		if (*type == DAD_CATEGORY)
 		{
-			gInventory.startBackgroundFetch(obj->getUUID());
+			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(obj->getUUID());
 		}
 
 		rv = TRUE;

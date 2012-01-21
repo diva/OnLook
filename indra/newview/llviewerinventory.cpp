@@ -48,6 +48,7 @@
 
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "llinventoryview.h"
 
 #include "llviewerregion.h"
@@ -507,7 +508,7 @@ bool LLViewerInventoryCategory::fetchDescendents()
 		}
 		if (!url.empty()) //Capability found.  Build up LLSD and use it.
 		{
-			LLInventoryModel::startBackgroundFetch(mUUID);			
+			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(mUUID);			
 		}
 		else
 		{	//Deprecated, but if we don't have a capability, use the old system.

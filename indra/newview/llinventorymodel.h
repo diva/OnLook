@@ -353,8 +353,6 @@ public:
 	//void mock(const LLUUID& root_id);
 
 	
-	// Add categories to a list to be fetched in bulk.
-	static void bulkFetch(std::string url);
 
 	// call this method to request the inventory.
 	//void requestFromServer(const LLUUID& agent_id);
@@ -368,10 +366,10 @@ public:
 	// name based on type, pass in a NULL to the 'name' parameter.
 	LLUUID createNewCategory(const LLUUID& parent_id,
 							 LLFolderType::EType preferred_type,
-							 const std::string& namevoid,
+							 const std::string& name,
 							 void (*callback)(const LLSD&, void*) = NULL,
 							 void* user_data = NULL);
-
+public:
 	// Internal methods that add inventory and make sure that all of
 	// the internal data structures are consistent. These methods
 	// should be passed pointers of newly created objects, and the
@@ -383,6 +381,7 @@ public:
 	// during authentication. return true if everything parsed.
 	typedef std::map<std::string, std::string> response_t;
 	typedef std::vector<response_t> options_t;
+
 
 	//OGPX really screwed with the login process. This is needed until it's all sorted out.
 	bool loadSkeleton(const options_t& options, const LLUUID& owner_id);
@@ -477,14 +476,6 @@ private:
 	typedef std::set<LLInventoryObserver*> observer_list_t;
 	observer_list_t mObservers;
 	
-public:
-	// this gets triggered when performing a filter-search
-	static void startBackgroundFetch(const LLUUID& cat_id = LLUUID::null); // start fetch process
-    static void findLostItems();
-	static BOOL backgroundFetchActive();
-	static bool isEverythingFetched();
-	static void backgroundFetch(void*); // background fetch idle function
-	static void incrBulkFetch(S16 fetching) {  sBulkFetchCount+=fetching; if (sBulkFetchCount<0) sBulkFetchCount=0; }
 /**                    Notifications
  **                                                                            **
  *******************************************************************************/
@@ -551,25 +542,11 @@ private:
 	std::map<LLUUID, bool> mCategoryLock;
 	std::map<LLUUID, bool> mItemLock;
 
-	// completing the fetch once per session should be sufficient
-	static BOOL sBackgroundFetchActive;
-	static BOOL sTimelyFetchPending;
-	static S32  sNumFetchRetries;
-	static LLFrameTimer sFetchTimer;
-	static F32 sMinTimeBetweenFetches;
-	static F32 sMaxTimeBetweenFetches;
-	static S16 sBulkFetchCount;
 
 public:
 	// *NOTE: DEBUG functionality
 	void dumpInventory() const;
 	
-	static bool isBulkFetchProcessingComplete();
-	static void stopBackgroundFetch(); // stop fetch process
-
-	static BOOL sFullFetchStarted;
-	static BOOL sAllFoldersFetched; 
-
 /**                    Miscellaneous
  **                                                                            **
  *******************************************************************************/

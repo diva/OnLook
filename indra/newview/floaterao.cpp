@@ -26,6 +26,7 @@
 
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "llinventoryview.h"
 #include "roles_constants.h"
 #include "llviewerregion.h"
@@ -126,7 +127,7 @@ BOOL AOInvTimer::tick()
 	if (!(gSavedSettings.getBOOL("AOEnabled"))) return TRUE;
 	if(LLStartUp::getStartupState() >= STATE_INVENTORY_SEND)
 	{
-		if(gInventory.isEverythingFetched())
+		if(LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
 		{
 //			cmdline_printchat("Inventory fetched, loading AO.");
 			LLFloaterAO::init();
@@ -667,7 +668,7 @@ void LLFloaterAO::init()
 
 	if(LLStartUp::getStartupState() >= STATE_INVENTORY_SEND)
 	{
-		if(gInventory.isEverythingFetched())
+		if(LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
 		{
 			LLUUID configncitem = (LLUUID)gSavedPerAccountSettings.getString("AOConfigNotecardID");
 			if (configncitem.notNull())
@@ -964,7 +965,7 @@ BOOL LLFloaterAO::stopMotion(const LLUUID& id, BOOL stop_immediate, BOOL stand)
 
 void LLFloaterAO::onClickReloadCard(void* user_data)
 {
-	if(gInventory.isEverythingFetched())
+	if(LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
 	{
 		LLFloaterAO::init();
 	}
@@ -972,7 +973,7 @@ void LLFloaterAO::onClickReloadCard(void* user_data)
 
 void LLFloaterAO::onClickOpenCard(void* user_data)
 {
-	if(gInventory.isEverythingFetched())
+	if(LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
 	{
 		LLUUID configncitem = (LLUUID)gSavedPerAccountSettings.getString("AOConfigNotecardID");
 		if (configncitem.notNull())
@@ -1419,7 +1420,7 @@ private:
 
 const LLUUID& LLFloaterAO::getAssetIDByName(const std::string& name)
 {
-	if (name.empty() || !(gInventory.isEverythingFetched())) return LLUUID::null;
+	if (name.empty() || !(LLInventoryModelBackgroundFetch::instance().isEverythingFetched())) return LLUUID::null;
 
 	LLViewerInventoryCategory::cat_array_t cats;
 	LLViewerInventoryItem::item_array_t items;
