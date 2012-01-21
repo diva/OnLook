@@ -44,7 +44,8 @@ const S32 MAX_FETCH_RETRIES = 10;
 LLInventoryModelBackgroundFetch::LLInventoryModelBackgroundFetch() :
 	mBackgroundFetchActive(FALSE),
 	mAllFoldersFetched(FALSE),
-	mFullFetchStarted(FALSE),
+	mRecursiveInventoryFetchStarted(FALSE),
+	mRecursiveLibraryFetchStarted(FALSE),
 	mNumFetchRetries(0),
 	mMinTimeBetweenFetches(0.3f),
 	mMaxTimeBetweenFetches(10.f),
@@ -62,7 +63,36 @@ bool LLInventoryModelBackgroundFetch::isBulkFetchProcessingComplete() const
 	return mFetchQueue.empty() && mBulkFetchCount<=0;
 }
 
-// static
+bool LLInventoryModelBackgroundFetch::libraryFetchStarted() const
+{
+	return mRecursiveLibraryFetchStarted;
+}
+
+bool LLInventoryModelBackgroundFetch::libraryFetchCompleted() const
+{
+	return libraryFetchStarted() && fetchQueueContainsNoDescendentsOf(gInventory.getLibraryRootFolderID());
+}
+
+bool LLInventoryModelBackgroundFetch::libraryFetchInProgress() const
+{
+	return libraryFetchStarted() && !libraryFetchCompleted();
+}
+	
+bool LLInventoryModelBackgroundFetch::inventoryFetchStarted() const
+{
+	return mRecursiveInventoryFetchStarted;
+}
+
+bool LLInventoryModelBackgroundFetch::inventoryFetchCompleted() const
+{
+	return inventoryFetchStarted() && fetchQueueContainsNoDescendentsOf(gInventory.getRootFolderID());
+}
+
+bool LLInventoryModelBackgroundFetch::inventoryFetchInProgress() const
+{
+	return inventoryFetchStarted() && !inventoryFetchCompleted();
+}
+
 bool LLInventoryModelBackgroundFetch::isEverythingFetched() const
 {
 	return mAllFoldersFetched;
@@ -73,42 +103,43 @@ BOOL LLInventoryModelBackgroundFetch::backgroundFetchActive() const
 	return mBackgroundFetchActive;
 }
 
-//static 
-void LLInventoryModelBackgroundFetch::startBackgroundFetch(const LLUUID& cat_id)
+void LLInventoryModelBackgroundFetch::start(const LLUUID& cat_id, BOOL recursive)
 {
-	if (!mAllFoldersFetched)
+	if (!mAllFoldersFetched || cat_id.notNull())
 	{
+		LL_DEBUGS("InventoryFetch") << "Start fetching category: " << cat_id << ", recursive: " << recursive << LL_ENDL;
+
+		mBackgroundFetchActive = TRUE;
 		if (cat_id.isNull())
 		{
-			if (!mFullFetchStarted)
+			if (!mRecursiveInventoryFetchStarted)
 			{
-				mFullFetchStarted = TRUE;
-				mFetchQueue.push_back(gInventory.getLibraryRootFolderID());
-				mFetchQueue.push_back(gInventory.getRootFolderID());
-				if (!mBackgroundFetchActive)
-				{
-					mBackgroundFetchActive = TRUE;
-					gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
-				}
+				mRecursiveInventoryFetchStarted |= recursive;
+				mFetchQueue.push_back(FetchQueueInfo(gInventory.getRootFolderID(), recursive));
+				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+			}
+			if (!mRecursiveLibraryFetchStarted)
+			{
+				mRecursiveLibraryFetchStarted |= recursive;
+				mFetchQueue.push_back(FetchQueueInfo(gInventory.getLibraryRootFolderID(), recursive));
+				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
 			}
 		}
 		else
 		{
-			// specific folder requests go to front of queue
-			// Remove it from the queue first, to avoid getting it twice.
-			if (!mFetchQueue.empty() && mFetchQueue.front().mCatUUID != cat_id)
+			// Specific folder requests go to front of queue.
+			if (mFetchQueue.empty() || mFetchQueue.front().mCatUUID != cat_id)
 			{
-				std::deque<FetchQueueInfo>::iterator old_entry = std::find(mFetchQueue.begin(), mFetchQueue.end(), FetchQueueInfo(cat_id));
-				if (old_entry != mFetchQueue.end())
-				{
-					mFetchQueue.erase(old_entry);
-				}
-			}
-			mFetchQueue.push_front(cat_id);
-			if (!mBackgroundFetchActive)
-			{
-				mBackgroundFetchActive = TRUE;
+				mFetchQueue.push_front(FetchQueueInfo(cat_id, recursive));
 				gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
+			}
+			if (cat_id == gInventory.getLibraryRootFolderID())
+			{
+				mRecursiveLibraryFetchStarted |= recursive;
+			}
+			if (cat_id == gInventory.getRootFolderID())
+			{
+				mRecursiveInventoryFetchStarted |= recursive;
 			}
 		}
 	}
@@ -117,15 +148,11 @@ void LLInventoryModelBackgroundFetch::startBackgroundFetch(const LLUUID& cat_id)
 //static
 void LLInventoryModelBackgroundFetch::findLostItems()
 {
-    mFetchQueue.push_back(LLUUID::null);
-	if (!mBackgroundFetchActive)
-	{
-		mBackgroundFetchActive = TRUE;
-		gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
-	}
+	mBackgroundFetchActive = TRUE;
+    mFetchQueue.push_back(FetchQueueInfo(LLUUID::null, TRUE));
+    gIdleCallbacks.addFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
 }
 
-//static
 void LLInventoryModelBackgroundFetch::stopBackgroundFetch()
 {
 	if (mBackgroundFetchActive)
@@ -134,17 +161,13 @@ void LLInventoryModelBackgroundFetch::stopBackgroundFetch()
 		gIdleCallbacks.deleteFunction(&LLInventoryModelBackgroundFetch::backgroundFetchCB, NULL);
 		mBulkFetchCount=0;
 		mMinTimeBetweenFetches=0.0f;
-		if (!mAllFoldersFetched)
-		{
-			// We didn't finish this, so set it to FALSE in order to be able to start it again.
-			mFullFetchStarted=FALSE;
-		}
 	}
 }
 
 void LLInventoryModelBackgroundFetch::setAllFoldersFetched()
 {
-	if (mFullFetchStarted)
+	if (mRecursiveInventoryFetchStarted &&
+		mRecursiveLibraryFetchStarted)
 	{
 		mAllFoldersFetched = TRUE;
 	}
@@ -170,8 +193,11 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 		}
 		
 #if 1
-		//DEPRECATED OLD CODE FOLLOWS.
-		// no more categories to fetch, stop fetch process
+		//--------------------------------------------------------------------------------
+		// DEPRECATED OLD CODE
+		//
+
+		// No more categories to fetch, stop fetch process.
 		if (mFetchQueue.empty())
 		{
 			llinfos << "Inventory fetch completed" << llendl;
@@ -246,7 +272,7 @@ void LLInventoryModelBackgroundFetch::backgroundFetch()
 					 it != categories->end();
 					 ++it)
 				{
-					mFetchQueue.push_back(FetchQueueInfo((*it)->getUUID()));
+					mFetchQueue.push_back(FetchQueueInfo((*it)->getUUID(),info.mRecursive));
 				}
 
 				// we received a response in less than the fast time
@@ -301,19 +327,22 @@ void LLInventoryModelBackgroundFetch::incrBulkFetch(S16 fetching)
 class LLInventoryModelFetchDescendentsResponder: public LLHTTPClient::Responder
 {
 	public:
-		LLInventoryModelFetchDescendentsResponder(const LLSD& request_sd) : 
-			mRequestSD(request_sd) 
-		{};
-		//LLInventoryModelFetchDescendentsResponder() {};
-		void result(const LLSD& content);
-		void error(U32 status, const std::string& reason);
+	LLInventoryModelFetchDescendentsResponder(const LLSD& request_sd, uuid_vec_t recursive_cats) : 
+		mRequestSD(request_sd),
+		mRecursiveCatUUIDs(recursive_cats)
+	{};
+	//LLInventoryModelFetchDescendentsResponder() {};
+	void result(const LLSD& content);
+	void error(U32 status, const std::string& reason);
+protected:
+	BOOL getIsRecursive(const LLUUID& cat_id) const;
 private:
-		LLSD mRequestSD;
+	LLSD mRequestSD;
+	uuid_vec_t mRecursiveCatUUIDs; // hack for storing away which cat fetches are recursive
 };
 
-//If we get back a normal response, handle it here
-// Note: this is the handler for WebFetchInventoryDescendents and agent/inventory caps
-void  LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
+// If we get back a normal response, handle it here.
+void LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
 {
 	LLInventoryModelBackgroundFetch *fetcher = LLInventoryModelBackgroundFetch::getInstance();
 	if (content.has("folders"))	
@@ -380,10 +409,12 @@ void  LLInventoryModelFetchDescendentsResponder::result(const LLSD& content)
 			{	
 				LLSD category = *category_it;
 				tcategory->fromLLSD(category); 
-							
-				if (fetcher->mFullFetchStarted)
+				
+				const BOOL recursive = getIsRecursive(tcategory->getUUID());
+				
+				if (recursive)
 				{
-					fetcher->mFetchQueue.push_back(LLInventoryModelBackgroundFetch::FetchQueueInfo(tcategory->getUUID()));
+					fetcher->mFetchQueue.push_back(LLInventoryModelBackgroundFetch::FetchQueueInfo(tcategory->getUUID(), recursive));
 				}
 				else if ( !gInventory.isCategoryComplete(tcategory->getUUID()) )
 				{
@@ -456,7 +487,8 @@ void LLInventoryModelFetchDescendentsResponder::error(U32 status, const std::str
 		{	
 			LLSD folder_sd = *folder_it;
 			LLUUID folder_id = folder_sd["folder_id"];
-			fetcher->mFetchQueue.push_front(LLInventoryModelBackgroundFetch::FetchQueueInfo(folder_id));
+			const BOOL recursive = getIsRecursive(folder_id);
+			fetcher->mFetchQueue.push_front(LLInventoryModelBackgroundFetch::FetchQueueInfo(folder_id, recursive));
 		}
 	}
 	else
@@ -469,6 +501,10 @@ void LLInventoryModelFetchDescendentsResponder::error(U32 status, const std::str
 	gInventory.notifyObservers();
 }
 
+BOOL LLInventoryModelFetchDescendentsResponder::getIsRecursive(const LLUUID& cat_id) const
+{
+	return (std::find(mRecursiveCatUUIDs.begin(),mRecursiveCatUUIDs.end(), cat_id) != mRecursiveCatUUIDs.end());
+}
 
 // Bundle up a bunch of requests to send all at once.
 // static   
@@ -498,6 +534,8 @@ void LLInventoryModelBackgroundFetch::bulkFetch(std::string url)
 
 	U32 sort_order = gSavedSettings.getU32("InventorySortOrder") & 0x1;
 
+	uuid_vec_t recursive_cats;
+
 	LLSD body;
 	LLSD body_lib;
 
@@ -522,44 +560,38 @@ void LLInventoryModelBackgroundFetch::bulkFetch(std::string url)
 		
 		    if (cat)
 		    {
-				// <edit> Pre-emptive strike
-				//if(!(gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot)))
-				if(true)
-				{
-				// </edit>
-					if ( LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
+			    if (LLViewerInventoryCategory::VERSION_UNKNOWN == cat->getVersion())
+			    {
+				    LLSD folder_sd;
+				    folder_sd["folder_id"]		= cat->getUUID();
+				    folder_sd["owner_id"]		= cat->getOwnerID();
+				    folder_sd["sort_order"]		= (LLSD::Integer)sort_order;
+				    folder_sd["fetch_folders"]	= TRUE; //(LLSD::Boolean)sFullFetchStarted;
+				    folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
+				    
+				    if (ALEXANDRIA_LINDEN_ID == cat->getOwnerID())
+					    body_lib["folders"].append(folder_sd);
+				    else
+					    body["folders"].append(folder_sd);
+				    folder_count++;
+			    }
+				// May already have this folder, but append child folders to list.
+			    if (fetch_info.mRecursive)
+			    {	
+					LLInventoryModel::cat_array_t* categories;
+					gInventory.getDirectDescendentsOf(cat->getUUID(), categories);
+					for (LLInventoryModel::cat_array_t::const_iterator it = categories->begin();
+						 it != categories->end();
+						 ++it)
 					{
-						LLSD folder_sd;
-						folder_sd["folder_id"]		= cat->getUUID();
-						folder_sd["owner_id"]		= cat->getOwnerID();
-						folder_sd["sort_order"]		= (LLSD::Integer)sort_order;
-						folder_sd["fetch_folders"]	= TRUE; //(LLSD::Boolean)sFullFetchStarted;
-						folder_sd["fetch_items"]	= (LLSD::Boolean)TRUE;
-						
-						LL_DEBUGS("Inventory") << " fetching "<<cat->getUUID()<<" with cat owner "<<cat->getOwnerID()<<" and agent" << gAgent.getID() << LL_ENDL;
-						if (ALEXANDRIA_LINDEN_ID == cat->getOwnerID())
-							body_lib["folders"].append(folder_sd);
-						else
-							body["folders"].append(folder_sd);
-						folder_count++;
-					}
-					// May already have this folder, but append child folders to list.
-					if (mFullFetchStarted)
-					{	//Already have this folder but append child folders to list.
-						LLInventoryModel::cat_array_t* categories;
-						gInventory.getDirectDescendentsOf(cat->getUUID(), categories);
-						for (LLInventoryModel::cat_array_t::const_iterator it = categories->begin();
-							 it != categories->end();
-							 ++it)
-						{
-							mFetchQueue.push_back(FetchQueueInfo((*it)->getUUID()));
-					    }
-					}
-				// <edit>
-				}
-				// </edit>
+						mFetchQueue.push_back(FetchQueueInfo((*it)->getUUID(), fetch_info.mRecursive));
+				    }
+			    }
 		    }
         }
+		if (fetch_info.mRecursive)
+			recursive_cats.push_back(cat_id);
+
 		mFetchQueue.pop_front();
 	}
 		
@@ -568,14 +600,14 @@ void LLInventoryModelBackgroundFetch::bulkFetch(std::string url)
 		mBulkFetchCount++;
 		if (body["folders"].size())
 		{
-			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(body);
+			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(body, recursive_cats);
 			LLHTTPClient::post(url, body, fetcher, 300.0);
 		}
 		if (body_lib["folders"].size())
 		{
 			std::string url_lib = gAgent.getRegion()->getCapability("FetchLibDescendents");
 			
-			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(body_lib);
+			LLInventoryModelFetchDescendentsResponder *fetcher = new LLInventoryModelFetchDescendentsResponder(body_lib, recursive_cats);
 			LLHTTPClient::post(url_lib, body_lib, fetcher, 300.0);
 		}
 		mFetchTimer.reset();

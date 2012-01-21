@@ -508,7 +508,7 @@ bool LLViewerInventoryCategory::fetchDescendents()
 		}
 		if (!url.empty()) //Capability found.  Build up LLSD and use it.
 		{
-			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(mUUID);			
+			LLInventoryModelBackgroundFetch::instance().start(mUUID, false);			
 		}
 		else
 		{	//Deprecated, but if we don't have a capability, use the old system.

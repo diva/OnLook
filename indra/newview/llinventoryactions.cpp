@@ -526,7 +526,7 @@ class LLRefreshInvModel : public inventory_listener_t
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
 		model->empty();
-		LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
+		LLInventoryModelBackgroundFetch::instance().start();
 		return true;
 	}
 };

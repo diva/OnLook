@@ -1309,7 +1309,7 @@ void LLFolderViewFolder::filter( LLInventoryFilter& filter)
 	// when applying a filter, matching folders get their contents downloaded first
 	if (filter.isNotDefault() && getFiltered(filter.getMinRequiredGeneration()) && (mListener && !gInventory.isCategoryComplete(mListener->getUUID())))
 	{
-		LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(mListener->getUUID());
+		LLInventoryModelBackgroundFetch::instance().start(mListener->getUUID());
 	}
 
 	// now query children

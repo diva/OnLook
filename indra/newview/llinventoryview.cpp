@@ -871,7 +871,7 @@ void LLInventoryView::toggleFindOptions()
 		addDependentFloater(mFinderHandle);
 
 		// start background fetch of folders
-		LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
+		LLInventoryModelBackgroundFetch::instance().start();
 
 		mFloaterControls[std::string("Inventory.ShowFilters")]->setValue(TRUE);
 	}
@@ -947,7 +947,7 @@ void LLInventoryView::onSearchEdit(const std::string& search_string, void* user_
 		return;
 	}
 
-	LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
+	LLInventoryModelBackgroundFetch::instance().start();
 
 	std::string filter_text = search_string;
 	std::string uppercase_search_string = filter_text;
@@ -1302,7 +1302,7 @@ void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
 	if (filter->isActive())
 	{
 		// If our filter is active we may be the first thing requiring a fetch so we better start it here.
-		LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
+		LLInventoryModelBackgroundFetch::instance().start();
 	}
 	self->setFilterTextFromFilter();
 	self->updateSortControls();

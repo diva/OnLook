@@ -803,7 +803,7 @@ BOOL LLInvFVBridge::startDrag(EDragAndDropType* type, LLUUID* id) const
 
 		if (*type == DAD_CATEGORY)
 		{
-			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(obj->getUUID());
+			LLInventoryModelBackgroundFetch::instance().start(obj->getUUID());
 		}
 
 		rv = TRUE;

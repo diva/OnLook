@@ -43,10 +43,22 @@ class LLInventoryModelBackgroundFetch : public LLSingleton<LLInventoryModelBackg
 public:
 	LLInventoryModelBackgroundFetch();
 	~LLInventoryModelBackgroundFetch();
-	
-	void startBackgroundFetch(const LLUUID& cat_id = LLUUID::null); // start fetch process
+
+	// Start and stop background breadth-first fetching of inventory contents.
+	// This gets triggered when performing a filter-search.
+	void start(const LLUUID& cat_id = LLUUID::null, BOOL recursive = TRUE);
+
 	BOOL backgroundFetchActive() const;
 	bool isEverythingFetched() const; // completing the fetch once per session should be sufficient
+
+	bool libraryFetchStarted() const;
+	bool libraryFetchCompleted() const;
+	bool libraryFetchInProgress() const;
+	
+	bool inventoryFetchStarted() const;
+	bool inventoryFetchCompleted() const;
+	bool inventoryFetchInProgress() const;
+
     void findLostItems();	
 protected:
 	void incrBulkFetch(S16 fetching);
@@ -60,10 +72,10 @@ protected:
 	void setAllFoldersFetched();
 	bool fetchQueueContainsNoDescendentsOf(const LLUUID& cat_id) const;
 private:
-	BOOL mFullFetchStarted;
-	BOOL mAllFoldersFetched; 
+ 	BOOL mRecursiveInventoryFetchStarted;
+	BOOL mRecursiveLibraryFetchStarted;
+	BOOL mAllFoldersFetched;
 
-	// completing the fetch once per session should be sufficient
 	BOOL mBackgroundFetchActive;
 	S16 mBulkFetchCount;
 	BOOL mTimelyFetchPending;
@@ -75,16 +87,12 @@ private:
 
 	struct FetchQueueInfo
 	{
-		FetchQueueInfo(const LLUUID& id/*, BOOL recursive*/) :
-			mCatUUID(id)/*, mRecursive(recursive)*/
+		FetchQueueInfo(const LLUUID& id, BOOL recursive) :
+			mCatUUID(id), mRecursive(recursive)
 		{
 		}
 		LLUUID mCatUUID;
-		//BOOL mRecursive;
-		bool operator ==(const FetchQueueInfo& b) const
-		{
-			return mCatUUID == b.mCatUUID;
-		}
+		BOOL mRecursive;
 	};
 	typedef std::deque<FetchQueueInfo> fetch_queue_t;
 	fetch_queue_t mFetchQueue;

@@ -159,10 +159,10 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 
 	// Start speculative download of sounds and animations
 	LLUUID animation_folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_ANIMATION);
-	LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(animation_folder_id);
+	LLInventoryModelBackgroundFetch::instance().start(animation_folder_id);
 
 	LLUUID sound_folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_SOUND);
-	LLInventoryModelBackgroundFetch::instance().startBackgroundFetch(sound_folder_id);
+	LLInventoryModelBackgroundFetch::instance().start(sound_folder_id);
 
 	// this will call refresh when we have everything.
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)self->getItem();

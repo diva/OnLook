@@ -2126,6 +2126,9 @@ void LLInventoryModel::buildParentChildMap()
 			// The inv tree is built.
 			mIsAgentInvUsable = true;
 			AIEvent::trigger(AIEvent::LLInventoryModel_mIsAgentInvUsable_true);
+			llinfos << "Inventory initialized, notifying observers" << llendl;
+			addChangedMask(LLInventoryObserver::ALL, LLUUID::null);
+			notifyObservers();
 		}
 	}
 	llinfos << " finished buildParentChildMap " << llendl;

@@ -2713,7 +2713,7 @@ bool idle_startup()
 			)
 		{
 			// Fetch inventory in the background
-			LLInventoryModelBackgroundFetch::instance().startBackgroundFetch();
+			LLInventoryModelBackgroundFetch::instance().start();
 		}
 
 		// HACK: Inform simulator of window size.
