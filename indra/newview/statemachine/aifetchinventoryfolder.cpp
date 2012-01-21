@@ -57,14 +57,20 @@ class AIInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsOb
 	AIStateMachine* mStateMachine;
 };
 
-AIInventoryFetchDescendentsObserver::AIInventoryFetchDescendentsObserver(AIStateMachine* statemachine, LLUUID const& folder) : mStateMachine(statemachine)
+AIInventoryFetchDescendentsObserver::AIInventoryFetchDescendentsObserver(AIStateMachine* statemachine, LLUUID const& folder) : 
+	mStateMachine(statemachine),
+	LLInventoryFetchDescendentsObserver(folder)
 {
-  mStateMachine->idle();
-  folder_ref_t folders(1, folder);
-  fetchDescendents(folders);
-  gInventory.addObserver(this);
-  if (isEverythingComplete())
-	done();
+	mStateMachine->idle();
+	startFetch();
+	if(isFinished())
+	{
+		done();
+	}
+	else
+	{
+		 gInventory.addObserver(this);
+	}
 }
 
 void AIFetchInventoryFolder::fetch(std::string const& foldername, bool create, bool fetch_contents)

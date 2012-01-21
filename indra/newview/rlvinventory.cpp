@@ -44,7 +44,7 @@ const std::string RlvInventory::cstrSharedRoot = RLV_ROOT_FOLDER;
 class RlvSharedInventoryFetcher : public LLInventoryFetchDescendentsObserver
 {
 public:
-	RlvSharedInventoryFetcher() {}
+	RlvSharedInventoryFetcher(const uuid_vec_t& cat_ids) : LLInventoryFetchDescendentsObserver(cat_ids) {}
 	virtual ~RlvSharedInventoryFetcher() {}
 
 	virtual void done()
@@ -75,19 +75,19 @@ void RlvInventory::fetchSharedInventory()
 	gInventory.collectDescendents(pRlvRoot->getUUID(), folders, items, FALSE);
 
 	// Add them to the "to fetch" list
-	LLInventoryFetchDescendentsObserver::folder_ref_t fetchFolders;
+	uuid_vec_t fetchFolders;
 	fetchFolders.push_back(pRlvRoot->getUUID());
 	for (S32 idxFolder = 0, cntFolder = folders.count(); idxFolder < cntFolder; idxFolder++)
 		fetchFolders.push_back(folders.get(idxFolder)->getUUID());
 
 	// Now fetch them all in one go
-	RlvSharedInventoryFetcher* pFetcher = new RlvSharedInventoryFetcher();
+	RlvSharedInventoryFetcher* pFetcher = new RlvSharedInventoryFetcher(fetchFolders);
 
 	RLV_INFOS << "Starting fetch of " << fetchFolders.size() << " shared folders" << RLV_ENDL;
-	pFetcher->fetchDescendents(fetchFolders);
+	pFetcher->startFetch();
 	m_fFetchStarted = true;
 
-	if (pFetcher->isEverythingComplete())
+	if (pFetcher->isFinished())
 		pFetcher->done();
 	else
 		gInventory.addObserver(pFetcher);
@@ -126,8 +126,8 @@ void RlvInventory::fetchSharedLinks()
 	RLV_INFOS << "Starting link target fetch of " << idItems.size() << " items and " << idFolders.size() << " folders" << RLV_ENDL;
 
 	// Fetch all the link item targets
-	RlvItemFetcher itemFetcher;
-	itemFetcher.fetchItems(idItems);
+	RlvItemFetcher itemFetcher(idItems);
+	itemFetcher.startFetch();
 
 	// Fetch all the link folder targets
 	// TODO!
@@ -167,8 +167,8 @@ void RlvInventory::fetchWornItems()
 		}
 	}
 
-	RlvItemFetcher itemFetcher;
-	itemFetcher.fetchItems(idItems);
+	RlvItemFetcher itemFetcher(idItems);
+	itemFetcher.startFetch();
 }
 
 // Checked: 2010-09-27 (RLVa-1.1.3a) | Added: RLVa-1.1.3a
@@ -176,10 +176,8 @@ void RlvInventory::fetchWornItem(const LLUUID& idItem)
 { 
 	if (idItem.notNull()) 
 	{
-		uuid_vec_t idItems; 
-		idItems.push_back(idItem);
-		RlvItemFetcher itemFetcher;
-		itemFetcher.fetchItems(idItems);
+		RlvItemFetcher itemFetcher(idItem);
+		itemFetcher.startFetch();
 	}
 }
 
@@ -532,7 +530,7 @@ void RlvGiveToRLVAgentOffer::done()
 void RlvGiveToRLVAgentOffer::doneIdle()
 {
 	const LLViewerInventoryCategory* pRlvRoot = RlvInventory::instance().getSharedRoot();
-	const LLViewerInventoryCategory* pFolder = (mCompleteFolders.size()) ? gInventory.getCategory(mCompleteFolders[0]) : NULL;
+	const LLViewerInventoryCategory* pFolder = (mComplete.size()) ? gInventory.getCategory(mComplete[0]) : NULL;
 	if ( (pRlvRoot) && (pFolder) )
 	{
 		std::string strName = pFolder->getName();

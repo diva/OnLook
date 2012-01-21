@@ -1365,7 +1365,7 @@ bool LLInventoryModel::fetchDescendentsOf(const LLUUID& folder_id) const
 	//{
 	//	known_descendents += items->count();
 	//}
-	return cat->fetchDescendents();
+	return cat->fetch();
 }
 
 void LLInventoryModel::cache(

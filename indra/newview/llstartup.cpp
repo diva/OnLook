@@ -323,10 +323,10 @@ namespace
 	};
 }
 
-class LLGestureInventoryFetchObserver : public LLInventoryFetchObserver
+class LLGestureInventoryFetchObserver : public LLInventoryFetchItemsObserver
 {
 public:
-	LLGestureInventoryFetchObserver() {}
+	LLGestureInventoryFetchObserver(const uuid_vec_t& item_ids) : LLInventoryFetchItemsObserver(item_ids) {}
 	virtual void done()
 	{
 		// we've downloaded all the items, so repaint the dialog
@@ -2690,8 +2690,7 @@ bool idle_startup()
 					}
 				}
 
-				LLGestureInventoryFetchObserver* fetch = new LLGestureInventoryFetchObserver();
-				fetch->fetchItems(item_ids);
+				LLGestureInventoryFetchObserver* fetch = new LLGestureInventoryFetchObserver(item_ids);
 				// deletes itself when done
 				gInventory.addObserver(fetch);
 			}

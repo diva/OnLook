@@ -1877,13 +1877,17 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 }
 
 //Used by LLFolderBridge as callback for directory recursion.
-class LLRightClickInventoryFetchObserver : public LLInventoryFetchObserver
+class LLRightClickInventoryFetchObserver : public LLInventoryFetchItemsObserver
 {
 public:
-	LLRightClickInventoryFetchObserver() :
+	LLRightClickInventoryFetchObserver(const uuid_vec_t& ids) :
+		LLInventoryFetchItemsObserver(ids),
 		mCopyItems(false)
 	{ };
-	LLRightClickInventoryFetchObserver(const LLUUID& cat_id, bool copy_items) :
+	LLRightClickInventoryFetchObserver(const uuid_vec_t& ids,
+									   const LLUUID& cat_id, 
+									   bool copy_items) :
+		LLInventoryFetchItemsObserver(ids),
 		mCatID(cat_id),
 		mCopyItems(copy_items)
 		{ };
@@ -1907,7 +1911,11 @@ protected:
 class LLRightClickInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsObserver
 {
 public:
-	LLRightClickInventoryFetchDescendentsObserver(bool copy_items) : mCopyItems(copy_items) {}
+	LLRightClickInventoryFetchDescendentsObserver(const uuid_vec_t& ids,
+												  bool copy_items) : 
+		LLInventoryFetchDescendentsObserver(ids),
+		mCopyItems(copy_items) 
+	{}
 	~LLRightClickInventoryFetchDescendentsObserver() {}
 	virtual void done();
 protected:
@@ -1918,7 +1926,7 @@ void LLRightClickInventoryFetchDescendentsObserver::done()
 {
 	// Avoid passing a NULL-ref as mCompleteFolders.front() down to
 	// gInventory.collectDescendents()
-	if( mCompleteFolders.empty() )
+	if( mComplete.empty() )
 	{
 		llwarns << "LLRightClickInventoryFetchDescendentsObserver::done with empty mCompleteFolders" << llendl;
 		dec_busy_count();
@@ -1932,7 +1940,7 @@ void LLRightClickInventoryFetchDescendentsObserver::done()
 	// happen.
 	LLInventoryModel::cat_array_t cat_array;
 	LLInventoryModel::item_array_t item_array;
-	gInventory.collectDescendents(mCompleteFolders.front(),
+	gInventory.collectDescendents(mComplete.front(),
 								  cat_array,
 								  item_array,
 								  LLInventoryModel::EXCLUDE_TRASH);
@@ -1941,7 +1949,7 @@ void LLRightClickInventoryFetchDescendentsObserver::done()
 	// This early causes a giant menu to get produced, and doesn't seem to be needed.
 	if(!count)
 	{
-		llwarns << "Nothing fetched in category " << mCompleteFolders.front()
+		llwarns << "Nothing fetched in category " << mComplete.front()
 				<< llendl;
 		dec_busy_count();
 		gInventory.removeObserver(this);
@@ -1956,7 +1964,7 @@ void LLRightClickInventoryFetchDescendentsObserver::done()
 		ids.push_back(item_array.get(i)->getUUID());
 	}
 
-	LLRightClickInventoryFetchObserver* outfit = new LLRightClickInventoryFetchObserver(mCompleteFolders.front(), mCopyItems);
+	LLRightClickInventoryFetchObserver* outfit = new LLRightClickInventoryFetchObserver(ids, mComplete.front(), mCopyItems);
 
 	// clean up, and remove this as an observer since the call to the
 	// outfit could notify observers and throw us into an infinite
@@ -1970,7 +1978,7 @@ void LLRightClickInventoryFetchDescendentsObserver::done()
 	inc_busy_count();
 
 	// do the fetch
-	outfit->fetchItems(ids);
+	outfit->startFetch();
 	outfit->done();				//Not interested in waiting and this will be right 99% of the time.
 //Uncomment the following code for laggy Inventory UI.
 /*	if(outfit->isEverythingComplete())
@@ -2549,10 +2557,10 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 
 		mMenu = menu.getHandle();
 		sSelf = getHandle();
-		LLRightClickInventoryFetchDescendentsObserver* fetch = new LLRightClickInventoryFetchDescendentsObserver(FALSE);
-		fetch->fetchDescendents(folders);
+		LLRightClickInventoryFetchDescendentsObserver* fetch = new LLRightClickInventoryFetchDescendentsObserver(folders, FALSE);
+		fetch->startFetch();
 		inc_busy_count();
-		if(fetch->isEverythingComplete())
+		if(fetch->isFinished())
 		{
 			// everything is already here - call done.
 			fetch->done();
@@ -4358,10 +4366,11 @@ struct LLWearableHoldingPattern
 */
 // [/RLVa:KB]
 
-class LLOutfitObserver : public LLInventoryFetchObserver
+class LLOutfitObserver : public LLInventoryFetchItemsObserver
 {
 public:
-	LLOutfitObserver(const LLUUID& cat_id, bool copy_items, bool append) :
+	LLOutfitObserver(const uuid_vec_t& ids, const LLUUID& cat_id, bool copy_items, bool append) :
+		LLInventoryFetchItemsObserver(ids),
 		mCatID(cat_id),
 		mCopyItems(copy_items),
 		mAppend(append)
@@ -4490,7 +4499,7 @@ void LLOutfitObserver::done()
 class LLOutfitFetch : public LLInventoryFetchDescendentsObserver
 {
 public:
-	LLOutfitFetch(bool copy_items, bool append) : mCopyItems(copy_items), mAppend(append) {}
+	LLOutfitFetch(const LLUUID& id, bool copy_items, bool append) : mCopyItems(copy_items), mAppend(append) {}
 	~LLOutfitFetch() {}
 	virtual void done();
 protected:
@@ -4505,14 +4514,14 @@ void LLOutfitFetch::done()
 	// happen.
 	LLInventoryModel::cat_array_t cat_array;
 	LLInventoryModel::item_array_t item_array;
-	gInventory.collectDescendents(mCompleteFolders.front(),
+	gInventory.collectDescendents(mComplete.front(),
 								  cat_array,
 								  item_array,
 								  LLInventoryModel::EXCLUDE_TRASH);
 	S32 count = item_array.count();
 	if(!count)
 	{
-		llwarns << "Nothing fetched in category " << mCompleteFolders.front()
+		llwarns << "Nothing fetched in category " << mComplete.front()
 				<< llendl;
 		dec_busy_count();
 		gInventory.removeObserver(this);
@@ -4520,13 +4529,14 @@ void LLOutfitFetch::done()
 		return;
 	}
 
-	LLOutfitObserver* outfit;
-	outfit = new LLOutfitObserver(mCompleteFolders.front(), mCopyItems, mAppend);
 	uuid_vec_t ids;
 	for(S32 i = 0; i < count; ++i)
 	{
 		ids.push_back(item_array.get(i)->getUUID());
 	}
+
+	LLOutfitObserver* outfit = new LLOutfitObserver(ids, mComplete.front(), mCopyItems, mAppend);
+	
 
 	// clean up, and remove this as an observer since the call to the
 	// outfit could notify observers and throw us into an infinite
@@ -4540,8 +4550,8 @@ void LLOutfitFetch::done()
 	inc_busy_count();
 
 	// do the fetch
-	outfit->fetchItems(ids);
-	if(outfit->isEverythingComplete())
+	outfit->startFetch();
+	if(outfit->isFinished())
 	{
 		// everything is already here - call done.
 		outfit->done();
@@ -4610,13 +4620,10 @@ void wear_inventory_category(LLInventoryCategory* category, bool copy, bool appe
 	// What we do here is get the complete information on the items in
 	// the inventory, and set up an observer that will wait for that to
 	// happen.
-	LLOutfitFetch* outfit;
-	outfit = new LLOutfitFetch(copy, append);
-	LLInventoryFetchDescendentsObserver::folder_ref_t folders;
-	folders.push_back(category->getUUID());
-	outfit->fetchDescendents(folders);
+	LLOutfitFetch* outfit = new LLOutfitFetch(category->getUUID(), copy, append);
+	outfit->startFetch();
 	inc_busy_count();
-	if(outfit->isEverythingComplete())
+	if(outfit->isFinished())
 	{
 		// everything is already here - call done.
 		outfit->done();

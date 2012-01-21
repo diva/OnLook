@@ -219,10 +219,23 @@ void LLViewerInventoryItem::fetchFromServer(void) const
 	{
 		std::string url; 
 
-		if( ALEXANDRIA_LINDEN_ID.getString() == mPermissions.getOwner().getString())
-			url = gAgent.getRegion()->getCapability("FetchLib2");
-		else	
-			url = gAgent.getRegion()->getCapability("FetchInventory2");
+		LLViewerRegion* region = gAgent.getRegion();
+		// we have to check region. It can be null after region was destroyed. See EXT-245
+		if (region)
+		{
+		  if(gAgent.getID() != mPermissions.getOwner())
+		    {
+		      url = region->getCapability("FetchLib2");
+		    }
+		  else
+		    {	
+		      url = region->getCapability("FetchInventory2");
+		    }
+		}
+		else
+		{
+			llwarns << "Agent Region is absent" << llendl;
+		}
 
 		if (!url.empty())
 		{
@@ -472,15 +485,16 @@ void LLViewerInventoryCategory::removeFromServer( void )
 	gAgent.sendReliableMessage();
 }
 
-bool LLViewerInventoryCategory::fetchDescendents()
+bool LLViewerInventoryCategory::fetch()
 {
 	// <edit>
 	if((mUUID == gSystemFolderRoot) || (gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))) return false;
 	// </edit>
-	if (VERSION_UNKNOWN == mVersion &&
-	    (!mDescendentsRequested.getStarted() ||
-		 mDescendentsRequested.hasExpired()))	// Expired check prevents multiple downloads.
+	if((VERSION_UNKNOWN == mVersion) &&
+		(!mDescendentsRequested.getStarted() ||
+		mDescendentsRequested.hasExpired()))	//Expired check prevents multiple downloads.
 	{
+		LL_DEBUGS("InventoryFetch") << "Fetching category children: " << mName << ", UUID: " << mUUID << LL_ENDL;
 		const F32 FETCH_TIMER_EXPIRY = 10.0f;
 		mDescendentsRequested.start(FETCH_TIMER_EXPIRY);
 
@@ -512,7 +526,7 @@ bool LLViewerInventoryCategory::fetchDescendents()
 		}
 		else
 		{	//Deprecated, but if we don't have a capability, use the old system.
-			//llinfos << "FetchInventoryDescendents capability not found.  Using deprecated UDP message." << llendl;
+			llinfos << "FetchInventoryDescendents2 capability not found.  Using deprecated UDP message." << llendl;
 			LLMessageSystem* msg = gMessageSystem;
 			msg->newMessage("FetchInventoryDescendents");
 			msg->nextBlock("AgentData");
@@ -710,6 +724,11 @@ void RezAttachmentCallback::fire(const LLUUID& inv_item)
 void ActivateGestureCallback::fire(const LLUUID& inv_item)
 {
 	if (inv_item.isNull())
+		return;
+	LLViewerInventoryItem* item = gInventory.getItem(inv_item);
+	if (!item)
+		return;
+	if (item->getType() != LLAssetType::AT_GESTURE)
 		return;
 
 	LLGestureMgr::instance().activateGesture(inv_item);

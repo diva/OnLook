@@ -2775,10 +2775,10 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 }
 
 // fetch observer
-class LLCurrentlyWorn : public LLInventoryFetchObserver
+class LLCurrentlyWorn : public LLInventoryFetchItemsObserver
 {
 public:
-	LLCurrentlyWorn() {}
+	LLCurrentlyWorn(const uuid_vec_t& item_ids) : LLInventoryFetchItemsObserver(item_ids){}
 	~LLCurrentlyWorn() {}
 	virtual void done() { /* no operation necessary */}
 };
@@ -2799,8 +2799,8 @@ void LLFloaterCustomize::fetchInventory()
 
 	// Fire & forget. The mInventoryObserver will catch inventory
 	// updates and correct the UI as necessary.
-	LLCurrentlyWorn worn;
-	worn.fetchItems(ids);
+	LLCurrentlyWorn worn(ids);
+	worn.startFetch();
 }
 
 void LLFloaterCustomize::updateInventoryUI()

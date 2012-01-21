@@ -1337,20 +1337,6 @@ void LLTextureCtrl::closeFloater()
 	}
 }
 
-// Allow us to download textures quickly when floater is shown
-class LLTextureFetchDescendentsObserver : public LLInventoryFetchDescendentsObserver
-{
-public:
-	virtual void done()
-	{
-		// We need to find textures in all folders, so get the main
-		// background download going.
-		LLInventoryModelBackgroundFetch::instance().start();
-		gInventory.removeObserver(this);
-		delete this;
-	}
-};
-
 BOOL LLTextureCtrl::handleHover(S32 x, S32 y, MASK mask)
 {
 	getWindow()->setCursor(UI_CURSOR_HAND);

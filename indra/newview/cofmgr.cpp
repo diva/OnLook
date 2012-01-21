@@ -56,7 +56,7 @@ public:
 class LLCOFFetcher : public LLInventoryFetchDescendentsObserver
 {
 public:
-	LLCOFFetcher() {}
+	LLCOFFetcher(const LLUUID& cat_id) : LLInventoryFetchDescendentsObserver(cat_id) {}
 	/*virtual*/ ~LLCOFFetcher() {}
 
 	/*virtual*/ void done()
@@ -216,12 +216,9 @@ void LLCOFMgr::fetchCOF()
 			return;
 		}
 
-		LLInventoryFetchDescendentsObserver::folder_ref_t fetchFolders;
-		fetchFolders.push_back(idCOF);
-
-		LLCOFFetcher* pFetcher = new LLCOFFetcher();
-		pFetcher->fetchDescendents(fetchFolders);
-		if (pFetcher->isEverythingComplete())
+		LLCOFFetcher* pFetcher = new LLCOFFetcher(idCOF);
+		pFetcher->startFetch();
+		if (pFetcher->isFinished())
 			pFetcher->done();
 		else
 			gInventory.addObserver(pFetcher);
