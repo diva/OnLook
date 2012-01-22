@@ -84,7 +84,7 @@ public:
 		// Add all currently worn wearables
 		for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++)
 		{
-			const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType);
+			const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType,0);	// TODO: MULTI-WEARABLE
 			if (idItem.isNull())
 				continue;
 			idItems.push_back(idItem);
@@ -486,7 +486,7 @@ void LLCOFMgr::synchWearables()
 	uuid_vec_t newItems;
 	for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++)
 	{
-		const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType);
+		const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)idxType, 0); // TODO: MULTI-WEARABLE
 		if (idItem.isNull())
 			continue;
 		newItems.push_back(idItem);

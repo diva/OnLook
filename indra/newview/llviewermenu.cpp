@@ -9184,7 +9184,7 @@ class LLEditTakeOff : public view_listener_t
 			LLWearableType::EType type = LLWearableType::typeNameToType(clothing);
 			if (type >= LLWearableType::WT_SHAPE 
 				&& type < LLWearableType::WT_COUNT)
-				LLAgentWearables::userRemoveWearable(type);
+				LLAgentWearables::userRemoveWearable(type,0);	// TODO: MULTI-WEARABLE
 		}
 		return true;
 	}

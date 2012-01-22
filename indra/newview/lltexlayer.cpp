@@ -84,7 +84,7 @@ LLBakedUploadData::LLBakedUploadData( LLVOAvatar* avatar,
 	mStartTime = LLFrameTimer::getTotalTime();		// Record starting time
 	for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 	{
-		LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)i);
+		LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( wearable )
 		{
 			mWearableAssets[i] = wearable->getAssetID();

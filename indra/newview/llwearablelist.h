@@ -33,6 +33,7 @@
 #ifndef LL_LLWEARABLELIST_H
 #define LL_LLWEARABLELIST_H
 
+#include "llmemory.h"
 #include "llwearable.h"
 #include "lluuid.h"
 #include "llassetstorage.h"

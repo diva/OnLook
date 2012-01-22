@@ -5422,7 +5422,7 @@ void LLWearableBridge::onRemoveFromAvatarArrived(LLWearable* wearable,
 			if( !(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES) ) //&&
 				//!((!gAgent.isTeen()) && ( type==WT_UNDERPANTS || type==WT_UNDERSHIRT )) )
 			{
-				gAgentWearables.removeWearable( type );
+				gAgentWearables.removeWearable( type, false, 0 );	// TODO: MULTI-WEARABLE
 			}
 		}
 	}

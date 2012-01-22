@@ -141,7 +141,7 @@ void RlvInventory::fetchWornItems()
 	// Fetch all currently worn clothing layers and body parts
 	for (int type = 0; type < LLWearableType::WT_COUNT; type++)
 	{
-		const LLUUID idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type);
+		const LLUUID idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type, 0);	// TODO: MULTI-WEARABLE
 		if (idItem.notNull())
 			idItems.push_back(idItem);
 	}
