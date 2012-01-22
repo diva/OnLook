@@ -36,7 +36,7 @@
 
 #include "llframetimer.h"
 #include "aiframetimer.h"
-#include "aiaprpool.h"
+#include "llaprpool.h"
 
 // Local constants.
 static F64 const USEC_PER_SECOND = 1000000.0;
@@ -59,7 +59,7 @@ apr_thread_mutex_t* LLFrameTimer::sGlobalMutex;
 // static
 void LLFrameTimer::global_initialization(void)
 {
-	apr_thread_mutex_create(&sGlobalMutex, APR_THREAD_MUTEX_UNNESTED, AIAPRRootPool::get()());
+	apr_thread_mutex_create(&sGlobalMutex, APR_THREAD_MUTEX_UNNESTED, LLAPRRootPool::get()());
 	AIFrameTimer::sNextExpiration = NEVER;
 }
 
