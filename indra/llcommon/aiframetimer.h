@@ -122,7 +122,7 @@ class LL_COMMON_API AIFrameTimer
 	// Destructing the AIFrameTimer object terminates the running timer (if still running).
 	// Note that cancel() must have returned BEFORE anything is destructed that would disallow the callback function to be called.
 	// So, if the AIFrameTimer is a member of an object whose callback function is called then cancel() has
-	// be called manually (or from the destructor of THAT object), before that object is destructed.
+	// to be called manually (or from the destructor of THAT object), before that object is destructed.
 	// Cancel may be called multiple times.
 	~AIFrameTimer() { cancel(); }
 
