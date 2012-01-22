@@ -19,6 +19,7 @@
 
 #include "llmemory.h"
 #include "llviewerinventory.h"
+#include "llinventoryfunctions.h"
 
 #include "rlvhelper.h"
 #include "rlvlocks.h"

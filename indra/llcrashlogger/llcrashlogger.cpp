@@ -89,7 +89,8 @@ LLCrashLogger::LLCrashLogger() :
 	mCrashBehavior(CRASH_BEHAVIOR_ASK),
 	mCrashInPreviousExec(false),
 	mSentCrashLogs(false),
-	mCrashHost("")
+	mCrashHost(""),
+	mCrashSettings("CrashSettings")
 {
 
 }
@@ -346,7 +347,7 @@ bool LLCrashLogger::sendCrashLogs()
 
 	bool sent = false;
 
-	//*TODO: Translate
+	// *TODO: Translate
 	if(mCrashHost != "")
 	{
 		sent = runCrashLogPost(mCrashHost, post_data, std::string("Sending to server"), 3, 5);

@@ -55,6 +55,10 @@ class LLStreamingAudio_FMOD : public LLStreamingAudioInterface
 	/*virtual*/ F32 getGain();
 	/*virtual*/ std::string getURL();
 
+	/*virtual*/ bool supportsMetaData(){return true;}
+	/*virtual*/ const LLSD *getMetaData(){return mMetaData;}	//return NULL if not playing.
+	/*virtual*/ bool supportsWaveData(){return false;}
+	/*virtual*/ bool getWaveData(float* arr, S32 count, S32 stride = 1){return false;}
 private:
 	LLAudioStreamManagerFMOD *mCurrentInternetStreamp;
 	int mFMODInternetStreamChannel;
@@ -62,6 +66,8 @@ private:
 
 	std::string mURL;
 	F32 mGain;
+
+	LLSD *mMetaData;
 };
 
 

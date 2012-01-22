@@ -41,9 +41,11 @@ set(llui_SOURCE_FILES
     lllineeditor.cpp
     llmenugl.cpp
     llmodaldialog.cpp
+    llmultifloater.cpp 
     llmultislider.cpp
     llmultisliderctrl.cpp
     llnotifications.cpp
+    llnotificationsutil.cpp
     llpanel.cpp
     llprogressbar.cpp
     llradiogroup.cpp
@@ -64,11 +66,12 @@ set(llui_SOURCE_FILES
     lltextbox.cpp
     lltexteditor.cpp
     lltextparser.cpp
+    lltrans.cpp
     llui.cpp
     lluictrl.cpp
     lluictrlfactory.cpp
+    lluiimage.cpp
     lluistring.cpp
-    lluitrans.cpp
     llundo.cpp
     llviewborder.cpp
     llview.cpp
@@ -91,6 +94,7 @@ set(llui_HEADER_FILES
     llfloater.h
     llfocusmgr.h
     llfunctorregistry.h
+    llhandle.h
     llhtmlhelp.h
     lliconctrl.h
     llkeywords.h
@@ -98,9 +102,13 @@ set(llui_HEADER_FILES
     llmemberlistener.h
     llmenugl.h
     llmodaldialog.h
+    llmultifloater.h 
     llmultisliderctrl.h
     llmultislider.h
+    llnotificationptr.h
     llnotifications.h
+    llnotificationsutil.h
+    llnotificationtemplate.h
     llpanel.h
     llprogressbar.h
     llradiogroup.h
@@ -121,13 +129,14 @@ set(llui_HEADER_FILES
     lltextbox.h
     lltexteditor.h
     lltextparser.h
+    lltrans.h
     lluiconstants.h
     lluictrlfactory.h
     lluictrl.h
     lluifwd.h
     llui.h
+    lluiimage.h
     lluistring.h
-    lluitrans.h
     lluixmltags.h
     llundo.h
     llviewborder.h

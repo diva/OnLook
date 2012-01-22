@@ -40,6 +40,7 @@
 #include "llinventory.h"
 #include "llfolderview.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llmemberlistener.h"
 #include "llcombobox.h"
 #include "lluictrlfactory.h"
@@ -282,6 +283,7 @@ public:
 	static void onFilterSelected(void* userdata, bool from_click);
 	static void onResetAll(void* userdata);
 	static void onExpandAll(void* userdata);
+    static void onCollapseAll(void* userdata);
 	static void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
 
 	const std::string getFilterSubString() { return mActivePanel->getFilterSubString(); }
@@ -316,50 +318,6 @@ protected:
 	static LLDynamicArray<LLInventoryView*> sActiveViews;
 };
 
-class LLSelectFirstFilteredItem : public LLFolderViewFunctor
-{
-public:
-	LLSelectFirstFilteredItem() : mItemSelected(FALSE) {}
-	virtual ~LLSelectFirstFilteredItem() {}
-	virtual void doFolder(LLFolderViewFolder* folder);
-	virtual void doItem(LLFolderViewItem* item);
-	BOOL wasItemSelected() { return mItemSelected; }
-protected:
-	BOOL	mItemSelected;
-};
-
-class LLOpenFilteredFolders : public LLFolderViewFunctor
-{
-public:
-	LLOpenFilteredFolders()  {}
-	virtual ~LLOpenFilteredFolders() {}
-	virtual void doFolder(LLFolderViewFolder* folder);
-	virtual void doItem(LLFolderViewItem* item);
-};
-
-class LLSaveFolderState : public LLFolderViewFunctor
-{
-public:
-	LLSaveFolderState() : mApply(FALSE) {}
-	virtual ~LLSaveFolderState() {}
-	virtual void doFolder(LLFolderViewFolder* folder);
-	virtual void doItem(LLFolderViewItem* item) {}
-	void setApply(BOOL apply);
-	void clearOpenFolders() { mOpenFolders.clear(); }
-protected:
-	std::set<LLUUID> mOpenFolders;
-	BOOL mApply;
-};
-
-class LLOpenFoldersWithSelection : public LLFolderViewFunctor
-{
-public:
-	LLOpenFoldersWithSelection() {}
-	virtual ~LLOpenFoldersWithSelection() {}
-	virtual void doFolder(LLFolderViewFolder* folder);
-	virtual void doItem(LLFolderViewItem* item);
-};
-
 ///----------------------------------------------------------------------------
 /// Function declarations, constants, enums, and typedefs
 ///----------------------------------------------------------------------------
@@ -382,24 +340,6 @@ void wear_inventory_category(LLInventoryCategory* category, bool copy, bool appe
 void open_notecard(LLViewerInventoryItem* inv_item, const std::string& title, const LLUUID& object_id, BOOL show_keep_discard, const LLUUID& source_id = LLUUID::null, BOOL take_focus = TRUE);
 void open_landmark(LLViewerInventoryItem* inv_item, const std::string& title,                          BOOL show_keep_discard, const LLUUID& source_id = LLUUID::null, BOOL take_focus = TRUE);
 void open_texture(const LLUUID& item_id, const std::string& title, BOOL show_keep_discard, const LLUUID& source_id = LLUUID::null, BOOL take_focus = TRUE);
-
-std::string get_item_icon_name(LLAssetType::EType asset_type,
-							 LLInventoryType::EType inventory_type,
-							 U32 attachment_point, 
-							 BOOL item_is_multi );
-
-LLUIImagePtr get_item_icon(LLAssetType::EType asset_type,
-							 LLInventoryType::EType inventory_type,
-							 U32 attachment_point, 
-							 BOOL item_is_multi );
-
-// Move items from an in-world object's "Contents" folder to a specified
-// folder in agent inventory.
-BOOL move_inv_category_world_to_agent(const LLUUID& object_id, 
-									  const LLUUID& category_id,
-									  BOOL drop,
-									  void (*callback)(S32, void*) = NULL,
-									  void* user_data = NULL);
 
 const BOOL TAKE_FOCUS_YES = TRUE;
 const BOOL TAKE_FOCUS_NO  = FALSE;

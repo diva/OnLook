@@ -33,13 +33,14 @@
 #ifndef LL_LLPREVIEW_H
 #define LL_LLPREVIEW_H
 
-#include "llfloater.h"
+#include "llmultifloater.h"
 #include "llresizehandle.h"
 #include "llmap.h"
 #include "lluuid.h"
 #include "llviewerinventory.h"
 #include "lltabcontainer.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include <map>
 
 class LLLineEditor;
@@ -53,7 +54,7 @@ public:
 
 	/*virtual*/void open();		/*Flawfinder: ignore*/
 	/*virtual*/void tabOpen(LLFloater* opened_floater, bool from_click);
-	/*virtual*/ void userSetShape(const LLRect& new_rect);
+	/*virtual*/ void handleReshape(const LLRect& new_rect, bool by_user = false);
 
 	static LLMultiPreview* getAutoOpenInstance(const LLUUID& id);
 	static void setAutoOpenInstance(LLMultiPreview* previewp, const LLUUID& id);
@@ -110,7 +111,7 @@ public:
 	void				addKeepDiscardButtons();
 	static void			onKeepBtn(void* data);
 	static void			onDiscardBtn(void* data);
-	/*virtual*/ void	userSetShape(const LLRect& new_rect);
+	/*virtual*/ void	handleReshape(const LLRect& new_rect, bool by_user = false);
 
 	void userResized() { mUserResized = TRUE; };
 

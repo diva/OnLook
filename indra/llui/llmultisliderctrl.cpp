@@ -78,9 +78,7 @@ LLMultiSliderCtrl::LLMultiSliderCtrl(const std::string& name, const LLRect& rect
 	  mEditor( NULL ),
 	  mTextBox( NULL ),
 	  mTextEnabledColor( LLUI::sColorsGroup->getColor( "LabelTextColor" ) ),
-	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) ),
-	  mSliderMouseUpCallback( NULL ),
-	  mSliderMouseDownCallback( NULL )
+	  mTextDisabledColor( LLUI::sColorsGroup->getColor( "LabelDisabledColor" ) )
 {
 	S32 top = getRect().getHeight();
 	S32 bottom = 0;
@@ -307,17 +305,10 @@ void LLMultiSliderCtrl::onEditorCommit( LLUICtrl* caller, void *userdata )
 		val = (F32) atof( text.c_str() );
 		if( self->mMultiSlider->getMinValue() <= val && val <= self->mMultiSlider->getMaxValue() )
 		{
-			if( self->mValidateCallback )
+			self->setCurSliderValue( val );
+			if(	(!self->mValidateCallback	|| self->mValidateCallback( self, self->mCallbackUserData )) &&
+				(!self->mValidateSignal		|| (*(self->mValidateSignal))(self, val)))
 			{
-				self->setCurSliderValue( val );  // set the value temporarily so that the callback can retrieve it.
-				if( self->mValidateCallback( self, self->mCallbackUserData ) )
-				{
-					success = TRUE;
-				}
-			}
-			else
-			{
-				self->setCurSliderValue( val );
 				success = TRUE;
 			}
 		}
@@ -348,18 +339,11 @@ void LLMultiSliderCtrl::onSliderCommit( LLUICtrl* caller, void *userdata )
 	F32 saved_val = self->mCurValue;
 	F32 new_val = self->mMultiSlider->getCurSliderValue();
 
-	if( self->mValidateCallback )
+	self->mCurValue = new_val;  // set the value temporarily so that the callback can retrieve it.
+	if(	(!self->mValidateCallback	||	self->mValidateCallback( self, self->mCallbackUserData )) &&
+		(!self->mValidateSignal		|| (*(self->mValidateSignal))(self, new_val )))
 	{
-		self->mCurValue = new_val;  // set the value temporarily so that the callback can retrieve it.
-		if( self->mValidateCallback( self, self->mCallbackUserData ) )
-		{
 			success = TRUE;
-		}
-	}
-	else
-	{
-		self->mCurValue = new_val;
-		success = TRUE;
 	}
 
 	if( success )
@@ -435,37 +419,14 @@ void LLMultiSliderCtrl::setPrecision(S32 precision)
 	updateText();
 }
 
-void LLMultiSliderCtrl::setSliderMouseDownCallback( void (*slider_mousedown_callback)(LLUICtrl* caller, void* userdata) )
+boost::signals2::connection LLMultiSliderCtrl::setSliderMouseDownCallback( const commit_signal_t::slot_type& cb )
 {
-	mSliderMouseDownCallback = slider_mousedown_callback;
-	mMultiSlider->setMouseDownCallback( LLMultiSliderCtrl::onSliderMouseDown );
+	return mMultiSlider->setMouseDownCallback( cb );
 }
 
-// static
-void LLMultiSliderCtrl::onSliderMouseDown(LLUICtrl* caller, void* userdata)
+boost::signals2::connection LLMultiSliderCtrl::setSliderMouseUpCallback( const commit_signal_t::slot_type& cb )
 {
-	LLMultiSliderCtrl* self = (LLMultiSliderCtrl*) userdata;
-	if( self->mSliderMouseDownCallback )
-	{
-		self->mSliderMouseDownCallback( self, self->mCallbackUserData );
-	}
-}
-
-
-void LLMultiSliderCtrl::setSliderMouseUpCallback( void (*slider_mouseup_callback)(LLUICtrl* caller, void* userdata) )
-{
-	mSliderMouseUpCallback = slider_mouseup_callback;
-	mMultiSlider->setMouseUpCallback( LLMultiSliderCtrl::onSliderMouseUp );
-}
-
-// static
-void LLMultiSliderCtrl::onSliderMouseUp(LLUICtrl* caller, void* userdata)
-{
-	LLMultiSliderCtrl* self = (LLMultiSliderCtrl*) userdata;
-	if( self->mSliderMouseUpCallback )
-	{
-		self->mSliderMouseUpCallback( self, self->mCallbackUserData );
-	}
+	return mMultiSlider->setMouseUpCallback( cb );
 }
 
 void LLMultiSliderCtrl::onTabInto()
@@ -582,22 +543,32 @@ LLView* LLMultiSliderCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFa
 	S32 max_sliders = 1;
 	node->getAttributeS32("max_sliders", max_sliders);
 
+	S32 value_width = 0;
+	node->getAttributeS32("val_width", value_width);
 
 	S32 text_left = 0;
 	if (show_text)
 	{
-		// calculate the size of the text box (log max_value is number of digits - 1 so plus 1)
-		if ( max_value )
-			text_left = font->getWidth(std::string("0")) * ( static_cast < S32 > ( log10  ( max_value ) ) + precision + 1 );
+		if(value_width > 0)	
+		{
+			//Fixed width. Be wary of precision and sign causing text to take more space than expected!
+			text_left = value_width;
+		}
+		else
+		{
+			// calculate the size of the text box (log max_value is number of digits - 1 so plus 1)
+			if ( max_value )
+				text_left = font->getWidth(std::string("0")) * ( static_cast < S32 > ( log10  ( max_value ) ) + precision + 1 );
 
-		if ( increment < 1.0f )
-			text_left += font->getWidth(std::string("."));	// (mostly) take account of decimal point in value
+			if ( increment < 1.0f )
+				text_left += font->getWidth(std::string("."));	// (mostly) take account of decimal point in value
 
-		if ( min_value < 0.0f || max_value < 0.0f )
-			text_left += font->getWidth(std::string("-"));	// (mostly) take account of minus sign 
+			if ( min_value < 0.0f || max_value < 0.0f )
+				text_left += font->getWidth(std::string("-"));	// (mostly) take account of minus sign 
 
-		// padding to make things look nicer
-		text_left += 8;
+			// padding to make things look nicer
+			text_left += 8;
+		}
 	}
 
 	LLUICtrlCallback callback = NULL;

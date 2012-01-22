@@ -41,12 +41,14 @@
 
 #include "llcachename.h"
 #include "llbutton.h"
+#include "llnotificationsutil.h"
 #include "lltextbox.h"
 
 #include "llagent.h"			// for agent id
 #include "llalertdialog.h"
-#include "llinventoryview.h"
+#include "llinventorybridge.h"
 #include "llinventorymodel.h"
+#include "llinventoryview.h"
 #include "llpanelinventory.h"
 #include "llselectmgr.h"
 #include "lluiconstants.h"
@@ -76,6 +78,28 @@ LLFloaterOpenObject::~LLFloaterOpenObject()
 	sInstance = NULL;
 }
 
+// static
+void LLFloaterOpenObject::show()
+{
+	LLObjectSelectionHandle object_selection = LLSelectMgr::getInstance()->getSelection();
+	if (object_selection->getRootObjectCount() != 1)
+	{
+		LLNotificationsUtil::add("UnableToViewContentsMoreThanOne");
+		return;
+	}
+
+	// Create a new instance only if needed
+	if (!sInstance)
+	{
+		sInstance = new LLFloaterOpenObject();
+		sInstance->center();
+	}
+
+	sInstance->open();		/* Flawfinder: ignore */
+	sInstance->setFocus(TRUE);
+
+	sInstance->mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
+}
 void LLFloaterOpenObject::refresh()
 {
 	mPanelInventory->refresh();
@@ -104,35 +128,13 @@ void LLFloaterOpenObject::dirty()
 	if (sInstance) sInstance->mDirty = TRUE;
 }
 
-// static
-void LLFloaterOpenObject::show()
-{
-	LLObjectSelectionHandle object_selection = LLSelectMgr::getInstance()->getSelection();
-	if (object_selection->getRootObjectCount() != 1)
-	{
-		LLNotifications::instance().add("UnableToViewContentsMoreThanOne");
-		return;
-	}
-
-	// Create a new instance only if needed
-	if (!sInstance)
-	{
-		sInstance = new LLFloaterOpenObject();
-		sInstance->center();
-	}
-
-	sInstance->open();		/* Flawfinder: ignore */
-	sInstance->setFocus(TRUE);
-
-	sInstance->mObjectSelection = LLSelectMgr::getInstance()->getEditSelection();
-}
 
 
 void LLFloaterOpenObject::moveToInventory(bool wear)
 {
 	if (mObjectSelection->getRootObjectCount() != 1)
 	{
-		LLNotifications::instance().add("OnlyCopyContentsOfSingleItem");
+		LLNotificationsUtil::add("OnlyCopyContentsOfSingleItem");
 		return;
 	}
 
@@ -149,32 +151,57 @@ void LLFloaterOpenObject::moveToInventory(bool wear)
 	if (wear)
 	{
 		parent_category_id = gInventory.findCategoryUUIDForType(
-			LLAssetType::AT_CLOTHING);
+			LLFolderType::FT_CLOTHING);
 	}
 	else
 	{
-		parent_category_id = gAgent.getInventoryRootID();
+		parent_category_id = gInventory.getRootFolderID();
 	}
-	LLUUID category_id = gInventory.createNewCategory(parent_category_id, 
-		LLAssetType::AT_NONE, 
-		name);
 
-	LLCatAndWear* data = new LLCatAndWear;
-	data->mCatID = category_id;
-	data->mWear = wear;
+	LLCategoryCreate* cat_data = new LLCategoryCreate(object_id, wear);
+
+	LLUUID category_id = gInventory.createNewCategory(parent_category_id, 
+		LLFolderType::FT_NONE,
+		name,
+		callbackCreateInventoryCategory,
+		(void*)cat_data);
+
+	//If we get a null category ID, we are using a capability in createNewCategory and we will
+	//handle the following in the callbackCreateInventoryCategory routine.
+	if ( category_id.notNull() )
+	{
+		LLSD result;
+		result["folder_id"] = category_id;
+		//Reduce redundant code by just calling the callback. Dur.
+		callbackCreateInventoryCategory(result,cat_data);
+	}
+}
+
+// static
+void LLFloaterOpenObject::callbackCreateInventoryCategory(const LLSD& result, void* data)
+{
+	LLCategoryCreate* cat_data = (LLCategoryCreate*)data;
+		
+	LLUUID category_id = result["folder_id"].asUUID();
+	LLCatAndWear* wear_data = new LLCatAndWear;
+
+	wear_data->mCatID = category_id;
+	wear_data->mWear = cat_data->mWear;
+	wear_data->mFolderResponded = true;
 
 	// Copy and/or move the items into the newly created folder.
 	// Ignore any "you're going to break this item" messages.
-	BOOL success = move_inv_category_world_to_agent(object_id, category_id, TRUE,
+	BOOL success = move_inv_category_world_to_agent(cat_data->mObjectID, category_id, TRUE,
 													callbackMoveInventory, 
-													(void*)data);
+													(void*)wear_data);
 	if (!success)
 	{
-		delete data;
-		data = NULL;
-
-		LLNotifications::instance().add("OpenObjectCannotCopy");
+		delete wear_data;
+		wear_data = NULL;
+		
+		LLNotificationsUtil::add("OpenObjectCannotCopy");
 	}
+	delete cat_data;	
 }
 
 // static

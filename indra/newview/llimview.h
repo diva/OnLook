@@ -33,7 +33,7 @@
 #ifndef LL_LLIMVIEW_H
 #define LL_LLIMVIEW_H
 
-#include "llfloater.h"
+#include "llmultifloater.h"
 #include "llinstantmessage.h"
 #include "lluuid.h"
 
@@ -205,7 +205,7 @@ private:
 
 	void processIMTypingCore(const LLIMInfo* im_info, BOOL typing);
 
-	static void onInviteNameLookup(const LLUUID& id, const std::string& first, const std::string& last, BOOL is_group, void* userdata);
+	static void onInviteNameLookup(const LLUUID& id, const std::string& full_name, bool is_group, LLSD payload);
 
 private:
 	std::set<LLHandle<LLFloater> > mFloaters;

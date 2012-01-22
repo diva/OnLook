@@ -35,6 +35,7 @@
 #include "roles_constants.h"
 
 #include "lllineeditor.h"
+#include "llnotificationsutil.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
 #include "llscrolllistctrl.h"
@@ -648,7 +649,7 @@ void LLPanelGroupVoting::handleResponse(
 				args["MESSAGE"] = self->mPanel.getString("vote_previously_recorded");
 			}
 
-			LLNotifications::instance().add("SystemMessage", args);
+			LLNotificationsUtil::add("SystemMessage", args);
 
 			self->sendGroupVoteHistoryRequest(self->mGroupID);
 		}
@@ -761,7 +762,7 @@ void LLPanelGroupVoting::impl::sendStartGroupProposal()
 
 	S32 quorum = llfloor(mQuorum->get());
 
-	//*************************************Conversion to capability
+	// *************************************Conversion to capability
 	LLSD body;
 
 	std::string url = gAgent.getRegion()->getCapability("StartGroupProposal");
@@ -900,7 +901,7 @@ void LLPanelGroupVoting::impl::addPendingActiveScrollListItem(unsigned int curre
 															  EAddPosition pos)
 {
 	std::stringstream pending;
-	//*TODO: translate
+	// *TODO: translate
 	pending << "Retrieving active proposals ("
 			<< current
 			<< "\\" << expected  << ")";
@@ -910,13 +911,13 @@ void LLPanelGroupVoting::impl::addPendingActiveScrollListItem(unsigned int curre
 
 void LLPanelGroupVoting::impl::addNoActiveScrollListItem(EAddPosition pos)
 {
-	//*TODO: translate
+	// *TODO: translate
 	mProposals->addCommentText(std::string("There are currently no active proposals"), pos);
 }
 
 void LLPanelGroupVoting::impl::addNoHistoryScrollListItem(EAddPosition pos)
 {
-	//*TODO: translate
+	// *TODO: translate
 	mVotesHistory->addCommentText(std::string("There are currently no archived proposals"), pos);
 }
 
@@ -924,7 +925,7 @@ void LLPanelGroupVoting::impl::addPendingHistoryScrollListItem(unsigned int curr
 															  unsigned int expected,
 															  EAddPosition pos)
 {
-	//*TODO: translate
+	// *TODO: translate
 	std::stringstream pending;
 	pending << "Retrieving archived proposals ("
 			<< current
@@ -1357,7 +1358,7 @@ void LLPanelGroupVoting::impl::onClickSubmitProposal(void *userdata)
 			//throw up an error dialog
 			LLSD args;
 			args["MESSAGE"] = self->mPanel.getString("empty_proposal_txt");
-			LLNotifications::instance().add("GenericAlert", args);
+			LLNotificationsUtil::add("GenericAlert", args);
 			return;
 		}
 
@@ -1400,7 +1401,7 @@ void LLPanelGroupVoting::impl::onClickViewProposalItem(void *userdata)
 		}
 		else
 		{
-			LLNotifications::instance().add("SelectProposalToView");
+			LLNotificationsUtil::add("SelectProposalToView");
 		}
 	}
 }
@@ -1440,7 +1441,7 @@ void LLPanelGroupVoting::impl::onClickViewHistoryItem(void *userdata)
 		}
 		else
 		{
-			LLNotifications::instance().add("SelectHistoryItemToView");
+			LLNotificationsUtil::add("SelectHistoryItemToView");
 		}
 	}
 }
@@ -1453,9 +1454,9 @@ void LLPanelGroupVoting::impl::onClickViewHistoryList(void *userdata)
 	if ( self) self->setEnableHistoryList();
 }
 
-//**********************************
-//** LLPanelGroupVoting Functions **
-//**********************************
+// **********************************
+// ** LLPanelGroupVoting Functions **
+// **********************************
 
 // static
 void* LLPanelGroupVoting::createTab(void* data)

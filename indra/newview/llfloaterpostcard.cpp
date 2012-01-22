@@ -45,6 +45,7 @@
 #include "lllineeditor.h"
 #include "llviewertexteditor.h"
 #include "llbutton.h"
+#include "llnotificationsutil.h"
 #include "llviewercontrol.h"
 #include "llviewernetwork.h"
 #include "lluictrlfactory.h"
@@ -54,6 +55,7 @@
 #include "llstatusbar.h"
 #include "llviewerregion.h"
 #include "lleconomy.h"
+#include "lltrans.h"
 
 #include "llgl.h"
 #include "llglheaders.h"
@@ -194,11 +196,11 @@ void LLFloaterPostcard::draw()
 		}
 		{
 
-		glMatrixMode(GL_TEXTURE);
-		glPushMatrix();
+		gGL.matrixMode(LLRender::MM_TEXTURE);
+		gGL.pushMatrix();
 		{
-			glScalef(mImageScale.mV[VX], mImageScale.mV[VY], 1.f);
-			glMatrixMode(GL_MODELVIEW);
+			gGL.scalef(mImageScale.mV[VX], mImageScale.mV[VY], 1.f);
+			gGL.matrixMode(LLRender::MM_MODELVIEW);
 			gl_draw_scaled_image(rect.mLeft,
 								 rect.mBottom,
 								 rect.getWidth(),
@@ -206,9 +208,9 @@ void LLFloaterPostcard::draw()
 								 mViewerImage, 
 								 LLColor4::white);
 		}
-		glMatrixMode(GL_TEXTURE);
-		glPopMatrix();
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_TEXTURE);
+		gGL.popMatrix();
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		}
 	}
 }
@@ -255,20 +257,20 @@ void LLFloaterPostcard::onClickSend(void* data)
 		
 		if (to.empty() || !boost::regex_match(to, emailFormat))
 		{
-			LLNotifications::instance().add("PromptRecipientEmail");
+			LLNotificationsUtil::add("PromptRecipientEmail");
 			return;
 		}
 
 		if (from.empty() || !boost::regex_match(from, emailFormat))
 		{
-			LLNotifications::instance().add("PromptSelfEmail");
+			LLNotificationsUtil::add("PromptSelfEmail");
 			return;
 		}
 
 		std::string subject(self->childGetValue("subject_form").asString());
 		if(subject.empty() || !self->mHasFirstMsgFocus)
 		{
-			LLNotifications::instance().add("PromptMissingSubjMsg", LLSD(), LLSD(), boost::bind(&LLFloaterPostcard::missingSubjMsgAlertCallback, self, _1, _2));
+			LLNotificationsUtil::add("PromptMissingSubjMsg", LLSD(), LLSD(), boost::bind(&LLFloaterPostcard::missingSubjMsgAlertCallback, self, _1, _2));
 			return;
 		}
 
@@ -278,7 +280,7 @@ void LLFloaterPostcard::onClickSend(void* data)
 		}
 		else
 		{
-			LLNotifications::instance().add("ErrorProcessingSnapshot");
+			LLNotificationsUtil::add("ErrorProcessingSnapshot");
 		}
 	}
 }
@@ -294,7 +296,7 @@ void LLFloaterPostcard::uploadCallback(const LLUUID& asset_id, void *user_data, 
 	{
 		LLSD args;
 		args["REASON"] = std::string(LLAssetStorage::getErrorString(result));
-		LLNotifications::instance().add("ErrorUploadingPostcard", args);
+		LLNotificationsUtil::add("ErrorUploadingPostcard", args);
 	}
 	else
 	{
@@ -353,7 +355,7 @@ void LLFloaterPostcard::onMsgFormFocusRecieved(LLFocusableElement* receiver, voi
 
 bool LLFloaterPostcard::missingSubjMsgAlertCallback(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	if(0 == option)
 	{
 		// User clicked OK
@@ -361,7 +363,7 @@ bool LLFloaterPostcard::missingSubjMsgAlertCallback(const LLSD& notification, co
 		{
 			// Stuff the subject back into the form.
 			LLStringUtil::format_map_t targs;
-			targs["[GRID_NAME]"] = gHippoGridManager->getConnectedGrid()->getGridName();
+			targs["[SECOND_LIFE]"] = LLTrans::getString("SECOND_LIFE");
 			std::string subj = getString("default_subject");
 			LLStringUtil::format(subj, targs);
 

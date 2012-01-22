@@ -41,6 +41,7 @@
 #include "llimagetga.h"
 #include "llinventoryview.h"
 #include "llinventory.h"
+#include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "lltextbox.h"
 #include "lltextureview.h"
@@ -269,12 +270,12 @@ void LLPreviewTexture::draw()
 
 		// ...border
 		gl_rect_2d( border, LLColor4(0.f, 0.f, 0.f, 1.f));
-		gl_rect_2d_checkerboard( interior );
+		gl_rect_2d_checkerboard( getScreenRect(), interior );
 
 		if ( mImage.notNull() )
 		{
 			// Draw the texture
-			glColor3f( 1.f, 1.f, 1.f );
+			gGL.diffuseColor3f( 1.f, 1.f, 1.f );
 			gl_draw_scaled_image(interior.mLeft,
 								interior.mBottom,
 								interior.getWidth(),
@@ -324,6 +325,7 @@ void LLPreviewTexture::draw()
 					interior.mLeft + 4, 
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
+					LLFontGL::NORMAL,
 					LLFontGL::DROP_SHADOW);
 				
 				F32 data_progress = mImage->getDownloadProgress();
@@ -360,6 +362,7 @@ void LLPreviewTexture::draw()
 					interior.mLeft + 4,
 					interior.mBottom + 4,
 					LLColor4::white, LLFontGL::LEFT, LLFontGL::BOTTOM,
+					LLFontGL::NORMAL,
 					LLFontGL::DROP_SHADOW);
 			}
 		}
@@ -436,13 +439,13 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;
-			LLNotifications::instance().add("CannotEncodeFile", args);
+			LLNotificationsUtil::add("CannotEncodeFile", args);
 		}
 		else if( !image_tga->save( self->mSaveFileName ) )
 		{
 			LLSD args;
 			args["FILE"] = self->mSaveFileName;
-			LLNotifications::instance().add("CannotWriteFile", args);
+			LLNotificationsUtil::add("CannotWriteFile", args);
 		}
 		else
 		{
@@ -454,7 +457,7 @@ void LLPreviewTexture::onFileLoadedForSave(BOOL success,
 
 	if( self && !success )
 	{
-		LLNotifications::instance().add("CannotDownloadFile");
+		LLNotificationsUtil::add("CannotDownloadFile");
 	}
 }
 

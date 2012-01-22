@@ -423,7 +423,7 @@ void LLButton::draw()
 	// Unselected image assignments
 	S32 local_mouse_x;
 	S32 local_mouse_y;
-	LLUI::getCursorPositionLocal(this, &local_mouse_x, &local_mouse_y);
+	LLUI::getMousePositionLocal(this, &local_mouse_x, &local_mouse_y);
 
 	BOOL pressed = pressed_by_keyboard 
 					|| (hasMouseCapture() && pointInView(local_mouse_x, local_mouse_y)) 
@@ -611,9 +611,10 @@ void LLButton::draw()
 	S32 text_left = mLeftHPad;
 	S32 text_right = getRect().getWidth() - mRightHPad;
 	S32 text_width = getRect().getWidth() - mLeftHPad - mRightHPad;
+	S32 text_middle = text_left + text_width/2;
 
 	// draw overlay image
-	if (mImageOverlay.notNull())
+	if (mImageOverlay.notNull() && mImageOverlay->getWidth() > 1)
 	{
 		// get max width and height (discard level 0)
 		S32 overlay_width = mImageOverlay->getWidth();
@@ -645,6 +646,7 @@ void LLButton::draw()
 		case LLFontGL::LEFT:
 			text_left += overlay_width + 1;
 			text_width -= overlay_width + 1;
+			text_middle += (overlay_width+1)/4;
 			mImageOverlay->draw(
 				mLeftHPad, 
 				center_y - (overlay_height / 2), 
@@ -663,6 +665,7 @@ void LLButton::draw()
 		case LLFontGL::RIGHT:
 			text_right -= overlay_width + 1;				
 			text_width -= overlay_width + 1;
+			text_middle += (overlay_width+1)/4;
 			mImageOverlay->draw(
 				getRect().getWidth() - mRightHPad - overlay_width, 
 				center_y - (overlay_height / 2), 
@@ -688,7 +691,10 @@ void LLButton::draw()
 			x = text_right;
 			break;
 		case LLFontGL::HCENTER:
-			x = getRect().getWidth() / 2;
+			{
+				S32 actual_width = mGLFont->getWidth(label.c_str());
+				x = llmax(text_middle, text_left + actual_width/2);
+			}
 			break;
 		case LLFontGL::LEFT:
 		default:
@@ -704,10 +710,14 @@ void LLButton::draw()
 			x++;
 		}
 
-		mGLFont->render(label, 0, (F32)x, (F32)(LLBUTTON_V_PAD + y_offset), 
+
+		mGLFont->render(label, 0, 
+			(F32)x, 
+			(F32)(LLBUTTON_V_PAD + y_offset), 
 			label_color,
 			mHAlign, LLFontGL::BOTTOM,
-			mDropShadowedText ? LLFontGL::DROP_SHADOW_SOFT : LLFontGL::NORMAL,
+			LLFontGL::NORMAL,
+			mDropShadowedText ? LLFontGL::DROP_SHADOW_SOFT : LLFontGL::NO_SHADOW,
 			U32_MAX, text_width,
 			NULL, FALSE, FALSE);
 	}

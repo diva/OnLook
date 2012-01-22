@@ -44,8 +44,9 @@
 #include "lldraghandle.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
+#include "llfoldervieweventlistener.h"
 #include "llinventory.h"
-#include "llinventorymodel.h"
+#include "llinventoryfunctions.h"
 #include "llinventoryview.h"
 #include "lllineeditor.h"
 #include "llui.h"
@@ -473,7 +474,7 @@ BOOL LLFloaterTexturePicker::handleKeyHere(KEY key, MASK mask)
 		{
 			if (!root_folder->getCurSelectedItem())
 			{
-				LLFolderViewItem* itemp = root_folder->getItemByID(gAgent.getInventoryRootID());
+				LLFolderViewItem* itemp = root_folder->getItemByID(gInventory.getRootFolderID());
 				if (itemp)
 				{
 					root_folder->setSelection(itemp, FALSE, FALSE);
@@ -648,7 +649,7 @@ void LLFloaterTexturePicker::draw()
 		{
 			if( mTexturep->getComponents() == 4 )
 			{
-				gl_rect_2d_checkerboard( interior );
+				gl_rect_2d_checkerboard( getScreenRect(), interior );
 			}
 
 			gl_draw_scaled_image( interior.mLeft, interior.mBottom, interior.getWidth(), interior.getHeight(), mTexturep );
@@ -1367,7 +1368,7 @@ BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 		showPicker(FALSE);
 
 		//grab textures first...
-		gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLAssetType::AT_TEXTURE));
+		gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
 		//...then start full inventory fetch.
 		gInventory.startBackgroundFetch();
 	}
@@ -1540,7 +1541,7 @@ void LLTextureCtrl::draw()
 	{
 		if( mTexturep->getComponents() == 4 )
 		{
-			gl_rect_2d_checkerboard( interior );
+			gl_rect_2d_checkerboard( getScreenRect(), interior );
 		}
 		
 		gl_draw_scaled_image( interior.mLeft, interior.mBottom, interior.getWidth(), interior.getHeight(), mTexturep);
@@ -1572,6 +1573,7 @@ void LLTextureCtrl::draw()
 			LLColor4::white,
 			LLFontGL::LEFT,
 			LLFontGL::BASELINE,
+			LLFontGL::NORMAL,
 			LLFontGL::DROP_SHADOW);
 	}
 

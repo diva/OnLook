@@ -51,6 +51,7 @@
 #include "chatbar_as_cmdline.h"
 
 #if SHY_MOD //Command handler
+#include "llvoavatarself.h"
 #include "shcommandhandler.h"
 #endif //shy_mod
 
@@ -109,7 +110,6 @@ BOOL LLViewerGesture::trigger(const std::string &trigger_string)
 	}
 }
 
-
 // private
 void LLViewerGesture::doTrigger( BOOL send_chat )
 {
@@ -140,7 +140,7 @@ void LLViewerGesture::doTrigger( BOOL send_chat )
 
 	bool handled = !cmd_line_chat(mOutputString, CHAT_TYPE_NORMAL);
 #if SHY_MOD //Command handler
-	handled = handled || SHCommandHandler::handleCommand(true, mOutputString, gAgentID, gAgent.getAvatarObject());
+	handled = handled || SHCommandHandler::handleCommand(true, mOutputString, gAgentID, gAgentAvatarp);
 #endif //shy_mod
 	if (!handled && send_chat && !mOutputString.empty())
 	{

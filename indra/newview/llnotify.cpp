@@ -44,6 +44,7 @@
 #include "lliconctrl.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
+#include "lltrans.h"
 #include "lluiconstants.h"
 #include "llui.h"
 #include "llxmlnode.h"
@@ -483,7 +484,7 @@ void LLNotifyBox::draw()
 
 	if (mAnimating && display_time < ANIMATION_TIME)
 	{
-		glMatrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		LLUI::pushMatrix();
 
 		S32 height = getRect().getHeight();
@@ -581,14 +582,15 @@ void LLNotifyBox::close()
 
 void LLNotifyBox::format(std::string& msg, const LLStringUtil::format_map_t& args)
 {
-	// XUI:translate!
+	// add default substitutions
 	LLStringUtil::format_map_t targs = args;
-	targs["[SECOND_LIFE]"] = gHippoGridManager->getConnectedGrid()->getGridName();
-	targs["[GRID_NAME]"] = gHippoGridManager->getConnectedGrid()->getGridName();
-	targs["[GRID_OWNER]"] = gHippoGridManager->getConnectedGrid()->getGridOwner();	
-	targs["[GRID_SITE]"] = gHippoGridManager->getConnectedGrid()->getWebSite();
-	targs["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-	targs["[VIEWER_NAME]"] = "Singularity Viewer";
+	const LLStringUtil::format_map_t& default_args = LLTrans::getDefaultArgs();
+	for (LLStringUtil::format_map_t::const_iterator iter = default_args.begin();
+		 iter != default_args.end(); ++iter)
+	{
+		targs[iter->first] = iter->second;
+	}
+
 	LLStringUtil::format(msg, targs);
 }
 
@@ -714,7 +716,7 @@ LLRect LLNotifyBox::getNotifyTipRect(const std::string &utf8message)
 		S32 remaining = end - start;
 		while( remaining )
 		{
-			S32 drawn = sFont->maxDrawableChars( start, (F32)text_area_width, remaining, TRUE );
+			S32 drawn = sFont->maxDrawableChars( start, (F32)text_area_width, remaining, LLFontGL::WORD_BOUNDARY_IF_POSSIBLE );
 
 			if( 0 == drawn )
 			{

@@ -36,6 +36,8 @@
 
 // library includes
 #include "indra_constants.h"
+#include "llnotifications.h"
+#include "llnotificationsutil.h"
 
 // viewer includes
 #include "llagent.h"	// for gAgent.inPrelude()
@@ -93,8 +95,7 @@ void LLFirstUse::useBalanceIncrease(S32 delta)
 
 		LLSD args;
 		args["AMOUNT"] = llformat("%d",delta);
-		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-		LLNotifications::instance().add("FirstBalanceIncrease", args);
+		LLNotificationsUtil::add("FirstBalanceIncrease", args);
 	}
 }
 
@@ -108,8 +109,7 @@ void LLFirstUse::useBalanceDecrease(S32 delta)
 
 		LLSD args;
 		args["AMOUNT"] = llformat("%d",-delta);
-		args["CURRENCY"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-		LLNotifications::instance().add("FirstBalanceDecrease", args);
+		LLNotificationsUtil::add("FirstBalanceDecrease", args);
 	}
 }
 
@@ -123,7 +123,7 @@ void LLFirstUse::useSit()
 	//{
 	//	gSavedSettings.setWarning("FirstSit", FALSE);
         //
-	//	LLNotifications::instance().add("FirstSit");
+	//	LLNotificationsUtil::add("FirstSit");
 	//}
 }
 
@@ -134,7 +134,7 @@ void LLFirstUse::useMap()
 	{
 		gSavedSettings.setWarning("FirstMap", FALSE);
 
-		LLNotifications::instance().add("FirstMap");
+		LLNotificationsUtil::add("FirstMap");
 	}
 }
 
@@ -151,7 +151,7 @@ void LLFirstUse::useBuild()
 	{
 		gSavedSettings.setWarning("FirstBuild", FALSE);
 
-		LLNotifications::instance().add("FirstBuild");
+		LLNotificationsUtil::add("FirstBuild");
 	}
 }
 
@@ -162,7 +162,7 @@ void LLFirstUse::useLeftClickNoHit()
 	{
 		gSavedSettings.setWarning("FirstLeftClickNoHit", FALSE);
 
-		LLNotifications::instance().add("FirstLeftClickNoHit");
+		LLNotificationsUtil::add("FirstLeftClickNoHit");
 	}
 }
 
@@ -176,7 +176,7 @@ void LLFirstUse::useTeleport()
 		{
 			gSavedSettings.setWarning("FirstTeleport", FALSE);
 
-		        LLNotifications::instance().add("FirstTeleport");
+		        LLNotificationsUtil::add("FirstTeleport");
 		}
 	}
 }
@@ -192,7 +192,7 @@ void LLFirstUse::useOverrideKeys()
 		{
 			gSavedSettings.setWarning("FirstOverrideKeys", FALSE);
 
-			LLNotifications::instance().add("FirstOverrideKeys");
+			LLNotificationsUtil::add("FirstOverrideKeys");
 		}
 	}
 }
@@ -210,7 +210,7 @@ void LLFirstUse::useAO()
 	{
 		gSavedSettings.setWarning("FirstAO", FALSE);
 
-		LLNotifications::instance().add("FirstAO");
+		LLNotificationsUtil::add("FirstAO");
 	}
 }
 
@@ -221,7 +221,7 @@ void LLFirstUse::useAppearance()
 	{
 		gSavedSettings.setWarning("FirstAppearance", FALSE);
 
-		LLNotifications::instance().add("FirstAppearance");
+		LLNotificationsUtil::add("FirstAppearance");
 	}
 }
 
@@ -232,7 +232,7 @@ void LLFirstUse::useInventory()
 	{
 		gSavedSettings.setWarning("FirstInventory", FALSE);
 
-		LLNotifications::instance().add("FirstInventory");
+		LLNotificationsUtil::add("FirstInventory");
 	}
 }
 
@@ -247,7 +247,7 @@ void LLFirstUse::useSandbox()
 		LLSD args;
 		args["HOURS"] = llformat("%d",SANDBOX_CLEAN_FREQ);
 		args["TIME"] = llformat("%d",SANDBOX_FIRST_CLEAN_HOUR);
-		LLNotifications::instance().add("FirstSandbox", args);
+		LLNotificationsUtil::add("FirstSandbox", args);
 	}
 }
 
@@ -258,7 +258,7 @@ void LLFirstUse::useFlexible()
 	{
 		gSavedSettings.setWarning("FirstFlexible", FALSE);
 
-		LLNotifications::instance().add("FirstFlexible");
+		LLNotificationsUtil::add("FirstFlexible");
 	}
 }
 
@@ -269,7 +269,7 @@ void LLFirstUse::useDebugMenus()
 	{
 		gSavedSettings.setWarning("FirstDebugMenus", FALSE);
 
-		LLNotifications::instance().add("FirstDebugMenus");
+		LLNotificationsUtil::add("FirstDebugMenus");
 	}
 }
 
@@ -280,7 +280,7 @@ void LLFirstUse::useSculptedPrim()
 	{
 		gSavedSettings.setWarning("FirstSculptedPrim", FALSE);
 
-		LLNotifications::instance().add("FirstSculptedPrim");
+		LLNotificationsUtil::add("FirstSculptedPrim");
 		
 	}
 }
@@ -292,7 +292,7 @@ void LLFirstUse::useMedia()
 	{
 		gSavedSettings.setWarning("FirstMedia", FALSE);
 
-		LLNotifications::instance().add("FirstMedia");
+		LLNotificationsUtil::add("FirstMedia");
 	}
 }
 

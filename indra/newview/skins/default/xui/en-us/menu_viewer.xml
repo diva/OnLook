@@ -28,7 +28,7 @@
 		<on_click function="Object.Import" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
-	<menu_item_call enabled="false" hidden="false" label="Import with Textures" mouse_opaque="true" name="Import">
+	<menu_item_call enabled="false" hidden="false" label="Import with Textures" mouse_opaque="true" name="Import2">
 		<on_click function="Object.ImportUpload" />
 		<on_enable function="Object.EnableImport" />
 	</menu_item_call>
@@ -196,11 +196,25 @@
 				<on_click function="Edit.TakeOff" userdata="skirt" />
 				<on_enable function="Edit.EnableTakeOff" userdata="skirt" />
 			</menu_item_call>
-      <menu_item_call bottom="-200" enabled="false" height="19" label="Physics" left="0"
+			<menu_item_call bottom="-185" enabled="false" height="19" label="Tattoo" left="0"
+			     mouse_opaque="true" name="Tattoo" width="118">
+				<on_click function="Edit.TakeOff" userdata="tattoo" />
+				<on_enable function="Edit.EnableTakeOff" userdata="tattoo" />
+			</menu_item_call>
+            <menu_item_separator bottom="-187" enabled="true" height="8" label="-----------" left="0"
+                mouse_opaque="true" name="separator51" width="153" />
+			<menu_item_call bottom="-190" enabled="false" height="19" label="Alpha" left="0"
+			     mouse_opaque="true" name="Alpha" width="118">
+				<on_click function="Edit.TakeOff" userdata="alpha" />
+				<on_enable function="Edit.EnableTakeOff" userdata="alpha" />
+			</menu_item_call>
+            <menu_item_call bottom="-200" enabled="false" height="19" label="Physics" left="0"
 			     mouse_opaque="true" name="Physics" width="118">
-        <on_click function="Edit.TakeOff" userdata="physics" />
-        <on_enable function="Edit.EnableTakeOff" userdata="physics" />
-      </menu_item_call>
+                <on_click function="Edit.TakeOff" userdata="physics" />
+                <on_enable function="Edit.EnableTakeOff" userdata="physics" />
+            </menu_item_call>
+            <menu_item_separator bottom="-195" enabled="true" height="8" label="-----------" left="0"
+                mouse_opaque="true" name="separator51" width="153" />
 			<menu_item_call bottom="-119" enabled="true" height="19" label="All Clothes" left="0"
 			     mouse_opaque="true" name="All Clothes" width="118">
 				<on_click function="Edit.TakeOff" userdata="all" />
@@ -867,10 +881,15 @@
 				<on_click function="PromptShowURL" name="PublicIssueTrackerHelp_url"
 				     userdata="WebLaunchPublicIssueHelp,http://wiki.secondlife.com/wiki/Issue_tracker" />
 			</menu_item_call>
+			<menu_item_call bottom="-94" enabled="true" height="19" label="Singularity Issue Tracker..."
+			     left="0" mouse_opaque="true" name="Singularity Issue Tracker..." width="166">
+				<on_click function="PromptShowURL" name="SinguIssueTracker_url"
+						userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/list" />
+			</menu_item_call>
 			<menu_item_separator bottom="-411" enabled="true" height="8" label="-----------" left="0"
 			     mouse_opaque="true" name="separator7" width="250" />
 			<menu_item_call bottom="-94" enabled="true" height="19" label="Bug Reporting 101..." left="0"
-			     mouse_opaque="true" name="Bug Reporing 101..." width="166">
+			     mouse_opaque="true" name="Bug Reporting 101..." width="166">
 				<on_click function="PromptShowURL" name="BugReporting101_url"
 				     userdata="WebLaunchBugReport101,http://wiki.secondlife.com/wiki/Bug_Reporting_101" />
 			</menu_item_call>
@@ -890,6 +909,11 @@
 			     mouse_opaque="true" name="Report Bug..." width="166">
 				<on_click function="PromptShowURL" name="ReportBug_url"
 				     userdata="WebLaunchPublicIssue,http://jira.secondlife.com" />
+			</menu_item_call>
+			<menu_item_call bottom="-240" enabled="true" height="19" label="Report Singularity Bug..." left="0"
+			     mouse_opaque="true" name="Report Singularity Bug..." width="166">
+				<on_click function="PromptShowURL" name="ReportSinguBug_url"
+						userdata="WebLaunchSinguIssue,http://code.google.com/p/singularity-viewer/issues/entry" />
 			</menu_item_call>
 		</menu>
 		<menu_item_call bottom="-313" enabled="true" height="19" label="About Singularity..." left="0"
