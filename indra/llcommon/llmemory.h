@@ -250,7 +250,7 @@ public:
 		{
 			bool operator()(const LLMemoryBlock* const& lhs, const LLMemoryBlock* const& rhs)
 			{
-				return (U32)lhs->getBuffer() < (U32)rhs->getBuffer();
+				return (size_t)lhs->getBuffer() < (size_t)rhs->getBuffer();
 			}
 		};
 	};
