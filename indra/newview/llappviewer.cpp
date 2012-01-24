@@ -592,6 +592,7 @@ bool LLAppViewer::init()
 	// into the log files during normal startup until AFTER
 	// we run the "program crashed last time" error handler below.
 	//
+	LLFastTimer::reset();
 	
 	// initialize SSE options
 	LLVector4a::initClass();
@@ -1004,6 +1005,21 @@ void LLAppViewer::checkMemory()
 		LLMemory::logMemoryInfo() ;
 	}
 }
+
+static LLFastTimer::DeclareTimer FTM_MESSAGES("System Messages");
+static LLFastTimer::DeclareTimer FTM_SLEEP("Sleep");
+static LLFastTimer::DeclareTimer FTM_TEXTURE_CACHE("Texture Cache");
+static LLFastTimer::DeclareTimer FTM_DECODE("Image Decode");
+static LLFastTimer::DeclareTimer FTM_VFS("VFS Thread");
+static LLFastTimer::DeclareTimer FTM_LFS("LFS Thread");
+static LLFastTimer::DeclareTimer FTM_PAUSE_THREADS("Pause Threads");
+static LLFastTimer::DeclareTimer FTM_IDLE("Idle");
+static LLFastTimer::DeclareTimer FTM_PUMP("Pump");
+static LLFastTimer::DeclareTimer FTM_PUMP_ARES("Ares");
+static LLFastTimer::DeclareTimer FTM_PUMP_SERVICE("Service");
+static LLFastTimer::DeclareTimer FTM_SERVICE_CALLBACK("Callback");
+static LLFastTimer::DeclareTimer FTM_AGENT_AUTOPILOT("Autopilot");
+static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE("Update");
 bool LLAppViewer::mainLoop()
 {
 	mMainloopTimeout = new LLWatchdogTimeout();
@@ -1035,7 +1051,7 @@ bool LLAppViewer::mainLoop()
 	// Handle messages
 	while (!LLApp::isExiting())
 	{
-		LLFastTimer::reset(); // Should be outside of any timer instances
+		LLFastTimer::nextFrame(); // Should be outside of any timer instances
 
 		//clear call stack records
 		llclearcallstacks;
@@ -1045,26 +1061,25 @@ bool LLAppViewer::mainLoop()
 		
 		try
 		{
-			LLFastTimer t(LLFastTimer::FTM_FRAME);
 			pingMainloopTimeout("Main:MiscNativeWindowEvents");
 
 			if (gViewerWindow)
 			{
-				LLFastTimer t2(LLFastTimer::FTM_MESSAGES);
-				gViewerWindow->mWindow->processMiscNativeEvents();
+				LLFastTimer t2(FTM_MESSAGES);
+				gViewerWindow->getWindow()->processMiscNativeEvents();
 			}
 			
 			pingMainloopTimeout("Main:GatherInput");
 			
 			if (gViewerWindow)
 			{
-				LLFastTimer t2(LLFastTimer::FTM_MESSAGES);
+				LLFastTimer t2(FTM_MESSAGES);
 				if (!restoreErrorTrap())
 				{
 					llwarns << " Someone took over my signal/exception handler (post messagehandling)!" << llendl;
 				}
 
-				gViewerWindow->mWindow->gatherInput();
+				gViewerWindow->getWindow()->gatherInput();
 			}
 
 #if 1 && !LL_RELEASE_FOR_DOWNLOAD
@@ -1110,18 +1125,28 @@ bool LLAppViewer::mainLoop()
 				{
 					pauseMainloopTimeout(); // *TODO: Remove. Messages shouldn't be stalling for 20+ seconds!
 					
-					LLFastTimer t3(LLFastTimer::FTM_IDLE);
+					LLFastTimer t3(FTM_IDLE);
 					// <edit> bad_alloc!! </edit>
 					idle();
 
 					if (gAres != NULL && gAres->isInitialized())
 					{
 						pingMainloopTimeout("Main:ServicePump");				
-						LLFastTimer t4(LLFastTimer::FTM_PUMP);
-						gAres->process();
-						// this pump is necessary to make the login screen show up
-						gServicePump->pump();
-						gServicePump->callback();
+						LLFastTimer t4(FTM_PUMP);
+						{
+							LLFastTimer t(FTM_PUMP_ARES);
+							gAres->process();
+						}
+						{
+							LLFastTimer t(FTM_PUMP_SERVICE);
+							// this pump is necessary to make the login screen show up
+							gServicePump->pump();
+
+							{
+								LLFastTimer t(FTM_SERVICE_CALLBACK);
+								gServicePump->callback();
+							}
+						}
 					}
 					
 					resumeMainloopTimeout();
@@ -1160,7 +1185,7 @@ bool LLAppViewer::mainLoop()
 
 			// Sleep and run background threads
 			{
-				LLFastTimer t2(LLFastTimer::FTM_SLEEP);
+				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 
 				// yield some time to the os based on command line option
@@ -1206,11 +1231,28 @@ bool LLAppViewer::mainLoop()
 				{
 					S32 work_pending = 0;
 					S32 io_pending = 0;
- 					work_pending += LLAppViewer::getTextureCache()->update(1); // unpauses the texture cache thread
- 					work_pending += LLAppViewer::getImageDecodeThread()->update(1); // unpauses the image thread
- 					work_pending += LLAppViewer::getTextureFetch()->update(1); // unpauses the texture fetch thread
-					io_pending += LLVFSThread::updateClass(1);
-					io_pending += LLLFSThread::updateClass(1);
+					{
+						LLFastTimer ftm(FTM_TEXTURE_CACHE);
+ 						work_pending += LLAppViewer::getTextureCache()->update(1); // unpauses the texture cache thread
+					}
+					{
+						LLFastTimer ftm(FTM_DECODE);
+	 					work_pending += LLAppViewer::getImageDecodeThread()->update(1); // unpauses the image thread
+					}
+					{
+						LLFastTimer ftm(FTM_DECODE);
+	 					work_pending += LLAppViewer::getTextureFetch()->update(1); // unpauses the texture fetch thread
+					}
+
+					{
+						LLFastTimer ftm(FTM_VFS);
+	 					io_pending += LLVFSThread::updateClass(1);
+					}
+					{
+						LLFastTimer ftm(FTM_LFS);
+	 					io_pending += LLLFSThread::updateClass(1);
+					}
+
 					if (io_pending > 1000)
 					{
 						ms_sleep(llmin(io_pending/100,100)); // give the vfs some time to catch up
@@ -1762,6 +1804,8 @@ bool LLAppViewer::initThreads()
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
 
+	LLImage::initClass();
+	
 	LLVFSThread::initClass(enable_threads && false);
 	LLLFSThread::initClass(enable_threads && false);
 
@@ -1769,7 +1813,7 @@ bool LLAppViewer::initThreads()
 	LLAppViewer::sImageDecodeThread = new LLImageDecodeThread(enable_threads && true);
 	LLAppViewer::sTextureCache = new LLTextureCache(enable_threads && true);
 	LLAppViewer::sTextureFetch = new LLTextureFetch(LLAppViewer::getTextureCache(), sImageDecodeThread, enable_threads && true);
-	LLImage::initClass();
+
 
 	// Mesh streaming and caching
 	gMeshRepo.init();
@@ -2654,6 +2698,8 @@ void LLAppViewer::writeSystemInfo()
 	LL_INFOS("SystemInfo") << "Memory info:\n" << gSysMemory << LL_ENDL;
 	LL_INFOS("SystemInfo") << "OS: " << getOSInfo().getOSStringSimple() << LL_ENDL;
 	LL_INFOS("SystemInfo") << "OS info: " << getOSInfo() << LL_ENDL;
+
+	LL_INFOS("SystemInfo") << "Timers: " << LLFastTimer::sClockType << LL_ENDL;
 
 	writeDebugInfo(); // Save out debug_info.log early, in case of crash.
 }
@@ -3638,6 +3684,18 @@ public:
 		}
 };
 
+static LLFastTimer::DeclareTimer FTM_AUDIO_UPDATE("Update Audio");
+static LLFastTimer::DeclareTimer FTM_CLEANUP("Cleanup");
+static LLFastTimer::DeclareTimer FTM_CLEANUP_DRAWABLES("Drawables");
+static LLFastTimer::DeclareTimer FTM_CLEANUP_OBJECTS("Objects");
+static LLFastTimer::DeclareTimer FTM_IDLE_CB("Idle Callbacks");
+static LLFastTimer::DeclareTimer FTM_LOD_UPDATE("Update LOD");
+static LLFastTimer::DeclareTimer FTM_OBJECTLIST_UPDATE("Update Objectlist");
+static LLFastTimer::DeclareTimer FTM_REGION_UPDATE("Update Region");
+static LLFastTimer::DeclareTimer FTM_WORLD_UPDATE("Update World");
+static LLFastTimer::DeclareTimer FTM_NETWORK("Network");
+static LLFastTimer::DeclareTimer FTM_AGENT_NETWORK("Agent Network");
+static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 // idle()
 //
@@ -3706,7 +3764,7 @@ void LLAppViewer::idle()
 
 	if (!gDisconnected)
 	{
-		LLFastTimer t(LLFastTimer::FTM_NETWORK);
+		LLFastTimer t(FTM_NETWORK);
 		// Update spaceserver timeinfo
 	    LLWorld::getInstance()->setSpaceTimeUSec(LLWorld::getInstance()->getSpaceTimeUSec() + (U32)(dt_raw * SEC_TO_MICROSEC));
     
@@ -3721,9 +3779,12 @@ void LLAppViewer::idle()
 			gAgent.moveYaw(-1.f);
 		}
 
-	    // Handle automatic walking towards points
-	    gAgentPilot.updateTarget();
-	    gAgent.autoPilot(&yaw);
+		{
+			LLFastTimer t(FTM_AGENT_AUTOPILOT);
+			// Handle automatic walking towards points
+			gAgentPilot.updateTarget();
+			gAgent.autoPilot(&yaw);
+		}
     
 	    static LLFrameTimer agent_update_timer;
 	    static U32 				last_control_flags;
@@ -3734,6 +3795,7 @@ void LLAppViewer::idle()
     
 	    if (flags_changed || (agent_update_time > (1.0f / (F32) AGENT_UPDATES_PER_SECOND)))
 	    {
+		    LLFastTimer t(FTM_AGENT_UPDATE);
 		    // Send avatar and camera info
 		    last_control_flags = gAgent.getControlFlags();
 		    if(!gAgent.getPhantom())
@@ -3792,7 +3854,7 @@ void LLAppViewer::idle()
 	
 	if (!gDisconnected)
 	{
-		LLFastTimer t(LLFastTimer::FTM_NETWORK);
+		LLFastTimer t(FTM_NETWORK);
 	
 	    ////////////////////////////////////////////////
 	    //
@@ -3824,7 +3886,7 @@ void LLAppViewer::idle()
 	//
 
 	{
-// 		LLFastTimer t(LLFastTimer::FTM_IDLE_CB);
+// 		LLFastTimer t(FTM_IDLE_CB);
 
 		// Do event notifications if necessary.  Yes, we may want to move this elsewhere.
 		gEventNotifier.update();
@@ -3854,13 +3916,15 @@ void LLAppViewer::idle()
 
 	{
 		// Handle pending gesture processing
+		static LLFastTimer::DeclareTimer ftm("Agent Position");
+		LLFastTimer t(ftm);
 		LLGestureMgr::instance().update();
 
 		gAgent.updateAgentPosition(gFrameDTClamped, yaw, current_mouse.mX, current_mouse.mY);
 	}
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_OBJECTLIST_UPDATE); // Actually "object update"
+		LLFastTimer t(FTM_OBJECTLIST_UPDATE); 
 		gFrameStats.start(LLFrameStats::OBJECT_UPDATE);
 		
         if (!(logoutRequestSent() && hasSavedFinalSnapshot()))
@@ -3876,10 +3940,16 @@ void LLAppViewer::idle()
 	//
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_CLEANUP);
 		gFrameStats.start(LLFrameStats::CLEAN_DEAD);
-		gObjectList.cleanDeadObjects();
-		LLDrawable::cleanupDeadDrawables();
+		LLFastTimer t(FTM_CLEANUP);
+		{
+			LLFastTimer t(FTM_CLEANUP_OBJECTS);
+			gObjectList.cleanDeadObjects();
+		}
+		{
+			LLFastTimer t(FTM_CLEANUP_DRAWABLES);
+			LLDrawable::cleanupDeadDrawables();
+		}
 	}
 	
 	//
@@ -3897,6 +3967,8 @@ void LLAppViewer::idle()
 
 	{
 		gFrameStats.start(LLFrameStats::UPDATE_EFFECTS);
+		static LLFastTimer::DeclareTimer ftm("HUD Effects");
+		LLFastTimer t(ftm);
 		LLSelectMgr::getInstance()->updateEffects();
 		LLHUDManager::getInstance()->cleanupEffects();
 		LLHUDManager::getInstance()->sendEffects();
@@ -3910,7 +3982,7 @@ void LLAppViewer::idle()
 	//
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_NETWORK);
+		LLFastTimer t(FTM_NETWORK);
 		gVLManager.unpackData();
 	}
 	
@@ -3922,7 +3994,7 @@ void LLAppViewer::idle()
 	LLWorld::getInstance()->updateVisibilities();
 	{
 		const F32 max_region_update_time = .001f; // 1ms
-		LLFastTimer t(LLFastTimer::FTM_REGION_UPDATE);
+		LLFastTimer t(FTM_REGION_UPDATE);
 		LLWorld::getInstance()->updateRegions(max_region_update_time);
 	}
 	
@@ -3969,7 +4041,7 @@ void LLAppViewer::idle()
 	
 	if (!gNoRender)
 	{
-		LLFastTimer t(LLFastTimer::FTM_WORLD_UPDATE);
+		LLFastTimer t(FTM_WORLD_UPDATE);
 		gFrameStats.start(LLFrameStats::UPDATE_MOVE);
 		gPipeline.updateMove();
 
@@ -3997,13 +4069,13 @@ void LLAppViewer::idle()
 
 	// objects and camera should be in sync, do LOD calculations now
 	{
-		LLFastTimer t(LLFastTimer::FTM_LOD_UPDATE);
+		LLFastTimer t(FTM_LOD_UPDATE);
 		gObjectList.updateApparentAngles(gAgent);
 	}
 
 	{
 		gFrameStats.start(LLFrameStats::AUDIO);
-		LLFastTimer t(LLFastTimer::FTM_AUDIO_UPDATE);
+		LLFastTimer t(FTM_AUDIO_UPDATE);
 		
 		if (gAudiop)
 		{
@@ -4204,6 +4276,12 @@ void LLAppViewer::idleNameCache()
 static F32 CheckMessagesMaxTime = CHECK_MESSAGES_DEFAULT_MAX_TIME;
 #endif
 
+static LLFastTimer::DeclareTimer FTM_IDLE_NETWORK("Idle Network");
+static LLFastTimer::DeclareTimer FTM_MESSAGE_ACKS("Message Acks");
+static LLFastTimer::DeclareTimer FTM_RETRANSMIT("Retransmit");
+static LLFastTimer::DeclareTimer FTM_TIMEOUT_CHECK("Timeout Check");
+static LLFastTimer::DeclareTimer FTM_DYNAMIC_THROTTLE("Dynamic Throttle");
+static LLFastTimer::DeclareTimer FTM_CHECK_REGION_CIRCUIT("Check Region Circuit");
 void LLAppViewer::idleNetwork()
 {
 	pingMainloopTimeout("idleNetwork");
@@ -4213,7 +4291,7 @@ void LLAppViewer::idleNetwork()
 
 	if (!gSavedSettings.getBOOL("SpeedTest"))
 	{
-		LLFastTimer t(LLFastTimer::FTM_IDLE_NETWORK); // decode
+		LLFastTimer t(FTM_IDLE_NETWORK); // decode
 		
 		llpushcallstacks ;
 		LLTimer check_message_timer;

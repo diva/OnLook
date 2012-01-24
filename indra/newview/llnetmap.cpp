@@ -39,6 +39,7 @@
 #include "llui.h"
 #include "llmath.h"		// clampf()
 #include "llfocusmgr.h"
+#include "lllocalcliprect.h"
 #include "llrender.h"
 
 #include "llfloateravatarlist.h"

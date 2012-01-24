@@ -73,7 +73,6 @@ LLVector2		LLUI::sGLScaleFactor(1.f, 1.f);
 LLWindow*		LLUI::sWindow = NULL;
 LLHtmlHelp*		LLUI::sHtmlHelp = NULL;
 BOOL            LLUI::sShowXUINames = FALSE;
-std::stack<LLRect> LLScreenClipRect::sClipRectStack;
 BOOL            LLUI::sQAMode = FALSE;
 
 //
@@ -1854,68 +1853,5 @@ void LLUI::setHtmlHelp(LLHtmlHelp* html_help)
 void LLUI::setQAMode(BOOL b)
 {
 	LLUI::sQAMode = b;
-}
-
-LLScreenClipRect::LLScreenClipRect(const LLRect& rect, BOOL enabled) : mScissorState(GL_SCISSOR_TEST), mEnabled(enabled)
-{
-	if (mEnabled)
-	{
-		pushClipRect(rect);
-	}
-	mScissorState.setEnabled(!sClipRectStack.empty());
-	updateScissorRegion();
-}
-
-LLScreenClipRect::~LLScreenClipRect()
-{
-	if (mEnabled)
-	{
-		popClipRect();
-	}
-	updateScissorRegion();
-}
-
-//static 
-void LLScreenClipRect::pushClipRect(const LLRect& rect)
-{
-	LLRect combined_clip_rect = rect;
-	if (!sClipRectStack.empty())
-	{
-		LLRect top = sClipRectStack.top();
-		combined_clip_rect.intersectWith(top);
-	}
-	sClipRectStack.push(combined_clip_rect);
-}
-
-//static 
-void LLScreenClipRect::popClipRect()
-{
-	sClipRectStack.pop();
-}
-
-//static
-void LLScreenClipRect::updateScissorRegion()
-{
-	if (sClipRectStack.empty()) return;
-
-	LLRect rect = sClipRectStack.top();
-	stop_glerror();
-	S32 x,y,w,h;
-	x = llfloor(rect.mLeft * LLUI::sGLScaleFactor.mV[VX]);
-	y = llfloor(rect.mBottom * LLUI::sGLScaleFactor.mV[VY]);
-	w = llmax(0, llceil(rect.getWidth() * LLUI::sGLScaleFactor.mV[VX])) + 1;
-	h = llmax(0, llceil(rect.getHeight() * LLUI::sGLScaleFactor.mV[VY])) + 1;
-	glScissor( x,y,w,h );
-	stop_glerror();
-}
-
-
-LLLocalClipRect::LLLocalClipRect(const LLRect &rect, BOOL enabled) 
-: LLScreenClipRect(LLRect(rect.mLeft + LLFontGL::sCurOrigin.mX, 
-						rect.mTop + LLFontGL::sCurOrigin.mY, 
-						rect.mRight + LLFontGL::sCurOrigin.mX, 
-						rect.mBottom + LLFontGL::sCurOrigin.mY),
-					enabled)
-{
 }
 

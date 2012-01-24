@@ -1095,13 +1095,33 @@ bool LLFace::canRenderAsMask()
 	return false;
 }
 
+
+static LLFastTimer::DeclareTimer FTM_FACE_GET_GEOM("Face Geom");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_POSITION("Position");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_NORMAL("Normal");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_TEXTURE("Texture");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_COLOR("Color");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_EMISSIVE("Emissive");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_WEIGHTS("Weights");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_BINORMAL("Binormal");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_INDEX("Index");
+static LLFastTimer::DeclareTimer FTM_FACE_GEOM_INDEX_TAIL("Tail");
+static LLFastTimer::DeclareTimer FTM_FACE_POSITION_STORE("Pos");
+static LLFastTimer::DeclareTimer FTM_FACE_TEXTURE_INDEX_STORE("TexIdx");
+static LLFastTimer::DeclareTimer FTM_FACE_POSITION_PAD("Pad");
+static LLFastTimer::DeclareTimer FTM_FACE_TEX_DEFAULT("Default");
+static LLFastTimer::DeclareTimer FTM_FACE_TEX_QUICK("Quick");
+static LLFastTimer::DeclareTimer FTM_FACE_TEX_QUICK_NO_XFORM("No Xform");
+static LLFastTimer::DeclareTimer FTM_FACE_TEX_QUICK_XFORM("Xform");
+
+static LLFastTimer::DeclareTimer FTM_FACE_TEX_QUICK_PLANAR("Quick Planar");
 BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 							   const S32 &f,
 								const LLMatrix4& mat_vert_in, const LLMatrix3& mat_norm_in,
 								const U16 &index_offset,
 								bool force_rebuild)
 {
-	LLFastTimer t(LLFastTimer::FTM_FACE_GET_GEOM);
+	LLFastTimer t(FTM_FACE_GET_GEOM);
 	llassert(verify());
 	const LLVolumeFace &vf = volume.getVolumeFace(f);
 	S32 num_vertices = (S32)vf.mNumVertices;
@@ -1210,7 +1230,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	// INDICES
 	if (full_rebuild)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_INDEX);
+		LLFastTimer t(FTM_FACE_GEOM_INDEX);
 		mVertexBuffer->getIndexStrider(indicesp, mIndicesIndex, mIndicesCount, map_range);
 
 		volatile __m128i* dst = (__m128i*) indicesp.get();
@@ -1226,7 +1246,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 
 		{
-			//LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_INDEX_TAIL);
+			LLFastTimer t(FTM_FACE_GEOM_INDEX_TAIL);
 			U16* idx = (U16*) dst;
 
 			for (S32 i = end*8; i < num_indices; ++i)
@@ -1252,7 +1272,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 	if (rebuild_tcoord)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_TEXTURE);
+		LLFastTimer t(FTM_FACE_GEOM_TEXTURE);
 		bool do_xform;
 			
 		if (tep)
@@ -1389,14 +1409,17 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 			if (texgen != LLTextureEntry::TEX_GEN_PLANAR)
 			{
+				LLFastTimer t(FTM_FACE_TEX_QUICK);
 				if (!do_tex_mat)
 				{
 					if (!do_xform)
 					{
+						LLFastTimer t(FTM_FACE_TEX_QUICK_NO_XFORM);
 						LLVector4a::memcpyNonAliased16((F32*) tex_coords.get(), (F32*) vf.mTexCoords, num_vertices*2*sizeof(F32));
 					}
 					else
 					{
+						LLFastTimer t(FTM_FACE_TEX_QUICK_XFORM);
 						F32* dst = (F32*) tex_coords.get();
 						LLVector4a* src = (LLVector4a*) vf.mTexCoords;
 
@@ -1449,6 +1472,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 			}
 			else
 			{ //no bump, no atlas, tex gen planar
+				LLFastTimer t(FTM_FACE_TEX_QUICK_PLANAR);
 				if (do_tex_mat)
 				{
 					for (S32 i = 0; i < num_vertices; i++)
@@ -1493,6 +1517,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 		else
 		{ //either bump mapped or in atlas, just do the whole expensive loop
+			LLFastTimer t(FTM_FACE_TEX_DEFAULT);
 			mVertexBuffer->getTexCoord0Strider(tex_coords, mGeomIndex, mGeomCount, map_range);
 
 			std::vector<LLVector2> bump_tc;
@@ -1594,7 +1619,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 	if (rebuild_pos)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_POSITION);
+		LLFastTimer t(FTM_FACE_GEOM_POSITION);
 		llassert(num_vertices > 0);
 		
 		mVertexBuffer->getVertexStrider(vert, mGeomIndex, mGeomCount, map_range);
@@ -1621,6 +1646,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		texIdx.set(0,0,0,index);
 
 		{
+			LLFastTimer t(FTM_FACE_POSITION_STORE);
 			LLVector4a tmp;
 
 			do
@@ -1634,6 +1660,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		}
 
 		{
+			LLFastTimer t(FTM_FACE_POSITION_PAD);
 			S32 aligned_pad_vertices = mGeomCount - num_vertices;
 			res.set(res[0], res[1], res[2], 0.f);
 
@@ -1653,7 +1680,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		
 	if (rebuild_normal)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_NORMAL);
+		LLFastTimer t(FTM_FACE_GEOM_NORMAL);
 		mVertexBuffer->getNormalStrider(norm, mGeomIndex, mGeomCount, map_range);
 		F32* normals = (F32*) norm.get();
 	
@@ -1674,7 +1701,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 		
 	if (rebuild_binormal)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_BINORMAL);
+		LLFastTimer t(FTM_FACE_GEOM_BINORMAL);
 		mVertexBuffer->getBinormalStrider(binorm, mGeomIndex, mGeomCount, map_range);
 		F32* binormals = (F32*) binorm.get();
 		
@@ -1695,7 +1722,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 	
 	if (rebuild_weights && vf.mWeights)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_WEIGHTS);
+		LLFastTimer t(FTM_FACE_GEOM_WEIGHTS);
 		mVertexBuffer->getWeight4Strider(wght, mGeomIndex, mGeomCount, map_range);
 		F32* weights = (F32*) wght.get();
 		LLVector4a::memcpyNonAliased16(weights, (F32*) vf.mWeights, num_vertices*4*sizeof(F32));
@@ -1707,7 +1734,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 	if (rebuild_color)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_COLOR);
+		LLFastTimer t(FTM_FACE_GEOM_COLOR);
 		mVertexBuffer->getColorStrider(colors, mGeomIndex, mGeomCount, map_range);
 
 		LLVector4a src;
@@ -1738,7 +1765,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 
 	if (rebuild_emissive)
 	{
-		LLFastTimer t(LLFastTimer::FTM_FACE_GEOM_EMISSIVE);
+		LLFastTimer t(FTM_FACE_GEOM_EMISSIVE);
 		LLStrider<LLColor4U> emissive;
 		mVertexBuffer->getEmissiveStrider(emissive, mGeomIndex, mGeomCount, map_range);
 

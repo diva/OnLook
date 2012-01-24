@@ -115,9 +115,10 @@ LLDrawable* LLVOClouds::createDrawable(LLPipeline *pipeline)
 	return mDrawable;
 }
 
+static LLFastTimer::DeclareTimer FTM_UPDATE_CLOUDS("Cloud Update");
 BOOL LLVOClouds::updateGeometry(LLDrawable *drawable)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_CLOUDS);
+	LLFastTimer ftm(FTM_UPDATE_CLOUDS);
 	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)))
 	{
 		return TRUE;

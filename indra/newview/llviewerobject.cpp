@@ -124,11 +124,14 @@ BOOL		LLViewerObject::sUseSharedDrawables(FALSE); // TRUE
 F64			LLViewerObject::sMaxUpdateInterpolationTime = 3.0;		// For motion interpolation: after X seconds with no updates, don't predict object motion
 F64			LLViewerObject::sPhaseOutUpdateInterpolationTime = 2.0;	// For motion interpolation: after Y seconds with no updates, taper off motion prediction
 
+
+static LLFastTimer::DeclareTimer FTM_CREATE_OBJECT("Create Object");
+
 // static
 LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 {
 	LLViewerObject *res = NULL;
-	LLFastTimer t1(LLFastTimer::FTM_CREATE_OBJECT);
+	LLFastTimer t1(FTM_CREATE_OBJECT);
 	
 	switch (pcode)
 	{
@@ -2095,6 +2098,8 @@ BOOL LLViewerObject::isActive() const
 
 BOOL LLViewerObject::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
+	static LLFastTimer::DeclareTimer ftm("Viewer Object");
+	LLFastTimer t(ftm);
 	if (mDead)
 	{
 		// It's dead.  Don't update it.

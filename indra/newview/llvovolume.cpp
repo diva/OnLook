@@ -94,6 +94,9 @@ F32 LLVOVolume::sDistanceFactor = 1.0f;
 S32 LLVOVolume::sNumLODChanges = 0;
 S32 LLVOVolume::mRenderComplexity_last = 0;
 S32 LLVOVolume::mRenderComplexity_current = 0;
+static LLFastTimer::DeclareTimer FTM_GEN_TRIANGLES("Generate Triangles");
+static LLFastTimer::DeclareTimer FTM_GEN_VOLUME("Generate Volumes");
+static LLFastTimer::DeclareTimer FTM_VOLUME_TEXTURES("Volume Textures");
 
 LLVOVolume::LLVOVolume(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	: LLViewerObject(id, pcode, regionp),
@@ -425,6 +428,9 @@ BOOL LLVOVolume::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	LLViewerObject::idleUpdate(agent, world, time);
 
+	static LLFastTimer::DeclareTimer ftm("Volume");
+	LLFastTimer t(ftm);
+
 	if (mDead || mDrawable.isNull())
 	{
 		return TRUE;
@@ -493,6 +499,7 @@ BOOL LLVOVolume::isVisible() const
 
 void LLVOVolume::updateTextureVirtualSize(bool forced)
 {
+	LLFastTimer ftm(FTM_VOLUME_TEXTURES);
 	// Update the pixel area of all faces
 
 	if(mDrawable.isNull())
@@ -1333,14 +1340,18 @@ void LLVOVolume::updateRelativeXform()
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_GEN_FLEX("Generate Flexies");
+static LLFastTimer::DeclareTimer FTM_UPDATE_PRIMITIVES("Update Primitives");
+static LLFastTimer::DeclareTimer FTM_UPDATE_RIGGED_VOLUME("Update Rigged");
+
 BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 {
-	LLFastTimer t(LLFastTimer::FTM_UPDATE_PRIMITIVES);
+	LLFastTimer t(FTM_UPDATE_PRIMITIVES);
 	
 	if (mDrawable->isState(LLDrawable::REBUILD_RIGGED))
 	{
 		{
-			LLFastTimer t2(LLFastTimer::FTM_UPDATE_RIGGED_VOLUME);
+			LLFastTimer t(FTM_UPDATE_RIGGED_VOLUME);
 			updateRiggedVolume();
 		}
 		genBBoxes(FALSE);
@@ -1351,7 +1362,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 	{
 		BOOL res;
 		{
-			LLFastTimer t(LLFastTimer::FTM_GEN_FLEX);
+			LLFastTimer t(FTM_GEN_FLEX);
 			res = mVolumeImpl->doUpdateGeometry(drawable);
 		}
 		updateFaceFlags();
@@ -1375,14 +1386,14 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 
 		if (mVolumeChanged)
 		{
-			LLFastTimer ftm(LLFastTimer::FTM_GEN_VOLUME);
+			LLFastTimer ftm(FTM_GEN_VOLUME);
 			LLVolumeParams volume_params = getVolume()->getParams();
 			setVolume(volume_params, 0);
 			drawable->setState(LLDrawable::REBUILD_VOLUME);
 		}
 
 		{
-			LLFastTimer t(LLFastTimer::FTM_GEN_TRIANGLES);
+			LLFastTimer t(FTM_GEN_TRIANGLES);
 			regenFaces();
 			genBBoxes(FALSE);
 		}
@@ -1399,7 +1410,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 		old_volumep = NULL ;
 
 		{
-			LLFastTimer ftm(LLFastTimer::FTM_GEN_VOLUME);
+			LLFastTimer ftm(FTM_GEN_VOLUME);
 			LLVolumeParams volume_params = getVolume()->getParams();
 			setVolume(volume_params, 0);
 		}
@@ -1422,7 +1433,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 			drawable->setState(LLDrawable::REBUILD_VOLUME); // for face->genVolumeTriangles()
 
 			{
-				LLFastTimer t(LLFastTimer::FTM_GEN_TRIANGLES);
+				LLFastTimer t(FTM_GEN_TRIANGLES);
 				if (new_num_faces != old_num_faces || mNumFaces != (S32)getNumTEs())
 				{
 					regenFaces();
@@ -1447,7 +1458,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 	{
 		compiled = TRUE;
 		// All it did was move or we changed the texture coordinate offset
-		LLFastTimer t(LLFastTimer::FTM_GEN_TRIANGLES);
+		LLFastTimer t(FTM_GEN_TRIANGLES);
 		genBBoxes(FALSE);
 	}
 
@@ -2949,9 +2960,8 @@ void LLVOVolume::updateRiggedVolume()
 
 }
 
-
-//static LLFastTimer::DeclareTimer FTM_SKIN_RIGGED("Skin");
-//static LLFastTimer::DeclareTimer FTM_RIGGED_OCTREE("Octree");
+static LLFastTimer::DeclareTimer FTM_SKIN_RIGGED("Skin");
+static LLFastTimer::DeclareTimer FTM_RIGGED_OCTREE("Octree");
 
 void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, const LLVolume* volume)
 {
@@ -3006,7 +3016,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		LLVector4a* pos = dst_face.mPositions;
 
 		{
-			LLFastTimer t(LLFastTimer::FTM_SKIN_RIGGED);
+			LLFastTimer t(FTM_SKIN_RIGGED);
 
 			for (U32 j = 0; j < (U32)dst_face.mNumVertices; ++j)
 			{
@@ -3067,7 +3077,7 @@ void LLRiggedVolume::update(const LLMeshSkinInfo* skin, LLVOAvatar* avatar, cons
 		}
 
 		{
-			LLFastTimer t(LLFastTimer::FTM_RIGGED_OCTREE);
+			LLFastTimer t(FTM_RIGGED_OCTREE);
 			delete dst_face.mOctree;
 			dst_face.mOctree = NULL;
 
@@ -3273,6 +3283,9 @@ void LLVolumeGeometryManager::getGeometry(LLSpatialGroup* group)
 
 }
 
+static LLFastTimer::DeclareTimer FTM_REBUILD_VOLUME_VB("Volume");
+static LLFastTimer::DeclareTimer FTM_REBUILD_VBO("VBO Rebuilt");
+
 static LLDrawPoolAvatar* get_avatar_drawpool(LLViewerObject* vobj)
 {
 	LLVOAvatar* avatar = vobj->getAvatar();
@@ -3318,8 +3331,8 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	{
 		if (group->isState(LLSpatialGroup::MESH_DIRTY) && !LLPipeline::sDelayVBUpdate)
 		{
-			LLFastTimer ftm(LLFastTimer::FTM_REBUILD_VBO);	
-			LLFastTimer ftm2(LLFastTimer::FTM_REBUILD_VOLUME_VB);
+			LLFastTimer ftm(FTM_REBUILD_VBO);	
+			LLFastTimer ftm2(FTM_REBUILD_VOLUME_VB);
 		
 			rebuildMesh(group);
 		}
@@ -3327,9 +3340,9 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	}
 
 	group->mBuilt = 1.f;
-	LLFastTimer ftm(LLFastTimer::FTM_REBUILD_VBO);	
+	LLFastTimer ftm(FTM_REBUILD_VBO);	
 
-	LLFastTimer ftm2(LLFastTimer::FTM_REBUILD_VOLUME_VB);
+	LLFastTimer ftm2(FTM_REBUILD_VOLUME_VB);
 
 	group->clearDrawMap();
 
@@ -3748,12 +3761,15 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 	mFaceList.clear();
 }
 
+static LLFastTimer::DeclareTimer FTM_VOLUME_GEOM("Volume Geometry");
+static LLFastTimer::DeclareTimer FTM_VOLUME_GEOM_PARTIAL("Terse Rebuild");
 void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 {
 	llassert(group);
 	static int warningsCount = 20;
 	if (group && group->isState(LLSpatialGroup::MESH_DIRTY) && !group->isState(LLSpatialGroup::GEOM_DIRTY))
 	{
+		LLFastTimer tm(FTM_VOLUME_GEOM);
 		S32 num_mapped_vertex_buffer = LLVertexBuffer::sMappedCount ;
 
 		group->mBuilt = 1.f;
@@ -3762,6 +3778,7 @@ void LLVolumeGeometryManager::rebuildMesh(LLSpatialGroup* group)
 
 		for (LLSpatialGroup::element_iter drawable_iter = group->getData().begin(); drawable_iter != group->getData().end(); ++drawable_iter)
 		{
+			LLFastTimer t(FTM_VOLUME_GEOM_PARTIAL);
 			LLDrawable* drawablep = *drawable_iter;
 
 			/*if (drawablep->isState(LLDrawable::FORCE_INVISIBLE) )
@@ -3961,7 +3978,6 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 
 		if (batch_textures)
 		{
-			LLFastTimer t_ftm(LLFastTimer::FTM_TEMP6);
 			U8 cur_tex = 0;
 			facep->setTextureIndex(cur_tex);
 			texture_list.push_back(tex);

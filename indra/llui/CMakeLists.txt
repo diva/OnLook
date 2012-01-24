@@ -39,6 +39,7 @@ set(llui_SOURCE_FILES
     lliconctrl.cpp
     llkeywords.cpp
     lllineeditor.cpp
+    lllocalcliprect.cpp
     llmenugl.cpp
     llmodaldialog.cpp
     llmultifloater.cpp 
@@ -99,6 +100,7 @@ set(llui_HEADER_FILES
     lliconctrl.h
     llkeywords.h
     lllineeditor.h
+    lllocalcliprect.h
     llmemberlistener.h
     llmenugl.h
     llmodaldialog.h

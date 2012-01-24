@@ -53,6 +53,7 @@
 #include "lltexturecache.h"
 #include "llviewercontrol.h"
 #include "llviewertexturelist.h"
+#include "llviewertexture.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llworld.h"

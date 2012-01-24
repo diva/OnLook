@@ -2483,6 +2483,8 @@ S32 LLVOAvatar::setTETexture(const U8 te, const LLUUID& uuid)
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_AVATAR_UPDATE("Update Avatar");
+static LLFastTimer::DeclareTimer FTM_JOINT_UPDATE("Update Joints");
 
 // setTEImage
 
@@ -2492,7 +2494,7 @@ S32 LLVOAvatar::setTETexture(const U8 te, const LLUUID& uuid)
 BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
-	LLFastTimer t(LLFastTimer::FTM_AVATAR_UPDATE);
+	LLFastTimer t(FTM_AVATAR_UPDATE);
 
 	if (isDead())
 	{
@@ -2511,7 +2513,7 @@ BOOL LLVOAvatar::idleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 	// force asynchronous drawable update
 	if(mDrawable.notNull() && !gNoRender)
 	{
-		LLFastTimer t(LLFastTimer::FTM_JOINT_UPDATE);
+		LLFastTimer t(FTM_JOINT_UPDATE);
 	
 		if (mIsSitting && getParent())
 		{
@@ -2721,20 +2723,23 @@ void LLVOAvatar::idleUpdateVoiceVisualizer(bool voice_enabled)
 		// here we get the approximate head position and set as sound source for the voice symbol
 		// (the following version uses a tweak of "mHeadOffset" which handle sitting vs. standing)
 		//--------------------------------------------------------------------------------------------
-	if( !mIsSitting )
-	{
-		LLVector3 tagPos = mRoot.getWorldPosition();
-		tagPos[VZ] -= mPelvisToFoot;
-		tagPos[VZ] += ( mBodySize[VZ] + 0.125f );
-		mVoiceVisualizer->setVoiceSourceWorldPosition( tagPos );
-	}
-	else
-	{
-		LLVector3 headOffset = LLVector3( 0.0f, 0.0f, mHeadOffset.mV[2] );
-		mVoiceVisualizer->setVoiceSourceWorldPosition( mRoot.getWorldPosition() + headOffset );
-	}
+		
+		if ( mIsSitting )
+		{
+			LLVector3 headOffset = LLVector3( 0.0f, 0.0f, mHeadOffset.mV[2] );
+			mVoiceVisualizer->setVoiceSourceWorldPosition( mRoot.getWorldPosition() + headOffset );
+		}
+		else 
+		{
+			LLVector3 tagPos = mRoot.getWorldPosition();
+			tagPos[VZ] -= mPelvisToFoot;
+			tagPos[VZ] += ( mBodySize[VZ] + 0.125f );
+			mVoiceVisualizer->setVoiceSourceWorldPosition( tagPos );
+		}
 	}//if ( voiceEnabled )
-}
+}		
+
+static LLFastTimer::DeclareTimer FTM_ATTACHMENT_UPDATE("Update Attachments");
 
 void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 {
@@ -2758,7 +2763,7 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 	// update attachments positions
 	if (detailed_update || !sUseImpostors)
 	{
-		LLFastTimer t(LLFastTimer::FTM_ATTACHMENT_UPDATE);
+		LLFastTimer t(FTM_ATTACHMENT_UPDATE);
 		for (attachment_map_t::iterator iter = mAttachmentPoints.begin(); 
 			 iter != mAttachmentPoints.end();
 			 ++iter)
@@ -6003,9 +6008,11 @@ void LLVOAvatar::requestStopMotion( LLMotion* motion )
 //-----------------------------------------------------------------------------
 // loadAvatar()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_LOAD_AVATAR("Load Avatar");
+
 BOOL LLVOAvatar::loadAvatar()
 {
-// 	LLFastTimer t(LLFastTimer::FTM_LOAD_AVATAR);
+// 	LLFastTimer t(FTM_LOAD_AVATAR);
 	
 	// avatar_skeleton.xml
 	if( !buildSkeleton(sAvatarSkeletonInfo) )
@@ -6564,9 +6571,10 @@ void LLVOAvatar::updateGL()
 //-----------------------------------------------------------------------------
 // updateGeometry()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_UPDATE_AVATAR("Update Avatar");
 BOOL LLVOAvatar::updateGeometry(LLDrawable *drawable)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_AVATAR);
+	LLFastTimer ftm(FTM_UPDATE_AVATAR);
  	if (!(gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_AVATAR)))
 	{
 		return TRUE;

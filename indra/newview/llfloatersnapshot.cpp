@@ -41,6 +41,7 @@
 #include "v3dmath.h"
 #include "llmath.h"
 #include "lldir.h"
+#include "lllocalcliprect.h"
 #include "llsdserialize.h"
 
 #include "llagent.h"

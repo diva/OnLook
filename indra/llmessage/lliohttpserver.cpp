@@ -51,6 +51,7 @@
 #include "llstat.h"
 #include "llstl.h"
 #include "lltimer.h"
+#include "llfasttimer.h"
 
 #include <sstream>
 
@@ -146,6 +147,7 @@ private:
 	LLSD mHeaders;
 };
 
+static LLFastTimer::DeclareTimer FTM_PROCESS_HTTP_PIPE("HTTP Pipe");
 LLIOPipe::EStatus LLHTTPPipe::process_impl(
 	const LLChannelDescriptors& channels,
     buffer_ptr_t& buffer,
@@ -153,6 +155,7 @@ LLIOPipe::EStatus LLHTTPPipe::process_impl(
     LLSD& context,
     LLPumpIO* pump)
 {
+	LLFastTimer t(FTM_PROCESS_HTTP_PIPE);
 	PUMP_DEBUG;
     lldebugs << "LLSDHTTPServer::process_impl" << llendl;
 
@@ -434,6 +437,9 @@ protected:
 /**
  * LLHTTPResponseHeader
  */
+
+static LLFastTimer::DeclareTimer FTM_PROCESS_HTTP_HEADER("HTTP Header");
+
 // virtual
 LLIOPipe::EStatus LLHTTPResponseHeader::process_impl(
 	const LLChannelDescriptors& channels,
@@ -442,6 +448,7 @@ LLIOPipe::EStatus LLHTTPResponseHeader::process_impl(
 	LLSD& context,
 	LLPumpIO* pump)
 {
+	LLFastTimer t(FTM_PROCESS_HTTP_HEADER);
 	PUMP_DEBUG;
 	LLMemType m1(LLMemType::MTYPE_IO_HTTP_SERVER);
 	if(eos)
@@ -636,6 +643,8 @@ void LLHTTPResponder::markBad(
 		<< "</body>\n</html>\n";
 }
 
+static LLFastTimer::DeclareTimer FTM_PROCESS_HTTP_RESPONDER("HTTP Responder");
+
 // virtual
 LLIOPipe::EStatus LLHTTPResponder::process_impl(
 	const LLChannelDescriptors& channels,
@@ -644,6 +653,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 	LLSD& context,
 	LLPumpIO* pump)
 {
+	LLFastTimer t(FTM_PROCESS_HTTP_RESPONDER);
 	PUMP_DEBUG;
 	LLMemType m1(LLMemType::MTYPE_IO_HTTP_SERVER);
 	LLIOPipe::EStatus status = STATUS_OK;
