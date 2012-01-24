@@ -33,6 +33,7 @@
 #include "aievent.h"
 #include "llagent.h"
 #include "llinventoryobserver.h"
+#include "llinventorymodelbackgroundfetch.h"
 
 enum fetchinventoryfolder_state_type {
   AIFetchInventoryFolder_checkFolderExists = AIStateMachine::max_state,
@@ -56,14 +57,20 @@ class AIInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsOb
 	AIStateMachine* mStateMachine;
 };
 
-AIInventoryFetchDescendentsObserver::AIInventoryFetchDescendentsObserver(AIStateMachine* statemachine, LLUUID const& folder) : mStateMachine(statemachine)
+AIInventoryFetchDescendentsObserver::AIInventoryFetchDescendentsObserver(AIStateMachine* statemachine, LLUUID const& folder) : 
+	mStateMachine(statemachine),
+	LLInventoryFetchDescendentsObserver(folder)
 {
-  mStateMachine->idle();
-  folder_ref_t folders(1, folder);
-  fetchDescendents(folders);
-  gInventory.addObserver(this);
-  if (isEverythingComplete())
-	done();
+	mStateMachine->idle();
+	startFetch();
+	if(isFinished())
+	{
+		done();
+	}
+	else
+	{
+		 gInventory.addObserver(this);
+	}
 }
 
 void AIFetchInventoryFolder::fetch(std::string const& foldername, bool create, bool fetch_contents)
@@ -154,7 +161,7 @@ void AIFetchInventoryFolder::multiplex_impl(void)
 	  // mFolderUUID is now valid.
 	  mExists = true;
 	  if (!mFetchContents ||							// No request to fetch contents.
-		  LLInventoryModel::isEverythingFetched())		// No need to fetch contents.
+		  LLInventoryModelBackgroundFetch::instance().isEverythingFetched())		// No need to fetch contents.
 	  {
 		// We're done.
 		finish();

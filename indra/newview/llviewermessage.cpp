@@ -814,10 +814,13 @@ static LLNotificationFunctorRegistration jgr_3("JoinGroupCanAfford", join_group_
 //-----------------------------------------------------------------------------
 // Instant Message
 //-----------------------------------------------------------------------------
-class LLOpenAgentOffer : public LLInventoryFetchObserver
+class LLOpenAgentOffer : public LLInventoryFetchItemsObserver
 {
 public:
-	LLOpenAgentOffer(const std::string& from_name) : mFromName(from_name) {}
+	LLOpenAgentOffer(const LLUUID& object_id,
+					 const std::string& from_name) : 
+		LLInventoryFetchItemsObserver(object_id),
+		mFromName(from_name) {}
 	/*virtual*/ void done()
 	{
 		open_offer(mComplete, mFromName);
@@ -856,13 +859,14 @@ void start_new_inventory_observer()
 	}
 }
 
-class LLDiscardAgentOffer : public LLInventoryFetchComboObserver
+class LLDiscardAgentOffer : public LLInventoryFetchItemsObserver
 {
 public:
 	LLDiscardAgentOffer(const LLUUID& folder_id, const LLUUID& object_id) :
+		LLInventoryFetchItemsObserver(object_id),
 		mFolderID(folder_id),
 		mObjectID(object_id) {}
-	virtual ~LLDiscardAgentOffer() {}
+
 	virtual void done()
 	{
 		LL_DEBUGS("Messaging") << "LLDiscardAgentOffer::done()" << LL_ENDL;
@@ -875,6 +879,7 @@ public:
 		gInventory.removeObserver(this);
 		delete this;
 	}
+
 protected:
 	LLUUID mFolderID;
 	LLUUID mObjectID;
@@ -1299,11 +1304,9 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 			if ( (rlv_handler_t::isEnabled()) && (!RlvSettings::getForbidGiveToRLV()) && (LLAssetType::AT_CATEGORY == mType) && 
 				 (RlvInventory::instance().getSharedRoot()) && (mDesc.find(RLV_PUTINV_PREFIX) == 0) )
 			{
-				RlvGiveToRLVAgentOffer* pOffer = new RlvGiveToRLVAgentOffer();
-				LLInventoryFetchComboObserver::folder_ref_t folders;
-				folders.push_back(mObjectID);
-				pOffer->fetchDescendents(folders);
-				if (pOffer->isEverythingComplete())
+				RlvGiveToRLVAgentOffer* pOffer = new RlvGiveToRLVAgentOffer(mObjectID);
+				pOffer->startFetch();
+				if (pOffer->isFinished())
 					pOffer->done();
 				else
 					gInventory.addObserver(pOffer);
@@ -1311,11 +1314,9 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 #endif // RLV_EXTENSION_GIVETORLV_A2A
 // [/RLVa:KB]
 
-			uuid_vec_t items;
-			items.push_back(mObjectID);
-			LLOpenAgentOffer* open_agent_offer = new LLOpenAgentOffer(from_string);
-			open_agent_offer->fetchItems(items);
-			if(catp || (itemp && itemp->isComplete()))
+			LLOpenAgentOffer* open_agent_offer = new LLOpenAgentOffer(mObjectID, from_string);
+			open_agent_offer->startFetch();
+			if(catp || (itemp && itemp->isFinished()))
 			{
 				open_agent_offer->done();
 			}
@@ -1382,13 +1383,9 @@ bool LLOfferInfo::inventory_offer_callback(const LLSD& notification, const LLSD&
 		// request will suffice to discard the item.
 		if(IM_INVENTORY_OFFERED == mIM)
 		{
-			LLInventoryFetchComboObserver::folder_ref_t folders;
-			LLInventoryFetchComboObserver::item_ref_t items;
-			items.push_back(mObjectID);
-			LLDiscardAgentOffer* discard_agent_offer;
-			discard_agent_offer = new LLDiscardAgentOffer(mFolderID, mObjectID);
-			discard_agent_offer->fetch(folders, items);
-			if(catp || (itemp && itemp->isComplete()))
+			LLDiscardAgentOffer* discard_agent_offer = new LLDiscardAgentOffer(mFolderID, mObjectID);
+			discard_agent_offer->startFetch();
+			if (catp || (itemp && itemp->isFinished()))
 			{
 				discard_agent_offer->done();
 			}
@@ -3623,7 +3620,9 @@ void process_teleport_progress(LLMessageSystem* msg, void**)
 class LLFetchInWelcomeArea : public LLInventoryFetchDescendentsObserver
 {
 public:
-	LLFetchInWelcomeArea() {}
+	LLFetchInWelcomeArea(const uuid_vec_t &ids) :
+		LLInventoryFetchDescendentsObserver(ids)
+	{}
 	virtual void done()
 	{
 		LLIsType is_landmark(LLAssetType::AT_LANDMARK);
@@ -3634,8 +3633,8 @@ public:
 		LLInventoryModel::cat_array_t	land_cats;
 		LLInventoryModel::item_array_t	land_items;
 
-		folder_ref_t::iterator it = mCompleteFolders.begin();
-		folder_ref_t::iterator end = mCompleteFolders.end();
+		uuid_vec_t::iterator it = mComplete.begin();
+		uuid_vec_t::iterator end = mComplete.end();
 		for(; it != end; ++it)
 		{
 			gInventory.collectDescendentsIf(
@@ -3696,19 +3695,18 @@ BOOL LLPostTeleportNotifiers::tick()
 	if ( gAgent.getTeleportState() == LLAgent::TELEPORT_NONE )
 	{
 		// get callingcards and landmarks available to the user arriving.
-		LLInventoryFetchDescendentsObserver::folder_ref_t folders;
-		LLUUID folder_id;
-		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_CALLINGCARD);
-		if(folder_id.notNull()) 
-			folders.push_back(folder_id);
-		folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
+		uuid_vec_t folders;
+		const LLUUID callingcard_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_CALLINGCARD);
+		if(callingcard_id.notNull()) 
+			folders.push_back(callingcard_id);
+		const LLUUID folder_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_LANDMARK);
 		if(folder_id.notNull()) 
 			folders.push_back(folder_id);
 		if(!folders.empty())
 		{
-			LLFetchInWelcomeArea* fetcher = new LLFetchInWelcomeArea;
-			fetcher->fetchDescendents(folders);
-			if(fetcher->isEverythingComplete())
+			LLFetchInWelcomeArea* fetcher = new LLFetchInWelcomeArea(folders);
+			fetcher->startFetch();
+			if(fetcher->isFinished())
 			{
 				fetcher->done();
 			}
@@ -4101,6 +4099,7 @@ const F32 THRESHOLD_HEAD_ROT_QDOT = 0.9997f;	// ~= 2.5 degrees -- if its less th
 const F32 MAX_HEAD_ROT_QDOT = 0.99999f;			// ~= 0.5 degrees -- if its greater than this then no need to update head_rot
 												// between these values we delay the updates (but no more than one second)
 
+static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE_SEND("Send Message");
 
 void send_agent_update(BOOL force_send, BOOL send_reliable)
 {
@@ -4265,6 +4264,7 @@ void send_agent_update(BOOL force_send, BOOL send_reliable)
 
 	if (duplicate_count < DUP_MSGS && !gDisconnected)
 	{
+		LLFastTimer t(FTM_AGENT_UPDATE_SEND);
 		// Build the message
 		msg->newMessageFast(_PREHASH_AgentUpdate);
 		msg->nextBlockFast(_PREHASH_AgentData);
@@ -4399,11 +4399,12 @@ void process_terse_object_update_improved(LLMessageSystem *mesgsys, void **user_
 	gObjectList.processCompressedObjectUpdate(mesgsys, user_data, OUT_TERSE_IMPROVED);
 }
 
+static LLFastTimer::DeclareTimer FTM_PROCESS_OBJECTS("Process Objects");
 
 
 void process_kill_object(LLMessageSystem *mesgsys, void **user_data)
 {
-	LLFastTimer t(LLFastTimer::FTM_PROCESS_OBJECTS);
+	LLFastTimer t(FTM_PROCESS_OBJECTS);
 
 	LLUUID		id;
 	U32			local_id;

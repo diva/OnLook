@@ -1446,8 +1446,6 @@ void LLRender::loadIdentity()
 	flush();
 
 	{
-		llassert_always(mMatrixMode < NUM_MATRIX_MODES) ;
-
 		mMatrix[mMatrixMode][mMatIdx[mMatrixMode]].make_identity();
 		mMatHash[mMatrixMode]++;
 	}

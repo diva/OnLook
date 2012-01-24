@@ -3950,7 +3950,7 @@ void LLAgent::sendAgentSetAppearance()
 
 
 	static bool send_physics_params = false;
-	send_physics_params |= !!gAgentWearables.getWearable(LLWearableType::WT_PHYSICS);
+	send_physics_params |= !!gAgentWearables.selfHasWearable(LLWearableType::WT_PHYSICS);
 	S32 transmitted_params = 0;
 	for (LLViewerVisualParam* param = (LLViewerVisualParam*)gAgentAvatarp->getFirstVisualParam();
 		 param;

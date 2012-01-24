@@ -284,10 +284,11 @@ void AIStateMachine::multiplex(U64 current_time)
   multiplex_impl();
 }
 
+static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 // static
 void AIStateMachine::mainloop(void*)
 {
-  LLFastTimer t(LLFastTimer::FTM_STATEMACHINE);
+  LLFastTimer t(FTM_STATEMACHINE);
   // Add continued state machines.
   {
 	AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);

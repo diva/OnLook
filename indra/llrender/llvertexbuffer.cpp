@@ -2,31 +2,25 @@
  * @file llvertexbuffer.cpp
  * @brief LLVertexBuffer implementation
  *
- * $LicenseInfo:firstyear=2003&license=viewergpl$
- * 
- * Copyright (c) 2003-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2003&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -44,6 +38,7 @@
 #include "llshadermgr.h"
 #include "llglslshader.h"
 #include "llmemory.h"
+#include "llfasttimer.h"
 
 //Next Highest Power Of Two
 //helper function, returns first number > v that is a power of 2, or v if v is already a power of 2
@@ -155,7 +150,7 @@ U32 wpo2(U32 i)
 	return r;
 }
 
-U8* LLVBOPool::allocate(U32& name, U32 size)
+volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 {
 	llassert(nhpo2(size) == size);
 
@@ -166,19 +161,23 @@ U8* LLVBOPool::allocate(U32& name, U32 size)
 		mFreeList.resize(i+1);
 	}
 
-	U8* ret = NULL;
+	volatile U8* ret = NULL;
 
 	if (mFreeList[i].empty())
 	{
 		//make a new buffer
 		glGenBuffersARB(1, &name);
 		glBindBufferARB(mType, name);
-		glBufferDataARB(mType, size, 0, mUsage);
 		LLVertexBuffer::sAllocatedBytes += size;
 
-		if (LLVertexBuffer::sDisableVBOMapping)
+		if (LLVertexBuffer::sDisableVBOMapping || mUsage != GL_DYNAMIC_DRAW_ARB)
 		{
+			glBufferDataARB(mType, size, 0, mUsage);
 			ret = (U8*) ll_aligned_malloc_16(size);
+		}
+		else
+		{ //always use a true hint of static draw when allocating non-client-backed buffers
+			glBufferDataARB(mType, size, 0, GL_STATIC_DRAW_ARB);
 		}
 		glBindBufferARB(mType, 0);
 	}
@@ -195,7 +194,7 @@ U8* LLVBOPool::allocate(U32& name, U32 size)
 	return ret;
 }
 
-void LLVBOPool::release(U32 name, U8* buffer, U32 size)
+void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 {
 	llassert(nhpo2(size) == size);
 
@@ -208,8 +207,15 @@ void LLVBOPool::release(U32 name, U8* buffer, U32 size)
 	rec.mClientData = buffer;
 
 	sBytesPooled += size;
-
-	mFreeList[i].push_back(rec);
+	
+	if (!LLVertexBuffer::sDisableVBOMapping && mUsage == GL_DYNAMIC_DRAW_ARB)
+	{
+		glDeleteBuffersARB(1, &rec.mGLName);
+	}
+	else
+	{
+		mFreeList[i].push_back(rec);
+	}
 }
 
 void LLVBOPool::cleanup()
@@ -228,7 +234,7 @@ void LLVBOPool::cleanup()
 
 			if (r.mClientData)
 			{
-				ll_aligned_free_16(r.mClientData);
+				ll_aligned_free_16((void*) r.mClientData);
 			}
 
 			l.pop_front();
@@ -543,7 +549,7 @@ void LLVertexBuffer::validateRange(U32 start, U32 end, U32 count, U32 indices_of
 void LLVertexBuffer::drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indices_offset) const
 {
 	validateRange(start, end, count, indices_offset);
-
+	mMappable = FALSE;
 	gGL.syncMatrices();
 
 	llassert(mNumVerts >= 0);
@@ -598,7 +604,7 @@ void LLVertexBuffer::drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indi
 void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
 {
 	llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShaderPtr != NULL);
-
+	mMappable = FALSE;
 	gGL.syncMatrices();
 
 	llassert(mNumIndices >= 0);
@@ -644,7 +650,7 @@ void LLVertexBuffer::draw(U32 mode, U32 count, U32 indices_offset) const
 void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 {
 	llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShaderPtr != NULL);
-	
+	mMappable = FALSE;
 	gGL.syncMatrices();
 	
 	llassert(mNumVerts >= 0);
@@ -794,9 +800,25 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 
 	if (mUsage && mUsage != GL_STREAM_DRAW_ARB)
 	{ //only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default
-		mUsage = GL_DYNAMIC_DRAW_ARB;
+		if (sDisableVBOMapping)
+		{ //always use stream draw if VBO mapping is disabled
+			mUsage = GL_STREAM_DRAW_ARB;
+		}
+		else
+		{
+			mUsage = GL_DYNAMIC_DRAW_ARB;
+		}
 	}
 		
+	if (mUsage == GL_DYNAMIC_DRAW_ARB && !sDisableVBOMapping)
+	{
+		mMappable = TRUE;
+	}
+	else
+	{
+		mMappable = FALSE;
+	}
+
 	//zero out offsets
 	for (U32 i = 0; i < TYPE_MAX; i++)
 	{
@@ -812,6 +834,7 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 	sCount++;
 }
 
+//static
 S32 LLVertexBuffer::calcOffsets(const U32& typemask, S32* offsets, S32 num_vertices)
 {
 	S32 offset = 0;
@@ -944,11 +967,11 @@ void LLVertexBuffer::releaseBuffer()
 {
 	if (mUsage == GL_STREAM_DRAW_ARB)
 	{
-		sStreamVBOPool.release(mGLBuffer, /*(U8*)*/mMappedData, mSize);
+		sStreamVBOPool.release(mGLBuffer, mMappedData, mSize);
 	}
 	else
 	{
-		sDynamicVBOPool.release(mGLBuffer, /*(U8*)*/mMappedData, mSize);
+		sDynamicVBOPool.release(mGLBuffer, mMappedData, mSize);
 	}
 	
 	mGLBuffer = 0;
@@ -961,11 +984,11 @@ void LLVertexBuffer::releaseIndices()
 {
 	if (mUsage == GL_STREAM_DRAW_ARB)
 	{
-		sStreamIBOPool.release(mGLIndices, /*(U8*)*/mMappedIndexData, mIndicesSize);
+		sStreamIBOPool.release(mGLIndices, mMappedIndexData, mIndicesSize);
 	}
 	else
 	{
-		sDynamicIBOPool.release(mGLIndices, /*(U8*)*/mMappedIndexData, mIndicesSize);
+		sDynamicIBOPool.release(mGLIndices, mMappedIndexData, mIndicesSize);
 	}
 
 	mGLIndices = 0;
@@ -1048,7 +1071,7 @@ void LLVertexBuffer::destroyGLBuffer()
 		}
 		else
 		{
-			FREE_MEM(sPrivatePoolp, /*(U8*)*/mMappedData) ;
+			FREE_MEM(sPrivatePoolp, (void*) mMappedData) ;
 			mMappedData = NULL;
 			mEmpty = TRUE;
 		}
@@ -1069,7 +1092,7 @@ void LLVertexBuffer::destroyGLIndices()
 		}
 		else
 		{
-			FREE_MEM(sPrivatePoolp, /*(U8*)*/mMappedIndexData) ;
+			FREE_MEM(sPrivatePoolp, (void*) mMappedIndexData) ;
 			mMappedIndexData = NULL;
 			mEmpty = TRUE;
 		}
@@ -1147,7 +1170,7 @@ void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 	}
 }
 
-//static LLFastTimer::DeclareTimer FTM_SETUP_VERTEX_ARRAY("Setup VAO");
+static LLFastTimer::DeclareTimer FTM_SETUP_VERTEX_ARRAY("Setup VAO");
 
 void LLVertexBuffer::setupVertexArray()
 {
@@ -1156,7 +1179,7 @@ void LLVertexBuffer::setupVertexArray()
 		return;
 	}
 
-	//LLFastTimer t(FTM_SETUP_VERTEX_ARRAY);
+	LLFastTimer t(FTM_SETUP_VERTEX_ARRAY);
 #if GL_ARB_vertex_array_object
 	glBindVertexArray(mGLArray);
 #endif
@@ -1288,8 +1311,10 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 	return true;
 }
 
+static LLFastTimer::DeclareTimer FTM_VBO_MAP_BUFFER_RANGE("VBO Map Range");
+static LLFastTimer::DeclareTimer FTM_VBO_MAP_BUFFER("VBO Map");
 // Map for data access
-/*volatile */U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range)
+volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range)
 {
 	bindGLBuffer(true);
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
@@ -1304,7 +1329,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 		
 	if (useVBOs())
 	{
-		if (sDisableVBOMapping || gGLManager.mHasMapBufferRange || gGLManager.mHasFlushBufferRange)
+		if (!mMappable || gGLManager.mHasMapBufferRange || gGLManager.mHasFlushBufferRange)
 		{
 			if (count == -1)
 			{
@@ -1329,7 +1354,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 			if (!mapped)
 			{
 				//not already mapped, map new region
-				MappedRegion region(type, !sDisableVBOMapping && map_range ? -1 : index, count);
+				MappedRegion region(type, mMappable && map_range ? -1 : index, count);
 				mMappedVertexRegions.push_back(region);
 			}
 		}
@@ -1345,19 +1370,20 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 			sMappedCount++;
 			stop_glerror();	
 
-			if(sDisableVBOMapping)
+			if(!mMappable)
 			{
 				map_range = false;
 			}
 			else
 			{
-				U8* src = NULL;
+				volatile U8* src = NULL;
 				waitFence();
 				if (gGLManager.mHasMapBufferRange)
 				{
 					if (map_range)
 					{
 #ifdef GL_ARB_map_buffer_range
+						LLFastTimer t(FTM_VBO_MAP_BUFFER_RANGE);
 						S32 offset = mOffsets[type] + sTypeSize[type]*index;
 						S32 length = (sTypeSize[type]*count+0xF) & ~0xF;
 						src = (U8*) glMapBufferRange(GL_ARRAY_BUFFER_ARB, offset, length, 
@@ -1381,6 +1407,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 							}
 						}
 
+						LLFastTimer t(FTM_VBO_MAP_BUFFER);
 						src = (U8*) glMapBufferRange(GL_ARRAY_BUFFER_ARB, 0, mSize, 
 							GL_MAP_WRITE_BIT | 
 							GL_MAP_FLUSH_EXPLICIT_BIT);
@@ -1408,7 +1435,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 
 				llassert(src != NULL);
 
-				mMappedData = LL_NEXT_ALIGNED_ADDRESS<U8>(src);
+				mMappedData = LL_NEXT_ALIGNED_ADDRESS<volatile U8>(src);
 				mAlignedOffset = mMappedData - src;
 			
 				stop_glerror();
@@ -1421,7 +1448,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 			//check the availability of memory
 			LLMemory::logMemoryInfo(TRUE) ; 
 			
-				if(!sDisableVBOMapping)
+				if(mMappable)
 				{			
 					//--------------------
 					//print out more debug info before crash
@@ -1453,7 +1480,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 		map_range = false;
 	}
 	
-	if (map_range && gGLManager.mHasMapBufferRange && !sDisableVBOMapping)
+	if (map_range && gGLManager.mHasMapBufferRange && mMappable)
 	{
 		return mMappedData;
 	}
@@ -1463,7 +1490,10 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 	}
 }
 
-/*volatile */U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range)
+
+static LLFastTimer::DeclareTimer FTM_VBO_MAP_INDEX_RANGE("IBO Map Range");
+static LLFastTimer::DeclareTimer FTM_VBO_MAP_INDEX("IBO Map");
+volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	bindGLIndices(true);
@@ -1478,7 +1508,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 
 	if (useVBOs())
 	{
-		if (sDisableVBOMapping || gGLManager.mHasMapBufferRange || gGLManager.mHasFlushBufferRange)
+		if (!mMappable || gGLManager.mHasMapBufferRange || gGLManager.mHasFlushBufferRange)
 		{
 			if (count == -1)
 			{
@@ -1500,7 +1530,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 			if (!mapped)
 			{
 				//not already mapped, map new region
-				MappedRegion region(TYPE_INDEX, !sDisableVBOMapping && map_range ? -1 : index, count);
+				MappedRegion region(TYPE_INDEX, mMappable && map_range ? -1 : index, count);
 				mMappedIndexRegions.push_back(region);
 			}
 		}
@@ -1529,19 +1559,20 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 				}
 			}
 
-			if(sDisableVBOMapping)
+			if(!mMappable)
 			{
 				map_range = false;
 			}
 			else
 			{
-				U8* src = NULL;
+				volatile U8* src = NULL;
 				waitFence();
 				if (gGLManager.mHasMapBufferRange)
 				{
 					if (map_range)
 					{
 #ifdef GL_ARB_map_buffer_range
+						LLFastTimer t(FTM_VBO_MAP_INDEX_RANGE);
 						S32 offset = sizeof(U16)*index;
 						S32 length = sizeof(U16)*count;
 						src = (U8*) glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER_ARB, offset, length, 
@@ -1553,6 +1584,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 					else
 					{
 #ifdef GL_ARB_map_buffer_range
+						LLFastTimer t(FTM_VBO_MAP_INDEX);
 						src = (U8*) glMapBufferRange(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, sizeof(U16)*mNumIndices, 
 							GL_MAP_WRITE_BIT | 
 							GL_MAP_FLUSH_EXPLICIT_BIT);
@@ -1574,6 +1606,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 				}
 				else
 				{
+					LLFastTimer t(FTM_VBO_MAP_INDEX);
 					map_range = false;
 					src = (U8*) glMapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
 				}
@@ -1592,7 +1625,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 			log_glerror();
 			LLMemory::logMemoryInfo(TRUE) ;
 
-			if(!sDisableVBOMapping)
+			if(mMappable)
 			{
 				GLint buff;
 				glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING_ARB, &buff);
@@ -1614,7 +1647,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 		map_range = false;
 	}
 
-	if (map_range && gGLManager.mHasMapBufferRange && !sDisableVBOMapping)
+	if (map_range && gGLManager.mHasMapBufferRange && mMappable)
 	{
 		return mMappedIndexData;
 	}
@@ -1623,6 +1656,13 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 		return mMappedIndexData + sizeof(U16)*index;
 	}
 }
+
+static LLFastTimer::DeclareTimer FTM_VBO_UNMAP("VBO Unmap");
+static LLFastTimer::DeclareTimer FTM_VBO_FLUSH_RANGE("Flush VBO Range");
+
+
+static LLFastTimer::DeclareTimer FTM_IBO_UNMAP("IBO Unmap");
+static LLFastTimer::DeclareTimer FTM_IBO_FLUSH_RANGE("Flush IBO Range");
 
 void LLVertexBuffer::unmapBuffer()
 {
@@ -1636,10 +1676,11 @@ void LLVertexBuffer::unmapBuffer()
 
 	if (mMappedData && mVertexLocked)
 	{
+		LLFastTimer t(FTM_VBO_UNMAP);
 		bindGLBuffer(true);
 		updated_all = mIndexLocked; //both vertex and index buffers done updating
 
-		if(sDisableVBOMapping)
+		if(!mMappable)
 		{
 			if (!mMappedVertexRegions.empty())
 			{
@@ -1649,7 +1690,7 @@ void LLVertexBuffer::unmapBuffer()
 					const MappedRegion& region = mMappedVertexRegions[i];
 					S32 offset = region.mIndex >= 0 ? mOffsets[region.mType]+sTypeSize[region.mType]*region.mIndex : 0;
 					S32 length = sTypeSize[region.mType]*region.mCount;
-					glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, offset, length, /*(U8*)*/mMappedData+offset);
+					glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, offset, length, (U8*) mMappedData+offset);
 					stop_glerror();
 				}
 
@@ -1658,7 +1699,7 @@ void LLVertexBuffer::unmapBuffer()
 			else
 			{
 				stop_glerror();
-				glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, getSize(), /*(U8*)*/mMappedData);
+				glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, getSize(), (U8*) mMappedData);
 				stop_glerror();
 			}
 		}
@@ -1676,6 +1717,7 @@ void LLVertexBuffer::unmapBuffer()
 						S32 length = sTypeSize[region.mType]*region.mCount;
 						if (gGLManager.mHasMapBufferRange)
 						{
+							LLFastTimer t(FTM_VBO_FLUSH_RANGE);
 #ifdef GL_ARB_map_buffer_range
 							glFlushMappedBufferRange(GL_ARRAY_BUFFER_ARB, offset, length);
 #endif
@@ -1704,7 +1746,7 @@ void LLVertexBuffer::unmapBuffer()
 	if (mMappedIndexData && mIndexLocked)
 	{
 		bindGLIndices();
-		if(sDisableVBOMapping)
+		if(!mMappable)
 		{
 			if (!mMappedIndexRegions.empty())
 			{
@@ -1713,7 +1755,7 @@ void LLVertexBuffer::unmapBuffer()
 					const MappedRegion& region = mMappedIndexRegions[i];
 					S32 offset = region.mIndex >= 0 ? sizeof(U16)*region.mIndex : 0;
 					S32 length = sizeof(U16)*region.mCount;
-					glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, offset, length, /*(U8*)*/mMappedIndexData+offset);
+					glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, offset, length, (U8*) mMappedIndexData+offset);
 					stop_glerror();
 				}
 
@@ -1722,7 +1764,7 @@ void LLVertexBuffer::unmapBuffer()
 			else
 			{
 				stop_glerror();
-				glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, getIndicesSize(), /*(U8*)*/mMappedIndexData);
+				glBufferSubDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0, getIndicesSize(), (U8*) mMappedIndexData);
 				stop_glerror();
 			}
 		}
@@ -1739,6 +1781,7 @@ void LLVertexBuffer::unmapBuffer()
 						S32 length = sizeof(U16)*region.mCount;
 						if (gGLManager.mHasMapBufferRange)
 						{
+							LLFastTimer t(FTM_IBO_FLUSH_RANGE);
 #ifdef GL_ARB_map_buffer_range
 							glFlushMappedBufferRange(GL_ELEMENT_ARRAY_BUFFER_ARB, offset, length);
 #endif
@@ -1783,7 +1826,7 @@ template <class T,S32 type> struct VertexBufferStrider
 	{
 		if (type == LLVertexBuffer::TYPE_INDEX)
 		{
-			/*volatile*/ U8* ptr = vbo.mapIndexBuffer(index, count, map_range);
+			volatile U8* ptr = vbo.mapIndexBuffer(index, count, map_range);
 
 			if (ptr == NULL)
 			{
@@ -1798,8 +1841,8 @@ template <class T,S32 type> struct VertexBufferStrider
 		else if (vbo.hasDataType(type))
 		{
 			S32 stride = LLVertexBuffer::sTypeSize[type];
-			
-			/*volatile */U8* ptr = vbo.mapVertexBuffer(type, index, count, map_range);
+
+			volatile U8* ptr = vbo.mapVertexBuffer(type, index, count, map_range);
 
 			if (ptr == NULL)
 			{
@@ -1876,13 +1919,13 @@ bool LLVertexBuffer::getClothWeightStrider(LLStrider<LLVector4>& strider, S32 in
 
 //----------------------------------------------------------------------------
 
-//static LLFastTimer::DeclareTimer FTM_BIND_GL_ARRAY("Bind Array");
+static LLFastTimer::DeclareTimer FTM_BIND_GL_ARRAY("Bind Array");
 bool LLVertexBuffer::bindGLArray()
 {
 	if (mGLArray && sGLRenderArray != mGLArray)
 	{
 		{
-			//LLFastTimer t(FTM_BIND_GL_ARRAY);
+			LLFastTimer t(FTM_BIND_GL_ARRAY);
 #if GL_ARB_vertex_array_object
 			glBindVertexArray(mGLArray);
 #endif
@@ -1899,7 +1942,7 @@ bool LLVertexBuffer::bindGLArray()
 	return false;
 }
 
-//static LLFastTimer::DeclareTimer FTM_BIND_GL_BUFFER("Bind Buffer");
+static LLFastTimer::DeclareTimer FTM_BIND_GL_BUFFER("Bind Buffer");
 
 bool LLVertexBuffer::bindGLBuffer(bool force_bind)
 {
@@ -1909,7 +1952,7 @@ bool LLVertexBuffer::bindGLBuffer(bool force_bind)
 
 	if (useVBOs() && (force_bind || (mGLBuffer && (mGLBuffer != sGLRenderBuffer || !sVBOActive))))
 	{
-		//LLFastTimer t(FTM_BIND_GL_BUFFER);
+		LLFastTimer t(FTM_BIND_GL_BUFFER);
 		/*if (sMapped)
 		{
 			llerrs << "VBO bound while another VBO mapped!" << llendl;
@@ -1931,7 +1974,7 @@ bool LLVertexBuffer::bindGLBuffer(bool force_bind)
 	return ret;
 }
 
-//static LLFastTimer::DeclareTimer FTM_BIND_GL_INDICES("Bind Indices");
+static LLFastTimer::DeclareTimer FTM_BIND_GL_INDICES("Bind Indices");
 
 bool LLVertexBuffer::bindGLIndices(bool force_bind)
 {
@@ -1940,7 +1983,7 @@ bool LLVertexBuffer::bindGLIndices(bool force_bind)
 	bool ret = false;
 	if (useVBOs() && (force_bind || (mGLIndices && (mGLIndices != sGLRenderIndices || !sIBOActive))))
 	{
-		//LLFastTimer t(FTM_BIND_GL_INDICES);
+		LLFastTimer t(FTM_BIND_GL_INDICES);
 		/*if (sMapped)
 		{
 			llerrs << "VBO bound while another VBO mapped!" << llendl;
@@ -2117,7 +2160,7 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask)
 {
 	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
 	stop_glerror();
-	U8* base = useVBOs() ?  (U8*)mAlignedOffset : /*(U8*)*/mMappedData;
+	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
 
 	/*if ((data_mask & mTypeMask) != data_mask)
 	{

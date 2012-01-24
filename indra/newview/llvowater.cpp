@@ -139,9 +139,10 @@ LLDrawable *LLVOWater::createDrawable(LLPipeline *pipeline)
 	return mDrawable;
 }
 
+static LLFastTimer::DeclareTimer FTM_UPDATE_WATER("Update Water");
 BOOL LLVOWater::updateGeometry(LLDrawable *drawable)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WATER);
+	LLFastTimer ftm(FTM_UPDATE_WATER);
 	LLFace *face;
 
 	if (drawable->getNumFaces() < 1)
@@ -171,7 +172,7 @@ BOOL LLVOWater::updateGeometry(LLDrawable *drawable)
 				  indices_per_quad * num_quads);
 	
 	LLVertexBuffer* buff = face->getVertexBuffer();
-	if (!buff)
+	if (!buff || !buff->isWriteable())
 	{
 		buff = new LLVertexBuffer(LLDrawPoolWater::VERTEX_DATA_MASK, GL_DYNAMIC_DRAW_ARB);
 		buff->allocateBuffer(face->getGeomCount(), face->getIndicesCount(), TRUE);

@@ -34,6 +34,7 @@
 #include "llagent.h"
 #include "llappviewer.h"
 #include "llbufferstream.h"
+#include "llcallbacklist.h"
 #include "llcurl.h"
 #include "lldatapacker.h"
 #include "llfasttimer.h"
@@ -73,8 +74,8 @@
 
 #include <queue>
 
-//LLFastTimer::DeclareTimer FTM_MESH_UPDATE("Mesh Update");
-//LLFastTimer::DeclareTimer FTM_LOAD_MESH("Load Mesh");
+LLFastTimer::DeclareTimer FTM_MESH_UPDATE("Mesh Update");
+LLFastTimer::DeclareTimer FTM_LOAD_MESH("Load Mesh");
 
 LLMeshRepository gMeshRepo;
 
@@ -2164,7 +2165,7 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 		return detail;
 	}
 
-	//LLFastTimer t(LLFastTimer::FTM_LOAD_MESH); 
+	LLFastTimer t(FTM_LOAD_MESH); 
 
 	{
 		LLMutexLock lock(mMeshMutex);
@@ -2236,10 +2237,10 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 	return detail;
 }
 
-/*static LLFastTimer::DeclareTimer FTM_START_MESH_THREAD("Start Thread");
+//static LLFastTimer::DeclareTimer FTM_START_MESH_THREAD("Start Thread");
 static LLFastTimer::DeclareTimer FTM_LOAD_MESH_LOD("Load LOD");
 static LLFastTimer::DeclareTimer FTM_MESH_LOCK1("Lock 1");
-static LLFastTimer::DeclareTimer FTM_MESH_LOCK2("Lock 2");*/
+static LLFastTimer::DeclareTimer FTM_MESH_LOCK2("Lock 2");
 
 void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
@@ -2342,15 +2343,15 @@ void LLMeshRepository::notifyLoadedMeshes()
 		}
 	}
 
-	LLFastTimer t(LLFastTimer::FTM_MESH_UPDATE);
+	LLFastTimer t(FTM_MESH_UPDATE);
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_MESH_LOCK1);
+		LLFastTimer t(FTM_MESH_LOCK1);
 		mMeshMutex->lock();	
 	}
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_MESH_LOCK2);
+		LLFastTimer t(FTM_MESH_LOCK2);
 		mThread->mMutex->lock();
 	}
 	
@@ -2405,7 +2406,7 @@ void LLMeshRepository::notifyLoadedMeshes()
 
 		while (!mPendingRequests.empty() && push_count > 0)
 		{
-			LLFastTimer t(LLFastTimer::FTM_LOAD_MESH_LOD);
+			LLFastTimer t(FTM_LOAD_MESH_LOD);
 			LLMeshRepoThread::LODRequest& request = mPendingRequests.front();
 			mThread->loadMeshLOD(request.mMeshParams, request.mLOD);
 			mPendingRequests.erase(mPendingRequests.begin());

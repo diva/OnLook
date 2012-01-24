@@ -1769,6 +1769,9 @@ void LLWindowWin32::gatherInput()
 	mMousePositionModified = FALSE;
 }
 
+static LLFastTimer::DeclareTimer FTM_KEYHANDLER("Handle Keyboard");
+static LLFastTimer::DeclareTimer FTM_MOUSEHANDLER("Handle Mouse");
+
 LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_param, LPARAM l_param)
 {
 	LLWindowWin32 *window_imp = (LLWindowWin32 *)GetWindowLong(h_wnd, GWL_USERDATA);
@@ -2009,7 +2012,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 			window_imp->mKeyVirtualKey = w_param;
 
 			window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_KEYUP");
-			LLFastTimer t2(LLFastTimer::FTM_KEYHANDLER);
+			LLFastTimer t2(FTM_KEYHANDLER);
 
 			if (gDebugWindowProc)
 			{
@@ -2120,7 +2123,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		case WM_LBUTTONDOWN:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_LBUTTONDOWN");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 				{
 					window_imp->interruptLanguageTextInput();
@@ -2184,7 +2187,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		case WM_LBUTTONUP:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_LBUTTONUP");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				//if (gDebugClicks)
 				//{
 				//	LL_INFOS("Window") << "WndProc left button up" << LL_ENDL;
@@ -2218,7 +2221,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		case WM_RBUTTONDOWN:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_RBUTTONDOWN");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 				{
 					window_imp->interruptLanguageTextInput();
@@ -2252,7 +2255,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		case WM_RBUTTONUP:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_RBUTTONUP");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				// Because we move the cursor position in the app, we need to query
 				// to find out where the cursor at the time the event is handled.
 				// If we don't do this, many clicks could get buffered up, and if the
@@ -2282,7 +2285,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 //		case WM_MBUTTONDBLCLK:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_MBUTTONDOWN");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				if (LLWinImm::isAvailable() && window_imp->mPreeditor)
 				{
 					window_imp->interruptLanguageTextInput();
@@ -2316,7 +2319,7 @@ LRESULT CALLBACK LLWindowWin32::mainWindowProc(HWND h_wnd, UINT u_msg, WPARAM w_
 		case WM_MBUTTONUP:
 			{
 				window_imp->mCallbacks->handlePingWatchdog(window_imp, "Main:WM_MBUTTONUP");
-				LLFastTimer t2(LLFastTimer::FTM_MOUSEHANDLER);
+				LLFastTimer t2(FTM_MOUSEHANDLER);
 				// Because we move the cursor position in tllviewerhe app, we need to query
 				// to find out where the cursor at the time the event is handled.
 				// If we don't do this, many clicks could get buffered up, and if the

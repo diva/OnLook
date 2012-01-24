@@ -398,6 +398,8 @@ private:
 public:
 	LLWindow*		mWindow;						// graphical window object
 
+	void			unblockToolTips(){mToolTipBlocked = FALSE;}	//hack until LLToolTipMgr is ported.
+
 protected:
 	BOOL			mActive;
 	BOOL			mWantFullscreen;

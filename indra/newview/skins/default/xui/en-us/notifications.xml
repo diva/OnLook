@@ -1266,7 +1266,9 @@ The region [REGION] does not allow terraforming.
    icon="alertmodal.tga"
    name="CannotCopyWarning"
    type="alertmodal">
-You do not have permission to copy this item and will lose it from your inventory if you give it away. Do you really want to offer this item?
+You do not have permission to copy the following items:
+[ITEMS]
+and will lose it from your inventory if you give it away. Do you really want to offer these items?
     <usetemplate
      name="okcancelbuttons"
      notext="No"

@@ -47,6 +47,7 @@
 #include "llfoldervieweventlistener.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "llinventoryview.h"
 #include "lllineeditor.h"
 #include "llui.h"
@@ -1336,20 +1337,6 @@ void LLTextureCtrl::closeFloater()
 	}
 }
 
-// Allow us to download textures quickly when floater is shown
-class LLTextureFetchDescendentsObserver : public LLInventoryFetchDescendentsObserver
-{
-public:
-	virtual void done()
-	{
-		// We need to find textures in all folders, so get the main
-		// background download going.
-		gInventory.startBackgroundFetch();
-		gInventory.removeObserver(this);
-		delete this;
-	}
-};
-
 BOOL LLTextureCtrl::handleHover(S32 x, S32 y, MASK mask)
 {
 	getWindow()->setCursor(UI_CURSOR_HAND);
@@ -1368,9 +1355,9 @@ BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 		showPicker(FALSE);
 
 		//grab textures first...
-		gInventory.startBackgroundFetch(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
+		LLInventoryModelBackgroundFetch::instance().start(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
 		//...then start full inventory fetch.
-		gInventory.startBackgroundFetch();
+		LLInventoryModelBackgroundFetch::instance().start();
 	}
 	return handled;
 }

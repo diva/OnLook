@@ -2,31 +2,25 @@
  * @file llvertexbuffer.h
  * @brief LLVertexBuffer wrapper for OpengGL vertex buffer objects
  *
- * $LicenseInfo:firstyear=2003&license=viewergpl$
- * 
- * Copyright (c) 2003-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2003&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -67,10 +61,10 @@ public:
 	U32 mType;
 
 	//size MUST be a power of 2
-	U8* allocate(U32& name, U32 size);
+	volatile U8* allocate(U32& name, U32 size);
 	
 	//size MUST be the size provided to allocate that returned the given name
-	void release(U32 name, U8* buffer, U32 size);
+	void release(U32 name, volatile U8* buffer, U32 size);
 	
 	//destroy all records in mFreeList
 	void cleanup();
@@ -79,7 +73,7 @@ public:
 	{
 	public:
 		U32 mGLName;
-		U8* mClientData;
+		volatile U8* mClientData;
 	};
 
 	typedef std::list<Record> record_list_t;
@@ -215,8 +209,8 @@ public:
 	LLVertexBuffer(U32 typemask, S32 usage);
 	
 	// map for data access
-	/*volatile */U8*		mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range);
-	/*volatile */U8*		mapIndexBuffer(S32 index, S32 count, bool map_range);
+	volatile U8*		mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range);
+	volatile U8*		mapIndexBuffer(S32 index, S32 count, bool map_range);
 
 	// set for rendering
 	virtual void	setBuffer(U32 data_mask); 	// calls  setupVertexBuffer() if data_mask is not 0
@@ -251,17 +245,18 @@ public:
 	S32 getNumVerts() const					{ return mNumVerts; }
 	S32 getNumIndices() const				{ return mNumIndices; }
 	
-	/*volatile */U8* getIndicesPointer() const	{ return useVBOs() ? (U8*) mAlignedIndexOffset : mMappedIndexData; }
-	/*volatile */U8* getVerticesPointer() const	{ return useVBOs() ? (U8*) mAlignedOffset : mMappedData; }
+	volatile U8* getIndicesPointer() const			{ return useVBOs() ? (U8*) mAlignedIndexOffset : mMappedIndexData; }
+	volatile U8* getVerticesPointer() const			{ return useVBOs() ? (U8*) mAlignedOffset : mMappedData; }
 	U32 getTypeMask() const					{ return mTypeMask; }
 	bool hasDataType(S32 type) const		{ return ((1 << type) & getTypeMask()); }
 	S32 getSize() const;
 	S32 getIndicesSize() const				{ return mIndicesSize; }
-	/*volatile */U8* getMappedData() const		{ return mMappedData; }
-	/*volatile */U8* getMappedIndices() const	{ return mMappedIndexData; }
+	volatile U8* getMappedData() const				{ return mMappedData; }
+	volatile U8* getMappedIndices() const			{ return mMappedIndexData; }
 	S32 getOffset(S32 type) const			{ return mOffsets[type]; }
 	S32 getUsage() const					{ return mUsage; }
-	
+	BOOL isWriteable() const				{ return (mMappable || mUsage == GL_STREAM_DRAW_ARB) ? TRUE : FALSE; }
+
 	void draw(U32 mode, U32 count, U32 indices_offset) const;
 	void drawArrays(U32 mode, U32 offset, U32 count) const;
 	void drawRange(U32 mode, U32 start, U32 end, U32 count, U32 indices_offset) const;
@@ -285,12 +280,13 @@ protected:
 	U32		mGLIndices;		// GL IBO handle
 	U32		mGLArray;		// GL VAO handle
 	
-	/*volatile */U8*		mMappedData;	// pointer to currently mapped data (NULL if unmapped)
-	/*volatile */U8*		mMappedIndexData;	// pointer to currently mapped indices (NULL if unmapped)
+	volatile U8* mMappedData;	// pointer to currently mapped data (NULL if unmapped)
+	volatile U8* mMappedIndexData;	// pointer to currently mapped indices (NULL if unmapped)
 	BOOL	mVertexLocked;			// if TRUE, vertex buffer is being or has been written to in client memory
 	BOOL	mIndexLocked;			// if TRUE, index buffer is being or has been written to in client memory
 	BOOL	mFinal;			// if TRUE, buffer can not be mapped again
 	BOOL	mEmpty;			// if TRUE, client buffer is empty (or NULL). Old values have been discarded.	
+	mutable BOOL	mMappable;     // if TRUE, use memory mapping to upload data (otherwise doublebuffer and use glBufferSubData)
 	S32		mOffsets[TYPE_MAX];
 
 	std::vector<MappedRegion> mMappedVertexRegions;

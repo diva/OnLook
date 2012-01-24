@@ -531,13 +531,13 @@ inline void ll_remove_outliers(std::vector<VEC_TYPE>& data, F32 k)
 		i++;
 	}
 
-	S32 j = data.size()-1;
+	S32 j = (S32)data.size()-1;
 	while (j > 0 && data[j] > max)
 	{
 		j--;
 	}
 
-	if (j < data.size()-1)
+	if (j < (S32)data.size()-1)
 	{
 		data.erase(data.begin()+j, data.end());
 	}
