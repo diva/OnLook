@@ -25,9 +25,39 @@
 #define RLV_VIEWER2_H
 
 #include "llcallbacklist.h"
+#include "llinventoryobserver.h"
 
 #include "boost/function.hpp"
 
 // ============================================================================
+// From lloutfitobserver.h
+
+class LLCOFObserver : public LLInventoryObserver, public LLSingleton<LLCOFObserver>
+{
+	friend class LLSingleton<LLCOFObserver>;
+protected:
+	LLCOFObserver();
+public:
+	virtual ~LLCOFObserver();
+
+	virtual void changed(U32 mask);
+
+	typedef boost::signals2::signal<void (void)> signal_t;
+	void addCOFChangedCallback(const signal_t::slot_type& cb) { mCOFChanged.connect(cb); }
+	void addCOFSavedCallback(const signal_t::slot_type& cb) { mCOFSaved.connect(cb); }
+
+protected:
+	bool checkCOF();
+	static S32					getCategoryVersion(const LLUUID& cat_id);
+	static const std::string&	getCategoryName(const LLUUID& cat_id);
+	static LLMD5				hashDirectDescendentNames(const LLUUID& cat_id);
+
+private:
+	signal_t	mCOFChanged;
+	signal_t	mCOFSaved;
+	S32			mCOFLastVersion;
+	LLMD5		mItemNameHash;
+};
+
 
 #endif // RLV_VIEWER2_H

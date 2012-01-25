@@ -276,6 +276,22 @@ public:
 							LLInventoryItem* item);
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLFindWearables
+//
+// Collects wearables based on given criteria.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+class LLFindWearablesEx : public LLInventoryCollectFunctor
+{
+public:
+	LLFindWearablesEx(bool is_worn, bool include_body_parts = true);
+	virtual bool operator()(LLInventoryCategory* cat, LLInventoryItem* item);
+private:
+	bool mIncludeBodyParts;
+	bool mIsWorn;
+};
+
 /**                    Inventory Collector Functions
  **                                                                            **
  *******************************************************************************/

@@ -279,6 +279,17 @@ public:
 
 	static bool onConfirmForceCloseError(const LLSD& notification, const LLSD& response);
 
+	typedef enum e_session_type
+	{
+		P2P_SESSION,
+		GROUP_SESSION,
+		ADHOC_SESSION
+	} SType;
+	bool isP2PSessionType() const { return mSessionType == P2P_SESSION;}
+	bool isAdHocSessionType() const { return mSessionType == ADHOC_SESSION;}
+	bool isGroupSessionType() const { return mSessionType == GROUP_SESSION;}
+	SType mSessionType;
+
 private:
 	// called by constructors
 	void init(const std::string& session_label);

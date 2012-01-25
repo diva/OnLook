@@ -2056,6 +2056,11 @@ void LLVOAvatar::buildCharacter()
 		return;
 	}
 
+// [RLVa:KB] - Checked: 2010-12-12 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
+	if (isSelf())
+		RlvAttachPtLookup::initLookupTable();
+// [/RLVa:KB]
+
 	//-------------------------------------------------------------------------
 	// initialize "well known" joint pointers
 	//-------------------------------------------------------------------------
