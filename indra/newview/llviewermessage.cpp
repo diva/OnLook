@@ -2012,9 +2012,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		}
 // [/RLVa:KB]
 //		else if (offline == IM_ONLINE && !is_linden && is_busy && name != SYSTEM_FROM)
-// [RLVa:KB] - Checked: 2010-03-23 (RLVa-1.2.0a) | Modified: RLVa-1.0.0g
-		else if ( (offline == IM_ONLINE && !is_linden && is_busy && name != SYSTEM_FROM) && 
-			      ( (!gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.isException(RLV_BHVR_RECVIM, from_id))) )
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+		else if ( (offline == IM_ONLINE && !is_linden && is_busy && name != SYSTEM_FROM) && (gRlvHandler.canReceiveIM(from_id)) )
 // [/RLVa:KB]
 		{
 			// return a standard "busy" message, but only do it to online IM 
@@ -2102,10 +2101,9 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 		else
 		{
 			// standard message, not from system
-// [RLVa:KB] - Checked: 2010-03-23 (RLVa-1.1.3a) | Modified: RLVa-1.2.0a
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 			// Don't block offline IMs, or IMs from Lindens
-			if ( (rlv_handler_t::isEnabled()) && (offline != IM_OFFLINE) && (!is_linden) &&
-				 (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) && (!gRlvHandler.isException(RLV_BHVR_RECVIM, from_id)) )
+			if ( (rlv_handler_t::isEnabled()) && (offline != IM_OFFLINE) && (!is_linden) && (!gRlvHandler.canReceiveIM(from_id)) )
 			{
 				if (!is_muted)
 					RlvUtil::sendBusyMessage(from_id, RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM_REMOTE), session_id);
@@ -2448,23 +2446,32 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 
 		// Only show messages if we have a session open (which
 		// should happen after you get an "invitation"
-		if ( !gIMMgr->hasSession(session_id) )
+//		if ( !gIMMgr->hasSession(session_id) )
+//		{
+//			return;
+//		}
+// [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
+		LLFloaterIMPanel* pIMFloater = gIMMgr->findFloaterBySession(session_id);
+		if (!pIMFloater)
 		{
 			return;
 		}
 
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-		if ( (rlv_handler_t::isEnabled()) && (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) )
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIMFROM)) )
 		{
-			if (gAgent.isInGroup(session_id))
+			switch (pIMFloater->mSessionType)
 			{
-				if (!gRlvHandler.isException(RLV_BHVR_RECVIM, session_id))
+				case LLFloaterIMPanel::GROUP_SESSION:	// Group chat
+					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(session_id)) )
+						return;
+					break;
+				case LLFloaterIMPanel::ADHOC_SESSION:	// Conference chat
+					if ( (from_id != gAgent.getID()) && (!gRlvHandler.canReceiveIM(from_id)) )
+						message = RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
+					break;
+				default:
+					RLV_ASSERT(false);
 					return;
-			}
-			else
-			{
-				if ( (from_id != gAgent.getID()) && (!gRlvHandler.isException(RLV_BHVR_RECVIM, from_id)) )
-					message = message.substr(0, message_offset) + RlvStrings::getString(RLV_STRING_BLOCKED_RECVIM);
 			}
 		}
 // [/RLVa:KB]
@@ -2616,7 +2623,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 			}
 			else
 			{
-// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3a) | Modified: RLVa-1.0.0d
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 				if (rlv_handler_t::isEnabled())
 				{
 					if (!gRlvHandler.canTeleportViaLure(from_id))
@@ -2627,9 +2634,8 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 						return;
 					}
 
-					// Censor lure message if: 1) @revcim=n restricted (and sender isn't an exception), or 2) @showloc=n restricted
-					if ( ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVIM)) && (!gRlvHandler.isException(RLV_BHVR_RECVIM, from_id)) ) ||
-						 (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
+					// Censor lure message if: 1) restricted from receiving IMs from the sender, or 2) @showloc=n restricted
+					if ( (!gRlvHandler.canReceiveIM(from_id)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC)) )
 					{
 						message = RlvStrings::getString(RLV_STRING_HIDDEN);
 					}
@@ -2646,11 +2652,12 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 				payload["godlike"] = FALSE;
 				//LLNotificationsUtil::add("TeleportOffered", args, payload);
 
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-07 (RLVa-1.0.0d) | Modified: RLVa-0.2.0b
-				if ( (rlv_handler_t::isEnabled()) &&
-					 ((gRlvHandler.hasBehaviour(RLV_BHVR_ACCEPTTP)) || (gRlvHandler.isException(RLV_BHVR_ACCEPTTP, from_id))) )
+// [RLVa:KB] - Checked: 2010-12-11 (RLVa-1.2.2c) | Modified: RLVa-1.2.2c
+				if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_ACCEPTTP)) || (fRlvSummon)) )
 				{
 					gRlvHandler.setCanCancelTp(false);
+					if (is_busy)
+						busy_message(msg,from_id);
 					LLNotifications::instance().forceResponse(LLNotification::Params("TeleportOffered").payload(payload), 0);
 				}
 				else
@@ -3297,10 +3304,14 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 			{
 				if (!RlvUtil::isEmote(mesg))
 				{
-					if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVCHAT)) && (!gRlvHandler.isException(RLV_BHVR_RECVCHAT, from_id)) )
+					if ( ((gRlvHandler.hasBehaviour(RLV_BHVR_RECVCHAT)) && (!gRlvHandler.isException(RLV_BHVR_RECVCHAT, from_id))) &&
+						 ((!gRlvHandler.hasBehaviour(RLV_BHVR_RECVCHATFROM)) || (gRlvHandler.isException(RLV_BHVR_RECVCHATFROM, from_id))) )
+					{
 						gRlvHandler.filterChat(mesg, false);
+					}
 				}
-				else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_RECVEMOTE)) && (!gRlvHandler.isException(RLV_BHVR_RECVEMOTE, from_id)) )
+				else if ( ((gRlvHandler.hasBehaviour(RLV_BHVR_RECVEMOTE)) && (!gRlvHandler.isException(RLV_BHVR_RECVEMOTE, from_id))) &&
+					      ((!gRlvHandler.hasBehaviour(RLV_BHVR_RECVEMOTEFROM)) || (gRlvHandler.isException(RLV_BHVR_RECVEMOTEFROM, from_id))) )
 				{
 					mesg = "/me ...";
 				}
@@ -6322,13 +6333,14 @@ bool handle_lure_callback(const LLSD& notification, const LLSD& response)
 
 	if(0 == option)
 	{
-// [RLVa:KB] - Version: 1.23.4 | Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0b
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM))
+// [RLVa:KB] - Checked: 2010-11-30 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
 		{
+			// Filter the lure message if one of the recipients of the lure can't be sent an IM to
 			for (LLSD::array_const_iterator it = notification["payload"]["ids"].beginArray(); 
 					it != notification["payload"]["ids"].endArray(); ++it)
 			{
-				if (!gRlvHandler.isException(RLV_BHVR_SENDIM, it->asUUID()))
+				if (!gRlvHandler.canSendIM(it->asUUID()))
 				{
 					text = RlvStrings::getString(RLV_STRING_HIDDEN);
 					break;

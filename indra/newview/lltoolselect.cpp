@@ -87,10 +87,10 @@ LLObjectSelectionHandle LLToolSelect::handleObjectSelection(const LLPickInfo& pi
 		object = object->getRootEdit();
 	}
 
-// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 	if (rlv_handler_t::isEnabled())
 	{
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+		if (!gRlvHandler.canEdit(object))
 		{
 			if (!temp_select)
 			{

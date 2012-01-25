@@ -5244,8 +5244,8 @@ BOOL LLViewerObject::permTransfer() const
 // given you modify rights to.  JC
 BOOL LLViewerObject::allowOpen() const
 {
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b)
-	return !flagInventoryEmpty() && (permYouOwner() || permModify()) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT));
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+	return !flagInventoryEmpty() && (permYouOwner() || permModify()) && ((!rlv_handler_t::isEnabled()) || (gRlvHandler.canEdit(this)));
 // [/RLVa:KB]
 //	return !flagInventoryEmpty() && (permYouOwner() || permModify());
 }

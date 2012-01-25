@@ -1167,6 +1167,9 @@ LLFloaterIMPanel::LLFloaterIMPanel(
 
 void LLFloaterIMPanel::init(const std::string& session_label)
 {
+	// set P2P type by default
+	mSessionType = P2P_SESSION;
+
 	mSessionLabel = session_label;
 
     // [Ansariel: Display name support]
@@ -1217,6 +1220,15 @@ void LLFloaterIMPanel::init(const std::string& session_label)
 		llwarns << "Unknown session type" << llendl;
 		xml_filename = "floater_instant_message.xml";
 		break;
+	}
+
+	if ( (IM_NOTHING_SPECIAL != mDialog) && (IM_SESSION_P2P_INVITE != mDialog) )
+	{
+		// determine whether it is group or conference session
+		if (gAgent.isInGroup(mSessionUUID))
+			mSessionType = GROUP_SESSION;
+		else
+			mSessionType = ADHOC_SESSION;
 	}
 
 	mSpeakers = new LLIMSpeakerMgr(mVoiceChannel);
@@ -2192,40 +2204,48 @@ void LLFloaterIMPanel::sendMsg()
 			std::string prefix = utf8text.substr(0, 4);
 			if (prefix != "/me " && prefix != "/me'")
 				if (mRPMode) utf8text = "[[" + utf8text + "]]";
-			
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-1.0.0g
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM))
+		
+// [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
+			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
 			{
-				if (IM_NOTHING_SPECIAL == mDialog)			// One-on-one IM: allow if recipient is a sendim exception
+				bool fRlvFilter = false;
+				switch (mSessionType)
 				{
-					if (!gRlvHandler.isException(RLV_BHVR_SENDIM, mOtherParticipantUUID))
-						utf8text = RlvStrings::getString(RLV_STRING_BLOCKED_SENDIM);
-				}
-				else if (gAgent.isInGroup(mSessionUUID))	// Group chat: allow if recipient is a sendim exception
-				{
-					if (!gRlvHandler.isException(RLV_BHVR_SENDIM, mSessionUUID))
-						utf8text = RlvStrings::getString(RLV_STRING_BLOCKED_SENDIM);
-				}
-				else if (mSpeakers)							// Conference chat: allow if all participants are sendim exceptions
-				{
-					LLSpeakerMgr::speaker_list_t speakers;
-					mSpeakers->getSpeakerList(&speakers, TRUE);
-
-					for (LLSpeakerMgr::speaker_list_t::const_iterator itSpeaker = speakers.begin(); 
-							itSpeaker != speakers.end(); ++itSpeaker)
-					{
-						LLSpeaker* pSpeaker = *itSpeaker;
-						if ( (gAgent.getID() != pSpeaker->mID) && (!gRlvHandler.isException(RLV_BHVR_SENDIM, pSpeaker->mID)) )
+					case P2P_SESSION:	// One-on-one IM
+						fRlvFilter = !gRlvHandler.canSendIM(mOtherParticipantUUID);
+						break;
+					case GROUP_SESSION:	// Group chat
+						fRlvFilter = !gRlvHandler.canSendIM(mSessionUUID);
+						break;
+					case ADHOC_SESSION:	// Conference chat: allow if all participants can be sent an IM
 						{
-							utf8text = RlvStrings::getString(RLV_STRING_BLOCKED_SENDIM);
-							break;
+							if (!mSpeakers)
+							{
+								fRlvFilter = true;
+								break;
+							}
+
+							LLSpeakerMgr::speaker_list_t speakers;
+							mSpeakers->getSpeakerList(&speakers, TRUE);
+							for (LLSpeakerMgr::speaker_list_t::const_iterator itSpeaker = speakers.begin(); 
+									itSpeaker != speakers.end(); ++itSpeaker)
+							{
+								const LLSpeaker* pSpeaker = *itSpeaker;
+								if ( (gAgent.getID() != pSpeaker->mID) && (!gRlvHandler.canSendIM(pSpeaker->mID)) )
+								{
+									fRlvFilter = true;
+									break;
+								}
+							}
 						}
-					}
+						break;
+					default:
+						fRlvFilter = true;
+						break;
 				}
-				else										// Catch all fall-through
-				{
+
+				if (fRlvFilter)
 					utf8text = RlvStrings::getString(RLV_STRING_BLOCKED_SENDIM);
-				}
 			}
 // [/RLVa:KB]
 

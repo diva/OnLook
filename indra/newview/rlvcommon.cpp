@@ -1,6 +1,6 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
  * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
@@ -498,6 +498,13 @@ bool RlvEnableIfNot::handleEvent(LLPointer<LLEvent>, const LLSD& userdata)
 bool RlvSelectHasLockedAttach::apply(LLSelectNode* pNode)
 {
 	return (pNode->getObject()) ? gRlvAttachmentLocks.isLockedAttachment(pNode->getObject()->getRootEdit()) : false;
+}
+
+// Checked: 2010-11-29 (RLVa-1.3.0c) | Added: RLVa-1.3.0c
+bool RlvSelectIsEditable::apply(LLSelectNode* pNode)
+{
+	const LLViewerObject* pObj = pNode->getObject();
+	return (pObj) && (!gRlvHandler.canEdit(pObj));
 }
 
 // Checked: 2009-07-05 (RLVa-1.0.0b) | Modified: RLVa-0.2.0f

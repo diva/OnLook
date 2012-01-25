@@ -1,6 +1,6 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
  * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
@@ -208,6 +208,13 @@ struct RlvSelectHasLockedAttach : public LLSelectedNodeFunctor
 	virtual bool apply(LLSelectNode* pNode);
 };
 
+// Filters out selected objects that can't be editable (i.e. getFirstNode() will return NULL if the selection is fully editable)
+struct RlvSelectIsEditable : public LLSelectedNodeFunctor
+{
+	RlvSelectIsEditable() {}
+	/*virtual*/ bool apply(LLSelectNode* pNode);
+};
+
 struct RlvSelectIsOwnedByOrGroupOwned : public LLSelectedNodeFunctor
 {
 	RlvSelectIsOwnedByOrGroupOwned(const LLUUID& uuid) : m_idAgent(uuid) {}
@@ -266,6 +273,12 @@ struct RlvPredIsEqualOrLinkedItem
 	}
 protected:
 	const LLViewerInventoryItem* m_pItem;
+};
+
+template<typename T> struct RlvPredValuesEqual
+{
+	bool operator()(const T* pT2) const { return (pT1) && (pT2) && (*pT1 == *pT2); }
+	const T* pT1;
 };
 
 // ============================================================================

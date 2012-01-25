@@ -1,6 +1,6 @@
 /** 
  *
- * Copyright (c) 2009-2010, Kitty Barnett
+ * Copyright (c) 2009-2011, Kitty Barnett
  * 
  * The source code in this file is provided to you under the terms of the 
  * GNU General Public License, version 2.0, but WITHOUT ANY WARRANTY;
@@ -34,6 +34,8 @@
 #include "rlvhelper.h"
 #include "rlvinventory.h"
 #include "rlvhandler.h"
+
+#include <boost/algorithm/string.hpp>
 
 // Defined in llinventorybridge.cpp
 void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void*);
@@ -74,6 +76,9 @@ RlvCommand::RlvCommand(const LLUUID& idObj, const std::string& strCommand)
 		return;
 	}
 
+	// HACK: all those @*overorreplace synonyms are rather tedious (and error-prone) to deal with so replace them their equivalent
+	if ( (RLV_TYPE_FORCE == m_eParamType) && (m_strBehaviour.length() - 13 == m_strBehaviour.rfind("overorreplace")) )
+		m_strBehaviour.erase(m_strBehaviour.length() - 13, 13);
 	// HACK: all those @addoutfit* synonyms are rather tedious (and error-prone) to deal with so replace them their @attach* equivalent
 	if ( (RLV_TYPE_FORCE == m_eParamType) && (0 == m_strBehaviour.find("addoutfit")) )
 		m_strBehaviour.replace(0, 9, "attach");
@@ -157,16 +162,19 @@ void RlvCommand::initLookupTable()
 		// NOTE: keep this matched with the enumeration at all times
 		std::string arBehaviours[RLV_BHVR_COUNT] =
 			{
-				"detach", "attach", "addattach", "remattach", "addoutfit", "remoutfit", "emote", "sendchat", "recvchat", "recvemote",
-				"redirchat", "rediremote", "chatwhisper", "chatnormal", "chatshout", "sendchannel", "sendim", "recvim", "permissive",
+				"detach", "attach", "addattach", "remattach", "addoutfit", "remoutfit", "sharedwear", "sharedunwear", "unsharedwear",
+				"unsharedunwear", "emote", "sendchat", "recvchat", "recvchatfrom", "recvemote", "recvemotefrom", "redirchat", "rediremote",
+				"chatwhisper", "chatnormal", "chatshout", "sendchannel", "sendim", "sendimto", "recvim", "recvimfrom", "permissive",
 				"notify", "showinv", "showminimap", "showworldmap", "showloc", "shownames", "showhovertext", "showhovertexthud",
-				"showhovertextworld", "showhovertextall", "tplm", "tploc", "tplure", "viewnote", "viewscript", "viewtexture", 
-				"acceptpermission", "accepttp", "allowidle", "edit", "rez", "fartouch", "interact", "touch", "touchattach", "touchhud", 
-				"touchworld", "fly", "unsit", "sit", "sittp", "standtp", "setdebug", "setenv", "detachme", "attachover", "attachthis",
-				"attachthisover", "detachthis", "attachall", "attachallover", "detachall", "attachallthis", "attachallthisover",
-				"detachallthis", "tpto", "version", "versionnew", "versionnum", "getattach", "getattachnames", 	"getaddattachnames", 
-				"getremattachnames", "getoutfit", "getoutfitnames", "getaddoutfitnames", "getremoutfitnames", "findfolder", "findfolders", 
-				"getpath", "getpathnew", "getinv", "getinvworn", "getsitid", "getcommand", "getstatus", "getstatusall"
+				"showhovertextworld", "showhovertextall", "tplm", "tploc", "tplure", "viewnote", "viewscript", "viewtexture",
+				"acceptpermission", "accepttp", "allowidle", "edit", "editobj", "rez", "fartouch", "interact",
+				"touchthis", "touchattach", "touchattachself", "touchattachother", "touchhud", "touchworld", "touchall", "touchme",
+				"fly", "unsit", "sit", "sittp", "standtp", "setdebug", "setenv", "detachme", "attachover", "attachthis", "attachthisover", 
+				"attachthisexcept", "detachthis", "detachthisexcept", "attachall", "attachallover", "detachall", "attachallthis", 
+				"attachallthisexcept", "attachallthisover", "detachallthis", "detachallthisexcept", "adjustheight", "tpto",
+				"version", "versionnew", "versionnum", "getattach", "getattachnames", "getaddattachnames", "getremattachnames",
+				"getoutfit", "getoutfitnames", "getaddoutfitnames", "getremoutfitnames", "findfolder", "findfolders", "getpath",
+				"getpathnew", "getinv", "getinvworn", "getsitid", "getcommand", "getstatus", "getstatusall"
 			};
 
 		for (int idxBvhr = 0; idxBvhr < RLV_BHVR_COUNT; idxBvhr++)
@@ -177,7 +185,7 @@ void RlvCommand::initLookupTable()
 }
 
 // ============================================================================
-// RlvCommandOption
+// RlvCommandOption structures
 //
 
 // Checked: 2010-09-28 (RLVa-1.1.3a) | Added: RLVa-1.2.1c
@@ -203,26 +211,21 @@ RlvCommandOptionGeneric::RlvCommandOptionGeneric(const std::string& strOption)
 	}
 }
 
-// Checked: 2010-09-28 (RLVa-1.1.3a) | Added: RLVa-1.2.1c
+// Checked: 2010-11-30 (RLVa-1.3.0b) | Modified: RLVa-1.3.0b
 RlvCommandOptionGetPath::RlvCommandOptionGetPath(const RlvCommand& rlvCmd)
-	: m_fValid(true)							// Assume the option will be a valid one until we find out otherwise
 {
+	m_fValid = true;	// Assume the option will be a valid one until we find out otherwise
+
 	// @getpath[:<option>]=<channel> => <option> is transformed to a list of inventory item UUIDs to get the path of
 
 	RlvCommandOptionGeneric rlvCmdOption(rlvCmd.getOption());
 	if (rlvCmdOption.isWearableType())			// <option> can be a clothing layer
 	{
-		LLWearableType::EType wtType = rlvCmdOption.getWearableType();
-		m_idItems.push_back(gAgentWearables.getWearableItemID(wtType, 0));	// TODO: MULTI-WEARABLE
+		getItemIDs(rlvCmdOption.getWearableType(), m_idItems, false);
 	}
 	else if (rlvCmdOption.isAttachmentPoint())	// ... or it can specify an attachment point
 	{
-		const LLViewerJointAttachment* pAttachPt = rlvCmdOption.getAttachmentPoint();
-		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator itAttachObj = pAttachPt->mAttachedObjects.begin();
-				itAttachObj != pAttachPt->mAttachedObjects.end(); ++itAttachObj)
-		{
-			m_idItems.push_back((*itAttachObj)->getAttachmentItemID());
-		}
+ 		getItemIDs(rlvCmdOption.getAttachmentPoint(), m_idItems, false);
 	}
 	else if (rlvCmdOption.isEmpty())			// ... or it can be empty (in which case we act on the object that issued the command)
 	{
@@ -236,12 +239,70 @@ RlvCommandOptionGetPath::RlvCommandOptionGetPath(const RlvCommand& rlvCmd)
 	}
 }
 
+// Checked: 2010-11-30 (RLVa-1.3.0b) | Modified: RLVa-1.3.0b
+bool RlvCommandOptionGetPath::getItemIDs(const LLViewerJointAttachment* pAttachPt, uuid_vec_t& idItems, bool fClear)
+{
+	if (fClear)
+		idItems.clear();
+	uuid_vec_t::size_type cntItemsPrev = idItems.size();
+	if (pAttachPt)
+	{
+		for (LLViewerJointAttachment::attachedobjs_vec_t::const_iterator itAttachObj = pAttachPt->mAttachedObjects.begin();
+				itAttachObj != pAttachPt->mAttachedObjects.end(); ++itAttachObj)
+		{
+			idItems.push_back((*itAttachObj)->getAttachmentItemID());
+		}
+	}
+	return (cntItemsPrev != idItems.size());
+}
+
+// Checked: 2010-11-30 (RLVa-1.3.0b) | Modified: RLVa-1.3.0b
+bool RlvCommandOptionGetPath::getItemIDs(LLWearableType::EType wtType, uuid_vec_t& idItems, bool fClear)
+{
+	if (fClear)
+		idItems.clear();
+	uuid_vec_t::size_type cntItemsPrev = idItems.size();
+	if (gAgentWearables.getWearable(wtType, 0))
+		idItems.push_back(gAgentWearables.getWearableItemID(wtType,0));
+	return (cntItemsPrev != idItems.size());
+}
+
+// Checked: 2011-03-28 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+RlvCommandOptionAdjustHeight::RlvCommandOptionAdjustHeight(const RlvCommand& rlvCmd)
+	: m_nPelvisToFoot(0.0f), m_nPelvisToFootDeltaMult(0.0f), m_nPelvisToFootOffset(0.0f)
+{
+	std::vector<std::string> cmdTokens;
+	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of(";"));
+	if (1 == cmdTokens.size())
+	{
+		m_fValid = (LLStringUtil::convertToF32(cmdTokens[0], m_nPelvisToFootOffset));
+		m_nPelvisToFootOffset = llclamp<F32>(m_nPelvisToFootOffset / 100, -1.0f, 1.0f);
+	}
+	else if ( (2 <= cmdTokens.size()) && (cmdTokens.size() <= 3) )
+	{
+		m_fValid = (LLStringUtil::convertToF32(cmdTokens[0], m_nPelvisToFoot)) &&
+			 (LLStringUtil::convertToF32(cmdTokens[1], m_nPelvisToFootDeltaMult)) && 
+			 ( (2 == cmdTokens.size()) || (LLStringUtil::convertToF32(cmdTokens[2], m_nPelvisToFootOffset)) );
+	}
+}
+
+// Checked: 2011-03-28 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+RlvCommandOptionTpTo::RlvCommandOptionTpTo(const RlvCommand &rlvCmd)
+{
+	std::vector<std::string> cmdTokens;
+	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of("/"));
+
+	m_fValid = (3 == cmdTokens.size());
+	for (int idxAxis = 0; (idxAxis < 3) && (m_fValid); idxAxis++)
+		m_fValid &= (bool)LLStringUtil::convertToF64(cmdTokens[idxAxis], m_posGlobal[idxAxis]);
+}
+
 // =========================================================================
 // RlvObject
 //
 
-RlvObject::RlvObject(const LLUUID& idObj) : m_UUID(idObj), m_nLookupMisses(0)
-{ 
+RlvObject::RlvObject(const LLUUID& idObj) : m_idObj(idObj), m_nLookupMisses(0)
+{
 	LLViewerObject* pObj = gObjectList.findObject(idObj);
 	m_fLookup = (NULL != pObj);
 	m_idxAttachPt = (pObj) ? ATTACHMENT_ID_FROM_STATE(pObj->getState()) : 0;
