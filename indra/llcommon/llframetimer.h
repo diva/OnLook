@@ -43,87 +43,130 @@
 
 #include "lltimer.h"
 #include "timing.h"
+#include <apr_thread_mutex.h>
 
 class LL_COMMON_API LLFrameTimer
 {
 public:
 	// Create an LLFrameTimer and start it. After creation it is running and in the state expired (hasExpired will return true).
-	LLFrameTimer(void) : mStartTime(sFrameTime), mExpiry(0), mRunning(true), mPaused(false) { }
+	LLFrameTimer(void) : mExpiry(0), mRunning(true), mPaused(false) { if (!sGlobalMutex) global_initialization(); setAge(0.0); }
+
+	// Atomic reads of static variables.
 
 	// Return the number of seconds since the start of the application.
-	static F64 getElapsedSeconds()
+	static F64 getElapsedSeconds(void)
 	{
 		// Loses msec precision after ~4.5 hours...
-		return sFrameTime;
+		apr_thread_mutex_lock(sGlobalMutex);
+		F64 res = sFrameTime;
+		apr_thread_mutex_unlock(sGlobalMutex);
+		return res;
 	} 
 
 	// Return a low precision usec since epoch.
-	static U64 getTotalTime()
+	static U64 getTotalTime(void)
 	{
-		llassert(sTotalTime);
-		return sTotalTime;
+		// sTotalTime is only accessed by the main thread, so no locking is necessary.
+		llassert(is_main_thread());
+		//apr_thread_mutex_lock(sGlobalMutex);
+		U64 res = sTotalTime;
+		//apr_thread_mutex_unlock(sGlobalMutex);
+		llassert(res);
+		return res;
 	}
 
 	// Return a low precision seconds since epoch.
-	static F64 getTotalSeconds()
+	static F64 getTotalSeconds(void)
 	{
-		return sTotalSeconds;
+		// sTotalSeconds is only accessed by the main thread, so no locking is necessary.
+		llassert(is_main_thread());
+		//apr_thread_mutex_lock(sGlobalMutex);
+		F64 res = sTotalSeconds;
+		//apr_thread_mutex_unlock(sGlobalMutex);
+		return res;
+	}
+
+	// Return current frame number (the number of frames since application start).
+	static U32 getFrameCount(void)
+	{
+		// sFrameCount is only accessed by the main thread, so no locking is necessary.
+		llassert(is_main_thread());
+		//apr_thread_mutex_lock(sGlobalMutex);
+		U32 res = sFrameCount;
+		//apr_thread_mutex_unlock(sGlobalMutex);
+		return res;
 	}
 
 	// Call this method once per frame to update the current frame time.
 	// This is actually called at some other times as well.
-	static void updateFrameTime();
+	static void updateFrameTime(void);
 
 	// Call this method once, and only once, per frame to update the current frame count and sFrameDeltaTime.
-	static void updateFrameTimeAndCount();
-
-	// Return current frame number (the number of frames since application start).
-	static U32 getFrameCount() { return sFrameCount; }
+	static void updateFrameTimeAndCount(void);
 
 	// Return duration of last frame in seconds.
-	static F32 getFrameDeltaTimeF32();
+	static F32 getFrameDeltaTimeF32(void);
 
 	// Return seconds since the current frame started
-	static F32 getCurrentFrameTime();
+	static F32 getCurrentFrameTime(void);
 
 	// MANIPULATORS
 
-	void reset(F32 expiration = 0.f);				// Same as start() but leaves mRunning off when called after stop().
-	void start(F32 expiration = 0.f);				// Reset and (re)start with expiration.
-	void stop();									// Stop running.
+	void reset(F32 expiration = 0.f)				// Same as start() but leaves mRunning off when called after stop().
+	{
+		llassert(!mPaused);
+		mStartTime = getElapsedSeconds();
+		mExpiry = mStartTime + expiration;
+	}
+
+	void start(F32 expiration = 0.f)				// Reset and (re)start with expiration.
+	{
+		reset(expiration);
+		mRunning = true;					// Start, if not already started.
+	}
+
+	void stop(void)									// Stop running.
+	{
+		llassert(!mPaused);
+		mRunning = false;
+	}
 
 	void pause();									// Mark elapsed time so far.
 	void unpause();									// Move 'start' time in order to decrement time between pause and unpause from ElapsedTime.
 
-	void setTimerExpirySec(F32 expiration);
+	void setTimerExpirySec(F32 expiration)			{ llassert(!mPaused); mExpiry = mStartTime + expiration; }
+
 	void setExpiryAt(F64 seconds_since_epoch);
 	bool checkExpirationAndReset(F32 expiration);	// Returns true when expired. Only resets if expired.
-	F32 getElapsedTimeAndResetF32() 				{ F32 t = getElapsedTimeF32(); reset(); return t; }
-	void setAge(const F64 age)						{ llassert(!mPaused); mStartTime = sFrameTime - age; }
+	F32 getElapsedTimeAndResetF32(void);
+	void setAge(const F64 age)						{ llassert(!mPaused); mStartTime = getElapsedSeconds() - age; }
 
 	// ACCESSORS
-	bool hasExpired() const							{ return sFrameTime >= mExpiry; }
-	F32  getElapsedTimeF32() const					{ llassert(mRunning); return mPaused ? (F32)mStartTime : (F32)(sFrameTime - mStartTime); }
+	bool hasExpired() const							{ return getElapsedSeconds() >= mExpiry; }
+	F32  getElapsedTimeF32() const					{ llassert(mRunning); return mPaused ? (F32)mStartTime : (F32)(getElapsedSeconds() - mStartTime); }
 	bool getStarted() const							{ return mRunning; }
 
 	// return the seconds since epoch when this timer will expire.
 	F64 expiresAt() const;
 
-protected:	
-	// A single, high resolution timer that drives all LLFrameTimers
-	// *NOTE: no longer used.
-	//static LLTimer sInternalTimer;		
+public:
+	// Do one-time initialization of the static members.
+	static void global_initialization(void);
 
+protected:
 	//
-	// Aplication constants
+	// Application constants
 	//
 
 	// Application start in microseconds since epoch.
 	static U64 const sStartTotalTime;	
 
 	// 
-	// Data updated per frame
+	// Global data.
 	//
+
+	// More than one thread are accessing (some of) these variables, therefore we need locking.
+	static apr_thread_mutex_t* sGlobalMutex;
 
 	// Current time in seconds since application start, updated together with sTotalTime.
 	static F64 sFrameTime;
