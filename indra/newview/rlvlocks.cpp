@@ -1096,7 +1096,7 @@ bool RlvFolderLocks::getLockedFolders(const folderlock_source_t& lockSource, LLI
 		case ST_WEARABLETYPE:
 			{
 				RLV_ASSERT( ((ST_ATTACHMENTPOINT == lockSource.first) && (typeid(S32) == lockSource.second.type())) || 
-					        ((ST_WEARABLETYPE == lockSource.first) && (typeid(EWearableType) == lockSource.second.type())) );
+					((ST_WEARABLETYPE == lockSource.first) && (typeid(LLWearableType::EType) == lockSource.second.type())) );
 
 				uuid_vec_t idItems;
 				if (ST_ATTACHMENTPOINT == lockSource.first)
@@ -1285,6 +1285,9 @@ void RlvFolderLocks::refreshLockedLookups() const
 					break;
 				case LLAssetType::AT_OBJECT:
 					m_LockedAttachmentRem.push_back(pItem->getLinkedUUID());
+					break;
+				default:
+					RLV_ASSERT(true);
 					break;
 			}
 		}
