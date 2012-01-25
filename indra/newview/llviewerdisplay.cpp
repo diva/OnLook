@@ -233,10 +233,19 @@ void display_stats()
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_PICK("Picking");
+static LLFastTimer::DeclareTimer FTM_RENDER("Render", true);
+static LLFastTimer::DeclareTimer FTM_UPDATE_SKY("Update Sky");
+static LLFastTimer::DeclareTimer FTM_UPDATE_TEXTURES("Update Textures");
+static LLFastTimer::DeclareTimer FTM_IMAGE_UPDATE("Update Images");
+static LLFastTimer::DeclareTimer FTM_IMAGE_UPDATE_CLASS("Class");
+static LLFastTimer::DeclareTimer FTM_IMAGE_UPDATE_BUMP("Bump");
+static LLFastTimer::DeclareTimer FTM_IMAGE_UPDATE_LIST("List");
+static LLFastTimer::DeclareTimer FTM_IMAGE_UPDATE_DELETE("Delete");
 // Paint the display!
 void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, bool tiling)
 {
-	LLFastTimer t(LLFastTimer::FTM_RENDER);
+	LLFastTimer t(FTM_RENDER);
 
 	if (gWindowResized)
 	{ //skip render on frames where window has been resized
@@ -302,7 +311,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	gViewerWindow->checkSettings();
 	
 	{
-		LLFastTimer ftm(LLFastTimer::FTM_PICK);
+		LLFastTimer ftm(FTM_PICK);
 		LLAppViewer::instance()->pingMainloopTimeout("Display:Pick");
 		gViewerWindow->performPick();
 	}
@@ -591,7 +600,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 	if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_DYNAMIC_TEXTURES))
 	{
 		LLAppViewer::instance()->pingMainloopTimeout("Display:DynamicTextures");
-		LLFastTimer t(LLFastTimer::FTM_UPDATE_TEXTURES);
+		LLFastTimer t(FTM_UPDATE_TEXTURES);
 		if (LLViewerDynamicTexture::updateAllInstances())
 		{
 			gGL.setColorMask(true, true);
@@ -770,20 +779,33 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		gFrameStats.start(LLFrameStats::IMAGE_UPDATE);
 
 		{
-			LLFastTimer t(LLFastTimer::FTM_IMAGE_UPDATE);
+			LLFastTimer t(FTM_IMAGE_UPDATE);
 			
-			LLViewerTexture::updateClass(LLViewerCamera::getInstance()->getVelocityStat()->getMean(),
-										LLViewerCamera::getInstance()->getAngularVelocityStat()->getMean());
+			{
+				LLFastTimer t(FTM_IMAGE_UPDATE_CLASS);
+				LLViewerTexture::updateClass(LLViewerCamera::getInstance()->getVelocityStat()->getMean(),
+											LLViewerCamera::getInstance()->getAngularVelocityStat()->getMean());
+			}
 
-			gBumpImageList.updateImages();  // must be called before gTextureList version so that it's textures are thrown out first.
+			
+			{
+				LLFastTimer t(FTM_IMAGE_UPDATE_BUMP);
+				gBumpImageList.updateImages();  // must be called before gTextureList version so that it's textures are thrown out first.
+			}
 
-			F32 max_image_decode_time = 0.050f*gFrameIntervalSeconds; // 50 ms/second decode time
-			max_image_decode_time = llclamp(max_image_decode_time, 0.001f, 0.005f ); // min 1ms/frame, max 5ms/frame)
-			gTextureList.updateImages(max_image_decode_time);
+			{
+				LLFastTimer t(FTM_IMAGE_UPDATE_LIST);
+				F32 max_image_decode_time = 0.050f*gFrameIntervalSeconds; // 50 ms/second decode time
+				max_image_decode_time = llclamp(max_image_decode_time, 0.002f, 0.005f ); // min 2ms/frame, max 5ms/frame)
+				gTextureList.updateImages(max_image_decode_time);
+			}
 
-			//remove dead textures from GL
-			LLImageGL::deleteDeadTextures();
-			stop_glerror();
+			{
+				LLFastTimer t(FTM_IMAGE_UPDATE_DELETE);
+				//remove dead textures from GL
+				LLImageGL::deleteDeadTextures();
+				stop_glerror();
+			}
 		}
 		llpushcallstacks ;
 		LLGLState::checkStates();
@@ -823,7 +845,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Sky");
-			LLFastTimer t(LLFastTimer::FTM_UPDATE_SKY);	
+			LLFastTimer t(FTM_UPDATE_SKY);	
 			gSky.updateSky();
 		}
 
@@ -983,6 +1005,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderUI");
 		if (!for_snapshot)
 		{
+			LLFastTimer t(FTM_RENDER_UI);
 			gFrameStats.start(LLFrameStats::RENDER_UI);
 			render_ui();
 		}		
@@ -1199,6 +1222,8 @@ BOOL setup_hud_matrices(const LLRect& screen_region)
 	glh_set_current_modelview(model);
 	return TRUE;
 }
+
+static LLFastTimer::DeclareTimer FTM_SWAP("Swap");
 void render_ui(F32 zoom_factor, int subfield, bool tiling)
 {
 	LLGLState::checkStates();
@@ -1243,7 +1268,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 		gGL.color4f(1,1,1,1);
 		if (gPipeline.hasRenderDebugFeatureMask(LLPipeline::RENDER_DEBUG_FEATURE_UI))
 		{
-			LLFastTimer t(LLFastTimer::FTM_RENDER_UI);
+			LLFastTimer t(FTM_RENDER_UI);
 
 			if (!gDisconnected)
 			{
@@ -1277,7 +1302,7 @@ void render_ui(F32 zoom_factor, int subfield, bool tiling)
 
 	if (gDisplaySwapBuffers)
 	{
-		LLFastTimer t(LLFastTimer::FTM_SWAP);
+		LLFastTimer t(FTM_SWAP);
 		gViewerWindow->getWindow()->swapBuffers();
 	}
 	gDisplaySwapBuffers = TRUE;

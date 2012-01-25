@@ -213,7 +213,7 @@ RlvCommandOptionGetPath::RlvCommandOptionGetPath(const RlvCommand& rlvCmd)
 	if (rlvCmdOption.isWearableType())			// <option> can be a clothing layer
 	{
 		LLWearableType::EType wtType = rlvCmdOption.getWearableType();
-		m_idItems.push_back(gAgentWearables.getWearableItemID(wtType));
+		m_idItems.push_back(gAgentWearables.getWearableItemID(wtType, 0));	// TODO: MULTI-WEARABLE
 	}
 	else if (rlvCmdOption.isAttachmentPoint())	// ... or it can specify an attachment point
 	{
@@ -554,7 +554,7 @@ bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComp
 		(pWearable) && (LLAssetType::AT_CLOTHING == pWearable->getAssetType()) 
 		&& ( (idExcept.isNull()) ? !gRlvWearableLocks.isLockedWearable(pWearable)
 		                         : !gRlvWearableLocks.isLockedWearableExcept(pWearable, idExcept) )
-		&& (isStrippable(gAgentWearables.getWearableItemID(pWearable->getType())))
+		&& (isStrippable(gAgentWearables.getWearableItemID(pWearable->getType(), 0)))	// TODO: MULTI-WEARABLE
 		#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 		&& ( (!fCheckComposite) || (!RlvSettings::getEnableComposites()) || 
 		     (!gRlvHandler.getCompositeInfo(pWearable->getItemID(), NULL, &pFolder)) || (gRlvHandler.canTakeOffComposite(pFolder)) )
@@ -566,7 +566,7 @@ bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComp
 bool RlvForceWear::isForceRemovable(LLWearableType::EType wtType, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
 {
 	// Wearable type can be removed by an RLV command if there's at least one currently worn wearable that can be removed
-	if (isForceRemovable(gAgentWearables.getWearable(wtType), fCheckComposite, idExcept))
+	if (isForceRemovable(gAgentWearables.getWearable(wtType, 0), fCheckComposite, idExcept))	// TODO: MULTI-WEARABLE
 		return true;
 	return false;
 }
@@ -600,7 +600,7 @@ void RlvForceWear::forceRemove(const LLWearable* pWearable)
 // Checked: 2010-03-19 (RLVa-1.1.3a) | Added: RLVa-1.2.0a
 void RlvForceWear::forceRemove(LLWearableType::EType wtType)
 {
-	forceRemove(gAgentWearables.getWearable(wtType));
+	forceRemove(gAgentWearables.getWearable(wtType,0));	// TODO: MULTI-WEARABLE
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a
@@ -741,7 +741,7 @@ void RlvForceWear::addWearable(const LLViewerInventoryItem* pItem, EWearAction e
 void RlvForceWear::remWearable(const LLWearable* pWearable)
 {
 	// Remove it from 'm_addWearables' if it's queued for wearing
-	const LLViewerInventoryItem* pItem = gInventory.getItem(gAgentWearables.getWearableItemID(pWearable->getType()));
+	const LLViewerInventoryItem* pItem = gInventory.getItem(gAgentWearables.getWearableItemID(pWearable->getType(), 0));	// TODO: MULTI-WEARABLE
 	if ( (pItem) && (isAddWearable(pItem)) )
 	{
 		addwearables_map_t::iterator itAddWearables = m_addWearables.find(pItem->getWearableType());
@@ -775,7 +775,7 @@ void RlvForceWear::done()
 	if (m_remWearables.size())
 	{
 		for (std::list<const LLWearable*>::const_iterator itWearable = m_remWearables.begin(); itWearable != m_remWearables.end(); ++itWearable)
-			gAgentWearables.removeWearable((*itWearable)->getType());
+			gAgentWearables.removeWearable((*itWearable)->getType(), false, 0);	// TODO: MULTI-WEARABLE
 		m_remWearables.clear();
 	}
 

@@ -204,9 +204,10 @@ void AscentDayCycleManager::savePreset(const std::string & name)
 	presetsXML.close();
 }
 
+static LLFastTimer::DeclareTimer FTM_UPDATE_WLPARAM("Ascent WLMenu Sync");
 void AscentDayCycleManager::update(LLViewerCamera * cam)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WLPARAM);
+	LLFastTimer ftm(FTM_UPDATE_WLPARAM);
 	
 	// sync menus if they exist
 	if(LLFloaterWindLight::isOpen()) 

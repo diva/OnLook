@@ -123,7 +123,7 @@ protected:
 class RlvGiveToRLVAgentOffer : public LLInventoryFetchDescendentsObserver
 {
 public:
-	RlvGiveToRLVAgentOffer() {}
+	RlvGiveToRLVAgentOffer(const LLUUID& cat_id) : LLInventoryFetchDescendentsObserver(cat_id) {}
 	virtual void done();
 protected:
 	void doneIdle();
@@ -223,10 +223,11 @@ public:
 	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem) { return (pItem) && (pItem->getIsLinkType()); }
 };
 
-class RlvItemFetcher : public LLInventoryFetchObserver
+class RlvItemFetcher : public LLInventoryFetchItemsObserver
 {
 public:
-	RlvItemFetcher() {}
+	RlvItemFetcher(const uuid_vec_t& cat_ids) : LLInventoryFetchItemsObserver(cat_ids) {}
+	RlvItemFetcher(const LLUUID& cat_id) : LLInventoryFetchItemsObserver(cat_id) {}
 	virtual ~RlvItemFetcher() {}
 	virtual void done() {}
 };

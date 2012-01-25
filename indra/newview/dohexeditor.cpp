@@ -15,6 +15,7 @@
 #include "llfocusmgr.h"
 #include "llkeyboard.h"
 #include "llclipboard.h"
+#include "lllocalcliprect.h"
 #include "llwindow.h" // setCursor
 #include "lllocalinventory.h"
 

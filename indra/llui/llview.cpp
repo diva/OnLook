@@ -57,6 +57,7 @@
 #include "lllineeditor.h"
 #include "lltexteditor.h"
 #include "lltextbox.h"
+#include "llfasttimer.h"
 
 // <edit>
 #include "lldelayeduidelete.h"
@@ -1664,8 +1665,11 @@ BOOL LLView::hasChild(const std::string& childname, BOOL recurse) const
 //-----------------------------------------------------------------------------
 // getChildView()
 //-----------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_FIND_VIEWS("Find Views");
+
 LLView* LLView::getChildView(const std::string& name, BOOL recurse, BOOL create_if_missing) const
 {
+	LLFastTimer ft(FTM_FIND_VIEWS);
 	//richard: should we allow empty names?
 	//if(name.empty())
 	//	return NULL;

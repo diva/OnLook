@@ -286,6 +286,7 @@ void LLWLParamManager::updateShaderUniforms(LLGLSLShader * shader)
 	shader->uniform1f("scene_light_strength", mSceneLightStrength);
 	
 }
+static LLFastTimer::DeclareTimer FTM_UPDATE_WLPARAM("Update Windlight Params");
 
 void LLWLParamManager::updateShaderLinks()
 {
@@ -308,7 +309,7 @@ void LLWLParamManager::updateShaderLinks()
 
 void LLWLParamManager::propagateParameters(void)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WLPARAM);
+	LLFastTimer ftm(FTM_UPDATE_WLPARAM);
 	
 	LLVector4 sunDir;
 	LLVector4 moonDir;
@@ -373,7 +374,7 @@ void LLWLParamManager::propagateParameters(void)
 
 void LLWLParamManager::update(LLViewerCamera * cam)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WLPARAM);
+	LLFastTimer ftm(FTM_UPDATE_WLPARAM);
 	
 	// update clouds, sun, and general
 	mCurParams.updateCloudScrolling();

@@ -31,9 +31,11 @@
  */
 
 #include "linden_common.h"
+
 #include "lltabcontainer.h"
 #include "llfocusmgr.h"
 #include "llbutton.h"
+#include "lllocalcliprect.h"
 #include "llrect.h"
 #include "llresmgr.h"
 #include "llresizehandle.h"

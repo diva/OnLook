@@ -291,9 +291,11 @@ set(viewer_SOURCE_FILES
     llinventorybackup.cpp
     llinventorybridge.cpp
     llinventoryclipboard.cpp
+    llinventoryfilter.cpp
     llinventoryfunctions.cpp
     llinventoryicon.cpp
     llinventorymodel.cpp
+    llinventorymodelbackgroundfetch.cpp
     llinventoryobserver.cpp
     llinventoryview.cpp
     lljoystickbutton.cpp
@@ -765,9 +767,11 @@ set(viewer_HEADER_FILES
     llinventorybackup.h
     llinventorybridge.h
     llinventoryclipboard.h
+    llinventoryfilter.h
     llinventoryfunctions.h
     llinventoryicon.h
     llinventorymodel.h
+    llinventorymodelbackgroundfetch.h
     llinventoryobserver.h
     llinventoryview.h
     lljoystickbutton.h

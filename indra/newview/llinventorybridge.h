@@ -118,21 +118,6 @@ public:
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryPanelObserver
-//
-// Bridge to support knowing when the inventory has changed.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-class LLInventoryPanelObserver : public LLInventoryObserver
-{
-public:
-	LLInventoryPanelObserver(LLInventoryPanel* ip) : mIP(ip) {}
-	virtual ~LLInventoryPanelObserver() {}
-	virtual void changed(U32 mask);
-protected:
-	LLInventoryPanel* mIP;
-};
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLInvFVBridge (& it's derived classes)
 //
 // Short for Inventory-Folder-View-Bridge. This is an

@@ -676,19 +676,19 @@ void LLImageGL::setImage(const LLImageRaw* imageraw)
 
 void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 {
-// 	LLFastTimer t1(LLFastTimer::FTM_TEMP1);
+// 	LLFastTimer t1(FTM_TEMP1);
 	bool is_compressed = false;
 	if (mFormatPrimary >= GL_COMPRESSED_RGBA_S3TC_DXT1_EXT && mFormatPrimary <= GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
 	{
 		is_compressed = true;
 	}
 
-// 		LLFastTimer t2(LLFastTimer::FTM_TEMP2);
+// 		LLFastTimer t2(FTM_TEMP2);
 	llverify(gGL.getTexUnit(0)->bind(this));
 	
 	if (mUseMipMaps)
 	{
-// 		LLFastTimer t2(LLFastTimer::FTM_TEMP3);
+// 		LLFastTimer t2(FTM_TEMP3);
 		if (data_hasmips)
 		{
 			// NOTE: data_in points to largest image; smaller images
@@ -705,14 +705,14 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 				}
 				if (is_compressed)
 				{
-// 					LLFastTimer t2(LLFastTimer::FTM_TEMP4);
+// 					LLFastTimer t2(FTM_TEMP4);
  					S32 tex_size = dataFormatBytes(mFormatPrimary, w, h);
 					glCompressedTexImage2DARB(mTarget, gl_level, mFormatPrimary, w, h, 0, tex_size, (GLvoid *)data_in);
 					stop_glerror();
 				}
 				else
 				{
-// 					LLFastTimer t2(LLFastTimer::FTM_TEMP4);
+// 					LLFastTimer t2(FTM_TEMP4);
 
 					if(mFormatSwapBytes)
 					{
@@ -748,7 +748,7 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 				}
 				stop_glerror();
 				{
-// 					LLFastTimer t2(LLFastTimer::FTM_TEMP4);
+// 					LLFastTimer t2(FTM_TEMP4);
 
 					if(mFormatSwapBytes)
 					{
@@ -814,7 +814,7 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 					}
 					llassert(w > 0 && h > 0 && cur_mip_data);
 					{
-// 						LLFastTimer t1(LLFastTimer::FTM_TEMP4);
+// 						LLFastTimer t1(FTM_TEMP4);
 						if(mFormatSwapBytes)
 						{
 							glPixelStorei(GL_UNPACK_SWAP_BYTES, 1);
@@ -862,7 +862,7 @@ void LLImageGL::setImage(const U8* data_in, BOOL data_hasmips)
 	}
 	else
 	{
-// 		LLFastTimer t2(LLFastTimer::FTM_TEMP5);
+// 		LLFastTimer t2(FTM_TEMP5);
 		S32 w = getWidth();
 		S32 h = getHeight();
 		if (is_compressed)

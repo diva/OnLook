@@ -397,6 +397,7 @@ protected:
 
 protected:
 	void initialize();
+	void cleanup();
 
 	/** 
 	 * @brief Given the internal state of the chains, rebuild the pollset

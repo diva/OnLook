@@ -69,11 +69,6 @@ class LLSearchEditor;
 class LLInventoryPanel : public LLPanel
 {
 public:
-	static const std::string DEFAULT_SORT_ORDER;
-	static const std::string RECENTITEMS_SORT_ORDER;
-	static const std::string WORNITEMS_SORT_ORDER;
-	static const std::string INHERIT_SORT_ORDER;
-
 	LLInventoryPanel(const std::string& name,
 			const std::string& sort_order_setting,
 			const LLRect& rect,
@@ -103,38 +98,36 @@ public:
 	void closeAllFolders();
 	void openDefaultFolderForType(LLAssetType::EType);
 	void setSelection(const LLUUID& obj_id, BOOL take_keyboard_focus);
-	void setSelectCallback(LLFolderView::SelectCallback callback, void* user_data) { if (mFolders) mFolders->setSelectCallback(callback, user_data); }
+	void setSelectCallback(LLFolderView::SelectCallback callback, void* user_data);
 	void clearSelection();
-	LLInventoryFilter* getFilter() { return mFolders->getFilter(); }
+	LLInventoryFilter* getFilter();
+	const LLInventoryFilter* getFilter() const;
 	void setFilterTypes(U32 filter);
-	U32 getFilterTypes() const { return mFolders->getFilterTypes(); }
+	U32 getFilterTypes() const;
 	void setFilterPermMask(PermissionMask filter_perm_mask);
-	U32 getFilterPermMask() const { return mFolders->getFilterPermissions(); }
+	U32 getFilterPermMask() const;
 	void setFilterSubString(const std::string& string);
-	const std::string getFilterSubString() { return mFolders->getFilterSubString(); }
+	const std::string getFilterSubString();
 	void setFilterWorn(bool worn);
-	bool getFilterWorn() const { return mFolders->getFilterWorn(); }
+	bool getFilterWorn() const { return mFolderRoot->getFilterWorn(); }
 	
-	void setSortOrder(U32 order);
-	U32 getSortOrder() { return mFolders->getSortOrder(); }
 	void setSinceLogoff(BOOL sl);
 	void setHoursAgo(U32 hours);
-	BOOL getSinceLogoff() { return mFolders->getFilter()->isSinceLogoff(); }
+	BOOL getSinceLogoff();
 	
 	void setShowFolderState(LLInventoryFilter::EFolderShow show);
 	LLInventoryFilter::EFolderShow getShowFolderState();
-	void setAllowMultiSelect(BOOL allow) { mFolders->setAllowMultiSelect(allow); }
+	void setAllowMultiSelect(BOOL allow) { mFolderRoot->setAllowMultiSelect(allow); }
 	// This method is called when something has changed about the inventory.
 	void modelChanged(U32 mask);
-	LLFolderView* getRootFolder() { return mFolders; }
+	LLFolderView* getRootFolder();
 	LLScrollableContainerView* getScrollableContainer() { return mScroller; }
 
 	// DEBUG ONLY:
 	static void dumpSelectionInformation(void* user_data);
 
 	void openSelected();
-
-	void unSelectAll()	{ mFolders->setSelection(NULL, FALSE, FALSE); }
+	void unSelectAll();
 
 protected:
 	// Given the id and the parent, build all of the folder views.
@@ -155,11 +148,31 @@ public:
 protected:
 	LLInventoryModel*			mInventory;
 	LLInventoryObserver*		mInventoryObserver;
-	LLFolderView*				mFolders;
-	LLScrollableContainerView*	mScroller;
+	
+	
 	BOOL 						mAllowMultiSelect;
+	LLFolderView*				mFolderRoot;
+	LLScrollableContainerView*	mScroller;
+	//--------------------------------------------------------------------
+	// Sorting
+	//--------------------------------------------------------------------
+public:
+	static const std::string DEFAULT_SORT_ORDER;
+	static const std::string RECENTITEMS_SORT_ORDER;
+	static const std::string WORNITEMS_SORT_ORDER;
+	static const std::string INHERIT_SORT_ORDER;
+
+	void setSortOrder(U32 order);
+	U32 getSortOrder() const;
+private:
 	const std::string			mSortOrderSetting;
 	LLUUID						mSelectThisID; // if non null, select this item
+	
+public:
+	const LLUUID&		getRootFolderID() const;
+protected:
+	virtual LLFolderViewFolder*	createFolderViewFolder(LLInvFVBridge * bridge);
+	virtual LLFolderViewItem*	createFolderViewItem(LLInvFVBridge * bridge);
 };
 
 class LLInventoryView;

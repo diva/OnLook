@@ -2791,6 +2791,9 @@ void LLViewerWindow::moveCursorToCenter()
 // event processing.
 BOOL LLViewerWindow::handlePerFrameHover()
 {
+	static LLFastTimer::DeclareTimer ftm("Update UI");
+	LLFastTimer t(ftm);
+
 	static std::string last_handle_msg;
 
 	LLView::sMouseHandlerMessage.clear();

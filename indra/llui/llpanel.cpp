@@ -39,6 +39,7 @@
 #include "llalertdialog.h"
 #include "llfocusmgr.h"
 #include "llfontgl.h"
+#include "lllocalcliprect.h"
 #include "llrect.h"
 #include "llerror.h"
 #include "lltimer.h"
@@ -56,6 +57,7 @@
 #include "llviewborder.h"
 #include "llbutton.h"
 #include "llnotificationsutil.h"
+#include "llfasttimer.h"
 
 // LLLayoutStack
 #include "llresizebar.h"
@@ -415,13 +417,13 @@ void LLPanel::setBorderVisible(BOOL b)
 	}
 }
 
+LLFastTimer::DeclareTimer FTM_PANEL_CONSTRUCTION("Panel Construction");
 // virtual
 LLXMLNodePtr LLPanel::getXML(bool save_children) const
 {
 	LLXMLNodePtr node = LLUICtrl::getXML();
 
 	node->setName(LL_PANEL_TAG);
-
 	if (mBorder && mBorder->getVisible())
 	{
 		node->createChild("border", TRUE)->setBoolValue(TRUE);
@@ -471,6 +473,7 @@ LLView* LLPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory *fac
 	node->getAttributeString("name", name);
 
 	LLPanel* panelp = factory->createFactoryPanel(name);
+	LLFastTimer _(FTM_PANEL_CONSTRUCTION);
 	// Fall back on a default panel, if there was no special factory.
 	if (!panelp)
 	{

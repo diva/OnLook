@@ -876,7 +876,7 @@ void RlvWearableLocks::addWearableTypeLock(LLWearableType::EType eType, const LL
 	if (eLock & RLV_LOCK_REMOVE)
 	{
 		m_WearableTypeRem.insert(std::pair<LLWearableType::EType, LLUUID>(eType, idRlvObj));
-		LLUUID item_id = gAgentWearables.getWearableItemID(eType);
+		LLUUID item_id = gAgentWearables.getWearableItemID(eType, 0);	// TODO: MULTI-WEARABLE
 		if(item_id.notNull())
 		{
 			gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
@@ -891,7 +891,7 @@ void RlvWearableLocks::addWearableTypeLock(LLWearableType::EType eType, const LL
 bool RlvWearableLocks::canRemove(LLWearableType::EType eType) const
 {
 	// NOTE: we return TRUE if the wearable type has at least one wearable that can be removed by the user
-	LLWearable* pWearable = gAgentWearables.getWearable(eType);
+	LLWearable* pWearable = gAgentWearables.getWearable(eType, 0);	// TODO: MULTI-WEARABLE
 	if ( (pWearable) && (!isLockedWearable(pWearable)) )
 		return true;
 	return false;
@@ -901,7 +901,7 @@ bool RlvWearableLocks::canRemove(LLWearableType::EType eType) const
 bool RlvWearableLocks::hasLockedWearable(LLWearableType::EType eType) const
 {
 	// NOTE: we return TRUE if there is at least 1 non-removable wearable currently worn on this wearable type
-	LLWearable* pWearable = gAgentWearables.getWearable(eType);
+	LLWearable* pWearable = gAgentWearables.getWearable(eType, 0);	// TODO: MULTI-WEARABLE
 	if ( (pWearable) && (isLockedWearable(pWearable)) )
 		return true;
 	return false;
@@ -972,7 +972,7 @@ void RlvWearableLocks::removeWearableTypeLock(LLWearableType::EType eType, const
 		{
 			if(m_WearableTypeRem.find(eType) == m_WearableTypeRem.end())
 			{
-				LLUUID item_id = gAgentWearables.getWearableItemID(eType);
+				LLUUID item_id = gAgentWearables.getWearableItemID(eType, 0);	// TODO: MULTI-WEARABLE
 				if(item_id.notNull())
 				{
 					gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);

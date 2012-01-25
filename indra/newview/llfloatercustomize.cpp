@@ -590,7 +590,7 @@ void LLPanelEditWearable::setSubpart( ESubpart subpart )
 		LLVOAvatar* avatar = gAgentAvatarp;
 		ESex avatar_sex = avatar->getSex();
 		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(mType);
+		item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(mType,0);	// TODO: MULTI-WEARABLE
 		U32 perm_mask = 0x0;
 		BOOL is_complete = FALSE;
 		bool can_export = false;
@@ -656,27 +656,27 @@ void LLPanelEditWearable::onBtnTakeOff( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	
-	LLWearable* wearable = gAgentWearables.getWearable( self->mType );
+	LLWearable* wearable = gAgentWearables.getWearable( self->mType, 0 );	// TODO: MULTI-WEARABLE
 	if( !wearable )
 	{
 		return;
 	}
 
-	gAgentWearables.removeWearable( self->mType );
+	gAgentWearables.removeWearable( self->mType, false, 0 );	// TODO: MULTI-WEARABLE
 }
 
 // static
 void LLPanelEditWearable::onBtnSave( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
-	gAgentWearables.saveWearable( self->mType );
+	gAgentWearables.saveWearable( self->mType, 0 );	// TODO: MULTI-WEARABLE
 }
 
 // static
 void LLPanelEditWearable::onBtnSaveAs( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
-	LLWearable* wearable = gAgentWearables.getWearable( self->getType() );
+	LLWearable* wearable = gAgentWearables.getWearable( self->getType(), 0 );	// TODO: MULTI-WEARABLE
 	if( wearable )
 	{
 		LLWearableSaveAsDialog* save_as_dialog = new LLWearableSaveAsDialog( wearable->getName(), onSaveAsCommit, self );
@@ -692,7 +692,7 @@ void LLPanelEditWearable::onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog
 	LLVOAvatar* avatar = gAgentAvatarp;
 	if( avatar )
 	{
-		gAgentWearables.saveWearableAs( self->getType(), save_as_dialog->getItemName(), FALSE );
+		gAgentWearables.saveWearableAs( self->getType(), 0, save_as_dialog->getItemName(), FALSE );	// TODO: MULTI-WEARABLE
 	}
 }
 
@@ -701,7 +701,7 @@ void LLPanelEditWearable::onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog
 void LLPanelEditWearable::onBtnRevert( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
-	gAgentWearables.revertWearable( self->mType );
+	gAgentWearables.revertWearable( self->mType, 0 );	// TODO: MULTI-WEARABLE
 }
 
 // static
@@ -740,7 +740,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 
 bool LLPanelEditWearable::textureIsInvisible(ETextureIndex te)
 {
-	if (gAgentWearables.getWearable(mType))
+	if (gAgentWearables.getWearable(mType, 0))	// TODO: MULTI-WEARABLE
 	{
 		LLVOAvatar *avatar = gAgentAvatarp;
 		if (avatar)
@@ -876,7 +876,7 @@ void LLPanelEditWearable::addTextureDropTarget( ETextureIndex te, const std::str
 	LLVOAvatar* avatar = gAgentAvatarp;
 	if (avatar)
 	{
-		LLWearable* wearable = gAgentWearables.getWearable(mType);
+		LLWearable* wearable = gAgentWearables.getWearable(mType, 0);	// TODO: MULTI-WEARABLE
 		if (wearable && mType == LLWearableType::WT_ALPHA)
 		{
 			const LLTextureEntry* current_te = avatar->getTE(te);
@@ -906,7 +906,7 @@ void LLPanelEditWearable::onTextureCommit( LLUICtrl* ctrl, void* userdata )
 			image = LLViewerTextureManager::getFetchedTexture(IMG_DEFAULT_AVATAR);
 		}
 		self->mTextureList[ctrl->getName()] = te;
-		if (gAgentWearables.getWearable(self->mType))
+		if (gAgentWearables.getWearable(self->mType, 0))	// TODO: MULTI-WEARABLE
 		{
 			avatar->setLocTexTE(te, image, TRUE);
 			avatar->wearableUpdated(self->mType, FALSE);
@@ -958,14 +958,14 @@ void LLPanelEditWearable::draw()
 		return;
 	}
 
-	LLWearable* wearable = gAgentWearables.getWearable( mType );
+	LLWearable* wearable = gAgentWearables.getWearable( mType, 0 );	// TODO: MULTI-WEARABLE
 	BOOL has_wearable = (wearable != NULL );
 	BOOL is_dirty = isDirty();
 	BOOL is_modifiable = FALSE;
 	BOOL is_copyable = FALSE;
 	BOOL is_complete = FALSE;
 	LLViewerInventoryItem* item;
-	item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(mType);
+	item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(mType, 0);	// TODO: MULTI-WEARABLE
 	if(item)
 	{
 		const LLPermissions& perm = item->getPermissions();
@@ -1041,7 +1041,7 @@ void LLPanelEditWearable::draw()
 		childSetTextArg("title_loading", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
 			
 		std::string path;
-		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType() );
+		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType(), 0 );	// TODO: MULTI-WEARABLE
 		append_path(item_id, path);
 		childSetVisible("path", TRUE);
 		childSetTextArg("path", "[PATH]", path);
@@ -1054,7 +1054,7 @@ void LLPanelEditWearable::draw()
 		childSetTextArg("title", "[DESC]", wearable->getName() );
 
 		std::string path;
-		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType() );
+		const LLUUID& item_id = gAgentWearables.getWearableItemID( wearable->getType(), 0 );	// TODO: MULTI-WEARABLE
 		append_path(item_id, path);
 		childSetVisible("path", TRUE);
 		childSetTextArg("path", "[PATH]", path);
@@ -1201,7 +1201,7 @@ void LLPanelEditWearable::setVisible(BOOL visible)
 
 BOOL LLPanelEditWearable::isDirty() const
 {
-	LLWearable* wearable = gAgentWearables.getWearable( mType );
+	LLWearable* wearable = gAgentWearables.getWearable( mType, 0 );	// TODO: MULTI-WEARABLE
 	if( !wearable )
 	{
 		return FALSE;
@@ -1226,7 +1226,7 @@ void LLPanelEditWearable::onCommitSexChange( LLUICtrl*, void* userdata )
 		return;
 	}
 
-	if( !gAgentWearables.isWearableModifiable(self->mType))
+	if( !gAgentWearables.isWearableModifiable(self->mType, 0))	// TODO: MULTI-WEARABLE
 	{
 		return;
 	}
@@ -1936,10 +1936,10 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i);
+		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i);
+			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 			if(item)
 			{
 				const LLPermissions& perm = item->getPermissions();
@@ -1960,10 +1960,10 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 	for( S32 i=0; i < LLWearableType::WT_COUNT; i++ )
 	{
 		is_modifiable = FALSE;
-		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i);
+		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i);
+			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 			if(item)
 			{
 				const LLPermissions& perm = item->getPermissions();
@@ -2015,7 +2015,7 @@ void LLFloaterCustomize::onBtnMakeOutfit( void* userdata )
 
 		for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 		{
-			BOOL enabled = (gAgentWearables.getWearable( (LLWearableType::EType) i ) != NULL);
+			BOOL enabled = (gAgentWearables.getWearable( (LLWearableType::EType) i, 0 ) != NULL);	// TODO: MULTI-WEARABLE
 			BOOL selected = (enabled && (LLWearableType::WT_SHIRT <= i) && (i < LLWearableType::WT_COUNT)); // only select clothing by default
 			if (gAgent.isTeen()
 				&& !edit_wearable_for_teens((LLWearableType::EType)i))
@@ -2748,13 +2748,13 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 	switch( option )
 	{
 	case 0:  // "Save"
-		gAgentWearables.saveWearable( cur );
+		gAgentWearables.saveWearable( cur, 0 );	// TODO: MULTI-WEARABLE
 		proceed = TRUE;
 		break;
 
 	case 1:  // "Don't Save"
 		{
-			gAgentWearables.revertWearable( cur );
+			gAgentWearables.revertWearable( cur, 0 );	// TODO: MULTI-WEARABLE
 			proceed = TRUE;
 		}
 		break;
@@ -2775,10 +2775,10 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 }
 
 // fetch observer
-class LLCurrentlyWorn : public LLInventoryFetchObserver
+class LLCurrentlyWorn : public LLInventoryFetchItemsObserver
 {
 public:
-	LLCurrentlyWorn() {}
+	LLCurrentlyWorn(const uuid_vec_t& item_ids) : LLInventoryFetchItemsObserver(item_ids){}
 	~LLCurrentlyWorn() {}
 	virtual void done() { /* no operation necessary */}
 };
@@ -2790,7 +2790,7 @@ void LLFloaterCustomize::fetchInventory()
 	LLUUID item_id;
 	for(S32 type = (S32)LLWearableType::WT_SHAPE; type < (S32)LLWearableType::WT_COUNT; ++type)
 	{
-		item_id = gAgentWearables.getWearableItemID((LLWearableType::EType)type);
+		item_id = gAgentWearables.getWearableItemID((LLWearableType::EType)type, 0);	// TODO: MULTI-WEARABLE
 		if(item_id.notNull())
 		{
 			ids.push_back(item_id);
@@ -2799,8 +2799,8 @@ void LLFloaterCustomize::fetchInventory()
 
 	// Fire & forget. The mInventoryObserver will catch inventory
 	// updates and correct the UI as necessary.
-	LLCurrentlyWorn worn;
-	worn.fetchItems(ids);
+	LLCurrentlyWorn worn(ids);
+	worn.startFetch();
 }
 
 void LLFloaterCustomize::updateInventoryUI()
@@ -2816,7 +2816,7 @@ void LLFloaterCustomize::updateInventoryUI()
 		panel = mWearablePanelList[i];
 		if(panel)
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType());
+			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType(), 0);	// TODO: MULTI-WEARABLE
 		}
 		if(item)
 		{
@@ -2851,7 +2851,7 @@ void LLFloaterCustomize::updateScrollingPanelUI()
 	LLPanelEditWearable* panel = mWearablePanelList[sCurrentWearableType];
 	if(panel)
 	{
-		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType());
+		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType(), 0);	// TODO: MULTI-WEARABLE
 		if(item)
 		{
 			U32 perm_mask = item->getPermissions().getMaskOwner();

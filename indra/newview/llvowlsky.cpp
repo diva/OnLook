@@ -307,9 +307,11 @@ void LLVOWLSky::restoreGL()
 	gPipeline.markRebuild(mDrawable, LLDrawable::REBUILD_ALL, TRUE);
 }
 
+static LLFastTimer::DeclareTimer FTM_GEO_SKY("Sky Geometry");
+
 BOOL LLVOWLSky::updateGeometry(LLDrawable * drawable)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_GEO_SKY);
+	LLFastTimer ftm(FTM_GEO_SKY);
 	LLStrider<LLVector3>	vertices;
 	LLStrider<LLVector2>	texCoords;
 	LLStrider<U16>			indices;
@@ -775,7 +777,7 @@ BOOL LLVOWLSky::updateStarGeometry(LLDrawable *drawable)
 	LLStrider<LLColor4U> colorsp;
 	LLStrider<LLVector2> texcoordsp;
 
-	if (mStarsVerts.isNull())
+	if (mStarsVerts.isNull() || !mStarsVerts->isWriteable())
 	{
 		mStarsVerts = new LLVertexBuffer(LLDrawPoolWLSky::STAR_VERTEX_DATA_MASK, GL_DYNAMIC_DRAW);
 		mStarsVerts->allocateBuffer(getStarsNumVerts()*6, 0, TRUE);

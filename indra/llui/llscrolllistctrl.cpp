@@ -43,6 +43,7 @@
 #include "llcheckboxctrl.h"
 #include "llclipboard.h"
 #include "llfocusmgr.h"
+#include "lllocalcliprect.h"
 #include "llrender.h"
 #include "llresmgr.h"
 #include "llscrollbar.h"

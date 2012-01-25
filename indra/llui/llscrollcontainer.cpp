@@ -35,6 +35,7 @@
 
 #include "llrender.h"
 #include "llscrollcontainer.h"
+#include "lllocalcliprect.h"
 #include "llscrollbar.h"
 #include "llui.h"
 #include "llkeyboard.h"

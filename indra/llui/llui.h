@@ -388,30 +388,6 @@ private:
 
 template <class T, class U> T* LLUISingleton<T,U>::sInstance = NULL;
 
-class LLScreenClipRect
-{
-public:
-	LLScreenClipRect(const LLRect& rect, BOOL enabled = TRUE);
-	virtual ~LLScreenClipRect();
-
-private:
-	static void pushClipRect(const LLRect& rect);
-	static void popClipRect();
-	static void updateScissorRegion();
-
-private:
-	LLGLState		mScissorState;
-	BOOL			mEnabled;
-
-	static std::stack<LLRect> sClipRectStack;
-};
-
-class LLLocalClipRect : public LLScreenClipRect
-{
-public:
-	LLLocalClipRect(const LLRect& rect, BOOL enabled = TRUE);
-};
-
 
 //RN: maybe this needs to moved elsewhere?
 class LLImageProviderInterface

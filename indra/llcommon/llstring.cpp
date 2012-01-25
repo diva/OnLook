@@ -43,6 +43,9 @@
 #include <winnls.h> // for WideCharToMultiByte
 #endif
 
+LLFastTimer::DeclareTimer FT_STRING_FORMAT("String Format");
+
+
 std::string ll_safe_string(const char* in)
 {
 	if(in) return std::string(in);
@@ -1196,7 +1199,7 @@ bool LLStringUtil::formatDatetime(std::string& replacement, std::string token,
 template<> 
 S32 LLStringUtil::format(std::string& s, const format_map_t& substitutions)
 {
-	LLFastTimer ft(LLFastTimer::FT_STRING_FORMAT);
+	LLFastTimer ft(FT_STRING_FORMAT);
 	S32 res = 0;
 
 	std::string output;
@@ -1269,7 +1272,7 @@ S32 LLStringUtil::format(std::string& s, const format_map_t& substitutions)
 template<> 
 S32 LLStringUtil::format(std::string& s, const LLSD& substitutions)
 {
-	LLFastTimer ft(LLFastTimer::FT_STRING_FORMAT);
+	LLFastTimer ft(FT_STRING_FORMAT);
 	S32 res = 0;
 
 	if (!substitutions.isMap()) 

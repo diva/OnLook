@@ -291,12 +291,14 @@ void LLViewerObjectList::processUpdateCore(LLViewerObject* objectp,
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_PROCESS_OBJECTS("Process Objects");
+
 void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 											 void **user_data,
 											 const EObjectUpdateType update_type,
 											 bool cached, bool compressed)
 {
-	LLFastTimer t(LLFastTimer::FTM_PROCESS_OBJECTS);	
+	LLFastTimer t(FTM_PROCESS_OBJECTS);	
 	
 	LLVector3d camera_global = gAgentCamera.getCameraPositionGlobal();
 	LLViewerObject *objectp;
@@ -909,20 +911,26 @@ void LLViewerObjectList::update(LLAgent &agent, LLWorld &world)
 	
 	// Make a copy of the list in case something in idleUpdate() messes with it
 	std::vector<LLViewerObject*> idle_list;
-	idle_list.reserve( mActiveObjects.size() );
+	
+	static LLFastTimer::DeclareTimer idle_copy("Idle Copy");
 
- 	for (std::set<LLPointer<LLViewerObject> >::iterator active_iter = mActiveObjects.begin();
-		active_iter != mActiveObjects.end(); active_iter++)
 	{
-		objectp = *active_iter;
-		if (objectp)
+		LLFastTimer t(idle_copy);
+		idle_list.reserve( mActiveObjects.size() );
+
+ 		for (std::set<LLPointer<LLViewerObject> >::iterator active_iter = mActiveObjects.begin();
+			active_iter != mActiveObjects.end(); active_iter++)
 		{
-			idle_list.push_back( objectp );
-		}
-		else
-		{	// There shouldn't be any NULL pointers in the list, but they have caused
-			// crashes before.  This may be idleUpdate() messing with the list.
-			llwarns << "LLViewerObjectList::update has a NULL objectp" << llendl;
+			objectp = *active_iter;
+			if (objectp)
+			{
+				idle_list.push_back( objectp );
+			}
+			else
+			{	// There shouldn't be any NULL pointers in the list, but they have caused
+				// crashes before.  This may be idleUpdate() messing with the list.
+				llwarns << "LLViewerObjectList::update has a NULL objectp" << llendl;
+			}
 		}
 	}
 
@@ -1211,8 +1219,12 @@ void LLViewerObjectList::cleanupReferences(LLViewerObject *objectp)
 	mNumDeadObjects++;
 }
 
+static LLFastTimer::DeclareTimer FTM_REMOVE_DRAWABLE("Remove Drawable");
+
 void LLViewerObjectList::removeDrawable(LLDrawable* drawablep)
 {
+	LLFastTimer t(FTM_REMOVE_DRAWABLE);
+
 	if (!drawablep)
 	{
 		return;
@@ -1857,12 +1869,13 @@ LLViewerObject *LLViewerObjectList::createObjectViewer(const LLPCode pcode, LLVi
 }
 
 
+static LLFastTimer::DeclareTimer FTM_CREATE_OBJECT("Create Object");
 
 LLViewerObject *LLViewerObjectList::createObject(const LLPCode pcode, LLViewerRegion *regionp,
 												 const LLUUID &uuid, const U32 local_id, const LLHost &sender)
 {
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
-	LLFastTimer t(LLFastTimer::FTM_CREATE_OBJECT);
+	LLFastTimer t(FTM_CREATE_OBJECT);
 	
 	LLUUID fullid;
 	if (uuid == LLUUID::null)

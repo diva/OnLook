@@ -51,6 +51,9 @@
 
 /*static*/ F32 LLVolumeImplFlexible::sUpdateFactor = 1.0f;
 
+static LLFastTimer::DeclareTimer FTM_FLEXIBLE_REBUILD("Rebuild");
+static LLFastTimer::DeclareTimer FTM_DO_FLEXIBLE_UPDATE("Update");
+
 // LLFlexibleObjectData::pack/unpack now in llprimitive.cpp
 
 //-----------------------------------------------
@@ -263,6 +266,7 @@ void LLVolumeImplFlexible::onSetVolume(const LLVolumeParams &volume_params, cons
 // updated every time step. In the future, perhaps there could be an 
 // optimization similar to what Havok does for objects that are stationary. 
 //---------------------------------------------------------------------------------
+static LLFastTimer::DeclareTimer FTM_FLEXIBLE_UPDATE("Update Flexies");
 BOOL LLVolumeImplFlexible::doIdleUpdate(LLAgent &agent, LLWorld &world, const F64 &time)
 {
 	if (mVO->mDrawable.isNull())
@@ -281,7 +285,7 @@ BOOL LLVolumeImplFlexible::doIdleUpdate(LLAgent &agent, LLWorld &world, const F6
 		parent->mDrawable->mQuietCount = 0;
 	}
 
-	LLFastTimer ftm(LLFastTimer::FTM_FLEXIBLE_UPDATE);
+	LLFastTimer ftm(FTM_FLEXIBLE_UPDATE);
 		
 	S32 new_res = mAttributes->getSimulateLOD();
 
@@ -365,6 +369,7 @@ inline S32 log2(S32 x)
 
 void LLVolumeImplFlexible::doFlexibleUpdate()
 {
+	LLFastTimer ftm(FTM_DO_FLEXIBLE_UPDATE);
 	LLVolume* volume = mVO->getVolume();
 	LLPath *path = &volume->getPath();
 	if ((mSimulateRes == 0 || !mInitialized) && mVO->mDrawable->isVisible()) 
@@ -702,6 +707,7 @@ BOOL LLVolumeImplFlexible::doUpdateGeometry(LLDrawable *drawable)
 
 	if (mRenderRes > -1)
 	{
+		LLFastTimer t(FTM_DO_FLEXIBLE_UPDATE);
 		doFlexibleUpdate();
 	}
 	
@@ -721,7 +727,7 @@ BOOL LLVolumeImplFlexible::doUpdateGeometry(LLDrawable *drawable)
 		volume->mDrawable->setState(LLDrawable::REBUILD_VOLUME);
 		volume->dirtySpatialGroup();
 		{
-			//LLFastTimer t(FTM_FLEXIBLE_REBUILD);
+			LLFastTimer t(FTM_FLEXIBLE_REBUILD);
 			doFlexibleRebuild();
 		}
 		volume->genBBoxes(isVolumeGlobal());

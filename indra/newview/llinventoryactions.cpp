@@ -63,6 +63,7 @@
 #include "lliconctrl.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryclipboard.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"
 #include "llpreviewanim.h"
@@ -525,7 +526,7 @@ class LLRefreshInvModel : public inventory_listener_t
 		LLInventoryModel* model = mPtr->getPanel()->getModel();
 		if(!model) return false;
 		model->empty();
-		model->startBackgroundFetch();
+		LLInventoryModelBackgroundFetch::instance().start();
 		return true;
 	}
 };

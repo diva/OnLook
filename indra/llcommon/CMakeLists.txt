@@ -36,7 +36,7 @@ set(llcommon_SOURCE_FILES
     llerrorthread.cpp
     llevent.cpp
     lleventtimer.cpp
-    llfasttimer.cpp
+    llfasttimer_class.cpp
     llfile.cpp
     llfindlocale.cpp
     llfixedbuffer.cpp
@@ -55,6 +55,7 @@ set(llcommon_SOURCE_FILES
     llmetrics.cpp
     llmortician.cpp
     lloptioninterface.cpp
+    llptrto.cpp 
     llprocesslauncher.cpp
     llprocessor.cpp
     llqueuedthread.cpp
@@ -138,6 +139,7 @@ set(llcommon_HEADER_FILES
     llextendedstatus.h
     lleventtimer.h
     llfasttimer.h
+    llfasttimer_class.h
     llfile.h
     llfindlocale.h
     llfixedbuffer.h
@@ -173,6 +175,7 @@ set(llcommon_HEADER_FILES
     llprocessor.h
     llptrskiplist.h
     llptrskipmap.h
+    llptrto.h
     llqueuedthread.h
     llrand.h
     llrefcount.h

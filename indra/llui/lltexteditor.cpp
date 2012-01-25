@@ -37,6 +37,7 @@
 #include "lltexteditor.h"
 
 #include "llfontgl.h"
+#include "lllocalcliprect.h"
 #include "llrender.h"
 #include "llui.h"
 #include "lluictrlfactory.h"
@@ -54,6 +55,7 @@
 #include "llkeywords.h"
 #include "llundo.h"
 #include "llviewborder.h"
+#include "llfasttimer.h"
 
 #include "llcontrol.h"
 #include "llimagegl.h"
@@ -4352,18 +4354,25 @@ void LLTextEditor::loadKeywords(const std::string& filename,
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_SYNTAX_HIGHLIGHTING("Syntax Highlighting");
+static LLFastTimer::DeclareTimer FTM_UPDATE_TEXT_SEGMENTS("Update Text Segments");
+
 void LLTextEditor::updateSegments()
 {
-	if (mKeywords.isLoaded())
 	{
-		// HACK:  No non-ascii keywords for now
-		mKeywords.findSegments(&mSegments, mWText, mDefaultColor);
-	}
-	else if (mAllowEmbeddedItems)
-	{
-		findEmbeddedItemSegments();
+		LLFastTimer ft(FTM_SYNTAX_HIGHLIGHTING);
+		if (mKeywords.isLoaded())
+		{
+			// HACK:  No non-ascii keywords for now
+			mKeywords.findSegments(&mSegments, mWText, mDefaultColor);
+		}
+		else if (mAllowEmbeddedItems)
+		{
+			findEmbeddedItemSegments();
+		}
 	}
 
+	LLFastTimer ft(FTM_UPDATE_TEXT_SEGMENTS);
 	// Make sure we have at least one segment
 	if (mSegments.size() == 1 && mSegments[0]->getIsDefault())
 	{

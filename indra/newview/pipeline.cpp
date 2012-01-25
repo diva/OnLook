@@ -166,6 +166,35 @@ BOOL	gDebugPipeline = FALSE;
 LLPipeline gPipeline;
 const LLMatrix4* gGLLastMatrix = NULL;
 
+LLFastTimer::DeclareTimer FTM_RENDER_GEOMETRY("Geometry");
+LLFastTimer::DeclareTimer FTM_RENDER_GRASS("Grass");
+LLFastTimer::DeclareTimer FTM_RENDER_INVISIBLE("Invisible");
+LLFastTimer::DeclareTimer FTM_RENDER_OCCLUSION("Occlusion");
+LLFastTimer::DeclareTimer FTM_RENDER_SHINY("Shiny");
+LLFastTimer::DeclareTimer FTM_RENDER_SIMPLE("Simple");
+LLFastTimer::DeclareTimer FTM_RENDER_TERRAIN("Terrain");
+LLFastTimer::DeclareTimer FTM_RENDER_TREES("Trees");
+LLFastTimer::DeclareTimer FTM_RENDER_UI("UI");
+LLFastTimer::DeclareTimer FTM_RENDER_WATER("Water");
+LLFastTimer::DeclareTimer FTM_RENDER_WL_SKY("Windlight Sky");
+LLFastTimer::DeclareTimer FTM_RENDER_ALPHA("Alpha Objects");
+LLFastTimer::DeclareTimer FTM_RENDER_CHARACTERS("Avatars");
+LLFastTimer::DeclareTimer FTM_RENDER_BUMP("Bump");
+LLFastTimer::DeclareTimer FTM_RENDER_FULLBRIGHT("Fullbright");
+LLFastTimer::DeclareTimer FTM_RENDER_GLOW("Glow");
+LLFastTimer::DeclareTimer FTM_GEO_UPDATE("Geo Update");
+LLFastTimer::DeclareTimer FTM_POOLRENDER("RenderPool");
+LLFastTimer::DeclareTimer FTM_POOLS("Pools");
+LLFastTimer::DeclareTimer FTM_RENDER_BLOOM_FBO("First FBO");
+LLFastTimer::DeclareTimer FTM_STATESORT("Sort Draw State");
+LLFastTimer::DeclareTimer FTM_PIPELINE("Pipeline");
+LLFastTimer::DeclareTimer FTM_CLIENT_COPY("Client Copy");
+LLFastTimer::DeclareTimer FTM_RENDER_DEFERRED("Deferred Shading");
+
+
+static LLFastTimer::DeclareTimer FTM_STATESORT_DRAWABLE("Sort Drawables");
+static LLFastTimer::DeclareTimer FTM_STATESORT_POSTSORT("Post Sort");
+
 //----------------------------------------
 std::string gPoolNames[] = 
 {
@@ -531,6 +560,7 @@ void LLPipeline::destroyGL()
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_RESIZE_SCREEN_TEXTURE("Resize Screen Texture");
 
 //static
 void LLPipeline::throttleNewMemoryAllocation(BOOL disable)
@@ -551,6 +581,7 @@ void LLPipeline::throttleNewMemoryAllocation(BOOL disable)
 }
 void LLPipeline::resizeScreenTexture()
 {
+	LLFastTimer ft(FTM_RESIZE_SCREEN_TEXTURE);
 	if (gPipeline.canUseVertexShaders() && assertInitialized())
 	{
 		GLuint resX = gViewerWindow->getWorldViewWidthRaw();
@@ -1279,9 +1310,15 @@ void LLPipeline::allocDrawable(LLViewerObject *vobj)
 }
 
 
+static LLFastTimer::DeclareTimer FTM_UNLINK("Unlink");
+static LLFastTimer::DeclareTimer FTM_REMOVE_FROM_MOVE_LIST("Movelist");
+static LLFastTimer::DeclareTimer FTM_REMOVE_FROM_SPATIAL_PARTITION("Spatial Partition");
+static LLFastTimer::DeclareTimer FTM_REMOVE_FROM_LIGHT_SET("Light Set");
+//static LLFastTimer::DeclareTimer FTM_REMOVE_FROM_HIGHLIGHT_SET("Highlight Set");
+
 void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 {
-	LLFastTimer t(LLFastTimer::FTM_PIPELINE);
+	LLFastTimer t(FTM_UNLINK);
 
 	assertInitialized();
 
@@ -1290,6 +1327,7 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 	// Based on flags, remove the drawable from the queues that it's on.
 	if (drawablep->isState(LLDrawable::ON_MOVE_LIST))
 	{
+		LLFastTimer t(FTM_REMOVE_FROM_MOVE_LIST);
 		LLDrawable::drawable_vector_t::iterator iter = std::find(mMovedList.begin(), mMovedList.end(), drawablep);
 		if (iter != mMovedList.end())
 		{
@@ -1299,6 +1337,7 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 
 	if (drawablep->getSpatialGroup())
 	{
+		LLFastTimer t(FTM_REMOVE_FROM_SPATIAL_PARTITION);
 		if (!drawablep->getSpatialGroup()->mSpatialPartition->remove(drawablep, drawablep->getSpatialGroup()))
 		{
 #ifdef LL_RELEASE_FOR_DOWNLOAD
@@ -1309,14 +1348,18 @@ void LLPipeline::unlinkDrawable(LLDrawable *drawable)
 		}
 	}
 
-	mLights.erase(drawablep);
-	for (light_set_t::iterator iter = mNearbyLights.begin();
-				iter != mNearbyLights.end(); iter++)
 	{
-		if (iter->drawable == drawablep)
+		LLFastTimer t(FTM_REMOVE_FROM_LIGHT_SET);
+		mLights.erase(drawablep);
+
+		for (light_set_t::iterator iter = mNearbyLights.begin();
+					iter != mNearbyLights.end(); iter++)
 		{
-			mNearbyLights.erase(iter);
-			break;
+			if (iter->drawable == drawablep)
+			{
+				mNearbyLights.erase(iter);
+				break;
+			}
 		}
 	}
 
@@ -1359,7 +1402,7 @@ U32 LLPipeline::addObject(LLViewerObject *vobj)
 
 void LLPipeline::createObjects(F32 max_dtime)
 {
-	LLFastTimer ftm(LLFastTimer::FTM_GEO_UPDATE);
+	LLFastTimer ftm(FTM_GEO_UPDATE);
 	LLMemType mt(LLMemType::MTYPE_DRAWABLE);
 
 	LLTimer update_timer;
@@ -1529,9 +1572,12 @@ void LLPipeline::updateMovedList(LLDrawable::drawable_vector_t& moved_list)
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_OCTREE_BALANCE("Balance Octree");
+static LLFastTimer::DeclareTimer FTM_UPDATE_MOVE("Update Move");
+
 void LLPipeline::updateMove()
 {
-	LLFastTimer t(LLFastTimer::FTM_UPDATE_MOVE);
+	LLFastTimer t(FTM_UPDATE_MOVE);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
 	static const LLCachedControl<bool> freeze_time("FreezeTime",false);
@@ -1542,23 +1588,31 @@ void LLPipeline::updateMove()
 
 	assertInitialized();
 
-	for (LLDrawable::drawable_set_t::iterator iter = mRetexturedList.begin();
-		 iter != mRetexturedList.end(); ++iter)
 	{
-		LLDrawable* drawablep = *iter;
-		if (drawablep && !drawablep->isDead())
+		static LLFastTimer::DeclareTimer ftm("Retexture");
+		LLFastTimer t(ftm);
+
+		for (LLDrawable::drawable_set_t::iterator iter = mRetexturedList.begin();
+			 iter != mRetexturedList.end(); ++iter)
 		{
-			drawablep->updateTexture();
+			LLDrawable* drawablep = *iter;
+			if (drawablep && !drawablep->isDead())
+			{
+				drawablep->updateTexture();
+			}
 		}
+		mRetexturedList.clear();
 	}
-	mRetexturedList.clear();
+
 	{
+		static LLFastTimer::DeclareTimer ftm("Moved List");
+		LLFastTimer t(ftm);
 		updateMovedList(mMovedList);
 	}
 
 	//balance octrees
 	{
- 		LLFastTimer ot(LLFastTimer::FTM_OCTREE_BALANCE);
+ 		LLFastTimer ot(FTM_OCTREE_BALANCE);
 
 		for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -1873,11 +1927,12 @@ BOOL LLPipeline::getVisibleExtents(LLCamera& camera, LLVector3& min, LLVector3& 
 	return res;
 }
 
+static LLFastTimer::DeclareTimer FTM_CULL("Object Culling");
 
 void LLPipeline::updateCull(LLCamera& camera, LLCullResult& result, S32 water_clip, LLPlane* planep)
 {
-	LLFastTimer t(LLFastTimer::FTM_CULL);
-	LLMemType mt(LLMemType::MTYPE_PIPELINE);
+	LLFastTimer t(FTM_CULL);
+	LLMemType mt_uc(LLMemType::MTYPE_PIPELINE);
 
 	grabReferences(result);
 
@@ -2249,7 +2304,7 @@ void LLPipeline::updateGeom(F32 max_dtime)
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 	LLPointer<LLDrawable> drawablep;
 
-	LLFastTimer t(LLFastTimer::FTM_GEO_UPDATE);
+	LLFastTimer t(FTM_GEO_UPDATE);
 
 	assertInitialized();
 
@@ -2627,6 +2682,8 @@ void LLPipeline::markRebuild(LLDrawable *drawablep, LLDrawable::EDrawableFlags f
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_RESET_DRAWORDER("Reset Draw Order");
+
 void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 {
 	if (hasAnyRenderType(LLPipeline::RENDER_TYPE_AVATAR,
@@ -2639,11 +2696,11 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 					  LLPipeline::END_RENDER_TYPES))
 	{
 		//clear faces from face pools
-		LLFastTimer t(LLFastTimer::FTM_RESET_DRAWORDER);
+		LLFastTimer t(FTM_RESET_DRAWORDER);
 		gPipeline.resetDrawOrders();
 	}
 
-	LLFastTimer ftm(LLFastTimer::FTM_STATESORT);
+	LLFastTimer ftm(FTM_STATESORT);
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
 
 	//LLVertexBuffer::unbind();
@@ -2728,7 +2785,7 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
 	}
 	
 	{
-		LLFastTimer ftm(LLFastTimer::FTM_STATESORT_DRAWABLE);
+		LLFastTimer ftm(FTM_STATESORT_DRAWABLE);
 		for (LLCullResult::drawable_list_t::iterator iter = sCull->beginVisibleList();
 			 iter != sCull->endVisibleList(); ++iter)
 		{
@@ -3022,7 +3079,7 @@ void renderSoundHighlights(LLDrawable* drawablep)
 void LLPipeline::postSort(LLCamera& camera)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	LLFastTimer ftm(LLFastTimer::FTM_STATESORT_POSTSORT);
+	LLFastTimer ftm(FTM_STATESORT_POSTSORT);
 
 	assertInitialized();
 
@@ -3261,7 +3318,7 @@ void LLPipeline::postSort(LLCamera& camera)
 
 void render_hud_elements()
 {
-	LLFastTimer t(LLFastTimer::FTM_RENDER_UI);
+	LLFastTimer t(FTM_RENDER_UI);
 	gPipeline.disableLights();		
 
 	LLGLDisable fog(GL_FOG);
@@ -3387,7 +3444,7 @@ U32 LLPipeline::sCurRenderPoolType = 0 ;
 void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	LLFastTimer t(LLFastTimer::FTM_RENDER_GEOMETRY);
+	LLFastTimer t(FTM_RENDER_GEOMETRY);
 
 	assertInitialized();
 
@@ -3432,6 +3489,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	gFrameStats.start(LLFrameStats::RENDER_GEOM);
 
 	// Initialize lots of GL state to "safe" values
+	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	gGL.matrixMode(LLRender::MM_TEXTURE);
 	gGL.loadIdentity();
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -3476,7 +3534,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 	}
 
 	{
-		LLFastTimer t(LLFastTimer::FTM_POOLS);
+		LLFastTimer t(FTM_POOLS);
 		
 		// HACK: don't calculate local lights if we're rendering the HUD!
 		//    Removing this check will cause bad flickering when there are 
@@ -3512,7 +3570,7 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 			pool_set_t::iterator iter2 = iter1;
 			if (hasRenderType(poolp->getType()) && poolp->getNumPasses() > 0)
 			{
-				LLFastTimer t(LLFastTimer::FTM_POOLRENDER);
+				LLFastTimer t(FTM_POOLRENDER);
 
 				gGLLastMatrix = NULL;
 				gGL.loadMatrix(gGLModelView);
@@ -3650,9 +3708,9 @@ void LLPipeline::renderGeom(LLCamera& camera, BOOL forceVBOUpdate)
 void LLPipeline::renderGeomDeferred(LLCamera& camera)
 {
 	LLAppViewer::instance()->pingMainloopTimeout("Pipeline:RenderGeomDeferred");
-	LLFastTimer t(LLFastTimer::FTM_RENDER_GEOMETRY);
+	LLFastTimer t(FTM_RENDER_GEOMETRY);
 
-	LLFastTimer t2(LLFastTimer::FTM_POOLS);
+	LLFastTimer t2(FTM_POOLS);
 
 	LLGLEnable cull(GL_CULL_FACE);
 
@@ -3695,7 +3753,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 		pool_set_t::iterator iter2 = iter1;
 		if (hasRenderType(poolp->getType()) && poolp->getNumDeferredPasses() > 0)
 		{
-			LLFastTimer t(LLFastTimer::FTM_POOLRENDER);
+			LLFastTimer t(FTM_POOLRENDER);
 
 			gGLLastMatrix = NULL;
 			gGL.loadMatrix(gGLModelView);
@@ -3749,7 +3807,7 @@ void LLPipeline::renderGeomDeferred(LLCamera& camera)
 
 void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 {
-	LLFastTimer t(LLFastTimer::FTM_POOLS);
+	LLFastTimer t(FTM_POOLS);
 	U32 cur_type = 0;
 
 	LLGLEnable cull(GL_CULL_FACE);
@@ -3784,7 +3842,7 @@ void LLPipeline::renderGeomPostDeferred(LLCamera& camera)
 		pool_set_t::iterator iter2 = iter1;
 		if (hasRenderType(poolp->getType()) && poolp->getNumPostDeferredPasses() > 0)
 		{
-			LLFastTimer t(LLFastTimer::FTM_POOLRENDER);
+			LLFastTimer t(FTM_POOLRENDER);
 
 			gGLLastMatrix = NULL;
 			gGL.loadMatrix(gGLModelView);
@@ -5925,6 +5983,7 @@ void LLPipeline::bindScreenToTexture()
 	
 }
 
+static LLFastTimer::DeclareTimer FTM_RENDER_BLOOM("Bloom");
 void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, bool tiling)
 {
 	if (!(gPipeline.canUseVertexShaders() &&
@@ -5974,7 +6033,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		tc2 /= (F32) res_mod;
 	}
 
-	LLFastTimer ftm(LLFastTimer::FTM_RENDER_BLOOM);
+	LLFastTimer ftm(FTM_RENDER_BLOOM);
 	gGL.color4f(1,1,1,1);
 	LLGLDepthTest depth(GL_FALSE);
 	LLGLDisable blend(GL_BLEND);
@@ -6048,7 +6107,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	
 	{
 		{
-			LLFastTimer ftm(LLFastTimer::FTM_RENDER_BLOOM_FBO);
+			LLFastTimer ftm(FTM_RENDER_BLOOM_FBO);
 			mGlow[2].bindTarget();
 			mGlow[2].clear();
 		}
@@ -6116,7 +6175,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	for (S32 i = 0; i < kernel; i++)
 	{
 		{
-			LLFastTimer ftm(LLFastTimer::FTM_RENDER_BLOOM_FBO);
+			LLFastTimer ftm(FTM_RENDER_BLOOM_FBO);
 			mGlow[i%2].bindTarget();
 			mGlow[i%2].clear();
 		}
@@ -6158,7 +6217,7 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	if (LLRenderTarget::sUseFBO)
 	{
-		LLFastTimer ftm(LLFastTimer::FTM_RENDER_BLOOM_FBO);
+		LLFastTimer ftm(FTM_RENDER_BLOOM_FBO);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -6597,9 +6656,11 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 }
 
+static LLFastTimer::DeclareTimer FTM_BIND_DEFERRED("Bind Deferred");
+
 void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 noise_map)
 {
-	LLFastTimer t(LLFastTimer::FTM_BIND_DEFERRED);
+	LLFastTimer t(FTM_BIND_DEFERRED);
 
 	static const LLCachedControl<F32> RenderDeferredSunWash("RenderDeferredSunWash",.5f);
 	static const LLCachedControl<F32> RenderShadowNoise("RenderShadowNoise",-.0001f);
@@ -6822,6 +6883,18 @@ void LLPipeline::bindDeferredShader(LLGLSLShader& shader, U32 light_index, U32 n
 	}
 }
 
+static LLFastTimer::DeclareTimer FTM_GI_TRACE("Trace");
+static LLFastTimer::DeclareTimer FTM_GI_GATHER("Gather");
+static LLFastTimer::DeclareTimer FTM_SUN_SHADOW("Shadow Map");
+static LLFastTimer::DeclareTimer FTM_SOFTEN_SHADOW("Shadow Soften");
+static LLFastTimer::DeclareTimer FTM_EDGE_DETECTION("Find Edges");
+static LLFastTimer::DeclareTimer FTM_LOCAL_LIGHTS("Local Lights");
+static LLFastTimer::DeclareTimer FTM_ATMOSPHERICS("Atmospherics");
+static LLFastTimer::DeclareTimer FTM_FULLSCREEN_LIGHTS("Fullscreen Lights");
+static LLFastTimer::DeclareTimer FTM_PROJECTORS("Projectors");
+static LLFastTimer::DeclareTimer FTM_POST("Post");
+
+
 void LLPipeline::renderDeferredLighting()
 {
 	if (!sCull)
@@ -6839,7 +6912,7 @@ void LLPipeline::renderDeferredLighting()
 	static const LLCachedControl<bool> RenderLocalLights("RenderLocalLights",false);
 		
 	{
-		LLFastTimer ftm(LLFastTimer::FTM_RENDER_DEFERRED);
+		LLFastTimer ftm(FTM_RENDER_DEFERRED);
 
 		LLViewerCamera* camera = LLViewerCamera::getInstance();
 		{
@@ -6899,7 +6972,7 @@ void LLPipeline::renderDeferredLighting()
 		{
 			mDeferredLight.bindTarget();
 			{ //paint shadow/SSAO light map (direct lighting lightmap)
-				LLFastTimer ftm(LLFastTimer::FTM_SUN_SHADOW);
+				LLFastTimer ftm(FTM_SUN_SHADOW);
 				bindDeferredShader(gDeferredSunProgram, 0);
 				mDeferredVB->setBuffer(LLVertexBuffer::MAP_VERTEX);
 				glClearColor(1,1,1,1);
@@ -6943,7 +7016,7 @@ void LLPipeline::renderDeferredLighting()
 
 		if (RenderDeferredSSAO)
 		{ //soften direct lighting lightmap
-			LLFastTimer ftm(LLFastTimer::FTM_SOFTEN_SHADOW);
+			LLFastTimer ftm(FTM_SOFTEN_SHADOW);
 			//blur lightmap
 			mScreen.bindTarget();
 			glClearColor(1,1,1,1);
@@ -7022,7 +7095,7 @@ void LLPipeline::renderDeferredLighting()
 		
 		if (RenderDeferredAtmospheric)
 		{ //apply sunlight contribution 
-			LLFastTimer ftm(LLFastTimer::FTM_ATMOSPHERICS);
+			LLFastTimer ftm(FTM_ATMOSPHERICS);
 			bindDeferredShader(gDeferredSoftenProgram);	
 			{
 				LLGLDepthTest depth(GL_FALSE);
@@ -7168,7 +7241,7 @@ void LLPipeline::renderDeferredLighting()
 								continue;
 							}
 							
-							LLFastTimer ftm(LLFastTimer::FTM_LOCAL_LIGHTS);
+							LLFastTimer ftm(FTM_LOCAL_LIGHTS);
 							//glTexCoord4f(tc.v[0], tc.v[1], tc.v[2], s*s);
 							gDeferredLightProgram.uniform3fv(LLShaderMgr::LIGHT_CENTER, 1, tc.v);
 							gDeferredLightProgram.uniform1f(LLShaderMgr::LIGHT_SIZE, s*s);
@@ -7209,7 +7282,7 @@ void LLPipeline::renderDeferredLighting()
 
 				for (LLDrawable::drawable_list_t::iterator iter = spot_lights.begin(); iter != spot_lights.end(); ++iter)
 				{
-					LLFastTimer ftm(LLFastTimer::FTM_PROJECTORS);
+					LLFastTimer ftm(FTM_PROJECTORS);
 					LLDrawable* drawablep = *iter;
 
 					LLVOVolume* volume = drawablep->getVOVolume();
@@ -7288,7 +7361,7 @@ void LLPipeline::renderDeferredLighting()
 
 				while (!fullscreen_lights.empty())
 				{
-					LLFastTimer ftm(LLFastTimer::FTM_FULLSCREEN_LIGHTS);
+					LLFastTimer ftm(FTM_FULLSCREEN_LIGHTS);
 					light[count] = fullscreen_lights.front();
 					fullscreen_lights.pop_front();
 					col[count] = light_colors.front();
@@ -7319,7 +7392,7 @@ void LLPipeline::renderDeferredLighting()
 
 				for (LLDrawable::drawable_list_t::iterator iter = fullscreen_spot_lights.begin(); iter != fullscreen_spot_lights.end(); ++iter)
 				{
-					LLFastTimer ftm(LLFastTimer::FTM_PROJECTORS);
+					LLFastTimer ftm(FTM_PROJECTORS);
 					LLDrawable* drawablep = *iter;
 					
 					LLVOVolume* volume = drawablep->getVOVolume();
@@ -7908,9 +7981,13 @@ glh::matrix4f scale_translate_to_fit(const LLVector3 min, const LLVector3 max)
 	return ret;
 }
 
+static LLFastTimer::DeclareTimer FTM_SHADOW_RENDER("Render Shadows");
+static LLFastTimer::DeclareTimer FTM_SHADOW_ALPHA("Alpha Shadow");
+static LLFastTimer::DeclareTimer FTM_SHADOW_SIMPLE("Simple Shadow");
+
 void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera& shadow_cam, LLCullResult &result, BOOL use_shader, BOOL use_occlusion)
 {
-	LLFastTimer t(LLFastTimer::FTM_SHADOW_RENDER);
+	LLFastTimer t(FTM_SHADOW_RENDER);
 
 	//clip out geometry on the same side of water as the camera
 	S32 occlude = LLPipeline::sUseOcclusion;
@@ -7971,7 +8048,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 		gGL.diffuseColor4f(1,1,1,1);
 		gGL.setColorMask(false, false);
 
-		LLFastTimer ftm(LLFastTimer::FTM_SHADOW_SIMPLE);
+		LLFastTimer ftm(FTM_SHADOW_SIMPLE);
 		gGL.getTexUnit(0)->disable();
 		for (U32 i = 0; i < sizeof(types)/sizeof(U32); ++i)
 		{
@@ -7996,7 +8073,7 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	}
 
 	{
-		LLFastTimer ftm(LLFastTimer::FTM_SHADOW_ALPHA);
+		LLFastTimer ftm(FTM_SHADOW_ALPHA);
 		gDeferredShadowAlphaMaskProgram.bind();
 		gDeferredShadowAlphaMaskProgram.setMinimumAlpha(0.598f);
 		
@@ -8037,9 +8114,10 @@ void LLPipeline::renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera
 	LLPipeline::sShadowRender = FALSE;
 }
 
+static LLFastTimer::DeclareTimer FTM_VISIBLE_CLOUD("Visible Cloud");
 BOOL LLPipeline::getVisiblePointCloud(LLCamera& camera, LLVector3& min, LLVector3& max, std::vector<LLVector3>& fp, LLVector3 light_dir)
 {
-	LLFastTimer t(LLFastTimer::FTM_VISIBLE_CLOUD);
+	LLFastTimer t(FTM_VISIBLE_CLOUD);
 	//get point cloud of intersection of frust and min, max
 
 	if (getVisibleExtents(camera, min, max))

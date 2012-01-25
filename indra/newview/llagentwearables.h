@@ -70,7 +70,7 @@ public:
 	// LLInitClass interface
 	static void initClass();
 protected:
-	void			createStandardWearablesDone(S32 type);
+	void			createStandardWearablesDone(S32 type, U32 index/* = 0*/);
 	void			createStandardWearablesAllDone();
 
 	//--------------------------------------------------------------------
@@ -78,10 +78,10 @@ protected:
 	//--------------------------------------------------------------------
 public:
 	BOOL			isWearingItem(const LLUUID& item_id) const;
-	BOOL			isWearableModifiable(LLWearableType::EType type) const;
+	BOOL			isWearableModifiable(LLWearableType::EType type, U32 index /*= 0*/) const;
 	BOOL			isWearableModifiable(const LLUUID& item_id) const;
 
-	BOOL			isWearableCopyable(LLWearableType::EType type) const;
+	BOOL			isWearableCopyable(LLWearableType::EType type, U32 index /*= 0*/) const;
 	BOOL			areWearablesLoaded() const;
 	void			updateWearablesLoaded();
 	//void			checkWearablesLoaded() const;
@@ -93,27 +93,25 @@ public:
 	//void			animateAllWearableParams(F32 delta, BOOL upload_bake);
 
 	BOOL			needsReplacement(LLWearableType::EType wearableType, S32 remove);
-	U32				getWearablePermMask(LLWearableType::EType type) const;
+	//U32				getWearablePermMask(LLWearableType::EType type) const;
 	
 	//--------------------------------------------------------------------
 	// Accessors
 	//--------------------------------------------------------------------
 public:
-	const LLUUID		getWearableItemID(LLWearableType::EType type ) const;
-	const LLUUID		getWearableAssetID(LLWearableType::EType type) const;
+	const LLUUID		getWearableItemID(LLWearableType::EType type, U32 index /*= 0*/) const;
+	const LLUUID		getWearableAssetID(LLWearableType::EType type, U32 index /*= 0*/) const;
 	const LLWearable*	getWearableFromItemID(const LLUUID& item_id) const;
-	LLWearable*			getWearableFromItemID(const LLUUID& item_id);
-	LLWearable*			getWearableFromAssetID(const LLUUID& asset_id);
-	LLInventoryItem* 	getWearableInventoryItem(LLWearableType::EType type);
+	LLWearable*	getWearableFromItemID(const LLUUID& item_id);
+	LLWearable*	getWearableFromAssetID(const LLUUID& asset_id);
+	LLInventoryItem*	getWearableInventoryItem(LLWearableType::EType type, U32 index /*= 0*/);
 	static BOOL			selfHasWearable(LLWearableType::EType type);
-	LLWearable*			getWearable( const LLWearableType::EType type );
-	const LLWearable*	getWearable( const LLWearableType::EType type ) const;
-	LLWearable*	getTopWearable(const LLWearableType::EType type);
+	LLWearable*			getWearable(const LLWearableType::EType type, U32 index /*= 0*/); 
+	const LLWearable* 	getWearable(const LLWearableType::EType type, U32 index /*= 0*/) const;
+	LLWearable*		getTopWearable(const LLWearableType::EType type);
 	LLWearable*	getBottomWearable(const LLWearableType::EType type);
 	U32				getWearableCount(const LLWearableType::EType type) const;
 	U32				getWearableCount(const U32 tex_index) const;
-
-	void			copyWearableToInventory( LLWearableType::EType type );
 
 	static const U32 MAX_CLOTHING_PER_TYPE = 1; 
 
@@ -124,11 +122,11 @@ public:
 
 private:
 	// Low-level data structure setter - public access is via setWearableItem, etc.
-	void 			setWearable(const LLWearableType::EType type, LLWearable *wearable);
+	void 			setWearable(const LLWearableType::EType type, U32 index, LLWearable *wearable);
 	U32 			pushWearable(const LLWearableType::EType type, LLWearable *wearable);
 	void			wearableUpdated(LLWearable *wearable);
 	void 			popWearable(LLWearable *wearable);
-	void			popWearable(const LLWearableType::EType type);
+	void			popWearable(const LLWearableType::EType type, U32 index);
 	
 public:
 	void			setWearableItem(LLInventoryItem* new_item, LLWearable* wearable);
@@ -156,11 +154,11 @@ protected:
 	 * @param item_id The inventory item id of the new wearable to wear.
 	 * @param wearable The actual wearable data.
 	 */
-	void addWearabletoAgentInventoryDone(const LLWearableType::EType type,
-		const LLUUID& item_id,
-		LLWearable* wearable);
-
-	void			recoverMissingWearable(LLWearableType::EType type);
+	void 			addWearabletoAgentInventoryDone(const LLWearableType::EType type,
+													const U32 index,
+													const LLUUID& item_id,
+													LLWearable* wearable);
+	void			recoverMissingWearable(const LLWearableType::EType type, U32 index /*= 0*/);
 	void			recoverMissingWearableDone();
 
 	//--------------------------------------------------------------------
@@ -182,9 +180,9 @@ private:
 	// Removing wearables
 	//--------------------------------------------------------------------
 public:
-	void			removeWearable( LLWearableType::EType type );
+	void			removeWearable(const LLWearableType::EType type, bool do_remove_all /*= false*/, U32 index /*= 0*/);
 private:
-	void			removeWearableFinal( LLWearableType::EType type );
+	void			removeWearableFinal(const LLWearableType::EType type, bool do_remove_all /*= false*/, U32 index /*= 0*/);
 protected:
 	static bool		onRemoveWearableDialog(const LLSD& notification, const LLSD& response);
 	static void		userRemoveAllClothesStep2(BOOL proceed, void* userdata ); // userdata is NULL
@@ -220,25 +218,26 @@ public:
 						BOOL rename_clothing);
 private:
 
-	void			makeNewOutfitDone(S32 type);
+	void			makeNewOutfitDone(S32 type, U32 index); 
 
 	//--------------------------------------------------------------------
 	// Save Wearables
 	//--------------------------------------------------------------------
 public:	
-	void			saveWearableAs(const LLWearableType::EType type, const std::string& new_name, BOOL save_in_lost_and_found );
-	void			saveWearable(const LLWearableType::EType type, BOOL send_update = TRUE,
+	void			saveWearableAs(const LLWearableType::EType type, const U32 index, const std::string& new_name, BOOL save_in_lost_and_found );
+	void			saveWearable(const LLWearableType::EType type, const U32 index, BOOL send_update = TRUE,
 								 const std::string new_name = "");
 
 	void			saveAllWearables();
-	void			revertWearable( LLWearableType::EType type );
+	void			revertWearable( LLWearableType::EType type, const U32 index);
 	void			revertAllWearables();
 
 	//--------------------------------------------------------------------
 	// Static UI hooks
 	//--------------------------------------------------------------------
 public:
-	static void		userRemoveWearable(const LLWearableType::EType &type);
+	static void		userRemoveWearable(const LLWearableType::EType &type, const U32 &index);
+	static void		userRemoveWearablesOfType(const LLWearableType::EType &type);
 	static void		userRemoveAllClothes();
 
 	typedef std::vector<LLViewerObject*> llvo_vec_t;
@@ -321,12 +320,14 @@ private:
 		 */
 		addWearableToAgentInventoryCallback(LLPointer<LLRefCount> cb,
 											LLWearableType::EType type,
+											U32 index,
 											LLWearable* wearable,
 											U32 todo = CALL_NONE);
 		virtual void fire(const LLUUID& inv_item);
 
 	private:
 		LLWearableType::EType mType;
+		U32 mIndex;
 		LLWearable* mWearable;
 		U32 mTodo;
 		LLPointer<LLRefCount> mCB;

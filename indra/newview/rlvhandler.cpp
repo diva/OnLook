@@ -2005,7 +2005,7 @@ ERlvCmdRet RlvHandler::onGetOutfit(const RlvCommand& rlvCmd, std::string& strRep
 		{
 			// We never hide body parts, even if they're "locked" and we're hiding locked layers
 			// (nor do we hide a layer if the issuing object is the only one that has this layer locked)
-			bool fWorn = (gAgentWearables.getWearable(wtRlvTypes[idxType])) && 
+			bool fWorn = (gAgentWearables.getWearable(wtRlvTypes[idxType], 0)) && 	// TODO: MULTI-WEARABLE
 				( (!RlvSettings::getHideLockedLayers()) || 
 				  (LLAssetType::AT_BODYPART == LLWearableType::getAssetType(wtRlvTypes[idxType])) ||
 				  (RlvForceWear::isForceRemovable(wtRlvTypes[idxType], true, rlvCmd.getObjectID())) );
@@ -2033,7 +2033,7 @@ ERlvCmdRet RlvHandler::onGetOutfitNames(const RlvCommand& rlvCmd, std::string& s
 		switch (rlvCmd.getBehaviourType())
 		{
 			case RLV_BHVR_GETOUTFITNAMES:		// Every layer that's worn
-				fAdd = (gAgentWearables.getWearable(wtType) != NULL);
+				fAdd = (gAgentWearables.getWearable(wtType, 0) != NULL);	// TODO: MULTI-WEARABLE
 				break;
 /*
 			case RLV_BHVR_GETADDOUTFITNAMES:	// Every layer that can be worn on (but ignore any locks set by the issuer)

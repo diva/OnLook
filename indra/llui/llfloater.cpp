@@ -56,6 +56,7 @@
 #include "llcontrol.h"
 #include "lltabcontainer.h"
 #include "v2math.h"
+#include "llfasttimer.h"
 
 const S32 MINIMIZED_WIDTH = 160;
 const S32 CLOSE_BOX_FROM_TOP = 1;
@@ -2548,6 +2549,7 @@ LLView* LLFloater::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *f
 	return floaterp;
 }
 
+LLFastTimer::DeclareTimer POST_BUILD("Floater Post Build");
 void LLFloater::initFloaterXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory, BOOL open)	/* Flawfinder: ignore */
 {
 	std::string name(getName());
@@ -2617,7 +2619,12 @@ void LLFloater::initFloaterXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactor
 		LLFloater::setFloaterHost(last_host);
 	}
 
-	BOOL result = postBuild();
+	BOOL result;
+	{
+		LLFastTimer ft(POST_BUILD);
+
+		result = postBuild();
+	}
 
 	if (!result)
 	{

@@ -158,6 +158,8 @@ BOOL LLFontGL::addChar(const llwchar wch) const
 	return TRUE;
 }
 
+static LLFastTimer::DeclareTimer FTM_RENDER_FONTS("Fonts");
+
 S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, const LLRect& rect, const LLColor4 &color, HAlign halign, VAlign valign, U8 style, 
 					 ShadowType shadow, S32 max_chars, F32* right_x, BOOL use_embedded, BOOL use_ellipses) const
 {
@@ -186,6 +188,8 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, const LLRect& rect
 S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, const LLColor4 &color, HAlign halign, VAlign valign, U8 style, 
 					 ShadowType shadow, S32 max_chars, S32 max_pixels, F32* right_x, BOOL use_embedded, BOOL use_ellipses) const
 {
+	LLFastTimer _(FTM_RENDER_FONTS);
+
 	if(!sDisplayFont) //do not display texts
 	{
 		return wstr.length() ;
@@ -224,7 +228,6 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 	F32 pixel_offset_y = llround((F32)sCurOrigin.mY) - (sCurOrigin.mY);
 	gGL.translatef(-pixel_offset_x, -pixel_offset_y, 0.f);
 
-	LLFastTimer t(LLFastTimer::FTM_RENDER_FONTS);
 
 	gGL.color4fv( color.mV );
 
