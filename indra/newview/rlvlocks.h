@@ -630,12 +630,13 @@ inline bool RlvFolderLocks::canRemoveFolder(const LLUUID& idFolder) const
 // Checked: 2011-03-29 (RLVa-1.3.0g) | Added: RLVa-1.3.0g
 inline bool RlvFolderLocks::canRenameFolder(const LLUUID& idFolder) const
 {
-	// Block renaming a folder if:
+	/* Block renaming a folder if:
 	//   - the folder (or one of its descendents) is explicitly locked by:
 	//		-> a "shared path" => renaming the folder would change the shared path and hence invalidate the lock
 	//		-> an attachment point \
 	//		-> an attachment        |--> renaming the folder to a "dot" (=invisible) folder would invalidate the lock
 	//		-> a wearable type     /
+	*/
 	return !hasLockedFolderDescendent(idFolder, ST_SHAREDPATH | ST_ATTACHMENT | ST_ATTACHMENTPOINT | ST_WEARABLETYPE, PERM_MASK_ANY, RLV_LOCK_ANY, true);
 }
 
