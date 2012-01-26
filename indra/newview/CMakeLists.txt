@@ -262,6 +262,7 @@ set(viewer_SOURCE_FILES
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
     llfolderview.cpp
+    llfolderviewitem.cpp
     llfollowcam.cpp
     llframestats.cpp
     llframestatview.cpp
@@ -740,6 +741,7 @@ set(viewer_HEADER_FILES
     llfloaterworldmap.h
     llfolderview.h
     llfoldervieweventlistener.h
+    llfolderviewitem.h
     llfollowcam.h
     llframestats.h
     llframestatview.h
