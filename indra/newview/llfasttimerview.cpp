@@ -288,6 +288,7 @@ BOOL LLFastTimerView::handleHover(S32 x, S32 y, MASK mask)
 					// covering region for this new timer, go ahead and unblock 
 					// so we can create a new tooltip
 					//LLToolTipMgr::instance().unblockToolTips();
+					gViewerWindow->unblockToolTips();
 					mHoverTimer = (*it);
 				}
 
