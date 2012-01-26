@@ -3561,6 +3561,8 @@ void LLAgent::teleportCancel()
 
 void LLAgent::teleportViaLocation(const LLVector3d& pos_global)
 {
+	if(!isAgentAvatarValid())
+		return;
 // [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Checked: 2010-03-02 (RLVa-1.1.1a) | Modified: RLVa-1.2.0a
 	if (rlv_handler_t::isEnabled()) 
 	{
