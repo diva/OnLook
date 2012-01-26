@@ -96,27 +96,29 @@ BOOL LLShaderMgr::attachShaderFeatures(LLGLSLShader * shader)
 		}
 	}
 
-	if (features->calculatesLighting)
+	if (features->calculatesLighting || features->atmosphericHelpers)
 	{
 		if (!shader->attachObject("windlight/atmosphericsHelpersV.glsl"))
 		{
 			return FALSE;
 		}
+	}
 		
+	if (features->calculatesLighting)
+	{
 		if (features->isSpecular)
 		{
 			if (!shader->attachObject("lighting/lightFuncSpecularV.glsl"))
 			{
 				return FALSE;
 			}
-			
+		
 			if (!features->isAlphaLighting)
 			{
 				if (!shader->attachObject("lighting/sumLightsSpecularV.glsl"))
 				{
 					return FALSE;
 				}
-
 			}
 			
 			if (!shader->attachObject("lighting/lightSpecularV.glsl"))
