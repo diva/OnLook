@@ -82,8 +82,8 @@ public:
 		void setCollapsed(bool collapsed) { mCollapsed = collapsed; }
 		bool getCollapsed() const { return mCollapsed; }
 
-		U32 getCountAverage() const { return mCountAverage; }
-		U32 getCallAverage() const { return mCallAverage; }
+		U32 getCountAverage() const; //{ return mCountAverage }
+		U32 getCallAverage() const; //{ return mCallAverage }
 
 		U32 getHistoricalCount(S32 history_index = 0) const;
 		U32 getHistoricalCalls(S32 history_index = 0) const;

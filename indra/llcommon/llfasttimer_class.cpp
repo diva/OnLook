@@ -498,6 +498,15 @@ void LLFastTimer::NamedTimer::accumulateTimings()
 	}
 }
 
+U32 LLFastTimer::NamedTimer::getCountAverage() const 
+{
+	return mCountAverage;// (sCurFrameIndex <= 0 || mCountAverage <= 0)  ? 0 : mCountAverage / llmin(sCurFrameIndex,(S32)HISTORY_NUM);
+}
+U32 LLFastTimer::NamedTimer::getCallAverage() const 
+{ 
+	return mCallAverage;// (sCurFrameIndex <= 0 || mCallAverage <= 0)  ? 0 : mCallAverage / llmin(sCurFrameIndex,(S32)HISTORY_NUM);
+}
+
 // static
 void LLFastTimer::NamedTimer::resetFrame()
 {
