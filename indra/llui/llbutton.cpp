@@ -611,9 +611,10 @@ void LLButton::draw()
 	S32 text_left = mLeftHPad;
 	S32 text_right = getRect().getWidth() - mRightHPad;
 	S32 text_width = getRect().getWidth() - mLeftHPad - mRightHPad;
+	S32 text_middle = text_left + text_width/2;
 
 	// draw overlay image
-	if (mImageOverlay.notNull())
+	if (mImageOverlay.notNull() && mImageOverlay->getWidth() > 1)
 	{
 		// get max width and height (discard level 0)
 		S32 overlay_width = mImageOverlay->getWidth();
@@ -645,6 +646,7 @@ void LLButton::draw()
 		case LLFontGL::LEFT:
 			text_left += overlay_width + 1;
 			text_width -= overlay_width + 1;
+			text_middle += (overlay_width+1)/4;
 			mImageOverlay->draw(
 				mLeftHPad, 
 				center_y - (overlay_height / 2), 
@@ -663,6 +665,7 @@ void LLButton::draw()
 		case LLFontGL::RIGHT:
 			text_right -= overlay_width + 1;				
 			text_width -= overlay_width + 1;
+			text_middle += (overlay_width+1)/4;
 			mImageOverlay->draw(
 				getRect().getWidth() - mRightHPad - overlay_width, 
 				center_y - (overlay_height / 2), 
@@ -688,7 +691,10 @@ void LLButton::draw()
 			x = text_right;
 			break;
 		case LLFontGL::HCENTER:
-			x = text_left + (text_width / 2);
+			{
+				S32 actual_width = mGLFont->getWidth(label.c_str());
+				x = llmax(text_middle, text_left + actual_width/2);
+			}
 			break;
 		case LLFontGL::LEFT:
 		default:
@@ -703,6 +709,7 @@ void LLButton::draw()
 			y_offset--;
 			x++;
 		}
+
 
 		mGLFont->render(label, 0, 
 			(F32)x, 

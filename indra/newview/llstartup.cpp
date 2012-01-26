@@ -378,9 +378,6 @@ bool idle_startup()
 	static std::string password;
 	static std::vector<const char*> requested_options;
 
-	static U32 first_sim_size_x = 256;
-	static U32 first_sim_size_y = 256;
-
 	static LLVector3 initial_sun_direction(1.f, 0.f, 0.f);
 	static LLVector3 agent_start_position_region(10.f, 10.f, 10.f);		// default for when no space server
 	static LLVector3 agent_start_look_at(1.0f, 0.f, 0.f);
@@ -1696,17 +1693,7 @@ bool idle_startup()
 				U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
 				gFirstSimHandle = to_region_handle(region_x, region_y);
 			}
-
-			text = LLUserAuth::getInstance()->getResponse("region_size_x");
-			if(!text.empty()) {
-				first_sim_size_x = strtoul(text.c_str(), NULL, 10);
-				LLViewerParcelMgr::getInstance()->init(first_sim_size_x);
-			}
-
-			//region Y size is currently unused, major refactoring required. - Patrick Sapinski (2/10/2011)
-			text = LLUserAuth::getInstance()->getResponse("region_size_y");
-			if(!text.empty()) first_sim_size_y = strtoul(text.c_str(), NULL, 10);
-
+			
 			const std::string look_at_str = LLUserAuth::getInstance()->getResponse("look_at");
 			if (!look_at_str.empty())
 			{
@@ -2001,7 +1988,7 @@ bool idle_startup()
 		gAgent.initOriginGlobal(from_region_handle(gFirstSimHandle));
 		display_startup();
 
-		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim, first_sim_size_x, first_sim_size_y);
+		LLWorld::getInstance()->addRegion(gFirstSimHandle, gFirstSim);
 		display_startup();
 
 		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);

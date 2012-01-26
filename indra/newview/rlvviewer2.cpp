@@ -23,7 +23,109 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
+#include "llgesturemgr.h"
 #include "llviewerinventory.h"
+#include "llvoavatar.h"
+#include "cofmgr.h"
 #include "rlvviewer2.h"
+
+// ============================================================================
+// From lloutfitobserver.cpp
+
+LLCOFObserver::LLCOFObserver() :
+	mCOFLastVersion(LLViewerInventoryCategory::VERSION_UNKNOWN)
+{
+	mItemNameHash.finalize();
+	gInventory.addObserver(this);
+}
+
+LLCOFObserver::~LLCOFObserver()
+{
+	if (gInventory.containsObserver(this))
+	{
+		gInventory.removeObserver(this);
+	}
+}
+
+void LLCOFObserver::changed(U32 mask)
+{
+	if (!gInventory.isInventoryUsable())
+		return;
+
+	checkCOF();
+}
+
+// static
+S32 LLCOFObserver::getCategoryVersion(const LLUUID& cat_id)
+{
+	LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
+	if (!cat)
+		return LLViewerInventoryCategory::VERSION_UNKNOWN;
+
+	return cat->getVersion();
+}
+
+// static
+const std::string& LLCOFObserver::getCategoryName(const LLUUID& cat_id)
+{
+	LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
+	if (!cat)
+		return LLStringUtil::null;
+
+	return cat->getName();
+}
+
+bool LLCOFObserver::checkCOF()
+{
+	LLUUID cof = LLCOFMgr::getInstance()->getCOF();
+	if (cof.isNull())
+		return false;
+
+	bool cof_changed = false;
+	LLMD5 item_name_hash = hashDirectDescendentNames(cof);
+	if (item_name_hash != mItemNameHash)
+	{
+		cof_changed = true;
+		mItemNameHash = item_name_hash;
+	}
+
+	S32 cof_version = getCategoryVersion(cof);
+	if (cof_version != mCOFLastVersion)
+	{
+		cof_changed = true;
+		mCOFLastVersion = cof_version;
+	}
+
+	if (!cof_changed)
+		return false;
+	
+	mCOFChanged();
+
+	return true;
+}
+
+LLMD5 LLCOFObserver::hashDirectDescendentNames(const LLUUID& cat_id)
+{
+	LLInventoryModel::cat_array_t* cat_array;
+	LLInventoryModel::item_array_t* item_array;
+	gInventory.getDirectDescendentsOf(cat_id,cat_array,item_array);
+	LLMD5 item_name_hash;
+	if (!item_array)
+	{
+		item_name_hash.finalize();
+		return item_name_hash;
+	}
+	for (LLInventoryModel::item_array_t::const_iterator iter = item_array->begin();
+		 iter != item_array->end();
+		 iter++)
+	{
+		const LLViewerInventoryItem *item = (*iter);
+		if (!item)
+			continue;
+		item_name_hash.update(item->getName());
+	}
+	item_name_hash.finalize();
+	return item_name_hash;
+}
 
 // ============================================================================

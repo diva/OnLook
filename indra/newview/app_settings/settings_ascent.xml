@@ -579,7 +579,7 @@
 		<key>AscentCmdLineKeyToName</key>
 		<map>
 			<key>Comment</key>
-			<string>Use a fast key to name querry</string>
+			<string>Use a fast key to name query</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>

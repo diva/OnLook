@@ -76,8 +76,13 @@
 // Returns true if you got at least one object
 void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 {
-// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
-	if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT))) )
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+	// Block rectangle selection if:
+	//   - prevented from editing and no exceptions are set (see below for the case where exceptions are set)
+	//   - prevented from interacting at all
+	if ( (rlv_handler_t::isEnabled()) && 
+		 ( ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasException(RLV_BHVR_EDIT))) || 
+		   (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) ) )
 	{
 		return;
 	}
@@ -241,6 +246,13 @@ void LLToolSelectRect::handleRectangleSelection(S32 x, S32 y, MASK mask)
 			{
 				continue;
 			}
+
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Added: RLVa-1.3.0c
+			if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canEdit(vobjp)) )
+			{
+				continue;
+			}
+// [/RLVa:KB]
 
 			S32 result = LLViewerCamera::getInstance()->sphereInFrustum(drawable->getPositionAgent(), drawable->getRadius());
 			if (result)
@@ -610,7 +622,7 @@ void LLViewerParcelMgr::renderOneSegment(F32 x1, F32 y1, F32 x2, F32 y2, F32 hei
 		return;
 	// HACK: At edge of last region of world, we need to make sure the region
 	// resolves correctly so we can get a height value.
-	const F32 BORDER = regionp->getWidth() - 0.1f;
+	const F32 BORDER = REGION_WIDTH_METERS - 0.1f;
 
 	F32 clamped_x1 = x1;
 	F32 clamped_y1 = y1;

@@ -75,6 +75,11 @@
 #include "llvoavatarself.h"
 #include "llwearablelist.h"
 
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
+#include "rlvhandler.h"
+#include "rlvlocks.h"
+// [/RLVa:KB]
+
 #include "cofmgr.h"
 
 BOOL LLInventoryState::sWearNewClothing = FALSE;
@@ -269,10 +274,10 @@ BOOL get_is_item_worn(const LLInventoryItem *item)
 		return FALSE;
 
 	// Consider the item as worn if it has links in COF.
-	if (LLCOFMgr::instance().isLinkInCOF(item->getUUID()))
-	{
+	/* if (LLCOFMgr::instance().isLinkInCOF(item->getUUID()))
+	{   REMOVED due to advice from Kitty Barnett, looks like it WILL cause trouble on some grids -SG
 		return TRUE;
-	}
+	} */
 
 	switch(item->getType())
 	{
@@ -390,6 +395,14 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 		}
 	}
 
+// [RLVa:KB] - Checked: 2011-03-29 (RLVa-1.3.0g) | Modified: RLVa-1.3.0g
+	if ( (rlv_handler_t::isEnabled()) && 
+		 (RlvFolderLocks::instance().hasLockedFolder(RLV_LOCK_ANY)) && (!RlvFolderLocks::instance().canRemoveItem(id)) )
+	{
+		return FALSE;
+	}
+// [/RLVa:KB]
+
 	const LLInventoryObject *obj = model->getItem(id);
 	if (obj && obj->getIsLinkType())
 	{
@@ -417,6 +430,14 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 	{
 		return FALSE;
 	}
+
+// [RLVa:KB] - Checked: 2011-03-29 (RLVa-1.3.0g) | Modified: RLVa-1.3.0g
+	if ( ((rlv_handler_t::isEnabled()) && 
+		 (RlvFolderLocks::instance().hasLockedFolder(RLV_LOCK_ANY)) && (!RlvFolderLocks::instance().canRemoveFolder(id))) )
+	{
+		return FALSE;
+	}
+// [/RLVa:KB]
 
 	if (!isAgentAvatarValid()) return FALSE;
 
@@ -452,6 +473,13 @@ BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
 	{
 		return FALSE;
 	}
+
+// [RLVa:KB] - Checked: 2011-03-29 (RLVa-1.3.0g) | Modified: RLVa-1.3.0g
+	if ( (rlv_handler_t::isEnabled()) && (model == &gInventory) && (!RlvFolderLocks::instance().canRenameFolder(id)) )
+	{
+		return FALSE;
+	}
+// [/RLVa:KB]
 
 	LLViewerInventoryCategory* cat = model->getCategory(id);
 
@@ -626,6 +654,38 @@ bool LLFindWearables::operator()(LLInventoryCategory* cat,
 	}
 	return FALSE;
 }
+
+LLFindWearablesEx::LLFindWearablesEx(bool is_worn, bool include_body_parts)
+:	mIsWorn(is_worn)
+,	mIncludeBodyParts(include_body_parts)
+{}
+
+bool LLFindWearablesEx::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
+{
+	LLViewerInventoryItem *vitem = dynamic_cast<LLViewerInventoryItem*>(item);
+	if (!vitem) return false;
+
+	// Skip non-wearables.
+	if (!vitem->isWearableType() && vitem->getType() != LLAssetType::AT_OBJECT)
+	{
+		return false;
+	}
+
+	// Skip body parts if requested.
+	if (!mIncludeBodyParts && vitem->getType() == LLAssetType::AT_BODYPART)
+	{
+		return false;
+	}
+
+	// Skip broken links.
+	if (vitem->getIsBrokenLink())
+	{
+		return false;
+	}
+
+	return (bool) get_is_item_worn(item->getUUID()) == mIsWorn;
+}
+
 
 ///----------------------------------------------------------------------------
 /// LLAssetIDMatches 

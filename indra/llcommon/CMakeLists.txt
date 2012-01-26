@@ -15,6 +15,7 @@ include_directories(
     )
 
 set(llcommon_SOURCE_FILES
+	aiframetimer.cpp
 	imageids.cpp
 	indra_constants.cpp
     llapp.cpp
@@ -90,6 +91,7 @@ set(llcommon_SOURCE_FILES
 set(llcommon_HEADER_FILES
     CMakeLists.txt
 
+    aiframetimer.h
     aithreadsafe.h
     bitpack.h
     ctype_workaround.h

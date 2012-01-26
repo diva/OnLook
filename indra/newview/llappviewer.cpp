@@ -594,6 +594,9 @@ bool LLAppViewer::init()
 	//
 	LLFastTimer::reset();
 	
+	// We can call this early.
+	LLFrameTimer::global_initialization();
+
 	// initialize SSE options
 	LLVector4a::initClass();
 	// Need to do this initialization before we do anything else, since anything

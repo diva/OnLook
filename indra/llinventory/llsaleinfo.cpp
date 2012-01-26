@@ -30,8 +30,8 @@
  * $/LicenseInfo$
  */
 
-#include <iostream>
 #include "linden_common.h"
+#include <iostream>
 
 #include "llsaleinfo.h"
 

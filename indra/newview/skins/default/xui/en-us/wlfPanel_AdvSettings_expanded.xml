@@ -34,12 +34,12 @@
 	</text>
 	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" left="5" follows="left|top" height="18" width="189" max_chars="20" 
 		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Sky." />
-	<text bottom_delta="-17" follows="left|bottom" font="SansSerifSmall" height="16" left="5"
+	<text bottom_delta="-20" follows="left|bottom" font="SansSerifSmall" height="16" left="5"
 		name="cmd_line_text_7" width="189">
 		Windlight Water Preset:
 	</text>
 	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" left="5" follows="left|bottom" height="18" width="166" max_chars="20" 
 		mouse_opaque="true" allow_text_entry="false" tool_tip="WindLight Presets for your Water." />
-	<button bottom="0" height="22" label="" left="172" name="expand" scale_image="true" toggle="true"
+	<button bottom="1" height="22" label="" left="172" name="expand" scale_image="true" toggle="true"
 		tool_tip="Hide the Settings Panel" width="22" />
 </panel>

@@ -44,19 +44,22 @@
 
 #include <windows.h>
 
-namespace {
-	inline DWORD getpid() {
-		return GetCurrentProcessId();
-	}
+static U32 getPID() {
+	return GetCurrentProcessId();
 }
 
-bool isProcessAlive(U32 pid)
+static bool isProcessAlive(U32 pid)
 {
 	return (bool) GetProcessVersion((DWORD)pid);
 }
 
 #else   //Everyone Else
-bool isProcessAlive(U32 pid)
+
+static U32 getPID() {
+	return getpid();
+}
+
+static bool isProcessAlive(U32 pid)
 {   
 	return (bool) kill( (pid_t)pid, 0);
 }
@@ -71,7 +74,7 @@ class LLPidLockFile
 			mAutosave(false),
 			mSaving(false),
 			mWaiting(false),
-			mPID(getpid()),
+			mPID(getPID()),
 			mNameTable(NULL),
 			mClean(true)
 		{

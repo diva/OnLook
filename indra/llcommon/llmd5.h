@@ -134,4 +134,7 @@ private:
 LL_COMMON_API bool operator==(const LLMD5& a, const LLMD5& b);
 LL_COMMON_API bool operator!=(const LLMD5& a, const LLMD5& b);
 
+LL_COMMON_API bool operator==(const LLMD5& a, const LLMD5& b);
+LL_COMMON_API bool operator!=(const LLMD5& a, const LLMD5& b);
+
 #endif // LL_LLMD5_H

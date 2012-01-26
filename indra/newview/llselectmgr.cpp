@@ -3719,7 +3719,20 @@ void LLSelectMgr::deselectAllIfTooFar()
 		return;
 	}
 
-// [RLVa:KB] - Checked: 2010-01-02 (RLVa-1.1.0l) | Modified: RLVa-1.1.0l
+// [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
+	if ( (!mSelectedObjects->isEmpty()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ))) )
+	{
+		struct NotTransientOrEditable : public LLSelectedNodeFunctor
+		{
+			bool apply(LLSelectNode* pNode)
+			{
+				const LLViewerObject* pObj = pNode->getObject();
+				return (!pNode->isTransient()) && (pObj) && (!gRlvHandler.canEdit(pObj));
+ 			}
+ 		} f;
+ 		if (mSelectedObjects->getFirstRootNode(&f, TRUE))
+ 			deselectAll();
+ 	}
 #ifdef RLV_EXTENSION_CMD_INTERACT
 	// [Fall-back code] Don't allow an active selection (except for HUD attachments - see above) when @interact=n restricted
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT))

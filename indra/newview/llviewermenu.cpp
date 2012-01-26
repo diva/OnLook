@@ -1969,9 +1969,10 @@ class LLObjectOpen : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0b) | OK
+// [RLVa:KB] - Checked: 2011-09-16 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
 		// TODO-RLVa: shouldn't we be checking for fartouch here as well?
-		if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+		const LLViewerObject* pObj = LLSelectMgr::getInstance()->getSelection()->getPrimaryObject();
+		if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canEdit(pObj)) ) 
 		{
 			return true;
 		}
@@ -2059,9 +2060,13 @@ bool toggle_build_mode()
 		}
 
 // [RLVa:KB] - Checked: 2009-07-05 (RLVa-1.0.0b)
-		if ( (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (LLSelectMgr::getInstance()) )
+		bool fRlvCanEdit = (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ));
+		if (!fRlvCanEdit)
 		{
-			LLSelectMgr::getInstance()->deselectAll();
+			LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+			RlvSelectIsEditable f;
+			if ((hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) != NULL))
+				LLSelectMgr::getInstance()->deselectAll();
 		}
 // [/RLVa:KB]
 
@@ -2167,9 +2172,13 @@ class LLObjectEdit : public view_listener_t
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g) | Modified: RLVa-0.2.0f
 		if (rlv_handler_t::isEnabled())
 		{
-			if (gRlvHandler.hasBehaviour(RLV_BHVR_EDIT))
+			bool fRlvCanEdit = (!gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) && (!gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ));
+			if (!fRlvCanEdit)
 			{
-				return true;	// Can't edit any object under @edit=n
+				LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+				RlvSelectIsEditable f;
+				if ((hSel.notNull()) && ((hSel->getFirstRootNode(&f, TRUE)) != NULL))
+					return true;	// Can't edit any object under @edit=n
 			}
 			else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH)) &&
 			          (SELECT_TYPE_WORLD == LLSelectMgr::getInstance()->getSelection()->getSelectType()) &&

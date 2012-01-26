@@ -775,9 +775,8 @@ Options:
   -p | --project=NAME   set the root project name. (Doesn't effect makefiles)
                         
 Commands:
-  build      configure and build default target
-  clean      delete all build directories, does not affect sources
-  configure  configure project by running cmake (default command if none given)
+  build           configure and build default target
+  clean           delete all build directories, does not affect sources
   configure       configure project by running cmake (default if none given)
   printbuilddirs  print the build directory that will be used
 

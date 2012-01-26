@@ -775,7 +775,7 @@ char* LLPrivateMemoryPool::LLMemoryBlock::allocate()
 void  LLPrivateMemoryPool::LLMemoryBlock::freeMem(void* addr) 
 {
 	//bit index
-	U32 idx = ((U32)addr - (U32)mBuffer - mDummySize) / mSlotSize ;
+	U32 idx = (static_cast<U32>((char*)addr - mBuffer) - mDummySize) / mSlotSize ;
 
 	U32* bits = &mUsageBits ;
 	if(idx >= 32)
@@ -957,7 +957,7 @@ char* LLPrivateMemoryPool::LLMemoryChunk::allocate(U32 size)
 
 void LLPrivateMemoryPool::LLMemoryChunk::freeMem(void* addr)
 {	
-	U32 blk_idx = getPageIndex((U32)addr) ;
+	U32 blk_idx = getPageIndex((char*)addr);
 	LLMemoryBlock* blk = (LLMemoryBlock*)(mMetaBuffer + blk_idx * sizeof(LLMemoryBlock)) ;
 	blk = blk->mSelf ;
 
@@ -982,7 +982,7 @@ bool LLPrivateMemoryPool::LLMemoryChunk::empty()
 
 bool LLPrivateMemoryPool::LLMemoryChunk::containsAddress(const char* addr) const
 {
-	return (U32)mBuffer <= (U32)addr && (U32)mBuffer + mBufferSize > (U32)addr ;
+	return (size_t)mBuffer <= (size_t)addr && (size_t)mBuffer + mBufferSize > (size_t)addr ;
 }
 
 //debug use
@@ -1339,9 +1339,9 @@ void LLPrivateMemoryPool::LLMemoryChunk::addToAvailBlockList(LLMemoryBlock* blk)
 	return ;
 }
 
-U32 LLPrivateMemoryPool::LLMemoryChunk::getPageIndex(U32 addr)
+U32 LLPrivateMemoryPool::LLMemoryChunk::getPageIndex(char const* addr)
 {
-	return (addr - (U32)mDataBuffer) / mMinBlockSize ;
+	return static_cast<U32>(addr - mDataBuffer) / mMinBlockSize ;
 }
 
 //for mAvailBlockList
@@ -1679,7 +1679,7 @@ void LLPrivateMemoryPool::removeChunk(LLMemoryChunk* chunk)
 
 U16 LLPrivateMemoryPool::findHashKey(const char* addr)
 {
-	return (((U32)addr) / CHUNK_SIZE) % mHashFactor ;
+	return (((size_t)addr) / CHUNK_SIZE) % mHashFactor ;
 }
 
 LLPrivateMemoryPool::LLMemoryChunk* LLPrivateMemoryPool::findChunk(const char* addr)

@@ -1578,7 +1578,7 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 			{
 				const LLUUID& old_item_id = getWearableItemID(type, 0);
 				if( (old_wearable->getAssetID() == new_wearable->getAssetID()) &&
-					(old_item_id == new_item->getUUID()) )
+					(old_item_id == new_item->getLinkedUUID()) )
 				{
 					lldebugs << "No change to wearable asset and item: " << LLWearableType::getTypeName( type ) << llendl;
 					continue;
@@ -1600,7 +1600,7 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 			}
 
 			new_wearable->setName(new_item->getName());
-			new_wearable->setItemID(new_item->getUUID());
+			new_wearable->setItemID(new_item->getLinkedUUID());
 
 			if (LLWearableType::getAssetType(type) == LLAssetType::AT_BODYPART)
 			{
@@ -1675,9 +1675,9 @@ void LLAgentWearables::setWearableItem( LLInventoryItem* new_item, LLWearable* n
 	LLWearableType::EType type = new_wearable->getType();
 
 
-// [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.0.0d)
+// [RLVa:KB] - Checked: 2009-07-07 (RLVa-1.1.4a)
 	// Block if: we can't wear on that layer; or we're already wearing something there we can't take off
-	if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canWear(type)) )
+	if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canWear(dynamic_cast<const LLViewerInventoryItem*>(new_item))) )
 	{
 		return;
 	}
@@ -1762,7 +1762,7 @@ void LLAgentWearables::setWearableFinal( LLInventoryItem* new_item, LLWearable* 
 		{
 			old_item_id = old_wearable->getItemID();
 		}
-		new_wearable->setItemID(new_item->getUUID());
+		new_wearable->setItemID(new_item->getLinkedUUID());
 		setWearable(type,0,new_wearable);
 
 		if (old_item_id.notNull())

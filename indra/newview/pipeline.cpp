@@ -2607,7 +2607,7 @@ void LLPipeline::processPartitionQ()
 void LLPipeline::markRebuild(LLSpatialGroup* group, BOOL priority)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
-	//assert_main_thread();
+	//llassert(is_main_thread());
 
 	if (group && !group->isDead() && group->mSpatialPartition)
 	{
@@ -2847,7 +2847,9 @@ void LLPipeline::stateSort(LLDrawable* drawablep, LLCamera& camera)
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f) | Modified: RLVa-1.2.1f
 		const LLViewerObject* pObj = drawablep->getVObj();
 		if ( (pObj) && (pObj->isSelected()) && 
-			 ((!rlv_handler_t::isEnabled()) || (!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) )
+			 ( (!rlv_handler_t::isEnabled()) || 
+			   ( ((!pObj->isHUDAttachment()) || (!gRlvAttachmentLocks.isLockedAttachment(pObj->getRootEdit()))) && 
+			     (gRlvHandler.canEdit(pObj)) ) ) )
 // [/RLVa:KB]
 		{
 			return;
