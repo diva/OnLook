@@ -34,6 +34,7 @@
 #include "llinventory.h"
 
 #include "lldbstrings.h"
+#include "llfasttimer.h"
 #include "llinventorydefines.h"
 #include "llxorcipher.h"
 #include "llsd.h"
@@ -1055,8 +1056,11 @@ void LLInventoryItem::asLLSD( LLSD& sd ) const
 	sd[INV_CREATION_DATE_LABEL] = (S32) mCreationDate;
 }
 
+LLFastTimer::DeclareTimer FTM_INVENTORY_SD_DESERIALIZE("Inventory SD Deserialize");
+
 bool LLInventoryItem::fromLLSD(const LLSD& sd)
 {
+	LLFastTimer _(FTM_INVENTORY_SD_DESERIALIZE);
 	mInventoryType = LLInventoryType::IT_NONE;
 	mAssetUUID.setNull();
 	std::string w;

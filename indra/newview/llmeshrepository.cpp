@@ -74,9 +74,6 @@
 
 #include <queue>
 
-LLFastTimer::DeclareTimer FTM_MESH_UPDATE("Mesh Update");
-LLFastTimer::DeclareTimer FTM_LOAD_MESH("Load Mesh");
-
 LLMeshRepository gMeshRepo;
 
 const U32 MAX_MESH_REQUESTS_PER_SECOND = 100;
@@ -1259,8 +1256,7 @@ void LLMeshUploadThread::DecompRequest::completed()
 void LLMeshUploadThread::preStart()
 {
 	//build map of LLModel refs to instances for callbacks
-	for (instance_list::iterator iter = mInstanceList.begin();
-		 iter != mInstanceList.end(); ++iter)
+	for (instance_list::iterator iter = mInstanceList.begin(); iter != mInstanceList.end(); ++iter)
 	{
 		mInstance[iter->mModel].push_back(*iter);
 	}
@@ -1603,9 +1599,6 @@ void LLMeshUploadThread::requestWholeModelFee()
 }
 #endif //MESH_IMPORT
 
-//static LLFastTimer::DeclareTimer FTM_NOTIFY_MESH_LOADED("Notify Loaded");
-//static LLFastTimer::DeclareTimer FTM_NOTIFY_MESH_UNAVAILABLE("Notify Unavailable");
-
 void LLMeshRepoThread::notifyLoadedMeshes()
 {//called via gMeshRepo.notifyLoadedMeshes(). mMutex already locked
 	while (!mLoadedQ.empty())
@@ -1718,8 +1711,7 @@ void LLMeshRepository::cacheOutgoingMesh(LLMeshUploadData& data, LLSD& header)
 	{
 		if (data.mModel[i].notNull())
 		{
-			LLPointer<LLVolume> volume = new LLVolume(volume_params,
-													  LLVolumeLODGroup::getVolumeScaleFromDetail(i));
+			LLPointer<LLVolume> volume = new LLVolume(volume_params, LLVolumeLODGroup::getVolumeScaleFromDetail(i));
 			volume->copyVolumeFaces(data.mModel[i]);
 			volume->setMeshAssetLoaded(TRUE);
 		}
@@ -2165,8 +2157,6 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 		return detail;
 	}
 
-	LLFastTimer t(FTM_LOAD_MESH); 
-
 	{
 		LLMutexLock lock(mMeshMutex);
 		//add volume to list of loading meshes
@@ -2236,11 +2226,6 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 
 	return detail;
 }
-
-//static LLFastTimer::DeclareTimer FTM_START_MESH_THREAD("Start Thread");
-static LLFastTimer::DeclareTimer FTM_LOAD_MESH_LOD("Load LOD");
-static LLFastTimer::DeclareTimer FTM_MESH_LOCK1("Lock 1");
-static LLFastTimer::DeclareTimer FTM_MESH_LOCK2("Lock 2");
 
 void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
@@ -2343,18 +2328,9 @@ void LLMeshRepository::notifyLoadedMeshes()
 		}
 	}
 
-	LLFastTimer t(FTM_MESH_UPDATE);
-
-	{
-		LLFastTimer t(FTM_MESH_LOCK1);
-		mMeshMutex->lock();	
-	}
-
-	{
-		LLFastTimer t(FTM_MESH_LOCK2);
-		mThread->mMutex->lock();
-	}
-	
+	mMeshMutex->lock();	
+	mThread->mMutex->lock();
+		
 	//popup queued error messages from background threads
 	while (!mUploadErrorQ.empty())
 	{
@@ -2406,7 +2382,6 @@ void LLMeshRepository::notifyLoadedMeshes()
 
 		while (!mPendingRequests.empty() && push_count > 0)
 		{
-			LLFastTimer t(FTM_LOAD_MESH_LOD);
 			LLMeshRepoThread::LODRequest& request = mPendingRequests.front();
 			mThread->loadMeshLOD(request.mMeshParams, request.mLOD);
 			mPendingRequests.erase(mPendingRequests.begin());
@@ -3553,18 +3528,18 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 		hull.mVertexBase = decomp.mHull[i][0].mV;
 		hull.mVertexStrideBytes = 12;
 
-		LLCDMeshData mesh;
 #if MESH_IMPORT
+		LLCDMeshData mesh;
 		LLCDResult res = LLCD_OK;
 		if (LLConvexDecomposition::getInstance() != NULL)
 		{
 			res = LLConvexDecomposition::getInstance()->getMeshFromHull(&hull, &mesh);
 		}
 		if (res == LLCD_OK)
-#endif //MESH_IMPORT
 		{
 			get_vertex_buffer_from_mesh(mesh, decomp.mMesh[i]);
 		}
+#endif //MESH_IMPORT
 	}
 
 	if (!decomp.mBaseHull.empty() && decomp.mBaseHullMesh.empty())
@@ -3574,18 +3549,18 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 		hull.mVertexBase = decomp.mBaseHull[0].mV;
 		hull.mVertexStrideBytes = 12;
 
-		LLCDMeshData mesh;
 #if MESH_IMPORT
+		LLCDMeshData mesh;
 		LLCDResult res = LLCD_OK;
 		if (LLConvexDecomposition::getInstance() != NULL)
 		{
 			res = LLConvexDecomposition::getInstance()->getMeshFromHull(&hull, &mesh);
 		}
 		if (res == LLCD_OK)
-#endif //MESH_IMPORT
 		{
 			get_vertex_buffer_from_mesh(mesh, decomp.mBaseHullMesh);
 		}
+#endif //MESH_IMPORT
 	}
 }
 
