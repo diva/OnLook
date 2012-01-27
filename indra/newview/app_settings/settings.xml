@@ -14261,6 +14261,17 @@
       <key>Value</key>
       <real>150000.0</real>
     </map>
+    <key>ExternalEditor</key>
+    <map>
+      <key>Comment</key>
+      <string>Path to program used to edit LSL scripts and XUI files, e.g.: /usr/bin/gedit --new-window "%s"</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>String</string>
+      <key>Value</key>
+      <string />
+    </map>
     <key>YawFromMousePosition</key>
     <map>
       <key>Comment</key>
