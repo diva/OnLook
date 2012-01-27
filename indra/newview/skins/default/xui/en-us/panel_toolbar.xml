@@ -4,7 +4,7 @@
      height="28" name="toolbar" width="1024">
     
   <string name="Redock Windows">Redock Windows</string>
-  <!-- panel bottom="0" filename="panel_bg_toolbar.xml" height="28" left="0" width="1024" /-->
+  <panel bottom="0" filename="panel_bg_toolbar.xml" height="28" left="0" width="1024"/>
   <layout_stack name="toolbar_stack" follows="left|right|bottom|top" bottom="2" left="1" width="1022" height="26" min_width="200" min_height="26"  orientation="horizontal" border_size="0">
     <icon image_name="spacer24.tga" width="2" height="2" follows="left|right" auto_resize="false" color="0,0,0,0" left="0" />
     <button bottom="0" font="SansSerif" height="24"
