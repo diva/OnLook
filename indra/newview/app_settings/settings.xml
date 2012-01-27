@@ -8746,6 +8746,66 @@
       <key>Value</key>
       <real>0.0</real>
     </map>
+  <key>ObjectCostHighThreshold</key>
+  <map>
+    <key>Comment</key>
+    <string>Threshold at which object cost is considered high (displayed in red).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>50.0</real>
+  </map>
+  <key>ObjectCostLowColor</key>
+  <map>
+    <key>Comment</key>
+    <string>Color for object with a low object cost.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Color4</string>
+    <key>Value</key>
+    <array>
+      <real>0.0</real>
+      <real>0.5</real>
+      <real>1.0</real>
+      <real>0.5</real>
+    </array>
+  </map>
+  <key>ObjectCostMidColor</key>
+  <map>
+    <key>Comment</key>
+    <string>Color for object with a medium object cost.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Color4</string>
+    <key>Value</key>
+    <array>
+      <real>1.0</real>
+      <real>0.75</real>
+      <real>0.0</real>
+      <real>0.65</real>
+    </array>
+  </map>
+  <key>ObjectCostHighColor</key>
+  <map>
+    <key>Comment</key>
+    <string>Color for object a high object cost.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Color4</string>
+    <key>Value</key>
+    <array>
+      <real>1.0</real>
+      <real>0.0</real>
+      <real>0.0</real>
+      <real>0.75</real>
+    </array>
+  </map>
+  
     <key>ParcelMediaAutoPlayEnable</key>
     <map>
       <key>Comment</key>
@@ -9583,6 +9643,88 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+  <key>RenderAvatarComplexityLimit</key>
+    <map>
+      <key>Comment</key>
+      <string>Max visual complexity of avatars in a scene</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>
+  <key>RenderComplexityColorMin</key>
+    <map>
+      <key>Comment</key>
+      <string>Max visual complexity of avatars in a scene</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>0.0</real>
+        <real>0.0</real>
+        <real>1.0</real>
+        <real>0.5</real>
+      </array>
+    </map>
+  <key>RenderComplexityColorMid</key>
+    <map>
+      <key>Comment</key>
+      <string>Max visual complexity of avatars in a scene</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>0.0</real>
+        <real>1.0</real>
+        <real>0.0</real>
+        <real>0.5</real>
+      </array>
+    </map>
+  <key>RenderComplexityColorMax</key>
+    <map>
+      <key>Comment</key>
+      <string>Max visual complexity of avatars in a scene</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Color4</string>
+      <key>Value</key>
+      <array>
+        <real>1.0</real>
+        <real>0.0</real>
+        <real>0.0</real>
+        <real>0.5</real>
+      </array>
+    </map>
+  <key>RenderComplexityThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>Only color objects higher than render threshold</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>
+  <key>RenderComplexityStaticMax</key>
+    <map>
+      <key>Comment</key>
+      <string>Sets a static max value for scaling of RenderComplexity 
+        display (-1 for dynamic scaling)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>
     <key>RenderAvatarLODFactor</key>
     <map>
       <key>Comment</key>
@@ -9847,6 +9989,17 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+  <key>RenderDebugNormalScale</key>
+  <map>
+    <key>Comment</key>
+    <string>Scale of normals in debug display.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.03</real>
+  </map>
   <key>RenderDebugPipeline</key>
     <map>
       <key>Comment</key>
@@ -11139,6 +11292,28 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+  <key>RenderAutoMuteByteLimit</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum bytes of attachments before an avatar is automatically visually muted (0 for no limit).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>RenderAutoMuteSurfaceAreaLimit</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum surface area of attachments before an avatar is automatically visually muted (0 for no limit).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
     <key>RenderUseShaderLOD</key>
     <map>
       <key>Comment</key>

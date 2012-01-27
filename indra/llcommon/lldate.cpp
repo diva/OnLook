@@ -43,6 +43,7 @@
 #include <iomanip>
 #include <sstream>
 
+#include "llfasttimer.h"
 #include "lltimer.h"
 #include "llstring.h"
 
@@ -94,9 +95,11 @@ std::string LLDate::asRFC1123() const
 	return toHTTPDateString (std::string ("%A, %d %b %Y %H:%M:%S GMT"));
 }
 
+LLFastTimer::DeclareTimer FT_DATE_FORMAT("Date Format");
 
 std::string LLDate::toHTTPDateString (std::string fmt) const
 {
+	LLFastTimer ft1(FT_DATE_FORMAT);
 	
 	time_t locSeconds = (time_t) mSecondsSinceEpoch;
 	struct tm * gmt = gmtime (&locSeconds);
@@ -105,7 +108,7 @@ std::string LLDate::toHTTPDateString (std::string fmt) const
 
 std::string LLDate::toHTTPDateString (tm * gmt, std::string fmt)
 {
-        // Return Epoch UTC date
+	LLFastTimer ft1(FT_DATE_FORMAT);
 
 	// avoid calling setlocale() unnecessarily - it's expensive.
 	static std::string prev_locale = "";
