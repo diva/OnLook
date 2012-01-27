@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel top="20" left="10" height="400" width="512" border="true" label="Vanity" name="ascvan">
   <tab_container label="Singularity Vanity" bottom="0" height="440" width="497" name="Ascent Vanity" tab_min_width="90">
-    <panel border="true" left="1" bottom="-190" height="180" width="500" label="General" name="General">
+    <panel border="true" left="1" bottom="-190" height="180" width="500" label="Main" name="General">
       <check_box bottom_delta="-25" control_name="AscentStoreSettingsPerAccount" follows="top" height="16" initial_value="true" label="Where applicable, save Vanity settings per-account." left="10" tool_tip="Saves settings per-account, allowing easier customization for alts." name="use_account_settings_check"/>
       <check_box bottom_delta="-20" control_name="AscentDisableTeleportScreens" follows="top" height="16" initial_value="true" label="Hide the Teleport progress screens" tool_tip="If checked, the viewer will hide the teleport progress screen, allowing you to continue to read IMs." name="disable_tp_screen_check"/>
       <check_box bottom_delta="-20" control_name="OptionPlayTpSound" follows="top" height="16" initial_value="true" label="Play the Teleport sound when moving between sims" tool_tip="Viewer will play the wooshing TP noise on teleport." name="tp_sound_check"/>
