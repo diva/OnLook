@@ -364,6 +364,7 @@ LLPipeline::LLPipeline() :
 	mOldRenderDebugMask(0),
 	mGroupQ1Locked(false),
 	mGroupQ2Locked(false),
+	mResetVertexBuffers(false),
 	mLastRebuildPool(NULL),
 	mAlphaPool(NULL),
 	mSkyPool(NULL),
@@ -588,6 +589,17 @@ void LLPipeline::resizeScreenTexture()
 		GLuint resY = gViewerWindow->getWorldViewHeightRaw();
 	
 		allocateScreenBuffer(resX,resY);
+	}
+}
+
+void LLPipeline::allocatePhysicsBuffer()
+{
+	GLuint resX = gViewerWindow->getWorldViewWidthRaw();
+	GLuint resY = gViewerWindow->getWorldViewHeightRaw();
+
+	if (mPhysicsDisplay.getWidth() != resX || mPhysicsDisplay.getHeight() != resY)
+	{
+		mPhysicsDisplay.allocate(resX, resY, GL_RGBA, TRUE, FALSE, LLTexUnit::TT_RECT_TEXTURE, FALSE);
 	}
 }
 
@@ -839,6 +851,7 @@ void LLPipeline::releaseScreenBuffers()
 {
 	mScreen.release();
 	mFXAABuffer.release();
+	mPhysicsDisplay.release();
 	mDeferredScreen.release();
 	mDeferredDepth.release();
 	mDeferredLight.release();
@@ -3993,6 +4006,69 @@ void LLPipeline::addTrianglesDrawn(S32 index_count, U32 render_type)
 	}
 }
 
+void LLPipeline::renderPhysicsDisplay()
+{
+	if (!hasRenderDebugMask(LLPipeline::RENDER_DEBUG_PHYSICS_SHAPES))
+	{
+		return;
+	}
+
+	allocatePhysicsBuffer();
+
+	gGL.flush();
+	mPhysicsDisplay.bindTarget();
+	glClearColor(0,0,0,1);
+	gGL.setColorMask(true, true);
+	mPhysicsDisplay.clear();
+	glClearColor(0,0,0,0);
+
+	gGL.setColorMask(true, false);
+
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gDebugProgram.bind();
+	}
+
+	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
+			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
+	{
+		LLViewerRegion* region = *iter;
+		for (U32 i = 0; i < LLViewerRegion::NUM_PARTITIONS; i++)
+		{
+			LLSpatialPartition* part = region->getSpatialPartition(i);
+			if (part)
+			{
+				if (hasRenderType(part->mDrawableType))
+				{
+					part->renderPhysicsShapes();
+				}
+			}
+		}
+	}
+
+	for (LLCullResult::bridge_list_t::const_iterator i = sCull->beginVisibleBridge(); i != sCull->endVisibleBridge(); ++i)
+	{
+		LLSpatialBridge* bridge = *i;
+		if (!bridge->isDead() && hasRenderType(bridge->mDrawableType))
+		{
+			gGL.pushMatrix();
+			gGL.multMatrix((F32*)bridge->mDrawable->getRenderMatrix().mMatrix);
+			bridge->renderPhysicsShapes();
+			gGL.popMatrix();
+		}
+	}
+
+	gGL.flush();
+
+	if (LLGLSLShader::sNoFixedFunction)
+	{
+		gDebugProgram.unbind();
+	}
+
+	mPhysicsDisplay.flush();
+}
+
+
 void LLPipeline::renderDebug()
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE);
@@ -4956,7 +5032,8 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 			light_state->setConstantAttenuation(0.f);
 			if (sRenderDeferred)
 			{
-				light_state->setLinearAttenuation(light_radius*1.5f);
+				F32 size = light_radius*1.5f;
+				light_state->setLinearAttenuation(size*size);
 				light_state->setQuadraticAttenuation(light->getLightFalloff()*0.5f+1.f);
 			}
 			else
@@ -6034,16 +6111,16 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
-	U32 res_mod = RenderResolutionDivisor;//.get();	
+	//U32 res_mod = RenderResolutionDivisor;//.get();	
 
 	LLVector2 tc1(0,0);
 	LLVector2 tc2((F32) mScreen.getWidth()*2,
 				  (F32) mScreen.getHeight()*2);
 
-	if (res_mod > 1)
+	/*if (res_mod > 1)
 	{
 		tc2 /= (F32) res_mod;
-	}
+	}*/
 
 	LLFastTimer ftm(FTM_RENDER_BLOOM);
 	gGL.color4f(1,1,1,1);
@@ -6560,7 +6637,13 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				mFXAABuffer.bindTexture(0, channel);
 				gGL.getTexUnit(channel)->setTextureFilteringOption(LLTexUnit::TFO_BILINEAR);
 			}
-						
+			
+			gGLViewport[0] = gViewerWindow->getWorldViewRectRaw().mLeft;
+			gGLViewport[1] = gViewerWindow->getWorldViewRectRaw().mBottom;
+			gGLViewport[2] = gViewerWindow->getWorldViewRectRaw().getWidth();
+			gGLViewport[3] = gViewerWindow->getWorldViewRectRaw().getHeight();
+			glViewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
+
 			F32 scale_x = (F32) width/mFXAABuffer.getWidth();
 			F32 scale_y = (F32) height/mFXAABuffer.getHeight();
 			shader->uniform2f(LLShaderMgr::FXAA_TC_SCALE, scale_x, scale_y);
@@ -6580,10 +6663,10 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	}
 	else
 	{
-		if (res_mod > 1)
+		/*if (res_mod > 1)
 		{
 			tc2 /= (F32) res_mod;
-		}
+		}*/
 
 		U32 mask = LLVertexBuffer::MAP_VERTEX | LLVertexBuffer::MAP_TEXCOORD0 | LLVertexBuffer::MAP_TEXCOORD1;
 		LLPointer<LLVertexBuffer> buff = new LLVertexBuffer(mask, 0);
@@ -6649,6 +6732,45 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 	}
 
 	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+
+	if (hasRenderDebugMask(LLPipeline::RENDER_DEBUG_PHYSICS_SHAPES))
+	{
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gSplatTextureRectProgram.bind();
+		}
+
+		gGL.setColorMask(true, false);
+
+		LLVector2 tc1(0,0);
+		LLVector2 tc2((F32) gViewerWindow->getWorldViewWidthRaw()*2,
+				  (F32) gViewerWindow->getWorldViewHeightRaw()*2);
+
+		LLGLEnable blend(GL_BLEND);
+		gGL.color4f(1,1,1,0.75f);
+
+		gGL.getTexUnit(0)->bind(&mPhysicsDisplay);
+
+		gGL.begin(LLRender::TRIANGLES);
+		gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);
+		gGL.vertex2f(-1,-1);
+		
+		gGL.texCoord2f(tc1.mV[0], tc2.mV[1]);
+		gGL.vertex2f(-1,3);
+		
+		gGL.texCoord2f(tc2.mV[0], tc1.mV[1]);
+		gGL.vertex2f(3,-1);
+		
+		gGL.end();
+		gGL.flush();
+
+		if (LLGLSLShader::sNoFixedFunction)
+		{
+			gSplatTextureRectProgram.unbind();
+		}
+	}
+
+	
 	if (LLRenderTarget::sUseFBO)
 	{ //copy depth buffer from mScreen to framebuffer
 		LLRenderTarget::copyContentsToFramebuffer(mScreen, 0, 0, mScreen.getWidth(), mScreen.getHeight(), 
@@ -9094,7 +9216,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar)
 
 	assertInitialized();
 
-	BOOL muted = LLMuteList::getInstance()->isMuted(avatar->getID());
+	bool muted = avatar->isVisuallyMuted();		
 
 	pushRenderTypeMask();
 	

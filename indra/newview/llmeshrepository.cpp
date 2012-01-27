@@ -89,6 +89,9 @@ const S32 MAX_MESH_VERSION = 999;
 U32 LLMeshRepository::sBytesReceived = 0;
 U32 LLMeshRepository::sHTTPRequestCount = 0;
 U32 LLMeshRepository::sHTTPRetryCount = 0;
+U32 LLMeshRepository::sLODProcessing = 0;
+U32 LLMeshRepository::sLODPending = 0;
+
 U32 LLMeshRepository::sCacheBytesRead = 0;
 U32 LLMeshRepository::sCacheBytesWritten = 0;
 U32 LLMeshRepository::sPeakKbps = 0;
@@ -206,6 +209,12 @@ public:
 	LLMeshHeaderResponder(const LLVolumeParams& mesh_params)
 		: mMeshParams(mesh_params)
 	{
+		LLMeshRepoThread::sActiveHeaderRequests++;
+	}
+
+	~LLMeshHeaderResponder()
+	{
+		LLMeshRepoThread::sActiveHeaderRequests--;
 	}
 
 	virtual void completedRaw(U32 status, const std::string& reason,
@@ -225,6 +234,12 @@ public:
 	LLMeshLODResponder(const LLVolumeParams& mesh_params, S32 lod, U32 offset, U32 requested_bytes)
 		: mMeshParams(mesh_params), mLOD(lod), mOffset(offset), mRequestedBytes(requested_bytes)
 	{
+		LLMeshRepoThread::sActiveLODRequests++;
+	}
+
+	~LLMeshLODResponder()
+	{
+		LLMeshRepoThread::sActiveLODRequests--;
 	}
 
 	virtual void completedRaw(U32 status, const std::string& reason,
@@ -503,6 +518,7 @@ void LLMeshRepoThread::run()
 					mMutex->lock();
 					LODRequest req = mLODReqQ.front();
 					mLODReqQ.pop();
+					LLMeshRepository::sLODProcessing--;
 					mMutex->unlock();
 					if (fetchMeshLOD(req.mMeshParams, req.mLOD))
 					{
@@ -611,6 +627,7 @@ void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 		{
 			LLMutexLock lock(mMutex);
 			mLODReqQ.push(req);
+			LLMeshRepository::sLODProcessing++;
 		}
 	}
 	else
@@ -713,7 +730,6 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
 										   new LLMeshSkinInfoResponder(mesh_id, offset, size));
@@ -786,7 +802,6 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(http_url, headers, offset, size,
 										   new LLMeshDecompositionResponder(mesh_id, offset, size));
@@ -859,7 +874,6 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(http_url, headers, offset, size,
 										   new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
@@ -910,7 +924,6 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params)
 	std::string http_url = constructUrl(mesh_params.getSculptID());
 	if (!http_url.empty())
 	{
-		++sActiveHeaderRequests;
 		retval = true;
 		//grab first 4KB if we're going to bother with a fetch.  Cache will prevent future fetches if a full mesh fits
 		//within the first 4KB
@@ -976,7 +989,6 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				retval = true;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
@@ -1052,6 +1064,7 @@ bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* dat
 			{
 				LODRequest req(mesh_params, iter->second[i]);
 				mLODReqQ.push(req);
+				LLMeshRepository::sLODProcessing++;
 			}
 		}
 		mPendingLOD.erase(iter);
@@ -1725,7 +1738,6 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
 
-	LLMeshRepoThread::sActiveLODRequests--;
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
 	if (status < 200 || status > 400)
@@ -1942,7 +1954,6 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
-	LLMeshRepoThread::sActiveHeaderRequests--;
 	if (status < 200 || status > 400)
 	{
 		//llwarns
@@ -2385,6 +2396,7 @@ void LLMeshRepository::notifyLoadedMeshes()
 			LLMeshRepoThread::LODRequest& request = mPendingRequests.front();
 			mThread->loadMeshLOD(request.mMeshParams, request.mLOD);
 			mPendingRequests.erase(mPendingRequests.begin());
+			LLMeshRepository::sLODPending--;
 			push_count--;
 		}
 	}

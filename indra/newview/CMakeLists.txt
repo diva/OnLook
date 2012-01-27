@@ -371,6 +371,7 @@ set(viewer_SOURCE_FILES
     llparcelselection.cpp
     llpatchvertexarray.cpp
     llphysicsmotion.cpp
+    llphysicsshapebuilderutil.cpp
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
@@ -850,6 +851,7 @@ set(viewer_HEADER_FILES
     llparcelselection.h
     llpatchvertexarray.h
     llphysicsmotion.h
+    llphysicsshapebuilderutil.h
     llpolymesh.h
     llpolymorph.h
     llprefschat.h
