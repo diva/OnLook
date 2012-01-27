@@ -117,7 +117,7 @@ LLDir_Linux::LLDir_Linux()
 	mOSUserAppDir = "";
 	mLindenUserDir = "";
 
-	char path [32];	/* Flawfinder: ignore */ 
+	char path [MAX_PATH];	/* Flawfinder: ignore */
 
 	// *NOTE: /proc/%d/exe doesn't work on FreeBSD. But that's ok,
 	// because this is the linux implementation.
