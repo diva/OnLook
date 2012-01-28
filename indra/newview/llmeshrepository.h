@@ -464,15 +464,14 @@ private:
 
 class LLMeshRepository
 {
-private:
-	S32 mMeshUploadTimeOut ; //maximum time in seconds to execute an uploading request.
-
 public:
 
 	//metrics
 	static U32 sBytesReceived;
 	static U32 sHTTPRequestCount;
 	static U32 sHTTPRetryCount;
+	static U32 sLODPending;
+	static U32 sLODProcessing;
 	static U32 sCacheBytesRead;
 	static U32 sCacheBytesWritten;
 	static U32 sPeakKbps;

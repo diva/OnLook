@@ -46,7 +46,6 @@
 #include "llsurface.h"
 #include "llsurfacepatch.h"
 #include "llvosky.h"
-#include "llvotree.h"
 #include "llviewercamera.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
@@ -55,6 +54,7 @@
 #include "llworld.h"
 #include "lldir.h"
 #include "llxmltree.h"
+#include "llvotree.h"
 
 const S32 GRASS_MAX_BLADES =	32;
 const F32 GRASS_BLADE_BASE =	0.25f;			//  Width of grass at base
