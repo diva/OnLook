@@ -1393,8 +1393,20 @@ if (WINDOWS)
     else()
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
     endif()
-    
+
+if (FMOD)
+	if(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMOD_BINARY_DIR}/fmod.dll")
+	else(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "--extra_libraries=${FMOD_BINARY_DIR}/fmod.dll")
+	endif(MANIFEST_LIBRARIES)
+endif (FMOD)
 if (FMODEX)
+	if(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
+	else(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
+	endif(MANIFEST_LIBRARIES)
 	set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
 endif (FMODEX)
 
@@ -1463,6 +1475,7 @@ endif (FMODEX)
               --build=${CMAKE_CURRENT_BINARY_DIR}
               --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
               --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/touched.bat
+		  ${MANIFEST_LIBRARIES}
         DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 
