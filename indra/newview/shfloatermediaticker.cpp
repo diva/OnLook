@@ -101,7 +101,7 @@ void SHFloaterMediaTicker::updateTickerText() //called via draw.
 			if(artist.isDefined() && title.isDefined())
 				mLoadTimer.stop();
 			else if(dirty)
-				mLoadTimer.reset();
+				mLoadTimer.start();
 			else if(mLoadTimer.getStarted() && mLoadTimer.getElapsedTimeF64() > 10.f) //It has been 10 seconds.. give up.
 			{
 				if(!artist.isDefined())
