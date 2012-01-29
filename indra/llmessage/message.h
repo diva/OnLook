@@ -778,18 +778,7 @@ private:
 	LLMessagePollInfo						*mPollInfop;
 
 	U8	mEncodedRecvBuffer[MAX_BUFFER_SIZE];
-
-// Push current alignment to stack and set alignment to 1 byte boundary
-#pragma pack(push,1)
-
-	struct ReceiveBuffer_t
-	{
-		proxywrap_t header;
-		U8			buffer[MAX_BUFFER_SIZE];
-	} mTrueReceiveBuffer;
-
-#pragma pack(pop)   /* restore original alignment from stack */
-
+	U8	mTrueReceiveBuffer[MAX_BUFFER_SIZE];
 	S32	mTrueReceiveSize;
 
 	// Must be valid during decode

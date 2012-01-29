@@ -556,11 +556,11 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 		S32 acks = 0;
 		S32 true_rcv_size = 0;
 
-		U8* buffer = mTrueReceiveBuffer.buffer;
+		U8* buffer = mTrueReceiveBuffer;
 
 		if(!faked_message)
 		{
-			mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer.buffer);
+			mTrueReceiveSize = mPacketRing.receivePacket(mSocket, (char *)mTrueReceiveBuffer);
 			receive_size = mTrueReceiveSize;
 			mLastSender = mPacketRing.getLastSender();
 			mLastReceivingIF = mPacketRing.getLastReceivingInterface();
@@ -635,7 +635,7 @@ BOOL LLMessageSystem::checkMessages( S64 frame_count, bool faked_message, U8 fak
 				for(S32 i = 0; i < acks; ++i)
 				{
 					true_rcv_size -= sizeof(TPACKETID);
-					memcpy(&mem_id, &buffer[true_rcv_size], /* Flawfinder: ignore*/
+					memcpy(&mem_id, &mTrueReceiveBuffer[true_rcv_size], /* Flawfinder: ignore*/
 					     sizeof(TPACKETID));
 					packet_id = ntohl(mem_id);
 					//LL_INFOS("Messaging") << "got ack: " << packet_id << llendl;
@@ -3405,7 +3405,7 @@ void LLMessageSystem::dumpPacketToLog()
 	{
 		S32 offset = cur_line_pos * 3;
 		snprintf(line_buffer + offset, sizeof(line_buffer) - offset,
-				 "%02x ", mTrueReceiveBuffer.buffer[i]);	/* Flawfinder: ignore */
+				 "%02x ", mTrueReceiveBuffer[i]);	/* Flawfinder: ignore */
 		cur_line_pos++;
 		if (cur_line_pos >= 16)
 		{

@@ -114,11 +114,21 @@ LLSocket::ptr_t LLSocket::create(EType type, U16 port)
 
 	if(STREAM_TCP == type)
 	{
-		status = apr_socket_create(&rv->mSocket, APR_INET, SOCK_STREAM, APR_PROTO_TCP, rv->mPool());
+		status = apr_socket_create(
+			&rv->mSocket, 
+			APR_INET,
+			SOCK_STREAM,
+			APR_PROTO_TCP,
+			rv->mPool());
 	}
 	else if(DATAGRAM_UDP == type)
 	{
-		status = apr_socket_create(&rv->mSocket, APR_INET, SOCK_DGRAM, APR_PROTO_UDP, rv->mPool());
+		status = apr_socket_create(
+			&rv->mSocket,
+			APR_INET,
+			SOCK_DGRAM,
+			APR_PROTO_UDP,
+			rv->mPool());
 	}
 	else
 	{
