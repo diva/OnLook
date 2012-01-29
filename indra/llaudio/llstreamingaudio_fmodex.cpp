@@ -372,7 +372,7 @@ LLAudioStreamManagerFMODEX::LLAudioStreamManagerFMODEX(FMOD::System *system, con
 	exinfo.cbsize = sizeof(exinfo);
 	exinfo.suggestedsoundtype = FMOD_SOUND_TYPE_MPEG;	//Hint to speed up loading.
 
-	FMOD_RESULT result = mSystem->createStream(url.c_str(), FMOD_2D | FMOD_NONBLOCKING, &exinfo, &mInternetStream);
+	FMOD_RESULT result = mSystem->createStream(url.c_str(), FMOD_2D | FMOD_NONBLOCKING | FMOD_IGNORETAGS, &exinfo, &mInternetStream);
 
 	if (result!= FMOD_OK)
 	{
