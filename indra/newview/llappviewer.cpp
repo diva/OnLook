@@ -2145,7 +2145,7 @@ bool LLAppViewer::initConfiguration()
 	if(clp.hasOption("disablecrashlogger"))
 	{
 		llwarns << "Crashes will be handled by system, stack trace logs and crash logger are both disabled" <<llendl;
-		sDisableCrashlogger=TRUE;
+		LLAppViewer::instance()->disableCrashlogger();
 	}
 
 	// Handle initialization from settings.
@@ -2731,7 +2731,7 @@ void LLAppViewer::handleViewerCrash()
 		abort();
 	}
 
-	if(pApp->sDisableCrashlogger==TRUE)
+	if (LLApp::isCrashloggerDisabled())
 	{
 		abort();
 	}

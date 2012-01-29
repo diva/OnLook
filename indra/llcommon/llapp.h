@@ -191,6 +191,11 @@ public:
 	//
 	virtual bool mainLoop() = 0; // Override for the application main loop.  Needs to at least gracefully notice the QUITTING state and exit.
 
+	//
+	// Crash logging
+	//
+	void disableCrashlogger();				// Let the OS handle the crashes
+	static bool isCrashloggerDisabled();	// Get the here above set value
 
 	//
 	// Application status
@@ -214,9 +219,6 @@ public:
 	//
 	void setErrorHandler(LLAppErrorHandler handler);
 	void setSyncErrorHandler(LLAppErrorHandler handler);
-
-	static BOOL sDisableCrashlogger; // Let the OS handle crashes for us.
-
 #if !LL_WINDOWS
 	//
 	// Child process handling (Unix only for now)
@@ -245,6 +247,7 @@ protected:
 	static void setStatus(EAppStatus status);		// Use this to change the application status.
 	static EAppStatus sStatus; // Reflects current application status
 	static BOOL sErrorThreadRunning; // Set while the error thread is running
+	static BOOL sDisableCrashlogger; // Let the OS handle crashes for us.
 
 #if !LL_WINDOWS
 	static LLAtomicU32* sSigChildCount; // Number of SIGCHLDs received.
