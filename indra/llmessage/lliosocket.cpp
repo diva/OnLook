@@ -244,6 +244,7 @@ LLSocket::LLSocket() :
 	mPool(LLThread::tldata().mRootPool),
 	mPort(PORT_INVALID)
 {
+		LLMemType m1(LLMemType::MTYPE_IO_TCP);
 }
 
 LLSocket::~LLSocket()

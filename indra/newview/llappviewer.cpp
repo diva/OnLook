@@ -630,6 +630,8 @@ bool LLAppViewer::init()
 	initMaxHeapSize() ;
 
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
+
+    mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
     LLCurl::initClass(gSavedSettings.getBOOL("CurlUseMultipleThreads"));
@@ -1023,8 +1025,10 @@ static LLFastTimer::DeclareTimer FTM_PUMP_SERVICE("Service");
 static LLFastTimer::DeclareTimer FTM_SERVICE_CALLBACK("Callback");
 static LLFastTimer::DeclareTimer FTM_AGENT_AUTOPILOT("Autopilot");
 static LLFastTimer::DeclareTimer FTM_AGENT_UPDATE("Update");
+
 bool LLAppViewer::mainLoop()
 {
+	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	mMainloopTimeout = new LLWatchdogTimeout();
 	// *FIX:Mani - Make this a setting, once new settings exist in this branch.
 	
@@ -1042,7 +1046,6 @@ bool LLAppViewer::mainLoop()
 	LLVoiceChannel::initClass();
 	LLVoiceClient::init(gServicePump);
 				
-	LLMemType mt1(LLMemType::MTYPE_MAIN);
 	LLTimer frameTimer,idleTimer;
 	LLTimer debugTime;
 	LLFrameTimer memCheckTimer;
@@ -1115,6 +1118,7 @@ bool LLAppViewer::mainLoop()
 					&& !gViewerWindow->getShowProgress()
 					&& !gFocusMgr.focusLocked())
 				{
+					LLMemType mjk(LLMemType::MTYPE_JOY_KEY);
 					joystick->scanJoystick();
 					gKeyboard->scanKeyboard();
 					if(isCrouch)
@@ -1134,6 +1138,7 @@ bool LLAppViewer::mainLoop()
 
 					if (gAres != NULL && gAres->isInitialized())
 					{
+						LLMemType mt_ip(LLMemType::MTYPE_IDLE_PUMP);
 						pingMainloopTimeout("Main:ServicePump");				
 						LLFastTimer t4(FTM_PUMP);
 						{
@@ -1188,6 +1193,7 @@ bool LLAppViewer::mainLoop()
 
 			// Sleep and run background threads
 			{
+				LLMemType mt_sleep(LLMemType::MTYPE_SLEEP);
 				LLFastTimer t2(FTM_SLEEP);
 				static const LLCachedControl<bool> run_multiple_threads("RunMultipleThreads",false);
 
@@ -3707,6 +3713,7 @@ static LLFastTimer::DeclareTimer FTM_VLMANAGER("VL Manager");
 ///////////////////////////////////////////////////////
 void LLAppViewer::idle()
 {
+	LLMemType mt_idle(LLMemType::MTYPE_IDLE);
 	pingMainloopTimeout("Main:Idle");
 	
 	// Update frame timers
@@ -4287,6 +4294,7 @@ static LLFastTimer::DeclareTimer FTM_DYNAMIC_THROTTLE("Dynamic Throttle");
 static LLFastTimer::DeclareTimer FTM_CHECK_REGION_CIRCUIT("Check Region Circuit");
 void LLAppViewer::idleNetwork()
 {
+	LLMemType mt_in(LLMemType::MTYPE_IDLE_NETWORK);
 	pingMainloopTimeout("idleNetwork");
 
 	gObjectList.mNumNewObjects = 0;
