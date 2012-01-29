@@ -36,4 +36,5 @@
 	<VertexShaderEnable value="TRUE"/>
 	<!--NO SHADERS-->
 	<WindLightUseAtmosShaders value="FALSE"/>
+  <RenderAvatarVP value="TRUE"/>
 </settings>
