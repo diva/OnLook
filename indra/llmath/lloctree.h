@@ -90,8 +90,8 @@ public:
 	typedef LLOctreeTraveler<T>									oct_traveler;
 	typedef LLTreeTraveler<T>									tree_traveler;
 	typedef typename std::set<LLPointer<T> >					element_list;
-	typedef typename std::set<LLPointer<T> >::iterator			element_iter;
-	typedef typename std::set<LLPointer<T> >::const_iterator	const_element_iter;
+	typedef typename element_list::iterator						element_iter;
+	typedef typename element_list::const_iterator	const_element_iter;
 	typedef typename std::vector<LLTreeListener<T>*>::iterator	tree_listener_iter;
 	typedef typename std::vector<LLOctreeNode<T>* >				child_list;
 	typedef LLTreeNode<T>		BaseType;
@@ -123,6 +123,8 @@ public:
 		{
 			mOctant = ((oct_node*) mParent)->getOctant(mCenter);
 		}
+
+		mElementCount = 0;
 
 		clearChildren();
 	}
@@ -229,11 +231,11 @@ public:
 	void accept(oct_traveler* visitor)				{ visitor->visit(this); }
 	virtual bool isLeaf() const						{ return mChild.empty(); }
 	
-	U32 getElementCount() const						{ return mData.size(); }
+	U32 getElementCount() const						{ return mElementCount; }
 	element_list& getData()							{ return mData; }
 	const element_list& getData() const				{ return mData; }
 	
-	U32 getChildCount()	const						{ return mChild.size(); }
+	U32 getChildCount()	const						{ return mChildCount; }
 	oct_node* getChild(U32 index)					{ return mChild[index]; }
 	const oct_node* getChild(U32 index) const		{ return mChild[index]; }
 	child_list& getChildren()						{ return mChild; }
@@ -321,6 +323,8 @@ public:
 
 				mData.insert(data);
 				BaseType::insert(data);
+
+				mElementCount = mData.size();
 				return true;
 			}
 			else
@@ -356,6 +360,8 @@ public:
 				{
 					mData.insert(data);
 					BaseType::insert(data);
+
+					mElementCount = mData.size();
 					return true;
 				}
 
@@ -409,6 +415,7 @@ public:
 		if (mData.find(data) != mData.end())
 		{	//we have data
 			mData.erase(data);
+			mElementCount = mData.size();
 			notifyRemoval(data);
 			checkAlive();
 			return true;
@@ -446,6 +453,7 @@ public:
         if (mData.find(data) != mData.end())
 		{
 			mData.erase(data);
+			mElementCount = mData.size();
 			notifyRemoval(data);
 			llwarns << "FOUND!" << llendl;
 			checkAlive();
@@ -462,7 +470,7 @@ public:
 	void clearChildren()
 	{
 		mChild.clear();
-
+		mChildCount = 0;
 		U32* foo = (U32*) mChildMap;
 		foo[0] = foo[1] = 0xFFFFFFFF;
 	}
@@ -522,9 +530,10 @@ public:
 		}
 #endif
 
-		mChildMap[child->getOctant()] = (U8) mChild.size();
+		mChildMap[child->getOctant()] = mChildCount;
 
 		mChild.push_back(child);
+		++mChildCount;
 		child->setParent(this);
 
 		if (!silent)
@@ -553,12 +562,13 @@ public:
 			delete mChild[index];
 		}
 		mChild.erase(mChild.begin() + index);
+		--mChildCount;
 
 		//rebuild child map
 		U32* foo = (U32*) mChildMap;
 		foo[0] = foo[1] = 0xFFFFFFFF;
 
-		for (U32 i = 0; i < mChild.size(); ++i)
+		for (U32 i = 0; i < mChildCount; ++i)
 		{
 			mChildMap[mChild[i]->getOctant()] = i;
 		}
@@ -611,8 +621,10 @@ protected:
 
 	child_list mChild;
 	U8 mChildMap[8];
+	U32 mChildCount;
 
 	element_list mData;
+	U32 mElementCount;
 		
 };
 

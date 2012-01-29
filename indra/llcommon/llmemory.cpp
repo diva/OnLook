@@ -162,7 +162,6 @@ void LLMemory::logMemoryInfo(BOOL update)
 	if(update)
 	{
 		updateMemoryInfo() ;
-		LLPrivateMemoryPoolManager::getInstance()->updateStatistics() ;
 	}
 
 	llinfos << "Current allocated physical memory(KB): " << sAllocatedMemInKB << llendl ;
