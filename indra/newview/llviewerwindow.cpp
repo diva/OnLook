@@ -105,6 +105,7 @@
 #include "llfloatereditui.h" // HACK JAMESDEBUG for ui editor
 #include "llfloaterland.h"
 #include "llfloaterinspect.h"
+#include "llfloaterinventory.h"
 #include "llfloaternamedesc.h"
 #include "llfloaterpreference.h"
 #include "llfloatersnapshot.h"
@@ -121,7 +122,6 @@
 #include "llimagebmp.h"
 #include "llimagej2c.h"
 #include "llimageworker.h"
-#include "llinventoryview.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"

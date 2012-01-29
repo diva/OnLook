@@ -2381,6 +2381,25 @@ void LLView::registerEventListener(std::string name, LLSimpleListener* function)
 
 }
 
+struct LLSignalListener : LLSimpleListener
+{
+	LLSignalListener(LLView::event_signal_t::slot_type &cb)
+	{
+		mSignal.connect(cb);
+	}
+	/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
+	{
+		mSignal(event, userdata);
+		return true;
+	}
+	LLView::event_signal_t mSignal;
+};
+
+void LLView::registerEventListener(std::string name, event_signal_t::slot_type &cb)
+{
+	registerEventListener(name, new LLSignalListener(cb));
+}
+
 void LLView::deregisterEventListener(std::string name)
 {
 	dispatch_list_t::iterator itor = mDispatchList.find(name);

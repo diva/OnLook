@@ -1,5 +1,5 @@
 // <edit>
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llinventory.h"
 #include "lleventtimer.h"
 class LLBuildNewViewsScheduler : public LLEventTimer

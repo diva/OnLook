@@ -115,6 +115,7 @@
 #include "llfloaterchat.h"
 #include "llfloatergesture.h"
 #include "llfloaterhud.h"
+#include "llfloaterinventory.h"
 #include "llfloaterland.h"
 #include "llfloatertopobjects.h"
 #include "llfloatertos.h"
@@ -130,7 +131,7 @@
 #include "llimview.h" // for gIMMgr
 #include "llinventoryfunctions.h"
 #include "llinventorymodelbackgroundfetch.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llkeyboard.h"
 #include "llloginhandler.h"			// gLoginHandler, SLURL support
 #include "llpanellogin.h"
@@ -205,7 +206,6 @@
 #include "llagentlanguage.h"
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
-
 
 // <edit>
 #include "llpanellogin.h"

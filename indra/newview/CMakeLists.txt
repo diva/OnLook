@@ -298,7 +298,7 @@ set(viewer_SOURCE_FILES
     llinventorymodel.cpp
     llinventorymodelbackgroundfetch.cpp
     llinventoryobserver.cpp
-    llinventoryview.cpp
+    llinventorypanel.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
     lllocalinventory.cpp
@@ -357,6 +357,7 @@ set(viewer_SOURCE_FILES
     llpanellandobjects.cpp
     llpanellandoptions.cpp
     llpanellogin.cpp
+    llpanelmaininventory.cpp
     llpanelmorph.cpp
     llpanelmediahud.cpp
     llpanelmsgs.cpp
@@ -776,7 +777,7 @@ set(viewer_HEADER_FILES
     llinventorymodel.h
     llinventorymodelbackgroundfetch.h
     llinventoryobserver.h
-    llinventoryview.h
+    llinventorypanel.h
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
@@ -837,6 +838,7 @@ set(viewer_HEADER_FILES
     llpanellandoptions.h
     llpanelLCD.h
     llpanellogin.h
+    llpanelmaininventory.h
     llpanelmorph.h
     llpanelmediahud.h
     llpanelmsgs.h

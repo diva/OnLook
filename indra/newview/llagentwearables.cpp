@@ -40,7 +40,8 @@
 #include "llfolderview.h"
 #include "llgesturemgr.h"
 #include "llinventorybridge.h"
-#include "llinventoryview.h"
+#include "llfloaterinventory.h"
+#include "llinventorypanel.h"
 #include "llmd5.h"
 #include "llnotificationsutil.h"
 #include "lltexlayer.h"
@@ -51,6 +52,7 @@
 
 #include "cofmgr.h"
 #include "llfloatercustomize.h"
+
 
 // [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
 #include "rlvhandler.h"

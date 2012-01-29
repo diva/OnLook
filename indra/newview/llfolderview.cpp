@@ -35,12 +35,12 @@
 #include "llfolderview.h"
 
 #include "llcallbacklist.h"
+#include "llfloaterinventory.h"
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h" // *TODO: remove this once hack below gone.
 #include "llinventoryfilter.h"
 #include "llinventoryfunctions.h"
 #include "llinventorymodelbackgroundfetch.h"
-#include "llinventoryview.h"
 #include "llfoldertype.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"

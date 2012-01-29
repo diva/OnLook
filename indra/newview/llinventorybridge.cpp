@@ -34,7 +34,7 @@
 
 #include <utility> // for std::pair<>
 
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
@@ -60,6 +60,7 @@
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
+#include "llfloaterinventory.h"
 #include "llfloaterproperties.h"
 
 #include "llfloaterworldmap.h"

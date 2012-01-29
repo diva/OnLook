@@ -30,7 +30,7 @@
 #include "llagent.h"
 #include "llappviewer.h"
 #include "llcallbacklist.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llinventorymodel.h"
 #include "llviewercontrol.h"
 #include "llviewerinventory.h"

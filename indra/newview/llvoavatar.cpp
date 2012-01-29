@@ -54,12 +54,12 @@
 
 #include "llfirstuse.h"
 #include "llfloaterchat.h"
+#include "llfloaterinventory.h"
 #include "llheadrotmotion.h"
 
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llinventorybridge.h"
-#include "llinventoryview.h"
 #include "llinventoryfunctions.h"
 #include "llhudnametag.h"
 #include "llhudtext.h"				// for mText/mDebugText
