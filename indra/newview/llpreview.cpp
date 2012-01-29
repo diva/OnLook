@@ -34,6 +34,7 @@
 #include "stdenums.h"
 
 #include "llpreview.h"
+#include "llfloaterinventory.h"
 #include "lllineeditor.h"
 #include "llinventory.h"
 #include "llinventorydefines.h"
@@ -53,7 +54,6 @@
 #include "llagent.h"
 #include "llvoavatarself.h"
 #include "llselectmgr.h"
-#include "llinventoryview.h"
 #include "llviewerinventory.h"
 #include "llviewerassettype.h"
 

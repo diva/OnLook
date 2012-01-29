@@ -48,7 +48,7 @@
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
 #include "llinventorymodelbackgroundfetch.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
 #include "llui.h"
 #include "llviewerinventory.h"

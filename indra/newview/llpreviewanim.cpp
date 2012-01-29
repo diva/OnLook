@@ -34,9 +34,9 @@
 
 #include "llpreviewanim.h"
 #include "llbutton.h"
+#include "llfloaterinventory.h"
 #include "llresmgr.h"
 #include "llinventory.h"
-#include "llinventoryview.h"
 #include "llvoavatarself.h"
 #include "llagent.h"          // gAgent
 #include "llkeyframemotion.h"

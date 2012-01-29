@@ -171,6 +171,7 @@
 #include "llvovolume.h"
 #include "llflexibleobject.h" 
 #include "llvosurfacepatch.h"
+#include "llfloaterinventory.h"
 
 // includes for idle() idleShutdown()
 #include "floaterao.h"
@@ -187,8 +188,6 @@
 #include "llimview.h"
 #include "llviewerthrottle.h"
 #include "llparcel.h"
-
-#include "llinventoryview.h"
 
 #include "llcommandlineparser.h"
 #include "llprogressview.h"

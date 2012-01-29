@@ -42,7 +42,7 @@
 #include "llfoldervieweventlistener.h"
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llviewerinventory.h"
 #include "llpermissions.h"
 #include "llsaleinfo.h"

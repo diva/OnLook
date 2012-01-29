@@ -39,6 +39,7 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llfloaterinventory.h"
 #include "llviewercontrol.h"
 #include "llconsole.h"
 #include "llinventorymodel.h"
@@ -49,7 +50,7 @@
 #include "llinventorybridge.h"
 #include "llinventorydefines.h"
 #include "llinventorymodelbackgroundfetch.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 
 #include "llviewerregion.h"
 #include "llviewerobjectlist.h"

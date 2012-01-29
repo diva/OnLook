@@ -39,7 +39,7 @@
 #include "llbutton.h"
 #include "llfocusmgr.h"
 #include "llfoldervieweventlistener.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llinventorymodel.h"
 #include "llinventoryfunctions.h"
 #include "lllineeditor.h"

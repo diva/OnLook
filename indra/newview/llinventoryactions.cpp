@@ -34,7 +34,7 @@
 
 #include <utility> // for std::pair<>
 
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llpanelinventory.h"
 #include "llinventorybridge.h"
 
@@ -56,6 +56,7 @@
 #include "llfloateravatarinfo.h"
 #include "llfloaterchat.h"
 #include "llfloatercustomize.h"
+#include "llfloaterinventory.h"
 #include "llfloaterproperties.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
@@ -257,14 +258,7 @@ class LLResetFilter : public inventory_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLInventoryViewFinder *finder = mPtr->getFinder();
-		mPtr->getActivePanel()->getFilter()->resetDefault();
-		if (finder)
-		{
-			finder->updateElementsFromFilter();
-		}
-
-		mPtr->setFilterTextFromFilter();
+		mPtr->resetFilters();
 		return true;
 	}
 };

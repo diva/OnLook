@@ -43,12 +43,10 @@
 #include "llcachename.h"
 
 #include "llagent.h"			// for agent id
-#include "llalertdialog.h"
 #include "llcheckboxctrl.h"
-#include "llinventorymodel.h"	// for gInventory
 #include "llinventorydefines.h"
-#include "llinventoryview.h"
-#include "llinventoryicon.h"
+#include "llinventoryfunctions.h"
+#include "llinventorymodel.h"	// for gInventory
 #include "llnotificationsutil.h"
 #include "llselectmgr.h"
 #include "llscrolllistctrl.h"
@@ -284,7 +282,7 @@ void LLFloaterBuyContents::onClickBuy(void*)
 	// We may want to wear this item
 	if (sInstance->childGetValue("wear_check"))
 	{
-		LLInventoryView::sWearNewClothing = TRUE;
+		LLInventoryState::sWearNewClothing = TRUE;
 	}
 
 	// Put the items where we put new folders.

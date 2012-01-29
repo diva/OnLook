@@ -55,7 +55,7 @@
 #include "llagent.h"
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
 #include "lltexturectrl.h"
 #include "llscrolllistctrl.h"

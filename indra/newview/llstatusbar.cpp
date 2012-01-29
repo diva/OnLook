@@ -42,12 +42,12 @@
 #include "llfloaterbuycurrency.h"
 #include "llfloaterchat.h"
 #include "llfloaterdirectory.h"		// to spawn search
+#include "llfloaterinventory.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
 #include "llfloaterregioninfo.h"
 #include "llfloaterscriptdebug.h"
 #include "llhudicon.h"
-#include "llinventoryview.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"

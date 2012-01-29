@@ -35,8 +35,8 @@
 #include "llaudioengine.h"
 #include "llagent.h"          // gAgent
 #include "llbutton.h"
+#include "llfloaterinventory.h"
 #include "llinventory.h"
-#include "llinventoryview.h"
 #include "lllineeditor.h"
 #include "llpreviewsound.h"
 #include "llresmgr.h"
