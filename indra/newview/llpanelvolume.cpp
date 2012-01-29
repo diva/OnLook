@@ -44,6 +44,7 @@
 #include "llmaterialtable.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
+#include "lltrans.h"
 #include "llvolume.h"
 #include "m3math.h"
 #include "material_codes.h"
