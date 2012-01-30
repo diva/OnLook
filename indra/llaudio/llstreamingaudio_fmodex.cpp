@@ -74,7 +74,9 @@ LLStreamingAudio_FMODEX::LLStreamingAudio_FMODEX(FMOD::System *system) :
 {
 	// Number of milliseconds of audio to buffer for the audio card.
 	// Must be larger than the usual Second Life frame stutter time.
-	mSystem->setStreamBufferSize(200, FMOD_TIMEUNIT_MS);
+	const U32 buffer_seconds = 5;		//sec
+	const U32 estimated_bitrate = 128;	//kbit/sec
+	mSystem->setStreamBufferSize(estimated_bitrate * buffer_seconds * 128/*bytes/kbit*/, FMOD_TIMEUNIT_RAWBYTES);
 
 	// Here's where we set the size of the network buffer and some buffering 
 	// parameters.  In this case we want a network buffer of 16k, we want it 
