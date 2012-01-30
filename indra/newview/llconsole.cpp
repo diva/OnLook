@@ -160,7 +160,7 @@ void LLConsole::draw()
 	F32 skip_time = cur_time - mLinePersistTime;
 	F32 fade_time = cur_time - mFadeTime;
 
-	U32 max_lines = gSavedSettings.getS32("ConsoleMaxLines");
+	static const LLCachedControl<S32> max_lines("ConsoleMaxLines");
 	U32 num_lines=0;
 
 	paragraph_t::reverse_iterator paragraph_it;
@@ -170,7 +170,7 @@ void LLConsole::draw()
 	while (!mParagraphs.empty() && paragraph_it != mParagraphs.rend())
 	{
 		num_lines += (*paragraph_it)->mLines.size();
-		if(num_lines > max_lines 
+		if(num_lines > (U32)max_lines.get()
 			|| ( (mLinePersistTime > (F32)0.f) && ((*paragraph_it)->mAddTime - skip_time)/(mLinePersistTime - mFadeTime) <= (F32)0.f)) 
 		{							//All lines above here are done.  Lose them.
 			for (U32 i=0;i<paragraph_num;i++)
@@ -198,8 +198,10 @@ void LLConsole::draw()
 
 	LLUIImagePtr imagep = LLUI::getUIImage("rounded_square.tga");
 
-	F32 console_opacity = llclamp(gSavedSettings.getF32("ConsoleBackgroundOpacity"), 0.f, 1.f);
-	LLColor4 color = gColors.getColor("ConsoleBackground");
+	static const LLCachedControl<F32> console_background_opacity("ConsoleBackgroundOpacity");
+	F32 console_opacity = llclamp(console_background_opacity.get(), 0.f, 1.f);
+	static const LLCachedControl<LLColor4> console_background(gColors,"ConsoleBackground");
+	LLColor4 color = console_background;
 	color.mV[VALPHA] *= console_opacity;
 
 	F32 line_height = mFont->getLineHeight();

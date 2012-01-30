@@ -955,7 +955,8 @@ void LLPipeline::createGLBuffers()
 
 					//F32 sp = acosf(sa)/(1.f-spec);
 
-					sa = powf(sa, gSavedSettings.getF32("RenderSpecularExponent"));
+					static const LLCachedControl<F32> render_specular_exponent("RenderSpecularExponent");
+					sa = powf(sa, render_specular_exponent);
 					F32 a = acosf(sa*0.25f+0.75f);
 					F32 m = llmax(0.5f-spec*0.5f, 0.001f);
 					F32 t2 = tanf(a)/m;

@@ -125,7 +125,8 @@ void LLMemoryView::draw()
 	const S32 UPDATE_INTERVAL = 60;
 	const S32 MARGIN_AMT = 10; 
 	static S32 curUpdate = UPDATE_INTERVAL;
-    static LLColor4 s_console_color = gColors.getColor("ConsoleBackground");
+	static const LLCachedControl<LLColor4> console_background(gColors,"ConsoleBackground");
+    static LLColor4 s_console_color = console_background;
 
 	// setup update interval
 	if (curUpdate >= UPDATE_INTERVAL)
@@ -141,7 +142,8 @@ void LLMemoryView::draw()
 	setRect(LLRect().setLeftTopAndSize(getRect().mLeft, getRect().mTop, width, height));
 	
 	// setup window color
-	F32 console_opacity = llclamp(gSavedSettings.getF32("ConsoleBackgroundOpacity"), 0.f, 1.f);
+	static const LLCachedControl<F32> console_background_opacity("ConsoleBackgroundOpacity");
+	F32 console_opacity = llclamp(console_background_opacity.get(), 0.f, 1.f);
 	LLColor4 color = s_console_color;
 	color.mV[VALPHA] *= console_opacity;
 

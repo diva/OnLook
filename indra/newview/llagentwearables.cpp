@@ -564,7 +564,8 @@ BOOL LLAgentWearables::isWearableCopyable(LLWearableType::EType type, U32 index)
 
 BOOL LLAgentWearables::areWearablesLoaded() const
 {
-	if(gSavedSettings.getBOOL("RenderUnloadedAvatar"))
+	static const LLCachedControl<bool> rener_unloaded_avatar("RenderUnloadedAvatar");
+	if(rener_unloaded_avatar)
 		return TRUE;
 	return mWearablesLoaded;
 }

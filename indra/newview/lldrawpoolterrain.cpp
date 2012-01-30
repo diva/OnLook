@@ -128,7 +128,8 @@ U32 LLDrawPoolTerrain::getVertexDataMask()
 void LLDrawPoolTerrain::prerender()
 {
 	mVertexShaderLevel = LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_ENVIRONMENT);
-	sDetailMode = gSavedSettings.getS32("RenderTerrainDetail");
+	static const LLCachedControl<S32> render_terrain_detail("RenderTerrainDetail");
+	sDetailMode = render_terrain_detail;
 }
 
 void LLDrawPoolTerrain::beginRenderPass( S32 pass )
