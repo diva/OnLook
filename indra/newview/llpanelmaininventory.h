@@ -33,6 +33,7 @@
 
 #include "llfolderview.h"
 
+class LLInventoryViewFinder;
 class LLFolderViewItem;
 class LLInventoryPanel;
 class LLSaveFolderState;
