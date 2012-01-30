@@ -69,14 +69,14 @@
   <slider bottom="-135"      control_name="RenderFarClip"	  	  		  decimal_digits="0" height="16" increment="8" initial_val="160" label="Draw Distance:" label_width="101" left="215" max_val="1024" min_val="64" name="DrawDistance" width="262"/>
   <slider bottom_delta="-16" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
   <slider bottom_delta="-20" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
-  <text bottom_delta="-17" height="12" left="215" width="128" name="MeshDetailText">Mesh Detail:</text>
-  <slider bottom_delta="-18" control_name="RenderVolumeLODFactor" 		 increment="0.125" initial_val="160" label="  Objects:" label_width="79" max_val="2" min_val="0" name="ObjectMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderFlexTimeFactor"  		 increment="0.1" initial_val="160" label="  Flexiprims:" label_width="79" max_val="1" min_val="0" name="FlexibleMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderTreeLODFactor"	  		 increment="0.125" initial_val="160" label="  Trees:" label_width="79" max_val="1" min_val="0" name="TreeMeshDetail"   show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderAvatarLODFactor" 		 increment="0.125" initial_val="160" label="  Avatars:" label_width="79" max_val="1" min_val="0" name="AvatarMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" initial_val="160" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0"	   name="AvatarPhysicsDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderTerrainLODFactor"  	 increment="0.125" initial_val="160" label="  Terrain:" label_width="79" max_val="2" min_val="1"	   name="TerrainMeshDetail"   show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="WLSkyDetail"			  		  decimal_digits="0" increment="8" initial_val="160" label="  Sky:" label_width="79" max_val="128" min_val="16" name="SkyMeshDetail"   show_text="false" width="223"/>
+  <text bottom_delta="-17" height="12" left="215" name="MeshDetailText">Mesh Detail:</text>
+  <slider bottom_delta="-18" control_name="RenderVolumeLODFactor" increment="0.09375" label="  Objects:" label_width="79" max_val="2" min_val="0.5" name="ObjectMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderFlexTimeFactor" increment="0.1" label="  Flexiprims:" label_width="79" max_val="1" min_val="0" name="FlexibleMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderTreeLODFactor"	increment="0.125" label="  Trees:" label_width="79" max_val="1" min_val="0" name="TreeMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderAvatarLODFactor" increment="0.125" label="  Avatars:" label_width="79" max_val="1" min_val="0" name="AvatarMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderTerrainLODFactor" increment="0.125" label="  Terrain:" label_width="79" max_val="2" min_val="1" name="TerrainMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="WLSkyDetail"			  		  decimal_digits="0" increment="8" label="  Sky:" label_width="79" max_val="128" min_val="16" name="SkyMeshDetail"   show_text="false" width="223"/>
   <text bottom="-172" height="12" left="444" name="PostProcessText">Low</text>
   <text bottom_delta="-38" height="12" name="ObjectMeshDetailText">Low</text>
   <text bottom_delta="-20" height="12" name="FlexibleMeshDetailText">Low</text>
