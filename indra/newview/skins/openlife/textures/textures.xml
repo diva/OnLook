@@ -134,6 +134,9 @@
   <texture name="inv_item_object.tga"/>
   <texture name="inv_item_object_multi.tga"/>
   <texture name="inv_item_pants.tga"/>
+  <texture name="inv_item_mesh.tga"/>
+  <texture name="inv_item_physics.tga"/>
+  <texture name="inv_item_tattoo.tga"/>
   <texture name="inv_item_script.tga"/>
   <texture name="inv_item_shape.tga"/>
   <texture name="inv_item_shirt.tga"/>
