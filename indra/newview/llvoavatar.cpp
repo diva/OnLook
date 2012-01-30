@@ -4059,6 +4059,7 @@ void LLVOAvatar::slamPosition()
 
 bool LLVOAvatar::isVisuallyMuted()
 {
+	if(isSelf())return false;
 	static LLCachedControl<U32> max_attachment_bytes(gSavedSettings, "RenderAutoMuteByteLimit");
 	static LLCachedControl<F32> max_attachment_area(gSavedSettings, "RenderAutoMuteSurfaceAreaLimit");
 	
@@ -4917,8 +4918,8 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 
 	if (pass == AVATAR_RENDER_PASS_SINGLE)
 	{
-
-		const bool should_alpha_mask = shouldAlphaMask();
+		bool is_muted = isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
+		const bool should_alpha_mask = !is_muted && shouldAlphaMask();
 		LLGLState test(GL_ALPHA_TEST, should_alpha_mask);
 		
 		if (should_alpha_mask && !LLGLSLShader::sNoFixedFunction)
@@ -4933,19 +4934,19 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 			{
 				if (isTextureVisible(TEX_HEAD_BAKED) || mIsDummy)
 				{
-					num_indices += mMeshLOD[MESH_ID_HEAD]->render(mAdjustedPixelArea, TRUE, mIsDummy);
+					num_indices += mMeshLOD[MESH_ID_HEAD]->render(mAdjustedPixelArea, TRUE, mIsDummy || is_muted);
 					first_pass = FALSE;
 				}
 			}
 			if (isTextureVisible(TEX_UPPER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_UPPER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				num_indices += mMeshLOD[MESH_ID_UPPER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
 				first_pass = FALSE;
 			}
 			
 			if (isTextureVisible(TEX_LOWER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_LOWER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				num_indices += mMeshLOD[MESH_ID_LOWER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
 				first_pass = FALSE;
 			}
 		}
