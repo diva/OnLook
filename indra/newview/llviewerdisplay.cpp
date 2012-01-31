@@ -1063,7 +1063,8 @@ void render_hud_attachments()
 		hud_cam.setAxes(LLVector3(1,0,0), LLVector3(0,1,0), LLVector3(0,0,1));
 		LLViewerCamera::updateFrustumPlanes(hud_cam, TRUE);
 
-		bool render_particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES) && gSavedSettings.getBOOL("RenderHUDParticles");
+		static const LLCachedControl<bool> render_hud_particles("RenderHUDParticles");
+		bool render_particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES) && render_hud_particles;
 		
 		//only render hud objects
 		gPipeline.pushRenderTypeMask();
@@ -1407,7 +1408,8 @@ void render_ui_3d()
 	}
 
 	// Coordinate axes
-	if (gSavedSettings.getBOOL("ShowAxes"))
+	static const LLCachedControl<bool> show_axes("ShowAxes");
+	if (show_axes)
 	{
 		draw_axes();
 	}

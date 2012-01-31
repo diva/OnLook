@@ -2240,7 +2240,8 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 
 void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
-	LLMeshRepoThread::sMaxConcurrentRequests = gSavedSettings.getU32("MeshMaxConcurrentRequests");
+	static const LLCachedControl<U32> max_concurrent_requests("MeshMaxConcurrentRequests");
+	LLMeshRepoThread::sMaxConcurrentRequests = max_concurrent_requests;
 
 #if MESH_IMPORT
 	//clean up completed upload threads
@@ -3580,7 +3581,8 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 bool LLMeshRepository::meshUploadEnabled()
 {
 	LLViewerRegion *region = gAgent.getRegion();
-	if(gSavedSettings.getBOOL("MeshEnabled") &&
+	static const LLCachedControl<bool> mesh_enabled("MeshEnabled");
+	if(mesh_enabled &&
 	   region)
 	{
 		return region->meshUploadEnabled();
@@ -3591,7 +3593,8 @@ bool LLMeshRepository::meshUploadEnabled()
 bool LLMeshRepository::meshRezEnabled()
 {
 	LLViewerRegion *region = gAgent.getRegion();
-	if(gSavedSettings.getBOOL("MeshEnabled") && 
+	static const LLCachedControl<bool> mesh_enabled("MeshEnabled");
+	if(mesh_enabled && 
 	   region)
 	{
 		return region->meshRezEnabled();

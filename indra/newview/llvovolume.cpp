@@ -821,7 +821,7 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 	
 	if (is404)
 	{
-		setIcon(LLViewerTextureManager::getFetchedTextureFromFile("icons/Inv_Mesh.png", TRUE, LLViewerTexture::BOOST_UI));
+		setIcon(LLViewerTextureManager::getFetchedTextureFromFile("inv_item_mesh.tga", TRUE, LLViewerTexture::BOOST_UI));
 		//render prim proxy when mesh loading attempts give up
 		volume_params.setSculptID(LLUUID::null, LL_SCULPT_TYPE_NONE);
 

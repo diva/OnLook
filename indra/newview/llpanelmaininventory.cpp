@@ -56,10 +56,10 @@ const S32 INV_FINDER_WIDTH = 160;
 const S32 INV_FINDER_HEIGHT = 408;
 
 //BOOL LLInventoryView::sOpenNextNewItem = FALSE;
-class LLInventoryViewFinder : public LLFloater
+class LLFloaterInventoryFinder : public LLFloater
 {
 public:
-	LLInventoryViewFinder(const std::string& name,
+	LLFloaterInventoryFinder(const std::string& name,
 						const LLRect& rect,
 						LLInventoryView* inventory_view);
 	virtual void draw();
@@ -116,6 +116,7 @@ LLInventoryView::LLInventoryView(const std::string& name,
 
 void LLInventoryView::init(LLInventoryModel* inventory)
 {
+	LLMemType mt(LLMemType::MTYPE_INVENTORY_VIEW_INIT);
 	// Callbacks
 	init_inventory_actions(this);
 
@@ -497,7 +498,7 @@ void LLInventoryView::updateSortControls()
 
 void LLInventoryView::resetFilters()
 {
-	LLInventoryViewFinder *finder = getFinder();
+	LLFloaterInventoryFinder *finder = getFinder();
 	getActivePanel()->getFilter()->resetDefault();
 	if (finder)
 	{
@@ -531,7 +532,7 @@ void LLInventoryView::onClearSearch(void* user_data)
 
 	if (finder)
 	{
-		LLInventoryViewFinder::selectAllTypes(finder);
+		LLFloaterInventoryFinder::selectAllTypes(finder);
 	}
 
 	// re-open folders that were initially open
@@ -678,7 +679,7 @@ void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 
 
 	// Force the filters window to update itself, if it's open.
-	LLInventoryViewFinder* finder = view->getFinder();
+	LLFloaterInventoryFinder* finder = view->getFinder();
 	if( finder )
 	{
 		finder->updateElementsFromFilter();
@@ -897,7 +898,7 @@ void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
 	LLInventoryView* self = (LLInventoryView*) userdata;
 	LLInventoryFilter* filter;
 
-	LLInventoryViewFinder *finder = self->getFinder();
+	LLFloaterInventoryFinder *finder = self->getFinder();
 	// Find my index
 	self->mActivePanel = (LLInventoryPanel*)self->childGetVisibleTab("inventory filter tabs");
 
@@ -1016,10 +1017,11 @@ void LLInventoryView::setFilterTextFromFilter()
 
 void LLInventoryView::toggleFindOptions()
 {
+	LLMemType mt(LLMemType::MTYPE_INVENTORY_VIEW_TOGGLE);
 	LLFloater *floater = getFinder();
 	if (!floater)
 	{
-		LLInventoryViewFinder * finder = new LLInventoryViewFinder(std::string("Inventory Finder"),
+		LLFloaterInventoryFinder * finder = new LLFloaterInventoryFinder(std::string("Inventory Finder"),
 										LLRect(getRect().mLeft - INV_FINDER_WIDTH, getRect().mTop, getRect().mLeft, getRect().mTop - INV_FINDER_HEIGHT),
 										this);
 		mFinderHandle = finder->getHandle();
@@ -1039,15 +1041,15 @@ void LLInventoryView::toggleFindOptions()
 	}
 }
 ///----------------------------------------------------------------------------
-/// LLInventoryViewFinder
+/// LLFloaterInventoryFinder
 ///----------------------------------------------------------------------------
-LLInventoryViewFinder* LLInventoryView::getFinder() 
+LLFloaterInventoryFinder* LLInventoryView::getFinder() 
 { 
-	return (LLInventoryViewFinder*)mFinderHandle.get();
+	return (LLFloaterInventoryFinder*)mFinderHandle.get();
 }
 
 
-LLInventoryViewFinder::LLInventoryViewFinder(const std::string& name,
+LLFloaterInventoryFinder::LLFloaterInventoryFinder(const std::string& name,
 						const LLRect& rect,
 						LLInventoryView* inventory_view) :
 	LLFloater(name, rect, std::string("Filters"), RESIZE_NO,
@@ -1061,7 +1063,7 @@ LLInventoryViewFinder::LLInventoryViewFinder(const std::string& name,
 	updateElementsFromFilter();
 }
 
-BOOL LLInventoryViewFinder::postBuild()
+BOOL LLFloaterInventoryFinder::postBuild()
 {
 	childSetAction("All", selectAllTypes, this);
 	childSetAction("None", selectNoTypes, this);
@@ -1082,9 +1084,9 @@ BOOL LLInventoryViewFinder::postBuild()
 }
 
 
-void LLInventoryViewFinder::onCheckSinceLogoff(LLUICtrl *ctrl, void *user_data)
+void LLFloaterInventoryFinder::onCheckSinceLogoff(LLUICtrl *ctrl, void *user_data)
 {
-	LLInventoryViewFinder *self = (LLInventoryViewFinder *)user_data;
+	LLFloaterInventoryFinder *self = (LLFloaterInventoryFinder *)user_data;
 	if (!self) return;
 
 	bool since_logoff= self->childGetValue("check_since_logoff");
@@ -1096,9 +1098,9 @@ void LLInventoryViewFinder::onCheckSinceLogoff(LLUICtrl *ctrl, void *user_data)
 	}	
 }
 
-void LLInventoryViewFinder::onTimeAgo(LLUICtrl *ctrl, void *user_data)
+void LLFloaterInventoryFinder::onTimeAgo(LLUICtrl *ctrl, void *user_data)
 {
-	LLInventoryViewFinder *self = (LLInventoryViewFinder *)user_data;
+	LLFloaterInventoryFinder *self = (LLFloaterInventoryFinder *)user_data;
 	if (!self) return;
 	
 	bool since_logoff=true;
@@ -1109,13 +1111,13 @@ void LLInventoryViewFinder::onTimeAgo(LLUICtrl *ctrl, void *user_data)
 	self->childSetValue("check_since_logoff", since_logoff);
 }
 
-void LLInventoryViewFinder::changeFilter(LLInventoryFilter* filter)
+void LLFloaterInventoryFinder::changeFilter(LLInventoryFilter* filter)
 {
 	mFilter = filter;
 	updateElementsFromFilter();
 }
 
-void LLInventoryViewFinder::updateElementsFromFilter()
+void LLFloaterInventoryFinder::updateElementsFromFilter()
 {
 	if (!mFilter)
 		return;
@@ -1146,8 +1148,9 @@ void LLInventoryViewFinder::updateElementsFromFilter()
 	mSpinSinceDays->set((F32)(hours / 24));
 }
 
-void LLInventoryViewFinder::draw()
+void LLFloaterInventoryFinder::draw()
 {
+	LLMemType mt(LLMemType::MTYPE_INVENTORY_DRAW);
 	U32 filter = 0xffffffff;
 	BOOL filtered_by_all_types = TRUE;
 
@@ -1253,7 +1256,7 @@ void LLInventoryViewFinder::draw()
 	LLFloater::draw();
 }
 
-void  LLInventoryViewFinder::onClose(bool app_quitting)
+void  LLFloaterInventoryFinder::onClose(bool app_quitting)
 {
 	if (mInventoryView) mInventoryView->getControl("Inventory.ShowFilters")->setValue(FALSE);
 	// If you want to reset the filter on close, do it here.  This functionality was
@@ -1268,26 +1271,26 @@ void  LLInventoryViewFinder::onClose(bool app_quitting)
 }
 
 
-BOOL LLInventoryViewFinder::getCheckShowEmpty()
+BOOL LLFloaterInventoryFinder::getCheckShowEmpty()
 {
 	return childGetValue("check_show_empty");
 }
 
-BOOL LLInventoryViewFinder::getCheckSinceLogoff()
+BOOL LLFloaterInventoryFinder::getCheckSinceLogoff()
 {
 	return childGetValue("check_since_logoff");
 }
 
-void LLInventoryViewFinder::onCloseBtn(void* user_data)
+void LLFloaterInventoryFinder::onCloseBtn(void* user_data)
 {
-	LLInventoryViewFinder* finderp = (LLInventoryViewFinder*)user_data;
+	LLFloaterInventoryFinder* finderp = (LLFloaterInventoryFinder*)user_data;
 	finderp->close();
 }
 
 // static
-void LLInventoryViewFinder::selectAllTypes(void* user_data)
+void LLFloaterInventoryFinder::selectAllTypes(void* user_data)
 {
-	LLInventoryViewFinder* self = (LLInventoryViewFinder*)user_data;
+	LLFloaterInventoryFinder* self = (LLFloaterInventoryFinder*)user_data;
 	if(!self) return;
 
 	self->childSetValue("check_animation", TRUE);
@@ -1316,9 +1319,9 @@ void LLInventoryViewFinder::selectAllTypes(void* user_data)
 }
 
 //static
-void LLInventoryViewFinder::selectNoTypes(void* user_data)
+void LLFloaterInventoryFinder::selectNoTypes(void* user_data)
 {
-	LLInventoryViewFinder* self = (LLInventoryViewFinder*)user_data;
+	LLFloaterInventoryFinder* self = (LLFloaterInventoryFinder*)user_data;
 	if(!self) return;
 
 	/*

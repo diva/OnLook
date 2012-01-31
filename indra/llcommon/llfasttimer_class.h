@@ -248,6 +248,7 @@ public:
 
 	struct CurTimerData
 	{
+		CurTimerData() : mCurTimer(NULL),mFrameState(NULL),mChildTime(0) {}
 		LLFastTimer*	mCurTimer;
 		FrameState*		mFrameState;
 		U32				mChildTime;

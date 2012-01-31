@@ -40,6 +40,7 @@
 #endif
 
 #include "llerror.h"
+#include "llmemtype.h"
 #if LL_DEBUG
 inline void* ll_aligned_malloc( size_t size, int align )
 {

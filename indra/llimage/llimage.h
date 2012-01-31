@@ -35,7 +35,7 @@
 
 #include "lluuid.h"
 #include "llstring.h"
-#include "llmemory.h"
+#include "llmemtype.h"
 #include "llthread.h"
 #include "aithreadsafe.h"
 
@@ -162,7 +162,7 @@ private:
 
 	static LLPrivateMemoryPool* sPrivatePoolp ;
 public:
-	S16 mMemType; // debug
+	LLMemType::DeclareMemType& mMemType; // debug
 };
 
 // Raw representation of an image (used for textures, and other uncompressed formats

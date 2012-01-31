@@ -17,7 +17,9 @@ include_directories(
 set(llcommon_SOURCE_FILES
 	aiframetimer.cpp
 	imageids.cpp
-	indra_constants.cpp
+    indra_constants.cpp
+    llallocator.cpp
+    llallocator_heap_profile.cpp
     llapp.cpp
     llapr.cpp
     llaprpool.cpp
@@ -52,6 +54,7 @@ set(llcommon_SOURCE_FILES
     llmd5.cpp
     llmemory.cpp
     llmemorystream.cpp
+    llmemtype.cpp
     llmetrics.cpp
     llmortician.cpp
     lloptioninterface.cpp
@@ -101,6 +104,8 @@ set(llcommon_HEADER_FILES
     linden_common.h
     linked_lists.h
     llaccountingcost.h
+    llallocator.h
+    llallocator_heap_profile.h
     llagentconstants.h
     llavatarname.h
     llapp.h
