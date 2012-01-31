@@ -11380,17 +11380,6 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
-  <key>RenderUseStreamVBO</key>
-  <map>
-    <key>Comment</key>
-    <string>Use VBO's for stream buffers</string>
-    <key>Persist</key>
-    <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
 	<key>RenderPreferStreamDraw</key>
 	<map>
 		<key>Comment</key>
