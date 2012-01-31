@@ -92,6 +92,7 @@ void process_generic_message(LLMessageSystem* msg, void**)
 	//This needs to be handled by a dispatcher really, but I'm not sure where is the best place to put it
 	if (method == "Windlight")
 	{	
+#if 0
 		//Meta7 WindLight packet
 		//We are delivering with an agentID of NULL_KEY so as to be
 		//friendly and not trigger a warning for unsupporting clients.
@@ -192,6 +193,7 @@ void process_generic_message(LLMessageSystem* msg, void**)
 				wl_param_mgr->loadPreset( "LightShare-CurrentRegion",true);	
 			}
 		}
+#endif
 	}
 	else if (agent_id != gAgent.getID())
 	{

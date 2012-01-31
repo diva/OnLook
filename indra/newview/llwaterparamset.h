@@ -48,7 +48,8 @@ class LLWaterParamSet
 	friend class LLWaterParamManager;
 
 public:
-	std::string mName;	
+	std::string mName;
+	LLUUID mInventoryID;
 	
 private:
 

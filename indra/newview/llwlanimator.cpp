@@ -2,31 +2,25 @@
  * @file llwlanimator.cpp
  * @brief Implementation for the LLWLAnimator class.
  *
- * $LicenseInfo:firstyear=2007&license=viewergpl$
- * 
- * Copyright (c) 2007-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -36,15 +30,24 @@
 #include "llsky.h"
 #include "pipeline.h"
 #include "llwlparammanager.h"
+#include "llwaterparammanager.h"
 
-LLWLAnimator::LLWLAnimator() : mStartTime(0), mDayRate(1), mDayTime(0),
-	mIsRunning(FALSE), mUseLindenTime(false)
+F64 LLWLAnimator::INTERP_TOTAL_SECONDS = 3.f;
+
+LLWLAnimator::LLWLAnimator() : mStartTime(0.f), mDayRate(1.f), mDayTime(0.f),
+							mIsRunning(FALSE), mIsInterpolating(FALSE), mIsInterpolatingSky(FALSE),
+							mTimeType(TIME_LINDEN), mInterpStartTime(), mInterpEndTime()
 {
-	mDayTime = 0;
+	mInterpBeginWL = new LLWLParamSet();
+	mInterpEndWL = new LLWLParamSet();
+	mInterpBeginWater = new LLWaterParamSet();
+	mInterpEndWater = new LLWaterParamSet();
 }
 
 void LLWLAnimator::update(LLWLParamSet& curParams)
 {
+	//llassert(mUseLindenTime != mUseLocalTime);
+
 	F64 curTime;
 	curTime = getDayTime();
 
@@ -108,9 +111,53 @@ void LLWLAnimator::update(LLWLParamSet& curParams)
 		weight = 1;
 	}
 
+	if(mIsInterpolating)
+	{
+		// *TODO_JACOB: this is kind of laggy.  Not sure why.  The part that lags is the curParams.mix call, and none of the other mixes.  It works, though.
+		clock_t current = clock();
+		if(current >= mInterpEndTime)
+		{
+			if (mIsInterpolatingSky)
+			{
+				deactivate();
+				// FIRE-3245: Some settings do not get fully mixed properly (possibly due to value extremes)
+				// at the end of the interp cycle, force the end settings to get applied
+				curParams.setAll(mInterpEndWL->getAll());
+			}
+			mIsInterpolating = false;
+			mIsInterpolatingSky = false;
+			return;
+		}
+
+		
+		if (mIsInterpolatingSky)
+		{
+			weight = (current - mInterpStartTime) / (INTERP_TOTAL_SECONDS * CLOCKS_PER_SEC);
+			curParams.mix(*mInterpBeginWL, *mInterpEndWL, weight);
+		}
+		else
+		{
+		
+			// determine moving target for final interpolation value
+			// *TODO: this will not work with lazy loading of sky presets.
+			LLWLParamSet buf = LLWLParamSet();
+			buf.setAll(LLWLParamManager::getInstance()->mParamList[mFirstIt->second].getAll());	// just give it some values, otherwise it has no params to begin with (see comment in constructor)
+			buf.mix(LLWLParamManager::getInstance()->mParamList[mFirstIt->second], LLWLParamManager::getInstance()->mParamList[mSecondIt->second], weight);	// mix to determine moving target for interpolation finish (as below)
+
+			// mix from previous value to moving target
+			weight = (current - mInterpStartTime) / (INTERP_TOTAL_SECONDS * CLOCKS_PER_SEC);
+			curParams.mix(*mInterpBeginWL, buf, weight);
+		}
+
+		// mix water
+		LLWaterParamManager::getInstance()->mCurParams.mix(*mInterpBeginWater, *mInterpEndWater, weight);
+	}
+	else
+	{
 	// do the interpolation and set the parameters
-	curParams.mix(LLWLParamManager::getInstance()->mParamList[mFirstIt->second], 
-		LLWLParamManager::getInstance()->mParamList[mSecondIt->second], weight);
+		// *TODO: this will not work with lazy loading of sky presets.
+		curParams.mix(LLWLParamManager::getInstance()->mParamList[mFirstIt->second], LLWLParamManager::getInstance()->mParamList[mSecondIt->second], weight);
+	}
 }
 
 F64 LLWLAnimator::getDayTime()
@@ -119,8 +166,7 @@ F64 LLWLAnimator::getDayTime()
 	{
 		return mDayTime;
 	}
-
-	if(mUseLindenTime)
+	else if(mTimeType == TIME_LINDEN)
 	{
 		F32 phase = gSky.getSunPhase() / F_PI;
 
@@ -140,6 +186,10 @@ F64 LLWLAnimator::getDayTime()
 		}
 
 		return mDayTime;
+	}
+	else if(mTimeType == TIME_LOCAL)
+	{
+		return getLocalTime();
 	}
 
 	// get the time;
@@ -176,7 +226,7 @@ void LLWLAnimator::setDayTime(F64 dayTime)
 }
 
 
-void LLWLAnimator::setTrack(std::map<F32, std::string>& curTrack,
+void LLWLAnimator::setTrack(std::map<F32, LLWLParamKey>& curTrack,
 							F32 dayRate, F64 dayTime, bool run)
 {
 	mTimeTrack = curTrack;
@@ -184,4 +234,104 @@ void LLWLAnimator::setTrack(std::map<F32, std::string>& curTrack,
 	setDayTime(dayTime);
 
 	mIsRunning = run;
+}
+
+void LLWLAnimator::startInterpolation(const LLSD& targetWater)
+{
+	mInterpBeginWL->setAll(LLWLParamManager::getInstance()->mCurParams.getAll());
+	mInterpBeginWater->setAll(LLWaterParamManager::getInstance()->mCurParams.getAll());
+	
+	mInterpStartTime = clock();
+	mInterpEndTime = mInterpStartTime + clock_t(INTERP_TOTAL_SECONDS) * CLOCKS_PER_SEC;
+
+	// Don't set any ending WL -- this is continuously calculated as the animator updates since it's a moving target
+	mInterpEndWater->setAll(targetWater);
+
+	mIsInterpolating = true;
+}
+
+void LLWLAnimator::startInterpolationSky(const LLSD& targetSky)
+{
+	mInterpEndWL->setAll(targetSky);
+
+	mIsInterpolatingSky = true;
+}
+
+std::string LLWLAnimator::timeToString(F32 curTime)
+{
+	S32 hours;
+	S32 min;
+	bool isPM = false;
+
+	// get hours and minutes
+	hours = (S32) (24.0 * curTime);
+	curTime -= ((F32) hours / 24.0f);
+	min = llround(24.0f * 60.0f * curTime);
+
+	// handle case where it's 60
+	if(min == 60) 
+	{
+		hours++;
+		min = 0;
+	}
+
+	// set for PM
+	if(hours >= 12 && hours < 24)
+	{
+		isPM = true;
+	}
+
+	// convert to non-military notation
+	if(hours >= 24) 
+	{
+		hours = 12;
+	} 
+	else if(hours > 12) 
+	{
+		hours -= 12;
+	} 
+	else if(hours == 0) 
+	{
+		hours = 12;
+	}
+
+	// make the string
+	std::stringstream newTime;
+	newTime << hours << ":";
+	
+	// double 0
+	if(min < 10) 
+	{
+		newTime << 0;
+	}
+	
+	// finish it
+	newTime << min << " ";
+	if(isPM) 
+	{
+		newTime << "PM";
+	} 
+	else 
+	{
+		newTime << "AM";
+	}
+
+	return newTime.str();
+}
+
+F64 LLWLAnimator::getLocalTime()
+{
+	char buffer[9];
+	time_t rawtime;
+	struct tm* timeinfo;
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+	strftime(buffer, 9, "%H:%M:%S", timeinfo);
+	std::string timeStr(buffer);
+
+	F64 tod = ((F64)atoi(timeStr.substr(0,2).c_str())) / 24.f +
+			  ((F64)atoi(timeStr.substr(3,2).c_str())) / 1440.f + 
+			  ((F64)atoi(timeStr.substr(6,2).c_str())) / 86400.f;
+	return tod;
 }

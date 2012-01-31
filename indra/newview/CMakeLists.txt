@@ -85,7 +85,9 @@ set(viewer_SOURCE_FILES
     floaterao.cpp
     floatervoicelicense.cpp
     cofmgr.cpp
-    ascentdaycyclemanager.cpp
+	lldaycyclemanager.cpp
+	llenvmanager.cpp
+	llwlhandlers.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
     ascentprefschat.cpp
@@ -563,7 +565,9 @@ set(viewer_HEADER_FILES
     floaterao.h
     floatervoicelicense.h
     cofmgr.h
-    ascentdaycyclemanager.h
+	lldaycyclemanager.h
+	llenvmanager.h
+	llwlhandlers.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
     ascentprefschat.h

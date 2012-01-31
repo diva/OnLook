@@ -3815,6 +3815,7 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	//Reset the windlight profile to default
 	//LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
 	//LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
+	/*
 	LLWLParamSet wl_backup;
 	if(LLWLParamManager::getInstance()->getParamSet("LightShare-Backup", wl_backup)) {
 		LLWLParamManager::getInstance()->propagateParameters();
@@ -3824,7 +3825,7 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	if(LLWaterParamManager::getInstance()->getParamSet("LightShare-Backup", backup)) {
 		LLWaterParamManager::getInstance()->propagateParameters();
 		LLWaterParamManager::getInstance()->removeParamSet("LightShare-Backup", true);
-	}
+	}*/
 
 	// now, use the circuit info to tell simulator about us!
 	LL_INFOS("Messaging") << "process_teleport_finish() Enabling "

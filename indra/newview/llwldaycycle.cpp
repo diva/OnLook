@@ -2,31 +2,25 @@
  * @file llwldaycycle.cpp
  * @brief Implementation for the LLWLDayCycle class.
  *
- * $LicenseInfo:firstyear=2007&license=viewergpl$
- * 
- * Copyright (c) 2007-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -35,15 +29,13 @@
 #include "llwldaycycle.h"
 #include "llsdserialize.h"
 #include "llwlparammanager.h"
-#include "llweb.h"
+#include "llnotificationsutil.h"
 
 #include "llviewerwindow.h"
 
 #include <map>
 
-LLWLDayCycle::LLWLDayCycle() : 
-	mDayRate(120),
-	mName("Unnamed Cycle")
+LLWLDayCycle::LLWLDayCycle() : mDayRate(120)
 {
 }
 
@@ -52,112 +44,157 @@ LLWLDayCycle::~LLWLDayCycle()
 {
 }
 
-void LLWLDayCycle::loadDayCycle(const std::string & fileName)
+void LLWLDayCycle::loadDayCycle(const LLSD& day_data, LLWLParamKey::EScope scope)
 {
-	// clear the first few things
+	lldebugs << "Loading day cycle (day_data.size() = " << day_data.size() << ", scope = " << scope << ")" << llendl;
 	mTimeMap.clear();
 
-	// bugfix for SL-46920: preventing filenames that break stuff.
-	std::string escaped_filename = LLWeb::curlEscape(fileName);
-
-	escaped_filename += ".xml";
-
-	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", escaped_filename));
-	llinfos << "Loading Day Cycle preset from " << pathName << llendl;
-
-	llifstream day_cycle_xml;
-	day_cycle_xml.open(pathName.c_str());
-
-	// That failed, try loading from the users area instead.
-	if(!day_cycle_xml)
+	// add each key frame
+	for(S32 i = 0; i < day_data.size(); ++i)
 	{
-		pathName=gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", escaped_filename);
-		llinfos << "Loading User Day Cycle preset from " << pathName << llendl;
-		day_cycle_xml.open(pathName.c_str());
-	}
+		// make sure it's a two array
+		if(day_data[i].size() != 2)
+		{
+			continue;
+		}
+		
+		// check each param key exists in param manager
+		bool success;
+		LLWLParamSet pset;
+		LLWLParamKey frame = LLWLParamKey(day_data[i][1].asString(), scope);
+		success =
+			LLWLParamManager::getInstance()->getParamSet(frame, pset);
+		if(!success)
+		{
+			// *HACK: If loading region day cycle, try local sky presets as well.
+			// Local presets may be referenced by a region day cycle after
+			// it has been edited but the changes have not been uploaded.
+			if (scope == LLEnvKey::SCOPE_REGION)
+			{
+				frame.scope = LLEnvKey::SCOPE_LOCAL;
+				success = LLWLParamManager::getInstance()->getParamSet(frame, pset);
+			}
 
-	if (day_cycle_xml)
+			if (!success)
+			{
+				// alert the user
+				LLSD args;
+				args["SKY"] = day_data[i][1].asString();
+				LLNotificationsUtil::add("WLMissingSky", args, LLSD());
+				continue;
+			}
+		}
+		
+		// then add the keyframe
+		addKeyframe((F32)day_data[i][0].asReal(), frame);
+	}
+}
+
+void LLWLDayCycle::loadDayCycleFromFile(const std::string & fileName)
+{
+	loadDayCycle(loadCycleDataFromFile(fileName), LLWLParamKey::SCOPE_LOCAL);
+}
+
+/*static*/ LLSD LLWLDayCycle::loadCycleDataFromFile(const std::string & fileName)
+{
+	// *FIX: Cannot load user day cycles.
+	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, 
+		"windlight/days", fileName));
+
+	return loadDayCycleFromPath(pathName);
+}
+
+// static
+LLSD LLWLDayCycle::loadDayCycleFromPath(const std::string& file_path)
+{
+	LL_INFOS("Windlight") << "Loading DayCycle settings from " << file_path << LL_ENDL;
+	
+	llifstream day_cycle_xml(file_path);
+	if (day_cycle_xml.is_open())
 	{
 		// load and parse it
 		LLSD day_data(LLSD::emptyArray());
 		LLPointer<LLSDParser> parser = new LLSDXMLParser();
 		parser->parse(day_cycle_xml, day_data, LLSDSerialize::SIZE_UNLIMITED);
-		llinfos << "Loading day cycle into timeline..." << llendl;
-		// add each key
-		for(S32 i = 0; i < day_data.size(); ++i)
-		{
-			llinfos << "Loading value" << i << llendl;
-			// make sure it's a two array
-			if(day_data[i].size() != 2)
-			{
-				continue;
-			}
-			
-			// check each param name exists in param manager
-			bool success;
-			LLWLParamSet pset;
-			success = LLWLParamManager::getInstance()->getParamSet(day_data[i][1].asString(), pset);
-			if(!success)
-			{
-				// alert the user
-				LLSD args;
-				args["SKY"] = day_data[i][1].asString();
-				LLNotifications::instance().add("WLMissingSky", args, LLSD());
-				continue;
-			}
-			
-			// then add the key
-			addKey((F32)day_data[i][0].asReal(), day_data[i][1].asString());
-		}
-
 		day_cycle_xml.close();
+		return day_data;
 	}
-	else 
+	else
 	{
-		llwarns << "Can't find " << fileName << llendl;
-		return;
+		return LLSD();
 	}
 }
 
 void LLWLDayCycle::saveDayCycle(const std::string & fileName)
 {
-	
-	// bugfix for SL-46920: preventing filenames that break stuff.
-	std::string escaped_filename = LLWeb::curlEscape(fileName);
+	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", fileName));
+	//llinfos << "Saving WindLight settings to " << pathName << llendl;
 
-	escaped_filename += ".xml";
+	save(pathName);
+}
 
-	std::string pathName(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", escaped_filename));
-	llinfos << "Saving Day Cycle preset from " << pathName << llendl;
+void LLWLDayCycle::save(const std::string& file_path)
+{
+	LLSD day_data = asLLSD();
 
-	llofstream day_cycle_xml;
-	day_cycle_xml.open(pathName.c_str());
-
-	// That failed, try loading from the users area instead.
-	if(!day_cycle_xml)
-	{
-		pathName=gDirUtilp->getExpandedFilename( LL_PATH_USER_SETTINGS , "windlight/days", escaped_filename);
-		llinfos << "Saving User Day Cycle preset from " << pathName << llendl;
-		day_cycle_xml.open(pathName.c_str());
-	}
-
-	LLSD day_data(LLSD::emptyArray());
-
-	for(std::map<F32, std::string>::const_iterator mIt = mTimeMap.begin();
-		mIt != mTimeMap.end();
-		++mIt) 
-	{
-		LLSD key(LLSD::emptyArray());
-		key.append(mIt->first);
-		key.append(mIt->second);
-		day_data.append(key);
-	}
-
+	llofstream day_cycle_xml(file_path);
 	LLPointer<LLSDFormatter> formatter = new LLSDXMLFormatter();
 	formatter->format(day_data, day_cycle_xml, LLSDFormatter::OPTIONS_PRETTY);
 	day_cycle_xml.close();
 }
 
+LLSD LLWLDayCycle::asLLSD()
+{
+	LLSD day_data(LLSD::emptyArray());
+	for(std::map<F32, LLWLParamKey>::const_iterator mIt = mTimeMap.begin(); mIt != mTimeMap.end(); ++mIt) 
+	{
+		LLSD key(LLSD::emptyArray());
+		key.append(mIt->first);
+		key.append(mIt->second.name);
+		day_data.append(key);
+	}
+
+	lldebugs << "Dumping day cycle (" << mTimeMap.size() << ") to LLSD: " << day_data << llendl;
+	return day_data;
+}
+
+bool LLWLDayCycle::getSkyRefs(std::map<LLWLParamKey, LLWLParamSet>& refs) const
+{
+	bool result = true;
+	LLWLParamManager* wl_mgr = LLWLParamManager::getInstance();
+
+	refs.clear();
+	for (std::map<F32, LLWLParamKey>::const_iterator iter = mTimeMap.begin(); iter != mTimeMap.end(); ++iter)
+	{
+		const LLWLParamKey& key = iter->second;
+		if (!wl_mgr->getParamSet(key, refs[key]))
+		{
+			llwarns << "Cannot find sky [" << key.name << "] referenced by a day cycle" << llendl;
+			result = false;
+		}
+	}
+
+	return result;
+}
+
+bool LLWLDayCycle::getSkyMap(LLSD& sky_map) const
+{
+	std::map<LLWLParamKey, LLWLParamSet> refs;
+
+	if (!getSkyRefs(refs))
+	{
+		return false;
+	}
+
+	sky_map = LLWLParamManager::createSkyMap(refs);
+	return true;
+}
+
+void LLWLDayCycle::clearKeyframes()
+{
+	lldebugs << "Clearing key frames" << llendl;
+	mTimeMap.clear();
+}
 
 void LLWLDayCycle::clearKeys()
 {
@@ -166,6 +203,11 @@ void LLWLDayCycle::clearKeys()
 
 
 bool LLWLDayCycle::addKey(F32 newTime, const std::string & paramName)
+{
+	return addKeyframe(newTime, LLWLParamKey(paramName, LLWLParamKey::SCOPE_LOCAL));
+}
+
+bool LLWLDayCycle::addKeyframe(F32 newTime, LLWLParamKey frame)
 {
 	// no adding negative time
 	if(newTime < 0) 
@@ -176,48 +218,68 @@ bool LLWLDayCycle::addKey(F32 newTime, const std::string & paramName)
 	// if time not being used, add it and return true
 	if(mTimeMap.find(newTime) == mTimeMap.end()) 
 	{
-		mTimeMap.insert(std::pair<F32, std::string>(newTime, paramName));
+		mTimeMap.insert(std::pair<F32, LLWLParamKey>(newTime, frame));
+		lldebugs << "Adding key frame (" << newTime << ", " << frame.toLLSD() << ")" << llendl;
 		return true;
 	}
 
 	// otherwise, don't add, and return error
+	llwarns << "Error adding key frame (" << newTime << ", " << frame.toLLSD() << ")" << llendl;
 	return false;
 }
 
 bool LLWLDayCycle::changeKeyTime(F32 oldTime, F32 newTime)
 {
-	// just remove and add back
-	std::string name = mTimeMap[oldTime];
+	return changeKeyframeTime(oldTime, newTime);
+}
 
-	bool stat = removeKey(oldTime);
+bool LLWLDayCycle::changeKeyframeTime(F32 oldTime, F32 newTime)
+{
+	lldebugs << "Changing key frame time (" << oldTime << " => " << newTime << ")" << llendl;
+
+	// just remove and add back
+	LLWLParamKey frame = mTimeMap[oldTime];
+
+	bool stat = removeKeyframe(oldTime);
 	if(stat == false) 
 	{
+		lldebugs << "Failed to change key frame time (" << oldTime << " => " << newTime << ")" << llendl;
 		return stat;
 	}
 
-	return addKey(newTime, name);
+	return addKeyframe(newTime, frame);
 }
 
 bool LLWLDayCycle::changeKeyParam(F32 time, const std::string & name)
 {
+	return changeKeyframeParam(time, LLWLParamKey(name, LLWLParamKey::SCOPE_LOCAL));
+}
+
+bool LLWLDayCycle::changeKeyframeParam(F32 time, LLWLParamKey key)
+{
+	lldebugs << "Changing key frame param (" << time << ", " << key.toLLSD() << ")" << llendl;
+
 	// just remove and add back
 	// make sure param exists
 	LLWLParamSet tmp;
-	bool stat = LLWLParamManager::getInstance()->getParamSet(name, tmp);
+	bool stat = LLWLParamManager::getInstance()->getParamSet(key, tmp);
 	if(stat == false) 
 	{
+		lldebugs << "Failed to change key frame param (" << time << ", " << key.toLLSD() << ")" << llendl;
 		return stat;
 	}
 
-	mTimeMap[time] = name;
+	mTimeMap[time] = key;
 	return true;
 }
 
 
-bool LLWLDayCycle::removeKey(F32 time)
+bool LLWLDayCycle::removeKeyframe(F32 time)
 {
+	lldebugs << "Removing key frame (" << time << ")" << llendl;
+
 	// look for the time.  If there, erase it
-	std::map<F32, std::string>::iterator mIt = mTimeMap.find(time);
+	std::map<F32, LLWLParamKey>::iterator mIt = mTimeMap.find(time);
 	if(mIt != mTimeMap.end()) 
 	{
 		mTimeMap.erase(mIt);
@@ -229,13 +291,18 @@ bool LLWLDayCycle::removeKey(F32 time)
 
 bool LLWLDayCycle::getKey(const std::string & name, F32& key)
 {
-	// scroll through till we find the 
-	std::map<F32, std::string>::iterator mIt = mTimeMap.begin();
+	return getKeytime(LLWLParamKey(name, LLWLParamKey::SCOPE_LOCAL), key);
+}
+
+bool LLWLDayCycle::getKeytime(LLWLParamKey frame, F32& key_time) const
+{
+	// scroll through till we find the correct value in the map
+	std::map<F32, LLWLParamKey>::const_iterator mIt = mTimeMap.begin();
 	for(; mIt != mTimeMap.end(); ++mIt) 
 	{
-		if(name == mIt->second) 
+		if(frame == mIt->second) 
 		{
-			key = mIt->first;
+			key_time = mIt->first;
 			return true;
 		}
 	}
@@ -246,26 +313,52 @@ bool LLWLDayCycle::getKey(const std::string & name, F32& key)
 bool LLWLDayCycle::getKeyedParam(F32 time, LLWLParamSet& param)
 {
 	// just scroll on through till you find it
-	std::map<F32, std::string>::iterator mIt = mTimeMap.find(time);
-	if(mIt != mTimeMap.end()) 
+	std::map<F32, LLWLParamKey>::iterator mIt = mTimeMap.find(time);
+	if(mIt != mTimeMap.end())
 	{
 		return LLWLParamManager::getInstance()->getParamSet(mIt->second, param);
 	}
 
 	// return error if not found
+	lldebugs << "Key " << time << " not found" << llendl;
 	return false;
 }
 
 bool LLWLDayCycle::getKeyedParamName(F32 time, std::string & name)
 {
 	// just scroll on through till you find it
-	std::map<F32, std::string>::iterator mIt = mTimeMap.find(time);
+	std::map<F32, LLWLParamKey>::iterator mIt = mTimeMap.find(time);
 	if(mIt != mTimeMap.end()) 
 	{
-		name = mTimeMap[time];
+		name = mTimeMap[time].name;
 		return true;
 	}
 
 	// return error if not found
+	lldebugs << "Key " << time << " not found" << llendl;
 	return false;
+}
+
+bool LLWLDayCycle::hasReferencesTo(const LLWLParamKey& keyframe) const
+{
+	F32 dummy;
+	return getKeytime(keyframe, dummy);
+}
+
+void LLWLDayCycle::removeReferencesTo(const LLWLParamKey& keyframe)
+{
+	lldebugs << "Removing references to key frame " << keyframe.toLLSD() << llendl;
+	F32 keytime;
+	bool might_exist;
+	do 
+	{
+		// look for it
+		might_exist = getKeytime(keyframe, keytime);
+		if(!might_exist)
+		{
+			return;
+		}
+		might_exist = removeKeyframe(keytime);
+
+	} while(might_exist); // might be another one
 }

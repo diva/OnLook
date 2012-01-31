@@ -99,30 +99,10 @@ public:
 	/// delete a key frame
 	static void onDeleteKey(void* userData);
 
-	/// when user hits the load preset button
-	static void onNewPreset(void* userData);
-
-	/// when user hits the save preset button
-	static void onSavePreset(void* userData);
-
-	/// prompts a user when overwriting a preset
-	static bool saveAlertCallback(const LLSD& notification, const LLSD& response);
-
-	/// when user hits the save preset button
-	static void onDeletePreset(void* userData);
-
-	/// prompts a user when overwriting a preset
-	bool deleteAlertCallback(const LLSD& notification, const LLSD& response);
-
-	static bool newPromptCallback(const LLSD& notification, const LLSD& response);
-
-	/// what to do when you change the preset name
-	static void onChangePresetName(LLUICtrl* ctrl, void* userData);
-
-	/// button to load day OLD -HgB
+	/// button to load day
 	static void onLoadDayCycle(void* userData);
 
-	/// button to save day OLD -HgB
+	/// button to save day
 	static void onSaveDayCycle(void* userData);
 
 	/// toggle for Linden time
@@ -159,9 +139,6 @@ private:
 
 	// map of sliders to parameters
 	static std::map<std::string, LLWLSkyKey> sSliderToKey;
-
-	//Presets default
-	static std::set<std::string> sDefaultPresets;
 
 	static const F32 sHoursPerDay;
 };

@@ -77,6 +77,25 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 	if(item)
 	{
 		gAgentAvatarp->createMotion(item->getAssetUUID());
+
+		const LLPermissions& perm = item->getPermissions();
+		U32 mask = PERM_NONE;
+		if(perm.getOwner() == gAgent.getID())
+		{
+			mask = perm.getMaskBase();
+		}
+		else if(gAgent.isInGroup(perm.getGroup()))
+		{
+			mask = perm.getMaskGroup();
+		}
+		else
+		{
+			mask = perm.getMaskEveryone();
+		}
+		if((mask & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)
+		{
+			mIsCopyable = true;
+		}
 	}
 	
 	switch ( activate ) 
@@ -334,7 +353,7 @@ void LLPreviewAnim::copyAnimID(void *userdata)
 // virtual
 BOOL LLPreviewAnim::canSaveAs() const
 {
-	return TRUE;
+	return mIsCopyable;
 }
 
 // virtual
