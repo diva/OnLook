@@ -753,16 +753,15 @@ S32 LLVertexBuffer::determineUsage(S32 usage)
 	if (LLRender::sGLCoreProfile)
 	{ //MUST use VBOs for all rendering
 		if(!usage)
-			usage = GL_STREAM_DRAW_ARB;
+			return GL_STREAM_DRAW_ARB;
 	}
-	else if (!sEnableVBOs || !usage)
+	else if (!sEnableVBOs || !usage || (!sUseStreamDraw && usage == GL_STREAM_DRAW_ARB))
 	{
 		return 0;
 	}
-	
 	//Only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default.
-	//Always use stream_draw VBO if mapping is disabled, or stream is enabled and preferred/expected
-	if( sDisableVBOMapping || (sUseStreamDraw && (sPreferStreamDraw || usage == GL_STREAM_DRAW_ARB)))
+	//Always use stream_draw VBO if mapping is disabled, or stream is preferred or expected
+	if( sDisableVBOMapping || sPreferStreamDraw || (usage == GL_STREAM_DRAW_ARB))
 	{
 		return GL_STREAM_DRAW_ARB;
 	}
