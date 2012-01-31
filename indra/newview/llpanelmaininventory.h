@@ -44,6 +44,7 @@ class LLToggleableMenu;
 class LLFloater;
 class LLSearchEditor;
 class LLComboBox;
+class LLFloaterInventoryFinder;
 
 class LLInventoryView : public LLFloater, LLInventoryObserver
 {
