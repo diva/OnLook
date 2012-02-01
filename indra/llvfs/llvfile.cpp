@@ -130,7 +130,7 @@ BOOL LLVFile::read(U8 *buffer, S32 bytes, BOOL async, F32 priority)
 }
 
 //static
-U8* LLVFile::readFile(LLVFS *vfs, const LLUUID &uuid, LLAssetType::EType type, S32* bytes_read)
+U8* LLVFile::readFile(LLVFS *vfs, LLPrivateMemoryPool* poolp, const LLUUID &uuid, LLAssetType::EType type, S32* bytes_read)
 {
 	U8 *data;
 	LLVFile file(vfs, uuid, type, LLVFile::READ);
@@ -142,12 +142,12 @@ U8* LLVFile::readFile(LLVFS *vfs, const LLUUID &uuid, LLAssetType::EType type, S
 	}
 	else
 	{
-		data = new U8[file_size];
+		data = (U8*)ALLOCATE_MEM(poolp, file_size);
 		file.read(data, file_size);	/* Flawfinder: ignore */ 
 		
 		if (file.getLastBytesRead() != (S32)file_size)
 		{
-			delete[] data;
+			FREE_MEM(poolp, data);
 			data = NULL;
 			file_size = 0;
 		}
