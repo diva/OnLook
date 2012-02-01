@@ -284,10 +284,10 @@ void LLWLParamManager::refreshRegionPresets()
 void LLWLParamManager::loadAllPresets()
 {
 	// First, load system (coming out of the box) sky presets.
-	loadPresetsFromDir(getSysDir());
+	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/skies", ""));
 
 	// Then load user presets. Note that user day presets will modify any system ones already loaded.
-	loadPresetsFromDir(getUserDir());
+	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/skies", ""));
 }
 
 void LLWLParamManager::loadPresetsFromDir(const std::string& dir)
@@ -314,7 +314,7 @@ void LLWLParamManager::loadPresetsFromDir(const std::string& dir)
 bool LLWLParamManager::loadPreset(const std::string& path)
 {
 	llifstream xml_file;
-	std::string name(gDirUtilp->getBaseFileName(LLURI::unescape(path), /*strip_exten = */ true));
+	std::string name(LLURI::unescape(gDirUtilp->getBaseFileName(path, true)));
 
 	xml_file.open(path.c_str());
 	if (!xml_file)

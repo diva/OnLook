@@ -145,10 +145,10 @@ BOOL wlfPanel_AdvSettings::postBuild()
 
 	getChild<LLCheckBoxCtrl>("use_estate_wl")->setCommitCallback(onUseRegionSettings);
 
-	mWaterPresetCombo = getChild<LLComboBox>("WWPresetsCombo");
+	mWaterPresetCombo = getChild<LLComboBox>("WLWaterPresetsCombo");
 	mWaterPresetCombo->setCommitCallback(onChangeWWPresetName);
 		
-	mSkyPresetCombo = getChild<LLComboBox>("WLPresetsCombo");
+	mSkyPresetCombo = getChild<LLComboBox>("WLSkyPresetsCombo");
 	mSkyPresetCombo->setCommitCallback(onChangeWLPresetName);
 	
 	// mDayCyclePresetCombo = getChild<LLComboBox>("DCPresetsCombo");

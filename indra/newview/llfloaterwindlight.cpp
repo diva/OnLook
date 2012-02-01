@@ -411,7 +411,7 @@ void LLFloaterWindLight::syncMenu()
 	bool lockY = !param_mgr->mCurParams.getEnableCloudScrollY();
 	childSetValue("WLCloudLockX", lockX);
 	childSetValue("WLCloudLockY", lockY);
-	childSetValue("DrawClassicClouds", gSavedSettings.getBOOL("SkyUseClassicClouds2"));
+	childSetValue("DrawClassicClouds", gSavedSettings.getBOOL("SkyUseClassicClouds"));
 	
 	// disable if locked, enable if not
 	if(lockX) 

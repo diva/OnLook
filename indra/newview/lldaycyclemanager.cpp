@@ -172,10 +172,10 @@ void LLDayCycleManager::loadAllPresets()
 	mDayCycleMap.clear();
 
 	// First, load system (coming out of the box) day cycles.
-	loadPresets(getSysDir());
+	loadPresets(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", ""));
 
 	// Then load user presets. Note that user day cycles will modify any system ones already loaded.
-	loadPresets(getUserDir());
+	loadPresets(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/days", ""));
 }
 
 void LLDayCycleManager::loadPresets(const std::string& dir)
@@ -199,7 +199,7 @@ bool LLDayCycleManager::loadPreset(const std::string& path)
 		return false;
 	}
 
-	std::string name(gDirUtilp->getBaseFileName(LLURI::unescape(path), /*strip_exten = */ true));
+	std::string name(LLURI::unescape(gDirUtilp->getBaseFileName(path, true)));
 	addPreset(name, data);
 
 	return true;
