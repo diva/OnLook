@@ -151,9 +151,10 @@ public:
 	 */
 	static void deleteSingleton()
 	{
-		delete getData().mSingletonInstance;
-		getData().mSingletonInstance = NULL;
+		DERIVED_TYPE* instance = getData().mSingletonInstance;
 		getData().mInitState = DELETED;
+		getData().mSingletonInstance = NULL;
+		delete instance;
 	}
 
 	static SingletonInstanceData& getData()
