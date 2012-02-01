@@ -42,7 +42,7 @@
 #include "llframetimer.h"
 #include "lleventtimer.h"
 
-
+class LLLiveLSLFile;
 class LLMessageSystem;
 class LLTextEditor;
 class LLButton;
@@ -72,6 +72,8 @@ public:
 		void (*save_callback)(void* userdata, BOOL close_after_save),
 		void (*search_replace_callback)(void* userdata),
 		void* userdata,
+        LLUUID objectUUID,
+        LLUUID itemUUID,
 		S32 bottom_pad = 0);	// pad below bottom row of buttons
 	~LLScriptEdCore();
 	
@@ -82,6 +84,12 @@ public:
 	BOOL			canClose();
 
 	void            setScriptText(const std::string& text, BOOL is_valid);
+	bool			loadScriptText(const std::string& filename);
+	bool			writeToFile(const std::string& filename);
+	void			sync();
+	std::string		getTmpFileName();
+	static void     openInExternalEditor(void* userdata);
+	bool			onExternalChange(const std::string& filename);
 
 	bool			handleSaveChangesDialog(const LLSD& notification, const LLSD& response);
 	bool			handleReloadFromServerDialog(const LLSD& notification, const LLSD& response);
@@ -95,7 +103,7 @@ public:
 	static void		onClickForward(void* userdata);
 	static void		onBtnInsertSample(void*);
 	static void		onBtnInsertFunction(LLUICtrl*, void*);
-	static void		doSave( void* userdata, BOOL close_after_save );
+	static void		doSave( void* userdata, BOOL close_after_save, BOOL sync_external_editor = TRUE );
 	static void		onBtnSave(void*);
 	static void		onBtnUndoChanges(void*);
 	static void		onSearchMenu(void* userdata);
@@ -158,6 +166,9 @@ private:
 	S32				mLiveHelpHistorySize;
 	BOOL			mEnableSave;
 	BOOL			mHasScriptData;
+	LLLiveLSLFile*	mLiveFile;
+	LLUUID          mObjectUUID;
+	LLUUID          mItemUUID;
 };
 
 

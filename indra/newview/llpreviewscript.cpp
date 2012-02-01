@@ -45,6 +45,8 @@
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 
+#include "lllivefile.h"
+#include "llexternaleditor.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"
 #include "llscrollbar.h"
@@ -148,6 +150,50 @@ static bool have_script_upload_cap(LLUUID& object_id)
 }
 
 /// ---------------------------------------------------------------------------
+/// LLLiveLSLFile
+/// ---------------------------------------------------------------------------
+class LLLiveLSLFile : public LLLiveFile
+{
+public:
+	typedef boost::function<bool (const std::string& filename)> change_callback_t;
+
+	LLLiveLSLFile(std::string file_path, change_callback_t change_cb);
+	~LLLiveLSLFile();
+
+	void ignoreNextUpdate() { mIgnoreNextUpdate = true; }
+
+protected:
+	/*virtual*/ bool loadFile();
+
+	change_callback_t	mOnChangeCallback;
+	bool				mIgnoreNextUpdate;
+};
+
+LLLiveLSLFile::LLLiveLSLFile(std::string file_path, change_callback_t change_cb)
+	:	mOnChangeCallback(change_cb)
+	,	mIgnoreNextUpdate(false)
+	,	LLLiveFile(file_path, 1.0)
+{
+	llassert(mOnChangeCallback);
+}
+
+LLLiveLSLFile::~LLLiveLSLFile()
+{
+	LLFile::remove(filename());
+}
+
+bool LLLiveLSLFile::loadFile()
+{
+	if (mIgnoreNextUpdate)
+	{
+		mIgnoreNextUpdate = false;
+		return true;
+	}
+
+	return mOnChangeCallback(filename());
+}
+
+/// ---------------------------------------------------------------------------
 /// LLScriptEdCore
 /// ---------------------------------------------------------------------------
 
@@ -169,6 +215,8 @@ LLScriptEdCore::LLScriptEdCore(
 	void (*save_callback)(void*, BOOL),
 	void (*search_replace_callback) (void* userdata),
 	void* userdata,
+	LLUUID objectUUID,
+	LLUUID itemUUID,
 	S32 bottom_pad)
 	:
 	LLPanel( std::string("name"), rect ),
@@ -183,8 +231,11 @@ LLScriptEdCore::LLScriptEdCore(
 	mLastHelpToken(NULL),
 	mLiveHelpHistorySize(0),
 	mEnableSave(FALSE),
+	mLiveFile(NULL),
 	mHasScriptData(FALSE),
-	LLEventTimer(60)
+	LLEventTimer(60),
+	mObjectUUID(objectUUID),
+	mItemUUID(itemUUID)
 {
 	setFollowsAll();
 	setBorderVisible(FALSE);
@@ -275,6 +326,7 @@ LLScriptEdCore::LLScriptEdCore(
  
 	childSetCommitCallback("lsl errors", &LLScriptEdCore::onErrorList, this);
 	childSetAction("Save_btn", onBtnSave,this);
+	childSetAction("Edit_btn", openInExternalEditor, this);
 
 	initMenu();
 		
@@ -290,6 +342,7 @@ LLScriptEdCore::LLScriptEdCore(
 LLScriptEdCore::~LLScriptEdCore()
 {
 	deleteBridges();
+	delete mLiveFile;
 }
 
 BOOL LLScriptEdCore::tick()
@@ -357,6 +410,106 @@ void LLScriptEdCore::setScriptText(const std::string& text, BOOL is_valid)
 		mEditor->setText(text);
 		mHasScriptData = is_valid;
 	}
+}
+
+bool LLScriptEdCore::loadScriptText(const std::string& filename)
+{
+	if (filename.empty())
+	{
+		llwarns << "Empty file name" << llendl;
+		return false;
+	}
+
+	LLFILE* file = LLFile::fopen(filename, "rb");		/*Flawfinder: ignore*/
+	if (!file)
+	{
+		llwarns << "Error opening " << filename << llendl;
+		return false;
+	}
+
+	// read in the whole file
+	fseek(file, 0L, SEEK_END);
+	size_t file_length = (size_t) ftell(file);
+	fseek(file, 0L, SEEK_SET);
+	char* buffer = new char[file_length+1];
+	size_t nread = fread(buffer, 1, file_length, file);
+	if (nread < file_length)
+	{
+		llwarns << "Short read" << llendl;
+	}
+	buffer[nread] = '\0';
+	fclose(file);
+
+	mEditor->setText(LLStringExplicit(buffer));
+	delete[] buffer;
+
+	return true;
+}
+
+bool LLScriptEdCore::writeToFile(const std::string& filename)
+{
+	LLFILE* fp = LLFile::fopen(filename, "wb");
+	if (!fp)
+	{
+		llwarns << "Unable to write to " << filename << llendl;
+
+		LLSD row;
+		row["columns"][0]["value"] = "Error writing to local file. Is your hard drive full?";
+		row["columns"][0]["font"] = "SANSSERIF_SMALL";
+		mErrorList->addElement(row);
+		return false;
+	}
+
+	std::string utf8text = mEditor->getText();
+
+	// Special case for a completely empty script - stuff in one space so it can store properly.  See SL-46889
+	if (utf8text.size() == 0)
+	{
+		utf8text = " ";
+	}
+
+	fputs(utf8text.c_str(), fp);
+	fclose(fp);
+	return true;
+}
+
+void LLScriptEdCore::sync()
+{
+	// Sync with external editor.
+	std::string tmp_file = getTmpFileName();
+	llstat s;
+	if (LLFile::stat(tmp_file, &s) == 0) // file exists
+	{
+		if (mLiveFile) mLiveFile->ignoreNextUpdate();
+		writeToFile(tmp_file);
+	}
+}
+
+std::string LLScriptEdCore::getTmpFileName()
+{
+	// Take script inventory item id (within the object inventory)
+	// to consideration so that it's possible to edit multiple scripts
+	// in the same object inventory simultaneously (STORM-781).
+	std::string script_id = mObjectUUID.asString() + "_" + mItemUUID.asString();
+
+	// Use MD5 sum to make the file name shorter and not exceed maximum path length.
+	char script_id_hash_str[33];               /* Flawfinder: ignore */
+	LLMD5 script_id_hash((const U8 *)script_id.c_str());
+	script_id_hash.hex_digest(script_id_hash_str);
+
+	return std::string(LLFile::tmpdir()) + "sl_script_" + script_id_hash_str + ".lsl";
+}
+
+bool LLScriptEdCore::onExternalChange(const std::string& filename)
+{
+	if (!loadScriptText(filename))
+	{
+		return false;
+	}
+
+	// Avoid recursive save/compile loop
+	doSave(this, false, false);
+	return true;
 }
 
 BOOL LLScriptEdCore::hasChanged(void* userdata)
@@ -752,7 +905,7 @@ void LLScriptEdCore::onBtnInsertFunction(LLUICtrl *ui, void* userdata)
 }
 
 // static 
-void LLScriptEdCore::doSave( void* userdata, BOOL close_after_save )
+void LLScriptEdCore::doSave( void* userdata, BOOL close_after_save, BOOL sync_external_editor)
 {
 	LLViewerStats::getInstance()->incStat( LLViewerStats::ST_LSL_SAVE_COUNT );
 
@@ -761,6 +914,56 @@ void LLScriptEdCore::doSave( void* userdata, BOOL close_after_save )
 	if( self->mSaveCallback )
 	{
 		self->mSaveCallback( self->mUserdata, close_after_save );
+	}
+	if ( sync_external_editor )
+	{
+		self->sync();
+	}
+}
+
+void LLScriptEdCore::openInExternalEditor(void *userdata)
+{
+	LLScriptEdCore* self = (LLScriptEdCore*) userdata;
+
+	delete self->mLiveFile; // deletes file
+
+	// Save the script to a temporary file.
+	std::string filename = self->getTmpFileName();
+	self->writeToFile(filename);
+
+	// Start watching file changes.
+	self->mLiveFile = new LLLiveLSLFile(filename, boost::bind(&LLScriptEdCore::onExternalChange, self, _1));
+	self->mLiveFile->ignoreNextUpdate();
+	self->mLiveFile->addToEventTimer();
+
+	// Open it in external editor.
+	{
+		LLExternalEditor ed;
+		LLExternalEditor::EErrorCode status;
+		std::string msg;
+
+		status = ed.setCommand("LL_SCRIPT_EDITOR");
+		if (status != LLExternalEditor::EC_SUCCESS)
+		{
+			if (status == LLExternalEditor::EC_NOT_SPECIFIED) // Use custom message for this error.
+			{
+				msg = "External editor not set";
+			}
+			else
+			{
+				msg = LLExternalEditor::getErrorMessage(status);
+			}
+
+			LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", msg));
+			return;
+		}
+
+		status = ed.run(filename);
+		if (status != LLExternalEditor::EC_SUCCESS)
+		{
+			msg = LLExternalEditor::getErrorMessage(status);
+			LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", msg));
+		}
 	}
 }
 
@@ -1038,6 +1241,8 @@ void* LLPreviewLSL::createScriptEdPanel(void* userdata)
 								   LLPreviewLSL::onSave,
 								   LLPreviewLSL::onSearchReplace,
 								   self,
+								   self->mObjectID,
+								   self->mItemUUID,
 								   0);
 
 	return self->mScriptEd;
@@ -1602,6 +1807,8 @@ void* LLLiveLSLEditor::createScriptEdPanel(void* userdata)
 								   &LLLiveLSLEditor::onSave,
 								   &LLLiveLSLEditor::onSearchReplace,
 								   self,
+								   self->mObjectID,
+								   self->mItemUUID,
 								   0);
 
 	return self->mScriptEd;

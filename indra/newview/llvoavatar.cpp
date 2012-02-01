@@ -689,6 +689,8 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	LLViewerObject(id, pcode, regionp),
 	mIsDummy(FALSE),
 	mSpecialRenderMode(0),
+	mAttachmentGeometryBytes(0),
+	mAttachmentSurfaceArea(0.f),
 	mTurning(FALSE),
 	mPelvisToFoot(0.f),
 	mLastSkeletonSerialNum( 0 ),
@@ -1370,6 +1372,7 @@ void LLVOAvatar::initInstance(void)
 			mesh->setName(mesh_name);
 			mesh->setMeshID(mesh_index);
 			mesh->setPickName(mesh_dict->mPickName);
+			mesh->setIsTransparent(FALSE);
 			switch((int)mesh_index)
 			{
 				case MESH_ID_HAIR:
@@ -3255,6 +3258,29 @@ void LLVOAvatar::getClientInfo(std::string& client, LLColor4& color, BOOL useCom
 		 return;
 	std::string uuid_str = getTE(TEX_HEAD_BODYPAINT)->getID().asString(); //UUID of the head texture
 
+	if(isFullyLoaded())
+	{
+		//Zwagoth's new client identification - HgB
+		// Overwrite the current tag/color settings if new method
+		// exists -- charbl.
+		const LLTextureEntry* texentry = getTE(0);
+		if(texentry->getGlow() > 0.0)
+		{
+			///llinfos << "Using new client identifier." << llendl;
+			U8 tag_buffer[UUID_BYTES+1];
+			memset(&tag_buffer, 0, UUID_BYTES);
+			memcpy(&tag_buffer[0], &texentry->getID().mData, UUID_BYTES);
+			tag_buffer[UUID_BYTES] = 0;
+			U32 tag_len = strlen((const char*)&tag_buffer[0]);
+			tag_len = (tag_len>UUID_BYTES) ? (UUID_BYTES) : tag_len;
+			client = std::string((char*)&tag_buffer[0], tag_len);
+			LLStringFn::replace_ascii_controlchars(mClientTag, LL_UNKNOWN_CHAR);
+			mNameString.clear();
+			color = texentry->getColor();
+			return;
+		}
+	}
+
 	static const LLCachedControl<LLColor4>	avatar_name_color(gColors,"AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 	if (isSelf())
 	{
@@ -3550,38 +3576,15 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 				
 				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
 
+
 				//As pointed out by Zwagoth, we really shouldn't be doing this per-frame. Skip if we already have the data. -HgB
 				if (mClientTag == "")
 				{
 					mClientColor = gColors.getColor( "AvatarNameColor" );
-					if(isFullyLoaded())
+					getClientInfo(mClientTag,mClientColor);
+					if(mClientTag == "")
 					{
-						//Zwagoth's new client identification - HgB
-						// Overwrite the current tag/color settings if new method
-						// exists -- charbl.
-						const LLTextureEntry* texentry = getTE(0);
-						if(texentry->getGlow() > 0.0)
-						{
-							llinfos << "Using new client identifier." << llendl;
-							U8 tag_buffer[UUID_BYTES+1];
-							memset(&tag_buffer, 0, UUID_BYTES);
-							memcpy(&tag_buffer[0], &texentry->getID().mData, UUID_BYTES);
-							tag_buffer[UUID_BYTES] = 0;
-							U32 tag_len = strlen((const char*)&tag_buffer[0]);
-							tag_len = (tag_len>UUID_BYTES) ? (UUID_BYTES) : tag_len;
-							mClientTag = std::string((char*)&tag_buffer[0], tag_len);
-							LLStringFn::replace_ascii_controlchars(mClientTag, LL_UNKNOWN_CHAR);
-							mNameString.clear();
-							mClientColor = texentry->getColor();
-						}
-						else
-						{
-							//llinfos << "Using Emerald-style client identifier." << llendl;
-							//The old client identification. Used only if the new method doesn't exist, so that it isn't automatically overwritten. -HgB
-							getClientInfo(mClientTag,mClientColor);
-							if(mClientTag == "")
-								client = "?"; //prevent console spam..
-						}	
+							client = "?"; //prevent console spam..
 					}
 
 					// Overwrite the tag/color shit yet again if we want to see
@@ -4044,6 +4047,16 @@ void LLVOAvatar::slamPosition()
 	mRoot.updateWorldMatrixChildren();
 }
 
+bool LLVOAvatar::isVisuallyMuted()
+{
+	static LLCachedControl<U32> max_attachment_bytes(gSavedSettings, "RenderAutoMuteByteLimit");
+	static LLCachedControl<F32> max_attachment_area(gSavedSettings, "RenderAutoMuteSurfaceAreaLimit");
+	
+	return LLMuteList::getInstance()->isMuted(getID()) ||
+			(mAttachmentGeometryBytes > max_attachment_bytes && max_attachment_bytes > 0) ||
+			(mAttachmentSurfaceArea > max_attachment_area && max_attachment_area > 0.f);
+}
+
 //------------------------------------------------------------------------
 // updateCharacter()
 // called on both your avatar and other avatars
@@ -4119,8 +4132,9 @@ BOOL LLVOAvatar::updateCharacter(LLAgent &agent)
 		size.setSub(ext[1],ext[0]);
 		F32 mag = size.getLength3().getF32()*0.5f;
 
+		
 		F32 impostor_area = 256.f*512.f*(8.125f - LLVOAvatar::sLODFactor*8.f);
-		if (LLMuteList::getInstance()->isMuted(getID()))
+		if (isVisuallyMuted())
 		{ // muted avatars update at 16 hz
 			mUpdatePeriod = 16;
 		}
@@ -5234,6 +5248,7 @@ void LLVOAvatar::updateTextures()
 				}
 			}
 		}
+		
 	}
 
 	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_TEXTURE_AREA))
@@ -10426,19 +10441,41 @@ void LLVOAvatar::getImpostorValues(LLVector4a* extents, LLVector3& angle, F32& d
 
 void LLVOAvatar::idleUpdateRenderCost()
 {
+	static const U32 ARC_BODY_PART_COST = 200;
+	static const U32 ARC_LIMIT = 20000;
+
+	static std::set<LLUUID> all_textures;
+
+	if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_ATTACHMENT_BYTES))
+	{ //set debug text to attachment geometry bytes here so render cost will override
+		setDebugText(llformat("%.1f KB, %.2f m^2", mAttachmentGeometryBytes/1024.f, mAttachmentSurfaceArea));
+	}
+
 	if (!gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHAME))
 	{
 		return;
 	}
 
-	U32 shame = 1;
+	U32 cost = 0;
+	LLVOVolume::texture_cost_t textures;
 
-	std::set<LLUUID> textures;
+	for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
+	{
+		const LLVOAvatarDictionary::BakedEntry *baked_dict = LLVOAvatarDictionary::getInstance()->getBakedTexture((EBakedTextureIndex)baked_index);
+		ETextureIndex tex_index = baked_dict->mTextureIndex;
+		if ((tex_index != TEX_SKIRT_BAKED) || (isWearingWearableType(LLWearableType::WT_SKIRT)))
+		{
+			if (isTextureVisible(tex_index))
+			{
+				cost +=ARC_BODY_PART_COST;
+			}
+		}
+	}
 
-	attachment_map_t::const_iterator iter;
-	for (iter = mAttachmentPoints.begin();
-		iter != mAttachmentPoints.end();
-		++iter)
+
+	for (attachment_map_t::const_iterator iter = mAttachmentPoints.begin(); 
+		 iter != mAttachmentPoints.end();
+		 ++iter)
 	{
 		LLViewerJointAttachment* attachment = iter->second;
 		for (LLViewerJointAttachment::attachedobjs_vec_t::iterator attachment_iter = attachment->mAttachedObjects.begin();
@@ -10448,51 +10485,88 @@ void LLVOAvatar::idleUpdateRenderCost()
 			const LLViewerObject* attached_object = (*attachment_iter);
 			if (attached_object && !attached_object->isHUDAttachment())
 			{
+				textures.clear();
 				const LLDrawable* drawable = attached_object->mDrawable;
 				if (drawable)
 				{
-					shame += 10;
-					LLVOVolume* volume = drawable->getVOVolume();
+					const LLVOVolume* volume = drawable->getVOVolume();
 					if (volume)
 					{
-						shame += calc_shame(volume, textures);
+						cost += volume->getRenderCost(textures);
+
+						const_child_list_t children = volume->getChildren();
+						for (const_child_list_t::const_iterator child_iter = children.begin();
+							  child_iter != children.end();
+							  ++child_iter)
+						{
+							LLViewerObject* child_obj = *child_iter;
+							LLVOVolume *child = dynamic_cast<LLVOVolume*>( child_obj );
+							if (child)
+							{
+								cost += child->getRenderCost(textures);
+							}
+						}
+
+						for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+						{
+							// add the cost of each individual texture in the linkset
+							cost += iter->second;
+						}
 					}
 				}
 			}
 		}
-	}	
 
-	if(sDoProperArc)
+	}
+
+
+
+	// Diagnostic output to identify all avatar-related textures.
+	// Does not affect rendering cost calculation.
+	// Could be wrapped in a debug option if output becomes problematic.
+	if (isSelf())
 	{
-		std::set<LLUUID>::const_iterator tex_iter;
-		for(tex_iter = textures.begin();tex_iter != textures.end();++tex_iter)
+		// print any attachment textures we didn't already know about.
+		for (LLVOVolume::texture_cost_t::iterator it = textures.begin(); it != textures.end(); ++it)
 		{
-			LLViewerTexture* img = LLViewerTextureManager::getFetchedTexture(*tex_iter);
-			if(img)
+			LLUUID image_id = it->first;
+			if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
+				continue;
+			if (all_textures.find(image_id) == all_textures.end())
 			{
-				shame += (img->getHeight() * img->getWidth()) >> 4;
+				// attachment texture not previously seen.
+				llinfos << "attachment_texture: " << image_id.asString() << llendl;
+				all_textures.insert(image_id);
+			}
+		}
+
+		// print any avatar textures we didn't already know about
+		for (LLVOAvatarDictionary::Textures::const_iterator iter = LLVOAvatarDictionary::getInstance()->getTextures().begin();
+			 iter != LLVOAvatarDictionary::getInstance()->getTextures().end();
+			 ++iter)
+		{
+			const LLVOAvatarDictionary::TextureEntry *texture_dict = iter->second;
+			// TODO: MULTI-WEARABLE: handle multiple textures for self
+			const LLViewerTexture* te_image = getTEImage(iter->first);//getImage(iter->first,0);
+			if (!te_image)
+				continue;
+			LLUUID image_id = te_image->getID();
+			if( image_id.isNull() || image_id == IMG_DEFAULT || image_id == IMG_DEFAULT_AVATAR)
+				continue;
+			if (all_textures.find(image_id) == all_textures.end())
+			{
+				llinfos << "local_texture: " << texture_dict->mName << ": " << image_id << llendl;
+				all_textures.insert(image_id);
 			}
 		}
 	}
-	shame += textures.size() * 5;
 
-	setDebugText(llformat("%d", shame));
-	F32 green = 1.f-llclamp(((F32) shame-1024.f)/1024.f, 0.f, 1.f);
-	F32 red = llmin((F32) shame/1024.f, 1.f);
-	if(sDoProperArc)
-	{
-		green = 1.f-llclamp(((F32)shame-1000000.f)/1000000.f, 0.f, 1.f);
-		red = llmin((F32)shame/1000000.f, 1.f);
-	}
-	else
-	{
-		green = 1.f-llclamp(((F32)shame-1024.f)/1024.f, 0.f, 1.f);
-		red = llmin((F32)shame/1024.f, 1.f);
-	}
+	setDebugText(llformat("%d", cost));
+	mVisualComplexity = cost;
+	F32 green = 1.f-llclamp(((F32) cost-(F32)ARC_LIMIT)/(F32)ARC_LIMIT, 0.f, 1.f);
+	F32 red = llmin((F32) cost/(F32)ARC_LIMIT, 1.f);
 	mText->setColor(LLColor4(red,green,0,1));
 }
-
-
 
 // static
 BOOL LLVOAvatar::isIndexLocalTexture(ETextureIndex index)

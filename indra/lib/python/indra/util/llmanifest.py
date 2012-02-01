@@ -168,7 +168,10 @@ ARGUMENTS=[
     dict(name='version',
          description="""This specifies the version of Second Life that is
         being packaged up.""",
-         default=get_default_version)
+         default=get_default_version),
+    dict(name='extra_libraries',
+         description="""List of extra libraries to include in package""",
+         default=None)
     ]
 
 def usage(srctree=""):

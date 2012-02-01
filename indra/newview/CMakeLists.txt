@@ -165,6 +165,7 @@ set(viewer_SOURCE_FILES
     lleventinfo.cpp
     lleventnotifier.cpp
     lleventpoll.cpp
+    llexternaleditor.cpp
     llface.cpp
     llfasttimerview.cpp
     llfeaturemanager.cpp
@@ -262,6 +263,7 @@ set(viewer_SOURCE_FILES
     llfloaterwindlight.cpp
     llfloaterworldmap.cpp
     llfolderview.cpp
+    llfolderviewitem.cpp
     llfollowcam.cpp
     llframestats.cpp
     llframestatview.cpp
@@ -370,6 +372,7 @@ set(viewer_SOURCE_FILES
     llparcelselection.cpp
     llpatchvertexarray.cpp
     llphysicsmotion.cpp
+    llphysicsshapebuilderutil.cpp
     llpolymesh.cpp
     llpolymorph.cpp
     llprefschat.cpp
@@ -642,6 +645,7 @@ set(viewer_HEADER_FILES
     lleventinfo.h
     lleventnotifier.h
     lleventpoll.h
+    llexternaleditor.h
     llface.h
     llfasttimerview.h
     llfeaturemanager.h
@@ -740,6 +744,7 @@ set(viewer_HEADER_FILES
     llfloaterworldmap.h
     llfolderview.h
     llfoldervieweventlistener.h
+    llfolderviewitem.h
     llfollowcam.h
     llframestats.h
     llframestatview.h
@@ -848,6 +853,7 @@ set(viewer_HEADER_FILES
     llparcelselection.h
     llpatchvertexarray.h
     llphysicsmotion.h
+    llphysicsshapebuilderutil.h
     llpolymesh.h
     llpolymorph.h
     llprefschat.h
@@ -1387,8 +1393,20 @@ if (WINDOWS)
     else()
         set(release_flags "/MAP:Release/${VIEWER_BINARY_NAME}.map")
     endif()
-    
+
+if (FMOD)
+	if(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMOD_BINARY_DIR}/fmod.dll")
+	else(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "--extra_libraries=${FMOD_BINARY_DIR}/fmod.dll")
+	endif(MANIFEST_LIBRARIES)
+endif (FMOD)
 if (FMODEX)
+	if(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "${MANIFEST_LIBRARIES}|${FMODEX_BINARY_DIR}/fmodex.dll")
+	else(MANIFEST_LIBRARIES)
+		set(MANIFEST_LIBRARIES "--extra_libraries=${FMODEX_BINARY_DIR}/fmodex.dll")
+	endif(MANIFEST_LIBRARIES)
 	set(EXTRA_LINKER_FLAGS "/DELAYLOAD:fmodex.dll")
 endif (FMODEX)
 
@@ -1457,6 +1475,7 @@ endif (FMODEX)
               --build=${CMAKE_CURRENT_BINARY_DIR}
               --dest=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}
               --touch=${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/touched.bat
+		  ${MANIFEST_LIBRARIES}
         DEPENDS ${VIEWER_BINARY_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/viewer_manifest.py
         )
 

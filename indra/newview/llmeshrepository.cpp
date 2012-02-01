@@ -74,9 +74,6 @@
 
 #include <queue>
 
-LLFastTimer::DeclareTimer FTM_MESH_UPDATE("Mesh Update");
-LLFastTimer::DeclareTimer FTM_LOAD_MESH("Load Mesh");
-
 LLMeshRepository gMeshRepo;
 
 const U32 MAX_MESH_REQUESTS_PER_SECOND = 100;
@@ -92,6 +89,9 @@ const S32 MAX_MESH_VERSION = 999;
 U32 LLMeshRepository::sBytesReceived = 0;
 U32 LLMeshRepository::sHTTPRequestCount = 0;
 U32 LLMeshRepository::sHTTPRetryCount = 0;
+U32 LLMeshRepository::sLODProcessing = 0;
+U32 LLMeshRepository::sLODPending = 0;
+
 U32 LLMeshRepository::sCacheBytesRead = 0;
 U32 LLMeshRepository::sCacheBytesWritten = 0;
 U32 LLMeshRepository::sPeakKbps = 0;
@@ -209,6 +209,12 @@ public:
 	LLMeshHeaderResponder(const LLVolumeParams& mesh_params)
 		: mMeshParams(mesh_params)
 	{
+		LLMeshRepoThread::sActiveHeaderRequests++;
+	}
+
+	~LLMeshHeaderResponder()
+	{
+		LLMeshRepoThread::sActiveHeaderRequests--;
 	}
 
 	virtual void completedRaw(U32 status, const std::string& reason,
@@ -228,6 +234,12 @@ public:
 	LLMeshLODResponder(const LLVolumeParams& mesh_params, S32 lod, U32 offset, U32 requested_bytes)
 		: mMeshParams(mesh_params), mLOD(lod), mOffset(offset), mRequestedBytes(requested_bytes)
 	{
+		LLMeshRepoThread::sActiveLODRequests++;
+	}
+
+	~LLMeshLODResponder()
+	{
+		LLMeshRepoThread::sActiveLODRequests--;
 	}
 
 	virtual void completedRaw(U32 status, const std::string& reason,
@@ -506,6 +518,7 @@ void LLMeshRepoThread::run()
 					mMutex->lock();
 					LODRequest req = mLODReqQ.front();
 					mLODReqQ.pop();
+					LLMeshRepository::sLODProcessing--;
 					mMutex->unlock();
 					if (fetchMeshLOD(req.mMeshParams, req.mLOD))
 					{
@@ -614,6 +627,7 @@ void LLMeshRepoThread::loadMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 		{
 			LLMutexLock lock(mMutex);
 			mLODReqQ.push(req);
+			LLMeshRepository::sLODProcessing++;
 		}
 	}
 	else
@@ -716,7 +730,6 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
 										   new LLMeshSkinInfoResponder(mesh_id, offset, size));
@@ -789,7 +802,6 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(http_url, headers, offset, size,
 										   new LLMeshDecompositionResponder(mesh_id, offset, size));
@@ -862,7 +874,6 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(http_url, headers, offset, size,
 										   new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
@@ -913,7 +924,6 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params)
 	std::string http_url = constructUrl(mesh_params.getSculptID());
 	if (!http_url.empty())
 	{
-		++sActiveHeaderRequests;
 		retval = true;
 		//grab first 4KB if we're going to bother with a fetch.  Cache will prevent future fetches if a full mesh fits
 		//within the first 4KB
@@ -979,7 +989,6 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
 			{
-				++sActiveLODRequests;
 				retval = true;
 				LLMeshRepository::sHTTPRequestCount++;
 				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
@@ -1055,6 +1064,7 @@ bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* dat
 			{
 				LODRequest req(mesh_params, iter->second[i]);
 				mLODReqQ.push(req);
+				LLMeshRepository::sLODProcessing++;
 			}
 		}
 		mPendingLOD.erase(iter);
@@ -1259,8 +1269,7 @@ void LLMeshUploadThread::DecompRequest::completed()
 void LLMeshUploadThread::preStart()
 {
 	//build map of LLModel refs to instances for callbacks
-	for (instance_list::iterator iter = mInstanceList.begin();
-		 iter != mInstanceList.end(); ++iter)
+	for (instance_list::iterator iter = mInstanceList.begin(); iter != mInstanceList.end(); ++iter)
 	{
 		mInstance[iter->mModel].push_back(*iter);
 	}
@@ -1603,9 +1612,6 @@ void LLMeshUploadThread::requestWholeModelFee()
 }
 #endif //MESH_IMPORT
 
-//static LLFastTimer::DeclareTimer FTM_NOTIFY_MESH_LOADED("Notify Loaded");
-//static LLFastTimer::DeclareTimer FTM_NOTIFY_MESH_UNAVAILABLE("Notify Unavailable");
-
 void LLMeshRepoThread::notifyLoadedMeshes()
 {//called via gMeshRepo.notifyLoadedMeshes(). mMutex already locked
 	while (!mLoadedQ.empty())
@@ -1718,8 +1724,7 @@ void LLMeshRepository::cacheOutgoingMesh(LLMeshUploadData& data, LLSD& header)
 	{
 		if (data.mModel[i].notNull())
 		{
-			LLPointer<LLVolume> volume = new LLVolume(volume_params,
-													  LLVolumeLODGroup::getVolumeScaleFromDetail(i));
+			LLPointer<LLVolume> volume = new LLVolume(volume_params, LLVolumeLODGroup::getVolumeScaleFromDetail(i));
 			volume->copyVolumeFaces(data.mModel[i]);
 			volume->setMeshAssetLoaded(TRUE);
 		}
@@ -1733,7 +1738,6 @@ void LLMeshLODResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
 
-	LLMeshRepoThread::sActiveLODRequests--;
 	S32 data_size = buffer->countAfter(channels.in(), NULL);
 
 	if (status < 200 || status > 400)
@@ -1950,7 +1954,6 @@ void LLMeshHeaderResponder::completedRaw(U32 status, const std::string& reason,
 							  const LLChannelDescriptors& channels,
 							  const LLIOPipe::buffer_ptr_t& buffer)
 {
-	LLMeshRepoThread::sActiveHeaderRequests--;
 	if (status < 200 || status > 400)
 	{
 		//llwarns
@@ -2165,8 +2168,6 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 		return detail;
 	}
 
-	LLFastTimer t(FTM_LOAD_MESH); 
-
 	{
 		LLMutexLock lock(mMeshMutex);
 		//add volume to list of loading meshes
@@ -2236,11 +2237,6 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 
 	return detail;
 }
-
-//static LLFastTimer::DeclareTimer FTM_START_MESH_THREAD("Start Thread");
-static LLFastTimer::DeclareTimer FTM_LOAD_MESH_LOD("Load LOD");
-static LLFastTimer::DeclareTimer FTM_MESH_LOCK1("Lock 1");
-static LLFastTimer::DeclareTimer FTM_MESH_LOCK2("Lock 2");
 
 void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
@@ -2343,18 +2339,9 @@ void LLMeshRepository::notifyLoadedMeshes()
 		}
 	}
 
-	LLFastTimer t(FTM_MESH_UPDATE);
-
-	{
-		LLFastTimer t(FTM_MESH_LOCK1);
-		mMeshMutex->lock();	
-	}
-
-	{
-		LLFastTimer t(FTM_MESH_LOCK2);
-		mThread->mMutex->lock();
-	}
-	
+	mMeshMutex->lock();	
+	mThread->mMutex->lock();
+		
 	//popup queued error messages from background threads
 	while (!mUploadErrorQ.empty())
 	{
@@ -2406,10 +2393,10 @@ void LLMeshRepository::notifyLoadedMeshes()
 
 		while (!mPendingRequests.empty() && push_count > 0)
 		{
-			LLFastTimer t(FTM_LOAD_MESH_LOD);
 			LLMeshRepoThread::LODRequest& request = mPendingRequests.front();
 			mThread->loadMeshLOD(request.mMeshParams, request.mLOD);
 			mPendingRequests.erase(mPendingRequests.begin());
+			LLMeshRepository::sLODPending--;
 			push_count--;
 		}
 	}
@@ -3553,18 +3540,18 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 		hull.mVertexBase = decomp.mHull[i][0].mV;
 		hull.mVertexStrideBytes = 12;
 
-		LLCDMeshData mesh;
 #if MESH_IMPORT
+		LLCDMeshData mesh;
 		LLCDResult res = LLCD_OK;
 		if (LLConvexDecomposition::getInstance() != NULL)
 		{
 			res = LLConvexDecomposition::getInstance()->getMeshFromHull(&hull, &mesh);
 		}
 		if (res == LLCD_OK)
-#endif //MESH_IMPORT
 		{
 			get_vertex_buffer_from_mesh(mesh, decomp.mMesh[i]);
 		}
+#endif //MESH_IMPORT
 	}
 
 	if (!decomp.mBaseHull.empty() && decomp.mBaseHullMesh.empty())
@@ -3574,18 +3561,18 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 		hull.mVertexBase = decomp.mBaseHull[0].mV;
 		hull.mVertexStrideBytes = 12;
 
-		LLCDMeshData mesh;
 #if MESH_IMPORT
+		LLCDMeshData mesh;
 		LLCDResult res = LLCD_OK;
 		if (LLConvexDecomposition::getInstance() != NULL)
 		{
 			res = LLConvexDecomposition::getInstance()->getMeshFromHull(&hull, &mesh);
 		}
 		if (res == LLCD_OK)
-#endif //MESH_IMPORT
 		{
 			get_vertex_buffer_from_mesh(mesh, decomp.mBaseHullMesh);
 		}
+#endif //MESH_IMPORT
 	}
 }
 

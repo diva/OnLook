@@ -66,6 +66,7 @@
 #include "llinventorymodel.h"
 #include "llinventoryicon.h"
 #include "llinventorybridge.h"
+#include "llinventoryfilter.h"
 #include "llmenugl.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"

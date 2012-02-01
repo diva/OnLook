@@ -1078,6 +1078,8 @@ void LLSpatialGroup::clearOcclusionState(eOcclusionState state, S32 mode)
 
 LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	mState(0),
+	mGeometryBytes(0),
+	mSurfaceArea(0.f),
 	mBuilt(0.f),
 	mOctreeNode(node),
 	mSpatialPartition(part),
@@ -1086,9 +1088,7 @@ LLSpatialGroup::LLSpatialGroup(OctreeNode* node, LLSpatialPartition* part) :
 	mDistance(0.f),
 	mDepth(0.f),
 	mLastUpdateDistance(-1.f), 
-	mLastUpdateTime(gFrameTimeSeconds),
-	mViewAngle(0.f),
-	mLastUpdateViewAngle(-1.f)
+	mLastUpdateTime(gFrameTimeSeconds)
 {
 	sNodeCount++;
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
@@ -1302,6 +1302,17 @@ void LLSpatialGroup::handleDestruction(const TreeNode* node)
 		}
 	}
 	
+	//clean up avatar attachment stats
+	LLSpatialBridge* bridge = mSpatialPartition->asBridge();
+	if (bridge)
+	{
+		if (bridge->mAvatar.notNull())
+		{
+			bridge->mAvatar->mAttachmentGeometryBytes -= mGeometryBytes;
+			bridge->mAvatar->mAttachmentSurfaceArea -= mSurfaceArea;
+		}
+	}
+
 	clearDrawMap();
 	mVertexBuffer = NULL;
 	mBufferMap.clear();
@@ -1659,7 +1670,7 @@ void LLSpatialGroup::doOcclusion(LLCamera* camera)
 //==============================================
 
 LLSpatialPartition::LLSpatialPartition(U32 data_mask, BOOL render_by_group, U32 buffer_usage)
-: mRenderByGroup(render_by_group)
+: mRenderByGroup(render_by_group), mBridge(NULL)
 {
 	LLMemType mt(LLMemType::MTYPE_SPACE_PARTITION);
 	mOcclusionEnabled = TRUE;
@@ -2718,6 +2729,115 @@ void renderUpdateType(LLDrawable* drawablep)
 	}
 }
 
+void renderComplexityDisplay(LLDrawable* drawablep)
+{
+	LLViewerObject* vobj = drawablep->getVObj();
+	if (!vobj)
+	{
+		return;
+	}
+
+	LLVOVolume *voVol = dynamic_cast<LLVOVolume*>(vobj);
+
+	if (!voVol)
+	{
+		return;
+	}
+
+	if (!voVol->isRoot())
+	{
+		return;
+	}
+
+	LLVOVolume::texture_cost_t textures;
+	F32 cost = (F32) voVol->getRenderCost(textures);
+
+	// add any child volumes
+	LLViewerObject::const_child_list_t children = voVol->getChildren();
+	for (LLViewerObject::const_child_list_t::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+	{
+		const LLViewerObject *child = *iter;
+		const LLVOVolume *child_volume = dynamic_cast<const LLVOVolume*>(child);
+		if (child_volume)
+		{
+			cost += child_volume->getRenderCost(textures);
+		}
+	}
+
+	// add texture cost
+	for (LLVOVolume::texture_cost_t::iterator iter = textures.begin(); iter != textures.end(); ++iter)
+	{
+		// add the cost of each individual texture in the linkset
+		cost += iter->second;
+	}
+
+	F32 cost_max = (F32) LLVOVolume::getRenderComplexityMax();
+
+
+
+	// allow user to set a static color scale
+	if (gSavedSettings.getS32("RenderComplexityStaticMax") > 0)
+	{
+		cost_max = gSavedSettings.getS32("RenderComplexityStaticMax");
+	}
+
+	F32 cost_ratio = cost / cost_max;
+	
+	// cap cost ratio at 1.0f in case cost_max is at a low threshold
+	cost_ratio = cost_ratio > 1.0f ? 1.0f : cost_ratio;
+	
+	LLGLEnable blend(GL_BLEND);
+
+	LLColor4 color;
+	const LLColor4 color_min = gSavedSettings.getColor4("RenderComplexityColorMin");
+	const LLColor4 color_mid = gSavedSettings.getColor4("RenderComplexityColorMid");
+	const LLColor4 color_max = gSavedSettings.getColor4("RenderComplexityColorMax");
+
+	if (cost_ratio < 0.5f)
+	{
+		color = color_min * (1 - cost_ratio * 2) + color_mid * (cost_ratio * 2);
+	}
+	else
+	{
+		color = color_mid * (1 - (cost_ratio - 0.5) * 2) + color_max * ((cost_ratio - 0.5) * 2);
+	}
+
+	LLSD color_val = color.getValue();
+
+	// don't highlight objects below the threshold
+	if (cost > gSavedSettings.getS32("RenderComplexityThreshold"))
+	{
+		glColor4f(color[0],color[1],color[2],0.5f);
+
+
+		S32 num_faces = drawablep->getNumFaces();
+		if (num_faces)
+		{
+			for (S32 i = 0; i < num_faces; ++i)
+			{
+				pushVerts(drawablep->getFace(i), LLVertexBuffer::MAP_VERTEX);
+			}
+		}
+		LLViewerObject::const_child_list_t children = voVol->getChildren();
+		for (LLViewerObject::const_child_list_t::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+		{
+			const LLViewerObject *child = *iter;
+			if (child)
+			{
+				num_faces = child->getNumFaces();
+				if (num_faces)
+				{
+					for (S32 i = 0; i < num_faces; ++i)
+					{
+						pushVerts(child->mDrawable->getFace(i), LLVertexBuffer::MAP_VERTEX);
+					}
+				}
+			}
+		}
+	}
+	
+	voVol->setDebugText(llformat("%4.0f", cost));	
+}
 
 void renderBoundingBox(LLDrawable* drawable, BOOL set_color = TRUE)
 {
@@ -2811,7 +2931,490 @@ void renderBoundingBox(LLDrawable* drawable, BOOL set_color = TRUE)
 	{
 		drawBoxOutline(pos,size);
 	}
-	
+}
+
+void renderNormals(LLDrawable* drawablep)
+{
+	LLVertexBuffer::unbind();
+
+	LLVOVolume* vol = drawablep->getVOVolume();
+	if (vol)
+	{
+		LLVolume* volume = vol->getVolume();
+		gGL.pushMatrix();
+		gGL.multMatrix((F32*) vol->getRelativeXform().mMatrix);
+		
+		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+
+		LLVector4a scale(gSavedSettings.getF32("RenderDebugNormalScale"));
+
+		for (S32 i = 0; i < volume->getNumVolumeFaces(); ++i)
+		{
+			const LLVolumeFace& face = volume->getVolumeFace(i);
+
+			for (S32 j = 0; j < face.mNumVertices; ++j)
+			{
+				gGL.begin(LLRender::LINES);
+				LLVector4a n,p;
+				
+				n.setMul(face.mNormals[j], scale);
+				p.setAdd(face.mPositions[j], n);
+				
+				gGL.diffuseColor4f(1,1,1,1);
+				gGL.vertex3fv(face.mPositions[j].getF32ptr());
+				gGL.vertex3fv(p.getF32ptr());
+				
+				if (face.mBinormals)
+				{
+					n.setMul(face.mBinormals[j], scale);
+					p.setAdd(face.mPositions[j], n);
+				
+					gGL.diffuseColor4f(0,1,1,1);
+					gGL.vertex3fv(face.mPositions[j].getF32ptr());
+					gGL.vertex3fv(p.getF32ptr());
+				}	
+				gGL.end();
+			}
+		}
+
+		gGL.popMatrix();
+	}
+}
+
+S32 get_physics_detail(const LLVolumeParams& volume_params, const LLVector3& scale)
+{
+	const S32 DEFAULT_DETAIL = 1;
+	const F32 LARGE_THRESHOLD = 5.f;
+	const F32 MEGA_THRESHOLD = 25.f;
+
+	S32 detail = DEFAULT_DETAIL;
+	F32 avg_scale = (scale[0]+scale[1]+scale[2])/3.f;
+
+	if (avg_scale > LARGE_THRESHOLD)
+	{
+		detail += 1;
+		if (avg_scale > MEGA_THRESHOLD)
+		{
+			detail += 1;
+		}
+	}
+
+	return detail;
+}
+
+void renderMeshBaseHull(LLVOVolume* volume, U32 data_mask, LLColor4& color, LLColor4& line_color)
+{
+	LLUUID mesh_id = volume->getVolume()->getParams().getSculptID();
+	LLModel::Decomposition* decomp = gMeshRepo.getDecomposition(mesh_id);
+
+	const LLVector3 center(0,0,0);
+	const LLVector3 size(0.25f,0.25f,0.25f);
+
+	if (decomp)
+	{		
+		if (!decomp->mBaseHullMesh.empty())
+		{
+			gGL.diffuseColor4fv(color.mV);
+			LLVertexBuffer::drawArrays(LLRender::TRIANGLES, decomp->mBaseHullMesh.mPositions, decomp->mBaseHullMesh.mNormals);
+		}
+		else
+		{
+			gMeshRepo.buildPhysicsMesh(*decomp);
+			gGL.diffuseColor4f(0,1,1,1);
+			drawBoxOutline(center, size);
+		}
+
+	}
+	else
+	{
+		gGL.diffuseColor3f(1,0,1);
+		drawBoxOutline(center, size);
+	}
+}
+
+void render_hull(LLModel::PhysicsMesh& mesh, const LLColor4& color, const LLColor4& line_color)
+{
+	gGL.diffuseColor4fv(color.mV);
+	LLVertexBuffer::drawArrays(LLRender::TRIANGLES, mesh.mPositions, mesh.mNormals);
+	LLGLEnable offset(GL_POLYGON_OFFSET_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glPolygonOffset(3.f, 3.f);
+	glLineWidth(3.f);
+	gGL.diffuseColor4fv(line_color.mV);
+	LLVertexBuffer::drawArrays(LLRender::TRIANGLES, mesh.mPositions, mesh.mNormals);
+	glLineWidth(1.f);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void renderPhysicsShape(LLDrawable* drawable, LLVOVolume* volume)
+{
+	U8 physics_type = volume->getPhysicsShapeType();
+
+	if (physics_type == LLViewerObject::PHYSICS_SHAPE_NONE || volume->isFlexible())
+	{
+		return;
+	}
+
+	//not allowed to return at this point without rendering *something*
+
+	F32 threshold = gSavedSettings.getF32("ObjectCostHighThreshold");
+	F32 cost = volume->getObjectCost();
+
+	LLColor4 low = gSavedSettings.getColor4("ObjectCostLowColor");
+	LLColor4 mid = gSavedSettings.getColor4("ObjectCostMidColor");
+	LLColor4 high = gSavedSettings.getColor4("ObjectCostHighColor");
+
+	F32 normalizedCost = 1.f - exp( -(cost / threshold) );
+
+	LLColor4 color;
+	if ( normalizedCost <= 0.5f )
+	{
+		color = lerp( low, mid, 2.f * normalizedCost );
+	}
+	else
+	{
+		color = lerp( mid, high, 2.f * ( normalizedCost - 0.5f ) );
+	}
+
+	LLColor4 line_color = color*0.5f;
+
+	U32 data_mask = LLVertexBuffer::MAP_VERTEX;
+
+	LLVolumeParams volume_params = volume->getVolume()->getParams();
+
+	LLPhysicsVolumeParams physics_params(volume_params, 
+		physics_type == LLViewerObject::PHYSICS_SHAPE_CONVEX_HULL); 
+
+	LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification physics_spec;
+	LLPhysicsShapeBuilderUtil::determinePhysicsShape(physics_params, volume->getScale(), physics_spec);
+
+	U32 type = physics_spec.getType();
+
+	LLVector3 center(0,0,0);
+	LLVector3 size(0.25f,0.25f,0.25f);
+
+	gGL.pushMatrix();
+	gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
+		
+	if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::USER_MESH)
+	{
+		//Skip. no
+		LLUUID mesh_id = volume->getVolume()->getParams().getSculptID();
+		LLModel::Decomposition* decomp = gMeshRepo.getDecomposition(mesh_id);
+			
+		if (decomp)
+		{ //render a physics based mesh
+			
+			gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+
+			if (!decomp->mHull.empty())
+			{ //decomposition exists, use that
+
+				if (decomp->mMesh.empty())
+				{
+					gMeshRepo.buildPhysicsMesh(*decomp);
+				}
+
+				for (U32 i = 0; i < decomp->mMesh.size(); ++i)
+				{		
+					render_hull(decomp->mMesh[i], color, line_color);
+				}
+			}
+			else if (!decomp->mPhysicsShapeMesh.empty())
+			{ 
+				//decomp has physics mesh, render that mesh
+				gGL.diffuseColor4fv(color.mV);
+				LLVertexBuffer::drawArrays(LLRender::TRIANGLES, decomp->mPhysicsShapeMesh.mPositions, decomp->mPhysicsShapeMesh.mNormals);
+								
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				gGL.diffuseColor4fv(line_color.mV);
+				LLVertexBuffer::drawArrays(LLRender::TRIANGLES, decomp->mPhysicsShapeMesh.mPositions, decomp->mPhysicsShapeMesh.mNormals);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
+			else
+			{ //no mesh or decomposition, render base hull
+				renderMeshBaseHull(volume, data_mask, color, line_color);
+
+				if (decomp->mPhysicsShapeMesh.empty())
+				{
+					//attempt to fetch physics shape mesh if available
+					gMeshRepo.fetchPhysicsShape(mesh_id);
+				}
+			}
+		}
+		else
+		{	
+			gGL.diffuseColor3f(1,1,0);
+			drawBoxOutline(center, size);
+		}
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::USER_CONVEX ||
+		type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::PRIM_CONVEX)
+	{
+		if (volume->isMesh())
+		{
+			renderMeshBaseHull(volume, data_mask, color, line_color);
+		}
+		/*else
+		{
+			LLVolumeParams volume_params = volume->getVolume()->getParams();
+			S32 detail = get_physics_detail(volume_params, volume->getScale());
+			LLVolume* phys_volume = LLPrimitive::getVolumeManager()->refVolume(volume_params, detail);
+
+			if (!phys_volume->mHullPoints)
+			{ //build convex hull
+				std::vector<LLVector3> pos;
+				std::vector<U16> index;
+
+				S32 index_offset = 0;
+
+				for (S32 i = 0; i < phys_volume->getNumVolumeFaces(); ++i)
+				{
+					const LLVolumeFace& face = phys_volume->getVolumeFace(i);
+					if (index_offset + face.mNumVertices > 65535)
+					{
+						continue;
+					}
+
+					for (S32 j = 0; j < face.mNumVertices; ++j)
+					{
+						pos.push_back(LLVector3(face.mPositions[j].getF32ptr()));
+					}
+
+					for (S32 j = 0; j < face.mNumIndices; ++j)
+					{
+						index.push_back(face.mIndices[j]+index_offset);
+					}
+
+					index_offset += face.mNumVertices;
+				}
+
+				if (!pos.empty() && !index.empty())
+				{
+					LLCDMeshData mesh;
+					mesh.mIndexBase = &index[0];
+					mesh.mVertexBase = pos[0].mV;
+					mesh.mNumVertices = pos.size();
+					mesh.mVertexStrideBytes = 12;
+					mesh.mIndexStrideBytes = 6;
+					mesh.mIndexType = LLCDMeshData::INT_16;
+
+					mesh.mNumTriangles = index.size()/3;
+					
+					LLCDMeshData res;
+
+					LLConvexDecomposition::getInstance()->generateSingleHullMeshFromMesh( &mesh, &res );
+
+					//copy res into phys_volume
+					phys_volume->mHullPoints = (LLVector4a*) ll_aligned_malloc_16(sizeof(LLVector4a)*res.mNumVertices);
+					phys_volume->mNumHullPoints = res.mNumVertices;
+
+					S32 idx_size = (res.mNumTriangles*3*2+0xF) & ~0xF;
+					phys_volume->mHullIndices = (U16*) ll_aligned_malloc_16(idx_size);
+					phys_volume->mNumHullIndices = res.mNumTriangles*3;
+
+					const F32* v = res.mVertexBase;
+
+					for (S32 i = 0; i < res.mNumVertices; ++i)
+					{
+						F32* p = (F32*) ((U8*)v+i*res.mVertexStrideBytes);
+						phys_volume->mHullPoints[i].load3(p);
+					}
+
+					if (res.mIndexType == LLCDMeshData::INT_16)
+					{
+						for (S32 i = 0; i < res.mNumTriangles; ++i)
+						{
+							U16* idx = (U16*) (((U8*)res.mIndexBase)+i*res.mIndexStrideBytes);
+
+							phys_volume->mHullIndices[i*3+0] = idx[0];
+							phys_volume->mHullIndices[i*3+1] = idx[1];
+							phys_volume->mHullIndices[i*3+2] = idx[2];
+						}
+					}
+					else
+					{
+						for (S32 i = 0; i < res.mNumTriangles; ++i)
+						{
+							U32* idx = (U32*) (((U8*)res.mIndexBase)+i*res.mIndexStrideBytes);
+
+							phys_volume->mHullIndices[i*3+0] = (U16) idx[0];
+							phys_volume->mHullIndices[i*3+1] = (U16) idx[1];
+							phys_volume->mHullIndices[i*3+2] = (U16) idx[2];
+						}
+					}
+				}
+			}
+
+			if (phys_volume->mHullPoints)
+			{
+				//render hull
+			
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				
+				gGL.diffuseColor4fv(line_color.mV);
+				LLVertexBuffer::unbind();
+
+				llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShader != 0);
+							
+				LLVertexBuffer::drawElements(LLRender::TRIANGLES, phys_volume->mHullPoints, NULL, phys_volume->mNumHullIndices, phys_volume->mHullIndices);
+				
+				gGL.diffuseColor4fv(color.mV);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+				LLVertexBuffer::drawElements(LLRender::TRIANGLES, phys_volume->mHullPoints, NULL, phys_volume->mNumHullIndices, phys_volume->mHullIndices);
+				
+			}
+			else
+			{
+				gGL.diffuseColor4f(1,0,1,1);
+				drawBoxOutline(center, size);
+			}
+
+			LLPrimitive::sVolumeManager->unrefVolume(phys_volume);
+		}*/
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::BOX)
+	{
+		LLVector3 center = physics_spec.getCenter();
+		LLVector3 scale = physics_spec.getScale();
+		LLVector3 vscale = volume->getScale()*2.f;
+		scale.set(scale[0]/vscale[0], scale[1]/vscale[1], scale[2]/vscale[2]);
+		
+		gGL.diffuseColor4fv(color.mV);
+		drawBox(center, scale);
+	}
+	else if	(type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::SPHERE)
+	{
+		/*LLVolumeParams volume_params;
+		volume_params.setType( LL_PCODE_PROFILE_CIRCLE_HALF, LL_PCODE_PATH_CIRCLE );
+		volume_params.setBeginAndEndS( 0.f, 1.f );
+		volume_params.setBeginAndEndT( 0.f, 1.f );
+		volume_params.setRatio	( 1, 1 );
+		volume_params.setShear	( 0, 0 );
+		LLVolume* sphere = LLPrimitive::sVolumeManager->refVolume(volume_params, 3);
+		
+		gGL.diffuseColor4fv(color.mV);
+		pushVerts(sphere);
+		LLPrimitive::sVolumeManager->unrefVolume(sphere);*/
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::CYLINDER)
+	{
+		LLVolumeParams volume_params;
+		volume_params.setType( LL_PCODE_PROFILE_CIRCLE, LL_PCODE_PATH_LINE );
+		volume_params.setBeginAndEndS( 0.f, 1.f );
+		volume_params.setBeginAndEndT( 0.f, 1.f );
+		volume_params.setRatio	( 1, 1 );
+		volume_params.setShear	( 0, 0 );
+		LLVolume* cylinder = LLPrimitive::getVolumeManager()->refVolume(volume_params, 3);
+		
+		gGL.diffuseColor4fv(color.mV);
+		pushVerts(cylinder);
+		LLPrimitive::getVolumeManager()->unrefVolume(cylinder);
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::PRIM_MESH)
+	{
+		LLVolumeParams volume_params = volume->getVolume()->getParams();
+		S32 detail = get_physics_detail(volume_params, volume->getScale());
+
+		LLVolume* phys_volume = LLPrimitive::getVolumeManager()->refVolume(volume_params, detail);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		
+		gGL.diffuseColor4fv(line_color.mV);
+		pushVerts(phys_volume);
+		
+		gGL.diffuseColor4fv(color.mV);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		pushVerts(phys_volume);
+		LLPrimitive::getVolumeManager()->unrefVolume(phys_volume);
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::PRIM_CONVEX)
+	{
+		LLVolumeParams volume_params = volume->getVolume()->getParams();
+		S32 detail = get_physics_detail(volume_params, volume->getScale());
+
+		LLVolume* phys_volume = LLPrimitive::getVolumeManager()->refVolume(volume_params, detail);
+
+		if (phys_volume->mHullPoints && phys_volume->mHullIndices)
+		{
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			llassert(!LLGLSLShader::sNoFixedFunction || LLGLSLShader::sCurBoundShader != 0);
+			LLVertexBuffer::unbind();
+			glVertexPointer(3, GL_FLOAT, 16, phys_volume->mHullPoints);
+			gGL.diffuseColor4fv(line_color.mV);
+			gGL.syncMatrices();
+			glDrawElements(GL_TRIANGLES, phys_volume->mNumHullIndices, GL_UNSIGNED_SHORT, phys_volume->mHullIndices);
+			
+			gGL.diffuseColor4fv(color.mV);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glDrawElements(GL_TRIANGLES, phys_volume->mNumHullIndices, GL_UNSIGNED_SHORT, phys_volume->mHullIndices);			
+		}
+		else
+		{
+			gGL.diffuseColor3f(1,0,1);
+			drawBoxOutline(center, size);
+			gMeshRepo.buildHull(volume_params, detail);
+		}
+		LLPrimitive::getVolumeManager()->unrefVolume(phys_volume);
+	}
+	else if (type == LLPhysicsShapeBuilderUtil::PhysicsShapeSpecification::SCULPT)
+	{
+		//TODO: implement sculpted prim physics display
+	}
+	else 
+	{
+		llerrs << "Unhandled type" << llendl;
+	}
+
+	gGL.popMatrix();
+}
+
+void renderPhysicsShapes(LLSpatialGroup* group)
+{
+	for (LLSpatialGroup::OctreeNode::const_element_iter i = group->getData().begin(); i != group->getData().end(); ++i)
+	{
+		LLDrawable* drawable = *i;
+		LLVOVolume* volume = drawable->getVOVolume();
+		if (volume && !volume->isAttachment() && volume->getPhysicsShapeType() != LLViewerObject::PHYSICS_SHAPE_NONE )
+		{
+			if (!group->mSpatialPartition->isBridge())
+			{
+				gGL.pushMatrix();
+				LLVector3 trans = drawable->getRegion()->getOriginAgent();
+				gGL.translatef(trans.mV[0], trans.mV[1], trans.mV[2]);
+				renderPhysicsShape(drawable, volume);
+				gGL.popMatrix();
+			}
+			else
+			{
+				renderPhysicsShape(drawable, volume);
+			}
+		}
+		else
+		{
+			LLViewerObject* object = drawable->getVObj();
+			if (object && object->getPCode() == LLViewerObject::LL_VO_SURFACE_PATCH)
+			{
+				//push face vertices for terrain
+				for (S32 i = 0; i < drawable->getNumFaces(); ++i)
+				{
+					LLFace* face = drawable->getFace(i);
+					LLVertexBuffer* buff = face->getVertexBuffer();
+					if (buff)
+					{
+						glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+						buff->setBuffer(LLVertexBuffer::MAP_VERTEX);
+						gGL.diffuseColor3f(0.2f, 0.5f, 0.3f);
+						buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
+									
+						gGL.diffuseColor3f(0.2f, 1.f, 0.3f);
+						glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+						buff->draw(LLRender::TRIANGLES, buff->getNumIndices(), 0);
+					}
+				}
+			}
+		}
+	}
 }
 
 void renderTexturePriority(LLDrawable* drawable)
@@ -2907,6 +3510,43 @@ void renderBatchSize(LLDrawInfo* params)
 	gGL.diffuseColor4ubv((GLubyte*) &(params->mDebugColor));
 	pushVerts(params, LLVertexBuffer::MAP_VERTEX);
 }
+
+void renderShadowFrusta(LLDrawInfo* params)
+{
+	LLGLEnable blend(GL_BLEND);
+	gGL.setSceneBlendType(LLRender::BT_ADD);
+
+	LLVector4a center;
+	center.setAdd(params->mExtents[1], params->mExtents[0]);
+	center.mul(0.5f);
+	LLVector4a size;
+	size.setSub(params->mExtents[1],params->mExtents[0]);
+	size.mul(0.5f);
+
+	if (gPipeline.mShadowCamera[4].AABBInFrustum(center, size))
+	{
+		gGL.diffuseColor3f(1,0,0);
+		pushVerts(params, LLVertexBuffer::MAP_VERTEX);
+	}
+	if (gPipeline.mShadowCamera[5].AABBInFrustum(center, size))
+	{
+		gGL.diffuseColor3f(0,1,0);
+		pushVerts(params, LLVertexBuffer::MAP_VERTEX);
+	}
+	if (gPipeline.mShadowCamera[6].AABBInFrustum(center, size))
+	{
+		gGL.diffuseColor3f(0,0,1);
+		pushVerts(params, LLVertexBuffer::MAP_VERTEX);
+	}
+	if (gPipeline.mShadowCamera[7].AABBInFrustum(center, size))
+	{
+		gGL.diffuseColor3f(1,0,1);
+		pushVerts(params, LLVertexBuffer::MAP_VERTEX);
+	}
+
+	gGL.setSceneBlendType(LLRender::BT_ALPHA);
+}
+
 
 void renderLights(LLDrawable* drawablep)
 {
@@ -3248,10 +3888,15 @@ public:
 		for (LLSpatialGroup::OctreeNode::const_element_iter i = branch->getData().begin(); i != branch->getData().end(); ++i)
 		{
 			LLDrawable* drawable = *i;
-						
+					
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_BBOXES))
 			{
 				renderBoundingBox(drawable);			
+			}
+
+			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_NORMALS))
+			{
+				renderNormals(drawable);
 			}
 			
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_BUILD_QUEUE))
@@ -3292,6 +3937,10 @@ public:
 			if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_UPDATE_TYPE))
 			{
 				renderUpdateType(drawable);
+			}
+			if(gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_RENDER_COMPLEXITY))
+			{
+				renderComplexityDisplay(drawable);
 			}
 
 			LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(drawable->getVObj().get());
@@ -3344,8 +3993,47 @@ public:
 				{
 					renderBatchSize(draw_info);
 				}
+				if (gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA))
+				{
+					renderShadowFrusta(draw_info);
+				}
 			}
 		}
+	}
+};
+
+
+class LLOctreeRenderPhysicsShapes : public LLOctreeTraveler<LLDrawable>
+{
+public:
+	LLCamera* mCamera;
+	LLOctreeRenderPhysicsShapes(LLCamera* camera): mCamera(camera) {}
+	
+	virtual void traverse(const LLSpatialGroup::OctreeNode* node)
+	{
+		LLSpatialGroup* group = (LLSpatialGroup*) node->getListener(0);
+		
+		if (!mCamera || mCamera->AABBInFrustumNoFarClip(group->mBounds[0], group->mBounds[1]))
+		{
+			node->accept(this);
+			stop_glerror();
+
+			for (U32 i = 0; i < node->getChildCount(); i++)
+			{
+				traverse(node->getChild(i));
+				stop_glerror();
+			}
+			
+			group->rebuildGeom();
+			group->rebuildMesh();
+
+			renderPhysicsShapes(group);
+		}
+	}
+
+	virtual void visit(const LLSpatialGroup::OctreeNode* branch)
+	{
+		
 	}
 };
 
@@ -3467,6 +4155,25 @@ public:
 };
 
 
+void LLSpatialPartition::renderPhysicsShapes()
+{
+	LLSpatialBridge* bridge = asBridge();
+	LLCamera* camera = LLViewerCamera::getInstance();
+	
+	if (bridge)
+	{
+		camera = NULL;
+	}
+
+	gGL.flush();
+	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+	glLineWidth(3.f);
+	LLOctreeRenderPhysicsShapes render_physics(camera);
+	render_physics.traverse(mOctree);
+	gGL.flush();
+	glLineWidth(1.f);
+}
+
 void LLSpatialPartition::renderDebug()
 {
 	if (!gPipeline.hasRenderDebugMask(LLPipeline::RENDER_DEBUG_OCTREE |
@@ -3475,13 +4182,16 @@ void LLSpatialPartition::renderDebug()
 									  LLPipeline::RENDER_DEBUG_BATCH_SIZE |
 									  LLPipeline::RENDER_DEBUG_UPDATE_TYPE |
 									  LLPipeline::RENDER_DEBUG_BBOXES |
+									  LLPipeline::RENDER_DEBUG_NORMALS |
 									  LLPipeline::RENDER_DEBUG_POINTS |
 									  LLPipeline::RENDER_DEBUG_TEXTURE_PRIORITY |
 									  LLPipeline::RENDER_DEBUG_TEXTURE_ANIM |
 									  LLPipeline::RENDER_DEBUG_RAYCAST |
 									  LLPipeline::RENDER_DEBUG_AVATAR_VOLUME |
 									  LLPipeline::RENDER_DEBUG_AGENT_TARGET |
-									  LLPipeline::RENDER_DEBUG_BUILD_QUEUE))
+									  //LLPipeline::RENDER_DEBUG_BUILD_QUEUE |
+									  LLPipeline::RENDER_DEBUG_SHADOW_FRUSTA |
+									  LLPipeline::RENDER_DEBUG_RENDER_COMPLEXITY)) 
 	{
 		return;
 	}

@@ -39,6 +39,7 @@
 #include "llfloater.h"
 #include "llinventory.h"
 #include "llfolderview.h"
+#include "llinventoryfilter.h"
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
 #include "llmemberlistener.h"

@@ -208,14 +208,14 @@ class WindowsManifest(ViewerManifest):
         self.path("dbghelp.dll")
 
         # For using FMOD for sound... DJS
-        if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
-            try:
-                self.path("fmod.dll")
-                pass
-            except:
-                print "Skipping fmod.dll - not found"
-                pass
-            self.end_prefix()
+        #~if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+            #~try:
+                #~self.path("fmod.dll")
+                #~pass
+            #~except:
+                #~print "Skipping fmod.dll - not found"
+               #~ pass
+            #~self.end_prefix()
 
         # For textures
         #if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
@@ -319,6 +319,15 @@ class WindowsManifest(ViewerManifest):
             self.path("ortp.dll")
             self.path("wrap_oal.dll")
             self.end_prefix()
+
+        if self.args['extra_libraries'] != None:
+            print self.args['extra_libraries']
+            path_list = self.args['extra_libraries'].split('|')
+            for path in path_list:
+                path_pair = path.rsplit('/', 1)
+                if self.prefix(src=path_pair[0], dst=""):
+                    self.path(path_pair[1])
+                    self.end_prefix()
 
         # pull in the crash logger and updater from other projects
         self.path(src='../win_crash_logger/%s/windows-crash-logger.exe' % self.args['configuration'], dst="win_crash_logger.exe")

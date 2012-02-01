@@ -56,7 +56,7 @@ static bool isProcessAlive(U32 pid)
 #else   //Everyone Else
 
 static U32 getPID() {
-	return getpid()
+	return getpid();
 }
 
 static bool isProcessAlive(U32 pid)
