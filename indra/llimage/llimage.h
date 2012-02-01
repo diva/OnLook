@@ -330,7 +330,7 @@ public:
 	virtual void setLastError(const std::string& message, const std::string& filename = std::string());
 	
 protected:
-	BOOL copyData(U8 *data, S32 size); // calls updateData()
+	BOOL copyData(U8 *data, S32 size);
 	
 protected:
 	S8 mCodec;
