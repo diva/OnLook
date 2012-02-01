@@ -2766,6 +2766,11 @@ bool idle_startup()
 		LL_DEBUGS("AppInit") << "Initialization complete" << LL_ENDL;
 
 		gRenderStartTime.reset();
+		// We're not allowed to call reset() when paused, and we might or might not be paused depending on
+		// whether or not the main window lost focus before we get here (see LLViewerWindow::handleFocusLost).
+		// The simplest, legal way to make sure we're unpaused is to just pause/unpause here.
+		gForegroundTime.pause();
+		gForegroundTime.unpause();
 		gForegroundTime.reset();
 
 		if (gSavedSettings.getBOOL("FetchInventoryOnLogin")

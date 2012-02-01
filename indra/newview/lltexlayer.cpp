@@ -402,7 +402,7 @@ void LLTexLayerSetBuffer::readBackAndUpload()
 			BOOL valid = FALSE;
 			LLPointer<LLImageJ2C> integrity_test = new LLImageJ2C;
 			S32 file_size = 0;
-			U8* data = LLVFile::readFile(gVFS, asset_id, LLAssetType::AT_TEXTURE, &file_size);
+			U8* data = LLVFile::readFile(gVFS, LLImageBase::getPrivatePool(), asset_id, LLAssetType::AT_TEXTURE, &file_size);
 			if (data)
 			{
 				valid = integrity_test->validate(data, file_size); // integrity_test will delete 'data'

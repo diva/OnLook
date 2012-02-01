@@ -165,6 +165,7 @@ set(viewer_SOURCE_FILES
     lleventinfo.cpp
     lleventnotifier.cpp
     lleventpoll.cpp
+    llexternaleditor.cpp
     llface.cpp
     llfasttimerview.cpp
     llfeaturemanager.cpp
@@ -645,6 +646,7 @@ set(viewer_HEADER_FILES
     lleventinfo.h
     lleventnotifier.h
     lleventpoll.h
+    llexternaleditor.h
     llface.h
     llfasttimerview.h
     llfeaturemanager.h

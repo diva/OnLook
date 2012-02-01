@@ -130,8 +130,16 @@ public:
 		mActiveTimerRoot->setCollapsed(false);
 
 		mRootFrameState = new LLFastTimer::FrameState(mActiveTimerRoot);
-		mRootFrameState->mParent = &mTimerRoot->getFrameState();
-		mActiveTimerRoot->setParent(mTimerRoot);
+		// getFrameState and setParent recursively call this function,
+		// so we have to work around that by using a specialized implementation
+		// for the special case were mTimerRoot != mActiveTimerRoot -- Aleric
+		mRootFrameState->mParent = &LLFastTimer::getFrameStateList()[0];	// &mTimerRoot->getFrameState()
+		// And the following four lines are mActiveTimerRoot->setParent(mTimerRoot);
+		llassert(!mActiveTimerRoot->mParent);
+		mActiveTimerRoot->mParent = mTimerRoot;								// mParent = parent;
+		mRootFrameState->mParent = mRootFrameState->mParent;				// getFrameState().mParent = &parent->getFrameState();
+		mTimerRoot->getChildren().push_back(mActiveTimerRoot);				// parent->getChildren().push_back(this);
+		mTimerRoot->mNeedsSorting = true;									// parent->mNeedsSorting = true;
 
 		mAppTimer = new LLFastTimer(mRootFrameState);
 	}

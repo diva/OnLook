@@ -8,7 +8,10 @@
 	     word_wrap="true" show_line_numbers="true">
 		Loading...
 	</text_editor>
-	<button bottom="-499" enabled="true" follows="right|bottom" font="SansSerif"
+  <button bottom="-499" enabled="true" follows="right|bottom" font="SansSerif"
+	     halign="center" height="20" label="Edit..." label_selected="Edit..." left="230"
+	     mouse_opaque="true" name="Edit_btn" width="128" />
+  <button bottom="-499" enabled="true" follows="right|bottom" font="SansSerif"
 	     halign="center" height="20" label="Save" label_selected="Save" left="360"
 	     mouse_opaque="true" name="Save_btn" width="128" />
 	<scroll_list background_visible="true" bottom="-457" column_padding="5" draw_border="true"

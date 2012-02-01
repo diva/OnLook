@@ -36,8 +36,8 @@
 	<icon bottom="-89" height="14" image_name="rounded_square.tga" left_delta="44" name="UltraDivet" width="2"/>
 -->
 	<slider bottom="-91" control_name="RenderQualityPerformance" increment="1" initial_val="0" left="165" max_val="3" min_val="0" name="QualityPerformanceSelection" show_text="false" width="150" />
-	<check_box bottom="-96" control_name="RenderCustomSettings" label="Custom" left="395" name="CustomSettings"/>
-	<view_border bevel_style="none" bottom="-395" height="280" left="5" width="485"/>
+	<check_box bottom="-96" control_name="RenderCustomSettings" label="Custom" left="395" initial_value="true" name="CustomSettings"/>
+	<view_border bevel_style="none" bottom="-395" height="280" left="5" name="GraphicsBorder" width="485"/>
 	<text bottom="-130" height="12" left="10" name="ShadersText">Shaders:</text>
 	<check_box bottom_delta="-23" control_name="RenderObjectBump" height="16" initial_value="true" label="Bump Mapping and Shiny" left="10" name="BumpShiny"/>
 	<check_box bottom_delta="-17" control_name="VertexShaderEnable" height="16" initial_value="true" label="Basic Shaders" left_delta="0" name="BasicShaders" tool_tip="Disabling this option may prevent some graphics card drivers from crashing."/>
@@ -59,13 +59,13 @@
 	  <combo_item name="2" value="2">Sun and spotlight shadows</combo_item>
   </combo_box>
 
-  <text bottom="-317" height="12" left="10">Avatar Rendering:</text>
+  <text bottom="-317" height="12" left="10" name="AvatarRenderingText">Avatar Rendering:</text>
   <check_box bottom_delta="-18" control_name="RenderUseImpostors" initial_value="true" label="Avatar Impostors" left_delta="0" name="AvatarImpostors"/>
   <slider bottom_delta="-12" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="100" left_delta="8" max_val="50" min_val="1" name="AvatarMaxVisible" width="195"/>
   <check_box bottom_delta="-22" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" left="10" name="AvatarVertexProgram"/>
   <check_box bottom_delta="-17" control_name="RenderAvatarCloth" initial_value="true" label="Avatar Cloth" left_delta="0" name="AvatarCloth"/>
-  <!--text bottom="-131" height="12" left="464">m</text-->
-  <text bottom="-131" height="12" left="470">m</text>
+  <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
+  <text bottom="-131" height="12" left="470" name="DrawDistanceMeterText2">m</text>
   <slider bottom="-135"      control_name="RenderFarClip"	  	  		  decimal_digits="0" height="16" increment="8" initial_val="160" label="Draw Distance:" label_width="101" left="215" max_val="1024" min_val="64" name="DrawDistance" width="262"/>
   <slider bottom_delta="-16" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101" left_delta="0"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
   <slider bottom_delta="-20" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" left_delta="0" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
@@ -90,7 +90,7 @@
 	  <radio_item bottom="-15" height="16" left="3" name="SunMoon" width="156">Sun and moon only</radio_item>
 	  <radio_item bottom="-31" height="16" left="3" name="LocalLights" width="156">Nearby local lights</radio_item>
   </radio_group>
-  <text bottom="-354" height="12" left="370">Terrain Detail:</text>
+  <text bottom="-354" height="12" left="370" name="TerrainDetailText">Terrain Detail:</text>
   <radio_group bottom_delta="-40" control_name="RenderTerrainDetail" draw_border="false" height="38" left_delta="0"	name="TerrainDetailRadio" width="321">
 	  <radio_item bottom="-15" height="16" left="3" name="0" width="315">Low</radio_item>
 	  <radio_item bottom="-31" height="16" left="3" name="2" width="315">High</radio_item>
