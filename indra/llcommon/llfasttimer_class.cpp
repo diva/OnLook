@@ -57,7 +57,6 @@ S32 LLFastTimer::sLastFrameIndex = -1;
 U64 LLFastTimer::sLastFrameTime = LLFastTimer::getCPUClockCount64();
 bool LLFastTimer::sPauseHistory = 0;
 bool LLFastTimer::sResetHistory = 0;
-LLFastTimer::CurTimerData LLFastTimer::sCurTimerData;
 BOOL LLFastTimer::sLog = FALSE;
 std::string LLFastTimer::sLogName = "";
 BOOL LLFastTimer::sMetricLog = FALSE;
@@ -72,7 +71,6 @@ U64 LLFastTimer::sClockResolution = 1000000000; // Nanosecond resolution
 U64 LLFastTimer::sClockResolution = 1000000; // Microsecond resolution
 #endif
 
-std::vector<LLFastTimer::FrameState>* LLFastTimer::sTimerInfos = NULL;
 U64				LLFastTimer::sTimerCycles = 0;
 U32				LLFastTimer::sTimerCalls = 0;
 
@@ -130,8 +128,16 @@ public:
 		mActiveTimerRoot->setCollapsed(false);
 
 		mRootFrameState = new LLFastTimer::FrameState(mActiveTimerRoot);
-		mRootFrameState->mParent = &mTimerRoot->getFrameState();
-		mActiveTimerRoot->setParent(mTimerRoot);
+		// getFrameState and setParent recursively call this function,
+		// so we have to work around that by using a specialized implementation
+		// for the special case were mTimerRoot != mActiveTimerRoot -- Aleric
+		mRootFrameState->mParent = &LLFastTimer::getFrameStateList()[0];	// &mTimerRoot->getFrameState()
+		// And the following four lines are mActiveTimerRoot->setParent(mTimerRoot);
+		llassert(!mActiveTimerRoot->mParent);
+		mActiveTimerRoot->mParent = mTimerRoot;								// mParent = parent;
+		mRootFrameState->mParent = mRootFrameState->mParent;				// getFrameState().mParent = &parent->getFrameState();
+		mTimerRoot->getChildren().push_back(mActiveTimerRoot);				// parent->getChildren().push_back(this);
+		mTimerRoot->mNeedsSorting = true;									// parent->mNeedsSorting = true;
 
 		mAppTimer = new LLFastTimer(mRootFrameState);
 	}
@@ -227,7 +233,8 @@ void LLFastTimer::DeclareTimer::updateCachedPointers()
 	}
 
 	// also update frame states of timers on stack
-	LLFastTimer* cur_timerp = LLFastTimer::sCurTimerData.mCurTimer;
+	static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+	LLFastTimer* cur_timerp = static_cur_data.mCurTimer;
 	while(cur_timerp->mLastTimerData.mCurTimer != cur_timerp)	
 	{
 		cur_timerp->mFrameState = &cur_timerp->mFrameState->mTimer->getFrameState();
@@ -454,10 +461,12 @@ void LLFastTimer::NamedTimer::accumulateTimings()
 {
 	U32 cur_time = getCPUClockCount32();
 
+	static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+
 	// walk up stack of active timers and accumulate current time while leaving timing structures active
-	LLFastTimer* cur_timer = sCurTimerData.mCurTimer;
+	LLFastTimer* cur_timer = static_cur_data.mCurTimer;
 	// root defined by parent pointing to self
-	CurTimerData* cur_data = &sCurTimerData;
+	CurTimerData* cur_data = &static_cur_data;
 	while(cur_timer->mLastTimerData.mCurTimer != cur_timer)
 	{
 		U32 cumulative_time_delta = cur_time - cur_timer->mStartTime;
@@ -606,8 +615,10 @@ void LLFastTimer::NamedTimer::reset()
 	// effectively zeroing out any accumulated time
 	U32 cur_time = getCPUClockCount32();
 
+	static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+
 	// root defined by parent pointing to self
-	CurTimerData* cur_data = &sCurTimerData;
+	CurTimerData* cur_data = &static_cur_data;
 	LLFastTimer* cur_timer = cur_data->mCurTimer;
 	while(cur_timer->mLastTimerData.mCurTimer != cur_timer)
 	{
@@ -641,12 +652,13 @@ void LLFastTimer::NamedTimer::reset()
 
 //static 
 LLFastTimer::info_list_t& LLFastTimer::getFrameStateList() 
-{ 
-	if (!sTimerInfos) 
-	{ 
-		sTimerInfos = new info_list_t(); 
-	} 
-	return *sTimerInfos; 
+{
+	//Static local varaible to avoid static initialization order fiasco.
+	//NamedTimerFactory ctor uses this object, and is called during static initialization...
+	//often before llfasttimer_class.cpp's translation unit.
+	//'leak' is harmless and intended to ensure it out-scopes NamedTimerFactory.
+	static info_list_t* timer_infos = new info_list_t();
+	return *timer_infos;
 }
 
 
@@ -779,10 +791,11 @@ LLFastTimer::LLFastTimer(LLFastTimer::FrameState* state)
 	U32 start_time = getCPUClockCount32();
 	mStartTime = start_time;
 	mFrameState->mActiveCount++;
-	LLFastTimer::sCurTimerData.mCurTimer = this;
-	LLFastTimer::sCurTimerData.mFrameState = mFrameState;
-	LLFastTimer::sCurTimerData.mChildTime = 0;
-	mLastTimerData = LLFastTimer::sCurTimerData;
+	static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+	static_cur_data.mCurTimer = this;
+	static_cur_data.mFrameState = mFrameState;
+	static_cur_data.mChildTime = 0;
+	mLastTimerData = static_cur_data;
 }
 
 

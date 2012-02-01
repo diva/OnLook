@@ -151,9 +151,10 @@ public:
 	 */
 	static void deleteSingleton()
 	{
-		delete getData().mSingletonInstance;
-		getData().mSingletonInstance = NULL;
+		DERIVED_TYPE* instance = getData().mSingletonInstance;
 		getData().mInitState = DELETED;
+		getData().mSingletonInstance = NULL;
+		delete instance;
 	}
 
 	static SingletonInstanceData& getData()
@@ -175,25 +176,11 @@ public:
 	{
 		SingletonInstanceData& data = getData();
 
-		if (data.mInitState == CONSTRUCTING)
+		if (data.mInitState != INITIALIZED)
 		{
-			llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << llendl;
+			createInstance(data);
 		}
 
-		if (data.mInitState == DELETED)
-		{
-			llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << llendl;
-		}
-		
-		if (!data.mSingletonInstance) 
-		{
-			data.mInitState = CONSTRUCTING;
-			data.mSingletonInstance = new DERIVED_TYPE(); 
-			data.mInitState = INITIALIZING;
-			data.mSingletonInstance->initSingleton(); 
-			data.mInitState = INITIALIZED;	
-		}
-		
 		return data.mSingletonInstance;
 	}
 
@@ -219,7 +206,35 @@ public:
 	}
 
 private:
+	static void createInstance(SingletonInstanceData& data);
 	virtual void initSingleton() {}
 };
+
+// Moved this here cause it's too big to be inlined --Aleric.
+template<typename DERIVED_TYPE>
+void LLSingleton<DERIVED_TYPE>::createInstance(SingletonInstanceData& data)
+{
+	if (data.mInitState == CONSTRUCTING)
+	{
+		llerrs << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from singleton constructor!" << llendl;
+	}
+
+	if (data.mInitState == DELETED)
+	{
+		llwarns << "Trying to access deleted singleton " << typeid(DERIVED_TYPE).name() << " creating new instance" << llendl;
+	}
+	
+	if (data.mInitState == INITIALIZING)
+	{
+		llwarns << "Tried to access singleton " << typeid(DERIVED_TYPE).name() << " from initSingleton(), using half-initialized object" << llendl;
+		return;
+	}
+
+	data.mInitState = CONSTRUCTING;
+	data.mSingletonInstance = new DERIVED_TYPE(); 
+	data.mInitState = INITIALIZING;
+	data.mSingletonInstance->initSingleton(); 
+	data.mInitState = INITIALIZED;	
+}
 
 #endif
