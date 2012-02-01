@@ -88,6 +88,7 @@ set(viewer_SOURCE_FILES
 	lldaycyclemanager.cpp
 	llenvmanager.cpp
 	llwlhandlers.cpp
+	llregioninfomodel.cpp
     ascentfloatercontactgroups.cpp
     ascentkeyword.cpp
     ascentprefschat.cpp
@@ -568,6 +569,7 @@ set(viewer_HEADER_FILES
 	lldaycyclemanager.h
 	llenvmanager.h
 	llwlhandlers.h
+	llregioninfomodel.h
     ascentfloatercontactgroups.h
     ascentkeyword.h
     ascentprefschat.h

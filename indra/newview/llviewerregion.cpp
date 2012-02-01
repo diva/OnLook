@@ -55,6 +55,7 @@
 #include "llfloaterreporter.h"
 #include "llfloaterregioninfo.h"
 #include "llhttpnode.h"
+#include "llregioninfomodel.h"
 #include "llsdutil.h"
 #include "llstartup.h"
 #include "lltrans.h"
@@ -647,6 +648,9 @@ std::string LLViewerRegion::accessToShortString(U8 sim_access)
 void LLViewerRegion::processRegionInfo(LLMessageSystem* msg, void**)
 {
 	// send it to 'observers'
+	// *TODO: switch the floaters to using LLRegionInfoModel
+	llinfos << "Processing region info" << llendl;
+	LLRegionInfoModel::getInstance()->update(msg);
 	LLFloaterGodTools::processRegionInfo(msg);
 	LLFloaterRegionInfo::processRegionInfo(msg);
 	LLFloaterReporter::processRegionInfo(msg);
@@ -1495,8 +1499,8 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	capabilityNames.append("DispatchRegionInfo");
 	capabilityNames.append("EstateChangeInfo");
 	capabilityNames.append("EventQueueGet");
-	/*capabilityNames.append("EnvironmentSettings");
-	capabilityNames.append("ObjectMedia");
+	capabilityNames.append("EnvironmentSettings");
+	/*capabilityNames.append("ObjectMedia");
 	capabilityNames.append("ObjectMediaNavigate");*/
 	
 	if (gSavedSettings.getBOOL("UseHTTPInventory")) //Caps suffixed with 2 by LL. Don't update until rest of fetch system is updated first.
