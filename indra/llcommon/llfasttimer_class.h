@@ -169,11 +169,11 @@ public:
 		// keep current parent as long as it is active when we are
 		frame_state->mMoveUpTree |= (frame_state->mParent->mActiveCount == 0);
 
-		LLFastTimer::CurTimerData* cur_timer_data = &LLFastTimer::sCurTimerData;
-		mLastTimerData = *cur_timer_data;
-		cur_timer_data->mCurTimer = this;
-		cur_timer_data->mFrameState = frame_state;
-		cur_timer_data->mChildTime = 0;
+		static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+		mLastTimerData = static_cur_data;
+		static_cur_data.mCurTimer = this;
+		static_cur_data.mFrameState = frame_state;
+		static_cur_data.mChildTime = 0;
 #endif
 #if TIME_FAST_TIMERS
 		U64 timer_end = getCPUClockCount64();
@@ -195,7 +195,9 @@ public:
 		LLFastTimer::FrameState* frame_state = mFrameState;
 		U32 total_time = getCPUClockCount32() - mStartTime;
 
-		frame_state->mSelfTimeCounter += total_time - LLFastTimer::sCurTimerData.mChildTime;
+		static LLFastTimer::CurTimerData& static_cur_data = LLFastTimer::CurTimerData::get();
+
+		frame_state->mSelfTimeCounter += total_time - static_cur_data.mChildTime;
 		frame_state->mActiveCount--;
 
 		// store last caller to bootstrap tree creation
@@ -205,7 +207,7 @@ public:
 		// we are only tracking self time, so subtract our total time delta from parents
 		mLastTimerData.mChildTime += total_time;
 
-		LLFastTimer::sCurTimerData = mLastTimerData;
+		static_cur_data = mLastTimerData;
 #endif
 #if TIME_FAST_TIMERS
 		U64 timer_end = getCPUClockCount64();
@@ -252,8 +254,16 @@ public:
 		LLFastTimer*	mCurTimer;
 		FrameState*		mFrameState;
 		U32				mChildTime;
+		static CurTimerData& get()
+		{
+			//Static local varaible to avoid static initialization order fiasco.
+			//NamedTimerFactory ctor uses this object, and is called during static initialization...
+			//often before llfasttimer_class.cpp's translation unit.
+			//'leak' is harmless and intended to ensure it out-scopes NamedTimerFactory.
+			static CurTimerData* timer_data = new CurTimerData();
+			return *timer_data;
+		}
 	};
-	static CurTimerData		sCurTimerData;
 	static std::string sClockType;
 
 public:
@@ -265,7 +275,6 @@ private:
 	static S32				sCurFrameIndex;
 	static S32				sLastFrameIndex;
 	static U64				sLastFrameTime;
-	static info_list_t*		sTimerInfos;
 
 	U32							mStartTime;
 	LLFastTimer::FrameState*	mFrameState;
