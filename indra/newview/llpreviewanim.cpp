@@ -73,29 +73,14 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
 	}
 
+	mIsCopyable = false;
 	// preload the animation
 	if(item)
 	{
 		gAgentAvatarp->createMotion(item->getAssetUUID());
 
 		const LLPermissions& perm = item->getPermissions();
-		U32 mask = PERM_NONE;
-		if(perm.getOwner() == gAgent.getID())
-		{
-			mask = perm.getMaskBase();
-		}
-		else if(gAgent.isInGroup(perm.getGroup()))
-		{
-			mask = perm.getMaskGroup();
-		}
-		else
-		{
-			mask = perm.getMaskEveryone();
-		}
-		if((mask & PERM_ITEM_UNRESTRICTED) == PERM_ITEM_UNRESTRICTED)
-		{
-			mIsCopyable = true;
-		}
+		mIsCopyable = (perm.getCreator() == gAgent.getID());
 	}
 	
 	switch ( activate ) 

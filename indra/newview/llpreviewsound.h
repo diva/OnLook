@@ -71,7 +71,8 @@ protected:
 	virtual void saveAs();
 	virtual LLUUID getItemID();
 	// </edit>
-
+private:
+	bool mIsCopyable;
 };
 
 #endif  // LL_LLPREVIEWSOUND_H
