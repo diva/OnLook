@@ -6153,6 +6153,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	if (tiling && !LLPipeline::sRenderDeferred) //Need to coax this into working with deferred now that tiling is back.
 	{
+		gGlowCombineProgram.bind();
+
 		gGL.getTexUnit(0)->bind(&mGlow[1]);
 		{
 			//LLGLEnable stencil(GL_STENCIL_TEST);
@@ -6194,12 +6196,14 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 
-		gGL.flush();
 		gGL.matrixMode(LLRender::MM_PROJECTION);
 		gGL.popMatrix();
-		gGL.matrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.popMatrix();
 
+		gGlowCombineProgram.unbind();
+
+		gGL.flush();
 		return;
 	}
 	

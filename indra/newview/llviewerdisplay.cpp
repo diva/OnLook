@@ -639,14 +639,17 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLHUDObject::updateAll();
 		stop_glerror();
 		
-		gFrameStats.start(LLFrameStats::UPDATE_GEOM);
-		const F32 max_geom_update_time = 0.005f*10.f*gFrameIntervalSeconds; // 50 ms/second update time
-		gPipeline.createObjects(max_geom_update_time);
-		gPipeline.processPartitionQ();
-		gPipeline.updateGeom(max_geom_update_time);
-		stop_glerror();
-		gPipeline.updateGL();
-		stop_glerror();
+		if(!tiling)
+		{
+			gFrameStats.start(LLFrameStats::UPDATE_GEOM);
+			const F32 max_geom_update_time = 0.005f*10.f*gFrameIntervalSeconds; // 50 ms/second update time
+			gPipeline.createObjects(max_geom_update_time);
+			gPipeline.processPartitionQ();
+			gPipeline.updateGeom(max_geom_update_time);
+			stop_glerror();
+			gPipeline.updateGL();
+			stop_glerror();
+		}
 		
 		gFrameStats.start(LLFrameStats::UPDATE_CULL);
 		S32 water_clip = 0;
