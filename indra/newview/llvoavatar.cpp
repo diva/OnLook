@@ -4918,7 +4918,7 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 
 	if (pass == AVATAR_RENDER_PASS_SINGLE)
 	{
-		bool is_muted = isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
+		bool is_muted = LLPipeline::sImpostorRender && isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
 		const bool should_alpha_mask = !is_muted && shouldAlphaMask();
 		LLGLState test(GL_ALPHA_TEST, should_alpha_mask);
 		
