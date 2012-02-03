@@ -306,5 +306,5 @@
 	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="--no options--" left="0"
 	     mouse_opaque="true" name="--no options--" width="128" />
-	<--menu_item_separator name="Wearable Separator" /-->
+	<!--menu_item_separator name="Wearable Separator" -->
 </menu>
