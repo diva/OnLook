@@ -158,7 +158,7 @@ extern BOOL gDebugGL;
 
 // hack counter for rendering a fixed number of frames after toggling
 // fullscreen to work around DEV-5361
-//static S32 sDelayedVBOEnable = 0;
+static S32 sDelayedVBOEnable = 0;
 
 BOOL	gAvatarBacklight = FALSE;
 
@@ -556,8 +556,11 @@ void LLPipeline::destroyGL()
 	if (LLVertexBuffer::sEnableVBOs)
 	{
 		// render 30 frames after switching to work around DEV-5361
-		//sDelayedVBOEnable = 30;
-		LLVertexBuffer::sEnableVBOs = FALSE;
+		if(!LLRenderTarget::sUseFBO)
+		{
+			sDelayedVBOEnable = 30;
+			LLVertexBuffer::sEnableVBOs = FALSE;
+		}
 	}
 }
 
@@ -580,6 +583,7 @@ void LLPipeline::throttleNewMemoryAllocation(BOOL disable)
 		}
 	}
 }
+
 void LLPipeline::resizeScreenTexture()
 {
 	LLFastTimer ft(FTM_RESIZE_SCREEN_TEXTURE);
@@ -2331,14 +2335,14 @@ void LLPipeline::updateGeom(F32 max_dtime)
 
 	assertInitialized();
 
-	/*if (sDelayedVBOEnable > 0)
+	if (sDelayedVBOEnable > 0)
 	{
 		if (--sDelayedVBOEnable <= 0)
 		{
 			resetVertexBuffers();
 			LLVertexBuffer::sEnableVBOs = TRUE;
 		}
-	}*/
+	}
 
 	// notify various object types to reset internal cost metrics, etc.
 	// for now, only LLVOVolume does this to throttle LOD changes
