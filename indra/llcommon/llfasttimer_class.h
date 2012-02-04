@@ -52,7 +52,7 @@ public:
 		U32 				mSelfTimeCounter;
 		U32 				mCalls;
 		FrameState*			mParent;		// info for caller timer
-		FrameState*			mLastCaller;	// used to bootstrap tree construction
+		NamedTimer*			mLastCaller;	// used to bootstrap tree construction
 		NamedTimer*			mTimer;
 		U16					mActiveCount;	// number of timers with this ID active on stack
 		bool				mMoveUpTree;	// needs to be moved up the tree of timers at the end of frame
@@ -144,8 +144,6 @@ public:
 		DeclareTimer(const std::string& name, bool open);
 		DeclareTimer(const std::string& name);
 
-		static void updateCachedPointers();
-
 	private:
 		NamedTimer&		mTimer;
 		FrameState*		mFrameState;
@@ -172,6 +170,7 @@ public:
 		LLFastTimer::CurTimerData* cur_timer_data = &LLFastTimer::sCurTimerData;
 		mLastTimerData = *cur_timer_data;
 		cur_timer_data->mCurTimer = this;
+		cur_timer_data->mNamedTimer = &timer.mTimer;
 		cur_timer_data->mFrameState = frame_state;
 		cur_timer_data->mChildTime = 0;
 #endif
@@ -200,7 +199,7 @@ public:
 
 		// store last caller to bootstrap tree creation
 		// do this in the destructor in case of recursion to get topmost caller
-		frame_state->mLastCaller = mLastTimerData.mFrameState;
+		frame_state->mLastCaller = mLastTimerData.mNamedTimer;
 
 		// we are only tracking self time, so subtract our total time delta from parents
 		mLastTimerData.mChildTime += total_time;
@@ -239,6 +238,9 @@ public:
 	// call this to reset timer hierarchy, averages, etc.
 	static void reset();
 
+	// called to update all FrameState pointers.
+	static void updateCachedPointers();
+
 	static U64 countsPerSecond();
 	static S32 getLastFrameIndex() { return sLastFrameIndex; }
 	static S32 getCurFrameIndex() { return sCurFrameIndex; }
@@ -249,6 +251,7 @@ public:
 	struct CurTimerData
 	{
 		LLFastTimer*	mCurTimer;
+		NamedTimer*		mNamedTimer;
 		FrameState*		mFrameState;
 		U32				mChildTime;
 	};
@@ -258,7 +261,6 @@ public:
 public:
 	static U32 getCPUClockCount32();
 	static U64 getCPUClockCount64();
-	static U64 sClockResolution;
 
 private:
 	static S32				sCurFrameIndex;
@@ -271,7 +273,5 @@ private:
 	LLFastTimer::CurTimerData	mLastTimerData;
 
 };
-
-typedef class LLFastTimer LLFastTimer;
 
 #endif // LL_LLFASTTIMER_H

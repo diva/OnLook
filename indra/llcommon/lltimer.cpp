@@ -198,7 +198,7 @@ U64 get_clock_count()
 	return clock_count.QuadPart - offset;
 }
 
-F64 calc_clock_frequency(U32 uiMeasureMSecs)
+F64 calc_clock_frequency(void)
 {
 	__int64 freq;
 	QueryPerformanceFrequency((LARGE_INTEGER *) &freq);
@@ -209,7 +209,7 @@ F64 calc_clock_frequency(U32 uiMeasureMSecs)
 
 #if LL_LINUX || LL_DARWIN || LL_SOLARIS
 // Both Linux and Mac use gettimeofday for accurate time
-F64 calc_clock_frequency(unsigned int uiMeasureMSecs)
+F64 calc_clock_frequency(void)
 {
 	return 1000000.0; // microseconds, so 1 Mhz.
 }
@@ -226,7 +226,7 @@ U64 get_clock_count()
 
 void update_clock_frequencies()
 {
-	gClockFrequency = calc_clock_frequency(50U);
+	gClockFrequency = calc_clock_frequency();
 	gClockFrequencyInv = 1.0/gClockFrequency;
 	gClocksToMicroseconds = gClockFrequencyInv * SEC_TO_MICROSEC;
 }
