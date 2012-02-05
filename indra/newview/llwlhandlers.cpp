@@ -195,7 +195,7 @@ bool LLEnvironmentApply::initiateRequest(const LLSD& content)
 	std::stringstream msg;
 	msg << reason << " (Code " << status << ")";
 
-	LL_WARNS("WindlightCaps") << "Couldn't apply windlight settings to region!  Reason: " << msg << LL_ENDL;
+	LL_WARNS("WindlightCaps") << "Couldn't apply windlight settings to region!  Reason: " << msg.str() << LL_ENDL;
 
 	LLSD args(LLSD::emptyMap());
 	args["FAIL_REASON"] = msg.str();
