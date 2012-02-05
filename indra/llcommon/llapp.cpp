@@ -401,6 +401,18 @@ bool LLApp::isExiting()
 	return isQuitting() || isError();
 }
 
+void LLApp::disableCrashlogger()
+{
+	// Disable Breakpad exception handler.
+	sDisableCrashlogger = TRUE;
+}
+
+// static
+bool LLApp::isCrashloggerDisabled()
+{
+	return (sDisableCrashlogger == TRUE); 
+}
+
 #if !LL_WINDOWS
 // static
 U32 LLApp::getSigChildCount()
@@ -734,7 +746,7 @@ void default_unix_signal_handler(int signum, siginfo_t *info, void *)
 				llwarns << "Signal handler - Flagging error status and waiting for shutdown" << llendl;
 			}
 									
-			if(LLApp::sDisableCrashlogger)	//Don't gracefully handle any signals crash and core for a gdb post mortum
+			if (LLApp::isCrashloggerDisabled())	// Don't gracefully handle any signal, crash and core for a gdb post mortem
 			{
 				clear_signals();
 				llwarns << "Fatal signal received, not handling the crash here, passing back to operating system" << llendl;

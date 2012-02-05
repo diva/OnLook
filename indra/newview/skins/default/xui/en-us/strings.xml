@@ -1739,6 +1739,7 @@ string llGetEnv(string name)
 Returns a string with the requested data about the region
   </string>
 
+
   <string name="LSLTipText_llCastRay">
 list llCastRay( Vector start, Vector end, list options )
 Returns a list consisting of the following three values for each hit: UUID, Link number, Hit position.
@@ -1803,18 +1804,32 @@ key llAvatarOnLinkSitTarget( integer link )
 Returns a key that is the UUID of the user seated on the prim.
   </string>
 
+
 <!-- No info on these functions yet....
   <string name="LSLTipText_llSetVelocity">
   </string>
   <string name="LSLTipText_llSetRotationalVelocity">
   </string>
 -->
+  <!-- Avatar busy/away mode -->
+	<string name="AvatarSetNotAway">Not Away</string>
+	<string name="AvatarSetAway">Away</string>
+	<string name="AvatarSetNotBusy">Not Busy</string>
+	<string name="AvatarSetBusy">Busy</string>
 
 
 
 	<!-- mouselook -->
 	<string name="LeaveMouselook">Press ESC to return to World View</string>
- 	<!-- menu accelerators -->
+	<string name="Stone">Stone</string>
+	<string name="Metal">Metal</string>
+	<string name="Glass">Glass</string>
+	<string name="Wood">Wood</string>
+	<string name="Flesh">Flesh</string>
+	<string name="Plastic">Plastic</string>
+	<string name="Rubber">Rubber</string>
+	<string name="Light">Light</string>
+	<!-- menu accelerators -->
 	<string name="accel-mac-control">Ctrl-</string>
 	<string name="accel-mac-command">Cmd-</string>
 	<string name="accel-mac-option">Opt-</string>

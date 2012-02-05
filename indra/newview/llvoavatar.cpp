@@ -54,12 +54,12 @@
 
 #include "llfirstuse.h"
 #include "llfloaterchat.h"
+#include "llfloaterinventory.h"
 #include "llheadrotmotion.h"
 
 #include "llhudeffecttrail.h"
 #include "llhudmanager.h"
 #include "llinventorybridge.h"
-#include "llinventoryview.h"
 #include "llinventoryfunctions.h"
 #include "llhudnametag.h"
 #include "llhudtext.h"				// for mText/mDebugText
@@ -3574,13 +3574,13 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					new_name = TRUE;
 				}
 				
-				LLColor4 avatar_name_color = gColors.getColor( "AvatarNameColor" );
+				static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor" );
 
 
 				//As pointed out by Zwagoth, we really shouldn't be doing this per-frame. Skip if we already have the data. -HgB
 				if (mClientTag == "")
 				{
-					mClientColor = gColors.getColor( "AvatarNameColor" );
+					mClientColor = avatar_name_color;
 					getClientInfo(mClientTag,mClientColor);
 					if(mClientTag == "")
 					{
@@ -3591,7 +3591,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					// friends in a special color. -- charbl
 					if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						if (gSavedSettings.getBOOL("AscentShowFriendsTag"))
+						static const LLCachedControl<bool> ascent_show_friends_tag("AscentShowFriendsTag");
+						if (ascent_show_friends_tag)
 						{
 							mClientTag = "Friend";
 						}
@@ -3611,33 +3612,41 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//Lindens are always more Linden than your friend, make that take precedence
 					if(LLMuteList::getInstance()->isLinden(getFullname()))
 					{
-						mClientColor = gSavedSettings.getColor4("AscentLindenColor");
+						static const LLCachedControl<LLColor4> ascent_linden_color( "AscentLindenColor" );
+						mClientColor = ascent_linden_color;
 					}
 					//check if they are an estate owner at their current position
 					else if(estate_owner.notNull() && this->getID() == estate_owner)
 					{
-						mClientColor = gSavedSettings.getColor4("AscentEstateOwnerColor");
+						static const LLCachedControl<LLColor4> ascent_estate_owner_color( "AscentEstateOwnerColor" );
+						mClientColor = ascent_estate_owner_color;
 					}
 					//without these dots, SL would suck.
 					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						mClientColor = gSavedSettings.getColor4("AscentFriendColor");
+						static const LLCachedControl<LLColor4> ascent_friend_color( "AscentFriendColor" );
+						mClientColor = ascent_friend_color;
 					}
 					//big fat jerkface who is probably a jerk, display them as such.
 					else if(LLMuteList::getInstance()->isMuted(this->getID()))
 					{
-						mClientColor = gSavedSettings.getColor4("AscentMutedColor");
+						static const LLCachedControl<LLColor4> ascent_muted_color( "AscentMutedColor" );
+						mClientColor = ascent_muted_color;
 					}
 				}
 
 				client = mClientTag;
-				if ((isSelf() && gSavedSettings.getBOOL("AscentShowSelfTagColor"))
-							|| (!isSelf() && gSavedSettings.getBOOL("AscentShowOthersTagColor")))
-					avatar_name_color = mClientColor;
+
+				static const LLCachedControl<bool> ascent_show_self_tag_color("AscentShowSelfTagColor");
+				static const LLCachedControl<bool> ascent_show_others_tag_color("AscentShowOthersTagColor");
+				LLColor4 name_color = avatar_name_color;
+				if ((isSelf() && ascent_show_self_tag_color)
+							|| (!isSelf() && ascent_show_others_tag_color))
+					name_color = mClientColor;
 
 
-				avatar_name_color.setAlpha(alpha);
-				mNameText->setColor(avatar_name_color);
+				name_color.setAlpha(alpha);
+				mNameText->setColor(name_color);
 				
 				LLQuaternion root_rot = mRoot.getWorldRotation();
 				//mNameText->setUsePixelSize(TRUE);
@@ -3719,7 +3728,8 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 			}
 			//idle text
 			std::string idle_string;
-			if(!isSelf() && mIdleTimer.getElapsedTimeF32() > 120.f && gSavedSettings.getBOOL("AscentShowIdleTime"))
+			static LLCachedControl<bool> ascent_show_idle_time("AscentShowIdleTime");
+			if(!isSelf() && mIdleTimer.getElapsedTimeF32() > 120.f && ascent_show_idle_time)
 			{
 				idle_string = getIdleTime();
 			}
@@ -4049,6 +4059,7 @@ void LLVOAvatar::slamPosition()
 
 bool LLVOAvatar::isVisuallyMuted()
 {
+	if(isSelf())return false;
 	static LLCachedControl<U32> max_attachment_bytes(gSavedSettings, "RenderAutoMuteByteLimit");
 	static LLCachedControl<F32> max_attachment_area(gSavedSettings, "RenderAutoMuteSurfaceAreaLimit");
 	
@@ -4907,8 +4918,8 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 
 	if (pass == AVATAR_RENDER_PASS_SINGLE)
 	{
-
-		const bool should_alpha_mask = shouldAlphaMask();
+		bool is_muted = LLPipeline::sImpostorRender && isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
+		const bool should_alpha_mask = !is_muted && shouldAlphaMask();
 		LLGLState test(GL_ALPHA_TEST, should_alpha_mask);
 		
 		if (should_alpha_mask && !LLGLSLShader::sNoFixedFunction)
@@ -4923,19 +4934,19 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 			{
 				if (isTextureVisible(TEX_HEAD_BAKED) || mIsDummy)
 				{
-					num_indices += mMeshLOD[MESH_ID_HEAD]->render(mAdjustedPixelArea, TRUE, mIsDummy);
+					num_indices += mMeshLOD[MESH_ID_HEAD]->render(mAdjustedPixelArea, TRUE, mIsDummy || is_muted);
 					first_pass = FALSE;
 				}
 			}
 			if (isTextureVisible(TEX_UPPER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_UPPER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				num_indices += mMeshLOD[MESH_ID_UPPER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
 				first_pass = FALSE;
 			}
 			
 			if (isTextureVisible(TEX_LOWER_BAKED) || mIsDummy)
 			{
-				num_indices += mMeshLOD[MESH_ID_LOWER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy);
+				num_indices += mMeshLOD[MESH_ID_LOWER_BODY]->render(mAdjustedPixelArea, first_pass, mIsDummy || is_muted);
 				first_pass = FALSE;
 			}
 		}
@@ -7912,7 +7923,8 @@ BOOL LLVOAvatar::isFullyLoaded() const
 {
 // [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
 	// Changes to LLAppearanceMgr::updateAppearanceFromCOF() expect this function to actually return mFullyLoaded for gAgentAvatarp
-	if ( (!isSelf()) && (gSavedSettings.getBOOL("RenderUnloadedAvatar")) )
+	static const LLCachedControl<bool> rener_unloaded_avatar("RenderUnloadedAvatar");
+	if ( (!isSelf()) && (rener_unloaded_avatar) )
 		return TRUE;
 	else
 		return mFullyLoaded;

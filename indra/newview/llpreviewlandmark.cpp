@@ -44,8 +44,8 @@
 #include "llagent.h"
 #include "llbutton.h"
 #include "lleconomy.h"
+#include "llfloaterinventory.h"
 #include "llfloaterworldmap.h"
-#include "llinventoryview.h"
 #include "lliconctrl.h"
 #include "lllandmarklist.h"
 #include "lllineeditor.h"
@@ -59,9 +59,6 @@
 #include "llviewerstats.h"
 #include "lluictrlfactory.h"
 #include "lltexturectrl.h"
-
-
-
 
 ////////////////////////////////////////////////////////////////////////////
 // LLPreviewLandmark

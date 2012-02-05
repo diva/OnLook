@@ -38,7 +38,7 @@
 #include "llinventory.h"
 #include "llinventorydefines.h"
 #include "llinventorymodel.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llinventorybridge.h"	// for landmark prefix string
 
 #include "llviewertexteditor.h"

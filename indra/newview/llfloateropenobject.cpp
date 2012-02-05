@@ -46,16 +46,16 @@
 
 #include "llagent.h"			// for agent id
 #include "llalertdialog.h"
+#include "llfloaterinventory.h"
 #include "llinventorybridge.h"
 #include "llinventorymodel.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llpanelinventory.h"
 #include "llselectmgr.h"
 #include "lluiconstants.h"
 #include "llviewerobject.h"
 #include "lluictrlfactory.h"
 #include "llviewerwindow.h"
-
 
 LLFloaterOpenObject* LLFloaterOpenObject::sInstance = NULL;
 

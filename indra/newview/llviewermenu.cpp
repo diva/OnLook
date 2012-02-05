@@ -130,6 +130,7 @@
 #include "llfloaterhtmlsimple.h"
 #include "llfloaterhud.h"
 #include "llfloaterinspect.h"
+#include "llfloaterinventory.h"
 #include "llfloaterlagmeter.h"
 #include "llfloaterland.h"
 #include "llfloaterlandholdings.h"
@@ -171,7 +172,7 @@
 #include "llimagetga.h"
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
-#include "llinventoryview.h"
+#include "llinventorypanel.h"
 #include "llkeyboard.h"
 #include "llpanellogin.h"
 #include "llmenucommands.h"
@@ -946,14 +947,14 @@ void init_client_menu(LLMenuGL* menu)
 										&get_visibility,
 										(void*)gDebugView->mFastTimerView,
 										  '9', MASK_CONTROL|MASK_SHIFT ) );
-#if MEM_TRACK_MEM
+//#if MEM_TRACK_MEM
 		sub->append(new LLMenuItemCheckGL("Memory", 
 										&toggle_visibility,
 										NULL,
 										&get_visibility,
 										(void*)gDebugView->mMemoryView,
 										  '0', MASK_CONTROL|MASK_SHIFT ) );
-#endif
+//#endif
 		
 		sub->appendSeparator();
 		

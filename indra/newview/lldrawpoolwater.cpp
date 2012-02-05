@@ -573,7 +573,8 @@ void LLDrawPoolWater::shade()
 
 	mWaterNormp->addTextureStats(1024.f*1024.f);
 	gGL.getTexUnit(bumpTex)->bind(mWaterNormp) ;
-	if (gSavedSettings.getBOOL("RenderWaterMipNormal"))
+	static const LLCachedControl<bool> render_water_mip_normal("RenderWaterMipNormal");
+	if (render_water_mip_normal)
 	{
 		mWaterNormp->setFilteringOption(LLTexUnit::TFO_ANISOTROPIC);
 	}

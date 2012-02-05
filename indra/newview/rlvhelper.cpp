@@ -16,9 +16,9 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llattachmentsmgr.h"
+#include "llfloaterinventory.h"
 #include "llfloaterwindlight.h"
 #include "llgesturemgr.h"
-#include "llinventoryview.h"
 #include "llinventorybridge.h"
 #include "llnotificationsutil.h"
 #include "llviewerobject.h"

@@ -38,8 +38,8 @@
 #include "llbutton.h"
 #include "llcombobox.h"
 #include "statemachine/aifilepicker.h"
+#include "llfloaterinventory.h"
 #include "llimagetga.h"
-#include "llinventoryview.h"
 #include "llinventory.h"
 #include "llnotificationsutil.h"
 #include "llresmgr.h"
@@ -51,7 +51,6 @@
 #include "llviewerwindow.h"
 #include "lllineeditor.h"
 #include "llfloateravatarinfo.h"
-
 
 const S32 PREVIEW_TEXTURE_MIN_WIDTH = 300;
 const S32 PREVIEW_TEXTURE_MIN_HEIGHT = 120;

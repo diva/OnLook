@@ -682,7 +682,7 @@ void LLViewerPartSim::updateSimulation()
 		if (!mViewerPartSources[i]->isDead())
 		{
 			BOOL upd = TRUE;
-			if (!LLPipeline::sRenderAttachedParticles)
+			//if (!LLPipeline::sRenderAttachedParticles)
 			{
 				LLViewerObject* vobj = mViewerPartSources[i]->mSourceObjectp;
 				if (vobj && (vobj->getPCode() == LL_PCODE_VOLUME))
@@ -690,7 +690,14 @@ void LLViewerPartSim::updateSimulation()
 					LLVOVolume* vvo = (LLVOVolume *)vobj;
 					if (vvo && vvo->isAttachment())
 					{
-						upd = FALSE;
+						if (!LLPipeline::sRenderAttachedParticles)
+							upd = FALSE;
+						else
+						{
+							LLVOAvatar *avatar = vvo->getAvatar();
+							if(avatar && avatar->isVisuallyMuted())
+								upd = FALSE;
+						}
 					}
 				}
 			}

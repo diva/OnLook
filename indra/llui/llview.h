@@ -446,6 +446,10 @@ public:
 	LLSimpleListener* getListenerByName(const std::string& callback_name);
 	void registerEventListener(std::string name, LLSimpleListener* function);
 	void deregisterEventListener(std::string name);
+
+	typedef boost::signals2::signal<void (LLPointer<LLEvent> event, const LLSD& userdata)> event_signal_t;
+	void registerEventListener(std::string name, event_signal_t::slot_type &cb);
+
 	std::string findEventListener(LLSimpleListener *listener) const;
 	void addListenerToControl(LLEventDispatcher *observer, const std::string& name, LLSD filter, LLSD userdata);
 

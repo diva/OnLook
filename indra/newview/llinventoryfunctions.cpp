@@ -43,6 +43,7 @@
 // newview includes
 #include "llappviewer.h"
 //#include "llfirstuse.h"
+#include "llfloaterinventory.h"
 #include "llfocusmgr.h"
 #include "llfolderview.h"
 #include "llgesturemgr.h"
@@ -51,7 +52,6 @@
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h"
 #include "llinventorymodel.h"
-#include "llinventoryview.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"
 #include "llnotificationsutil.h"

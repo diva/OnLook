@@ -13,7 +13,6 @@
 #include "llvoavatarself.h"
 #include "llanimationstates.h"
 #include "lluictrlfactory.h"
-#include "llinventoryview.h"
 #include "llstartup.h"
 #include "llpreviewnotecard.h"
 #include "llviewertexteditor.h"
@@ -26,8 +25,8 @@
 
 #include "llinventory.h"
 #include "llinventoryfunctions.h"
+#include "llinventorypanel.h"
 #include "llinventorymodelbackgroundfetch.h"
-#include "llinventoryview.h"
 #include "roles_constants.h"
 #include "llviewerregion.h"
 

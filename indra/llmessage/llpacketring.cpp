@@ -239,15 +239,23 @@ S32 LLPacketRing::receivePacket (S32 socket, char *datap)
 		// no delay, pull straight from net
 		if (LLSocks::isEnabled())
 		{
-			proxywrap_t * header;
-			datap  = datap-10;
-			header = (proxywrap_t *)datap;
-			packet_size = receive_packet(socket, datap);
-			mLastSender.setAddress(header->addr);
-			mLastSender.setPort(ntohs(header->port));
-			if (packet_size > 10)
+			const U8 SOCKS_HEADER_SIZE = 10;
+			U8 buffer[NET_BUFFER_SIZE + SOCKS_HEADER_SIZE];
+			packet_size = receive_packet(socket, static_cast<char*>(static_cast<void*>(buffer)));
+			
+			if (packet_size > SOCKS_HEADER_SIZE)
 			{
-				packet_size -= 10;			
+				// *FIX We are assuming ATYP is 0x01 (IPv4), not 0x03 (hostname) or 0x04 (IPv6)
+				memcpy(datap, buffer + SOCKS_HEADER_SIZE, packet_size - SOCKS_HEADER_SIZE);
+				proxywrap_t * header = static_cast<proxywrap_t*>(static_cast<void*>(buffer));
+				mLastSender.setAddress(header->addr);
+				mLastSender.setPort(ntohs(header->port));
+
+				packet_size -= SOCKS_HEADER_SIZE; // The unwrapped packet size
+			}
+			else
+			{
+				packet_size = 0;
 			}
 		}
 		else
@@ -285,7 +293,7 @@ BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LL
 	
 	if (!mUseOutThrottle)
 	{
-		return doSendPacket(h_socket, send_buffer, buf_size, host );
+		return sendPacketImpl(h_socket, send_buffer, buf_size, host );
 	}
 	else
 	{
@@ -306,7 +314,7 @@ BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LL
 				mOutBufferLength -= packetp->getSize();
 				packet_size = packetp->getSize();
 
-				status = doSendPacket(h_socket, packetp->getData(), packet_size, packetp->getHost());
+				status = sendPacketImpl(h_socket, packetp->getData(), packet_size, packetp->getHost());
 				
 				delete packetp;
 				// Update the throttle
@@ -315,7 +323,7 @@ BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LL
 			else
 			{
 				// If the queue's empty, we can just send this packet right away.
-				status =  doSendPacket(h_socket, send_buffer, buf_size, host );
+				status =  sendPacketImpl(h_socket, send_buffer, buf_size, host );
 				packet_size = buf_size;
 
 				// Update the throttle
@@ -354,7 +362,7 @@ BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LL
 	return status;
 }
 
-BOOL LLPacketRing::doSendPacket(int h_socket, const char * send_buffer, S32 buf_size, LLHost host)
+BOOL LLPacketRing::sendPacketImpl(int h_socket, const char * send_buffer, S32 buf_size, LLHost host)
 {
 	
 	if (!LLSocks::isEnabled())
@@ -362,14 +370,21 @@ BOOL LLPacketRing::doSendPacket(int h_socket, const char * send_buffer, S32 buf_
 		return send_packet(h_socket, send_buffer, buf_size, host.getAddress(), host.getPort());
 	}
 
-	proxywrap_t *socks_header = (proxywrap_t *)&mProxyWrappedSendBuffer;
+	const U8 SOCKS_HEADER_SIZE = 10;
+	char headered_send_buffer[NET_BUFFER_SIZE + SOCKS_HEADER_SIZE];
+
+	proxywrap_t *socks_header = static_cast<proxywrap_t*>(static_cast<void*>(&headered_send_buffer));
 	socks_header->rsv   = 0;
 	socks_header->addr  = host.getAddress();
 	socks_header->port  = htons(host.getPort());
 	socks_header->atype = ADDRESS_IPV4;
 	socks_header->frag  = 0;
 
-	memcpy(mProxyWrappedSendBuffer+10, send_buffer, buf_size);
+	memcpy(headered_send_buffer + SOCKS_HEADER_SIZE, send_buffer, buf_size);
 
-	return send_packet(h_socket,(const char*) mProxyWrappedSendBuffer, buf_size+10, LLSocks::getInstance()->getUDPPproxy().getAddress(), LLSocks::getInstance()->getUDPPproxy().getPort());
+	return send_packet(	h_socket,
+						headered_send_buffer,
+						buf_size + SOCKS_HEADER_SIZE,
+						LLSocks::getInstance()->getUDPPproxy().getAddress(),
+						LLSocks::getInstance()->getUDPPproxy().getPort());
 }

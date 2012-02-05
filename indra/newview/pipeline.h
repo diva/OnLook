@@ -502,7 +502,6 @@ public:
 	static BOOL				sRenderBump;
 	static BOOL				sBakeSunlight;
 	static BOOL				sNoAlpha;
-	static BOOL				sUseFBO;
 	static BOOL				sUseFarClip;
 	static BOOL				sShadowRender;
 	static BOOL				sSkipUpdate; //skip lod updates

@@ -44,6 +44,7 @@
 #include "llmaterialtable.h"
 #include "llpermissionsflags.h"
 #include "llstring.h"
+#include "lltrans.h"
 #include "llvolume.h"
 #include "m3math.h"
 #include "material_codes.h"
@@ -165,6 +166,18 @@ BOOL	LLPanelVolume::postBuild()
 		mSpinPhysicsRestitution = getChild<LLSpinCtrl>("Physics Restitution");
 		mSpinPhysicsRestitution->setCommitCallback(boost::bind(&LLPanelVolume::sendPhysicsRestitution, this, _1, mSpinPhysicsRestitution));
 	}
+
+	std::map<std::string, std::string> material_name_map;
+	material_name_map["Stone"]= LLTrans::getString("Stone");
+	material_name_map["Metal"]= LLTrans::getString("Metal");
+	material_name_map["Glass"]= LLTrans::getString("Glass");
+	material_name_map["Wood"]= LLTrans::getString("Wood");
+	material_name_map["Flesh"]= LLTrans::getString("Flesh");
+	material_name_map["Plastic"]= LLTrans::getString("Plastic");
+	material_name_map["Rubber"]= LLTrans::getString("Rubber");
+	material_name_map["Light"]= LLTrans::getString("Light");
+	
+	LLMaterialTable::basic.initTableTransNames(material_name_map);
 	// Start with everyone disabled
 	clearCtrls();
 

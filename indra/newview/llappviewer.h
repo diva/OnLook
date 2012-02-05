@@ -33,7 +33,8 @@
 #ifndef LL_LLAPPVIEWER_H
 #define LL_LLAPPVIEWER_H
 
-#include "llsys.h"				// LLOSInfo
+#include "llallocator.h"
+#include "llsys.h"			// for LLOSInfo
 #include "llviewercontrol.h"	// settings_map_type
 
 class LLTextureCache;
@@ -158,6 +159,7 @@ public:
 	// *NOTE:Mani Fix this for login abstraction!!
 	void handleLoginComplete();
 
+    LLAllocator & getAllocator() { return mAlloc; }
 	void addOnIdleCallback(const boost::function<void()>& cb); // add a callback to fire (once) when idle
 
 	void purgeCache(); // Clear the local cache. 
@@ -245,6 +247,7 @@ private:
 	bool mAgentRegionLastAlive;
 	LLUUID mAgentRegionLastID;
 
+    LLAllocator mAlloc;
 
 	LLFrameTimer mMemCheckTimer;
 	

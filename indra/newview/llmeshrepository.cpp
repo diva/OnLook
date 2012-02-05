@@ -1075,17 +1075,19 @@ bool LLMeshRepoThread::headerReceived(const LLVolumeParams& mesh_params, U8* dat
 
 bool LLMeshRepoThread::lodReceived(const LLVolumeParams& mesh_params, S32 lod, U8* data, S32 data_size)
 {
-	LLVolume* volume = new LLVolume(mesh_params, LLVolumeLODGroup::getVolumeScaleFromDetail(lod));
+	LLPointer<LLVolume> volume = new LLVolume(mesh_params, LLVolumeLODGroup::getVolumeScaleFromDetail(lod));
 	std::string mesh_string((char*) data, data_size);
 	std::istringstream stream(mesh_string);
 
 	if (volume->unpackVolumeFaces(stream, data_size))
 	{
-		LoadedMesh mesh(volume, mesh_params, lod);
 		if (volume->getNumFaces() > 0)
 		{
-			LLMutexLock lock(mMutex);
-			mLoadedQ.push(mesh);
+			LoadedMesh mesh(volume, mesh_params, lod);
+			{
+				LLMutexLock lock(mMutex);
+				mLoadedQ.push(mesh);
+			}
 			return true;
 		}
 	}
@@ -2240,7 +2242,8 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 
 void LLMeshRepository::notifyLoadedMeshes()
 { //called from main thread
-	LLMeshRepoThread::sMaxConcurrentRequests = gSavedSettings.getU32("MeshMaxConcurrentRequests");
+	static const LLCachedControl<U32> max_concurrent_requests("MeshMaxConcurrentRequests");
+	LLMeshRepoThread::sMaxConcurrentRequests = max_concurrent_requests;
 
 #if MESH_IMPORT
 	//clean up completed upload threads
@@ -3580,7 +3583,8 @@ void LLMeshRepository::buildPhysicsMesh(LLModel::Decomposition& decomp)
 bool LLMeshRepository::meshUploadEnabled()
 {
 	LLViewerRegion *region = gAgent.getRegion();
-	if(gSavedSettings.getBOOL("MeshEnabled") &&
+	static const LLCachedControl<bool> mesh_enabled("MeshEnabled");
+	if(mesh_enabled &&
 	   region)
 	{
 		return region->meshUploadEnabled();
@@ -3591,7 +3595,8 @@ bool LLMeshRepository::meshUploadEnabled()
 bool LLMeshRepository::meshRezEnabled()
 {
 	LLViewerRegion *region = gAgent.getRegion();
-	if(gSavedSettings.getBOOL("MeshEnabled") && 
+	static const LLCachedControl<bool> mesh_enabled("MeshEnabled");
+	if(mesh_enabled && 
 	   region)
 	{
 		return region->meshRezEnabled();

@@ -731,7 +731,7 @@ void LLVertexBuffer::unbind()
 //static
 void LLVertexBuffer::cleanupClass()
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_CLEANUP_CLASS);
 	unbind();
 	
 	sStreamIBOPool.cleanup();
@@ -750,41 +750,25 @@ void LLVertexBuffer::cleanupClass()
 
 S32 LLVertexBuffer::determineUsage(S32 usage)
 {
-	S32 ret_usage = usage;
-
-	if (!sEnableVBOs)
-	{
-		ret_usage = 0;
-	}
-	
-	if (usage == GL_STREAM_DRAW_ARB && !sUseStreamDraw)
-	{
-		ret_usage = 0;
-	}
-	
-	if (usage == GL_DYNAMIC_DRAW_ARB && sPreferStreamDraw)
-	{
-		ret_usage = GL_STREAM_DRAW_ARB;
-	}
-	
-	if (usage == 0 && LLRender::sGLCoreProfile)
+	if (LLRender::sGLCoreProfile)
 	{ //MUST use VBOs for all rendering
-		ret_usage = GL_STREAM_DRAW_ARB;
+		if(!usage)
+			return GL_STREAM_DRAW_ARB;
 	}
-	
-	if (usage && usage != GL_STREAM_DRAW_ARB)
-	{ //only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default
-		if (sDisableVBOMapping)
-		{ //always use stream draw if VBO mapping is disabled
-			ret_usage = GL_STREAM_DRAW_ARB;
-		}
-		else
-		{
-			ret_usage = GL_DYNAMIC_DRAW_ARB;
-		}
+	else if (!sEnableVBOs || !usage || (!sUseStreamDraw && usage == GL_STREAM_DRAW_ARB))
+	{
+		return 0;
 	}
-	
-	return ret_usage;
+	//Only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default.
+	//Always use stream_draw VBO if mapping is disabled, or stream is preferred or expected
+	if( sDisableVBOMapping || sPreferStreamDraw || (usage == GL_STREAM_DRAW_ARB))
+	{
+		return GL_STREAM_DRAW_ARB;
+	}
+	else
+	{
+		return GL_DYNAMIC_DRAW_ARB;
+	}
 }
 
 LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
@@ -812,7 +796,7 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 	mMappable(false),
 	mFence(NULL)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_CONSTRUCTOR);
 
 	if (mUsage == GL_DYNAMIC_DRAW_ARB && !sDisableVBOMapping)
 	{
@@ -880,7 +864,7 @@ S32 LLVertexBuffer::getSize() const
 //virtual
 LLVertexBuffer::~LLVertexBuffer()
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_DESTRUCTOR);
 	destroyGLBuffer();
 	destroyGLIndices();
 
@@ -997,7 +981,7 @@ void LLVertexBuffer::releaseIndices()
 
 void LLVertexBuffer::createGLBuffer(U32 size)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_CREATE_VERTICES);
 	
 	if (mGLBuffer)
 	{
@@ -1028,7 +1012,7 @@ void LLVertexBuffer::createGLBuffer(U32 size)
 
 void LLVertexBuffer::createGLIndices(U32 size)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_CREATE_INDICES);
 	
 	if (mGLIndices)
 	{
@@ -1064,7 +1048,7 @@ void LLVertexBuffer::createGLIndices(U32 size)
 
 void LLVertexBuffer::destroyGLBuffer()
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_DESTROY_BUFFER);
 	if (mGLBuffer)
 	{
 		if (mMappedDataUsingVBOs)
@@ -1085,7 +1069,7 @@ void LLVertexBuffer::destroyGLBuffer()
 
 void LLVertexBuffer::destroyGLIndices()
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_DESTROY_INDICES);
 	if (mGLIndices)
 	{
 		if (mMappedIndexDataUsingVBOs)
@@ -1106,7 +1090,7 @@ void LLVertexBuffer::destroyGLIndices()
 
 void LLVertexBuffer::updateNumVerts(S32 nverts)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_UPDATE_VERTS);
 
 	llassert(nverts >= 0);
 
@@ -1128,7 +1112,7 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 
 void LLVertexBuffer::updateNumIndices(S32 nindices)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_UPDATE_INDICES);
 
 	llassert(nindices >= 0);
 
@@ -1144,7 +1128,7 @@ void LLVertexBuffer::updateNumIndices(S32 nindices)
 
 void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_ALLOCATE_BUFFER);
 	
 	stop_glerror();
 
@@ -1265,7 +1249,7 @@ void LLVertexBuffer::resizeBuffer(S32 newnverts, S32 newnindices)
 	llassert(newnverts >= 0);
 	llassert(newnindices >= 0);
 
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_RESIZE_BUFFER);
 	
 	updateNumVerts(newnverts);		
 	updateNumIndices(newnindices);
@@ -1313,7 +1297,7 @@ static LLFastTimer::DeclareTimer FTM_VBO_MAP_BUFFER("VBO Map");
 volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range)
 {
 	bindGLBuffer(true);
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_MAP_BUFFER);
 	if (mFinal)
 	{
 		llerrs << "LLVertexBuffer::mapVeretxBuffer() called on a finalized buffer." << llendl;
@@ -1362,6 +1346,7 @@ volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, boo
 
 		if (!mVertexLocked)
 		{
+			LLMemType mt_v(LLMemType::MTYPE_VERTEX_MAP_BUFFER_VERTICES);
 			mVertexLocked = true;
 			sMappedCount++;
 			stop_glerror();	
@@ -1492,7 +1477,7 @@ static LLFastTimer::DeclareTimer FTM_VBO_MAP_INDEX("IBO Map");
 
 volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_MAP_BUFFER);
 	bindGLIndices(true);
 	if (mFinal)
 	{
@@ -1539,7 +1524,7 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range
 
 		if (!mIndexLocked)
 		{
-			//LLMemType mt_v(LLMemType::MTYPE_VERTEX_MAP_BUFFER_INDICES);
+			LLMemType mt_v(LLMemType::MTYPE_VERTEX_MAP_BUFFER_INDICES);
 
 			mIndexLocked = true;
 			sMappedCount++;
@@ -1663,7 +1648,7 @@ static LLFastTimer::DeclareTimer FTM_IBO_FLUSH_RANGE("Flush IBO Range");
 
 void LLVertexBuffer::unmapBuffer()
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_UNMAP_BUFFER);
 	if (!useVBOs())
 	{
 		return ; //nothing to unmap
@@ -2007,7 +1992,7 @@ void LLVertexBuffer::setBuffer(U32 data_mask)
 {
 	flush();
 
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_SET_BUFFER);
 	//set up pointers if the data mask is different ...
 	bool setup = (sLastMask != data_mask);
 
@@ -2149,7 +2134,7 @@ void LLVertexBuffer::setBuffer(U32 data_mask)
 // virtual (default)
 void LLVertexBuffer::setupVertexBuffer(U32 data_mask)
 {
-	LLMemType mt(LLMemType::MTYPE_VERTEX_DATA);
+	LLMemType mt2(LLMemType::MTYPE_VERTEX_SETUP_VERTEX_BUFFER);
 	stop_glerror();
 	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
 

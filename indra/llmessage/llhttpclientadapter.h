@@ -34,7 +34,7 @@
 #define LL_HTTPCLIENTADAPTER_H
 
 #include "llhttpclientinterface.h"
-#include "llmemory.h"	// LLSingleton<>
+#include "llsingleton.h"	// LLSingleton<>
 
 class LLHTTPClientAdapter : public LLHTTPClientInterface, public LLSingleton<LLHTTPClientAdapter>
 {

@@ -35,7 +35,7 @@
 
 #include "lluuid.h"
 #include "llstring.h"
-#include "llmemory.h"
+#include "llmemtype.h"
 #include "llthread.h"
 #include "aithreadsafe.h"
 
@@ -162,7 +162,7 @@ private:
 
 	static LLPrivateMemoryPool* sPrivatePoolp ;
 public:
-	S16 mMemType; // debug
+	LLMemType::DeclareMemType& mMemType; // debug
 };
 
 // Raw representation of an image (used for textures, and other uncompressed formats
@@ -330,7 +330,7 @@ public:
 	virtual void setLastError(const std::string& message, const std::string& filename = std::string());
 	
 protected:
-	BOOL copyData(U8 *data, S32 size); // calls updateData()
+	BOOL copyData(U8 *data, S32 size);
 	
 protected:
 	S8 mCodec;

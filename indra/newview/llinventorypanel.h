@@ -31,8 +31,8 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLINVENTORYVIEW_H
-#define LL_LLINVENTORYVIEW_H
+#ifndef LL_LLINVENTORYPANEL_H
+#define LL_LLINVENTORYPANEL_H
 
 #include "llassetstorage.h"
 #include "lldarray.h"
@@ -178,159 +178,8 @@ protected:
 
 class LLInventoryView;
 
-class LLInventoryViewFinder : public LLFloater
-{
-public:
-	LLInventoryViewFinder(const std::string& name,
-						const LLRect& rect,
-						LLInventoryView* inventory_view);
-	virtual void draw();
-	virtual void onClose(bool app_quitting);
-	void changeFilter(LLInventoryFilter* filter);
-	void updateElementsFromFilter();
-	BOOL getCheckShowEmpty();
-	BOOL getCheckSinceLogoff();
-
-	static void onTimeAgo(LLUICtrl*, void *);
-	static void onCheckSinceLogoff(LLUICtrl*, void *);
-	static void onCloseBtn(void* user_data);
-	static void selectAllTypes(void* user_data);
-	static void selectNoTypes(void* user_data);
-
-protected:
-	LLInventoryView*	mInventoryView;
-	LLSpinCtrl*			mSpinSinceDays;
-	LLSpinCtrl*			mSpinSinceHours;
-	LLInventoryFilter*	mFilter;
-};
-
-class LLInventoryView : public LLFloater, LLInventoryObserver
-{
-friend class LLInventoryViewFinder;
-
-public:
-	LLInventoryView(const std::string& name, const std::string& rect,
-			LLInventoryModel* inventory);
-	LLInventoryView(const std::string& name, const LLRect& rect,
-					LLInventoryModel* inventory);
-	~LLInventoryView();
-
-	/*virtual*/ void changed(U32 mask);
-
-	 BOOL postBuild();
-
-	//
-	// Misc functions
-	//
-	void setFilterTextFromFilter() { mFilterText = mActivePanel->getFilter()->getFilterText(); }
-	void startSearch();
-	// This method makes sure that an inventory view exists, is
-	// visible, and has focus. The view chosen is returned.
-	static LLInventoryView* showAgentInventory(BOOL take_keyboard_focus = FALSE);
-
-	// Return the active inventory view if there is one. Active is
-	// defined as the inventory that is the closest to the front, and
-	// is visible.
-	static LLInventoryView* getActiveInventory();
-
-	// This method calls showAgentInventory() if no views are visible,
-	// or hides/destroyes them all if any are visible.
-	static void toggleVisibility();
-	static void toggleVisibility(void*) { toggleVisibility(); }
-
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
-	static void closeAll() 
-	{
-		// If there are mulitple inventory floaters open then clicking the "Inventory" button will close
-		// them one by one (see LLToolBar::onClickInventory() => toggleVisibility() ) until we get to the
-		// last one which will just be hidden instead of closed/destroyed (see LLInventoryView::onClose)
-		//
-		// However the view isn't removed from sActiveViews until its destructor is called and since
-		// 'LLMortician::sDestroyImmediate == FALSE' while the viewer is running the destructor won't be 
-		// called right away
-		//
-		// Result: we can't call close() on the last (sActiveViews.count() will still be > 1) because
-		//         onClose() would take the wrong branch and destroy() it as well
-		//
-		// Workaround: "fix" onClose() to count only views that aren't marked as "dead"
-
-		LLInventoryView* pView; U8 flagsSound;
-		for (S32 idx = sActiveViews.count() - 1; idx >= 0; idx--)
-		{
-			pView = sActiveViews.get(idx);
-			flagsSound = pView->getSoundFlags();
-			pView->setSoundFlags(LLView::SILENT);	// Suppress the window close sound
-			pView->close();							// onClose() protects against closing the last inventory floater
-			pView->setSoundFlags(flagsSound);		// One view won't be destroy()'ed so it needs its sound flags restored
-		}
-	}
-// [/RLVa:KB]
-
-	// Final cleanup, destroy all open inventory views.
-	static void cleanup();
-
-	// LLView & LLFloater functionality
-	virtual void onClose(bool app_quitting);
-	virtual void setVisible(BOOL visible);
-	virtual void draw();
-	virtual BOOL handleKeyHere(KEY key, MASK mask);
-
-	BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-		EDragAndDropType cargo_type,
-		void* cargo_data,
-		EAcceptance* accept,
-		std::string& tooltip_msg);
 
 
-	LLInventoryPanel* getPanel() { return mActivePanel; }
-	LLInventoryPanel* getActivePanel() { return mActivePanel; }
-
-	static BOOL filtersVisible(void* user_data);
-	static void onClearSearch(void* user_data);
-	static void onFoldersByName(void *user_data);
-	static BOOL checkFoldersByName(void *user_data);
-	static void onSearchEdit(const std::string& search_string, void* user_data );
-
-	static void onQuickFilterCommit(LLUICtrl* ctrl, void* user_data);
-	static void refreshQuickFilter(LLUICtrl* ctrl);
-	
-	static void onFilterSelected(void* userdata, bool from_click);
-	static void onResetAll(void* userdata);
-	static void onExpandAll(void* userdata);
-    static void onCollapseAll(void* userdata);
-	static void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
-
-	const std::string getFilterSubString() { return mActivePanel->getFilterSubString(); }
-	void setFilterSubString(const std::string& string) { mActivePanel->setFilterSubString(string); }
-
-	// HACK: Until we can route this info through the instant message hierarchy
-	static BOOL sWearNewClothing;
-	static LLUUID sWearNewClothingTransactionID;	// wear all clothing in this transaction
-
-	void toggleFindOptions();
-	void updateSortControls();
-
-	LLInventoryViewFinder* getFinder() { return (LLInventoryViewFinder*)mFinderHandle.get(); }
-
-protected:
-	// internal initialization code
-	void init(LLInventoryModel* inventory);
-
-protected:
-	LLSearchEditor*				mSearchEditor;
-	LLComboBox*						mQuickFilterCombo;
-	LLTabContainer*				mFilterTabs;
-	LLHandle<LLFloater>				mFinderHandle;
-	LLInventoryPanel*			mActivePanel;
-	LLSaveFolderState*			mSavedFolderState;
-
-	std::string					mFilterText;
-
-
-	// This container is used to hold all active inventory views. This
-	// is here to support the inventory toggle show button.
-	static LLDynamicArray<LLInventoryView*> sActiveViews;
-};
 
 ///----------------------------------------------------------------------------
 /// Function declarations, constants, enums, and typedefs
@@ -358,7 +207,7 @@ void open_texture(const LLUUID& item_id, const std::string& title, BOOL show_kee
 const BOOL TAKE_FOCUS_YES = TRUE;
 const BOOL TAKE_FOCUS_NO  = FALSE;
 
-#endif // LL_LLINVENTORYVIEW_H
+#endif // LL_LLINVENTORYPANEL_H
 
 
 

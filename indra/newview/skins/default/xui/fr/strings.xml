@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <!-- This file contains strings that used to be hardcoded in the source.
      It is only for those strings which do not belong in a floater.
      For example, the strings used in avatar chat bubbles, and strings 
@@ -557,6 +557,42 @@
 	</string>
 	<string name="choose_the_directory">
 		Choisir le répertoire
+	</string>
+	<string name="AvatarSetNotAway">
+		Présent
+	</string>
+	<string name="AvatarSetAway">
+		Absent
+	</string>
+	<string name="AvatarSetNotBusy">
+		Pas occupé
+	</string>
+	<string name="AvatarSetBusy">
+		Occupé
+	</string>
+	<string name="Stone">
+		Pierre
+	</string>
+	<string name="Metal">
+		Métal
+	</string>
+	<string name="Glass">
+		Verre
+	</string>
+	<string name="Wood">
+		Bois
+	</string>
+	<string name="Flesh">
+		Chair
+	</string>
+	<string name="Plastic">
+		Plastique
+	</string>
+	<string name="Rubber">
+		Caoutchouc
+	</string>
+	<string name="Light">
+		Léger
 	</string>
 </strings>
 	<string name="LeaveMouselook">
