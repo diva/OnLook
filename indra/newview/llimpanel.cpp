@@ -2201,6 +2201,10 @@ void LLFloaterIMPanel::sendMsg()
 				}
 			}
 
+			if (utf8text.find("/ME'") == 0 || utf8text.find("/ME ") == 0)	//Allow CAPSlock /me
+			{
+				utf8text.replace(1, 2, "me");
+			}
 			std::string prefix = utf8text.substr(0, 4);
 			if (prefix != "/me " && prefix != "/me'")
 				if (mRPMode) utf8text = "[[" + utf8text + "]]";
