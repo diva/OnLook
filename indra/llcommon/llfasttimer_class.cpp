@@ -370,7 +370,7 @@ void LLFastTimer::updateCachedPointers()
 		llassert(frame_state_list[vector_size - 1].mParent == vector_start);		// The one that was added at the end is already OK.
 		for (int i = 2; i < vector_size - 1; ++i)
 		{
-			FrameState*& parent(frame_state_list[i].mParent);
+			FrameState*& parent = frame_state_list[i].mParent;
 			if (parent != &root_frame_state)
 			{
 				parent += offset;
