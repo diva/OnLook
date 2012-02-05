@@ -42,6 +42,7 @@
 #include "llwlhandlers.h"
 #include "llwlparammanager.h"
 //#include "kcwlinterface.h"
+#include "m7wlinterface.h"
 #include "rlvhandler.h"
 
 std::string LLEnvPrefs::getWaterPresetName() const
@@ -492,7 +493,7 @@ void LLEnvManagerNew::onRegionSettingsResponse(const LLSD& content)
 	LLWLParamManager::getInstance()->refreshRegionPresets();
 
 	// Use the region settings if parcel settings didnt override it already -KC
-	if (true /*KCWindlightInterface::instance().haveParcelOverride(new_settings)*/)
+	if (!M7WindlightInterface::getInstance()->hasOverride())
 	{
 		// If using server settings, update managers.
 		if (getUseRegionSettings())
