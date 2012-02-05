@@ -321,18 +321,21 @@ void LLPanelFriends::filterContacts(const std::string& search_name)
 			refreshNames(LLFriendObserver::ADD);
 		}
 
+		//llinfos << "search_name = " << search_name <<llendl;
+
 		std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
 		for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
 		{
 			friend_name = utf8str_tolower((*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString());
 			BOOL show_entry = (friend_name.find(utf8str_tolower(search_name)) != std::string::npos);
-
+			//llinfos << "friend_name = " << friend_name << (show_entry?" (shown)":"") <<llendl;
 			if (!show_entry)
 			{
 				mFriendsList->deleteItems((*itr)->getValue());
 			}
 		}
 
+		mFriendsList->updateLayout();
 		refreshUI();
 	}
 	else if (search_name == "" && search_name != mLastContactSearch) refreshNames(LLFriendObserver::ADD);
