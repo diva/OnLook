@@ -27,7 +27,7 @@
 //
 // LLFastTimer documentation, written by Aleric (Feb 2012).
 //
-// Disclaimer: this is horrible code and I distantiate myself from it's design.
+// Disclaimer: this is horrible code and I distantiate myself from its design.
 // It's neither robust nor object oriented.  I just document what I find, in
 // order to be able to fix the bugs (that logically result from such a design).
 //
@@ -63,12 +63,12 @@
 // LLFastTimer::getFrameStateList()[named_timer.getFrameStateIndex()], where
 // getFrameStateList() is a static function returning a global std::vector<FrameState>.
 // This vector is ordered "Depth First" (the FrameState objects (belonging to
-// NamedTimer objects) with smallest depth first). The vector is resorted a few
+// NamedTimer objects) with smallest depth first). The vector is re-sorted a few
 // times in the beginning (and indexes in FrameState updated) since timers are added
 // whenever they are first used, not in "Depth First" order, but stabilizes after a
 // while. This implies that FrameState pointers can't really be used: FrameState
 // objects move around in memory whenever something is inserted or removed from the
-// std::vector and/or when the vector is resorted. However, FrameState pointers ARE
+// std::vector and/or when the vector is re-sorted. However, FrameState pointers ARE
 // being used and code exists that tries to update those pointers in the above
 // mentioned cases (this part had bugs, which I now fixed).
 // 
