@@ -81,6 +81,7 @@ protected:
 	LLUUID		mObjectID;
 	LLButton*	mPlayBtn;
 	LLButton*	mAuditionBtn;
+	bool		mIsCopyable;
 };
 
 #endif  // LL_LLPREVIEWSOUND_H

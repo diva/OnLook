@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llfloaterfriends.cpp
  * @author Phoenix
  * @date 2005-01-13
@@ -310,44 +310,45 @@ void LLPanelFriends::categorizeContacts()
 	}
 }
 
-void LLPanelFriends::filterContacts()
+void LLPanelFriends::filterContacts(const std::string& search_name)
 {
 	std::string friend_name;
-	std::string search_name;
-
-	search_name = LLPanelFriends::getChild<LLLineEditor>("buddy_search_lineedit")->getValue().asString();
 
 	if ((search_name != "" /*&& search_name != mLastContactSearch*/))
 	{	
-		mLastContactSearch = search_name;
-		refreshNames(LLFriendObserver::ADD);
+		if (search_name.find(mLastContactSearch) == std::string::npos)
+		{
+			refreshNames(LLFriendObserver::ADD);
+		}
+
+		//llinfos << "search_name = " << search_name <<llendl;
 
 		std::vector<LLScrollListItem*> vFriends = mFriendsList->getAllData(); // all of it.
 		for (std::vector<LLScrollListItem*>::iterator itr = vFriends.begin(); itr != vFriends.end(); ++itr)
 		{
 			friend_name = utf8str_tolower((*itr)->getColumn(LIST_FRIEND_NAME)->getValue().asString());
 			BOOL show_entry = (friend_name.find(utf8str_tolower(search_name)) != std::string::npos);
-
+			//llinfos << "friend_name = " << friend_name << (show_entry?" (shown)":"") <<llendl;
 			if (!show_entry)
 			{
 				mFriendsList->deleteItems((*itr)->getValue());
 			}
 		}
 
+		mFriendsList->updateLayout();
 		refreshUI();
 	}
 	else if (search_name == "" && search_name != mLastContactSearch) refreshNames(LLFriendObserver::ADD);
+	mLastContactSearch = search_name;
 }
 
-void LLPanelFriends::onContactSearchKeystroke(LLLineEditor* caller, void* user_data)
+//static
+void LLPanelFriends::onContactSearchEdit(const std::string& search_string, void* user_data)
 {
-	if (caller)
+	LLPanelFriends* panelp = (LLPanelFriends*)user_data;
+	if (panelp)
 	{
-		LLPanelFriends* panelp = (LLPanelFriends*)caller->getParent();
-		if (panelp)
-		{
-			panelp->filterContacts();
-		}
+		panelp->filterContacts(search_string);
 	}
 }
 
@@ -377,10 +378,10 @@ BOOL LLPanelFriends::postBuild()
 	// <dogmode>
 	// Contact search and group system.
 	// 09/05/2010 - Charley Levenque
-	LLLineEditor* contact = getChild<LLLineEditor>("buddy_search_lineedit");
+	LLSearchEditor* contact = getChild<LLSearchEditor>("buddy_search_lineedit");
 	if (contact)
 	{
-		contact->setKeystrokeCallback(&onContactSearchKeystroke);
+		contact->setSearchCallback(&onContactSearchEdit, this);
 	}
 
 	getChild<LLTextBox>("s_num")->setValue("0");

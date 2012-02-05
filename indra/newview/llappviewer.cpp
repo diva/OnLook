@@ -1213,6 +1213,9 @@ bool LLAppViewer::mainLoop()
 					// of equal priority on Windows
 					if (milliseconds_to_sleep > 0)
 					{
+						//Prevent sleeping too long while in the login process (tends to cause stalling)
+						if(LLStartUp::getStartupState() >= STATE_LOGIN_AUTH_INIT && LLStartUp::getStartupState() < STATE_STARTED)
+							milliseconds_to_sleep = llmin(milliseconds_to_sleep,250);
 						ms_sleep(milliseconds_to_sleep);
 						// also pause worker threads during this wait period
 						LLAppViewer::getTextureCache()->pause();

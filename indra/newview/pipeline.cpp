@@ -158,7 +158,7 @@ extern BOOL gDebugGL;
 
 // hack counter for rendering a fixed number of frames after toggling
 // fullscreen to work around DEV-5361
-//static S32 sDelayedVBOEnable = 0;
+static S32 sDelayedVBOEnable = 0;
 
 BOOL	gAvatarBacklight = FALSE;
 
@@ -556,8 +556,11 @@ void LLPipeline::destroyGL()
 	if (LLVertexBuffer::sEnableVBOs)
 	{
 		// render 30 frames after switching to work around DEV-5361
-		//sDelayedVBOEnable = 30;
-		LLVertexBuffer::sEnableVBOs = FALSE;
+		if(!LLRenderTarget::sUseFBO)
+		{
+			sDelayedVBOEnable = 30;
+			LLVertexBuffer::sEnableVBOs = FALSE;
+		}
 	}
 }
 
@@ -580,6 +583,7 @@ void LLPipeline::throttleNewMemoryAllocation(BOOL disable)
 		}
 	}
 }
+
 void LLPipeline::resizeScreenTexture()
 {
 	LLFastTimer ft(FTM_RESIZE_SCREEN_TEXTURE);
@@ -607,7 +611,13 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 {
 	refreshCachedSettings();
 	static const LLCachedControl<U32> RenderFSAASamples("RenderFSAASamples",0);
-	U32 samples = RenderFSAASamples;
+	U32 samples = RenderFSAASamples.get() - RenderFSAASamples.get() % 2;	//Must be multipe of 2.
+
+	//Don't multisample if not using FXAA, or if fbos are disabled, or if multisampled fbos are not supported.
+	if(!LLPipeline::sRenderDeferred && (!LLRenderTarget::sUseFBO || !gGLManager.mHasFramebufferMultisample))
+	{
+		samples = 0;
+	}
 
 	//try to allocate screen buffers at requested resolution and samples
 	// - on failure, shrink number of samples and try again
@@ -628,8 +638,7 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 			releaseScreenBuffers();
 		}
 
-		if(LLPipeline::sRenderDeferred || !LLRenderTarget::sUseFBO || !gGLManager.mHasFramebufferMultisample)
-			samples = 0;
+		samples = 0;
 
 		//reduce resolution
 		while (resY > 0 && resX > 0)
@@ -2326,14 +2335,14 @@ void LLPipeline::updateGeom(F32 max_dtime)
 
 	assertInitialized();
 
-	/*if (sDelayedVBOEnable > 0)
+	if (sDelayedVBOEnable > 0)
 	{
 		if (--sDelayedVBOEnable <= 0)
 		{
 			resetVertexBuffers();
 			LLVertexBuffer::sEnableVBOs = TRUE;
 		}
-	}*/
+	}
 
 	// notify various object types to reset internal cost metrics, etc.
 	// for now, only LLVOVolume does this to throttle LOD changes
@@ -6153,6 +6162,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 	if (tiling && !LLPipeline::sRenderDeferred) //Need to coax this into working with deferred now that tiling is back.
 	{
+		gGlowCombineProgram.bind();
+
 		gGL.getTexUnit(0)->bind(&mGlow[1]);
 		{
 			//LLGLEnable stencil(GL_STENCIL_TEST);
@@ -6194,12 +6205,14 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 			gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		}
 
-		gGL.flush();
 		gGL.matrixMode(LLRender::MM_PROJECTION);
 		gGL.popMatrix();
-		gGL.matrixMode(GL_MODELVIEW);
+		gGL.matrixMode(LLRender::MM_MODELVIEW);
 		gGL.popMatrix();
 
+		gGlowCombineProgram.unbind();
+
+		gGL.flush();
 		return;
 	}
 	

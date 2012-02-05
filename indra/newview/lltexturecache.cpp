@@ -1969,14 +1969,14 @@ void LLTextureCache::removeEntry(S32 idx, Entry& entry, std::string& filename, b
 		  }
 		}
 
-			entry.mImageSize = -1;
-			entry.mBodySize = 0;
+		mTexturesSizeTotal -= entry.mBodySize;
+		entry.mImageSize = -1;
+		entry.mBodySize = 0;
 		mHeaderIDMap.erase(entry.mID);
 		mTexturesSizeMap.erase(entry.mID);
 
-		mTexturesSizeTotal -= entry.mBodySize;
-			mFreeList.insert(idx);
-		}
+		mFreeList.insert(idx);
+	}
 
 	if (remove_file && file_maybe_exists)
 	{

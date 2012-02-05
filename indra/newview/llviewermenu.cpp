@@ -9268,7 +9268,6 @@ class LLWorldEnvSettings : public view_listener_t
 // [/RLVa:KB]
 
 		std::string tod = userdata.asString();
-		LLVector3 sun_direction;
 		
 		if (tod == "editor")
 		{
@@ -9288,53 +9287,25 @@ class LLWorldEnvSettings : public view_listener_t
 		
 		if (tod == "sunrise")
 		{
-			// set the value, turn off animation
-			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.25);
-			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
-
-			// then call update once
-			LLWLParamManager::getInstance()->mAnimator.update(
-				LLWLParamManager::getInstance()->mCurParams);
+			LLEnvManagerNew::instance().setUseSkyPreset("Sunrise", gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 		}
 		else if (tod == "noon")
 		{
-			// set the value, turn off animation
-			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.567);
-			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
-
-			// then call update once
-			LLWLParamManager::getInstance()->mAnimator.update(
-				LLWLParamManager::getInstance()->mCurParams);
+			LLEnvManagerNew::instance().setUseSkyPreset("Midday", gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 		}
 		else if (tod == "sunset")
 		{
-			// set the value, turn off animation
-			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.75);
-			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
-
-			// then call update once
-			LLWLParamManager::getInstance()->mAnimator.update(
-				LLWLParamManager::getInstance()->mCurParams);
+			LLEnvManagerNew::instance().setUseSkyPreset("Sunset", gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 		}
 		else if (tod == "midnight")
 		{
-			// set the value, turn off animation
-			LLWLParamManager::getInstance()->mAnimator.setDayTime(0.0);
-			LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
-
-			// then call update once
-			LLWLParamManager::getInstance()->mAnimator.update(
-				LLWLParamManager::getInstance()->mCurParams);
+			LLEnvManagerNew::instance().setUseSkyPreset("Midnight", gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 		}
-		else
+		else // Use Region Environment Settings
 		{
-			LLWLParamManager::getInstance()->mAnimator.mIsRunning = true;
-			LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = true;	
+			LLEnvManagerNew::instance().setUseRegionSettings(true, gSavedSettings.getBOOL("PhoenixInterpolateSky"));
 		}
+
 		return true;
 	}
 };

@@ -133,7 +133,7 @@ void LLFloaterEnvSettings::syncMenu()
 	param_mgr->setDensitySliderValue(param_mgr->mFogDensity.mExp);
 
 	// turn off Use Estate Time button if it's already being used
-	if(LLWLParamManager::getInstance()->mAnimator.mUseLindenTime)
+	if(LLWLParamManager::getInstance()->mAnimator.getUseLindenTime())
 	{
 		childDisable("EnvUseEstateTimeButton");
 	} else {
@@ -218,8 +218,7 @@ void LLFloaterEnvSettings::onChangeDayTime(LLUICtrl* ctrl, void* userData)
 	sldr = sEnvSettings->getChild<LLSliderCtrl>("EnvTimeSlider");
 
 	// deactivate animator
-	LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
 	F32 val = sldr->getValueF32() + 0.25f;
 	if(val > 1.0) 
@@ -311,8 +310,8 @@ void LLFloaterEnvSettings::onUseEstateTime(void* userData)
 		box->selectByValue("");
 	}
 
-	LLWLParamManager::getInstance()->mAnimator.mIsRunning = true;
-	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = true;
+	LLWLParamManager::getInstance()->mAnimator.activate(LLWLAnimator::TIME_LINDEN);
+	LLEnvManagerNew::instance().setUseDayCycle(LLEnvManagerNew::instance().getDayCycleName());
 }
 
 std::string LLFloaterEnvSettings::timeToString(F32 curTime)

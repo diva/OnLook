@@ -73,10 +73,14 @@ LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const 
 		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
 	}
 
+	mIsCopyable = false;
 	// preload the animation
 	if(item)
 	{
 		gAgentAvatarp->createMotion(item->getAssetUUID());
+
+		const LLPermissions& perm = item->getPermissions();
+		mIsCopyable = (perm.getCreator() == gAgent.getID());
 	}
 	
 	switch ( activate ) 
@@ -334,7 +338,7 @@ void LLPreviewAnim::copyAnimID(void *userdata)
 // virtual
 BOOL LLPreviewAnim::canSaveAs() const
 {
-	return TRUE;
+	return mIsCopyable;
 }
 
 // virtual

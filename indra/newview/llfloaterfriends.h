@@ -105,7 +105,7 @@ private:
 	typedef std::map<LLUUID, S32> rights_map_t;
 	void refreshNames(U32 changed_mask);
 	// <dogmode> Contacts search and group system
-	void filterContacts();
+	void filterContacts(const std::string& search_name);
 	void categorizeContacts();
 	void setContactGroup(std::string contact_grp);
 	std::string cleanFileName(std::string filename);
@@ -136,7 +136,7 @@ private:
 	static bool callbackAddFriendWithMessage(const LLSD& notification, const LLSD& response);
 	static void onPickAvatar(const std::vector<std::string>& names, const std::vector<LLUUID>& ids, void* user_data);
 	static void onMaximumSelect(void* user_data);
-	static void onContactSearchKeystroke(LLLineEditor* caller, void* user_data);
+	static void onContactSearchEdit(const std::string& search_string, void* user_data);
 	static void onClickIM(void* user_data);
 	static void onClickAssign(void* user_data);
 	static void onClickExpand(void* user_data);

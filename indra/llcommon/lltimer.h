@@ -113,7 +113,7 @@ public:
 // Various functions for initializing/accessing clock and timing stuff.  Don't use these without REALLY knowing how they work.
 //
 LL_COMMON_API U64 get_clock_count();
-LL_COMMON_API F64 calc_clock_frequency(U32 msecs);
+LL_COMMON_API F64 calc_clock_frequency();
 LL_COMMON_API void update_clock_frequencies();
 
 // Sleep for milliseconds

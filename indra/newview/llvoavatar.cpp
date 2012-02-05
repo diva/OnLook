@@ -3612,25 +3612,25 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 					//Lindens are always more Linden than your friend, make that take precedence
 					if(LLMuteList::getInstance()->isLinden(getFullname()))
 					{
-						static const LLCachedControl<LLColor4> ascent_linden_color(gColors, "AscentLindenColor" );
+						static const LLCachedControl<LLColor4> ascent_linden_color( "AscentLindenColor" );
 						mClientColor = ascent_linden_color;
 					}
 					//check if they are an estate owner at their current position
 					else if(estate_owner.notNull() && this->getID() == estate_owner)
 					{
-						static const LLCachedControl<LLColor4> ascent_estate_owner_color(gColors, "AscentEstateOwnerColor" );
+						static const LLCachedControl<LLColor4> ascent_estate_owner_color( "AscentEstateOwnerColor" );
 						mClientColor = ascent_estate_owner_color;
 					}
 					//without these dots, SL would suck.
 					else if (LLAvatarTracker::instance().getBuddyInfo(this->getID()) != NULL)
 					{
-						static const LLCachedControl<LLColor4> ascent_friend_color(gColors, "AscentFriendColor" );
+						static const LLCachedControl<LLColor4> ascent_friend_color( "AscentFriendColor" );
 						mClientColor = ascent_friend_color;
 					}
 					//big fat jerkface who is probably a jerk, display them as such.
 					else if(LLMuteList::getInstance()->isMuted(this->getID()))
 					{
-						static const LLCachedControl<LLColor4> ascent_muted_color(gColors, "AscentMutedColor" );
+						static const LLCachedControl<LLColor4> ascent_muted_color( "AscentMutedColor" );
 						mClientColor = ascent_muted_color;
 					}
 				}
@@ -4918,7 +4918,7 @@ U32 LLVOAvatar::renderSkinned(EAvatarRenderPass pass)
 
 	if (pass == AVATAR_RENDER_PASS_SINGLE)
 	{
-		bool is_muted = isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
+		bool is_muted = LLPipeline::sImpostorRender && isVisuallyMuted();	//Disable masking and also disable alpha in LLViewerJoint::render
 		const bool should_alpha_mask = !is_muted && shouldAlphaMask();
 		LLGLState test(GL_ALPHA_TEST, should_alpha_mask);
 		

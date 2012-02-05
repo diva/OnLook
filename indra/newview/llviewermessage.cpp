@@ -164,6 +164,7 @@
 #include "hipporestrequest.h"
 #include "hippofloaterxml.h"
 #include "llversionviewer.h"
+#include "m7wlinterface.h"
 
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
@@ -3496,6 +3497,7 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 				}
 // [/RLVa:KB]
 			case CHAT_TYPE_DEBUG_MSG:
+			case CHAT_TYPE_DIRECT: // llRegionSayTo()
 			case CHAT_TYPE_NORMAL:
 				verb = ": ";
 				break;
@@ -3813,19 +3815,7 @@ void process_teleport_finish(LLMessageSystem* msg, void**)
 	gCacheName->setUpstream(sim);
 */
 
-	//Reset the windlight profile to default
-	//LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-	//LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
-	LLWLParamSet wl_backup;
-	if(LLWLParamManager::getInstance()->getParamSet("LightShare-Backup", wl_backup)) {
-		LLWLParamManager::getInstance()->propagateParameters();
-		LLWLParamManager::getInstance()->removeParamSet("LightShare-Backup", true);
-	}
-	LLWaterParamSet backup;
-	if(LLWaterParamManager::getInstance()->getParamSet("LightShare-Backup", backup)) {
-		LLWaterParamManager::getInstance()->propagateParameters();
-		LLWaterParamManager::getInstance()->removeParamSet("LightShare-Backup", true);
-	}
+	M7WindlightInterface::getInstance()->receiveReset();
 
 	// now, use the circuit info to tell simulator about us!
 	LL_INFOS("Messaging") << "process_teleport_finish() Enabling "
