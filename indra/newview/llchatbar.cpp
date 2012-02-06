@@ -685,8 +685,10 @@ void LLChatBar::sendChatFromViewer(const LLWString &wtext, EChatType type, BOOL 
 	}
 // [/RLVa:KB]
 
+	LLCachedControl<bool> disable_chat_animation("SGDisableChatAnimation");
+
 	// Don't animate for chats people can't hear (chat to scripts)
-	if (animate && (channel == 0))
+	if (animate && (channel == 0) && !disable_chat_animation)
 	{
 		if (type == CHAT_TYPE_WHISPER)
 		{
