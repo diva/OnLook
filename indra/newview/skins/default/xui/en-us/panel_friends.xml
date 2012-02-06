@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel border="true" name="friends">
-	<string name="Multiple">
-		Multiple friends...
-	</string>
+	<string name="Multiple">Multiple friends...</string>
 	<scroll_list bottom="10" can_resize="true" column_padding="0" draw_heading="true"
 	    follows="left|top|bottom|right" left="10" multi_select="true"
 	    name="friend_list" right="-100" search_column="1"
@@ -12,7 +10,7 @@
 		    tool_tip="Online status" width="20" />
 		<column dynamicwidth="true" label="Name" name="friend_name" tool_tip="Name" />
 		<column image="ff_visible_online_button.tga" name="icon_visible_online"
-		    tool_tip="Friend can see when you&apos;re online" width="20" />
+		    tool_tip="Friend can see when you're online" width="20" />
 		<column image="ff_visible_map_button.tga" name="icon_visible_map"
 		    tool_tip="Friend can locate you on the map" width="20" />
 		<column image="ff_edit_mine_button.tga" name="icon_edit_mine"
@@ -22,7 +20,7 @@
    		<column image="ff_visible_map_button.tga" name="icon_visible_map_theirs"
 		    tool_tip="You can locate them on the map" width="20" />
 		<column image="ff_edit_theirs_button.tga" name="icon_edit_theirs"
-		    tool_tip="You can edit this friend&apos;s objects" width="20" />
+		    tool_tip="You can edit this friend's objects" width="20" />
 		<column name="friend_last_update_generation" width="0" />
 	</scroll_list>
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
