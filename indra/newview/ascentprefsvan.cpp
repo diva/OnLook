@@ -218,6 +218,7 @@ void LLPrefsAscentVan::refreshValues()
     mShowTPScreen			= !gSavedSettings.getBOOL("AscentDisableTeleportScreens");
     mPlayTPSound			= gSavedSettings.getBOOL("OptionPlayTpSound");
     mShowLogScreens			= !gSavedSettings.getBOOL("AscentDisableLogoutScreens");
+	mDisableChatAnimation   = gSavedSettings.getBOOL("SGDisableChatAnimation");
 
     //Tags\Colors ----------------------------------------------------------------------------
     mAscentUseTag           = gSavedSettings.getBOOL("AscentUseTag");
@@ -291,6 +292,7 @@ void LLPrefsAscentVan::cancel()
     gSavedSettings.setBOOL("AscentDisableTeleportScreens", !mShowTPScreen);
     gSavedSettings.setBOOL("OptionPlayTpSound",             mPlayTPSound);
     gSavedSettings.setBOOL("AscentDisableLogoutScreens",   !mShowLogScreens);
+	gSavedSettings.setBOOL("SGDisableChatAnimation",		mDisableChatAnimation);
 
     //Tags\Colors ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("AscentUseTag",               mAscentUseTag);

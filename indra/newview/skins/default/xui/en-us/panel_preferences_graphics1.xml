@@ -2,7 +2,7 @@
 <panel border="true" bottom="-439" height="438" label="Graphics" left="102" name="Display panel" width="517">
 	<button bottom="-22" height="18" label="?" left="470" name="GraphicsPreferencesHelpButton" width="22"/>
 	<check_box bottom="-23" height="16" initial_value="false" label="Run viewer in a window" left="10" name="windowed mode" width="120" tool_tip="If unchecked, viewer will display full-screen when logged in."/>
-	<text bottom="-62" height="12" left="10" name="WindowSizeLabel">Window Size:</text>
+	<text bottom="-62" height="12" name="WindowSizeLabel">Window Size:</text>
 	<combo_box bottom="-67" height="18" left="165" name="windowsize combo" width="150">
 		<combo_item name="800x600" value="800 x 600">800x600</combo_item>
 		<combo_item name="720x480" value="720 x 480">720x480 (NTSC)</combo_item>
@@ -60,43 +60,43 @@
   </combo_box>
 
   <text bottom="-317" height="12" left="10" name="AvatarRenderingText">Avatar Rendering:</text>
-  <check_box bottom_delta="-18" control_name="RenderUseImpostors" initial_value="true" label="Avatar Impostors" left_delta="0" name="AvatarImpostors"/>
+  <check_box bottom_delta="-18" control_name="RenderUseImpostors" initial_value="true" label="Avatar Impostors" name="AvatarImpostors"/>
   <slider bottom_delta="-12" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="100" left_delta="8" max_val="50" min_val="1" name="AvatarMaxVisible" width="195"/>
-  <check_box bottom_delta="-22" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" left="10" name="AvatarVertexProgram"/>
-  <check_box bottom_delta="-17" control_name="RenderAvatarCloth" initial_value="true" label="Avatar Cloth" left_delta="0" name="AvatarCloth"/>
+  <check_box bottom_delta="-22" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" name="AvatarVertexProgram"/>
+  <check_box bottom_delta="-17" control_name="RenderAvatarCloth" initial_value="true" label="Avatar Cloth" name="AvatarCloth"/>
   <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
   <text bottom="-131" height="12" left="470" name="DrawDistanceMeterText2">m</text>
   <slider bottom="-135"      control_name="RenderFarClip"	  	  		  decimal_digits="0" height="16" increment="8" initial_val="160" label="Draw Distance:" label_width="101" left="215" max_val="1024" min_val="64" name="DrawDistance" width="262"/>
-  <slider bottom_delta="-16" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101" left_delta="0"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
-  <slider bottom_delta="-20" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" left_delta="0" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
-  <text bottom_delta="-17" height="12" left="215" width="128" name="MeshDetailText">Mesh Detail:</text>
-  <slider bottom_delta="-18" control_name="RenderVolumeLODFactor" 		  decimal_digits="3" increment="0.125" initial_val="160" label="  Objects:" label_width="79" left_delta="0" max_val="2" min_val="0" name="ObjectMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderFlexTimeFactor"  		  decimal_digits="3" increment="0.1" initial_val="160" label="  Flexiprims:" label_width="79" left_delta="0" max_val="1" min_val="0" name="FlexibleMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderTreeLODFactor"	  		  decimal_digits="3" increment="0.125" initial_val="160" label="  Trees:" label_width="79" left_delta="0" max_val="1" min_val="0" name="TreeMeshDetail"   show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderAvatarLODFactor" 		  decimal_digits="3" increment="0.125" initial_val="160" label="  Avatars:" label_width="79" left_delta="0" max_val="1" min_val="0" name="AvatarMeshDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderAvatarPhysicsLODFactor"  decimal_digits="3" increment="0.1" initial_val="160" label="  Avatar Physics:" label_width="79" left_delta="0" max_val="1" min_val="0"	   name="AvatarPhysicsDetail" show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="RenderTerrainLODFactor"  	  decimal_digits="3" increment="0.125" initial_val="160" label="  Terrain:" label_width="79" left_delta="0" max_val="2" min_val="1"	   name="TerrainMeshDetail"   show_text="false" width="223"/>
-  <slider bottom_delta="-20" control_name="WLSkyDetail"			  		  decimal_digits="0" increment="8" initial_val="160" label="  Sky:" label_width="79" left_delta="0" max_val="128" min_val="16" name="SkyMeshDetail"   show_text="false" width="223"/>
+  <slider bottom_delta="-16" control_name="RenderMaxPartCount"	  		  decimal_digits="0" height="16" increment="256" initial_val="4096"	  label="Max. Particle Count:" label_width="101"	  max_val="8192" min_val="0" name="MaxParticleCount" width="262"/>
+  <slider bottom_delta="-20" control_name="RenderGlowResolutionPow" 	  decimal_digits="0" height="16" increment="1" initial_val="8" label="Post Process Quality:"	  label_width="101" max_val="9" min_val="8" name="RenderPostProcess" show_text="false" width="226"/>
+  <text bottom_delta="-17" height="12" left="215" name="MeshDetailText">Mesh Detail:</text>
+  <slider bottom_delta="-18" control_name="RenderVolumeLODFactor" increment="0.09375" label="  Objects:" label_width="79" max_val="2" min_val="0.5" name="ObjectMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderFlexTimeFactor" increment="0.1" label="  Flexiprims:" label_width="79" max_val="1" min_val="0" name="FlexibleMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderTreeLODFactor"	increment="0.125" label="  Trees:" label_width="79" max_val="1" min_val="0" name="TreeMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderAvatarLODFactor" increment="0.125" label="  Avatars:" label_width="79" max_val="1" min_val="0" name="AvatarMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderAvatarPhysicsLODFactor" increment="0.1" label="  Avatar Physics:" label_width="79" max_val="1" min_val="0" name="AvatarPhysicsDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="RenderTerrainLODFactor" increment="0.125" label="  Terrain:" label_width="79" max_val="2" min_val="1" name="TerrainMeshDetail" show_text="false" width="223"/>
+  <slider bottom_delta="-20" control_name="WLSkyDetail"			  		  decimal_digits="0" increment="8" label="  Sky:" label_width="79" max_val="128" min_val="16" name="SkyMeshDetail"   show_text="false" width="223"/>
   <text bottom="-172" height="12" left="444" name="PostProcessText">Low</text>
-  <text bottom_delta="-38" height="12" left_delta="0" name="ObjectMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="FlexibleMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="TreeMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="AvatarMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="AvatarPhysicsDetailText">Off</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="TerrainMeshDetailText">Low</text>
-  <text bottom_delta="-20" height="12" left_delta="0" name="SkyMeshDetailText">Low</text>
-  <text bottom="-354"	   height="12" left="215" 	  name="LightingDetailText">Lighting Detail:</text>
-  <radio_group bottom_delta="-40" control_name="RenderLocalLights" draw_border="false" height="38" left_delta="0" name="LightingDetailRadio" width="321">
+  <text bottom_delta="-38" height="12" name="ObjectMeshDetailText">Low</text>
+  <text bottom_delta="-20" height="12" name="FlexibleMeshDetailText">Low</text>
+  <text bottom_delta="-20" height="12" name="TreeMeshDetailText">Low</text>
+  <text bottom_delta="-20" height="12" name="AvatarMeshDetailText">Low</text>
+  <text bottom_delta="-20" height="12" name="AvatarPhysicsDetailText">Off</text>
+  <text bottom_delta="-20" height="12" name="TerrainMeshDetailText">Low</text>
+  <text bottom_delta="-20" height="12" name="SkyMeshDetailText">Low</text>
+  <text bottom="-354"	   height="12" left="215" name="LightingDetailText">Lighting Detail:</text>
+  <radio_group bottom_delta="-40" control_name="RenderLocalLights" draw_border="false" height="38" name="LightingDetailRadio" width="321">
 	  <radio_item bottom="-15" height="16" left="3" name="SunMoon" width="156">Sun and moon only</radio_item>
-	  <radio_item bottom="-31" height="16" left="3" name="LocalLights" width="156">Nearby local lights</radio_item>
+	  <radio_item bottom="-31" height="16" name="LocalLights" width="156">Nearby local lights</radio_item>
   </radio_group>
   <text bottom="-354" height="12" left="370" name="TerrainDetailText">Terrain Detail:</text>
-  <radio_group bottom_delta="-40" control_name="RenderTerrainDetail" draw_border="false" height="38" left_delta="0"	name="TerrainDetailRadio" width="321">
+  <radio_group bottom_delta="-40" control_name="RenderTerrainDetail" draw_border="false" height="38" name="TerrainDetailRadio" width="321">
 	  <radio_item bottom="-15" height="16" left="3" name="0" width="315">Low</radio_item>
-	  <radio_item bottom="-31" height="16" left="3" name="2" width="315">High</radio_item>
+	  <radio_item bottom="-31" height="16" name="2" width="315">High</radio_item>
   </radio_group>
-  <button bottom="-430" font="SansSerif" height="20" label="Recommended Settings" left="130" name="Defaults" scale_image="true" width="170"/>
-  <button bottom="-430" font="SansSerif" height="20" label="Hardware Options" 	  left="310" name="GraphicsHardwareButton" scale_image="true" width="170"/>
+  <button bottom="-430" height="20" label="Recommended Settings" left="130" name="Defaults" scale_image="true" width="170"/>
+  <button bottom="-430" height="20" label="Hardware Options" 	  left="310" name="GraphicsHardwareButton" scale_image="true" width="170"/>
   <string name="resolution_format">[RES_X] x [RES_Y]</string>
   <string name="aspect_ratio_text">[NUM]:[DEN]</string>
 </panel>

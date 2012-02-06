@@ -3,14 +3,14 @@
 	<text bottom="-22" height="12" left="10" name="muting_text">Volume:</text>
 	<text bottom="-215" name="streaming_prefs_text">Streaming Preferences:</text>
 	<text bottom="-300" height="12" name="audio_prefs_text">Audio Preferences:</text>
-	<panel border="true" bottom="-195" filename="panel_audio.xml" height="180" label="Volume" left="148" name="Volume Panel" width="260"/>
+	<panel border="true" bottom="-175" filename="panel_audio.xml" height="140" label="Volume" left="142" name="Volume Panel" width="260"/>
 	<check_box bottom="-220" control_name="AudioStreamingMusic" height="16" initial_value="true" label="Play Streaming Music When Available (uses more bandwidth)" left="142" name="streaming_music"/>
 	<check_box bottom_delta="-20" control_name="AudioStreamingVideo" follows="top" height="16" initial_value="true" label="Play Streaming Media When Available (uses more bandwidth)" name="streaming_video"/>
 	<check_box bottom_delta="-20" control_name="ParcelMediaAutoPlayEnable" follows="top" height="16" initial_value="true" label="Automatically play media" left="162" name="auto_streaming_video"/>
 	<check_box bottom_delta="-20" control_name="MediaEnableFilter" follows="top" height="16" initial_value="true" label="Ask for permission (enables filtering)" name="streaming_video"/>
 	<check_box bottom_delta="-25" control_name="MuteWhenMinimized" follows="top" height="16" initial_value="true" label="Mute Audio When Window Minimized" left="142" name="mute_when_minimized"/>
-	<slider bottom_delta="-20" control_name="AudioLevelDoppler" edit_text="true" follows="top" height="15" increment="0.1" initial_val="1" label="Doppler Effect" label_width="100" left="148" max_val="2" min_val="0" name="Doppler Effect" show_text="true" width="250" />
-	<slider bottom_delta="-20" control_name="AudioLevelRolloff" edit_text="true" follows="top" height="15" increment="0.1" initial_val="1" label="Rolloff Factor" label_width="100" max_val="2" min_val="0" name="Rolloff Factor" width="250"/>
+	<slider bottom_delta="-20" control_name="AudioLevelDoppler" edit_text="true" follows="top" height="15" increment="0.1" initial_val="1" label="Doppler Effect" label_width="69" left="148" max_val="2" min_val="0" name="Doppler Effect" show_text="true" width="219" />
+	<slider bottom_delta="-20" control_name="AudioLevelRolloff" edit_text="true" follows="top" height="15" increment="0.1" initial_val="1" label="Rolloff Factor" label_width="69" max_val="2" min_val="0" name="Rolloff Factor" width="219"/>
 	<spinner bottom_delta="-20" control_name="UISndMoneyChangeThreshold" decimal_digits="0" follows="top" height="16" increment="10" initial_val="10" label="[CURRENCY] change threshold:" label_width="128" max_val="10000" min_val="0" name="currency_change_threshold" width="192"/>
 	<spinner bottom_delta="-20" control_name="UISndHealthReductionThreshold" decimal_digits="0" follows="top" height="16" increment="10" initial_val="20" label="Health Change Threshold" label_width="128" max_val="10000" min_val="0" name="Health Change Threshold" width="192" />
 </panel>

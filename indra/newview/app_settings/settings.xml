@@ -9,6 +9,108 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>WaterPresetName</key>
+  <map>
+	<key>Comment</key>
+	<string>Water preset to use. May be superseded by region settings</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>String</string>
+	<key>Value</key>
+	<integer>Default</integer>
+  </map>
+  <key>SkyPresetName</key>
+  <map>
+	<key>Comment</key>
+	<string>Sky preset to use. May be superseded by region settings</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>String</string>
+	<key>Value</key>
+	<integer>Default</integer>
+  </map>
+  <key>DayCycleName</key>
+  <map>
+	<key>Comment</key>
+	<string>Day Cycle to use. May be superseded by region settings</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>String</string>
+	<key>Value</key>
+	<integer>Default</integer>
+  </map>
+  <key>UseEnvironmentFromRegion</key>
+  <map>
+	<key>Comment</key>
+	<string>Choose whether to use the region's environment settings, or override them with the local settings.</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>UseEnvironmentFromRegionAlways</key>
+  <map>
+	<key>Comment</key>
+	<string>Choose whether to always use the region's environment settings when they are available
+			or to allow the manual selections to remain unchanging.</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>UseDayCycle</key>
+  <map>
+	<key>Comment</key>
+	<string>Whether to use use a day cycle or a fixed sky.</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>PhoenixInterpolateParcelWL</key>
+  <map>
+	<key>Comment</key>
+	<string>PhoenixInterpolateParcelWL</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>PhoenixInterpolateSky</key>
+  <map>
+	<key>Comment</key>
+	<string>PhoenixInterpolateSky</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+  <key>PhoenixInterpolateWater</key>
+  <map>
+	<key>Comment</key>
+	<string>PhoenixInterpolateWater</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>1</integer>
+  </map>
+
+
   <key>SGTextFadeDistance</key>
   <map>
     <key>Comment</key>
@@ -10944,7 +11046,7 @@
       <key>Comment</key>
       <string>Maximum size of a single node's vertex data (in KB).</string>
       <key>Persist</key>
-      <integer>1</integer>
+      <integer>0</integer>
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>

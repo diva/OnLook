@@ -57,6 +57,7 @@ protected:
     BOOL mShowTPScreen;
     BOOL mPlayTPSound;
     BOOL mShowLogScreens;
+	bool mDisableChatAnimation;
     //Tags\Colors
     BOOL mAscentUseTag;
     std::string mReportClientUUID;

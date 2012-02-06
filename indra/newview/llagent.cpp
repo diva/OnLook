@@ -43,10 +43,10 @@
 #include "llanimationstates.h"
 #include "llcallingcard.h"
 #include "llconsole.h"
+#include "llenvmanager.h"
 #include "llfirstuse.h"
 #include "llfloatercamera.h"
 #include "llfloatertools.h"
-
 #include "llgroupmgr.h"
 #include "llhomelocationresponder.h"
 #include "llhudmanager.h"
@@ -645,6 +645,8 @@ void LLAgent::toggleTPosed()
 //-----------------------------------------------------------------------------
 void LLAgent::setRegion(LLViewerRegion *regionp)
 {
+	bool teleport = true;
+
 	llassert(regionp);
 	if (mRegionp != regionp)
 	{
@@ -682,6 +684,8 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 				gSky.mVOGroundp->setRegion(regionp);
 			}
 
+			// Notify windlight managers
+			teleport = (gAgent.getTeleportState() != LLAgent::TELEPORT_NONE);
 		}
 		else
 		{
@@ -713,6 +717,15 @@ void LLAgent::setRegion(LLViewerRegion *regionp)
 	mRegionsVisited.insert(handle);
 
 	LLSelectMgr::getInstance()->updateSelectionCenter();
+
+	if (teleport)
+	{
+		LLEnvManagerNew::instance().onTeleport();
+	}
+	else
+	{
+		LLEnvManagerNew::instance().onRegionCrossing();
+	}
 }
 
 

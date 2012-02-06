@@ -2156,55 +2156,58 @@ void LLFloaterIMPanel::sendMsg()
 			if (mInputEditor) mInputEditor->updateHistory();
 			// Truncate and convert to UTF8 for transport
 			std::string utf8text = wstring_to_utf8str(text);
+			// Convert MU*s style poses into IRC emotes here.
+			if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.length() > 3 && utf8text[0] == ':')
+			{
+				if (utf8text[1] == '\'')
+				{
+					utf8text.replace(0, 1, "/me");
+ 				}
+				else if (isalpha(utf8text[1]))	// Do not prevent smileys and such.
+				{
+					utf8text.replace(0, 1, "/me ");
+				}
+			}
+			if (utf8text.find("/ME'") == 0 || utf8text.find("/ME ") == 0)	//Allow CAPSlock /me
+				utf8text.replace(1, 2, "me");
+			std::string prefix = utf8text.substr(0, 4);
 			if (gSavedSettings.getBOOL("AscentAutoCloseOOC") && (utf8text.length() > 1) && !mRPMode)
 			{
 				// Chalice - OOC autoclosing patch based on code by Henri Beauchamp
 				int needsClosingType=0;
 				//Check if it needs the end-of-chat brackets -HgB
-				if (utf8text.find("((") == 0 && utf8text.find("))") == -1)
+				if (utf8text.find("((") == 0 && utf8text.find("))") == std::string::npos)
 				{
-					if(utf8text.at(utf8text.length() - 1) == ')')
+					if(*utf8text.rbegin() == ')')
 						utf8text+=" ";
 					utf8text+="))";
 				}
-				else if(utf8text.find("[[") == 0 && utf8text.find("]]") == -1)
+				else if(utf8text.find("[[") == 0 && utf8text.find("]]") == std::string::npos)
 				{
-					if(utf8text.at(utf8text.length() - 1) == ']')
+					if(*utf8text.rbegin() == ']')
 						utf8text+=" ";
 					utf8text+="]]";
 				}
 				//Check if it needs the start-of-chat brackets -HgB
 				needsClosingType=0;
-				if (utf8text.find("((") == -1 && utf8text.find("))") == (utf8text.length() - 2))
+				if (prefix != "/me " && prefix != "/me'")   //Allow /me to end with )) or ]]
 				{
-					if(utf8text.at(0) == '(')
-						utf8text.insert(0," ");
-					utf8text.insert(0,"((");
-				}
-				else if (utf8text.find("[[") == -1 && utf8text.find("]]") == (utf8text.length() - 2))
-				{
-					if(utf8text.at(0) == '[')
-						utf8text.insert(0," ");
-					utf8text.insert(0,"[[");
-				}
-			}
-			// Convert MU*s style poses into IRC emotes here.
-			if (gSavedSettings.getBOOL("AscentAllowMUpose") && utf8text.find(":") == 0 && utf8text.length() > 3)
-			{
-				if (utf8text.find(":'") == 0)
-				{
-					utf8text.replace(0, 1, "/me");
- 				}
-				else if (isalpha(utf8text.at(1)))	// Do not prevent smileys and such.
-				{
-					utf8text.replace(0, 1, "/me ");
+					if (utf8text.find("((") == std::string::npos && utf8text.find("))") == (utf8text.length() - 2))
+					{
+						if(utf8text[0] == '(')
+							utf8text.insert(0," ");
+						utf8text.insert(0,"((");
+					}
+					else if (utf8text.find("[[") == std::string::npos && utf8text.find("]]") == (utf8text.length() - 2))
+					{
+						if(utf8text[0] == '[')
+							utf8text.insert(0," ");
+						utf8text.insert(0,"[[");
+					}
 				}
 			}
-
-			std::string prefix = utf8text.substr(0, 4);
-			if (prefix != "/me " && prefix != "/me'")
-				if (mRPMode) utf8text = "[[" + utf8text + "]]";
-		
+			if (mRPMode && prefix != "/me " && prefix != "/me'")
+				utf8text = "[[" + utf8text + "]]";
 // [RLVa:KB] - Checked: 2011-09-17 (RLVa-1.1.4b) | Modified: RLVa-1.1.4b
 			if ( (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIM)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SENDIMTO)) )
 			{

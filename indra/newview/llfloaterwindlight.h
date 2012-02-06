@@ -45,6 +45,7 @@
 struct WLColorControl;
 struct WLFloatControl;
 
+class LLComboBox;
 
 /// Menuing system for all of windlight's functionality
 class LLFloaterWindLight : public LLFloater
@@ -91,8 +92,11 @@ public:
 	/// when user hits the load preset button
 	static void onNewPreset(void* userData);
 
-	/// when user hits the save preset button
-	static void onSavePreset(void* userData);
+	/// when user hits the save to file button
+	static void onSavePreset(LLUICtrl* ctrl, void* userData);
+	
+	/// prompts a user when overwriting a preset notecard
+	static bool saveNotecardCallback(const LLSD& notification, const LLSD& response);
 
 	/// prompts a user when overwriting a preset
 	static bool saveAlertCallback(const LLSD& notification, const LLSD& response);
@@ -132,11 +136,20 @@ public:
 	/// turn off animated skies
 	static void deactivateAnimator();
 
+	static void selectTab(std::string tab_name);
+
 private:
 	// one instance on the inside
 	static LLFloaterWindLight* sWindLight;
 
 	static std::set<std::string> sDefaultPresets;
+
+	static void onClickNext(void* user_data);
+	static void onClickPrev(void* user_data);
+	
+	void populateSkyPresetsList();
+	
+	LLComboBox*		mSkyPresetCombo;
 };
 
 

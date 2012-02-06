@@ -212,7 +212,7 @@
 //#include "llfloateravatars.h"
 //#include "llactivation.h"
 #include "wlfPanel_AdvSettings.h" //Lower right Windlight and Rendering options
-#include "ascentdaycyclemanager.h"
+#include "lldaycyclemanager.h"
 #include "llfloaterblacklist.h"
 #include "scriptcounter.h"
 #include "shfloatermediaticker.h"
@@ -1968,7 +1968,7 @@ bool idle_startup()
 		display_startup();
 
 		// init the shader managers
-		AscentDayCycleManager::initClass();
+		//LLDayCycleManager::initClass();
 		display_startup();
 
 		// RN: don't initialize VO classes in drone mode, they are too closely tied to rendering

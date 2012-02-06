@@ -1,4 +1,4 @@
-/* Copyright (c) 2009
+/* Copyright (c) 2010
  *
  * Modular Systems All rights reserved.
  *
@@ -16,7 +16,7 @@
  *      may be used to endorse or promote products derived from this
  *      software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS AND CONTRIBUTORS “AS IS”
+ * THIS SOFTWARE IS PROVIDED BY MODULAR SYSTEMS AND CONTRIBUTORS Â“AS ISÂ”
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL MODULAR SYSTEMS OR CONTRIBUTORS
@@ -34,6 +34,9 @@
 
 #include "llpanel.h"
 
+class LLComboBox;
+class LLSliderCtrl;
+
 class wlfPanel_AdvSettings : public LLPanel
 {
 public:
@@ -46,11 +49,32 @@ public:
 	static void fixPanel();
 
 	static void onClickExpandBtn(void* user_data);
-	static void onChangePresetName(LLUICtrl* ctrl, void* userData);
+	static void onChangeWWPresetName(LLUICtrl* ctrl, void* userData);
+	static void onChangeWLPresetName(LLUICtrl* ctrl, void* userData);
 
 protected:
 	void build();
 
+	static void onUseRegionSettings(LLUICtrl* ctrl, void* userdata);
+	static void onClickWWNext(void* user_data);
+	static void onClickWWPrev(void* user_data);
+	static void onClickWLNext(void* user_data);
+	static void onClickWLPrev(void* user_data);
+	static void onOpenAdvancedSky(void* userData);
+	static void onOpenAdvancedWater(void* userData);
+	static void onChangeDayTime(LLUICtrl* ctrl, void* userData);
+
+	void refreshLists(); /// update controls with user prefs
+
+	void populateWaterPresetsList();
+	void populateSkyPresetsList();
+	// void populateDayCyclePresetsList();
+	void updateTimeSlider();
+
+	LLComboBox*		mWaterPresetCombo;
+	LLComboBox*		mSkyPresetCombo;
+	// LLComboBox*		mDayCyclePresetCombo;
+	LLSliderCtrl*		mTimeSlider;
 };
 
 #endif // LL_wlfPanel_AdvSettings_H

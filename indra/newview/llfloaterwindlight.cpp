@@ -47,13 +47,18 @@
 #include "llcombobox.h"
 #include "lllineeditor.h"
 #include "llfloaterdaycycle.h"
+#include "lltabcontainer.h"
 #include "llboost.h"
-#include "llnotificationsutil.h"
+
+#include "llagent.h"
+#include "llinventorymodel.h"
+#include "llviewerinventory.h"
 
 #include "v4math.h"
 #include "llviewerdisplay.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
+#include "llsavedsettingsglue.h"
 
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
@@ -72,22 +77,11 @@ LLFloaterWindLight::LLFloaterWindLight() : LLFloater(std::string("windlight floa
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_windlight_options.xml");
 	
 	// add the combo boxes
-	LLComboBox* comboBox = getChild<LLComboBox>("WLPresetsCombo");
+	mSkyPresetCombo = getChild<LLComboBox>("WLPresetsCombo");
 
-	if(comboBox != NULL) {
-		
-		std::map<std::string, LLWLParamSet>::const_iterator mIt = 
-			LLWLParamManager::getInstance()->getPresets().begin();
-		for(; mIt != LLWLParamManager::getInstance()->getPresets().end(); mIt++) 
-		{
-			comboBox->add(mIt->first);
-		}
-
-		// entry for when we're in estate time
-		comboBox->add(LLStringUtil::null);
-
-		// set defaults on combo boxes
-		comboBox->selectByValue(LLSD("Default"));
+	if(mSkyPresetCombo != NULL) {
+		populateSkyPresetsList();
+		mSkyPresetCombo->setCommitCallback(onChangePresetName);
 	}
 
 	// add the list of presets
@@ -214,20 +208,21 @@ void LLFloaterWindLight::initCallbacks(void) {
 
 	// WL Top
 	childSetAction("WLDayCycleMenuButton", onOpenDayCycle, NULL);
+	
 	// Load/save
-	LLComboBox* comboBox = getChild<LLComboBox>("WLPresetsCombo");
-
-	//childSetAction("WLLoadPreset", onLoadPreset, comboBox);
-	childSetAction("WLNewPreset", onNewPreset, comboBox);
-	childSetAction("WLSavePreset", onSavePreset, comboBox);
-	childSetAction("WLDeletePreset", onDeletePreset, comboBox);
-
-	comboBox->setCommitCallback(onChangePresetName);
+	//childSetAction("WLLoadPreset", onLoadPreset, mSkyPresetCombo);
+	childSetAction("WLNewPreset", onNewPreset, mSkyPresetCombo);
+	childSetAction("WLDeletePreset", onDeletePreset, mSkyPresetCombo);
+	childSetCommitCallback("WLSavePreset", onSavePreset, this);
 
 
 	// Dome
 	childSetCommitCallback("WLGamma", onFloatControlMoved, &param_mgr->mWLGamma);
 	childSetCommitCallback("WLStarAlpha", onStarAlphaMoved, NULL);
+
+	// next/prev buttons
+	childSetAction("next", onClickNext, this);
+	childSetAction("prev", onClickPrev, this);
 }
 
 void LLFloaterWindLight::onClickHelp(void* data)
@@ -253,10 +248,8 @@ bool LLFloaterWindLight::newPromptCallback(const LLSD& notification, const LLSD&
 		return false;
 	}
 
-	if(option == 0) {
-		LLComboBox* comboBox = sWindLight->getChild<LLComboBox>( 
-			"WLPresetsCombo");
-
+	if(option == 0)
+	{
 		LLFloaterDayCycle* sDayCycle = NULL;
 		LLComboBox* keyCombo = NULL;
 		if(LLFloaterDayCycle::isOpen()) 
@@ -268,38 +261,42 @@ bool LLFloaterWindLight::newPromptCallback(const LLSD& notification, const LLSD&
 
 		// add the current parameters to the list
 		// see if it's there first
-		std::map<std::string, LLWLParamSet>::const_iterator mIt = 
-			LLWLParamManager::getInstance()->getPresets().find(text);
+
+		const LLWLParamKey key(text, LLEnvKey::SCOPE_LOCAL);
 
 		// if not there, add a new one
-		if(mIt == LLWLParamManager::getInstance()->getPresets().end()) 
+		if(!LLWLParamManager::getInstance()->hasParamSet(key))
 		{
-			LLWLParamManager::getInstance()->addParamSet(text, 
+			LLWLParamManager::getInstance()->addParamSet(key,
 				LLWLParamManager::getInstance()->mCurParams);
-			comboBox->add(text);
-			comboBox->sortByName();
+			sWindLight->mSkyPresetCombo->add(text);
+			sWindLight->mSkyPresetCombo->sortByName();
 
 			// add a blank to the bottom
-			comboBox->selectFirstItem();
-			if(comboBox->getSimple() == "")
+			sWindLight->mSkyPresetCombo->selectFirstItem();
+			if(sWindLight->mSkyPresetCombo->getSimple() == "")
 			{
-				comboBox->remove(0);
+				sWindLight->mSkyPresetCombo->remove(0);
 			}
-			comboBox->add(LLStringUtil::null);
+			sWindLight->mSkyPresetCombo->add(LLStringUtil::null);
 
-			comboBox->setSelectedByValue(text, true);
+			sWindLight->mSkyPresetCombo->selectByValue(text);
+
 			if(LLFloaterDayCycle::isOpen()) 
 			{
 				keyCombo->add(text);
 				keyCombo->sortByName();
 			}
-			LLWLParamManager::getInstance()->savePreset(text);
+			const LLWLParamKey key(text, LLEnvKey::SCOPE_LOCAL);
+			LLWLParamManager::getInstance()->savePreset(key);
+
+			LLEnvManagerNew::instance().setUseSkyPreset(text);
 
 		// otherwise, send a message to the user
 		} 
 		else 
 		{
-			LLNotificationsUtil::add("ExistsSkyPresetAlert");
+			LLNotifications::instance().add("ExistsSkyPresetAlert");
 		}
 	}
 	return false;
@@ -316,10 +313,9 @@ void LLFloaterWindLight::syncMenu()
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 	// Fixes LL "bug" (preset name isn't kept synchronized)
-	LLComboBox* comboBox = getChild<LLComboBox>("WLPresetsCombo");
-	if (comboBox->getSelectedItemLabel() != currentParams.mName)
+	if (mSkyPresetCombo->getSelectedItemLabel() != LLEnvManagerNew::instance().getSkyPresetName())
 	{
-		comboBox->setSimple(currentParams.mName);
+		mSkyPresetCombo->selectByValue(LLEnvManagerNew::instance().getSkyPresetName());
 	}
 // [/RLVa:KB]
 
@@ -460,19 +456,32 @@ LLFloaterWindLight* LLFloaterWindLight::instance()
 }
 void LLFloaterWindLight::show()
 {
-	LLFloaterWindLight* windLight = instance();
-	windLight->syncMenu();
+	if (!sWindLight)
+	{
+		LLFloaterWindLight* windLight = instance();
+		windLight->syncMenu();
 
-	// comment in if you want the menu to rebuild each time
-	//LLUICtrlFactory::getInstance()->buildFloater(windLight, "floater_windlight_options.xml");
-	//windLight->initCallbacks();
-
-	windLight->open();
+		// comment in if you want the menu to rebuild each time
+		//LLUICtrlFactory::getInstance()->buildFloater(windLight, "floater_windlight_options.xml");
+		//windLight->initCallbacks();
+	}
+	else
+	{
+		if (sWindLight->getVisible())
+		{
+			sWindLight->close();
+		}
+		else
+		{
+			sWindLight->open();
+		}
+	}
 }
 
 bool LLFloaterWindLight::isOpen()
 {
-	if (sWindLight != NULL) {
+	if (sWindLight != NULL)
+	{
 		return sWindLight->getVisible();
 	}
 	return false;
@@ -790,34 +799,50 @@ void LLFloaterWindLight::onStarAlphaMoved(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::onNewPreset(void* userData)
 {
-	LLNotificationsUtil::add("NewSkyPreset", LLSD(), LLSD(), newPromptCallback);
+	LLNotifications::instance().add("NewSkyPreset", LLSD(), LLSD(), newPromptCallback);
 }
 
-void LLFloaterWindLight::onSavePreset(void* userData)
+void LLFloaterWindLight::onSavePreset(LLUICtrl* ctrl, void* userData)
 {
-	// get the name
-	LLComboBox* comboBox = sWindLight->getChild<LLComboBox>( 
-		"WLPresetsCombo");
-
 	// don't save the empty name
-	if(comboBox->getSelectedItemLabel() == "")
+	if(sWindLight->mSkyPresetCombo->getSelectedItemLabel() == "")
 	{
 		return;
 	}
 
-	// check to see if it's a default and shouldn't be overwritten
-	std::set<std::string>::iterator sIt = sDefaultPresets.find(
-		comboBox->getSelectedItemLabel());
-	if(sIt != sDefaultPresets.end() && !gSavedSettings.getBOOL("SkyEditPresets")) 
+	if (ctrl->getValue().asString() == "save_inventory_item")
 	{
-		LLNotificationsUtil::add("WLNoEditDefault");
-		return;
+
 	}
+	else
+	{
+		// check to see if it's a default and shouldn't be overwritten
+		std::set<std::string>::iterator sIt = sDefaultPresets.find(
+			sWindLight->mSkyPresetCombo->getSelectedItemLabel());
+		if(sIt != sDefaultPresets.end() && !gSavedSettings.getBOOL("SkyEditPresets")) 
+		{
+			LLNotifications::instance().add("WLNoEditDefault");
+			return;
+		}
 
-	LLWLParamManager::getInstance()->mCurParams.mName = 
-		comboBox->getSelectedItemLabel();
+		LLWLParamManager::getInstance()->mCurParams.mName =
+			sWindLight->mSkyPresetCombo->getSelectedItemLabel();
 
-	LLNotificationsUtil::add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+		LLNotifications::instance().add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+	}
+}
+
+bool LLFloaterWindLight::saveNotecardCallback(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	// if they choose save, do it.  Otherwise, don't do anything
+	if(option == 0) 
+	{
+		LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
+		param_mgr->setParamSet(param_mgr->mCurParams.mName, param_mgr->mCurParams);
+		param_mgr->savePresetToNotecard(param_mgr->mCurParams.mName);
+	}
+	return false;
 }
 
 bool LLFloaterWindLight::saveAlertCallback(const LLSD& notification, const LLSD& response)
@@ -831,24 +856,22 @@ bool LLFloaterWindLight::saveAlertCallback(const LLSD& notification, const LLSD&
 		param_mgr->setParamSet(param_mgr->mCurParams.mName, param_mgr->mCurParams);
 		
 		// comment this back in to save to file
-		param_mgr->savePreset(param_mgr->mCurParams.mName);
+		const LLWLParamKey key(param_mgr->mCurParams.mName, LLEnvKey::SCOPE_LOCAL);
+		param_mgr->savePreset(key);
 	}
 	return false;
 }
 
 void LLFloaterWindLight::onDeletePreset(void* userData)
 {
-	LLComboBox* combo_box = sWindLight->getChild<LLComboBox>( 
-		"WLPresetsCombo");
-
-	if(combo_box->getSelectedValue().asString() == "")
+	if(sWindLight->mSkyPresetCombo->getSelectedValue().asString() == "")
 	{
 		return;
 	}
 
 	LLSD args;
-	args["SKY"] = combo_box->getSelectedValue().asString();
-	LLNotificationsUtil::add("WLDeletePresetAlert", args, LLSD(), 
+	args["SKY"] = sWindLight->mSkyPresetCombo->getSelectedValue().asString();
+	LLNotifications::instance().add("WLDeletePresetAlert", args, LLSD(), 
 									boost::bind(&LLFloaterWindLight::deleteAlertCallback, sWindLight, _1, _2));
 }
 
@@ -859,8 +882,6 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 	// if they choose delete, do it.  Otherwise, don't do anything
 	if(option == 0) 
 	{
-		LLComboBox* combo_box = getChild<LLComboBox>( 
-			"WLPresetsCombo");
 		LLFloaterDayCycle* day_cycle = NULL;
 		LLComboBox* key_combo = NULL;
 		LLMultiSliderCtrl* mult_sldr = NULL;
@@ -873,22 +894,22 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 			mult_sldr = day_cycle->getChild<LLMultiSliderCtrl>("WLDayCycleKeys");
 		}
 
-		std::string name(combo_box->getSelectedValue().asString());
+		std::string name(mSkyPresetCombo->getSelectedValue().asString());
 
 		// check to see if it's a default and shouldn't be deleted
 		std::set<std::string>::iterator sIt = sDefaultPresets.find(name);
 		if(sIt != sDefaultPresets.end()) 
 		{
-			LLNotificationsUtil::add("WLNoEditDefault");
+			LLNotifications::instance().add("WLNoEditDefault");
 			return false;
 		}
 
 		LLWLParamManager::getInstance()->removeParamSet(name, true);
 		
 		// remove and choose another
-		S32 new_index = combo_box->getCurrentIndex();
+		S32 new_index = mSkyPresetCombo->getCurrentIndex();
 
-		combo_box->remove(name);
+		mSkyPresetCombo->remove(name);
 		if(key_combo != NULL) 
 		{
 			key_combo->remove(name);
@@ -903,9 +924,17 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 			new_index--;
 		}
 		
-		if(combo_box->getItemCount() > 0) 
+		if(mSkyPresetCombo->getItemCount() > 0) 
 		{
-			combo_box->setCurrentByIndex(new_index);
+			mSkyPresetCombo->setCurrentByIndex(new_index);
+
+			// If we don't update the name here, we crash on next/prev -- MC
+			LLWLParamManager::getInstance()->mCurParams.mName = mSkyPresetCombo->getSelectedValue().asString();
+			if (LLWLParamManager::getInstance()->mCurParams.mName.empty())
+			{
+				LLWLParamManager::getInstance()->mCurParams.mName = "Default";
+			}
+			LLEnvManagerNew::instance().setUseSkyPreset(LLWLParamManager::getInstance()->mCurParams.mName);
 		}
 	}
 	return false;
@@ -914,17 +943,26 @@ bool LLFloaterWindLight::deleteAlertCallback(const LLSD& notification, const LLS
 
 void LLFloaterWindLight::onChangePresetName(LLUICtrl* ctrl, void * userData)
 {
-	deactivateAnimator();
-
 	LLComboBox * combo_box = static_cast<LLComboBox*>(ctrl);
 	
 	if(combo_box->getSimple() == "")
 	{
 		return;
 	}
+
+	const LLWLParamKey key(combo_box->getSelectedValue().asString(), LLEnvKey::SCOPE_LOCAL);
+	if (LLWLParamManager::getInstance()->hasParamSet(key))
+	{
+		LLEnvManagerNew::instance().setUseSkyPreset(key.name);
+	}
+	else
+	{
+		//if that failed, use region's
+		// LLEnvManagerNew::instance().useRegionSky();
+		LLEnvManagerNew::instance().setUseSkyPreset("Default");
+	}
 	
-	LLWLParamManager::getInstance()->loadPreset(
-		combo_box->getSelectedValue().asString());
+	//LL_INFOS("WindLight") << "Current inventory ID: " << LLWLParamManager::getInstance()->mCurParams.mInventoryID << LL_ENDL;
 	sWindLight->syncMenu();
 }
 
@@ -999,6 +1037,52 @@ void LLFloaterWindLight::onCloudScrollYToggled(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::deactivateAnimator()
 {
-	LLWLParamManager::getInstance()->mAnimator.mIsRunning = false;
-	LLWLParamManager::getInstance()->mAnimator.mUseLindenTime = false;
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
+}
+
+void LLFloaterWindLight::onClickNext(void* user_data)
+{
+	S32 index = sWindLight->mSkyPresetCombo->getCurrentIndex();
+	index++;
+	if (index == sWindLight->mSkyPresetCombo->getItemCount())
+		index = 0;
+	sWindLight->mSkyPresetCombo->setCurrentByIndex(index);
+
+	LLFloaterWindLight::onChangePresetName(sWindLight->mSkyPresetCombo, sWindLight);
+}
+
+void LLFloaterWindLight::onClickPrev(void* user_data)
+{
+	S32 index = sWindLight->mSkyPresetCombo->getCurrentIndex();
+	if (index == 0)
+		index = sWindLight->mSkyPresetCombo->getItemCount();
+	index--;
+	sWindLight->mSkyPresetCombo->setCurrentByIndex(index);
+
+	LLFloaterWindLight::onChangePresetName(sWindLight->mSkyPresetCombo, sWindLight);
+}
+
+//static
+void LLFloaterWindLight::selectTab(std::string tab_name)
+{
+	if (!tab_name.empty())
+	{
+		LLTabContainer* tabs = LLFloaterWindLight::instance()->getChild<LLTabContainer>("WindLight Tabs");
+		tabs->selectTabByName(tab_name);
+	}
+}
+
+void LLFloaterWindLight::populateSkyPresetsList()
+{
+	mSkyPresetCombo->removeall();
+
+	LLWLParamManager::preset_name_list_t local_presets;
+	LLWLParamManager::getInstance()->getLocalPresetNames(local_presets);
+
+	for (LLWLParamManager::preset_name_list_t::const_iterator it = local_presets.begin(); it != local_presets.end(); ++it)
+	{
+		mSkyPresetCombo->add(*it);
+	}
+
+	mSkyPresetCombo->selectByValue(LLEnvManagerNew::instance().getSkyPresetName());
 }
