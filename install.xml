@@ -551,9 +551,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>6e593ab33ec58cc104018bb75092fc50</string>
+            <string>4f787437a5e063ccde6637dfb1ebc01d</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/gperftools-2.0-windows-20120206.tar.bz2</uri>
+			<uri>https://bitbucket.org/Ansariel/phoenix-prebuilts/downloads/google_perftools-1.8-windows-20111005.tar.bz2</uri>
           </map>
         </map>
       </map>
