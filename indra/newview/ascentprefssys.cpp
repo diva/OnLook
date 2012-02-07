@@ -226,11 +226,12 @@ void LLPrefsAscentSys::refreshValues()
     mCmdMapToKeepPos            = gSavedSettings.getBOOL("AscentMapToKeepPos");
     mCmdLineTP2                 = gSavedSettings.getString("AscentCmdLineTP2");
 
-    //Privacy -----------------------------------------------------------------------------
+    //Security ----------------------------------------------------------------------------
     mBroadcastViewerEffects		= gSavedSettings.getBOOL("BroadcastViewerEffects");
     mDisablePointAtAndBeam		= gSavedSettings.getBOOL("DisablePointAtAndBeam");
     mPrivateLookAt				= gSavedSettings.getBOOL("PrivateLookAt");
     mShowLookAt					= gSavedSettings.getBOOL("AscentShowLookAt");
+	mQuietSnapshotsToDisk		= gSavedSettings.getBOOL("QuietSnapshotsToDisk");
     mRevokePermsOnStandUp		= gSavedSettings.getBOOL("RevokePermsOnStandUp");
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
@@ -330,11 +331,12 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("AscentMapToKeepPos",            mCmdMapToKeepPos);
     gSavedSettings.setString("AscentCmdLineTP2",			mCmdLineTP2);
 
-    //Privacy -----------------------------------------------------------------------------
+    //Security ----------------------------------------------------------------------------
     gSavedSettings.setBOOL("BroadcastViewerEffects",        mBroadcastViewerEffects);
     gSavedSettings.setBOOL("DisablePointAtAndBeam",         mDisablePointAtAndBeam);
     gSavedSettings.setBOOL("PrivateLookAt",                 mPrivateLookAt);
     gSavedSettings.setBOOL("AscentShowLookAt",              mShowLookAt);
+    gSavedSettings.setBOOL("QuietSnapshotsToDisk",			mQuietSnapshotsToDisk);
     gSavedSettings.setBOOL("RevokePermsOnStandUp",          mRevokePermsOnStandUp);
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
