@@ -88,6 +88,7 @@ protected:
     std::string mCmdLineMapTo;
     BOOL mCmdMapToKeepPos;
     std::string mCmdLineTP2;
+    std::string mCmdLineAway;
 
     //Security ----------------------------------------------------------------------------
     BOOL mBroadcastViewerEffects;

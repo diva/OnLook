@@ -99,6 +99,7 @@ bool toggle_build_mode();
 void handle_object_build(void*);
 void handle_save_snapshot(void *);
 void handle_toggle_flycam();
+void handle_fake_away_status(void*);
 
 bool handle_sit_or_stand();
 bool handle_give_money_dialog();
