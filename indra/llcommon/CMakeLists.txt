@@ -213,8 +213,7 @@ set(llcommon_HEADER_FILES
     lluri.h
     lluuid.h
     lluuidhashmap.h
-    llversionserver.h
-    llversionviewer.h
+    llversionviewer.h.in
     llworkerthread.h
     metaclass.h
     metaclasst.h

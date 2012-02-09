@@ -37,7 +37,7 @@
 #include "hippogridmanager.h"
 #include "hippolimits.h"
 
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "llfeaturemanager.h"
 #include "lluictrlfactory.h"
 #include "lltexteditor.h"
@@ -643,11 +643,11 @@ bool LLAppViewer::init()
 
 	// Build a string representing the current version number.
     gCurrentVersion = llformat("%s %d.%d.%d.%d",
-        LL_CHANNEL,
-        LL_VERSION_MAJOR,
-        LL_VERSION_MINOR,
-        LL_VERSION_PATCH,
-        LL_VERSION_BUILD );
+        gVersionChannel,
+        gVersionMajor,
+        gVersionMinor,
+        gVersionPatch,
+        gVersionBuild );
 
 	//////////////////////////////////////////////////////////////////////////////
 	//////////////////////////////////////////////////////////////////////////////
@@ -2045,7 +2045,7 @@ bool LLAppViewer::initConfiguration()
 	gSavedSettings.setString("ClientSettingsFile", 
         gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, getSettingsFilename("Default", "Global")));
 
-	gSavedSettings.setString("VersionChannelName", LL_CHANNEL);
+	gSavedSettings.setString("VersionChannelName", gVersionChannel);
 
 #ifndef	LL_RELEASE_FOR_DOWNLOAD
 	// provide developer build only overrides for these control variables that are not
@@ -2654,12 +2654,12 @@ void LLAppViewer::writeSystemInfo()
 {
 	gDebugInfo["SLLog"] = LLError::logFileName();
 
-	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
+	gDebugInfo["ClientInfo"]["Name"] = gVersionChannel;
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gVersionMajor;
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gVersionMinor;
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gVersionPatch;
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gVersionBuild;
 
 	gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
@@ -2694,7 +2694,7 @@ void LLAppViewer::writeSystemInfo()
 	
 	// Dump some debugging info
 	LL_INFOS("SystemInfo") << LLTrans::getString("APP_NAME")
-			<< " version " << LL_VERSION_MAJOR << "." << LL_VERSION_MINOR << "." << LL_VERSION_PATCH
+			<< " version " << gVersionMajor << "." << gVersionMinor << "." << gVersionPatch
 			<< LL_ENDL;
 
 	// Dump the local time and time zone
@@ -2758,12 +2758,12 @@ void LLAppViewer::handleViewerCrash()
 	//We already do this in writeSystemInfo(), but we do it again here to make /sure/ we have a version
 	//to check against no matter what
 
-	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
+	gDebugInfo["ClientInfo"]["Name"] = gVersionChannel;
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gVersionMajor;
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gVersionMinor;
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gVersionPatch;
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gVersionBuild;
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])
@@ -4607,12 +4607,12 @@ void LLAppViewer::handleLoginComplete()
 	initMainloopTimeout("Mainloop Init");
 
 	// Store some data to DebugInfo in case of a freeze.
-	gDebugInfo["ClientInfo"]["Name"] = LL_CHANNEL;
+	gDebugInfo["ClientInfo"]["Name"] = gVersionChannel;
 
-	gDebugInfo["ClientInfo"]["MajorVersion"] = LL_VERSION_MAJOR;
-	gDebugInfo["ClientInfo"]["MinorVersion"] = LL_VERSION_MINOR;
-	gDebugInfo["ClientInfo"]["PatchVersion"] = LL_VERSION_PATCH;
-	gDebugInfo["ClientInfo"]["BuildVersion"] = LL_VERSION_BUILD;
+	gDebugInfo["ClientInfo"]["MajorVersion"] = gVersionMajor;
+	gDebugInfo["ClientInfo"]["MinorVersion"] = gVersionMinor;
+	gDebugInfo["ClientInfo"]["PatchVersion"] = gVersionPatch;
+	gDebugInfo["ClientInfo"]["BuildVersion"] = gVersionBuild;
 
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 	if ( parcel && parcel->getMusicURL()[0])

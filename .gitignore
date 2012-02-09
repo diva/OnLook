@@ -1,4 +1,5 @@
 /installed.xml
+/indra/llcommon/llversionviewer.h
 /indra/build-*
 /indra/tools/vstool/obj/
 *.aps
@@ -11,6 +12,7 @@
 /indra/viewer-*
 /indra/newview/vivox-runtime/
 /libraries/
+/lib/
 *.pyc
 *.orig
 *.rej
