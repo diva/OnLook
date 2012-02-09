@@ -92,17 +92,34 @@ void AIStateMachine::updateSettings(void)
 void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") << ", " << abort_parent << ") [" << (void*)this << "]");
-  // Must be the first time we're being run.
-  llassert(!mParent);
-  llassert(!mCallback);
+  // Must be the first time we're being run, or we must be called from a callback function.
+  llassert(!mParent || mState == bs_callback);
+  llassert(!mCallback || mState == bs_callback);
   // Can only be run when in this state.
-  llassert(mState == bs_initialize);
-  // If a parent is provided, it must be running.
-  llassert(!parent || parent->mState == bs_run);
+  llassert(mState == bs_initialize || mState == bs_callback);
 
-  mParent = parent;
-  mNewParentState = new_parent_state;
-  mAbortParent = abort_parent;
+  // Allow NULL to be passed as parent to signal that we want to reuse the old one.
+  if (parent)
+  {
+	mParent = parent;
+	// In that case remove any old callback!
+	if (mCallback)
+	{
+	  delete mCallback;
+	  mCallback = NULL;
+	}
+
+	mNewParentState = new_parent_state;
+	mAbortParent = abort_parent;
+  }
+
+  // If abort_parent is requested then a parent must be provided.
+  llassert(!abort_parent || mParent);
+  // If a parent is provided, it must be running.
+  llassert(!mParent || mParent->mState == bs_run);
+
+  // Mark that run() has been called, in case we're being called from a callback function.
+  mState = bs_initialize;
 
   cont();
 }
@@ -110,13 +127,24 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
 void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::run(<slot>) [" << (void*)this << "]");
-  // Must be the first time we're being run.
-  llassert(!mParent);
-  llassert(!mCallback);
+  // Must be the first time we're being run, or we must be called from a callback function.
+  llassert(!mParent || mState == bs_callback);
+  llassert(!mCallback || mState == bs_callback);
   // Can only be run when in this state.
-  llassert(mState == bs_initialize);
+  llassert(mState == bs_initialize || mState == bs_callback);
+
+  // Clean up any old callbacks.
+  mParent = NULL;
+  if (mCallback)
+  {
+	delete mCallback;
+	mCallback = NULL;
+  }
 
   mCallback = new callback_type(slot);
+
+  // Mark that run() has been called, in case we're being called from a callback function.
+  mState = bs_initialize;
 
   cont(); 
 }
@@ -134,17 +162,18 @@ void AIStateMachine::cont(void)
   DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
   llassert(mIdle);
   mIdle = false;
-  if (mQueued)
-	return;
-  AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
-  cscm_w->continued_statemachines.push_back(this);
-  if (!cscm_w->calling_mainloop)
+  if (mActive == as_idle)
   {
-	Dout(dc::statemachine, "Adding AIStateMachine::mainloop to gIdleCallbacks");
-	cscm_w->calling_mainloop = true;
-	gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
+	AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
+	cscm_w->continued_statemachines.push_back(this);
+	if (!cscm_w->calling_mainloop)
+	{
+	  Dout(dc::statemachine, "Adding AIStateMachine::mainloop to gIdleCallbacks");
+	  cscm_w->calling_mainloop = true;
+	  gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
+	}
+	mActive = as_queued;
   }
-  mQueued = true;
 }
 
 void AIStateMachine::set_state(state_type state)
@@ -194,32 +223,44 @@ void AIStateMachine::finish(void)
 	  if (mAborted && mAbortParent)
 	  {
 		mParent->abort();
+		mParent = NULL;
 	  }
 	  else
 	  {
 		mParent->set_state(mNewParentState);
 	  }
 	}
-	mParent = NULL;
   }
-  // Set this already to bs_initialize now, so that (bool)*this evaluates to true.
-  mState = bs_initialize;
+  // After this (bool)*this evaluates to true and we can call the callback, which then is allowed to call run().
+  mState = bs_callback;
   if (mCallback)
   {
-	mCallback->callback(!mAborted);			// This can/may call kill(), in which case the whole AIStateMachine will be deleted from the mainloop.
-	delete mCallback;
-	mCallback = NULL;
+	// This can/may call kill() that sets mState to bs_kill and in which case the whole AIStateMachine
+	// will be deleted from the mainloop, or it may call run() that sets mState is set to bs_initialize
+	// and might change or reuse mCallback or mParent.
+	mCallback->callback(!mAborted);
+	if (mState != bs_initialize)
+	{
+	  delete mCallback;
+	  mCallback = NULL;
+	  mParent = NULL;
+	}
   }
-  // Restore the request for deletion if we weren't started again from the callback.
-  if (default_delete && mState == bs_initialize)
-	mState = bs_killed;
+  else
+  {
+	// Not restarted by callback. Allow run() to be called later on.
+	mParent = NULL;
+  }
+  // Fix the final state.
+  if (mState == bs_callback)
+	mState = default_delete ? bs_killed : bs_initialize;
 }
 
 void AIStateMachine::kill(void)
 {
   // Should only be called from finish().
-  llassert(mIdle && (mState == bs_initialize || mState == bs_finish));
-  if (mState == bs_initialize)
+  llassert(mIdle && (mState == bs_callback || mState == bs_finish));
+  if (mState == bs_callback && mActive == as_idle)
   {
 	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
 	cont();
@@ -239,6 +280,7 @@ char const* AIStateMachine::state_str(state_type state)
 	  AI_CASE_RETURN(bs_run);
 	  AI_CASE_RETURN(bs_abort);
 	  AI_CASE_RETURN(bs_finish);
+	  AI_CASE_RETURN(bs_callback);
 	  AI_CASE_RETURN(bs_killed);
 	}
   }
@@ -300,7 +342,7 @@ void AIStateMachine::mainloop(void*)
 	  nonempty = true;
 	  active_statemachines.push_back(QueueElement(*iter));
 	  Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
-	  (*iter)->mQueued = false;
+	  (*iter)->mActive = as_active;
 	}
 	if (nonempty)
 	  AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
@@ -337,6 +379,7 @@ void AIStateMachine::mainloop(void*)
 	if (statemachine.mIdle)
 	{
 	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
+	  statemachine.mActive = as_idle;
 	  iter = active_statemachines.erase(iter);
 	  if (statemachine.mState == bs_killed)
 	  {
