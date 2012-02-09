@@ -28,6 +28,9 @@ set(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release;ReleaseSSE2;Debug" CACHE S
 # Platform-specific compilation flags.
 
 if (WINDOWS)
+  # Remove default /Zm1000 flag that cmake inserts
+  string (REPLACE "/Zm1000" " " CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
   # Don't build DLLs.
   set(BUILD_SHARED_LIBS OFF)
 
@@ -113,7 +116,7 @@ if (WINDOWS)
     
 endif (WINDOWS)
 
-set (GCC_EXTRA_OPTIMIZATIONS "-ffast-math -frounding-math")
+set (GCC_EXTRA_OPTIMIZATIONS "-ffast-math")
 
 if (LINUX)
   set(CMAKE_SKIP_RPATH TRUE)
@@ -182,6 +185,8 @@ if (LINUX)
       -pthread
       )
 
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+
   add_definitions(-DAPPID=secondlife)
   add_definitions(-fvisibility=hidden)
   # don't catch SIGCHLD in our base application class for the viewer - some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  The viewer doesn't need to catch SIGCHLD anyway.
@@ -200,10 +205,10 @@ if (LINUX)
     if (NOT STANDALONE)
   	set(MARCH_FLAG " -march=pentium4")
     endif (NOT STANDALONE)
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
   endif (${ARCH} STREQUAL "x86_64")
 
   set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline ${CMAKE_CXX_FLAGS_DEBUG} -msse2")

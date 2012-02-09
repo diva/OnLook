@@ -35,7 +35,7 @@
 #include "llbufferstream.h"
 #include "lltranslate.h"
 #include "llui.h"
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "llweb.h"
 
 // <edit>
