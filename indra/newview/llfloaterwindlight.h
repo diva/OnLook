@@ -67,6 +67,8 @@ public:
 
 	static bool newPromptCallback(const LLSD& notification, const LLSD& response);
 
+	void setColorSwatch(const std::string& name, const WLColorControl& from_ctrl, F32 k);
+	
 	/// general purpose callbacks for dealing with color controllers
 	static void onColorControlRMoved(LLUICtrl* ctrl, void* userData);
 	static void onColorControlGMoved(LLUICtrl* ctrl, void* userData);
@@ -133,8 +135,6 @@ public:
 	/// sync up sliders with parameters
 	void syncMenu();
 
-	/// turn off animated skies
-	static void deactivateAnimator();
 
 	static void selectTab(std::string tab_name);
 

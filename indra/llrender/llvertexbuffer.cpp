@@ -798,14 +798,7 @@ LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
 {
 	LLMemType mt2(LLMemType::MTYPE_VERTEX_CONSTRUCTOR);
 
-	if (mUsage == GL_DYNAMIC_DRAW_ARB && !sDisableVBOMapping)
-	{
-		mMappable = true;
-	}
-	else
-	{
-		mMappable = false;
-	}
+	mMappable = (mUsage == GL_DYNAMIC_DRAW_ARB && !sDisableVBOMapping);
 
 	//zero out offsets
 	for (U32 i = 0; i < TYPE_MAX; i++)

@@ -91,10 +91,10 @@ LLWLParamManager::LLWLParamManager() :
 	mWLGamma(1.0f, "gamma"),
 
 	mBlueHorizon(0.25f, 0.25f, 1.0f, 1.0f, "blue_horizon", "WLBlueHorizon"),
-	mHazeDensity(1.0f, 1.0f, 1.0f, 0.5f, "haze_density"),
+	mHazeDensity(1.0f, "haze_density"),
 	mBlueDensity(0.25f, 0.25f, 0.25f, 1.0f, "blue_density", "WLBlueDensity"),
 	mDensityMult(1.0f, "density_multiplier", 1000),
-	mHazeHorizon(1.0f, 1.0f, 1.0f, 0.5f, "haze_horizon"),
+	mHazeHorizon(1.0f, "haze_horizon"),
 	mMaxAlt(4000.0f, "max_y"),
 
 	// Lighting
@@ -284,10 +284,10 @@ void LLWLParamManager::refreshRegionPresets()
 void LLWLParamManager::loadAllPresets()
 {
 	// First, load system (coming out of the box) sky presets.
-	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/skies", ""));
+	loadPresetsFromDir(getSysDir());
 
 	// Then load user presets. Note that user day presets will modify any system ones already loaded.
-	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/skies", ""));
+	loadPresetsFromDir(getUserDir());
 }
 
 void LLWLParamManager::loadPresetsFromDir(const std::string& dir)

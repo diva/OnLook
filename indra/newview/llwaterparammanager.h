@@ -319,9 +319,6 @@ public:
 	F32 getFogDensity(void);
 	LLColor4 getFogColor(void);
 
-	// singleton pattern implementation
-	static LLWaterParamManager * instance();
-
 public:
 
 	LLWaterParamSet mCurParams;

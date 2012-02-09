@@ -120,9 +120,8 @@ struct WLFloatControl {
 	{
 	}
 
-	inline WLFloatControl & operator = (LLVector4 const & val) {
-		x = val.mV[0];
-
+	inline WLFloatControl & operator = (F32 val) {
+		x = val;
 		return *this;
 	}
 
@@ -289,10 +288,10 @@ public:
 	
 	/// Atmospherics
 	WLColorControl mBlueHorizon;
-	WLColorControl mHazeDensity;
+	WLFloatControl mHazeDensity;
 	WLColorControl mBlueDensity;
 	WLFloatControl mDensityMult;
-	WLColorControl mHazeHorizon;
+	WLFloatControl mHazeHorizon;
 	WLFloatControl mMaxAlt;
 
 	/// Lighting
@@ -315,14 +314,10 @@ public:
 	
 
 private:
+
 	friend class LLWLAnimator;
 
 	std::vector<LLGLSLShader *> mShaderList;
-
-	friend class LLSingleton<LLWLParamManager>;
-	/*virtual*/ void initSingleton();
-	LLWLParamManager();
-	~LLWLParamManager();
 
 	static void loadWindlightNotecard(LLVFS *vfs, const LLUUID& asset_id, LLAssetType::EType asset_type, void *user_data, S32 status, LLExtStat ext_status);
 
@@ -332,6 +327,11 @@ private:
 
 	static std::string getSysDir();
 	static std::string getUserDir();
+
+	friend class LLSingleton<LLWLParamManager>;
+	/*virtual*/ void initSingleton();
+	LLWLParamManager();
+	~LLWLParamManager();
 
 	// list of all the parameters, listed by name
 	std::map<LLWLParamKey, LLWLParamSet> mParamList;

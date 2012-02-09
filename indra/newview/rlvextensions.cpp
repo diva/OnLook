@@ -325,8 +325,8 @@ std::string RlvExtGetSet::onGetEnv(std::string strSetting)
 	else if ("densitymultiplier" == strSetting)		nValue = pWLParams->mDensityMult.x * pWLParams->mDensityMult.mult;
 	else if ("distancemultiplier" == strSetting)	nValue = pWLParams->mDistanceMult;
 	else if ("eastangle" == strSetting)				nValue = pWLParams->mCurParams.getEastAngle() / F_TWO_PI;
-	else if ("hazedensity" == strSetting)			nValue = pWLParams->mHazeDensity.r;
-	else if ("hazehorizon" == strSetting)			nValue = pWLParams->mHazeHorizon.r;
+	else if ("hazedensity" == strSetting)			nValue = pWLParams->mHazeDensity;
+	else if ("hazehorizon" == strSetting)			nValue = pWLParams->mHazeHorizon;
 	else if ("maxaltitude" == strSetting)			nValue = pWLParams->mMaxAlt;
 	else if ("scenegamma" == strSetting)			nValue = pWLParams->mWLGamma;
 	else if ("starbrightness" == strSetting)		nValue = pWLParams->mCurParams.getStarBrightness();
@@ -472,8 +472,8 @@ ERlvCmdRet RlvExtGetSet::onSetEnv(std::string strSetting, const std::string& str
 	else if ("maxaltitude" == strSetting)			pFloat = &pWLParams->mMaxAlt;
 	else if ("scenegamma" == strSetting)			pFloat = &pWLParams->mWLGamma;
 	// See LLFloaterWindLight::onColorControlRMoved()
-	else if ("hazedensity" == strSetting)	pColour = &pWLParams->mHazeDensity;
-	else if ("hazehorizon" == strSetting)	pColour = &pWLParams->mHazeHorizon;
+	else if ("hazedensity" == strSetting)	pFloat = &pWLParams->mHazeDensity;
+	else if ("hazehorizon" == strSetting)	pFloat = &pWLParams->mHazeHorizon;
 
 	if (pFloat)
 	{
