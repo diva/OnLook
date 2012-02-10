@@ -26,7 +26,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(Variables)
 
 # Load versions now.  Install locations need them.
-include(Versions)
+include(BuildVersion)
 
 include(UnixInstall)
 

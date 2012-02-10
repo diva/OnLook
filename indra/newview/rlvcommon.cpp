@@ -20,7 +20,7 @@
 #include "llavatarnamecache.h"
 #include "llnotificationsutil.h"
 #include "lluictrlfactory.h"
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "llviewermenu.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
@@ -305,7 +305,7 @@ std::string RlvStrings::getVersion(bool fLegacy /*=false*/)
 	return llformat("%s viewer v%d.%d.%d (%s %d.%d.%d.%d - RLVa %d.%d.%d)",
 		( (!fLegacy) ? "RestrainedLove" : "RestrainedLife" ),
 		RLV_VERSION_MAJOR, RLV_VERSION_MINOR, RLV_VERSION_PATCH,
-		LLAppViewer::instance()->getSecondLifeTitle().c_str(), LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD,
+		LLAppViewer::instance()->getSecondLifeTitle().c_str(), gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild,
 		RLVa_VERSION_MAJOR, RLVa_VERSION_MINOR, RLVa_VERSION_PATCH);
 }
 

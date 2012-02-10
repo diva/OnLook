@@ -39,7 +39,7 @@
 	<text bottom="-331" height="18" left="10" name="crash_report_textbox">Crash reports:</text>
 	<text bottom="-363" height="18" name="language_textbox">Language:</text>
 	<text bottom_delta="6" follows="top" height="18" left_delta="243" name="language_textbox2">(Requires restart for full effect)
-					*Uses English UI</text>
+          *Uses English UI</text>
 	<combo_box allow_text_entry="true" bottom="-361" follows="top" height="16" left="103" name="language_combobox" max_chars="32" width="140">
 		<combo_item name="System Default Language" value="default">System Default</combo_item>
 		<combo_item name="English" value="en-us">English</combo_item>		
