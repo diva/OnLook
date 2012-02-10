@@ -39,6 +39,7 @@ set(statemachine_SOURCE_FILES
     aifilepicker.cpp
     aifetchinventoryfolder.cpp
     aievent.cpp
+    aitimer.cpp
     )
 
 set(statemachine_HEADER_FILES
@@ -48,6 +49,7 @@ set(statemachine_HEADER_FILES
     aidirpicker.h
     aifetchinventoryfolder.h
     aievent.h
+    aitimer.h
     )
 
 set_source_files_properties(${statemachine_HEADER_FILES}
