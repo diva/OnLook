@@ -37,6 +37,7 @@
 #include "v3dmath.h"
 #include "lluuid.h"
 #include "llmediactrl.h"
+#include "llavatarpropertiesprocessor.h"
 
 class LLAvatarName;
 class LLButton;
@@ -68,30 +69,29 @@ enum EOnlineStatus
 // Base class for all sub-tabs inside the avatar profile.  Many of these
 // panels need to keep track of the parent panel (to get the avatar id)
 // and only request data from the database when they are first drawn. JC
-class LLPanelAvatarTab : public LLPanel
+class LLPanelAvatarTab : public LLPanel, public LLAvatarPropertiesObserver
 {
 public:
 	LLPanelAvatarTab(const std::string& name, const LLRect &rect, 
 		LLPanelAvatar* panel_avatar);
+
+	virtual ~LLPanelAvatarTab();
 
 	// Calls refresh() once per frame when panel is visible
 	/*virtual*/ void draw();
 
 	LLPanelAvatar* getPanelAvatar() const { return mPanelAvatar; }
 
+	void setAvatarID(const LLUUID& avatar_id);
+
 	void setDataRequested(bool requested) { mDataRequested = requested; }
 	bool isDataRequested() const		  { return mDataRequested; }
-
-	// If the data for this tab has not yet been requested,
-	// send the request.  Used by tabs that are filled in only
-	// when they are first displayed.
-	// type is one of "avatarnotesrequest", "avatarpicksrequest",
-	// or "avatarclassifiedsrequest"
-	void sendAvatarProfileRequestIfNeeded(const std::string& method);
 
 private:
 	LLPanelAvatar* mPanelAvatar;
 	bool mDataRequested;
+protected:
+	LLUUID mAvatarID;
 };
 
 
@@ -101,6 +101,9 @@ public:
 	LLPanelAvatarFirstLife(const std::string& name, const LLRect &rect, LLPanelAvatar* panel_avatar);
 
 	/*virtual*/ BOOL postBuild(void);
+
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
+
 	static void onClickImage(			void *userdata);
 
 
@@ -116,6 +119,8 @@ public:
 
 	/*virtual*/ BOOL postBuild(void);
 	/*virtual*/ void refresh();
+
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
 	static void onClickImage(			void *userdata);
 	static void onClickFriends(			void *userdata);
@@ -150,6 +155,8 @@ public:
 
 	/*virtual*/ void refresh();
 
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
+
 	void enableControls(BOOL own_avatar);
 
 	void setWebURL(std::string url);
@@ -176,6 +183,8 @@ public:
 	LLPanelAvatarAdvanced(const std::string& name, const LLRect& rect, LLPanelAvatar* panel_avatar);
 
 	/*virtual*/ BOOL	postBuild(void);
+
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
 	void enableControls(BOOL own_avatar);
 	void setWantSkills(U32 want_to_mask, const std::string& want_to_text,
@@ -204,6 +213,8 @@ public:
 
 	/*virtual*/ void refresh();
 
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type){}
+
 	void clearControls();
 
 	static void onCommitNotes(LLUICtrl* field, void* userdata);
@@ -219,6 +230,8 @@ public:
 
 	/*virtual*/ void refresh();
 
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
+
 	// If can close, return TRUE.  If cannot close, pop save/discard dialog
 	// and return FALSE.
 	BOOL canClose();
@@ -229,10 +242,6 @@ public:
 
 	// Delete all the classified sub-panels from the tab container
 	void deleteClassifiedPanels();
-
-	// Unpack the outline of classified for this avatar (count, names, but not
-	// actual data).
-	void processAvatarClassifiedReply(LLMessageSystem* msg, void**);
 
 private:
 	static void onClickNew(void* data);
@@ -252,13 +261,10 @@ public:
 
 	/*virtual*/ void refresh();
 
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
+
 	// Delete all the pick sub-panels from the tab container
 	void deletePickPanels();
-
-	// Unpack the outline of picks for this avatar (count, names, but not
-	// actual data).
-	void processAvatarPicksReply(LLMessageSystem* msg, void**);
-	void processAvatarClassifiedReply(LLMessageSystem* msg, void**);
 
 private:
 	static void onClickNew(void* data);
@@ -276,7 +282,7 @@ private:
 };
 
 
-class LLPanelAvatar : public LLPanel
+class LLPanelAvatar : public LLPanel, public LLAvatarPropertiesObserver
 {
 
 public:
@@ -284,6 +290,8 @@ public:
 	/*virtual*/ ~LLPanelAvatar();
 
 	/*virtual*/ BOOL	postBuild(void);
+
+	/*virtual*/ void	processProperties(void* data, EAvatarProcessorType type);
 
 	// If can close, return TRUE.  If cannot close, pop save/discard dialog
 	// and return FALSE.
@@ -317,13 +325,6 @@ public:
 
 	BOOL haveData() { return mHaveProperties && mHaveStatistics; }
 	BOOL isEditable() const { return mAllowEdit; }
-
-	static void processAvatarPropertiesReply(LLMessageSystem *msg, void **);
-	static void processAvatarInterestsReply(LLMessageSystem *msg, void **);
-	static void processAvatarGroupsReply(LLMessageSystem* msg, void**);
-	static void processAvatarNotesReply(LLMessageSystem *msg, void **);
-	static void processAvatarPicksReply(LLMessageSystem *msg, void **);
-	static void processAvatarClassifiedReply(LLMessageSystem *msg, void **);
 
 	static void onClickTrack(	void *userdata);
 	static void onClickIM(		void *userdata);
@@ -368,6 +369,8 @@ public:
 	LLPanelAvatarNotes*			mPanelNotes;
 	LLPanelAvatarFirstLife*		mPanelFirstLife;
 	LLPanelAvatarWeb*			mPanelWeb;
+
+	std::list<LLPanelAvatarTab*> mAvatarPanelList;
 
 	LLDropTarget* 				mDropTarget;
 

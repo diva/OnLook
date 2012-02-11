@@ -3617,20 +3617,20 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 		LLViewerParcelMgr::processParcelDwellReply);
 
 	msg->setHandlerFunc("AvatarPropertiesReply",
-						LLPanelAvatar::processAvatarPropertiesReply);
+						&LLAvatarPropertiesProcessor::processAvatarPropertiesReply);
 	msg->setHandlerFunc("AvatarInterestsReply",
-						LLPanelAvatar::processAvatarInterestsReply);
+						&LLAvatarPropertiesProcessor::processAvatarInterestsReply);
 	msg->setHandlerFunc("AvatarGroupsReply",
-						LLPanelAvatar::processAvatarGroupsReply);
+						&LLAvatarPropertiesProcessor::processAvatarGroupsReply);
 	// ratings deprecated
 	//msg->setHandlerFuncFast(_PREHASH_AvatarStatisticsReply,
 	//					LLPanelAvatar::processAvatarStatisticsReply);
 	msg->setHandlerFunc("AvatarNotesReply",
-						LLPanelAvatar::processAvatarNotesReply);
+						&LLAvatarPropertiesProcessor::processAvatarNotesReply);
 	msg->setHandlerFunc("AvatarPicksReply",
-						LLPanelAvatar::processAvatarPicksReply);
+						&LLAvatarPropertiesProcessor::processAvatarPicksReply);
 	msg->setHandlerFunc("AvatarClassifiedReply",
-						LLPanelAvatar::processAvatarClassifiedReply);
+						&LLAvatarPropertiesProcessor::processAvatarClassifiedsReply);
 
 	msg->setHandlerFuncFast(_PREHASH_CreateGroupReply,
 						LLGroupMgr::processCreateGroupReply);
@@ -3704,8 +3704,9 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFunc("MapItemReply", LLWorldMap::processMapItemReply);
 
 	msg->setHandlerFunc("EventInfoReply", LLPanelEvent::processEventInfoReply);
-	msg->setHandlerFunc("PickInfoReply", LLPanelPick::processPickInfoReply);
-	msg->setHandlerFunc("ClassifiedInfoReply", LLPanelClassified::processClassifiedInfoReply);
+	msg->setHandlerFunc("PickInfoReply", &LLAvatarPropertiesProcessor::processPickInfoReply);
+	//msg->setHandlerFunc("ClassifiedInfoReply", LLPanelClassified::processClassifiedInfoReply);
+	msg->setHandlerFunc("ClassifiedInfoReply", LLAvatarPropertiesProcessor::processClassifiedInfoReply);
 	msg->setHandlerFunc("ParcelInfoReply", LLPanelPlace::processParcelInfoReply);
 	msg->setHandlerFunc("ScriptDialog", process_script_dialog);
 	msg->setHandlerFunc("LoadURL", process_load_url);
