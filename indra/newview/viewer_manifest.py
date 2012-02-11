@@ -405,7 +405,7 @@ class WindowsManifest(ViewerManifest):
         !define VIEWERNAME "%(channel)s"
         !define INSTFLAGS "%(flags)s"
         !define INSTNAME   "%(channel_oneword)s"
-        !define SHORTCUT   "%(channel)s"
+        !define SHORTCUT   "%(channel)s Viewer"
         !define URLNAME   "secondlife"
         !define INSTALL_ICON "install_icon_singularity.ico"
         !define UNINSTALL_ICON "install_icon_singularity.ico"
