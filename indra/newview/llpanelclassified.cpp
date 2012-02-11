@@ -213,12 +213,21 @@ LLPanelClassified::LLPanelClassified(bool in_finder, bool from_search)
 
 LLPanelClassified::~LLPanelClassified()
 {
+	if(mCreatorID.notNull())
+	{
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+	}
     sAllPanels.remove(this);
 }
 
 
 void LLPanelClassified::reset()
 {
+	if(mCreatorID.notNull())
+	{
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+	}
+
 	mClassifiedID.setNull();
 	mCreatorID.setNull();
 	mParcelID.setNull();
@@ -320,6 +329,82 @@ BOOL LLPanelClassified::postBuild()
 	
 	resetDirty();
     return TRUE;
+}
+
+void LLPanelClassified::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(APT_CLASSIFIED_INFO == type)
+	{
+		lldebugs << "processClassifiedInfoReply()" << llendl;
+		
+		LLAvatarClassifiedInfo* c_info = static_cast<LLAvatarClassifiedInfo*>(data);
+		if(c_info && mClassifiedID == c_info->classified_id)
+		{
+			LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+
+		    // "Location text" is actually the original
+		    // name that owner gave the parcel, and the location.
+			std::string location_text = c_info->parcel_name;
+			
+			if (!location_text.empty())
+				location_text.append(", ");
+
+		    S32 region_x = llround((F32)c_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
+		    S32 region_y = llround((F32)c_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
+			S32 region_z = llround((F32)c_info->pos_global.mdV[VZ]);
+
+			std::string buffer = llformat("%s (%d, %d, %d)", c_info->sim_name.c_str(), region_x, region_y, region_z);
+		    location_text.append(buffer);
+
+			//BOOL enabled = is_cf_enabled(flags);
+
+			time_t tim = c_info->creation_date;
+			tm *now=localtime(&tim);
+
+
+	        // Found the panel, now fill in the information
+			mClassifiedID = c_info->classified_id;
+			mCreatorID = c_info->creator_id;
+			mParcelID = c_info->parcel_id;
+			mPriceForListing = c_info->price_for_listing;
+			mSimName = c_info->sim_name;
+			mPosGlobal = c_info->pos_global;
+
+			// Update UI controls
+	        mNameEditor->setText(c_info->name);
+	        mDescEditor->setText(c_info->description);
+	        mSnapshotCtrl->setImageAssetID(c_info->snapshot_id);
+	        mLocationEditor->setText(location_text);
+			mLocationChanged = false;
+
+			mCategoryCombo->setCurrentByIndex(c_info->category - 1);
+
+			mMatureCombo->setCurrentByIndex(is_cf_mature(c_info->flags) ? MATURE_CONTENT : PG_CONTENT);
+
+			if (mAutoRenewCheck)
+			{
+				mAutoRenewCheck->set(is_cf_auto_renew(c_info->flags));
+			}
+
+			std::string datestr;
+			timeStructToFormattedString(now, gSavedSettings.getString("ShortDateFormat"), datestr);
+			LLStringUtil::format_map_t string_args;
+			string_args["[DATE]"] = datestr;
+			string_args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
+			string_args["[AMT]"] = llformat("%d", c_info->price_for_listing);
+			childSetText("classified_info_text", getString("ad_placed_paid", string_args));
+
+			// If we got data from the database, we know the listing is paid for.
+			mPaidFor = TRUE;
+
+			mUpdateBtn->setLabel(getString("update_txt"));
+
+			resetDirty();
+
+			// I don't know if a second call is deliberate or a bad merge, so I'm leaving it here. 
+			resetDirty();
+		}
+    }
 }
 
 BOOL LLPanelClassified::titleIsValid()
@@ -488,19 +573,13 @@ std::string LLPanelClassified::getClassifiedName()
 
 void LLPanelClassified::sendClassifiedInfoRequest()
 {
-    LLMessageSystem *msg = gMessageSystem;
-
 	if (mClassifiedID != mRequestedID)
 	{
-		msg->newMessageFast(_PREHASH_ClassifiedInfoRequest);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID() );
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
-		msg->nextBlockFast(_PREHASH_Data);
-		msg->addUUIDFast(_PREHASH_ClassifiedID, mClassifiedID);
-		gAgent.sendReliableMessage();
+		LLAvatarPropertiesProcessor::getInstance()->addObserver(mCreatorID, this);
+		LLAvatarPropertiesProcessor::getInstance()->sendClassifiedInfoRequest(mClassifiedID);
 
 		mDataRequested = TRUE;
+
 		mRequestedID = mClassifiedID;
 
 		// While we're at it let's get the stats from the new table if that
@@ -517,9 +596,10 @@ void LLPanelClassified::sendClassifiedInfoRequest()
 	}
 }
 
-
 void LLPanelClassified::sendClassifiedInfoUpdate()
 {
+	LLAvatarClassifiedInfo c_data;
+
 	// If we don't have a classified id yet, we'll need to generate one,
 	// otherwise we'll keep overwriting classified_id 00000 in the database.
 	if (mClassifiedID.isNull())
@@ -528,178 +608,22 @@ void LLPanelClassified::sendClassifiedInfoUpdate()
 		mClassifiedID.generate();
 	}
 
-	LLMessageSystem* msg = gMessageSystem;
+	c_data.agent_id = gAgent.getID();
+	c_data.classified_id = mClassifiedID;
+	c_data.category = mCategoryCombo->getCurrentIndex() + 1;
+	c_data.name = mNameEditor->getText();
+	c_data.description = mDescEditor->getText();
+	c_data.parcel_id = mParcelID;
+	c_data.snapshot_id = mSnapshotCtrl->getImageAssetID();
+	c_data.pos_global = mPosGlobal;
+	BOOL auto_renew = mAutoRenewCheck && mAutoRenewCheck->get();
+	c_data.flags = pack_classified_flags_request(auto_renew, false, mMatureCombo->getCurrentIndex() == MATURE_CONTENT, false);
+	c_data.price_for_listing = mPriceForListing;
+	c_data.parent_estate = 0;	//probably not required.
 
-	msg->newMessageFast(_PREHASH_ClassifiedInfoUpdate);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->nextBlockFast(_PREHASH_Data);
-	msg->addUUIDFast(_PREHASH_ClassifiedID, mClassifiedID);
-	// TODO: fix this
-	U32 category = mCategoryCombo->getCurrentIndex() + 1;
-	msg->addU32Fast(_PREHASH_Category, category);
-	msg->addStringFast(_PREHASH_Name, mNameEditor->getText());
-	msg->addStringFast(_PREHASH_Desc, mDescEditor->getText());
-
-	// fills in on simulator if null
-	msg->addUUIDFast(_PREHASH_ParcelID, mParcelID);
-	// fills in on simulator if null
-	msg->addU32Fast(_PREHASH_ParentEstate, 0);
-	msg->addUUIDFast(_PREHASH_SnapshotID, mSnapshotCtrl->getImageAssetID());
-	msg->addVector3dFast(_PREHASH_PosGlobal, mPosGlobal);
-	BOOL mature = mMatureCombo->getCurrentIndex() == MATURE_CONTENT;
-	BOOL auto_renew = FALSE;
-	if (mAutoRenewCheck) 
-	{
-		auto_renew = mAutoRenewCheck->get();
-	}
-    // These flags doesn't matter here.
-    const bool adult_enabled = false;
-	const bool is_pg = false;
-	U8 flags = pack_classified_flags_request(auto_renew, is_pg, mature, adult_enabled);
-	msg->addU8Fast(_PREHASH_ClassifiedFlags, flags);
-	msg->addS32("PriceForListing", mPriceForListing);
-	gAgent.sendReliableMessage();
+	LLAvatarPropertiesProcessor::getInstance()->sendClassifiedInfoUpdate(&c_data);
 
 	mDirty = false;
-}
-
-
-//static
-void LLPanelClassified::processClassifiedInfoReply(LLMessageSystem *msg, void **)
-{
-	lldebugs << "processClassifiedInfoReply()" << llendl;
-    // Extract the agent id and verify the message is for this
-    // client.
-    LLUUID agent_id;
-    msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
-    if (agent_id != gAgent.getID())
-    {
-        llwarns << "Agent ID mismatch in processClassifiedInfoReply"
-            << llendl;
-		return;
-    }
-
-    LLUUID classified_id;
-    msg->getUUIDFast(_PREHASH_Data, _PREHASH_ClassifiedID, classified_id);
-
-    LLUUID creator_id;
-    msg->getUUIDFast(_PREHASH_Data, _PREHASH_CreatorID, creator_id);
-
-    LLUUID parcel_id;
-    msg->getUUIDFast(_PREHASH_Data, _PREHASH_ParcelID, parcel_id);
-
-	std::string name;
-	msg->getStringFast(_PREHASH_Data, _PREHASH_Name, name);
-
-	std::string desc;
-	msg->getStringFast(_PREHASH_Data, _PREHASH_Desc, desc);
-
-	LLUUID snapshot_id;
-	msg->getUUIDFast(_PREHASH_Data, _PREHASH_SnapshotID, snapshot_id);
-
-    // "Location text" is actually the original
-    // name that owner gave the parcel, and the location.
-	std::string location_text;
-
-    msg->getStringFast(_PREHASH_Data, _PREHASH_ParcelName, location_text);
-	if (!location_text.empty())
-	{
-		location_text.append(", ");
-	}
-
-	std::string sim_name;
-	msg->getStringFast(_PREHASH_Data, _PREHASH_SimName, sim_name);
-
-	LLVector3d pos_global;
-	msg->getVector3dFast(_PREHASH_Data, _PREHASH_PosGlobal, pos_global);
-
-    S32 region_x = llround((F32)pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
-    S32 region_y = llround((F32)pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
-	S32 region_z = llround((F32)pos_global.mdV[VZ]);
-
-	std::string buffer = llformat("%s (%d, %d, %d)", sim_name.c_str(), region_x, region_y, region_z);
-    location_text.append(buffer);
-
-	U8 flags;
-	msg->getU8Fast(_PREHASH_Data, _PREHASH_ClassifiedFlags, flags);
-	//BOOL enabled = is_cf_enabled(flags);
-	bool mature = is_cf_mature(flags);
-	bool auto_renew = is_cf_auto_renew(flags);
-
-	U32 date = 0;
-	msg->getU32Fast(_PREHASH_Data, _PREHASH_CreationDate, date);
-	time_t tim = date;
-	tm *now=localtime(&tim);
-
-	// future use
-	U32 expiration_date = 0;
-	msg->getU32("Data", "ExpirationDate", expiration_date);
-
-	U32 category = 0;
-	msg->getU32Fast(_PREHASH_Data, _PREHASH_Category, category);
-
-	S32 price_for_listing = 0;
-	msg->getS32("Data", "PriceForListing", price_for_listing);
-
-    // Look up the panel to fill in
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelClassified* self = *iter;
-		// For top picks, must match pick id
-		if (self->mClassifiedID != classified_id)
-		{
-			continue;
-		}
-
-        // Found the panel, now fill in the information
-		self->mClassifiedID = classified_id;
-		self->mCreatorID = creator_id;
-		self->mParcelID = parcel_id;
-		self->mPriceForListing = price_for_listing;
-		self->mSimName.assign(sim_name);
-		self->mPosGlobal = pos_global;
-
-		// Update UI controls
-        self->mNameEditor->setText(name);
-        self->mDescEditor->setText(desc);
-        self->mSnapshotCtrl->setImageAssetID(snapshot_id);
-        self->mLocationEditor->setText(location_text);
-		self->mLocationChanged = false;
-
-		self->mCategoryCombo->setCurrentByIndex(category - 1);
-		if(mature)
-		{
-			self->mMatureCombo->setCurrentByIndex(MATURE_CONTENT);
-		}
-		else
-		{
-			self->mMatureCombo->setCurrentByIndex(PG_CONTENT);
-		}
-		if (self->mAutoRenewCheck)
-		{
-			self->mAutoRenewCheck->set(auto_renew);
-		}
-
-		std::string datestr;
-		timeStructToFormattedString(now, gSavedSettings.getString("ShortDateFormat"), datestr);
-		LLStringUtil::format_map_t string_args;
-		string_args["[DATE]"] = datestr;
-		string_args["[CURRENCY]"] = gHippoGridManager->getConnectedGrid()->getCurrencySymbol();
-		string_args["[AMT]"] = llformat("%d", price_for_listing);
-		self->childSetText("classified_info_text", self->getString("ad_placed_paid", string_args));
-
-		// If we got data from the database, we know the listing is paid for.
-		self->mPaidFor = TRUE;
-
-		self->mUpdateBtn->setLabel(self->getString("update_txt"));
-
-		self->resetDirty();
-
-		// I don't know if a second call is deliberate or a bad merge, so I'm leaving it here. 
-		self->resetDirty();
-    }
 }
 
 void LLPanelClassified::draw()

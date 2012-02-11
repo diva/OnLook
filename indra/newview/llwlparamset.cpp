@@ -101,36 +101,62 @@ void LLWLParamSet::update(LLGLSLShader * shader) const
 			val.mV[1] = F32(i->second[1].asReal()) + mCloudScrollYOffset;
 			val.mV[2] = (F32) i->second[2].asReal();
 			val.mV[3] = (F32) i->second[3].asReal();
-			
-			shader->uniform4fv(param, 1, val.mV);	
-		} 
-		else 
+
+			stop_glerror();
+			shader->uniform4fv(param, 1, val.mV);
+			stop_glerror();
+		}
+		else if (param == "cloud_scale" || param == "cloud_shadow" ||
+				 param == "density_multiplier" || param == "distance_multiplier" ||
+				 param == "haze_density" || param == "haze_horizon" ||
+				 param == "max_y" )
 		{
-			LLVector4 val;
-			
+			F32 val = (F32) i->second[0].asReal();
+
+			stop_glerror();
+			shader->uniform1f(param, val);
+			stop_glerror();
+		}
+		else // param is the uniform name
+		{
 			// handle all the different cases
-			if(i->second.isArray() && i->second.size() == 4) 
+			if (i->second.isArray() && i->second.size() == 4)
 			{
+				LLVector4 val;
+
 				val.mV[0] = (F32) i->second[0].asReal();
 				val.mV[1] = (F32) i->second[1].asReal();
 				val.mV[2] = (F32) i->second[2].asReal();
 				val.mV[3] = (F32) i->second[3].asReal();															
+
+				stop_glerror();
+				shader->uniform4fv(param, 1, val.mV);
+				stop_glerror();
 			} 
-			else if(i->second.isReal()) 
+			else if (i->second.isReal())
 			{
-				val.mV[0] = (F32) i->second.asReal();
+				F32 val = (F32) i->second.asReal();
+
+				stop_glerror();
+				shader->uniform1f(param, val);
+				stop_glerror();
 			} 
-			else if(i->second.isInteger()) 
+			else if (i->second.isInteger())
 			{
-				val.mV[0] = (F32) i->second.asReal();
+				S32 val = (S32) i->second.asInteger();
+
+				stop_glerror();
+				shader->uniform1i(param, val);
+				stop_glerror();
 			} 
-			else if(i->second.isBoolean())
+			else if (i->second.isBoolean())
 			{
-				val.mV[0] = i->second.asBoolean();
+				S32 val = (i->second.asBoolean() ? 1 : 0);
+
+				stop_glerror();
+				shader->uniform1i(param, val);
+				stop_glerror();
 			}
-			
-			
-			shader->uniform4fv(param, 1, val.mV);
 		}
 	}
 }
@@ -151,7 +177,8 @@ void LLWLParamSet::set(const std::string& paramName, float x)
 	}
 }
 
-void LLWLParamSet::set(const std::string& paramName, float x, float y) {
+void LLWLParamSet::set(const std::string& paramName, float x, float y)
+{
 	mParamValues[paramName][0] = x;
 	mParamValues[paramName][1] = y;
 }

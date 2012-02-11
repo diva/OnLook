@@ -112,12 +112,20 @@ LLPanelPick::LLPanelPick(BOOL top_pick)
 
 LLPanelPick::~LLPanelPick()
 {
+	if(mDataRequested && !mDataReceived)
+	{
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+	}
     sAllPanels.remove(this);
 }
 
 
 void LLPanelPick::reset()
 {
+	if(mDataRequested && !mDataReceived)
+	{
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+	}
 	mPickID.setNull();
 	mCreatorID.setNull();
 	mParcelID.setNull();
@@ -178,6 +186,72 @@ BOOL LLPanelPick::postBuild()
     return TRUE;
 }
 
+void LLPanelPick::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(APT_PICK_INFO != type)
+	{
+		return;
+	}
+
+	LLPickData* pick_info = static_cast<LLPickData*>(data);
+	//llassert_always(pick_info->creator_id != gAgent.getID());
+	//llassert_always(mCreatorID != gAgent.getID());
+	if(!pick_info 
+		|| pick_info->creator_id != mCreatorID 
+		|| pick_info->pick_id != mPickID)
+	{
+		return;
+	}
+
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(mCreatorID, this);
+
+	// "Location text" is actually the owner name, the original
+    // name that owner gave the parcel, and the location.
+	std::string location_text = pick_info->user_name + ", ";
+
+	if (!pick_info->original_name.empty())
+	{
+		location_text.append(pick_info->original_name);
+		location_text.append(", ");
+	}
+
+	location_text.append(pick_info->sim_name);
+	location_text.append(" ");
+
+	//Fix for location text importing - RK
+	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
+	{
+		LLPanelPick* self = *iter;
+		if(!self->mImporting)	self->mLocationText = location_text;
+		else location_text = self->mLocationText;
+		self->mImporting = false;
+	}
+
+    S32 region_x = llround((F32)pick_info->pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
+    S32 region_y = llround((F32)pick_info->pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
+	S32 region_z = llround((F32)pick_info->pos_global.mdV[VZ]);
+   
+    location_text.append(llformat("(%d, %d, %d)", region_x, region_y, region_z));
+
+	mDataReceived = TRUE;
+
+    // Found the panel, now fill in the information
+	mPickID = pick_info->pick_id;
+	mCreatorID = pick_info->creator_id;
+	mParcelID = pick_info->parcel_id;
+	mSimName = pick_info->sim_name;
+	mPosGlobal = pick_info->pos_global;
+
+	// Update UI controls
+    mNameEditor->setText(pick_info->name);
+    mDescEditor->setText(pick_info->desc);
+    mSnapshotCtrl->setImageAssetID(pick_info->snapshot_id);
+    mLocationEditor->setText(location_text);
+    mEnabledCheck->set(pick_info->enabled);
+
+	mSortOrderEditor->setText(llformat("%d", pick_info->sort_order));
+    
+}
 
 // Fill in some reasonable defaults for a new pick.
 void LLPanelPick::initNewPick()
@@ -307,12 +381,9 @@ std::string LLPanelPick::getPickName()
 
 void LLPanelPick::sendPickInfoRequest()
 {
-	// Must ask for a pick based on the creator id because
-	// the pick database is distributed to the inventory cluster. JC
-	std::vector<std::string> strings;
-	strings.push_back( mCreatorID.asString() );
-	strings.push_back( mPickID.asString() );
-	send_generic_message("pickinforequest", strings);
+	//llassert_always(mCreatorID != gAgent.getID());
+	LLAvatarPropertiesProcessor::getInstance()->addObserver(mCreatorID, this);
+	LLAvatarPropertiesProcessor::getInstance()->sendPickInfoRequest(mCreatorID, mPickID);
 
 	mDataRequested = TRUE;
 }
@@ -320,6 +391,8 @@ void LLPanelPick::sendPickInfoRequest()
 
 void LLPanelPick::sendPickInfoUpdate()
 {
+	LLPickData pick_data;
+
 	// If we don't have a pick id yet, we'll need to generate one,
 	// otherwise we'll keep overwriting pick_id 00000 in the database.
 	if (mPickID.isNull())
@@ -327,146 +400,29 @@ void LLPanelPick::sendPickInfoUpdate()
 		mPickID.generate();
 	}
 
-	LLMessageSystem* msg = gMessageSystem;
+	pick_data.agent_id = gAgent.getID();
+	pick_data.session_id = gAgent.getSessionID();
+	pick_data.pick_id = mPickID;
+	pick_data.creator_id = gAgent.getID();
 
-	msg->newMessage("PickInfoUpdate");
-	msg->nextBlock("AgentData");
-	msg->addUUID("AgentID", gAgent.getID());
-	msg->addUUID("SessionID", gAgent.getSessionID());
-	msg->nextBlock("Data");
-	msg->addUUID("PickID", mPickID);
-	msg->addUUID("CreatorID", mCreatorID);
-	msg->addBOOL("TopPick", mTopPick);
-	// fills in on simulator if null
-	msg->addUUID("ParcelID", mParcelID);
-	msg->addString("Name", mNameEditor->getText());
-	msg->addString("Desc", mDescEditor->getText());
-	msg->addUUID("SnapshotID", mSnapshotCtrl->getImageAssetID());
-	msg->addVector3d("PosGlobal", mPosGlobal);
-	
-	// Only top picks have a sort order
-	S32 sort_order;
-	if (mTopPick)
-	{
-		sort_order = atoi(mSortOrderEditor->getText().c_str());
-	}
+	//legacy var  need to be deleted
+	pick_data.top_pick = mTopPick; 
+	pick_data.parcel_id = mParcelID;
+	pick_data.name = mNameEditor->getText();
+	pick_data.desc = mDescEditor->getText();
+	pick_data.snapshot_id = mSnapshotCtrl->getImageAssetID();
+	pick_data.pos_global = mPosGlobal;
+	if(mTopPick)
+		pick_data.sort_order = atoi(mSortOrderEditor->getText().c_str());
 	else
-	{
-		sort_order = 0;
-	}
-	msg->addS32("SortOrder", sort_order);
-	msg->addBOOL("Enabled", mEnabledCheck->get());
-	gAgent.sendReliableMessage();
+		pick_data.sort_order = 0;
+
+	pick_data.enabled = mEnabledCheck->get();
+
+	LLAvatarPropertiesProcessor::getInstance()->sendPickInfoUpdate(&pick_data);
 }
 
 
-//static
-void LLPanelPick::processPickInfoReply(LLMessageSystem *msg, void **)
-{
-    // Extract the agent id and verify the message is for this
-    // client.
-    LLUUID agent_id;
-    msg->getUUID("AgentData", "AgentID", agent_id );
-    if (agent_id != gAgent.getID())
-    {
-        llwarns << "Agent ID mismatch in processPickInfoReply"
-            << llendl;
-		return;
-    }
-
-    LLUUID pick_id;
-    msg->getUUID("Data", "PickID", pick_id);
-
-    LLUUID creator_id;
-    msg->getUUID("Data", "CreatorID", creator_id);
-
-	BOOL top_pick;
-	msg->getBOOL("Data", "TopPick", top_pick);
-
-    LLUUID parcel_id;
-    msg->getUUID("Data", "ParcelID", parcel_id);
-
-	std::string name;
-	msg->getString("Data", "Name", name);
-
-	std::string desc;
-	msg->getString("Data", "Desc", desc);
-
-	LLUUID snapshot_id;
-	msg->getUUID("Data", "SnapshotID", snapshot_id);
-
-    // "Location text" is actually the owner name, the original
-    // name that owner gave the parcel, and the location.
-	std::string location_text;
-    msg->getString("Data", "User", location_text);
-    location_text.append(", ");
-
-	std::string original_name;
-    msg->getString("Data", "OriginalName", original_name);
-	if (!original_name.empty())
-	{
-		location_text.append(original_name);
-		location_text.append(", ");
-	}
-
-	std::string sim_name;
-	msg->getString("Data", "SimName", sim_name);
-	location_text.append(sim_name);
-	location_text.append(" ");
-
-	//Fix for location text importing - RK
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelPick* self = *iter;
-		if(!self->mImporting)	self->mLocationText = location_text;
-		else location_text = self->mLocationText;
-		self->mImporting = false;
-	}
-
-	LLVector3d pos_global;
-	msg->getVector3d("Data", "PosGlobal", pos_global);
-
-    S32 region_x = llround((F32)pos_global.mdV[VX]) % REGION_WIDTH_UNITS;
-    S32 region_y = llround((F32)pos_global.mdV[VY]) % REGION_WIDTH_UNITS;
-	S32 region_z = llround((F32)pos_global.mdV[VZ]);
-   
-    location_text.append(llformat("(%d, %d, %d)", region_x, region_y, region_z));
-
-	S32 sort_order;
-    msg->getS32("Data", "SortOrder", sort_order);
-
-	BOOL enabled;
-	msg->getBOOL("Data", "Enabled", enabled);
-
-    // Look up the panel to fill in
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelPick* self = *iter;
-		// For top picks, must match pick id
-		if (self->mPickID != pick_id)
-		{
-			continue;
-		}
-
-		self->mDataReceived = TRUE;
-
-        // Found the panel, now fill in the information
-		self->mPickID = pick_id;
-		self->mCreatorID = creator_id;
-		self->mParcelID = parcel_id;
-		self->mSimName.assign(sim_name);
-		self->mPosGlobal = pos_global;
-
-		// Update UI controls
-        self->mNameEditor->setText(std::string(name));
-        self->mDescEditor->setText(std::string(desc));
-        self->mSnapshotCtrl->setImageAssetID(snapshot_id);
-        self->mLocationEditor->setText(location_text);
-        self->mEnabledCheck->set(enabled);
-
-		self->mSortOrderEditor->setText(llformat("%d", sort_order));
-    }
-}
 
 void LLPanelPick::draw()
 {
@@ -610,6 +566,9 @@ void LLPanelPick::onClickSet(void* data)
 void LLPanelPick::onCommitAny(LLUICtrl* ctrl, void* data)
 {
 	LLPanelPick* self = (LLPanelPick*)data;
+
+	if(self->mCreatorID != gAgent.getID())
+		return;
 
 	// have we received up to date data for this pick?
 	if (self->mDataReceived)

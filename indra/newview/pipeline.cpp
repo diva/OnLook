@@ -4249,7 +4249,9 @@ void LLPipeline::renderDebug()
 
 			}
 
-			/*for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin();
+			/*gGL.flush();
+			glLineWidth(16-i*2);
+			for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 					iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
 			{
 				LLViewerRegion* region = *iter;
@@ -4264,10 +4266,17 @@ void LLPipeline::renderDebug()
 						}
 					}
 				}
-			}*/
+			}
+			gGL.flush();
+			glLineWidth(1.f);*/
 		}
 	}
 
+	if (mRenderDebugMask & RENDER_DEBUG_WIND_VECTORS)
+	{
+		gAgent.getRegion()->mWind.renderVectors();
+	}
+	
 	if (mRenderDebugMask & RENDER_DEBUG_COMPOSITION)
 	{
 		// Debug composition layers
@@ -6500,9 +6509,12 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 				mDeferredLight.flush();
 			}
 
+			U32 dof_width = mScreen.getWidth()*CameraDoFResScale;
+			U32 dof_height = mScreen.getHeight()*CameraDoFResScale;
+			
 			{ //perform DoF sampling at half-res (preserve alpha channel)
 				mScreen.bindTarget();
-				glViewport(0,0,(GLsizei) (mScreen.getWidth()*CameraDoFResScale), (GLsizei) (mScreen.getHeight()*CameraDoFResScale));
+				glViewport(0,0, dof_width, dof_height);
 				gGL.setColorMask(true, false);
 
 				shader = &gDeferredPostProgram;
@@ -6560,6 +6572,8 @@ void LLPipeline::renderBloom(BOOL for_snapshot, F32 zoom_factor, int subfield, b
 
 				shader->uniform1f(LLShaderMgr::DOF_MAX_COF, CameraMaxCoF);
 				shader->uniform1f(LLShaderMgr::DOF_RES_SCALE, CameraDoFResScale);
+				shader->uniform1f(LLShaderMgr::DOF_WIDTH, dof_width-1);
+				shader->uniform1f(LLShaderMgr::DOF_HEIGHT, dof_height-1);
 
 				gGL.begin(LLRender::TRIANGLE_STRIP);
 				gGL.texCoord2f(tc1.mV[0], tc1.mV[1]);

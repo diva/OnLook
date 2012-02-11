@@ -416,7 +416,7 @@ public:
 	LLColor3 blue_density;
 	LLColor3 blue_horizon;
 	F32 haze_density;
-	LLColor3 haze_horizon;
+	F32 haze_horizon;
 	F32 density_multiplier;
 	F32 max_y;
 	LLColor3 glow;

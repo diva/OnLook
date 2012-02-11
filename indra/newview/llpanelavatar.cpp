@@ -176,7 +176,29 @@ LLPanelAvatarTab::LLPanelAvatarTab(const std::string& name, const LLRect &rect,
 :	LLPanel(name, rect),
 	mPanelAvatar(panel_avatar),
 	mDataRequested(false)
-{ }
+{
+	//Register with parent so it can relay agentid to tabs, since the id is set AFTER creation.
+	panel_avatar->mAvatarPanelList.push_back(this);
+}
+
+void LLPanelAvatarTab::setAvatarID(const LLUUID& avatar_id)
+{
+	if(mAvatarID != avatar_id)
+	{
+		if(mAvatarID.notNull())
+			LLAvatarPropertiesProcessor::getInstance()->removeObserver(mAvatarID, this);
+		mAvatarID = avatar_id;
+		if(mAvatarID.notNull())
+			LLAvatarPropertiesProcessor::getInstance()->addObserver(mAvatarID, this);
+	}
+	
+}
+// virtual
+LLPanelAvatarTab::~LLPanelAvatarTab()
+{
+	if(mAvatarID.notNull())
+		LLAvatarPropertiesProcessor::getInstance()->removeObserver(mAvatarID, this);
+}
 
 // virtual
 void LLPanelAvatarTab::draw()
@@ -184,17 +206,6 @@ void LLPanelAvatarTab::draw()
 	refresh();
 
 	LLPanel::draw();
-}
-
-void LLPanelAvatarTab::sendAvatarProfileRequestIfNeeded(const std::string& method)
-{
-	if (!mDataRequested)
-	{
-		std::vector<std::string> strings;
-		strings.push_back( mPanelAvatar->getAvatarID().asString() );
-		send_generic_message(method, strings);
-		mDataRequested = true;
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -271,6 +282,161 @@ void LLPanelAvatarSecondLife::clearControls()
 
 }
 
+// virtual
+void LLPanelAvatarSecondLife::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(type == APT_PROPERTIES)
+	{
+		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>( data );
+		if (pAvatarData && (mAvatarID == pAvatarData->avatar_id) && (pAvatarData->avatar_id != LLUUID::null))
+		{
+			LLStringUtil::format_map_t args;
+
+			U8 caption_index = 0;
+			std::string caption_text = getString("CaptionTextAcctInfo");
+				
+			const char* ACCT_TYPE[] = 
+			{
+				"AcctTypeResident",
+				"AcctTypeTrial",
+				"AcctTypeCharterMember",
+				"AcctTypeEmployee"
+			};
+
+
+			caption_index = llclamp(caption_index, (U8)0, (U8)(LL_ARRAY_SIZE(ACCT_TYPE)-1));
+			args["[ACCTTYPE]"] = getString(ACCT_TYPE[caption_index]);
+			
+			std::string payment_text = " ";
+			const S32 DEFAULT_CAPTION_LINDEN_INDEX = 3;
+			if(caption_index != DEFAULT_CAPTION_LINDEN_INDEX)
+			{
+				if(pAvatarData->flags & AVATAR_TRANSACTED)
+				{
+					payment_text = "PaymentInfoUsed";
+				}
+				else if (pAvatarData->flags & AVATAR_IDENTIFIED)
+				{
+					payment_text = "PaymentInfoOnFile";
+				}
+				else
+				{
+					payment_text = "NoPaymentInfoOnFile";
+				}
+				args["[PAYMENTINFO]"] = getString(payment_text);
+
+				// Do not display age verification status at this time - Mostly because it /doesn't work/. -HgB
+				/*bool age_verified = (pAvatarData->flags & AVATAR_AGEVERIFIED); // Not currently getting set in dataserver/lldataavatar.cpp for privacy consideration
+				std::string age_text = age_verified ? "AgeVerified" : "NotAgeVerified";
+
+				args["[AGEVERIFICATION]"] = getString(age_text);
+				*/
+				args["[AGEVERIFICATION]"] = " ";
+			}
+			else
+			{
+				args["[PAYMENTINFO]"] = " ";
+				args["[AGEVERIFICATION]"] = " ";
+			}
+			LLStringUtil::format(caption_text, args);
+			
+			childSetValue("acct", caption_text);
+
+			getChild<LLTextureCtrl>("img")->setImageAssetID(pAvatarData->image_id);
+
+			//Chalice - Show avatar age in days.
+			int year, month, day;
+			sscanf(pAvatarData->born_on.c_str(),"%d/%d/%d",&month,&day,&year);
+			time_t now = time(NULL);
+			struct tm * timeinfo;
+			timeinfo=localtime(&now);
+			timeinfo->tm_mon = --month;
+			timeinfo->tm_year = year - 1900;
+			timeinfo->tm_mday = day;
+			time_t birth = mktime(timeinfo);
+			std::stringstream NumberString;
+			NumberString << (difftime(now,birth) / (60*60*24));
+			std::string born_on = pAvatarData->born_on;
+			born_on += " (";
+			born_on += NumberString.str();
+			born_on += ")";
+			childSetValue("born", born_on);
+
+			bool allow_publish = (pAvatarData->flags & AVATAR_ALLOW_PUBLISH);
+			childSetValue("allow_publish", allow_publish);
+
+			setPartnerID(pAvatarData->partner_id);
+			updatePartnerName();
+		}
+	}
+	else if(type == APT_GROUPS)
+	{
+		const LLAvatarGroups* pAvatarGroups = static_cast<const LLAvatarGroups*>( data );
+		if(pAvatarGroups && pAvatarGroups->avatar_id == mAvatarID && pAvatarGroups->avatar_id.notNull())
+		{
+			LLScrollListCtrl*	group_list = getChild<LLScrollListCtrl>("groups");
+// 			if(group_list)
+//			{
+// 				group_list->deleteAllItems();
+//			}
+			if (0 == pAvatarGroups->group_list.size())
+			{
+				group_list->addCommentText(std::string("None")); // *TODO: Translate
+			}
+
+			for(LLAvatarGroups::group_list_t::const_iterator it = pAvatarGroups->group_list.begin();
+				it != pAvatarGroups->group_list.end(); ++it)
+			{
+				// Is this really necessary?  Remove existing entry if it exists.
+				// TODO: clear the whole list when a request for data is made
+				if (group_list)
+				{
+					S32 index = group_list->getItemIndex(it->group_id);
+					if ( index >= 0 )
+					{
+						group_list->deleteSingleItem(index);
+					}
+				}
+
+				LLSD row;
+				row["id"] = it->group_id;
+				row["columns"][0]["value"] = it->group_id.notNull() ? it->group_name : "";
+				row["columns"][0]["font"] = "SANSSERIF_SMALL";
+				LLGroupData *group_data = NULL;
+
+				if (pAvatarGroups->avatar_id == pAvatarGroups->agent_id) // own avatar
+				{
+					// Search for this group in the agent's groups list
+					LLDynamicArray<LLGroupData>::iterator i;
+
+					for (i = gAgent.mGroups.begin(); i != gAgent.mGroups.end(); i++)
+					{
+						if (i->mID == it->group_id)
+						{
+							group_data = &*i;
+							break;
+						}
+					}
+					// Set normal color if not found or if group is visible in profile
+					if (group_data)
+					{
+						std::string font_style = group_data->mListInProfile ? "BOLD" : "NORMAL";
+						if(group_data->mID == gAgent.getGroupID())
+							font_style.append("|ITALIC");
+						row["columns"][0]["font-style"] = font_style;
+					}
+					else
+						row["columns"][0]["font-style"] = "NORMAL";
+				}
+				
+				if (group_list)
+				{
+					group_list->addElement(row,ADD_SORTED);
+				}
+			}
+		}
+	}
+}
 
 //-----------------------------------------------------------------------------
 // enableControls()
@@ -312,8 +478,21 @@ void LLPanelAvatarFirstLife::onClickImage(void* data)
 		}
 	
 	}
+}
 
-	
+// virtual
+void LLPanelAvatarFirstLife::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(type == APT_PROPERTIES)
+	{
+		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>( data );
+		if (pAvatarData && (mAvatarID == pAvatarData->avatar_id) && (pAvatarData->avatar_id != LLUUID::null))
+		{
+			// Teens don't get these
+			childSetValue("about", pAvatarData->fl_about_text);
+			getChild<LLTextureCtrl>("img")->setImageAssetID(pAvatarData->fl_image_id);
+		}
+	}
 }
 
 // static
@@ -519,8 +698,18 @@ BOOL LLPanelAvatarWeb::postBuild(void)
 	return TRUE;
 }
 
-
-
+// virtual
+void LLPanelAvatarWeb::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(type == APT_PROPERTIES)
+	{
+		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>( data );
+		if (pAvatarData && (mAvatarID == pAvatarData->avatar_id) && (pAvatarData->avatar_id != LLUUID::null))
+		{
+			setWebURL(pAvatarData->profile_url);
+		}
+	}
+}
 
 BOOL LLPanelAvatarClassified::postBuild(void)
 {
@@ -567,6 +756,19 @@ BOOL LLPanelAvatarAdvanced::postBuild()
 	childSetVisible("want_to_edit",LLPanelAvatar::sAllowFirstLife);
 
 	return TRUE;
+}
+
+// virtual
+void LLPanelAvatarAdvanced::processProperties(void* data, EAvatarProcessorType type)
+{
+	if(type == APT_INTERESTS)
+	{
+		const LLAvatarInterestsInfo* i_info = static_cast<LLAvatarInterestsInfo*>(data);
+		if(i_info && i_info->avatar_id == mAvatarID && i_info->avatar_id.notNull())
+		{
+			setWantSkills(i_info->want_to_mask,i_info->want_to_text,i_info->skills_mask,i_info->skills_text,i_info->languages_text);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -824,7 +1026,11 @@ LLPanelAvatarNotes::LLPanelAvatarNotes(const std::string& name, const LLRect& re
 
 void LLPanelAvatarNotes::refresh()
 {
-	sendAvatarProfileRequestIfNeeded("avatarnotesrequest");
+	if (!isDataRequested())
+	{
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarNotesRequest(mAvatarID);
+		setDataRequested(true);
+	}
 }
 
 void LLPanelAvatarNotes::clearControls()
@@ -887,7 +1093,11 @@ void LLPanelAvatarClassified::refresh()
 	childSetVisible("Delete...", !in_directory);
 	childSetVisible("classified tab",!show_help);
 
-	sendAvatarProfileRequestIfNeeded("avatarclassifiedsrequest");
+	if (!isDataRequested())
+	{
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarClassifiedsRequest(mAvatarID);
+		setDataRequested(true);
+	}
 }
 
 
@@ -947,52 +1157,46 @@ void LLPanelAvatarClassified::deleteClassifiedPanels()
 	childSetVisible("loading_text", true);
 }
 
-
-void LLPanelAvatarClassified::processAvatarClassifiedReply(LLMessageSystem* msg, void**)
+// virtual
+void LLPanelAvatarClassified::processProperties(void* data, EAvatarProcessorType type)
 {
-	S32 block = 0;
-	S32 block_count = 0;
-	LLUUID classified_id;
-	std::string classified_name;
-	LLPanelClassified* panel_classified = NULL;
-
-	LLTabContainer* tabs = getChild<LLTabContainer>("classified tab");
-
-	// Don't remove old panels.  We need to be able to process multiple
-	// packets for people who have lots of classifieds. JC
-
-	block_count = msg->getNumberOfBlocksFast(_PREHASH_Data);
-	for (block = 0; block < block_count; block++)
+	if(type == APT_CLASSIFIEDS)
 	{
-		msg->getUUIDFast(_PREHASH_Data, _PREHASH_ClassifiedID, classified_id, block);
-		msg->getStringFast(_PREHASH_Data, _PREHASH_Name, classified_name, block);
-
-		panel_classified = new LLPanelClassified(false, false);
-
-		panel_classified->setClassifiedID(classified_id);
-
-		// This will request data from the server when the pick is first drawn.
-		panel_classified->markForServerRequest();
-
-		// The button should automatically truncate long names for us
-		if(tabs)
+		LLAvatarClassifieds* c_info = static_cast<LLAvatarClassifieds*>(data);
+		if(c_info && mAvatarID == c_info->target_id)
 		{
-			tabs->addTabPanel(panel_classified, classified_name);
+			LLTabContainer* tabs = getChild<LLTabContainer>("classified tab");
+			
+			for(LLAvatarClassifieds::classifieds_list_t::iterator it = c_info->classifieds_list.begin();
+				it != c_info->classifieds_list.end(); ++it)
+			{
+				LLPanelClassified* panel_classified = new LLPanelClassified(false, false);
+
+				panel_classified->setClassifiedID(it->classified_id);
+
+				// This will request data from the server when the pick is first drawn.
+				panel_classified->markForServerRequest();
+
+				// The button should automatically truncate long names for us
+				if(tabs)
+				{
+					tabs->addTabPanel(panel_classified, it->name);
+				}
+			}
+
+			// Make sure somebody is highlighted.  This works even if there
+			// are no tabs in the container.
+			if(tabs)
+			{
+				tabs->selectFirstTab();
+			}
+
+			childSetVisible("New...", true);
+			childSetVisible("Delete...", true);
+			childSetVisible("loading_text", false);
 		}
 	}
-
-	// Make sure somebody is highlighted.  This works even if there
-	// are no tabs in the container.
-	if(tabs)
-	{
-		tabs->selectFirstTab();
-	}
-
-	childSetVisible("New...", true);
-	childSetVisible("Delete...", true);
-	childSetVisible("loading_text", false);
 }
-
 
 // Create a new classified panel.  It will automatically handle generating
 // its own id when it's time to save.
@@ -1058,20 +1262,12 @@ bool  LLPanelAvatarClassified::callbackDelete(const LLSD& notification, const LL
 	{
 		panel_classified = (LLPanelClassified*)tabs->getCurrentPanel();
 	}
-	
-	LLMessageSystem* msg = gMessageSystem;
 
 	if (!panel_classified) return false;
 
 	if (0 == option)
 	{
-		msg->newMessageFast(_PREHASH_ClassifiedDelete);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		msg->nextBlockFast(_PREHASH_Data);
-		msg->addUUIDFast(_PREHASH_ClassifiedID, panel_classified->getClassifiedID());
-		gAgent.sendReliableMessage();
+		LLAvatarPropertiesProcessor::getInstance()->sendClassifiedDelete(panel_classified->getClassifiedID());
 
 		if(tabs)
 		{
@@ -1113,7 +1309,11 @@ void LLPanelAvatarPicks::refresh()
 	childSetEnabled("Export...", self && tab_count > 0);
 	childSetVisible("Export...", self && getPanelAvatar()->isEditable());
 
-	sendAvatarProfileRequestIfNeeded("avatarpicksrequest");
+	if (!isDataRequested())
+	{
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarPicksRequest(mAvatarID);
+		setDataRequested(true);
+	}
 }
 
 
@@ -1135,60 +1335,59 @@ void LLPanelAvatarPicks::deletePickPanels()
 
 }
 
-void LLPanelAvatarPicks::processAvatarPicksReply(LLMessageSystem* msg, void**)
+// virtual
+void LLPanelAvatarPicks::processProperties(void* data, EAvatarProcessorType type)
 {
-	S32 block = 0;
-	S32 block_count = 0;
-	LLUUID pick_id;
-	std::string pick_name;
-	LLPanelPick* panel_pick = NULL;
-
-	LLTabContainer* tabs =  getChild<LLTabContainer>("picks tab");
-
-	// Clear out all the old panels.  We'll replace them with the correct
-	// number of new panels.
-	deletePickPanels();
-
-	// The database needs to know for which user to look up picks.
-	LLUUID avatar_id = getPanelAvatar()->getAvatarID();
-	
-	block_count = msg->getNumberOfBlocks("Data");
-	for (block = 0; block < block_count; block++)
+	if(type == APT_PICKS)
 	{
-		msg->getUUID("Data", "PickID", pick_id, block);
-		msg->getString("Data", "PickName", pick_name, block);
+		LLAvatarPicks* picks = static_cast<LLAvatarPicks*>(data);
 
-		panel_pick = new LLPanelPick(FALSE);
+		//llassert_always(picks->target_id != gAgent.getID());
+		//llassert_always(mAvatarID != gAgent.getID());
 
-		panel_pick->setPickID(pick_id, avatar_id);
-
-		// This will request data from the server when the pick is first
-		// drawn.
-		panel_pick->markForServerRequest();
-
-		// The button should automatically truncate long names for us
-		if(tabs)
+		if(picks && mAvatarID == picks->target_id)
 		{
-			tabs->addTabPanel(panel_pick, pick_name);
+			LLTabContainer* tabs =  getChild<LLTabContainer>("picks tab");
+
+			// Clear out all the old panels.  We'll replace them with the correct
+			// number of new panels.
+			deletePickPanels();
+
+			for(LLAvatarPicks::picks_list_t::iterator it = picks->picks_list.begin();
+				it != picks->picks_list.end(); ++it)
+			{
+				LLPanelPick* panel_pick = new LLPanelPick(FALSE);
+				panel_pick->setPickID(it->first, mAvatarID);
+
+				// This will request data from the server when the pick is first
+				// drawn.
+				panel_pick->markForServerRequest();
+
+				// The button should automatically truncate long names for us
+				if(tabs)
+				{
+					llinfos << "Adding tab for " << mAvatarID << " " << ((mAvatarID == gAgent.getID()) ? "Self" : "Other") << ": '" << it->second << "'" << llendl;
+					tabs->addTabPanel(panel_pick, it->second);
+				}
+			}
+
+			// Make sure somebody is highlighted.  This works even if there
+			// are no tabs in the container.
+			if(tabs)
+			{
+				tabs->selectFirstTab();
+			}
+
+			childSetVisible("New...", true);
+			childSetVisible("Delete...", true);
+			childSetVisible("loading_text", false);
+
+			//For pick import and export - RK
+			childSetVisible("Import...", true);
+			childSetVisible("Export...", true);
 		}
 	}
-
-	// Make sure somebody is highlighted.  This works even if there
-	// are no tabs in the container.
-	if(tabs)
-	{
-		tabs->selectFirstTab();
-	}
-
-	childSetVisible("New...", true);
-	childSetVisible("Delete...", true);
-	childSetVisible("loading_text", false);
-
-	//For pick import and export - RK
-	childSetVisible("Import...", true);
-	childSetVisible("Export...", true);
 }
-
 
 // Create a new pick panel.  It will automatically handle generating
 // its own id when it's time to save.
@@ -1289,17 +1488,13 @@ bool LLPanelAvatarPicks::callbackDelete(const LLSD& notification, const LLSD& re
 			// *HACK: We need to send the pick's creator id to accomplish
 			// the delete, and we don't use the query id for anything. JC
 			msg->addUUID( "QueryID", panel_pick->getPickCreatorID() );
+			gAgent.sendReliableMessage();
 		}
 		else
 		{
-			msg->newMessage("PickDelete");
-			msg->nextBlock("AgentData");
-			msg->addUUID("AgentID", gAgent.getID());
-			msg->addUUID("SessionID", gAgent.getSessionID());
-			msg->nextBlock("Data");
-			msg->addUUID("PickID", panel_pick->getPickID());
+			LLAvatarPropertiesProcessor::getInstance()->sendPickDelete(panel_pick->getPickID());
 		}
-		gAgent.sendReliableMessage();
+		
 
 		if(tabs)
 		{
@@ -1397,6 +1592,7 @@ BOOL LLPanelAvatar::postBuild(void)
 
 LLPanelAvatar::~LLPanelAvatar()
 {
+	LLAvatarPropertiesProcessor::getInstance()->removeObserver(mAvatarID,this);
 	sAllPanels.remove(this);
 }
 
@@ -1492,8 +1688,14 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	if (avatar_id != mAvatarID)
 	{
 		avatar_changed = TRUE;
+		if(mAvatarID.notNull())
+		{
+			LLAvatarPropertiesProcessor::getInstance()->removeObserver(mAvatarID, this);
+		}
 	}
 	mAvatarID = avatar_id;
+
+	LLAvatarPropertiesProcessor::getInstance()->addObserver(mAvatarID, this);
 
 	// Determine if we have their calling card.
 	mIsFriend = is_agent_friend(mAvatarID); 
@@ -1503,6 +1705,11 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	
 	BOOL own_avatar = (mAvatarID == gAgent.getID() );
 	BOOL avatar_is_friend = LLAvatarTracker::instance().getBuddyInfo(mAvatarID) != NULL;
+
+	for(std::list<LLPanelAvatarTab*>::iterator it=mAvatarPanelList.begin();it!=mAvatarPanelList.end();++it)
+	{
+		(*it)->setAvatarID(avatar_id);
+	}
 
 	mPanelSecondLife->enableControls(own_avatar && mAllowEdit);
 	mPanelWeb->enableControls(own_avatar && mAllowEdit);
@@ -1923,14 +2130,8 @@ void LLPanelAvatar::onClickCancel(void *userdata)
 void LLPanelAvatar::sendAvatarPropertiesRequest()
 {
 	lldebugs << "LLPanelAvatar::sendAvatarPropertiesRequest()" << llendl; 
-	LLMessageSystem *msg = gMessageSystem;
 
-	msg->newMessageFast(_PREHASH_AvatarPropertiesRequest);
-	msg->nextBlockFast( _PREHASH_AgentData);
-	msg->addUUIDFast(   _PREHASH_AgentID, gAgent.getID() );
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->addUUIDFast(   _PREHASH_AvatarID, mAvatarID);
-	gAgent.sendReliableMessage();
+	LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesRequest(mAvatarID);
 }
 
 void LLPanelAvatar::sendAvatarNotesUpdate()
@@ -1949,334 +2150,55 @@ void LLPanelAvatar::sendAvatarNotesUpdate()
 		return;
 	}
 
-	LLMessageSystem *msg = gMessageSystem;
-
-	msg->newMessage("AvatarNotesUpdate");
-	msg->nextBlock("AgentData");
-	msg->addUUID("AgentID", gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->nextBlock("Data");
-	msg->addUUID("TargetID", mAvatarID);
-	msg->addString("Notes", notes);
-
-	gAgent.sendReliableMessage();
+	LLAvatarPropertiesProcessor::getInstance()->sendNotes(mAvatarID,notes);
 }
 
-
-// static
-void LLPanelAvatar::processAvatarPropertiesReply(LLMessageSystem *msg, void**)
+// virtual
+void LLPanelAvatar::processProperties(void* data, EAvatarProcessorType type)
 {
-	LLUUID	agent_id;	// your id
-	LLUUID	avatar_id;	// target of this panel
-	LLUUID	image_id;
-	LLUUID	fl_image_id;
-	LLUUID	partner_id;
-	std::string	about_text;
-	std::string	fl_about_text;
-	std::string	born_on;
-	S32		charter_member_size = 0;
-	BOOL	allow_publish = FALSE;
-	//BOOL	mature = FALSE;
-	BOOL	identified = FALSE;
-	BOOL	transacted = FALSE;
-	BOOL	age_verified = FALSE;
-	BOOL	online = FALSE;
-	std::string	profile_url;
-
-	U32		flags = 0x0;
-
-	//llinfos << "properties packet size " << msg->getReceiveSize() << llendl;
-
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id);
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AvatarID, avatar_id );
-
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
+	if(type == APT_PROPERTIES)
 	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != avatar_id)
+		const LLAvatarData* pAvatarData = static_cast<const LLAvatarData*>( data );
+		if (pAvatarData && (mAvatarID == pAvatarData->avatar_id) && (pAvatarData->avatar_id != LLUUID::null))
 		{
-			continue;
-		}
-		self->childSetEnabled("Instant Message...",TRUE);
-		self->childSetEnabled("GroupInvite_Button",TRUE);
-		self->childSetEnabled("Pay...",TRUE);
-		self->childSetEnabled("Mute",TRUE);
+			childSetEnabled("Instant Message...",TRUE);
+			childSetEnabled("GroupInvite_Button",TRUE);
+			childSetEnabled("Pay...",TRUE);
+			childSetEnabled("Mute",TRUE);
 
-		self->childSetEnabled("drop target",TRUE);
+			childSetEnabled("drop target",TRUE);
 
-		self->mHaveProperties = TRUE;
-		self->enableOKIfReady();
+			mHaveProperties = TRUE;
+			enableOKIfReady();
 
-		msg->getUUIDFast(  _PREHASH_PropertiesData,	_PREHASH_ImageID,		image_id );
-		msg->getUUIDFast(  _PREHASH_PropertiesData,	_PREHASH_FLImageID,	fl_image_id );
-		msg->getUUIDFast(_PREHASH_PropertiesData, _PREHASH_PartnerID, partner_id);
-		msg->getStringFast(_PREHASH_PropertiesData, _PREHASH_AboutText,	about_text );
-		msg->getStringFast(_PREHASH_PropertiesData, _PREHASH_FLAboutText, fl_about_text );
-		msg->getStringFast(_PREHASH_PropertiesData, _PREHASH_BornOn, born_on);
-		msg->getString("PropertiesData","ProfileURL", profile_url);
-		msg->getU32Fast(_PREHASH_PropertiesData, _PREHASH_Flags, flags);
-
-		/*tm t;
-		if (sscanf(born_on.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
-		{
-			t.tm_year -= 1900;
-			t.tm_mon--;
-			t.tm_hour = t.tm_min = t.tm_sec = 0;
-			timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), born_on);
-		}*/
-
-		identified = (flags & AVATAR_IDENTIFIED);
-		transacted = (flags & AVATAR_TRANSACTED);
-		age_verified = (flags & AVATAR_AGEVERIFIED); // Not currently getting set in dataserver/lldataavatar.cpp for privacy considerations
-		allow_publish = (flags & AVATAR_ALLOW_PUBLISH);
-		online = (flags & AVATAR_ONLINE);
-		
-		U8 caption_index = 0;
-		std::string caption_text;
-		charter_member_size = msg->getSize("PropertiesData", "CharterMember");
-		if(1 == charter_member_size)
-		{
-			msg->getBinaryData("PropertiesData", "CharterMember", &caption_index, 1);
-		}
-		else if(1 < charter_member_size)
-		{
-			msg->getString("PropertiesData", "CharterMember", caption_text);
-		}
-		
-
-		if(caption_text.empty())
-		{
-			LLStringUtil::format_map_t args;
-			caption_text = self->mPanelSecondLife->getString("CaptionTextAcctInfo");
+			/*tm t;
+			if (sscanf(born_on.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+			{
+				t.tm_year -= 1900;
+				t.tm_mon--;
+				t.tm_hour = t.tm_min = t.tm_sec = 0;
+				timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), born_on);
+			}*/
 			
-			const char* ACCT_TYPE[] = {
-				"AcctTypeResident",
-				"AcctTypeTrial",
-				"AcctTypeCharterMember",
-				"AcctTypeEmployee"
-			};
-			caption_index = llclamp(caption_index, (U8)0, (U8)(LL_ARRAY_SIZE(ACCT_TYPE)-1));
-			args["[ACCTTYPE]"] = self->mPanelSecondLife->getString(ACCT_TYPE[caption_index]);
-
-			std::string payment_text = " ";
-			const S32 DEFAULT_CAPTION_LINDEN_INDEX = 3;
-			if(caption_index != DEFAULT_CAPTION_LINDEN_INDEX)
-			{			
-				if(transacted)
-				{
-					payment_text = "PaymentInfoUsed";
-				}
-				else if (identified)
-				{
-					payment_text = "PaymentInfoOnFile";
-				}
-				else
-				{
-					payment_text = "NoPaymentInfoOnFile";
-				}
-				args["[PAYMENTINFO]"] = self->mPanelSecondLife->getString(payment_text);
-				std::string age_text = age_verified ? "AgeVerified" : "NotAgeVerified";
-				// Do not display age verification status at this time - Mostly because it /doesn't work/. -HgB
-				//args["[AGEVERIFICATION]"] = self->mPanelSecondLife->getString(age_text);
-				args["[AGEVERIFICATION]"] = " ";
-			}
-			else
-			{
-				args["[PAYMENTINFO]"] = " ";
-				args["[AGEVERIFICATION]"] = " ";
-			}
-			LLStringUtil::format(caption_text, args);
-		}
-		
-		self->mPanelSecondLife->childSetValue("acct", caption_text);
-		//Chalice - Show avatar age in days.
-		int year, month, day;
-		sscanf(born_on.c_str(),"%d/%d/%d",&month,&day,&year);
-		time_t now = time(NULL);
-		struct tm * timeinfo;
-		timeinfo=localtime(&now);
-		timeinfo->tm_mon = --month;
-		timeinfo->tm_year = year - 1900;
-		timeinfo->tm_mday = day;
-		time_t birth = mktime(timeinfo);
-		std::stringstream NumberString;
-		NumberString << (difftime(now,birth) / (60*60*24));
-		born_on += " (";
-		born_on += NumberString.str();
-		born_on += ")";
-		self->mPanelSecondLife->childSetValue("born", born_on);
-
-		EOnlineStatus online_status = (online) ? ONLINE_STATUS_YES : ONLINE_STATUS_NO;
-
-		self->setOnlineStatus(online_status);
-
-		self->mPanelWeb->setWebURL(profile_url);
-
-		LLTextureCtrl*	image_ctrl = self->mPanelSecondLife->getChild<LLTextureCtrl>("img");
-		if(image_ctrl)
-		{
-			image_ctrl->setImageAssetID(image_id);
-		}
-		self->childSetValue("about", about_text);
-
-		self->mPanelSecondLife->setPartnerID(partner_id);
-		self->mPanelSecondLife->updatePartnerName();
-
-		if (self->mPanelFirstLife)
-		{
-			// Teens don't get these
-			self->mPanelFirstLife->childSetValue("about", fl_about_text);
-			LLTextureCtrl*	image_ctrl = self->mPanelFirstLife->getChild<LLTextureCtrl>("img");
-			if(image_ctrl)
-			{
-				image_ctrl->setImageAssetID(fl_image_id);
-			}
-
-			self->mPanelSecondLife->childSetValue("allow_publish", allow_publish);
-
+			
+			bool online = (pAvatarData->flags & AVATAR_ONLINE);
+						
+			EOnlineStatus online_status = (online) ? ONLINE_STATUS_YES : ONLINE_STATUS_NO;
+			
+			setOnlineStatus(online_status);
+			
+			childSetValue("about", pAvatarData->about_text);
 		}
 	}
-}
-
-// static
-void LLPanelAvatar::processAvatarInterestsReply(LLMessageSystem *msg, void**)
-{
-	LLUUID	agent_id;	// your id
-	LLUUID	avatar_id;	// target of this panel
-
-	U32		want_to_mask;
-	std::string	want_to_text;
-	U32		skills_mask;
-	std::string	skills_text;
-	std::string	languages_text;
-
-	//llinfos << "properties packet size " << msg->getReceiveSize() << llendl;
-
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id);
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AvatarID, avatar_id );
-
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
+	else if(type == APT_NOTES)
 	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != avatar_id)
+		const LLAvatarNotes* pAvatarNotes = static_cast<const LLAvatarNotes*>( data );
+		if (pAvatarNotes && (mAvatarID == pAvatarNotes->target_id) && (pAvatarNotes->target_id != LLUUID::null))
 		{
-			continue;
-		}
-
-		msg->getU32Fast(   _PREHASH_PropertiesData,	_PREHASH_WantToMask,	want_to_mask );
-		msg->getStringFast(_PREHASH_PropertiesData, _PREHASH_WantToText,	want_to_text );
-		msg->getU32Fast(   _PREHASH_PropertiesData,	_PREHASH_SkillsMask,	skills_mask );
-		msg->getStringFast(_PREHASH_PropertiesData, _PREHASH_SkillsText,	skills_text );
-		msg->getString(_PREHASH_PropertiesData, "LanguagesText",			languages_text );
-
-		self->mPanelAdvanced->setWantSkills(want_to_mask, want_to_text, skills_mask, skills_text, languages_text);
-	}
-}
-
-// Separate function because the groups list can be very long, almost
-// filling a packet. JC
-// static
-void LLPanelAvatar::processAvatarGroupsReply(LLMessageSystem *msg, void**)
-{
-	LLUUID	agent_id;	// your id
-	LLUUID	avatar_id;	// target of this panel
-	U64		group_powers;
-	std::string	group_title;
-	LLUUID	group_id;
-	std::string	group_name;
-	LLUUID	group_insignia_id;
-
-	llinfos << "groups packet size " << msg->getReceiveSize() << llendl;
-
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id);
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AvatarID, avatar_id );
-
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != avatar_id)
-		{
-			continue;
-		}
-		
-		LLScrollListCtrl*	group_list = self->mPanelSecondLife->getChild<LLScrollListCtrl>("groups"); 
-// 		if(group_list)
-// 		{
-// 			group_list->deleteAllItems();
-// 		}
-		
-		S32 group_count = msg->getNumberOfBlocksFast(_PREHASH_GroupData);
-		if (0 == group_count)
-		{
-			if(group_list) group_list->addCommentText(std::string("None")); // *TODO: Translate
-		}
-		else
-		{
-			for(S32 i = 0; i < group_count; ++i)
-			{
-				msg->getU64(    _PREHASH_GroupData, "GroupPowers",	group_powers, i );
-				msg->getStringFast(_PREHASH_GroupData, _PREHASH_GroupTitle,	group_title, i );
-				msg->getUUIDFast(  _PREHASH_GroupData, _PREHASH_GroupID,	group_id, i);
-				msg->getStringFast(_PREHASH_GroupData, _PREHASH_GroupName,	group_name, i );
-				msg->getUUIDFast(  _PREHASH_GroupData, _PREHASH_GroupInsigniaID, group_insignia_id, i );
-
-				std::string group_string;
-				if (group_id.notNull())
-				{
-					group_string.assign(group_name);
-				}
-				else
-				{
-					group_string.assign("");
-				}
-
-				// Is this really necessary?  Remove existing entry if it exists.
-				// TODO: clear the whole list when a request for data is made
-				if (group_list)
-				{
-					S32 index = group_list->getItemIndex(group_id);
-					if ( index >= 0 )
-					{
-						group_list->deleteSingleItem(index);
-					}
-				}
-
-				LLSD row;
-				row["id"] = group_id;
-				row["columns"][0]["value"] = group_string;
-				row["columns"][0]["font"] = "SANSSERIF_SMALL";
-				LLGroupData *group_data = NULL;
-
-				if (avatar_id == agent_id) // own avatar
-				{
-					// Search for this group in the agent's groups list
-					LLDynamicArray<LLGroupData>::iterator i;
-
-					for (i = gAgent.mGroups.begin(); i != gAgent.mGroups.end(); i++)
-					{
-						if (i->mID == group_id)
-						{
-							group_data = &*i;
-							break;
-						}
-					}
-					// Set normal color if not found or if group is visible in profile
-					if (group_data)
-					{
-						std::string font_style = group_data->mListInProfile ? "BOLD" : "NORMAL";
-						if(group_data->mID == gAgent.getGroupID())
-							font_style.append("|ITALIC");
-						row["columns"][0]["font-style"] = font_style;
-					}
-					else
-						row["columns"][0]["font-style"] = "NORMAL";
-				}
-				
-				if (group_list)
-				{
-					group_list->addElement(row,ADD_SORTED);
-				}
-			}
+			childSetValue("notes edit", pAvatarNotes->notes);
+			childSetEnabled("notes edit", true);
+			mHaveNotes = true;
+			mLastNotes = pAvatarNotes->notes;
 		}
 	}
 }
@@ -2306,12 +2228,6 @@ void LLPanelAvatar::sendAvatarPropertiesUpdate()
 		//A profile should never be mature.
 		mature = FALSE;
 	}
-	U32 want_to_mask = 0x0;
-	U32 skills_mask = 0x0;
-	std::string want_to_text;
-	std::string skills_text;
-	std::string languages_text;
-	mPanelAdvanced->getWantSkills(&want_to_mask, want_to_text, &skills_mask, skills_text, languages_text);
 
 	LLUUID first_life_image_id;
 	std::string first_life_about_text;
@@ -2327,44 +2243,22 @@ void LLPanelAvatar::sendAvatarPropertiesUpdate()
 
 	std::string about_text = mPanelSecondLife->childGetValue("about").asString();
 
-	LLMessageSystem *msg = gMessageSystem;
+	LLAvatarData avatar_data;
+	avatar_data.image_id = mPanelSecondLife->getChild<LLTextureCtrl>("img")->getImageAssetID();
+	avatar_data.fl_image_id = first_life_image_id;
+	avatar_data.about_text = about_text;
+	avatar_data.fl_about_text = first_life_about_text;
+	avatar_data.allow_publish = allow_publish;
+	//avatar_data.mature = mature;
+	avatar_data.profile_url = mPanelWeb->childGetText("url_edit");
+	LLAvatarPropertiesProcessor::getInstance()->sendAvatarPropertiesUpdate(&avatar_data);
 
-	msg->newMessageFast(_PREHASH_AvatarPropertiesUpdate);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(	_PREHASH_AgentID,		gAgent.getID() );
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID() );
-	msg->nextBlockFast(_PREHASH_PropertiesData);
-	
-	LLTextureCtrl*	image_ctrl = mPanelSecondLife->getChild<LLTextureCtrl>("img");
-	if(image_ctrl)
-	{
-		msg->addUUIDFast(	_PREHASH_ImageID,	image_ctrl->getImageAssetID());
-	}
-	else
-	{
-		msg->addUUIDFast(	_PREHASH_ImageID,	LLUUID::null);
-	}
-//	msg->addUUIDFast(	_PREHASH_ImageID,		mPanelSecondLife->mimage_ctrl->getImageAssetID()	);
-	msg->addUUIDFast(	_PREHASH_FLImageID,		first_life_image_id);
-	msg->addStringFast(	_PREHASH_AboutText,		about_text);
-	msg->addStringFast(	_PREHASH_FLAboutText,	first_life_about_text);
+	LLAvatarInterestsInfo interests_data;
+	interests_data.want_to_mask = 0x0;
+	interests_data.skills_mask = 0x0;
+	mPanelAdvanced->getWantSkills(&interests_data.want_to_mask, interests_data.want_to_text, &interests_data.skills_mask, interests_data.skills_text, interests_data.languages_text);
 
-	msg->addBOOL("AllowPublish", allow_publish);
-	msg->addBOOL("MaturePublish", mature);
-	msg->addString("ProfileURL", mPanelWeb->childGetText("url_edit"));
-	gAgent.sendReliableMessage();
-
-	msg->newMessage("AvatarInterestsUpdate");
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(	_PREHASH_AgentID,		gAgent.getID() );
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID() );
-	msg->nextBlockFast(_PREHASH_PropertiesData);
-	msg->addU32Fast(	_PREHASH_WantToMask,	want_to_mask);
-	msg->addStringFast(	_PREHASH_WantToText,	want_to_text);
-	msg->addU32Fast(	_PREHASH_SkillsMask,	skills_mask);
-	msg->addStringFast(	_PREHASH_SkillsText,	skills_text);
-	msg->addString( "LanguagesText",			languages_text);
-	gAgent.sendReliableMessage();
+	LLAvatarPropertiesProcessor::getInstance()->sendAvatarInterestsUpdate(&interests_data);
 }
 
 void LLPanelAvatar::selectTab(S32 tabnum)
@@ -2387,77 +2281,6 @@ void LLPanelAvatar::selectTabByName(std::string tab_name)
 		{
 			mTab->selectTabByName(tab_name);
 		}
-	}
-}
-
-
-void LLPanelAvatar::processAvatarNotesReply(LLMessageSystem *msg, void**)
-{
-	// extract the agent id
-	LLUUID agent_id;
-	msg->getUUID("AgentData", "AgentID", agent_id);
-
-	LLUUID target_id;
-	msg->getUUID("Data", "TargetID", target_id);
-
-	// look up all panels which have this avatar
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != target_id)
-		{
-			continue;
-		}
-
-		std::string text;
-		msg->getString("Data", "Notes", text);
-		self->childSetValue("notes edit", text);
-		self->childSetEnabled("notes edit", true);
-		self->mHaveNotes = true;
-		self->mLastNotes = text;
-	}
-}
-
-
-void LLPanelAvatar::processAvatarClassifiedReply(LLMessageSystem *msg, void** userdata)
-{
-	LLUUID agent_id;
-	LLUUID target_id;
-
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id);
-	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_TargetID, target_id);
-
-	// look up all panels which have this avatar target
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != target_id)
-		{
-			continue;
-		}
-
-		self->mPanelClassified->processAvatarClassifiedReply(msg, userdata);
-	}
-}
-
-void LLPanelAvatar::processAvatarPicksReply(LLMessageSystem *msg, void** userdata)
-{
-	LLUUID agent_id;
-	LLUUID target_id;
-
-	msg->getUUID("AgentData", "AgentID", agent_id);
-	msg->getUUID("AgentData", "TargetID", target_id);
-
-	// look up all panels which have this avatar target
-	for (panel_list_t::iterator iter = sAllPanels.begin(); iter != sAllPanels.end(); ++iter)
-	{
-		LLPanelAvatar* self = *iter;
-		if (self->mAvatarID != target_id)
-		{
-			continue;
-		}
-
-		self->mPanelPicks->processAvatarPicksReply(msg, userdata);
 	}
 }
 

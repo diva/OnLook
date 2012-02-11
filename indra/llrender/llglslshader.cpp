@@ -151,8 +151,7 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	mProgramObject = glCreateProgramObjectARB();
 
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-	//static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false);	//Legacy does not jive with new batching.
-	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing /*|| use_legacy_path*/)
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
 	{ //force indexed texture channels to 1 if GL version is old (performance improvement for drivers with poor branching shader model support)
 		mFeatures.mIndexedTextureChannels = llmin(mFeatures.mIndexedTextureChannels, 1);
 	}
