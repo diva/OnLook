@@ -1358,6 +1358,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
 					//roll back to try UDP
 					if(mCanUseNET)
 					{
+						resetFormattedData();
 						mState = INIT ;
 						mCanUseHTTP = false ;
 						setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
@@ -1405,6 +1406,7 @@ bool LLTextureFetchWorker::doWork(S32 param)
     						//roll back to try UDP
     						if(mCanUseNET)
     						{
+								resetFormattedData();
     							mState = INIT ;
     							mCanUseHTTP = false ;
     							setPriority(LLWorkerThread::PRIORITY_HIGH | mWorkPriority);
