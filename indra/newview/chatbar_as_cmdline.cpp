@@ -55,6 +55,7 @@
 #include "llfloateravatarlist.h"
 #include "llviewerobjectlist.h"
 #include "llviewertexteditor.h"
+#include "llviewermenu.h"
 #include "llvoavatar.h"
 #include "lltooldraganddrop.h"
 #include "llinventorymodel.h"
@@ -397,6 +398,10 @@ bool cmd_line_chat(std::string revised_text, EChatType type)
 					std::string name = revised_text.substr(command.length()+1);
 					cmdline_tp2name(name);
 				}
+				return false;
+			}else if(command == utf8str_tolower(gSavedSettings.getString("SinguCmdLineAway")))
+			{
+				handle_fake_away_status(NULL);
 				return false;
 			}else if(command == "typingstop")
 			{

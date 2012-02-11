@@ -620,5 +620,16 @@
 			<key>Value</key>
 			<string>tp2</string>
 		</map>
+		<key>SinguCmdLineAway</key>
+		<map>
+			<key>Comment</key>
+			<string>Toggle Fake Away Status.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>/away</string>
+		</map>
     </map>
 </llsd>
