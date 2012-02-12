@@ -207,17 +207,6 @@
       <key>Value</key>
       <real>10.0</real>
     </map>
-    <key>ShyotlUseLegacyRenderPath</key>
-    <map>
-      <key>Comment</key>
-      <string>Use deprecated pre-3.x OpenGL api calls.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
     <key>ShyotlUseLegacyTextureBatching</key>
     <map>
       <key>Comment</key>
@@ -228,28 +217,6 @@
       <string>Boolean</string>
       <key>Value</key>
       <integer>0</integer>
-    </map>
-	<key>ShyotlUseLegacyDynamicTexture</key>
-    <map>
-      <key>Comment</key>
-      <string>Disable shader path when rendering dynamic textures.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-	<key>ShyotlUseLegacyTextureBaking</key>
-    <map>
-      <key>Comment</key>
-      <string>Disable shader path when generating baked textures.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
     </map>
 	<key>ShyotlDumpRawShaders</key>
     <map>

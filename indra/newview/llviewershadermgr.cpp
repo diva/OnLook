@@ -310,8 +310,7 @@ void LLViewerShaderMgr::setShaders()
 
 	LLGLSLShader::sIndexedTextureChannels = llmax(llmin(gGLManager.mNumTextureImageUnits, (S32) gSavedSettings.getU32("RenderMaxTextureIndex")), 1);
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-	//static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false);	//Legacy does not jive with new batching.
-	if(no_texture_indexing /*|| use_legacy_path*/)
+	if(no_texture_indexing)
 		LLGLSLShader::sIndexedTextureChannels = 1;
 
 	//NEVER use more than 16 texture channels (work around for prevalent driver bug)
@@ -372,8 +371,7 @@ void LLViewerShaderMgr::setShaders()
 		&& gSavedSettings.getBOOL("VertexShaderEnable"))
 	{
 		//using shaders, disable fixed function
-		//static const LLCachedControl<bool> renderforcefixedfuncs("ShyotlUseLegacyRenderPath",false);
-		LLGLSLShader::sNoFixedFunction = true;//!renderforcefixedfuncs;
+		LLGLSLShader::sNoFixedFunction = true;
 		S32 light_class = 2;
 		S32 env_class = 2;
 		S32 obj_class = 2;
@@ -621,8 +619,7 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 	S32 ch = llmax(LLGLSLShader::sIndexedTextureChannels-1, 1);
 
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
-	//static const LLCachedControl<bool> use_legacy_path("ShyotlUseLegacyRenderPath", false); //Legacy does not jive with new batching.
-	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing /*|| use_legacy_path*/)
+	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
 	{ //force to 1 texture index channel for old drivers
 		ch = 1;
 	}
