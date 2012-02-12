@@ -61,20 +61,37 @@ class LL_COMMON_API AIFrameTimer
 	// See aiframetimer.cpp for more notes.
 	class AIRunningFrameTimer {
 	  private:
-		F64 mExpire;							// Time at which the timer expires, in seconds since application start (compared to LLFrameTimer::sFrameTime).
-		Signal* mCallback;
-		AIFrameTimer* mTimer;
+		F64 mExpire;						// Time at which the timer expires, in seconds since application start (compared to LLFrameTimer::sFrameTime).
+		AIFrameTimer* mTimer;				// The actual timer.
+		// Can be mutable, since only the mExpire is used for ordering this object in the multiset AIFrameTimer::sTimerList.
+		mutable Signal* mCallback;			// Pointer to callback struct, or NULL when the object wasn't added to sTimerList yet.
 
 	  public:
-		AIRunningFrameTimer(F64 expiration, AIFrameTimer* timer) : mExpire(LLFrameTimer::getElapsedSeconds() + expiration), mCallback(new Signal), mTimer(timer) { }
+		AIRunningFrameTimer(F64 expiration, AIFrameTimer* timer) : mExpire(LLFrameTimer::getElapsedSeconds() + expiration), mCallback(NULL), mTimer(timer) { }
 		~AIRunningFrameTimer() { delete mCallback; }
-		void init(signal_type::slot_type const& slot) const { mCallback->mSignal.connect(slot); }
 
+		// This function is called after the final object was added to sTimerList (where it is initialized in-place).
+		void init(signal_type::slot_type const& slot) const
+			{
+			  // We may only call init() once.
+			  llassert(!mCallback);
+			  mCallback = new Signal;
+			  mCallback->mSignal.connect(slot);
+			}
+
+		// Order AIFrameTimer::sTimerList so that the timer that expires first is up front.
 		friend bool operator<(AIRunningFrameTimer const& ft1, AIRunningFrameTimer const& ft2) { return ft1.mExpire < ft2.mExpire; }
 
 		void do_callback(void) const { mCallback->mSignal(); }
 		F64 expiration(void) const { return mExpire; }
 		AIFrameTimer* getTimer(void) const { return mTimer; }
+
+#if LL_DEBUG
+		// May not copy this object after it was initialized.
+		AIRunningFrameTimer(AIRunningFrameTimer const& running_frame_timer) :
+			mExpire(running_frame_timer.mExpire), mCallback(running_frame_timer.mCallback), mTimer(running_frame_timer.mTimer)
+			{ llassert(!mCallback); }
+#endif
 	};
 
 	typedef std::multiset<AIRunningFrameTimer> timer_list_type;
@@ -98,12 +115,12 @@ class LL_COMMON_API AIFrameTimer
 
 		// Actual initialization used by AIFrameTimer::create.
 		void init(timer_list_type::iterator const& running_timer, signal_type::slot_type const& slot)
-		{
-		  // Locking AIFrameTimer::sMutex is not neccessary here, because we're creating
-		  // the object and no other thread knows of mRunningTimer at this point.
-		  mRunningTimer = running_timer;
-		  mRunningTimer->init(slot);
-		}
+			{
+			  // Locking AIFrameTimer::sMutex is not neccessary here, because we're creating
+			  // the object and no other thread knows of mRunningTimer at this point.
+			  mRunningTimer = running_timer;
+			  mRunningTimer->init(slot);
+			}
 
 	  private:
 		// LLMutex has no assignment operator.
@@ -128,6 +145,8 @@ class LL_COMMON_API AIFrameTimer
 
 	void create(F64 expiration, signal_type::slot_type const& slot);
 	void cancel(void);
+
+	bool isRunning(void) const { bool running; sMutex.lock(); running = mHandle.mRunningTimer != sTimerList.end(); sMutex.unlock(); return running; }
 
   protected:
 	static void handleExpiration(F64 current_frame_time);

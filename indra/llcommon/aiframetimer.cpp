@@ -27,8 +27,38 @@
  *   - Initial version, written by Aleric Inglewood @ SL
  */
 
-#include "linden_common.h"
+// An AIFrameTimer object provides a callback API for timer events.
+//
+// Typical usage:
+//
+// // Any thread.
+// AIFrameTimer timer;
+//
+// ...
+// // Any thread (after successful construction is guaranteed).
+// timer.create(5.5, boost::bind(&the_callback, <optional params>));	// Call the_callback(<optional params>) in 5.5 seconds.
+//
+// The callback function is always called by the main thread and should therefore
+// be light weight.
+//
+// If timer.cancel() is called before the timer expires, then the callback
+// function isn't called. If cancel() is called by another thread than the
+// main thread, then it is possible that the callback function is called
+// even while still inside cancel(), but as soon as cancel() returned it
+// is guarenteed that the callback function won't be called anymore.
+// Hence, if the callback function is a member of some object then
+// cancel() must be called before the destruction of that object (ie from
+// it's destructor). Calling cancel() multiple times is not a problem.
+// Note: if cancel() is called while the callback function is being
+// called then cancel() will block until the callback function returned.
+//
+// The timer object can be reused (by calling create() again), but
+// only after either the callback function was called, or after cancel()
+// returned. Most notably, you can call create() again from inside the
+// callback function to "restart" the timer.
+//
 
+#include "linden_common.h"
 #include "aiframetimer.h"
 
 static F64 const NEVER = 1e16;				// 317 million years.
@@ -115,7 +145,7 @@ void AIFrameTimer::handleExpiration(F64 current_frame_time)
 		// function here because the trylock fails.
 		//
 		// Assuming the main thread arrived here, there are two possible states
-		// for the other thread that tries to delete the call back function,
+		// for the other thread that tries to delete the callback function,
 		// right after calling the cancel() function too:
 		//
 		// 1. It hasn't obtained the first lock yet, we obtain the handle.mMutex

@@ -75,10 +75,13 @@
 //  Abort  |       |		Calls abort_impl().
 //    |    |       |
 //    v    v       |
-//    Finish       |		Calls finish_impl(), which may call kill() and/or the callback
-//    |    |       |		function passed to run(), if any, which may call kill() and/or run().
-//    |    `-------'
-//    v
+//    Finish       |		Calls finish_impl() (which may call kill()) or
+//    |    |       |		the callback function passed to run(), if any,
+//    |    v       |
+//    | Callback   |        which may call kill() and/or run().
+//    |  |   |     |
+//    |  |   `-----'
+//    v  v
 //  Killed					Delete the statemachine (all statemachines must be allocated with new).
 //
 // Each state causes corresponding code to be called.
@@ -165,6 +168,8 @@
 //
 //   Should cleanup whatever init_impl() did, or any of the
 //   states of the object where multiplex_impl() calls finish().
+//   Call kill() from here to make that the default behavior
+//   (state machine is deleted unless the callback calls run()).
 //
 // virtual char const* state_str_impl(state_type run_state);
 //
@@ -177,7 +182,14 @@ class AIStateMachine {
 	  bs_run,
 	  bs_abort,
 	  bs_finish,
+	  bs_callback,
 	  bs_killed
+	};
+	//! The type of mActive
+	enum active_type {
+	  as_idle,					// State machine is on neither list.
+	  as_queued,				// State machine is on continued_statemachines list.
+	  as_active					// State machine is on active_statemachines list.
 	};
 
   public:
@@ -192,7 +204,7 @@ class AIStateMachine {
 	base_state_type mState;						//!< State of the base class.
 	bool mIdle;									//!< True if this state machine is not running.
 	bool mAborted;								//!< True after calling abort() and before calling run().
-	bool mQueued;								//!< True when the statemachine is queued to be added back to the active list.
+	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 
 	// Callback facilities.
@@ -220,11 +232,11 @@ class AIStateMachine {
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mQueued(false), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert(mState == bs_killed && !mQueued); }
+	virtual ~AIStateMachine() { llassert(mState == bs_killed && mActive == as_idle); }
 
   public:
 	//! Halt the state machine until cont() is called.
@@ -319,7 +331,7 @@ class AIStateMachine {
 	// Use some safebool idiom (http://www.artima.com/cppsource/safebool.html) rather than operator bool.
 	typedef state_type AIStateMachine::* const bool_type;
 	//! Return true if state machine successfully finished.
-	operator bool_type() const { return (mState == bs_initialize && !mAborted) ? &AIStateMachine::mRunState : 0; }
+	operator bool_type() const { return ((mState == bs_initialize || mState == bs_callback) && !mAborted) ? &AIStateMachine::mRunState : 0; }
 
 	//! Return a stringified state, for debugging purposes.
 	char const* state_str(state_type state);

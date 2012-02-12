@@ -21,10 +21,10 @@
 
 #include "sgversion.h"
 
-extern const S32 gVersionMajor = LL_VERSION_MAJOR;
-extern const S32 gVersionMinor = LL_VERSION_MINOR;
-extern const S32 gVersionPatch = LL_VERSION_PATCH;
-extern const S32 gVersionBuild = LL_VERSION_BUILD;
+const S32 gVersionMajor = LL_VERSION_MAJOR;
+const S32 gVersionMinor = LL_VERSION_MINOR;
+const S32 gVersionPatch = LL_VERSION_PATCH;
+const S32 gVersionBuild = LL_VERSION_BUILD;
 
-extern const char* gVersionChannel = LL_CHANNEL;
+const char* gVersionChannel = LL_CHANNEL;
 
