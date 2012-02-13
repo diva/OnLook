@@ -640,7 +640,7 @@ void LLFloaterWindLight::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
 		if(color_ctrl->isSunOrAmbientColor)
 			scale = WL_SUN_AMBIENT_SLIDER_SCALE;
 		else if(color_ctrl->isBlueHorizonOrDensity)
-			WL_BLUE_HORIZON_DENSITY_SCALE;
+			scale = WL_BLUE_HORIZON_DENSITY_SCALE;
 		
 		F32 iVal = color_ctrl->i * scale;
 
