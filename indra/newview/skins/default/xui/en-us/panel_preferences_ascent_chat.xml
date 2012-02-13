@@ -23,7 +23,7 @@
         label="Do not echo/log notifications in chat" name="hide_notifications_in_chat_check"/>
       <check_box bottom="-120" left="10" control_name="AscentAllowMUpose" initial_value="false"
         label="Allow MU pose method." tool_tip="Allows the use of both /me and : to perform emotes." name="allow_mu_pose_check"/>
-      <check_box bottom_delta="-20" follows="left|top"
+      <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"
         label="Auto-close OOC comments." tool_tip="Will automatically append '))' to any message starting with '((', or visa versa." name="close_ooc_check"/>
       <text bottom_delta="-15" follows="left|top" name="objects_link_text_box">Show links on chatting object names in chat history for:</text>
       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
