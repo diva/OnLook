@@ -1723,7 +1723,7 @@ void LLWindowSDL::processMiscNativeEvents()
 
 void LLWindowSDL::gatherInput()
 {
-    const Uint32 CLICK_THRESHOLD = 300;  // milliseconds
+	const Uint32 CLICK_THRESHOLD = 500;  // milliseconds
     static int leftClick = 0;
     static int rightClick = 0;
     static Uint32 lastLeftDown = 0;
