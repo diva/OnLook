@@ -992,6 +992,9 @@ private:
 	LLFrameTimer	mTimeVisible;
 	std::deque<LLChat> mChats;
 	BOOL			mTyping;
+public:
+	BOOL isTyping(){ return mTyping; }
+private:
 	LLFrameTimer	mTypingTimer;
 	static void on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata);
 
