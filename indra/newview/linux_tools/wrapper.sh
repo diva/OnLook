@@ -57,6 +57,11 @@
 #export LL_WRAPPER='gdb --args'
 #export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
 
+## - This allows one to set an arbitrary value for LD_PRELOAD.
+##   It won't work if LL_TCMALLOC is set because that uses it's
+##   own value of LD_PRELOAD.
+#export AI_PRELOAD='/path/to/libmemleak.so'
+
 ## - Avoids an often-buggy X feature that doesn't really benefit us anyway.
 export SDL_VIDEO_X11_DGAMOUSE=0
 
@@ -96,6 +101,12 @@ cd "${RUN_PATH}"
 ##  subprocesses that care.
 export SAVED_LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 
+SL_ENV=
+
+if [ -n "$AI_PRELOAD" ]; then
+    SL_ENV='LD_PRELOAD="$AI_PRELOAD" '
+fi
+
 if [ -n "$LL_TCMALLOC" ]; then
     tcmalloc_libs='/usr/lib/libtcmalloc.so.0 /usr/lib/libstacktrace.so.0 /lib/libpthread.so.0'
     all=1
@@ -107,7 +118,7 @@ if [ -n "$LL_TCMALLOC" ]; then
     if [ $all != 1 ]; then
         echo 'Cannot use tcmalloc libraries: components missing' 1>&2
     else
-	export LD_PRELOAD=$(echo $tcmalloc_libs | tr ' ' :)
+	SL_ENV='LD_PRELOAD="$(echo $tcmalloc_libs | tr '"' '"' :)" '
 	if [ -z "$HEAPCHECK" -a -z "$HEAPPROFILE" ]; then
 	    export HEAPCHECK=${HEAPCHECK:-normal}
 	fi
@@ -119,10 +130,10 @@ BINARY_TYPE=$(expr match "$(file -b bin/$VIEWER_BINARY)" '\(.*executable\)')
 QPP=qt4/plugins/imageformats/
 if [ "${BINARY_TYPE}" == "ELF 64-bit LSB executable" ]; then
     QTPLUGINS=/usr/lib64/$QPP:/lib64/$QPP:/usr/local/lib64/$QPP
-	export SL_ENV='LD_LIBRARY_PATH="`pwd`"/lib64:"`pwd`"/lib32:$QTPLUGINS:"${LD_LIBRARY_PATH}"'
+	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib64:`pwd`/lib32:$QTPLUGINS:$LD_LIBRARY_PATH"'
 else
     QTPLUGINS=/usr/lib/$QPP:/lib/$QPP:/usr/local/lib/$QPP
-	export SL_ENV='LD_LIBRARY_PATH="`pwd`"/lib:$QTPLUGINS:"${LD_LIBRARY_PATH}"'
+	SL_ENV+='LD_LIBRARY_PATH="`pwd`/lib:$QTPLUGINS:$LD_LIBRARY_PATH"'
 fi
 
 export SL_CMD='$LL_WRAPPER bin/$VIEWER_BINARY'
