@@ -102,10 +102,10 @@ LLWaterParamManager::~LLWaterParamManager()
 void LLWaterParamManager::loadAllPresets()
 {
 	// First, load system (coming out of the box) water presets.
-	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/water", ""));
+	loadPresetsFromDir(getSysDir());
 
 	// Then load user presets. Note that user day presets will modify any system ones already loaded.
-	loadPresetsFromDir(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "windlight/water", ""));
+	loadPresetsFromDir(getUserDir());
 }
 
 void LLWaterParamManager::loadPresetsFromDir(const std::string& dir)
@@ -327,7 +327,7 @@ void LLWaterParamManager::updateShaderUniforms(LLGLSLShader * shader)
 		shader->uniform4fv("waterPlane", 1, mWaterPlane.mV);
 		shader->uniform1f("waterFogDensity", getFogDensity());
 		shader->uniform1f("waterFogKS", mWaterFogKS);
-		shader->uniform4f("distance_multiplier", 0, 0, 0, 0);
+		shader->uniform1f("distance_multiplier", 0);
 	}
 }
 
@@ -349,7 +349,7 @@ void LLWaterParamManager::applyParams(const LLSD& params, bool interpolate)
 	}
 }
 
-//static LLFastTimer::DeclareTimer FTM_UPDATE_WATERPARAM("Update Water Params");
+static LLFastTimer::DeclareTimer FTM_UPDATE_WATERPARAM("Update Water Params");
 
 void LLWaterParamManager::updateShaderLinks()
 {
@@ -375,7 +375,7 @@ void LLWaterParamManager::updateShaderLinks()
 
 void LLWaterParamManager::update(LLViewerCamera * cam)
 {
-	//LLFastTimer ftm(LLFastTimer::FTM_UPDATE_WLPARAM);
+	LLFastTimer ftm(FTM_UPDATE_WATERPARAM);
 	
 	// update the shaders and the menu
 	propagateParameters();

@@ -21,22 +21,21 @@
 	<string name="ChangePermissions">Change its permissions</string>
 	<string name="TrackYourCamera">Track your camera</string>
 	<string name="ControlYourCamera">Control your camera</string>
-	<layout_stack border="false" bottom="2" follows="left|top|right|bottom" height="255" left="2" orientation="horizontal" width="430" name="panels">
+	<layout_stack border="false" bottom="0" follows="left|top|right|bottom" height="260" left="0" orientation="horizontal" width="430" name="panels">
 		<layout_panel border="false" bottom="0" default_tab_group="1" height="135" left="0" min_width="275" name="im_contents_panel" width="305">
-			<combo_box follows="left|top" height="18" label="Gestures" left="5" name="Gesture" width="120">
+			<combo_box follows="left|top" height="18" label="Gestures" left="6" name="Gesture" width="120">
 				<combo_item name="Gestures">Gestures</combo_item>
 			</combo_box>
-			<check_box bottom_delta="-2" enabled="true" follows="left|top" font="SansSerifSmall" height="20" initial_value="false" label="Show Muted Text" left_delta="125" name="show mutes" width="116"/>
+			<check_box bottom_delta="-2" enabled="true" follows="left|top" font="SansSerifSmall" height="20" initial_value="false" label="Show Muted Text" left_delta="124" name="show mutes" width="116"/>
 			<!--check_box bottom_delta="-15" enabled="true" follows="left|top" font="SansSerifSmall" height="20" initial_value="false" label="Translate Chat (powered by Google)" name="translate chat" width="100"/-->
-			<button bottom_delta="2" left_delta="120" follows="left|top" font="SansSerifSmall" height="20" width="100" label="Open History" name="chat_history_open" tool_top="Click here to open chat history in external editor."/>
-			<button bottom_delta="0" follows="right|top" height="20" label="&lt; &lt;" label_selected="&gt; &gt;" left="272" name="toggle_active_speakers_btn" right="305"
-			     tool_tip="Click here to show list of active participants in this IM session." width="70"/>
-			<text_editor type="string" length="1" bg_readonly_color="ChatHistoryBgColor" bg_writeable_color="ChatHistoryBgColor" bottom="28" enabled="false" follows="left|top|right|bottom" font="SansSerif" height="82" left="5" max_length="2147483647" name="Chat History Editor" text_color="ChatHistoryTextColor" track_bottom="true" text_readonly_color="ChatHistoryTextColor" width="300" word_wrap="true"/>
-			<text_editor type="string" length="1" bg_readonly_color="ChatHistoryBgColor" bg_writeable_color="ChatHistoryBgColor" bottom="28" enabled="false" follows="left|top|right|bottom" font="SansSerif" height="82" max_length="2147483647" name="Chat History Editor with mute" text_color="ChatHistoryTextColor" track_bottom="true" text_readonly_color="ChatHistoryTextColor" width="300" word_wrap="true"/>
+			<button bottom_delta="2" left_delta="120" follows="left|top" font="SansSerifSmall" height="20" width="100" label="Open History" name="chat_history_open" tool_tip="Click here to open chat history in external editor."/>
+			<button bottom_delta="0" follows="right|top" height="20" label="&lt; &lt;" label_selected="&gt; &gt;" left="272" name="toggle_active_speakers_btn" right="305" tool_tip="Click here to show a list of active participants in this IM session." width="80"/>
+			<text_editor type="string" length="1" bg_readonly_color="ChatHistoryBgColor" bg_writeable_color="ChatHistoryBgColor" bottom="28" enabled="false" follows="left|top|right|bottom" font="SansSerif" height="81" left="5" max_length="2147483647" name="Chat History Editor" text_color="ChatHistoryTextColor" track_bottom="true" text_readonly_color="ChatHistoryTextColor" width="300" word_wrap="true"/>
+			<text_editor type="string" length="1" bg_readonly_color="ChatHistoryBgColor" bg_writeable_color="ChatHistoryBgColor" bottom="28" enabled="false" follows="left|top|right|bottom" font="SansSerif" height="81" max_length="2147483647" name="Chat History Editor with mute" text_color="ChatHistoryTextColor" track_bottom="true" text_readonly_color="ChatHistoryTextColor" width="300" word_wrap="true"/>
 			<panel bottom="5" follows="left|right|bottom" left="5" name="chat_panel" right="-5" tab_group="1" top="25">
 				<string name="gesture_label">Gestures</string>
-				<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="0" follows="left|right|bottom" font="SansSerif" handle_edit_keys_directly="false" height="20" label="Click here to chat." left="0" max_length="2147483647" name="Chat Editor" right="-70" select_all_on_focus_received="false" select_on_focus="false" tab_group="1" spell_check="true"/>
-				<flyout_button bottom="0" follows="right|bottom" height="20" label="Say" left="-65" list_position="above" name="Say" tool_tip="(Enter)" width="70">
+				<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="0" follows="left|right|bottom" font="SansSerif" handle_edit_keys_directly="false" height="20" label="Click here to chat." left="0" max_length="2147483647" name="Chat Editor" right="-60" select_all_on_focus_received="false" select_on_focus="false" tab_group="1" spell_check="true"/>
+				<flyout_button bottom_delta="0" follows="right|bottom" height="20" label="Say" left="-57" list_position="above" name="Say" tool_tip="(Enter)" width="60">
 					<flyout_button_item value="shout" name="shout_item">Shout</flyout_button_item>
 					<flyout_button_item value="say" name="say_item">Say</flyout_button_item>
 					<flyout_button_item value="whisper" name="whisper_item">Whisper</flyout_button_item>

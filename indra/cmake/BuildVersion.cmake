@@ -16,7 +16,11 @@ execute_process(
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-string(REPLACE "\n" ";" GIT_REV_LIST ${GIT_REV_LIST_STR})
+if(GIT_REV_LIST_STR)
+  string(REPLACE "\n" ";" GIT_REV_LIST ${GIT_REV_LIST_STR})
+else()
+  string(REPLACE "\n" ";" GIT_REV_LIST "")
+endif()
 
 if(GIT_REV_LIST)
   list(LENGTH GIT_REV_LIST vBUILD)

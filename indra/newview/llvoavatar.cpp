@@ -46,6 +46,7 @@
 #include "llagentcamera.h"
 #include "llagentwearables.h"
 #include "llanimationstates.h"
+#include "llavatarpropertiesprocessor.h"
 #include "llviewercontrol.h"
 #include "lldrawpoolavatar.h"
 #include "lldriverparam.h"
@@ -7936,9 +7937,7 @@ bool LLVOAvatar::sendAvatarTexturesRequest()
 	bool sent = false;
 	if (mRuthTimer.getElapsedTimeF32() > DERUTHING_TIMEOUT_SECONDS)
 	{
-		std::vector<std::string> strings;
-		strings.push_back(getID().asString());
-		send_generic_message("avatartexturesrequest", strings);
+		LLAvatarPropertiesProcessor::getInstance()->sendAvatarTexturesRequest(getID());
 		mRuthTimer.reset();
 		sent = true;
 	}

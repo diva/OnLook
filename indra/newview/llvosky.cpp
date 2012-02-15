@@ -2,31 +2,25 @@
  * @file llvosky.cpp
  * @brief LLVOSky class implementation
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -348,7 +342,7 @@ LLVOSky::LLVOSky(const LLUUID &id, const LLPCode pcode, LLViewerRegion *regionp)
 	blue_density = LLColor3();
 	blue_horizon = LLColor3();
 	haze_density = 0.f;
-	haze_horizon = LLColor3();
+	haze_horizon = 1.f;
 	density_multiplier = 0.f;
 	max_y = 0.f;
 	glow = LLColor3();
@@ -659,17 +653,17 @@ void LLVOSky::initAtmospherics(void)
 	sunlight_color = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("sunlight_color", error));
 	ambient = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("ambient", error));
 	//lightnorm = LLWLParamManager::getInstance()->mCurParams.getVector("lightnorm", error);
-	gamma = LLWLParamManager::getInstance()->mCurParams.getVector("gamma", error)[0];
+	gamma = LLWLParamManager::getInstance()->mCurParams.getFloat("gamma", error);
 	blue_density = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("blue_density", error));
 	blue_horizon = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("blue_horizon", error));
-	haze_density = LLWLParamManager::getInstance()->mCurParams.getVector("haze_density", error)[0];
-	haze_horizon = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("haze_horizon", error));
-	density_multiplier = LLWLParamManager::getInstance()->mCurParams.getVector("density_multiplier", error)[0];
-	max_y = LLWLParamManager::getInstance()->mCurParams.getVector("max_y", error)[0];
+	haze_density = LLWLParamManager::getInstance()->mCurParams.getFloat("haze_density", error);
+	haze_horizon = LLWLParamManager::getInstance()->mCurParams.getFloat("haze_horizon", error);
+	density_multiplier = LLWLParamManager::getInstance()->mCurParams.getFloat("density_multiplier", error);
+	max_y = LLWLParamManager::getInstance()->mCurParams.getFloat("max_y", error);
 	glow = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("glow", error));
-	cloud_shadow = LLWLParamManager::getInstance()->mCurParams.getVector("cloud_shadow", error)[0];
+	cloud_shadow = LLWLParamManager::getInstance()->mCurParams.getFloat("cloud_shadow", error);
 	cloud_color = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("cloud_color", error));
-	cloud_scale = LLWLParamManager::getInstance()->mCurParams.getVector("cloud_scale", error)[0];
+	cloud_scale = LLWLParamManager::getInstance()->mCurParams.getFloat("cloud_scale", error);
 	cloud_pos_density1 = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("cloud_pos_density1", error));
 	cloud_pos_density2 = LLColor3(LLWLParamManager::getInstance()->mCurParams.getVector("cloud_pos_density2", error));
 
@@ -833,7 +827,7 @@ void LLVOSky::calcSkyColorWLVert(LLVector3 & Pn, LLColor3 & vary_HazeColor, LLCo
 
 	// Haze color above cloud
 	vary_HazeColor = (blue_horizon * blue_weight * (sunlight + ambient)
-				+ componentMult(haze_horizon.mV[0] * haze_weight, sunlight * temp2.mV[0] + ambient)
+				+ componentMult(haze_horizon * haze_weight, sunlight * temp2.mV[0] + ambient)
 			 );	
 
 	// Increase ambient when there are more clouds
@@ -844,7 +838,7 @@ void LLVOSky::calcSkyColorWLVert(LLVector3 & Pn, LLColor3 & vary_HazeColor, LLCo
 
 	// Haze color below cloud
 	LLColor3 additiveColorBelowCloud = (blue_horizon * blue_weight * (sunlight + tmpAmbient)
-				+ componentMult(haze_horizon.mV[0] * haze_weight, sunlight * temp2.mV[0] + tmpAmbient)
+				+ componentMult(haze_horizon * haze_weight, sunlight * temp2.mV[0] + tmpAmbient)
 			 );	
 
 	// Final atmosphere additive
@@ -1010,7 +1004,7 @@ void LLVOSky::calcAtmospherics(void)
 		//haze color
 		vary_HazeColor =
 			(blue_horizon * blue_weight * (sunlight*(1.f - cloud_shadow) + tmpAmbient)	
-			+ componentMult(haze_horizon.mV[0] * haze_weight, sunlight*(1.f - cloud_shadow) * temp2.mV[0] + tmpAmbient)
+			+ componentMult(haze_horizon * haze_weight, sunlight*(1.f - cloud_shadow) * temp2.mV[0] + tmpAmbient)
 				 );	
 
 		//brightness of surface both sunlight and ambient

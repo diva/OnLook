@@ -40,6 +40,7 @@
 #include "llpanel.h"
 #include "v3dmath.h"
 #include "lluuid.h"
+#include "llavatarpropertiesprocessor.h"
 
 class LLButton;
 class LLCheckBoxCtrl;
@@ -52,7 +53,7 @@ class LLUICtrl;
 class LLMessageSystem;
 class AIFilePicker;
 
-class LLPanelPick : public LLPanel
+class LLPanelPick : public LLPanel, public LLAvatarPropertiesObserver
 {
 public:
     LLPanelPick(BOOL top_pick);
@@ -65,6 +66,8 @@ public:
     /*virtual*/ void draw();
 
 	/*virtual*/ void refresh();
+
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
 	// Setup a new pick, including creating an id, giving a sane
 	// initial position, etc.
@@ -90,8 +93,6 @@ public:
 
     void sendPickInfoRequest();
 	void sendPickInfoUpdate();
-
-    static void processPickInfoReply(LLMessageSystem* msg, void**);
 
 protected:
     static void onClickTeleport(void* data);

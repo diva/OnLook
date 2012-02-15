@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel bg_visible="false" border="false" border_visible="false" height="220" name="Adv_Settings" use_bounding_rect="true" width="220">
-	<panel bottom="1" filename="panel_bg_tab.xml" height="185" width="197"/>
-	<slider bottom="160" left="5" control_name="RenderFarClip" decimal_digits="0" height="20" increment="8" label="Draw Dist.:" can_edit_text="true" label_width="53" max_val="1024" min_val="24" val_width="36" name="DrawDistance" width="189" tool_tip="Change your Draw Distance"/>
-	<slider bottom_delta="-20" control_name="ThrottleBandwidthKBPS" decimal_digits="0" height="20" increment="50" label="Bandwidth:" can_edit_text="true" label_width="53" max_val="5000" min_val="50" val_width="36" name="max_bandwidth" width="189" tool_tip="Set your Network bandwidth in kbps (kilobits per second)"/>
-	<slider bottom_delta="-20" control_name="RenderMaxPartCount" decimal_digits="0" height="20" increment="256" label="Particles:" can_edit_text="true" label_width="53" max_val="8192" min_val="0" val_width="36" name="MaxParticleCount" width="189" tool_tip="Amount of particles to render"/>
-	<slider bottom_delta="-20" control_name="RenderAvatarMaxVisible" decimal_digits="0" height="20" increment="1" label="Max Avs:" can_edit_text="true" label_width="53" max_val="50" min_val="1" val_width="36" name="RenderAvatarMaxVisible" width="189" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
-	<slider bottom_delta="-20" control_name="RenderVolumeLODFactor" height="20" increment="0.125" label="Obj. Detail:" can_edit_text="true" label_width="53"  max_val="2" min_val="0.5" name="Object Detail" val_width="36" width="189" tool_tip="Controls level of detail of primitives (multiplier for current screen area when calculated level of detail[0.5 to 2.0 is stable])"/>      
-	<text bottom_delta="-17" height="16" name="cmd_line_text_7">Windlight Sky Preset:</text>
-	<combo_box name="WLSkyPresetsCombo" bottom_delta="-20" height="18" width="189" tool_tip="WindLight Presets for your Sky." />
-	<text bottom_delta="-20" height="16" name="cmd_line_text_7">Windlight Water Preset:</text>
-	<combo_box name="WLWaterPresetsCombo" bottom_delta="-20" height="18" width="166" tool_tip="WindLight Presets for your Water."/>
+<panel bg_visible="false" border="false" border_visible="false" height="200" name="Adv_Settings" use_bounding_rect="true" width="220">
+	<panel bottom="1" filename="panel_bg_tab.xml" height="197" width="197"/>
+	<slider bottom="177" left="5" control_name="RenderFarClip" decimal_digits="0" height="20" increment="8" label="Draw Dist.:" can_edit_text="true" label_width="60" max_val="1024" min_val="24" val_width="36" name="DrawDistance" width="189" tool_tip="Change your Draw Distance"/>
+	<slider bottom_delta="-20" control_name="ThrottleBandwidthKBPS" decimal_digits="0" height="20" increment="50" label="Bandwidth:" can_edit_text="true" label_width="60" max_val="5000" min_val="50" val_width="36" name="max_bandwidth" width="189" tool_tip="Set your Network bandwidth in kbps (kilobits per second)"/>
+	<slider bottom_delta="-20" control_name="RenderMaxPartCount" decimal_digits="0" height="20" increment="256" label="Particles:" can_edit_text="true" label_width="60" max_val="8192" min_val="0" val_width="36" name="MaxParticleCount" width="189" tool_tip="Amount of particles to render"/>
+	<slider bottom_delta="-20" control_name="RenderAvatarMaxVisible" decimal_digits="0" height="20" increment="1" label="Max Avs:" can_edit_text="true" label_width="60" max_val="50" min_val="1" val_width="36" name="RenderAvatarMaxVisible" width="189" tool_tip="How many avatars to fully render on screen. Lowering this greatly improves FPS in crowded situations. Requires Avatar Impostors to be on. [Default 35]"/>
+	<slider bottom_delta="-20" control_name="RenderVolumeLODFactor" height="20" increment="0.125" label="Obj. Detail:" can_edit_text="true" label_width="60"  max_val="2" min_val="0.5" name="Object Detail" val_width="36" width="189" tool_tip="Controls level of detail of primitives (multiplier for current screen area when calculated level of detail[0.5 to 2.0 is stable])"/>
+	<button left="5" height="20" name="EnvAdvancedSkyButton" width="20" image_overlay="Inv_WindLight.png" label="" tool_tip="Advanced Sky"/>
+	<combo_box name="WLSkyPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="133" tool_tip="WindLight Presets for your Sky."/>
+	<button bottom_delta="0" height="18" label="&lt;" left="158" image_overlay="arrow_left.tga" name="WLprev" scale_image="true" width="18"/>
+	<button bottom_delta="0" height="18" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WLnext" width="18"/>
+	<button left="5" height="20" name="EnvAdvancedWaterButton" width="20" image_overlay="Inv_WaterLight.png" label="" tool_tip="Advanced Water"/>
+	<combo_box name="WLWaterPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="133" tool_tip="WindLight Presets for your Water."/>
+	<button bottom_delta="0" height="18" label="&lt;" left="158" image_overlay="arrow_left.tga" name="WWprev" width="18"/>
+	<button bottom_delta="0" height="18" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WWnext" width="18"/>
+	<check_box left="5" label="Region Environment" control_name="UseEnvironmentFromRegion" height="16" name="use_estate_wl" tool_tip="Use the region/parcel's windlight settings when available."/>
+<check_box bottom_delta="0" left_delta="125" label="Always?" control_name="UseEnvironmentFromRegionAlways" height="16" name="Always" tool_tip="Always use region/parcel settings when they exist, automatically."/>
+	<icon bottom_delta="-18" height="14" image_name="icon_day_cycle.tga" left="10" width="150"/>
+	<slider bottom_delta="-8" control_name="EnvTimeSlider" left="5" height="10" increment="0.00000001" label="" max_val="1" min_val="0" name="EnvTimeSlider" show_text="false" width="160"/>
 	<button bottom="1" height="22" label="" left="172" name="expand" scale_image="true" toggle="true" tool_tip="Hide the Settings Panel" width="22"/>
 </panel>

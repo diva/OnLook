@@ -61,8 +61,8 @@
 
   <text bottom="-317" height="12" left="10" name="AvatarRenderingText">Avatar Rendering:</text>
   <check_box bottom_delta="-18" control_name="RenderUseImpostors" initial_value="true" label="Avatar Impostors" name="AvatarImpostors"/>
-  <slider bottom_delta="-12" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="100" left_delta="8" max_val="50" min_val="1" name="AvatarMaxVisible" width="195"/>
-  <check_box bottom_delta="-22" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" name="AvatarVertexProgram"/>
+  <slider bottom_delta="-12" left_delta="8" control_name="RenderAvatarMaxVisible" 	  	 decimal_digits="0" increment="1" initial_val="35" label="Max non-impostors" label_width="100" max_val="50" min_val="1" name="AvatarMaxVisible" width="195"/>
+  <check_box bottom_delta="-22" left_delta="-8" control_name="RenderAvatarVP" initial_value="true" label="Hardware Skinning" name="AvatarVertexProgram"/>
   <check_box bottom_delta="-17" control_name="RenderAvatarCloth" initial_value="true" label="Avatar Cloth" name="AvatarCloth"/>
   <!--text bottom="-131" height="12" left="464" name="DrawDistanceMeterText1">m</text-->
   <text bottom="-131" height="12" left="470" name="DrawDistanceMeterText2">m</text>

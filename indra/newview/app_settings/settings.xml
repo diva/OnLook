@@ -9,6 +9,18 @@
 		<string>settings_rlv.xml</string>
 	</array>
 
+  <key>SGAbsolutePointer</key>
+  <map>
+	<key>Comment</key>
+	<string>Support pen tablets and absolute pointer devices by disabling mouse wrapping</string>
+	<key>Persist</key>
+	<integer>1</integer>
+	<key>Type</key>
+	<string>Boolean</string>
+	<key>Value</key>
+	<integer>0</integer>
+  </map>
+
   <key>WaterPresetName</key>
   <map>
 	<key>Comment</key>
@@ -8132,7 +8144,7 @@
       <key>Type</key>
       <string>Boolean</string>
       <key>Value</key>
-      <integer>1</integer>
+	  <integer>0</integer>
     </map>
     <key>MemoryPrivatePoolSize</key>
     <map>

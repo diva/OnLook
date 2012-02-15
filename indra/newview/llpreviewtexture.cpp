@@ -469,7 +469,7 @@ LLUUID LLPreviewTexture::getItemID()
 		if ((perms & PERM_TRANSFER) &&
 			(perms & PERM_COPY))
 		{
-			return item->getUUID();
+			return item->getAssetUUID();
 		}
 	}
 	return LLUUID::null;

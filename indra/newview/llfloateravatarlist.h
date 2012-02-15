@@ -33,6 +33,18 @@ class LLAvatarListEntry {
 
 public:
 
+enum ACTIVITY_TYPE
+{
+	ACTIVITY_NONE,           /** Avatar not doing anything */ 
+	ACTIVITY_MOVING,         /** Changing position */
+	ACTIVITY_GESTURING,	 /** Playing a gesture */
+	ACTIVITY_REZZING,        /** Rezzing objects */
+	ACTIVITY_PARTICLES,      /** Creating particles */
+	ACTIVITY_TYPING,         /** Typing */
+	ACTIVITY_NEW,            /** Avatar just appeared */
+	ACTIVITY_SOUND,          /** Playing a sound */
+	ACTIVITY_DEAD            /** Avatar isn't around anymore, and will be removed soon from the list */
+};
 	/**
 	 * @brief Initializes a list entry
 	 * @param id Avatar's key
@@ -72,6 +84,13 @@ public:
 	 */
 	LLUUID getID() { return mID; }
 
+	void setActivity(ACTIVITY_TYPE activity);
+
+	/**
+	 * @brief Returns the activity type
+	 */
+	ACTIVITY_TYPE getActivity();
+
 	/**
 	 * @brief Sets the 'focus' status on this entry (camera focused on this avatar)
 	 */
@@ -106,7 +125,12 @@ private:
 	/**
 	 * @brief Timer to keep track of whether avatars are still there
 	 */
+
 	LLTimer mUpdateTimer;
+
+	ACTIVITY_TYPE mActivityType;
+
+	LLTimer mActivityTimer;
 
 	/**
 	 * @brief Last frame when this avatar was updated
@@ -204,8 +228,10 @@ private:
 		LIST_DISTANCE,
 		LIST_POSITION,
 		LIST_ALTITUDE,
+		LIST_ACTIVITY,
 		LIST_CLIENT,
 	};
+
 
 	typedef void (*avlist_command_t)(const LLUUID &avatar, const std::string &name);
 

@@ -239,12 +239,15 @@ protected:
 	// A list of all audio sources that are known to the viewer at this time.
 	// This is most likely a superset of the ones that we actually have audio
 	// data for, or are playing back.
+public://Jay: IDGAF
 	typedef std::map<LLUUID, LLAudioSource *> source_map;
+protected:
 	typedef std::map<LLUUID, LLAudioData *> data_map;
-
+	
+public://Jay: IDGAF
 	source_map mAllSources;
+protected:
 	data_map mAllData;
-
 	LLAudioChannel *mChannels[MAX_CHANNELS];
 
 	// Buffers needs to change into a different data structure, as the number of buffers
@@ -351,6 +354,9 @@ public:
 protected:
 	LLUUID			mID; // The ID of the source is that of the object if it's attached to an object.
 	LLUUID			mOwnerID;	// owner of the object playing the sound
+public:
+	const LLUUID &getOwnerID()		{ return mOwnerID; }
+protected:
 	F32				mPriority;
 	F32				mGain;
 	bool			mSourceMuted;

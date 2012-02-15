@@ -71,6 +71,8 @@ LLFloaterWindLight* LLFloaterWindLight::sWindLight = NULL;
 std::set<std::string> LLFloaterWindLight::sDefaultPresets;
 
 static const F32 WL_SUN_AMBIENT_SLIDER_SCALE = 3.0f;
+static const F32 WL_BLUE_HORIZON_DENSITY_SCALE = 2.0f;
+static const F32 WL_CLOUD_SLIDER_SCALE = 1.0f;
 
 LLFloaterWindLight::LLFloaterWindLight() : LLFloater(std::string("windlight floater"))
 {
@@ -308,7 +310,7 @@ void LLFloaterWindLight::syncMenu()
 
 	LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
 
-	LLWLParamSet& currentParams = param_mgr->mCurParams;
+	LLWLParamSet& cur_params = param_mgr->mCurParams;
 	//std::map<std::string, LLVector4> & currentParams = param_mgr->mCurParams.mParamValues;
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
@@ -320,59 +322,37 @@ void LLFloaterWindLight::syncMenu()
 // [/RLVa:KB]
 
 	// blue horizon
-	param_mgr->mBlueHorizon = currentParams.getVector(param_mgr->mBlueHorizon.mName, err);
-	childSetValue("WLBlueHorizonR", param_mgr->mBlueHorizon.r / 2.0);
-	childSetValue("WLBlueHorizonG", param_mgr->mBlueHorizon.g / 2.0);
-	childSetValue("WLBlueHorizonB", param_mgr->mBlueHorizon.b / 2.0);
-	childSetValue("WLBlueHorizonI", 
-		std::max(param_mgr->mBlueHorizon.r / 2.0, 
-			std::max(param_mgr->mBlueHorizon.g / 2.0, 
-				param_mgr->mBlueHorizon.b / 2.0)));
+	param_mgr->mBlueHorizon = cur_params.getVector(param_mgr->mBlueHorizon.mName, err);
+	setColorSwatch("WLBlueHorizon", param_mgr->mBlueHorizon, WL_BLUE_HORIZON_DENSITY_SCALE);
 
 	// haze density, horizon, mult, and altitude
-	param_mgr->mHazeDensity = currentParams.getVector(param_mgr->mHazeDensity.mName, err);
-	childSetValue("WLHazeDensity", param_mgr->mHazeDensity.r);
-	param_mgr->mHazeHorizon = currentParams.getVector(param_mgr->mHazeHorizon.mName, err);
-	childSetValue("WLHazeHorizon", param_mgr->mHazeHorizon.r);
-	param_mgr->mDensityMult = currentParams.getVector(param_mgr->mDensityMult.mName, err);
-	childSetValue("WLDensityMult", param_mgr->mDensityMult.x * 
-		param_mgr->mDensityMult.mult);
-	param_mgr->mMaxAlt = currentParams.getVector(param_mgr->mMaxAlt.mName, err);
-	childSetValue("WLMaxAltitude", param_mgr->mMaxAlt.x);
+	param_mgr->mHazeDensity = cur_params.getFloat(param_mgr->mHazeDensity.mName, err);
+	childSetValue("WLHazeDensity", (F32) param_mgr->mHazeDensity);
+	param_mgr->mHazeHorizon = cur_params.getFloat(param_mgr->mHazeHorizon.mName, err);
+	childSetValue("WLHazeHorizon", (F32) param_mgr->mHazeHorizon);
+	param_mgr->mDensityMult = cur_params.getFloat(param_mgr->mDensityMult.mName, err);
+	childSetValue("WLDensityMult", ((F32) param_mgr->mDensityMult) * param_mgr->mDensityMult.mult);
+	param_mgr->mMaxAlt = cur_params.getFloat(param_mgr->mMaxAlt.mName, err);
+	childSetValue("WLMaxAltitude", (F32) param_mgr->mMaxAlt);
 
 	// blue density
-	param_mgr->mBlueDensity = currentParams.getVector(param_mgr->mBlueDensity.mName, err);
-	childSetValue("WLBlueDensityR", param_mgr->mBlueDensity.r / 2.0);
-	childSetValue("WLBlueDensityG", param_mgr->mBlueDensity.g / 2.0);
-	childSetValue("WLBlueDensityB", param_mgr->mBlueDensity.b / 2.0);
-	childSetValue("WLBlueDensityI", 
-		std::max(param_mgr->mBlueDensity.r / 2.0, 
-		std::max(param_mgr->mBlueDensity.g / 2.0, param_mgr->mBlueDensity.b / 2.0)));
+	param_mgr->mBlueDensity = cur_params.getVector(param_mgr->mBlueDensity.mName, err);
+	setColorSwatch("WLBlueDensity", param_mgr->mBlueDensity, WL_BLUE_HORIZON_DENSITY_SCALE);
 
 	// Lighting
-	
+
 	// sunlight
-	param_mgr->mSunlight = currentParams.getVector(param_mgr->mSunlight.mName, err);
-	childSetValue("WLSunlightR", param_mgr->mSunlight.r / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLSunlightG", param_mgr->mSunlight.g / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLSunlightB", param_mgr->mSunlight.b / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLSunlightI", 
-		std::max(param_mgr->mSunlight.r / WL_SUN_AMBIENT_SLIDER_SCALE, 
-		std::max(param_mgr->mSunlight.g / WL_SUN_AMBIENT_SLIDER_SCALE, param_mgr->mSunlight.b / WL_SUN_AMBIENT_SLIDER_SCALE)));
+	param_mgr->mSunlight = cur_params.getVector(param_mgr->mSunlight.mName, err);
+	setColorSwatch("WLSunlight", param_mgr->mSunlight, WL_SUN_AMBIENT_SLIDER_SCALE);
 
 	// glow
-	param_mgr->mGlow = currentParams.getVector(param_mgr->mGlow.mName, err);
+	param_mgr->mGlow = cur_params.getVector(param_mgr->mGlow.mName, err);
 	childSetValue("WLGlowR", 2 - param_mgr->mGlow.r / 20.0f);
 	childSetValue("WLGlowB", -param_mgr->mGlow.b / 5.0f);
 		
 	// ambient
-	param_mgr->mAmbient = currentParams.getVector(param_mgr->mAmbient.mName, err);
-	childSetValue("WLAmbientR", param_mgr->mAmbient.r / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLAmbientG", param_mgr->mAmbient.g / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLAmbientB", param_mgr->mAmbient.b / WL_SUN_AMBIENT_SLIDER_SCALE);
-	childSetValue("WLAmbientI", 
-		std::max(param_mgr->mAmbient.r / WL_SUN_AMBIENT_SLIDER_SCALE, 
-		std::max(param_mgr->mAmbient.g / WL_SUN_AMBIENT_SLIDER_SCALE, param_mgr->mAmbient.b / WL_SUN_AMBIENT_SLIDER_SCALE)));		
+	param_mgr->mAmbient = cur_params.getVector(param_mgr->mAmbient.mName, err);
+	setColorSwatch("WLAmbient", param_mgr->mAmbient, WL_SUN_AMBIENT_SLIDER_SCALE);
 
 	childSetValue("WLSunAngle", param_mgr->mCurParams.getFloat("sun_angle",err) / F_TWO_PI);
 	childSetValue("WLEastAngle", param_mgr->mCurParams.getFloat("east_angle",err) / F_TWO_PI);
@@ -380,31 +360,26 @@ void LLFloaterWindLight::syncMenu()
 	// Clouds
 
 	// Cloud Color
-	param_mgr->mCloudColor = currentParams.getVector(param_mgr->mCloudColor.mName, err);
-	childSetValue("WLCloudColorR", param_mgr->mCloudColor.r);
-	childSetValue("WLCloudColorG", param_mgr->mCloudColor.g);
-	childSetValue("WLCloudColorB", param_mgr->mCloudColor.b);
-	childSetValue("WLCloudColorI", 
-		std::max(param_mgr->mCloudColor.r, 
-		std::max(param_mgr->mCloudColor.g, param_mgr->mCloudColor.b)));
+	param_mgr->mCloudColor = cur_params.getVector(param_mgr->mCloudColor.mName, err);
+	setColorSwatch("WLCloudColor", param_mgr->mCloudColor, WL_CLOUD_SLIDER_SCALE);
 
 	// Cloud
-	param_mgr->mCloudMain = currentParams.getVector(param_mgr->mCloudMain.mName, err);
+	param_mgr->mCloudMain = cur_params.getVector(param_mgr->mCloudMain.mName, err);
 	childSetValue("WLCloudX", param_mgr->mCloudMain.r);
 	childSetValue("WLCloudY", param_mgr->mCloudMain.g);
 	childSetValue("WLCloudDensity", param_mgr->mCloudMain.b);
 
 	// Cloud Detail
-	param_mgr->mCloudDetail = currentParams.getVector(param_mgr->mCloudDetail.mName, err);
+	param_mgr->mCloudDetail = cur_params.getVector(param_mgr->mCloudDetail.mName, err);
 	childSetValue("WLCloudDetailX", param_mgr->mCloudDetail.r);
 	childSetValue("WLCloudDetailY", param_mgr->mCloudDetail.g);
 	childSetValue("WLCloudDetailDensity", param_mgr->mCloudDetail.b);
 
 	// Cloud extras
-	param_mgr->mCloudCoverage = currentParams.getVector(param_mgr->mCloudCoverage.mName, err);
-	param_mgr->mCloudScale = currentParams.getVector(param_mgr->mCloudScale.mName, err);
-	childSetValue("WLCloudCoverage", param_mgr->mCloudCoverage.x);
-	childSetValue("WLCloudScale", param_mgr->mCloudScale.x);
+	param_mgr->mCloudCoverage = cur_params.getFloat(param_mgr->mCloudCoverage.mName, err);
+	param_mgr->mCloudScale = cur_params.getFloat(param_mgr->mCloudScale.mName, err);
+	childSetValue("WLCloudCoverage", (F32) param_mgr->mCloudCoverage);
+	childSetValue("WLCloudScale", (F32) param_mgr->mCloudScale);
 
 	// cloud scrolling
 	bool lockX = !param_mgr->mCurParams.getEnableCloudScrollX();
@@ -414,16 +389,20 @@ void LLFloaterWindLight::syncMenu()
 	childSetValue("DrawClassicClouds", gSavedSettings.getBOOL("SkyUseClassicClouds"));
 	
 	// disable if locked, enable if not
-	if(lockX) 
+	if (lockX)
 	{
 		childDisable("WLCloudScrollX");
-	} else {
+	}
+	else
+	{
 		childEnable("WLCloudScrollX");
 	}
-	if(lockY)
+	if (lockY)
 	{
 		childDisable("WLCloudScrollY");
-	} else {
+	}
+	else
+	{
 		childEnable("WLCloudScrollY");
 	}
 
@@ -431,17 +410,32 @@ void LLFloaterWindLight::syncMenu()
 	childSetValue("WLCloudScrollX", param_mgr->mCurParams.getCloudScrollX() - 10.0f);
 	childSetValue("WLCloudScrollY", param_mgr->mCurParams.getCloudScrollY() - 10.0f);
 
-	param_mgr->mDistanceMult = currentParams.getVector(param_mgr->mDistanceMult.mName, err);
-	childSetValue("WLDistanceMult", param_mgr->mDistanceMult.x);
+	param_mgr->mDistanceMult = cur_params.getFloat(param_mgr->mDistanceMult.mName, err);
+	childSetValue("WLDistanceMult", (F32) param_mgr->mDistanceMult);
 
 	// Tweak extras
 
-	param_mgr->mWLGamma = currentParams.getVector(param_mgr->mWLGamma.mName, err);
-	childSetValue("WLGamma", param_mgr->mWLGamma.x);
+	param_mgr->mWLGamma = cur_params.getFloat(param_mgr->mWLGamma.mName, err);
+	childSetValue("WLGamma", (F32) param_mgr->mWLGamma);
 
 	childSetValue("WLStarAlpha", param_mgr->mCurParams.getStarBrightness());
 }
 
+void LLFloaterWindLight::setColorSwatch(const std::string& name, const WLColorControl& from_ctrl, F32 k)
+{
+	std::string child_name(name);
+	LLVector4 color_vec = from_ctrl;
+	color_vec/=k;
+	
+	child_name.push_back('R');
+	childSetValue(name.data(), color_vec[0]);
+	child_name.replace(child_name.length()-1,1,1,'G');
+	childSetValue(child_name, color_vec[1]);
+	child_name.replace(child_name.length()-1,1,1,'B');
+	childSetValue(child_name, color_vec[2]);
+	child_name.replace(child_name.length()-1,1,1,'I');
+	childSetValue(child_name, llmax(color_vec.mV[0], color_vec.mV[1], color_vec.mV[2]));
+}
 
 // static
 LLFloaterWindLight* LLFloaterWindLight::instance()
@@ -497,240 +491,238 @@ void LLFloaterWindLight::onClose(bool app_quitting)
 }
 
 // color control callbacks
-void LLFloaterWindLight::onColorControlRMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onColorControlRMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl* color_ctrl = static_cast<WLColorControl *>(userdata);
 
-	colorControl->r = sldrCtrl->getValueF32();
-	if(colorControl->isSunOrAmbientColor) {
-		colorControl->r *= 3;
+	color_ctrl->r = sldr_ctrl->getValueF32();
+	if (color_ctrl->isSunOrAmbientColor)
+	{
+		color_ctrl->r *= WL_SUN_AMBIENT_SLIDER_SCALE;
 	}
-	if(colorControl->isBlueHorizonOrDensity) {
-		colorControl->r *= 2;
-	}	
+	if (color_ctrl->isBlueHorizonOrDensity)
+	{
+		color_ctrl->r *= WL_BLUE_HORIZON_DENSITY_SCALE;
+	}
 
 	// move i if it's the max
-	if(colorControl->r >= colorControl->g && colorControl->r >= colorControl->b 
-		&& colorControl->hasSliderName) {
-		colorControl->i = colorControl->r;
-		std::string name = colorControl->mSliderName;
+	if (color_ctrl->r >= color_ctrl->g && color_ctrl->r >= color_ctrl->b && color_ctrl->hasSliderName)
+	{
+		color_ctrl->i = color_ctrl->r;
+		std::string name = color_ctrl->mSliderName;
 		name.append("I");
-		
-		if(colorControl->isSunOrAmbientColor) {
-			sWindLight->childSetValue(name, colorControl->r / 3);
-		} else if(colorControl->isBlueHorizonOrDensity) {
-			sWindLight->childSetValue(name, colorControl->r / 2);
-		} else {
-			sWindLight->childSetValue(name, colorControl->r);
+
+		if (color_ctrl->isSunOrAmbientColor)
+		{
+			sWindLight->childSetValue(name, color_ctrl->r / WL_SUN_AMBIENT_SLIDER_SCALE);
+		}
+		else if	(color_ctrl->isBlueHorizonOrDensity)
+		{
+			sWindLight->childSetValue(name, color_ctrl->r / WL_BLUE_HORIZON_DENSITY_SCALE);
+		}
+		else
+		{
+			sWindLight->childSetValue(name, color_ctrl->r);
 		}
 	}
 
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
-void LLFloaterWindLight::onColorControlGMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onColorControlGMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl* color_ctrl = static_cast<WLColorControl *>(userdata);
 
-	colorControl->g = sldrCtrl->getValueF32();
-	if(colorControl->isSunOrAmbientColor) {
-		colorControl->g *= 3;
+	color_ctrl->g = sldr_ctrl->getValueF32();
+	if (color_ctrl->isSunOrAmbientColor)
+	{
+		color_ctrl->g *= WL_SUN_AMBIENT_SLIDER_SCALE;
 	}
-	if(colorControl->isBlueHorizonOrDensity) {
-		colorControl->g *= 2;
-	}	
+	if (color_ctrl->isBlueHorizonOrDensity)
+	{
+		color_ctrl->g *= WL_BLUE_HORIZON_DENSITY_SCALE;
+	}
 
 	// move i if it's the max
-	if(colorControl->g >= colorControl->r && colorControl->g >= colorControl->b
-		&& colorControl->hasSliderName) {
-		colorControl->i = colorControl->g;
-		std::string name = colorControl->mSliderName;
+	if (color_ctrl->g >= color_ctrl->r && color_ctrl->g >= color_ctrl->b && color_ctrl->hasSliderName)
+	{
+		color_ctrl->i = color_ctrl->g;
+		std::string name = color_ctrl->mSliderName;
 		name.append("I");
 
-		if(colorControl->isSunOrAmbientColor) {
-			sWindLight->childSetValue(name, colorControl->g / 3);
-		} else if(colorControl->isBlueHorizonOrDensity) {
-			sWindLight->childSetValue(name, colorControl->g / 2);
-		} else {
-			sWindLight->childSetValue(name, colorControl->g);
+		if (color_ctrl->isSunOrAmbientColor)
+		{
+			sWindLight->childSetValue(name, color_ctrl->g / WL_SUN_AMBIENT_SLIDER_SCALE);
+		}
+		else if (color_ctrl->isBlueHorizonOrDensity)
+		{
+			sWindLight->childSetValue(name, color_ctrl->g / WL_BLUE_HORIZON_DENSITY_SCALE);
+		}
+		else
+		{
+			sWindLight->childSetValue(name, color_ctrl->g);
 		}
 	}
 
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
-void LLFloaterWindLight::onColorControlBMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onColorControlBMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl* color_ctrl = static_cast<WLColorControl *>(userdata);
 
-	colorControl->b = sldrCtrl->getValueF32();
-	if(colorControl->isSunOrAmbientColor) {
-		colorControl->b *= 3;
+	color_ctrl->b = sldr_ctrl->getValueF32();
+	if (color_ctrl->isSunOrAmbientColor)
+	{
+		color_ctrl->b *= WL_SUN_AMBIENT_SLIDER_SCALE;
 	}
-	if(colorControl->isBlueHorizonOrDensity) {
-		colorControl->b *= 2;
-	}	
+	if (color_ctrl->isBlueHorizonOrDensity)
+	{
+		color_ctrl->b *= WL_BLUE_HORIZON_DENSITY_SCALE;
+	}
 
 	// move i if it's the max
-	if(colorControl->b >= colorControl->r && colorControl->b >= colorControl->g
-		&& colorControl->hasSliderName) {
-		colorControl->i = colorControl->b;
-		std::string name = colorControl->mSliderName;
+	if (color_ctrl->b >= color_ctrl->r && color_ctrl->b >= color_ctrl->g && color_ctrl->hasSliderName)
+	{
+		color_ctrl->i = color_ctrl->b;
+		std::string name = color_ctrl->mSliderName;
 		name.append("I");
 
-		if(colorControl->isSunOrAmbientColor) {
-			sWindLight->childSetValue(name, colorControl->b / 3);
-		} else if(colorControl->isBlueHorizonOrDensity) {
-			sWindLight->childSetValue(name, colorControl->b / 2);
-		} else {
-			sWindLight->childSetValue(name, colorControl->b);
+		if (color_ctrl->isSunOrAmbientColor)
+		{
+			sWindLight->childSetValue(name, color_ctrl->b / WL_SUN_AMBIENT_SLIDER_SCALE);
+		}
+		else if (color_ctrl->isBlueHorizonOrDensity)
+		{
+			sWindLight->childSetValue(name, color_ctrl->b / WL_BLUE_HORIZON_DENSITY_SCALE);
+		}
+		else
+		{
+			sWindLight->childSetValue(name, color_ctrl->b);
 		}
 	}
 
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 void LLFloaterWindLight::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl * color_ctrl = static_cast<WLColorControl *>(userData);
 
-	colorControl->i = sldrCtrl->getValueF32();
+	color_ctrl->i = sldr_ctrl->getValueF32();
 	
 	// only for sliders where we pass a name
-	if(colorControl->hasSliderName) {
+	if(color_ctrl->hasSliderName)
+	{
 		
 		// set it to the top
-		F32 maxVal = std::max(std::max(colorControl->r, colorControl->g), colorControl->b);
-		F32 iVal;
-
-		if(colorControl->isSunOrAmbientColor)
-		{
-			iVal = colorControl->i * 3;
-		} 
-		else if(colorControl->isBlueHorizonOrDensity)
-		{
-			iVal = colorControl->i * 2;
-		} 
-		else 
-		{
-			iVal = colorControl->i;
-		}
-
-		// get the names of the other sliders
-		std::string rName = colorControl->mSliderName;
-		rName.append("R");
-		std::string gName = colorControl->mSliderName;
-		gName.append("G");
-		std::string bName = colorControl->mSliderName;
-		bName.append("B");
+		F32 maxVal = std::max(std::max(color_ctrl->r, color_ctrl->g), color_ctrl->b);
+		
+		F32 scale = 1.f;
+		if(color_ctrl->isSunOrAmbientColor)
+			scale = WL_SUN_AMBIENT_SLIDER_SCALE;
+		else if(color_ctrl->isBlueHorizonOrDensity)
+			scale = WL_BLUE_HORIZON_DENSITY_SCALE;
+		
+		F32 iVal = color_ctrl->i * scale;
 
 		// handle if at 0
-		if(iVal == 0) {
-			colorControl->r = 0;
-			colorControl->g = 0;
-			colorControl->b = 0;
+		if(iVal == 0)
+		{
+			color_ctrl->r = 0;
+			color_ctrl->g = 0;
+			color_ctrl->b = 0;
 		
 		// if all at the start
 		// set them all to the intensity
-		} else if (maxVal == 0) {
-			colorControl->r = iVal;
-			colorControl->g = iVal;
-			colorControl->b = iVal;
+		}
+		else if (maxVal == 0)
+		{
+			color_ctrl->r = iVal;
+			color_ctrl->g = iVal;
+			color_ctrl->b = iVal;
 
-		} else {
-
+		}
+		else
+		{
 			// add delta amounts to each
 			F32 delta = (iVal - maxVal) / maxVal;
-			colorControl->r *= (1.0f + delta);
-			colorControl->g *= (1.0f + delta);
-			colorControl->b *= (1.0f + delta);
+			color_ctrl->r *= (1.0f + delta);
+			color_ctrl->g *= (1.0f + delta);
+			color_ctrl->b *= (1.0f + delta);
 		}
 
-		// divide sun color vals by three
-		if(colorControl->isSunOrAmbientColor) 
-		{
-			sWindLight->childSetValue(rName, colorControl->r/3);
-			sWindLight->childSetValue(gName, colorControl->g/3);
-			sWindLight->childSetValue(bName, colorControl->b/3);	
-		
-		} 
-		else if(colorControl->isBlueHorizonOrDensity) 
-		{
-			sWindLight->childSetValue(rName, colorControl->r/2);
-			sWindLight->childSetValue(gName, colorControl->g/2);
-			sWindLight->childSetValue(bName, colorControl->b/2);	
-		
-		} 
-		else 
-		{
-			// set the sliders to the new vals
-			sWindLight->childSetValue(rName, colorControl->r);
-			sWindLight->childSetValue(gName, colorControl->g);
-			sWindLight->childSetValue(bName, colorControl->b);
-		}
+		// set the sliders to the new vals
+		std::string child_name(color_ctrl->mSliderName);
+		child_name.push_back('R');
+		sWindLight->childSetValue(child_name, color_ctrl->r/scale);
+		child_name.replace(child_name.length()-1,1,1,'G');
+		sWindLight->childSetValue(child_name, color_ctrl->g/scale);
+		child_name.replace(child_name.length()-1,1,1,'B');
+		sWindLight->childSetValue(child_name, color_ctrl->b/scale);
 	}
 
 	// now update the current parameters and send them to shaders
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 /// GLOW SPECIFIC CODE
-void LLFloaterWindLight::onGlowRMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onGlowRMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl* color_ctrl = static_cast<WLColorControl *>(userdata);
 
 	// scaled by 20
-	colorControl->r = (2 - sldrCtrl->getValueF32()) * 20;
+	color_ctrl->r = (2 - sldr_ctrl->getValueF32()) * 20;
 
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
 /// \NOTE that we want NEGATIVE (-) B
-void LLFloaterWindLight::onGlowBMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onGlowBMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLColorControl* color_ctrl = static_cast<WLColorControl *>(userdata);
 
 	/// \NOTE that we want NEGATIVE (-) B and NOT by 20 as 20 is too big
-	colorControl->b = -sldrCtrl->getValueF32() * 5;
+	color_ctrl->b = -sldr_ctrl->getValueF32() * 5;
 
-	colorControl->update(LLWLParamManager::getInstance()->mCurParams);
+	color_ctrl->update(LLWLParamManager::getInstance()->mCurParams);
 	LLWLParamManager::getInstance()->propagateParameters();
 }
 
-void LLFloaterWindLight::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
+void LLFloaterWindLight::onFloatControlMoved(LLUICtrl* ctrl, void* userdata)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	WLFloatControl * floatControl = static_cast<WLFloatControl *>(userData);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	WLFloatControl * floatControl = static_cast<WLFloatControl *>(userdata);
 
-	floatControl->x = sldrCtrl->getValueF32() / floatControl->mult;
+	floatControl->x = sldr_ctrl->getValueF32() / floatControl->mult;
 
 	floatControl->update(LLWLParamManager::getInstance()->mCurParams);
 	LLWLParamManager::getInstance()->propagateParameters();
@@ -738,7 +730,7 @@ void LLFloaterWindLight::onFloatControlMoved(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::onBoolToggle(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
 	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
 
@@ -752,12 +744,12 @@ void LLFloaterWindLight::onBoolToggle(LLUICtrl* ctrl, void* userData)
 // time of day
 void LLFloaterWindLight::onSunMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
 	LLSliderCtrl* sunSldr = sWindLight->getChild<LLSliderCtrl>("WLSunAngle");
 	LLSliderCtrl* eastSldr = sWindLight->getChild<LLSliderCtrl>("WLEastAngle");
 
-	WLColorControl * colorControl = static_cast<WLColorControl *>(userData);
+	WLColorControl * color_ctrl = static_cast<WLColorControl *>(userData);
 	
 	// get the two angles
 	LLWLParamManager * param_mgr = LLWLParamManager::getInstance();
@@ -766,20 +758,20 @@ void LLFloaterWindLight::onSunMoved(LLUICtrl* ctrl, void* userData)
 	param_mgr->mCurParams.setEastAngle(F_TWO_PI * eastSldr->getValueF32());
 
 	// set the sun vector
-	colorControl->r = -sin(param_mgr->mCurParams.getEastAngle()) * 
+	color_ctrl->r = -sin(param_mgr->mCurParams.getEastAngle()) * 
 		cos(param_mgr->mCurParams.getSunAngle());
-	colorControl->g = sin(param_mgr->mCurParams.getSunAngle());
-	colorControl->b = cos(param_mgr->mCurParams.getEastAngle()) * 
+	color_ctrl->g = sin(param_mgr->mCurParams.getSunAngle());
+	color_ctrl->b = cos(param_mgr->mCurParams.getEastAngle()) * 
 		cos(param_mgr->mCurParams.getSunAngle());
-	colorControl->i = 1.f;
+	color_ctrl->i = 1.f;
 
-	colorControl->update(param_mgr->mCurParams);
+	color_ctrl->update(param_mgr->mCurParams);
 	param_mgr->propagateParameters();
 }
 
 void LLFloaterWindLight::onFloatTweakMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
 	F32 * tweak = static_cast<F32 *>(userData);
@@ -790,7 +782,7 @@ void LLFloaterWindLight::onFloatTweakMoved(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::onStarAlphaMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
 	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
 
@@ -974,36 +966,35 @@ void LLFloaterWindLight::onOpenDayCycle(void* userData)
 // Clouds
 void LLFloaterWindLight::onCloudScrollXMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
-	// *HACK  all cloud scrolling is off by an additive of 10. 
-	LLWLParamManager::getInstance()->mCurParams.setCloudScrollX(sldrCtrl->getValueF32() + 10.0f);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
+	// *HACK  all cloud scrolling is off by an additive of 10.
+	LLWLParamManager::getInstance()->mCurParams.setCloudScrollX(sldr_ctrl->getValueF32() + 10.0f);
 }
 
 void LLFloaterWindLight::onCloudScrollYMoved(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLSliderCtrl* sldrCtrl = static_cast<LLSliderCtrl*>(ctrl);
+	LLSliderCtrl* sldr_ctrl = static_cast<LLSliderCtrl*>(ctrl);
 
-	// *HACK  all cloud scrolling is off by an additive of 10. 
-	LLWLParamManager::getInstance()->mCurParams.setCloudScrollY(sldrCtrl->getValueF32() + 10.0f);
+	// *HACK  all cloud scrolling is off by an additive of 10.
+	LLWLParamManager::getInstance()->mCurParams.setCloudScrollY(sldr_ctrl->getValueF32() + 10.0f);
 }
 
 void LLFloaterWindLight::onCloudScrollXToggled(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
+	LLCheckBoxCtrl* cb_ctrl = static_cast<LLCheckBoxCtrl*>(ctrl);
 
-	bool lock = cbCtrl->get();
+	bool lock = cb_ctrl->get();
 	LLWLParamManager::getInstance()->mCurParams.setEnableCloudScrollX(!lock);
 
-	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>( 
-		"WLCloudScrollX");
+	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>("WLCloudScrollX");
 
-	if(cbCtrl->get()) 
+	if (cb_ctrl->get())
 	{
 		sldr->setEnabled(false);
 	} 
@@ -1016,16 +1007,15 @@ void LLFloaterWindLight::onCloudScrollXToggled(LLUICtrl* ctrl, void* userData)
 
 void LLFloaterWindLight::onCloudScrollYToggled(LLUICtrl* ctrl, void* userData)
 {
-	deactivateAnimator();
+	LLWLParamManager::getInstance()->mAnimator.deactivate();
 
-	LLCheckBoxCtrl* cbCtrl = static_cast<LLCheckBoxCtrl*>(ctrl);
-	bool lock = cbCtrl->get();
+	LLCheckBoxCtrl* cb_ctrl = static_cast<LLCheckBoxCtrl*>(ctrl);
+	bool lock = cb_ctrl->get();
 	LLWLParamManager::getInstance()->mCurParams.setEnableCloudScrollY(!lock);
 
-	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>( 
-		"WLCloudScrollY");
+	LLSliderCtrl* sldr = sWindLight->getChild<LLSliderCtrl>("WLCloudScrollY");
 
-	if(cbCtrl->get()) 
+	if (cb_ctrl->get())
 	{
 		sldr->setEnabled(false);
 	} 
@@ -1035,10 +1025,6 @@ void LLFloaterWindLight::onCloudScrollYToggled(LLUICtrl* ctrl, void* userData)
 	}
 }
 
-void LLFloaterWindLight::deactivateAnimator()
-{
-	LLWLParamManager::getInstance()->mAnimator.deactivate();
-}
 
 void LLFloaterWindLight::onClickNext(void* user_data)
 {

@@ -37,6 +37,7 @@
 #ifndef LL_LLPANELCLASSIFIED_H
 #define LL_LLPANELCLASSIFIED_H
 
+#include "llavatarpropertiesprocessor.h"
 #include "llpanel.h"
 #include "llclassifiedinfo.h"
 #include "v3dmath.h"
@@ -55,7 +56,7 @@ class LLTextureCtrl;
 class LLUICtrl;
 class LLMessageSystem;
 
-class LLPanelClassified : public LLPanel
+class LLPanelClassified : public LLPanel, public LLAvatarPropertiesObserver
 {
 public:
     LLPanelClassified(bool in_finder, bool from_search);
@@ -68,6 +69,8 @@ public:
     /*virtual*/ void draw();
 
 	/*virtual*/ void refresh();
+
+	/*virtual*/ void processProperties(void* data, EAvatarProcessorType type);
 
 	void apply();
 
@@ -97,8 +100,6 @@ public:
     void sendClassifiedInfoRequest();
 	void sendClassifiedInfoUpdate();
 	void resetDirty();
-
-    static void processClassifiedInfoReply(LLMessageSystem* msg, void**);
 
 	// Confirmation dialogs flow in this order
 	bool confirmMature(const LLSD& notification, const LLSD& response);
