@@ -699,7 +699,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			text[count++] = strdup("return texture2D(tex0, texcoord);\n");
 			text[count++] = strdup("}\n");
 		}
-		else if (gGLManager.mGLVersion >= 3.f)
+		else if (gGLManager.mGLVersion >= 3.f && !(gGLManager.mIsATI && gGLManager.mGLVersion < 3.3f) )
 		{ 
 			text[count++] = strdup("\tswitch (int(vary_texture_index+0.25))\n");
 			text[count++] = strdup("\t{\n");

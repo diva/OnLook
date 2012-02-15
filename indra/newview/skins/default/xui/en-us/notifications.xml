@@ -7020,5 +7020,18 @@ Click 'Wear' to attach the Physics Wearable, or click 'Cancel' if you wish to ma
   </form>
   </notification>
 
+  <notification
+   icon="alert.tga"
+   name="SGIncompleteAppearence"
+   type="alert">
+Sending incomplete appearence. You may appear to others as a cloud.
+
+Your shape, skin, hair or eyes might be defect.
+	<usetemplate
+	 name="okbutton"
+	 yestext="OK"/>
+  </notification>
+
+
 </notifications>
 
