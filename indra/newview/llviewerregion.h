@@ -67,7 +67,6 @@ class LLVOCache;
 class LLVOCacheEntry;
 class LLSpatialPartition;
 class LLEventPump;
-//class LLCapabilityListener;
 class LLDataPacker;
 class LLDataPackerBinaryBuffer;
 class LLHost;
@@ -199,7 +198,7 @@ public:
 	S32 getSimCPURatio()                   const { return mCPURatio; }
 	const std::string& getSimColoName()    const { return mColoName; }
 	const std::string& getSimProductSKU()  const { return mProductSKU; }
-	const std::string& getSimProductName() const { return mProductName; }
+	std::string getLocalizedSimProductName() const;
 
 	// Returns "Sandbox", "Expensive", etc.
 	static std::string regionFlagsToString(U32 flags);
@@ -209,7 +208,10 @@ public:
 
 	// Returns "M", "PG", "A" etc.
 	static std::string accessToShortString(U8 sim_access);
-	
+
+	// Return access icon name
+	static std::string getAccessIcon(U8 sim_access);
+
 	// helper function which just makes sure all interested parties
 	// can process the message.
 	static void processRegionInfo(LLMessageSystem* msg, void**);
@@ -230,11 +232,12 @@ public:
 
 	U32	getPacketsLost() const;
 
-	void setHttpResponderPtrNULL();
-	const LLHTTPClient::ResponderPtr getHttpResponderPtr() const;
+	S32 getHttpResponderID() const;
 
 	// Get/set named capability URLs for this region.
 	void setSeedCapability(const std::string& url);
+	void failedSeedCapability();
+	S32 getNumSeedCapRetries();
 	void setCapability(const std::string& name, const std::string& url);
 	// implements LLCapabilityProvider
     virtual std::string getCapability(const std::string& name) const;
@@ -249,7 +252,7 @@ public:
 
     /// Get LLEventPump on which we listen for capability requests
     /// (https://wiki.lindenlab.com/wiki/Viewer:Messaging/Messaging_Notes#Capabilities)
-   // LLEventPump& getCapAPI() const;
+    LLEventPump& getCapAPI() const;
 
     /// implements LLCapabilityProvider
 	/*virtual*/ const LLHost& getHost() const;
@@ -328,6 +331,11 @@ public:
 	LLSpatialPartition* getSpatialPartition(U32 type);
 
 	bool objectIsReturnable(const LLVector3& pos, const std::vector<LLBBox>& boxes) const;
+	bool childrenObjectReturnable( const std::vector<LLBBox>& boxes ) const;
+	bool objectsCrossParcel(const std::vector<LLBBox>& boxes) const;
+
+	void getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegions );
+
 public:
 	struct CompareDistance
 	{
