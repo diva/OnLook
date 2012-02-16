@@ -119,12 +119,6 @@ LLViewerVisualParam::LLViewerVisualParam()
 {
 }
 
-/*
-//=============================================================================
-// These virtual functions should always be overridden,
-// but are included here for use as templates
-//=============================================================================
-
 //-----------------------------------------------------------------------------
 // setInfo()
 //-----------------------------------------------------------------------------
@@ -139,6 +133,12 @@ BOOL LLViewerVisualParam::setInfo(LLViewerVisualParamInfo *info)
 	setWeight(getDefaultWeight(), FALSE );
 	return TRUE;
 }
+
+/*
+//=============================================================================
+// These virtual functions should always be overridden,
+// but are included here for use as templates
+//=============================================================================
 
 //-----------------------------------------------------------------------------
 // parseData()

@@ -35,7 +35,7 @@
 #include <utility> // for std::pair<>
 
 #include "llinventorypanel.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llinventorybridge.h"
 
 #include "message.h"
@@ -103,7 +103,7 @@ const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not
 const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
 const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)
 
-typedef LLMemberListener<LLPanelInventory> object_inventory_listener_t;
+typedef LLMemberListener<LLPanelObjectInventory> object_inventory_listener_t;
 typedef LLMemberListener<LLInventoryView> inventory_listener_t;
 typedef LLMemberListener<LLInventoryPanel> inventory_panel_listener_t;
 
@@ -190,7 +190,7 @@ class LLDoToSelectedPanel : public object_inventory_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		std::string action = userdata.asString();
-		LLPanelInventory *panel = mPtr;
+		LLPanelObjectInventory *panel = mPtr;
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
@@ -707,7 +707,7 @@ class LL : public listener_t
 };
 */
 
-void init_object_inventory_panel_actions(LLPanelInventory *panel)
+void init_object_inventory_panel_actions(LLPanelObjectInventory *panel)
 {
 	(new LLDoToSelectedPanel())->registerListener(panel, "Inventory.DoToSelected");
 }

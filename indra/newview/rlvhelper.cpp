@@ -15,6 +15,8 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llagent.h"
+#include "llagentwearables.h"
 #include "llattachmentsmgr.h"
 #include "llfloaterinventory.h"
 #include "llfloaterwindlight.h"
@@ -29,11 +31,11 @@
 #include "llvoavatar.h"
 #include "llwearablelist.h"
 #include "llwlparammanager.h"
-#include "llagentwearables.h"
+
 
 #include "rlvhelper.h"
-#include "rlvinventory.h"
 #include "rlvhandler.h"
+#include "rlvinventory.h"
 
 #include <boost/algorithm/string.hpp>
 

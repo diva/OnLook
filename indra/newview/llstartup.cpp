@@ -204,6 +204,8 @@
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 #include "llagentlanguage.h"
+#include "llwearable.h"
+#include "llinventorybridge.h"
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
 
@@ -234,8 +236,6 @@
 // exported globals
 //
 bool gAgentMovementCompleted = false;
-std::string gInitialOutfit;
-std::string gInitialOutfitGender;
 
 std::string SCREEN_HOME_FILENAME = "screen_home.bmp";
 std::string SCREEN_LAST_FILENAME = "screen_last.bmp";
@@ -2092,7 +2092,7 @@ bool idle_startup()
 		// <edit>
 		else if (gSavedSettings.getBOOL("RadarKeepOpen"))
 		{
-			LLFloaterAvatarList::createInstance(false);
+			LLFloaterAvatarList::getInstance()->close();
 		}
 		if (gSavedSettings.getBOOL("SHShowMediaTicker"))
 		{
@@ -2918,7 +2918,7 @@ bool idle_startup()
 		const F32 wearables_time = wearables_timer.getElapsedTimeF32();
 		const F32 MAX_WEARABLES_TIME = 10.f;
 
-		if (!gAgent.isGenderChosen())
+		if (!gAgent.isGenderChosen() && isAgentAvatarValid())
 		{
 			// No point in waiting for clothing, we don't even
 			// know what gender we are.  Pop a dialog to ask and

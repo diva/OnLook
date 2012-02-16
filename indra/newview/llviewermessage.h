@@ -33,20 +33,26 @@
 #ifndef LL_LLVIEWERMESSAGE_H
 #define LL_LLVIEWERMESSAGE_H
 
+#include "llassettype.h"
 #include "llinstantmessage.h"
+#include "llpointer.h"
 #include "lltransactiontypes.h"
 #include "lluuid.h"
-#include "llchat.h"
+#include "message.h"
 #include "stdenums.h"
+#include "llnotifications.h"
+#include "llchat.h"
 
 //
 // Forward declarations
 //
 class LLColor4;
-class LLViewerObject;
 class LLInventoryObject;
 class LLInventoryItem;
+class LLMeanCollisionData;
 class LLMessageSystem;
+class LLVFS;
+class LLViewerObject;
 class LLViewerRegion;
 
 //

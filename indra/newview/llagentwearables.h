@@ -185,7 +185,7 @@ private:
 	void			removeWearableFinal(const LLWearableType::EType type, bool do_remove_all /*= false*/, U32 index /*= 0*/);
 protected:
 	static bool		onRemoveWearableDialog(const LLSD& notification, const LLSD& response);
-	static void		userRemoveAllClothesStep2(BOOL proceed, void* userdata ); // userdata is NULL
+	static void		userRemoveAllClothesStep2(BOOL proceed); // userdata is NULL
 	
 	//--------------------------------------------------------------------
 	// Server Communication

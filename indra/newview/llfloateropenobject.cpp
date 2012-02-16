@@ -50,7 +50,7 @@
 #include "llinventorybridge.h"
 #include "llinventorymodel.h"
 #include "llinventorypanel.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llselectmgr.h"
 #include "lluiconstants.h"
 #include "llviewerobject.h"
@@ -211,11 +211,10 @@ void LLFloaterOpenObject::callbackMoveInventory(S32 result, void* data)
 
 	if (result == 0)
 	{
-		LLInventoryView::showAgentInventory();
-		LLInventoryView* view = LLInventoryView::getActiveInventory();
-		if (view)
+		LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+		if (active_panel)
 		{
-			view->getPanel()->setSelection(cat->mCatID, TAKE_FOCUS_NO);
+			active_panel->setSelection(cat->mCatID, TAKE_FOCUS_NO);
 		}
 	}
 
@@ -243,6 +242,6 @@ void LLFloaterOpenObject::onClickMoveAndWear(void* data)
 void* LLFloaterOpenObject::createPanelInventory(void* data)
 {
 	LLFloaterOpenObject* floater = (LLFloaterOpenObject*)data;
-	floater->mPanelInventory = new LLPanelInventory(std::string("Object Contents"), LLRect());
+	floater->mPanelInventory = new LLPanelObjectInventory(std::string("Object Contents"), LLRect());
 	return floater->mPanelInventory;
 }

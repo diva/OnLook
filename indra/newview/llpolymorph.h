@@ -42,6 +42,7 @@ class LLPolyMeshSharedData;
 class LLVOAvatar;
 class LLVector2;
 class LLViewerJointCollisionVolume;
+class LLWearable;
 
 //-----------------------------------------------------------------------------
 // LLPolyMorphData()

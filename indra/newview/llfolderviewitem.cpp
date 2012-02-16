@@ -93,25 +93,28 @@ LLFolderViewItem::LLFolderViewItem( const std::string& name, LLUIImagePtr icon,
 								   LLFolderView* root,
 									LLFolderViewEventListener* listener ) :
 	LLUICtrl( name, LLRect(0, 0, 0, 0), TRUE, NULL, NULL, FOLLOWS_LEFT|FOLLOWS_TOP|FOLLOWS_RIGHT),
-	mLabel( name ),
 	mLabelWidth(0),
-	mCreationDate(creation_date),
+
 	mParentFolder( NULL ),
-	mListener( listener ),
 	mIsSelected( FALSE ),
 	mIsCurSelection( FALSE ),
 	mSelectPending(FALSE),
 	mLabelStyle( LLFontGL::NORMAL ),
-	mIcon(icon),
+
 	mHasVisibleChildren(FALSE),
 	mIndentation(0),
 	mPassedFilter(FALSE),
 	mLastFilterGeneration(-1),
 	mStringMatchOffset(std::string::npos),
 	mControlLabelRotation(0.f),
-	mRoot( root ),
+	
 	mDragAndDropTarget(FALSE),
-	mIsLoading(FALSE)
+	mIsLoading(FALSE),
+	mLabel( name ),
+	mRoot( root ),
+	mCreationDate(creation_date),
+	mIcon(icon),
+	mListener(listener)
 {
 	sFolderViewItems.insert(this);
 	refresh(); // possible opt: only call refreshFromListener()

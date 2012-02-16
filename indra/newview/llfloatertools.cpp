@@ -51,7 +51,7 @@
 #include "llpanelcontents.h"
 #include "llpanelface.h"
 #include "llpanelland.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llpanelobject.h"
 #include "llpanelvolume.h"
 #include "llpanelpermissions.h"
@@ -168,7 +168,7 @@ void*	LLFloaterTools::createPanelContents(void* data)
 void*	LLFloaterTools::createPanelContentsInventory(void* data)
 {
 	LLFloaterTools* floater = (LLFloaterTools*)data;
-	floater->mPanelContents->mPanelInventory = new LLPanelInventory(std::string("ContentsInventory"), LLRect());
+	floater->mPanelContents->mPanelInventory = new LLPanelObjectInventory(std::string("ContentsInventory"), LLRect());
 	return floater->mPanelContents->mPanelInventory;
 }
 

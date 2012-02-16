@@ -165,6 +165,8 @@ public:
 
 	void setSortOrder(U32 order);
 	U32 getSortOrder() const;
+
+	static LLInventoryPanel *getActiveInventoryPanel();
 private:
 	const std::string			mSortOrderSetting;
 	LLUUID						mSelectThisID; // if non null, select this item

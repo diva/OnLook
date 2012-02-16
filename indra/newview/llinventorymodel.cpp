@@ -31,44 +31,26 @@
  */
 
 #include "llviewerprecompiledheaders.h"
-
 #include "llinventorymodel.h"
 
-#include "llassetstorage.h"
-#include "llcrc.h"
-#include "lldir.h"
-#include "llsys.h"
-#include "llxfermanager.h"
+#include "llagent.h"
+#include "llinventorypanel.h"
+#include "llinventorybridge.h"
 #include "llinventoryfunctions.h"
 #include "llinventoryobserver.h"
-#include "message.h"
-
-#include "llagent.h"
-#include "llfloater.h"
-#include "llfloaterinventory.h"
-#include "llfocusmgr.h"
 #include "llinventorypanel.h"
-#include "llviewerinventory.h"
+#include "llnotificationsutil.h"
+#include "llwindow.h"
+#include "llviewercontrol.h"
+#include "llpreview.h" 
 #include "llviewermessage.h"
-#include "llfoldertype.h"
 #include "llviewerfoldertype.h"
 #include "llviewerwindow.h"
-#include "llviewerregion.h"
 #include "llappviewer.h"
-#include "lldbstrings.h"
-#include "llviewerstats.h"
-#include "llmutelist.h"
-#include "llnotificationsutil.h"
+#include "llviewerregion.h"
 #include "llcallbacklist.h"
-#include "llpreview.h"
-#include "llviewercontrol.h"
-#include "llvoavatar.h"
-#include "llsdutil.h"
+#include "llvoavatarself.h"
 #include "statemachine/aievent.h"
-// <edit>
-#include "llappviewer.h" // gLostItemsRoot
-// </edit>
-#include <deque>
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -2614,10 +2596,10 @@ void LLInventoryModel::processUpdateInventoryFolder(LLMessageSystem* msg,
 	gInventory.notifyObservers();
 
 	// *HACK: Do the 'show' logic for a new item in the inventory.
-	LLInventoryView* view = LLInventoryView::getActiveInventory();
-	if(view)
+	LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+	if (active_panel)
 	{
-		view->getPanel()->setSelection(lastfolder->getUUID(), TAKE_FOCUS_NO);
+		active_panel->setSelection(lastfolder->getUUID(), TAKE_FOCUS_NO);
 	}
 }
 

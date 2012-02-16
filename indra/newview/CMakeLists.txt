@@ -356,7 +356,7 @@ set(viewer_SOURCE_FILES
     llpanelgrouproles.cpp
     llpanelgroupvoting.cpp
     llpanelinput.cpp
-    llpanelinventory.cpp
+    llpanelobjectinventory.cpp
     llpanelland.cpp
     llpanellandaudio.cpp
     llpanellandmedia.cpp
@@ -842,7 +842,7 @@ set(viewer_HEADER_FILES
     llpanelgrouproles.h
     llpanelgroupvoting.h
     llpanelinput.h
-    llpanelinventory.h
+    llpanelobjectinventory.h
     llpanelland.h
     llpanellandaudio.h
     llpanellandmedia.h

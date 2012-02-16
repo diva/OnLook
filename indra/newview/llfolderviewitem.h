@@ -335,7 +335,7 @@ protected:
 						LLFolderViewEventListener* listener );
 
 	friend class LLBuildNewViewsScheduler;
-	friend class LLPanelInventory;
+	friend class LLPanelObjectInventory;
 	friend class LLInventoryPanel;
 	
 public:
@@ -495,8 +495,9 @@ public:
 	void applyFunctorRecursively(LLFolderViewFunctor& functor);
 	virtual void applyListenerFunctorRecursively(LLFolderViewListenerFunctor& functor);
 
+
 	virtual void openItem( void );
-	virtual BOOL addItem(LLFolderViewItem* item); 
+	virtual BOOL addItem(LLFolderViewItem* item);
 	virtual BOOL addFolder( LLFolderViewFolder* folder);
 
 	// LLView functionality
@@ -505,10 +506,10 @@ public:
 	virtual BOOL handleMouseDown( S32 x, S32 y, MASK mask );
 	virtual BOOL handleDoubleClick( S32 x, S32 y, MASK mask );
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-								   EDragAndDropType cargo_type,
-								   void* cargo_data,
-								   EAcceptance* accept,
-								   std::string& tooltip_msg);
+		EDragAndDropType cargo_type,
+		void* cargo_data,
+		EAcceptance* accept,
+		std::string& tooltip_msg);
 	virtual void draw();
 
 	time_t getCreationDate() const;

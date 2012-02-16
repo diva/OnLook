@@ -3695,12 +3695,6 @@ void LLAgent::setTeleportState(ETeleportState state)
 		default:
 			break;
 	}
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Version: 1.23.4 | Checked: 2009-07-07 (RLVa-1.0.0d) | Added: RLVa-0.2.0b
-	if ( (rlv_handler_t::isEnabled()) && (TELEPORT_NONE == mTeleportState) )
-	{
-		gRlvHandler.setCanCancelTp(true);
-	}
-// [/RLVa:KB]
 }
 
 void LLAgent::stopCurrentAnimations()

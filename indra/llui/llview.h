@@ -84,7 +84,7 @@ virtual void	removeCtrl( LLUICtrl* ctrl);
 virtual BOOL canFocusChildren() const		{ return TRUE; }
 		LLFolderView
 virtual void deleteAllChildren();
-		LLFolderView, LLPanelInventory
+		LLFolderView, LLPanelObjectInventory
 virtual void	setTentative(BOOL b)		{}
 		LLUICtrl, LLSliderCtrl, LLSpinCtrl
 virtual BOOL	getTentative() const		{ return FALSE; }

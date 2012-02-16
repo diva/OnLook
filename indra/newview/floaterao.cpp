@@ -30,7 +30,7 @@
 #include "roles_constants.h"
 #include "llviewerregion.h"
 
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llinventorybridge.h"
 
 #include "llboost.h"

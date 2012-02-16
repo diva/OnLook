@@ -48,6 +48,7 @@
 #include "llvoavatarself.h"
 #include "llscrollcontainer.h"
 #include "llviewerassettype.h"
+#include "llpanelmaininventory.h"
 
 #include "llsdserialize.h"
 
@@ -290,6 +291,13 @@ void LLInventoryPanel::setSortOrder(U32 order)
 U32 LLInventoryPanel::getSortOrder() const 
 { 
 	return mFolderRoot->getSortOrder(); 
+}
+
+// static
+LLInventoryPanel* LLInventoryPanel::getActiveInventoryPanel()
+{
+	LLInventoryView *view = LLInventoryView::getActiveInventory();
+	return view ? view->getPanel() : NULL;
 }
 
 void LLInventoryPanel::setSinceLogoff(BOOL sl)

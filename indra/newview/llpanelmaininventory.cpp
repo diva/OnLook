@@ -42,7 +42,7 @@
 #include "lltooldraganddrop.h"
 #include "llviewermenu.h"
 #include "llviewertexturelist.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llappviewer.h"
 
 #include "rlvhandler.h"

@@ -661,7 +661,7 @@ void LLMenuItemTearOffGL::doIt()
 			getMenu()->highlightNextItem(this);
 		}
 
-		getMenu()->arrange();
+		getMenu()->needsArrange();
 
 		LLFloater* parent_floater = mParentHandle.get();
 		LLFloater* tear_off_menu = LLTearOffMenu::create(getMenu());
@@ -1325,55 +1325,58 @@ BOOL LLMenuItemBranchGL::handleKeyHere( KEY key, MASK mask )
 
 void LLMenuItemBranchGL::openMenu()
 {
-	if(!getBranch()) return;
+	LLMenuGL* branch = getBranch();
+	if (!branch)
+		return;
 
-	if (getBranch()->getTornOff())
+	if (branch->getTornOff())
 	{
-		gFloaterView->bringToFront((LLFloater*)getBranch()->getParent());
+		gFloaterView->bringToFront((LLFloater*)branch->getParent());
 		// this might not be necessary, as torn off branches don't get focus and hence no highligth
-		getBranch()->highlightNextItem(NULL);
+		branch->highlightNextItem(NULL);
 	}
-	else if( !getBranch()->getVisible() )
+	else if( !branch->getVisible() )
 	{
 		// get valid rectangle for menus
 		const LLRect menu_region_rect = LLMenuGL::sMenuContainer->getMenuRect();
 
-		getBranch()->arrange();
+		branch->arrange();
 
-		LLRect rect = getBranch()->getRect();
+		LLRect branch_rect = branch->getRect();
 		// calculate root-view relative position for branch menu
 		S32 left = getRect().mRight;
 		S32 top = getRect().mTop - getRect().mBottom;
 
-		localPointToOtherView(left, top, &left, &top, getBranch()->getParent());
+		localPointToOtherView(left, top, &left, &top, branch->getParent());
 
-		rect.setLeftTopAndSize( left, top,
-								rect.getWidth(), rect.getHeight() );
+		branch_rect.setLeftTopAndSize( left, top,
+								branch_rect.getWidth(), branch_rect.getHeight() );
 
-		if (getBranch()->getCanTearOff())
+		if (branch->getCanTearOff())
 		{
-			rect.translate(0, TEAROFF_SEPARATOR_HEIGHT_PIXELS);
+			branch_rect.translate(0, TEAROFF_SEPARATOR_HEIGHT_PIXELS);
 		}
-		getBranch()->setRect( rect );
+		branch->setRect( branch_rect );
 		S32 x = 0;
 		S32 y = 0;
-		getBranch()->localPointToOtherView( 0, 0, &x, &y, getBranch()->getParent() ); 
 		S32 delta_x = 0;
 		S32 delta_y = 0;
+		branch->localPointToOtherView( 0, 0, &x, &y, branch->getParent() ); 
 		if( y < menu_region_rect.mBottom )
 		{
 			delta_y = menu_region_rect.mBottom - y;
 		}
 
 		S32 menu_region_width = menu_region_rect.getWidth();
-		if( x - menu_region_rect.mLeft > menu_region_width - rect.getWidth() )
+		if( x - menu_region_rect.mLeft > menu_region_width - branch_rect.getWidth() )
 		{
 			// move sub-menu over to left side
-			delta_x = llmax(-x, (-1 * (rect.getWidth() + getRect().getWidth())));
+			delta_x = llmax(-x, ( -(branch_rect.getWidth() + getRect().getWidth())));
 		}
-		getBranch()->translate( delta_x, delta_y );
-		getBranch()->setVisible( TRUE );
-		getBranch()->getParent()->sendChildToFront(getBranch());
+		branch->translate( delta_x, delta_y );
+
+		branch->setVisible( TRUE );
+		branch->getParent()->sendChildToFront(branch);
 	}
 }
 
@@ -1705,7 +1708,8 @@ LLMenuGL::LLMenuGL( const std::string& name, const std::string& label, LLHandle<
 	mSpilloverBranch(NULL),
 	mSpilloverMenu(NULL),
 	mParentFloaterHandle(parent_floater_handle),
-	mJumpKey(KEY_NONE)
+	mJumpKey(KEY_NONE),
+	mNeedsArrange(FALSE)
 {
 	mFadeTimer.stop();
 	setCanTearOff(TRUE, parent_floater_handle);
@@ -1753,7 +1757,7 @@ void LLMenuGL::setCanTearOff(BOOL tear_off, LLHandle<LLFloater> parent_floater_h
 		mTearOffItem = new LLMenuItemTearOffGL(parent_floater_handle);
 		mItems.insert(mItems.begin(), mTearOffItem);
 		addChildAtEnd(mTearOffItem);
-		arrange();
+		needsArrange();
 	}
 	else if (!tear_off && mTearOffItem != NULL)
 	{
@@ -1761,7 +1765,7 @@ void LLMenuGL::setCanTearOff(BOOL tear_off, LLHandle<LLFloater> parent_floater_h
 		removeChild(mTearOffItem);
 		delete mTearOffItem;
 		mTearOffItem = NULL;
-		arrange();
+		needsArrange();
 	}
 }
 
@@ -2502,7 +2506,7 @@ void LLMenuGL::empty( void )
 void LLMenuGL::setLeftAndBottom(S32 left, S32 bottom)
 {
 	setRect(LLRect(left, getRect().mTop, getRect().mRight, bottom));
-	arrange();
+	needsArrange();
 }
 
 BOOL LLMenuGL::handleJumpKey(KEY key)
@@ -2539,7 +2543,7 @@ BOOL LLMenuGL::append( LLMenuItemGL* item )
 
 	mItems.push_back( item );
 	addChild( item );
-	arrange();
+	needsArrange();
 	return TRUE;
 }
 
@@ -2610,7 +2614,7 @@ BOOL LLMenuGL::remove( LLMenuItemGL* item )
 	// Note that getMenu() will still not work since its parent isn't a menu.
 	sMenuContainer->addChild( item );
 
-	arrange();
+	needsArrange();
 	return TRUE;
 }
 
@@ -2648,6 +2652,7 @@ void LLMenuGL::setItemVisible( const std::string& name, BOOL visible )
 		if( (*item_iter)->getName() == name )
 		{
 			(*item_iter)->setVisible( visible );
+			needsArrange();
 			break;
 		}
 	}
@@ -2978,16 +2983,19 @@ BOOL LLMenuGL::handleHover( S32 x, S32 y, MASK mask )
 
 void LLMenuGL::draw( void )
 {
+	if (mNeedsArrange)
+	{
+		arrange();
+		mNeedsArrange = FALSE;
+	}
 	if (mDropShadowed && !mTornOff)
 	{
-		static LLColor4 color_drop_shadow = LLUI::sColorsGroup->getColor("ColorDropShadow");
 		static S32 drop_shadow_floater = LLUI::sConfigGroup->getS32("DropShadowFloater");
+		static LLColor4 color_drop_shadow = LLUI::sColorsGroup->getColor("ColorDropShadow");
+	
 		gl_drop_shadow(0, getRect().getHeight(), getRect().getWidth(), 0, 
-			color_drop_shadow, 
-			drop_shadow_floater );
+			color_drop_shadow, drop_shadow_floater );
 	}
-
-	LLColor4 bg_color = mBackgroundColor;
 
 	if( mBgVisible )
 	{
@@ -4464,7 +4472,7 @@ LLTearOffMenu::LLTearOffMenu(LLMenuGL* menup) :
 	// flag menu as being torn off
 	menup->setTornOff(TRUE);
 	// update menu layout as torn off menu (no spillover menus)
-	menup->arrange();
+	menup->needsArrange();
 
 	LLRect rect;
 	menup->localRectToOtherView(LLRect(-1, menup->getRect().getHeight(), menup->getRect().getWidth() + 3, 0), &rect, gFloaterView);
@@ -4491,7 +4499,7 @@ LLTearOffMenu::LLTearOffMenu(LLMenuGL* menup) :
 void LLTearOffMenu::draw()
 {
 	mMenu->setBackgroundVisible(isBackgroundOpaque());
-	mMenu->arrange();
+	mMenu->needsArrange();
 
 	if (getRect().getHeight() != mTargetHeight)
 	{

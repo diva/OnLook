@@ -1567,7 +1567,8 @@ void LLViewerTextEditor::copyInventory(const LLInventoryItem* item, U32 callback
 {
 	copy_inventory_from_notecard(mObjectID,
 								 mNotecardInventoryID,
-								 item, callback_id);
+								 item,
+								 callback_id);
 }
 
 bool LLViewerTextEditor::hasEmbeddedInventory()

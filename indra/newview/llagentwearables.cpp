@@ -1903,15 +1903,15 @@ void LLAgentWearables::userRemoveAllClothes()
 	// We have to do this up front to avoid having to deal with the case of multiple wearables being dirty.
 	if (gAgentCamera.cameraCustomizeAvatar())
 	{
-		gFloaterCustomize->askToSaveIfDirty( LLAgentWearables::userRemoveAllClothesStep2, NULL );
+		gFloaterCustomize->askToSaveIfDirty( boost::bind(LLAgentWearables::userRemoveAllClothesStep2,_1) );
 	}
 	else
 	{
-		userRemoveAllClothesStep2( TRUE, NULL );
+		userRemoveAllClothesStep2( TRUE );
 	}
 }
 
-void LLAgentWearables::userRemoveAllClothesStep2( BOOL proceed, void* userdata )
+void LLAgentWearables::userRemoveAllClothesStep2( BOOL proceed )
 {
 	if( proceed )
 	{

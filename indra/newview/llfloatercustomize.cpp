@@ -32,6 +32,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "llappearancemgr.h"
 #include "llimagejpeg.h"
 #include "llfloatercustomize.h"
 #include "llfontgl.h"
@@ -814,23 +815,22 @@ void LLPanelEditWearable::onColorCommit( LLUICtrl* ctrl, void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLColorSwatchCtrl* color_ctrl = (LLColorSwatchCtrl*) ctrl;
 
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if( self && color_ctrl && avatar )
+	if( self && color_ctrl && gAgentAvatarp )
 	{
 		std::map<std::string, S32>::const_iterator cl_itr = self->mColorList.find(ctrl->getName());
 		if(cl_itr != self->mColorList.end())
 		{
 			ETextureIndex te = (ETextureIndex)cl_itr->second;
 
-			LLColor4 old_color = avatar->getClothesColor( te );
+			LLColor4 old_color = gAgentAvatarp->getClothesColor( te );
 			const LLColor4& new_color = color_ctrl->get();
 			if( old_color != new_color )
 			{
 				// Set the new version
-				avatar->setClothesColor( te, new_color, TRUE );
+				gAgentAvatarp->setClothesColor( te, new_color, TRUE );
 
 				LLVisualParamHint::requestHintUpdates();
-				avatar->wearableUpdated(self->mType, FALSE);
+				gAgentAvatarp->wearableUpdated(self->mType, FALSE);
 			}
 		}
 	}
@@ -1736,9 +1736,7 @@ struct WearablePanelData
 LLFloaterCustomize::LLFloaterCustomize()
 :	LLFloater(std::string("customize")),
 	mScrollingPanelList( NULL ),
-	mInventoryObserver(NULL),
-	mNextStepAfterSaveCallback( NULL ),
-	mNextStepAfterSaveUserdata( NULL )
+	mInventoryObserver(NULL)
 {
 	memset(&mWearablePanelList[0],0,sizeof(char*)*LLWearableType::WT_COUNT); //Initialize to 0
 
@@ -1990,12 +1988,11 @@ void LLFloaterCustomize::onBtnOk( void* userdata )
 	LLFloaterCustomize* floater = (LLFloaterCustomize*) userdata;
 	gAgentWearables.saveAllWearables();
 
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if ( avatar )
+	if ( gAgentAvatarp )
 	{
-		avatar->invalidateAll();
+		gAgentAvatarp->invalidateAll();
 		
-		avatar->requestLayerSetUploads();
+		gAgentAvatarp->requestLayerSetUploads();
 
 		gAgent.sendAgentSetAppearance();
 	}
@@ -2602,11 +2599,11 @@ void LLFloaterCustomize::onTabPrecommit( void* userdata, bool from_click )
 	LLWearableType::EType type = (LLWearableType::EType)(intptr_t) userdata;
 	if (type != LLWearableType::WT_INVALID && gFloaterCustomize && gFloaterCustomize->getCurrentWearableType() != type)
 	{
-		gFloaterCustomize->askToSaveIfDirty(onCommitChangeTab, userdata);
+		gFloaterCustomize->askToSaveIfDirty(boost::bind(&onCommitChangeTab, _1));
 	}
 	else
 	{
-		onCommitChangeTab(TRUE, NULL);
+		onCommitChangeTab(true);
 	}
 }
 
@@ -2629,7 +2626,7 @@ void LLFloaterCustomize::onClose(bool app_quitting)
 }
 
 // static
-void LLFloaterCustomize::onCommitChangeTab(BOOL proceed, void* userdata)
+void LLFloaterCustomize::onCommitChangeTab(BOOL proceed)
 {
 	if (!proceed || !gFloaterCustomize)
 	{
@@ -2716,24 +2713,20 @@ void LLFloaterCustomize::updateScrollingPanelList(BOOL allow_modify)
 }
 
 
-void LLFloaterCustomize::askToSaveIfDirty( void(*next_step_callback)(BOOL proceed, void* userdata), void* userdata )
+void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 {
 	if( isDirty())
 	{
 		// Ask if user wants to save, then continue to next step afterwards
-		mNextStepAfterSaveCallback = next_step_callback;
-		mNextStepAfterSaveUserdata = userdata;
+		mNextStepAfterSaveCallback.connect(cb);
 
 		// Bring up view-modal dialog: Save changes? Yes, No, Cancel
 		LLNotificationsUtil::add("SaveClothingBodyChanges", LLSD(), LLSD(),
 			boost::bind(&LLFloaterCustomize::onSaveDialog, this, _1, _2));
-		return;
 	}
-
-	// Try to move to the next step
-	if( next_step_callback )
+	else
 	{
-		next_step_callback( TRUE, userdata );
+		cb(TRUE);	//just clal it immediately.
 	}
 }
 
@@ -2767,10 +2760,9 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 		break;
 	}
 
-	if( mNextStepAfterSaveCallback )
-	{
-		mNextStepAfterSaveCallback( proceed, mNextStepAfterSaveUserdata );
-	}
+	mNextStepAfterSaveCallback(proceed);
+	mNextStepAfterSaveCallback.disconnect_all_slots();	//Should this be done?
+
 	return false;
 }
 

@@ -215,54 +215,31 @@ BOOL LLAvatarListEntry::isDead()
 	return getEntryAgeSeconds() > DEAD_KEEP_TIME;
 }
 
-LLFloaterAvatarList* LLFloaterAvatarList::sInstance = NULL;
-
 LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar"))
 {
-	llassert_always(sInstance == NULL);
-	sInstance = this;
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_radar.xml");
 	mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
 }
 
 LLFloaterAvatarList::~LLFloaterAvatarList()
 {
 	gIdleCallbacks.deleteFunction(LLFloaterAvatarList::callbackIdle);
-	sInstance = NULL;
-}
-//static
-void LLFloaterAvatarList::createInstance(bool visible)
-{
-	sInstance = new LLFloaterAvatarList();
-	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
-	if(!visible)
-	{
-		sInstance->setVisible(FALSE);
-		gSavedSettings.setBOOL("ShowRadar", FALSE);
-	}
 }
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
-	if (sInstance)
-	{
-		if (sInstance->getVisible()
 // [RLVa:KB]
-			|| gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)
-// [/RLVa:KB]
-			)
-
-		{
-			sInstance->close(false);
-		}
-		else
-		{
-			sInstance->open();
-		}
+	if(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+	{
+		if(instanceExists())
+			getInstance()->close();
 	}
 	else
-	{
+// [/RLVa:KB]
+	if(!instanceExists() || !getInstance()->getVisible())
 		showInstance();
-	}
+	else
+		getInstance()->close();
 }
 
 //static
@@ -272,17 +249,7 @@ void LLFloaterAvatarList::showInstance()
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		return;
 // [/RLVa:KB]
-	if (sInstance)
-	{
-		if (!sInstance->getVisible())
-		{
-			sInstance->open();
-		}
-	}
-	else
-	{
-		createInstance(true);
-	}
+	getInstance()->open();
 }
 
 void LLFloaterAvatarList::draw()
@@ -293,12 +260,11 @@ void LLFloaterAvatarList::draw()
 void LLFloaterAvatarList::onOpen()
 {
 	gSavedSettings.setBOOL("ShowRadar", TRUE);
-	sInstance->setVisible(TRUE);
 }
 
 void LLFloaterAvatarList::onClose(bool app_quitting)
 {
-	sInstance->setVisible(FALSE);
+	setVisible(FALSE);
 	if (!app_quitting)
 	{
 		gSavedSettings.setBOOL("ShowRadar", FALSE);
@@ -361,8 +327,6 @@ BOOL LLFloaterAvatarList::postBuild()
 
 void LLFloaterAvatarList::updateAvatarList()
 {
-	if (sInstance != this) return;
-
 	//llinfos << "radar refresh: updating map" << llendl;
 
 	// Check whether updates are enabled
@@ -602,7 +566,7 @@ void LLFloaterAvatarList::expireAvatarList()
 void LLFloaterAvatarList::refreshAvatarList() 
 {
 	// Don't update list when interface is hidden
-	if (!sInstance->getVisible()) return;
+	if (!getVisible()) return;
 
 	// We rebuild the list fully each time it's refreshed
 	// The assumption is that it's faster to refill it and sort than
@@ -1441,15 +1405,13 @@ void LLFloaterAvatarList::callbackFreeze(const LLSD& notification, const LLSD& r
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
-
 	if (option == 0)
 	{
-		self->doCommand(cmd_freeze);
+		getInstance()->doCommand( cmd_freeze );
 	}
 	else if (option == 1)
 	{
-		self->doCommand(cmd_unfreeze);
+		getInstance()->doCommand( cmd_unfreeze );
 	}
 }
 
@@ -1458,15 +1420,13 @@ void LLFloaterAvatarList::callbackEject(const LLSD& notification, const LLSD& re
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
- 
 	if (option == 0)
 	{
-		self->doCommand(cmd_eject);
+		getInstance()->doCommand( cmd_eject );
 	}
 	else if (option == 1)
 	{
-		self->doCommand(cmd_ban);
+		getInstance()->doCommand( cmd_ban );
 	}
 }
 
@@ -1475,22 +1435,21 @@ void LLFloaterAvatarList::callbackEjectFromEstate(const LLSD& notification, cons
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
-
 	if (option == 0)
 	{
-		self->doCommand(cmd_estate_eject);
+		getInstance()->doCommand( cmd_estate_eject );
 	}
 }
 
 //static
-void LLFloaterAvatarList::callbackIdle(void *userdata) {
-	if (LLFloaterAvatarList::sInstance != NULL)
+void LLFloaterAvatarList::callbackIdle(void *userdata)
+{
+	if (instanceExists())
 	{
 		// Do not update at every frame: this would be insane !
-		if (gFrameCount % LLFloaterAvatarList::sInstance->mUpdateRate == 0)
+		if (gFrameCount % getInstance()->mUpdateRate == 0)
 		{
-			LLFloaterAvatarList::sInstance->updateAvatarList();
+			getInstance()->updateAvatarList();
 		}
 	}
 }

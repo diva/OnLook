@@ -37,7 +37,7 @@
 #include "llpanel.h"
 
 class LLButton;
-class LLPanelInventory;
+class LLPanelObjectInventory;
 class LLViewerObject;
 class LLCheckBoxCtrl;
 class LLSpinCtrl;
@@ -58,7 +58,7 @@ protected:
 	void			getState(LLViewerObject *object);
 
 public:
-	LLPanelInventory* mPanelInventory;
+	LLPanelObjectInventory* mPanelInventory;
 };
 
 #endif

@@ -55,7 +55,7 @@
 #include "llinventoryfunctions.h"
 #include "llmanipscale.h"
 #include "llnotificationsutil.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llpreviewscript.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"

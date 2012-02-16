@@ -156,9 +156,17 @@ void dec_busy_count()
 }
 
 // Function declarations
+
+struct LLWearInfo
+{
+	LLUUID	mCategoryID;
+	BOOL	mAppend;
+	BOOL	mReplace;
+};
+
 struct LLWearableHoldingPattern;
 void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL append, BOOL replace = FALSE);
-void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata);
+void wear_inventory_category_on_avatar_step2( BOOL proceed, const LLWearInfo wear_info);
 void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void*);
 void wear_inventory_category_on_avatar_step3(LLWearableHoldingPattern* holder, BOOL append);
 void remove_inventory_category_from_avatar(LLInventoryCategory* category);
@@ -180,12 +188,6 @@ void gotAssetForSaveItemAs(LLVFS *vfs,
 									   void* user_data, S32 status, LLExtStat ext_status);
 // </edit>
 
-struct LLWearInfo
-{
-	LLUUID	mCategoryID;
-	BOOL	mAppend;
-	BOOL	mReplace;
-};
 
 // [RLVa:KB] - Made this part of LLWearableHoldingPattern
 //BOOL gAddToOutfit = FALSE;
@@ -4688,31 +4690,27 @@ void wear_inventory_category_on_avatar(LLInventoryCategory* category, BOOL appen
 	lldebugs << "wear_inventory_category_on_avatar( " << category->getName()
 			 << " )" << llendl;
 			 	
-	LLWearInfo* userdata = new LLWearInfo;
-	userdata->mAppend = append;
-	userdata->mReplace = replace;
-	userdata->mCategoryID = category->getUUID();
+	LLWearInfo wear_info;
+	wear_info.mAppend = append;
+	wear_info.mReplace = replace;
+	wear_info.mCategoryID = category->getUUID();
 
 	if( gFloaterCustomize )
 	{
 		gFloaterCustomize->askToSaveIfDirty(
-			wear_inventory_category_on_avatar_step2,
-			userdata);
+			boost::bind(wear_inventory_category_on_avatar_step2,_1,wear_info));
 	}
 	else
 	{
 		wear_inventory_category_on_avatar_step2(
 			TRUE,
-			userdata );
+			wear_info );
 	}
 }
 
 
-void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
+void wear_inventory_category_on_avatar_step2( BOOL proceed, const LLWearInfo wear_info )
 {
-	LLWearInfo* wear_info = (LLWearInfo*)userdata;
-	if (!wear_info) return;
-
 	// Find all the wearables that are in the category's subtree.	
 	lldebugs << "wear_inventory_category_on_avatar_step2()" << llendl;
 	if(proceed)
@@ -4720,7 +4718,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 		LLInventoryModel::cat_array_t cat_array;
 		LLInventoryModel::item_array_t item_array;
 		LLFindWearables is_wearable;
-		gInventory.collectDescendentsIf(wear_info->mCategoryID,
+		gInventory.collectDescendentsIf(wear_info.mCategoryID,
 										cat_array,
 										item_array,
 										LLInventoryModel::EXCLUDE_TRASH,
@@ -4729,14 +4727,14 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 		S32 wearable_count = item_array.count();
 
 		LLInventoryModel::item_array_t obj_items_new;
-		LLCOFMgr::getDescendentsOfAssetType(wear_info->mCategoryID, obj_items_new, LLAssetType::AT_OBJECT, false);
+		LLCOFMgr::getDescendentsOfAssetType(wear_info.mCategoryID, obj_items_new, LLAssetType::AT_OBJECT, false);
 		S32 obj_count = obj_items_new.count();
 
 		// Find all gestures in this folder
 		LLInventoryModel::cat_array_t	gest_cat_array;
 		LLInventoryModel::item_array_t	gest_item_array;
 		LLIsType is_gesture( LLAssetType::AT_GESTURE );
-		gInventory.collectDescendentsIf(wear_info->mCategoryID,
+		gInventory.collectDescendentsIf(wear_info.mCategoryID,
 										gest_cat_array,
 										gest_item_array,
 										LLInventoryModel::EXCLUDE_TRASH,
@@ -4746,7 +4744,6 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 		if( !wearable_count && !obj_count && !gest_count)
 		{
 			LLNotificationsUtil::add("CouldNotPutOnOutfit");
-			delete wear_info;
 			return;
 		}
 
@@ -4765,7 +4762,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 
 			// Update the inventory item labels to reflect the fact
 			// they are active.
-			LLViewerInventoryCategory* catp = gInventory.getCategory(wear_info->mCategoryID);
+			LLViewerInventoryCategory* catp = gInventory.getCategory(wear_info.mCategoryID);
 			if (catp)
 			{
 				gInventory.updateCategory(catp);
@@ -4781,7 +4778,7 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 			// before the final getNextData().
 //			LLWearableHoldingPattern* holder = new LLWearableHoldingPattern;
 // [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
-			LLWearableHoldingPattern* holder = new LLWearableHoldingPattern(wear_info->mAppend);
+			LLWearableHoldingPattern* holder = new LLWearableHoldingPattern(wear_info.mAppend);
 // [/RLVa:KB]
 			LLFoundData* found;
 			LLDynamicArray<LLFoundData*> found_container;
@@ -4814,10 +4811,10 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 		//
 		// - Attachments: include COF contents only if appending.
 		//
-		if (!wear_info->mReplace)
+		if (!wear_info.mReplace)
 		{
 			LLInventoryModel::item_array_t obj_items;
-			if (wear_info->mAppend)
+			if (wear_info.mAppend)
 				LLCOFMgr::getDescendentsOfAssetType(idCOF, obj_items, LLAssetType::AT_OBJECT, false);
 // [RLVa:KB] - Checked: 2010-03-05 (RLVa-1.2.0z) | Modified: RLVa-1.2.0b
 			else if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
@@ -4855,11 +4852,9 @@ void wear_inventory_category_on_avatar_step2( BOOL proceed, void* userdata )
 			}
 		}
 
-		if (!wear_info->mAppend)
-			LLCOFMgr::instance().addBOFLink(wear_info->mCategoryID);
+		if (!wear_info.mAppend)
+			LLCOFMgr::instance().addBOFLink(wear_info.mCategoryID);
 	}
-	delete wear_info;
-	wear_info = NULL;
 }
 
 void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void* data)
@@ -4967,8 +4962,7 @@ void remove_inventory_category_from_avatar( LLInventoryCategory* category )
 	if( gFloaterCustomize )
 	{
 		gFloaterCustomize->askToSaveIfDirty(
-			remove_inventory_category_from_avatar_step2,
-			uuid);
+			boost::bind(remove_inventory_category_from_avatar_step2,_1,uuid));
 	}
 	else
 	{

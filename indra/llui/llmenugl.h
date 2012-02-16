@@ -477,6 +477,7 @@ public:
 
 	virtual BOOL isOpen();
 
+	void needsArrange() { mNeedsArrange = TRUE; }
 	// Shape this menu to fit the current state of the children, and
 	// adjust the child rects to fit. This is called automatically
 	// when you add items. *FIX: We may need to deal with visibility
@@ -541,6 +542,7 @@ protected:
 	S32				mMouseVelY;
 	BOOL			mHorizontalLayout;
 	BOOL			mKeepFixedSize;
+	BOOL			mNeedsArrange;
 
 private:
 	static LLColor4 sDefaultBackgroundColor;

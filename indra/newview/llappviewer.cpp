@@ -4639,13 +4639,9 @@ void LLAppViewer::handleLoginComplete()
 	{
 		gDebugInfo["MainloopTimeoutState"] = LLAppViewer::instance()->mMainloopTimeout->getState();
 	}
-	writeDebugInfo();
 
-// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
-	if (rlv_handler_t::isEnabled())
-	{
-		gRlvHandler.onLoginComplete();
-	}
-// [/RLVa:KB]
+	mOnLoginCompleted();
+
+	writeDebugInfo();
 }
 

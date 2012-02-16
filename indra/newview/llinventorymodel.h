@@ -168,6 +168,10 @@ private:
 	//--------------------------------------------------------------------
 	// Login
 	//--------------------------------------------------------------------
+public:
+	static BOOL getIsFirstTimeInViewer2();
+private:
+	static BOOL sFirstTimeInViewer2;
 	const static S32 sCurrentInvCacheVersion; // expected inventory cache version
 
 /**                    Initialization/Setup

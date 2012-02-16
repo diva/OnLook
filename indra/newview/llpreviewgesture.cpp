@@ -95,12 +95,9 @@ protected:
 
 void LLInventoryGestureAvailable::done()
 {
-	LLPreview* preview = NULL;
-	uuid_vec_t::iterator it = mComplete.begin();
-	uuid_vec_t::iterator end = mComplete.end();
-	for(; it < end; ++it)
+	for(uuid_vec_t::iterator it = mComplete.begin(); it != mComplete.end(); ++it)
 	{
-		preview = LLPreview::find((*it));
+		LLPreview *preview = LLPreview::find((*it));
 		if(preview)
 		{
 			preview->refresh();
@@ -166,7 +163,7 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 
 	// this will call refresh when we have everything.
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)self->getItem();
-	if(item && !item->isComplete())
+	if (item && !item->isFinished())
 	{
 		LLInventoryGestureAvailable* observer;
 		observer = new LLInventoryGestureAvailable();
@@ -188,6 +185,11 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 	return self;
 }
 
+void LLPreviewGesture::draw()
+{
+	// Skip LLPreview::draw() to avoid description update
+	LLFloater::draw();
+}
 
 // virtual
 BOOL LLPreviewGesture::handleKeyHere(KEY key, MASK mask)
@@ -888,7 +890,13 @@ void LLPreviewGesture::initDefaultGesture()
 void LLPreviewGesture::loadAsset()
 {
 	const LLInventoryItem* item = getItem();
-	if (!item) return;
+	if (!item) 
+	{
+		// Don't set asset status here; we may not have set the item id yet
+		// (e.g. when this gets called initially)
+		//mAssetStatus = PREVIEW_ASSET_ERROR;
+		return;
+	}
 
 	LLUUID asset_id = item->getAssetUUID();
 	if (asset_id.isNull())
@@ -897,6 +905,7 @@ void LLPreviewGesture::loadAsset()
 		// Blank gesture will be fine.
 		initDefaultGesture();
 		refresh();
+		mAssetStatus = PREVIEW_ASSET_LOADED;
 		return;
 	}
 
@@ -952,6 +961,7 @@ void LLPreviewGesture::onLoadComplete(LLVFS *vfs,
 
 				self->mDirty = FALSE;
 				self->refresh();
+				self->refreshFromItem(self->getItem()); // to update description and title
 			}
 			else
 			{

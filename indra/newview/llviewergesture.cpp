@@ -110,6 +110,7 @@ BOOL LLViewerGesture::trigger(const std::string &trigger_string)
 	}
 }
 
+
 // private
 void LLViewerGesture::doTrigger( BOOL send_chat )
 {

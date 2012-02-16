@@ -131,9 +131,6 @@ void LLAvatarPropertiesProcessor::sendAvatarPropertiesRequest(const LLUUID& avat
 
 void LLAvatarPropertiesProcessor::sendAvatarPicksRequest(const LLUUID& avatar_id)
 {
-	std::string name;
-	gCacheName->getFullName(avatar_id, name);
-	llinfos << "Sending avatarpicksrequest for " << avatar_id << " ("<<name<<")" << llendl;
 	sendGenericRequest(avatar_id, APT_PICKS, "avatarpicksrequest");
 }
 
@@ -398,10 +395,6 @@ void LLAvatarPropertiesProcessor::processAvatarPicksReply(LLMessageSystem* msg, 
 	msg->getUUID(_PREHASH_AgentData, _PREHASH_AgentID, avatar_picks.agent_id);
 	msg->getUUID(_PREHASH_AgentData, _PREHASH_TargetID, avatar_picks.target_id);
 
-	std::string name;
-	gCacheName->getFullName(avatar_picks.target_id, name);
-
-	llinfos << "Got reply for " << avatar_picks.target_id << ": (" << name << ")" << llendl;
 	S32 block_count = msg->getNumberOfBlocks(_PREHASH_Data);
 	for (int block = 0; block < block_count; ++block)
 	{
@@ -411,14 +404,12 @@ void LLAvatarPropertiesProcessor::processAvatarPicksReply(LLMessageSystem* msg, 
 		msg->getUUID(_PREHASH_Data, _PREHASH_PickID, pick_id, block);
 		msg->getString(_PREHASH_Data, _PREHASH_PickName, pick_name, block);
 
-		llinfos << "\t" << pick_id << ": " << pick_name << llendl;
 		avatar_picks.picks_list.push_back(std::make_pair(pick_id,pick_name));
 	}
 	LLAvatarPropertiesProcessor* self = getInstance();
 	// Request processed, no longer pending
 	self->removePendingRequest(avatar_picks.target_id, APT_PICKS);
 	self->notifyObservers(avatar_picks.target_id,&avatar_picks,APT_PICKS);
-	//LLPanelAvatar
 }
 
 void LLAvatarPropertiesProcessor::processPickInfoReply(LLMessageSystem* msg, void**)

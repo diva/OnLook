@@ -173,6 +173,7 @@
 #include "llinventorydefines.h"
 #include "llinventoryfunctions.h"
 #include "llinventorypanel.h"
+#include "llinventorybridge.h"
 #include "llkeyboard.h"
 #include "llpanellogin.h"
 #include "llmenucommands.h"
@@ -4189,18 +4190,18 @@ void handle_show_newest_map(void*)
 //
 // Major mode switching
 //
-void reset_view_final( BOOL proceed, void* );
+void reset_view_final( BOOL proceed );
 
 void handle_reset_view()
 {
 	if( (CAMERA_MODE_CUSTOMIZE_AVATAR == gAgentCamera.getCameraMode()) && gFloaterCustomize )
 	{
 		// Show dialog box if needed.
-		gFloaterCustomize->askToSaveIfDirty( reset_view_final, NULL );
+		gFloaterCustomize->askToSaveIfDirty( boost::bind(&reset_view_final, _1) );
 	}
 	else
 	{
-		reset_view_final( TRUE, NULL );
+		reset_view_final( true );
 	}
 }
 
@@ -4214,7 +4215,7 @@ class LLViewResetView : public view_listener_t
 };
 
 // Note: extra parameters allow this function to be called from dialog.
-void reset_view_final( BOOL proceed, void* ) 
+void reset_view_final( BOOL proceed ) 
 {
 	if( !proceed )
 	{
@@ -8298,10 +8299,9 @@ void slow_mo_animations(void*)
 
 void handle_dump_avatar_local_textures(void*)
 {
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if( avatar )
+	if( isAgentAvatarValid() )
 	{
-		avatar->dumpLocalTextures();
+		gAgentAvatarp->dumpLocalTextures();
 	}
 }
 
@@ -9062,12 +9062,11 @@ void handle_buy_currency_test(void*)
 
 void handle_rebake_textures(void*)
 {
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if (!avatar) return;
+	if (!isAgentAvatarValid()) return;
 
 	// Slam pending upload count to "unstick" things
 	bool slam_for_debug = true;
-	avatar->forceBakeAllTextures(slam_for_debug);
+	gAgentAvatarp->forceBakeAllTextures(slam_for_debug);
 }
 
 void toggle_visibility(void* user_data)
