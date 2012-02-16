@@ -3105,6 +3105,8 @@ void renderSoundHighlights(LLDrawable* drawablep)
 	}
 }
 
+void updateParticleActivity(LLDrawable *drawablep);
+
 void LLPipeline::postSort(LLCamera& camera)
 {
 	LLMemType mt(LLMemType::MTYPE_PIPELINE_POST_SORT);
@@ -3235,6 +3237,9 @@ void LLPipeline::postSort(LLCamera& camera)
 		std::sort(sCull->beginAlphaGroups(), sCull->endAlphaGroups(), LLSpatialGroup::CompareDepthGreater());
 	}
 	llpushcallstacks ;
+
+	forAllVisibleDrawables(updateParticleActivity);
+
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
 	static const LLCachedControl<bool> beacons_visible("BeaconsVisible", false);
 	if (beacons_visible && !sShadowRender)

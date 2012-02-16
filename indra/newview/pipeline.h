@@ -45,6 +45,7 @@
 #include "llgl.h"
 #include "lldrawable.h"
 #include "llrendertarget.h"
+#include "llfasttimer.h"
 
 #include <stack>
 
