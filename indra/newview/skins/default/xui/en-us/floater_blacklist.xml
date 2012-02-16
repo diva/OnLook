@@ -10,13 +10,15 @@
 	<scroll_list top="-100" bottom="35" can_resize="true" column_padding="0" draw_heading="true"
 	     follows="left|top|bottom|right" left="10" multi_select="true" name="file_list" right="-10" search_column="0">
     <column dynamicwidth="false" name="asset_id" label="Asset ID" width ="00"  />
-		<column dynamicwidth="true" name="entry_name" label="Name" />
+    <column dynamicwidth="true" name="entry_name" label="Name" />
     <column dynamicwidth="false" name="entry_type" label="Type" width="110" />
     <column dynamicwidth="false" name="entry_agent" label="Blacklisted by" width="170" />
     <column dynamicwidth="false" name="entry_date" label="Date" width="130"/>
+    <!--column dynamicwidth="false" name="asset_id" label="Asset-ID" width="130"/-->
 	</scroll_list>
 	<button name="save_btn" follows="left|bottom" width="75" bottom_delta="-23" left="10" height="20" label="Save XML"/>
 	<button name="load_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Load XML"/>
 	<button name="clear_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Clear"/>
+	<!--button name="rerender_btn" follows="right|bottom" width="150" bottom_delta="0" left_delta="400" height="20" label="Rerender all Objects"/-->
 	<button name="copy_uuid_btn" follows="left|bottom" width="75" bottom_delta="0" left_delta="75" height="20" label="Copy UUID"/>
 </floater>
