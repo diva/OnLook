@@ -7,25 +7,12 @@ if(INSTALL_PROPRIETARY)
   use_prebuilt_binary(fmodex)
 endif(INSTALL_PROPRIETARY)
 
-find_library(FMODEX_LIBRARY_RELEASE
+find_library(FMODEX_LIBRARY
              NAMES fmodex fmodex_vc fmodexL_vc
              PATHS
-             ${ARCH_PREBUILT_DIRS_RELEASE}
+             optimized ${ARCH_PREBUILT_DIRS_RELEASE}
+             debug ${ARCH_PREBUILT_DIRS_DEBUG}
              )
-
-find_library(FMODEX_LIBRARY_DEBUG
-             NAMES fmodex fmodex_vc fmodexL_vc
-             PATHS
-             ${ARCH_PREBUILT_DIRS_DEBUG}
-             )
-
-if (FMODEX_LIBRARY_RELEASE AND FMODEX_LIBRARY_DEBUG)
-  set(FMODEX_LIBRARY
-      debug ${FMODEX_LIBRARY_DEBUG}
-      optimized ${FMODEX_LIBRARY_RELEASE})
-elseif (FMODEX_LIBRARY_RELEASE)
-  set(FMODEX_LIBRARY ${FMODEX_LIBRARY_RELEASE})
-endif (FMODEX_LIBRARY_RELEASE AND FMODEX_LIBRARY_DEBUG)
 
 if (NOT FMODEX_LIBRARY)
   set(FMODEX_SDK_DIR CACHE PATH "Path to the FMOD Ex SDK.")
