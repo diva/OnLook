@@ -87,7 +87,7 @@
 <!-- NOTIFICATION POP-UPS -->
 <NotifyBoxColor value="166, 166, 166, 255"/>
 <NotifyTextColor value="0, 0, 0, 255"/>
-<NotifyCautionBoxColor value="254, 209, 118, 255"/>		<!-- the background color of caution permissions prompts -->
+<NotifyCautionBoxColor value="0, 0, 0, 255"/>		<!-- the background color of caution permissions prompts -->
 <NotifyCautionWarnColor value="0, 0, 0, 255"/>			<!-- the foreground color of the special title text in caution permissions prompts -->
 <GroupNotifyBoxColor value="70, 170, 255, 255"/>
 <GroupNotifyTextColor value="0, 0, 0 255" />

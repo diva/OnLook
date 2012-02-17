@@ -96,7 +96,7 @@
 <!-- NOTIFICATION POP-UPS -->
 <NotifyBoxColor value="152, 160, 160, 255"/>
 <NotifyTextColor value="0, 0, 0, 255"/>
-<NotifyCautionBoxColor value="254, 209, 118, 255"/>
+<NotifyCautionBoxColor value="0, 0, 0, 255"/>
 <NotifyCautionWarnColor value="0, 0, 0, 255"/>
 <FocusBackgroundColor value="176, 184, 184, 255"/>
 <GroupNotifyBoxColor value="255, 170, 70, 255"/>
@@ -182,7 +182,7 @@
  <!-- Alert box colors -->
 <AlertBoxColor value="176, 184, 184, 255"/>
 <AlertTextColor value="0, 0, 0, 255"/>
-<AlertCautionBoxColor value="254, 209, 118, 255"/>	<!-- Background color of caution alerts -->
+<AlertCautionBoxColor value="0, 0, 0, 255"/>	<!-- Background color of caution alerts -->
 <AlertCautionTextColor value="0, 0, 0, 255"/>		<!-- Foreground color of the special title text in caution alerts -->
 
 <!--  Multi sliders, as in the sky animation setting -->
