@@ -38,6 +38,7 @@ else (STANDALONE)
   if (LINUX)
     set(UI_LIBRARIES
         atk-1.0
+        X11
         gdk-x11-2.0
         gdk_pixbuf-2.0
         Xinerama

@@ -67,6 +67,10 @@ elseif (LINUX)
         QtNetwork
         QtGui
         QtCore
+        crypto
+        ssl
+#       qgif
+#       qjpeg
         jscore
         jpeg
         fontconfig
