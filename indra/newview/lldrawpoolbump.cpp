@@ -1589,7 +1589,11 @@ void LLDrawPoolInvisible::endDeferredPass( S32 pass )
 
 void LLDrawPoolInvisible::renderDeferred( S32 pass )
 { //render invisiprims; this doesn't work becaue it also blocks all the post-deferred stuff
-#if 0
+	static const LLCachedControl<bool> enable("SianaRenderDeferredInvisiprim");
+	if (!enable) {
+	    return;
+	}
+
 	LLFastTimer t(FTM_RENDER_INVISIBLE);
   
 	U32 invisi_mask = LLVertexBuffer::MAP_VERTEX;
@@ -1607,5 +1611,4 @@ void LLDrawPoolInvisible::renderDeferred( S32 pass )
 		renderShiny(true);
 		endShiny(true);
 	}
-#endif
 }
