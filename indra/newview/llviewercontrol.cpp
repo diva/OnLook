@@ -190,7 +190,7 @@ static bool handleAvatarBoobXYInfluence(const LLSD& newvalue)
 
 static bool handleSetSelfInvisible( const LLSD& newvalue)
 {
-	LLVOAvatar::onChangeSelfInvisible( newvalue.asBoolean() );
+	LLVOAvatarSelf::onChangeSelfInvisible( newvalue.asBoolean() );
 	return true;
 }
 

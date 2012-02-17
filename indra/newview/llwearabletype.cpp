@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llwearabletype.h"
+#include "llinventoryfunctions.h"
 #include "lltrans.h"
 
 struct WearableEntry : public LLDictionaryEntry
@@ -150,9 +151,9 @@ BOOL LLWearableType::getDisableCameraSwitch(LLWearableType::EType type)
 // static 
 BOOL LLWearableType::getAllowMultiwear(LLWearableType::EType type)
 {
-	return false; //Disabled
-	/*const LLWearableDictionary *dict = LLWearableDictionary::getInstance();
+	const LLWearableDictionary *dict = LLWearableDictionary::getInstance();
 	const WearableEntry *entry = dict->lookup(type);
 	if (!entry) return FALSE;
-	return entry->mAllowMultiwear;*/
+	return entry->mAllowMultiwear;
 }
+

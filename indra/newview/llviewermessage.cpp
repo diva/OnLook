@@ -199,8 +199,6 @@ static const F32 LLREQUEST_PERMISSION_THROTTLE_INTERVAL	= 10.0f; // seconds
 extern BOOL gDebugClicks;
 
 // function prototypes
-void open_offer(const std::vector<LLUUID>& items, const std::string& from_name);
-bool highlight_offered_object(const LLUUID& obj_id);
 bool check_offer_throttle(const std::string& from_name, bool check_only);
 void callbackCacheEstateOwnerName(const LLUUID& id, const std::string& full_name,  bool is_group);
 
@@ -810,6 +808,51 @@ bool join_group_response(const LLSD& notification, const LLSD& response)
 
 	return false;
 }
+
+static void highlight_inventory_objects_in_panel(const std::vector<LLUUID>& items, LLInventoryPanel *inventory_panel)
+{
+	if (NULL == inventory_panel) return;
+
+	for (std::vector<LLUUID>::const_iterator item_iter = items.begin();
+		item_iter != items.end();
+		++item_iter)
+	{
+		const LLUUID& item_id = (*item_iter);
+		if(!highlight_offered_object(item_id))
+		{
+			continue;
+		}
+
+		LLInventoryObject* item = gInventory.getObject(item_id);
+		llassert(item);
+		if (!item) {
+			continue;
+		}
+
+		LL_DEBUGS("Inventory_Move") << "Highlighting inventory item: " << item->getName() << ", " << item_id  << LL_ENDL;
+		LLFolderView* fv = inventory_panel->getRootFolder();
+		if (fv)
+		{
+			LLFolderViewItem* fv_item = fv->getItemByID(item_id);
+			if (fv_item)
+			{
+				LLFolderViewItem* fv_folder = fv_item->getParentFolder();
+				if (fv_folder)
+				{
+					// Parent folders can be different in case of 2 consecutive drag and drop
+					// operations when the second one is started before the first one completes.
+					LL_DEBUGS("Inventory_Move") << "Open folder: " << fv_folder->getName() << LL_ENDL;
+					fv_folder->setOpen(TRUE);
+					if (fv_folder->isSelected())
+					{
+						fv->changeSelection(fv_folder, FALSE);
+					}
+				}
+				fv->changeSelection(fv_item, TRUE);
+			}
+		}
+	}
+}
 static LLNotificationFunctorRegistration jgr_1("JoinGroup", join_group_response);
 static LLNotificationFunctorRegistration jgr_2("JoinedTooManyGroupsMember", join_group_response);
 static LLNotificationFunctorRegistration jgr_3("JoinGroupCanAfford", join_group_response);
@@ -825,15 +868,199 @@ public:
 					 const std::string& from_name) : 
 		LLInventoryFetchItemsObserver(object_id),
 		mFromName(from_name) {}
+	/*virtual*/ void startFetch()
+	{
+		for (uuid_vec_t::const_iterator it = mIDs.begin(); it < mIDs.end(); ++it)
+		{
+			LLViewerInventoryCategory* cat = gInventory.getCategory(*it);
+			if (cat)
+			{
+				mComplete.push_back((*it));
+			}
+		}
+		LLInventoryFetchItemsObserver::startFetch();
+	}
 	/*virtual*/ void done()
 	{
-		open_offer(mComplete, mFromName);
+		open_inventory_offer(mComplete, mFromName);
 		gInventory.removeObserver(this);
 		delete this;
 	}
 private:
 	std::string mFromName;
 };
+
+/**
+ * Class to observe adding of new items moved from the world to user's inventory to select them in inventory.
+ *
+ * We can't create it each time items are moved because "drop" event is sent separately for each
+ * element even while multi-dragging. We have to have the only instance of the observer. See EXT-4347.
+ */
+class LLViewerInventoryMoveFromWorldObserver : public LLInventoryAddItemByAssetObserver
+{
+public:
+	LLViewerInventoryMoveFromWorldObserver()
+		: LLInventoryAddItemByAssetObserver()
+	{
+
+	}
+
+	void setMoveIntoFolderID(const LLUUID& into_folder_uuid) {mMoveIntoFolderID = into_folder_uuid; }
+
+private:
+	/*virtual */void onAssetAdded(const LLUUID& asset_id)
+	{
+		// Store active Inventory panel.
+		if (LLInventoryPanel::getActiveInventoryPanel())
+		{
+			mActivePanel = LLInventoryPanel::getActiveInventoryPanel()->getHandle();
+		}
+
+		// Store selected items (without destination folder)
+		mSelectedItems.clear();
+		if (LLInventoryPanel::getActiveInventoryPanel())
+		{
+			LLInventoryPanel::getActiveInventoryPanel()->getRootFolder()->getSelectionList(mSelectedItems);
+		}
+		mSelectedItems.erase(mMoveIntoFolderID);
+	}
+
+	/**
+	 * Selects added inventory items watched by their Asset UUIDs if selection was not changed since
+	 * all items were started to watch (dropped into a folder).
+	 */
+	void done()
+	{
+		LLInventoryPanel* active_panel = dynamic_cast<LLInventoryPanel*>(mActivePanel.get());
+
+		// if selection is not changed since watch started lets hightlight new items.
+		if (active_panel && !isSelectionChanged())
+		{
+			LL_DEBUGS("Inventory_Move") << "Selecting new items..." << LL_ENDL;
+			active_panel->clearSelection();
+			highlight_inventory_objects_in_panel(mAddedItems, active_panel);
+		}
+	}
+
+	/**
+	 * Returns true if selected inventory items were changed since moved inventory items were started to watch.
+	 */
+	bool isSelectionChanged()
+	{	
+		LLInventoryPanel* active_panel = dynamic_cast<LLInventoryPanel*>(mActivePanel.get());
+
+		if (NULL == active_panel)
+		{
+			return true;
+		}
+
+		// get selected items (without destination folder)
+		selected_items_t selected_items;
+		active_panel->getRootFolder()->getSelectionList(selected_items);
+		selected_items.erase(mMoveIntoFolderID);
+
+		// compare stored & current sets of selected items
+		selected_items_t different_items;
+		std::set_symmetric_difference(mSelectedItems.begin(), mSelectedItems.end(),
+			selected_items.begin(), selected_items.end(), std::inserter(different_items, different_items.begin()));
+
+		LL_DEBUGS("Inventory_Move") << "Selected firstly: " << mSelectedItems.size()
+			<< ", now: " << selected_items.size() << ", difference: " << different_items.size() << LL_ENDL;
+
+		return different_items.size() > 0;
+	}
+
+	LLHandle<LLPanel> mActivePanel;
+	typedef std::set<LLUUID> selected_items_t;
+	selected_items_t mSelectedItems;
+
+	/**
+	 * UUID of FolderViewFolder into which watched items are moved.
+	 *
+	 * Destination FolderViewFolder becomes selected while mouse hovering (when dragged items are dropped).
+	 * 
+	 * If mouse is moved out it set unselected and number of selected items is changed 
+	 * even if selected items in Inventory stay the same.
+	 * So, it is used to update stored selection list.
+	 *
+	 * @see onAssetAdded()
+	 * @see isSelectionChanged()
+	 */
+	LLUUID mMoveIntoFolderID;
+};
+
+LLViewerInventoryMoveFromWorldObserver* gInventoryMoveObserver = NULL;
+
+void set_dad_inventory_item(LLInventoryItem* inv_item, const LLUUID& into_folder_uuid)
+{
+	start_new_inventory_observer();
+
+	gInventoryMoveObserver->setMoveIntoFolderID(into_folder_uuid);
+	gInventoryMoveObserver->watchAsset(inv_item->getAssetUUID());
+}
+
+
+/**
+ * Class to observe moving of items and to select them in inventory.
+ *
+ * Used currently for dragging from inbox to regular inventory folders
+ */
+
+class LLViewerInventoryMoveObserver : public LLInventoryObserver
+{
+public:
+
+	LLViewerInventoryMoveObserver(const LLUUID& object_id)
+		: LLInventoryObserver()
+		, mObjectID(object_id)
+	{
+		if (LLInventoryPanel::getActiveInventoryPanel())
+		{
+			mActivePanel = LLInventoryPanel::getActiveInventoryPanel()->getHandle();
+		}
+	}
+
+	virtual ~LLViewerInventoryMoveObserver() {}
+	virtual void changed(U32 mask);
+	
+private:
+	LLUUID mObjectID;
+	LLHandle<LLPanel> mActivePanel;
+
+};
+
+void LLViewerInventoryMoveObserver::changed(U32 mask)
+{
+	LLInventoryPanel* active_panel = dynamic_cast<LLInventoryPanel*>(mActivePanel.get());
+
+	if (NULL == active_panel)
+	{
+		gInventory.removeObserver(this);
+		return;
+	}
+
+	if((mask & (LLInventoryObserver::STRUCTURE)) != 0)
+	{
+		const std::set<LLUUID>& changed_items = gInventory.getChangedIDs();
+
+		std::set<LLUUID>::const_iterator id_it = changed_items.begin();
+		std::set<LLUUID>::const_iterator id_end = changed_items.end();
+		for (;id_it != id_end; ++id_it)
+		{
+			if ((*id_it) == mObjectID)
+			{
+				active_panel->clearSelection();			
+				std::vector<LLUUID> items;
+				items.push_back(mObjectID);
+				highlight_inventory_objects_in_panel(items, active_panel);
+				active_panel->getRootFolder()->scrollToShowSelection();
+				
+				gInventory.removeObserver(this);
+				break;
+			}
+		}
+	}
+}
 
 //unlike the FetchObserver for AgentOffer, we only make one 
 //instance of the AddedObserver for TaskOffers
@@ -845,13 +1072,62 @@ class LLOpenTaskOffer : public LLInventoryAddedObserver
 protected:
 	/*virtual*/ void done()
 	{
-		open_offer(mAdded, "");
+		for (uuid_vec_t::iterator it = mAdded.begin(); it != mAdded.end();)
+		{
+			const LLUUID& item_uuid = *it;
+			bool was_moved = false;
+			LLInventoryObject* added_object = gInventory.getObject(item_uuid);
+			if (added_object)
+			{
+				// cast to item to get Asset UUID
+				LLInventoryItem* added_item = dynamic_cast<LLInventoryItem*>(added_object);
+				if (added_item)
+				{
+					const LLUUID& asset_uuid = added_item->getAssetUUID();
+					if (gInventoryMoveObserver->isAssetWatched(asset_uuid))
+					{
+						LL_DEBUGS("Inventory_Move") << "Found asset UUID: " << asset_uuid << LL_ENDL;
+						was_moved = true;
+					}
+				}
+			}
+
+			if (was_moved)
+			{
+				it = mAdded.erase(it);
+			}
+			else ++it;
+		}
+
+		open_inventory_offer(mAdded, "");
 		mAdded.clear();
 	}
  };
 
+class LLOpenTaskGroupOffer : public LLInventoryAddedObserver
+{
+protected:
+	/*virtual*/ void done()
+	{
+		open_inventory_offer(mAdded, "group_offer");
+		mAdded.clear();
+		gInventory.removeObserver(this);
+		delete this;
+	}
+};
+
 //one global instance to bind them
 LLOpenTaskOffer* gNewInventoryObserver=NULL;
+class LLNewInventoryHintObserver : public LLInventoryAddedObserver
+{
+protected:
+	/*virtual*/ void done()
+	{
+		//LLFirstUse::newInventory();
+	}
+};
+
+LLNewInventoryHintObserver* gNewInventoryHintObserver=NULL;
 
 void start_new_inventory_observer()
 {
@@ -861,10 +1137,19 @@ void start_new_inventory_observer()
 		gNewInventoryObserver = new LLOpenTaskOffer;
 		gInventory.addObserver(gNewInventoryObserver);
 	}
+
+	if (!gInventoryMoveObserver) //inventory move from the world observer 
+	{
+		// Observer is deleted by gInventory
+		gInventoryMoveObserver = new LLViewerInventoryMoveFromWorldObserver;
+		gInventory.addObserver(gInventoryMoveObserver);
+	}
 }
 
 class LLDiscardAgentOffer : public LLInventoryFetchItemsObserver
 {
+	LOG_CLASS(LLDiscardAgentOffer);
+
 public:
 	LLDiscardAgentOffer(const LLUUID& folder_id, const LLUUID& object_id) :
 		LLInventoryFetchItemsObserver(object_id),
@@ -954,7 +1239,7 @@ bool check_offer_throttle(const std::string& from_name, bool check_only)
 	}
 }
  
-void open_offer(const std::vector<LLUUID>& items, const std::string& from_name)
+void open_inventory_offer(const uuid_vec_t& items, const std::string& from_name)
 {
 	uuid_vec_t::const_iterator it = items.begin();
 	uuid_vec_t::const_iterator end = items.end();
@@ -1059,16 +1344,9 @@ bool highlight_offered_object(const LLUUID& obj_id)
 		if (parent)
 		{
 			const LLFolderType::EType parent_type = parent->getPreferredType();
-			switch (parent_type)
+			if (LLViewerFolderType::lookupIsQuietType(parent_type))
 			{
-				case LLFolderType::FT_TRASH:
-				case LLFolderType::FT_LOST_AND_FOUND:
-				case LLFolderType::FT_CURRENT_OUTFIT:
-				case LLFolderType::FT_OUTFIT:
-				case LLFolderType::FT_MY_OUTFITS:
-					return false;
-				default:
-					break;
+				return false;
 			}
 		}
 	}

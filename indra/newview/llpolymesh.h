@@ -433,6 +433,8 @@ public:
 	//   This sets mInfo and calls initialization functions
 	BOOL							setInfo(LLPolySkeletalDistortionInfo *info);
 
+	/*virtual*/ LLViewerVisualParam* cloneParam(LLWearable* wearable) const;
+
 	// LLVisualParam Virtual functions
 	///*virtual*/ BOOL				parseData(LLXmlTreeNode* node);
 	/*virtual*/ void				apply( ESex sex );

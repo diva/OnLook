@@ -84,7 +84,6 @@ set(viewer_SOURCE_FILES
     lggdicdownload.cpp
     floaterao.cpp
     floatervoicelicense.cpp
-    cofmgr.cpp
     lldaycyclemanager.cpp
     llenvmanager.cpp
     llwlhandlers.cpp
@@ -121,7 +120,9 @@ set(viewer_SOURCE_FILES
     llagentpilot.cpp
     llagentui.cpp
     llagentwearables.cpp
+    llagentwearablesfetch.cpp
     llanimstatelabels.cpp
+    llappearancemgr.cpp
     llappviewer.cpp
     llassetconverter.cpp
     llassetuploadresponders.cpp
@@ -307,6 +308,7 @@ set(viewer_SOURCE_FILES
     llinventorypanel.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
+    lllocaltextureobject.cpp
     lllocalinventory.cpp
     lllogchat.cpp
     llloginhandler.cpp
@@ -328,6 +330,7 @@ set(viewer_SOURCE_FILES
     llnamelistctrl.cpp
     llnetmap.cpp
     llnotify.cpp
+    lloutfitobserver.cpp
     lloverlaybar.cpp
     llpanelaudioprefs.cpp
     llpanelaudiovolume.cpp
@@ -410,7 +413,9 @@ set(viewer_SOURCE_FILES
     llstylemap.cpp
     llsurface.cpp
     llsurfacepatch.cpp
+    lltexglobalcolor.cpp
     lltexlayer.cpp
+    lltexlayerparams.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -568,7 +573,6 @@ set(viewer_HEADER_FILES
     aoremotectrl.h
     floaterao.h
     floatervoicelicense.h
-    cofmgr.h
     lldaycyclemanager.h
     llenvmanager.h
     llwlhandlers.h
@@ -605,8 +609,10 @@ set(viewer_HEADER_FILES
     llagentpilot.h
     llagentui.h
     llagentwearables.h
+    llagentwearablesfetch.h
     llanimstatelabels.h
     llappearance.h
+    llappearancemgr.h
     llappviewer.h
     llassetconverter.h
     llassetuploadresponders.h
@@ -793,6 +799,7 @@ set(viewer_HEADER_FILES
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
+    lllocaltextureobject.h
     lllocalinventory.h
     lllogchat.h
     llloginhandler.h
@@ -814,6 +821,7 @@ set(viewer_HEADER_FILES
     llnamelistctrl.h
     llnetmap.h
     llnotify.h
+    lloutfitobserver.h
     lloverlaybar.h
     llpanelaudioprefs.h
     llpanelaudiovolume.h
@@ -899,7 +907,9 @@ set(viewer_HEADER_FILES
     llsurface.h
     llsurfacepatch.h
     lltable.h
+    lltexglobalcolor.h
     lltexlayer.h
+    lltexlayerparams.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h

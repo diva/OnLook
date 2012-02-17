@@ -61,8 +61,8 @@ public:
 								 void* userdata);
 
 	LLWearable*			createWearableMatchedToInventoryItem( LLWearable* old_wearable, LLViewerInventoryItem* item );
-	LLWearable*			createCopyFromAvatar( LLWearable* old_wearable, const std::string& new_name = std::string() );
-	LLWearable*			createCopy( LLWearable* old_wearable );
+	//LLWearable*			createCopyFromAvatar( LLWearable* old_wearable, const std::string& new_name = std::string() );
+	LLWearable*			createCopy(const LLWearable* old_wearable, const std::string& new_name = std::string());
 	LLWearable*			createNewWearable( LLWearableType::EType type );
 	
 	// Callback

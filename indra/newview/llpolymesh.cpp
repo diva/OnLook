@@ -1882,6 +1882,13 @@ BOOL LLPolySkeletalDistortion::setInfo(LLPolySkeletalDistortionInfo *info)
         return TRUE;
 }
 
+/*virtual*/ LLViewerVisualParam* LLPolySkeletalDistortion::cloneParam(LLWearable* wearable) const
+{
+        LLPolySkeletalDistortion *new_param = new LLPolySkeletalDistortion(mAvatar);
+        *new_param = *this;
+        return new_param;
+}
+
 //-----------------------------------------------------------------------------
 // apply()
 //-----------------------------------------------------------------------------

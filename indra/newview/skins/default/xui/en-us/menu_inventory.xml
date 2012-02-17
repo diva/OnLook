@@ -274,13 +274,13 @@
 	     name="Deactivate" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
 	</menu_item_call>
-	<menu_item_separator name="Attach Separator" />
+	<menu_item_separator name="Wearable And Object Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
-	     name="Object Wear" width="128">
+	     name="Wearable And Object Wear" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="attach" />
 	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Add to Worn" left="0" mouse_opaque="true"
-	     name="Object Add" width="128">
+	     name="Wearable Add" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="wear_add" />
 	</menu_item_call>
 	<menu bottom_delta="-18" height="18" label="Attach To" left="0" mouse_opaque="true"

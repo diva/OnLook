@@ -76,6 +76,7 @@
 // newview includes
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llappearancemgr.h"
 #include "llagentwearables.h"
 #include "jcfloaterareasearch.h"
 
@@ -271,7 +272,6 @@ void init_debug_rendering_menu(LLMenuGL* menu);
 void init_debug_ui_menu(LLMenuGL* menu);
 void init_debug_xui_menu(LLMenuGL* menu);
 void init_debug_avatar_menu(LLMenuGL* menu);
-void init_debug_baked_texture_menu(LLMenuGL* menu);
 // [RLVa:KB]
 #include "rlvhandler.h"
 #include "rlvfloaterbehaviour.h"
@@ -590,8 +590,6 @@ void handle_mesh_load_obj(void*);
 void handle_morph_save_obj(void*);
 void handle_morph_load_obj(void*);
 void handle_debug_avatar_textures(void*);
-void handle_grab_texture(void*);
-BOOL enable_grab_texture(void*);
 void handle_dump_region_object_cache(void*);
 
 BOOL menu_ui_enabled(void *user_data);
@@ -1596,11 +1594,8 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 
 void init_debug_avatar_menu(LLMenuGL* menu)
 {
-	LLMenuGL* sub_menu = new LLMenuGL("Grab Baked Texture");
-	init_debug_baked_texture_menu(sub_menu);
+	LLMenuGL* sub_menu = new LLMenuGL("Character Tests");
 	menu->appendMenu(sub_menu);
-
-	sub_menu = new LLMenuGL("Character Tests");
 	sub_menu->append(new LLMenuItemToggleGL("Go Away/AFK When Idle",
 		&gAllowIdleAFK));
 
@@ -1669,17 +1664,6 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 	mesh_item->setUserData((void*)mesh_item);  // So we can remove it later
 	menu->append(mesh_item);
 
-	menu->createJumpKeys();
-}
-
-void init_debug_baked_texture_menu(LLMenuGL* menu)
-{
-	menu->append(new LLMenuItemCallGL("Iris", handle_grab_texture, enable_grab_texture, (void*) TEX_EYES_BAKED));
-	menu->append(new LLMenuItemCallGL("Head", handle_grab_texture, enable_grab_texture, (void*) TEX_HEAD_BAKED));
-	menu->append(new LLMenuItemCallGL("Upper Body", handle_grab_texture, enable_grab_texture, (void*) TEX_UPPER_BAKED));
-	menu->append(new LLMenuItemCallGL("Lower Body", handle_grab_texture, enable_grab_texture, (void*) TEX_LOWER_BAKED));
-	menu->append(new LLMenuItemCallGL("Skirt", handle_grab_texture, enable_grab_texture, (void*) TEX_SKIRT_BAKED));
-	menu->append(new LLMenuItemCallGL("Hair", handle_grab_texture, enable_grab_texture, (void*) TEX_HAIR_BAKED));
 	menu->createJumpKeys();
 }
 
@@ -3080,10 +3064,10 @@ class LLAvatarDebug : public view_listener_t
 {
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
-		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
-		if( avatar )
+		//LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
+		if (isAgentAvatarValid())
 		{
-			avatar->dumpLocalTextures();
+			gAgentAvatarp->dumpLocalTextures();
 			// <edit> hell no don't tell them about that
 			/*			
 			llinfos << "Dumping temporary asset data to simulator logs for avatar " << avatar->getID() << llendl;
@@ -3093,7 +3077,7 @@ class LLAvatarDebug : public view_listener_t
 			send_generic_message("dumptempassetdata", strings, invoice);
 			*/
 			// </edit>
-			LLFloaterAvatarTextures::show( avatar->getID() );
+			LLFloaterAvatarTextures::show( gAgentAvatarp->getID() );
 		}
 		return true;
 	}
@@ -7628,7 +7612,7 @@ void handle_test_male(void*)
 	}
 // [/RLVa:KB]
 
-	wear_outfit_by_name("Male Shape & Outfit");
+	LLAppearanceMgr::instance().wearOutfitByName("Male Shape & Outfit");
 	//gGestureList.requestResetFromServer( TRUE );
 }
 
@@ -7643,7 +7627,7 @@ void handle_test_female(void*)
 	}
 // [/RLVa:KB]
 
-	wear_outfit_by_name("Female Shape & Outfit");
+	LLAppearanceMgr::instance().wearOutfitByName("Female Shape & Outfit");
 	//gGestureList.requestResetFromServer( FALSE );
 }
 
@@ -8318,7 +8302,7 @@ void handle_meshes_and_morphs(void* menu_item)
 	LLVOAvatar::mesh_info_t mesh_info;
 	LLVOAvatar::getMeshInfo(&mesh_info);
 
-	for(LLVOAvatar::mesh_info_t::iterator info_iter = mesh_info.begin();
+	for(LLVOAvatarSelf::mesh_info_t::iterator info_iter = mesh_info.begin();
 		info_iter != mesh_info.end(); ++info_iter)
 	{
 		const std::string& type = info_iter->first;
@@ -8725,110 +8709,6 @@ void handle_debug_avatar_textures(void*)
 	// </edit>
 }
 
-void handle_grab_texture(void* data)
-{
-	ETextureIndex index = (ETextureIndex)((intptr_t)data);
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if ( avatar )
-	{
-		const LLUUID& asset_id = avatar->grabLocalTexture(index);
-		LL_INFOS("texture") << "Adding baked texture " << asset_id << " to inventory." << llendl;
-		LLAssetType::EType asset_type = LLAssetType::AT_TEXTURE;
-		LLInventoryType::EType inv_type = LLInventoryType::IT_TEXTURE;
-		LLUUID folder_id(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
-		if(folder_id.notNull())
-		{
-			std::string name = "Baked ";
-			switch (index)
-			{
-			case TEX_EYES_BAKED:
-				name.append("Iris");
-				break;
-			case TEX_HEAD_BAKED:
-				name.append("Head");
-				break;
-			case TEX_UPPER_BAKED:
-				name.append("Upper Body");
-				break;
-			case TEX_LOWER_BAKED:
-				name.append("Lower Body");
-				break;
-			case TEX_SKIRT_BAKED:
-				name.append("Skirt");
-				break;
-			case TEX_HAIR_BAKED:
-				name.append("Hair");
-				break;
-			default:
-				name.append("Unknown");
-				break;
-			}
-			name.append(" Texture");
-
-			LLUUID item_id;
-			item_id.generate();
-			LLPermissions perm;
-			perm.init(gAgentID,
-					  gAgentID,
-					  LLUUID::null,
-					  LLUUID::null);
-			U32 next_owner_perm = PERM_MOVE | PERM_TRANSFER;
-			perm.initMasks(PERM_ALL,
-						   PERM_ALL,
-						   PERM_NONE,
-						   PERM_NONE,
-						   next_owner_perm);
-			time_t creation_date_now = time_corrected();
-			LLPointer<LLViewerInventoryItem> item
-				= new LLViewerInventoryItem(item_id,
-											folder_id,
-											perm,
-											asset_id,
-											asset_type,
-											inv_type,
-											name,
-											LLStringUtil::null,
-											LLSaleInfo::DEFAULT,
-											LLInventoryItemFlags::II_FLAGS_NONE,
-											creation_date_now);
-
-			item->updateServer(TRUE);
-			gInventory.updateItem(item);
-			gInventory.notifyObservers();
-
-			LLInventoryView* view = LLInventoryView::getActiveInventory();
-
-			// Show the preview panel for textures to let
-			// user know that the image is now in inventory.
-			if(view)
-			{
-				LLFocusableElement* focus_ctrl = gFocusMgr.getKeyboardFocus();
-
-				view->getPanel()->setSelection(item_id, TAKE_FOCUS_NO);
-				view->getPanel()->openSelected();
-				//LLInventoryView::dumpSelectionInformation((void*)view);
-				// restore keyboard focus
-				gFocusMgr.setKeyboardFocus(focus_ctrl);
-			}
-		}
-		else
-		{
-			llwarns << "Can't find a folder to put it in" << llendl;
-		}
-	}
-}
-
-BOOL enable_grab_texture(void* data)
-{
-	ETextureIndex index = (ETextureIndex)((intptr_t)data);
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if ( avatar )
-	{
-		return avatar->canGrabLocalTexture(index);
-	}
-	return FALSE;
-}
-
 // Returns a pointer to the avatar give the UUID of the avatar OR of an attachment the avatar is wearing.
 // Returns NULL on failure.
 LLVOAvatar* find_avatar_from_object( LLViewerObject* object )
@@ -9204,15 +9084,19 @@ class LLEditTakeOff : public view_listener_t
 	{
 		std::string clothing = userdata.asString();
 		if (clothing == "all")
-		{
-			LLAgentWearables::userRemoveAllClothes();
-		}
+			LLWearableBridge::removeAllClothesFromAvatar();
 		else
 		{
 			LLWearableType::EType type = LLWearableType::typeNameToType(clothing);
 			if (type >= LLWearableType::WT_SHAPE 
-				&& type < LLWearableType::WT_COUNT)
-				LLAgentWearables::userRemoveWearable(type,0);	// TODO: MULTI-WEARABLE
+				&& type < LLWearableType::WT_COUNT
+				&& (gAgentWearables.getWearableCount(type) > 0))
+			{
+				// MULTI-WEARABLES: assuming user wanted to remove top shirt.
+				U32 wearable_index = gAgentWearables.getWearableCount(type) - 1;
+				LLViewerInventoryItem *item = dynamic_cast<LLViewerInventoryItem*>(gAgentWearables.getWearableInventoryItem(type,wearable_index));
+				LLWearableBridge::removeItemFromAvatar(item);
+			}
 		}
 		return true;
 	}

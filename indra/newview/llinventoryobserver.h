@@ -56,7 +56,9 @@ public:
 		STRUCTURE = 16,		// structural change, eg, item or folder moved
 		CALLING_CARD = 32,	// online, grant status, cancel, etc change
 		GESTURE 		= 64,
-		ALL = 0xffffffff
+		REBUILD 		= 128, 	// Item UI changed (e.g. item type different)
+		SORT 			= 256, 	// Folder needs to be resorted.
+		ALL 			= 0xffffffff
 	};
 	LLInventoryObserver();
 	virtual ~LLInventoryObserver();

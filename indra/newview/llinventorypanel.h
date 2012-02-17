@@ -99,7 +99,7 @@ public:
 	void closeAllFolders();
 	void openDefaultFolderForType(LLAssetType::EType);
 	void setSelection(const LLUUID& obj_id, BOOL take_keyboard_focus);
-	void setSelectCallback(LLFolderView::SelectCallback callback, void* user_data);
+	void setSelectCallback(const boost::function<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)>& cb);
 	void clearSelection();
 	LLInventoryFilter* getFilter();
 	const LLInventoryFilter* getFilter() const;
@@ -123,17 +123,14 @@ public:
 	void modelChanged(U32 mask);
 	LLFolderView* getRootFolder();
 	LLScrollableContainerView* getScrollableContainer() { return mScroller; }
-
+	
+	void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
 	// DEBUG ONLY:
 	static void dumpSelectionInformation(void* user_data);
 
 	void openSelected();
 	void unSelectAll();
 
-protected:
-	// Given the id and the parent, build all of the folder views.
-	void rebuildViewsFor(const LLUUID& id, U32 mask);
-	void buildNewViews(const LLUUID& id);
 
 public:
 	// TomY TODO: Move this elsewhere?
@@ -174,6 +171,10 @@ private:
 public:
 	const LLUUID&		getRootFolderID() const;
 protected:
+	// Given the id and the parent, build all of the folder views.
+	LLFolderViewItem* rebuildViewsFor(const LLUUID& id, U32 mask);
+	
+	LLFolderViewItem* buildNewViews(const LLUUID& id);
 	virtual LLFolderViewFolder*	createFolderViewFolder(LLInvFVBridge * bridge);
 	virtual LLFolderViewItem*	createFolderViewItem(LLInvFVBridge * bridge);
 };
@@ -195,11 +196,6 @@ void init_inventory_panel_actions(LLInventoryPanel *panel);
 
 class LLInventoryCategory;
 class LLInventoryItem;
-//void wear_inventory_category_on_avatar(LLInventoryCategory* category);
-
-void wear_inventory_item_on_avatar(LLInventoryItem* item);
-void wear_outfit_by_name(const std::string& name);
-void wear_inventory_category(LLInventoryCategory* category, bool copy, bool append);
 
 // These methods can open items without the inventory being visible
 void open_notecard(LLViewerInventoryItem* inv_item, const std::string& title, const LLUUID& object_id, BOOL show_keep_discard, const LLUUID& source_id = LLUUID::null, BOOL take_focus = TRUE);

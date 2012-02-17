@@ -196,12 +196,12 @@ void LLCloseAllFoldersFunctor::doItem(LLFolderViewItem* item)
 
 // Default constructor
 LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon, 
-						   const LLRect& rect, const LLUUID& source_id, LLView *parent_view ) :
+						   const LLRect& rect, const LLUUID& source_id, LLView *parent_view, LLFolderViewEventListener* listener ) :
 #if LL_WINDOWS
 #pragma warning( push )
 #pragma warning( disable : 4355 ) // warning C4355: 'this' : used in base member initializer list
 #endif
-	LLFolderViewFolder( name, root_folder_icon, this, NULL ),
+	LLFolderViewFolder( name, root_folder_icon, this, listener ),
 #if LL_WINDOWS
 #pragma warning( pop )
 #endif
@@ -223,8 +223,6 @@ LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_ic
 	mShowSelectionContext(FALSE),
 	mShowSingleSelection(FALSE),
 	mArrangeGeneration(0),
-	mUserData(NULL),
-	mSelectCallback(NULL),
 	mSignalSelectCallback(0),
 	mMinWidth(0),
 	mDragAndDropThisFrame(FALSE)
@@ -274,6 +272,8 @@ LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_ic
 // Destroys the object
 LLFolderView::~LLFolderView( void )
 {
+	closeRenamer();
+
 	// The release focus call can potentially call the
 	// scrollcontainer, which can potentially be called with a partly
 	// destroyed scollcontainer. Just null it out here, and no worries
@@ -292,7 +292,7 @@ LLFolderView::~LLFolderView( void )
 	mAutoOpenItems.removeAllNodes();
 	gIdleCallbacks.deleteFunction(idle, this);
 
-	LLView::deleteViewByHandle(mPopupMenuHandle);
+	if (mPopupMenuHandle.get()) mPopupMenuHandle.get()->die();
 
 	if(mRenamer == gFocusMgr.getTopCtrl())
 	{
@@ -434,6 +434,7 @@ void LLFolderView::closeAllFolders()
 {
 	// Close all the folders
 	setOpenArrangeRecursively(FALSE, LLFolderViewFolder::RECURSE_DOWN);
+	arrangeAll();
 }
 
 void LLFolderView::openFolder(const std::string& foldername)
@@ -541,6 +542,9 @@ S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_gen
 		reshape( llmax(min_width, total_width), running_height );
 	}
 
+	// move item renamer text field to item's new position
+	updateRenamerPosition();
+
 	mTargetHeight = (F32)target_height;
 	return llround(mTargetHeight);
 }
@@ -580,6 +584,8 @@ void LLFolderView::reshape(S32 width, S32 height, BOOL called_from_parent)
 	}
 	width = llmax(mMinWidth, min_width);
 	LLView::reshape(width, height, called_from_parent);
+
+	mReshapeSignal(mSelectedItems, FALSE);
 }
 
 void LLFolderView::addToSelectionList(LLFolderViewItem* item)
@@ -835,8 +841,7 @@ void LLFolderView::sanitizeSelection()
 		}
 		else
 		{
-			// nothing selected to start with, so pick "My Inventory" as best guess
-			new_selection = getItemByID(gInventory.getRootFolderID());
+			new_selection = NULL;
 		}
 
 		if (new_selection)
@@ -952,6 +957,7 @@ void LLFolderView::draw()
 	}
 	else
 	{
+		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 		if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
 		{
 			mStatusText = std::string("Searching..."); // *TODO:translate
@@ -980,17 +986,7 @@ void LLFolderView::finishRenamingItem( void )
 		mRenameItem->rename( mRenamer->getText() );
 	}
 
-	mRenamer->setCommitOnFocusLost( FALSE );
-	mRenamer->setFocus( FALSE );
-	mRenamer->setVisible( FALSE );
-	mRenamer->setCommitOnFocusLost( TRUE );
-	gFocusMgr.setTopCtrl( NULL );
-
-	if( mRenameItem )
-	{
-		setSelectionFromRoot( mRenameItem, TRUE );
-		mRenameItem = NULL;
-	}
+	closeRenamer();
 
 	// List is re-sorted alphabeticly, so scroll to make sure the selected item is visible.
 	scrollToShowSelection();
@@ -998,15 +994,10 @@ void LLFolderView::finishRenamingItem( void )
 
 void LLFolderView::closeRenamer( void )
 {
-	// will commit current name (which could be same as original name)
-	mRenamer->setFocus( FALSE );
-	mRenamer->setVisible( FALSE );
-	gFocusMgr.setTopCtrl( NULL );
-
-	if( mRenameItem )
+	if (mRenamer && mRenamer->getVisible())
 	{
-		setSelectionFromRoot( mRenameItem, TRUE );
-		mRenameItem = NULL;
+		// Triggers onRenamerLost() that actually closes the renamer.
+		gFocusMgr.setTopCtrl( NULL );
 	}
 }
 
@@ -1081,7 +1072,7 @@ void LLFolderView::removeSelectedItems( void )
 			if (!new_selection)
 			{
 				new_selection = last_item->getPreviousOpenNode(FALSE);
-				while (new_selection && new_selection->isSelected())
+				while (new_selection && (new_selection->isSelected()/* || isDescendantOfASelectedItem(new_selection, items)*/))
 				{
 					new_selection = new_selection->getPreviousOpenNode(FALSE);
 				}
@@ -1186,9 +1177,20 @@ void LLFolderView::propertiesSelectedItems( void )
 	}
 }
 
+void LLFolderView::changeType(LLInventoryModel *model, LLFolderType::EType new_folder_type)
+{
+	LLFolderBridge *folder_bridge = LLFolderBridge::sSelf.get();
+
+	if (!folder_bridge) return;
+	LLViewerInventoryCategory *cat = folder_bridge->getCategory();
+	if (!cat) return;
+	cat->changeType(new_folder_type);
+}
 void LLFolderView::autoOpenItem( LLFolderViewFolder* item )
 {
-	if (mAutoOpenItems.check() == item || mAutoOpenItems.getDepth() >= (U32)AUTO_OPEN_STACK_DEPTH)
+	if ((mAutoOpenItems.check() == item) || 
+		(mAutoOpenItems.getDepth() >= (U32)AUTO_OPEN_STACK_DEPTH) ||
+		item->isOpen())
 	{
 		return;
 	}
@@ -1298,12 +1300,43 @@ void LLFolderView::copy()
 
 BOOL LLFolderView::canCut() const
 {
-	return FALSE;
+	if (!(getVisible() && getEnabled() && (mSelectedItems.size() > 0)))
+	{
+		return FALSE;
+	}
+	
+	for (selected_items_t::const_iterator selected_it = mSelectedItems.begin(); selected_it != mSelectedItems.end(); ++selected_it)
+	{
+		const LLFolderViewItem* item = *selected_it;
+		const LLFolderViewEventListener* listener = item->getListener();
+
+		if (!listener || !listener->isItemRemovable())
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
 }
 
 void LLFolderView::cut()
 {
-	// implement Windows-style cut-and-leave
+	// clear the inventory clipboard
+	LLInventoryClipboard::instance().reset();
+	S32 count = mSelectedItems.size();
+	if(getVisible() && getEnabled() && (count > 0))
+	{
+		LLFolderViewEventListener* listener = NULL;
+		selected_items_t::iterator item_it;
+		for (item_it = mSelectedItems.begin(); item_it != mSelectedItems.end(); ++item_it)
+		{
+			listener = (*item_it)->getListener();
+			if(listener)
+			{
+				listener->cutToClipboard();
+			}
+		}
+	}
+	mSearchString.clear();
 }
 
 BOOL LLFolderView::canPaste() const
@@ -1386,23 +1419,8 @@ void LLFolderView::startRenamingSelectedItem( void )
 	{
 		mRenameItem = item;
 
-		S32 x = ARROW_SIZE + TEXT_PAD + ICON_WIDTH + ICON_PAD - 1 + item->getIndentation();
-		S32 y = llfloor(item->getRect().getHeight()-sFont->getLineHeight()-2);
-		item->localPointToScreen( x, y, &x, &y );
-		screenPointToLocal( x, y, &x, &y );
-		mRenamer->setOrigin( x, y );
+		updateRenamerPosition();
 
-		S32 scroller_height = 0;
-		S32 scroller_width = gViewerWindow->getWindowWidth();
-		BOOL dummy_bool;
-		if (mScrollContainer)
-		{
-			mScrollContainer->calcVisibleSize( &scroller_width, &scroller_height, &dummy_bool, &dummy_bool);
-		}
-
-		S32 width = llmax(llmin(item->getRect().getWidth() - x, scroller_width - x - getRect().mLeft), MINIMUM_RENAMER_WIDTH);
-		S32 height = llfloor(sFont->getLineHeight() + RENAME_HEIGHT_PAD);
-		mRenamer->reshape( width, height, TRUE );
 
 		mRenamer->setText(item->getName());
 		mRenamer->selectAll();
@@ -2091,11 +2109,11 @@ void LLFolderView::doIdle()
 		}
 	}
 
-	if (mSignalSelectCallback && mSelectCallback)
+	if (mSignalSelectCallback)
 	{
 		//RN: we use keyboard focus as a proxy for user-explicit actions
 		BOOL take_keyboard_focus = (mSignalSelectCallback == SIGNAL_KEYBOARD_FOCUS);
-		mSelectCallback(mSelectedItems, take_keyboard_focus, mUserData);
+		mSelectSignal(mSelectedItems, take_keyboard_focus);
 	}
 	mSignalSelectCallback = FALSE;
 }
@@ -2111,7 +2129,6 @@ void LLFolderView::idle(void* user_data)
 	}
 }
 
-
 void LLFolderView::dumpSelectionInformation()
 {
 	llinfos << "LLFolderView::dumpSelectionInformation()" << llendl;
@@ -2124,6 +2141,29 @@ void LLFolderView::dumpSelectionInformation()
 	llinfos << "****************************************" << llendl;
 }
 
+void LLFolderView::updateRenamerPosition()
+{
+	if(mRenameItem)
+	{
+		// See also LLFolderViewItem::draw()
+		S32 x = ARROW_SIZE + TEXT_PAD + ICON_WIDTH + ICON_PAD + mRenameItem->getIndentation();
+		S32 y = mRenameItem->getRect().getHeight() - mRenameItem->getItemHeight() - RENAME_HEIGHT_PAD;
+		mRenameItem->localPointToScreen( x, y, &x, &y );
+		screenPointToLocal( x, y, &x, &y );
+		mRenamer->setOrigin( x, y );
+
+		LLRect scroller_rect(0, 0, gViewerWindow->getWindowWidthScaled(), 0);
+		if (mScrollContainer)
+		{
+			BOOL dummy_bool;
+			mScrollContainer->calcVisibleSize( &scroller_rect.mRight, &scroller_rect.mTop, &dummy_bool, &dummy_bool);
+		}
+
+		S32 width = llmax(llmin(mRenameItem->getRect().getWidth() - x, scroller_rect.getWidth() - x - getRect().mLeft), MINIMUM_RENAMER_WIDTH);
+		S32 height = mRenameItem->getItemHeight() - RENAME_HEIGHT_PAD;
+		mRenamer->reshape( width, height, TRUE );
+	}
+}
 ///----------------------------------------------------------------------------
 /// Local function definitions
 ///----------------------------------------------------------------------------

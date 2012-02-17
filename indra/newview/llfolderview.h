@@ -74,15 +74,14 @@ class LLTextBox;
 class LLUICtrl;
 class LLLineEditor;
 
-class LLFolderView : public LLFolderViewFolder, LLEditMenuHandler
+class LLFolderView : public LLFolderViewFolder, public LLEditMenuHandler
 {
 public:
 	typedef void (*SelectCallback)(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
 
-	static F32 sAutoOpenTime;
 
 	LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon, const LLRect& rect, 
-					const LLUUID& source_id, LLView *parent_view );
+					const LLUUID& source_id, LLView *parent_view, LLFolderViewEventListener* listener );
 	virtual ~LLFolderView( void );
 
 	virtual BOOL canFocusChildren() const;
@@ -94,7 +93,10 @@ public:
 	void setSortOrder(U32 order);
 	void checkTreeResortForModelChanged();
 	void setFilterPermMask(PermissionMask filter_perm_mask);
-	void setSelectCallback(SelectCallback callback, void* user_data) { mSelectCallback = callback, mUserData = user_data; }
+
+	typedef boost::signals2::signal<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)> signal_t;
+	void setSelectCallback(const signal_t::slot_type& cb) { mSelectSignal.connect(cb); }
+	void setReshapeCallback(const signal_t::slot_type& cb) { mReshapeSignal.connect(cb); }
 	void setAllowMultiSelect(BOOL allow) { mAllowMultiSelect = allow; }
 
 	LLInventoryFilter* getFilter();
@@ -106,6 +108,7 @@ public:
 	//LLInventoryFilter::EFolderShow getShowFolderState();
 	U32 getSortOrder() const;
 	BOOL isFilterModified();
+
 	BOOL getAllowMultiSelect() { return mAllowMultiSelect; }
 
 	U32 toggleSearchType(std::string toggle);
@@ -152,6 +155,8 @@ public:
 
 	BOOL startDrag(LLToolDragAndDrop::ESource source);
 	void setDragAndDropThisFrame() { mDragAndDropThisFrame = TRUE; }
+	void setDraggingOverItem(LLFolderViewItem* item) { mDraggingOverItem = item; }
+	LLFolderViewItem* getDraggingOverItem() { return mDraggingOverItem; }
 
 	// deletion functionality
  	void removeSelectedItems();
@@ -159,6 +164,9 @@ public:
 	// open the selected item.
 	void openSelectedItems( void );
 	void propertiesSelectedItems( void );
+
+	// change the folder type
+	void changeType(LLInventoryModel *model, LLFolderType::EType new_folder_type);
 
 	void autoOpenItem(LLFolderViewFolder* item);
 	void closeAutoOpenedFolders();
@@ -238,6 +246,7 @@ public:
 	// DEBUG only
 	void dumpSelectionInformation();
 
+	void updateRenamerPosition();
 protected:
 	LLScrollableContainerView* mScrollContainer;  // NULL if this is not a child of a scroll container.
 
@@ -282,13 +291,20 @@ protected:
 	LLFrameTimer					mMultiSelectionFadeTimer;
 	S32								mArrangeGeneration;
 
-	void*							mUserData;
-	SelectCallback					mSelectCallback;
+	signal_t						mSelectSignal;
+	signal_t						mReshapeSignal;
 	S32								mSignalSelectCallback;
 	S32								mMinWidth;
 	std::map<LLUUID, LLFolderViewItem*> mItemMap;
 	BOOL							mDragAndDropThisFrame;
 
+	/**
+	 * Contains item under mouse pointer while dragging
+	 */
+	LLFolderViewItem*				mDraggingOverItem; // See EXT-719
+
+public:
+	static F32 sAutoOpenTime;
 };
 
 bool sort_item_name(LLFolderViewItem* a, LLFolderViewItem* b);

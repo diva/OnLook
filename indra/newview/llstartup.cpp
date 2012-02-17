@@ -206,6 +206,7 @@
 #include "llagentlanguage.h"
 #include "llwearable.h"
 #include "llinventorybridge.h"
+#include "llappearancemgr.h"
 #include "llsocks5.h"
 #include "jcfloaterareasearch.h"
 
@@ -258,6 +259,7 @@ static BOOL gSkipOptionalUpdate = FALSE;
 static bool gGotUseCircuitCodeAck = false;
 static std::string sInitialOutfit;
 static std::string sInitialOutfitGender;	// "male" or "female"
+static boost::signals2::connection sWearablesLoadedCon;
 
 static bool gUseCircuitCallbackCalled = false;
 
@@ -2870,23 +2872,8 @@ bool idle_startup()
 			LLStartUp::loadInitialOutfit( sInitialOutfit, sInitialOutfitGender );
 		}
 
-				display_startup();
-		// We now have an inventory skeleton, so if this is a user's first
-		// login, we can start setting up their clothing and avatar 
-		// appearance.  This helps to avoid the generic "Ruth" avatar in
-		// the orientation island tutorial experience. JC
-		if (gAgent.isFirstLogin()
-			&& !sInitialOutfit.empty()    // registration set up an outfit
-			&& !sInitialOutfitGender.empty() // and a gender
-			&& gAgentAvatarp	  // can't wear clothes without object
-			&& !gAgent.isGenderChosen() ) // nothing already loading
-		{
-			// Start loading the wearables, textures, gestures
-			LLStartUp::loadInitialOutfit( sInitialOutfit, sInitialOutfitGender );
-		}
-		
 		display_startup();
-		
+
 		// wait precache-delay and for agent's avatar or a lot longer.
 		if(((timeout_frac > 1.f) && isAgentAvatarValid())
 		   || (timeout_frac > 3.f))
@@ -3573,7 +3560,7 @@ void register_viewer_callbacks(LLMessageSystem* msg)
 	msg->setHandlerFuncFast(_PREHASH_AvatarAnimation,		process_avatar_animation);
 	msg->setHandlerFuncFast(_PREHASH_AvatarAppearance,		process_avatar_appearance);
 	msg->setHandlerFunc("AgentCachedTextureResponse",	LLAgent::processAgentCachedTextureResponse);
-	msg->setHandlerFunc("RebakeAvatarTextures", LLVOAvatar::processRebakeAvatarTextures);
+	msg->setHandlerFunc("RebakeAvatarTextures", LLVOAvatarSelf::processRebakeAvatarTextures);
 	msg->setHandlerFuncFast(_PREHASH_CameraConstraint,		process_camera_constraint);
 	msg->setHandlerFuncFast(_PREHASH_AvatarSitResponse,		process_avatar_sit_response);
 	msg->setHandlerFunc("SetFollowCamProperties",			process_set_follow_cam_properties);
@@ -3771,44 +3758,79 @@ bool callback_choose_gender(const LLSD& notification, const LLSD& response)
 void LLStartUp::loadInitialOutfit( const std::string& outfit_folder_name,
 								   const std::string& gender_name )
 {
-	S32 gender = 0;
-	std::string gestures;
+	lldebugs << "starting" << llendl;
+
+	// Not going through the processAgentInitialWearables path, so need to set this here.
+	LLAppearanceMgr::instance().setAttachmentInvLinkEnable(true);
+	// Initiate creation of COF, since we're also bypassing that.
+	gInventory.findCategoryUUIDForType(LLFolderType::FT_CURRENT_OUTFIT);
+	
+	ESex gender;
 	if (gender_name == "male")
 	{
-		gender = OPT_MALE;
-		gestures = MALE_GESTURES_FOLDER;
+		lldebugs << "male" << llendl;
+		gender = SEX_MALE;
 	}
 	else
 	{
-		gender = OPT_FEMALE;
-		gestures = FEMALE_GESTURES_FOLDER;
+		lldebugs << "female" << llendl;
+		gender = SEX_FEMALE;
 	}
+
+	if (!isAgentAvatarValid())
+	{
+		llwarns << "Trying to load an initial outfit for an invalid agent avatar" << llendl;
+		return;
+	}
+
+	gAgentAvatarp->setSex(gender);
 
 	// try to find the outfit - if not there, create some default
 	// wearables.
-	LLInventoryModel::cat_array_t cat_array;
-	LLInventoryModel::item_array_t item_array;
-	LLNameCategoryCollector has_name(outfit_folder_name);
-	gInventory.collectDescendentsIf(LLUUID::null,
-									cat_array,
-									item_array,
-									LLInventoryModel::EXCLUDE_TRASH,
-									has_name);
-	if (0 == cat_array.count())
+	LLUUID cat_id = findDescendentCategoryIDByName(
+		gInventory.getLibraryRootFolderID(),
+		outfit_folder_name);
+	if (cat_id.isNull())
 	{
-		gAgentWearables.createStandardWearables(gender);
+		lldebugs << "standard wearables" << llendl;
+		gAgentWearables.createStandardWearables();
 	}
 	else
 	{
-		wear_outfit_by_name(outfit_folder_name);
+		sWearablesLoadedCon = gAgentWearables.addLoadedCallback(LLStartUp::saveInitialOutfit);
+
+		bool do_copy = true;
+		bool do_append = false;
+		LLViewerInventoryCategory *cat = gInventory.getCategory(cat_id);
+		LLAppearanceMgr::instance().wearInventoryCategory(cat, do_copy, do_append);
+		lldebugs << "initial outfit category id: " << cat_id << llendl;
 	}
-	wear_outfit_by_name(gestures);
-	wear_outfit_by_name(COMMON_GESTURES_FOLDER);
 
 	// This is really misnamed -- it means we have started loading
 	// an outfit/shape that will give the avatar a gender eventually. JC
 	gAgent.setGenderChosen(TRUE);
+}
 
+//static
+void LLStartUp::saveInitialOutfit()
+{
+	if (sInitialOutfit.empty()) {
+		lldebugs << "sInitialOutfit is empty" << llendl;
+		return;
+	}
+	
+	if (sWearablesLoadedCon.connected())
+	{
+		lldebugs << "sWearablesLoadedCon is connected, disconnecting" << llendl;
+		sWearablesLoadedCon.disconnect();
+	}
+	lldebugs << "calling makeNewOutfitLinks( \"" << sInitialOutfit << "\" )" << llendl;
+	LLAppearanceMgr::getInstance()->makeNewOutfitLinks(sInitialOutfit,false);
+}
+
+std::string& LLStartUp::getInitialOutfitName()
+{
+	return sInitialOutfit;
 }
 
 // Loads a bitmap to display during load

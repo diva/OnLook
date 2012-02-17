@@ -41,6 +41,7 @@ LLInventoryClipboard LLInventoryClipboard::sInstance;
 ///----------------------------------------------------------------------------
 
 LLInventoryClipboard::LLInventoryClipboard()
+: mCutMode(false)
 {
 }
 
@@ -71,6 +72,16 @@ void LLInventoryClipboard::store(const LLDynamicArray<LLUUID>& inv_objects)
 	}
 }
 
+void LLInventoryClipboard::cut(const LLUUID& object)
+{
+	if(!mCutMode && !mObjects.empty())
+	{
+		//looks like there are some stored items, reset clipboard state
+		reset();
+	}
+	mCutMode = true;
+	add(object);
+}
 void LLInventoryClipboard::retrieve(LLDynamicArray<LLUUID>& inv_objects) const
 {
 	inv_objects.reset();
@@ -84,6 +95,7 @@ void LLInventoryClipboard::retrieve(LLDynamicArray<LLUUID>& inv_objects) const
 void LLInventoryClipboard::reset()
 {
 	mObjects.reset();
+	mCutMode = false;
 }
 
 // returns true if the clipboard has something pasteable in it.

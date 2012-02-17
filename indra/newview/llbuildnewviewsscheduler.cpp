@@ -65,6 +65,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 													objectp->getType(),
 													LLInventoryType::IT_CATEGORY,
 													panelp,
+													panelp->getRootFolder(),
 													objectp->getUUID());
 
 			if (new_listener)
@@ -86,6 +87,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 				item->getActualType(),
 				item->getInventoryType(),
 				panelp,
+				panelp->getRootFolder(),
 				item->getUUID(),
 				item->getFlags());
 			if (new_listener)

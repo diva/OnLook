@@ -446,10 +446,10 @@ BOOL LLPolyMorphData::setMorphFromMesh(LLPolyMesh *morph)
 		}
 
 		// If we have a vertex mask, just remove it.  It will be recreated.
-		if (param->undoMask(TRUE))
+		/*if (param->undoMask(TRUE))
 		{
 			continue;
-		}
+		}*/
 
 		LLVector4 *mesh_coords           = mesh->getWritableCoords();
 		LLVector4 *mesh_normals          = mesh->getWritableNormals();
@@ -628,6 +628,13 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 		return FALSE;  // Continue, ignoring this tag
 	}
 	return TRUE;
+}
+
+/*virtual*/ LLViewerVisualParam* LLPolyMorphTarget::cloneParam(LLWearable* wearable) const
+{
+	LLPolyMorphTarget *new_param = new LLPolyMorphTarget(mMesh);
+	*new_param = *this;
+	return new_param;
 }
 
 #if 0 // obsolete
@@ -876,32 +883,10 @@ void	LLPolyMorphTarget::applyMask(U8 *maskTextureData, S32 width, S32 height, S3
 	else
 	{
 		// remove effect of previous mask
-		undoMask(FALSE);
-	}
+		F32 *maskWeights = (mVertMask) ? mVertMask->getMorphMaskWeights() : NULL;
 
-	mLastWeight = 0.f;
-
-	mVertMask->generateMask(maskTextureData, width, height, num_components, invert, clothing_weights);
-
-	apply(mLastSex);
-}
-
-//-----------------------------------------------------------------------------
-// undoMask()
-//-----------------------------------------------------------------------------
-BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
-{
-	if (!mVertMask)
+		if (maskWeights)
 		{
-	    return FALSE;
-	}
-
-	// remove effect of previous mask
-
-	LLVector4 *clothing_weights = getInfo()->mIsClothingMorph ? mMesh->getWritableClothingWeights() : NULL;
-
-	F32 *mask_weights = mVertMask->getMorphMaskWeights();
-
 			LLVector4 *coords = mMesh->getWritableCoords();
 			LLVector3 *scaled_normals = mMesh->getScaledNormals();
 			LLVector3 *scaled_binormals = mMesh->getScaledBinormals();
@@ -909,13 +894,7 @@ BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
 
 			for(U32 vert = 0; vert < mMorphData->mNumIndices; vert++)
 			{
-				F32 mask_weight = 1.f;
-				if (mask_weights)
-				{
-					mask_weight = mask_weights[vert];
-				}
-
-				F32 lastMaskWeight = mLastWeight * mask_weights[vert];
+				F32 lastMaskWeight = mLastWeight * maskWeights[vert];
 				S32 out_vert = mMorphData->mVertexIndices[vert];
 
 				// remove effect of existing masked morph
@@ -933,18 +912,15 @@ BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
 					clothing_weight->mV[VZ] -= clothing_offset.mV[VZ];
 				}
 			}
+		}
+	}
 
 	// set last weight to 0, since we've removed the effect of this morph
 	mLastWeight = 0.f;
 
-	if (delete_mask)
-	{
-		delete mVertMask;
-		mVertMask = NULL;
-		addPendingMorphMask();
-	}
+	mVertMask->generateMask(maskTextureData, width, height, num_components, invert, clothing_weights);
 
-	return TRUE;
+	apply(mLastSex);
 }
 
 

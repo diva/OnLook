@@ -89,6 +89,8 @@ public:
 	const LLInventoryPanel* getActivePanel() const { return mActivePanel; }
 
 	const std::string& getFilterText() const { return mFilterText; }
+
+	void setSelectCallback(const LLFolderView::signal_t::slot_type& cb);
 	static void onSearchEdit(const std::string& search_string, void* user_data );
 	//
 	// Misc functions
@@ -97,7 +99,8 @@ public:
 	void startSearch();
 
 	void toggleFindOptions();
-	static void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
+	void onSelectionChange(LLInventoryPanel *panel, const std::deque<LLFolderViewItem*>& items, BOOL user_action);
+
 	static BOOL filtersVisible(void* user_data);
 	static void onClearSearch(void* user_data);
 	static void onFoldersByName(void *user_data);

@@ -765,8 +765,7 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, void* userdata)
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLCheckBoxCtrl* checkbox_ctrl = (LLCheckBoxCtrl*) ctrl;
-	LLVOAvatar *avatar = gAgentAvatarp;
-	if (!avatar)
+	if (!gAgentAvatarp)
 	{
 		return;
 	}
@@ -777,13 +776,13 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, void* userdata)
 	if (new_invis_state)
 	{
 		LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(IMG_INVISIBLE);
-		const LLTextureEntry* current_te = avatar->getTE(te);
+		const LLTextureEntry* current_te = gAgentAvatarp->getTE(te);
 		if (current_te)
 		{
 			self->mPreviousTextureList[(S32)te] = current_te->getID();
 		}
-		avatar->setLocTexTE(te, image, TRUE);
-		avatar->wearableUpdated(self->mType, FALSE);
+		gAgentAvatarp->setLocalTextureTE(te,image, 0);
+		gAgentAvatarp->wearableUpdated(self->mType, FALSE);
 	}
 	else
 	{
@@ -796,8 +795,8 @@ void LLPanelEditWearable::onInvisibilityCommit(LLUICtrl* ctrl, void* userdata)
 		if (prev_id.notNull())
 		{
 			LLViewerTexture* image = LLViewerTextureManager::getFetchedTexture(prev_id);
-			avatar->setLocTexTE(te, image, TRUE);
-			avatar->wearableUpdated(self->mType, FALSE);
+			gAgentAvatarp->setLocalTextureTE(te, image, 0);
+			gAgentAvatarp->wearableUpdated(self->mType, FALSE);
 		}
 		
 	}
@@ -894,8 +893,7 @@ void LLPanelEditWearable::onTextureCommit( LLUICtrl* ctrl, void* userdata )
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	LLTextureCtrl* texture_ctrl = (LLTextureCtrl*) ctrl;
 
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if( avatar )
+	if( gAgentAvatarp )
 	{
 		ETextureIndex te = (ETextureIndex)(self->mTextureList[ctrl->getName()]);
 
@@ -908,8 +906,8 @@ void LLPanelEditWearable::onTextureCommit( LLUICtrl* ctrl, void* userdata )
 		self->mTextureList[ctrl->getName()] = te;
 		if (gAgentWearables.getWearable(self->mType, 0))	// TODO: MULTI-WEARABLE
 		{
-			avatar->setLocTexTE(te, image, TRUE);
-			avatar->wearableUpdated(self->mType, FALSE);
+			gAgentAvatarp->setLocalTextureTE(te, image, 0);
+			gAgentAvatarp->wearableUpdated(self->mType, FALSE);
 		}
 		if (self->mType == LLWearableType::WT_ALPHA && image->getID() != IMG_INVISIBLE)
 		{
@@ -2039,7 +2037,8 @@ void LLFloaterCustomize::onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* u
 
 		dialog->getIncludedItems( wearables_to_include, attachments_to_include );
 
-		gAgentWearables.makeNewOutfit( dialog->getFolderName(), wearables_to_include, attachments_to_include, dialog->getRenameClothing() );
+		// MULTI-WEARABLES TODO
+		//LLAppearanceMgr::getInstance()->makeNewOutfit( dialog->getFolderName(), wearables_to_include, attachments_to_include, dialog->getRenameClothing() );
 	}
 }
 

@@ -15,15 +15,17 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llagent.h"
+#include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
+#include "llinventoryobserver.h"
+#include "lloutfitobserver.h"
 #include "llviewerobjectlist.h"
 #include "pipeline.h"
-#include "cofmgr.h"
-#include "llagentwearables.h"
 
+#include "rlvlocks.h"
 #include "rlvhelper.h"
 #include "rlvinventory.h"
-#include "rlvlocks.h"
 
 // ============================================================================
 // RlvAttachPtLookup member functions
@@ -1023,7 +1025,7 @@ protected:
 RlvFolderLocks::RlvFolderLocks()
 	: m_fLookupDirty(false), m_fLockedRoot(false)
 {
-	LLCOFObserver::instance().addCOFChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
+	LLOutfitObserver::instance().addCOFChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
 	RlvInventory::instance().addSharedRootIDChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
 }
 
@@ -1272,7 +1274,7 @@ void RlvFolderLocks::refreshLockedLookups() const
 	m_LockedWearableRem.clear();
 
 	LLInventoryModel::item_array_t lockedItems;
-	if (getLockedItems(LLCOFMgr::instance().getCOF(), lockedItems, true))
+	if (getLockedItems(LLAppearanceMgr::instance().getCOF(), lockedItems, true))
 	{
 		for (S32 idxItem = 0, cntItem = lockedItems.count(); idxItem < cntItem; idxItem++)
 		{

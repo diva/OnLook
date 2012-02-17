@@ -152,7 +152,7 @@ BOOL LLInventoryView::postBuild()
 		mActivePanel->setSortOrder(gSavedSettings.getU32(LLInventoryPanel::DEFAULT_SORT_ORDER));
 		mActivePanel->getFilter()->markDefault();
 		mActivePanel->getRootFolder()->applyFunctorRecursively(*mSavedFolderState);
-		mActivePanel->setSelectCallback(onSelectionChange, mActivePanel);
+		mActivePanel->setSelectCallback(boost::bind(&LLInventoryView::onSelectionChange, this, mActivePanel, _1, _2));
 	}
 	LLInventoryPanel* recent_items_panel = getChild<LLInventoryPanel>("Recent Items");
 	if (recent_items_panel)
@@ -161,7 +161,7 @@ BOOL LLInventoryView::postBuild()
 		recent_items_panel->setSortOrder(gSavedSettings.getU32(LLInventoryPanel::RECENTITEMS_SORT_ORDER));
 		recent_items_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		recent_items_panel->getFilter()->markDefault();
-		recent_items_panel->setSelectCallback(onSelectionChange, recent_items_panel);
+		recent_items_panel->setSelectCallback(boost::bind(&LLInventoryView::onSelectionChange, this, recent_items_panel, _1, _2));
 	}
 	LLInventoryPanel* worn_items_panel = getChild<LLInventoryPanel>("Worn Items");
 	if (worn_items_panel)
@@ -170,7 +170,7 @@ BOOL LLInventoryView::postBuild()
 		worn_items_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		worn_items_panel->getFilter()->markDefault();
 		worn_items_panel->setFilterWorn(true);
-		worn_items_panel->setSelectCallback(onSelectionChange, worn_items_panel);
+		worn_items_panel->setSelectCallback(boost::bind(&LLInventoryView::onSelectionChange, this, worn_items_panel, _1, _2));
 	}
 
 	// Now load the stored settings from disk, if available.
@@ -581,12 +581,44 @@ void LLInventoryView::onSearchEdit(const std::string& search_string, void* user_
 	self->mActivePanel->setFilterSubString(uppercase_search_string);
 }
 
+struct FilterEntry : public LLDictionaryEntry
+{
+	FilterEntry(const std::string &filter_name)	:
+		LLDictionaryEntry(filter_name){}
+};
+
+class LLFilterDictionary : public LLSingleton<LLFilterDictionary>,
+						   public LLDictionary<U32, FilterEntry>
+{
+public:
+	LLFilterDictionary()
+	{}
+	void init(LLInventoryView *view)
+	{
+		addEntry(0x1 << LLInventoryType::IT_ANIMATION,		new FilterEntry(view->getString("filter_type_animation")));
+		addEntry(0x1 << LLInventoryType::IT_CALLINGCARD,	new FilterEntry(view->getString("filter_type_callingcard")));
+		addEntry(0x1 << LLInventoryType::IT_WEARABLE,		new FilterEntry(view->getString("filter_type_wearable")));
+		addEntry(0x1 << LLInventoryType::IT_GESTURE,		new FilterEntry(view->getString("filter_type_gesture")));
+		addEntry(0x1 << LLInventoryType::IT_LANDMARK,		new FilterEntry(view->getString("filter_type_landmark")));
+		addEntry(0x1 << LLInventoryType::IT_NOTECARD,		new FilterEntry(view->getString("filter_type_notecard")));
+		addEntry(0x1 << LLInventoryType::IT_OBJECT,			new FilterEntry(view->getString("filter_type_object")));
+		addEntry(0x1 << LLInventoryType::IT_LSL,			new FilterEntry(view->getString("filter_type_script")));
+		addEntry(0x1 << LLInventoryType::IT_SOUND,			new FilterEntry(view->getString("filter_type_sound")));
+		addEntry(0x1 << LLInventoryType::IT_TEXTURE,		new FilterEntry(view->getString("filter_type_texture")));
+		addEntry(0x1 << LLInventoryType::IT_SNAPSHOT,		new FilterEntry(view->getString("filter_type_snapshot")));
+		addEntry(0xffffffff,								new FilterEntry(view->getString("filter_type_all")));
+	}
+	virtual U32 notFound() const
+	{
+		return 0;
+	}
+};
+
 //static
 void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 {
 
 	LLComboBox* quickfilter = (LLComboBox*)ctrl;
-
 
 	LLInventoryView* view = (LLInventoryView*)(quickfilter->getParent());
 	if (!view->mActivePanel)
@@ -594,66 +626,9 @@ void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 		return;
 	}
 
-
 	std::string item_type = quickfilter->getSimple();
-	U32 filter_type;
 
-	if (view->getString("filter_type_animation") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_ANIMATION;
-	}
-
-	else if (view->getString("filter_type_callingcard") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_CALLINGCARD;
-	}
-
-	else if (view->getString("filter_type_wearable") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_WEARABLE;
-	}
-
-	else if (view->getString("filter_type_gesture") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_GESTURE;
-	}
-
-	else if (view->getString("filter_type_landmark") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_LANDMARK;
-	}
-
-	else if (view->getString("filter_type_notecard") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_NOTECARD;
-	}
-
-	else if (view->getString("filter_type_object") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_OBJECT;
-	}
-
-	else if (view->getString("filter_type_script") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_LSL;
-	}
-
-	else if (view->getString("filter_type_sound") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_SOUND;
-	}
-
-	else if (view->getString("filter_type_texture") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_TEXTURE;
-	}
-
-	else if (view->getString("filter_type_snapshot") == item_type)
-	{
-		filter_type = 0x1 << LLInventoryType::IT_SNAPSHOT;
-	}
-
-	else if (view->getString("filter_type_custom") == item_type)
+	if (view->getString("filter_type_custom") == item_type)
 	{
 		// When they select custom, show the floater then return
 		if( !(view->filtersVisible(view)) )
@@ -662,31 +637,27 @@ void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 		}
 		return;
 	}
-
-	else if (view->getString("filter_type_all") == item_type)
+	else 
 	{
-		// Show all types
-		filter_type = 0xffffffff;
+		if(!LLFilterDictionary::instanceExists())
+			LLFilterDictionary::instance().init(view);
+
+		U32 filter_type = LLFilterDictionary::instance().lookup(item_type);
+		if(!filter_type)
+		{
+			llwarns << "Ignoring unknown filter: " << item_type << llendl;
+			return;
+		}
+		else
+		{
+			view->mActivePanel->setFilterTypes( filter_type );
+
+			// Force the filters window to update itself, if it's open.
+			LLFloaterInventoryFinder* finder = view->getFinder();
+			if( finder )
+				finder->updateElementsFromFilter();
+		}
 	}
-
-	else
-	{
-		llwarns << "Ignoring unknown filter: " << item_type << llendl;
-		return;
-	}
-
-	view->mActivePanel->setFilterTypes( filter_type );
-
-
-	// Force the filters window to update itself, if it's open.
-	LLFloaterInventoryFinder* finder = view->getFinder();
-	if( finder )
-	{
-		finder->updateElementsFromFilter();
-	}
-
-	// llinfos << "Quick Filter: " << item_type << llendl;
-
 }
 
 
@@ -694,7 +665,6 @@ void LLInventoryView::onQuickFilterCommit(LLUICtrl* ctrl, void* user_data)
 //static
 void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
 {
-
 	LLInventoryView* view = (LLInventoryView*)(ctrl->getParent());
 	if (!view->mActivePanel)
 	{
@@ -707,146 +677,47 @@ void LLInventoryView::refreshQuickFilter(LLUICtrl* ctrl)
 		return;
 	}
 
-
 	U32 filter_type = view->mActivePanel->getFilterTypes();
 
+	if(!LLFilterDictionary::instanceExists())
+		LLFilterDictionary::instance().init(view);
 
-  // Mask to extract only the bit fields we care about.
-  // *TODO: There's probably a cleaner way to construct this mask.
-  U32 filter_mask = 0;
-  filter_mask |= (0x1 << LLInventoryType::IT_ANIMATION);
-  filter_mask |= (0x1 << LLInventoryType::IT_CALLINGCARD);
-  filter_mask |= (0x1 << LLInventoryType::IT_WEARABLE);
-  filter_mask |= (0x1 << LLInventoryType::IT_GESTURE);
-  filter_mask |= (0x1 << LLInventoryType::IT_LANDMARK);
-  filter_mask |= (0x1 << LLInventoryType::IT_NOTECARD);
-  filter_mask |= (0x1 << LLInventoryType::IT_OBJECT);
-  filter_mask |= (0x1 << LLInventoryType::IT_LSL);
-  filter_mask |= (0x1 << LLInventoryType::IT_SOUND);
-  filter_mask |= (0x1 << LLInventoryType::IT_TEXTURE);
-  filter_mask |= (0x1 << LLInventoryType::IT_SNAPSHOT);
-
-
-  filter_type &= filter_mask;
-
-
+	// Mask to extract only the bit fields we care about.
+	// *TODO: There's probably a cleaner way to construct this mask.
+	U32 filter_mask = 0;
+	for (LLFilterDictionary::const_iterator_t dictionary_iter =  LLFilterDictionary::instance().map_t::begin(); 
+		dictionary_iter != LLFilterDictionary::instance().map_t::end(); dictionary_iter++)
+	{
+		if(filter_mask != 0xffffffff)
+			filter_mask |= dictionary_iter->first;
+	}
+ 
+	filter_type &= filter_mask;
+	
   //llinfos << "filter_type: " << filter_type << llendl;
-
 	std::string selection;
-
 
 	if (filter_type == filter_mask)
 	{
 		selection = view->getString("filter_type_all");
 	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_ANIMATION))
-	{
-		selection = view->getString("filter_type_animation");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_CALLINGCARD))
-	{
-		selection = view->getString("filter_type_callingcard");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_WEARABLE))
-	{
-		selection = view->getString("filter_type_wearable");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_GESTURE))
-	{
-		selection = view->getString("filter_type_gesture");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_LANDMARK))
-	{
-		selection = view->getString("filter_type_landmark");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_NOTECARD))
-	{
-		selection = view->getString("filter_type_notecard");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_OBJECT))
-	{
-		selection = view->getString("filter_type_object");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_LSL))
-	{
-		selection = view->getString("filter_type_script");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_SOUND))
-	{
-		selection = view->getString("filter_type_sound");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_TEXTURE))
-	{
-		selection = view->getString("filter_type_texture");
-	}
-
-	else if (filter_type == (0x1 << LLInventoryType::IT_SNAPSHOT))
-	{
-		selection = view->getString("filter_type_snapshot");
-	}
-
 	else
 	{
-		selection = view->getString("filter_type_custom");
+		const FilterEntry *entry = LLFilterDictionary::instance().lookup(filter_type);
+		if(entry)
+			selection = view->getString(entry->mName);
+		else
+			selection = view->getString("filter_type_custom");
 	}
-
 
 	// Select the chosen item by label text
 	BOOL result = quickfilter->setSimple( (selection) );
 
-  if( !result )
-  {
-    llinfos << "The item didn't exist: " << selection << llendl;
-  }
-
+	if( !result )
+	{
+		llinfos << "The item didn't exist: " << selection << llendl;
+	}
 }
-
-
-
-// static
-// BOOL LLInventoryView::incrementalFind(LLFolderViewItem* first_item, const char *find_text, BOOL backward)
-// {
-// 	LLInventoryView* active_view = NULL;
-
-// 	for (S32 i = 0; i < sActiveViews.count(); i++)
-// 	{
-// 		if (gFocusMgr.childHasKeyboardFocus(sActiveViews[i]))
-// 		{
-// 			active_view = sActiveViews[i];
-// 			break;
-// 		}
-// 	}
-
-// 	if (!active_view)
-// 	{
-// 		return FALSE;
-// 	}
-
-// 	std::string search_string(find_text);
-
-// 	if (search_string.empty())
-// 	{
-// 		return FALSE;
-// 	}
-
-// 	if (active_view->mActivePanel &&
-// 		active_view->mActivePanel->getRootFolder()->search(first_item, search_string, backward))
-// 	{
-// 		return TRUE;
-// 	}
-
-// 	return FALSE;
-// }
 
 void LLInventoryView::onResetAll(void* userdata)
 {
@@ -918,21 +789,6 @@ void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
 	}
 	self->setFilterTextFromFilter();
 	self->updateSortControls();
-}
-
-// static
-void LLInventoryView::onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data)
-{
-	LLInventoryPanel* panel = (LLInventoryPanel*)data;
-	LLFolderView* fv = panel->getRootFolder();
-	if (fv->needsAutoRename()) // auto-selecting a new user-created asset and preparing to rename
-	{
-		fv->setNeedsAutoRename(FALSE);
-		if (items.size()) // new asset is visible and selected
-		{
-			fv->startRenamingSelectedItem();
-		}
-	}
 }
 
 const std::string LLInventoryView::getFilterSubString() 
@@ -1040,9 +896,23 @@ void LLInventoryView::toggleFindOptions()
 		mFloaterControls[std::string("Inventory.ShowFilters")]->setValue(FALSE);
 	}
 }
+
+void LLInventoryView::setSelectCallback(const LLFolderView::signal_t::slot_type& cb)
+{
+	getChild<LLInventoryPanel>("All Items")->setSelectCallback(cb);
+	getChild<LLInventoryPanel>("Recent Items")->setSelectCallback(cb);
+	getChild<LLInventoryPanel>("Worn Items")->setSelectCallback(cb);
+}
+
+void LLInventoryView::onSelectionChange(LLInventoryPanel *panel, const std::deque<LLFolderViewItem*>& items, BOOL user_action)
+{
+	panel->onSelectionChange(items, user_action);
+}
+
 ///----------------------------------------------------------------------------
 /// LLFloaterInventoryFinder
 ///----------------------------------------------------------------------------
+
 LLFloaterInventoryFinder* LLInventoryView::getFinder() 
 { 
 	return (LLFloaterInventoryFinder*)mFinderHandle.get();
@@ -1056,7 +926,7 @@ LLFloaterInventoryFinder::LLFloaterInventoryFinder(const std::string& name,
 				INV_FINDER_WIDTH, INV_FINDER_HEIGHT, DRAG_ON_TOP,
 				MINIMIZE_NO, CLOSE_YES),
 	mInventoryView(inventory_view),
-	mFilter(inventory_view->mActivePanel->getFilter())
+	mFilter(inventory_view->getPanel()->getFilter())
 {
 
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_inventory_view_finder.xml");

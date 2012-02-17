@@ -37,12 +37,6 @@ class LLFolderView;
 class LLFolderViewFolder;
 class LLViewerObject;
 
-// Utility function to hide all entries except those in the list
-class LLMenuGL;
-void hide_context_entries(LLMenuGL& menu, 
-		const std::vector<std::string> &entries_to_show, 
-		const std::vector<std::string> &disabled_entries);
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLPanelObjectInventory
 //

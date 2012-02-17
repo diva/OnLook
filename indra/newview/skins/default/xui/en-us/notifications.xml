@@ -2321,6 +2321,19 @@ Please enter a higher price.
 
   <notification
    icon="alertmodal.tga"
+   name="ConfirmItemDeleteHasLinks"
+   type="alertmodal">
+At least one of the items you has link items that point to it.  If you delete this item, its links will permanently stop working.  It is strongly advised to delete the links first.
+
+Are you sure you want to delete these items?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="ConfirmObjectDeleteLock"
    type="alertmodal">
 At least one of the items you have selected is locked.
@@ -4589,6 +4602,18 @@ Would you like to leave Busy Mode before completing this transaction?
        name="No"
        text="Cancel"/>
     </form>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="ConfirmDeleteProtectedCategory"
+   type="alertmodal">
+The folder &apos;[FOLDERNAME]&apos; is a system folder. Deleting system folders can cause instability.  Are you sure you want to delete it?
+    <usetemplate
+     ignoretext="Confirm before I delete a system folder"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
   </notification>
 
   <notification

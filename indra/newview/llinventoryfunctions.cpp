@@ -41,6 +41,7 @@
 #include "message.h"
 
 // newview includes
+#include "llappearancemgr.h"
 #include "llappviewer.h"
 //#include "llfirstuse.h"
 #include "llfloaterinventory.h"
@@ -52,9 +53,11 @@
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h"
 #include "llinventorymodel.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"
 #include "llnotificationsutil.h"
+#include "llpanelmaininventory.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
 #include "llpreviewnotecard.h"
@@ -75,12 +78,12 @@
 #include "llvoavatarself.h"
 #include "llwearablelist.h"
 
+#include <boost/foreach.hpp>
+
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
 #include "rlvlocks.h"
 // [/RLVa:KB]
-
-#include "cofmgr.h"
 
 BOOL LLInventoryState::sWearNewClothing = FALSE;
 LLUUID LLInventoryState::sWearNewClothingTransactionID;
@@ -164,7 +167,7 @@ void change_category_parent(LLInventoryModel* model,
 	model->notifyObservers();
 }
 
-/*void remove_category(LLInventoryModel* model, const LLUUID& cat_id)
+void remove_category(LLInventoryModel* model, const LLUUID& cat_id)
 {
 	if (!model || !get_is_category_removable(model, cat_id))
 	{
@@ -195,7 +198,7 @@ void change_category_parent(LLInventoryModel* model,
 		const LLUUID trash_id = model->findCategoryUUIDForType(LLFolderType::FT_TRASH);
 		change_category_parent(model, cat, trash_id, TRUE);
 	}
-}*/
+}
 
 void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name)
 {
@@ -237,7 +240,7 @@ BOOL get_is_parent_to_worn_item(const LLUUID& id)
 	LLInventoryModel::cat_array_t cats;
 	LLInventoryModel::item_array_t items;
 	LLInventoryCollectAllItems collect_all;
-	gInventory.collectDescendentsIf(LLCOFMgr::instance().getCOF(), cats, items, LLInventoryModel::EXCLUDE_TRASH, collect_all);
+	gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(), cats, items, LLInventoryModel::EXCLUDE_TRASH, collect_all);
 
 	for (LLInventoryModel::item_array_t::const_iterator it = items.begin(); it != items.end(); ++it)
 	{
@@ -313,13 +316,13 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 	if (!item)
 		return FALSE;
 
-	if (LLCOFMgr::instance().isLinkInCOF(item->getLinkedUUID()))
+	if (LLAppearanceMgr::isLinkInCOF(item->getLinkedUUID()))
 	{
 		// an item having links in COF (i.e. a worn item)
 		return FALSE;
 	}
 
-	if (gInventory.isObjectDescendentOf(id, LLCOFMgr::instance().getCOF()))
+	if (gInventory.isObjectDescendentOf(id, LLAppearanceMgr::instance().getCOF()))
 	{
 		// a non-link object in COF (should not normally happen)
 		return FALSE;
@@ -363,18 +366,21 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 				// Not being worn yet.
 				return TRUE;
 			}
-		break;
-		
-	default:
-		break;
+			break;
+		default:
+			break;
 	}
-
 	return FALSE;
 }
 
 BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 {
 	if (!model)
+	{
+		return FALSE;
+	}
+
+	if(id == gInventory.getRootFolderID())
 	{
 		return FALSE;
 	}
@@ -387,7 +393,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 
 	// Disable delete from COF folder; have users explicitly choose "detach/take off",
 	// unless the item is not worn but in the COF (i.e. is bugged).
-	if (LLCOFMgr::instance().getIsProtectedCOFItem(id))
+	if (LLAppearanceMgr::instance().getIsProtectedCOFItem(id))
 	{
 		if (get_is_item_worn(id))
 		{
@@ -415,7 +421,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 	return TRUE;
 }
 
-/*BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
+BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
 {
 	// NOTE: This function doesn't check the folder's children.
 	// See LLFolderBridge::isItemRemovable for a function that does
@@ -465,7 +471,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 	}
 
 	return TRUE;
-}*/
+}
 
 BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
 {
@@ -491,6 +497,26 @@ BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
 	return FALSE;
 }
 
+
+void show_item_profile(const LLUUID& item_uuid)
+{
+	LLUUID linked_uuid = gInventory.getLinkedItemID(item_uuid);
+	if(!LLFloaterProperties::show(linked_uuid, LLUUID::null))
+	{
+		S32 left, top;
+		gFloaterView->getNewFloaterPosition(&left, &top);
+		LLRect rect = gSavedSettings.getRect("PropertiesRect");
+		rect.translate( left - rect.mLeft, top - rect.mTop );
+		LLFloaterProperties* floater;
+		floater = new LLFloaterProperties("item properties",
+										rect,
+										"Inventory Item Properties",
+										linked_uuid,
+										LLUUID::null);
+		// keep onscreen
+		gFloaterView->adjustToFitScreen(floater, FALSE);
+	}
+}
 
 ///----------------------------------------------------------------------------
 /// LLInventoryCollectFunctor implementations
@@ -641,6 +667,33 @@ bool LLNameCategoryCollector::operator()(
 	return false;
 }
 
+bool LLFindCOFValidItems::operator()(LLInventoryCategory* cat,
+									 LLInventoryItem* item)
+{
+	// Valid COF items are:
+	// - links to wearables (body parts or clothing)
+	// - links to attachments
+	// - links to gestures
+	// - links to ensemble folders
+	LLViewerInventoryItem *linked_item = ((LLViewerInventoryItem*)item)->getLinkedItem();
+	if (linked_item)
+	{
+		LLAssetType::EType type = linked_item->getType();
+		return (type == LLAssetType::AT_CLOTHING ||
+				type == LLAssetType::AT_BODYPART ||
+				type == LLAssetType::AT_GESTURE ||
+				type == LLAssetType::AT_OBJECT);
+	}
+	else
+	{
+		LLViewerInventoryCategory *linked_category = ((LLViewerInventoryItem*)item)->getLinkedCategory();
+		// BAP remove AT_NONE support after ensembles are fully working?
+		return (linked_category &&
+				((linked_category->getPreferredType() == LLFolderType::FT_NONE) ||
+				 (LLFolderType::lookupIsEnsembleType(linked_category->getPreferredType()))));
+	}
+}
+
 bool LLFindWearables::operator()(LLInventoryCategory* cat,
 								 LLInventoryItem* item)
 {
@@ -686,6 +739,40 @@ bool LLFindWearablesEx::operator()(LLInventoryCategory* cat, LLInventoryItem* it
 	return (bool) get_is_item_worn(item->getUUID()) == mIsWorn;
 }
 
+bool LLFindWearablesOfType::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
+{
+	if (!item) return false;
+	if (item->getType() != LLAssetType::AT_CLOTHING &&
+		item->getType() != LLAssetType::AT_BODYPART)
+	{
+		return false;
+	}
+
+	LLViewerInventoryItem *vitem = dynamic_cast<LLViewerInventoryItem*>(item);
+	if (!vitem || vitem->getWearableType() != mWearableType) return false;
+
+	return true;
+}
+
+void LLFindWearablesOfType::setType(LLWearableType::EType type)
+{
+	mWearableType = type;
+}
+
+bool LLFindNonRemovableObjects::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
+{
+	if (item)
+	{
+		return !get_is_item_removable(&gInventory, item->getUUID());
+	}
+	if (cat)
+	{
+		return !get_is_category_removable(&gInventory, cat->getUUID());
+	}
+
+	llwarns << "Not a category and not an item?" << llendl;
+	return false;
+}
 
 ///----------------------------------------------------------------------------
 /// LLAssetIDMatches 

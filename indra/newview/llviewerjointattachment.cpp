@@ -176,7 +176,7 @@ BOOL LLViewerJointAttachment::addObject(LLViewerObject* object)
 		object->markDead();
 
 		// If this happens to be attached to self, then detach.
-		LLVOAvatar::detachAttachmentIntoInventory(object->getAttachmentItemID());
+		LLVOAvatarSelf::detachAttachmentIntoInventory(object->getAttachmentItemID());
 		return FALSE;
 	}
 

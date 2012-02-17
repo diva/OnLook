@@ -38,10 +38,10 @@
 #include "llassetstorage.h"
 #include "llagent.h"
 #include "llvoavatar.h"
-#include "llviewerinventory.h"
-//#include "llfloaterchat.h"
 #include "llviewerstats.h"
 #include "llnotificationsutil.h"
+#include "llinventorymodel.h"
+#include "lltrans.h"
 
 // Callback struct
 struct LLWearableArrivedData
@@ -71,7 +71,7 @@ struct LLWearableArrivedData
 
 LLWearableList::~LLWearableList()
 {
-	llassert_always(mList.empty()) ;
+	cleanup();
 }
 
 void LLWearableList::cleanup() 
@@ -231,7 +231,7 @@ LLWearable* LLWearableList::createWearableMatchedToInventoryItem( LLWearable* ol
 	return wearable;
 }
 
-LLWearable* LLWearableList::createCopyFromAvatar( LLWearable* old_wearable, const std::string& new_name )
+/*LLWearable* LLWearableList::createCopyFromAvatar( LLWearable* old_wearable, const std::string& new_name )
 {
 	lldebugs << "LLWearableList::createCopyFromAvatar()" << llendl;
 	
@@ -248,10 +248,10 @@ LLWearable* LLWearableList::createCopyFromAvatar( LLWearable* old_wearable, cons
 	wearable->saveNewAsset();
 
 	return wearable;
-}
+}*/
 
 
-LLWearable* LLWearableList::createCopy( LLWearable* old_wearable )
+LLWearable* LLWearableList::createCopy(const LLWearable* old_wearable, const std::string& new_name)
 {
 	lldebugs << "LLWearableList::createCopy()" << llendl;
 
@@ -262,6 +262,7 @@ LLWearable* LLWearableList::createCopy( LLWearable* old_wearable )
 	perm.setOwnerAndGroup(LLUUID::null, gAgent.getID(), LLUUID::null, true);
 	wearable->setPermissions(perm);
 
+	if (!new_name.empty()) wearable->setName(new_name);
 
 	// Send to the dataserver
 	wearable->saveNewAsset();
@@ -276,8 +277,7 @@ LLWearable* LLWearableList::createNewWearable( LLWearableType::EType type )
 	LLWearable *wearable = generateNewWearable();
 	wearable->setType( type );
 	
-	std::string name = "New ";
-	name.append( wearable->getTypeLabel() );
+	std::string name = LLWearableType::getTypeDefaultNewName(wearable->getType());
 	wearable->setName( name );
 
 	LLPermissions perm;
@@ -288,6 +288,9 @@ LLWearable* LLWearableList::createNewWearable( LLWearableType::EType type )
 	// Description and sale info have default values.
 	wearable->setParamsToDefaults();
 	wearable->setTexturesToDefaults();
+
+	//mark all values (params & images) as saved
+	wearable->saveValues();
 
 	// Send to the dataserver
 	wearable->saveNewAsset();

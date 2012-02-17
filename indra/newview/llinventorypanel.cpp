@@ -121,7 +121,15 @@ BOOL LLInventoryPanel::postBuild()
 					   0,
 					   getRect().getWidth(),
 					   0);
-	mFolderRoot = new LLFolderView(getName(), NULL, folder_rect, LLUUID::null, this);
+
+	LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(LLAssetType::AT_CATEGORY,
+													LLAssetType::AT_CATEGORY,
+													LLInventoryType::IT_CATEGORY,
+													this,
+													NULL,
+													LLUUID::null);
+													
+	mFolderRoot = new LLFolderView(getName(), NULL, folder_rect, LLUUID::null, this, new_listener);
 	mFolderRoot->setAllowMultiSelect(mAllowMultiSelect);
 
 	// scroller
@@ -475,16 +483,16 @@ const LLUUID& LLInventoryPanel::getRootFolderID() const
 {
 	return mFolderRoot->getListener()->getUUID();
 }
-void LLInventoryPanel::rebuildViewsFor(const LLUUID& id, U32 mask)
+LLFolderViewItem* LLInventoryPanel::rebuildViewsFor(const LLUUID& id, U32 mask)
 {
 	// Destroy the old view for this ID so we can rebuild it.
 	LLFolderViewItem* old_view = mFolderRoot->getItemByID(id);
-	if (old_view && id.notNull())
+	if (old_view)
 	{
 		old_view->destroyView();
 	}
 
-	buildNewViews(id);
+	return buildNewViews(id);
 }
 
 LLFolderViewFolder * LLInventoryPanel::createFolderViewFolder(LLInvFVBridge * bridge)
@@ -506,71 +514,74 @@ LLFolderViewItem * LLInventoryPanel::createFolderViewItem(LLInvFVBridge * bridge
 		bridge);
 }
 
-void LLInventoryPanel::buildNewViews(const LLUUID& id)
+LLFolderViewItem* LLInventoryPanel::buildNewViews(const LLUUID& id)
 {
-	LLInventoryObject* const objectp = gInventory.getObject(id);
+ 	LLInventoryObject const* objectp = gInventory.getObject(id);
+ 	LLUUID root_id = mFolderRoot->getListener()->getUUID();
+ 	LLFolderViewFolder* parent_folder = NULL;
 	LLFolderViewItem* itemp = NULL;
 	
-
-	if (objectp)
-	{	
-		const LLUUID &parent_id = objectp->getParentUUID();
-		LLFolderViewFolder* parent_folder = (LLFolderViewFolder*)mFolderRoot->getItemByID(parent_id);
-		if (objectp->getType() <= LLAssetType::AT_NONE ||
-			objectp->getType() >= LLAssetType::AT_COUNT)
-		{
+ 	if (id == root_id)
+ 	{
+ 		parent_folder = mFolderRoot;
+ 	}
+ 	else if (objectp)
+ 	{
+ 		const LLUUID &parent_id = objectp->getParentUUID();
+ 		parent_folder = (LLFolderViewFolder*)mFolderRoot->getItemByID(parent_id);
+  		
+  		if (parent_folder)
+  		{
+  			if (objectp->getType() <= LLAssetType::AT_NONE ||
+  				objectp->getType() >= LLAssetType::AT_COUNT)
+  			{
   				llwarns << "LLInventoryPanel::buildNewViews called with invalid objectp->mType : "
   						<< ((S32) objectp->getType()) << " name " << objectp->getName() << " UUID " << objectp->getUUID()
   						<< llendl;
-		}
-		else if ((objectp->getType() == LLAssetType::AT_CATEGORY) &&
-				(objectp->getActualType() != LLAssetType::AT_LINK_FOLDER)) // build new view for category
-		{
-			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(objectp->getType(),
+  				return NULL;
+  			}
+  		
+  			if ((objectp->getType() == LLAssetType::AT_CATEGORY) &&
+  				(objectp->getActualType() != LLAssetType::AT_LINK_FOLDER))
+			{
+				LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(objectp->getType(),
 													objectp->getType(),
 													LLInventoryType::IT_CATEGORY,
 													this,
+													mFolderRoot,
 													objectp->getUUID());
-
-			if (new_listener)
+  				if (new_listener)
+  				{
+					LLFolderViewFolder* folderp = createFolderViewFolder(new_listener);
+					if (folderp)
+					{
+						folderp->setItemSortOrder(mFolderRoot->getSortOrder());
+					}
+  					itemp = folderp;
+  				}
+  			}
+  			else
   			{
-				LLFolderViewFolder* folderp = createFolderViewFolder(new_listener);
-				if (folderp)
-				{
-					folderp->setItemSortOrder(mFolderRoot->getSortOrder());
-				}
-				itemp = folderp;
-			}
-		}
-		else // build new view for item
-		{
-			LLInventoryItem* item = (LLInventoryItem*)objectp;
-			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(
-				item->getType(),
+  				// Build new view for item.
+  				LLInventoryItem* item = (LLInventoryItem*)objectp;
+			LLInvFVBridge* new_listener = LLInvFVBridge::createBridge(item->getType(),
 				item->getActualType(),
 				item->getInventoryType(),
-				this,
-				item->getUUID(),
-				item->getFlags());
+  																				this,
+  																				mFolderRoot,
+  																				item->getUUID(),
+  																				item->getFlags());
+ 
   				if (new_listener)
   				{
 					itemp = createFolderViewItem(new_listener);
   				}
-		}
-
-		
-
-		if (itemp)
-		{
-			if (parent_folder)
-			{
-				itemp->addToFolder(parent_folder, mFolderRoot);
-			}
-			else
-			{
-				llwarns << "Couldn't find parent folder for child " << itemp->getLabel() << llendl;
-				delete itemp;
-			}
+  			}
+ 
+  			if (itemp)
+  			{
+  				itemp->addToFolder(parent_folder, mFolderRoot);
+   			}
 		}
 	}
 
@@ -595,7 +606,7 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 			}
 		}
 		
-		if(items)
+		if(items && parent_folder)
 		{
 			for (LLViewerInventoryItem::item_array_t::const_iterator item_iter = items->begin();
 				 item_iter != items->end();
@@ -607,6 +618,8 @@ void LLInventoryPanel::buildNewViews(const LLUUID& id)
 		}
 		mInventory->unlockDirectDescendentArrays(id);
 	}
+	
+	return itemp;
 }
 
 struct LLConfirmPurgeData
@@ -728,17 +741,31 @@ void LLInventoryPanel::setSelection(const LLUUID& obj_id, BOOL take_keyboard_foc
 		mSelectThisID = obj_id;
 	}
 }
-void LLInventoryPanel::setSelectCallback(LLFolderView::SelectCallback callback, void* user_data) 
-{
+void LLInventoryPanel::setSelectCallback(const boost::function<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)>& cb) 
+{ 
 	if (mFolderRoot)
 	{
-	 	mFolderRoot->setSelectCallback(callback, user_data);
+		mFolderRoot->setSelectCallback(cb);
 	}
 }
+
 void LLInventoryPanel::clearSelection()
 {
 	mFolderRoot->clearSelection();
 	mSelectThisID.setNull();
+}
+
+void LLInventoryPanel::onSelectionChange(const std::deque<LLFolderViewItem*>& items, BOOL user_action)
+{
+	LLFolderView* fv = getRootFolder();
+	if (fv->needsAutoRename()) // auto-selecting a new user-created asset and preparing to rename
+	{
+		fv->setNeedsAutoRename(FALSE);
+		if (items.size()) // new asset is visible and selected
+		{
+			fv->startRenamingSelectedItem();
+		}
+	}
 }
 
 void LLInventoryPanel::createNewItem(const std::string& name,

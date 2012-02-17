@@ -107,13 +107,6 @@ private:
 protected:
 	static const LLFontGL*		sFont;
 	static const LLFontGL*		sSmallFont;
-	static LLColor4				sFgColor;
-	static LLColor4				sHighlightBgColor;
-	static LLColor4				sHighlightFgColor;
-	static LLColor4				sFilterBGColor;
-	static LLColor4				sFilterTextColor;
-	static LLColor4				sSuffixColor;
-	static LLColor4				sSearchStatusColor;
 	static LLUIImagePtr			sArrowImage;
 	static LLUIImagePtr			sBoxImage;
 
@@ -122,7 +115,6 @@ protected:
 	std::string					mSearchableLabelDesc;
 	std::string					mSearchableLabelCreator;
 	std::string					mSearchable;
-	std::string					mType;
 	S32							mLabelWidth;
 	U32							mCreationDate;
 	LLFolderViewFolder*			mParentFolder;
@@ -156,6 +148,8 @@ protected:
 	virtual BOOL addFolder(LLFolderViewFolder*) { return FALSE; }
 
 public:
+	BOOL postBuild();
+
 	// This function clears the currently selected item, and records
 	// the specified selected item appropriately for display and use
 	// in the UI. If open is TRUE, then folders are opened up along
@@ -495,6 +489,8 @@ public:
 	void applyFunctorRecursively(LLFolderViewFunctor& functor);
 	virtual void applyListenerFunctorRecursively(LLFolderViewListenerFunctor& functor);
 
+	// Just apply this functor to the folder's immediate children.
+	void applyFunctorToChildren(LLFolderViewFunctor& functor);
 
 	virtual void openItem( void );
 	virtual BOOL addItem(LLFolderViewItem* item);
@@ -510,6 +506,11 @@ public:
 		void* cargo_data,
 		EAcceptance* accept,
 		std::string& tooltip_msg);
+	BOOL handleDragAndDropToThisFolder(MASK mask, BOOL drop,
+									   EDragAndDropType cargo_type,
+									   void* cargo_data,
+									   EAcceptance* accept,
+									   std::string& tooltip_msg);
 	virtual void draw();
 
 	time_t getCreationDate() const;
@@ -523,6 +524,8 @@ public:
 	items_t::const_iterator getItemsBegin() const { return mItems.begin(); }
 	items_t::const_iterator getItemsEnd() const { return mItems.end(); }
 	items_t::size_type getItemsCount() const { return mItems.size(); }
+	LLFolderViewFolder* getCommonAncestor(LLFolderViewItem* item_a, LLFolderViewItem* item_b, bool& reverse);
+	void gatherChildRangeExclusive(LLFolderViewItem* start, LLFolderViewItem* end, bool reverse,  std::vector<LLFolderViewItem*>& items);
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -123,7 +123,7 @@ private:
 	Impl* mImpl;
 };
 
-class LLBakedUploadData;
+struct LLBakedUploadData;
 class LLSendTexLayerResponder : public LLAssetUploadResponder
 {
 	LOG_CLASS(LLSendTexLayerResponder);
