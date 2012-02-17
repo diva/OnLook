@@ -2818,7 +2818,7 @@ void update_group_floaters(const LLUUID& group_id)
 		gIMMgr->refresh();
 	}
 
-	gAgent.fireEvent(new LLEvent(&gAgent, "new group"), "");
+	gAgent.fireEvent(new LLOldEvents::LLEvent(&gAgent, "new group"), "");
 }
 
 // static

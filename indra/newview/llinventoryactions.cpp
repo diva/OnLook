@@ -99,6 +99,8 @@
 #include "statemachine/aifilepicker.h"
 // </edit>
 
+using namespace LLOldEvents;
+
 const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
 const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
 const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)

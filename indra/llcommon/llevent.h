@@ -35,8 +35,11 @@
 #define LL_EVENT_H
 
 #include "llsd.h"
-#include "llmemory.h"
+#include "llpointer.h"
 #include "llthread.h"
+
+namespace LLOldEvents
+{
 
 class LLEventListener;
 class LLEvent;
@@ -193,5 +196,7 @@ public:
 	LLSD getValue() { return mValue; }
 	LLSD mValue;
 };
+
+} // LLOldEvents
 
 #endif // LL_EVENT_H

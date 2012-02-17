@@ -261,6 +261,7 @@
 
 #include "hippogridmanager.h"
 
+using namespace LLOldEvents;
 using namespace LLVOAvatarDefines;
 void init_client_menu(LLMenuGL* menu);
 void init_server_menu(LLMenuGL* menu);
