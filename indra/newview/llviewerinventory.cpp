@@ -911,7 +911,11 @@ public:
 	}
 };
 
-void copy_inventory_from_notecard(const LLUUID& object_id, const LLUUID& notecard_inv_id, const LLInventoryItem *src, U32 callback_id)
+void copy_inventory_from_notecard(/* V3: const LLUUID& destination_id, */
+								  const LLUUID& object_id,
+								  const LLUUID& notecard_inv_id,
+								  const LLInventoryItem *src,
+								  U32 callback_id)
 {
 	if (NULL == src)
 	{
@@ -930,7 +934,7 @@ void copy_inventory_from_notecard(const LLUUID& object_id, const LLUUID& notecar
 
 	// Fallback to the agents region if for some reason the 
 	// object isn't found in the viewer.
-	if(!viewer_region)
+	if (! viewer_region)
 	{
 		viewer_region = gAgent.getRegion();
 	}
@@ -958,9 +962,13 @@ void copy_inventory_from_notecard(const LLUUID& object_id, const LLUUID& notecar
     body["object-id"] = object_id;
     body["item-id"] = src->getUUID();
 	body["folder-id"] = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(src->getType()));
+	// V3: body["folder-id"] = destination_id;
     body["callback-id"] = (LLSD::Integer)callback_id;
 
-	LLHTTPClient::post(url, body, new LLCopyInventoryFromNotecardResponder());
+    request["message"] = "CopyInventoryFromNotecard";
+    request["payload"] = body;
+
+    viewer_region->getCapAPI().post(request);
 }
 
 
