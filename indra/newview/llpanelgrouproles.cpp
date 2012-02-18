@@ -1810,7 +1810,7 @@ BOOL LLPanelGroupRolesSubTab::postBuildSubTab(LLView* root)
 	mRoleDescription->setCommitOnFocusLost(TRUE);
 	mRoleDescription->setCallbackUserData(this);
 	mRoleDescription->setCommitCallback(onDescriptionCommit);
-	mRoleDescription->setFocusReceivedCallback(onDescriptionFocus, this);
+	mRoleDescription->setFocusReceivedCallback(boost::bind(&LLPanelGroupRolesSubTab::onDescriptionFocus, this));
 
 	setFooterEnabled(FALSE);
 
@@ -2273,14 +2273,10 @@ void LLPanelGroupRolesSubTab::onPropertiesKey(LLLineEditor* ctrl, void* user_dat
 	self->notifyObservers();
 }
 
-// static 
-void LLPanelGroupRolesSubTab::onDescriptionFocus(LLFocusableElement* ctrl, void* user_data)
+void LLPanelGroupRolesSubTab::onDescriptionFocus()
 {
-	LLPanelGroupRolesSubTab* self = static_cast<LLPanelGroupRolesSubTab*>(user_data);
-	if (!self) return;
-
-	self->mHasRoleChange = TRUE;
-	self->notifyObservers();
+	mHasRoleChange = TRUE;
+	notifyObservers();
 }
 
 // static 

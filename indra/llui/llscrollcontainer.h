@@ -78,7 +78,8 @@ public:
 
 	void			scrollToShowRect( const LLRect& rect, const LLCoordGL& desired_offset );
 	void			setReserveScrollCorner( BOOL b ) { mReserveScrollCorner = b; }
-	const LLRect&	getScrolledViewRect() const { return mScrolledView->getRect(); }
+	LLRect			getContentWindowRect();
+	const LLRect&	getScrolledViewRect() const { return mScrolledView ? mScrolledView->getRect() : LLRect::null; }
 	void			pageUp(S32 overlap = 0);
 	void			pageDown(S32 overlap = 0);
 	void			goToTop();

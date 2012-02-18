@@ -80,7 +80,6 @@ public:
 
 	virtual void	draw();
 	virtual void	onFocusLost();
-	virtual void	onLostTop();
 
 	virtual void	setEnabled(BOOL enabled);
 
@@ -212,6 +211,7 @@ private:
 	bool				mSuppressTentative;
 	void				(*mPrearrangeCallback)(LLUICtrl*,void*);
 	void				(*mTextEntryCallback)(LLLineEditor*, void*);
+	boost::signals2::connection mTopLostSignalConnection;
 };
 
 class LLFlyoutButton : public LLComboBox

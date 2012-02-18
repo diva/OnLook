@@ -578,6 +578,23 @@ void LLScrollableContainerView::setBorderVisible(BOOL b)
 	mBorder->setVisible( b );
 }
 
+LLRect LLScrollableContainerView::getContentWindowRect()
+{
+	updateScroll();
+	LLRect scroller_view_rect;
+	S32 visible_width = 0;
+	S32 visible_height = 0;
+	BOOL show_h_scrollbar = FALSE;
+	BOOL show_v_scrollbar = FALSE;
+	calcVisibleSize( &visible_width, &visible_height, &show_h_scrollbar, &show_v_scrollbar );
+	S32 border_width = mBorder->getBorderWidth();
+	scroller_view_rect.setOriginAndSize(border_width, 
+										show_h_scrollbar ? mScrollbar[HORIZONTAL]->getRect().mTop : border_width, 
+										visible_width, 
+										visible_height);
+	return scroller_view_rect;
+}
+
 // Scroll so that as much of rect as possible is showing (where rect is defined in the space of scroller view, not scrolled)
 void LLScrollableContainerView::scrollToShowRect(const LLRect& rect, const LLCoordGL& desired_offset)
 {

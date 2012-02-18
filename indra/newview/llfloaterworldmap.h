@@ -151,8 +151,8 @@ protected:
 	void			flyToAvatar();
 	void			teleportToAvatar();
 
-	static void		updateSearchEnabled( LLUICtrl* ctrl, void* userdata );
-	static void		onLocationFocusChanged( LLFocusableElement* ctrl, void* userdata );
+	void			updateSearchEnabled();
+	void			onLocationFocusChanged( LLFocusableElement* focus );
 	static void		onLocationCommit( void* userdata );
 	static void		onCommitLocation( LLUICtrl* ctrl, void* userdata );
 	static void		onCommitSearchResult( LLUICtrl* ctrl, void* userdata );

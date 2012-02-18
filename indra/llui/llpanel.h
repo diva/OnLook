@@ -170,7 +170,6 @@ public:
 	// LLUICtrl
 	void childSetFocus(const std::string& id, BOOL focus = TRUE);
 	BOOL childHasFocus(const std::string& id);
-	void childSetFocusChangedCallback(const std::string& id, void (*cb)(LLFocusableElement*, void*), void* user_data = NULL);
 	
 	void childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void* userdata = NULL );
 	void childSetDoubleClickCallback(const std::string& id, void (*cb)(void*), void* userdata = NULL );

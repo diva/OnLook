@@ -1787,6 +1787,7 @@ LLView* LLView::getRootView()
 	return view;
 }
 
+
 BOOL LLView::deleteViewByHandle(LLHandle<LLView> handle)
 {
 	LLView* viewp = handle.get();
@@ -1801,9 +1802,26 @@ BOOL LLView::deleteViewByHandle(LLHandle<LLView> handle)
 	return viewp != NULL;
 }
 
+LLView* LLView::findPrevSibling(LLView* child)
+{
+	child_list_t::iterator prev_it = std::find(mChildList.begin(), mChildList.end(), child);
+	if (prev_it != mChildList.end() && prev_it != mChildList.begin())
+	{
+		return *(--prev_it);
+	}
+	return NULL;
+}
 
-// Moves the view so that it is entirely inside of constraint.
-// If the view will not fit because it's too big, aligns with the top and left.
+LLView* LLView::findNextSibling(LLView* child)
+{
+	child_list_t::iterator next_it = std::find(mChildList.begin(), mChildList.end(), child);
+	if (next_it != mChildList.end())
+	{
+		next_it++;
+	}
+
+	return (next_it != mChildList.end()) ? *next_it : NULL;
+}
 // (Why top and left?  That's where the drag bars are for floaters.)
 BOOL LLView::translateIntoRect(const LLRect& constraint, BOOL allow_partial_outside )
 {

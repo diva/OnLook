@@ -126,7 +126,7 @@ LLSpinCtrl::LLSpinCtrl(	const std::string& name, const LLRect& rect, const std::
 								&LLLineEditor::prevalidateASCII );
 	mEditor->setFollowsLeft();
 	mEditor->setFollowsBottom();
-	mEditor->setFocusReceivedCallback( &LLSpinCtrl::onEditorGainFocus, this );
+	mEditor->setFocusReceivedCallback( boost::bind(&LLSpinCtrl::onFocusReceived, this) );
 	//RN: this seems to be a BAD IDEA, as it makes the editor behavior different when it has focus
 	// than when it doesn't.  Instead, if you always have to double click to select all the text, 
 	// it's easier to understand
@@ -241,15 +241,6 @@ void LLSpinCtrl::onDownBtn( void *userdata )
 		self->updateEditor();
 		self->onCommit();
 	}
-}
-
-// static
-void LLSpinCtrl::onEditorGainFocus( LLFocusableElement* caller, void *userdata )
-{
-	LLSpinCtrl* self = (LLSpinCtrl*) userdata;
-	llassert( caller == self->mEditor );
-
-	self->onFocusReceived();
 }
 
 void LLSpinCtrl::setValue(const LLSD& value )

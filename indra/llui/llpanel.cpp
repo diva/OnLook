@@ -760,16 +760,6 @@ BOOL LLPanel::childHasFocus(const std::string& id)
 	}
 }
 
-
-void LLPanel::childSetFocusChangedCallback(const std::string& id, void (*cb)(LLFocusableElement*, void*), void* user_data)
-{
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
-	if (child)
-	{
-		child->setFocusChangedCallback(cb, user_data);
-	}
-}
-
 void LLPanel::childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void *userdata )
 {
 	LLUICtrl* child = getChild<LLUICtrl>(id, true);

@@ -153,8 +153,8 @@ BOOL LLChatBar::postBuild()
 	{
 		mInputEditor->setCallbackUserData(this);
 		mInputEditor->setKeystrokeCallback(&onInputEditorKeystroke);
-		mInputEditor->setFocusLostCallback(&onInputEditorFocusLost, this);
-		mInputEditor->setFocusReceivedCallback( &onInputEditorGainFocus, this );
+		mInputEditor->setFocusLostCallback(boost::bind(&LLChatBar::onInputEditorFocusLost));
+		mInputEditor->setFocusReceivedCallback(boost::bind(&LLChatBar::onInputEditorGainFocus));
 		mInputEditor->setCommitOnFocusLost( FALSE );
 		mInputEditor->setRevertOnEsc( FALSE );
 		mInputEditor->setIgnoreTab(TRUE);
@@ -623,14 +623,14 @@ void LLChatBar::onInputEditorKeystroke( LLLineEditor* caller, void* userdata )
 }
 
 // static
-void LLChatBar::onInputEditorFocusLost( LLFocusableElement* caller, void* userdata)
+void LLChatBar::onInputEditorFocusLost()
 {
 	// stop typing animation
 	gAgent.stopTyping();
 }
 
 // static
-void LLChatBar::onInputEditorGainFocus( LLFocusableElement* caller, void* userdata )
+void LLChatBar::onInputEditorGainFocus()
 {
 	LLFloaterChat::setHistoryCursorAndScrollToEnd();
 }

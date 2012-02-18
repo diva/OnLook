@@ -255,7 +255,7 @@ public:
 	static void onPropertiesKey(LLLineEditor*, void*);
 
 	static void onDescriptionCommit(LLUICtrl*, void*);
-	static void onDescriptionFocus(LLFocusableElement*, void*);
+	void		onDescriptionFocus();
 
 	static void onMemberVisibilityChange(LLUICtrl*, void*);
 	void handleMemberVisibilityChange(bool value);

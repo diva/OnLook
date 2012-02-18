@@ -110,13 +110,11 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 	mButton->setImageOverlay("combobox_arrow.tga", LLFontGL::RIGHT);
 
 	updateLayout();
+	
+	mTopLostSignalConnection = setTopLostCallback(boost::bind(&LLComboBox::hideList, this));
 }
 
 
-LLComboBox::~LLComboBox()
-{
-	// children automatically deleted, including mMenu, mButton
-}
 
 // virtual
 LLXMLNodePtr LLComboBox::getXML(bool save_children) const
@@ -227,6 +225,16 @@ void LLComboBox::setEnabled(BOOL enabled)
 	LLView::setEnabled(enabled);
 	mButton->setEnabled(enabled);
 }
+
+
+LLComboBox::~LLComboBox()
+{
+	// children automatically deleted, including mMenu, mButton
+
+	// explicitly disconect this signal, since base class destructor might fire top lost
+	mTopLostSignalConnection.disconnect();
+}
+
 
 void LLComboBox::clear()
 { 
@@ -480,12 +488,6 @@ void LLComboBox::onFocusLost()
 	}
 	LLUICtrl::onFocusLost();
 }
-
-void LLComboBox::onLostTop()
-{
-	hideList();
-}
-
 
 void LLComboBox::setButtonVisible(BOOL visible)
 {

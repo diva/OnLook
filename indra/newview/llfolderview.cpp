@@ -1427,7 +1427,7 @@ void LLFolderView::startRenamingSelectedItem( void )
 		mRenamer->setVisible( TRUE );
 		// set focus will fail unless item is visible
 		mRenamer->setFocus( TRUE );
-		mRenamer->setLostTopCallback(onRenamerLost);
+		mRenamer->setTopLostCallback(boost::bind(&LLFolderView::onRenamerLost, this));
 		gFocusMgr.setTopCtrl( mRenamer );
 	}
 }
@@ -2168,11 +2168,9 @@ void LLFolderView::updateRenamerPosition()
 /// Local function definitions
 ///----------------------------------------------------------------------------
 
-
-//static 
-void LLFolderView::onRenamerLost( LLUICtrl* renamer, void* user_data)
+void LLFolderView::onRenamerLost()
 {
-	renamer->setVisible(FALSE);
+		mRenamer->setVisible(FALSE);
 }
 
 LLInventoryFilter* LLFolderView::getFilter()

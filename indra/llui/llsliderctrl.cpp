@@ -121,7 +121,7 @@ LLSliderCtrl::LLSliderCtrl(const std::string& name, const LLRect& rect,
 										&LLLineEditor::prevalidateFloat );
 			mEditor->setFollowsLeft();
 			mEditor->setFollowsBottom();
-			mEditor->setFocusReceivedCallback( &LLSliderCtrl::onEditorGainFocus, this );
+			mEditor->setFocusReceivedCallback( boost::bind(&LLSliderCtrl::onFocusReceived, this) );
 			mEditor->setIgnoreTab(TRUE);
 			// don't do this, as selecting the entire text is single clicking in some cases
 			// and double clicking in others
@@ -139,17 +139,6 @@ LLSliderCtrl::LLSliderCtrl(const std::string& name, const LLRect& rect,
 
 	updateText();
 }
-
-
-// static
-void LLSliderCtrl::onEditorGainFocus( LLFocusableElement* caller, void *userdata )
-{
-	LLSliderCtrl* self = (LLSliderCtrl*) userdata;
-	llassert( caller == self->mEditor );
-
-	self->onFocusReceived();
-}
-
 
 void LLSliderCtrl::setValue(F32 v, BOOL from_event)
 {

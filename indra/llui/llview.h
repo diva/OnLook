@@ -372,6 +372,8 @@ public:
 	LLView*		getRootView();
 	LLView*		getParent() const				{ return mParentView; }
 	LLView*		getFirstChild() const			{ return (mChildList.empty()) ? NULL : *(mChildList.begin()); }
+	LLView*		findPrevSibling(LLView* child);
+	LLView*		findNextSibling(LLView* child);
 	S32			getChildCount()	const			{ return (S32)mChildList.size(); }
 	template<class _Pr3> void sortChildren(_Pr3 _Pred) { mChildList.sort(_Pred); }
 	BOOL		hasAncestor(const LLView* parentp) const;

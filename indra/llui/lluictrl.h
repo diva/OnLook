@@ -89,7 +89,6 @@ public:
 	virtual void	resetDirty(); //Defaults to no-op
 	
 	// Call appropriate callbacks
-	virtual void	onLostTop();	// called when registered as top ctrl and user clicks elsewhere
 	virtual void	onCommit();
 	
 	// Default to no-op:
@@ -125,7 +124,6 @@ public:
 	
 	void			setCommitCallback( void (*cb)(LLUICtrl*, void*) )		{ mCommitCallback = cb; }
 	void			setValidateBeforeCommit( BOOL(*cb)(LLUICtrl*, void*) )	{ mValidateCallback = cb; }
-	void			setLostTopCallback( void (*cb)(LLUICtrl*, void*) )		{ mLostTopCallback = cb; }
 	
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
 
@@ -144,7 +142,6 @@ protected:
 	commit_signal_t*		mCommitSignal;
 	enable_signal_t*		mValidateSignal;
 	void			(*mCommitCallback)( LLUICtrl* ctrl, void* userdata );
-	void			(*mLostTopCallback)( LLUICtrl* ctrl, void* userdata );
 	BOOL			(*mValidateCallback)( LLUICtrl* ctrl, void* userdata );
 
 	void*			mCallbackUserData;

@@ -251,7 +251,7 @@ protected:
 	LLScrollableContainerView* mScrollContainer;  // NULL if this is not a child of a scroll container.
 
 	static void commitRename( LLUICtrl* renamer, void* user_data );
-	static void onRenamerLost( LLUICtrl* renamer, void* user_data);
+	void onRenamerLost();
 
 	void finishRenamingItem( void );
 	void closeRenamer( void );

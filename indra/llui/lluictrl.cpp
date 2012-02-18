@@ -45,7 +45,6 @@ LLUICtrl::LLUICtrl() :
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
 	mCommitCallback(NULL),
-	mLostTopCallback(NULL),
 	mValidateCallback(NULL),
 	mCallbackUserData(NULL),
 	mTentative(FALSE),
@@ -64,7 +63,6 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect& rect, BOOL mouse_opaqu
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
 	mCommitCallback( on_commit_callback),
-	mLostTopCallback( NULL ),
 	mValidateCallback( NULL ),
 	mCallbackUserData( callback_userdata ),
 	mTentative( FALSE ),
@@ -209,15 +207,6 @@ void LLUICtrl::onFocusLost()
 		ctrlp->onFocusLost();
 	}
 }
-
-void LLUICtrl::onLostTop()
-{
-	if (mLostTopCallback)
-	{
-		mLostTopCallback(this, mCallbackUserData);
-	}
-}
-
 
 // virtual
 void LLUICtrl::setTabStop( BOOL b )	

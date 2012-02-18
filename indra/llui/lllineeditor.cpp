@@ -156,7 +156,8 @@ LLLineEditor::LLLineEditor(const std::string& name, const LLRect& rect,
 		mGLFont = LLFontGL::getFontSansSerifSmall();
 	}
 
-	setFocusLostCallback(focus_lost_callback);
+	if(focus_lost_callback)
+		setFocusLostCallback(boost::bind(focus_lost_callback,_1,(void*)NULL));
 
 	setTextPadding(0, 0);
 
