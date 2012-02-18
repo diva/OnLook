@@ -37,7 +37,7 @@
 // linden libraries
 #include "indra_constants.h"
 #include "llavatarnamecache.h"		// name lookup cap url
-#include "llfloaterreg.h"
+//#include "llfloaterreg.h"
 #include "llmath.h"
 #include "llhttpclient.h"
 #include "llregionflags.h"
@@ -177,7 +177,7 @@ class LLRegionHandler : public LLCommandHandler
 {
 public:
 	// requests will be throttled from a non-trusted browser
-	LLRegionHandler() : LLCommandHandler("region", UNTRUSTED_THROTTLE) {}
+	LLRegionHandler() : LLCommandHandler("region", /*V3: UNTRUSTED_THROTTLE*/ true) {}
 
 	bool handle(const LLSD& params, const LLSD& query_map, LLMediaCtrl* web)
 	{
@@ -200,7 +200,7 @@ public:
 		}
 
 		// Process the SLapp as if it was a secondlife://{PLACE} SLurl
-		LLURLDispatcher::dispatch(url, "clicked", web, true);
+		LLURLDispatcher::dispatch(url, /*V3: "clicked",*/ web, true);
 		return true;
 	}
 };
