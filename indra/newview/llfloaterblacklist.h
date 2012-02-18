@@ -32,6 +32,7 @@ public:
 
 	static std::map<LLUUID,LLSD> blacklist_entries;
 	static std::vector<LLUUID> blacklist_textures;
+	static std::vector<LLUUID> blacklist_objects;
 		
 	static void loadFromSave();
 
@@ -48,6 +49,7 @@ private:
 	static void onClickSave_continued(AIFilePicker* filepicker);
 	static void onClickLoad(void* user_data);
 	static void onClickLoad_continued(AIFilePicker* filepicker);
+	static void onClickRerender(void* user_data);
 	static void onClickCopyUUID(void* user_data);
 	static void onClickRemove(void* user_data);
 	
