@@ -19,7 +19,7 @@ endif(NOT FMODEX)
 include(OPENAL)
 include(HUNSPELL)
 include(FindOpenGL)
-include(JsonCpp)
+#include(JsonCpp)
 include(LLAddBuildTest)
 include(LLAudio)
 include(LLCharacter)
@@ -442,7 +442,6 @@ set(viewer_SOURCE_FILES
     lltoolselectrect.cpp
     lltoolview.cpp
     lltracker.cpp
-    lltranslate.cpp
     lluploaddialog.cpp
 	lluploadfloaterobservers.cpp
     llurl.cpp
