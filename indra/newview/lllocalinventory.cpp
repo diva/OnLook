@@ -105,7 +105,7 @@ void LLLocalInventory::open(LLUUID item_id)
 							   rect,
 							   "",
 							   item_id,
-							   0);
+							   LLPreviewAnim::NONE);
 		floaterp->setFocus(TRUE);
 		gFloaterView->adjustToFitScreen(floaterp, FALSE);
 	}

@@ -51,55 +51,18 @@
 
 extern LLAgent gAgent;
 
-LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const std::string& title, const LLUUID& item_uuid, const S32& activate, const LLUUID& object_uuid )	:
+LLPreviewAnim::LLPreviewAnim(const std::string& name, const LLRect& rect, const std::string& title, const LLUUID& item_uuid, const e_activation_type& _activate, const LLUUID& object_uuid )	:
 	LLPreview( name, rect, title, item_uuid, object_uuid)
 {
-	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_animation.xml");
-
-	childSetAction("Anim play btn",playAnim,this);
-	childSetAction("Anim audition btn",auditionAnim,this);
-
-	const LLInventoryItem* item = getItem();
-	
-	childSetCommitCallback("desc", LLPreview::onText, this);
-	childSetText("desc", item->getDescription());
-	childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
-	
+	mIsCopyable = false;
 	setTitle(title);
-
+	LLUICtrlFactory::getInstance()->buildFloater(this,"floater_preview_animation.xml");
 	if (!getHost())
 	{
 		LLRect curRect = getRect();
 		translate(rect.mLeft - curRect.mLeft, rect.mTop - curRect.mTop);
 	}
-
-	mIsCopyable = false;
-	// preload the animation
-	if(item)
-	{
-		gAgentAvatarp->createMotion(item->getAssetUUID());
-
-		const LLPermissions& perm = item->getPermissions();
-		mIsCopyable = (perm.getCreator() == gAgent.getID());
-	}
-	
-	switch ( activate ) 
-	{
-		case 1:
-		{
-			playAnim( (void *) this );
-			break;
-		}
-		case 2:
-		{
-			auditionAnim( (void *) this );
-			break;
-		}
-		default:
-		{
-		//do nothing
-		}
-	}
+	activate(_activate);
 }
 
 // static
@@ -112,6 +75,50 @@ void LLPreviewAnim::endAnimCallback( void *userdata )
 	{
 		self->childSetValue("Anim play btn", FALSE);
 		self->childSetValue("Anim audition btn", FALSE);
+	}
+}
+
+// virtual
+BOOL LLPreviewAnim::postBuild()
+{
+	const LLInventoryItem* item = getItem();
+
+	// preload the animation
+	if(item)
+	{
+		gAgentAvatarp->createMotion(item->getAssetUUID());
+		childSetText("desc", item->getDescription());
+	
+		const LLPermissions& perm = item->getPermissions();
+		mIsCopyable = (perm.getCreator() == gAgent.getID());
+	}
+
+	childSetAction("Anim play btn",playAnim,this);
+	childSetAction("Anim audition btn",auditionAnim,this);
+
+	childSetCommitCallback("desc", LLPreview::onText, this);
+	childSetPrevalidate("desc", &LLLineEditor::prevalidatePrintableNotPipe);
+	
+	return LLPreview::postBuild();
+}
+void LLPreviewAnim::activate(e_activation_type type)
+{
+	switch ( type ) 
+	{
+		case PLAY:
+		{
+			playAnim( (void *) this );
+			break;
+		}
+		case AUDITION:
+		{
+			auditionAnim( (void *) this );
+			break;
+		}
+		default:
+		{
+		//do nothing
+		}
 	}
 }
 
@@ -135,10 +142,7 @@ void LLPreviewAnim::playAnim( void *userdata )
 		{
 			self->mPauseRequest = NULL;
 			gAgent.sendAnimationRequest(itemID, ANIM_REQUEST_START);
-			
-			LLVOAvatar* avatar = gAgentAvatarp;
-			LLMotion*   motion = avatar->findMotion(itemID);
-			
+			LLMotion* motion = gAgentAvatarp->findMotion(itemID);
 			if (motion)
 			{
 				motion->setDeactivateCallback(&endAnimCallback, (void *)(new LLHandle<LLFloater>(self->getHandle())));
@@ -172,9 +176,7 @@ void LLPreviewAnim::auditionAnim( void *userdata )
 		{
 			self->mPauseRequest = NULL;
 			gAgentAvatarp->startMotion(item->getAssetUUID());
-			
-			LLVOAvatar* avatar = gAgentAvatarp;
-			LLMotion*   motion = avatar->findMotion(itemID);
+			LLMotion* motion = gAgentAvatarp->findMotion(itemID);
 			
 			if (motion)
 			{
@@ -434,9 +436,7 @@ void LLPreviewAnim::onClose(bool app_quitting)
 	{
 		gAgentAvatarp->stopMotion(item->getAssetUUID());
 		gAgent.sendAnimationRequest(item->getAssetUUID(), ANIM_REQUEST_STOP);
-					
-		LLVOAvatar* avatar = gAgentAvatarp;
-		LLMotion*   motion = avatar->findMotion(item->getAssetUUID());
+		LLMotion* motion = gAgentAvatarp->findMotion(item->getAssetUUID());
 		
 		if (motion)
 		{

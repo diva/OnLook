@@ -81,7 +81,7 @@ public:
 
 
 	LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon, const LLRect& rect, 
-					const LLUUID& source_id, LLView *parent_view, LLFolderViewEventListener* listener );
+					const LLUUID& source_id, LLPanel *parent_view, LLFolderViewEventListener* listener );
 	virtual ~LLFolderView( void );
 
 	virtual BOOL canFocusChildren() const;
@@ -109,7 +109,7 @@ public:
 	U32 getSortOrder() const;
 	BOOL isFilterModified();
 
-	BOOL getAllowMultiSelect() { return mAllowMultiSelect; }
+	bool getAllowMultiSelect() { return mAllowMultiSelect; }
 
 	U32 toggleSearchType(std::string toggle);
 	U32 getSearchType() const;
@@ -117,6 +117,7 @@ public:
 	// Close all folders in the view
 	void closeAllFolders();
 	void openFolder(const std::string& foldername);
+	void openTopLevelFolders();
 
 	virtual void toggleOpen() {};
 	virtual void setOpenArrangeRecursively(BOOL openitem, ERecurseType recurse);
@@ -196,9 +197,6 @@ public:
 	//void				dragItemIntoFolder( LLFolderViewItem* moving_item, LLFolderViewFolder* dst_folder, BOOL drop, BOOL* accept );
 	//void				dragFolderIntoFolder( LLFolderViewFolder* moving_folder, LLFolderViewFolder* dst_folder, BOOL drop, BOOL* accept );
 
-	// LLUICtrl Functionality
-	/*virtual*/ void setFocus(BOOL focus);
-
 	// LLView functionality
 	///*virtual*/ BOOL handleKey( KEY key, MASK mask, BOOL called_from_parent );
 	/*virtual*/ BOOL handleKeyHere( KEY key, MASK mask );
@@ -213,7 +211,6 @@ public:
 								   EAcceptance* accept,
 								   std::string& tooltip_msg);
 	/*virtual*/ void reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-	/*virtual*/ void onFocusLost();
 	virtual BOOL handleScrollWheel(S32 x, S32 y, S32 clicks);
 	virtual void draw();
 	virtual void deleteAllChildren();
@@ -233,6 +230,7 @@ public:
 	void addItemID(const LLUUID& id, LLFolderViewItem* itemp);
 	void removeItemID(const LLUUID& id);
 	LLFolderViewItem* getItemByID(const LLUUID& id);
+	LLFolderViewFolder* getFolderByID(const LLUUID& id);
 
 	void	doIdle();						// Real idle routine
 	static void idle(void* user_data);		// static glue to doIdle()
@@ -243,10 +241,16 @@ public:
 
 	BOOL getDebugFilters() { return mDebugFilters; }
 
+	LLPanel* getParentPanel() { return mParentPanel; }
 	// DEBUG only
 	void dumpSelectionInformation();
 
+	void updateMenu();
+
+private:
+	void updateMenuOptions(LLMenuGL* menu);
 	void updateRenamerPosition();
+
 protected:
 	LLScrollableContainerView* mScrollContainer;  // NULL if this is not a child of a scroll container.
 
@@ -256,6 +260,8 @@ protected:
 	void finishRenamingItem( void );
 	void closeRenamer( void );
 
+	
+	BOOL addNoOptions(LLMenuGL* menu) const;
 protected:
 	LLHandle<LLView>					mPopupMenuHandle;
 	
@@ -295,8 +301,11 @@ protected:
 	signal_t						mReshapeSignal;
 	S32								mSignalSelectCallback;
 	S32								mMinWidth;
+	S32								mRunningHeight;
 	std::map<LLUUID, LLFolderViewItem*> mItemMap;
 	BOOL							mDragAndDropThisFrame;
+	
+	LLPanel*						mParentPanel;
 
 	/**
 	 * Contains item under mouse pointer while dragging

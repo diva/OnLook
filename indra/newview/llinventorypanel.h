@@ -47,16 +47,13 @@
 #include "lluictrlfactory.h"
 #include <set>
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryView
-//
-// This is the controller class specific for handling agent
-// inventory. It deals with the buttons and views used to navigate as
-// well as controls the behavior of the overall object.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+class LLFolderView;
+class LLFolderViewFolder;
+class LLFolderViewItem;
+class LLInventoryFilter;
 class LLInventoryModel;
 class LLInvFVBridge;
+class LLInventoryFVBridgeBuilder;
 class LLMenuBarGL;
 class LLCheckBoxCtrl;
 class LLSpinCtrl;
@@ -65,19 +62,21 @@ class LLTextBox;
 class LLIconCtrl;
 class LLSaveFolderState;
 class LLSearchEditor;
-
+class LLInvPanelComplObserver;
 
 class LLInventoryPanel : public LLPanel
 {
-public:
+protected:
 	LLInventoryPanel(const std::string& name,
 			const std::string& sort_order_setting,
 			const LLRect& rect,
 			LLInventoryModel* inventory,
 			BOOL allow_multi_select,
 			LLView *parent_view = NULL);
-	~LLInventoryPanel();
+public:
+	virtual ~LLInventoryPanel();
 
+public:
 	LLInventoryModel* getModel() { return mInventory; }
 
 	BOOL postBuild();
@@ -93,6 +92,9 @@ public:
 								   void* cargo_data,
 								   EAcceptance* accept,
 								   std::string& tooltip_msg);
+	// LLUICtrl methods
+	 /*virtual*/ void onFocusLost();
+	 /*virtual*/ void onFocusReceived();
 
 	// Call this method to set the selection.
 	void openAllFolders();
@@ -130,7 +132,12 @@ public:
 
 	void openSelected();
 	void unSelectAll();
+	
+	static void onIdle(void* user_data);
 
+	// Find whichever inventory panel is active / on top.
+	// "Auto_open" determines if we open an inventory panel if none are open.
+	static LLInventoryPanel *getActiveInventoryPanel(BOOL auto_open = TRUE);
 
 public:
 	// TomY TODO: Move this elsewhere?
@@ -144,13 +151,27 @@ public:
 					   U32 next_owner_perm = 0);
 
 protected:
+	void openStartFolderOrMyInventory(); // open the first level of inventory
+	void onItemsCompletion();			// called when selected items are complete
+
 	LLInventoryModel*			mInventory;
 	LLInventoryObserver*		mInventoryObserver;
-	
+	LLInvPanelComplObserver*	mCompletionObserver;
 	
 	BOOL 						mAllowMultiSelect;
 	LLFolderView*				mFolderRoot;
 	LLScrollableContainerView*	mScroller;
+
+	/**
+	 * Pointer to LLInventoryFVBridgeBuilder.
+	 *
+	 * It is set in LLInventoryPanel's constructor and can be overridden in derived classes with 
+	 * another implementation.
+	 * Take into account it will not be deleted by LLInventoryPanel itself.
+	 */
+	const LLInventoryFVBridgeBuilder* mInvFVBridgeBuilder;
+
+
 	//--------------------------------------------------------------------
 	// Sorting
 	//--------------------------------------------------------------------
@@ -159,24 +180,30 @@ public:
 	static const std::string RECENTITEMS_SORT_ORDER;
 	static const std::string WORNITEMS_SORT_ORDER;
 	static const std::string INHERIT_SORT_ORDER;
-
+	
 	void setSortOrder(U32 order);
 	U32 getSortOrder() const;
+	void requestSort();
 
-	static LLInventoryPanel *getActiveInventoryPanel();
 private:
 	const std::string			mSortOrderSetting;
 	LLUUID						mSelectThisID; // if non null, select this item
 	
 public:
+	BOOL 				getIsViewsInitialized() const { return mViewsInitialized; }
 	const LLUUID&		getRootFolderID() const;
 protected:
-	// Given the id and the parent, build all of the folder views.
-	LLFolderViewItem* rebuildViewsFor(const LLUUID& id, U32 mask);
+	// Builds the UI.  Call this once the inventory is usable.
+	void 				initializeViews();
+	LLFolderViewItem*	rebuildViewsFor(const LLUUID& id); // Given the id and the parent, build all of the folder views.
+
+	virtual void		buildFolderView();
+	LLFolderViewItem*	buildNewViews(const LLUUID& id);
 	
-	LLFolderViewItem* buildNewViews(const LLUUID& id);
+	virtual LLFolderView*		createFolderView(LLInvFVBridge * bridge, bool useLabelSuffix);
 	virtual LLFolderViewFolder*	createFolderViewFolder(LLInvFVBridge * bridge);
 	virtual LLFolderViewItem*	createFolderViewItem(LLInvFVBridge * bridge);
+	BOOL				mViewsInitialized; // Views have been generated
 };
 
 class LLInventoryView;

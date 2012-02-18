@@ -493,6 +493,7 @@ void LLScrollableContainerView::draw()
 
 void LLScrollableContainerView::updateScroll()
 {
+	if(!mScrolledView)return;
 	LLRect doc_rect = mScrolledView->getRect();
 	S32 doc_width = doc_rect.getWidth();
 	S32 doc_height = doc_rect.getHeight();

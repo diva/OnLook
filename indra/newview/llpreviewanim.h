@@ -41,9 +41,10 @@ class AIFilePicker;
 class LLPreviewAnim : public LLPreview
 {
 public:
+	enum e_activation_type { NONE = 0, PLAY = 1, AUDITION = 2 };
 	LLPreviewAnim(const std::string& name, const LLRect& rect, const std::string& title,
 					const LLUUID& item_uuid,
-					const S32&    activate,
+					const e_activation_type&    activate,
 					const LLUUID& object_uuid = LLUUID::null);
 
 	static void playAnim( void* userdata );
@@ -65,6 +66,8 @@ public:
 	static void copyAnimID(void* userdata);
 	// </edit>
 	static void endAnimCallback( void *userdata );
+	/*virtual*/	BOOL postBuild();
+	void activate(e_activation_type type);
 
 protected:
 	virtual void onClose(bool app_quitting);

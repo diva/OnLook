@@ -364,6 +364,7 @@ protected:
 	S32			mLastCalculatedWidth;
 	S32			mCompletedFilterGeneration;
 	S32			mMostFilteredDescendantGeneration;
+	bool		mNeedsSort;
 public:
 	typedef enum e_recurse_type
 	{
@@ -389,6 +390,7 @@ public:
 	virtual S32 arrange( S32* width, S32* height, S32 filter_generation );
 
 	BOOL needsArrange();
+	void requestSort();
 
 	// Returns the sort group (system, trash, folder) for this folder.
 	virtual EInventorySortGroup getSortGroup() const;
@@ -396,7 +398,7 @@ public:
 	virtual void	setCompletedFilterGeneration(S32 generation, BOOL recurse_up);
 	virtual S32		getCompletedFilterGeneration() { return mCompletedFilterGeneration; }
 
-	BOOL hasFilteredDescendants(S32 filter_generation) { return mMostFilteredDescendantGeneration >= filter_generation; }
+	BOOL hasFilteredDescendants(S32 filter_generation);
 	BOOL hasFilteredDescendants();
 
 	// applies filters to control visibility of inventory items

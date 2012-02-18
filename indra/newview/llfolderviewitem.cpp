@@ -1046,7 +1046,8 @@ LLFolderViewFolder::LLFolderViewFolder( const std::string& name, LLUIImagePtr ic
 	mLastArrangeGeneration( -1 ),
 	mLastCalculatedWidth(0),
 	mCompletedFilterGeneration(-1),
-	mMostFilteredDescendantGeneration(-1)
+	mMostFilteredDescendantGeneration(-1),
+	mNeedsSort(false)
 {
 }
 
@@ -1075,6 +1076,14 @@ BOOL LLFolderViewFolder::addToFolder(LLFolderViewFolder* folder, LLFolderView* r
 // makes sure that this view and it's children are the right size.
 S32 LLFolderViewFolder::arrange( S32* width, S32* height, S32 filter_generation)
 {
+	// sort before laying out contents
+	if (mNeedsSort)
+	{
+		mFolders.sort(mSortFunction);
+		mItems.sort(mSortFunction);
+		mNeedsSort = false;
+	}
+
 	mHasVisibleChildren = hasFilteredDescendants(filter_generation);
 	
 	LLInventoryFilter::EFolderShow show_folder_state = getRoot()->getFilter()->getShowFolderState();
@@ -1219,6 +1228,12 @@ BOOL LLFolderViewFolder::needsArrange()
 	return mLastArrangeGeneration < getRoot()->getArrangeGeneration(); 
 }
 
+void LLFolderViewFolder::requestSort()
+{
+	mNeedsSort = true;
+	// whenever item order changes, we need to lay things out again
+	requestArrange();
+}
 void LLFolderViewFolder::setCompletedFilterGeneration(S32 generation, BOOL recurse_up)
 {
 	mMostFilteredDescendantGeneration = llmin(mMostFilteredDescendantGeneration, generation);
@@ -1402,6 +1417,11 @@ void LLFolderViewFolder::dirtyFilter()
 	// we're a folder, so invalidate our completed generation
 	setCompletedFilterGeneration(-1, FALSE);
 	LLFolderViewItem::dirtyFilter();
+}
+
+BOOL LLFolderViewFolder::hasFilteredDescendants(S32 filter_generation)
+{
+	return mMostFilteredDescendantGeneration >= filter_generation;
 }
 
 BOOL LLFolderViewFolder::hasFilteredDescendants()
@@ -1871,7 +1891,7 @@ void LLFolderViewFolder::destroyView()
 		folderp->destroyView(); // removes entry from mFolders
 	}
 
-	deleteAllChildren();
+	//deleteAllChildren();
 	
 	if (mParentFolder)
 	{
@@ -2190,11 +2210,15 @@ void LLFolderViewFolder::setOpenArrangeRecursively(BOOL openitem, ERecurseType r
 {
 	BOOL was_open = mIsOpen;
 	mIsOpen = openitem;
-	if(!was_open && openitem)
+	if (mListener)
 	{
-		if(mListener)
+		if(!was_open && openitem)
 		{
 			mListener->openItem();
+		}
+		else if(was_open && !openitem)
+		{
+			mListener->closeItem();
 		}
 	}
 

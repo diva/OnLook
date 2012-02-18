@@ -1434,7 +1434,7 @@ void LLTaskAnimationBridge::openItem()
 									rect,
 								   getName(),
 								   mUUID,
-								   0,
+								   LLPreviewAnim::NONE,
 								   mPanel->getTaskUUID());
 			preview->setFocus(TRUE);  // take focus if you're looking at one of these
 

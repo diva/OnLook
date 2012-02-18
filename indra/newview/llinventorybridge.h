@@ -154,9 +154,8 @@ protected:
 									 const LLUUID& new_parent,
 									 BOOL restamp);
 	void removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*>& batch);
-
 protected:
-	LLInventoryPanel* mInventoryPanel;
+	LLHandle<LLPanel> mInventoryPanel;
 	LLFolderView* mRoot;
 	LLUUID mUUID;	// item id
 	LLInventoryType::EType mInvType;
@@ -165,6 +164,24 @@ protected:
 };
 
 class AIFilePicker;
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLInvFVBridgeBuilder
+//
+// This class intended to build Folder View Bridge via LLInvFVBridge::createBridge.
+// It can be overridden with another way of creation necessary Inventory-Folder-View-Bridge.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLInventoryFVBridgeBuilder
+{
+public:
+ 	virtual ~LLInventoryFVBridgeBuilder() {}
+	virtual LLInvFVBridge* createBridge(LLAssetType::EType asset_type,
+										LLAssetType::EType actual_asset_type,
+										LLInventoryType::EType inv_type,
+										LLInventoryPanel* inventory,
+										LLFolderView* root,
+										const LLUUID& uuid,
+										U32 flags = 0x00) const;
+};
 
 class LLItemBridge : public LLInvFVBridge
 {
@@ -251,9 +268,9 @@ public:
 	virtual BOOL isItemCopyable() const;
 	virtual BOOL isClipboardPasteable() const;
 	virtual BOOL isClipboardPasteableAsLink() const;
-
+	virtual BOOL copyToClipboard() const;
+	
 	static void createWearable(LLFolderBridge* bridge, LLWearableType::EType type);
-	//static void createWearable(LLUUID parent_folder_id, LLWearableType::EType type);
 
 	LLViewerInventoryCategory* getCategory() const;
 	LLHandle<LLFolderBridge> getHandle() { mHandle.bind(this); return mHandle; }
@@ -302,12 +319,10 @@ public:
 private:
 	BOOL				mCallingCards;
 	BOOL				mWearables;
-	LLHandle<LLView>	mMenu;
 	menuentry_vec_t		mItems;
 	menuentry_vec_t		mDisabledItems;
 	LLRootHandle<LLFolderBridge> mHandle;
 };
-
 
 class LLTextureBridge : public LLItemBridge
 {
@@ -323,8 +338,8 @@ public:
 	}
 	virtual LLUIImagePtr getIcon() const;
 	virtual void openItem();
-	//virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
-	//virtual void performAction(LLInventoryModel* model, std::string action);
+	virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
+	virtual void performAction(LLInventoryModel* model, std::string action);
 	bool canSaveTexture(void);
 };
 

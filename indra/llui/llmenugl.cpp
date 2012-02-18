@@ -522,31 +522,15 @@ BOOL LLMenuItemGL::setLabelArg( const std::string& key, const LLStringExplicit& 
 // This class represents a separator.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class LLMenuItemSeparatorGL : public LLMenuItemGL
-{
-public:
-	LLMenuItemSeparatorGL( const std::string &name = SEPARATOR_NAME );
-
-	virtual LLXMLNodePtr getXML(bool save_children = true) const;
-
-	virtual std::string getType() const	{ return "separator"; }
-
-	// doIt() - do the primary funcationality of the menu item.
-	virtual void doIt( void ) {}
-
-	virtual void draw( void );
-	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
-	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
-	virtual BOOL handleHover(S32 x, S32 y, MASK mask);
-
-	virtual U32 getNominalHeight( void ) const { return SEPARATOR_HEIGHT_PIXELS; }
-};
 
 LLMenuItemSeparatorGL::LLMenuItemSeparatorGL( const std::string &name ) :
-	LLMenuItemGL( name, SEPARATOR_LABEL )
+	LLMenuItemGL( name.empty() ? SEPARATOR_NAME : name, SEPARATOR_LABEL )
 {
 }
-
+U32 LLMenuItemSeparatorGL::getNominalHeight( void ) const
+{
+	return SEPARATOR_HEIGHT_PIXELS;
+}
 
 LLXMLNodePtr LLMenuItemSeparatorGL::getXML(bool save_children) const
 {
@@ -1694,7 +1678,6 @@ LLMenuGL::LLMenuGL( const std::string& name, const std::string& label, LLHandle<
 :	LLUICtrl( name, LLRect(), FALSE, NULL, NULL ),
 	mBackgroundColor( sDefaultBackgroundColor ),
 	mBgVisible( TRUE ),
-	mParentMenuItem( NULL ),
 	mLabel( label ),
 	mDropShadowed( TRUE ),
 	mHorizontalLayout( FALSE ),
@@ -1720,7 +1703,6 @@ LLMenuGL::LLMenuGL( const std::string& label, LLHandle<LLFloater> parent_floater
 :	LLUICtrl( label, LLRect(), FALSE, NULL, NULL ),
 	mBackgroundColor( sDefaultBackgroundColor ),
 	mBgVisible( TRUE ),
-	mParentMenuItem( NULL ),
 	mLabel( label ),
 	mDropShadowed( TRUE ),
 	mHorizontalLayout( FALSE ),
@@ -2339,6 +2321,16 @@ void LLMenuGL::arrange( void )
 	if (mKeepFixedSize)
 	{
 		reshape(initial_rect.getWidth(), initial_rect.getHeight());
+	}
+}
+
+
+void LLMenuGL::arrangeAndClear( void )
+{
+	if (mNeedsArrange)
+	{
+		arrange();
+		mNeedsArrange = FALSE;
 	}
 }
 

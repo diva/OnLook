@@ -216,6 +216,30 @@ private:
 	KEY mJumpKey;
 };
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLMenuItemSeparatorGL
+//
+// This class represents a separator.
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLMenuItemSeparatorGL : public LLMenuItemGL
+{
+public:
+	LLMenuItemSeparatorGL( const std::string &name = std::string() );
+
+	virtual LLXMLNodePtr getXML(bool save_children = true) const;
+
+	virtual std::string getType() const	{ return "separator"; }
+
+	// doIt() - do the primary funcationality of the menu item.
+	virtual void doIt( void ) {}
+
+	virtual void draw( void );
+	virtual BOOL handleMouseDown(S32 x, S32 y, MASK mask);
+	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask);
+	virtual BOOL handleHover(S32 x, S32 y, MASK mask);
+
+	virtual U32 getNominalHeight( void ) const;
+};
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Class LLMenuItemCallGL
@@ -483,6 +507,7 @@ public:
 	// when you add items. *FIX: We may need to deal with visibility
 	// arrangement.
 	virtual void arrange( void );
+	void arrangeAndClear( void );
 
 	// remove all items on the menu
 	void empty( void );
@@ -511,8 +536,8 @@ public:
 	// Whether to drop shadow menu bar 
 	void setDropShadowed( const BOOL shadowed );
 
-	void setParentMenuItem( LLMenuItemGL* parent_menu_item ) { mParentMenuItem = parent_menu_item; }
-	LLMenuItemGL* getParentMenuItem() const { return mParentMenuItem; }
+	void setParentMenuItem( LLMenuItemGL* parent_menu_item ) { mParentMenuItem = parent_menu_item->getHandle(); }
+	LLMenuItemGL* getParentMenuItem() const { return dynamic_cast<LLMenuItemGL*>(mParentMenuItem.get()); }
 
 	void setTornOff(BOOL torn_off);
 	BOOL getTornOff() { return mTornOff; }
@@ -550,7 +575,7 @@ private:
 
 	LLColor4		mBackgroundColor;
 	BOOL			mBgVisible;
-	LLMenuItemGL*	mParentMenuItem;
+	LLHandle<LLView> mParentMenuItem;
 	LLUIString		mLabel;
 	BOOL mDropShadowed; 	//  Whether to drop shadow 
 	BOOL			mHasSelection;
