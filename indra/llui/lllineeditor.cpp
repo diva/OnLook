@@ -186,12 +186,12 @@ LLLineEditor::LLLineEditor(const std::string& name, const LLRect& rect,
 	{
 	menu = new LLMenuGL(LLStringUtil::null);
 	}*/
-	menu->append(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
-	menu->append(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
-	menu->append(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
-	menu->append(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
-	menu->append(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
-	menu->appendSeparator("Spelsep");
+	menu->addChild(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
+	menu->addSeparator();
 	//menu->setBackgroundColor(gColors.getColor("MenuPopupBgColor"));
 	menu->setCanTearOff(FALSE);
 	menu->setVisible(FALSE);
@@ -668,7 +668,7 @@ BOOL LLLineEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 			SpellMenuBind * tempBind = suggestionMenuItems[i];
 			if(tempBind)
 			{
-				menu->remove((LLMenuItemCallGL *)tempBind->menuItem);
+				menu->removeChild((LLMenuItemCallGL *)tempBind->menuItem);
 				((LLMenuItemCallGL *)tempBind->menuItem)->die();
 				//delete tempBind->menuItem;
 				//tempBind->menuItem = NULL;
@@ -705,7 +705,7 @@ BOOL LLLineEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 						//new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
 						tempStruct->menuItem = suggMenuItem;
 						suggestionMenuItems.push_back(tempStruct);
-						menu->append(suggMenuItem);
+						menu->addChild(suggMenuItem);
 					}
 					SpellMenuBind * tempStruct = new SpellMenuBind;
 					tempStruct->origin = this;
@@ -716,7 +716,7 @@ BOOL LLLineEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 						"Add Word", spell_add, NULL, tempStruct);
 					tempStruct->menuItem = suggMenuItem;
 					suggestionMenuItems.push_back(tempStruct);
-					menu->append(suggMenuItem);
+					menu->addChild(suggMenuItem);
 				}
 			}
 
@@ -734,7 +734,7 @@ BOOL LLLineEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 				tempStruct->word, spell_show, NULL, tempStruct);
 			tempStruct->menuItem = suggMenuItem;
 			suggestionMenuItems.push_back(tempStruct);
-			menu->append(suggMenuItem);
+			menu->addChild(suggMenuItem);
 		}
 
 		mLastContextMenuX = x;

@@ -1127,7 +1127,7 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	}
 
 	items.push_back(std::string("Task Play"));
-	/*menu.appendSeparator();
+	/*menu.addSeparator();
 	menu.append(new LLMenuItemCallGL("Play",
 									 &LLTaskSoundBridge::playSound,
 									 NULL,

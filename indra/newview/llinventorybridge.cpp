@@ -2890,7 +2890,7 @@ void LLFolderBridge::buildContextMenuFolderOptions(U32 flags)
 				mItems.push_back(std::string("Add To Outfit"));
 			}
 			else if(!InventoryLinksEnabled())
-				mItems.push_back(std::string("Wear Items"));	
+				mItems.push_back(std::string("Wearable And Object Wear"));	
 			mItems.push_back(std::string("Replace Outfit"));
 		}
 		mItems.push_back(std::string("Remove From Outfit"));
@@ -4738,7 +4738,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					disabled_items.push_back(std::string("Attach To"));
 					disabled_items.push_back(std::string("Attach To HUD"));
 				}
-// [RLVa:KB] - Checked: 2010-09-03 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a | OK
+/*// [RLVa:KB] - Checked: 2010-09-03 (RLVa-1.2.1a) | Modified: RLVa-1.2.1a | OK
 				else if (rlv_handler_t::isEnabled())
 				{
 					ERlvWearMask eWearMask = gRlvAttachmentLocks.canAttach(item);
@@ -4747,7 +4747,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					if ((eWearMask & RLV_WEAR_ADD) == 0)
 						disabled_items.push_back(std::string("Object Add"));
 				}
-// [/RLVa:KB]
+// [/RLVa:KB]*/
 
 				LLMenuGL* attach_menu = menu.getChildMenuByName("Attach To", TRUE);
 				LLMenuGL* attach_hud_menu = menu.getChildMenuByName("Attach To HUD", TRUE);
@@ -4766,7 +4766,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 						if (attachment->getIsHUDAttachment())
 						{
 // [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
-							attach_hud_menu->append(new_item = new LLMenuItemCallGL(attachment->getName(), 
+							attach_hud_menu->addChild(new_item = new LLMenuItemCallGL(attachment->getName(), 
 								NULL, //&LLObjectBridge::attachToAvatar, 
 								(rlv_handler_t::isEnabled()) ? &rlvAttachToEnabler : NULL,
 								&attach_label, (void*)attachment));
@@ -4775,7 +4775,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 						else
 						{
 // [RLVa:KB] - Checked: 2009-07-06 (RLVa-1.0.0c)
-							attach_menu->append(new_item = new LLMenuItemCallGL(attachment->getName(), 
+							attach_menu->addChild(new_item = new LLMenuItemCallGL(attachment->getName(), 
 								NULL, //&LLObjectBridge::attachToAvatar,
 								(rlv_handler_t::isEnabled()) ? &rlvAttachToEnabler : NULL,
 								&attach_label, (void*)attachment));
@@ -4790,7 +4790,7 @@ void LLObjectBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 						}
 					}
 					LLMenuItemCallGL *new_item = new LLMenuItemCallGL("Custom...", NULL, NULL);
-					attach_menu->append(new_item);
+					attach_menu->addChild(new_item);
 					LLSimpleListener* callback = mInventoryPanel.get()->getListenerByName("Inventory.AttachCustom");
 					new_item->addListener(callback, "on_click", LLSD());
 				}
@@ -5138,13 +5138,13 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		items.push_back(std::string("Wearable And Object Separator"));
 		
 		items.push_back(std::string("Wearable Edit"));
-// [RLVa:KB] - Checked: 2011-09-16 (RLVa-1.1.4a) | Added: RLVa-1.1.4a
+/*// [RLVa:KB] - Checked: 2011-09-16 (RLVa-1.1.4a) | Added: RLVa-1.1.4a
 		if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canRemove(item)) )
 		{
 			disabled_items.push_back(std::string("Wearable And Object Wear"));
 			disabled_items.push_back(std::string("Wearable Edit"));
 		}
-// [/RLVa:KB]
+// [/RLVa:KB]*/
 
 		if ((flags & FIRST_SELECTED_ITEM) == 0)
 		{
@@ -5165,10 +5165,10 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			{
 				case LLAssetType::AT_CLOTHING:
 					items.push_back(std::string("Take Off"));
-// [RLVa:KB] - Checked: 2011-09-16 (RLVa-1.1.4a) | Added: RLVa-1.1.4a
+/*// [RLVa:KB] - Checked: 2011-09-16 (RLVa-1.1.4a) | Added: RLVa-1.1.4a
 			if ( (rlv_handler_t::isEnabled()) && (!gRlvWearableLocks.canRemove(item)) )
 				disabled_items.push_back(std::string("Take Off"));
-// [/RLVa:KB]
+// [/RLVa:KB]*/
 					// Fallthrough since clothing and bodypart share wear options
 				case LLAssetType::AT_BODYPART:
 					if (get_is_item_worn(item->getUUID()))

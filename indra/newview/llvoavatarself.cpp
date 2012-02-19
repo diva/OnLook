@@ -290,7 +290,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 //													object_selected_and_point_valid);
 					item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
 					
-					gAttachPieMenu->append(item);
+					gAttachPieMenu->addChild(item);
 
 					attachment_found = TRUE;
 					break;
@@ -306,7 +306,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 
 			if (!attachment_found)
 			{
-				gAttachPieMenu->appendSeparator();
+				gAttachPieMenu->addSeparator();
 			}
 		}
 
@@ -324,7 +324,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 				LLViewerJointAttachment* attachment = iter->second;
 				if (attachment->getGroup() == i)
 				{
-					gDetachPieMenu->append(new LLMenuItemCallGL(attachment->getName(),
+					gDetachPieMenu->addChild(new LLMenuItemCallGL(attachment->getName(),
 						&handle_detach_from_avatar, object_attached, attachment));
 
 					attachment_found = TRUE;
@@ -334,7 +334,7 @@ BOOL LLVOAvatarSelf::buildMenus()
 
 			if (!attachment_found)
 			{
-				gDetachPieMenu->appendSeparator();
+				gDetachPieMenu->addSeparator();
 			}
 		}
 	}
@@ -358,8 +358,8 @@ BOOL LLVOAvatarSelf::buildMenus()
 //											NULL, 
 //											object_selected_and_point_valid);
 			item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
-			gAttachScreenPieMenu->append(item);
-			gDetachScreenPieMenu->append(new LLMenuItemCallGL(attachment->getName(), 
+			gAttachScreenPieMenu->addChild(item);
+			gDetachScreenPieMenu->addChild(new LLMenuItemCallGL(attachment->getName(), 
 						&handle_detach_from_avatar, object_attached, attachment));
 		}
 	}
@@ -387,17 +387,17 @@ BOOL LLVOAvatarSelf::buildMenus()
 														  NULL, &object_selected_and_point_valid,
 														  &attach_label, attachment);
 			item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", iter->first);
-			gAttachSubMenu->append(item);
+			gAttachSubMenu->addChild(item);
 
-			gDetachSubMenu->append(new LLMenuItemCallGL(attachment->getName(), 
+			gDetachSubMenu->addChild(new LLMenuItemCallGL(attachment->getName(), 
 				&handle_detach_from_avatar, object_attached, &detach_label, attachment));
 			
 		}
 		if (pass == 0)
 		{
 			// put separator between non-hud and hud attachments
-			gAttachSubMenu->appendSeparator();
-			gDetachSubMenu->appendSeparator();
+			gAttachSubMenu->addSeparator();
+			gDetachSubMenu->addSeparator();
 		}
 	}
 
@@ -434,8 +434,8 @@ BOOL LLVOAvatarSelf::buildMenus()
 			S32 attach_index = attach_it->second;
 			while (cur_pie_slice < requested_pie_slice)
 			{
-				gAttachBodyPartPieMenus[group]->appendSeparator();
-				gDetachBodyPartPieMenus[group]->appendSeparator();
+				gAttachBodyPartPieMenus[group]->addSeparator();
+				gDetachBodyPartPieMenus[group]->addSeparator();
 				cur_pie_slice++;
 			}
 
@@ -449,9 +449,9 @@ BOOL LLVOAvatarSelf::buildMenus()
 // [/RLVa:KB]
 //					LLMenuItemCallGL* item = new LLMenuItemCallGL(attachment->getName(), 
 //																  NULL, object_selected_and_point_valid);
-				gAttachBodyPartPieMenus[group]->append(item);
+				gAttachBodyPartPieMenus[group]->addChild(item);
 				item->addListener(gMenuHolder->getListenerByName("Object.AttachToAvatar"), "on_click", attach_index);
-				gDetachBodyPartPieMenus[group]->append(new LLMenuItemCallGL(attachment->getName(), 
+				gDetachBodyPartPieMenus[group]->addChild(new LLMenuItemCallGL(attachment->getName(), 
 																			&handle_detach_from_avatar,
 																			object_attached, attachment));
 				cur_pie_slice++;
