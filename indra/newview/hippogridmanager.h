@@ -39,7 +39,6 @@ public:
 	Platform           getPlatform();
 	bool isOpenSimulator() const;
 	bool isSecondLife() const;
-	const std::string& getGridNick();
 	const std::string& getGridName()        const;
 	const std::string& getGridOwner()       const;	
 	const std::string& getLoginUri()        const;
@@ -55,6 +54,7 @@ public:
 	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
 	std::string getSearchUrl(SearchType ty, bool is_web) const;
 	bool isRenderCompat()                   const;
+	std::string getGridNick();	
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
 
 	const std::string& getCurrencySymbol()     const;
