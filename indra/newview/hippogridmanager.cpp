@@ -199,11 +199,15 @@ void HippoGridInfo::setPlatform(const std::string& platform)
 
 void HippoGridInfo::setGridName(const std::string& gridName)
 {
-	HippoGridManager::GridIterator it = gHippoGridManager->mGridInfo.find(mGridName);
-	if(it != gHippoGridManager->endGrid())
+	HippoGridManager::GridIterator it;
+	for(it = gHippoGridManager->beginGrid(); it != gHippoGridManager->endGrid(); ++it)
 	{
-		gHippoGridManager->mGridInfo.erase(it);
-		gHippoGridManager->mGridInfo[gridName] = this;
+		if (it->second == this)
+		{
+			gHippoGridManager->mGridInfo.erase(it);
+			gHippoGridManager->mGridInfo[gridName] = this;
+			break;
+		}
 	}
 	mGridName = gridName;
 	/*if(mGridNick.empty() && !gridName.empty())
@@ -568,14 +572,16 @@ std::string HippoGridInfo::sanitizeGridNick(std::string &gridnick)
 }
 
 
-const std::string&  HippoGridInfo::getGridNick()
+std::string HippoGridInfo::getGridNick()
 {
-	if(mGridNick.empty())
+	if(!mGridNick.empty())
 	{
-		mGridNick = sanitizeGridNick(mGridName);
+		return mGridNick;
 	}
-		
-	return mGridNick;
+	else
+	{
+		return sanitizeGridNick(mGridName);
+	}
 }
 
 // ********************************************************************
@@ -843,7 +849,7 @@ void HippoGridManager::loadFromFile()
 	// load user grid info
 	parseFile(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "grids_sg1.xml"), false);
 	// merge default grid info, if newer. Force load, if list of grids is empty.
-	parseFile(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "default_grids.xml"), true);
+	parseFile(gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "default_grids.xml"), !mGridInfo.empty());
 	// merge grid info from web site, if newer. Force load, if list of grids is empty.
 	if (gSavedSettings.getBOOL("CheckForGridUpdates"))
 		parseUrl(gSavedSettings.getString("GridUpdateList"), !mGridInfo.empty());
@@ -951,7 +957,7 @@ void HippoGridManager::parseData(LLSD &gridInfo, bool mergeIfNewer)
 			}
 				
 			bool newGrid = (it == mGridInfo.end());
-			if (newGrid) 
+			if (newGrid || !it->second)
 			{
 				if(gridname.empty())
 				{
