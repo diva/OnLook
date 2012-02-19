@@ -1822,70 +1822,124 @@ LLView* LLView::findNextSibling(LLView* child)
 
 	return (next_it != mChildList.end()) ? *next_it : NULL;
 }
-// (Why top and left?  That's where the drag bars are for floaters.)
-BOOL LLView::translateIntoRect(const LLRect& constraint, BOOL allow_partial_outside )
+
+
+LLCoordGL getNeededTranslation(const LLRect& input, const LLRect& constraint, BOOL allow_partial_outside)
 {
-	S32 delta_x = 0;
-	S32 delta_y = 0;
+	LLCoordGL delta;
 
 	if (allow_partial_outside)
 	{
 		const S32 KEEP_ONSCREEN_PIXELS = 16;
 
-		if( getRect().mRight - KEEP_ONSCREEN_PIXELS < constraint.mLeft )
+		if( input.mRight - KEEP_ONSCREEN_PIXELS < constraint.mLeft )
 		{
-			delta_x = constraint.mLeft - (getRect().mRight - KEEP_ONSCREEN_PIXELS);
+			delta.mX = constraint.mLeft - (input.mRight - KEEP_ONSCREEN_PIXELS);
 		}
 		else
-		if( getRect().mLeft + KEEP_ONSCREEN_PIXELS > constraint.mRight )
+		if( input.mLeft + KEEP_ONSCREEN_PIXELS > constraint.mRight )
 		{
-			delta_x = constraint.mRight - (getRect().mLeft + KEEP_ONSCREEN_PIXELS);
+			delta.mX = constraint.mRight - (input.mLeft + KEEP_ONSCREEN_PIXELS);
 		}
 
-		if( getRect().mTop > constraint.mTop )
+		if( input.mTop > constraint.mTop )
 		{
-			delta_y = constraint.mTop - getRect().mTop;
+			delta.mY = constraint.mTop - input.mTop;
 		}
 		else
-		if( getRect().mTop - KEEP_ONSCREEN_PIXELS < constraint.mBottom )
+		if( input.mTop - KEEP_ONSCREEN_PIXELS < constraint.mBottom )
 		{
-			delta_y = constraint.mBottom - (getRect().mTop - KEEP_ONSCREEN_PIXELS);
+			delta.mY = constraint.mBottom - (input.mTop - KEEP_ONSCREEN_PIXELS);
 		}
 	}
 	else
 	{
-		if( getRect().mLeft < constraint.mLeft )
+		if( input.mLeft < constraint.mLeft )
 		{
-			delta_x = constraint.mLeft - getRect().mLeft;
+			delta.mX = constraint.mLeft - input.mLeft;
 		}
 		else
-		if( getRect().mRight > constraint.mRight )
+		if( input.mRight > constraint.mRight )
 		{
-			delta_x = constraint.mRight - getRect().mRight;
+			delta.mX = constraint.mRight - input.mRight;
 			// compensate for left edge possible going off screen
-			delta_x += llmax( 0, getRect().getWidth() - constraint.getWidth() );
+			delta.mX += llmax( 0, input.getWidth() - constraint.getWidth() );
 		}
 
-		if( getRect().mTop > constraint.mTop )
+		if( input.mTop > constraint.mTop )
 		{
-			delta_y = constraint.mTop - getRect().mTop;
+			delta.mY = constraint.mTop - input.mTop;
 		}
 		else
-		if( getRect().mBottom < constraint.mBottom )
+		if( input.mBottom < constraint.mBottom )
 		{
-			delta_y = constraint.mBottom - getRect().mBottom;
+			delta.mY = constraint.mBottom - input.mBottom;
 			// compensate for top edge possible going off screen
-			delta_y -= llmax( 0, getRect().getHeight() - constraint.getHeight() );
+			delta.mY -= llmax( 0, input.getHeight() - constraint.getHeight() );
 		}
 	}
 
-	if (delta_x != 0 || delta_y != 0)
+	return delta;
+}
+
+// Moves the view so that it is entirely inside of constraint.
+// If the view will not fit because it's too big, aligns with the top and left.
+// (Why top and left?  That's where the drag bars are for floaters.)
+BOOL LLView::translateIntoRect(const LLRect& constraint, BOOL allow_partial_outside )
+{
+	LLCoordGL translation = getNeededTranslation(getRect(), constraint, allow_partial_outside);
+
+	if (translation.mX != 0 || translation.mY != 0)
 	{
-		translate(delta_x, delta_y);
+		translate(translation.mX, translation.mY);
 		return TRUE;
 	}
 	return FALSE;
 }
+
+// move this view into "inside" but not onto "exclude"
+// NOTE: if this view is already contained in "inside", we ignore the "exclude" rect
+BOOL LLView::translateIntoRectWithExclusion( const LLRect& inside, const LLRect& exclude, BOOL allow_partial_outside )
+{
+	LLCoordGL translation = getNeededTranslation(getRect(), inside, allow_partial_outside);
+	
+	if (translation.mX != 0 || translation.mY != 0)
+	{
+		// translate ourselves into constraint rect
+		translate(translation.mX, translation.mY);
+	
+		// do we overlap with exclusion area?
+		// keep moving in the same direction to the other side of the exclusion rect
+		if (exclude.overlaps(getRect()))
+		{
+			// moving right
+			if (translation.mX > 0)
+			{
+				translate(exclude.mRight - getRect().mLeft, 0);
+			}
+			// moving left
+			else if (translation.mX < 0)
+			{
+				translate(exclude.mLeft - getRect().mRight, 0);
+			}
+
+			// moving up
+			if (translation.mY > 0)
+			{
+				translate(0, exclude.mTop - getRect().mBottom);
+			}
+			// moving down
+			else if (translation.mY < 0)
+			{
+				translate(0, exclude.mBottom - getRect().mTop);
+			}
+		}
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
 
 void LLView::centerWithin(const LLRect& bounds)
 {
