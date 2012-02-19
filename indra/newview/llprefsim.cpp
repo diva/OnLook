@@ -198,7 +198,7 @@ void LLPrefsIMImpl::apply()
 		}
 		else
 		{
-			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getCurrentGridNick(), 
+			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getConnectedGrid()->getGridNick(), 
 				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
 		}
 		

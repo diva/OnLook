@@ -51,12 +51,10 @@ public:
 	// Returns the url base used for the Web Search tab
 	const std::string& getSearchUrl()       const;
 	const std::string& getGridMessage()     const;
-	const std::string& getFirstName()       const;
-	const std::string& getLastName()        const;
-	const std::string& getAvatarPassword()  const;
 	const std::string& getVoiceConnector()  const { return mVoiceConnector; }
 	std::string getSearchUrl(SearchType ty, bool is_web) const;
 	bool isRenderCompat()                   const;
+	std::string getGridNick();	
 	int getMaxAgentGroups() const { return mMaxAgentGroups; }
 
 	const std::string& getCurrencySymbol()     const;
@@ -67,6 +65,7 @@ public:
 
 	void setPlatform (const std::string& platform);
 	void setPlatform (Platform platform);
+	void setGridNick (std::string gridNick);
 	void setGridName (const std::string& gridName);
 	void setLoginUri (const std::string& loginUri);
 	void setLoginPage(const std::string& loginPage);
@@ -80,9 +79,6 @@ public:
 	void setGridMessage(const std::string& message);
 	void setRenderCompat(bool compat);
 	void setMaxAgentGroups(int max)                   { mMaxAgentGroups = max;   }
-	void setFirstName(const std::string& firstName);
-	void setLastName(const std::string& lastName);
-	void setAvatarPassword(const std::string& avatarPassword);
 	void setVoiceConnector(const std::string& vc)     { mVoiceConnector = vc;    }
 
 	void setCurrencySymbol(const std::string& sym);
@@ -90,10 +86,13 @@ public:
 	void setDirectoryFee(int fee);
 	bool supportsInvLinks();
 	void setSupportsInvLinks(bool b);
+	bool getAutoUpdate();
+	void setAutoUpdate(bool b);	
 
 	bool retrieveGridInfo();
 
 	static const char* getPlatformString(Platform platform);
+	static std::string sanitizeGridNick(std::string &gridnick);
 
 	static HippoGridInfo FALLBACK_GRIDINFO;
 	static void initFallback();
@@ -101,6 +100,7 @@ public:
 private:
 	Platform mPlatform;
 	std::string mGridName;
+	std::string mGridNick;
 	std::string mLoginUri;
 	std::string mLoginPage;
 	std::string mHelperUri;
@@ -110,11 +110,9 @@ private:
 	std::string mPasswordUrl;
 	std::string mSearchUrl;
 	std::string mVoiceConnector;
-	std::string mFirstName;
-	std::string mLastName;
-	std::string mAvatarPassword;
 	bool mRenderCompat;
 	bool mInvLinks;
+	bool mAutoUpdate;
 	int mMaxAgentGroups;
 
 	std::string mCurrencySymbol;
@@ -125,7 +123,7 @@ private:
 	// for parsing grid info XML
 	enum XmlState 
 	{
-		XML_VOID, XML_PLATFORM, XML_GRIDNAME,
+		XML_VOID, XML_PLATFORM, XML_GRIDNAME, XML_GRIDNICK,
 		XML_LOGINURI, XML_LOGINPAGE, XML_HELPERURI,
 		XML_WEBSITE, XML_SUPPORT, XML_REGISTER, XML_PASSWORD, XML_SEARCH, XML_MESSAGE
 	};
@@ -168,6 +166,7 @@ public:
 	GridIterator endGrid() { return mGridInfo.end(); }
 
 private:
+	friend class HippoGridInfo;
 	std::map<std::string, HippoGridInfo*> mGridInfo;
 	std::string mDefaultGrid;
 	std::string mCurrentGrid;

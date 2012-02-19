@@ -861,7 +861,7 @@ void LLPanelLogin::updateGridCombo()
 	}
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it) {
-		const std::string &grid = it->second->getGridName();
+		std::string grid = it->second->getGridName();
 		if (grid != defaultGrid) {
 			grids->add(grid);
 			if (grid == currentGrid) selectIndex = i;
@@ -959,7 +959,10 @@ void LLPanelLogin::loadLoginPage()
 			}
 		}
 	}
-	else
+	else if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()){
+		oStr << "&grid=" << gHippoGridManager->getConnectedGrid()->getGridNick();
+	}
+	else if (gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_AURORA)
 	{
 		oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
 	}

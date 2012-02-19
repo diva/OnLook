@@ -1019,7 +1019,7 @@ bool idle_startup()
 		}
 		else
 		{
-			gDirUtilp->setLindenUserDir(gHippoGridManager->getCurrentGridNick(), firstname, lastname);
+			gDirUtilp->setLindenUserDir(gHippoGridManager->getConnectedGrid()->getGridNick(), firstname, lastname);
 		}
     	LLFile::mkdir(gDirUtilp->getLindenUserDir());
 
@@ -1059,7 +1059,7 @@ bool idle_startup()
 		}
 		else
 		{
-			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getCurrentGridNick(), 
+			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getConnectedGrid()->getGridNick(), 
 				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
 		}
 		LLFile::mkdir(gDirUtilp->getChatLogsDir());
