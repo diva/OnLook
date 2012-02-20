@@ -99,7 +99,7 @@
 <!-- NOTIFICATION POP-UPS -->
 <NotifyBoxColor value="70, 170, 255, 255" />
 <NotifyTextColor value="0, 0, 0, 255" />
-<NotifyCautionBoxColor value="0, 0, 0, 255" /> 	<!-- the background color of caution permissions prompts -->
+<NotifyCautionBoxColor value="254, 209, 118, 255" /> 	<!-- the background color of caution permissions prompts -->
 <NotifyCautionWarnColor value="0, 0, 0, 255" /> 	<!-- the foreground color of the special title text in caution permissions prompts -->
 <GroupNotifyBoxColor value="70, 170, 255, 255" />
 <GroupNotifyTextColor value="0, 30, 60, 255" />
@@ -195,7 +195,7 @@
 <!-- Alert box colors -->
 <AlertBoxColor value="62, 62, 62, 255" />               <!-- Warnings floaters, like when returning objects -->
 <AlertTextColor value="147, 169, 213, 255" />
-<AlertCautionBoxColor value="0, 0, 0, 255" />	<!-- Background color of caution alerts -->
+<AlertCautionBoxColor value="254, 209, 118, 255" />	<!-- Background color of caution alerts -->
 <AlertCautionTextColor value="0, 0, 0, 255" />		<!-- Foreground color of the special title text in caution alerts -->
 
 <!--  Multi sliders, as in the sky animation setting -->
