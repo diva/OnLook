@@ -3,7 +3,7 @@
 	<text bottom="-22" height="12" left="10" name="muting_text">Volume:</text>
 	<text bottom="-215" name="streaming_prefs_text">Streaming Preferences:</text>
 	<text bottom="-300" height="12" name="audio_prefs_text">Audio Preferences:</text>
-	<panel border="true" bottom="-175" filename="panel_audio.xml" height="140" label="Volume" left="142" name="Volume Panel" width="260"/>
+	<panel border="true" bottom="-200" filename="panel_audio.xml" height="165" label="Volume" left="142" name="Volume Panel" width="260"/>
 	<check_box bottom="-220" control_name="AudioStreamingMusic" height="16" initial_value="true" label="Play Streaming Music When Available (uses more bandwidth)" left="142" name="streaming_music"/>
 	<check_box bottom_delta="-20" control_name="AudioStreamingVideo" follows="top" height="16" initial_value="true" label="Play Streaming Media When Available (uses more bandwidth)" name="streaming_video"/>
 	<check_box bottom_delta="-20" control_name="ParcelMediaAutoPlayEnable" follows="top" height="16" initial_value="true" label="Automatically play media" left="162" name="auto_streaming_video"/>

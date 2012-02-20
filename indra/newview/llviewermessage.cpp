@@ -4521,6 +4521,8 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 	msg->getVector3Fast(_PREHASH_SoundData, _PREHASH_Position, pos_local);
 	msg->getF32Fast(_PREHASH_SoundData, _PREHASH_Gain, gain);
 
+	// Stop here if gesture muting, the user isn't playing this sound, and this is likely to be a gesture.
+	if(gSavedSettings.getBOOL("SinguMuteGestures") && owner_id != gAgent.getID() && object_id == owner_id) return;
 	// adjust sound location to true global coords
 	LLVector3d	pos_global = from_region_handle(region_handle);
 	pos_global.mdV[VX] += pos_local.mV[VX];
