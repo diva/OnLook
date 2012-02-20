@@ -2957,23 +2957,23 @@ void process_decline_callingcard(LLMessageSystem* msg, void**)
 class ChatTranslationReceiver : public LLTranslate::TranslationReceiver
 {
 public :
-	ChatTranslationReceiver(const std::string &fromLang, const std::string &toLang, LLChat *chat, 
+	ChatTranslationReceiver(const std::string &from_lang, const std::string &to_lang, LLChat *chat, 
 		const BOOL history)
-		: LLTranslate::TranslationReceiver(fromLang, toLang),
+		: LLTranslate::TranslationReceiver(from_lang, to_lang),
 		m_chat(chat),
 		m_history(history)	
 	{
 	}
 
-	static boost::intrusive_ptr<ChatTranslationReceiver> build(const std::string &fromLang, const std::string &toLang, LLChat *chat, const BOOL history)
+	static boost::intrusive_ptr<ChatTranslationReceiver> build(const std::string &from_lang, const std::string &to_lang, LLChat *chat, const BOOL history)
 	{
-		return boost::intrusive_ptr<ChatTranslationReceiver>(new ChatTranslationReceiver(fromLang, toLang, chat, history));
+		return boost::intrusive_ptr<ChatTranslationReceiver>(new ChatTranslationReceiver(from_lang, to_lang, chat, history));
 	}
 
 protected:
 	void handleResponse(const std::string &translation, const std::string &detectedLanguage)
 	{		
-		if (m_toLang != detectedLanguage)
+		if (mToLang != detectedLanguage)
 			m_chat->mText += " (" + translation + ")";			
 
 		add_floater_chat(*m_chat, m_history);
@@ -2981,14 +2981,12 @@ protected:
 		delete m_chat;
 	}
 
-	void handleFailure()
+	void handleFailure(int status, const std::string& err_msg)
 	{
-		LLTranslate::TranslationReceiver::handleFailure();
+		llwarns << "Translation failed for mesg " << m_chat << " toLang " << mToLang << " fromLang " << mFromLang << llendl;
 
 		m_chat->mText += " (?)";
-
 		add_floater_chat(*m_chat, m_history);
-
 		delete m_chat;
 	}
 
@@ -3017,14 +3015,12 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 
 	if (translate && chat.mSourceType != CHAT_SOURCE_SYSTEM)
 	{
-		// fromLang hardcoded to "" (autodetection) pending implementation of
-		// SVC-4879
-		const std::string &fromLang = "";
-		const std::string &toLang = LLTranslate::getTranslateLanguage();
+		const std::string &from_lang = "";
+		const std::string &to_lang = LLTranslate::getTranslateLanguage();
 		LLChat *newChat = new LLChat(chat);
 
-		LLHTTPClient::ResponderPtr result = ChatTranslationReceiver::build(fromLang, toLang, newChat, history);
-		LLTranslate::translateMessage(result, fromLang, toLang, mesg);
+		LLTranslate::TranslationReceiverPtr result = ChatTranslationReceiver::build(from_lang, to_lang, newChat, history);
+		LLTranslate::translateMessage(result, from_lang, to_lang, mesg);
 	}
 	else
 	{
