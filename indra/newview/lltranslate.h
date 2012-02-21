@@ -2,27 +2,33 @@
 * @file lltranslate.h
 * @brief Human language translation class and JSON response receiver.
 *
- * $LicenseInfo:firstyear=2009&license=viewerlgpl$
- * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation;
- * version 2.1 of the License only.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * 
- * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
- * $/LicenseInfo$
- */
+* $LicenseInfo:firstyear=2009&license=viewergpl$
+*
+* Copyright (c) 2009, Linden Research, Inc.
+*
+* Second Life Viewer Source Code
+* The source code in this file ("Source Code") is provided by Linden Lab
+* to you under the terms of the GNU General Public License, version 2.0
+* ("GPL"), unless you have obtained a separate licensing agreement
+* ("Other License"), formally executed by you and Linden Lab. Terms of
+* the GPL can be found in doc/GPL-license.txt in this distribution, or
+* online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+*
+* There are special exceptions to the terms and conditions of the GPL as
+* it is applied to this Source Code. View the full text of the exception
+* in the file doc/FLOSS-exception.txt in this software distribution, or
+* online at
+* http://secondlifegrid.net/programs/open_source/licensing/flossexception
+*
+* By copying, modifying or distributing this software, you acknowledge
+* that you have read and understood your obligations described above,
+* and agree to abide by those obligations.
+*
+* ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
+* WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
+* COMPLETENESS OR PERFORMANCE.
+* $/LicenseInfo$
+*/
 
 #ifndef LL_LLTRANSLATE_H
 #define LL_LLTRANSLATE_H
@@ -31,273 +37,89 @@
 #include "llbufferstream.h"
 #include "jsoncpp/reader.h"
 
-namespace Json
-{
-    class Value;
-}
-
-/**
- * Handler of an HTTP machine translation service.
- *
- * Derived classes know the service URL
- * and how to parse the translation result.
- */
-class LLTranslationAPIHandler
-{
-public:
-	/**
-	 * Get URL for translation of the given string.
-	 *
-	 * Sending HTTP GET request to the URL will initiate translation.
-	 *
-	 * @param[out] url        Place holder for the result.
-	 * @param      from_lang  Source language. Leave empty for auto-detection.
-	 * @param      to_lang    Target language.
-	 * @param      text       Text to translate.
-	 */
-	virtual void getTranslateURL(
-		std::string &url,
-		const std::string &from_lang,
-		const std::string &to_lang,
-		const std::string &text) const = 0;
-
-	/**
-	 * Get URL to verify the given API key.
-	 *
-	 * Sending request to the URL verifies the key.
-	 * Positive HTTP response (code 200) means that the key is valid.
-	 *
-	 * @param[out] url  Place holder for the URL.
-	 * @param[in]  key  Key to verify.
-	 */
-	virtual void getKeyVerificationURL(
-		std::string &url,
-		const std::string &key) const = 0;
-
-	/**
-	 * Parse translation response.
-	 *
-	 * @param[in,out] status        HTTP status. May be modified while parsing.
-	 * @param         body          Response text.
-	 * @param[out]    translation   Translated text.
-	 * @param[out]    detected_lang Detected source language. May be empty.
-	 * @param[out]    err_msg       Error message (in case of error).
-	 */
-	virtual bool parseResponse(
-		int& status,
-		const std::string& body,
-		std::string& translation,
-		std::string& detected_lang,
-		std::string& err_msg) const = 0;
-
-	/**
-	 * @return if the handler is configured to function properly
-	 */
-	virtual bool isConfigured() const = 0;
-
-	virtual ~LLTranslationAPIHandler() {}
-
-protected:
-	static const int STATUS_OK = 200;
-};
-
-/// Google Translate v2 API handler.
-class LLGoogleTranslationHandler : public LLTranslationAPIHandler
-{
-	LOG_CLASS(LLGoogleTranslationHandler);
-
-public:
-	/*virtual*/ void getTranslateURL(
-		std::string &url,
-		const std::string &from_lang,
-		const std::string &to_lang,
-		const std::string &text) const;
-	/*virtual*/ void getKeyVerificationURL(
-		std::string &url,
-		const std::string &key) const;
-	/*virtual*/ bool parseResponse(
-		int& status,
-		const std::string& body,
-		std::string& translation,
-		std::string& detected_lang,
-		std::string& err_msg) const;
-	/*virtual*/ bool isConfigured() const;
-
-private:
-	static void parseErrorResponse(
-		const Json::Value& root,
-		int& status,
-		std::string& err_msg);
-	static bool parseTranslation(
-		const Json::Value& root,
-		std::string& translation,
-		std::string& detected_lang);
-	static std::string getAPIKey();
-};
-
-/// Microsoft Translator v2 API handler.
-class LLBingTranslationHandler : public LLTranslationAPIHandler
-{
-	LOG_CLASS(LLBingTranslationHandler);
-
-public:
-	/*virtual*/ void getTranslateURL(
-		std::string &url,
-		const std::string &from_lang,
-		const std::string &to_lang,
-		const std::string &text) const;
-	/*virtual*/ void getKeyVerificationURL(
-		std::string &url,
-		const std::string &key) const;
-	/*virtual*/ bool parseResponse(
-		int& status,
-		const std::string& body,
-		std::string& translation,
-		std::string& detected_lang,
-		std::string& err_msg) const;
-	/*virtual*/ bool isConfigured() const;
-private:
-	static std::string getAPIKey();
-};
-
-/**
- * Entry point for machine translation services.
- *
- * Basically, to translate a string, we need to know the URL
- * of a translation service, have a valid API for the service
- * and be given the target language.
- *
- * Callers specify the string to translate and the target language,
- * LLTranslate takes care of the rest.
- *
- * API keys for translation are taken from saved settings.
- */
 class LLTranslate
 {
-	LOG_CLASS(LLTranslate);
-
 public :
-
-	typedef enum e_service {
-		SERVICE_BING,
-		SERVICE_GOOGLE,
-	} EService;
-
-	/**
-	 * Subclasses are supposed to handle translation results (e.g. show them in chat)
-	 */
 	class TranslationReceiver: public LLHTTPClient::Responder
 	{
-	public:
+	protected:
+		TranslationReceiver(const std::string &fromLang, const std::string &toLang)
+			: m_fromLang(fromLang),
+			m_toLang(toLang)
+		{
+		}
 
-		/**
-		 * Using mHandler, parse incoming response.
-		 *
-		 * Calls either handleResponse() or handleFailure()
-		 * depending on the HTTP status code and parsing success.
-		 *
-		 * @see handleResponse()
-		 * @see handleFailure()
-		 * @see mHandler
-		 */
-		/*virtual*/ void completedRaw(
-			U32 http_status,
+		virtual void handleResponse(const std::string &translation, const std::string &recognizedLang) {}
+		virtual void handleFailure() {};
+
+	public:
+		~TranslationReceiver()
+		{
+		}
+
+		virtual void error(U32 status, const std::string& reason)
+		{
+			LL_WARNS("Translate") << "URL Request error: " << reason << LL_ENDL;
+			handleFailure();
+		}
+
+		virtual void completedRaw(
+			U32 status,
 			const std::string& reason,
 			const LLChannelDescriptors& channels,
-			const LLIOPipe::buffer_ptr_t& buffer);
+			const LLIOPipe::buffer_ptr_t& buffer)
+		{
+			LLBufferStream istr(channels, buffer.get());
+
+			std::stringstream strstrm;
+			strstrm << istr.rdbuf();
+			const std::string result = strstrm.str();
+
+			std::string translation;
+			std::string detectedLanguage;
+
+			if (!parseGoogleTranslate(result, translation, detectedLanguage))
+			{
+				handleFailure();
+				return;
+			}
+
+			// Fix up the response
+			stringReplaceAll( translation, "&lt;","<");
+			stringReplaceAll( translation, "&gt;",">");
+			stringReplaceAll( translation, "&quot;","\"");
+			stringReplaceAll( translation, "&#39;","'");
+			stringReplaceAll( translation, "&amp;","&");
+			stringReplaceAll( translation, "&apos;","'");
+
+			handleResponse(translation, detectedLanguage);
+		}
 
 	protected:
-		friend class LLTranslate;
-
-		/// Remember source and target languages for subclasses to be able to filter inappropriate results.
-		TranslationReceiver(const std::string& from_lang, const std::string& to_lang);
-
-		/// Override point to handle successful translation.
-		virtual void handleResponse(const std::string &translation, const std::string &recognized_lang) = 0;
-
-		/// Override point to handle unsuccessful translation.
-		virtual void handleFailure(int status, const std::string& err_msg) = 0;
-
-		std::string mFromLang;
-		std::string mToLang;
-		const LLTranslationAPIHandler& mHandler;
+		const std::string m_toLang;
+		const std::string m_fromLang;
 	};
 
-	/**
-	 * Subclasses are supposed to handle API key verification result.
-	 */
-	class KeyVerificationReceiver: public LLHTTPClient::Responder
-	{
-	public:
-		EService getService() const;
-
-	protected:
-		/**
-		 * Save the translation service the key belongs to.
-		 *
-		 * Subclasses need to know it.
-		 *
-		 * @see getService()
-		 */
-		KeyVerificationReceiver(EService service);
-
-		/**
-		 * Parse verification response.
-		 *
-		 * Calls setVerificationStatus() with the verification status,
-		 * which is true if HTTP status code is 200.
-		 *
-		 * @see setVerificationStatus()
-		 */
-		/*virtual*/ void completedRaw(
-			U32 http_status,
-			const std::string& reason,
-			const LLChannelDescriptors& channels,
-			const LLIOPipe::buffer_ptr_t& buffer);
-
-		/**
-		 * Override point for subclasses to handle key verification status.
-		 */
-		virtual void setVerificationStatus(bool ok) = 0;
-
-		EService mService;
-	};
-
-	typedef boost::intrusive_ptr<TranslationReceiver> TranslationReceiverPtr;
-	typedef boost::intrusive_ptr<KeyVerificationReceiver> KeyVerificationReceiverPtr;
-
-	/**
-	 * Translate given text.
-	 *
-	 * @param receiver   Object to pass translation result to.
-	 * @param from_lang  Source language. Leave empty for auto-detection.
-	 * @param to_lang    Target language.
-	 * @param mesg       Text to translate.
-	 */
-	static void translateMessage(TranslationReceiverPtr &receiver, const std::string &from_lang, const std::string &to_lang, const std::string &mesg);
-
-	/**
-	 * Verify given API key of a translation service.
-	 *
-	 * @param receiver  Object to pass verification result to.
-	 * @param key       Key to verify.
-	 */
-	static void verifyKey(KeyVerificationReceiverPtr& receiver, const std::string& key);
-
-	/**
-	 * @return translation target language
-	 */
+	static void translateMessage(LLHTTPClient::ResponderPtr &result, const std::string &fromLang, const std::string &toLang, const std::string &mesg);
+	static float m_GoogleTimeout;
 	static std::string getTranslateLanguage();
 
-	/**
-	 * @return true if translation is configured properly.
-	 */
-	static bool isTranslationConfigured();
-
 private:
-	static const LLTranslationAPIHandler& getPreferredHandler();
-	static const LLTranslationAPIHandler& getHandler(EService service);
-	static void sendRequest(const std::string& url, LLHTTPClient::ResponderPtr responder);
+	static void getTranslateUrl(std::string &translateUrl, const std::string &fromLang, const std::string &toLang, const std::string &text);
+	static void stringReplaceAll(std::string& context, const std::string& from, const std::string& to);
+	static BOOL parseGoogleTranslate(const std::string result, std::string &translation, std::string &detectedLanguage);
+
+	static LLSD m_Header;
+	static const char* m_GoogleURL;
+	static const char* m_GoogleLangSpec;
+	static const char* m_AcceptHeader;
+	static const char* m_AcceptType;
+	static const char* m_AgentHeader;
+	static const char* m_UserAgent;
+
+	static const char* m_GoogleData;
+	static const char* m_GoogleTranslation;
+	static const char* m_GoogleLanguage;
 };
 
 #endif
