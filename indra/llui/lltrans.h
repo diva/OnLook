@@ -60,11 +60,13 @@ public:
 
 	/**
 	 * @brief Parses the xml file that holds the strings. Used once on startup
-	 * @param xml_filename Filename to parse
+// *FIXME	 * @param xml_filename Filename to parse
 	 * @param default_args Set of strings (expected to be in the file) to use as default replacement args, e.g. "SECOND_LIFE"
 	 * @returns true if the file was parsed successfully, true if something went wrong
 	 */
 	static bool parseStrings(const std::string& xml_filename, const std::set<std::string>& default_args);
+
+	//V3: static bool parseLanguageStrings(LLPointer<LLXMLNode> & root);
 
 	/**
 	 * @brief Returns a translated string
@@ -73,6 +75,9 @@ public:
 	 * @returns Translated string
 	 */
 	static std::string getString(const std::string &xml_desc, const LLStringUtil::format_map_t& args);
+	static std::string getString(const std::string &xml_desc, const LLSD& args);
+	static bool findString(std::string &result, const std::string &xml_desc, const LLStringUtil::format_map_t& args);
+	static bool findString(std::string &result, const std::string &xml_desc, const LLSD& args);
 
 	/**
 	 * @brief Returns a translated string
@@ -84,7 +89,20 @@ public:
 		LLStringUtil::format_map_t empty;
 		return getString(xml_desc, empty);
 	}
-	
+
+	static bool findString(std::string &result, const std::string &xml_desc)
+	{
+		LLStringUtil::format_map_t empty;
+		return findString(result, xml_desc, empty);
+	}
+
+	static std::string getKeyboardString(const char* keystring)
+	{
+		std::string key_str(keystring);
+		std::string trans_str;
+		return findString(trans_str, key_str) ? trans_str : key_str;
+	}
+
 	// get the default args
 	static const LLStringUtil::format_map_t& getDefaultArgs()
 	{

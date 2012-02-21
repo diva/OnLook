@@ -525,7 +525,7 @@ void LLPanelLandGeneral::refresh()
 		if (regionp)
 		{
 			mContentRating->setText(regionp->getSimAccessString());
-			mLandType->setText(regionp->getSimProductName());
+			mLandType->setText(regionp->getLocalizedSimProductName());
 		}
 
 		// estate owner/manager cannot edit other parts of the parcel
@@ -2907,7 +2907,7 @@ void LLPanelLandCovenant::refresh()
 	LLTextBox* region_landtype = getChild<LLTextBox>("region_landtype_text");
 	if (region_landtype)
 	{
-		region_landtype->setText(region->getSimProductName());
+		region_landtype->setText(region->getLocalizedSimProductName());
 	}
 	
 	LLTextBox* region_maturity = getChild<LLTextBox>("region_maturity_text");

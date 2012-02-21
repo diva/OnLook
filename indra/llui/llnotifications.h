@@ -100,43 +100,12 @@
 #include "llinstancetracker.h"
 
 // and we need this to manage the notification callbacks
+#include "llevents.h"
 #include "llfunctorregistry.h"
 #include "llui.h"
 #include "llxmlnode.h"
 #include "llnotificationptr.h"
 
-
-/*****************************************************************************
-*   Signal and handler declarations
-*   Using a single handler signature means that we can have a common handler
-*   type, rather than needing a distinct one for each different handler.
-*****************************************************************************/
-
-/**
- * A boost::signals2 Combiner that stops the first time a handler returns true
- * We need this because we want to have our handlers return bool, so that
- * we have the option to cause a handler to stop further processing. The
- * default handler fails when the signal returns a value but has no slots.
- */
-struct LLStopWhenHandled
-{
-    typedef bool result_type;
-
-    template<typename InputIterator>
-    result_type operator()(InputIterator first, InputIterator last) const
-    {
-        for (InputIterator si = first; si != last; ++si)
-		{
-            if (*si)
-			{
-                return true;
-			}
-		}
-        return false;
-    }
-};
-
-	
 typedef enum e_notification_priority
 {
 	NOTIFICATION_PRIORITY_UNSPECIFIED,
@@ -146,26 +115,10 @@ typedef enum e_notification_priority
 	NOTIFICATION_PRIORITY_CRITICAL
 } ENotificationPriority;
 
-/**
- * We want to have a standard signature for all signals; this way,
- * we can easily document a protocol for communicating across
- * dlls and into scripting languages someday.
- * we want to return a bool to indicate whether the signal has been
- * handled and should NOT be passed on to other listeners.
- * Return true to stop further handling of the signal, and false
- * to continue.
- * We take an LLSD because this way the contents of the signal
- * are independent of the API used to communicate it.
- * It is const ref because then there's low cost to pass it;
- * if you only need to inspect it, it's very cheap.
- */
-
 typedef boost::function<void (const LLSD&, const LLSD&)> LLNotificationResponder;
 
 typedef LLFunctorRegistry<LLNotificationResponder> LLNotificationFunctorRegistry;
 typedef LLFunctorRegistration<LLNotificationResponder> LLNotificationFunctorRegistration;
-
-typedef boost::signals2::signal<bool(const LLSD&), LLStopWhenHandled>  LLStandardSignal;
 
 // context data that can be looked up via a notification's payload by the display logic
 // derive from this class to implement specific contexts

@@ -76,6 +76,7 @@ elseif (LINUX)
         fontconfig
         X11
         Xrender
+        Xext
         GL
         )
      endif (STANDALONE)

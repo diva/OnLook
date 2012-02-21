@@ -113,6 +113,69 @@ std::string LLTrans::getString(const std::string &xml_desc, const LLStringUtil::
 	}
 }
 
+//static
+std::string LLTrans::getString(const std::string &xml_desc, const LLSD& msg_args)
+{
+	// Don't care about time as much as call count.  Make sure we're not
+	// calling LLTrans::getString() in an inner loop. JC
+	//V3: LLFastTimer timer(FTM_GET_TRANS);
+
+	template_map_t::iterator iter = sStringTemplates.find(xml_desc);
+	if (iter != sStringTemplates.end())
+	{
+		std::string text = iter->second.mText;
+		LLStringUtil::format(text, msg_args);
+		return text;
+	}
+	else
+	{
+		LL_WARNS_ONCE("configuration") << "Missing String in strings.xml: [" << xml_desc << "]" << LL_ENDL;
+		return "MissingString("+xml_desc+")";
+	}
+}
+
+//static 
+bool LLTrans::findString(std::string &result, const std::string &xml_desc, const LLStringUtil::format_map_t& msg_args)
+{
+	//V3: LLFastTimer timer(FTM_GET_TRANS);
+	
+	template_map_t::iterator iter = sStringTemplates.find(xml_desc);
+	if (iter != sStringTemplates.end())
+	{
+		std::string text = iter->second.mText;
+		LLStringUtil::format_map_t args = sDefaultArgs;
+		args.insert(msg_args.begin(), msg_args.end());
+		LLStringUtil::format(text, args);
+		result = text;
+		return true;
+	}
+	else
+	{
+		LL_WARNS_ONCE("configuration") << "Missing String in strings.xml: [" << xml_desc << "]" << LL_ENDL;	
+		return false;
+	}
+}
+
+//static
+bool LLTrans::findString(std::string &result, const std::string &xml_desc, const LLSD& msg_args)
+{
+	//V3: LLFastTimer timer(FTM_GET_TRANS);
+
+	template_map_t::iterator iter = sStringTemplates.find(xml_desc);
+	if (iter != sStringTemplates.end())
+	{
+		std::string text = iter->second.mText;
+		LLStringUtil::format(text, msg_args);
+		result = text;
+		return true;
+	}
+	else
+	{
+		LL_WARNS_ONCE("configuration") << "Missing String in strings.xml: [" << xml_desc << "]" << LL_ENDL;	
+		return false;
+	}
+}
+
 void LLTrans::setDefaultArg(const std::string& name, const std::string& value)
 {
 	sDefaultArgs[name] = value;

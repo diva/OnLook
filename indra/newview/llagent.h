@@ -92,7 +92,7 @@ struct LLGroupData
 
 //
 
-class LLAgent : public LLObservable
+class LLAgent : public LLOldEvents::LLObservable
 {
 	LOG_CLASS(LLAgent);
 	

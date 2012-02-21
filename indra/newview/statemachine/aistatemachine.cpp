@@ -254,19 +254,25 @@ void AIStateMachine::finish(void)
   // Fix the final state.
   if (mState == bs_callback)
 	mState = default_delete ? bs_killed : bs_initialize;
-}
-
-void AIStateMachine::kill(void)
-{
-  // Should only be called from finish().
-  llassert(mIdle && (mState == bs_callback || mState == bs_finish));
-  if (mState == bs_callback && mActive == as_idle)
+  if (mState == bs_killed && mActive == as_idle)
   {
 	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
 	cont();
 	idle();
   }
+}
+
+void AIStateMachine::kill(void)
+{
+  // Should only be called from finish() (or when not running (bs_initialize)).
+  llassert(mIdle && (mState == bs_callback || mState == bs_finish || mState == bs_initialize));
+  base_state_type prev_state = mState;
   mState = bs_killed;
+  if (prev_state == bs_initialize)
+  {
+	// We're not running (ie being deleted by a parent statemachine), delete it immediately.
+	delete this;
+  }
 }
 
 // Return stringified 'state'.

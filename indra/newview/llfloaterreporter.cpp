@@ -107,7 +107,6 @@ LLMap< EReportType, LLFloaterReporter* > gReporterInstances;
 // keeps track of where email is going to - global to avoid a pile
 // of static/non-static access outside my control
 namespace {
-	static BOOL gEmailToEstateOwner = FALSE;
 	static BOOL gDialogVisible = FALSE;
 }
 
@@ -227,16 +226,10 @@ void LLFloaterReporter::processRegionInfo(LLMessageSystem* msg)
 {
 	U32 region_flags;
 	msg->getU32("RegionInfo", "RegionFlags", region_flags);
-	gEmailToEstateOwner = ( region_flags & REGION_FLAGS_ABUSE_EMAIL_TO_ESTATE_OWNER );
 
 	if ( gDialogVisible )
 	{
-		if ( gEmailToEstateOwner )
-		{
-			LLNotificationsUtil::add("HelpReportAbuseEmailEO");
-		}
-		else
-			LLNotificationsUtil::add("HelpReportAbuseEmailLL");
+		LLNotificationsUtil::add("HelpReportAbuseEmailLL");
 	};
 }
 
@@ -264,18 +257,7 @@ LLFloaterReporter::~LLFloaterReporter()
 // virtual
 void LLFloaterReporter::draw()
 {
-	// this is set by a static callback sometime after the dialog is created.
-	// Only disable screenshot for abuse reports to estate owners - bug reports always
-	// allow screenshots to be taken.
-	if ( gEmailToEstateOwner && ( mReportType != BUG_REPORT ) )
-	{
-		childSetValue("screen_check", FALSE );
-		childSetEnabled("screen_check", FALSE );
-	}
-	else
-	{
-		childSetEnabled("screen_check", TRUE );
-	}
+	childSetEnabled("screen_check", TRUE );
 
 	LLFloater::draw();
 }
@@ -805,17 +787,7 @@ LLSD LLFloaterReporter::gatherReport()
 	LLUUID screenshot_id = LLUUID::null;
 	if (childGetValue("screen_check"))
 	{
-		if ( mReportType != BUG_REPORT )
-		{
-			if ( gEmailToEstateOwner == FALSE )
-			{
-				screenshot_id = childGetValue("screenshot");
-			}
-		}
-		else
-		{
-			screenshot_id = childGetValue("screenshot");
-		};
+		screenshot_id = childGetValue("screenshot");
 	};
 
 	LLSD report = LLSD::emptyMap();

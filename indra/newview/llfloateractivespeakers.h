@@ -49,7 +49,7 @@ class LLVoiceChannel;
 
 
 // data for a given participant in a voice channel
-class LLSpeaker : public LLRefCount, public LLObservable, public LLHandleProvider<LLSpeaker>
+class LLSpeaker : public LLRefCount, public LLOldEvents::LLObservable, public LLHandleProvider<LLSpeaker>
 {
 public:
 	typedef enum e_speaker_type
@@ -96,21 +96,21 @@ public:
 	std::string     mLegacyName;
 };
 
-class LLSpeakerTextModerationEvent : public LLEvent
+class LLSpeakerTextModerationEvent : public LLOldEvents::LLEvent
 {
 public:
 	LLSpeakerTextModerationEvent(LLSpeaker* source);
 	/*virtual*/ LLSD getValue();
 };
 
-class LLSpeakerVoiceModerationEvent : public LLEvent
+class LLSpeakerVoiceModerationEvent : public LLOldEvents::LLEvent
 {
 public:
 	LLSpeakerVoiceModerationEvent(LLSpeaker* source);
 	/*virtual*/ LLSD getValue();
 };
 
-class LLSpeakerListChangeEvent : public LLEvent
+class LLSpeakerListChangeEvent : public LLOldEvents::LLEvent
 {
 public:
 	LLSpeakerListChangeEvent(LLSpeakerMgr* source, const LLUUID& speaker_id);
@@ -120,7 +120,7 @@ private:
 	const LLUUID& mSpeakerID;
 };
 
-class LLSpeakerMgr : public LLObservable
+class LLSpeakerMgr : public LLOldEvents::LLObservable
 {
 public:
 	LLSpeakerMgr(LLVoiceChannel* channelp);
@@ -237,46 +237,46 @@ public:
 	static void	onChangeModerationMode(LLUICtrl* ctrl, void* user_data);
 
 protected:
-	class SpeakerMuteListener : public LLSimpleListener
+	class SpeakerMuteListener : public LLOldEvents::LLSimpleListener
 	{
 	public:
 		SpeakerMuteListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
 
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 
 		LLPanelActiveSpeakers* mPanel;
 	};
 
 	friend class SpeakerAddListener;
-	class SpeakerAddListener : public LLSimpleListener
+	class SpeakerAddListener : public LLOldEvents::LLSimpleListener
 	{
 	public:
 		SpeakerAddListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
 
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 
 		LLPanelActiveSpeakers* mPanel;
 	};
 
 	friend class SpeakerRemoveListener;
-	class SpeakerRemoveListener : public LLSimpleListener
+	class SpeakerRemoveListener : public LLOldEvents::LLSimpleListener
 	{
 	public:
 		SpeakerRemoveListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
 
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 
 		LLPanelActiveSpeakers* mPanel;
 	};
 
 
 	friend class SpeakerClearListener;
-	class SpeakerClearListener : public LLSimpleListener
+	class SpeakerClearListener : public LLOldEvents::LLSimpleListener
 	{
 	public:
 		SpeakerClearListener(LLPanelActiveSpeakers* panel) : mPanel(panel) {}
 
-		/*virtual*/ bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+		/*virtual*/ bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 
 		LLPanelActiveSpeakers* mPanel;
 	};

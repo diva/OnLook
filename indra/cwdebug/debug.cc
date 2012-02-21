@@ -171,7 +171,8 @@ void stop_recording_backtraces(void)
       channel_ct gtk DDCN("GTK");		//!< This debug channel is used for output related to gtk.
       channel_ct sdl DDCN("SDL");		//!< This debug channel is used for output related to sdl locking.
       channel_ct backtrace DDCN("BACKTRACE");	//!< This debug channel is used for backtraces.
-      channel_ct statemachine DDCN("STATEMACHINE");	//!< This debug channel is used class AIStateMachine.
+      channel_ct statemachine DDCN("STATEMACHINE");	//!< This debug channel is used for output related to class AIStateMachine.
+      channel_ct caps DDCN("CAPS");		//!< This debug channel is used for output related to Capabilities.
 
     } // namespace dc
   } // namespace DEBUGCHANNELS
