@@ -78,14 +78,14 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
   #SDK Compiler and Deployment targets for XCode
   if (${XCODE_VERSION} VERSION_LESS 4.0.0)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
     set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.5.sdk)
     set(CMAKE_XCODE_ATTIBUTE_GCC_VERSION "4.2")
   else (${XCODE_VERSION} VERSION_LESS 4.0.0)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.6)
     set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.6.sdk)
     set(CMAKE_XCODE_ATTRIBUTE_GCC_VERSION "com.apple.compilers.llvmgcc42")
   endif (${XCODE_VERSION} VERSION_LESS 4.0.0)
-
-  set(CMAKE_OSX_DEPLOYMENT_TARGET 10.5)
 
   # NOTE: To attempt an i386/PPC Universal build, add this on the configure line:
   # -DCMAKE_OSX_ARCHITECTURES:STRING='i386;ppc'
