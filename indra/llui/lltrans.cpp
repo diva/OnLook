@@ -72,7 +72,11 @@ bool LLTrans::parseStrings(const std::string& xml_filename, const std::set<std::
 			continue;
 		}
 	
-		LLTransTemplate xml_template(string_name, string->getTextContents());
+		std::string contents;
+		//value is used for strings with preceeding spaces. If not present, fall back to getTextContents()
+		if(!string->getAttributeString("value",contents))
+			contents=string->getTextContents();
+		LLTransTemplate xml_template(string_name, contents);
 		sStringTemplates[xml_template.mName] = xml_template;
 
 		std::set<std::string>::const_iterator iter = default_args.find(xml_template.mName);
