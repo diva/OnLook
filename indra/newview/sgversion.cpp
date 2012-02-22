@@ -28,3 +28,6 @@ const S32 gVersionBuild = LL_VERSION_BUILD;
 
 const char* gVersionChannel = LL_CHANNEL;
 
+#if LL_DARWIN
+const char* gVersionBundleID = LL_VERSION_BUNDLE_ID;
+#endif

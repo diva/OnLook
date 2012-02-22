@@ -158,10 +158,10 @@ if (LINUX)
       add_definitions(-D_FORTIFY_SOURCE=2)
     endif (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
   endif (${GXX_VERSION} STREQUAL ${CXX_VERSION})
- 
-  #Lets actualy get a numerical version of gxx's version
+
+  #Lets actually get a numerical version of gxx's version
   STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.([0-9]).*" "\\1\\2\\3" CXX_VERSION ${CXX_VERSION})
-  
+
   #gcc 4.3 and above don't like the LL boost
   if(${CXX_VERSION} GREATER 429)
     add_definitions(-Wno-parentheses)
