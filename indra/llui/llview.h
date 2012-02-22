@@ -138,7 +138,7 @@ virtual void	setControlName(const std::string& control, LLView *context);
 		LLSliderCtrl, LLCheckBoxCtrl
 virtual std::string getControlName() const { return mControlName; }
 		LLSliderCtrl, LLCheckBoxCtrl
-virtual bool	handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+virtual bool	handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 		LLMenuItem
 virtual void	setValue(const LLSD& value);
 		*
@@ -443,15 +443,15 @@ public:
 	void localRectToScreen( const LLRect& local, LLRect* screen ) const;
 	
 	// Listener dispatching functions (Dispatcher deletes pointers to listeners on deregistration or destruction)
-	LLSimpleListener* getListenerByName(const std::string& callback_name);
-	void registerEventListener(std::string name, LLSimpleListener* function);
+	LLOldEvents::LLSimpleListener* getListenerByName(const std::string& callback_name);
+	void registerEventListener(std::string name, LLOldEvents::LLSimpleListener* function);
 	void deregisterEventListener(std::string name);
 
-	typedef boost::signals2::signal<void (LLPointer<LLEvent> event, const LLSD& userdata)> event_signal_t;
+	typedef boost::signals2::signal<void (LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata)> event_signal_t;
 	void registerEventListener(std::string name, event_signal_t::slot_type &cb);
 
-	std::string findEventListener(LLSimpleListener *listener) const;
-	void addListenerToControl(LLEventDispatcher *observer, const std::string& name, LLSD filter, LLSD userdata);
+	std::string findEventListener(LLOldEvents::LLSimpleListener *listener) const;
+	void addListenerToControl(LLOldEvents::LLEventDispatcher *observer, const std::string& name, LLSD filter, LLSD userdata);
 
 	void addBoolControl(const std::string& name, bool initial_value);
 	LLControlVariable *getControl(const std::string& name);
@@ -460,7 +460,7 @@ public:
 	bool setControlValue(const LLSD& value);
 	virtual void	setControlName(const std::string& control, LLView *context);
 	virtual std::string getControlName() const { return mControlName; }
-//	virtual bool	handleEvent(LLPointer<LLEvent> event, const LLSD& userdata);
+//	virtual bool	handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
 	virtual void	setValue(const LLSD& value);
 	virtual LLSD	getValue() const;
 
@@ -663,7 +663,7 @@ private:
 
 	static LLWindow* sWindow;	// All root views must know about their window.
 
-	typedef std::map<std::string, LLPointer<LLSimpleListener> > dispatch_list_t;
+	typedef std::map<std::string, LLPointer<LLOldEvents::LLSimpleListener> > dispatch_list_t;
 	dispatch_list_t mDispatchList;
 
 	std::string		mControlName;

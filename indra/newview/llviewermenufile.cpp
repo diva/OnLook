@@ -96,6 +96,8 @@
 
 #include "importtracker.h"
 
+using namespace LLOldEvents;
+
 std::deque<std::string> gUploadQueue;
 
 typedef LLMemberListener<LLView> view_listener_t;

@@ -773,10 +773,12 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 		// 1. Tiles are zoomed out small enough, or
 		// 2. Sim's texture has not been loaded yet
 		F32 map_scale_cutoff = SIM_MAP_SCALE;
+#if 0 // This is always false, as REGION_FLAGS_NULL_LAYER doesn't exist anymore
 		if ((info->getRegionFlags() & REGION_FLAGS_NULL_LAYER) > 0)
 		{
 			map_scale_cutoff = SIM_NULL_MAP_SCALE;
 		}
+#endif
 
 		bool sim_visible =
 			(sMapScale >= map_scale_cutoff) &&
@@ -910,7 +912,7 @@ void LLWorldMapView::drawTiles(S32 width, S32 height) {
 				gGL.end();
 			}
 		
-			if ((info->getRegionFlags() & REGION_FLAGS_NULL_LAYER) == 0)
+			if (true /*V3: REGION_FLAGS_NULL_LAYER doesn't exist... (info->getRegionFlags() & REGION_FLAGS_NULL_LAYER) == 0*/)
 			{
 				// draw an alpha of 1 where the sims are visible (except NULL sims)
 				gGL.flush();

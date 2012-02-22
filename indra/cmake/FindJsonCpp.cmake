@@ -9,7 +9,7 @@
 #  also defined, but not for general use are
 #  JSONCPP_LIBRARY, where to find the jsoncpp library.
 
-FIND_PATH(JSONCPP_INCLUDE_DIR jsoncpp/json.h
+FIND_PATH(JSONCPP_INCLUDE_DIR json/json.h
 /usr/local/include
 /usr/include
 )

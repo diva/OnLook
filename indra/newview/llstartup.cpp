@@ -2038,7 +2038,7 @@ bool idle_startup()
 	//---------------------------------------------------------------------
 	if(STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState())
 	{
-		/*LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
 		if (regionp->capabilitiesReceived())
 		{
 			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
@@ -2056,7 +2056,7 @@ bool idle_startup()
 			{
 				set_startup_status(0.4f, LLTrans::getString("LoginRequestSeedCapGrant"), gAgent.mMOTD);
 			}
-		}*/
+		}
 		return FALSE;
 	}
 

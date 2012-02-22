@@ -195,7 +195,7 @@ typedef bool (RlvCommandHandler::*rlvCommandHandler)(const RlvCommand& rlvCmd, E
 
 class RlvEnableIfNot : public LLMemberListener<LLView>
 {
-	bool handleEvent(LLPointer<LLEvent>, const LLSD&);
+	bool handleEvent(LLPointer<LLOldEvents::LLEvent>, const LLSD&);
 };
 
 // ============================================================================

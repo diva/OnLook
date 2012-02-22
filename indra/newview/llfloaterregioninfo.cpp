@@ -2720,7 +2720,7 @@ bool LLPanelEstateCovenant::refreshFromRegion(LLViewerRegion* region)
 	LLTextBox* region_landtype = getChild<LLTextBox>("region_landtype_text");
 	if (region_landtype)
 	{
-		region_landtype->setText(region->getSimProductName());
+		region_landtype->setText(region->getLocalizedSimProductName());
 	}
 	
 	

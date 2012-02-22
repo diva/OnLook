@@ -145,7 +145,6 @@
 #include "llfloaterworldmap.h"
 #include "llviewerdisplay.h"
 #include "llkeythrottle.h"
-#include "lltranslate.h"
 // <edit>
 #include "llviewernetwork.h"
 // </edit>
@@ -2954,6 +2953,7 @@ void process_decline_callingcard(LLMessageSystem* msg, void**)
 	LLNotificationsUtil::add("CallingCardDeclined");
 }
 
+#if 0	// Google translate doesn't work anymore
 class ChatTranslationReceiver : public LLTranslate::TranslationReceiver
 {
 public :
@@ -2996,6 +2996,7 @@ private:
 	LLChat *m_chat;
 	const BOOL m_history;		
 };
+#endif
 
 void add_floater_chat(const LLChat &chat, const BOOL history)
 {
@@ -3011,6 +3012,7 @@ void add_floater_chat(const LLChat &chat, const BOOL history)
 	}
 }
 
+#if 0	// Google translate doesn't work anymore
 void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL history)
 {	
 	const bool translate = LLUI::sConfigGroup->getBOOL("TranslateChat");
@@ -3031,6 +3033,7 @@ void check_translate_chat(const std::string &mesg, LLChat &chat, const BOOL hist
 		add_floater_chat(chat, history);
 	}
 }
+#endif
 
 // defined in llchatbar.cpp, but not declared in any header
 void send_chat_from_viewer(std::string utf8_out_text, EChatType type, S32 channel);
@@ -3523,29 +3526,22 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 		}
 
 		// truth table:
-		// LINDEN	BUSY	MUTED	OWNED_BY_YOU	TASK		DISPLAY		STORE IN HISTORY
-		// F		F		F		F				*			Yes			Yes
-		// F		F		F		T				*			Yes			Yes
-		// F		F		T		F				*			No			No
-		// F		F		T		T				*			No			No
-		// F		T		F		F				*			No			Yes
-		// F		T		F		T				*			Yes			Yes
-		// F		T		T		F				*			No			No
-		// F		T		T		T				*			No			No
+		// LINDEN	MUTED	BUSY	OWNED_BY_YOU	TASK		DISPLAY		STORE IN HISTORY
+		// F		T		*		*				*			No			No
+		// F		F		T		F				*			No			Yes
+		// *		F		F		*				*			Yes			Yes
+		// *		F		*		T				*			Yes			Yes
 		// T		*		*		*				F			Yes			Yes
 
 		chat.mMuted = is_muted && !is_linden;
-		
-		if (!visible_in_chat_bubble 
-			&& (is_linden || !is_busy || is_owned_by_me))
+		if (!chat.mMuted)
 		{
-			// show on screen and add to history
-			check_translate_chat(mesg, chat, FALSE);
-		}
-		else
-		{
-			// just add to chat history
-			check_translate_chat(mesg, chat, TRUE);
+			bool only_history = visible_in_chat_bubble || (!is_linden && !is_owned_by_me && is_busy);
+#if 0	// Google translate doesn't work anymore
+			check_translate_chat(mesg, chat, only_history);
+#else
+			add_floater_chat(chat, only_history);
+#endif
 		}
 	}
 }

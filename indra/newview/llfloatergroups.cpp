@@ -62,6 +62,8 @@
 
 #include "hippolimits.h"
 
+using namespace LLOldEvents;
+
 // static
 std::map<const LLUUID, LLFloaterGroupPicker*> LLFloaterGroupPicker::sInstances;
 
