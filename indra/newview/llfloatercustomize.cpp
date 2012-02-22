@@ -1398,7 +1398,8 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		}
 		for (it = to_remove.begin(); it != to_remove.end(); it++)
 		{
-			removeChild(*it, TRUE);
+			removeChild(*it);
+			delete (*it);
 		}
 		slider->translate(0,PARAM_HINT_HEIGHT);
 		reshape(getRect().getWidth(),getRect().getHeight()-PARAM_HINT_HEIGHT);

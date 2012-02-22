@@ -56,6 +56,7 @@
 class LLFontGL;
 class LLLineEditorRollback;
 class LLButton;
+class LLMenuGL;
 
 typedef BOOL (*LLLinePrevalidateFunc)(const LLWString &wstr);
 
@@ -79,6 +80,9 @@ public:
 				 LLViewBorder::EStyle border_style = LLViewBorder::STYLE_LINE,
 				 S32 border_thickness = 1);
 
+protected:
+	void showContextMenu(S32 x, S32 y);
+public:
 	virtual ~LLLineEditor();
 
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
@@ -252,7 +256,9 @@ public:
 	void			updateHistory(); // stores current line in history
 
 	void			setReplaceNewlinesWithSpaces(BOOL replace);
-	
+
+	void			setContextMenu(LLMenuGL* new_context_menu);
+
 private:
 	// private helper methods
 
@@ -285,7 +291,6 @@ private:
 	virtual S32		getPreeditFontSize() const;
 
 protected:
-	LLHandle<LLView> mPopupMenuHandle;
 	LLUIString		mText;					// The string being edited.
 	std::string		mPrevText;				// Saved string for 'ESC' revert
 	LLUIString		mLabel;					// text label that is visible when no user text provided
@@ -359,6 +364,8 @@ protected:
 	std::vector<S32> mPreeditPositions;
 	LLPreeditor::standouts_t mPreeditStandouts;
 
+	LLHandle<LLView> mContextMenuHandle;
+	
 private:
 	// Utility on top of LLUI::getUIImage, looks up a named image in a given XML node and returns it if possible
 	// or returns a given default image if anything in the process fails.

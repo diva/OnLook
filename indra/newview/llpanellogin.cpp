@@ -247,7 +247,7 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	LLPanelLogin::sInstance = this;
 
 	// add to front so we are the bottom-most child
-	gViewerWindow->getRootView()->addChildAtEnd(this);
+	gViewerWindow->getRootView()->addChildInBack(this);
 
 	// Logo
 	mLogoImage = LLUI::getUIImage("startup_logo.j2c");

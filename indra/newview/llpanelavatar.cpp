@@ -587,7 +587,7 @@ void LLPanelAvatarSecondLife::onClickPartnerInfo(void *data)
 	if (self->mPartnerID.notNull())
 	{
 		LLFloaterAvatarInfo::showFromProfile(self->mPartnerID,
-											 self->getScreenRect());
+											 self->calcScreenRect());
 	}
 }
 

@@ -417,7 +417,7 @@ void LLGroupNotifyBox::moveToBack()
 {
 	// Move this dialog to the back.
 	gNotifyBoxView->removeChild(this);
-	gNotifyBoxView->addChildAtEnd(this);
+	gNotifyBoxView->addChildInBack(this);
 	mNextBtn->setVisible(FALSE);
 
 	// And enable the next button on the frontmost one, if there is one

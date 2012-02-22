@@ -138,8 +138,6 @@ public:
 
 	LLHandle<LLPanel>	getHandle() const { return mPanelHandle; }
 
-	S32				getLastTabGroup() const { return mLastTabGroup; }
-
 	const LLCallbackMap::map_t& getFactoryMap() const { return mFactoryMap; }
 
 	BOOL initPanelXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
@@ -235,10 +233,6 @@ private:
 	// common construction logic
 	void init();
 
-	// From LLView
-	virtual void	addCtrl( LLUICtrl* ctrl, S32 tab_group );
-	virtual void	addCtrlAtEnd( LLUICtrl* ctrl, S32 tab_group);
-
 	// Unified error reporting for the child* functions
 	typedef std::set<std::string> expected_members_list_t;
 	mutable expected_members_list_t mExpectedMembers;
@@ -253,7 +247,6 @@ private:
 	LLViewBorder*	mBorder;
 	LLButton*		mDefaultBtn;
 	std::string		mLabel;
-	S32				mLastTabGroup;
 	LLRootHandle<LLPanel> mPanelHandle;
 
 	typedef std::map<std::string, std::string> ui_string_map_t;
@@ -278,7 +271,7 @@ public:
 
 	/*virtual*/ void draw();
 	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
-	/*virtual*/ void removeCtrl(LLUICtrl* ctrl);
+	/*virtual*/ void removeChild(LLView* ctrl);
 
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 

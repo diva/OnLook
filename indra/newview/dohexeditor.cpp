@@ -81,10 +81,6 @@ DOHexEditor::DOHexEditor(const std::string& name, const LLRect& rect)
 DOHexEditor::~DOHexEditor()
 {
 	gFocusMgr.releaseFocusIfNeeded(this);
-	if(gEditMenuHandler == this)
-	{
-		gEditMenuHandler = NULL;
-	}
 }
 
 LLView* DOHexEditor::fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory)

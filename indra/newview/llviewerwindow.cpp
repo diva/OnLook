@@ -1945,7 +1945,7 @@ void LLViewerWindow::initWorldUI()
 		}
 		gHUDView = new LLHUDView(hud_rect);
 		// put behind everything else in the UI
-		mRootView->addChildAtEnd(gHUDView);
+		mRootView->addChildInBack(gHUDView);
 	}
 }
 

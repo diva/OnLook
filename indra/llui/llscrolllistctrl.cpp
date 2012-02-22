@@ -745,11 +745,6 @@ S32 LLScrollListCtrl::getSearchColumn()
 LLScrollListCtrl::~LLScrollListCtrl()
 {
 	std::for_each(mItemList.begin(), mItemList.end(), DeletePointer());
-
-	if( gEditMenuHandler == this )
-	{
-		gEditMenuHandler = NULL;
-	}
 }
 
 

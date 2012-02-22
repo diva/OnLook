@@ -81,7 +81,9 @@ S32		LLView::sLastBottomXML = S32_MIN;
 BOOL LLView::sIsDrawing = FALSE;
 #endif
 
-LLView::LLView() :
+LLView::LLView() 
+:	mVisible(TRUE),
+	mInDraw(false),
 	mParentView(NULL),
 	mReshapeFlags(FOLLOWS_NONE),
 	mDefaultTabGroup(0),
@@ -92,18 +94,20 @@ LLView::LLView() :
 	mIsFocusRoot(FALSE),
 	mLastVisible(TRUE),
 	mUseBoundingRect(FALSE),
-	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
 	mHoverCursor(UI_CURSOR_ARROW),
+	mLastTabGroup(0),
 	// <edit>
 	mDelayedDelete(FALSE)
 	// </edit>
 {
 }
 
-LLView::LLView(const std::string& name, BOOL mouse_opaque) :
-	mParentView(NULL),
+LLView::LLView(const std::string& name, BOOL mouse_opaque)
+:	mVisible(TRUE),
+	mInDraw(false),
 	mName(name),
+	mParentView(NULL),
 	mReshapeFlags(FOLLOWS_NONE),
 	mDefaultTabGroup(0),
 	mEnabled(TRUE),
@@ -113,9 +117,9 @@ LLView::LLView(const std::string& name, BOOL mouse_opaque) :
 	mIsFocusRoot(FALSE),
 	mLastVisible(TRUE),
 	mUseBoundingRect(FALSE),
-	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
 	mHoverCursor(UI_CURSOR_ARROW),
+	mLastTabGroup(0),
 	// <edit>
 	mDelayedDelete(FALSE)
 	// </edit>
@@ -124,9 +128,11 @@ LLView::LLView(const std::string& name, BOOL mouse_opaque) :
 
 
 LLView::LLView(
-	const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 reshape) :
-	mParentView(NULL),
+	const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 reshape) 
+:	mVisible(TRUE),
+	mInDraw(false),
 	mName(name),
+	mParentView(NULL),
 	mRect(rect),
 	mBoundingRect(rect),
 	mReshapeFlags(reshape),
@@ -138,9 +144,9 @@ LLView::LLView(
 	mIsFocusRoot(FALSE),
 	mLastVisible(TRUE),
 	mUseBoundingRect(FALSE),
-	mVisible(TRUE),
 	mNextInsertionOrdinal(0),
 	mHoverCursor(UI_CURSOR_ARROW),
+	mLastTabGroup(0),
 	// <edit>
 	mDelayedDelete(FALSE)
 	// </edit>
@@ -234,7 +240,7 @@ void LLView::setUseBoundingRect( BOOL use_bounding_rect )
 	}
 }
 
-BOOL LLView::getUseBoundingRect()
+BOOL LLView::getUseBoundingRect() const
 {
 	return mUseBoundingRect;
 }
@@ -263,6 +269,7 @@ void LLView::sendChildToFront(LLView* child)
 
 void LLView::sendChildToBack(LLView* child)
 {
+// 	llassert_always(sDepth == 0); // Avoid re-ordering while drawing; it can cause subtle iterator bugs
 	if (child && child->getParent() == this) 
 	{
 		// minor optimization, but more importantly,
@@ -291,16 +298,18 @@ void LLView::moveChildToBackOfTabGroup(LLUICtrl* child)
 	}
 }
 
-void LLView::addChild(LLView* child, S32 tab_group)
+// virtual
+bool LLView::addChild(LLView* child, S32 tab_group)
 {
 	if (!child)
 	{
-		return;
+		return false;
 	}
 	if (mParentView == child) 
 	{
 		llerrs << "Adding view " << child->getName() << " as child of itself" << llendl;
 	}
+
 	// remove from current parent
 	if (child->mParentView) 
 	{
@@ -313,84 +322,55 @@ void LLView::addChild(LLView* child, S32 tab_group)
 	// add to ctrl list if is LLUICtrl
 	if (child->isCtrl())
 	{
-		// controls are stored in reverse order from render order
-		addCtrlAtEnd((LLUICtrl*) child, tab_group);
+		LLUICtrl* ctrl = static_cast<LLUICtrl*>(child);
+		mCtrlOrder.insert(tab_order_pair_t(ctrl,
+							tab_order_t(tab_group, mNextInsertionOrdinal)));
+
+		mNextInsertionOrdinal++;
 	}
 
 	child->mParentView = this;
 	updateBoundingRect();
+	mLastTabGroup = tab_group;
+	return true;
 }
 
 
-void LLView::addChildAtEnd(LLView* child, S32 tab_group)
+bool LLView::addChildInBack(LLView* child, S32 tab_group)
 {
-	if (mParentView == child) 
+	if(addChild(child, tab_group))
 	{
-		llerrs << "Adding view " << child->getName() << " as child of itself" << llendl;
-	}
-	// remove from current parent
-	if (child->mParentView) 
-	{
-		child->mParentView->removeChild(child);
+		sendChildToBack(child);
+		return true;
 	}
 
-	// add to back of child list
-	mChildList.push_back(child);
-
-	// add to ctrl list if is LLUICtrl
-	if (child->isCtrl())
-	{
-		// controls are stored in reverse order from render order
-		addCtrl((LLUICtrl*) child, tab_group);
-	}
-	
-	child->mParentView = this;
-	updateBoundingRect();
+	return false;
 }
 
 // remove the specified child from the view, and set it's parent to NULL.
-void LLView::removeChild(LLView* child, BOOL deleteIt)
+void LLView::removeChild(LLView* child)
 {
+	//llassert_always(sDepth == 0); // Avoid re-ordering while drawing; it can cause subtle iterator bugs
 	if (child->mParentView == this) 
 	{
+		// if we are removing an item we are currently iterating over, that would be bad
+		llassert(child->mInDraw == false);
 		mChildList.remove( child );
 		child->mParentView = NULL;
 		if (child->isCtrl())
 		{
-			removeCtrl((LLUICtrl*)child);
-		}
-		if (deleteIt)
-		{
-			delete child;
+			child_tab_order_t::iterator found = mCtrlOrder.find(static_cast<LLUICtrl*>(child));
+			if(found != mCtrlOrder.end())
+			{
+				mCtrlOrder.erase(found);
+			}
 		}
 	}
 	else
 	{
-		llerrs << "LLView::removeChild called with non-child" << llendl;
+		llwarns << child->getName() << "is not a child of " << getName() << llendl;
 	}
 	updateBoundingRect();
-}
-
-void LLView::addCtrlAtEnd(LLUICtrl* ctrl, S32 tab_group)
-{
-	mCtrlOrder.insert(tab_order_pair_t(ctrl,
-								tab_order_t(tab_group, mNextInsertionOrdinal++)));
-}
-
-void LLView::addCtrl( LLUICtrl* ctrl, S32 tab_group)
-{
-	// add to front of list by using negative ordinal, which monotonically increases
-	mCtrlOrder.insert(tab_order_pair_t(ctrl,
-								tab_order_t(tab_group, -1 * mNextInsertionOrdinal++)));
-}
-
-void LLView::removeCtrl(LLUICtrl* ctrl)
-{
-	child_tab_order_t::iterator found = mCtrlOrder.find(ctrl);
-	if(found != mCtrlOrder.end())
-	{
-		mCtrlOrder.erase(found);
-	}
 }
 
 LLView::ctrl_list_t LLView::getCtrlList() const
@@ -1325,56 +1305,72 @@ LLView* LLView::childrenHandleMiddleMouseUp(S32 x, S32 y, MASK mask)
 
 void LLView::draw()
 {
-	if (sDebugRects)
-	{
-		drawDebugRect();
+	drawChildren();
+}
 
-		// Check for bogus rectangle
-		if (getRect().mRight <= getRect().mLeft
-			|| getRect().mTop <= getRect().mBottom)
-		{
-			llwarns << "Bogus rectangle for " << getName() << " with " << mRect << llendl;
-		}
-	}
-
-	LLRect rootRect = getRootView()->getRect();
-	LLRect screenRect;
+void LLView::drawChildren()
+{
 
 	// draw focused control on top of everything else
-	LLUICtrl* focus_view = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
+	/*LLUICtrl* focus_view = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
 	if (focus_view && focus_view->getParent() != this)
 	{
 		focus_view = NULL;
-	}
-
-	++sDepth;
-	for (child_list_reverse_iter_t child_iter = mChildList.rbegin(); child_iter != mChildList.rend(); ++child_iter)
+	}*/
+	if (!mChildList.empty())
 	{
-		LLView *viewp = *child_iter;
+		LLView* rootp = getRootView();		
+		++sDepth;
 
-		if (viewp->getVisible() && viewp != focus_view && viewp->getRect().isValid())
+		for (child_list_reverse_iter_t child_iter = mChildList.rbegin(); child_iter != mChildList.rend();)  // ++child_iter)
 		{
-			// Only draw views that are within the root view
-			localRectToScreen(viewp->getRect(),&screenRect);
-			if ( rootRect.overlaps(screenRect) )
-			{
-				gGL.matrixMode(LLRender::MM_MODELVIEW);
-				LLUI::pushMatrix();
+				child_list_reverse_iter_t child = child_iter++;
+				LLView *viewp = *child;
+			
+				if (viewp == NULL)
 				{
-					LLUI::translate((F32)viewp->getRect().mLeft, (F32)viewp->getRect().mBottom, 0.f);
-					viewp->draw();
+					continue;
 				}
-				LLUI::popMatrix();
+
+
+			if (viewp->getVisible() && /*viewp != focus_view && */viewp->getRect().isValid())
+			{
+				// Only draw views that are within the root view
+				LLRect screen_rect = viewp->calcScreenRect();
+				if ( rootp->getLocalRect().overlaps(screen_rect) )
+				{
+					//gGL.matrixMode(LLRender::MM_MODELVIEW);
+					LLUI::pushMatrix();
+					{
+						LLUI::translate((F32)viewp->getRect().mLeft, (F32)viewp->getRect().mBottom, 0.f);
+						// flag the fact we are in draw here, in case overridden draw() method attempts to remove this widget
+						viewp->mInDraw = true;
+						viewp->draw();
+						viewp->mInDraw = false;
+
+						if (sDebugRects)
+						{
+							viewp->drawDebugRect();
+
+							// Check for bogus rectangle
+							if (!getRect().isValid())
+							{
+								llwarns << "Bogus rectangle for " << getName() << " with " << mRect << llendl;
+							}
+						}
+					}
+					LLUI::popMatrix();
+				}
 			}
+
 		}
-
+		--sDepth;
 	}
-	--sDepth;
 
-	if (focus_view && focus_view->getVisible())
+	/*if (focus_view && focus_view->getVisible())
 	{
 		drawChild(focus_view);
-	}
+	}*/
 
 	// HACK
 	if (sEditingUI && this == sEditingUIView)
@@ -1391,12 +1387,12 @@ void LLView::drawDebugRect()
 		// drawing solids requires texturing be disabled
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
-		if (mUseBoundingRect)
+		if (getUseBoundingRect())
 		{
 			LLUI::translate((F32)mBoundingRect.mLeft - (F32)mRect.mLeft, (F32)mBoundingRect.mBottom - (F32)mRect.mBottom, 0.f);
 		}
 
-		LLRect debug_rect = mUseBoundingRect ? mBoundingRect : mRect;
+		LLRect debug_rect = getUseBoundingRect() ? mBoundingRect : mRect;
 
 		// draw red rectangle for the border
 		LLColor4 border_color(0.f, 0.f, 0.f, 1.f);
@@ -1539,43 +1535,51 @@ void LLView::reshape(S32 width, S32 height, BOOL called_from_parent)
 	updateBoundingRect();
 }
 
-void LLView::updateBoundingRect()
+LLRect LLView::calcBoundingRect()
 {
-	if (isDead()) return;
-
-	if (mUseBoundingRect)
-	{
-		LLRect local_bounding_rect = LLRect::null;
+	LLRect local_bounding_rect = LLRect::null;
 
 	BOOST_FOREACH(LLView* childp, mChildList)
 	{
 		// ignore invisible and "top" children when calculating bounding rect
-			// such as combobox popups
-			if (!childp->getVisible() || childp == gFocusMgr.getTopCtrl()) 
-			{
-				continue;
-			}
-
-			LLRect child_bounding_rect = childp->getBoundingRect();
-
-			if (local_bounding_rect.isEmpty())
-			{
-				// start out with bounding rect equal to first visible child's bounding rect
-				local_bounding_rect = child_bounding_rect;
-			}
-			else
-			{
-				// accumulate non-null children rectangles
-				if (child_bounding_rect.notEmpty())
-				{
-					local_bounding_rect.unionWith(child_bounding_rect);
-				}
-			}
+		// such as combobox popups
+		if (!childp->getVisible() || childp == gFocusMgr.getTopCtrl()) 
+		{
+			continue;
 		}
 
-		mBoundingRect = local_bounding_rect;
-		// translate into parent-relative coordinates
-		mBoundingRect.translate(mRect.mLeft, mRect.mBottom);
+		LLRect child_bounding_rect = childp->getBoundingRect();
+
+		if (local_bounding_rect.isEmpty())
+		{
+			// start out with bounding rect equal to first visible child's bounding rect
+			local_bounding_rect = child_bounding_rect;
+		}
+		else
+		{
+			// accumulate non-null children rectangles
+			if (!child_bounding_rect.isEmpty())
+			{
+				local_bounding_rect.unionWith(child_bounding_rect);
+			}
+		}
+	}
+
+	// convert to parent-relative coordinates
+	local_bounding_rect.translate(mRect.mLeft, mRect.mBottom);
+	return local_bounding_rect;
+}
+
+
+void LLView::updateBoundingRect()
+{
+	if (isDead()) return;
+
+	LLRect cur_rect = mBoundingRect;
+
+	if (getUseBoundingRect())
+	{
+		mBoundingRect = calcBoundingRect();
 	}
 	else
 	{
@@ -1583,18 +1587,37 @@ void LLView::updateBoundingRect()
 	}
 
 	// give parent view a chance to resize, in case we just moved, for example
-	if (getParent() && getParent()->mUseBoundingRect)
+	if (getParent() && getParent()->getUseBoundingRect())
 	{
 		getParent()->updateBoundingRect();
 	}
+
+	/*if (mBoundingRect != cur_rect)
+	{
+		dirtyRect();
+	}*/
+
 }
 
-LLRect LLView::getScreenRect() const
+LLRect LLView::calcScreenRect() const
 {
-	// *FIX: check for one-off error
 	LLRect screen_rect;
 	localPointToScreen(0, 0, &screen_rect.mLeft, &screen_rect.mBottom);
 	localPointToScreen(getRect().getWidth(), getRect().getHeight(), &screen_rect.mRight, &screen_rect.mTop);
+	return screen_rect;
+}
+
+LLRect LLView::calcScreenBoundingRect() const
+{
+	LLRect screen_rect;
+	// get bounding rect, if used
+	LLRect bounding_rect = getUseBoundingRect() ? mBoundingRect : mRect;
+
+	// convert to local coordinates, as defined by mRect
+	bounding_rect.translate(-mRect.mLeft, -mRect.mBottom);
+
+	localPointToScreen(bounding_rect.mLeft, bounding_rect.mBottom, &screen_rect.mLeft, &screen_rect.mBottom);
+	localPointToScreen(bounding_rect.mRight, bounding_rect.mTop, &screen_rect.mRight, &screen_rect.mTop);
 	return screen_rect;
 }
 
@@ -1644,15 +1667,19 @@ BOOL LLView::hasAncestor(const LLView* parentp) const
 
 BOOL LLView::childHasKeyboardFocus( const std::string& childname ) const
 {
-	LLView *child = getChildView(childname, TRUE, FALSE);
-	if (child)
+	LLView *focus = dynamic_cast<LLView *>(gFocusMgr.getKeyboardFocus());
+	
+	while (focus != NULL)
 	{
-		return gFocusMgr.childHasKeyboardFocus(child);
+		if (focus->getName() == childname)
+		{
+			return TRUE;
+		}
+		
+		focus = focus->getParent();
 	}
-	else
-	{
-		return FALSE;
-	}
+	
+	return FALSE;
 }
 
 //-----------------------------------------------------------------------------

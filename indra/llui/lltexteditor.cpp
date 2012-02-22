@@ -372,18 +372,12 @@ LLTextEditor::~LLTextEditor()
 {
 	gFocusMgr.releaseFocusIfNeeded( this ); // calls onCommit()
 
-	// Route menu back to the default
-	if( gEditMenuHandler == this )
-	{
-		gEditMenuHandler = NULL;
-	}
-
 	// Scrollbar is deleted by LLView
 	mHoverSegment = NULL;
 	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 
 	std::for_each(mUndoStack.begin(), mUndoStack.end(), DeletePointer());
-	LLView::deleteViewByHandle(mPopupMenuHandle);
+	//LLView::deleteViewByHandle(mPopupMenuHandle);
 }
 void LLTextEditor::context_cut(void* data)
 {
@@ -1461,6 +1455,7 @@ BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 		mLastContextMenuX = x;
 		mLastContextMenuY = y;
 		menu->buildDrawLabels();
+		menu->updateParent(LLMenuGL::sMenuContainer);
 		LLMenuGL::showPopup(this, menu, x, y);
 	}
 	return TRUE;
@@ -3245,7 +3240,7 @@ void LLTextEditor::drawCursor()
 				}
 
 				// Make sure the IME is in the right place
-				LLRect screen_pos = getScreenRect();
+				LLRect screen_pos = calcScreenRect();
 				LLCoordGL ime_pos( screen_pos.mLeft + llfloor(cursor_left), screen_pos.mBottom + llfloor(cursor_top) );
 
 				ime_pos.mX = (S32) (ime_pos.mX * LLUI::sGLScaleFactor.mV[VX]);

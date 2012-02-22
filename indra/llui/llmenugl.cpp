@@ -1699,7 +1699,7 @@ BOOL LLMenuItemBranchDownGL::handleKeyHere(KEY key, MASK mask)
 {
 	BOOL menu_open = getBranch()->getVisible();
 	// don't do keyboard navigation of top-level menus unless in keyboard mode, or menu expanded
-	if (getHighlight() && getMenu()->getVisible() && (isActive() || LLMenuGL::getKeyboardMode()))
+	if (getHighlight() && getMenu()->isOpen() && (isActive() || LLMenuGL::getKeyboardMode()))
 	{
 		if (key == KEY_LEFT)
 		{
@@ -3314,6 +3314,9 @@ protected:
 	LLPieMenu* mBranch;
 };
 
+const F32 PIE_MENU_WIDTH = 190;
+const F32 PIE_MENU_HEIGHT = 190;
+
 LLPieMenuBranch::LLPieMenuBranch(const std::string& name,
 								 const std::string& label,
 								 LLPieMenu* branch) 
@@ -3396,6 +3399,7 @@ LLPieMenu::LLPieMenu(const std::string& name, const std::string& label)
 	mCurRadius(0.f),
 	mRightMouseDown(FALSE)
 { 
+	setRect(LLRect(0,PIE_MENU_HEIGHT,PIE_MENU_WIDTH,0));
 	LLMenuGL::setVisible(FALSE);
 }
 
@@ -3410,6 +3414,7 @@ LLPieMenu::LLPieMenu(const std::string& name)
 	mCurRadius(0.f),
 	mRightMouseDown(FALSE)
 { 
+	setRect(LLRect(0,PIE_MENU_HEIGHT,PIE_MENU_WIDTH,0));
 	LLMenuGL::setVisible(FALSE);
 }
 
@@ -3836,9 +3841,6 @@ BOOL LLPieMenu::appendPieMenu(LLPieMenu *menu)
 // virtual
 void LLPieMenu::arrange()
 {
-	const S32 rect_height = 190;
-	const S32 rect_width = 190;
-
 	// all divide by 6
 	const S32 CARD_X = 60;
 	const S32 DIAG_X = 48;
@@ -3848,8 +3850,6 @@ void LLPieMenu::arrange()
 	const S32 ITEM_CENTER_X[] = { CARD_X, DIAG_X,      0, -DIAG_X, -CARD_X, -DIAG_X,       0,  DIAG_X };
 	const S32 ITEM_CENTER_Y[] = {      0, DIAG_Y, CARD_Y,  DIAG_Y,       0, -DIAG_Y, -CARD_Y, -DIAG_Y };
 
-	LLRect rect;
-	
 	S32 font_height = 0;
 	if( mItems.size() )
 	{
@@ -3862,8 +3862,7 @@ void LLPieMenu::arrange()
 
 	// TODO: Compute actual bounding rect for menu
 
-	// HACK: casting away const.  Should use setRect or some helper function instead.
-	const_cast<LLRect&>(getRect()).setOriginAndSize(getRect().mLeft, getRect().mBottom, rect_width, rect_height );
+	LLRect rect = getRect();
 
 	// place items around a circle, with item 0 at positive X,
 	// rotating counter-clockwise
@@ -3881,7 +3880,7 @@ void LLPieMenu::arrange()
 							  item_width, font_height );
 
 		// Correct for the actual rectangle size
-		rect.translate( rect_width/2, rect_height/2 );
+		rect.translate( getRect().getWidth()/2, getRect().getHeight()/2 );
 
 		item->setRect( rect );
 
@@ -3979,62 +3978,38 @@ void LLPieMenu::show(S32 x, S32 y, BOOL mouse_down)
 	const LLRect menu_region_rect = LLMenuGL::sMenuContainer->getMenuRect();
 
 	LLView* parent_view = getParent();
-	BOOL moved = FALSE;
 
 	S32 local_x, local_y;
 	parent_view->screenPointToLocal(x, y, &local_x, &local_y);
 
-	// HACK: casting away const.  Should use setRect or some helper function instead.
-	const_cast<LLRect&>(getRect()).setCenterAndSize(local_x, local_y, width, height);
+	LLRect rect;
+	rect.setCenterAndSize(local_x, local_y, width, height);
+	setRect(rect);
+	
 	arrange();
 
 	// Adjust the pie rectangle to keep it on screen
-	if (getRect().mLeft < menu_region_rect.mLeft) 
+	if(!menu_region_rect.contains(rect))
 	{
-		//mShiftHoriz = menu_region_rect.mLeft - getRect().mLeft;
-		//getRect().translate( mShiftHoriz, 0 );
-		// HACK: casting away const.  Should use setRect or some helper function instead.
-		const_cast<LLRect&>(getRect()).translate( menu_region_rect.mLeft - getRect().mLeft, 0 );
-		moved = TRUE;
-	}
-
-	if (getRect().mRight > menu_region_rect.mRight) 
-	{
-		//mShiftHoriz = menu_region_rect.mRight - getRect().mRight;
-		//getRect().translate( mShiftHoriz, 0);
-		// HACK: casting away const.  Should use setRect or some helper function instead.
-		const_cast<LLRect&>(getRect()).translate( menu_region_rect.mRight - getRect().mRight, 0 );
-		moved = TRUE;
-	}
-
-	if (getRect().mBottom < menu_region_rect.mBottom)
-	{
-		//mShiftVert = menu_region_rect.mBottom - getRect().mBottom;
-		//getRect().translate( 0, mShiftVert );
-		// HACK: casting away const.  Should use setRect or some helper function instead.
-		const_cast<LLRect&>(getRect()).translate( 0, menu_region_rect.mBottom - getRect().mBottom );
-		moved = TRUE;
-	}
-
-
-	if (getRect().mTop > menu_region_rect.mTop)
-	{
-		//mShiftVert = menu_region_rect.mTop - getRect().mTop;
-		//getRect().translate( 0, mShiftVert );
-		// HACK: casting away const. Should use setRect or some helper function instead.
-		const_cast<LLRect&>(getRect()).translate( 0, menu_region_rect.mTop - getRect().mTop );
-		moved = TRUE;
-	}
-
-	// If we had to relocate the pie menu, put the cursor in the
-	// center of its rectangle
-	if (moved)
-	{
-		LLCoordGL center;
-		center.mX = (getRect().mLeft + getRect().mRight) / 2;
-		center.mY = (getRect().mTop + getRect().mBottom) / 2;
-
-		LLUI::setMousePositionLocal(getParent(), center.mX, center.mY);
+		S32 trans[2]={0,0};
+		if (rect.mLeft < menu_region_rect.mLeft) 
+		{
+			trans[0] = menu_region_rect.mLeft - rect.mLeft;
+		}
+		else if (rect.mRight > menu_region_rect.mRight) 
+		{
+			trans[0] = menu_region_rect.mRight - rect.mRight;
+		}
+		if (rect.mBottom < menu_region_rect.mBottom)
+		{
+			trans[1] = menu_region_rect.mBottom - rect.mBottom;
+		}
+		else if (rect.mTop > menu_region_rect.mTop)
+		{
+			trans[1] = menu_region_rect.mTop - rect.mTop;
+		}
+		setRect(rect.translate(trans[0],trans[1]));
+		LLUI::setMousePositionLocal(getParent(),rect.getCenterX(), rect.getCenterY());
 	}
 
 	// *FIX: what happens when mouse buttons reversed?

@@ -1568,10 +1568,12 @@ void	LLFloater::setCanResize(BOOL can_resize)
 	{
 		for (S32 i = 0; i < 4; i++) 
 		{
-			removeChild(mResizeBar[i], TRUE);
+			removeChild(mResizeBar[i]);
+			delete mResizeBar[i];
 			mResizeBar[i] = NULL; 
 
-			removeChild(mResizeHandle[i], TRUE);
+			removeChild(mResizeHandle[i]);
+			delete mResizeHandle[i];
 			mResizeHandle[i] = NULL;
 		}
 	}

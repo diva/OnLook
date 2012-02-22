@@ -521,21 +521,24 @@ BOOL LLPanelGroupSubTab::postBuild()
 	if (icon && !icon->getImageName().empty())
 	{
 		mActionIcons["folder"] = icon->getImageName();
-		removeChild(icon, TRUE);
+		removeChild(icon);
+		delete icon;
 	}
 
 	icon = getChild<LLIconCtrl>("power_all_have_icon",no_recurse);
 	if (icon && !icon->getImageName().empty())
 	{
 		mActionIcons["full"] = icon->getImageName();
-		removeChild(icon, TRUE);
+		removeChild(icon);
+		delete icon;
 	}
 
 	icon = getChild<LLIconCtrl>("power_partial_icon",no_recurse);
 	if (icon && !icon->getImageName().empty())
 	{
 		mActionIcons["partial"] = icon->getImageName();
-		removeChild(icon, TRUE);
+		removeChild(icon);
+		delete icon;
 	}
 
 	return LLPanelGroupTab::postBuild();

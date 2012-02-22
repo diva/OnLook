@@ -278,7 +278,8 @@ BOOL LLPanelGroupNotices::postBuild()
 	target->setToolTip(dtv->getToolTip());
 
 	mPanelCreateNotice->addChild(target);
-	mPanelCreateNotice->removeChild(dtv, TRUE);
+	mPanelCreateNotice->removeChild(dtv);
+	delete dtv;
 
 	arrangeNoticeView(VIEW_PAST_NOTICE);
 

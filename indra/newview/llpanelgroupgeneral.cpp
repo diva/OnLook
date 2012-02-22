@@ -150,7 +150,8 @@ BOOL LLPanelGroupGeneral::postBuild()
 	if (founder)
 	{
 		mFounderName = new LLNameBox(founder->getName(),founder->getRect(),LLUUID::null,FALSE,founder->getFont(),founder->getMouseOpaque());
-		removeChild(founder, TRUE);
+		removeChild(founder);
+		delete founder;
 		addChild(mFounderName);
 	}
 

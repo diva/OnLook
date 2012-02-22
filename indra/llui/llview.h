@@ -294,7 +294,7 @@ public:
 	void        setSoundFlags(U8 flags)			{ mSoundFlags = flags; }
 	void		setName(std::string name)			{ mName = name; }
 	void		setUseBoundingRect( BOOL use_bounding_rect );
-	BOOL		getUseBoundingRect();
+	BOOL		getUseBoundingRect() const;
 
 	const std::string& getToolTip() const			{ return mToolTipMsg.getString(); }
 
@@ -302,15 +302,14 @@ public:
 	void		sendChildToBack(LLView* child);
 	void		moveChildToFrontOfTabGroup(LLUICtrl* child);
 	void		moveChildToBackOfTabGroup(LLUICtrl* child);
+	
+	virtual bool addChild(LLView* view, S32 tab_group = 0);
 
-	void		addChild(LLView* view, S32 tab_group = 0);
-	void		addChildAtEnd(LLView* view,  S32 tab_group = 0);
+	// implemented in terms of addChild()
+	bool		addChildInBack(LLView* view,  S32 tab_group = 0);
+
 	// remove the specified child from the view, and set it's parent to NULL.
-	void		removeChild(LLView* view, BOOL deleteIt = FALSE);
-
-	virtual void	addCtrl( LLUICtrl* ctrl, S32 tab_group);
-	virtual void	addCtrlAtEnd( LLUICtrl* ctrl, S32 tab_group);
-	virtual void	removeCtrl( LLUICtrl* ctrl);
+	virtual void	removeChild(LLView* view);
 
 	child_tab_order_t getCtrlOrder() const		{ return mCtrlOrder; }
 	ctrl_list_t getCtrlList() const;
@@ -318,6 +317,7 @@ public:
 	
 	void setDefaultTabGroup(S32 d)				{ mDefaultTabGroup = d; }
 	S32 getDefaultTabGroup() const				{ return mDefaultTabGroup; }
+	S32 getLastTabGroup()						{ return mLastTabGroup; }
 
 	BOOL		isInVisibleChain() const;
 	BOOL		isInEnabledChain() const;
@@ -336,14 +336,14 @@ public:
 	void 	setAllChildrenEnabled(BOOL b);
 
 	virtual void	setVisible(BOOL visible);
-	BOOL			getVisible() const			{ return mVisible; }
+	const BOOL&		getVisible() const			{ return mVisible; }
 	virtual void	setEnabled(BOOL enabled);
 	BOOL			getEnabled() const			{ return mEnabled; }
 	U8              getSoundFlags() const       { return mSoundFlags; }
 
 	virtual BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
 
-	virtual void	handleVisibilityChange ( BOOL curVisibilityIn );
+	virtual void	handleVisibilityChange ( BOOL new_visibility );
 
 	void			pushVisible(BOOL visible)	{ mLastVisible = mVisible; setVisible(visible); }
 	void			popVisible()				{ setVisible(mLastVisible); }
@@ -361,13 +361,15 @@ public:
 	const LLRect&	getRect() const				{ return mRect; }
 	const LLRect&	getBoundingRect() const		{ return mBoundingRect; }
 	LLRect	getLocalBoundingRect() const;
-	LLRect	getScreenRect() const;
+	LLRect	calcScreenRect() const;
+	LLRect	calcScreenBoundingRect() const;
 	LLRect	getLocalRect() const;
 	virtual LLRect getSnapRect() const;
 	LLRect getLocalSnapRect() const;
 
 	// Override and return required size for this object. 0 for width/height means don't care.
 	virtual LLRect getRequiredRect();
+	LLRect calcBoundingRect();
 	void updateBoundingRect();
 
 	LLView*		getRootView();
@@ -469,6 +471,8 @@ public:
 	virtual LLSD	getValue() const;
 
 	const child_list_t*	getChildList() const { return &mChildList; }
+	child_list_const_iter_t	beginChild() const { return mChildList.begin(); }
+	child_list_const_iter_t	endChild() const { return mChildList.end(); }
 
 	// LLMouseHandler functions
 	//  Default behavior is to pass events to children
@@ -602,6 +606,7 @@ protected:
 
 	void			drawDebugRect();
 	void			drawChild(LLView* childp, S32 x_offset = 0, S32 y_offset = 0, BOOL force_draw = FALSE);
+	void			drawChildren();
 
 	LLView*	childrenHandleKey(KEY key, MASK mask);
 	LLView* childrenHandleUnicodeChar(llwchar uni_char);
@@ -631,15 +636,18 @@ private:
 	LLView*		mParentView;
 	child_list_t mChildList;
 
-	std::string	mName;
 	// location in pixels, relative to surrounding structure, bottom,left=0,0
+	BOOL		mVisible;
 	LLRect		mRect;
 	LLRect		mBoundingRect;
+
+	std::string	mName;
 	
 	U32			mReshapeFlags;
 
 	child_tab_order_t mCtrlOrder;
 	S32			mDefaultTabGroup;
+	S32			mLastTabGroup;
 
 	BOOL		mEnabled;		// Enabled means "accepts input that has an effect on the state of the application."
 								// A disabled view, for example, may still have a scrollbar that responds to mouse events.
@@ -655,10 +663,11 @@ private:
 	LLRootHandle<LLView> mHandle;
 	BOOL		mLastVisible;
 
-	BOOL		mVisible;
+
 
 	S32			mNextInsertionOrdinal;
 
+	bool		mInDraw;
 	// <edit>
 public:
 	BOOL mDelayedDelete;

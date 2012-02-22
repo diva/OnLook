@@ -317,11 +317,6 @@ LLViewerMediaImpl::LLViewerMediaImpl(const std::string& media_url,
 //////////////////////////////////////////////////////////////////////////////////////////
 LLViewerMediaImpl::~LLViewerMediaImpl()
 {
-	if( gEditMenuHandler == this )
-	{
-		gEditMenuHandler = NULL;
-	}
-	
 	destroyMediaSource();
 	LLViewerMedia::removeMedia(this);
 }
