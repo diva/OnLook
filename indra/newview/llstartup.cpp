@@ -1886,6 +1886,12 @@ bool idle_startup()
 			// OGPX : Inventory root might be null in OGP.
 //			   && gAgent.mInventoryRootID.notNull())
 			{
+				std::string name = firstname;
+				std::string last_name = lastname;
+				LLStringUtil::toLower(last_name);
+				if(last_name != "resident")
+					name += " " + lastname;
+				gViewerWindow->getWindow()->setTitle(LLAppViewer::instance()->getWindowTitle() + "- " + name);
 				LLStartUp::setStartupState( STATE_WORLD_INIT );
 			}
 			else

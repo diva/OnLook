@@ -3140,6 +3140,14 @@ void LLWindowWin32::spawnWebBrowser(const std::string& escaped_url, bool async)
 	ShellExecuteEx( &sei );
 }
 
+void LLWindowWin32::setTitle(const std::string &title)
+{
+	mbstowcs(mWindowTitle, title.c_str(), 255);
+	mWindowTitle[255] = 0;
+
+	SetWindowText(mWindowHandle, mWindowTitle);
+}
+
 /*
 	Make the raw keyboard data available - used to poke through to LLQtWebKit so
 	that Qt/Webkit has access to the virtual keycodes etc. that it needs
