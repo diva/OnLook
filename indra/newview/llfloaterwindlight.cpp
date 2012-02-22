@@ -1070,5 +1070,13 @@ void LLFloaterWindLight::populateSkyPresetsList()
 		mSkyPresetCombo->add(*it);
 	}
 
+	LLWLParamManager::preset_name_list_t user_presets;
+	LLWLParamManager::getInstance()->getUserPresetNames(user_presets);
+
+	for (LLWLParamManager::preset_name_list_t::const_iterator it = user_presets.begin(); it != user_presets.end(); ++it)
+	{
+		mSkyPresetCombo->add(*it);
+	}
+
 	mSkyPresetCombo->selectByValue(LLEnvManagerNew::instance().getSkyPresetName());
 }
