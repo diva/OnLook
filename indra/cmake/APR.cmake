@@ -29,12 +29,12 @@ else (STANDALONE)
       )
   elseif (DARWIN)
     set(APR_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapr-1.0.3.7.dylib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapr-1.0.3.7.dylib
+      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libapr-1.0.dylib
+      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapr-1.0.dylib
       )
     set(APRUTIL_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.0.3.8.dylib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.0.3.8.dylib
+      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.0.dylib
+      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.0.dylib
       )
     set(APRICONV_LIBRARIES iconv)
   else (WINDOWS)
