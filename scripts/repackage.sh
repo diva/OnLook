@@ -51,6 +51,7 @@ esac
 
 case "$2" in
 	--commoninclude|--common-include|--common)
+		echo "Using common include directory"
 		INCPATH="libraries/include"
 		shift
 		;;
@@ -68,11 +69,11 @@ if [ -z "$FILEOUT" ]; then
 fi
 
 mkdir "$TMP"
-cd "$TMP"
 
 case "$FILEIN" in
 	http\:\/\/*|https\:\/\/*)
 		echo "	Downloading..."
+		cd "$TMP"
 		wget "$FILEIN" -O package.tar.bz2
 		echo "	Unpacking..."
 		tar -xjvf package.tar.bz2
@@ -85,6 +86,7 @@ case "$FILEIN" in
 			usage
 		fi
 		echo "	Unpacking..."
+		cd "$TMP"
 		tar -xjvf "$FILEIN"
 		;;
 esac
@@ -99,7 +101,7 @@ if [ -d lib/release ]; then
 fi
 if [ -d include ]; then
 	mkdir -p $INCPATH
-	mv -f include/* $LIBPATH
+	mv -f include/* $INCPATH
 fi
 
 echo "	Packing..."

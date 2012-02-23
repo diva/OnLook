@@ -212,9 +212,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>17f89b854959b4d728be832d9c8184e4</string>
+            <string>ce5ce1050d039ef5c233c4f684437b16</string>
             <key>url</key>
-            <uri>https://github.com/downloads/NickyPerian/imprudence/boost_1_45_VC100_libs_inc_patch4073.tar.bz2</uri>
+            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/boost-1.45.0-windows-20120222.tar.bz2</uri>
           </map>
         </map>
       </map>
