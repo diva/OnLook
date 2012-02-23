@@ -244,17 +244,31 @@ void LLEventPumps::unregister(const LLEventPump& pump)
     }
 }
 
+//static
+bool LLEventPumps::sDeleted;
+
+//static
+void LLEventPumps::maybe_unregister(const LLEventPump& pump)
+{
+	if (!sDeleted)
+	{
+		LLEventPumps::instance().unregister(pump);
+	}
+}
+
 LLEventPumps::~LLEventPumps()
 {
-    // On destruction, delete every LLEventPump we instantiated (via
-    // obtain()). CAREFUL: deleting an LLEventPump calls its destructor, which
-    // calls unregister(), which removes that LLEventPump instance from
-    // mOurPumps. So an iterator loop over mOurPumps to delete contained
-    // LLEventPump instances is dangerous! Instead, delete them one at a time
-    // until mOurPumps is empty.
-    while (! mOurPumps.empty())
+    // Deleting an LLEventPump calls its destructor, which calls maybe_unregister(),
+    // which would try to remove that LLEventPump instance from a NEWLY created LLEventPumps
+    // singleton (as we're already being destructed). Therefore, mark that we're not
+    // home anymore... --Aleric
+    sDeleted = true;
+
+    // Subsequently we can delete every LLEventPump we instantiated (via obtain()).
+	// We're not clearing mPumpMap or mOurPumps here... their destructors will.
+    for (LLEventPumps::PumpSet::iterator pump = mOurPumps.begin(); pump != mOurPumps.end(); ++pump)
     {
-        delete *mOurPumps.begin();
+        delete *pump;
     }
 }
 
@@ -280,7 +294,7 @@ LLEventPump::LLEventPump(const std::string& name, bool tweak):
 LLEventPump::~LLEventPump()
 {
     // Unregister this doomed instance from LLEventPumps
-    LLEventPumps::instance().unregister(*this);
+    LLEventPumps::maybe_unregister(*this);
 }
 
 // static data member

@@ -238,6 +238,8 @@ private:
      * Unregister a doomed LLEventPump instance (internal)
      */
     void unregister(const LLEventPump&);
+    static bool sDeleted;
+    static void maybe_unregister(const LLEventPump&);
 
 private:
     LLEventPumps();
