@@ -70,6 +70,10 @@ if (WINDOWS)
       /Oy-
       )
      
+  # configure win32 API for windows XP+ compatibility
+  set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
+  add_definitions("/DWINVER=${WINVER}" "/D_WIN32_WINNT=${WINVER}")
+
   if(MSVC80 OR MSVC90 OR MSVC10)
     set(CMAKE_CXX_FLAGS_RELEASE
       "${CMAKE_CXX_FLAGS_RELEASE} -D_SECURE_STL=0 -D_HAS_ITERATOR_DEBUGGING=0"
