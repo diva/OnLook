@@ -645,6 +645,12 @@ void LLFloaterColorPicker::draw()
 				startX + mLumMarkerSize, startY + mLumMarkerSize,
 					LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ), TRUE );
 
+	// draw a white marker inside the black marker to be visible with dark or bright ui.
+	gl_triangle_2d ( startX+2, startY,
+		startX + mLumMarkerSize - 1, startY - mLumMarkerSize + 2,
+			startX + mLumMarkerSize - 1, startY + mLumMarkerSize - 2,
+				LLColor4 ( 1.0f, 1.0f, 1.0f, 1.0f ), TRUE );
+
 	// draw luminance slider outline
 	gl_rect_2d ( mLumRegionLeft,
 				 mLumRegionTop - mLumRegionHeight + 1,

@@ -201,6 +201,7 @@ void LLTexLayerSetBuffer::conditionalRestartUploadTimer()
 	}
 	else
 	{
+		mNeedsUploadTimer.unpause(); //Isn't always unpaused before this, although it should be..
 		mNeedsUploadTimer.reset();
 		mNeedsUploadTimer.start();
 	}

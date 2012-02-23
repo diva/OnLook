@@ -2392,7 +2392,8 @@ void LLFolderViewEventListener::arrangeAndSet(LLFolderViewItem* focus,
 {
 	if(!focus) return;
 	LLFolderView* root = focus->getRoot();
-	focus->getParentFolder()->requestArrange();
+	if(focus->getParentFolder())
+		focus->getParentFolder()->requestArrange();
 	if(set_selection)
 	{
 		focus->setSelectionFromRoot(focus, TRUE, take_keyboard_focus);
