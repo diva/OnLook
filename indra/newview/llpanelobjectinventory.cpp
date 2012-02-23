@@ -1760,6 +1760,7 @@ void LLPanelObjectInventory::createFolderViews(LLInventoryObject* inventory_root
 		LLFolderViewFolder* new_folder = NULL;
 		new_folder = new LLFolderViewFolder(inventory_root->getName(),
 											bridge->getIcon(),
+											NULL,
 											mFolders,
 											bridge);
 		new_folder->addToFolder(mFolders, mFolders);
@@ -1797,6 +1798,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewFolder(obj->getName(),
 											  bridge->getIcon(),
+											  NULL,
 											  mFolders,
 											  bridge);
 				child_categories.put(new obj_folder_pair(obj,
@@ -1806,6 +1808,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewItem(obj->getName(),
 											bridge->getIcon(),
+											NULL,
 											bridge->getCreationDate(),
 											mFolders,
 											bridge);

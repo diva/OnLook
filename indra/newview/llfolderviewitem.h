@@ -125,6 +125,7 @@ protected:
 	std::string					mLabelSuffix;
 	LLUIImagePtr				mIcon;
 	std::string					mStatusText;
+	LLUIImagePtr				mIconOverlay;
 	BOOL						mHasVisibleChildren;
 	S32							mIndentation;
 	BOOL						mPassedFilter;
@@ -166,7 +167,7 @@ public:
 	void filterFromRoot( void );
 
 	// creation_date is in UTC seconds
-	LLFolderViewItem( const std::string& name, LLUIImagePtr icon, S32 creation_date, LLFolderView* root, LLFolderViewEventListener* listener );
+	LLFolderViewItem( const std::string& name, LLUIImagePtr icon, LLUIImagePtr icon_overlay, S32 creation_date, LLFolderView* root, LLFolderViewEventListener* listener );
 	virtual ~LLFolderViewItem( void );
 
 	// addToFolder() returns TRUE if it succeeds. FALSE otherwise
@@ -325,6 +326,7 @@ class LLFolderViewFolder : public LLFolderViewItem
 {
 protected:
 	LLFolderViewFolder( const std::string& name, LLUIImagePtr icon,
+						LLUIImagePtr icon_link,
 						LLFolderView* root,
 						LLFolderViewEventListener* listener );
 

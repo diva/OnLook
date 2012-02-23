@@ -598,7 +598,14 @@ LLFolderView * LLInventoryPanel::createFolderView(LLInvFVBridge * bridge, bool u
 					   getRect().getWidth(),
 					   0);
 
-	LLFolderView* ret = new LLFolderView(getName(), NULL, folder_rect, LLUUID::null, this, bridge);
+	LLFolderView* ret = new LLFolderView(
+	
+	getName(), 
+	NULL, 
+	folder_rect, 
+	LLUUID::null, 
+	this, 
+	bridge);
 	ret->setAllowMultiSelect(mAllowMultiSelect);
 	return ret;
 }
@@ -608,6 +615,7 @@ LLFolderViewFolder * LLInventoryPanel::createFolderViewFolder(LLInvFVBridge * br
 	return new LLFolderViewFolder(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
+		LLUI::getUIImage("inv_link_overlay.tga"),
 		mFolderRoot,
 		bridge);
 }
@@ -617,6 +625,7 @@ LLFolderViewItem * LLInventoryPanel::createFolderViewItem(LLInvFVBridge * bridge
 	return new LLFolderViewItem(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
+		LLUI::getUIImage("inv_link_overlay.tga"),
 		bridge->getCreationDate(),
 		mFolderRoot,
 		bridge);

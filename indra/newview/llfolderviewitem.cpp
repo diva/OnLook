@@ -75,6 +75,7 @@ void LLFolderViewItem::cleanupClass()
 // Default constructor
 // NOTE: Optimize this, we call it a *lot* when opening a large inventory
 LLFolderViewItem::LLFolderViewItem( const std::string& name, LLUIImagePtr icon,
+									LLUIImagePtr icon_overlay,
 								   S32 creation_date,
 								   LLFolderView* root,
 									LLFolderViewEventListener* listener ) :
@@ -100,6 +101,7 @@ LLFolderViewItem::LLFolderViewItem( const std::string& name, LLUIImagePtr icon,
 	mRoot( root ),
 	mCreationDate(creation_date),
 	mIcon(icon),
+	mIconOverlay(icon_overlay),
 	mListener(listener)
 {
 	sFolderViewItems.insert(this);
@@ -917,11 +919,21 @@ void LLFolderViewItem::draw()
 		mDragAndDropTarget = FALSE;
 	}
 
+	const LLViewerInventoryItem *item = getInventoryItem();
+	const BOOL highlight_link = mIconOverlay && item && item->getIsLinkType();
+	//--------------------------------------------------------------------------------//
+	// Draw open icon
+	//
 	const S32 icon_x = mIndentation + ARROW_SIZE + TEXT_PAD;
 	if (mIcon)
 	{
  		mIcon->draw(icon_x, getRect().getHeight() - mIcon->getHeight() - TOP_PAD + 1);
  	}
+
+	if (highlight_link)
+	{
+		mIconOverlay->draw(icon_x, getRect().getHeight() - mIcon->getHeight() - TOP_PAD + 1);
+	}
 
 	//--------------------------------------------------------------------------------//
 	// Exit if no label to draw
@@ -1032,9 +1044,10 @@ void LLFolderViewItem::draw()
 
 // Default constructor
 LLFolderViewFolder::LLFolderViewFolder( const std::string& name, LLUIImagePtr icon,
+										LLUIImagePtr icon_link,
 										LLFolderView* root,
 										LLFolderViewEventListener* listener ): 
-	LLFolderViewItem( name, icon, 0, root, listener ),	// 0 = no create time
+	LLFolderViewItem( name, icon, icon_link, 0, root, listener ),	// 0 = no create time
 	mNumDescendantsSelected(0),
 	mIsOpen(FALSE),
 	mExpanderHighlighted(FALSE),

@@ -196,13 +196,13 @@ void LLCloseAllFoldersFunctor::doItem(LLFolderViewItem* item)
 ///----------------------------------------------------------------------------
 
 // Default constructor
-LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon, 
+LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon,
 						   const LLRect& rect, const LLUUID& source_id, LLPanel *parent_view, LLFolderViewEventListener* listener ) :
 #if LL_WINDOWS
 #pragma warning( push )
 #pragma warning( disable : 4355 ) // warning C4355: 'this' : used in base member initializer list
 #endif
-	LLFolderViewFolder( name, root_folder_icon, this, listener ),
+	LLFolderViewFolder( name, root_folder_icon, NULL, this, listener ),
 #if LL_WINDOWS
 #pragma warning( pop )
 #endif
