@@ -1806,7 +1806,7 @@ void warn_move_inventory(LLViewerObject* object, LLMoveInv* move_inv)
 
 // Move/copy all inventory items from the Contents folder of an in-world
 // object to the agent's inventory, inside a given category.
-BOOL move_inv_category_world_to_agent(const LLUUID& object_id, 
+BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 									  const LLUUID& category_id,
 									  BOOL drop,
 									  void (*callback)(S32, void*),
@@ -1833,7 +1833,7 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 		llinfos << "Object contents not found for drop." << llendl;
 		return FALSE;
 	}
-	
+
 	BOOL accept = TRUE;
 	BOOL is_move = FALSE;
 
@@ -4544,7 +4544,10 @@ void LLOutfitObserver::done()
 class LLOutfitFetch : public LLInventoryFetchDescendentsObserver
 {
 public:
-	LLOutfitFetch(const LLUUID& id, bool copy_items, bool append) : mCopyItems(copy_items), mAppend(append) {}
+	LLOutfitFetch(const LLUUID& id, bool copy_items, bool append) :
+		LLInventoryFetchDescendentsObserver(id),
+		mCopyItems(copy_items),
+		mAppend(append) {}
 	~LLOutfitFetch() {}
 	virtual void done();
 protected:
@@ -4559,6 +4562,18 @@ void LLOutfitFetch::done()
 	// happen.
 	LLInventoryModel::cat_array_t cat_array;
 	LLInventoryModel::item_array_t item_array;
+
+	// Avoid passing a NULL-ref as mCompleteFolders.front() down to
+	// gInventory.collectDescendents()
+	if( mComplete.empty() )
+	{
+		llwarns << "LLOutfitFetch::done with empty mCompleteFolders" << llendl;
+		dec_busy_count();
+		gInventory.removeObserver(this);
+		delete this;
+		return;
+	}
+	
 	gInventory.collectDescendents(mComplete.front(),
 								  cat_array,
 								  item_array,
