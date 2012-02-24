@@ -29,14 +29,21 @@ set(llcommon_SOURCE_FILES
     llbase64.cpp
     llcommon.cpp
     llcommonutils.cpp
+    llcoros.cpp
     llcrc.cpp
     llcriticaldamp.cpp
     llcursortypes.cpp
     lldate.cpp
+    lldependencies.cpp
     lldictionary.cpp
     llerror.cpp
     llerrorthread.cpp
     llevent.cpp
+    lleventapi.cpp
+    lleventcoro.cpp
+    lleventdispatcher.cpp
+    lleventfilter.cpp
+    llevents.cpp
     lleventtimer.cpp
     llfasttimer_class.cpp
     llfile.cpp
@@ -84,6 +91,7 @@ set(llcommon_SOURCE_FILES
     lluri.cpp
     lluuid.cpp
     llworkerthread.cpp
+    ll_template_cast.h
     metaclass.cpp
     metaproperty.cpp
     reflective.cpp
@@ -121,6 +129,7 @@ set(llcommon_HEADER_FILES
     llclickaction.h
     llcommon.h
     llcommonutils.h
+    llcoros.h
     llcrc.h
     llcriticaldamp.h
     llcursortypes.h
@@ -128,6 +137,7 @@ set(llcommon_HEADER_FILES
     lldarrayptr.h
     lldate.h
     lldefs.h
+    lldependencies.h
     lldeleteutils.h
     lldepthstack.h
     lldictionary.h
@@ -140,6 +150,11 @@ set(llcommon_HEADER_FILES
     llerrorlegacy.h
     llerrorthread.h
     llevent.h
+    lleventapi.h
+    lleventcoro.h
+    lleventdispatcher.h
+    lleventfilter.h
+    llevents.h
     lleventemitter.h
     llextendedstatus.h
     lleventtimer.h
@@ -213,8 +228,7 @@ set(llcommon_HEADER_FILES
     lluri.h
     lluuid.h
     lluuidhashmap.h
-    llversionserver.h
-    llversionviewer.h
+    llversionviewer.h.in
     llworkerthread.h
     metaclass.h
     metaclasst.h

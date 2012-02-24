@@ -88,13 +88,15 @@ protected:
     std::string mCmdLineMapTo;
     BOOL mCmdMapToKeepPos;
     std::string mCmdLineTP2;
+    std::string mCmdLineAway;
 
-    //Privacy -----------------------------------------------------------------------------
+    //Security ----------------------------------------------------------------------------
     BOOL mBroadcastViewerEffects;
     BOOL mDisablePointAtAndBeam;
     BOOL mPrivateLookAt;
     BOOL mShowLookAt;
-    BOOL mRevokePermsOnStandUp;
+	BOOL mQuietSnapshotsToDisk;
+	BOOL mRevokePermsOnStandUp;
     BOOL mDisableClickSit;
     BOOL mDisplayScriptJumps;
     F32 mNumScriptDiff;

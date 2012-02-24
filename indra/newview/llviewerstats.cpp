@@ -213,6 +213,7 @@ LLViewerStats::LLViewerStats() :
 	mObjectKBitStat("objectkbitstat"),
 	mAssetKBitStat("assetkbitstat"),
 	mTextureKBitStat("texturekbitstat"),
+	mMallocStat("mallocstat"),
 	mVFSPendingOperations("vfspendingoperations"),
 	mObjectsDrawnStat("objectsdrawnstat"),
 	mObjectsCulledStat("objectsculledstat"),

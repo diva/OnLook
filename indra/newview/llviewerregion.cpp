@@ -34,7 +34,10 @@
 
 #include "llviewerregion.h"
 
+// linden libraries
 #include "indra_constants.h"
+#include "llavatarnamecache.h"		// name lookup cap url
+//#include "llfloaterreg.h"
 #include "llmath.h"
 #include "llhttpclient.h"
 #include "llregionflags.h"
@@ -49,6 +52,8 @@
 #include "llagentcamera.h"
 #include "llcallingcard.h"
 #include "llcaphttpsender.h"
+#include "llcapabilitylistener.h"
+#include "llcommandhandler.h"
 #include "lldir.h"
 #include "lleventpoll.h"
 #include "llfloatergodtools.h"
@@ -62,6 +67,7 @@
 #include "llurldispatcher.h"
 #include "llviewerobjectlist.h"
 #include "llviewerparceloverlay.h"
+#include "llviewerstatsrecorder.h"
 #include "llvlmanager.h"
 #include "llvlcomposition.h"
 #include "llvocache.h"
@@ -71,9 +77,6 @@
 #include "stringize.h"
 #include "llviewercontrol.h"
 #include "llsdserialize.h"
-#include "llviewerparcelmgr.h"
-
-extern BOOL gNoRender;
 
 #ifdef LL_WINDOWS
 	#pragma warning(disable:4355)
@@ -81,6 +84,14 @@ extern BOOL gNoRender;
 
 const F32 WATER_TEXTURE_SCALE = 8.f;			//  Number of times to repeat the water texture across a region
 const S16 MAX_MAP_DIST = 10;
+// The server only keeps our pending agent info for 60 seconds.
+// We want to allow for seed cap retry, but its not useful after that 60 seconds.
+// Give it 3 chances, each at 18 seconds to give ourselves a few seconds to connect anyways if we give up.
+const S32 MAX_SEED_CAP_ATTEMPTS_BEFORE_LOGIN = 3;
+const F32 CAP_REQUEST_TIMEOUT = 18;
+// Even though we gave up on login, keep trying for caps after we are logged in:
+const S32 MAX_CAP_REQUEST_ATTEMPTS = 30;
+
 typedef std::map<std::string, std::string> CapabilityMap;
 
 class LLViewerRegionImpl {
@@ -88,7 +99,11 @@ public:
 	LLViewerRegionImpl(LLViewerRegion * region, LLHost const & host)
 		:	mHost(host),
 			mCompositionp(NULL),
-			mEventPoll(NULL)//,
+			mEventPoll(NULL),
+			mSeedCapMaxAttempts(MAX_CAP_REQUEST_ATTEMPTS),
+			mSeedCapMaxAttemptsBeforeLogin(MAX_SEED_CAP_ATTEMPTS_BEFORE_LOGIN),
+			mSeedCapAttempts(0),
+			mHttpResponderID(0),
 		    // I'd prefer to set the LLCapabilityListener name to match the region
 		    // name -- it's disappointing that's not available at construction time.
 		    // We could instead store an LLCapabilityListener*, making
@@ -98,8 +113,8 @@ public:
 		    // For testability -- the new Michael Feathers paradigm --
 		    // LLCapabilityListener binds all the globals it expects to need at
 		    // construction time.
-		    //mCapabilityListener(host.getString(), gMessageSystem, *region,
-		                        //gAgent.getID(), gAgent.getSessionID())
+		    mCapabilityListener(host.getString(), gMessageSystem, *region,
+		                        gAgent.getID(), gAgent.getSessionID())
 	{
 	}
 
@@ -137,85 +152,125 @@ public:
 	
 	LLEventPoll* mEventPoll;
 
+	S32 mSeedCapMaxAttempts;
+	S32 mSeedCapMaxAttemptsBeforeLogin;
+	S32 mSeedCapAttempts;
+
+	S32 mHttpResponderID;
+
 	/// Post an event to this LLCapabilityListener to invoke a capability message on
 	/// this LLViewerRegion's server
 	/// (https://wiki.lindenlab.com/wiki/Viewer:Messaging/Messaging_Notes#Capabilities)
-	//LLCapabilityListener mCapabilityListener;
+	LLCapabilityListener mCapabilityListener;
 
 	//spatial partitions for objects in this region
 	std::vector<LLSpatialPartition*> mObjectPartition;
-
-	LLHTTPClient::ResponderPtr  mHttpResponderPtr ;
 };
+
+// support for secondlife:///app/region/{REGION} SLapps
+// N.B. this is defined to work exactly like the classic secondlife://{REGION}
+// However, the later syntax cannot support spaces in the region name because
+// spaces (and %20 chars) are illegal in the hostname of an http URL. Some
+// browsers let you get away with this, but some do not (such as Qt's Webkit).
+// Hence we introduced the newer secondlife:///app/region alternative.
+class LLRegionHandler : public LLCommandHandler
+{
+public:
+	// requests will be throttled from a non-trusted browser
+	LLRegionHandler() : LLCommandHandler("region", /*V3: UNTRUSTED_THROTTLE*/ true) {}
+
+	bool handle(const LLSD& params, const LLSD& query_map, LLMediaCtrl* web)
+	{
+		// make sure that we at least have a region name
+		int num_params = params.size();
+		if (num_params < 1)
+		{
+			return false;
+		}
+
+		// build a secondlife://{PLACE} SLurl from this SLapp
+		std::string url = "secondlife://";
+		for (int i = 0; i < num_params; i++)
+		{
+			if (i > 0)
+			{
+				url += "/";
+			}
+			url += params[i].asString();
+		}
+
+		// Process the SLapp as if it was a secondlife://{PLACE} SLurl
+		LLURLDispatcher::dispatch(url, /*V3: "clicked",*/ web, true);
+		return true;
+	}
+};
+LLRegionHandler gRegionHandler;
 
 class BaseCapabilitiesComplete : public LLHTTPClient::Responder
 {
 	LOG_CLASS(BaseCapabilitiesComplete);
 public:
-    BaseCapabilitiesComplete(LLViewerRegion* region)
-		: mRegion(region)
+    BaseCapabilitiesComplete(U64 region_handle, S32 id)
+		: mRegionHandle(region_handle), mID(id)
     { }
 	virtual ~BaseCapabilitiesComplete()
-	{
-		if(mRegion)
-		{
-			mRegion->setHttpResponderPtrNULL() ;
-		}
-	}
-
-	void setRegion(LLViewerRegion* region)
-	{
-		mRegion = region ;
-	}
+	{ }
 
     void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "Capabilities") << statusNum << ": " << reason << LL_ENDL;
-		
-		if (STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState())
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
+		if (regionp)
 		{
-			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
+			regionp->failedSeedCapability();
 		}
     }
 
     void result(const LLSD& content)
     {
-		if(!mRegion || LLHTTPClient::ResponderPtr(this) != mRegion->getHttpResponderPtr()) //region is removed or responder is not created.
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
+		if(!regionp) //region was removed
 		{
+			LL_WARNS2("AppInit", "Capabilities") << "Received results for region that no longer exists!" << LL_ENDL;
+			return ;
+		}
+		if( mID != regionp->getHttpResponderID() ) // region is no longer referring to this responder
+		{
+			LL_WARNS2("AppInit", "Capabilities") << "Received results for a stale http responder!" << LL_ENDL;
 			return ;
 		}
 
 		LLSD::map_const_iterator iter;
 		for(iter = content.beginMap(); iter != content.endMap(); ++iter)
 		{
-			mRegion->setCapability(iter->first, iter->second);
+			regionp->setCapability(iter->first, iter->second);
 			LL_DEBUGS2("AppInit", "Capabilities") << "got capability for " 
 				<< iter->first << LL_ENDL;
 
 			/* HACK we're waiting for the ServerReleaseNotes */
-			if (iter->first == "ServerReleaseNotes" && mRegion->getReleaseNotesRequested())
+			if (iter->first == "ServerReleaseNotes" && regionp->getReleaseNotesRequested())
 			{
-				mRegion->showReleaseNotes();
+				regionp->showReleaseNotes();
 			}
 		}
 
-		mRegion->setCapabilitiesReceived(true);
-		
+		regionp->setCapabilitiesReceived(true);
+
 		if (STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState())
 		{
 			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
 		}
 	}
 
-    static boost::intrusive_ptr<BaseCapabilitiesComplete> build(
-								LLViewerRegion* region)
+    static boost::intrusive_ptr<BaseCapabilitiesComplete> build( U64 region_handle, S32 id )
     {
-		return boost::intrusive_ptr<BaseCapabilitiesComplete>(
-							 new BaseCapabilitiesComplete(region));
+		return boost::intrusive_ptr<BaseCapabilitiesComplete>( 
+				new BaseCapabilitiesComplete(region_handle, id) );
     }
 
 private:
-	LLViewerRegion* mRegion;
+	U64 mRegionHandle;
+	S32 mID;
 };
 
 
@@ -251,31 +306,21 @@ LLViewerRegion::LLViewerRegion(const U64 &handle,
 
 	mImpl->mLandp = new LLSurface('l', NULL);
 
-	if (!gNoRender)
-	{
-		// Create the composition layer for the surface
-		mImpl->mCompositionp =
-			new LLVLComposition(mImpl->mLandp,
-								grids_per_region_edge,
-								region_width_meters / grids_per_region_edge);
-		mImpl->mCompositionp->setSurface(mImpl->mLandp);
+	// Create the composition layer for the surface
+	mImpl->mCompositionp =
+		new LLVLComposition(mImpl->mLandp,
+							grids_per_region_edge,
+							region_width_meters / grids_per_region_edge);
+	mImpl->mCompositionp->setSurface(mImpl->mLandp);
 
-		// Create the surfaces
-		mImpl->mLandp->setRegion(this);
-		mImpl->mLandp->create(grids_per_region_edge,
-						grids_per_patch_edge,
-						mImpl->mOriginGlobal,
-						mWidth);
-	}
+	// Create the surfaces
+	mImpl->mLandp->setRegion(this);
+	mImpl->mLandp->create(grids_per_region_edge,
+					grids_per_patch_edge,
+					mImpl->mOriginGlobal,
+					mWidth);
 
-	if (!gNoRender)
-	{
-		mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
-	}
-	else
-	{
-		mParcelOverlay = NULL;
-	}
+	mParcelOverlay = new LLViewerParcelOverlay(this, region_width_meters);
 
 	setOriginGlobal(from_region_handle(handle));
 	calculateCenterGlobal();
@@ -317,11 +362,6 @@ void LLViewerRegion::initStats()
 
 LLViewerRegion::~LLViewerRegion() 
 {
-	if(mImpl->mHttpResponderPtr)
-	{
-		(static_cast<BaseCapabilitiesComplete*>(mImpl->mHttpResponderPtr.get()))->setRegion(NULL) ;
-	}
-
 	gVLManager.cleanupData(this);
 	// Can't do this on destruction, because the neighbor pointers might be invalid.
 	// This should be reference counted...
@@ -345,10 +385,10 @@ LLViewerRegion::~LLViewerRegion()
 	mImpl = NULL;
 }
 
-/*LLEventPump& LLViewerRegion::getCapAPI() const
+LLEventPump& LLViewerRegion::getCapAPI() const
 {
 	return mImpl->mCapabilityListener.getCapAPI();
-}*/
+}
 
 /*virtual*/ 
 const LLHost&	LLViewerRegion::getHost() const				
@@ -537,14 +577,19 @@ const std::string LLViewerRegion::getSimAccessString() const
 	return accessToString(mSimAccess);
 }
 
+std::string LLViewerRegion::getLocalizedSimProductName() const
+{
+	std::string localized_spn;
+	return LLTrans::findString(localized_spn, mProductName) ? localized_spn : mProductName;
+}
 
 // static
 std::string LLViewerRegion::regionFlagsToString(U32 flags)
 {
 	std::string result;
+
 	if (flags & REGION_FLAGS_SANDBOX)
 	{
-		if(!result.empty()) result += ", ";
 		result += "Sandbox";
 	}
 
@@ -625,6 +670,26 @@ std::string LLViewerRegion::accessToString(U8 sim_access)
 }
 
 // static
+std::string LLViewerRegion::getAccessIcon(U8 sim_access)
+{
+	switch(sim_access)
+	{
+	case SIM_ACCESS_MATURE:
+		return "Parcel_M_Dark";
+
+	case SIM_ACCESS_ADULT:
+		return "Parcel_R_Light";
+
+	case SIM_ACCESS_PG:
+		return "Parcel_PG_Light";
+
+	case SIM_ACCESS_MIN:
+	default:
+		return "";
+	}
+}
+
+// static
 std::string LLViewerRegion::accessToShortString(U8 sim_access)
 {
 	switch(sim_access)		/* Flawfinder: ignore */
@@ -685,6 +750,7 @@ void LLViewerRegion::dirtyHeights()
 
 BOOL LLViewerRegion::idleUpdate(F32 max_update_time)
 {
+	LLMemType mt_ivr(LLMemType::MTYPE_IDLE_UPDATE_VIEWER_REGION);
 	// did_update returns TRUE if we did at least one significant update
 	BOOL did_update = mImpl->mLandp->idleUpdate(max_update_time);
 	
@@ -901,14 +967,9 @@ U32 LLViewerRegion::getPacketsLost() const
 	}
 }
 
-void LLViewerRegion::setHttpResponderPtrNULL()
+S32 LLViewerRegion::getHttpResponderID() const
 {
-	mImpl->mHttpResponderPtr = NULL;
-}
-
-const LLHTTPClient::ResponderPtr LLViewerRegion::getHttpResponderPtr() const
-{
-	return mImpl->mHttpResponderPtr;
+	return mImpl->mHttpResponderID;
 }
 
 BOOL LLViewerRegion::pointInRegionGlobal(const LLVector3d &point_global) const
@@ -1560,9 +1621,11 @@ void LLViewerRegionImpl::buildCapabilityNames(LLSD& capabilityNames)
 	//capabilityNames.append("ViewerMetrics");
 	capabilityNames.append("ViewerStartAuction");
 	capabilityNames.append("ViewerStats");
+	
 	// Please add new capabilities alphabetically to reduce
 	// merge conflicts.
 }
+
 void LLViewerRegion::setSeedCapability(const std::string& url)
 {
 	if (getCapability("Seed") == url)
@@ -1578,49 +1641,101 @@ void LLViewerRegion::setSeedCapability(const std::string& url)
 	setCapability("Seed", url);
 
 	LLSD capabilityNames = LLSD::emptyArray();
-	
 	mImpl->buildCapabilityNames(capabilityNames);
-	
 
 	llinfos << "posting to seed " << url << llendl;
 
-	mImpl->mHttpResponderPtr = BaseCapabilitiesComplete::build(this) ;
-	LLHTTPClient::post(url, capabilityNames, mImpl->mHttpResponderPtr);
+	S32 id = ++mImpl->mHttpResponderID;
+	LLHTTPClient::post(url, capabilityNames, 
+						BaseCapabilitiesComplete::build(getHandle(), id),
+						LLSD(), CAP_REQUEST_TIMEOUT);
+}
+
+S32 LLViewerRegion::getNumSeedCapRetries()
+{
+	return mImpl->mSeedCapAttempts;
+}
+
+void LLViewerRegion::failedSeedCapability()
+{
+	// Should we retry asking for caps?
+	mImpl->mSeedCapAttempts++;
+	std::string url = getCapability("Seed");
+	if ( url.empty() )
+	{
+		LL_WARNS2("AppInit", "Capabilities") << "Failed to get seed capabilities, and can not determine url for retries!" << LL_ENDL;
+		return;
+	}
+	// After a few attempts, continue login.  We will keep trying once in-world:
+	if ( mImpl->mSeedCapAttempts >= mImpl->mSeedCapMaxAttemptsBeforeLogin &&
+		 STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState() )
+	{
+		LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
+	}
+
+	if ( mImpl->mSeedCapAttempts < mImpl->mSeedCapMaxAttempts)
+	{
+		LLSD capabilityNames = LLSD::emptyArray();
+		mImpl->buildCapabilityNames(capabilityNames);
+
+		llinfos << "posting to seed " << url << " (retry " 
+				<< mImpl->mSeedCapAttempts << ")" << llendl;
+
+		S32 id = ++mImpl->mHttpResponderID;
+		LLHTTPClient::post(url, capabilityNames, 
+						BaseCapabilitiesComplete::build(getHandle(), id),
+						LLSD(), CAP_REQUEST_TIMEOUT);
+	}
+	else
+	{
+		// *TODO: Give a user pop-up about this error?
+		LL_WARNS2("AppInit", "Capabilities") << "Failed to get seed capabilities from '" << url << "' after " << mImpl->mSeedCapAttempts << " attempts.  Giving up!" << LL_ENDL;
+	}
 }
 
 class SimulatorFeaturesReceived : public LLHTTPClient::Responder
 {
 	LOG_CLASS(SimulatorFeaturesReceived);
 public:
-    SimulatorFeaturesReceived(LLViewerRegion* region)
-	: mRegion(region)
+    SimulatorFeaturesReceived(const std::string& retry_url, U64 region_handle, 
+			S32 attempt = 0, S32 max_attempts = MAX_CAP_REQUEST_ATTEMPTS)
+	: mRetryURL(retry_url), mRegionHandle(region_handle), mAttempt(attempt), mMaxAttempts(max_attempts)
     { }
 	
 	
     void error(U32 statusNum, const std::string& reason)
     {
 		LL_WARNS2("AppInit", "SimulatorFeatures") << statusNum << ": " << reason << LL_ENDL;
+		retry();
     }
-	
+
     void result(const LLSD& content)
     {
-		if(!mRegion) //region is removed or responder is not created.
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(mRegionHandle);
+		if(!regionp) //region is removed or responder is not created.
 		{
+			LL_WARNS2("AppInit", "SimulatorFeatures") << "Received results for region that no longer exists!" << LL_ENDL;
 			return ;
 		}
 		
-		mRegion->setSimulatorFeatures(content);
+		regionp->setSimulatorFeatures(content);
+	}
+
+private:
+	void retry()
+	{
+		if (mAttempt < mMaxAttempts)
+		{
+			mAttempt++;
+			LL_WARNS2("AppInit", "SimulatorFeatures") << "Re-trying '" << mRetryURL << "'.  Retry #" << mAttempt << LL_ENDL;
+			LLHTTPClient::get(mRetryURL, new SimulatorFeaturesReceived(*this), LLSD(), CAP_REQUEST_TIMEOUT);
+		}
 	}
 	
-    static boost::intrusive_ptr<SimulatorFeaturesReceived> build(
-																 LLViewerRegion* region)
-    {
-		return boost::intrusive_ptr<SimulatorFeaturesReceived>(
-															   new SimulatorFeaturesReceived(region));
-    }
-	
-private:
-	LLViewerRegion* mRegion;
+	std::string mRetryURL;
+	U64 mRegionHandle;
+	S32 mAttempt;
+	S32 mMaxAttempts;
 };
 
 
@@ -1639,7 +1754,7 @@ void LLViewerRegion::setCapability(const std::string& name, const std::string& u
 	else if (name == "SimulatorFeatures")
 	{
 		// kick off a request for simulator features
-		LLHTTPClient::get(url, new SimulatorFeaturesReceived(this));
+		LLHTTPClient::get(url, new SimulatorFeaturesReceived(url, getHandle()), LLSD(), CAP_REQUEST_TIMEOUT);
 	}
 	else
 	{
@@ -1663,6 +1778,7 @@ std::string LLViewerRegion::getCapability(const std::string& name) const
 	{
 		return "";
 	}
+
 	return iter->second;
 }
 
@@ -1712,6 +1828,37 @@ LLSpatialPartition* LLViewerRegion::getSpatialPartition(U32 type)
 		return mImpl->mObjectPartition[type];
 	}
 	return NULL;
+}
+
+// the viewer can not yet distinquish between normal- and estate-owned objects
+// so we collapse these two bits and enable the UI if either are set
+const U32 ALLOW_RETURN_ENCROACHING_OBJECT = REGION_FLAGS_ALLOW_RETURN_ENCROACHING_OBJECT
+											| REGION_FLAGS_ALLOW_RETURN_ENCROACHING_ESTATE_OBJECT;
+
+bool LLViewerRegion::objectIsReturnable(const LLVector3& pos, const std::vector<LLBBox>& boxes) const
+{
+	return (mParcelOverlay != NULL)
+		&& (mParcelOverlay->isOwnedSelf(pos)
+			|| mParcelOverlay->isOwnedGroup(pos)
+			|| ((mRegionFlags & ALLOW_RETURN_ENCROACHING_OBJECT)
+				&& mParcelOverlay->encroachesOwned(boxes)) );
+}
+
+bool LLViewerRegion::childrenObjectReturnable( const std::vector<LLBBox>& boxes ) const
+{
+	bool result = false;
+	result = ( mParcelOverlay && mParcelOverlay->encroachesOnUnowned( boxes ) ) ? 1 : 0;
+	return result;
+}
+
+bool LLViewerRegion::objectsCrossParcel(const std::vector<LLBBox>& boxes) const
+{
+	return mParcelOverlay && mParcelOverlay->encroachesOnNearbyParcel(boxes);
+}
+
+void LLViewerRegion::getNeighboringRegions( std::vector<LLViewerRegion*>& uniqueRegions )
+{
+	mImpl->mLandp->getNeighboringRegions( uniqueRegions );
 }
 
 void LLViewerRegion::showReleaseNotes()

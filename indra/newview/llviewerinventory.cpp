@@ -1060,7 +1060,7 @@ void copy_inventory_from_notecard(const LLUUID& destination_id,
 
 	// Fallback to the agents region if for some reason the 
 	// object isn't found in the viewer.
-	if(!viewer_region)
+	if (! viewer_region)
 	{
 		viewer_region = gAgent.getRegion();
 	}
@@ -1090,7 +1090,10 @@ void copy_inventory_from_notecard(const LLUUID& destination_id,
 	body["folder-id"] = destination_id;
     body["callback-id"] = (LLSD::Integer)callback_id;
 
-	LLHTTPClient::post(url, body, new LLHTTPClient::Responder() );
+    request["message"] = "CopyInventoryFromNotecard";
+    request["payload"] = body;
+
+    viewer_region->getCapAPI().post(request);
 }
 
 void create_new_item(const std::string& name,

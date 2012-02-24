@@ -295,14 +295,21 @@ bool HippoPanelGridsImpl::saveCurGrid()
 	HippoGridInfo *gridInfo = 0;
 	
 	gridInfo = gHippoGridManager->getGrid(mCurGrid);
-	gridInfo->retrieveGridInfo();
+	//gridInfo->retrieveGridInfo();
 	refresh();
-
+	
+	std::string gridname = childGetValue("gridname");
+	if (gridname == "<required>") gridname = "";
+	std::string loginuri = childGetValue("loginuri");
+	if (loginuri == "<required>") loginuri = "";
+	
+	if (gridname.empty() && !loginuri.empty())
+		this->retrieveGridInfo();
+	
 	if ((mState == ADD_NEW) || (mState == ADD_COPY)) {
 		
 		// check nickname
 		std::string gridname = childGetValue("gridname");
-		if (gridname == "<required>") gridname = "";
 		childSetValue("gridname", (gridname != "")? gridname: "<required>");
 		if (gridname == "") {
 			LLNotificationsUtil::add("GridsNoNick");
@@ -316,8 +323,7 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		}
 		
 		// check login URI
-		std::string loginuri = childGetValue("loginuri");
-		if ((loginuri == "") || (loginuri == "<required>")) {
+		if (loginuri == "") {
 			LLSD args;
 			args["NAME"] = gridname;
 			LLNotificationsUtil::add("GridsNoLoginUri", args);
@@ -329,11 +335,6 @@ bool HippoPanelGridsImpl::saveCurGrid()
 		gridInfo = new HippoGridInfo(gridname);
 		gHippoGridManager->addGrid(gridInfo);
 	    gridInfo->retrieveGridInfo();
-	} else {
-		
-		llwarns << "Illegal state " << mState << '.' << llendl;
-		return true;
-		
 	}
 	
 	if (!gridInfo) {

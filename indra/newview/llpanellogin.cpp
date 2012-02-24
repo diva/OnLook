@@ -42,7 +42,7 @@
 #include "llfontgl.h"
 #include "llmd5.h"
 #include "llsecondlifeurls.h"
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "v4color.h"
 
 #include "llbutton.h"
@@ -347,12 +347,12 @@ LLPanelLogin::LLPanelLogin(const LLRect &rect,
 	childSetAction("grids_btn", onClickGrids, this);
 	childSetCommitCallback("grids_combo", onSelectGrid, this);
 
-	std::string channel = LL_CHANNEL;
+	std::string channel = gVersionChannel;
 
 	std::string version = llformat("%d.%d.%d (%d)",
-		LL_VERSION_MAJOR,
-		LL_VERSION_MINOR,
-		LL_VERSION_PATCH,
+		gVersionMajor,
+		gVersionMinor,
+		gVersionPatch,
 		LL_VIEWER_BUILD );
 	LLTextBox* channel_text = getChild<LLTextBox>("channel_text");
 	channel_text->setTextArg("[CHANNEL]", channel); // though not displayed
@@ -861,7 +861,7 @@ void LLPanelLogin::updateGridCombo()
 	}
 	HippoGridManager::GridIterator it, end = gHippoGridManager->endGrid();
 	for (it = gHippoGridManager->beginGrid(); it != end; ++it) {
-		const std::string &grid = it->second->getGridName();
+		std::string grid = it->second->getGridName();
 		if (grid != defaultGrid) {
 			grids->add(grid);
 			if (grid == currentGrid) selectIndex = i;
@@ -934,10 +934,10 @@ void LLPanelLogin::loadLoginPage()
 	}
 
 	std::string version = llformat("%d.%d.%d (%d)",
-						LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VERSION_BUILD);
+						gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild);
 
 	if(login_page.find("secondlife.com") == -1) {
-		oStr << "&channel=" << LLWeb::curlEscape(LL_CHANNEL);
+		oStr << "&channel=" << LLWeb::curlEscape(gVersionChannel);
 		oStr << "&version=" << LLWeb::curlEscape(version);
 	}
 
@@ -959,7 +959,10 @@ void LLPanelLogin::loadLoginPage()
 			}
 		}
 	}
-	else
+	else if (gHippoGridManager->getConnectedGrid()->isOpenSimulator()){
+		oStr << "&grid=" << gHippoGridManager->getConnectedGrid()->getGridNick();
+	}
+	else if (gHippoGridManager->getConnectedGrid()->getPlatform() == HippoGridInfo::PLATFORM_AURORA)
 	{
 		oStr << "&grid=" << LLWeb::curlEscape(LLViewerLogin::getInstance()->getGridLabel());
 	}

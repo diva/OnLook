@@ -29,7 +29,7 @@
           </map>
         </map>
       </map>
-	  <key>freeglut</key>
+      <key>freeglut</key>
       <map>
         <key>copyright</key>
         <string>Copyright (c) 1999-2000 Pawel W. Olszta.</string>
@@ -90,9 +90,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>115d8ac44a91efdb173e9b3e478c46b6</string>
+            <string>2486db13c5ed9340855da3c1c48772af</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/apr_suite-1.3.7-darwin-20090805.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/SingularityViewer/apr_suite-1.4.2-darwin-20110217.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
@@ -172,7 +172,7 @@
             <key>md5sum</key>
             <string>a2cde4f24bdcc260b661e139846b8acd</string>
             <key>url</key>
-			<uri>http://imprudenceviewer.org/download/libs/imprudence-artwork-20101026.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/imprudence-artwork-20101026.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -200,64 +200,64 @@
             <key>md5sum</key>
             <string>2cad51575b429be4fdadb5d63da1c739</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
           </map>
            <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>a2d2fff5cc5555ffd9865daedfcd0dd5</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>17f89b854959b4d728be832d9c8184e4</string>
+            <string>ce5ce1050d039ef5c233c4f684437b16</string>
             <key>url</key>
-            <uri>https://github.com/downloads/NickyPerian/imprudence/boost_1_45_VC100_libs_inc_patch4073.tar.bz2</uri>
+            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/boost-1.45.0-windows-20120222.tar.bz2</uri>
           </map>
         </map>
       </map>
-			<key>curl</key>
-			<map>
-				<key>copyright</key>
-				<string>Copyright (c) 1996 - 2008, Daniel Stenberg, &lt;daniel@haxx.se&gt;.</string>
-				<key>description</key>
-				<string>Client-side URL transfer library. Handles moving data across the net in many different protocols. Used to GET/POST/PUT/DELETE web resources.</string>
-				<key>license</key>
-				<string>curl</string>
-				<key>packages</key>
-				<map>
-					<key>darwin</key>
-					<map>
-						<key>md5sum</key>
-						<string>525f6b18ea5af8fbd691c2ac1769056c</string>
-						<key>url</key>
-						<uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-darwin-20100606.tar.bz2</uri>
-					</map>
-					<key>linux</key>
-					<map>
-						<key>md5sum</key>
-						<string>6244eec15fb26f9577785625fdb38f78</string>
-						<key>url</key>
-						<uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-linux-20100527.tar.bz2</uri>
-					</map>
-					<key>linux64</key>
-					<map>
-						<key>md5sum</key>
-						<string>8a28849f4b9d99601dbc8db9d6a2f9ba</string>
-						<key>url</key>
-						<uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.16.4a-linux64-20090303.tar.bz2</uri>
-					</map>
-					<key>windows</key>
-					<map>
-						<key>md5sum</key>
-						<string>60ed73408c4050ff9c96f26771fd6b46</string>
-						<key>url</key>
-						<uri>https://github.com/downloads/siana/SingularityViewer/curl-7.21.1-windows-20110504.tar.bz2</uri>
-					</map>
-				</map>
-			</map>
+      <key>curl</key>
+      <map>
+        <key>copyright</key>
+        <string>Copyright (c) 1996 - 2008, Daniel Stenberg, &lt;daniel@haxx.se&gt;.</string>
+        <key>description</key>
+        <string>Client-side URL transfer library. Handles moving data across the net in many different protocols. Used to GET/POST/PUT/DELETE web resources.</string>
+        <key>license</key>
+        <string>curl</string>
+        <key>packages</key>
+        <map>
+          <key>darwin</key>
+          <map>
+            <key>md5sum</key>
+            <string>525f6b18ea5af8fbd691c2ac1769056c</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-darwin-20100606.tar.bz2</uri>
+          </map>
+          <key>linux</key>
+          <map>
+            <key>md5sum</key>
+            <string>6244eec15fb26f9577785625fdb38f78</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-linux-20100527.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>8a28849f4b9d99601dbc8db9d6a2f9ba</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.16.4a-linux64-20090303.tar.bz2</uri>
+          </map>
+          <key>windows</key>
+          <map>
+            <key>md5sum</key>
+            <string>60ed73408c4050ff9c96f26771fd6b46</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/siana/SingularityViewer/curl-7.21.1-windows-20110504.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
       <key>dbghelp</key>
       <map>
         <key>copyright</key>
@@ -546,14 +546,14 @@
             <key>md5sum</key>
             <string>b190d8a0dce8dd8b514d2adb2c74b8d8</string>
             <key>url</key>
-			<uri>http://sldev.free.fr/libraries/google-perftools-1.8.3-linux-20110924.tar.bz2</uri>
+            <uri>http://sldev.free.fr/libraries/google-perftools-1.8.3-linux-20110924.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
             <string>4f787437a5e063ccde6637dfb1ebc01d</string>
             <key>url</key>
-			<uri>https://bitbucket.org/Ansariel/phoenix-prebuilts/downloads/google_perftools-1.8-windows-20111005.tar.bz2</uri>
+            <uri>https://bitbucket.org/Ansariel/phoenix-prebuilts/downloads/google_perftools-1.8-windows-20111005.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -995,7 +995,7 @@ anguage Infrstructure (CLI) international standard</string>
             <key>md5sum</key>
             <string>38abfe002ba073b6824016db98269972</string>
             <key>url</key>
-			<uri>http://imprudenceviewer.org/download/libs/ndofdev-linux32-0.3.1-20100817.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/ndofdev-linux32-0.3.1-20100817.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1028,14 +1028,14 @@ anguage Infrstructure (CLI) international standard</string>
             <key>md5sum</key>
             <string>5a154313bc30eacd8cfa1acd852ecd3e</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-darwin-20110616.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-darwin-20110616.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>712b1d30790e9de83fea84ec3bc8fab0</string>
             <key>url</key>
-			<uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-linux-20110616.tar.bz2</uri>
+            <uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-linux-20110616.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1227,10 +1227,10 @@ anguage Infrstructure (CLI) international standard</string>
       <key>32bitcompatibilitylibs</key>
       <map>
         <key>copyright</key>
-        <string>Copyrights: 	Libidn: Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 
-				Simon Josefsson. License GPL v3.0.
-				Freealut, libuuid, openal-soft: see copyright and license of the 
-				according main packages.
+        <string>Copyrights:     Libidn: Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 
+                Simon Josefsson. License GPL v3.0.
+                Freealut, libuuid, openal-soft: see copyright and license of the 
+                according main packages.
         </string>
         <key>description</key>
         <string>32bit libraries needed for using voice</string>
@@ -1300,9 +1300,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>c844e1b05723ce078dbbd5aea9cdd3ad</string>
+            <string>58ef62004b508b234039f6a313d852eb</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/zlib-1.1.4-darwin-20080818.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/SingularityViewer/zlib-1.2.5-darwin-20110211.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>

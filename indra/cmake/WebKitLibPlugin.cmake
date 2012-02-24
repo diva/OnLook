@@ -67,11 +67,16 @@ elseif (LINUX)
         QtNetwork
         QtGui
         QtCore
+        crypto
+        ssl
+#       qgif
+#       qjpeg
         jscore
         jpeg
         fontconfig
         X11
         Xrender
+        Xext
         GL
         )
      endif (STANDALONE)

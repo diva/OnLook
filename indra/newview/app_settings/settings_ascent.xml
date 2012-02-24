@@ -84,7 +84,7 @@
 		<key>AscentAutoCloseOOC</key>
 		<map>
 			<key>Comment</key>
-			<string>Auto-close OOC chat (i.e. add \"))\" if not found and \"((\" was used)</string>
+			<string>Auto-close OOC chat (i.e. add "))" if not found and "((" was used)</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -150,7 +150,7 @@
 		<key>AscentShowSelfTagColor</key>
 		<map>
 			<key>Comment</key>
-			<string>Show your own tag</string>
+			<string>Show your own tagcolor to yourself(instead of default linden viewer color).</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -293,7 +293,7 @@
 		<key>AscentShowIdleTime</key>
 		<map>
 			<key>Comment</key>
-			<string>Show client tags for others.</string>
+			<string>Show idle time of others in tags.</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -403,7 +403,7 @@
 		<key>AscentBuildPrefs_PivotIsPercent</key>
 		<map>
 			<key>Comment</key>
-			<string>Would you like the chatbar to be able to be used for command line functions?</string>
+			<string>Pivot points are based on percentages</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -414,7 +414,7 @@
 		<key>AscentBuildPrefs_PivotX</key>
 		<map>
 			<key>Comment</key>
-			<string>idfk</string>
+			<string>Pivot point on X-axis for new objects</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -425,7 +425,7 @@
 		<key>AscentBuildPrefs_PivotY</key>
 		<map>
 			<key>Comment</key>
-			<string>idfk</string>
+			<string>Pivot point on Y-axis for new objects</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -436,7 +436,7 @@
 		<key>AscentBuildPrefs_PivotZ</key>
 		<map>
 			<key>Comment</key>
-			<string>idfk</string>
+			<string>Pivot point on Z-axis for new objects</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>
@@ -619,6 +619,17 @@
 			<string>String</string>
 			<key>Value</key>
 			<string>tp2</string>
+		</map>
+		<key>SinguCmdLineAway</key>
+		<map>
+			<key>Comment</key>
+			<string>Toggle Fake Away Status.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>String</string>
+			<key>Value</key>
+			<string>/away</string>
 		</map>
     </map>
 </llsd>

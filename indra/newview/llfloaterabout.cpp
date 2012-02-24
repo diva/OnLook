@@ -49,7 +49,7 @@
 #include "llagent.h"
 #include "llviewerstats.h"
 #include "llviewerregion.h"
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "llviewerbuild.h"
 #include "lluictrlfactory.h"
 #include "lluri.h"
@@ -137,9 +137,9 @@ LLFloaterAbout::LLFloaterAbout()
 	// Version string
 	std::string version = std::string(LLAppViewer::instance()->getSecondLifeTitle()
 		+ llformat(" %d.%d.%d (%d) %s %s (%s)\n",
-		LL_VERSION_MAJOR, LL_VERSION_MINOR, LL_VERSION_PATCH, LL_VIEWER_BUILD,
+		gVersionMajor, gVersionMinor, gVersionPatch, LL_VIEWER_BUILD,
 		__DATE__, __TIME__,
-		LL_CHANNEL));
+		gVersionChannel));
 	support_widget->appendColoredText(version, FALSE, FALSE, gColors.getColor("TextFgReadOnlyColor"));
 	support_widget->appendStyledText(LLTrans::getString("ReleaseNotes"), false, false, viewer_link_style);
 
@@ -331,13 +331,13 @@ static std::string get_viewer_release_notes_url()
 {
 	return "http://www.singularityviewer.org";
 	/*std::ostringstream version;
-	version <<  LL_VERSION_MAJOR
-		<< "." << LL_VERSION_MINOR
-		<< "." << LL_VERSION_PATCH
-		<< "." << LL_VERSION_BUILD;
+	version <<  gVersionMajor
+		<< "." << gVersionMinor
+		<< "." << gVersionPatch
+		<< "." << gVersionBuild;
 	LLSD query;
 
-	query["channel"] = LL_CHANNEL;
+	query["channel"] = gVersionChannel;
 
 	query["version"] = version.str();
 

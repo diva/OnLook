@@ -59,6 +59,7 @@ public:
 	LLStat mActualInKBitStat;	// From the packet ring (when faking a bad connection)
 	LLStat mActualOutKBitStat;	// From the packet ring (when faking a bad connection)
 	LLStat mTrianglesDrawnStat;
+	LLStat mMallocStat;
 
 	// Simulator stats
 	LLStat mSimTimeDilation;

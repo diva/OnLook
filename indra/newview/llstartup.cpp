@@ -85,7 +85,7 @@
 #include "llsecondlifeurls.h"
 #include "llstring.h"
 #include "lluserrelations.h"
-#include "llversionviewer.h"
+#include "sgversion.h"
 #include "llvfs.h"
 #include "llxorcipher.h"	// saved password, MAC address
 #include "message.h"
@@ -535,9 +535,9 @@ bool idle_startup()
 			if(!start_messaging_system(
 				   message_template_path,
 				   port,
-				   LL_VERSION_MAJOR,
-				   LL_VERSION_MINOR,
-				   LL_VERSION_PATCH,
+				   gVersionMajor,
+				   gVersionMinor,
+				   gVersionPatch,
 				   FALSE,
 				   std::string(),
 				   responder,
@@ -1021,7 +1021,7 @@ bool idle_startup()
 		}
 		else
 		{
-			gDirUtilp->setLindenUserDir(gHippoGridManager->getCurrentGridNick(), firstname, lastname);
+			gDirUtilp->setLindenUserDir(gHippoGridManager->getConnectedGrid()->getGridNick(), firstname, lastname);
 		}
     	LLFile::mkdir(gDirUtilp->getLindenUserDir());
 
@@ -1061,7 +1061,7 @@ bool idle_startup()
 		}
 		else
 		{
-			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getCurrentGridNick(), 
+			gDirUtilp->setPerAccountChatLogsDir(gHippoGridManager->getConnectedGrid()->getGridNick(), 
 				gSavedSettings.getString("FirstName"), gSavedSettings.getString("LastName") );
 		}
 		LLFile::mkdir(gDirUtilp->getChatLogsDir());
@@ -2046,7 +2046,7 @@ bool idle_startup()
 	//---------------------------------------------------------------------
 	if(STATE_SEED_GRANTED_WAIT == LLStartUp::getStartupState())
 	{
-		/*LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
+		LLViewerRegion *regionp = LLWorld::getInstance()->getRegionFromHandle(gFirstSimHandle);
 		if (regionp->capabilitiesReceived())
 		{
 			LLStartUp::setStartupState( STATE_SEED_CAP_GRANTED );
@@ -2064,7 +2064,7 @@ bool idle_startup()
 			{
 				set_startup_status(0.4f, LLTrans::getString("LoginRequestSeedCapGrant"), gAgent.mMOTD);
 			}
-		}*/
+		}
 		return FALSE;
 	}
 
@@ -3410,7 +3410,7 @@ bool update_dialog_callback(const LLSD& notification, const LLSD& response)
 	// userserver no longer exists.
 	query_map["userserver"] = LLViewerLogin::getInstance()->getGridLabel();
 	// <edit>
-	query_map["channel"] = LL_CHANNEL;
+	query_map["channel"] = gVersionChannel;
 
 	// *TODO constantize this guy
 	// *NOTE: This URL is also used in win_setup/lldownloader.cpp
@@ -3485,7 +3485,7 @@ bool update_dialog_callback(const LLSD& notification, const LLSD& response)
 	LLAppViewer::sUpdaterInfo->mUpdateExePath += "\" -name \"";
 	LLAppViewer::sUpdaterInfo->mUpdateExePath += LLAppViewer::instance()->getSecondLifeTitle();
 	LLAppViewer::sUpdaterInfo->mUpdateExePath += "\" -bundleid \"";
-	LLAppViewer::sUpdaterInfo->mUpdateExePath += LL_VERSION_BUNDLE_ID;
+	LLAppViewer::sUpdaterInfo->mUpdateExePath += gVersionBundleID;
 	LLAppViewer::sUpdaterInfo->mUpdateExePath += "\" &";
 
 	LL_DEBUGS("AppInit") << "Calling updater: " << LLAppViewer::sUpdaterInfo->mUpdateExePath << LL_ENDL;

@@ -147,6 +147,8 @@ struct LLMoveInv
 	void* mUserData;
 };
 
+using namespace LLOldEvents;
+
 // Helpers
 // bug in busy count inc/dec right now, logic is complex... do we really need it?
 void inc_busy_count()
@@ -2098,7 +2100,7 @@ void warn_move_inventory(LLViewerObject* object, LLMoveInv* move_inv)
 
 // Move/copy all inventory items from the Contents folder of an in-world
 // object to the agent's inventory, inside a given category.
-BOOL move_inv_category_world_to_agent(const LLUUID& object_id, 
+BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 									  const LLUUID& category_id,
 									  BOOL drop,
 									  void (*callback)(S32, void*),
@@ -2125,7 +2127,7 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 		llinfos << "Object contents not found for drop." << llendl;
 		return FALSE;
 	}
-	
+
 	BOOL accept = TRUE;
 	BOOL is_move = FALSE;
 

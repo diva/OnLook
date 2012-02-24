@@ -172,7 +172,7 @@ class ViewerManifest(LLManifest):
 
 class WindowsManifest(ViewerManifest):
     def final_exe(self):
-        return 'SingularityViewer.exe'
+        return self.channel_oneword() + 'Viewer.exe'
 
 
     def construct(self):
@@ -399,17 +399,17 @@ class WindowsManifest(ViewerManifest):
         !define VERSION_LONG "%(version)s"
         !define VERSION_DASHES "%(version_dashes)s"
         """ % substitution_strings
-        installer_file = "Singularity_%(version_short)s_Setup.exe"
+        installer_file = "%(channel_oneword)s_%(version_dashes)s_Setup.exe"
         grid_vars_template = """
         OutFile "%(installer_file)s"
-        !define VIEWERNAME "Singularity Viewer"
+        !define VIEWERNAME "%(channel)s"
         !define INSTFLAGS "%(flags)s"
-        !define INSTNAME   "SingularityViewer"
-        !define SHORTCUT   "Singularity Viewer"
+        !define INSTNAME   "%(channel_oneword)s"
+        !define SHORTCUT   "%(channel)s Viewer"
         !define URLNAME   "secondlife"
         !define INSTALL_ICON "install_icon_singularity.ico"
         !define UNINSTALL_ICON "install_icon_singularity.ico"
-        Caption "Singularity Viewer ${VERSION}"
+        Caption "${VIEWERNAME} ${VERSION_LONG}"
         """
         if 'installer_name' in self.args:
             installer_file = self.args['installer_name']
@@ -514,8 +514,8 @@ class DarwinManifest(ViewerManifest):
                 libfile = "lib%s.dylib"
                 libdir = "../../libraries/universal-darwin/lib_release"
 
-                for libfile in ("libapr-1.0.3.7.dylib",
-                                "libaprutil-1.0.3.8.dylib",
+                for libfile in ("libapr-1.0.dylib",
+                                "libaprutil-1.0.dylib",
                                 "libexpat.0.5.0.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
@@ -541,8 +541,8 @@ class DarwinManifest(ViewerManifest):
                 mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
                 for libfile in ("libllcommon.dylib",
-                                "libapr-1.0.3.7.dylib",
-                                "libaprutil-1.0.3.8.dylib",
+                                "libapr-1.0.dylib",
+                                "libaprutil-1.0.dylib",
                                 "libexpat.0.5.0.dylib"):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %

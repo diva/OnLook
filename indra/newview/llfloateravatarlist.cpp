@@ -57,6 +57,10 @@
 
 #include "llsdutil.h"
 
+#include "llaudioengine.h"
+
+#include "llstartup.h"
+
 //<edit>
 #include "llviewermenu.h"
 //</edit>
@@ -125,7 +129,8 @@ void chat_avatar_status(std::string name, LLUUID key, ERadarAlertType type, bool
 LLAvatarListEntry::LLAvatarListEntry(const LLUUID& id, const std::string &name, const LLVector3d &position) :
 		mID(id), mName(name), mPosition(position), mDrawPosition(), mMarked(FALSE), mFocused(FALSE),
 		mUpdateTimer(), mFrame(gFrameCount), mInSimFrame(U32_MAX), mInDrawFrame(U32_MAX),
-		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX)
+		mInChatFrame(U32_MAX), mInShoutFrame(U32_MAX),
+		mActivityType(ACTIVITY_NEW), mActivityTimer()
 {
 }
 
@@ -214,6 +219,26 @@ BOOL LLAvatarListEntry::isDead()
 {
 	return getEntryAgeSeconds() > DEAD_KEEP_TIME;
 }
+const F32 ACTIVITY_TIMEOUT = 1.0f;
+void LLAvatarListEntry::setActivity(ACTIVITY_TYPE activity)
+{
+	if ( activity >= mActivityType || mActivityTimer.getElapsedTimeF32() > ACTIVITY_TIMEOUT )
+	{
+		mActivityType = activity;
+		mActivityTimer.start();
+	}
+}
+
+LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
+{
+	if ( mActivityTimer.getElapsedTimeF32() > ACTIVITY_TIMEOUT )
+	{
+		mActivityType = ACTIVITY_NONE;
+	}
+	if(isDead())return ACTIVITY_DEAD;
+	
+	return mActivityType;
+}
 
 LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar"))
 {
@@ -229,7 +254,7 @@ LLFloaterAvatarList::~LLFloaterAvatarList()
 void LLFloaterAvatarList::toggle(void*)
 {
 // [RLVa:KB]
-	if(!gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 	{
 		if(instanceExists())
 			getInstance()->close();
@@ -237,9 +262,13 @@ void LLFloaterAvatarList::toggle(void*)
 	else
 // [/RLVa:KB]
 	if(!instanceExists() || !getInstance()->getVisible())
+	{
 		showInstance();
+	}
 	else
+	{
 		getInstance()->close();
+	}
 }
 
 //static
@@ -325,6 +354,23 @@ BOOL LLFloaterAvatarList::postBuild()
 	return TRUE;
 }
 
+void updateParticleActivity(LLDrawable *drawablep)
+{
+	if (LLFloaterAvatarList::instanceExists())
+	{
+		LLViewerObject *vobj = drawablep->getVObj();
+		if (vobj && vobj->isParticleSource())
+		{
+			LLUUID id = vobj->mPartSourcep->getOwnerUUID();
+			LLAvatarListEntry *ent = LLFloaterAvatarList::getInstance()->getAvatarEntry(id);
+			if ( NULL != ent )
+			{
+				ent->setActivity(LLAvatarListEntry::ACTIVITY_PARTICLES);
+			}
+		}
+	}
+}
+
 void LLFloaterAvatarList::updateAvatarList()
 {
 	//llinfos << "radar refresh: updating map" << llendl;
@@ -340,6 +386,25 @@ void LLFloaterAvatarList::updateAvatarList()
 	else
 	{
 		mUpdate = TRUE;
+	}
+	//moved to pipeline to prevent a crash
+	//gPipeline.forAllVisibleDrawables(updateParticleActivity);
+
+
+	//todo: make this less of a hacked up copypasta from dales 1.18.
+	if(gAudiop != NULL)
+	{
+		LLAudioEngine::source_map::iterator iter;
+		for (iter = gAudiop->mAllSources.begin(); iter != gAudiop->mAllSources.end(); ++iter)
+		{
+			LLAudioSource *sourcep = iter->second;
+			LLUUID uuid = sourcep->getOwnerID();
+			LLAvatarListEntry *ent = getAvatarEntry(uuid);
+			if ( ent )
+			{
+				ent->setActivity(LLAvatarListEntry::ACTIVITY_SOUND);
+			}
+		}
 	}
 
 	LLVector3d mypos = gAgent.getPositionGlobal();
@@ -433,6 +498,7 @@ void LLFloaterAvatarList::updateAvatarList()
 					// Avatar already in list, update position
 					F32 dist = (F32)(position - mypos).magVec();
 					mAvatars[avid].setPosition(position, (avatarp->getRegion() == gAgent.getRegion()), true, dist < 20.0, dist < 100.0);
+					if(avatarp->isTyping())mAvatars[avid].setActivity(LLAvatarListEntry::ACTIVITY_TYPING);
 				}
 				else
 				{
@@ -777,6 +843,40 @@ void LLFloaterAvatarList::refreshAvatarList()
 			snprintf(temp, sizeof(temp), "%d", (S32)position.mdV[VZ]);
 		}
 		element["columns"][LIST_ALTITUDE]["value"] = temp;
+
+		element["columns"][LIST_ACTIVITY]["column"] = "activity";
+		element["columns"][LIST_ACTIVITY]["type"] = "icon";
+
+		std::string activity_icon = "";
+		switch(entry->getActivity())
+		{
+		case LLAvatarListEntry::ACTIVITY_MOVING:
+			activity_icon = "inv_item_animation.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_GESTURING:
+			activity_icon = "inv_item_gesture.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_SOUND:
+			activity_icon = "inv_item_sound.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_REZZING:
+			activity_icon = "ff_edit_theirs.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_PARTICLES:
+			activity_icon = "particles_scan.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_NEW:
+			activity_icon = "avatar_new.tga";
+			break;
+		case LLAvatarListEntry::ACTIVITY_TYPING:
+			activity_icon = "avatar_typing.tga";
+			break;
+		default:
+			break;
+		}
+
+		element["columns"][LIST_ACTIVITY]["value"] = activity_icon;//icon_image_id; //"icn_active-speakers-dot-lvl0.tga";
+		//element["columns"][LIST_AVATAR_ACTIVITY]["color"] = icon_color.getValue();
 		
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";

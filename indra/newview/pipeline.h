@@ -45,6 +45,7 @@
 #include "llgl.h"
 #include "lldrawable.h"
 #include "llrendertarget.h"
+#include "llfasttimer.h"
 
 #include <stack>
 
@@ -368,7 +369,7 @@ private:
 	void removeFromQuickLookup( LLDrawPool* poolp );
 	BOOL updateDrawableGeom(LLDrawable* drawable, BOOL priority);
 	void assertInitializedDoError();
-	bool assertInitialized() { const bool is_init = isInit(); if (!is_init) assertInitializedDoError(); return is_init; };
+	bool assertInitialized() { const bool is_init = isInit(); if (!is_init) assertInitializedDoError(); return is_init; }
 	
 public:
 	enum {GPU_CLASS_MAX = 3 };

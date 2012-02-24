@@ -80,6 +80,7 @@
 #include "object_flags.h"
 
 #include "llappviewer.h"
+#include "llfloaterblacklist.h"
 
 #include "llviewerobjectbackup.h"
 
@@ -527,6 +528,15 @@ void LLViewerObjectList::processObjectUpdate(LLMessageSystem *mesgsys,
 				continue;
 			}
 #endif
+
+
+			if(std::find(LLFloaterBlacklist::blacklist_objects.begin(),
+				LLFloaterBlacklist::blacklist_objects.end(),fullid) != LLFloaterBlacklist::blacklist_objects.end())
+			{
+				llinfos << "Blacklisted object asset " << fullid.asString() << " blocked." << llendl; 
+				continue;
+			}
+
 
 			objectp = createObject(pcode, regionp, fullid, local_id, gMessageSystem->getSender());
 			if (!objectp)

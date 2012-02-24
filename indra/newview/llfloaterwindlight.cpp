@@ -640,7 +640,7 @@ void LLFloaterWindLight::onColorControlIMoved(LLUICtrl* ctrl, void* userData)
 		if(color_ctrl->isSunOrAmbientColor)
 			scale = WL_SUN_AMBIENT_SLIDER_SCALE;
 		else if(color_ctrl->isBlueHorizonOrDensity)
-			WL_BLUE_HORIZON_DENSITY_SCALE;
+			scale = WL_BLUE_HORIZON_DENSITY_SCALE;
 		
 		F32 iVal = color_ctrl->i * scale;
 
@@ -1066,6 +1066,14 @@ void LLFloaterWindLight::populateSkyPresetsList()
 	LLWLParamManager::getInstance()->getLocalPresetNames(local_presets);
 
 	for (LLWLParamManager::preset_name_list_t::const_iterator it = local_presets.begin(); it != local_presets.end(); ++it)
+	{
+		mSkyPresetCombo->add(*it);
+	}
+
+	LLWLParamManager::preset_name_list_t user_presets;
+	LLWLParamManager::getInstance()->getUserPresetNames(user_presets);
+
+	for (LLWLParamManager::preset_name_list_t::const_iterator it = user_presets.begin(); it != user_presets.end(); ++it)
 	{
 		mSkyPresetCombo->add(*it);
 	}

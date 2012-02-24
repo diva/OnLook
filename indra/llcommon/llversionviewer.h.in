@@ -1,10 +1,10 @@
 /** 
- * @file lldrawpoolclouds.h
- * @brief LLDrawPoolClouds class definition
+ * @file llversionviewer.h
+ * @brief
  *
- * $LicenseInfo:firstyear=2006&license=viewergpl$
+ * $LicenseInfo:firstyear=2002&license=viewergpl$
  * 
- * Copyright (c) 2006-2009, Linden Research, Inc.
+ * Copyright (c) 2002-2009, Linden Research, Inc.
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -30,31 +30,19 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLDRAWPOOLCLOUDS_H
-#define LL_LLDRAWPOOLCLOUDS_H
+#ifndef LL_LLVERSIONVIEWER_H
+#define LL_LLVERSIONVIEWER_H
 
-#include "lldrawpool.h"
+const S32 LL_VERSION_MAJOR = 1;
+const S32 LL_VERSION_MINOR = 6;
+const S32 LL_VERSION_PATCH = 0;
+const S32 LL_VERSION_BUILD = ${vBUILD};
 
-class LLDrawPoolClouds : public LLDrawPool
-{
-public:
-	enum
-	{
-		VERTEX_DATA_MASK =	LLVertexBuffer::MAP_VERTEX |
-							LLVertexBuffer::MAP_NORMAL |
-							LLVertexBuffer::MAP_TEXCOORD0
-	};
+const char * const LL_CHANNEL = "${VIEWER_CHANNEL}";
 
-	BOOL addFace(LLFace* face);
-	virtual U32 getVertexDataMask() { return VERTEX_DATA_MASK; }
+#if LL_DARWIN
+const char * const LL_VERSION_BUNDLE_ID = "org.singularityviewer.singularity";
+#endif
 
-	LLDrawPoolClouds();
+#endif
 
-	/*virtual*/ void prerender();
-	/*virtual*/ LLDrawPool *instancePool();
-	/*virtual*/ void enqueue(LLFace *face);
-	/*virtual*/ void beginRenderPass(S32 pass);
-	/*virtual*/ void render(S32 pass = 0);
-};
-
-#endif // LL_LLDRAWPOOLSKY_H

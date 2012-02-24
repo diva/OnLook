@@ -35,7 +35,7 @@
 
 #include "llhttpclient.h"
 #include "llbufferstream.h"
-#include "jsoncpp/reader.h"
+#include "json/reader.h"
 
 class LLTranslate
 {

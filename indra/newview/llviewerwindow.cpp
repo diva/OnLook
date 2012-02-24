@@ -2771,8 +2771,12 @@ void LLViewerWindow::handleScrollWheel(S32 clicks)
 
 void LLViewerWindow::moveCursorToCenter()
 {
-		S32 x = getWorldViewWidthScaled() / 2;
-		S32 y = getWorldViewHeightScaled() / 2;
+	if (gSavedSettings.getBOOL("SGAbsolutePointer")) {
+		return;
+	}
+
+	S32 x = getWorldViewWidthScaled() / 2;
+	S32 y = getWorldViewHeightScaled() / 2;
 	
 	//on a forced move, all deltas get zeroed out to prevent jumping
 	mCurrentMousePoint.set(x,y);

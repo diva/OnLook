@@ -62,7 +62,7 @@
 #include "llevent.h"
 
 template <class T>
-class LLMemberListener : public LLSimpleListener
+class LLMemberListener : public LLOldEvents::LLSimpleListener
 {
 public:
 	LLMemberListener() : mPtr(NULL), mRegisteredName() { }
@@ -75,7 +75,7 @@ public:
 	}
 
 	// This is what you have to override to handle this event
-	virtual bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata) = 0;
+	virtual bool handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata) = 0;
 
 protected:
 	T *mPtr; // The object that this listener manipulates
