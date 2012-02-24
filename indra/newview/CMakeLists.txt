@@ -76,6 +76,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    sgmemstat.cpp
     sgversion.cpp
     llviewerobjectbackup.cpp
     slfloatermediafilter.cpp
@@ -564,6 +565,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    sgmemstat.h
     sgversion.h
     llviewerobjectbackup.h
     slfloatermediafilter.h
