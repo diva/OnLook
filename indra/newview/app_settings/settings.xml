@@ -4205,6 +4205,17 @@
       <key>Value</key>
       <integer>-1</integer>
     </map>
+    <key>DebugStatModeMalloc</key>
+    <map>
+      <key>Comment</key>
+      <string>Mode of stat in Statistics floater</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>-1</integer>
+    </map>    
     <key>DebugStatModeFormattedMem</key>
     <map>
       <key>Comment</key>
