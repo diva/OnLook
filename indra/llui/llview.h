@@ -54,6 +54,7 @@
 #include "stdenums.h"
 #include "lluistring.h"
 #include "llcursortypes.h"
+#include "llinitparam.h"
 #include "llfocusmgr.h"
 
 const U32	FOLLOWS_NONE	= 0x00;
@@ -67,88 +68,6 @@ const BOOL	MOUSE_OPAQUE = TRUE;
 const BOOL	NOT_MOUSE_OPAQUE = FALSE;
 
 const U32 GL_NAME_UI_RESERVED = 2;
-
-/*
-// virtual functions defined in LLView:
-
-virtual BOOL isCtrl() const;
-		LLUICtrl
-virtual BOOL isPanel();
-		LLPanel
-virtual void setRect(const LLRect &rect);
-		LLLineEditor
-virtual void	addCtrl( LLUICtrl* ctrl, S32 tab_group);
-virtual void	addCtrlAtEnd( LLUICtrl* ctrl, S32 tab_group);
-virtual void	removeCtrl( LLUICtrl* ctrl);
-		LLPanel
-virtual BOOL canFocusChildren() const		{ return TRUE; }
-		LLFolderView
-virtual void deleteAllChildren();
-		LLFolderView, LLPanelObjectInventory
-virtual void	setTentative(BOOL b)		{}
-		LLUICtrl, LLSliderCtrl, LLSpinCtrl
-virtual BOOL	getTentative() const		{ return FALSE; }
-		LLUICtrl, LLCheckBoxCtrl
-virtual void	setVisible(BOOL visible);
-		LLFloater, LLAlertDialog, LLMenuItemGL, LLModalDialog
-virtual void	setEnabled(BOOL enabled)	{ mEnabled = enabled; }
-		LLCheckBoxCtrl, LLComboBox, LLLineEditor, LLMenuGL, LLRadioGroup, etc
-virtual BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text ) { return FALSE; }
-		LLUICtrl, LLButton, LLCheckBoxCtrl, LLLineEditor, LLMenuGL, LLSliderCtrl
-virtual void	handleVisibilityChange ( BOOL curVisibilityIn );
-		LLMenuGL
-virtual LLRect getSnapRect() const	{ return mRect; } *TODO: Make non virtual
-		LLFloater
-virtual LLRect getRequiredRect()			{ return mRect; }
-		LLScrolllistCtrl
-virtual void	reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
-		LLUICtrl, et. al.
-virtual void	translate( S32 x, S32 y );
-		LLMenuGL		
-virtual void	handleReshape(const LLRect& new_rect, bool by_user = false);
-		LLFloater, LLScrollLIstVtrl
-virtual LLView*	findSnapRect(LLRect& new_rect, const LLCoordGL& mouse_dir, LLView::ESnapType snap_type, S32 threshold, S32 padding = 0);
-virtual LLView*	findSnapEdge(S32& new_edge_val, const LLCoordGL& mouse_dir, ESnapEdge snap_edge, ESnapType snap_type, S32 threshold, S32 padding = 0);
-		LLScrollListCtrl
-virtual BOOL	canSnapTo(const LLView* other_view) { return other_view != this && other_view->getVisible(); }
-		LLFloater
-virtual void	setSnappedTo(const LLView* snap_view) {}
-		LLFloater
-virtual BOOL	handleKey(KEY key, MASK mask, BOOL called_from_parent);
-		*
-virtual BOOL	handleUnicodeChar(llwchar uni_char, BOOL called_from_parent);
-		*
-virtual BOOL	handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,EDragAndDropType cargo_type,void* cargo_data,EAcceptance* accept,std::string& tooltip_msg);
-		*
-virtual void	draw();
-		*
-
-		*
-virtual LLXMLNodePtr getXML(bool save_children = true) const;
-		*
-virtual void initFromXML(LLXMLNodePtr node, LLView* parent);
-		*
-virtual void onFocusLost() {}
-		LLUICtrl, LLScrollListCtrl, LLMenuGL, LLLineEditor, LLComboBox
-virtual void onFocusReceived() {}
-		LLUICtrl, LLTextEditor, LLScrollListVtrl, LLMenuGL, LLLineEditor
-virtual LLView* getChildView(const std::string& name, BOOL recurse = TRUE, BOOL create_if_missing = TRUE) const;
-		LLTabContainer, LLPanel, LLMenuGL
-virtual void	setControlName(const std::string& control, LLView *context);
-		LLSliderCtrl, LLCheckBoxCtrl
-virtual std::string getControlName() const { return mControlName; }
-		LLSliderCtrl, LLCheckBoxCtrl
-virtual bool	handleEvent(LLPointer<LLOldEvents::LLEvent> event, const LLSD& userdata);
-		LLMenuItem
-virtual void	setValue(const LLSD& value);
-		*
-
-protected:
-virtual BOOL	handleKeyHere(KEY key, MASK mask);
-		*
-virtual BOOL	handleUnicodeCharHere(llwchar uni_char);
-		*
-*/
 
 class LLUICtrlFactory;
 
@@ -209,9 +128,73 @@ public:
 	}
 };
 
-class LLView : public LLMouseHandler, public LLMortician, public LLFocusableElement
+class LLView 
+:	public LLMouseHandler,			// handles mouse events
+	public LLFocusableElement,		// handles keyboard events
+	public LLMortician				// lazy deletion
+	//public LLHandleProvider<LLView>	// passes out weak references to self
 {
+public:
+	struct Follows : public LLInitParam::ChoiceBlock<Follows>
+	{
+		Alternative<std::string>	string;
+		Alternative<U32>			flags;
 
+        Follows();
+	};
+
+	struct Params : public LLInitParam::Block<Params>
+	{
+		Mandatory<std::string>		name;
+
+		Optional<bool>				enabled,
+									visible,
+									mouse_opaque,
+									use_bounding_rect,
+									from_xui,
+									focus_root;
+
+		Optional<S32>				tab_group,
+									default_tab_group;
+		Optional<std::string>		tool_tip;
+
+		Optional<S32>				sound_flags;
+		Optional<Follows>			follows;
+		Optional<std::string>		hover_cursor;
+
+		Optional<std::string>		layout;
+		Optional<LLRect>			rect;
+
+		// Historical bottom-left layout used bottom_delta and left_delta
+		// for relative positioning.  New layout "topleft" prefers specifying
+		// based on top edge.
+		Optional<S32>				bottom_delta,	// from last bottom to my bottom
+									top_pad,		// from last bottom to my top
+									top_delta,		// from last top to my top
+									left_pad,		// from last right to my left
+									left_delta;		// from last left to my left
+
+		//FIXME: get parent context involved in parsing traversal
+		Ignored						needs_translate,	// cue for translation tools
+									xmlns,				// xml namespace
+									xmlns_xsi,			// xml namespace
+									xsi_schemaLocation,	// xml schema
+									xsi_type;			// xml schema type
+
+		Params();
+	};
+
+	void initFromParams(const LLView::Params&);
+
+protected:
+	LLView(const LLView::Params&);
+	//friend class LLUICtrlFactory;
+private:
+	void init(const LLView::Params&);
+
+private:
+	// widgets in general are not copyable
+	LLView(const LLView& other) {};
 public:
 #if LL_DEBUG
 	static BOOL sIsDrawing;
@@ -663,15 +646,9 @@ private:
 	LLRootHandle<LLView> mHandle;
 	BOOL		mLastVisible;
 
-
-
 	S32			mNextInsertionOrdinal;
 
 	bool		mInDraw;
-	// <edit>
-public:
-	BOOL mDelayedDelete;
-	// </edit>
 private:
 
 	static LLWindow* sWindow;	// All root views must know about their window.

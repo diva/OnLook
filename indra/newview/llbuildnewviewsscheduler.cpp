@@ -106,7 +106,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 
 		if (itemp)
 		{
-			itemp->mDelayedDelete = TRUE;
+			//itemp->mDelayedDelete = TRUE;
 			if (parent_folder)
 			{
 				itemp->addToFolder(parent_folder, panelp->getRootFolder());

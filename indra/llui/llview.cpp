@@ -83,76 +83,94 @@ S32		LLView::sLastBottomXML = S32_MIN;
 BOOL LLView::sIsDrawing = FALSE;
 #endif
 
-LLView::LLView() 
-:	mVisible(TRUE),
-	mInDraw(false),
-	mParentView(NULL),
-	mReshapeFlags(FOLLOWS_NONE),
-	mDefaultTabGroup(0),
-	mEnabled(TRUE),
-	mMouseOpaque(TRUE),
-	mSoundFlags(MOUSE_UP), // default to only make sound on mouse up
-	mSaveToXML(TRUE),
-	mIsFocusRoot(FALSE),
-	mLastVisible(TRUE),
-	mUseBoundingRect(FALSE),
-	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW),
-	mLastTabGroup(0),
-	// <edit>
-	mDelayedDelete(FALSE)
-	// </edit>
+LLView::Follows::Follows()
+:   string(""),
+	flags("flags", FOLLOWS_NONE)
+{}
+
+LLView::Params::Params()
+:	name("name", std::string("unnamed")),
+	enabled("enabled", true),
+	visible("visible", true),
+	mouse_opaque("mouse_opaque", true),
+	follows("follows"),
+	hover_cursor("hover_cursor", "UI_CURSOR_ARROW"),
+	use_bounding_rect("use_bounding_rect", false),
+	tab_group("tab_group", 0),
+	default_tab_group("default_tab_group"),
+	//tool_tip("tool_tip"),
+	sound_flags("sound_flags", MOUSE_UP),
+	layout("layout"),
+	rect("rect"),
+	bottom_delta("bottom_delta", S32_MAX),
+	top_pad("top_pad"),
+	top_delta("top_delta", S32_MAX),
+	left_pad("left_pad"),
+	left_delta("left_delta", S32_MAX),
+	from_xui("from_xui", true),
+	focus_root("focus_root", false),
+	needs_translate("translate"),
+	xmlns("xmlns"),
+	xmlns_xsi("xmlns:xsi"),
+	xsi_schemaLocation("xsi:schemaLocation"),
+	xsi_type("xsi:type")
+
 {
+	addSynonym(rect, "");
+}
+
+LLView::LLView(const LLView::Params& p)
+{
+	init(p);
+}
+
+void LLView::init(const LLView::Params& p)
+{
+	mVisible = p.visible;
+	mInDraw = false;
+	mName = p.name;
+	mParentView = NULL;
+	mReshapeFlags = FOLLOWS_NONE;
+	mSaveToXML = p.from_xui;
+	mIsFocusRoot = p.focus_root;
+	mLastVisible = FALSE;
+	mNextInsertionOrdinal = 0;
+	mHoverCursor = getCursorFromString(p.hover_cursor);
+	mEnabled = p.enabled;
+	mMouseOpaque = p.mouse_opaque;
+	mSoundFlags = p.sound_flags;
+	mUseBoundingRect = p.use_bounding_rect;
+	mDefaultTabGroup = p.default_tab_group;
+	mLastTabGroup = 0;
+	//mToolTipMsg((LLStringExplicit)p.tool_tip()),
+	//mDefaultWidgets(NULL)
+	
+	// create rect first, as this will supply initial follows flags
+	setShape(p.rect);
+	mReshapeFlags = p.follows.flags;
+}
+
+LLView::LLView()
+{
+	init(LLView::Params());
 }
 
 LLView::LLView(const std::string& name, BOOL mouse_opaque)
-:	mVisible(TRUE),
-	mInDraw(false),
-	mName(name),
-	mParentView(NULL),
-	mReshapeFlags(FOLLOWS_NONE),
-	mDefaultTabGroup(0),
-	mEnabled(TRUE),
-	mMouseOpaque(mouse_opaque),
-	mSoundFlags(MOUSE_UP), // default to only make sound on mouse up
-	mSaveToXML(TRUE),
-	mIsFocusRoot(FALSE),
-	mLastVisible(TRUE),
-	mUseBoundingRect(FALSE),
-	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW),
-	mLastTabGroup(0),
-	// <edit>
-	mDelayedDelete(FALSE)
-	// </edit>
 {
+	LLView::Params p;
+	p.name = name;
+	p.mouse_opaque = mouse_opaque;
+	init(p);
 }
 
-
-LLView::LLView(
-	const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 reshape) 
-:	mVisible(TRUE),
-	mInDraw(false),
-	mName(name),
-	mParentView(NULL),
-	mRect(rect),
-	mBoundingRect(rect),
-	mReshapeFlags(reshape),
-	mDefaultTabGroup(0),
-	mEnabled(TRUE),
-	mMouseOpaque(mouse_opaque),
-	mSoundFlags(MOUSE_UP), // default to only make sound on mouse up
-	mSaveToXML(TRUE),
-	mIsFocusRoot(FALSE),
-	mLastVisible(TRUE),
-	mUseBoundingRect(FALSE),
-	mNextInsertionOrdinal(0),
-	mHoverCursor(UI_CURSOR_ARROW),
-	mLastTabGroup(0),
-	// <edit>
-	mDelayedDelete(FALSE)
-	// </edit>
+LLView::LLView(	const std::string& name, const LLRect& rect, BOOL mouse_opaque, U32 reshape) 
 {
+	LLView::Params p;
+	p.name = name;
+	p.mouse_opaque = mouse_opaque;
+	p.rect = rect;
+	p.follows.flags = reshape;
+	init(p);
 }
 
 
@@ -160,15 +178,10 @@ LLView::~LLView()
 {
 	//llinfos << "Deleting view " << mName << ":" << (void*) this << llendl;
 // 	llassert(LLView::sIsDrawing == FALSE);
-	if( gFocusMgr.getKeyboardFocus() == this )
-	{
-		llwarns << "View holding keyboard focus deleted: " << getName() << ".  Keyboard focus removed." << llendl;
-		gFocusMgr.removeKeyboardFocusWithoutCallback( this );
-	}
 
 	if( hasMouseCapture() )
 	{
-		llwarns << "View holding mouse capture deleted: " << getName() << ".  Mouse capture removed." << llendl;
+		//llwarns << "View holding mouse capture deleted: " << getName() << ".  Mouse capture removed." << llendl;
 		gFocusMgr.removeMouseCaptureWithoutCallback( this );
 	}
 
@@ -616,11 +629,6 @@ void LLView::setVisible(BOOL visible)
 {
 	if ( mVisible != visible )
 	{
-		if( !visible && (gFocusMgr.getTopCtrl() == this) )
-		{
-			gFocusMgr.setTopCtrl( NULL );
-		}
-
 		mVisible = visible;
 
 		// notify children of visibility change if root, or part of visible hierarchy

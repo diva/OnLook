@@ -38,6 +38,7 @@
 
 #include "llcallbackmap.h"
 #include "llfloater.h"
+#include "llinitparam.h"
 
 class LLView;
 class LLPanel;
