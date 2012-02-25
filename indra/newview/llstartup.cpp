@@ -399,7 +399,7 @@ bool idle_startup()
 	// until initialization is complete, but need to be done here for things
 	// to work.
 	gIdleCallbacks.callFunctions();
-	gViewerWindow->handlePerFrameHover();
+	gViewerWindow->updateUI();
 	LLMortician::updateClass();
 
 	if (gNoRender)

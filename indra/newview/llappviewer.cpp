@@ -3912,7 +3912,7 @@ void LLAppViewer::idle()
 		return;
     }
 
-	gViewerWindow->handlePerFrameHover();
+	gViewerWindow->updateUI();
 
 	///////////////////////////////////////
 	// Agent and camera movement

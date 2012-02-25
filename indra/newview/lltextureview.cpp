@@ -747,52 +747,56 @@ void LLTextureView::draw()
 			if (!mOrderFetch)
 			{
 #if 1
-			if (pri < HIGH_PRIORITY && LLSelectMgr::getInstance())
-			{
-				struct f : public LLSelectedTEFunctor
+				if (pri < HIGH_PRIORITY && LLSelectMgr::getInstance())
 				{
-						LLViewerFetchedTexture* mImage;
-						f(LLViewerFetchedTexture* image) : mImage(image) {}
-					virtual bool apply(LLViewerObject* object, S32 te)
+					struct f : public LLSelectedTEFunctor
 					{
-						return (mImage == object->getTEImage(te));
+							LLViewerFetchedTexture* mImage;
+							f(LLViewerFetchedTexture* image) : mImage(image) {}
+						virtual bool apply(LLViewerObject* object, S32 te)
+						{
+							return (mImage == object->getTEImage(te));
+						}
+					} func(imagep);
+					const bool firstonly = true;
+					bool match = LLSelectMgr::getInstance()->getSelection()->applyToTEs(&func, firstonly);
+					if (match)
+					{
+						pri += 3*HIGH_PRIORITY;
 					}
-				} func(imagep);
-				const bool firstonly = true;
-				bool match = LLSelectMgr::getInstance()->getSelection()->applyToTEs(&func, firstonly);
-				if (match)
-				{
-					pri += 3*HIGH_PRIORITY;
 				}
-			}
 #endif
 #if 1
-			if (pri < HIGH_PRIORITY && (cur_discard< 0 || desired_discard < cur_discard))
-			{
-				LLViewerObject *objectp = gHoverView->getLastHoverObject();
-				if (objectp)
+				if (pri < HIGH_PRIORITY && (cur_discard< 0 || desired_discard < cur_discard))
 				{
-					S32 tex_count = objectp->getNumTEs();
-					for (S32 i = 0; i < tex_count; i++)
+					LLSelectNode* hover_node = LLSelectMgr::instance().getHoverNode();
+					if (hover_node)
 					{
-						if (imagep == objectp->getTEImage(i))
+						LLViewerObject *objectp = hover_node->getObject();
+						if (objectp)
 						{
-							pri += 2*HIGH_PRIORITY;
-							break;
+							S32 tex_count = objectp->getNumTEs();
+							for (S32 i = 0; i < tex_count; i++)
+							{
+								if (imagep == objectp->getTEImage(i))
+								{
+									pri += 2*HIGH_PRIORITY;
+									break;
+								}
+							}
 						}
 					}
 				}
-			}
 #endif
 #if 1
-			if (pri > 0.f && pri < HIGH_PRIORITY)
-			{
-				if (imagep->mLastPacketTimer.getElapsedTimeF32() < 1.f ||
-					imagep->mFetchDeltaTime < 0.25f)
+				if (pri > 0.f && pri < HIGH_PRIORITY)
 				{
-					pri += 1*HIGH_PRIORITY;
+					if (imagep->mLastPacketTimer.getElapsedTimeF32() < 1.f ||
+						imagep->mFetchDeltaTime < 0.25f)
+					{
+						pri += 1*HIGH_PRIORITY;
+					}
 				}
-			}
 #endif
 			}
 			

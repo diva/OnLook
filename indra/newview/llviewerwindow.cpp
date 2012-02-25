@@ -2793,7 +2793,7 @@ void LLViewerWindow::moveCursorToCenter()
 
 // Update UI based on stored mouse position from mouse-move
 // event processing.
-BOOL LLViewerWindow::handlePerFrameHover()
+void LLViewerWindow::updateUI()
 {
 	static LLFastTimer::DeclareTimer ftm("Update UI");
 	LLFastTimer t(ftm);
@@ -2819,51 +2819,13 @@ BOOL LLViewerWindow::handlePerFrameHover()
 											  &gDebugRaycastStart,
 											  &gDebugRaycastEnd);
 	}
-	//RN: fix for asynchronous notification of mouse leaving window not working
-	LLCoordWindow mouse_pos;
-	mWindow->getCursorPosition(&mouse_pos);
-	if (mouse_pos.mX < 0 || 
-		mouse_pos.mY < 0 ||
-		mouse_pos.mX > mWindowRectRaw.getWidth() ||
-		mouse_pos.mY > mWindowRectRaw.getHeight())
-	{
-		mMouseInWindow = FALSE;
-	}
-	else
-	{
-		mMouseInWindow = TRUE;
-	}
 
+	updateMouseDelta();
 
-	S32 dx = lltrunc((F32) (mCurrentMousePoint.mX - mLastMousePoint.mX) * LLUI::sGLScaleFactor.mV[VX]);
-	S32 dy = lltrunc((F32) (mCurrentMousePoint.mY - mLastMousePoint.mY) * LLUI::sGLScaleFactor.mV[VY]);
-
-	LLVector2 mouse_vel; 
-
-	static const  LLCachedControl<bool> mouse_smooth("MouseSmooth",false);
-	if (mouse_smooth)
-	{
-		static F32 fdx = 0.f;
-		static F32 fdy = 0.f;
-
-		F32 amount = 16.f;
-		fdx = fdx + ((F32) dx - fdx) * llmin(gFrameIntervalSeconds*amount,1.f);
-		fdy = fdy + ((F32) dy - fdy) * llmin(gFrameIntervalSeconds*amount,1.f);
-
-		mCurrentMouseDelta.set(llround(fdx), llround(fdy));
-		mouse_vel.setVec(fdx,fdy);
-	}
-	else
-	{
-		mCurrentMouseDelta.set(dx, dy);
-		mouse_vel.setVec((F32) dx, (F32) dy);
-	}
-    
-	mMouseVelocityStat.addValue(mouse_vel.magVec());
 
 	if (gNoRender)
 	{
-		return TRUE;
+		return;
 	}
 
 	// clean up current focus
@@ -3239,7 +3201,7 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	previous_x = x;
 	previous_y = y;
 	
-	return handled;
+	return;
 }
 
 
@@ -3249,6 +3211,50 @@ void LLViewerWindow::hoverPickCallback(const LLPickInfo& pick_info)
 	gViewerWindow->mHoverPick = pick_info;
 }
 	
+
+void LLViewerWindow::updateMouseDelta()
+{
+	S32 dx = lltrunc((F32) (mCurrentMousePoint.mX - mLastMousePoint.mX) * LLUI::sGLScaleFactor.mV[VX]);
+	S32 dy = lltrunc((F32) (mCurrentMousePoint.mY - mLastMousePoint.mY) * LLUI::sGLScaleFactor.mV[VY]);
+
+	//RN: fix for asynchronous notification of mouse leaving window not working
+	LLCoordWindow mouse_pos;
+	mWindow->getCursorPosition(&mouse_pos);
+	if (mouse_pos.mX < 0 || 
+		mouse_pos.mY < 0 ||
+		mouse_pos.mX > mWindowRectRaw.getWidth() ||
+		mouse_pos.mY > mWindowRectRaw.getHeight())
+	{
+		mMouseInWindow = FALSE;
+	}
+	else
+	{
+		mMouseInWindow = TRUE;
+	}
+
+	LLVector2 mouse_vel; 
+
+	static const  LLCachedControl<bool> mouse_smooth("MouseSmooth",false);
+	if (mouse_smooth)
+	{
+		static F32 fdx = 0.f;
+		static F32 fdy = 0.f;
+
+		F32 amount = 16.f;
+		fdx = fdx + ((F32) dx - fdx) * llmin(gFrameIntervalSeconds*amount,1.f);
+		fdy = fdy + ((F32) dy - fdy) * llmin(gFrameIntervalSeconds*amount,1.f);
+
+		mCurrentMouseDelta.set(llround(fdx), llround(fdy));
+		mouse_vel.setVec(fdx,fdy);
+	}
+	else
+	{
+		mCurrentMouseDelta.set(dx, dy);
+		mouse_vel.setVec((F32) dx, (F32) dy);
+	}
+    
+	mMouseVelocityStat.addValue(mouse_vel.magVec());
+}
 
 void LLViewerWindow::saveLastMouse(const LLCoordGL &point)
 {
