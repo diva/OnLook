@@ -66,7 +66,7 @@ struct ViewerFolderEntry : public LLDictionaryEntry
 		mIconNameOpen(icon_name),
 		mIconNameClosed(icon_name),
 		*/
-		mIconNameOpen("inv_folder_plain_closed.tga"), mIconNameClosed("inv_folder_plain_closed.tga"),
+		mIconNameOpen("inv_folder_plain_open.tga"), mIconNameClosed("inv_folder_plain_closed.tga"),
 		mNewCategoryName(new_category_name),
 		mIsQuiet(FALSE),
 		mHideIfEmpty(false)
@@ -117,7 +117,7 @@ LLViewerFolderDictionary::LLViewerFolderDictionary()
 	addEntry(LLFolderType::FT_CLOTHING, 			new ViewerFolderEntry("Clothing",				"inv_folder_clothing.tga",			"inv_folder_clothing.tga",		FALSE,		false));
 	addEntry(LLFolderType::FT_OBJECT, 				new ViewerFolderEntry("Objects",				"inv_folder_object.tga",			"inv_folder_object.tga",		FALSE,		false));
 	addEntry(LLFolderType::FT_NOTECARD, 			new ViewerFolderEntry("Notecards",				"inv_folder_notecard.tga",			"inv_folder_notecard.tga",		FALSE,		false));
-	addEntry(LLFolderType::FT_ROOT_INVENTORY, 		new ViewerFolderEntry("My Inventory",			"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_ROOT_INVENTORY, 		new ViewerFolderEntry("My Inventory",			"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 	addEntry(LLFolderType::FT_LSL_TEXT, 			new ViewerFolderEntry("Scripts",				"inv_folder_script.tga",			"inv_folder_script.tga",		FALSE,		false));
 	addEntry(LLFolderType::FT_BODYPART, 			new ViewerFolderEntry("Body Parts",				"inv_folder_bodypart.tga",			"inv_folder_bodypart.tga",		FALSE,		false));
 	addEntry(LLFolderType::FT_TRASH, 				new ViewerFolderEntry("Trash",					"inv_folder_trash.tga",				"inv_folder_trash.tga",			TRUE,		false));
@@ -125,26 +125,26 @@ LLViewerFolderDictionary::LLViewerFolderDictionary()
 	addEntry(LLFolderType::FT_LOST_AND_FOUND, 		new ViewerFolderEntry("Lost And Found",	   		"inv_folder_lostandfound.tga",		"inv_folder_lostandfound.tga",	TRUE,		false));
 	addEntry(LLFolderType::FT_ANIMATION, 			new ViewerFolderEntry("Animations",				"inv_folder_animation.tga",			"inv_folder_animation.tga",		FALSE,		false));
 	addEntry(LLFolderType::FT_GESTURE, 				new ViewerFolderEntry("Gestures",				"inv_folder_gesture.tga",			"inv_folder_gesture.tga",		FALSE,		false));
-	addEntry(LLFolderType::FT_FAVORITE, 			new ViewerFolderEntry("Favorites",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_FAVORITE, 			new ViewerFolderEntry("Favorites",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 
-	addEntry(LLFolderType::FT_CURRENT_OUTFIT, 		new ViewerFolderEntry("Current Outfit",			"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
-	addEntry(LLFolderType::FT_OUTFIT, 				new ViewerFolderEntry("New Outfit",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
-	addEntry(LLFolderType::FT_MY_OUTFITS, 			new ViewerFolderEntry("My Outfits",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
-	addEntry(LLFolderType::FT_MESH, 				new ViewerFolderEntry("Meshes",					"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_CURRENT_OUTFIT, 		new ViewerFolderEntry("Current Outfit",			"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
+	addEntry(LLFolderType::FT_OUTFIT, 				new ViewerFolderEntry("New Outfit",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
+	addEntry(LLFolderType::FT_MY_OUTFITS, 			new ViewerFolderEntry("My Outfits",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	TRUE,		false));
+	addEntry(LLFolderType::FT_MESH, 				new ViewerFolderEntry("Meshes",					"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 	
-	addEntry(LLFolderType::FT_INBOX, 				new ViewerFolderEntry("Inbox",					"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
-	addEntry(LLFolderType::FT_OUTBOX, 				new ViewerFolderEntry("Outbox",					"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_INBOX, 				new ViewerFolderEntry("Inbox",					"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_OUTBOX, 				new ViewerFolderEntry("Outbox",					"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 
-	addEntry(LLFolderType::FT_BASIC_ROOT, 			new ViewerFolderEntry("Basic Root",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
+	addEntry(LLFolderType::FT_BASIC_ROOT, 			new ViewerFolderEntry("Basic Root",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false));
 		 
-	addEntry(LLFolderType::FT_NONE, 				new ViewerFolderEntry("New Folder",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",	FALSE,		false,	"default"));
+	addEntry(LLFolderType::FT_NONE, 				new ViewerFolderEntry("New Folder",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",	FALSE,		false,	"default"));
 
 #if SUPPORT_ENSEMBLES
 	initEnsemblesFromFile();
 #else
 	for (U32 type = (U32)LLFolderType::FT_ENSEMBLE_START; type <= (U32)LLFolderType::FT_ENSEMBLE_END; ++type)
 	{
-		addEntry((LLFolderType::EType)type, 		new ViewerFolderEntry("New Folder",				"inv_folder_plain_closed.tga",		"inv_folder_plain_closed.tga",		FALSE,		false));
+		addEntry((LLFolderType::EType)type, 		new ViewerFolderEntry("New Folder",				"inv_folder_plain_open.tga",		"inv_folder_plain_closed.tga",		FALSE,		false));
 	}	
 #endif
 }

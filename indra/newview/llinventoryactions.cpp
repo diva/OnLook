@@ -129,8 +129,7 @@ bool doToSelected(LLFolderView* folder, std::string action)
 		LLInventoryClipboard::instance().reset();
 	}
 
-	std::set<LLUUID> selected_items;
-	folder->getSelectionList(selected_items);
+	std::set<LLUUID> selected_items = folder->getSelectionList();
 
 	LLMultiPreview* multi_previewp = NULL;
 	LLMultiProperties* multi_propertiesp = NULL;
@@ -232,7 +231,7 @@ class LLNewWindow : public inventory_listener_t
 		LLInventoryView* iv = new LLInventoryView(std::string("Inventory"),
 												rect,
 												mPtr->getActivePanel()->getModel());
-		iv->getActivePanel()->setFilterTypes(mPtr->getActivePanel()->getFilterTypes());
+		iv->getActivePanel()->setFilterTypes(mPtr->getActivePanel()->getFilterObjectTypes());
 		iv->getActivePanel()->setFilterSubString(mPtr->getActivePanel()->getFilterSubString());
 		iv->open();		/*Flawfinder: ignore*/
 
@@ -537,8 +536,7 @@ class LLBeginIMSession : public inventory_panel_listener_t
 		LLInventoryPanel *panel = mPtr;
 		LLInventoryModel* model = panel->getModel();
 		if(!model) return true;
-		std::set<LLUUID> selected_items;
-		panel->getRootFolder()->getSelectionList(selected_items);
+		std::set<LLUUID> selected_items = panel->getRootFolder()->getSelectionList();
 
 		std::string name;
 		static int session_num = 1;
@@ -643,8 +641,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
-		std::set<LLUUID> selected_items;
-		folder->getSelectionList(selected_items);
+		std::set<LLUUID> selected_items = folder->getSelectionList();
 		LLUUID id = *selected_items.begin();
 
 		std::string joint_name = userdata.asString();

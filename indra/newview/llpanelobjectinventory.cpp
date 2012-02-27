@@ -328,15 +328,15 @@ const std::string& LLTaskInvFVBridge::getDisplayName() const
 
 		if(!copy)
 		{
-			mDisplayName.append(" (no copy)");
+			mDisplayName.append(LLTrans::getString("no_copy"));
 		}
 		if(!mod)
 		{
-			mDisplayName.append(" (no modify)");
+			mDisplayName.append(LLTrans::getString("no_modify"));
 		}
 		if(!xfer)
 		{
-			mDisplayName.append(" (no transfer)");
+			mDisplayName.append(LLTrans::getString("no_transfer"));
 		}
 	}
 
@@ -852,7 +852,7 @@ void LLTaskCategoryBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	std::vector<std::string> items;
 	std::vector<std::string> disabled_items;
-	items.push_back(std::string("Task Open"));  // *TODO: Translate
+	//items.push_back(std::string("Task Open"));  // *TODO: Translate
 	hide_context_entries(menu, items, disabled_items);
 }
 
@@ -1108,9 +1108,9 @@ void LLTaskSoundBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 			}
 		}
 	}
-	else
+	else if (canOpenItem())
 	{
-		items.push_back(std::string("Task Open")); 
+		//items.push_back(std::string("Task Open")); 
 		if (!isItemCopyable())
 		{
 			disabled_items.push_back(std::string("Task Open"));
@@ -1618,7 +1618,7 @@ void LLPanelObjectInventory::reset()
 	setBorderVisible(FALSE);
 
 	LLRect dummy_rect(0, 1, 1, 0);
-	mFolders = new LLFolderView(std::string("task inventory"), NULL, dummy_rect, getTaskUUID(), this, LLTaskInvFVBridge::createObjectBridge(this, NULL));
+	mFolders = new LLFolderView(std::string("task inventory"), dummy_rect, getTaskUUID(), this, LLTaskInvFVBridge::createObjectBridge(this, NULL));
 	// this ensures that we never say "searching..." or "no items found"
 	mFolders->getFilter()->setShowFolderState(LLInventoryFilter::SHOW_ALL_FOLDERS);
 
@@ -1681,9 +1681,9 @@ void LLPanelObjectInventory::updateInventory()
 	// We're still interested in this task's inventory.
 	std::set<LLUUID> selected_items;
 	BOOL inventory_has_focus = FALSE;
-	if (mHaveInventory && mFolders->getNumSelectedDescendants())
+	if (mHaveInventory)
 	{
-		mFolders->getSelectionList(selected_items);
+		selected_items = mFolders->getSelectionList();
 		inventory_has_focus = gFocusMgr.childHasKeyboardFocus(mFolders);
 	}
 
@@ -1737,7 +1737,7 @@ void LLPanelObjectInventory::updateInventory()
 		}
 	}
 
-	mFolders->arrangeFromRoot();
+	mFolders->requestArrange();
 	mInventoryNeedsUpdate = FALSE;
 }
 
@@ -1760,6 +1760,7 @@ void LLPanelObjectInventory::createFolderViews(LLInventoryObject* inventory_root
 		LLFolderViewFolder* new_folder = NULL;
 		new_folder = new LLFolderViewFolder(inventory_root->getName(),
 											bridge->getIcon(),
+											bridge->getOpenIcon(),
 											NULL,
 											mFolders,
 											bridge);
@@ -1798,6 +1799,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewFolder(obj->getName(),
 											  bridge->getIcon(),
+											  bridge->getOpenIcon(),
 											  NULL,
 											  mFolders,
 											  bridge);
@@ -1808,6 +1810,7 @@ void LLPanelObjectInventory::createViewsForCategory(LLInventoryObject::object_li
 			{
 				view = new LLFolderViewItem(obj->getName(),
 											bridge->getIcon(),
+											bridge->getOpenIcon(),
 											NULL,
 											bridge->getCreationDate(),
 											mFolders,
@@ -1974,4 +1977,23 @@ void LLPanelObjectInventory::idle(void* user_data)
 	{
 		self->updateInventory();
 	}
+}
+
+void LLPanelObjectInventory::onFocusLost()
+{
+	// inventory no longer handles cut/copy/paste/delete
+	if (LLEditMenuHandler::gEditMenuHandler == mFolders)
+	{
+		LLEditMenuHandler::gEditMenuHandler = NULL;
+	}
+	
+	LLPanel::onFocusLost();
+}
+
+void LLPanelObjectInventory::onFocusReceived()
+{
+	// inventory now handles cut/copy/paste/delete
+	LLEditMenuHandler::gEditMenuHandler = mFolders;
+	
+	LLPanel::onFocusReceived();
 }

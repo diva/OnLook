@@ -35,7 +35,6 @@
 #include "llfolderview.h"
 
 #include "llcallbacklist.h"
-#include "llfloaterinventory.h"
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h" // *TODO: remove this once hack below gone.
 #include "llinventoryfilter.h"
@@ -43,6 +42,7 @@
 #include "llinventorymodelbackgroundfetch.h"
 #include "llinventorypanel.h"
 #include "llfoldertype.h"
+#include "llfloaterinventory.h"// hacked in for the bonus context menu items.
 #include "llkeyboard.h"
 #include "lllineeditor.h"
 #include "llmenugl.h"
@@ -196,13 +196,13 @@ void LLCloseAllFoldersFunctor::doItem(LLFolderViewItem* item)
 ///----------------------------------------------------------------------------
 
 // Default constructor
-LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon,
+LLFolderView::LLFolderView( const std::string& name,
 						   const LLRect& rect, const LLUUID& source_id, LLPanel *parent_view, LLFolderViewEventListener* listener ) :
 #if LL_WINDOWS
 #pragma warning( push )
 #pragma warning( disable : 4355 ) // warning C4355: 'this' : used in base member initializer list
 #endif
-	LLFolderViewFolder( name, root_folder_icon, NULL, this, listener ),
+	LLFolderViewFolder( name, NULL, NULL, NULL, this, listener ),
 #if LL_WINDOWS
 #pragma warning( pop )
 #endif
@@ -210,17 +210,18 @@ LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_ic
 	mScrollContainer( NULL ),
 	mPopupMenuHandle(),
 	mAllowMultiSelect(TRUE),
+	mShowEmptyMessage(TRUE),
 	mShowFolderHierarchy(FALSE),
 	mSourceID(source_id),
 	mRenameItem( NULL ),
 	mNeedsScroll( FALSE ),
-	mLastScrollItem( NULL ),
+	mUseLabelSuffix( TRUE ),
+	mPinningSelectedItem(FALSE),
 	mNeedsAutoSelect( FALSE ),
 	mAutoSelectOverride(FALSE),
 	mNeedsAutoRename(FALSE),
 	mDebugFilters(FALSE),
 	mSortOrder(LLInventoryFilter::SO_FOLDERS_BY_NAME),	// This gets overridden by a pref immediately
-	mSearchType(1),
 	mFilter( new LLInventoryFilter(name) ),
 	mShowSelectionContext(FALSE),
 	mShowSingleSelection(FALSE),
@@ -228,9 +229,14 @@ LLFolderView::LLFolderView( const std::string& name, LLUIImagePtr root_folder_ic
 	mSignalSelectCallback(0),
 	mMinWidth(0),
 	mDragAndDropThisFrame(FALSE),
-	mParentPanel(parent_view)
+	mParentPanel(parent_view),
+	mUseEllipses(FALSE),
+	mSearchType(1)
+
 {
 	mRoot = this;
+
+	mShowLoadStatus = TRUE;
 	LLRect new_rect(rect.mLeft, rect.mBottom + getRect().getHeight(), rect.mLeft + getRect().getWidth(), rect.mBottom);
 	setRect( rect );
 	reshape(rect.getWidth(), rect.getHeight());
@@ -310,18 +316,6 @@ BOOL LLFolderView::canFocusChildren() const
 	return FALSE;
 }
 
-void LLFolderView::checkTreeResortForModelChanged()
-{
-	if (mSortOrder & LLInventoryFilter::SO_DATE && !(mSortOrder & LLInventoryFilter::SO_FOLDERS_BY_NAME))
-	{
-		// This is the case where something got added or removed.  If we are date sorting
-		// everything including folders, then we need to rebuild the whole tree.
-		// Just set to something not SO_DATE to force the folder most resent date resort.
-		mSortOrder = mSortOrder & ~LLInventoryFilter::SO_DATE;
-		setSortOrder(mSortOrder | LLInventoryFilter::SO_DATE);
-	}
-}
-
 static LLFastTimer::DeclareTimer FTM_SORT("Sort Inventory");
 
 void LLFolderView::setSortOrder(U32 order)
@@ -329,15 +323,10 @@ void LLFolderView::setSortOrder(U32 order)
 	if (order != mSortOrder)
 	{
 		LLFastTimer t(FTM_SORT);
+		
 		mSortOrder = order;
 
-		for (folders_t::iterator iter = mFolders.begin();
-			 iter != mFolders.end();)
-		{
-			folders_t::iterator fit = iter++;
-			(*fit)->sortBy(order);
-		}
-
+		sortBy(order);
 		arrangeAll();
 	}
 }
@@ -412,10 +401,7 @@ BOOL LLFolderView::addFolder( LLFolderViewFolder* folder)
 	{
 		mFolders.insert(mFolders.begin(), folder);
 	}
-	if (folder->numSelected())
-	{
-		recursiveIncrementNumDescendantsSelected(folder->numSelected());
-	}
+	folder->setShowLoadStatus(mShowLoadStatus);
 	folder->setOrigin(0, 0);
 	folder->reshape(getRect().getWidth(), 0);
 	folder->setVisible(FALSE);
@@ -430,16 +416,6 @@ void LLFolderView::closeAllFolders()
 	// Close all the folders
 	setOpenArrangeRecursively(FALSE, LLFolderViewFolder::RECURSE_DOWN);
 	arrangeAll();
-}
-
-void LLFolderView::openFolder(const std::string& foldername)
-{
-	LLFolderViewFolder* inv = getChild<LLFolderViewFolder>(foldername);
-	if (inv)
-	{
-		setSelection(inv, FALSE, FALSE);
-		inv->setOpen(TRUE);
-	}
 }
 
 void LLFolderView::openTopLevelFolders()
@@ -508,6 +484,7 @@ S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_gen
 			folderp->setVisible(show_folder_state == LLInventoryFilter::SHOW_ALL_FOLDERS || // always show folders?
 									(folderp->getFiltered(filter_generation) || folderp->hasFilteredDescendants(filter_generation))); // passed filter or has descendants that passed filter
 		}
+
 		if (folderp->getVisible())
 		{
 			S32 child_height = 0;
@@ -604,6 +581,11 @@ void LLFolderView::reshape(S32 width, S32 height, BOOL called_from_parent)
 	}
 	width = llmax(mMinWidth, scroll_rect.getWidth());
 	height = llmax(mRunningHeight, scroll_rect.getHeight());
+
+	// restrict width with scroll container's width
+	if (mUseEllipses)
+		width = scroll_rect.getWidth();
+
 	LLView::reshape(width, height, called_from_parent);
 
 	mReshapeSignal(mSelectedItems, FALSE);
@@ -696,6 +678,30 @@ BOOL LLFolderView::setSelection(LLFolderViewItem* selection, BOOL openitem,
 	return rv;
 }
 
+void LLFolderView::setSelectionByID(const LLUUID& obj_id, BOOL take_keyboard_focus)
+{
+	LLFolderViewItem* itemp = getItemByID(obj_id);
+	if(itemp && itemp->getListener())
+	{
+		itemp->arrangeAndSet(TRUE, take_keyboard_focus);
+		mSelectThisID.setNull();
+		return;
+	}
+	else
+	{
+		// save the desired item to be selected later (if/when ready)
+		mSelectThisID = obj_id;
+	}
+}
+
+void LLFolderView::updateSelection()
+{
+	if (mSelectThisID.notNull())
+	{
+		setSelectionByID(mSelectThisID, false);
+	}
+}
+
 BOOL LLFolderView::changeSelection(LLFolderViewItem* selection, BOOL selected)
 {
 	BOOL rv = FALSE;
@@ -736,26 +742,6 @@ BOOL LLFolderView::changeSelection(LLFolderViewItem* selection, BOOL selected)
 	mSignalSelectCallback = SIGNAL_KEYBOARD_FOCUS;
 	
 	return rv;
-}
-
-void LLFolderView::extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items)
-{
-	// now store resulting selection
-	if (mAllowMultiSelect)
-	{
-		LLFolderViewItem *cur_selection = getCurSelectedItem();
-		LLFolderViewFolder::extendSelection(selection, cur_selection, items);
-		for (S32 i = 0; i < items.count(); i++)
-		{
-			addToSelectionList(items[i]);
-		}
-	}
-	else
-	{
-		setSelection(selection, FALSE, FALSE);
-	}
-
-	mSignalSelectCallback = SIGNAL_KEYBOARD_FOCUS;
 }
 
 static LLFastTimer::DeclareTimer FTM_SANITIZE_SELECTION("Sanitize Selection");
@@ -874,23 +860,27 @@ void LLFolderView::sanitizeSelection()
 
 void LLFolderView::clearSelection()
 {
-	if (mSelectedItems.size() > 0)
+	for (selected_items_t::const_iterator item_it = mSelectedItems.begin(); 
+		 item_it != mSelectedItems.end(); 
+		 ++item_it)
 	{
-		recursiveDeselect(FALSE);
-		mSelectedItems.clear();
+		(*item_it)->setUnselected();
 	}
+
+	mSelectedItems.clear();
+	mSelectThisID.setNull();
 }
 
-BOOL LLFolderView::getSelectionList(std::set<LLUUID> &selection)
+std::set<LLUUID> LLFolderView::getSelectionList() const
 {
+	std::set<LLUUID> selection;
 	for (selected_items_t::const_iterator item_it = mSelectedItems.begin(); 
 		 item_it != mSelectedItems.end(); 
 		 ++item_it)
 	{
 		selection.insert((*item_it)->getListener()->getUUID());
 	}
-
-	return (selection.size() != 0);
+	return selection;
 }
 
 BOOL LLFolderView::startDrag(LLToolDragAndDrop::ESource source)
@@ -972,7 +962,7 @@ void LLFolderView::draw()
 	{
 		mStatusText.clear();
 	}
-	else
+	else if (mShowEmptyMessage)
 	{
 		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 		if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
@@ -987,7 +977,7 @@ void LLFolderView::draw()
 		}
 	}
 
-	LLFolderViewFolder::draw();
+	LLView::draw();
 
 	mDragAndDropThisFrame = FALSE;
 }
@@ -1013,10 +1003,8 @@ void LLFolderView::closeRenamer( void )
 {
 	if (mRenamer && mRenamer->getVisible())
 	{
-		if(mRenamer == gFocusMgr.getTopCtrl())
-			gFocusMgr.setTopCtrl( NULL );
 		// Triggers onRenamerLost() that actually closes the renamer.
-		//gFocusMgr.setTopCtrl( NULL );
+		gFocusMgr.setTopCtrl( NULL );
 	}
 }
 
@@ -1255,7 +1243,9 @@ void LLFolderView::autoOpenItem( LLFolderViewFolder* item )
 	mAutoOpenItems.push(item);
 	
 	item->setOpen(TRUE);
-	scrollToShowItem(item);
+	LLRect content_rect = mScrollContainer->getContentWindowRect();
+	LLRect constraint_rect(0,content_rect.getHeight(), content_rect.getWidth(), 0);
+	scrollToShowItem(item, constraint_rect);
 }
 
 void LLFolderView::closeAutoOpenedFolders()
@@ -1865,8 +1855,7 @@ BOOL LLFolderView::handleRightMouseDown( S32 x, S32 y, MASK mask )
 	   
 		menu->updateParent(LLMenuGL::sMenuContainer);
 		LLMenuGL::showPopup(this, menu, x, y);
-
-		menu->needsArrange(); // update menu height if needed
+		//menu->needsArrange(); // update menu height if needed
 	}
 	else
 	{
@@ -1922,8 +1911,27 @@ BOOL LLFolderView::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 									 std::string& tooltip_msg)
 {
 	mDragAndDropThisFrame = TRUE;
+	// have children handle it first
 	BOOL handled = LLView::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data,
 											 accept, tooltip_msg);
+
+	// when drop is not handled by child, it should be handled
+	// by the folder which is the hierarchy root.
+	if (!handled)
+	{
+		if (getListener()->getUUID().notNull())
+		{
+			handled = LLFolderViewFolder::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
+		}
+		else
+		{
+			if (!mFolders.empty())
+			{
+				// dispatch to last folder as a hack to support "Contents" folder in object inventory
+				handled = mFolders.back()->handleDragAndDropFromChild(mask,drop,cargo_type,cargo_data,accept,tooltip_msg);
+			}
+		}
+	}
 
 	if (handled)
 	{
@@ -1970,50 +1978,41 @@ void LLFolderView::scrollToShowSelection()
 
 // If the parent is scroll containter, scroll it to make the selection
 // is maximally visible.
-void LLFolderView::scrollToShowItem(LLFolderViewItem* item)
+void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constraint_rect)
 {
 	if (!mScrollContainer) return;
+
 	// don't scroll to items when mouse is being used to scroll/drag and drop
 	if (gFocusMgr.childHasMouseCapture(mScrollContainer))
 	{
 		mNeedsScroll = FALSE;
 		return;
 	}
-	if(item && mScrollContainer)
+
+	// if item exists and is in visible portion of parent folder...
+	if(item)
 	{
-		LLRect local_rect = item->getRect();
+		LLRect local_rect = item->getLocalRect();
 		LLRect item_scrolled_rect; // item position relative to display area of scroller
+		LLRect visible_doc_rect = mScrollContainer->getVisibleContentRect();
 		
 		S32 icon_height = mIcon.isNull() ? 0 : mIcon->getHeight(); 
 		S32 label_height = llround(sFont->getLineHeight()); 
-		// when navigating with keyboard, only move top of folders on screen, otherwise show whole folder
-		S32 max_height_to_show = gFocusMgr.childHasKeyboardFocus(this) ? (llmax( icon_height, label_height ) + ICON_PAD) : local_rect.getHeight(); 
-		item->localPointToOtherView(item->getIndentation(), llmax(0, local_rect.getHeight() - max_height_to_show), &item_scrolled_rect.mLeft, &item_scrolled_rect.mBottom, mScrollContainer);
-		item->localPointToOtherView(local_rect.getWidth(), local_rect.getHeight(), &item_scrolled_rect.mRight, &item_scrolled_rect.mTop, mScrollContainer);
+		// when navigating with keyboard, only move top of opened folder on screen, otherwise show whole folder
+		S32 max_height_to_show = item->isOpen() && mScrollContainer->hasFocus() ? (llmax( icon_height, label_height ) + ICON_PAD) : local_rect.getHeight(); 
+		
+		// get portion of item that we want to see...
+		LLRect item_local_rect = LLRect(item->getIndentation(), 
+										local_rect.getHeight(), 
+										llmin(MIN_ITEM_WIDTH_VISIBLE, local_rect.getWidth()), 
+										llmax(0, local_rect.getHeight() - max_height_to_show));
 
-		item_scrolled_rect.mRight = llmin(item_scrolled_rect.mLeft + MIN_ITEM_WIDTH_VISIBLE, item_scrolled_rect.mRight);
-		LLCoordGL scroll_offset(-mScrollContainer->getBorderWidth() - item_scrolled_rect.mLeft, 
-				mScrollContainer->getRect().getHeight() - item_scrolled_rect.mTop - 1);
+		LLRect item_doc_rect;
 
-		S32 max_scroll_offset = getVisibleRect().getHeight() - item_scrolled_rect.getHeight();
-		if (item != mLastScrollItem || // if we're scrolling to focus on a new item
-		// or the item has just appeared on screen and it wasn't onscreen before
-			(scroll_offset.mY > 0 && scroll_offset.mY < max_scroll_offset && 
-			(mLastScrollOffset.mY < 0 || mLastScrollOffset.mY > max_scroll_offset)))
-		{
-			// we now have a position on screen that we want to keep stable
-			// offset of selection relative to top of visible area
-			mLastScrollOffset = scroll_offset;
-			mLastScrollItem = item;
-		}
+		item->localRectToOtherView(item_local_rect, &item_doc_rect, this); 
 
-		mScrollContainer->scrollToShowRect( item_scrolled_rect, mLastScrollOffset );
+		mScrollContainer->scrollToShowRect( item_doc_rect, constraint_rect );
 
-		// after scrolling, store new offset
-		// in case we don't have room to maintain the original position
-		LLCoordGL new_item_left_top;
-		item->localPointToOtherView(item->getIndentation(), item->getRect().getHeight(), &new_item_left_top.mX, &new_item_left_top.mY, mScrollContainer);
-		mLastScrollOffset.set(-mScrollContainer->getBorderWidth() - new_item_left_top.mX, mScrollContainer->getRect().getHeight() - new_item_left_top.mY - 1);
 	}
 }
 
@@ -2141,7 +2140,7 @@ void LLFolderView::doIdle()
 		LLFastTimer t3(FTM_AUTO_SELECT);
 		// select new item only if a filtered item not currently selected
 		LLFolderViewItem* selected_itemp = mSelectedItems.empty() ? NULL : mSelectedItems.back();
-		if (selected_itemp != NULL && sFolderViewItems.count(selected_itemp) == 0)
+		/*if (selected_itemp != NULL && sFolderViewItems.count(selected_itemp) == 0)
 		{
 			// There is a crash bug due to a race condition: when a folder view item is
 			// destroyed, its address may still appear in mSelectedItems a couple of doIdle()
@@ -2153,7 +2152,7 @@ void LLFolderView::doIdle()
 			clearSelection();
 			requestArrange();
 		}
-		else if ((selected_itemp && !selected_itemp->getFiltered()) && !mAutoSelectOverride)
+		else */if ((selected_itemp && !selected_itemp->getFiltered()) && !mAutoSelectOverride)
 		{
 			// select first filtered item
 			LLSelectFirstFilteredItem filter;
@@ -2171,6 +2170,59 @@ void LLFolderView::doIdle()
 		scrollToShowSelection();
 	}
 
+	// during filtering process, try to pin selected item's location on screen
+	// this will happen when searching your inventory and when new items arrive
+	if (filter_modified_and_active)
+	{
+		// calculate rectangle to pin item to at start of animated rearrange
+		if (!mPinningSelectedItem && !mSelectedItems.empty())
+		{
+			// lets pin it!
+			mPinningSelectedItem = TRUE;
+
+			LLRect visible_content_rect = mScrollContainer->getVisibleContentRect();
+			LLFolderViewItem* selected_item = mSelectedItems.back();
+
+			LLRect item_rect;
+			selected_item->localRectToOtherView(selected_item->getLocalRect(), &item_rect, this);
+			// if item is visible in scrolled region
+			if (visible_content_rect.overlaps(item_rect))
+			{
+				// then attempt to keep it in same place on screen
+				mScrollConstraintRect = item_rect;
+				mScrollConstraintRect.translate(-visible_content_rect.mLeft, -visible_content_rect.mBottom);
+			}
+			else
+			{
+				// otherwise we just want it onscreen somewhere
+				LLRect content_rect = mScrollContainer->getContentWindowRect();
+				mScrollConstraintRect.setOriginAndSize(0, 0, content_rect.getWidth(), content_rect.getHeight());
+			}
+		}
+	}
+	else
+	{
+		// stop pinning selected item after folders stop rearranging
+		if (!needsArrange())
+		{
+			mPinningSelectedItem = FALSE;
+		}
+	}
+
+	LLRect constraint_rect;
+	if (mPinningSelectedItem)
+	{
+		// use last known constraint rect for pinned item
+		constraint_rect = mScrollConstraintRect;
+	}
+	else
+	{
+		// during normal use (page up/page down, etc), just try to fit item on screen
+		LLRect content_rect = mScrollContainer->getContentWindowRect();
+		constraint_rect.setOriginAndSize(0, 0, content_rect.getWidth(), content_rect.getHeight());
+	}
+
+
 	BOOL is_visible = isInVisibleChain();
 
 	if ( is_visible )
@@ -2184,10 +2236,10 @@ void LLFolderView::doIdle()
 
 	if (mSelectedItems.size() && mNeedsScroll)
 	{
-		scrollToShowItem(mSelectedItems.back());
+		scrollToShowItem(mSelectedItems.back(), constraint_rect);
 		// continue scrolling until animated layout change is done
-		if (getCompletedFilterGeneration() >= mFilter->getMinRequiredGeneration() &&
-			(!needsArrange() || !is_visible))
+		if (!filter_modified_and_active 
+			&& (!needsArrange() || !is_visible))
 		{
 			mNeedsScroll = FALSE;
 		}
@@ -2286,6 +2338,87 @@ void LLFolderView::updateMenu()
 		menu->needsArrange(); // update menu height if needed
 	}
 }
+
+bool LLFolderView::selectFirstItem()
+{
+	for (folders_t::iterator iter = mFolders.begin();
+		 iter != mFolders.end();++iter)
+	{
+		LLFolderViewFolder* folder = (*iter );
+		if (folder->getVisible())
+		{
+			LLFolderViewItem* itemp = folder->getNextFromChild(0,true);
+			if(itemp)
+				setSelection(itemp,FALSE,TRUE);
+			return true;	
+		}
+		
+	}
+	for(items_t::iterator iit = mItems.begin();
+		iit != mItems.end(); ++iit)
+	{
+		LLFolderViewItem* itemp = (*iit);
+		if (itemp->getVisible())
+		{
+			setSelection(itemp,FALSE,TRUE);
+			return true;	
+		}
+	}
+	return false;
+}
+bool LLFolderView::selectLastItem()
+{
+	for(items_t::reverse_iterator iit = mItems.rbegin();
+		iit != mItems.rend(); ++iit)
+	{
+		LLFolderViewItem* itemp = (*iit);
+		if (itemp->getVisible())
+		{
+			setSelection(itemp,FALSE,TRUE);
+			return true;	
+		}
+	}
+	for (folders_t::reverse_iterator iter = mFolders.rbegin();
+		 iter != mFolders.rend();++iter)
+	{
+		LLFolderViewFolder* folder = (*iter);
+		if (folder->getVisible())
+		{
+			LLFolderViewItem* itemp = folder->getPreviousFromChild(0,true);
+			if(itemp)
+				setSelection(itemp,FALSE,TRUE);
+			return true;	
+		}
+	}
+	return false;
+}
+
+
+S32	LLFolderView::notify(const LLSD& info) 
+{
+	if(info.has("action"))
+	{
+		std::string str_action = info["action"];
+		if(str_action == "select_first")
+		{
+			setFocus(true);
+			selectFirstItem();
+			scrollToShowSelection();
+			return 1;
+
+		}
+		else if(str_action == "select_last")
+		{
+			setFocus(true);
+			selectLastItem();
+			scrollToShowSelection();
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
 ///----------------------------------------------------------------------------
 /// Local function definitions
 ///----------------------------------------------------------------------------
@@ -2322,9 +2455,9 @@ bool LLFolderView::getFilterWorn() const
 	return mFilter->getFilterWorn();
 }
 
-U32 LLFolderView::getFilterTypes() const
+U32 LLFolderView::getFilterObjectTypes() const
 {
-	return mFilter->getFilterTypes();
+	return mFilter->getFilterObjectTypes();
 }
 
 PermissionMask LLFolderView::getFilterPermissions() const
@@ -2381,27 +2514,3 @@ void properties_selected_items(void* user_data)
 		fv->propertiesSelectedItems();
 	}
 }
-
-///----------------------------------------------------------------------------
-/// Class LLFolderViewEventListener
-///----------------------------------------------------------------------------
-
-void LLFolderViewEventListener::arrangeAndSet(LLFolderViewItem* focus,
-											  BOOL set_selection,
-											  BOOL take_keyboard_focus)
-{
-	if(!focus) return;
-	LLFolderView* root = focus->getRoot();
-	if(focus->getParentFolder())
-		focus->getParentFolder()->requestArrange();
-	if(set_selection)
-	{
-		focus->setSelectionFromRoot(focus, TRUE, take_keyboard_focus);
-		if(root)
-		{
-			root->scrollToShowSelection();
-		}
-	}
-}
-
-

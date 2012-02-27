@@ -3024,6 +3024,13 @@ LLSD	LLView::getValue() const
 	return LLSD();
 }
 
+S32	LLView::notifyParent(const LLSD& info)
+{
+	LLView* parent = getParent();
+	if(parent)
+		return parent->notifyParent(info);
+	return 0;
+}
 LLView* LLView::createWidget(LLXMLNodePtr xml_node) const
 {
 	// forward requests to ui ctrl factory

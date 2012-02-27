@@ -124,7 +124,7 @@ public:
 	void updateSortControls();
 
 	void resetFilters();
-
+	void updateItemcountText();
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 	static void closeAll() 
@@ -166,9 +166,10 @@ protected:
 	LLTabContainer*				mFilterTabs;
 	LLHandle<LLFloater>			mFinderHandle;
 	LLInventoryPanel*			mActivePanel;
+	bool						mResortActivePanel;
 	LLSaveFolderState*			mSavedFolderState;
-
 	std::string					mFilterText;
+	std::string					mFilterSubString;
 
 
 	// This container is used to hold all active inventory views. This

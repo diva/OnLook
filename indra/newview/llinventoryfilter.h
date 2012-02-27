@@ -51,8 +51,26 @@ public:
 		FILTER_MORE_RESTRICTIVE		// if you didn't pass the previous filter, you definitely won't pass this one
 	};
 
+	enum EFilterType	{
+		FILTERTYPE_NONE = 0,
+		FILTERTYPE_OBJECT = 0x1 << 0,	// normal default search-by-object-type
+		FILTERTYPE_CATEGORY = 0x1 << 1,	// search by folder type
+		FILTERTYPE_UUID	= 0x1 << 2,		// find the object with UUID and any links to it
+		FILTERTYPE_DATE = 0x1 << 3,		// search by date range
+		FILTERTYPE_WEARABLE = 0x1 << 4,	// search by wearable type
+		FILTERTYPE_EMPTYFOLDERS = 0x1 << 5	// pass if folder is not a system folder to be hidden if empty
+	};
+
+	enum EFilterLink
+	{
+		FILTERLINK_INCLUDE_LINKS,	// show links too
+		FILTERLINK_EXCLUDE_LINKS,	// don't show links
+		FILTERLINK_ONLY_LINKS		// only show links
+	};
+
 	enum ESortOrderType
 	{
+		SO_NAME = 0,						// Sort inventory by name
 		SO_DATE = 0x1,						// Sort inventory by date
 		SO_FOLDERS_BY_NAME = 0x1 << 1,		// Force folder sort by name
 		SO_SYSTEM_FOLDERS_TO_TOP = 0x1 << 2	// Force system folders to be on top
@@ -61,17 +79,26 @@ public:
 	LLInventoryFilter(const std::string& name);
 	virtual ~LLInventoryFilter();
 
-	void setFilterTypes(U32 types);
-	BOOL isFilterWith(LLInventoryType::EType t) const;
-	U32 getFilterTypes() const { return mFilterOps.mFilterTypes; }
-	
+	// +-------------------------------------------------------------------+
+	// + Parameters
+	// +-------------------------------------------------------------------+
+	void 				setFilterObjectTypes(U64 types);
+	U64 				getFilterObjectTypes() const;
+	U64					getFilterCategoryTypes() const;
+	BOOL 				isFilterObjectTypesWith(LLInventoryType::EType t) const;
+	void 				setFilterCategoryTypes(U64 types);
+	void 				setFilterUUID(const LLUUID &object_id);
+	void				setFilterWearableTypes(U64 types);
+	void				setFilterEmptySystemFolders();
+	void				updateFilterTypes(U64 types, U64& current_types);
+
 	void 				setFilterSubString(const std::string& string);
 	const std::string& 	getFilterSubString(BOOL trim = FALSE) const;
 	const std::string& 	getFilterSubStringOrig() const { return mFilterSubStringOrig; } 
 	BOOL 				hasFilterString() const;
 	
-	void setFilterWorn(bool worn) { mFilterWorn = worn; }
-	bool getFilterWorn() const { return mFilterWorn; }
+	void setFilterWorn(bool worn) { mFilterOps.mFilterWorn = worn; }
+	bool getFilterWorn() const { return mFilterOps.mFilterWorn; }
 
 	void setFilterPermissions(PermissionMask perms);
 	PermissionMask 		getFilterPermissions() const;
@@ -84,10 +111,18 @@ public:
 	void setHoursAgo(U32 hours);
 	U32 				getHoursAgo() const;
 
+	void 				setFilterLinks(U64 filter_link);
+	U64					getFilterLinks() const;
+
 	// +-------------------------------------------------------------------+
 	// + Execution And Results
 	// +-------------------------------------------------------------------+
-	BOOL check(LLFolderViewItem* item);
+	BOOL 				check(LLFolderViewItem* item);
+	bool				checkFolder(const LLFolderViewFolder* folder);
+	BOOL 				checkAgainstFilterType(const LLFolderViewItem* item) const;
+	BOOL 				checkAgainstPermissions(const LLFolderViewItem* item) const;
+	BOOL 				checkAgainstFilterLinks(const LLFolderViewItem* item) const;
+
 	std::string::size_type getStringMatchOffset() const;
 
 	// +-------------------------------------------------------------------+
@@ -146,12 +181,20 @@ private:
 	struct FilterOps
 	{
 		FilterOps();
-		U32				mFilterTypes;
+		U32 			mFilterTypes;
+
+		U64				mFilterObjectTypes; // For _OBJECT
+		U64				mFilterWearableTypes;
+		U64				mFilterCategoryTypes; // For _CATEGORY
+		LLUUID      	mFilterUUID; // for UUID
+
 		time_t			mMinDate;
 		time_t			mMaxDate;
 		U32				mHoursAgo;
 		EFolderShow		mShowFolderState;
 		PermissionMask	mPermissions;
+		U64				mFilterLinks;
+		bool			mFilterWorn;
 	};
 
 	U32						mOrder;
@@ -163,21 +206,19 @@ private:
 	std::string::size_type	mSubStringMatchOffset;
 	std::string				mFilterSubString;
 	std::string				mFilterSubStringOrig;
-	bool					mFilterWorn;
-	
-	const std::string	mName;
-	S32				mFilterGeneration;
-	S32				mMustPassGeneration;
-	S32				mMinRequiredGeneration;
-	S32				mNextFilterGeneration;
+	const std::string		mName;
 
-	S32				mFilterCount;
-	EFilterBehavior mFilterBehavior;
+	S32						mFilterGeneration;
+	S32						mMustPassGeneration;
+	S32						mMinRequiredGeneration;
+	S32						mNextFilterGeneration;
 
-	BOOL mModified;
-	BOOL mNeedTextRebuild;
-	std::string mFilterText;
+	S32						mFilterCount;
+	EFilterBehavior 		mFilterBehavior;
+
+	BOOL 					mModified;
+	BOOL 					mNeedTextRebuild;
+	std::string 			mFilterText;
 };
-
 
 #endif

@@ -5548,6 +5548,7 @@ void LLMeshBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	hide_context_entries(menu, items, disabled_items);
 }
 
+
 // +=================================================+
 // |        LLLinkBridge                             |
 // +=================================================+
@@ -5555,8 +5556,22 @@ void LLMeshBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 std::string LLLinkFolderBridge::sPrefix("Link: ");
 LLUIImagePtr LLLinkFolderBridge::getIcon() const
 {
-	//For now, all inv links share this icon. There is no 'overlay' mechanism yet.
-	return LLUI::getUIImage("inv_link_folder.tga");
+	LLFolderType::EType folder_type = LLFolderType::FT_NONE;
+	const LLInventoryObject *obj = getInventoryObject();
+	if (obj)
+	{
+		LLViewerInventoryCategory* cat = NULL;
+		LLInventoryModel* model = getInventoryModel();
+		if(model)
+		{
+			cat = (LLViewerInventoryCategory*)model->getCategory(obj->getLinkedUUID());
+			if (cat)
+			{
+				folder_type = cat->getPreferredType();
+			}
+		}
+	}
+	return LLFolderBridge::getIcon(folder_type);
 }
 
 void LLLinkFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)

@@ -105,10 +105,11 @@ public:
 	void clearSelection();
 	LLInventoryFilter* getFilter();
 	const LLInventoryFilter* getFilter() const;
-	void setFilterTypes(U32 filter);
-	U32 getFilterTypes() const;
+	void setFilterTypes(U64 filter, LLInventoryFilter::EFilterType = LLInventoryFilter::FILTERTYPE_OBJECT);
+	U32 getFilterObjectTypes() const;
 	void setFilterPermMask(PermissionMask filter_perm_mask);
 	U32 getFilterPermMask() const;
+	void setFilterWearableTypes(U64 filter);
 	void setFilterSubString(const std::string& string);
 	const std::string getFilterSubString();
 	void setFilterWorn(bool worn);
@@ -117,7 +118,8 @@ public:
 	void setSinceLogoff(BOOL sl);
 	void setHoursAgo(U32 hours);
 	BOOL getSinceLogoff();
-	
+	void setFilterLinks(U64 filter_links);
+
 	void setShowFolderState(LLInventoryFilter::EFolderShow show);
 	LLInventoryFilter::EFolderShow getShowFolderState();
 	void setAllowMultiSelect(BOOL allow) { mFolderRoot->setAllowMultiSelect(allow); }
@@ -187,8 +189,13 @@ public:
 
 private:
 	const std::string			mSortOrderSetting;
-	LLUUID						mSelectThisID; // if non null, select this item
-	
+
+	//--------------------------------------------------------------------
+	// Hidden folders
+	//--------------------------------------------------------------------
+public:
+	void addHideFolderType(LLFolderType::EType folder_type);
+
 public:
 	BOOL 				getIsViewsInitialized() const { return mViewsInitialized; }
 	const LLUUID&		getRootFolderID() const;
@@ -199,6 +206,7 @@ protected:
 
 	virtual void		buildFolderView();
 	LLFolderViewItem*	buildNewViews(const LLUUID& id);
+	BOOL				getIsHiddenFolderType(LLFolderType::EType folder_type) const;
 	
 	virtual LLFolderView*		createFolderView(LLInvFVBridge * bridge, bool useLabelSuffix);
 	virtual LLFolderViewFolder*	createFolderViewFolder(LLInvFVBridge * bridge);

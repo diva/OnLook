@@ -308,7 +308,7 @@ template<> bool SH_SpamHandler<std::string>::isAgent(const std::string &owner)
 
 bool friendship_offer_callback(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	LLMessageSystem* msg = gMessageSystem;
 	const LLSD& payload = notification["payload"];
 	switch(option)
@@ -730,7 +730,7 @@ void send_sound_trigger(const LLUUID& sound_id, F32 gain)
 
 bool join_group_response(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	BOOL delete_context_data = TRUE;
 	bool accept_invite = false;
 
@@ -919,7 +919,7 @@ private:
 		mSelectedItems.clear();
 		if (LLInventoryPanel::getActiveInventoryPanel())
 		{
-			LLInventoryPanel::getActiveInventoryPanel()->getRootFolder()->getSelectionList(mSelectedItems);
+			mSelectedItems = LLInventoryPanel::getActiveInventoryPanel()->getRootFolder()->getSelectionList();
 		}
 		mSelectedItems.erase(mMoveIntoFolderID);
 	}
@@ -954,8 +954,7 @@ private:
 		}
 
 		// get selected items (without destination folder)
-		selected_items_t selected_items;
-		active_panel->getRootFolder()->getSelectionList(selected_items);
+		selected_items_t selected_items = active_panel->getRootFolder()->getSelectionList();
 		selected_items.erase(mMoveIntoFolderID);
 
 		// compare stored & current sets of selected items

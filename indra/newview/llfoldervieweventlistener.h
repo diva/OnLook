@@ -57,6 +57,7 @@ public:
 	virtual PermissionMask getPermissionMask() const = 0;
 	virtual LLFolderType::EType getPreferredType() const = 0;
 	virtual LLPointer<LLUIImage> getIcon() const = 0;
+	virtual LLPointer<LLUIImage> getOpenIcon() const { return getIcon(); }
 	virtual LLFontGL::StyleFlags getLabelStyle() const = 0;
 	virtual std::string getLabelSuffix() const = 0;
 	virtual void openItem( void ) = 0;
@@ -101,11 +102,6 @@ public:
 	// bridge is actually dropped. This allows for cleanup of the old
 	// view, reference counting, etc.
 //	virtual void dropped() = 0;
-
-	// this method accesses the parent and arranges and sets it as
-	// specified.
-	void arrangeAndSet(LLFolderViewItem* focus, BOOL set_selection,
-		BOOL take_keyboard_focus = TRUE);
 };
 
 

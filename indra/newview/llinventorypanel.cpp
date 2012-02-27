@@ -204,10 +204,8 @@ BOOL LLInventoryPanel::postBuild()
 	{
 		setSortOrder(gSavedSettings.getU32(DEFAULT_SORT_ORDER));
 	}
-	mFolderRoot->setSortOrder(mFolderRoot->getFilter()->getSortOrder());
-
-
-	return TRUE;
+	getFilter()->setFilterEmptySystemFolders();
+	return LLPanel::postBuild();
 }
 
 LLInventoryPanel::~LLInventoryPanel()
@@ -273,11 +271,8 @@ LLView* LLInventoryPanel::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 
 void LLInventoryPanel::draw()
 {
-	// select the desired item (in case it wasn't loaded when the selection was requested)
-	if (mSelectThisID.notNull())
-	{
-		setSelection(mSelectThisID, false);
-	}
+	// Select the desired item (in case it wasn't loaded when the selection was requested)
+	mFolderRoot->updateSelection();
 	LLPanel::draw();
 }
 
@@ -299,14 +294,17 @@ const LLInventoryFilter* LLInventoryPanel::getFilter() const
 	return NULL;
 }
 
-void LLInventoryPanel::setFilterTypes(U32 filter_types)
+void LLInventoryPanel::setFilterTypes(U64 types, LLInventoryFilter::EFilterType filter_type)
 {
-	getFilter()->setFilterTypes(filter_types);
-}	
+	if (filter_type == LLInventoryFilter::FILTERTYPE_OBJECT)
+		getFilter()->setFilterObjectTypes(types);
+	if (filter_type == LLInventoryFilter::FILTERTYPE_CATEGORY)
+		getFilter()->setFilterCategoryTypes(types);
+}
 
-U32 LLInventoryPanel::getFilterTypes() const 
+U32 LLInventoryPanel::getFilterObjectTypes() const 
 { 
-	return mFolderRoot->getFilterTypes(); 
+	return mFolderRoot->getFilterObjectTypes(); 
 }
 
 U32 LLInventoryPanel::getFilterPermMask() const 
@@ -314,9 +312,15 @@ U32 LLInventoryPanel::getFilterPermMask() const
 	return mFolderRoot->getFilterPermissions(); 
 }
 
+
 void LLInventoryPanel::setFilterPermMask(PermissionMask filter_perm_mask)
 {
 	getFilter()->setFilterPermissions(filter_perm_mask);
+}
+
+void LLInventoryPanel::setFilterWearableTypes(U64 types)
+{
+	getFilter()->setFilterWearableTypes(types);
 }
 
 void LLInventoryPanel::setFilterWorn(bool worn)
@@ -333,6 +337,7 @@ const std::string LLInventoryPanel::getFilterSubString()
 { 
 	return mFolderRoot->getFilterSubString(); 
 }
+
 
 void LLInventoryPanel::setSortOrder(U32 order)
 {
@@ -363,6 +368,11 @@ void LLInventoryPanel::setSinceLogoff(BOOL sl)
 void LLInventoryPanel::setHoursAgo(U32 hours)
 {
 	getFilter()->setHoursAgo(hours);
+}
+
+void LLInventoryPanel::setFilterLinks(U64 filter_links)
+{
+	getFilter()->setFilterLinks(filter_links);
 }
 
 void LLInventoryPanel::setShowFolderState(LLInventoryFilter::EFolderShow show)
@@ -599,9 +609,7 @@ LLFolderView * LLInventoryPanel::createFolderView(LLInvFVBridge * bridge, bool u
 					   0);
 
 	LLFolderView* ret = new LLFolderView(
-	
 	getName(), 
-	NULL, 
 	folder_rect, 
 	LLUUID::null, 
 	this, 
@@ -615,6 +623,7 @@ LLFolderViewFolder * LLInventoryPanel::createFolderViewFolder(LLInvFVBridge * br
 	return new LLFolderViewFolder(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
+		bridge->getOpenIcon(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		mFolderRoot,
 		bridge);
@@ -625,6 +634,7 @@ LLFolderViewItem * LLInventoryPanel::createFolderViewItem(LLInvFVBridge * bridge
 	return new LLFolderViewItem(
 		bridge->getDisplayName(),
 		bridge->getIcon(),
+		bridge->getOpenIcon(),
 		LLUI::getUIImage("inv_link_overlay.tga"),
 		bridge->getCreationDate(),
 		mFolderRoot,
@@ -833,18 +843,28 @@ BOOL LLInventoryPanel::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 								   EAcceptance* accept,
 								   std::string& tooltip_msg)
 {
+	BOOL handled = FALSE;
 
-	BOOL handled = LLPanel::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
-
-	if (handled)
+	//if (mAcceptsDragAndDrop)
 	{
-		mFolderRoot->setDragAndDropThisFrame();
+		handled = LLPanel::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
+
+		// If folder view is empty the (x, y) point won't be in its rect
+		// so the handler must be called explicitly.
+		// but only if was not handled before. See EXT-6746.
+		if (!handled && !mFolderRoot->hasVisibleChildren())
+		{
+			handled = mFolderRoot->handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
+		}
+
+		if (handled)
+		{
+			mFolderRoot->setDragAndDropThisFrame();
+		}
 	}
 
 	return handled;
 }
-
-
 
 void LLInventoryPanel::onFocusLost()
 {
@@ -886,22 +906,18 @@ void LLInventoryPanel::openDefaultFolderForType(LLAssetType::EType type)
 
 void LLInventoryPanel::setSelection(const LLUUID& obj_id, BOOL take_keyboard_focus)
 {
-	LLFolderViewItem* itemp = mFolderRoot->getItemByID(obj_id);
-	if(itemp && itemp->getListener())
+	// Don't select objects in COF (e.g. to prevent refocus when items are worn).
+	const LLInventoryObject *obj = gInventory.getObject(obj_id);
+	if (obj && obj->getParentUUID() == LLAppearanceMgr::instance().getCOF())
 	{
-		itemp->getListener()->arrangeAndSet(itemp, TRUE, take_keyboard_focus);
-		mSelectThisID.setNull();
 		return;
 	}
-	else
-	{
-		// save the desired item to be selected later (if/when ready)
-		mSelectThisID = obj_id;
-	}
+	mFolderRoot->setSelectionByID(obj_id, take_keyboard_focus);
 }
+
 void LLInventoryPanel::setSelectCallback(const boost::function<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)>& cb) 
 { 
-	if (mFolderRoot)
+	if (mFolderRoot) 
 	{
 		mFolderRoot->setSelectCallback(cb);
 	}
@@ -910,7 +926,6 @@ void LLInventoryPanel::setSelectCallback(const boost::function<void (const std::
 void LLInventoryPanel::clearSelection()
 {
 	mFolderRoot->clearSelection();
-	mSelectThisID.setNull();
 }
 
 void LLInventoryPanel::onSelectionChange(const std::deque<LLFolderViewItem*>& items, BOOL user_action)
@@ -1005,4 +1020,13 @@ LLInventoryPanel* LLInventoryPanel::getActiveInventoryPanel(BOOL auto_open)
 		res = floater_inventory->getActivePanel();
 	}
 	return res;
+}
+void LLInventoryPanel::addHideFolderType(LLFolderType::EType folder_type)
+{
+	getFilter()->setFilterCategoryTypes(getFilter()->getFilterCategoryTypes() & ~(1ULL << folder_type));
+}
+
+BOOL LLInventoryPanel::getIsHiddenFolderType(LLFolderType::EType folder_type) const
+{
+	return !(getFilter()->getFilterCategoryTypes() & (1ULL << folder_type));
 }

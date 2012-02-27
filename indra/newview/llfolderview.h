@@ -71,16 +71,13 @@ class LLTextBox;
 // manages the screen region of the folder view.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class LLUICtrl;
-class LLLineEditor;
-
 class LLFolderView : public LLFolderViewFolder, public LLEditMenuHandler
 {
 public:
 	typedef void (*SelectCallback)(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
 
 
-	LLFolderView( const std::string& name, LLUIImagePtr root_folder_icon, const LLRect& rect, 
+	LLFolderView( const std::string& name, const LLRect& rect, 
 					const LLUUID& source_id, LLPanel *parent_view, LLFolderViewEventListener* listener );
 	virtual ~LLFolderView( void );
 
@@ -91,7 +88,6 @@ public:
 	// FolderViews default to sort by name.  This will change that,
 	// and resort the items if necessary.
 	void setSortOrder(U32 order);
-	void checkTreeResortForModelChanged();
 	void setFilterPermMask(PermissionMask filter_perm_mask);
 
 	typedef boost::signals2::signal<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)> signal_t;
@@ -102,7 +98,7 @@ public:
 	LLInventoryFilter* getFilter();
 	const std::string getFilterSubString(BOOL trim = FALSE);
 	bool getFilterWorn() const;
-	U32 getFilterTypes() const;
+	U32 getFilterObjectTypes() const;
 	PermissionMask getFilterPermissions() const;
 	// *NOTE: use getFilter()->getShowFolderState();
 	//LLInventoryFilter::EFolderShow getShowFolderState();
@@ -116,7 +112,6 @@ public:
 
 	// Close all folders in the view
 	void closeAllFolders();
-	void openFolder(const std::string& foldername);
 	void openTopLevelFolders();
 
 	virtual void toggleOpen() {};
@@ -140,13 +135,17 @@ public:
 	virtual BOOL setSelection(LLFolderViewItem* selection, BOOL openitem,
 		BOOL take_keyboard_focus);
 
+	// Used by menu callbacks
+	void setSelectionByID(const LLUUID& obj_id, BOOL take_keyboard_focus);
+
+	// Called once a frame to update the selection if mSelectThisID has been set
+	void updateSelection();
+
 	// This method is used to toggle the selection of an item. Walks
 	// children, and keeps track of selected objects.
 	virtual BOOL changeSelection(LLFolderViewItem* selection, BOOL selected);
 
-	virtual void extendSelection(LLFolderViewItem* selection, LLFolderViewItem* last_selected, LLDynamicArray<LLFolderViewItem*>& items);
-
-	virtual BOOL getSelectionList(std::set<LLUUID> &selection);
+	virtual std::set<LLUUID> getSelectionList() const;
 
 	// make sure if ancestor is selected, descendents are not
 	void sanitizeSelection();
@@ -216,7 +215,7 @@ public:
 	virtual void deleteAllChildren();
 
 	void scrollToShowSelection();
-	void scrollToShowItem(LLFolderViewItem* item);
+	void scrollToShowItem(LLFolderViewItem* item, const LLRect& constraint_rect);
 	void setScrollContainer( LLScrollableContainerView* parent ) { mScrollContainer = parent; }
 	LLRect getVisibleRect();
 
@@ -226,6 +225,7 @@ public:
 	void setShowSingleSelection(BOOL show);
 	BOOL getShowSingleSelection() { return mShowSingleSelection; }
 	F32  getSelectionFadeElapsedTime() { return mMultiSelectionFadeTimer.getElapsedTimeF32(); }
+	bool getUseEllipses() { return mUseEllipses; }
 
 	void addItemID(const LLUUID& id, LLFolderViewItem* itemp);
 	void removeItemID(const LLUUID& id);
@@ -238,6 +238,8 @@ public:
 	BOOL needsAutoSelect() { return mNeedsAutoSelect && !mAutoSelectOverride; }
 	BOOL needsAutoRename() { return mNeedsAutoRename; }
 	void setNeedsAutoRename(BOOL val) { mNeedsAutoRename = val; }
+	void setPinningSelectedItem(BOOL val) { mPinningSelectedItem = val; }
+	void setAutoSelectOverride(BOOL val) { mAutoSelectOverride = val; }
 
 	BOOL getDebugFilters() { return mDebugFilters; }
 
@@ -245,6 +247,9 @@ public:
 	// DEBUG only
 	void dumpSelectionInformation();
 
+	virtual S32	notify(const LLSD& info) ;
+	
+	bool useLabelSuffix() { return mUseLabelSuffix; }
 	void updateMenu();
 
 private:
@@ -260,6 +265,8 @@ protected:
 	void finishRenamingItem( void );
 	void closeRenamer( void );
 
+	bool selectFirstItem();
+	bool selectLastItem();
 	
 	BOOL addNoOptions(LLMenuGL* menu) const;
 protected:
@@ -269,6 +276,7 @@ protected:
 	selected_items_t				mSelectedItems;
 	BOOL							mKeyboardSelection;
 	BOOL							mAllowMultiSelect;
+	BOOL							mShowEmptyMessage;
 	BOOL							mShowFolderHierarchy;
 	LLUUID							mSourceID;
 
@@ -277,11 +285,12 @@ protected:
 	LLLineEditor*					mRenamer;
 
 	BOOL							mNeedsScroll;
-	LLFolderViewItem*				mLastScrollItem;
-	LLCoordGL						mLastScrollOffset;
+	BOOL							mPinningSelectedItem;
+	LLRect							mScrollConstraintRect;
 	BOOL							mNeedsAutoSelect;
 	BOOL							mAutoSelectOverride;
 	BOOL							mNeedsAutoRename;
+	bool							mUseLabelSuffix;
 	
 	BOOL							mDebugFilters;
 	U32								mSortOrder;
@@ -305,7 +314,15 @@ protected:
 	std::map<LLUUID, LLFolderViewItem*> mItemMap;
 	BOOL							mDragAndDropThisFrame;
 	
+	LLUUID							mSelectThisID; // if non null, select this item
+	
 	LLPanel*						mParentPanel;
+
+	/**
+	 * Is used to determine if we need to cut text In LLFolderViewItem to avoid horizontal scroll.
+	 * NOTE: For now it uses only to cut LLFolderViewItem::mLabel text to be used for Landmarks in Places Panel.
+	 */
+	bool							mUseEllipses; // See EXT-719
 
 	/**
 	 * Contains item under mouse pointer while dragging

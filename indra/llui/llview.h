@@ -583,10 +583,14 @@ public:
 	static LLWindow*	getWindow(void) { return LLUI::sWindow; }
 
 	virtual void	handleReshape(const LLRect& rect, bool by_user);
-protected:
+
 	virtual BOOL	handleKeyHere(KEY key, MASK mask);
 	virtual BOOL	handleUnicodeCharHere(llwchar uni_char);
 
+
+	//send custom notification to LLView parent
+	virtual S32	notifyParent(const LLSD& info);
+protected:
 	void			drawDebugRect();
 	void			drawChild(LLView* childp, S32 x_offset = 0, S32 y_offset = 0, BOOL force_draw = FALSE);
 	void			drawChildren();

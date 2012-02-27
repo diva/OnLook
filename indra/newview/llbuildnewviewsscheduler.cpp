@@ -72,6 +72,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 			{
 				LLFolderViewFolder* folderp = new LLFolderViewFolder(new_listener->getDisplayName(),
 													new_listener->getIcon(),
+													new_listener->getIcon(),
 													NULL,
 													panelp->getRootFolder(),
 													new_listener);
@@ -95,6 +96,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 			{
 				itemp = new LLFolderViewItem(new_listener->getDisplayName(),
 												new_listener->getIcon(),
+												NULL,
 												NULL,
 												new_listener->getCreationDate(),
 												panelp->getRootFolder(),

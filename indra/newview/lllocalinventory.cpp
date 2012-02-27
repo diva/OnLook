@@ -333,8 +333,7 @@ void LLLocalInventory::loadInvCache(std::string filename)
 void LLLocalInventory::saveInvCache(std::string filename, LLFolderView* folder)
 {
 	LLInventoryModel* model = &gInventory;
-	std::set<LLUUID> selected_items;
-	folder->getSelectionList(selected_items);
+	std::set<LLUUID> selected_items = folder->getSelectionList();
 	if(selected_items.size() < 1)
 	{
 		// No items selected?  Wtfboom
