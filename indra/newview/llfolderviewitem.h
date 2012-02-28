@@ -108,8 +108,6 @@ private:
 	BOOL					mIsSelected;
 
 protected:
-	static const LLFontGL*		sFont;
-	static const LLFontGL*		sSmallFont;
 	static LLUIImagePtr			sArrowImage;
 	static LLUIImagePtr			sBoxImage;
 
@@ -158,6 +156,8 @@ protected:
 	// no-op at this level, but reimplemented in derived classes.
 	virtual BOOL addItem(LLFolderViewItem*) { return FALSE; }
 	virtual BOOL addFolder(LLFolderViewFolder*) { return FALSE; }
+
+	static LLFontGL* getLabelFontForStyle(U8 style);
 
 	virtual void setCreationDate(time_t creation_date_utc)	{ mCreationDate = creation_date_utc; }
 
@@ -329,6 +329,9 @@ public:
 		void* cargo_data,
 		EAcceptance* accept,
 		std::string& tooltip_msg);
+
+private:
+	static std::map<U8, LLFontGL*> sFonts; // map of styles to fonts
 };
 
 

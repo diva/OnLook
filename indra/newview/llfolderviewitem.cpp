@@ -44,9 +44,9 @@
 #include "llfocusmgr.h"		// gFocusMgr
 #include "lltrans.h"
 // statics 
-const LLFontGL* LLFolderViewItem::sFont = NULL;
-const LLFontGL* LLFolderViewItem::sSmallFont = NULL;
+std::map<U8, LLFontGL*> LLFolderViewItem::sFonts; // map of styles to fonts
 
+// only integers can be initialized in header
 const F32 LLFolderViewItem::FOLDER_CLOSE_TIME_CONSTANT = 0.02f;
 const F32 LLFolderViewItem::FOLDER_OPEN_TIME_CONSTANT = 0.03f;
 
@@ -58,10 +58,25 @@ LLUIImagePtr LLFolderViewItem::sBoxImage;
 std::set<LLFolderViewItem*> sFolderViewItems;
 
 //static
+LLFontGL* LLFolderViewItem::getLabelFontForStyle(U8 style)
+{
+	LLFontGL* rtn = sFonts[style];
+	if (!rtn) // grab label font with this style, lazily
+	{
+		LLFontDescriptor labelfontdesc("SansSerif", "Small", style);
+		rtn = LLFontGL::getFont(labelfontdesc);
+		if (!rtn)
+		{
+			rtn = LLFontGL::getFontMonospace();
+		}
+		sFonts[style] = rtn;
+	}
+	return rtn;
+}
+
+//static
 void LLFolderViewItem::initClass()
 {
-	sFont = LLResMgr::getInstance()->getRes( LLFONT_SANSSERIF_SMALL );
-	sSmallFont = LLResMgr::getInstance()->getRes( LLFONT_SMALL );
 	sArrowImage = LLUI::getUIImage("folder_arrow.tga"); 
 	sBoxImage = LLUI::getUIImage("rounded_square.tga");
 }
@@ -69,6 +84,7 @@ void LLFolderViewItem::initClass()
 //static
 void LLFolderViewItem::cleanupClass()
 {
+	sFonts.clear();
 	sArrowImage = NULL;
 	sBoxImage = NULL;
 }
@@ -411,7 +427,7 @@ S32 LLFolderViewItem::arrange( S32* width, S32* height, S32 filter_generation)
 		: 0;
 	if (mLabelWidthDirty)
 	{
-		mLabelWidth = ARROW_SIZE + TEXT_PAD + ICON_WIDTH + ICON_PAD + sFont->getWidth(mSearchableLabel); 
+		mLabelWidth = ARROW_SIZE + TEXT_PAD + ICON_WIDTH + ICON_PAD + getLabelFontForStyle(mLabelStyle)->getWidth(mSearchableLabel); 
 		mLabelWidthDirty = false;
 	}
 
@@ -876,9 +892,9 @@ void LLFolderViewItem::draw()
 	static LLCachedControl<LLColor4> sSuffixColor(gColors, "InventoryItemSuffixColor", LLColor4::white );
 	static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 
-	const S32 TOP_PAD = 0;
-	const S32 FOCUS_LEFT = 0;
-	const LLFontGL* font = sFont;
+	const S32 TOP_PAD = 4;
+	const S32 FOCUS_LEFT = 1;
+	const LLFontGL* font = getLabelFontForStyle(mLabelStyle);
 
 	const BOOL in_inventory = getListener() && gInventory.isObjectDescendentOf(getListener()->getUUID(), gInventory.getRootFolderID());
 	const BOOL in_library = getListener() && gInventory.isObjectDescendentOf(getListener()->getUUID(), gInventory.getLibraryRootFolderID());
@@ -1016,7 +1032,7 @@ void LLFolderViewItem::draw()
 			LLColor4 filter_color = mLastFilterGeneration >= getRoot()->getFilter()->getCurrentGeneration() ? 
 			LLColor4(0.5f, 0.8f, 0.5f, 1.f) : 
 			LLColor4(0.8f, 0.5f, 0.5f, 1.f);
-			sSmallFont->renderUTF8(mStatusText, 0, text_left, y, filter_color,
+		LLFontGL::getFontMonospace()->renderUTF8(mStatusText, 0, text_left, y, filter_color,
 							LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
 							S32_MAX, S32_MAX, &right_x, FALSE );
 			text_left = right_x;
@@ -1048,7 +1064,7 @@ void LLFolderViewItem::draw()
 	{
 		std::string load_string = " ( Loading... ) ";
 		font->renderUTF8(load_string, 0, right_x, y, sSearchStatusColor,
-						 LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, 
+						 LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 
 						 S32_MAX, S32_MAX, &right_x, FALSE);
 	}
 
@@ -1058,7 +1074,7 @@ void LLFolderViewItem::draw()
 	if (!mLabelSuffix.empty())
 	{
 		font->renderUTF8( mLabelSuffix, 0, right_x, y, sSuffixColor,
-						  LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW,
+						  LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,
 						  S32_MAX, S32_MAX, &right_x, FALSE );
 	}
 
@@ -1081,7 +1097,7 @@ void LLFolderViewItem::draw()
 			F32 yy = (F32)getRect().getHeight() - font->getLineHeight() - (F32)TEXT_PAD - (F32)TOP_PAD;
 			font->renderUTF8( combined_string, mStringMatchOffset, match_string_left, yy,
 
-							sFilterTextColor, LLFontGL::LEFT, LLFontGL::BOTTOM, mLabelStyle, LLFontGL::NO_SHADOW, 
+							sFilterTextColor, LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, 
 							filter_string_length, S32_MAX, &right_x, FALSE );
 		}
 	}

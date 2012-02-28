@@ -253,7 +253,7 @@ LLFolderView::LLFolderView( const std::string& name,
 	// just make sure the label ("Inventory Folder") never shows up
 	mLabel = LLStringUtil::null;
 
-	mRenamer = new LLLineEditor(std::string("ren"), getRect(), LLStringUtil::null, sFont,
+	mRenamer = new LLLineEditor(std::string("ren"), getRect(), LLStringUtil::null, getLabelFontForStyle(LLFontGL::NORMAL),
 								DB_INV_ITEM_NAME_STR_LEN,
 								&LLFolderView::commitRename,
 								NULL,
@@ -466,7 +466,7 @@ S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_gen
 		getRoot()->getFilter()->getShowFolderState();
 
 	S32 total_width = LEFT_PAD;
-	S32 running_height = mDebugFilters ? llceil(sSmallFont->getLineHeight()) : 0;
+	S32 running_height = mDebugFilters ? llceil(LLFontGL::getFontMonospace()->getLineHeight()) : 0;
 	S32 target_height = running_height;
 	S32 parent_item_height = getRect().getHeight();
 
@@ -921,8 +921,8 @@ void LLFolderView::draw()
 	{
 		std::string current_filter_string = llformat("Current Filter: %d, Least Filter: %d, Auto-accept Filter: %d",
 										mFilter->getCurrentGeneration(), mFilter->getMinRequiredGeneration(), mFilter->getMustPassGeneration());
-		sSmallFont->renderUTF8(current_filter_string, 0, 2, 
-			getRect().getHeight() - sSmallFont->getLineHeight(), LLColor4(0.5f, 0.5f, 0.8f, 1.f), 
+		LLFontGL::getFontMonospace()->renderUTF8(current_filter_string, 0, 2, 
+			getRect().getHeight() - LLFontGL::getFontMonospace()->getLineHeight(), LLColor4(0.5f, 0.5f, 0.8f, 1.f), 
 			LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, LLFontGL::NO_SHADOW,  S32_MAX, S32_MAX, NULL, FALSE );
 	}
 
@@ -964,16 +964,17 @@ void LLFolderView::draw()
 	}
 	else if (mShowEmptyMessage)
 	{
+		const LLFontGL* font = getLabelFontForStyle(mLabelStyle);
 		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 		if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
 		{
 			mStatusText = std::string("Searching..."); // *TODO:translate
-			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
+			font->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 		else
 		{
 			mStatusText = std::string("No matching items found in inventory."); // *TODO:translate
-			sFont->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
+			font->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 	}
 
@@ -1997,7 +1998,7 @@ void LLFolderView::scrollToShowItem(LLFolderViewItem* item, const LLRect& constr
 		LLRect visible_doc_rect = mScrollContainer->getVisibleContentRect();
 		
 		S32 icon_height = mIcon.isNull() ? 0 : mIcon->getHeight(); 
-		S32 label_height = llround(sFont->getLineHeight()); 
+		S32 label_height = llround(getLabelFontForStyle(mLabelStyle)->getLineHeight()); 
 		// when navigating with keyboard, only move top of opened folder on screen, otherwise show whole folder
 		S32 max_height_to_show = item->isOpen() && mScrollContainer->hasFocus() ? (llmax( icon_height, label_height ) + ICON_PAD) : local_rect.getHeight(); 
 		
