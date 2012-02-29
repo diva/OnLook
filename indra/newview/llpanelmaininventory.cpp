@@ -170,6 +170,7 @@ BOOL LLInventoryView::postBuild()
 		worn_items_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		worn_items_panel->getFilter()->markDefault();
 		worn_items_panel->setFilterWorn(true);
+		worn_items_panel->setFilterLinks(LLInventoryFilter::FILTERLINK_EXCLUDE_LINKS);
 		worn_items_panel->setSelectCallback(boost::bind(&LLInventoryView::onSelectionChange, this, worn_items_panel, _1, _2));
 	}
 
@@ -526,7 +527,6 @@ void LLInventoryView::onClearSearch(void* user_data)
 	{
 		self->mActivePanel->setFilterSubString(LLStringUtil::null);
 		self->mActivePanel->setFilterTypes(0xffffffff);
-		self->mActivePanel->setFilterLinks(LLInventoryFilter::FILTERLINK_INCLUDE_LINKS);
 	}
 
 	if (finder)
@@ -543,7 +543,7 @@ void LLInventoryView::onClearSearch(void* user_data)
 		self->mActivePanel->getRootFolder()->applyFunctorRecursively(opener);
 		self->mActivePanel->getRootFolder()->scrollToShowSelection();
 	}
-	self->mFilterSubString = "";
+	//self->mFilterSubString = "";
 }
 
 //static
@@ -561,8 +561,11 @@ void LLInventoryView::onSearchEdit(const std::string& search_string, void* user_
 
 	LLInventoryModelBackgroundFetch::instance().start();
 
-	self->mFilterSubString = search_string;
-	if (self->mActivePanel->getFilterSubString().empty() && self->mFilterSubString.empty())
+	//self->mFilterSubString = search_string;
+	std::string filter_text = search_string;
+	std::string uppercase_search_string = filter_text;
+	LLStringUtil::toUpper(uppercase_search_string);
+	if (self->mActivePanel->getFilterSubString().empty() && uppercase_search_string.empty() /*self->mFilterSubString.empty()*/)
 	{
 			// current filter and new filter empty, do nothing
 			return;
@@ -576,7 +579,7 @@ void LLInventoryView::onSearchEdit(const std::string& search_string, void* user_
 	}
 
 	// set new filter string
-	self->setFilterSubString(self->mFilterSubString);
+	self->mActivePanel->setFilterSubString(uppercase_search_string/*self->mFilterSubString*/);
 }
 
 struct FilterEntry : public LLDictionaryEntry
@@ -773,7 +776,7 @@ void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
 		return;
 	}
 
-	self->setFilterSubString(self->mFilterSubString);
+	//self->setFilterSubString(self->mFilterSubString);
 	LLInventoryFilter* filter = self->mActivePanel->getFilter();
 	LLFloaterInventoryFinder *finder = self->getFinder();
 	if (finder)

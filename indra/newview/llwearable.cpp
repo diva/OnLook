@@ -161,8 +161,7 @@ BOOL LLWearable::FileExportTextures( FILE* file )
 		 iter != mTEMap.end(); ++iter)
 	{
 		S32 te = iter->first;
-		LLUUID& image_id = iter->second->getID();
-		fprintf( file, "%d %s\n", te, image_id.asString().c_str() );
+		fprintf( file, "%d %s\n", te, iter->second->getID().asString().c_str() );
     }
 
 	return TRUE;
@@ -1243,11 +1242,11 @@ void LLWearable::pullCrossWearableValues()
 			//pretty sure is right
 			if(param->getID() == 507)
 				avatar->setActualBoobGrav(param->getWeight());
-			/*if(param->getID() == 151)
-				avatar->setActualButtGrav(param->getWeight());
-			if(param->getID() == 157)
-				avatar->setActualFatGrav(param->getWeight());
-			*//*
+			//if(param->getID() == 151)
+			//	avatar->setActualButtGrav(param->getWeight());
+			//if(param->getID() == 157)
+			//	avatar->setActualFatGrav(param->getWeight());
+			
 			//if(param->getID() == 507)
 			//{
 			//	llwarns << "current = " << avatar->getActualBoobGrav() << llendl;

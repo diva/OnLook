@@ -5245,6 +5245,13 @@ void LLWearableBridge::wearOnAvatar()
 void LLWearableBridge::wearAddOnAvatar()
 {
 	// TODO: investigate wearables may not be loaded at this point EXT-8231
+	// Don't wear anything until initial wearables are loaded, can
+	// destroy clothing items.
+	if (!gAgentWearables.areWearablesLoaded()) 
+	{
+		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
+		return;
+	}
 
 	LLViewerInventoryItem* item = getItem();
 	if(item)

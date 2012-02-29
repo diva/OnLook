@@ -429,8 +429,9 @@ void LLInventoryFilter::setFilterSubString(const std::string& string)
 		}
 
 		// Cancel out filter links once the search string is modified
+		// Singu Note: No, don't do this...
 		{
-			mFilterOps.mFilterLinks = FILTERLINK_INCLUDE_LINKS;
+			//mFilterOps.mFilterLinks = FILTERLINK_INCLUDE_LINKS;
 		}
 	}
 }

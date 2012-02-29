@@ -169,7 +169,7 @@ protected:
 	bool						mResortActivePanel;
 	LLSaveFolderState*			mSavedFolderState;
 	std::string					mFilterText;
-	std::string					mFilterSubString;
+	//std::string					mFilterSubString;
 
 
 	// This container is used to hold all active inventory views. This
