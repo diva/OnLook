@@ -73,6 +73,7 @@ class LL_COMMON_API LLThread
 {
 private:
 	static U32 sIDIter;
+	static LLAtomicS32	sCount;
 	
 public:
 	typedef enum e_thread_status
@@ -90,6 +91,7 @@ public:
 	bool isStopped() const { return (STOPPED == mStatus); }
 	
 	static U32 currentID(); // Return ID of current thread
+	static S32 getCount() { return sCount; }	
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
 	
 public:
@@ -129,7 +131,7 @@ protected:
 	apr_thread_t		*mAPRThreadp;
 	volatile EThreadStatus		mStatus;
 	U32					mID;
-
+	
 	friend void LLThreadLocalData::create(LLThread* threadp);
 	LLThreadLocalData*  mThreadLocalData;
 
