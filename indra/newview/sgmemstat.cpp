@@ -18,7 +18,7 @@
 #include "llviewerprecompiledheaders.h"
 #include "sgmemstat.h"
 
-#if 0
+#if (!LL_WINDOWS && !LL_LINUX)
 bool SGMemStat::haveStat() {
 	return false;
 }
@@ -49,10 +49,14 @@ static MallocExtension_GetStats_t MallocExtension_GetStats = 0;
 static void initialize() {
 	static bool initialized = false;	
 	if (!initialized) {
-		apr_dso_handle_t* hprog;// = (apr_dso_handle_t*)dlopen(0,0);
+		apr_dso_handle_t* hprog = 0;
 		LLAPRPool pool;
 		pool.create();
+#if LL_WINDOWS
+		apr_dso_load(&hprog, "libtcmalloc_minimal.dll", pool());
+#else
 		apr_dso_load(&hprog, 0, pool());
+#endif
 		apr_dso_sym((apr_dso_handle_sym_t*)&MallocExtension_GetNumericProperty,
 			hprog, "MallocExtension_GetNumericProperty");
 		apr_dso_sym((apr_dso_handle_sym_t*)&MallocExtension_GetStats,
