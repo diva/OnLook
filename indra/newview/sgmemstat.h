@@ -26,6 +26,8 @@ F32 getMalloc();
 
 U32 getNumObjects();
 
+std::string getPrintableStat();
+
 }
 
 #endif
