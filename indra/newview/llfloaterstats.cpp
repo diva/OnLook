@@ -105,9 +105,9 @@ void LLFloaterStats::buildStats()
 		stat_barp = stat_viewp->addStat("Allocated memory", &(LLViewerStats::getInstance()->mMallocStat), "DebugStatModeMalloc");
 		stat_barp->setUnitLabel(" MB");
 		stat_barp->mMinBar = 0.f;
-		stat_barp->mMaxBar = 4000.f;
-		stat_barp->mTickSpacing = 100.f;
-		stat_barp->mLabelSpacing = 200.f;
+		stat_barp->mMaxBar = 2048.f;
+		stat_barp->mTickSpacing = 128.f;
+		stat_barp->mLabelSpacing = 512.f;
 		stat_barp->mPerSec = FALSE;
 		stat_barp->mDisplayMean = FALSE;
 	}
