@@ -81,21 +81,21 @@ LLFloaterMove::LLFloaterMove(const LLSD& key)
 
 	mTurnLeftButton = getChild<LLButton>("turn left btn"); 
 	mTurnLeftButton->setHeldDownDelay(MOVE_BUTTON_DELAY);
-	mTurnLeftButton->setHeldDownCallback( turnLeft );
+	mTurnLeftButton->setHeldDownCallback( boost::bind(&LLFloaterMove::turnLeft, this) );
 
 	mTurnRightButton = getChild<LLButton>("turn right btn"); 
 	mTurnRightButton->setHeldDownDelay(MOVE_BUTTON_DELAY);
-	mTurnRightButton->setHeldDownCallback( turnRight );
+	mTurnRightButton->setHeldDownCallback( boost::bind(&LLFloaterMove::turnRight, this) );
 
 	mMoveUpButton = getChild<LLButton>("move up btn"); 
 	childSetAction("move up btn",moveUp,NULL);
 	mMoveUpButton->setHeldDownDelay(MOVE_BUTTON_DELAY);
-	mMoveUpButton->setHeldDownCallback( moveUp );
+	mMoveUpButton->setHeldDownCallback( boost::bind(&LLFloaterMove::moveUp, this) );
 
 	mMoveDownButton = getChild<LLButton>("move down btn"); 
 	childSetAction("move down btn",moveDown,NULL);	
 	mMoveDownButton->setHeldDownDelay(MOVE_BUTTON_DELAY);
-	mMoveDownButton->setHeldDownCallback( moveDown );
+	mMoveDownButton->setHeldDownCallback( boost::bind(&LLFloaterMove::moveDown, this) );
 }
 
 // virtual

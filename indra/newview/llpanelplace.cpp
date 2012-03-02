@@ -106,20 +106,16 @@ BOOL LLPanelPlace::postBuild()
     mLocationDisplay = getChild<LLTextBox>("location_editor");
 
 	mTeleportBtn = getChild<LLButton>( "teleport_btn");
-	mTeleportBtn->setClickedCallback(onClickTeleport);
-	mTeleportBtn->setCallbackUserData(this);
+	mTeleportBtn->setClickedCallback(boost::bind(&LLPanelPlace::onClickTeleport,this));
 
 	mMapBtn = getChild<LLButton>( "map_btn");
-	mMapBtn->setClickedCallback(onClickMap);
-	mMapBtn->setCallbackUserData(this);
+	mMapBtn->setClickedCallback(boost::bind(&LLPanelPlace::onClickMap,this));
 
 	//mLandmarkBtn = getChild<LLButton>( "landmark_btn");
-	//mLandmarkBtn->setClickedCallback(onClickLandmark);
-	//mLandmarkBtn->setCallbackUserData(this);
+	//mLandmarkBtn->setClickedCallback(boost::bind(&LLPanelPlace::onClickLandmark,this));
 
 	mAuctionBtn = getChild<LLButton>( "auction_btn");
-	mAuctionBtn->setClickedCallback(onClickAuction);
-	mAuctionBtn->setCallbackUserData(this);
+	mAuctionBtn->setClickedCallback(boost::bind(&LLPanelPlace::onClickAuction,this));
 
 	// Default to no auction button.  We'll show it if we get an auction id
 	mAuctionBtn->setVisible(FALSE);

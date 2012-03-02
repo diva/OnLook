@@ -224,20 +224,17 @@ LLFloaterColorPicker::
 postBuild()
 {
 	mCancelBtn = getChild<LLButton>( "cancel_btn" );
-    mCancelBtn->setClickedCallback ( onClickCancel );
-    mCancelBtn->setCallbackUserData ( this );
+    mCancelBtn->setClickedCallback ( boost::bind(&LLFloaterColorPicker::onClickCancel,this) );
 
 	mSelectBtn = getChild<LLButton>( "select_btn");
-    mSelectBtn->setClickedCallback ( onClickSelect );
-    mSelectBtn->setCallbackUserData ( this );
+    mSelectBtn->setClickedCallback ( boost::bind(&LLFloaterColorPicker::onClickSelect,this) );
 	mSelectBtn->setFocus ( TRUE );
 
 	mPipetteBtn = getChild<LLButton>("color_pipette" );
 
 	mPipetteBtn->setImages(std::string("eye_button_inactive.tga"), std::string("eye_button_active.tga"));
 
-	mPipetteBtn->setClickedCallback( onClickPipette );
-	mPipetteBtn->setCallbackUserData ( this );
+	mPipetteBtn->setClickedCallback( boost::bind(&LLFloaterColorPicker::onClickPipette,this) );
 
 	mApplyImmediateCheck = getChild<LLCheckBoxCtrl>("apply_immediate");
 	mApplyImmediateCheck->set(gSavedSettings.getBOOL("ApplyColorImmediately"));

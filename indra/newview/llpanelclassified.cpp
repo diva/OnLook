@@ -270,22 +270,18 @@ BOOL LLPanelClassified::postBuild()
     mLocationEditor = getChild<LLLineEditor>("location_editor");
 
     mSetBtn = getChild<LLButton>( "set_location_btn");
-    mSetBtn->setClickedCallback(onClickSet);
-    mSetBtn->setCallbackUserData(this);
+    mSetBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickSet, this));
 
     mTeleportBtn = getChild<LLButton>( "classified_teleport_btn");
-    mTeleportBtn->setClickedCallback(onClickTeleport);
-    mTeleportBtn->setCallbackUserData(this);
+    mTeleportBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickTeleport, this));
 
     mMapBtn = getChild<LLButton>( "classified_map_btn");
-    mMapBtn->setClickedCallback(onClickMap);
-    mMapBtn->setCallbackUserData(this);
+    mMapBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickMap, this));
 
 	if(mInFinder)
 	{
 		mProfileBtn  = getChild<LLButton>( "classified_profile_btn");
-		mProfileBtn->setClickedCallback(onClickProfile);
-		mProfileBtn->setCallbackUserData(this);
+		mProfileBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickProfile, this));
 	}
 
 	mCategoryCombo = getChild<LLComboBox>( "classified_category_combo");
@@ -319,7 +315,7 @@ BOOL LLPanelClassified::postBuild()
 	}
 
 	mUpdateBtn = getChild<LLButton>("classified_update_btn");
-    mUpdateBtn->setClickedCallback(onClickUpdate);
+    mUpdateBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickUpdate, this));
     mUpdateBtn->setCallbackUserData(this);
 
 	if (!mInFinder)

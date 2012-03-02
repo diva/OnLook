@@ -60,7 +60,7 @@ public:
 	virtual void	onHeldDown() = 0;
 	F32				getElapsedHeldDownTime();
 
-	static void		onHeldDown(void *userdata);		// called by llbutton callback handler
+	static void		onHeldDownCallback(void *userdata);		// called by llbutton callback handler
 	void            setInitialQuadrant(EJoystickQuadrant initial) { mInitialQuadrant = initial; };
 	
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;

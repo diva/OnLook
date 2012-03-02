@@ -62,7 +62,7 @@ public:
 	
 	void setCancelButtonVisible(BOOL b, const std::string& label);
 
-	static void onCancelButtonClicked( void* );
+	static void onCancelButtonClicked();
 	static void onClickMessage(void*);
 
 protected:

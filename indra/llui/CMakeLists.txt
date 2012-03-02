@@ -79,6 +79,7 @@ set(llui_SOURCE_FILES
     lluistring.cpp
     llundo.cpp
     llviewborder.cpp
+    llviewmodel.cpp
     llview.cpp
     llviewquery.cpp
     )
@@ -146,6 +147,7 @@ set(llui_HEADER_FILES
     lluixmltags.h
     llundo.h
     llviewborder.h
+    llviewmodel.h
     llview.h
     llviewquery.h
     )

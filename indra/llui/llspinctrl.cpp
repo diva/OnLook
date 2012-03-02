@@ -101,7 +101,7 @@ LLSpinCtrl::LLSpinCtrl(	const std::string& name, const LLRect& rect, const std::
 								   &LLSpinCtrl::onUpBtn, this, LLFontGL::getFontSansSerif() );
 	mUpBtn->setFollowsLeft();
 	mUpBtn->setFollowsBottom();
-	mUpBtn->setHeldDownCallback( &LLSpinCtrl::onUpBtn );
+	mUpBtn->setHeldDownCallback(boost::bind(&LLSpinCtrl::onUpBtn,this));
 	mUpBtn->setTabStop(FALSE);
 	addChild(mUpBtn);
 
@@ -115,7 +115,7 @@ LLSpinCtrl::LLSpinCtrl(	const std::string& name, const LLRect& rect, const std::
 							&LLSpinCtrl::onDownBtn, this, LLFontGL::getFontSansSerif() );
 	mDownBtn->setFollowsLeft();
 	mDownBtn->setFollowsBottom();
-	mDownBtn->setHeldDownCallback( &LLSpinCtrl::onDownBtn );
+	mDownBtn->setHeldDownCallback(boost::bind(&LLSpinCtrl::onDownBtn,this));
 	mDownBtn->setTabStop(FALSE);
 	addChild(mDownBtn);
 

@@ -1419,15 +1419,15 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		childSetValue("min param text", min_name);
 		childSetValue("max param text", max_name);
 		mLess = getChild<LLButton>("less");
-		mLess->setMouseDownCallback( LLScrollingPanelParam::onHintMinMouseDown );
-		mLess->setMouseUpCallback( LLScrollingPanelParam::onHintMinMouseUp );
-		mLess->setHeldDownCallback( LLScrollingPanelParam::onHintMinHeldDown );
+		mLess->setMouseDownCallback( boost::bind(&LLScrollingPanelParam::onHintMinMouseDown, this) );
+		mLess->setMouseUpCallback( boost::bind(LLScrollingPanelParam::onHintMinMouseUp, this) );
+		mLess->setHeldDownCallback( boost::bind(LLScrollingPanelParam::onHintMinHeldDown, this) );
 		mLess->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
 
 		mMore = getChild<LLButton>("more");
-		mMore->setMouseDownCallback( LLScrollingPanelParam::onHintMaxMouseDown );
-		mMore->setMouseUpCallback( LLScrollingPanelParam::onHintMaxMouseUp );
-		mMore->setHeldDownCallback( LLScrollingPanelParam::onHintMaxHeldDown );
+		mMore->setMouseDownCallback( boost::bind(LLScrollingPanelParam::onHintMaxMouseDown, this) );
+		mMore->setMouseUpCallback( boost::bind(LLScrollingPanelParam::onHintMaxMouseUp, this) );
+		mMore->setHeldDownCallback( boost::bind(LLScrollingPanelParam::onHintMaxHeldDown, this) );
 		mMore->setHeldDownDelay( PARAM_STEP_TIME_THRESHOLD );
 	}
 	else

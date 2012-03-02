@@ -135,15 +135,13 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
 	if ( mBtnJoinGroup )
 	{
-		mBtnJoinGroup->setClickedCallback(onClickJoin);
-		mBtnJoinGroup->setCallbackUserData(this);
+		mBtnJoinGroup->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickJoin, this));
 	}
 
 	mBtnInfo = getChild<LLButton>("info_button", recurse);
 	if ( mBtnInfo )
 	{
-		mBtnInfo->setClickedCallback(onClickInfo);
-		mBtnInfo->setCallbackUserData(this);
+		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
 	}
 
 	LLTextBox* founder = getChild<LLTextBox>("founder_name");
@@ -158,7 +156,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(openProfile);
+		mListVisibleMembers->setDoubleClickCallback(&LLPanelGroupGeneral::openProfile);
 		mListVisibleMembers->setCallbackUserData(this);
 	}
 
@@ -166,7 +164,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlShowInGroupList = getChild<LLCheckBoxCtrl>("show_in_group_list", recurse);
 	if (mCtrlShowInGroupList)
 	{
-		mCtrlShowInGroupList->setCommitCallback(onCommitAny);
+		mCtrlShowInGroupList->setCommitCallback(&LLPanelGroupGeneral::onCommitAny);
 		mCtrlShowInGroupList->setCallbackUserData(this);
 	}
 

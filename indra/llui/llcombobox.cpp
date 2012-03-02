@@ -85,13 +85,13 @@ LLComboBox::LLComboBox(	const std::string& name, const LLRect &rect, const std::
 								LLRect(), 
 								LLStringUtil::null,
 								NULL, this);
-	mButton->setImageUnselected(std::string("square_btn_32x128.tga"));
-	mButton->setImageSelected(std::string("square_btn_selected_32x128.tga"));
-	mButton->setImageDisabled(std::string("square_btn_32x128.tga"));
-	mButton->setImageDisabledSelected(std::string("square_btn_selected_32x128.tga"));
+	mButton->setImageUnselected(LLUI::getUIImage("square_btn_32x128.tga"));
+	mButton->setImageSelected(LLUI::getUIImage("square_btn_selected_32x128.tga"));
+	mButton->setImageDisabled(LLUI::getUIImage("square_btn_32x128.tga"));
+	mButton->setImageDisabledSelected(LLUI::getUIImage("square_btn_selected_32x128.tga"));
 	mButton->setScaleImage(TRUE);
 
-	mButton->setMouseDownCallback(onButtonDown);
+	mButton->setMouseDownCallback(boost::bind(&LLComboBox::onButtonDown,this));
 	mButton->setFont(LLFontGL::getFontSansSerifSmall());
 	mButton->setFollows(FOLLOWS_LEFT | FOLLOWS_BOTTOM | FOLLOWS_RIGHT);
 	mButton->setHAlign( LLFontGL::LEFT );
@@ -244,8 +244,6 @@ void LLComboBox::clear()
 	}
 	mButton->setLabelSelected(LLStringUtil::null);
 	mButton->setLabelUnselected(LLStringUtil::null);
-	mButton->setDisabledLabel(LLStringUtil::null);
-	mButton->setDisabledSelectedLabel(LLStringUtil::null);
 	mList->deselectAllItems();
 }
 
@@ -445,8 +443,6 @@ void LLComboBox::setLabel(const LLStringExplicit& name)
 	{
 		mButton->setLabelUnselected(name);
 		mButton->setLabelSelected(name);
-		mButton->setDisabledLabel(name);
-		mButton->setDisabledSelectedLabel(name);
 	}
 }
 
@@ -1218,7 +1214,7 @@ LLFlyoutButton::LLFlyoutButton(
 					LLRect(), LLStringUtil::null, NULL, this);
 	mActionButton->setScaleImage(TRUE);
 
-	mActionButton->setClickedCallback(onActionButtonClick);
+	mActionButton->setClickedCallback(boost::bind(&LLFlyoutButton::onActionButtonClick, this));
 	mActionButton->setFollowsAll();
 	mActionButton->setHAlign( LLFontGL::HCENTER );
 	mActionButton->setLabel(label);

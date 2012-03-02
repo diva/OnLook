@@ -1575,35 +1575,25 @@ BOOL LLPanelGroupVoting::postBuild()
 		mImpl->mVotesHistory->setDoubleClickCallback(impl::onDoubleClickHistoryItem);
 		mImpl->mVotesHistory->setCallbackUserData(mImpl);
 
-		mImpl->mBtnAbstain->setClickedCallback(impl::onClickAbstain);
-		mImpl->mBtnAbstain->setCallbackUserData(mImpl);
+		mImpl->mBtnAbstain->setClickedCallback(boost::bind(&impl::onClickAbstain,mImpl));
 
-		mImpl->mBtnNo->setClickedCallback(impl::onClickNo);
-		mImpl->mBtnNo->setCallbackUserData(mImpl);
+		mImpl->mBtnNo->setClickedCallback(boost::bind(&impl::onClickNo,mImpl));
 
-		mImpl->mBtnYes->setClickedCallback(impl::onClickYes);
-		mImpl->mBtnYes->setCallbackUserData(mImpl);
+		mImpl->mBtnYes->setClickedCallback(boost::bind(&impl::onClickYes,mImpl));
 
-		mImpl->mBtnCreateProposal->setClickedCallback(impl::onClickCreateProposal);
-		mImpl->mBtnCreateProposal->setCallbackUserData(mImpl);
+		mImpl->mBtnCreateProposal->setClickedCallback(boost::bind(&impl::onClickCreateProposal,mImpl));
 
-		mImpl->mBtnSubmitProposal->setClickedCallback(impl::onClickSubmitProposal);
-		mImpl->mBtnSubmitProposal->setCallbackUserData(mImpl);
+		mImpl->mBtnSubmitProposal->setClickedCallback(boost::bind(&impl::onClickSubmitProposal,mImpl));
 
-		mImpl->mBtnCancelProposal->setClickedCallback(impl::onClickCancelProposal);
-		mImpl->mBtnCancelProposal->setCallbackUserData(mImpl);
+		mImpl->mBtnCancelProposal->setClickedCallback(boost::bind(&impl::onClickCancelProposal,mImpl));
 
-		mImpl->mBtnViewProposalList->setClickedCallback(impl::onClickViewProposalList);
-		mImpl->mBtnViewProposalList->setCallbackUserData(mImpl);
+		mImpl->mBtnViewProposalList->setClickedCallback(boost::bind(&impl::onClickViewProposalList,mImpl));
 
-		mImpl->mBtnViewProposalItem->setClickedCallback(impl::onClickViewProposalItem);
-		mImpl->mBtnViewProposalItem->setCallbackUserData(mImpl);
+		mImpl->mBtnViewProposalItem->setClickedCallback(boost::bind(&impl::onClickViewProposalItem,mImpl));
 
-		mImpl->mBtnViewHistoryList->setClickedCallback(impl::onClickViewHistoryList);
-		mImpl->mBtnViewHistoryList->setCallbackUserData(mImpl);
+		mImpl->mBtnViewHistoryList->setClickedCallback(boost::bind(&impl::onClickViewHistoryList,mImpl));
 
-		mImpl->mBtnViewHistoryItem->setClickedCallback(impl::onClickViewHistoryItem);
-		mImpl->mBtnViewHistoryItem->setCallbackUserData(mImpl);
+		mImpl->mBtnViewHistoryItem->setClickedCallback(boost::bind(&impl::onClickViewHistoryItem,mImpl));
 
 		gMessageSystem->setHandlerFuncFast(_PREHASH_GroupActiveProposalItemReply, 
 										   impl::processGroupActiveProposalItemReply);

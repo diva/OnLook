@@ -707,6 +707,8 @@ const std::string& LLFloater::getCurrentTitle() const
 
 void LLFloater::setTitle( const std::string& title )
 {
+	if(mTitle == title)
+		return;
 	mTitle = title;
 	applyTitle();
 }
@@ -1742,8 +1744,8 @@ void LLFloater::buildButtons()
 		buttonp->setFollowsRight();
 		buttonp->setToolTip( sButtonToolTips[i] );
 		buttonp->setImageColor(LLUI::sColorsGroup->getColor("FloaterButtonImageColor"));
-		buttonp->setHoverImages(sButtonPressedImageNames[i],
-								sButtonPressedImageNames[i]);
+		buttonp->setImageHoverSelected(LLUI::getUIImage(sButtonPressedImageNames[i]));
+		buttonp->setImageHoverUnselected(LLUI::getUIImage(sButtonPressedImageNames[i]));
 		buttonp->setScaleImage(TRUE);
 		buttonp->setSaveToXML(false);
 		addChild(buttonp);

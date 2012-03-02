@@ -438,26 +438,22 @@ BOOL LLPreviewGesture::postBuild()
 	mLibraryList = list;
 
 	btn = getChild<LLButton>( "add_btn");
-	btn->setClickedCallback(onClickAdd);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickAdd,this));
 	btn->setEnabled(FALSE);
 	mAddBtn = btn;
 
 	btn = getChild<LLButton>( "up_btn");
-	btn->setClickedCallback(onClickUp);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickUp,this));
 	btn->setEnabled(FALSE);
 	mUpBtn = btn;
 
 	btn = getChild<LLButton>( "down_btn");
-	btn->setClickedCallback(onClickDown);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickDown,this));
 	btn->setEnabled(FALSE);
 	mDownBtn = btn;
 
 	btn = getChild<LLButton>( "delete_btn");
-	btn->setClickedCallback(onClickDelete);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickDelete,this));
 	btn->setEnabled(FALSE);
 	mDeleteBtn = btn;
 
@@ -529,12 +525,12 @@ BOOL LLPreviewGesture::postBuild()
 	mActiveCheck = check;
 
 	btn = getChild<LLButton>( "save_btn");
-	btn->setClickedCallback(onClickSave);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickSave,this));
 	btn->setCallbackUserData(this);
 	mSaveBtn = btn;
 
 	btn = getChild<LLButton>( "preview_btn");
-	btn->setClickedCallback(onClickPreview);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickPreview,this));
 	btn->setCallbackUserData(this);
 	mPreviewBtn = btn;
 

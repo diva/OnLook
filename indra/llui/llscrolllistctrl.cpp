@@ -3679,9 +3679,9 @@ LLColumnHeader::LLColumnHeader(const std::string& label, const LLRect &rect, LLS
 	mButton->setTabStop(FALSE);
 	// require at least two frames between mouse down and mouse up event to capture intentional "hold" not just bad framerate
 	mButton->setHeldDownDelay(LLUI::sConfigGroup->getF32("ColumnHeaderDropDownDelay"), 2);
-	mButton->setHeldDownCallback(onHeldDown);
-	mButton->setClickedCallback(onClick);
-	mButton->setMouseDownCallback(onMouseDown);
+	mButton->setHeldDownCallback(boost::bind(&LLColumnHeader::onHeldDown, this));
+	mButton->setClickedCallback(boost::bind(&LLColumnHeader::onClick, this));
+	mButton->setMouseDownCallback(boost::bind(&LLColumnHeader::onMouseDown, this));
 
 	mButton->setCallbackUserData(this);
 	mButton->setToolTip(label);
@@ -3843,8 +3843,8 @@ void LLColumnHeader::setImage(const std::string &image_name)
 {
 	if (mButton)
 	{
-		mButton->setImageSelected(image_name);
-		mButton->setImageUnselected(image_name);
+		mButton->setImageSelected(LLUI::getUIImage(image_name));
+		mButton->setImageUnselected(LLUI::getUIImage(image_name));
 	}
 }
 

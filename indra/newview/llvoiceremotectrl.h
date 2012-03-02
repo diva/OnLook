@@ -47,10 +47,10 @@ public:
 	/*virtual*/ void draw();
 
 	static void onBtnLock(void* user_data);
-	static void onBtnTalkHeld(void *user_data);
-	static void onBtnTalkReleased(void* user_data);
-	static void onBtnTalkClicked(void* user_data);
-	static void onClickSpeakers(void *user_data);
+	static void onBtnTalkHeld();
+	static void onBtnTalkReleased();
+	static void onBtnTalkClicked();
+	static void onClickSpeakers();
 	static void onClickPopupBtn(void* user_data);
 	static void onClickVoiceChannel(void* user_data);
 	static void onClickEndCall(void* user_data);

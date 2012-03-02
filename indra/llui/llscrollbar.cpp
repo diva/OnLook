@@ -127,7 +127,7 @@ LLScrollbar::LLScrollbar(
 		line_up_btn->setFollowsLeft();
 		line_up_btn->setFollowsBottom();
 	}
-	line_up_btn->setHeldDownCallback( &LLScrollbar::onLineUpBtnPressed );
+	line_up_btn->setHeldDownCallback( boost::bind(&LLScrollbar::onLineUpBtnPressed, (void*)this) );
 	line_up_btn->setTabStop(FALSE);
 	line_up_btn->setScaleImage(TRUE);
 
@@ -138,7 +138,7 @@ LLScrollbar::LLScrollbar(
 										   &LLScrollbar::onLineDownBtnPressed, this, LLFontGL::getFontSansSerif() );
 	line_down_btn->setFollowsRight();
 	line_down_btn->setFollowsBottom();
-	line_down_btn->setHeldDownCallback( &LLScrollbar::onLineDownBtnPressed );
+	line_down_btn->setHeldDownCallback( boost::bind(&LLScrollbar::onLineDownBtnPressed, this) );
 	line_down_btn->setTabStop(FALSE);
 	line_down_btn->setScaleImage(TRUE);
 	addChild(line_down_btn);

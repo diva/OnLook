@@ -84,7 +84,7 @@ BOOL LLProgressView::postBuild()
 	mProgressBar = getChild<LLProgressBar>("login_progress_bar");
 
 	mCancelBtn = getChild<LLButton>("cancel_btn");
-	mCancelBtn->setClickedCallback(  LLProgressView::onCancelButtonClicked );
+	mCancelBtn->setClickedCallback( boost::bind(&LLProgressView::onCancelButtonClicked) );
 	mFadeTimer.stop();
 
 	getChild<LLTextBox>("title_text")->setText(LLStringExplicit(LLAppViewer::instance()->getSecondLifeTitle()));
@@ -224,7 +224,7 @@ void LLProgressView::setCancelButtonVisible(BOOL b, const std::string& label)
 }
 
 // static
-void LLProgressView::onCancelButtonClicked(void*)
+void LLProgressView::onCancelButtonClicked()
 {
 	if (gAgent.getTeleportState() == LLAgent::TELEPORT_NONE)
 	{
