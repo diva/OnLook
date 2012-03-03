@@ -3566,7 +3566,7 @@ BOOL LLPieMenu::handleMouseDown( S32 x, S32 y, MASK mask )
 	}
 
 	// always handle mouse down as mouse up will close open menus
-	return handled;
+	return TRUE;
 }
 
 BOOL LLPieMenu::handleRightMouseDown(S32 x, S32 y, MASK mask)
@@ -4187,7 +4187,8 @@ BOOL LLMenuBarGL::handleAcceleratorKey(KEY key, MASK mask)
 
 	if(!result 
 		&& (key == KEY_F10 && mask == MASK_CONTROL) 
-		&& !gKeyboard->getKeyRepeated(key))
+		&& !gKeyboard->getKeyRepeated(key)
+		&& isInVisibleChain())
 	{
 		if (getHighlightedItem())
 		{
@@ -4613,7 +4614,7 @@ LLView* const LLMenuHolderGL::getVisibleMenu() const
 	for ( child_list_const_iter_t child_it = getChildList()->begin(); child_it != getChildList()->end(); ++child_it)
 	{
 		LLView* viewp = *child_it;
-		if (viewp->getVisible() && dynamic_cast<LLMenuGL*>(viewp) != NULL)
+		if (viewp->getVisible() && dynamic_cast<LLMenuGL*>(viewp) != NULL && !dynamic_cast<LLMenuBarGL*>(viewp))
 		{
 			return viewp;
 		}
