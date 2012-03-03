@@ -66,8 +66,6 @@ public:
 	/*virtual*/ void	initFromXML(LLXMLNodePtr node, LLView* parent);
 	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
 	/*virtual*/ BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
-	/*virtual*/ void	onFocusReceived();
-	/*virtual*/ void	onFocusLost();
 	/*virtual*/ BOOL	isCtrl() const;
 
 	// From LLFocusableElement

@@ -185,7 +185,8 @@ BOOL LLResizeBar::handleHover(S32 x, S32 y, MASK mask)
 
 			if (mSnappingEnabled)
 			{
-				static LLCachedControl<S32> snap_margin (*LLUI::sConfigGroup,"SnapMargin", 0);
+				//static LLCachedControl<S32> snap_margin (*LLUI::sConfigGroup,"SnapMargin", 0);
+				S32 snap_margin = LLUI::sConfigGroup->getS32("SnapMargin");
 				switch( mSide )
 				{
 				case LEFT:

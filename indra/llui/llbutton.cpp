@@ -207,7 +207,7 @@ LLButton::LLButton(const std::string& name, const LLRect& rect,
 	{
 		// user-specified image - don't use fixed borders unless requested
 		mImageSelected = LLUI::getUIImage(selected_image_name);
-		mImageDisabled = mImageSelected;
+		mImageDisabledSelected = mImageSelected;
 
 		mFadeWhenDisabled = TRUE;
 		//mScaleImage = FALSE;

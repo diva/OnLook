@@ -430,6 +430,27 @@ void LLFloater::initFloater(const std::string& title,
 	}
 }
 
+void LLFloater::enableResizeCtrls(bool enable, bool width, bool height)
+{
+	mResizeBar[LLResizeBar::LEFT]->setVisible(enable && width);
+	mResizeBar[LLResizeBar::LEFT]->setEnabled(enable && width);
+
+	mResizeBar[LLResizeBar::TOP]->setVisible(enable && height);
+	mResizeBar[LLResizeBar::TOP]->setEnabled(enable && height);
+	
+	mResizeBar[LLResizeBar::RIGHT]->setVisible(enable && width);
+	mResizeBar[LLResizeBar::RIGHT]->setEnabled(enable && width);
+	
+	mResizeBar[LLResizeBar::BOTTOM]->setVisible(enable && height);
+	mResizeBar[LLResizeBar::BOTTOM]->setEnabled(enable && height);
+
+	for (S32 i = 0; i < 4; ++i)
+	{
+		mResizeHandle[i]->setVisible(enable && width && height);
+		mResizeHandle[i]->setEnabled(enable && width && height);
+	}
+}
+
 // virtual
 LLFloater::~LLFloater()
 {
@@ -1641,6 +1662,7 @@ void	LLFloater::setCanResize(BOOL can_resize)
 			mMinHeight,
 			LLResizeHandle::LEFT_TOP );
 		addChild(mResizeHandle[3]);
+		enableResizeCtrls(can_resize);
 	}
 	mResizable = can_resize;
 }

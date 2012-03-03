@@ -1951,12 +1951,17 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 			submenu->updateParent(parent);
 		}
 	}
-	else if (child->hasName(LL_MENU_ITEM_CALL_GL_TAG) || 
-			child->hasName(LL_MENU_ITEM_CHECK_GL_TAG) || 
-			child->hasName(LL_MENU_ITEM_SEPARATOR_GL_TAG))
+	else if (child->hasName(LL_MENU_ITEM_SEPARATOR_GL_TAG))
 	{
-		LLMenuItemGL *item = NULL;
-
+		std::string item_name;
+		child->getAttributeString("name", item_name);
+		LLMenuItemGL* separator = new LLMenuItemSeparatorGL(item_name);
+		addChild(separator);
+	}
+	else if(child->hasName(LL_MENU_ITEM_CALL_GL_TAG) || 
+			child->hasName(LL_MENU_ITEM_CHECK_GL_TAG))
+	{
+		// ITEM
 		std::string type;
 		std::string item_name;
 		std::string source_label;
@@ -1966,7 +1971,7 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 		child->getAttributeString("type", type);
 		child->getAttributeString("name", item_name);
 		child->getAttributeString("label", source_label);
-
+		
 		// parse jump key out of label
 		typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
 		boost::char_separator<char> sep("_");
@@ -1983,242 +1988,225 @@ void LLMenuGL::parseChildXML(LLXMLNodePtr child, LLView *parent, LLUICtrlFactory
 			++token_count;
 		}
 
-
-		if (child->hasName(LL_MENU_ITEM_SEPARATOR_GL_TAG))
+		MASK mask = 0;
+					
+#ifdef LL_DARWIN
+		// See if this Mac accelerator should really use the ctrl key and not get mapped to cmd
+		BOOL useMacCtrl = FALSE;
+		child->getAttributeBOOL("useMacCtrl", useMacCtrl);
+#endif // LL_DARWIN
+			
+		std::string shortcut;
+		child->getAttributeString("shortcut", shortcut);
+		if (shortcut.find("control") != shortcut.npos)
 		{
-			addSeparator();
-		}
-		else
-		{
-			// ITEM
-			if (child->hasName(LL_MENU_ITEM_CALL_GL_TAG) || 
-				child->hasName(LL_MENU_ITEM_CHECK_GL_TAG))
+#ifdef LL_DARWIN
+			if ( useMacCtrl )
 			{
-				MASK mask = 0;
-							
-#ifdef LL_DARWIN
-				// See if this Mac accelerator should really use the ctrl key and not get mapped to cmd
-				BOOL useMacCtrl = FALSE;
-				child->getAttributeBOOL("useMacCtrl", useMacCtrl);
+				mask |= MASK_MAC_CONTROL;
+			}
 #endif // LL_DARWIN
-				
-				std::string shortcut;
-				child->getAttributeString("shortcut", shortcut);
-				if (shortcut.find("control") != shortcut.npos)
-				{
-#ifdef LL_DARWIN
-					if ( useMacCtrl )
-					{
-						mask |= MASK_MAC_CONTROL;
-					}
-#endif // LL_DARWIN
-					mask |= MASK_CONTROL;
-				}
-				if (shortcut.find("alt") != shortcut.npos)
-				{
-					mask |= MASK_ALT;
-				}
-				if (shortcut.find("shift") != shortcut.npos)
-				{
-					mask |= MASK_SHIFT;
-				}
-				S32 pipe_pos = shortcut.rfind("|");
-				std::string key_str = shortcut.substr(pipe_pos+1);
+			mask |= MASK_CONTROL;
+		}
+		if (shortcut.find("alt") != shortcut.npos)
+		{
+			mask |= MASK_ALT;
+		}
+		if (shortcut.find("shift") != shortcut.npos)
+		{
+			mask |= MASK_SHIFT;
+		}
+		S32 pipe_pos = shortcut.rfind("|");
+		std::string key_str = shortcut.substr(pipe_pos+1);
 
-				KEY key = KEY_NONE;
-				LLKeyboard::keyFromString(key_str, &key);
+		KEY key = KEY_NONE;
+		LLKeyboard::keyFromString(key_str, &key);
 
-				LLMenuItemCallGL *new_item;
-				LLXMLNodePtr call_child;
+		LLMenuItemCallGL *new_item;
+		LLXMLNodePtr call_child;
 
-				if (child->hasName(LL_MENU_ITEM_CHECK_GL_TAG))
+		if (child->hasName(LL_MENU_ITEM_CHECK_GL_TAG))
+		{
+			std::string control_name;
+			child->getAttributeString("control_name", control_name);
+
+			new_item = new LLMenuItemCheckGL(item_name, item_label, 0, 0, control_name, parent, 0, key, mask);
+
+			for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
+			{
+				if (call_child->hasName("on_check"))
 				{
+					std::string callback_name;
 					std::string control_name;
-					child->getAttributeString("control_name", control_name);
-
-					new_item = new LLMenuItemCheckGL(item_name, item_label, 0, 0, control_name, parent, 0, key, mask);
-
-					for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
+					if (call_child->hasAttribute("function"))
 					{
-						if (call_child->hasName("on_check"))
-						{
-							std::string callback_name;
-							std::string control_name;
-							if (call_child->hasAttribute("function"))
-							{
-								call_child->getAttributeString("function", callback_name);
-
-								control_name = callback_name;
-
-								std::string callback_data = item_name;
-								if (call_child->hasAttribute("userdata"))
-								{
-									call_child->getAttributeString("userdata", callback_data);
-									if (!callback_data.empty())
-									{
-										control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
-									}
-								}
-
-								LLSD userdata;
-								userdata["control"] = control_name;
-								userdata["data"] = callback_data;
-
-								LLSimpleListener* callback = parent->getListenerByName(callback_name);
-
-								if (!callback)
-								{
-									lldebugs << "Ignoring \"on_check\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
-									continue;
-								}
-
-								new_item->addListener(callback, "on_build", userdata);
-							}
-							else if (call_child->hasAttribute("control"))
-							{
-								call_child->getAttributeString("control", control_name);
-							}
-							else
-							{
-								continue;
-							}
-							LLControlVariable *control = parent->findControl(control_name);
-							if (!control)
-							{
-								parent->addBoolControl(control_name, FALSE);
-							}
-							((LLMenuItemCheckGL*)new_item)->setCheckedControl(control_name, parent);
-						}
-					}
-				}
-				else
-				{
-					new_item = new LLMenuItemCallGL(item_name, item_label, 0, 0, 0, 0, key, mask);
-				}
-
-				for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
-				{
-					if (call_child->hasName("on_click"))
-					{
-						std::string callback_name;
 						call_child->getAttributeString("function", callback_name);
+
+						control_name = callback_name;
 
 						std::string callback_data = item_name;
 						if (call_child->hasAttribute("userdata"))
 						{
 							call_child->getAttributeString("userdata", callback_data);
+							if (!callback_data.empty())
+							{
+								control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
+							}
 						}
+
+						LLSD userdata;
+						userdata["control"] = control_name;
+						userdata["data"] = callback_data;
 
 						LLSimpleListener* callback = parent->getListenerByName(callback_name);
 
 						if (!callback)
 						{
-							lldebugs << "Ignoring \"on_click\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
+							lldebugs << "Ignoring \"on_check\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
 							continue;
 						}
 
-						new_item->addListener(callback, "on_click", callback_data);
+						new_item->addListener(callback, "on_build", userdata);
 					}
-					if (call_child->hasName("on_enable"))
+					else if (call_child->hasAttribute("control"))
 					{
-						std::string callback_name;
-						std::string control_name;
-						if (call_child->hasAttribute("function"))
-						{
-							call_child->getAttributeString("function", callback_name);
-
-							control_name = callback_name;
-
-							std::string callback_data;
-							if (call_child->hasAttribute("userdata"))
-							{
-								call_child->getAttributeString("userdata", callback_data);
-								if (!callback_data.empty())
-								{
-									control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
-								}
-							}
-
-							LLSD userdata;
-							userdata["control"] = control_name;
-							userdata["data"] = callback_data;
-
-							LLSimpleListener* callback = parent->getListenerByName(callback_name);
-
-							if (!callback)
-							{
-								lldebugs << "Ignoring \"on_enable\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
-								continue;
-							}
-
-							new_item->addListener(callback, "on_build", userdata);
-						}
-						else if (call_child->hasAttribute("control"))
-						{
-							call_child->getAttributeString("control", control_name);
-						}
-						else
-						{
-							continue;
-						}
-						new_item->setEnabledControl(control_name, parent);
+						call_child->getAttributeString("control", control_name);
 					}
-					if (call_child->hasName("on_visible"))
+					else
 					{
-						std::string callback_name;
-						std::string control_name;
-						if (call_child->hasAttribute("function"))
-						{
-							call_child->getAttributeString("function", callback_name);
-
-							control_name = callback_name;
-
-							std::string callback_data;
-							if (call_child->hasAttribute("userdata"))
-							{
-								call_child->getAttributeString("userdata", callback_data);
-								if (!callback_data.empty())
-								{
-									control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
-								}
-							}
-
-							LLSD userdata;
-							userdata["control"] = control_name;
-							userdata["data"] = callback_data;
-
-							LLSimpleListener* callback = parent->getListenerByName(callback_name);
-
-							if (!callback)
-							{
-								lldebugs << "Ignoring \"on_visible\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
-								continue;
-							}
-
-							new_item->addListener(callback, "on_build", userdata);
-						}
-						else if (call_child->hasAttribute("control"))
-						{
-							call_child->getAttributeString("control", control_name);
-						}
-						else
-						{
-							continue;
-						}
-						new_item->setVisibleControl(control_name, parent);
+						continue;
 					}
+					LLControlVariable *control = parent->findControl(control_name);
+					if (!control)
+					{
+						parent->addBoolControl(control_name, FALSE);
+					}
+					((LLMenuItemCheckGL*)new_item)->setCheckedControl(control_name, parent);
 				}
-				item = new_item;
-				item->setLabel(item_label);
-				if (jump_key != KEY_NONE)
-					item->setJumpKey(jump_key);
-			}
-
-			if (item != NULL)
-			{
-				append(item);
 			}
 		}
+		else
+		{
+			new_item = new LLMenuItemCallGL(item_name, item_label, 0, 0, 0, 0, key, mask);
+		}
+
+		for (call_child = child->getFirstChild(); call_child.notNull(); call_child = call_child->getNextSibling())
+		{
+			if (call_child->hasName("on_click"))
+			{
+				std::string callback_name;
+				call_child->getAttributeString("function", callback_name);
+
+				std::string callback_data = item_name;
+				if (call_child->hasAttribute("userdata"))
+				{
+					call_child->getAttributeString("userdata", callback_data);
+				}
+
+				LLSimpleListener* callback = parent->getListenerByName(callback_name);
+
+				if (!callback)
+				{
+					lldebugs << "Ignoring \"on_click\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
+					continue;
+				}
+
+				new_item->addListener(callback, "on_click", callback_data);
+			}
+			if (call_child->hasName("on_enable"))
+			{
+				std::string callback_name;
+				std::string control_name;
+				if (call_child->hasAttribute("function"))
+				{
+					call_child->getAttributeString("function", callback_name);
+
+					control_name = callback_name;
+
+					std::string callback_data;
+					if (call_child->hasAttribute("userdata"))
+					{
+						call_child->getAttributeString("userdata", callback_data);
+						if (!callback_data.empty())
+						{
+							control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
+						}
+					}
+
+					LLSD userdata;
+					userdata["control"] = control_name;
+					userdata["data"] = callback_data;
+
+					LLSimpleListener* callback = parent->getListenerByName(callback_name);
+
+					if (!callback)
+					{
+						lldebugs << "Ignoring \"on_enable\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
+						continue;
+					}
+
+					new_item->addListener(callback, "on_build", userdata);
+				}
+				else if (call_child->hasAttribute("control"))
+				{
+					call_child->getAttributeString("control", control_name);
+				}
+				else
+				{
+					continue;
+				}
+				new_item->setEnabledControl(control_name, parent);
+			}
+			if (call_child->hasName("on_visible"))
+			{
+				std::string callback_name;
+				std::string control_name;
+				if (call_child->hasAttribute("function"))
+				{
+					call_child->getAttributeString("function", callback_name);
+
+					control_name = callback_name;
+
+					std::string callback_data;
+					if (call_child->hasAttribute("userdata"))
+					{
+						call_child->getAttributeString("userdata", callback_data);
+						if (!callback_data.empty())
+						{
+							control_name = llformat("%s(%s)", callback_name.c_str(), callback_data.c_str());
+						}
+					}
+
+					LLSD userdata;
+					userdata["control"] = control_name;
+					userdata["data"] = callback_data;
+
+					LLSimpleListener* callback = parent->getListenerByName(callback_name);
+
+					if (!callback)
+					{
+						lldebugs << "Ignoring \"on_visible\" \"" << item_name << "\" because \"" << callback_name << "\" is not registered" << llendl;
+						continue;
+					}
+
+					new_item->addListener(callback, "on_build", userdata);
+				}
+				else if (call_child->hasAttribute("control"))
+				{
+					call_child->getAttributeString("control", control_name);
+				}
+				else
+				{
+					continue;
+				}
+				new_item->setVisibleControl(control_name, parent);
+			}
+		}
+		new_item->setLabel(item_label);
+		if (jump_key != KEY_NONE)
+			new_item->setJumpKey(jump_key);
+		
+		append(new_item);
 	}
 }
 

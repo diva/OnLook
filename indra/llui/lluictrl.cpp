@@ -188,18 +188,6 @@ void LLUICtrl::setFocus(BOOL b)
 	}
 }
 
-void LLUICtrl::onFocusReceived()
-{
-	// trigger callbacks
-	LLFocusableElement::onFocusReceived();
-}
-
-void LLUICtrl::onFocusLost()
-{
-	// trigger callbacks
-	LLFocusableElement::onFocusLost();
-}
-
 // virtual
 void LLUICtrl::setTabStop( BOOL b )	
 { 

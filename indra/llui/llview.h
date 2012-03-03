@@ -279,6 +279,8 @@ public:
 	void		setUseBoundingRect( BOOL use_bounding_rect );
 	BOOL		getUseBoundingRect() const;
 
+	ECursorType	getHoverCursor() { return mHoverCursor; }
+
 	const std::string& getToolTip() const			{ return mToolTipMsg.getString(); }
 
 	void		sendChildToFront(LLView* child);
@@ -590,6 +592,9 @@ protected:
 	void			drawDebugRect();
 	void			drawChild(LLView* childp, S32 x_offset = 0, S32 y_offset = 0, BOOL force_draw = FALSE);
 	void			drawChildren();
+	bool			visibleAndContains(S32 local_x, S32 local_Y);
+	bool			visibleEnabledAndContains(S32 local_x, S32 local_y);
+	void			logMouseEvent();
 
 	LLView*	childrenHandleKey(KEY key, MASK mask);
 	LLView* childrenHandleUnicodeChar(llwchar uni_char);
@@ -616,6 +621,21 @@ protected:
 	control_map_t mFloaterControls;
 
 private:
+
+	template <typename METHOD, typename XDATA>
+	LLView* childrenHandleMouseEvent(const METHOD& method, S32 x, S32 y, XDATA extra, bool allow_mouse_block = true);
+
+	template <typename METHOD, typename CHARTYPE>
+	LLView* childrenHandleCharEvent(const std::string& desc, const METHOD& method,
+									CHARTYPE c, MASK mask);
+
+	// adapter to blur distinction between handleKey() and handleUnicodeChar()
+	// for childrenHandleCharEvent()
+	BOOL	handleUnicodeCharWithDummyMask(llwchar uni_char, MASK /* dummy */, BOOL from_parent)
+	{
+		return handleUnicodeChar(uni_char, from_parent);
+	}
+
 	LLView*		mParentView;
 	child_list_t mChildList;
 
@@ -664,6 +684,34 @@ private:
 	boost::signals2::connection mControlConnection;
 
 	ECursorType mHoverCursor;
+
+	// This allows special mouse-event targeting logic for testing.
+	typedef boost::function<bool(const LLView*, S32 x, S32 y)> DrilldownFunc;
+	static DrilldownFunc sDrilldown;
+public:
+	// This is the only public accessor to alter sDrilldown. This is not
+	// an accident. The intended usage pattern is like:
+	// {
+	//     LLView::TemporaryDrilldownFunc scoped_func(myfunctor);
+	//     // ... test with myfunctor ...
+	// } // exiting block restores original LLView::sDrilldown
+	class TemporaryDrilldownFunc: public boost::noncopyable
+	{
+	public:
+		TemporaryDrilldownFunc(const DrilldownFunc& func):
+			mOldDrilldown(sDrilldown)
+		{
+			sDrilldown = func;
+		}
+
+		~TemporaryDrilldownFunc()
+		{
+			sDrilldown = mOldDrilldown;
+		}
+
+	private:
+		DrilldownFunc mOldDrilldown;
+	};
 	
 public:
 	static BOOL	sDebugRects;	// Draw debug rects behind everything.

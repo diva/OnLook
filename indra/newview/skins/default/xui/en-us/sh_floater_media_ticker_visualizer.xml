@@ -15,24 +15,24 @@
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-17" drop_shadow_visible="true" follows="top|left"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="4"
-	     mouse_opaque="true" name="artist_label" v_pad="0" width="50">
+	     mouse_opaque="false" name="artist_label" v_pad="0" width="50">
 		Artist:
 	</text>
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-17" drop_shadow_visible="true" follows="top|left|right"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
-	     mouse_opaque="true" name="artist_text" v_pad="0" width="125">
+	     mouse_opaque="false" name="artist_text" v_pad="0" width="125">
 	</text>
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-32" drop_shadow_visible="true" follows="top|left"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="4"
-	     mouse_opaque="true" name="title_label" v_pad="0" width="50">
+	     mouse_opaque="false" name="title_label" v_pad="0" width="50">
 		Title:
 	</text>
 	<text text_color="0,0,0,1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 	     bottom="-32" drop_shadow_visible="true" follows="top|left|right"
 	     font="SansSerifBold" h_pad="0" halign="left" height="16" left="50"
-	     mouse_opaque="true" name="title_text" v_pad="0" width="125">
+	     mouse_opaque="false" name="title_text" v_pad="0" width="125">
 	</text>
 	
 	<string name="paused">

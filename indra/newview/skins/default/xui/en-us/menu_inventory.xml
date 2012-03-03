@@ -297,10 +297,6 @@
 	     name="Wearable Edit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="edit" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
-	     name="Wearable And Object Wear" width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="wear" />
-	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Take Off" left="0" mouse_opaque="true"
 	     name="Take Off" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="take_off" />
