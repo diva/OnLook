@@ -898,6 +898,7 @@ void init_client_menu(LLMenuGL* menu)
 	{
 		// *TODO: Translate
 		LLMenuGL* sub = new LLMenuGL("Consoles");
+		sub->setCanTearOff(TRUE);
 		menu->addChild(sub);
 		sub->addChild(new LLMenuItemCheckGL("Frame Console", 
 										&toggle_visibility,
@@ -978,6 +979,7 @@ void init_client_menu(LLMenuGL* menu)
 
 	sub_menu = new LLMenuGL("HUD Info");
 	{
+		sub_menu->setCanTearOff(TRUE);
 		sub_menu->addChild(new LLMenuItemCheckGL("Velocity", 
 												&toggle_visibility,
 												NULL,
@@ -1039,10 +1041,12 @@ void init_client_menu(LLMenuGL* menu)
 	menu->addSeparator();
 
 	sub_menu = new LLMenuGL("Rendering");
+	sub_menu->setCanTearOff(TRUE);
 	init_debug_rendering_menu(sub_menu);
 	menu->addChild(sub_menu);
 
 	sub_menu = new LLMenuGL("World");
+	sub_menu->setCanTearOff(TRUE);
 	init_debug_world_menu(sub_menu);
 	menu->addChild(sub_menu);
 
@@ -1051,6 +1055,7 @@ void init_client_menu(LLMenuGL* menu)
 		if (rlv_handler_t::isEnabled())
 		{
 			sub_menu = new LLMenuGL("RLVa");
+			sub_menu->setCanTearOff(TRUE);
 			init_debug_rlva_menu(sub_menu);
 			menu->addChild(sub_menu);
 			sub_menu->setVisible(rlv_handler_t::isEnabled());
@@ -1060,20 +1065,24 @@ void init_client_menu(LLMenuGL* menu)
 // [/RLVa:KB]
 
 	sub_menu = new LLMenuGL("UI");
+	sub_menu->setCanTearOff(TRUE);
 	init_debug_ui_menu(sub_menu);
 	menu->addChild(sub_menu);
 
 	sub_menu = new LLMenuGL("XUI");
+	sub_menu->setCanTearOff(TRUE);
 	init_debug_xui_menu(sub_menu);
 	menu->addChild(sub_menu);
 
 	sub_menu = new LLMenuGL("Character");
+	sub_menu->setCanTearOff(TRUE);
 	init_debug_avatar_menu(sub_menu);
 	menu->addChild(sub_menu);
 
 {
 		LLMenuGL* sub = NULL;
 		sub = new LLMenuGL("Network");
+		sub->setCanTearOff(TRUE);
 
 		sub->addChild(new LLMenuItemCallGL("Enable Message Log",  
 			&handle_viewer_enable_message_log,  NULL));
@@ -1105,6 +1114,7 @@ void init_client_menu(LLMenuGL* menu)
 	{
 		LLMenuGL* sub = NULL;
 		sub = new LLMenuGL("Recorder");
+		sub->setCanTearOff(TRUE);
 
 		sub->addChild(new LLMenuItemCheckGL("Full Session Logging", &menu_toggle_control, NULL, &menu_check_control, (void*)"StatsSessionTrackFrameStats"));
 
@@ -1126,6 +1136,7 @@ void init_client_menu(LLMenuGL* menu)
 	{
 		LLMenuGL* sub = NULL;
 		sub = new LLMenuGL("Media");
+		sub->setCanTearOff(TRUE);
 		sub->addChild(new LLMenuItemCallGL("Reload MIME types", &LLMIMETypes::reload));
 		sub->addChild(new LLMenuItemCallGL("Web Browser Test", &handle_web_browser_test));
 		menu->addChild( sub );
@@ -1178,6 +1189,7 @@ void init_client_menu(LLMenuGL* menu)
 	{
 		LLMenuGL* sub = NULL;
 		sub = new LLMenuGL("Debugging");
+		sub->setCanTearOff(TRUE);
 #if LL_WINDOWS
         sub->addChild(new LLMenuItemCallGL("Force Breakpoint", &force_error_breakpoint, NULL, NULL, 'B', MASK_CONTROL | MASK_ALT));
 #endif
@@ -1324,6 +1336,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	// Debug menu for types/pools
 	//
 	sub_menu = new LLMenuGL("Types");
+	sub_menu->setCanTearOff(TRUE);
 	menu->addChild(sub_menu);
 
 	sub_menu->addChild(new LLMenuItemCheckGL("Simple",
@@ -1382,6 +1395,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 											(void*)LLPipeline::RENDER_TYPE_BUMP, '\\', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
 	sub_menu->createJumpKeys();
 	sub_menu = new LLMenuGL("Features");
+	sub_menu->setCanTearOff(TRUE);
 	menu->addChild(sub_menu);
 	sub_menu->addChild(new LLMenuItemCheckGL("UI",
 											&LLPipeline::toggleRenderDebugFeature, NULL,
@@ -1422,6 +1436,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 	// Debug menu for info displays
 	//
 	sub_menu = new LLMenuGL("Info Displays");
+	sub_menu->setCanTearOff(TRUE);
 	menu->addChild(sub_menu);
 
 	sub_menu->addChild(new LLMenuItemCheckGL("Verify",	&LLPipeline::toggleRenderDebug, NULL,
@@ -1501,6 +1516,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 													(void*)LLPipeline::RENDER_DEBUG_RENDER_COMPLEXITY));												;
 
 	sub_menu = new LLMenuGL("Render Tests");
+	sub_menu->setCanTearOff(TRUE);
 
 	sub_menu->addChild(new LLMenuItemCheckGL("Camera Offset", 
 										  &menu_toggle_control,
@@ -1590,7 +1606,7 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 void init_debug_avatar_menu(LLMenuGL* menu)
 {
 	LLMenuGL* sub_menu = new LLMenuGL("Character Tests");
-	menu->addChild(sub_menu);
+	sub_menu->setCanTearOff(TRUE);
 	sub_menu->addChild(new LLMenuItemToggleGL("Go Away/AFK When Idle",
 		&gAllowIdleAFK));
 
@@ -1668,6 +1684,7 @@ void init_debug_rlva_menu(LLMenuGL* menu)
 	// Debug options
 	{
 		LLMenuGL* pDbgMenu = new LLMenuGL("Debug");
+		pDbgMenu->setCanTearOff(TRUE);
 
 		if (gSavedSettings.controlExists(RLV_SETTING_DEBUG))
 			pDbgMenu->addChild(new LLMenuItemCheckGL("Show Debug Messages", menu_toggle_control, NULL, menu_check_control, (void*)RLV_SETTING_DEBUG));

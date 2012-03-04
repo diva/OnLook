@@ -562,7 +562,7 @@ void LLMenuItemGL::draw( void )
 		}
 		if( !mDrawBranchLabel.empty() )
 		{
-			mFont->render( mDrawBranchLabel.getWString(), 0, (F32)getRect().mRight - (F32)RIGHT_PAD_PIXELS, ((F32)MENU_ITEM_PADDING / 2.f) + 1.f, color,
+			mFont->render( mDrawBranchLabel.getWString(), 0, (F32)getRect().mRight - (F32)RIGHT_PAD_PIXELS, ((F32)MENU_ITEM_PADDING / 2.f) + 1.f, (!getEnabled() || getHighlight()) ? color : color % .7f,
 						   LLFontGL::RIGHT, LLFontGL::BOTTOM, mStyle, font_shadow, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 	}
@@ -1494,7 +1494,9 @@ void LLMenuItemBranchGL::openMenu()
 		S32 delta_x = 0;
 		S32 delta_y = 0;
 		branch->localPointToOtherView( 0, 0, &x, &y, branch->getParent() ); 
-		if( y < menu_region_rect.mBottom )
+		
+		F32 center_y = top - (getRect().getHeight() / 2.f);
+		if( y < menu_region_rect.mBottom  && center_y <= menu_region_rect.getCenterY())
 		{
 			// open upwards if menu extends past bottom
 			// adjust by the height of the menu item branch since it is a submenu
@@ -1827,6 +1829,7 @@ LLMenuGL::LLMenuGL( const std::string& name, const std::string& label )
 :	LLUICtrl( name, LLRect(), FALSE, NULL, NULL ),
 	mBackgroundColor( sDefaultBackgroundColor ),
 	mBgVisible( TRUE ),
+	mHasSelection( FALSE ),
 	mLabel( label ),
 	mDropShadowed( TRUE ),
 	mHorizontalLayout( FALSE ),
@@ -1852,6 +1855,7 @@ LLMenuGL::LLMenuGL( const std::string& label)
 :	LLUICtrl( label, LLRect(), FALSE, NULL, NULL ),
 	mBackgroundColor( sDefaultBackgroundColor ),
 	mBgVisible( TRUE ),
+	mHasSelection( FALSE ),
 	mLabel( label ),
 	mDropShadowed( TRUE ),
 	mHorizontalLayout( FALSE ),
@@ -2484,9 +2488,9 @@ void LLMenuGL::arrange( void )
 			}
 		}
 
-		setRect(LLRect(getRect().mLeft, getRect().mBottom + height, getRect().mLeft + width, getRect().mBottom));
-
 		S32 cur_height = (S32)llmin(max_height, height);
+		setRect(LLRect(getRect().mLeft, getRect().mTop, getRect().mLeft + width, getRect().mTop - cur_height));
+
 		S32 cur_width = 0;
 		S32 offset = 0;
 		item_list_t::iterator item_iter;
@@ -2540,6 +2544,7 @@ void LLMenuGL::createSpilloverBranch()
 		mSpilloverMenu->updateParent(LLMenuGL::sMenuContainer);
 		// Inherit colors
 		mSpilloverMenu->setBackgroundColor( mBackgroundColor );
+		mSpilloverMenu->setCanTearOff(FALSE);
 
 		mSpilloverBranch = new LLMenuItemBranchGL(std::string("More"), std::string("More"), mSpilloverMenu->getHandle());
 		mSpilloverBranch->setFontStyle(LLFontGL::ITALIC);
@@ -3055,11 +3060,11 @@ BOOL LLMenuGL::handleHover( S32 x, S32 y, MASK mask )
 
 	// don't change menu focus unless mouse is moving or alt key is not held down
 	if ((llabs(mMouseVelX) > 0 || 
-			llabs(mMouseVelY) > 0) &&
+			llabs(mMouseVelY) > 0) /*&&
 		(!mHasSelection ||
-		//(mouse_delta_x == 0 && mouse_delta_y == 0) ||
+		(mouse_delta_x == 0 && mouse_delta_y == 0) ||
 		(mMouseVelX < 0) ||
-		llabs((F32)mMouseVelY) / llabs((F32)mMouseVelX) > MAX_MOUSE_SLOPE_SUB_MENU))
+		llabs((F32)mMouseVelY) / llabs((F32)mMouseVelX) > MAX_MOUSE_SLOPE_SUB_MENU)*/)
 	{
 		for ( child_list_const_iter_t child_it = getChildList()->begin(); child_it != getChildList()->end(); ++child_it)
 		{

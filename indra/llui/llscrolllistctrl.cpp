@@ -641,6 +641,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
  :	LLUICtrl(name, rect, TRUE, commit_callback, callback_user_data),
 	mLineHeight(0),
 	mScrollLines(0),
+	mMouseWheelOpaque(true),
 	mPageLines(0),
 	mHeadingHeight(20),
 	mMaxSelectable(0),
@@ -1950,6 +1951,12 @@ BOOL LLScrollListCtrl::handleScrollWheel(S32 x, S32 y, S32 clicks)
 	BOOL handled = FALSE;
 	// Pretend the mouse is over the scrollbar
 	handled = mScrollbar->handleScrollWheel( 0, 0, clicks );
+
+	if (mMouseWheelOpaque)
+	{
+		return TRUE;
+	}
+
 	return handled;
 }
 
@@ -2842,6 +2849,8 @@ LLXMLNodePtr LLScrollListCtrl::getXML(bool save_children) const
 	node->createChild("draw_stripes", TRUE)->setBoolValue(mDrawStripes);
 
 	node->createChild("column_padding", TRUE)->setIntValue(mColumnPadding);
+	
+	node->createChild("mouse_wheel_opaque", TRUE)->setBoolValue(mMouseWheelOpaque);
 
 	addColorXML(node, mBgWriteableColor, "bg_writeable_color", "ScrollBgWriteableColor");
 	addColorXML(node, mBgReadOnlyColor, "bg_read_only_color", "ScrollBgReadOnlyColor");
@@ -2969,6 +2978,9 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 
 	BOOL sort_ascending = TRUE;
 	node->getAttributeBOOL("sort_ascending", sort_ascending);
+	
+	BOOL mouse_wheel_opaque = TRUE;
+	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
 
 	LLUICtrlCallback callback = NULL;
 
@@ -2993,6 +3005,8 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	scroll_list->initFromXML(node, parent);
 
 	scroll_list->setSearchColumn(search_column);
+	
+	scroll_list->mMouseWheelOpaque = mouse_wheel_opaque;
 
 	LLSD columns;
 	S32 index = 0;
