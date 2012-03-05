@@ -387,6 +387,7 @@ void LLPreferenceCore::refreshEnabledGraphics()
 
 LLFloaterPreference::LLFloaterPreference()
 {
+	mExitWithoutSaving = false;
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_preferences.xml");
 }
 
@@ -532,7 +533,10 @@ void LLFloaterPreference::onBtnApply( void* userdata )
 void LLFloaterPreference::onClose(bool app_quitting)
 {
 	LLPanelLogin::setAlwaysRefresh(false);
-	cancel(); // will be a no-op if OK or apply was performed just prior.
+	if (!mExitWithoutSaving)
+	{
+		cancel(); // will be a no-op if OK or apply was performed just prior.
+	}
 	LLFloater::onClose(app_quitting);
 }
 
@@ -571,4 +575,11 @@ void LLFloaterPreference::refreshEnabledGraphics()
 void LLFloaterPreference::switchTab(S32 i)
 {
 	sInstance->mPreferenceCore->getTabContainer()->selectTab(i);
+}
+
+// static
+void LLFloaterPreference::closeWithoutSaving()
+{
+	sInstance->mExitWithoutSaving = true;
+	sInstance->close();
 }
