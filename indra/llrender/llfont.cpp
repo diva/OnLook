@@ -192,6 +192,8 @@ BOOL LLFont::loadFace(const std::string& filename, const F32 point_size, const F
 		FT_Done_Face(mFTFace);
 		mFTFace = NULL;
 	}
+	
+	llinfos << "Loading font file: " << filename << llendl;
 
 	int error;
 
