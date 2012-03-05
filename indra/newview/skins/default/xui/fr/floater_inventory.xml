@@ -2,7 +2,7 @@
 <floater name="Inventory" title="Inventaire">
 	<search_editor label="Saisissez votre recherche ici" name="inventory search editor"/>
 <text name="group_titles_textbox" halign="right" font="SansSerifSmall" follows="left|top"
-		height="16" left="30" bottom_delta="2" right="93">Filtre rapidie:</text>
+		height="16" left="30" bottom_delta="2" right="93">Filtre rapide:</text>
 	<!-- Inventory Type Filter Labels -->
 	<string name="filter_type_all">TOUT</string>
 	<string name="filter_type_animation">Animations</string>

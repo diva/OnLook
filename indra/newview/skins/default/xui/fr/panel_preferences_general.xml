@@ -1,25 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Général" name="general_panel">
-	<radio_group name="default_start_location" width="166">
-		<radio_item name="MyHome" tool_tip="Par défaut, choisir mon domicile comme lieu de départ.">
-			Domicile
-		</radio_item>
-		<radio_item name="MyLastLocation" tool_tip="Par défaut, choisir mon dernier emplacement comme lieu de départ.">
-			Dernier emplacement
-		</radio_item>
-	</radio_group>
-	<check_box label="Afficher le lieu de départ sur l&apos;écran de connexion" name="show_location_checkbox"/>
-	<combo_box name="fade_out_combobox" width="166">
-		<combo_item name="Never">
-			Jamais
-		</combo_item>
-		<combo_item name="Show Temporarily">
-			Afficher temporairement
-		</combo_item>
-		<combo_item name="Always">
-			Toujours
-		</combo_item>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" bottom="-409" height="408" label="General" left="102" name="general_panel" width="517">
+  <radio_group bottom="-44" height="40" left="109" name="default_start_location" width="280">
+    <radio_item bottom="-20" height="20" name="MyHome" tool_tip="Par défaut, choisir mon domicile comme lieu de départ.">Domicile</radio_item>
+    <radio_item bottom="-20" height="20" left="93" name="MyLastLocation" tool_tip="Par défaut, choisir mon dernier emplacement comme lieu de départ.">Dernier emplacement.</radio_item>
+  </radio_group>
+  <check_box bottom="-42" height="16" initial_value="true" label="Afficher le lieu de départ sur l&apos;écran de connexion" name="show_location_checkbox"/>
+	<combo_box bottom_delta="-27" follows="top" height="18" left="103" name="fade_out_combobox" width="111">
+		<combo_item name="Never" value="Never">Jamais</combo_item>
+		<combo_item name="Show Temporarily" value="Show Temporarily">Afficher temporairement</combo_item>
+		<combo_item name="Always" value="Always">Toujours</combo_item>
 	</combo_box>
+
+
+
+
+
 	<check_box label="Nom des avatars en petit" name="small_avatar_names_checkbox"/>
 	<check_box label="Masquer mon nom sur mon écran" name="show_my_name_checkbox"/>
 	<text name="group_titles_textbox">
@@ -36,14 +31,14 @@
 	<spinner label="Absent(e) après :" name="afk_timeout_spinner"/>
 	<check_box label="M&apos;avertir lorsque je dépense ou reçois des L$" name="notify_money_change_checkbox"/>
 	<text name="maturity_desired_label">
-		Catégorie de contenu :
+		Catégories :
 	</text>
 	<text name="maturity_desired_prompt">
 		Je veux accéder au contenu classé :
 	</text>
 	<combo_box name="maturity_desired_combobox" left="340">
 		<combo_item name="Desired_Adult">
-			PG, Mature et Adult
+			PG, Mature &#x26; Adult
 		</combo_item>
 		<combo_item name="Desired_Mature">
 			PG et Mature

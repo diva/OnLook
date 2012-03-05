@@ -13,7 +13,7 @@
 	<menu bottom="97" create_jump_keys="true" drop_shadow="true" enabled="true"
 	     height="439" label="Édition" left="38" mouse_opaque="false" name="Edit"
 	     opaque="true" tear_off="false" width="153">
-		<menu_item_call bottom="-29" enabled="true" height="19" label="Preferences" left="0"
+		<menu_item_call bottom="-29" enabled="true" height="19" label="Pr&#xE9;ferences" left="0"
 		     mouse_opaque="true" name="Preferences..." shortcut="control|P" width="153">
 			<on_click function="ShowFloater" userdata="preferences" />
 		</menu_item_call>

@@ -49,7 +49,7 @@
 	<menu_item_call label="Copier" name="Copy"/>
 	<menu_item_call label="Coller" name="Paste"/>
 	<menu_item_call label="Supprimer" name="Delete"/>
-	<menu_item_call label="Enlever les objets" name="Take Off Items"/>
+	<menu_item_call label="Enlever l&apos;ensemble" name="Take Off Items"/>
 	<menu_item_call label="Ajouter à l&apos;ensemble" name="Add To Outfit"/>
 	<menu_item_call label="Remplacer l&apos;ensemble" name="Replace Outfit"/>
 	<menu_item_call label="Démarrer le chat conférence" name="Conference Chat Folder"/>

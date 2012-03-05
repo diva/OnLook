@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="groups">
 	<scroll_list bottom="50" name="group list"/>
 	<text bottom="16" height="32" name="groupdesc" width="268">

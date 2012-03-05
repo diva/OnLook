@@ -8,112 +8,112 @@
       follows="left|top|right|bottom" label="General" name="User Interface">
       <check_box bottom_delta="-25" control_name="DoubleClickTeleport" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Enable teleporting via double-click in-world" left="10"
-        tool_tip="Double-clicking on an object/person will teleport you to that location."
+        label="Activer le TP avec le double-clic" left="10"
+        tool_tip="Double-clic sur un objet/personne pour vous y TP dessus."
         mouse_opaque="true" name="double_click_teleport_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="OptionRotateCamAfterLocalTP" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Reset camera after teleporting" left="20"
-        tool_tip="Centers the camera behind you after a local teleport."
+        label="R&#xE9;initialiser la cam&#xE9;ra apr&#xE8;s le TP" left="20"
+        tool_tip="Centre la cam&#xE9;ra derri&#xE8;re vous apr&#xE8;s un TP."
         mouse_opaque="true" name="center_after_teleport_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="OptionOffsetTPByAgentHeight" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Offset TP target by half agent height" left="20"
-        tool_tip="Tries to aim the TP so that your feet land at the point you're aiming for."
+        label="Compenser la cible du TP" left="20"
+        tool_tip="Essaye de cibler le TP pour que vos pieds atterrissent au point vis&#xE9;."
         mouse_opaque="true" name="offset_teleport_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="PreviewAnimInWorld" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Preview animations on the avatar instead on a dummy before uploading" left="10"
-        tool_tip="The Animation upload window will play animations on your avatar when previewing them."
+        label="Preview animations on the avatar - Test temporaire d&#x27;une animation" left="10"
+        tool_tip="L&#x27;animation est jou&#xE9;e avec votre avatar avant d&#x27;&#xEA;tre t&#xE9;l&#xE9;charg&#xE9;e."
         mouse_opaque="true" name="preview_anim_in_world_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="SaveScriptsAsMono" enabled="false"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Save scripts in inventory as Mono scripts instead of LSL2" left="10"
-        tool_tip="Scripts will automatically be compiled in Mono when saving - Usually only possible when placed in an object."
+        label="Enregistrer les scripts syst&#xE9;matiquement en Mono" left="10"
+        tool_tip="Compile les scripts en Mono quand cela est possible."
         mouse_opaque="true" name="save_scripts_as_mono_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentAlwaysRezInGroup" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Always rez objects as land group when available" left="10"
-        tool_tip="Rez objects with the same group that the object is being rezzed on has, regardless of your active tag."
+        label="Rezzer les objets avec le groupe du terrain quand cela est possible" left="10"
+        tool_tip="Rez les objets avec le m&#xEA;me groupe que le terrain, ind&#xE9;pendamment de votre tag actif."
         mouse_opaque="true" name="always_rez_in_group_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentBuildAlwaysEnabled" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Always show Build as enabled" left="10"
-        tool_tip="Allows you to use the Build menu without having to be tricky about it. May not mean you can actually build there."
+        label="Toujours montrer le bouton construire activ&#xE9;" left="10"
+        tool_tip="Permet d&#x27;acc&#xE9;der &#xE0; au bouton construire en permanence, sans pour autant avoir le droit de construire."
         mouse_opaque="true" name="always_build_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentFlyAlwaysEnabled" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Always allow Fly" left="10"
-        tool_tip="Lets you fly in locations you shouldn't be allowed to. Use at your own risk - Just because you can doesn't mean you should."
+        label="Toujours permettre le mode vol (Fly)" left="10"
+        tool_tip="Permet de voler quelque soient les droits de la sim, &#xE0; vos risques et p&#xE9;rils."
         mouse_opaque="true" name="always_fly_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentDisableMinZoomDist" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Disable camera minimum distance" left="10"
-        tool_tip="Allows the camera to get reeeaaally close to things."
+        label="D&#xE9;sactiver la distance minimum de la cam&#xE9;ra" left="10"
+        tool_tip="La cam&#xE9;ra zoome de tr&#xE9;s pr&#xE8;s."
         mouse_opaque="true" name="disable_camera_zoom_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Enable Power User functionality" left="10"
-        tool_tip="Adds features deemed too dangerous for normal use. These features can wreak havoc or do bad things if misused - Mostly to yourself or your belongings. If you're sure, activate the checkbox below as well."
+        label="Activer les fonctions Power User - &#xE0; vos risques et p&#xE9;rils !" left="10"
+        tool_tip="Ajoute des fonctions consid&#xE9;r&#xE9;es trop dangereuses pour une utilisation normale. Ces fonctions peuvent faire des ravages si employ&#xE9;es improprement."
         mouse_opaque="true" name="power_user_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Confirm Power User functionality" left="20"
-        tool_tip="Confirms Power User activation. Turn this on at your own risk, and use any features it enables responsibly. Ascent devs will not replace anything you break if you ruin something important. Unlike most checkboxes, you must apply/ok changes before this will activate."
+        label="Confirmer les fonctions Power User" left="20"
+        tool_tip="Confirme les fonctions Power User . A vos risques et p&#xE9;rils. Ascent devs n'est pas responsable de cette utilisation."
         mouse_opaque="true" name="power_user_confirm_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentUseSystemFolder" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Enable Ascent System Inventory (Requires Restart)" left="10"
-        tool_tip="Creates a new folder in the inventory for storing settings files and non-permanent assets."
+        label="Activer l&#x27;Ascent System Inventory (Red&#xE9;marrage n&#xE9;cessaire)" left="10"
+        tool_tip="Cr&#xE9;e un nouveau dossier dans l&#x27;inventaire afin de stocker les fichiers de settings et les assets non permanents."
         mouse_opaque="true" name="system_folder_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentSystemTemporary" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Temporary uploads go in the System Asset folder." left="20"
-        tool_tip="Puts temporary uploads in the Asset folder which separates them from actual uploads, making them easier to find."
+        label="Les t&#xE9;l&#xE9;chargements temporaires vont dans le dossier : System Inventory &#x3E; Assets" left="20"
+        tool_tip="Place les t&#xE9;l&#xE9;chargements temporaires dans le dossier : System Inventory &#x3E; Assets ce qui permet de les retrouver plus ais&#xE9;ment."
         mouse_opaque="true" name="temp_in_system_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="FetchInventoryOnLogin" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Automatically fetch the inventory in the background after login" left="10"
-        tool_tip="Inventory will preload when you log in, so you don't have to wait for it to load when doing an initial search."
+        label="Pr&#xE9;charger l&#x27;inventaire &#xE0; la connection" left="10"
+        tool_tip="R&#xE9;duit l&#x27;attente lors de votre recherche initiale dans l&#x27;inventaire."
         mouse_opaque="true" name="fetch_inventory_on_login_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="WindEnabled" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Enable Wind Effects" left="10"
+        label="Activer les effets de vent" left="10"
         mouse_opaque="true" name="enable_wind" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="CloudsEnabled" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Enable Clouds" left="10"
+        label="Activer les nuages" left="10"
         mouse_opaque="true" name="enable_clouds" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" left_delta="10"  control_name="SkyUseClassicClouds" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Enable Classic Clouds" left="10"
+        label="Activer les nuages classiques" left="10"
         mouse_opaque="true" name="enable_classic_clouds" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" left_delta="-10" control_name="SpeedRez" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Enable speed-rezzing via draw distance stepping" left="10"
+        label="Activer le rezz rapide par rapport &#xE0; une distance progressive" left="10"
         mouse_opaque="true" name="speed_rez_check" radio_style="false"
-        tool_tip="When active, this will progressively increase your draw distance, which allows closer objects/people to rez first."
+        tool_tip="Active, cette fonction charge progressivement les textures du plus pr&#xE8;s au plus loin."
         width="400" />
       <spinner bottom_delta="-20" control_name="SpeedRezInterval" enabled="true" decimal_digits="0"
         follows="left|top" font="SansSerifSmall" height="16" left="30" width="230"
-        label="Draw distance stepping interval:" label_width="180"
+        label="Intervalle distance/affichage:" label_width="180"
         max_val="60" min_val="5" initial_val="20" increment="5"
         mouse_opaque="true" name="speed_rez_interval" />
       <text type="string" length="1" bottom_delta="0" left_delta="235" bg_visible="false"
@@ -121,7 +121,7 @@
         drop_shadow_visible="true" enabled="true" follows="left|top"
         font="SansSerifSmall" h_pad="0" halign="left" height="16"
         mouse_opaque="true" name="speed_rez_seconds" v_pad="0" width="100">
-seconds
+secondes
       </text>
     </panel>
 
@@ -233,7 +233,7 @@ Se tp vers un avatar (usage: cmd nom)
       </text>
       <line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="-20" follows="left|top"
         font="SansSerifSmall" height="20" left_delta="0" max_length="256" mouse_opaque="true"
-        tool_tip="The syntax of this command allows partial names and is not case sensitive. Better results if used while the Radar is open."
+        tool_tip="Cette syntaxe permet les noms partiels."
         name="AscentCmdLineTP2" width="200"/>
     </panel>
 
@@ -241,46 +241,46 @@ Se tp vers un avatar (usage: cmd nom)
       follows="left|top|right|bottom" label="Security" name="Security">
       <check_box bottom_delta="-25" control_name="BroadcastViewerEffects" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Broadcast Viewer Effects (Does not include beams)" left="10"
+        label="Emettre les effets du viewer (Exclut les rayons)" left="10"
         mouse_opaque="true" name="broadcast_viewer_effects" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="DisablePointAtAndBeam" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="true"
-        label="Disable Point At And Beam" left="10"
-        tool_tip="Don't point at or show your edit beam when selecting an object."
+        label="D&#xE9;sactiver le &#x22;Pointer vers&#x22; &#xE0; l&#x22;&#xE9;dition d&#x27;un objet" left="10"
+        tool_tip="Masque le pointeur sur l&#x27;objet  &#xE9;dit&#xE9;"
         mouse_opaque="true" name="disable_point_at_and_beams_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="PrivateLookAt" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Do not Look At objects (defeats ShowLookAt)" left="10"
-        tool_tip="Turns off broadcasting headturns and lookat beacons for yourself."
+        label="Ne pas &#x22;Regarder vers&#x22;" left="10"
+        tool_tip="Supprime les mouvements de t&#xEA;te, et le &#x22;Regarder vers&#x22; pour soi m&#xEA;me."
         mouse_opaque="true" name="private_look_at_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="AscentShowLookAt" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Show others' LookAt beacons" left="10"
-        tool_tip="Shows you where others are looking."
+        label="Voir quand les autres &#x22;Regardent vers&#x22;" left="10"
+        tool_tip="Montre ou les autres regardent."
         mouse_opaque="true" name="show_look_at_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="RevokePermsOnStandUp" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="On standing up, revoke perms for the object your avatar was sitting on" left="10"
-        tool_tip="Objects generally retain Take Control and Trigger Animation permissions until reset or given permission by another user. Enabling this will make sure you revoke these permissions immediately."
+        label="En vous levant, r&#xE9;voquez les permissions pour l&#x27;objet sur lequel votre avatar &#xE9;tait assis" left="10"
+        tool_tip="Evite que l&#x27;objet garde le controle par exemple pour les animations."
         mouse_opaque="true" name="revoke_perms_on_stand_up_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" control_name="DisableClickSit" enabled="true"
         follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-        label="Disable click-to-sit objects" left="10"
-        tool_tip="Some griefer tools rely on forcing or tricking you to click on an object that will make you sit, giving the object automatic permissions to trigger animations amongst other things. This will disable llSitTarget - It does mean that you will need to select 'Sit' on poseballs and furniture."
+        label="D&#xE9;sactive le &#x22;Click to sit&#x22; automatique" left="10"
+        tool_tip="D&#xE9;sactive llSitTarget, vous devrez s&#xE9;lectionner vous m&#xEA;me la fonction &#x22;sit&#x22; sur l&#x27;objet."
         mouse_opaque="true" name="disable_click_sit_check" radio_style="false"
         width="400" />
       <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="false" label="Display Total Script Count changes:" left_delta="0"
+        initial_value="false" label="Affiche les changements de d&#xE9;comptes de scripts de la r&#xE9;gion" left_delta="0"
         mouse_opaque="true" name="totalscriptjumps" radio_style="false" width="270"
         control_name="AscentDisplayTotalScriptJumps"
-        tool_tip="Displays script count changes in your region, dependant on the threshold you choose to the right."/>
+        tool_tip="D&#xE9;pendant du seuil que vous choisissez dans la fen&#xEA;tre &#xE0; droite."/>
       <spinner bottom_delta="0" decimal_digits="0" follows="left|top" height="16" increment="1"
-        label="" label_width="0" digits="4" left_delta="210" max_val="9999"
+        label="" label_width="0" digits="4" left_delta="325" max_val="9999"
         min_val="1" mouse_opaque="true" name="ScriptJumpCount" width="50" control_name="Ascentnumscriptdiff"
         tool_tip="Threshold for the script jump message [Default: 100]"/>
     </panel>
@@ -291,7 +291,7 @@ Se tp vers un avatar (usage: cmd nom)
         bottom_delta="-19" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall"
         h_pad="0" halign="left" height="10" left_delta="30" mouse_opaque="false"
         name="text_box6" v_pad="0" width="150">
-Pivot Point
+Point de Pivot
       </text>
       <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.05"
         label="X pos" label_width="40" left="10" mouse_opaque="true" max_val="256"
@@ -303,16 +303,16 @@ Pivot Point
         label="Z pos" label_width="40" left_delta="0" mouse_opaque="true" max_val="256"
         min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
       <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        label="Values are percent" left_delta="-5" mouse_opaque="true"
+        label="Valeurs en pour&#xE7;entages" left_delta="-5" mouse_opaque="true"
         tool_tip="Default settings are Percentages and every axis set at 50"
         name="EmPivotPercToggle" radio_style="false" width="100" control_name="AscentBuildPrefs_PivotIsPercent"/>
       <check_box bottom_delta="60" enabled="false" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="true" label="Enable highlighting of selected prims" left_delta="140"
+        initial_value="true" label="Active les &#x22;Highlights&#x22; sur les prims s&#xE9;lectionn&#xE9;s" left_delta="140"
         mouse_opaque="true" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"
         radio_style="false" width="270"/>
       <check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall" height="16"
-        initial_value="false" label="Show axis arrow on root prim position" left_delta="0"
-        mouse_opaque="true" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead."
+        initial_value="false" label="Axer sur le Root Prim" left_delta="0"
+        mouse_opaque="true" tool_tip="Par d&#xE9;faut le centre de la totalit&#xE9; du build est l&#x27;axe."
         name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"
         radio_style="false" width="270"/>
     </panel>

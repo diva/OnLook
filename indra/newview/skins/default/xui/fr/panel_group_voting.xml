@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Propositions" name="voting_tab">
 	<text name="help_text">
-		Les propositions de groupe permettent d&apos;en savoir plus sur les objectifs du groupe ou son avis sur un sujet donné. Si vous avez les pouvoirs requis, vous pouvez créer des propositions, voter et accéder à d&apos;anciennes propositions.
+		Les propositions de groupe permettent d&apos;en savoir plus sur les objectifs du groupe ou son avis sur un sujet donnÃ©. Si vous avez les pouvoirs requis, vous pouvez crÃ©er des propositions, voter et accÃ©der Ã  d&apos;anciennes propositions.
 	</text>
 	<button label="?" name="help_button"/>
 	<text name="proposal_header">
 		Propositions du groupe en cours
 	</text>
 	<text name="proposal_voting_lbl">
-		Proposition                                                      Fin du vote                      Votée ?
+		Proposition                                                      Fin du vote                      VotÃ©e ?
 	</text>
 	<text name="proposals_header_view_txt">
 		Propositions en cours
 	</text>
 	<string name="proposals_header_view_inst">
 		Double-cliquez sur la proposition pour laquelle vous aimeriez voter
-ou cliquez sur Créer proposition pour créer une nouvelle proposition.
+ou cliquez sur CrÃ©er proposition pour crÃ©er une nouvelle proposition.
 	</string>
 	<text name="proposals_header_create_txt">
-		Créer une proposition
+		CrÃ©er une proposition
 	</text>
 	<string name="proposals_header_create_inst">
-		Saisissez une description. Vous pouvez changer le quorum, la durée
-et la majorité requise pour que la proposition soit adoptée.
+		Saisissez une description. Vous pouvez changer le quorum, la durÃ©e
+et la majoritÃ© requise pour que la proposition soit adoptÃ©e.
 	</string>
 	<text name="proposals_header_vote_txt">
 		Vote sur la proposition
@@ -32,42 +32,42 @@ et la majorité requise pour que la proposition soit adoptée.
 ou abstenez-vous en cliquant sur M&apos;abstenir.
 	</string>
 	<string name="proposals_header_voted_inst">
-		Vous avez voté : [VOTE]
+		Vous avez votÃ©Â : [VOTE]
 	</string>
 	<text name="empty_proposal_txt">
-		La proposition que vous essayez de créer est vide. Veuillez saisir une description avant de créer la proposition.
+		La proposition que vous essayez de crÃ©er est vide. Veuillez saisir une description avant de crÃ©er la proposition.
 	</text>
 	<text name="proposal_instructions">
 		Double-cliquez sur la proposition sur laquelle vous voulez voter ou cliquez
-sur Créer une nouvelle proposition pour en créer une nouvelle.
+sur CrÃ©er une nouvelle proposition pour en crÃ©er une nouvelle.
 	</text>
 	<text name="proposal_lbl">
 		Description de la proposition
 	</text>
-	<button label="Créer une proposition" label_selected="Créer une proposition" name="btn_proposal"/>
+	<button label="CrÃ©er une proposition" label_selected="CrÃ©er une proposition" name="btn_proposal"/>
 	<button label="Afficher la proposition" label_selected="Afficher la proposition" name="btn_view_proposal_item"/>
 	<button label="Afficher la liste" label_selected="Afficher la liste" name="btn_view_proposal_list"/>
 	<text name="quorum_lbl">
-		Quorum :
+		QuorumÂ :
 	</text>
-	<spinner name="quorum" tool_tip="Nombre total de votants nécessaires pour que les résultats soient valides."/>
+	<spinner name="quorum" tool_tip="Nombre total de votants nÃ©cessaires pour que les rÃ©sultats soient valides."/>
 	<text name="quorum_text">
 		sur [MEMBERS] membres doivent voter.
 	</text>
 	<text name="duration_lbl">
-		Durée :
+		DurÃ©eÂ :
 	</text>
-	<spinner name="duration" tool_tip="Durée du vote (en nombre de jours)."/>
+	<spinner name="duration" tool_tip="DurÃ©e du vote (en nombre de jours)."/>
 	<text name="duration_text">
 		jours
 	</text>
-	<radio_group left="296" name="majority" tool_tip="Majorité de tous les votes nécessaires pour remporter le vote.">
-		Majorité simple
-		Majorité des 2/3
-		Unanimité
+	<radio_group left="296" name="majority" tool_tip="MajoritÃ© de tous les votes nÃ©cessaires pour remporter le vote.">
+		MajoritÃ© simple
+		MajoritÃ© des 2/3
+		UnanimitÃ©
 	</radio_group>
 	<text name="start_lbl">
-		Début :
+		DÃ©but :
 	</text>
 	<text name="end_lbl">
 		Fin :
@@ -81,14 +81,14 @@ sur Créer une nouvelle proposition pour en créer une nouvelle.
 		Historique des votes
 	</text>
 	<text left="7" name="instructions" width="405">
-		Double-cliquez sur un ancien vote ou sélectionnez-en un pour voir les résultats.
+		Double-cliquez sur un ancien vote ou sÃ©lectionnez-en un pour voir les rÃ©sultats.
 	</text>
 	<text name="history_list_lbl">
 		Ancien vote                                                      Fin du vote
 	</text>
 	<button label="Afficher la proposition" label_selected="Afficher la proposition" left="247" name="btn_view_history_item" width="160"/>
 	<text name="vote_text_lbl">
-		Résultats du vote :
+		RÃ©sultats du voteÂ :
 	</text>
 	<button label="Afficher la liste" label_selected="Afficher la liste" name="btn_view_history_list"/>
 	<string name="proposals_submit_yes_txt">
@@ -104,9 +104,9 @@ sur Créer une nouvelle proposition pour en créer une nouvelle.
 		Soumission de la nouvelle proposition en cours...
 	</string>
 	<string name="vote_recorded">
-		Votre vote a bien été reçu.
+		Votre vote a bien Ã©tÃ© reÃ§u.
 	</string>
 	<string name="vote_previously_recorded">
-		Vous avez déjà voté. Vous ne pouvez voter qu&apos;une seule fois sur une proposition.
+		Vous avez dÃ©jÃ  votÃ©. Vous ne pouvez voter qu&apos;une seule fois sur une proposition.
 	</string>
 </panel>
