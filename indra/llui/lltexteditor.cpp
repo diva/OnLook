@@ -1277,7 +1277,8 @@ BOOL LLTextEditor::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_
 BOOL LLTextEditor::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
 	// Pretend the mouse is over the scrollbar
-	return mScrollbar->handleScrollWheel( 0, 0, clicks );
+	mScrollbar->handleScrollWheel( 0, 0, clicks );
+	return TRUE;
 }
 
 BOOL LLTextEditor::handleMouseDown(S32 x, S32 y, MASK mask)

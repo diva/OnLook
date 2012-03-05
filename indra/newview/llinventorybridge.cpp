@@ -3374,7 +3374,7 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 			}
 			// If an item is being dragged between windows, unselect everything in the active window 
 			// so that we don't follow the selection to its new location (which is very annoying).
-			LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+			LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel(FALSE);
 			if (active_panel)
 			{
 				LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
@@ -3386,7 +3386,7 @@ BOOL LLFolderBridge::dragItemIntoFolder(LLInventoryItem* inv_item,
 
 			// FAVORITES folder
 			// (copy the item)
-			else if (move_is_into_favorites)
+			if (move_is_into_favorites)
 			{
 				dropToFavorites(inv_item);
 			}

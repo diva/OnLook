@@ -4671,7 +4671,7 @@ void LLMenuHolderGL::setActivatedItem(LLMenuItemGL* item)
 LLTearOffMenu::LLTearOffMenu(LLMenuGL* menup) : 
 	LLFloater(menup->getName(), LLRect(0, 100, 100, 0), menup->getLabel(), FALSE, DEFAULT_MIN_WIDTH, DEFAULT_MIN_HEIGHT, FALSE, FALSE)
 {
-	//S32 floater_header_size = LLFLOATER_HEADER_SIZE;
+	S32 floater_header_size = LLFLOATER_HEADER_SIZE;
 
 	setName(menup->getName());
 	setTitle(menup->getLabel());
@@ -4684,16 +4684,20 @@ LLTearOffMenu::LLTearOffMenu(LLMenuGL* menup) :
 	LLRect rect;
 	menup->localRectToOtherView(LLRect(-1, menup->getRect().getHeight(), menup->getRect().getWidth() + 3, 0), &rect, gFloaterView);
 	// make sure this floater is big enough for menu
-	mTargetHeight = (F32)(rect.getHeight() + LLFLOATER_HEADER_SIZE + 5);
+	mTargetHeight = (F32)(rect.getHeight() + floater_header_size);
 	reshape(rect.getWidth(), rect.getHeight());
 	setRect(rect);
 
 	// attach menu to floater
-	menup->setFollowsAll();
+	menup->setFollows(FOLLOWS_BOTTOM|FOLLOWS_LEFT);
 	mOldParent = menup->getParent();
 	addChild(menup);
 	menup->setVisible(TRUE);
-	menup->translate(-menup->getRect().mLeft + 1, -menup->getRect().mBottom + 1);
+	
+	LLRect menu_rect = menup->getRect();
+	menu_rect.setOriginAndSize( 1, 1,
+		menu_rect.getWidth(), menu_rect.getHeight());
+	menup->setRect(menu_rect);
 	menup->setDropShadowed(FALSE);
 
 	mMenu = menup;
@@ -4712,12 +4716,6 @@ void LLTearOffMenu::draw()
 	{
 		// animate towards target height
 		reshape(getRect().getWidth(), llceil(lerp((F32)getRect().getHeight(), mTargetHeight, LLCriticalDamp::getInterpolant(0.05f))));
-	}
-	else
-	{
-		// when in stasis, remain big enough to hold menu contents
-		mTargetHeight = (F32)(mMenu->getRect().getHeight() + LLFLOATER_HEADER_SIZE + 4);
-		reshape(mMenu->getRect().getWidth() + 3, mMenu->getRect().getHeight() + LLFLOATER_HEADER_SIZE + 5);
 	}
 	LLFloater::draw();
 }
