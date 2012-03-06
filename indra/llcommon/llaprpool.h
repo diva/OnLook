@@ -1,5 +1,5 @@
 /**
- * @file LLAPRPool.h
+ * @file llaprpool.h
  * @brief Implementation of LLAPRPool.
  *
  * Copyright (c) 2010, Aleric Inglewood.

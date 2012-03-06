@@ -38,6 +38,7 @@
 #endif
 
 #include "linden_common.h"
+#include "llaprpool.h"
 
 extern "C" {
 #include <dbus/dbus-glib.h>
@@ -55,8 +56,8 @@ extern "C" {
 #undef LL_DBUS_SYM
 
 static bool sSymsGrabbed = false;
-static apr_pool_t *sSymDBUSDSOMemoryPool = NULL;
-static apr_dso_handle_t *sSymDBUSDSOHandleG = NULL;
+static LLAPRPool sSymDBUSDSOMemoryPool;					// Used for sSymDBUSDSOHandleG (and what it is pointing at?)
+static apr_dso_handle_t* sSymDBUSDSOHandleG = NULL;
 
 bool grab_dbus_syms(std::string dbus_dso_name)
 {
@@ -74,12 +75,12 @@ bool grab_dbus_syms(std::string dbus_dso_name)
 #define LL_DBUS_SYM(REQUIRED, DBUSSYM, RTN, ...) do{rv = apr_dso_sym((apr_dso_handle_sym_t*)&ll##DBUSSYM, sSymDBUSDSOHandle, #DBUSSYM); if (rv != APR_SUCCESS) {INFOMSG("Failed to grab symbol: %s", #DBUSSYM); if (REQUIRED) sym_error = true;} else DEBUGMSG("grabbed symbol: %s from %p", #DBUSSYM, (void*)ll##DBUSSYM);}while(0)
 
 	//attempt to load the shared library
-	apr_pool_create(&sSymDBUSDSOMemoryPool, NULL);
+	sSymDBUSDSOMemoryPool.create();
   
 #ifdef LL_STANDALONE
     void *dso_handle = dlopen(dbus_dso_name.c_str(), RTLD_NOW | RTLD_GLOBAL);
     rv = (!dso_handle)?APR_EDSOOPEN:apr_os_dso_handle_put(&sSymDBUSDSOHandle,
-            dso_handle, sSymDBUSDSOMemoryPool);
+            dso_handle, sSymDBUSDSOMemoryPool());
 
 	if ( APR_SUCCESS == rv )
 #else
@@ -113,6 +114,10 @@ bool grab_dbus_syms(std::string dbus_dso_name)
 #undef LL_DBUS_SYM
 
 	sSymsGrabbed = rtn;
+	if (!sSymsGrabbed)
+	{
+		sSymDBUSDSOMemoryPool.destroy();
+	}
 	return rtn;
 }
 
@@ -127,13 +132,9 @@ void ungrab_dbus_syms()
 		apr_dso_unload(sSymDBUSDSOHandleG);
 		sSymDBUSDSOHandleG = NULL;
 	}
-	
-	if ( sSymDBUSDSOMemoryPool )
-	{
-		apr_pool_destroy(sSymDBUSDSOMemoryPool);
-		sSymDBUSDSOMemoryPool = NULL;
-	}
-	
+
+	sSymDBUSDSOMemoryPool.destroy();
+
 	// NULL-out all of the symbols we'd grabbed
 #define LL_DBUS_SYM(REQUIRED, DBUSSYM, RTN, ...) do{ll##DBUSSYM = NULL;}while(0)
 #include "llappviewerlinux_api_dbus_syms_raw.inc"
