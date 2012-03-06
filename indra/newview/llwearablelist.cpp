@@ -71,7 +71,7 @@ struct LLWearableArrivedData
 
 LLWearableList::~LLWearableList()
 {
-	llassert_always(mList.empty()) ;
+	cleanup();
 }
 
 void LLWearableList::cleanup() 
