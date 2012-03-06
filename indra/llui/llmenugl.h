@@ -697,6 +697,9 @@ public:
 	void initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *factory);
 
 	// LLView Functionality
+	// hide separators. they are added to 'pad' in empty cells.
+	virtual bool addChild(LLView* view, S32 tab_group = 0);
+
 	// can't set visibility directly, must call show or hide
 	virtual void setVisible(BOOL visible);
 	

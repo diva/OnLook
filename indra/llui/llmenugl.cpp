@@ -3300,6 +3300,12 @@ public:
 	// called to rebuild the draw label
 	virtual void buildDrawLabel( void );
 
+	virtual BOOL handleMouseUp(S32 x, S32 y, MASK mask)
+	{
+		LLMenuItemGL::handleMouseUp(x,y,mask);
+		return TRUE;
+	}
+
 	// doIt() - do the primary funcationality of the menu item.
 	virtual void doIt( void );
 
@@ -3446,6 +3452,18 @@ void LLPieMenu::initXML(LLXMLNodePtr node, LLView *context, LLUICtrlFactory *fac
 			parseChildXML(child, context, factory);
 		}
 	}
+}
+
+bool LLPieMenu::addChild(LLView* view, S32 tab_group)
+{
+	if(LLMenuGL::addChild(view, tab_group))
+	{
+		LLMenuItemSeparatorGL* sep = dynamic_cast<LLMenuItemSeparatorGL*>(view);
+		if(sep)
+			sep->setVisible(false);
+		return true;
+	}
+	return false;
 }
 
 // virtual
@@ -3929,7 +3947,10 @@ LLMenuItemGL *LLPieMenu::pieItemFromXY(S32 x, S32 y)
 		{
 			if (which == 0)
 			{
-				return (*item_iter);
+				if((*item_iter)->getVisible())	
+					return (*item_iter);
+				else
+					return NULL;
 			}
 			which--;
 		}

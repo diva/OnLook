@@ -2135,6 +2135,8 @@ BOOL LLScrollListCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 		mSelectionChanged = FALSE;
 
 		handleClick(x, y, mask);
+
+		setFocus(TRUE);
 	}
 
 	return TRUE;
@@ -3898,6 +3900,8 @@ void LLColumnHeader::onClick(void* user_data)
 
 	// propagate new sort order to sort order list
 	headerp->mList->selectNthItem(column->mParentCtrl->getSortAscending() ? 0 : 1);
+
+	headerp->mList->setFocus(TRUE);
 }
 
 //static

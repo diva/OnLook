@@ -747,10 +747,10 @@ void LLComboBox::onButtonDown(void *userdata)
 		self->setFocus( TRUE );
 
 		// pass mouse capture on to list if button is depressed
-		if (self->mButton->hasMouseCapture())
+		/*if (self->mButton->hasMouseCapture())
 		{
 			gFocusMgr.setMouseCapture(self->mList);
-		}
+		}*/
 	}
 	else
 	{
