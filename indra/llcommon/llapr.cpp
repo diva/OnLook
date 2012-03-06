@@ -88,7 +88,7 @@ bool ll_apr_warn_status(apr_status_t status)
 
 void ll_apr_assert_status(apr_status_t status)
 {
-	llassert(ll_apr_warn_status(status) == false);
+	llassert(!ll_apr_warn_status(status));
 }
 
 //---------------------------------------------------------------------
@@ -146,7 +146,7 @@ apr_status_t LLAPRFile::open(std::string const& filename, apr_int32_t flags, acc
 
 	apr_status_t status;
 	{
-		apr_pool_t* apr_file_open_pool;
+		apr_pool_t* apr_file_open_pool;	// The use of apr_pool_t is OK here.
 										// This is a temporary variable for a pool that is passed directly to apr_file_open below.
 		if (access_type == short_lived)
 		{
@@ -199,7 +199,6 @@ apr_status_t LLAPRFile::open(const std::string& filename, apr_int32_t flags, BOO
 // File I/O
 S32 LLAPRFile::read(void *buf, S32 nbytes)
 {
-	//llassert_always(mFile); (ASC-TUDCC) -HgB
 	if(!mFile) 
 	{
 		llwarns << "apr mFile is removed by somebody else. Can not read." << llendl ;
@@ -222,7 +221,6 @@ S32 LLAPRFile::read(void *buf, S32 nbytes)
 
 S32 LLAPRFile::write(const void *buf, S32 nbytes)
 {
-	// llassert_always(mFile); (ASC-TUDCC) -HgB
 	if(!mFile) 
 	{
 		llwarns << "apr mFile is removed by somebody else. Can not write." << llendl ;

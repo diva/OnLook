@@ -73,7 +73,7 @@ class LL_COMMON_API LLThread
 {
 private:
 	static U32 sIDIter;
-	
+
 public:
 	typedef enum e_thread_status
 	{
@@ -179,13 +179,17 @@ public:
 
 	LLMutexBase() ;
 	
-	void lock();		//blocks
+	void lock();		// blocks
 	void unlock();
 	// Returns true if lock was obtained successfully.
 	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
 
 	// non-blocking, but does do a lock/unlock so not free
 	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
+
+	// Returns true if locked by this thread.
+	bool isSelfLocked() const;
+
 	// get ID of locking thread
 	U32 lockingThread() const { return mLockingThread; }
 
