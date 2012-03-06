@@ -33,6 +33,7 @@
 #include "llapr.h"
 #include "llbuffer.h"
 #include "llbufferstream.h"
+#include "llfasttimer.h"
 #include "llhttpnode.h"
 #include "lliopipe.h"
 #include "lliosocket.h"
@@ -45,7 +46,6 @@
 #include "llstat.h"
 #include "llstl.h"
 #include "lltimer.h"
-#include "llfasttimer.h"
 
 #include <sstream>
 
@@ -819,6 +819,8 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 
   			// Copy everything after mLast read to the out.
 			LLBufferArray::segment_iterator_t seg_iter;
+
+			buffer->lock();
 			seg_iter = buffer->splitAfter(mLastRead);
 			if(seg_iter != buffer->endSegment())
 			{
@@ -839,7 +841,7 @@ LLIOPipe::EStatus LLHTTPResponder::process_impl(
 				}
 #endif
 			}
-
+			buffer->unlock();
 			//
 			// *FIX: get rid of extra bytes off the end
 			//
@@ -966,9 +968,7 @@ private:
 // static
 LLHTTPNode& LLIOHTTPServer::create(LLPumpIO& pump, U16 port)
 {
-	LLSocket::ptr_t socket = LLSocket::create(
-		LLSocket::STREAM_TCP,
-		port);
+	LLSocket::ptr_t socket = LLSocket::create(LLSocket::STREAM_TCP, port);
     if(!socket)
     {
         llerrs << "Unable to initialize socket" << llendl;

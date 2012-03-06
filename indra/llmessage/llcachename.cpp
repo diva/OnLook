@@ -2,31 +2,25 @@
  * @file llcachename.cpp
  * @brief A hierarchical cache of first and last names queried based on UUID.
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -77,6 +71,8 @@ public:
 public:
 	bool mIsGroup;
 	U32 mCreateTime;	// unix time_t
+	// IDEVO TODO collapse names to one field, which will eliminate
+	// many string compares on "Resident"
 	std::string mFirstName;
 	std::string mLastName;
 	std::string mGroupName;
@@ -310,85 +306,6 @@ boost::signals2::connection LLCacheName::addObserver(const LLCacheNameCallback& 
 	return impl.mSignal.connect(callback);
 }
 
-#if 0
-void LLCacheName::importFile(LLFILE* fp)
-{
-	S32 count = 0;
-
-	const S32 BUFFER_SIZE = 1024;
-	char buffer[BUFFER_SIZE];	/*Flawfinder: ignore*/
-
-	// *NOTE: These buffer sizes are hardcoded into sscanf() below
-	char id_string[MAX_STRING]; /*Flawfinder: ignore*/
-	char firstname[MAX_STRING]; /*Flawfinder: ignore*/
-	char lastname[MAX_STRING]; /*Flawfinder: ignore*/
-	U32 create_time;
-
-	// This is OK if the first line is actually a name.  We just don't load it.
-	char* valid = fgets(buffer, BUFFER_SIZE, fp);
-	if (!valid) return;
-
-	// *NOTE: This buffer size is hardcoded into sscanf() below
-	char version_string[BUFFER_SIZE]; /*Flawfinder: ignore*/
-	S32 version = 0;
-	S32 match = sscanf(	/* Flawfinder: ignore */
-		buffer,
-		"%1023s %d",
-		version_string, &version);
-	if (   match != 2
-		|| strcmp(version_string, "version")
-		|| version != CN_FILE_VERSION)
-	{
-		llwarns << "Ignoring old cache name file format" << llendl;
-		return;
-	}
-
-	// We'll expire entries more than a week old
-	U32 now = (U32)time(NULL);
-	const U32 SECS_PER_DAY = 60 * 60 * 24;
-	U32 delete_before_time = now - (7 * SECS_PER_DAY);
-
-	while(!feof(fp))
-	{
-		valid = fgets(buffer, BUFFER_SIZE, fp);
-		if (!valid) break;
-
-		match = sscanf(	/* Flawfinder: ignore */
-			buffer,
-			"%254s %u %254s %254s",
-			id_string, 
-			&create_time,
-			firstname, 
-			lastname);
-		if (4 != match) continue;
-
-		LLUUID id(id_string);
-		if (id.isNull()) continue;
-
-		// undo trivial XOR
-		S32 i;
-		for (i = 0; i < UUID_BYTES; i++)
-		{
-			id.mData[i] ^= 0x33;
-		}
-
-		// Don't load entries that are more than a week old
-		if (create_time < delete_before_time) continue;
-
-		LLCacheNameEntry* entry = new LLCacheNameEntry();
-		entry->mIsGroup = false;
-		entry->mCreateTime = create_time;
-		entry->mFirstName = firstname;
-		entry->mLastName = lastname;
-		impl.mCache[id] = entry;
-
-		count++;
-	}
-
-	llinfos << "LLCacheName loaded " << count << " names" << llendl;
-}
-#endif
-
 bool LLCacheName::importFile(std::istream& istr)
 {
 	LLSD data;
@@ -467,6 +384,7 @@ void LLCacheName::exportFile(std::ostream& ostr)
 		// store it
 		LLUUID id = iter->first;
 		std::string id_str = id.asString();
+		// IDEVO TODO: Should we store SLIDs with last name "Resident" or not?
 		if(!entry->mFirstName.empty() && !entry->mLastName.empty())
 		{
 			data[AGENTS][id_str][FIRST] = entry->mFirstName;
@@ -751,7 +669,7 @@ bool LLCacheName::getIfThere(const LLUUID& id, std::string& fullname, BOOL& is_g
 		fullname = "";
 		return false;
 	}
-
+	
 	LLCacheNameEntry* entry = get_ptr_in_map(impl.mCache, id );
 	if (entry)
 	{
@@ -770,6 +688,8 @@ bool LLCacheName::getIfThere(const LLUUID& id, std::string& fullname, BOOL& is_g
 	return false;
 }
 // </edit>
+
+
 void LLCacheName::processPending()
 {
 	LLMemType mt_pp(LLMemType::MTYPE_CACHE_PROCESS_PENDING);
@@ -1127,4 +1047,3 @@ void LLCacheName::Impl::handleUUIDGroupNameReply(LLMessageSystem* msg, void** us
 {
 	((LLCacheName::Impl*)userData)->processUUIDReply(msg, true);
 }
-

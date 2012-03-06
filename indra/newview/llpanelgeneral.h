@@ -47,7 +47,7 @@ public:
 	void apply();
 	void cancel();
 
-	static void LLPanelGeneral::onClickClearSettings(void*);
+	static void onClickClearSettings(void*);
 	static void callbackResetAllSettings(const LLSD& notification, const LLSD& response);
 };
 

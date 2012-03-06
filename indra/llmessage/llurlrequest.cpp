@@ -4,31 +4,25 @@
  * @date 2005-04-28
  * @brief Implementation of the URLRequest class and related classes.
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -36,17 +30,19 @@
 #include "llurlrequest.h"
 
 #include <algorithm>
-
+#include <openssl/x509_vfy.h>
+#include <openssl/ssl.h>
 #include "llcurl.h"
+#include "llfasttimer.h"
 #include "llioutil.h"
 #include "llmemtype.h"
+#include "llproxy.h"
 #include "llpumpio.h"
 #include "llsd.h"
 #include "llstring.h"
 #include "apr_env.h"
 #include "llapr.h"
 #include "llscopedvolatileaprpool.h"
-#include "llfasttimer.h"
 static const U32 HTTP_STATUS_PIPE_ERROR = 499;
 
 /**
@@ -70,34 +66,70 @@ public:
 	~LLURLRequestDetail();
 	std::string mURL;
 	LLCurlEasyRequest* mCurlRequest;
-	LLBufferArray* mResponseBuffer;
+	LLIOPipe::buffer_ptr_t mResponseBuffer;
 	LLChannelDescriptors mChannels;
 	U8* mLastRead;
 	U32 mBodyLimit;
 	S32 mByteAccumulator;
 	bool mIsBodyLimitSet;
+	LLURLRequest::SSLCertVerifyCallback mSSLVerifyCallback;
 };
 
 LLURLRequestDetail::LLURLRequestDetail() :
 	mCurlRequest(NULL),
-	mResponseBuffer(NULL),
 	mLastRead(NULL),
 	mBodyLimit(0),
 	mByteAccumulator(0),
-	mIsBodyLimitSet(false)
+	mIsBodyLimitSet(false),
+    mSSLVerifyCallback(NULL)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mCurlRequest = new LLCurlEasyRequest();
+	
+	if(!mCurlRequest->isValid()) //failed.
+	{
+		delete mCurlRequest ;
+		mCurlRequest = NULL ;
+	}
 }
 
 LLURLRequestDetail::~LLURLRequestDetail()
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	delete mCurlRequest;
-	mResponseBuffer = NULL;
 	mLastRead = NULL;
 }
 
+void LLURLRequest::setSSLVerifyCallback(SSLCertVerifyCallback callback, void *param)
+{
+	mDetail->mSSLVerifyCallback = callback;
+	mDetail->mCurlRequest->setSSLCtxCallback(LLURLRequest::_sslCtxCallback, (void *)this);
+	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, true);
+	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYHOST, 2);	
+}
+
+
+// _sslCtxFunction
+// Callback function called when an SSL Context is created via CURL
+// used to configure the context for custom cert validation
+
+CURLcode LLURLRequest::_sslCtxCallback(CURL * curl, void *sslctx, void *param)
+{	
+	LLURLRequest *req = (LLURLRequest *)param;
+	if(req == NULL || req->mDetail->mSSLVerifyCallback == NULL)
+	{
+		SSL_CTX_set_cert_verify_callback((SSL_CTX *)sslctx, NULL, NULL);
+		return CURLE_OK;
+	}
+	SSL_CTX * ctx = (SSL_CTX *) sslctx;
+	// disable any default verification for server certs
+	SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+	// set the verification callback.
+	SSL_CTX_set_cert_verify_callback(ctx, req->mDetail->mSSLVerifyCallback, (void *)req);
+	// the calls are void
+	return CURLE_OK;
+	
+}
 
 /**
  * class LLURLRequest
@@ -157,6 +189,7 @@ std::string LLURLRequest::getURL() const
 {
 	return mDetail->mURL;
 }
+
 void LLURLRequest::addHeader(const char* header)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
@@ -167,12 +200,6 @@ void LLURLRequest::setBodyLimit(U32 size)
 {
 	mDetail->mBodyLimit = size;
 	mDetail->mIsBodyLimitSet = true;
-}
-
-void LLURLRequest::checkRootCertificate(bool check)
-{
-	mDetail->mCurlRequest->setopt(CURLOPT_SSL_VERIFYPEER, (check? TRUE : FALSE));
-	mDetail->mCurlRequest->setoptString(CURLOPT_ENCODING, "");
 }
 
 void LLURLRequest::setCallback(LLURLRequestComplete* callback)
@@ -213,9 +240,9 @@ void LLURLRequest::useProxy(bool use_proxy)
 		}
     }
 
-    LL_DEBUGS("Proxy") << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = " << (!env_proxy.empty() ? env_proxy : "(null)") << LL_ENDL;
+    lldebugs << "use_proxy = " << (use_proxy?'Y':'N') << ", env_proxy = \"" << env_proxy << "\"" << llendl;
 
-    if (use_proxy && !env_proxy.empty())
+    if (use_proxy)
     {
 		mDetail->mCurlRequest->setoptString(CURLOPT_PROXY, env_proxy);
     }
@@ -235,12 +262,24 @@ void LLURLRequest::allowCookies()
 	mDetail->mCurlRequest->setoptString(CURLOPT_COOKIEFILE, "");
 }
 
+//virtual 
+bool LLURLRequest::isValid() 
+{
+	return mDetail->mCurlRequest && mDetail->mCurlRequest->isValid(); 
+}
+
 // virtual
 LLIOPipe::EStatus LLURLRequest::handleError(
 	LLIOPipe::EStatus status,
 	LLPumpIO* pump)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
+	
+	if(!isValid())
+	{
+		return STATUS_EXPIRED ;
+	}
+
 	if(mCompletionCallback && pump)
 	{
 		LLURLRequestComplete* complete = NULL;
@@ -270,8 +309,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	//llinfos << "LLURLRequest::process_impl()" << llendl;
 	if (!buffer) return STATUS_ERROR;
-	if (!mDetail) return STATUS_ERROR; //Seems to happen on occasion. Need to hunt down why.
-
+	
 	// we're still waiting or prcessing, check how many
 	// bytes we have accumulated.
 	const S32 MIN_ACCUMULATION = 100000;
@@ -310,7 +348,7 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 
 		// *FIX: bit of a hack, but it should work. The configure and
 		// callback method expect this information to be ready.
-		mDetail->mResponseBuffer = buffer.get();
+		mDetail->mResponseBuffer = buffer;
 		mDetail->mChannels = channels;
 		if(!configure())
 		{
@@ -329,7 +367,10 @@ LLIOPipe::EStatus LLURLRequest::process_impl(
 		static LLFastTimer::DeclareTimer FTM_URL_PERFORM("Perform");
 		{
 			LLFastTimer t(FTM_URL_PERFORM);
-			mDetail->mCurlRequest->perform();
+			if(!mDetail->mCurlRequest->wait())
+			{
+				return status ;
+			}
 		}
 
 		while(1)
@@ -424,6 +465,12 @@ void LLURLRequest::initialize()
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	mState = STATE_INITIALIZED;
 	mDetail = new LLURLRequestDetail;
+
+	if(!isValid())
+	{
+		return ;
+	}
+
 	mDetail->mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
 	mDetail->mCurlRequest->setWriteCallback(&downCallback, (void*)this);
 	mDetail->mCurlRequest->setReadCallback(&upCallback, (void*)this);
