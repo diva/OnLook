@@ -70,6 +70,10 @@ if (WINDOWS)
       /Oy-
       )
      
+  # configure win32 API for windows XP+ compatibility
+  set(WINVER "0x0501" CACHE STRING "Win32 API Target version (see http://msdn.microsoft.com/en-us/library/aa383745%28v=VS.85%29.aspx)")
+  add_definitions("/DWINVER=${WINVER}" "/D_WIN32_WINNT=${WINVER}")
+
   if(MSVC80 OR MSVC90 OR MSVC10)
     set(CMAKE_CXX_FLAGS_RELEASE
       "${CMAKE_CXX_FLAGS_RELEASE} -D_SECURE_STL=0 -D_HAS_ITERATOR_DEBUGGING=0"
@@ -158,10 +162,10 @@ if (LINUX)
       add_definitions(-D_FORTIFY_SOURCE=2)
     endif (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
   endif (${GXX_VERSION} STREQUAL ${CXX_VERSION})
- 
-  #Lets actualy get a numerical version of gxx's version
+
+  #Lets actually get a numerical version of gxx's version
   STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.([0-9]).*" "\\1\\2\\3" CXX_VERSION ${CXX_VERSION})
-  
+
   #gcc 4.3 and above don't like the LL boost
   if(${CXX_VERSION} GREATER 429)
     add_definitions(-Wno-parentheses)

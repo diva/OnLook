@@ -83,6 +83,7 @@
 #include "llwlparammanager.h"
 #include "llwaterparammanager.h"
 #include "llpostprocess.h"
+#include "sgmemstat.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -228,6 +229,8 @@ void display_stats()
 		gMemoryAllocated = LLMemory::getCurrentRSS();
 		U32 memory = (U32)(gMemoryAllocated / (1024*1024));
 		llinfos << llformat("MEMORY: %d MB", memory) << llendl;
+		llinfos << "THREADS: "<< LLThread::getCount() << llendl;
+		llinfos << "MALLOC: " << SGMemStat::getPrintableStat() <<llendl;
 		LLMemory::logMemoryInfo(TRUE) ;
 		gRecentMemoryTime.reset();
 	}

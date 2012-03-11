@@ -39,6 +39,7 @@
 class LLVOAvatarSelf :
 	public LLVOAvatar
 {
+	LOG_CLASS(LLVOAvatarSelf);
 
 /********************************************************************************
  **                                                                            **

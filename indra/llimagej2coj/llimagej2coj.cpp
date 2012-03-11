@@ -168,7 +168,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	// dereference the array.
 	if(!image || !image->numcomps)
 	{
-		llwarns << "ERROR -> decodeImpl: failed to decode image!" << llendl;
+		llwarns << "failed to decode image!" << llendl;
 		if (image)
 		{
 			opj_image_destroy(image);
@@ -183,6 +183,7 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	{
 		if (image->comps[i].factor != base.getRawDiscardLevel())
 		{
+			llwarns << "Expected discard level not reached!" << llendl;			
 			// if we didn't get the discard level we're expecting, fail
 			opj_image_destroy(image);
 			base.decodeFailed();

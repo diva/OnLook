@@ -96,7 +96,7 @@
 <!-- NOTIFICATION POP-UPS -->
 <NotifyBoxColor value="66, 66, 66, 255"/>
 <NotifyTextColor value="200, 200, 200, 255"/>
-<NotifyCautionBoxColor value="0, 0, 0, 255"/>		<!-- the background color of caution permissions prompts -->
+<NotifyCautionBoxColor value="254, 209, 118, 255"/>		<!-- the background color of caution permissions prompts -->
 <NotifyCautionWarnColor value="0, 0, 0, 255"/>			<!-- the foreground color of the special title text in caution permissions prompts -->
 <GroupNotifyBoxColor value="70, 170, 255, 255"/>
 <GroupNotifyTextColor value="0, 0, 0 255" />
@@ -131,12 +131,6 @@
 <!-- Icon Enable/Disable -->
 <IconEnabledColor value="255, 255, 255, 255"/>
 <IconDisabledColor value="147, 169, 213, 200"/>
-
-<!-- MAP -->
-<MapAvatar value="0, 255, 0, 255" />
-<MapFriend value="255, 255, 0, 255" />
-<MapLinden value="0, 0, 255, 255" />
-<MapMuted value="110, 110, 110, 255" />
 
 <!-- MAP -->
 <MapAvatar value="0, 255, 0, 255" />
@@ -188,7 +182,6 @@
 <FolderViewLoadingMessageTextColor value="240, 165, 90, 255"/>
 <InventoryBackgroundColor value="62, 62, 62, 80"/>
 <SHMediaTickerOscillatorColor value ="0, 0, 0, 191"/>
-<DefaultListText value="0, 0, 0, 255"/> <!-- We are replacing all the hardcoded black text with this color so we can make skins with white text on dark background -->
 <ComboBoxBg value="255, 255, 255, 255"/>
 <AvatarListTextDistNormalRange value="0, 0, 0, 255"/>
 <AvatarListTextDistShoutRange value="0, 0, 0, 128"/>

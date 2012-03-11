@@ -4244,6 +4244,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 				}
 			}
 			else if (gPipeline.canUseVertexShaders()
+			    && group->mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_HUD
 				&& LLPipeline::sRenderBump 
 				&& te->getShiny())
 			{ //shiny

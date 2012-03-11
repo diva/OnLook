@@ -67,6 +67,7 @@ U32 ll_thread_local local_thread_ID = 0;
 #endif 
 
 U32 LLThread::sIDIter = 0;
+LLAtomicS32	LLThread::sCount = 0;
 
 LL_COMMON_API void assert_main_thread()
 {
@@ -125,6 +126,8 @@ LLThread::LLThread(std::string const& name) :
 	mThreadLocalData(NULL)
 {
 	mID = ++sIDIter;
+	sCount++;
+	llassert(sCount <= 50);
 	mRunCondition = new LLCondition;
 }
 
@@ -175,7 +178,7 @@ void LLThread::shutdown()
 		}
 		mAPRThreadp = NULL;
 	}
-
+	sCount--;
 	delete mRunCondition;
 	mRunCondition = 0;
 }

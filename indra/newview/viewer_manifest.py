@@ -514,8 +514,8 @@ class DarwinManifest(ViewerManifest):
                 libfile = "lib%s.dylib"
                 libdir = "../../libraries/universal-darwin/lib_release"
 
-                for libfile in ("libapr-1.0.3.7.dylib",
-                                "libaprutil-1.0.3.8.dylib",
+                for libfile in ("libapr-1.0.dylib",
+                                "libaprutil-1.0.dylib",
                                 "libexpat.0.5.0.dylib"):
                     self.path(os.path.join(libdir, libfile), libfile)
 
@@ -541,8 +541,8 @@ class DarwinManifest(ViewerManifest):
                 mac_crash_logger_res_path = self.dst_path_of("mac-crash-logger.app/Contents/Resources")
                 slplugin_res_path = self.dst_path_of("SLPlugin.app/Contents/Resources")
                 for libfile in ("libllcommon.dylib",
-                                "libapr-1.0.3.7.dylib",
-                                "libaprutil-1.0.3.8.dylib",
+                                "libapr-1.0.dylib",
+                                "libaprutil-1.0.dylib",
                                 "libexpat.0.5.0.dylib"):
                     target_lib = os.path.join('../../..', libfile)
                     self.run_command("ln -sf %(target)r %(link)r" %

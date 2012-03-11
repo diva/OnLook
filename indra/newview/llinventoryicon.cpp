@@ -88,7 +88,7 @@ LLIconDictionary::LLIconDictionary()
 	addEntry(LLInventoryIcon::ICONNAME_LINKFOLDER, 				new IconEntry("inv_link_folder.tga"));
 	addEntry(LLInventoryIcon::ICONNAME_MESH,	 				new IconEntry("inv_item_mesh.tga"));
 
-	addEntry(LLInventoryIcon::ICONNAME_INVALID, 				new IconEntry("Inv_Invalid.png"));
+	addEntry(LLInventoryIcon::ICONNAME_INVALID, 				new IconEntry("inv_invalid.png"));
 
 	addEntry(LLInventoryIcon::ICONNAME_NONE, 					new IconEntry("NONE"));
 }

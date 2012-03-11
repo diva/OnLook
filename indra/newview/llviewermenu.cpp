@@ -245,7 +245,6 @@
 // <edit>
 #include "dofloaterhex.h"
 #include "hgfloatertexteditor.h"
-#include "llfloatermessagelog.h"
 #include "llfloatervfs.h"
 #include "llfloatervfsexplorer.h"
 #include "shfloatermediaticker.h"
@@ -482,7 +481,7 @@ void handle_phantom_avatar(void*);
 void handle_hide_typing_notification(void*);
 void handle_close_all_notifications(void*);
 void handle_reopen_with_hex_editor(void*);
-void handle_open_message_log(void*);
+//void handle_open_message_log(void*);
 void handle_edit_ao(void*);
 void handle_local_assets(void*);
 void handle_vfs_explorer(void*);
@@ -822,7 +821,7 @@ void init_menus()
 										(void*)"ReSit"));
 	menu->appendSeparator();
 	menu->append(new LLMenuItemCallGL(	"Object Area Search", &handle_area_search, NULL));
-	menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
+	//menu->append(new LLMenuItemCallGL(  "Message Log", &handle_open_message_log, NULL));	
 
 	menu->append(new LLMenuItemCallGL(	"Sound Explorer",
 											&handle_sounds_explorer, NULL));
@@ -3764,10 +3763,10 @@ void handle_reopen_with_hex_editor(void*)
 
 }
 
-void handle_open_message_log(void*)
+/*void handle_open_message_log(void*)
 {
 	LLFloaterMessageLog::show();
-}
+}*/
 
 void handle_edit_ao(void*)
 {

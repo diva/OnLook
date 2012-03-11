@@ -384,9 +384,13 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 	// This may not be the best solution, but it at least prevents a crash.
 	if (it != mFontMap.end() && it->second != NULL)
 	{
-		llinfos << "-- matching font exists: " << nearest_exact_desc.getName() << " size " << nearest_exact_desc.getSize() << " style " << ((S32) nearest_exact_desc.getStyle()) << llendl;
+		if (it->second != NULL) {
+			llinfos << "-- matching font exists: " << nearest_exact_desc.getName() << " size " << nearest_exact_desc.getSize() << " style " << ((S32) nearest_exact_desc.getStyle()) << llendl;
 		
-		return it->second;
+			return it->second;
+		} else {
+			llwarns << "Failed to find font" << llendl;
+		}
 		//Haven't plugged free-type in yet.
 		// copying underlying Freetype font, and storing in LLFontGL with requested font descriptor
 		/*LLFontGL *font = new LLFontGL;
@@ -408,6 +412,7 @@ LLFontGL *LLFontRegistry::createFont(const LLFontDescriptor& desc)
 		file_names.insert(file_names.end(),
 						  match_default_desc->getFileNames().begin(),
 						  match_default_desc->getFileNames().end());
+		llinfos << "Found matching fallback fonts: " << match_default_desc->getFileNames().size() << llendl;
 	}
 
 	// Add ultimate fallback list - generated dynamically on linux,

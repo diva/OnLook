@@ -45,6 +45,7 @@
 #include "pipeline.h"
 #include "llviewerobjectlist.h"
 #include "llviewertexturelist.h"
+#include "sgmemstat.h"
 
 const S32 LL_SCROLL_BORDER = 1;
 
@@ -99,7 +100,17 @@ void LLFloaterStats::buildStats()
 	stat_barp->mLabelSpacing = 200.f;
 	stat_barp->mPerSec = FALSE;
 	stat_barp->mDisplayMean = FALSE;
-
+	
+	if(SGMemStat::haveStat()) {
+		stat_barp = stat_viewp->addStat("Allocated memory", &(LLViewerStats::getInstance()->mMallocStat), "DebugStatModeMalloc");
+		stat_barp->setUnitLabel(" MB");
+		stat_barp->mMinBar = 0.f;
+		stat_barp->mMaxBar = 2048.f;
+		stat_barp->mTickSpacing = 128.f;
+		stat_barp->mLabelSpacing = 512.f;
+		stat_barp->mPerSec = FALSE;
+		stat_barp->mDisplayMean = FALSE;
+	}
 
 	stat_viewp = new LLStatView("advanced stat view", "Advanced", "OpenDebugStatAdvanced", rect);
 	addStatView(stat_viewp);

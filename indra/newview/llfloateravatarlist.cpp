@@ -704,7 +704,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		LLVector3d delta = position - mypos;
 		F32 distance = (F32)delta.magVec();
-		if (position.mdV[VZ] == 0.0)
+		if (position.mdV[VZ] == 0.f || position.mdV[VZ] == 1020.f)
 		{
 			UnknownAltitude = true;
 			distance = 9000.0;

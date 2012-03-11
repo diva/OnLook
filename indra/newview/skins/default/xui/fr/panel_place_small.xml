@@ -17,7 +17,7 @@
 	</text>
 	<text left="113" name="location_editor" width="338"/>
 	<button label="Téléporter" name="teleport_btn"/>
-	<button label="Voir sur la carte" name="map_btn"/>
+	<button label="Voir sur la carte" name="map_btn" width="115"/>
 	<button label="Enchères..." name="auction_btn"/>
 	<string name="traffic_text">
 		Trafic : [TRAFFIC]. 

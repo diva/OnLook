@@ -7,8 +7,6 @@ include(LLCommon)
 include(LLMath)
 include(LLMessage)
 include(LLVFS)
-include(LLAddBuildTest)
-include(Tut)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -21,6 +19,7 @@ include_directories(
 
 set(llmessage_SOURCE_FILES
     llares.cpp
+    llareslistener.cpp
     llassetstorage.cpp
     llavatarnamecache.cpp
     llblowfishcipher.cpp
@@ -49,7 +48,6 @@ set(llmessage_SOURCE_FILES
     llmail.cpp
     llmessagebuilder.cpp
     llmessageconfig.cpp
-    llmessagelog.cpp
     llmessagereader.cpp
     llmessagetemplate.cpp
     llmessagetemplateparser.cpp
@@ -61,6 +59,7 @@ set(llmessage_SOURCE_FILES
     llpacketbuffer.cpp
     llpacketring.cpp
     llpartdata.cpp
+    llproxy.cpp
     llpumpio.cpp
     llregionpresenceverifier.cpp
     llsdappservices.cpp
@@ -100,7 +99,6 @@ set(llmessage_SOURCE_FILES
     patch_code.cpp
     patch_dct.cpp
     patch_idct.cpp
-    llsocks5.cpp
     sound_ids.cpp
     )
 
@@ -108,6 +106,7 @@ set(llmessage_HEADER_FILES
     CMakeLists.txt
 
     llares.h
+    llareslistener.h
     llassetstorage.h
     llavatarnamecache.h
     llblowfishcipher.h
@@ -144,7 +143,6 @@ set(llmessage_HEADER_FILES
     llmail.h
     llmessagebuilder.h
     llmessageconfig.h
-    llmessagelog.h
     llmessagereader.h
     llmessagetemplate.h
     llmessagetemplateparser.h
@@ -158,6 +156,7 @@ set(llmessage_HEADER_FILES
     llpacketring.h
     llpartdata.h
     llpumpio.h
+    llproxy.h
     llqueryflags.h
     llregionflags.h
     llregionhandle.h
@@ -202,7 +201,6 @@ set(llmessage_HEADER_FILES
     patch_code.h
     patch_dct.h
     sound_ids.h
-    llsocks5.h
     )
 
 set_source_files_properties(${llmessage_HEADER_FILES}
@@ -213,21 +211,52 @@ list(APPEND llmessage_SOURCE_FILES ${llmessage_HEADER_FILES})
 add_library (llmessage ${llmessage_SOURCE_FILES})
 add_dependencies(llmessage prepare)
 target_link_libraries(
-    llmessage
-    ${CURL_LIBRARIES}
-    ${CARES_LIBRARIES}
-    ${OPENSSL_LIBRARIES}
-    ${CRYPTO_LIBRARIES}
-    ${XMLRPCEPI_LIBRARIES}
+  llmessage
+  ${CURL_LIBRARIES}
+  ${CARES_LIBRARIES}
+  ${OPENSSL_LIBRARIES}
+  ${CRYPTO_LIBRARIES}
+  ${XMLRPCEPI_LIBRARIES}
+  )
+
+# tests
+if (LL_TESTS)
+  include(GoogleMock)
+  include(LLAddBuildTest)
+  include(Python)
+  include(Tut)
+
+  SET(llmessage_TEST_SOURCE_FILES
+    # llhttpclientadapter.cpp
+    llmime.cpp
+    llnamevalue.cpp
+    lltrustedmessageservice.cpp
+    lltemplatemessagedispatcher.cpp
+      llregionpresenceverifier.cpp
+    )
+  LL_ADD_PROJECT_UNIT_TESTS(llmessage "${llmessage_TEST_SOURCE_FILES}")
+
+  #    set(TEST_DEBUG on)
+  set(test_libs
+    ${LLMESSAGE_LIBRARIES}
+    ${WINDOWS_LIBRARIES}
+    ${LLVFS_LIBRARIES}
+    ${LLMATH_LIBRARIES}
+    ${LLCOMMON_LIBRARIES}
+      ${GOOGLEMOCK_LIBRARIES}
     )
 
-IF (LL_TESTS)
-    # When building the viewer the tests links against the shared objects. 
-    # These can not be found when we try to run the tests, so we had to disable them, for the viewer build.
-    # TODO: Can someone with viewer knowledge figure out how to make these find the correct so.
-    #ADD_BUILD_TEST(llhttpclientadapter llmessage)
-    ADD_BUILD_TEST(llhttpclientadapter llmessage)
-    ADD_BUILD_TEST(lltrustedmessageservice llmessage)
-    ADD_BUILD_TEST(lltemplatemessagedispatcher llmessage)
-ENDIF (LL_TESTS)
+  LL_ADD_INTEGRATION_TEST(
+    llsdmessage
+    "llsdmessage.cpp"
+    "${test_libs}"
+    ${PYTHON_EXECUTABLE}
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_llsdmessage_peer.py"
+    )
+
+  LL_ADD_INTEGRATION_TEST(llavatarnamecache "" "${test_libs}")
+  LL_ADD_INTEGRATION_TEST(llhost "" "${test_libs}")
+  LL_ADD_INTEGRATION_TEST(llpartdata "" "${test_libs}")
+  LL_ADD_INTEGRATION_TEST(llxfer_file "" "${test_libs}")
+endif (LL_TESTS)
 

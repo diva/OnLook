@@ -1118,6 +1118,7 @@ LLVoiceClient::LLVoiceClient()
 	mMuteMic = false;
 	mSessionTerminateRequested = false;
 	mRelogRequested = false;
+	mConnected = false;	
 	mCommandCookie = 0;
 	mCurrentParcelLocalID = 0;
 	mLoginRetryCount = 0;

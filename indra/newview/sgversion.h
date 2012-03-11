@@ -25,5 +25,8 @@ extern const S32 gVersionBuild;
 
 extern const char* gVersionChannel;
 
+#if LL_DARWIN
+extern const char* gVersionBundleID;
+#endif
 
 #endif

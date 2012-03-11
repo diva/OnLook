@@ -43,6 +43,7 @@
 #include "llviewercontrol.h"
 
 #include "llagent.h"
+#include "llfloaterpreference.h"
 #include "llviewerregion.h"
 #include "llavatarnamecache.h"
 #include "llvoavatar.h"
@@ -109,6 +110,8 @@ BOOL LLPanelGeneral::postBuild()
 	
 	childSetVisible("maturity_desired_combobox", can_choose);
 	childSetVisible("maturity_desired_textbox",	!can_choose);
+
+	childSetAction("clear_settings", &onClickClearSettings, this);
 			
 	return TRUE;
 }
@@ -160,3 +163,44 @@ void LLPanelGeneral::cancel()
 {
 }
 
+// static
+void LLPanelGeneral::onClickClearSettings(void*)
+{
+	if(gAgent.getID().notNull()) {
+		LLNotifications::instance().add("ResetAllSettingsPrompt", LLSD(), LLSD(), &callbackResetAllSettings);
+	}
+	else
+	{
+		LLNotifications::instance().add("ResetSystemSettingsPrompt", LLSD(), LLSD(), &callbackResetAllSettings);
+	}
+}
+
+// static
+void LLPanelGeneral::callbackResetAllSettings(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	if(option != 3) //At least some settings want to be removed
+	{
+		// We probably want to avoid altering this setting, so keep it across the reset.
+		std::string client_settings_file = gSavedSettings.getString("ClientSettingsFile");
+		if(option != 2)
+		{
+			gSavedSettings.resetToDefaults();
+			gSavedSettings.setString("ClientSettingsFile", client_settings_file);
+			gSavedSettings.saveToFile(client_settings_file, TRUE);
+		}
+		
+		// Wipe user-specific settings for good measure and consistency.
+		// Obviously, we can only do this if we're actually logged in.
+		if(gAgent.getID().notNull() && (option != 1))
+		{
+			gSavedPerAccountSettings.resetToDefaults();
+			gSavedPerAccountSettings.saveToFile(gSavedSettings.getString("PerAccountSettingsFile"), TRUE);
+		}
+		LLNotifications::instance().add("ResetSettingsComplete");
+
+		// *HACK: Now close the floater without cancelling or applying.
+		// (the alternative route would be to add a method to every preference panel to handle this and update its UI)
+		LLFloaterPreference::closeWithoutSaving();
+	}
+}

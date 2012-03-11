@@ -2,31 +2,25 @@
  * @file net.cpp
  * @brief Cross-platform routines for sending and receiving packets.
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -55,8 +49,6 @@
 #include "llhost.h"
 #include "lltimer.h"
 #include "indra_constants.h"
-
-#include "llsocks5.h"
 
 // Globals
 #if LL_WINDOWS
@@ -181,7 +173,7 @@ U32 ip_string_to_u32(const char* ip_string)
 	// use wildcard addresses. -Ambroff
 	U32 ip = inet_addr(ip_string);
 	if (ip == INADDR_NONE 
-	    && strncmp(ip_string, BROADCAST_ADDRESS_STRING, MAXADDRSTR) != 0)
+			&& strncmp(ip_string, BROADCAST_ADDRESS_STRING, MAXADDRSTR) != 0)
 	{
 		llwarns << "ip_string_to_u32() failed, Error: Invalid IP string '" << ip_string << "'" << llendl;
 		return INVALID_HOST_IP_ADDRESS;
@@ -196,94 +188,10 @@ U32 ip_string_to_u32(const char* ip_string)
 
 #if LL_WINDOWS
 
-int tcp_handshake(S32 handle, char * dataout, int outlen, char * datain, int maxinlen)
-{
-	int result;
-	result = send(handle, dataout, outlen, 0);
-	if (result != outlen)
-	{
-		S32 err = WSAGetLastError();
-		llwarns << "Error sending data to proxy control channel, number of bytes sent were " << result << " error code was " << err << llendl;
-		return -1;
-	}
-
-	result = recv(handle, datain, maxinlen, 0);
-	if (result != maxinlen)
-	{
-		S32 err = WSAGetLastError();
-		llwarns << "Error receiving data from proxy control channel, number of bytes received were " << result << " error code was " << err << llendl;
-		return -1;
-	}
-
-	return 0;
-}
-
-S32 tcp_open_channel(LLHost host)
-{
-	// Open a TCP channel
-	// Jump through some hoops to ensure that if the request hosts is down
-	// or not reachable connect() does not block
-
-	S32 handle;
-	handle = socket(AF_INET, SOCK_STREAM, 0);
-	if (!handle)
-	{
-		llwarns << "Error opening TCP control socket, socket() returned " << handle << llendl;
-		return -1;
-	}
-
-	struct sockaddr_in address;
-	address.sin_port        = htons(host.getPort());
-	address.sin_family      = AF_INET;
-	address.sin_addr.s_addr = host.getAddress();
-
-	// Non blocking 
-	WSAEVENT hEvent=WSACreateEvent();
-	WSAEventSelect(handle, hEvent, FD_CONNECT) ;
-	connect(handle, (struct sockaddr*)&address, sizeof(address)) ;
-	// Wait fot 5 seconds, if we can't get a TCP channel open in this
-	// time frame then there is something badly wrong.
-	WaitForSingleObject(hEvent, 1000*5); // 5 seconds time out
-
-	WSANETWORKEVENTS netevents;
-	WSAEnumNetworkEvents(handle,hEvent,&netevents);
-
-	// Check the async event status to see if we connected
-	if ((netevents.lNetworkEvents & FD_CONNECT) == FD_CONNECT)
-	{
-		if (netevents.iErrorCode[FD_CONNECT_BIT] != 0)
-		{
-			llwarns << "Unable to open TCP channel, WSA returned an error code of " << netevents.iErrorCode[FD_CONNECT_BIT] << llendl;
-			WSACloseEvent(hEvent);
-			return -1;
-		}
-
-		// Now we are connected disable non blocking
-		// we don't need support an async interface as
-		// currently our only consumer (socks5) will make one round
-		// of packets then just hold the connection open
-		WSAEventSelect(handle, hEvent, NULL) ;
-		unsigned long NonBlock = 0;
-		ioctlsocket(handle, FIONBIO, &NonBlock);
-
-		return handle;
-	}
-
-	llwarns << "Unable to open TCP channel, Timeout is the host up?" << netevents.iErrorCode[FD_CONNECT_BIT] << llendl;
-	return -1;
-}
-
-void tcp_close_channel(S32 handle)
-{
-	llinfos << "Closing TCP channel" << llendl;
-	shutdown(handle, SD_BOTH);
-	closesocket(handle);
-}
-
 S32 start_net(S32& socket_out, int& nPort) 
 {			
 	// Create socket, make non-blocking
-    // Init WinSock 
+	// Init WinSock
 	int nRet;
 	int hSocket;
 
@@ -292,7 +200,7 @@ S32 start_net(S32& socket_out, int& nPort)
 	int buff_size = 4;
  
 	// Initialize windows specific stuff
-	if(WSAStartup(0x0202, &stWSAData))
+	if (WSAStartup(0x0202, &stWSAData))
 	{
 		S32 err = WSAGetLastError();
 		WSACleanup();
@@ -301,8 +209,8 @@ S32 start_net(S32& socket_out, int& nPort)
 	}
 
 	// Get a datagram socket
-    hSocket = (int)socket(AF_INET, SOCK_DGRAM, 0);
-    if (hSocket == INVALID_SOCKET)
+	hSocket = (int)socket(AF_INET, SOCK_DGRAM, 0);
+	if (hSocket == INVALID_SOCKET)
 	{
 		S32 err = WSAGetLastError();
 		WSACleanup();
@@ -393,11 +301,9 @@ S32 start_net(S32& socket_out, int& nPort)
 	LL_DEBUGS("AppInit") << "startNet - send buffer size    : " << snd_size << LL_ENDL;
 
 	//  Setup a destination address
-	//char achMCAddr[MAXADDRSTR] = " ";	/* Flawfinder: ignore */ 
 	stDstAddr.sin_family =      AF_INET;
-	//stDstAddr.sin_addr.s_addr = inet_addr(achMCAddr);
-	stDstAddr.sin_addr.s_addr = INVALID_HOST_IP_ADDRESS; //Not so sure about this...
-    stDstAddr.sin_port =        htons(nPort);
+	stDstAddr.sin_addr.s_addr = INVALID_HOST_IP_ADDRESS;
+	stDstAddr.sin_port =        htons(nPort);
 
 	socket_out = hSocket;
 	return 0;
@@ -437,7 +343,6 @@ S32 receive_packet(int hSocket, char * receiveBuffer)
 // Returns TRUE on success.
 BOOL send_packet(int hSocket, const char *sendBuffer, int size, U32 recipient, int nPort)
 {
-
 	//  Sends a packet to the address set in initNet
 	//  
 	int nRet = 0;
@@ -479,77 +384,6 @@ BOOL send_packet(int hSocket, const char *sendBuffer, int size, U32 recipient, i
 
 #else
 
-
-int tcp_handshake(S32 handle, char * dataout, int outlen, char * datain, int maxinlen)
-{
-	if (send(handle, dataout, outlen, 0) != outlen)
-	{
-		llwarns << "Error sending data to proxy control channel" << llendl;
-		return -1;
-	}
-
-	if (recv(handle, datain, maxinlen, 0) != maxinlen)
-	{
-		llwarns << "Error receiving data to proxy control channel" << llendl;		
-		return -1;
-	}
-
-	return 0;
-}
-
-S32 tcp_open_channel(LLHost host)
-{
-	S32 handle;
-	handle = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (!handle)
-	{
-		llwarns << "Error opening TCP control socket, socket() returned " << handle << llendl;
-		return -1;
-	}
-
-	struct sockaddr_in address;
-	address.sin_port        = htons(host.getPort());
-	address.sin_family      = AF_INET;
-	address.sin_addr.s_addr = host.getAddress();
-
-	// Set the socket to non blocking for the connect()
-	int flags = fcntl(handle, F_GETFL, 0);
-	fcntl(handle, F_SETFL, flags | O_NONBLOCK);
-
-	S32 error = connect(handle, (sockaddr*)&address, sizeof(address));
-	if (error && (errno != EINPROGRESS))
-	{
-			llwarns << "Unable to open TCP channel, error code: " << errno << llendl;
-			return -1;
-	}
-
-	struct timeval timeout;
-	timeout.tv_sec  = 5; // Maximum time to wait for the connect() to complete
-	timeout.tv_usec = 0;
-    fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(handle, &fds);
-
-	// See if we have connectde or time out after 5 seconds
-	U32 rc = select(sizeof(fds)*8, NULL, &fds, NULL, &timeout);	
-	
-	if (rc != 1) // we require exactly one descriptor to be set
-	{
-			llwarns << "Unable to open TCP channel" << llendl;
-			return -1;
-	}
-
-	// Return the socket to blocking operations
-	fcntl(handle, F_SETFL, flags);
-
-	return handle;
-}
-
-void tcp_close_channel(S32 handle)
-{
-		close(handle);
-}
-
 //  Create socket, make non-blocking
 S32 start_net(S32& socket_out, int& nPort)
 {
@@ -558,10 +392,10 @@ S32 start_net(S32& socket_out, int& nPort)
 	int rec_size = RECEIVE_BUFFER_SIZE;
 
 	socklen_t buff_size = 4;
-    
+
 	//  Create socket
-    hSocket = socket(AF_INET, SOCK_DGRAM, 0);
-    if (hSocket < 0)
+	hSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (hSocket < 0)
 	{
 		llwarns << "socket() failed" << llendl;
 		return 1;
@@ -594,7 +428,7 @@ S32 start_net(S32& socket_out, int& nPort)
 	}
 	else
 	{
-	    // Name the socket (assign the local port number to receive on)
+		// Name the socket (assign the local port number to receive on)
 		stLclAddr.sin_family      = AF_INET;
 		stLclAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 		stLclAddr.sin_port        = htons(nPort);
@@ -639,7 +473,7 @@ S32 start_net(S32& socket_out, int& nPort)
 		nPort = attempt_port;
 	}
 	// Set socket to be non-blocking
- 	fcntl(hSocket, F_SETFL, O_NONBLOCK);
+	fcntl(hSocket, F_SETFL, O_NONBLOCK);
 	// set a large receive buffer
 	nRet = setsockopt(hSocket, SOL_SOCKET, SO_RCVBUF, (char *)&rec_size, buff_size);
 	if (nRet)
@@ -675,8 +509,8 @@ S32 start_net(S32& socket_out, int& nPort)
 	//  Setup a destination address
 	char achMCAddr[MAXADDRSTR] = "127.0.0.1";	/* Flawfinder: ignore */ 
 	stDstAddr.sin_family =      AF_INET;
-        stDstAddr.sin_addr.s_addr = ip_string_to_u32(achMCAddr);
-        stDstAddr.sin_port =        htons(nPort);
+	stDstAddr.sin_addr.s_addr = ip_string_to_u32(achMCAddr);
+	stDstAddr.sin_port =        htons(nPort);
 
 	socket_out = hSocket;
 	return 0;
@@ -702,7 +536,7 @@ static int recvfrom_destip( int socket, void *buf, int len, struct sockaddr *fro
 	iov[0].iov_base = buf;
 	iov[0].iov_len = len;
 
-	memset( &msg, 0, sizeof msg );
+	memset(&msg, 0, sizeof msg);
 	msg.msg_name = from;
 	msg.msg_namelen = *fromlen;
 	msg.msg_iov = iov;
@@ -710,14 +544,14 @@ static int recvfrom_destip( int socket, void *buf, int len, struct sockaddr *fro
 	msg.msg_control = &cmsg;
 	msg.msg_controllen = sizeof(cmsg);
 
-	size = recvmsg( socket, &msg, 0 );
+	size = recvmsg(socket, &msg, 0);
 
-	if( size == -1 )
+	if (size == -1)
 	{
 		return -1;
 	}
 
-	for( cmsgptr = CMSG_FIRSTHDR(&msg); cmsgptr != NULL; cmsgptr = CMSG_NXTHDR( &msg, cmsgptr ) )
+	for (cmsgptr = CMSG_FIRSTHDR(&msg); cmsgptr != NULL; cmsgptr = CMSG_NXTHDR( &msg, cmsgptr))
 	{
 		if( cmsgptr->cmsg_level == SOL_IP && cmsgptr->cmsg_type == IP_PKTINFO )
 		{
@@ -815,7 +649,7 @@ BOOL send_packet(int hSocket, const char * sendBuffer, int size, U32 recipient, 
 			}
 		}
 	}
-	while ( resend && send_attempts < 3);
+	while (resend && send_attempts < 3);
 
 	if (send_attempts >= 3)
 	{

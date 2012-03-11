@@ -76,6 +76,7 @@ include_directories(
     )
 
 set(viewer_SOURCE_FILES
+    sgmemstat.cpp
     sgversion.cpp
     llviewerobjectbackup.cpp
     slfloatermediafilter.cpp
@@ -98,7 +99,6 @@ set(viewer_SOURCE_FILES
     ascentprefsvan.cpp
     dhparam.cpp
     dsaparam.cpp
-    emerald.cpp
     emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
@@ -232,7 +232,6 @@ set(viewer_SOURCE_FILES
     llfloaterlandmark.cpp
     llfloatermap.cpp
     llfloatermemleak.cpp
-    llfloatermessagelog.cpp
     llfloatermodeluploadbase.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
@@ -564,6 +563,7 @@ set(viewer_HEADER_FILES
     CMakeLists.txt
     ViewerInstall.cmake
 
+    sgmemstat.h
     sgversion.h
     llviewerobjectbackup.h
     slfloatermediafilter.h
@@ -582,7 +582,6 @@ set(viewer_HEADER_FILES
     ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
-    emerald.h
     emeraldboobutils.h
     dofloaterhex.h
     dohexeditor.h
@@ -720,7 +719,6 @@ set(viewer_HEADER_FILES
     llfloatermap.h
     llfloatermemleak.h
     llfloatermodeluploadbase.h
-    llfloatermessagelog.h
     llfloatermute.h
     llfloaternamedesc.h
     llfloaternewim.h
