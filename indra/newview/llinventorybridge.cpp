@@ -598,18 +598,6 @@ void hide_context_entries(LLMenuGL& menu,
 	// if the first element is a separator, it will not be shown.
 	bool is_previous_entry_separator = true;
 
-	for (menuentry_vec_t::const_iterator itor = entries_to_show.begin(); itor != entries_to_show.end(); ++itor)
-	{
-		bool found = false;
-		for (LLView::child_list_t::const_iterator itor2 = list->begin(); itor2 != list->end(); ++itor2)
-		{
-			if(*itor == (*itor2)->getName())
-			found = true;
-		}
-		if(!found)
-			llinfos << "Failed to find entry '" << *itor << "'" << llendl;
-	}
-
 	for (LLView::child_list_t::const_iterator itor = list->begin(); 
 		 itor != list->end(); 
 		 ++itor)
@@ -665,7 +653,6 @@ void hide_context_entries(LLMenuGL& menu,
 			{
 				enabled &= (*itor2 != name);
 			}
-			llinfos << (enabled ? "Showing" : "hiding") << " " << menu_item->getName() << llendl;
 			menu_item->setEnabled(enabled);
 		}
 	}
@@ -1938,12 +1925,6 @@ BOOL LLFolderBridge::dragCategoryIntoFolder(LLInventoryCategory* inv_cat,
 		}
 		// Can't move favorites folder.
 		if (is_movable && (mUUID == model->findCategoryUUIDForType(LLFolderType::FT_FAVORITE)))
-		{
-			is_movable = FALSE;
-			// tooltip?
-		}
-		// Avoid moves that would change nothing
-		if (is_movable && (mUUID != inv_cat->getParentUUID()))
 		{
 			is_movable = FALSE;
 			// tooltip?

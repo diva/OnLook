@@ -8343,7 +8343,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 	//	(isTextureDefined(TEX_HAIR_BAKED) ? "HAIR" : "hair " ) << (getTEImage(TEX_HAIR_BAKED)->getID()) << std::endl <<
 	//	(isTextureDefined(TEX_EYES_BAKED)  ? "EYES" : "eyes" ) << (getTEImage(TEX_EYES_BAKED)->getID()) << llendl ;
  
-	if( !mFirstTEMessageReceived )
+	if( !is_first_appearance_message )
 	{
 		onFirstTEMessageReceived();
 	}
@@ -8433,19 +8433,19 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 			}
 		}
 
-		while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
+		const S32 expected_tweakable_count = getVisualParamCountInGroup(VISUAL_PARAM_GROUP_TWEAKABLE); // don't worry about VISUAL_PARAM_GROUP_TWEAKABLE_NO_TRANSMIT
+		if (num_blocks != expected_tweakable_count)
 		{
-			param = getNextVisualParam();
+			llinfos << "Number of params in AvatarAppearance msg (" << num_blocks << ") does not match number of tweakable params in avatar xml file (" << expected_tweakable_count << ").  Processing what we can.  object: " << getID() << llendl;
+			if(is_first_appearance_message)
+			{
+				while( param && (param->getGroup() != VISUAL_PARAM_GROUP_TWEAKABLE) )
+					param = getNextVisualParam();
+				if(param && param->getName() == "breast_physics_mass")
+					llinfos << getFullname() << " does not have avatar physics." << llendl;
+			}
 		}
-		if( param )
-		{
-			if(param->getName() == "breast_physics_mass")
-				llinfos << getFullname() << " does not have avatar physics." << llendl;
-			else
-				llwarns << "Number of params in AvatarAppearance msg does not match number of params in avatar xml file for " << getFullname() << " (Prematurely reached end of list at " << param->getName() << ")." << llendl;
-			//return; //ASC-TTRFE
-		}
-
+		
 		if (params_changed)
 		{
 			if (interp_params)

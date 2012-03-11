@@ -713,19 +713,19 @@ void LLPanelAvatarWeb::processProperties(void* data, EAvatarProcessorType type)
 
 BOOL LLPanelAvatarClassified::postBuild(void)
 {
-	childSetAction("New...",onClickNew,NULL);
-	childSetAction("Delete...",onClickDelete,NULL);
+	childSetAction("New...",onClickNew,this);
+	childSetAction("Delete...",onClickDelete,this);
 	return TRUE;
 }
 
 BOOL LLPanelAvatarPicks::postBuild(void)
 {
-	childSetAction("New...",onClickNew,NULL);
-	childSetAction("Delete...",onClickDelete,NULL);
+	childSetAction("New...",onClickNew,this);
+	childSetAction("Delete...",onClickDelete,this);
 	
 	//For pick import and export - RK
-	childSetAction("Import...",onClickImport,NULL);
-	childSetAction("Export...",onClickExport,NULL);
+	childSetAction("Import...",onClickImport,this);
+	childSetAction("Export...",onClickExport,this);
 	return TRUE;
 }
 
