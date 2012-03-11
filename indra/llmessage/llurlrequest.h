@@ -38,7 +38,6 @@
 #include "lliopipe.h"
 #include "llchainio.h"
 #include "llerror.h"
-#include <openssl/x509_vfy.h>
 #include "llcurl.h"
 
 
@@ -50,6 +49,9 @@ extern const std::string CONTEXT_TRANSFERED_BYTES;
 class LLURLRequestDetail;
 
 class LLURLRequestComplete;
+
+struct x509_store_ctx_st;
+typedef struct x509_store_ctx_st X509_STORE_CTX;
 
 /** 
  * @class LLURLRequest

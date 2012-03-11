@@ -28,6 +28,7 @@
 
 #include "linden_common.h"
 #include "llbuffer.h"
+#include <iterator>
 
 #include "llmath.h"
 #include "llmemtype.h"
