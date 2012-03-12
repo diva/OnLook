@@ -193,7 +193,6 @@ public:
 	bool isSelfLocked() const;
 
 	// get ID of locking thread
-	bool isSelfLocked(); //return true if locked in a same thread		
 	U32 lockingThread() const { return mLockingThread; }
 
 protected:
