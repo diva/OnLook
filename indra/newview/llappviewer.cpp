@@ -2047,7 +2047,7 @@ bool LLAppViewer::initConfiguration()
 
 	gSavedSettings.setString("VersionChannelName", gVersionChannel);
 
-#ifndef	LL_RELEASE_FOR_DOWNLOAD
+#if 0 //#ifndef	LL_RELEASE_FOR_DOWNLOAD
 	// provide developer build only overrides for these control variables that are not
 	// persisted to settings.xml
 	LLControlVariable* c = gSavedSettings.getControl("ShowConsoleWindow");
