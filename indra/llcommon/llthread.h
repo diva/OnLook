@@ -41,6 +41,9 @@
 
 #ifdef SHOW_ASSERT
 extern LL_COMMON_API bool is_main_thread(void);
+#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
+#else
+#define ASSERT_SINGLE_THREAD do { } while(0)
 #endif
 
 class LLThread;
