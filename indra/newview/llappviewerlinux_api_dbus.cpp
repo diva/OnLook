@@ -86,7 +86,7 @@ bool grab_dbus_syms(std::string dbus_dso_name)
 #else
 	if ( APR_SUCCESS == (rv = apr_dso_load(&sSymDBUSDSOHandle,
 					       dbus_dso_name.c_str(),
-					       sSymDBUSDSOMemoryPool) ))
+					       sSymDBUSDSOMemoryPool()) ))
 #endif
 	{
 		INFOMSG("Found DSO: %s", dbus_dso_name.c_str());
