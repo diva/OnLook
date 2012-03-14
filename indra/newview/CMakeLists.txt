@@ -99,7 +99,6 @@ set(viewer_SOURCE_FILES
     ascentprefsvan.cpp
     dhparam.cpp
     dsaparam.cpp
-    emerald.cpp
     emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
@@ -584,7 +583,6 @@ set(viewer_HEADER_FILES
     ascentprefschat.h
     ascentprefssys.h
     ascentprefsvan.h
-    emerald.h
     emeraldboobutils.h
     dofloaterhex.h
     dohexeditor.h

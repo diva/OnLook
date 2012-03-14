@@ -61,6 +61,7 @@
 #include "llfeaturemanager.h"
 #include "llviewernetwork.h"
 #include "llmeshrepository.h" //for LLMeshRepository::sBytesReceived
+#include "sgmemstat.h"
 #if LL_LCD_COMPILE
 #include "lllcd.h"
 #endif
@@ -689,6 +690,17 @@ void update_statistics(U32 frame_count)
 		}
 	}
 
+	{
+		static const F32 mem_stats_freq = 10.f;
+		static LLFrameTimer mem_stats_timer;
+		if (mem_stats_timer.getElapsedTimeF32() >= mem_stats_freq)
+		{
+			LLViewerStats::getInstance()->mMallocStat.addValue(SGMemStat::getMalloc()/1024.f/1024.f);
+			mem_stats_timer.reset();
+		}
+	}
+
+	
 #if LL_LCD_COMPILE
 	bool LCDenabled = gLcdScreen->Enabled();
 	LLViewerStats::getInstance()->setStat(LLViewerStats::ST_LOGITECH_LCD, LCDenabled);
