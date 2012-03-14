@@ -38,6 +38,7 @@
 #include "llmemory.h"
 #include "apr_thread_cond.h"
 #include "llaprpool.h"
+#include "llatomic.h"
 
 #ifdef SHOW_ASSERT
 extern LL_COMMON_API bool is_main_thread(void);
@@ -400,13 +401,6 @@ void LLThread::unlockData()
 
 class LL_COMMON_API LLThreadSafeRefCount
 {
-public:
-	static void initThreadSafeRefCount(); // creates sMutex
-	static void cleanupThreadSafeRefCount(); // destroys sMutex
-	
-private:
-	static LLMutex* sMutex;
-
 private:
 	LLThreadSafeRefCount(const LLThreadSafeRefCount&); // not implemented
 	LLThreadSafeRefCount&operator=(const LLThreadSafeRefCount&); // not implemented
@@ -419,31 +413,20 @@ public:
 	
 	void ref()
 	{
-		if (sMutex) sMutex->lock();
 		mRef++; 
-		if (sMutex) sMutex->unlock();
 	} 
 
-	S32 unref()
+	void unref()
 	{
-		llassert(mRef >= 1);
-		if (sMutex) sMutex->lock();
-		S32 res = --mRef;
-		if (sMutex) sMutex->unlock();
-		if (0 == res) 
-		{
-			delete this; 
-			return 0;
-		}
-		return res;
-	}	
+		if (!--mRef) delete this;
+	}
 	S32 getNumRefs() const
 	{
 		return mRef;
 	}
 
 private: 
-	S32	mRef; 
+	LLAtomicS32	mRef; 
 };
 
 //============================================================================

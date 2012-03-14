@@ -178,7 +178,7 @@ void LLThread::shutdown()
 		}
 		mAPRThreadp = NULL;
 	}
-	sCount--;
+	--sCount;
 	delete mRunCondition;
 	mRunCondition = 0;
 }
@@ -443,28 +443,6 @@ void LLMutexBase::unlock()
 
 	apr_thread_mutex_unlock(mAPRMutexp);
 }
-
-//----------------------------------------------------------------------------
-
-//static
-LLMutex* LLThreadSafeRefCount::sMutex = 0;
-
-//static
-void LLThreadSafeRefCount::initThreadSafeRefCount()
-{
-	if (!sMutex)
-	{
-		sMutex = new LLMutex;
-	}
-}
-
-//static
-void LLThreadSafeRefCount::cleanupThreadSafeRefCount()
-{
-	delete sMutex;
-	sMutex = NULL;
-}
-	
 
 //----------------------------------------------------------------------------
 
