@@ -23,7 +23,7 @@
 			<button bottom_delta="0" height="20" image_selected="icn_speaker-muted_dark.tga"
 			     image_unselected="icn_speaker_dark.tga" label="" left_delta="115"
 			     name="mute_btn" toggle="true" tool_tip="Mute voice for this resident"
-			     width="25" />
+			     width="25" scale_image="false" />
 		</panel>
 	</panel>
 </floater>
