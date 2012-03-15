@@ -269,7 +269,7 @@ U8* LLImageBase::allocateDataSize(S32 width, S32 height, S32 ncomponents, S32 si
 // LLImageRaw
 //---------------------------------------------------------------------------
 
-AITHREADSAFESIMPLE(S32, LLImageRaw::sGlobalRawMemory, );
+AIThreadSafeSimpleDC<S32> LLImageRaw::sGlobalRawMemory;
 S32 LLImageRaw::sRawImageCount = 0;
 S32 LLImageRaw::sRawImageCachedCount = 0;
 

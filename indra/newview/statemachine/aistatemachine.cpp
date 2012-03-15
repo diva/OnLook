@@ -65,18 +65,18 @@ namespace {
   };
 
   typedef std::vector<QueueElement> active_statemachines_type;
-  static active_statemachines_type active_statemachines;
+  active_statemachines_type active_statemachines;
   typedef std::vector<AIStateMachine*> continued_statemachines_type;
   struct cscm_type
   {
 	continued_statemachines_type continued_statemachines;
 	bool calling_mainloop;
   };
-  static AITHREADSAFE(cscm_type, continued_statemachines_and_calling_mainloop, );
+  AIThreadSafeDC<cscm_type> continued_statemachines_and_calling_mainloop;
 }
 
 // static
-AITHREADSAFESIMPLE(U64, AIStateMachine::sMaxCount, );
+AIThreadSafeSimpleDC<U64> AIStateMachine::sMaxCount;
 
 void AIStateMachine::updateSettings(void)
 {

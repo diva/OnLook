@@ -224,7 +224,7 @@ class AIStateMachine {
 	};
 	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.
 
-	static AIThreadSafeSimple<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
+	static AIThreadSafeSimpleDC<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
 
   protected:
 	//! State of the derived class. Only valid if mState == bs_run. Call set_state to change.

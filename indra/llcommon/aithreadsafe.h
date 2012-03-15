@@ -26,8 +26,65 @@
  *
  *   31/03/2010
  *   Initial version, written by Aleric Inglewood @ SL
+ *
+ *   14/03/2012
+ *   Added AIThreadSafeSingleThread and friends.
+ *   Added AIAccessConst (and derived AIAccess from it) to allow read
+ *   access to a const AIThreadSafeSimple.
  */
 
+// This file defines wrapper template classes for arbitrary types T
+// adding locking to the instance and shielding it from access
+// without first being locked.
+//
+// Locking and getting access works by creating a temporary (local)
+// access object that takes the wrapper class as argument. Creating
+// the access object obtains the lock, while destructing it releases
+// the lock.
+//
+// There are three types of wrapper classes:
+// AIThreadSafe, AIThreadSafeSimple and AIThreadSafeSingleThread.
+//
+// AIThreadSafe is for use with the access classes:
+// AIReadAccessConst, AIReadAccess and AIWriteAccess.
+//
+// AIThreadSafeSimple is for use with the access classes:
+// AIAccessConst and AIAccess.
+//
+// AIThreadSafeSingleThread is for use with the access classes:
+// AISTAccessConst and AISTAccess.
+//
+// AIReadAccessConst provides read access to a const AIThreadSafe.
+// AIReadAccess provides read access to a non-const AIThreadSafe.
+// AIWriteAccess provides read/write access to a non-const AIThreadSafe.
+//
+// AIAccessConst provides read access to a const AIThreadSafeSimple.
+// AIAccess provides read/write access to a non-const AIThreadSafeSimple.
+//
+// AISTAccessConst provides read access to a const AIThreadSafeSingleThread.
+// AISTAccess provides read/write access to a non-const AIThreadSafeSingleThread.
+//
+// Thus, AIThreadSafe is to protect objects with a read/write lock,
+// AIThreadSafeSimple is to protect objects with a single mutex,
+// and AIThreadSafeSingleThread doesn't do any locking but makes sure
+// (in Debug mode) that the wrapped object is only accessed by one thread.
+//
+// Each wrapper class allows it's wrapped object to be constructed
+// with arbitrary parameters by using operator new with placement;
+// for example, to instantiate a class Foo with read/write locking:
+//
+// AIThreadSafe<Foo> foo(new (foo.memory()) Foo(param1, param2, ...));
+//
+// Each wrapper class has a derived class that end on 'DC' (which
+// stand for Default Constructed): AIThreadSafeDC, AIThreadSafeSimpleDC
+// and AIThreadSafeSingleThreadDC. The default constructors of those
+// wrapper classes cause the wrapped instance to be default constructed
+// as well. They also provide a general one-parameter constructor.
+// For example:
+//
+// AIThreadSafeDC<Foo> foo;			// Default constructed Foo.
+// AIThreadSafeDC<Foo> foo(3.4);	// Foo with one constructor parameter.
+//
 #ifndef AITHREADSAFE_H
 #define AITHREADSAFE_H
 
@@ -54,14 +111,6 @@ template<typename T> struct AIAccess;
 template<typename T> struct AISTAccessConst;
 template<typename T> struct AISTAccess;
 
-#if LL_WINDOWS
-template<typename T> class AIThreadSafeBits;
-template<typename T>
-struct AIThreadSafeWindowsHack {
-	AIThreadSafeWindowsHack(AIThreadSafeBits<T>& var, T* object);
-};
-#endif
-
 template<typename T>
 class AIThreadSafeBits
 {
@@ -84,9 +133,6 @@ public:
 	void* memory() const { return const_cast<long*>(&mMemory[0]); }
 
 protected:
-#if LL_WINDOWS
-	template<typename T2> friend struct AIThreadSafeWindowsHack;
-#endif
 	// Accessors.
 	T const* ptr() const { return reinterpret_cast<T const*>(mMemory); }
 	T* ptr() { return reinterpret_cast<T*>(mMemory); }
@@ -188,6 +234,14 @@ public:
 		llassert(object == AIThreadSafeBits<T>::ptr());
 #endif
 	}
+
+#if LL_DEBUG
+	// Can only be locked when there still exists an AIAccess object that
+	// references this object and will access it upon destruction.
+	// If the assertion fails, make sure that such AIAccess object is
+	// destructed before the deletion of this object.
+	~AIThreadSafe() { llassert(!mRWLock.isLocked()); }
+#endif
 };
 
 /**
@@ -197,48 +251,39 @@ public:
  *
  * <code>
  * Foo foo(x, y);
- * static Bar bar;
+ * static Bar bar(0.1, true);
  * </code>
  *
  * One can instantiate a thread-safe instance with
  *
  * <code>
  * AITHREADSAFE(Foo, foo, (x, y));
- * static AITHREADSAFE(Bar, bar, );
+ * static AITHREADSAFE(Bar, bar, (0.1, true));
  * </code>
  *
  * Note: This macro does not allow to allocate such object on the heap.
  *       If that is needed, have a look at AIThreadSafeDC.
  */
-#if LL_WINDOWS
-template<typename T>
-AIThreadSafeWindowsHack<T>::AIThreadSafeWindowsHack(AIThreadSafeBits<T>& var, T* object)
-{
-	llassert(object == var.ptr());
-}
-#define AITHREADSAFE(type, var, paramlist) \
-  AIThreadSafe<type> var(NULL); \
-  AIThreadSafeWindowsHack<type> dummy_##var(var, new (var.memory()) type paramlist)
-#else
 #define AITHREADSAFE(type, var, paramlist) AIThreadSafe<type> var(new (var.memory()) type paramlist)
-#endif
 
 /**
  * @brief A wrapper class for objects that need to be accessed by more than one thread.
  *
  * This class is the same as an AIThreadSafe wrapper, except that it can only
- * be used for default constructed objects.
+ * be used for default constructed objects, or constructed with one parameter.
  *
  * For example, instead of
  *
  * <code>
  * Foo foo;
+ * Bar bar(3);
  * </code>
  *
  * One would use
  *
  * <code>
  * AIThreadSafeDC<Foo> foo;
+ * AIThreadSafeDC<Bar> bar(3);
  * </code>
  *
  * The advantage over AITHREADSAFE is that this object can be allocated with
@@ -395,6 +440,7 @@ struct AIWriteAccess : public AIReadAccess<T>
  *
  * AIAccess<Foo> foo_w(foo);
  * // Use foo_w-> for read and write access.
+ * </code>
  *
  * See also AIThreadSafe
  */
@@ -417,6 +463,14 @@ protected:
 public:
 	// Only for use by AITHREADSAFESIMPLE, see below.
 	AIThreadSafeSimple(T* object) { llassert(object == AIThreadSafeBits<T>::ptr()); }
+
+#if LL_DEBUG
+	// Can only be locked when there still exists an AIAccess object that
+	// references this object and will access it upon destruction.
+	// If the assertion fails, make sure that such AIAccess object is
+	// destructed before the deletion of this object.
+	~AIThreadSafeSimple() { llassert(!mMutex.isLocked()); }
+#endif
 };
 
 /**
@@ -426,14 +480,14 @@ public:
  *
  * <code>
  * Foo foo(x, y);
- * static Bar bar;
+ * static Bar bar(0.1, true);
  * </code>
  *
  * One can instantiate a thread-safe instance with
  *
  * <code>
  * AITHREADSAFESIMPLE(Foo, foo, (x, y));
- * static AITHREADSAFESIMPLE(Bar, bar, );
+ * static AITHREADSAFESIMPLE(Bar, bar, (0.1, true));
  * </code>
  *
  * Note: This macro does not allow to allocate such object on the heap.
@@ -445,18 +499,20 @@ public:
  * @brief A wrapper class for objects that need to be accessed by more than one thread.
  *
  * This class is the same as an AIThreadSafeSimple wrapper, except that it can only
- * be used for default constructed objects.
+ * be used for default constructed objects, or constructed with one parameter.
  *
  * For example, instead of
  *
  * <code>
  * Foo foo;
+ * Bar bar(0.1);
  * </code>
  *
  * One would use
  *
  * <code>
  * AIThreadSafeSimpleDC<Foo> foo;
+ * AIThreadSafeSimpleDC<Bar> bar(0.1);
  * </code>
  *
  * The advantage over AITHREADSAFESIMPLE is that this object can be allocated with
@@ -590,6 +646,7 @@ struct AIAccess : public AIAccessConst<T>
  *
  * AISTAccess<Foo> foo_w(foo);
  * // Use foo_w-> for read and write access.
+ * </code>
  */
 template<typename T>
 class AIThreadSafeSingleThread : public AIThreadSafeBits<T>
@@ -639,18 +696,20 @@ public:
  * @brief A wrapper class for objects that should only be accessed by a single thread.
  *
  * This class is the same as an AIThreadSafeSingleThread wrapper, except that it can only
- * be used for default constructed objects.
+ * be used for default constructed objects, or constructed with one parameter.
  *
  * For example, instead of
  *
  * <code>
  * Foo foo;
+ * Bar bar(0.1);
  * </code>
  *
  * One would use
  *
  * <code>
  * AIThreadSafeSingleThreadDC<Foo> foo;
+ * AIThreadSafeSingleThreadDC<Bar> bar(0.1);
  * </code>
  *
  * The advantage over AITHREADSAFESINGLETHREAD is that this object can be allocated with
@@ -661,6 +720,12 @@ public:
  * </code>
  *
  * which is not possible with AITHREADSAFESINGLETHREAD.
+ *
+ * This class is primarily intended to test if some (member) variable needs locking,
+ * during development (in debug mode), and is therefore more flexible in that it
+ * automatically converts to the underlaying type, can be assigned to and can be
+ * written to an ostream, as if it wasn't wrapped at all. This is to reduce the
+ * impact on the source code.
  */
 template<typename T>
 class AIThreadSafeSingleThreadDC : public AIThreadSafeSingleThread<T>
