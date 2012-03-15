@@ -256,6 +256,8 @@ class AIThreadSafeDC : public AIThreadSafe<T>
 public:
 	// Construct a wrapper around a default constructed object.
 	AIThreadSafeDC(void) { new (AIThreadSafe<T>::ptr()) T; }
+	// Allow an arbitrary parameter to be passed for construction.
+	template<typename T2> AIThreadSafeDC(T2 const& val) { new (AIThreadSafe<T>::ptr()) T(val); }
 };
 
 /**
@@ -472,10 +474,12 @@ class AIThreadSafeSimpleDC : public AIThreadSafeSimple<T>
 public:
 	// Construct a wrapper around a default constructed object.
 	AIThreadSafeSimpleDC(void) { new (AIThreadSafeSimple<T>::ptr()) T; }
+	// Allow an arbitrary parameter to be passed for construction.
+	template<typename T2> AIThreadSafeSimpleDC(T2 const& val) { new (AIThreadSafeSimple<T>::ptr()) T(val); }
 
 protected:
 	// For use by AIThreadSafeSimpleDCRootPool
-	AIThreadSafeSimpleDC(LLAPRPool& parent) : AIThreadSafeSimple<T>(parent) { new (AIThreadSafeSimple<T>::ptr()) T; }
+	AIThreadSafeSimpleDC(LLAPRRootPool& parent) : AIThreadSafeSimple<T>(parent) { new (AIThreadSafeSimple<T>::ptr()) T; }
 };
 
 // Helper class for AIThreadSafeSimpleDCRootPool to assure initialization of
@@ -664,6 +668,17 @@ class AIThreadSafeSingleThreadDC : public AIThreadSafeSingleThread<T>
 public:
 	// Construct a wrapper around a default constructed object.
 	AIThreadSafeSingleThreadDC(void) { new (AIThreadSafeSingleThread<T>::ptr()) T; }
+	// Allow an arbitrary parameter to be passed for construction.
+	template<typename T2> AIThreadSafeSingleThreadDC(T2 const& val) { new (AIThreadSafeSingleThread<T>::ptr()) T(val); }
+
+	// Allow assigning with T.
+	AIThreadSafeSingleThreadDC& operator=(T const& val) { AIThreadSafeSingleThread<T>::accessed(); *AIThreadSafeSingleThread<T>::ptr() = val; return *this; }
+	// Allow writing to an ostream.
+	friend std::ostream& operator<<(std::ostream& os, AIThreadSafeSingleThreadDC const& wrapped_val) { wrapped_val.accessed(); return os << *wrapped_val.ptr(); }
+
+	// Automatic conversion to T.
+	operator T&(void) { AIThreadSafeSingleThread<T>::accessed(); return *AIThreadSafeSingleThread<T>::ptr(); }
+	operator T const&(void) const { AIThreadSafeSingleThread<T>::accessed(); return *AIThreadSafeSingleThread<T>::ptr(); }
 };
 
 /**
