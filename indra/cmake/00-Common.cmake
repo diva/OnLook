@@ -226,7 +226,7 @@ endif (LINUX)
 
 
 if (DARWIN)
-  add_definitions(-DLL_DARWIN=1)
+  add_definitions(-DLL_DARWIN=1 -D_XOPEN_SOURCE)
   set(CMAKE_CXX_LINK_FLAGS "-Wl,-headerpad_max_install_names,-search_paths_first")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_CXX_LINK_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mlong-branch")
