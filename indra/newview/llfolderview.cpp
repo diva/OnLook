@@ -80,7 +80,7 @@
 ///----------------------------------------------------------------------------
 
 const S32 RENAME_WIDTH_PAD = 4;
-const S32 RENAME_HEIGHT_PAD = 6;
+const S32 RENAME_HEIGHT_PAD = 1;
 const S32 AUTO_OPEN_STACK_DEPTH = 16;
 const S32 MIN_ITEM_WIDTH_VISIBLE = LLFolderViewItem::ICON_WIDTH
 			+ LLFolderViewItem::ICON_PAD 
@@ -89,6 +89,9 @@ const S32 MIN_ITEM_WIDTH_VISIBLE = LLFolderViewItem::ICON_WIDTH
 			+ /*first few characters*/ 40;
 const S32 MINIMUM_RENAMER_WIDTH = 80;
 
+// *TODO: move in params in xml if necessary. Requires modification of LLFolderView & LLInventoryPanel Params.
+const S32 STATUS_TEXT_HPAD = 6;
+const S32 STATUS_TEXT_VPAD = 8;
 
 enum {
 	SIGNAL_NO_KEYBOARD_FOCUS = 1,
@@ -102,30 +105,6 @@ void copy_selected_item(void* user_data);
 void open_selected_items(void* user_data);
 void properties_selected_items(void* user_data);
 void paste_items(void* user_data);
-void renamer_focus_lost( LLFocusableElement* handler, void* user_data );
-
-///----------------------------------------------------------------------------
-/// Class LLFolderViewItem
-///----------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //---------------------------------------------------------------------------
@@ -231,8 +210,9 @@ LLFolderView::LLFolderView( const std::string& name,
 	mDragAndDropThisFrame(FALSE),
 	mParentPanel(parent_view),
 	mUseEllipses(FALSE),
+	mDraggingOverItem(NULL),
+	mStatusTextBox(NULL),
 	mSearchType(1)
-
 {
 	mRoot = this;
 
@@ -265,7 +245,17 @@ LLFolderView::LLFolderView( const std::string& name,
 	mRenamer->setCommitOnFocusLost(TRUE);
 	mRenamer->setVisible(FALSE);
 	addChild(mRenamer);
-
+	
+	LLFontGL* font = getLabelFontForStyle(mLabelStyle);
+	LLRect new_r = LLRect(rect.mLeft + ICON_PAD,
+			      rect.mTop - TEXT_PAD,
+			      rect.mRight,
+			      rect.mTop - TEXT_PAD - llfloor(font->getLineHeight()));
+	mStatusTextBox = new LLTextBox(name, new_r, std::string(), font, false);
+	mStatusTextBox->setVisible(true);
+	mStatusTextBox->setHPad(STATUS_TEXT_HPAD);
+	mStatusTextBox->setVPad(STATUS_TEXT_VPAD);
+	mStatusTextBox->setFollows(FOLLOWS_LEFT|FOLLOWS_TOP);
 	// make the popup menu available
 	LLMenuGL* menu = LLUICtrlFactory::getInstance()->buildMenu("menu_inventory.xml", parent_view);
 	if (!menu)
@@ -294,6 +284,7 @@ LLFolderView::~LLFolderView( void )
 	mScrollContainer = NULL;
 	mRenameItem = NULL;
 	mRenamer = NULL;
+	mStatusTextBox = NULL;
 
 	mAutoOpenItems.removeAllNodes();
 	gIdleCallbacks.deleteFunction(idle, this);
@@ -523,12 +514,12 @@ S32 LLFolderView::arrange( S32* unused_width, S32* unused_height, S32 filter_gen
 		}
 	}
 
-	/*if(!mHasVisibleChildren)// is there any filtered items ?
+	if(!mHasVisibleChildren)// is there any filtered items ?
 	{
 		//Nope. We need to display status textbox, let's reserve some place for it
 		running_height = mStatusTextBox->getTextPixelHeight();
 		target_height = running_height;
-	}*/
+	}
 
 	mRunningHeight = running_height;
 	LLRect scroll_rect = mScrollContainer->getContentWindowRect();
@@ -961,20 +952,37 @@ void LLFolderView::draw()
 		|| mFilter->getShowFolderState() == LLInventoryFilter::SHOW_ALL_FOLDERS)
 	{
 		mStatusText.clear();
+		mStatusTextBox->setVisible( FALSE );
 	}
 	else if (mShowEmptyMessage)
 	{
-		const LLFontGL* font = getLabelFontForStyle(mLabelStyle);
 		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
 		if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
 		{
 			mStatusText = std::string("Searching..."); // *TODO:translate
-			font->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
 		}
 		else
 		{
 			mStatusText = std::string("No matching items found in inventory."); // *TODO:translate
-			font->renderUTF8(mStatusText, 0, 2, 1, sSearchStatusColor, LLFontGL::LEFT, LLFontGL::TOP, LLFontGL::NORMAL, LLFontGL::NO_SHADOW, S32_MAX, S32_MAX, NULL, FALSE );
+		}
+		mStatusTextBox->setWrappedText(mStatusText);
+		mStatusTextBox->setVisible( TRUE );
+
+		// firstly reshape message textbox with current size. This is necessary to
+		// LLTextBox::getTextPixelHeight works properly
+		const LLRect local_rect = getLocalRect();
+		mStatusTextBox->setShape(local_rect);
+
+		// get preferable text height...
+		S32 pixel_height = mStatusTextBox->getTextPixelHeight();
+		bool height_changed = local_rect.getHeight() != pixel_height;
+		if (height_changed)
+		{
+			// ... if it does not match current height, lets rearrange current view.
+			// This will indirectly call ::arrange and reshape of the status textbox.
+			// We should call this method to also notify parent about required rect.
+			// See EXT-7564, EXT-7047.
+			arrangeFromRoot();
 		}
 	}
 
@@ -1581,9 +1589,25 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 				{
 					if (next == last_selected)
 					{
+						//special case for LLAccordionCtrl
+						if(notifyParent(LLSD().with("action","select_next")) > 0 )//message was processed
+						{
+							clearSelection();
+							return TRUE;
+						}
 						return FALSE;
 					}
 					setSelection( next, FALSE, TRUE );
+				}
+				else
+				{
+					//special case for LLAccordionCtrl
+					if(notifyParent(LLSD().with("action","select_next")) > 0 )//message was processed
+					{
+						clearSelection();
+						return TRUE;
+					}
+					return FALSE;
 				}
 			}
 			scrollToShowSelection();
@@ -1629,6 +1653,13 @@ BOOL LLFolderView::handleKeyHere( KEY key, MASK mask )
 				{
 					if (prev == this)
 					{
+						// If case we are in accordion tab notify parent to go to the previous accordion
+						if(notifyParent(LLSD().with("action","select_prev")) > 0 )//message was processed
+						{
+							clearSelection();
+							return TRUE;
+						}
+
 						return FALSE;
 					}
 					setSelection( prev, FALSE, TRUE );
@@ -1959,6 +1990,8 @@ void LLFolderView::deleteAllChildren()
 	mScrollContainer = NULL;
 	mRenameItem = NULL;
 	mRenamer = NULL;
+	mStatusTextBox = NULL;
+	
 	clearSelection();
 	LLView::deleteAllChildren();
 }

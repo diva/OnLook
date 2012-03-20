@@ -852,7 +852,6 @@ void LLTaskCategoryBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 {
 	std::vector<std::string> items;
 	std::vector<std::string> disabled_items;
-	//items.push_back(std::string("Task Open"));  // *TODO: Translate
 	hide_context_entries(menu, items, disabled_items);
 }
 
@@ -912,21 +911,17 @@ BOOL LLTaskCategoryBridge::dragOrDrop(MASK mask, BOOL drop,
 		case DAD_GESTURE:
 		case DAD_CALLINGCARD:
 		case DAD_MESH:
-			// *HACK: In order to resolve SL-22177, we need to block
-			// drags from notecards and objects onto other
-			// objects. uncomment the simpler version when we have
-			// that right.
 			accept = LLToolDragAndDrop::isInventoryDropAcceptable(object, (LLViewerInventoryItem*)cargo_data);
 			// <edit> testzone
 			//if(LLToolDragAndDrop::isInventoryDropAcceptable(
 			//	   object, (LLViewerInventoryItem*)cargo_data)
-			if(object->permModify()
+			/*if(object->permModify()
 			// </edit>
 			   && (LLToolDragAndDrop::SOURCE_WORLD != LLToolDragAndDrop::getInstance()->getSource())
 			   && (LLToolDragAndDrop::SOURCE_NOTECARD != LLToolDragAndDrop::getInstance()->getSource()))
 			{
 				accept = TRUE;
-			}
+			}*/
 			if(accept && drop)
 			{
 				LLToolDragAndDrop::dropInventory(object,

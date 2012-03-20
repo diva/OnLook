@@ -3580,7 +3580,7 @@ void LLAppViewer::badNetworkHandler()
 	std::string grid_support_msg = "";
 	if (!gHippoGridManager->getCurrentGrid()->getSupportUrl().empty())
 	{
-		grid_support_msg = "\n\nOr visit the gird support page at: \n " 
+		grid_support_msg = "\n\nOr visit the grid support page at: \n " 
 			+ gHippoGridManager->getCurrentGrid()->getSupportUrl();
 	}
 	std::ostringstream message;

@@ -331,6 +331,8 @@ protected:
 
 public:
 	static F32 sAutoOpenTime;
+	LLTextBox*						mStatusTextBox;
+
 };
 
 bool sort_item_name(LLFolderViewItem* a, LLFolderViewItem* b);
