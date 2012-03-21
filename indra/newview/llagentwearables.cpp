@@ -1424,7 +1424,7 @@ void LLAgentWearables::removeWearableFinal( LLWearableType::EType type, bool do_
 	gInventory.notifyObservers();
 }
 
-static bool isFirstPhysicsWearable(LLWearableType::EType type, LLInventoryItem *new_item, LLWearable *new_wearable)
+/*static bool isFirstPhysicsWearable(LLWearableType::EType type, LLInventoryItem *new_item, LLWearable *new_wearable)
 {
 	if (type == LLWearableType::WT_PHYSICS && gSavedSettings.getWarning("FirstPhysicsWearable"))
 	{
@@ -1446,7 +1446,7 @@ static bool isFirstPhysicsWearable(LLWearableType::EType type, LLInventoryItem *
 		return true;
 	}
 	return false;
-}
+}*/
 
 // Assumes existing wearables are not dirty.
 void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& items,
@@ -1483,10 +1483,10 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 		{
 			const LLWearableType::EType type = new_wearable->getType();
 
-			if (isFirstPhysicsWearable(type, new_item, new_wearable))
+			/*if (isFirstPhysicsWearable(type, new_item, new_wearable))
 			{
 				return;
-			}
+			}*/
 
 			new_wearable->setName(new_item->getName());
 			new_wearable->setItemID(new_item->getUUID());
@@ -1539,10 +1539,10 @@ void LLAgentWearables::setWearableItem(LLInventoryItem* new_item, LLWearable* ne
 	
 	const LLWearableType::EType type = new_wearable->getType();
 
-	if (isFirstPhysicsWearable(type, new_item, new_wearable))
+	/*if (isFirstPhysicsWearable(type, new_item, new_wearable))
 	{
 		return;
-	}
+	}*/
 	
 	if (!do_append)
 	{
