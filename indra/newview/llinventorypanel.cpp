@@ -242,6 +242,18 @@ LLXMLNodePtr LLInventoryPanel::getXML(bool save_children) const
 	return node;
 }
 
+class LLInventoryRecentItemsPanel : public LLInventoryPanel
+{
+public:
+	LLInventoryRecentItemsPanel(const std::string& name,
+								    const std::string& sort_order_setting,
+									const LLRect& rect,
+									LLInventoryModel* inventory,
+									BOOL allow_multi_select,
+									LLView *parent_view);
+
+};
+
 LLView* LLInventoryPanel::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory)
 {
 	LLInventoryPanel* panel;
@@ -258,7 +270,12 @@ LLView* LLInventoryPanel::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	std::string sort_order(INHERIT_SORT_ORDER);
 	node->getAttributeString("sort_order", sort_order);
 
-	panel = new LLInventoryPanel(name, sort_order,
+	if(name != "Recent Items")
+		panel = new LLInventoryPanel(name, sort_order,
+								 rect, &gInventory,
+								 allow_multi_select, parent);
+	else
+		panel = new LLInventoryRecentItemsPanel(name, sort_order,
 								 rect, &gInventory,
 								 allow_multi_select, parent);
 
@@ -1030,3 +1047,24 @@ BOOL LLInventoryPanel::getIsHiddenFolderType(LLFolderType::EType folder_type) co
 {
 	return !(getFilter()->getFilterCategoryTypes() & (1ULL << folder_type));
 }
+
+
+/************************************************************************/
+/* Recent Inventory Panel related class                                 */
+/************************************************************************/
+class LLInventoryRecentItemsPanel;
+static const LLRecentInventoryBridgeBuilder RECENT_ITEMS_BUILDER;
+
+
+LLInventoryRecentItemsPanel:: LLInventoryRecentItemsPanel(const std::string& name,
+						    		const std::string& sort_order_setting,
+									const LLRect& rect,
+									LLInventoryModel* inventory,
+									BOOL allow_multi_select,
+									LLView *parent_view) : 
+									LLInventoryPanel(name, sort_order_setting,rect,inventory,allow_multi_select,parent_view)
+{
+	mInvFVBridgeBuilder = &RECENT_ITEMS_BUILDER;	
+}
+
+

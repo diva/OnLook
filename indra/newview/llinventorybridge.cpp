@@ -2751,12 +2751,16 @@ void LLFolderBridge::buildContextMenuBaseOptions(U32 flags)
 		// Not sure what the right thing is to do here.
 		if (!isCOFFolder() && cat && (cat->getPreferredType() != LLFolderType::FT_OUTFIT))
 		{
+			LLInventoryPanel* panel = dynamic_cast<LLInventoryPanel*>(mInventoryPanel.get());
+			if(panel && !panel->getFilterWorn())
+			{
 			mItems.push_back(std::string("New Folder"));
 			mItems.push_back(std::string("New Script"));
 			mItems.push_back(std::string("New Note"));
 			mItems.push_back(std::string("New Gesture"));
 			mItems.push_back(std::string("New Clothes"));
 			mItems.push_back(std::string("New Body Parts"));
+			}
 
 			getClipboardEntries(false, mItems, mDisabledItems, flags);
 		}
@@ -3575,9 +3579,10 @@ void open_texture(const LLUUID& item_id,
 void LLTextureBridge::openItem()
 {
 	LLViewerInventoryItem* item = getItem();
-	if(item)
+
+	if (item)
 	{
-		open_texture(mUUID, getPrefix() + item->getName(), FALSE);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -3634,7 +3639,7 @@ void LLSoundBridge::openItem()
 	LLViewerInventoryItem* item = getItem();
 	if(item)
 	{
-		openSoundPreview((void*)this);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -3658,7 +3663,7 @@ void LLSoundBridge::openSoundPreview(void* which)
 		rect.translate(left - rect.mLeft, top - rect.mTop);
 		LLPreviewSound* preview = new LLPreviewSound("preview sound",
 										   rect,
-										   me->getPrefix() + me->getName(),
+										   std::string("Sound: ") + me->getName(),
 										   me->mUUID);
 		preview->setFocus(TRUE);
 		// Keep entirely onscreen.
@@ -3776,7 +3781,7 @@ void LLLandmarkBridge::performAction(LLInventoryModel* model, std::string action
 		LLViewerInventoryItem* item = getItem();
 		if(item)
 		{
-			open_landmark(item, std::string("  ") + getPrefix() + item->getName(), FALSE);
+			open_landmark(item, std::string("  Landmark: ") + item->getName(), FALSE);
 		}
 	}
 	else 
@@ -3832,15 +3837,10 @@ static LLNotificationFunctorRegistration open_landmark_callback_reg("TeleportFro
 void LLLandmarkBridge::openItem()
 {
 	LLViewerInventoryItem* item = getItem();
-	if( item )
+
+	if (item)
 	{
-		// Opening (double-clicking) a landmark immediately teleports,
-		// but warns you the first time.
-		// open_landmark(item, std::string("  ") + getPrefix() + item->getName(), FALSE);
-		LLSD payload;
-		payload["asset_id"] = item->getAssetUUID();
-		payload["item_id"] = item->getUUID();
-		LLNotificationsUtil::add("TeleportFromLandmark", LLSD(), payload);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -3942,12 +3942,18 @@ std::string LLCallingCardBridge::getLabelSuffix() const
 void LLCallingCardBridge::openItem()
 {
 	LLViewerInventoryItem* item = getItem();
-	if(item && !item->getCreatorUUID().isNull())
+
+	if (item)
 	{
-		BOOL online;
-		online = LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID());
-		LLFloaterAvatarInfo::showFromFriend(item->getCreatorUUID(), online);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
+/*
+  LLViewerInventoryItem* item = getItem();
+  if(item && !item->getCreatorUUID().isNull())
+  {
+  LLAvatarActions::showProfile(item->getCreatorUUID());
+  }
+*/
 }
 
 void LLCallingCardBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
@@ -4132,7 +4138,7 @@ void LLNotecardBridge::openItem()
 	LLViewerInventoryItem* item = getItem();
 	if (item)
 	{
-		open_notecard(item, getPrefix() + item->getName(), LLUUID::null, FALSE);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -4226,22 +4232,19 @@ void LLGestureBridge::performAction(LLInventoryModel* model, std::string action)
 void LLGestureBridge::openItem()
 {
 	LLViewerInventoryItem* item = getItem();
-	if (!item) return;
 
-	// See if we can bring an existing preview to the front
-	if(!LLPreview::show(mUUID))
+	if (item)
 	{
-		LLUUID item_id = mUUID;
-		std::string title = getPrefix() + item->getName();
-		LLUUID object_id = LLUUID::null;
-
-		// TODO: save the rectangle
-		LLPreviewGesture* preview = LLPreviewGesture::show(title, item_id, object_id);
-		preview->setFocus(TRUE);
-
-		// Force to be entirely onscreen.
-		gFloaterView->adjustToFitScreen(preview, FALSE);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
+/*
+  LLViewerInventoryItem* item = getItem();
+  if (item)
+  {
+  LLPreviewGesture* preview = LLPreviewGesture::show(mUUID, LLUUID::null);
+  preview->setFocus(TRUE);
+  }
+*/
 }
 
 BOOL LLGestureBridge::removeItem()
@@ -4364,7 +4367,7 @@ void LLAnimationBridge::performAction(LLInventoryModel* model, std::string actio
 				rect.translate( left - rect.mLeft, top - rect.mTop );
 				LLPreviewAnim* preview = new LLPreviewAnim("preview anim",
 										rect,
-										getPrefix() + getItem()->getName(),
+										"Animations: " + getItem()->getName(),
 										mUUID,
 										activate);
 				// Force to be entirely onscreen.
@@ -4379,26 +4382,19 @@ void LLAnimationBridge::performAction(LLInventoryModel* model, std::string actio
 
 void LLAnimationBridge::openItem()
 {
-	// See if we can bring an existing preview to the front
-	if(LLPreview::show( mUUID ))
-		return;
-			
 	LLViewerInventoryItem* item = getItem();
-	if( item )
+
+	if (item)
 	{
-			S32 left, top;
-			gFloaterView->getNewFloaterPosition(&left, &top);
-			LLRect rect = gSavedSettings.getRect("PreviewAnimRect");
-			rect.translate( left - rect.mLeft, top - rect.mTop );
-			LLPreviewAnim* preview = new LLPreviewAnim("preview anim",
-									rect,
-									getPrefix() + item->getName(),
-									mUUID,
-									LLPreviewAnim::NONE);
-		preview->setFocus(TRUE);
-		// Force to be entirely onscreen.
-		gFloaterView->adjustToFitScreen(preview, FALSE);
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
+/*
+  LLViewerInventoryItem* item = getItem();
+  if (item)
+  {
+  LLFloaterReg::showInstance("preview_anim", LLSD(mUUID), TAKE_FOCUS_YES);
+  }
+*/
 }
 
 // +=================================================+
@@ -4785,7 +4781,7 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 {
 	if(!isItemRenameable())
 		return FALSE;
-	LLPreview::rename(mUUID, getPrefix() + new_name);
+	LLPreview::rename(mUUID, std::string("Object: ") + new_name);
 	LLInventoryModel* model = getInventoryModel();
 	if(!model)
 		return FALSE;
@@ -4797,6 +4793,7 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 		buildDisplayName(new_item, mDisplayName);
 		new_item->updateServer(FALSE);
 		model->updateItem(new_item);
+
 		model->notifyObservers();
 
 		if (isAgentAvatarValid())
@@ -4822,34 +4819,11 @@ BOOL LLObjectBridge::renameItem(const std::string& new_name)
 
 void LLLSLTextBridge::openItem()
 {
-// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWSCRIPT))
-	{
-		RlvNotifications::notifyBlockedViewScript();
-		return;
-	}
-// [/RLVa:KB]
+	LLViewerInventoryItem* item = getItem();
 
-	// See if we can bring an exiting preview to the front
-	if(!LLPreview::show(mUUID))
+	if (item)
 	{
-		LLViewerInventoryItem* item = getItem();
-		if (item)
-		{
-			// There isn't one, so make a new preview
-			S32 left, top;
-			gFloaterView->getNewFloaterPosition(&left, &top);
-			LLRect rect = gSavedSettings.getRect("PreviewScriptRect");
-			rect.translate(left - rect.mLeft, top - rect.mTop);
-			
-			LLPreviewLSL* preview =	new LLPreviewLSL("preview lsl text",
-											 rect,
-											 getPrefix() + item->getName(),
-											 mUUID);
-			preview->setFocus(TRUE);
-			// keep onscreen
-			gFloaterView->adjustToFitScreen(preview, FALSE);
-		}
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -5037,43 +5011,11 @@ void LLWearableBridge::performAction(LLInventoryModel* model, std::string action
 
 void LLWearableBridge::openItem()
 {
-	if( isItemInTrash() )
+	LLViewerInventoryItem* item = getItem();
+
+	if (item)
 	{
-		LLNotificationsUtil::add("CannotWearTrash");
-	}
-	else if(isAgentInventory())
-	{
-		if (gAgentWearables.isWearingItem(mUUID))
-		{
-			performAction(NULL, "take_off");
-		}
-		else
- 		{
-			performAction(NULL, "wear");
-		}
-	}
-	else
-	{
-		// must be in the inventory library. copy it to our inventory
-		// and put it on right away.
-		LLViewerInventoryItem* item = getItem();
-		if(item && item->isComplete())
-		{
-			LLPointer<LLInventoryCallback> cb = new WearOnAvatarCallback();
-			copy_inventory_item(
-				gAgent.getID(),
-				item->getPermissions().getOwner(),
-				item->getUUID(),
-				LLUUID::null,
-				std::string(),
-				cb);
-		}
-		else if(item)
-		{
-			// *TODO: We should fetch the item details, and then do
-			// the operation above.
-			LLNotificationsUtil::add("CannotWearInfoNotComplete");
-		}
+		LLInvFVBridgeAction::doAction(item->getType(),mUUID,getInventoryModel());
 	}
 }
 
@@ -5251,21 +5193,6 @@ void LLWearableBridge::onWearOnAvatarArrived( LLWearable* wearable, void* userda
 		{
 			if(item->getAssetUUID() == wearable->getAssetID())
 			{
-				//RN: after discussing with Brashears, I disabled this code
-				//Metadata should reside in the item, not the asset
-				//And this code does not handle failed asset uploads properly
-
-//				if(!wearable->isMatchedToInventoryItem(item))
-//				{
-//					LLWearable* new_wearable = LLWearableList::instance().createWearableMatchedToInventoryItem( wearable, item );
-//
-//					// Now that we have an asset that matches the
-//					// item, update the item to point to the new
-//					// asset.
-//					item->setAssetUUID(new_wearable->getID());
-//					item->updateAssetOnServer();
-//					wearable = new_wearable;
-//				}
 				gAgentWearables.setWearableItem(item, wearable);
 				gInventory.notifyObservers();
 				//self->getFolderItem()->refreshFromRoot();
@@ -5477,7 +5404,6 @@ void LLLinkItemBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 	hide_context_entries(menu, items, disabled_items);
 }
 
-
 // +=================================================+
 // |        LLMeshBridge                             |
 // +=================================================+
@@ -5617,3 +5543,433 @@ const LLUUID &LLLinkFolderBridge::getFolderID() const
 	return LLUUID::null;
 }
 
+/********************************************************************************
+ **
+ **                    BRIDGE ACTIONS
+ **/
+
+// static
+void LLInvFVBridgeAction::doAction(LLAssetType::EType asset_type,
+								   const LLUUID& uuid,
+								   LLInventoryModel* model)
+{
+	// Perform indirection in case of link.
+	const LLUUID& linked_uuid = gInventory.getLinkedItemID(uuid);
+
+	LLInvFVBridgeAction* action = createAction(asset_type,linked_uuid,model);
+	if(action)
+	{
+		action->doIt();
+		delete action;
+	}
+}
+
+// static
+void LLInvFVBridgeAction::doAction(const LLUUID& uuid, LLInventoryModel* model)
+{
+	llassert(model);
+	LLViewerInventoryItem* item = model->getItem(uuid);
+	llassert(item);
+	if (item)
+	{
+		LLAssetType::EType asset_type = item->getType();
+		LLInvFVBridgeAction* action = createAction(asset_type,uuid,model);
+		if(action)
+		{
+			action->doIt();
+			delete action;
+		}
+	}
+}
+
+LLViewerInventoryItem* LLInvFVBridgeAction::getItem() const
+{
+	if (mModel)
+		return (LLViewerInventoryItem*)mModel->getItem(mUUID);
+	return NULL;
+}
+
+class LLTextureBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			open_texture(mUUID, std::string("Texture: ") + item->getName(), FALSE);
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLTextureBridgeAction(){}
+protected:
+	LLTextureBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLSoundBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			if(!LLPreview::show(mUUID))
+			{
+				S32 left, top;
+				gFloaterView->getNewFloaterPosition(&left, &top);
+				LLRect rect = gSavedSettings.getRect("PreviewSoundRect");
+				rect.translate(left - rect.mLeft, top - rect.mTop);
+				LLPreviewSound* preview = new LLPreviewSound("preview sound",
+												   rect,
+												   std::string("Sound: ") + item->getName(),
+												   mUUID);
+				preview->setFocus(TRUE);
+				// Keep entirely onscreen.
+				gFloaterView->adjustToFitScreen(preview, FALSE);
+			}
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLSoundBridgeAction(){}
+protected:
+	LLSoundBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLLandmarkBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			// Opening (double-clicking) a landmark immediately teleports,
+			// but warns you the first time.
+			LLSD payload;
+			payload["asset_id"] = item->getAssetUUID();		
+			
+			payload["item_id"] = item->getUUID();
+			
+			LLSD args; 
+			args["LOCATION"] = item->getName(); 
+			
+			LLNotificationsUtil::add("TeleportFromLandmark", args, payload);
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLLandmarkBridgeAction(){}
+protected:
+	LLLandmarkBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLCallingCardBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item && item->getCreatorUUID().notNull())
+		{
+			bool online = LLAvatarTracker::instance().isBuddyOnline(item->getCreatorUUID());
+			LLFloaterAvatarInfo::showFromFriend(item->getCreatorUUID(), online);
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLCallingCardBridgeAction(){}
+protected:
+	LLCallingCardBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+
+};
+
+class LLNotecardBridgeAction
+: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			open_notecard(item, std::string("Notecard: ") + item->getName(), LLUUID::null, FALSE);
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLNotecardBridgeAction(){}
+protected:
+	LLNotecardBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLGestureBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			// See if we can bring an existing preview to the front
+			if(!LLPreview::show(mUUID))
+			{
+				// TODO: save the rectangle
+				LLPreviewGesture* preview = LLPreviewGesture::show(std::string("Gesture: ") + item->getName(), mUUID, LLUUID::null);
+				preview->setFocus(TRUE);
+
+				// Force to be entirely onscreen.
+				gFloaterView->adjustToFitScreen(preview, FALSE);
+			}
+		}
+		LLInvFVBridgeAction::doIt();		
+	}
+	virtual ~LLGestureBridgeAction(){}
+protected:
+	LLGestureBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLAnimationBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			// See if we can bring an existing preview to the front
+			if(!LLPreview::show( mUUID ))
+			{
+
+				S32 left, top;
+				gFloaterView->getNewFloaterPosition(&left, &top);
+				LLRect rect = gSavedSettings.getRect("PreviewAnimRect");
+				rect.translate( left - rect.mLeft, top - rect.mTop );
+				LLPreviewAnim* preview = new LLPreviewAnim("preview anim",
+										rect,
+										std::string("Animation: ") + item->getName(),
+										mUUID,
+										LLPreviewAnim::NONE);
+				preview->setFocus(TRUE);
+				// Force to be entirely onscreen.
+				gFloaterView->adjustToFitScreen(preview, FALSE);
+			}
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLAnimationBridgeAction(){}
+protected:
+	LLAnimationBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLObjectBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		/*
+		  LLFloaterReg::showInstance("properties", mUUID);
+		*/
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLObjectBridgeAction(){}
+protected:
+	LLObjectBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLLSLTextBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+// [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWSCRIPT))
+	{
+		RlvNotifications::notifyBlockedViewScript();
+		return;
+	}
+// [/RLVa:KB]
+		LLViewerInventoryItem* item = getItem();
+		if (item)
+		{
+			// See if we can bring an exiting preview to the front
+			if(!LLPreview::show(mUUID))
+			{
+				LLViewerInventoryItem* item = getItem();
+				if (item)
+				{
+					// There isn't one, so make a new preview
+					S32 left, top;
+					gFloaterView->getNewFloaterPosition(&left, &top);
+					LLRect rect = gSavedSettings.getRect("PreviewScriptRect");
+					rect.translate(left - rect.mLeft, top - rect.mTop);
+			
+					LLPreviewLSL* preview =	new LLPreviewLSL("preview lsl text",
+													 rect,
+													 std::string("Script: ") + item->getName(),
+													 mUUID);
+					preview->setFocus(TRUE);
+					// keep onscreen
+					gFloaterView->adjustToFitScreen(preview, FALSE);
+				}
+			}
+		}
+		LLInvFVBridgeAction::doIt();
+	}
+	virtual ~LLLSLTextBridgeAction(){}
+protected:
+	LLLSLTextBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+};
+
+class LLWearableBridgeAction: public LLInvFVBridgeAction
+{
+	friend class LLInvFVBridgeAction;
+public:
+	virtual void doIt()
+	{
+		wearOnAvatar();
+	}
+
+	virtual ~LLWearableBridgeAction(){}
+protected:
+	LLWearableBridgeAction(const LLUUID& id,LLInventoryModel* model) : LLInvFVBridgeAction(id,model) {}
+	BOOL isItemInTrash() const;
+	// return true if the item is in agent inventory. if false, it
+	// must be lost or in the inventory library.
+	BOOL isAgentInventory() const;
+	void wearOnAvatar();
+};
+
+BOOL LLWearableBridgeAction::isItemInTrash() const
+{
+	if(!mModel) return FALSE;
+	const LLUUID trash_id = mModel->findCategoryUUIDForType(LLFolderType::FT_TRASH);
+	return mModel->isObjectDescendentOf(mUUID, trash_id);
+}
+
+BOOL LLWearableBridgeAction::isAgentInventory() const
+{
+	if(!mModel) return FALSE;
+	if(gInventory.getRootFolderID() == mUUID) return TRUE;
+	return mModel->isObjectDescendentOf(mUUID, gInventory.getRootFolderID());
+}
+
+void LLWearableBridgeAction::wearOnAvatar()
+{
+	// TODO: investigate wearables may not be loaded at this point EXT-8231
+
+	LLViewerInventoryItem* item = getItem();
+	if(item)
+	{
+		LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(), true, true);
+	}
+}
+
+LLInvFVBridgeAction* LLInvFVBridgeAction::createAction(LLAssetType::EType asset_type,
+													   const LLUUID& uuid,
+													   LLInventoryModel* model)
+{
+	LLInvFVBridgeAction* action = NULL;
+	switch(asset_type)
+	{
+		case LLAssetType::AT_TEXTURE:
+			action = new LLTextureBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_SOUND:
+			action = new LLSoundBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_LANDMARK:
+			action = new LLLandmarkBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_CALLINGCARD:
+			action = new LLCallingCardBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_OBJECT:
+			action = new LLObjectBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_NOTECARD:
+			action = new LLNotecardBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_ANIMATION:
+			action = new LLAnimationBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_GESTURE:
+			action = new LLGestureBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_LSL_TEXT:
+			action = new LLLSLTextBridgeAction(uuid,model);
+			break;
+		case LLAssetType::AT_CLOTHING:
+		case LLAssetType::AT_BODYPART:
+			action = new LLWearableBridgeAction(uuid,model);
+			break;
+		default:
+			break;
+	}
+	return action;
+}
+
+/************************************************************************/
+/* Recent Inventory Panel related classes                               */
+/************************************************************************/
+void LLRecentItemsFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
+{
+	LLFolderBridge::buildContextMenu(menu, flags);
+
+	menuentry_vec_t disabled_items, items = getMenuItems();
+
+	items.erase(std::remove(items.begin(), items.end(), std::string("New Folder")), items.end());
+
+	hide_context_entries(menu, items, disabled_items);
+}
+
+LLInvFVBridge* LLRecentInventoryBridgeBuilder::createBridge(
+	LLAssetType::EType asset_type,
+	LLAssetType::EType actual_asset_type,
+	LLInventoryType::EType inv_type,
+	LLInventoryPanel* inventory,
+	LLFolderView* root,
+	const LLUUID& uuid,
+	U32 flags /*= 0x00*/ ) const
+{
+	LLInvFVBridge* new_listener = NULL;
+	switch(asset_type)
+	{
+	case LLAssetType::AT_CATEGORY:
+		if (actual_asset_type == LLAssetType::AT_LINK_FOLDER)
+		{
+			// *TODO: Create a link folder handler instead if it is necessary
+			new_listener = LLInventoryFVBridgeBuilder::createBridge(
+				asset_type,
+				actual_asset_type,
+				inv_type,
+				inventory,
+				root,
+				uuid,
+				flags);
+			break;
+		}
+		new_listener = new LLRecentItemsFolderBridge(inv_type, inventory, root, uuid);
+		break;
+	default:
+		new_listener = LLInventoryFVBridgeBuilder::createBridge(
+			asset_type,
+			actual_asset_type,
+			inv_type,
+			inventory,
+			root,
+			uuid,
+			flags);
+	}
+	return new_listener;
+
+}
+
+
+// EOF

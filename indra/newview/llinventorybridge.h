@@ -560,6 +560,73 @@ protected:
                        LLItemBridge(inventory, root, uuid) {}
 };
 
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Class LLInvFVBridgeAction
+//
+// This is an implementation class to be able to 
+// perform action to view inventory items.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LLInvFVBridgeAction
+{
+public:
+	// This method is a convenience function which creates the correct
+	// type of bridge action based on some basic information.
+	static LLInvFVBridgeAction* createAction(LLAssetType::EType asset_type,
+											 const LLUUID& uuid,
+											 LLInventoryModel* model);
+	static void doAction(LLAssetType::EType asset_type,
+						 const LLUUID& uuid, LLInventoryModel* model);
+	static void doAction(const LLUUID& uuid, LLInventoryModel* model);
+
+	virtual void doIt() {};
+	virtual ~LLInvFVBridgeAction() {} // need this because of warning on OSX
+protected:
+	LLInvFVBridgeAction(const LLUUID& id, LLInventoryModel* model) :
+		mUUID(id), mModel(model) {}
+	LLViewerInventoryItem* getItem() const;
+protected:
+	const LLUUID& mUUID; // item id
+	LLInventoryModel* mModel;
+};
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Recent Inventory Panel related classes
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+// Overridden version of the Inventory-Folder-View-Bridge for Folders
+class LLRecentItemsFolderBridge : public LLFolderBridge
+{
+	friend class LLInvFVBridgeAction;
+public:
+	// Creates context menu for Folders related to Recent Inventory Panel.
+	// Uses base logic and than removes from visible items "New..." menu items.
+	LLRecentItemsFolderBridge(LLInventoryType::EType type,
+							  LLInventoryPanel* inventory,
+							  LLFolderView* root,
+							  const LLUUID& uuid) :
+		LLFolderBridge(inventory, root, uuid)
+	{
+		mInvType = type;
+	}
+	/*virtual*/ void buildContextMenu(LLMenuGL& menu, U32 flags);
+};
+
+// Bridge builder to create Inventory-Folder-View-Bridge for Recent Inventory Panel
+class LLRecentInventoryBridgeBuilder : public LLInventoryFVBridgeBuilder
+{
+public:
+	// Overrides FolderBridge for Recent Inventory Panel.
+	// It use base functionality for bridges other than FolderBridge.
+	virtual LLInvFVBridge* createBridge(LLAssetType::EType asset_type,
+		LLAssetType::EType actual_asset_type,
+		LLInventoryType::EType inv_type,
+		LLInventoryPanel* inventory,
+		LLFolderView* root,
+		const LLUUID& uuid,
+		U32 flags = 0x00) const;
+};
 void rez_attachment(LLViewerInventoryItem* item, 
 					LLViewerJointAttachment* attachment,
 					bool replace = false);
