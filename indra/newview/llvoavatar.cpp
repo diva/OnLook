@@ -1,32 +1,26 @@
 /** 
- * @file llvoavatar.cpp
- * @brief Implementation of LLVOAvatar class which is a derivation fo LLViewerObject
+ * @File llvoavatar.cpp
+ * @brief Implementation of LLVOAvatar class which is a derivation of LLViewerObject
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -2930,66 +2924,6 @@ void LLVOAvatar::idleUpdateBoobEffect()
 
 		mBoobState = newBoobState;
 	}
-	/*
-	if(mFirstSetActualButtGravRan)
-	{
-		// BUTT
-		EmeraldBoobInputs buttInputs;
-		buttInputs.type = 1;
-		buttInputs.chestPosition	= mPelvisp->getWorldPosition();
-		buttInputs.chestRotation	= mPelvisp->getWorldRotation();
-		buttInputs.elapsedTime		= mBoobBounceTimer.getElapsedTimeF32();
-		buttInputs.appearanceFlag	= getAppearanceFlag();
-
-
-		EmeraldBoobState newButtState = EmeraldBoobUtils::idleUpdate(sBoobConfig, mLocalBoobConfig, mButtState, buttInputs);
-
-		if(mButtState.boobGrav != newButtState.boobGrav)
-		{
-			LLVisualParam *param;
-			param = getVisualParam(795);
-
-			ESex avatar_sex = getSex();
-
-			param->stopAnimating(FALSE);
-			param->setWeight(newButtState.boobGrav*0.3f+getActualButtGrav(), FALSE);
-			param->apply(avatar_sex);
-			updateVisualParams();
-		}
-
-		mButtState = newButtState;
-	}
-
-	if(mFirstSetActualFatGravRan)
-	{
-		// FAT
-		EmeraldBoobInputs fatInputs;
-		fatInputs.type = 2;
-		fatInputs.chestPosition		= mPelvisp->getWorldPosition();
-		fatInputs.chestRotation		= mPelvisp->getWorldRotation();
-		fatInputs.elapsedTime		= mBoobBounceTimer.getElapsedTimeF32();
-		fatInputs.appearanceFlag	= getAppearanceFlag();
-
-
-		EmeraldBoobState newFatState = EmeraldBoobUtils::idleUpdate(sBoobConfig, mLocalBoobConfig, mFatState, fatInputs);
-
-		if(mFatState.boobGrav != newFatState.boobGrav)
-		{
-			LLVisualParam *param;
-			param = getVisualParam(157);
-
-			ESex avatar_sex = getSex();
-
-			param->stopAnimating(FALSE);
-			param->setWeight(newFatState.boobGrav*0.3f+getActualFatGrav(), FALSE);
-			param->apply(avatar_sex);
-			updateVisualParams();
-		}
-
-		mFatState = newFatState;
-	}
-	*/
-	
 }
 
 void LLVOAvatar::idleUpdateLipSync(bool voice_enabled)
@@ -6863,6 +6797,7 @@ const LLViewerJointAttachment *LLVOAvatar::attachObject(LLViewerObject *viewer_o
 	// <edit> testzone attachpt
 	if(!attachment)
 	{
+		llwarns << "Failed to find attachment." << llendl;
 		S32 attachmentID = ATTACHMENT_ID_FROM_STATE(viewer_object->getState());
 		LLUUID item_id;
 		LLNameValue* item_id_nv = viewer_object->getNVPair("AttachItemID");
@@ -7286,6 +7221,7 @@ LLVOAvatar* LLVOAvatar::findAvatarFromAttachment( LLViewerObject* obj )
 	return NULL;
 }
 
+// warning: order(N) not order(1)
 S32 LLVOAvatar::getAttachmentCount()
 {
 	S32 count = mAttachmentPoints.size();
@@ -8699,7 +8635,6 @@ void LLVOAvatar::useBakedTexture( const LLUUID& id )
 // static
 void LLVOAvatar::dumpArchetypeXML( void* )
 {
-	LLVOAvatar* avatar = gAgentAvatarp;
 	LLAPRFile outfile(gDirUtilp->getExpandedFilename(LL_PATH_CHARACTER, "new archetype.xml"), LL_APR_WB);
 	apr_file_t* file = outfile.getFileHandle() ;
 	if( !file )
@@ -8732,7 +8667,8 @@ void LLVOAvatar::dumpArchetypeXML( void* )
 		{
 			if( LLVOAvatarDictionary::getTEWearableType((ETextureIndex)te) == type )
 			{
-				LLViewerTexture* te_image = avatar->getTEImage((ETextureIndex)te);
+				// MULTIPLE_WEARABLES: extend to multiple wearables?
+				LLViewerTexture* te_image = ((LLVOAvatar *)(gAgentAvatarp))->getImage((ETextureIndex)te, 0);
 				if( te_image )
 				{
 					std::string uuid_str;

@@ -40,6 +40,7 @@ struct WearableEntry : public LLDictionaryEntry
 		LLDictionaryEntry(name),
 		mAssetType(assetType),
 		mDefaultNewName(default_new_name),
+		//*TODO:Translate
 		mLabel(/*LLTrans::getString*/(name)),
 		mIconName(iconName),
 		mDisableCameraSwitch(disable_camera_switch),

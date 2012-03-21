@@ -85,11 +85,11 @@ public:
 	virtual LLInventoryType::EType getInventoryType() const = 0;
 	virtual void performAction(LLInventoryModel* model, std::string action) = 0;
 	virtual LLWearableType::EType getWearableType() const = 0;
-
+	
 	// This method should be called when a drag begins. returns TRUE
 	// if the drag can begin, otherwise FALSE.
 	virtual BOOL startDrag(EDragAndDropType* type, LLUUID* id) const = 0;
-
+	
 	// This method will be called to determine if a drop can be
 	// performed, and will set drop to TRUE if a drop is
 	// requested. Returns TRUE if a drop is possible/happened,
@@ -97,12 +97,6 @@ public:
 	virtual BOOL dragOrDrop(MASK mask, BOOL drop,
 							EDragAndDropType cargo_type,
 							void* cargo_data) = 0;
-
-	// This method is called when the object being referenced by the
-	// bridge is actually dropped. This allows for cleanup of the old
-	// view, reference counting, etc.
-//	virtual void dropped() = 0;
 };
-
 
 #endif

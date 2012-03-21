@@ -169,7 +169,6 @@ void remove_inventory_category_from_avatar(LLInventoryCategory* category);
 void remove_inventory_category_from_avatar_step2( BOOL proceed, LLUUID category_id);
 bool move_task_inventory_callback(const LLSD& notification, const LLSD& response, LLMoveInv*);
 bool confirm_attachment_rez(const LLSD& notification, const LLSD& response);
-void teleport_via_landmark(const LLUUID& asset_id);
 static BOOL can_move_to_outfit(LLInventoryItem* inv_item, BOOL move_is_into_current_outfit);
 
 // Helper functions
@@ -434,7 +433,7 @@ void LLInvFVBridge::removeBatchNoCheck(LLDynamicArray<LLFolderViewEventListener*
 			--update[cat->getParentUUID()];
 			++update[trash_id];
 			// <edit>
-			if(!gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot))
+			if(!gInventory.isObjectDescendentOf(cat->getUUID(), gSystemFolderRoot))	//Avoid fake items.
 			{
 			// </edit>
 				if(start_new_message)
@@ -1506,8 +1505,7 @@ BOOL LLItemBridge::removeItem()
 	// Already in trash
 	if (model->isObjectDescendentOf(mUUID, trash_id)) return FALSE;
 
-		//Is this needed? What does it fix? Ascent has bad commenting.
-		/*	// <edit> trash problem
+		// <edit> trash problem
 		if(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot))
 		{
 			LLInventoryModel::LLCategoryUpdate up(item->getParentUUID(), -1);
@@ -1515,7 +1513,7 @@ BOOL LLItemBridge::removeItem()
 			gInventory.accountForUpdate(up);
 			gInventory.notifyObservers();
 		}
-		// </edit>	*/ 
+		// </edit>
 
 	LLNotification::Params params("ConfirmItemDeleteHasLinks");
 	params.functor(boost::bind(&LLItemBridge::confirmRemoveItem, this, _1, _2));

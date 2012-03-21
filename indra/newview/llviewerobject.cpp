@@ -2704,7 +2704,7 @@ void LLViewerObject::processTaskInv(LLMessageSystem* msg, void** user_data)
 		LLPointer<LLInventoryObject> obj;
 		obj = new LLInventoryObject(object->mID, LLUUID::null,
 									LLAssetType::AT_CATEGORY,
-									std::string("Contents"));
+									"Contents");
 		object->mInventory->push_front(obj);
 		object->doInventoryCallback();
 		delete ft;

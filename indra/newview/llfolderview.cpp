@@ -2134,7 +2134,6 @@ LLFolderViewFolder* LLFolderView::getFolderByID(const LLUUID& id)
 
 static LLFastTimer::DeclareTimer FTM_AUTO_SELECT("Open and Select");
 static LLFastTimer::DeclareTimer FTM_INVENTORY("Inventory");
-extern std::set<LLFolderViewItem*> sFolderViewItems;	//dumb hack
 // Main idle routine
 void LLFolderView::doIdle()
 {
@@ -2174,19 +2173,7 @@ void LLFolderView::doIdle()
 		LLFastTimer t3(FTM_AUTO_SELECT);
 		// select new item only if a filtered item not currently selected
 		LLFolderViewItem* selected_itemp = mSelectedItems.empty() ? NULL : mSelectedItems.back();
-		/*if (selected_itemp != NULL && sFolderViewItems.count(selected_itemp) == 0)
-		{
-			// There is a crash bug due to a race condition: when a folder view item is
-			// destroyed, its address may still appear in mSelectedItems a couple of doIdle()
-			// later, even if you explicitely clear this list and dirty the filters in the
-			// destructor...
-			// This code avoids the crash bug.
-			llwarns << "Invalid folder view item (" << selected_itemp << ") in selection: clearing the latter." << llendl;
-			dirtyFilter();
-			clearSelection();
-			requestArrange();
-		}
-		else */if ((selected_itemp && !selected_itemp->getFiltered()) && !mAutoSelectOverride)
+		if ((selected_itemp && !selected_itemp->getFiltered()) && !mAutoSelectOverride)
 		{
 			// select first filtered item
 			LLSelectFirstFilteredItem filter;

@@ -2,31 +2,25 @@
  * @file llinventorybridge.h
  * @brief Implementation of the Inventory-Folder-View-Bridge classes.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -38,7 +32,6 @@
 #include "llfoldervieweventlistener.h"
 #include "llinventorymodel.h"
 #include "llinventoryobserver.h"
-//#include "llinventoryview.h"
 #include "llviewercontrol.h"
 #include "llwearable.h"
 
@@ -59,7 +52,7 @@ typedef std::vector<std::string> menuentry_vec_t;
 //
 // You'll want to call LLInvItemFVELister::createBridge() to actually create
 // an instance of this class. This helps encapsulate the
-// funcationality a bit. (except for folders, you can create those
+// functionality a bit. (except for folders, you can create those
 // manually...)
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class LLInvFVBridge : public LLFolderViewEventListener
@@ -126,6 +119,9 @@ public:
 	virtual LLInventoryType::EType getInventoryType() const { return mInvType; }
 	virtual LLWearableType::EType getWearableType() const { return LLWearableType::WT_NONE; }
 
+	//--------------------------------------------------------------------
+	// Convenience functions for adding various common menu options.
+	//--------------------------------------------------------------------
 protected:
 	virtual void addTrashContextMenuOptions(menuentry_vec_t &items,
 											menuentry_vec_t &disabled_items);
@@ -140,8 +136,7 @@ protected:
 	
 	BOOL isLinkedObjectInTrash() const; // Is this obj or its baseobj in the trash?
 	BOOL isLinkedObjectMissing() const; // Is this a linked obj whose baseobj is not in inventory?
-	// return true if the item is in agent inventory. if false, it
-	// must be lost or in the inventory library.
+
 	BOOL isAgentInventory() const; // false if lost or in the inventory library
 	BOOL isCOFFolder() const; // true if COF or descendent of
 	virtual BOOL isItemPermissive() const;
@@ -157,7 +152,7 @@ protected:
 protected:
 	LLHandle<LLPanel> mInventoryPanel;
 	LLFolderView* mRoot;
-	LLUUID mUUID;	// item id
+	const LLUUID mUUID;	// item id
 	LLInventoryType::EType mInvType;
 	BOOL mIsLink;
 	void purgeItem(LLInventoryModel *model, const LLUUID &uuid);
@@ -278,10 +273,12 @@ public:
 protected:
 	void buildContextMenuBaseOptions(U32 flags);
 	void buildContextMenuFolderOptions(U32 flags);
-	// menu callbacks
+
+	//--------------------------------------------------------------------
+	// Menu callbacks
+	//--------------------------------------------------------------------
 	static void pasteClipboard(void* user_data);
 	static void createNewCategory(void* user_data);
-
 	static void createNewShirt(void* user_data);
 	static void createNewPants(void* user_data);
 	static void createNewShoes(void* user_data);
@@ -459,7 +456,7 @@ public:
 	virtual BOOL renameItem(const std::string& new_name);
 	LLInventoryObject* getObject() const;
 protected:
-	static LLUUID	sContextMenuItemID;  // Only valid while the context menu is open.
+	static LLUUID sContextMenuItemID;  // Only valid while the context menu is open.
 	U32 mAttachPt;
 	BOOL mIsMultiObject;
 };
@@ -474,7 +471,6 @@ public:
 		LLItemBridge(inventory, root, uuid) {}
 	virtual void openItem();
 };
-
 
 class LLWearableBridge : public LLItemBridge
 {
