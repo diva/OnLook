@@ -7831,34 +7831,6 @@ void LLVOAvatar::releaseComponentTextures()
 	}
 }
 
-
-
-
-
-//-----------------------------------------------------------------------------
-// static
-// onCustomizeStart()
-//-----------------------------------------------------------------------------
-void LLVOAvatar::onCustomizeStart()
-{
-	// We're no longer doing any baking or invalidating on entering
-	// appearance editing mode. Leaving function in place in case
-	// further changes require us to do something at this point - Nyx
-}
-
-//-----------------------------------------------------------------------------
-// static
-// onCustomizeEnd()
-//-----------------------------------------------------------------------------
-void LLVOAvatar::onCustomizeEnd()
-{
-	if (isAgentAvatarValid())
-	{
-		gAgentAvatarp->invalidateAll();
-		gAgentAvatarp->requestLayerSetUploads();
-	}
-}
-
 //static
 BOOL LLVOAvatar::teToColorParams( ETextureIndex te, U32 *param_name )
 {

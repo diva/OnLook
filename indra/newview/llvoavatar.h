@@ -711,13 +711,6 @@ public:
 	U32				getVisibilityRank()  const { return mVisibilityRank; } // unused
 	static S32 		sNumVisibleAvatars; // Number of instances of this class
 	static LLColor4 getDummyColor();
-	
-	//--------------------------------------------------------------------
-	// Customize
-	//--------------------------------------------------------------------
-public:
-	static void		onCustomizeStart();
-	static void		onCustomizeEnd();
 /**                    Appearance
  **                                                                            **
  *******************************************************************************/

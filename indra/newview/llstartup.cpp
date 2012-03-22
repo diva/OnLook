@@ -241,6 +241,8 @@ bool gAgentMovementCompleted = false;
 std::string SCREEN_HOME_FILENAME = "screen_home.bmp";
 std::string SCREEN_LAST_FILENAME = "screen_last.bmp";
 
+LLPointer<LLViewerTexture> gStartTexture;
+
 //
 // Imported globals
 //
@@ -251,7 +253,7 @@ extern S32 gStartImageHeight;
 // local globals
 //
 
-LLPointer<LLViewerTexture> gStartTexture;
+
 
 static LLHost gAgentSimHost;
 static BOOL gSkipOptionalUpdate = FALSE;
@@ -3875,22 +3877,32 @@ void init_start_screen(S32 location_id)
 	else if(!start_image_bmp->load(temp_str) )
 	{
 		LL_WARNS("AppInit") << "Bitmap load failed" << LL_ENDL;
-		return;
-	}
-
-	gStartImageWidth = start_image_bmp->getWidth();
-	gStartImageHeight = start_image_bmp->getHeight();
-
-	LLPointer<LLImageRaw> raw = new LLImageRaw;
-	if (!start_image_bmp->decode(raw, 0.0f))
-	{
-		LL_WARNS("AppInit") << "Bitmap decode failed" << LL_ENDL;
 		gStartTexture = NULL;
-		return;
+	}
+	else
+	{
+		gStartImageWidth = start_image_bmp->getWidth();
+		gStartImageHeight = start_image_bmp->getHeight();
+
+		LLPointer<LLImageRaw> raw = new LLImageRaw;
+		if (!start_image_bmp->decode(raw, 0.0f))
+		{
+			LL_WARNS("AppInit") << "Bitmap decode failed" << LL_ENDL;
+			gStartTexture = NULL;
+		}
+		else
+		{
+			raw->expandToPowerOfTwo();
+			gStartTexture = LLViewerTextureManager::getLocalTexture(raw.get(), FALSE) ;
+		}
 	}
 
-	raw->expandToPowerOfTwo();
-	gStartTexture = LLViewerTextureManager::getLocalTexture(raw.get(), FALSE) ;
+	if(gStartTexture.isNull())
+	{
+		gStartTexture = LLViewerTexture::sBlackImagep ;
+		gStartImageWidth = gStartTexture->getWidth() ;
+		gStartImageHeight = gStartTexture->getHeight() ;
+	}
 }
 
 
