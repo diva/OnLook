@@ -71,8 +71,6 @@ extern BOOL gDebugWindowProc;
 
 const S32 MAX_NUM_RESOLUTIONS = 200;
 
-const S32 MIN_WINDOW_WIDTH = 1024;
-const S32 MIN_WINDOW_HEIGHT = 768;
 // static variable for ATI mouse cursor crash work-around:
 static bool ATIbug = false;
 
