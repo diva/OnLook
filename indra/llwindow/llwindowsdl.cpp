@@ -71,8 +71,6 @@ extern BOOL gDebugWindowProc;
 
 const S32 MAX_NUM_RESOLUTIONS = 200;
 
-const S32 MIN_WINDOW_WIDTH = 1024;
-const S32 MIN_WINDOW_HEIGHT = 768;
 // static variable for ATI mouse cursor crash work-around:
 static bool ATIbug = false;
 
@@ -2564,7 +2562,7 @@ std::vector<std::string> LLWindowSDL::getDynamicFallbackFontList()
 	// Use libfontconfig to find us a nice ordered list of fallback fonts
 	// specific to this system.
 	std::string final_fallback("/usr/share/fonts/truetype/kochi/kochi-gothic.ttf");
-	const int max_font_count_cutoff = 40; // fonts are expensive in the current system, don't enumerate an arbitrary number of them
+	const int max_font_count_cutoff = 100; // fonts are expensive in the current system, don't enumerate an arbitrary number of them
 	// Our 'ideal' font properties which define the sorting results.
 	// slant=0 means Roman, index=0 means the first face in a font file
 	// (the one we actually use), weight=80 means medium weight,
@@ -2654,7 +2652,7 @@ std::vector<std::string> LLWindowSDL::getDynamicFallbackFontList()
 	}
 	llinfos << "Using " << rtns.size() << "/" << found_font_count << " system fonts." << llendl;
 
-	rtns.push_back(final_fallback);
+	//rtns.push_back(final_fallback);
 	return rtns;
 }
 

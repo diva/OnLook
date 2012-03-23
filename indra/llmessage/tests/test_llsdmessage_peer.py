@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """\
 @file   test_llsdmessage_peer.py
 @author Nat Goodspeed
@@ -7,31 +7,25 @@
         the command line, returning its result code. While that executable is
         running, we provide dummy local services for use by C++ tests.
 
-$LicenseInfo:firstyear=2008&license=viewergpl$
-
-Copyright (c) 2008-2009, Linden Research, Inc.
-
+$LicenseInfo:firstyear=2008&license=viewerlgpl$
 Second Life Viewer Source Code
-The source code in this file ("Source Code") is provided by Linden Lab
-to you under the terms of the GNU General Public License, version 2.0
-("GPL"), unless you have obtained a separate licensing agreement
-("Other License"), formally executed by you and Linden Lab.  Terms of
-the GPL can be found in doc/GPL-license.txt in this distribution, or
-online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+Copyright (C) 2010, Linden Research, Inc.
 
-There are special exceptions to the terms and conditions of the GPL as
-it is applied to this Source Code. View the full text of the exception
-in the file doc/FLOSS-exception.txt in this software distribution, or
-online at
-http://secondlifegrid.net/programs/open_source/licensing/flossexception
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation;
+version 2.1 of the License only.
 
-By copying, modifying or distributing this software, you acknowledge
-that you have read and understood your obligations described above,
-and agree to abide by those obligations.
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
 
-ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
-WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
-COMPLETENESS OR PERFORMANCE.
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+
+Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
 $/LicenseInfo$
 """
 
@@ -39,16 +33,12 @@ import os
 import sys
 from threading import Thread
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
 mydir = os.path.dirname(__file__)       # expected to be .../indra/llmessage/tests/
 sys.path.insert(0, os.path.join(mydir, os.pardir, os.pardir, "lib", "python"))
 from indra.util.fastest_elementtree import parse as xml_parse
 from indra.base import llsd
-
-def debug(*args):
-    sys.stdout.writelines(args)
-    sys.stdout.flush()
-# comment out the line below to enable debug output
-debug = lambda *args: None
+from testrunner import freeport, run, debug, VERBOSE
 
 class TestHTTPRequestHandler(BaseHTTPRequestHandler):
     """This subclass of BaseHTTPRequestHandler is to receive and echo
@@ -82,10 +72,10 @@ class TestHTTPRequestHandler(BaseHTTPRequestHandler):
 ##         # assuming that the underlying XML parser reads its input file
 ##         # incrementally. Unfortunately I haven't been able to make it work.
 ##         tree = xml_parse(self.rfile)
-##         debug("Finished raw parse\n")
-##         debug("parsed XML tree %s\n" % tree)
-##         debug("parsed root node %s\n" % tree.getroot())
-##         debug("root node tag %s\n" % tree.getroot().tag)
+##         debug("Finished raw parse")
+##         debug("parsed XML tree %s", tree)
+##         debug("parsed root node %s", tree.getroot())
+##         debug("root node tag %s", tree.getroot().tag)
 ##         return llsd.to_python(tree.getroot())
 
     def do_GET(self):
@@ -98,8 +88,10 @@ class TestHTTPRequestHandler(BaseHTTPRequestHandler):
         self.answer(self.read_xml())
 
     def answer(self, data):
+        debug("%s.answer(%s): self.path = %r", self.__class__.__name__, data, self.path)
         if "fail" not in self.path:
             response = llsd.format_xml(data.get("reply", llsd.LLSD("success")))
+            debug("success: %s", response)
             self.send_response(200)
             self.send_header("Content-type", "application/llsd+xml")
             self.send_header("Content-Length", str(len(response)))
@@ -107,47 +99,48 @@ class TestHTTPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(response)
         else:                           # fail requested
             status = data.get("status", 500)
+            # self.responses maps an int status to a (short, long) pair of
+            # strings. We want the longer string. That's why we pass a string
+            # pair to get(): the [1] will select the second string, whether it
+            # came from self.responses or from our default pair.
             reason = data.get("reason",
                                self.responses.get(status,
                                                   ("fail requested",
                                                    "Your request specified failure status %s "
                                                    "without providing a reason" % status))[1])
+            debug("fail requested: %s: %r", status, reason)
             self.send_error(status, reason)
 
-    def log_request(self, code, size=None):
-        # For present purposes, we don't want the request splattered onto
-        # stderr, as it would upset devs watching the test run
-        pass
+    if not VERBOSE:
+        # When VERBOSE is set, skip both these overrides because they exist to
+        # suppress output.
 
-    def log_error(self, format, *args):
-        # Suppress error output as well
-        pass
+        def log_request(self, code, size=None):
+            # For present purposes, we don't want the request splattered onto
+            # stderr, as it would upset devs watching the test run
+            pass
 
-class TestHTTPServer(Thread):
-    def run(self):
-        httpd = HTTPServer(('127.0.0.1', 8000), TestHTTPRequestHandler)
-        debug("Starting HTTP server...\n")
-        httpd.serve_forever()
+        def log_error(self, format, *args):
+            # Suppress error output as well
+            pass
 
-def main(*args):
-    # Start HTTP server thread. Note that this and all other comm server
-    # threads should be daemon threads: we'll let them run "forever,"
-    # confident that the whole process will terminate when the main thread
-    # terminates, which will be when the test executable child process
-    # terminates.
-    httpThread = TestHTTPServer(name="httpd")
-    httpThread.setDaemon(True)
-    httpThread.start()
-    # choice of os.spawnv():
-    # - [v vs. l] pass a list of args vs. individual arguments,
-    # - [no p] don't use the PATH because we specifically want to invoke the
-    #   executable passed as our first arg,
-    # - [no e] child should inherit this process's environment.
-    debug("Running %s...\n" % (" ".join(args)))
-    sys.stdout.flush()
-    rc = os.spawnv(os.P_WAIT, args[0], args)
-    debug("%s returned %s\n" % (args[0], rc))
-    return rc
+class Server(HTTPServer):
+    # This pernicious flag is on by default in HTTPServer. But proper
+    # operation of freeport() absolutely depends on it being off.
+    allow_reuse_address = False
 
 if __name__ == "__main__":
-    sys.exit(main(*sys.argv[1:]))
+    # Instantiate a Server(TestHTTPRequestHandler) on the first free port
+    # in the specified port range. Doing this inline is better than in a
+    # daemon thread: if it blows up here, we'll get a traceback. If it blew up
+    # in some other thread, the traceback would get eaten and we'd run the
+    # subject test program anyway.
+    httpd, port = freeport(xrange(8000, 8020),
+                           lambda port: Server(('127.0.0.1', port), TestHTTPRequestHandler))
+    # Pass the selected port number to the subject test program via the
+    # environment. We don't want to impose requirements on the test program's
+    # command-line parsing -- and anyway, for C++ integration tests, that's
+    # performed in TUT code rather than our own.
+    os.environ["PORT"] = str(port)
+    debug("$PORT = %s", port)
+    sys.exit(run(server=Thread(name="httpd", target=httpd.serve_forever), *sys.argv[1:]))

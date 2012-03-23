@@ -633,7 +633,9 @@ bool LLAppViewer::init()
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
     // *NOTE:Mani - LLCurl::initClass is not thread safe. 
     // Called before threads are created.
-    LLCurl::initClass(gSavedSettings.getBOOL("CurlUseMultipleThreads"));
+    LLCurl::initClass(gSavedSettings.getF32("CurlRequestTimeOut"), 
+						gSavedSettings.getS32("CurlMaximumNumberOfHandles"), 
+						gSavedSettings.getBOOL("CurlUseMultipleThreads"));
 	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
@@ -2047,7 +2049,7 @@ bool LLAppViewer::initConfiguration()
 
 	gSavedSettings.setString("VersionChannelName", gVersionChannel);
 
-#ifndef	LL_RELEASE_FOR_DOWNLOAD
+#if 0 //#ifndef	LL_RELEASE_FOR_DOWNLOAD
 	// provide developer build only overrides for these control variables that are not
 	// persisted to settings.xml
 	LLControlVariable* c = gSavedSettings.getControl("ShowConsoleWindow");

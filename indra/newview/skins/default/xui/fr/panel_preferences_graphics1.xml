@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Graphiques" name="Display panel">
 	<button label="?" name="GraphicsPreferencesHelpButton"/>
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
@@ -134,26 +134,26 @@
 			Tout
 		</combo_item>
 	</combo_box>
-      <text name="AvatarRenderingText">
 <text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
       bottom_delta="-17" drop_shadow_visible="true" enabled="true" follows="left|top"
       font="SansSerifSmall" h_pad="0" halign="left" height="12"
       left="15" mouse_opaque="true" name="ShadowDetailText" v_pad="0"
       width="128">
-    Ombres atténués:
+    Ombres atténuées:
   </text>
   <combo_box bottom_delta="-20" control_name="RenderShadowDetail" enabled = "true" follows="left|top" label="Shadow Detail"
    left_delta="-2" mouse_opaque="true" name="ShadowDetailCombo" width="160" height="16">
     <combo_item type="string" length="1" name="0" value="0">
-      Disabled
+      D&#xE9;sactiv&#xE9;
     </combo_item>
     <combo_item type="string" length="1" name="1" value="1">
-      Sun shadows
+      Ombres solaires
     </combo_item>
     <combo_item type="string" length="1" name="2" value="2">
-      Sun and spotlight shadows
+      Ombres des projecteurs
     </combo_item>
   </combo_box>
+      <text name="AvatarRenderingText">
 		Rendu de l&apos;avatar :
 	</text>
 	<check_box label="Avatars éloignés en 2D" name="AvatarImpostors"/>

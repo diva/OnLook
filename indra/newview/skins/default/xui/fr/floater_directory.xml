@@ -12,8 +12,8 @@
 				Trouver :
 			</text>
 			<line_editor label="Rechercher" name="search_editor" tool_tip="Rechercher dans Second Life"/>
-			<button label="Précédente" name="back_btn" width="82"/>
-			<button label="Suivante" left="316" name="forward_btn" width="77"/>
+			<button label="." name="back_btn" width="20"/>
+			<button label="." left="316" name="forward_btn" width="20"/>
 			<button label="Rechercher" name="search_btn"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">

@@ -4,31 +4,25 @@
  * @date 2005-09-20
  * @brief Declaration of buffer and buffer arrays primarily used in I/O.
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -45,6 +39,7 @@
 #include <list>
 #include <vector>
 
+class LLMutex;
 /** 
  * @class LLChannelDescriptors
  * @brief A way simple interface to accesss channels inside a buffer
@@ -570,6 +565,29 @@ public:
 	 * @return Returns true on success.
 	 */
 	bool eraseSegment(const segment_iterator_t& iter);
+
+	/**
+	* @brief Lock the mutex if it exists
+	* This method locks mMutexp to make accessing LLBufferArray thread-safe
+	*/
+	void lock();
+
+	/**
+	* @brief Unlock the mutex if it exists
+	*/
+	void unlock();
+
+	/**
+	* @brief Return mMutexp
+	*/
+	LLMutex* getMutex();
+
+	/**
+	* @brief Set LLBufferArray to be shared across threads or not
+	* This method is to create mMutexp if is threaded.
+	* @param threaded Indicates this LLBufferArray instance is shared across threads if true.
+	*/
+	void setThreaded(bool threaded);
 	//@}
 
 protected:
@@ -601,6 +619,7 @@ protected:
 	S32 mNextBaseChannel;
 	buffer_list_t mBuffers;
 	segment_list_t mSegments;
+	LLMutex* mMutexp;
 };
 
 #endif // LL_LLBUFFER_H

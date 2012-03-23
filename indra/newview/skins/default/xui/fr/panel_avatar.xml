@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="Panel Avatar" width="470">
 	<tab_container name="tab" width="459">
 		<panel label="2ème vie" name="2nd Life" width="458">
@@ -87,16 +87,9 @@ objets :
 			<button label="Proposer téléportation" label_selected="Proposer téléportation..." name="Offer Teleport..." left_delta="117" width="150"/>
 			<button label="Devenir amis" label_selected="Devenir amis..." name="Add Friend..." left_delta="167"/>
 			<button label="Payer" label_selected="Payer" name="Pay..."/>
-            <button bottom_delta="0" font="SansSerif" halign="center" height="20"
-			     label="IM" label_selected="Instant Message..."
-			     left_delta="80" mouse_opaque="true" name="Instant Message..."
-			     tool_tip="Instant Message (IM)" width="70" />
-			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Mute/Ignorer"
-			     label_selected="Mute" left_delta="85" mouse_opaque="true" name="Mute"
-			     width="110" />
-			<button bottom_delta="0" font="SansSerif" halign="center" height="20" label="Invit. Groupe"
-			     label_selected="Invite to Group" left_delta="120" mouse_opaque="true"
-			     name="GroupInvite_Button" width="130" />
+                        <button bottom_delta="0" font="SansSerif" halign="center" label="IM" label_selected="IM" left_delta="80" name="Instant Message..." tool_tip="Instant Message (IM)" width="70"/>
+			<button bottom_delta="0" font="SansSerif" halign="center" label="Mute/Ignorer" label_selected="Mute" left_delta="85" name="Mute" tool_tip="ATTENTION VOUS ALLEZ MUTE LA PERSONNE" width="110"/>
+			<button bottom_delta="0" font="SansSerif" halign="center" label="Invit. Groupe" label_selected="Invit. Groupe" left_delta="120" name="GroupInvite_Button" width="130"/>
 
 		</panel>
 		<panel label="Web" name="WebProfile" width="458">
@@ -187,6 +180,19 @@ page et même le résident dont vous consultez le profil ne pourra pas voir ce q
 vous avez écrit.
 			</text>
 			<text_editor bottom_delta="-260" height="240" name="notes edit" width="430"/>
+
+			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+			     bottom_delta="-26" drop_shadow_visible="true" follows="left|top"
+			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="10"
+			     mouse_opaque="true" name="key_label" v_pad="0" width="95">
+				Clef-Key:
+			</text>
+			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
+			     border_thickness="1" bottom_delta="1" enabled="false" follows="left|top"
+			     font="SansSerifSmall" height="18" is_unicode="false" left_delta="95"
+			     max_length="48" mouse_opaque="false" name="avatar_key"
+			     text_readonly_color="1, 1, 1, 1" width="250" />
+
 		</panel>
 	</tab_container>
 	<button label="OK" label_selected="OK" name="OK"/>

@@ -22,7 +22,12 @@
 	</text>
 	<check_box label="Ajustement automatique en mode Édition" name="edit_camera_movement" tool_tip="Positionner automatiquement la caméra lors de l&apos;entrée ou de la sortie du mode Édition"/>
 	<check_box label="Ajustement automatique en mode Édition d&apos;apparence" name="appearance_camera_movement" tool_tip="Positionner automatiquement la caméra en mode Édition"/>
-	<text name="text2">
+	<check_box bottom_delta="-18" enabled="true"
+	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
+	     label="Lever l&apos;avatar au reset de la caméra" left="148" mouse_opaque="true"
+	     name="unsit_on_camera_reset" radio_style="false"
+	     tool_tip="Leve automatiquement l&apos;avatar quand vous pressez ESC ainsi la caméra permute en mode troisième personne" width="242" />
+        <text name="text2">
 		Affichage de l&apos;avatar :
 	</text>
 	<check_box label="Montrer l&apos;avatar en vue subjective" name="first_person_avatar_visible"/>

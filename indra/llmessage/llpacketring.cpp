@@ -2,39 +2,31 @@
  * @file llpacketring.cpp
  * @brief implementation of LLPacketRing class for a packet.
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
 #include "linden_common.h"
 
 #include "llpacketring.h"
-
-#include "llsocks5.h"
 
 #if LL_WINDOWS
 	#include <winsock2.h>
@@ -46,15 +38,11 @@
 // linden library includes
 #include "llerror.h"
 #include "lltimer.h"
+#include "llproxy.h"
 #include "llrand.h"
 #include "message.h"
 #include "timing.h"
 #include "u64.h"
-//<edit>
-#include "llmessagelog.h"
-
-//</edit>
-
 
 ///////////////////////////////////////////////////////////
 LLPacketRing::LLPacketRing () :
@@ -237,9 +225,8 @@ S32 LLPacketRing::receivePacket (S32 socket, char *datap)
 	else
 	{
 		// no delay, pull straight from net
-		if (LLSocks::isEnabled())
+		if (LLProxy::isSOCKSProxyEnabled())
 		{
-			const U8 SOCKS_HEADER_SIZE = 10;
 			U8 buffer[NET_BUFFER_SIZE + SOCKS_HEADER_SIZE];
 			packet_size = receive_packet(socket, static_cast<char*>(static_cast<void*>(buffer)));
 			
@@ -260,7 +247,7 @@ S32 LLPacketRing::receivePacket (S32 socket, char *datap)
 		}
 		else
 		{
-			packet_size = receive_packet(socket, datap);		
+			packet_size = receive_packet(socket, datap);
 			mLastSender = ::get_sender();
 		}
 
@@ -286,11 +273,7 @@ S32 LLPacketRing::receivePacket (S32 socket, char *datap)
 
 BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LLHost host)
 {
-	//<edit>
-	LLMessageLog::log(LLHost(16777343, gMessageSystem->getListenPort()), host, (U8*)send_buffer, buf_size);
-	//</edit>
 	BOOL status = TRUE;
-	
 	if (!mUseOutThrottle)
 	{
 		return sendPacketImpl(h_socket, send_buffer, buf_size, host );
@@ -365,12 +348,11 @@ BOOL LLPacketRing::sendPacket(int h_socket, char * send_buffer, S32 buf_size, LL
 BOOL LLPacketRing::sendPacketImpl(int h_socket, const char * send_buffer, S32 buf_size, LLHost host)
 {
 	
-	if (!LLSocks::isEnabled())
+	if (!LLProxy::isSOCKSProxyEnabled())
 	{
 		return send_packet(h_socket, send_buffer, buf_size, host.getAddress(), host.getPort());
 	}
 
-	const U8 SOCKS_HEADER_SIZE = 10;
 	char headered_send_buffer[NET_BUFFER_SIZE + SOCKS_HEADER_SIZE];
 
 	proxywrap_t *socks_header = static_cast<proxywrap_t*>(static_cast<void*>(&headered_send_buffer));
@@ -385,6 +367,6 @@ BOOL LLPacketRing::sendPacketImpl(int h_socket, const char * send_buffer, S32 bu
 	return send_packet(	h_socket,
 						headered_send_buffer,
 						buf_size + SOCKS_HEADER_SIZE,
-						LLSocks::getInstance()->getUDPPproxy().getAddress(),
-						LLSocks::getInstance()->getUDPPproxy().getPort());
+						LLProxy::getInstance()->getUDPProxy().getAddress(),
+						LLProxy::getInstance()->getUDPProxy().getPort());
 }

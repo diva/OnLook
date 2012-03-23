@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater label="(inconnue)" name="im_floater" title="(inconnue)">
 	<string name="ringing">
 		Appel en cours...
@@ -7,7 +7,7 @@
 		Connexion en cours...
 	</string>
 	<string name="connected">
-		Connecté(e), cliquez sur Raccrocher pour terminer l&apos;appel
+		Connecté(e), cliquez sur Stop pour terminer l&apos;appel
 	</string>
 	<string name="hang_up">
 		Appel terminé
@@ -41,7 +41,7 @@
           name="history_btn" visible="true" width="80" />
 	<button label="Profil" name="profile_callee_btn"/>
 	<button label="Appeler" name="start_call_btn"/>
-	<button label="Raccrocher" name="end_call_btn"/>
+	<button bottom="-40" follows="top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="Stop" name="end_call_btn" visible="false" width="56"/>
 	<panel name="speaker_controls">
 		<button label="" name="mute_btn" tool_tip="Ignorez"/>
 	</panel>

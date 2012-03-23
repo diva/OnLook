@@ -2,31 +2,25 @@
  * @file lltemplatemessagereader.cpp
  * @brief LLTemplateMessageReader class implementation.
  *
- * $LicenseInfo:firstyear=2007&license=viewergpl$
- * 
- * Copyright (c) 2007-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -449,10 +443,7 @@ S32 LLTemplateMessageReader::getMessageSize() const
 // Returns template for the message contained in buffer
 BOOL LLTemplateMessageReader::decodeTemplate(  
 		const U8* buffer, S32 buffer_size,  // inputs
-		// <edit>
-		//LLMessageTemplate** msg_template ) // outputs
-		LLMessageTemplate** msg_template, BOOL custom)
-		// </edit>
+		LLMessageTemplate** msg_template ) // outputs
 {
 	const U8* header = buffer + LL_PACKET_ID_SIZE;
 
@@ -494,9 +485,6 @@ BOOL LLTemplateMessageReader::decodeTemplate(
 	}
 	else // bogus packet received (too short)
 	{
-		// <edit>
-		if(!custom)
-		// </edit>
 		llwarns << "Packet with unusable length received (too short): "
 				<< buffer_size << llendl;
 		return(FALSE);
@@ -509,16 +497,9 @@ BOOL LLTemplateMessageReader::decodeTemplate(
 	}
 	else
 	{
-		// <edit>
-		if(!custom)
-		{
-		// </edit>
 		llwarns << "Message #" << std::hex << num << std::dec
 			<< " received but not registered!" << llendl;
 		gMessageSystem->callExceptionFunc(MX_UNREGISTERED_MESSAGE);
-		// <edit>
-		}
-		// </edit>
 		return(FALSE);
 	}
 
@@ -545,10 +526,9 @@ void LLTemplateMessageReader::logRanOffEndOfPacket( const LLHost& host, const S3
 }
 
 static LLFastTimer::DeclareTimer FTM_PROCESS_MESSAGES("Process Messages");
+
 // decode a given message
-//BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender )
-BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender, BOOL custom)
-// </edit>
+BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender )
 {
 	llassert( mReceiveSize >= 0 );
 	llassert( mCurrentRMessageTemplate);
@@ -606,9 +586,6 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender,
 		}
 		else
 		{
-			// <edit>
-			if(!custom)
-			// </edit>
 			llerrs << "Unknown block type" << llendl;
 			return FALSE;
 		}
@@ -655,9 +632,6 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender,
 
 					if ((decode_pos + data_size) > mReceiveSize)
 					{
-						// <edit>
-						if(!custom)
-						// </edit>
 						logRanOffEndOfPacket(sender, decode_pos, data_size);
 
 						// default to 0 length variable blocks
@@ -694,9 +668,6 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender,
 					// so, copy data pointer and set data size to fixed size
 					if ((decode_pos + mvci.getSize()) > mReceiveSize)
 					{
-						// <edit>
-						if(!custom)
-						// </edit>
 						logRanOffEndOfPacket(sender, decode_pos, mvci.getSize());
 
 						// default to 0s.
@@ -724,10 +695,7 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender,
 		lldebugs << "Empty message '" << mCurrentRMessageTemplate->mName << "' (no blocks)" << llendl;
 		return FALSE;
 	}
-	
-	// <edit>
-	if(!custom)
-	// </edit>
+
 	{
 		static LLTimer decode_timer;
 
@@ -783,18 +751,11 @@ BOOL LLTemplateMessageReader::decodeData(const U8* buffer, const LLHost& sender,
 BOOL LLTemplateMessageReader::validateMessage(const U8* buffer, 
 											  S32 buffer_size, 
 											  const LLHost& sender,
-											  bool trusted,
-											  // <edit>
-											  BOOL custom)
-											  // </edit>)
+											  bool trusted)
 {
 	mReceiveSize = buffer_size;
-	// <edit>
-	//BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate );
-	BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate, custom );
-	//if(result)
-	if(valid && !custom)
-	// </edit>
+	BOOL valid = decodeTemplate(buffer, buffer_size, &mCurrentRMessageTemplate );
+	if(valid)
 	{
 		mCurrentRMessageTemplate->mReceiveCount++;
 		//lldebugs << "MessageRecvd:"
@@ -834,20 +795,11 @@ const char* LLTemplateMessageReader::getMessageName() const
 {
 	if (!mCurrentRMessageTemplate)
 	{
-		// <edit>
-		//llwarns << "no mCurrentRMessageTemplate" << llendl;
-		// </edit>
+		// no message currently being read
 		return "";
 	}
 	return mCurrentRMessageTemplate->mName;
 }
-
-// <edit>
-LLMessageTemplate* LLTemplateMessageReader::getTemplate()
-{
-	return mCurrentRMessageTemplate;
-}
-// </edit>
 
 //virtual 
 bool LLTemplateMessageReader::isTrusted() const

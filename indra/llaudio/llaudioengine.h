@@ -366,6 +366,7 @@ protected:
 	bool			mSyncSlave;
 	bool			mQueueSounds;
 	bool			mPlayedOnce;
+	bool            mCorrupted;
 	S32             mType;
 	LLVector3d		mPositionGlobal;
 	LLVector3		mVelocity;

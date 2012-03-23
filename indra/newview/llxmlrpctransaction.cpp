@@ -226,24 +226,18 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 	{
 		mCurlRequest = new LLCurlEasyRequest();
 	}
-	
-	if (LLSocks::getInstance()->isHttpProxyEnabled())
+
+	if(!mCurlRequest->isValid())
 	{
-		std::string address = LLSocks::getInstance()->getHTTPProxy().getIPString();
-		U16 port = LLSocks::getInstance()->getHTTPProxy().getPort();
-		mCurlRequest->setoptString(CURLOPT_PROXY, address.c_str());
-		mCurlRequest->setopt(CURLOPT_PROXYPORT, port);
-		if (LLSocks::getInstance()->getHttpProxyType() == LLPROXY_SOCKS)
-		{
-			mCurlRequest->setopt(CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
-			if(LLSocks::getInstance()->getSelectedAuthMethod()==METHOD_PASSWORD)
-				mCurlRequest->setoptString(CURLOPT_PROXYUSERPWD,LLSocks::getInstance()->getProxyUserPwd());
-		}
-		else
-		{
-			mCurlRequest->setopt(CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
-		}
+		llwarns << "mCurlRequest is invalid." << llendl ;
+
+		delete mCurlRequest ;
+		mCurlRequest = NULL ;
+		return ;
 	}
+
+
+	LLProxy::getInstance()->applyProxySettings(mCurlRequest);
 
 //	mCurlRequest->setopt(CURLOPT_VERBOSE, 1); // usefull for debugging
 	mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
@@ -293,10 +287,20 @@ LLXMLRPCTransaction::Impl::~Impl()
 	}
 	
 	delete mCurlRequest;
+	mCurlRequest = NULL ;
 }
 
 bool LLXMLRPCTransaction::Impl::process()
 {
+	if(!mCurlRequest || !mCurlRequest->isValid())
+	{
+		llwarns << "transaction failed." << llendl ;
+
+		delete mCurlRequest ;
+		mCurlRequest = NULL ;
+		return true ; //failed, quit.
+	}
+
 	switch(mStatus)
 	{
 		case LLXMLRPCTransaction::StatusComplete:
@@ -322,7 +326,7 @@ bool LLXMLRPCTransaction::Impl::process()
 	//const F32 MAX_PROCESSING_TIME = 0.05f;
 	//LLTimer timer;
 
-	mCurlRequest->perform();
+	mCurlRequest->wait();
 
 	/*while (mCurlRequest->perform() > 0)
 	{

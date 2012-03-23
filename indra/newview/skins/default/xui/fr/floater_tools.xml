@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="toolbox floater" title="" short_title="Construire">
 	<button label="" label_selected="" name="button focus" tool_tip="Mise au point"/>
 	<button label="" label_selected="" name="button move" tool_tip="Déplacer"/>
@@ -627,7 +627,7 @@
 		Glisser pour déplacer, Ctrl pour soulever, Crtl-Maj pour pivoter.
 	</string>
 	<string name="status_place">
-		Cliquez dans le monde pour construire.
+		Cliquez pour construire.
 	</string>
 	<string name="status_selectland">
 		Cliquez et faites glisser pour sélectionner le terrain.

@@ -45,6 +45,8 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
+#include "llproxy.h"
+
 bool LLPanelNetwork::sSocksSettingsChanged;
 
 LLPanelNetwork::LLPanelNetwork()
@@ -132,7 +134,7 @@ void LLPanelNetwork::apply()
 		else
 		{
 			// Mark the socks class that it needs to update its connection
-			LLSocks::getInstance()->updated();
+			//LLSocks::getInstance()->updated();
 		}
 	}
 }

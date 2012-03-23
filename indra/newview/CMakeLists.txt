@@ -232,7 +232,6 @@ set(viewer_SOURCE_FILES
     llfloaterlandmark.cpp
     llfloatermap.cpp
     llfloatermemleak.cpp
-    llfloatermessagelog.cpp
     llfloatermodeluploadbase.cpp
     llfloatermute.cpp
     llfloaternamedesc.cpp
@@ -720,7 +719,6 @@ set(viewer_HEADER_FILES
     llfloatermap.h
     llfloatermemleak.h
     llfloatermodeluploadbase.h
-    llfloatermessagelog.h
     llfloatermute.h
     llfloaternamedesc.h
     llfloaternewim.h

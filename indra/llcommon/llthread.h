@@ -189,6 +189,7 @@ public:
 	// non-blocking, but does do a lock/unlock so not free
 	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
 	// get ID of locking thread
+	bool isSelfLocked(); //return true if locked in a same thread		
 	U32 lockingThread() const { return mLockingThread; }
 
 protected:
@@ -269,11 +270,11 @@ public:
 	LLMutexLock(LLMutexBase* mutex)
 	{
 		mMutex = mutex;
-		mMutex->lock();
+		if(mMutex) mMutex->lock();
 	}
 	~LLMutexLock()
 	{
-		mMutex->unlock();
+		if(mMutex) mMutex->unlock();
 	}
 private:
 	LLMutexBase* mMutex;

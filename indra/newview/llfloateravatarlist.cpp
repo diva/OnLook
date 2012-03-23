@@ -54,16 +54,12 @@
 
 
 #include "llworld.h"
-
 #include "llsdutil.h"
-
 #include "llaudioengine.h"
-
 #include "llstartup.h"
-
-//<edit>
 #include "llviewermenu.h"
-//</edit>
+
+#include "hippogridmanager.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -263,6 +259,16 @@ void LLFloaterAvatarList::createInstance(bool visible)
 	{
 		sInstance->setVisible(FALSE);
 		gSavedSettings.setBOOL("ShowRadar", FALSE);
+	}
+	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
+		LLScrollListCtrl* list = sInstance->getChild<LLScrollListCtrl>("avatar_list");
+		list->getColumn(1)->setWidth(0);
+		list->getColumn(6)->setWidth(0);
+		list->getColumn(6)->mDynamicWidth = FALSE;
+		list->getColumn(6)->mRelWidth = 0;
+		list->getColumn(1)->mDynamicWidth = TRUE;
+		list->getColumn(1)->mRelWidth = -1;
+		list->updateLayout();
 	}
 }
 //static
@@ -704,7 +710,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		LLVector3d delta = position - mypos;
 		F32 distance = (F32)delta.magVec();
-		if (position.mdV[VZ] == 0.0)
+		if (position.mdV[VZ] == 0.f || position.mdV[VZ] == 1020.f)
 		{
 			UnknownAltitude = true;
 			distance = 9000.0;

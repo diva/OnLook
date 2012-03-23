@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="friends">
 	<string name="Multiple">
 		Amis multiples...
@@ -11,10 +11,13 @@
 		<column name="icon_edit_mine" tool_tip="Votre ami peut modifier, supprimer ou prendre vos objets"/>
 		<column name="icon_edit_theirs" tool_tip="Vous pouvez modifier les objets de cet ami"/>
 	</scroll_list>
-	<text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
+	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
 		name="friends" width="130">
 		Rechercher un(e) ami(e) :
-	</text>
+	</text-->
+	<search_editor bottom_delta="-40" enabled="true" follows="left|top" font="SansSerif"
+		height="18" left_delta="0" name="buddy_search_lineedit" label="Rechercher une(e) ami(e)"
+		tool_tip="Rechercher une(e) ami(e) dans la liste de noms" width="160" />
 	<button label="IM/Appel" name="im_btn" tool_tip="Envoyez un IM à ce résident"/>
 	<button label="Profil" name="profile_btn" tool_tip="Consultez le profil de ce résident (photos, groupes et autres infos)"/>
 	<button label="Téléporter" name="offer_teleport_btn" tool_tip="Proposez à cet ami d&apos;être téléporté là où vous êtes"/>

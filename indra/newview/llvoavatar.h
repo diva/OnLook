@@ -84,6 +84,8 @@ class LLVOAvatar :
 	public LLViewerObject,
 	public LLCharacter
 {
+	LOG_CLASS(LLVOAvatar);
+
 public:
 	friend class LLVOAvatarSelf;
 protected:

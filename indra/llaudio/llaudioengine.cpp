@@ -1321,6 +1321,7 @@ LLAudioSource::LLAudioSource(const LLUUID& id, const LLUUID& owner_id, const F32
 	mSyncSlave(false),
 	mQueueSounds(false),
 	mPlayedOnce(false),
+	mCorrupted(false),
 	mType(type),
 	// <edit>
 	mSourceID(source_id),
@@ -1372,16 +1373,25 @@ void LLAudioSource::setChannel(LLAudioChannel *channelp)
 
 void LLAudioSource::update()
 {
+	if(mCorrupted)
+	{
+		return ; //no need to update
+	}
+
 	if (!getCurrentBuffer())
 	{
 		if (getCurrentData())
 		{
 			// Hack - try and load the sound.  Will do this as a callback
 			// on decode later.
-			if (getCurrentData()->load())
+			if (getCurrentData()->load() && getCurrentData()->getBuffer())
 			{
 				play(getCurrentData()->getID());
-			}			
+			}
+			else
+			{
+				mCorrupted = true ;
+			}
 		}
 	}
 }
@@ -1502,6 +1512,11 @@ bool LLAudioSource::play(const LLUUID &audio_uuid)
 
 bool LLAudioSource::isDone() const
 {
+	if(mCorrupted)
+	{
+		return true ;
+	}
+
 	const F32 MAX_AGE = 60.f;
 	const F32 MAX_UNPLAYED_AGE = 15.f;
 	const F32 MAX_MUTED_AGE = 11.f;
@@ -1817,7 +1832,7 @@ LLAudioData::LLAudioData(const LLUUID &uuid) :
 	}
 }
 
-
+//return false when the audio file is corrupted.
 bool LLAudioData::load()
 {
 	// For now, just assume we're going to use one buffer per audiodata.
@@ -1833,7 +1848,7 @@ bool LLAudioData::load()
 	{
 		// No free buffers, abort.
 		llinfos << "Not able to allocate a new audio buffer, aborting." << llendl;
-		return false;
+		return true;
 	}
 
 	std::string uuid_str;

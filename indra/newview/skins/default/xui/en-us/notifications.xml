@@ -7032,6 +7032,65 @@ Your shape, skin, hair or eyes might be defect.
 	 yestext="OK"/>
   </notification>
 
+  <notification
+  icon="alertmodal.tga"
+  label="All settings reset"
+  name="ResetSettingsComplete"
+  type="alertmodal">
+    Settings have been reset. You should relog to ensure this takes full effect.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   label="Reset all settings"
+   name="ResetSystemSettingsPrompt"
+   type="alertmodal">
+    Resetting all settings may be helpful if you are experiencing problems; however, you will need to redo any changes you have made to the default configuration.
+
+    Would you like to reset system settings?
+    <form>
+      <button
+       index="0"
+       name="all"
+       text="OK"/>
+      <button
+       default="true"
+       index="3"
+       name="cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+
+  <notification
+    icon="alertmodal.tga"
+    label="Reset all settings"
+    name="ResetAllSettingsPrompt"
+    type="alertmodal">
+    Resetting all settings may be helpful if you are experiencing problems; however, you will need to redo any changes you have made to the default configuration.
+
+    Which settings would you like to reset?
+    <form>
+      <button
+       index="0"
+       name="all"
+       text="ALL"/>
+      <button
+       index="1"
+       name="system"
+       text="System"/>
+      <button
+       index="2"
+       name="user"
+       text="User"/>
+      <button
+       default="true"
+       index="3"
+       name="cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
 
 </notifications>
 

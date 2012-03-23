@@ -67,5 +67,6 @@
 		<combo_item name="Alwayssend" value="Always send">Always send</combo_item>
 		<combo_item name="Neversend" value="Never send">Never send</combo_item>
 	</combo_box>
-	<check_box bottom="-385" height="16" initial_value="false" label="Share language with objects" left="101" name="language_is_public" tool_tip="This lets in-world objects know your preferred language."/>
+  <check_box bottom="-385" height="16" initial_value="false" label="Share language with objects" left="101" name="language_is_public" tool_tip="This lets in-world objects know your preferred language."/>
+  <button bottom="-425" height="25" label="Reset All Settings" name="clear_settings" width="200" />
 </panel>

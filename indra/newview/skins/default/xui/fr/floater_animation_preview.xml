@@ -41,7 +41,7 @@
 			Pointer (les deux)
 		</combo_item>
 		<combo_item name="Fist">
-			Poing
+			Poings
 		</combo_item>
 		<combo_item name="RelaxedLeft">
 			Détendue (gauche)
@@ -50,7 +50,7 @@
 			Pointer (gauche)
 		</combo_item>
 		<combo_item name="FistLeft">
-			Poing (gauche)
+			Poing gauche
 		</combo_item>
 		<combo_item name="RelaxedRight">
 			Détendue (droite)
@@ -59,7 +59,7 @@
 			Pointer (droite)
 		</combo_item>
 		<combo_item name="FistRight">
-			Poing (droite)
+			Poing droit
 		</combo_item>
 		<combo_item name="SaluteRight">
 			Saluer (droite)
@@ -68,7 +68,7 @@
 			Taper
 		</combo_item>
 		<combo_item name="PeaceRight">
-			Paix (main droite)
+			Paix (droite)
 		</combo_item>
 	</combo_box>
 	<text name="emote_label">

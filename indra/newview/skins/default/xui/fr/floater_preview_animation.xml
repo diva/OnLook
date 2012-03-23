@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater bottom="-366" can_close="true" can_drag_on_left="false" can_minimize="true"
      can_resize="false" enabled="true" height="85" left="239" min_height="0"
      min_width="0" mouse_opaque="true" name="preview_anim" width="300">

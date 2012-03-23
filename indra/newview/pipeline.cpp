@@ -1021,10 +1021,12 @@ void LLPipeline::restoreGL()
 
 BOOL LLPipeline::canUseVertexShaders()
 {
+	static const std::string vertex_shader_enable_feature_string = "VertexShaderEnable";
+
 	if (sDisableShaders ||
 		!gGLManager.mHasVertexShader ||
 		!gGLManager.mHasFragmentShader ||
-		!LLFeatureManager::getInstance()->isFeatureAvailable("VertexShaderEnable") ||
+		!LLFeatureManager::getInstance()->isFeatureAvailable(vertex_shader_enable_feature_string) ||
 		(assertInitialized() && mVertexShadersLoaded != 1) )
 	{
 		return FALSE;
@@ -5085,7 +5087,8 @@ void LLPipeline::setupHWLights(LLDrawPool* pool)
 				light_state->setSpotCutoff(90.f);
 				light_state->setSpotExponent(2.f);
 	
-				light_state->setSpecular(LLColor4::black);
+				const LLColor4 specular(0.f, 0.f, 0.f, 0.f);
+				light_state->setSpecular(specular);
 			}
 			else // omnidirectional (point) light
 			{
