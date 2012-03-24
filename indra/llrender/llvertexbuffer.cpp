@@ -1223,7 +1223,7 @@ void LLVertexBuffer::setupVertexArray()
 		if (mTypeMask & (1 << i))
 		{
 			glEnableVertexAttribArrayARB(i);
-			glVertexAttribPointerARB(i, attrib_size[i], attrib_type[i], attrib_normalized[i], sTypeSize[i], (void*) mOffsets[i]); 
+			glVertexAttribPointerARB(i, attrib_size[i], attrib_type[i], attrib_normalized[i], sTypeSize[i], (void*)((U8*)NULL + mOffsets[i]));
 		}
 		else
 		{
