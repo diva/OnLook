@@ -690,6 +690,11 @@ public:
 	{
 	  llassert(object == AIThreadSafeBits<T>::ptr());
 	}
+
+private:
+	// Disallow copying or assignments.
+	AIThreadSafeSingleThread(AIThreadSafeSingleThread const&);
+	void operator=(AIThreadSafeSingleThread const&);
 };
 
 /**
