@@ -1202,6 +1202,7 @@ BOOL LLFloater::handleMiddleMouseDown(S32 x, S32 y, MASK mask)
 	return LLPanel::handleMiddleMouseDown( x, y, mask );
 }
 
+
 // virtual
 BOOL LLFloater::handleDoubleClick(S32 x, S32 y, MASK mask)
 {
@@ -1209,22 +1210,6 @@ BOOL LLFloater::handleDoubleClick(S32 x, S32 y, MASK mask)
 	setMinimized(FALSE);
 	return was_minimized || LLPanel::handleDoubleClick(x, y, mask);
 }
-
-// virtual
-BOOL LLFloater::handleKeyHere(KEY key, MASK mask)
-{
-	if (key == 'W' && mask == MASK_CONTROL)
-	{
-		if (canClose() && isCloseable())
-		{
-			close();
-		}
-		return TRUE;
-	}
-
-	return LLPanel::handleKeyHere(key, mask);
-}
-
 
 void LLFloater::bringToFront( S32 x, S32 y )
 {
@@ -1352,21 +1337,10 @@ void LLFloater::onClickEdit(void *userdata)
 // static 
 LLFloater* LLFloater::getClosableFloaterFromFocus()
 {
-	LLFloater* focused_floater = NULL;
+	LLFloater* focused_floater = gFloaterView->getFocusedFloater();
 
-	handle_map_iter_t iter;
-	for(iter = sFloaterMap.begin(); iter != sFloaterMap.end(); ++iter)
+	if (!focused_floater)
 	{
-		focused_floater = iter->second;
-		if (focused_floater->hasFocus())
-		{
-			break;
-		}
-	}
-
-	if (iter == sFloaterMap.end())
-	{
-		// nothing found, return
 		return NULL;
 	}
 
@@ -1374,7 +1348,7 @@ LLFloater* LLFloater::getClosableFloaterFromFocus()
 	// Find and close a parental floater that is closeable, if any.
 	LLFloater* previous_floater = NULL;		// Guard against endless loop, because getParentFloater(x) can return x!
 	for(LLFloater* floater_to_close = focused_floater; 
-		NULL != floater_to_close && floater_to_close != gFloaterView->getParentFloater(floater_to_close); 
+		NULL != floater_to_close; 
 		floater_to_close = gFloaterView->getParentFloater(floater_to_close))
 	{
 		if(floater_to_close == previous_floater)
