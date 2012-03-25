@@ -120,7 +120,7 @@ void main()
 				sc -= 1.0;
 			}
 		}
-		
+
 		diff /= w;
 	}
 		

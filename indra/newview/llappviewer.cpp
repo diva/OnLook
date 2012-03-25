@@ -481,6 +481,7 @@ static void settings_to_globals()
 	
 	LLRender::sGLCoreProfile = gSavedSettings.getBOOL("RenderGLCoreProfile");
 	LLImageGL::sGlobalUseAnisotropic	= gSavedSettings.getBOOL("RenderAnisotropic");
+	LLImageGL::sCompressTextures		= gSavedSettings.getBOOL("RenderCompressTextures");
 	LLVOVolume::sLODFactor				= gSavedSettings.getF32("RenderVolumeLODFactor");
 	LLVOVolume::sDistanceFactor			= 1.f-LLVOVolume::sLODFactor * 0.1f;
 	LLVolumeImplFlexible::sUpdateFactor = gSavedSettings.getF32("RenderFlexTimeFactor");
@@ -500,7 +501,7 @@ static void settings_to_globals()
 	gAgentPilot.mNumRuns		= gSavedSettings.getS32("StatsNumRuns");
 	gAgentPilot.mQuitAfterRuns	= gSavedSettings.getBOOL("StatsQuitAfterRuns");
 	gAgent.setHideGroupTitle(gSavedSettings.getBOOL("RenderHideGroupTitle"));
-
+		
 	gDebugWindowProc = gSavedSettings.getBOOL("DebugWindowProc");
 	gAllowIdleAFK = gSavedSettings.getBOOL("AllowIdleAFK");
 	gAllowTapTapHoldRun = gSavedSettings.getBOOL("AllowTapTapHoldRun");

@@ -34,11 +34,12 @@
 #include "llmemtype.h"
 #include "llrender.h"
 #include "llvector4a.h"
-#include "llcontrol.h"
 #include "llshadermgr.h"
 #include "llglslshader.h"
 #include "llmemory.h"
 #include "llfasttimer.h"
+
+#define LL_VBO_POOLING 0
 
 //Next Highest Power Of Two
 //helper function, returns first number > v that is a power of 2, or v if v is already a power of 2
@@ -51,6 +52,35 @@ U32 nhpo2(U32 v)
 	return r;
 }
 
+//which power of 2 is i?
+//assumes i is a power of 2 > 0
+U32 wpo2(U32 i)
+{
+	llassert(i > 0);
+	llassert(nhpo2(i) == i);
+
+	U32 r = 0;
+
+	while (i >>= 1) ++r;
+
+	return r;
+}
+
+
+const U32 LL_VBO_BLOCK_SIZE = 2048;
+
+U32 vbo_block_size(U32 size)
+{ //what block size will fit size?
+	U32 mod = size % LL_VBO_BLOCK_SIZE;
+	return mod == 0 ? size : size + (LL_VBO_BLOCK_SIZE-mod);
+}
+
+U32 vbo_block_index(U32 size)
+{
+	return vbo_block_size(size)/LL_VBO_BLOCK_SIZE;
+}
+
+
 
 //============================================================================
 
@@ -59,9 +89,13 @@ LLVBOPool LLVertexBuffer::sStreamVBOPool(GL_STREAM_DRAW_ARB, GL_ARRAY_BUFFER_ARB
 LLVBOPool LLVertexBuffer::sDynamicVBOPool(GL_DYNAMIC_DRAW_ARB, GL_ARRAY_BUFFER_ARB);
 LLVBOPool LLVertexBuffer::sStreamIBOPool(GL_STREAM_DRAW_ARB, GL_ELEMENT_ARRAY_BUFFER_ARB);
 LLVBOPool LLVertexBuffer::sDynamicIBOPool(GL_DYNAMIC_DRAW_ARB, GL_ELEMENT_ARRAY_BUFFER_ARB);
-U32 LLVBOPool::sBytesPooled = 0;
 
-LLPrivateMemoryPool* LLVertexBuffer::sPrivatePoolp = NULL ;
+U32 LLVBOPool::sBytesPooled = 0;
+U32 LLVBOPool::sIndexBytesPooled = 0;
+U32 LLVertexBuffer::sAllocatedIndexBytes = 0;
+U32 LLVertexBuffer::sIndexCount = 0;
+
+LLPrivateMemoryPool* LLVertexBuffer::sPrivatePoolp = NULL;
 U32 LLVertexBuffer::sBindCount = 0;
 U32 LLVertexBuffer::sSetCount = 0;
 S32 LLVertexBuffer::sCount = 0;
@@ -76,6 +110,7 @@ U32 LLVertexBuffer::sLastMask = 0;
 bool LLVertexBuffer::sVBOActive = false;
 bool LLVertexBuffer::sIBOActive = false;
 U32 LLVertexBuffer::sAllocatedBytes = 0;
+U32 LLVertexBuffer::sVertexCount = 0;
 bool LLVertexBuffer::sMapped = false;
 bool LLVertexBuffer::sUseStreamDraw = true;
 bool LLVertexBuffer::sUseVAO = false;
@@ -136,39 +171,35 @@ public:
 };
 
 
-//which power of 2 is i?
-//assumes i is a power of 2 > 0
-U32 wpo2(U32 i)
-{
-	llassert(i > 0);
-	llassert(nhpo2(i) == i);
-
-	U32 r = 0;
-
-	while (i >>= 1) ++r;
-
-	return r;
-}
-
 volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 {
-	llassert(nhpo2(size) == size);
+	llassert(vbo_block_size(size) == size);
+	
+	volatile U8* ret = NULL;
 
-	U32 i = wpo2(size);
+#if LL_VBO_POOLING
+
+	U32 i = vbo_block_index(size);
 
 	if (mFreeList.size() <= i)
 	{
 		mFreeList.resize(i+1);
 	}
 
-	volatile U8* ret = NULL;
-
 	if (mFreeList[i].empty())
 	{
 		//make a new buffer
 		glGenBuffersARB(1, &name);
 		glBindBufferARB(mType, name);
-		LLVertexBuffer::sAllocatedBytes += size;
+
+		if (mType == GL_ARRAY_BUFFER_ARB)
+		{
+			LLVertexBuffer::sAllocatedBytes += size;
+		}
+		else
+		{
+			LLVertexBuffer::sAllocatedIndexBytes += size;
+		}
 
 		if (LLVertexBuffer::sDisableVBOMapping || mUsage != GL_DYNAMIC_DRAW_ARB)
 		{
@@ -179,6 +210,7 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 		{ //always use a true hint of static draw when allocating non-client-backed buffers
 			glBufferDataARB(mType, size, 0, GL_STATIC_DRAW_ARB);
 		}
+
 		glBindBufferARB(mType, 0);
 	}
 	else
@@ -186,19 +218,55 @@ volatile U8* LLVBOPool::allocate(U32& name, U32 size)
 		name = mFreeList[i].front().mGLName;
 		ret = mFreeList[i].front().mClientData;
 
-		sBytesPooled -= size;
+		if (mType == GL_ARRAY_BUFFER_ARB)
+		{
+			sBytesPooled -= size;
+		}
+		else
+		{
+			sIndexBytesPooled -= size;
+		}
 
 		mFreeList[i].pop_front();
 	}
+#else //no pooling
+
+	glGenBuffersARB(1, &name);
+	glBindBufferARB(mType, name);
+
+	if (mType == GL_ARRAY_BUFFER_ARB)
+	{
+		LLVertexBuffer::sAllocatedBytes += size;
+	}
+	else
+	{
+		LLVertexBuffer::sAllocatedIndexBytes += size;
+	}
+
+	if (LLVertexBuffer::sDisableVBOMapping || mUsage != GL_DYNAMIC_DRAW_ARB)
+	{
+		glBufferDataARB(mType, size, 0, mUsage);
+		ret = (U8*) ll_aligned_malloc_16(size);
+	}
+	else
+	{ //always use a true hint of static draw when allocating non-client-backed buffers
+		glBufferDataARB(mType, size, 0, GL_STATIC_DRAW_ARB);
+	}
+
+	glBindBufferARB(mType, 0);
+
+#endif
 
 	return ret;
 }
 
 void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 {
-	llassert(nhpo2(size) == size);
+	llassert(vbo_block_size(size) == size);
 
-	U32 i = wpo2(size);
+#if LL_VBO_POOLING
+
+	U32 i = vbo_block_index(size);
 
 	llassert(mFreeList.size() > i);
 
@@ -212,9 +280,29 @@ void LLVBOPool::release(U32 name, volatile U8* buffer, U32 size)
 	}
 	else
 	{
-		sBytesPooled += size;
+		if (mType == GL_ARRAY_BUFFER_ARB)
+		{
+			sBytesPooled += size;
+		}
+		else
+		{
+			sIndexBytesPooled += size;
+		}
 		mFreeList[i].push_back(rec);
 	}
+#else //no pooling
+	glDeleteBuffersARB(1, &name);
+	ll_aligned_free_16((U8*) buffer);
+
+	if (mType == GL_ARRAY_BUFFER_ARB)
+	{
+		LLVertexBuffer::sAllocatedBytes -= size;
+	}
+	else
+	{
+		LLVertexBuffer::sAllocatedIndexBytes -= size;
+	}
+#endif
 }
 
 void LLVBOPool::cleanup()
@@ -238,8 +326,16 @@ void LLVBOPool::cleanup()
 
 			l.pop_front();
 
-			LLVertexBuffer::sAllocatedBytes -= size;
-			sBytesPooled -= size;
+			if (mType == GL_ARRAY_BUFFER_ARB)
+			{
+				sBytesPooled -= size;
+				LLVertexBuffer::sAllocatedBytes -= size;
+			}
+			else
+			{
+				sIndexBytesPooled -= size;
+				LLVertexBuffer::sAllocatedIndexBytes -= size;
+			}
 		}
 
 		size *= 2;
@@ -436,7 +532,7 @@ void LLVertexBuffer::drawArrays(U32 mode, const std::vector<LLVector3>& pos, con
 
 	U32 count = pos.size();
 	llassert_always(norm.size() >= pos.size());
-	llassert_always(count > 0) ;
+	llassert_always(count > 0);
 
 	unbind();
 	
@@ -695,8 +791,8 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 //static
 void LLVertexBuffer::initClass(bool use_vbo, bool no_vbo_mapping)
 {
-	sEnableVBOs = use_vbo && gGLManager.mHasVertexBufferObject ;
-	sDisableVBOMapping = sEnableVBOs && no_vbo_mapping ;
+	sEnableVBOs = use_vbo && gGLManager.mHasVertexBufferObject;
+	sDisableVBOMapping = sEnableVBOs && no_vbo_mapping;
 
 	if (!sPrivatePoolp)
 	{ 
@@ -747,8 +843,8 @@ void LLVertexBuffer::cleanupClass()
 
 	if(sPrivatePoolp)
 	{
-		LLPrivateMemoryPoolManager::getInstance()->deletePool(sPrivatePoolp) ;
-		sPrivatePoolp = NULL ;
+		LLPrivateMemoryPoolManager::getInstance()->deletePool(sPrivatePoolp);
+		sPrivatePoolp = NULL;
 	}
 }
 
@@ -756,25 +852,41 @@ void LLVertexBuffer::cleanupClass()
 
 S32 LLVertexBuffer::determineUsage(S32 usage)
 {
-	if (LLRender::sGLCoreProfile)
+	S32 ret_usage = usage;
+
+	if (!sEnableVBOs)
+	{
+		ret_usage = 0;
+	}
+	
+	if (ret_usage == GL_STREAM_DRAW_ARB && !sUseStreamDraw)
+	{
+		ret_usage = 0;
+	}
+	
+	if (ret_usage == GL_DYNAMIC_DRAW_ARB && sPreferStreamDraw)
+	{
+		ret_usage = GL_STREAM_DRAW_ARB;
+	}
+	
+	if (ret_usage == 0 && LLRender::sGLCoreProfile)
 	{ //MUST use VBOs for all rendering
-		if(!usage)
-			return GL_STREAM_DRAW_ARB;
+		ret_usage = GL_STREAM_DRAW_ARB;
 	}
-	else if (!sEnableVBOs || !usage || (!sUseStreamDraw && usage == GL_STREAM_DRAW_ARB))
-	{
-		return 0;
+	
+	if (ret_usage && ret_usage != GL_STREAM_DRAW_ARB)
+	{ //only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default
+		if (sDisableVBOMapping)
+		{ //always use stream draw if VBO mapping is disabled
+			ret_usage = GL_STREAM_DRAW_ARB;
+		}
+		else
+		{
+			ret_usage = GL_DYNAMIC_DRAW_ARB;
+		}
 	}
-	//Only stream_draw and dynamic_draw are supported when using VBOs, dynamic draw is the default.
-	//Always use stream_draw VBO if mapping is disabled, or stream is preferred or expected
-	if( sDisableVBOMapping || sPreferStreamDraw || (usage == GL_STREAM_DRAW_ARB))
-	{
-		return GL_STREAM_DRAW_ARB;
-	}
-	else
-	{
-		return GL_DYNAMIC_DRAW_ARB;
-	}
+	
+	return ret_usage;
 }
 
 LLVertexBuffer::LLVertexBuffer(U32 typemask, S32 usage) :
@@ -883,7 +995,10 @@ LLVertexBuffer::~LLVertexBuffer()
 	
 	mFence = NULL;
 
-	llassert_always(!mMappedData && !mMappedIndexData) ;
+	sVertexCount -= mNumVerts;
+	sIndexCount -= mNumIndices;
+
+	llassert_always(!mMappedData && !mMappedIndexData);
 };
 
 void LLVertexBuffer::placeFence() const
@@ -914,7 +1029,7 @@ void LLVertexBuffer::waitFence() const
 
 void LLVertexBuffer::genBuffer(U32 size)
 {
-	mSize = nhpo2(size);
+	mSize = vbo_block_size(size);
 
 	if (mUsage == GL_STREAM_DRAW_ARB)
 	{
@@ -930,7 +1045,7 @@ void LLVertexBuffer::genBuffer(U32 size)
 
 void LLVertexBuffer::genIndices(U32 size)
 {
-	mIndicesSize = nhpo2(size);
+	mIndicesSize = vbo_block_size(size);
 
 	if (mUsage == GL_STREAM_DRAW_ARB)
 	{
@@ -1099,14 +1214,16 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 		nverts = 65535;
 	}
 
-	U32 needed_size = calcOffsets(mTypeMask, mOffsets, nverts);
+	S32 needed_size = calcOffsets(mTypeMask, mOffsets, nverts);
 
-	if (needed_size > (U32)mSize || needed_size <= (U32)mSize/2)
+	if (needed_size > mSize || needed_size <= mSize/2)
 	{
 		createGLBuffer(needed_size);
 	}
 
+	sVertexCount -= mNumVerts;
 	mNumVerts = nverts;
+	sVertexCount += mNumVerts;
 }
 
 void LLVertexBuffer::updateNumIndices(S32 nindices)
@@ -1115,14 +1232,16 @@ void LLVertexBuffer::updateNumIndices(S32 nindices)
 
 	llassert(nindices >= 0);
 
-	U32 needed_size = sizeof(U16) * nindices;
+	S32 needed_size = sizeof(U16) * nindices;
 
-	if (needed_size > (U32)mIndicesSize || needed_size <= (U32)mIndicesSize/2)
+	if (needed_size > mIndicesSize || needed_size <= mIndicesSize/2)
 	{
 		createGLIndices(needed_size);
 	}
 
+	sIndexCount -= mNumIndices;
 	mNumIndices = nindices;
+	sIndexCount += mNumIndices;
 }
 
 void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
@@ -1247,7 +1366,7 @@ void LLVertexBuffer::setupVertexArray()
 		{
 			glEnableVertexAttribArrayARB(i);
 
-			if (attrib_integer)
+			if (attrib_integer[i])
 			{
 #if !LL_DARWIN
 				//glVertexattribIPointer requires GLSL 1.30 or later
@@ -1323,6 +1442,7 @@ bool expand_region(LLVertexBuffer::MappedRegion& region, S32 index, S32 count)
 
 static LLFastTimer::DeclareTimer FTM_VBO_MAP_BUFFER_RANGE("VBO Map Range");
 static LLFastTimer::DeclareTimer FTM_VBO_MAP_BUFFER("VBO Map");
+
 // Map for data access
 volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, bool map_range)
 {
@@ -1457,16 +1577,16 @@ volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, boo
 				log_glerror();
 
 				//check the availability of memory
-				LLMemory::logMemoryInfo(true) ; 
+				LLMemory::logMemoryInfo(true);
 			
 				if(mMappable)
 				{			
 					//--------------------
 					//print out more debug info before crash
-					llinfos << "vertex buffer size: (num verts : num indices) = " << getNumVerts() << " : " << getNumIndices() << llendl ;
-					GLint size ;
-					glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &size) ;
-					llinfos << "GL_ARRAY_BUFFER_ARB size is " << size << llendl ;
+					llinfos << "vertex buffer size: (num verts : num indices) = " << getNumVerts() << " : " << getNumIndices() << llendl;
+					GLint size;
+					glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &size);
+					llinfos << "GL_ARRAY_BUFFER_ARB size is " << size << llendl;
 					//--------------------
 
 					GLint buff;
@@ -1481,7 +1601,7 @@ volatile U8* LLVertexBuffer::mapVertexBuffer(S32 type, S32 index, S32 count, boo
 				}
 				else
 				{
-					llerrs << "memory allocation for vertex data failed." << llendl ;
+					llerrs << "memory allocation for vertex data failed." << llendl;
 				}
 			}
 		}
@@ -1635,7 +1755,7 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range
 		if (!mMappedIndexData)
 		{
 			log_glerror();
-			LLMemory::logMemoryInfo(true) ;
+			LLMemory::logMemoryInfo(true);
 
 			if(mMappable)
 			{
@@ -1650,7 +1770,7 @@ volatile U8* LLVertexBuffer::mapIndexBuffer(S32 index, S32 count, bool map_range
 			}
 			else
 			{
-				llerrs << "memory allocation for Index data failed. " << llendl ;
+				llerrs << "memory allocation for Index data failed. " << llendl;
 			}
 		}
 	}
@@ -1681,10 +1801,10 @@ void LLVertexBuffer::unmapBuffer()
 	LLMemType mt2(LLMemType::MTYPE_VERTEX_UNMAP_BUFFER);
 	if (!useVBOs())
 	{
-		return ; //nothing to unmap
+		return; //nothing to unmap
 	}
 
-	bool updated_all = false ;
+	bool updated_all = false;
 
 	if (mMappedData && mVertexLocked)
 	{
@@ -1815,10 +1935,10 @@ void LLVertexBuffer::unmapBuffer()
 			glUnmapBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB);
 			stop_glerror();
 
-			mMappedIndexData = NULL ;
+			mMappedIndexData = NULL;
 		}
 
-		mIndexLocked = false ;
+		mIndexLocked = false;
 		sMappedCount--;
 	}
 

@@ -543,7 +543,6 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		return 0;
 	}
 
-
 	//read in from file
 	LLFILE* file = NULL;
 
@@ -572,7 +571,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		return 0;
 	}
 
-	//we can't have any lines longer than 1024 characters 
+		//we can't have any lines longer than 1024 characters 
 	//or any shaders longer than 4096 lines... deal - DaveP
 	GLcharARB buff[1024];
 	GLcharARB* text[4096];
@@ -617,6 +616,7 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 
 			//some implementations of GLSL 1.30 require integer precision be explicitly declared
 			text[count++] = strdup("precision mediump int;\n");
+			text[count++] = strdup("precision highp float;\n");
 		}
 		else
 		{ //set version to 400
@@ -642,15 +642,15 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 
 		//backwards compatibility with legacy texture lookup syntax
 		text[count++] = strdup("#define texture2D texture\n");
-		text[count++] = strdup("#define texture2DRect texture\n");
 		text[count++] = strdup("#define textureCube texture\n");
 		text[count++] = strdup("#define texture2DLod textureLod\n");
-		text[count++] = strdup("#define	shadow2D(a,b) vec2(texture(a,b))\n");	//Shadow lookups only return a single float.
-		
-		//Also deprecated:
-		text[count++] = strdup("#define texture2D texture\n");
-		text[count++] = strdup("#define texture2DRect texture\n");
-		text[count++] = strdup("#define shadow2DRect(a,b) vec2(texture(a,b))\n");
+		text[count++] = strdup("#define	shadow2D(a,b) vec2(texture(a,b))\n");
+
+		if (major_version > 1 || minor_version >= 40)
+		{ //GLSL 1.40 replaces texture2DRect et al with texture
+			text[count++] = strdup("#define texture2DRect texture\n");
+			text[count++] = strdup("#define shadow2DRect(a,b) vec2(texture(a,b))\n");
+		}
 	}
 
 	//copy preprocessor definitions into buffer
@@ -676,20 +676,22 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 		
 		VARYING_FLAT ivec4 vary_texture_index;
 
+		vec4 ret = vec4(1,0,1,1);
+
 		vec4 diffuseLookup(vec2 texcoord)
 		{
- 			switch (vary_texture_index.r))
+			switch (vary_texture_index.r))
 			{
-				case 0: return texture2D(tex0, texcoord);
-				case 1: return texture2D(tex1, texcoord);
-				case 2: return texture2D(tex2, texcoord);
+				case 0: ret = texture2D(tex0, texcoord); break;
+				case 1: ret = texture2D(tex1, texcoord); break;
+				case 2: ret = texture2D(tex2, texcoord); break;
 				.
 				.
 				.
-				case N: return texture2D(texN, texcoord);
+				case N: return texture2D(texN, texcoord); break;
 			}
 
-			return vec4(0,0,0,0);
+			return ret;
 		}
 		*/
 
@@ -714,20 +716,21 @@ GLhandleARB LLShaderMgr::loadShaderFile(const std::string& filename, S32 & shade
 			text[count++] = strdup("return texture2D(tex0, texcoord);\n");
 			text[count++] = strdup("}\n");
 		}
-		else if (gGLManager.mGLVersion >= 3.f && !(gGLManager.mIsATI && gGLManager.mGLVersion < 3.3f) )
-		{ 
-			text[count++] = strdup("\tswitch (int(vary_texture_index+0.25))\n");
+		else if (major_version > 1 || minor_version >= 30)
+		{  //switches are supported in GLSL 1.30 and later
+			text[count++] = strdup("\tvec4 ret = vec4(1,0,1,1);\n");
+			text[count++] = strdup("\tswitch (vary_texture_index.r)\n");
 			text[count++] = strdup("\t{\n");
 		
 			//switch body
 			for (S32 i = 0; i < texture_index_channels; ++i)
 			{
-				std::string case_str = llformat("\t\tcase %d: return texture2D(tex%d, texcoord);\n", i, i);
+				std::string case_str = llformat("\t\tcase %d: ret = texture2D(tex%d, texcoord); break;\n", i, i);
 				text[count++] = strdup(case_str.c_str());
 			}
 
 			text[count++] = strdup("\t}\n");
-			text[count++] = strdup("\treturn vec4(1,0,1,1);\n");
+			text[count++] = strdup("\treturn ret;\n");
 			text[count++] = strdup("}\n");
 		}
 		else

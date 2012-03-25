@@ -30,12 +30,10 @@ out vec4 frag_color;
 
 uniform sampler2D diffuseMap;
 
-VARYING vec4 vertex_color;
 VARYING vec2 vary_texcoord0;
 
 void main() 
 {
-	//frag_color = vec4(1,1,1,vertex_color.a * texture2D(diffuseMap, vary_texcoord0.xy).a);
 	frag_color = vec4(1,1,1,1);
 }
 
