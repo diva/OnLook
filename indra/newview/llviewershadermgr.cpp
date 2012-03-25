@@ -588,7 +588,7 @@ BOOL LLViewerShaderMgr::loadBasicShaders()
 
 	vector< pair<string, S32> > shaders;
 	shaders.push_back( make_pair( "windlight/atmosphericsVarsV.glsl",		mVertexShaderLevel[SHADER_WINDLIGHT] ) );
-	shaders.push_back( make_pair( "windlight/atmosphericsVarsWaterV.glsl",		mVertexShaderLevel[SHADER_WINDLIGHT] ) );
+	shaders.push_back( make_pair( "windlight/atmosphericsVarsWaterV.glsl",	mVertexShaderLevel[SHADER_WINDLIGHT] ) );
 	shaders.push_back( make_pair( "windlight/atmosphericsHelpersV.glsl",	mVertexShaderLevel[SHADER_WINDLIGHT] ) );
 	shaders.push_back( make_pair( "lighting/lightFuncV.glsl",				mVertexShaderLevel[SHADER_LIGHTING] ) );
 	shaders.push_back( make_pair( "lighting/sumLightsV.glsl",				sum_lights_class ) );

@@ -62,7 +62,7 @@ public:
 	{}
 
 	const U32 mUsage;
-	U32 mType;
+	const U32 mType;
 
 	//size MUST be a power of 2
 	volatile U8* allocate(U32& name, U32 size);
@@ -268,8 +268,6 @@ public:
 
 	//for debugging, validate data in given range is valid
 	void validateRange(U32 start, U32 end, U32 count, U32 offset) const;
-
-	
 
 protected:	
 	S32		mNumVerts;		// Number of vertices allocated
