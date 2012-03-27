@@ -298,7 +298,7 @@
 		<key>Type</key>
 		<string>S32</string>
 		<key>Value</key>
-		<integer>100</integer>
+		<integer>0</integer>
 	</map>
 
 	<key>SianaLegacyJ2CSize</key>

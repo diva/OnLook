@@ -149,10 +149,15 @@ BOOL LLImageJ2COJ::decodeImpl(LLImageJ2C &base, LLImageRaw &raw_image, F32 decod
 	opj_setup_decoder(dinfo, &parameters);
 
 	/* open a byte stream */
-#if 0
+#if 1
 	std::vector<U8> data(base.getData(), base.getData()+base.getDataSize());
-	data.push_back((U8)0xFF);
-	data.push_back((U8)0xD9);
+	S32 size = data.size();
+	if (data[size-1] == 0xFF) {
+		data.push_back((U8)0xD9);
+	} else if (data[size-2] != 0xFF || data[size-1] != 0xD9) {
+		data.push_back((U8)0xFF);
+		data.push_back((U8)0xD9);
+	}
 	cio = opj_cio_open((opj_common_ptr)dinfo, &data[0], data.size());
 #else
 	cio = opj_cio_open((opj_common_ptr)dinfo, base.getData(), base.getDataSize());
