@@ -234,11 +234,11 @@ if (DARWIN)
   # NOTE: it's critical that the optimization flag is put in front.
   # NOTE: it's critical to have both CXX_FLAGS and C_FLAGS covered.
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -03 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -03 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -O3 -msse3 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
   set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -O3 -msse2 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
-  set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -03 -msse2 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
+  set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -O3 -msse2 -mtune=generic -mfpmath=sse ${GCC_EXTRA_OPTIMIZATIONS}")
 endif (DARWIN)
 
 
