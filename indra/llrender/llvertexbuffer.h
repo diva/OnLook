@@ -55,14 +55,15 @@ class LLVBOPool
 {
 public:
 	static U32 sBytesPooled;
-	
+	static U32 sIndexBytesPooled;
+
 	LLVBOPool(U32 vboUsage, U32 vboType)
 		: mUsage(vboUsage)
 		, mType(vboType)
 	{}
 
 	const U32 mUsage;
-	U32 mType;
+	const U32 mType;
 
 	//size MUST be a power of 2
 	volatile U8* allocate(U32& name, U32 size);
@@ -93,7 +94,7 @@ public:
 
 //============================================================================
 // base class 
-class LLPrivateMemoryPool ;
+class LLPrivateMemoryPool;
 class LLVertexBuffer : public LLRefCount
 {
 public:
@@ -280,7 +281,9 @@ protected:
 	S32		mSize;
 	S32		mIndicesSize;
 	U32		mTypeMask;
-	S32		mUsage;			// GL usage
+
+	const S32		mUsage;			// GL usage
+	
 	U32		mGLBuffer;		// GL VBO handle
 	U32		mGLIndices;		// GL IBO handle
 	U32		mGLArray;		// GL VAO handle
@@ -296,6 +299,7 @@ protected:
 	U32		mEmpty : 1;			// if true, client buffer is empty (or NULL). Old values have been discarded.	
 	
 	mutable bool	mMappable;     // if true, use memory mapping to upload data (otherwise doublebuffer and use glBufferSubData)
+
 	S32		mOffsets[TYPE_MAX];
 
 	std::vector<MappedRegion> mMappedVertexRegions;
@@ -309,7 +313,7 @@ protected:
 	static S32 determineUsage(S32 usage);
 
 private:
-	static LLPrivateMemoryPool* sPrivatePoolp ;
+	static LLPrivateMemoryPool* sPrivatePoolp;
 
 public:
 	static S32 sCount;
@@ -329,6 +333,9 @@ public:
 	static bool sIBOActive;
 	static U32 sLastMask;
 	static U32 sAllocatedBytes;
+	static U32 sAllocatedIndexBytes;
+	static U32 sVertexCount;
+	static U32 sIndexCount;
 	static U32 sBindCount;
 	static U32 sSetCount;
 };

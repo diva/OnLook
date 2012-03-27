@@ -147,8 +147,8 @@ void LLFloaterWindLight::initCallbacks(void) {
 	childSetCommitCallback("WLBlueHorizonI", onColorControlIMoved, &param_mgr->mBlueHorizon);
 
 	// haze density, horizon, mult, and altitude
-	childSetCommitCallback("WLHazeDensity", onColorControlRMoved, &param_mgr->mHazeDensity);
-	childSetCommitCallback("WLHazeHorizon", onColorControlRMoved, &param_mgr->mHazeHorizon);
+	childSetCommitCallback("WLHazeDensity", onFloatControlMoved, &param_mgr->mHazeDensity);
+	childSetCommitCallback("WLHazeHorizon", onFloatControlMoved, &param_mgr->mHazeHorizon);
 	childSetCommitCallback("WLDensityMult", onFloatControlMoved, &param_mgr->mDensityMult);
 	childSetCommitCallback("WLMaxAltitude", onFloatControlMoved, &param_mgr->mMaxAlt);
 

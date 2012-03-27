@@ -83,7 +83,6 @@
 LLWLParamManager::LLWLParamManager() :
 
 	//set the defaults for the controls
-	// index is from sWLUniforms in pipeline.cpp line 979
 
 	/// Sun Delta Terrain tweak variables.
 	mSunDeltaYaw(180.0f),

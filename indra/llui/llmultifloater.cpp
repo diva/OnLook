@@ -406,6 +406,22 @@ void LLMultiFloater::setVisible(BOOL visible)
 	}
 }
 
+BOOL LLMultiFloater::handleKeyHere(KEY key, MASK mask)
+{
+	if (key == 'W' && mask == MASK_CONTROL)
+	{
+		LLFloater* floater = getActiveFloater();
+		// is user closeable and is system closeable
+		if (floater && floater->canClose() && floater->isCloseable())
+		{
+			floater->close();
+		}
+		return TRUE;
+	}
+
+	return LLFloater::handleKeyHere(key, mask);
+}
+
 LLFloater* LLMultiFloater::getActiveFloater()
 {
 	return (LLFloater*)mTabContainer->getCurrentPanel();

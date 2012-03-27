@@ -3951,7 +3951,7 @@ void LLModelPreview::genLODs(S32 which_lod, U32 decimation, bool enforce_tri_lim
 				U32 num_indices = mVertexBuffer[5][mdl][i]->getNumIndices();
 				if (num_indices > 2)
 				{
-					glodInsertElements(mObject[mdl], i, GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, mVertexBuffer[5][mdl][i]->getIndicesPointer(), 0, 0.f);
+					glodInsertElements(mObject[mdl], i, GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, (U8*) mVertexBuffer[5][mdl][i]->getIndicesPointer(), 0, 0.f);
 				}
 				tri_count += num_indices/3;
 				stop_gloderror();

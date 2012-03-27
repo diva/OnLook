@@ -51,6 +51,7 @@ public:
 	/*virtual*/ void onClose(bool app_quitting);
 	/*virtual*/ void draw();
 	/*virtual*/ void setVisible(BOOL visible);
+	/*virtual*/ BOOL handleKeyHere(KEY key, MASK mask);
 
 	virtual void setCanResize(BOOL can_resize);
 	virtual void growToFit(S32 content_width, S32 content_height);

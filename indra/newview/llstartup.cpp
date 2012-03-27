@@ -4299,7 +4299,7 @@ bool LLStartUp::startLLProxy()
 			LL_WARNS("Proxy") << "Invalid other HTTP proxy configuration."<< LL_ENDL;
 
 			// Set the missing or wrong configuration back to something valid.
-			gSavedSettings.setString("HttpProxyType", "None");
+			gSavedSettings.setString("Socks5HttpProxyType", "None");
 			LLProxy::getInstance()->disableHTTPProxy();
 
 			// Leave proxy_ok alone, since this isn't necessarily fatal.
