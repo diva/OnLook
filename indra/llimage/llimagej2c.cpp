@@ -363,8 +363,7 @@ S32 LLImageJ2C::calcHeaderSizeJ2C()
 	return FIRST_PACKET_SIZE; // Hack. just needs to be >= actual header size...
 }
 
-//static
-S32 LLImageJ2C::calcDataSizeJ2C(S32 w, S32 h, S32 comp, S32 discard_level, F32 rate)
+static S32 cald_data_size_help(S32 w, S32 h, S32 comp, S32 discard_level, F32 rate)
 {
 	if (rate <= 0.f) rate = .125f;
 	while (discard_level > 0)
@@ -376,7 +375,22 @@ S32 LLImageJ2C::calcDataSizeJ2C(S32 w, S32 h, S32 comp, S32 discard_level, F32 r
 		discard_level--;
 	}
 	S32 bytes = (S32)((F32)(w*h*comp)*rate);
-	//bytes = llmax(bytes, calcHeaderSizeJ2C());
+	return bytes;
+}
+
+
+//static
+S32 LLImageJ2C::calcDataSizeJ2C(S32 w, S32 h, S32 comp, S32 discard_level, F32 rate)
+{
+	static const LLCachedControl<F32> exponent("SianaJ2CSizeExponent", 1.0f);
+	static const LLCachedControl<S32> offset("SianaJ2CSizeOffset", 0);
+	S32 size = cald_data_size_help(w, h, comp, discard_level, rate);
+	S32 size_d0 = cald_data_size_help(w, h, comp, 0, rate);
+
+	llassert_always(size_d0);
+	S32 bytes = size_d0*pow((double)size/size_d0, (double)exponent) + offset;
+	bytes = llmax (0, bytes - 600);
+	bytes = ((bytes + (1000 - 1))/1000)*1000 + 600;
 	return bytes;
 }
 
@@ -392,15 +406,7 @@ S32 LLImageJ2C::calcDataSize(S32 discard_level)
 	static const LLCachedControl<bool> legacy_size("SianaLegacyJ2CSize", false);
 	
 	if (legacy_size) {
-		static const LLCachedControl<F32> exponent("SianaJ2CSizeExponent", 1.0f);
-		static const LLCachedControl<S32> offset("SianaJ2CSizeOffset", 0);
-		
-		S32 size = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), discard_level, mRate);
-		S32 size_d0 = calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), 0, mRate);
-		llassert_always(size_d0);
-		S32 bytes = pow(size/size_d0, exponent)*size_d0 + offset;
-		bytes = llmax(bytes, calcHeaderSizeJ2C());
-		return bytes;
+		return calcDataSizeJ2C(getWidth(), getHeight(), getComponents(), discard_level, mRate);
 	}
 
 	discard_level = llclamp(discard_level, 0, MAX_DISCARD_LEVEL);

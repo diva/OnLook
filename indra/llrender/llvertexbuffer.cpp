@@ -2004,7 +2004,7 @@ template <class T,S32 type> struct VertexBufferStrider
 		}
 		else
 		{
-			llerrs << "VertexBufferStrider could not find valid vertex data." << llendl;
+			llwarns << "VertexBufferStrider could not find valid vertex data." << llendl;
 		}
 		return false;
 	}
