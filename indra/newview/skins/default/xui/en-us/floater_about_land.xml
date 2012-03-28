@@ -911,7 +911,7 @@ Only large parcels can be listed in search.
 				 height="16"
 				 left="10"
 				 length="1"
-				 name="at URL:"
+				 name="at URL2:"
 				 type="string"
 				 width="65">
 				Current URL:

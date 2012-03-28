@@ -19,10 +19,10 @@
     <button height="20" bottom_delta="-28" label="Save" font="SansSerif" left="20" name="save_btn" tool_tip="Save your new Display Name" width="113" />
     <button height="20" bottom_delta="0" label="Reset" font="SansSerif" left_delta="123" name="reset_btn" tool_tip="Make Display Name the same as Username" width="113" />
     <button height="20" bottom_delta="0" label="Cancel" font="SansSerif" left_delta="123" name="cancel_btn" tool_tip="Cancel and close this Dialog" width="113" />
-    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label">
+    <text left="20" bottom_delta="-25" width="360" height="18" font="SansSerif" name="name_confirm_label2">
       The name you give your avatar is called yours Display Name.
     </text>
-     <text left="20" bottom_delta="-18" width="360" height="18" font="SansSerif" name="name_confirm_label">
+     <text left="20" bottom_delta="-18" width="360" height="18" font="SansSerif" name="name_confirm_label3">
       You can change it once a week.
     </text>
 </floater>

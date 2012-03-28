@@ -16,7 +16,7 @@
 		 <view_border bevel_style="none" border_thickness="1" bottom_delta="0" follows="top|left" height="75"
 		left="235" name="CmdDivisor" width="0"/>
 	  -->
-      <text bottom="-15" left="250" name="objects_link_text_box" width="300">Chat:</text>
+      <text bottom="-15" left="250" name="objects_link_text_box2" width="300">Chat:</text>
       <check_box bottom_delta="-25" left_delta="-5" follows="left|top" control_name="PlayTypingSound" initial_value="true"
         label="Play the typing sound for local chat" tool_tip="Silences the chatting type sound, making it quieter for things like performances." name="play_typing_sound_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="HideNotificationsInChat" initial_value="false"
@@ -25,7 +25,7 @@
         label="Allow MU pose method." tool_tip="Allows the use of both /me and : to perform emotes." name="allow_mu_pose_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"
         label="Auto-close OOC comments." tool_tip="Will automatically append '))' to any message starting with '((', or visa versa." name="close_ooc_check"/>
-      <text bottom_delta="-15" follows="left|top" name="objects_link_text_box">Show links on chatting object names in chat history for:</text>
+      <text bottom_delta="-15" follows="left|top" name="objects_link_text_box3">Show links on chatting object names in chat history for:</text>
       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
         follows="top" height="20" left="20" name="objects_link" width="350">
         <radio_item bottom_delta="0" left_delta="5" name="no_object" width="48">No object</radio_item>
@@ -58,7 +58,7 @@
       <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Send an item along with the response" name="AscentInstantMessageResponseItem" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
 	  <text bottom_delta="120" left_delta="245" follows="left|top" height="18" name="text_box1">Response Text:</text>
       <text_editor bottom_delta="-110" follows="left|top" height="110" max_length="1100" name="im_response" width="230" word_wrap="true" spell_check="true"/>
-      <text bottom_delta="-25" follows="left|top" height="18" name="text_box1">
+      <text bottom_delta="-25" follows="left|top" height="18" name="text_box2">
 #f for user's first name, #l for last name,
 #t for timestamp, #r for SLURL to you,
 #i for your idle time. (e.g. "5 mins")
