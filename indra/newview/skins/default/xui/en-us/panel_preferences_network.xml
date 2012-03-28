@@ -24,7 +24,7 @@
 	<text bottom_delta="-26" follows="top" height="10" left="12" name="socks5_host_label">Socks 5 Host:</text>
 	<line_editor bottom_delta="-6" follows="top" font="SansSerif" height="20" left="90" name="socks5_proxy_host" tool_tip="The name or IP address of the SOCKS5 proxy you would like to use" width="311"/>
 	<spinner bottom_delta="-30" decimal_digits="0" follows="top" height="16" increment="1" initial_val="80" label="Port Number:" label_width="75" max_val="65535" min_val="0" name="socks5_proxy_port" width="140"/>
-	<text bottom_delta="-20" follows="top" height="10" left="12" name="socks5_auth_label">Socks5 Authentication:</text>
+	<text bottom_delta="-20" follows="top" height="10" left="12" name="socks5_auth_label2">Socks5 Authentication:</text>
 	<radio_group bottom_delta="-6" draw_border="false" follows="top" height="20" name="socks5_auth" width="420">
 		<radio_item bottom="0" height="20" left_delta="80" name="None" tool_tip="No authentication">None</radio_item>
 		<radio_item bottom="0" height="20" left_delta="50" name="UserPass" tool_tip="Username / Password authentication">Username/Password</radio_item>

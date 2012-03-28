@@ -16,7 +16,7 @@
 		 <view_border bevel_style="none" border_thickness="1" bottom_delta="0" follows="top|left" height="75"
 		left="235" name="CmdDivisor" width="0"/>
 	  -->
-      <text bottom="-15" left="250" name="objects_link_text_box1" width="300">Chat:</text>
+      <text bottom="-15" left="250" name="objects_link_text_box2" width="300">Chat:</text>
       <check_box bottom_delta="-25" left_delta="-5" follows="left|top" control_name="PlayTypingSound" initial_value="true"
         label="Play the typing sound for local chat" tool_tip="Silences the chatting type sound, making it quieter for things like performances." name="play_typing_sound_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="HideNotificationsInChat" initial_value="false"
@@ -25,7 +25,7 @@
         label="Allow MU pose method." tool_tip="Allows the use of both /me and : to perform emotes." name="allow_mu_pose_check"/>
       <check_box bottom_delta="-20" follows="left|top" control_name="AscentAutoCloseOOC"
         label="Auto-close OOC comments." tool_tip="Will automatically append '))' to any message starting with '((', or visa versa." name="close_ooc_check"/>
-      <text bottom_delta="-15" follows="left|top" name="objects_link_text_box2">Show links on chatting object names in chat history for:</text>
+      <text bottom_delta="-15" follows="left|top" name="objects_link_text_box3">Show links on chatting object names in chat history for:</text>
       <radio_group bottom_delta="-26" control_name="LinksForChattingObjects" tool_tip="Enables a link to show you the owner of the speaking object."
         follows="top" height="20" left="20" name="objects_link" width="350">
         <radio_item bottom_delta="0" left_delta="5" name="no_object" width="48">No object</radio_item>
