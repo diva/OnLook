@@ -126,7 +126,6 @@ public:
 	static void		onSliderCommit(LLUICtrl* caller, void* userdata);
 	
 	static void		onEditorCommit(LLUICtrl* ctrl, void* userdata);
-	static void		onEditorGainFocus(LLFocusableElement* caller, void *userdata);
 	static void		onEditorChangeFocus(LLUICtrl* caller, S32 direction, void *userdata);
 
 private:

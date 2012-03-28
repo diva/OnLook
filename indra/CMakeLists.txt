@@ -77,6 +77,7 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}llcrashlogger)
   add_subdirectory(${LIBS_OPEN_PREFIX}llplugin)
   add_subdirectory(${LIBS_OPEN_PREFIX}llui)
+  add_subdirectory(${LIBS_OPEN_PREFIX}llxuixml)
 
   # viewer plugins directory
   add_subdirectory(${LIBS_OPEN_PREFIX}plugins)

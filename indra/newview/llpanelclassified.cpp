@@ -255,14 +255,14 @@ BOOL LLPanelClassified::postBuild()
     mNameEditor = getChild<LLLineEditor>("given_name_editor");
 	mNameEditor->setMaxTextLength(DB_PARCEL_NAME_LEN);
 	mNameEditor->setCommitOnFocusLost(TRUE);
-	mNameEditor->setFocusReceivedCallback(focusReceived, this);
+	mNameEditor->setFocusReceivedCallback(boost::bind(focusReceived, _1, this));
 	mNameEditor->setCommitCallback(onCommitAny);
 	mNameEditor->setCallbackUserData(this);
 	mNameEditor->setPrevalidate( LLLineEditor::prevalidateASCII );
 
     mDescEditor = getChild<LLTextEditor>("desc_editor");
 	mDescEditor->setCommitOnFocusLost(TRUE);
-	mDescEditor->setFocusReceivedCallback(focusReceived, this);
+	mDescEditor->setFocusReceivedCallback(boost::bind(focusReceived, _1, this));
 	mDescEditor->setCommitCallback(onCommitAny);
 	mDescEditor->setCallbackUserData(this);
 	mDescEditor->setTabsToNextField(TRUE);
@@ -270,22 +270,18 @@ BOOL LLPanelClassified::postBuild()
     mLocationEditor = getChild<LLLineEditor>("location_editor");
 
     mSetBtn = getChild<LLButton>( "set_location_btn");
-    mSetBtn->setClickedCallback(onClickSet);
-    mSetBtn->setCallbackUserData(this);
+    mSetBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickSet, this));
 
     mTeleportBtn = getChild<LLButton>( "classified_teleport_btn");
-    mTeleportBtn->setClickedCallback(onClickTeleport);
-    mTeleportBtn->setCallbackUserData(this);
+    mTeleportBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickTeleport, this));
 
     mMapBtn = getChild<LLButton>( "classified_map_btn");
-    mMapBtn->setClickedCallback(onClickMap);
-    mMapBtn->setCallbackUserData(this);
+    mMapBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickMap, this));
 
 	if(mInFinder)
 	{
 		mProfileBtn  = getChild<LLButton>( "classified_profile_btn");
-		mProfileBtn->setClickedCallback(onClickProfile);
-		mProfileBtn->setCallbackUserData(this);
+		mProfileBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickProfile, this));
 	}
 
 	mCategoryCombo = getChild<LLComboBox>( "classified_category_combo");
@@ -319,7 +315,7 @@ BOOL LLPanelClassified::postBuild()
 	}
 
 	mUpdateBtn = getChild<LLButton>("classified_update_btn");
-    mUpdateBtn->setClickedCallback(onClickUpdate);
+    mUpdateBtn->setClickedCallback(boost::bind(&LLPanelClassified::onClickUpdate, this));
     mUpdateBtn->setCallbackUserData(this);
 
 	if (!mInFinder)

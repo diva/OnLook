@@ -99,7 +99,7 @@ public:
 
 	virtual BOOL	isDirty() const;
 
-	void			askToSaveIfDirty( void(*next_step_callback)(BOOL proceed, void* userdata), void* userdata );
+	void			askToSaveIfDirty( boost::function<void (BOOL)> cb );
 
 	void			switchToDefaultSubpart();
 
@@ -118,7 +118,7 @@ public:
 	static void		onTabChanged( void* userdata, bool from_click );
 	static void		onTabPrecommit( void* userdata, bool from_click );
 	bool			onSaveDialog(const LLSD& notification, const LLSD& response);
-	static void		onCommitChangeTab(BOOL proceed, void* userdata);
+	static void		onCommitChangeTab(BOOL proceed);
 
 	void fetchInventory();
 	void updateInventoryUI();
@@ -135,10 +135,8 @@ protected:
 
 	LLInventoryObserver* mInventoryObserver;
 
-	void					(*mNextStepAfterSaveCallback)(BOOL proceed, void* userdata);
-	void*					mNextStepAfterSaveUserdata;
-
-
+	boost::signals2::signal<void (bool proceed)> mNextStepAfterSaveCallback;
+	
 protected:
 	
 	static void* createWearablePanel(void* userdata);

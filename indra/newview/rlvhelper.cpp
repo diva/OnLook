@@ -15,6 +15,9 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llagent.h"
+#include "llagentwearables.h"
+#include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
 #include "llfloaterinventory.h"
 #include "llfloaterwindlight.h"
@@ -29,16 +32,13 @@
 #include "llvoavatar.h"
 #include "llwearablelist.h"
 #include "llwlparammanager.h"
-#include "llagentwearables.h"
+
 
 #include "rlvhelper.h"
-#include "rlvinventory.h"
 #include "rlvhandler.h"
+#include "rlvinventory.h"
 
 #include <boost/algorithm/string.hpp>
-
-// Defined in llinventorybridge.cpp
-void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void*);
 
 // ============================================================================
 // RlvCommmand
@@ -828,6 +828,8 @@ void RlvForceWear::done()
 		return;
 	}
 
+	LLAppearanceMgr* pAppearanceMgr = LLAppearanceMgr::getInstance();
+	
 	//
 	// Process removals
 	//
@@ -836,20 +838,16 @@ void RlvForceWear::done()
 	if (m_remWearables.size())
 	{
 		for (std::list<const LLWearable*>::const_iterator itWearable = m_remWearables.begin(); itWearable != m_remWearables.end(); ++itWearable)
-			gAgentWearables.removeWearable((*itWearable)->getType(), false, 0);	// TODO: MULTI-WEARABLE
+			pAppearanceMgr->removeItemFromAvatar((*itWearable)->getItemID());
 		m_remWearables.clear();
 	}
 
 	// Gestures
 	if (m_remGestures.size())
 	{
-		for (S32 idxGesture = 0, cntGesture = m_remGestures.count(); idxGesture < cntGesture; idxGesture++)
-		{
-			LLViewerInventoryItem* pItem = m_remGestures.get(idxGesture);
-			LLGestureMgr::instance().deactivateGesture(pItem->getUUID());
-			gInventory.updateItem(pItem);
-			gInventory.notifyObservers();
-		}
+		// NOTE: LLGestureMgr::deactivateGesture() will call LLAppearanceMgr::removeCOFItemLinks() for us
+		for (S32 idxItem = 0, cntItem = m_remGestures.count(); idxItem < cntItem; idxItem++)
+			LLGestureMgr::instance().deactivateGesture(m_remGestures.get(idxItem)->getUUID());
 		m_remGestures.clear();
 	}
 
@@ -869,6 +867,12 @@ void RlvForceWear::done()
 		}
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 
+		for (std::list<const LLViewerObject*>::const_iterator itAttachObj = m_remAttachments.begin(); 
+				itAttachObj != m_remAttachments.end(); ++itAttachObj)
+		{
+			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID(), false);
+		}
+
 		m_remAttachments.clear();
 	}
 
@@ -876,48 +880,24 @@ void RlvForceWear::done()
 	// Process additions
 	//
 
-	// Process wearables
-	if (m_addWearables.size())
+	// Wearables need to be split into AT_BODYPART and AT_CLOTHING for COF
+	LLInventoryModel::item_array_t addBodyParts, addClothing;
+	for (addwearables_map_t::const_iterator itAddWearables = m_addWearables.begin(); itAddWearables != m_addWearables.end(); ++itAddWearables)
 	{
-		// [See wear_inventory_category_on_avatar_step2()]
-		LLWearableHoldingPattern* pWearData = new LLWearableHoldingPattern(TRUE);
-
-		// We need to populate 'pWearData->mFoundList' before doing anything else because (some of) the assets might already be available
-		for (addwearables_map_t::const_iterator itAddWearables = m_addWearables.begin(); 
-				itAddWearables != m_addWearables.end(); ++itAddWearables)
+		const LLInventoryModel::item_array_t& wearItems = itAddWearables->second;
+		for (S32 idxItem = 0, cntItem = wearItems.count(); idxItem < cntItem; idxItem++)
 		{
-			const LLInventoryModel::item_array_t& wearItems = itAddWearables->second;
-
-			RLV_VERIFY(1 == wearItems.count());
-			if (wearItems.count() > 0)
+			LLViewerInventoryItem* pItem = wearItems.get(idxItem);
+			if (!pAppearanceMgr->isLinkInCOF(pItem->getUUID()))		// It's important to examine COF here and *not* gAgentWearables
 			{
-				LLViewerInventoryItem* pItem = wearItems.get(0);
-				if ( (pItem) && ((LLAssetType::AT_BODYPART == pItem->getType()) || (LLAssetType::AT_CLOTHING == pItem->getType())) )
-				{
-					LLFoundData* pFound = new LLFoundData(pItem->getLinkedUUID(), pItem->getAssetUUID(), pItem->getName(), pItem->getType());
-					pWearData->mFoundList.push_front(pFound);
-				}
+				if (LLAssetType::AT_BODYPART == pItem->getType())
+					addBodyParts.push_back(pItem);
+				else
+					addClothing.push_back(pItem);
 			}
 		}
-
-		if (!pWearData->mFoundList.size())
-		{
-			delete pWearData;
-			return;
-		}
-
-		// If all the assets are available locally then "pWearData" will be freed *before* the last "LLWearableList::instance().getAsset()" call returns
-		bool fContinue = true; LLWearableHoldingPattern::found_list_t::const_iterator itWearable = pWearData->mFoundList.begin();
-		while ( (fContinue) && (itWearable != pWearData->mFoundList.end()) )
-		{
-			const LLFoundData* pFound = *itWearable;
-			++itWearable;
-			fContinue = (itWearable != pWearData->mFoundList.end());
-			LLWearableList::instance().getAsset(pFound->mAssetID, pFound->mName, pFound->mAssetType, wear_inventory_category_on_avatar_loop, (void*)pWearData);
-		}
-
-		m_addWearables.clear();
 	}
+	m_addWearables.clear();
 
 	// Until LL provides a way for updateCOF to selectively attach add/replace we have to deal with attachments ourselves
 	for (addattachments_map_t::const_iterator itAddAttachments = m_addAttachments.begin(); 
@@ -927,22 +907,20 @@ void RlvForceWear::done()
 		for (S32 idxItem = 0, cntItem = wearItems.count(); idxItem < cntItem; idxItem++)
 		{
 			const LLUUID& idItem = wearItems.get(idxItem)->getLinkedUUID();
-//			if (gAgentAvatarp->attachmentWasRequested(idItem))
-//				continue;
-//			gAgentAvatarp->addAttachmentRequest(idItem);
+			if (gAgentAvatarp->attachmentWasRequested(idItem))
+				continue;
+			gAgentAvatarp->addAttachmentRequest(idItem);
 
 			LLAttachmentsMgr::instance().addAttachment(idItem, itAddAttachments->first & ~ATTACHMENT_ADD, itAddAttachments->first & ATTACHMENT_ADD);
 		}
 	}
 	m_addAttachments.clear();
 
-	// Process gestures
-	if (m_addGestures.size())
+	// If there are additions we need to call LLAppearanceManager::updateCOF(), otherwise LLAppearanceManager::updateAppearanceFromCOF()
+	if ( (!addBodyParts.empty()) || (!addClothing.empty()) || (!m_addGestures.empty()) )
 	{
-		LLGestureMgr::instance().activateGestures(m_addGestures);
-		for (S32 idxGesture = 0, cntGesture = m_addGestures.count(); idxGesture < cntGesture; idxGesture++)
-			gInventory.updateItem(m_addGestures.get(idxGesture));
-		gInventory.notifyObservers();
+		LLInventoryModel::item_array_t addAttachments;
+		pAppearanceMgr->updateCOF(addBodyParts, addClothing, addAttachments, m_addGestures, true);
 
 		m_addGestures.clear();
 	}

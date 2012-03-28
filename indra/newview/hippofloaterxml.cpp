@@ -65,6 +65,11 @@ class HippoFloaterXmlImpl : public LLFloater
 	private:
 		std::string mName;
 		bool mIsNotifyOnClose;
+		//Must retain handles to unregister notices.
+		typedef boost::signals2::scoped_connection notice_connection_t;
+		typedef boost::shared_ptr<notice_connection_t> notice_ptr_t;
+
+		std::map<LLUICtrl*, notice_ptr_t > mNotices;
 };
 
 
@@ -260,18 +265,13 @@ void HippoFloaterXml::execute(const std::string &cmds)
 // ********************************************************************
 // generic notification callbacks
 
-static void notify(LLUICtrl *ctrl, void *data)
+static void notifyCallback(LLUICtrl *ctrl)
 {
 	std::string msg = "NOTIFY:";
 	msg += ctrl->getName();
 	msg += ':';
 	msg += ctrl->getValue().asString();
 	send_chat_from_viewer(msg, CHAT_TYPE_WHISPER, CHANNEL);
-}
-
-static void notify(void *data)
-{
-	notify(static_cast<LLUICtrl*>(data), 0);
 }
 
 void HippoFloaterXmlImpl::onClose(bool quitting)
@@ -324,16 +324,19 @@ bool HippoFloaterXmlImpl::execute(LLUICtrl *ctrl,
 					bool set = (value != "0");
 					if (HippoFloaterXmlImpl *floater = dynamic_cast<HippoFloaterXmlImpl*>(ctrl)) {
 						floater->mIsNotifyOnClose = set;
-					} else if (LLButton *button = dynamic_cast<LLButton*>(ctrl)) {
+					} else if (LLButton *button = dynamic_cast<LLButton*>(ctrl)) 
+					{
 						if (set)
-							button->setClickedCallback(notify, ctrl);
+							floater->mNotices[button] = notice_ptr_t(new notice_connection_t(button->setClickedCallback(boost::bind(&notifyCallback, ctrl))));
 						else
-							button->setClickedCallback(0, 0);
-					} else {
+							floater->mNotices.erase(button);
+					} 
+					else 
+					{
 						if (set)
-							ctrl->setCommitCallback(notify);
+							floater->mNotices[ctrl] = notice_ptr_t(new notice_connection_t(ctrl->setCommitCallback(boost::bind(&notifyCallback, ctrl))));
 						else
-							ctrl->setCommitCallback(0);
+							floater->mNotices.erase(ctrl);
 					}
 				}
 			}

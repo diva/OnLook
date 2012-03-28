@@ -66,7 +66,6 @@ public:
 public:
 	void fetchSharedInventory();
 	void fetchWornItems();
-	void fetchWornItem(const LLUUID& idItem);
 protected:
 	void fetchSharedLinks();
 

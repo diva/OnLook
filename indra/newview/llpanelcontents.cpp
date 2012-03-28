@@ -68,7 +68,7 @@
 #include "lltool.h"
 #include "lltoolmgr.h"
 #include "lltoolcomp.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 // [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c)
 #include "rlvhandler.h"
 // [/RLVa:KB]

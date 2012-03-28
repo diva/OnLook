@@ -45,7 +45,7 @@ class LLUICtrl;
 class LLButton;
 class LLViewerObject;
 class LLComboBox;
-class LLPanelInventory;
+class LLPanelObjectInventory;
 class LLColorSwatchCtrl;
 
 class LLPanelVolume : public LLPanel

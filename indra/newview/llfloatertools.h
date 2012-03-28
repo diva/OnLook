@@ -103,10 +103,10 @@ public:
 	static void setEditTool(void* data);
 	void saveLastTool();
 private:
-	static void setObjectType( void* data );
-	
+
 	void refresh();
 
+	static void setObjectType( LLPCode pcode );
 	static void onClickGridOptions(void* data);
 
 public:

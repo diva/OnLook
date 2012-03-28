@@ -81,10 +81,6 @@ DOHexEditor::DOHexEditor(const std::string& name, const LLRect& rect)
 DOHexEditor::~DOHexEditor()
 {
 	gFocusMgr.releaseFocusIfNeeded(this);
-	if(gEditMenuHandler == this)
-	{
-		gEditMenuHandler = NULL;
-	}
 }
 
 LLView* DOHexEditor::fromXML(LLXMLNodePtr node, LLView *parent, class LLUICtrlFactory *factory)
@@ -273,7 +269,8 @@ U32 DOHexEditor::getProperSelectionEnd()
 
 BOOL DOHexEditor::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
-	return mScrollbar->handleScrollWheel( 0, 0, clicks );
+	mScrollbar->handleScrollWheel( 0, 0, clicks );
+	return TRUE;
 }
 
 BOOL DOHexEditor::handleMouseDown(S32 x, S32 y, MASK mask)

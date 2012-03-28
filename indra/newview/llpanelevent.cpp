@@ -89,20 +89,16 @@ BOOL LLPanelEvent::postBuild()
 	mTBCover = getChild<LLTextBox>("event_cover");
 
 	mTeleportBtn = getChild<LLButton>( "teleport_btn");
-	mTeleportBtn->setClickedCallback(onClickTeleport);
-	mTeleportBtn->setCallbackUserData(this);
+	mTeleportBtn->setClickedCallback(boost::bind(&LLPanelEvent::onClickTeleport,this));
 
 	mMapBtn = getChild<LLButton>( "map_btn");
-	mMapBtn->setClickedCallback(onClickMap);
-	mMapBtn->setCallbackUserData(this);
+	mMapBtn->setClickedCallback(boost::bind(&LLPanelEvent::onClickMap,this));
 
 	mNotifyBtn = getChild<LLButton>( "notify_btn");
-	mNotifyBtn->setClickedCallback(onClickNotify);
-	mNotifyBtn->setCallbackUserData(this);
+	mNotifyBtn->setClickedCallback(boost::bind(&LLPanelEvent::onClickNotify,this));
 
 	mCreateEventBtn = getChild<LLButton>( "create_event_btn");
-	mCreateEventBtn->setClickedCallback(onClickCreateEvent);
-	mCreateEventBtn->setCallbackUserData(this);
+	mCreateEventBtn->setClickedCallback(boost::bind(&LLPanelEvent::onClickCreateEvent,this));
 
 	return TRUE;
 }

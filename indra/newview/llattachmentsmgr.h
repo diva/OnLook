@@ -28,7 +28,7 @@
 #ifndef LL_LLATTACHMENTSMGR_H
 #define LL_LLATTACHMENTSMGR_H
 
-#include "llmemory.h"
+#include "llsingleton.h"
 
 class LLViewerInventoryItem;
 

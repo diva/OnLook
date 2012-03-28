@@ -15,15 +15,17 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llagent.h"
+#include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
+#include "llinventoryobserver.h"
+#include "lloutfitobserver.h"
 #include "llviewerobjectlist.h"
 #include "pipeline.h"
-#include "cofmgr.h"
-#include "llagentwearables.h"
 
+#include "rlvlocks.h"
 #include "rlvhelper.h"
 #include "rlvinventory.h"
-#include "rlvlocks.h"
 
 // ============================================================================
 // RlvAttachPtLookup member functions
@@ -184,7 +186,7 @@ void RlvAttachmentLocks::addAttachmentLock(const LLUUID& idAttachObj, const LLUU
 #endif // RLV_RELEASE
 
 	m_AttachObjRem.insert(std::pair<LLUUID, LLUUID>(idAttachObj, idRlvObj));
-	if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//OK
+	if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//Update labels to (locked)
 	{
 		gInventory.addChangedMask(LLInventoryObserver::LABEL, pObj->getAttachmentItemID());
 		gInventory.notifyObservers();
@@ -206,7 +208,7 @@ void RlvAttachmentLocks::addAttachmentPointLock(S32 idxAttachPt, const LLUUID& i
 	{
 		m_AttachPtRem.insert(std::pair<S32, LLUUID>(idxAttachPt, idRlvObj));
 		LLVOAvatar* pAvatar = gAgentAvatarp;
-		if (pAvatar)
+		if (pAvatar)	//Update labels to (locked)
 		{
 			bool need_update = false;
 			LLVOAvatar::attachment_map_t::iterator iter = pAvatar->mAttachmentPoints.find(idxAttachPt);
@@ -343,7 +345,7 @@ void RlvAttachmentLocks::removeAttachmentLock(const LLUUID& idAttachObj, const L
 		if (idRlvObj == itAttachObj->second)
 		{
 			m_AttachObjRem.erase(itAttachObj);
-			if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//OK
+			if(LLViewerObject *pObj = gObjectList.findObject(idAttachObj))	//Update labels to (locked)
 			{
 				gInventory.addChangedMask(LLInventoryObserver::LABEL, pObj->getAttachmentItemID());
 				gInventory.notifyObservers();
@@ -378,7 +380,7 @@ void RlvAttachmentLocks::removeAttachmentPointLock(S32 idxAttachPt, const LLUUID
 				break;
 			}
 		}
-		if(removed_entry)
+		if(removed_entry)	//Update labels to (locked)
 		{
 			if(m_AttachPtRem.find(idxAttachPt) == m_AttachPtRem.end())
 			{
@@ -880,7 +882,7 @@ void RlvWearableLocks::addWearableTypeLock(LLWearableType::EType eType, const LL
 	{
 		m_WearableTypeRem.insert(std::pair<LLWearableType::EType, LLUUID>(eType, idRlvObj));
 		LLUUID item_id = gAgentWearables.getWearableItemID(eType, 0);	// TODO: MULTI-WEARABLE
-		if(item_id.notNull())
+		if(item_id.notNull())	//Update labels to (locked)
 		{
 			gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
 			gInventory.notifyObservers();
@@ -971,7 +973,7 @@ void RlvWearableLocks::removeWearableTypeLock(LLWearableType::EType eType, const
 				break;
 			}
 		}
-		if(removed_entry)
+		if(removed_entry)	//Update labels to (locked)
 		{
 			if(m_WearableTypeRem.find(eType) == m_WearableTypeRem.end())
 			{
@@ -1023,7 +1025,7 @@ protected:
 RlvFolderLocks::RlvFolderLocks()
 	: m_fLookupDirty(false), m_fLockedRoot(false)
 {
-	LLCOFObserver::instance().addCOFChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
+	LLOutfitObserver::instance().addCOFChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
 	RlvInventory::instance().addSharedRootIDChangedCallback(boost::bind(&RlvFolderLocks::onNeedsLookupRefresh, this));
 }
 
@@ -1272,7 +1274,7 @@ void RlvFolderLocks::refreshLockedLookups() const
 	m_LockedWearableRem.clear();
 
 	LLInventoryModel::item_array_t lockedItems;
-	if (getLockedItems(LLCOFMgr::instance().getCOF(), lockedItems, true))
+	if (getLockedItems(LLAppearanceMgr::instance().getCOF(), lockedItems, true))
 	{
 		for (S32 idxItem = 0, cntItem = lockedItems.count(); idxItem < cntItem; idxItem++)
 		{

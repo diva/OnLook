@@ -86,7 +86,7 @@ LLStatBar *LLStatView::addStat(const std::string& name, LLStat *statp,
 	stat_barp->mStatp = statp;
 
 	stat_barp->setVisible(mDisplayChildren);
-	addChildAtEnd(stat_barp);
+	addChildInBack(stat_barp);
 	mStatBars.push_back(stat_barp);
 
 	// Rearrange all child bars.
@@ -98,7 +98,7 @@ LLStatView *LLStatView::addStatView(const std::string& name, const std::string& 
 {
 	LLStatView *statview = new LLStatView(name, label, setting, rect);
 	statview->setVisible(mDisplayChildren);
-	addChildAtEnd(statview);
+	addChildInBack(statview);
 	return statview;
 }
 

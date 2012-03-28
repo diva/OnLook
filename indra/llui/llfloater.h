@@ -250,6 +250,7 @@ public:
 	static BOOL		getEditModeEnabled() { return sEditModeEnabled; }
 	static LLMultiFloater*		getFloaterHost() {return sHostp; }
 
+	void			enableResizeCtrls(bool enable, bool width = true, bool height = true);
 protected:
 
 	virtual void	bringToFront(S32 x, S32 y);

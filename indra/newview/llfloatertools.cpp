@@ -51,7 +51,7 @@
 #include "llpanelcontents.h"
 #include "llpanelface.h"
 #include "llpanelland.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llpanelobject.h"
 #include "llpanelvolume.h"
 #include "llpanelpermissions.h"
@@ -168,7 +168,7 @@ void*	LLFloaterTools::createPanelContents(void* data)
 void*	LLFloaterTools::createPanelContentsInventory(void* data)
 {
 	LLFloaterTools* floater = (LLFloaterTools*)data;
-	floater->mPanelContents->mPanelInventory = new LLPanelInventory(std::string("ContentsInventory"), LLRect());
+	floater->mPanelContents->mPanelInventory = new LLPanelObjectInventory(std::string("ContentsInventory"), LLRect());
 	return floater->mPanelContents->mPanelInventory;
 }
 
@@ -180,8 +180,41 @@ void*	LLFloaterTools::createPanelLandInfo(void* data)
 	return floater->mPanelLandInfo;
 }
 
+static	const std::string	toolNames[]={
+	"ToolCube",
+	"ToolPrism",
+	"ToolPyramid",
+	"ToolTetrahedron",
+	"ToolCylinder",
+	"ToolHemiCylinder",
+	"ToolCone",
+	"ToolHemiCone",
+	"ToolSphere",
+	"ToolHemiSphere",
+	"ToolTorus",
+	"ToolTube",
+	"ToolRing",
+	"ToolTree",
+	"ToolGrass"};
+LLPCode toolData[]={
+	LL_PCODE_CUBE,
+	LL_PCODE_PRISM,
+	LL_PCODE_PYRAMID,
+	LL_PCODE_TETRAHEDRON,
+	LL_PCODE_CYLINDER,
+	LL_PCODE_CYLINDER_HEMI,
+	LL_PCODE_CONE,
+	LL_PCODE_CONE_HEMI,
+	LL_PCODE_SPHERE,
+	LL_PCODE_SPHERE_HEMI,
+	LL_PCODE_TORUS,
+	LLViewerObject::LL_VO_SQUARE_TORUS,
+	LLViewerObject::LL_VO_TRIANGLE_TORUS,
+	LL_PCODE_LEGACY_TREE,
+	LL_PCODE_LEGACY_GRASS};
+
 BOOL	LLFloaterTools::postBuild()
-{
+{	
 	
 	// Hide until tool selected
 	setVisible(FALSE);
@@ -250,44 +283,12 @@ BOOL	LLFloaterTools::postBuild()
 	// Create Buttons
 	//
 
-	static	const std::string	toolNames[]={
-			"ToolCube",
-			"ToolPrism",
-			"ToolPyramid",
-			"ToolTetrahedron",
-			"ToolCylinder",
-			"ToolHemiCylinder",
-			"ToolCone",
-			"ToolHemiCone",
-			"ToolSphere",
-			"ToolHemiSphere",
-			"ToolTorus",
-			"ToolTube",
-			"ToolRing",
-			"ToolTree",
-			"ToolGrass"};
-	void*	toolData[]={
-			&LLToolPlacerPanel::sCube,
-			&LLToolPlacerPanel::sPrism,
-			&LLToolPlacerPanel::sPyramid,
-			&LLToolPlacerPanel::sTetrahedron,
-			&LLToolPlacerPanel::sCylinder,
-			&LLToolPlacerPanel::sCylinderHemi,
-			&LLToolPlacerPanel::sCone,
-			&LLToolPlacerPanel::sConeHemi,
-			&LLToolPlacerPanel::sSphere,
-			&LLToolPlacerPanel::sSphereHemi,
-			&LLToolPlacerPanel::sTorus,
-			&LLToolPlacerPanel::sSquareTorus,
-			&LLToolPlacerPanel::sTriangleTorus,
-			&LLToolPlacerPanel::sTree,
-			&LLToolPlacerPanel::sGrass};
 	for(size_t t=0; t<LL_ARRAY_SIZE(toolNames); ++t)
 	{
 		LLButton *found = getChild<LLButton>(toolNames[t]);
 		if(found)
 		{
-			found->setClickedCallback(setObjectType,toolData[t]);
+			found->setClickedCallback(boost::bind(&LLFloaterTools::setObjectType, toolData[t]));
 			mButtons.push_back( found );
 		}
 		else
@@ -737,15 +738,13 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	else
 	{
 		// Highlight the correct placer button
-		for( std::vector<LLButton*>::size_type i = 0; i < mButtons.size(); i++ )
+		for( S32 t = 0; t < (S32)mButtons.size(); t++ )
 		{
 			LLPCode pcode = LLToolPlacer::getObjectType();
-			void *userdata = mButtons[i]->getCallbackUserData();
-			LLPCode *cur = (LLPCode*) userdata;
-
-			BOOL state = (pcode == *cur);
-			mButtons[i]->setToggleState( state );
-			mButtons[i]->setVisible( create_visible );
+			LLPCode button_pcode = toolData[t];
+			BOOL state = (pcode == button_pcode);
+			mButtons[t]->setToggleState( state );
+			mButtons[t]->setVisible( create_visible );
 		}
 	}
 
@@ -1034,9 +1033,8 @@ void commit_grid_mode(LLUICtrl *ctrl, void *data)
 } 
 
 // static 
-void LLFloaterTools::setObjectType( void* data )
+void LLFloaterTools::setObjectType( LLPCode pcode )
 {
-	LLPCode pcode = *(LLPCode*) data;
 	LLToolPlacer::setObjectType( pcode );
 	gSavedSettings.setBOOL("CreateToolCopySelection", FALSE);
 	gFocusMgr.setMouseCapture(NULL);
@@ -1067,11 +1065,11 @@ void LLFloaterTools::onSelectTreesGrass(LLUICtrl*, void*)
 {
 	const std::string &selected = gFloaterTools->mComboTreesGrass->getValue();
 	LLPCode pcode = LLToolPlacer::getObjectType();
-	if (pcode == LLToolPlacerPanel::sTree) 
+	if (pcode == LL_PCODE_LEGACY_TREE) 
 	{
 		gSavedSettings.setString("LastTree", selected);
 	} 
-	else if (pcode == LLToolPlacerPanel::sGrass) 
+	else if (pcode == LL_PCODE_LEGACY_GRASS) 
 	{
 		gSavedSettings.setString("LastGrass", selected);
 	}  
@@ -1085,7 +1083,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 		LLPCode pcode = LLToolPlacer::getObjectType();
 		std::map<std::string, S32>::iterator it, end;
 		std::string selected;
-		if (pcode == LLToolPlacerPanel::sTree) 
+		if (pcode == LL_PCODE_LEGACY_TREE) 
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolTree");
@@ -1095,7 +1093,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 			it = LLVOTree::sSpeciesNames.begin();
 			end = LLVOTree::sSpeciesNames.end();
 		} 
-		else if (pcode == LLToolPlacerPanel::sGrass) 
+		else if (pcode == LL_PCODE_LEGACY_GRASS) 
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolGrass");

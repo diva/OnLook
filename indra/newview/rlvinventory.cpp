@@ -200,16 +200,6 @@ void RlvInventory::fetchWornItems()
 	itemFetcher.startFetch();
 }
 
-// Checked: 2010-09-27 (RLVa-1.1.3a) | Added: RLVa-1.1.3a
-void RlvInventory::fetchWornItem(const LLUUID& idItem)
-{ 
-	if (idItem.notNull()) 
-	{
-		RlvItemFetcher itemFetcher(idItem);
-		itemFetcher.startFetch();
-	}
-}
-
 // Checked: 2010-04-07 (RLVa-1.2.0a) | Modified: RLVa-1.0.0h
 bool RlvInventory::findSharedFolders(const std::string& strCriteria, LLInventoryModel::cat_array_t& folders) const
 {

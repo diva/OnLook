@@ -110,6 +110,11 @@ public:
 	static void loadInitialOutfit( const std::string& outfit_folder_name,
 								   const std::string& gender_name );
 
+	//save loaded initial outfit into My Outfits category
+	static void saveInitialOutfit();
+	
+	static std::string& getInitialOutfitName();
+	
 	// Load MD5 of user's password from local disk file.
 	static std::string loadPasswordFromDisk();
 	

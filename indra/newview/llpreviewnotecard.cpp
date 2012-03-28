@@ -484,7 +484,7 @@ void LLPreviewNotecard::onClickGetItems(void* user_data)
 					LLInventoryItem* item = static_cast<LLInventoryItem*>(*iter);
 					if(use_caps)
 					{
-						copy_inventory_from_notecard(preview->getObjectID(), preview->getNotecardItemID(), item, 0);
+						copy_inventory_from_notecard(LLUUID::null, preview->getObjectID(), preview->getNotecardItemID(), item, 0);
 					}
 					else
 					{

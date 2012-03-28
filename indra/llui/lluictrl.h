@@ -38,11 +38,13 @@
 #include "llrect.h"
 #include "llsd.h"
 
+#include "llviewmodel.h"		// *TODO move dependency to .cpp file
 
 class LLUICtrl
 : public LLView
 {
 public:
+	typedef boost::function<void (LLUICtrl* ctrl, const LLSD& param)> commit_callback_t;
 	typedef boost::signals2::signal<void (LLUICtrl* ctrl, const LLSD& param)> commit_signal_t;
 	typedef boost::signals2::signal<bool (LLUICtrl* ctrl, const LLSD& param), boost_boolean_combiner> enable_signal_t;
 
@@ -56,15 +58,15 @@ public:
 		U32 reshape=FOLLOWS_NONE);
 	/*virtual*/ ~LLUICtrl();
 
+	// We need this virtual so we can override it with derived versions
+	virtual LLViewModel* getViewModel() const;
+    // We shouldn't ever need to set this directly
+    //virtual void    setViewModel(const LLViewModelPtr&);
 	// LLView interface
 	/*virtual*/ void	initFromXML(LLXMLNodePtr node, LLView* parent);
 	/*virtual*/ LLXMLNodePtr getXML(bool save_children = true) const;
 	/*virtual*/ BOOL	setLabelArg( const std::string& key, const LLStringExplicit& text );
-	/*virtual*/ void	onFocusReceived();
-	/*virtual*/ void	onFocusLost();
 	/*virtual*/ BOOL	isCtrl() const;
-	/*virtual*/ void	setTentative(BOOL b);
-	/*virtual*/ BOOL	getTentative() const;
 
 	// From LLFocusableElement
 	/*virtual*/ void	setFocus( BOOL b );
@@ -77,7 +79,14 @@ public:
 	virtual class LLCtrlListInterface* getListInterface();
 	virtual class LLCtrlScrollInterface* getScrollInterface();
 
+	virtual void	setTentative(BOOL b);
+	virtual BOOL	getTentative() const;
+	virtual void	setValue(const LLSD& value);
 	virtual LLSD	getValue() const;
+    /// When two widgets are displaying the same data (e.g. during a skin
+    /// change), share their ViewModel.
+    virtual void    shareViewModelFrom(const LLUICtrl& other);
+
 	virtual BOOL	setTextArg(  const std::string& key, const LLStringExplicit& text );
 	virtual void	setIsChrome(BOOL is_chrome);
 
@@ -89,7 +98,6 @@ public:
 	virtual void	resetDirty(); //Defaults to no-op
 	
 	// Call appropriate callbacks
-	virtual void	onLostTop();	// called when registered as top ctrl and user clicks elsewhere
 	virtual void	onCommit();
 	
 	// Default to no-op:
@@ -125,7 +133,6 @@ public:
 	
 	void			setCommitCallback( void (*cb)(LLUICtrl*, void*) )		{ mCommitCallback = cb; }
 	void			setValidateBeforeCommit( BOOL(*cb)(LLUICtrl*, void*) )	{ mValidateCallback = cb; }
-	void			setLostTopCallback( void (*cb)(LLUICtrl*, void*) )		{ mLostTopCallback = cb; }
 	
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
 
@@ -143,8 +150,9 @@ protected:
 
 	commit_signal_t*		mCommitSignal;
 	enable_signal_t*		mValidateSignal;
+	
+    LLViewModelPtr  mViewModel;
 	void			(*mCommitCallback)( LLUICtrl* ctrl, void* userdata );
-	void			(*mLostTopCallback)( LLUICtrl* ctrl, void* userdata );
 	BOOL			(*mValidateCallback)( LLUICtrl* ctrl, void* userdata );
 
 	void*			mCallbackUserData;

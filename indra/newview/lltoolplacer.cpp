@@ -588,23 +588,6 @@ void LLToolPlacer::handleDeselect()
 //////////////////////////////////////////////////////
 // LLToolPlacerPanel
 
-// static
-LLPCode LLToolPlacerPanel::sCube		= LL_PCODE_CUBE;
-LLPCode LLToolPlacerPanel::sPrism		= LL_PCODE_PRISM;
-LLPCode LLToolPlacerPanel::sPyramid		= LL_PCODE_PYRAMID;
-LLPCode LLToolPlacerPanel::sTetrahedron	= LL_PCODE_TETRAHEDRON;
-LLPCode LLToolPlacerPanel::sCylinder	= LL_PCODE_CYLINDER;
-LLPCode LLToolPlacerPanel::sCylinderHemi= LL_PCODE_CYLINDER_HEMI;
-LLPCode LLToolPlacerPanel::sCone		= LL_PCODE_CONE;
-LLPCode LLToolPlacerPanel::sConeHemi	= LL_PCODE_CONE_HEMI;
-LLPCode LLToolPlacerPanel::sTorus		= LL_PCODE_TORUS;
-LLPCode LLToolPlacerPanel::sSquareTorus = LLViewerObject::LL_VO_SQUARE_TORUS;
-LLPCode LLToolPlacerPanel::sTriangleTorus = LLViewerObject::LL_VO_TRIANGLE_TORUS;
-LLPCode LLToolPlacerPanel::sSphere		= LL_PCODE_SPHERE;
-LLPCode LLToolPlacerPanel::sSphereHemi	= LL_PCODE_SPHERE_HEMI;
-LLPCode LLToolPlacerPanel::sTree		= LL_PCODE_LEGACY_TREE;
-LLPCode LLToolPlacerPanel::sGrass		= LL_PCODE_LEGACY_GRASS;
-
 S32			LLToolPlacerPanel::sButtonsAdded = 0;
 LLButton*	LLToolPlacerPanel::sButtons[ TOOL_PLACER_NUM_BUTTONS ];
 
@@ -612,22 +595,6 @@ LLToolPlacerPanel::LLToolPlacerPanel(const std::string& name, const LLRect& rect
 	:
 	LLPanel( name, rect )
 {
-	/* DEPRECATED - JC
-	addButton( "UIImgCubeUUID",			"UIImgCubeSelectedUUID",		&LLToolPlacerPanel::sCube );
-	addButton( "UIImgPrismUUID",		"UIImgPrismSelectedUUID",		&LLToolPlacerPanel::sPrism );
-	addButton( "UIImgPyramidUUID",		"UIImgPyramidSelectedUUID",		&LLToolPlacerPanel::sPyramid );
-	addButton( "UIImgTetrahedronUUID",	"UIImgTetrahedronSelectedUUID",	&LLToolPlacerPanel::sTetrahedron );
-	addButton( "UIImgCylinderUUID",		"UIImgCylinderSelectedUUID",	&LLToolPlacerPanel::sCylinder );
-	addButton( "UIImgHalfCylinderUUID",	"UIImgHalfCylinderSelectedUUID",&LLToolPlacerPanel::sCylinderHemi );
-	addButton( "UIImgConeUUID",			"UIImgConeSelectedUUID",		&LLToolPlacerPanel::sCone );
-	addButton( "UIImgHalfConeUUID",		"UIImgHalfConeSelectedUUID",	&LLToolPlacerPanel::sConeHemi );
-	addButton( "UIImgSphereUUID",		"UIImgSphereSelectedUUID",		&LLToolPlacerPanel::sSphere );
-	addButton( "UIImgHalfSphereUUID",	"UIImgHalfSphereSelectedUUID",	&LLToolPlacerPanel::sSphereHemi );
-	addButton( "UIImgTreeUUID",			"UIImgTreeSelectedUUID",		&LLToolPlacerPanel::sTree );
-	addButton( "UIImgGrassUUID",		"UIImgGrassSelectedUUID",		&LLToolPlacerPanel::sGrass );
-	addButton( "ObjectTorusImageID",	"ObjectTorusActiveImageID",		&LLToolPlacerPanel::sTorus );
-	addButton( "ObjectTubeImageID",		"ObjectTubeActiveImageID",		&LLToolPlacerPanel::sSquareTorus );
-	*/
 }
 
 void LLToolPlacerPanel::addButton( const std::string& up_state, const std::string& down_state, LLPCode* pcode )

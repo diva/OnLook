@@ -2512,6 +2512,11 @@ void LLWindowSDL::spawnWebBrowser(const std::string& escaped_url, bool async)
 	llinfos << "spawn_web_browser returning." << llendl;
 }
 
+void LLWindowSDL::setTitle(const std::string &title)
+{
+	mWindowTitle = title;
+	SDL_WM_SetCaption(mWindowTitle.c_str(),mWindowTitle.c_str());
+}
 
 void *LLWindowSDL::getPlatformWindow()
 {

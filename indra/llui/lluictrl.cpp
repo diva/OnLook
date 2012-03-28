@@ -42,10 +42,10 @@ static LLRegisterWidget<LLUICtrl> r("ui_ctrl");
 // NOTE: the LLFocusableElement implementation has been moved to llfocusmgr.cpp, to mirror the header where the class is defined.
 
 LLUICtrl::LLUICtrl() :
+	mViewModel(LLViewModelPtr(new LLViewModel)),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
 	mCommitCallback(NULL),
-	mLostTopCallback(NULL),
 	mValidateCallback(NULL),
 	mCallbackUserData(NULL),
 	mTentative(FALSE),
@@ -63,8 +63,8 @@ LLUICtrl::LLUICtrl(const std::string& name, const LLRect& rect, BOOL mouse_opaqu
 	LLView( name, rect, mouse_opaque, reshape ),
 	mCommitSignal(NULL),
 	mValidateSignal(NULL),
+	mViewModel(LLViewModelPtr(new LLViewModel)),
 	mCommitCallback( on_commit_callback),
-	mLostTopCallback( NULL ),
 	mValidateCallback( NULL ),
 	mCallbackUserData( callback_userdata ),
 	mTentative( FALSE ),
@@ -103,12 +103,33 @@ BOOL LLUICtrl::isCtrl() const
 	return TRUE;
 }
 
+//virtual 
+void LLUICtrl::setValue(const LLSD& value)
+{
+    mViewModel->setValue(value);
+}
+
 //virtual
 LLSD LLUICtrl::getValue() const
 {
-	return LLSD();
+	return mViewModel->getValue();
 }
 
+/// When two widgets are displaying the same data (e.g. during a skin
+/// change), share their ViewModel.
+void    LLUICtrl::shareViewModelFrom(const LLUICtrl& other)
+{
+    // Because mViewModel is an LLViewModelPtr, this assignment will quietly
+    // dispose of the previous LLViewModel -- unless it's already shared by
+    // somebody else.
+    mViewModel = other.mViewModel;
+}
+
+//virtual
+LLViewModel* LLUICtrl::getViewModel() const
+{
+	return mViewModel;
+}
 // virtual
 BOOL LLUICtrl::setTextArg( const std::string& key, const LLStringExplicit& text ) 
 { 
@@ -167,58 +188,6 @@ void LLUICtrl::setFocus(BOOL b)
 	}
 }
 
-void LLUICtrl::onFocusReceived()
-{
-	// trigger callbacks
-	LLFocusableElement::onFocusReceived();
-
-	// find first view in hierarchy above new focus that is a LLUICtrl
-	LLView* viewp = getParent();
-	LLUICtrl* last_focus = dynamic_cast<LLUICtrl*>(gFocusMgr.getLastKeyboardFocus());
-
-	while (viewp && !viewp->isCtrl()) 
-	{
-		viewp = viewp->getParent();
-	}
-
-	// and if it has newly gained focus, call onFocusReceived()
-	LLUICtrl* ctrlp = static_cast<LLUICtrl*>(viewp);
-	if (ctrlp && (!last_focus || !last_focus->hasAncestor(ctrlp)))
-	{
-		ctrlp->onFocusReceived();
-	}
-}
-
-void LLUICtrl::onFocusLost()
-{
-	// trigger callbacks
-	LLFocusableElement::onFocusLost();
-
-	// find first view in hierarchy above old focus that is a LLUICtrl
-	LLView* viewp = getParent();
-	while (viewp && !viewp->isCtrl()) 
-	{
-		viewp = viewp->getParent();
-	}
-
-	// and if it has just lost focus, call onFocusReceived()
-	LLUICtrl* ctrlp = static_cast<LLUICtrl*>(viewp);
-	// hasFocus() includes any descendants
-	if (ctrlp && !ctrlp->hasFocus())
-	{
-		ctrlp->onFocusLost();
-	}
-}
-
-void LLUICtrl::onLostTop()
-{
-	if (mLostTopCallback)
-	{
-		mLostTopCallback(this, mCallbackUserData);
-	}
-}
-
-
 // virtual
 void LLUICtrl::setTabStop( BOOL b )	
 { 
@@ -240,12 +209,13 @@ BOOL LLUICtrl::acceptsTextInput() const
 //virtual
 BOOL LLUICtrl::isDirty() const
 {
-	return FALSE;
+	return mViewModel->isDirty();
 };
 
 //virtual
 void LLUICtrl::resetDirty()
 {
+    mViewModel->resetDirty();
 }
 
 // virtual

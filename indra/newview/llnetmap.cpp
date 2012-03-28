@@ -664,7 +664,7 @@ BOOL LLNetMap::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rec
 			LLVector3d mypos = gAgent.getPositionGlobal();
 			LLVector3d position = mClosestAgentPosition;
 
-			if ( LLFloaterAvatarList::getInstance() )
+			if ( LLFloaterAvatarList::instanceExists() )
 			{
 				LLAvatarListEntry *ent = LLFloaterAvatarList::getInstance()->getAvatarEntry(mClosestAgentToCursor);
 				if ( NULL != ent )

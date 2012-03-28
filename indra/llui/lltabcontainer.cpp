@@ -803,7 +803,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 							   LLStringUtil::null,
 							   LLStringUtil::null, 
 							   LLStringUtil::null, 
-							   &LLTabContainer::onTabBtn, NULL,
+							   NULL, NULL,
 							   font,
 							   trimmed_label, trimmed_label);
 			btn->setImages(std::string("tab_left.tga"), std::string("tab_left_selected.tga"));
@@ -825,7 +825,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 			btn = new LLButton(std::string(child->getName()) + " tab",
 							   btn_rect, 
 							   LLStringUtil::null, LLStringUtil::null, LLStringUtil::null,
-							   &LLTabContainer::onTabBtn, NULL, // set userdata below
+							   NULL, NULL, // set userdata below
 							   font,
 							   trimmed_label, trimmed_label );
 			btn->setVisible( FALSE );
@@ -865,7 +865,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 	if (btn)
 	{
 		btn->setSaveToXML(false);
-		btn->setCallbackUserData( tuple );
+		btn->setClickedCallback(&LLTabContainer::onTabBtn, tuple);
 		addChild( btn, 0 );
 	}
 	if (child)
@@ -1682,7 +1682,7 @@ void LLTabContainer::initButtons()
 		mPrevArrowBtn = new LLButton(std::string("Left Arrow"), left_arrow_btn_rect,
 									 out_id, in_id, LLStringUtil::null,
 									 &LLTabContainer::onPrevBtn, this, LLFontGL::getFontSansSerif() );
-		mPrevArrowBtn->setHeldDownCallback(onPrevBtnHeld);
+		mPrevArrowBtn->setHeldDownCallback(boost::bind(LLTabContainer::onPrevBtnHeld, this));
 		mPrevArrowBtn->setFollowsLeft();
 	
 		out_id = "UIImgBtnJumpRightOutUUID";
@@ -1717,12 +1717,12 @@ void LLTabContainer::initButtons()
 		}
 	}
 
-	mPrevArrowBtn->setHeldDownCallback(onPrevBtnHeld);
+	mPrevArrowBtn->setHeldDownCallback(boost::bind(&LLTabContainer::onPrevBtnHeld, this));
 	mPrevArrowBtn->setSaveToXML(false);
 	mPrevArrowBtn->setTabStop(FALSE);
 	addChild(mPrevArrowBtn);
 
-	mNextArrowBtn->setHeldDownCallback(onNextBtnHeld);
+	mNextArrowBtn->setHeldDownCallback(boost::bind(&LLTabContainer::onNextBtnHeld, this));
 	mNextArrowBtn->setSaveToXML(false);
 	mNextArrowBtn->setTabStop(FALSE);
 	addChild(mNextArrowBtn);

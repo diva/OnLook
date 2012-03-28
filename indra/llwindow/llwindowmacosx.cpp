@@ -3269,6 +3269,15 @@ void LLWindowMacOSX::spawnWebBrowser(const std::string& escaped_url, bool async)
 	}
 }
 
+void LLWindowMacOSX::setTitle(const std::string &title)
+{
+	/*strncpy((char*)mWindowTitle + 1, title.c_str(), 253);
+	mWindowTitle[0] = title.length();*/
+
+	CFStringRef title_str = CFStringCreateWithCString(NULL, title.c_str(), kCFStringEncodingUTF8);
+	SetWindowTitleWithCFString(mWindow, title_str);
+}
+
 LLSD LLWindowMacOSX::getNativeKeyData()
 {
 	LLSD result = LLSD::emptyMap();

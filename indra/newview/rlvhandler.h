@@ -143,6 +143,8 @@ public:
 	bool onGC();
 	void onLoginComplete();
 	void onSitOrStand(bool fSitting);
+	void onTeleportFailed();
+	void onTeleportFinished(const LLVector3d& posArrival);
 	static void onIdleStartup(void* pParam);
 
 	/*

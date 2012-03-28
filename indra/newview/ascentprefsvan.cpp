@@ -98,13 +98,11 @@ void LLPrefsAscentVan::onCommitClientTag(LLUICtrl* ctrl, void* userdata)
             gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
             gSavedSettings.setU32("AscentReportClientIndex",  client_index);
 
-            LLVOAvatar* avatar = gAgentAvatarp;
-
-            if (avatar)
+            if (gAgentAvatarp)
             {
                 // Slam pending upload count to "unstick" things
                 bool slam_for_debug = true;
-                avatar->forceBakeAllTextures(slam_for_debug);
+                gAgentAvatarp->forceBakeAllTextures(slam_for_debug);
             }
         }
     }

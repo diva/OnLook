@@ -3583,7 +3583,7 @@ void LLAppViewer::badNetworkHandler()
 	std::string grid_support_msg = "";
 	if (!gHippoGridManager->getCurrentGrid()->getSupportUrl().empty())
 	{
-		grid_support_msg = "\n\nOr visit the gird support page at: \n " 
+		grid_support_msg = "\n\nOr visit the grid support page at: \n " 
 			+ gHippoGridManager->getCurrentGrid()->getSupportUrl();
 	}
 	std::ostringstream message;
@@ -3915,7 +3915,7 @@ void LLAppViewer::idle()
 		return;
     }
 
-	gViewerWindow->handlePerFrameHover();
+	gViewerWindow->updateUI();
 
 	///////////////////////////////////////
 	// Agent and camera movement
@@ -4642,13 +4642,9 @@ void LLAppViewer::handleLoginComplete()
 	{
 		gDebugInfo["MainloopTimeoutState"] = LLAppViewer::instance()->mMainloopTimeout->getState();
 	}
-	writeDebugInfo();
 
-// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b) | Modified: RLVa-1.1.3b
-	if (rlv_handler_t::isEnabled())
-	{
-		gRlvHandler.onLoginComplete();
-	}
-// [/RLVa:KB]
+	mOnLoginCompleted();
+
+	writeDebugInfo();
 }
 

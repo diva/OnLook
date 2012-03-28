@@ -430,6 +430,27 @@ void LLFloater::initFloater(const std::string& title,
 	}
 }
 
+void LLFloater::enableResizeCtrls(bool enable, bool width, bool height)
+{
+	mResizeBar[LLResizeBar::LEFT]->setVisible(enable && width);
+	mResizeBar[LLResizeBar::LEFT]->setEnabled(enable && width);
+
+	mResizeBar[LLResizeBar::TOP]->setVisible(enable && height);
+	mResizeBar[LLResizeBar::TOP]->setEnabled(enable && height);
+	
+	mResizeBar[LLResizeBar::RIGHT]->setVisible(enable && width);
+	mResizeBar[LLResizeBar::RIGHT]->setEnabled(enable && width);
+	
+	mResizeBar[LLResizeBar::BOTTOM]->setVisible(enable && height);
+	mResizeBar[LLResizeBar::BOTTOM]->setEnabled(enable && height);
+
+	for (S32 i = 0; i < 4; ++i)
+	{
+		mResizeHandle[i]->setVisible(enable && width && height);
+		mResizeHandle[i]->setEnabled(enable && width && height);
+	}
+}
+
 // virtual
 LLFloater::~LLFloater()
 {
@@ -707,6 +728,8 @@ const std::string& LLFloater::getCurrentTitle() const
 
 void LLFloater::setTitle( const std::string& title )
 {
+	if(mTitle == title)
+		return;
 	mTitle = title;
 	applyTitle();
 }
@@ -1542,10 +1565,12 @@ void	LLFloater::setCanResize(BOOL can_resize)
 	{
 		for (S32 i = 0; i < 4; i++) 
 		{
-			removeChild(mResizeBar[i], TRUE);
+			removeChild(mResizeBar[i]);
+			delete mResizeBar[i];
 			mResizeBar[i] = NULL; 
 
-			removeChild(mResizeHandle[i], TRUE);
+			removeChild(mResizeHandle[i]);
+			delete mResizeHandle[i];
 			mResizeHandle[i] = NULL;
 		}
 	}
@@ -1611,6 +1636,7 @@ void	LLFloater::setCanResize(BOOL can_resize)
 			mMinHeight,
 			LLResizeHandle::LEFT_TOP );
 		addChild(mResizeHandle[3]);
+		enableResizeCtrls(can_resize);
 	}
 	mResizable = can_resize;
 }
@@ -1714,8 +1740,8 @@ void LLFloater::buildButtons()
 		buttonp->setFollowsRight();
 		buttonp->setToolTip( sButtonToolTips[i] );
 		buttonp->setImageColor(LLUI::sColorsGroup->getColor("FloaterButtonImageColor"));
-		buttonp->setHoverImages(sButtonPressedImageNames[i],
-								sButtonPressedImageNames[i]);
+		buttonp->setImageHoverSelected(LLUI::getUIImage(sButtonPressedImageNames[i]));
+		buttonp->setImageHoverUnselected(LLUI::getUIImage(sButtonPressedImageNames[i]));
 		buttonp->setScaleImage(TRUE);
 		buttonp->setSaveToXML(false);
 		addChild(buttonp);
@@ -2459,8 +2485,12 @@ void LLFloaterView::pushVisibleAll(BOOL visible, const skip_list_t& skip_list)
 
 void LLFloaterView::popVisibleAll(const skip_list_t& skip_list)
 {
-	for (child_list_const_iter_t child_iter = getChildList()->begin();
-		 child_iter != getChildList()->end(); ++child_iter)
+	// make a copy of the list since some floaters change their
+	// order in the childList when changing visibility.
+	child_list_t child_list_copy = *getChildList();
+
+	for (child_list_const_iter_t child_iter = child_list_copy.begin();
+		 child_iter != child_list_copy.end(); ++child_iter)
 	{
 		LLView *view = *child_iter;
 		if (skip_list.find(view) == skip_list.end())

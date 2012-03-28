@@ -1565,9 +1565,11 @@ bool LLViewerTextEditor::importStream(std::istream& str)
 
 void LLViewerTextEditor::copyInventory(const LLInventoryItem* item, U32 callback_id)
 {
-	copy_inventory_from_notecard(mObjectID,
+	copy_inventory_from_notecard(LLUUID::null,  // Don't specify a destination -- let the sim do that
+								 mObjectID,
 								 mNotecardInventoryID,
-								 item, callback_id);
+								 item,
+								 callback_id);
 }
 
 bool LLViewerTextEditor::hasEmbeddedInventory()

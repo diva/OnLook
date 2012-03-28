@@ -654,7 +654,7 @@ BOOL LLPanelGroupLandMoney::postBuild()
 	
 	if ( mImplementationp->mMapButtonp )
 	{
-		mImplementationp->mMapButtonp->setClickedCallback(LLPanelGroupLandMoney::impl::mapCallback, mImplementationp);
+		mImplementationp->mMapButtonp->setClickedCallback(boost::bind(&LLPanelGroupLandMoney::impl::mapCallback, mImplementationp));
 	}
 
 	if ( mImplementationp->mGroupOverLimitTextp )

@@ -613,7 +613,7 @@ void LLFloaterStats::reshape(S32 width, S32 height, BOOL called_from_parent)
 
 void LLFloaterStats::addStatView(LLStatView* stat)
 {
-	mStatsContainer->addChildAtEnd(stat);
+	mStatsContainer->addChildInBack(stat);
 }
 
 // virtual

@@ -2392,7 +2392,7 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 		gFocusMgr.setKeyboardFocus( NULL );
 		gFocusMgr.setMouseCapture( NULL );
 
-		LLVOAvatar::onCustomizeStart();
+		LLVOAvatarSelf::onCustomizeStart();
 
 		if (isAgentAvatarValid())
 		{
@@ -2418,10 +2418,11 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 				{
 					setAnimationDuration(gSavedSettings.getF32("ZoomTime"));
 				}
-				//gAgentAvatarp->invalidateAll();
-				//gAgentAvatarp->updateMeshTextures();
 			}
 			
+			gAgentAvatarp->invalidateAll();
+			gAgentAvatarp->updateMeshTextures();
+				
 			gAgentCamera.setFocusGlobal(LLVector3d::zero);
 		}
 	}

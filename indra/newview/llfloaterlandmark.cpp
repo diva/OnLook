@@ -93,7 +93,7 @@ LLFloaterLandmark::LLFloaterLandmark(const LLSD& data)
 
 		mInventoryPanel->setFilterTypes(filter_types);
 		//mInventoryPanel->setFilterPermMask(getFilterPermMask());  //Commented out due to no-copy texture loss.
-		mInventoryPanel->setSelectCallback(onSelectionChange, this);
+		mInventoryPanel->setSelectCallback(boost::bind(&LLFloaterLandmark::onSelectionChange, _1, _2, (void*)this));
 		mInventoryPanel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		mInventoryPanel->setAllowMultiSelect(FALSE);
 

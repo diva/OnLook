@@ -3698,12 +3698,6 @@ void LLAgent::setTeleportState(ETeleportState state)
 		default:
 			break;
 	}
-// [RLVa:KB] - Alternate: Snowglobe-1.2.4 | Version: 1.23.4 | Checked: 2009-07-07 (RLVa-1.0.0d) | Added: RLVa-0.2.0b
-	if ( (rlv_handler_t::isEnabled()) && (TELEPORT_NONE == mTeleportState) )
-	{
-		gRlvHandler.setCanCancelTp(true);
-	}
-// [/RLVa:KB]
 }
 
 void LLAgent::stopCurrentAnimations()
@@ -3840,11 +3834,10 @@ void LLAgent::sendAgentSetAppearance()
 {
 	if (!isAgentAvatarValid()) return;
 
-	if (gAgentQueryManager.mNumPendingQueries > 0 && (isAgentAvatarValid() && !gAgentCamera.cameraCustomizeAvatar())) 
+	if (gAgentQueryManager.mNumPendingQueries > 0 && (isAgentAvatarValid() && gAgentAvatarp->isUsingBakedTextures())) 
 	{
 		return;
 	}
-
 
 	llinfos << "TAT: Sent AgentSetAppearance: " << gAgentAvatarp->getBakedStatusForPrintout() << llendl;
 	//dumpAvatarTEs( "sendAgentSetAppearance()" );
@@ -3875,7 +3868,7 @@ void LLAgent::sendAgentSetAppearance()
 
 	// is texture data current relative to wearables?
 	// KLW - TAT this will probably need to check the local queue.
-	BOOL textures_current = !gAgentAvatarp->hasPendingBakedUploads() && gAgentWearables.areWearablesLoaded();
+	BOOL textures_current = gAgentAvatarp->areTexturesCurrent();
 
 	for(U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++ )
 	{
@@ -3887,8 +3880,8 @@ void LLAgent::sendAgentSetAppearance()
 			continue;
 		}
 
-		// IMG_DEFAULT_AVATAR means not baked
-		if (!gAgentAvatarp->isTextureDefined(texture_index))
+		// IMG_DEFAULT_AVATAR means not baked. 0 index should be ignored for baked textures
+		if (!gAgentAvatarp->isTextureDefined(texture_index, 0))
 		{
 			textures_current = FALSE;
 			break;
@@ -3901,12 +3894,17 @@ void LLAgent::sendAgentSetAppearance()
 		llinfos << "TAT: Sending cached texture data" << llendl;
 		for (U8 baked_index = 0; baked_index < BAKED_NUM_INDICES; baked_index++)
 		{
+			BOOL generate_valid_hash = TRUE;
+			if (isAgentAvatarValid() && !gAgentAvatarp->isBakedTextureFinal((LLVOAvatarDefines::EBakedTextureIndex)baked_index))
+			{
+				generate_valid_hash = FALSE;
+				llinfos << "Not caching baked texture upload for " << (U32)baked_index << " due to being uploaded at low resolution." << llendl;
+			}
 
-			const LLUUID hash = gAgentWearables.computeBakedTextureHash((EBakedTextureIndex) baked_index, true);		
+			const LLUUID hash = gAgentWearables.computeBakedTextureHash((EBakedTextureIndex) baked_index, generate_valid_hash);
 			if (hash.notNull())
 			{
-				const ETextureIndex texture_index = LLVOAvatarDictionary::bakedToLocalTextureIndex((EBakedTextureIndex)baked_index);
-
+				ETextureIndex texture_index = LLVOAvatarDictionary::bakedToLocalTextureIndex((EBakedTextureIndex) baked_index);
 				msg->nextBlockFast(_PREHASH_WearableData);
 				msg->addUUIDFast(_PREHASH_CacheID, hash);
 				msg->addU8Fast(_PREHASH_TextureIndex, (U8)texture_index);

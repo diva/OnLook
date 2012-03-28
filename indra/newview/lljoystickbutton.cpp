@@ -78,8 +78,7 @@ LLJoystick::LLJoystick(
 	mHeldDown(FALSE),
 	mHeldDownTimer()
 {
-	setHeldDownCallback(&LLJoystick::onHeldDown);
-	setCallbackUserData(this);
+	setHeldDownCallback(boost::bind(&LLJoystick::onHeldDownCallback,this));
 }
 
 
@@ -178,7 +177,7 @@ F32 LLJoystick::getElapsedHeldDownTime()
 }
 
 // static
-void LLJoystick::onHeldDown(void *userdata)
+void LLJoystick::onHeldDownCallback(void *userdata)
 {
 	LLJoystick *self = (LLJoystick *)userdata;
 

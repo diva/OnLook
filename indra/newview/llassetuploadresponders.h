@@ -73,12 +73,14 @@ protected:
 class LLNewAgentInventoryResponder : public LLAssetUploadResponder
 {
 public:
-	LLNewAgentInventoryResponder(const LLSD& post_data,
-								const LLUUID& vfile_id,
-								LLAssetType::EType asset_type);
-	LLNewAgentInventoryResponder(const LLSD& post_data,
-								 const std::string& file_name,
-											   LLAssetType::EType asset_type);
+	LLNewAgentInventoryResponder(
+		const LLSD& post_data,
+		const LLUUID& vfile_id,
+		LLAssetType::EType asset_type);
+	LLNewAgentInventoryResponder(
+		const LLSD& post_data,
+		const std::string& file_name,
+		LLAssetType::EType asset_type);
     virtual void error(U32 statusNum, const std::string& reason);
 	virtual void uploadComplete(const LLSD& content);
 	virtual void uploadFailure(const LLSD& content);
@@ -92,23 +94,28 @@ class LLNewAgentInventoryVariablePriceResponder :
 	public LLHTTPClient::Responder
 {
 public:
-	LLNewAgentInventoryVariablePriceResponder(const LLUUID& vfile_id,
-											  LLAssetType::EType asset_type,
-											  const LLSD& inventory_info);
+	LLNewAgentInventoryVariablePriceResponder(
+		const LLUUID& vfile_id,
+		LLAssetType::EType asset_type,
+		const LLSD& inventory_info);
 
-	LLNewAgentInventoryVariablePriceResponder(const std::string& file_name,
-											  LLAssetType::EType asset_type,
-											  const LLSD& inventory_info);
+	LLNewAgentInventoryVariablePriceResponder(
+		const std::string& file_name,
+		LLAssetType::EType asset_type,
+		const LLSD& inventory_info);
 	virtual ~LLNewAgentInventoryVariablePriceResponder();
 
-	void errorWithContent(U32 statusNum,
-						  const std::string& reason,
-						  const LLSD& content);
+	void errorWithContent(
+		U32 statusNum,
+		const std::string& reason,
+		const LLSD& content);
 	void result(const LLSD& content);
 
-	virtual void onApplicationLevelError(const LLSD& error);
-	virtual void showConfirmationDialog(S32 upload_price,
-										S32 resource_cost,
+	virtual void onApplicationLevelError(
+		const LLSD& error);
+	virtual void showConfirmationDialog(
+		S32 upload_price,
+		S32 resource_cost,
 										const std::string& confirmation_url);
 
 private:
@@ -116,7 +123,7 @@ private:
 	Impl* mImpl;
 };
 
-class LLBakedUploadData;
+struct LLBakedUploadData;
 class LLSendTexLayerResponder : public LLAssetUploadResponder
 {
 	LOG_CLASS(LLSendTexLayerResponder);

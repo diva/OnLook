@@ -42,6 +42,9 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
+#include "llappearancemgr.h"
+#include "lldictionary.h"
 #include "llviewercontrol.h"
 #include "llfirstuse.h"
 #include "llfloater.h"
@@ -1731,10 +1734,11 @@ EAcceptance LLToolDragAndDrop::dad3dRezAttachmentFromInv(
 	{
 		if(mSource == SOURCE_LIBRARY)
 		{
-//			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0);
+			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0);
+			//Reapply this patch later.
 // [SL:KB] - Patch: Appearance-Misc | Checked: 2010-09-08 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
 			// Make this behave consistent with dad3dWearItem
-			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0, !(mask & MASK_CONTROL));
+			//LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(0, !(mask & MASK_CONTROL));	// MULTI-WEARABLES TODO
 // [/SL:KB]
 			copy_inventory_item(
 				gAgent.getID(),
@@ -2074,23 +2078,9 @@ EAcceptance LLToolDragAndDrop::dad3dWearItem(
 				return ACCEPT_NO;
 			}
 
-			if(mSource == SOURCE_LIBRARY)
-			{
-				// create item based on that one, and put it on if that
-				// was a success.
-				LLPointer<LLInventoryCallback> cb = new WearOnAvatarCallback();
-				copy_inventory_item(
-					gAgent.getID(),
-					item->getPermissions().getOwner(),
-					item->getUUID(),
-					LLUUID::null,
-					std::string(),
-					cb);
-			}
-			else
-			{
-				wear_inventory_item_on_avatar( item );
-			}
+			// TODO: investigate wearables may not be loaded at this point EXT-8231
+
+			LLAppearanceMgr::instance().wearItemOnAvatar(item->getUUID(),true, !(mask & MASK_CONTROL));
 		}
 		return ACCEPT_YES_MULTI;
 	}
@@ -2181,7 +2171,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearCategory(
 		if(drop)
 		{
 		    BOOL append = ( (mask & MASK_SHIFT) ? TRUE : FALSE );
-			wear_inventory_category(category, false, append);
+			LLAppearanceMgr::instance().wearInventoryCategory(category, false, append);
 		}
 		return ACCEPT_YES_MULTI;
 	}
@@ -2189,7 +2179,7 @@ EAcceptance LLToolDragAndDrop::dad3dWearCategory(
 	{
 		if(drop)
 		{
-			wear_inventory_category(category, true, false);
+			LLAppearanceMgr::instance().wearInventoryCategory(category, true, false);
 		}
 		return ACCEPT_YES_MULTI;
 	}

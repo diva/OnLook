@@ -83,22 +83,6 @@ public:
  	
 	static void	setObjectType( void* data );
 
-	static LLPCode sCube;
-	static LLPCode sPrism;
-	static LLPCode sPyramid;
-	static LLPCode sTetrahedron;
-	static LLPCode sCylinder;
-	static LLPCode sCylinderHemi;
-	static LLPCode sCone; 
-	static LLPCode sConeHemi;
-	static LLPCode sTorus;
-	static LLPCode sSquareTorus;
-	static LLPCode sTriangleTorus;
-	static LLPCode sSphere; 
-	static LLPCode sSphereHemi;
-	static LLPCode sTree;
-	static LLPCode sGrass;
-
 private:
 	void		addButton( const std::string& up_state, const std::string& down_state, LLPCode* pcode );
 

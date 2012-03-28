@@ -50,7 +50,7 @@
 #include "llinventorybridge.h"
 #include "llinventorymodel.h"
 #include "llinventorypanel.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llselectmgr.h"
 #include "lluiconstants.h"
 #include "llviewerobject.h"
@@ -157,54 +157,38 @@ void LLFloaterOpenObject::moveToInventory(bool wear)
 	{
 		parent_category_id = gInventory.getRootFolderID();
 	}
-	
+
 	LLCategoryCreate* cat_data = new LLCategoryCreate(object_id, wear);
-	
+
 	LLUUID category_id = gInventory.createNewCategory(parent_category_id, 
-													  LLFolderType::FT_NONE, 
-													  name,
-													  callbackCreateInventoryCategory,
-													  (void*)cat_data);
+		LLFolderType::FT_NONE,
+		name,
+		callbackCreateInventoryCategory,
+		(void*)cat_data);
 
 	//If we get a null category ID, we are using a capability in createNewCategory and we will
 	//handle the following in the callbackCreateInventoryCategory routine.
 	if ( category_id.notNull() )
 	{
-		delete cat_data;
-		
-		LLCatAndWear* data = new LLCatAndWear;
-		data->mCatID = category_id;
-		data->mWear = wear;
-		data->mFolderResponded = false;
-
-		// Copy and/or move the items into the newly created folder.
-		// Ignore any "you're going to break this item" messages.
-		BOOL success = move_inv_category_world_to_agent(object_id, category_id, TRUE,
-														callbackMoveInventory, 
-														(void*)data);
-		if (!success)
-		{
-			delete data;
-			data = NULL;
-
-			LLNotificationsUtil::add("OpenObjectCannotCopy");
-		}
+		LLSD result;
+		result["folder_id"] = category_id;
+		//Reduce redundant code by just calling the callback. Dur.
+		callbackCreateInventoryCategory(result,cat_data);
 	}
 }
-
 
 // static
 void LLFloaterOpenObject::callbackCreateInventoryCategory(const LLSD& result, void* data)
 {
 	LLCategoryCreate* cat_data = (LLCategoryCreate*)data;
-	
+		
 	LLUUID category_id = result["folder_id"].asUUID();
 	LLCatAndWear* wear_data = new LLCatAndWear;
 
 	wear_data->mCatID = category_id;
 	wear_data->mWear = cat_data->mWear;
 	wear_data->mFolderResponded = true;
-	
+
 	// Copy and/or move the items into the newly created folder.
 	// Ignore any "you're going to break this item" messages.
 	BOOL success = move_inv_category_world_to_agent(cat_data->mObjectID, category_id, TRUE,
@@ -227,11 +211,10 @@ void LLFloaterOpenObject::callbackMoveInventory(S32 result, void* data)
 
 	if (result == 0)
 	{
-		LLInventoryView::showAgentInventory();
-		LLInventoryView* view = LLInventoryView::getActiveInventory();		
-		if (view)
+		LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
+		if (active_panel)
 		{
-			view->getPanel()->setSelection(cat->mCatID, TAKE_FOCUS_NO);
+			active_panel->setSelection(cat->mCatID, TAKE_FOCUS_NO);
 		}
 	}
 
@@ -259,6 +242,6 @@ void LLFloaterOpenObject::onClickMoveAndWear(void* data)
 void* LLFloaterOpenObject::createPanelInventory(void* data)
 {
 	LLFloaterOpenObject* floater = (LLFloaterOpenObject*)data;
-	floater->mPanelInventory = new LLPanelInventory(std::string("Object Contents"), LLRect());
+	floater->mPanelInventory = new LLPanelObjectInventory(std::string("Object Contents"), LLRect());
 	return floater->mPanelInventory;
 }

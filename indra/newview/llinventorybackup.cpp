@@ -489,8 +489,7 @@ void LLInventoryBackup::save(LLFolderView* folder)
 {
 	LLInventoryModel* model = &gInventory;
 
-	std::set<LLUUID> selected_items;
-	folder->getSelectionList(selected_items);
+	std::set<LLUUID> selected_items = folder->getSelectionList();
 
 	if(selected_items.size() < 1)
 	{

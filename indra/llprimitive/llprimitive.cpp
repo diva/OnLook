@@ -223,7 +223,7 @@ void LLPrimitive::setPCode(const U8 p_code)
 }
 
 //===============================================================
-const LLTextureEntry* LLPrimitive::getTE(const U8 index) const
+LLTextureEntry* LLPrimitive::getTE(const U8 index) const
 {
 	return mTextureList.getTexture(index);
 }

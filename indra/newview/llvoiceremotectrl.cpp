@@ -69,17 +69,15 @@ LLVoiceRemoteCtrl::~LLVoiceRemoteCtrl()
 BOOL LLVoiceRemoteCtrl::postBuild()
 {
 	mTalkBtn = getChild<LLButton>("push_to_talk");
-	mTalkBtn->setClickedCallback(onBtnTalkClicked);
-	mTalkBtn->setHeldDownCallback(onBtnTalkHeld);
-	mTalkBtn->setMouseUpCallback(onBtnTalkReleased);
+	mTalkBtn->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onBtnTalkClicked));
+	mTalkBtn->setHeldDownCallback(boost::bind(&LLVoiceRemoteCtrl::onBtnTalkHeld));
+	mTalkBtn->setMouseUpCallback(boost::bind(&LLVoiceRemoteCtrl::onBtnTalkReleased));
 
 	mTalkLockBtn = getChild<LLButton>("ptt_lock");
-	mTalkLockBtn->setClickedCallback(onBtnLock);
-	mTalkLockBtn->setCallbackUserData(this);
+	mTalkLockBtn->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onBtnLock,this));
 
 	mSpeakersBtn = getChild<LLButton>("speakers_btn");
-	mSpeakersBtn->setClickedCallback(onClickSpeakers);
-	mSpeakersBtn->setCallbackUserData(this);
+	mSpeakersBtn->setClickedCallback(boost::bind(&LLVoiceRemoteCtrl::onClickSpeakers));
 
 	childSetAction("show_channel", onClickPopupBtn, this);
 	childSetAction("end_call_btn", onClickEndCall, this);
@@ -216,7 +214,7 @@ void LLVoiceRemoteCtrl::draw()
 	LLPanel::draw();
 }
 
-void LLVoiceRemoteCtrl::onBtnTalkClicked(void *user_data)
+void LLVoiceRemoteCtrl::onBtnTalkClicked()
 {
 	// when in toggle mode, clicking talk button turns mic on/off
 	if (gSavedSettings.getBOOL("PushToTalkToggle"))
@@ -225,7 +223,7 @@ void LLVoiceRemoteCtrl::onBtnTalkClicked(void *user_data)
 	}
 }
 
-void LLVoiceRemoteCtrl::onBtnTalkHeld(void *user_data)
+void LLVoiceRemoteCtrl::onBtnTalkHeld()
 {
 	// when not in toggle mode, holding down talk button turns on mic
 	if (!gSavedSettings.getBOOL("PushToTalkToggle"))
@@ -234,7 +232,7 @@ void LLVoiceRemoteCtrl::onBtnTalkHeld(void *user_data)
 	}
 }
 
-void LLVoiceRemoteCtrl::onBtnTalkReleased(void* user_data)
+void LLVoiceRemoteCtrl::onBtnTalkReleased()
 {
 	// when not in toggle mode, releasing talk button turns off mic
 	if (!gSavedSettings.getBOOL("PushToTalkToggle"))
@@ -279,7 +277,7 @@ void LLVoiceRemoteCtrl::onClickEndCall(void* user_data)
 }
 
 
-void LLVoiceRemoteCtrl::onClickSpeakers(void *user_data)
+void LLVoiceRemoteCtrl::onClickSpeakers()
 {
 	LLFloaterActiveSpeakers::toggleInstance(LLSD());
 }

@@ -82,7 +82,6 @@ public:
 
 	virtual void		setEnabled( BOOL b );
 
-	virtual void		draw();
 	virtual void		reshape(S32 width, S32 height, BOOL called_from_parent = TRUE);
 
 	// LLUICtrl interface
@@ -91,8 +90,8 @@ public:
 			BOOL		get() { return (BOOL)getValue().asBoolean(); }
 			void		set(BOOL value) { setValue(value); }
 
-	virtual void		setTentative(BOOL b)	{ mButton->setTentative(b); }
-	virtual BOOL		getTentative() const	{ return mButton->getTentative(); }
+	virtual void		setTentative(BOOL b);
+	virtual BOOL		getTentative() const;
 
 	virtual BOOL		setLabelArg( const std::string& key, const LLStringExplicit& text );
 
@@ -108,6 +107,9 @@ public:
 	void				setLabel( const LLStringExplicit& label );
 	std::string			getLabel() const;
 
+	void				setFont( const LLFontGL* font ) { mFont = font; }
+	const LLFontGL*		getFont() { return mFont; }
+	
 	virtual void		setControlName(const std::string& control_name, LLView* context);
 	virtual std::string 	getControlName() const;
 
@@ -121,8 +123,9 @@ protected:
 	LLButton*		mButton;
 	LLTextBox*		mLabel;
 	const LLFontGL* mFont;
-	LLColor4		mTextEnabledColor;
-	LLColor4		mTextDisabledColor;
+
+	LLUIColor		mTextEnabledColor;
+	LLUIColor		mTextDisabledColor;
 	BOOL			mRadioStyle;
 	BOOL			mInitialValue;			// Value set in constructor
 	BOOL			mSetValue;				// Value set programmatically

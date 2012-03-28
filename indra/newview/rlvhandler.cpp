@@ -16,6 +16,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llfloateravatarlist.h"
+#include "llappviewer.h"
 #include "llavatarnamecache.h"
 #include "llcallbacklist.h"
 #include "llfloaterbeacons.h"
@@ -33,6 +34,7 @@
 #include "llviewermenu.h"
 #include "llviewermessage.h"
 #include "llviewerobjectlist.h"
+#include "llviewerparcelmgr.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
 #include "llagentcamera.h"
@@ -589,7 +591,22 @@ void RlvHandler::onLoginComplete()
 	RlvSettings::updateLoginLastLocation();
 	#endif // RLV_EXTENSION_STARTLOCATION
 
+	LLViewerParcelMgr::getInstance()->setTeleportFailedCallback(boost::bind(&RlvHandler::onTeleportFailed, this));
+	LLViewerParcelMgr::getInstance()->setTeleportFinishedCallback(boost::bind(&RlvHandler::onTeleportFinished, this, _1));
+
 	processRetainedCommands();
+}
+
+// Checked: 2010-04-05 (RLVa-1.2.0d) | Added: RLVa-1.2.0d
+void RlvHandler::onTeleportFailed()
+{
+	setCanCancelTp(true);
+}
+
+// Checked: 2010-04-05 (RLVa-1.2.0d) | Added: RLVa-1.2.0d
+void RlvHandler::onTeleportFinished(const LLVector3d& posArrival)
+{
+	setCanCancelTp(true);
 }
 
 // ============================================================================
@@ -932,6 +949,9 @@ BOOL RlvHandler::setEnabled(BOOL fEnable)
 
 	if (fEnable)
 	{
+		RLV_INFOS << "Enabling Restrained Love API support - " << RlvStrings::getVersion() << RLV_ENDL;
+		m_fEnabled = TRUE;
+
 		// Initialize the command lookup table
 		RlvCommand::initLookupTable();
 
@@ -941,11 +961,11 @@ BOOL RlvHandler::setEnabled(BOOL fEnable)
 
 		gRlvHandler.addCommandHandler(new RlvExtGetSet());
 
-		// Fetch shared inventory if we're enabled after logon
-		if (LLStartUp::getStartupState() >= STATE_CLEANUP)
-			RlvInventory::instance().fetchSharedInventory();
-
-		m_fEnabled = TRUE;
+		// Make sure we get notified when login is successful
+		if (LLStartUp::getStartupState() < STATE_STARTED)
+			LLAppViewer::instance()->setOnLoginCompletedCallback(boost::bind(&RlvHandler::onLoginComplete, &gRlvHandler));
+		else
+			gRlvHandler.onLoginComplete();
 	}
 
 	#ifdef RLV_ADVANCED_MENU
@@ -1015,7 +1035,8 @@ ERlvCmdRet RlvHandler::processAddRemCommand(const RlvCommand& rlvCmd)
 				VERIFY_OPTION_REF( (rlvCmdOption.isEmpty()) || (rlvCmdOption.isWearableType()) );
 
 				// We need to flush any queued force-wear commands before changing the restrictions
-				RlvForceWear::instance().done();
+				if (RlvForceWear::instanceExists())
+					RlvForceWear::instance().done();
 
 				ERlvLockMask eLock = (RLV_BHVR_ADDOUTFIT == eBhvr) ? RLV_LOCK_ADD : RLV_LOCK_REMOVE;
 				for (int idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++)
@@ -1419,7 +1440,8 @@ ERlvCmdRet RlvHandler::onAddRemAttach(const RlvCommand& rlvCmd, bool& fRefCount)
 		return RLV_RET_FAILED;
 
 	// We need to flush any queued force-wear commands before changing the restrictions
-	RlvForceWear::instance().done();
+	if (RlvForceWear::instanceExists())
+		RlvForceWear::instance().done();
 
 	ERlvLockMask eLock = (RLV_BHVR_REMATTACH == rlvCmd.getBehaviourType()) ? RLV_LOCK_REMOVE : RLV_LOCK_ADD;
 	for (LLVOAvatar::attachment_map_t::const_iterator itAttach = pAvatar->mAttachmentPoints.begin(); 
@@ -1445,7 +1467,8 @@ ERlvCmdRet RlvHandler::onAddRemDetach(const RlvCommand& rlvCmd, bool& fRefCount)
 	RLV_ASSERT(RLV_BHVR_DETACH == rlvCmd.getBehaviourType());
 
 	// We need to flush any queued force-wear commands before changing the restrictions
-	RlvForceWear::instance().done();
+	if (RlvForceWear::instanceExists())
+		RlvForceWear::instance().done();
 
 	if (rlvCmd.getOption().empty())	// @detach=n|y - RLV_LOCK_REMOVE locks an attachment *object*
 	{
@@ -1698,7 +1721,7 @@ ERlvCmdRet RlvHandler::processForceCommand(const RlvCommand& rlvCmd) const
 				const LLViewerObject* pAttachObj = gObjectList.findObject(rlvCmd.getObjectID());
 				if ( (pAttachObj) && (pAttachObj->isAttachment()) )
 				{
-					LLVOAvatar::detachAttachmentIntoInventory(pAttachObj->getAttachmentItemID());
+					LLVOAvatarSelf::detachAttachmentIntoInventory(pAttachObj->getAttachmentItemID());
 				}
 			}
 			break;

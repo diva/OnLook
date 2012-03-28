@@ -159,12 +159,13 @@ private:
  * Since I'm very new to C++ any suggestions on coding, style, etc are very
  * welcome.
  */
-class LLFloaterAvatarList : public LLFloater
+class LLFloaterAvatarList : public LLFloater, public LLSingleton<LLFloaterAvatarList>
 {
 	/**
 	 * @brief Creates and initializes the LLFloaterAvatarList
 	 * Here the interface is created, and callbacks are initialized.
 	 */
+	friend class LLSingleton<LLFloaterAvatarList>;
 private:
 	LLFloaterAvatarList();
 public:
@@ -211,11 +212,6 @@ public:
 	static void sound_trigger_hook(LLMessageSystem* msg,void **);
 	static void sendKeys();
 
-private:
-	static LLFloaterAvatarList* sInstance;
-
-public:
-	static LLFloaterAvatarList* getInstance() { return sInstance; }
 private:
 	// when a line editor loses keyboard focus, it is committed.
 	// commit callbacks are named onCommitWidgetName by convention.
