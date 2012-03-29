@@ -349,7 +349,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);
 
 	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
-		LLScrollListCtrl* list = sInstance->getChild<LLScrollListCtrl>("avatar_list");
+		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("avatar_list");
 		list->getColumn(1)->setWidth(0);
 		list->getColumn(6)->setWidth(0);
 		list->getColumn(6)->mDynamicWidth = FALSE;
