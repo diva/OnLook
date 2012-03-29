@@ -645,7 +645,7 @@ void LLMultisampleBuffer::release()
 
 	if (mTex.size() > 0)
 	{
-		sBytesAllocated -= mResX*mResY*4*mResX*mResY*4*mTex.size();
+		sBytesAllocated -= mResX*mResY*4*mTex.size();
 		glDeleteRenderbuffers(mTex.size(), (GLuint *) &mTex[0]);
 		mTex.clear();
 		
