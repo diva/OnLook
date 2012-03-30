@@ -90,10 +90,6 @@ public:
 		E_LAST						// never use!
 	} UserAuthcode;
 
-	// used for holding options
-	typedef std::map<std::string, std::string> response_t;
-	typedef std::vector<response_t> options_t;
-
 	// viewer auth version
 	void authenticate(
 		const std::string& auth_uri,
@@ -140,8 +136,8 @@ public:
 
 	// function to get a direct reponse from the login api by
 	// name. returns NULL if the named response was not found.
-	const std::string& getResponse(const std::string& name) const;
-	BOOL getOptions(const std::string& name, options_t& options) const;
+	LLSD getResponse() const { return mResponses; }
+	LLSD getResponse(const std::string& entry) const { return mResponses[entry]; }
 
 	F64 getLastTransferRateBPS() const { return mLastTransferRateBPS; }
 
@@ -152,11 +148,11 @@ private:
 	std::string mErrorMessage;
 	
 	// dealing with the XML
-	typedef std::map<std::string, options_t> all_options_t;
-	response_t mResponses;
-	all_options_t mOptions;
+	LLSD mResponses;
 	
 	UserAuthcode parseResponse();
+
+	LLSD parseValues(UserAuthcode &auth_code, const std::string& key_pfx, XMLRPC_VALUE param);
 
 	F64 mLastTransferRateBPS;	// bits per second, only valid after a big transfer like inventory
 };
