@@ -323,6 +323,7 @@ const std::string SAVE_INTO_TASK_INVENTORY("Save Object Back to Object Contents"
 LLMenuGL* gAttachSubMenu = NULL;
 LLMenuGL* gDetachSubMenu = NULL;
 LLMenuGL* gTakeOffClothes = NULL;
+LLMenuGL* gMeshesAndMorphsMenu = NULL;
 LLPieMenu* gPieRate = NULL;
 LLPieMenu* gAttachScreenPieMenu = NULL;
 LLPieMenu* gAttachPieMenu = NULL;
@@ -691,6 +692,7 @@ void init_menus()
 	//
 	// Main menu bar
 	//
+
 	gMenuHolder = new LLViewerMenuHolderGL();
 	gMenuHolder->setRect(LLRect(0, top, width, 0));
 	gMenuHolder->setFollowsAll();
@@ -867,7 +869,6 @@ void init_menus()
 	show_debug_menus();
 
 	gLoginMenuBarView = (LLMenuBarGL*)LLUICtrlFactory::getInstance()->buildMenu("menu_login.xml", gMenuHolder);
-	LLRect menuBarRect = gLoginMenuBarView->getRect();
 	
 	menu = new LLMenuGL(CLIENT_MENU_NAME);
 	menu->setCanTearOff(FALSE);
@@ -875,9 +876,14 @@ void init_menus()
 	gLoginMenuBarView->addChild(menu);
 	menu->updateParent(LLMenuGL::sMenuContainer);
 
-	gLoginMenuBarView->setRect(LLRect(menuBarRect.mLeft, menuBarRect.mTop,
+	gLoginMenuBarView->arrangeAndClear();
+	LLRect menuBarRect = gLoginMenuBarView->getRect();
+	menuBarRect.setLeftTopAndSize(0, gMenuHolder->getRect().getHeight(), gMenuHolder->getRect().getWidth(), menuBarRect.getHeight());
+	gLoginMenuBarView->setRect(menuBarRect);
+
+	/*gLoginMenuBarView->setRect(LLRect(menuBarRect.mLeft, menuBarRect.mTop,
 									  gViewerWindow->getRootView()->getRect().getWidth() - menuBarRect.mLeft,
-									  menuBarRect.mBottom));
+									  menuBarRect.mBottom));*/
 	
 	gLoginMenuBarView->setBackgroundColor( color );
 
@@ -1670,9 +1676,8 @@ void init_debug_avatar_menu(LLMenuGL* menu)
 //#endif
 // </edit>
 
-	LLMenuItemCallGL* mesh_item = new LLMenuItemCallGL("Meshes And Morphs...", handle_meshes_and_morphs);
-	mesh_item->setUserData((void*)mesh_item);  // So we can remove it later
-	menu->addChild(mesh_item);
+	gMeshesAndMorphsMenu = new LLMenuGL("Meshes and Morphs");
+	menu->addChild(gMeshesAndMorphsMenu);
 
 	menu->createJumpKeys();
 }
@@ -8353,13 +8358,11 @@ void handle_dump_avatar_local_textures(void*)
 	}
 }
 
-void handle_meshes_and_morphs(void* menu_item)
+void init_meshes_and_morphs_menu()
 {
-	LLMenuItemCallGL* item = (LLMenuItemCallGL*) menu_item;
-	LLMenuGL* parent_menu = (LLMenuGL*) item->getParent();
-	parent_menu->removeChild(item);
-
-	LLMenuGL* menu = new LLMenuGL("Meshes And Morphs");
+	LLMenuGL* menu = gMeshesAndMorphsMenu;
+	llassert_always(menu);
+	menu->setCanTearOff(TRUE);
 	menu->addChild(new LLMenuItemCallGL("Dump Avatar Mesh Info", &LLPolyMesh::dumpDiagInfo));
 	menu->addSeparator();
 
@@ -8441,12 +8444,6 @@ void handle_meshes_and_morphs(void* menu_item)
 	}
 
 	menu->createJumpKeys();
-	menu->updateParent(LLMenuGL::sMenuContainer);
-	parent_menu->addChild(menu);
-
-	LLMenuGL::sMenuContainer->hideMenus();
-	LLFloater* tear_off_menu = LLTearOffMenu::create(menu);
-	tear_off_menu->setFocus(TRUE);
 }
 
 static void handle_mesh_save_llm_continued(void* data, AIFilePicker* filepicker);

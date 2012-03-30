@@ -64,6 +64,8 @@ void handle_duplicate_in_place(void*);
 BOOL enable_not_have_card(void *userdata);
 void process_grant_godlike_powers(LLMessageSystem* msg, void**);
 
+void init_meshes_and_morphs_menu();
+
 BOOL enable_cut(void*);
 BOOL enable_copy(void*);
 BOOL enable_paste(void*);
@@ -158,6 +160,7 @@ extern LLPieMenu	*gPieLandSimple;
 extern LLMenuGL* gAttachSubMenu;
 extern LLMenuGL* gDetachSubMenu;
 extern LLMenuGL* gTakeOffClothes;
+extern LLMenuGL* gMeshesAndMorphsMenu;
 extern LLPieMenu* gAttachScreenPieMenu;
 extern LLPieMenu* gDetachScreenPieMenu;
 extern LLPieMenu* gAttachPieMenu;

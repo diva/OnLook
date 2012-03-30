@@ -298,12 +298,6 @@ BOOL LLVOAvatarSelf::buildMenus()
 				}
 			}
 
-
-
-
-
-
-
 			if (!attachment_found)
 			{
 				gAttachPieMenu->addSeparator();
@@ -363,8 +357,6 @@ BOOL LLVOAvatarSelf::buildMenus()
 						&handle_detach_from_avatar, object_attached, attachment));
 		}
 	}
-
-
 
 	for (S32 pass = 0; pass < 2; pass++)
 	{
@@ -458,6 +450,9 @@ BOOL LLVOAvatarSelf::buildMenus()
 			}
 		}
 	}
+
+	init_meshes_and_morphs_menu();
+
 	return TRUE;
 }
 
