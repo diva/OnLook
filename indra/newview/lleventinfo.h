@@ -48,7 +48,7 @@ public:
 
 	void unpack(LLMessageSystem *msg);
 
-	static void loadCategories(LLUserAuth::options_t event_options);
+	static void loadCategories(LLSD& event_options);
 
 public:
 	std::string mName;

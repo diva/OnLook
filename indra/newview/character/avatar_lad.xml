@@ -396,8 +396,8 @@
 
     <attachment_point
        id="39"
-       group="9"
-       pie_slice="1"
+       group="6"
+       pie_slice="0"
        name="Neck"
        joint="mNeck"
        position="0 0 0"
@@ -406,8 +406,8 @@
   	
     <attachment_point
        id="40"
-       group="9"
-       pie_slice="2"
+       group="6"
+       pie_slice="4"
        name="Root"
        joint="mRoot"
        position="0 0 0"

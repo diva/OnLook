@@ -362,7 +362,7 @@ U32 LLViewerJoint::render( F32 pixelArea, BOOL first_pass, BOOL is_dummy )
 // 	rotateMat.setFwdRow( boneX );
 // 	rotateMat.setLeftRow( boneY );
 // 	rotateMat.setUpRow( boneZ );
-// 	gGL.multMAtrix( &rotateMat.mMatrix[0][0] );
+// 	gGL.multMatrix( &rotateMat.mMatrix[0][0] );
 
 // 	// render the bone
 // 	gGL.color3f( 0.5f, 0.5f, 0.0f );

@@ -777,7 +777,7 @@ void LLViewerJointMesh::updateGeometry(LLFace *mFace, LLPolyMesh *mMesh)
 	LLStrider<LLVector3> o_normals;
 
 	//get vertex and normal striders
-	LLVertexBuffer *buffer = mFace->getVertexBuffer();
+	LLVertexBuffer* buffer = mFace->getVertexBuffer();
 	buffer->getVertexStrider(o_vertices,  0);
 	buffer->getNormalStrider(o_normals,   0);
 

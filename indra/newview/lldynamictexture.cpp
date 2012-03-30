@@ -152,8 +152,8 @@ void LLViewerDynamicTexture::preRender(BOOL clear_depth)
 			mOrigin.mY += window_pos.mY;
 			mOrigin.mY = llmax(mOrigin.mY, 0) ;
 		}
-	}
 
+	}
 	gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 	// Set up camera
 	LLViewerCamera* camera = LLViewerCamera::getInstance();
@@ -221,7 +221,6 @@ BOOL LLViewerDynamicTexture::updateAllInstances()
 	}
 
 	bool use_fbo = gGLManager.mHasFramebufferObject && gPipeline.mWaterDis.isComplete();
-
 	if (use_fbo)
 	{
 		gPipeline.mWaterDis.bindTarget();

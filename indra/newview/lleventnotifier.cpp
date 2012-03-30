@@ -115,15 +115,12 @@ bool LLEventNotifier::handleResponse(U32 eventId, LLVector3d eventPos, const LLS
 	return true;
 }
 
-void LLEventNotifier::load(const LLUserAuth::options_t& event_options)
+void LLEventNotifier::load(const LLSD& event_options)
 {
-	LLUserAuth::options_t::const_iterator resp_it;
-	for (resp_it = event_options.begin(); 
-		 resp_it != event_options.end(); 
-		 ++resp_it)
+	for(LLSD::array_const_iterator resp_it = event_options.beginArray(),
+		end = event_options.endArray(); resp_it != end; ++resp_it)
 	{
-		const LLUserAuth::response_t& response = *resp_it;
-
+		LLSD response = *resp_it;
 		LLEventNotification *new_enp = new LLEventNotification();
 
 		if (!new_enp->load(response))
@@ -134,6 +131,7 @@ void LLEventNotifier::load(const LLUserAuth::options_t& event_options)
 		
 		mEventNotifications[new_enp->getEventID()] = new_enp;
 	}
+		
 }
 
 void LLEventNotifier::add(U32 eventId)
@@ -216,48 +214,47 @@ LLEventNotification::~LLEventNotification()
 }
 
 
-BOOL LLEventNotification::load(const LLUserAuth::response_t &response)
+BOOL LLEventNotification::load(const LLSD& response)
 {
-
-	LLUserAuth::response_t::const_iterator option_it;
 	BOOL event_ok = TRUE;
-	option_it = response.find("event_id");
-	if (option_it != response.end())
+	LLSD event_id = response["event_id"];
+	if (event_id.isDefined())
 	{
-		mEventID = atoi(option_it->second.c_str());
+		mEventID = event_id.asInteger();
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 
-	option_it = response.find("event_name");
-	if (option_it != response.end())
+	LLSD event_name = response["event_name"];
+	if (event_name.isDefined())
 	{
-		llinfos << "Event: " << option_it->second << llendl;
-		mEventName = option_it->second;
+		mEventName = event_name.asString();
+		llinfos << "Event: " << mEventName << llendl;
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 /*
-	option_it = response.find("event_date");
-	if (option_it != response.end())
+	LLSD event_date = response["event_date"];
+	if (event_date.isDefined())
 	{
-		llinfos << "EventDate: " << option_it->second << llendl;
-		mEventDateStr = option_it->second;
+		mEventDate = event_date.asString();
+		llinfos << "EventDate: " << mEventDate << llendl;
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 */
-	option_it = response.find("event_date_ut");
-	if (option_it != response.end())
+	LLSD event_date_ut = response["event_date_ut"];
+	if (event_date_ut.isDefined())
 	{
-		llinfos << "EventDate: " << option_it->second << llendl;
-		mEventDate = strtoul(option_it->second.c_str(), NULL, 10);
+		std::string date = event_date_ut.asString();
+		llinfos << "EventDate: " << date << llendl;
+		mEventDate = strtoul(date.c_str(), NULL, 10);
 
 		// Convert to Pacific, based on server's opinion of whether
 		// it's daylight savings time there.
@@ -282,44 +279,44 @@ BOOL LLEventNotification::load(const LLUserAuth::response_t &response)
 	S32 x_region = 0;
 	S32 y_region = 0;
 
-	option_it = response.find("grid_x");
-	if (option_it != response.end())
+	LLSD grid_x_sd = response["grid_x"];
+	if (grid_x_sd.isDefined())
 	{
-		llinfos << "GridX: " << option_it->second << llendl;
-		grid_x= atoi(option_it->second.c_str());
+		grid_x= grid_x_sd.asInteger();
+		llinfos << "GridX: " << grid_x << llendl;
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 
-	option_it = response.find("grid_y");
-	if (option_it != response.end())
+	LLSD grid_y_sd = response["grid_y"];
+	if (grid_y_sd.isDefined())
 	{
-		llinfos << "GridY: " << option_it->second << llendl;
-		grid_y = atoi(option_it->second.c_str());
+		grid_y= grid_y_sd.asInteger();
+		llinfos << "GridY: " << grid_y << llendl;
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 
-	option_it = response.find("x_region");
-	if (option_it != response.end())
-	{
-		llinfos << "RegionX: " << option_it->second << llendl;
-		x_region = atoi(option_it->second.c_str());
+	LLSD x_region_sd = response["x_region"];
+	if (x_region_sd.isDefined())
+	{	
+		x_region = x_region_sd.asInteger();
+		llinfos << "RegionX: " << x_region << llendl;
 	}
 	else
 	{
 		event_ok = FALSE;
 	}
 
-	option_it = response.find("y_region");
-	if (option_it != response.end())
+	LLSD y_region_sd = response["y_region"];
+	if (y_region_sd.isDefined())
 	{
-		llinfos << "RegionY: " << option_it->second << llendl;
-		y_region = atoi(option_it->second.c_str());
+		y_region = y_region_sd.asInteger();
+		llinfos << "RegionY: " << y_region << llendl;
 	}
 	else
 	{
