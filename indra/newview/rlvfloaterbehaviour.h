@@ -14,53 +14,91 @@
  * 
  */
 
-#ifndef RLV_FLOATER_BEHAVIOUR
-#define RLV_FLOATER_BEHAVIOUR
+#ifndef RLV_FLOATERS_H
+#define RLV_FLOATERS_H
 
 #include "llfloater.h"
+
+#include "rlvdefines.h"
 #include "rlvcommon.h"
 
 // ============================================================================
+// RlvFloaterLocks class declaration
+//
 
-class RlvFloaterBehaviour :
-	public LLFloater,
-	public LLFloaterSingleton<RlvFloaterBehaviour>,
-	public RlvBehaviourObserver
+class RlvFloaterBehaviours : public LLFloater, public LLFloaterSingleton<RlvFloaterBehaviours>
 {
-	friend class LLUISingleton<RlvFloaterBehaviour, VisibilityPolicy<LLFloater> >;
-public:
-	virtual ~RlvFloaterBehaviour() {}
+	friend class LLUISingleton<RlvFloaterBehaviours, VisibilityPolicy<LLFloater> >;
+
+	RlvFloaterBehaviours(const LLSD& sdKey);
 
 	/*
 	 * LLFloater overrides
 	 */
 public:
-	/*virtual*/ BOOL canClose();
 	/*virtual*/ void onOpen();
-	/*virtual*/ void onClose(bool app_quitting);
+	/*virtual*/ void onClose(bool fQuitting);
 	/*virtual*/ BOOL postBuild();
-
-	/*
-	 * RlvBehaviourObserver overrides
-	 */
-public:
-	/*virtual*/ void changed(const RlvCommand& rlvCmd, bool fInternal);
+	
+	static void toggle(void* a=NULL);
+	static BOOL visible(void* a=NULL);
 
 	/*
 	 * Member functions
 	 */
+protected:
+	void onAvatarNameLookup(const LLUUID& idAgent, const LLAvatarName& avName);
+	void onBtnCopyToClipboard();
+	void onCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet);
+	void refreshAll();
+
+	/*
+	 * Member variables
+	 */
+protected:
+	boost::signals2::connection	m_ConnRlvCommand;
+	uuid_vec_t 					m_PendingLookup;
+};
+
+// ============================================================================
+// RlvFloaterLocks class declaration
+//
+
+class RlvFloaterLocks : public LLFloater, public LLFloaterSingleton<RlvFloaterLocks>
+{
+	friend class LLUISingleton<RlvFloaterLocks, VisibilityPolicy<LLFloater> >;
+
+	RlvFloaterLocks(const LLSD& sdKey);
+
+	/*
+	 * LLFloater overrides
+	 */
 public:
-	static void show(void*);
-	void onAvatarNameLookup(const LLUUID& uuid);
+	virtual void onOpen();
+	virtual void onClose(bool fQuitting);
+	
+	static void toggle(void* a=NULL);
+	static BOOL visible(void* a=NULL);
+
+	/*
+	 * Event handlers
+	 */
+protected:
+	void onRlvCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet);
+
+	/*
+	 * Member functions
+	 */
 protected:
 	void refreshAll();
-private:
-	RlvFloaterBehaviour(const LLSD& key = LLSD());
 
-public:
-	std::map<LLUUID,boost::signals2::connection> m_PendingLookup;	//Have to hold a signal so we can remove it later.
+	/*
+	 * Member variables
+	 */
+protected:
+	boost::signals2::connection m_ConnRlvCommand;
 };
 
 // ============================================================================
 
-#endif // RLV_FLOATER_BEHAVIOUR
+#endif // RLV_FLOATERS_H

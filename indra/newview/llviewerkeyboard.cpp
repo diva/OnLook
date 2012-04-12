@@ -104,14 +104,18 @@ static void agent_handle_doubletap_run(EKeystate s, LLAgent::EDoubleTapRunMode m
 {
 	if (KEYSTATE_UP == s)
 	{
-		if (gAgent.mDoubleTapRunMode == mode &&
-		    gAgent.getRunning() &&
-		    !gAgent.getAlwaysRun())
-		{
-			// Turn off temporary running.
-			gAgent.clearRunning();
-			gAgent.sendWalkRun(gAgent.getRunning());
-		}
+//		if (gAgent.mDoubleTapRunMode == mode &&
+//		    gAgent.getRunning() &&
+//		    !gAgent.getAlwaysRun())
+//		{
+//			// Turn off temporary running.
+//			gAgent.clearRunning();
+//			gAgent.sendWalkRun(gAgent.getRunning());
+//		}
+// [RLVa:KB] - Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
+		if ( (gAgent.mDoubleTapRunMode == mode) && (gAgent.getTempRun()) )
+			gAgent.clearTempRun();
+// [/RLVa:KB]
 	}
 	else if (gAllowTapTapHoldRun &&
 		 KEYSTATE_DOWN == s &&
@@ -122,8 +126,11 @@ static void agent_handle_doubletap_run(EKeystate s, LLAgent::EDoubleTapRunMode m
 		{
 			// Same walk-key was pushed again quickly; this is a
 			// double-tap so engage temporary running.
-			gAgent.setRunning();
-			gAgent.sendWalkRun(gAgent.getRunning());
+//			gAgent.setRunning();
+//			gAgent.sendWalkRun(gAgent.getRunning());
+// [RLVa:KB] - Checked: 2011-05-11 (RLVa-1.3.0i) | Added: RLVa-1.3.0i
+			gAgent.setTempRun();
+// [/RLVa:KB]
 		}
 
 		// Pressing any walk-key resets the double-tap timer
@@ -521,8 +528,9 @@ void start_chat( EKeystate s )
 
 void start_gesture( EKeystate s )
 {
+	LLUICtrl* focus_ctrlp = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
 	if (KEYSTATE_UP == s &&
-		!(gFocusMgr.getKeyboardFocus() && dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus())->acceptsTextInput()))
+		! (focus_ctrlp && focus_ctrlp->acceptsTextInput()))
 	{
 		if (gChatBar->getCurrentChat().empty())
 		{
@@ -859,7 +867,7 @@ EKeyboardMode LLViewerKeyboard::getMode()
 	{
 		return MODE_EDIT_AVATAR;
 	}
-	else if (gAgentAvatarp && gAgentAvatarp->isSitting())
+	else if (isAgentAvatarValid() && gAgentAvatarp->isSitting())
 	{
 		return MODE_SITTING;
 	}

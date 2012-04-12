@@ -230,6 +230,12 @@ void LLFloaterGodTools::show(void *)
 	}
 }
 
+void LLFloaterGodTools::hide(void *)
+{
+	if(sGodTools)
+		sGodTools->setVisible(FALSE);;
+}
+
 void LLFloaterGodTools::showPanel(const std::string& panel_name)
 {
 	childShowTab("GodTools Tabs", panel_name);

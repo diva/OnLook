@@ -147,7 +147,6 @@ set(viewer_SOURCE_FILES
     llcolorswatch.cpp
     llcommandhandler.cpp
     llcommandlineparser.cpp
-    llcompass.cpp
     llcompilequeue.cpp
     llconfirmationmanager.cpp
     llconsole.cpp
@@ -557,7 +556,7 @@ set(viewer_SOURCE_FILES
     rlvinventory.cpp
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
-    rlvviewer2.cpp
+    rlvui.cpp
 	shcommandhandler.cpp
 	shfloatermediaticker.cpp
     )
@@ -638,7 +637,6 @@ set(viewer_HEADER_FILES
     llcolorswatch.h
     llcommandhandler.h
     llcommandlineparser.h
-    llcompass.h
     llcompilequeue.h
     llconfirmationmanager.h
     llconsole.h
@@ -1060,8 +1058,8 @@ set(viewer_HEADER_FILES
     rlvinventory.h
     rlvextensions.h
     rlvfloaterbehaviour.h
-    rlvviewer2.h
-    shcommandhandler.h
+    rlvui.h
+ 	shcommandhandler.h
 	shfloatermediaticker.h
     )
 

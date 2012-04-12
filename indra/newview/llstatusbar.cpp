@@ -60,7 +60,7 @@
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llframetimer.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llresmgr.h"
 #include "llworld.h"
 #include "llstatgraph.h"

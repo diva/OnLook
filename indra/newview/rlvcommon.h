@@ -17,99 +17,107 @@
 #ifndef RLV_COMMON_H
 #define RLV_COMMON_H
 
-#include "llmemberlistener.h"
-#include "llinventorymodel.h"
+#include "llavatarname.h"
 #include "llselectmgr.h"
-#include "llview.h"
 #include "llviewercontrol.h"
-#include "llviewerinventory.h"
+#include "llmemberlistener.h"
+
 #include "rlvdefines.h"
-#include "rlvviewer2.h"
+
+#ifdef LL_WINDOWS
+	#pragma warning (push)
+	#pragma warning (disable : 4702) // warning C4702: unreachable code
+#endif
+#include <boost/variant.hpp>
+#ifdef LL_WINDOWS
+	#pragma warning (pop)
+#endif
+
+using namespace LLOldEvents;
 
 // ============================================================================
 // Forward declarations
 //
 
-class RlvCommand;
-
-typedef std::vector<const LLViewerObject*> c_llvo_vec_t;
-
-// ============================================================================
-// RlvNotifications
 //
+// General viewer source
+//
+class LLInventoryItem;
+class LLViewerInventoryCategory;
+class LLViewerInventoryItem;
+class LLViewerJointAttachment;
+class LLWearable;
 
-class RlvNotifications
-{
-public:
-	static void notifyBehaviour(ERlvBehaviour eBhvr, ERlvParamType eType);
-	static void notifyBlockedTeleport()    { notifyBlocked("blocked_teleport"); }
-	static void notifyBlockedViewNote()    { notifyBlockedViewXXX(LLAssetType::lookup(LLAssetType::AT_NOTECARD)); }
-	static void notifyBlockedViewScript()  { notifyBlockedViewXXX(LLAssetType::lookup(LLAssetType::AT_SCRIPT)); }
-	static void notifyBlockedViewTexture() { notifyBlockedViewXXX(LLAssetType::lookup(LLAssetType::AT_TEXTURE)); }
+//
+// RLVa-specific
+//
+class RlvCommand;
+typedef std::list<RlvCommand> rlv_command_list_t;
+class RlvObject;
 
-	static void warnGiveToRLV();
-protected:
-	static void notifyBlocked(const std::string& strRlvString);
-	static void notifyBlockedViewXXX(const char* pstrAssetType);
+struct RlvException;
+typedef boost::variant<std::string, LLUUID, S32, ERlvBehaviour> RlvExceptionOption;
 
-	static void onGiveToRLVConfirmation(const LLSD& notification, const LLSD& response);
-};
+class RlvGCTimer;
 
 // ============================================================================
 // RlvSettings
 //
 
-inline BOOL rlvGetSettingBOOL(const std::string& strSetting, BOOL fDefault)
+template<typename T> inline T rlvGetSetting(const std::string& strSetting, const T& defaultValue)
 {
-	return (gSavedSettings.controlExists(strSetting)) ? gSavedSettings.getBOOL(strSetting) : fDefault;
+	RLV_ASSERT_DBG(gSavedSettings.controlExists(strSetting));
+	return (gSavedSettings.controlExists(strSetting)) ? gSavedSettings.get<T>(strSetting) : defaultValue;
 }
-inline BOOL rlvGetPerUserSettingsBOOL(const std::string& strSetting, BOOL fDefault)
+
+template<typename T> inline T rlvGetPerUserSetting(const std::string& strSetting, const T& defaultValue)
 {
-	return (gSavedPerAccountSettings.controlExists(strSetting)) ? gSavedPerAccountSettings.getBOOL(strSetting) : fDefault;
-}
-inline std::string rlvGetSettingString(const std::string& strSetting, const std::string& strDefault)
-{
-	return (gSavedSettings.controlExists(strSetting)) ? gSavedSettings.getString(strSetting) : strDefault;
+	RLV_ASSERT_DBG(gSavedPerAccountSettings.controlExists(strSetting));
+	return (gSavedPerAccountSettings.controlExists(strSetting)) ? gSavedPerAccountSettings.get<T>(strSetting) : defaultValue;
 }
 
 class RlvSettings
 {
 public:
-	static BOOL getDebug()						{ return rlvGetSettingBOOL(RLV_SETTING_DEBUG, FALSE); }
-	static BOOL getForbidGiveToRLV()			{ return rlvGetSettingBOOL(RLV_SETTING_FORBIDGIVETORLV, TRUE); }
-	static BOOL getNoSetEnv()					{ return fNoSetEnv; }
+	static F32  getAvatarOffsetZ()				{ return rlvGetSetting<F32>(RLV_SETTING_AVATAROFFSET_Z, 0.0); }
+	static bool getDebug()						{ return rlvGetSetting<bool>(RLV_SETTING_DEBUG, false); }
+	static bool getCanOOC()						{ return fCanOOC; }
+	static bool getForbidGiveToRLV()			{ return rlvGetSetting<bool>(RLV_SETTING_FORBIDGIVETORLV, true); }
+	static bool getNoSetEnv()					{ return fNoSetEnv; }
 
-	static std::string getWearAddPrefix()		{ return rlvGetSettingString(RLV_SETTING_WEARADDPREFIX, LLStringUtil::null); }
-	static std::string getWearReplacePrefix()	{ return rlvGetSettingString(RLV_SETTING_WEARREPLACEPREFIX, LLStringUtil::null); }
+	static std::string getWearAddPrefix()		{ return rlvGetSetting<std::string>(RLV_SETTING_WEARADDPREFIX, LLStringUtil::null); }
+	static std::string getWearReplacePrefix()	{ return rlvGetSetting<std::string>(RLV_SETTING_WEARREPLACEPREFIX, LLStringUtil::null); }
 
-	static bool getDebugHideUnsetDup()			{ return rlvGetSettingBOOL(RLV_SETTING_DEBUGHIDEUNSETDUP, FALSE); }
+	static bool getDebugHideUnsetDup()			{ return rlvGetSetting<bool>(RLV_SETTING_DEBUGHIDEUNSETDUP, false); }
 	#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 	static BOOL getEnableComposites()			{ return fCompositeFolders; }
 	#endif // RLV_EXPERIMENTAL_COMPOSITEFOLDERS
-	static BOOL getEnableLegacyNaming()			{ return fLegacyNaming; }
-	static BOOL getEnableWear()					{ return TRUE; }
-	static BOOL getEnableSharedWear()			{ return rlvGetSettingBOOL(RLV_SETTING_ENABLESHAREDWEAR, FALSE); }
-	static BOOL getHideLockedLayers()			{ return rlvGetSettingBOOL(RLV_SETTING_HIDELOCKEDLAYER, FALSE); }		
-	static BOOL getHideLockedAttach()			{ return rlvGetSettingBOOL(RLV_SETTING_HIDELOCKEDATTACH, FALSE); }
-	static BOOL getHideLockedInventory()		{ return rlvGetSettingBOOL(RLV_SETTING_HIDELOCKEDINVENTORY, FALSE); }
-	static BOOL getSharedInvAutoRename()		{ return rlvGetSettingBOOL(RLV_SETTING_SHAREDINVAUTORENAME, TRUE); }
-	static BOOL getShowNameTags()				{ return fShowNameTags; }
+	static bool getEnableLegacyNaming()			{ return fLegacyNaming; }
+	static bool getEnableSharedWear()			{ return rlvGetSetting<bool>(RLV_SETTING_ENABLESHAREDWEAR, false); }
+	static bool getHideLockedLayers()			{ return rlvGetSetting<bool>(RLV_SETTING_HIDELOCKEDLAYER, false); }		
+	static bool getHideLockedAttach()			{ return rlvGetSetting<bool>(RLV_SETTING_HIDELOCKEDATTACH, false); }
+	static bool getHideLockedInventory()		{ return rlvGetSetting<bool>(RLV_SETTING_HIDELOCKEDINVENTORY, false); }
+	static bool getSharedInvAutoRename()		{ return rlvGetSetting<bool>(RLV_SETTING_SHAREDINVAUTORENAME, true); }
+	static bool getShowNameTags()				{ return fShowNameTags; }
 
 	#ifdef RLV_EXTENSION_STARTLOCATION
-	static BOOL getLoginLastLocation()			{ return rlvGetPerUserSettingsBOOL(RLV_SETTING_LOGINLASTLOCATION, TRUE); }
+	static bool getLoginLastLocation()			{ return rlvGetPerUserSetting<bool>(RLV_SETTING_LOGINLASTLOCATION, true); }
 	static void updateLoginLastLocation();
 	#endif // RLV_EXTENSION_STARTLOCATION
 
 	static void initClass();
 protected:
-	static bool onChangedSettingBOOL(const LLSD& newvalue, BOOL* pfSetting);
+	static bool onChangedAvatarOffset(const LLSD& sdValue);
+	static bool onChangedMenuLevel();
+	static bool onChangedSettingBOOL(const LLSD& sdValue, bool* pfSetting);
 
 	#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 	static BOOL fCompositeFolders;
 	#endif // RLV_EXPERIMENTAL_COMPOSITEFOLDERS
-	static BOOL fLegacyNaming;
-	static BOOL fNoSetEnv;
-	static BOOL fShowNameTags;
+	static bool fCanOOC;
+	static bool fLegacyNaming;
+	static bool fNoSetEnv;
+	static bool fShowNameTags;
 };
 
 // ============================================================================
@@ -121,6 +129,7 @@ class RlvStrings
 public:
 	static void initClass();
 
+	static const std::string& getAnonym(const LLAvatarName& avName);		// @shownames
 	static const std::string& getAnonym(const std::string& strName);		// @shownames
 	static const std::string& getBehaviourNotificationString(ERlvBehaviour eBhvr, ERlvParamType eType);
 	static const std::string& getString(const std::string& strStringName);
@@ -133,10 +142,6 @@ public:
 protected:
 	static std::vector<std::string> m_Anonyms;
 	static std::map<std::string, std::string> m_StringMap;
-	#ifdef RLV_EXTENSION_NOTIFY_BEHAVIOUR
-	static std::map<ERlvBehaviour, std::string> m_BhvrAddMap;
-	static std::map<ERlvBehaviour, std::string> m_BhvrRemMap;
-	#endif // RLV_EXTENSION_NOTIFY_BEHAVIOUR
 };
 
 // ============================================================================
@@ -156,6 +161,9 @@ public:
 	static bool isForceTp()	{ return m_fForceTp; }
 	static void forceTp(const LLVector3d& posDest);									// Ignores restrictions that might otherwise prevent tp'ing
 
+	static void notifyBlocked(const std::string& strNotifcation, const LLSD& sdArgs = LLSD());
+	static void notifyBlockedGeneric()	{ notifyBlocked(RLV_STRING_BLOCKED_GENERIC); }
+	static void notifyBlockedViewXXX(LLAssetType::EType assetType) { notifyBlocked(RLV_STRING_BLOCKED_VIEWXXX, LLSD().with("[TYPE]", LLAssetType::lookup(assetType))); }
 	static void notifyFailedAssertion(const std::string& strAssert, const std::string& strFile, int nLine);
 
 	static void sendBusyMessage(const LLUUID& idTo, const std::string& strMsg, const LLUUID& idSession = LLUUID::null);
@@ -163,6 +171,8 @@ public:
 	static bool sendChatReply(S32 nChannel, const std::string& strUTF8Text);
 	static bool sendChatReply(const std::string& strChannel, const std::string& strUTF8Text);
 
+	static void warnGiveToRLV();
+	static void onGiveToRLVConfirmation(const LLSD& notification, const LLSD& response);
 protected:
 	static bool m_fForceTp;															// @standtp
 };
@@ -170,13 +180,6 @@ protected:
 // ============================================================================
 // Extensibility classes
 //
-
-class RlvBehaviourObserver
-{
-public:
-	virtual ~RlvBehaviourObserver() {}
-	virtual void changed(const RlvCommand& rlvCmd, bool fInternal) = 0;
-};
 
 class RlvCommandHandler
 {
@@ -193,14 +196,20 @@ typedef bool (RlvCommandHandler::*rlvCommandHandler)(const RlvCommand& rlvCmd, E
 // Generic menu enablers
 //
 
+BOOL rlvMenuCheckEnabled(void*);
+void rlvMenuToggleEnabled(void*);
+//void rlvMenuToggleVisible(void*);
+//bool rlvMenuEnableIfNot(const LLSD& sdParam);
 class RlvEnableIfNot : public LLMemberListener<LLView>
 {
-	bool handleEvent(LLPointer<LLOldEvents::LLEvent>, const LLSD&);
+	bool handleEvent(LLPointer<LLEvent>, const LLSD&);
 };
 
 // ============================================================================
 // Selection functors
 //
+
+bool rlvCanDeleteOrReturn();
 
 struct RlvSelectHasLockedAttach : public LLSelectedNodeFunctor
 {
@@ -215,27 +224,13 @@ struct RlvSelectIsEditable : public LLSelectedNodeFunctor
 	/*virtual*/ bool apply(LLSelectNode* pNode);
 };
 
-struct RlvSelectIsOwnedByOrGroupOwned : public LLSelectedNodeFunctor
-{
-	RlvSelectIsOwnedByOrGroupOwned(const LLUUID& uuid) : m_idAgent(uuid) {}
-	virtual bool apply(LLSelectNode* pNode);
-protected:
-	LLUUID m_idAgent;
-};
-
 struct RlvSelectIsSittingOn : public LLSelectedNodeFunctor
 {
-	RlvSelectIsSittingOn(LLXform* pObject) : m_pObject(pObject) {}
-	virtual bool apply(LLSelectNode* pNode);
+	RlvSelectIsSittingOn(const LLVOAvatar* pAvatar) : m_pAvatar(pAvatar) {}
+	/*virtual*/ bool apply(LLSelectNode* pNode);
 protected:
-	LLXform* m_pObject;
+	const LLVOAvatar* m_pAvatar;
 };
-
-// ============================================================================
-// Various public helper functions
-//
-
-BOOL rlvAttachToEnabler(void* pParam);
 
 // ============================================================================
 // Predicates
@@ -265,12 +260,8 @@ protected:
 struct RlvPredIsEqualOrLinkedItem
 {
 	RlvPredIsEqualOrLinkedItem(const LLViewerInventoryItem* pItem) : m_pItem(pItem) {}
-	RlvPredIsEqualOrLinkedItem(const LLUUID& idItem) { m_pItem = gInventory.getItem(idItem); }
-
-	bool operator()(const LLViewerInventoryItem* pItem) const
-	{
-		return (m_pItem) && (pItem) && (m_pItem->getLinkedUUID() == pItem->getLinkedUUID());
-	}
+	RlvPredIsEqualOrLinkedItem(const LLUUID& idItem);
+	bool operator()(const LLViewerInventoryItem* pItem) const;
 protected:
 	const LLViewerInventoryItem* m_pItem;
 };
@@ -284,6 +275,12 @@ template<typename T> struct RlvPredValuesEqual
 // ============================================================================
 // Inlined class member functions
 //
+
+// Checked: 2010-10-31 (RLVa-1.2.2a) | Added: RLVa-1.2.2a
+inline const std::string& RlvStrings::getAnonym(const LLAvatarName& avName)
+{
+	return getAnonym(avName.mDisplayName);
+}
 
 // Checked: 2010-03-26 (RLVa-1.2.0b) | Modified: RLVa-1.0.2a
 inline bool RlvUtil::isEmote(const std::string& strUTF8Text)

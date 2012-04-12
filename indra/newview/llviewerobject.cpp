@@ -2,31 +2,25 @@
  * @file llviewerobject.cpp
  * @brief Base class for viewer objects
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -52,6 +46,7 @@
 #include "llprimitive.h"
 #include "llquantize.h"
 #include "llregionhandle.h"
+#include "llsdserialize.h"
 #include "lltree_common.h"
 #include "llxfermanager.h"
 #include "message.h"
@@ -69,6 +64,7 @@
 #include "llfloaterproperties.h"
 #include "llfloatertools.h"
 #include "llfollowcam.h"
+#include "llhudtext.h"
 #include "llselectmgr.h"
 #include "llrendersphere.h"
 #include "lltooldraganddrop.h"
@@ -82,6 +78,7 @@
 #include "llviewerstats.h"
 #include "llviewertextureanim.h"
 #include "llviewerwindow.h" // For getSpinAxis
+#include "llvoavatar.h"
 #include "llvoavatarself.h"
 #include "llvoclouds.h"
 #include "llvograss.h"
@@ -104,6 +101,7 @@
 
 // [RLVa:KB]
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 //#define DEBUG_UPDATE_TYPE
@@ -534,23 +532,139 @@ void LLViewerObject::setNameValueList(const std::string& name_value_list)
 	}
 }
 
-
 // This method returns true if the object is over land owned by the
 // agent.
-BOOL LLViewerObject::isOverAgentOwnedLand() const
+bool LLViewerObject::isReturnable()
 {
-	return mRegionp
-		&& mRegionp->getParcelOverlay()
-		&& mRegionp->getParcelOverlay()->isOwnedSelf(getPositionRegion());
+	if (isAttachment())
+	{
+		return false;
+	}
+		
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Added: RLVa-1.4.0a
+	// Block if: @rez=n restricted and owned by us or a group *or* @unsit=n restricted and being sat on by us
+	if ( (rlv_handler_t::isEnabled()) &&
+		 ( ((gRlvHandler.hasBehaviour(RLV_BHVR_REZ)) && ((permYouOwner() || permGroupOwner()))) ||
+		   ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (isAgentAvatarValid()) && (getRootEdit()->isChild(gAgentAvatarp))) ) )
+	{
+		return false;
+	}
+// [/RLVa:KB]
+	std::vector<LLBBox> boxes;
+	boxes.push_back(LLBBox(getPositionRegion(), getRotationRegion(), getScale() * -0.5f, getScale() * 0.5f).getAxisAligned());
+	for (child_list_t::iterator iter = mChildList.begin();
+		 iter != mChildList.end(); iter++)
+	{
+		LLViewerObject* child = *iter;
+		boxes.push_back( LLBBox(child->getPositionRegion(), child->getRotationRegion(), child->getScale() * -0.5f, child->getScale() * 0.5f).getAxisAligned());
+	}
+
+	bool result = (mRegionp && mRegionp->objectIsReturnable(getPositionRegion(), boxes)) ? 1 : 0;
+	
+	if ( !result )
+	{		
+		//Get list of neighboring regions relative to this vo's region
+		std::vector<LLViewerRegion*> uniqueRegions;
+		mRegionp->getNeighboringRegions( uniqueRegions );
+	
+		//Build aabb's - for root and all children
+		std::vector<PotentialReturnableObject> returnables;
+		typedef std::vector<LLViewerRegion*>::iterator RegionIt;
+		RegionIt regionStart = uniqueRegions.begin();
+		RegionIt regionEnd   = uniqueRegions.end();
+		
+		for (; regionStart != regionEnd; ++regionStart )
+		{
+			LLViewerRegion* pTargetRegion = *regionStart;
+			//Add the root vo as there may be no children and we still want
+			//to test for any edge overlap
+			buildReturnablesForChildrenVO( returnables, this, pTargetRegion );
+			//Add it's children
+			for (child_list_t::iterator iter = mChildList.begin();  iter != mChildList.end(); iter++)
+			{
+				LLViewerObject* pChild = *iter;		
+				buildReturnablesForChildrenVO( returnables, pChild, pTargetRegion );
+			}
+		}	
+	
+		//TBD#Eventually create a region -> box list map 
+		typedef std::vector<PotentialReturnableObject>::iterator ReturnablesIt;
+		ReturnablesIt retCurrentIt = returnables.begin();
+		ReturnablesIt retEndIt = returnables.end();
+	
+		for ( ; retCurrentIt !=retEndIt; ++retCurrentIt )
+		{
+			boxes.clear();
+			LLViewerRegion* pRegion = (*retCurrentIt).pRegion;
+			boxes.push_back( (*retCurrentIt).box );	
+			bool retResult = 	pRegion
+							 && pRegion->childrenObjectReturnable( boxes )
+							 && pRegion->canManageEstate();
+			if ( retResult )
+			{ 
+				result = true;
+				break;
+			}
+		}
+	}
+	return result;
 }
 
-// This method returns true if the object is over land owned by the
-// agent.
-BOOL LLViewerObject::isOverGroupOwnedLand() const
+void LLViewerObject::buildReturnablesForChildrenVO( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion )
 {
-	return mRegionp 
-		&& mRegionp->getParcelOverlay()
-		&& mRegionp->getParcelOverlay()->isOwnedGroup(getPositionRegion());
+	if ( !pChild )
+	{
+		llerrs<<"child viewerobject is NULL "<<llendl;
+	}
+	
+	constructAndAddReturnable( returnables, pChild, pTargetRegion );
+	
+	//We want to handle any children VO's as well
+	for (child_list_t::iterator iter = pChild->mChildList.begin();  iter != pChild->mChildList.end(); iter++)
+	{
+		LLViewerObject* pChildofChild = *iter;
+		buildReturnablesForChildrenVO( returnables, pChildofChild, pTargetRegion );
+	}
+}
+
+void LLViewerObject::constructAndAddReturnable( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion )
+{
+	
+	LLVector3 targetRegionPos;
+	targetRegionPos.setVec( pChild->getPositionGlobal() );	
+	
+	LLBBox childBBox = LLBBox( targetRegionPos, pChild->getRotationRegion(), pChild->getScale() * -0.5f, 
+							    pChild->getScale() * 0.5f).getAxisAligned();
+	
+	LLVector3 edgeA = targetRegionPos + childBBox.getMinLocal();
+	LLVector3 edgeB = targetRegionPos + childBBox.getMaxLocal();
+	
+	LLVector3d edgeAd, edgeBd;
+	edgeAd.setVec(edgeA);
+	edgeBd.setVec(edgeB);
+	
+	//Only add the box when either of the extents are in a neighboring region
+	if ( pTargetRegion->pointInRegionGlobal( edgeAd ) || pTargetRegion->pointInRegionGlobal( edgeBd ) )
+	{
+		PotentialReturnableObject returnableObj;
+		returnableObj.box		= childBBox;
+		returnableObj.pRegion	= pTargetRegion;
+		returnables.push_back( returnableObj );
+	}
+}
+
+bool LLViewerObject::crossesParcelBounds()
+{
+	std::vector<LLBBox> boxes;
+	boxes.push_back(LLBBox(getPositionRegion(), getRotationRegion(), getScale() * -0.5f, getScale() * 0.5f).getAxisAligned());
+	for (child_list_t::iterator iter = mChildList.begin();
+		 iter != mChildList.end(); iter++)
+	{
+		LLViewerObject* child = *iter;
+		boxes.push_back(LLBBox(child->getPositionRegion(), child->getRotationRegion(), child->getScale() * -0.5f, child->getScale() * 0.5f).getAxisAligned());
+	}
+
+	return mRegionp && mRegionp->objectsCrossParcel(boxes);
 }
 
 BOOL LLViewerObject::setParent(LLViewerObject* parent)
@@ -653,7 +767,10 @@ void LLViewerObject::addThisAndNonJointChildren(std::vector<LLViewerObject*>& ob
 	}
 }
 
-BOOL LLViewerObject::isChild(LLViewerObject *childp) const
+//BOOL LLViewerObject::isChild(LLViewerObject *childp) const
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Added: RLVa-1.4.0a
+BOOL LLViewerObject::isChild(const LLViewerObject *childp) const
+// [/RLVa:KB]
 {
 	for (child_list_t::const_iterator iter = mChildList.begin();
 		 iter != mChildList.end(); ++iter)

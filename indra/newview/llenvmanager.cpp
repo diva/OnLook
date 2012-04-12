@@ -41,9 +41,11 @@
 #include "llwaterparammanager.h"
 #include "llwlhandlers.h"
 #include "llwlparammanager.h"
-//#include "kcwlinterface.h"
 #include "m7wlinterface.h"
+// [RLVa:KB] - Checked: 2011-09-04 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+#include <boost/algorithm/string.hpp>
 #include "rlvhandler.h"
+// [/RLVa:KB]
 
 std::string LLEnvPrefs::getWaterPresetName() const
 {
@@ -492,21 +494,15 @@ void LLEnvManagerNew::onRegionSettingsResponse(const LLSD& content)
 	// Load region sky presets.
 	LLWLParamManager::getInstance()->refreshRegionPresets();
 
-	// Use the region settings if parcel settings didnt override it already -KC
-	if (!M7WindlightInterface::getInstance()->hasOverride())
+	bool bOverridden = M7WindlightInterface::getInstance()->hasOverride();
+
+	// If using server settings, update managers.
+//	if (getUseRegionSettings())
+// [RLVa:KB] - Checked: 2011-08-29 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+	if (!bOverridden && (getUseRegionSettings()) && (LLWLParamManager::getInstance()->mAnimator.getIsRunning()) )
+// [/RLVa:KB]
 	{
-		// If using server settings, update managers.
-		if (getUseRegionSettings())
-		{
-			updateManagersFromPrefs(mInterpNextChangeMessage);
-		}
-		//bit of a hacky override since I've repurposed many of the settings and methods here -KC
-		//NOTE* It might not be a good idea to do this if under RLV_BHVR_SETENV -KC
-		else if (gSavedSettings.getBOOL("UseEnvironmentFromRegionAlways") 
-		 && !(rlv_handler_t::isEnabled() && gRlvHandler.hasBehaviour(RLV_BHVR_SETENV)))
-		{
-			setUseRegionSettings(true, mInterpNextChangeMessage);
-		}
+		updateManagersFromPrefs(mInterpNextChangeMessage);
 	}
 
 	// Let interested parties know about the region settings update.
@@ -614,6 +610,12 @@ void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 
 void LLEnvManagerNew::updateManagersFromPrefs(bool interpolate)
 {
+// [RLVa:KB] - Checked: 2011-09-04 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SETENV))
+	{
+		return;
+	}
+// [/RLVa:KB]
 	// Apply water settings.
 	updateWaterFromPrefs(interpolate);
 

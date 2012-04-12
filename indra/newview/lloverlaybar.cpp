@@ -64,7 +64,7 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 #include "llvoiceclient.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvoiceremotectrl.h"
 #include "llmediactrl.h"
 #include "llselectmgr.h"

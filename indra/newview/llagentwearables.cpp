@@ -2,33 +2,26 @@
  * @file llagentwearables.cpp
  * @brief LLAgentWearables class implementation
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2010, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlife.com/developers/opensource/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlife.com/developers/opensource/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
- * 
  */
 
 #include "llviewerprecompiledheaders.h"
@@ -59,7 +52,7 @@
 #include "llfloatercustomize.h"
 
 
-// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
 #include "rlvinventory.h"
 #include "llattachmentsmgr.h"
@@ -72,6 +65,9 @@
 LLAgentWearables gAgentWearables;
 
 BOOL LLAgentWearables::mInitialWearablesUpdateReceived = FALSE;
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
+bool LLAgentWearables::mInitialWearablesLoaded = false;
+// [/SL:KB]
 
 using namespace LLVOAvatarDefines;
 
@@ -538,9 +534,8 @@ void LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
 	old_wearable->revertValues();
 }
 
-void LLAgentWearables::revertWearable(const LLWearableType::EType type, const U32 index, bool set_by_user)
+void LLAgentWearables::revertWearable(const LLWearableType::EType type, const U32 index)
 {
-	//llassert_always(index == 0);
 	LLWearable* wearable = getWearable(type, index);
 	llassert(wearable);
 	if (wearable)
@@ -789,12 +784,28 @@ U32 LLAgentWearables::pushWearable(const LLWearableType::EType type, LLWearable 
 		llwarns << "Null wearable sent for type " << type << llendl;
 		return MAX_CLOTHING_PER_TYPE;
 	}
-	if (type < LLWearableType::WT_COUNT || mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE)
+//	if (type < LLWearableType::WT_COUNT || mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE)
+//	{
+//		mWearableDatas[type].push_back(wearable);
+//		wearableUpdated(wearable);
+//		checkWearableAgainstInventory(wearable);
+//		return mWearableDatas[type].size()-1;
+//	}
+// [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+	if ( (type < LLWearableType::WT_COUNT) && (mWearableDatas[type].size() < MAX_CLOTHING_PER_TYPE) )
 	{
-		mWearableDatas[type].push_back(wearable);
+		// Don't add the same wearable twice
+		U32 idxWearable = getWearableIndex(wearable);
+		RLV_ASSERT(MAX_CLOTHING_PER_TYPE == idxWearable); // pushWearable() on an already added wearable is a bug *somewhere*
+		if (MAX_CLOTHING_PER_TYPE == idxWearable)
+		{
+			mWearableDatas[type].push_back(wearable);
+			idxWearable = mWearableDatas[type].size() - 1;
+		}
 		wearableUpdated(wearable);
 		checkWearableAgainstInventory(wearable);
-		return mWearableDatas[type].size()-1;
+		return idxWearable;
+// [/RLVa:KB]
 	}
 	return MAX_CLOTHING_PER_TYPE;
 }
@@ -947,7 +958,6 @@ U32 LLAgentWearables::itemUpdatePendingCount() const
 
 const LLUUID LLAgentWearables::getWearableItemID(LLWearableType::EType type, U32 index) const
 {
-	//llassert_always(index == 0);
 	const LLWearable *wearable = getWearable(type,index);
 	if (wearable)
 		return wearable->getItemID();
@@ -955,9 +965,32 @@ const LLUUID LLAgentWearables::getWearableItemID(LLWearableType::EType type, U32
 		return LLUUID();
 }
 
+// [RLVa:KB] - Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void LLAgentWearables::getWearableItemIDs(uuid_vec_t& idItems) const
+{
+	for (wearableentry_map_t::const_iterator itWearableType = mWearableDatas.begin(); 
+			itWearableType != mWearableDatas.end(); ++itWearableType)
+	{
+		getWearableItemIDs(itWearableType->first, idItems);
+	}
+}
+
+void LLAgentWearables::getWearableItemIDs(LLWearableType::EType eType, uuid_vec_t& idItems) const
+{
+	wearableentry_map_t::const_iterator itWearableType = mWearableDatas.find(eType);
+	if (mWearableDatas.end() != itWearableType)
+	{
+		for (wearableentry_vec_t::const_iterator itWearable = itWearableType->second.begin(), endWearable = itWearableType->second.end();
+				itWearable != endWearable; ++itWearable)
+		{
+			idItems.push_back((*itWearable)->getItemID());
+		}
+	}
+}
+// [/RLVa:KB]
+
 const LLUUID LLAgentWearables::getWearableAssetID(LLWearableType::EType type, U32 index) const
 {
-	//llassert_always(index == 0);
 	const LLWearable *wearable = getWearable(type,index);
 	if (wearable)
 		return wearable->getAssetID();
@@ -1317,7 +1350,6 @@ void LLAgentWearables::addWearableToAgentInventory(LLPointer<LLInventoryCallback
 
 void LLAgentWearables::removeWearable(const LLWearableType::EType type, bool do_remove_all, U32 index)
 {
-	//llassert_always(index == 0);
 	if (gAgent.isTeen() &&
 		(type == LLWearableType::WT_UNDERSHIRT || type == LLWearableType::WT_UNDERPANTS))
 	{
@@ -1339,7 +1371,11 @@ void LLAgentWearables::removeWearable(const LLWearableType::EType type, bool do_
 	{
 		LLWearable* old_wearable = getWearable(type,index);
 		
-		if (old_wearable)
+//		if (old_wearable)
+// [RLVa:KB] - Checked: 2010-05-11 (RLVa-1.2.0c) | Modified: RLVa-1.2.0g
+		// NOTE: we block actual removal in removeWearableFinal(); all we really want here is to avoid showing the save notice
+		if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
+// [/RLVa:KB]
 		{
 			if (old_wearable->isDirty())
 			{
@@ -1397,20 +1433,30 @@ void LLAgentWearables::removeWearableFinal( LLWearableType::EType type, bool do_
 		{
 			LLWearable* old_wearable = getWearable(type,i);
 			//queryWearableCache(); // moved below
-			if (old_wearable)
+//			if (old_wearable)
+// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+			if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
+// [/RLVa:KB]
 			{
 				popWearable(old_wearable);
 				old_wearable->removeFromAvatar(TRUE);
 			}
 		}
-		mWearableDatas[type].clear();
+//		mWearableDatas[type].clear();
+// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+		// The line above shouldn't be needed and would cause issues if we block removing one of the wearables
+		RLV_VERIFY( ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.hasLockedWearable(type))) ? mWearableDatas[type].empty() : true );
+// [/RLVa:KB]
 	}
 	else
 	{
 		LLWearable* old_wearable = getWearable(type, index);
 		//queryWearableCache(); // moved below
 
-		if (old_wearable)
+//		if (old_wearable)
+// [RLVa:KB] - Checked: 2010-05-14 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+		if ( (old_wearable) && ((!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.isLockedWearable(old_wearable))) )
+// [/RLVa:KB]
 		{
 			popWearable(old_wearable);
 			old_wearable->removeFromAvatar(TRUE);
@@ -1472,6 +1518,12 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 	S32 count = wearables.count();
 	llassert(items.count() == count);
 
+// [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+	// If the user is @add/remoutfit restricted in any way then this function won't just work as-is, so instead of removing and re-adding
+	// we're stuck with any wearable type potentially having left-over (remove locked) clothing that we'll need to reorder in-place
+	S32 idxCurPerType[LLWearableType::WT_COUNT] = { 0 };
+// [/RLVa:KB]
+
 	S32 i;
 	for (i = 0; i < count; i++)
 	{
@@ -1496,10 +1548,51 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 				// exactly one wearable per body part
 				setWearable(type,0,new_wearable);
 			}
-			else
+//			else
+//			{
+//				pushWearable(type,new_wearable);
+//			}
+// [RLVa:KB] - Checked: 2010-06-08 (RLVa-1.2.0g) | Added: RLVa-1.2.0g
+			else if ( (!rlv_handler_t::isEnabled()) || (!gRlvWearableLocks.hasLockedWearable(type)) || (!remove) )
 			{
+				// Sanity check: there shouldn't be any worn wearables for this type the first time we encounter it
+				RLV_ASSERT( (!remove) || (0 != idxCurPerType[type]) || (0 == getWearableCount(type)) );
 				pushWearable(type,new_wearable);
 			}
+			else
+			{
+				// Get the current index of the wearable (or add it if doesn't exist yet)
+				S32 idxCur = getWearableIndex(new_wearable);
+				if (MAX_CLOTHING_PER_TYPE == idxCur)
+				{
+					// Skip adding if @addoutfit=n restricted *unless* the wearable made it into COF [see LLAppMgr::updateAgentWearables()]
+					if ( (RLV_WEAR_LOCKED == gRlvWearableLocks.canWear(type)) && 
+						 (!gInventory.isObjectDescendentOf(new_item->getUUID(), LLAppearanceMgr::instance().getCOF())) )
+					{
+						continue;
+					}
+					idxCur = pushWearable(type,new_wearable);
+				}
+
+				// Since we're moving up from index 0 we just swap the two wearables and things will work out in the end (hopefully)
+				if (idxCurPerType[type] != idxCur)
+				{
+					wearableentry_map_t::iterator itWearable = mWearableDatas.find(type);
+					RLV_ASSERT(itWearable != mWearableDatas.end());
+					if (itWearable == mWearableDatas.end()) continue;
+					wearableentry_vec_t& typeWearable = itWearable->second;
+					RLV_ASSERT(typeWearable.size() >= 2);
+					if (typeWearable.size() < 2) continue;
+
+					typeWearable[idxCur] = typeWearable[idxCurPerType[type]];
+					typeWearable[idxCurPerType[type]] = new_wearable;
+					//wearableUpdated(new_wearable);
+					//checkWearableAgainstInventory(new_wearable);
+				}
+			}
+			idxCurPerType[type]++;
+// [/RLVa:KB]
+
 			wearableUpdated(new_wearable);
 			checkWearableAgainstInventory(new_wearable);
 		}
@@ -1517,6 +1610,13 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 	// Start rendering & update the server
 	mWearablesLoaded = TRUE; 
 	checkWearablesLoaded();
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-09-22 (Catznip-3.0.0a) | Modified: Catznip-2.2.0a
+	if (!mInitialWearablesLoaded)
+	{
+		mInitialWearablesLoaded = true;
+		mInitialWearablesLoadedSignal();
+	}
+// [/SL:KB]
 	notifyLoadingFinished();
 	queryWearableCache();
 	updateServer();
@@ -1539,11 +1639,16 @@ void LLAgentWearables::setWearableItem(LLInventoryItem* new_item, LLWearable* ne
 	
 	const LLWearableType::EType type = new_wearable->getType();
 
-	/*if (isFirstPhysicsWearable(type, new_item, new_wearable))
+// [RLVa:KB] - Checked: 2010-03-19 (RLVa-1.2.0a) | Modified: RLVa-1.2.0g
+	// TODO-RLVa: [RLVa-1.2.1] This looks like dead code in SL-2.0.2 so we can't really check to see if it works :|
+	if (rlv_handler_t::isEnabled())
 	{
-		return;
-	}*/
-	
+		ERlvWearMask eWear = gRlvWearableLocks.canWear(type);
+		if ( (RLV_WEAR_LOCKED == eWear) || ((!do_append) && (!(eWear & RLV_WEAR_REPLACE))) )
+			return;
+	}
+// [/RLVa:KB]
+
 	if (!do_append)
 	{
 		// Remove old wearable, if any
@@ -1751,28 +1856,31 @@ LLUUID LLAgentWearables::computeBakedTextureHash(LLVOAvatarDefines::EBakedTextur
 
 // User has picked "remove from avatar" from a menu.
 // static
-void LLAgentWearables::userRemoveWearable(const LLWearableType::EType &type, const U32 &index)
-{
-	if( !(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES) ) //&&
-		//!((!gAgent.isTeen()) && ( type==WT_UNDERPANTS || type==WT_UNDERSHIRT )) )
-	{
-		gAgentWearables.removeWearable(type,false,index);
-	}
-}
+//void LLAgentWearables::userRemoveWearable(const LLWearableType::EType &type, const U32 &index)
+//{
+//	if (!(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES)) //&&
+//		//!((!gAgent.isTeen()) && (type==LLWearableType::WT_UNDERPANTS || type==LLWearableType::WT_UNDERSHIRT)))
+//	{
+//		gAgentWearables.removeWearable(type,false,index);
+//	}
+//}
 
 //static 
-void LLAgentWearables::userRemoveWearablesOfType(const LLWearableType::EType &type)
-{
-	if (!(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES)) //&&
-		//!((!gAgent.isTeen()) && (type==LLWearableType::WT_UNDERPANTS || type==LLWearableType::WT_UNDERSHIRT)))
-	{
-		gAgentWearables.removeWearable(type,true,0);
-	}
-}
+//void LLAgentWearables::userRemoveWearablesOfType(const LLWearableType::EType &type)
+//{
+//	if (!(type==LLWearableType::WT_SHAPE || type==LLWearableType::WT_SKIN || type==LLWearableType::WT_HAIR || type==LLWearableType::WT_EYES)) //&&
+//		//!((!gAgent.isTeen()) && (type==LLWearableType::WT_UNDERPANTS || type==LLWearableType::WT_UNDERSHIRT)))
+//	{
+//		gAgentWearables.removeWearable(type,true,0);
+//	}
+//}
 
 // Combines userRemoveAllAttachments() and userAttachMultipleAttachments() logic to
 // get attachments into desired state with minimal number of adds/removes.
-void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array)
+//void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array)
+// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
+void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj_item_array, bool fAttachOnly)
+// [/SL:KB]
 {
 	// Possible cases:
 	// already wearing but not in request set -> take off.
@@ -1838,8 +1946,8 @@ void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj
 
 	// Remove everything in objects_to_remove
 //	userRemoveMultipleAttachments(objects_to_remove);
-// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-2.2.0a) | Added: Catznip-2.2.0a
-	if (!gAgentAvatarp->isFullyLoaded())
+// [SL:KB] - Patch: Appearance-SyncAttach | Checked: 2010-09-22 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
+	if (!fAttachOnly)
 	{
 		userRemoveMultipleAttachments(objects_to_remove);
 	}
@@ -1852,6 +1960,34 @@ void LLAgentWearables::userUpdateAttachments(LLInventoryModel::item_array_t& obj
 void LLAgentWearables::userRemoveMultipleAttachments(llvo_vec_t& objects_to_remove)
 {
 	if (!isAgentAvatarValid()) return;
+
+// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
+	// RELEASE-RLVa: [SL-2.0.0] Check our callers and verify that erasing elements from the passed vector won't break random things
+	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_REMOVE)) )
+	{
+		llvo_vec_t::iterator itObj = objects_to_remove.begin();
+		while (itObj != objects_to_remove.end())
+		{
+			const LLViewerObject* pAttachObj = *itObj;
+			if (gRlvAttachmentLocks.isLockedAttachment(pAttachObj))
+			{
+				itObj = objects_to_remove.erase(itObj);
+
+				// Fall-back code: re-add the attachment if it got removed from COF somehow (compensates for possible bugs elsewhere)
+				LLInventoryModel::cat_array_t folders; LLInventoryModel::item_array_t items;
+				LLLinkedItemIDMatches f(pAttachObj->getAttachmentItemID());
+				gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(), folders, items, LLInventoryModel::EXCLUDE_TRASH, f);
+				RLV_ASSERT( 0 != items.count() );
+				if (0 == items.count())
+					LLAppearanceMgr::instance().registerAttachment(pAttachObj->getAttachmentItemID());
+			}
+			else
+			{
+				++itObj;
+			}
+		}
+	}
+// [/RLVa:KB]
 
 	if (objects_to_remove.empty())
 		return;
@@ -1899,9 +2035,11 @@ void LLAgentWearables::userRemoveAllAttachments()
 
 void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_array_t& obj_item_array)
 {
-// [RLVa:KB] - Checked: 2010-03-04 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
-	// RELEASE-RLVa: [SL-2.0.0] Check our callers and verify that erasing elements from the passed vector won't break random things
-	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+	static bool sInitialAttachmentsRequested = false;
+
+	// RELEASE-RLVa: [SL-2.5.2] Check our callers and verify that erasing elements from the passed vector won't break random things
+	if ( (rlv_handler_t::isEnabled()) && (sInitialAttachmentsRequested) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
 	{
 		// Fall-back code: everything should really already have been pruned before we get this far
 		for (S32 idxItem = obj_item_array.count() - 1; idxItem >= 0; idxItem--)
@@ -1954,6 +2092,12 @@ void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_arra
 		msg->addUUIDFast(_PREHASH_ItemID, item->getLinkedUUID());
 		msg->addUUIDFast(_PREHASH_OwnerID, item->getPermissions().getOwner());
 		msg->addU8Fast(_PREHASH_AttachmentPt, replace? 0 : ATTACHMENT_ADD);	// Wear at the previous or default attachment point
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+		if ( (rlv_handler_t::isEnabled()) && (sInitialAttachmentsRequested) && (gRlvAttachmentLocks.hasLockedAttachmentPoint(RLV_LOCK_ANY)) )
+		{
+			RlvAttachmentLockWatchdog::instance().onWearAttachment(item, RLV_WEAR_ADD);
+		}
+// [/RLVa:KB]
 		pack_permissions_slam(msg, item->getFlags(), item->getPermissions());
 		msg->addStringFast(_PREHASH_Name, item->getName());
 		msg->addStringFast(_PREHASH_Description, item->getDescription());
@@ -1964,6 +2108,10 @@ void LLAgentWearables::userAttachMultipleAttachments(LLInventoryModel::item_arra
 			msg->sendReliable( gAgent.getRegion()->getHost() );
 		}
 	}
+
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1b) | Added: RLVa-1.3.1b
+	sInitialAttachmentsRequested = true;
+// [/RLVa:KB]
 }
 
 void LLAgentWearables::checkWearablesLoaded() const
@@ -2178,6 +2326,13 @@ boost::signals2::connection LLAgentWearables::addLoadedCallback(loaded_callback_
 {
 	return mLoadedSignal.connect(cb);
 }
+
+// [SL:KB] - Patch: Appearance-InitialWearablesLoadedCallback | Checked: 2010-08-14 (Catznip-3.0.0a) | Added: Catznip-2.1.1d
+boost::signals2::connection LLAgentWearables::addInitialWearablesLoadedCallback(loaded_callback_t cb)
+{
+	return mInitialWearablesLoadedSignal.connect(cb);
+}
+// [/SL:KB]
 
 void LLAgentWearables::notifyLoadingStarted()
 {

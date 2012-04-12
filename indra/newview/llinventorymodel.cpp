@@ -48,8 +48,9 @@
 #include "llvoavatarself.h"
 #include "statemachine/aievent.h"
 
-// [RLVa:KB]
+// [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 //#define DIFF_INVENTORY_FILES

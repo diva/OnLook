@@ -17,25 +17,14 @@
 #ifndef RLV_HELPER_H
 #define RLV_HELPER_H
 
-#include "llagent.h"
-#include "llboost.h"
-#include "llgesturemgr.h"
-#include "llinventoryobserver.h"
-#include "llviewerinventory.h"
-#include "llvoavatar.h"
-#include "llwlparamset.h"
 #include "lleventtimer.h"
+#include "llinventorymodel.h"
+#include "llviewerinventory.h"
+#include "llwearabletype.h"
+#include "llwlparamset.h"
+
 #include "rlvdefines.h"
 #include "rlvcommon.h"
-
-#ifdef LL_WINDOWS
-	#pragma warning (push)
-	#pragma warning (disable : 4702) // warning C4702: unreachable code
-#endif
-#include <boost/variant.hpp>
-#ifdef LL_WINDOWS
-	#pragma warning (pop)
-#endif
 
 // ============================================================================
 // RlvCommand
@@ -57,6 +46,8 @@ public:
 	const std::string& getOption() const		{ return m_strOption; }
 	const std::string& getParam() const			{ return m_strParam; }
 	ERlvParamType      getParamType() const		{ return m_eParamType; }
+	ERlvCmdRet         getReturnType() const	{ return m_eRet; }
+	bool               hasOption() const		{ return !m_strOption.empty(); }
 	bool               isStrict() const			{ return m_fStrict; }
 	bool               isValid() const			{ return m_fValid; }
 
@@ -88,12 +79,13 @@ protected:
 	std::string   m_strOption;
 	std::string   m_strParam;
 	ERlvParamType m_eParamType;
+	ERlvCmdRet    m_eRet;
 
 	static bhvr_map_t m_BhvrMap;
 
 	friend class RlvHandler;
+	friend class RlvObject;
 };
-typedef std::list<RlvCommand> rlv_command_list_t;
 
 // ============================================================================
 // RlvCommandOption (and derived classed)
@@ -189,6 +181,7 @@ public:
 public:
 	bool addCommand(const RlvCommand& rlvCmd);
 	bool removeCommand(const RlvCommand& rlvCmd);
+	void setCommandRet(const RlvCommand& rlvCmd, ERlvCmdRet eRet);
 
 	std::string getStatusString(const std::string& strMatch) const;
 	bool        hasBehaviour(ERlvBehaviour eBehaviour, bool fStrictOnly) const;
@@ -309,19 +302,17 @@ private:
 // RlvBehaviourNotifyHandler
 //
 
-class RlvBehaviourNotifyHandler : public LLSingleton<RlvBehaviourNotifyHandler>, public RlvBehaviourObserver
+class RlvBehaviourNotifyHandler : public LLSingleton<RlvBehaviourNotifyHandler>
 {
 	friend class LLSingleton<RlvBehaviourNotifyHandler>;
 protected:
 	RlvBehaviourNotifyHandler();
-	virtual ~RlvBehaviourNotifyHandler();
+	virtual ~RlvBehaviourNotifyHandler() { if (m_ConnCommand.connected()) m_ConnCommand.disconnect(); }
 
 public:
 	void addNotify(const LLUUID& idObj, S32 nChannel, const std::string& strFilter)
 	{
-		//m_Notifications.insert(std::pair<LLUUID, notifyData>(idObj, notifyData(nChannel, strFilter)));
-		// RLVa-HACK: see RlvBehaviourNotifyHandler::changed()
-		m_NotificationsDelayed.insert(std::pair<LLUUID, notifyData>(idObj, notifyData(nChannel, strFilter)));
+		m_Notifications.insert(std::pair<LLUUID, notifyData>(idObj, notifyData(nChannel, strFilter)));
 	}
 	void removeNotify(const LLUUID& idObj, S32 nChannel, const std::string& strFilter)
 	{
@@ -334,10 +325,22 @@ public:
 				break;
 			}
 		}
+		if (m_Notifications.empty())
+			delete this;	// Delete ourself if we have nothing to do
 	}
-	void sendNotification(const std::string& strText, const std::string& strSuffix = LLStringUtil::null) const;
+	static void sendNotification(const std::string& strText, const std::string& strSuffix = LLStringUtil::null);
+
+	/*
+	 * Event handlers
+	 */
+public:
+	static void	onWear(LLWearableType::EType eType, bool fAllowed);
+	static void	onTakeOff(LLWearableType::EType eType, bool fAllowed);
+	static void	onAttach(const LLViewerJointAttachment* pAttachPt, bool fAllowed);
+	static void	onDetach(const LLViewerJointAttachment* pAttachPt, bool fAllowed);
+	static void	onReattach(const LLViewerJointAttachment* pAttachPt, bool fAllowed);
 protected:
-	/*virtual*/ void changed(const RlvCommand& rlvCmd, bool fInternal);
+	void		onCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet, bool fInternal);
 
 protected:
 	struct notifyData
@@ -347,14 +350,12 @@ protected:
 		notifyData(S32 channel, const std::string& filter) : nChannel(channel), strFilter(filter) {}
 	};
 	std::multimap<LLUUID, notifyData> m_Notifications;
-	std::multimap<LLUUID, notifyData> m_NotificationsDelayed;
+	boost::signals2::connection m_ConnCommand;
 };
 
 // ============================================================================
 // RlvException
 //
-
-typedef boost::variant<std::string, LLUUID, S32, ERlvBehaviour> RlvExceptionOption;
 
 struct RlvException
 {
@@ -366,23 +367,6 @@ public:
 	RlvException(const LLUUID& idObj, ERlvBehaviour eBhvr, const RlvExceptionOption& option) : idObject(idObj), eBehaviour(eBhvr), varOption(option) {}
 private:
 	RlvException();
-};
-
-// ============================================================================
-// RlvWLSnapshot
-//
-
-struct RlvWLSnapshot
-{
-public:
-	static void           restoreSnapshot(const RlvWLSnapshot* pWLSnapshot);
-	static RlvWLSnapshot* takeSnapshot();
-private:
-	RlvWLSnapshot() {}
-
-	bool		 fIsRunning;
-	bool		 fUseLindenTime;
-	LLWLParamSet WLParams;
 };
 
 // ============================================================================
@@ -421,20 +405,11 @@ inline void rlvCallbackTimerOnce(F32 nPeriod, RlvCallbackTimerOnce::nullary_func
 // Various helper functions
 //
 
-bool rlvCanDeleteOrReturn();
-
 ERlvAttachGroupType rlvAttachGroupFromIndex(S32 idxGroup);
 ERlvAttachGroupType rlvAttachGroupFromString(const std::string& strGroup);
 
 std::string rlvGetFirstParenthesisedText(const std::string& strText, std::string::size_type* pidxMatch = NULL);
 std::string rlvGetLastParenthesisedText(const std::string& strText, std::string::size_type* pidxStart = NULL);
-void        rlvStringReplace(std::string& strText, std::string strFrom, const std::string& strTo);
-
-#ifdef RLV_ADVANCED_TOGGLE_RLVA
-	// "Advanced / RLVa / Enable RLV" menu option
-	void rlvToggleEnabled(void*);
-	BOOL rlvGetEnabled(void*);
-#endif // RLV_ADVANCED_TOGGLE_RLVA
 
 // ============================================================================
 // Inlined class member functions

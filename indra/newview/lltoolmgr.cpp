@@ -51,6 +51,7 @@
 #include "lltoolselectland.h"
 #include "lltoolobjpicker.h"
 #include "lltoolpipette.h"
+#include "llviewerparcelmgr.h"
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llviewercontrol.h"
@@ -240,6 +241,10 @@ BOOL LLToolMgr::inEdit()
 	return mBaseTool != LLToolPie::getInstance() && mBaseTool != gToolNull;
 }
 
+bool LLToolMgr::canEdit()
+{
+	return LLViewerParcelMgr::getInstance()->allowAgentBuild();
+}
 bool LLToolMgr::inBuildMode()
 {
 	// when entering mouselook inEdit() immediately returns true before 
