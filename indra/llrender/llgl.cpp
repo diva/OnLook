@@ -755,6 +755,11 @@ bool LLGLManager::initGL()
 	}
 #endif
 
+	if (mIsIntel && mGLVersion <= 3.f)
+	{ //never try to use framebuffer objects on older intel drivers (crashy)
+		mHasFramebufferObject = FALSE;
+	}
+
 	if (mHasFramebufferObject)
 	{
 		glGetIntegerv(GL_MAX_SAMPLES, &mMaxSamples);
