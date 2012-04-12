@@ -94,6 +94,7 @@
 #include "llpanelobjectinventory.h"
 // [RLVa:KB] - Checked: 2010-09-28 (RLVa-1.2.1f)
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 const std::string HELLO_LSL =

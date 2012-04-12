@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true"
+         height="425" min_height="200" min_width="375" name="rlvLocks" title="Active RLV Locks" width="375"
+         save_rect="true" save_visibility="true" single_instance="true">
+  <scroll_list bottom="-410" left="2" right="-2" draw_border="false" follows="top|left|bottom|right" height="390" multi_select="false"
+               name="lock_list" draw_heading="true" draw_stripes="true" layout="topleft">
+    <column label="Lock Type" name="lock_type" width="110" />
+    <column label="Add / Rem" name="lock_addrem" width="65" />
+    <column label="Lock Target" name="lock_target" width="150" />
+    <column label="Held By" name="lock_origin" width="150" />
+  </scroll_list>
+</floater>

@@ -665,7 +665,7 @@ protected:
 public:
 	void 			processAvatarAppearance(LLMessageSystem* mesgsys);
 	void 			hideSkirt();
-	void			startAppearanceAnimation(BOOL set_by_user, BOOL play_sound);
+	void			startAppearanceAnimation();
 	LLPolyMesh*		getMesh(LLPolyMeshSharedData* shared_data);
 	
 	//--------------------------------------------------------------------
@@ -677,7 +677,6 @@ private:
 	BOOL			mAppearanceAnimating;
 	LLFrameTimer	mAppearanceMorphTimer;
 	F32				mLastAppearanceBlendTime;
-	BOOL			mAppearanceAnimSetByUser;	//1.23
 
 public:
 	typedef std::map<S32, std::string> lod_mesh_map_t;
@@ -735,9 +734,7 @@ public:
 	void				cleanupAttachedMesh( LLViewerObject* pVO );
 	static LLVOAvatar*  findAvatarFromAttachment(LLViewerObject* obj);
 protected:
-// [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
-	LLViewerJointAttachment* getTargetAttachmentPoint(const LLViewerObject* viewer_object) const;
-// [/RLVa:KB]
+	LLViewerJointAttachment* getTargetAttachmentPoint(LLViewerObject* viewer_object);
 	void 				lazyAttach();
 	void				rebuildRiggedAttachments( void );
 
@@ -772,9 +769,7 @@ public:
 	BOOL 			isWearingUnsupportedAttachment( const LLUUID& inv_item_id );
 	// </edit>
 	LLViewerObject* getWornAttachment( const LLUUID& inv_item_id );
-// [RLVa:KB] - Checked: 2010-03-14 (RLVa-1.2.0a) | Added: RLVa-1.1.0i
-	LLViewerJointAttachment* getWornAttachmentPoint(const LLUUID& inv_item_id) const;
-// [/RLVa:KB]
+
 	const std::string getAttachedPointName(const LLUUID& inv_item_id);
 
 	// <edit>

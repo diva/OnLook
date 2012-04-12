@@ -105,7 +105,7 @@ public:
 // [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE))
 			{
-				RlvNotifications::notifyBlockedViewNote();
+				RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_NOTECARD);
 				return;
 			}
 // [/RLVa:KB]
@@ -1427,7 +1427,7 @@ void LLViewerTextEditor::openEmbeddedTexture( LLInventoryItem* item, llwchar wc 
 // [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
 	{
-		RlvNotifications::notifyBlockedViewTexture();
+		RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_TEXTURE);
 		return;
 	}
 // [/RLVa:KB]

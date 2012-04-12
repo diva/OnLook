@@ -666,9 +666,9 @@ class LLAttachObject : public inventory_panel_listener_t
 
 		if(item && gInventory.isObjectDescendentOf(id, gInventory.getRootFolderID()))
 		{
-			rez_attachment(item, attachmentp);
+			rez_attachment(item, attachmentp);	// don't replace if called from an "Attach To..." menu
 		}
-		else if(item && item->isComplete())
+		else if(item && item->isFinished())
 		{
 			// must be in library. copy it to our inventory and put it on.
 			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(attachmentp);

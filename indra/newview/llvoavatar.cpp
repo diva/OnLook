@@ -690,7 +690,6 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 	mWindFreq(0.f),
 	mRipplePhase( 0.f ),
 	mBelowWater(FALSE),
-	mAppearanceAnimSetByUser(FALSE),
 	mLastAppearanceBlendTime(0.f),
 	mAppearanceAnimating(FALSE),
 	mNameString(),
@@ -2001,11 +2000,6 @@ void LLVOAvatar::buildCharacter()
 		return;
 	}
 
-// [RLVa:KB] - Checked: 2010-12-12 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
-	if (isSelf())
-		RlvAttachPtLookup::initLookupTable();
-// [/RLVa:KB]
-
 	//-------------------------------------------------------------------------
 	// initialize "well known" joint pointers
 	//-------------------------------------------------------------------------
@@ -2823,7 +2817,7 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 			{
 				if (param->isTweakable())
 				{
-					param->stopAnimating(mAppearanceAnimSetByUser);
+					param->stopAnimating(FALSE);
 				}
 			}
 			updateVisualParams();
@@ -2849,7 +2843,7 @@ void LLVOAvatar::idleUpdateAppearanceAnimation()
 				{
 					if (param->isTweakable())
 					{
-						param->animate(morph_amt, mAppearanceAnimSetByUser);
+						param->animate(morph_amt, FALSE);
 					}
 				}
 			}
@@ -3319,6 +3313,9 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 	BOOL visible_chat = use_chat_bubbles && (mChats.size() || mTyping);
 	BOOL render_name =	visible_chat ||
 						(visible_avatar &&
+// [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.2a) | Added: RLVa-1.0.0h
+						( (!fRlvShowNames) || (RlvSettings::getShowNameTags()) ) &&
+// [/RLVa:KB]
 						((sRenderName == RENDER_NAME_ALWAYS) ||
 						 (sRenderName == RENDER_NAME_FADE && time_visible < NAME_SHOW_TIME) ||
 						 mNameFromChatOverride));
@@ -5608,7 +5605,14 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 
 	LLMemType mt(LLMemType::MTYPE_AVATAR);
 
+	lldebugs << "motion requested " << id.asString() << " " << gAnimLibrary.animationName(id) << llendl;
+
 	LLUUID remap_id = remapMotionID(id);
+
+	if (remap_id != id)
+	{
+		lldebugs << "motion resultant " << remap_id.asString() << " " << gAnimLibrary.animationName(remap_id) << llendl;
+	}
 
 	if (isSelf() && remap_id == ANIM_AGENT_AWAY)
 	{
@@ -5623,9 +5627,15 @@ BOOL LLVOAvatar::startMotion(const LLUUID& id, F32 time_offset)
 //-----------------------------------------------------------------------------
 BOOL LLVOAvatar::stopMotion(const LLUUID& id, BOOL stop_immediate)
 {
+	lldebugs << "motion requested " << id.asString() << " " << gAnimLibrary.animationName(id) << llendl;
 
 	LLUUID remap_id = remapMotionID(id);
 	
+	if (remap_id != id)
+	{
+		lldebugs << "motion resultant " << remap_id.asString() << " " << gAnimLibrary.animationName(remap_id) << llendl;
+	}
+
 	if (isSelf())
 	{
 		gAgent.onAnimStop(remap_id);
@@ -6760,10 +6770,7 @@ void LLVOAvatar::removeChild(LLViewerObject *childp)
 	}
 }
 
-//LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* viewer_object)
-// [RLVa:KB] - Checked: 2009-12-18 (RLVa-1.1.0i) | Added: RLVa-1.1.0i
-LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(const LLViewerObject* viewer_object) const
-// [/RLVa:KB]
+LLViewerJointAttachment* LLVOAvatar::getTargetAttachmentPoint(LLViewerObject* viewer_object)
 {
 	S32 attachmentID = ATTACHMENT_ID_FROM_STATE(viewer_object->getState());
 
@@ -7061,6 +7068,13 @@ void LLVOAvatar::sitDown(BOOL bSitting)
 	if (isSelf())
 	{
 		LLFloaterAO::ChangeStand();	
+
+// [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
+		if (rlv_handler_t::isEnabled())
+		{
+			gRlvHandler.onSitOrStand(bSitting);
+		}
+// [/RLVa:KB]
 	}
 }
 
@@ -7071,13 +7085,6 @@ void LLVOAvatar::sitOnObject(LLViewerObject *sit_object)
 {
 		if (isSelf())
 	{
-// [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
-		if (rlv_handler_t::isEnabled())
-		{
-			gRlvHandler.onSitOrStand(true);
-		}
-// [/RLVa:KB]
-
 		// Might be first sit
 		LLFirstUse::useSit();
 
@@ -7168,13 +7175,6 @@ void LLVOAvatar::getOffObject()
 
 	if (isSelf())
 	{
-// [RLVa:KB] - Checked: 2010-08-29 (RLVa-1.2.1c) | Modified: RLVa-1.2.1c
-		if (rlv_handler_t::isEnabled())
-		{
-			gRlvHandler.onSitOrStand(false);
-		}
-// [/RLVa:KB]
-
 		LLQuaternion av_rot = gAgent.getFrameAgent().getQuaternion();
 		LLQuaternion obj_rot = sit_object ? sit_object->getRenderRotation() : LLQuaternion::DEFAULT;
 		av_rot = av_rot * obj_rot;
@@ -7283,20 +7283,6 @@ LLViewerObject* LLVOAvatar::getWornAttachment( const LLUUID& inv_item_id )
 	}
 	return NULL;
 }
-
-// [RLVa:KB] - Checked: 2010-03-14 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
-LLViewerJointAttachment* LLVOAvatar::getWornAttachmentPoint(const LLUUID& idItem) const
-{
-	const LLUUID& idItemBase = gInventory.getLinkedItemID(idItem);
-	for (attachment_map_t::const_iterator itAttachPt = mAttachmentPoints.begin(); itAttachPt != mAttachmentPoints.end(); ++itAttachPt)
-	{
-		LLViewerJointAttachment* pAttachPt = itAttachPt->second;
- 		if (pAttachPt->getAttachedObject(idItemBase))
-			return pAttachPt;
-	}
-	return NULL;
-}
-// [/RLVa:KB]
 
 const std::string LLVOAvatar::getAttachedPointName(const LLUUID& inv_item_id)
 {
@@ -8363,7 +8349,7 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 		{
 			if (interp_params)
 			{
-				startAppearanceAnimation(FALSE, FALSE);
+				startAppearanceAnimation();
 			}
 			updateVisualParams();
 
@@ -8760,11 +8746,10 @@ void LLVOAvatar::cullAvatarsByPixelArea()
 	}
 }
 
-void LLVOAvatar::startAppearanceAnimation(BOOL set_by_user, BOOL play_sound)
+void LLVOAvatar::startAppearanceAnimation()
 {
 	if(!mAppearanceAnimating)
 	{
-		mAppearanceAnimSetByUser = set_by_user;
 		mAppearanceAnimating = TRUE;
 		mAppearanceMorphTimer.reset();
 		mLastAppearanceBlendTime = 0.f;

@@ -58,7 +58,7 @@
 #ifdef RLV_EXPERIMENTAL_CMDS
 	#define RLV_EXTENSION_CMD_ALLOWIDLE		// Forces "Away" status when idle (effect is the same as setting AllowIdleAFK to TRUE)
 	#define RLV_EXTENSION_CMD_GETCOMMAND	// @getcommand:<option>=<channel>
-//	#define RLV_EXTENSION_CMD_GETXXXNAMES	// @get[add|rem]attachnames:<option>=<channel> and @get[add|rem]outfitnames=<channel>
+	#define RLV_EXTENSION_CMD_GETXXXNAMES	// @get[add|rem]attachnames:<option>=<channel> and @get[add|rem]outfitnames=<channel>
 	#define RLV_EXTENSION_CMD_INTERACT		// @interact=n
 	#define RLV_EXTENSION_CMD_TOUCHXXX		// @touch:uuid=n|y, @touchworld[:<uuid>]=n|y, @touchattach[:<uuid>]=n|y, @touchud[:<uuid>]=n|y
 #endif // RLV_EXPERIMENTAL_CMDS
@@ -69,22 +69,18 @@
 
 // Version of the specifcation we support
 const S32 RLV_VERSION_MAJOR = 2;
-const S32 RLV_VERSION_MINOR = 2;
+const S32 RLV_VERSION_MINOR = 7;
 const S32 RLV_VERSION_PATCH = 0;
-const S32 RLV_VERSION_BUILD = 1;
+const S32 RLV_VERSION_BUILD = 0;
 
 // Implementation version
 const S32 RLVa_VERSION_MAJOR = 1;
-const S32 RLVa_VERSION_MINOR = 1;
-const S32 RLVa_VERSION_PATCH = 4;
+const S32 RLVa_VERSION_MINOR = 4;
+const S32 RLVa_VERSION_PATCH = 5;
 const S32 RLVa_VERSION_BUILD = 0;
 
 // Uncomment before a final release
 #define RLV_RELEASE
-
-// The official viewer version we're patching against
-#define RLV_MAKE_TARGET(x, y, z)	((x << 16) | (y << 8) | z)
-#define RLV_TARGET					RLV_MAKE_TARGET(1, 23, 5)
 
 // Defining these makes it easier if we ever need to change our tag
 #define RLV_WARNS		LL_WARNS("RLV")
@@ -189,12 +185,15 @@ enum ERlvBehaviour {
 	RLV_BHVR_TOUCHALL,				// "touchall"
 	RLV_BHVR_TOUCHME,				// "touchme"
 	RLV_BHVR_FLY,					// "fly"
+	RLV_BHVR_SETGROUP,				// "setgroup"
 	RLV_BHVR_UNSIT,					// "unsit"
 	RLV_BHVR_SIT,					// "sit"
 	RLV_BHVR_SITTP,					// "sittp"
 	RLV_BHVR_STANDTP,				// "standtp"
 	RLV_BHVR_SETDEBUG,				// "setdebug"
 	RLV_BHVR_SETENV,				// "setenv"
+	RLV_BHVR_ALWAYSRUN,				// "alwaysrun"
+	RLV_BHVR_TEMPRUN,				// "temprun"
 	RLV_BHVR_DETACHME,				// "detachme"
 	RLV_BHVR_ATTACHOVER,			// "attachover"
 	RLV_BHVR_ATTACHTHIS,			// "attachthis"
@@ -229,6 +228,7 @@ enum ERlvBehaviour {
 	RLV_BHVR_GETPATHNEW,			// "getpathnew"
 	RLV_BHVR_GETINV,				// "getinv"
 	RLV_BHVR_GETINVWORN,			// "getinvworn"
+	RLV_BHVR_GETGROUP,				// "getgroup"
 	RLV_BHVR_GETSITID,				// "getsitid"
 	RLV_BHVR_GETCOMMAND,			// "getcommand"
 	RLV_BHVR_GETSTATUS,				// "getstatus"
@@ -302,8 +302,11 @@ enum ERlvAttachGroupType
 
 #define RLV_SETTING_MAIN				"RestrainedLove"
 #define RLV_SETTING_DEBUG				"RestrainedLoveDebug"
-#define RLV_SETTING_NOSETENV			"RestrainedLoveNoSetEnv"
+#define RLV_SETTING_AVATAROFFSET_Z		"RestrainedLoveOffsetAvatarZ"
+#define RLV_SETTING_CANOOC				"RestrainedLoveCanOOC"
 #define RLV_SETTING_FORBIDGIVETORLV		"RestrainedLoveForbidGiveToRLV"
+#define RLV_SETTING_NOSETENV			"RestrainedLoveNoSetEnv"
+#define RLV_SETTING_SHOWELLIPSIS		"RestrainedLoveShowEllipsis"
 #define RLV_SETTING_WEARADDPREFIX       "RestrainedLoveStackWhenFolderBeginsWith"
 #define RLV_SETTING_WEARREPLACEPREFIX   "RestrainedLoveReplaceWhenFolderBeginsWith"
 
@@ -316,26 +319,32 @@ enum ERlvAttachGroupType
 #define RLV_SETTING_HIDELOCKEDINVENTORY	"RLVaHideLockedInventory"
 #define RLV_SETTING_LOGINLASTLOCATION	"RLVaLoginLastLocation"
 #define RLV_SETTING_SHAREDINVAUTORENAME	"RLVaSharedInvAutoRename"
+#define RLV_SETTING_SHOWASSERTIONFAIL	"RLVaShowAssertionFailures"
 #define RLV_SETTING_SHOWNAMETAGS		"RLVaShowNameTags"
+#define RLV_SETTING_TOPLEVELMENU		"RLVaTopLevelMenu"
+#define RLV_SETTING_WEARREPLACEUNLOCKED	"RLVaWearReplaceUnlocked"
 
 #define RLV_SETTING_FIRSTUSE_PREFIX		"FirstRLV"
 #define RLV_SETTING_FIRSTUSE_GIVETORLV	RLV_SETTING_FIRSTUSE_PREFIX"GiveToRLV"
 
-#define RLV_SETTING_AVATAROFFSET_Z		"AscentAvatarZModifier"
-
 // ============================================================================
-// Strings
+// Strings (see rlva_strings.xml)
 //
 
 #define RLV_STRING_HIDDEN					"hidden_generic"
 #define RLV_STRING_HIDDEN_PARCEL			"hidden_parcel"
 #define RLV_STRING_HIDDEN_REGION			"hidden_region"
 
+#define RLV_STRING_BLOCKED_GENERIC			"blocked_generic"
+#define RLV_STRING_BLOCKED_PERMATTACH		"blocked_permattach"
 #define RLV_STRING_BLOCKED_RECVIM			"blocked_recvim"
 #define RLV_STRING_BLOCKED_RECVIM_REMOTE	"blocked_recvim_remote"
 #define RLV_STRING_BLOCKED_SENDIM			"blocked_sendim"
-#define RLV_STRING_BLOCKED_VIEWXXX			"blocked_viewxxx"
+#define RLV_STRING_BLOCKED_STARTCONF		"blocked_startconf"
+#define RLV_STRING_BLOCKED_STARTIM			"blocked_startim"
+#define RLV_STRING_BLOCKED_TELEPORT			"blocked_teleport"
 #define RLV_STRING_BLOCKED_TPLURE_REMOTE	"blocked_tplure_remote"
+#define RLV_STRING_BLOCKED_VIEWXXX			"blocked_viewxxx"
 
 // ============================================================================
 

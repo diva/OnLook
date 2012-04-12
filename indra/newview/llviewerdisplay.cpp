@@ -64,7 +64,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvograss.h"
 #include "llworld.h"
 #include "pipeline.h"
@@ -87,6 +87,7 @@
 
 // [RLVa:KB]
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 LLPointer<LLViewerTexture> gDisconnectedImagep = NULL;

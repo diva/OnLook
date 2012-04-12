@@ -36,7 +36,8 @@
 #include "llviewercontrol.h"
 #include "llviewerregion.h"
 #include "llviewerparcelmgr.h"
-// [RLVa:KB] - Checked: 2010-09-27 (RLVa-1.1.3b)
+#include "llvoavatarself.h"
+// [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.0d)
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
@@ -70,13 +71,6 @@ BOOL LLAgentUI::checkAgentDistance(const LLVector3& pole, F32 radius)
 }
 BOOL LLAgentUI::buildLocationString(std::string& str, ELocationFormat fmt,const LLVector3& agent_pos_region)
 {
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
-	{
-		str = RlvStrings::getString(RLV_STRING_HIDDEN);
-		return TRUE;
-	}
-// [/RLVa:KB]
 	LLViewerRegion* region = gAgent.getRegion();
 	LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
 
@@ -108,6 +102,18 @@ BOOL LLAgentUI::buildLocationString(std::string& str, ELocationFormat fmt,const 
 	// create a default name and description for the landmark
 	std::string parcel_name = LLViewerParcelMgr::getInstance()->getAgentParcelName();
 	std::string region_name = region->getName();
+// [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.0d) | Modified: RLVa-1.2.0d
+	// RELEASE-RLVa: [SL-2.0.0] Check ELocationFormat to make sure our switch still makes sense
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SHOWLOC))
+	{
+		parcel_name = RlvStrings::getString(RLV_STRING_HIDDEN_PARCEL);
+		region_name = RlvStrings::getString(RLV_STRING_HIDDEN_REGION);
+		if (LOCATION_FORMAT_NO_MATURITY == fmt)
+			fmt = LOCATION_FORMAT_LANDMARK;
+		else if (LOCATION_FORMAT_FULL == fmt)
+			fmt = LOCATION_FORMAT_NO_COORDS;
+	}
+// [/RLVa:KB]
 	std::string sim_access_string = region->getSimAccessString();
 	std::string buffer;
 	if( parcel_name.empty() )

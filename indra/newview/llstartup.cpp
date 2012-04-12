@@ -184,7 +184,7 @@
 #include "llviewerstats.h"
 #include "llviewerthrottle.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvoclouds.h"
 #include "llweb.h"
 #include "llwind.h"

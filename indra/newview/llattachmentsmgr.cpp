@@ -35,6 +35,7 @@
 #include "message.h"
 // [RLVa:KB] - Checked: 2010-09-13 (RLVa-1.2.1c)
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 LLAttachmentsMgr::LLAttachmentsMgr()

@@ -12,6 +12,10 @@
     <string name="blocked_sendim">*** IM blocked by sender's viewer</string>
 
     <!-- Shown as notifications -->
+    <string name="blocked_generic">Unable to perform action due to RLV restrictions</string>
+    <string name="blocked_permattach">Attempt to attach '[OBJECT]' was denied due to RLV restrictions</string>
+    <string name="blocked_startim">Unable to start IM session with [RECIPIENT] due to RLV restrictions</string>
+    <string name="blocked_startconf">Unable to start conference with [RECIPIENT] due to RLV restrictions</string>
     <string name="blocked_teleport">Unable to initiate teleport due to RLV restrictions</string>
     <string name="blocked_viewxxx">Unable to open [TYPE] due to RLV restrictions</string>
 
@@ -22,6 +26,13 @@
     <string name="blocked_tplure_remote">
       The Resident you invited is prevented from accepting teleport offers. Please try again later.
     </string>
+
+    <!-- Shown in local chat when dropping inventory onto a nearby agent (moved to strings.xml since it needs to be accesible by LLTrans) -->
+    <!--
+    <string name="inventory_item_offered_rlv">
+      Inventory item offered to [NAME]
+    </string>
+    -->
   </strings>
 
   <!-- Generic names used to replace resident names when @shownames restricted -->

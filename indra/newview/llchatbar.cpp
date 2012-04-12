@@ -75,6 +75,7 @@
 // [/RLVa:KB]
 
 #if SHY_MOD //Command handler
+#include "llvoavatarself.h"
 #include "shcommandhandler.h"
 #endif //shy_mod
 

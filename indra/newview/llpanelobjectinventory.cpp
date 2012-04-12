@@ -66,6 +66,7 @@
 #include "llviewermessage.h"
 // [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.2.0b)
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 #include "hippogridmanager.h"
@@ -982,7 +983,7 @@ void LLTaskTextureBridge::openItem()
 // [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
 	{
-		RlvNotifications::notifyBlockedViewTexture();
+		RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_TEXTURE);
 		return;
 	}
 // [/RLVa:KB]
@@ -1218,7 +1219,7 @@ void LLTaskLSLBridge::openItem()
 // [RLVa:KB] - Checked: 2010-03-27 (RLVa-1.1.3b) | Modified: RLVa-1.1.0a
 	if ( (rlv_handler_t::isEnabled()) && (gRlvAttachmentLocks.isLockedAttachment(object->getRootEdit())) )
 	{
-		RlvNotifications::notifyBlockedViewScript();
+		RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_SCRIPT);
 		return;
 	}
 // [/RLVa:KB]
@@ -1304,7 +1305,7 @@ void LLTaskNotecardBridge::openItem()
 	if ( (rlv_handler_t::isEnabled()) && 
 		 ((gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE)) || (gRlvAttachmentLocks.isLockedAttachment(object->getRootEdit()))) )
 	{
-		RlvNotifications::notifyBlockedViewNote();
+		RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_NOTECARD);
 		return;
 	}
 // [/RLVa:KB]

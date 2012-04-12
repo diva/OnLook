@@ -117,6 +117,12 @@ public:
 	LLColor4	mColor;
 };
 
+struct PotentialReturnableObject
+{
+	LLBBox			box;
+	LLViewerRegion* pRegion;
+};
+
 //============================================================================
 
 class LLViewerObject : public LLPrimitive, public LLRefCount, public LLGLUpdate
@@ -233,12 +239,16 @@ public:
 	virtual BOOL isMesh() const						{ return FALSE; }
 
 	// This method returns true if the object is over land owned by
-	// the agent.
-	BOOL isOverAgentOwnedLand() const;
+	// the agent, one of its groups, or it encroaches and 
+	// anti-encroachment is enabled
+	bool isReturnable();
 
-	// True if over land owned by group of which the agent is
-	// either officer or member.
-	BOOL isOverGroupOwnedLand() const;
+	void buildReturnablesForChildrenVO( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion );
+	void constructAndAddReturnable( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion );
+
+	// This method returns true if the object crosses
+	// any parcel bounds in the region.
+	bool crossesParcelBounds();
 
 	/*
 	// This method will scan through this object, and then query the
@@ -256,7 +266,10 @@ public:
 	S32 numChildren() const { return mChildList.size(); }
 	void addThisAndAllChildren(std::vector<LLViewerObject*>& objects);
 	void addThisAndNonJointChildren(std::vector<LLViewerObject*>& objects);
-	BOOL isChild(LLViewerObject *childp) const;
+//	BOOL isChild(LLViewerObject *childp) const;
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Added: RLVa-1.4.0a
+	BOOL isChild(const LLViewerObject *childp) const;
+// [/RLVa:KB]
 	BOOL isSeat() const;
 	
 

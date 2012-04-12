@@ -55,6 +55,7 @@
 #include "llui.h"
 
 //Headers added for functions moved from viewer.cpp
+#include "llvoavatarself.h"
 #include "llvograss.h"
 #include "llvotree.h"
 #include "llvolumemessage.h"

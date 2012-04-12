@@ -51,6 +51,9 @@
 #include "llfloatertools.h"		//For gFloaterTools
 #include "floaterao.h"			//For LLFloaterAO
 #include "llfloatercustomize.h" //For gFloaterCustomize
+// [RLVa:KB] - Checked: 2010-05-10 (RLVa-1.2.0g)
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 using namespace LLVOAvatarDefines;
 
@@ -249,7 +252,7 @@ void LLAgentCamera::cleanup()
 	setFocusObject(NULL);
 }
 
-void LLAgentCamera::setAvatarObject(LLVOAvatar* avatar)
+void LLAgentCamera::setAvatarObject(LLVOAvatarSelf* avatar)
 {
 	if (!mLookAt)
 	{
@@ -2119,7 +2122,8 @@ void LLAgentCamera::resetCamera()
 //-----------------------------------------------------------------------------
 void LLAgentCamera::changeCameraToMouselook(BOOL animate)
 {
-	if (!gSavedSettings.getBOOL("EnableMouselook") || LLViewerJoystick::getInstance()->getOverrideCamera())
+	if (!gSavedSettings.getBOOL("EnableMouselook")
+		|| LLViewerJoystick::getInstance()->getOverrideCamera())
 	{
 		return;
 	}
@@ -2348,7 +2352,7 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 //-----------------------------------------------------------------------------
 // changeCameraToCustomizeAvatar()
 //-----------------------------------------------------------------------------
-void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL camera_animate)
+void LLAgentCamera::changeCameraToCustomizeAvatar()
 {
 	if (LLViewerJoystick::getInstance()->getOverrideCamera())
 	{
@@ -2370,13 +2374,10 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 	gSavedSettings.setBOOL("ThirdPersonBtnState", FALSE);
 	gSavedSettings.setBOOL("BuildBtnState", FALSE);
 
-	if (camera_animate)
-	{
-		// <edit>
-		if(gSavedSettings.getBOOL("AppearanceCameraMovement"))
-		// </edit>
-		startCameraAnimation();
-	}
+	// <edit>
+	if(gSavedSettings.getBOOL("AppearanceCameraMovement"))
+	// </edit>
+	startCameraAnimation();
 
 	if (mCameraMode != CAMERA_MODE_CUSTOMIZE_AVATAR)
 	{
@@ -2396,40 +2397,26 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 
 		if (isAgentAvatarValid())
 		{
-			if(avatar_animate)
+			// Remove any pitch or rotation from the avatar
+			LLVector3 at = gAgent.getAtAxis();
+			at.mV[VZ] = 0.f;
+			at.normalize();
+			gAgent.resetAxes(at);
+
+			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+			gAgent.setCustomAnim(TRUE);
+			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+			LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
+
+			if (turn_motion)
 			{
-				// Remove any pitch or rotation from the avatar
-				LLVector3 at = gAgent.getAtAxis();
-				at.mV[VZ] = 0.f;
-				at.normalize();
-				gAgent.resetAxes(at);
-
-				gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-				gAgent.setCustomAnim(TRUE);
-				gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
-				LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
-
-				if (turn_motion)
-				{
-					// delay camera animation long enough to play through turn animation
-					setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
-				}
-				else
-				{
-					setAnimationDuration(gSavedSettings.getF32("ZoomTime"));
-				}
+				// delay camera animation long enough to play through turn animation
+				setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
 			}
-			
+
 			gAgentAvatarp->invalidateAll();
 			gAgentAvatarp->updateMeshTextures();
-				
-			gAgentCamera.setFocusGlobal(LLVector3d::zero);
 		}
-	}
-	else
-	{
-		mCameraAnimating = FALSE;
-		gAgent.endAnimationUpdateUI();
 	}
 	
 	// <edit>

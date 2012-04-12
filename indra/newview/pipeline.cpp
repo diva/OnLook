@@ -111,6 +111,7 @@
 
 // [RLVa:KB]
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 void check_stack_depth(S32 stack_depth)

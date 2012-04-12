@@ -66,7 +66,7 @@
 #include "llwindow.h"
 #include "llviewermedia.h"
 #include "llviewermediafocus.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llworld.h"
 #include "llui.h"
 #include "llweb.h"
@@ -206,7 +206,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			// touch behavior down below...
 			break;
 		case CLICK_ACTION_SIT:
-			if ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting()) 
+			if ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting()) 
 				&& (!gSavedSettings.getBOOL("DisableClickSit"))) // agent not already sitting
 			{
 				handle_sit_or_stand();
@@ -561,7 +561,7 @@ ECursorType cursor_from_object(LLViewerObject* object)
 	case CLICK_ACTION_SIT:
 //		if ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting())) // not already sitting?
 // [RLVa:KB] - Checked: 2009-12-22 (RLVa-1.1.0k) | Added: RLVa-1.1.0j
-		if ( ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting())) && // not already sitting?
+		if ( ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting())) && // not already sitting?
 			 ((!rlv_handler_t::isEnabled()) || (gRlvHandler.canSit(object, gViewerWindow->getHoverPick().mObjectOffset))) )
 // [/RLVa:KB]
 		{

@@ -42,13 +42,14 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 #include "llbutton.h"
 #include "llfocusmgr.h"
 #include "llviewercontrol.h"
 #include "llmenucommands.h"
 #include "llimview.h"
 #include "lluiconstants.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "lltooldraganddrop.h"
 #include "llfloaterchatterbox.h"
 #include "llfloaterfriends.h"
@@ -288,6 +289,9 @@ void LLToolBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 // Per-frame updates of visibility
 void LLToolBar::refresh()
 {
+	if(!isAgentAvatarValid())
+		return;
+
 	BOOL show = gSavedSettings.getBOOL("ShowToolBar");
 	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);

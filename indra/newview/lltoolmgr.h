@@ -59,6 +59,7 @@ public:
 	LLTool*			getBaseTool(); // returns active tool when overrides are deactivated
 
 	BOOL			inEdit();
+	bool			canEdit();
 	
 	/* Determines if we are in Build mode or not. */
 	bool			inBuildMode();

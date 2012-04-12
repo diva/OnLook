@@ -32,9 +32,8 @@
 #include "llhudeffectpointat.h" 	// ELookAtType
 
 class LLPickInfo;
-class LLVOAvatar;
+class LLVOAvatarSelf;
 class LLControlVariable;
-
 
 //--------------------------------------------------------------------
 // Types
@@ -63,7 +62,7 @@ public:
 	virtual 		~LLAgentCamera();
 	void			init();
 	void			cleanup();
-	void		    setAvatarObject(LLVOAvatar* avatar);
+	void		    setAvatarObject(LLVOAvatarSelf* avatar);
 	bool			isInitialized() { return mInitialized; }
 private:
 	bool			mInitialized;
@@ -76,7 +75,7 @@ public:
 	void			changeCameraToDefault();
 	void			changeCameraToMouselook(BOOL animate = TRUE);
 	void			changeCameraToThirdPerson(BOOL animate = TRUE);
-	void			changeCameraToCustomizeAvatar(BOOL avatar_animate = TRUE, BOOL camera_animate = TRUE);			// trigger transition animation
+	void			changeCameraToCustomizeAvatar();			// trigger transition animation
 	F32				calcCustomizeAvatarUIOffset( const LLVector3d& camera_pos_global );
 	// Ventrella
 	void			changeCameraToFollow(BOOL animate = TRUE);
