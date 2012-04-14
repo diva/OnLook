@@ -1835,6 +1835,18 @@ Returns a key that is the UUID of the user seated on the prim.
 	<string name="WornOnAttachmentPoint" value=" (worn on [ATTACHMENT_POINT])" />
 	<string name="LockedOnAttachmentPoint" value=" (locked to [ATTACHMENT_POINT])" />
 	<string name="ActiveGesture" value="[GESLABEL] (active)"/>
+	<!-- Gestures labels -->
+    <!-- use value="" because they have preceding spaces -->
+    <string name="Chat Message"  value=" Chat : " />
+    <string name="Sound"         value=" Sound : " />
+	<string name="Wait"          value=" --- Wait : " />
+	<string name="AnimFlagStop"  value=" Stop Animation :    " />
+	<string name="AnimFlagStart" value=" Start Animation :   " />
+	<string name="Wave"          value=" Wave " />
+	<string name="GestureActionNone" value="None" />
+	<string name="HelloAvatar"   value=" Hello, avatar! " />
+	<string name="ViewAllGestures"  value="  View All &gt;&gt;" />
+	<string name="GetMoreGestures"  value="  Get More &gt;&gt;" />
 	<string name="Stone">Stone</string>
 	<string name="Metal">Metal</string>
 	<string name="Glass">Glass</string>
@@ -1912,6 +1924,12 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
 
 If you continue to receive this message, contact the [SUPPORT_SITE].
 	</string>
+	
+  <string name="group_role_everyone">Everyone</string>
+  <string name="group_role_officers">Officers</string>
+  <string name="group_role_owners">Owners</string>	
+  <string name="group_member_status_online">Online</string>
+	
 <!-- Addition of OSSL commands for use in OpenSimulator based regions, including Aurora -->
   <string name="LSLTipText_osSetRegionWaterHeight">
 osSetRegionWaterHeight(float height)

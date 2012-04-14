@@ -911,6 +911,21 @@ LLGroupMgrGroupData* LLGroupMgr::getGroupData(const LLUUID& id)
 	return NULL;
 }
 
+// Helper function for LLGroupMgr::processGroupMembersReply
+// This reformats date strings from MM/DD/YYYY to YYYY/MM/DD ( e.g. 1/27/2008 -> 2008/1/27 )
+// so that the sorter can sort by year before month before day.
+static void formatDateString(std::string &date_string)
+{
+	tm t;
+	if (sscanf(date_string.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+	{
+		t.tm_year -= 1900;
+		t.tm_mon--;
+		t.tm_hour = t.tm_min = t.tm_sec = 0;
+		timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), date_string);
+	}
+}
+
 // static
 void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 {
@@ -960,13 +975,14 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 
 			if (member_id.notNull())
 			{
-				tm t;
-				if (sscanf(online_status.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+				if (online_status == "Online")
 				{
-					t.tm_year -= 1900;
-					t.tm_mon--;
-					t.tm_hour = t.tm_min = t.tm_sec = 0;
-					timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), online_status);
+					static std::string localized_online(LLTrans::getString("group_member_status_online"));
+					online_status = localized_online;
+				}
+				else
+				{
+					formatDateString(online_status); // reformat for sorting, e.g. 12/25/2008 -> 2008/12/25
 				}
 				
 				//llinfos << "Member " << member_id << " has powers " << std::hex << agent_powers << std::dec << llendl;
@@ -1126,6 +1142,22 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 		msg->getString("RoleData","Description",desc,i);
 		msg->getU64("RoleData","Powers",powers,i);
 		msg->getU32("RoleData","Members",member_count,i);
+
+		//there are 3 predifined roles - Owners, Officers, Everyone
+		//there names are defined in lldatagroups.cpp
+		//lets change names from server to localized strings
+		if(name == "Everyone")
+		{
+			name = LLTrans::getString("group_role_everyone");
+		}
+		else if(name == "Officers")
+		{
+			name = LLTrans::getString("group_role_officers");
+		}
+		else if(name == "Owners")
+		{
+			name = LLTrans::getString("group_role_owners");
+		}
 
 		lldebugs << "Adding role data: " << name << " {" << role_id << "}" << llendl;
 		LLGroupRoleData* rd = new LLGroupRoleData(role_id,name,title,desc,powers,member_count);
