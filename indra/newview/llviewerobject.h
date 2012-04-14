@@ -772,7 +772,6 @@ private:
 	//--------------------------------------------------------------------
 public:
 // <edit>
-	S32 getAttachmentPoint();
 	std::string getAttachmentPointName();
 // </edit>
 	const LLUUID &getAttachmentItemID() const;
@@ -787,8 +786,6 @@ private:
 	EObjectUpdateType	mLastUpdateType;
 	BOOL	mLastUpdateCached;
 };
-
-typedef std::vector<LLViewerObject*> llvo_vec_t;
 
 ///////////////////
 //

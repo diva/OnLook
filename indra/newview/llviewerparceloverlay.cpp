@@ -335,7 +335,7 @@ void LLViewerParcelOverlay::updateOverlayTexture()
 	{
 		U8 ownership = mOwnership[i];
 
-		U8 r,g,b,a;
+		F32 r,g,b,a;
 
 		// Color stored in low three bits
 		switch( ownership & 0x7 )
@@ -384,10 +384,10 @@ void LLViewerParcelOverlay::updateOverlayTexture()
 			break;
 		}
 
-		raw[pixel_index + 0] = r;
-		raw[pixel_index + 1] = g;
-		raw[pixel_index + 2] = b;
-		raw[pixel_index + 3] = a;
+		raw[pixel_index + 0] = (U8)r;
+		raw[pixel_index + 1] = (U8)g;
+		raw[pixel_index + 2] = (U8)b;
+		raw[pixel_index + 3] = (U8)a;
 
 		pixel_index += OVERLAY_IMG_COMPONENTS;
 	}

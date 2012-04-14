@@ -121,8 +121,6 @@ LLDrawPool *LLDrawPoolAvatar::instancePool()
 	return new LLDrawPoolAvatar();
 }
 
-BOOL gRenderAvatar = TRUE;
-
 S32 LLDrawPoolAvatar::getVertexShaderLevel() const
 {
 	return (S32) LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_AVATAR);
@@ -1053,13 +1051,6 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 			endRenderPass(i);
 		}
 
-		return;
-	}
-
-	
-
-	if (!gRenderAvatar)
-	{
 		return;
 	}
 

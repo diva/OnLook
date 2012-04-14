@@ -189,6 +189,7 @@ extern LLMap< const LLUUID, LLFloaterAvatarInfo* > gAvatarInfoInstances; // Only
 //
 const F32 BIRD_AUDIBLE_RADIUS = 32.0f;
 const F32 SIT_DISTANCE_FROM_TARGET = 0.25f;
+const F32 CAMERA_POSITION_THRESHOLD_SQUARED = 0.001f * 0.001f;
 static const F32 LOGOUT_REPLY_TIME = 3.f;	// Wait this long after LogoutReply before quitting.
 
 // Determine how quickly residents' scripts can issue question dialogs
@@ -1355,20 +1356,12 @@ bool highlight_offered_object(const LLUUID& obj_id)
 
 void inventory_offer_mute_callback(const LLUUID& blocked_id,
 								   const std::string& full_name,
-								   bool is_group )
+								   bool is_group)
 {
-	std::string from_name = full_name;
-	LLMute::EType type;
-	if (is_group)
-	{
-		type = LLMute::GROUP;
-	}
-	else
-	{
-		type = LLMute::AGENT;
-	}
+	// *NOTE: blocks owner if the offer came from an object
+	LLMute::EType mute_type = is_group ? LLMute::GROUP : LLMute::AGENT;
 
-	LLMute mute(blocked_id, from_name, type);
+	LLMute mute(blocked_id, full_name, mute_type);
 	if (LLMuteList::getInstance()->add(mute))
 	{
 		LLFloaterMute::showInstance();
@@ -3214,8 +3207,8 @@ void process_offer_callingcard(LLMessageSystem* msg, void**)
 		LLNameValue* nvlast  = source->getNVPair("LastName");
 		if (nvfirst && nvlast)
 		{
-			source_name = std::string(nvfirst->getString()) + " " + nvlast->getString();
-			args["NAME"] = source_name;
+			args["NAME"] = LLCacheName::buildFullName(
+				nvfirst->getString(), nvlast->getString());
 		}
 	}
 
@@ -4374,6 +4367,7 @@ void process_crossed_region(LLMessageSystem* msg, void**)
 		return;
 	}
 	LL_INFOS("Messaging") << "process_crossed_region()" << LL_ENDL;
+	gAgentAvatarp->resetRegionCrossingTimer();
 
 	U32 sim_ip;
 	msg->getIPAddrFast(_PREHASH_RegionData, _PREHASH_SimIP, sim_ip);
@@ -4849,6 +4843,12 @@ void process_sound_trigger(LLMessageSystem *msg, void **)
 	{
 		return;
 	}
+
+	// Don't play sounds from gestures if they are not enabled.
+	if (object_id == owner_id && !gSavedSettings.getBOOL("EnableGestureSounds"))
+	{
+		return;
+	}
 		
 	// <edit>
 	//gAudiop->triggerSound(sound_id, owner_id, gain, LLAudioEngine::AUDIO_TYPE_SFX, pos_global);
@@ -5290,7 +5290,7 @@ void process_avatar_sit_response(LLMessageSystem *mesgsys, void **user_data)
 	BOOL force_mouselook;
 	mesgsys->getBOOLFast(_PREHASH_SitTransform, _PREHASH_ForceMouselook, force_mouselook);
 
-	if (isAgentAvatarValid() && dist_vec_squared(camera_eye, camera_at) > 0.0001f)
+	if (isAgentAvatarValid() && dist_vec_squared(camera_eye, camera_at) > CAMERA_POSITION_THRESHOLD_SQUARED)
 	{
 		gAgentCamera.setSitCamera(sitObjectID, camera_eye, camera_at);
 	}
@@ -5693,6 +5693,12 @@ bool attempt_standard_notification(LLMessageSystem* msgsystem)
 	{
 		// notification was specified using the new mechanism, so we can just handle it here
 		std::string notificationID;
+		msgsystem->getStringFast(_PREHASH_AlertInfo, _PREHASH_Message, notificationID);
+		if (!LLNotifications::getInstance()->templateExists(notificationID))
+		{
+			return false;
+		}
+
 		std::string llsdRaw;
 		LLSD llsdBlock;
 		msgsystem->getStringFast(_PREHASH_AlertInfo, _PREHASH_Message, notificationID);
@@ -6301,7 +6307,7 @@ void container_inventory_arrived(LLViewerObject* object,
 		gAgentCamera.changeCameraToDefault();
 	}
 
-	LLInventoryView* view = LLInventoryView::getActiveInventory();
+	LLInventoryPanel *active_panel = LLInventoryPanel::getActiveInventoryPanel();
 
 	if (inventory->size() > 2)
 	{
@@ -6339,9 +6345,9 @@ void container_inventory_arrived(LLViewerObject* object,
 			}
 		}
 		gInventory.notifyObservers();
-		if(view)
+		if(active_panel)
 		{
-			view->getPanel()->setSelection(cat_id, TAKE_FOCUS_NO);
+			active_panel->setSelection(cat_id, TAKE_FOCUS_NO);
 		}
 	}
 	else if (inventory->size() == 2)
@@ -6375,9 +6381,9 @@ void container_inventory_arrived(LLViewerObject* object,
 		new_item->updateServer(TRUE);
 		gInventory.updateItem(new_item);
 		gInventory.notifyObservers();
-		if(view)
+		if(active_panel)
 		{
-			view->getPanel()->setSelection(item_id, TAKE_FOCUS_NO);
+			active_panel->setSelection(item_id, TAKE_FOCUS_NO);
 		}
 	}
 

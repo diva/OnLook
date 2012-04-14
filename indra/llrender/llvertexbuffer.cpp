@@ -1208,20 +1208,15 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 
 	llassert(nverts >= 0);
 
-	if (nverts >= 65535)
+	if (nverts > 65536)
 	{
-		// <FS:ND> FIRE-5077; Just print an info if there are more than 0xFFFF, for now just so there is a message in the logs where in older version #vertices would have been capped.
-
-		// llwarns << "Vertex buffer overflow!" << llendl;
-		// nverts = 65535;
-		llinfos << "More vertices than 65535 (#" << nverts << ")" <<llendl;
-
-		// </FS:ND>
+		llwarns << "Vertex buffer overflow!" << llendl;
+		nverts = 65536;
 	}
 
-	S32 needed_size = calcOffsets(mTypeMask, mOffsets, nverts);
+	U32 needed_size = (U32)calcOffsets(mTypeMask, mOffsets, nverts);
 
-	if (needed_size > mSize || needed_size <= mSize/2)
+	if (needed_size > (U32)mSize || needed_size <= (U32)mSize/2)
 	{
 		createGLBuffer(needed_size);
 	}
@@ -1237,9 +1232,9 @@ void LLVertexBuffer::updateNumIndices(S32 nindices)
 
 	llassert(nindices >= 0);
 
-	S32 needed_size = sizeof(U16) * nindices;
+	U32 needed_size = sizeof(U16) * (U32)nindices;
 
-	if (needed_size > mIndicesSize || needed_size <= mIndicesSize/2)
+	if (needed_size > (U32)mIndicesSize || needed_size <= (U32)mIndicesSize/2)
 	{
 		createGLIndices(needed_size);
 	}
@@ -1255,21 +1250,11 @@ void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 	
 	stop_glerror();
 
-	// <FS:ND> FIRE-5077; Just print an info if there are more than 0xFFFF, for now just so there is a message in the logs where in older version #vertices would have been capped.
-
-	// if (nverts < 0 || nindices < 0 ||
-	// 	nverts > 65536)
-	// {
-	// 	llerrs << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
-	// }
-
-	if( nverts < 0 || nindices < 0 )
-		llerrs << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
-
-	if( nverts > 0xFFFF )
-		llinfos << "More vertices than 65535 (#" << nverts << ")" <<llendl;
-	
-	// </FS:ND>
+	if (nverts < 0 || nindices < 0 ||
+		nverts > 65536)
+	{
+		llwarns << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
+	}
 
 	updateNumVerts(nverts);
 	updateNumIndices(nindices);
@@ -2303,10 +2288,10 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask)
 	stop_glerror();
 	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
 
-	/*if ((data_mask & mTypeMask) != data_mask)
+	if (gDebugGL && ((data_mask & mTypeMask) != data_mask))
 	{
 		llerrs << "LLVertexBuffer::setupVertexBuffer missing required components for supplied data mask." << llendl;
-	}*/
+	}
 
 	if (LLGLSLShader::sNoFixedFunction)
 	{

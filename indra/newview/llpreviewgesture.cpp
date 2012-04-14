@@ -327,7 +327,7 @@ void LLPreviewGesture::setMinimized(BOOL minimize)
 
 bool LLPreviewGesture::handleSaveChangesDialog(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch(option)
 	{
 	case 0:  // "Yes"
@@ -701,7 +701,7 @@ void LLPreviewGesture::refresh()
 {
 	// If previewing or item is incomplete, all controls are disabled
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)getItem();
-	bool is_complete = (item && item->isComplete()) ? true : false;
+	bool is_complete = (item && item->isFinished()) ? true : false;
 	if (mPreviewGesture || !is_complete)
 	{
 		

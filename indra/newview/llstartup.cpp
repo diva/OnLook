@@ -1747,6 +1747,7 @@ bool idle_startup()
 				set_startup_status(0.4f, LLTrans::getString("LoginRequestSeedCapGrant"), gAgent.mMOTD);
 			}
 		}
+		display_startup();
 		return FALSE;
 	}
 
@@ -2432,10 +2433,9 @@ bool idle_startup()
 						item_ids.push_back(item_id);
 					}
 				}
-
-				LLGestureInventoryFetchObserver* fetch = new LLGestureInventoryFetchObserver(item_ids);
-				// deletes itself when done
-				gInventory.addObserver(fetch);
+				// no need to add gesture to inventory observer, it's already made in constructor 
+				LLGestureMgr::instance().setFetchIDs(item_ids);
+				LLGestureMgr::instance().startFetch();
 			}
 		}
 		gDisplaySwapBuffers = TRUE;
@@ -2646,10 +2646,11 @@ bool idle_startup()
 		LLViewerParcelMedia::loadDomainFilterList();
 
 		// Let the map know about the inventory.
-		if(gFloaterWorldMap)
+		LLFloaterWorldMap* floater_world_map = gFloaterWorldMap;
+		if(floater_world_map)
 		{
-			gFloaterWorldMap->observeInventory(&gInventory);
-			gFloaterWorldMap->observeFriends();
+			floater_world_map->observeInventory(&gInventory);
+			floater_world_map->observeFriends();
 		}
 
 		// Start the AO now that settings have loaded and login successful -- MC
@@ -2734,332 +2735,6 @@ bool idle_startup()
 	LL_WARNS("AppInit") << "Reached end of idle_startup for state " << LLStartUp::getStartupState() << LL_ENDL;
 	return TRUE;
 }
-
-bool process_login_success_response(std::string& password)
-{
-	LLSD response = LLUserAuth::getInstance()->getResponse();
-
-	std::string text(response["udp_blacklist"]);
-	if(!text.empty())
-	{
-		apply_udp_blacklist(text);
-	}
-
-	// unpack login data needed by the application
-	text = response["agent_id"].asString();
-	if(!text.empty()) gAgentID.set(text);
-	gDebugInfo["AgentID"] = text;
-	
-	text = response["session_id"].asString();
-	if(!text.empty()) gAgentSessionID.set(text);
-	gDebugInfo["SessionID"] = text;
-	
-	text = response["secure_session_id"].asString();
-	if(!text.empty()) gAgent.mSecureSessionID.set(text);
-
-	std::string firstname;
-	std::string lastname;
-	text = response["first_name"].asString();
-	if(!text.empty()) 
-	{
-		// Remove quotes from string.  Login.cgi sends these to force
-		// names that look like numbers into strings.
-		firstname.assign(text);
-		LLStringUtil::replaceChar(firstname, '"', ' ');
-		LLStringUtil::trim(firstname);
-	}
-	text = response["last_name"].asString();
-	if(!text.empty()) lastname.assign(text);
-	gSavedSettings.setString("FirstName", firstname);
-	gSavedSettings.setString("LastName", lastname);
-	// <edit>
-	gFullName = utf8str_tolower(firstname + " " + lastname);
-	// </edit>
-
-	if (gSavedSettings.getBOOL("RememberPassword"))
-	{
-		// Successful login means the password is valid, so save it.
-		LLStartUp::savePasswordToDisk(password);
-	}
-	else
-	{
-		// Don't leave password from previous session sitting around
-		// during this login session.
-		LLStartUp::deletePasswordFromDisk();
-		password.assign(""); // clear the password so it isn't saved to login history either
-	}
-
-	{
-		// Save the login history data to disk
-		std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
-
-		LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
-		std::string grid_nick = gHippoGridManager->getConnectedGrid()->getGridName();
-		history_data.deleteEntry(firstname, lastname, grid_nick);
-		if (gSavedSettings.getBOOL("RememberLogin"))
-		{
-			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_nick);
-			history_data.addEntry(login_entry);
-		}
-		else
-		{
-			// Clear the old-style login data as well
-			gSavedSettings.setString("FirstName", std::string(""));
-			gSavedSettings.setString("LastName", std::string(""));
-		}
-
-		LLSavedLogins::saveFile(history_data, history_file);
-	}
-
-	// this is their actual ability to access content
-	text = response["agent_access_max"].asString();
-	if (!text.empty())
-	{
-		// agent_access can be 'A', 'M', and 'PG'.
-		gAgent.setMaturity(text[0]);
-	}
-	
-	// this is the value of their preference setting for that content
-	// which will always be <= agent_access_max
-	text = response["agent_region_access"].asString();
-	if (!text.empty())
-	{
-		U32 preferredMaturity = (U32)LLAgent::convertTextToMaturity(text[0]);
-
-		gSavedSettings.setU32("PreferredMaturity", preferredMaturity);
-	}
-	// During the AO transition, this flag will be true. Then the flag will
-	// go away. After the AO transition, this code and all the code that
-	// uses it can be deleted.
-	text = response["ao_transition"].asString();
-	if (!text.empty())
-	{
-		if (text == "1")
-		{
-			gAgent.setAOTransition();
-		}
-	}
-
-	text = response["start_location"].asString();
-	if(!text.empty()) 
-	{
-		gAgentStartLocation.assign(text);
-	}
-
-	text = response["circuit_code"].asString();
-	if(!text.empty())
-	{
-		gMessageSystem->mOurCircuitCode = strtoul(text.c_str(), NULL, 10);
-	}
-	std::string sim_ip_str = response["sim_ip"];
-	std::string sim_port_str = response["sim_port"];
-	if(!sim_ip_str.empty() && !sim_port_str.empty())
-	{
-		U32 sim_port = strtoul(sim_port_str.c_str(), NULL, 10);
-		gFirstSim.set(sim_ip_str, sim_port);
-		if (gFirstSim.isOk())
-		{
-			gMessageSystem->enableCircuit(gFirstSim, TRUE);
-		}
-	}
-	std::string region_x_str = response["region_x"];
-	std::string region_y_str = response["region_y"];
-	if(!region_x_str.empty() && !region_y_str.empty())
-	{
-		U32 region_x = strtoul(region_x_str.c_str(), NULL, 10);
-		U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
-		gFirstSimHandle = to_region_handle(region_x, region_y);
-	}
-	
-	const std::string look_at_str = response["look_at"];
-	if (!look_at_str.empty())
-	{
-		size_t len = look_at_str.size();
-		LLMemoryStream mstr((U8*)look_at_str.c_str(), len);
-		LLSD sd = LLSDSerialize::fromNotation(mstr, len);
-		gAgentStartLookAt = ll_vector3_from_sd(sd);
-	}
-
-	text = response["seed_capability"].asString();
-	if (!text.empty()) gFirstSimSeedCap = text;
-				
-	text = response["seconds_since_epoch"].asString();
-	if(!text.empty())
-	{
-		U32 server_utc_time = strtoul(text.c_str(), NULL, 10);
-		if(server_utc_time)
-		{
-			time_t now = time(NULL);
-			gUTCOffset = (server_utc_time - now);
-		}
-	}
-
-	std::string home_location = response["home"];
-	if(!home_location.empty())
-	{
-		size_t len = home_location.size();
-		LLMemoryStream mstr((U8*)home_location.c_str(), len);
-		LLSD sd = LLSDSerialize::fromNotation(mstr, len);
-		S32 region_x = sd["region_handle"][0].asInteger();
-		S32 region_y = sd["region_handle"][1].asInteger();
-		U64 region_handle = to_region_handle(region_x, region_y);
-		LLVector3 position = ll_vector3_from_sd(sd["position"]);
-		gAgent.setHomePosRegion(region_handle, position);
-	}
-
-	gAgent.mMOTD.assign(response["message"]);
-
-	// Options...
-	// Each 'option' is an array of submaps. 
-	// It appears that we only ever use the first element of the array.
-	LLUUID inv_root_folder_id = response["inventory-root"][0]["folder_id"];
-	if(inv_root_folder_id.notNull())
-	{
-		gInventory.setRootFolderID(inv_root_folder_id);
-		//gInventory.mock(gAgent.getInventoryRootID());
-	}
-
-	LLSD login_flags = response["login-flags"][0];
-	if(login_flags.size())
-	{
-		std::string flag = login_flags["ever_logged_in"];
-		if(!flag.empty())
-		{
-			gAgent.setFirstLogin((flag == "N") ? TRUE : FALSE);
-		}
-
-		/*  Flag is currently ignored by the viewer.
-		flag = login_flags["stipend_since_login"];
-		if(flag == "Y") 
-		{
-			stipend_since_login = true;
-		}
-		*/
-
-		flag = login_flags["gendered"].asString();
-		if(flag == "Y")
-		{
-			gAgent.setGenderChosen(TRUE);
-		}
-		
-		flag = login_flags["daylight_savings"].asString();
-		if(flag == "Y")
-		{
-			gPacificDaylightTime = (flag == "Y");
-		}
-	}
-	std::string map_server_url = response["map-server-url"];
-	if(!map_server_url.empty())
-	{
-		gSavedSettings.setString("MapServerURL", map_server_url);
-		LLWorldMap::gotMapServerURL(true);
-	}
-	// Initial outfit for the user.
-	LLSD initial_outfit = response["initial-outfit"][0];
-	if(initial_outfit.size())
-	{
-		std::string flag = initial_outfit["folder_name"];
-		if(!flag.empty())
-		{
-			// Initial outfit is a folder in your inventory,
-			// must be an exact folder-name match.
-			sInitialOutfit = flag;
-		}
-
-		flag = initial_outfit["gender"].asString();
-		if(!flag.empty())
-		{
-			sInitialOutfitGender = flag;
-		}
-	}
-
-	LLSD global_textures = response["global-textures"][0];
-	if(global_textures.size())
-	{
-		// Extract sun and moon texture IDs.  These are used
-		// in the LLVOSky constructor, but I can't figure out
-		// how to pass them in.  JC
-		LLUUID id = global_textures["sun_texture_id"];
-		if(id.notNull())
-		{
-			gSunTextureID = id;
-		}
-
-		id = global_textures["moon_texture_id"];
-		if(id.notNull())
-		{
-			gMoonTextureID = id;
-		}
-
-		id = global_textures["cloud_texture_id"];
-		if(id.notNull())
-		{
-			gCloudTextureID = id;
-		}
-	}
-
-	
-	// Override grid info with anything sent in the login response
-	std::string tmp = response["gridname"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setGridName(tmp);
-	tmp = response["loginuri"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginUri(tmp);
-	tmp = response["welcome"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginPage(tmp);
-	tmp = response["loginpage"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginPage(tmp);
-	tmp = response["economy"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setHelperUri(tmp);
-	tmp = response["helperuri"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setHelperUri(tmp);
-	tmp = response["about"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setWebSite(tmp);
-	tmp = response["website"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setWebSite(tmp);
-	tmp = response["help"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSupportUrl(tmp);
-	tmp = response["support"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSupportUrl(tmp);
-	tmp = response["register"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRegisterUrl(tmp);
-	tmp = response["account"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRegisterUrl(tmp);
-	tmp = response["password"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setPasswordUrl(tmp);
-	tmp = response["search"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
-	tmp = response["currency"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
-	tmp = response["real_currency"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
-	tmp = response["directory_fee"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setDirectoryFee(atoi(tmp.c_str()));
-	tmp = response["max_groups"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
-	tmp = response["max-agent-groups"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
-	tmp = response["VoiceConnector"];
-	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
-	gHippoGridManager->saveFile();
-	gHippoLimits->setLimits();
-
-	gIMMgr->loadIgnoreGroup();
-
-	bool success = false;
-	// JC: gesture loading done below, when we have an asset system
-	// in place.  Don't delete/clear user_credentials until then.
-
-	if(gAgentID.notNull()
-		&& gAgentSessionID.notNull()
-	  	&& gMessageSystem->mOurCircuitCode
-		&& gFirstSim.isOk()
-	  	&& gInventory.getRootFolderID().notNull())
-	{
-		success = true;	
-	}
-	return success;
-}
-
 
 
 //
@@ -4352,4 +4027,328 @@ bool LLStartUp::startLLProxy()
 	}
 
 	return proxy_ok;
+}
+bool process_login_success_response(std::string& password)
+{
+	LLSD response = LLUserAuth::getInstance()->getResponse();
+
+	std::string text(response["udp_blacklist"]);
+	if(!text.empty())
+	{
+		apply_udp_blacklist(text);
+	}
+
+	// unpack login data needed by the application
+	text = response["agent_id"].asString();
+	if(!text.empty()) gAgentID.set(text);
+	gDebugInfo["AgentID"] = text;
+	
+	text = response["session_id"].asString();
+	if(!text.empty()) gAgentSessionID.set(text);
+	gDebugInfo["SessionID"] = text;
+	
+	text = response["secure_session_id"].asString();
+	if(!text.empty()) gAgent.mSecureSessionID.set(text);
+
+	std::string firstname;
+	std::string lastname;
+	text = response["first_name"].asString();
+	if(!text.empty()) 
+	{
+		// Remove quotes from string.  Login.cgi sends these to force
+		// names that look like numbers into strings.
+		firstname.assign(text);
+		LLStringUtil::replaceChar(firstname, '"', ' ');
+		LLStringUtil::trim(firstname);
+	}
+	text = response["last_name"].asString();
+	if(!text.empty()) lastname.assign(text);
+	gSavedSettings.setString("FirstName", firstname);
+	gSavedSettings.setString("LastName", lastname);
+	// <edit>
+	gFullName = utf8str_tolower(firstname + " " + lastname);
+	// </edit>
+
+	if (gSavedSettings.getBOOL("RememberPassword"))
+	{
+		// Successful login means the password is valid, so save it.
+		LLStartUp::savePasswordToDisk(password);
+	}
+	else
+	{
+		// Don't leave password from previous session sitting around
+		// during this login session.
+		LLStartUp::deletePasswordFromDisk();
+		password.assign(""); // clear the password so it isn't saved to login history either
+	}
+
+	{
+		// Save the login history data to disk
+		std::string history_file = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "saved_logins_sg2.xml");
+
+		LLSavedLogins history_data = LLSavedLogins::loadFile(history_file);
+		std::string grid_nick = gHippoGridManager->getConnectedGrid()->getGridName();
+		history_data.deleteEntry(firstname, lastname, grid_nick);
+		if (gSavedSettings.getBOOL("RememberLogin"))
+		{
+			LLSavedLoginEntry login_entry(firstname, lastname, password, grid_nick);
+			history_data.addEntry(login_entry);
+		}
+		else
+		{
+			// Clear the old-style login data as well
+			gSavedSettings.setString("FirstName", std::string(""));
+			gSavedSettings.setString("LastName", std::string(""));
+		}
+
+		LLSavedLogins::saveFile(history_data, history_file);
+	}
+
+	// this is their actual ability to access content
+	text = response["agent_access_max"].asString();
+	if (!text.empty())
+	{
+		// agent_access can be 'A', 'M', and 'PG'.
+		gAgent.setMaturity(text[0]);
+	}
+	
+	// this is the value of their preference setting for that content
+	// which will always be <= agent_access_max
+	text = response["agent_region_access"].asString();
+	if (!text.empty())
+	{
+		U32 preferredMaturity = (U32)LLAgent::convertTextToMaturity(text[0]);
+
+		gSavedSettings.setU32("PreferredMaturity", preferredMaturity);
+	}
+	// During the AO transition, this flag will be true. Then the flag will
+	// go away. After the AO transition, this code and all the code that
+	// uses it can be deleted.
+	text = response["ao_transition"].asString();
+	if (!text.empty())
+	{
+		if (text == "1")
+		{
+			gAgent.setAOTransition();
+		}
+	}
+
+	text = response["start_location"].asString();
+	if(!text.empty()) 
+	{
+		gAgentStartLocation.assign(text);
+	}
+
+	text = response["circuit_code"].asString();
+	if(!text.empty())
+	{
+		gMessageSystem->mOurCircuitCode = strtoul(text.c_str(), NULL, 10);
+	}
+	std::string sim_ip_str = response["sim_ip"];
+	std::string sim_port_str = response["sim_port"];
+	if(!sim_ip_str.empty() && !sim_port_str.empty())
+	{
+		U32 sim_port = strtoul(sim_port_str.c_str(), NULL, 10);
+		gFirstSim.set(sim_ip_str, sim_port);
+		if (gFirstSim.isOk())
+		{
+			gMessageSystem->enableCircuit(gFirstSim, TRUE);
+		}
+	}
+	std::string region_x_str = response["region_x"];
+	std::string region_y_str = response["region_y"];
+	if(!region_x_str.empty() && !region_y_str.empty())
+	{
+		U32 region_x = strtoul(region_x_str.c_str(), NULL, 10);
+		U32 region_y = strtoul(region_y_str.c_str(), NULL, 10);
+		gFirstSimHandle = to_region_handle(region_x, region_y);
+	}
+	
+	const std::string look_at_str = response["look_at"];
+	if (!look_at_str.empty())
+	{
+		size_t len = look_at_str.size();
+		LLMemoryStream mstr((U8*)look_at_str.c_str(), len);
+		LLSD sd = LLSDSerialize::fromNotation(mstr, len);
+		gAgentStartLookAt = ll_vector3_from_sd(sd);
+	}
+
+	text = response["seed_capability"].asString();
+	if (!text.empty()) gFirstSimSeedCap = text;
+				
+	text = response["seconds_since_epoch"].asString();
+	if(!text.empty())
+	{
+		U32 server_utc_time = strtoul(text.c_str(), NULL, 10);
+		if(server_utc_time)
+		{
+			time_t now = time(NULL);
+			gUTCOffset = (server_utc_time - now);
+		}
+	}
+
+	std::string home_location = response["home"];
+	if(!home_location.empty())
+	{
+		size_t len = home_location.size();
+		LLMemoryStream mstr((U8*)home_location.c_str(), len);
+		LLSD sd = LLSDSerialize::fromNotation(mstr, len);
+		S32 region_x = sd["region_handle"][0].asInteger();
+		S32 region_y = sd["region_handle"][1].asInteger();
+		U64 region_handle = to_region_handle(region_x, region_y);
+		LLVector3 position = ll_vector3_from_sd(sd["position"]);
+		gAgent.setHomePosRegion(region_handle, position);
+	}
+
+	gAgent.mMOTD.assign(response["message"]);
+
+	// Options...
+	// Each 'option' is an array of submaps. 
+	// It appears that we only ever use the first element of the array.
+	LLUUID inv_root_folder_id = response["inventory-root"][0]["folder_id"];
+	if(inv_root_folder_id.notNull())
+	{
+		gInventory.setRootFolderID(inv_root_folder_id);
+		//gInventory.mock(gAgent.getInventoryRootID());
+	}
+
+	LLSD login_flags = response["login-flags"][0];
+	if(login_flags.size())
+	{
+		std::string flag = login_flags["ever_logged_in"];
+		if(!flag.empty())
+		{
+			gAgent.setFirstLogin((flag == "N") ? TRUE : FALSE);
+		}
+
+		/*  Flag is currently ignored by the viewer.
+		flag = login_flags["stipend_since_login"];
+		if(flag == "Y") 
+		{
+			stipend_since_login = true;
+		}
+		*/
+
+		flag = login_flags["gendered"].asString();
+		if(flag == "Y")
+		{
+			gAgent.setGenderChosen(TRUE);
+		}
+		
+		flag = login_flags["daylight_savings"].asString();
+		if(flag == "Y")
+		{
+			gPacificDaylightTime = (flag == "Y");
+		}
+	}
+	std::string map_server_url = response["map-server-url"];
+	if(!map_server_url.empty())
+	{
+		gSavedSettings.setString("MapServerURL", map_server_url);
+		LLWorldMap::gotMapServerURL(true);
+	}
+	// Initial outfit for the user.
+	LLSD initial_outfit = response["initial-outfit"][0];
+	if(initial_outfit.size())
+	{
+		std::string flag = initial_outfit["folder_name"];
+		if(!flag.empty())
+		{
+			// Initial outfit is a folder in your inventory,
+			// must be an exact folder-name match.
+			sInitialOutfit = flag;
+		}
+
+		flag = initial_outfit["gender"].asString();
+		if(!flag.empty())
+		{
+			sInitialOutfitGender = flag;
+		}
+	}
+
+	LLSD global_textures = response["global-textures"][0];
+	if(global_textures.size())
+	{
+		// Extract sun and moon texture IDs.  These are used
+		// in the LLVOSky constructor, but I can't figure out
+		// how to pass them in.  JC
+		LLUUID id = global_textures["sun_texture_id"];
+		if(id.notNull())
+		{
+			gSunTextureID = id;
+		}
+
+		id = global_textures["moon_texture_id"];
+		if(id.notNull())
+		{
+			gMoonTextureID = id;
+		}
+
+		id = global_textures["cloud_texture_id"];
+		if(id.notNull())
+		{
+			gCloudTextureID = id;
+		}
+	}
+
+	
+	// Override grid info with anything sent in the login response
+	std::string tmp = response["gridname"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setGridName(tmp);
+	tmp = response["loginuri"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginUri(tmp);
+	tmp = response["welcome"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginPage(tmp);
+	tmp = response["loginpage"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setLoginPage(tmp);
+	tmp = response["economy"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setHelperUri(tmp);
+	tmp = response["helperuri"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setHelperUri(tmp);
+	tmp = response["about"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setWebSite(tmp);
+	tmp = response["website"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setWebSite(tmp);
+	tmp = response["help"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSupportUrl(tmp);
+	tmp = response["support"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSupportUrl(tmp);
+	tmp = response["register"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRegisterUrl(tmp);
+	tmp = response["account"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRegisterUrl(tmp);
+	tmp = response["password"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setPasswordUrl(tmp);
+	tmp = response["search"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setSearchUrl(tmp);
+	tmp = response["currency"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setCurrencySymbol(tmp);
+	tmp = response["real_currency"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setRealCurrencySymbol(tmp);
+	tmp = response["directory_fee"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setDirectoryFee(atoi(tmp.c_str()));
+	tmp = response["max_groups"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
+	tmp = response["max-agent-groups"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setMaxAgentGroups(atoi(tmp.c_str()));
+	tmp = response["VoiceConnector"];
+	if (!tmp.empty()) gHippoGridManager->getConnectedGrid()->setVoiceConnector(tmp);
+	gHippoGridManager->saveFile();
+	gHippoLimits->setLimits();
+
+	gIMMgr->loadIgnoreGroup();
+
+	bool success = false;
+	// JC: gesture loading done below, when we have an asset system
+	// in place.  Don't delete/clear user_credentials until then.
+
+	if(gAgentID.notNull()
+		&& gAgentSessionID.notNull()
+	  	&& gMessageSystem->mOurCircuitCode
+		&& gFirstSim.isOk()
+	  	&& gInventory.getRootFolderID().notNull())
+	{
+		success = true;	
+	}
+	return success;
 }
