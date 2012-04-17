@@ -96,6 +96,9 @@
 	<string name="TooltipLand">Land:</string>
 	<string name="TooltipMustSingleDrop">Only a single item can be dragged here</string>
 
+	
+	<string name="TooltipDragOntoOwnChild">You can't move a folder into its child</string>
+	<string name="TooltipDragOntoSelf">You can't move a folder into itself</string>
 
 	<!-- Indicates that an avatar's name or other similar datum is being retrieved. General usage. -->
 	<string name="RetrievingData">Retrieving...</string>
@@ -212,6 +215,8 @@
 	<string name="texture_loading">Loading...</string>
 	<string name="worldmap_offline">Offline</string>
 
+	<!-- animations uploading status codes -->
+	<string name="Ok">OK</string>
 	<!-- Chat -->
 	<string name="whisper">whispers:</string>
 	<string name="shout">shouts:</string>
@@ -247,6 +252,7 @@
 	<string name="load_files">Load Files</string>
 	<string name="choose_the_directory">Choose Directory</string>
 
+ 
 	<!-- LSL Usage Hover Tips -->
   <string name="LSLTipSleepTime">
 Sleeps script for [SLEEP_TIME] seconds.
@@ -1819,6 +1825,7 @@ Returns a key that is the UUID of the user seated on the prim.
 
 
 
+	<string name="ok">OK</string>
 	<!-- mouselook -->
 	<string name="LeaveMouselook">Press ESC to return to World View</string>
 	<!-- use value="" because they have preceding spaces -->
@@ -1855,6 +1862,12 @@ Returns a key that is the UUID of the user seated on the prim.
 	<string name="Plastic">Plastic</string>
 	<string name="Rubber">Rubber</string>
 	<string name="Light">Light</string>
+	<string name="Unknown">(Unknown)</string>
+	<!-- Environment settings -->
+	<string name="Local">Local</string>
+	<string name="LocalSettings">Local Settings</string>
+	<string name="Region">Region</string>
+	<string name="RegionSettings">Region Settings</string>
 	<!-- menu accelerators -->
 	<string name="accel-mac-control">Ctrl-</string>
 	<string name="accel-mac-command">Cmd-</string>
@@ -1929,7 +1942,17 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   <string name="group_role_officers">Officers</string>
   <string name="group_role_owners">Owners</string>	
   <string name="group_member_status_online">Online</string>
-	
+  
+  <string name="Chat">Chat</string>
+
+ <!-- External editor status codes -->
+ <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
+ <string name="ExternalEditorNotFound">Cannot find the external editor you specified.
+Try enclosing path to the editor with double quotes.
+(e.g. "/path to my/editor" "%s")</string>
+ <string name="ExternalEditorCommandParseError">Error parsing the external editor command.</string>
+ <string name="ExternalEditorFailedToRun">External editor failed to run.</string>
+
 <!-- Addition of OSSL commands for use in OpenSimulator based regions, including Aurora -->
   <string name="LSLTipText_osSetRegionWaterHeight">
 osSetRegionWaterHeight(float height)
