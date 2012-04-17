@@ -301,6 +301,13 @@
 	     name="Take Off" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="take_off" />
 	</menu_item_call>
+	<menu_item_separator name="Marketplace Separator" />
+	<menu_item_call bottom_delta="-18" height="18" label="Copy to Merchant Outbox" left="0" mouse_opaque="true"
+	     name="Merchant Copy" width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="copy_to_outbox" />
+	<menu_item_call bottom_delta="-18" height="18" label="Send to Marketplace" left="0" mouse_opaque="true"
+	     name="Marketplace Send" width="128">
+		<on_click filter="" function="Inventory.DoToSelected" userdata="send_to_marketplace" />
 	<menu_item_call bottom_delta="-18" height="18" label="--no options--" left="0"
 	     mouse_opaque="true" name="--no options--" width="128" />
 	<!--menu_item_separator name="Wearable Separator" -->

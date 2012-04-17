@@ -182,6 +182,8 @@ BOOL LLInventoryModel::isObjectDescendentOf(const LLUUID& obj_id,
 											const BOOL break_on_recursion) const
 {
 	if (obj_id == cat_id) return TRUE;
+	//The while loop will ALWAYS return false if parent_id is null, regardless of cat_id being null too. Don't bother trying.
+	if(cat_id.isNull()) return FALSE;
 	LLInventoryObject* obj = getObject(obj_id);
 	int depthCounter = 0;
 	while(obj)

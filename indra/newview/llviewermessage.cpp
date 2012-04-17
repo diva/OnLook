@@ -1062,6 +1062,12 @@ void LLViewerInventoryMoveObserver::changed(U32 mask)
 	}
 }
 
+void set_dad_inbox_object(const LLUUID& object_id)
+{
+	LLViewerInventoryMoveObserver* move_observer = new LLViewerInventoryMoveObserver(object_id);
+	gInventory.addObserver(move_observer);
+}
+
 //unlike the FetchObserver for AgentOffer, we only make one 
 //instance of the AddedObserver for TaskOffers
 //and it never dies.  We do this because we don't know the UUID of 
