@@ -824,7 +824,9 @@ LLVOAvatar::LLVOAvatar(const LLUUID& id,
 //------------------------------------------------------------------------
 LLVOAvatar::~LLVOAvatar()
 {
-	if (gSavedSettings.getBOOL("DebugAvatarRezTime"))
+	//App teardown is a mess. Avatar destruction can be unpredictable due to all potential refs to the smartptr.
+	//Cannot guarantee that LLNotificationUtil will be usable during shutdown chain.
+	if (!LLApp::isQuitting() && gSavedSettings.getBOOL("DebugAvatarRezTime"))
 	{
 		if (!mFullyLoaded)
 		{
