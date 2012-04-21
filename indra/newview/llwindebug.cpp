@@ -690,31 +690,6 @@ LPTOP_LEVEL_EXCEPTION_FILTER WINAPI MyDummySetUnhandledExceptionFilter(
 	return gFilterFunc;
 }
 
-BOOL PreventSetUnhandledExceptionFilter()
-{
-	HMODULE hKernel32 = LoadLibrary(_T("kernel32.dll"));
-	if (hKernel32 == NULL) 
-		return FALSE;
-
-	void *pOrgEntry = GetProcAddress(hKernel32, "SetUnhandledExceptionFilter");
-	if(pOrgEntry == NULL) 
-		return FALSE;
-	
-	unsigned char newJump[ 100 ];
-	DWORD dwOrgEntryAddr = (DWORD)pOrgEntry;
-	dwOrgEntryAddr += 5; // add 5 for 5 op-codes for jmp far
-	void *pNewFunc = &MyDummySetUnhandledExceptionFilter;
-	DWORD dwNewEntryAddr = (DWORD) pNewFunc;
-	DWORD dwRelativeAddr = dwNewEntryAddr - dwOrgEntryAddr;
-
-	newJump[ 0 ] = 0xE9;  // JMP absolute
-	memcpy(&newJump[ 1 ], &dwRelativeAddr, sizeof(pNewFunc));
-	SIZE_T bytesWritten;
-	BOOL bRet = WriteProcessMemory(GetCurrentProcess(),
-	pOrgEntry, newJump, sizeof(pNewFunc) + 1, &bytesWritten);
-	return bRet;
-}
-
 // static
 void  LLWinDebug::initExceptionHandler(LPTOP_LEVEL_EXCEPTION_FILTER filter_func)
 {
@@ -764,9 +739,6 @@ void  LLWinDebug::initExceptionHandler(LPTOP_LEVEL_EXCEPTION_FILTER filter_func)
 
     LPTOP_LEVEL_EXCEPTION_FILTER prev_filter;
 	prev_filter = SetUnhandledExceptionFilter(filter_func);
-
-	// *REMOVE:Mani
-	//PreventSetUnhandledExceptionFilter();
 
 	if(prev_filter != gFilterFunc)
 	{
