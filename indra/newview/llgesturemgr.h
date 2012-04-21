@@ -37,6 +37,7 @@
 #include "llviewerinventory.h"
 
 class LLMultiGesture;
+class LLGestureListener;
 class LLGestureStep;
 class LLUUID;
 class LLVFS;

@@ -4456,64 +4456,71 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		{
 			gDisplaySwapBuffers = FALSE;
 			gDepthDirty = TRUE;
-			{
-				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
-				display(do_rebuild, scale_factor, subfield, TRUE, is_tiling);
-				// Required for showing the GUI in snapshots?  See DEV-16350 for details. JC
-				render_ui(scale_factor, subfield, is_tiling);
-			}
 
 			S32 subimage_x_offset = llclamp(buffer_x_offset - (subimage_x * window_width), 0, window_width);
 			// handle fractional rows
 			U32 read_width = llmax(0, (window_width - subimage_x_offset) -
 									llmax(0, (window_width * (subimage_x + 1)) - (buffer_x_offset + raw->getWidth())));
 
-			for(U32 out_y = 0; out_y < read_height ; out_y++)
+			// Skip rendering and sampling altogether if either width or height is degenerated to 0 (common in cropping cases)
+			if (read_width && read_height)
 			{
-				S32 output_buffer_offset = ( 
-							(out_y * (raw->getWidth())) // ...plus iterated y...
-							+ (window_width * subimage_x) // ...plus subimage start in x...
-							+ (raw->getWidth() * window_height * subimage_y) // ...plus subimage start in y...
-							- output_buffer_offset_x // ...minus buffer padding x...
-							- (output_buffer_offset_y * (raw->getWidth()))  // ...minus buffer padding y...
-						) * raw->getComponents();
+				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
+				display(do_rebuild, scale_factor, subfield, TRUE, is_tiling);
 				
-				// Ping the wathdog thread every 100 lines to keep us alive (arbitrary number, feel free to change)
-				if (out_y % 100 == 0)
+				if (!LLPipeline::sRenderDeferred)
 				{
-					LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
+					// Required for showing the GUI in snapshots and performing bloom composite overlay
+					// Call even if show_ui is FALSE
+					render_ui(scale_factor, subfield);
 				}
 				
-				if (type == SNAPSHOT_TYPE_COLOR)
+				for (U32 out_y = 0; out_y < read_height ; out_y++)
 				{
-					glReadPixels(
-						subimage_x_offset, 
-						out_y + subimage_y_offset, 
-						read_width, 1,
-						GL_RGB, GL_UNSIGNED_BYTE,
-						raw->getData() + output_buffer_offset
-					);
-				}
-				else // SNAPSHOT_TYPE_DEPTH
-				{
-					LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(read_width, 1, sizeof(GL_FLOAT)); // need to store floating point values
-					glReadPixels(
-						subimage_x_offset, out_y + subimage_y_offset,
-						read_width, 1,
-						GL_DEPTH_COMPONENT, GL_FLOAT,
-						depth_line_buffer->getData()// current output pixel is beginning of buffer...
-					);
-
-					for (S32 i = 0; i < (S32)read_width; i++)
+					S32 output_buffer_offset = ( 
+												(out_y * (raw->getWidth())) // ...plus iterated y...
+												+ (window_width * subimage_x) // ...plus subimage start in x...
+												+ (raw->getWidth() * window_height * subimage_y) // ...plus subimage start in y...
+												- output_buffer_offset_x // ...minus buffer padding x...
+												- (output_buffer_offset_y * (raw->getWidth()))  // ...minus buffer padding y...
+												) * raw->getComponents();
+				
+					// Ping the watchdog thread every 100 lines to keep us alive (arbitrary number, feel free to change)
+					if (out_y % 100 == 0)
 					{
-						F32 depth_float = *(F32*)(depth_line_buffer->getData() + (i * sizeof(F32)));
-					
-						F32 linear_depth_float = 1.f / (depth_conversion_factor_1 - (depth_float * depth_conversion_factor_2));
-						U8 depth_byte = F32_to_U8(linear_depth_float, LLViewerCamera::getInstance()->getNear(), LLViewerCamera::getInstance()->getFar());
-						//write converted scanline out to result image
-						for(S32 j = 0; j < raw->getComponents(); j++)
+						LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
+					}
+				
+					if (type == SNAPSHOT_TYPE_COLOR)
+					{
+						glReadPixels(
+									 subimage_x_offset, out_y + subimage_y_offset,
+									 read_width, 1,
+									 GL_RGB, GL_UNSIGNED_BYTE,
+									 raw->getData() + output_buffer_offset
+									 );
+					}
+					else // SNAPSHOT_TYPE_DEPTH
+					{
+						LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(read_width, 1, sizeof(GL_FLOAT)); // need to store floating point values
+						glReadPixels(
+									 subimage_x_offset, out_y + subimage_y_offset,
+									 read_width, 1,
+									 GL_DEPTH_COMPONENT, GL_FLOAT,
+									 depth_line_buffer->getData()// current output pixel is beginning of buffer...
+									 );
+
+						for (S32 i = 0; i < (S32)read_width; i++)
 						{
-							*(raw->getData() + output_buffer_offset + (i * raw->getComponents()) + j) = depth_byte;
+							F32 depth_float = *(F32*)(depth_line_buffer->getData() + (i * sizeof(F32)));
+					
+							F32 linear_depth_float = 1.f / (depth_conversion_factor_1 - (depth_float * depth_conversion_factor_2));
+							U8 depth_byte = F32_to_U8(linear_depth_float, LLViewerCamera::getInstance()->getNear(), LLViewerCamera::getInstance()->getFar());
+							// write converted scanline out to result image
+							for (S32 j = 0; j < raw->getComponents(); j++)
+							{
+								*(raw->getData() + output_buffer_offset + (i * raw->getComponents()) + j) = depth_byte;
+							}
 						}
 					}
 				}

@@ -1,10 +1,9 @@
 /** 
- * @file llresourcedata.h
- * @brief Tracking object for uploads.
+ * @file debugV.glsl
  *
- * $LicenseInfo:firstyear=2006&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
+ * Copyright (C) 2011, Linden Research, Inc.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,21 +23,16 @@
  * $/LicenseInfo$
  */
 
-#ifndef LLRESOURCEDATA_H
-#define LLRESOURCEDATA_H
+uniform mat4 modelview_projection_matrix;
+uniform mat4 modelview_matrix;
 
-#include "llassetstorage.h"
-#include "llinventorytype.h"
+ATTRIBUTE vec3 position;
 
-struct LLResourceData
+VARYING vec3 vary_position;
+
+void main()
 {
-	LLAssetInfo mAssetInfo;
-	LLFolderType::EType mPreferredLocation;
-	LLInventoryType::EType mInventoryType;
-	U32 mNextOwnerPerm;
-	S32 mExpectedUploadCost;
-	void *mUserData;
-	static const S8 INVALID_LOCATION = -2;
-};
+	vary_position = (modelview_matrix*vec4(position.xyz,1.0)).xyz;
+	gl_Position = modelview_projection_matrix * vec4(position.xyz, 1.0);
+}
 
-#endif

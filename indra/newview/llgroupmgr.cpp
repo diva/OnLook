@@ -2,31 +2,25 @@
  * @file llgroupmgr.cpp
  * @brief LLGroupMgr class implementation
  *
- * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
- * Copyright (c) 2004-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2004&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -55,11 +49,20 @@
 #include "llfloatergroupinfo.h"
 #include "llnotificationsutil.h"
 #include "lluictrlfactory.h"
-#if LL_MSVC
-#pragma warning( disable       : 4265 )	// "class has virtual functions, but destructor is not virtual"
-#endif
+#include "lltrans.h"
 #include <boost/regex.hpp>
 
+#if LL_MSVC
+#pragma warning(push)   
+// disable boost::lexical_cast warning
+#pragma warning (disable:4702)
+#endif
+
+#include <boost/lexical_cast.hpp>
+
+#if LL_MSVC
+#pragma warning(pop)   // Restore all warnings to the previous state
+#endif
 
 const U32 MAX_CACHED_GROUPS = 10;
 
@@ -153,7 +156,7 @@ LLGroupRoleData::~LLGroupRoleData()
 {	
 }
 
-S32 LLGroupRoleData::getMembersInRole(std::vector<LLUUID> members,
+S32 LLGroupRoleData::getMembersInRole(uuid_vec_t members,
 									  BOOL needs_sort)
 {
 	if (mRoleID.isNull())
@@ -177,8 +180,8 @@ S32 LLGroupRoleData::getMembersInRole(std::vector<LLUUID> members,
 
 	// Return the number of members in the intersection.
 	S32 max_size = llmin( members.size(), mMemberIDs.size() );
-	std::vector<LLUUID> in_role( max_size );
-	std::vector<LLUUID>::iterator in_role_end;
+	uuid_vec_t in_role( max_size );
+	uuid_vec_t::iterator in_role_end;
 	in_role_end = std::set_intersection(mMemberIDs.begin(), mMemberIDs.end(),
 									members.begin(), members.end(),
 									in_role.begin());
@@ -193,7 +196,7 @@ void LLGroupRoleData::addMember(const LLUUID& member)
 
 bool LLGroupRoleData::removeMember(const LLUUID& member)
 {
-	std::vector<LLUUID>::iterator it = std::find(mMemberIDs.begin(),mMemberIDs.end(),member);
+	uuid_vec_t::iterator it = std::find(mMemberIDs.begin(),mMemberIDs.end(),member);
 
 	if (it != mMemberIDs.end())
 	{
@@ -850,6 +853,14 @@ void LLGroupMgr::addObserver(LLGroupMgrObserver* observer)
 		mObservers.insert(std::pair<LLUUID, LLGroupMgrObserver*>(observer->getID(), observer));
 }
 
+void LLGroupMgr::addObserver(const LLUUID& group_id, LLParticularGroupObserver* observer)
+{
+	if(group_id.notNull() && observer)
+	{
+		mParticularObservers[group_id].insert(observer);
+	}
+}
+
 void LLGroupMgr::removeObserver(LLGroupMgrObserver* observer)
 {
 	if (!observer)
@@ -872,6 +883,23 @@ void LLGroupMgr::removeObserver(LLGroupMgrObserver* observer)
 	}
 }
 
+void LLGroupMgr::removeObserver(const LLUUID& group_id, LLParticularGroupObserver* observer)
+{
+	if(group_id.isNull() || !observer)
+	{
+		return;
+	}
+
+    observer_map_t::iterator obs_it = mParticularObservers.find(group_id);
+    if(obs_it == mParticularObservers.end())
+        return;
+
+    obs_it->second.erase(observer);
+
+    if (obs_it->second.size() == 0)
+    	mParticularObservers.erase(obs_it);
+}
+
 LLGroupMgrGroupData* LLGroupMgr::getGroupData(const LLUUID& id)
 {
 	group_map_t::iterator gi = mGroups.find(id);
@@ -883,6 +911,21 @@ LLGroupMgrGroupData* LLGroupMgr::getGroupData(const LLUUID& id)
 	return NULL;
 }
 
+// Helper function for LLGroupMgr::processGroupMembersReply
+// This reformats date strings from MM/DD/YYYY to YYYY/MM/DD ( e.g. 1/27/2008 -> 2008/1/27 )
+// so that the sorter can sort by year before month before day.
+static void formatDateString(std::string &date_string)
+{
+	tm t;
+	if (sscanf(date_string.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+	{
+		t.tm_year -= 1900;
+		t.tm_mon--;
+		t.tm_hour = t.tm_min = t.tm_sec = 0;
+		timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), date_string);
+	}
+}
+
 // static
 void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 {
@@ -891,7 +934,7 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 	if (gAgent.getID() != agent_id)
 	{
-		llwarns << "Got group properties reply for another agent!" << llendl;
+		llwarns << "Got group members reply for another agent!" << llendl;
 		return;
 	}
 
@@ -902,9 +945,9 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 	msg->getUUIDFast(_PREHASH_GroupData, _PREHASH_RequestID, request_id);
 
 	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->createGroupData(group_id);
-	if (group_datap->mMemberRequestID != request_id)
+	if (!group_datap || (group_datap->mMemberRequestID != request_id))
 	{
-		llwarns << "processGroupMembersReply: Received incorrect (stale?) request id" << llendl;
+		llwarns << "processGroupMembersReply: Received incorrect (stale?) group or request id" << llendl;
 		return;
 	}
 
@@ -932,13 +975,14 @@ void LLGroupMgr::processGroupMembersReply(LLMessageSystem* msg, void** data)
 
 			if (member_id.notNull())
 			{
-				tm t;
-				if (sscanf(online_status.c_str(), "%u/%u/%u", &t.tm_mon, &t.tm_mday, &t.tm_year) == 3 && t.tm_year > 1900)
+				if (online_status == "Online")
 				{
-					t.tm_year -= 1900;
-					t.tm_mon--;
-					t.tm_hour = t.tm_min = t.tm_sec = 0;
-					timeStructToFormattedString(&t, gSavedSettings.getString("ShortDateFormat"), online_status);
+					static std::string localized_online(LLTrans::getString("group_member_status_online"));
+					online_status = localized_online;
+				}
+				else
+				{
+					formatDateString(online_status); // reformat for sorting, e.g. 12/25/2008 -> 2008/12/25
 				}
 				
 				//llinfos << "Member " << member_id << " has powers " << std::hex << agent_powers << std::dec << llendl;
@@ -1061,7 +1105,7 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 	if (gAgent.getID() != agent_id)
 	{
-		llwarns << "Got group properties reply for another agent!" << llendl;
+		llwarns << "Got group role data reply for another agent!" << llendl;
 		return;
 	}
 
@@ -1071,14 +1115,14 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 	LLUUID request_id;
 	msg->getUUIDFast(_PREHASH_GroupData, _PREHASH_RequestID, request_id);
 
-	LLGroupMgrGroupData* group_data = LLGroupMgr::getInstance()->createGroupData(group_id);
-	if (group_data->mRoleDataRequestID != request_id)
+	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->createGroupData(group_id);
+	if (!group_datap || (group_datap->mRoleDataRequestID != request_id))
 	{
-		llwarns << "processGroupRoleDataReply: Received incorrect (stale?) request id" << llendl;
+		llwarns << "processGroupPropertiesReply: Received incorrect (stale?) group or request id" << llendl;
 		return;
 	}
 
-	msg->getS32(_PREHASH_GroupData, "RoleCount", group_data->mRoleCount );
+	msg->getS32(_PREHASH_GroupData, "RoleCount", group_datap->mRoleCount );
 
 	std::string	name;
 	std::string	title;
@@ -1099,24 +1143,40 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 		msg->getU64("RoleData","Powers",powers,i);
 		msg->getU32("RoleData","Members",member_count,i);
 
+		//there are 3 predifined roles - Owners, Officers, Everyone
+		//there names are defined in lldatagroups.cpp
+		//lets change names from server to localized strings
+		if(name == "Everyone")
+		{
+			name = LLTrans::getString("group_role_everyone");
+		}
+		else if(name == "Officers")
+		{
+			name = LLTrans::getString("group_role_officers");
+		}
+		else if(name == "Owners")
+		{
+			name = LLTrans::getString("group_role_owners");
+		}
+
 		lldebugs << "Adding role data: " << name << " {" << role_id << "}" << llendl;
 		LLGroupRoleData* rd = new LLGroupRoleData(role_id,name,title,desc,powers,member_count);
-		group_data->mRoles[role_id] = rd;
+		group_datap->mRoles[role_id] = rd;
 	}
 
-	if (group_data->mRoles.size() == (U32)group_data->mRoleCount)
+	if (group_datap->mRoles.size() == (U32)group_datap->mRoleCount)
 	{
-		group_data->mRoleDataComplete = TRUE;
-		group_data->mRoleDataRequestID.setNull();
+		group_datap->mRoleDataComplete = TRUE;
+		group_datap->mRoleDataRequestID.setNull();
 		// We don't want to make role-member data requests until we have all the role data
-		if (group_data->mPendingRoleMemberRequest)
+		if (group_datap->mPendingRoleMemberRequest)
 		{
-			group_data->mPendingRoleMemberRequest = FALSE;
-			LLGroupMgr::getInstance()->sendGroupRoleMembersRequest(group_data->mID);
+			group_datap->mPendingRoleMemberRequest = FALSE;
+			LLGroupMgr::getInstance()->sendGroupRoleMembersRequest(group_datap->mID);
 		}
 	}
 
-	group_data->mChanged = TRUE;
+	group_datap->mChanged = TRUE;
 #if SHY_MOD //Group title script access
 	gGroupRoleChanger.CheckUpdateRole(group_id,group_data->mRoles);
 #endif //shy_mod
@@ -1131,7 +1191,7 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_AgentID, agent_id );
 	if (gAgent.getID() != agent_id)
 	{
-		llwarns << "Got group properties reply for another agent!" << llendl;
+		llwarns << "Got group role members reply for another agent!" << llendl;
 		return;
 	}
 
@@ -1144,11 +1204,10 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 	U32 total_pairs;
 	msg->getU32(_PREHASH_AgentData, "TotalPairs", total_pairs);
 
-	LLGroupMgrGroupData* group_data = LLGroupMgr::getInstance()->createGroupData(group_id);
-
-	if (group_data->mRoleMembersRequestID != request_id)
+	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->createGroupData(group_id);
+	if (!group_datap || (group_datap->mRoleMembersRequestID != request_id))
 	{
-		llwarns << "processGroupRoleMembersReply: Received incorrect (stale?) role member request id" << llendl;
+		llwarns << "processGroupRoleMembersReply: Received incorrect (stale?) group or request id" << llendl;
 		return;
 	}
 
@@ -1173,15 +1232,15 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 			if (role_id.notNull() && member_id.notNull() )
 			{
 				rd = NULL;
-				ri = group_data->mRoles.find(role_id);
-				if (ri != group_data->mRoles.end())
+				ri = group_datap->mRoles.find(role_id);
+				if (ri != group_datap->mRoles.end())
 				{
 					rd = ri->second;
 				}
 
 				md = NULL;
-				mi = group_data->mMembers.find(member_id);
-				if (mi != group_data->mMembers.end())
+				mi = group_datap->mMembers.find(member_id);
+				if (mi != group_datap->mMembers.end())
 				{
 					md = mi->second;
 				}
@@ -1200,21 +1259,21 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 			}
 		}
 
-		group_data->mReceivedRoleMemberPairs += num_blocks;
+		group_datap->mReceivedRoleMemberPairs += num_blocks;
 	}
 
-	if (group_data->mReceivedRoleMemberPairs == total_pairs)
+	if (group_datap->mReceivedRoleMemberPairs == total_pairs)
 	{
 		// Add role data for the 'everyone' role to all members
-		LLGroupRoleData* everyone = group_data->mRoles[LLUUID::null];
+		LLGroupRoleData* everyone = group_datap->mRoles[LLUUID::null];
 		if (!everyone)
 		{
 			llwarns << "Everyone role not found!" << llendl;
 		}
 		else
 		{
-			for (LLGroupMgrGroupData::member_list_t::iterator mi = group_data->mMembers.begin();
-				 mi != group_data->mMembers.end(); ++mi)
+			for (LLGroupMgrGroupData::member_list_t::iterator mi = group_datap->mMembers.begin();
+				 mi != group_datap->mMembers.end(); ++mi)
 			{
 				LLGroupMemberData* data = mi->second;
 				if (data)
@@ -1224,11 +1283,11 @@ void LLGroupMgr::processGroupRoleMembersReply(LLMessageSystem* msg, void** data)
 			}
 		}
 		
-        group_data->mRoleMemberDataComplete = TRUE;
-		group_data->mRoleMembersRequestID.setNull();
+        group_datap->mRoleMemberDataComplete = TRUE;
+		group_datap->mRoleMembersRequestID.setNull();
 	}
 
-	group_data->mChanged = TRUE;
+	group_datap->mChanged = TRUE;
 	LLGroupMgr::getInstance()->notifyObservers(GC_ROLE_MEMBER_DATA);
 }
 
@@ -1246,15 +1305,13 @@ void LLGroupMgr::processGroupTitlesReply(LLMessageSystem* msg, void** data)
 
 	LLUUID group_id;
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_GroupID, group_id );
-
-	LLGroupMgrGroupData* group_data = LLGroupMgr::getInstance()->createGroupData(group_id);
-
 	LLUUID request_id;
 	msg->getUUIDFast(_PREHASH_AgentData, _PREHASH_RequestID, request_id);
 
-	if (group_data->mTitlesRequestID != request_id)
+	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->createGroupData(group_id);
+	if (!group_datap || (group_datap->mTitlesRequestID != request_id))
 	{
-		llwarns << "processGroupTitlesReply: Received incorrect (stale?) title request id" << llendl;
+		llwarns << "processGroupTitlesReply: Received incorrect (stale?) group" << llendl;
 		return;
 	}
 
@@ -1271,11 +1328,11 @@ void LLGroupMgr::processGroupTitlesReply(LLMessageSystem* msg, void** data)
 		if (!title.mTitle.empty())
 		{
 			lldebugs << "LLGroupMgr adding title: " << title.mTitle << ", " << title.mRoleID << ", " << (title.mSelected ? 'Y' : 'N') << llendl;
-			group_data->mTitles.push_back(title);
+			group_datap->mTitles.push_back(title);
 		}
 	}
 
-	group_data->mChanged = TRUE;
+	group_datap->mChanged = TRUE;
 	LLGroupMgr::getInstance()->notifyObservers(GC_TITLES);
 }
 
@@ -1418,6 +1475,18 @@ void LLGroupMgr::notifyObservers(LLGroupChange gc)
 				oi->second->changed(gc);
 			}
 			gi->second->mChanged = FALSE;
+
+
+			// notify LLParticularGroupObserver
+		    observer_map_t::iterator obs_it = mParticularObservers.find(group_id);
+		    if(obs_it == mParticularObservers.end())
+		        return;
+
+		    observer_set_t& obs = obs_it->second;
+		    for (observer_set_t::iterator ob_it = obs.begin(); ob_it != obs.end(); ++ob_it)
+		    {
+		        (*ob_it)->changed(group_id, gc);
+		    }
 		}
 	}
 }
@@ -1747,15 +1816,17 @@ void LLGroupMgr::sendGroupMemberInvites(const LLUUID& group_id, std::map<LLUUID,
 
 //static
 void LLGroupMgr::sendGroupMemberEjects(const LLUUID& group_id,
-									   std::vector<LLUUID>& member_ids)
+									   uuid_vec_t& member_ids)
 {
 	bool start_message = true;
 	LLMessageSystem* msg = gMessageSystem;
 
+	
+
 	LLGroupMgrGroupData* group_datap = LLGroupMgr::getInstance()->getGroupData(group_id);
 	if (!group_datap) return;
 
-	for (std::vector<LLUUID>::iterator it = member_ids.begin();
+	for (uuid_vec_t::iterator it = member_ids.begin();
 		 it != member_ids.end(); ++it)
 	{
 		LLUUID& ejected_member_id = (*it);

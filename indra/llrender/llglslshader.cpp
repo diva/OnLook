@@ -176,7 +176,7 @@ BOOL LLGLSLShader::createShader(vector<string> * attributes,
 	}
 
 	static const LLCachedControl<bool> no_texture_indexing("ShyotlUseLegacyTextureBatching",false);
- 	if (gGLManager.mGLVersion < 3.1f || no_texture_indexing)
+ 	if ((gGLManager.mGLSLVersionMajor < 2 && gGLManager.mGLSLVersionMinor < 3) || no_texture_indexing)
  	{ //attachShaderFeatures may have set the number of indexed texture channels, so set to 1 again
 		mFeatures.mIndexedTextureChannels = llmin(mFeatures.mIndexedTextureChannels, 1);
 	}

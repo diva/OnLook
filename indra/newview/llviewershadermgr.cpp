@@ -83,6 +83,7 @@ LLGLSLShader	gGlowCombineFXAAProgram(LLViewerShaderMgr::SHADER_INTERFACE);
 LLGLSLShader	gTwoTextureAddProgram(LLViewerShaderMgr::SHADER_INTERFACE);
 LLGLSLShader	gOneTextureNoColorProgram(LLViewerShaderMgr::SHADER_INTERFACE);
 LLGLSLShader	gDebugProgram(LLViewerShaderMgr::SHADER_INTERFACE);
+LLGLSLShader	gClipProgram(LLViewerShaderMgr::SHADER_INTERFACE);
 LLGLSLShader	gAlphaMaskProgram(LLViewerShaderMgr::SHADER_INTERFACE);
 
 LLGLSLShader	gUIProgram(LLViewerShaderMgr::SHADER_INTERFACE);
@@ -2472,6 +2473,16 @@ BOOL LLViewerShaderMgr::loadShadersInterface()
 		gDebugProgram.mShaderFiles.push_back(make_pair("interface/debugF.glsl", GL_FRAGMENT_SHADER_ARB));
 		gDebugProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];
 		success = gDebugProgram.createShader(NULL, NULL);
+	}
+
+	if (success)
+	{
+		gClipProgram.mName = "Clip Shader";
+		gClipProgram.mShaderFiles.clear();
+		gClipProgram.mShaderFiles.push_back(make_pair("interface/clipV.glsl", GL_VERTEX_SHADER_ARB));
+		gClipProgram.mShaderFiles.push_back(make_pair("interface/clipF.glsl", GL_FRAGMENT_SHADER_ARB));
+		gClipProgram.mShaderLevel = mVertexShaderLevel[SHADER_INTERFACE];
+		success = gClipProgram.createShader(NULL, NULL);
 	}
 
 	if (success)

@@ -2,31 +2,25 @@
  * @file lltoolgrab.cpp
  * @brief LLToolGrab class implementation
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -394,22 +388,7 @@ void LLToolGrab::startGrab()
 	mDragStartPointGlobal = grab_start_global;
 	mDragStartFromCamera = grab_start_global - gAgentCamera.getCameraPositionGlobal();
 
-	LLMessageSystem	*msg = gMessageSystem;
-	msg->newMessageFast(_PREHASH_ObjectGrab);
-	msg->nextBlockFast(_PREHASH_AgentData);
-	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-	msg->nextBlockFast(_PREHASH_ObjectData);
-	msg->addU32Fast(_PREHASH_LocalID, objectp->mLocalID);
-	msg->addVector3Fast(_PREHASH_GrabOffset, grab_offset );
-	msg->nextBlock("SurfaceInfo");
-	msg->addVector3("UVCoord", LLVector3(mGrabPick.mUVCoords));
-	msg->addVector3("STCoord", LLVector3(mGrabPick.mSTCoords));
-	msg->addS32Fast(_PREHASH_FaceIndex, mGrabPick.mObjectFace);
-	msg->addVector3("Position", mGrabPick.mIntersection);
-	msg->addVector3("Normal", mGrabPick.mNormal);
-	msg->addVector3("Binormal", mGrabPick.mBinormal);
-	msg->sendMessage( objectp->getRegion()->getHost());
+	send_ObjectGrab_message(objectp, mGrabPick, grab_offset);
 
 	mGrabOffsetFromCenterInitial = grab_offset;
 	mGrabHiddenOffsetFromCamera = mDragStartFromCamera;
@@ -534,8 +513,8 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 	const F32 RADIANS_PER_PIXEL_X = 0.01f;
 	const F32 RADIANS_PER_PIXEL_Y = 0.01f;
 
-	S32 dx = x - (gViewerWindow->getWindowWidth() / 2);
-	S32 dy = y - (gViewerWindow->getWindowHeight() / 2);
+	S32 dx = x - (gViewerWindow->getWorldViewWidthScaled() / 2);
+	S32 dy = y - (gViewerWindow->getWorldViewHeightScaled() / 2);
 
 	if (dx != 0 || dy != 0)
 	{
@@ -655,10 +634,10 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 			// Handle auto-rotation at screen edge.
 			LLVector3 grab_pos_agent = gAgent.getPosAgentFromGlobal( grab_point_global );
 
-			LLCoordGL grab_center_gl( gViewerWindow->getWindowWidth() / 2, gViewerWindow->getWindowHeight() / 2);
+			LLCoordGL grab_center_gl( gViewerWindow->getWorldViewWidthScaled() / 2, gViewerWindow->getWorldViewHeightScaled() / 2);
 			LLViewerCamera::getInstance()->projectPosAgentToScreen(grab_pos_agent, grab_center_gl);
 
-			const S32 ROTATE_H_MARGIN = gViewerWindow->getWindowWidth() / 20;
+			const S32 ROTATE_H_MARGIN = gViewerWindow->getWorldViewWidthScaled() / 20;
 			const F32 ROTATE_ANGLE_PER_SECOND = 30.f * DEG_TO_RAD;
 			const F32 rotate_angle = ROTATE_ANGLE_PER_SECOND / gFPSClamped;
 			// ...build mode moves camera about focus point
@@ -673,7 +652,7 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 					gAgentCamera.cameraOrbitAround(rotate_angle);
 				}
 			}
-			else if (grab_center_gl.mX > gViewerWindow->getWindowWidth() - ROTATE_H_MARGIN)
+			else if (grab_center_gl.mX > gViewerWindow->getWorldViewWidthScaled() - ROTATE_H_MARGIN)
 			{
 				if (gAgentCamera.getFocusOnAvatar())
 				{
@@ -686,7 +665,7 @@ void LLToolGrab::handleHoverActive(S32 x, S32 y, MASK mask)
 			}
 
 			// Don't move above top of screen or below bottom
-			if ((grab_center_gl.mY < gViewerWindow->getWindowHeight() - 6)
+			if ((grab_center_gl.mY < gViewerWindow->getWorldViewHeightScaled() - 6)
 				&& (grab_center_gl.mY > 24))
 			{
 				// Transmit update to simulator
@@ -1082,28 +1061,12 @@ void LLToolGrab::stopGrab()
 	}
 
 	// Next, send messages to simulator
-	LLMessageSystem *msg = gMessageSystem;
 	switch(mMode)
 	{
 	case GRAB_ACTIVE_CENTER:
 	case GRAB_NONPHYSICAL:
 	case GRAB_LOCKED:
-		msg->newMessageFast(_PREHASH_ObjectDeGrab);
-		msg->nextBlockFast(_PREHASH_AgentData);
-		msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
-		msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
-		msg->nextBlockFast(_PREHASH_ObjectData);
-		msg->addU32Fast(_PREHASH_LocalID, objectp->mLocalID);
-		msg->nextBlock("SurfaceInfo");
-		msg->addVector3("UVCoord", LLVector3(pick.mUVCoords));
-		msg->addVector3("STCoord", LLVector3(pick.mSTCoords));
-		msg->addS32Fast(_PREHASH_FaceIndex, pick.mObjectFace);
-		msg->addVector3("Position", pick.mIntersection);
-		msg->addVector3("Normal", pick.mNormal);
-		msg->addVector3("Binormal", pick.mBinormal);
-
-		msg->sendMessage(objectp->getRegion()->getHost());
-
+		send_ObjectDeGrab_message(objectp, pick);
 		mVerticalDragging = FALSE;
 		break;
 
@@ -1154,4 +1117,63 @@ LLVector3d LLToolGrab::getGrabPointGlobal()
 	default:
 		return gAgent.getPositionGlobal();
 	}
+}
+
+
+void send_ObjectGrab_message(LLViewerObject* object, const LLPickInfo & pick, const LLVector3 &grab_offset)
+{
+	if (!object) return;
+
+	LLMessageSystem	*msg = gMessageSystem;
+
+	msg->newMessageFast(_PREHASH_ObjectGrab);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast( _PREHASH_ObjectData);
+	msg->addU32Fast(    _PREHASH_LocalID, object->mLocalID);
+	msg->addVector3Fast(_PREHASH_GrabOffset, grab_offset);
+	msg->nextBlock("SurfaceInfo");
+	msg->addVector3("UVCoord", LLVector3(pick.mUVCoords));
+	msg->addVector3("STCoord", LLVector3(pick.mSTCoords));
+	msg->addS32Fast(_PREHASH_FaceIndex, pick.mObjectFace);
+	msg->addVector3("Position", pick.mIntersection);
+	msg->addVector3("Normal", pick.mNormal);
+	msg->addVector3("Binormal", pick.mBinormal);
+	msg->sendMessage( object->getRegion()->getHost());
+
+	/*  Diagnostic code
+	llinfos << "mUVCoords: " << pick.mUVCoords
+			<< ", mSTCoords: " << pick.mSTCoords
+			<< ", mObjectFace: " << pick.mObjectFace
+			<< ", mIntersection: " << pick.mIntersection
+			<< ", mNormal: " << pick.mNormal
+			<< ", mBinormal: " << pick.mBinormal
+			<< llendl;
+
+	llinfos << "Avatar pos: " << gAgent.getPositionAgent() << llendl;
+	llinfos << "Object pos: " << object->getPosition() << llendl;
+	*/
+}
+
+void send_ObjectDeGrab_message(LLViewerObject* object, const LLPickInfo & pick)
+{
+	if (!object) return;
+
+	LLMessageSystem	*msg = gMessageSystem;
+
+	msg->newMessageFast(_PREHASH_ObjectDeGrab);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast(_PREHASH_ObjectData);
+	msg->addU32Fast(_PREHASH_LocalID, object->mLocalID);
+	msg->nextBlock("SurfaceInfo");
+	msg->addVector3("UVCoord", LLVector3(pick.mUVCoords));
+	msg->addVector3("STCoord", LLVector3(pick.mSTCoords));
+	msg->addS32Fast(_PREHASH_FaceIndex, pick.mObjectFace);
+	msg->addVector3("Position", pick.mIntersection);
+	msg->addVector3("Normal", pick.mNormal);
+	msg->addVector3("Binormal", pick.mBinormal);
+	msg->sendMessage(object->getRegion()->getHost());
 }

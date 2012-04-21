@@ -319,6 +319,7 @@ set(viewer_SOURCE_FILES
     llmaniprotate.cpp
     llmanipscale.cpp
     llmaniptranslate.cpp
+    llmarketplacenotifications.cpp
     llmediaremotectrl.cpp
     llmemoryview.cpp
     llmenucommands.cpp
@@ -809,6 +810,7 @@ set(viewer_HEADER_FILES
     llmaniprotate.h
     llmanipscale.h
     llmaniptranslate.h
+    llmarketplacenotifications.h
     llmediaremotectrl.h
     llmemoryview.h
     llmenucommands.h

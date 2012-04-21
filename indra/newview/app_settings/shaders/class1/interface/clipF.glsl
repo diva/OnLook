@@ -1,10 +1,9 @@
 /** 
- * @file llresourcedata.h
- * @brief Tracking object for uploads.
+ * @file debugF.glsl
  *
- * $LicenseInfo:firstyear=2006&license=viewerlgpl$
+ * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
- * Copyright (C) 2010, Linden Research, Inc.
+ * Copyright (C) 2011, Linden Research, Inc.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,21 +23,24 @@
  * $/LicenseInfo$
  */
 
-#ifndef LLRESOURCEDATA_H
-#define LLRESOURCEDATA_H
-
-#include "llassetstorage.h"
-#include "llinventorytype.h"
-
-struct LLResourceData
-{
-	LLAssetInfo mAssetInfo;
-	LLFolderType::EType mPreferredLocation;
-	LLInventoryType::EType mInventoryType;
-	U32 mNextOwnerPerm;
-	S32 mExpectedUploadCost;
-	void *mUserData;
-	static const S8 INVALID_LOCATION = -2;
-};
-
+#ifdef DEFINE_GL_FRAGCOLOR
+out vec4 frag_color;
+#else
+#define frag_color gl_FragColor
 #endif
+
+uniform vec4 color;
+uniform vec4 clip_plane;
+
+VARYING vec3 vary_position;
+
+
+void main() 
+{
+	if (dot(vary_position,clip_plane.xyz)+clip_plane.w < 0.0)
+	{
+		discard;
+	}
+
+	frag_color = color;
+}
