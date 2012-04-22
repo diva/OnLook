@@ -2418,15 +2418,17 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 			gAgentAvatarp->updateMeshTextures();
 		}
 	}
-	
 	// <edit>
 	if(!gSavedSettings.getBOOL("AppearanceCameraMovement"))
 	{
 		//hmm
 		mCameraAnimating = FALSE;
 		gAgent.endAnimationUpdateUI();
+		return;
 	}
-	/*LLVector3 agent_at = gAgent.getAtAxis();
+	// </edit>
+	
+	LLVector3 agent_at = gAgent.getAtAxis();
 	agent_at.mV[VZ] = 0.f;
 	agent_at.normalize();
 
@@ -2441,7 +2443,9 @@ void LLAgentCamera::changeCameraToCustomizeAvatar()
 	camera_offset *= CUSTOMIZE_AVATAR_CAMERA_DEFAULT_DIST;
 	LLVector3d focus_target_global = gAgent.getPosGlobalFromAgent(focus_target);
 	setAnimationDuration(gSavedSettings.getF32("ZoomTime"));
-	setCameraPosAndFocusGlobal(focus_target_global + camera_offset, focus_target_global, gAgent.getID());*/
+	setCameraPosAndFocusGlobal(focus_target_global + camera_offset, focus_target_global, gAgent.getID());
+	
+
 }
 
 
