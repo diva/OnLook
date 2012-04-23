@@ -724,6 +724,8 @@ bool LLAppViewer::init()
 				&LLURLDispatcher::dispatchFromTextEditor,
 				&LLURLDispatcher::dispatchFromTextEditor);
 	
+	LLToolMgr::getInstance(); // Initialize tool manager if not already instantiated
+		
 	/////////////////////////////////////////////////
 	//
 	// Load settings files
