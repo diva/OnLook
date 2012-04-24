@@ -476,7 +476,8 @@ LLView* LLPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory *fac
 	}
 	else
 	{
-		panelp->initPanelXML(node, parent, factory);
+		if(!factory->builtPanel(panelp))
+			panelp->initPanelXML(node, parent, factory);
 	}
 
 	return panelp;
