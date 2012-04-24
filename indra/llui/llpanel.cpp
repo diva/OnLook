@@ -478,6 +478,16 @@ LLView* LLPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory *fac
 	{
 		if(!factory->builtPanel(panelp))
 			panelp->initPanelXML(node, parent, factory);
+		else
+		{
+			LLRect new_rect = panelp->getRect();
+			// override rectangle with embedding parameters as provided
+			panelp->createRect(node, new_rect, parent);
+			panelp->setOrigin(new_rect.mLeft, new_rect.mBottom);
+			panelp->setShape(new_rect);
+			// optionally override follows flags from including nodes
+			panelp->parseFollowsFlags(node);
+		}
 	}
 
 	return panelp;
