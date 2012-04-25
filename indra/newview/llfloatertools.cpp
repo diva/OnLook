@@ -999,7 +999,7 @@ void commit_select_tool(LLUICtrl *ctrl, void *data)
 	S32 show_owners = gSavedSettings.getBOOL("ShowParcelOwners");
 
 	LLCheckBoxCtrl* group = (LLCheckBoxCtrl*)ctrl;
-	std::string selected = group->getValue().asString();
+	std::string selected = group->getName();
 	if (selected == "radio position")
 	{
 		LLFloaterTools::setEditTool( LLToolCompTranslate::getInstance() );
