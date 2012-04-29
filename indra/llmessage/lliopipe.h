@@ -55,11 +55,11 @@ void pump_debug(const char *file, S32 line);
 /**
  * intrusive pointer support
  */
-namespace boost
-{
+//namespace boost
+//{
 	void intrusive_ptr_add_ref(LLIOPipe* p);
 	void intrusive_ptr_release(LLIOPipe* p);
-};
+//};
 
 /** 
  * @class LLIOPipe
