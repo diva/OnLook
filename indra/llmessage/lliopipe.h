@@ -250,13 +250,13 @@ protected:
 		LLPumpIO* pump) = 0;
 
 private:
-	friend void boost::intrusive_ptr_add_ref(LLIOPipe* p);
-	friend void boost::intrusive_ptr_release(LLIOPipe* p);
+	friend void /*boost::*/intrusive_ptr_add_ref(LLIOPipe* p);
+	friend void /*boost::*/intrusive_ptr_release(LLIOPipe* p);
 	U32 mReferenceCount;
 };
 
-namespace boost
-{
+//namespace boost
+//{
 	inline void intrusive_ptr_add_ref(LLIOPipe* p)
 	{
 		++p->mReferenceCount;
@@ -268,7 +268,7 @@ namespace boost
 			delete p;
 		}
 	}
-};
+//};
 
 
 #if 0
