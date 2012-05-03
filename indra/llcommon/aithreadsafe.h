@@ -132,6 +132,14 @@ public:
 	// Only for use by AITHREADSAFE, see below.
 	void* memory() const { return const_cast<long*>(&mMemory[0]); }
 
+	// Cast a T* back to AIThreadSafeBits<T>. This is the inverse of memory().
+	template<typename T2>
+	  static AIThreadSafeBits<T2>* wrapper_cast(T2* ptr)
+	      { return reinterpret_cast<AIThreadSafeBits<T2>*>(reinterpret_cast<char*>(ptr) - offsetof(AIThreadSafeBits<T2>, mMemory[0])); }
+	template<typename T2>
+	  static AIThreadSafeBits<T2> const* wrapper_cast(T2 const* ptr)
+	      { return reinterpret_cast<AIThreadSafeBits<T2> const*>(reinterpret_cast<char const*>(ptr) - offsetof(AIThreadSafeBits<T2>, mMemory[0])); }
+
 protected:
 	// Accessors.
 	T const* ptr() const { return reinterpret_cast<T const*>(mMemory); }
