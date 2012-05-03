@@ -44,7 +44,7 @@
 #include "llsimplehash.h"
 
 //============================================================================
-// Note: ~LLQueuedThread is O(N) N=# of queued threads, assumed to be small
+// Note: ~LLQueuedThread is O(N) N=# of queued requests, assumed to be small
 //   It is assumed that LLQueuedThreads are rarely created/destroyed.
 
 class LL_COMMON_API LLQueuedThread : public LLThread
