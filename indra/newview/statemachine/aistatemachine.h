@@ -206,6 +206,7 @@ class AIStateMachine {
 	bool mAborted;								//!< True after calling abort() and before calling run().
 	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
+	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
 
 	// Callback facilities.
 	// From within an other state machine:
