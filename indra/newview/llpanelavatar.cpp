@@ -1599,7 +1599,7 @@ LLPanelAvatar::~LLPanelAvatar()
 
 BOOL LLPanelAvatar::canClose()
 {
-	return mPanelClassified && mPanelClassified->canClose();
+	return !mPanelClassified || mPanelClassified->canClose();
 }
 
 void LLPanelAvatar::setAvatar(LLViewerObject *avatarp)
@@ -1645,6 +1645,7 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 		online_status = ONLINE_STATUS_YES;
 	}
 	
+	if(mPanelSecondLife)
 	mPanelSecondLife->childSetVisible("online_yes", online_status == ONLINE_STATUS_YES);
 
 	// Since setOnlineStatus gets called after setAvatarID
@@ -1711,9 +1712,9 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 		(*it)->setAvatarID(avatar_id);
 	}
 
-	mPanelSecondLife->enableControls(own_avatar && mAllowEdit);
-	mPanelWeb->enableControls(own_avatar && mAllowEdit);
-	mPanelAdvanced->enableControls(own_avatar && mAllowEdit);
+	if (mPanelSecondLife) mPanelSecondLife->enableControls(own_avatar && mAllowEdit);
+	if (mPanelWeb) mPanelWeb->enableControls(own_avatar && mAllowEdit);
+	if (mPanelAdvanced) mPanelAdvanced->enableControls(own_avatar && mAllowEdit);
 	// Teens don't have this.
 	if (mPanelFirstLife) mPanelFirstLife->enableControls(own_avatar && mAllowEdit);
 
@@ -1772,16 +1773,16 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	{
 		// While we're waiting for data off the network, clear out the
 		// old data.
-		mPanelSecondLife->clearControls();
+		if(mPanelSecondLife) mPanelSecondLife->clearControls();
 
-		mPanelPicks->deletePickPanels();
-		mPanelPicks->setDataRequested(false);
+		if(mPanelPicks) mPanelPicks->deletePickPanels();
+		if(mPanelPicks) mPanelPicks->setDataRequested(false);
 
-		mPanelClassified->deleteClassifiedPanels();
-		mPanelClassified->setDataRequested(false);
+		if(mPanelClassified) mPanelClassified->deleteClassifiedPanels();
+		if(mPanelClassified) mPanelClassified->setDataRequested(false);
 
-		mPanelNotes->clearControls();
-		mPanelNotes->setDataRequested(false);
+		if(mPanelNotes) mPanelNotes->clearControls();
+		if(mPanelNotes) mPanelNotes->setDataRequested(false);
 		mHaveNotes = false;
 		mLastNotes.clear();
 

@@ -241,11 +241,18 @@ public:
 		pOutfitFoldersCtrl->setCallbackUserData(this);
 	}
 
-	BOOL getRenameClothing()
+	bool getUseOutfits()
+	{
+		return childGetValue("checkbox_use_outfits").asBoolean();
+	}
+	bool getUseLinks()
+	{
+		return childGetValue("checkbox_use_links").asBoolean();
+	}
+	/*bool getRenameClothing()
 	{
 		return childGetValue("rename").asBoolean();
-
-	}
+	}*/
 	virtual void draw()
 	{
 		BOOL one_or_more_items_selected = FALSE;
@@ -269,7 +276,7 @@ public:
 	{
 		LLWearableType::EType wtType = (LLWearableType::EType)wearable;
 		if ( ( (0 <= wtType) && (wtType < LLWearableType::WT_COUNT) ) && 
-			 ( (LLAssetType::AT_BODYPART != LLWearableType::getAssetType(wtType)) || (!gSavedSettings.getBOOL("UseOutfitFolders")) ) )
+			 ( (LLAssetType::AT_BODYPART != LLWearableType::getAssetType(wtType)) || (!getUseOutfits()) ) )
 		{
 			std::string name = std::string("checkbox_") + LLWearableType::getTypeLabel(wtType);
 			childSetEnabled(name, enabled);
@@ -277,25 +284,32 @@ public:
 		}
 	}
 
-	void getIncludedItems( LLDynamicArray<S32> &wearables_to_include, LLDynamicArray<S32> &attachments_to_include )
+	void getIncludedItems( LLInventoryModel::item_array_t& item_list )
 	{
-		for( S32 i = 0; i < (S32)mCheckBoxList.size(); i++)
+		LLInventoryModel::cat_array_t *cats;
+		LLInventoryModel::item_array_t *items;
+		gInventory.getDirectDescendentsOf(LLAppearanceMgr::instance().getCOF(), cats, items);
+		for (LLInventoryModel::item_array_t::const_iterator iter = items->begin();
+						 iter != items->end();
+						 ++iter)
 		{
-			std::string name = mCheckBoxList[i].first;
-			BOOL checked = childGetValue(name).asBoolean();
-			if (i < LLWearableType::WT_COUNT )
+			LLViewerInventoryItem* item = (*iter);
+			if(!item)
+				continue;
+			if(item->isWearableType())
 			{
-				if( checked )
+				LLWearableType::EType type = item->getWearableType();
+				if (type < LLWearableType::WT_COUNT && childGetValue(mCheckBoxList[type].first).asBoolean())
 				{
-					wearables_to_include.put(i);
+					item_list.push_back(item);
 				}
 			}
 			else
 			{
-				if( checked )
+				LLViewerJointAttachment* attachment = gAgentAvatarp->getWornAttachmentPoint(item->getLinkedUUID());
+				if(attachment && childGetValue(std::string("checkbox_")+attachment->getName()).asBoolean())
 				{
-					S32 attachment_pt = mCheckBoxList[i].second;
-					attachments_to_include.put( attachment_pt );
+					item_list.push_back(item);
 				}
 			}
 		}
@@ -350,7 +364,7 @@ public:
 
 	void refresh()
 	{
-		BOOL fUseOutfits = gSavedSettings.getBOOL("UseOutfitFolders");
+		BOOL fUseOutfits = getUseOutfits();
 
 		for (S32 idxType = 0; idxType < LLWearableType::WT_COUNT; idxType++ )
 		{
@@ -1982,7 +1996,7 @@ void LLFloaterCustomize::onBtnMakeOutfit( void* userdata )
 
 		for( S32 i = 0; i < LLWearableType::WT_COUNT; i++ )
 		{
-			BOOL enabled = (gAgentWearables.getWearable( (LLWearableType::EType) i, 0 ) != NULL);	// TODO: MULTI-WEARABLE
+			BOOL enabled = (gAgentWearables.getWearableCount( (LLWearableType::EType) i ));	// TODO: MULTI-WEARABLE
 			BOOL selected = (enabled && (LLWearableType::WT_SHIRT <= i) && (i < LLWearableType::WT_COUNT)); // only select clothing by default
 			if (gAgent.isTeen()
 				&& !edit_wearable_for_teens((LLWearableType::EType)i))
@@ -2007,10 +2021,14 @@ void LLFloaterCustomize::onMakeOutfitCommit( LLMakeOutfitDialog* dialog, void* u
 		LLDynamicArray<S32> wearables_to_include;
 		LLDynamicArray<S32> attachments_to_include;  // attachment points
 
-		dialog->getIncludedItems( wearables_to_include, attachments_to_include );
+		LLInventoryModel::item_array_t item_list;
+		dialog->getIncludedItems(item_list);
 
 		// MULTI-WEARABLES TODO
-		//LLAppearanceMgr::getInstance()->makeNewOutfit( dialog->getFolderName(), wearables_to_include, attachments_to_include, dialog->getRenameClothing() );
+		if(dialog->getUseOutfits())
+			LLAppearanceMgr::instance().makeNewOutfitLinks( dialog->getFolderName(), item_list);
+		else
+			LLAppearanceMgr::instance().makeNewOutfitLegacy( dialog->getFolderName(), item_list, dialog->getUseLinks());
 	}
 }
 

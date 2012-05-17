@@ -80,6 +80,8 @@ public:
 	void shallowCopyCategory(const LLUUID& src_id, const LLUUID& dst_id,
 							 LLPointer<LLInventoryCallback> cb);
 
+	void copyItems(const LLUUID& dst_id, LLInventoryModel::item_array_t* items, LLPointer<LLInventoryCallback> cb);
+
 	// Return whether this folder contains minimal contents suitable for making a full outfit.
 	BOOL getCanMakeFolderIntoOutfit(const LLUUID& folder_id);
 
@@ -174,6 +176,8 @@ public:
 
 
 	LLUUID makeNewOutfitLinks(const std::string& new_folder_name,bool show_panel = true);
+	LLUUID makeNewOutfitLinks(const std::string& new_folder_name, LLInventoryModel::item_array_t& item_list, bool show_panel = true);
+	LLUUID makeNewOutfitLegacy(const std::string& new_folder_name, LLInventoryModel::item_array_t& items, bool use_links, bool show_panel = true);
 
 	bool moveWearable(LLViewerInventoryItem* item, bool closer_to_body);
 
