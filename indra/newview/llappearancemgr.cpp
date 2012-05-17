@@ -3115,7 +3115,7 @@ private:
 		{}
 		virtual void dispatch()
 		{
-			const LLViewerInventoryItem* base_item = mItem->getLinkedItem() ? mItem->getLinkedItem() : mItem;
+			const LLViewerInventoryItem* base_item = mItem->getLinkedItem() ? mItem->getLinkedItem() : mItem.get();
 			copy_inventory_item(gAgent.getID(),
 								base_item->getPermissions().getOwner(),
 								base_item->getUUID(),
@@ -3176,7 +3176,7 @@ public:
 		if(item_id.notNull())
 			LLShowCreatedOutfit::fire(item_id);
 
-		std::vector<const LLCreateBase*>::const_iterator it = std::find(mActiveRequests.begin(), mActiveRequests.end(),cb);
+		std::vector<const LLCreateBase*>::iterator it = std::find(mActiveRequests.begin(), mActiveRequests.end(),cb);
 		if(it != mActiveRequests.end())
 		{
 			const LLViewerInventoryItem* old_item = (*it)->getItem();
