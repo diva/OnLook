@@ -47,6 +47,7 @@
 #include "llvoavatarself.h"
 #include "llviewerregion.h"
 #include "llwearablelist.h"
+#include "llinventorypanel.h"
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
 #include "rlvhelper.h"
@@ -1228,13 +1229,17 @@ void LLAppearanceMgr::shallowCopyCategory(const LLUUID& src_id, const LLUUID& ds
 }
 
 // Copy contents of src_id to dst_id.
-void LLAppearanceMgr::shallowCopyCategoryContents(const LLUUID& src_id, const LLUUID& dst_id,
-													  LLPointer<LLInventoryCallback> cb)
+void LLAppearanceMgr::shallowCopyCategoryContents(const LLUUID& src_id, const LLUUID& dst_id, LLPointer<LLInventoryCallback> cb)
 {
 	LLInventoryModel::cat_array_t* cats;
 	LLInventoryModel::item_array_t* items;
 	gInventory.getDirectDescendentsOf(src_id, cats, items);
 	llinfos << "copying " << items->count() << " items" << llendl;
+	copyItems(dst_id, items, cb);
+}
+
+void LLAppearanceMgr::copyItems(const LLUUID& dst_id, LLInventoryModel::item_array_t* items, LLPointer<LLInventoryCallback> cb)
+{
 	for (LLInventoryModel::item_array_t::const_iterator iter = items->begin();
 		 iter != items->end();
 		 ++iter)
@@ -1274,13 +1279,25 @@ void LLAppearanceMgr::shallowCopyCategoryContents(const LLUUID& src_id, const LL
 			case LLAssetType::AT_BODYPART:
 			case LLAssetType::AT_GESTURE:
 			{
-				llinfos << "copying inventory item " << item->getName() << llendl;
-				copy_inventory_item(gAgent.getID(),
-									item->getPermissions().getOwner(),
-									item->getUUID(),
-									dst_id,
-									item->getName(),
-									cb);
+				if(!item->getPermissions().allowCopyBy(gAgent.getID()))
+				{
+					link_inventory_item(gAgent.getID(),
+										item->getUUID(),
+										dst_id,
+										item->getName(),
+										item->getDescription(),
+										LLAssetType::AT_LINK, cb);
+				}
+				else
+				{
+					llinfos << "copying inventory item " << item->getName() << llendl;
+					copy_inventory_item(gAgent.getID(),
+										item->getPermissions().getOwner(),
+										item->getUUID(),
+										dst_id,
+										item->getName(),
+										cb);
+				}
 				break;
 			}
 			default:
@@ -2892,11 +2909,39 @@ void LLAppearanceMgr::updateClothingOrderingInfo(LLUUID cat_id, bool update_base
 
 
 
-
-class LLShowCreatedOutfit: public LLInventoryCallback
+class LLScrollOnFirstItem : public LLInventoryCallback
 {
 public:
-	LLShowCreatedOutfit(LLUUID& folder_id, bool show_panel = true): mFolderID(folder_id), mShowPanel(show_panel)
+	LLScrollOnFirstItem(const LLUUID&folder_id, bool do_scroll) : mFirstItemCreated(!do_scroll), mFolderID(folder_id)
+	{}
+
+	virtual void fire(const LLUUID& item_id)
+	{
+		if(mFirstItemCreated)
+			return;
+		mFirstItemCreated = true;
+		if (LLInventoryPanel::getActiveInventoryPanel())
+		{
+			if( LLFolderView* root = LLInventoryPanel::getActiveInventoryPanel()->getRootFolder())
+			{
+				LLFolderViewItem* folder = dynamic_cast<LLFolderViewFolder*>(root->getItemByID(mFolderID));
+				if(folder)
+				{
+					folder->openItem();
+					root->setSelection(folder,true,false);
+					root->scrollToShowSelection();
+				}
+			}
+		}
+	}
+	bool mFirstItemCreated;
+	LLUUID mFolderID;
+};
+
+class LLShowCreatedOutfit: public LLScrollOnFirstItem
+{
+public:
+	LLShowCreatedOutfit(const LLUUID& folder_id, bool show_panel = true): LLScrollOnFirstItem(folder_id, show_panel), mFolderID(folder_id), mShowPanel(show_panel)
 	{}
 
 	virtual ~LLShowCreatedOutfit()
@@ -2929,10 +2974,7 @@ public:
 		LLAppearanceMgr::getInstance()->updatePanelOutfitName("");
 	}
 
-	virtual void fire(const LLUUID&)
-	{}
-
-private:
+protected:
 	LLUUID mFolderID;
 	bool mShowPanel;
 };
@@ -2957,6 +2999,299 @@ LLUUID LLAppearanceMgr::makeNewOutfitLinks(const std::string& new_folder_name, b
 	createBaseOutfitLink(folder_id, cb);
 
 	dumpCat(folder_id,"COF, new outfit");
+
+	return folder_id;
+}
+
+//Given an array of items from COF. v3 outfit behavior.
+LLUUID LLAppearanceMgr::makeNewOutfitLinks(const std::string& new_folder_name, LLInventoryModel::item_array_t& items, bool show_panel )
+{
+	if (!isAgentAvatarValid()) return LLUUID::null;
+	else if (items.empty()) return LLUUID::null;
+
+	gAgentWearables.notifyLoadingStarted();
+
+	// First, make a folder in the My Outfits directory.
+	const LLUUID parent_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_MY_OUTFITS);
+	LLUUID folder_id = gInventory.createNewCategory(
+		parent_id,
+		LLFolderType::FT_OUTFIT,
+		new_folder_name);
+
+	updateClothingOrderingInfo();
+
+	LLPointer<LLInventoryCallback> cb = new LLShowCreatedOutfit(folder_id,show_panel);
+	copyItems(folder_id, &items, cb);
+	createBaseOutfitLink(folder_id, cb);
+
+	dumpCat(folder_id,"COF, new outfit");
+
+	return folder_id;
+}
+
+//Creates item copies before links and ties all requests to a sole handler
+//Requests are batched into subbatches, as too many requests at once causes the sim to
+//stall with the inventory requests.
+//This handler will also ensure all 'copy' requests are finished before 'link' requests are
+//sent out. This behavior isn't really needed for nomod/nocopy items, but it is for multi-worn 
+//clothing.
+//Note that the 'wear' process is pretty convoluted, but its a cludge to get rlva support in without
+//tinkering with LLAppearanceMgr further.
+//To use this:
+// 1) assign an LLPointer the newly created LLCreateLegacyOutfit object.
+// 2) Stuff with requests via makeLink and makeCopy
+// 3) Call dispatch()
+// 4) Let the LLPointer go out of scope.
+class LLCreateLegacyOutfit : public LLShowCreatedOutfit
+{
+public:
+	LLCreateLegacyOutfit(const LLUUID& folder_id, bool show_panel) : 
+		LLShowCreatedOutfit(folder_id, show_panel),	mFolderID(folder_id), mFailed(false)
+	{}
+	virtual ~LLCreateLegacyOutfit()
+	{
+		if (!LLApp::isRunning() || mFailed)
+			return;
+
+		LLInventoryModel::item_array_t body_items, wear_items, obj_items, gest_items;
+		for(std::set<LLUUID>::const_iterator it = mWearItems.begin(); it != mWearItems.end(); ++it)
+		{
+			LLViewerInventoryItem* item = gInventory.getItem(*it);
+			if(item)
+			{
+				switch(item->getType())
+				{
+				case LLAssetType::AT_BODYPART:
+					body_items.push_back(item);
+					break;
+				case LLAssetType::AT_CLOTHING:
+					wear_items.push_back(item);
+					break;
+				case LLAssetType::AT_OBJECT:
+					obj_items.push_back(item);
+					break;
+				case LLAssetType::AT_GESTURE:
+					gest_items.push_back(item);
+					break;
+				default:
+					break;
+				}
+			}
+		}
+		
+		if(!body_items.empty() || !wear_items.empty() || !obj_items.empty() || !gest_items.empty())
+			LLAppearanceMgr::instance().updateCOF(body_items, wear_items, obj_items, gest_items, false);
+	}
+private:
+	class LLCreateBase : public LLInventoryCallback
+	{
+	public:
+		LLCreateBase(LLViewerInventoryItem* item, const LLUUID& folder_id, LLPointer<LLCreateLegacyOutfit> cb) :
+			mCallback(cb), mItem(item), mFolderID(folder_id)
+		{}
+		virtual ~LLCreateBase()
+		{
+			if(mCallback)
+				mCallback->finished(this, LLUUID::null);
+		}
+		virtual void dispatch() = 0;
+		virtual void fire(const LLUUID& item_id)
+		{
+			mCallback->finished(this, item_id);
+			mCallback = NULL;
+		}
+		const LLViewerInventoryItem* getItem() const {return mItem;}
+	protected:
+		LLPointer<LLViewerInventoryItem> mItem;
+		LLPointer<LLCreateLegacyOutfit> mCallback;
+		const LLUUID mFolderID;
+	};
+	class LLCreateCopy : public LLCreateBase
+	{
+	public: 
+		LLCreateCopy(LLViewerInventoryItem* item, bool create_copy, const LLUUID& folder_id, LLPointer<LLCreateLegacyOutfit> cb) :
+			LLCreateBase(item,folder_id,cb), mCreateLink(create_copy),
+			mLinkDesc((mCreateLink && item->getIsLinkType()) ? item->LLInventoryItem::getDescription() : "" )
+		{}
+		virtual void dispatch()
+		{
+			const LLViewerInventoryItem* base_item = mItem->getLinkedItem() ? mItem->getLinkedItem() : mItem;
+			copy_inventory_item(gAgent.getID(),
+								base_item->getPermissions().getOwner(),
+								base_item->getUUID(),
+								mFolderID,
+								base_item->getName(),
+								this);
+		}
+		virtual void fire(const LLUUID& item_id)
+		{
+			if(mCreateLink)
+				mCallback->makeLink(gInventory.getItem(item_id), mLinkDesc);
+			LLCreateBase::fire(item_id);
+		}
+	private:
+		bool mCreateLink;
+		std::string mLinkDesc;
+	};
+	class LLCreateLink : public LLCreateBase
+	{
+	public:
+		LLCreateLink(LLViewerInventoryItem* item, const std::string& desc, const LLUUID& folder_id, LLPointer<LLCreateLegacyOutfit> cb) :
+			LLCreateBase(item,folder_id,cb), mDesc(desc)
+		{}
+		virtual void dispatch()
+		{
+			link_inventory_item(gAgent.getID(),
+								mItem->getLinkedUUID(),
+								mFolderID,
+								mItem->getName(),
+								mDesc,
+								LLAssetType::AT_LINK,
+								this);
+		}
+	private:
+		const std::string mDesc;
+	};
+public:
+	void makeLink(LLViewerInventoryItem* item, const std::string desc)
+	{
+		if(!item)
+			return;
+		mPendingLinks.push_back(new LLCreateLink(item, desc, mFolderID, this));
+	}
+	void makeCopy(LLViewerInventoryItem* item, bool create_link)
+	{	
+		if(!item)
+			return;
+		mPendingCopies.push_back(new LLCreateCopy(item, create_link, mFolderID, this));
+	}
+	void finished(const LLCreateBase* cb, const LLUUID item_id)
+	{
+		if(!LLApp::isRunning())
+		{
+			mPendingCopies.clear();
+			mPendingLinks.clear();
+			return;
+		}
+		if(item_id.notNull())
+			LLShowCreatedOutfit::fire(item_id);
+
+		std::vector<const LLCreateBase*>::const_iterator it = std::find(mActiveRequests.begin(), mActiveRequests.end(),cb);
+		if(it != mActiveRequests.end())
+		{
+			const LLViewerInventoryItem* old_item = (*it)->getItem();
+			if(item_id.notNull())
+			{
+				const LLViewerInventoryItem* item = gInventory.getItem(item_id);
+
+				if ((rlv_handler_t::isEnabled()) &&
+					//If the old item can be removed, but a new one can't take its place, then just use the original item again.
+					(((rlvPredCanRemoveItem(old_item) && !rlvPredCanWearItem(item,RLV_WEAR_REPLACE))) ||
+					//If the old item cannot be removed then just use the original item again.
+					!rlvPredCanRemoveItem(old_item)))
+				{
+					item = old_item;
+				}
+				if(item->getIsLinkType())
+					mWearItems.erase(item->getLinkedUUID());
+				mWearItems.insert(item->getUUID());
+			}
+			else 
+				mWearItems.insert(old_item->getUUID());
+
+			mActiveRequests.erase(it);
+
+			if(!item_id.notNull())
+				mFailed = true;
+
+			if(mActiveRequests.empty())
+				dispatch();	//Fire off any pending requests.
+		}
+	}
+	void dispatch()
+	{
+		const S32 max_batch = 5;
+		S32 count=0;
+		
+		if(!sendRequests(mPendingCopies,count,max_batch))
+			sendRequests(mPendingLinks,count,max_batch);	//IFF there are NO copy requests pending.
+
+		gInventory.notifyObservers();
+	}
+private:
+	bool sendRequests(std::vector<LLPointer<LLCreateBase> >& list, S32& count, const S32& max_batch)
+	{
+		bool handled = false;
+		for(std::vector<LLPointer<LLCreateBase> >::iterator it = list.begin();it!=list.end();)
+		{
+			if(count >= max_batch)
+				break;
+			LLPointer<LLCreateBase> cb = (*it);
+			it=list.erase(it);
+			if(cb)
+			{
+				cb->dispatch();
+				mActiveRequests.push_back(cb.get());
+				++count;
+				handled = true;
+			}
+		}
+		return handled;
+	}
+
+	LLUUID mFolderID;
+	bool mFailed;
+	std::vector<LLPointer<LLCreateBase> > mPendingCopies;
+	std::vector<LLPointer<LLCreateBase> > mPendingLinks;
+	std::set<LLUUID> mWearItems;
+	std::vector<const LLCreateBase*> mActiveRequests;
+};
+
+
+//Given an array of items from COF. Will only use links for no-copy, no-mod, or multi-worn clothing.
+LLUUID LLAppearanceMgr::makeNewOutfitLegacy(const std::string& new_folder_name, LLInventoryModel::item_array_t& items, bool use_links, bool show_panel )
+{
+	if (!isAgentAvatarValid()) return LLUUID::null;
+	else if (items.empty()) return LLUUID::null;
+
+	gAgentWearables.notifyLoadingStarted();
+
+	// First, make a folder in the My Outfits directory.
+	const LLUUID parent_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_CLOTHING);
+	LLUUID folder_id = gInventory.createNewCategory(
+		parent_id,
+		LLFolderType::FT_NONE,
+		new_folder_name);
+
+	updateClothingOrderingInfo();
+
+	LLInventoryModel::item_array_t base_items;
+	LLInventoryModel::item_array_t remove_items;
+
+	LLPointer<LLCreateLegacyOutfit> cb = new LLCreateLegacyOutfit(folder_id,show_panel);
+
+	for (LLInventoryModel::item_array_t::const_iterator iter = items.begin();
+		 iter != items.end();
+		 ++iter)
+	{
+		LLViewerInventoryItem* item = (*iter);
+		LLViewerInventoryItem* base_item = item->getLinkedItem() ? item->getLinkedItem() : item;
+		bool is_copy = base_item->getPermissions().allowCopyBy(gAgent.getID());
+		//Just treat 'object' type as modifiable... permission slam screws them up pretty well.
+		bool is_mod = base_item->getInventoryType() == LLInventoryType::IT_OBJECT || base_item->getPermissions().allowModifyBy(gAgent.getID());
+		//If it's multi-worn we want to create a copy of the item if possible AND create a new link to that new copy with the same desc as the old link.
+		bool is_multi = base_item->isWearableType() && gAgentWearables.getWearableCount(base_item->getWearableType()) > 1 ;
+
+		if( use_links && (!is_copy || !is_mod) )
+		{
+			cb->makeLink(item,item->LLInventoryItem::getDescription());
+		}
+		else if( is_copy )
+		{
+			cb->makeCopy(item,is_multi && use_links);
+		}
+	}
+	cb->dispatch();
 
 	return folder_id;
 }
