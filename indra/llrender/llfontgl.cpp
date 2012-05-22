@@ -57,8 +57,9 @@ std::string LLFontGL::sAppDir;
 LLColor4 LLFontGL::sShadowColor(0.f, 0.f, 0.f, 1.f);
 LLFontRegistry* LLFontGL::sFontRegistry = NULL;
 
-LLCoordFont LLFontGL::sCurOrigin;
-std::vector<LLCoordFont> LLFontGL::sOriginStack;
+LLCoordGL LLFontGL::sCurOrigin;
+F32 LLFontGL::sCurDepth;
+std::vector<std::pair<LLCoordGL, F32> > LLFontGL::sOriginStack;
 
 const F32 EXT_X_BEARING = 1.f;
 const F32 EXT_Y_BEARING = 0.f;
@@ -221,7 +222,7 @@ S32 LLFontGL::render(const LLWString &wstr, S32 begin_offset, F32 x, F32 y, cons
 
 	gGL.pushMatrix();
 	gGL.loadIdentity();
-	gGL.translatef(floorf(sCurOrigin.mX*sScaleX), floorf(sCurOrigin.mY*sScaleY), sCurOrigin.mZ);
+	gGL.translatef(floorf(sCurOrigin.mX*sScaleX), floorf(sCurOrigin.mY*sScaleY), sCurDepth);
 
 	// this code snaps the text origin to a pixel grid to start with
 	F32 pixel_offset_x = llround((F32)sCurOrigin.mX) - (sCurOrigin.mX);

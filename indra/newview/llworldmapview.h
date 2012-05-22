@@ -52,7 +52,6 @@ const S32 DEFAULT_TRACKING_ARROW_SIZE = 16;
 
 class LLColor4;
 class LLColor4U;
-class LLCoordGL;
 class LLViewerTexture;
 class LLTextBox;
 
