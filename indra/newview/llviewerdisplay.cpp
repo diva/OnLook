@@ -769,7 +769,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLGLState::checkStates();
 		LLGLState::checkClientArrays();
 
-		if (!for_snapshot || tiling)
+		//if (!for_snapshot)
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Imagery");
 			gPipeline.generateWaterReflection(*LLViewerCamera::getInstance());
@@ -921,13 +921,14 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		if (to_texture)
 		{
 			gGL.setColorMask(true, true);
+
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.bindTarget();
 				glClearColor(1,0,1,1);
 				gPipeline.mDeferredScreen.clear();
 			}
-			else if(!tiling)
+			else
 			{
 				gPipeline.mScreen.bindTarget();
 				if (LLPipeline::sUnderWaterRender && !gPipeline.canUseWindLightShaders())
@@ -994,7 +995,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 				}
 			}
-			else if(!tiling)
+			else
 			{
 				gPipeline.mScreen.flush();
 				if(LLRenderTarget::sUseFBO)
@@ -1017,7 +1018,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLPipeline::sUnderWaterRender = FALSE;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderUI");
-		if (!for_snapshot)
+		if (!for_snapshot || LLPipeline::sRenderDeferred)
 		{
 			LLFastTimer t(FTM_RENDER_UI);
 			gFrameStats.start(LLFrameStats::RENDER_UI);
