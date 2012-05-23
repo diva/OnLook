@@ -1644,21 +1644,22 @@ void LLUI::translate(F32 x, F32 y, F32 z)
 	gGL.translatef(x,y,z);
 	LLFontGL::sCurOrigin.mX += (S32) x;
 	LLFontGL::sCurOrigin.mY += (S32) y;
-	LLFontGL::sCurOrigin.mZ += z;
+	LLFontGL::sCurDepth += z;
 }
 
 //static
 void LLUI::pushMatrix()
 {
 	gGL.pushMatrix();
-	LLFontGL::sOriginStack.push_back(LLFontGL::sCurOrigin);
+	LLFontGL::sOriginStack.push_back(std::make_pair(LLFontGL::sCurOrigin, LLFontGL::sCurDepth));
 }
 
 //static
 void LLUI::popMatrix()
 {
 	gGL.popMatrix();
-	LLFontGL::sCurOrigin = *LLFontGL::sOriginStack.rbegin();
+	LLFontGL::sCurOrigin = LLFontGL::sOriginStack.back().first;
+	LLFontGL::sCurDepth = LLFontGL::sOriginStack.back().second;
 	LLFontGL::sOriginStack.pop_back();
 }
 
@@ -1668,7 +1669,7 @@ void LLUI::loadIdentity()
 	gGL.loadIdentity();
 	LLFontGL::sCurOrigin.mX = 0;
 	LLFontGL::sCurOrigin.mY = 0;
-	LLFontGL::sCurOrigin.mZ = 0;
+	LLFontGL::sCurDepth = 0.f;
 }
 
 //static

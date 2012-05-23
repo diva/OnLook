@@ -118,8 +118,10 @@ public:
 	void doResetVertexBuffers();
 	void resizeScreenTexture();
 	void releaseGLBuffers();
+	void releaseLUTBuffers();
 	void releaseScreenBuffers();
 	void createGLBuffers();
+	void createLUTBuffers();
 
 	void allocateScreenBuffer(U32 resX, U32 resY);
 	bool allocateScreenBuffer(U32 resX, U32 resY, U32 samples);
@@ -263,7 +265,7 @@ public:
 	void generateSunShadow(LLCamera& camera);
 
 
-	void renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera& camera, LLCullResult& result, BOOL use_shader = TRUE, BOOL use_occlusion = TRUE);
+	void renderShadow(glh::matrix4f& view, glh::matrix4f& proj, LLCamera& camera, LLCullResult& result, BOOL use_shader, BOOL use_occlusion, U32 target_width);
 	void renderHighlights();
 	void renderDebug();
 	void renderPhysicsDisplay();

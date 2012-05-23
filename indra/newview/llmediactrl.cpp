@@ -722,7 +722,7 @@ void LLMediaCtrl::draw()
 				// to get render origin for this view (with unit scale)
 				gGL.translatef(floorf(LLFontGL::sCurOrigin.mX * LLUI::sGLScaleFactor.mV[VX]), 
 							floorf(LLFontGL::sCurOrigin.mY * LLUI::sGLScaleFactor.mV[VY]), 
-							LLFontGL::sCurOrigin.mZ);
+							LLFontGL::sCurDepth);
 			}
 
 			// scale texture to fit the space using texture coords
