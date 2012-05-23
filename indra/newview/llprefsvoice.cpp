@@ -114,7 +114,7 @@ BOOL LLPrefsVoice::postBuild()
 	childSetCommitCallback("enable_voice_check", onCommitEnableVoiceChat, this);
 	childSetAction("set_voice_hotkey_button", onClickSetKey, this);
 	childSetAction("set_voice_middlemouse_button", onClickSetMiddleMouse, this);
-	childSetAction("device_settings_btn", onClickVoiceDeviceSettings, NULL);
+	childSetAction("device_settings_btn", onClickVoiceDeviceSettings, this);
 
 	BOOL voice_disabled = gSavedSettings.getBOOL("CmdLineDisableVoice");
 	childSetVisible("voice_unavailable", voice_disabled);
