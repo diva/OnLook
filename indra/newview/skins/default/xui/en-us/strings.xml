@@ -144,7 +144,7 @@
 	<string name="AssetErrorUnknownStatus">Unknown status</string>
 
 	<!-- llvoavatar. Displayed in the avatar's chat bubble -->
-	<string name="AvatarEditingApparance">(Editing Appearance)</string>
+	<string name="AvatarEditingAppearance">(Editing Appearance)</string>
 	<string name="AvatarAway">Away</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>
