@@ -295,7 +295,7 @@ bool LLAudioEngine_FMODEX::init(const S32 num_channels, void* userdata)
 		/*
 		... and re-init.
 		*/
-		result = mSystem->init(100, FMOD_INIT_NORMAL, 0);
+		result = mSystem->init( num_channels + 2, fmod_flags, 0);
 	}
 	if(Check_FMOD_Error(result, "Error initializing FMOD"))
 		return false;
