@@ -842,7 +842,7 @@ void SHClientTagMgr::updateAvatarTag(LLVOAvatar* pAvatar)
 	std::map<LLUUID, LLSD>::iterator it = mAvatarTags.find(id);
 
 	LLSD new_tag = generateClientTag(pAvatar);
-	LLSD& old_tag = (it != mAvatarTags.end()) ? it->second : LLSD();
+	LLSD old_tag = (it != mAvatarTags.end()) ? it->second : LLSD();
 
 	bool dirty = old_tag.size() != new_tag.size() || !llsd_equals(new_tag,old_tag);
 	if(dirty)
