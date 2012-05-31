@@ -3192,11 +3192,8 @@ class LLAvatarClientUUID : public view_listener_t
 	{
 		LLVOAvatar* avatar = find_avatar_from_object( LLSelectMgr::getInstance()->getSelection()->getPrimaryObject() );
 		if(!avatar) return true;
-		
-		std::string clientID;
-		LLColor4 color;
-		avatar->getClientInfo(clientID, color, false);
-		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID));
+		const LLUUID clientID = SHClientTagMgr::instance().getClientID(avatar);
+		gViewerWindow->mWindow->copyTextToClipboard(utf8str_to_wstring(clientID.asString()));
 		return true;
 	}
 };

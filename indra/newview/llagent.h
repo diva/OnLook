@@ -169,12 +169,6 @@ public:
 	void			setGenderChosen(BOOL b)		{ mGenderChosen = b; }
  private:
 	BOOL			mGenderChosen;
-
-	//--------------------------------------------------------------------
-	// Client Tagging
-	//--------------------------------------------------------------------
-public:
-	void			resetClientTag();
  
 /**                    Identity
  **                                                                            **
