@@ -271,7 +271,7 @@
 		<key>AscentShowFriendsTag</key>
 		<map>
 			<key>Comment</key>
-			<string>Show friends client tags as (Friend), and colorize them specially.</string>
+			<string>Show friends' client tags as (Friend).</string>
 			<key>Persist</key>
 			<integer>1</integer>
 			<key>Type</key>

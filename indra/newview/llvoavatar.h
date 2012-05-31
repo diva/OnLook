@@ -78,6 +78,45 @@ class LLTexGlobalColor;
 class LLVOAvatarBoneInfo;
 class LLVOAvatarSkeletonInfo;
 
+class SHClientTagMgr : public LLSingleton<SHClientTagMgr>, public boost::signals2::trackable
+{
+public:
+	SHClientTagMgr();
+	//Fetch updated client_tags_sg1.xml from server
+	bool fetchDefinitions() const;
+	//Parse definitions from client_tags_sg1.xml
+	bool parseDefinitions();
+private:
+	//Just refreshes the tag for the agent avatar.
+	//Used for boost::bind to verify agent avatar is valid before calling updateAvatarTag
+	void updateAgentAvatarTag();
+	//Actually generate the tag information for the avatar
+	const LLSD generateClientTag(const LLVOAvatar* pAvatar) const;
+public:
+	//Generates tag for particular avatar and sets dirty if the tag has changed. Call on received TE updates.
+	void updateAvatarTag(LLVOAvatar* pAvatar);
+	//Removes entry in mAvatarTags map. Call on destruction of avatar.
+	void clearAvatarTag(const LLVOAvatar* pAvatar);
+
+	//	Accessors
+
+	//Returns true if tag system is enabled.
+	bool getIsEnabled() const;
+	//If a tag entry exists, returns the clientname if found. If is_friend is set, will return "Friend" if AscentShowFriendsTag is true.
+	const std::string getClientName(const LLVOAvatar* pAvatar, bool is_friend) const;
+	//Returns ID of tag entry if it exists, else returns a null LLUUID.
+	const LLUUID getClientID(const LLVOAvatar* pAvatar) const;
+	//Sets color to either 'status' color, or falls back to client color if status isn't relevant.
+	//If neither status or client color are found, returns false.
+	bool getClientColor(const LLVOAvatar* pAvatar, bool check_status, LLColor4& color) const;
+
+private:
+	//UUID map associating texture uuids to client info entries parsed from client_tags_sg1.xml
+	std::map<LLUUID, LLSD> mClientDefinitions;
+	//UUID map associating avatar uuids to their CURRENT client tag info.
+	std::map<LLUUID, LLSD> mAvatarTags;
+};
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // LLVOAvatar
 // 
@@ -239,16 +278,20 @@ public:
 	void 			idleUpdateLoadingEffect();
 	void 			idleUpdateWindEffect();
 	void 			idleUpdateNameTag(const LLVector3& root_pos_last);
+	void			idleUpdateNameTagText(BOOL new_name);
+	LLVector3		idleUpdateNameTagPosition(const LLVector3& root_pos_last);
+	void			idleUpdateNameTagAlpha(BOOL new_name, F32 alpha);
+	LLColor4		getNameTagColor(bool is_friend);
 	void			clearNameTag();
 	static void		invalidateNameTag(const LLUUID& agent_id);
 	// force all name tags to rebuild, useful when display names turned on/off
 	static void		invalidateNameTags();
+	void			addNameTagLine(const std::string& line, const LLColor4& color, S32 style, const LLFontGL* font);
 	void 			idleUpdateRenderCost();
 	void 			idleUpdateBelowWater();
 	void 			idleUpdateBoobEffect();	//Emerald
 	
-	LLFrameTimer 	mIdleTimer;
-	std::string		getIdleTime();
+
 	
 	//--------------------------------------------------------------------
 	// Static preferences (controlled by user settings/menus)
@@ -387,8 +430,6 @@ private:
  **/
 
 public:
-	// Graphical stuff for objects - maybe broken out into render class later?
-	U32 renderFootShadows();
 	U32 		renderImpostor(LLColor4U color = LLColor4U(255,255,255,255), S32 diffuse_channel = 0);
 	bool		isVisuallyMuted() const;
 
@@ -814,12 +855,10 @@ public:
 	// Chat
 	//--------------------------------------------------------------------
 public:
-	void			setNameFromChat(const std::string &text);
-	void			clearNameFromChat();
 	void			addChat(const LLChat& chat);
 	void	   		clearChat();
 	void			startTyping() { mTyping = TRUE; mTypingTimer.reset(); mIdleTimer.reset();}
-	void			stopTyping() { mTyping = FALSE; }
+	void			stopTyping() { mTyping = FALSE; mIdleTimer.reset();}
 private:
 	BOOL			mVisibleChat;
 
@@ -945,19 +984,16 @@ protected:
 	static void		getAnimLabels(LLDynamicArray<std::string>* labels);
 	static void		getAnimNames(LLDynamicArray<std::string>* names);	
 private:
-	std::string		mNameString;
-	std::string  	mSubNameString;
+	std::string		mNameString;		// UTF-8 title + name + status
 	std::string  	mTitle;
 	bool	  		mNameAway;
 	bool	  		mNameBusy;
 	bool	  		mNameMute;
 	bool      		mNameAppearance;
-	bool			mRenderTag;
-	bool      		mRenderGroupTitles;
-	std::string      mRenderedName;
-	std::string      mClientName;
-	std::string		 mIdleString;
-	S32		  mUsedNameSystem;
+	bool			mNameFriend;
+	bool			mNameCloud;
+	F32				mNameAlpha;
+	BOOL      		mRenderGroupTitles;
 
 	//--------------------------------------------------------------------
 	// Display the name (then optionally fade it out)
@@ -971,28 +1007,7 @@ private:
 	BOOL			mTyping;
 public:
 	BOOL isTyping(){ return mTyping; }
-private:
 	LLFrameTimer	mTypingTimer;
-	static void on_avatar_name_response(const LLUUID& agent_id, const LLAvatarName& av_name, void *userdata);
-
-	//--------------------------------------------------------------------
-	// Client tagging
-	//--------------------------------------------------------------------
-public:
-	// <edit>
-	void getClientInfo(std::string& clientTag, LLColor4& tagColor, BOOL useComment=FALSE);
-	std::string extraMetadata;
-	// </edit>
-	
-	static bool 	updateClientTags();
-	static bool 	loadClientTags();
-	std::string 	mClientTag; //Zwagoth's new client identification system. -HgB
-	LLColor4 		mClientColor; //Zwagoth's new client identification system. -HgB
-
-	bool mNameFromChatOverride;
-	bool mNameFromChatChanged;
-	std::string mNameFromChatText;
-	std::string mNameFromAttachment;
 
 /**                    Name
  **                                                                            **
@@ -1188,18 +1203,28 @@ protected: // Shared with LLVOAvatarSelf
  *******************************************************************************/
 // <edit>
 
+//Avatar idle timer
+private:
+	std::string		getIdleTime(bool is_away, bool is_busy, bool is_appearance);
 public:
-	//bool mNametagSaysIdle;
-	//bool mIdleForever;
-	//LLFrameTimer mIdleTimer;
-	//U32 mIdleMinutes;
-	LLUUID mFocusObject;
-	LLVector3d mFocusVector;
-	//void resetIdleTime();
+	LLFrameTimer 	mIdleTimer;
+private:
+	S32				mIdleMinute;
 
-	static LLSD sClientResolutionList;
+//CCS Nametag
+public:
+	void setNameFromChat(const std::string &text);
+	void clearNameFromChat();
+private:
+	void			idleCCSUpdateAttachmentText(bool render_name);
+	LLFrameTimer	mCCSUpdateAttachmentTimer;
+	std::string		mCCSAttachmentText;
+	bool			mCCSChatTextOverride;
+	std::string		mCCSChatText;
+
 // </edit>
 }; // LLVOAvatar
+
 extern const F32 SELF_ADDITIONAL_PRI;
 extern const S32 MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL;
 
