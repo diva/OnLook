@@ -64,6 +64,7 @@
 #include "llviewerwindow.h"
 #include "llvoavatarself.h"
 #include "pipeline.h"
+#include "llagentwearables.h"
 
 
 //static
@@ -152,7 +153,8 @@ BOOL LLVisualParamHint::needsRender()
 void LLVisualParamHint::preRender(BOOL clear_depth)
 {
 	mLastParamWeight = mVisualParam->getWeight();
-	//mWearablePtr->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
+	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mVisualParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
+	if(wearable)wearable->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
 	gAgentAvatarp->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
 	gAgentAvatarp->setVisualParamWeight("Blink_Left", 0.f);
 	gAgentAvatarp->setVisualParamWeight("Blink_Right", 0.f);
@@ -252,7 +254,10 @@ BOOL LLVisualParamHint::render()
 		gGL.setSceneBlendType(LLRender::BT_ALPHA);
 		gGL.setAlphaRejectSettings(LLRender::CF_DEFAULT);
 	}
-	gAgentAvatarp->setVisualParamWeight(mVisualParam, mLastParamWeight);
+	gAgentAvatarp->setVisualParamWeight(mVisualParam->getID(), mLastParamWeight);
+	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mVisualParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
+	if(wearable)wearable->setVisualParamWeight(mVisualParam->getID(), mLastParamWeight, FALSE);
+	gAgentAvatarp->updateVisualParams();
 	gGL.color4f(1,1,1,1);
 	mGLTexturep->setGLTextureCreated(true);
 	return TRUE;

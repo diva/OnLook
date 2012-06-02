@@ -29,6 +29,9 @@
  * $/LicenseInfo$
  */
 
+#ifndef LL_LLSCROLLINGPANELLIST_H
+#define LL_LLSCROLLINGPANELLIST_H
+
 #include <vector>
 
 #include "llui.h"
@@ -56,6 +59,8 @@ public:
 	LLScrollingPanelList(const std::string& name, const LLRect& rect)
 		:	LLUICtrl(name, rect, TRUE, NULL, NULL, FOLLOWS_LEFT | FOLLOWS_BOTTOM ) {}
 
+	typedef std::deque<LLScrollingPanel*>	panel_list_t;
+
 	virtual void setValue(const LLSD& value) {};
 
 	virtual void		draw();
@@ -64,11 +69,16 @@ public:
 	void				addPanel( LLScrollingPanel* panel );
 	void				updatePanels(BOOL allow_modify);
 
+	const panel_list_t&	getPanelList() { return mPanelList; }
+
 	virtual LLXMLNodePtr getXML(bool save_children = true) const;
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 	
 private:
 	void				updatePanelVisiblilty();
 
-	std::deque<LLScrollingPanel*> mPanelList;
+
+	panel_list_t		mPanelList;
 };
+
+#endif //LL_LLSCROLLINGPANELLIST_H

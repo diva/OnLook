@@ -91,7 +91,6 @@ public:
 	void			generateVisualParamHints(LLViewerJointMesh* joint_mesh,
 											 param_map& params, bool bVisualHint);
 
-	const std::string& getEditGroup();
 	void 			updateScrollingPanelList(BOOL allow_modify);
 
 	void			setWearable(LLWearableType::EType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete);

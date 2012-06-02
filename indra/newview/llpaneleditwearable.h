@@ -1,0 +1,114 @@
+/** 
+ * @file llpaneleditwearable.h
+ * @brief A LLPanel dedicated to the editing of wearables.
+ *
+ * $LicenseInfo:firstyear=2009&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2010, Linden Research, Inc.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * $/LicenseInfo$
+ */
+
+#ifndef LL_LLPANELEDITWEARABLE_H
+#define LL_LLPANELEDITWEARABLE_H
+
+#include "llpanel.h"
+#include "llscrollingpanellist.h"
+#include "llmodaldialog.h"
+#include "llvoavatardefines.h"
+#include "llwearabletype.h"
+
+class LLAccordionCtrl;
+class LLCheckBoxCtrl;
+class LLWearable;
+class LLTextBox;
+class LLViewerInventoryItem;
+class LLViewerVisualParam;
+class LLVisualParamHint;
+class LLViewerJointMesh;
+class LLAccordionCtrlTab;
+class LLJoint;
+class LLLineEditor;
+class LLSubpart;
+class LLWearableSaveAsDialog;
+
+enum ESubpart;
+using namespace LLVOAvatarDefines;
+
+class LLPanelEditWearable : public LLPanel
+{
+public:
+	LLPanelEditWearable( LLWearableType::EType type );
+	virtual ~LLPanelEditWearable();
+
+	virtual BOOL 		postBuild();
+	virtual void		draw();
+	virtual BOOL		isDirty() const;	// LLUICtrl
+	
+	void				addTextureDropTarget( ETextureIndex te, const std::string& name, const LLUUID& default_image_id, BOOL allow_no_texture );
+	void				addInvisibilityCheckbox(ETextureIndex te, const std::string& name);
+
+	const std::string&	getLabel()	{ return LLWearableType::getTypeLabel( mType ); }
+	LLWearableType::EType		getType() const{ return mType; }
+	LLWearable* 		getWearable() 	const;
+
+	ESubpart			getDefaultSubpart();
+	void				setSubpart( ESubpart subpart );
+	void				switchToDefaultSubpart();
+
+	void 				setWearable(LLWearable* wearable, U32 perm_mask, BOOL is_complete);
+
+	void 				setUIPermissions(U32 perm_mask, BOOL is_complete);
+
+	void				hideTextureControls();
+	bool				textureIsInvisible(ETextureIndex te);
+	void				initPreviousTextureList();
+	void				initPreviousTextureListEntry(ETextureIndex te);
+
+	static void			onRevertButtonClicked( void* userdata );
+	void				onCommitSexChange();
+		
+	virtual void		setVisible( BOOL visible );
+
+	// Callbacks
+	static void			onBtnSubpart( void* userdata );
+	static void			onBtnTakeOff( void* userdata );
+	static void			onBtnSave( void* userdata );
+
+	static void			onBtnSaveAs( void* userdata );
+	static void			onSaveAsCommit( LLWearableSaveAsDialog* save_as_dialog, void* userdata );
+
+	static void			onBtnTakeOffDialog( S32 option, void* userdata );
+	static void			onBtnCreateNew( void* userdata );
+	static void			onInvisibilityCommit( LLUICtrl* ctrl, void* userdata );
+	static bool			onSelectAutoWearOption(const LLSD& notification, const LLSD& response);
+
+
+
+	void				onColorSwatchCommit(const LLUICtrl*);
+	void				onTexturePickerCommit(const LLUICtrl*);
+private:
+
+	LLWearableType::EType		mType;
+	BOOL				mCanTakeOff;
+	std::map<std::string, S32> mInvisibilityList;
+	std::map<S32, LLUUID> mPreviousTextureList;
+	ESubpart			mCurrentSubpart;
+};
+
+#endif

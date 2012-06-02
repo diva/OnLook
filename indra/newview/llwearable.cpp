@@ -1077,6 +1077,27 @@ void LLWearable::revertValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
+	if( gFloaterCustomize )
+	{
+		if(gAgentWearables.getWearableIndex(this) != 0) // TODO: MULTI-WEARABLE
+			return;
+		
+		LLViewerInventoryItem* item;
+		item = (LLViewerInventoryItem*)gInventory.getItem(getItemID());	// TODO: MULTI-WEARABLE
+		U32 perm_mask = PERM_NONE;
+		BOOL is_complete = FALSE;
+		if(item)
+		{
+			perm_mask = item->getPermissions().getMaskOwner();
+			is_complete = item->isComplete();
+			if(!is_complete)
+			{
+				item->fetchFromServer();
+			}
+		}
+		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
+		LLFloaterCustomize::setCurrentWearableType( mType );
+	}
 }
 
 BOOL LLWearable::isOnTop() const
@@ -1118,6 +1139,28 @@ void LLWearable::saveValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
+	if( gFloaterCustomize )
+	{
+		if(gAgentWearables.getWearableIndex(this) != 0) // TODO: MULTI-WEARABLE
+			return;
+
+		LLViewerInventoryItem* item;
+		item = (LLViewerInventoryItem*)gInventory.getItem(getItemID());	// TODO: MULTI-WEARABLE
+		U32 perm_mask = PERM_NONE;
+		BOOL is_complete = FALSE;
+		if(item)
+		{
+			perm_mask = item->getPermissions().getMaskOwner();
+			is_complete = item->isComplete();
+			if(!is_complete)
+			{
+				item->fetchFromServer();
+			}
+		}
+		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
+		LLFloaterCustomize::setCurrentWearableType( mType );
+	}
+
 }
 
 void LLWearable::syncImages(te_map_t &src, te_map_t &dst)
