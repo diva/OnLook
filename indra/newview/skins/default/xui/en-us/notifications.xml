@@ -540,6 +540,20 @@ Add this Ability to &apos;[ROLE_NAME]&apos;?
 
   <notification
    icon="alertmodal.tga"
+   name="AttachmentDrop"
+   type="alertmodal">
+You are about to drop your attachment.
+Are you sure you want to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before dropping attachments"
+     name="okcancelignore"
+     notext="No"
+     yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="ClickPublishHelpLand"
    type="alertmodal">
 Selecting the &quot;Publish in Search&quot;
