@@ -7245,6 +7245,39 @@
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>InventoryOutboxMaxFolderCount</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of subfolders allowed in a listing in the merchant outbox.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>21</integer>
+    </map>
+    <key>InventoryOutboxMaxFolderDepth</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of nested levels of subfolders allowed in a listing in the merchant outbox.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>4</integer>
+    </map>
+    <key>InventoryOutboxMaxItemCount</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of items allowed in a listing in the merchant outbox.</string>
+      <key>Persist</key>
+      <integer>0</integer>
+      <key>Type</key>
+      <string>U32</string>
+      <key>Value</key>
+      <integer>200</integer>
+    </map>
     <key>InventorySortOrder</key>
     <map>
       <key>Comment</key>
@@ -8185,7 +8218,7 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-    <key>MemoryLogFrequency</key>
+  <key>MemoryLogFrequency</key>
     <map>
       <key>Comment</key>
       <string>Seconds between display of Memory in log (0 for never)</string>
@@ -8295,17 +8328,6 @@
     <key>Value</key>
     <real>0</real>
   </map>
-  <key>MeshUploadTimeOut</key>
-  <map>
-    <key>Comment</key>
-    <string>Maximum time in seconds for llcurl to execute a mesh uploading request</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>S32</string>
-    <key>Value</key>
-    <real>600</real>
-  </map>
   <key>MeshUploadFakeErrors</key>
   <map>
     <key>Comment</key>
@@ -8317,8 +8339,18 @@
     <key>Value</key>
     <real>0</real>
   </map>
-
-    <key>MigrateCacheDirectory</key>
+  <key>MeshUploadTimeOut</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum time in seconds for llcurl to execute a mesh uploading request</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <real>600</real>
+  </map>
+  <key>MigrateCacheDirectory</key>
     <map>
       <key>Comment</key>
       <string>Check for old version of disk cache to migrate to current location</string>
@@ -10004,32 +10036,32 @@
   <key>RenderShadowNearDist</key>
   <map>
     <key>Comment</key>
-      <string>Near clip plane of shadow camera (affects precision of depth shadows).</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Vector3</string>
-      <key>Value</key>
-      <array>
-        <real>256</real>
-        <real>256</real>
-        <real>256</real>
-      </array>
-    </map>
-    <key>RenderShadowClipPlanes</key>
-    <map>
-      <key>Comment</key>
-      <string>Near clip plane split distances for shadow map frusta.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Vector3</string>
-      <key>Value</key>
-      <array>
-      	<real>1.0</real>
-      	<real>12.0</real>
-      	<real>32.0</real>
-      </array>
+    <string>Near clip plane of shadow camera (affects precision of depth shadows).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Vector3</string>
+    <key>Value</key>
+    <array>
+      <real>256</real>
+      <real>256</real>
+      <real>256</real>
+    </array>
+  </map>
+  <key>RenderShadowClipPlanes</key>
+  <map>
+    <key>Comment</key>
+    <string>Near clip plane split distances for shadow map frusta.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Vector3</string>
+    <key>Value</key>
+    <array>
+      <real>1.0</real>
+      <real>12.0</real>
+      <real>32.0</real>
+    </array>
   </map>
   <key>RenderShadowSplitExponent</key>
   <map>
@@ -10094,55 +10126,55 @@
     <key>Value</key>
     <real>0.5</real>
   </map>
-    <key>RenderSSAOScale</key>
-    <map>
-      <key>Comment</key>
-      <string>Scaling factor for the area to sample for occluders (pixels at 1 meter away, inversely varying with distance)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>500.0</real>
-    </map>
-    <key>RenderSSAOMaxScale</key>
-    <map>
-      <key>Comment</key>
-      <string>Maximum screen radius for sampling (pixels)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>U32</string>
-      <key>Value</key>
-      <integer>200</integer>
-    </map>
-    <key>RenderSSAOFactor</key>
-    <map>
-      <key>Comment</key>
-      <string>Occlusion sensitivity factor for ambient occlusion (larger is more)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>0.30</real>
-    </map>
-    <key>RenderSSAOEffect</key>
-    <map>
-      <key>Comment</key>
-      <string>Multiplier for (1) value and (2) saturation (HSV definition), for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Vector3</string>
-      <key>Value</key>
-      <array>
-        <real>0.80</real>
-        <real>1.00</real>
-        <real>0.00</real>
-      </array>
-    </map>
-    <key>RenderBumpmapMinDistanceSquared</key>
+  <key>RenderSSAOScale</key>
+  <map>
+    <key>Comment</key>
+    <string>Scaling factor for the area to sample for occluders (pixels at 1 meter away, inversely varying with distance)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>500.0</real>
+  </map>
+  <key>RenderSSAOMaxScale</key>
+  <map>
+    <key>Comment</key>
+    <string>Maximum screen radius for sampling (pixels)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>200</integer>
+  </map>
+  <key>RenderSSAOFactor</key>
+  <map>
+    <key>Comment</key>
+    <string>Occlusion sensitivity factor for ambient occlusion (larger is more)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.30</real>
+  </map>
+  <key>RenderSSAOEffect</key>
+  <map>
+    <key>Comment</key>
+    <string>Multiplier for (1) value and (2) saturation (HSV definition), for areas which are totally occluded.  Blends with original color for partly-occluded areas.  (Third component is unused.)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Vector3</string>
+    <key>Value</key>
+    <array>
+      <real>0.80</real>
+      <real>1.00</real>
+      <real>0.00</real>
+    </array>
+  </map>
+  <key>RenderBumpmapMinDistanceSquared</key>
     <map>
       <key>Comment</key>
       <string>Maximum distance at which to render bumpmapped primitives (distance in meters, squared)</string>
@@ -10153,17 +10185,17 @@
       <key>Value</key>
       <real>100.0</real>
     </map>
-    <key>RenderNormalMapScale</key>
-    <map>
-      <key>Comment</key>
-      <string>Scaler applied to height map when generating normal maps</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>64</real>
-    </map>
+  <key>RenderNormalMapScale</key>
+  <map>
+    <key>Comment</key>
+    <string>Scaler applied to height map when generating normal maps</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>64</real>
+  </map>
     <key>RenderCubeMap</key>
     <map>
       <key>Comment</key>
@@ -10241,29 +10273,29 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>RenderDelayCreation</key>
-    <map>
-      <key>Comment</key>
-      <string>Throttle creation of drawables.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
+  <key>RenderDelayCreation</key>
+  <map>
+    <key>Comment</key>
+    <string>Throttle creation of drawables.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
 
-    <key>RenderAnimateRes</key>
-    <map>
-      <key>Comment</key>
-      <string>Animate rezing prims.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
+  <key>RenderAnimateRes</key>
+  <map>
+    <key>Comment</key>
+    <string>Animate rezing prims.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
 
   <key>RenderBakeSunlight</key>
   <map>
@@ -10276,7 +10308,7 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-  
+
     <!--<key>RenderAnimateTrees</key>
     <map>
       <key>Comment</key>
@@ -10325,27 +10357,27 @@
   </map>
 
   <key>RenderDeferredAlphaSoften</key>
-    <map>
-      <key>Comment</key>
-      <string>Scalar for softening alpha surfaces (for soft particles).</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>0.75</real>
-    </map>
-    <key>RenderDeferredNoise</key>
-    <map>
-      <key>Comment</key>
-      <string>Noise scalar to hide banding in deferred render.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>4</real>
-    </map>
+  <map>
+    <key>Comment</key>
+    <string>Scalar for softening alpha surfaces (for soft particles).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.75</real>
+  </map>
+  <key>RenderDeferredNoise</key>
+  <map>
+    <key>Comment</key>
+    <string>Noise scalar to hide banding in deferred render.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>4</real>
+  </map>
   <key>RenderDeferredSpotShadowBias</key>
   <map>
     <key>Comment</key>
@@ -10391,7 +10423,6 @@
     <key>Value</key>
     <real>0.01</real>
   </map>
-
   <key>RenderShadowBiasError</key>
   <map>
     <key>Comment</key>
@@ -10613,14 +10644,14 @@
   <key>RenderDeferred</key>
   <map>
     <key>Comment</key>
-      <string>Use deferred rendering pipeline.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
+    <string>Use deferred rendering pipeline.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
 
   <key>RenderDeferredSun</key>
   <map>
@@ -10672,25 +10703,25 @@
 
   <key>RenderDeferredSunWash</key>
   <map>
-      <key>Comment</key>
-      <string>Amount local lights are washed out by sun.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>0.5</real>
-    </map>
-    <key>RenderShadowNoise</key>
-    <map>
-      <key>Comment</key>
-      <string>Magnitude of noise on shadow samples.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>F32</string>
-      <key>Value</key>
-      <real>-0.0001</real>
+    <key>Comment</key>
+    <string>Amount local lights are washed out by sun.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.5</real>
+  </map>
+  <key>RenderShadowNoise</key>
+  <map>
+    <key>Comment</key>
+    <string>Magnitude of noise on shadow samples.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>-0.0001</real>
   </map>
   <key>RenderShadowErrorCutoff</key>
   <map>
@@ -10744,15 +10775,15 @@
   </map>
   <key>RenderShadowBlurSamples</key>
   <map>
-      <key>Comment</key>
-      <string>Number of samples to take for each pass of shadow blur (value range 1-16).  Actual number of samples is value * 2 - 1.</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>U32</string>
-      <key>Value</key>
-      <real>4</real>
-    </map>
+    <key>Comment</key>
+    <string>Number of samples to take for each pass of shadow blur (value range 1-16).  Actual number of samples is value * 2 - 1.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <real>4</real>
+  </map>
   <key>RenderShadowBlurDistFactor</key>
   <map>
     <key>Comment</key>
@@ -10765,7 +10796,7 @@
     <real>0.1</real>
   </map>
 
-    <key>RenderDynamicLOD</key>
+  <key>RenderDynamicLOD</key>
     <map>
       <key>Comment</key>
       <string>Dynamically adjust level of detail.</string>
@@ -11522,28 +11553,28 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-    <key>RenderUseShaderLOD</key>
-    <map>
-      <key>Comment</key>
-      <string>Whether we want to have different shaders for LOD</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-    <key>RenderUseShaderNearParticles</key>
-    <map>
-      <key>Comment</key>
-      <string>Whether we want to use shaders on near particles</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
+  <key>RenderUseShaderLOD</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether we want to have different shaders for LOD</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>RenderUseShaderNearParticles</key>
+  <map>
+    <key>Comment</key>
+    <string>Whether we want to use shaders on near particles</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
     <key>RenderVBOEnable</key>
     <map>
       <key>Comment</key>
@@ -11721,18 +11752,18 @@
     <key>Value</key>
     <integer>32</integer>
   </map>
-    <key>RunBtnState</key>
-    <map>
-      <key>Comment</key>
-      <string/>
-      <key>Persist</key>
-      <integer>0</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
-    <key>RunMultipleThreads</key>
+  <key>RunBtnState</key>
+  <map>
+    <key>Comment</key>
+    <string/>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+   <key>RunMultipleThreads</key>
     <map>
       <key>Comment</key>
       <string>If TRUE keep background threads active during render</string>
