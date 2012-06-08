@@ -1486,6 +1486,11 @@ void LLWorld::getAvatars(std::vector<LLUUID>* avatar_ids, std::vector<LLVector3d
 	}
 }
 
+bool LLWorld::isRegionListed(const LLViewerRegion* region) const
+{
+	region_list_t::const_iterator it = find(mRegionList.begin(), mRegionList.end(), region);
+	return it != mRegionList.end();
+}
 
 LLHTTPRegistration<LLEstablishAgentCommunication>
 	gHTTPRegistrationEstablishAgentCommunication(

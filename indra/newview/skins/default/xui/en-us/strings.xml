@@ -16,6 +16,9 @@
 	<string name="TeleportLureMaturity">
 	  [NAME]'s teleport lure is to [DESTINATION]
 	</string>
+	<string name="AvatarIdle">
+	  Idle [MINUTES]min
+	</string>
 
 	<!-- Default Args - these arguments will be replaced in all strings -->
 	<string name="SECOND_LIFE">Second Life</string>
@@ -144,7 +147,7 @@
 	<string name="AssetErrorUnknownStatus">Unknown status</string>
 
 	<!-- llvoavatar. Displayed in the avatar's chat bubble -->
-	<string name="AvatarEditingApparance">(Editing Appearance)</string>
+	<string name="AvatarEditingAppearance">(Editing Appearance)</string>
 	<string name="AvatarAway">Away</string>
 	<string name="AvatarBusy">Busy</string>
 	<string name="AvatarMuted">Muted</string>

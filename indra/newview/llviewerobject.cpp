@@ -146,7 +146,10 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 			}
 			else 
 			{
-				gAgentAvatarp->updateRegion(regionp);
+				if (isAgentAvatarValid())
+				{
+					gAgentAvatarp->updateRegion(regionp);
+				}
 			}
 			res = gAgentAvatarp;
 		}
@@ -901,6 +904,13 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 	LLMemType mt(LLMemType::MTYPE_OBJECT);
 	U32 retval = 0x0;
 	
+	// If region is removed from the list it is also deleted.
+	if (!LLWorld::instance().isRegionListed(mRegionp))
+	{
+		llwarns << "Updating object in an invalid region" << llendl;
+		return retval;
+	}
+
 	// Coordinates of objects on simulators are region-local.
 	U64 region_handle;
 	mesgsys->getU64Fast(_PREHASH_RegionData, _PREHASH_RegionHandle, region_handle);
@@ -1768,6 +1778,22 @@ U32 LLViewerObject::processUpdateMessage(LLMessageSystem *mesgsys,
 														mesgsys->getSenderPort());
 
 				LLViewerObject *sent_parentp = gObjectList.findObject(parent_uuid);
+
+				if(isAttachment())
+				{
+					llassert_always(gAgentID.notNull());
+					if(parent_uuid == gAgentID)
+					{
+						static std::map<LLUUID,bool> state_map;
+						std::map<LLUUID,bool>::iterator it = state_map.find(getID());
+						 
+						if(it == state_map.end() || (!it->second && sent_parentp))
+						{
+							it->second = sent_parentp != NULL;
+							LL_INFOS("Attachment") << getID() << " ("<<getAttachmentPointName()<<") has " << (sent_parentp ? "" : "no ") << "parent." << llendl;
+						}
+					}
+				}
 
 				//
 				// Check to see if we have the corresponding viewer object for the parent.
@@ -3537,7 +3563,8 @@ LLNameValue *LLViewerObject::getNVPair(const std::string& name) const
 
 void LLViewerObject::updatePositionCaches() const
 {
-	if(mRegionp)
+	// If region is removed from the list it is also deleted.
+	if(mRegionp && LLWorld::instance().isRegionListed(mRegionp))
 	{
 		if (!isRoot())
 		{
@@ -3554,7 +3581,8 @@ void LLViewerObject::updatePositionCaches() const
 
 const LLVector3d LLViewerObject::getPositionGlobal() const
 {	
-	if(mRegionp)
+	// If region is removed from the list it is also deleted.
+	if(mRegionp && LLWorld::instance().isRegionListed(mRegionp))
 	{
 		LLVector3d position_global = mRegionp->getPosGlobalFromRegion(getPositionRegion());
 
@@ -3573,7 +3601,8 @@ const LLVector3d LLViewerObject::getPositionGlobal() const
 
 const LLVector3 &LLViewerObject::getPositionAgent() const
 {
-	if (mRegionp)
+	// If region is removed from the list it is also deleted.
+	if(mRegionp && LLWorld::instance().isRegionListed(mRegionp))
 	{
 		if (mDrawable.notNull() && (!mDrawable->isRoot() && getParent()))
 		{

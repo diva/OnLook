@@ -133,6 +133,9 @@ public:
 	
 	void			setCommitCallback( void (*cb)(LLUICtrl*, void*) )		{ mCommitCallback = cb; }
 	void			setValidateBeforeCommit( BOOL(*cb)(LLUICtrl*, void*) )	{ mValidateCallback = cb; }
+	// *TODO: Deprecate; for backwards compatability only:
+	boost::signals2::connection setCommitCallback( boost::function<void (LLUICtrl*,void*)> cb, void* data);	
+	boost::signals2::connection setValidateBeforeCommit( boost::function<bool (const LLSD& data)> cb );
 	
 	static LLView* fromXML(LLXMLNodePtr node, LLView* parent, class LLUICtrlFactory* factory);
 

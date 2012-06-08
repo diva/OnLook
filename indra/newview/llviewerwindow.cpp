@@ -4879,7 +4879,7 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 		gResizeScreenTexture = TRUE;
 		gWindowResized = TRUE;
 
-		if (gFloaterCustomize && gFloaterCustomize->getVisible())
+		if (isAgentAvatarValid() && !gAgentAvatarp->isUsingBakedTextures())
 		{
 			LLVisualParamHint::requestHintUpdates();
 		}

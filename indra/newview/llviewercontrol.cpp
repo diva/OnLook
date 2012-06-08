@@ -210,6 +210,16 @@ static bool handleReleaseGLBufferChanged(const LLSD& newvalue)
 	return true;
 }
 
+static bool handleLUTBufferChanged(const LLSD& newvalue)
+{
+	if (gPipeline.isInit())
+	{
+		gPipeline.releaseLUTBuffers();
+		gPipeline.createLUTBuffers();
+	}
+	return true;
+}
+
 static bool handleAnisotropicChanged(const LLSD& newvalue)
 {
 	LLImageGL::sGlobalUseAnisotropic = newvalue.asBoolean();
@@ -576,25 +586,6 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 	return true;
 }
 
-bool handleAscentSelfTag(const LLSD& newvalue)
-{
-	if(gAgentAvatarp)
-		gAgentAvatarp->mClientTag = "";
-	return true;
-}
-
-bool handleAscentGlobalTag(const LLSD& newvalue)
-{
-	S32 object_count = gObjectList.getNumObjects();
-	for (S32 i = 0; i < object_count; i++)
-	{
-		LLViewerObject *objectp = gObjectList.getObject(i);
-		if (objectp && objectp->isAvatar())
-			((LLVOAvatar*)objectp)->mClientTag = "";
-	}
-	return true;
-}
-
 bool handleAscentAvatarModifier(const LLSD& newvalue)
 {
 	llinfos << "Calling gAgent.sendAgentSetAppearance() because AscentAvatar*Modifier changed." << llendl;
@@ -636,9 +627,9 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("VertexShaderEnable")->getSignal()->connect(boost::bind(&handleSetShaderChanged, _2));
 	gSavedSettings.getControl("RenderDepthOfField")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
 	gSavedSettings.getControl("RenderFSAASamples")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
-	gSavedSettings.getControl("RenderSpecularResX")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
-	gSavedSettings.getControl("RenderSpecularResY")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
-	gSavedSettings.getControl("RenderSpecularExponent")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
+	gSavedSettings.getControl("RenderSpecularResX")->getSignal()->connect(boost::bind(&handleLUTBufferChanged, _2));
+	gSavedSettings.getControl("RenderSpecularResY")->getSignal()->connect(boost::bind(&handleLUTBufferChanged, _2));
+	gSavedSettings.getControl("RenderSpecularExponent")->getSignal()->connect(boost::bind(&handleLUTBufferChanged, _2));
 	gSavedSettings.getControl("RenderAnisotropic")->getSignal()->connect(boost::bind(&handleAnisotropicChanged, _2));
 	gSavedSettings.getControl("RenderShadowResolutionScale")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
 	gSavedSettings.getControl("RenderGlow")->getSignal()->connect(boost::bind(&handleReleaseGLBufferChanged, _2));
@@ -781,13 +772,6 @@ void settings_setup_listeners()
 	gSavedSettings.getControl("EmeraldBreastPhysicsToggle")->getSignal()->connect(boost::bind(&handleAvatarBoobToggleChanged, _2));
 	gSavedSettings.getControl("EmeraldBoobXYInfluence")->getSignal()->connect(boost::bind(&handleAvatarBoobXYInfluence, _2));
 	
-	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_2));
-	gSavedSettings.getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_2));
-	gSavedSettings.getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_2));
-	gSavedSettings.getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_2));
-	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&handleAscentSelfTag,_2));
-	gSavedSettings.getControl("AscentShowFriendsTag")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_2));
-	gSavedSettings.getControl("AscentUseStatusColors")->getSignal()->connect(boost::bind(&handleAscentGlobalTag,_2));
 	gSavedSettings.getControl("AscentAvatarXModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarYModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));
 	gSavedSettings.getControl("AscentAvatarZModifier")->getSignal()->connect(boost::bind(&handleAscentAvatarModifier, _2));

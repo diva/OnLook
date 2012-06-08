@@ -350,12 +350,12 @@ BOOL LLFloaterAvatarList::postBuild()
 
 	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
 		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("avatar_list");
-		list->getColumn(1)->setWidth(0);
-		list->getColumn(6)->setWidth(0);
-		list->getColumn(6)->mDynamicWidth = FALSE;
-		list->getColumn(6)->mRelWidth = 0;
-		list->getColumn(1)->mDynamicWidth = TRUE;
-		list->getColumn(1)->mRelWidth = -1;
+		list->getColumn(LIST_AVATAR_NAME)->setWidth(0);
+		list->getColumn(LIST_CLIENT)->setWidth(0);
+		list->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
+		list->getColumn(LIST_CLIENT)->mRelWidth = 0;
+		list->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
+		list->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
 		list->updateLayout();
 	}
 
@@ -894,11 +894,11 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 		LLColor4 client_color(avatar_name_color);
-		std::string client;
 		LLVOAvatar *avatarp = gObjectList.findAvatar(av_id);
 		if(avatarp)
 		{
-			avatarp->getClientInfo(client, client_color, TRUE);
+			std::string client = SHClientTagMgr::instance().getClientName(avatarp, false);
+			SHClientTagMgr::instance().getClientColor(avatarp, false, client_color);
 			if(client == "")
 			{
 				client_color = unselected_color;
