@@ -57,6 +57,7 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llworld.h"
+#include "llstartup.h"
 
 //////////////////////////////////////////////////////////////////////////////
 class LLTextureFetchWorker : public LLWorkerClass
@@ -2367,6 +2368,7 @@ void LLTextureFetch::commonUpdate()
 	}
 }
 
+
 // MAIN THREAD
 //virtual
 S32 LLTextureFetch::update(F32 max_time_ms)
@@ -2382,14 +2384,20 @@ S32 LLTextureFetch::update(F32 max_time_ms)
 
 		mNetworkQueueMutex.unlock() ;
 	}
-	
+
 	S32 res = LLWorkerThread::update(max_time_ms);
 	
 	if (!mDebugPause)
 	{
-		sendRequestListToSimulators();
+		// this is the startup state when send_complete_agent_movement() message is sent.
+		// Before this, the RequestImages message sent by sendRequestListToSimulators 
+		// won't work so don't bother trying
+		if (LLStartUp::getStartupState() > STATE_AGENT_SEND)
+		{
+			sendRequestListToSimulators();
+		}
 	}
-	
+
 	if (!mThreaded)
 	{
 		commonUpdate();
