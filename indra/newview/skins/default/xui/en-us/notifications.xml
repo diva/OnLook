@@ -540,6 +540,20 @@ Add this Ability to &apos;[ROLE_NAME]&apos;?
 
   <notification
    icon="alertmodal.tga"
+   name="AttachmentDrop"
+   type="alertmodal">
+You are about to drop your attachment.
+Are you sure you want to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before dropping attachments"
+     name="okcancelignore"
+     notext="No"
+     yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="ClickPublishHelpLand"
    type="alertmodal">
 Selecting the &quot;Publish in Search&quot;
@@ -7214,9 +7228,9 @@ Click 'Wear' to attach the Physics Wearable, or click 'Cancel' if you wish to ma
 
   <notification
    icon="alert.tga"
-   name="SGIncompleteAppearence"
+   name="SGIncompleteAppearance"
    type="alert">
-Sending incomplete appearence. You may appear to others as a cloud.
+Sending incomplete appearance. You may appear to others as a cloud.
 
 Your shape, skin, hair or eyes might be defect.
 	<usetemplate

@@ -242,8 +242,8 @@ BOOL LLVorbisDecodeState::initDecode()
 		llwarns << "No default bitstream found" << llendl;	
 	}
 	// <edit>
-		// This magic value is equivilent to 150MiB of data.
-		// Prevents griffers from utilizin a huge xbox sound the size of god to instafry the viewer
+	// This magic value is equivalent to 150MiB of data.
+	// Prevents griefers from utilizing a huge xbox sound the size of god to instafry the viewer
 	if(size_guess >= 157286400)
 	{
 		llwarns << "Bad sound caught by zmagic" << llendl;
@@ -616,7 +616,8 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 				llwarns << mCurrentDecodep->getUUID() << " has invalid vorbis data, aborting decode" << llendl;
 				mCurrentDecodep->flushBadFile();
 				LLAudioData *adp = gAudiop->getAudioData(mCurrentDecodep->getUUID());
-				adp->setHasValidData(FALSE);
+				adp->setHasValidData(false);
+				adp->setHasCompletedDecode(true);
 				mCurrentDecodep = NULL;
 				done = TRUE;
 			}
@@ -631,11 +632,16 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 				if (mCurrentDecodep->finishDecode())
 				{
 					// We finished!
-					if (mCurrentDecodep->isValid() && mCurrentDecodep->isDone())
+					LLAudioData *adp = gAudiop->getAudioData(mCurrentDecodep->getUUID());
+					if (!adp)
 					{
-						LLAudioData *adp = gAudiop->getAudioData(mCurrentDecodep->getUUID());
-						adp->setHasDecodedData(TRUE);
-						adp->setHasValidData(TRUE);
+						llwarns << "Missing LLAudioData for decode of " << mCurrentDecodep->getUUID() << llendl;
+					}
+					else if (mCurrentDecodep->isValid() && mCurrentDecodep->isDone())
+					{
+						adp->setHasCompletedDecode(true);
+						adp->setHasDecodedData(true);
+						adp->setHasValidData(true);
 
 						// At this point, we could see if anyone needs this sound immediately, but
 						// I'm not sure that there's a reason to - we need to poll all of the playing
@@ -644,7 +650,8 @@ void LLAudioDecodeMgr::Impl::processQueue(const F32 num_secs)
 					}
 					else
 					{
-						llinfos << "Vorbis decode failed!!!" << llendl;
+						adp->setHasCompletedDecode(true);
+						llinfos << "Vorbis decode failed for " << mCurrentDecodep->getUUID() << llendl;
 					}
 					mCurrentDecodep = NULL;
 				}
@@ -712,15 +719,18 @@ BOOL LLAudioDecodeMgr::addDecodeRequest(const LLUUID &uuid)
 	if (gAudiop->hasDecodedFile(uuid))
 	{
 		// Already have a decoded version, don't need to decode it.
+		//llinfos << "addDecodeRequest for " << uuid << " has decoded file already" << llendl;
 		return TRUE;
 	}
 
 	if (gAssetStorage->hasLocalAsset(uuid, LLAssetType::AT_SOUND))
 	{
 		// Just put it on the decode queue.
+		//llinfos << "addDecodeRequest for " << uuid << " has local asset file already" << llendl;
 		mImpl->mDecodeQueue.push(uuid);
 		return TRUE;
 	}
 
+	//llinfos << "addDecodeRequest for " << uuid << " no file available" << llendl;
 	return FALSE;
 }

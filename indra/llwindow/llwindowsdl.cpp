@@ -2621,8 +2621,9 @@ std::vector<std::string> LLWindowSDL::getDynamicFallbackFontList()
 	if (sortpat)
 	{
 		// Sort the list of system fonts from most-to-least-desirable.
+		FcResult fresult;
 		fs = FcFontSort(NULL, sortpat, elide_unicode_coverage,
-				NULL, NULL);
+				NULL, &fresult);
 		FcPatternDestroy(sortpat);
 	}
 
