@@ -99,7 +99,7 @@ std::string LLAvatarName::getCompleteName(bool linefeed) const
 	}
 	else
 	{
-		name = mDisplayName + (linefeed ? "\n(" : "(") + mUsername + ")";
+		name = mDisplayName + (linefeed ? "\n(" : " (") + mUsername + ")";
 	}
 	return name;
 }

@@ -32,7 +32,7 @@
  */
 
 #ifndef LLBASE64_H
-#define LLBASE64_h
+#define LLBASE64_H
 
 class LL_COMMON_API LLBase64
 {

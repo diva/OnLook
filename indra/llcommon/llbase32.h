@@ -32,7 +32,7 @@
  */
 
 #ifndef LLBASE32_H
-#define LLBASE32_h
+#define LLBASE32_H
 
 class LL_COMMON_API LLBase32
 {
