@@ -40,6 +40,7 @@
 #include "llviewercamera.h"
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
+#include "llvoavatarself.h" //For mInAir
 #include "llvoiceclient.h"
 #include "llviewermedia.h"
 
@@ -239,24 +240,49 @@ void audio_update_wind(bool force_update)
 				gAudiop->setRolloffFactor(audio_level_rolloff);
 			}
 		}
-		// this line rotates the wind vector to be listener (agent) relative
-		// unfortunately we have to pre-translate to undo the translation that
-		// occurs in the transform call
-		gRelativeWindVec = gAgent.getFrameAgent().rotateToLocal(gWindVec - gAgent.getVelocity());
+
+        // Scale down the contribution of weather-simulation wind to the
+        // ambient wind noise.  Wind velocity averages 3.5 m/s, with gusts to 7 m/s
+        // whereas steady-state avatar walk velocity is only 3.2 m/s.
+        // Without this the world feels desolate on first login when you are
+        // standing still.
+        static LLCachedControl<F32> wind_level("AudioLevelWind", 0.5f);
+        LLVector3 scaled_wind_vec = gWindVec * wind_level;
+
+        // Mix in the avatar's motion, subtract because when you walk north,
+        // the apparent wind moves south.
+        LLVector3 final_wind_vec = scaled_wind_vec - gAgent.getVelocity();
+		// rotate the wind vector to be listener (agent) relative
+		gRelativeWindVec = gAgent.getFrameAgent().rotateToLocal(final_wind_vec);
 
 		// don't use the setter setMaxWindGain() because we don't
 		// want to screw up the fade-in on startup by setting actual source gain
 		// outside the fade-in.
-		static const LLCachedControl<bool> mute_audio("MuteAudio",false);
-		static const LLCachedControl<bool> mute_ambient("MuteAmbient",false);
-		static const LLCachedControl<F32> audio_level_master("AudioLevelMaster", 1.0f);
-		static const LLCachedControl<F32> audio_level_ambient("AudioLevelAmbient",1.0f);
-		F32 master_volume  = mute_audio ? 0.f : (F32)audio_level_master;
-		F32 ambient_volume = mute_ambient ? 0.f : (F32)audio_level_ambient;
+		F32 master_volume  = gSavedSettings.getBOOL("MuteAudio") ? 0.f : gSavedSettings.getF32("AudioLevelMaster");
+		F32 ambient_volume = gSavedSettings.getBOOL("MuteAmbient") ? 0.f : gSavedSettings.getF32("AudioLevelAmbient");
+		F32 max_wind_volume = master_volume * ambient_volume;
 
-		F32 wind_volume = master_volume * ambient_volume;
-		gAudiop->mMaxWindGain = wind_volume;
-		
+		const F32 WIND_SOUND_TRANSITION_TIME = 2.f;
+		// amount to change volume this frame
+		F32 volume_delta = (LLFrameTimer::getFrameDeltaTimeF32() / WIND_SOUND_TRANSITION_TIME) * max_wind_volume;
+		if (force_update) 
+		{
+			// initialize wind volume (force_update) by using large volume_delta
+			// which is sufficient to completely turn off or turn on wind noise
+			volume_delta = 1.f;
+		}
+
+		// mute wind when not /*flying*/ in air
+		if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)
+		{
+			// volume increases by volume_delta, up to no more than max_wind_volume
+			gAudiop->mMaxWindGain = llmin(gAudiop->mMaxWindGain + volume_delta, max_wind_volume);
+		}
+		else
+		{
+			// volume decreases by volume_delta, down to no less than 0
+			gAudiop->mMaxWindGain = llmax(gAudiop->mMaxWindGain - volume_delta, 0.f);
+		}
 		
 		last_camera_water_height = camera_water_height;
 		gAudiop->updateWind(gRelativeWindVec, camera_water_height);
