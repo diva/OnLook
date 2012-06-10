@@ -2502,8 +2502,8 @@ void LLWindowSDL::spawnWebBrowser(const std::string& escaped_url, bool async)
 	std::string cmd, arg;
 	cmd  = gDirUtilp->getAppRODataDir();
 	cmd += gDirUtilp->getDirDelimiter();
-	cmd += "etc";
-	cmd += gDirUtilp->getDirDelimiter();
+	//cmd += "etc";
+	//cmd += gDirUtilp->getDirDelimiter();
 	cmd += "launch_url.sh";
 	arg = escaped_url;
 	exec_cmd(cmd, arg);
