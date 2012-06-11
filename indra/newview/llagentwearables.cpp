@@ -1615,7 +1615,16 @@ void LLAgentWearables::setWearableOutfit(const LLInventoryItem::item_array_t& it
 	{
 		gAgentAvatarp->setCompositeUpdatesEnabled(TRUE);
 		gAgentAvatarp->updateVisualParams();
-		gAgentAvatarp->invalidateAll();
+
+		// If we have not yet declouded, we may want to use
+		// baked texture UUIDs sent from the first objectUpdate message
+		// don't overwrite these. If we have already declouded, we've saved
+		// these ids as the last known good textures and can invalidate without
+		// re-clouding.
+		if (!gAgentAvatarp->getIsCloud())
+		{
+			gAgentAvatarp->invalidateAll();
+		}
 	}
 
 	// Start rendering & update the server
@@ -1816,7 +1825,8 @@ void LLAgentWearables::queryWearableCache()
 		{
 			gAgentAvatarp->outputRezTiming("Fetching textures from cache");
 		}
-		llinfos << "Requesting texture cache entry for " << num_queries << " baked textures" << llendl;
+
+		LL_INFOS("Avatar") << gAgentAvatarp->avString() << "Requesting texture cache entry for " << num_queries << " baked textures" << LL_ENDL;
 		gMessageSystem->sendReliable(gAgent.getRegion()->getHost());
 		gAgentQueryManager.mNumPendingQueries++;
 		gAgentQueryManager.mWearablesCacheQueryID++;
@@ -2344,6 +2354,11 @@ boost::signals2::connection LLAgentWearables::addInitialWearablesLoadedCallback(
 	return mInitialWearablesLoadedSignal.connect(cb);
 }
 // [/SL:KB]
+
+bool LLAgentWearables::changeInProgress() const
+{
+	return mCOFChangeInProgress;
+}
 
 void LLAgentWearables::notifyLoadingStarted()
 {

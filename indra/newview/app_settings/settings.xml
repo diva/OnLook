@@ -13290,6 +13290,39 @@
       <key>Value</key>
       <real>20.0</real>
     </map>
+    <key>TexelPixelRatio</key>
+    <map>
+      <key>Comment</key>
+      <string>texel pixel ratio = texel / pixel</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>1.0</real>
+    </map>
+    <key>TextureCameraMotionThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>If the overall motion is lower than this value, textures will be loaded faster</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.2</real>
+    </map>
+    <key>TextureCameraMotionBoost</key>
+    <map>
+      <key>Comment</key>
+      <string>Progressive discard level decrement when the camera is still</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>3</integer>
+    </map>
     <key>TextureDecodeDisabled</key>
     <map>
       <key>Comment</key>

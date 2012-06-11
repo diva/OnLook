@@ -608,7 +608,7 @@ BOOL LLWearable::isDirty() const
 
 			if( a != b  )
 			{
-				llwarns << "param ID " << param->getID() << " was changed." << llendl;
+				//llwarns << "param ID " << param->getID() << " was changed." << llendl;
 				return TRUE;
 			}
 		}
