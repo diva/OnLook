@@ -46,6 +46,8 @@
 #include "llviewerregion.h"
 #include "llcallbacklist.h"
 #include "llvoavatarself.h"
+#include "llgesturemgr.h"
+#include <typeinfo>
 #include "statemachine/aievent.h"
 
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
@@ -1080,6 +1082,72 @@ void LLInventoryModel::moveObject(const LLUUID& object_id, const LLUUID& cat_id)
 	}
 }
 
+// Migrated from llinventoryfunctions
+void LLInventoryModel::changeItemParent(LLViewerInventoryItem* item,
+										const LLUUID& new_parent_id,
+										BOOL restamp)
+{
+	// <edit>
+	bool send_parent_update = gInventory.isObjectDescendentOf(item->getUUID(), gInventory.getRootFolderID());
+	// </edit>
+	if (item->getParentUUID() == new_parent_id)
+	{
+		LL_DEBUGS("Inventory") << "'" << item->getName() << "' (" << item->getUUID()
+							   << ") is already in folder " << new_parent_id << LL_ENDL;
+	}
+	else
+	{
+		LL_INFOS("Inventory") << "Moving '" << item->getName() << "' (" << item->getUUID()
+							  << ") from " << item->getParentUUID() << " to folder "
+							  << new_parent_id << LL_ENDL;
+		LLInventoryModel::update_list_t update;
+		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(),-1);
+		update.push_back(old_folder);
+		LLInventoryModel::LLCategoryUpdate new_folder(new_parent_id, 1);
+		update.push_back(new_folder);
+		accountForUpdate(update);
+
+		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
+		new_item->setParent(new_parent_id);
+		// <edit>
+		if(send_parent_update)
+		// </edit>
+		new_item->updateParentOnServer(restamp);
+		updateItem(new_item);
+		notifyObservers();
+	}
+}
+
+// Migrated from llinventoryfunctions
+void LLInventoryModel::changeCategoryParent(LLViewerInventoryCategory* cat,
+											const LLUUID& new_parent_id,
+											BOOL restamp)
+{
+	if (!cat)
+	{
+		return;
+	}
+
+	// Can't move a folder into a child of itself.
+	if (isObjectDescendentOf(new_parent_id, cat->getUUID()))
+	{
+		return;
+	}
+
+	LLInventoryModel::update_list_t update;
+	LLInventoryModel::LLCategoryUpdate old_folder(cat->getParentUUID(), -1);
+	update.push_back(old_folder);
+	LLInventoryModel::LLCategoryUpdate new_folder(new_parent_id, 1);
+	update.push_back(new_folder);
+	accountForUpdate(update);
+
+	LLPointer<LLViewerInventoryCategory> new_cat = new LLViewerInventoryCategory(cat);
+	new_cat->setParent(new_parent_id);
+	new_cat->updateParentOnServer(restamp);
+	updateCategory(new_cat);
+	notifyObservers();
+}
+
 // Delete a particular inventory object by ID.
 void LLInventoryModel::deleteObject(const LLUUID& id)
 {
@@ -1208,13 +1276,12 @@ void LLInventoryModel::purgeDescendentsOf(const LLUUID& id)
 						   items,
 						   INCLUDE_TRASH);
 		S32 count = items.count();
-		S32 i;
-		for(i = 0; i < count; ++i)
+		for(S32 i = 0; i < count; ++i)
 		{
 			deleteObject(items.get(i)->getUUID());
 		}
 		count = categories.count();
-		for(i = 0; i < count; ++i)
+		for(S32 i = 0; i < count; ++i)
 		{
 			deleteObject(categories.get(i)->getUUID());
 		}
@@ -1729,6 +1796,7 @@ bool LLInventoryModel::loadSkeleton(
 		update_map_t child_counts;
 		cat_array_t categories;
 		item_array_t items;
+		item_array_t possible_broken_links;
 		cat_set_t invalid_categories; // Used to mark categories that weren't successfully loaded.
 		std::string owner_id_str;
 		owner_id.toString(owner_id_str);
@@ -1815,6 +1883,8 @@ bool LLInventoryModel::loadSkeleton(
 			// Add all the items loaded which are parented to a
 			// category with a correctly cached parent
 			S32 bad_link_count = 0;
+			S32 good_link_count = 0;
+			S32 recovered_link_count = 0;
 			cat_map_t::iterator unparented = mCategoryMap.end();
 			for(item_array_t::const_iterator item_iter = items.begin();
 				item_iter != items.end();
@@ -1831,13 +1901,17 @@ bool LLInventoryModel::loadSkeleton(
 						// This can happen if the linked object's baseobj is removed from the cache but the linked object is still in the cache.
 						if (item->getIsBrokenLink())
 						{
-							bad_link_count++;
+							//bad_link_count++;
 							lldebugs << "Attempted to add cached link item without baseobj present ( name: "
 									 << item->getName() << " itemID: " << item->getUUID()
 									 << " assetID: " << item->getAssetUUID()
 									 << " ).  Ignoring and invalidating " << cat->getName() << " . " << llendl;
-							invalid_categories.insert(cit->second);
+							possible_broken_links.push_back(item);
 							continue;
+						}
+						else if (item->getIsLinkType())
+						{
+							good_link_count++;
 						}
 						addItem(item);
 						cached_item_count += 1;
@@ -1845,12 +1919,38 @@ bool LLInventoryModel::loadSkeleton(
 					}
 				}
 			}
-			if (bad_link_count > 0)
+			if (possible_broken_links.size() > 0)
 			{
-				llinfos << "Attempted to add " << bad_link_count
-						<< " cached link items without baseobj present. "
-						<< "The corresponding categories were invalidated." << llendl;
+				for(item_array_t::const_iterator item_iter = possible_broken_links.begin();
+				    item_iter != possible_broken_links.end();
+				    ++item_iter)
+				{
+					LLViewerInventoryItem *item = (*item_iter).get();
+					const cat_map_t::iterator cit = mCategoryMap.find(item->getParentUUID());
+					const LLViewerInventoryCategory* cat = cit->second.get();
+					if (item->getIsBrokenLink())
+					{
+						bad_link_count++;
+						invalid_categories.insert(cit->second);
+						//llinfos << "link still broken: " << item->getName() << " in folder " << cat->getName() << llendl;
+					}
+					else
+					{
+						// was marked as broken because of loading order, its actually fine to load
+						addItem(item);
+						cached_item_count += 1;
+						++child_counts[cat->getUUID()];
+						recovered_link_count++;
+					}
+				}
+
+ 				llinfos << "Attempted to add " << bad_link_count
+ 						<< " cached link items without baseobj present. "
+					    << good_link_count << " link items were successfully added. "
+					    << recovered_link_count << " links added in recovery. "
+ 						<< "The corresponding categories were invalidated." << llendl;
 			}
+
 		}
 		else
 		{
@@ -3099,27 +3199,62 @@ void LLInventoryModel::emptyFolderType(const std::string notification, LLFolderT
 		notifyObservers();
 	}
 }
+
+//----------------------------------------------------------------------------
+
 void LLInventoryModel::removeItem(const LLUUID& item_id)
 {
 	LLViewerInventoryItem* item = getItem(item_id);
-	const LLUUID new_parent = findCategoryUUIDForType(LLFolderType::FT_TRASH);
-	if(item && new_parent.notNull() && item->getParentUUID() != new_parent)
+	if (! item)
 	{
-		LLInventoryModel::update_list_t update;
-		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(), -1);
-		update.push_back(old_folder);
-		LLInventoryModel::LLCategoryUpdate new_folder(new_parent, 1);
-		update.push_back(new_folder);
-		accountForUpdate(update);
-
-		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
-		new_item->setParent(new_parent);
-		new_item->updateParentOnServer(TRUE);
-		updateItem(new_item);
-		notifyObservers();
+		LL_WARNS("Inventory") << "couldn't find inventory item " << item_id << LL_ENDL;
+	}
+	else
+	{
+		const LLUUID new_parent = findCategoryUUIDForType(LLFolderType::FT_TRASH);
+		if (new_parent.notNull())
+		{
+			LL_INFOS("Inventory") << "Moving to Trash (" << new_parent << "):" << LL_ENDL;
+			changeItemParent(item, new_parent, TRUE);
+		}
 	}
 }
 
+void LLInventoryModel::removeCategory(const LLUUID& category_id)
+{
+	if (! get_is_category_removable(this, category_id))
+	{
+		return;
+	}
+
+	// Look for any gestures and deactivate them
+	LLInventoryModel::cat_array_t	descendent_categories;
+	LLInventoryModel::item_array_t	descendent_items;
+	collectDescendents(category_id, descendent_categories, descendent_items, FALSE);
+
+	for (LLInventoryModel::item_array_t::const_iterator iter = descendent_items.begin();
+		 iter != descendent_items.end();
+		 ++iter)
+	{
+		const LLViewerInventoryItem* item = (*iter);
+		const LLUUID& item_id = item->getUUID();
+		if (item->getType() == LLAssetType::AT_GESTURE
+			&& LLGestureMgr::instance().isGestureActive(item_id))
+		{
+			LLGestureMgr::instance().deactivateGesture(item_id);
+		}
+	}
+
+	LLViewerInventoryCategory* cat = getCategory(category_id);
+	if (cat)
+	{
+		const LLUUID trash_id = findCategoryUUIDForType(LLFolderType::FT_TRASH);
+		if (trash_id.notNull())
+		{
+			changeCategoryParent(cat, trash_id, TRUE);
+		}
+	}
+}
 const LLUUID &LLInventoryModel::getRootFolderID() const
 {
 	return mRootFolderID;

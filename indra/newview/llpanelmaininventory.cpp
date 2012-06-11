@@ -862,7 +862,7 @@ void LLInventoryView::updateItemcountText()
 {
 	std::ostringstream title;
 	title << "Inventory";
- 	if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive())
+ 	if (LLInventoryModelBackgroundFetch::instance().folderFetchActive())
 	{
 		LLLocale locale(LLLocale::USER_LOCALE);
 		std::string item_count_string;
