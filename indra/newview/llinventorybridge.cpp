@@ -5543,6 +5543,33 @@ LLUIImagePtr LLWearableBridge::getIcon() const
 	return LLInventoryIcon::getIcon(mAssetType, mInvType, mWearableType, FALSE);
 }
 
+//LLAppearanceMgr::moveWearable unfortunately fails for non-link item, so links in CoF must be found for this to work.
+void move_wearable_item(LLViewerInventoryItem* item, bool closer_to_body)
+{
+	if(!item)
+		return;
+
+	if(item->getIsLinkType())
+	{
+		if(LLAppearanceMgr::instance().moveWearable(item, closer_to_body))
+			gAgentAvatarp->wearableUpdated(item->getWearableType(),TRUE);
+	}
+	else
+	{
+		LLInventoryModel::item_array_t items;
+		gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(),
+										LLInventoryModel::cat_array_t(),
+										items,
+										LLInventoryModel::EXCLUDE_TRASH,
+										LLLinkedItemIDMatches(item->getUUID()));
+		if(!items.empty())
+		{
+			if(LLAppearanceMgr::instance().moveWearable(gInventory.getItem(items.front()->getUUID()),closer_to_body))
+				gAgentAvatarp->wearableUpdated(item->getWearableType(),TRUE);
+		}
+	}
+}
+
 // virtual
 void LLWearableBridge::performAction(LLInventoryModel* model, std::string action)
 {
@@ -5563,6 +5590,15 @@ void LLWearableBridge::performAction(LLInventoryModel* model, std::string action
 	{
 		removeFromAvatar();
 		return;
+	}
+	//These move 
+	else if("move_forward" == action)
+	{
+		move_wearable_item(getItem(),false);
+	}
+	else if("move_back" == action)
+	{
+		move_wearable_item(getItem(),true);
 	}
 	else LLItemBridge::performAction(model, action);
 }
@@ -5686,6 +5722,15 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					if (LLWearableType::getAllowMultiwear(mWearableType))
 					{
 						items.push_back(std::string("Wearable Add"));
+						items.push_back(std::string("Wearable Move Forward"));
+						items.push_back(std::string("Wearable Move Back"));
+
+						bool is_worn = get_is_item_worn(item->getUUID());
+						if(!is_worn || !gAgentWearables.canMoveWearable(item->getUUID(),false))
+							disabled_items.push_back(std::string("Wearable Move Forward"));
+						if(!is_worn || !gAgentWearables.canMoveWearable(item->getUUID(),true))
+							disabled_items.push_back(std::string("Wearable Move Back"));
+
 //						if (gAgentWearables.getWearableCount(mWearableType) >= LLAgentWearables::MAX_CLOTHING_PER_TYPE)
 // [SL:KB] - Patch: Appearance-WearableDuplicateAssets | Checked: 2011-07-24 (Catznip-2.6.0e) | Added: Catznip-2.6.0e
 						if ( (gAgentWearables.getWearableCount(mWearableType) >= LLAgentWearables::MAX_CLOTHING_PER_TYPE) ||
