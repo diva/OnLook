@@ -831,6 +831,14 @@ void LLAgentWearables::wearableUpdated(LLWearable *wearable)
 		saveWearable(wearable->getType(),index,TRUE);
 	}
 
+	//Needed as wearable 'save' process is a mess and fires superfluous updateScrollingPanelList calls
+	//while the wearable being created has not yet been stuffed into the wearable list.
+	//This results in the param hints being buggered and screwing up the current wearable during LLVisualParamHint::preRender,
+	//thus making the wearable 'dirty'. The code below basically 'forces' a refresh of the panel to fix this.
+	U32 index = gAgentWearables.getWearableIndex(wearable);
+	if(gFloaterCustomize && index==0)
+		gFloaterCustomize->setWearable(wearable->getType(), wearable);
+
 }
 
 void LLAgentWearables::popWearable(LLWearable *wearable)

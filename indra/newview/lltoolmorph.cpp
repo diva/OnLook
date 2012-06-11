@@ -154,8 +154,12 @@ void LLVisualParamHint::preRender(BOOL clear_depth)
 {
 	mLastParamWeight = mVisualParam->getWeight();
 	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mVisualParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
-	if(wearable)wearable->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
-	gAgentAvatarp->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
+	if(wearable)
+	{
+		llinfos << llformat("%#.8lX",wearable) << llendl;
+		wearable->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
+	}
+ 	gAgentAvatarp->setVisualParamWeight(mVisualParam->getID(), mVisualParamWeight, FALSE);
 	gAgentAvatarp->setVisualParamWeight("Blink_Left", 0.f);
 	gAgentAvatarp->setVisualParamWeight("Blink_Right", 0.f);
 	gAgentAvatarp->updateComposites();

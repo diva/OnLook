@@ -56,35 +56,42 @@ public:
 	LLPanelEditWearable( LLWearableType::EType type );
 	virtual ~LLPanelEditWearable();
 
-	virtual BOOL 		postBuild();
-	virtual void		draw();
-	virtual BOOL		isDirty() const;	// LLUICtrl
+	/*virtual*/ BOOL 		postBuild();
+	/*virtual*/ BOOL		isDirty() const;	// LLUICtrl
+	/*virtual*/ void		draw();	
 	
-	void				addTextureDropTarget( ETextureIndex te, const std::string& name, const LLUUID& default_image_id, BOOL allow_no_texture );
-	void				addInvisibilityCheckbox(ETextureIndex te, const std::string& name);
+	// changes camera angle to default for selected subpart
+	void				changeCamera(U8 subpart);
 
 	const std::string&	getLabel()	{ return LLWearableType::getTypeLabel( mType ); }
 	LLWearableType::EType		getType() const{ return mType; }
 	LLWearable* 		getWearable() 	const;
 
-	ESubpart			getDefaultSubpart();
-	void				setSubpart( ESubpart subpart );
-	void				switchToDefaultSubpart();
-
 	void 				setWearable(LLWearable* wearable, U32 perm_mask, BOOL is_complete);
 
+	void				saveChanges(bool force_save_as = false, std::string new_name = std::string());
+	
 	void 				setUIPermissions(U32 perm_mask, BOOL is_complete);
 
 	void				hideTextureControls();
-	bool				textureIsInvisible(ETextureIndex te);
-	void				initPreviousTextureList();
-	void				initPreviousTextureListEntry(ETextureIndex te);
+	void				revertChanges();
+
+	void				showDefaultSubpart();
+
+	void 				updateScrollingPanelList();
 
 	static void			onRevertButtonClicked( void* userdata );
 	void				onCommitSexChange();
 		
 	virtual void		setVisible( BOOL visible );
 
+	typedef std::pair<BOOL, LLViewerVisualParam*> editable_param;
+	typedef std::map<F32, editable_param> value_map_t;
+	
+	void				updateScrollingPanelUI();
+	void				getSortedParams(value_map_t &sorted_params, const std::string &edit_group, bool editable);
+	void				buildParamList(LLScrollingPanelList *panel_list, value_map_t &sorted_params);
+		
 	// Callbacks
 	static void			onBtnSubpart( void* userdata );
 	static void			onBtnTakeOff( void* userdata );
@@ -95,19 +102,27 @@ public:
 
 	static void			onBtnTakeOffDialog( S32 option, void* userdata );
 	static void			onBtnCreateNew( void* userdata );
-	static void			onInvisibilityCommit( LLUICtrl* ctrl, void* userdata );
 	static bool			onSelectAutoWearOption(const LLSD& notification, const LLSD& response);
-
-
 
 	void				onColorSwatchCommit(const LLUICtrl*);
 	void				onTexturePickerCommit(const LLUICtrl*);
+	
+	//alpha mask checkboxes
+	void configureAlphaCheckbox(LLVOAvatarDefines::ETextureIndex te, const std::string& name);
+	void onInvisibilityCommit(LLCheckBoxCtrl* checkbox_ctrl, LLVOAvatarDefines::ETextureIndex te);
+	void updateAlphaCheckboxes();
+	void initPreviousAlphaTextures();
+	void initPreviousAlphaTextureEntry(LLVOAvatarDefines::ETextureIndex te);
+	
 private:
 
 	LLWearableType::EType		mType;
 	BOOL				mCanTakeOff;
-	std::map<std::string, S32> mInvisibilityList;
-	std::map<S32, LLUUID> mPreviousTextureList;
+	typedef std::map<std::string, LLVOAvatarDefines::ETextureIndex> string_texture_index_map_t;
+	string_texture_index_map_t mAlphaCheckbox2Index;
+
+	typedef std::map<LLVOAvatarDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
+	s32_uuid_map_t mPreviousAlphaTexture;
 	ESubpart			mCurrentSubpart;
 };
 

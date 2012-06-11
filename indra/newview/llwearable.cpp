@@ -727,36 +727,12 @@ void LLWearable::writeToAvatar()
 			gAgentAvatarp->setLocalTextureTE(te, image, 0);
 		}
 	}
-		
-	/*if( gFloaterCustomize )
-	{
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(gAgentWearables.getWearableItemID(mType, 0));	// TODO: MULTI-WEARABLE
-		U32 perm_mask = PERM_NONE;
-		BOOL is_complete = FALSE;
-		if(item)
-		{
-			perm_mask = item->getPermissions().getMaskOwner();
-			is_complete = item->isComplete();
-			if(!is_complete)
-			{
-				item->fetchFromServer();
-			}
-		}
-		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
-		LLFloaterCustomize::setCurrentWearableType( mType );
-	}*/
 
 	ESex new_sex = gAgentAvatarp->getSex();
 	if( old_sex != new_sex )
 	{
 		gAgentAvatarp->updateSexDependentLayerSets( FALSE );
 	}	
-	
-//	if( upload_bake )
-//	{
-//		gAgent.sendAgentSetAppearance();
-//	}
 }
 
 
@@ -787,7 +763,7 @@ void LLWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload_bake 
 
 	if(gAgentCamera.cameraCustomizeAvatar())
 	{
-		gFloaterCustomize->setWearable(type, NULL, PERM_ALL, TRUE);
+		gFloaterCustomize->setWearable(type, NULL);
 	}
 
 	gAgentAvatarp->updateVisualParams();
@@ -1077,27 +1053,9 @@ void LLWearable::revertValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
-	if( gFloaterCustomize )
-	{
-		if(gAgentWearables.getWearableIndex(this) != 0) // TODO: MULTI-WEARABLE
-			return;
-		
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(getItemID());	// TODO: MULTI-WEARABLE
-		U32 perm_mask = PERM_NONE;
-		BOOL is_complete = FALSE;
-		if(item)
-		{
-			perm_mask = item->getPermissions().getMaskOwner();
-			is_complete = item->isComplete();
-			if(!is_complete)
-			{
-				item->fetchFromServer();
-			}
-		}
-		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
-		LLFloaterCustomize::setCurrentWearableType( mType );
-	}
+	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0 )
+		gFloaterCustomize->updateScrollingPanelList();
+	
 }
 
 BOOL LLWearable::isOnTop() const
@@ -1139,28 +1097,9 @@ void LLWearable::saveValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
-	if( gFloaterCustomize )
-	{
-		if(gAgentWearables.getWearableIndex(this) != 0) // TODO: MULTI-WEARABLE
-			return;
 
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(getItemID());	// TODO: MULTI-WEARABLE
-		U32 perm_mask = PERM_NONE;
-		BOOL is_complete = FALSE;
-		if(item)
-		{
-			perm_mask = item->getPermissions().getMaskOwner();
-			is_complete = item->isComplete();
-			if(!is_complete)
-			{
-				item->fetchFromServer();
-			}
-		}
-		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
-		LLFloaterCustomize::setCurrentWearableType( mType );
-	}
-
+	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0)
+		gFloaterCustomize->updateScrollingPanelList();
 }
 
 void LLWearable::syncImages(te_map_t &src, te_map_t &dst)

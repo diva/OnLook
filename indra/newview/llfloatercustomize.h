@@ -72,10 +72,6 @@ class AIFilePicker;
 class LLFloaterCustomize : public LLFloater
 {
 public:
-	typedef std::pair<BOOL, LLViewerVisualParam*> editable_param;
-	typedef std::map<F32, editable_param> param_map;
-
-public:
 	LLFloaterCustomize();
 	virtual ~LLFloaterCustomize();
 	virtual BOOL 	postBuild();
@@ -87,13 +83,9 @@ public:
 
 
 	// New methods
-	void			clearScrollingPanelList();
-	void			generateVisualParamHints(LLViewerJointMesh* joint_mesh,
-											 param_map& params, bool bVisualHint);
 
-	void 			updateScrollingPanelList(BOOL allow_modify);
-
-	void			setWearable(LLWearableType::EType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete);
+	void			setWearable(LLWearableType::EType type, LLWearable* wearable);
+	void			updateScrollingPanelList();
 	LLPanelEditWearable* getCurrentWearablePanel() { return mWearablePanelList[ sCurrentWearableType ]; }
 
 	virtual BOOL	isDirty() const;
@@ -121,8 +113,8 @@ public:
 
 	void fetchInventory();
 	void updateInventoryUI();
-	void updateScrollingPanelUI();
 
+	LLScrollingPanelList* getScrollingPanelList() const { return mScrollingPanelList; }
 protected:
 	LLPanelEditWearable*	mWearablePanelList[ LLWearableType::WT_COUNT ];
 

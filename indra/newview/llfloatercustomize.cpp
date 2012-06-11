@@ -98,7 +98,7 @@ class LLFloaterCustomizeObserver : public LLInventoryObserver
 public:
 	LLFloaterCustomizeObserver(LLFloaterCustomize* fc) : mFC(fc) {}
 	virtual ~LLFloaterCustomizeObserver() {}
-	virtual void changed(U32 mask) { mFC->updateScrollingPanelUI(); }
+	virtual void changed(U32 mask) { mFC->getCurrentWearablePanel()->updateScrollingPanelUI(); }
 protected:
 	LLFloaterCustomize* mFC;
 };
@@ -701,7 +701,7 @@ LLFloaterCustomize::~LLFloaterCustomize()
 
 void LLFloaterCustomize::switchToDefaultSubpart()
 {
-	getCurrentWearablePanel()->switchToDefaultSubpart();
+	getCurrentWearablePanel()->showDefaultSubpart();
 }
 
 void LLFloaterCustomize::draw()
@@ -812,31 +812,7 @@ void LLFloaterCustomize::initScrollingPanelList()
 	}
 }
 
-void LLFloaterCustomize::clearScrollingPanelList()
-{
-	if( mScrollingPanelList )
-	{
-		mScrollingPanelList->clearPanels();
-	}
-}
-
-void LLFloaterCustomize::generateVisualParamHints(LLViewerJointMesh* joint_mesh, LLFloaterCustomize::param_map& params, bool bVisualHint)
-{
-	// sorted_params is sorted according to magnitude of effect from
-	// least to greatest.  Adding to the front of the child list
-	// reverses that order.
-	if( mScrollingPanelList )
-	{
-		mScrollingPanelList->clearPanels();
-		param_map::iterator end = params.end();
-		for(param_map::iterator it = params.begin(); it != end; ++it)
-		{
-			mScrollingPanelList->addPanel( new LLScrollingPanelParam( "LLScrollingPanelParam", joint_mesh, (*it).second.second, (*it).second.first, bVisualHint) );
-		}
-	}
-}
-
-void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete)
+void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wearable)
 {
 	llassert( type < LLWearableType::WT_COUNT );
 	gSavedSettings.setU32("AvatarSex", (gAgentAvatarp->getSex() == SEX_MALE) );
@@ -844,20 +820,29 @@ void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wea
 	LLPanelEditWearable* panel = mWearablePanelList[ type ];
 	if( panel )
 	{
+		U32 perm_mask = wearable ? PERM_NONE : PERM_ALL;
+		BOOL is_complete = wearable ? FALSE : TRUE;
+		if(wearable)
+		{
+			LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(gAgentWearables.getWearableItemID(type, 0));	// TODO: MULTI-WEARABLE
+			if(item)
+			{
+				perm_mask = item->getPermissions().getMaskOwner();
+				is_complete = item->isComplete();
+				if(!is_complete)
+				{
+					item->fetchFromServer();
+				}
+			}
+		}
 		panel->setWearable(wearable, perm_mask, is_complete);
-		updateScrollingPanelList((perm_mask & PERM_MODIFY) ? is_complete : FALSE);
 	}
 }
 
-void LLFloaterCustomize::updateScrollingPanelList(BOOL allow_modify)
+void LLFloaterCustomize::updateScrollingPanelList()
 {
-	if( mScrollingPanelList )
-	{
-		LLScrollingPanelParam::sUpdateDelayFrames = 0;
-		mScrollingPanelList->updatePanels(allow_modify );
-	}
+	getCurrentWearablePanel()->updateScrollingPanelList();
 }
-
 
 void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 {
@@ -982,20 +967,5 @@ void LLFloaterCustomize::updateInventoryUI()
 	}
 
 	childSetEnabled("Make Outfit", all_complete);
-}
-
-void LLFloaterCustomize::updateScrollingPanelUI()
-{
-	LLPanelEditWearable* panel = mWearablePanelList[sCurrentWearableType];
-	if(panel)
-	{
-		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType(), 0);	// TODO: MULTI-WEARABLE
-		if(item)
-		{
-			U32 perm_mask = item->getPermissions().getMaskOwner();
-			BOOL is_complete = item->isComplete();
-			updateScrollingPanelList((perm_mask & PERM_MODIFY) ? is_complete : FALSE);
-		}
-	}
 }
 
