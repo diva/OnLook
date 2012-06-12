@@ -363,6 +363,8 @@ public:
 	LLVector4a mViewAngle;
 	LLVector4a mLastUpdateViewAngle;
 
+	F32 mObjectBoxSize; //cached mObjectBounds[1].getLength3()
+		
 protected:
 	virtual ~LLSpatialGroup();
 

@@ -3203,8 +3203,12 @@ void LLPipeline::postSort(LLCamera& camera)
 	for (LLCullResult::sg_list_t::iterator i = sCull->beginVisibleGroups(); i != sCull->endVisibleGroups(); ++i)
 	{
 		LLSpatialGroup* group = *i;
+
+		static LLCachedControl<F32> RenderAutoHideSurfaceAreaLimit("RenderAutoHideSurfaceAreaLimit", 0.f);
 		if (sUseOcclusion && 
-			group->isOcclusionState(LLSpatialGroup::OCCLUDED))
+			group->isOcclusionState(LLSpatialGroup::OCCLUDED) ||
+			(RenderAutoHideSurfaceAreaLimit > 0.f && 
+			group->mSurfaceArea > RenderAutoHideSurfaceAreaLimit*llmax(group->mObjectBoxSize, 10.f)))
 		{
 			continue;
 		}
@@ -3275,7 +3279,7 @@ void LLPipeline::postSort(LLCamera& camera)
 	}
 	llpushcallstacks ;
 
-	forAllVisibleDrawables(updateParticleActivity);
+	forAllVisibleDrawables(updateParticleActivity);	//for llfloateravatarlist
 
 	// only render if the flag is set. The flag is only set if we are in edit mode or the toggle is set in the menus
 	static const LLCachedControl<bool> beacons_visible("BeaconsVisible", false);
