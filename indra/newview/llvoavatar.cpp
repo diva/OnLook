@@ -3769,6 +3769,7 @@ void LLVOAvatar::idleUpdateNameTagText(BOOL new_name)
 			// Suppress SLID display if display name matches exactly (ugh)
 			if (show_usernames && !av_name.mIsDisplayNameDefault && !av_name.mUsername.empty())
 			{
+				firstnameText.push_back(' ');
 				firstnameText.push_back('(');
 				firstnameText.append(av_name.mUsername);	//Defer for later formatting
 				firstnameText.push_back(')');
