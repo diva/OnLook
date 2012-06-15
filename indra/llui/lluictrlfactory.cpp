@@ -228,7 +228,7 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 
 bool LLUICtrlFactory::getLayeredXMLNodeFromBuffer(const std::string &buffer, LLXMLNodePtr& root)
 {
-	if (!LLXMLNode::parseBuffer(buffer.data(), buffer.size(), root, 0)) {
+	if (!LLXMLNode::parseBuffer((U8*)buffer.data(), buffer.size(), root, 0)) {
 		llwarns << "Error reading UI description from buffer." << llendl;
 		return false;
 	}
