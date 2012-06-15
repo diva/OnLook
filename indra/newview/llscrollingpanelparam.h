@@ -40,7 +40,7 @@ class LLJoint;
 class LLScrollingPanelParam : public LLScrollingPanelParamBase
 {
 public:
-	LLScrollingPanelParam( const std::string& name, LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, bool bVisualHint );
+	LLScrollingPanelParam( const std::string& name, LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, LLWearable* wearable, bool bVisualHint );
 	virtual ~LLScrollingPanelParam();
 
 	virtual void		draw();
@@ -69,7 +69,6 @@ public:
 protected:
 	LLTimer				mMouseDownTimer;	// timer for how long mouse has been held down on a hint.
 	F32					mLastHeldTime;
-	BOOL mAllowModify;
 };
 
 

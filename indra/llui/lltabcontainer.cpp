@@ -69,12 +69,33 @@ const S32 TABCNTRV_PAD = 0;
 
 static LLRegisterWidget<LLTabContainer> r("tab_container");
 
+// Structure used to map tab buttons to and from tab panels
+class LLTabTuple
+{
+public:
+	LLTabTuple( LLTabContainer* c, LLPanel* p, LLButton* b, LLTextBox* placeholder = NULL)
+		:
+		mTabContainer(c),
+		mTabPanel(p),
+		mButton(b),
+		mOldState(FALSE),
+		mPlaceholderText(placeholder),
+		mPadding(0)
+		{}
+
+	LLTabContainer*  mTabContainer;
+	LLPanel*		 mTabPanel;
+	LLButton*		 mButton;
+	BOOL			 mOldState;
+	LLTextBox*		 mPlaceholderText;
+	S32				 mPadding;
+};
+
 LLTabContainer::LLTabContainer(const std::string& name, const LLRect& rect, TabPosition pos,
 							   BOOL bordered, BOOL is_vertical )
 	: 
 	LLPanel(name, rect, bordered),
 	mCurrentTabIdx(-1),
-	mNextTabIdx(-1),
 	mTabsHidden(FALSE),
 	mScrolled(FALSE),
 	mScrollPos(0),
@@ -221,10 +242,13 @@ void LLTabContainer::draw()
 	}
 	
 	// Hide all the buttons
-	for(tuple_list_t::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
+	if (getTabsHidden())
 	{
-		LLTabTuple* tuple = *iter;
-		tuple->mButton->setVisible( FALSE );
+		for(tuple_list_t::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
+		{
+			LLTabTuple* tuple = *iter;
+			tuple->mButton->setVisible( FALSE );
+		}
 	}
 
 	LLPanel::draw();
@@ -320,7 +344,7 @@ void LLTabContainer::draw()
 BOOL LLTabContainer::handleMouseDown( S32 x, S32 y, MASK mask )
 {
 	BOOL handled = FALSE;
-	BOOL has_scroll_arrows = (getMaxScrollPos() > 0);
+	BOOL has_scroll_arrows = (getMaxScrollPos() > 0) && !getTabsHidden();
 
 	if (has_scroll_arrows)
 	{
@@ -355,7 +379,7 @@ BOOL LLTabContainer::handleMouseDown( S32 x, S32 y, MASK mask )
 	}
 
 	S32 tab_count = getTabCount();
-	if (tab_count > 0)
+	if (tab_count > 0 && !getTabsHidden())
 	{
 		LLTabTuple* firsttuple = getTab(0);
 		LLRect tab_rect;
@@ -379,7 +403,7 @@ BOOL LLTabContainer::handleMouseDown( S32 x, S32 y, MASK mask )
 			index = llclamp(index, 0, tab_count-1);
 			LLButton* tab_button = getTab(index)->mButton;
 			gFocusMgr.setMouseCapture(this);
-			gFocusMgr.setKeyboardFocus(tab_button);
+			tab_button->setFocus(TRUE);
 		}
 	}
 	return handled;
@@ -389,7 +413,7 @@ BOOL LLTabContainer::handleMouseDown( S32 x, S32 y, MASK mask )
 BOOL LLTabContainer::handleHover( S32 x, S32 y, MASK mask )
 {
 	BOOL handled = FALSE;
-	BOOL has_scroll_arrows = (getMaxScrollPos() > 0);
+	BOOL has_scroll_arrows = (getMaxScrollPos() > 0) && !getTabsHidden();
 
 	if (has_scroll_arrows)
 	{
@@ -431,7 +455,7 @@ BOOL LLTabContainer::handleHover( S32 x, S32 y, MASK mask )
 BOOL LLTabContainer::handleMouseUp( S32 x, S32 y, MASK mask )
 {
 	BOOL handled = FALSE;
-	BOOL has_scroll_arrows = (getMaxScrollPos() > 0);
+	BOOL has_scroll_arrows = (getMaxScrollPos() > 0)  && !getTabsHidden();
 
 	if (has_scroll_arrows)
 	{
@@ -487,7 +511,7 @@ BOOL LLTabContainer::handleMouseUp( S32 x, S32 y, MASK mask )
 BOOL LLTabContainer::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* sticky_rect )
 {
 	BOOL handled = LLPanel::handleToolTip( x, y, msg, sticky_rect );
-	if (!handled && getTabCount() > 0) 
+	if (!handled && getTabCount() > 0 && !getTabsHidden()) 
 	{
 		LLTabTuple* firsttuple = getTab(0);
 
@@ -522,12 +546,6 @@ BOOL LLTabContainer::handleToolTip( S32 x, S32 y, std::string& msg, LLRect* stic
 					break;
 				}
 			}
-		}
-
-		for(tuple_list_t::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
-		{
-			LLTabTuple* tuple = *iter;
-			tuple->mButton->setVisible( FALSE );
 		}
 	}
 	return handled;
@@ -695,8 +713,6 @@ BOOL LLTabContainer::handleDragAndDrop(S32 x, S32 y, MASK mask,	BOOL drop,	EDrag
 void LLTabContainer::addTabPanel(LLPanel* child, 
 								 const std::string& label, 
 								 BOOL select, 
-								 void (*on_tab_clicked)(void*, bool), 
-								 void* userdata,
 								 S32 indent,
 								 BOOL placeholder,
 								 eInsertionPoint insertion_point)
@@ -722,20 +738,28 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 	// Tab panel
 	S32 tab_panel_top;
 	S32 tab_panel_bottom;
-	if( getTabPosition() == LLTabContainer::TOP )
+	if (!getTabsHidden()) 
 	{
-		S32 tab_height = mIsVertical ? BTN_HEIGHT : TABCNTR_TAB_HEIGHT;
-		tab_panel_top = getRect().getHeight() - getTopBorderHeight() - (tab_height - TABCNTR_BUTTON_PANEL_OVERLAP);	
-		tab_panel_bottom = LLPANEL_BORDER_WIDTH;
+		if( getTabPosition() == LLTabContainer::TOP )
+		{
+			S32 tab_height = mIsVertical ? BTN_HEIGHT : TABCNTR_TAB_HEIGHT;
+			tab_panel_top = getRect().getHeight() - getTopBorderHeight() - (tab_height - TABCNTR_BUTTON_PANEL_OVERLAP);	
+			tab_panel_bottom = LLPANEL_BORDER_WIDTH;
+		}
+		else
+		{
+			tab_panel_top = getRect().getHeight() - getTopBorderHeight();
+			tab_panel_bottom = (TABCNTR_TAB_HEIGHT - TABCNTR_BUTTON_PANEL_OVERLAP);  // Run to the edge, covering up the border
+		}
 	}
 	else
 	{
-		tab_panel_top = getRect().getHeight() - getTopBorderHeight();
-		tab_panel_bottom = (TABCNTR_TAB_HEIGHT - TABCNTR_BUTTON_PANEL_OVERLAP);  // Run to the edge, covering up the border
+		//Scip tab button space if they are invisible(EXT - 576)
+		tab_panel_top = getRect().getHeight();
+		tab_panel_bottom = LLPANEL_BORDER_WIDTH;
 	}
-	
 	LLRect tab_panel_rect;
-	if (mIsVertical)
+	if (!getTabsHidden() && mIsVertical)
 	{
 		tab_panel_rect = LLRect(mMinTabWidth + (LLPANEL_BORDER_WIDTH * 2) + TABCNTRV_PAD, 
 								getRect().getHeight() - LLPANEL_BORDER_WIDTH,
@@ -854,7 +878,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 		}
 	}
 	
-	LLTabTuple* tuple = new LLTabTuple( this, child, btn, on_tab_clicked, userdata, textbox );
+	LLTabTuple* tuple = new LLTabTuple( this, child, btn, textbox );
 	insertTuple( tuple, insertion_point );
 
 	if (textbox)
@@ -883,7 +907,7 @@ void LLTabContainer::addTabPanel(LLPanel* child,
 
 void LLTabContainer::addPlaceholder(LLPanel* child, const std::string& label)
 {
-	addTabPanel(child, label, FALSE, NULL, NULL, 0, TRUE);
+	addTabPanel(child, label, FALSE, 0, TRUE);
 }
 
 void LLTabContainer::removeTabPanel(LLPanel* child)
@@ -1154,8 +1178,8 @@ BOOL LLTabContainer::selectTabPanel(LLPanel* child)
 
 BOOL LLTabContainer::selectTab(S32 which)
 {
-	if (which >= getTabCount()) return FALSE;
-	if (which < 0) return FALSE;
+	if (which >= getTabCount() || which < 0)
+		return FALSE;
 
 	//if( gFocusMgr.childHasKeyboardFocus( this ) )
 	//{
@@ -1167,28 +1191,26 @@ BOOL LLTabContainer::selectTab(S32 which)
 	{
 		return FALSE;
 	}
+	
+	LLSD cbdata;
+	if (selected_tuple->mTabPanel)
+		cbdata = selected_tuple->mTabPanel->getName();
 
-	if (!selected_tuple->mPrecommitChangeCallback)
+	BOOL res = FALSE;
+	if( !mValidateSignal || (*mValidateSignal)( this, cbdata ) )
 	{
-		return setTab(which);
+		res = setTab(which);
+		if (res && mCommitSignal)
+		{
+			(*mCommitSignal)(this, cbdata);
+		}
 	}
-
-	mNextTabIdx = which;
-	selected_tuple->mPrecommitChangeCallback(selected_tuple->mUserData, false);
-	return TRUE;
+	
+	return res;
 }
 
 BOOL LLTabContainer::setTab(S32 which)
 {
-	if (which == -1)
-	{
-		if (mNextTabIdx == -1)
-		{
-			return FALSE;
-		}
-		which = mNextTabIdx;
-		mNextTabIdx = -1;
-	}
 
 	LLTabTuple* selected_tuple = getTab(which);
 	if (!selected_tuple)
@@ -1212,7 +1234,7 @@ BOOL LLTabContainer::setTab(S32 which)
 			// RN: this limits tab-stops to active button only, which would require arrow keys to switch tabs
 			tuple->mButton->setTabStop( is_selected );
 			
-			if( is_selected && (mIsVertical || (getMaxScrollPos() > 0)))
+			if (is_selected)
 			{
 				// Make sure selected tab is within scroll region
 				if (mIsVertical)
@@ -1228,7 +1250,7 @@ BOOL LLTabContainer::setTab(S32 which)
 						is_visible = FALSE;
 					}
 				}
-				else
+				else if (getMaxScrollPos() > 0)
 				{
 					if( i < getScrollPos() )
 					{
@@ -1259,12 +1281,12 @@ BOOL LLTabContainer::setTab(S32 which)
 					}
 					is_visible = TRUE;
 				}
+				else
+				{
+					is_visible = TRUE;
+				}
 			}
 			i++;
-		}
-		if( selected_tuple->mOnChangeCallback )
-		{
-			selected_tuple->mOnChangeCallback( selected_tuple->mUserData, false );
 		}
 	}
 	if (mIsVertical && getCurrentPanelIndex() >= 0)
@@ -1366,33 +1388,6 @@ void LLTabContainer::setTopBorderHeight(S32 height)
 S32 LLTabContainer::getTopBorderHeight() const
 {
 	return mTopBorderHeight;
-}
-
-void LLTabContainer::setTabChangeCallback(LLPanel* tab, void (*on_tab_clicked)(void*, bool))
-{
-	LLTabTuple* tuplep = getTabByPanel(tab);
-	if (tuplep)
-	{
-		tuplep->mOnChangeCallback = on_tab_clicked;
-	}
-}
-
-void LLTabContainer::setTabPrecommitChangeCallback(LLPanel* tab, void (*on_precommit)(void*, bool))
-{
-	LLTabTuple* tuplep = getTabByPanel(tab);
-	if (tuplep)
-	{
-		tuplep->mPrecommitChangeCallback = on_precommit;
-	}
-}
-
-void LLTabContainer::setTabUserData(LLPanel* tab, void* userdata)
-{
-	LLTabTuple* tuplep = getTabByPanel(tab);
-	if (tuplep)
-	{
-		tuplep->mUserData = userdata;
-	}
 }
 
 void LLTabContainer::setRightTabBtnOffset(S32 offset)
@@ -1583,8 +1578,7 @@ LLView* LLTabContainer::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFacto
 			}
 			BOOL placeholder = FALSE;
 			child->getAttributeBOOL("placeholder", placeholder);
-			tab_container->addTabPanel(panelp, label, false,
-									   NULL, NULL, 0, placeholder);
+			tab_container->addTabPanel(panelp, label, false, 0, placeholder);
 		}
 	}
 
@@ -1745,7 +1739,7 @@ void LLTabContainer::initButtons()
 	setDefaultTabGroup(1);
 }
 
-LLTabContainer::LLTabTuple* LLTabContainer::getTabByPanel(LLPanel* child)
+LLTabTuple* LLTabContainer::getTabByPanel(LLPanel* child)
 {
 	for(tuple_list_t::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
 	{
@@ -1846,7 +1840,7 @@ void LLTabContainer::updateMaxScrollPos()
 
 void LLTabContainer::commitHoveredButton(S32 x, S32 y)
 {
-	if (hasMouseCapture())
+	if (!getTabsHidden() && hasMouseCapture())
 	{
 		for(tuple_list_t::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
 		{

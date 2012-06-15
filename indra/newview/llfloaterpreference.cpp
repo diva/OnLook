@@ -144,39 +144,39 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	mPrefsAscentVan(NULL)
 {
 	mGeneralPanel = new LLPanelGeneral();
-	mTabContainer->addTabPanel(mGeneralPanel, mGeneralPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mGeneralPanel, mGeneralPanel->getLabel());
 	mGeneralPanel->setDefaultBtn(default_btn);
 
 	mInputPanel = new LLPanelInput();
-	mTabContainer->addTabPanel(mInputPanel, mInputPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mInputPanel, mInputPanel->getLabel());
 	mInputPanel->setDefaultBtn(default_btn);
 
 	mNetworkPanel = new LLPanelNetwork();
-	mTabContainer->addTabPanel(mNetworkPanel, mNetworkPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mNetworkPanel, mNetworkPanel->getLabel());
 	mNetworkPanel->setDefaultBtn(default_btn);
 
 	mWebPanel = new LLPanelWeb();
-	mTabContainer->addTabPanel(mWebPanel, mWebPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mWebPanel, mWebPanel->getLabel());
 	mWebPanel->setDefaultBtn(default_btn);
 
 	mDisplayPanel = new LLPanelDisplay();
-	mTabContainer->addTabPanel(mDisplayPanel, mDisplayPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mDisplayPanel, mDisplayPanel->getLabel());
 	mDisplayPanel->setDefaultBtn(default_btn);
 
 	mAudioPanel = new LLPanelAudioPrefs();
-	mTabContainer->addTabPanel(mAudioPanel, mAudioPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mAudioPanel, mAudioPanel->getLabel());
 	mAudioPanel->setDefaultBtn(default_btn);
 
 	mPrefsChat = new LLPrefsChat();
-	mTabContainer->addTabPanel(mPrefsChat->getPanel(), mPrefsChat->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsChat->getPanel(), mPrefsChat->getPanel()->getLabel());
 	mPrefsChat->getPanel()->setDefaultBtn(default_btn);
 
 	mPrefsVoice = new LLPrefsVoice();
-	mTabContainer->addTabPanel(mPrefsVoice, mPrefsVoice->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsVoice, mPrefsVoice->getLabel());
 	mPrefsVoice->setDefaultBtn(default_btn);
 
 	mPrefsIM = new LLPrefsIM();
-	mTabContainer->addTabPanel(mPrefsIM->getPanel(), mPrefsIM->getPanel()->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsIM->getPanel(), mPrefsIM->getPanel()->getLabel());
 	mPrefsIM->getPanel()->setDefaultBtn(default_btn);
 
 #if LL_LCD_COMPILE
@@ -185,7 +185,7 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 	if (gLcdScreen->Enabled())
 	{
 		mLCDPanel = new LLPanelLCD();
-		mTabContainer->addTabPanel(mLCDPanel, mLCDPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+		mTabContainer->addTabPanel(mLCDPanel, mLCDPanel->getLabel());
 		mLCDPanel->setDefaultBtn(default_btn);
 	}
 
@@ -194,28 +194,30 @@ LLPreferenceCore::LLPreferenceCore(LLTabContainer* tab_container, LLButton * def
 #endif
 
 	mMsgPanel = new LLPanelMsgs();
-	mTabContainer->addTabPanel(mMsgPanel, mMsgPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mMsgPanel, mMsgPanel->getLabel());
 	mMsgPanel->setDefaultBtn(default_btn);
 	
 	mSkinsPanel = new LLPanelSkins();
-	mTabContainer->addTabPanel(mSkinsPanel, mSkinsPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mSkinsPanel, mSkinsPanel->getLabel());
 	mSkinsPanel->setDefaultBtn(default_btn);
 
 	mGridsPanel = HippoPanelGrids::create();
-	mTabContainer->addTabPanel(mGridsPanel, mGridsPanel->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mGridsPanel, mGridsPanel->getLabel());
 	mGridsPanel->setDefaultBtn(default_btn);
 
 	mPrefsAscentChat = new LLPrefsAscentChat();
-	mTabContainer->addTabPanel(mPrefsAscentChat, mPrefsAscentChat->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsAscentChat, mPrefsAscentChat->getLabel());
 	mPrefsAscentChat->setDefaultBtn(default_btn);
 
 	mPrefsAscentSys = new LLPrefsAscentSys();
-	mTabContainer->addTabPanel(mPrefsAscentSys, mPrefsAscentSys->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsAscentSys, mPrefsAscentSys->getLabel());
 	mPrefsAscentSys->setDefaultBtn(default_btn);
 
 	mPrefsAscentVan = new LLPrefsAscentVan();
-	mTabContainer->addTabPanel(mPrefsAscentVan, mPrefsAscentVan->getLabel(), FALSE, onTabChanged, mTabContainer);
+	mTabContainer->addTabPanel(mPrefsAscentVan, mPrefsAscentVan->getLabel());
 	mPrefsAscentVan->setDefaultBtn(default_btn);
+
+	mTabContainer->setCommitCallback(boost::bind(LLPreferenceCore::onTabChanged,_1));
 
 	if (!mTabContainer->selectTab(gSavedSettings.getS32("LastPrefTab")))
 	{
@@ -363,9 +365,9 @@ void LLPreferenceCore::cancel()
 }
 
 // static
-void LLPreferenceCore::onTabChanged(void* user_data, bool from_click)
+void LLPreferenceCore::onTabChanged(LLUICtrl* ctrl)
 {
-	LLTabContainer* self = (LLTabContainer*)user_data;
+	LLTabContainer* self = (LLTabContainer*)ctrl;
 
 	gSavedSettings.setS32("LastPrefTab", self->getCurrentPanelIndex());
 }

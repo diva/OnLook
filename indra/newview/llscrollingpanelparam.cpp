@@ -57,8 +57,8 @@ const S32 PARAM_PANEL_HEIGHT = 2 * BTN_BORDER + LLScrollingPanelParam::PARAM_HIN
 S32 LLScrollingPanelParam::sUpdateDelayFrames = 0;
 
 LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
-											  LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, bool bVisualHint )
-	: LLScrollingPanelParamBase( name, mesh, param, allow_modify, bVisualHint, LLRect( 0, PARAM_PANEL_HEIGHT, PARAM_PANEL_WIDTH, 0 )),
+											  LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, LLWearable* wearable, bool bVisualHint )
+	: LLScrollingPanelParamBase( name, mesh, param, allow_modify, wearable, bVisualHint, LLRect( 0, PARAM_PANEL_HEIGHT, PARAM_PANEL_WIDTH, 0 )),
 	  mLess(NULL),
 	  mMore(NULL)
 {
@@ -70,9 +70,9 @@ LLScrollingPanelParam::LLScrollingPanelParam( const std::string& name,
 		F32 min_weight = param->getMinWeight();
 		F32 max_weight = param->getMaxWeight();
 
-		mHintMin = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param,  min_weight);
+		mHintMin = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param, mWearable, min_weight);
 		pos_x += PARAM_HINT_WIDTH + 3 * BTN_BORDER;
-		mHintMax = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param, max_weight );
+		mHintMax = new LLVisualParamHint( pos_x, pos_y, PARAM_HINT_WIDTH, PARAM_HINT_HEIGHT, mesh, param, mWearable, max_weight );
 
 		mHintMin->setAllowsUpdates( FALSE );
 		mHintMax->setAllowsUpdates( FALSE );
@@ -107,9 +107,7 @@ LLScrollingPanelParam::~LLScrollingPanelParam()
 
 void LLScrollingPanelParam::updatePanel(BOOL allow_modify)
 {
-	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
-
-	if(!wearable)
+	if(!mWearable)
 	{
 		// not editing a wearable just now, no update necessary
 		return;
@@ -150,9 +148,7 @@ void LLScrollingPanelParam::setVisible( BOOL visible )
 
 void LLScrollingPanelParam::draw()
 {
-	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
-
-	if( !wearable || gFloaterCustomize->isMinimized() )
+	if( !mWearable || gFloaterCustomize->isMinimized() )
 	{
 		return;
 	}
@@ -219,15 +215,14 @@ void LLScrollingPanelParam::onHintMouseDown( bool max )
 {
 	LLVisualParamHint* hint = max ? mHintMax : mHintMin;
 	LLViewerVisualParam* param = hint->getVisualParam();
-	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)mParam->getWearableType(),0);	// TODO: MULTI-WEARABLE
 
-	if(!wearable || !param)
+	if(!mWearable || !param)
 	{
 		return;
 	}
 
 	// morph towards this result
-	F32 current_weight = wearable->getVisualParamWeight( hint->getVisualParam()->getID() );
+	F32 current_weight = mWearable->getVisualParamWeight( hint->getVisualParam()->getID() );
 
 	// if we have maxed out on this morph, we shouldn't be able to click it
 	if( hint->getVisualParamWeight() != current_weight )
@@ -241,14 +236,13 @@ void LLScrollingPanelParam::onHintHeldDown( bool max )
 {
 	LLVisualParamHint* hint = max ? mHintMax : mHintMin;
 	LLViewerVisualParam* param = hint->getVisualParam();
-	LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)param->getWearableType(),0);	// TODO: MULTI-WEARABLE
 
-	if(!wearable || !param)
+	if(!mWearable || !param)
 	{
 		return;
 	}
 
-	F32 current_weight = wearable->getVisualParamWeight( param->getID() );
+	F32 current_weight = mWearable->getVisualParamWeight( param->getID() );
 
 	if (current_weight != hint->getVisualParamWeight() )
 	{
@@ -275,8 +269,8 @@ void LLScrollingPanelParam::onHintHeldDown( bool max )
 			if (slider->getMinValue() < new_percent
 				&& new_percent < slider->getMaxValue())
 			{
-				wearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
-				wearable->writeToAvatar();
+				mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
+				mWearable->writeToAvatar();
 				gAgentAvatarp->updateVisualParams();
 
 				slider->setValue( weightToPercent( new_weight ) );
@@ -297,11 +291,10 @@ void LLScrollingPanelParam::onHintMouseUp( bool max )
 		{
 			LLViewerVisualParam* param = hint->getVisualParam();
 
-			LLWearable* wearable = gAgentWearables.getWearable((LLWearableType::EType)param->getWearableType(),0);	// TODO: MULTI-WEARABLE
-			if(wearable)
+			if(mWearable)
 			{
 				// step in direction
-				F32 current_weight = wearable->getVisualParamWeight( param->getID() );
+				F32 current_weight = mWearable->getVisualParamWeight( param->getID() );
 				F32 range = mHintMax->getVisualParamWeight() - mHintMin->getVisualParamWeight();
 				//if min, range should be negative.
 				if(!max)
@@ -315,8 +308,8 @@ void LLScrollingPanelParam::onHintMouseUp( bool max )
 					if (slider->getMinValue() < new_percent
 						&& new_percent < slider->getMaxValue())
 					{
-						wearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
-						wearable->writeToAvatar();
+						mWearable->setVisualParamWeight(param->getID(), new_weight, FALSE);
+						mWearable->writeToAvatar();
 						slider->setValue( weightToPercent( new_weight ) );
 					}
 				}

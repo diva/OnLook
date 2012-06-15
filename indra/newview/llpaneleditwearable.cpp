@@ -607,12 +607,14 @@ private:
 	std::string	mItemName;
 	void		(*mCommitCallback)(LLWearableSaveAsDialog*,void*);
 	void*		mCallbackUserData;
+	LLPanelEditWearable* mParent;
 
 public:
-	LLWearableSaveAsDialog( const std::string& desc, void(*commit_cb)(LLWearableSaveAsDialog*,void*), void* userdata )
+	LLWearableSaveAsDialog( const std::string& desc, LLPanelEditWearable* parent, void(*commit_cb)(LLWearableSaveAsDialog*,void*), void* userdata )
 		: LLModalDialog( LLStringUtil::null, 240, 100 ),
 		  mCommitCallback( commit_cb ),
-		  mCallbackUserData( userdata )
+		  mCallbackUserData( userdata ),
+		  mParent( parent )
 	{
 		LLUICtrlFactory::getInstance()->buildFloater(this, "floater_wearable_save_as.xml");
 		
@@ -621,7 +623,11 @@ public:
 
 		childSetTextArg("name ed", "[DESC]", desc);
 	}
-
+	~LLWearableSaveAsDialog()
+	{
+		if(mParent && mParent->mActiveModal == this)
+			mParent->mActiveModal = NULL;
+	}
 	virtual void startModal()
 	{
 		LLModalDialog::startModal();
@@ -658,11 +664,20 @@ public:
 LLPanelEditWearable::LLPanelEditWearable( LLWearableType::EType type )
 
 	: LLPanel( LLWearableType::getTypeLabel( type ) ),
-	  mType( type )
+	  mType( type ),
+	  mActiveModal( NULL ),
+	  mCurrentIndex( 0 ),
+	  mCurrentWearable( NULL ),
+	  mPendingWearable( NULL ),
+	  mPendingRefresh( false )
 {
 }
 LLPanelEditWearable::~LLPanelEditWearable()
 {
+	if(mActiveModal)
+	{
+		mActiveModal->close();
+	}
 }
 
 BOOL LLPanelEditWearable::postBuild()
@@ -729,6 +744,23 @@ BOOL LLPanelEditWearable::postBuild()
     			for_each_picker_ctrl_entry <LLColorSwatchCtrl> (this, mType, boost::bind(init_color_swatch_ctrl, this, _1, _2));
 				for_each_picker_ctrl_entry <LLTextureCtrl>     (this, mType, boost::bind(init_texture_ctrl, this, _1, _2));
 	}
+
+	LLTabContainer* tab = getChild<LLTabContainer>("layer_tabs", true, false);
+	if(tab)
+	{
+		for(U32 i = 1; i <= LLAgentWearables::MAX_CLOTHING_PER_TYPE; ++i)
+		{
+			LLPanel* new_panel = new LLPanel(llformat("%i",i));
+			tab->addTabPanel(new_panel, llformat("Layer %i",i));
+		}
+		tab->setCommitCallback(boost::bind(&LLPanelEditWearable::onTabChanged, this, _1));
+		tab->setValidateCallback(boost::bind(&LLPanelEditWearable::onTabPrecommit, this));
+	}
+
+	childSetTextArg("title_not_worn", "[DESC]", LLWearableType::getTypeLabel( mType ));
+	childSetTextArg("title_loading", "[DESC]", LLWearableType::getTypeLabel( mType ));
+	childSetTextArg("title_no_modify", "[DESC]", LLWearableType::getTypeLabel( mType ));
+	childSetTextArg("title", "[DESC]", LLWearableType::getTypeLabel( mType ));
 	return TRUE;
 }
 
@@ -743,8 +775,11 @@ void LLPanelEditWearable::draw()
 	if( gFloaterCustomize->isMinimized() || !isAgentAvatarValid())
 		return;
 
+	refreshWearables(false);
+
 	LLWearable* wearable = getWearable();
 	BOOL has_wearable = (wearable != NULL );
+	BOOL has_any_wearable = has_wearable || gAgentWearables.getWearableCount(mType);
 	BOOL is_dirty = isDirty();
 	BOOL is_modifiable = FALSE;
 	BOOL is_copyable = FALSE;
@@ -758,16 +793,49 @@ void LLPanelEditWearable::draw()
 		is_complete = ((LLViewerInventoryItem*)item)->isComplete();
 	}
 
-	childSetEnabled("Save", is_modifiable && is_complete && has_wearable && is_dirty);
-	childSetEnabled("Save As", is_copyable && is_complete && has_wearable);
-	childSetEnabled("Revert", has_wearable && is_dirty );
-	childSetEnabled("Take Off",  has_wearable );
-	childSetVisible("Take Off", mCanTakeOff && has_wearable  );
-	childSetVisible("Create New", !has_wearable );
+	childSetEnabled("Save",						has_wearable && is_modifiable && is_complete && is_dirty);
+	childSetEnabled("Save As",					has_wearable && is_copyable		&& is_complete);
+	childSetEnabled("Revert",					has_wearable && is_dirty );
+	childSetEnabled("Take Off",					has_wearable);
+	childSetVisible("Take Off",					has_wearable && mCanTakeOff);
+	childSetVisible("Create New",				!has_any_wearable);
+	childSetVisible("not worn instructions",	!has_any_wearable);
+	childSetVisible("title_not_worn",			!has_any_wearable);
+	childSetVisible("no modify instructions",has_wearable && !is_modifiable);
+	childSetVisible("title_no_modify",			has_wearable && !is_modifiable);
+	childSetVisible("title",					has_wearable && is_modifiable && is_complete);
+	childSetVisible("title_loading",			(!has_wearable && has_any_wearable) || (has_wearable && is_modifiable && !is_complete));
+	childSetVisible("path",						has_wearable);
+	childSetVisible("square",					has_wearable && !is_modifiable);	//lock icon
 
-	childSetVisible("not worn instructions",  !has_wearable );
-	childSetVisible("no modify instructions",  has_wearable && !is_modifiable);
+	/*LLTabContainer* tab = getChild<LLTabContainer>("layer_tabs", true, false);
+	if(tab)
+	{
+		tab->setEnabled(has_any_wearable);
+		tab->setVisible(has_any_wearable);
+	}*/
 
+	if(has_wearable && is_modifiable)
+	{
+		for_each_picker_ctrl_entry <LLColorSwatchCtrl>	(this, mType, boost::bind(update_color_swatch_ctrl, this, _1, _2));
+		for_each_picker_ctrl_entry <LLTextureCtrl>    	(this, mType, boost::bind(update_texture_ctrl, this, _1, _2));
+		for_each_picker_ctrl_entry <LLColorSwatchCtrl>	(this, mType, boost::bind(set_enabled_color_swatch_ctrl, is_complete, _1, _2));
+        for_each_picker_ctrl_entry <LLTextureCtrl>		(this, mType, boost::bind(set_enabled_texture_ctrl, is_complete, _1, _2));
+		for(string_texture_index_map_t::iterator iter = mAlphaCheckbox2Index.begin();
+                iter != mAlphaCheckbox2Index.end(); ++iter )
+        {
+            LLCheckBoxCtrl* ctrl = getChild<LLCheckBoxCtrl>(iter->first, true, false);
+            if (ctrl)
+            {
+				ctrl->setEnabled(is_copyable && is_complete);
+				ctrl->setVisible(is_copyable && is_complete);
+			}
+		}
+	}
+	else
+	{
+		hideTextureControls();
+	}
 
 	const LLEditWearableDictionary::WearableEntry *wearable_entry = LLEditWearableDictionary::getInstance()->getWearable(mType);
 	if (wearable_entry)
@@ -798,15 +866,6 @@ void LLPanelEditWearable::draw()
 		}
 	}
 
-	childSetVisible("square", !is_modifiable);
-
-	childSetVisible("title", FALSE);
-	childSetVisible("title_no_modify", FALSE);
-	childSetVisible("title_not_worn", FALSE);
-	childSetVisible("title_loading", FALSE);
-
-	childSetVisible("path", FALSE);
-
 	LLTextBox *av_height = getChild<LLTextBox>("avheight",FALSE,FALSE);
 	if(av_height) //Only display this if the element exists
 	{
@@ -825,65 +884,6 @@ void LLPanelEditWearable::draw()
 		av_height->setVisible(TRUE);
 		av_height->setTextArg("[AVHEIGHT]",avheight.str());		
 	}
-	
-	if(has_wearable && !is_modifiable)
-	{
-		// *TODO:Translate
-		childSetVisible("title_no_modify", TRUE);
-		childSetTextArg("title_no_modify", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
-		
-		hideTextureControls();
-	}
-	else if(has_wearable && !is_complete)
-	{
-		// *TODO:Translate
-		childSetVisible("title_loading", TRUE);
-		childSetTextArg("title_loading", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
-			
-		std::string path;
-		const LLUUID& item_id = wearable->getItemID();
-		append_path(item_id, path);
-		childSetVisible("path", TRUE);
-		childSetTextArg("path", "[PATH]", path);
-
-		hideTextureControls();
-	}
-	else if(has_wearable && is_modifiable)
-	{
-		childSetVisible("title", TRUE);
-		childSetTextArg("title", "[DESC]", wearable->getName() );
-
-		std::string path;
-		const LLUUID& item_id = wearable->getItemID();
-		append_path(item_id, path);
-		childSetVisible("path", TRUE);
-		childSetTextArg("path", "[PATH]", path);
-
-		for_each_picker_ctrl_entry <LLColorSwatchCtrl>	(this, mType, boost::bind(update_color_swatch_ctrl, this, _1, _2));
-		for_each_picker_ctrl_entry <LLTextureCtrl>    	(this, mType, boost::bind(update_texture_ctrl, this, _1, _2));
-		for_each_picker_ctrl_entry <LLColorSwatchCtrl>	(this, mType, boost::bind(set_enabled_color_swatch_ctrl, is_complete, _1, _2));
-        for_each_picker_ctrl_entry <LLTextureCtrl>		(this, mType, boost::bind(set_enabled_texture_ctrl, is_complete, _1, _2));
-		for(string_texture_index_map_t::iterator iter = mAlphaCheckbox2Index.begin();
-                iter != mAlphaCheckbox2Index.end(); ++iter )
-        {
-            LLCheckBoxCtrl* ctrl = getChild<LLCheckBoxCtrl>(iter->first, true, false);
-            if (ctrl)
-            {
-				ctrl->setEnabled(is_copyable && is_complete);
-				ctrl->setVisible(is_copyable && is_complete);
-			}
-		}
-	}
-	else
-	{
-		// *TODO:Translate
-		childSetVisible("title_not_worn", TRUE);
-		childSetTextArg("title_not_worn", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
-
-		hideTextureControls();
-	}
-	
-	childSetVisible("icon", has_wearable && is_modifiable);
 
 	LLPanel::draw();
 }
@@ -897,17 +897,84 @@ void LLPanelEditWearable::setVisible(BOOL visible)
 	}
 }
 
-void LLPanelEditWearable::setWearable(LLWearable* wearable, U32 perm_mask, BOOL is_complete)
+void LLPanelEditWearable::onTabChanged(LLUICtrl* ctrl)
 {
-	if( wearable )
+	if(mPendingWearable)
+		return;
+	U32 tab_index = ((LLTabContainer*)ctrl)->getCurrentPanelIndex();
+	U32 wearable_index = gAgentWearables.getWearableCount(mType) - tab_index - 1;
+	if(wearable_index != mCurrentIndex )
 	{
-		setUIPermissions(perm_mask, is_complete);
-		if (mType == LLWearableType::WT_ALPHA)
+		setWearableIndex(wearable_index);
+	}
+}
+
+bool LLPanelEditWearable::onTabPrecommit()
+{
+	return !mPendingWearable;
+}
+
+void LLPanelEditWearable::setWearableIndex(S32 index)
+{
+	if(mPendingWearable)
+		return;
+
+	mCurrentIndex = index;
+
+	LLTabContainer* tab = getChild<LLTabContainer>("layer_tabs", true, false);
+	if(tab)
+	{
+		U32 tab_index = gAgentWearables.getWearableCount(mType) - index - 1;
+
+		if(tab->getCurrentPanelIndex() != tab_index)
+			tab->selectTab(tab_index);
+	}	
+
+	LLWearable* wearable = gAgentWearables.getWearable(mType,mCurrentIndex);
+
+	if(wearable == getWearable())
+		return;
+
+	mCurrentWearable = wearable;
+
+
+	if(wearable)
+	{
+		childSetTextArg("title", "[DESC]", wearable->getName() );
+		childSetTextArg("title_no_modify", "[DESC]", wearable->getName());
+	}
+	else
+	{
+		childSetTextArg("title", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )) );
+		childSetTextArg("title_no_modify", "[DESC]", std::string(LLWearableType::getTypeLabel( mType )));
+	}
+
+	if(mActiveModal)
+		mActiveModal->close();
+
+	U32 perm_mask = wearable ? PERM_NONE : PERM_ALL;
+	BOOL is_complete = wearable ? FALSE : TRUE;
+	if(wearable)
+	{
+		LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(wearable->getItemID());
+		if(item)
 		{
-			initPreviousAlphaTextures();
-			updateAlphaCheckboxes();
+			perm_mask = item->getPermissions().getMaskOwner();
+			is_complete = item->isComplete();
+			if(!is_complete)
+			{
+				item->fetchFromServer();
+			}
 		}
 	}
+	setUIPermissions(perm_mask, is_complete);
+	if (mType == LLWearableType::WT_ALPHA)
+	{
+		initPreviousAlphaTextures();
+		updateAlphaCheckboxes();
+
+	}
+
 	const LLEditWearableDictionary::SubpartEntry *subpart_entry = LLEditWearableDictionary::getInstance()->getSubpart(mCurrentSubpart);
 	if(subpart_entry)
 	{
@@ -916,7 +983,60 @@ void LLPanelEditWearable::setWearable(LLWearable* wearable, U32 perm_mask, BOOL 
 		buildParamList(gFloaterCustomize->getScrollingPanelList(), sorted_params);
 	}
 
+	if(wearable)
+	{
+		std::string path;
+		const LLUUID& item_id = wearable->getItemID();
+		append_path(item_id, path);
+		childSetTextArg("path", "[PATH]", path);
+	}
+
 	updateScrollingPanelList();
+
+}
+
+void LLPanelEditWearable::refreshWearables(bool force_immediate)
+{
+	if(!force_immediate && !mPendingRefresh)
+		return;
+
+	mPendingRefresh = false;
+
+	U32 index;
+	if(mPendingWearable)
+	{
+		index = gAgentWearables.getWearableIndex(mPendingWearable);
+		if(index == LLAgentWearables::MAX_CLOTHING_PER_TYPE)
+			return;
+		mPendingWearable = NULL;
+	}
+	else
+	{
+		index = gAgentWearables.getWearableIndex(getWearable());
+		if(index == LLAgentWearables::MAX_CLOTHING_PER_TYPE)
+		{
+			index = gAgentWearables.getWearableCount(mType);
+			if(index)
+				--index;
+		}
+	}
+
+	
+	
+	LLTabContainer* tab = getChild<LLTabContainer>("layer_tabs", true, false);
+	if(tab)
+	{
+		for(U32 i = 0; i < LLAgentWearables::MAX_CLOTHING_PER_TYPE; ++i)
+		{
+			tab->enableTabButton(i, i < gAgentWearables.getWearableCount(mType));
+		}
+	}
+	setWearableIndex(index);
+}
+
+void LLPanelEditWearable::wearablesChanged()
+{
+	mPendingRefresh = true;
 }
 
 // static
@@ -936,11 +1056,13 @@ void LLPanelEditWearable::onBtnSave( void* userdata )
 void LLPanelEditWearable::onBtnSaveAs( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
-	LLWearable* wearable = gAgentWearables.getWearable( self->getType(), 0 );	// TODO: MULTI-WEARABLE
+	if(self->mActiveModal)
+		return;
+	LLWearable* wearable = self->getWearable();
 	if( wearable )
 	{
-		LLWearableSaveAsDialog* save_as_dialog = new LLWearableSaveAsDialog( wearable->getName(), onSaveAsCommit, self );
-		save_as_dialog->startModal();
+		self->mActiveModal = new LLWearableSaveAsDialog( wearable->getName(), self, onSaveAsCommit, self );
+		self->mActiveModal->startModal();
 		// LLWearableSaveAsDialog deletes itself.
 	}
 }
@@ -958,7 +1080,7 @@ void LLPanelEditWearable::onCommitSexChange()
 	if (!isAgentAvatarValid()) return;
 
 	LLWearableType::EType type = mType;	// TODO: MULTI-WEARABLE
-    U32 index = 0;	// TODO: MULTI-WEARABLE
+    U32 index = mCurrentIndex;	// TODO: MULTI-WEARABLE
 
 	if( !gAgentWearables.isWearableModifiable(type, index))
     {
@@ -1039,7 +1161,7 @@ bool LLPanelEditWearable::onSelectAutoWearOption(const LLSD& notification, const
 
 LLWearable* LLPanelEditWearable::getWearable() const
 {
-	return gAgentWearables.getWearable(mType, 0);	// TODO: MULTI-WEARABLE
+	return mCurrentWearable;//gAgentWearables.getWearable(mType, mCurrentIndex);	// TODO: MULTI-WEARABLE
 }
 
 
@@ -1132,7 +1254,7 @@ void LLPanelEditWearable::hideTextureControls()
 
 void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
 {
-        if (!getWearable() || !isDirty())
+        if (!getWearable() || (!force_save_as && !isDirty()))
         {
                 // do nothing if no unsaved changes
                 return;
@@ -1144,9 +1266,15 @@ void LLPanelEditWearable::saveChanges(bool force_save_as, std::string new_name)
         {
                 // the name of the wearable has changed, re-save wearable with new name
                 LLAppearanceMgr::instance().removeCOFItemLinks(getWearable()->getItemID(),false);
-                gAgentWearables.saveWearableAs(mType, index, new_name, FALSE);
-                childSetTextArg("title", "[DESC]", new_name );
-        }
+				LLWearable* new_wearable = gAgentWearables.saveWearableAs(mType, index, new_name, FALSE);
+				if(new_wearable)
+				{
+					mPendingWearable = new_wearable;
+					mCurrentWearable = new_wearable;
+					childSetTextArg("title", "[DESC]", new_wearable->getName());
+					childSetTextArg("title_no_modify", "[DESC]", new_wearable->getName());
+				}
+        }	
         else
         {
                 gAgentWearables.saveWearable(mType, index, TRUE, new_name);
@@ -1173,6 +1301,7 @@ void LLPanelEditWearable::revertChanges()
 
 void LLPanelEditWearable::showDefaultSubpart()
 {
+	refreshWearables(true);
 	changeCamera(0);
 }
 
@@ -1312,7 +1441,7 @@ void LLPanelEditWearable::updateScrollingPanelUI()
 		return;
 	}
 	
-		llinfos << llformat("%#.8lX",wearable) << llendl;
+	llinfos << llformat("%#.8lX",wearable) << llendl;
 	llinfos << "cur_wearable->isDirty()=" << wearable->isDirty() << llendl;
 
 	LLViewerInventoryItem* item = gInventory.getItem(wearable->getItemID());
@@ -1330,13 +1459,14 @@ void LLPanelEditWearable::onBtnTakeOff( void* userdata )
 {
 	LLPanelEditWearable* self = (LLPanelEditWearable*) userdata;
 	
-	LLWearable* wearable = gAgentWearables.getWearable( self->mType, 0 );	// TODO: MULTI-WEARABLE
+	LLWearable* wearable = self->getWearable();
 	if( !wearable )
 	{
 		return;
 	}
 
-	gAgentWearables.removeWearable( self->mType, false, 0 );	// TODO: MULTI-WEARABLE
+	LLAppearanceMgr::instance().removeItemFromAvatar(wearable->getItemID());
+	self->refreshWearables(true);
 }
 
 // static
@@ -1382,7 +1512,7 @@ void LLPanelEditWearable::buildParamList(LLScrollingPanelList *panel_list, value
 		for(value_map_t::iterator it = sorted_params.begin(); it != end; ++it)
 		{
 			LLScrollingPanelParam *panel_param = NULL;
-			panel_param = new LLScrollingPanelParam( "LLScrollingPanelParam", NULL, (*it).second.second, (*it).second.first, (mType != LLWearableType::WT_PHYSICS));
+			panel_param = new LLScrollingPanelParam( "LLScrollingPanelParam", NULL, (*it).second.second, (*it).second.first, getWearable(), (mType != LLWearableType::WT_PHYSICS));
 			panel_list->addPanel( panel_param );
 		}
 	}

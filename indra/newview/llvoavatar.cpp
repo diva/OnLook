@@ -817,17 +817,6 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 	if(!mClientDefinitions.empty())
 	{
 		std::map<LLUUID, LLSD>::const_iterator it = mClientDefinitions.find(id);
-		/*S32 idx = ll_rand(mClientDefinitions.size()-1);
-		for(;it!=mClientDefinitions.end();++it)
-		{
-			if(!idx--)
-			{
-				llinfos << "[" << idx << "] Returning " << it->second["name"] << " : " << it->second["id"] << llendl;
-				return it->second;
-			}
-			else
-				llinfos << "[" << idx << "] Skipping " << it->second["name"] << " : " << it->second["id"] << llendl;
-		}*/
 		if(it != mClientDefinitions.end())
 		{
 			return it->second;

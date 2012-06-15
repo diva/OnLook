@@ -2508,7 +2508,21 @@ void LLAppearanceMgr::addCOFItemLink(const LLInventoryItem *item, bool do_update
 		{
 			cb = new ModifiedCOFCallback;
 		}
-		const std::string description = vitem->getIsLinkType() ? vitem->getDescription() : "";
+		std::string description = vitem->getIsLinkType() ? vitem->getDescription() : "";
+		if(description.empty())
+		{
+			LLWearable* wearable = gAgentWearables.getWearableFromItemID(vitem->getLinkedUUID());
+			if(wearable)
+			{
+				U32 index = gAgentWearables.getWearableIndex(wearable);
+				if(index < LLAgentWearables::MAX_CLOTHING_PER_TYPE)
+				{
+					std::ostringstream order_num;
+					order_num << ORDER_NUMBER_SEPARATOR << wearable->getType() * 100 + index;
+					description = order_num.str();
+				}
+			}
+		}
 		link_inventory_item( gAgent.getID(),
 							 vitem->getLinkedUUID(),
 							 getCOF(),

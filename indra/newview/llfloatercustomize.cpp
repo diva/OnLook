@@ -405,25 +405,19 @@ BOOL LLFloaterCustomize::postBuild()
 	initWearablePanels();
 
 	// Tab container
-	const std::string &invalid_name = LLWearableType::getTypeName(LLWearableType::WT_INVALID);
-	for(U32 type=LLWearableType::WT_SHAPE;type<LLWearableType::WT_INVALID;++type)
+	LLTabContainer* tab_container = getChild<LLTabContainer>("customize tab container");
+	if(tab_container)
 	{
-		std::string name = LLWearableType::getTypeName((LLWearableType::EType)type);
-		if(name != invalid_name)
-		{
-			name[0] = toupper(name[0]);
-			childSetTabChangeCallback("customize tab container", name, onTabChanged, (void*)type, onTabPrecommit );
-		}
+		tab_container->setCommitCallback(boost::bind(&LLFloaterCustomize::onTabChanged, _2));
+		tab_container->setValidateCallback(boost::bind(&LLFloaterCustomize::onTabPrecommit, this, _1, _2));
 	}
 
 	// Remove underwear panels for teens
 	if (gAgent.isTeen())
 	{
-		LLTabContainer* tab_container = getChild<LLTabContainer>("customize tab container");
 		if (tab_container)
 		{
-			LLPanel* panel;
-			panel = tab_container->getPanelByName("Undershirt");
+			LLPanel* panel = tab_container->getPanelByName("Undershirt");
 			if (panel) tab_container->removeTabPanel(panel);
 			panel = tab_container->getPanelByName("Underpants");
 			if (panel) tab_container->removeTabPanel(panel);
@@ -553,7 +547,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+			item = gInventory.getItem(old_wearable->getItemID());
 			if(item)
 			{
 				const LLPermissions& perm = item->getPermissions();
@@ -577,7 +571,7 @@ void LLFloaterCustomize::onBtnExport_continued(AIFilePicker* filepicker)
 		LLWearable* old_wearable = gAgentWearables.getWearable((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
 		if( old_wearable )
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem((LLWearableType::EType)i, 0);	// TODO: MULTI-WEARABLE
+			item = gInventory.getItem(old_wearable->getItemID());
 			if(item)
 			{
 				const LLPermissions& perm = item->getPermissions();
@@ -728,39 +722,51 @@ void LLFloaterCustomize::draw()
 
 BOOL LLFloaterCustomize::isDirty() const
 {
-	for(S32 i = 0; i < LLWearableType::WT_COUNT; i++)
+	LLWearableType::EType cur = getCurrentWearableType();
+	for(U32 i = 0; i < gAgentWearables.getWearableCount(cur); ++i)
 	{
-		if( mWearablePanelList[i]
-			&& mWearablePanelList[i]->isDirty() )
-		{
+		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		if(wearable && wearable->isDirty())
 			return TRUE;
-		}
 	}
 	return FALSE;
 }
 
-// static
-void LLFloaterCustomize::onTabPrecommit( void* userdata, bool from_click )
+bool LLFloaterCustomize::onTabPrecommit( LLUICtrl* ctrl, const LLSD& param )
 {
-	LLWearableType::EType type = (LLWearableType::EType)(intptr_t) userdata;
-	if (type != LLWearableType::WT_INVALID && gFloaterCustomize && gFloaterCustomize->getCurrentWearableType() != type)
+	std::string panel_name = param.asString();
+	for(U32 type=LLWearableType::WT_SHAPE;type<LLWearableType::WT_INVALID;++type)
 	{
-		gFloaterCustomize->askToSaveIfDirty(boost::bind(&onCommitChangeTab, _1));
+		std::string type_name = LLWearableType::getTypeName((LLWearableType::EType)type);
+		std::transform(panel_name.begin(), panel_name.end(), panel_name.begin(), tolower); 
+
+		if(type_name == panel_name)
+		{
+			if(LLFloaterCustomize::sCurrentWearableType != type)
+			{
+				askToSaveIfDirty(boost::bind(&LLFloaterCustomize::onCommitChangeTab, _1, (LLTabContainer*)ctrl, param.asString(), (LLWearableType::EType)type));
+				return false;
+			}
+		}
 	}
-	else
-	{
-		onCommitChangeTab(true);
-	}
+	return true;
 }
 
 
 // static
-void LLFloaterCustomize::onTabChanged( void* userdata, bool from_click )
+void LLFloaterCustomize::onTabChanged( const LLSD& param )
 {
-	LLWearableType::EType wearable_type = (LLWearableType::EType) (intptr_t)userdata;
-	if (wearable_type != LLWearableType::WT_INVALID)
+	std::string panel_name = param.asString();
+	for(U32 type=LLWearableType::WT_SHAPE;type<LLWearableType::WT_INVALID;++type)
 	{
-		LLFloaterCustomize::setCurrentWearableType(wearable_type);
+		std::string type_name = LLWearableType::getTypeName((LLWearableType::EType)type);
+		std::transform(panel_name.begin(), panel_name.end(), panel_name.begin(), tolower); 
+
+		if(type_name == panel_name)
+		{
+			LLFloaterCustomize::setCurrentWearableType((LLWearableType::EType)type);
+			break;
+		}
 	}
 }
 
@@ -772,18 +778,15 @@ void LLFloaterCustomize::onClose(bool app_quitting)
 }
 
 // static
-void LLFloaterCustomize::onCommitChangeTab(BOOL proceed)
+void LLFloaterCustomize::onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type)
 {
 	if (!proceed || !gFloaterCustomize)
 	{
 		return;
 	}
 
-	LLTabContainer* tab_container = gFloaterCustomize->getChild<LLTabContainer>("customize tab container");
-	if (tab_container)
-	{
-		tab_container->setTab(-1);
-	}
+	LLFloaterCustomize::setCurrentWearableType(type);
+	ctrl->selectTabByName(panel_name);
 }
 
 
@@ -812,7 +815,7 @@ void LLFloaterCustomize::initScrollingPanelList()
 	}
 }
 
-void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wearable)
+void LLFloaterCustomize::wearablesChanged(LLWearableType::EType type)
 {
 	llassert( type < LLWearableType::WT_COUNT );
 	gSavedSettings.setU32("AvatarSex", (gAgentAvatarp->getSex() == SEX_MALE) );
@@ -820,22 +823,7 @@ void LLFloaterCustomize::setWearable(LLWearableType::EType type, LLWearable* wea
 	LLPanelEditWearable* panel = mWearablePanelList[ type ];
 	if( panel )
 	{
-		U32 perm_mask = wearable ? PERM_NONE : PERM_ALL;
-		BOOL is_complete = wearable ? FALSE : TRUE;
-		if(wearable)
-		{
-			LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem(gAgentWearables.getWearableItemID(type, 0));	// TODO: MULTI-WEARABLE
-			if(item)
-			{
-				perm_mask = item->getPermissions().getMaskOwner();
-				is_complete = item->isComplete();
-				if(!is_complete)
-				{
-					item->fetchFromServer();
-				}
-			}
-		}
-		panel->setWearable(wearable, perm_mask, is_complete);
+		panel->wearablesChanged();
 	}
 }
 
@@ -846,7 +834,7 @@ void LLFloaterCustomize::updateScrollingPanelList()
 
 void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 {
-	if( isDirty())
+	if(isDirty())
 	{
 		// Ask if user wants to save, then continue to next step afterwards
 		mNextStepAfterSaveCallback.connect(cb);
@@ -857,7 +845,7 @@ void LLFloaterCustomize::askToSaveIfDirty( boost::function<void (BOOL)> cb )
 	}
 	else
 	{
-		cb(TRUE);	//just clal it immediately.
+		cb(TRUE);	//just call it immediately.
 	}
 }
 
@@ -869,27 +857,35 @@ bool LLFloaterCustomize::onSaveDialog(const LLSD& notification, const LLSD& resp
 	BOOL proceed = FALSE;
 	LLWearableType::EType cur = getCurrentWearableType();
 
-	switch( option )
+	for(U32 i = 0;i < gAgentWearables.getWearableCount(cur);++i)
 	{
-	case 0:  // "Save"
-		gAgentWearables.saveWearable( cur, 0 );	// TODO: MULTI-WEARABLE
-		proceed = TRUE;
-		break;
-
-	case 1:  // "Don't Save"
+		LLWearable* wearable = gAgentWearables.getWearable(cur,i);
+		if(wearable && wearable->isDirty())
 		{
-			gAgentWearables.revertWearable( cur, 0 );	// TODO: MULTI-WEARABLE
-			proceed = TRUE;
+			switch( option )
+			{
+			case 0:  // "Save"
+				gAgentWearables.saveWearable( cur, i );
+				proceed = TRUE;
+				break;
+
+			case 1:  // "Don't Save"
+				{
+					gAgentWearables.revertWearable( cur, i );
+					proceed = TRUE;
+				}
+				break;
+
+			case 2: // "Cancel"
+				break;
+
+			default:
+				llassert(0);
+				break;
+			}
 		}
-		break;
-
-	case 2: // "Cancel"
-		break;
-
-	default:
-		llassert(0);
-		break;
 	}
+
 
 	mNextStepAfterSaveCallback(proceed);
 	mNextStepAfterSaveCallback.disconnect_all_slots();	//Should this be done?
@@ -913,10 +909,13 @@ void LLFloaterCustomize::fetchInventory()
 	LLUUID item_id;
 	for(S32 type = (S32)LLWearableType::WT_SHAPE; type < (S32)LLWearableType::WT_COUNT; ++type)
 	{
-		item_id = gAgentWearables.getWearableItemID((LLWearableType::EType)type, 0);	// TODO: MULTI-WEARABLE
-		if(item_id.notNull())
+		for(U32 i = 0; i < gAgentWearables.getWearableCount((LLWearableType::EType)type); ++i)
 		{
-			ids.push_back(item_id);
+			item_id = gAgentWearables.getWearableItemID((LLWearableType::EType)type, i);
+			if(item_id.notNull())
+			{
+				ids.push_back(item_id);
+			}
 		}
 	}
 
@@ -939,7 +938,9 @@ void LLFloaterCustomize::updateInventoryUI()
 		panel = mWearablePanelList[i];
 		if(panel)
 		{
-			item = (LLViewerInventoryItem*)gAgentWearables.getWearableInventoryItem(panel->getType(), 0);	// TODO: MULTI-WEARABLE
+			LLWearable* wearable = panel->getWearable();
+			if(wearable)
+				item = gInventory.getItem(wearable->getItemID());
 		}
 		if(item)
 		{
@@ -961,8 +962,8 @@ void LLFloaterCustomize::updateInventoryUI()
 			{
 				panel->setUIPermissions(perm_mask, is_complete);
 			}
-			BOOL is_vis = panel && item && is_complete && (perm_mask & PERM_MODIFY);
-			childSetVisible("panel_container", is_vis);
+			//BOOL is_vis = panel && item && is_complete && (perm_mask & PERM_MODIFY);
+			//childSetVisible("panel_container", is_vis);
 		}
 	}
 

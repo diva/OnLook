@@ -107,7 +107,7 @@ public:
 	static BOOL checkFoldersByName(void *user_data);
 	
 	
-	static void onFilterSelected(void* userdata, bool from_click);
+	void onFilterSelected();
 	
 	const std::string getFilterSubString();
 	void setFilterSubString(const std::string& string);

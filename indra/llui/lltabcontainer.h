@@ -36,6 +36,7 @@
 #include "llpanel.h"
 #include "lltextbox.h"
 #include "llframetimer.h"
+class LLTabTuple;
 
 extern const S32 TABCNTR_HEADER_HEIGHT;
 
@@ -79,9 +80,7 @@ public:
 
 	void 		addTabPanel(LLPanel* child, 
 							const std::string& label, 
-							BOOL select = FALSE,  
-							void (*on_tab_clicked)(void*, bool) = NULL, 
-							void* userdata = NULL,
+							BOOL select = FALSE,
 							S32 indent = 0,
 							BOOL placeholder = FALSE,
 							eInsertionPoint insertion_point = END);
@@ -108,7 +107,6 @@ public:
 	BOOL 		selectTabPanel( LLPanel* child );
 	BOOL 		selectTab(S32 which);
 	BOOL 		selectTabByName(const std::string& title);
-	BOOL		setTab(S32 which);
 
 	BOOL        getTabPanelFlashing(LLPanel* child);
 	void		setTabPanelFlashing(LLPanel* child, BOOL state);
@@ -118,10 +116,6 @@ public:
 
 	void		setTopBorderHeight(S32 height);
 	S32			getTopBorderHeight() const;
-	
-	void 		setTabChangeCallback(LLPanel* tab, void (*on_tab_clicked)(void*,bool));
-	void		setTabPrecommitChangeCallback(LLPanel* tab, void (*on_precommit)(void*, bool));
-	void 		setTabUserData(LLPanel* tab, void* userdata);
 
 	void 		setRightTabBtnOffset( S32 offset );
 	void 		setPanelTitle(S32 index, const std::string& title);
@@ -146,38 +140,10 @@ public:
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
 private:
-	// Structure used to map tab buttons to and from tab panels
-	struct LLTabTuple
-	{
-		LLTabTuple( LLTabContainer* c, LLPanel* p, LLButton* b,
-					void (*cb)(void*,bool), void* userdata, LLTextBox* placeholder = NULL, 
-					void (*pcb)(void*,bool) = NULL)
-			:
-			mTabContainer(c),
-			mTabPanel(p),
-			mButton(b),
-			mOnChangeCallback( cb ),
-			mPrecommitChangeCallback( pcb ),
-			mUserData( userdata ),
-			mOldState(FALSE),
-			mPlaceholderText(placeholder),
-			mPadding(0)
-			{}
-
-		LLTabContainer*  mTabContainer;
-		LLPanel*		 mTabPanel;
-		LLButton*		 mButton;
-		void			 (*mOnChangeCallback)(void*, bool);
-		void			 (*mPrecommitChangeCallback)(void*,bool);		// Precommit callback gets called before tab is changed and 
-																		// can prevent it from being changed. onChangeCallback is called
-																		// immediately after tab is actually changed - Nyx
-		void*			 mUserData;
-		BOOL			 mOldState;
-		LLTextBox*		 mPlaceholderText;
-		S32				 mPadding;
-	};
 
 	void initButtons();
+	
+	BOOL		setTab(S32 which);
 	
 	LLTabTuple* getTab(S32 index) 		{ return mTabList[index]; }
 	LLTabTuple* getTabByPanel(LLPanel* child);

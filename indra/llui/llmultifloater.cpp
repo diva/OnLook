@@ -280,7 +280,7 @@ void LLMultiFloater::addFloater(LLFloater* floaterp, BOOL select_added_floater, 
 	}
 
 	//add the panel, add it to proper maps
-	mTabContainer->addTabPanel(floaterp, floaterp->getShortTitle(), FALSE, onTabSelected, this, 0, FALSE, insertion_point);
+	mTabContainer->addTabPanel(floaterp, floaterp->getShortTitle(), FALSE, 0, FALSE, insertion_point);
 	mFloaterDataMap[floaterp->getHandle()] = floater_data;
 
 	updateResizeLimits();
@@ -366,10 +366,10 @@ void LLMultiFloater::removeFloater(LLFloater* floaterp)
 
 	updateResizeLimits();
 
-	tabOpen((LLFloater*)mTabContainer->getCurrentPanel(), false);
+	tabOpen((LLFloater*)mTabContainer->getCurrentPanel());
 }
 
-void LLMultiFloater::tabOpen(LLFloater* opened_floater, bool from_click)
+void LLMultiFloater::tabOpen(LLFloater* opened_floater)
 {
 	// default implementation does nothing
 }
@@ -464,12 +464,9 @@ void LLMultiFloater::setFloaterFlashing(LLFloater* floaterp, BOOL flashing)
 		mTabContainer->setTabPanelFlashing(floaterp, flashing);
 }
 
-//static
-void LLMultiFloater::onTabSelected(void* userdata, bool from_click)
+void LLMultiFloater::onTabSelected()
 {
-	LLMultiFloater* floaterp = (LLMultiFloater*)userdata;
-
-	floaterp->tabOpen((LLFloater*)floaterp->mTabContainer->getCurrentPanel(), from_click);
+	tabOpen((LLFloater*)mTabContainer->getCurrentPanel());
 }
 
 void LLMultiFloater::setCanResize(BOOL can_resize)
@@ -499,6 +496,7 @@ BOOL LLMultiFloater::postBuild()
 	if (checkRequirements())
 	{
 		mTabContainer = getChild<LLTabContainer>("Preview Tabs");
+		mTabContainer->setCommitCallback(boost::bind(&LLMultiFloater::onTabSelected, this));
 		return TRUE;
 	}
 

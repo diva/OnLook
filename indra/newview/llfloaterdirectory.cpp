@@ -144,23 +144,7 @@ LLFloaterDirectory::LLFloaterDirectory(const std::string& name)
 		mPanelAvatarp->selectTab(0);
 	}
 	
-	childSetTabChangeCallback("Directory Tabs", "classified_panel", onTabChanged, this);
-	childSetTabChangeCallback("Directory Tabs", "events_panel", onTabChanged, this);
-	childSetTabChangeCallback("Directory Tabs", "places_panel", onTabChanged, this);
-	childSetTabChangeCallback("Directory Tabs", "land_sales_panel", onTabChanged, this);
-	childSetTabChangeCallback("Directory Tabs", "people_panel", onTabChanged, this);
-	childSetTabChangeCallback("Directory Tabs", "groups_panel", onTabChanged, this);
-	if (enableWebSearch)
-	{
-		// web search and showcase for SecondLife
-		childSetTabChangeCallback("Directory Tabs", "find_all_panel", onTabChanged, this);
-		childSetTabChangeCallback("Directory Tabs", "showcase_panel", onTabChanged, this);
-	}
-	
-	if(enableClassicAllSearch)
-	{
-		childSetTabChangeCallback("Directory Tabs", "find_all_old_panel", onTabChanged, this);		
-	}
+	getChild<LLTabContainer>("Directory Tabs")->setCommitCallback(boost::bind(&LLFloaterDirectory::onTabChanged,_2));
 }
 
 LLFloaterDirectory::~LLFloaterDirectory()
@@ -508,16 +492,9 @@ void LLFloaterDirectory::onClose(bool app_quitting)
 }
 
 // static
-void LLFloaterDirectory::onTabChanged(void* data, bool from_click)
+void LLFloaterDirectory::onTabChanged( const LLSD& param )
 {
-	LLFloaterDirectory* self = (LLFloaterDirectory*)data;
-	if (!self) return;
-
-	LLPanel *panel = self->childGetVisibleTab("Directory Tabs");
-	if (panel)
-	{
-		gSavedSettings.setString("LastFindPanel", panel->getName());
-	}
+	gSavedSettings.setString("LastFindPanel", param.asString());
 }
 
 void LLFloaterDirectory::hideAllDetailPanels()

@@ -55,7 +55,7 @@ class LLMakeOutfitDialog;
 class LLRadioGroup;
 class LLScrollableContainerView;
 class LLScrollingPanelList;
-class LLTabContainerVertical;
+class LLTabContainer;
 class LLTextBox;
 class LLTextureCtrl;
 class LLViewerJointMesh;
@@ -84,7 +84,7 @@ public:
 
 	// New methods
 
-	void			setWearable(LLWearableType::EType type, LLWearable* wearable);
+	void			wearablesChanged(LLWearableType::EType type);
 	void			updateScrollingPanelList();
 	LLPanelEditWearable* getCurrentWearablePanel() { return mWearablePanelList[ sCurrentWearableType ]; }
 
@@ -106,10 +106,10 @@ public:
 	static void		onBtnExport( void* userdata );	
 	static void		onBtnExport_continued(AIFilePicker* filepicker);
 
-	static void		onTabChanged( void* userdata, bool from_click );
-	static void		onTabPrecommit( void* userdata, bool from_click );
+	static void		onTabChanged( const LLSD& param );
+	bool			onTabPrecommit( LLUICtrl* ctrl, const LLSD& param );
 	bool			onSaveDialog(const LLSD& notification, const LLSD& response);
-	static void		onCommitChangeTab(BOOL proceed);
+	static void		onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type);
 
 	void fetchInventory();
 	void updateInventoryUI();

@@ -41,10 +41,11 @@
 #include "llagentwearables.h"
 
 LLScrollingPanelParamBase::LLScrollingPanelParamBase( const std::string& name,
-							LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, bool bVisualHint, LLRect rect )
+							LLViewerJointMesh* mesh, LLViewerVisualParam* param, BOOL allow_modify, LLWearable* wearable, bool bVisualHint, LLRect rect )
 	: LLScrollingPanel( name, rect ),
 	mParam(param),
-	mAllowModify(allow_modify)
+	mAllowModify(allow_modify),
+	mWearable(wearable)
 {
 	LLUICtrlFactory::getInstance()->buildPanel(this, "panel_scrolling_param.xml");
 	//Set up the slider
@@ -87,14 +88,14 @@ LLScrollingPanelParamBase::~LLScrollingPanelParamBase()
 void LLScrollingPanelParamBase::updatePanel(BOOL allow_modify)
 {
 	LLViewerVisualParam* param = mParam;
-	LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)param->getWearableType(), 0 );	// TODO: MULTI-WEARABLE
-	if(!wearable)
+	
+	if(!mWearable)
 	{
 		// not editing a wearable just now, no update necessary
 		return;
 	}
 
-	F32 current_weight = wearable->getVisualParamWeight( param->getID() );
+	F32 current_weight = mWearable->getVisualParamWeight( param->getID() );
 	childSetValue("param slider", weightToPercent( current_weight ) );
 	mAllowModify = allow_modify;
 	childSetEnabled("param slider", mAllowModify);
@@ -107,21 +108,19 @@ void LLScrollingPanelParamBase::onSliderMoved(LLUICtrl* ctrl)
 		return;
 	}
 
-	LLWearable* wearable = gAgentWearables.getWearable( (LLWearableType::EType)mParam->getWearableType(), 0 );	// TODO: MULTI-WEARABLE
-
-	if(!wearable)
+	if(!mWearable)
 	{
 		return;
 	}
 	
 	LLSliderCtrl* slider = (LLSliderCtrl*) ctrl;
 
-	F32 current_weight = wearable->getVisualParamWeight(mParam->getID());
+	F32 current_weight = mWearable->getVisualParamWeight(mParam->getID());
 	F32 new_weight = percentToWeight( (F32)slider->getValue().asReal() );
 	if (current_weight != new_weight )
 	{
-		wearable->setVisualParamWeight( mParam->getID(), new_weight, FALSE);
-		wearable->writeToAvatar();
+		mWearable->setVisualParamWeight( mParam->getID(), new_weight, FALSE);
+		mWearable->writeToAvatar();
 		gAgentAvatarp->updateVisualParams();
 	}
 }

@@ -281,8 +281,6 @@ void LLAgentWearables::addWearabletoAgentInventoryDone(const LLWearableType::ETy
 													   const LLUUID& item_id,
 													   LLWearable* wearable)
 {
-	//llassert_always(index == 0);
-	
 	llinfos << "type " << type << " index " << index << " item " << item_id.asString() << llendl;
 
 	if (item_id.isNull())
@@ -472,29 +470,28 @@ void LLAgentWearables::saveWearable(const LLWearableType::EType type, const U32 
 	}
 }
 
-void LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
+LLWearable* LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
 									  const U32 index,
 									  const std::string& new_name,
 									  BOOL save_in_lost_and_found)
 {
-	//llassert_always(index == 0);
 	if (!isWearableCopyable(type, index))
 	{
 		llwarns << "LLAgent::saveWearableAs() not copyable." << llendl;
-		return;
+		return NULL;
 	}
 	LLWearable* old_wearable = getWearable(type, index);
 	if (!old_wearable)
 	{
 		llwarns << "LLAgent::saveWearableAs() no old wearable." << llendl;
-		return;
+		return NULL;
 	}
 
 	LLInventoryItem* item = gInventory.getItem(getWearableItemID(type,index));
 	if (!item)
 	{
 		llwarns << "LLAgent::saveWearableAs() no inventory item." << llendl;
-		return;
+		return NULL;
 	}
 	std::string trunc_name(new_name);
 	LLStringUtil::truncate(trunc_name, DB_INV_ITEM_NAME_STR_LEN);
@@ -532,6 +529,7 @@ void LLAgentWearables::saveWearableAs(const LLWearableType::EType type,
 	// unsaved changes so other inventory items aren't affected by the changes
 	// that were just saved.
 	old_wearable->revertValues();
+	return new_wearable;
 }
 
 void LLAgentWearables::revertWearable(const LLWearableType::EType type, const U32 index)
@@ -755,7 +753,7 @@ void LLAgentWearables::setWearable(const LLWearableType::EType type, U32 index, 
 		pushWearable(type,wearable);
 		return;
 	}
-	
+
 	wearableentry_map_t::iterator wearable_iter = mWearableDatas.find(type);
 	if (wearable_iter == mWearableDatas.end())
 	{
@@ -835,9 +833,8 @@ void LLAgentWearables::wearableUpdated(LLWearable *wearable)
 	//while the wearable being created has not yet been stuffed into the wearable list.
 	//This results in the param hints being buggered and screwing up the current wearable during LLVisualParamHint::preRender,
 	//thus making the wearable 'dirty'. The code below basically 'forces' a refresh of the panel to fix this.
-	U32 index = gAgentWearables.getWearableIndex(wearable);
-	if(gFloaterCustomize && index==0)
-		gFloaterCustomize->setWearable(wearable->getType(), wearable);
+	if(gFloaterCustomize)
+		gFloaterCustomize->wearablesChanged(wearable->getType());
 
 }
 
@@ -1712,21 +1709,21 @@ bool LLAgentWearables::onSetWearableDialog( const LLSD& notification, const LLSD
 
 	switch( option )
 	{
-	case 0:  // "Save"
+		case 0:  // "Save"
 			gAgentWearables.saveWearable(wearable->getType(),index);
-		gAgentWearables.setWearableFinal( new_item, wearable );
-		break;
+			gAgentWearables.setWearableFinal( new_item, wearable );
+			break;
 
-	case 1:  // "Don't Save"
-		gAgentWearables.setWearableFinal( new_item, wearable );
-		break;
+		case 1:  // "Don't Save"
+			gAgentWearables.setWearableFinal( new_item, wearable );
+			break;
 
-	case 2: // "Cancel"
-		break;
+		case 2: // "Cancel"
+			break;
 
-	default:
-		llassert(0);
-		break;
+		default:
+			llassert(0);
+			break;
 	}
 
 	delete wearable;
@@ -1742,10 +1739,11 @@ void LLAgentWearables::setWearableFinal(LLInventoryItem* new_item, LLWearable* n
 	if (do_append && getWearableItemID(type,0).notNull())
 	{
 		new_wearable->setItemID(new_item->getUUID());
-		mWearableDatas[type].push_back(new_wearable);
+		/*mWearableDatas[type].push_back(new_wearable);
 		llinfos << "Added additional wearable for type " << type
 				<< " size is now " << mWearableDatas[type].size() << llendl;
-		checkWearableAgainstInventory(new_wearable);
+		checkWearableAgainstInventory(new_wearable);*/
+		pushWearable(type,new_wearable);	//To call LLAgentWearables::wearableUpdated
 	}
 	else
 	{
@@ -2228,6 +2226,12 @@ bool LLAgentWearables::moveWearable(const LLViewerInventoryItem* item, bool clos
 		U32 swap_i = closer_to_body ? i-1 : i+1;
 		wearable_vec[i] = wearable_vec[swap_i];
 		wearable_vec[swap_i] = wearable;
+
+		if(gFloaterCustomize)
+		{
+			gFloaterCustomize->wearablesChanged(item->getWearableType());
+		}
+
 		return true;
 	}
 

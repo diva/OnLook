@@ -60,7 +60,7 @@ public:
 	virtual void showFloater(LLFloater* floaterp);
 	virtual void removeFloater(LLFloater* floaterp);
 
-	virtual void tabOpen(LLFloater* opened_floater, bool from_click);
+	virtual void tabOpen(LLFloater* opened_floater);
 	virtual void tabClose();
 
 	virtual BOOL selectFloater(LLFloater* floaterp);
@@ -74,7 +74,7 @@ public:
 	virtual void setFloaterFlashing(LLFloater* floaterp, BOOL flashing);
 	virtual BOOL closeAllFloaters();	//Returns FALSE if the floater could not be closed due to pending confirmation dialogs
 	void setTabContainer(LLTabContainer* tab_container) { if (!mTabContainer) mTabContainer = tab_container; }
-	static void onTabSelected(void* userdata, bool);
+	void onTabSelected();
 
 	virtual void updateResizeLimits();
 

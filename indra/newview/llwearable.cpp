@@ -763,7 +763,7 @@ void LLWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload_bake 
 
 	if(gAgentCamera.cameraCustomizeAvatar())
 	{
-		gFloaterCustomize->setWearable(type, NULL);
+		gFloaterCustomize->wearablesChanged(type);
 	}
 
 	gAgentAvatarp->updateVisualParams();

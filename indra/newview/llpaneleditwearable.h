@@ -67,7 +67,12 @@ public:
 	LLWearableType::EType		getType() const{ return mType; }
 	LLWearable* 		getWearable() 	const;
 
-	void 				setWearable(LLWearable* wearable, U32 perm_mask, BOOL is_complete);
+	void			onTabChanged(LLUICtrl* ctrl);
+	bool			onTabPrecommit();
+
+	void				setWearableIndex(S32 index);	
+	void				refreshWearables(bool force_immediate);
+	void 				wearablesChanged();
 
 	void				saveChanges(bool force_save_as = false, std::string new_name = std::string());
 	
@@ -124,6 +129,14 @@ private:
 	typedef std::map<LLVOAvatarDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
 	s32_uuid_map_t mPreviousAlphaTexture;
 	ESubpart			mCurrentSubpart;
+	U32					mCurrentIndex;
+	LLWearable*			mCurrentWearable;
+	LLWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 
+											//so this is needed to retain focus on this wearables tab over the messy transition.
+	bool				mPendingRefresh;	//LLAgentWearables::setWearableOutfit fires a buttload of remove/wear calls which spams wearablesChanged
+											//a bazillion pointless (and not particularly valid) times. Deferring to draw effectively sorts it all out.
+public:
+	LLModalDialog*		mActiveModal;
 };
 
 #endif
