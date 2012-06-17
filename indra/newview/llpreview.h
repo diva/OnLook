@@ -53,7 +53,7 @@ public:
 	LLMultiPreview(const LLRect& rect);
 
 	/*virtual*/void open();		/*Flawfinder: ignore*/
-	/*virtual*/void tabOpen(LLFloater* opened_floater, bool from_click);
+	/*virtual*/void tabOpen(LLFloater* opened_floater);
 	/*virtual*/ void handleReshape(const LLRect& new_rect, bool by_user = false);
 
 	static LLMultiPreview* getAutoOpenInstance(const LLUUID& id);

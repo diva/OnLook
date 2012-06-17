@@ -215,9 +215,7 @@ BOOL LLInventoryView::postBuild()
 
 	sActiveViews.put(this);
 
-	childSetTabChangeCallback("inventory filter tabs", "All Items", onFilterSelected, this);
-	childSetTabChangeCallback("inventory filter tabs", "Recent Items", onFilterSelected, this);
-	childSetTabChangeCallback("inventory filter tabs", "Worn Items", onFilterSelected, this);
+	getChild<LLTabContainer>("inventory filter tabs")->setCommitCallback(boost::bind(&LLInventoryView::onFilterSelected,this));
 
 	childSetAction("Inventory.ResetAll",onResetAll,this);
 	childSetAction("Inventory.ExpandAll",onExpandAll,this);
@@ -764,21 +762,19 @@ void LLInventoryView::onCollapseAll(void* userdata)
 	self->mActivePanel->closeAllFolders();
 }
 
-//static
-void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
+void LLInventoryView::onFilterSelected()
 {
-	LLInventoryView* self = (LLInventoryView*) userdata;
 	// Find my index
-	self->mActivePanel = (LLInventoryPanel*)self->childGetVisibleTab("inventory filter tabs");
+	mActivePanel = (LLInventoryPanel*)childGetVisibleTab("inventory filter tabs");
 
-	if (!self->mActivePanel)
+	if (!mActivePanel)
 	{
 		return;
 	}
 
-	//self->setFilterSubString(self->mFilterSubString);
-	LLInventoryFilter* filter = self->mActivePanel->getFilter();
-	LLFloaterInventoryFinder *finder = self->getFinder();
+	//>setFilterSubString(self->mFilterSubString);
+	LLInventoryFilter* filter = mActivePanel->getFilter();
+	LLFloaterInventoryFinder *finder = getFinder();
 	if (finder)
 	{
 		finder->changeFilter(filter);
@@ -788,8 +784,8 @@ void LLInventoryView::onFilterSelected(void* userdata, bool from_click)
 		// If our filter is active we may be the first thing requiring a fetch so we better start it here.
 		LLInventoryModelBackgroundFetch::instance().start();
 	}
-	self->setFilterTextFromFilter();
-	self->updateSortControls();
+	setFilterTextFromFilter();
+	updateSortControls();
 }
 
 const std::string LLInventoryView::getFilterSubString() 
@@ -862,7 +858,7 @@ void LLInventoryView::updateItemcountText()
 {
 	std::ostringstream title;
 	title << "Inventory";
- 	if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive())
+ 	if (LLInventoryModelBackgroundFetch::instance().folderFetchActive())
 	{
 		LLLocale locale(LLLocale::USER_LOCALE);
 		std::string item_count_string;

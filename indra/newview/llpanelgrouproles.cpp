@@ -147,16 +147,15 @@ BOOL LLPanelGroupRoles::postBuild()
 	{
 		LLPanelGroupSubTab* subtabp = (LLPanelGroupSubTab*) mSubTabContainer->getPanelByIndex(i);
 
-		// Add click callbacks to all the tabs.
-		mSubTabContainer->setTabChangeCallback(subtabp, onClickSubTab);
-		mSubTabContainer->setTabUserData(subtabp, this);
-
 		// Hand the subtab a pointer to this LLPanelGroupRoles, so that it can
 		// look around for the widgets it is interested in.
 		if (!subtabp->postBuildSubTab(this)) return FALSE;
 
 		subtabp->addObserver(this);
 	}
+
+	// Add click callbacks to all the tabs.
+	mSubTabContainer->setCommitCallback(boost::bind(&LLPanelGroupRoles::handleClickSubTab,this));
 
 	// Set the current tab to whatever is currently being shown.
 	mCurrentTab = (LLPanelGroupTab*) mSubTabContainer->getCurrentPanel();
@@ -196,13 +195,6 @@ BOOL LLPanelGroupRoles::isVisibleByAgent(LLAgent* agentp)
 	*/
 	return mAllowEdit && agentp->isInGroup(mGroupID);
 								   
-}
-
-// static
-void LLPanelGroupRoles::onClickSubTab(void* user_data, bool from_click)
-{
-	LLPanelGroupRoles* self = static_cast<LLPanelGroupRoles*>(user_data);
-	self->handleClickSubTab();
 }
 
 void LLPanelGroupRoles::handleClickSubTab()

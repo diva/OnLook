@@ -322,6 +322,7 @@ protected:
 	} LLGLTextureState;
 	LLGLTextureState  mTextureState ;
 
+	static F32 sTexelPixelRatio;
 public:
 	static const U32 sCurrentFileVersion;	
 	static S32 sImageCount;
@@ -336,12 +337,23 @@ public:
 	static S32 sMaxTotalTextureMemInMegaBytes;
 	static S32 sMaxDesiredTextureMemInBytes ;
 	static S8  sCameraMovingDiscardBias;
+	static F32 sCameraMovingBias;
 	static S32 sMaxSculptRez ;
 	static S32 sMinLargeImageSize ;
 	static S32 sMaxSmallImageSize ;
 	static BOOL sFreezeImageScalingDown ;//do not scale down image res if set.
 	static F32  sCurrentTime ;
 	//static BOOL sUseTextureAtlas ;
+
+	enum EDebugTexels
+	{
+		DEBUG_TEXELS_OFF,
+		DEBUG_TEXELS_CURRENT,
+		DEBUG_TEXELS_DESIRED,
+		DEBUG_TEXELS_FULL
+	};
+
+	static EDebugTexels sDebugTexelsMode;
 
 	static LLPointer<LLViewerTexture> sNullImagep; // Null texture for non-textured objects.
 	static LLPointer<LLViewerTexture> sBlackImagep;	// Texture to show NOTHING (pure black)
@@ -491,6 +503,7 @@ public:
 	BOOL        hasFetcher() const { return mHasFetcher;}
 	void        setCanUseHTTP(bool can_use_http) {mCanUseHTTP = can_use_http;}
 
+	void        forceToDeleteRequest();
 protected:
 	/*virtual*/ void switchToCachedImage();
 	S32 getCurrentDiscardLevelForFetching() ;
@@ -710,6 +723,7 @@ public:
 	//"find-texture" just check if the texture exists, if yes, return it, otherwise return null.
 	//
 	static LLViewerTexture*           findTexture(const LLUUID& id) ;
+	static LLViewerFetchedTexture*    findFetchedTexture(const LLUUID& id) ;
 #if NEW_MEDIA_TEXTURE
 	static LLViewerMediaTexture*      findMediaTexture(const LLUUID& id) ;
 

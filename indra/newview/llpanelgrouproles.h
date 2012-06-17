@@ -64,7 +64,6 @@ public:
 	virtual BOOL isVisibleByAgent(LLAgent* agentp);
 
 	static void* createTab(void* data);
-	static void onClickSubTab(void*,bool);
 	void handleClickSubTab();
 
 	// Checks if the current tab needs to be applied, and tries to switch to the requested tab.

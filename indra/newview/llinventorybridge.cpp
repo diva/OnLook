@@ -200,6 +200,42 @@ bool isMarketplaceSendAction(const std::string& action)
 	return ("send_to_marketplace" == action);
 }
 
+// Used by LLFolderBridge as callback for directory fetching recursion
+class LLRightClickInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsObserver
+{
+public:
+	LLRightClickInventoryFetchDescendentsObserver(const uuid_vec_t& ids) : LLInventoryFetchDescendentsObserver(ids) {}
+	~LLRightClickInventoryFetchDescendentsObserver() {}
+	virtual void execute(bool clear_observer = false);
+	virtual void done()
+	{
+		execute(true);
+	}
+};
+
+// Used by LLFolderBridge as callback for directory content items fetching
+class LLRightClickInventoryFetchObserver : public LLInventoryFetchItemsObserver
+{
+public:
+	LLRightClickInventoryFetchObserver(const uuid_vec_t& ids) : LLInventoryFetchItemsObserver(ids) { };
+	~LLRightClickInventoryFetchObserver() {}
+	void execute(bool clear_observer = false)
+	{
+		if (clear_observer)
+		{
+			dec_busy_count();
+			gInventory.removeObserver(this);
+			delete this;
+		}
+		// we've downloaded all the items, so repaint the dialog
+		LLFolderBridge::staticFolderOptionsMenu();
+	}
+	virtual void done()
+	{
+		execute(true);
+	}
+};
+
 // <edit>
 void gotImageForSaveItemAs(BOOL success, 
 											LLViewerTexture *src_vi,
@@ -1050,7 +1086,7 @@ void LLInvFVBridge::changeItemParent(LLInventoryModel* model,
 									 const LLUUID& new_parent_id,
 									 BOOL restamp)
 {
-	change_item_parent(model, item, new_parent_id, restamp);
+	model->changeItemParent(item, new_parent_id, restamp);
 }
 
 // static
@@ -1059,7 +1095,7 @@ void LLInvFVBridge::changeCategoryParent(LLInventoryModel* model,
 										 const LLUUID& new_parent_id,
 										 BOOL restamp)
 {
-	change_category_parent(model, cat, new_parent_id, restamp);
+	model->changeCategoryParent(cat, new_parent_id, restamp);
 }
 
 LLInvFVBridge* LLInvFVBridge::createBridge(LLAssetType::EType asset_type,
@@ -1464,7 +1500,8 @@ void LLItemBridge::selectItem()
 		// <edit>
 		if(!(gInventory.isObjectDescendentOf(mUUID, gSystemFolderRoot)))
 		// </edit>
-		item->fetchFromServer();
+		//item->fetchFromServer();
+		LLInventoryModelBackgroundFetch::instance().start(item->getUUID(), false);
 	}
 }
 
@@ -2498,9 +2535,16 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 	LLInventoryObject::object_list_t::iterator end = inventory_objects.end();
 	for ( ; it != end; ++it)
 	{
+		LLInventoryItem* item = dynamic_cast<LLInventoryItem*>(it->get());
+		if (!item)
+		{
+			llwarns << "Invalid inventory item for drop" << llendl;
+			continue;
+		}
+
 		// coming from a task. Need to figure out if the person can
 		// move/copy this item.
-		LLPermissions perm(((LLInventoryItem*)((LLInventoryObject*)(*it)))->getPermissions());
+		LLPermissions perm(item->getPermissions());
 		if((perm.allowCopyBy(gAgent.getID(), gAgent.getGroupID())
 			&& perm.allowTransferTo(gAgent.getID())))
 //			|| gAgent.isGodlike())
@@ -2553,121 +2597,114 @@ BOOL move_inv_category_world_to_agent(const LLUUID& object_id,
 	return accept;
 }
 
-//Used by LLFolderBridge as callback for directory recursion.
-class LLRightClickInventoryFetchObserver : public LLInventoryFetchItemsObserver
+void LLRightClickInventoryFetchDescendentsObserver::execute(bool clear_observer)
 {
-public:
-	LLRightClickInventoryFetchObserver(const uuid_vec_t& ids) :
-		LLInventoryFetchItemsObserver(ids),
-		mCopyItems(false)
-	{ };
-	LLRightClickInventoryFetchObserver(const uuid_vec_t& ids,
-									   const LLUUID& cat_id, 
-									   bool copy_items) :
-		LLInventoryFetchItemsObserver(ids),
-		mCatID(cat_id),
-		mCopyItems(copy_items)
-		{ };
-	virtual void done()
-	{
-		// we've downloaded all the items, so repaint the dialog
-		LLFolderBridge::staticFolderOptionsMenu();
-
-		gInventory.removeObserver(this);
-		delete this;
-	}
-
-protected:
-	LLUUID mCatID;
-	bool mCopyItems;
-
-};
-
-//Used by LLFolderBridge as callback for directory recursion.
-class LLRightClickInventoryFetchDescendentsObserver : public LLInventoryFetchDescendentsObserver
-{
-public:
-	LLRightClickInventoryFetchDescendentsObserver(const uuid_vec_t& ids,
-												  bool copy_items) : 
-		LLInventoryFetchDescendentsObserver(ids),
-		mCopyItems(copy_items) 
-	{}
-	~LLRightClickInventoryFetchDescendentsObserver() {}
-	virtual void done();
-protected:
-	bool mCopyItems;
-};
-
-void LLRightClickInventoryFetchDescendentsObserver::done()
-{
-	// Avoid passing a NULL-ref as mCompleteFolders.front() down to
-	// gInventory.collectDescendents()
+	// Bail out immediately if no descendents
 	if( mComplete.empty() )
 	{
 		llwarns << "LLRightClickInventoryFetchDescendentsObserver::done with empty mCompleteFolders" << llendl;
+		if (clear_observer)
+		{
 		dec_busy_count();
 		gInventory.removeObserver(this);
 		delete this;
+		}
 		return;
 	}
 
-	// What we do here is get the complete information on the items in
-	// the library, and set up an observer that will wait for that to
-	// happen.
-	LLInventoryModel::cat_array_t cat_array;
-	LLInventoryModel::item_array_t item_array;
-	gInventory.collectDescendents(mComplete.front(),
-								  cat_array,
-								  item_array,
-								  LLInventoryModel::EXCLUDE_TRASH);
-	S32 count = item_array.count();
-#if 0 // HACK/TODO: Why?
-	// This early causes a giant menu to get produced, and doesn't seem to be needed.
-	if(!count)
+	// Copy the list of complete fetched folders while "this" is still valid
+	uuid_vec_t completed_folder = mComplete;
+	
+	// Clean up, and remove this as an observer now since recursive calls
+	// could notify observers and throw us into an infinite loop.
+	if (clear_observer)
 	{
-		llwarns << "Nothing fetched in category " << mComplete.front()
-				<< llendl;
 		dec_busy_count();
 		gInventory.removeObserver(this);
 		delete this;
-		return;
 	}
-#endif
 
-	uuid_vec_t ids;
-	for(S32 i = 0; i < count; ++i)
+	for (uuid_vec_t::iterator current_folder = completed_folder.begin(); current_folder != completed_folder.end(); ++current_folder)
 	{
-		ids.push_back(item_array.get(i)->getUUID());
+		// Get the information on the fetched folder items and subfolders and fetch those 
+		LLInventoryModel::cat_array_t* cat_array;
+		LLInventoryModel::item_array_t* item_array;
+		gInventory.getDirectDescendentsOf(*current_folder, cat_array, item_array);
+
+		S32 item_count = item_array->count();
+		S32 cat_count = cat_array->count();
+	
+		// Move to next if current folder empty
+		if ((item_count == 0) && (cat_count == 0))
+	{
+			continue;
 	}
 
-	LLRightClickInventoryFetchObserver* outfit = new LLRightClickInventoryFetchObserver(ids, mComplete.front(), mCopyItems);
+		uuid_vec_t ids;
+		LLRightClickInventoryFetchObserver* outfit = NULL;
+		LLRightClickInventoryFetchDescendentsObserver* categories = NULL;
 
-	// clean up, and remove this as an observer since the call to the
-	// outfit could notify observers and throw us into an infinite
-	// loop.
-	dec_busy_count();
-	gInventory.removeObserver(this);
-	delete this;
+		// Fetch the items
+		if (item_count)
+		{
+			for (S32 i = 0; i < item_count; ++i)
+			{
+				ids.push_back(item_array->get(i)->getUUID());
+			}
+			outfit = new LLRightClickInventoryFetchObserver(ids);
+		}
+		// Fetch the subfolders
+		if (cat_count)
+		{
+			for (S32 i = 0; i < cat_count; ++i)
+			{
+				ids.push_back(cat_array->get(i)->getUUID());
+			}
+			categories = new LLRightClickInventoryFetchDescendentsObserver(ids);
+		}
 
-	// increment busy count and either tell the inventory to check &
-	// call done, or add this object to the inventory for observation.
-	inc_busy_count();
-
-	// do the fetch
+		// Perform the item fetch
+		if (outfit)
+		{
 	outfit->startFetch();
-	outfit->done();				//Not interested in waiting and this will be right 99% of the time.
+			outfit->execute();				// Not interested in waiting and this will be right 99% of the time.
+			delete outfit;
 //Uncomment the following code for laggy Inventory UI.
-/*	if(outfit->isEverythingComplete())
+			/*
+			 if (outfit->isFinished())
 	{
-		// everything is already here - call done.
-		outfit->done();
+	// everything is already here - call done.
+				outfit->execute();
+				delete outfit;
 	}
 	else
 	{
-		// it's all on it's way - add an observer, and the inventory
-		// will call done for us when everything is here.
-		gInventory.addObserver(outfit);
-	}*/
+				// it's all on its way - add an observer, and the inventory
+	// will call done for us when everything is here.
+				inc_busy_count();
+	gInventory.addObserver(outfit);
+			}
+			*/
+		}
+		// Perform the subfolders fetch : this is where we truly recurse down the folder hierarchy
+		if (categories)
+		{
+			categories->startFetch();
+			if (categories->isFinished())
+			{
+				// everything is already here - call done.
+				categories->execute();
+				delete categories;
+			}
+			else
+			{
+				// it's all on its way - add an observer, and the inventory
+				// will call done for us when everything is here.
+				inc_busy_count();
+				gInventory.addObserver(categories);
+			}
+		}
+	}
 }
 
 
@@ -2980,7 +3017,7 @@ bool LLFolderBridge::removeItemResponse(const LLSD& notification, const LLSD& re
 	{
 		// move it to the trash
 		LLPreview::hide(mUUID);
-		remove_category(getInventoryModel(), mUUID);
+		getInventoryModel()->removeCategory(mUUID);
 		return TRUE;
 	}
 	return FALSE;
@@ -3336,16 +3373,19 @@ void LLFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 		folders.push_back(category->getUUID());
 
 		sSelf = getHandle();
-		LLRightClickInventoryFetchDescendentsObserver* fetch = new LLRightClickInventoryFetchDescendentsObserver(folders, FALSE);
+		LLRightClickInventoryFetchDescendentsObserver* fetch = new LLRightClickInventoryFetchDescendentsObserver(folders);
 		fetch->startFetch();
-		inc_busy_count();
 		if (fetch->isFinished())
 		{
+			// Do not call execute() or done() here as if the folder is here, there's likely no point drilling down 
+			// This saves lots of time as buildContextMenu() is called a lot
+			delete fetch;
 			buildContextMenuFolderOptions(flags);
 		}
 		else
 		{
 			// it's all on its way - add an observer, and the inventory will call done for us when everything is here.
+			inc_busy_count();
 			gInventory.addObserver(fetch);
 		}
 	}
@@ -5543,6 +5583,33 @@ LLUIImagePtr LLWearableBridge::getIcon() const
 	return LLInventoryIcon::getIcon(mAssetType, mInvType, mWearableType, FALSE);
 }
 
+//LLAppearanceMgr::moveWearable unfortunately fails for non-link item, so links in CoF must be found for this to work.
+void move_wearable_item(LLViewerInventoryItem* item, bool closer_to_body)
+{
+	if(!item)
+		return;
+
+	if(item->getIsLinkType())
+	{
+		if(LLAppearanceMgr::instance().moveWearable(item, closer_to_body))
+			gAgentAvatarp->wearableUpdated(item->getWearableType(),TRUE);
+	}
+	else
+	{
+		LLInventoryModel::item_array_t items;
+		gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(),
+										LLInventoryModel::cat_array_t(),
+										items,
+										LLInventoryModel::EXCLUDE_TRASH,
+										LLLinkedItemIDMatches(item->getUUID()));
+		if(!items.empty())
+		{
+			if(LLAppearanceMgr::instance().moveWearable(gInventory.getItem(items.front()->getUUID()),closer_to_body))
+				gAgentAvatarp->wearableUpdated(item->getWearableType(),TRUE);
+		}
+	}
+}
+
 // virtual
 void LLWearableBridge::performAction(LLInventoryModel* model, std::string action)
 {
@@ -5563,6 +5630,15 @@ void LLWearableBridge::performAction(LLInventoryModel* model, std::string action
 	{
 		removeFromAvatar();
 		return;
+	}
+	//These move 
+	else if("move_forward" == action)
+	{
+		move_wearable_item(getItem(),false);
+	}
+	else if("move_back" == action)
+	{
+		move_wearable_item(getItem(),true);
 	}
 	else LLItemBridge::performAction(model, action);
 }
@@ -5686,6 +5762,15 @@ void LLWearableBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
 					if (LLWearableType::getAllowMultiwear(mWearableType))
 					{
 						items.push_back(std::string("Wearable Add"));
+						items.push_back(std::string("Wearable Move Forward"));
+						items.push_back(std::string("Wearable Move Back"));
+
+						bool is_worn = get_is_item_worn(item->getUUID());
+						if(!is_worn || !gAgentWearables.canMoveWearable(item->getUUID(),false))
+							disabled_items.push_back(std::string("Wearable Move Forward"));
+						if(!is_worn || !gAgentWearables.canMoveWearable(item->getUUID(),true))
+							disabled_items.push_back(std::string("Wearable Move Back"));
+
 //						if (gAgentWearables.getWearableCount(mWearableType) >= LLAgentWearables::MAX_CLOTHING_PER_TYPE)
 // [SL:KB] - Patch: Appearance-WearableDuplicateAssets | Checked: 2011-07-24 (Catznip-2.6.0e) | Added: Catznip-2.6.0e
 						if ( (gAgentWearables.getWearableCount(mWearableType) >= LLAgentWearables::MAX_CLOTHING_PER_TYPE) ||

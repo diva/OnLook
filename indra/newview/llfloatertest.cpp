@@ -160,6 +160,8 @@ LLFloaterTestImpl::LLFloaterTestImpl()
 	addChild(tab);
 	mTab = tab;
 
+	tab->setCommitCallback(boost::bind(&LLFloaterTestImpl::onClickTab,_1,_2));
+
 	//-----------------------------------------------------------------------
 	// First tab container panel
 	//-----------------------------------------------------------------------
@@ -167,8 +169,7 @@ LLFloaterTestImpl::LLFloaterTestImpl()
 		LLRect(0, 400, 400, 0),	// dummy rect
 		TRUE);	// bordered
 	tab->addTabPanel(panel, std::string("First"), 
-		TRUE,	// select
-		onClickTab, this);
+		TRUE);	// select
 
 	y = panel->getRect().getHeight() - VPAD;
 
@@ -284,8 +285,7 @@ LLFloaterTestImpl::LLFloaterTestImpl()
 		LLRect(0, 400, 400, 0),	// dummy rect
 		TRUE);	// bordered
 	tab->addTabPanel(panel, std::string("Second"), 
-		FALSE,	// select
-		onClickTab, this);
+		FALSE);	// select
 
 	y = panel->getRect().getHeight() - VPAD;
 

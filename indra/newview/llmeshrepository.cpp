@@ -521,9 +521,11 @@ void LLMeshRepoThread::run()
 					mLODReqQ.pop();
 					LLMeshRepository::sLODProcessing--;
 					mMutex->unlock();
-					if (fetchMeshLOD(req.mMeshParams, req.mLOD))
+					if (!fetchMeshLOD(req.mMeshParams, req.mLOD, count))//failed, resubmit
 					{
-						count++;
+						mMutex->lock();
+						mLODReqQ.push(req) ; 
+						mMutex->unlock();
 					}
 				}
 			}
@@ -536,9 +538,11 @@ void LLMeshRepoThread::run()
 					HeaderRequest req = mHeaderReqQ.front();
 					mHeaderReqQ.pop();
 					mMutex->unlock();
-					if (fetchMeshHeader(req.mMeshParams))
+					if (!fetchMeshHeader(req.mMeshParams, count))//failed, resubmit
 					{
-						count++;
+						mMutex->lock();
+						mHeaderReqQ.push(req) ;
+						mMutex->unlock();
 					}
 				}
 			}
@@ -691,8 +695,9 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 		return false;
 	}
 
+	bool ret = true ;
 	U32 header_size = mMeshHeaderSize[mesh_id];
-
+	
 	if (header_size > 0)
 	{
 		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
@@ -737,10 +742,13 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{
-				LLMeshRepository::sHTTPRequestCount++;
-				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
-										   new LLMeshSkinInfoResponder(mesh_id, offset, size));
+			{				
+				ret = mCurlRequest->getByteRange(http_url, headers, offset, size,
+												 new LLMeshSkinInfoResponder(mesh_id, offset, size));
+				if(ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 	}
@@ -750,7 +758,7 @@ bool LLMeshRepoThread::fetchMeshSkinInfo(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
 bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
@@ -769,7 +777,8 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 	}
 
 	U32 header_size = mMeshHeaderSize[mesh_id];
-
+	bool ret = true ;
+	
 	if (header_size > 0)
 	{
 		S32 version = mMeshHeader[mesh_id]["version"].asInteger();
@@ -814,10 +823,13 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{
-				LLMeshRepository::sHTTPRequestCount++;
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
-										   new LLMeshDecompositionResponder(mesh_id, offset, size));
+			{				
+				ret = mCurlRequest->getByteRange(http_url, headers, offset, size,
+												 new LLMeshDecompositionResponder(mesh_id, offset, size));
+				if(ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 	}
@@ -827,7 +839,7 @@ bool LLMeshRepoThread::fetchMeshDecomposition(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
 bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
@@ -840,12 +852,13 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 	mHeaderMutex->lock();
 
 	if (mMeshHeader.find(mesh_id) == mMeshHeader.end())
-	{	//we have no header info for this mesh, do nothing
+	{ //we have no header info for this mesh, do nothing
 		mHeaderMutex->unlock();
 		return false;
 	}
 
 	U32 header_size = mMeshHeaderSize[mesh_id];
+	bool ret = true ;
 
 	if (header_size > 0)
 	{
@@ -891,14 +904,18 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{
-				LLMeshRepository::sHTTPRequestCount++;
-				mCurlRequest->getByteRange(http_url, headers, offset, size,
-										   new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
+			{				
+				ret = mCurlRequest->getByteRange(http_url, headers, offset, size,
+												 new LLMeshPhysicsShapeResponder(mesh_id, offset, size));
+
+				if(ret)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
 			}
 		}
 		else
-		{	//no physics shape whatsoever, report back NULL
+		{ //no physics shape whatsoever, report back NULL
 			physicsShapeReceived(mesh_id, NULL, 0);
 		}
 	}
@@ -908,13 +925,12 @@ bool LLMeshRepoThread::fetchMeshPhysicsShape(const LLUUID& mesh_id)
 	}
 
 	//early out was not hit, effectively fetched
-	return true;
+	return ret;
 }
 
-bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params)
+//return false if failed to get header
+bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params, U32& count)
 {
-	bool retval = false;
-
 	{
 		//look for mesh in asset in vfs
 		LLVFile file(gVFS, mesh_params.getSculptID(), LLAssetType::AT_MESH);
@@ -928,32 +944,37 @@ bool LLMeshRepoThread::fetchMeshHeader(const LLVolumeParams& mesh_params)
 			LLMeshRepository::sCacheBytesRead += bytes;	
 			file.read(buffer, bytes);
 			if (headerReceived(mesh_params, buffer, bytes))
-			{	//did not do an HTTP request, return false
-				return false;
+			{ //did not do an HTTP request, return false
+				return true;
 			}
 		}
 	}
 
-	//either cache entry doesn't exist or is corrupt, request header from simulator
-
+	//either cache entry doesn't exist or is corrupt, request header from simulator	
+	bool retval = true ;
 	std::vector<std::string> headers;
 	headers.push_back("Accept: application/octet-stream");
 
 	std::string http_url = constructUrl(mesh_params.getSculptID());
 	if (!http_url.empty())
 	{
-		retval = true;
 		//grab first 4KB if we're going to bother with a fetch.  Cache will prevent future fetches if a full mesh fits
 		//within the first 4KB
-		LLMeshRepository::sHTTPRequestCount++;
-		mCurlRequest->getByteRange(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
+		//NOTE -- this will break of headers ever exceed 4KB		
+		retval = mCurlRequest->getByteRange(http_url, headers, 0, 4096, new LLMeshHeaderResponder(mesh_params));
+		if(retval)
+		{
+			LLMeshRepository::sHTTPRequestCount++;
+		}
+		count++;
 	}
 
 	return retval;
 }
 
-bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
-{	//protected by mMutex
+//return false if failed to get mesh lod.
+bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod, U32& count)
+{ //protected by mMutex
 	if (!mHeaderMutex)
 	{
 		return false;
@@ -961,7 +982,7 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 
 	mHeaderMutex->lock();
 
-	bool retval = false;
+	bool retval = true;
 
 	LLUUID mesh_id = mesh_params.getSculptID();
 	
@@ -998,7 +1019,7 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 					if (lodReceived(mesh_params, lod, buffer, size))
 					{
 						delete[] buffer;
-						return false;
+						return true;
 					}
 				}
 
@@ -1011,11 +1032,15 @@ bool LLMeshRepoThread::fetchMeshLOD(const LLVolumeParams& mesh_params, S32 lod)
 
 			std::string http_url = constructUrl(mesh_id);
 			if (!http_url.empty())
-			{
-				retval = true;
-				LLMeshRepository::sHTTPRequestCount++;
-				mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
+			{				
+				retval = mCurlRequest->getByteRange(constructUrl(mesh_id), headers, offset, size,
 										   new LLMeshLODResponder(mesh_params, lod, offset, size));
+
+				if(retval)
+				{
+					LLMeshRepository::sHTTPRequestCount++;
+				}
+				count++;
 			}
 			else
 			{
@@ -2212,6 +2237,7 @@ S32 LLMeshRepository::loadMesh(LLVOVolume* vobj, const LLVolumeParams& mesh_para
 			//first request for this mesh
 			mLoadingMeshes[detail][mesh_params].insert(vobj->getID());
 			mPendingRequests.push_back(LLMeshRepoThread::LODRequest(mesh_params, detail));
+			LLMeshRepository::sLODPending++;
 		}
 	}
 
@@ -3228,7 +3254,6 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 	
 	LLCDMeshData mesh;	
 
-#if 1
 	setMeshData(mesh, true);
 
 	LLCDResult ret = decomp->buildSingleHull() ;
@@ -3264,88 +3289,6 @@ void LLPhysicsDecomp::doDecompositionSingleHull()
 		mCurRequest->mHull[0] = p;
 		mMutex->unlock();	
 	}		
-#else
-	setMeshData(mesh, false);
-
-	//set all parameters to default
-	std::map<std::string, const LLCDParam*> param_map;
-
-	static const LLCDParam* params = NULL;
-	static S32 param_count = 0;
-
-	if (!params)
-	{
-		param_count = decomp->getParameters(&params);
-	}
-	
-	for (S32 i = 0; i < param_count; ++i)
-	{
-		decomp->setParam(params[i].mName, params[i].mDefault.mIntOrEnumValue);
-	}
-
-	const S32 STAGE_DECOMPOSE = mStageID["Decompose"];	
-	const S32 STAGE_SIMPLIFY = mStageID["Simplify"];
-	const S32 DECOMP_PREVIEW = 0;
-	const S32 SIMPLIFY_RETAIN = 0;
-	
-	decomp->setParam("Decompose Quality", DECOMP_PREVIEW);
-	decomp->setParam("Simplify Method", SIMPLIFY_RETAIN);
-	decomp->setParam("Retain%", 0.f);
-
-	LLCDResult ret = LLCD_OK;
-	ret = decomp->executeStage(STAGE_DECOMPOSE);
-	
-	if (ret)
-	{
-		llwarns << "Could not execute decomposition stage when attempting to create single hull." << llendl;
-		make_box(mCurRequest);
-	}
-	else
-	{
-		ret = decomp->executeStage(STAGE_SIMPLIFY);
-
-		if (ret)
-		{
-			llwarns << "Could not execute simiplification stage when attempting to create single hull." << llendl;
-			make_box(mCurRequest);
-		}
-		else
-		{
-			S32 num_hulls =0;
-			if (LLConvexDecomposition::getInstance() != NULL)
-			{
-				num_hulls = LLConvexDecomposition::getInstance()->getNumHullsFromStage(STAGE_SIMPLIFY);
-			}
-			
-			mMutex->lock();
-			mCurRequest->mHull.clear();
-			mCurRequest->mHull.resize(num_hulls);
-			mCurRequest->mHullMesh.clear();
-			mMutex->unlock();
-
-			for (S32 i = 0; i < num_hulls; ++i)
-			{
-				std::vector<LLVector3> p;
-				LLCDHull hull;
-				// if LLConvexDecomposition is a stub, num_hulls should have been set to 0 above, and we should not reach this code
-				LLConvexDecomposition::getInstance()->getHullFromStage(STAGE_SIMPLIFY, i, &hull);
-
-				const F32* v = hull.mVertexBase;
-
-				for (S32 j = 0; j < hull.mNumVertices; ++j)
-				{
-					LLVector3 vert(v[0], v[1], v[2]); 
-					p.push_back(vert);
-					v = (F32*) (((U8*) v) + hull.mVertexStrideBytes);
-				}
-						
-				mMutex->lock();
-				mCurRequest->mHull[i] = p;
-				mMutex->unlock();
-			}
-		}
-	}
-#endif
 
 	{
 		completeCurrent();

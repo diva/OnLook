@@ -297,8 +297,7 @@ boost::signals2::connection LLButton::setHeldDownCallback(const CommitCallbackPa
 
 boost::signals2::connection LLButton::setClickedCallback( const commit_signal_t::slot_type& cb )
 {
-	if (!mCommitSignal) mCommitSignal = new commit_signal_t();
-	return mCommitSignal->connect(cb);
+	return LLUICtrl::setCommitCallback(cb);
 }
 boost::signals2::connection LLButton::setMouseDownCallback( const commit_signal_t::slot_type& cb )
 {

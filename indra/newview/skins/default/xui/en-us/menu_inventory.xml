@@ -284,6 +284,14 @@
 	     name="Wearable Add" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="wear_add" />
 	</menu_item_call>
+  <menu_item_call bottom_delta="-18" height="18" label="&#9650; Move Forward" left="0" mouse_opaque="true"
+	     name="Wearable Move Forward" width="128">
+    <on_click filter="" function="Inventory.DoToSelected" userdata="move_forward" />
+  </menu_item_call>
+  <menu_item_call bottom_delta="-18" height="18" label="&#9660; Move Back" left="0" mouse_opaque="true"
+	     name="Wearable Move Back" width="128">
+    <on_click filter="" function="Inventory.DoToSelected" userdata="move_back" />
+  </menu_item_call>
 	<menu bottom_delta="-18" height="18" label="Attach To" left="0" mouse_opaque="true"
 	     name="Attach To" opaque="true" tear_off="false" width="128" />
 	<menu bottom_delta="-18" height="18" label="Attach To HUD" left="0"

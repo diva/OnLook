@@ -82,7 +82,7 @@ public:
 
 	static void clickEarlierCallback(void* data);
 	static void clickLaterCallback(void* data);
-	static void clickTabCallback(void* user_data, bool from_click);
+	void clickTabCallback(const LLSD &param);
 
 	static LLMap<LLUUID, LLGroupMoneyTabEventHandler*> sInstanceIDs;
 	static std::map<LLPanel*, LLGroupMoneyTabEventHandler*> sTabsToHandlers;
@@ -924,8 +924,7 @@ LLGroupMoneyTabEventHandler::LLGroupMoneyTabEventHandler(LLButton* earlier_butto
 
 	if ( tab_containerp && panelp )
 	{
-		tab_containerp->setTabChangeCallback(panelp, clickTabCallback);
-		tab_containerp->setTabUserData(panelp, this);
+		tab_containerp->setCommitCallback(boost::bind(&LLGroupMoneyTabEventHandler::clickTabCallback, this, _2));
 	}
 
 	sInstanceIDs.addData(mImplementationp->mPanelID, this);
@@ -997,11 +996,10 @@ void LLGroupMoneyTabEventHandler::clickLaterCallback(void* data)
 	if ( selfp ) selfp->onClickLater();
 }
 
-//static
-void LLGroupMoneyTabEventHandler::clickTabCallback(void* data, bool from_click)
+void LLGroupMoneyTabEventHandler::clickTabCallback(const LLSD& param)
 {
-	LLGroupMoneyTabEventHandler* selfp = (LLGroupMoneyTabEventHandler*) data;
-	if ( selfp ) selfp->onClickTab();
+	if(param.asString() == "group_money_details_tab")
+		onClickTab();
 }
 
 // **************************************************

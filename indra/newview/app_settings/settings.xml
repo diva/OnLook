@@ -278,6 +278,29 @@
     </array>
   </map>
 
+	<key>SianaJ2CSizeExponent</key>
+	<map>
+		<key>Comment</key>
+		<string>Exponent of size estimator. Should be between 0.0 and 1.0</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>F32</string>
+		<key>Value</key>
+		<real>1.0</real>
+	</map>
+	<key>SianaJ2CSizeOffset</key>
+	<map>
+		<key>Comment</key>
+		<string>Number of bytes to add to size estimator.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>S32</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
+
 	<key>SianaLegacyJ2CSize</key>
 	<map>
 		<key>Comment</key>
@@ -7256,6 +7279,39 @@
       <key>Value</key>
       <real>1.0</real>
     </map>
+    <key>InventoryDisplayInbox</key>
+    <map>
+        <key>Comment</key>
+        <string>Override received items inventory inbox display</string>
+        <key>Persist</key>
+        <integer>0</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+    <key>InventoryDisplayOutbox</key>
+    <map>
+        <key>Comment</key>
+        <string>Override merchant inventory outbox display</string>
+        <key>Persist</key>
+        <integer>0</integer>
+        <key>Type</key>
+        <string>Boolean</string>
+        <key>Value</key>
+        <integer>0</integer>
+    </map>
+	<key>InventoryOutboxLogging</key>
+	<map>
+		<key>Comment</key>
+		<string>Enable debug output associated with the Merchant Outbox.</string>
+		<key>Persist</key>
+		<integer>1</integer>
+		<key>Type</key>
+		<string>Boolean</string>
+		<key>Value</key>
+		<integer>0</integer>
+	</map>
     <key>InventoryOutboxMaxFolderCount</key>
     <map>
       <key>Comment</key>
@@ -8229,7 +8285,7 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-  <key>MemoryLogFrequency</key>
+    <key>MemoryLogFrequency</key>
     <map>
       <key>Comment</key>
       <string>Seconds between display of Memory in log (0 for never)</string>
@@ -11183,7 +11239,7 @@
       <key>Comment</key>
       <string>Maximum size of a single node's vertex data (in KB).</string>
       <key>Persist</key>
-      <integer>0</integer>
+      <integer>1</integer>
       <key>Type</key>
       <string>S32</string>
       <key>Value</key>
@@ -11564,28 +11620,19 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-  <key>RenderUseShaderLOD</key>
+
+  <key>RenderAutoHideSurfaceAreaLimit</key>
   <map>
     <key>Comment</key>
-    <string>Whether we want to have different shaders for LOD</string>
+    <string>Maximum surface area of a set of proximal objects inworld before automatically hiding geometry to prevent system overload.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
-    <string>Boolean</string>
-    <key>Value</key>
-    <integer>1</integer>
-  </map>
-  <key>RenderUseShaderNearParticles</key>
-  <map>
-    <key>Comment</key>
-    <string>Whether we want to use shaders on near particles</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>Boolean</string>
+    <string>F32</string>
     <key>Value</key>
     <integer>0</integer>
   </map>
+
     <key>RenderVBOEnable</key>
     <map>
       <key>Comment</key>
@@ -13253,6 +13300,39 @@
       <string>F32</string>
       <key>Value</key>
       <real>20.0</real>
+    </map>
+    <key>TexelPixelRatio</key>
+    <map>
+      <key>Comment</key>
+      <string>texel pixel ratio = texel / pixel</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>1.0</real>
+    </map>
+    <key>TextureCameraMotionThreshold</key>
+    <map>
+      <key>Comment</key>
+      <string>If the overall motion is lower than this value, textures will be loaded faster</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>0.2</real>
+    </map>
+    <key>TextureCameraMotionBoost</key>
+    <map>
+      <key>Comment</key>
+      <string>Progressive discard level decrement when the camera is still</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>3</integer>
     </map>
     <key>TextureDecodeDisabled</key>
     <map>
