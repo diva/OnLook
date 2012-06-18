@@ -208,6 +208,9 @@ const S32 MAX_BUBBLE_CHAT_UTTERANCES = 12;
 const F32 CHAT_FADE_TIME = 8.0;
 const F32 BUBBLE_CHAT_TIME = CHAT_FADE_TIME * 3.f;
 
+const U32 EMERALD_BOOB_SIZE_PARAM = 105;
+const U32 EMERALD_BOOB_GRAVITY_PARAM = 507;
+
 const LLColor4 DUMMY_COLOR = LLColor4(0.5,0.5,0.5,1.0);
 
 //Singu note: FADE and ALWAYS are swapped around from LL's source to match our preference panel.
@@ -1799,7 +1802,7 @@ void LLVOAvatar::initInstance(void)
 	sBoobConfig.mass             = EmeraldBoobUtils::convertMass(gSavedSettings.getF32("EmeraldBoobMass"));
 	sBoobConfig.hardness         = EmeraldBoobUtils::convertHardness(gSavedSettings.getF32("EmeraldBoobHardness"));
 	sBoobConfig.velMax           = EmeraldBoobUtils::convertVelMax(gSavedSettings.getF32("EmeraldBoobVelMax"));
-	sBoobConfig.velMin           = EmeraldBoobUtils::convertVelMin(gSavedSettings.getF32("EmeraldBoobVelMin"));
+	sBoobConfig.velMin           = EmeraldBoobUtils::convertVelMin(gSavedSettings.getF32("EmeraldBoobVelMin"))*sBoobConfig.velMax;
 	sBoobConfig.friction         = EmeraldBoobUtils::convertFriction(gSavedSettings.getF32("EmeraldBoobFriction"));
 	sBoobConfig.enabled          = gSavedSettings.getBOOL("EmeraldBreastPhysicsToggle");
 	sBoobConfig.XYInfluence		 = gSavedSettings.getF32("EmeraldBoobXYInfluence");
@@ -3260,30 +3263,29 @@ void LLVOAvatar::idleUpdateBoobEffect()
 	if(mFirstSetActualBoobGravRan)
 	{
 		// should probably be moved somewhere where it is only called when boobsize changes
-		LLVisualParam *param;
+		static const LLCachedControl<bool> avatar_physics("AvatarPhysics",false);
+		
+		EmeraldBoobState newBoobState;
 
-		// BOOBS
-		param = getVisualParam(105); //boob size
-		mLocalBoobConfig.boobSize = param->getCurrentWeight();
-		EmeraldBoobInputs boobInputs;
-		boobInputs.type = 0;
-		boobInputs.chestPosition	= mChestp->getWorldPosition();
-		boobInputs.chestRotation	= mChestp->getWorldRotation();
-		boobInputs.elapsedTime		= mBoobBounceTimer.getElapsedTimeF32();
-		boobInputs.appearanceFlag	= getAppearanceFlag();
+		if(!avatar_physics || (!isSelf() && !mSupportsPhysics))
+		{
+			mLocalBoobConfig.boobSize = getVisualParam(EMERALD_BOOB_SIZE_PARAM)->getCurrentWeight();
 
+			EmeraldBoobInputs boobInputs;
+			boobInputs.chestPosition	= mChestp->getWorldPosition();
+			boobInputs.chestRotation	= mChestp->getWorldRotation();
+			boobInputs.elapsedTime		= mBoobBounceTimer.getElapsedTimeF32();
 
-		EmeraldBoobState newBoobState = EmeraldBoobUtils::idleUpdate(sBoobConfig, mLocalBoobConfig, mBoobState, boobInputs);
+			newBoobState = EmeraldBoobUtils::idleUpdate(sBoobConfig, mLocalBoobConfig, mBoobState, boobInputs);
+		}
+
 		if(mBoobState.boobGrav != newBoobState.boobGrav)
 		{
-			LLVisualParam *param;
-			param = getVisualParam(507);
-
-			ESex avatar_sex = getSex();
+			LLVisualParam *param = getVisualParam(EMERALD_BOOB_GRAVITY_PARAM);
 		
 			param->stopAnimating(FALSE);
 			param->setWeight(llclamp(newBoobState.boobGrav+getActualBoobGrav(), -1.5f, 2.f), FALSE);
-			param->apply(avatar_sex);
+			param->apply(getSex());
 			updateVisualParams();
 		}
 
@@ -8354,23 +8356,10 @@ void LLVOAvatar::processAvatarAppearance( LLMessageSystem* mesgsys )
 				{
 					mSupportsPhysics = true;
 				}
-				else if(param->getID() == 507 && newWeight != getActualBoobGrav())
+				else if(param->getID() == EMERALD_BOOB_GRAVITY_PARAM && newWeight != getActualBoobGrav())
 				{
-					llwarns << "Boob Grav SET to " << newWeight << " for " << getFullname() << llendl;
 					setActualBoobGrav(newWeight);
 				}
-				/*if(param->getID() == 795 && newWeight != getActualButtGrav())
-				{
-					llwarns << "Butt Grav SET to " << newWeight << " for " << getFullname() << llendl;
-					setActualButtGrav(newWeight);
-				}
-				if(param->getID() == 157 && newWeight != getActualFatGrav())
-				{
-					llwarns << "Fat Grav SET to " << newWeight << " for " << getFullname() << llendl;
-					setActualFatGrav(newWeight);
-				}
-				*/
-
 
 				if (is_first_appearance_message || (param->getWeight() != newWeight))
 				{

@@ -510,8 +510,7 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 				}
 				mCharacter->updateVisualParams();
 			}
-			if(physics_unsupported) //Only use emerald physics if avatarphysiscs is really off, or the client doesn't seem to support new physics.
-				((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
+			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Emerald physics will fix params it altered if wearable physics are disabled.
 			return TRUE;
 		}
         

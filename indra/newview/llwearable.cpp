@@ -584,28 +584,6 @@ BOOL LLWearable::isDirty() const
 			U8 a = F32_to_U8( saved_weight, param->getMinWeight(), param->getMaxWeight() );
 			U8 b = F32_to_U8( current_weight, param->getMinWeight(), param->getMaxWeight() );
 
-			if(gAgentAvatarp->getAppearanceFlag() == true)
-			{
-				//boob
-				if(param->getID() == 507)
-				{
-					if( is_in_map(mVisualParamIndexMap, param->getID() ) )
-						current_weight = mVisualParamIndexMap.find(param->getID())->second->getWeight();
-					else
-						current_weight = gAgentAvatarp->getActualBoobGrav();
-					current_weight = llclamp( current_weight, param->getMinWeight(), param->getMaxWeight() );
-					b = F32_to_U8( current_weight, param->getMinWeight(), param->getMaxWeight() );
-				}
-			}
-			else
-			{
-				//boob
-				if(param->getID() == 507)
-				{
-						a = F32_to_U8( gAgentAvatarp->getActualBoobGrav(), param->getMinWeight(), param->getMaxWeight() );
-				}
-			}
-
 			if( a != b  )
 			{
 				//llwarns << "param ID " << param->getID() << " was changed." << llendl;
@@ -698,10 +676,6 @@ void LLWearable::writeToAvatar()
 		{
 			S32 param_id = param->getID();
 			F32 weight = getVisualParamWeight(param_id);
-
-			//ZOMG: When switching shapes from inventory
-			if(param_id == 507)
-				gAgentAvatarp->setActualBoobGrav(weight);
 
 			gAgentAvatarp->setVisualParamWeight( param_id, weight, FALSE );
 		}
@@ -800,21 +774,6 @@ void LLWearable::copyDataFrom(const LLWearable* src)
 		{
 			S32 id = param->getID();
 			F32 weight = src->getVisualParamWeight(id);
-			//llwarns << "------------------------------" << llendl;
-			//llwarns << "copydatafrom" << llendl;
-			//llwarns << "------------------------------" << llendl;
-			
-			//if(id == 507)
-			//{
-			//	llwarns << "weight = " << weight << llendl;
-			//	llwarns << "actual = " << avatar->getActualBoobGrav() << llendl;
-			//	llwarns << "mVisualParamMap[id] = " << mVisualParamMap[id] << llendl;
-			//}
-
-			//pretty sure right
-			if(id == 507)
-				gAgentAvatarp->setActualBoobGrav(weight);
-			
 			mSavedVisualParamMap[id] = weight;
 		}
 	}
@@ -1200,23 +1159,6 @@ void LLWearable::pullCrossWearableValues()
 	{
 		if( (((LLViewerVisualParam*)param)->getWearableType() == mType) && (param->isTweakable()) )
 		{
-
-			
-			//pretty sure is right
-			if(param->getID() == 507)
-				avatar->setActualBoobGrav(param->getWeight());
-			//if(param->getID() == 151)
-			//	avatar->setActualButtGrav(param->getWeight());
-			//if(param->getID() == 157)
-			//	avatar->setActualFatGrav(param->getWeight());
-			
-			//if(param->getID() == 507)
-			//{
-			//	llwarns << "current = " << avatar->getActualBoobGrav() << llendl;
-			//	llwarns << "param weight = " << param->getWeight() << llendl;
-			//}
-				
-
 			mVisualParamMap[param->getID()] = param->getWeight();
 		}
 	}
