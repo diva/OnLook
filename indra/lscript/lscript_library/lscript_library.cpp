@@ -461,11 +461,12 @@ void LLScriptLibrary::init()
 
 	addFunction(10.f, 0.f, dummy_func, "llGetLinkNumberOfSides", "i", "i");
 
-    // IDEVO Name lookup calls, see lscript_avatar_names.h
+	// IDEVO Name lookup calls, see lscript_avatar_names.h
 	addFunction(10.f, 0.f, dummy_func, "llGetUsername", "s", "k");
 	addFunction(10.f, 0.f, dummy_func, "llRequestUsername", "k", "k");
 	addFunction(10.f, 0.f, dummy_func, "llGetDisplayName", "s", "k");
 	addFunction(10.f, 0.f, dummy_func, "llRequestDisplayName", "k", "k");
+
 	addFunction(10.f, 0.f, dummy_func, "llGetEnv", "s", "s");
 	addFunction(10.f, 0.f, dummy_func, "llRegionSayTo", NULL, "kis");
 
