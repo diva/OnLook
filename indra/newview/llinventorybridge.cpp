@@ -5597,11 +5597,13 @@ void move_wearable_item(LLViewerInventoryItem* item, bool closer_to_body)
 	else
 	{
 		LLInventoryModel::item_array_t items;
+		LLInventoryModel::cat_array_t cats;
+		LLLinkedItemIDMatches is_linked_item_match(item->getUUID());
 		gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(),
-										LLInventoryModel::cat_array_t(),
+										cats,
 										items,
 										LLInventoryModel::EXCLUDE_TRASH,
-										LLLinkedItemIDMatches(item->getUUID()));
+										is_linked_item_match);
 		if(!items.empty())
 		{
 			if(LLAppearanceMgr::instance().moveWearable(gInventory.getItem(items.front()->getUUID()),closer_to_body))
