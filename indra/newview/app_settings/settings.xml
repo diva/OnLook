@@ -806,17 +806,6 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-    <key>EmeraldUseProperArc</key>
-    <map>
-      <key>Comment</key>
-      <string>Enables/Disables a fixed ARC counter</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>0</integer>
-    </map>
     <key>EmeraldBoobMass</key>
     <map>
       <key>Comment</key>
@@ -843,17 +832,6 @@
     <map>
       <key>Comment</key>
       <string>Enables/Disables breast physics</string>
-      <key>Persist</key>
-      <integer>1</integer>
-      <key>Type</key>
-      <string>Boolean</string>
-      <key>Value</key>
-      <integer>1</integer>
-    </map>
-    <key>EmeraldBreastSportsBra</key>
-    <map>
-      <key>Comment</key>
-      <string>allows disabling the physics for 1 av, in case their outfit looks wrong with it on</string>
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>

@@ -33,8 +33,6 @@ std::ostream &operator<<(std::ostream &os, const EmeraldBoobState &v)
 	os << "frameDuration: " << v.frameDuration << std::endl;
 	os << "chestDisplacement: " << v.chestDisplacement << std::endl;
 	os << "localChestDisplacement: " << v.localChestDisplacement << std::endl;
-	os << "displacementForce: " << v.displacementForce << std::endl;
-	os << "mysteryValue: " << v.mysteryValue << std::endl;
 	os << "Number of bounceStates: " << v.bounceStates.size() << std::endl;
 	return os;
 }
@@ -45,8 +43,6 @@ std::ostream &operator<<(std::ostream &os, const EmeraldBoobInputs &v)
 	os << "chestPosition: " << v.chestPosition << std::endl;
 	os << "chestRotation: " << v.chestRotation << std::endl;
 	os << "elapsedTime: " << v.elapsedTime << std::endl;
-	os << "appearanceFlag: " << v.appearanceFlag << std::endl;
-	os << "appearanceAnimating: " << v.appearanceAnimating << std::endl;
 	return os;
 }
 
@@ -80,27 +76,11 @@ EmeraldBoobState EmeraldBoobUtils::idleUpdate(const EmeraldGlobalBoobConfig &con
 	F32 avatarLocalMass = 0.0f;
 	F32 partMod = 1.f;
 
-	if(!config.enabled || inputs.appearanceFlag || inputs.appearanceAnimating)
+	if(!config.enabled)
 		return newState;
 
-	if(inputs.type == 0)
-	{
-		newState.boobGrav = localConfig.actualBoobGrav;
-		avatarLocalMass = (llclamp(localConfig.boobSize, 0.0f, 0.5f) / 0.5f);
-	}
-	if(inputs.type == 1)
-	{
-		newState.boobGrav = localConfig.actualButtGrav;
-		partMod = 1.5f;
-		avatarLocalMass = llclamp(localConfig.actualButtGrav, 0.0f, 0.5f) / 0.5f;
-	}
-	if(inputs.type == 2)
-	{
-		newState.boobGrav = localConfig.actualFatGrav;
-		partMod = 1.3f;
-		avatarLocalMass = localConfig.actualFatGrav;
-	}
-
+	newState.boobGrav = localConfig.actualBoobGrav;
+	avatarLocalMass = (llclamp(localConfig.boobSize, 0.0f, 0.5f) / 0.5f);
 
 	newState.elapsedTime = inputs.elapsedTime;
 	//  seemed to create incorrect amounts of velocity when FPS varied
@@ -119,9 +99,10 @@ EmeraldBoobState EmeraldBoobUtils::idleUpdate(const EmeraldGlobalBoobConfig &con
 		boobVel = newState.localChestDisplacement.mV[VZ];
 		boobVel +=	newState.localChestDisplacement[VX] * config.XYInfluence;
 		boobVel +=	newState.localChestDisplacement.mV[VY] * config.XYInfluence;
-		boobVel *= newState.frameDuration * 0.3f * 100.f;
 		boobVel =	llclamp(boobVel, -config.velMax, config.velMax);
-		 if(fabs(boobVel) <= config.velMax * config.velMin * newState.frameDuration * 100.f)
+		boobVel *= newState.frameDuration * 0.3f * 100.f;
+		
+		 if(fabs(boobVel) <= config.velMin * newState.frameDuration * 100.f)
 			 boobVel = 0.0f;
 		 else
 		 {
@@ -134,26 +115,6 @@ EmeraldBoobState EmeraldBoobUtils::idleUpdate(const EmeraldGlobalBoobConfig &con
 			bounceStates.push_front(bounceState);
 		 }
 	}
-
-	/*if(fabs(newState.localChestDisplacement.length()) >= 0.f) {
-		LLVector3 displacementInfluence = newState.localChestDisplacement;
-		displacementInfluence *= LLVector3(0.3f, 0.3f, 1.0f);
-		F32 clampedDisplacementInfluenceLength = llclamp(displacementInfluence.length(), 0.0f, config.velMax);
-		if(displacementInfluence[VZ]<0.f)
-			clampedDisplacementInfluenceLength= -clampedDisplacementInfluenceLength;
-		EmeraldBoobBounceState bounceState;
-		bounceState.bounceStart = inputs.elapsedTime;
-		bounceState.bounceStartFrameDuration = newState.frameDuration;
-		bounceState.bounceStartAmplitude = clampedDisplacementInfluenceLength;
-		if(fabs(bounceState.bounceStartAmplitude) < config.velMin * config.velMax)
-			bounceState.bounceStartAmplitude = 0.0f;
-		else
-		{
-			bounceState.bounceStartAmplitude *= config.mass;
-			bounceStates.push_front(bounceState);
-		}
-	}
-	*/
 
 	F32 totalNewAmplitude = 0.0f;
 	//std::cout << "Beginning bounce State processing at time " << inputs.elapsedTime << std::endl;
@@ -170,15 +131,6 @@ EmeraldBoobState EmeraldBoobUtils::idleUpdate(const EmeraldGlobalBoobConfig &con
 		}
 		totalNewAmplitude+=newAmplitude;
 	}
-	//std::cout << "Total new amplitude: " << totalNewAmplitude << std::endl;
-	/*
-	if(inputs.type == 0)
-		newState.boobGrav = localConfig.actualBoobGrav + totalNewAmplitude;
-	if(inputs.type == 1)
-		newState.boobGrav = localConfig.actualButtGrav + totalNewAmplitude;
-	if(inputs.type == 2)
-		newState.boobGrav = localConfig.actualFatGrav + totalNewAmplitude;
-	*/
 
 	newState.boobGrav = totalNewAmplitude;
 

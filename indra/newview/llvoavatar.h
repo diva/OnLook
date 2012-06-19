@@ -923,6 +923,9 @@ private:
 	BOOL		mStepOnLand;
 	U8			mStepMaterial;
 	LLVector3	mStepObjectVelocity;
+	
+public:
+	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
 
 	//--------------------------------------------------------------------
 	// Emerald legacy boob bounce
@@ -944,10 +947,7 @@ private:
 	LLFrameTimer	mBoobBounceTimer;
 	EmeraldAvatarLocalBoobConfig mLocalBoobConfig;
 	EmeraldBoobState mBoobState;
-	
-public:
-	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
-	
+
 /**                    Physics
  **                                                                            **
  *******************************************************************************/
@@ -1237,4 +1237,6 @@ private:
 extern const F32 SELF_ADDITIONAL_PRI;
 extern const S32 MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL;
 
+extern const U32 EMERALD_BOOB_SIZE_PARAM;		//"Breast Size"
+extern const U32 EMERALD_BOOB_GRAVITY_PARAM;	//"Breast_Gravity"
 #endif // LL_VO_AVATAR_H
