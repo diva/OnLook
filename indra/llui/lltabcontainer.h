@@ -111,6 +111,7 @@ public:
 	BOOL        getTabPanelFlashing(LLPanel* child);
 	void		setTabPanelFlashing(LLPanel* child, BOOL state);
 	void 		setTabImage(LLPanel* child, std::string img_name, const LLColor4& color = LLColor4::white);
+	void 		setTabImage(LLPanel* child, const LLUUID& img_id, const LLColor4& color = LLColor4::white);
 	void		setTitle( const std::string& title );
 	const std::string getPanelTitle(S32 index);
 
@@ -128,14 +129,13 @@ public:
 
 	void		startDragAndDropDelayTimer() { mDragAndDropDelayTimer.start(); }
 	
-	static void	onCloseBtn(void* userdata);
-	static void	onTabBtn(void* userdata);
-	static void	onNextBtn(void* userdata);
-	static void	onNextBtnHeld(void* userdata);
-	static void	onPrevBtn(void* userdata);
-	static void	onPrevBtnHeld(void* userdata);
-	static void onJumpFirstBtn( void* userdata );
-	static void onJumpLastBtn( void* userdata );
+	void onTabBtn( const LLSD& data, LLPanel* panel );
+	void onNextBtn(const LLSD& data);
+	void onNextBtnHeld(const LLSD& data);
+	void onPrevBtn(const LLSD& data);
+	void onPrevBtnHeld(const LLSD& data);
+	void onJumpFirstBtn( const LLSD& data );
+	void onJumpLastBtn( const LLSD& data );
 
 	static LLView* fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFactory *factory);
 
@@ -167,13 +167,13 @@ private:
 	void updateMaxScrollPos();
 	void commitHoveredButton(S32 x, S32 y);
 
+	void reshapeTuple(LLTabTuple* tuple);
 	// Variables
 	
 	typedef std::vector<LLTabTuple*> tuple_list_t;
 	tuple_list_t					mTabList;
 	
 	S32								mCurrentTabIdx;
-	S32								mNextTabIdx;
 	BOOL							mTabsHidden;
 
 	BOOL							mScrolled;
@@ -181,9 +181,6 @@ private:
 	S32								mScrollPos;
 	S32								mScrollPosPixels;
 	S32								mMaxScrollPos;
-
-	void							(*mCloseCallback)(void*);
-	void*							mCallbackUserdata;
 
 	LLTextBox*						mTitleBox;
 
