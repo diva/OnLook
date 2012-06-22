@@ -39,7 +39,7 @@ class LLSD;
 class LLOptionInterface
 {
 public:
-    virtual ~LLOptionInterface() = 0;
+    virtual ~LLOptionInterface();
 	virtual LLSD getOption(const std::string& name) const = 0;
 };
 
