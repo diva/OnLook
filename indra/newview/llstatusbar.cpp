@@ -449,6 +449,16 @@ void LLStatusBar::refresh()
 		x += buttonRect.getWidth();
 	}
 
+	bool no_see_avs = parcel && !parcel->getSeeAVs();
+	childSetVisible("status_SeeAV", no_see_avs);
+	if (no_see_avs)
+	{
+		childGetRect( "status_SeeAV", buttonRect );
+		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
+		childSetRect( "status_SeeAV", r );
+		x += buttonRect.getWidth();
+	}
+
 	BOOL canBuyLand = parcel
 		&& !parcel->isPublic()
 		&& LLViewerParcelMgr::getInstance()->canAgentBuyParcel(parcel, false);
