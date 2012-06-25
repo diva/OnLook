@@ -1069,16 +1069,16 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>f219ef07b02e2abb9282345c3a8f2b39</string>
+            <string>613856e3880c5898f9629f9f7eb3545c</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openSSL-0.9.7c-linux-20080812.tar.bz2</uri>
+			<uri>https://bitbucket.org/Lirusaito/singularityviewer/downloads/openssl-1.0.0d-linux-20110418.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>00b23f28a2457d9dabbaff0b29ee7323</string>
+            <string>5785bec161f1ad3069fa8330ba42f404</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openSSL-0.9.8g-linux64-20080909.tar.bz2</uri>
+			<uri>https://bitbucket.org/Lirusaito/singularityviewer/downloads/openSSL-1.0.0d-linux64-for-singularity.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
