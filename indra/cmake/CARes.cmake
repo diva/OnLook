@@ -10,6 +10,7 @@ if (STANDALONE)
 else (STANDALONE)
     use_prebuilt_binary(ares)
     if (WINDOWS)
+        add_definitions("-DCARES_STATICLIB")
         set(CARES_LIBRARIES areslib)
     elseif (DARWIN)
         set(CARES_LIBRARIES

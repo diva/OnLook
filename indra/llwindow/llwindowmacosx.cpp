@@ -2548,9 +2548,6 @@ OSStatus LLWindowMacOSX::eventHandler (EventHandlerCallRef myHandler, EventRef e
 			{
 				// This is where we would constrain move/resize to a particular screen
 
-				const S32 MIN_WIDTH  = 1024;
-				const S32 MIN_HEIGHT = 768;
-				
 				Rect currentBounds;
 				Rect previousBounds;
 
@@ -2575,14 +2572,14 @@ OSStatus LLWindowMacOSX::eventHandler (EventHandlerCallRef myHandler, EventRef e
 					mPreviousWindowRect = previousBounds;
 				}
 
-				if ((currentBounds.right - currentBounds.left) < MIN_WIDTH)
+				if ((currentBounds.right - currentBounds.left) < MIN_WINDOW_WIDTH)
 				{
-					currentBounds.right = currentBounds.left + MIN_WIDTH;
+					currentBounds.right = currentBounds.left + MIN_WINDOW_WIDTH;
 				}
 
-				if ((currentBounds.bottom - currentBounds.top) < MIN_HEIGHT)
+				if ((currentBounds.bottom - currentBounds.top) < MIN_WINDOW_HEIGHT)
 				{
-					currentBounds.bottom = currentBounds.top + MIN_HEIGHT;
+					currentBounds.bottom = currentBounds.top + MIN_WINDOW_HEIGHT;
 				}
 				
 				SetEventParameter(event, kEventParamCurrentBounds, typeQDRectangle, sizeof(Rect), &currentBounds);

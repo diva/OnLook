@@ -301,13 +301,12 @@ const char* RlvStrings::getStringFromReturnCode(ERlvCmdRet eRet)
 	return NULL;
 }
 
-// Checked: 2010-03-27 (RLVa-1.2.0b) | Modified: RLVa-1.2.0b
+// Checked: 2012-02-25 (RLVa-1.4.5) | Modified: RLVa-1.4.5
 std::string RlvStrings::getVersion(bool fLegacy /*=false*/) 
 {
-	return llformat("%s viewer v%d.%d.%d (%s %d.%d.%d.%d - RLVa %d.%d.%d)",
+	return llformat("%s viewer v%d.%d.%d (RLVa %d.%d.%d)",
 		( (!fLegacy) ? "RestrainedLove" : "RestrainedLife" ),
 		RLV_VERSION_MAJOR, RLV_VERSION_MINOR, RLV_VERSION_PATCH,
-		LLAppViewer::instance()->getSecondLifeTitle().c_str(), gVersionMajor, gVersionMinor, gVersionPatch, gVersionBuild,
 		RLVa_VERSION_MAJOR, RLVa_VERSION_MINOR, RLVa_VERSION_PATCH);
 }
 

@@ -1,5 +1,5 @@
 /** 
- * @file postgiV.glsl
+ * @file avatarEyesV.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -23,18 +23,26 @@
  * $/LicenseInfo$
  */
 
+uniform mat3 normal_matrix;
+uniform mat4 texture_matrix0;
 uniform mat4 modelview_projection_matrix;
- 
+
 ATTRIBUTE vec3 position;
+ATTRIBUTE vec3 normal;
+ATTRIBUTE vec4 diffuse_color;
+ATTRIBUTE vec2 texcoord0;
 
-
-VARYING vec2 vary_fragcoord;
-uniform vec2 screen_res;
+VARYING vec3 vary_normal;
+VARYING vec4 vertex_color;
+VARYING vec2 vary_texcoord0;
 
 void main()
 {
 	//transform vertex
-	vec4 pos = modelview_projection_matrix * vec4(position.xyz, 1.0);
-	gl_Position = pos; 	
-	vary_fragcoord = (pos.xy*0.5+0.5)*screen_res;
+	gl_Position = modelview_projection_matrix * vec4(position.xyz, 1.0); 
+	vary_texcoord0 = (texture_matrix0 * vec4(texcoord0,0,1)).xy;
+	
+	vary_normal = normalize(normal_matrix * normal);
+
+	vertex_color = diffuse_color;
 }

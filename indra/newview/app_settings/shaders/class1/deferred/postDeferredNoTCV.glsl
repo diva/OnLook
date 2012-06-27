@@ -1,5 +1,5 @@
 /** 
- * @file lightWaterF.glsl
+ * @file postDeferredV.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -23,24 +23,18 @@
  * $/LicenseInfo$
  */
 
-#ifdef DEFINE_GL_FRAGCOLOR
-out vec4 frag_color;
-#else
-#define frag_color gl_FragColor
-#endif
+uniform mat4 modelview_projection_matrix;
 
-VARYING vec4 vertex_color;
-VARYING vec2 vary_texcoord0;
+ATTRIBUTE vec3 position;
 
-vec3 atmosLighting(vec3 light);
-vec4 applyWaterFog(vec4 color);
+VARYING vec2 vary_fragcoord;
 
-void default_lighting_water()
+uniform vec2 screen_res;
+
+void main()
 {
-	vec4 color = diffuseLookup(vary_texcoord0.xy) * vertex_color;
-
-	color.rgb = atmosLighting(color.rgb);
-
-	frag_color = applyWaterFog(color);
+	//transform vertex
+	vec4 pos = modelview_projection_matrix * vec4(position.xyz, 1.0);
+	gl_Position = pos;	
+	vary_fragcoord = (pos.xy*0.5+0.5)*screen_res;
 }
-

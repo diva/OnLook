@@ -26,7 +26,9 @@
 #extension GL_ARB_texture_rectangle : enable
 
 #ifdef DEFINE_GL_FRAGCOLOR
-out vec4 gl_FragColor;
+out vec4 frag_color;
+#else
+#define frag_color gl_FragColor
 #endif
 
 uniform sampler2DRect diffuseRect;
@@ -317,7 +319,7 @@ void main()
 			//add environmentmap
 			vec3 env_vec = env_mat * refnormpersp;
 			col = mix(col.rgb, textureCube(environmentMap, env_vec).rgb, 
-				   max(spec.a-diffuse.a*2.0, 0.0)); 
+				max(spec.a-diffuse.a*2.0, 0.0)); 
 		}
 			
 		col = atmosLighting(col);
@@ -330,6 +332,6 @@ void main()
 		col = diffuse.rgb;
 	}
 		
-	gl_FragColor.rgb = col;
-	gl_FragColor.a = bloom;
+	frag_color.rgb = col;
+	frag_color.a = bloom;
 }

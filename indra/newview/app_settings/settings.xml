@@ -287,7 +287,7 @@
 		<key>Type</key>
 		<string>F32</string>
 		<key>Value</key>
-		<real>0.5</real>
+		<real>1.0</real>
 	</map>
 	<key>SianaJ2CSizeOffset</key>
 	<map>
@@ -298,7 +298,7 @@
 		<key>Type</key>
 		<string>S32</string>
 		<key>Value</key>
-		<integer>100</integer>
+		<integer>0</integer>
 	</map>
 
 	<key>SianaLegacyJ2CSize</key>
@@ -3941,7 +3941,29 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
-  <key>CurlUseMultipleThreads</key>
+    <key>CurlMaximumNumberOfHandles</key>
+    <map>
+      <key>Comment</key>
+      <string>Maximum number of handles curl can use (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>S32</string>
+      <key>Value</key>
+      <integer>256</integer>
+    </map>
+    <key>CurlRequestTimeOut</key>
+    <map>
+      <key>Comment</key>
+      <string>Max idle time of a curl request before killed (requires restart)</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>F32</string>
+      <key>Value</key>
+      <real>120.0</real>
+    </map>
+    <key>CurlUseMultipleThreads</key>
   <map>
     <key>Comment</key>
     <string>Use background threads for executing curl_multi_perform (requires restart)</string>
@@ -9807,6 +9829,17 @@
       <key>Value</key>
       <integer>1</integer>
     </map>
+  <key>RenderCompressTextures</key>
+  <map>
+    <key>Comment</key>
+    <string>Enable texture compression on OpenGL 3.0 and later implementations (EXPERIMENTAL, requires restart)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
    
   <key>RenderLocalLights</key>
   <map>
