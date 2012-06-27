@@ -49,7 +49,10 @@
 template<typename T> struct AIReadAccessConst;
 template<typename T> struct AIReadAccess;
 template<typename T> struct AIWriteAccess;
+template<typename T> struct AIAccessConst;
 template<typename T> struct AIAccess;
+template<typename T> struct AISTAccessConst;
+template<typename T> struct AISTAccess;
 
 #if LL_WINDOWS
 template<typename T> class AIThreadSafeBits;
@@ -398,6 +401,7 @@ class AIThreadSafeSimple : public AIThreadSafeBits<T>
 {
 protected:
 	// Only this one may access the object (through ptr()).
+	friend struct AIAccessConst<T>;
 	friend struct AIAccess<T>;
 
 	// Locking control.
@@ -509,13 +513,13 @@ public:
 };
 
 /**
- * @brief Write lock object and provide read/write access.
+ * @brief Write lock object and provide read access.
  */
 template<typename T>
-struct AIAccess
+struct AIAccessConst
 {
-	//! Construct a AIAccess from a non-constant AIThreadSafeSimple.
-	AIAccess(AIThreadSafeSimple<T>& wrapper) : mWrapper(wrapper)
+	//! Construct a AIAccessConst from a constant AIThreadSafeSimple.
+	AIAccessConst(AIThreadSafeSimple<T> const& wrapper) : mWrapper(const_cast<AIThreadSafeSimple<T>&>(wrapper))
 #if AI_NEED_ACCESS_CC
 		, mIsCopyConstructed(false)
 #endif
@@ -524,12 +528,12 @@ struct AIAccess
 	}
 
 	//! Access the underlaying object for (read and) write access.
-	T* operator->() const { return this->mWrapper.ptr(); }
+	T const* operator->() const { return this->mWrapper.ptr(); }
 
 	//! Access the underlaying object for (read and) write access.
-	T& operator*() const { return *this->mWrapper.ptr(); }
+	T const& operator*() const { return *this->mWrapper.ptr(); }
 
-	~AIAccess()
+	~AIAccessConst()
 	{
 #if AI_NEED_ACCESS_CC
 	  if (mIsCopyConstructed) return;
@@ -538,17 +542,204 @@ struct AIAccess
 	}
 
 protected:
-	AIThreadSafeSimple<T>& mWrapper;	//!< Reference to the object that we provide access to.
+	AIThreadSafeSimple<T>& mWrapper;		//!< Reference to the object that we provide access to.
 
 #if AI_NEED_ACCESS_CC
 	bool mIsCopyConstructed;
 public:
-	AIAccess(AIAccess const& orig) : mWrapper(orig.mWrapper), mIsCopyConstructed(true) { }
+	AIAccessConst(AIAccessConst const& orig) : mWrapper(orig.mWrapper), mIsCopyConstructed(true) { }
 #else
 private:
 	// Disallow copy constructing directly.
-	AIAccess(AIAccess const&);
+	AIAccessConst(AIAccessConst const&);
 #endif
+};
+
+/**
+ * @brief Write lock object and provide read/write access.
+ */
+template<typename T>
+struct AIAccess : public AIAccessConst<T>
+{
+	//! Construct a AIAccess from a non-constant AIThreadSafeSimple.
+	AIAccess(AIThreadSafeSimple<T>& wrapper) : AIAccessConst<T>(wrapper) { }
+
+	//! Access the underlaying object for (read and) write access.
+	T* operator->() const { return this->mWrapper.ptr(); }
+
+	//! Access the underlaying object for (read and) write access.
+	T& operator*() const { return *this->mWrapper.ptr(); }
+};
+
+/**
+ * @brief A wrapper class for objects that should only be accessed by a single thread.
+ *
+ * Use AITHREADSAFESINGLETHREAD to define instances of any type, and use AISTAccess
+ * to get access to the instance.
+ *
+ * For example,
+ *
+ * <code>
+ * class Foo { public: Foo(int, int); };
+ *
+ * AITHREADSAFESINGLETHREAD(Foo, foo, (2, 3));
+ *
+ * AISTAccess<Foo> foo_w(foo);
+ * // Use foo_w-> for read and write access.
+ */
+template<typename T>
+class AIThreadSafeSingleThread : public AIThreadSafeBits<T>
+{
+protected:
+	// Only these one may access the object (through ptr()).
+	friend struct AISTAccessConst<T>;
+	friend struct AISTAccess<T>;
+
+	// For use by AIThreadSafeSingleThreadDC.
+	AIThreadSafeSingleThread(void)
+#ifdef LL_DEBUG
+	  : mAccessed(false)
+#endif
+	{ }
+
+#ifdef LL_DEBUG
+	mutable bool mAccessed;
+	mutable apr_os_thread_t mTheadID;
+
+	void accessed(void) const
+	{
+	  if (!mAccessed)
+	  {
+		mAccessed = true;
+		mTheadID = apr_os_thread_current();
+	  }
+	  else
+	  {
+		llassert_always(apr_os_thread_equal(mTheadID, apr_os_thread_current()));
+	  }
+	}
+#endif
+
+public:
+	// Only for use by AITHREADSAFESINGLETHREAD, see below.
+	AIThreadSafeSingleThread(T* object)
+#ifdef LL_DEBUG
+	  : mAccessed(false)
+#endif
+	{
+	  llassert(object == AIThreadSafeBits<T>::ptr());
+	}
+};
+
+/**
+ * @brief A wrapper class for objects that should only be accessed by a single thread.
+ *
+ * This class is the same as an AIThreadSafeSingleThread wrapper, except that it can only
+ * be used for default constructed objects.
+ *
+ * For example, instead of
+ *
+ * <code>
+ * Foo foo;
+ * </code>
+ *
+ * One would use
+ *
+ * <code>
+ * AIThreadSafeSingleThreadDC<Foo> foo;
+ * </code>
+ *
+ * The advantage over AITHREADSAFESINGLETHREAD is that this object can be allocated with
+ * new on the heap. For example:
+ *
+ * <code>
+ * AIThreadSafeSingleThreadDC<Foo>* ptr = new AIThreadSafeSingleThreadDC<Foo>;
+ * </code>
+ *
+ * which is not possible with AITHREADSAFESINGLETHREAD.
+ */
+template<typename T>
+class AIThreadSafeSingleThreadDC : public AIThreadSafeSingleThread<T>
+{
+public:
+	// Construct a wrapper around a default constructed object.
+	AIThreadSafeSingleThreadDC(void) { new (AIThreadSafeSingleThread<T>::ptr()) T; }
+};
+
+/**
+ * @brief Instantiate a static, global or local object of a given type wrapped in AIThreadSafeSingleThread, using an arbitrary constructor.
+ *
+ * For example, instead of doing
+ *
+ * <code>
+ * Foo foo(x, y);
+ * static Bar bar;
+ * </code>
+ *
+ * One can instantiate a thread-safe instance with
+ *
+ * <code>
+ * AITHREADSAFESINGLETHREAD(Foo, foo, (x, y));
+ * static AITHREADSAFESINGLETHREAD(Bar, bar, );
+ * </code>
+ *
+ * Note: This macro does not allow to allocate such object on the heap.
+ *       If that is needed, have a look at AIThreadSafeSingleThreadDC.
+ */
+#define AITHREADSAFESINGLETHREAD(type, var, paramlist) AIThreadSafeSingleThread<type> var(new (var.memory()) type paramlist)
+
+/**
+ * @brief Access single threaded object for read access.
+ */
+template<typename T>
+struct AISTAccessConst
+{
+	//! Construct a AISTAccessConst from a constant AIThreadSafeSingleThread.
+	AISTAccessConst(AIThreadSafeSingleThread<T> const& wrapper) : mWrapper(const_cast<AIThreadSafeSingleThread<T>&>(wrapper))
+	{
+#if LL_DEBUG
+	  wrapper.accessed();
+#endif
+	}
+
+	//! Access the underlaying object for read access.
+	T const* operator->() const { return this->mWrapper.ptr(); }
+
+	//! Access the underlaying object for read write access.
+	T const& operator*() const { return *this->mWrapper.ptr(); }
+
+protected:
+	AIThreadSafeSingleThread<T>& mWrapper;		//!< Reference to the object that we provide access to.
+
+#if AI_NEED_ACCESS_CC
+public:
+	AISTAccessConst(AISTAccessConst const& orig) : mWrapper(orig.mWrapper) { }
+#else
+private:
+	// Disallow copy constructing directly.
+	AISTAccessConst(AISTAccessConst const&);
+#endif
+};
+
+/**
+ * @brief Access single threaded object for read/write access.
+ */
+template<typename T>
+struct AISTAccess : public AISTAccessConst<T>
+{
+	//! Construct a AISTAccess from a non-constant AIThreadSafeSingleThread.
+	AISTAccess(AIThreadSafeSingleThread<T>& wrapper) : AISTAccessConst<T>(wrapper)
+	{
+#if LL_DEBUG
+	  wrapper.accessed();
+#endif
+	}
+
+	//! Access the underlaying object for (read and) write access.
+	T* operator->() const { return this->mWrapper.ptr(); }
+
+	//! Access the underlaying object for (read and) write access.
+	T& operator*() const { return *this->mWrapper.ptr(); }
 };
 
 #endif

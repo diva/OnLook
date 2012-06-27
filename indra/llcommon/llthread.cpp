@@ -402,6 +402,15 @@ LLMutexBase::LLMutexBase() :
 {
 }
 
+bool LLMutexBase::isSelfLocked() const
+{
+#if LL_DARWIN
+	return mLockingThread == LLThread::currentID();
+#else
+	return mLockingThread == local_thread_ID;
+#endif
+}
+
 void LLMutexBase::lock() 
 { 
 #if LL_DARWIN
@@ -435,15 +444,6 @@ void LLMutexBase::unlock()
 	apr_thread_mutex_unlock(mAPRMutexp);
 }
 
-bool LLMutexBase::isSelfLocked()
-{
-#if LL_DARWIN
-	return mLockingThread == LLThread::currentID();
-#else
-	return mLockingThread == local_thread_ID;
-#endif
-}
-	
 //----------------------------------------------------------------------------
 
 //static

@@ -41,6 +41,9 @@
 
 #ifdef SHOW_ASSERT
 extern LL_COMMON_API bool is_main_thread(void);
+#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
+#else
+#define ASSERT_SINGLE_THREAD do { } while(0)
 #endif
 
 class LLThread;
@@ -74,7 +77,7 @@ class LL_COMMON_API LLThread
 private:
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
-	
+
 public:
 	typedef enum e_thread_status
 	{
@@ -181,15 +184,18 @@ public:
 
 	LLMutexBase() ;
 	
-	void lock();		//blocks
+	void lock();		// blocks
 	void unlock();
 	// Returns true if lock was obtained successfully.
 	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
 
 	// non-blocking, but does do a lock/unlock so not free
 	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
+
+	// Returns true if locked by this thread.
+	bool isSelfLocked() const;
+
 	// get ID of locking thread
-	bool isSelfLocked(); //return true if locked in a same thread		
 	U32 lockingThread() const { return mLockingThread; }
 
 protected:
