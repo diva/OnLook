@@ -118,6 +118,7 @@ extern CWD_API channel_ct sdl;
 extern CWD_API channel_ct backtrace;
 extern CWD_API channel_ct statemachine;
 extern CWD_API channel_ct caps;
+extern CWD_API channel_ct curl;
 
 #endif
 

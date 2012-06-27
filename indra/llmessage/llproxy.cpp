@@ -406,16 +406,6 @@ void LLProxy::cleanupClass()
 	deleteSingleton();
 }
 
-void LLProxy::applyProxySettings(LLCurlEasyRequest* handle)
-{
-	applyProxySettings(handle->getEasy());
-}
-
-void LLProxy::applyProxySettings(LLCurl::Easy* handle)
-{
-	applyProxySettings(handle->getCurlHandle());
-}
-
 /**
  * @brief Apply proxy settings to a CuRL request if an HTTP proxy is enabled.
  *
@@ -425,9 +415,9 @@ void LLProxy::applyProxySettings(LLCurl::Easy* handle)
  * When the HTTP proxy is enabled, the proxy mutex will
  * be locked every time this method is called.
  *
- * @param handle A pointer to a valid CURL request, before it has been performed.
+ * @param curlEasyRequest_w An already locked curl easy handle, before it has been performed.
  */
-void LLProxy::applyProxySettings(CURL* handle)
+void LLProxy::applyProxySettings(AICurlEasyRequest_wat const& curlEasyRequest_w)
 {
 	// Do a faster unlocked check to see if we are supposed to proxy.
 	if (mHTTPProxyEnabled)
@@ -437,21 +427,21 @@ void LLProxy::applyProxySettings(CURL* handle)
 		// Now test again to verify that the proxy wasn't disabled between the first check and the lock.
 		if (mHTTPProxyEnabled)
 		{
-			LLCurlFF::check_easy_code(curl_easy_setopt(handle, CURLOPT_PROXY, mHTTPProxy.getIPString().c_str()));
-			LLCurlFF::check_easy_code(curl_easy_setopt(handle, CURLOPT_PROXYPORT, mHTTPProxy.getPort()));
+			curlEasyRequest_w->setopt(CURLOPT_PROXY, mHTTPProxy.getIPString().c_str());
+			curlEasyRequest_w->setopt(CURLOPT_PROXYPORT, mHTTPProxy.getPort());
 
 			if (mProxyType == LLPROXY_SOCKS)
 			{
-				LLCurlFF::check_easy_code(curl_easy_setopt(handle, CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5));
+				curlEasyRequest_w->setopt(CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
 				if (mAuthMethodSelected == METHOD_PASSWORD)
 				{
 					std::string auth_string = mSocksUsername + ":" + mSocksPassword;
-					LLCurlFF::check_easy_code(curl_easy_setopt(handle, CURLOPT_PROXYUSERPWD, auth_string.c_str()));
+					curlEasyRequest_w->setopt(CURLOPT_PROXYUSERPWD, auth_string.c_str());
 				}
 			}
 			else
 			{
-				LLCurlFF::check_easy_code(curl_easy_setopt(handle, CURLOPT_PROXYTYPE, CURLPROXY_HTTP));
+				curlEasyRequest_w->setopt(CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
 			}
 		}
 	}

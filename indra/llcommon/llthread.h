@@ -57,6 +57,12 @@ class LLCondition;
 #define ll_thread_local __thread
 #endif
 
+class LL_COMMON_API LLThreadLocalDataMember
+{
+public:
+	virtual ~LLThreadLocalDataMember() { };
+};
+
 class LL_COMMON_API LLThreadLocalData
 {
 private:
@@ -66,11 +72,18 @@ public:
 	// Thread-local memory pool.
 	LLAPRRootPool mRootPool;
 	LLVolatileAPRPool mVolatileAPRPool;
+	LLThreadLocalDataMember* mCurlMultiHandle;	// Initialized by AICurlMultiHandle::getInstance
+	char* mCurlErrorBuffer;						// NULL, or pointing to a buffer used by libcurl.
+	std::string mName;							// "main thread", or a copy of LLThread::mName.
 
 	static void init(void);
 	static void destroy(void* thread_local_data);
 	static void create(LLThread* pthread);
 	static LLThreadLocalData& tldata(void);
+
+private:
+	LLThreadLocalData(char const* name);
+	~LLThreadLocalData();
 };
 
 class LL_COMMON_API LLThread
@@ -78,6 +91,7 @@ class LL_COMMON_API LLThread
 private:
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
+	static LLAtomicS32	sRunning;
 
 public:
 	typedef enum e_thread_status
@@ -96,8 +110,9 @@ public:
 	
 	static U32 currentID(); // Return ID of current thread
 	static S32 getCount() { return sCount; }	
+	static S32 getRunning() { return sRunning; }
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
-	
+
 public:
 	// PAUSE / RESUME functionality. See source code for important usage notes.
 	// Called from MAIN THREAD.
@@ -204,6 +219,11 @@ protected:
 	apr_thread_mutex_t* mAPRMutexp;
 	mutable U32			mCount;
 	mutable U32			mLockingThread;
+
+private:
+	// Disallow copy construction and assignment.
+	LLMutexBase(LLMutexBase const&);
+	LLMutexBase& operator=(LLMutexBase const&);
 };
 
 class LL_COMMON_API LLMutex : public LLMutexBase
@@ -223,10 +243,6 @@ public:
 
 protected:
 	LLAPRPool mPool;
-private:
-	// Disable copy construction, as si teh bomb!!! -SG
-	LLMutex(const LLMutex&);
-	LLMutex& operator=(const LLMutex&);
 };
 
 #if APR_HAS_THREADS
@@ -380,6 +396,16 @@ public:
 		mNoHoldersCondition.signal();			// Tell waiting readers, see [5].
 		mNoHoldersCondition.unlock();			// Release lock on mHoldersCount.
 	}
+#if LL_DEBUG
+	// Really only intended for debugging purposes:
+	bool isLocked(void)
+	{
+		mNoHoldersCondition.lock();
+		bool res = mHoldersCount;
+		mNoHoldersCondition.unlock();
+		return res;
+	}
+#endif
 };
 
 //============================================================================

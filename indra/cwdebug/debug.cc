@@ -173,6 +173,7 @@ void stop_recording_backtraces(void)
       channel_ct backtrace DDCN("BACKTRACE");	//!< This debug channel is used for backtraces.
       channel_ct statemachine DDCN("STATEMACHINE");	//!< This debug channel is used for output related to class AIStateMachine.
       channel_ct caps DDCN("CAPS");		//!< This debug channel is used for output related to Capabilities.
+      channel_ct curl DDCN("CURL");		//!< This debug channel is used for output related to Curl.
 
     } // namespace dc
   } // namespace DEBUGCHANNELS

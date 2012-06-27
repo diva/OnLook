@@ -240,11 +240,14 @@ public:
 	virtual bool build(LLPumpIO::chain_t& chain, LLSD context) const
 	{
 		lldebugs << "LLSDRPCClientFactory::build" << llendl;
-		LLURLRequest* http(new LLURLRequest(LLURLRequest::HTTP_POST));
-		if(!http->isValid())
+		LLURLRequest* http;
+		try
 		{
-			llwarns << "Creating LLURLRequest failed." << llendl ;
-			delete http;
+			http = new LLURLRequest(LLURLRequest::HTTP_POST);
+		}
+		catch(AICurlNoEasyHandle const& error)
+		{
+			llwarns << "Creating LLURLRequest failed: " << error.what() << llendl ;
 			return false;
 		}
 
@@ -291,11 +294,14 @@ public:
 	{
 		lldebugs << "LLXMLSDRPCClientFactory::build" << llendl;
 
-		LLURLRequest* http(new LLURLRequest(LLURLRequest::HTTP_POST));
-		if(!http->isValid())
+		LLURLRequest* http;
+		try
 		{
-			llwarns << "Creating LLURLRequest failed." << llendl ;
-			delete http;
+			http = new LLURLRequest(LLURLRequest::HTTP_POST);
+		}
+		catch(AICurlNoEasyHandle const& error)
+		{
+			llwarns << "Creating LLURLRequest failed: " << error.what() << llendl ;
 			return false ;
 		}
 		LLIOPipe::ptr_t service(new Client);

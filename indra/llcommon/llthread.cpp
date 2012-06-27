@@ -68,6 +68,7 @@ U32 ll_thread_local local_thread_ID = 0;
 
 U32 LLThread::sIDIter = 0;
 LLAtomicS32	LLThread::sCount = 0;
+LLAtomicS32	LLThread::sRunning = 0;
 
 LL_COMMON_API void assert_main_thread()
 {
@@ -119,6 +120,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// the critical area of the mSignal lock)].
 	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
 
+	--sRunning;		// Would be better to do this after joining with the thread, but we don't join :/
 	return NULL;
 }
 
@@ -194,6 +196,7 @@ void LLThread::start()
 	
 	// Set thread state to running
 	mStatus = RUNNING;
+	sRunning++;
 
 	apr_status_t status =
 		apr_thread_create(&mAPRThreadp, NULL, staticRun, (void *)this, tldata().mRootPool());
@@ -205,6 +208,7 @@ void LLThread::start()
 	}
 	else
 	{
+		--sRunning;
 		mStatus = STOPPED;
 		llwarns << "failed to start thread " << mName << llendl;
 		ll_apr_warn_status(status);
@@ -315,6 +319,16 @@ LL_COMMON_API bool is_main_thread(void) { return apr_os_thread_equal(main_thread
 // The thread private handle to access the LLThreadLocalData instance.
 apr_threadkey_t* LLThreadLocalData::sThreadLocalDataKey;
 
+LLThreadLocalData::LLThreadLocalData(char const* name) : mCurlMultiHandle(NULL), mCurlErrorBuffer(NULL), mName(name)
+{
+}
+
+LLThreadLocalData::~LLThreadLocalData()
+{
+  delete mCurlMultiHandle;
+  delete [] mCurlErrorBuffer;
+}
+
 //static
 void LLThreadLocalData::init(void)
 {
@@ -348,7 +362,7 @@ void LLThreadLocalData::destroy(void* thread_local_data)
 //static
 void LLThreadLocalData::create(LLThread* threadp)
 {
-	LLThreadLocalData* new_tld = new LLThreadLocalData;
+	LLThreadLocalData* new_tld = new LLThreadLocalData(threadp ? threadp->mName.c_str() : "main thread");
 	if (threadp)
 	{
 		threadp->mThreadLocalData = new_tld;

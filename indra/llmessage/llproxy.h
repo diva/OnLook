@@ -206,15 +206,7 @@ enum LLSocks5AuthType
  * The implementation of HTTP proxying is handled by libcurl. LLProxy
  * is responsible for managing the HTTP proxy options and provides a
  * thread-safe method to apply those options to a curl request
- * (LLProxy::applyProxySettings()). This method is overloaded
- * to accommodate the various abstraction libcurl layers that exist
- * throughout the viewer (LLCurlEasyRequest, LLCurl::Easy, and CURL).
- *
- * If you are working with LLCurl or LLCurlEasyRequest objects,
- * the configured proxy settings will be applied in the constructors
- * of those request handles.  If you are working with CURL objects
- * directly, you will need to pass the handle of the request to
- * applyProxySettings() before issuing the request.
+ * (LLProxy::applyProxySettings()).
  *
  * To ensure thread safety, all LLProxy members that relate to the HTTP
  * proxy require the LLProxyMutex to be locked before accessing.
@@ -251,9 +243,7 @@ public:
 
 	// Apply the current proxy settings to a curl request. Doesn't do anything if mHTTPProxyEnabled is false.
 	// Safe to call from any thread.
-	void applyProxySettings(CURL* handle);
-	void applyProxySettings(LLCurl::Easy* handle);
-	void applyProxySettings(LLCurlEasyRequest* handle);
+	void applyProxySettings(AICurlEasyRequest_wat const& curlEasyRequest_w);
 
 	// Start a connection to the SOCKS 5 proxy. Call from main thread only.
 	S32 startSOCKSProxy(LLHost host);

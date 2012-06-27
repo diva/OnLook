@@ -237,7 +237,7 @@ class AIStateMachine {
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
-	virtual ~AIStateMachine() { llassert(mState == bs_killed && mActive == as_idle); }
+	virtual ~AIStateMachine() { llassert((mState == bs_killed && mActive == as_idle) || mState == bs_initialize); }
 
   public:
 	//! Halt the state machine until cont() is called.

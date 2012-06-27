@@ -760,7 +760,7 @@ BOOL LLPanelRegionGeneralInfo::sendUpdate()
 		body["allow_parcel_changes"] = childGetValue("allow_parcel_changes_check");
 		body["block_parcel_search"] = childGetValue("block_parcel_search_check");
 
-		LLHTTPClient::post(url, body, new LLHTTPClient::Responder());
+		LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);
 	}
 	else
 	{
