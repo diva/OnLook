@@ -176,6 +176,10 @@ class CurlEasyRequest : public CurlEasyHandle {
 	// Reset everything to the state it was in when this object was just created.
 	void resetState(void);
 
+  private:
+	// Called from applyDefaultOptions.
+	void applyProxySettings(void);
+
   public:
 	// Set default options that we want applied to all curl easy handles.
 	void applyDefaultOptions(void);

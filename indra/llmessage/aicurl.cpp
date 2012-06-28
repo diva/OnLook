@@ -805,6 +805,39 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
 }
 #endif
 
+void CurlEasyRequest::applyProxySettings(void)
+{
+  LLProxy& proxy = *LLProxy::getInstance();
+
+  // Do a faster unlocked check to see if we are supposed to proxy.
+  if (proxy.HTTPProxyEnabled())
+  {
+	// We think we should proxy, read lock the shared proxy members.
+	LLProxy::Shared_crat proxy_r(proxy.shared_lockobj());
+
+	// Now test again to verify that the proxy wasn't disabled between the first check and the lock.
+	if (proxy.HTTPProxyEnabled())
+	{
+	  setopt(CURLOPT_PROXY, proxy.getHTTPProxy(proxy_r).getIPString().c_str());
+	  setopt(CURLOPT_PROXYPORT, proxy.getHTTPProxy(proxy_r).getPort());
+
+	  if (proxy.getHTTPProxyType(proxy_r) == LLPROXY_SOCKS)
+	  {
+		setopt(CURLOPT_PROXYTYPE, CURLPROXY_SOCKS5);
+		if (proxy.getSelectedAuthMethod(proxy_r) == METHOD_PASSWORD)
+		{
+		  std::string auth_string = proxy.getSocksUser(proxy_r) + ":" + proxy.getSocksPwd(proxy_r);
+		  setopt(CURLOPT_PROXYUSERPWD, auth_string.c_str());
+		}
+	  }
+	  else
+	  {
+		setopt(CURLOPT_PROXYTYPE, CURLPROXY_HTTP);
+	  }
+	}
+  }
+}
+
 void CurlEasyRequest::applyDefaultOptions(void)
 {
   CertificateAuthority_rat CertificateAuthority_r(gCertificateAuthority);
@@ -822,7 +855,7 @@ void CurlEasyRequest::applyDefaultOptions(void)
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
   // Set the CURL options for either Socks or HTTP proxy.
-  LLProxy::getInstance()->applyProxySettings(this);
+  applyProxySettings();
   Debug(
 	if (dc::curl.is_on())
 	{
