@@ -204,6 +204,10 @@ void ssl_cleanup(void)
 } // namespace openSSL
 //-----------------------------------------------------------------------------------
 
+static unsigned int encoded_version(int major, int minor, int patch)
+{
+  return (major << 16) | (minor << 8) | patch;
+}
 
 //==================================================================================
 // External API
@@ -283,7 +287,8 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 	  }
 	}
 
-	gSetoptParamsNeedDup = (version_info->version_num < 0x071700);
+	// Before version 7.17.0, strings were not copied. Instead the user was forced keep them available until libcurl no longer needed them.
+	gSetoptParamsNeedDup = (version_info->version_num < encoded_version(7, 17, 0));
 	if (gSetoptParamsNeedDup)
 	{
 	  llwarns << "Your libcurl version is too old." << llendl;
