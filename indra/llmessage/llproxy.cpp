@@ -179,7 +179,7 @@ S32 LLProxy::proxyHandshake(LLHost proxy)
 	}
 
 	{
-		// Write acccess type and read access type are really the same, so unshared_w must be simply a reference.
+		// Write access type and read access type are really the same, so unshared_w must be simply a reference.
 		Unshared_wat& unshared_w = unshared_r;
 		unshared_w->mUDPProxy.setPort(ntohs(connect_reply.port)); // reply port is in network byte order
 		unshared_w->mUDPProxy.setAddress(proxy.getAddress());

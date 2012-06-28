@@ -125,19 +125,19 @@ void setCAPath(std::string const& file);
 // The life cycle of classes derived from this class is as follows:
 // They are allocated with new on the line where get(), getByteRange() or post() is called,
 // and the pointer to the allocated object is then put in a reference counting ResponderPtr.
-// This ResponderPtr is passed to CurlResponderBuffer::prepRequest which stores it in it's
-// member mResponder. Hence, the life time of a Responder is never longer than it's
-// associated CurlResponderBuffer, however, if everything works correct, then normally a
+// This ResponderPtr is passed to CurlResponderBuffer::prepRequest which stores it in its
+// member mResponder. Hence, the life time of a Responder is never longer than its
+// associated CurlResponderBuffer, however, if everything works correctly, then normally a
 // responder is deleted in CurlResponderBuffer::removed_from_multi_handle by setting
 // mReponder to NULL.
 //
-// Note that the life time of CurlResponderBuffer is (a bit) shorter than the associated
+// Note that the lifetime of CurlResponderBuffer is (a bit) shorter than the associated
 // CurlEasyRequest (because of the order of base classes of ThreadSafeBufferedCurlEasyRequest)
 // and the callbacks, as set by prepRequest, only use those two.
 // A callback locks the CurlEasyRequest before actually making the callback, and the
 // destruction of CurlResponderBuffer also first locks the CurlEasyRequest, and then revokes
 // the callbacks. This assures that a Responder is never used when the objects it uses are
-// destructed. Also, if any of those are destructed then the responder is automatically
+// destructed. Also, if any of those are destructed then the Responder is automatically
 // destructed too.
 //
 class Responder {
@@ -150,8 +150,8 @@ class Responder {
 	std::string mURL;
 
   public:
-	// Called to set the url of the current request for this responder,
-	// used only when printing debug output regarding activity of the responder.
+	// Called to set the URL of the current request for this Responder,
+	// used only when printing debug output regarding activity of the Responder.
 	void setURL(std::string const& url);
 
   public:
@@ -193,7 +193,7 @@ class Responder {
 
   public:
 	// Called from LLSDMessage::ResponderAdapter::listener.
-	// LLSDMessage::ResponderAdapter is a hack, showing among others by fact that these function needs to be public.
+	// LLSDMessage::ResponderAdapter is a hack, showing among others by fact that these functions need to be public.
 
 	void pubErrorWithContent(U32 status, std::string const& reason, LLSD const& content) { errorWithContent(status, reason, content); }
 	void pubResult(LLSD const& content) { result(content); }
@@ -246,12 +246,12 @@ struct AICurlEasyHandleEvents {
 // Therefore we use the following trick: we wrap CurlEasyRequestPtr too, and only allow
 // read accesses on it.
 
-// AICurlEasyRequest: a thread safe, reference counting, auto cleaning curl easy handle.
+// AICurlEasyRequest: a thread safe, reference counting, auto-cleaning curl easy handle.
 class AICurlEasyRequest {
   public:
 	// Initial construction is allowed (thread-safe).
 	// Note: If ThreadSafeCurlEasyRequest() throws then the memory allocated is still freed.
-	// 'new' never returned however and the constructor nor destructor of mCurlEasyRequest is called in this case.
+	// 'new' never returned however and neither the constructor nor destructor of mCurlEasyRequest is called in this case.
 	// This might throw AICurlNoEasyHandle.
 	AICurlEasyRequest(bool buffered) :
 	    mCurlEasyRequest(buffered ? new AICurlPrivate::ThreadSafeBufferedCurlEasyRequest : new AICurlPrivate::ThreadSafeCurlEasyRequest) { }
@@ -295,7 +295,7 @@ class AICurlEasyRequest {
 
 	// If we have a correct (with regard to reference counting) AICurlPrivate::CurlEasyRequestPtr,
 	// then it's OK to construct a AICurlEasyRequest from it.
-	// Note that the external AICurlPrivate::CurlEasyRequestPtr needs it's own locking, because
+	// Note that the external AICurlPrivate::CurlEasyRequestPtr needs its own locking, because
 	// it's not thread-safe in itself.
 	AICurlEasyRequest(AICurlPrivate::CurlEasyRequestPtr const& ptr) : mCurlEasyRequest(ptr) { }
 
