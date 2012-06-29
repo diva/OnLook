@@ -83,6 +83,13 @@ bool gSetoptParamsNeedDup;
 
 } // namespace
 
+// See http://www.openssl.org/docs/crypto/threads.html:
+// CRYPTO_THREADID and associated functions were introduced in OpenSSL 1.0.0 to replace
+// (actually, deprecate) the previous CRYPTO_set_id_callback(), CRYPTO_get_id_callback(),
+// and CRYPTO_thread_id() functions which assumed thread IDs to always be represented by
+// 'unsigned long'.
+#define HAVE_CRYPTO_THREADID (OPENSSL_VERSION_NUMBER >= (1 << 28))
+
 //-----------------------------------------------------------------------------------
 // Needed for thread-safe openSSL operation.
 
@@ -115,6 +122,7 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
   }
 }
 
+#if HAVE_CRYPTO_THREADID
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
 {
@@ -124,6 +132,7 @@ void ssl_id_function(CRYPTO_THREADID* thread_id)
   CRYPTO_THREADID_set_pointer(thread_id, apr_os_thread_current());
 #endif
 }
+#endif // HAVE_CRYPTO_THREADID
 
 // OpenSSL allocate and initialize dynamic crypto lock.
 CRYPTO_dynlock_value* ssl_dyn_create_function(char const* file, int line)
@@ -157,13 +166,21 @@ void ssl_dyn_lock_function(int mode, CRYPTO_dynlock_value* l, char const* file, 
 }
 
 typedef void (*ssl_locking_function_type)(int, int, char const*, int);
+#if HAVE_CRYPTO_THREADID
 typedef void (*ssl_id_function_type)(CRYPTO_THREADID*);
+#else
+typedef unsigned long (*ulong_thread_id_function_type)(void);
+#endif
 typedef CRYPTO_dynlock_value* (*ssl_dyn_create_function_type)(char const*, int);
 typedef void (*ssl_dyn_destroy_function_type)(CRYPTO_dynlock_value*, char const*, int);
 typedef void (*ssl_dyn_lock_function_type)(int, CRYPTO_dynlock_value*, char const*, int);
 
 ssl_locking_function_type     old_ssl_locking_function;
+#if HAVE_CRYPTO_THREADID
 ssl_id_function_type          old_ssl_id_function;
+#else
+ulong_thread_id_function_type old_ulong_thread_id_function;
+#endif
 ssl_dyn_create_function_type  old_ssl_dyn_create_function;
 ssl_dyn_destroy_function_type old_ssl_dyn_destroy_function;
 ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
@@ -171,13 +188,36 @@ ssl_dyn_lock_function_type    old_ssl_dyn_lock_function;
 // Initialize OpenSSL library for thread-safety.
 void ssl_init(void)
 {
+  // The version identifier format is: MMNNFFPPS: major minor fix patch status.
+  int const compiled_openSLL_major = (OPENSSL_VERSION_NUMBER >> 28) & 0xff;
+  int const compiled_openSLL_minor = (OPENSSL_VERSION_NUMBER >> 20) & 0xff;
+  int const linked_openSLL_major = (SSLeay() >> 28) & 0xff;
+  int const linked_openSLL_minor = (SSLeay() >> 20) & 0xff;
+  // Check if dynamically loaded version is compatible with the one we compiled against.
+  // As off version 1.0.0 also minor versions are compatible.
+  if (linked_openSLL_major != compiled_openSLL_major ||
+	  (compiled_openSLL_major == 0 && linked_openSLL_minor != compiled_openSLL_minor))
+  {
+	llerrs << "The viewer was compiled against " << OPENSSL_VERSION_TEXT <<
+	    " but linked against " << SSLeay_version(SSLEAY_VERSION) <<
+		". Those versions are not compatible." << llendl;
+  }
   // Static locks vector.
   ssl_rwlock_array = new AIRWLock[CRYPTO_num_locks()];
   // Static locks callbacks.
   old_ssl_locking_function = CRYPTO_get_locking_callback();
+#if HAVE_CRYPTO_THREADID
   old_ssl_id_function = CRYPTO_THREADID_get_callback();
+#else
+  old_ulong_thread_id_function = CRYPTO_get_id_callback();
+#endif
   CRYPTO_set_locking_callback(&ssl_locking_function);
-  CRYPTO_THREADID_set_callback(&ssl_id_function);		// Setting this avoids the need for a thread-local error number facility, which is hard to check.
+  // Setting this avoids the need for a thread-local error number facility, which is hard to check.
+#if HAVE_CRYPTO_THREADID
+  CRYPTO_THREADID_set_callback(&ssl_id_function);
+#else
+  CRYPTO_set_id_callback(&apr_os_thread_current);
+#endif
   // Dynamic locks callbacks.
   old_ssl_dyn_create_function = CRYPTO_get_dynlock_create_callback();
   old_ssl_dyn_lock_function = CRYPTO_get_dynlock_lock_callback();
@@ -185,6 +225,8 @@ void ssl_init(void)
   CRYPTO_set_dynlock_create_callback(&ssl_dyn_create_function);
   CRYPTO_set_dynlock_lock_callback(&ssl_dyn_lock_function);
   CRYPTO_set_dynlock_destroy_callback(&ssl_dyn_destroy_function);
+  llinfos << "Successful initialization of " <<
+	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
 }
 
 // Cleanup OpenSLL library thread-safety.
@@ -195,7 +237,11 @@ void ssl_cleanup(void)
   CRYPTO_set_dynlock_lock_callback(old_ssl_dyn_lock_function);
   CRYPTO_set_dynlock_create_callback(old_ssl_dyn_create_function);
   // Static locks callbacks.
+#if HAVE_CRYPTO_THREADID
   CRYPTO_THREADID_set_callback(old_ssl_id_function);
+#else
+  CRYPTO_set_id_callback(old_ulong_thread_id_function);
+#endif
   CRYPTO_set_locking_callback(old_ssl_locking_function);
   // Static locks vector.
   delete [] ssl_rwlock_array;
@@ -246,7 +292,7 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 	}
 
 	llinfos << "Successful initialization of libcurl " <<
-		version_info->version << " (" << version_info->version_num << "), (" <<
+		version_info->version << " (0x" << std::hex << version_info->version_num << "), (" <<
 	    version_info->ssl_version << ", libz/" << version_info->libz_version << ")." << llendl;
 
 	// Detect SSL library used.
