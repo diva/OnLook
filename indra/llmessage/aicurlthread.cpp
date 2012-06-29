@@ -115,9 +115,9 @@ namespace curlthread {
 //-----------------------------------------------------------------------------
 // PollSet
 
-// A PollSet can store at least 1024 file descriptors, or FD_SETSIZE if that is larger than 1024 [MAXSIZE].
-// The number of stored file descriptors is mNrFds [0 <= mNrFds <= MAXSIZE].
-// The largest file descriptor is stored is mMaxFd, which is -1 iff mNrFds == 0.
+// A PollSet can store at least 1024 filedescriptors, or FD_SETSIZE if that is larger than 1024 [MAXSIZE].
+// The number of stored filedescriptors is mNrFds [0 <= mNrFds <= MAXSIZE].
+// The largest filedescriptor is stored is mMaxFd, which is -1 iff mNrFds == 0.
 // The file descriptors are stored contiguous in mFileDescriptors[i], with 0 <= i < mNrFds.
 // File descriptors with the highest priority should be stored first (low index).
 //
@@ -126,7 +126,7 @@ namespace curlthread {
 //
 // After a call to refresh():
 //
-// mFdSet has bits set for at most FD_SETSIZE - 1 file descriptors, copied from mFileDescriptors starting
+// mFdSet has bits set for at most FD_SETSIZE - 1 filedescriptors, copied from mFileDescriptors starting
 // at index mNext (wrapping around to 0). If mNrFds < FD_SETSIZE then mNext is reset to 0 before copying starts.
 // If mNrFds >= FD_SETSIZE then mNext is set to the next filedescriptor that was not copied (otherwise it is left at 0).
 //
@@ -139,7 +139,7 @@ PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [std::max(1024, FD_S
   FD_ZERO(&mFdSet);
 }
 
-// Add file descriptor s to the PollSet.
+// Add filedescriptor s to the PollSet.
 void PollSet::add(curl_socket_t s)
 {
   llassert_always(mNrFds < mSize);
@@ -147,7 +147,7 @@ void PollSet::add(curl_socket_t s)
   mMaxFd = std::max(mMaxFd, s);
 }
 
-// Remove file descriptor s from the PollSet.
+// Remove filedescriptor s from the PollSet.
 void PollSet::remove(curl_socket_t s)
 {
   // The number of open filedescriptors is relatively small,
@@ -220,8 +220,8 @@ refresh_t PollSet::refresh(void)
 
   llassert_always(mNext < mNrFds);
 
-  // Test if mNrFds is larger or equal FD_SETSIZE; equal, because we reserve one
-  // file descriptor for the wakeup fd: we copy maximal FD_SETSIZE - 1 file descriptors.
+  // Test if mNrFds is larger than or equal FD_SETSIZE; equal, because we reserve one
+  // filedescriptor for the wakeup fd: we copy maximal FD_SETSIZE - 1 filedescriptors.
   // If not then we're going to copy everything so that we can save on CPU cycles
   // by not calculating mMaxFdSet here.
   if (mNrFds >= FD_SETSIZE)
@@ -278,8 +278,8 @@ refresh_t PollSet::refresh(void)
   return complete_not_empty;
 }
 
-// FIXME: This needs a rewrite on windows, as FD_ISSET is slow there; it would make
-// more sense to iterate directly over the fd's in mFdSet on windows.
+// FIXME: This needs a rewrite on Windows, as FD_ISSET is slow there; it would make
+// more sense to iterate directly over the fd's in mFdSet on Windows.
 void PollSet::reset(void)
 {
   llassert((mNrFds == 0) == mCopiedFileDescriptors.empty());
@@ -298,8 +298,8 @@ inline int PollSet::get(void) const
   return (mIter == mCopiedFileDescriptors.end()) ? -1 : *mIter;
 }
 
-// FIXME: This needs a rewrite on windows, as FD_ISSET is slow there; it would make
-// more sense to iterate directly over the fd's in mFdSet on windows.
+// FIXME: This needs a rewrite on Windows, as FD_ISSET is slow there; it would make
+// more sense to iterate directly over the fd's in mFdSet on Windows.
 void PollSet::next(void)
 {
   llassert(mIter != mCopiedFileDescriptors.end());	// Only call next() if the last call to get() didn't return -1.
@@ -476,7 +476,7 @@ AICurlThread::~AICurlThread()
 void AICurlThread::create_wakeup_fds(void)
 {
 #ifdef WINDOWS
-// Probably need to use sockets here, cause windows select doesn't work for a pipe.
+// Probably need to use sockets here, cause Windows select doesn't work for a pipe.
 #error Missing implementation
 #else
   int pipefd[2];
@@ -626,7 +626,7 @@ void AICurlThread::run(void)
 	int nfds = std::max(max_rfd, max_wfd) + 1;
 	llassert(0 <= nfds && nfds <= FD_SETSIZE);
 	llassert((max_rfd == -1) == (read_fd_set == NULL) &&
-		     (max_wfd == -1) == (write_fd_set == NULL));	// Needed on windows.
+		     (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.
 	llassert((max_rfd == -1 || multi_handle_w->mReadPollSet.is_set(max_rfd)) &&
 		     (max_wfd == -1 || multi_handle_w->mWritePollSet.is_set(max_wfd)));
 	int ready = 0;
@@ -971,7 +971,7 @@ void AICurlEasyRequest::addRequest(void)
 	  command_being_processed_rat command_being_processed_r(command_being_processed);
 	  if (*command_being_processed_r == *this)
 	  {
-		// May not be inbetween being removed from the command queue but not added to the multi session handle yet.
+		// May not be in-between being removed from the command queue but not added to the multi session handle yet.
 		llassert(command_being_processed_r->command() == cmd_remove);
 	  }
 	  else
@@ -1020,7 +1020,7 @@ void AICurlEasyRequest::removeRequest(void)
 	  command_being_processed_rat command_being_processed_r(command_being_processed);
 	  if (*command_being_processed_r == *this)
 	  {
-		// May not be inbetween being removed from the command queue but not removed from the multi session handle yet.
+		// May not be in-between being removed from the command queue but not removed from the multi session handle yet.
 		llassert(command_being_processed_r->command() != cmd_remove);
 	  }
 	  else

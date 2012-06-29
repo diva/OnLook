@@ -244,7 +244,7 @@ struct ProxyShared
 	// HTTP proxy address and port
 	LLHost mHTTPProxy;
 
-	// Currently selected HTTP proxy type. Can be web or socks.
+	// Currently selected HTTP proxy type. Can be web or SOCKS.
 	LLHttpProxyType mProxyType;
 
 	// SOCKS 5 selected authentication method.

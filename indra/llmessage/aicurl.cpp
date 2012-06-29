@@ -229,7 +229,7 @@ void ssl_init(void)
 	  SSLeay_version(SSLEAY_VERSION) << " (0x" << std::hex << SSLeay() << ")." << llendl;
 }
 
-// Cleanup OpenSLL library thread-safety.
+// Cleanup OpenSSL library thread-safety.
 void ssl_cleanup(void)
 {
   // Dynamic locks callbacks.
@@ -895,7 +895,7 @@ void CurlEasyRequest::applyDefaultOptions(void)
   setoptString(CURLOPT_CAINFO, CertificateAuthority_r->file);
   // This option forces openssl to use TLS version 1.
   // The Linden Lab servers don't support later TLS versions, and libopenssl-1.0.1c has
-  // a bug were renegotion fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
+  // a bug where renegotiation fails (see http://rt.openssl.org/Ticket/Display.html?id=2828),
   // causing the connection to fail completely without this hack.
   // For a commandline test of the same, observe the difference between:
   // openssl s_client       -connect login.agni.lindenlab.com:443 -CAfile packaged/app_settings/CA.pem -debug
@@ -905,12 +905,12 @@ void CurlEasyRequest::applyDefaultOptions(void)
   setopt(CURLOPT_NOSIGNAL, 1);
   // The old code did this for the 'buffered' version, but I think it's nonsense.
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
-  // Set the CURL options for either Socks or HTTP proxy.
+  // Set the CURL options for either SOCKS or HTTP proxy.
   applyProxySettings();
   Debug(
 	if (dc::curl.is_on())
 	{
-	  setopt(CURLOPT_VERBOSE, 1);					// Usefull for debugging.
+	  setopt(CURLOPT_VERBOSE, 1);					// Useful for debugging.
 	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_callback);
 	  setopt(CURLOPT_DEBUGDATA, this);
 	}
@@ -925,11 +925,11 @@ void CurlEasyRequest::finalizeRequest(std::string const& url)
   lldebugs << url << llendl;
   setopt(CURLOPT_HTTPHEADER, mHeaders);
   setoptString(CURLOPT_URL, url);
-  // The following line is a bit tricky: we store a pointer to the object without increasing it's reference count.
+  // The following line is a bit tricky: we store a pointer to the object without increasing its reference count.
   // Of course we could increment the reference count, but that doesn't help much: if then this pointer would
   // get "lost" we'd have a memory leak. Either way we must make sure that it is impossible that this pointer
   // will be used if the object is deleted [In fact, since this is finalizeRequest() and not addRequest(),
-  // incrementing the reference counter would be wrong: if addRequest is never called then the object is
+  // incrementing the reference counter would be wrong: if addRequest() is never called then the object is
   // destroyed shortly after and this pointer is never even used.]
   // This pointer is used in MultiHandle::check_run_count, which means that addRequest() was called and
   // the reference counter was increased and the object is being kept alive, see the comments above
@@ -1004,7 +1004,7 @@ CurlResponderBuffer::CurlResponderBuffer()
 CurlResponderBuffer::~CurlResponderBuffer()
 {
   ThreadSafeBufferedCurlEasyRequest* lockobj = get_lockobj();
-  AICurlEasyRequest_wat curl_easy_request_w(*lockobj);				// Wait till possible callbacks have returned.
+  AICurlEasyRequest_wat curl_easy_request_w(*lockobj);				// Wait 'til possible callbacks have returned.
   curl_easy_request_w->send_events_to(NULL);
   curl_easy_request_w->revokeCallbacks();
   if (mResponder)
@@ -1093,7 +1093,7 @@ size_t CurlResponderBuffer::curlWriteCallback(char* data, size_t size, size_t nm
   ThreadSafeBufferedCurlEasyRequest* lockobj = static_cast<ThreadSafeBufferedCurlEasyRequest*>(user_data);
 
   // We need to lock the curl easy request object too, because that lock is used
-  // to make sure that callbacks and destruction aren't done simulaneously.
+  // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
   AICurlResponderBuffer_wat buffer_w(*lockobj);
@@ -1108,7 +1108,7 @@ size_t CurlResponderBuffer::curlReadCallback(char* data, size_t size, size_t nme
   ThreadSafeBufferedCurlEasyRequest* lockobj = static_cast<ThreadSafeBufferedCurlEasyRequest*>(user_data);
 
   // We need to lock the curl easy request object too, because that lock is used
-  // to make sure that callbacks and destruction aren't done simulaneously.
+  // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
   AICurlResponderBuffer_wat buffer_w(*lockobj);
@@ -1129,7 +1129,7 @@ size_t CurlResponderBuffer::curlHeaderCallback(char* data, size_t size, size_t n
   ThreadSafeBufferedCurlEasyRequest* lockobj = static_cast<ThreadSafeBufferedCurlEasyRequest*>(user_data);
 
   // We need to lock the curl easy request object too, because that lock is used
-  // to make sure that callbacks and destruction aren't done simulaneously.
+  // to make sure that callbacks and destruction aren't done simultaneously.
   AICurlEasyRequest_wat buffered_easy_request_w(*lockobj);
 
   AICurlResponderBuffer_wat buffer_w(*lockobj);

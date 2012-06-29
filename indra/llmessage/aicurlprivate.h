@@ -97,7 +97,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURLMcode remove_handle_from_multi(AICurlEasyRequest_wat& curl_easy_request_w, CURLM* multi_handle);
 
   public:
-	// Retuns total number of existing CURL* handles (excluding ones created outside this class).
+	// Returns total number of existing CURL* handles (excluding ones created outside this class).
 	static U32 getTotalEasyHandles(void) { return sTotalEasyHandles; }
 
 	// Returns true if this easy handle was added to a curl multi handle.
@@ -114,7 +114,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	bool operator==(CURL* easy_handle) const { return mEasyHandle == easy_handle; }
 
   protected:
-	// Return the underlaying curl easy handle.
+	// Return the underlying curl easy handle.
 	CURL* getEasyHandle(void) const { return mEasyHandle; }
 
   private:
@@ -149,7 +149,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	void addHeader(char const* str);
 
   private:
-	// Call back stubs.
+	// Callback stubs.
 	static size_t headerCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
 	static size_t readCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
@@ -217,7 +217,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 	~CurlEasyRequest();
 
   public:
-	// Post initialization, set the parent to which to pass the events to.
+	// Post-initialization, set the parent to pass the events to.
 	void send_events_to(AICurlEasyHandleEvents* target) { mEventsTarget = target; }
 
 	// For debugging purposes
@@ -237,7 +237,7 @@ class CurlEasyRequest : public CurlEasyHandle {
 // Curl callbacks write into and read from these buffers.
 // The interface with the rest of the code is through AICurlInterface::Responder.
 //
-// The life time of a CurlResponderBuffer is slightly shorter than it's
+// The lifetime of a CurlResponderBuffer is slightly shorter than its
 // associated CurlEasyRequest; this class can only be created as base class
 // of ThreadSafeBufferedCurlEasyRequest, and is therefore constructed after
 // the construction of the associated CurlEasyRequest and destructed before it.
@@ -311,8 +311,8 @@ class ThreadSafeCurlEasyRequest : public AIThreadSafeSimple<CurlEasyRequest> {
 	friend void intrusive_ptr_release(ThreadSafeCurlEasyRequest* p);	// Called by boost::intrusive_ptr when a boost::intrusive_ptr<ThreadSafeCurlEasyRequest> is destroyed.
 };
 
-// Same as the above but adds a CurlResponderBuffer. The latter has it's own locking in order to
-// allow casting the underlaying CurlEasyRequest to ThreadSafeCurlEasyRequest, independent of
+// Same as the above but adds a CurlResponderBuffer. The latter has its own locking in order to
+// allow casting the underlying CurlEasyRequest to ThreadSafeCurlEasyRequest, independent of
 // what class it is part of: ThreadSafeCurlEasyRequest or ThreadSafeBufferedCurlEasyRequest.
 // The virtual destructor of ThreadSafeCurlEasyRequest allows to treat each easy handle transparently
 // as a ThreadSafeCurlEasyRequest object, or optionally dynamic_cast it to a ThreadSafeBufferedCurlEasyRequest.

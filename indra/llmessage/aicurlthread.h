@@ -100,7 +100,7 @@ class PollSet
 	fd_set mFdSet;		// Output variable for select(). (Re)initialized by calling refresh().
 	int mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or -1 when it was empty.
 
-	std::vector<curl_socket_t> mCopiedFileDescriptors;	// File descriptors copied by refresh to mFdSet.
+	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
 	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
 };
 
@@ -136,7 +136,7 @@ class MultiHandle : public CurlMultiHandle
 	bool mHandleAddedOrRemoved;	// Set when an easy handle was added or removed, reset in check_run_count().
 	int mPrevRunningHandles;	// The last value of mRunningHandles that check_run_count() was called with.
 	int mRunningHandles;		// The last value returned by curl_multi_socket_action.
-	long mTimeOut;				// The last time out in ms as set by the call back CURLMOPT_TIMERFUNCTION.
+	long mTimeOut;				// The last time out in ms as set by the callback CURLMOPT_TIMERFUNCTION.
 
   private:
     static int socket_callback(CURL* easy, curl_socket_t s, int action, void* userp, void* socketp);
