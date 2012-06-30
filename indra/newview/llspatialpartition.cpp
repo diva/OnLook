@@ -2007,7 +2007,7 @@ public:
 
 	virtual void processGroup(LLSpatialGroup* group)
 	{
-		llassert(!group->isState(LLSpatialGroup::DIRTY) && !group->getData().empty())
+		llassert(!group->isState(LLSpatialGroup::DIRTY) && !group->getData().empty());
 		
 		if (mRes < 2)
 		{
