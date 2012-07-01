@@ -281,6 +281,10 @@ endif (STANDALONE)
 if(1 EQUAL 1)
 	add_definitions(-DOPENSIM_RULES=1)
 	add_definitions(-DMESH_ENABLED=1)
+	add_definitions(-DENABLE_CLASSIC_CLOUDS=1)
+	if (NOT "$ENV{SHY_MOD}" STREQUAL "1")
+		add_definitions(-DSHY_MOD=1)
+	endif (NOT "$ENV{SHY_MOD}" STREQUAL "1")
 endif(1 EQUAL 1)
 
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASESSE2

@@ -2,31 +2,25 @@
  * @file llgl.cpp
  * @brief LLGL implementation
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -263,6 +257,12 @@ PFNGLTEXIMAGE3DMULTISAMPLEPROC glTexImage3DMultisample = NULL;
 PFNGLGETMULTISAMPLEFVPROC glGetMultisamplefv = NULL;
 PFNGLSAMPLEMASKIPROC glSampleMaski = NULL;
 
+//transform feedback (4.0 core)
+PFNGLBEGINTRANSFORMFEEDBACKPROC glBeginTransformFeedback = NULL;
+PFNGLENDTRANSFORMFEEDBACKPROC glEndTransformFeedback = NULL;
+PFNGLTRANSFORMFEEDBACKVARYINGSPROC glTransformFeedbackVaryings = NULL;
+PFNGLBINDBUFFERRANGEPROC glBindBufferRange = NULL;
+
 //GL_ARB_debug_output
 PFNGLDEBUGMESSAGECONTROLARBPROC glDebugMessageControlARB = NULL;
 PFNGLDEBUGMESSAGEINSERTARBPROC glDebugMessageInsertARB = NULL;
@@ -436,6 +436,7 @@ LLGLManager::LLGLManager() :
 	mHasDrawBuffers(FALSE),
 	mHasTextureRectangle(FALSE),
 	mHasTextureMultisample(FALSE),
+	mHasTransformFeedback(FALSE),
 	mMaxSampleMaskWords(0),
 	mMaxColorTextureSamples(0),
 	mMaxDepthTextureSamples(0),
@@ -573,7 +574,8 @@ bool LLGLManager::initGL()
 	parse_gl_version( &mDriverVersionMajor, 
 		&mDriverVersionMinor, 
 		&mDriverVersionRelease, 
-		&mDriverVersionVendorString );
+		&mDriverVersionVendorString,
+		&mGLVersionString);
 
 	mGLVersion = mDriverVersionMajor + mDriverVersionMinor * .1f;
 
@@ -591,7 +593,7 @@ bool LLGLManager::initGL()
 #endif
 	}
 
-	if (mGLVersion >= 3.f && LLImageGL::sCompressTextures)
+	if (mGLVersion >= 2.1f && LLImageGL::sCompressTextures)
 	{ //use texture compression
 		glHint(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
 	}
@@ -620,11 +622,8 @@ bool LLGLManager::initGL()
 #endif // LL_WINDOWS
 
 #if (LL_WINDOWS || LL_LINUX) && !LL_MESA_HEADLESS
-		// release 7277 is a point at which we verify that ATI OpenGL
-		// drivers get pretty stable with SL, ~Catalyst 8.2,
-		// for both Win32 and Linux.
-		if (mDriverVersionRelease < 7277 &&
-		    mDriverVersionRelease != 0) // 0 == Undetectable driver version - these get to pretend to be new ATI drivers, though that decision may be revisited.
+		// count any pre OpenGL 3.0 implementation as an old driver
+		if (mGLVersion < 3.f) 
 		{
 			mATIOldDriver = TRUE;
 		}
@@ -931,7 +930,6 @@ void LLGLManager::initExtensions()
 	mHasMultitexture = glh_init_extensions("GL_ARB_multitexture");
 	mHasATIMemInfo = ExtensionExists("GL_ATI_meminfo", gGLHExts.mSysExts);
 	mHasNVXMemInfo = ExtensionExists("GL_NVX_gpu_memory_info", gGLHExts.mSysExts);
-	mHasMipMapGeneration = glh_init_extensions("GL_SGIS_generate_mipmap");
 	mHasSeparateSpecularColor = glh_init_extensions("GL_EXT_separate_specular_color");
 	mHasAnisotropic = glh_init_extensions("GL_EXT_texture_filter_anisotropic");
 	glh_init_extensions("GL_ARB_texture_cube_map");
@@ -956,11 +954,15 @@ void LLGLManager::initExtensions()
 							ExtensionExists("GL_EXT_packed_depth_stencil", gGLHExts.mSysExts);
 #endif
 	mHasFramebufferMultisample = mHasFramebufferObject && ExtensionExists("GL_EXT_framebuffer_multisample", gGLHExts.mSysExts);
+	
+	mHasMipMapGeneration = mHasFramebufferObject || mGLVersion >= 1.4f;
+		
 	mHasDrawBuffers = ExtensionExists("GL_ARB_draw_buffers", gGLHExts.mSysExts);
 	mHasBlendFuncSeparate = ExtensionExists("GL_EXT_blend_func_separate", gGLHExts.mSysExts);
 	mHasTextureRectangle = ExtensionExists("GL_ARB_texture_rectangle", gGLHExts.mSysExts);
 	mHasTextureMultisample = ExtensionExists("GL_ARB_texture_multisample", gGLHExts.mSysExts);
 	mHasDebugOutput = ExtensionExists("GL_ARB_debug_output", gGLHExts.mSysExts);
+	mHasTransformFeedback = mGLVersion >= 4.f ? TRUE : FALSE;
 #if !LL_DARWIN
 	mHasPointParameters = !mIsATI && ExtensionExists("GL_ARB_point_parameters", gGLHExts.mSysExts);
 #endif
@@ -1202,7 +1204,14 @@ void LLGLManager::initExtensions()
 		glTexImage3DMultisample = (PFNGLTEXIMAGE3DMULTISAMPLEPROC) GLH_EXT_GET_PROC_ADDRESS("glTexImage3DMultisample");
 		glGetMultisamplefv = (PFNGLGETMULTISAMPLEFVPROC) GLH_EXT_GET_PROC_ADDRESS("glGetMultisamplefv");
 		glSampleMaski = (PFNGLSAMPLEMASKIPROC) GLH_EXT_GET_PROC_ADDRESS("glSampleMaski");
-	}	
+	}
+	if (mHasTransformFeedback)
+	{
+		glBeginTransformFeedback = (PFNGLBEGINTRANSFORMFEEDBACKPROC) GLH_EXT_GET_PROC_ADDRESS("glBeginTransformFeedback");
+		glEndTransformFeedback = (PFNGLENDTRANSFORMFEEDBACKPROC) GLH_EXT_GET_PROC_ADDRESS("glEndTransformFeedback");
+		glTransformFeedbackVaryings = (PFNGLTRANSFORMFEEDBACKVARYINGSPROC) GLH_EXT_GET_PROC_ADDRESS("glTransformFeedbackVaryings");
+		glBindBufferRange = (PFNGLBINDBUFFERRANGEPROC) GLH_EXT_GET_PROC_ADDRESS("glBindBufferRange");
+	}
 	if (mHasDebugOutput)
 	{
 		glDebugMessageControlARB = (PFNGLDEBUGMESSAGECONTROLARBPROC) GLH_EXT_GET_PROC_ADDRESS("glDebugMessageControlARB");
@@ -2040,7 +2049,7 @@ void LLGLManager::initGLStates()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void parse_gl_version( S32* major, S32* minor, S32* release, std::string* vendor_specific )
+void parse_gl_version( S32* major, S32* minor, S32* release, std::string* vendor_specific, std::string* version_string )
 {
 	// GL_VERSION returns a null-terminated string with the format: 
 	// <major>.<minor>[.<release>] [<vendor specific>]
@@ -2055,6 +2064,8 @@ void parse_gl_version( S32* major, S32* minor, S32* release, std::string* vendor
 	{
 		return;
 	}
+
+	version_string->assign(version);
 
 	std::string ver_copy( version );
 	S32 len = (S32)strlen( version );	/* Flawfinder: ignore */
@@ -2415,5 +2426,65 @@ LLGLSquashToFarClip::~LLGLSquashToFarClip()
 	gGL.matrixMode(LLRender::MM_PROJECTION);
 	gGL.popMatrix();
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
+}
+
+
+	
+LLGLSyncFence::LLGLSyncFence()
+{
+#ifdef GL_ARB_sync
+	mSync = 0;
+#endif
+}
+
+LLGLSyncFence::~LLGLSyncFence()
+{
+#ifdef GL_ARB_sync
+	if (mSync)
+	{
+		glDeleteSync(mSync);
+	}
+#endif
+}
+
+void LLGLSyncFence::placeFence()
+{
+#ifdef GL_ARB_sync
+	if (mSync)
+	{
+		glDeleteSync(mSync);
+	}
+	mSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+#endif
+}
+
+bool LLGLSyncFence::isCompleted()
+{
+	bool ret = true;
+#ifdef GL_ARB_sync
+	if (mSync)
+	{
+		GLenum status = glClientWaitSync(mSync, 0, 1);
+		if (status == GL_TIMEOUT_EXPIRED)
+		{
+			ret = false;
+		}
+	}
+#endif
+	return ret;
+}
+
+void LLGLSyncFence::wait()
+{
+#ifdef GL_ARB_sync
+	if (mSync)
+	{
+		while (glClientWaitSync(mSync, 0, FENCE_WAIT_TIME_NANOSECONDS) == GL_TIMEOUT_EXPIRED)
+		{ //track the number of times we've waited here
+			static S32 waits = 0;
+			waits++;
+		}
+	}
+#endif
 }
 

@@ -42,7 +42,7 @@ class LLViewerCloudGroup;
 
 class LLCloudGroup;
 
-
+#if ENABLE_CLASSIC_CLOUDS
 class LLVOClouds : public LLAlphaObject
 {
 public:
@@ -82,4 +82,5 @@ protected:
 
 extern LLUUID gCloudTextureID;
 
+#endif
 #endif // LL_VO_CLOUDS_H

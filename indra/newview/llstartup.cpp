@@ -4284,11 +4284,13 @@ bool process_login_success_response(std::string& password)
 			gMoonTextureID = id;
 		}
 
+#if ENABLE_CLASSIC_CLOUDS
 		id = global_textures["cloud_texture_id"];
 		if(id.notNull())
 		{
 			gCloudTextureID = id;
 		}
+#endif
 	}
 
 	

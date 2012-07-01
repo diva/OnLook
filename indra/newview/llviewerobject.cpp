@@ -175,8 +175,10 @@ LLViewerObject *LLViewerObject::createObject(const LLUUID &id, const LLPCode pco
 	  res = NULL; break;
 	case LL_PCODE_LEGACY_TEXT_BUBBLE:
 	  res = new LLVOTextBubble(id, pcode, regionp); break;
+#if ENABLE_CLASSIC_CLOUDS
 	case LL_VO_CLOUDS:
 	  res = new LLVOClouds(id, pcode, regionp); break;
+#endif
 	case LL_VO_SURFACE_PATCH:
 	  res = new LLVOSurfacePatch(id, pcode, regionp); break;
 	case LL_VO_SKY:
@@ -442,7 +444,9 @@ void LLViewerObject::dump() const
 	llinfos << "PositionAgent: " << getPositionAgent() << llendl;
 	llinfos << "PositionGlobal: " << getPositionGlobal() << llendl;
 	llinfos << "Velocity: " << getVelocity() << llendl;
-	if (mDrawable.notNull() && mDrawable->getNumFaces())
+	if (mDrawable.notNull() && 
+		mDrawable->getNumFaces() && 
+		mDrawable->getFace(0))
 	{
 		LLFacePool *poolp = mDrawable->getFace(0)->getPool();
 		if (poolp)
@@ -4555,7 +4559,11 @@ U32 LLViewerObject::getNumVertices() const
 		num_faces = mDrawable->getNumFaces();
 		for (i = 0; i < num_faces; i++)
 		{
-			num_vertices += mDrawable->getFace(i)->getGeomCount();
+			LLFace * facep = mDrawable->getFace(i);
+			if (facep)
+			{
+				num_vertices += facep->getGeomCount();
+			}
 		}
 	}
 	return num_vertices;
@@ -4570,7 +4578,11 @@ U32 LLViewerObject::getNumIndices() const
 		num_faces = mDrawable->getNumFaces();
 		for (i = 0; i < num_faces; i++)
 		{
-			num_indices += mDrawable->getFace(i)->getIndicesCount();
+			LLFace * facep = mDrawable->getFace(i);
+			if (facep)
+			{
+				num_indices += facep->getIndicesCount();
+			}
 		}
 	}
 	return num_indices;

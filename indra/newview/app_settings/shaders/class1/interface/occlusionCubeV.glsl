@@ -1,5 +1,5 @@
 /** 
- * @file pointLightF.glsl
+ * @file occlusionCubeV.glsl
  *
  * $LicenseInfo:firstyear=2007&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -24,22 +24,15 @@
  */
 
 uniform mat4 modelview_projection_matrix;
-uniform mat4 modelview_matrix;
 
 ATTRIBUTE vec3 position;
 
-uniform vec3 center;
-uniform float size;
-
-VARYING vec4 vary_fragcoord;
-VARYING vec3 trans_center;
+uniform vec3 box_center;
+uniform vec3 box_size;
 
 void main()
 {
-	//transform vertex
-	vec3 p = position*sqrt(size)+center;
-	vec4 pos = modelview_projection_matrix * vec4(p.xyz, 1.0);
-	vary_fragcoord = pos;
-	trans_center = (modelview_matrix*vec4(center.xyz, 1.0)).xyz;
-	gl_Position = pos;
+	vec3 p = position*box_size+box_center;
+	gl_Position = modelview_projection_matrix * vec4(p.xyz, 1.0);
 }
+
