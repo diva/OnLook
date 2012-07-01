@@ -618,6 +618,10 @@ SHClientTagMgr::SHClientTagMgr()
 	gSavedSettings.getControl("AscentFriendColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 	gSavedSettings.getControl("AscentMutedColor")->getSignal()->connect(boost::bind(&LLVOAvatar::invalidateNameTags));
 
+	gSavedSettings.getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
+	gSavedSettings.getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
+	gSavedSettings.getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
+
 	if(!getIsEnabled())
 		return;
 
@@ -627,9 +631,6 @@ SHClientTagMgr::SHClientTagMgr()
 
 	//These only matter to the agent avatar. Don't iterate over everything.
 	gSavedSettings.getControl("AscentUseTag")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
-	gSavedSettings.getControl("AscentUseCustomTag")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
-	gSavedSettings.getControl("AscentCustomTagColor")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
-	gSavedSettings.getControl("AscentCustomTagLabel")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
 	gSavedSettings.getControl("AscentReportClientUUID")->getSignal()->connect(boost::bind(&SHClientTagMgr::updateAgentAvatarTag, this));
 
 	//Fire off a AgentSetAppearance update if these change.
@@ -727,9 +728,6 @@ void SHClientTagMgr::updateAgentAvatarTag()
 }
 const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const	
 {
-	if(!getIsEnabled())
-		return LLSD();
-
 	static const LLCachedControl<LLColor4>		avatar_name_color(gColors,"AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 	LLUUID id;
 
@@ -748,6 +746,10 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 			info.insert("color", ascent_custom_tag_color.get().getValue());
 			return info;
 		}
+		else if(!getIsEnabled())
+		{
+			return LLSD();
+		}
 		else if (ascent_use_tag)
 		{
 			id.set(ascent_report_client_uuid,false);
@@ -755,6 +757,9 @@ const LLSD SHClientTagMgr::generateClientTag(const LLVOAvatar* pAvatar) const
 	}
 	else
 	{
+		if(!getIsEnabled())
+			return LLSD();
+
 		LLTextureEntry* pTextureEntry = pAvatar->getTE(TEX_HEAD_BODYPAINT);
 		if (!pTextureEntry)
 			return LLSD();

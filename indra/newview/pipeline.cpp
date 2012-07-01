@@ -466,7 +466,8 @@ void LLPipeline::init()
 	gSavedSettings.getControl("RenderUseFarClip")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderAvatarMaxVisible")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	//gSavedSettings.getControl("RenderDelayVBUpdate")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-	
+	gSavedSettings.getControl("UseOcclusion")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
+	gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 }
 
 LLPipeline::~LLPipeline()

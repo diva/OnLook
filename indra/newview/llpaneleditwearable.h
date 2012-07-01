@@ -47,7 +47,6 @@ class LLLineEditor;
 class LLSubpart;
 class LLWearableSaveAsDialog;
 
-enum ESubpart;
 using namespace LLVOAvatarDefines;
 
 class LLPanelEditWearable : public LLPanel
@@ -128,7 +127,7 @@ private:
 
 	typedef std::map<LLVOAvatarDefines::ETextureIndex, LLUUID> s32_uuid_map_t;
 	s32_uuid_map_t mPreviousAlphaTexture;
-	ESubpart			mCurrentSubpart;
+	U32					mCurrentSubpart;
 	U32					mCurrentIndex;
 	LLWearable*			mCurrentWearable;
 	LLWearable*			mPendingWearable;	//For SaveAs. There's a period where the old wearable will be removed, but the new one will still be pending, 

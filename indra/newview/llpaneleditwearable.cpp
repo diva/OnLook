@@ -975,7 +975,7 @@ void LLPanelEditWearable::setWearableIndex(S32 index)
 
 	}
 
-	const LLEditWearableDictionary::SubpartEntry *subpart_entry = LLEditWearableDictionary::getInstance()->getSubpart(mCurrentSubpart);
+	const LLEditWearableDictionary::SubpartEntry *subpart_entry = LLEditWearableDictionary::getInstance()->getSubpart((ESubpart)mCurrentSubpart);
 	if(subpart_entry)
 	{
 		value_map_t sorted_params;
