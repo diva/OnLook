@@ -1178,7 +1178,7 @@ void LLGroupMgr::processGroupRoleDataReply(LLMessageSystem* msg, void** data)
 
 	group_datap->mChanged = TRUE;
 #if SHY_MOD //Group title script access
-	gGroupRoleChanger.CheckUpdateRole(group_id,group_data->mRoles);
+	gGroupRoleChanger.CheckUpdateRole(group_id,group_datap->mRoles);
 #endif //shy_mod
 	LLGroupMgr::getInstance()->notifyObservers(GC_ROLE_DATA);
 }
