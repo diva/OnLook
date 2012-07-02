@@ -206,6 +206,7 @@ class AIStateMachine {
 	bool mAborted;								//!< True after calling abort() and before calling run().
 	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
+	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
 
 	// Callback facilities.
 	// From within an other state machine:
@@ -224,7 +225,7 @@ class AIStateMachine {
 	};
 	callback_type* mCallback;					//!< Pointer to signal/connection, or NULL when not connected.
 
-	static AIThreadSafeSimple<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
+	static AIThreadSafeSimpleDC<U64> sMaxCount;	//!< Number of cpu clocks below which we start a new state machine within the same frame.
 
   protected:
 	//! State of the derived class. Only valid if mState == bs_run. Call set_state to change.

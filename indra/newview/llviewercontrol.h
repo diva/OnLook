@@ -51,7 +51,7 @@ extern BOOL gHackGodmode;
 void settings_setup_listeners();
 
 typedef std::map<std::string, LLControlGroup*> settings_map_type;
-extern AIThreadSafe<settings_map_type> gSettings;
+extern AIThreadSafeDC<settings_map_type> gSettings;
 
 // for the graphics settings
 void create_graphics_group(LLControlGroup& group);

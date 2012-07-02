@@ -191,7 +191,7 @@ int main(int argc, char **argv)
 #ifdef CWDEBUG
 	Debug( libcw_do.margin().assign("SLPlugin ", 9) );
 	Debug(debug::init());
-	// Uncomment this to automatically open a terminal with gdb. Requires SNOW-173.
+	// Uncomment this to automatically open a terminal with gdb.
 	//Debug(attach_gdb());
 #endif
 

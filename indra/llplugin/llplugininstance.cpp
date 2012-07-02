@@ -99,7 +99,22 @@ int LLPluginInstance::load(std::string &plugin_file)
 	if(result != APR_SUCCESS)
 	{
 		char buf[1024];
-		apr_dso_error(mDSOHandle, buf, sizeof(buf));
+#if LL_LINUX && defined(LL_STANDALONE)
+		if (!dso_handle)
+		{
+			char* error = dlerror();
+			buf[0] = 0;
+			if (error)
+			{
+				strncpy(buf, dlerror(), sizeof(buf));
+			}
+			buf[sizeof(buf) - 1] = 0;
+		}
+		else
+#endif
+		{
+			apr_dso_error(mDSOHandle, buf, sizeof(buf));
+		}
 
 #if LL_LINUX && defined(LL_STANDALONE)
 		LL_WARNS("Plugin") << "plugin load " << plugin_file << " failed with error " << result << " , additional info string: " << buf << LL_ENDL;

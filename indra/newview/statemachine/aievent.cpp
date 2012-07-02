@@ -64,22 +64,8 @@ inline void AIRegisteredStateMachines::trigger(void)
 }
 
 // A list (array) with all AIRegisteredStateMachines maps, one for each event type.
-struct AIRegisteredStateMachinesList {
-	AIThreadSafeSimple<AIRegisteredStateMachines> mRegisteredStateMachinesList[AIEvent::number_of_events];
-	AIRegisteredStateMachinesList(void);
-	AIThreadSafeSimple<AIRegisteredStateMachines>& operator[](AIEvent::AIEvents event) { return mRegisteredStateMachinesList[event]; }
-};
-
-AIRegisteredStateMachinesList::AIRegisteredStateMachinesList(void)
-{
-	for (int event = 0; event < AIEvent::number_of_events; ++event)
-	{
-		new (&mRegisteredStateMachinesList[event]) AIRegisteredStateMachines;
-	}
-}
-
-// Instantiate the list with all AIRegisteredStateMachines maps.
-static AIRegisteredStateMachinesList registered_statemachines_list;
+static AIThreadSafeSimpleDC<AIRegisteredStateMachines> registered_statemachines_list[AIEvent::number_of_events];
+typedef AIAccess<AIRegisteredStateMachines> registered_statemachines_wat;
 
 //-----------------------------------------------------------------------------
 // External API starts here.
@@ -91,7 +77,7 @@ static AIRegisteredStateMachinesList registered_statemachines_list;
 void AIEvent::Register(AIEvents event, AIStateMachine* statemachine, bool one_shot)
 {
 	statemachine->idle();
-	AIAccess<AIRegisteredStateMachines> registered_statemachines_w(registered_statemachines_list[event]);
+	registered_statemachines_wat registered_statemachines_w(registered_statemachines_list[event]);
 	registered_statemachines_w->Register(statemachine, one_shot);
 }
 
@@ -99,7 +85,7 @@ void AIEvent::Register(AIEvents event, AIStateMachine* statemachine, bool one_sh
 // static
 void AIEvent::Unregister(AIEvents event, AIStateMachine* statemachine)
 {
-	AIAccess<AIRegisteredStateMachines> registered_statemachines_w(registered_statemachines_list[event]);
+	registered_statemachines_wat registered_statemachines_w(registered_statemachines_list[event]);
 	registered_statemachines_w->Unregister(statemachine);
 }
 
@@ -107,7 +93,7 @@ void AIEvent::Unregister(AIEvents event, AIStateMachine* statemachine)
 // static
 void AIEvent::trigger(AIEvents event)
 {
-	AIAccess<AIRegisteredStateMachines> registered_statemachines_w(registered_statemachines_list[event]);
+	registered_statemachines_wat registered_statemachines_w(registered_statemachines_list[event]);
 	registered_statemachines_w->trigger();
 }
 
