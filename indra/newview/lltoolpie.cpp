@@ -675,7 +675,7 @@ BOOL LLToolPie::handleHover(S32 x, S32 y, MASK mask)
 	const LLPickInfo& pick = gViewerWindow->getHoverPick();
 	object = pick.getObject();
 	if ( (object) && (rlv_handler_t::isEnabled()) && 
-		( ((gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH))) && (!gRlvHandler.canTouch(object, pick.mObjectOffset)) || 
+		( (((gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH))) && (!gRlvHandler.canTouch(object, pick.mObjectOffset))) || 
 		  ((gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) && (!object->isHUDAttachment())) ) )
 	{
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);

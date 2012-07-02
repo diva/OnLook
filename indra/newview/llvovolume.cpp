@@ -3430,7 +3430,7 @@ void LLVolumeGeometryManager::rebuildGeom(LLSpatialGroup* group)
 		}
 
 		if (vobj->isMesh() &&
-			(vobj->getVolume() && !vobj->getVolume()->isMeshAssetLoaded() || !gMeshRepo.meshRezEnabled()))
+			((vobj->getVolume() && !vobj->getVolume()->isMeshAssetLoaded()) || !gMeshRepo.meshRezEnabled()))
 		{
 			continue;
 		}
@@ -4152,7 +4152,7 @@ void LLVolumeGeometryManager::genDrawInfo(LLSpatialGroup* group, U32 mask, std::
 		}
 		else 
 		{ //resize pre-existing buffer
-			if (LLVertexBuffer::sEnableVBOs && buffer->getUsage() != buffer_usage ||
+			if ((LLVertexBuffer::sEnableVBOs && buffer->getUsage() != buffer_usage) ||
 				buffer->getTypeMask() != mask)
 			{
 				buffer = createVertexBuffer(mask, buffer_usage);

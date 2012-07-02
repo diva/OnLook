@@ -1436,7 +1436,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 
 void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 {
-	if (avatar->isSelf() && !gAgent.needsRenderAvatar() || !gMeshRepo.meshRezEnabled())
+	if ((avatar->isSelf() && !gAgent.needsRenderAvatar()) || !gMeshRepo.meshRezEnabled())
 	{
 		return;
 	}
