@@ -1598,7 +1598,11 @@ void LLManipTranslate::renderSnapGuides()
 					LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_GREATER);
 					LLGLEnable stipple(GL_LINE_STIPPLE);
 					gGL.flush();
-					glLineStipple(1, 0x3333);
+
+					if (!LLGLSLShader::sNoFixedFunction)
+					{
+						glLineStipple(1, 0x3333);
+					}
 		
 					switch (mManipPart)
 					{
@@ -1712,16 +1716,20 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		gClipProgram.uniform4fv("clip_plane", 1, plane.v);
 		
 		BOOL particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
+#if ENABLE_CLASSIC_CLOUDS
 		BOOL clouds = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+#endif
 		
 		if (particles)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
 		}
+#if ENABLE_CLASSIC_CLOUDS
 		if (clouds)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
+#endif
 		
 		//stencil in volumes
 		glStencilOp(GL_INCR, GL_INCR, GL_INCR);
@@ -1742,10 +1750,12 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
 		}
+#if ENABLE_CLASSIC_CLOUDS
 		if (clouds)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
+#endif
 
 		gGL.setColorMask(true, false);
 	}

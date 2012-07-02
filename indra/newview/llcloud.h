@@ -89,6 +89,7 @@ class LLCloudLayer;
 class LLBitPack;
 class LLGroupHeader;
 
+#if ENABLE_CLASSIC_CLOUDS
 const S32 CLOUD_GROUPS_PER_EDGE = 4;
 
 class LLCloudPuff
@@ -201,5 +202,5 @@ protected:
 	LLCloudGroup		mCloudGroups[CLOUD_GROUPS_PER_EDGE][CLOUD_GROUPS_PER_EDGE];
 };
 
-
+#endif
 #endif
