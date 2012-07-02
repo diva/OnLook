@@ -78,6 +78,7 @@ class LL_COMMON_API LLThread
 private:
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
+	static LLAtomicS32	sRunning;
 
 public:
 	typedef enum e_thread_status
@@ -96,8 +97,9 @@ public:
 	
 	static U32 currentID(); // Return ID of current thread
 	static S32 getCount() { return sCount; }	
+	static S32 getRunning() { return sRunning; }
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
-	
+
 public:
 	// PAUSE / RESUME functionality. See source code for important usage notes.
 	// Called from MAIN THREAD.
