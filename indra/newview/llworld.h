@@ -124,8 +124,10 @@ public:
 	void					updateRegions(F32 max_update_time);
 	void					updateVisibilities();
 	void					updateParticles();
+#if ENABLE_CLASSIC_CLOUDS
 	void					updateClouds(const F32 dt);
 	LLCloudGroup *			findCloudGroup(const LLCloudPuff &puff);
+#endif
 
 	void					renderPropertyLines();
 

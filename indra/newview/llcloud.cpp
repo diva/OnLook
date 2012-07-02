@@ -54,6 +54,7 @@
 #include "lldrawpool.h"
 #include "llworld.h"
 
+#if ENABLE_CLASSIC_CLOUDS
 extern LLPipeline gPipeline;
 
 const F32 CLOUD_UPDATE_RATE = 1.0f;  // Global time dilation for clouds
@@ -544,3 +545,4 @@ void LLCloudLayer::disconnectAllNeighbors()
 		disconnectNeighbor(i);
 	}
 }
+#endif

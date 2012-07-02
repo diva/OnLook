@@ -245,9 +245,9 @@ bool LLTextureCacheLocalFileWorker::doRead()
 		}
 	}
 #else
-	if (!mDataSize || mDataSize > local_size - mOffset)
+	if (!mDataSize || mDataSize > local_size)
 	{
-		mDataSize = local_size - mOffset;
+		mDataSize = local_size;
 	}
 	mReadData = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mDataSize);
 	
@@ -375,7 +375,7 @@ bool LLTextureCacheRemoteWorker::doRead()
 		llassert(local_size != 0);	// we're assuming there is a non empty local file here...
 		if (!mDataSize || mDataSize > local_size - mOffset)
 		{
-			mDataSize = local_size - mOffset;
+			mDataSize = local_size	- mOffset;
 		}
 		// Allocate read buffer
 		mReadData = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mDataSize);

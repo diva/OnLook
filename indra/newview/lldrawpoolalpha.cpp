@@ -404,7 +404,9 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 			bool draw_glow_for_this_partition = mVertexShaderLevel > 0 && // no shaders = no glow.
 				// All particle systems seem to come off the wire with texture entries which claim that they glow.  This is probably a bug in the data.  Suppress.
 				group->mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_PARTICLE &&
+#if ENABLE_CLASSIC_CLOUDS
 				group->mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_CLOUD &&
+#endif
 				group->mSpatialPartition->mPartitionType != LLViewerRegion::PARTITION_HUD_PARTICLE;
 
 			LLSpatialGroup::drawmap_elem_t& draw_info = group->mDrawMap[LLRenderPass::PASS_ALPHA];
@@ -413,13 +415,20 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask)
 			{
 				LLDrawInfo& params = **k;
 
+				if ((params.mVertexBuffer->getTypeMask() & mask) != mask)
+				{ //FIXME!
+					llwarns << "Missing required components, skipping render batch." << llendl;
+					continue;
+				}
+
 				LLRenderPass::applyModelMatrix(params);
 
-					if (params.mFullbright)
+				
+				if (params.mFullbright)
+				{
+					// Turn off lighting if it hasn't already been so.
+					if (light_enabled || !initialized_lighting)
 					{
-						// Turn off lighting if it hasn't already been so.
-						if (light_enabled || !initialized_lighting)
-						{
 							initialized_lighting = TRUE;
 							if (use_shaders) 
 							{
