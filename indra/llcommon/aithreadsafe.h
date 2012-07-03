@@ -69,7 +69,7 @@
 // and AIThreadSafeSingleThread doesn't do any locking but makes sure
 // (in Debug mode) that the wrapped object is only accessed by one thread.
 //
-// Each wrapper class allows it's wrapped object to be constructed
+// Each wrapper class allows its wrapped object to be constructed
 // with arbitrary parameters by using operator new with placement;
 // for example, to instantiate a class Foo with read/write locking:
 //
@@ -565,7 +565,7 @@ private:
  * for the internally used mutexes and condition, instead of using the current threads
  * root pool. The advantage of this is that it can be used for objects that need to
  * be accessed from the destructors of global objects (after main). The disadvantage
- * is that it's less efficient to use your own root pool, therefore it's use should be
+ * is that it's less efficient to use your own root pool, therefore its use should be
  * restricted to those cases where it is absolutely necessary.
  */
 template<typename T>
@@ -736,7 +736,7 @@ private:
  *
  * This class is primarily intended to test if some (member) variable needs locking,
  * during development (in debug mode), and is therefore more flexible in that it
- * automatically converts to the underlaying type, can be assigned to and can be
+ * automatically converts to the underlying type, can be assigned to and can be
  * written to an ostream, as if it wasn't wrapped at all. This is to reduce the
  * impact on the source code.
  */
