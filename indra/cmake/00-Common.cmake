@@ -231,19 +231,7 @@ if (LINUX)
     add_definitions(
         -DCC_CLANG
         -D_FORTIFY_SOURCE=2
-        -Wno-tautological-compare
-        -Wno-char-subscripts
-        -Wno-gnu
-        -Wno-logical-op-parentheses
-        -Wno-parentheses-equality
-        -Wno-unused-function
-        -Wno-unused-value
-        -Wno-unused-variable
         )
-
-    if(NOT DISABLE_FATAL_WARNINGS)
-      add_definitions(-Werror)
-    endif(NOT DISABLE_FATAL_WARNINGS)
 
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime
@@ -291,17 +279,21 @@ endif (DARWIN)
 
 
 if (LINUX OR DARWIN)
-  set(GCC_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
-
+  if(${CMAKE_C_COMPILER} MATCHES "gcc*")
+    set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
+    set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
+  elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
+    set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses 
+    -Wno-non-virtual-dtor -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable")
+    set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
+  endif()
+  
   if (NOT DISABLE_FATAL_WARNINGS)
-    set(GCC_WARNINGS "${GCC_WARNINGS} -Werror")
+    set(UNIX_WARNINGS "${UNIX_WARNINGS} -Werror")
   endif (NOT DISABLE_FATAL_WARNINGS)
 
-  set(GCC_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
-
-  set(CMAKE_C_FLAGS "${GCC_WARNINGS} ${CMAKE_C_FLAGS}")
-  set(CMAKE_CXX_FLAGS "${GCC_CXX_WARNINGS} ${CMAKE_CXX_FLAGS}")
-
+  set(CMAKE_C_FLAGS "${UNIX_WARNINGS} ${CMAKE_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${UNIX_CXX_WARNINGS} ${CMAKE_CXX_FLAGS}")
   if (WORD_SIZE EQUAL 32)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
