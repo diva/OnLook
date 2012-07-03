@@ -120,31 +120,12 @@ BOOL LLPanelLandMedia::postBuild()
 	childSetCommitCallback("media_size_height", onCommitAny, this);
 	mMediaSizeCtrlLabel = getChild<LLTextBox>("media_size");
 
-    /*mMediaNavigateAllowCheck = getChild<LLCheckBoxCtrl>("check navigate allow");  Making Dummy View -HgB
-	childSetCommitCallback("check navigate allow", onCommitAny, this);*/
-	mMediaURLFilterCheck = getChild<LLCheckBoxCtrl>("check navigate filter");
-	childSetCommitCallback("check navigate filter", onCommitAny, this);
-	
 	mSetURLButton = getChild<LLButton>("set_media_url");
 	childSetAction("set_media_url", onSetBtn, this);
 
 	mResetURLButton = getChild<LLButton>("reset_media_url");
 	childSetAction("reset_media_url", onResetBtn, this);
 
-	mURLFilterList = getChild<LLScrollListCtrl>("filter_list");
-
-	mMediaURLFilterDomainEdit = getChild<LLLineEditor>("navigate_filter_domain");
-
-	mMediaURLFilterAddButton = getChild<LLButton>("add_navigate_filter");
-	childSetAction("add_navigate_filter", onClickAddURLFilter, this);
-
-	mMediaURLFilterRemoveButton = getChild<LLButton>("remove_navigate_filter");
-	childSetAction("remove_navigate_filter", onClickRemoveURLFilter, this);
-
-	mRadioNavigateControl = getChild<LLRadioGroup>("radio_navigate_allow");
-	childSetCommitCallback("radio_navigate_allow", onCommitAny, this);
-
-	
 	return TRUE;
 }
 
@@ -222,42 +203,10 @@ void LLPanelLandMedia::refresh()
 		mSetURLButton->setEnabled( can_change_media );
 		mResetURLButton->setEnabled( can_change_media );
 
-		mMediaURLFilterCheck->set( parcel->getMediaURLFilterEnable() );
-		mMediaURLFilterCheck->setEnabled( can_change_media );
-
 		LLFloaterURLEntry* floater_url_entry = (LLFloaterURLEntry*)mURLEntryFloater.get();
 		if (floater_url_entry)
 		{
 			floater_url_entry->updateFromLandMediaPanel();
-		}
-
-		// This radial control is really just an inverse mapping to the boolean allow_navigate value. 
-		// It is set as a radial merely for user readability.
-		mRadioNavigateControl->setSelectedIndex(! parcel->getMediaAllowNavigate());
-		mRadioNavigateControl->setEnabled( can_change_media );
-
-		mMediaURLFilterDomainEdit->setEnabled( can_change_media );
-		mMediaURLFilterAddButton->setEnabled( can_change_media );
-		mMediaURLFilterRemoveButton->setEnabled( can_change_media );
-
-		if (mURLFilterList)
-		{
-			mURLFilterList->setEnabled( can_change_media );
-			
-			mURLFilterList->deleteAllItems();
-
-			LLSD list = parcel->getMediaURLFilterList();
-			
-			for (LLSD::array_iterator i = list.beginArray(); i != list.endArray(); ++i)
-			{
-				std::string domain = (*i).asString();
-
-				LLSD element;
-				element["id"] = domain;
-				element["columns"][0]["value"] = domain;
-				
-				mURLFilterList->addElement(element);
-			}
 		}
 	}
 }
@@ -281,8 +230,7 @@ void LLPanelLandMedia::populateMIMECombo()
 			mMediaTypeCombo->add(info.mLabel, mime_type);
 		}
 	}
-	// *TODO: The sort order is based on std::map key, which is
-	// ASCII-sorted and is wrong in other languages.  TRANSLATE
+
 	mMediaTypeCombo->add( default_label, default_mime_type, ADD_BOTTOM );
 }
 
@@ -341,17 +289,15 @@ void LLPanelLandMedia::onCommitAny(LLUICtrl*, void *userdata)
 	}
 
 	// Extract data from UI
-	std::string media_url	= self->mMediaURLEdit->getText();
-	std::string media_desc	= self->mMediaDescEdit->getText();
-	std::string mime_type	= self->childGetText("mime_type");
+	std::string media_url		= self->mMediaURLEdit->getText();
+	std::string media_desc		= self->mMediaDescEdit->getText();
+	std::string mime_type		= self->childGetText("mime_type");
 	U8 media_auto_scale		= self->mMediaAutoScaleCheck->get();
-	U8 media_loop           = self->mMediaLoopCheck->get();
-	F32 media_reset_time	= (F32)self->mMediaResetCtrl->get();
+	U8 media_loop       		= self->mMediaLoopCheck->get();
+	F32 media_reset_time		= (F32)self->mMediaResetCtrl->get();
 	S32 media_width			= (S32)self->mMediaWidthCtrl->get();
 	S32 media_height		= (S32)self->mMediaHeightCtrl->get();
 	LLUUID media_id			= self->mMediaTextureCtrl->getImageAssetID();
-	U8 navigate_allow       = ! self->mRadioNavigateControl->getSelectedIndex();
-	U8 navigate_filter      = self->mMediaURLFilterCheck->get();
 
 
 	self->childSetText("mime_type", mime_type);
@@ -368,8 +314,6 @@ void LLPanelLandMedia::onCommitAny(LLUICtrl*, void *userdata)
 	parcel->setMediaID(media_id);
 	parcel->setMediaAutoScale ( media_auto_scale );
 	parcel->setMediaLoop ( media_loop );
-	parcel->setMediaURLFilterEnable(navigate_filter);
-	parcel->setMediaAllowNavigate(navigate_allow);
 	parcel->setMediaURLTimeout(media_reset_time);
 
 
@@ -401,80 +345,4 @@ void LLPanelLandMedia::onResetBtn(void *userdata)
 	self->childSetText("current_url", parcel->getMediaURL());
 	// LLViewerParcelMedia::sendMediaNavigateMessage(parcel->getMediaURL());
 
-}
-// static
-void LLPanelLandMedia::onClickAddURLFilter(void *userdata)
-{
-	LLPanelLandMedia *panelp = (LLPanelLandMedia *)userdata;
-	LLParcel* parcel = panelp->mParcel->getParcel();
-	
-	LLSD list = parcel->getMediaURLFilterList();
-
-	std::string domain = panelp->mMediaURLFilterDomainEdit->getText();
-	LLStringUtil::trim(domain);
-
-	BOOL add = TRUE;
-	if (domain == "")
-	{
-		add = FALSE;
-	}
-
-	// check for dupes
-	for(S32 i = 0; i < list.size(); i++)
-	{
-		if (list[i].asString() == domain)
-		{
-			add = FALSE;
-			break;
-		}
-	}
-
-	if (add)
-	{
-		list.append(domain);
-		parcel->setMediaURLFilterList(list);
-
-		LLViewerParcelMgr::getInstance()->sendParcelPropertiesUpdate( parcel );
-
-		panelp->mMediaURLFilterDomainEdit->setText(std::string(""));
-
-		panelp->refresh();
-	}
-
-}
-
-// static
-void LLPanelLandMedia::onClickRemoveURLFilter(void *data)
-{
-	LLPanelLandMedia* panelp = (LLPanelLandMedia*)data;
-	if (panelp && panelp->mURLFilterList)
-	{
-		LLParcel* parcel = panelp->mParcel->getParcel();
-		if (parcel)
-		{
-			LLSD list = parcel->getMediaURLFilterList();
-			
-			std::vector<LLScrollListItem*> domains = panelp->mURLFilterList->getAllSelected();
-			for (std::vector<LLScrollListItem*>::iterator iter = domains.begin(); iter != domains.end(); iter++)
-			{
-				LLScrollListItem* item = *iter;
-				const std::string domain = item->getValue().asString();
-
-				for(S32 i = 0; i < list.size(); i++)
-				{
-					if (list[i].asString() == domain)
-					{
-						list.erase(i);
-						break;
-					}
-				}
-			}
-			
-			parcel->setMediaURLFilterList(list);
-			LLViewerParcelMgr::getInstance()->sendParcelPropertiesUpdate( parcel );
-
-			panelp->refresh();
-		}
-	}
-	
 }
