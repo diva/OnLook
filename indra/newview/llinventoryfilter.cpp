@@ -424,7 +424,7 @@ void LLInventoryFilter::setFilterSubString(const std::string& string)
 		if (mFilterOps.mFilterTypes == FILTERTYPE_UUID)
 		{
 			mFilterOps.mFilterTypes &= ~FILTERTYPE_UUID;
-			mFilterOps.mFilterUUID == LLUUID::null;
+			//mFilterOps.mFilterUUID == LLUUID::null;
 			setModified(FILTER_RESTART);
 		}
 
@@ -519,8 +519,8 @@ void LLInventoryFilter::setHoursAgo(U32 hours)
 		bool is_increasing_from_zero = is_increasing && !mFilterOps.mHoursAgo;
 
 		// *NOTE: need to cache last filter time, in case filter goes stale
-		BOOL less_restrictive = (are_date_limits_valid && ((is_increasing && mFilterOps.mHoursAgo)) || !hours);
-		BOOL more_restrictive = (are_date_limits_valid && (!is_increasing && hours) || is_increasing_from_zero);
+		BOOL less_restrictive = ((are_date_limits_valid && ((is_increasing && mFilterOps.mHoursAgo))) || !hours);
+		BOOL more_restrictive = ((are_date_limits_valid && (!is_increasing && hours)) || is_increasing_from_zero);
 
 		mFilterOps.mHoursAgo = hours;
 		mFilterOps.mMinDate = time_min();

@@ -65,7 +65,7 @@ AIFilePicker::AIFilePicker(void) : mPluginManager(NULL), mAutoKill(false), mCanc
 }
 
 // static
-AITHREADSAFESIMPLE(AIFilePicker::context_map_type, AIFilePicker::sContextMap, );
+AIThreadSafeSimpleDC<AIFilePicker::context_map_type> AIFilePicker::sContextMap;
 
 // static
 void AIFilePicker::store_folder(std::string const& context, std::string const& folder)

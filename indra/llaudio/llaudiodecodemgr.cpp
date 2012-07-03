@@ -168,19 +168,13 @@ long vfs_tell (void *datasource)
 	return file->tell();
 }
 
-LLVorbisDecodeState::LLVorbisDecodeState(const LLUUID &uuid, const std::string &out_filename)
-{
-	mDone = FALSE;
-	mValid = FALSE;
-	mBytesRead = -1;
-	mUUID = uuid;
-	mInFilep = NULL;
-	mCurrentSection = 0;
+LLVorbisDecodeState::LLVorbisDecodeState(const LLUUID &uuid, const std::string &out_filename) :
+	mValid(FALSE), mDone(FALSE), mBytesRead(-1), mUUID(uuid),
 #if !defined(USE_WAV_VFILE)
-	mOutFilename = out_filename;
-	mFileHandle = LLLFSThread::nullHandle();
+	mOutFilename(out_filename), mFileHandle(LLLFSThread::nullHandle()),
 #endif
-	// No default value for mVF, it's an ogg structure?
+	mInFilep(NULL), mCurrentSection(0)
+{
 }
 
 LLVorbisDecodeState::~LLVorbisDecodeState()

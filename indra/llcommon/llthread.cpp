@@ -68,6 +68,7 @@ U32 ll_thread_local local_thread_ID = 0;
 
 U32 LLThread::sIDIter = 0;
 LLAtomicS32	LLThread::sCount = 0;
+LLAtomicS32	LLThread::sRunning = 0;
 
 LL_COMMON_API void assert_main_thread()
 {
@@ -104,6 +105,11 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// the moment it happens... therefore make a copy here.
 	char const* volatile name = threadp->mName.c_str();
 	
+	// Always make sure that sRunning <= number of threads with status RUNNING,
+	// so do this before changing mStatus (meaning that once we see that we
+	// are STOPPED, then sRunning is also up to date).
+	--sRunning;
+
 	// We're done with the run function, this thread is done executing now.
 	threadp->mStatus = STOPPED;
 
@@ -114,6 +120,7 @@ void *APR_THREAD_FUNC LLThread::staticRun(apr_thread_t *apr_threadp, void *datap
 	// the critical area of the mSignal lock)].
 	lldebugs << "LLThread::staticRun() Exiting: " << name << llendl;
 
+	--sRunning;		// Would be better to do this after joining with the thread, but we don't join :/
 	return NULL;
 }
 
@@ -178,7 +185,7 @@ void LLThread::shutdown()
 		}
 		mAPRThreadp = NULL;
 	}
-	sCount--;
+	--sCount;
 	delete mRunCondition;
 	mRunCondition = 0;
 }
@@ -189,6 +196,7 @@ void LLThread::start()
 	
 	// Set thread state to running
 	mStatus = RUNNING;
+	sRunning++;
 
 	apr_status_t status =
 		apr_thread_create(&mAPRThreadp, NULL, staticRun, (void *)this, tldata().mRootPool());
@@ -200,6 +208,7 @@ void LLThread::start()
 	}
 	else
 	{
+		--sRunning;
 		mStatus = STOPPED;
 		llwarns << "failed to start thread " << mName << llendl;
 		ll_apr_warn_status(status);
@@ -402,6 +411,15 @@ LLMutexBase::LLMutexBase() :
 {
 }
 
+bool LLMutexBase::isSelfLocked() const
+{
+#if LL_DARWIN
+	return mLockingThread == LLThread::currentID();
+#else
+	return mLockingThread == local_thread_ID;
+#endif
+}
+
 void LLMutexBase::lock() 
 { 
 #if LL_DARWIN
@@ -434,37 +452,6 @@ void LLMutexBase::unlock()
 
 	apr_thread_mutex_unlock(mAPRMutexp);
 }
-
-bool LLMutexBase::isSelfLocked()
-{
-#if LL_DARWIN
-	return mLockingThread == LLThread::currentID();
-#else
-	return mLockingThread == local_thread_ID;
-#endif
-}
-	
-//----------------------------------------------------------------------------
-
-//static
-LLMutex* LLThreadSafeRefCount::sMutex = 0;
-
-//static
-void LLThreadSafeRefCount::initThreadSafeRefCount()
-{
-	if (!sMutex)
-	{
-		sMutex = new LLMutex;
-	}
-}
-
-//static
-void LLThreadSafeRefCount::cleanupThreadSafeRefCount()
-{
-	delete sMutex;
-	sMutex = NULL;
-}
-	
 
 //----------------------------------------------------------------------------
 

@@ -121,6 +121,7 @@ set(llcommon_HEADER_FILES
     llaprpool.h
     llassettype.h
     llassoclist.h
+    llatomic.h
     llavatarconstants.h
     llbase32.h
     llbase64.h

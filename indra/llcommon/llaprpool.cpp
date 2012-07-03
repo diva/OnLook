@@ -1,5 +1,5 @@
 /**
- * @file LLAPRPool.cpp
+ * @file llaprpool.cpp
  *
  * Copyright (c) 2010, Aleric Inglewood.
  *

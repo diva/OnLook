@@ -39,7 +39,6 @@ void LLCommon::initClass()
 {
 	LLMemory::initClass();
 	LLTimer::initClass();
-	LLThreadSafeRefCount::initThreadSafeRefCount();
 // 	LLWorkerThread::initClass();
 // 	LLFrameCallbackManager::initClass();
 }
@@ -49,7 +48,6 @@ void LLCommon::cleanupClass()
 {
 // 	LLFrameCallbackManager::cleanupClass();
 // 	LLWorkerThread::cleanupClass();
-	LLThreadSafeRefCount::cleanupThreadSafeRefCount();
 	LLTimer::cleanupClass();
 	LLMemory::cleanupClass();
 }

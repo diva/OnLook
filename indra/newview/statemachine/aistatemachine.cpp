@@ -65,18 +65,18 @@ namespace {
   };
 
   typedef std::vector<QueueElement> active_statemachines_type;
-  static active_statemachines_type active_statemachines;
+  active_statemachines_type active_statemachines;
   typedef std::vector<AIStateMachine*> continued_statemachines_type;
   struct cscm_type
   {
 	continued_statemachines_type continued_statemachines;
 	bool calling_mainloop;
   };
-  static AITHREADSAFE(cscm_type, continued_statemachines_and_calling_mainloop, );
+  AIThreadSafeDC<cscm_type> continued_statemachines_and_calling_mainloop;
 }
 
 // static
-AITHREADSAFESIMPLE(U64, AIStateMachine::sMaxCount, );
+AIThreadSafeSimpleDC<U64> AIStateMachine::sMaxCount;
 
 void AIStateMachine::updateSettings(void)
 {
@@ -157,14 +157,33 @@ void AIStateMachine::idle(void)
   mSleep = 0;
 }
 
+// About thread safeness:
+//
+// The main thread initializes a statemachine and calls run, so a statemachine
+// runs in the main thread. However, it is allowed that a state calls idle()
+// and then allows one and only one other thread to call cont() upon some
+// event (only once, of course, as idle() has to be called before cont()
+// can be called again-- and another thread is not allowed to call idle()).
+// Instead of cont(), the other thread may also call set_state().
+
 void AIStateMachine::cont(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
   llassert(mIdle);
+  // Atomic test mActive and change mIdle.
+  mIdleActive.lock();
   mIdle = false;
-  if (mActive == as_idle)
+  bool not_active = mActive == as_idle;
+  mIdleActive.unlock();
+  if (not_active)
   {
 	AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
+	// We only get here when the statemachine was idle (set by the main thread),
+	// see first assertion. Hence, the main thread is not changing this, as the
+	// statemachine is not running. Thus, mActive can have changed when a THIRD
+	// thread called cont(), which is not allowed: if two threads can call cont()
+	// at any moment then the first assertion can't hold.
+	llassert_always(mActive == as_idle);
 	cscm_w->continued_statemachines.push_back(this);
 	if (!cscm_w->calling_mainloop)
 	{
@@ -173,6 +192,7 @@ void AIStateMachine::cont(void)
 	  gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
 	}
 	mActive = as_queued;
+	llassert_always(!mIdle);	// It should never happen that one thread calls cont() while another calls idle() concurrently.
   }
 }
 
@@ -203,7 +223,7 @@ void AIStateMachine::finish(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
   llassert(mState == bs_run || mState == bs_abort);
-  // It is possible that mIdle is false when abort or finish was called from
+  // It is possible that mIdle is true when abort or finish was called from
   // outside multiplex_impl. However, that only may be done by the main thread.
   llassert(!mIdle || is_main_thread());
   if (!mIdle)
@@ -363,6 +383,9 @@ void AIStateMachine::mainloop(void*)
 	if (!statemachine.mIdle)
 	{
 	  U64 start = LLFastTimer::getCPUClockCount64();
+	  // This might call idle() and then pass the statemachine to another thread who then may call cont().
+	  // Hence, after this isn't not sure what mIdle is, and it can change from true to false at any moment,
+	  // if it is true after this function returns.
 	  iter->statemachine().multiplex(start);
 	  U64 delta = LLFastTimer::getCPUClockCount64() - start;
 	  iter->add(delta);
@@ -382,10 +405,23 @@ void AIStateMachine::mainloop(void*)
   while (iter != active_statemachines.end())
   {
 	AIStateMachine& statemachine(iter->statemachine());
-	if (statemachine.mIdle)
+	// Atomic test mIdle and change mActive.
+	bool locked = statemachine.mIdleActive.tryLock();
+	// If the lock failed, then another thread is in the middle of calling cont(),
+	// thus mIdle will end up false. So, there is no reason to block here; just
+	// treat mIdle as false already.
+	if (locked && statemachine.mIdle)
 	{
-	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
+	  // Without the lock, it would be possible that another thread called cont() right here,
+	  // changing mIdle to false again but NOT adding the statemachine to continued_statemachines,
+	  // thinking it is in active_statemachines (and it is), while immediately below it is
+	  // erased from active_statemachines.
 	  statemachine.mActive = as_idle;
+	  // Now, calling cont() is ok -- as that will cause the statemachine to be added to
+	  // continued_statemachines, so it's fine in that case-- even necessary-- to remove it from
+	  // active_statemachines regardless, and we can release the lock here.
+	  statemachine.mIdleActive.unlock();
+	  Dout(dc::statemachine, "Erasing " << (void*)&statemachine << " from active_statemachines");
 	  iter = active_statemachines.erase(iter);
 	  if (statemachine.mState == bs_killed)
 	  {
@@ -395,6 +431,11 @@ void AIStateMachine::mainloop(void*)
 	}
 	else
 	{
+	  if (locked)
+	  {
+		statemachine.mIdleActive.unlock();
+	  }
+	  llassert(statemachine.mActive == as_active);	// It should not be possible that another thread called cont() and changed this when we are we are not idle.
 	  llassert(statemachine.mState == bs_run || statemachine.mState == bs_initialize);
 	  ++iter;
 	}

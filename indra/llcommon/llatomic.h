@@ -1,10 +1,11 @@
 /** 
- * @file llhash.h
- * @brief Wrapper for a hash function.
+ * @file llatomic.h
+ * @brief Definition of LLAtomic
  *
  * $LicenseInfo:firstyear=2004&license=viewergpl$
  * 
  * Copyright (c) 2004-2009, Linden Research, Inc.
+ * Copyright (c) 2012, Aleric Inglewood
  * 
  * Second Life Viewer Source Code
  * The source code in this file ("Source Code") is provided by Linden Lab
@@ -30,53 +31,31 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLHASH_H
-#define LL_LLHASH_H
+#ifndef LL_LLATOMIC_H
+#define LL_LLATOMIC_H
 
-#include "llpreprocessor.h" // for GCC_VERSION
+#include "apr_atomic.h"
 
-#if (LL_WINDOWS)
-#include <hash_map>
-#include <algorithm>
-#elif LL_DARWIN || LL_LINUX
-#if CC_GCC
-#  if GCC_VERSION >= 40300 // gcc 4.3 and up
-#    include <backward/hashtable.h>
-#  elif GCC_VERSION >= 30400 // gcc 3.4 and up
-#    include <ext/hashtable.h>
-#  elif __GNUC__ >= 3
-#    include <ext/stl_hashtable.h>
-#  else
-#    include <hashtable.h>
-#  endif
-#elif CC_CLANG
-#  include <hashtable.h>
-#endif
-#elif LL_SOLARIS
-#include <ext/hashtable.h>
-#else
-#error Please define your platform.
-#endif
-
-// Warning - an earlier template-based version of this routine did not do
-// the correct thing on Windows.   Since this is only used to get
-// a string hash, it was converted to a regular routine and
-// unit tests added.
-
-inline size_t llhash( const char * value )
+template <typename Type> class LLAtomic32
 {
-#if LL_WINDOWS
-	return stdext::hash_value(value);
-#elif ( (defined _STLPORT_VERSION) || ((LL_LINUX) && (__GNUC__ <= 2)) )
-	std::hash<const char *> H;
-	return H(value);
-#elif LL_DARWIN || LL_LINUX || LL_SOLARIS
-	__gnu_cxx::hash<const char *> H;
-	return H(value);
-#else
-#error Please define your platform.
-#endif
-}
+public:
+	LLAtomic32(void) { }
+	LLAtomic32(LLAtomic32 const& atom) { apr_uint32_t data = apr_atomic_read32(const_cast<apr_uint32_t*>(&atom.mData)); apr_atomic_set32(&mData, data); }
+	LLAtomic32(Type x) { apr_atomic_set32(&mData, static_cast<apr_uint32_t>(x)); }
+	LLAtomic32& operator=(LLAtomic32 const& atom) { apr_uint32_t data = apr_atomic_read32(const_cast<apr_uint32_t*>(&atom.mData)); apr_atomic_set32(&mData, data); return *this; }
+
+	operator Type() const { apr_uint32_t data = apr_atomic_read32(const_cast<apr_uint32_t*>(&mData)); return static_cast<Type>(data); }
+	void operator=(Type x) { apr_atomic_set32(&mData, static_cast<apr_uint32_t>(x)); }
+	void operator-=(Type x) { apr_atomic_sub32(&mData, static_cast<apr_uint32_t>(x)); }
+	void operator+=(Type x) { apr_atomic_add32(&mData, static_cast<apr_uint32_t>(x)); }
+	Type operator++(int) { return apr_atomic_inc32(&mData); } // Type++
+	bool operator--() { return apr_atomic_dec32(&mData); } // Returns (--Type != 0)
+	
+private:
+	apr_uint32_t mData;
+};
+
+typedef LLAtomic32<U32> LLAtomicU32;
+typedef LLAtomic32<S32> LLAtomicS32;
 
 #endif
-

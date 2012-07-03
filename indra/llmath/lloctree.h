@@ -309,7 +309,7 @@ public:
 		//is it here?
 		if (isInside(data->getPositionGroup()))
 		{
-			if ((getElementCount() < gOctreeMaxCapacity && contains(data->getBinRadius()) ||
+			if (((getElementCount() < gOctreeMaxCapacity && contains(data->getBinRadius())) ||
 				(data->getBinRadius() > getSize()[0] &&	parent && parent->getElementCount() >= gOctreeMaxCapacity))) 
 			{ //it belongs here
 #if LL_OCTREE_PARANOIA_CHECK

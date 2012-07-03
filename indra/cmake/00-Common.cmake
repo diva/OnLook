@@ -90,26 +90,26 @@ if (WINDOWS)
   endif (MSVC80 OR MSVC90 OR MSVC10)
   
   # Are we using the crummy Visual Studio KDU build workaround?
-  if (NOT VS_DISABLE_FATAL_WARNINGS)
+  if (NOT DISABLE_FATAL_WARNINGS)
     add_definitions(/WX)
-  endif (NOT VS_DISABLE_FATAL_WARNINGS)
+  endif (NOT DISABLE_FATAL_WARNINGS)
   
   # Various libs are compiler specific, generate some variables here we can just use
   # when we require them instead of reimplementing the test each time.
   
   if (MSVC71)
-	    set(MSVC_DIR 7.1)
-	    set(MSVC_SUFFIX 71)
-    elseif (MSVC80)
-	    set(MSVC_DIR 8.0)
-	    set(MSVC_SUFFIX 80)
-    elseif (MSVC90)
-	    set(MSVC_DIR 9.0)
-	    set(MSVC_SUFFIX 90)
-    elseif (MSVC10)
-	    set(MSVC_DIR 10.0)
-	    set(MSVC_SUFFIX 100)
-    endif (MSVC71)
+    set(MSVC_DIR 7.1)
+    set(MSVC_SUFFIX 71)
+  elseif (MSVC80)
+    set(MSVC_DIR 8.0)
+    set(MSVC_SUFFIX 80)
+  elseif (MSVC90)
+    set(MSVC_DIR 9.0)
+    set(MSVC_SUFFIX 90)
+  elseif (MSVC10)
+    set(MSVC_DIR 10.0)
+    set(MSVC_SUFFIX 100)
+  endif (MSVC71)
 
   if (MSVC10)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFEST:NO")
@@ -125,103 +125,151 @@ set (GCC_EXTRA_OPTIMIZATIONS "-ffast-math")
 if (LINUX)
   set(CMAKE_SKIP_RPATH TRUE)
 
-  # Here's a giant hack for Fedora 8, where we can't use
-  # _FORTIFY_SOURCE if we're using a compiler older than gcc 4.1.
-
-  find_program(GXX g++)
-  mark_as_advanced(GXX)
-
-  if (GXX)
-    execute_process(
-        COMMAND ${GXX} --version
-        COMMAND sed "s/^[gc+ ]*//"
-        COMMAND head -1
-        OUTPUT_VARIABLE GXX_VERSION
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-  else (GXX)
-    set(GXX_VERSION x)
-  endif (GXX)
-
-  # The quoting hack here is necessary in case we're using distcc or
-  # ccache as our compiler.  CMake doesn't pass the command line
-  # through the shell by default, so we end up trying to run "distcc"
-  # " g++" - notice the leading space.  Ugh.
-
-  execute_process(
-      COMMAND sh -c "${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} --version"
-      COMMAND sed "s/^[gc+ ]*//"
-      COMMAND head -1
-      OUTPUT_VARIABLE CXX_VERSION
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  if (${GXX_VERSION} STREQUAL ${CXX_VERSION})
-    add_definitions(-D_FORTIFY_SOURCE=2)
-  else (${GXX_VERSION} STREQUAL ${CXX_VERSION})
-    if (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
-      add_definitions(-D_FORTIFY_SOURCE=2)
-    endif (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
-  endif (${GXX_VERSION} STREQUAL ${CXX_VERSION})
-
-  #Lets actually get a numerical version of gxx's version
-  STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.([0-9]).*" "\\1\\2\\3" CXX_VERSION ${CXX_VERSION})
-
-  #gcc 4.3 and above don't like the LL boost
-  if(${CXX_VERSION} GREATER 429)
-    add_definitions(-Wno-parentheses)
-  endif (${CXX_VERSION} GREATER 429)
-
-  #gcc 4.6 has a new spammy warning
-  if(NOT ${CXX_VERSION} LESS 460)
-    add_definitions(-Wno-unused-but-set-variable)
-  endif (NOT ${CXX_VERSION} LESS 460)
-
-  # End of hacks.
-
   add_definitions(
       -DLL_LINUX=1
+      -DAPPID=secondlife
       -D_REENTRANT
       -fexceptions
       -fno-math-errno
       -fno-strict-aliasing
       -fsigned-char
+      -fvisibility=hidden
       -g
       -pthread
       )
 
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+    # Don't catch SIGCHLD in our base application class for the viewer
+    # some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  
+    # The viewer doesn't need to catch SIGCHLD anyway.
+    add_definitions(-DLL_IGNORE_SIGCHLD)
 
-  add_definitions(-DAPPID=secondlife)
-  add_definitions(-fvisibility=hidden)
-  # don't catch SIGCHLD in our base application class for the viewer - some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  The viewer doesn't need to catch SIGCHLD anyway.
-  add_definitions(-DLL_IGNORE_SIGCHLD)
-  if (NOT STANDALONE)
-    # this stops us requiring a really recent glibc at runtime
-    add_definitions(-fno-stack-protector)
-  endif (NOT STANDALONE)
-  if (${ARCH} STREQUAL "x86_64")
-    add_definitions(-DLINUX64=1 -pipe)
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
-  else (${ARCH} STREQUAL "x86_64")
+  if(${CMAKE_C_COMPILER} MATCHES "gcc*")
+
+    find_program(GXX g++)
+    mark_as_advanced(GXX)
+
+    if (GXX)
+      execute_process(
+          COMMAND ${GXX} --version
+          COMMAND sed "s/^[gc+ ]*//"
+          COMMAND head -1
+          OUTPUT_VARIABLE GXX_VERSION
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          )
+    else (GXX)
+      set(GXX_VERSION x)
+    endif (GXX)
+
+    # The quoting hack here is necessary in case we're using distcc or
+    # ccache as our compiler.  CMake doesn't pass the command line
+    # through the shell by default, so we end up trying to run "distcc"
+    # " g++" - notice the leading space.  Ugh.
+
+    execute_process(
+        COMMAND sh -c "${CMAKE_CXX_COMPILER} ${CMAKE_CXX_COMPILER_ARG1} --version"
+        COMMAND sed "s/^[gc+ ]*//"
+        COMMAND head -1
+        OUTPUT_VARIABLE CXX_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    # Here's a giant hack for Fedora 8, where we can't use
+    # _FORTIFY_SOURCE if we're using a compiler older than gcc 4.1.
+    if (${GXX_VERSION} STREQUAL ${CXX_VERSION})
+      add_definitions(-D_FORTIFY_SOURCE=2)
+    else (${GXX_VERSION} STREQUAL ${CXX_VERSION})
+      if (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
+        add_definitions(-D_FORTIFY_SOURCE=2)
+      endif (NOT ${GXX_VERSION} MATCHES " 4.1.*Red Hat")
+    endif (${GXX_VERSION} STREQUAL ${CXX_VERSION})
+
+    #Lets actually get a numerical version of gxx's version
+    STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.([0-9]).*" "\\1\\2\\3" CXX_VERSION ${CXX_VERSION})
+
+    #gcc 4.3 and above doesn't like the LL boost
+    if(${CXX_VERSION} GREATER 429)
+      add_definitions(-Wno-parentheses)
+    endif (${CXX_VERSION} GREATER 429)
+
+    #gcc 4.6 has a new spammy warning
+    if(NOT ${CXX_VERSION} LESS 460)
+      add_definitions(-Wno-unused-but-set-variable)
+    endif (NOT ${CXX_VERSION} LESS 460)
+
+    # End of hacks.
+
+    #GCC Specific
+    add_definitions(-DCC_GCC)
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+
     if (NOT STANDALONE)
-  	set(MARCH_FLAG " -march=pentium4")
+      # this stops us requiring a really recent glibc at runtime
+      add_definitions(-fno-stack-protector)
     endif (NOT STANDALONE)
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
-  endif (${ARCH} STREQUAL "x86_64")
+    if (${ARCH} STREQUAL "x86_64")
+      add_definitions(-DLINUX64=1 -pipe)
+      set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
+      set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
+      set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -fomit-frame-pointer -mmmx -msse -mfpmath=sse -msse2 -ffast-math -ftree-vectorize -fweb -fexpensive-optimizations -frename-registers")
+    else (${ARCH} STREQUAL "x86_64")
+      if (NOT STANDALONE)
+        set(MARCH_FLAG " -march=pentium4")
+      endif (NOT STANDALONE)
+      set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
+      set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
+      set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+      set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+      set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+      set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
+    endif (${ARCH} STREQUAL "x86_64")
+  elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
+ 
+    find_program(CLANG clang++)
+    mark_as_advanced(CLANG)
 
-  set(CMAKE_CXX_FLAGS_DEBUG "-fno-inline ${CMAKE_CXX_FLAGS_DEBUG} -msse2")
+    add_definitions(
+        -DCC_CLANG
+        -D_FORTIFY_SOURCE=2
+        -Wno-tautological-compare
+        -Wno-char-subscripts
+        -Wno-gnu
+        -Wno-logical-op-parentheses
+        -Wno-parentheses-equality
+        -Wno-unused-function
+        -Wno-unused-value
+        -Wno-unused-variable
+        )
+
+    if(NOT DISABLE_FATAL_WARNINGS)
+      add_definitions(-Werror)
+    endif(NOT DISABLE_FATAL_WARNINGS)
+
+    if (NOT STANDALONE)
+      # this stops us requiring a really recent glibc at runtime
+      add_definitions(-fno-stack-protector)
+    endif (NOT STANDALONE)
+
+    if (NOT STANDALONE)
+      set(MARCH_FLAG " -march=pentium4")
+    endif (NOT STANDALONE)
+
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
+    set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -msse2")
+    set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -msse2")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
+  endif()
+
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
   set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 ${CMAKE_CXX_FLAGS_RELEASESSE2}")
   set(CMAKE_C_FLAGS_RELEASESSE2 "-O3 ${CMAKE_C_FLAGS_RELEASESSE2}")
   set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-  set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")  
 endif (LINUX)
 
 
@@ -245,9 +293,9 @@ endif (DARWIN)
 if (LINUX OR DARWIN)
   set(GCC_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
 
-  if (NOT GCC_DISABLE_FATAL_WARNINGS)
+  if (NOT DISABLE_FATAL_WARNINGS)
     set(GCC_WARNINGS "${GCC_WARNINGS} -Werror")
-  endif (NOT GCC_DISABLE_FATAL_WARNINGS)
+  endif (NOT DISABLE_FATAL_WARNINGS)
 
   set(GCC_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
 
@@ -279,12 +327,12 @@ else (STANDALONE)
 endif (STANDALONE)
 
 if(1 EQUAL 1)
-	add_definitions(-DOPENSIM_RULES=1)
-	add_definitions(-DMESH_ENABLED=1)
-	add_definitions(-DENABLE_CLASSIC_CLOUDS=1)
-	if (NOT "$ENV{SHY_MOD}" STREQUAL "")
-		add_definitions(-DSHY_MOD=1)
-	endif (NOT "$ENV{SHY_MOD}" STREQUAL "")
+  add_definitions(-DOPENSIM_RULES=1)
+  add_definitions(-DMESH_ENABLED=1)
+  add_definitions(-DENABLE_CLASSIC_CLOUDS=1)
+  if (NOT "$ENV{SHY_MOD}" STREQUAL "")
+    add_definitions(-DSHY_MOD=1)
+  endif (NOT "$ENV{SHY_MOD}" STREQUAL "")
 endif(1 EQUAL 1)
 
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASESSE2

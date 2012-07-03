@@ -1,5 +1,5 @@
 /**
- * @file LLAPRPool.h
+ * @file llaprpool.h
  * @brief Implementation of LLAPRPool.
  *
  * Copyright (c) 2010, Aleric Inglewood.
@@ -60,9 +60,9 @@ extern void ll_init_apr();
 class LL_COMMON_API LLAPRPool
 {
 protected:
-	apr_pool_t* mPool;					//!< Pointer to the underlaying pool. NULL if not initialized.
+	apr_pool_t* mPool;			//!< Pointer to the underlaying pool. NULL if not initialized.
 	LLAPRPool* mParent;			//!< Pointer to the parent pool, if any. Only valid when mPool is non-zero.
-	apr_os_thread_t mOwner;				//!< The thread that owns this memory pool. Only valid when mPool is non-zero.
+	apr_os_thread_t mOwner;		//!< The thread that owns this memory pool. Only valid when mPool is non-zero.
 
 public:
 	//! Construct an uninitialized (destructed) pool.

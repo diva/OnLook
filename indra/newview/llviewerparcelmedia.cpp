@@ -762,7 +762,7 @@ void LLViewerParcelMedia::filterMedia(LLParcel* parcel, U32 type)
 
 	if (media_url.empty())
 	{
-		media_action == "allow";
+		media_action = "allow";
 	}
 	else if (!sMediaFilterListLoaded || sDeniedMedia.count(domain) || sDeniedMedia.count(ip))
 	{
