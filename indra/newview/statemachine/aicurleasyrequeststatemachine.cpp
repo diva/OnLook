@@ -138,6 +138,8 @@ void AICurlEasyRequestStateMachine::finish_impl(void)
 	curl_easy_request_w->send_events_to(NULL);
 	curl_easy_request_w->revokeCallbacks();
   }
+  // Auto clean up.
+  kill();
 }
 
 AICurlEasyRequestStateMachine::AICurlEasyRequestStateMachine(bool buffered) : mBuffered(buffered), mCurlEasyRequest(buffered)

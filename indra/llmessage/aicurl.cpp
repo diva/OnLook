@@ -259,10 +259,9 @@ static unsigned int encoded_version(int major, int minor, int patch)
 // External API
 //
 
-namespace AICurlInterface {
-
 #undef AICurlPrivate
-using AICurlPrivate::check_easy_code;
+
+namespace AICurlInterface {
 
 // MAIN-THREAD
 void initCurl(F32 curl_request_timeout, S32 max_number_handles)
@@ -270,7 +269,7 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
   DoutEntering(dc::curl, "AICurlInterface::initCurl(" << curl_request_timeout << ", " << max_number_handles << ")");
 
   llassert(LLThread::getRunning() == 0);		// We must not call curl_global_init unless we are the only thread.
-  CURLcode res = check_easy_code(curl_global_init(CURL_GLOBAL_ALL));
+  CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
   if (res != CURLE_OK)
   {
 	llerrs << "curl_global_init(CURL_GLOBAL_ALL) failed." << llendl;
@@ -346,10 +345,12 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 // MAIN-THREAD
 void cleanupCurl(void)
 {
+  using AICurlPrivate::stopCurlThread;
   using AICurlPrivate::curlThreadIsRunning;
 
   DoutEntering(dc::curl, "AICurlInterface::cleanupCurl()");
 
+  stopCurlThread();
   ssl_cleanup();
 
   llassert(LLThread::getRunning() <= (curlThreadIsRunning() ? 1 : 0));		// We must not call curl_global_cleanup unless we are the only thread left.
@@ -495,30 +496,32 @@ void intrusive_ptr_release(Responder* responder)
 
 namespace AICurlPrivate {
 
-// THREAD-SAFE
-CURLcode check_easy_code(CURLcode code)
+//static
+LLAtomicU32 Stats::easy_calls;
+LLAtomicU32 Stats::easy_errors;
+LLAtomicU32 Stats::easy_init_calls;
+LLAtomicU32 Stats::easy_init_errors;
+LLAtomicU32 Stats::easy_cleanup_calls;
+LLAtomicU32 Stats::multi_calls;
+LLAtomicU32 Stats::multi_errors;
+
+//static
+void Stats::print(void)
 {
-  if (code != CURLE_OK)
-  {
-	char* error_buffer = LLThreadLocalData::tldata().mCurlErrorBuffer;
-	llinfos << "curl easy error detected: " << curl_easy_strerror(code);
-	if (error_buffer && *error_buffer != '\0')
-	{
-	  llcont << ": " << error_buffer;
-	}
-	llcont << llendl;
-  }
-  return code;
+  llinfos << "====== CURL  STATS ======" << llendl;
+  llinfos << "  Curl multi errors/calls: " << std::dec << multi_errors << "/" << multi_calls << llendl;
+  llinfos << "  Curl easy errors/calls: " << std::dec << easy_errors << "/" << easy_calls << llendl;
+  llinfos << "  curl_easy_init() errors/calls: " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
+  llinfos << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
+  llinfos << "=== END OF CURL STATS ===" << llendl;
 }
 
 // THREAD-SAFE
-CURLMcode check_multi_code(CURLMcode code) 
+void handle_multi_error(CURLMcode code) 
 {
-  if (code != CURLM_OK)
-  {
-	llinfos << "curl multi error detected: " << curl_multi_strerror(code) << llendl;
-  }
-  return code;
+  Stats::multi_errors++;
+  llinfos << "curl multi error detected: " << curl_multi_strerror(code) <<
+	  "; (errors/calls = " << Stats::multi_errors << "/" << Stats::multi_calls << ")" << llendl;
 }
 
 //=============================================================================
@@ -528,33 +531,46 @@ CURLMcode check_multi_code(CURLMcode code)
 //-----------------------------------------------------------------------------
 // CurlEasyHandle
 
-LLAtomicU32 CurlEasyHandle::sTotalEasyHandles;
+// THREAD-SAFE
+//static
+void CurlEasyHandle::handle_easy_error(CURLcode code)
+{
+  char* error_buffer = LLThreadLocalData::tldata().mCurlErrorBuffer;
+  llinfos << "curl easy error detected: " << curl_easy_strerror(code);
+  if (error_buffer && *error_buffer != '\0')
+  {
+	llcont << ": " << error_buffer;
+  }
+  Stats::easy_errors++;
+  llcont << "; (errors/calls = " << Stats::easy_errors << "/" << Stats::easy_calls << ")" << llendl;
+}
 
 // Throws AICurlNoEasyHandle.
 CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
 {
   mEasyHandle = curl_easy_init();
 #if 0
-  //FIXME: for debugging, throw once every 10 times.
-  static int c = 0;
-  if (++c % 10 == 5)
+  // Fake curl_easy_init() failures: throw once every 10 times (for debugging purposes).
+  static int count = 0;
+  if (mEasyHandle && (++count % 10) == 5)
   {
     curl_easy_cleanup(mEasyHandle);
 	mEasyHandle = NULL;
   }
 #endif
+  Stats::easy_init_calls++;
   if (!mEasyHandle)
   {
+	Stats::easy_init_errors++;
 	throw AICurlNoEasyHandle("curl_easy_init() returned NULL");
   }
-  sTotalEasyHandles++;
 }
 
 CurlEasyHandle::~CurlEasyHandle()
 {
   llassert(!mActiveMultiHandle);
   curl_easy_cleanup(mEasyHandle);
-  --sTotalEasyHandles;
+  Stats::easy_cleanup_calls++;
 }
 
 //static
@@ -573,8 +589,13 @@ void CurlEasyHandle::setErrorBuffer(void)
   char* error_buffer = getTLErrorBuffer();
   if (mErrorBuffer != error_buffer)
   {
-	curl_easy_setopt(mEasyHandle, CURLOPT_ERRORBUFFER, error_buffer);
 	mErrorBuffer = error_buffer;
+	CURLcode res = curl_easy_setopt(mEasyHandle, CURLOPT_ERRORBUFFER, error_buffer);
+	if (res != CURLE_OK)
+	{
+	  llwarns << "curl_easy_setopt(" << (void*)mEasyHandle << "CURLOPT_ERRORBUFFER, " << (void*)error_buffer << ") failed with error " << res << llendl;
+	  mErrorBuffer = NULL;
+	}
   }
 }
 
@@ -727,27 +748,29 @@ void CurlEasyRequest::setSSLCtxCallback(curl_ssl_ctx_callback callback, void* us
   setopt(CURLOPT_SSL_CTX_DATA, userdata ? this : NULL);
 }
 
+#define llmaybewarns lllog(LLApp::isExiting() ? LLError::LEVEL_INFO : LLError::LEVEL_WARN, NULL, NULL, false)
+
 static size_t noHeaderCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llwarns << "Calling noHeaderCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noHeaderCallback(); curl session aborted." << llendl;
   return 0;							// Cause a CURL_WRITE_ERROR
 }
 
 static size_t noWriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llwarns << "Calling noWriteCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noWriteCallback(); curl session aborted." << llendl;
   return 0;							// Cause a CURL_WRITE_ERROR
 }
 
 static size_t noReadCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
-  llwarns << "Calling noReadCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noReadCallback(); curl session aborted." << llendl;
   return CURL_READFUNC_ABORT;		// Cause a CURLE_ABORTED_BY_CALLBACK
 }
 
 static CURLcode noSSLCtxCallback(CURL* curl, void* sslctx, void* parm)
 {
-  llwarns << "Calling noSSLCtxCallback(); curl session aborted." << llendl;
+  llmaybewarns << "Calling noSSLCtxCallback(); curl session aborted." << llendl;
   return CURLE_ABORTED_BY_CALLBACK;
 }
 
@@ -765,7 +788,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   mWriteCallback = &noWriteCallback;
   mReadCallback = &noReadCallback;
   mSSLCtxCallback = &noSSLCtxCallback;
-  if (active())
+  if (active() && !LLApp::isExiting())
   {
 	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
   }
@@ -907,14 +930,17 @@ void CurlEasyRequest::applyDefaultOptions(void)
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
   // Set the CURL options for either SOCKS or HTTP proxy.
   applyProxySettings();
+#if 0
+  // Cause libcurl to print all it's I/O traffic on the debug channel.
   Debug(
 	if (dc::curl.is_on())
 	{
-	  setopt(CURLOPT_VERBOSE, 1);					// Useful for debugging.
+	  setopt(CURLOPT_VERBOSE, 1);
 	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_callback);
 	  setopt(CURLOPT_DEBUGDATA, this);
 	}
   );
+#endif
 }
 
 void CurlEasyRequest::finalizeRequest(std::string const& url)
@@ -1204,9 +1230,12 @@ LLAtomicU32 CurlMultiHandle::sTotalMultiHandles;
 
 CurlMultiHandle::CurlMultiHandle(void)
 {
+  DoutEntering(dc::curl, "CurlMultiHandle::CurlMultiHandle() [" << (void*)this << "].");
   mMultiHandle = curl_multi_init();
+  Stats::multi_calls++;
   if (!mMultiHandle)
   {
+	Stats::multi_errors++;
 	throw AICurlNoMultiHandle("curl_multi_init() returned NULL");
   }
   sTotalMultiHandles++;
@@ -1215,7 +1244,11 @@ CurlMultiHandle::CurlMultiHandle(void)
 CurlMultiHandle::~CurlMultiHandle()
 {
   curl_multi_cleanup(mMultiHandle);
-  --sTotalMultiHandles;
+  Stats::multi_calls++;
+  int total = --sTotalMultiHandles;
+  Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << total << " remaining.");
+  if (total == 0)
+	Stats::print();
 }
 
 } // namespace AICurlPrivate

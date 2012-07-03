@@ -278,6 +278,12 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 	  mCurlEasyRequestStateMachinePtr->run(boost::bind(&LLXMLRPCTransaction::Impl::curlEasyRequestCallback, this, _1));
 	  setStatus(LLXMLRPCTransaction::StatusStarted);
 	}
+	else
+	{
+	  // This deletes the statemachine immediately.
+	  mCurlEasyRequestStateMachinePtr->kill();
+	  mCurlEasyRequestStateMachinePtr = NULL;
+	}
 }
 
 LLXMLRPCTransaction::Impl::~Impl()
@@ -311,13 +317,19 @@ void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
 {
 	llassert(mStatus == LLXMLRPCTransaction::StatusStarted || mStatus == LLXMLRPCTransaction::StatusDownloading);
 
+	AICurlEasyRequestStateMachine* state_machine = mCurlEasyRequestStateMachinePtr;
+	// We're done with the statemachine, one way or another.
+	// Set mCurlEasyRequestStateMachinePtr to NULL so we won't call mCurlEasyRequestStateMachinePtr->running() in the destructor.
+	// Note that the state machine auto-cleaning: it will be deleted by the main-thread after this function returns.
+	mCurlEasyRequestStateMachinePtr = NULL;
+
 	if (!success)
 	{
 		setStatus(LLXMLRPCTransaction::StatusOtherError, "Statemachine failed");
 		return;
 	}
 
-	AICurlEasyRequest_wat curlEasyRequest_w(*mCurlEasyRequestStateMachinePtr->mCurlEasyRequest);
+	AICurlEasyRequest_wat curlEasyRequest_w(*state_machine->mCurlEasyRequest);
 	CURLcode result;
 	curlEasyRequest_w->getResult(&result, &mTransferInfo);
 

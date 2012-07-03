@@ -92,7 +92,6 @@ class PollSet
 
   private:
 	curl_socket_t* mFileDescriptors;
-	size_t mSize;		// Size of mFileDescriptors array.
 	int mNrFds;			// The number of filedescriptors in the array.
 	int mMaxFd;			// The largest filedescriptor in the array, or -1 when it is empty.
 	int mNext;			// The index of the first file descriptor to start copying, the next call to refresh().
@@ -172,6 +171,7 @@ class MultiHandle : public CurlMultiHandle
 class AICurlMultiHandle : public AIThreadSafeSingleThreadDC<AICurlPrivate::curlthread::MultiHandle>, public LLThreadLocalDataMember {
   public:
 	static AICurlMultiHandle& getInstance(void);
+	static void destroyInstance(void);
   private:
 	// Use getInstance().
 	AICurlMultiHandle(void) { }

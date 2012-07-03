@@ -32,15 +32,29 @@
 #define AICURLPRIVATE_H
 
 #include <sstream>
+#include "llatomic.h"
 
 namespace AICurlPrivate {
 namespace curlthread { class MultiHandle; }
 
-CURLcode check_easy_code(CURLcode code);
-CURLMcode check_multi_code(CURLMcode code);
+struct Stats {
+  static LLAtomicU32 easy_calls;
+  static LLAtomicU32 easy_errors;
+  static LLAtomicU32 easy_init_calls;
+  static LLAtomicU32 easy_init_errors;
+  static LLAtomicU32 easy_cleanup_calls;
+  static LLAtomicU32 multi_calls;
+  static LLAtomicU32 multi_errors;
+
+ static void print(void);
+};
+
+void handle_multi_error(CURLMcode code);
+inline CURLMcode check_multi_code(CURLMcode code) { Stats::multi_calls++; if (code != CURLM_OK) handle_multi_error(code); return code; }
 
 bool curlThreadIsRunning(void);
 void wakeUpCurlThread(void);
+void stopCurlThread(void);
 
 class ThreadSafeCurlEasyRequest;
 class ThreadSafeBufferedCurlEasyRequest;
@@ -88,7 +102,6 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
-	static LLAtomicU32 sTotalEasyHandles;
 
   private:
 	// This should only be called from MultiHandle; add/remove an easy handle to/from a multi handle.
@@ -97,21 +110,30 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURLMcode remove_handle_from_multi(AICurlEasyRequest_wat& curl_easy_request_w, CURLM* multi_handle);
 
   public:
-	// Returns total number of existing CURL* handles (excluding ones created outside this class).
-	static U32 getTotalEasyHandles(void) { return sTotalEasyHandles; }
-
 	// Returns true if this easy handle was added to a curl multi handle.
 	bool active(void) const { return mActiveMultiHandle; }
 
-	// Call this prior to every curl_easy function whose return value is passed to check_easy_code.
-	void setErrorBuffer(void);
-
 	// If there was an error code as result, then this returns a human readable error string.
 	// Only valid when setErrorBuffer was called and the curl_easy function returned an error.
-	std::string getErrorString(void) const { return mErrorBuffer; }
+	std::string getErrorString(void) const { return mErrorBuffer ? mErrorBuffer : "(null)"; }
 
 	// Used for debugging purposes.
 	bool operator==(CURL* easy_handle) const { return mEasyHandle == easy_handle; }
+
+  private:
+	// Call this prior to every curl_easy function whose return value is passed to check_easy_code.
+	void setErrorBuffer(void);
+
+	static void handle_easy_error(CURLcode code);
+
+	// Always first call setErrorBuffer()!
+	static inline CURLcode check_easy_code(CURLcode code)
+	{
+	  Stats::easy_calls++;
+	  if (code != CURLE_OK)
+		handle_easy_error(code);
+	  return code;
+	}
 
   protected:
 	// Return the underlying curl easy handle.
