@@ -281,7 +281,7 @@ endif (DARWIN)
 if (LINUX OR DARWIN)
   if(${CMAKE_C_COMPILER} MATCHES "gcc*")
     set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
-    set(UNIX_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
+    set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
   elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
     set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses 
     -Wno-non-virtual-dtor -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable")
