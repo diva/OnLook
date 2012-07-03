@@ -2006,7 +2006,7 @@ BOOL LLFace::getGeometryVolume(const LLVolume& volume,
 						 (glow << 24);
 
 			U32 vec[4];
-			vec[0] = vec[1] = vec[2] = vec[3] = glow32;
+			std::fill_n(vec,4,glow32); // for clang
 		
 			src.loadua((F32*) vec);
 
