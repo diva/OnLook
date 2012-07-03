@@ -429,6 +429,7 @@ public:
 	virtual void placeFence() = 0;
 	virtual bool isCompleted() = 0;
 	virtual void wait() = 0;
+	virtual ~LLGLFence() {}
 };
 
 class LLGLSyncFence : public LLGLFence
