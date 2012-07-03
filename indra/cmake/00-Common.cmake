@@ -90,9 +90,9 @@ if (WINDOWS)
   endif (MSVC80 OR MSVC90 OR MSVC10)
   
   # Are we using the crummy Visual Studio KDU build workaround?
-  if (NOT VS_DISABLE_FATAL_WARNINGS)
+  if (NOT DISABLE_FATAL_WARNINGS)
     add_definitions(/WX)
-  endif (NOT VS_DISABLE_FATAL_WARNINGS)
+  endif (NOT DISABLE_FATAL_WARNINGS)
   
   # Various libs are compiler specific, generate some variables here we can just use
   # when we require them instead of reimplementing the test each time.
@@ -133,13 +133,18 @@ if (LINUX)
       -fno-math-errno
       -fno-strict-aliasing
       -fsigned-char
+      -fvisibility=hidden
       -g
       -pthread
       )
 
-  # Here's a giant hack for Fedora 8, where we can't use
-  # _FORTIFY_SOURCE if we're using a compiler older than gcc 4.1.
+    # Don't catch SIGCHLD in our base application class for the viewer
+    # some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  
+    # The viewer doesn't need to catch SIGCHLD anyway.
+    add_definitions(-DLL_IGNORE_SIGCHLD)
+
   if(${CMAKE_C_COMPILER} MATCHES "gcc*")
+
     find_program(GXX g++)
     mark_as_advanced(GXX)
 
@@ -167,6 +172,8 @@ if (LINUX)
         OUTPUT_VARIABLE CXX_VERSION
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+    # Here's a giant hack for Fedora 8, where we can't use
+    # _FORTIFY_SOURCE if we're using a compiler older than gcc 4.1.
     if (${GXX_VERSION} STREQUAL ${CXX_VERSION})
       add_definitions(-D_FORTIFY_SOURCE=2)
     else (${GXX_VERSION} STREQUAL ${CXX_VERSION})
@@ -195,9 +202,6 @@ if (LINUX)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
-    add_definitions(-fvisibility=hidden)
-    # don't catch SIGCHLD in our base application class for the viewer - some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  The viewer doesn't need to catch SIGCHLD anyway.
-    add_definitions(-DLL_IGNORE_SIGCHLD)
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime
       add_definitions(-fno-stack-protector)
@@ -219,15 +223,6 @@ if (LINUX)
       set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
     endif (${ARCH} STREQUAL "x86_64")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS_RELEASE}")
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 ${CMAKE_CXX_FLAGS_RELEASESSE2}")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "-O3 ${CMAKE_C_FLAGS_RELEASESSE2}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_C_FLAGS_RELWITHDEBINFO}") 
   elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
  
     find_program(CLANG clang++)
@@ -236,24 +231,20 @@ if (LINUX)
     add_definitions(
         -DCC_CLANG
         -D_FORTIFY_SOURCE=2
+        -Wno-tautological-compare
+        -Wno-char-subscripts
+        -Wno-gnu
+        -Wno-logical-op-parentheses
+        -Wno-parentheses-equality
+        -Wno-unused-function
+        -Wno-unused-value
+        -Wno-unused-variable
         )
 
-    if(NOT CLANG_ENABLE_WARNINGS)
-      add_definitions(
-          -Wno-char-subscripts
-          -Wno-gnu
-          -Wno-unused-function
-          -Wno-unused-variable
-          -Wno-parentheses-equality
-          -Wno-logical-op-parentheses
-          )
-    endif(NOT CLANG_ENABLE_WARNINGS)
+    if(NOT DISABLE_FATAL_WARNINGS)
+      add_definitions(-Werror)
+    endif(NOT DISABLE_FATAL_WARNINGS)
 
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
-
-    add_definitions(-fvisibility=hidden)
-    # don't catch SIGCHLD in our base application class for the viewer - some of our 3rd party libs may need their *own* SIGCHLD handler to work.  Sigh!  The viewer doesn't need to catch SIGCHLD anyway.
-    add_definitions(-DLL_IGNORE_SIGCHLD)
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime
       add_definitions(-fno-stack-protector)
@@ -262,22 +253,23 @@ if (LINUX)
     if (NOT STANDALONE)
       set(MARCH_FLAG " -march=pentium4")
     endif (NOT STANDALONE)
+
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline -msse2")
     set(CMAKE_CXX_FLAGS_RELEASESSE2 "${CMAKE_CXX_FLAGS_RELEASESSE2}${MARCH_FLAG} -msse2")
     set(CMAKE_C_FLAGS_RELEASESSE2 "${CMAKE_C_FLAGS_RELEASESSE2}${MARCH_FLAG} -msse2")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_C_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
-    set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS_RELEASE}")
-    set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 ${CMAKE_CXX_FLAGS_RELEASESSE2}")
-    set(CMAKE_C_FLAGS_RELEASESSE2 "-O3 ${CMAKE_C_FLAGS_RELEASESSE2}")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")  
   endif()
+
+  set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+  set(CMAKE_C_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3 ${CMAKE_CXX_FLAGS_RELEASE}")
+  set(CMAKE_C_FLAGS_RELEASE "-O3 ${CMAKE_C_FLAGS_RELEASE}")
+  set(CMAKE_CXX_FLAGS_RELEASESSE2 "-O3 ${CMAKE_CXX_FLAGS_RELEASESSE2}")
+  set(CMAKE_C_FLAGS_RELEASESSE2 "-O3 ${CMAKE_C_FLAGS_RELEASESSE2}")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+  set(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 ${CMAKE_C_FLAGS_RELWITHDEBINFO}")  
 endif (LINUX)
 
 
@@ -301,9 +293,9 @@ endif (DARWIN)
 if (LINUX OR DARWIN)
   set(GCC_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
 
-  if (NOT GCC_DISABLE_FATAL_WARNINGS)
+  if (NOT DISABLE_FATAL_WARNINGS)
     set(GCC_WARNINGS "${GCC_WARNINGS} -Werror")
-  endif (NOT GCC_DISABLE_FATAL_WARNINGS)
+  endif (NOT DISABLE_FATAL_WARNINGS)
 
   set(GCC_CXX_WARNINGS "${GCC_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
 
