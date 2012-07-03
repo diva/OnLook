@@ -39,6 +39,7 @@
 #include "llviewercontrol.h"
 #include "lldir.h"
 #include "llflexibleobject.h"
+#include "llfloatertools.h"
 #include "llmaterialtable.h"
 #include "llprimitive.h"
 #include "llvolume.h"
@@ -50,6 +51,7 @@
 #include "object_flags.h"
 #include "llagentconstants.h"
 #include "lldrawable.h"
+#include "lldrawpoolavatar.h"
 #include "lldrawpoolbump.h"
 #include "llface.h"
 #include "llspatialpartition.h"
@@ -68,13 +70,11 @@
 #include "pipeline.h"
 #include "llsdutil.h"
 #include "llmatrix4a.h"
-#include "llagent.h"
-#include "lldrawpoolavatar.h"
 #include "llmeshrepository.h"
+#include "llagent.h"
 #include "lldatapacker.h"
 #include "llviewershadermgr.h"
 #include "llvoavatar.h"
-#include "llfloatertools.h"
 #include "llvocache.h"
 
 // [RLVa:KB] - Checked: 2010-04-04 (RLVa-1.2.0d)
@@ -131,7 +131,7 @@ void LLVOVolume::markDead()
 {
 	if (!mDead)
 	{
-	
+
 		if (mSculptTexture.notNull())
 		{
 			mSculptTexture->removeVolume(this);
@@ -310,7 +310,7 @@ U32 LLVOVolume::processUpdateMessage(LLMessageSystem *mesgsys,
 			}
 		}
 	}
-	
+
 	return retval;
 }
 
@@ -673,6 +673,7 @@ void LLVOVolume::updateTextureVirtualSize(bool forced)
 										  mSculptTexture->getHeight(), mSculptTexture->getWidth()));
 			}
 		}
+
 	}
 
 	if (getLightTextureID().notNull())
@@ -853,7 +854,7 @@ BOOL LLVOVolume::setVolume(const LLVolumeParams &params_in, const S32 detail, bo
 		{
 			mVolumeImpl->onSetVolume(volume_params, mLOD); //detail ?
 		}
-		
+	
 		updateSculptTexture();
 
 		if (isSculpted())
@@ -988,6 +989,7 @@ void LLVOVolume::sculpt()
 		if(!raw_image)
 		{
 			llassert(discard_level < 0) ;
+
 			sculpt_width = 0;
 			sculpt_height = 0;
 			sculpt_data = NULL ;
@@ -1056,7 +1058,7 @@ BOOL LLVOVolume::calcLOD()
 	
 
 	distance *= sDistanceFactor;
-			
+
 	F32 rampDist = LLVOVolume::sLODFactor * 2;
 	
 	if (distance < rampDist)
@@ -1229,7 +1231,7 @@ BOOL LLVOVolume::genBBoxes(BOOL force_global)
 
 	BOOL rebuild = mDrawable->isState(LLDrawable::REBUILD_VOLUME | LLDrawable::REBUILD_POSITION | LLDrawable::REBUILD_RIGGED);
 
-//	bool rigged = false;
+	//	bool rigged = false;
 	LLVolume* volume = mRiggedVolume;
 	if (!volume)
 	{
@@ -2089,7 +2091,7 @@ BOOL LLVOVolume::isSculpted() const
 }
 
 BOOL LLVOVolume::isMesh() const
-{	
+{
 	if (isSculpted())
 	{
 		LLSculptParams *sculpt_params = (LLSculptParams *)getParameterEntry(LLNetworkData::PARAMS_SCULPT);
@@ -2388,7 +2390,7 @@ U32 LLVOVolume::getRenderCost(texture_cost_t &textures) const
 		produces_light = 1;
 	}
 
-	for (U32 i = 0; i < num_faces; ++i)
+	for (S32 i = 0; i < num_faces; ++i)
 	{
 		const LLFace* face = drawablep->getFace(i);
 		if (!face) continue;

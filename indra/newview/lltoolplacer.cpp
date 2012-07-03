@@ -35,9 +35,6 @@
 // self header
 #include "lltoolplacer.h"
 
-// linden library headers
-#include "llprimitive.h"
-
 // viewer headers
 #include "llbutton.h"
 #include "llviewercontrol.h"
@@ -50,12 +47,10 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
-#include "llwindow.h"
 #include "llworld.h"
 #include "llui.h"
 
 //Headers added for functions moved from viewer.cpp
-#include "llvoavatarself.h"
 #include "llvograss.h"
 #include "llvotree.h"
 #include "llvolumemessage.h"
@@ -67,6 +62,11 @@
 #include "llviewerobjectlist.h"
 #include "llviewercamera.h"
 #include "llviewerstats.h"
+#include "llvoavatarself.h"
+
+// linden library headers
+#include "llprimitive.h"
+#include "llwindow.h"
 
 // <edit>
 #include "llparcel.h" // always rez

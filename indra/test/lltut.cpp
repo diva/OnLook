@@ -40,6 +40,7 @@
 #include "llformat.h"
 #include "llsd.h"
 #include "lluri.h"
+#include "stringize.h"
 
 namespace tut
 {
@@ -76,9 +77,13 @@ namespace tut
 
 	void ensure_equals(const char* m, const LLSD& actual,
 		const LLSD& expected)
+    {
+        ensure_equals(std::string(m), actual, expected);
+    }
+
+	void ensure_equals(const std::string& msg, const LLSD& actual,
+		const LLSD& expected)
 	{
-		const std::string& msg = m ? m : "";
-		
 		ensure_equals(msg + " type", actual.type(), expected.type());
 		switch (actual.type())
 		{
@@ -94,7 +99,7 @@ namespace tut
 				return;
 			
 			case LLSD::TypeReal:
-				tut::ensure_equals(msg + " real", actual.asReal(), expected.asReal());
+				ensure_equals(msg + " real", actual.asReal(), expected.asReal());
 				return;
 			
 			case LLSD::TypeString:
@@ -128,7 +133,7 @@ namespace tut
 				{
 					ensure_equals(msg + " map keys", 
 						actual_iter->first, expected_iter->first);
-					ensure_equals((msg + "[" + actual_iter->first + "]").c_str(),
+					ensure_equals(msg + "[" + actual_iter->first + "]",
 						actual_iter->second, expected_iter->second);
 					++actual_iter;
 					++expected_iter;
@@ -141,11 +146,15 @@ namespace tut
 				
 				for(int i = 0; i < actual.size(); ++i)
 				{
-					ensure_equals((msg + llformat("[%d]", i)).c_str(),
+					ensure_equals(msg + llformat("[%d]", i),
 						actual[i], expected[i]);
 				}
 				return;
 			}
+			default:
+				// should never get here, but compiler produces warning if we
+				// don't cover this case, and at Linden warnings are fatal.
+				throw failure(STRINGIZE("invalid type field " << actual.type()));
 		}
 	}
 
