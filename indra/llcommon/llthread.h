@@ -382,6 +382,16 @@ public:
 		mNoHoldersCondition.signal();			// Tell waiting readers, see [5].
 		mNoHoldersCondition.unlock();			// Release lock on mHoldersCount.
 	}
+#if LL_DEBUG
+	// Really only intended for debugging purposes:
+	bool isLocked(void)
+	{
+		mNoHoldersCondition.lock();
+		bool res = mHoldersCount;
+		mNoHoldersCondition.unlock();
+		return res;
+	}
+#endif
 };
 
 //============================================================================
