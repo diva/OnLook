@@ -1282,6 +1282,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						return true ; //abort.
 					}
 				}
+				resetFormattedData();
+				cur_size = 0;
 			}
 			mRequestedSize = mDesiredSize;
 			mRequestedDiscard = mDesiredDiscard;
@@ -1315,7 +1317,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 															 LLImageBase::TYPE_AVATAR_BAKE == mType);
 #endif
 
-				if(cur_size > 0) offset--;
 				// Will call callbackHttpGet when curl request completes
 				std::vector<std::string> headers;
 				headers.push_back("Accept: image/x-j2c");
@@ -1460,14 +1461,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 			
 			U8* buffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mBufferSize);
-			if (cur_size > 0) {
+			if (cur_size > 0)
+			{
 				memcpy(buffer, mFormattedImage->getData(), cur_size);
-				mBufferSize--;
-				if(mRequestedSize == 1) mRequestedDiscard = 0;
-				else memcpy(buffer + cur_size, mBuffer+1, mRequestedSize-1); // append
 			}
-			else memcpy(buffer + cur_size, mBuffer, mRequestedSize); // append
-
+			memcpy(buffer + cur_size, mBuffer, mRequestedSize); // append
 			// NOTE: setData releases current data and owns new data (buffer)
 			mFormattedImage->setData(buffer, mBufferSize);
 			// delete temp data
@@ -1830,11 +1828,7 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 			mBuffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), data_size);
 			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
 			mBufferSize += data_size;
-			if(mFormattedImage.notNull() && mFormattedImage->getDataSize() > 0 && data_size == 1)
-			{
-				mHaveAllData = TRUE;
-			}
-			else if (data_size < mRequestedSize && mRequestedDiscard == 0)
+			if (data_size < mRequestedSize && mRequestedDiscard == 0)
 			{
 				mHaveAllData = TRUE;
 			}
