@@ -2,31 +2,25 @@
  * @file llimagegl.h
  * @brief Object for managing images and their textures
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -51,8 +45,16 @@ class LLImageGL : public LLRefCount
 {
 	friend class LLTexUnit;
 public:
-	static std::list<U32> sDeadTextureList;
+	static U32 sCurTexName;
 
+	//previously used but now available texture names
+	// sDeadTextureList[<usage>][<internal format>]
+	typedef std::map<U32, std::list<U32> > dead_texturelist_t;
+	static dead_texturelist_t sDeadTextureList[LLTexUnit::TT_NONE];
+
+	// These 2 functions replace glGenTextures() and glDeleteTextures()
+	static void generateTextures(LLTexUnit::eTextureType type, U32 format, S32 numTextures, U32 *textures);
+	static void deleteTextures(LLTexUnit::eTextureType type, U32 format, S32 mip_levels, S32 numTextures, U32 *textures, bool immediate = false);
 	static void deleteDeadTextures();
 
 	// Size calculation
@@ -102,15 +104,11 @@ public:
 	void setComponents(S32 ncomponents) { mComponents = (S8)ncomponents ;}
 	void setAllowCompression(bool allow) { mAllowCompression = allow; }
 
-	// These 3 functions currently wrap glGenTextures(), glDeleteTextures(), and glTexImage2D() 
-	// for tracking purposes and will be deprecated in the future
-	static void generateTextures(S32 numTextures, U32 *textures);
-	static void deleteTextures(S32 numTextures, U32 *textures, bool immediate = false);
 	static void setManualImage(U32 target, S32 miplevel, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void *pixels, bool allow_compression = true);
 
 	BOOL createGLTexture() ;
-	BOOL createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S32 usename = 0, BOOL to_create = TRUE, 
-		S32 category = sMaxCatagories - 1);
+	BOOL createGLTexture(S32 discard_level, const LLImageRaw* imageraw, S32 usename = 0, BOOL to_create = TRUE,
+		S32 category = sMaxCategories-1);
 	BOOL createGLTexture(S32 discard_level, const U8* data, BOOL data_hasmips = FALSE, S32 usename = 0);
 	void setImage(const LLImageRaw* imageraw);
 	void setImage(const U8* data_in, BOOL data_hasmips = FALSE);
@@ -209,7 +207,8 @@ protected:
 	LLGLenum mTarget;		// Normally GL_TEXTURE2D, sometimes something else (ex. cube maps)
 	LLTexUnit::eTextureType mBindTarget;	// Normally TT_TEXTURE, sometimes something else (ex. cube maps)
 	bool mHasMipMaps;
-	
+	S32 mMipLevels;
+
 	LLGLboolean mIsResident;
 	
 	S8 mComponents;
@@ -232,8 +231,6 @@ public:
 	
 	static F32 sLastFrameTime;
 	
-	static LLGLuint sCurrentBoundTextures[MAX_GL_TEXTURE_UNITS]; // Currently bound texture ID
-
 	// Global memory statistics
 	static S32 sGlobalTextureMemoryInBytes;		// Tracks main memory texmem
 	static S32 sBoundTextureMemoryInBytes;	// Tracks bound texmem for last completed frame
@@ -255,7 +252,7 @@ public:
 	static void initClass(S32 num_catagories) ;
 	static void cleanupClass() ;
 private:
-	static S32 sMaxCatagories ;
+	static S32 sMaxCategories ;
 
 	//the flag to allow to call readBackRaw(...).
 	//can be removed if we do not use that function at all.

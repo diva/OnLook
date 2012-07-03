@@ -931,24 +931,6 @@ LLPanel *LLPanel::childGetVisibleTab(const std::string& id) const
 	return NULL;
 }
 
-void LLPanel::childSetTabChangeCallback(const std::string& id, const std::string& tabname, void (*on_tab_clicked)(void*, bool), void *userdata, void (*on_precommit)(void*,bool))
-{
-	LLTabContainer* child = getChild<LLTabContainer>(id);
-	if (child)
-	{
-		LLPanel *panel = child->getPanelByName(tabname);
-		if (panel)
-		{
-			child->setTabChangeCallback(panel, on_tab_clicked);
-			child->setTabUserData(panel, userdata);
-			if (on_precommit)
-			{
-				child->setTabPrecommitChangeCallback(panel, on_precommit);
-			}
-		}
-	}
-}
-
 void LLPanel::childSetKeystrokeCallback(const std::string& id, void (*keystroke_callback)(LLLineEditor* caller, void* user_data), void *user_data)
 {
 	LLLineEditor* child = getChild<LLLineEditor>(id);

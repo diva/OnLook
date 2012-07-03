@@ -282,7 +282,24 @@ bool LLToolMgr::canEdit()
 
 void LLToolMgr::toggleBuildMode()
 {
-	if (!inBuildMode())
+	if (inBuildMode())
+	{
+		if (gSavedSettings.getBOOL("EditCameraMovement"))
+		{
+			// just reset the view, will pull us out of edit mode
+			handle_reset_view();
+		}
+		else
+		{
+			// manually disable edit mode, but do not affect the camera
+			gAgentCamera.resetView(false);
+			gFloaterTools->close();
+			gViewerWindow->showCursor();			
+		}
+		// avoid spurious avatar movements pulling out of edit mode
+		LLViewerJoystick::getInstance()->setNeedsReset();
+	}
+	else
 	{
 		ECameraMode camMode = gAgentCamera.getCameraMode();
 		if (CAMERA_MODE_MOUSELOOK == camMode ||	CAMERA_MODE_CUSTOMIZE_AVATAR == camMode)
@@ -332,24 +349,8 @@ void LLToolMgr::toggleBuildMode()
 		LLViewerJoystick::getInstance()->setNeedsReset();
 
 	}
-	else
-	{
-		if (gSavedSettings.getBOOL("EditCameraMovement"))
-		{
-			// just reset the view, will pull us out of edit mode
-			handle_reset_view();
-		}
-		else
-		{
-			// manually disable edit mode, but do not affect the camera
-			gAgentCamera.resetView(false);
-			gFloaterTools->close();
-			gViewerWindow->showCursor();			
-		}
-		// avoid spurious avatar movements pulling out of edit mode
-		LLViewerJoystick::getInstance()->setNeedsReset();
-	}
 }
+
 bool LLToolMgr::inBuildMode()
 {
 	// when entering mouselook inEdit() immediately returns true before 

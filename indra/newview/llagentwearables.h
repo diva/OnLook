@@ -205,7 +205,7 @@ private:
 	// Save Wearables
 	//--------------------------------------------------------------------
 public:	
-	void			saveWearableAs(const LLWearableType::EType type, const U32 index, const std::string& new_name, BOOL save_in_lost_and_found);
+	LLWearable*			saveWearableAs(const LLWearableType::EType type, const U32 index, const std::string& new_name, BOOL save_in_lost_and_found);
 	void			saveWearable(const LLWearableType::EType type, const U32 index, BOOL send_update = TRUE,
 								 const std::string new_name = "");
 	void			saveAllWearables();
@@ -247,6 +247,7 @@ public:
 	boost::signals2::connection				addInitialWearablesLoadedCallback(loaded_callback_t cb);
 // [/SL:KB]
 
+	bool									changeInProgress() const;
 	void									notifyLoadingStarted();
 	void									notifyLoadingFinished();
 

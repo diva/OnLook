@@ -957,7 +957,7 @@ void LLFolderView::draw()
 	else if (mShowEmptyMessage)
 	{
 		static LLCachedControl<LLColor4> sSearchStatusColor(gColors, "InventorySearchStatusColor", LLColor4::white );
-		if (LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
+		if (LLInventoryModelBackgroundFetch::instance().folderFetchActive() || mCompletedFilterGeneration < mFilter->getMinRequiredGeneration())
 		{
 			mStatusText = std::string("Searching..."); // *TODO:translate
 		}
@@ -2003,7 +2003,7 @@ void LLFolderView::scrollToShowSelection()
 	// However we allow scrolling for folder views with mAutoSelectOverride
 	// (used in Places SP) as an exception because the selection in them
 	// is not reset during items filtering. See STORM-133.
-	if ( (!LLInventoryModelBackgroundFetch::instance().backgroundFetchActive() || mAutoSelectOverride)
+	if ( (!LLInventoryModelBackgroundFetch::instance().folderFetchActive() || mAutoSelectOverride)
 			&& mSelectedItems.size() )
 	{
 		mNeedsScroll = TRUE;

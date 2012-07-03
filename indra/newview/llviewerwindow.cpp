@@ -178,6 +178,7 @@
 #include "llviewershadermgr.h"
 #include "llviewerstats.h"
 #include "llvoavatarself.h"
+#include "llvopartgroup.h"
 #include "llvovolume.h"
 #include "llworld.h"
 #include "llworldmapview.h"
@@ -1183,7 +1184,8 @@ void LLViewerWindow::handleFocusLost(LLWindow *window)
 BOOL LLViewerWindow::handleTranslatedKeyDown(KEY key,  MASK mask, BOOL repeated)
 {
 	// Let the voice chat code check for its PTT key.  Note that this never affects event processing.
-	gVoiceClient->keyDown(key, mask);
+	if(gVoiceClient)
+		gVoiceClient->keyDown(key, mask);
 	
 	if (gAwayTimer.getElapsedTimeF32() > MIN_AFK_TIME)
 	{
@@ -4823,6 +4825,8 @@ void LLViewerWindow::stopGL(BOOL save_state)
 		LLVOAvatar::destroyGL();
 		stop_glerror();
 
+		LLVOPartGroup::destroyGL();
+
 		LLViewerDynamicTexture::destroyGL();
 		stop_glerror();
 
@@ -4875,6 +4879,7 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 		gBumpImageList.restoreGL();
 		LLViewerDynamicTexture::restoreGL();
 		LLVOAvatar::restoreGL();
+		LLVOPartGroup::restoreGL();
 		
 		gResizeScreenTexture = TRUE;
 		gWindowResized = TRUE;
@@ -5514,8 +5519,10 @@ void LLPickInfo::getSurfaceInfo()
 			if (objectp->mDrawable.notNull() && mObjectFace > -1)
 			{
 				LLFace* facep = objectp->mDrawable->getFace(mObjectFace);
-
-				mUVCoords = facep->surfaceToTexture(mSTCoords, mIntersection, mNormal);
+				if (facep)
+				{
+					mUVCoords = facep->surfaceToTexture(mSTCoords, mIntersection, mNormal);
+				}
 			}
 
 			// and XY coords:

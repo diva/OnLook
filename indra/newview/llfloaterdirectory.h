@@ -81,7 +81,7 @@ public:
 
 	static void toggleEvents(void*);
 	static void toggleFind(void*);
-	static void onTabChanged(void*, bool);
+	static void onTabChanged( const LLSD& param );
 
 	void hideAllDetailPanels();
 

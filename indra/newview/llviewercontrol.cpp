@@ -579,10 +579,11 @@ bool handleCloudSettingsChanged(const LLSD& newvalue)
 	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS)!=bCloudsEnabled)
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_WL_CLOUDS);
 
+#if ENABLE_CLASSIC_CLOUDS
 	if( !gSavedSettings.getBOOL("SkyUseClassicClouds") ) bCloudsEnabled = false;
-
 	if((bool)LLPipeline::hasRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS)!=bCloudsEnabled )
 		LLPipeline::toggleRenderTypeControl((void*)LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+#endif
 	return true;
 }
 

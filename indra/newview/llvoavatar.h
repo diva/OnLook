@@ -326,14 +326,21 @@ public:
 public:
 	BOOL			isFullyLoaded() const;
 	bool visualParamWeightsAreDefault();
+	virtual BOOL	getIsCloud() const;
+	BOOL			isFullyTextured() const;
+	BOOL			hasGray() const; 
+	S32				getRezzedStatus() const; // 0 = cloud, 1 = gray, 2 = fully textured.
+	void			updateRezzedStatusTimers();
+
+	S32				mLastRezzedStatus;
 protected:
-	virtual BOOL	getIsCloud();
 	BOOL			updateIsFullyLoaded();
 	BOOL			processFullyLoadedChange(bool loading);
 
 	void			updateRuthTimer(bool loading);
 	F32 			calcMorphAmount();
 private:
+	BOOL			mFirstFullyVisible;
 	BOOL			mFullyLoaded;
 	BOOL			mPreviousFullyLoaded;
 	BOOL			mFullyLoadedInitialized;
@@ -567,9 +574,10 @@ public:
 	virtual BOOL	isTextureVisible(LLVOAvatarDefines::ETextureIndex type, U32 index = 0) const;
 	virtual BOOL	isTextureVisible(LLVOAvatarDefines::ETextureIndex type, LLWearable *wearable) const;
 
-protected:
 	BOOL			isFullyBaked();
 	static BOOL		areAllNearbyInstancesBaked(S32& grey_avatars);
+	static void		getNearbyRezzedStats(std::vector<S32>& counts);
+	static std::string rezStatusToString(S32 status);
 
 	//--------------------------------------------------------------------
 	// Baked textures
@@ -600,9 +608,6 @@ protected:
 	bakedtexturedata_vec_t 					mBakedTextureDatas;
 	LLLoadedCallbackEntry::source_callback_list_t mCallbackTextureList ; 
 	BOOL mLoadedCallbacksPaused;
-
-public:
-	const BakedTextureData& getBakedTextureData(LLVOAvatarDefines::ETextureIndex idx) const {return mBakedTextureDatas[idx];}
 	//--------------------------------------------------------------------
 	// Local Textures
 	//--------------------------------------------------------------------
@@ -918,6 +923,9 @@ private:
 	BOOL		mStepOnLand;
 	U8			mStepMaterial;
 	LLVector3	mStepObjectVelocity;
+	
+public:
+	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
 
 	//--------------------------------------------------------------------
 	// Emerald legacy boob bounce
@@ -939,10 +947,7 @@ private:
 	LLFrameTimer	mBoobBounceTimer;
 	EmeraldAvatarLocalBoobConfig mLocalBoobConfig;
 	EmeraldBoobState mBoobState;
-	
-public:
-	bool mSupportsPhysics; //Client supports v2 wearable physics. Disable emerald physics.
-	
+
 /**                    Physics
  **                                                                            **
  *******************************************************************************/
@@ -980,6 +985,7 @@ private:
 
 public:
 	std::string		getFullname() const; // Returns "FirstName LastName"
+	std::string		avString() const; // Frequently used string in log messages "Avatar '<full name'"
 protected:
 	static void		getAnimLabels(LLDynamicArray<std::string>* labels);
 	static void		getAnimNames(LLDynamicArray<std::string>* names);	
@@ -1078,11 +1084,14 @@ private:
 	F32					mAdjustedPixelArea;
 	std::string  		mDebugText;
 
+
 	//--------------------------------------------------------------------
 	// Avatar Rez Metrics
 	//--------------------------------------------------------------------
 public:
+	void 			debugAvatarRezTime(std::string notification_name, std::string comment = "");
 	F32				debugGetExistenceTimeElapsedF32() const { return mDebugExistenceTimer.getElapsedTimeF32(); }
+
 protected:
 	LLFrameTimer	mRuthDebugTimer; // For tracking how long it takes for av to rez
 	LLFrameTimer	mDebugExistenceTimer; // Debugging for how long the avatar has been in memory.
@@ -1228,4 +1237,6 @@ private:
 extern const F32 SELF_ADDITIONAL_PRI;
 extern const S32 MAX_TEXTURE_VIRTURE_SIZE_RESET_INTERVAL;
 
+extern const U32 EMERALD_BOOB_SIZE_PARAM;		//"Breast Size"
+extern const U32 EMERALD_BOOB_GRAVITY_PARAM;	//"Breast_Gravity"
 #endif // LL_VO_AVATAR_H

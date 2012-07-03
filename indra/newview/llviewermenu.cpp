@@ -875,8 +875,6 @@ void init_menus()
 	gLoginMenuBarView->setBackgroundColor( color );
 
 	gMenuHolder->addChild(gLoginMenuBarView);
-	
-	LLToolMgr::getInstance()->initMenu(sMenus);
 }
 
 
@@ -1371,7 +1369,11 @@ void init_debug_rendering_menu(LLMenuGL* menu)
 											&LLPipeline::hasRenderTypeControl,
 											(void*)LLPipeline::RENDER_TYPE_GRASS, '0', MASK_CONTROL|MASK_ALT|MASK_SHIFT));
 	//NOTE: Using a static variable, as an unsigned long long cannot fit in the space of a pointer. Pass pointer to callbacks
-	static U64 cloud_flags = (1ULL<<LLPipeline::RENDER_TYPE_WL_CLOUDS | 1ULL<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+	static U64 cloud_flags = (1ULL<<LLPipeline::RENDER_TYPE_WL_CLOUDS
+#if ENABLE_CLASSIC_CLOUDS
+		| 1ULL<<LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS
+#endif
+		);
 	sub_menu->addChild(new LLMenuItemCheckGL("Clouds",  //This clobbers skyuseclassicclouds, but.. big deal.
 											&LLPipeline::toggleRenderPairedTypeControl, NULL,
 											&LLPipeline::hasRenderPairedTypeControl,
@@ -2751,44 +2753,32 @@ bool handle_go_to()
 */
 // [/RLVa:KB]
 
-	// JAMESDEBUG try simulator autopilot
+	// try simulator autopilot
 	std::vector<std::string> strings;
 	std::string val;
 	LLVector3d pos = LLToolPie::getInstance()->getPick().mPosGlobal;
-	if (gSavedSettings.getBOOL("DoubleClickTeleport")
-		)
+	val = llformat("%g", pos.mdV[VX]);
+	strings.push_back(val);
+	val = llformat("%g", pos.mdV[VY]);
+	strings.push_back(val);
+	val = llformat("%g", pos.mdV[VZ]);
+	strings.push_back(val);
+	send_generic_message("autopilot", strings);
+
+	LLViewerParcelMgr::getInstance()->deselectLand();
+
+	if (isAgentAvatarValid() && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
 	{
-		LLVector3d hips_offset(0.0f, 0.0f, 1.2f);
-		gAgent.teleportViaLocation(pos + hips_offset);
+		gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentAvatarp->getID());
 	}
-	else
+	else 
 	{
-		// JAMESDEBUG try simulator autopilot
-		std::vector<std::string> strings;
-		std::string val;
-		val = llformat("%g", pos.mdV[VX]);
-		strings.push_back(val);
-		val = llformat("%g", pos.mdV[VY]);
-		strings.push_back(val);
-		val = llformat("%g", pos.mdV[VZ]);
-		strings.push_back(val);
-		send_generic_message("autopilot", strings);
-
-		LLViewerParcelMgr::getInstance()->deselectLand();
-
-		if (gAgentAvatarp && !gSavedSettings.getBOOL("AutoPilotLocksCamera"))
-		{
-			gAgentCamera.setFocusGlobal(gAgentCamera.getFocusTargetGlobal(), gAgentAvatarp->getID());
-		}
-		else 
-		{
-			// Snap camera back to behind avatar
-			gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
-		}
-
-		// Could be first use
-		LLFirstUse::useGoTo();
+		// Snap camera back to behind avatar
+		gAgentCamera.setFocusOnAvatar(TRUE, ANIMATE);
 	}
+
+	// Could be first use
+	LLFirstUse::useGoTo();
 	return true;
 }
 
@@ -9518,4 +9508,6 @@ void initialize_menus()
 		addMenu(new RlvEnableIfNot(), "RLV.EnableIfNot");
 	}
 // [/RLVa:KB]
+
+	LLToolMgr::getInstance()->initMenu(sMenus);
 }

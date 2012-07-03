@@ -813,12 +813,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				gTextureList.updateImages(max_image_decode_time);
 			}
 
-			{
+			/*{
 				LLFastTimer t(FTM_IMAGE_UPDATE_DELETE);
 				//remove dead textures from GL
 				LLImageGL::deleteDeadTextures();
 				stop_glerror();
-			}
+			}*/
 		}
 		llpushcallstacks ;
 		LLGLState::checkStates();
@@ -948,6 +948,29 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				&& !gRestoreGL)
 		{
 			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
+			
+			LLCachedControl<bool> render_depth_pre_pass("RenderDepthPrePass", false);
+			if (render_depth_pre_pass && LLGLSLShader::sNoFixedFunction)
+			{
+				gGL.setColorMask(false, false);
+				
+				U32 types[] = { 
+					LLRenderPass::PASS_SIMPLE, 
+					LLRenderPass::PASS_FULLBRIGHT, 
+					LLRenderPass::PASS_SHINY 
+				};
+
+				U32 num_types = LL_ARRAY_SIZE(types);
+				gOcclusionProgram.bind();
+				for (U32 i = 0; i < num_types; i++)
+				{
+					gPipeline.renderObjects(types[i], LLVertexBuffer::MAP_VERTEX, FALSE);
+				}
+
+				gOcclusionProgram.unbind();
+			}
+
+
 			gGL.setColorMask(true, false);
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{

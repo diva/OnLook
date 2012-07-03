@@ -250,10 +250,8 @@ BOOL LLPanelGroup::postBuild()
 			// Pass on whether or not to allow edit to tabs.
 			panelp->setAllowEdit(mAllowEdit);
 			panelp->addObserver(this);
-
-			mTabContainer->setTabChangeCallback(panelp, onClickTab);
-			mTabContainer->setTabUserData(panelp, this);
 		}
+		mTabContainer->setCommitCallback(boost::bind(&LLPanelGroup::handleClickTab,this)); 
 		updateTabVisibility();
 
 		// Act as though this tab was just activated.
@@ -321,13 +319,6 @@ void LLPanelGroup::tabChanged()
 	}
 }
 
-// static
-void LLPanelGroup::onClickTab(void* user_data, bool from_click)
-{
-	LLPanelGroup* self = static_cast<LLPanelGroup*>(user_data);
-	self->handleClickTab();
-}
-
 void LLPanelGroup::handleClickTab()
 {
 	// If we are already handling a transition,
@@ -377,7 +368,7 @@ void LLPanelGroup::selectTab(std::string tab_name)
 	if ( tabp && mTabContainer )
 	{
 		mTabContainer->selectTabPanel(tabp);
-		onClickTab(this, false);
+		handleClickTab();
 	}
 }
 

@@ -31,7 +31,6 @@
 #include "lldynamictexture.h"
 #include "llvoavatardefines.h"
 #include "lltexlayerparams.h"
-#include "lllocaltextureobject.h"
 
 class LLVOAvatar;
 class LLVOAvatarSelf;

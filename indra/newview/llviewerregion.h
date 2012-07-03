@@ -86,7 +86,9 @@ public:
 		PARTITION_WATER,
 		PARTITION_TREE,
 		PARTITION_PARTICLE,
+#if ENABLE_CLASSIC_CLOUDS
 		PARTITION_CLOUD,
+#endif
 		PARTITION_GRASS,
 		PARTITION_VOLUME,
 		PARTITION_BRIDGE,
@@ -354,7 +356,9 @@ protected:
 
 public:
 	LLWind  mWind;
+#if ENABLE_CLASSIC_CLOUDS
 	LLCloudLayer mCloudLayer;
+#endif
 	LLViewerParcelOverlay	*mParcelOverlay;
 
 	LLStat	mBitStat;

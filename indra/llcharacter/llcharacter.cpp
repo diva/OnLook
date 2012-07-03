@@ -56,8 +56,7 @@ LLCharacter::LLCharacter()
 	mPreferredPelvisHeight( 0.f ),
 	mSex( SEX_FEMALE ),
 	mAppearanceSerialNum( 0 ),
-	mSkeletonSerialNum( 0 ),
-	mInAppearance( false )
+	mSkeletonSerialNum( 0 )
 {
 	llassert_always(sAllowInstancesChange) ;
 	sInstances.push_back(this);

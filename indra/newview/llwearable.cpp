@@ -584,31 +584,9 @@ BOOL LLWearable::isDirty() const
 			U8 a = F32_to_U8( saved_weight, param->getMinWeight(), param->getMaxWeight() );
 			U8 b = F32_to_U8( current_weight, param->getMinWeight(), param->getMaxWeight() );
 
-			if(gAgentAvatarp->getAppearanceFlag() == true)
-			{
-				//boob
-				if(param->getID() == 507)
-				{
-					if( is_in_map(mVisualParamIndexMap, param->getID() ) )
-						current_weight = mVisualParamIndexMap.find(param->getID())->second->getWeight();
-					else
-						current_weight = gAgentAvatarp->getActualBoobGrav();
-					current_weight = llclamp( current_weight, param->getMinWeight(), param->getMaxWeight() );
-					b = F32_to_U8( current_weight, param->getMinWeight(), param->getMaxWeight() );
-				}
-			}
-			else
-			{
-				//boob
-				if(param->getID() == 507)
-				{
-						a = F32_to_U8( gAgentAvatarp->getActualBoobGrav(), param->getMinWeight(), param->getMaxWeight() );
-				}
-			}
-
 			if( a != b  )
 			{
-				llwarns << "param ID " << param->getID() << " was changed." << llendl;
+				//llwarns << "param ID " << param->getID() << " was changed." << llendl;
 				return TRUE;
 			}
 		}
@@ -699,10 +677,6 @@ void LLWearable::writeToAvatar()
 			S32 param_id = param->getID();
 			F32 weight = getVisualParamWeight(param_id);
 
-			//ZOMG: When switching shapes from inventory
-			if(param_id == 507)
-				gAgentAvatarp->setActualBoobGrav(weight);
-
 			gAgentAvatarp->setVisualParamWeight( param_id, weight, FALSE );
 		}
 	}
@@ -727,36 +701,12 @@ void LLWearable::writeToAvatar()
 			gAgentAvatarp->setLocalTextureTE(te, image, 0);
 		}
 	}
-		
-	/*if( gFloaterCustomize )
-	{
-		LLViewerInventoryItem* item;
-		item = (LLViewerInventoryItem*)gInventory.getItem(gAgentWearables.getWearableItemID(mType, 0));	// TODO: MULTI-WEARABLE
-		U32 perm_mask = PERM_NONE;
-		BOOL is_complete = FALSE;
-		if(item)
-		{
-			perm_mask = item->getPermissions().getMaskOwner();
-			is_complete = item->isComplete();
-			if(!is_complete)
-			{
-				item->fetchFromServer();
-			}
-		}
-		gFloaterCustomize->setWearable(mType, this, perm_mask, is_complete);
-		LLFloaterCustomize::setCurrentWearableType( mType );
-	}*/
 
 	ESex new_sex = gAgentAvatarp->getSex();
 	if( old_sex != new_sex )
 	{
 		gAgentAvatarp->updateSexDependentLayerSets( FALSE );
 	}	
-	
-//	if( upload_bake )
-//	{
-//		gAgent.sendAgentSetAppearance();
-//	}
 }
 
 
@@ -787,7 +737,7 @@ void LLWearable::removeFromAvatar( LLWearableType::EType type, BOOL upload_bake 
 
 	if(gAgentCamera.cameraCustomizeAvatar())
 	{
-		gFloaterCustomize->setWearable(type, NULL, PERM_ALL, TRUE);
+		gFloaterCustomize->wearablesChanged(type);
 	}
 
 	gAgentAvatarp->updateVisualParams();
@@ -824,21 +774,6 @@ void LLWearable::copyDataFrom(const LLWearable* src)
 		{
 			S32 id = param->getID();
 			F32 weight = src->getVisualParamWeight(id);
-			//llwarns << "------------------------------" << llendl;
-			//llwarns << "copydatafrom" << llendl;
-			//llwarns << "------------------------------" << llendl;
-			
-			//if(id == 507)
-			//{
-			//	llwarns << "weight = " << weight << llendl;
-			//	llwarns << "actual = " << avatar->getActualBoobGrav() << llendl;
-			//	llwarns << "mVisualParamMap[id] = " << mVisualParamMap[id] << llendl;
-			//}
-
-			//pretty sure right
-			if(id == 507)
-				gAgentAvatarp->setActualBoobGrav(weight);
-			
 			mSavedVisualParamMap[id] = weight;
 		}
 	}
@@ -1077,6 +1012,9 @@ void LLWearable::revertValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
+	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0 )
+		gFloaterCustomize->updateScrollingPanelList();
+	
 }
 
 BOOL LLWearable::isOnTop() const
@@ -1118,6 +1056,9 @@ void LLWearable::saveValues()
 	{
 		panel->updateScrollingPanelList();
 	}*/
+
+	if( gFloaterCustomize && gAgentWearables.getWearableIndex(this)==0)
+		gFloaterCustomize->updateScrollingPanelList();
 }
 
 void LLWearable::syncImages(te_map_t &src, te_map_t &dst)
@@ -1218,23 +1159,6 @@ void LLWearable::pullCrossWearableValues()
 	{
 		if( (((LLViewerVisualParam*)param)->getWearableType() == mType) && (param->isTweakable()) )
 		{
-
-			
-			//pretty sure is right
-			if(param->getID() == 507)
-				avatar->setActualBoobGrav(param->getWeight());
-			//if(param->getID() == 151)
-			//	avatar->setActualButtGrav(param->getWeight());
-			//if(param->getID() == 157)
-			//	avatar->setActualFatGrav(param->getWeight());
-			
-			//if(param->getID() == 507)
-			//{
-			//	llwarns << "current = " << avatar->getActualBoobGrav() << llendl;
-			//	llwarns << "param weight = " << param->getWeight() << llendl;
-			//}
-				
-
 			mVisualParamMap[param->getID()] = param->getWeight();
 		}
 	}

@@ -70,7 +70,6 @@ public:
 	static void onBtnCancel(void*);
 	static void onBtnApply(void*);
 	static void onBtnRefresh(void*);
-	static void onClickTab(void*,bool);
 	void handleClickTab();
 
 	void setGroupID(const LLUUID& group_id);

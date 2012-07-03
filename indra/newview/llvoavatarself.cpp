@@ -136,7 +136,8 @@ LLVOAvatarSelf::LLVOAvatarSelf(const LLUUID& id,
 	LLVOAvatar(id, pcode, regionp),
 	mScreenp(NULL),
 	mLastRegionHandle(0),
-	mRegionCrossingCount(0)
+	mRegionCrossingCount(0),
+	mInitialBakesLoaded(false)
 {
 	gAgentWearables.setAvatarObject(this);
 	gAgentCamera.setAvatarObject(this);
@@ -172,6 +173,7 @@ void LLVOAvatarSelf::initInstance()
 	{
 		mDebugBakedTextureTimes[i][0] = -1.0f;
 		mDebugBakedTextureTimes[i][1] = -1.0f;
+		mInitialBakeIDs[i] = LLUUID::null;
 	}
 
 // [RLVa:KB] - Checked: 2010-12-12 (RLVa-1.2.2c) | Added: RLVa-1.2.2c
@@ -655,6 +657,11 @@ BOOL LLVOAvatarSelf::setParamWeight(LLViewerVisualParam *param, F32 weight, BOOL
 		}
 	}
 
+	if(param->getID() == EMERALD_BOOB_GRAVITY_PARAM && weight != getActualBoobGrav())
+ 	{
+ 		setActualBoobGrav(weight);
+ 	}
+
 	return LLCharacter::setVisualParamWeight(param,weight,upload_bake);
 }
 
@@ -708,6 +715,40 @@ void LLVOAvatarSelf::stopMotionFromSource(const LLUUID& source_id)
 	{
 		object->mFlags &= ~FLAGS_ANIM_SOURCE;
 	}
+}
+
+//virtual
+U32  LLVOAvatarSelf::processUpdateMessage(LLMessageSystem *mesgsys,
+													 void **user_data,
+													 U32 block_num,
+													 const EObjectUpdateType update_type,
+													 LLDataPacker *dp)
+{
+	U32 retval = LLVOAvatar::processUpdateMessage(mesgsys,user_data,block_num,update_type,dp);
+
+	if (mInitialBakesLoaded == false && retval == 0x0)
+	{
+		// call update textures to force the images to be created
+		updateMeshTextures();
+
+		// unpack the texture UUIDs to the texture slots
+		retval = unpackTEMessage(mesgsys, _PREHASH_ObjectData, block_num);
+
+		// need to trigger a few operations to get the avatar to use the new bakes
+		for (U32 i = 0; i < mBakedTextureDatas.size(); i++)
+		{
+			const LLVOAvatarDefines::ETextureIndex te = mBakedTextureDatas[i].mTextureIndex;
+			LLUUID texture_id = getTEImage(te)->getID();
+			setNewBakedTexture(te, texture_id);
+			mInitialBakeIDs[i] = texture_id;
+		}
+
+		onFirstTEMessageReceived();
+
+		mInitialBakesLoaded = true;
+	}
+
+	return retval;
 }
 
 void LLVOAvatarSelf::setLocalTextureTE(U8 te, LLViewerTexture* image, U32 index)
@@ -1908,7 +1949,7 @@ void LLVOAvatarSelf::dumpTotalLocalTextureByteCount()
 	llinfos << "Total Avatar LocTex GL:" << (gl_bytes/1024) << "KB" << llendl;
 }
 
-BOOL LLVOAvatarSelf::getIsCloud()
+BOOL LLVOAvatarSelf::getIsCloud() const
 {
 	// do we have our body parts?
 	if (gAgentWearables.getWearableCount(LLWearableType::WT_SHAPE) == 0 ||
@@ -2369,6 +2410,18 @@ void LLVOAvatarSelf::setCachedBakedTexture( ETextureIndex te, const LLUUID& uuid
 	{
 		if ( mBakedTextureDatas[i].mTextureIndex == te && mBakedTextureDatas[i].mTexLayerSet)
 		{
+			if (mInitialBakeIDs[i] != LLUUID::null)
+			{
+				if (mInitialBakeIDs[i] == uuid)
+				{
+					llinfos << "baked texture correctly loaded at login! " << i << llendl;
+				}
+				else
+				{
+					llwarns << "baked texture does not match id loaded at login!" << i << llendl;
+				}
+				mInitialBakeIDs[i] = LLUUID::null;
+			}
 			mBakedTextureDatas[i].mTexLayerSet->cancelUpload();
 		}
 	}
@@ -2495,6 +2548,20 @@ LLTexLayerSet* LLVOAvatarSelf::getLayerSet(ETextureIndex index) const
 	}
 	return NULL;
 }
+
+LLTexLayerSet* LLVOAvatarSelf::getLayerSet(EBakedTextureIndex baked_index) const
+{
+       /* switch(index)
+               case TEX_HEAD_BAKED:
+               case TEX_HEAD_BODYPAINT:
+                       return mHeadLayerSet; */
+       if (baked_index >= 0 && baked_index < BAKED_NUM_INDICES)
+       {
+                       return mBakedTextureDatas[baked_index].mTexLayerSet;
+       }
+       return NULL;
+}
+
 
 // static
 void LLVOAvatarSelf::onCustomizeStart()
@@ -2629,7 +2696,7 @@ void LLVOAvatarSelf::deleteScratchTextures()
 		 namep; 
 		 namep = sScratchTexNames.getNextData() )
 	{
-		LLImageGL::deleteTextures(1, (U32 *)namep );
+		LLImageGL::deleteTextures(LLTexUnit::TT_TEXTURE, 0, -1, 1, (U32 *)namep );
 		stop_glerror();
 	}
 

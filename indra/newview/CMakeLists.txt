@@ -341,6 +341,7 @@ set(viewer_SOURCE_FILES
     llpanelavatar.cpp
     llpanelclassified.cpp
     llpanelcontents.cpp
+    llpaneleditwearable.cpp
     llpaneldebug.cpp
     llpaneldirbrowser.cpp
     llpaneldirclassified.cpp
@@ -404,6 +405,8 @@ set(viewer_SOURCE_FILES
     llregionposition.cpp
     llremoteparcelrequest.cpp
     llsavedsettingsglue.cpp
+    llscrollingpanelparam.cpp
+    llscrollingpanelparambase.cpp
     llselectmgr.cpp
     llsky.cpp
     llspatialpartition.cpp
@@ -833,6 +836,7 @@ set(viewer_HEADER_FILES
     llpanelavatar.h
     llpanelclassified.h
     llpanelcontents.h
+    llpaneleditwearable.h
     llpaneldebug.h
     llpaneldirbrowser.h
     llpaneldirclassified.h
@@ -898,6 +902,8 @@ set(viewer_HEADER_FILES
     llremoteparcelrequest.h
     llresourcedata.h
     llsavedsettingsglue.h
+    llscrollingpanelparam.h
+    llscrollingpanelparambase.h
     llselectmgr.h
     llsky.h
     llspatialpartition.h
