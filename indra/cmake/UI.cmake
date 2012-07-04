@@ -60,7 +60,6 @@ else (STANDALONE)
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/cairo
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/pixman-1
-      ${LIBS_PREBUILT_DIR}/include
       )
   foreach(include ${${LL_ARCH}_INCLUDES})
       include_directories(${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/${include})

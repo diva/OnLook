@@ -32,11 +32,7 @@
 #ifndef LL_LLPNGWRAPPER_H
 #define LL_LLPNGWRAPPER_H
 
-#if LL_WINDOWS
-#include "libpng15/png.h"
-#else
-#include "libpng12/png.h"
-#endif
+#include "png.h"
 #include "llimage.h"
 
 class LLPngWrapper

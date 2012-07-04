@@ -30,17 +30,19 @@ case "$1" in
 	--mac|--osx|--darwin|-x|mac|osx|darwin)
 		MODE=osx
 		LIBPATH="libraries/universal-darwin/lib_release"
-		LIBDPATH="libraries/universal-darwin/lib_release"
+		LIBDPATH="libraries/universal-darwin/lib/release"
 		INCPATH="libraries/universal-darwin/include"
 		;;
 	--lin|--linux|-l|linux)
 		MODE=linux
-		LIBPATH="libraries/i686-linux/lib_release_client"
+		LIBPATH="libraries/i686-linux/lib/release"
+		LIBDPATH="libraries/i686-linux/lib/debug"
 		INCPATH="libraries/i686-linux/include"
 		;;
 	--linux64|-6|linux64)
 		MODE=linux64
-		LIBPATH="libraries/x86_64-linux/lib_release_client"
+		LIBPATH="libraries/x86_64-linux/lib/release"
+		LIBDPATH="libraries/x86_64-linux/lib/debug"
 		INCPATH="libraries/x86_64-linux/include"
 		;;
 	*)

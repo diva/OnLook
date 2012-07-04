@@ -3,55 +3,52 @@
 <map>
     <key>installables</key>
     <map>
-      <key>glext</key>
+      <key>32bitcompatibilitylibs</key>
       <map>
         <key>copyright</key>
-        <string>Copyright (c) 2007-2010 Khronos Group Inc.</string>
+        <string>Copyrights:     Libidn: Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 
+                Simon Josefsson. License GPL v3.0.
+                Freealut, libuuid, openal-soft: see copyright and license of the 
+                according main packages.
+        </string>
         <key>description</key>
-        <string>OpenGL Extension Header Files</string>
+        <string>32bit libraries needed for using voice</string>
         <key>license</key>
-        <string>glext</string>
+        <string>gpl</string>
+        <key>packages</key>
+        <map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>cbaafc55fb8b14283541791e82f13462</string>
+            <key>url</key>
+            <uri>http://imprudenceviewer.org/download/libs/linux64-32bitcompatibilitylibs-20100903.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
+      <key>GLOD</key>
+      <map>
+        <key>copyright</key>
+        <string>Copyright (C) 2003-04 Jonathan Cohen, Nat Duca, Chris Niski, Johns Hopkins University and David Luebke, Brenden Schubert, University of Virginia</string>
+        <key>description</key>
+        <string>GLOD</string>
+        <key>license</key>
+        <string>GLOD</string>
         <key>packages</key>
         <map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>2fc9a86782ec8dcc719ddc78026e7ba2</string>
+            <string>e84769e15f3d48ecbb07fa272c30365e</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>2fc9a86782ec8dcc719ddc78026e7ba2</string>
-            <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/glext-68-win32-linux.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>freeglut</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (c) 1999-2000 Pawel W. Olszta.</string>
-        <key>description</key>
-        <string>OpenSource alternative to OpenGL Utility Toolkit</string>
-        <key>license</key>
-        <string>freeglut</string>
-        <key>packages</key>
-        <map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>fefd6b548d677a60a198e50d9326d939</string>
-            <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/freeglut-2.6.0-win32.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glod-1.0pre4-linux-20110611.tar.bz2</uri>
           </map>
         </map>
       </map>
       <key>SDL</key>
       <map>
         <key>copyright</key>
-        <string>Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002  Sam Lantinga</string>
+        <string>Copyright (C) 1997-2009 Sam Lantinga</string>
         <key>description</key>
         <string>The Simple DirectMedia Layer libraries are used for handling input and basic window/GL setup on the Linux client.</string>
         <key>license</key>
@@ -68,9 +65,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>7952d45a61dc01faf1d9fd67023d96bd</string>
+            <string>7806c04e09f0eb490c108bfab7731b7b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/SDL-1.2.12-linux-20081222d.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-20110309.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -97,9 +94,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>7b84cd6a3c601a104d9c09e58ef2f50c</string>
+            <string>471db9f761e5ee66b91e0e330e331f68</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/apr_suite-1.2.8-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-linux-20120618.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -137,9 +134,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>c6953535222475e248d57fa9c2eec5cf</string>
+            <string>6acb4fde2fe2e02e0a91ae2a2dac166a</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/ares-1.7.1-linux-20100527.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.1-linux-20110310.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -156,34 +153,6 @@
             <uri>https://github.com/downloads/siana/SingularityViewer/ares-1.7.1-windows-20110504.tar.bz2</uri>
           </map>
         </map>
-      </map>
-      <key>artwork-common</key>
-      <map>
-        <key>copyright</key>
-        <string>(C) 2008 Linden Research, Inc.</string>
-        <key>description</key>
-        <string>Second Life(TM) Viewer Artwork</string>
-        <key>license</key>
-        <string>artwork</string>
-        <key>packages</key>
-        <map>
-          <key>common</key>
-          <map>
-            <key>md5sum</key>
-            <string>a2cde4f24bdcc260b661e139846b8acd</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/imprudence-artwork-20101026.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>berkeley</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (c) 1990-1999 Sleepycat Software. All rights reserved.</string>
-        <key>description</key>
-        <string>a high-performance, embedded database library</string>
-        <key>license</key>
-        <string>sleepycat</string>
       </map>
       <key>boost</key>
       <map>
@@ -202,12 +171,12 @@
             <key>url</key>
             <uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-darwin-20110604.tar.bz2</uri>
           </map>
-           <key>linux</key>
+          <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>a2d2fff5cc5555ffd9865daedfcd0dd5</string>
+            <string>6e71c78873593aea2ec5c68dcfde0167</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/boost-1.45.0-linux-20110604.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-linux-20110604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -238,9 +207,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>6244eec15fb26f9577785625fdb38f78</string>
+            <string>f35a301aa5e058b3fb15e69b984a0534</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-linux-20100527.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/curl-7.21.1-linux-20110316.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -255,6 +224,25 @@
             <string>60ed73408c4050ff9c96f26771fd6b46</string>
             <key>url</key>
             <uri>https://github.com/downloads/siana/SingularityViewer/curl-7.21.1-windows-20110504.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
+      <key>db</key>
+      <map>
+        <key>copyright</key>
+        <string>Copyright (c) 1990, 2010 Oracle and/or its affiliates. All rights reserved.</string>
+        <key>description</key>
+        <string>a high-performance, embedded database library</string>
+        <key>license</key>
+        <string>bsd</string>
+        <key>packages</key>
+        <map>
+          <key>linux</key>
+          <map>
+            <key>md5sum</key>
+            <string>3262d0a90b93c81e6fb650beb88cbdbb</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/db-5.1.25-linux-20110309.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -312,9 +300,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>82ea408af2f968cfe5f013ab241323ef</string>
+            <string>048f301afc327d4502d2e5111c0dcba0</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/elfio-1.0.3-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux-20110225.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -345,9 +333,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>67b470fd446b08c9831d1039674eae4e</string>
+            <string>1a5b715652a5162145c18525196f7419</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/expat-1.95.8-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-linux-20110219.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -374,24 +362,28 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>9af6a1ed39fa540bfcaa402b0ea22f78</string>
+            <string>2f88d7924fb9fcc93e44139f0fe4880a</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/fontconfig-2.2.3-linux-20080613.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/fontconfig-2.8.0-linux-20110311.tar.bz2</uri>
           </map>
         </map>
       </map>
       <key>freeglut</key>
       <map>
+        <key>copyright</key>
+        <string>Copyright (c) 1999-2000 Pawel W. Olszta.</string>
+        <key>description</key>
+        <string>OpenSource alternative to OpenGL Utility Toolkit</string>
         <key>license</key>
-        <string>mit</string>
+        <string>freeglut</string>
         <key>packages</key>
         <map>
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>fcbb695ff203775fad96d184bf5f34fc</string>
+            <string>fefd6b548d677a60a198e50d9326d939</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/freeglut-2.4.0-windows-20090608.tar.bz2</uri>
+            <uri>https://github.com/downloads/Shyotl/SingularityViewer/freeglut-2.6.0-win32.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -432,6 +424,32 @@
             <string>c1fec2f5a4924b75ca6047edfcc91eba</string>
             <key>url</key>
             <uri>https://github.com/downloads/siana/SingularityViewer/freetype-2.4.4-windows-20110504.tar.bz2</uri>
+          </map>
+        </map>
+      </map>
+      <key>glext</key>
+      <map>
+        <key>copyright</key>
+        <string>Copyright (c) 2007-2010 Khronos Group Inc.</string>
+        <key>description</key>
+        <string>OpenGL Extension Header Files</string>
+        <key>license</key>
+        <string>glext</string>
+        <key>packages</key>
+        <map>
+          <key>linux</key>
+          <map>
+            <key>md5sum</key>
+            <string>b94a97e60b37afee73f5525cd07ba959</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
+          </map>
+          <key>windows</key>
+          <map>
+            <key>md5sum</key>
+            <string>b94a97e60b37afee73f5525cd07ba959</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -535,7 +553,7 @@
           </map>
         </map>
       </map>
-      <key>google</key>
+      <key>gperftools</key>
       <map>
         <key>license</key>
         <string>mit</string>
@@ -544,9 +562,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>b190d8a0dce8dd8b514d2adb2c74b8d8</string>
+            <string>c3e754fbff965bcc036d5c76f587e6be</string>
             <key>url</key>
-            <uri>http://sldev.free.fr/libraries/google-perftools-1.8.3-linux-20110924.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/google-perftools-1.8.3-linux-20120703.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -566,9 +584,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>2cd3f6499f8444f1d119d097e4047252</string>
+            <string>5e6564f5102e3112781e3017c93e762f</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gstreamer-0.10.24-linux-20091125.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -592,9 +610,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>349ee367e0ac1e878b24b66e449c6ff8</string>
+            <string>e0eec19274dba0b58f5a1679d71f4204</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/gtk-etc-linux-20101106.1.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk-etc-linux-20101106.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -602,44 +620,6 @@
             <string>d963750bcd333a108b3697d220c87d09</string>
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gtk-atk-pango-glib-windows-20080613.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>glib</key>
-      <map>
-        <key>description</key>
-        <string>GLib is a library containing many useful C routines for things such as trees, hashes, and lists.</string>
-        <key>license</key>
-        <string>gpl</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>64a131bae070964de6431e1c7d5e7362</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.12.0-darwin-20091107.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>566cc47a572303bc4aef12ca02670902</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.20.5-linux32-20100529.tar.bz2</uri>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>md5sum</key>
-            <string>58c11add6b275c163950364df5b2964a</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.20.5-linux64-20100515.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>b1e0e16472c0e5d3b6291870e3f20b0c</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.18.4-windows-03162009.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -653,12 +633,12 @@
         <string>lgpl</string>
         <key>packages</key>
         <map>
-          <key>windows</key>
+          <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>1eb49bf9bcce30f5fe0dddaed2a3c628</string>
+            <string>9b970abfc9df40ad6d183a4b1f732fb2</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/windows_hunspell.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/hunspell-1.2-darwin.tar.gz</uri>
           </map>
           <key>linux</key>
           <map>
@@ -674,45 +654,19 @@
             <key>url</key>
             <uri>http://imprudenceviewer.org/download/libs/hunspell-1.2-linux64-20100902.tar.bz2</uri>
           </map>
-          <key>darwin</key>
+          <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>9b970abfc9df40ad6d183a4b1f732fb2</string>
+            <string>1eb49bf9bcce30f5fe0dddaed2a3c628</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/hunspell-1.2-darwin.tar.gz</uri>
-          </map>
-        </map>
-      </map>
-      <key>dbusglib</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (C) 2002, 2003 CodeFactory AB / Copyright (C) 2003, 2004 Red Hat, Inc.</string>
-        <key>description</key>
-        <string>dbus/dbus-glib: headers only</string>
-        <key>license</key>
-        <string>AFL2.1</string>
-        <key>packages</key>
-        <map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>5bbf7e33dadc7d046dcf44883a9ec3d0</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux-20101031.tar.bz2</uri>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>md5sum</key>
-            <string>09be41e3145e1a960e50f2f9ce0a5e7d</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux64-20101007.tar.bz2</uri>
+            <uri>http://imprudenceviewer.org/download/libs/windows_hunspell.tar.bz2</uri>
           </map>
         </map>
       </map>
       <key>jpeglib</key>
       <map>
         <key>copyright</key>
-        <string>Copyright (c) 2003, Yves Piguet.</string>
+        <string>Copyright (c) 1991-2011, Thomas G. Lane, Guido Vollbeding</string>
         <key>description</key>
         <string>An open-source JPEG (JFIF) library</string>
         <key>license</key>
@@ -729,9 +683,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>8aa8e01e0c21f60f0ede0ffb04e9214f</string>
+            <string>e6a47cfe0a7610c57eb8c7cb4136ca09</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/jpeglib-6b-linux-20081218.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-linux-20110323.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -769,9 +723,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>a2a94b8ca1d32f23e3e668d64023514e</string>
+            <string>e462fe4b2752f1c3d9300a0013243ec8</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/jsoncpp-svn-r69-linux-20090922.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-linux-20110315.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -786,47 +740,6 @@
             <string>91e081c4b7b4949c4e53849182a42370</string>
             <key>url</key>
             <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-windows-20110320.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
-      <key>libmono</key>
-      <map>
-        <key>copyright</key>
-        <string>(C) 2005 Novell, Inc. http://www.novell.com</string>
-        <key>description</key>
-        <string>An open source implementation of the ECMA/ISO ECMA-334 Common L\
-anguage Infrstructure (CLI) international standard</string>
-        <key>license</key>
-        <string>lgpl</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>39a803fcbe6f11b72358fc78b7777b6c</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libmono-darwin-20080724.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>9bc0f8b7d5e0ff194b6d5635daf9ae3a</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libmono-1.2.6-linux-20080816a.tar.bz2</uri>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>md5sum</key>
-            <string>451521b4cb57c35caf3efb8dcf99b99e</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libmono-1.2.6-linux64-20080926.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>6712a09311a914752f47d5d62562a239</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libmono-1.2.6-windows-20080903.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -850,9 +763,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>f5e84c991f6e3caacb26db259593cbea</string>
+            <string>7953ff3422fb0f84c1c713db0b1aa9ca</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libpng-1.2.35-linux-20090304.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.1-linux-20110223.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -883,9 +796,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>91b194aed4b38bc23493b198009a8c6a</string>
+            <string>ab4f25d8a2a30516cc77c47664bdf75f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libuuid-linux-20090417.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libuuid-1.6.2-linux-20110315.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -898,9 +811,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>4b5d2dcfe8a49b73fb69f10aab441092</string>
+            <string>899ff969b1a82a6eea6b3ec85185942f</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libxml-2.6.24-linux-20080613.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libxml-2.6.24-linux-20101013.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -927,9 +840,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>6e422a3548597a043223de9e9384c734</string>
+            <string>307fdcc100ba95cfb12f35aab4fd0d08</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-linux-20111013.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-linux-20120228.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -1033,9 +946,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>712b1d30790e9de83fea84ec3bc8fab0</string>
+            <string>5317c7859cfa24d4e9114ac0411b2cc6</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-linux-20110616.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-linux-20110511.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1069,9 +982,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>f219ef07b02e2abb9282345c3a8f2b39</string>
+            <string>1eecd24e4d51b11110efee63b2928961</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openSSL-0.9.7c-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0d-linux-20110418.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1109,9 +1022,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>3cf31623dc214b163fb79aab7f4c024b</string>
+            <string>0b257146f1a05dcae1ca2e0d79330e6b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/openal-linux-120202.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-linux-20120202.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1224,29 +1137,6 @@ anguage Infrstructure (CLI) international standard</string>
           </map>
         </map>
       </map>
-      <key>32bitcompatibilitylibs</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyrights:     Libidn: Copyright (C) 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 
-                Simon Josefsson. License GPL v3.0.
-                Freealut, libuuid, openal-soft: see copyright and license of the 
-                according main packages.
-        </string>
-        <key>description</key>
-        <string>32bit libraries needed for using voice</string>
-        <key>license</key>
-        <string>gpl</string>
-        <key>packages</key>
-        <map>
-          <key>linux64</key>
-          <map>
-            <key>md5sum</key>
-            <string>cbaafc55fb8b14283541791e82f13462</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/linux64-32bitcompatibilitylibs-20100903.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>xmlrpc-epi</key>
       <map>
         <key>copyright</key>
@@ -1267,9 +1157,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>84a219199240ea70f54439c02acef0cd</string>
+            <string>d3b9f85ce4a04cd4c319a202c6367b2d</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/xmlrpc-epi-0.51-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-linux-20110314.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1307,9 +1197,9 @@ anguage Infrstructure (CLI) international standard</string>
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>26fe88213c213dc6153690ab142c25ca</string>
+            <string>c2707c0214bd0d58b35c77fa351f8cb0</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/zlib-1.2.3dfsg-linux-20091208.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.5-linux-20110314.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1335,61 +1225,74 @@ anguage Infrstructure (CLI) international standard</string>
         <key>url</key>
         <string>http://opensource-definition.org/licenses/afl-2.1.html</string>
       </map>
-      <key>glext</key>
+      <key>GLOD</key>
       <map>
         <key>text</key>
-        <string>Copyright (c) 2007-2010 The Khronos Group Inc.
+        <string>The GLOD Open-Source License   Version 1.0             July 22, 2003
 
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and/or associated documentation files (the
-"Materials"), to deal in the Materials without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Materials, and to
-permit persons to whom the Materials are furnished to do so, subject to
-the following conditions:
+Copyright (C) 2003 Jonathan Cohen, Nat Duca, Johns Hopkins University
+and David Luebke, Brenden Schubert, University of Virginia. All rights
+reserved.
 
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Materials.
+Redistribution and use in source and binary forms, with or without
+modification, is permitted provided that the following conditions are
+met:
 
-THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
-        </string>
-      </map>
-      <key>freeglut</key>
-      <map>
-        <key>text</key>
-        <string>Freeglut Copyright
-------------------
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer and
+   request.
 
-Freeglut code without an explicit copyright is covered by the following
-copyright:
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer and
+   request in the documentation and/or other materials provided with
+   the distribution.
 
-Copyright (c) 1999-2000 Pawel W. Olszta. All Rights Reserved.
-Permission is hereby granted, free of charge,  to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction,  including without limitation the rights
-to use, copy,  modify, merge,  publish, distribute,  sublicense,  and/or sell
-copies or substantial portions of the Software.
+3. The name "GLOD" must not be used to endorse or promote products
+   derived from this software without prior written permission.
 
-The above  copyright notice  and this permission notice  shall be included in
-all copies or substantial portions of the Software.
+4. Redistributions of any modified version of this source, whether in
+   source or binary form , must include a form of the following
+   acknowledgment: "This product is derived from the GLOD library,
+   which is available from http://www.cs.jhu.edu/~graphics/GLOD."
 
-THE SOFTWARE  IS PROVIDED "AS IS",  WITHOUT WARRANTY OF ANY KIND,  EXPRESS OR
-IMPLIED,  INCLUDING  BUT  NOT LIMITED  TO THE WARRANTIES  OF MERCHANTABILITY,
-FITNESS  FOR  A PARTICULAR PURPOSE  AND NONINFRINGEMENT.  IN  NO EVENT  SHALL
-PAWEL W. OLSZTA BE LIABLE FOR ANY CLAIM,  DAMAGES OR OTHER LIABILITY, WHETHER
-IN  AN ACTION  OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM,  OUT OF  OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+5. Redistributions of any modified version of this source in binary
+   form must provide, free of charge, access to the modified version
+   of the code.
 
-Except as contained in this notice,  the name of Pawel W. Olszta shall not be
-used  in advertising  or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from Pawel W. Olszta.
-        </string>
+6. This license shall be governed by and construed and enforced in
+   accordance with the laws of the State of Maryland, without
+   reference to its conflicts of law provisions. The exclusive
+   jurisdiction and venue for all legal actions relating to this
+   license shall be in courts of competent subject matter jurisdiction
+   located in the State of Maryland.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, GLOD IS PROVIDED
+UNDER THIS LICENSE ON AN AS IS BASIS, WITHOUT WARRANTY OF ANY KIND,
+EITHER EXPRESSED OR IMPLIED, INCLUDING, WITHOUT LIMITATION, WARRANTIES
+THAT GLOD IS FREE OF DEFECTS, MERCHANTABLE, FIT FOR A PARTICULAR
+PURPOSE OR NON-INFRINGING. ALL WARRANTIES ARE DISCLAIMED AND THE
+ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE CODE IS WITH
+YOU. SHOULD ANY CODE PROVE DEFECTIVE IN ANY RESPECT, YOU (NOT THE
+COPYRIGHT HOLDER OR ANY OTHER CONTRIBUTOR) ASSUME THE COST OF ANY
+NECESSARY SERVICING, REPAIR OR CORRECTION. THIS DISCLAIMER OF WARRANTY
+CONSTITUTES AN ESSENTIAL PART OF THIS LICENSE. NO USE OF ANY CODE IS
+AUTHORIZED HEREUNDER EXCEPT UNDER THIS DISCLAIMER.
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR ANY OTHER CONTRIBUTOR BE LIABLE FOR ANY
+SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES FOR LOSS OF
+PROFITS, REVENUE, OR FOR LOSS OF INFORMATION OR ANY OTHER LOSS.
+
+YOU EXPRESSLY AGREE TO FOREVER INDEMNIFY, DEFEND AND HOLD HARMLESS THE
+COPYRIGHT HOLDERS AND CONTRIBUTORS OF GLOD AGAINST ALL CLAIMS,
+DEMANDS, SUITS OR OTHER ACTIONS ARISING DIRECTLY OR INDIRECTLY FROM
+YOUR ACCEPTANCE AND USE OF GLOD.
+
+Although NOT REQUIRED, we would appreciate it if active users of GLOD
+put a link on their web site to the GLOD web site when possible.
+</string>
+        <key>url</key>
+        <string>http://www.cs.jhu.edu/~graphics/GLOD/license/</string>
       </map>
       <key>MSDTW</key>
       <map>
@@ -1568,10 +1471,66 @@ your work.
         <key>url</key>
         <string>http://www.fmod.org/ifmodlicense.html</string>
       </map>
+      <key>freeglut</key>
+      <map>
+        <key>text</key>
+        <string>Freeglut Copyright
+------------------
+
+Freeglut code without an explicit copyright is covered by the following
+copyright:
+
+Copyright (c) 1999-2000 Pawel W. Olszta. All Rights Reserved.
+Permission is hereby granted, free of charge,  to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction,  including without limitation the rights
+to use, copy,  modify, merge,  publish, distribute,  sublicense,  and/or sell
+copies or substantial portions of the Software.
+
+The above  copyright notice  and this permission notice  shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE  IS PROVIDED "AS IS",  WITHOUT WARRANTY OF ANY KIND,  EXPRESS OR
+IMPLIED,  INCLUDING  BUT  NOT LIMITED  TO THE WARRANTIES  OF MERCHANTABILITY,
+FITNESS  FOR  A PARTICULAR PURPOSE  AND NONINFRINGEMENT.  IN  NO EVENT  SHALL
+PAWEL W. OLSZTA BE LIABLE FOR ANY CLAIM,  DAMAGES OR OTHER LIABILITY, WHETHER
+IN  AN ACTION  OF CONTRACT,  TORT OR OTHERWISE,  ARISING FROM,  OUT OF  OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice,  the name of Pawel W. Olszta shall not be
+used  in advertising  or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from Pawel W. Olszta.
+        </string>
+      </map>
       <key>freetype</key>
       <map>
         <key>url</key>
         <string>http://freetype.sourceforge.net/FTL.TXT</string>
+      </map>
+      <key>glext</key>
+      <map>
+        <key>text</key>
+        <string>Copyright (c) 2007-2012 The Khronos Group Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and/or associated documentation files (the
+"Materials"), to deal in the Materials without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Materials, and to
+permit persons to whom the Materials are furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Materials.
+
+THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+        </string>
       </map>
       <key>glh_linear</key>
       <map>
@@ -1706,11 +1665,14 @@ IMPORTANT NOTE: To the extent this software may be used to reproduce materials, 
 
 1. License.  Any software, tools, utilities, sample code, documentation, fonts, API?s, header files and other materials accompanying this License, whether on disk, print or electronic documentation, in read only memory, or any other media, (collectively, the "Apple Software") are licensed, not sold, to you by Apple Computer, Inc. ("Apple") for use only under the terms of this License, and Apple reserves all rights not expressly granted to you.  The rights granted herein are limited to Apple's and its licensors' intellectual property rights in the Apple Software and do not include any other patents or intellectual property rights.   You own the media on which the Apple Software is recorded but Apple and/or Apple's licensor(s) retain ownership of the Apple Software itself.  The Apple Software in this package and any copies, modifications and derivative works that this License authorizes you to make are subject to this License.
 
-2. Permitted Uses and Restrictions.  You may use the Apple Software to develop application software that is compatible with, and runs only on Mac OS X and/or Windows platforms with QuickTime installed.  Except for compiling header files and linking libraries as necessary to build your application software, you have no right to modify, incorporate into or include in combination with your own programs, license or otherwise redistribute any portion of the Apple Software. Your software application may not interfere with the functionality of QuickTime Player or the QuickTime Plug-in, including but not limited to file type or MIME type associations that are registered to QuickTime. You may make only as many internal use copies of the Apple Software as reasonably necessary to use the Apple Software as permitted in this paragraph and distribute such copies only to your employees whose job duties require them to so use the Apple Software. You must reproduce on each copy of the Apple Software or portion thereof, the Apple copyright notice and any other proprietary legends that were on the original copy of the Apple Software.  Except as expressly permitted in this License, you may not decompile, reverse engineer, disassemble, modify, rent, lease, loan, sublicense, distribute or create derivative works based upon the Apple Software in whole or part.  Your rights under this License will terminate automatically without notice from Apple if you fail to comply with any term(s) of this License. In addition, Apple reserves the right to terminate this License if a new version of Apple's operating system software or the Apple Software is released which is incompatible with the Apple Software.
+2. Permitted Uses and Restrictions.  You may use the Apple Software to develop application software that is compatible with, and runs only on Mac OS X and/or Windows platforms with QuickTime installed.  Except for compiling header files and linking libraries as necessary to build your application software, you have no right to modify, incorporate into or include in combination with your own programs, license or otherwise redistribute any portion of the Apple Software. Your software application may not interfere with the functionality of QuickTime Player or the QuickTime Plug-in, including but not limited to file type or MIME type associations that are registered to QuickTime. You may make only as many internal use copies of the Apple Software as reasonably necessary to use the Apple Software as permitted in this paragraph and distribute such copies only to your employees whose job duties require them to so use the Apple Software. You must reproduce on each copy of the Apple Software or portion thereof, the 
+Apple copyright notice and any other proprietary legends that were on the original copy of the Apple Software.  Except as expressly permitted in this License, you may not decompile, reverse engineer, disassemble, modify, rent, lease, loan, sublicense, distribute or create derivative works based upon the Apple Software in whole or part.  Your rights under this License will terminate automatically without notice from Apple if you fail to comply with any term(s) of this License. In addition, Apple reserves the right to terminate this License if a new version of Apple's operating system software or the Apple Software is released which is incompatible with the Apple Software.
 
-3. Disclaimer Of Warranty.  The Apple Software may be "alpha", "beta", "development", pre-release, untested, and/or not fully tested and may contain errors that could cause failures or loss of data, be incomplete or contain inaccuracies.  YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT USE OF THE APPLE SOFTWARE IS AT YOUR SOLE RISK AND THAT THE ENTIRE RISK AS TO SATISFACTORY QUALITY, PERFORMANCE, ACCURACY AND EFFORT IS WITH YOU. EXCEPT FOR THE LIMITED WARRANTY ON MEDIA SET FORTH ABOVE AND TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE APPLE SOFTWARE IS PROVIDED "AS IS", WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND, AND APPLE AND APPLE'S LICENSORS (COLLECTIVELY REFERRED TO AS "APPLE" FOR THE PURPOSES OF SECTIONS 4 AND 5) HEREBY DISCLAIM ALL WARRANTIES AND CONDITIONS WITH RESPECT TO THE APPLE SOFTWARE, EITHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES AND/OR CONDITIONS OF MERCHANTABILITY, OF SATISFACTORY QUALITY, OF FITNESS FOR A PARTICULAR PURPOSE, OF ACCURACY, OF QUIET ENJOYMENT, AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.  APPLE DOES NOT WARRANT AGAINST INTERFERENCE WITH YOUR ENJOYMENT OF THE APPLE SOFTWARE, THAT THE FUNCTIONS CONTAINED IN THE APPLE SOFTWARE WILL MEET YOUR REQUIREMENTS, THAT THE OPERATION OF THE APPLE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT DEFECTS IN THE APPLE SOFTWARE WILL BE CORRECTED. NO ORAL OR WRITTEN INFORMATION OR ADVICE GIVEN BY APPLE OR AN APPLE AUTHORIZED REPRESENTATIVE SHALL CREATE A WARRANTY.  SHOULD THE APPLE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE ENTIRE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.  SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES OR LIMITATIONS ON APPLICABLE STATUTORY RIGHTS OF A CONSUMER, SO THE ABOVE EXCLUSION AND LIMITATIONS MAY NOT APPLY TO YOU.
+3. Disclaimer Of Warranty.  The Apple Software may be "alpha", "beta", "development", pre-release, untested, and/or not fully tested and may contain errors that could cause failures or loss of data, be incomplete or contain inaccuracies.  YOU EXPRESSLY ACKNOWLEDGE AND AGREE THAT USE OF THE APPLE SOFTWARE IS AT YOUR SOLE RISK AND THAT THE ENTIRE RISK AS TO SATISFACTORY QUALITY, PERFORMANCE, ACCURACY AND EFFORT IS WITH YOU. EXCEPT FOR THE LIMITED WARRANTY ON MEDIA SET FORTH ABOVE AND TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE APPLE SOFTWARE IS PROVIDED "AS IS", WITH ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND, AND APPLE AND APPLE'S LICENSORS (COLLECTIVELY REFERRED TO AS "APPLE" FOR THE PURPOSES OF SECTIONS 4 AND 5) HEREBY DISCLAIM ALL WARRANTIES AND CONDITIONS WITH RESPECT TO THE APPLE SOFTWARE, EITHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES AND/OR CONDITIONS OF MERCHANTABILITY, OF SATISFACTORY QUALITY, OF FITNESS FOR A PARTICULAR PURPOSE, OF ACCURACY, 
+OF QUIET ENJOYMENT, AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.  APPLE DOES NOT WARRANT AGAINST INTERFERENCE WITH YOUR ENJOYMENT OF THE APPLE SOFTWARE, THAT THE FUNCTIONS CONTAINED IN THE APPLE SOFTWARE WILL MEET YOUR REQUIREMENTS, THAT THE OPERATION OF THE APPLE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT DEFECTS IN THE APPLE SOFTWARE WILL BE CORRECTED. NO ORAL OR WRITTEN INFORMATION OR ADVICE GIVEN BY APPLE OR AN APPLE AUTHORIZED REPRESENTATIVE SHALL CREATE A WARRANTY.  SHOULD THE APPLE SOFTWARE PROVE DEFECTIVE, YOU ASSUME THE ENTIRE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.  SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES OR LIMITATIONS ON APPLICABLE STATUTORY RIGHTS OF A CONSUMER, SO THE ABOVE EXCLUSION AND LIMITATIONS MAY NOT APPLY TO YOU.
 
-4. Limitation Of Liability. TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT SHALL APPLE BE LIABLE FOR PERSONAL INJURY, OR ANY INCIDENTAL, SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES WHATSOEVER, INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, LOSS OF DATA, BUSINESS INTERRUPTION OR ANY OTHER COMMERCIAL DAMAGES OR LOSSES, ARISING OUT OF OR RELATED TO YOUR USE OR INABILITY TO USE THE APPLE SOFTWARE, HOWEVER CAUSED, REGARDLESS OF THE THEORY OF LIABILITY (CONTRACT, TORT OR OTHERWISE) AND EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OF LIABILITY FOR PERSONAL INJURY, OR OF INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THIS LIMITATION MAY NOT APPLY TO YOU.  In no event shall Apple's total liability to you for all damages (other than as may be required by applicable law in cases involving personal injury) exceed the amount of fifty dollars ($50.00).  The foregoing limitations will apply even if the above stated remedy fails of its essential purpose.
+4. Limitation Of Liability. TO THE EXTENT NOT PROHIBITED BY LAW, IN NO EVENT SHALL APPLE BE LIABLE FOR PERSONAL INJURY, OR ANY INCIDENTAL, SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES WHATSOEVER, INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS, LOSS OF DATA, BUSINESS INTERRUPTION OR ANY OTHER COMMERCIAL DAMAGES OR LOSSES, ARISING OUT OF OR RELATED TO YOUR USE OR INABILITY TO USE THE APPLE SOFTWARE, HOWEVER CAUSED, REGARDLESS OF THE THEORY OF LIABILITY (CONTRACT, TORT OR OTHERWISE) AND EVEN IF APPLE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OF LIABILITY FOR PERSONAL INJURY, OR OF INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THIS LIMITATION MAY NOT APPLY TO YOU.  In no event shall Apple's total liability to you for all damages (other than as may be required by applicable law in cases involving personal injury) exceed the amount of fifty dollars ($50.00).  The foregoing limitations will apply even if the above stated remedy fails of its essential 
+purpose.
 
 5. Export Control. You may not use or otherwise export or reexport the Apple Product except as authorized by United States law and the laws of the jurisdiction in which the Apple Product was obtained. In particular, but without limitation, the Apple Product may not be exported or re-exported (a) into any U.S. embargoed countries or (b) to anyone on the U.S. Treasury Department's list of Specially Designated Nationals or the U.S. Department of Commerce Denied Person?s List or Entity List.  By using the Apple Product, you represent and warrant that you are not located in any such country or on any such list.
 
@@ -1731,8 +1693,7 @@ EA0300
       <key>smartheap</key>
       <map>
         <key>text</key>
-        <string>on file
-</string>
+        <string>on file</string>
       </map>
       <key>things</key>
       <map>
@@ -1742,15 +1703,15 @@ EA0300
         <key>text</key>
         <string>on file</string>
       </map>
-      <key>xmlrpc-epi</key>
-      <map>
-        <key>url</key>
-        <string>http://xmlrpc-epi.sourceforge.net/main.php?t=license</string>
-      </map>
       <key>xiph-bsd</key>
       <map>
         <key>url</key>
         <string>http://www.xiph.org/licenses/bsd/</string>
+      </map>
+      <key>xmlrpc-epi</key>
+      <map>
+        <key>url</key>
+        <string>http://xmlrpc-epi.sourceforge.net/main.php?t=license</string>
       </map>
       <key>zlib</key>
       <map>

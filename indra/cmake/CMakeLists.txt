@@ -29,17 +29,16 @@ set(cmake_SOURCE_FILES
     FindELFIO.cmake
     FindGooglePerfTools.cmake
     FindHunSpell.cmake
-    FindMono.cmake
     FindMT.cmake
-    FindMySQL.cmake
     FindNDOF.cmake
     FindOpenJPEG.cmake
     FindXmlRpcEpi.cmake
-	FMOD.cmake
+    FMOD.cmake
+    FMODEX.cmake
     FreeType.cmake
     GStreamer010Plugin.cmake
     GooglePerfTools.cmake
-    HUNSPELL.cmake
+    Hunspell.cmake
     JPEG.cmake
     LLAddBuildTest.cmake
     LLAudio.cmake
@@ -63,8 +62,6 @@ set(cmake_SOURCE_FILES
     LLXML.cmake
     LScript.cmake
     Linking.cmake
-    MonoEmbed.cmake
-    MySQL.cmake
     NDOF.cmake
     OPENAL.cmake
     OpenGL.cmake
@@ -82,10 +79,6 @@ set(cmake_SOURCE_FILES
     XmlRpcEpi.cmake
     ZLIB.cmake
     )
-
-if(FMODEX)
-	list(APPEND cmake_SOURCE_FILES FMODEX.cmake)
-endif(FMODEX)
 
 source_group("Shared Rules" FILES ${cmake_SOURCE_FILES})
 

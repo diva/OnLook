@@ -25,13 +25,11 @@
  * $/LicenseInfo$
  * @endcond
  */
-
-#include "linden_common.h"
-
 #include "llqtwebkit.h"
-
+#include "linden_common.h"
 #include "indra_constants.h" // for indra keyboard codes
 
+#include "lltimer.h"
 #include "llgl.h"
 
 #include "llplugininstance.h"
@@ -146,7 +144,7 @@ private:
 		mVolumeCatcher.pump();
 
 		checkEditState();
-		
+	
 		if(mInitState == INIT_STATE_NAVIGATE_COMPLETE)
 		{
 			if(!mInitialNavigateURL.empty())
@@ -298,13 +296,17 @@ private:
 
 		// turn on/off cookies based on what host app tells us
 		LLQtWebKit::getInstance()->enableCookies( mCookiesEnabled );
-
+		
 		// turn on/off plugins based on what host app tells us
 		LLQtWebKit::getInstance()->enablePlugins( mPluginsEnabled );
 
 		// turn on/off Javascript based on what host app tells us
+#if LLQTWEBKIT_API_VERSION >= 11
+		LLQtWebKit::getInstance()->enableJavaScript( mJavascriptEnabled );
+#else
 		LLQtWebKit::getInstance()->enableJavascript( mJavascriptEnabled );
-		
+#endif
+
 		// create single browser window
 		mBrowserWindowId = LLQtWebKit::getInstance()->createBrowserWindow(mWidth, mHeight, mTarget);
 
@@ -971,9 +973,9 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 				S32 height = message_in.getValueS32("height");
 				S32 texture_width = message_in.getValueS32("texture_width");
 				S32 texture_height = message_in.getValueS32("texture_height");
-				mBackgroundR = message_in.getValueReal("background_r");
-				mBackgroundG = message_in.getValueReal("background_g");
-				mBackgroundB = message_in.getValueReal("background_b");
+				mBackgroundR = (F32)message_in.getValueReal("background_r");
+				mBackgroundG = (F32)message_in.getValueReal("background_g");
+				mBackgroundB = (F32)message_in.getValueReal("background_b");
 //				mBackgroundA = message_in.setValueReal("background_a");		// Ignore any alpha
 								
 				if(!name.empty())
@@ -1225,6 +1227,15 @@ void MediaPluginWebKit::receiveMessage(const char *message_string)
 			{
 				mUserAgent = message_in.getValue("user_agent");
 				LLQtWebKit::getInstance()->setBrowserAgentId( mUserAgent );
+			}
+			else if(message_name == "show_web_inspector")
+			{
+#if LLQTWEBKIT_API_VERSION >= 10
+				bool val = message_in.getValueBoolean("show");
+				LLQtWebKit::getInstance()->showWebInspector( val );
+#else
+				llwarns << "Ignoring showWebInspector message (llqtwebkit version is too old)." << llendl;
+#endif
 			}
 			else if(message_name == "ignore_ssl_cert_errors")
 			{
