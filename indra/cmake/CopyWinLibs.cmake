@@ -114,14 +114,6 @@ set(all_targets ${all_targets} ${out_targets})
 
 copy_if_different(
     ${plugintest_release_src_dir}
-    "${CMAKE_CURRENT_BINARY_DIR}/../test_apps/llplugintest/ReleaseSSE2"
-    out_targets
-    ${plugintest_release_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${plugintest_release_src_dir}
     "${CMAKE_CURRENT_BINARY_DIR}/../test_apps/llplugintest/RelWithDebInfo"
     out_targets
     ${plugintest_release_files}
@@ -148,14 +140,6 @@ set(all_targets ${all_targets} ${out_targets})
 
 copy_if_different(
     ${plugintest_release_src_dir}
-    "${CMAKE_CURRENT_BINARY_DIR}/../test_apps/llplugintest/ReleaseSSE2/imageformats"
-    out_targets
-    ${plugintest_release_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${plugintest_release_src_dir}
     "${CMAKE_CURRENT_BINARY_DIR}/../test_apps/llplugintest/RelWithDebInfo/imageformats"
     out_targets
     ${plugintest_release_files}
@@ -165,14 +149,6 @@ set(all_targets ${all_targets} ${out_targets})
 copy_if_different(
     ${plugintest_release_src_dir}
     "${CMAKE_CURRENT_BINARY_DIR}/Release/llplugin/imageformats"
-    out_targets
-    ${plugintest_release_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${plugintest_release_src_dir}
-    "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/llplugin/imageformats"
     out_targets
     ${plugintest_release_files}
     )
@@ -226,14 +202,6 @@ set(all_targets ${all_targets} ${out_targets})
 
 copy_if_different(
     ${plugins_release_src_dir}
-    "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/llplugin"
-    out_targets
-    ${plugins_release_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${plugins_release_src_dir}
     "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/llplugin"
     out_targets
     ${plugins_release_files}
@@ -259,8 +227,6 @@ if(FMODEX)
 	if(FMODEX_BINARY_DIR)
 		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmodex.dll)
 		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2" out_targets fmodex.dll)
-		set(all_targets ${all_targets} ${out_targets})
 		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmodex.dll)
 		set(all_targets ${all_targets} ${out_targets})
 		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmodex.dll)
@@ -277,8 +243,6 @@ if(FMOD)
 
 	if(FMOD_BINARY_DIR)
 		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmod.dll)
-		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2" out_targets fmod.dll)
 		set(all_targets ${all_targets} ${out_targets})
 		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmod.dll)
 		set(all_targets ${all_targets} ${out_targets})
@@ -300,22 +264,6 @@ set(all_targets ${all_targets} ${out_targets})
 copy_if_different(
     ${vivox_src_dir} 
     "${CMAKE_CURRENT_BINARY_DIR}/Release"
-    out_targets 
-    ${vivox_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${release_src_dir} 
-    "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2"
-    out_targets 
-    ${release_files}
-    )
-set(all_targets ${all_targets} ${out_targets})
-
-copy_if_different(
-    ${vivox_src_dir} 
-    "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2"
     out_targets 
     ${vivox_files}
     )
@@ -371,15 +319,6 @@ else(EXISTS ${internal_llkdu_path})
             COMMENT "Copying llkdu.dll ${CMAKE_CURRENT_BINARY_DIR}/Release"
             )
         set(all_targets ${all_targets} ${release_llkdu_dst})
-        
-        set(releasesse2_llkdu_dst "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/llkdu.dll")
-        ADD_CUSTOM_COMMAND(
-            OUTPUT  ${releasesse2_llkdu_dst}
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${release_llkdu_src} ${releasesse2_llkdu_dst}
-            DEPENDS ${release_llkdu_src}
-            COMMENT "Copying llkdu.dll ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2"
-            )
-        set(all_targets ${all_targets} ${releasesse2_llkdu_dst})
 
         set(relwithdebinfo_llkdu_dst "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/llkdu.dll")
         ADD_CUSTOM_COMMAND(
@@ -457,14 +396,6 @@ if (MSVC80)
 
         copy_if_different(
             ${release_msvc8_redist_path} 
-            "${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2"
-            out_targets 
-            ${release_msvc8_files}
-            )
-        set(all_targets ${all_targets} ${out_targets})
-
-        copy_if_different(
-            ${release_msvc8_redist_path} 
             "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo"
             out_targets 
             ${release_msvc8_files}
@@ -482,19 +413,6 @@ if (MSVC80)
               ${release_appconfig_file}
             DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/Release/Microsoft.VC80.CRT.manifest
             COMMENT "Creating release app config file"
-            )
-
-        set(releasesse2_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/${VIEWER_BINARY_NAME}.exe.config)
-        add_custom_command(
-            OUTPUT ${releasesse2_appconfig_file}
-            COMMAND ${PYTHON_EXECUTABLE}
-            ARGS
-              ${CMAKE_CURRENT_SOURCE_DIR}/build_win32_appConfig.py
-              ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/Microsoft.VC80.CRT.manifest
-              ${CMAKE_CURRENT_SOURCE_DIR}/SecondLife.exe.config
-              ${releasesse2_appconfig_file}
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/ReleaseSSE2/Microsoft.VC80.CRT.manifest
-            COMMENT "Creating release-sse2 app config file"
             )
             
         set(relwithdebinfo_appconfig_file ${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo/${VIEWER_BINARY_NAME}.exe.config)
@@ -517,7 +435,6 @@ add_custom_target(copy_win_libs ALL
   DEPENDS 
     ${all_targets}
     ${release_appconfig_file} 
-    ${releasesse2_appconfig_file} 
     ${relwithdebinfo_appconfig_file} 
     ${debug_appconfig_file}
   )
