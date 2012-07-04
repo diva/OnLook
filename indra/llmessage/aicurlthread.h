@@ -72,8 +72,10 @@ class PollSet
 	// Return a pointer to the underlaying fd_set.
 	fd_set* access(void) { return &mFdSet; }
 
+#if !LL_WINDOWS
 	// Return the largest fd set in mFdSet by refresh.
-	int get_max_fd(void) const { return mMaxFdSet; }
+	curl_socket_t get_max_fd(void) const { return mMaxFdSet; }
+#endif
 
 	// Return true if a filedescriptor is set in mFileDescriptors (used for debugging).
 	bool contains(curl_socket_t s) const;
@@ -85,22 +87,26 @@ class PollSet
 	void clr(curl_socket_t fd);
 
 	// Iterate over all file descriptors that were set by refresh and are still set in mFdSet.
-	void reset(void);		// Reset the iterator.
-	int get(void) const;	// Return next filedescriptor, or -1 when there are no more.
-	                   		// Only valid if reset() was called after the last call to refresh().
-	void next(void);		// Advance to next filedescriptor.
+	void reset(void);				// Reset the iterator.
+	curl_socket_t get(void) const;	// Return next filedescriptor, or CURL_SOCKET_BAD when there are no more.
+	                   				// Only valid if reset() was called after the last call to refresh().
+	void next(void);				// Advance to next filedescriptor.
 
   private:
 	curl_socket_t* mFileDescriptors;
-	int mNrFds;			// The number of filedescriptors in the array.
-	int mMaxFd;			// The largest filedescriptor in the array, or -1 when it is empty.
-	int mNext;			// The index of the first file descriptor to start copying, the next call to refresh().
+	int mNrFds;						// The number of filedescriptors in the array.
+	int mNext;						// The index of the first file descriptor to start copying, the next call to refresh().
 
-	fd_set mFdSet;		// Output variable for select(). (Re)initialized by calling refresh().
-	int mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or -1 when it was empty.
+	fd_set mFdSet;					// Output variable for select(). (Re)initialized by calling refresh().
 
+#if !LL_WINDOWS
+	curl_socket_t mMaxFd;			// The largest filedescriptor in the array, or CURL_SOCKET_BAD when it is empty.
+	curl_socket_t mMaxFdSet;		// The largest filedescriptor set in mFdSet by refresh(), or CURL_SOCKET_BAD when it was empty.
 	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
 	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
+#else
+	int mIter;											// Index into fd_set::fd_array.
+#endif
 };
 
 //-----------------------------------------------------------------------------
