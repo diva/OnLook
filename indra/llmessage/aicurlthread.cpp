@@ -447,7 +447,7 @@ bool MergeIterator::next(curl_socket_t& fd_out, int& ev_bitmask_out)
 	ev_bitmask_out = CURL_CSELECT_IN | CURL_CSELECT_OUT;
 	mReadPollSet.next();
   }
-  else if (wfd == CURL_SOCKET_BAD || rfd < wfd)	// Use and increment smaller one, unless it's CURL_SOCKET_BAD.
+  else if (wfd == CURL_SOCKET_BAD || (rfd != CURL_SOCKET_BAD && rfd < wfd))	// Use and increment smaller one, unless it's CURL_SOCKET_BAD.
   {
 	fd_out = rfd;
 	ev_bitmask_out = CURL_CSELECT_IN;
