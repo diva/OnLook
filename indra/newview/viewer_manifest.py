@@ -801,7 +801,7 @@ class Linux_i686Manifest(LinuxManifest):
             self.path("libdirectfb-1.*.so*")
             self.path("libfusion-1.*.so*")
             self.path("libexpat.so*")
-            self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
+            self.path("libhunspell-*.so.*")
             self.path("libssl.so*")
             self.path("libuuid.so*")
             self.path("libalut.so")

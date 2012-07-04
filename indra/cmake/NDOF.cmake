@@ -15,7 +15,7 @@ else (STANDALONE)
     set(NDOF_LIBRARY ndofdev)
   endif (WINDOWS)
 
-  set(NDOF_INCLUDE_DIR ${ARCH_PREBUILT_DIRS}/include/ndofdev)
+  set(NDOF_INCLUDE_DIR ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/ndofdev)
   set(NDOF_FOUND 1)
 endif (STANDALONE)
 

@@ -278,9 +278,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>5bbf7e33dadc7d046dcf44883a9ec3d0</string>
+            <string>e4a22c3401a0f938ee0a6a2becfa7840</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux-20101031.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/dbus_glib-0.76-linux-20110310.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -300,9 +300,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>048f301afc327d4502d2e5111c0dcba0</string>
+            <string>fb4e8f07c7f3e86cc8baa73f8c02f777</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux-20110225.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux-20080812.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -407,9 +407,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>efc845cf291073b1e4d381a271f194eb</string>
+            <string>155c50560099db8a37540c50d9ee48d0</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/freetype-2.3.11-linux-20091103.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.3.11-linux-20091103_1.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -511,9 +511,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>566cc47a572303bc4aef12ca02670902</string>
+            <string>bc5bf517ada0a3a1036e7e193884db79</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.20.5-linux32-20100529.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glib-2.20.5-linux32-20100529.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -643,9 +643,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>dbe264ef2e932980e31db646ea29bbe7</string>
+            <string>bc470ff6673553c5580ccb47958d7789</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/hunspell-1.2-linux32-20100902.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libhunspell-1.3.2-linux-20120616.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -866,9 +866,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>70d0bbe1145fff29a0131349c898260e</string>
+            <string>a816df4887085fb0f0d301336d87cd70</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/mesa-7.0-linux-20080812.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/mesa-7.0-linux-20100930.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -906,9 +906,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>38abfe002ba073b6824016db98269972</string>
+            <string>c366f71de80a56c7336c5166520b40a5</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/ndofdev-linux32-0.3.1-20100817.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ndofdev-linux32-0.3.1_1-20100817.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -1055,9 +1055,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>30cb00069fe2a545fbf7be1070386236</string>
+            <string>6c7325be47ddce71a3fbbd24621f86e1</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/linux-pulse-headers-0.9.14.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux-pulse-headers-0.9.14_1.tar.bz2</uri>
           </map>
         </map>
       </map>
