@@ -55,7 +55,9 @@ public:
 	typedef LLCurl::Responder Responder;
 	typedef LLCurl::ResponderPtr ResponderPtr;
 
-	
+	// The default actually already ignores responses.
+	class ResponderIgnore : public Responder { };
+
 	/** @name non-blocking API */
 	//@{
 	static void head(

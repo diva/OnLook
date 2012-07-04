@@ -1,6 +1,6 @@
 /**
- * @file llcurl.h
- * @brief Drop in replacement for old llcurl.h.
+ * @file llcurlrequest.h
+ * @brief Declaration of class Request
  *
  * Copyright (c) 2012, Aleric Inglewood.
  *
@@ -24,16 +24,36 @@
  * CHANGELOG
  *   and additional copyright holders.
  *
- *   22/06/2012
+ *   17/03/2012
  *   Initial version, written by Aleric Inglewood @ SL
  */
 
-#ifndef LL_LLCURL_H
-#define LL_LLCURL_H
+#ifndef AICURLREQUEST_H
+#define AICURLREQUEST_H
 
-#include "aicurl.h"
+#include <string>
+#include <vector>
+#include <boost/intrusive_ptr.hpp>
 
-// Map interface to old LLCurl names so this can be used as a drop-in replacement.
-namespace LLCurl = AICurlInterface;
+// Things defined in this namespace are called from elsewhere in the viewer code.
+namespace AICurlInterface {
 
-#endif // LL_LLCURL_H
+// Forward declaration.
+class Responder;
+typedef boost::intrusive_ptr<Responder> ResponderPtr;
+
+class Request {
+  public:
+	typedef std::vector<std::string> headers_t;
+	
+	bool get(std::string const& url, ResponderPtr responder);
+	bool getByteRange(std::string const& url, headers_t const& headers, S32 offset, S32 length, ResponderPtr responder);
+	bool post(std::string const& url, headers_t const& headers, std::string const& data, ResponderPtr responder, S32 time_out = 0);
+	bool post(std::string const& url, headers_t const& headers,        LLSD const& data, ResponderPtr responder, S32 time_out = 0);
+
+	S32  process(void);
+};
+
+} // namespace AICurlInterface
+
+#endif

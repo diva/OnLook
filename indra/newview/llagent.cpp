@@ -2370,7 +2370,7 @@ bool LLAgent::sendMaturityPreferenceToServer(int preferredMaturity)
 		body["access_prefs"] = access_prefs;
 		llinfos << "Sending access prefs update to " << (access_prefs["max"].asString()) << " via capability to: "
 		<< url << llendl;
-		LLHTTPClient::post(url, body, new LLHTTPClient::Responder());    // Ignore response
+		LLHTTPClient::post(url, body, new LLHTTPClient::ResponderIgnore);    // Ignore response
 		return true;
 	}
 	return false;

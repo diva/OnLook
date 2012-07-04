@@ -151,11 +151,11 @@ bool LLSDMessage::ResponderAdapter::listener(const LLSD& payload, bool success)
 {
     if (success)
     {
-        mResponder->result(payload);
+        mResponder->pubResult(payload);
     }
     else
     {
-        mResponder->errorWithContent(payload["status"].asInteger(), payload["reason"], payload["content"]);
+        mResponder->pubErrorWithContent(payload["status"].asInteger(), payload["reason"], payload["content"]);
     }
 
     /*---------------- MUST BE LAST STATEMENT BEFORE RETURN ----------------*/

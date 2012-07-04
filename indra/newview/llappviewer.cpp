@@ -611,6 +611,9 @@ bool LLAppViewer::init()
 
 	initLogging();
 
+	// Curl must be initialized before any thread is running.
+	AICurlInterface::initCurl();
+
 	// Logging is initialized. Now it's safe to start the error thread.
 	startErrorThread();
 
@@ -635,12 +638,6 @@ bool LLAppViewer::init()
 	LLPrivateMemoryPoolManager::initClass((BOOL)gSavedSettings.getBOOL("MemoryPrivatePoolEnabled"), (U32)gSavedSettings.getU32("MemoryPrivatePoolSize")) ;
 
     mAlloc.setProfilingEnabled(gSavedSettings.getBOOL("MemProfiling"));
-    // *NOTE:Mani - LLCurl::initClass is not thread safe. 
-    // Called before threads are created.
-    LLCurl::initClass(gSavedSettings.getF32("CurlRequestTimeOut"), 
-						gSavedSettings.getS32("CurlMaximumNumberOfHandles"), 
-						gSavedSettings.getBOOL("CurlUseMultipleThreads"));
-	LL_INFOS("InitInfo") << "LLCurl initialized." << LL_ENDL ;
 
     initThreads();
 	LL_INFOS("InitInfo") << "Threads initialized." << LL_ENDL ;
@@ -1767,10 +1764,9 @@ bool LLAppViewer::cleanup()
 	end_messaging_system();
 	llinfos << "Message system deleted." << llendflush;
 
-	LLUserAuth::getInstance()->reset(); //reset before LLCurl::cleanupClass, else LLCURL::sHandleMutex == NULL
-	// *NOTE:Mani - The following call is not thread safe. 
-	LLCurl::cleanupClass();
-	llinfos << "LLCurl cleaned up." << llendflush;
+	LLUserAuth::getInstance()->reset(); // Reset before AICurlInterface::cleanupCurl, else LLCURL::sHandleMutex == NULL
+	LLApp::stopErrorThread();			// The following call is not thread-safe. Have to stop all threads.
+	AICurlInterface::cleanupCurl();
 
 	// If we're exiting to launch an URL, do that here so the screen
 	// is at the right resolution before we launch IE.
@@ -1838,6 +1834,8 @@ bool LLAppViewer::initThreads()
 	{
 		LLWatchdog::getInstance()->init(watchdog_killer_callback);
 	}
+
+	AICurlInterface::startCurlThread();
 
 	LLImage::initClass();
 	

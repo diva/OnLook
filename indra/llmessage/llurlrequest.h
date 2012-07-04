@@ -66,7 +66,7 @@ typedef struct x509_store_ctx_st X509_STORE_CTX;
  * worth the time and effort to eventually port this to a raw client
  * socket.
  */
-class LLURLRequest : public LLIOPipe
+class LLURLRequest : public LLIOPipe, protected AICurlEasyHandleEvents
 {
 	LOG_CLASS(LLURLRequest);
 public:
@@ -217,6 +217,7 @@ protected:
 		STATE_INITIALIZED,
 		STATE_WAITING_FOR_RESPONSE,
 		STATE_PROCESSING_RESPONSE,
+		STATE_CURL_FINISHED,
 		STATE_HAVE_RESPONSE,
 	};
 	EState mState;
@@ -228,6 +229,14 @@ protected:
 
 	static CURLcode _sslCtxCallback(CURL * curl, void *sslctx, void *param);
 	
+	// mRemoved is used instead of changing mState directly, because I'm not convinced the latter is atomic.
+	// Set to false before adding curl request and then only tested.
+	// Reset in removed_from_multi_handle (by another thread), this is thread-safe.
+	bool mRemoved;
+	/*virtual*/ void added_to_multi_handle(AICurlEasyRequest_wat&);
+	/*virtual*/ void finished(AICurlEasyRequest_wat&);
+	/*virtual*/ void removed_from_multi_handle(AICurlEasyRequest_wat&);
+
 private:
 	/** 
 	 * @brief Initialize the object. Called during construction.
