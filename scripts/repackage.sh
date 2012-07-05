@@ -30,7 +30,7 @@ case "$1" in
 	--mac|--osx|--darwin|-x|mac|osx|darwin)
 		MODE=osx
 		LIBPATH="libraries/universal-darwin/lib_release"
-		LIBDPATH="libraries/universal-darwin/lib/release"
+		LIBDPATH="libraries/universal-darwin/lib/debug"
 		INCPATH="libraries/universal-darwin/include"
 		;;
 	--lin|--linux|-l|linux)
