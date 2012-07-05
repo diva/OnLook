@@ -869,7 +869,49 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
 	LibcwDoutStream.write(buf, size);
   else if (infotype == CURLINFO_HEADER_IN || infotype == CURLINFO_HEADER_OUT)
 	LibcwDoutStream << libcwd::buf2str(buf, size);
-  else if (infotype == CURLINFO_DATA_IN || infotype == CURLINFO_DATA_OUT)
+  else if (infotype == CURLINFO_DATA_IN)
+  {
+	LibcwDoutStream << size << " bytes";
+	bool finished = false;
+	int i = 0;
+	while (i < size)
+	{
+	  char c = buf[i];
+	  if (!('0' <= c && c <= '9') && !('a' <= c && c <= 'f'))
+	  {
+		if (0 < i && i + 1 < size && buf[i] == '\r' && buf[i + 1] == '\n')
+		{
+		  // Binary output: "[0-9a-f]*\r\n ...binary data..."
+		  LibcwDoutStream << ": \"" << libcwd::buf2str(buf, i + 2) << "\"...";
+		  finished = true;
+		}
+		break;
+	  }
+	  ++i;
+	}
+	if (!finished && size > 9 && buf[0] == '<')
+	{
+	  // Human readable output: html, xml or llsd.
+	  if (!strncmp(buf, "<!DOCTYPE", 9) || !strncmp(buf, "<?xml", 5) || !strncmp(buf, "<llsd>", 6))
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, size) << '"';
+		finished = true;
+	  }
+	}
+	if (!finished)
+	{
+	  // Unknown format. Only print the first and last 20 characters.
+	  if (size > 40UL)
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, 20) << "\"...\"" << libcwd::buf2str(&buf[size - 20], 20) << '"';
+	  }
+	  else
+	  {
+		LibcwDoutStream << ": \"" << libcwd::buf2str(buf, size) << '"';
+	  }
+	}
+  }
+  else if (infotype == CURLINFO_DATA_OUT)
 	LibcwDoutStream << size << " bytes: \"" << libcwd::buf2str(buf, size) << '"';
   else
 	LibcwDoutStream << size << " bytes";
