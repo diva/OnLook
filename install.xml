@@ -937,9 +937,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>1eecd24e4d51b11110efee63b2928961</string>
+            <string>c57c14353e07e45c0f168313f26ace8e</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0d-linux-20110418.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-linux-20120207.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
@@ -951,9 +951,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>dd85209081b832e836de6e1538541d89</string>
+            <string>30062b843657b745ab297bb674ac0b6e</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openSSL-0.9.8j-windows-20090129.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-windows-20120207.tar.bz2</uri>
           </map>
         </map>
       </map>
