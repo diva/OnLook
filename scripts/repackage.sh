@@ -109,8 +109,8 @@ fi
 echo "	Packing..."
 tar -cjvf "$FILEOUT" libraries LICENSES
 echo "	Checksum:"
-cd `dirname "$FILEOUT"`
-md5sum -b `basename "$FILEOUT"`
+cd "`dirname "$FILEOUT"`"
+md5sum -b "`basename "$FILEOUT"`"
 cd "$PWD"
 rm -rf "$TMP"
 
