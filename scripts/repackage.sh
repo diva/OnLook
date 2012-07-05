@@ -2,8 +2,8 @@
 #(C) 2011 SIANA GEARZ
 
 usage() {
-	echo "Usage: repackage PLATTFORM FILEIN.tar.bz2 [FILEOUT.tar.bz2]
-Repackage an archive from llautobuild format into legacy format
+	echo "Usage: repackage PLATFORM FILEIN.tar.bz2 [FILEOUT.tar.bz2]
+Repackage an archive from llautobuild format into singularity format
 
 PLATTFORM can be one of windows, linux, mac.
 "
@@ -30,7 +30,7 @@ case "$1" in
 	--mac|--osx|--darwin|-x|mac|osx|darwin)
 		MODE=osx
 		LIBPATH="libraries/universal-darwin/lib_release"
-		LIBDPATH="libraries/universal-darwin/lib/release"
+		LIBDPATH="libraries/universal-darwin/lib/debug"
 		INCPATH="libraries/universal-darwin/include"
 		;;
 	--lin|--linux|-l|linux)
