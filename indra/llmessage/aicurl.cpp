@@ -508,12 +508,12 @@ LLAtomicU32 Stats::multi_errors;
 //static
 void Stats::print(void)
 {
-  llinfos << "====== CURL  STATS ======" << llendl;
-  llinfos << "  Curl multi errors/calls: " << std::dec << multi_errors << "/" << multi_calls << llendl;
-  llinfos << "  Curl easy errors/calls: " << std::dec << easy_errors << "/" << easy_calls << llendl;
-  llinfos << "  curl_easy_init() errors/calls: " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
+  llinfos << "============ CURL  STATS ============" << llendl;
+  llinfos << "  Curl multi       errors/calls      : " << std::dec << multi_errors << "/" << multi_calls << llendl;
+  llinfos << "  Curl easy        errors/calls      : " << std::dec << easy_errors << "/" << easy_calls << llendl;
+  llinfos << "  curl_easy_init() errors/calls      : " << std::dec << easy_init_errors << "/" << easy_init_calls << llendl;
   llinfos << "  Current number of curl easy handles: " << std::dec << (easy_init_calls - easy_init_errors - easy_cleanup_calls) << llendl;
-  llinfos << "=== END OF CURL STATS ===" << llendl;
+  llinfos << "========= END OF CURL STATS =========" << llendl;
 }
 
 // THREAD-SAFE
@@ -838,7 +838,7 @@ static int curl_debug_callback(CURL*, curl_infotype infotype, char* buf, size_t 
   marker << (void*)request->get_lockobj();
   libcw_do.push_marker();
   libcw_do.marker().assign(marker.str().data(), marker.str().size());
-  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curl|cond_nonewline_cf(infotype == CURLINFO_TEXT))
+  LibcwDoutScopeBegin(LIBCWD_DEBUGCHANNELS, libcw_do, dc::curlio|cond_nonewline_cf(infotype == CURLINFO_TEXT))
   switch (infotype)
   {
 	case CURLINFO_TEXT:
@@ -930,17 +930,15 @@ void CurlEasyRequest::applyDefaultOptions(void)
   //setopt(CURLOPT_DNS_CACHE_TIMEOUT, 0);
   // Set the CURL options for either SOCKS or HTTP proxy.
   applyProxySettings();
-#if 0
   // Cause libcurl to print all it's I/O traffic on the debug channel.
   Debug(
-	if (dc::curl.is_on())
+	if (dc::curlio.is_on())
 	{
 	  setopt(CURLOPT_VERBOSE, 1);
 	  setopt(CURLOPT_DEBUGFUNCTION, &curl_debug_callback);
 	  setopt(CURLOPT_DEBUGDATA, this);
 	}
   );
-#endif
 }
 
 void CurlEasyRequest::finalizeRequest(std::string const& url)
