@@ -55,26 +55,12 @@
         <string>lgpl</string>
         <key>packages</key>
         <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>7b07e7121a3623b2553ed36fb9024b40</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/SDL-1.2.5-darwin-20080818.tar.bz2</uri>
-          </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
             <string>7806c04e09f0eb490c108bfab7731b7b</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-20110309.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>149626b0c10d7eb8b9f9be96b5318218</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/SDL-1.2.5-windows-20080613.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -181,9 +167,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>ce5ce1050d039ef5c233c4f684437b16</string>
+            <string>ba3165f8e51c7a59f55c7464932fbfc1</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Siana/singularityviewer/downloads/boost-1.45.0-windows-20120222.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -347,9 +333,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>74494ba202b3d2cd74e4032716f4bf1b</string>
+            <string>5aff9e0f0e1ba7ada2f118f92139f759</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/expat-2.0.1-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-windows-20110215.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -381,9 +367,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>fefd6b548d677a60a198e50d9326d939</string>
+            <string>74758efd7fc6246f704ea702c4b3e310</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/freeglut-2.6.0-win32.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freeglut-2.6.0-windows-20110214.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -421,9 +407,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>c1fec2f5a4924b75ca6047edfcc91eba</string>
+            <string>fcb8ec727e72e2b8ae766d8af78f12ea</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/freetype-2.4.4-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.4.4-windows-20110218.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -453,46 +439,6 @@
           </map>
         </map>
       </map>
-      <key>glh_linear</key>
-      <map>
-        <key>copyright</key>
-        <string>Copyright (c) 2000 Cass Everitt; Copyright (c) 2000 NVIDIA Corporation; All rights reserved.</string>
-        <key>description</key>
-        <string>nVidia NVParse SDK: platform-indepenedent C++ Apple OpenGL helper library</string>
-        <key>license</key>
-        <string>glh_linear</string>
-        <key>packages</key>
-        <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>23bd9a75e5a2365a827461e6c324f52b</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/glh_linear-darwin-20080613.tar.bz2</uri>
-          </map>
-          <key>linux</key>
-          <map>
-            <key>md5sum</key>
-            <string>23bd9a75e5a2365a827461e6c324f52b</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/glh_linear-linux-20080812.tar.bz2</uri>
-          </map>
-          <key>linux64</key>
-          <map>
-            <key>md5sum</key>
-            <string>2965646aea1d2a6aec1fbc431c02733f</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/glh_linear-linux-20080613.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>38b9ddfe8dceff55ee4351016a937d1b</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/glh_linear-windows-20080613.tar.bz2</uri>
-          </map>
-        </map>
-      </map>
       <key>glib</key>
       <map>
         <key>description</key>
@@ -501,13 +447,6 @@
         <string>gpl</string>
         <key>packages</key>
         <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>64a131bae070964de6431e1c7d5e7362</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.12.0-darwin-20091107.tar.bz2</uri>
-          </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
@@ -521,13 +460,6 @@
             <string>58c11add6b275c163950364df5b2964a</string>
             <key>url</key>
             <uri>http://imprudenceviewer.org/download/libs/glib-2.20.5-linux64-20100515.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>b1e0e16472c0e5d3b6291870e3f20b0c</string>
-            <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.18.4-windows-03162009.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -547,9 +479,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>5b8631fe510d4ebaeb965c673937e1e7</string>
+            <string>eeec9982df843043a18748276bbf39ce</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/glui-2.3.6-windows-freeglut-20090608.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glui-2.36-windows-20110214.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -569,9 +501,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>4f787437a5e063ccde6637dfb1ebc01d</string>
+            <string>a0ab68d140da9c55d404586cd7150a97</string>
             <key>url</key>
-            <uri>https://bitbucket.org/Ansariel/phoenix-prebuilts/downloads/google_perftools-1.8-windows-20111005.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/google_perftools-1.8.3-windows-20110914.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -614,13 +546,6 @@
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk-etc-linux-20101106.tar.bz2</uri>
           </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>d963750bcd333a108b3697d220c87d09</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/gtk-atk-pango-glib-windows-20080613.tar.bz2</uri>
-          </map>
         </map>
       </map>
       <key>hunspell</key>
@@ -657,9 +582,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>1eb49bf9bcce30f5fe0dddaed2a3c628</string>
+            <string>bbaf7035a4a5b59153f18bca1d8fa107</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/windows_hunspell.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/hunspell-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -697,9 +622,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>e4dfbea847d92b46e3d2d1a2c25fe3b3</string>
+            <string>d28938e6930bf48584e332f764208822</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/jpeglib-8c-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -737,9 +662,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>91e081c4b7b4949c4e53849182a42370</string>
+            <string>8aa2d47182e93cbc856517309fe11dc7</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/jsoncpp-0.5.0-windows-20110320.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -777,9 +702,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>acf1626a563b2827a7f62d48661352c8</string>
+            <string>a698200d34d20b53fe72fb53fc1c6dcf</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/libpng-1.5.2-windows-20110512.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.2-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -847,9 +772,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>999b265a3af47eb13e9a380d042a1763</string>
+            <string>ccb96fa1260ef6c3060d407b8c6b3972</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/llqtwebkit-4.7.1-windows-20110320.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-windows-20120228.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -876,13 +801,6 @@
             <string>56630977f9261bd82039b0da08a0685c</string>
             <key>url</key>
             <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/mesa-6.2.1-linux64-20081016.tar.bz2</uri>
-          </map>
-          <key>windows</key>
-          <map>
-            <key>md5sum</key>
-            <string>82cdcdcb2d0615389a7480485ea35f4c</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/mesa-7.0-windows-20080613.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -920,9 +838,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>383ce3f78ae3e6afa39ee9ced6d8e531</string>
+            <string>f897874709ed6d0ef06db3730b3eea7d</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/libndofdev-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libndofdev-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -960,9 +878,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>30bb58af8c5f818fc8ea8d481bd2f478</string>
+            <string>3339ac49f5986068e7fa17b6655b9f9b</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/ogg_vorbis-1.2.2-1.3.2-windows-20110512.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-windows-20110510.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1012,13 +930,6 @@
         <string>lgpl</string>
         <key>packages</key>
         <map>
-          <key>darwin</key>
-          <map>
-            <key>md5sum</key>
-            <string>a0757244e3e6688fde2ffeea35cc1f96</string>
-            <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openal-darwin-20080924.tar.bz2</uri>
-          </map>
           <key>linux</key>
           <map>
             <key>md5sum</key>
@@ -1036,9 +947,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>a0757244e3e6688fde2ffeea35cc1f96</string>
+            <string>e75f1529adcaa6e508d1725f59d93a16</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openal-windows-20080924.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-1.12.854-1.1.0-windows-20110301.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1171,9 +1082,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>2faea7fe8fa66872793e0ea917c33e2e</string>
+            <string>0d208a90f378284e27138c22e8c15f10</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/xmlrpc_epi-0.54.1-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1211,9 +1122,9 @@
           <key>windows</key>
           <map>
             <key>md5sum</key>
-            <string>7fc3539a45054e91b7e225cc3888f838</string>
+            <string>d76dad53f2984827db98fd9d62232ab2</string>
             <key>url</key>
-            <uri>https://github.com/downloads/siana/SingularityViewer/zlib-1.2.5-windows-20110504.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.5-windows-20120704.tar.bz2</uri>
           </map>
         </map>
       </map>

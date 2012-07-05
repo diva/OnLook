@@ -43,10 +43,6 @@ set(all_targets ${all_targets} ${out_targets})
 set(plugintest_debug_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/debug")
 set(plugintest_debug_files
     libeay32.dll
-    libglib-2.0-0.dll
-    libgmodule-2.0-0.dll
-    libgobject-2.0-0.dll
-    libgthread-2.0-0.dll
     qtcored4.dll
     qtguid4.dll
     qtnetworkd4.dll
@@ -92,11 +88,6 @@ set(all_targets ${all_targets} ${out_targets})
 set(plugintest_release_src_dir "${CMAKE_SOURCE_DIR}/../libraries/i686-win32/lib/release")
 set(plugintest_release_files
     libeay32.dll
-    libglib-2.0-0.dll
-    libgmodule-2.0-0.dll
-    libgobject-2.0-0.dll
-    libgthread-2.0-0.dll
-#    llkdu.dll        (not required for plugin test)
     qtcore4.dll
     qtgui4.dll
     qtnetwork4.dll
@@ -218,39 +209,39 @@ set(release_files
     )
 
 if(FMODEX)
-	find_path(FMODEX_BINARY_DIR fmodex.dll
+    find_path(FMODEX_BINARY_DIR fmodex.dll
           ${release_src_dir}
           ${FMODEX_SDK_DIR}/api
           ${FMODEX_SDK_DIR}
           )
 
-	if(FMODEX_BINARY_DIR)
-		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmodex.dll)
-		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmodex.dll)
-		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmodex.dll)
-		set(all_targets ${all_targets} ${out_targets})
-	endif(FMODEX_BINARY_DIR)
+    if(FMODEX_BINARY_DIR)
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmodex.dll)
+        set(all_targets ${all_targets} ${out_targets})
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmodex.dll)
+        set(all_targets ${all_targets} ${out_targets})
+        copy_if_different("${FMODEX_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmodex.dll)
+        set(all_targets ${all_targets} ${out_targets})
+    endif(FMODEX_BINARY_DIR)
 endif(FMODEX)
 
 if(FMOD)
-	find_path(FMOD_BINARY_DIR fmod.dll
+    find_path(FMOD_BINARY_DIR fmod.dll
           ${release_src_dir}
           ${FMOD_SDK_DIR}/api
           ${FMOD_SDK_DIR}
           )
 
-	if(FMOD_BINARY_DIR)
-		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmod.dll)
-		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmod.dll)
-		set(all_targets ${all_targets} ${out_targets})
-		copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmod.dll)
-		set(all_targets ${all_targets} ${out_targets})
-	else(FMOD_BINARY_DIR)
-		list(APPEND release_files fmod.dll)	#Required for compile. This will cause an error in copying binaries.
-	endif(FMOD_BINARY_DIR)
+if(FMOD_BINARY_DIR)
+    copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Release" out_targets fmod.dll)
+    set(all_targets ${all_targets} ${out_targets})
+    copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebInfo" out_targets fmod.dll)
+    set(all_targets ${all_targets} ${out_targets})
+    copy_if_different("${FMOD_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/Debug" out_targets fmod.dll)
+    set(all_targets ${all_targets} ${out_targets})
+    else(FMOD_BINARY_DIR)
+        list(APPEND release_files fmod.dll)	#Required for compile. This will cause an error in copying binaries.
+    endif(FMOD_BINARY_DIR)
 endif(FMOD)
     
 copy_if_different(
