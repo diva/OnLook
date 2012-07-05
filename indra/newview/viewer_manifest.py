@@ -275,6 +275,8 @@ class WindowsManifest(ViewerManifest):
             print "Skipping llcommon.dll (assuming llcommon was linked statically)"
           self.end_prefix()
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          self.path("libeay32.dll")
+          self.path("ssleay32.dll")
           try:
             self.path('libapr-1.dll')
             self.path('libaprutil-1.dll')
