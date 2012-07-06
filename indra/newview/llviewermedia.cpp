@@ -411,7 +411,7 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 			media_source->setLanguageCode(LLUI::getLanguage());
 
 			// collect 'cookies enabled' setting from prefs and send to embedded browser
-			bool cookies_enabled = gSavedSettings.getBOOL( "BrowserCookiesEnabled" );
+			bool cookies_enabled = gSavedSettings.getBOOL( "CookiesEnabled" );
 			media_source->enable_cookies( cookies_enabled );
 
 			// collect 'plugins enabled' setting from prefs and send to embedded browser
@@ -421,8 +421,12 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 			// collect 'javascript enabled' setting from prefs and send to embedded browser
 			bool javascript_enabled = gSavedSettings.getBOOL( "BrowserJavascriptEnabled" );
 			media_source->setJavascriptEnabled( javascript_enabled );
+		
+			bool media_plugin_debugging_enabled = gSavedSettings.getBOOL("MediaPluginDebugging");
+			media_source->enableMediaPluginDebugging( media_plugin_debugging_enabled );
 
-			if (media_source->init(launcher_name, plugin_name, gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins")))
+			const std::string plugin_dir = gDirUtilp->getLLPluginDir();
+			if (media_source->init(launcher_name, plugin_dir, plugin_name, gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins")))
 			{
 				return media_source;
 			}
@@ -433,8 +437,8 @@ LLPluginClassMedia* LLViewerMediaImpl::newSourceFromMediaType(std::string media_
 			}
 		}
 	}
-
-	LL_WARNS("Plugin") << "plugin intialization failed for mime type: " << media_type << LL_ENDL;
+	
+	LL_WARNS_ONCE("Plugin") << "plugin initialization failed for mime type: " << media_type << LL_ENDL;
 	LLSD args;
 	args["MIME_TYPE"] = media_type;
 	LLNotificationsUtil::add("NoPlugin", args);
@@ -467,8 +471,36 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 		media_source->setLoop(mMediaLoop);
 		media_source->setAutoScale(mMediaAutoScale);
 		media_source->setBrowserUserAgent(LLViewerMedia::getCurrentUserAgent());
-		
+
+		if(gSavedSettings.getBOOL("BrowserIgnoreSSLCertErrors"))
+		{
+			media_source->ignore_ssl_cert_errors(true);
+		}
+
+		// start by assuming the default CA file will be used
+		std::string ca_path = gDirUtilp->getExpandedFilename( LL_PATH_APP_SETTINGS, "CA.pem" );
+
+		// default turned off so pick up the user specified path
+		if( ! gSavedSettings.getBOOL("BrowserUseDefaultCAFile"))
+		{
+			ca_path = gSavedSettings.getString("BrowserCAFilePath");
+		}
+		// set the path to the CA.pem file
+		media_source->addCertificateFilePath( ca_path );
+
+		// TODO: Only send cookies to plugins that need them
+		//  Ideally, the plugin should tell us whether it handles cookies or not -- either via the init response or through a separate message.
+		//  Due to the ordering of messages, it's possible we wouldn't get that information back in time to send cookies before sending a navigate message,
+		//  which could cause odd race conditions.
+		std::string all_cookies = LLViewerMedia::getCookieStore()->getAllCookies();
+		lldebugs << "setting cookies: " << all_cookies << llendl;
+		if(!all_cookies.empty())
+		{
+			media_source->set_cookies(all_cookies);
+		}
+
 		mPluginBase = media_source;
+
 		return true;
 	}
 
