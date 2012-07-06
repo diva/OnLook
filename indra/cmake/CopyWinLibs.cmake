@@ -29,6 +29,8 @@ set(debug_files
     libapr-1.dll
     libaprutil-1.dll
     libapriconv-1.dll
+    libeay32.dll
+    ssleay32.dll
     )
 
 copy_if_different(
@@ -206,6 +208,8 @@ set(release_files
     libapr-1.dll
     libaprutil-1.dll
     libapriconv-1.dll
+    libeay32.dll
+    ssleay32.dll
     )
 
 if(FMODEX)
