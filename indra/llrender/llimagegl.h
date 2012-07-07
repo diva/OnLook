@@ -183,6 +183,7 @@ public:
 	
 private:
 	LLPointer<LLImageRaw> mSaveData; // used for destroyGL/restoreGL
+	S32	mSaveDiscardLevel;
 	U8* mPickMask;  //downsampled bitmap approximation of alpha channel.  NULL if no alpha channel
 	U16 mPickMaskWidth;
 	U16 mPickMaskHeight;

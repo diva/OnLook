@@ -670,8 +670,6 @@
 			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pastesizeclip"  enabled="true"
 			     tool_tip="Paste Size from Clipboard"  width="20" />
-				 
-				 
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-14" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="7"
@@ -699,9 +697,6 @@
 			<button bottom_delta="-18" follows="top|right" font="SansSerifSmall" halign="center"
 			     height="18" label="p" left_delta="0" mouse_opaque="true" name="pasterotclip"  enabled="true"
 			     tool_tip="Paste Rotation from Clipboard"  width="20" />
-							 
-							 
-				 
 			<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
 			     bottom_delta="-16" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="left" height="10" left="10"
@@ -1129,15 +1124,15 @@
 				follows="left|top" 
 				height="16"
 				left_delta="114" 
-			     	ncrement="0.05" 
+			    increment="0.05"
 				initial_val="1" 
 				label="Ambiance" 
 				label_width="55"
-			     	max_val="1" 
-			     	min_val="0" 
-			     	mouse_opaque="true"
-			     	name="Light Ambiance" 
-			     	width="118" />
+			    max_val="1"
+			    min_val="0"
+			    mouse_opaque="true"
+			    name="Light Ambiance"
+			    width="118" />
             <text
              type="string"
              length="1"
