@@ -238,16 +238,16 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>6244eec15fb26f9577785625fdb38f78</string>
+            <string>097d7571ce07626bbd248bbfd8f3e494</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.20.1-linux-20100527.tar.bz2</uri>
+            <uri>https://github.com/downloads/AlericInglewood/SingularityViewer/curl-7.21.1-linux-20110316.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>8a28849f4b9d99601dbc8db9d6a2f9ba</string>
+            <string>d28fd5f4ed86b07d49443cb57e875cc1</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.16.4a-linux64-20090303.tar.bz2</uri>
+			<uri>https://github.com/downloads/AlericInglewood/SingularityViewer/curl-7.24.0-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
