@@ -737,7 +737,7 @@ BOOL LLPanelEditWearable::postBuild()
 						{
 							llinfos << "Finding button " << subpart_entry->mButtonName << llendl;
 							llassert_always(getChild<LLButton>(subpart_entry->mButtonName,true,false));
-							childSetAction(subpart_entry->mButtonName, &LLPanelEditWearable::onBtnSubpart, (void*)index);
+							childSetAction(subpart_entry->mButtonName, &LLPanelEditWearable::onBtnSubpart, reinterpret_cast<void*>(index));
 						}
                 }	
 				// initialize texture and color picker controls
