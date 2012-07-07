@@ -1401,7 +1401,7 @@ void LLStringUtilBase<T>::testHarness()
 	
 	s2.erase( 4, 1 );
 	llassert( s2 == "hell");
-	s2.insert( 0, 'y' );
+	s2.insert( 0, std::string('y') );
 	llassert( s2 == "yhell");
 	s2.erase( 1, 3 );
 	llassert( s2 == "yl");
