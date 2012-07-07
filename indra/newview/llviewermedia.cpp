@@ -488,17 +488,6 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 		// set the path to the CA.pem file
 		media_source->addCertificateFilePath( ca_path );
 
-		// TODO: Only send cookies to plugins that need them
-		//  Ideally, the plugin should tell us whether it handles cookies or not -- either via the init response or through a separate message.
-		//  Due to the ordering of messages, it's possible we wouldn't get that information back in time to send cookies before sending a navigate message,
-		//  which could cause odd race conditions.
-		std::string all_cookies = LLViewerMedia::getCookieStore()->getAllCookies();
-		lldebugs << "setting cookies: " << all_cookies << llendl;
-		if(!all_cookies.empty())
-		{
-			media_source->set_cookies(all_cookies);
-		}
-
 		mPluginBase = media_source;
 
 		return true;
