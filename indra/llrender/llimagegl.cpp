@@ -352,7 +352,10 @@ void LLImageGL::destroyGL(BOOL save_state)
 					glimage->mSaveData = NULL ;
 				}
 				else
+				{
+					glimage->mSaveDiscardLevel = glimage->mCurrentDiscardLevel;
 					stored_count++;
+				}
 			}
 
 			glimage->destroyGLTexture();
@@ -379,13 +382,14 @@ void LLImageGL::restoreGL()
 		}
 		if (glimage->mSaveData.notNull())
 		{
-			if (glimage->getComponents() && glimage->mSaveData->getComponents())
+			if (glimage->getComponents() && glimage->mSaveData->getComponents() && glimage->mSaveDiscardLevel >= 0)
 			{
-				glimage->createGLTexture(glimage->mCurrentDiscardLevel, glimage->mSaveData, 0, TRUE, glimage->getCategory());
+				glimage->createGLTexture(glimage->mSaveDiscardLevel, glimage->mSaveData, 0, TRUE, glimage->getCategory());
 				stop_glerror();
 				recovered_count++;
 			}
 			glimage->mSaveData = NULL; // deletes data
+			glimage->mSaveDiscardLevel = -1;
 		}
 	}
 	llinfos << "Restored " << recovered_count << " images" << llendl;
@@ -430,7 +434,7 @@ BOOL LLImageGL::create(LLPointer<LLImageGL>& dest, const LLImageRaw* imageraw, B
 //----------------------------------------------------------------------------
 
 LLImageGL::LLImageGL(BOOL usemipmaps)
-	: mSaveData(0)
+	: mSaveData(0), mSaveDiscardLevel(-1)
 {
 	init(usemipmaps);
 	setSize(0, 0, 0);
@@ -439,7 +443,7 @@ LLImageGL::LLImageGL(BOOL usemipmaps)
 }
 
 LLImageGL::LLImageGL(U32 width, U32 height, U8 components, BOOL usemipmaps)
-	: mSaveData(0)
+	: mSaveData(0), mSaveDiscardLevel(-1)
 {
 	llassert( components <= 4 );
 	init(usemipmaps);
@@ -449,7 +453,7 @@ LLImageGL::LLImageGL(U32 width, U32 height, U8 components, BOOL usemipmaps)
 }
 
 LLImageGL::LLImageGL(const LLImageRaw* imageraw, BOOL usemipmaps)
-	: mSaveData(0)
+	: mSaveData(0), mSaveDiscardLevel(-1)
 {
 	init(usemipmaps);
 	setSize(0, 0, 0);
@@ -1415,6 +1419,8 @@ BOOL LLImageGL::readBackRaw(S32 discard_level, LLImageRaw* imageraw, bool compre
 	if (discard_level < 0)
 	{
 		discard_level = mCurrentDiscardLevel;
+		if(discard_level < 0)
+			return FALSE;
 	}
 	
 	if (mTexName == 0 || discard_level < mCurrentDiscardLevel || discard_level > mMaxDiscardLevel )
