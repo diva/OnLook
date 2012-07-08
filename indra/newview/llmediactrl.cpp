@@ -346,6 +346,7 @@ BOOL LLMediaCtrl::postBuild ()
 }
 
 void LLMediaCtrl::onOpenWebInspector()
+{
 	if (mMediaSource && mMediaSource->hasMedia())
 		mMediaSource->getMediaPlugin()->showWebInspector( true );
 }

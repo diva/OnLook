@@ -477,27 +477,12 @@ bool LLViewerMediaImpl::initializePlugin(const std::string& media_type)
 			media_source->ignore_ssl_cert_errors(true);
 		}
 
-		// start by assuming the default CA file will be used
+		// the correct way to deal with certs it to load ours from CA.pem and append them to the ones
+		// Qt/WebKit loads from your system location.
+		// Note: This needs the new CA.pem file with the Equifax Secure Certificate Authority 
+		// cert at the bottom: (MIIDIDCCAomgAwIBAgIENd70zzANBg)
 		std::string ca_path = gDirUtilp->getExpandedFilename( LL_PATH_APP_SETTINGS, "CA.pem" );
-
-		// default turned off so pick up the user specified path
-		if( ! gSavedSettings.getBOOL("BrowserUseDefaultCAFile"))
-		{
-			ca_path = gSavedSettings.getString("BrowserCAFilePath");
-		}
-		// set the path to the CA.pem file
 		media_source->addCertificateFilePath( ca_path );
-
-		// TODO: Only send cookies to plugins that need them
-		//  Ideally, the plugin should tell us whether it handles cookies or not -- either via the init response or through a separate message.
-		//  Due to the ordering of messages, it's possible we wouldn't get that information back in time to send cookies before sending a navigate message,
-		//  which could cause odd race conditions.
-		std::string all_cookies = LLViewerMedia::getCookieStore()->getAllCookies();
-		lldebugs << "setting cookies: " << all_cookies << llendl;
-		if(!all_cookies.empty())
-		{
-			media_source->set_cookies(all_cookies);
-		}
 
 		mPluginBase = media_source;
 
