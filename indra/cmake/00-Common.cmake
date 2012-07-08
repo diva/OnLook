@@ -210,9 +210,11 @@ if (LINUX)
       set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -mfpmath=sse,387 -msse2 ${GCC_EXTRA_OPTIMIZATIONS}")
     endif (${ARCH} STREQUAL "x86_64")
   elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
- 
-    find_program(CLANG clang++)
+    find_program(CLANG clang)
     mark_as_advanced(CLANG)
+    
+    find_program(CLANGXX clang++)
+    mark_as_advanced(CLANGXX)
 
     add_definitions(
         -DCC_CLANG
@@ -234,6 +236,31 @@ if (LINUX)
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}${MARCH_FLAG} -msse2")
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
+  elseif(${CMAKE_C_COMPILER} MATCHES "icc*" AND ${CMAKE_CXX_COMPILER} MATCHES "icpc*")
+ 
+    find_program(ICC icc)
+    mark_as_advanced(ICC)
+
+    add_definitions(
+        -DCC_ICC
+        -D_FORTIFY_SOURCE=2
+        )
+
+    if (NOT STANDALONE)
+      # this stops us requiring a really recent glibc at runtime
+      add_definitions(-fno-stack-protector)
+    endif (NOT STANDALONE)
+
+    if (NOT STANDALONE)
+      set(MARCH_FLAG " -axsse4.1 -msse2")
+    endif (NOT STANDALONE)
+
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline-functions")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}${MARCH_FLAG} -fno-inline-functions")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}${MARCH_FLAG} -parallel -fp-model fast=1")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}${MARCH_FLAG} -parallel -fp-model fast=1")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -parallel -fp-model fast=1")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -parallel -fp-model fast=1")
   endif()
 
   set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
@@ -267,6 +294,9 @@ if (LINUX OR DARWIN)
   elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
     set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses -Wno-non-virtual-dtor ")
     set(UNIX_WARNINGS "${UNIX_WARNINGS} -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable")
+    set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
+  elseif(${CMAKE_C_COMPILER} MATCHES "icc")
+    set(UNIX_WARNINGS "-wd327 -wd597 -wd858")
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")
   endif()
   
