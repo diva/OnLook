@@ -345,6 +345,10 @@ BOOL LLMediaCtrl::postBuild ()
 	return true;
 }
 
+void LLMediaCtrl::onOpenWebInspector()
+	if (mMediaSource && mMediaSource->hasMedia())
+		mMediaSource->getMediaPlugin()->showWebInspector( true );
+}
 ////////////////////////////////////////////////////////////////////////////////
 //
 BOOL LLMediaCtrl::handleKeyHere( KEY key, MASK mask )
