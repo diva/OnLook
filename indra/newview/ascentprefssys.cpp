@@ -41,14 +41,19 @@
 #include "llcombobox.h"
 #include "llfloaterchat.h" //For POWER USER affirmation.
 #include "llradiogroup.h"
+#include "lltexturectrl.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
+#include "llstartup.h"
 
+LLDropTarget* mBuildDropTarget;
+LLPrefsAscentSys* LLPrefsAscentSys::sInst;
 
 LLPrefsAscentSys::LLPrefsAscentSys()
 {
     LLUICtrlFactory::getInstance()->buildPanel(this, "panel_preferences_ascent_system.xml");
 
+    //General -----------------------------------------------------------------------------
     childSetCommitCallback("speed_rez_check", onCommitCheckBox, this);
     childSetCommitCallback("double_click_teleport_check", onCommitCheckBox, this);
     childSetCommitCallback("system_folder_check", onCommitCheckBox, this);
@@ -57,6 +62,7 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     childSetCommitCallback("power_user_check", onCommitCheckBox, this);
     childSetCommitCallback("power_user_confirm_check", onCommitCheckBox, this);
 
+    //Command Line ------------------------------------------------------------------------
     childSetCommitCallback("chat_cmd_toggle", onCommitCmdLine, this);
     childSetCommitCallback("AscentCmdLinePos", onCommitCmdLine, this);
     childSetCommitCallback("AscentCmdLineGround", onCommitCmdLine, this);
@@ -73,12 +79,43 @@ LLPrefsAscentSys::LLPrefsAscentSys()
     childSetCommitCallback("AscentCmdLineTP2", onCommitCmdLine, this);
     childSetCommitCallback("SinguCmdLineAway", onCommitCmdLine, this);
 
-    refreshValues();
+	//Build -------------------------------------------------------------------------------
+	childSetCommitCallback("next_owner_copy", onCommitCheckBox, this);
+	childSetEnabled("next_owner_transfer", gSavedSettings.getBOOL("NextOwnerCopy"));
+	childSetCommitCallback("material", onCommitComboBox, this);
+	childSetCommitCallback("combobox shininess", onCommitComboBox, this);
+	getChild<LLTextureCtrl>("texture control")->setDefaultImageAssetID(LLUUID(gSavedSettings.getString("EmeraldBuildPrefs_Texture")));
+	childSetCommitCallback("texture control", onCommitTexturePicker, this);
+
+	if(sInst)delete sInst; sInst = this;
+	LLView* target_view = getChild<LLView>("build_item_drop_target_rect");
+	if (target_view)
+	{
+		const std::string drop="drop target";
+		if (mBuildDropTarget)	delete mBuildDropTarget;
+		mBuildDropTarget = new LLDropTarget(drop, target_view->getRect(), SinguBuildItemDrop);//, mAvatarID);
+		addChild(mBuildDropTarget);
+	}
+
+	if (LLStartUp::getStartupState() == STATE_STARTED)
+	{
+		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item");
+		LLViewerInventoryItem* item = gInventory.getItem(itemid);
+
+		if		(item)				childSetValue("build_item_add_disp_rect_txt", "Currently set to:\n"+item->getName());
+		else if (itemid.isNull())	childSetValue("build_item_add_disp_rect_txt", "Currently\nnot set");
+		else 						childSetValue("build_item_add_disp_rect_txt", "Currently set to\nan item not on this account");
+	}
+	else							childSetValue("build_item_add_disp_rect_txt", "You are\nnot logged in");
+
+	refreshValues();
     refresh();
 }
 
 LLPrefsAscentSys::~LLPrefsAscentSys()
 {
+	sInst=NULL;
+	delete mBuildDropTarget; mBuildDropTarget=NULL;
 }
 
 //static
@@ -132,6 +169,12 @@ void LLPrefsAscentSys::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
             LLFloaterChat::addChat(chat);
         }
     }
+	else if (ctrl->getName() == "next_owner_copy")
+	{
+		bool copy = gSavedSettings.getBOOL("NextOwnerCopy");
+		if (!copy)	gSavedSettings.setBOOL("NextOwnerTransfer", true);
+        self->childSetEnabled("next_owner_transfer", copy);
+	}
 }
 
 //static
@@ -189,6 +232,24 @@ void LLPrefsAscentSys::onCommitCmdLine(LLUICtrl* ctrl, void* user_data)
     gSavedSettings.setString("SinguCmdLineAway",          self->childGetValue("SinguCmdLineAway"));
 }
 
+void LLPrefsAscentSys::onCommitComboBox(LLUICtrl* ctrl, void* userdata)
+{
+	LLComboBox* box = (LLComboBox*)ctrl;
+	if(box)	gSavedSettings.setString(box->getControlName(), box->getValue().asString());
+}
+
+void LLPrefsAscentSys::onCommitTexturePicker(LLUICtrl* ctrl, void* userdata)
+{
+	LLTextureCtrl*	image_ctrl = (LLTextureCtrl*)ctrl;
+	if(image_ctrl)	gSavedSettings.setString("EmeraldBuildPrefs_Texture", image_ctrl->getImageAssetID().asString());
+}
+
+void LLPrefsAscentSys::SinguBuildItemDrop(LLViewerInventoryItem* item)
+{
+	gSavedPerAccountSettings.setString("EmeraldBuildPrefs_Item", item->getUUID().asString());
+	sInst->childSetValue("build_item_add_disp_rect_txt","Currently set to:\n"+item->getName());
+}
+
 void LLPrefsAscentSys::refreshValues()
 {
     //General -----------------------------------------------------------------------------
@@ -240,10 +301,29 @@ void LLPrefsAscentSys::refreshValues()
     mDisableClickSit			= gSavedSettings.getBOOL("DisableClickSit");
     mDisplayScriptJumps			= gSavedSettings.getBOOL("AscentDisplayTotalScriptJumps");
     mNumScriptDiff              = gSavedSettings.getF32("Ascentnumscriptdiff");
+
+	//Build -------------------------------------------------------------------------------
+	mAlpha						= gSavedSettings.getF32("EmeraldBuildPrefs_Alpha");
+	mColor						= gSavedSettings.getColor4("EmeraldBuildPrefs_Color");
+	mFullBright					= gSavedSettings.getBOOL("EmeraldBuildPrefs_FullBright");
+	mGlow						= gSavedSettings.getF32("EmeraldBuildPrefs_Glow");
+	mMaterial					= gSavedSettings.getString("BuildPrefs_Material");
+	mNextCopy					= gSavedSettings.getBOOL("NextOwnerCopy");
+	mNextMod					= gSavedSettings.getBOOL("NextOwnerModify");
+	mNextTrans					= gSavedSettings.getBOOL("NextOwnerTransfer");
+	mShiny						= gSavedSettings.getString("EmeraldBuildPrefs_Shiny");
+	mTemporary					= gSavedSettings.getBOOL("EmeraldBuildPrefs_Temporary");
+	mTexture					= gSavedSettings.getString("EmeraldBuildPrefs_Texture");
+	mPhantom					= gSavedSettings.getBOOL("EmeraldBuildPrefs_Phantom");
+	mPhysical					= gSavedSettings.getBOOL("EmeraldBuildPrefs_Physical");
+	mXsize						= gSavedSettings.getF32("BuildPrefs_Xsize");
+	mYsize						= gSavedSettings.getF32("BuildPrefs_Ysize");
+	mZsize						= gSavedSettings.getF32("BuildPrefs_Zsize");
 }
 
 void LLPrefsAscentSys::refresh()
 {
+    //General -----------------------------------------------------------------------------
     childSetEnabled("center_after_teleport_check",	mDoubleClickTeleport);
     childSetEnabled("offset_teleport_check",		mDoubleClickTeleport);
     childSetValue("power_user_check",				mPowerUser);
@@ -252,6 +332,7 @@ void LLPrefsAscentSys::refresh()
     childSetEnabled("speed_rez_interval",           mSpeedRez);
     childSetEnabled("speed_rez_seconds",            mSpeedRez);
 
+    //Command Line ------------------------------------------------------------------------
     childSetEnabled("cmd_line_text_2",            mCmdLine);
     childSetEnabled("cmd_line_text_3",            mCmdLine);
     childSetEnabled("cmd_line_text_4",            mCmdLine);
@@ -282,6 +363,7 @@ void LLPrefsAscentSys::refresh()
     childSetEnabled("AscentCmdLineTP2",           mCmdLine);
     childSetEnabled("SinguCmdLineAway",           mCmdLine);
 
+    //Security ----------------------------------------------------------------------------
     childSetValue("AscentCmdLinePos",           mCmdLinePos);
     childSetValue("AscentCmdLineGround",        mCmdLineGround);
     childSetValue("AscentCmdLineHeight",        mCmdLineHeight);
@@ -296,6 +378,24 @@ void LLPrefsAscentSys::refresh()
     childSetValue("AscentCmdLineMapTo",         mCmdLineMapTo);
     childSetValue("AscentCmdLineTP2",           mCmdLineTP2);
     childSetValue("SinguCmdLineAway",           mCmdLineAway);
+
+	//Build -------------------------------------------------------------------------------
+	childSetValue("EmeraldBuildPrefs_Alpha",        mAlpha);
+	getChild<LLColorSwatchCtrl>("EmeraldBuildPrefs_Color")->setOriginal(mColor);
+	childSetValue("EmeraldBuildPrefs_FullBright",   mFullBright);
+	childSetValue("EmeraldBuildPrefs_Glow",         mGlow);
+	childSetValue("BuildPrefs_Material",            mMaterial);
+	childSetValue("NextOwnerCopy",                  mNextCopy);
+	childSetValue("NextOwnerModify",                mNextMod);
+	childSetValue("NextOwnerTransfer",              mNextTrans);
+	childSetValue("EmeraldBuildPrefs_Phantom",      mPhantom);
+	childSetValue("EmeraldBuildPrefs_Physical",     mPhysical);
+	childSetValue("EmeraldBuildPrefs_Shiny",        mShiny);
+	childSetValue("EmeraldBuildPrefs_Temporary",    mTemporary);
+	childSetValue("EmeraldBuildPrefs_Texture",      mTexture);
+	childSetValue("BuildPrefs_Xsize",               mXsize);
+	childSetValue("BuildPrefs_Ysize",               mYsize);
+	childSetValue("BuildPrefs_Zsize",               mZsize);
 }
 
 void LLPrefsAscentSys::cancel()
@@ -348,6 +448,24 @@ void LLPrefsAscentSys::cancel()
     gSavedSettings.setBOOL("DisableClickSit",               mDisableClickSit);
     gSavedSettings.setBOOL("AscentDisplayTotalScriptJumps", mDisplayScriptJumps);
     gSavedSettings.setF32("Ascentnumscriptdiff",            mNumScriptDiff);
+
+	//Build -------------------------------------------------------------------------------
+	gSavedSettings.setF32("EmeraldBuildPrefs_Alpha",        mAlpha);
+	gSavedSettings.setColor4("EmeraldBuildPrefs_Color",     mColor);
+	gSavedSettings.setBOOL("EmeraldBuildPrefs_FullBright",  mFullBright);
+	gSavedSettings.setF32("EmeraldBuildPrefs_Glow",         mGlow);
+	gSavedSettings.setString("BuildPrefs_Material",         mMaterial);
+	gSavedSettings.setBOOL("NextOwnerCopy",                 mNextCopy);
+	gSavedSettings.setBOOL("NextOwnerModify",               mNextMod);
+	gSavedSettings.setBOOL("NextOwnerTransfer",             mNextTrans);
+	gSavedSettings.setBOOL("EmeraldBuildPrefs_Phantom",     mPhantom);
+	gSavedSettings.setBOOL("EmeraldBuildPrefs_Physical",    mPhysical);
+	gSavedSettings.setString("EmeraldBuildPrefs_Shiny",     mShiny);
+	gSavedSettings.setBOOL("EmeraldBuildPrefs_Temporary",   mTemporary);
+	gSavedSettings.setString("EmeraldBuildPrefs_Texture",   mTexture);
+	gSavedSettings.setF32("BuildPrefs_Xsize",               mXsize);
+	gSavedSettings.setF32("BuildPrefs_Ysize",               mYsize);
+	gSavedSettings.setF32("BuildPrefs_Zsize",               mZsize);
 }
 
 void LLPrefsAscentSys::apply()

@@ -2061,7 +2061,7 @@ version 2.0
 		{	IsPhantom		BOOL	}
 		{	CastsShadows	BOOL	}
 	}
-	{
+    {
 		ExtraPhysics        Variable
 		{   PhysicsShapeType U8     }
         {   Density          F32    }
@@ -2975,7 +2975,7 @@ version 2.0
 		{	BillableFactor		F32			}
 		{	ObjectBonusFactor 	F32			}
 		{	WaterHeight			F32			}
-		{   TerrainRaiseLimit	F32 		}
+		{	TerrainRaiseLimit	F32 		}
 		{	TerrainLowerLimit	F32 		}
 		{	PricePerMeter 		S32			}
 		{	RedirectGridX 		S32			}
@@ -4250,6 +4250,10 @@ version 2.0
 	{
 		Buttons	Variable
 		{	ButtonLabel		Variable	1	}
+	}
+	{
+		OwnerData Variable
+		{	OwnerID		LLUUID	}
 	}
 }
 

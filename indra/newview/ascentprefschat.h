@@ -34,6 +34,7 @@
 
 
 #include "llpanel.h"
+#include "lldroptarget.h"
 
 
 class LLPrefsAscentChat : public LLPanel
@@ -101,6 +102,9 @@ protected:
     LLColor4 mKeywordsColor;
     BOOL mKeywordsPlaySound;
     LLUUID mKeywordsSound;
+private:
+	static LLPrefsAscentChat* sInst;
+	static void SinguIMResponseItemDrop(LLViewerInventoryItem* item);
 };
 
 #endif

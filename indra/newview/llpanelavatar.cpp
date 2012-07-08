@@ -85,6 +85,7 @@
 #include "lluictrlfactory.h"
 #include "llviewermenu.h"
 #include "llavatarnamecache.h"
+#include "lldroptarget.h"
 
 
 #include <iosfwd>
@@ -104,68 +105,6 @@ BOOL LLPanelAvatar::sAllowFirstLife = FALSE;
 extern void callback_invite_to_group(LLUUID group_id, void *user_data);
 extern void handle_lure(const LLUUID& invitee);
 extern void handle_pay_by_id(const LLUUID& payee);
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLDropTarget
-//
-// This handy class is a simple way to drop something on another
-// view. It handles drop events, always setting itself to the size of
-// its parent.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLDropTarget : public LLView
-{
-public:
-	LLDropTarget(const std::string& name, const LLRect& rect, const LLUUID& agent_id);
-	~LLDropTarget();
-
-	void doDrop(EDragAndDropType cargo_type, void* cargo_data);
-
-	//
-	// LLView functionality
-	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-								   EDragAndDropType cargo_type,
-								   void* cargo_data,
-								   EAcceptance* accept,
-								   std::string& tooltip_msg);
-	void setAgentID(const LLUUID &agent_id)		{ mAgentID = agent_id; }
-protected:
-	LLUUID mAgentID;
-};
-
-
-LLDropTarget::LLDropTarget(const std::string& name, const LLRect& rect,
-						   const LLUUID& agent_id) :
-	LLView(name, rect, NOT_MOUSE_OPAQUE, FOLLOWS_ALL),
-	mAgentID(agent_id)
-{
-}
-
-LLDropTarget::~LLDropTarget()
-{
-}
-
-void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
-{
-	llinfos << "LLDropTarget::doDrop()" << llendl;
-}
-
-BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-									 EDragAndDropType cargo_type,
-									 void* cargo_data,
-									 EAcceptance* accept,
-									 std::string& tooltip_msg)
-{
-	if(getParent())
-	{
-		LLToolDragAndDrop::handleGiveDragAndDrop(mAgentID, LLUUID::null, drop,
-												 cargo_type, cargo_data, accept);
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
 
 
 //-----------------------------------------------------------------------------

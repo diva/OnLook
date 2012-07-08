@@ -7,31 +7,30 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "llagent.h"
-#include "llframetimer.h"
-#include "llprimitive.h"
-#include "llviewercontrol.h"
+//#include "llprimitive.h"
+#include "llcontrol.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
-#include "llvolumemessage.h"
-#include "llchat.h"
+//#include "llvolumemessage.h"
+//#include "llchat.h"
 #include "importtracker.h"
-#include "llsdserialize.h"
+//#include "llsdserialize.h"
 #include "lltooldraganddrop.h"
-#include "llassetuploadresponders.h"
-#include "lleconomy.h"
+//#include "llassetuploadresponders.h"
+//#include "lleconomy.h"
 
-#include "llfloaterperms.h"
+//#include "llfloaterperms.h"
 
 
-#include "llviewertexteditor.h"
+//#include "llviewertexteditor.h"
 
-#include "jclslpreproc.h"
+//#include "jclslpreproc.h"
 
 ImportTracker gImportTracker;
 
 extern LLAgent gAgent;
 
-void ImportTracker::importer(std::string file,  void (*callback)(LLViewerObject*))
+/*void ImportTracker::importer(std::string file,  void (*callback)(LLViewerObject*))
 {
 	mDownCallback = callback;
 	asset_insertions = 0;
@@ -71,7 +70,7 @@ void ImportTracker::import(LLSD& ls_data)
 	state = BUILDING;
 	//llinfos << "IMPORTED, BUILDING.." << llendl;
 	plywood_above_head();
-}
+}*/
 
 void ImportTracker::expectRez()
 {
@@ -80,7 +79,7 @@ void ImportTracker::expectRez()
 	//llinfos << "EXPECTING CUBE..." << llendl;
 }
 
-void ImportTracker::clear()
+/*void ImportTracker::clear()
 {
 	if(linkset.isDefined())lastrootid = linkset[0]["LocalID"].asInteger();
 	localids.clear();
@@ -88,7 +87,7 @@ void ImportTracker::clear()
 	state = IDLE;
 	finish();
 }
-void cmdline_printchat(std::string message);
+void cmdline_printchat(std::string message);*/
 LLViewerObject* find(U32 local)
 {
 	S32 i;
@@ -104,7 +103,7 @@ LLViewerObject* find(U32 local)
 	}
 	return NULL;
 }
-void ImportTracker::finish()
+/*void ImportTracker::finish()
 {
 	if(asset_insertions == 0)
 	{
@@ -144,13 +143,13 @@ void ImportTracker::cleanUp()
 		}
 	}
 	else cleargroups();
-}
+}*/
 
 void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 {
 	switch (state)
 	{
-		//lgg crap
+		//lgg crap to change remaining prim parameters from the ascent system build preferences subtab
 		case WAND:
 			if(justCreated && createSelected)
 			{
@@ -165,14 +164,16 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 				msg->nextBlockFast(_PREHASH_ObjectData);				
 				msg->addU32Fast(_PREHASH_ObjectLocalID,  (U32)newid);
 				msg->addStringFast(_PREHASH_MediaURL, NULL);
-	
+//sets texture stuff
 				LLPrimitive obj;
 				obj.setNumTEs(U8(10));	
 				S32 shinnyLevel = 0;
-				if(gSavedSettings.getString("EmeraldBuildPrefs_Shiny")== "None") shinnyLevel = 0;
-				if(gSavedSettings.getString("EmeraldBuildPrefs_Shiny")== "Low") shinnyLevel = 1;
-				if(gSavedSettings.getString("EmeraldBuildPrefs_Shiny")== "Medium") shinnyLevel = 2;
-				if(gSavedSettings.getString("EmeraldBuildPrefs_Shiny")== "High") shinnyLevel = 3;
+				static LLCachedControl<std::string> sshinystr(gSavedSettings, "EmeraldBuildPrefs_Shiny");
+				std::string shinystr = sshinystr;
+				//if(shinystr == "None") shinnyLevel = 0; //We're already 0.
+				if(shinystr == "Low") shinnyLevel = 1;
+				else if(shinystr == "Medium") shinnyLevel = 2;
+				else if(shinystr == "High") shinnyLevel = 3;
 				
 				for (int i = 0; i < 10; i++)
 				{
@@ -193,21 +194,21 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 				obj.packTEMessage(gMessageSystem);
 	
 				msg->sendReliable(gAgent.getRegion()->getHost());
-				
+//sets some object parameters
 				msg->newMessage("ObjectFlagUpdate");
 				msg->nextBlockFast(_PREHASH_AgentData);
 				msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID() );
 				msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 				msg->addU32Fast(_PREHASH_ObjectLocalID, (U32)newid );
 				msg->addBOOLFast(_PREHASH_UsePhysics, gSavedSettings.getBOOL("EmeraldBuildPrefs_Physical"));
-				msg->addBOOL("IsTemporary", gSavedSettings.getBOOL("EmeraldBuildPrefs_Temporary"));
-				msg->addBOOL("IsPhantom", gSavedSettings.getBOOL("EmeraldBuildPrefs_Phantom") );
+				msg->addBOOLFast(_PREHASH_IsTemporary, gSavedSettings.getBOOL("EmeraldBuildPrefs_Temporary"));
+				msg->addBOOLFast(_PREHASH_IsPhantom, gSavedSettings.getBOOL("EmeraldBuildPrefs_Phantom") );
 				msg->addBOOL("CastsShadows", true );
 				msg->sendReliable(gAgent.getRegion()->getHost());
 
 				if(gSavedSettings.getBOOL("EmeraldBuildPrefs_EmbedItem"))
 				{
-					LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem((LLUUID)gSavedSettings.getString("EmeraldBuildPrefs_Item"));
+					LLViewerInventoryItem* item = (LLViewerInventoryItem*)gInventory.getItem((LLUUID)gSavedPerAccountSettings.getString("EmeraldBuildPrefs_Item"));
 					LLViewerObject* objectp = find((U32)newid);
 					if(objectp)
 						if(item)
@@ -250,12 +251,11 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 					flags |= PERM_TRANSFER;
 				}
 				msg->addU32Fast(_PREHASH_Mask, flags);
-				msg->sendReliable(gAgent.getRegion()->getHost());				
-
+				msg->sendReliable(gAgent.getRegion()->getHost());
 				//llinfos << "LGG SENDING CUBE TEXTURE.." << llendl;
 			}
 		break;
-		case BUILDING:
+/*		case BUILDING:
 			
 			if (justCreated && (int)localids.size() < linkset.size())
 			{
@@ -298,10 +298,10 @@ void ImportTracker::get_update(S32 newid, BOOL justCreated, BOOL createSelected)
 		break;
 		case LINKING:
 			link();
-		break;
+		break;*/
 	}
 }
-struct InventoryImportInfo
+/*struct InventoryImportInfo
 {
 	U32 localid;
 	LLAssetType::EType type;
@@ -427,8 +427,8 @@ public:
 	void fire(const LLUUID &inv_item)
 	{
 		S32 file_size;
-		LLAPRFile infile ;
-		infile.open(data->filename, LL_APR_RB, NULL, &file_size);
+		LLAPRFile infile;
+		infile.open(data->filename, LL_APR_RB, LLAPRFile::access_t(), &file_size);
 		if (infile.getFileHandle())
 		{
 			//cmdline_printchat("got file handle @ postinv");
@@ -445,7 +445,7 @@ public:
 			case LLAssetType::AT_NOTECARD:
 				//cmdline_printchat("case notecard @ postinv");
 				{
-					/*LLViewerTextEditor* edit = new LLViewerTextEditor("",LLRect(0,0,0,0),S32_MAX,"");
+					*//*LLViewerTextEditor* edit = new LLViewerTextEditor("",LLRect(0,0,0,0),S32_MAX,"");
 					S32 size = gVFS->getSize(data->assetid, data->type);
 					U8* buffer = new U8[size];
 					gVFS->getData(data->assetid, data->type, buffer, 0, size);
@@ -461,7 +461,7 @@ public:
 					file.remove();
 					LLVFile newfile(gVFS, data->assetid, data->type, LLVFile::APPEND);
 					newfile.setMaxSize(size);
-					newfile.write((const U8*)card.c_str(),size);*/
+					newfile.write((const U8*)card.c_str(),size);*//*
 					//FAIL.
 
 
@@ -484,14 +484,14 @@ public:
 					U8* buffer = new U8[size];
 					gVFS->getData(data->assetid, data->type, buffer, 0, size);
 					std::string script((char*)buffer);
-					BOOL domono = JCLSLPreprocessor::mono_directive(script);
-					/*if(script.find("//mono\n") != -1)
+					BOOL domono = FALSE;//Phox- this needs to be fixed when the preproc is added = JCLSLPreprocessor::mono_directive(script);
+					*//*if(script.find("//mono\n") != -1)
 					{
 						domono = TRUE;
 					}else if(script.find("//lsl2\n") != -1)
 					{
 						domono = FALSE;
-					}*/
+					}*//*
 					delete buffer;
 					buffer = 0;
 					body["target"] = (domono == TRUE) ? "mono" : "lsl2";
@@ -592,7 +592,7 @@ void ImportTracker::send_inventory(LLSD& prim)
 						std::string url = gAgent.getRegion()->getCapability("NewFileAgentInventory");
 						S32 file_size;
 						LLAPRFile infile ;
-						infile.open(data->filename, LL_APR_RB, NULL, &file_size);
+						infile.open(data->filename, LL_APR_RB, LLAPRFile::access_t(), &file_size);
 						if (infile.getFileHandle())
 						{
 							//cmdline_printchat("got file handle");
@@ -625,8 +625,8 @@ void ImportTracker::send_inventory(LLSD& prim)
 					//cmdline_printchat("case cloth/bodypart");
 					{
 						S32 file_size;
-						LLAPRFile infile ;
-						infile.open(data->filename, LL_APR_RB, NULL, &file_size);
+						LLAPRFile infile;
+						infile.open(data->filename, LL_APR_RB, LLAPRFile::access_t(), &file_size);
 						if (infile.getFileHandle())
 						{
 							//cmdline_printchat("got file handle @ cloth");
@@ -716,7 +716,7 @@ void ImportTracker::send_properties(LLSD& prim, int counter)
 			msg->addU8Fast(_PREHASH_Field,	PERM_NEXT_OWNER);
 			msg->addBOOLFast(_PREHASH_Set,		PERM_ITEM_UNRESTRICTED);
 			msg->addU32Fast(_PREHASH_Mask,		U32(atoi(prim["next_owner_mask"].asString().c_str())));
-			/*msg->sendReliable(gAgent.getRegion()->getHost());
+			*//*msg->sendReliable(gAgent.getRegion()->getHost());
 
 			//LLMessageSystem* msg = gMessageSystem;
 			msg->newMessageFast(_PREHASH_ObjectPermissions);
@@ -724,13 +724,13 @@ void ImportTracker::send_properties(LLSD& prim, int counter)
 			msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 			msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 			msg->nextBlockFast(_PREHASH_HeaderData);
-			msg->addBOOLFast(_PREHASH_Override, data->mOverride);*/
+			msg->addBOOLFast(_PREHASH_Override, data->mOverride);*//*
 			msg->nextBlockFast(_PREHASH_ObjectData);
 			msg->addU32Fast(_PREHASH_ObjectLocalID, prim["LocalID"].asInteger());
 			msg->addU8Fast(_PREHASH_Field,	PERM_GROUP);
 			msg->addBOOLFast(_PREHASH_Set,		PERM_ITEM_UNRESTRICTED);
 			msg->addU32Fast(_PREHASH_Mask,		U32(atoi(prim["group_mask"].asString().c_str())));
-			/*msg->sendReliable(gAgent.getRegion()->getHost());
+			*//*msg->sendReliable(gAgent.getRegion()->getHost());
 
 			//LLMessageSystem* msg = gMessageSystem;
 			msg->newMessageFast(_PREHASH_ObjectPermissions);
@@ -738,7 +738,7 @@ void ImportTracker::send_properties(LLSD& prim, int counter)
 			msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
 			msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
 			msg->nextBlockFast(_PREHASH_HeaderData);
-			msg->addBOOLFast(_PREHASH_Override, data->mOverride);*/
+			msg->addBOOLFast(_PREHASH_Override, data->mOverride);*//*
 			msg->nextBlockFast(_PREHASH_ObjectData);
 			msg->addU32Fast(_PREHASH_ObjectLocalID, prim["LocalID"].asInteger());
 			msg->addU8Fast(_PREHASH_Field,	PERM_EVERYONE);
@@ -1119,4 +1119,4 @@ void ImportTracker::plywood_above_head()
 		msg->addUUIDFast(_PREHASH_RayTargetID, LLUUID::null);
 		msg->sendReliable(region->getHost());
 }
-
+*/

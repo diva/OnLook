@@ -2261,7 +2261,7 @@ void process_improved_im(LLMessageSystem *msg, void **user_data)
 									position,
 									false);
 						}
-						LLGiveInventory::doGiveInventoryItem(from_id, item);
+						LLGiveInventory::doGiveInventoryItem(from_id, item, computed_session_id);
 					}
 				}
 			}
