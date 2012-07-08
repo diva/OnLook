@@ -685,9 +685,9 @@
           <key>linux</key>
           <map>
             <key>md5sum</key>
-            <string>e462fe4b2752f1c3d9300a0013243ec8</string>
+            <string>85f4be144b34bfc84976c9018192a266</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-linux-20110315.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jsoncpp-0.5.0-linux-20120708.tar.bz2</uri>
           </map>
           <key>linux64</key>
           <map>
