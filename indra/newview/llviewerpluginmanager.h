@@ -77,7 +77,8 @@ LLPluginClassBasic* LLViewerPluginManager::createPlugin(T* user_data)
 {
 	// Always delete the old plugin first.
 	destroyPlugin();
-	  
+
+	std::string plugin_dir = gDirUtilp->getLLPluginDir();
 	std::string plugin_name = gDirUtilp->getLLPluginFilename(PLUGIN_TYPE::plugin_basename());
 
 	// See if the plugin executable exists.
@@ -93,7 +94,7 @@ LLPluginClassBasic* LLViewerPluginManager::createPlugin(T* user_data)
 	else
 	{
 		LLPluginClassBasic* plugin = new PLUGIN_TYPE(user_data);
-		if (plugin->init(PLUGIN_TYPE::launcher_name(), plugin_name, gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins")))
+		if (plugin->init(PLUGIN_TYPE::launcher_name(), plugin_dir, plugin_name, gSavedSettings.getBOOL("PluginAttachDebuggerToPlugins")))
 		{
 			mPluginBase = plugin;
 		}

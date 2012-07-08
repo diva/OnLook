@@ -1956,6 +1956,8 @@ If you continue to receive this message, contact the [SUPPORT_SITE].
   
   <string name="Chat">Chat</string>
 
+  <string name="DefaultMimeType">none/none</string>
+
  <!-- External editor status codes -->
  <string name="ExternalEditorNotSet">Select an editor using the ExternalEditor setting.</string>
  <string name="ExternalEditorNotFound">Cannot find the external editor you specified.

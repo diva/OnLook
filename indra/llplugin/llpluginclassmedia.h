@@ -112,6 +112,9 @@ public:
 
 	void scrollEvent(int x, int y, MASK modifiers);
 
+	// enable/disable media plugin debugging messages and info spam
+	void enableMediaPluginDebugging( bool enable );
+
 	// Javascript <-> viewer events
 	void jsEnableObject( bool enable );
 	void jsAgentLocationEvent( double x, double y, double z );
@@ -167,6 +170,7 @@ public:
 	bool pluginSupportsMediaBrowser(void);
 	
 	void focus(bool focused);
+	void set_page_zoom_factor( double factor );
 	void clear_cache();
 	void clear_cookies();
 	void set_cookies(const std::string &cookies);
@@ -178,6 +182,7 @@ public:
 	void browse_back();
 	void set_status_redirect(int code, const std::string &url);
 	void setBrowserUserAgent(const std::string& user_agent);
+	void showWebInspector( bool show );
 	void proxyWindowOpened(const std::string &target, const std::string &uuid);
 	void proxyWindowClosed(const std::string &uuid);
 	void ignore_ssl_cert_errors(bool ignore);
@@ -212,6 +217,10 @@ public:
 
 	// This is valid during MEDIA_EVENT_CLICK_LINK_HREF and MEDIA_EVENT_GEOMETRY_CHANGE
 	std::string getClickUUID() const { return mClickUUID; };
+
+	// These are valid during MEDIA_EVENT_DEBUG_MESSAGE
+	std::string getDebugMessageText() const { return mDebugMessageText; };
+	std::string getDebugMessageLevel() const { return mDebugMessageLevel; };
 
 	// This is valid after MEDIA_EVENT_NAVIGATE_ERROR_PAGE
 	S32 getStatusCode() const { return mStatusCode; };
@@ -271,7 +280,7 @@ protected:
 
 protected:
 	LLPluginClassMediaOwner *mOwner;
-	
+
 	bool		mTextureParamsReceived;		// the mRequestedTexture* fields are only valid when this is true
 	S32 		mRequestedTextureDepth;
 	LLGLenum	mRequestedTextureInternalFormat;
@@ -358,6 +367,8 @@ protected:
 	std::string		mClickNavType;
 	std::string		mClickTarget;
 	std::string		mClickUUID;
+	std::string		mDebugMessageText;
+	std::string		mDebugMessageLevel;
 	S32				mGeometryX;
 	S32				mGeometryY;
 	S32				mGeometryWidth;

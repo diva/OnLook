@@ -13,7 +13,7 @@ if (STANDALONE)
   set(BOOST_SYSTEM_LIBRARY boost_system-mt)
 else (STANDALONE)
   use_prebuilt_binary(boost)
-  set(Boost_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/include)
+  set(Boost_INCLUDE_DIRS ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include)
 
   if (WINDOWS)
     set(BOOST_VERSION 1_45)
