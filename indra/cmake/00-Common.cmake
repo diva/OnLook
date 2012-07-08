@@ -198,7 +198,6 @@ if (LINUX)
     # End of hacks.
 
     #GCC Specific
-    add_definitions(-DCC_GCC)
 
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
@@ -227,11 +226,6 @@ if (LINUX)
  
     find_program(CLANG clang++)
     mark_as_advanced(CLANG)
-
-    add_definitions(
-        -DCC_CLANG
-        -D_FORTIFY_SOURCE=2
-        )
 
     if (NOT STANDALONE)
       # this stops us requiring a really recent glibc at runtime
@@ -280,9 +274,11 @@ endif (DARWIN)
 
 if (LINUX OR DARWIN)
   if(${CMAKE_C_COMPILER} MATCHES "gcc*")
+    add_definitions(-DCC_GCC)
     set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs")
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS} -Wno-reorder -Wno-non-virtual-dtor -Woverloaded-virtual")
   elseif(${CMAKE_C_COMPILER} MATCHES "clang*")
+    add_definitions(-DCC_CLANG -D_FORTIFY_SOURCE=2)
     set(UNIX_WARNINGS "-Wall -Wno-sign-compare -Wno-trigraphs -Wno-tautological-compare -Wno-char-subscripts -Wno-gnu -Wno-logical-op-parentheses 
     -Wno-non-virtual-dtor -Woverloaded-virtual -Wno-parentheses-equality -Wno-reorder -Wno-unused-function -Wno-unused-value -Wno-unused-variable")
     set(UNIX_CXX_WARNINGS "${UNIX_WARNINGS}")

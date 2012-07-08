@@ -98,8 +98,8 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-    dhparam.cpp
-    dsaparam.cpp
+	#dhparam.cpp
+	#dsaparam.cpp
     emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
