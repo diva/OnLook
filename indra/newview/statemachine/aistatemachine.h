@@ -207,6 +207,11 @@ class AIStateMachine {
 	active_type mActive;						//!< Whether statemachine is idle, queued to be added to the active list, or already on the active list.
 	S64 mSleep;									//!< Non-zero while the state machine is sleeping.
 	LLMutex mIdleActive;						//!< Used for atomic operations on the pair mIdle / mActive.
+	LLMutex mSetStateLock;						//!< For critical areas in set_state() and locked_cont().
+#ifdef SHOW_ASSERT
+	apr_os_thread_t mContThread;				//!< Thread that last called locked_cont().
+	bool mCalledThreadUnsafeIdle;				//!< Set to true when idle() is called.
+#endif
 
 	// Callback facilities.
 	// From within an other state machine:
@@ -233,15 +238,22 @@ class AIStateMachine {
 
   public:
 	//! Create a non-running state machine.
-	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL) { updateSettings(); }
+	AIStateMachine(void) : mState(bs_initialize), mIdle(true), mAborted(true), mActive(as_idle), mSleep(0), mParent(NULL), mCallback(NULL)
+#ifdef SHOW_ASSERT
+		, mContThread(0), mCalledThreadUnsafeIdle(false)
+#endif
+		{ updateSettings(); }
 
   protected:
 	//! The user should call 'kill()', not delete a AIStateMachine (derived) directly.
 	virtual ~AIStateMachine() { llassert((mState == bs_killed && mActive == as_idle) || mState == bs_initialize); }
 
   public:
-	//! Halt the state machine until cont() is called.
+	//! Halt the state machine until cont() is called (not thread-safe).
 	void idle(void);
+
+	//! Halt the state machine until cont() is called, provided it is still in 'cur_run_state'.
+	void idle(state_type current_run_state);
 
 	//! Temporarily halt the state machine.
 	void yield_frame(unsigned int frames) { mSleep = -(S64)frames; }
@@ -250,8 +262,18 @@ class AIStateMachine {
 	void yield_ms(unsigned int ms) { mSleep = LLFastTimer::getCPUClockCount64() + LLFastTimer::countsPerSecond() * ms / 1000; }
 
 	//! Continue running after calling idle.
-	void cont(void);
+	void cont(void)
+	{
+		mSetStateLock.lock();
+		// Ignore calls to cont() if the statemachine isn't idle. See comments in set_state().
+		// Calling cont() twice or after calling set_state(), without first calling idle(), is an error.
+		if (!mIdle) { llassert(mContThread != apr_os_thread_current()); mSetStateLock.unlock(); return; }
+		locked_cont();
+	}
+  private:
+	void locked_cont(void);
 
+  public:
 	//---------------------------------------
 	// Changing the state.
 

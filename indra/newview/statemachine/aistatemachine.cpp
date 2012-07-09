@@ -152,37 +152,74 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
 void AIStateMachine::idle(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
+  llassert(is_main_thread());
   llassert(!mIdle);
   mIdle = true;
   mSleep = 0;
+#ifdef SHOW_ASSERT
+  mCalledThreadUnsafeIdle = true;
+#endif
+}
+
+void AIStateMachine::idle(state_type current_run_state)
+{
+  DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
+  llassert(is_main_thread());
+  llassert(!mIdle);
+  mSetStateLock.lock();
+  // Only go idle if the run state is (still) what we expect it to be.
+  // Otherwise assume that another thread called set_state() and continue running.
+  if (current_run_state == mRunState)
+  {
+	mIdle = true;
+	mSleep = 0;
+  }
+  mSetStateLock.unlock();
 }
 
 // About thread safeness:
 //
 // The main thread initializes a statemachine and calls run, so a statemachine
 // runs in the main thread. However, it is allowed that a state calls idle()
-// and then allows one and only one other thread to call cont() upon some
+// and then allows one or more other threads to call cont() upon some
 // event (only once, of course, as idle() has to be called before cont()
-// can be called again-- and another thread is not allowed to call idle()).
-// Instead of cont(), the other thread may also call set_state().
-
-void AIStateMachine::cont(void)
+// can be called again-- and a non-main thread is not allowed to call idle()).
+// Instead of cont() one may also call set_state().
+// Of course, this may give rise to a race condition; if that happens then
+// the thread that calls cont() (set_state()) first is serviced, and the other
+// thread(s) are ignored, as if they never called cont().
+void AIStateMachine::locked_cont(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
   llassert(mIdle);
   // Atomic test mActive and change mIdle.
   mIdleActive.lock();
+#ifdef SHOW_ASSERT
+  mContThread = apr_os_thread_current();
+#endif
   mIdle = false;
   bool not_active = mActive == as_idle;
   mIdleActive.unlock();
+  // mActive is only changed in AIStateMachine::mainloop, by the main-thread, and
+  // here, possibly by any thread. However, after setting mIdle to false above, it
+  // is impossible for any thread to come here, until after the main-thread called
+  // idle(). So, if this is the main thread then that certainly isn't going to
+  // happen until we left this function, while if this is another thread  and the
+  // state machine is already running in the main thread then not_active is false
+  // and we're already at the end of this function.
+  // If not_active is true then main-thread is not running this statemachine.
+  // It might call cont() (or set_state()) but never locked_cont(), and will never
+  // start actually running until we are done here and release the lock on
+  // continued_statemachines_and_calling_mainloop again. It is therefore safe
+  // to release mSetStateLock here, with as advantage that if we're not the main-
+  // thread and not_active is true, then the main-thread won't block when it has
+  // a timer running that times out and calls set_state().
+  mSetStateLock.unlock();
   if (not_active)
   {
 	AIWriteAccess<cscm_type> cscm_w(continued_statemachines_and_calling_mainloop);
-	// We only get here when the statemachine was idle (set by the main thread),
-	// see first assertion. Hence, the main thread is not changing this, as the
-	// statemachine is not running. Thus, mActive can have changed when a THIRD
-	// thread called cont(), which is not allowed: if two threads can call cont()
-	// at any moment then the first assertion can't hold.
+	// See above: it is not possible that mActive was changed since not_active
+	// was set to true above.
 	llassert_always(mActive == as_idle);
 	cscm_w->continued_statemachines.push_back(this);
 	if (!cscm_w->calling_mainloop)
@@ -192,21 +229,77 @@ void AIStateMachine::cont(void)
 	  gIdleCallbacks.addFunction(&AIStateMachine::mainloop);
 	}
 	mActive = as_queued;
-	llassert_always(!mIdle);	// It should never happen that one thread calls cont() while another calls idle() concurrently.
+	llassert_always(!mIdle);	// It should never happen that the main thread calls idle(), while another thread calls cont() concurrently.
   }
 }
 
 void AIStateMachine::set_state(state_type state)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::set_state(" << state_str(state) << ") [" << (void*)this << "]");
+  // Do not call abort(), finish() or kill() before cancelling the possibility that other threads call set_state().
+  // Do not call set_state() unless running.
   llassert(mState == bs_run);
+  // Do not call idle() when set_state is called from another thread.
+  llassert(!mCalledThreadUnsafeIdle || LLThread::is_main_thread());
+
+  // If this function is called from another thread than the main thread, then we have to ignore
+  // it if we're not idle and the state is less than the current state. The main thread must
+  // be able to change the state to anything (also smaller values). Note that that only can work
+  // if the main thread itself at all times cancels thread callbacks that call set_state()
+  // before calling idle() again!
+  //
+  // Thus: main thead calls idle(), and tells one or more threads to do callbacks on events,
+  // which (might) call set_state(). If the main thread calls set_state first (currently only
+  // possible as a result of the use of a timer) it will set mIdle to false (here) then cancel
+  // the call backs from the other threads and only then call idle() again.
+  // Thus if you want other threads get here while mIdle is false to be ignored then the
+  // main thread should use a large value for the new run state.
+  //
+  // If a non-main thread calls set_state first, then the state is changed but the main thread
+  // can still override it if it calls set_state before handling the new state; in the latter
+  // case it would still be as if the call from the non-main thread was ignored.
+  //
+  // Concurrent calls from non-main threads however, always result in the largest state
+  // to prevail.
+
+  // Stop race condition of multiple threads calling cont() or set_state() here.
+  mSetStateLock.lock();
+
+  // If the state machine is already running, and we are not the main-thread and the new
+  // state is less than the current state, ignore it.
+  if (!mIdle && !LLThread::is_main_thread() && state <= mRunState)
+  {
+#ifdef SHOW_ASSERT
+	// It's a bit weird if the same thread does two calls on a row where the second call
+	// has a smaller value: warn about that.
+	if (mContThread == apr_os_thread_current())
+	{
+	  llwarns << "Ignoring call to set_state(" << state_str(state) <<
+		  ") by non-main thread before main-thread could react on previous call, "
+		  "because new state is smaller than old state (" << state_str(mRunState) << ")." << llendl;
+	}
+#endif
+	mSetStateLock.unlock();
+	return;		// Ignore.
+  }
+
+  // Change mRunState to the requested value.
   if (mRunState != state)
   {
 	mRunState = state;
 	Dout(dc::statemachine, "mRunState set to " << state_str(mRunState));
   }
+
+  // Continue the state machine if appropriate.
   if (mIdle)
-	cont();
+	locked_cont();				// This unlocks mSetStateLock.
+  else
+	mSetStateLock.unlock();
+
+  // If we get here then mIdle is false, so only mRunState can still be changed but we won't
+  // call locked_cont() anymore. When the main thread finally picks up on the state change,
+  // it will cancel any possible callbacks from other threads and process the largest state
+  // that this function was called with in the meantime.
 }
 
 void AIStateMachine::abort(void)

@@ -310,11 +310,13 @@ void LLThread::wakeLocked()
 	}
 }
 
-#ifdef SHOW_ASSERT
-// This allows the use of llassert(is_main_thread()) to assure the current thread is the main thread.
-static apr_os_thread_t main_thread_id;
-LL_COMMON_API bool is_main_thread(void) { return apr_os_thread_equal(main_thread_id, apr_os_thread_current()); }
-#endif
+//static
+apr_os_thread_t LLThread::sMainThreadID;
+
+void LLThread::set_main_thread_id(void)
+{
+	sMainThreadID = apr_os_thread_current();
+}
 
 // The thread private handle to access the LLThreadLocalData instance.
 apr_threadkey_t* LLThreadLocalData::sThreadLocalDataKey;
@@ -346,10 +348,8 @@ void LLThreadLocalData::init(void)
 	// Create the thread-local data for the main thread (this function is called by the main thread).
 	LLThreadLocalData::create(NULL);
 
-#ifdef SHOW_ASSERT
 	// This function is called by the main thread.
-	main_thread_id = apr_os_thread_current();
-#endif
+	LLThread::set_main_thread_id();
 }
 
 // This is called once for every thread when the thread is destructed.

@@ -40,13 +40,6 @@
 #include "llaprpool.h"
 #include "llatomic.h"
 
-#ifdef SHOW_ASSERT
-extern LL_COMMON_API bool is_main_thread(void);
-#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
-#else
-#define ASSERT_SINGLE_THREAD do { } while(0)
-#endif
-
 class LLThread;
 class LLMutex;
 class LLCondition;
@@ -89,6 +82,7 @@ private:
 class LL_COMMON_API LLThread
 {
 private:
+	static apr_os_thread_t sMainThreadID;
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
 	static LLAtomicS32	sRunning;
@@ -112,6 +106,7 @@ public:
 	static S32 getCount() { return sCount; }	
 	static S32 getRunning() { return sRunning; }
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
+	static bool is_main_thread(void) { return apr_os_thread_equal(LLThread::sMainThreadID, apr_os_thread_current()); }
 
 public:
 	// PAUSE / RESUME functionality. See source code for important usage notes.
@@ -134,6 +129,9 @@ public:
 
 	// Return thread-local data for the current thread.
 	static LLThreadLocalData& tldata(void) { return LLThreadLocalData::tldata(); }
+
+	// Called once, from LLThreadLocalData::init().
+	static void set_main_thread_id(void);
 
 	U32 getID() const { return mID; }
 
@@ -177,6 +175,13 @@ protected:
 	//     mRunCondition->signal();
 	// mRunCondition->unlock();
 };
+
+#ifdef SHOW_ASSERT
+LL_COMMON_API inline bool is_main_thread(void) { return LLThread::is_main_thread(); }
+#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
+#else
+#define ASSERT_SINGLE_THREAD do { } while(0)
+#endif
 
 //============================================================================
 

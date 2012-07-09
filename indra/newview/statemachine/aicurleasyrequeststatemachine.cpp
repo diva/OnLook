@@ -34,7 +34,7 @@
 enum curleasyrequeststatemachine_state_type {
   AICurlEasyRequestStateMachine_addRequest = AIStateMachine::max_state,
   AICurlEasyRequestStateMachine_waitAdded,
-  AICurlEasyRequestStateMachine_waitFinished,
+  AICurlEasyRequestStateMachine_waitRemoved,
   AICurlEasyRequestStateMachine_finished
 };
 
@@ -44,7 +44,7 @@ char const* AICurlEasyRequestStateMachine::state_str_impl(state_type run_state) 
   {
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_addRequest);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitAdded);
-	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitFinished);
+	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitRemoved);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_finished);
   }
   return "UNKNOWN STATE";
@@ -63,7 +63,7 @@ void AICurlEasyRequestStateMachine::initialize_impl(void)
 // CURL-THREAD
 void AICurlEasyRequestStateMachine::added_to_multi_handle(AICurlEasyRequest_wat&)
 {
-  set_state(AICurlEasyRequestStateMachine_waitFinished);
+  set_state(AICurlEasyRequestStateMachine_waitRemoved);
 }
 
 // CURL-THREAD
@@ -83,17 +83,17 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
   {
 	case AICurlEasyRequestStateMachine_addRequest:
 	{
-	  mCurlEasyRequest.addRequest();
 	  set_state(AICurlEasyRequestStateMachine_waitAdded);
-	}
-	case AICurlEasyRequestStateMachine_waitAdded:
-	{
-	  idle();			// Wait till AICurlEasyRequestStateMachine::added_to_multi_handle() is called.
+	  idle(AICurlEasyRequestStateMachine_waitAdded);			// Wait till AICurlEasyRequestStateMachine::added_to_multi_handle() is called.
+	  // Only AFTER going idle, add request to curl thread; this is needed because calls to set_state() are
+	  // ignored when the statemachine is not idle, and theoretically the callbacks could be called
+	  // immediately after this call.
+	  mCurlEasyRequest.addRequest();
 	  break;
 	}
-	case AICurlEasyRequestStateMachine_waitFinished:
+	case AICurlEasyRequestStateMachine_waitRemoved:
 	{
-	  idle();			// Wait till AICurlEasyRequestStateMachine::finished() is called.
+	  idle(AICurlEasyRequestStateMachine_waitRemoved);			// Wait till AICurlEasyRequestStateMachine::removed_from_multi_handle() is called.
 	  break;
 	}
 	case AICurlEasyRequestStateMachine_finished:
