@@ -31,11 +31,9 @@ if (STANDALONE)
     add_definitions(${${pkg}_CFLAGS_OTHERS})
   endforeach(pkg)
 else (STANDALONE)
-  if (NOT DARWIN)
+  if (LINUX)
     use_prebuilt_binary(glib)		# gtk-etc needs glib
     use_prebuilt_binary(gtk-atk-pango-glib)
-  endif (NOT DARWIN)
-  if (LINUX)
     set(UI_LIBRARIES
         atk-1.0
         X11
@@ -60,7 +58,6 @@ else (STANDALONE)
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/cairo
       ${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/pixman-1
-      ${LIBS_PREBUILT_DIR}/include
       )
   foreach(include ${${LL_ARCH}_INCLUDES})
       include_directories(${LIBS_PREBUILT_DIR}/${LL_ARCH_DIR}/include/${include})

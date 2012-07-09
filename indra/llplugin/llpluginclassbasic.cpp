@@ -52,15 +52,16 @@ LLPluginClassBasic::~LLPluginClassBasic()
 	delete mPlugin;
 }
 
-bool LLPluginClassBasic::init(std::string const& launcher_filename, std::string const& plugin_filename, bool debug)
+bool LLPluginClassBasic::init(std::string const& launcher_filename, std::string const& plugin_dir, std::string const& plugin_filename, bool debug)
 {	
 	LL_DEBUGS("Plugin") << "launcher: " << launcher_filename << LL_ENDL;
+	LL_DEBUGS("Plugin") << "dir: " << plugin_dir << LL_ENDL;
 	LL_DEBUGS("Plugin") << "plugin: " << plugin_filename << LL_ENDL;
 	
 	mPlugin = new LLPluginProcessParent(this);
 	mPlugin->setSleepTime(mSleepTime);
 	
-	mPlugin->init(launcher_filename, plugin_filename, debug);
+	mPlugin->init(launcher_filename, plugin_dir, plugin_filename, debug);
 
 	return init_impl();
 }

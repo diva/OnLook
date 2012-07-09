@@ -75,7 +75,7 @@ LLHeartbeat::rawSend()
 
 	int result;
 #ifndef LL_DARWIN
-	union sigval dummy;
+	static union sigval dummy;
 	result = sigqueue(getppid(), LL_HEARTBEAT_SIGNAL, dummy);
 #else
 	result = kill(getppid(), LL_HEARTBEAT_SIGNAL);

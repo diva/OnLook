@@ -9,7 +9,7 @@ else (STANDALONE)
 	set(HUNSPELL_INCLUDE_DIR ${LIBS_PREBUILT_DIR}/include/hunspell)
 
 	if (LINUX OR DARWIN)
-	    set(HUNSPELL_LIBRARY hunspell-1.2)
+	    set(HUNSPELL_LIBRARY hunspell-1.3)
 	else (LINUX OR DARWIN)
 	    set(HUNSPELL_LIBRARY libhunspell)
 	endif (LINUX OR DARWIN)
