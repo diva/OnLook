@@ -325,7 +325,16 @@ void LLXMLRPCTransaction::Impl::curlEasyRequestCallback(bool success)
 
 	if (!success)
 	{
-		setStatus(LLXMLRPCTransaction::StatusOtherError, "Statemachine failed");
+		// AICurlEasyRequestStateMachine did abort.
+		// This currently only happens when libcurl didn't finish before the timer expired.
+		std::ostringstream msg;
+		F32 timeout_value = gSavedSettings.getF32("CurlRequestTimeOut");
+		msg << "Connection to " << mURI << " timed out (" << timeout_value << " s)!";
+		if (timeout_value < 40)
+		{
+			msg << "\nTry increasing CurlRequestTimeOut in Debug Settings.";
+		}
+		setStatus(LLXMLRPCTransaction::StatusOtherError, msg.str());
 		return;
 	}
 

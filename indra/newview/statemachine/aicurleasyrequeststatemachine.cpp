@@ -30,11 +30,13 @@
 
 #include "linden_common.h"
 #include "aicurleasyrequeststatemachine.h"
+#include "llcontrol.h"
 
 enum curleasyrequeststatemachine_state_type {
   AICurlEasyRequestStateMachine_addRequest = AIStateMachine::max_state,
   AICurlEasyRequestStateMachine_waitAdded,
   AICurlEasyRequestStateMachine_waitRemoved,
+  AICurlEasyRequestStateMachine_timedOut,		// Only _finished has a higher priority than _timedOut.
   AICurlEasyRequestStateMachine_finished
 };
 
@@ -45,6 +47,7 @@ char const* AICurlEasyRequestStateMachine::state_str_impl(state_type run_state) 
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_addRequest);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitAdded);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_waitRemoved);
+	AI_CASE_RETURN(AICurlEasyRequestStateMachine_timedOut);
 	AI_CASE_RETURN(AICurlEasyRequestStateMachine_finished);
   }
   return "UNKNOWN STATE";
@@ -89,11 +92,27 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 	  // ignored when the statemachine is not idle, and theoretically the callbacks could be called
 	  // immediately after this call.
 	  mCurlEasyRequest.addRequest();
+
+	  // Set an inactivity timer.
+	  // This shouldn't really be necessary, except in the case of a bug
+	  // in libcurl; but lets be sure and set a timer for inactivity.
+	  static LLCachedControl<F32> CurlRequestTimeOut("CurlRequestTimeOut", 40.f);
+	  mTimer = new AIPersistentTimer;			// Do not delete timer upon expiration.
+	  mTimer->setInterval(CurlRequestTimeOut);
+	  mTimer->run(this, AICurlEasyRequestStateMachine_timedOut);
+
 	  break;
 	}
 	case AICurlEasyRequestStateMachine_waitRemoved:
 	{
 	  idle(AICurlEasyRequestStateMachine_waitRemoved);			// Wait till AICurlEasyRequestStateMachine::removed_from_multi_handle() is called.
+	  break;
+	}
+	case AICurlEasyRequestStateMachine_timedOut:
+	{
+	  // Libcurl failed to end on error(?)... abort operation in order to free
+	  // this curl easy handle and to notify the application that it didn't work.
+	  abort();
 	  break;
 	}
 	case AICurlEasyRequestStateMachine_finished:
@@ -112,16 +131,10 @@ void AICurlEasyRequestStateMachine::multiplex_impl(void)
 
 void AICurlEasyRequestStateMachine::abort_impl(void)
 {
-  Dout(dc::curl, "AICurlEasyRequestStateMachine::abort_impl called for = " << (void*)mCurlEasyRequest.get());
-  // We must first revoke the events, or the curl thread might change mRunState still.
+  DoutEntering(dc::curl, "AICurlEasyRequestStateMachine::abort_impl() [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  // Revert call to addRequest() if that was already called (and the request wasn't removed already again).
+  if (AICurlEasyRequestStateMachine_waitAdded <= mRunState && mRunState < AICurlEasyRequestStateMachine_finished)
   {
-    AICurlEasyRequest_wat curl_easy_request_w(*mCurlEasyRequest);
-	curl_easy_request_w->send_events_to(NULL);
-	curl_easy_request_w->revokeCallbacks();
-  }
-  if (mRunState >= AICurlEasyRequestStateMachine_waitAdded && mRunState < AICurlEasyRequestStateMachine_finished)
-  {
-	// Revert call to addRequest().
 	// Note that it's safe to call this even if the curl thread already removed it, or will removes it
 	// after we called this, before processing the remove command; only the curl thread calls
 	// MultiHandle::remove_easy_request, which is a no-op when called twice for the same easy request.
@@ -131,14 +144,19 @@ void AICurlEasyRequestStateMachine::abort_impl(void)
 
 void AICurlEasyRequestStateMachine::finish_impl(void)
 {
-  Dout(dc::curl, "AICurlEasyRequestStateMachine::finish_impl called for = " << (void*)mCurlEasyRequest.get());
-  if (!aborted())
+  DoutEntering(dc::curl, "AICurlEasyRequestStateMachine::finish_impl() [" << (void*)this << "] [" << (void*)mCurlEasyRequest.get() << "]");
+  // Revoke callbacks.
   {
-    AICurlEasyRequest_wat curl_easy_request_w(*mCurlEasyRequest);
+	AICurlEasyRequest_wat curl_easy_request_w(*mCurlEasyRequest);
 	curl_easy_request_w->send_events_to(NULL);
 	curl_easy_request_w->revokeCallbacks();
   }
-  // Auto clean up.
+  // Note that even if the timer expired, it wasn't deleted because we used AIPersistentTimer; so mTimer is still valid.
+  // Stop the timer.
+  mTimer->abort();
+  // And delete it here.
+  mTimer->kill();
+  // Auto clean up ourselves.
   kill();
 }
 

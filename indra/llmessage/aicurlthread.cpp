@@ -831,11 +831,13 @@ void AICurlThread::run(void)
 		while (ready > 0 && iter.next(fd, ev_bitmask))
 		{
 		  ready -= (ev_bitmask == (CURL_CSELECT_IN|CURL_CSELECT_OUT)) ? 2 : 1;
+		  // This can cause libcurl to do callbacks and remove filedescriptors, causing us to reset their bits in the poll sets.
 		  multi_handle_w->socket_action(fd, ev_bitmask);
 		  llassert(ready >= 0);
 		}
-		// Should have handled them all.
-		llassert(ready == 0);
+		// Note that ready is not necessarily 0 here, because it's possible
+		// that libcurl removed file descriptors which we subsequently
+		// didn't handle.
 	  }
 	  multi_handle_w->check_run_count();
 	}

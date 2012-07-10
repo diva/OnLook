@@ -267,7 +267,7 @@ class AIStateMachine {
 		mSetStateLock.lock();
 		// Ignore calls to cont() if the statemachine isn't idle. See comments in set_state().
 		// Calling cont() twice or after calling set_state(), without first calling idle(), is an error.
-		if (!mIdle) { llassert(mContThread != apr_os_thread_current()); mSetStateLock.unlock(); return; }
+		if (mState != bs_run || !mIdle) { llassert(mState != bs_run || mContThread != apr_os_thread_current()); mSetStateLock.unlock(); return; }
 		locked_cont();
 	}
   private:

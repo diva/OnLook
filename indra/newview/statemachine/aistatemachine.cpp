@@ -121,7 +121,9 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
   // Mark that run() has been called, in case we're being called from a callback function.
   mState = bs_initialize;
 
-  cont();
+  // Set mIdle to false and add statemachine to continued_statemachines.
+  mSetStateLock.lock();
+  locked_cont();
 }
 
 void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
@@ -146,7 +148,9 @@ void AIStateMachine::run(callback_type::signal_type::slot_type const& slot)
   // Mark that run() has been called, in case we're being called from a callback function.
   mState = bs_initialize;
 
-  cont(); 
+  // Set mIdle to false and add statemachine to continued_statemachines.
+  mSetStateLock.lock();
+  locked_cont();
 }
 
 void AIStateMachine::idle(void)
@@ -163,7 +167,7 @@ void AIStateMachine::idle(void)
 
 void AIStateMachine::idle(state_type current_run_state)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::idle() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine, "AIStateMachine::idle(" << state_str(current_run_state) << ") [" << (void*)this << "]");
   llassert(is_main_thread());
   llassert(!mIdle);
   mSetStateLock.lock();
@@ -190,7 +194,7 @@ void AIStateMachine::idle(state_type current_run_state)
 // thread(s) are ignored, as if they never called cont().
 void AIStateMachine::locked_cont(void)
 {
-  DoutEntering(dc::statemachine, "AIStateMachine::cont() [" << (void*)this << "]");
+  DoutEntering(dc::statemachine, "AIStateMachine::locked_cont() [" << (void*)this << "]");
   llassert(mIdle);
   // Atomic test mActive and change mIdle.
   mIdleActive.lock();
@@ -221,6 +225,7 @@ void AIStateMachine::locked_cont(void)
 	// See above: it is not possible that mActive was changed since not_active
 	// was set to true above.
 	llassert_always(mActive == as_idle);
+	Dout(dc::statemachine, "Adding " << (void*)this << " to continued_statemachines");
 	cscm_w->continued_statemachines.push_back(this);
 	if (!cscm_w->calling_mainloop)
 	{
@@ -236,11 +241,12 @@ void AIStateMachine::locked_cont(void)
 void AIStateMachine::set_state(state_type state)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::set_state(" << state_str(state) << ") [" << (void*)this << "]");
-  // Do not call abort(), finish() or kill() before cancelling the possibility that other threads call set_state().
+
+  // Stop race condition of multiple threads calling cont() or set_state() here.
+  mSetStateLock.lock();
+
   // Do not call set_state() unless running.
-  llassert(mState == bs_run);
-  // Do not call idle() when set_state is called from another thread.
-  llassert(!mCalledThreadUnsafeIdle || LLThread::is_main_thread());
+  llassert(mState == bs_run || !LLThread::is_main_thread());
 
   // If this function is called from another thread than the main thread, then we have to ignore
   // it if we're not idle and the state is less than the current state. The main thread must
@@ -262,17 +268,16 @@ void AIStateMachine::set_state(state_type state)
   // Concurrent calls from non-main threads however, always result in the largest state
   // to prevail.
 
-  // Stop race condition of multiple threads calling cont() or set_state() here.
-  mSetStateLock.lock();
-
   // If the state machine is already running, and we are not the main-thread and the new
   // state is less than the current state, ignore it.
-  if (!mIdle && !LLThread::is_main_thread() && state <= mRunState)
+  // Also, if abort() or finish() was called, then we should just ignore it.
+  if (mState != bs_run ||
+	  (!mIdle && !LLThread::is_main_thread() && state <= mRunState))
   {
 #ifdef SHOW_ASSERT
 	// It's a bit weird if the same thread does two calls on a row where the second call
 	// has a smaller value: warn about that.
-	if (mContThread == apr_os_thread_current())
+	if (mState == bs_run && mContThread == apr_os_thread_current())
 	{
 	  llwarns << "Ignoring call to set_state(" << state_str(state) <<
 		  ") by non-main thread before main-thread could react on previous call, "
@@ -282,6 +287,9 @@ void AIStateMachine::set_state(state_type state)
 	mSetStateLock.unlock();
 	return;		// Ignore.
   }
+
+  // Do not call idle() when set_state is called from another thread; use idle(state_type) instead.
+  llassert(!mCalledThreadUnsafeIdle || LLThread::is_main_thread());
 
   // Change mRunState to the requested value.
   if (mRunState != state)
@@ -305,23 +313,56 @@ void AIStateMachine::set_state(state_type state)
 void AIStateMachine::abort(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::abort() [" << (void*)this << "]");
-  llassert(mState == bs_run);
-  mState = bs_abort;
-  abort_impl();
-  mAborted = true;
-  finish();
+  // It's possible that abort() is called before calling AIStateMachine::multiplex.
+  // In that case the statemachine wasn't initialized yet and we should just kill() it.
+  if (LL_UNLIKELY(mState == bs_initialize))
+  {
+	// It's ok to use the thread-unsafe idle() here, because if the statemachine
+	// wasn't started yet, then other threads won't call set_state() on it.
+	if (!mIdle)
+	  idle();
+	// run() calls locked_cont() after which the top of the mainloop adds this
+	// state machine to active_statemachines. Therefore, if the following fails
+	// then either the same statemachine called run() immediately followed by abort(),
+	// which is not allowed; or there were two active statemachines running,
+	// the first created a new statemachine and called run() on it, and then
+	// the other (before reaching the top of the mainloop) called abort() on
+	// that freshly created statemachine. Obviously, this is highly unlikely,
+	// but if that is the case then here we bump the statemachine into
+	// continued_statemachines to prevent kill() to delete this statemachine:
+	// the caller of abort() does not expect that.
+	if (LL_UNLIKELY(mActive == as_idle))
+	{
+	  mSetStateLock.lock();
+	  locked_cont();
+	  idle();
+	}
+	kill();
+  }
+  else
+  {
+	llassert(mState == bs_run);
+	mSetStateLock.lock();
+	mState = bs_abort;		// Causes additional calls to set_state to be ignored.
+	mSetStateLock.unlock();
+	abort_impl();
+	mAborted = true;
+	finish();
+  }
 }
 
 void AIStateMachine::finish(void)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::finish() [" << (void*)this << "]");
+  mSetStateLock.lock();
   llassert(mState == bs_run || mState == bs_abort);
   // It is possible that mIdle is true when abort or finish was called from
   // outside multiplex_impl. However, that only may be done by the main thread.
   llassert(!mIdle || is_main_thread());
   if (!mIdle)
-	idle();
-  mState = bs_finish;
+	idle();					// After calling this, we don't want other threads to call set_state() anymore.
+  mState = bs_finish;		// Causes additional calls to set_state to be ignored.
+  mSetStateLock.unlock();
   finish_impl();
   // Did finish_impl call kill()? Then that is only the default. Remember it.
   bool default_delete = (mState == bs_killed);
@@ -370,18 +411,21 @@ void AIStateMachine::finish(void)
   if (mState == bs_killed && mActive == as_idle)
   {
 	// Bump the statemachine onto the active statemachine list, or else it won't be deleted.
-	cont();
+	mSetStateLock.lock();
+	locked_cont();
 	idle();
   }
 }
 
 void AIStateMachine::kill(void)
 {
+  DoutEntering(dc::statemachine, "AIStateMachine::kill() [" << (void*)this << "]");
   // Should only be called from finish() (or when not running (bs_initialize)).
-  llassert(mIdle && (mState == bs_callback || mState == bs_finish || mState == bs_initialize));
+  // However, also allow multiple calls to kill() on a row (bs_killed) (which effectively don't do anything).
+  llassert(mIdle && (mState == bs_callback || mState == bs_finish || mState == bs_initialize || mState == bs_killed));
   base_state_type prev_state = mState;
   mState = bs_killed;
-  if (prev_state == bs_initialize)
+  if (prev_state == bs_initialize && mActive == as_idle)
   {
 	// We're not running (ie being deleted by a parent statemachine), delete it immediately.
 	delete this;
