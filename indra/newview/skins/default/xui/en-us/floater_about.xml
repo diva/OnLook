@@ -3,15 +3,15 @@
  can_resize="false" height="440" min_height="100" min_width="100"
  name="floater_about" rect_control="FloaterAboutRect"
  title="About Singularity Viewer" width="470">
-  <tab_container follows="all" bottom="10" left="10" height="405" width="450" name="about_tab" tab_position="top">
-    <panel border="true" height="386" label="Info" help_topic="about_support_tab" name="support_panel">
-      <text_editor parse_urls="true" follows="top|left" font="SansSerif" height="343" bg_readonly_color="transparent" left="1" max_length="65536" name="support_editor" top="-1" bottom="28" width="446" word_wrap="true"/>
+  <tab_container follows="all" bottom="1" border="false" left="10" height="414" width="450" name="about_tab" tab_position="top">
+    <panel border="false" height="386" label="Info" help_topic="about_support_tab" name="support_panel">
+      <text_editor parse_urls="true" follows="top|left" font="SansSerif" top="-1" bg_readonly_color="transparent" left="3" max_length="65536" name="support_editor" bottom="28" width="443" word_wrap="true"/>
       <button follows="left|top" label="Copy to Clipboard" name="copy_btn" right="-5" bottom="0" top_pad="5" height="25" width="180"/>
     </panel>
 
-    <panel border="true" label="Credits" height="386" name="credits_panel">
-      <text_editor enabled="false" follows="left|top" bg_readonly_color="transparent" left="1" text_color="LtGray" max_length="65536" name="credits_editor" top="-1" bottom="0" width="446" word_wrap="true">
-Singularity Viewer is developed and maintained by Siana Gearz, Shyotl Kuhr, Aleric Inglewood and Narv Czervik, with contributions by Henri Beauchamp, Kitty Barnett, Thickbrick Sleaford, Zauber Parecelsus, Wolfspirit Magic and others. Singularity is based upon Ascent source code. Credits for Ascent include Hg Beeks, Charley Levenque, Hazim Gazov, Zwagoth Klaar, Qarl Fizz, and others. Ascent is based upon the Inertia source code.
+    <panel border="false" label="Credits" height="386" name="credits_panel">
+      <text_editor enabled="false" follows="left|top" bg_readonly_color="transparent" left="3" max_length="65536" name="credits_editor" top="-1" bottom="0" width="443" word_wrap="true">
+Singularity Viewer is developed and maintained by Siana Gearz, Shyotl Kuhr, Aleric Inglewood, Narv Czervik, Tigh MacFanatic, Inusaito Kanya, Sovereign Engineer and Latif Khalifa, with contributions by Fractured Crystal, Fritigern Gothly, Henri Beauchamp, McCabe Maxsted, Kadah Coba, Kitty Barnett, Laika Tungsten, Nomade Zhao, Revolution Smythe, Selvone Franizzi, Thickbrick Sleaford, Zauber Parecelsus, Wolfspirit Magic and others. Singularity is based upon Ascent source code. Credits for Ascent include Hg Beeks, Charley Levenque, Hazim Gazov, Zwagoth Klaar, Qarl Fizz, and others. Ascent is based upon the Inertia source code.
 
 Singularity Viewer includes source code contributions of the following residents: Able Whitman, Adam Marker, Agathos Frascati, Aimee Trescothick, Alejandro Rosenthal, Aleric Inglewood, Alissa Sabre, Angus Boyd, Ann Congrejo, Argent Stonecutter, Asuka Neely, Balp Allen, Benja Kepler, Biancaluce Robbiani, Blakar Ogre, blino Nakamura, Boroondas Gupte, Bulli Schumann, bushing Spatula, Carjay McGinnis, Catherine Pfeffer, Celierra Darling, Cron Stardust, Dale Glass, Drewan Keats, Dylan Haskell, Dzonatas Sol, Eddy Stryker, EponymousDylan Ra, Eva Nowicka, Farallon Greyskin, Feep Larsson, Flemming Congrejo, Fluf Fredriksson, Fractured Crystal, Fremont Cunningham, Geneko Nemeth, Gigs Taggart, Ginko Bayliss, Grazer Kline, Gudmund Shepherd, Hamncheese Omlet, HappySmurf Papp, Henri Beauchamp, Hikkoshi Sakai, Hiro Sommambulist, Hoze Menges, Ian Kas, Irene Muni, Iskar Ariantho, Jacek Antonelli, JB Kraft, Joghert LeSabre, Kage Pixel, Ken March, Kerutsen Sellery, Khyota Wulluf, Kunnis Basiat, Lisa Lowe, Lockhart Cordoso, 
 maciek marksman, Magnus Balczo, Malwina Dollinger, march Korda, Matthew Dowd, McCabe Maxsted, Michelle2 Zenovka, Mm Alder, Mr Greggan, Nicholaz Beresford, Nounouch Hapmouche, Patric Mills, Paul Churchill, Paula Innis, Peekay Semyorka, Peter Lameth, Pf Shan, princess niven, Renault Clio, Ringo Tuxing, Robin Cornelius, Ryozu Kojima, Salahzar Stenvaag, Sammy Frederix, Scrippy Scofield, Seg Baphomet, Sergen Davies, SignpostMarv Martin, Simon Nolan, SpacedOut Frye, Sporked Friis, Stevex Janus, Still Defiant, Strife Onizuka, Tayra Dagostino, TBBle Kurosawa, Teardrops Fall, tenebrous pau, Tharax Ferraris, Thickbrick Sleaford, Thraxis Epsilon, tiamat bingyi, TraductoresAnonimos Alter, Tue Torok, Vadim Bigbear, Vixen Heron, Whoops Babii, Wilton Lundquist, Zarkonnen Decosta, Zi Ree, Zipherius Turas
@@ -26,8 +26,8 @@ Wulluf, kirstenlee Cinquetti, Latif Khalifa, Lex Neva, Lilibeth Andree, Lisa Low
       </text_editor>
     </panel>
 
-    <panel border="true" label="Licenses" height="386" name="licenses_panel">
-      <text_editor enabled="false" follows="left|top" bg_readonly_color="transparent" left="1" text_color="LtGray" max_length="65536" name="licenses_editor" top="-1" bottom="0" width="446" word_wrap="true"> 
+    <panel border="false" label="Licenses" height="386" name="licenses_panel">
+      <text_editor enabled="false" follows="left|top" bg_readonly_color="transparent" left="3" max_length="65536" name="licenses_editor" top="-1" bottom="0" width="443" word_wrap="true"> 
 3Dconnexion SDK Copyright (C) 1992-2007 3Dconnexion
 APR Copyright (C) 2000-2012 The Apache Software Foundation
 Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
@@ -54,10 +54,8 @@ This software contains source code provided by NVIDIA Corporation.
 All rights reserved.  See licenses.txt for details.
 
 Voice chat Audio coding: Polycom(R) Siren14(TM) (ITU-T Rec. G.722.1 Annex C)
-
-To be a success in business, be daring, be first, be different. --Henry Marchant
       </text_editor>
-    </panel>
+    </panel-->
   </tab_container>  
   <string name="you_are_at">You are at [POSITION]</string>
 </floater>

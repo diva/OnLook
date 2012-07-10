@@ -44,7 +44,20 @@
 			<key>Type</key>
 			<string>Boolean</string>
 			<key>Value</key>
+			<integer>0</integer>
+			<key>IsCOA</key>
 			<integer>1</integer>
+		</map>
+		<key>AscentHideTypingNotification</key>
+		<map>
+			<key>Comment</key>
+			<string>Keep those jerks guessing by hiding your "____ is typing..." message.</string>
+			<key>Persist</key>
+			<integer>1</integer>
+			<key>Type</key>
+			<string>Boolean</string>
+			<key>Value</key>
+			<integer>0</integer>
 			<key>IsCOA</key>
 			<integer>1</integer>
 		</map>
