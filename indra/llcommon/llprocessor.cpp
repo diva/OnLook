@@ -55,10 +55,10 @@
 #      define LL_X86 1
 #elif LL_MSVC && _M_IX86
 #      define LL_X86 1
-#elif LL_GNUC && ( defined(__amd64__) || defined(__x86_64__) )
+#elif LL_GNUC || LL_ICC || LL_CLANG && ( defined(__amd64__) || defined(__x86_64__) )
 #      define LL_X86_64 1
 #      define LL_X86 1
-#elif LL_GNUC && ( defined(__i386__) )
+#elif LL_GNUC || LL_ICC || LL_CLANG && ( defined(__i386__) )
 #      define LL_X86 1
 #elif LL_GNUC && ( defined(__powerpc__) || defined(__ppc__) )
 #      define LL_PPC 1
