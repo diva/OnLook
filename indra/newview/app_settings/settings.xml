@@ -21,6 +21,19 @@
 	  <integer>1</integer>
 	</map>
 
+	<key>SianaVoidWaterSubdivision</key>
+	<map>
+	  <key>Comment</key>
+	  <string>Number of tiles of void water</string>
+	  <key>Persist</key>
+	  <integer>1</integer>
+	  <key>Type</key>
+	  <string>U32</string>
+	  <key>Value</key>
+	  <integer>8</integer>
+	</map>
+
+
   <key>SGAbsolutePointer</key>
   <map>
 	<key>Comment</key>
