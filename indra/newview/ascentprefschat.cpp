@@ -42,6 +42,10 @@
 #include "llviewercontrol.h"
 #include "lgghunspell_wrapper.h"
 
+#include "llstartup.h"
+
+LLDropTarget* mObjectDropTarget;
+LLPrefsAscentChat* LLPrefsAscentChat::sInst;
 
 LLPrefsAscentChat::LLPrefsAscentChat()
 {
@@ -63,6 +67,28 @@ LLPrefsAscentChat::LLPrefsAscentChat()
     childSetCommitCallback("AscentInstantMessageShowResponded", onCommitAutoResponse, this);
     childSetCommitCallback("AscentInstantMessageResponseRepeat", onCommitAutoResponse, this);
     childSetCommitCallback("AscentInstantMessageResponseItem", onCommitAutoResponse, this);
+
+	if(sInst)delete sInst; sInst = this;
+	LLView* target_view = getChild<LLView>("im_give_drop_target_rect");
+	if (target_view)
+	{
+		const std::string drop="drop target";
+		if (mObjectDropTarget)	delete mObjectDropTarget;
+		mObjectDropTarget = new LLDropTarget(drop, target_view->getRect(), SinguIMResponseItemDrop);//, mAvatarID);
+		addChild(mObjectDropTarget);
+	}
+
+	if (LLStartUp::getStartupState() == STATE_STARTED)
+	{
+		LLUUID itemid = (LLUUID)gSavedPerAccountSettings.getString("AscentInstantMessageResponseItemData");
+		LLViewerInventoryItem* item = gInventory.getItem(itemid);
+
+		if		(item)				childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
+		else if (itemid.isNull())	childSetValue("im_give_disp_rect_txt","Currently not set");
+		else 						childSetValue("im_give_disp_rect_txt","Currently set to an item not on this account");
+	}
+	else							childSetValue("im_give_disp_rect_txt","Not logged in");
+
     childSetCommitCallback("im_response", onCommitAutoResponse, this);
 
     childSetCommitCallback("KeywordsOn", onCommitKeywords, this);
@@ -80,6 +106,8 @@ LLPrefsAscentChat::LLPrefsAscentChat()
 
 LLPrefsAscentChat::~LLPrefsAscentChat()
 {
+	sInst=NULL;
+	delete mObjectDropTarget; mObjectDropTarget=NULL;
 }
 
 //static
@@ -200,6 +228,13 @@ void LLPrefsAscentChat::onCommitAutoResponse(LLUICtrl* ctrl, void* user_data)
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseRepeat",  self->childGetValue("AscentInstantMessageResponseRepeat"));
     gSavedPerAccountSettings.setBOOL("AscentInstantMessageResponseItem",    self->childGetValue("AscentInstantMessageResponseItem"));
     gSavedPerAccountSettings.setString("AscentInstantMessageResponse",      self->childGetValue("im_response"));
+}
+
+//static
+void LLPrefsAscentChat::SinguIMResponseItemDrop(LLViewerInventoryItem* item)
+{
+	gSavedPerAccountSettings.setString("AscentInstantMessageResponseItemData", item->getUUID().asString());
+	sInst->childSetValue("im_give_disp_rect_txt","Currently set to: "+item->getName());
 }
 
 //static
@@ -496,3 +531,4 @@ void LLPrefsAscentChat::apply()
     refreshValues();
     refresh();
 }
+

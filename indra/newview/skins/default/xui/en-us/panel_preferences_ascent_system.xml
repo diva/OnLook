@@ -97,7 +97,45 @@
       <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Z pos" label_width="40" max_val="256" min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
       <check_box bottom_delta="-20" follows="top" label="Values are percent" left_delta="-5" tool_tip="Default settings are Percentages and every axis set at 50" name="EmPivotPercToggle" control_name="AscentBuildPrefs_PivotIsPercent"/>
       <check_box bottom_delta="60" follows="top" label="Enable highlighting of selected prims" left_delta="140" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"/>
-      <check_box bottom_delta="-20" follows="top" initial_value="false" label="Show axis arrow on root prim position" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
+	  <check_box bottom_delta="-20" follows="top" initial_value="false" label="Show axis arrow on root prim position" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
+      <view_border bevel_style="none" border_thickness="1" bottom="-180" follows="top" height="70" left="5" name="NextOwnerBorder" width="130"/>
+      <text bottom_delta="60" follows="top" height="10" left_delta="10" name="text_box7">Allow next owner:</text>
+        <check_box follows="top" height="16" initial_value="false" label="Copy permissions" tool_tip="Next owner can make copies of creations" name="next_owner_copy" control_name="NextOwnerCopy"/>
+        <check_box follows="top" height="16" initial_value="false" label="Modify permission" tool_tip="Next owner can edit creations" name="next_owner_modify" control_name="NextOwnerModify"/>
+        <check_box follows="top" height="16" initial_value="true" label="Transfer permission" tool_tip="Next owner can give(or sell) creations" name="next_owner_transfer" control_name="NextOwnerTransfer"/>
+      <texture_picker allow_no_texture="false" bottom="-190" can_apply_immediately="true" default_image_name="Default" follows="top" height="80" label="     Texture" left="155" name="texture control" control_name="EmeraldBuildPrefs_Texture" tool_tip="Click to choose a texture" width="64"/>
+      <check_box bottom="-131" left_delta="75" follows="top" height="16" label="Phantom" name="EmPhantomToggle" control_name="EmeraldBuildPrefs_Phantom"/>
+      <check_box follows="top" height="16" label="Physical" name="EmPhysicalToggle" control_name="EmeraldBuildPrefs_Physical"/>
+      <check_box follows="top" height="16" label="Temporary" name="EmTemporaryToggle" control_name="EmeraldBuildPrefs_Temporary"/>
+      <combo_box bottom="-190" left_delta="6" follows="top" height="18" name="material" width="64" control_name="BuildPrefs_Material">
+        <combo_item name="Stone" value="Stone">Stone</combo_item>
+        <combo_item name="Metal" value="Metal">Metal</combo_item>
+        <combo_item name="Glass" value="Glass">Glass</combo_item>
+        <combo_item name="Wood" value="Wood">Wood</combo_item>
+        <combo_item name="Flesh" value="Flesh">Flesh</combo_item>
+        <combo_item name="Plastic" value="Plastic">Plastic</combo_item>
+        <combo_item name="Rubber" value="Rubber">Rubber</combo_item>
+      </combo_box>
+      <color_swatch border_color="0.45098, 0.517647, 0.607843, 1" bottom="-190" can_apply_immediately="true" color="1, 1, 1, 1" follows="top" height="80" label="      Color" left_delta="76" name="colorswatch" tool_tip="Click to open Color Picker" width="64" control_name="EmeraldBuildPrefs_Color"/>
+      <spinner bottom_delta="60" decimal_digits="0" follows="top" height="16" increment="1" label="Alpha" label_width="45" left_delta="70" max_val="100" min_val="0" name="alpha" width="97" control_name="EmeraldBuildPrefs_Alpha"/>
+      <spinner bottom_delta="-20" decimal_digits="2" follows="top" height="16" increment="0.05" label="Glow" label_width="45" max_val="1" min_val="0" name="glow" width="97" control_name="EmeraldBuildPrefs_Glow"/>
+      <check_box follows="top" height="16" label="Full Bright" name="EmFBToggle" control_name="EmeraldBuildPrefs_FullBright"/>
+      <text follows="top">Shine</text>
+      <combo_box bottom_delta="-5" follows="top" left_delta="33" height="18" name="combobox shininess" tool_tip="Set the amount of shine for the object" width="64" control_name="EmeraldBuildPrefs_Shiny">
+        <combo_item name="None" value="None">None</combo_item>
+        <combo_item name="Low" value="Low">Low</combo_item>
+        <combo_item name="Medium" value="Medium">Medium</combo_item>
+        <combo_item name="High" value="High">High</combo_item>
+      </combo_box>
+      <check_box name="EmeraldBuildPrefsEmbedItem" left="5" bottom_delta="-15" follows="top" initial_value="false" label="Put an item into new objects" control_name="EmeraldBuildPrefs_EmbedItem"/>
+       <view_border blevel_style="in" bottom_delta="-20" left="25" follows="top" height="16" name="build_item_drop_target_rect" width="140"/>
+        <text bottom_delta="0" left_delta="8" follows="top" height="16" name="Give inventory">Drop inventory item here</text>
+       <view_border blevel_style="in" bottom_delta="-35" left_delta="-8" follows="top" height="35" name="build_item_add_disp_rect" width="140"/>
+         <text bottom_delta="15" left_delta="0" follows="top" height="16" name="build_item_add_disp_rect_txt" halign="center" width="138">Currently set to:
+	       ITEM</text>
+	   <spinner bottom="369" left="370" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="X size" label_width="40" max_val="10" min_val="0.0001" name="X size" width="110" control_name="BuildPrefs_Xsize"/>
+       <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="Y size" label_width="40" max_val="10" min_val="0.0001" name="Y size" width="110" control_name="BuildPrefs_Ysize"/>
+       <spinner bottom_delta="-20" decimal_digits="5" follows="left|top" height="16" increment="0.0005" label="Z size" label_width="40" max_val="10" min_val="0.0001" name="Z size" width="110" control_name="BuildPrefs_Zsize"/>
     </panel>
 
   </tab_container>

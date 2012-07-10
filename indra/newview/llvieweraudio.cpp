@@ -271,9 +271,14 @@ void audio_update_wind(bool force_update)
 			// which is sufficient to completely turn off or turn on wind noise
 			volume_delta = 1.f;
 		}
-
+		// mute wind entirely when the user asked
+		if (gSavedSettings.getBOOL("MuteWind"))
+		{
+			// volume decreases by itself
+			gAudiop->mMaxWindGain -= gAudiop->mMaxWindGain;
+		}
 		// mute wind when not /*flying*/ in air
-		if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)
+		else if /*(gAgent.getFlying())*/ (gAgentAvatarp && gAgentAvatarp->mInAir)
 		{
 			// volume increases by volume_delta, up to no more than max_wind_volume
 			gAudiop->mMaxWindGain = llmin(gAudiop->mMaxWindGain + volume_delta, max_wind_volume);

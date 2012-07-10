@@ -55,8 +55,10 @@
       <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Send as soon as they start typing" name="AscentInstantMessageShowOnTyping"/>
       <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Don't show IMs you auto-responsed to" name="AscentInstantMessageShowResponded"/>
       <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Autorespond to every message" name="AscentInstantMessageResponseRepeat"/>
-      <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Send an item along with the response" name="AscentInstantMessageResponseItem" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
-	  <text bottom_delta="120" left_delta="245" follows="left|top" height="18" name="text_box1">Response Text:</text>
+	  <check_box bottom_delta="-20" follows="left|top" initial_value="false" label="Send an item along with the response" name="AscentInstantMessageResponseItem" tool_tip="You can include an inventory item to send along with your auto response by dragging it from your inventory to the location below"/>
+      <view_border blevel_style="in" bottom_delta="-20" follows="left|top" height="18" left_delta="5" mouse_opaque="false" name="im_give_drop_target_rect" width="220"/>
+	  <text bottom_delta="0" drop_shadow_visible="true" follows="left|top" halign="center" height="16" name="im_give_disp_rect_txt" tool_tip="Drop an inventory item here to have it given along with the auto-response." width="230">Drop item here (Currently: NONE)</text>
+	  <text bottom_delta="140" left_delta="240" follows="left|top" height="18" name="text_box1">Response Text:</text>
       <text_editor bottom_delta="-110" follows="left|top" height="110" max_length="1100" name="im_response" width="230" word_wrap="true" spell_check="true"/>
       <text bottom_delta="-25" follows="left|top" height="18" name="text_box2">
 #f for user's first name, #l for last name,

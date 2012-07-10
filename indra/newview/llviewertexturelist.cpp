@@ -277,7 +277,7 @@ void LLViewerTextureList::shutdown()
 			break;
 	}
 	
-	if (count > 0 && !gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, "").empty())
+	if (count > 0 && !gDirUtilp->getLindenUserDir(true).empty())	
 	{
 		std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, get_texture_list_name());
 		llofstream file;

@@ -110,7 +110,7 @@ U32 LLVertexBuffer::sSetCount = 0;
 S32 LLVertexBuffer::sCount = 0;
 S32 LLVertexBuffer::sGLCount = 0;
 S32 LLVertexBuffer::sMappedCount = 0;
-bool LLVertexBuffer::sDisableVBOMapping = false;
+bool LLVertexBuffer::sDisableVBOMapping = true;	//Temporary workaround for vbo mapping being straight up broken
 bool LLVertexBuffer::sEnableVBOs = true;
 U32 LLVertexBuffer::sGLRenderBuffer = 0;
 U32 LLVertexBuffer::sGLRenderArray = 0;
@@ -820,7 +820,7 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 void LLVertexBuffer::initClass(bool use_vbo, bool no_vbo_mapping)
 {
 	sEnableVBOs = use_vbo && gGLManager.mHasVertexBufferObject;
-	sDisableVBOMapping = sEnableVBOs && no_vbo_mapping;
+	sDisableVBOMapping = sEnableVBOs;// && no_vbo_mapping; //Temporary workaround for vbo mapping being straight up broken
 
 	if (!sPrivatePoolp)
 	{ 
