@@ -37,6 +37,8 @@
  * $/LicenseInfo$
  */
 
+#include "llviewerprecompiledheaders.h"
+
 #include "lldroptarget.h"
 #include "lltooldraganddrop.h"
 #include "llinventorymodel.h"
