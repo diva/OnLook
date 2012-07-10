@@ -55,7 +55,7 @@ All rights reserved.  See licenses.txt for details.
 
 Voice chat Audio coding: Polycom(R) Siren14(TM) (ITU-T Rec. G.722.1 Annex C)
       </text_editor>
-    </panel-->
+    </panel>
   </tab_container>  
   <string name="you_are_at">You are at [POSITION]</string>
 </floater>
