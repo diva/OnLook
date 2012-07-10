@@ -96,7 +96,7 @@
       <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Y pos" label_width="40" max_val="256" min_val="-256" name="Y pos" width="120" control_name="AscentBuildPrefs_PivotY"/>
       <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Z pos" label_width="40" max_val="256" min_val="-256" name="Z pos" width="120" control_name="AscentBuildPrefs_PivotZ"/>
       <check_box bottom_delta="-20" follows="top" label="Values are percent" left_delta="-5" tool_tip="Default settings are Percentages and every axis set at 50" name="EmPivotPercToggle" control_name="AscentBuildPrefs_PivotIsPercent"/>
-      <check_box bottom_delta="60" follows="top" label="Enable highlighting of selected prims" left_delta="140" name="EmBuildPrefsRenderHighlight_toggle" control_name="AscentRenderHighlightSelections"/>
+      <check_box bottom_delta="60" follows="top" label="Enable highlighting of selected prims" left_delta="140" name="EmBuildPrefsRenderHighlight_toggle" control_name="RenderHighlightSelections"/>
 	  <check_box bottom_delta="-20" follows="top" initial_value="false" label="Show axis arrow on root prim position" tool_tip="Default behaviour is to show the axis on the center of mass of a linkset. If enabled, the axis will be shown on the root prim of the linkset instead." name="EmBuildPrefsActualRoot_toggle" control_name="AscentBuildPrefs_ActualRoot"/>
       <view_border bevel_style="none" border_thickness="1" bottom="-180" follows="top" height="70" left="5" name="NextOwnerBorder" width="130"/>
       <text bottom_delta="60" follows="top" height="10" left_delta="10" name="text_box7">Allow next owner:</text>
