@@ -8514,7 +8514,7 @@
         <integer>29</integer>
       </array>
     </map>
-    <key>DisableWindAudio</key>
+    <key>MuteWind</key>
     <map>
       <key>Comment</key>
       <string>Disable the wind audio effect</string>
