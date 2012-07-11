@@ -479,11 +479,16 @@ void LLXMLRPCTransaction::Impl::setCurlStatus(CURLcode code)
 size_t LLXMLRPCTransaction::Impl::curlDownloadCallback(
 		char* data, size_t size, size_t nmemb, void* user_data)
 {
-	DoutEntering(dc::curl, "LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, size * nmemb) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
-
 	Impl& impl(*(Impl*)user_data);
 	
 	size_t n = size * nmemb;
+
+#ifdef CWDEBUG
+	if (n < 80)
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, n) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+	else
+	  Dout(dc::curl, "Entering LLXMLRPCTransaction::Impl::curlDownloadCallback(\"" << buf2str(data, 40) << "\"...\"" << buf2str(data + n - 40, 40) << "\", " << size << ", " << nmemb << ", " << user_data << ")");
+#endif
 
 	impl.mResponseText.append(data, n);
 	

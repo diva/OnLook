@@ -79,7 +79,7 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	  CURLcode setopt(CURLoption option, BUILTIN parameter);
 
 	// Clone a libcurl session handle using all the options previously set.
-	CurlEasyHandle(CurlEasyHandle const& orig) : mEasyHandle(curl_easy_duphandle(orig.mEasyHandle)), mActiveMultiHandle(NULL), mErrorBuffer(NULL) { }
+	//CurlEasyHandle(CurlEasyHandle const& orig);
 
 	// URL encode/decode the given string.
 	char* escape(char* url, int length);
@@ -102,6 +102,10 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
+#ifdef SHOW_ASSERT
+  public:
+	bool mRemovedPerCommand;		// Set if mActiveMultiHandle was reset as per command from the main thread.
+#endif
 
   private:
 	// This should only be called from MultiHandle; add/remove an easy handle to/from a multi handle.
@@ -278,6 +282,9 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
 	std::stringstream& getInput() { return mInput; }
 	std::stringstream& getHeaderOutput() { return mHeaderOutput; }
 	LLIOPipe::buffer_ptr_t& getOutput() { return mOutput; }
+
+	// Called if libcurl doesn't deliver within CurlRequestTimeOut seconds.
+	void timed_out(void);
 
 	// Called after removed_from_multi_handle was called.
 	void processOutput(AICurlEasyRequest_wat& curl_easy_request_w);

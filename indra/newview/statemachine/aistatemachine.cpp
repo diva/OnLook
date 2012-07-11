@@ -89,7 +89,7 @@ void AIStateMachine::updateSettings(void)
 // Public methods
 //
 
-void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent)
+void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bool abort_parent, bool on_abort_signal_parent)
 {
   DoutEntering(dc::statemachine, "AIStateMachine::run(" << (void*)parent << ", " << (parent ? parent->state_str(new_parent_state) : "NA") << ", " << abort_parent << ") [" << (void*)this << "]");
   // Must be the first time we're being run, or we must be called from a callback function.
@@ -111,6 +111,7 @@ void AIStateMachine::run(AIStateMachine* parent, state_type new_parent_state, bo
 
 	mNewParentState = new_parent_state;
 	mAbortParent = abort_parent;
+	mOnAbortSignalParent = on_abort_signal_parent;
   }
 
   // If abort_parent is requested then a parent must be provided.
@@ -272,7 +273,7 @@ void AIStateMachine::set_state(state_type state)
   // state is less than the current state, ignore it.
   // Also, if abort() or finish() was called, then we should just ignore it.
   if (mState != bs_run ||
-	  (!mIdle && !LLThread::is_main_thread() && state <= mRunState))
+	  (!mIdle && state <= mRunState && !LLThread::is_main_thread()))
   {
 #ifdef SHOW_ASSERT
 	// It's a bit weird if the same thread does two calls on a row where the second call
@@ -379,7 +380,7 @@ void AIStateMachine::finish(void)
 		mParent->abort();
 		mParent = NULL;
 	  }
-	  else
+	  else if (!mAborted || mOnAbortSignalParent)
 	  {
 		mParent->set_state(mNewParentState);
 	  }
@@ -491,25 +492,28 @@ void AIStateMachine::multiplex(U64 current_time)
   multiplex_impl();
 }
 
+//static
+void AIStateMachine::add_continued_statemachines(void)
+{
+  AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
+  bool nonempty = false;
+  for (continued_statemachines_type::const_iterator iter = cscm_r->continued_statemachines.begin(); iter != cscm_r->continued_statemachines.end(); ++iter)
+  {
+	nonempty = true;
+	active_statemachines.push_back(QueueElement(*iter));
+	Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
+	(*iter)->mActive = as_active;
+  }
+  if (nonempty)
+	AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
+}
+
 static LLFastTimer::DeclareTimer FTM_STATEMACHINE("State Machine");
 // static
 void AIStateMachine::mainloop(void*)
 {
   LLFastTimer t(FTM_STATEMACHINE);
-  // Add continued state machines.
-  {
-	AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
-	bool nonempty = false;
-	for (continued_statemachines_type::const_iterator iter = cscm_r->continued_statemachines.begin(); iter != cscm_r->continued_statemachines.end(); ++iter)
-	{
-	  nonempty = true;
-	  active_statemachines.push_back(QueueElement(*iter));
-	  Dout(dc::statemachine, "Adding " << (void*)*iter << " to active_statemachines");
-	  (*iter)->mActive = as_active;
-	}
-	if (nonempty)
-	  AIWriteAccess<cscm_type>(cscm_r)->continued_statemachines.clear();
-  }
+  add_continued_statemachines();
   llassert(!active_statemachines.empty());
   // Run one or more state machines.
   U64 total_clocks = 0;
@@ -523,7 +527,7 @@ void AIStateMachine::mainloop(void*)
 	  // This might call idle() and then pass the statemachine to another thread who then may call cont().
 	  // Hence, after this isn't not sure what mIdle is, and it can change from true to false at any moment,
 	  // if it is true after this function returns.
-	  iter->statemachine().multiplex(start);
+	  statemachine.multiplex(start);
 	  U64 delta = LLFastTimer::getCPUClockCount64() - start;
 	  iter->add(delta);
 	  total_clocks += delta;
@@ -586,6 +590,43 @@ void AIStateMachine::mainloop(void*)
 	  Dout(dc::statemachine, "Removing AIStateMachine::mainloop from gIdleCallbacks");
 	  AIWriteAccess<cscm_type>(cscm_r)->calling_mainloop = false;
 	  gIdleCallbacks.deleteFunction(&AIStateMachine::mainloop);
+	}
+  }
+}
+
+// static
+void AIStateMachine::flush(void)
+{
+  DoutEntering(dc::curl, "AIStateMachine::flush(void)");
+  add_continued_statemachines();
+  // Abort all state machines.
+  for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
+  {
+	AIStateMachine& statemachine(iter->statemachine());
+	if (statemachine.running())
+	  statemachine.abort();
+  }
+  for (int batch = 0;; ++batch)
+  {
+	// Run mainloop until all state machines are idle.
+	for(;;)
+	{
+	  {
+		AIReadAccess<cscm_type> cscm_r(continued_statemachines_and_calling_mainloop);
+		if (!cscm_r->calling_mainloop)
+		  break;
+	  }
+	  mainloop(NULL);
+	}
+	if (batch == 1)
+	  break;
+	add_continued_statemachines();
+	// Kill all state machines.
+	for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
+	{
+	  AIStateMachine& statemachine(iter->statemachine());
+	  if (statemachine.running())
+		statemachine.kill();
 	}
   }
 }

@@ -90,7 +90,7 @@ struct TransferInfo {
 
 // Called once at start of application (from newview/llappviewer.cpp by main thread (before threads are created)),
 // with main purpose to initialize curl.
-void initCurl(F32 curl_request_timeout = 120.f, S32 max_number_handles = 256);
+void initCurl(void (*)(void) = NULL);
 
 // Called once at start of application (from LLAppViewer::initThreads), starts AICurlThread.
 void startCurlThread(void);

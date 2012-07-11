@@ -702,7 +702,7 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 		  multi_handle_w->add_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
 		  break;
 		case cmd_remove:
-		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()));
+		  multi_handle_w->remove_easy_request(AICurlEasyRequest(command_being_processed_r->easy_request()), true);
 		  break;
 	  }
 	  // Done processing.
@@ -858,6 +858,8 @@ MultiHandle::MultiHandle(void) : mHandleAddedOrRemoved(false), mPrevRunningHandl
 
 MultiHandle::~MultiHandle()
 {
+  llinfos << "Destructing MultiHandle with " << mAddedEasyRequests.size() << " active curl easy handles." << llendl;
+
   // This thread was terminated.
   // Curl demands that all handles are removed from the multi session handle before calling curl_multi_cleanup.
   for(addedEasyRequests_type::iterator iter = mAddedEasyRequests.begin(); iter != mAddedEasyRequests.end(); iter = mAddedEasyRequests.begin())
@@ -958,7 +960,7 @@ CURLMcode MultiHandle::add_easy_request(AICurlEasyRequest const& easy_request)
   return ret;
 }
 
-CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request)
+CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command)
 {
   addedEasyRequests_type::iterator iter = mAddedEasyRequests.find(easy_request);
   if (iter == mAddedEasyRequests.end())
@@ -967,6 +969,9 @@ CURLMcode MultiHandle::remove_easy_request(AICurlEasyRequest const& easy_request
   {
 	AICurlEasyRequest_wat curl_easy_request_w(**iter);
 	res = curl_easy_request_w->remove_handle_from_multi(curl_easy_request_w, mMultiHandle);
+#ifdef SHOW_ASSERT
+	curl_easy_request_w->mRemovedPerCommand = as_per_command;
+#endif
   }
   mAddedEasyRequests.erase(iter);
   mHandleAddedOrRemoved = true;
@@ -1173,8 +1178,11 @@ void AICurlEasyRequest::removeRequest(void)
 	  }
 	  else
 	  {
-		// May not already have been removed from multi session handle.
-		llassert(AICurlEasyRequest_wat(*get())->active());
+		// May not already have been removed from multi session handle as per command from the main thread (through this function thus).
+		{
+		  AICurlEasyRequest_wat curl_easy_request_w(*get());
+		  llassert(curl_easy_request_w->active() || !curl_easy_request_w->mRemovedPerCommand);
+		}
 	  }
 	}
 #endif

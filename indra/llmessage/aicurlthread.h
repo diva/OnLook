@@ -123,7 +123,7 @@ class MultiHandle : public CurlMultiHandle
 
 	// Add/remove an easy handle to/from a multi session.
 	CURLMcode add_easy_request(AICurlEasyRequest const& easy_request);
-	CURLMcode remove_easy_request(AICurlEasyRequest const& easy_request);
+	CURLMcode remove_easy_request(AICurlEasyRequest const& easy_request, bool as_per_command = false);
 
 	// Reads/writes available data from a particular socket (non-blocking).
 	CURLMcode socket_action(curl_socket_t sockfd, int ev_bitmask);

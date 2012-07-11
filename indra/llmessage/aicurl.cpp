@@ -80,6 +80,7 @@ enum gSSLlib_type {
 // No locking needed: initialized before threads are created, and subsequently only read.
 gSSLlib_type gSSLlib;
 bool gSetoptParamsNeedDup;
+void (*statemachines_flush_hook)(void);
 
 } // namespace
 
@@ -264,9 +265,9 @@ static unsigned int encoded_version(int major, int minor, int patch)
 namespace AICurlInterface {
 
 // MAIN-THREAD
-void initCurl(F32 curl_request_timeout, S32 max_number_handles)
+void initCurl(void (*flush_hook)())
 {
-  DoutEntering(dc::curl, "AICurlInterface::initCurl(" << curl_request_timeout << ", " << max_number_handles << ")");
+  DoutEntering(dc::curl, "AICurlInterface::initCurl(" << (void*)flush_hook << ")");
 
   llassert(LLThread::getRunning() == 0);		// We must not call curl_global_init unless we are the only thread.
   CURLcode res = curl_global_init(CURL_GLOBAL_ALL);
@@ -340,17 +341,24 @@ void initCurl(F32 curl_request_timeout, S32 max_number_handles)
 	}
 	llassert_always(!gSetoptParamsNeedDup);		// Might add support later.
   }
+
+  // Called in cleanupCurl.
+  statemachines_flush_hook = flush_hook;
 }
 
 // MAIN-THREAD
 void cleanupCurl(void)
 {
-  using AICurlPrivate::stopCurlThread;
-  using AICurlPrivate::curlThreadIsRunning;
+  using namespace AICurlPrivate;
 
   DoutEntering(dc::curl, "AICurlInterface::cleanupCurl()");
 
   stopCurlThread();
+  if (CurlMultiHandle::getTotalMultiHandles() != 0)
+	llwarns << "Not all CurlMultiHandle objects were destroyed!" << llendl;
+  if (statemachines_flush_hook)
+	(*statemachines_flush_hook)();
+  Stats::print();
   ssl_cleanup();
 
   llassert(LLThread::getRunning() <= (curlThreadIsRunning() ? 1 : 0));		// We must not call curl_global_cleanup unless we are the only thread left.
@@ -547,6 +555,9 @@ void CurlEasyHandle::handle_easy_error(CURLcode code)
 
 // Throws AICurlNoEasyHandle.
 CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
+#ifdef SHOW_ASSERT
+	, mRemovedPerCommand(true)
+#endif
 {
   mEasyHandle = curl_easy_init();
 #if 0
@@ -565,6 +576,22 @@ CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NU
 	throw AICurlNoEasyHandle("curl_easy_init() returned NULL");
   }
 }
+
+#if 0 // Not used
+CurlEasyHandle::CurlEasyHandle(CurlEasyHandle const& orig) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
+#ifdef SHOW_ASSERT
+		, mRemovedPerCommand(true)
+#endif
+{
+  mEasyHandle = curl_easy_duphandle(orig.mEasyHandle);
+  Stats::easy_init_calls++;
+  if (!mEasyHandle)
+  {
+	Stats::easy_init_errors++;
+	throw AICurlNoEasyHandle("curl_easy_duphandle() returned NULL");
+  }
+}
+#endif
 
 CurlEasyHandle::~CurlEasyHandle()
 {
@@ -1075,24 +1102,25 @@ CurlResponderBuffer::~CurlResponderBuffer()
   curl_easy_request_w->revokeCallbacks();
   if (mResponder)
   {	
-	llwarns << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
-	llassert(false);	// Does this ever happen? And if so, what does it mean?
-	// FIXME: Does this really mean it timed out?
-	mResponder->completedRaw(HTTP_REQUEST_TIME_OUT, "Request timeout, aborted.", sChannels, mOutput);
-	mResponder = NULL;
+	// If the responder is still alive, then that means that CurlResponderBuffer::processOutput was
+	// never called, which means that the removed_from_multi_handle event never happened.
+	// This is definitely an internal error as it can only happen when libcurl is too slow,
+	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
+	// calls CurlResponderBuffer::timed_out(). So, this really should never happen.
+	llerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
+	timed_out();
   }
+}
+
+void CurlResponderBuffer::timed_out(void)
+{
+	mResponder->completedRaw(HTTP_INTERNAL_ERROR, "Request timeout, aborted.", sChannels, mOutput);
+	mResponder = NULL;
 }
 
 void CurlResponderBuffer::resetState(AICurlEasyRequest_wat& curl_easy_request_w)
 {
-  if (mResponder)
-  {	
-	llwarns << "Calling CurlResponderBuffer::resetState() for active easy handle!" << llendl;
-	llassert(false);	// Does this ever happen? And if so, what does it mean?
-	// FIXME: Does this really mean it timed out?
-	mResponder->completedRaw(HTTP_REQUEST_TIME_OUT, "Request timeout, aborted.", sChannels, mOutput);
-	mResponder = NULL;
-  }
+  llassert(!mResponder);
 
   curl_easy_request_w->resetState();
 
@@ -1287,8 +1315,6 @@ CurlMultiHandle::~CurlMultiHandle()
   Stats::multi_calls++;
   int total = --sTotalMultiHandles;
   Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << total << " remaining.");
-  if (total == 0)
-	Stats::print();
 }
 
 } // namespace AICurlPrivate
