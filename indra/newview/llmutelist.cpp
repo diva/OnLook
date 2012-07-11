@@ -688,6 +688,12 @@ BOOL LLMuteList::isMuted(const LLUUID& id, const std::string& name, U32 flags) c
 
 	// don't need name or type for lookup
 	LLMute mute(id_to_check);
+	// Can't mute self.
+	if (mute.mID == gAgent.getID() && !mute_object)
+	{
+		getInstance()->remove(mute);
+		return false;
+	}
 	mute_set_t::const_iterator mute_it = mMutes.find(mute);
 	if (mute_it != mMutes.end())
 	{
