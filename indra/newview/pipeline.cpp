@@ -457,9 +457,11 @@ void LLPipeline::init()
 	{
 		mCubeVB = ll_create_cube_vb(LLVertexBuffer::MAP_VERTEX, GL_STATIC_DRAW_ARB);
 	}
-
-	mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
-	mDeferredVB->allocateBuffer(8, 0, true);
+	if(mDeferredVB.isNull())
+	{
+		mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
+		mDeferredVB->allocateBuffer(8, 0, true);
+	}
 	setLightingDetail(-1);
 	gSavedSettings.getControl("RenderAutoMaskAlphaDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("RenderAutoMaskAlphaNonDeferred")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
@@ -468,7 +470,7 @@ void LLPipeline::init()
 	//gSavedSettings.getControl("RenderDelayVBUpdate")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("UseOcclusion")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 	gSavedSettings.getControl("VertexShaderEnable")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
-
+	gSavedSettings.getControl("RenderFSAASamples")->getCommitSignal()->connect(boost::bind(&LLPipeline::refreshCachedSettings));
 }
 
 LLPipeline::~LLPipeline()
@@ -6102,6 +6104,7 @@ void LLPipeline::doResetVertexBuffers()
 	mResetVertexBuffers = false;
 
 	mCubeVB = NULL;
+	mDeferredVB = NULL;
 
 	for (LLWorld::region_list_t::const_iterator iter = LLWorld::getInstance()->getRegionList().begin(); 
 			iter != LLWorld::getInstance()->getRegionList().end(); ++iter)
@@ -7241,6 +7244,11 @@ void LLPipeline::renderDeferredLighting()
 
 		glh::matrix4f mat = glh_copy_matrix(gGLModelView);
 
+		if(mDeferredVB.isNull())
+		{
+			mDeferredVB = new LLVertexBuffer(DEFERRED_VB_MASK, 0);
+			mDeferredVB->allocateBuffer(8, 0, true);
+		}
 		LLStrider<LLVector3> vert; 
 		mDeferredVB->getVertexStrider(vert);
 		LLStrider<LLVector2> tc0;
