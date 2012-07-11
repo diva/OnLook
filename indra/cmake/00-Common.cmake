@@ -130,7 +130,6 @@ if (LINUX)
     add_definitions(-DLL_IGNORE_SIGCHLD)
 
   if(${CMAKE_C_COMPILER} MATCHES "gcc*")
-
     find_program(GXX g++)
     mark_as_advanced(GXX)
 
@@ -183,9 +182,6 @@ if (LINUX)
 
     # End of hacks.
 
-    #GCC Specific
-    add_definitions(-DCC_GCC)
-
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
 
     if (NOT STANDALONE)
@@ -217,7 +213,6 @@ if (LINUX)
     mark_as_advanced(CLANGXX)
 
     add_definitions(
-        -DCC_CLANG
         -D_FORTIFY_SOURCE=2
         )
 
@@ -237,12 +232,10 @@ if (LINUX)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO}${MARCH_FLAG} -msse2")
   elseif(${CMAKE_C_COMPILER} MATCHES "icc*" AND ${CMAKE_CXX_COMPILER} MATCHES "icpc*")
- 
     find_program(ICC icc)
     mark_as_advanced(ICC)
 
     add_definitions(
-        -DCC_ICC
         -D_FORTIFY_SOURCE=2
         )
 

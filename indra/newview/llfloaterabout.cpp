@@ -151,6 +151,14 @@ LLFloaterAbout::LLFloaterAbout()
     support.append(llformat("Built with MSVC version %d\n\n", _MSC_VER));
 #endif
 
+#if LL_CLANG
+    support.append(llformat("Built with Clang version %d\n\n", CLANG_VERSION));
+#endif
+
+#if LL_ICC
+    support.append(llformat("Built with ICC version %d\n\n", __ICC));
+#endif
+
 #if LL_GNUC
     support.append(llformat("Built with GCC version %d\n\n", GCC_VERSION));
 #endif
