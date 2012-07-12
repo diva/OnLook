@@ -99,11 +99,25 @@ public:
 	/// delete a key frame
 	static void onDeleteKey(void* userData);
 
-	/// button to load day
-	static void onLoadDayCycle(void* userData);
+	/// when user hits the load preset button
+	static void onNewPreset(void* userData);
 
-	/// button to save day
-	static void onSaveDayCycle(void* userData);
+	/// when user hits the save preset button
+	static void onSavePreset(void* userData);
+
+	/// prompts a user when overwriting a preset
+	static bool saveAlertCallback(const LLSD& notification, const LLSD& response);
+
+	/// when user hits the save preset button
+	static void onDeletePreset(void* userData);
+
+	/// prompts a user when overwriting a preset
+	bool deleteAlertCallback(const LLSD& notification, const LLSD& response);
+
+	static bool newPromptCallback(const LLSD& notification, const LLSD& response);
+
+	/// what to do when you change the preset name
+	static void onChangePresetName(LLUICtrl* ctrl, void* userData);
 
 	/// toggle for Linden time
 	static void onUseLindenTime(void* userData);
