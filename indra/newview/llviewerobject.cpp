@@ -2984,6 +2984,33 @@ void LLViewerObject::removeInventory(const LLUUID& item_id)
 	//gBuildView->refresh();
 }
 
+bool LLViewerObject::isTextureInInventory(LLViewerInventoryItem* item)
+{
+	bool result = false;
+
+	if (item && LLAssetType::AT_TEXTURE == item->getType())
+	{
+		std::list<LLUUID>::iterator begin = mPendingInventoryItemsIDs.begin();
+		std::list<LLUUID>::iterator end = mPendingInventoryItemsIDs.end();
+
+		bool is_fetching = std::find(begin, end, item->getAssetUUID()) != end;
+		bool is_fetched = getInventoryItemByAsset(item->getAssetUUID()) != NULL;
+
+		result = is_fetched || is_fetching;
+	}
+
+	return result;
+}
+
+void LLViewerObject::updateTextureInventory(LLViewerInventoryItem* item, U8 key, bool is_new)
+{
+	if (item && !isTextureInInventory(item))
+	{
+		mPendingInventoryItemsIDs.push_back(item->getAssetUUID());
+		updateInventory(item, key, is_new);
+	}
+}
+
 void LLViewerObject::updateInventory(
 	LLViewerInventoryItem* item,
 	U8 key,
