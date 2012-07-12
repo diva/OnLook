@@ -14,8 +14,9 @@
 	<combo_box name="WLWaterPresetsCombo" bottom_delta="1" left_delta="20" height="18" width="133" tool_tip="WindLight Presets for your Water."/>
 	<button bottom_delta="0" height="18" label="&lt;" left="158" image_overlay="arrow_left.tga" name="WWprev" width="18"/>
 	<button bottom_delta="0" height="18" label="&gt;" left_delta="18" image_overlay="arrow_right.tga" name="WWnext" width="18"/>
-	<check_box left="5" label="Region Environment" control_name="UseEnvironmentFromRegion" height="16" name="use_estate_wl" tool_tip="Use the region/parcel's windlight settings when available."/>
+	<check_box left="5" label="Region WL" control_name="UseEnvironmentFromRegion" height="16" name="use_estate_wl" tool_tip="Use the region's windlight settings when available."/>
 <!--check_box bottom_delta="0" left_delta="125" label="Always?" control_name="UseEnvironmentFromRegionAlways" height="16" name="Always" tool_tip="Always use region/parcel settings when they exist, automatically."/-->
+	<check_box bottom_delta="0" left_delta="110" label="Crossfade?" control_name="PhoenixInterpolateSky" height="16" name="Crossfade" tool_tip="If unchecked, Sky Windlight settings changes will apply immediately, without hesitation/animation."/>
 	<icon bottom_delta="-18" height="14" image_name="icon_day_cycle.tga" left="10" width="150"/>
 	<slider bottom_delta="-8" control_name="EnvTimeSlider" left="5" height="10" increment="0.00000001" label="" max_val="1" min_val="0" name="EnvTimeSlider" show_text="false" width="160"/>
 	<button bottom="1" height="22" label="" left="172" name="expand" scale_image="true" toggle="true" tool_tip="Hide the Settings Panel" width="22"/>
