@@ -4907,6 +4907,8 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 
 void LLViewerWindow::initFonts(F32 zoom_factor)
 {
+	if(gGLManager.mIsDisabled)
+		return;
 	LLFontGL::destroyAllGL();
 	// Initialize with possibly different zoom factor
 	LLFontGL::initClass( gSavedSettings.getF32("FontScreenDPI"),

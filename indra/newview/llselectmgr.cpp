@@ -5651,7 +5651,7 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 
 	if (shader)
 	{
-		gHighlightProgram.bind();
+		gDebugProgram.bind();
 	}
 
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
