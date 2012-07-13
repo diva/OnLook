@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="Name/Description">
+	  <text name="name_label">
+			 Nombre:
+	  </text>
+	  <line_editor name="name_form"/>
+	  <text name="description_label">
+			 Descripción:
+	  </text>
+	  <line_editor name="description_form"/>
+	  <button label="Cancelar" name="cancel_btn"/>
+	  <button label="Subir ([UPLOADFEE])" name="ok_btn"/>
+</floater>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="true"
+     can_resize="false" width="320" min_width="320" height="320" min_height="320"
+     name="floater_vfs" title="Local Assets" rect_control="FloaterVFSRect">
+	
+</floater>

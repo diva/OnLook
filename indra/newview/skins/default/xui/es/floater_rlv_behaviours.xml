@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater 
+  can_close="true"
+  can_drag_on_left="false"
+  can_minimize="true"
+  can_resize="true"
+  height="455"
+  min_height="200"
+  min_width="375"
+  name="rlv_behaviours"
+  title="Active RLV Restrictions"
+  width="350">
+
+  <tab_container
+    follows="top|left|bottom|right"
+    bottom="-445"
+    left="5"
+    height="420"
+    width="338"
+    name="behaviour_tab"
+    tab_position="top">
+    <panel
+      border="true"
+      label="Restrictions"
+      name="behaviour_panel">
+      
+      <scroll_list
+        top_pad="17"
+	height="-30"
+	follows="top|left|bottom|right"
+	draw_border="false"
+	multi_select="false"
+	name="behaviour_list"
+	draw_heading="true"
+	draw_stripes="true"
+	left="2"
+	right="-2">
+	 <column
+	   label="Restriction"
+	   name="behaviour"
+	   width="170" />
+         <column
+	   label="Object Name"
+	   name="issuer"
+	   width="170" />
+      </scroll_list>
+    </panel>
+    <panel
+      border="true"
+      label="Exceptions"
+      name="exception_panel">
+      
+      <scroll_list
+top_pad="17"
+	height="-30"
+	follows="top|left|bottom|right"
+	draw_border="false"
+	multi_select="false"
+	name="exception_list"
+	draw_heading="true"
+	draw_stripes="true"
+	left="2"
+	right="-2">
+	 <column
+	   label="Restriction"
+	   name="behaviour"
+	   width="70" />
+	 <column
+	   label="Option"
+	   name="option"
+	   width="170" />
+         <column
+	   label="Object Name"
+	   name="issuer"
+	   width="170" />
+      </scroll_list>
+    </panel>
+  </tab_container>
+
+  <button
+    follows="bottom|left"
+    height="25"
+    label="Copy to Clipboard"
+    left="10"
+    name="copy_btn"
+    bottom="-440"
+    width="180" />
+
+</floater>
