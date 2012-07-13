@@ -858,12 +858,15 @@ void LLInventoryView::updateItemcountText()
 {
 	std::ostringstream title;
 	title << "Inventory";
- 	if (LLInventoryModelBackgroundFetch::instance().folderFetchActive())
+ 	if (LLInventoryModelBackgroundFetch::instance().folderFetchActive() || LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
 	{
 		LLLocale locale(LLLocale::USER_LOCALE);
 		std::string item_count_string;
 		LLResMgr::getInstance()->getIntegerString(item_count_string, gInventory.getItemCount());
-		title << " (Fetched " << item_count_string << " items...)";
+		if(LLInventoryModelBackgroundFetch::instance().folderFetchActive())
+			title << " (Fetched " << item_count_string << " items...)";
+		else
+			title << " ("<< item_count_string << " items)";
 	}
 	title << mFilterText;
 	setTitle(title.str());
