@@ -130,10 +130,7 @@ LLFloaterGodTools::LLFloaterGodTools()
 	factory_map["request"] = LLCallbackMap(createPanelRequest, this);
 	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_god_tools.xml", &factory_map);
 
-	childSetTabChangeCallback("GodTools Tabs", "grid", onTabChanged, this);
-	childSetTabChangeCallback("GodTools Tabs", "region", onTabChanged, this);
-	childSetTabChangeCallback("GodTools Tabs", "objects", onTabChanged, this);
-	childSetTabChangeCallback("GodTools Tabs", "request", onTabChanged, this);
+	getChild<LLTabContainer>("GodTools Tabs")->setCommitCallback(boost::bind(&LLFloaterGodTools::onTabChanged,_1,_2));
 
 	sendRegionInfoRequest();
 
@@ -230,6 +227,12 @@ void LLFloaterGodTools::show(void *)
 	}
 }
 
+void LLFloaterGodTools::hide(void *)
+{
+	if(sGodTools)
+		sGodTools->setVisible(FALSE);;
+}
+
 void LLFloaterGodTools::showPanel(const std::string& panel_name)
 {
 	childShowTab("GodTools Tabs", panel_name);
@@ -238,15 +241,12 @@ void LLFloaterGodTools::showPanel(const std::string& panel_name)
 	if (panel) panel->setFocus(TRUE);
 }
 
-
-// static
-void LLFloaterGodTools::onTabChanged(void* data, bool from_click)
+//static
+void LLFloaterGodTools::onTabChanged(LLUICtrl* ctrl, const LLSD& param)
 {
-	LLPanel* panel = (LLPanel*)data;
-	if (panel)
-	{
+	LLPanel* panel = (LLPanel*)ctrl->getChildView(param.asString(),false,false);
+	if(panel)
 		panel->setFocus(TRUE);
-	}
 }
 
 

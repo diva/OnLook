@@ -55,6 +55,7 @@ public:
 	static LLPreviewGesture* show(const std::string& title, const LLUUID& item_id, const LLUUID& object_id, BOOL take_focus = TRUE);
 
 	// LLView
+	virtual void draw();
 	virtual BOOL handleKeyHere(KEY key, MASK mask);
 	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
 									 EDragAndDropType cargo_type,
@@ -112,6 +113,7 @@ protected:
 	// "Sound", "Chat", or "Wait"
 	LLScrollListItem* addStep(const enum EStepType step_type);
 
+	static std::string getLabel(std::vector<std::string> labels);
 	static void updateLabel(LLScrollListItem* item);
 
 	static void onCommitSetDirty(LLUICtrl* ctrl, void* data);

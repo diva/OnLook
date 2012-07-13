@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llfloateravatarlist.cpp
  * @brief Avatar list/radar floater
  *
@@ -232,67 +232,39 @@ LLAvatarListEntry::ACTIVITY_TYPE LLAvatarListEntry::getActivity()
 		mActivityType = ACTIVITY_NONE;
 	}
 	if(isDead())return ACTIVITY_DEAD;
-	
+
 	return mActivityType;
 }
 
-LLFloaterAvatarList* LLFloaterAvatarList::sInstance = NULL;
-
 LLFloaterAvatarList::LLFloaterAvatarList() :  LLFloater(std::string("radar"))
 {
-	llassert_always(sInstance == NULL);
-	sInstance = this;
+	LLUICtrlFactory::getInstance()->buildFloater(this, "floater_radar.xml");
 	mUpdateRate = gSavedSettings.getU32("RadarUpdateRate") * 3 + 3;
 }
 
 LLFloaterAvatarList::~LLFloaterAvatarList()
 {
 	gIdleCallbacks.deleteFunction(LLFloaterAvatarList::callbackIdle);
-	sInstance = NULL;
 }
-//static
-void LLFloaterAvatarList::createInstance(bool visible)
-{
-	sInstance = new LLFloaterAvatarList();
-	LLUICtrlFactory::getInstance()->buildFloater(sInstance, "floater_radar.xml");
-	if(!visible)
-	{
-		sInstance->setVisible(FALSE);
-		gSavedSettings.setBOOL("ShowRadar", FALSE);
-	}
-	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
-		LLScrollListCtrl* list = sInstance->getChild<LLScrollListCtrl>("avatar_list");
-		list->getColumn(1)->setWidth(0);
-		list->getColumn(6)->setWidth(0);
-		list->getColumn(6)->mDynamicWidth = FALSE;
-		list->getColumn(6)->mRelWidth = 0;
-		list->getColumn(1)->mDynamicWidth = TRUE;
-		list->getColumn(1)->mRelWidth = -1;
-		list->updateLayout();
-	}
-}
+
 //static
 void LLFloaterAvatarList::toggle(void*)
 {
-	if (sInstance)
-	{
-		if (sInstance->getVisible()
 // [RLVa:KB]
-			|| gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES)
+	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
+	{
+		if(instanceExists())
+			getInstance()->close();
+	}
+	else
 // [/RLVa:KB]
-			)
-
-		{
-			sInstance->close(false);
-		}
-		else
-		{
-			sInstance->open();
-		}
+	if(!instanceExists() || !getInstance()->getVisible())
+	{
+		showInstance();
 	}
 	else
 	{
-		showInstance();
+		getInstance()->close();
 	}
 }
 
@@ -303,17 +275,7 @@ void LLFloaterAvatarList::showInstance()
 	if(gRlvHandler.hasBehaviour(RLV_BHVR_SHOWNAMES))
 		return;
 // [/RLVa:KB]
-	if (sInstance)
-	{
-		if (!sInstance->getVisible())
-		{
-			sInstance->open();
-		}
-	}
-	else
-	{
-		createInstance(true);
-	}
+	getInstance()->open();
 }
 
 void LLFloaterAvatarList::draw()
@@ -324,12 +286,11 @@ void LLFloaterAvatarList::draw()
 void LLFloaterAvatarList::onOpen()
 {
 	gSavedSettings.setBOOL("ShowRadar", TRUE);
-	sInstance->setVisible(TRUE);
 }
 
 void LLFloaterAvatarList::onClose(bool app_quitting)
 {
-	sInstance->setVisible(FALSE);
+	setVisible(FALSE);
 	if (!app_quitting)
 	{
 		gSavedSettings.setBOOL("ShowRadar", FALSE);
@@ -361,7 +322,7 @@ BOOL LLFloaterAvatarList::postBuild()
 	childSetAction("next_in_list_btn", onClickNextInList, this);
 	childSetAction("prev_marked_btn", onClickPrevMarked, this);
 	childSetAction("next_marked_btn", onClickNextMarked, this);
-	
+
 	childSetAction("get_key_btn", onClickGetKey, this);
 
 	childSetAction("freeze_btn", onClickFreeze, this);
@@ -387,12 +348,23 @@ BOOL LLFloaterAvatarList::postBuild()
 
 	gIdleCallbacks.addFunction(LLFloaterAvatarList::callbackIdle);
 
+	if(gHippoGridManager->getConnectedGrid()->isSecondLife()){
+		LLScrollListCtrl* list = getChild<LLScrollListCtrl>("avatar_list");
+		list->getColumn(LIST_AVATAR_NAME)->setWidth(0);
+		list->getColumn(LIST_CLIENT)->setWidth(0);
+		list->getColumn(LIST_CLIENT)->mDynamicWidth = FALSE;
+		list->getColumn(LIST_CLIENT)->mRelWidth = 0;
+		list->getColumn(LIST_AVATAR_NAME)->mDynamicWidth = TRUE;
+		list->getColumn(LIST_AVATAR_NAME)->mRelWidth = -1;
+		list->updateLayout();
+	}
+
 	return TRUE;
 }
 
 void updateParticleActivity(LLDrawable *drawablep)
 {
-	if (LLFloaterAvatarList::getInstance())
+	if (LLFloaterAvatarList::instanceExists())
 	{
 		LLViewerObject *vobj = drawablep->getVObj();
 		if (vobj && vobj->isParticleSource())
@@ -409,10 +381,6 @@ void updateParticleActivity(LLDrawable *drawablep)
 
 void LLFloaterAvatarList::updateAvatarList()
 {
-	if (sInstance != this) return;
-
-	//if(LLStartUp::getStartupState() < STATE_STARTED)return;
-
 	//llinfos << "radar refresh: updating map" << llendl;
 
 	// Check whether updates are enabled
@@ -471,7 +439,7 @@ void LLFloaterAvatarList::updateAvatarList()
 
 		size_t i;
 		size_t count = avatar_ids.size();
-		
+
 		bool announce = gSavedSettings.getBOOL("RadarChatKeys");
 		std::queue<LLUUID> announce_keys;
 
@@ -498,7 +466,7 @@ void LLFloaterAvatarList::updateAvatarList()
 				// Get avatar data
 				position = gAgent.getPosGlobalFromAgent(avatarp->getCharacterPosition());
 				name = avatarp->getFullname();
-			
+
 				// [Ansariel: Display name support]
 				LLAvatarName avatar_name;
 				if (LLAvatarNameCache::get(avatarp->getID(), &avatar_name))
@@ -583,7 +551,7 @@ void LLFloaterAvatarList::updateAvatarList()
 		}
 		//let us send the keys in a more timely fashion
 		if(announce && !announce_keys.empty())
-                {
+		{
 			std::ostringstream ids;
 			int transact_num = (int)gFrameCount;
 			int num_ids = 0;
@@ -597,20 +565,20 @@ void LLFloaterAvatarList::updateAvatarList()
 
 				if(ids.tellp() > 200)
 				{
-				        gMessageSystem->newMessage("ScriptDialogReply");
-				        gMessageSystem->nextBlock("AgentData");
-				        gMessageSystem->addUUID("AgentID", gAgent.getID());
-				        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-				        gMessageSystem->nextBlock("Data");
-				        gMessageSystem->addUUID("ObjectID", gAgent.getID());
-				        gMessageSystem->addS32("ChatChannel", -777777777);
-				        gMessageSystem->addS32("ButtonIndex", 1);
-				        gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-				        gAgent.sendReliableMessage();
+					gMessageSystem->newMessage("ScriptDialogReply");
+					gMessageSystem->nextBlock("AgentData");
+					gMessageSystem->addUUID("AgentID", gAgent.getID());
+					gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+					gMessageSystem->nextBlock("Data");
+					gMessageSystem->addUUID("ObjectID", gAgent.getID());
+					gMessageSystem->addS32("ChatChannel", -777777777);
+					gMessageSystem->addS32("ButtonIndex", 1);
+					gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+					gAgent.sendReliableMessage();
 
-				        num_ids = 0;
-				        ids.seekp(0);
-				        ids.str("");
+					num_ids = 0;
+					ids.seekp(0);
+					ids.str("");
 				}
 			}
 			if(num_ids > 0)
@@ -626,9 +594,9 @@ void LLFloaterAvatarList::updateAvatarList()
 				gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
 				gAgent.sendReliableMessage();
 			}
-                }
+		}
 	}
-	
+
 //	llinfos << "radar refresh: done" << llendl;
 
 	expireAvatarList();
@@ -646,7 +614,7 @@ void LLFloaterAvatarList::expireAvatarList()
 	for (iter = mAvatars.begin(); iter != mAvatars.end(); iter++)
 	{
 		LLAvatarListEntry *entry = &iter->second;
-		
+
 		alive = entry->getAlive();
 
 		if (entry->isDead())
@@ -672,7 +640,7 @@ void LLFloaterAvatarList::expireAvatarList()
 void LLFloaterAvatarList::refreshAvatarList() 
 {
 	// Don't update list when interface is hidden
-	if (!sInstance->getVisible()) return;
+	if (!getVisible()) return;
 
 	// We rebuild the list fully each time it's refreshed
 	// The assumption is that it's faster to refill it and sort than
@@ -710,7 +678,8 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		LLVector3d delta = position - mypos;
 		F32 distance = (F32)delta.magVec();
-		if (position.mdV[VZ] == 0.f || position.mdV[VZ] == 1020.f)
+		F32 unknownAlt = (gHippoGridManager->getConnectedGrid()->isSecondLife()) ? 1020.f : 0.f;
+		if (position.mdV[VZ] == unknownAlt)
 		{
 			UnknownAltitude = true;
 			distance = 9000.0;
@@ -799,7 +768,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 		}
 
 		name_color = name_color*0.5f + unselected_color*0.5f;
-		
+
 		element["columns"][LIST_AVATAR_NAME]["color"] = name_color.getValue();
 
 		char temp[32];
@@ -917,7 +886,7 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		element["columns"][LIST_ACTIVITY]["value"] = activity_icon;//icon_image_id; //"icn_active-speakers-dot-lvl0.tga";
 		//element["columns"][LIST_AVATAR_ACTIVITY]["color"] = icon_color.getValue();
-		
+
 		element["columns"][LIST_CLIENT]["column"] = "client";
 		element["columns"][LIST_CLIENT]["type"] = "text";
 
@@ -926,11 +895,11 @@ void LLFloaterAvatarList::refreshAvatarList()
 
 		static const LLCachedControl<LLColor4> avatar_name_color(gColors, "AvatarNameColor",LLColor4(LLColor4U(251, 175, 93, 255)) );
 		LLColor4 client_color(avatar_name_color);
-		std::string client;
 		LLVOAvatar *avatarp = gObjectList.findAvatar(av_id);
 		if(avatarp)
 		{
-			avatarp->getClientInfo(client, client_color, TRUE);
+			std::string client = SHClientTagMgr::instance().getClientName(avatarp, false);
+			SHClientTagMgr::instance().getClientColor(avatarp, false, client_color);
 			if(client == "")
 			{
 				client_color = unselected_color;
@@ -1016,7 +985,7 @@ void LLFloaterAvatarList::onClickTeleportOffer(void *userdata)
 void LLFloaterAvatarList::onClickTrack(void *userdata)
 {
 	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
-	
+
  	LLScrollListItem *item =   self->mAvatarList->getFirstSelected();
 	if (!item) return;
 
@@ -1104,8 +1073,8 @@ void LLFloaterAvatarList::onClickMark(void *userdata)
 void LLFloaterAvatarList::onClickFocus(void *userdata)
 {
 	LLFloaterAvatarList *self = (LLFloaterAvatarList*)userdata;
-	
- 	LLScrollListItem *item = self->mAvatarList->getFirstSelected();
+
+	LLScrollListItem *item = self->mAvatarList->getFirstSelected();
 	if (item)
 	{
 		self->mFocusedAvatar = item->getUUID();
@@ -1296,89 +1265,89 @@ void LLFloaterAvatarList::onClickGetKey(void *userdata)
 //static
 void LLFloaterAvatarList::sendKeys()
 {
-	 LLViewerRegion* regionp = gAgent.getRegion();
-        if(!regionp)return;//ALWAYS VALIDATE DATA
-        std::ostringstream ids;
-        static int last_transact_num = 0;
-        int transact_num = (int)gFrameCount;
-        int num_ids = 0;
+	LLViewerRegion* regionp = gAgent.getRegion();
+	if(!regionp)return;//ALWAYS VALIDATE DATA
+	std::ostringstream ids;
+	static int last_transact_num = 0;
+	int transact_num = (int)gFrameCount;
+	int num_ids = 0;
 
-        if(!gSavedSettings.getBOOL("RadarChatKeys"))
+	if(!gSavedSettings.getBOOL("RadarChatKeys"))
 	{
-                return;
+		return;
 	}
 
-        if(transact_num > last_transact_num)
+	if(transact_num > last_transact_num)
 	{
-                last_transact_num = transact_num;
+		last_transact_num = transact_num;
 	}
-        else
+	else
 	{
-                //on purpose, avatar IDs on map don't change until the next frame.
-                //no need to send more than once a frame.
-                return;
+		//on purpose, avatar IDs on map don't change until the next frame.
+		//no need to send more than once a frame.
+		return;
 	}
 
 	if (!regionp) return; // caused crash if logged out/connection lost
-        for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
+	for (int i = 0; i < regionp->mMapAvatarIDs.count(); i++)
 	{
-                const LLUUID &id = regionp->mMapAvatarIDs.get(i);
+		const LLUUID &id = regionp->mMapAvatarIDs.get(i);
 
-                ids << "," << id.asString();
-                ++num_ids;
+		ids << "," << id.asString();
+		++num_ids;
 
 
-                if(ids.tellp() > 200)
+		if(ids.tellp() > 200)
 		{
-                        gMessageSystem->newMessage("ScriptDialogReply");
-                        gMessageSystem->nextBlock("AgentData");
-                        gMessageSystem->addUUID("AgentID", gAgent.getID());
-                        gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-                        gMessageSystem->nextBlock("Data");
-                        gMessageSystem->addUUID("ObjectID", gAgent.getID());
-                        gMessageSystem->addS32("ChatChannel", -777777777);
-                        gMessageSystem->addS32("ButtonIndex", 1);
-                        gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-                        gAgent.sendReliableMessage();
+			gMessageSystem->newMessage("ScriptDialogReply");
+			gMessageSystem->nextBlock("AgentData");
+			gMessageSystem->addUUID("AgentID", gAgent.getID());
+			gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+			gMessageSystem->nextBlock("Data");
+			gMessageSystem->addUUID("ObjectID", gAgent.getID());
+			gMessageSystem->addS32("ChatChannel", -777777777);
+			gMessageSystem->addS32("ButtonIndex", 1);
+			gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+			gAgent.sendReliableMessage();
 
-                        num_ids = 0;
-                        ids.seekp(0);
-                        ids.str("");
+			num_ids = 0;
+			ids.seekp(0);
+			ids.str("");
 		}
 	}
 	if(num_ids > 0)
 	{
-                gMessageSystem->newMessage("ScriptDialogReply");
-                gMessageSystem->nextBlock("AgentData");
-                gMessageSystem->addUUID("AgentID", gAgent.getID());
-                gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
-                gMessageSystem->nextBlock("Data");
-                gMessageSystem->addUUID("ObjectID", gAgent.getID());
-                gMessageSystem->addS32("ChatChannel", -777777777);
-                gMessageSystem->addS32("ButtonIndex", 1);
-                gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
-                gAgent.sendReliableMessage();
-        }
+		gMessageSystem->newMessage("ScriptDialogReply");
+		gMessageSystem->nextBlock("AgentData");
+		gMessageSystem->addUUID("AgentID", gAgent.getID());
+		gMessageSystem->addUUID("SessionID", gAgent.getSessionID());
+		gMessageSystem->nextBlock("Data");
+		gMessageSystem->addUUID("ObjectID", gAgent.getID());
+		gMessageSystem->addS32("ChatChannel", -777777777);
+		gMessageSystem->addS32("ButtonIndex", 1);
+		gMessageSystem->addString("ButtonLabel",llformat("%d,%d", transact_num, num_ids) + ids.str());
+		gAgent.sendReliableMessage();
+	}
 }
 //static
 void LLFloaterAvatarList::sound_trigger_hook(LLMessageSystem* msg,void **)
 {
 	LLUUID  sound_id,owner_id;
-        msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_SoundID, sound_id);
-        msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_OwnerID, owner_id);
-        if(owner_id == gAgent.getID() && sound_id == LLUUID("76c78607-93f9-f55a-5238-e19b1a181389"))
-        {
-                //lets ask if they want to turn it on.
-                if(gSavedSettings.getBOOL("RadarChatKeys"))
-                {
-                        LLFloaterAvatarList::getInstance()->sendKeys();
-                }else
-                {
-                        LLSD args;
+	msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_SoundID, sound_id);
+	msg->getUUIDFast(_PREHASH_SoundData, _PREHASH_OwnerID, owner_id);
+	if(owner_id == gAgent.getID() && sound_id == LLUUID("76c78607-93f9-f55a-5238-e19b1a181389"))
+	{
+		//lets ask if they want to turn it on.
+		if(gSavedSettings.getBOOL("RadarChatKeys"))
+		{
+			LLFloaterAvatarList::getInstance()->sendKeys();
+		}else
+		{
+			LLSD args;
 			args["MESSAGE"] = "An object owned by you has request the keys from your radar.\nWould you like to enable announcing keys to objects in the sim?";
 			LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(), onConfirmRadarChatKeys);
-                }
-        }
+		}
+	}
 }
 // static
 bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const LLSD& response )
@@ -1387,7 +1356,7 @@ bool LLFloaterAvatarList::onConfirmRadarChatKeys(const LLSD& notification, const
 	if(option == 0) // yes
 	{
 		gSavedSettings.setBOOL("RadarChatKeys",TRUE);
-                LLFloaterAvatarList::getInstance()->sendKeys();
+		LLFloaterAvatarList::getInstance()->sendKeys();
 	}
 	return false;
 }
@@ -1506,7 +1475,7 @@ void LLFloaterAvatarList::doCommand(void (*func)(const LLUUID &avatar, const std
 std::string LLFloaterAvatarList::getSelectedNames(const std::string& separator)
 {
 	std::string ret = "";
-	
+
 	LLDynamicArray<LLUUID> ids = mAvatarList->getSelectedIDs();
 	for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
 	{
@@ -1545,15 +1514,13 @@ void LLFloaterAvatarList::callbackFreeze(const LLSD& notification, const LLSD& r
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
-
 	if (option == 0)
 	{
-		self->doCommand(cmd_freeze);
+		getInstance()->doCommand( cmd_freeze );
 	}
 	else if (option == 1)
 	{
-		self->doCommand(cmd_unfreeze);
+		getInstance()->doCommand( cmd_unfreeze );
 	}
 }
 
@@ -1562,15 +1529,13 @@ void LLFloaterAvatarList::callbackEject(const LLSD& notification, const LLSD& re
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
- 
 	if (option == 0)
 	{
-		self->doCommand(cmd_eject);
+		getInstance()->doCommand( cmd_eject );
 	}
 	else if (option == 1)
 	{
-		self->doCommand(cmd_ban);
+		getInstance()->doCommand( cmd_ban );
 	}
 }
 
@@ -1579,22 +1544,21 @@ void LLFloaterAvatarList::callbackEjectFromEstate(const LLSD& notification, cons
 {
 	S32 option = LLNotification::getSelectedOption(notification, response);
 
-	LLFloaterAvatarList *self = LLFloaterAvatarList::sInstance;
-
 	if (option == 0)
 	{
-		self->doCommand(cmd_estate_eject);
+		getInstance()->doCommand( cmd_estate_eject );
 	}
 }
 
 //static
-void LLFloaterAvatarList::callbackIdle(void *userdata) {
-	if (LLFloaterAvatarList::sInstance != NULL)
+void LLFloaterAvatarList::callbackIdle(void *userdata)
+{
+	if (instanceExists())
 	{
 		// Do not update at every frame: this would be insane !
-		if (gFrameCount % LLFloaterAvatarList::sInstance->mUpdateRate == 0)
+		if (gFrameCount % getInstance()->mUpdateRate == 0)
 		{
-			LLFloaterAvatarList::sInstance->updateAvatarList();
+			getInstance()->updateAvatarList();
 		}
 	}
 }
@@ -1627,7 +1591,7 @@ void LLFloaterAvatarList::onClickMute(void *userdata)
 		for (LLDynamicArray<LLUUID>::iterator itr = ids.begin(); itr != ids.end(); ++itr)
 		{
 			LLUUID agent_id = *itr;
-		
+
 			std::string agent_name;
 			if (gCacheName->getFullName(agent_id, agent_name))
 			{

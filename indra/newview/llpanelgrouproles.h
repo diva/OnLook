@@ -64,7 +64,6 @@ public:
 	virtual BOOL isVisibleByAgent(LLAgent* agentp);
 
 	static void* createTab(void* data);
-	static void onClickSubTab(void*,bool);
 	void handleClickSubTab();
 
 	// Checks if the current tab needs to be applied, and tries to switch to the requested tab.
@@ -130,8 +129,7 @@ public:
 	void buildActionsList(LLScrollListCtrl* ctrl,
 								 U64 allowed_by_some,
 								 U64 allowed_by_all,
-								 icon_map_t& icons,
-								 void (*commit_callback)(LLUICtrl*,void*),
+						  		 LLUICtrl::commit_callback_t commit_callback,
 								 BOOL show_all,
 								 BOOL filter,
 								 BOOL is_owner_role);
@@ -139,8 +137,7 @@ public:
 									U64 allowed_by_some,
 									U64 allowed_by_all,
 									LLRoleActionSet* action_set,
-									icon_map_t& icons,
-									void (*commit_callback)(LLUICtrl*,void*),
+									LLUICtrl::commit_callback_t commit_callback,
 									BOOL show_all,
 									BOOL filter,
 									BOOL is_owner_role);
@@ -248,14 +245,12 @@ public:
 	void handleRoleSelect();
 	void buildMembersList();
 
-	static void onActionCheck(LLUICtrl*, void*);
-	void handleActionCheck(LLCheckBoxCtrl*, bool force=false);
 	bool addActionCB(const LLSD& notification, const LLSD& response, LLCheckBoxCtrl* check);
 
 	static void onPropertiesKey(LLLineEditor*, void*);
 
 	static void onDescriptionCommit(LLUICtrl*, void*);
-	static void onDescriptionFocus(LLFocusableElement*, void*);
+	void		onDescriptionFocus();
 
 	static void onMemberVisibilityChange(LLUICtrl*, void*);
 	void handleMemberVisibilityChange(bool value);
@@ -268,10 +263,8 @@ public:
 
 	void saveRoleChanges();
 protected:
-	LLSD createRoleItem(const LLUUID& role_id, 
-								 std::string name, 
-								 std::string title, 
-								 S32 members);
+	void handleActionCheck(LLUICtrl* ctrl, bool force);
+	LLSD createRoleItem(const LLUUID& role_id, std::string name, std::string title, S32 members);
 
 	LLScrollListCtrl* mRolesList;
 	LLNameListCtrl* mAssignedMembersList;
@@ -306,7 +299,6 @@ public:
 	virtual bool apply(std::string& mesg);
 	virtual void update(LLGroupChange gc);
 
-	static void onActionSelect(LLUICtrl*, void*);
 	void handleActionSelect();
 protected:
 	LLScrollListCtrl*	mActionList;

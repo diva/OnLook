@@ -38,6 +38,7 @@
 
 #include "llcallbackmap.h"
 #include "llfloater.h"
+#include "llinitparam.h"
 
 class LLView;
 class LLPanel;
@@ -62,6 +63,8 @@ public:
 
 	void removePanel(LLPanel* panelp) { mBuiltPanels.erase(panelp->getHandle()); }
 	void removeFloater(LLFloater* floaterp) { mBuiltFloaters.erase(floaterp->getHandle()); }
+	
+	bool builtPanel(LLPanel* panelp) {return mBuiltPanels.find(panelp->getHandle()) != mBuiltPanels.end();}
 
 	class LLMenuGL *buildMenu(const std::string &filename, LLView* parentp);
 	class LLPieMenu *buildPieMenu(const std::string &filename, LLView* parentp);

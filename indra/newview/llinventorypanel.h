@@ -47,16 +47,13 @@
 #include "lluictrlfactory.h"
 #include <set>
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLInventoryView
-//
-// This is the controller class specific for handling agent
-// inventory. It deals with the buttons and views used to navigate as
-// well as controls the behavior of the overall object.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+class LLFolderView;
+class LLFolderViewFolder;
+class LLFolderViewItem;
+class LLInventoryFilter;
 class LLInventoryModel;
 class LLInvFVBridge;
+class LLInventoryFVBridgeBuilder;
 class LLMenuBarGL;
 class LLCheckBoxCtrl;
 class LLSpinCtrl;
@@ -65,19 +62,21 @@ class LLTextBox;
 class LLIconCtrl;
 class LLSaveFolderState;
 class LLSearchEditor;
-
+class LLInvPanelComplObserver;
 
 class LLInventoryPanel : public LLPanel
 {
-public:
+protected:
 	LLInventoryPanel(const std::string& name,
 			const std::string& sort_order_setting,
 			const LLRect& rect,
 			LLInventoryModel* inventory,
 			BOOL allow_multi_select,
 			LLView *parent_view = NULL);
-	~LLInventoryPanel();
+public:
+	virtual ~LLInventoryPanel();
 
+public:
 	LLInventoryModel* getModel() { return mInventory; }
 
 	BOOL postBuild();
@@ -93,20 +92,24 @@ public:
 								   void* cargo_data,
 								   EAcceptance* accept,
 								   std::string& tooltip_msg);
+	// LLUICtrl methods
+	 /*virtual*/ void onFocusLost();
+	 /*virtual*/ void onFocusReceived();
 
 	// Call this method to set the selection.
 	void openAllFolders();
 	void closeAllFolders();
 	void openDefaultFolderForType(LLAssetType::EType);
 	void setSelection(const LLUUID& obj_id, BOOL take_keyboard_focus);
-	void setSelectCallback(LLFolderView::SelectCallback callback, void* user_data);
+	void setSelectCallback(const boost::function<void (const std::deque<LLFolderViewItem*>& items, BOOL user_action)>& cb);
 	void clearSelection();
 	LLInventoryFilter* getFilter();
 	const LLInventoryFilter* getFilter() const;
-	void setFilterTypes(U32 filter);
-	U32 getFilterTypes() const;
+	void setFilterTypes(U64 filter, LLInventoryFilter::EFilterType = LLInventoryFilter::FILTERTYPE_OBJECT);
+	U32 getFilterObjectTypes() const;
 	void setFilterPermMask(PermissionMask filter_perm_mask);
 	U32 getFilterPermMask() const;
+	void setFilterWearableTypes(U64 filter);
 	void setFilterSubString(const std::string& string);
 	const std::string getFilterSubString();
 	void setFilterWorn(bool worn);
@@ -115,7 +118,8 @@ public:
 	void setSinceLogoff(BOOL sl);
 	void setHoursAgo(U32 hours);
 	BOOL getSinceLogoff();
-	
+	void setFilterLinks(U64 filter_links);
+
 	void setShowFolderState(LLInventoryFilter::EFolderShow show);
 	LLInventoryFilter::EFolderShow getShowFolderState();
 	void setAllowMultiSelect(BOOL allow) { mFolderRoot->setAllowMultiSelect(allow); }
@@ -123,17 +127,19 @@ public:
 	void modelChanged(U32 mask);
 	LLFolderView* getRootFolder();
 	LLScrollableContainerView* getScrollableContainer() { return mScroller; }
-
+	
+	void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action);
 	// DEBUG ONLY:
 	static void dumpSelectionInformation(void* user_data);
 
 	void openSelected();
 	void unSelectAll();
+	
+	static void onIdle(void* user_data);
 
-protected:
-	// Given the id and the parent, build all of the folder views.
-	void rebuildViewsFor(const LLUUID& id, U32 mask);
-	void buildNewViews(const LLUUID& id);
+	// Find whichever inventory panel is active / on top.
+	// "Auto_open" determines if we open an inventory panel if none are open.
+	static LLInventoryPanel *getActiveInventoryPanel(BOOL auto_open = TRUE);
 
 public:
 	// TomY TODO: Move this elsewhere?
@@ -147,13 +153,27 @@ public:
 					   U32 next_owner_perm = 0);
 
 protected:
+	void openStartFolderOrMyInventory(); // open the first level of inventory
+	void onItemsCompletion();			// called when selected items are complete
+
 	LLInventoryModel*			mInventory;
 	LLInventoryObserver*		mInventoryObserver;
-	
+	LLInvPanelComplObserver*	mCompletionObserver;
 	
 	BOOL 						mAllowMultiSelect;
 	LLFolderView*				mFolderRoot;
 	LLScrollableContainerView*	mScroller;
+
+	/**
+	 * Pointer to LLInventoryFVBridgeBuilder.
+	 *
+	 * It is set in LLInventoryPanel's constructor and can be overridden in derived classes with 
+	 * another implementation.
+	 * Take into account it will not be deleted by LLInventoryPanel itself.
+	 */
+	const LLInventoryFVBridgeBuilder* mInvFVBridgeBuilder;
+
+
 	//--------------------------------------------------------------------
 	// Sorting
 	//--------------------------------------------------------------------
@@ -162,18 +182,36 @@ public:
 	static const std::string RECENTITEMS_SORT_ORDER;
 	static const std::string WORNITEMS_SORT_ORDER;
 	static const std::string INHERIT_SORT_ORDER;
-
+	
 	void setSortOrder(U32 order);
 	U32 getSortOrder() const;
+	void requestSort();
+
 private:
 	const std::string			mSortOrderSetting;
-	LLUUID						mSelectThisID; // if non null, select this item
-	
+
+	//--------------------------------------------------------------------
+	// Hidden folders
+	//--------------------------------------------------------------------
 public:
+	void addHideFolderType(LLFolderType::EType folder_type);
+
+public:
+	BOOL 				getIsViewsInitialized() const { return mViewsInitialized; }
 	const LLUUID&		getRootFolderID() const;
 protected:
+	// Builds the UI.  Call this once the inventory is usable.
+	void 				initializeViews();
+	LLFolderViewItem*	rebuildViewsFor(const LLUUID& id); // Given the id and the parent, build all of the folder views.
+
+	virtual void		buildFolderView();
+	LLFolderViewItem*	buildNewViews(const LLUUID& id);
+	BOOL				getIsHiddenFolderType(LLFolderType::EType folder_type) const;
+	
+	virtual LLFolderView*		createFolderView(LLInvFVBridge * bridge, bool useLabelSuffix);
 	virtual LLFolderViewFolder*	createFolderViewFolder(LLInvFVBridge * bridge);
 	virtual LLFolderViewItem*	createFolderViewItem(LLInvFVBridge * bridge);
+	BOOL				mViewsInitialized; // Views have been generated
 };
 
 class LLInventoryView;
@@ -193,11 +231,6 @@ void init_inventory_panel_actions(LLInventoryPanel *panel);
 
 class LLInventoryCategory;
 class LLInventoryItem;
-//void wear_inventory_category_on_avatar(LLInventoryCategory* category);
-
-void wear_inventory_item_on_avatar(LLInventoryItem* item);
-void wear_outfit_by_name(const std::string& name);
-void wear_inventory_category(LLInventoryCategory* category, bool copy, bool append);
 
 // These methods can open items without the inventory being visible
 void open_notecard(LLViewerInventoryItem* inv_item, const std::string& title, const LLUUID& object_id, BOOL show_keep_discard, const LLUUID& source_id = LLUUID::null, BOOL take_focus = TRUE);

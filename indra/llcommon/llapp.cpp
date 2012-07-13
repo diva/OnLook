@@ -74,7 +74,7 @@ S32 LL_HEARTBEAT_SIGNAL = (SIGRTMAX >= 0) ? (SIGRTMAX-0) : SIGUSR2;
 // the static application instance
 LLApp* LLApp::sApplication = NULL;
 
-// Allows the generation of core files for post mortum under gdb
+// Allows the generation of core files for post mortem under gdb
 // and disables crashlogger
 BOOL LLApp::sDisableCrashlogger = FALSE; 
 
@@ -396,6 +396,7 @@ bool LLApp::isQuitting()
 	return (APP_STATUS_QUITTING == sStatus);
 }
 
+// static
 bool LLApp::isExiting()
 {
 	return isQuitting() || isError();

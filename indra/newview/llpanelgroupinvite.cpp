@@ -392,27 +392,9 @@ void LLPanelGroupInvite::addUsers(std::vector<LLUUID>& agent_ids)
 	std::vector<std::string> names;
 	for (S32 i = 0; i < (S32)agent_ids.size(); i++)
 	{
-		LLUUID agent_id = agent_ids[i];
-		LLVOAvatar* avatarp = gObjectList.findAvatar(agent_id);
-		if(avatarp)
-		{
-			std::string fullname;
-			LLNameValue* nvfirst = avatarp->getNVPair("FirstName");
-			LLNameValue* nvlast = avatarp->getNVPair("LastName");
-			if(nvfirst && nvlast)
-			{
-				fullname = std::string(nvfirst->getString()) + " " + std::string(nvlast->getString());
-			}
-			if (!fullname.empty())
-			{
-				names.push_back(fullname);
-			} 
-			else 
-			{
-				llwarns << "llPanelGroupInvite: Selected avatar has no name: " << avatarp->getID() << llendl;
-				names.push_back("(Unknown)");
-			}
-		}
+		std::string name;
+		if(gCacheName->getFullName(agent_ids[i], name))
+			names.push_back(name);
 	}
 	mImplementation->addUsers(names, agent_ids);
 }
@@ -527,17 +509,14 @@ BOOL LLPanelGroupInvite::postBuild()
 	{
 		// default to opening avatarpicker automatically
 		// (*impl::callbackClickAdd)((void*)this);
-		button->setClickedCallback(impl::callbackClickAdd);
-		button->setCallbackUserData(this);
+		button->setClickedCallback(boost::bind(&impl::callbackClickAdd, this));
 	}
 
 	mImplementation->mRemoveButton = 
 			getChild<LLButton>("remove_button", recurse);
 	if ( mImplementation->mRemoveButton )
 	{
-		mImplementation->mRemoveButton->
-				setClickedCallback(impl::callbackClickRemove);
-		mImplementation->mRemoveButton->setCallbackUserData(mImplementation);
+		mImplementation->mRemoveButton->setClickedCallback(boost::bind(&impl::callbackClickRemove, mImplementation));
 		mImplementation->mRemoveButton->setEnabled(FALSE);
 	}
 
@@ -545,17 +524,14 @@ BOOL LLPanelGroupInvite::postBuild()
 		getChild<LLButton>("ok_button", recurse);
 	if ( mImplementation->mOKButton )
  	{
-		mImplementation->mOKButton->
-				setClickedCallback(impl::callbackClickOK);
-		mImplementation->mOKButton->setCallbackUserData(mImplementation);
+		mImplementation->mOKButton->setClickedCallback(boost::bind(&impl::callbackClickOK, mImplementation));
 		mImplementation->mOKButton->setEnabled(FALSE);
  	}
 
 	button = getChild<LLButton>("cancel_button", recurse);
 	if ( button )
 	{
-		button->setClickedCallback(impl::callbackClickCancel);
-		button->setCallbackUserData(mImplementation);
+		button->setClickedCallback(boost::bind(&impl::callbackClickCancel,mImplementation));
 	}
 
 	mImplementation->mOwnerWarning = getString("confirm_invite_owner_str");

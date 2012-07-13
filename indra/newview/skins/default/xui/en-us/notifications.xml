@@ -283,8 +283,87 @@ Save changes to current clothing/body part?
      notext="Don&apos;t Save"
      yestext="Save"/>
   </notification>
+  <notification
+   icon="alertmodal.tga"
+     name="ConfirmNoCopyToOutbox"
+     type="alertmodal">
+You don't have permission to copy one or more of these items to the Merchant Outbox.  You can move them or leave them behind.
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Don't move item(s)"
+     yestext="Move item(s)"/>
+  </notification>
 
   <notification
+   icon="OutboxStatus_Success"
+   name="OutboxFolderCreated"
+   type="outbox">
+    <unique/>
+A new folder has been created for each item you have transferred into the top level of your Merchant Outbox.
+
+    <usetemplate
+     ignoretext="A new folder was created in the Merchant Outbox"
+     name="okignore"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="OutboxStatus_Success"
+   name="OutboxImportComplete"
+   type="outbox">
+Success
+
+All folders were successfully sent to the Marketplace.
+
+        <usetemplate
+         ignoretext="All folders sent to the Marketplace"
+         name="okignore"
+         yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="OutboxStatus_Warning"
+   name="OutboxImportHadErrors"
+   type="outbox">
+Some folders did not transfer
+
+Errors occurred when some folders were sent to the Marketplace.  Those folders are still in your Merchant Outbox.
+
+See the [[MARKETPLACE_IMPORTS_URL] error log] for more information.
+
+        <usetemplate
+         name="okbutton"
+         yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="OutboxStatus_Error"
+   name="OutboxImportFailed"
+   type="outbox">
+Transfer failed
+
+No folders were sent to the Marketplace because of a system or network error.  Try again later.
+
+        <usetemplate
+         name="okbutton"
+         yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="OutboxStatus_Error"
+   name="OutboxInitFailed"
+   type="outbox">
+Marketplace initialization failed
+
+Initialization with the Marketplace failed because of a system or network error.  Try again later.
+
+        <usetemplate
+         name="okbutton"
+         yestext="OK"/>
+  </notification>
+    
+
+    <notification
    icon="alertmodal.tga"
    name="CompileQueueSaveText"
    type="alertmodal">
@@ -455,6 +534,20 @@ You are about to add the Ability &apos;[ACTION_NAME]&apos; to the Role &apos;[RO
 Add this Ability to &apos;[ROLE_NAME]&apos;?
     <usetemplate
      name="okcancelbuttons"
+     notext="No"
+     yestext="Yes"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="AttachmentDrop"
+   type="alertmodal">
+You are about to drop your attachment.
+Are you sure you want to continue?
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before dropping attachments"
+     name="okcancelignore"
      notext="No"
      yestext="Yes"/>
   </notification>
@@ -2317,6 +2410,19 @@ You must specify a name for your classified.
 Price to pay for listing must be at least [CURRENCY][MIN_PRICE].
 
 Please enter a higher price.
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="ConfirmItemDeleteHasLinks"
+   type="alertmodal">
+At least one of the items you has link items that point to it.  If you delete this item, its links will permanently stop working.  It is strongly advised to delete the links first.
+
+Are you sure you want to delete these items?
+    <usetemplate
+     name="okcancelbuttons"
+     notext="Cancel"
+     yestext="OK"/>
   </notification>
 
   <notification
@@ -4593,6 +4699,18 @@ Would you like to leave Busy Mode before completing this transaction?
 
   <notification
    icon="alertmodal.tga"
+   name="ConfirmDeleteProtectedCategory"
+   type="alertmodal">
+The folder &apos;[FOLDERNAME]&apos; is a system folder. Deleting system folders can cause instability.  Are you sure you want to delete it?
+    <usetemplate
+     ignoretext="Confirm before I delete a system folder"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
    name="ConfirmEmptyTrash"
    type="alertmodal">
 Are you sure you want to permanently remove the contents of your Trash folder?
@@ -6862,6 +6980,94 @@ The URL you clicked cannot be opened from this web browser.
     Could not get region capability &apos;[CAPABILITY]&apos;.
   </notification>
 
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' declouded after [TIME] seconds.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezSelfBakedDoneNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+You finished baking your outfit after [TIME] seconds.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezSelfBakedUpdateNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+You sent out an update of your appearance after [TIME] seconds.
+[STATUS]
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezCloudNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' became cloud.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezArrivedNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' appeared.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezLeftCloudNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' left after [TIME] seconds as cloud.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezEnteredAppearanceNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' entered appearance mode.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezLeftAppearanceNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' left appearance mode.
+  </notification>
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezLeftNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+Avatar '[NAME]' left as fully loaded.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezSelfBakedTextureUploadNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+You uploaded a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AvatarRezSelfBakedTextureUpdateNotification"
+   type="notifytip">
+( [EXISTENCE] seconds alive )
+You locally updated a [RESOLUTION] baked texture for '[BODYREGION]' after [TIME] seconds.
+  </notification>
+
   <global name="UnsupportedCPU">
 - Your CPU speed does not meet the minimum requirements.
   </global>
@@ -7022,9 +7228,9 @@ Click 'Wear' to attach the Physics Wearable, or click 'Cancel' if you wish to ma
 
   <notification
    icon="alert.tga"
-   name="SGIncompleteAppearence"
+   name="SGIncompleteAppearance"
    type="alert">
-Sending incomplete appearence. You may appear to others as a cloud.
+Sending incomplete appearance. You may appear to others as a cloud.
 
 Your shape, skin, hair or eyes might be defect.
 	<usetemplate

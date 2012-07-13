@@ -38,9 +38,13 @@
 #include "llmemory.h"
 #include "apr_thread_cond.h"
 #include "llaprpool.h"
+#include "llatomic.h"
 
 #ifdef SHOW_ASSERT
 extern LL_COMMON_API bool is_main_thread(void);
+#define ASSERT_SINGLE_THREAD do { static apr_os_thread_t first_thread_id = apr_os_thread_current(); llassert(apr_os_thread_equal(first_thread_id, apr_os_thread_current())); } while(0)
+#else
+#define ASSERT_SINGLE_THREAD do { } while(0)
 #endif
 
 class LLThread;
@@ -74,7 +78,8 @@ class LL_COMMON_API LLThread
 private:
 	static U32 sIDIter;
 	static LLAtomicS32	sCount;
-	
+	static LLAtomicS32	sRunning;
+
 public:
 	typedef enum e_thread_status
 	{
@@ -92,8 +97,9 @@ public:
 	
 	static U32 currentID(); // Return ID of current thread
 	static S32 getCount() { return sCount; }	
+	static S32 getRunning() { return sRunning; }
 	static void yield(); // Static because it can be called by the main thread, which doesn't have an LLThread data structure.
-	
+
 public:
 	// PAUSE / RESUME functionality. See source code for important usage notes.
 	// Called from MAIN THREAD.
@@ -181,15 +187,18 @@ public:
 
 	LLMutexBase() ;
 	
-	void lock();		//blocks
+	void lock();		// blocks
 	void unlock();
 	// Returns true if lock was obtained successfully.
 	bool tryLock() { return !APR_STATUS_IS_EBUSY(apr_thread_mutex_trylock(mAPRMutexp)); }
 
 	// non-blocking, but does do a lock/unlock so not free
 	bool isLocked() { bool is_not_locked = tryLock(); if (is_not_locked) unlock(); return !is_not_locked; }
+
+	// Returns true if locked by this thread.
+	bool isSelfLocked() const;
+
 	// get ID of locking thread
-	bool isSelfLocked(); //return true if locked in a same thread		
 	U32 lockingThread() const { return mLockingThread; }
 
 protected:
@@ -373,6 +382,16 @@ public:
 		mNoHoldersCondition.signal();			// Tell waiting readers, see [5].
 		mNoHoldersCondition.unlock();			// Release lock on mHoldersCount.
 	}
+#if LL_DEBUG
+	// Really only intended for debugging purposes:
+	bool isLocked(void)
+	{
+		mNoHoldersCondition.lock();
+		bool res = mHoldersCount;
+		mNoHoldersCondition.unlock();
+		return res;
+	}
+#endif
 };
 
 //============================================================================
@@ -394,13 +413,6 @@ void LLThread::unlockData()
 
 class LL_COMMON_API LLThreadSafeRefCount
 {
-public:
-	static void initThreadSafeRefCount(); // creates sMutex
-	static void cleanupThreadSafeRefCount(); // destroys sMutex
-	
-private:
-	static LLMutex* sMutex;
-
 private:
 	LLThreadSafeRefCount(const LLThreadSafeRefCount&); // not implemented
 	LLThreadSafeRefCount&operator=(const LLThreadSafeRefCount&); // not implemented
@@ -413,31 +425,20 @@ public:
 	
 	void ref()
 	{
-		if (sMutex) sMutex->lock();
 		mRef++; 
-		if (sMutex) sMutex->unlock();
 	} 
 
-	S32 unref()
+	void unref()
 	{
-		llassert(mRef >= 1);
-		if (sMutex) sMutex->lock();
-		S32 res = --mRef;
-		if (sMutex) sMutex->unlock();
-		if (0 == res) 
-		{
-			delete this; 
-			return 0;
-		}
-		return res;
-	}	
+		if (!--mRef) delete this;
+	}
 	S32 getNumRefs() const
 	{
 		return mRef;
 	}
 
 private: 
-	S32	mRef; 
+	LLAtomicS32	mRef; 
 };
 
 //============================================================================

@@ -208,13 +208,9 @@ BOOL LLFloaterWorldMap::postBuild()
 
 	childSetAction("DoSearch", onLocationCommit, this);
 
-	childSetFocusChangedCallback("location", onLocationFocusChanged, this);
-
 	LLLineEditor *location_editor = getChild<LLLineEditor>("location");
-	if (location_editor)
-	{
-		location_editor->setKeystrokeCallback( onSearchTextEntry );
-	}
+	location_editor->setFocusChangedCallback(boost::bind(&LLFloaterWorldMap::onLocationFocusChanged, this, _1));
+	location_editor->setKeystrokeCallback( onSearchTextEntry );
 	
 	childSetCommitCallback("search_results", onCommitSearchResult, this);
 	childSetDoubleClickCallback("search_results", onClickTeleportBtn);
@@ -1132,7 +1128,7 @@ void LLFloaterWorldMap::onComboTextEntry( LLLineEditor* ctrl, void* userdata )
 void LLFloaterWorldMap::onSearchTextEntry( LLLineEditor* ctrl, void* userdata )
 {
 	onComboTextEntry(ctrl, userdata);
-	updateSearchEnabled(ctrl, userdata);
+	gFloaterWorldMap->updateSearchEnabled();
 }
 
 // static 
@@ -1239,24 +1235,21 @@ void LLFloaterWorldMap::onAvatarComboCommit( LLUICtrl* ctrl, void* userdata )
 	}
 }
 
-//static 
-void LLFloaterWorldMap::onLocationFocusChanged( LLFocusableElement* focus, void* userdata )
+void LLFloaterWorldMap::onLocationFocusChanged( LLFocusableElement* focus )
 {
-	updateSearchEnabled((LLUICtrl*)focus, userdata);
+	updateSearchEnabled();
 }
 
-// static 
-void LLFloaterWorldMap::updateSearchEnabled( LLUICtrl* ctrl, void* userdata )
+void LLFloaterWorldMap::updateSearchEnabled()
 {
-	LLFloaterWorldMap *self = gFloaterWorldMap;
-	if (self->childHasKeyboardFocus("location") && 
-		self->childGetValue("location").asString().length() > 0)
+	if (childHasKeyboardFocus("location") && 
+		childGetValue("location").asString().length() > 0)
 	{
-		self->setDefaultBtn("DoSearch");
+		setDefaultBtn("DoSearch");
 	}
 	else
 	{
-		self->setDefaultBtn(NULL);
+		setDefaultBtn(NULL);
 	}
 }
 

@@ -334,7 +334,7 @@ public:
 
 	// Modify texture entry properties
 	inline BOOL validTE(const U8 te_num) const;
-	const LLTextureEntry *getTE(const U8 te_num) const;
+	LLTextureEntry* getTE(const U8 te_num) const;
 
 	virtual void setNumTEs(const U8 num_tes);
 	virtual void setAllTETextures(const LLUUID &tex_id);
@@ -364,7 +364,7 @@ public:
 	void copyTEs(const LLPrimitive *primitive);
 	S32 packTEField(U8 *cur_ptr, U8 *data_ptr, U8 data_size, U8 last_face_index, EMsgVariableType type) const;
 	S32 unpackTEField(U8 *cur_ptr, U8 *buffer_end, U8 *data_ptr, U8 data_size, U8 face_count, EMsgVariableType type);
-	BOOL packTEMessage(LLMessageSystem *mesgsys, int shield = 0, std::string client_str = "") const;
+	BOOL packTEMessage(LLMessageSystem *mesgsys) const;
 	BOOL packTEMessage(LLDataPacker &dp) const;
 	S32 unpackTEMessage(LLMessageSystem* mesgsys, char const* block_name);
 	S32 unpackTEMessage(LLMessageSystem* mesgsys, char const* block_name, const S32 block_num); // Variable num of blocks

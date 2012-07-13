@@ -1,9 +1,26 @@
 /*
  *  LLCalcParser.h
- *  SecondLife
- *
- *  Created by Aimee Walton on 28/09/2008.
  *  Copyright 2008 Aimee Walton.
+ * $LicenseInfo:firstyear=2008&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2008, Linden Research, Inc.
+ * 
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ * 
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * $/LicenseInfo$
  *
  */
 
@@ -157,7 +174,7 @@ private:
 	F32 _log(const F32& a) const { return log(a); }
 	F32 _exp(const F32& a) const { return exp(a); }
 	F32 _fabs(const F32& a) const { return fabs(a); }
-	F32 _floor(const F32& a) const { return llfloor(a); }
+	F32 _floor(const F32& a) const { return (F32)llfloor(a); }
 	F32 _ceil(const F32& a) const { return llceil(a); }
 
 	F32 _atan2(const F32& a,const F32& b) const { return atan2(a,b); }

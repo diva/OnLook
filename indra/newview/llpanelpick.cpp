@@ -160,16 +160,13 @@ BOOL LLPanelPick::postBuild()
     mLocationEditor = getChild<LLLineEditor>("location_editor");
 
     mSetBtn = getChild<LLButton>( "set_location_btn");
-    mSetBtn->setClickedCallback(onClickSet);
-    mSetBtn->setCallbackUserData(this);
+    mSetBtn->setClickedCallback(boost::bind(&LLPanelPick::onClickSet,this));
 
     mTeleportBtn = getChild<LLButton>( "pick_teleport_btn");
-    mTeleportBtn->setClickedCallback(onClickTeleport);
-    mTeleportBtn->setCallbackUserData(this);
+    mTeleportBtn->setClickedCallback(boost::bind(&LLPanelPick::onClickTeleport,this));
 
     mMapBtn = getChild<LLButton>( "pick_map_btn");
-    mMapBtn->setClickedCallback(onClickMap);
-    mMapBtn->setCallbackUserData(this);
+    mMapBtn->setClickedCallback(boost::bind(&LLPanelPick::onClickMap,this));
 
 	mSortOrderText = getChild<LLTextBox>("sort_order_text");
 

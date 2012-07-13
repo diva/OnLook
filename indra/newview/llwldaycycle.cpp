@@ -80,7 +80,7 @@ void LLWLDayCycle::loadDayCycle(const LLSD& day_data, LLWLParamKey::EScope scope
 				// alert the user
 				LLSD args;
 				args["SKY"] = day_data[i][1].asString();
-				LLNotificationsUtil::add("WLMissingSky", args, LLSD());
+				LLNotifications::instance().add("WLMissingSky", args, LLSD());
 				continue;
 			}
 		}
@@ -161,13 +161,13 @@ LLSD LLWLDayCycle::asLLSD()
 bool LLWLDayCycle::getSkyRefs(std::map<LLWLParamKey, LLWLParamSet>& refs) const
 {
 	bool result = true;
-	LLWLParamManager* wl_mgr = LLWLParamManager::getInstance();
+	LLWLParamManager& wl_mgr = LLWLParamManager::instance();
 
 	refs.clear();
 	for (std::map<F32, LLWLParamKey>::const_iterator iter = mTimeMap.begin(); iter != mTimeMap.end(); ++iter)
 	{
 		const LLWLParamKey& key = iter->second;
-		if (!wl_mgr->getParamSet(key, refs[key]))
+		if (!wl_mgr.getParamSet(key, refs[key]))
 		{
 			llwarns << "Cannot find sky [" << key.name << "] referenced by a day cycle" << llendl;
 			result = false;

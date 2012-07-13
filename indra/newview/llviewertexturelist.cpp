@@ -64,6 +64,7 @@
 #include "llviewerstats.h"
 #include "pipeline.h"
 #include "llappviewer.h"
+#include "llagent.h"
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -275,8 +276,8 @@ void LLViewerTextureList::shutdown()
 		if (++count >= max_count)
 			break;
 	}
-
-	if (count > 0 && !gDirUtilp->getLindenUserDir(true).empty())
+	
+	if (count > 0 && !gDirUtilp->getLindenUserDir(true).empty())	
 	{
 		std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, get_texture_list_name());
 		llofstream file;
@@ -622,6 +623,11 @@ static LLFastTimer::DeclareTimer FTM_IMAGE_MEDIA("Media");
 
 void LLViewerTextureList::updateImages(F32 max_time)
 {
+	if(gAgent.getTeleportState() != LLAgent::TELEPORT_NONE)
+	{
+		clearFetchingRequests();
+		return;
+	}
 	LLAppViewer::getTextureFetch()->setTextureBandwidth(LLViewerStats::getInstance()->mTextureKBitStat.getMeanPerSec());
 
 	S32 global_raw_memory;
@@ -690,6 +696,24 @@ void LLViewerTextureList::updateImages(F32 max_time)
 	{
 		LLFastTimer t(FTM_IMAGE_STATS);
 		updateImagesUpdateStats();
+	}
+}
+
+void LLViewerTextureList::clearFetchingRequests()
+{
+	if (LLAppViewer::getTextureFetch()->getNumRequests() == 0)
+	{
+		return;
+	}
+
+	for (image_priority_list_t::iterator iter = mImageList.begin();
+		 iter != mImageList.end(); ++iter)
+	{
+		LLViewerFetchedTexture* image = *iter;
+		if(image->hasFetcher())
+		{
+			image->forceToDeleteRequest() ;
+		}
 	}
 }
 

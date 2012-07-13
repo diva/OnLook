@@ -39,6 +39,7 @@
 #include "llsavedlogins.h"
 
 class LLUIImage;
+class LLComboBox;
 
 // <edit>
 extern std::string gFullName;
@@ -118,7 +119,7 @@ private:
 	//static void onSelectServer(LLUICtrl*, void*);
 	//static void onServerComboLostFocus(LLFocusableElement*, void*);
 	static void onSelectLoginEntry(LLUICtrl*, void*);
-	static void onLoginComboLostFocus(LLFocusableElement* fe, void*);
+	void onLoginComboLostFocus(LLComboBox* combo_box);
 	static void onNameCheckChanged(LLUICtrl* ctrl, void* data);
 	static void clearPassword();
 

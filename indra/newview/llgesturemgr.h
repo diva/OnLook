@@ -2,31 +2,25 @@
  * @file llgesturemgr.h
  * @brief Manager for playing gestures on the viewer
  *
- * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
- * Copyright (c) 2004-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2004&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -38,9 +32,12 @@
 #include <vector>
 
 #include "llassetstorage.h"	// LLAssetType
+#include "llinventoryobserver.h"
+#include "llsingleton.h"
 #include "llviewerinventory.h"
 
 class LLMultiGesture;
+class LLGestureListener;
 class LLGestureStep;
 class LLUUID;
 class LLVFS;
@@ -52,11 +49,14 @@ public:
 	virtual void changed() = 0;
 };
 
-class LLGestureMgr : public LLSingleton<LLGestureMgr>
+class LLGestureMgr : public LLSingleton<LLGestureMgr>, public LLInventoryFetchItemsObserver
 {
 public:
+
+	typedef boost::function<void (LLMultiGesture* loaded_gesture)> gesture_loaded_callback_t;
 	// Maps inventory item_id to gesture
 	typedef std::map<LLUUID, LLMultiGesture*> item_map_t;
+	typedef std::map<LLUUID, gesture_loaded_callback_t> callback_map_t;
 
 	LLGestureMgr();
 	~LLGestureMgr();
@@ -110,7 +110,15 @@ public:
 	// Also remove from playing list
 	void stopGesture(LLMultiGesture* gesture);
 	void stopGesture(const LLUUID& item_id);
-
+	/**
+	 * Add cb into callbackMap.
+	 * Note:
+	 * Manager will call cb after gesture will be loaded and will remove cb automatically. 
+	 */
+	void setGestureLoadedCallback(LLUUID inv_item_id, gesture_loaded_callback_t cb)
+	{
+		mCallbackMap[inv_item_id] = cb;
+	}
 	// Trigger the first gesture that matches this key.
 	// Returns TRUE if it finds a gesture bound to that key.
 	BOOL triggerGesture(KEY key, MASK mask);
@@ -127,6 +135,9 @@ public:
 	void removeObserver(LLGestureManagerObserver* observer);
 	void notifyObservers();
 
+	// Overriding so we can update active gesture names and notify observers 
+	void changed(U32 mask); 
+
 	BOOL matchPrefix(const std::string& in_str, std::string* out_str);
 
 	// Copy item ids into the vector
@@ -139,14 +150,25 @@ protected:
 	// Do a single step in a gesture
 	void runStep(LLMultiGesture* gesture, LLGestureStep* step);
 
+	// LLInventoryCompletionObserver trigger
+	void done();
+
 	// Used by loadGesture
 	static void onLoadComplete(LLVFS *vfs,
 						   const LLUUID& asset_uuid,
 						   LLAssetType::EType type,
 						   void* user_data, S32 status, LLExtStat ext_status);
 
+	// Used by playGesture to load an asset file
+	// required to play a gesture step
+	static void onAssetLoadComplete(LLVFS *vfs,
+									const LLUUID& asset_uuid,
+									LLAssetType::EType type,
+									void* user_data, S32 status, LLExtStat ext_status);
 
-
+	// Checks whether all animation and sound assets
+	// needed to play a gesture are loaded.
+	static bool hasLoadingAssets(LLMultiGesture* gesture);
 
 private:
 	// Active gestures.
@@ -157,9 +179,13 @@ private:
 
 	S32 mLoadingCount;
 	std::string mDeactivateSimilarNames;
-
+	
 	std::vector<LLGestureManagerObserver*> mObservers;
+	callback_map_t mCallbackMap;
 	std::vector<LLMultiGesture*> mPlaying;	
 	BOOL mValid;
+
+	std::set<LLUUID> mLoadingAssets;
 };
+
 #endif

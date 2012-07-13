@@ -15,30 +15,21 @@
  */
 
 #include "llviewerprecompiledheaders.h"
+#include "llagent.h"
+#include "llagentwearables.h"
+#include "llappearancemgr.h"
 #include "llattachmentsmgr.h"
-#include "llfloaterinventory.h"
-#include "llfloaterwindlight.h"
 #include "llgesturemgr.h"
-#include "llinventorybridge.h"
 #include "llnotificationsutil.h"
 #include "llviewerobject.h"
 #include "llviewerobjectlist.h"
-#include "llviewerregion.h"
-#include "llviewerstats.h"
-#include "llviewerwindow.h"
-#include "llvoavatar.h"
-#include "llwearablelist.h"
 #include "llwlparammanager.h"
-#include "llagentwearables.h"
 
 #include "rlvhelper.h"
-#include "rlvinventory.h"
 #include "rlvhandler.h"
+#include "rlvinventory.h"
 
 #include <boost/algorithm/string.hpp>
-
-// Defined in llinventorybridge.cpp
-void wear_inventory_category_on_avatar_loop(LLWearable* wearable, void*);
 
 // ============================================================================
 // RlvCommmand
@@ -48,7 +39,7 @@ RlvCommand::bhvr_map_t RlvCommand::m_BhvrMap;
 
 // Checked: 2009-12-27 (RLVa-1.1.0k) | Modified: RLVa-1.1.0k
 RlvCommand::RlvCommand(const LLUUID& idObj, const std::string& strCommand)
-	: m_idObj(idObj), m_eBehaviour(RLV_BHVR_UNKNOWN), m_fStrict(false), m_eParamType(RLV_TYPE_UNKNOWN)
+	: m_fValid(false), m_idObj(idObj), m_eBehaviour(RLV_BHVR_UNKNOWN), m_fStrict(false), m_eParamType(RLV_TYPE_UNKNOWN), m_eRet(RLV_RET_UNKNOWN)
 {
 	if ((m_fValid = parseCommand(strCommand, m_strBehaviour, m_strOption, m_strParam)))
 	{
@@ -77,13 +68,19 @@ RlvCommand::RlvCommand(const LLUUID& idObj, const std::string& strCommand)
 	}
 
 	// HACK: all those @*overorreplace synonyms are rather tedious (and error-prone) to deal with so replace them their equivalent
-	if ( (RLV_TYPE_FORCE == m_eParamType) && (m_strBehaviour.length() - 13 == m_strBehaviour.rfind("overorreplace")) )
+	if ( (RLV_TYPE_FORCE == m_eParamType) && 
+		 (m_strBehaviour.length() > 13) && (m_strBehaviour.length() - 13 == m_strBehaviour.rfind("overorreplace")) )
+	{
 		m_strBehaviour.erase(m_strBehaviour.length() - 13, 13);
+	}
 	// HACK: all those @addoutfit* synonyms are rather tedious (and error-prone) to deal with so replace them their @attach* equivalent
 	if ( (RLV_TYPE_FORCE == m_eParamType) && (0 == m_strBehaviour.find("addoutfit")) )
+	{
 		m_strBehaviour.replace(0, 9, "attach");
+	}
 	m_eBehaviour = getBehaviourFromString(m_strBehaviour, &m_fStrict);
 }
+
 
 bool RlvCommand::parseCommand(const std::string& strCommand, std::string& strBehaviour, std::string& strOption, std::string& strParam)
 {
@@ -162,19 +159,20 @@ void RlvCommand::initLookupTable()
 		// NOTE: keep this matched with the enumeration at all times
 		std::string arBehaviours[RLV_BHVR_COUNT] =
 			{
-				"detach", "attach", "addattach", "remattach", "addoutfit", "remoutfit", "sharedwear", "sharedunwear", "unsharedwear",
-				"unsharedunwear", "emote", "sendchat", "recvchat", "recvchatfrom", "recvemote", "recvemotefrom", "redirchat", "rediremote",
-				"chatwhisper", "chatnormal", "chatshout", "sendchannel", "sendim", "sendimto", "recvim", "recvimfrom", "permissive",
-				"notify", "showinv", "showminimap", "showworldmap", "showloc", "shownames", "showhovertext", "showhovertexthud",
-				"showhovertextworld", "showhovertextall", "tplm", "tploc", "tplure", "viewnote", "viewscript", "viewtexture",
-				"acceptpermission", "accepttp", "allowidle", "edit", "editobj", "rez", "fartouch", "interact",
-				"touchthis", "touchattach", "touchattachself", "touchattachother", "touchhud", "touchworld", "touchall", "touchme",
-				"fly", "unsit", "sit", "sittp", "standtp", "setdebug", "setenv", "detachme", "attachover", "attachthis", "attachthisover", 
-				"attachthisexcept", "detachthis", "detachthisexcept", "attachall", "attachallover", "detachall", "attachallthis", 
-				"attachallthisexcept", "attachallthisover", "detachallthis", "detachallthisexcept", "adjustheight", "tpto",
-				"version", "versionnew", "versionnum", "getattach", "getattachnames", "getaddattachnames", "getremattachnames",
-				"getoutfit", "getoutfitnames", "getaddoutfitnames", "getremoutfitnames", "findfolder", "findfolders", "getpath",
-				"getpathnew", "getinv", "getinvworn", "getsitid", "getcommand", "getstatus", "getstatusall"
+				"detach", "attach", "addattach", "remattach", "addoutfit", "remoutfit", "sharedwear", "sharedunwear", 
+				"unsharedwear",	"unsharedunwear", "emote", "sendchat", "recvchat", "recvchatfrom", "recvemote", "recvemotefrom",
+				"redirchat", "rediremote", "chatwhisper", "chatnormal", "chatshout", "sendchannel", "sendim", "sendimto",
+				"recvim", "recvimfrom", "permissive", "notify", "showinv", "showminimap", "showworldmap", "showloc",
+				"shownames", "showhovertext", "showhovertexthud", "showhovertextworld", "showhovertextall", "tplm", "tploc", "tplure",
+				"viewnote", "viewscript", "viewtexture", "acceptpermission", "accepttp", "allowidle", "edit", "editobj", "rez", "fartouch",
+				"interact", "touchthis", "touchattach", "touchattachself", "touchattachother", "touchhud", "touchworld", "touchall", 
+				"touchme", "fly", "setgroup", "unsit", "sit", "sittp", "standtp", "setdebug", "setenv", "alwaysrun", "temprun", "detachme", 
+				"attachover", "attachthis", "attachthisover", "attachthis_except", "detachthis", "detachthis_except", "attachall", 
+				"attachallover", "detachall", "attachallthis", "attachallthis_except", "attachallthisover", "detachallthis", 
+				"detachallthis_except", "adjustheight", "tpto", "version", "versionnew", "versionnum", "getattach", "getattachnames", 
+				"getaddattachnames", "getremattachnames", "getoutfit", "getoutfitnames", "getaddoutfitnames", "getremoutfitnames", 
+				"findfolder", "findfolders", "getpath", "getpathnew", "getinv", "getinvworn", "getgroup", "getsitid", "getcommand", 
+				"getstatus", "getstatusall"
 			};
 
 		for (int idxBvhr = 0; idxBvhr < RLV_BHVR_COUNT; idxBvhr++)
@@ -196,8 +194,8 @@ RlvCommandOptionGeneric::RlvCommandOptionGeneric(const std::string& strOption)
 
 	if (!(m_fEmpty = strOption.empty()))														// <option> could be an empty string
 	{
-		if ((wtType = LLWearableType::typeNameToType(strOption)) != LLWearableType::WT_NONE)
-			m_varOption = wtType;																// ... or specify a clothing layer
+		if ( ((wtType = LLWearableType::typeNameToType(strOption)) != LLWearableType::WT_INVALID) && (wtType != LLWearableType::WT_NONE) )
+			m_varOption = wtType;																// ... or specify a (valid) clothing layer
 		else if ((pAttachPt = RlvAttachPtLookup::getAttachPoint(strOption)) != NULL)
 			m_varOption = pAttachPt;															// ... or specify an attachment point
 		else if ( ((UUID_STR_LENGTH - 1) == strOption.length()) && (idOption.set(strOption)) )
@@ -209,6 +207,7 @@ RlvCommandOptionGeneric::RlvCommandOptionGeneric(const std::string& strOption)
 		else
 			m_varOption = strOption;															// ... or it might just be a string
 	}
+	m_fValid = true;
 }
 
 // Checked: 2010-11-30 (RLVa-1.3.0b) | Modified: RLVa-1.3.0b
@@ -262,8 +261,10 @@ bool RlvCommandOptionGetPath::getItemIDs(LLWearableType::EType wtType, uuid_vec_
 	if (fClear)
 		idItems.clear();
 	uuid_vec_t::size_type cntItemsPrev = idItems.size();
-	if (gAgentWearables.getWearable(wtType, 0))
-		idItems.push_back(gAgentWearables.getWearableItemID(wtType,0));
+	for (S32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(wtType); idxWearable < cntWearable; idxWearable++)
+	{
+		idItems.push_back(gAgentWearables.getWearableItemID(wtType, idxWearable));
+	}
 	return (cntItemsPrev != idItems.size());
 }
 
@@ -272,7 +273,7 @@ RlvCommandOptionAdjustHeight::RlvCommandOptionAdjustHeight(const RlvCommand& rlv
 	: m_nPelvisToFoot(0.0f), m_nPelvisToFootDeltaMult(0.0f), m_nPelvisToFootOffset(0.0f)
 {
 	std::vector<std::string> cmdTokens;
-	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of(";"));
+	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of(std::string(";")));
 	if (1 == cmdTokens.size())
 	{
 		m_fValid = (LLStringUtil::convertToF32(cmdTokens[0], m_nPelvisToFootOffset));
@@ -290,7 +291,7 @@ RlvCommandOptionAdjustHeight::RlvCommandOptionAdjustHeight(const RlvCommand& rlv
 RlvCommandOptionTpTo::RlvCommandOptionTpTo(const RlvCommand &rlvCmd)
 {
 	std::vector<std::string> cmdTokens;
-	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of("/"));
+	boost::split(cmdTokens, rlvCmd.getOption(), boost::is_any_of(std::string("/")));
 
 	m_fValid = (3 == cmdTokens.size());
 	for (int idxAxis = 0; (idxAxis < 3) && (m_fValid); idxAxis++)
@@ -346,6 +347,19 @@ bool RlvObject::removeCommand(const RlvCommand& rlvCmd)
 	return false;	// Command was never added so nothing to remove now
 }
 
+// Checked: 2011-05-23 (RLVa-1.3.1c) | Added: RLVa-1.3.1c
+void RlvObject::setCommandRet(const RlvCommand& rlvCmd, ERlvCmdRet eRet)
+{
+	for (rlv_command_list_t::iterator itCmd = m_Commands.begin(); itCmd != m_Commands.end(); ++itCmd)
+	{
+		if (*itCmd == rlvCmd)
+		{
+			itCmd->m_eRet = eRet;
+			break;
+		}
+	}
+}
+
 bool RlvObject::hasBehaviour(ERlvBehaviour eBehaviour, bool fStrictOnly) const
 {
 	for (rlv_command_list_t::const_iterator itCmd = m_Commands.begin(); itCmd != m_Commands.end(); ++itCmd)
@@ -395,7 +409,7 @@ bool RlvForceWear::isWearingItem(const LLInventoryItem* pItem)
 			case LLAssetType::AT_CLOTHING:
 				return gAgentWearables.isWearingItem(pItem->getUUID());
 			case LLAssetType::AT_OBJECT:
-				return (gAgentAvatarp) && (gAgentAvatarp->isWearingAttachment(pItem->getUUID()));
+				return (isAgentAvatarValid()) && (gAgentAvatarp->isWearingAttachment(pItem->getUUID()));
 			case LLAssetType::AT_GESTURE:
 				return LLGestureMgr::instance().isGestureActive(pItem->getUUID());
 			case LLAssetType::AT_LINK:
@@ -416,8 +430,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 		LLNotificationsUtil::add("CanNotChangeAppearanceUntilLoaded");
 		return;
 	}
-	LLVOAvatar* pAvatar = gAgentAvatarp;
-	if (!pAvatar)
+	if (!isAgentAvatarValid())
 		return;
 
 	// Grab a list of all the items we'll be wearing/attaching
@@ -448,7 +461,6 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 			case LLAssetType::AT_CLOTHING:
 				if (isWearAction(eAction))
 				{
-					eCurAction = ACTION_WEAR_REPLACE; // 1.X doesn't support multi-wearables so "add" means "replace" for wearables
 					ERlvWearMask eWearMask = gRlvWearableLocks.canWear(pRlvItem);
 					if ( ((ACTION_WEAR_REPLACE == eCurAction) && (eWearMask & RLV_WEAR_REPLACE)) ||
 						 ((ACTION_WEAR_ADD == eCurAction) && (eWearMask & RLV_WEAR_ADD)) )
@@ -500,7 +512,7 @@ void RlvForceWear::forceFolder(const LLViewerInventoryCategory* pFolder, EWearAc
 				}
 				else
 				{
-					const LLViewerObject* pAttachObj = pAvatar->getWornAttachment(pItem->getUUID());
+					const LLViewerObject* pAttachObj = gAgentAvatarp->getWornAttachment(pItem->getUUID());
 					if ( (pAttachObj) && (isForceDetachable(pAttachObj, false)) )
 						remAttachment(pAttachObj);
 				}
@@ -615,7 +627,7 @@ bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComp
 		(pWearable) && (LLAssetType::AT_CLOTHING == pWearable->getAssetType()) 
 		&& ( (idExcept.isNull()) ? !gRlvWearableLocks.isLockedWearable(pWearable)
 		                         : !gRlvWearableLocks.isLockedWearableExcept(pWearable, idExcept) )
-		&& (isStrippable(gAgentWearables.getWearableItemID(pWearable->getType(), 0)))	// TODO: MULTI-WEARABLE
+		&& (isStrippable(pWearable->getItemID()))
 		#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 		&& ( (!fCheckComposite) || (!RlvSettings::getEnableComposites()) || 
 		     (!gRlvHandler.getCompositeInfo(pWearable->getItemID(), NULL, &pFolder)) || (gRlvHandler.canTakeOffComposite(pFolder)) )
@@ -623,12 +635,13 @@ bool RlvForceWear::isForceRemovable(const LLWearable* pWearable, bool fCheckComp
 	  );
 }
 
-// Checked: 2010-03-19 (RLVa-1.1.3b) | Added: RLVa-1.2.0a
+// Checked: 2010-03-19 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
 bool RlvForceWear::isForceRemovable(LLWearableType::EType wtType, bool fCheckComposite /*=true*/, const LLUUID& idExcept /*=LLUUID::null*/)
 {
 	// Wearable type can be removed by an RLV command if there's at least one currently worn wearable that can be removed
-	if (isForceRemovable(gAgentWearables.getWearable(wtType, 0), fCheckComposite, idExcept))	// TODO: MULTI-WEARABLE
-		return true;
+	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(wtType); idxWearable < cntWearable; idxWearable++)
+		if (isForceRemovable(gAgentWearables.getWearable(wtType, idxWearable), fCheckComposite, idExcept))
+			return true;
 	return false;
 }
 
@@ -644,7 +657,7 @@ void RlvForceWear::forceRemove(const LLWearable* pWearable)
 		#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 		LLViewerInventoryCategory* pFolder = NULL;
 		if ( (RlvSettings::getEnableComposites()) && 
-			 (gRlvHandler.getCompositeInfo(gAgentWearables.getWearableItemID(wtType), NULL, &pFolder)) )
+			 (gRlvHandler.getCompositeInfo(gAgent.getWearableItem(wtType), NULL, &pFolder)) )
 		{
 			// Wearable belongs to a composite folder so detach the entire folder (if we can take it off)
 			if (gRlvHandler.canTakeOffComposite(pFolder))
@@ -661,7 +674,8 @@ void RlvForceWear::forceRemove(const LLWearable* pWearable)
 // Checked: 2010-03-19 (RLVa-1.1.3a) | Added: RLVa-1.2.0a
 void RlvForceWear::forceRemove(LLWearableType::EType wtType)
 {
-	forceRemove(gAgentWearables.getWearable(wtType,0));	// TODO: MULTI-WEARABLE
+	for (U32 idxWearable = 0, cntWearable = gAgentWearables.getWearableCount(wtType); idxWearable < cntWearable; idxWearable++)
+		forceRemove(gAgentWearables.getWearable(wtType, idxWearable));
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0c) | Modified: RLVa-1.2.0a
@@ -701,8 +715,7 @@ bool RlvForceWear::isStrippable(const LLInventoryItem* pItem)
 void RlvForceWear::addAttachment(const LLViewerInventoryItem* pItem, EWearAction eAction)
 {
 	// Remove it from 'm_remAttachments' if it's queued for detaching
-	const LLViewerObject* pAttachObj = 
-		(gAgentAvatarp) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
+	const LLViewerObject* pAttachObj = (isAgentAvatarValid()) ? gAgentAvatarp->getWornAttachment(pItem->getLinkedUUID()) : NULL;
 	if ( (pAttachObj) && (isRemAttachment(pAttachObj)) )
 		m_remAttachments.erase(std::remove(m_remAttachments.begin(), m_remAttachments.end(), pAttachObj), m_remAttachments.end());
 
@@ -802,7 +815,7 @@ void RlvForceWear::addWearable(const LLViewerInventoryItem* pItem, EWearAction e
 void RlvForceWear::remWearable(const LLWearable* pWearable)
 {
 	// Remove it from 'm_addWearables' if it's queued for wearing
-	const LLViewerInventoryItem* pItem = gInventory.getItem(gAgentWearables.getWearableItemID(pWearable->getType(), 0));	// TODO: MULTI-WEARABLE
+	const LLViewerInventoryItem* pItem = gInventory.getItem(pWearable->getItemID());
 	if ( (pItem) && (isAddWearable(pItem)) )
 	{
 		addwearables_map_t::iterator itAddWearables = m_addWearables.find(pItem->getWearableType());
@@ -828,6 +841,8 @@ void RlvForceWear::done()
 		return;
 	}
 
+	LLAppearanceMgr* pAppearanceMgr = LLAppearanceMgr::getInstance();
+	
 	//
 	// Process removals
 	//
@@ -836,20 +851,16 @@ void RlvForceWear::done()
 	if (m_remWearables.size())
 	{
 		for (std::list<const LLWearable*>::const_iterator itWearable = m_remWearables.begin(); itWearable != m_remWearables.end(); ++itWearable)
-			gAgentWearables.removeWearable((*itWearable)->getType(), false, 0);	// TODO: MULTI-WEARABLE
+			pAppearanceMgr->removeItemFromAvatar((*itWearable)->getItemID());
 		m_remWearables.clear();
 	}
 
 	// Gestures
 	if (m_remGestures.size())
 	{
-		for (S32 idxGesture = 0, cntGesture = m_remGestures.count(); idxGesture < cntGesture; idxGesture++)
-		{
-			LLViewerInventoryItem* pItem = m_remGestures.get(idxGesture);
-			LLGestureMgr::instance().deactivateGesture(pItem->getUUID());
-			gInventory.updateItem(pItem);
-			gInventory.notifyObservers();
-		}
+		// NOTE: LLGestureMgr::deactivateGesture() will call LLAppearanceMgr::removeCOFItemLinks() for us
+		for (S32 idxItem = 0, cntItem = m_remGestures.count(); idxItem < cntItem; idxItem++)
+			LLGestureMgr::instance().deactivateGesture(m_remGestures.get(idxItem)->getUUID());
 		m_remGestures.clear();
 	}
 
@@ -869,6 +880,12 @@ void RlvForceWear::done()
 		}
 		gMessageSystem->sendReliable(gAgent.getRegionHost());
 
+		for (std::list<const LLViewerObject*>::const_iterator itAttachObj = m_remAttachments.begin(); 
+				itAttachObj != m_remAttachments.end(); ++itAttachObj)
+		{
+			pAppearanceMgr->removeCOFItemLinks((*itAttachObj)->getAttachmentItemID(), false);
+		}
+
 		m_remAttachments.clear();
 	}
 
@@ -876,48 +893,24 @@ void RlvForceWear::done()
 	// Process additions
 	//
 
-	// Process wearables
-	if (m_addWearables.size())
+	// Wearables need to be split into AT_BODYPART and AT_CLOTHING for COF
+	LLInventoryModel::item_array_t addBodyParts, addClothing;
+	for (addwearables_map_t::const_iterator itAddWearables = m_addWearables.begin(); itAddWearables != m_addWearables.end(); ++itAddWearables)
 	{
-		// [See wear_inventory_category_on_avatar_step2()]
-		LLWearableHoldingPattern* pWearData = new LLWearableHoldingPattern(TRUE);
-
-		// We need to populate 'pWearData->mFoundList' before doing anything else because (some of) the assets might already be available
-		for (addwearables_map_t::const_iterator itAddWearables = m_addWearables.begin(); 
-				itAddWearables != m_addWearables.end(); ++itAddWearables)
+		const LLInventoryModel::item_array_t& wearItems = itAddWearables->second;
+		for (S32 idxItem = 0, cntItem = wearItems.count(); idxItem < cntItem; idxItem++)
 		{
-			const LLInventoryModel::item_array_t& wearItems = itAddWearables->second;
-
-			RLV_VERIFY(1 == wearItems.count());
-			if (wearItems.count() > 0)
+			LLViewerInventoryItem* pItem = wearItems.get(idxItem);
+			if (!pAppearanceMgr->isLinkInCOF(pItem->getUUID()))		// It's important to examine COF here and *not* gAgentWearables
 			{
-				LLViewerInventoryItem* pItem = wearItems.get(0);
-				if ( (pItem) && ((LLAssetType::AT_BODYPART == pItem->getType()) || (LLAssetType::AT_CLOTHING == pItem->getType())) )
-				{
-					LLFoundData* pFound = new LLFoundData(pItem->getLinkedUUID(), pItem->getAssetUUID(), pItem->getName(), pItem->getType());
-					pWearData->mFoundList.push_front(pFound);
-				}
+				if (LLAssetType::AT_BODYPART == pItem->getType())
+					addBodyParts.push_back(pItem);
+				else
+					addClothing.push_back(pItem);
 			}
 		}
-
-		if (!pWearData->mFoundList.size())
-		{
-			delete pWearData;
-			return;
-		}
-
-		// If all the assets are available locally then "pWearData" will be freed *before* the last "LLWearableList::instance().getAsset()" call returns
-		bool fContinue = true; LLWearableHoldingPattern::found_list_t::const_iterator itWearable = pWearData->mFoundList.begin();
-		while ( (fContinue) && (itWearable != pWearData->mFoundList.end()) )
-		{
-			const LLFoundData* pFound = *itWearable;
-			++itWearable;
-			fContinue = (itWearable != pWearData->mFoundList.end());
-			LLWearableList::instance().getAsset(pFound->mAssetID, pFound->mName, pFound->mAssetType, wear_inventory_category_on_avatar_loop, (void*)pWearData);
-		}
-
-		m_addWearables.clear();
 	}
+	m_addWearables.clear();
 
 	// Until LL provides a way for updateCOF to selectively attach add/replace we have to deal with attachments ourselves
 	for (addattachments_map_t::const_iterator itAddAttachments = m_addAttachments.begin(); 
@@ -927,22 +920,20 @@ void RlvForceWear::done()
 		for (S32 idxItem = 0, cntItem = wearItems.count(); idxItem < cntItem; idxItem++)
 		{
 			const LLUUID& idItem = wearItems.get(idxItem)->getLinkedUUID();
-//			if (gAgentAvatarp->attachmentWasRequested(idItem))
-//				continue;
-//			gAgentAvatarp->addAttachmentRequest(idItem);
+			if (gAgentAvatarp->attachmentWasRequested(idItem))
+				continue;
+			gAgentAvatarp->addAttachmentRequest(idItem);
 
 			LLAttachmentsMgr::instance().addAttachment(idItem, itAddAttachments->first & ~ATTACHMENT_ADD, itAddAttachments->first & ATTACHMENT_ADD);
 		}
 	}
 	m_addAttachments.clear();
 
-	// Process gestures
-	if (m_addGestures.size())
+	// If there are additions we need to call LLAppearanceManager::updateCOF(), otherwise LLAppearanceManager::updateAppearanceFromCOF()
+	if ( (!addBodyParts.empty()) || (!addClothing.empty()) || (!m_addGestures.empty()) )
 	{
-		LLGestureMgr::instance().activateGestures(m_addGestures);
-		for (S32 idxGesture = 0, cntGesture = m_addGestures.count(); idxGesture < cntGesture; idxGesture++)
-			gInventory.updateItem(m_addGestures.get(idxGesture));
-		gInventory.notifyObservers();
+		LLInventoryModel::item_array_t addAttachments;
+		pAppearanceMgr->updateCOF(addBodyParts, addClothing, addAttachments, m_addGestures, true);
 
 		m_addGestures.clear();
 	}
@@ -959,17 +950,13 @@ void RlvForceWear::done()
 // Checked: 2010-09-26 (RLVa-1.1.3a) | Modified: RLVa-1.1.3a
 RlvBehaviourNotifyHandler::RlvBehaviourNotifyHandler()
 {
-	gRlvHandler.addBehaviourObserver(this);
+	// NOTE: the reason we use rlv_command_signal_t instead of the better-suited rlv_behaviour_signal_t is because
+	//       RLV will notify scripts about "invalid" commands so we need to as well
+	m_ConnCommand = gRlvHandler.setCommandCallback(boost::bind(&RlvBehaviourNotifyHandler::onCommand, this, _1, _2, _3));
 }
 
-// Checked: 2010-09-26 (RLVa-1.1.3a) | Modified: RLVa-1.1.3a
-RlvBehaviourNotifyHandler::~RlvBehaviourNotifyHandler()
-{
-	gRlvHandler.removeBehaviourObserver(this);
-}
-
-// Checked: 2010-03-03 (RLVa-1.1.3a) | Modified: RLVa-1.2.0a
-void RlvBehaviourNotifyHandler::changed(const RlvCommand& rlvCmd, bool fInternal)
+// Checked: 2010-03-03 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
+void RlvBehaviourNotifyHandler::onCommand(const RlvCommand& rlvCmd, ERlvCmdRet eRet, bool fInternal)
 {
 	if (fInternal)
 		return;
@@ -986,27 +973,53 @@ void RlvBehaviourNotifyHandler::changed(const RlvCommand& rlvCmd, bool fInternal
 		default:
 			break;
 	}
+}
 
-	// RLVa-HACK: @notify:<channel>;XXX=add will trigger itself, but shouldn't... this is a bad fix but won't create new bugs, revisit later
-	//   -> it works since the command did succeed and will trigger RlvHandler::notifyBehaviourObservers() which in turn will trigger us
-	//      and cause the code below to run, but meanwhile the code above will not process the @notify because it's not been added yet
-	if (!m_NotificationsDelayed.empty())
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Modify: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::sendNotification(const std::string& strText, const std::string& strSuffix)
+{
+	if (instanceExists())
 	{
-		m_Notifications.insert(m_NotificationsDelayed.begin(), m_NotificationsDelayed.end());
-		m_NotificationsDelayed.clear();
+		RlvBehaviourNotifyHandler* pThis = getInstance();
+
+		// NOTE: notifications have two parts (which are concatenated without token) where only the first part is subject to the filter
+		for (std::multimap<LLUUID, notifyData>::const_iterator itNotify = pThis->m_Notifications.begin(); 
+				itNotify != pThis->m_Notifications.end(); ++itNotify)
+		{
+			if ( (itNotify->second.strFilter.empty()) || (std::string::npos != strText.find(itNotify->second.strFilter)) )
+				RlvUtil::sendChatReply(itNotify->second.nChannel, "/" + strText + strSuffix);
+		}
 	}
 }
 
-// Checked: 2010-09-23 (RLVa-1.2.1e) | Modified: RLVa-1.2.1e
-void RlvBehaviourNotifyHandler::sendNotification(const std::string& strText, const std::string& strSuffix) const
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::onWear(LLWearableType::EType eType, bool fAllowed)
 {
-	// NOTE: notifications have two parts (which are concatenated without token) where only the first part is subject to the filter
-	for (std::multimap<LLUUID, notifyData>::const_iterator itNotify = m_Notifications.begin(); 
-			itNotify != m_Notifications.end(); ++itNotify)
-	{
-		if ( (itNotify->second.strFilter.empty()) || (std::string::npos != strText.find(itNotify->second.strFilter)) )
-			RlvUtil::sendChatReply(itNotify->second.nChannel, "/" + strText + strSuffix);
-	}
+	sendNotification(llformat("worn %s %s", (fAllowed) ? "legally" : "illegally", LLWearableType::getTypeName(eType).c_str()));
+}
+
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::onTakeOff(LLWearableType::EType eType, bool fAllowed)
+{
+	sendNotification(llformat("unworn %s %s", (fAllowed) ? "legally" : "illegally", LLWearableType::getTypeName(eType).c_str()));
+}
+
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::onAttach(const LLViewerJointAttachment* pAttachPt, bool fAllowed)
+{
+	sendNotification(llformat("attached %s %s", (fAllowed) ? "legally" : "illegally", pAttachPt->getName().c_str()));
+}
+
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::onDetach(const LLViewerJointAttachment* pAttachPt, bool fAllowed)
+{
+	sendNotification(llformat("detached %s %s", (fAllowed) ? "legally" : "illegally", pAttachPt->getName().c_str()));
+}
+
+// Checked: 2011-03-31 (RLVa-1.3.0f) | Added: RLVa-1.3.0f
+void RlvBehaviourNotifyHandler::onReattach(const LLViewerJointAttachment* pAttachPt, bool fAllowed)
+{
+	sendNotification(llformat("reattached %s %s", (fAllowed) ? "legally" : "illegally", pAttachPt->getName().c_str()));
 }
 
 // ============================================================================
@@ -1014,6 +1027,7 @@ void RlvBehaviourNotifyHandler::sendNotification(const std::string& strText, con
 //
 
 // Checked: 2009-06-03 (RLVa-0.2.0h) | Added: RLVa-0.2.0h
+#if 0
 void RlvWLSnapshot::restoreSnapshot(const RlvWLSnapshot* pWLSnapshot)
 {
 	LLWLParamManager* pWLParams = LLWLParamManager::getInstance();
@@ -1049,11 +1063,13 @@ RlvWLSnapshot* RlvWLSnapshot::takeSnapshot()
 	}
 	return pWLSnapshot;
 }
+#endif
 
 // =========================================================================
 // Various helper classes/timers/functors
 //
 
+// Checked: 2010-03-13 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
 BOOL RlvGCTimer::tick()
 {
 	bool fContinue = gRlvHandler.onGC();
@@ -1065,57 +1081,6 @@ BOOL RlvGCTimer::tick()
 // ============================================================================
 // Various helper functions
 //
-
-// Checked: 2010-04-11 (RLVa-1.2.0b) | Modified: RLVa-0.2.0g
-bool rlvCanDeleteOrReturn()
-{
-	bool fIsAllowed = true;
-
-	if (gRlvHandler.hasBehaviour(RLV_BHVR_REZ))
-	{
-		// We'll allow if none of the prims are owned by the avie or group owned
-		LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsOwnedByOrGroupOwned f(gAgent.getID());
-		if ( (handleSel.notNull()) && ((0 == handleSel->getRootObjectCount()) || (NULL != handleSel->getFirstRootNode(&f, FALSE))) )
-			fIsAllowed = false;
-	}
-	
-	if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) && (gAgentAvatarp) )
-	{
-		// We'll allow if the avie isn't sitting on any of the selected objects
-		LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
-		if ( (handleSel.notNull()) && (handleSel->getFirstRootNode(&f, TRUE)) )
-			fIsAllowed = false;
-	}
-
-	return fIsAllowed;
-}
-
-#ifdef RLV_ADVANCED_TOGGLE_RLVA
-	// Checked: 2009-07-12 (RLVa-1.0.0h) | Modified: RLVa-1.0.0h
-	void rlvToggleEnabled(void*)
-	{
-		gSavedSettings.setBOOL(RLV_SETTING_MAIN, !rlv_handler_t::isEnabled());
-
-		#if RLV_TARGET < RLV_MAKE_TARGET(1, 23, 0)			// Version: 1.22.11
-			LLStringUtil::format_map_t args;
-			args["[MESSAGE]"] = llformat("RestrainedLove Support will be %s after you restart", 
-				(rlv_handler_t::isEnabled()) ? "disabled" : "enabled" );
-			gViewerWindow->alertXml("GenericAlert", args);
-		#else												// Version: 1.23.4
-			LLSD args;
-			args["MESSAGE"] = llformat("RestrainedLove Support will be %s after you restart", 
-				(rlv_handler_t::isEnabled()) ? "disabled" : "enabled" );
-			LLNotificationsUtil::add("GenericAlert", args);
-		#endif
-	}
-	// Checked: 2009-07-08 (RLVa-1.0.0e)
-	BOOL rlvGetEnabled(void*)
-	{
-		return rlv_handler_t::isEnabled();
-	}
-#endif // RLV_ADVANCED_TOGGLE_RLVA
 
 // ============================================================================
 // Attachment group helper functions
@@ -1161,28 +1126,6 @@ ERlvAttachGroupType rlvAttachGroupFromString(const std::string& strGroup)
 // String helper functions
 //
 
-// Checked: 2009-07-04 (RLVa-1.0.0a)
-void rlvStringReplace(std::string& strText, std::string strFrom, const std::string& strTo)
-{
-	if (strFrom.empty())
-		return;
-
-	size_t lenFrom = strFrom.length();
-	size_t lenTo = strTo.length();
-
-	std::string strTemp(strText);
-	LLStringUtil::toLower(strTemp);
-	LLStringUtil::toLower(strFrom);
-
-	std::string::size_type idxCur, idxStart = 0, idxOffset = 0;
-	while ( (idxCur = strTemp.find(strFrom, idxStart)) != std::string::npos)
-	{
-		strText.replace(idxCur + idxOffset, lenFrom, strTo);
-		idxStart = idxCur + lenFrom;
-		idxOffset += lenTo - lenFrom;
-	}
-}
-
 // Checked: 2009-07-29 (RLVa-1.0.1b) | Added: RLVa-1.0.1b
 std::string rlvGetFirstParenthesisedText(const std::string& strText, std::string::size_type* pidxMatch /*=NULL*/)
 {
@@ -1194,9 +1137,9 @@ std::string rlvGetFirstParenthesisedText(const std::string& strText, std::string
 		return std::string();
 
 	const char* pstrText = strText.c_str(); idxIt = idxStart;
-	while ( (cntLevel > 0) && (idxIt < strText.length()) )
+	while ( (cntLevel > 0) && (++idxIt < strText.length()) )
 	{
-		if ('(' == pstrText[++idxIt])
+		if ('(' == pstrText[idxIt])
 			cntLevel++;
 		else if (')' == pstrText[idxIt])
 			cntLevel--;
@@ -1223,9 +1166,9 @@ std::string rlvGetLastParenthesisedText(const std::string& strText, std::string:
 		return std::string();
 
 	const char* pstrText = strText.c_str(); idxIt = idxEnd;
-	while ( (cntLevel > 0) && (idxIt >= 0) )
+	while ( (cntLevel > 0) && (--idxIt >= 0) && (idxIt < strText.length()) )
 	{
-		if (')' == pstrText[--idxIt])
+		if (')' == pstrText[idxIt])
 			cntLevel++;
 		else if ('(' == pstrText[idxIt])
 			cntLevel--;

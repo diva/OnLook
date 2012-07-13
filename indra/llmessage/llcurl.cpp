@@ -202,8 +202,8 @@ void LLCurl::Responder::completedHeader(U32 status, const std::string& reason, c
 
 }
 
-namespace boost
-{
+//namespace boost
+//{
 	void intrusive_ptr_add_ref(LLCurl::Responder* p)
 	{
 		++p->mReferenceCount;
@@ -216,7 +216,7 @@ namespace boost
 			delete p;
 		}
 	}
-};
+//};
 
 
 //////////////////////////////////////////////////////////////////////////////
@@ -309,6 +309,14 @@ LLCurl::Easy* LLCurl::Easy::getEasy()
 	CURLcode result = curl_easy_setopt(easy->mCurlEasyHandle, CURLOPT_DNS_CACHE_TIMEOUT, 0);
 	check_curl_code(result);
 	
+	// Disable SSL/TLS session caching. Some servers refuse to talk to us when session ids are enabled.
+	// id.secondlife.com is such a server, when greeted with a SSL HELLO and a session id, it immediatly returns a RST packet and closes
+	// the connections.
+	// Fixes: FIRE-5368, FIRE-5756, VWR-28039, VWR-28629
+	result = curl_easy_setopt(easy->mCurlEasyHandle, CURLOPT_SSL_SESSIONID_CACHE, 0);
+	check_curl_code(result);
+
+
 	++gCurlEasyCount;
 	return easy;
 }
@@ -758,7 +766,7 @@ bool LLCurl::Multi::doPerform()
 		}
 
 		mQueued = q;	
-		setState(STATE_COMPLETED) ;		
+		setState(STATE_COMPLETED) ;
 		mIdleTimer.reset() ;
 	}
 	else if(!mValid && mIdleTimer.getElapsedTimeF32() > mIdleTimeOut) //idle for too long, remove it.

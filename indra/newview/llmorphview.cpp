@@ -110,7 +110,7 @@ void	LLMorphView::initialize()
 //-----------------------------------------------------------------------------
 void	LLMorphView::shutdown()
 {
-	LLVOAvatar::onCustomizeEnd();
+	LLVOAvatarSelf::onCustomizeEnd();
 
 	if (isAgentAvatarValid())
 	{

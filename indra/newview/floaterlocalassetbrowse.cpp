@@ -670,8 +670,10 @@ void LocalAssetBrowser::PerformTimedActions(void)
 	// one of the layer bitmaps has been updated, we need to rebake.
 	if ( mLayerUpdated )
 	{
-	    LLVOAvatar* avatar = gAgentAvatarp;
-	    if (avatar) { avatar->forceBakeAllTextures(SLAM_FOR_DEBUG); }
+	    if (isAgentAvatarValid())
+		{ 
+			gAgentAvatarp->forceBakeAllTextures(SLAM_FOR_DEBUG);
+		}
 		
 		mLayerUpdated = false;
 	}

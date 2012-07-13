@@ -52,7 +52,7 @@ void LLScrollingPanelList::clearPanels()
 
 void LLScrollingPanelList::addPanel( LLScrollingPanel* panel )
 {
-	addChildAtEnd( panel );
+	addChildInBack( panel );
 	mPanelList.push_front( panel );
 	
 	const S32 GAP_BETWEEN_PANELS = 6;

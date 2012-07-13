@@ -60,6 +60,7 @@ public:
 	BOOL loadShadersWater();
 	BOOL loadShadersInterface();
 	BOOL loadShadersWindLight();
+	BOOL loadTransformShaders();
 
 	std::vector<S32> mVertexShaderLevel;
 	S32	mMaxAvatarShaderLevel;
@@ -75,6 +76,7 @@ public:
 		SHADER_WINDLIGHT,
 		SHADER_WATER,
 		SHADER_DEFERRED,
+		SHADER_TRANSFORM,
 		SHADER_COUNT
 	};
 
@@ -227,13 +229,21 @@ inline bool operator != (LLViewerShaderMgr::shader_iter const & a, LLViewerShade
 
 extern LLVector4			gShinyOrigin;
 
+//transform shaders
+extern LLGLSLShader			gTransformPositionProgram;
+extern LLGLSLShader			gTransformTexCoordProgram;
+extern LLGLSLShader			gTransformNormalProgram;
+extern LLGLSLShader			gTransformColorProgram;
+extern LLGLSLShader			gTransformBinormalProgram;
 //utility shaders
 extern LLGLSLShader			gOcclusionProgram;
+extern LLGLSLShader			gOcclusionCubeProgram;
 extern LLGLSLShader			gCustomAlphaProgram;
 extern LLGLSLShader			gGlowCombineProgram;
 extern LLGLSLShader			gSplatTextureRectProgram;
 extern LLGLSLShader			gGlowCombineFXAAProgram;
 extern LLGLSLShader			gDebugProgram;
+extern LLGLSLShader			gClipProgram;
 extern LLGLSLShader			gAlphaMaskProgram;
 
 //output tex0[tc0] + tex1[tc1]
@@ -347,6 +357,7 @@ extern LLGLSLShader			gDeferredBlurLightProgram;
 extern LLGLSLShader			gDeferredAvatarProgram;
 extern LLGLSLShader			gDeferredSoftenProgram;
 extern LLGLSLShader			gDeferredShadowProgram;
+extern LLGLSLShader			gDeferredShadowCubeProgram;
 extern LLGLSLShader			gDeferredShadowAlphaMaskProgram;
 extern LLGLSLShader			gDeferredPostProgram;
 extern LLGLSLShader			gDeferredCoFProgram;

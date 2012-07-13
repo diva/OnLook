@@ -2502,8 +2502,8 @@ void LLWindowSDL::spawnWebBrowser(const std::string& escaped_url, bool async)
 	std::string cmd, arg;
 	cmd  = gDirUtilp->getAppRODataDir();
 	cmd += gDirUtilp->getDirDelimiter();
-	cmd += "etc";
-	cmd += gDirUtilp->getDirDelimiter();
+	//cmd += "etc";
+	//cmd += gDirUtilp->getDirDelimiter();
 	cmd += "launch_url.sh";
 	arg = escaped_url;
 	exec_cmd(cmd, arg);
@@ -2512,6 +2512,11 @@ void LLWindowSDL::spawnWebBrowser(const std::string& escaped_url, bool async)
 	llinfos << "spawn_web_browser returning." << llendl;
 }
 
+void LLWindowSDL::setTitle(const std::string &title)
+{
+	mWindowTitle = title;
+	SDL_WM_SetCaption(mWindowTitle.c_str(),mWindowTitle.c_str());
+}
 
 void *LLWindowSDL::getPlatformWindow()
 {
@@ -2616,8 +2621,9 @@ std::vector<std::string> LLWindowSDL::getDynamicFallbackFontList()
 	if (sortpat)
 	{
 		// Sort the list of system fonts from most-to-least-desirable.
+		FcResult fresult;
 		fs = FcFontSort(NULL, sortpat, elide_unicode_coverage,
-				NULL, NULL);
+				NULL, &fresult);
 		FcPatternDestroy(sortpat);
 	}
 

@@ -737,6 +737,7 @@ std::string LLStringOps::sDayFormat;
 std::string LLStringOps::sAM;
 std::string LLStringOps::sPM;
 
+
 S32	LLStringOps::collate(const llwchar* a, const llwchar* b)
 { 
 	#if LL_WINDOWS
@@ -936,22 +937,24 @@ S32 LLStringUtil::format(std::string& s, const format_map_t& substitutions);
 template<> 
 void LLStringUtil::getTokens(const std::string& instr, std::vector<std::string >& tokens, const std::string& delims)
 {
-	std::string currToken;
-	std::string::size_type begIdx, endIdx;
-
-	begIdx = instr.find_first_not_of (delims);
-	while (begIdx != std::string::npos)
+	// Starting at offset 0, scan forward for the next non-delimiter. We're
+	// done when the only characters left in 'instr' are delimiters.
+	for (std::string::size_type begIdx, endIdx = 0;
+		 (begIdx = instr.find_first_not_of (delims, endIdx)) != std::string::npos; )
 	{
+		// Found a non-delimiter. After that, find the next delimiter.
 		endIdx = instr.find_first_of (delims, begIdx);
 		if (endIdx == std::string::npos)
 		{
+			// No more delimiters: this token extends to the end of the string.
 			endIdx = instr.length();
 		}
 
-		currToken = instr.substr(begIdx, endIdx - begIdx);
+		// extract the token between begIdx and endIdx; substr() needs length
+		std::string currToken(instr.substr(begIdx, endIdx - begIdx));
 		LLStringUtil::trim (currToken);
 		tokens.push_back(currToken);
-		begIdx = instr.find_first_not_of (delims, endIdx);
+		// next scan past delimiters starts at endIdx
 	}
 }
 
@@ -1401,7 +1404,7 @@ void LLStringUtilBase<T>::testHarness()
 	
 	s2.erase( 4, 1 );
 	llassert( s2 == "hell");
-	s2.insert( 0, 'y' );
+	s2.insert( 0, 1, 'y' );
 	llassert( s2 == "yhell");
 	s2.erase( 1, 3 );
 	llassert( s2 == "yl");

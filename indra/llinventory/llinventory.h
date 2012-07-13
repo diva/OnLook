@@ -214,15 +214,11 @@ public:
 	virtual BOOL importLegacyStream(std::istream& input_stream);
 	virtual BOOL exportLegacyStream(std::ostream& output_stream, BOOL include_asset_key = TRUE) const;
 
-	virtual LLXMLNode *exportFileXML(BOOL include_asset_key = TRUE) const;
-	BOOL importXML(LLXMLNode* node);
-
 	//--------------------------------------------------------------------
 	// Helper Functions
 	//--------------------------------------------------------------------
 public:
 	// Pack all information needed to reconstruct this item into the given binary bucket.
-
 	S32 packBinaryBucket(U8* bin_bucket, LLPermissions* perm_override = NULL) const;
 	void unpackBinaryBucket(U8* bin_bucket, S32 bin_bucket_size);
 	LLSD asLLSD() const;
@@ -249,7 +245,6 @@ protected:
 // items. Users come with a set of default categories, and can create
 // new ones as needed.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 class LLInventoryCategory : public LLInventoryObject
 {
 public:

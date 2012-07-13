@@ -55,7 +55,7 @@ class LLMakeOutfitDialog;
 class LLRadioGroup;
 class LLScrollableContainerView;
 class LLScrollingPanelList;
-class LLTabContainerVertical;
+class LLTabContainer;
 class LLTextBox;
 class LLTextureCtrl;
 class LLViewerJointMesh;
@@ -72,10 +72,6 @@ class AIFilePicker;
 class LLFloaterCustomize : public LLFloater
 {
 public:
-	typedef std::pair<BOOL, LLViewerVisualParam*> editable_param;
-	typedef std::map<F32, editable_param> param_map;
-
-public:
 	LLFloaterCustomize();
 	virtual ~LLFloaterCustomize();
 	virtual BOOL 	postBuild();
@@ -87,19 +83,14 @@ public:
 
 
 	// New methods
-	void			clearScrollingPanelList();
-	void			generateVisualParamHints(LLViewerJointMesh* joint_mesh,
-											 param_map& params, bool bVisualHint);
 
-	const std::string& getEditGroup();
-	void 			updateScrollingPanelList(BOOL allow_modify);
-
-	void			setWearable(LLWearableType::EType type, LLWearable* wearable, U32 perm_mask, BOOL is_complete);
+	void			wearablesChanged(LLWearableType::EType type);
+	void			updateScrollingPanelList();
 	LLPanelEditWearable* getCurrentWearablePanel() { return mWearablePanelList[ sCurrentWearableType ]; }
 
 	virtual BOOL	isDirty() const;
 
-	void			askToSaveIfDirty( void(*next_step_callback)(BOOL proceed, void* userdata), void* userdata );
+	void			askToSaveIfDirty( boost::function<void (BOOL)> cb );
 
 	void			switchToDefaultSubpart();
 
@@ -115,15 +106,15 @@ public:
 	static void		onBtnExport( void* userdata );	
 	static void		onBtnExport_continued(AIFilePicker* filepicker);
 
-	static void		onTabChanged( void* userdata, bool from_click );
-	static void		onTabPrecommit( void* userdata, bool from_click );
+	static void		onTabChanged( const LLSD& param );
+	bool			onTabPrecommit( LLUICtrl* ctrl, const LLSD& param );
 	bool			onSaveDialog(const LLSD& notification, const LLSD& response);
-	static void		onCommitChangeTab(BOOL proceed, void* userdata);
+	static void		onCommitChangeTab(BOOL proceed, LLTabContainer* ctrl, std::string panel_name, LLWearableType::EType type);
 
 	void fetchInventory();
 	void updateInventoryUI();
-	void updateScrollingPanelUI();
 
+	LLScrollingPanelList* getScrollingPanelList() const { return mScrollingPanelList; }
 protected:
 	LLPanelEditWearable*	mWearablePanelList[ LLWearableType::WT_COUNT ];
 
@@ -135,10 +126,8 @@ protected:
 
 	LLInventoryObserver* mInventoryObserver;
 
-	void					(*mNextStepAfterSaveCallback)(BOOL proceed, void* userdata);
-	void*					mNextStepAfterSaveUserdata;
-
-
+	boost::signals2::signal<void (bool proceed)> mNextStepAfterSaveCallback;
+	
 protected:
 	
 	static void* createWearablePanel(void* userdata);

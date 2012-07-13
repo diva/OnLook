@@ -35,9 +35,6 @@
 // self header
 #include "lltoolplacer.h"
 
-// linden library headers
-#include "llprimitive.h"
-
 // viewer headers
 #include "llbutton.h"
 #include "llviewercontrol.h"
@@ -50,7 +47,6 @@
 #include "llviewerobject.h"
 #include "llviewerregion.h"
 #include "llviewerwindow.h"
-#include "llwindow.h"
 #include "llworld.h"
 #include "llui.h"
 
@@ -66,11 +62,17 @@
 #include "llviewerobjectlist.h"
 #include "llviewercamera.h"
 #include "llviewerstats.h"
+#include "llvoavatarself.h"
+
+// linden library headers
+#include "llprimitive.h"
+#include "llwindow.h"
 
 // <edit>
 #include "llparcel.h" // always rez
 #include "llviewerparcelmgr.h" // always rez
 // </edit>
+#include "importtracker.h"
 
 // [RLVa:KB]
 #include "rlvhandler.h"
@@ -221,8 +223,19 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 
 	// Set params for new object based on its PCode.
 	LLQuaternion	rotation;
-	LLVector3		scale = DEFAULT_OBJECT_SCALE;
+	LLVector3		scale = LLVector3(
+		gSavedSettings.getF32("BuildPrefs_Xsize"),
+		gSavedSettings.getF32("BuildPrefs_Ysize"),
+		gSavedSettings.getF32("BuildPrefs_Zsize"));
+
 	U8				material = LL_MCODE_WOOD;
+	if(gSavedSettings.getString("BuildPrefs_Material")== "Stone") material = LL_MCODE_STONE;
+	else if(gSavedSettings.getString("BuildPrefs_Material")== "Metal") material = LL_MCODE_METAL;
+	//if(gSavedSettings.getString("BuildPrefs_Material")== "Wood") material = LL_MCODE_WOOD; redundant
+	else if(gSavedSettings.getString("BuildPrefs_Material")== "Flesh") material = LL_MCODE_FLESH;
+	else if(gSavedSettings.getString("BuildPrefs_Material")== "Rubber") material = LL_MCODE_RUBBER;
+	else if(gSavedSettings.getString("BuildPrefs_Material")== "Plastic") material = LL_MCODE_PLASTIC;
+
 	BOOL			create_selected = FALSE;
 	LLVolumeParams	volume_params;
 	
@@ -464,7 +477,8 @@ BOOL LLToolPlacer::addObject( LLPCode pcode, S32 x, S32 y, U8 use_physics )
 	
 	// Pack in name value pairs
 	gMessageSystem->sendReliable(regionp->getHost());
-
+	//Actually call expectRez so that importtracker can do its thing
+	gImportTracker.expectRez();
 	// Spawns a message, so must be after above send
 	if (create_selected)
 	{
@@ -588,23 +602,6 @@ void LLToolPlacer::handleDeselect()
 //////////////////////////////////////////////////////
 // LLToolPlacerPanel
 
-// static
-LLPCode LLToolPlacerPanel::sCube		= LL_PCODE_CUBE;
-LLPCode LLToolPlacerPanel::sPrism		= LL_PCODE_PRISM;
-LLPCode LLToolPlacerPanel::sPyramid		= LL_PCODE_PYRAMID;
-LLPCode LLToolPlacerPanel::sTetrahedron	= LL_PCODE_TETRAHEDRON;
-LLPCode LLToolPlacerPanel::sCylinder	= LL_PCODE_CYLINDER;
-LLPCode LLToolPlacerPanel::sCylinderHemi= LL_PCODE_CYLINDER_HEMI;
-LLPCode LLToolPlacerPanel::sCone		= LL_PCODE_CONE;
-LLPCode LLToolPlacerPanel::sConeHemi	= LL_PCODE_CONE_HEMI;
-LLPCode LLToolPlacerPanel::sTorus		= LL_PCODE_TORUS;
-LLPCode LLToolPlacerPanel::sSquareTorus = LLViewerObject::LL_VO_SQUARE_TORUS;
-LLPCode LLToolPlacerPanel::sTriangleTorus = LLViewerObject::LL_VO_TRIANGLE_TORUS;
-LLPCode LLToolPlacerPanel::sSphere		= LL_PCODE_SPHERE;
-LLPCode LLToolPlacerPanel::sSphereHemi	= LL_PCODE_SPHERE_HEMI;
-LLPCode LLToolPlacerPanel::sTree		= LL_PCODE_LEGACY_TREE;
-LLPCode LLToolPlacerPanel::sGrass		= LL_PCODE_LEGACY_GRASS;
-
 S32			LLToolPlacerPanel::sButtonsAdded = 0;
 LLButton*	LLToolPlacerPanel::sButtons[ TOOL_PLACER_NUM_BUTTONS ];
 
@@ -612,22 +609,6 @@ LLToolPlacerPanel::LLToolPlacerPanel(const std::string& name, const LLRect& rect
 	:
 	LLPanel( name, rect )
 {
-	/* DEPRECATED - JC
-	addButton( "UIImgCubeUUID",			"UIImgCubeSelectedUUID",		&LLToolPlacerPanel::sCube );
-	addButton( "UIImgPrismUUID",		"UIImgPrismSelectedUUID",		&LLToolPlacerPanel::sPrism );
-	addButton( "UIImgPyramidUUID",		"UIImgPyramidSelectedUUID",		&LLToolPlacerPanel::sPyramid );
-	addButton( "UIImgTetrahedronUUID",	"UIImgTetrahedronSelectedUUID",	&LLToolPlacerPanel::sTetrahedron );
-	addButton( "UIImgCylinderUUID",		"UIImgCylinderSelectedUUID",	&LLToolPlacerPanel::sCylinder );
-	addButton( "UIImgHalfCylinderUUID",	"UIImgHalfCylinderSelectedUUID",&LLToolPlacerPanel::sCylinderHemi );
-	addButton( "UIImgConeUUID",			"UIImgConeSelectedUUID",		&LLToolPlacerPanel::sCone );
-	addButton( "UIImgHalfConeUUID",		"UIImgHalfConeSelectedUUID",	&LLToolPlacerPanel::sConeHemi );
-	addButton( "UIImgSphereUUID",		"UIImgSphereSelectedUUID",		&LLToolPlacerPanel::sSphere );
-	addButton( "UIImgHalfSphereUUID",	"UIImgHalfSphereSelectedUUID",	&LLToolPlacerPanel::sSphereHemi );
-	addButton( "UIImgTreeUUID",			"UIImgTreeSelectedUUID",		&LLToolPlacerPanel::sTree );
-	addButton( "UIImgGrassUUID",		"UIImgGrassSelectedUUID",		&LLToolPlacerPanel::sGrass );
-	addButton( "ObjectTorusImageID",	"ObjectTorusActiveImageID",		&LLToolPlacerPanel::sTorus );
-	addButton( "ObjectTubeImageID",		"ObjectTubeActiveImageID",		&LLToolPlacerPanel::sSquareTorus );
-	*/
 }
 
 void LLToolPlacerPanel::addButton( const std::string& up_state, const std::string& down_state, LLPCode* pcode )

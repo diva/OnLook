@@ -16,11 +16,12 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llagent.h"
-#include "llcallbacklist.h"
+#include "llappearancemgr.h"
+#include "llinventoryobserver.h"
 #include "llstartup.h"
 #include "llviewerfoldertype.h"
 #include "llviewerobject.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 
 #include "rlvdefines.h"
 #include "rlvcommon.h"
@@ -44,7 +45,7 @@ const std::string RlvInventory::cstrSharedRoot = RLV_ROOT_FOLDER;
 class RlvSharedInventoryFetcher : public LLInventoryFetchDescendentsObserver
 {
 public:
-	RlvSharedInventoryFetcher(const uuid_vec_t& cat_ids) : LLInventoryFetchDescendentsObserver(cat_ids) {}
+	RlvSharedInventoryFetcher(const uuid_vec_t& idFolders): LLInventoryFetchDescendentsObserver(idFolders) {}
 	virtual ~RlvSharedInventoryFetcher() {}
 
 	virtual void done()
@@ -78,7 +79,7 @@ RlvInventory::~RlvInventory()
 // Checked: 2011-03-28 (RLVa-1.3.0g) | Added: RLVa-1.3.0g
 void RlvInventory::changed(U32 mask)
 {
-	const std::set<LLUUID>& idsChanged = gInventory.getChangedIDs();
+	const LLInventoryModel::changed_items_t& idsChanged = gInventory.getChangedIDs();
 	if (std::find(idsChanged.begin(), idsChanged.end(), m_idRlvRoot) != idsChanged.end())
 	{
 		gInventory.removeObserver(this);
@@ -104,15 +105,15 @@ void RlvInventory::fetchSharedInventory()
 	gInventory.collectDescendents(pRlvRoot->getUUID(), folders, items, FALSE);
 
 	// Add them to the "to fetch" list
-	uuid_vec_t fetchFolders;
-	fetchFolders.push_back(pRlvRoot->getUUID());
+	uuid_vec_t idFolders;
+	idFolders.push_back(pRlvRoot->getUUID());
 	for (S32 idxFolder = 0, cntFolder = folders.count(); idxFolder < cntFolder; idxFolder++)
-		fetchFolders.push_back(folders.get(idxFolder)->getUUID());
+		idFolders.push_back(folders.get(idxFolder)->getUUID());
 
 	// Now fetch them all in one go
-	RlvSharedInventoryFetcher* pFetcher = new RlvSharedInventoryFetcher(fetchFolders);
+	RlvSharedInventoryFetcher* pFetcher = new RlvSharedInventoryFetcher(idFolders);
 
-	RLV_INFOS << "Starting fetch of " << fetchFolders.size() << " shared folders" << RLV_ENDL;
+	RLV_INFOS << "Starting fetch of " << idFolders.size() << " shared folders" << RLV_ENDL;
 	pFetcher->startFetch();
 	m_fFetchStarted = true;
 
@@ -155,14 +156,14 @@ void RlvInventory::fetchSharedLinks()
 	RLV_INFOS << "Starting link target fetch of " << idItems.size() << " items and " << idFolders.size() << " folders" << RLV_ENDL;
 
 	// Fetch all the link item targets
-	RlvItemFetcher itemFetcher(idItems);
+	LLInventoryFetchItemsObserver itemFetcher(idItems);
 	itemFetcher.startFetch();
 
 	// Fetch all the link folder targets
 	// TODO!
 }
 
-// Checked: 2010-02-28 (RLVa-1.1.3a) | Modified: RLVa-1.2.0a
+// Checked: 2010-02-28 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a
 void RlvInventory::fetchWornItems()
 {
 	uuid_vec_t idItems;
@@ -170,17 +171,17 @@ void RlvInventory::fetchWornItems()
 	// Fetch all currently worn clothing layers and body parts
 	for (int type = 0; type < LLWearableType::WT_COUNT; type++)
 	{
-		const LLUUID idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type, 0);	// TODO: MULTI-WEARABLE
+		// RELEASE-RLVa: [SL-2.0.0] Needs rewriting once 'LLAgentWearables::MAX_WEARABLES_PER_TYPE > 1'
+		const LLUUID& idItem = gAgentWearables.getWearableItemID((LLWearableType::EType)type, 0);
 		if (idItem.notNull())
 			idItems.push_back(idItem);
 	}
 
 	// Fetch all currently worn attachments
-	LLVOAvatar* pAvatar = gAgentAvatarp;
-	if (pAvatar)
+	if (isAgentAvatarValid())
 	{
-		for (LLVOAvatar::attachment_map_t::const_iterator itAttachPt = pAvatar->mAttachmentPoints.begin(); 
-				itAttachPt != pAvatar->mAttachmentPoints.end(); ++itAttachPt)
+		for (LLVOAvatar::attachment_map_t::const_iterator itAttachPt = gAgentAvatarp->mAttachmentPoints.begin(); 
+				itAttachPt != gAgentAvatarp->mAttachmentPoints.end(); ++itAttachPt)
 		{
 			const LLViewerJointAttachment* pAttachPt = itAttachPt->second;
 			if (pAttachPt)
@@ -196,18 +197,8 @@ void RlvInventory::fetchWornItems()
 		}
 	}
 
-	RlvItemFetcher itemFetcher(idItems);
+	LLInventoryFetchItemsObserver itemFetcher(idItems);
 	itemFetcher.startFetch();
-}
-
-// Checked: 2010-09-27 (RLVa-1.1.3a) | Added: RLVa-1.1.3a
-void RlvInventory::fetchWornItem(const LLUUID& idItem)
-{ 
-	if (idItem.notNull()) 
-	{
-		RlvItemFetcher itemFetcher(idItem);
-		itemFetcher.startFetch();
-	}
 }
 
 // Checked: 2010-04-07 (RLVa-1.2.0a) | Modified: RLVa-1.0.0h
@@ -260,17 +251,19 @@ const LLUUID& RlvInventory::getSharedRootID() const
 		gInventory.getDirectDescendentsOf(gInventory.getRootFolderID(), pFolders, pItems);
 		if (pFolders)
 		{
-			// NOTE: we might have multiple #RLV folders so we'll just go with the first one we come across
+			// NOTE: we might have multiple #RLV folders (pick the first one with sub-folders; otherwise the last one with no sub-folders)
 			const LLViewerInventoryCategory* pFolder;
 			for (S32 idxFolder = 0, cntFolder = pFolders->count(); idxFolder < cntFolder; idxFolder++)
 			{
 				if ( ((pFolder = pFolders->get(idxFolder)) != NULL) && (cstrSharedRoot == pFolder->getName()) )
 				{
-					if (!gInventory.containsObserver((RlvInventory*)this))
-						gInventory.addObserver((RlvInventory*)this);
 					m_idRlvRoot = pFolder->getUUID();
+					if (getDirectDescendentsFolderCount(pFolder) > 0)
+						break;
 				}
 			}
+			if ( (m_idRlvRoot.notNull()) && (!gInventory.containsObserver((RlvInventory*)this)) )
+				gInventory.addObserver((RlvInventory*)this);
 		}
 	}
 	return m_idRlvRoot;
@@ -358,8 +351,17 @@ std::string RlvInventory::getSharedPath(const LLViewerInventoryCategory* pFolder
 	return strPath.erase(0, 1);
 }
 
+// Checked: 2011-10-06 (RLVa-1.4.2a) | Added: RLVa-1.4.2a
+S32 RlvInventory::getDirectDescendentsFolderCount(const LLInventoryCategory* pFolder)
+{
+	LLInventoryModel::cat_array_t* pFolders = NULL; LLInventoryModel::item_array_t* pItems = NULL;
+	if (pFolder)
+		gInventory.getDirectDescendentsOf(pFolder->getUUID(), pFolders, pItems);
+	return (pFolders) ? pFolders->size() : 0;
+}
+
 // Checked: 2009-05-26 (RLVa-0.2.0d) | Modified: RLVa-0.2.0d
-S32 RlvInventory::getDirectDescendentsCount(const LLInventoryCategory* pFolder, LLAssetType::EType filterType)
+S32 RlvInventory::getDirectDescendentsItemCount(const LLInventoryCategory* pFolder, LLAssetType::EType filterType)
 {
 	S32 cntType = 0;
 	if (pFolder)
@@ -393,16 +395,16 @@ void RlvRenameOnWearObserver::done()
 // Checked: 2010-03-14 (RLVa-1.1.3a) | Added: RLVa-1.2.0a
 void RlvRenameOnWearObserver::doneIdle()
 {
-	const LLViewerInventoryCategory* pRlvRoot = NULL; LLVOAvatar* pAvatar = gAgentAvatarp;
+	const LLViewerInventoryCategory* pRlvRoot = NULL;
 	if ( (RlvSettings::getEnableSharedWear()) || (!RlvSettings::getSharedInvAutoRename()) || (LLStartUp::getStartupState() < STATE_STARTED) || 
-		 (!pAvatar) || ((pRlvRoot = RlvInventory::instance().getSharedRoot()) == NULL) )
+		 (!isAgentAvatarValid()) || ((pRlvRoot = RlvInventory::instance().getSharedRoot()) == NULL) )
 	{
 		delete this;
 		return;
 	}
 
 	const LLViewerJointAttachment* pAttachPt = NULL; S32 idxAttachPt = 0;
-//	RLV_ASSERT(mComplete.size() > 0);	// Catch instances where we forgot to call startFetch()
+	RLV_ASSERT(mComplete.size() > 0);	// Catch instances where we forgot to call startFetch()
 	for (uuid_vec_t::const_iterator itItem = mComplete.begin(); itItem != mComplete.end(); ++itItem)
 	{
 		const LLUUID& idAttachItem = *itItem;
@@ -416,14 +418,13 @@ void RlvRenameOnWearObserver::doneIdle()
 		if (items.empty())
 			continue;
 
-		if ( ((pAttachPt = pAvatar->getWornAttachmentPoint(idAttachItem)) == NULL) ||
+		if ( ((pAttachPt = gAgentAvatarp->getWornAttachmentPoint(idAttachItem)) == NULL) ||
 			 ((idxAttachPt = RlvAttachPtLookup::getAttachPointIndex(pAttachPt)) == 0) )
 		{
-//			RLV_ASSERT(false);
+			RLV_ASSERT(false);
 			continue;
 		}
 
-		static const std::string &new_category_name = LLViewerFolderType::lookupNewCategoryName(LLFolderType::FT_NONE);
 		for (S32 idxItem = 0, cntItem = items.count(); idxItem < cntItem; idxItem++)
 		{
 			LLViewerInventoryItem* pItem = items.get(idxItem);
@@ -458,9 +459,9 @@ void RlvRenameOnWearObserver::doneIdle()
 					std::string strFolderName = ".(" + strAttachPt + ")";
 
 					// Rename the item's parent folder if it's called "New Folder", isn't directly under #RLV and contains exactly 1 object
-					if ( (new_category_name == pFolder->getName()) && 
+					if ( (LLViewerFolderType::lookupNewCategoryName(LLFolderType::FT_NONE) == pFolder->getName()) && 
 						 (pFolder->getParentUUID() != pRlvRoot->getUUID()) && 
-						 (1 == RlvInventory::getDirectDescendentsCount(pFolder, LLAssetType::AT_OBJECT)) )
+						 (1 == RlvInventory::getDirectDescendentsItemCount(pFolder, LLAssetType::AT_OBJECT)) )
 					{
 						pFolder->rename(strFolderName);
 						pFolder->updateServer(FALSE);
@@ -469,8 +470,13 @@ void RlvRenameOnWearObserver::doneIdle()
 					else
 					{
 						// "No modify" item with a non-renameable parent: create a new folder named and move the item into it
-						LLUUID idAttachFolder = gInventory.createNewCategory(pFolder->getUUID(), LLFolderType::FT_NONE, strFolderName);
-						move_inventory_item(gAgent.getID(), gAgent.getSessionID(), pItem->getUUID(), idAttachFolder, std::string(), NULL);
+						LLUUID idFolder = gInventory.createNewCategory(pFolder->getUUID(), LLFolderType::FT_NONE, strFolderName,
+						                                               &RlvRenameOnWearObserver::onCategoryCreate, new LLUUID(pItem->getUUID()));
+						if (idFolder.notNull())
+						{
+							// Not using the new 'CreateInventoryCategory' cap so manually invoke the callback
+							RlvRenameOnWearObserver::onCategoryCreate(LLSD().with("folder_id", idFolder), new LLUUID(pItem->getUUID()));
+						}
 					}
 				}
 			}
@@ -479,6 +485,18 @@ void RlvRenameOnWearObserver::doneIdle()
 	gInventory.notifyObservers();
 
 	delete this;
+}
+
+// Checked: 2012-03-22 (RLVa-1.4.6) | Added: RLVa-1.4.6
+void RlvRenameOnWearObserver::onCategoryCreate(const LLSD& sdData, void* pParam)
+{
+	LLUUID idFolder = sdData["folder_id"].asUUID();
+	LLUUID* pidItem = (LLUUID*)pParam;
+
+	if ( (idFolder.notNull()) && (pidItem) && (pidItem->notNull()) )
+		move_inventory_item(gAgent.getID(), gAgent.getSessionID(), *pidItem, idFolder, std::string(), NULL);
+
+	delete pidItem;
 }
 
 // ============================================================================
@@ -540,7 +558,7 @@ void RlvGiveToRLVTaskOffer::doneIdle()
 				pNewFolder->updateServer(FALSE);
 				gInventory.updateCategory(pNewFolder);
 
-				RlvBehaviourNotifyHandler::instance().sendNotification("accepted_in_rlv inv_offer " + pNewFolder->getName());
+				RlvBehaviourNotifyHandler::sendNotification("accepted_in_rlv inv_offer " + pNewFolder->getName());
 
 				gInventory.notifyObservers();
 				break;
@@ -671,14 +689,15 @@ bool RlvWearableItemCollector::onCollectFolder(const LLInventoryCategory* pFolde
 
 	if ( (!fLinkedFolder) && (RlvInventory::isFoldedFolder(pFolder, false)) )	// Check for folder that should get folded under its parent
 	{
-		if ( (!fAttach) || (1 == RlvInventory::getDirectDescendentsCount(pFolder, LLAssetType::AT_OBJECT)) )
+		if ( (!fAttach) || (1 == RlvInventory::getDirectDescendentsItemCount(pFolder, LLAssetType::AT_OBJECT)) )
 		{																		// When attaching there should only be 1 attachment in it
 			m_Folded.push_front(pFolder->getUUID());
 			m_FoldingMap.insert(std::pair<LLUUID, LLUUID>(pFolder->getUUID(), pFolder->getParentUUID()));
 		}
 	}
 	else if ( (RLV_FOLDER_PREFIX_HIDDEN != strFolder[0]) && 					// Collect from any non-hidden child folder for *all
-		      ( (fMatchAll) || (fLinkedFolder) ) )								// ... and collect from linked folders
+		      ( (fMatchAll) || (fLinkedFolder) ) && 							// ... and collect from linked folders
+			  (!isLinkedFolder(pFolder->getParentUUID())) )						// ... but never from non-folded linked folder descendents
 	{
 		#ifdef RLV_EXPERIMENTAL_COMPOSITEFOLDERS
 		if ( (!RlvSettings::getEnableComposites()) ||							// ... if we're not checking composite folders

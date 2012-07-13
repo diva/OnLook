@@ -64,7 +64,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerparcelmgr.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvograss.h"
 #include "llworld.h"
 #include "pipeline.h"
@@ -87,6 +87,7 @@
 
 // [RLVa:KB]
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 LLPointer<LLViewerTexture> gDisconnectedImagep = NULL;
@@ -152,6 +153,8 @@ void display_startup()
 
 	LLGLState::checkStates();
 	LLGLState::checkTextureChannels();
+
+	gViewerWindow->updateUI(); // Fix ui flicker.
 
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	LLGLSUIDefault gls_ui;
@@ -766,7 +769,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLGLState::checkStates();
 		LLGLState::checkClientArrays();
 
-		if (!for_snapshot || tiling)
+		//if (!for_snapshot)
 		{
 			LLAppViewer::instance()->pingMainloopTimeout("Display:Imagery");
 			gPipeline.generateWaterReflection(*LLViewerCamera::getInstance());
@@ -810,12 +813,12 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				gTextureList.updateImages(max_image_decode_time);
 			}
 
-			{
+			/*{
 				LLFastTimer t(FTM_IMAGE_UPDATE_DELETE);
 				//remove dead textures from GL
 				LLImageGL::deleteDeadTextures();
 				stop_glerror();
-			}
+			}*/
 		}
 		llpushcallstacks ;
 		LLGLState::checkStates();
@@ -918,13 +921,14 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		if (to_texture)
 		{
 			gGL.setColorMask(true, true);
+
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
 				gPipeline.mDeferredScreen.bindTarget();
 				glClearColor(1,0,1,1);
 				gPipeline.mDeferredScreen.clear();
 			}
-			else if(!tiling)
+			else
 			{
 				gPipeline.mScreen.bindTarget();
 				if (LLPipeline::sUnderWaterRender && !gPipeline.canUseWindLightShaders())
@@ -944,6 +948,29 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 				&& !gRestoreGL)
 		{
 			LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
+			
+			LLCachedControl<bool> render_depth_pre_pass("RenderDepthPrePass", false);
+			if (render_depth_pre_pass && LLGLSLShader::sNoFixedFunction)
+			{
+				gGL.setColorMask(false, false);
+				
+				U32 types[] = { 
+					LLRenderPass::PASS_SIMPLE, 
+					LLRenderPass::PASS_FULLBRIGHT, 
+					LLRenderPass::PASS_SHINY 
+				};
+
+				U32 num_types = LL_ARRAY_SIZE(types);
+				gOcclusionProgram.bind();
+				for (U32 i = 0; i < num_types; i++)
+				{
+					gPipeline.renderObjects(types[i], LLVertexBuffer::MAP_VERTEX, FALSE);
+				}
+
+				gOcclusionProgram.unbind();
+			}
+
+
 			gGL.setColorMask(true, false);
 			if (LLPipeline::sRenderDeferred && !LLPipeline::sUnderWaterRender)
 			{
@@ -966,12 +993,13 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 			stop_glerror();
 		}
 
-		for (U32 i = 0; i < (U32)gGLManager.mNumTextureImageUnits; i++)
+		//Reversed this. disabling a texunit sets its index as current.. randomly breaking LLRender::matrixMode(U32 mode). Make sure unit0 is the 'current' unit.
+		for (S32 i = gGLManager.mNumTextureImageUnits-1; i >= 0; --i)
 		{ //dummy cleanup of any currently bound textures
-			if (gGL.getTexUnit(i)->getCurrType() != LLTexUnit::TT_NONE)
+			if (gGL.getTexUnit((U32)i)->getCurrType() != LLTexUnit::TT_NONE)
 			{
-				gGL.getTexUnit(i)->unbind(gGL.getTexUnit(i)->getCurrType());
-				gGL.getTexUnit(i)->disable();
+				gGL.getTexUnit((U32)i)->unbind(gGL.getTexUnit((U32)i)->getCurrType());
+				gGL.getTexUnit((U32)i)->disable();
 			}
 		}
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderFlush");		
@@ -990,7 +1018,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 															  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 				}
 			}
-			else if(!tiling)
+			else
 			{
 				gPipeline.mScreen.flush();
 				if(LLRenderTarget::sUseFBO)
@@ -1013,7 +1041,7 @@ void display(BOOL rebuild, F32 zoom_factor, int subfield, BOOL for_snapshot, boo
 		LLPipeline::sUnderWaterRender = FALSE;
 
 		LLAppViewer::instance()->pingMainloopTimeout("Display:RenderUI");
-		if (!for_snapshot)
+		if (!for_snapshot || LLPipeline::sRenderDeferred)
 		{
 			LLFastTimer t(FTM_RENDER_UI);
 			gFrameStats.start(LLFrameStats::RENDER_UI);

@@ -86,7 +86,7 @@ namespace tut
 	void application_object_t::test<2>()
 	{
 		const int ARGC = 13;
-		char* ARGV[ARGC] =
+		const char* ARGV[ARGC] =
 		{
 			"", // argv[0] is usually the application name
 			"-crashcount",
@@ -97,12 +97,12 @@ namespace tut
 			"localhost",
 			"--allowlslhttprequests",
 			"-asset-uri",
-			"http://asset.grid.lindenlab.com/assets",
+			"http://test.lindenlab.com/assets",
 			"-data",
 			"127.0.0.1",
 			"--smtp"
 		};
-		bool ok = mApp->parseCommandOptions(ARGC, ARGV);
+		bool ok = mApp->parseCommandOptions(ARGC, const_cast<char**>(ARGV));
 		ensure("command line parsed", ok);
 		ensure_equals(
 			"crashcount", mApp->getOption("crashcount").asInteger(), 2);
@@ -118,7 +118,7 @@ namespace tut
 		ensure_equals(
 			"asset-uri",
 			mApp->getOption("asset-uri").asString(),
-			std::string("http://asset.grid.lindenlab.com/assets"));
+			std::string("http://test.lindenlab.com/assets"));
 		ensure_equals(
 			"data",
 			mApp->getOption("data").asString(),
@@ -130,14 +130,14 @@ namespace tut
 	void application_object_t::test<3>()
 	{
 		const int ARGC = 4;
-		char* ARGV[ARGC] =
+		const char* ARGV[ARGC] =
 		{
 			"", // argv[0] is usually the application name
 			"crashcount",
 			"2",
 			"--space"
 		};
-		bool ok = mApp->parseCommandOptions(ARGC, ARGV);
+		bool ok = mApp->parseCommandOptions(ARGC, const_cast<char**>(ARGV));
 		ensure("command line parse failure", !ok);
 	}
 
@@ -145,14 +145,14 @@ namespace tut
 	void application_object_t::test<4>()
 	{
 		const int ARGC = 4;
-		char* ARGV[ARGC] =
+		const char* ARGV[ARGC] =
 		{
 			"", // argv[0] is usually the application name
 			"--crashcount",
 			"2",
 			"space"
 		};
-		bool ok = mApp->parseCommandOptions(ARGC, ARGV);
+		bool ok = mApp->parseCommandOptions(ARGC, const_cast<char**>(ARGV));
 		ensure("command line parse failure", !ok);
 	}
 

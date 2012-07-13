@@ -127,37 +127,36 @@ BOOL LLPanelGroupGeneral::postBuild()
 	if(mEditCharter)
 	{
 		mEditCharter->setCommitCallback(onCommitAny);
-		mEditCharter->setFocusReceivedCallback(onFocusEdit, this);
-		mEditCharter->setFocusChangedCallback(onFocusEdit, this);
+		mEditCharter->setFocusReceivedCallback(boost::bind(&LLPanelGroupGeneral::onFocusEdit, this));
+		mEditCharter->setFocusChangedCallback(boost::bind(&LLPanelGroupGeneral::onFocusEdit, this));
 		mEditCharter->setCallbackUserData(this);
 	}
 
 	mBtnJoinGroup = getChild<LLButton>("join_button", recurse);
 	if ( mBtnJoinGroup )
 	{
-		mBtnJoinGroup->setClickedCallback(onClickJoin);
-		mBtnJoinGroup->setCallbackUserData(this);
+		mBtnJoinGroup->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickJoin, this));
 	}
 
 	mBtnInfo = getChild<LLButton>("info_button", recurse);
 	if ( mBtnInfo )
 	{
-		mBtnInfo->setClickedCallback(onClickInfo);
-		mBtnInfo->setCallbackUserData(this);
+		mBtnInfo->setClickedCallback(boost::bind(&LLPanelGroupGeneral::onClickInfo, this));
 	}
 
 	LLTextBox* founder = getChild<LLTextBox>("founder_name");
 	if (founder)
 	{
 		mFounderName = new LLNameBox(founder->getName(),founder->getRect(),LLUUID::null,FALSE,founder->getFont(),founder->getMouseOpaque());
-		removeChild(founder, TRUE);
+		removeChild(founder);
+		delete founder;
 		addChild(mFounderName);
 	}
 
 	mListVisibleMembers = getChild<LLNameListCtrl>("visible_members", recurse);
 	if (mListVisibleMembers)
 	{
-		mListVisibleMembers->setDoubleClickCallback(openProfile);
+		mListVisibleMembers->setDoubleClickCallback(&LLPanelGroupGeneral::openProfile);
 		mListVisibleMembers->setCallbackUserData(this);
 	}
 
@@ -165,7 +164,7 @@ BOOL LLPanelGroupGeneral::postBuild()
 	mCtrlShowInGroupList = getChild<LLCheckBoxCtrl>("show_in_group_list", recurse);
 	if (mCtrlShowInGroupList)
 	{
-		mCtrlShowInGroupList->setCommitCallback(onCommitAny);
+		mCtrlShowInGroupList->setCommitCallback(&LLPanelGroupGeneral::onCommitAny);
 		mCtrlShowInGroupList->setCallbackUserData(this);
 	}
 
@@ -279,15 +278,12 @@ BOOL LLPanelGroupGeneral::postBuild()
 	return LLPanelGroupTab::postBuild();
 }
 
-// static
-void LLPanelGroupGeneral::onFocusEdit(LLFocusableElement* ctrl, void* data)
+void LLPanelGroupGeneral::onFocusEdit()
 {
-	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;
-	self->updateChanged();
-	self->notifyObservers();
+	updateChanged();
+	notifyObservers();
 }
 
-// static
 void LLPanelGroupGeneral::onCommitAny(LLUICtrl* ctrl, void* data)
 {
 	LLPanelGroupGeneral* self = (LLPanelGroupGeneral*)data;

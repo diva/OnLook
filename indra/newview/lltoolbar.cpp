@@ -42,13 +42,14 @@
 
 #include "llagent.h"
 #include "llagentcamera.h"
+#include "llagentwearables.h"
 #include "llbutton.h"
 #include "llfocusmgr.h"
 #include "llviewercontrol.h"
 #include "llmenucommands.h"
 #include "llimview.h"
 #include "lluiconstants.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "lltooldraganddrop.h"
 #include "llfloaterchatterbox.h"
 #include "llfloaterfriends.h"
@@ -176,7 +177,7 @@ BOOL LLToolBar::postBuild()
 	{
 		LLRect rect(0, 0, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT);
 		mResizeHandle = new LLFakeResizeHandle(std::string(""), rect, RESIZE_HANDLE_WIDTH, RESIZE_HANDLE_HEIGHT);
-		this->addChildAtEnd(mResizeHandle);
+		this->addChildInBack(mResizeHandle);
 		LLLayoutStack* toolbar_stack = getChild<LLLayoutStack>("toolbar_stack");
 		toolbar_stack->reshape(toolbar_stack->getRect().getWidth() - RESIZE_HANDLE_WIDTH, toolbar_stack->getRect().getHeight());
 	}
@@ -288,6 +289,9 @@ void LLToolBar::reshape(S32 width, S32 height, BOOL called_from_parent)
 // Per-frame updates of visibility
 void LLToolBar::refresh()
 {
+	if(!isAgentAvatarValid())
+		return;
+
 	BOOL show = gSavedSettings.getBOOL("ShowToolBar");
 	BOOL mouselook = gAgentCamera.cameraMouselook();
 	setVisible(show && !mouselook);
@@ -533,7 +537,7 @@ void LLToolBar::onClickDirectory(void*)
 // static
 void LLToolBar::onClickBuild(void*)
 {
-	toggle_build_mode();
+	LLToolMgr::getInstance()->toggleBuildMode();
 }
 
 

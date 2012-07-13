@@ -41,9 +41,11 @@
 #include "llwaterparammanager.h"
 #include "llwlhandlers.h"
 #include "llwlparammanager.h"
-//#include "kcwlinterface.h"
 #include "m7wlinterface.h"
+// [RLVa:KB] - Checked: 2011-09-04 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+#include <boost/algorithm/string.hpp>
 #include "rlvhandler.h"
+// [/RLVa:KB]
 
 std::string LLEnvPrefs::getWaterPresetName() const
 {
@@ -185,8 +187,8 @@ bool LLEnvManagerNew::useRegionSettings()
 bool LLEnvManagerNew::useWaterPreset(const std::string& name)
 {
 	LL_DEBUGS("Windlight") << "Displaying water preset " << name << LL_ENDL;
-	LLWaterParamManager* water_mgr = LLWaterParamManager::getInstance();
-	bool rslt = water_mgr->getParamSet(name, water_mgr->mCurParams);
+	LLWaterParamManager& water_mgr = LLWaterParamManager::instance();
+	bool rslt = water_mgr.getParamSet(name, water_mgr.mCurParams);
 	llassert(rslt == true);
 	return rslt;
 }
@@ -194,30 +196,30 @@ bool LLEnvManagerNew::useWaterPreset(const std::string& name)
 bool LLEnvManagerNew::useWaterParams(const LLSD& params)
 {
 	LL_DEBUGS("Windlight") << "Displaying water params" << LL_ENDL;
-	LLWaterParamManager::getInstance()->mCurParams.setAll(params);
+	LLWaterParamManager::instance().mCurParams.setAll(params);
 	return true;
 }
 
 bool LLEnvManagerNew::useSkyPreset(const std::string& name, bool interpolate /*= false*/)
 {
-	LLWLParamManager* sky_mgr = LLWLParamManager::getInstance();
+	LLWLParamManager& sky_mgr = LLWLParamManager::instance();
 	LLWLParamSet param_set;
 
-	if (!sky_mgr->getParamSet(LLWLParamKey(name, LLEnvKey::SCOPE_LOCAL), param_set))
+	if (!sky_mgr.getParamSet(LLWLParamKey(name, LLEnvKey::SCOPE_LOCAL), param_set))
 	{
 		llwarns << "No sky preset named " << name << llendl;
 		return false;
 	}
 
 	LL_DEBUGS("Windlight") << "Displaying sky preset " << name << LL_ENDL;
-	sky_mgr->applySkyParams(param_set.getAll(), interpolate);
+	sky_mgr.applySkyParams(param_set.getAll(), interpolate);
 	return true;
 }
 
 bool LLEnvManagerNew::useSkyParams(const LLSD& params)
 {
 	LL_DEBUGS("Windlight") << "Displaying sky params" << LL_ENDL;
-	LLWLParamManager::getInstance()->applySkyParams(params);
+	LLWLParamManager::instance().applySkyParams(params);
 	return true;
 }
 
@@ -241,7 +243,7 @@ bool LLEnvManagerNew::useDayCycle(const std::string& name, LLEnvKey::EScope scop
 		}
 	}
 
-	bool rslt = LLWLParamManager::getInstance()->applyDayCycleParams(params, scope);
+	bool rslt = LLWLParamManager::instance().applyDayCycleParams(params, scope);
 	llassert(rslt == true);
 	return rslt;
 }
@@ -249,7 +251,7 @@ bool LLEnvManagerNew::useDayCycle(const std::string& name, LLEnvKey::EScope scop
 bool LLEnvManagerNew::useDayCycleParams(const LLSD& params, LLEnvKey::EScope scope, F32 time /* = 0.5*/)
 {
 	LL_DEBUGS("Windlight") << "Displaying day cycle params" << LL_ENDL;
-	return LLWLParamManager::getInstance()->applyDayCycleParams(params, scope);
+	return LLWLParamManager::instance().applyDayCycleParams(params, scope);
 }
 
 void LLEnvManagerNew::setUseRegionSettings(bool val, bool interpolate /*= false*/)
@@ -364,7 +366,7 @@ void LLEnvManagerNew::dumpPresets()
 		LL_DEBUGS("Windlight") << " - " << region_name << LL_ENDL;
 	}
 	LLWaterParamManager::preset_name_list_t water_presets;
-	LLWaterParamManager::getInstance()->getPresetNames(water_presets);
+	LLWaterParamManager::instance().getPresetNames(water_presets);
 	for (LLWaterParamManager::preset_name_list_t::const_iterator it = water_presets.begin(); it != water_presets.end(); ++it)
 	{
 		LL_DEBUGS("Windlight") << " - " << *it << LL_ENDL;
@@ -373,7 +375,7 @@ void LLEnvManagerNew::dumpPresets()
 	// Dump sky presets.
 	LL_DEBUGS("Windlight") << "Skies:" << LL_ENDL;
 	LLWLParamManager::preset_key_list_t sky_preset_keys;
-	LLWLParamManager::getInstance()->getPresetKeys(sky_preset_keys);
+	LLWLParamManager::instance().getPresetKeys(sky_preset_keys);
 	for (LLWLParamManager::preset_key_list_t::const_iterator it = sky_preset_keys.begin(); it != sky_preset_keys.end(); ++it)
 	{
 		std::string preset_name = it->name;
@@ -490,23 +492,17 @@ void LLEnvManagerNew::onRegionSettingsResponse(const LLSD& content)
 	mCachedRegionPrefs = new_settings;
 
 	// Load region sky presets.
-	LLWLParamManager::getInstance()->refreshRegionPresets();
+	LLWLParamManager::instance().refreshRegionPresets();
 
-	// Use the region settings if parcel settings didnt override it already -KC
-	if (!M7WindlightInterface::getInstance()->hasOverride())
+	bool bOverridden = M7WindlightInterface::getInstance()->hasOverride();
+
+	// If using server settings, update managers.
+//	if (getUseRegionSettings())
+// [RLVa:KB] - Checked: 2011-08-29 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+	if (!bOverridden && (getUseRegionSettings()) && (LLWLParamManager::getInstance()->mAnimator.getIsRunning()) )
+// [/RLVa:KB]
 	{
-		// If using server settings, update managers.
-		if (getUseRegionSettings())
-		{
-			updateManagersFromPrefs(mInterpNextChangeMessage);
-		}
-		//bit of a hacky override since I've repurposed many of the settings and methods here -KC
-		//NOTE* It might not be a good idea to do this if under RLV_BHVR_SETENV -KC
-		else if (gSavedSettings.getBOOL("UseEnvironmentFromRegionAlways") 
-		 && !(rlv_handler_t::isEnabled() && gRlvHandler.hasBehaviour(RLV_BHVR_SETENV)))
-		{
-			setUseRegionSettings(true, mInterpNextChangeMessage);
-		}
+		updateManagersFromPrefs(mInterpNextChangeMessage);
 	}
 
 	// Let interested parties know about the region settings update.
@@ -567,7 +563,7 @@ void LLEnvManagerNew::updateSkyFromPrefs(bool interpolate /*= false*/)
 
 void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 {
-	LLWaterParamManager* water_mgr = LLWaterParamManager::getInstance();
+	LLWaterParamManager& water_mgr = LLWaterParamManager::instance();
 	LLSD target_water_params;
 
 	// Determine new water settings based on user prefs.
@@ -575,7 +571,7 @@ void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 	{
 		// Fall back to default water.
 		LLWaterParamSet default_water;
-		water_mgr->getParamSet("Default", default_water);
+		water_mgr.getParamSet("Default", default_water);
 		target_water_params = default_water.getAll();
 	}
 
@@ -598,10 +594,10 @@ void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 		std::string water = getWaterPresetName();
 		LL_DEBUGS("Windlight") << "Applying water preset [" << water << "]" << LL_ENDL;
 		LLWaterParamSet params;
-		if (!water_mgr->getParamSet(water, params))
+		if (!water_mgr.getParamSet(water, params))
 		{
 			llwarns << "No water preset named " << water << ", falling back to defaults" << llendl;
-			water_mgr->getParamSet("Default", params);
+			water_mgr.getParamSet("Default", params);
 
 			// *TODO: Fix user preferences accordingly.
 		}
@@ -609,11 +605,17 @@ void LLEnvManagerNew::updateWaterFromPrefs(bool interpolate)
 	}
 
 	// Sync water with user prefs.
-	water_mgr->applyParams(target_water_params, interpolate);
+	water_mgr.applyParams(target_water_params, interpolate);
 }
 
 void LLEnvManagerNew::updateManagersFromPrefs(bool interpolate)
 {
+// [RLVa:KB] - Checked: 2011-09-04 (RLVa-1.4.1a) | Added: RLVa-1.4.1a
+	if (gRlvHandler.hasBehaviour(RLV_BHVR_SETENV))
+	{
+		return;
+	}
+// [/RLVa:KB]
 	// Apply water settings.
 	updateWaterFromPrefs(interpolate);
 

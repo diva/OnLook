@@ -30,11 +30,11 @@ include(BuildVersion)
 
 include(UnixInstall)
 
-set (GCC_DISABLE_FATAL_WARNINGS TRUE)
+set (DISABLE_FATAL_WARNINGS TRUE)
 
 if (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE ReleaseSSE2 CACHE STRING
-      "Build type.  One of: Debug Release ReleaseSSE2 RelWithDebInfo" FORCE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Build type.  One of: Debug Release RelWithDebInfo" FORCE)
 endif (NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
 
 # Create a 'prepare' target in which to perform setup actions.  This
@@ -77,6 +77,7 @@ if (VIEWER)
   add_subdirectory(${LIBS_OPEN_PREFIX}llcrashlogger)
   add_subdirectory(${LIBS_OPEN_PREFIX}llplugin)
   add_subdirectory(${LIBS_OPEN_PREFIX}llui)
+  add_subdirectory(${LIBS_OPEN_PREFIX}llxuixml)
 
   # viewer plugins directory
   add_subdirectory(${LIBS_OPEN_PREFIX}plugins)

@@ -174,6 +174,8 @@ public:
 	// Provide native key event data
 	virtual LLSD getNativeKeyData() { return LLSD::emptyMap(); }
 
+	virtual void setTitle(const std::string &title){};
+
 protected:
 LLWindow(LLWindowCallbacks* callbacks, BOOL fullscreen, U32 flags);
 	virtual ~LLWindow();

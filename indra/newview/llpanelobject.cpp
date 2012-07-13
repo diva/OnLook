@@ -55,7 +55,7 @@
 #include "llinventoryfunctions.h"
 #include "llmanipscale.h"
 #include "llnotificationsutil.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llpreviewscript.h"
 #include "llresmgr.h"
 #include "llselectmgr.h"
@@ -83,6 +83,7 @@
 
 // [RLVa:KB]
 #include "rlvhandler.h"
+#include "llvoavatarself.h"
 // [/RLVa:KB]
 
 //
@@ -477,10 +478,10 @@ void LLPanelObject::getState( )
 	}
 
 	// can move or rotate only linked group with move permissions, or sub-object with move and modify perms
-	BOOL enable_move	= objectp->permMove() && (!objectp->isAttachment() && objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_move	= objectp->permMove() && ((!objectp->isAttachment() && objectp->permModify()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 	BOOL enable_scale	= objectp->permMove() && objectp->permModify();
-	BOOL enable_rotate	= objectp->permMove() && ( (objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
-	BOOL enable_link	= objectp->permMove() && !objectp->isAttachment() && (objectp->permModify() || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_rotate	= objectp->permMove() && ((objectp->permModify() && !objectp->isAttachment()) || !gSavedSettings.getBOOL("EditLinkedParts"));
+	BOOL enable_link	= objectp->permMove() && ((!objectp->isAttachment() && objectp->permModify()) || !gSavedSettings.getBOOL("EditLinkedParts"));
 	childSetEnabled("build_math_constants",true);
 	S32 selected_count = LLSelectMgr::getInstance()->getSelection()->getObjectCount();
 	BOOL single_volume = (LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME ))
@@ -493,11 +494,10 @@ void LLPanelObject::getState( )
 		enable_rotate = FALSE;
 	}
 
-// [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
+// [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c) | Modified: RLVa-1.0.0g
 	if ( (rlv_handler_t::isEnabled()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP))) )
 	{
-		LLVOAvatar* pAvatar = gAgentAvatarp;
-		if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == objectp->getRootEdit()) )
+		if ( (isAgentAvatarValid()) && (gAgentAvatarp->isSitting()) && (gAgentAvatarp->getRoot() == objectp->getRootEdit()) )
 			enable_move = enable_scale = enable_rotate = FALSE;
 	}
 // [/RLVa:KB]

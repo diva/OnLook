@@ -275,6 +275,8 @@ class WindowsManifest(ViewerManifest):
             print "Skipping llcommon.dll (assuming llcommon was linked statically)"
           self.end_prefix()
         if self.prefix(src="../../libraries/i686-win32/lib/release", dst=""):
+          self.path("libeay32.dll")
+          self.path("ssleay32.dll")
           try:
             self.path('libapr-1.dll')
             self.path('libaprutil-1.dll')
@@ -782,14 +784,7 @@ class Linux_i686Manifest(LinuxManifest):
 
         self.path("../llcommon/libllcommon.so", "lib/libllcommon.so")
 
-        if (not self.standalone()) and self.prefix("../../libraries/i686-linux/lib_release_client", dst="lib"):
-
-            try:
-                self.path("libkdu_v42R.so", "libkdu.so")
-                pass
-            except:
-                print "Skipping libkdu_v42R.so - not found"
-                pass
+        if (not self.standalone()) and self.prefix("../../libraries/i686-linux/lib/release", dst="lib"):
 
             try:
                 self.path("libfmod-3.75.so")
@@ -798,17 +793,19 @@ class Linux_i686Manifest(LinuxManifest):
                 print "Skipping libfmod-3.75.so - not found"
                 pass
 
-            self.path("libapr-1.so.0")
-            self.path("libaprutil-1.so.0")
-            self.path("libdb-4.2.so")
-            self.path("libcrypto.so.0.9.7")
-            self.path("libexpat.so.1")
-            self.path("libhunspell-1.2.so.0.0.0", "libhunspell-1.2.so.0")
-            self.path("libssl.so.0.9.7")
-            #self.path("libuuid.so.1")
-            self.path("libSDL-1.2.so.0")
             self.path("libELFIO.so")
-            #self.path("libopenjpeg.so.1.3.0", "libopenjpeg.so.1.3")
+            self.path("libSDL-1.2.so*")
+            self.path("libapr-1.so*")
+            self.path("libaprutil-1.so*")
+            self.path("libcrypto.so*")
+            self.path("libdb*.so")
+            self.path("libdirect-1.*.so*")
+            self.path("libdirectfb-1.*.so*")
+            self.path("libfusion-1.*.so*")
+            self.path("libexpat.so*")
+            self.path("libhunspell-*.so.*")
+            self.path("libssl.so*")
+            self.path("libuuid.so*")
             self.path("libalut.so")
             self.path("libopenal.so.1")
             self.path("libtcmalloc_minimal.so.0")

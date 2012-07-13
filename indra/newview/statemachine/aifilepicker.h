@@ -185,7 +185,7 @@ public:
 private:
 	LLPointer<LLViewerPluginManager> mPluginManager;				//!< Pointer to the plugin manager.
 	typedef std::map<std::string, std::string> context_map_type;	//!< Type of mContextMap.
-	static AIThreadSafeSimple<context_map_type> sContextMap;		//!< Map context (ie, "snapshot" or "image") to last used folder.
+	static AIThreadSafeSimpleDC<context_map_type> sContextMap;		//!< Map context (ie, "snapshot" or "image") to last used folder.
 	std::string mContext;											//!< Some key to indicate the context (remembers the folder per key).
 	bool mAutoKill;													//!< True if the default behavior is to delete itself after being finished.
 

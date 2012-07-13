@@ -259,7 +259,7 @@ void LLFloaterSculptPreview::draw()
 		
 		if (selected <= 0)
 		{
-			gl_rect_2d_checkerboard(getScreenRect(),mPreviewRect);
+			gl_rect_2d_checkerboard(calcScreenRect(),mPreviewRect);
 			LLGLDisable gls_alpha(GL_ALPHA_TEST);
 
 			if(mImagep.notNull())

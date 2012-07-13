@@ -32,19 +32,6 @@ struct EmeraldGlobalBoobConfig
 			XYInfluence(0.3f)
 	{
 	}
-
-	bool operator==(const EmeraldGlobalBoobConfig &other) const
-	{
-		return
-			enabled == other.enabled &&
-			mass == other.mass &&
-			zMax == other.zMax &&
-			velMax == other.velMax &&
-			velMin == other.velMin &&
-			zInfluence == other.zInfluence &&
-			XYInfluence == other.XYInfluence &&
-			friction == other.friction;
-	}
 };
 
 std::ostream &operator<<(std::ostream &os, const EmeraldGlobalBoobConfig &v);
@@ -52,14 +39,10 @@ std::ostream &operator<<(std::ostream &os, const EmeraldGlobalBoobConfig &v);
 struct EmeraldAvatarLocalBoobConfig
 {
 	F32 actualBoobGrav;
-	F32 actualButtGrav;
-	F32 actualFatGrav;
 	F32 boobSize;
 
 	EmeraldAvatarLocalBoobConfig()
 		: actualBoobGrav(0.0f),
-		  actualButtGrav(0.0f),
-		  actualFatGrav(0.0f),
 			boobSize(0.0f)
 	{
 	}
@@ -68,8 +51,6 @@ struct EmeraldAvatarLocalBoobConfig
 	{
 		return
 			actualBoobGrav == other.actualBoobGrav &&
-			actualButtGrav == other.actualButtGrav &&
-			actualFatGrav == other.actualFatGrav &&
 			boobSize == other.boobSize;
 	}
 
@@ -88,8 +69,6 @@ struct EmeraldBoobState
 	F32 frameDuration;
 	LLVector3 chestDisplacement;
 	LLVector3 localChestDisplacement;
-	LLVector3 displacementForce;
-	F32 mysteryValue;
 	std::list<EmeraldBoobBounceState> bounceStates;
 
 	EmeraldBoobState()
@@ -99,9 +78,7 @@ struct EmeraldBoobState
 			elapsedTime(0.0f),
 			frameDuration(0.0f),
 			chestDisplacement(0.0f,0.0f,0.0f),
-			localChestDisplacement(0.0f,0.0f,0.0f),
-			displacementForce(0.0f,0.0f,0.0f),
-			mysteryValue(0.0f)
+			localChestDisplacement(0.0f,0.0f,0.0f)
 	{
 	}
 
@@ -115,8 +92,6 @@ struct EmeraldBoobState
 			frameDuration == other.frameDuration &&
 			chestDisplacement == other.chestDisplacement &&
 			localChestDisplacement == other.localChestDisplacement &&
-			displacementForce == other.displacementForce &&
-			mysteryValue == other.mysteryValue &&
 			bounceStates == other.bounceStates;
 	}
 };
@@ -128,17 +103,11 @@ struct EmeraldBoobInputs
 	LLVector3 chestPosition;
 	LLQuaternion chestRotation;
 	F32 elapsedTime;
-	bool appearanceFlag;
-	bool appearanceAnimating;
-	S32 type;
 
 	EmeraldBoobInputs()
 		: chestPosition(0.0f,0.0f,0.0f),
 			chestRotation(0.0f,0.0f,0.0f,1.0f),
-			elapsedTime(0.0f),
-			appearanceFlag(false),
-			appearanceAnimating(false),
-			type(0)
+			elapsedTime(0.0f)
 	{
 	}
 
@@ -147,10 +116,7 @@ struct EmeraldBoobInputs
 		return
 			chestPosition == other.chestPosition &&
 			chestRotation == other.chestRotation &&
-			elapsedTime == other.elapsedTime &&
-			appearanceFlag == other.appearanceFlag &&
-			appearanceAnimating == other.appearanceAnimating &&
-			type == other.type;
+			elapsedTime == other.elapsedTime;
 	}
 };
 

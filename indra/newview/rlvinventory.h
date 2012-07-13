@@ -17,9 +17,11 @@
 #ifndef RLV_INVENTORY_H
 #define RLV_INVENTORY_H
 
-#include "llmemory.h"
-#include "llviewerinventory.h"
 #include "llinventoryfunctions.h"
+#include "llinventorymodel.h"
+#include "llinventoryobserver.h"
+#include "llsingleton.h"
+#include "llviewerinventory.h"
 
 #include "rlvhelper.h"
 #include "rlvlocks.h"
@@ -66,7 +68,6 @@ public:
 public:
 	void fetchSharedInventory();
 	void fetchWornItems();
-	void fetchWornItem(const LLUUID& idItem);
 protected:
 	void fetchSharedLinks();
 
@@ -74,8 +75,12 @@ protected:
 	 * General purpose helper functions
 	 */
 public:
-	// Returns the number of direct descendents of pFolder that have the specified type asset type
-	static S32 getDirectDescendentsCount(const LLInventoryCategory* pFolder, LLAssetType::EType filterType);
+	// Returns the number of sub-folders of the specified folder
+	static S32 getDirectDescendentsFolderCount(const LLInventoryCategory* pFolder);
+	// Returns the number of direct descendents of the specified folder that have the specified type asset type
+	static S32 getDirectDescendentsItemCount(const LLInventoryCategory* pFolder, LLAssetType::EType filterType);
+	// Returns the folder the items of the specified folder should folded into (can be the folder itself)
+	static const LLUUID& getFoldedParent(const LLUUID& idFolder, bool fCheckComposite);
 	// A "folded folder" is a folder whose items logically belong to the grandparent rather than the parent
 	static bool isFoldedFolder(const LLInventoryCategory* pFolder, bool fCheckComposite);
 
@@ -106,6 +111,7 @@ public:
 	virtual void done();
 protected:
 	void doneIdle();
+	static void onCategoryCreate(const LLSD& sdData, void* pParam);
 };
 
 // ============================================================================
@@ -119,9 +125,9 @@ class RlvGiveToRLVTaskOffer : public LLInventoryObserver
 {
 public:
 	RlvGiveToRLVTaskOffer(const LLUUID& idTransaction) : m_idTransaction(idTransaction) {}
-	virtual void changed(U32 mask);
+	/*virtual*/ void changed(U32 mask);
 protected:
-	virtual void done();
+	/*virtual*/ void done();
 	void doneIdle();
 
 	typedef std::vector<LLUUID> folder_ref_t;
@@ -132,8 +138,8 @@ protected:
 class RlvGiveToRLVAgentOffer : public LLInventoryFetchDescendentsObserver
 {
 public:
-	RlvGiveToRLVAgentOffer(const LLUUID& cat_id) : LLInventoryFetchDescendentsObserver(cat_id) {}
-	virtual void done();
+	RlvGiveToRLVAgentOffer(const LLUUID& idFolder) : LLInventoryFetchDescendentsObserver(idFolder) {}
+	/*virtual*/ void done();
 protected:
 	void doneIdle();
 };
@@ -232,15 +238,6 @@ public:
 	virtual bool operator()(LLInventoryCategory* pFolder, LLInventoryItem* pItem) { return (pItem) && (pItem->getIsLinkType()); }
 };
 
-class RlvItemFetcher : public LLInventoryFetchItemsObserver
-{
-public:
-	RlvItemFetcher(const uuid_vec_t& cat_ids) : LLInventoryFetchItemsObserver(cat_ids) {}
-	RlvItemFetcher(const LLUUID& cat_id) : LLInventoryFetchItemsObserver(cat_id) {}
-	virtual ~RlvItemFetcher() {}
-	virtual void done() {}
-};
-
 // ============================================================================
 // RlvInventory inlined member functions
 //
@@ -250,6 +247,15 @@ inline LLViewerInventoryCategory* RlvInventory::getSharedRoot() const
 {
 	const LLUUID& idRlvRoot = getSharedRootID();
 	return (idRlvRoot.notNull()) ? gInventory.getCategory(idRlvRoot) : NULL;
+}
+
+// Checked: 2011-11-26 (RLVa-1.5.4a) | Added: RLVa-1.5.4a
+inline const LLUUID& RlvInventory::getFoldedParent(const LLUUID& idFolder, bool fCheckComposite)
+{
+	LLViewerInventoryCategory* pFolder = gInventory.getCategory(idFolder);
+	while ((pFolder) && (isFoldedFolder(pFolder, fCheckComposite)))
+		pFolder = gInventory.getCategory(pFolder->getParentUUID());
+	return (pFolder) ? pFolder->getUUID() : LLUUID::null;
 }
 
 // Checked: 2010-03-19 (RLVa-1.2.0a) | Modified: RLVa-1.2.0a

@@ -5,22 +5,26 @@ project(llui)
 include(00-Common)
 include(LLCommon)
 include(LLImage)
+include(LLInventory)
 include(LLMath)
 include(LLMessage)
 include(LLRender)
 include(LLWindow)
 include(LLVFS)
 include(LLXML)
+include(LLXUIXML)
 
 include_directories(
     ${LLCOMMON_INCLUDE_DIRS}
     ${LLIMAGE_INCLUDE_DIRS}
+    ${LLINVENTORY_INCLUDE_DIRS}
     ${LLMATH_INCLUDE_DIRS}
     ${LLMESSAGE_INCLUDE_DIRS}
     ${LLRENDER_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLVFS_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLXUIXML_INCLUDE_DIRS}
     )
 
 set(llui_SOURCE_FILES
@@ -75,6 +79,7 @@ set(llui_SOURCE_FILES
     lluistring.cpp
     llundo.cpp
     llviewborder.cpp
+    llviewmodel.cpp
     llview.cpp
     llviewquery.cpp
     )
@@ -142,6 +147,7 @@ set(llui_HEADER_FILES
     lluixmltags.h
     llundo.h
     llviewborder.h
+    llviewmodel.h
     llview.h
     llviewquery.h
     )
@@ -159,6 +165,7 @@ target_link_libraries(llui
     llwindow
     llimage
     llvfs       # ugh, just for LLDir
+    llxuixml
     llxml
     llcommon    # must be after llimage, llwindow, llrender
     llmath

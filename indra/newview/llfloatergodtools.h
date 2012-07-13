@@ -101,7 +101,7 @@ public:
 	// Send possibly changed values to simulator.
 	void sendGodUpdateRegionInfo();
 
-	static void onTabChanged(void *data, bool from_click);
+	static void onTabChanged(LLUICtrl* ctrl, const LLSD& param);
 
 protected:
 	U32 computeRegionFlags() const;

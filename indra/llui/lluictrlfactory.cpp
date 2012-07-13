@@ -228,7 +228,7 @@ bool LLUICtrlFactory::getLayeredXMLNode(const std::string &xui_filename, LLXMLNo
 
 bool LLUICtrlFactory::getLayeredXMLNodeFromBuffer(const std::string &buffer, LLXMLNodePtr& root)
 {
-	if (!LLXMLNode::parseBuffer(buffer.data(), buffer.size(), root, 0)) {
+	if (!LLXMLNode::parseBuffer((U8*)buffer.data(), buffer.size(), root, 0)) {
 		llwarns << "Error reading UI description from buffer." << llendl;
 		return false;
 	}
@@ -455,9 +455,11 @@ LLPieMenu *LLUICtrlFactory::buildPieMenu(const std::string &filename, LLView* pa
 //-----------------------------------------------------------------------------
 void LLUICtrlFactory::rebuild()
 {
+	built_panel_t built_panels = mBuiltPanels;
+	mBuiltPanels.clear();
 	built_panel_t::iterator built_panel_it;
-	for (built_panel_it = mBuiltPanels.begin();
-		built_panel_it != mBuiltPanels.end();
+	for (built_panel_it = built_panels.begin();
+		built_panel_it != built_panels.end();
 		++built_panel_it)
 	{
 		std::string filename = built_panel_it->second;

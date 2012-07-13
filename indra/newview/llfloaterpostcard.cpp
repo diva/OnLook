@@ -135,7 +135,7 @@ BOOL LLFloaterPostcard::postBuild()
 		MsgField->setWordWrap(TRUE);
 
 		// For the first time a user focusess to .the msg box, all text will be selected.
-		MsgField->setFocusChangedCallback(onMsgFormFocusRecieved, this);
+		MsgField->setFocusChangedCallback(boost::bind(&LLFloaterPostcard::onMsgFormFocusRecieved, this, _1, MsgField));
 	}
 	
 	childSetFocus("to_form", TRUE);
@@ -339,17 +339,12 @@ void LLFloaterPostcard::updateUserInfo(const std::string& email)
 	}
 }
 
-void LLFloaterPostcard::onMsgFormFocusRecieved(LLFocusableElement* receiver, void* data)
+void LLFloaterPostcard::onMsgFormFocusRecieved(LLFocusableElement* receiver, LLTextEditor* msg_form)
 {
-	LLFloaterPostcard* self = (LLFloaterPostcard *)data;
-	if(self) 
+	if(msg_form && msg_form == receiver && msg_form->hasFocus() && !(mHasFirstMsgFocus))
 	{
-		LLTextEditor* msgForm = self->getChild<LLTextEditor>("msg_form");
-		if(msgForm && msgForm == receiver && msgForm->hasFocus() && !(self->mHasFirstMsgFocus))
-		{
-			self->mHasFirstMsgFocus = true;
-			msgForm->setText(LLStringUtil::null);
-		}
+		mHasFirstMsgFocus = true;
+		msg_form->setText(LLStringUtil::null);
 	}
 }
 

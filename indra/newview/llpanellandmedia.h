@@ -57,8 +57,6 @@ private:
 	static void onCommitType(LLUICtrl* ctrl, void *userdata);
 	static void onSetBtn(void* userdata);
 	static void onResetBtn(void* userdata);
-	static void onClickAddURLFilter(void *userdata);
-	static void onClickRemoveURLFilter(void *userdata);
 	
 private:
 	LLLineEditor*	mMediaURLEdit;
@@ -76,15 +74,6 @@ private:
 	LLCheckBoxCtrl*	mMediaLoopCheck;
 	LLCheckBoxCtrl* mMediaUrlCheck;
 	LLHandle<LLFloater>	mURLEntryFloater;
-	LLCheckBoxCtrl* mMediaNavigateAllowCheck;
-	LLCheckBoxCtrl* mMediaURLFilterCheck;
-	LLLineEditor*	mMediaURLFilterDomainEdit;
-	LLButton*		mMediaURLFilterAddButton;
-	LLButton*		mMediaURLFilterRemoveButton;
-	LLScrollListCtrl*   mURLFilterList;
-	LLRadioGroup*	mRadioNavigateControl;
-
-
 	
 	LLSafeHandle<LLParcelSelection>&	mParcel;
 };

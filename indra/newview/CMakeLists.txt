@@ -17,7 +17,7 @@ if(NOT FMODEX)
 	include(FMOD)
 endif(NOT FMODEX)
 include(OPENAL)
-include(HUNSPELL)
+include(Hunspell)
 include(FindOpenGL)
 #include(JsonCpp)
 include(LLAddBuildTest)
@@ -37,6 +37,7 @@ include(LLUI)
 include(LLVFS)
 include(LLWindow)
 include(LLXML)
+include(LLXUIXML)
 include(LScript)
 include(Linking)
 include(NDOF)
@@ -71,6 +72,7 @@ include_directories(
     ${LLVFS_INCLUDE_DIRS}
     ${LLWINDOW_INCLUDE_DIRS}
     ${LLXML_INCLUDE_DIRS}
+    ${LLXUIXML_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}
     ${LSCRIPT_INCLUDE_DIRS}/lscript_compile
     )
@@ -86,7 +88,6 @@ set(viewer_SOURCE_FILES
     lggdicdownload.cpp
     floaterao.cpp
     floatervoicelicense.cpp
-    cofmgr.cpp
     lldaycyclemanager.cpp
     llenvmanager.cpp
     llwlhandlers.cpp
@@ -97,8 +98,8 @@ set(viewer_SOURCE_FILES
     ascentprefschat.cpp
     ascentprefssys.cpp
     ascentprefsvan.cpp
-    dhparam.cpp
-    dsaparam.cpp
+	#dhparam.cpp
+	#dsaparam.cpp
     emeraldboobutils.cpp
     dofloaterhex.cpp
     dohexeditor.cpp
@@ -110,6 +111,7 @@ set(viewer_SOURCE_FILES
     hippolimits.cpp
     hipporestrequest.cpp
     hippopanelgrids.cpp
+	importtracker.cpp
     jcfloaterareasearch.cpp
     chatbar_as_cmdline.cpp
     qtoolalign.cpp
@@ -122,7 +124,9 @@ set(viewer_SOURCE_FILES
     llagentpilot.cpp
     llagentui.cpp
     llagentwearables.cpp
+    llagentwearablesfetch.cpp
     llanimstatelabels.cpp
+    llappearancemgr.cpp
     llappviewer.cpp
     llassetconverter.cpp
     llassetuploadresponders.cpp
@@ -144,7 +148,6 @@ set(viewer_SOURCE_FILES
     llcolorswatch.cpp
     llcommandhandler.cpp
     llcommandlineparser.cpp
-    llcompass.cpp
     llcompilequeue.cpp
     llconfirmationmanager.cpp
     llconsole.cpp
@@ -167,6 +170,7 @@ set(viewer_SOURCE_FILES
     lldrawpoolwater.cpp
     lldrawpoolwlsky.cpp
     lldriverparam.cpp
+	lldroptarget.cpp
     lldynamictexture.cpp
     llemote.cpp
     lleventinfo.cpp
@@ -308,14 +312,17 @@ set(viewer_SOURCE_FILES
     llinventorypanel.cpp
     lljoystickbutton.cpp
     lllandmarklist.cpp
+    lllocaltextureobject.cpp
     lllocalinventory.cpp
     lllogchat.cpp
     llloginhandler.cpp
     llsavedlogins.cpp
+    llmainlooprepeater.cpp
     llmanip.cpp
     llmaniprotate.cpp
     llmanipscale.cpp
     llmaniptranslate.cpp
+    llmarketplacenotifications.cpp
     llmediaremotectrl.cpp
     llmemoryview.cpp
     llmenucommands.cpp
@@ -329,12 +336,14 @@ set(viewer_SOURCE_FILES
     llnamelistctrl.cpp
     llnetmap.cpp
     llnotify.cpp
+    lloutfitobserver.cpp
     lloverlaybar.cpp
     llpanelaudioprefs.cpp
     llpanelaudiovolume.cpp
     llpanelavatar.cpp
     llpanelclassified.cpp
     llpanelcontents.cpp
+    llpaneleditwearable.cpp
     llpaneldebug.cpp
     llpaneldirbrowser.cpp
     llpaneldirclassified.cpp
@@ -357,7 +366,7 @@ set(viewer_SOURCE_FILES
     llpanelgrouproles.cpp
     llpanelgroupvoting.cpp
     llpanelinput.cpp
-    llpanelinventory.cpp
+    llpanelobjectinventory.cpp
     llpanelland.cpp
     llpanellandaudio.cpp
     llpanellandmedia.cpp
@@ -398,6 +407,8 @@ set(viewer_SOURCE_FILES
     llregionposition.cpp
     llremoteparcelrequest.cpp
     llsavedsettingsglue.cpp
+    llscrollingpanelparam.cpp
+    llscrollingpanelparambase.cpp
     llselectmgr.cpp
     llsky.cpp
     llspatialpartition.cpp
@@ -411,7 +422,9 @@ set(viewer_SOURCE_FILES
     llstylemap.cpp
     llsurface.cpp
     llsurfacepatch.cpp
+    lltexglobalcolor.cpp
     lltexlayer.cpp
+    lltexlayerparams.cpp
     lltexturecache.cpp
     lltexturectrl.cpp
     lltexturefetch.cpp
@@ -550,7 +563,7 @@ set(viewer_SOURCE_FILES
     rlvinventory.cpp
     rlvextensions.cpp
     rlvfloaterbehaviour.cpp
-    rlvviewer2.cpp
+    rlvui.cpp
 	shcommandhandler.cpp
 	shfloatermediaticker.cpp
     )
@@ -571,7 +584,6 @@ set(viewer_HEADER_FILES
     aoremotectrl.h
     floaterao.h
     floatervoicelicense.h
-    cofmgr.h
     lldaycyclemanager.h
     llenvmanager.h
     llwlhandlers.h
@@ -593,6 +605,7 @@ set(viewer_HEADER_FILES
     hippolimits.h
     hipporestrequest.h
     hippopanelgrids.h
+	importtracker.h
     jcfloaterareasearch.h
     lggdicdownload.h
     lgghunspell_wrapper.h
@@ -607,8 +620,10 @@ set(viewer_HEADER_FILES
     llagentpilot.h
     llagentui.h
     llagentwearables.h
+    llagentwearablesfetch.h
     llanimstatelabels.h
     llappearance.h
+    llappearancemgr.h
     llappviewer.h
     llassetconverter.h
     llassetuploadresponders.h
@@ -630,7 +645,6 @@ set(viewer_HEADER_FILES
     llcolorswatch.h
     llcommandhandler.h
     llcommandlineparser.h
-    llcompass.h
     llcompilequeue.h
     llconfirmationmanager.h
     llconsole.h
@@ -653,6 +667,7 @@ set(viewer_HEADER_FILES
     lldrawpoolwater.h
     lldrawpoolwlsky.h
     lldriverparam.h
+	lldroptarget.h
     lldynamictexture.h
     llemote.h
     lleventinfo.h
@@ -794,14 +809,17 @@ set(viewer_HEADER_FILES
     lljoystickbutton.h
     lllandmarklist.h
     lllightconstants.h
+    lllocaltextureobject.h
     lllocalinventory.h
     lllogchat.h
     llloginhandler.h
     llsavedlogins.h
+    llmainlooprepeater.h
     llmanip.h
     llmaniprotate.h
     llmanipscale.h
     llmaniptranslate.h
+    llmarketplacenotifications.h
     llmediaremotectrl.h
     llmemoryview.h
     llmenucommands.h
@@ -815,12 +833,14 @@ set(viewer_HEADER_FILES
     llnamelistctrl.h
     llnetmap.h
     llnotify.h
+    lloutfitobserver.h
     lloverlaybar.h
     llpanelaudioprefs.h
     llpanelaudiovolume.h
     llpanelavatar.h
     llpanelclassified.h
     llpanelcontents.h
+    llpaneleditwearable.h
     llpaneldebug.h
     llpaneldirbrowser.h
     llpaneldirclassified.h
@@ -843,7 +863,7 @@ set(viewer_HEADER_FILES
     llpanelgrouproles.h
     llpanelgroupvoting.h
     llpanelinput.h
-    llpanelinventory.h
+    llpanelobjectinventory.h
     llpanelland.h
     llpanellandaudio.h
     llpanellandmedia.h
@@ -886,6 +906,8 @@ set(viewer_HEADER_FILES
     llremoteparcelrequest.h
     llresourcedata.h
     llsavedsettingsglue.h
+    llscrollingpanelparam.h
+    llscrollingpanelparambase.h
     llselectmgr.h
     llsky.h
     llspatialpartition.h
@@ -900,7 +922,9 @@ set(viewer_HEADER_FILES
     llsurface.h
     llsurfacepatch.h
     lltable.h
+    lltexglobalcolor.h
     lltexlayer.h
+    lltexlayerparams.h
     lltexturecache.h
     lltexturectrl.h
     lltexturefetch.h
@@ -1048,8 +1072,8 @@ set(viewer_HEADER_FILES
     rlvinventory.h
     rlvextensions.h
     rlvfloaterbehaviour.h
-    rlvviewer2.h
-    shcommandhandler.h
+    rlvui.h
+ 	shcommandhandler.h
 	shfloatermediaticker.h
     )
 
@@ -1340,39 +1364,40 @@ if (OPENAL)
 endif (OPENAL)
 
 if (FMOD OR FMODEX)
-  if(FMODEX)
-	set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMODEX")
-  endif(FMODEX)
-  if(FMOD)
+  if (FMODEX)
+    set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMODEX")
+  endif (FMODEX)
+  if (FMOD)
     set(LLSTARTUP_COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS} -DLL_FMOD")
-  endif(FMOD)
+  endif (FMOD)
 
-  if (NOT WINDOWS)
+  if (DARWIN)
     set(fmodwrapper_SOURCE_FILES fmodwrapper.cpp)
     add_library(fmodwrapper SHARED ${fmodwrapper_SOURCE_FILES})
-    if(FMOD AND FMODEX)
-		set(fmodwrapper_needed_LIBRARIES "${FMODEX_LIBRARY} ${FMOD_LIBRARY}")
-    else(FMOD AND FMODEX)
-        if(FMODEX)
-            set(fmodwrapper_needed_LIBRARIES ${FMODEX_LIBRARY})
-        endif(FMODEX)
-        if(FMOD)
-            set(fmodwrapper_needed_LIBRARIES "${FMOD_LIBRARY}")
-        endif(FMOD)
-    endif(FMOD AND FMODEX)
-    if (DARWIN)
-      list(APPEND fmodwrapper_needed_LIBRARIES ${CARBON_LIBRARY})
-      set_target_properties(
-        fmodwrapper
-        PROPERTIES
-        BUILD_WITH_INSTALL_RPATH 1
-        INSTALL_NAME_DIR "@executable_path/../Resources"
-        LINK_FLAGS "-unexported_symbols_list \"${CMAKE_CURRENT_SOURCE_DIR}/fmod_hidden_symbols.exp\""
-        )
-    endif (DARWIN)
+    if (FMODEX)
+      set(fmodwrapper_needed_LIBRARIES ${FMODEX_LIBRARY} ${CARBON_LIBRARY})
+    endif (FMODEX)
+    if (FMOD)
+      set(fmodwrapper_needed_LIBRARIES ${FMOD_LIBRARY} ${CARBON_LIBRARY})
+    endif (FMOD)
+    set_target_properties(
+      fmodwrapper
+      PROPERTIES
+      BUILD_WITH_INSTALL_RPATH 1
+      INSTALL_NAME_DIR "@executable_path/../Resources"
+      LINK_FLAGS "-unexported_symbols_list ${CMAKE_CURRENT_SOURCE_DIR}/fmod_hidden_symbols.exp"
+      )
     set(FMODWRAPPER_LIBRARY fmodwrapper)
     target_link_libraries(fmodwrapper ${fmodwrapper_needed_LIBRARIES})
-  endif (NOT WINDOWS)
+  else (DARWIN)
+    # fmodwrapper unnecessary on linux or windows, for fmod and fmodex
+    if (FMODEX)
+       set(FMODWRAPPER_LIBRARY ${FMODEX_LIBRARY})
+    endif (FMODEX)
+    if (FMOD)
+       set(FMODWRAPPER_LIBRARY ${FMOD_LIBRARY})
+    endif (FMOD)
+  endif (DARWIN)
 endif (FMOD OR FMODEX)
 
 set_source_files_properties(llstartup.cpp PROPERTIES COMPILE_FLAGS "${LLSTARTUP_COMPILE_FLAGS}")
@@ -1522,6 +1547,7 @@ target_link_libraries(${VIEWER_BINARY_NAME}
     ${LLVFS_LIBRARIES}
     ${LLWINDOW_LIBRARIES}
     ${LLXML_LIBRARIES}
+    ${LLXUIXML_LIBRARIES}
     ${LSCRIPT_LIBRARIES}
     ${LLMATH_LIBRARIES}
     ${LLCOMMON_LIBRARIES}

@@ -72,8 +72,7 @@ BOOL LLPanelGroupTab::postBuild()
 	LLButton* button = getChild<LLButton>("help_button");
 	if (button)
 	{
-		button->setClickedCallback(onClickHelp);
-		button->setCallbackUserData(this);
+		button->setClickedCallback(boost::bind(&LLPanelGroupTab::onClickHelp,this));
 	}
 
 	mHelpText = getString("help_text");
@@ -251,10 +250,8 @@ BOOL LLPanelGroup::postBuild()
 			// Pass on whether or not to allow edit to tabs.
 			panelp->setAllowEdit(mAllowEdit);
 			panelp->addObserver(this);
-
-			mTabContainer->setTabChangeCallback(panelp, onClickTab);
-			mTabContainer->setTabUserData(panelp, this);
 		}
+		mTabContainer->setCommitCallback(boost::bind(&LLPanelGroup::handleClickTab,this)); 
 		updateTabVisibility();
 
 		// Act as though this tab was just activated.
@@ -267,23 +264,21 @@ BOOL LLPanelGroup::postBuild()
 	LLButton* button = getChild<LLButton>("btn_ok");
 	if (button)
 	{
-		button->setClickedCallback(onBtnOK);
-		button->setCallbackUserData(this);
+		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnOK,this));
 		button->setVisible(mAllowEdit);
 	}
 	
 	button = getChild<LLButton>("btn_cancel");
 	if (button)
 	{
-		button->setClickedCallback(onBtnCancel);
-	   	button->setCallbackUserData(this);
+		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnCancel,this));
 		button->setVisible(mAllowEdit);
 	}
 
 	button = getChild<LLButton>("btn_apply");
 	if (button)
 	{
-		button->setClickedCallback(onBtnApply);
+		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnApply,this));
 		button->setVisible(mAllowEdit);
 		button->setEnabled(FALSE);
 
@@ -293,8 +288,7 @@ BOOL LLPanelGroup::postBuild()
 	button = getChild<LLButton>("btn_refresh");
 	if (button)
 	{
-		button->setClickedCallback(onBtnRefresh);
-		button->setCallbackUserData(this);
+		button->setClickedCallback(boost::bind(&LLPanelGroup::onBtnRefresh,this));
 		button->setVisible(mAllowEdit);
 	}
 
@@ -323,13 +317,6 @@ void LLPanelGroup::tabChanged()
 		std::string mesg;
 		mApplyBtn->setEnabled(mCurrentTab->needsApply(mesg));
 	}
-}
-
-// static
-void LLPanelGroup::onClickTab(void* user_data, bool from_click)
-{
-	LLPanelGroup* self = static_cast<LLPanelGroup*>(user_data);
-	self->handleClickTab();
 }
 
 void LLPanelGroup::handleClickTab()
@@ -381,7 +368,7 @@ void LLPanelGroup::selectTab(std::string tab_name)
 	if ( tabp && mTabContainer )
 	{
 		mTabContainer->selectTabPanel(tabp);
-		onClickTab(this, false);
+		handleClickTab();
 	}
 }
 

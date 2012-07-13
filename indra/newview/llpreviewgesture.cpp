@@ -44,6 +44,7 @@
 #include "lldir.h"
 #include "llmultigesture.h"
 #include "llvfile.h"
+#include "lltrans.h"
 
 // newview
 #include "llagent.h"		// todo: remove
@@ -95,12 +96,9 @@ protected:
 
 void LLInventoryGestureAvailable::done()
 {
-	LLPreview* preview = NULL;
-	uuid_vec_t::iterator it = mComplete.begin();
-	uuid_vec_t::iterator end = mComplete.end();
-	for(; it < end; ++it)
+	for(uuid_vec_t::iterator it = mComplete.begin(); it != mComplete.end(); ++it)
 	{
-		preview = LLPreview::find((*it));
+		LLPreview *preview = LLPreview::find((*it));
 		if(preview)
 		{
 			preview->refresh();
@@ -166,7 +164,7 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 
 	// this will call refresh when we have everything.
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)self->getItem();
-	if(item && !item->isComplete())
+	if (item && !item->isFinished())
 	{
 		LLInventoryGestureAvailable* observer;
 		observer = new LLInventoryGestureAvailable();
@@ -188,6 +186,11 @@ LLPreviewGesture* LLPreviewGesture::show(const std::string& title, const LLUUID&
 	return self;
 }
 
+void LLPreviewGesture::draw()
+{
+	// Skip LLPreview::draw() to avoid description update
+	LLFloater::draw();
+}
 
 // virtual
 BOOL LLPreviewGesture::handleKeyHere(KEY key, MASK mask)
@@ -325,7 +328,7 @@ void LLPreviewGesture::setMinimized(BOOL minimize)
 
 bool LLPreviewGesture::handleSaveChangesDialog(const LLSD& notification, const LLSD& response)
 {
-	S32 option = LLNotification::getSelectedOption(notification, response);
+	S32 option = LLNotificationsUtil::getSelectedOption(notification, response);
 	switch(option)
 	{
 	case 0:  // "Yes"
@@ -436,26 +439,22 @@ BOOL LLPreviewGesture::postBuild()
 	mLibraryList = list;
 
 	btn = getChild<LLButton>( "add_btn");
-	btn->setClickedCallback(onClickAdd);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickAdd,this));
 	btn->setEnabled(FALSE);
 	mAddBtn = btn;
 
 	btn = getChild<LLButton>( "up_btn");
-	btn->setClickedCallback(onClickUp);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickUp,this));
 	btn->setEnabled(FALSE);
 	mUpBtn = btn;
 
 	btn = getChild<LLButton>( "down_btn");
-	btn->setClickedCallback(onClickDown);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickDown,this));
 	btn->setEnabled(FALSE);
 	mDownBtn = btn;
 
 	btn = getChild<LLButton>( "delete_btn");
-	btn->setClickedCallback(onClickDelete);
-	btn->setCallbackUserData(this);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickDelete,this));
 	btn->setEnabled(FALSE);
 	mDeleteBtn = btn;
 
@@ -527,12 +526,12 @@ BOOL LLPreviewGesture::postBuild()
 	mActiveCheck = check;
 
 	btn = getChild<LLButton>( "save_btn");
-	btn->setClickedCallback(onClickSave);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickSave,this));
 	btn->setCallbackUserData(this);
 	mSaveBtn = btn;
 
 	btn = getChild<LLButton>( "preview_btn");
-	btn->setClickedCallback(onClickPreview);
+	btn->setClickedCallback(boost::bind(&LLPreviewGesture::onClickPreview,this));
 	btn->setCallbackUserData(this);
 	mPreviewBtn = btn;
 
@@ -703,7 +702,7 @@ void LLPreviewGesture::refresh()
 {
 	// If previewing or item is incomplete, all controls are disabled
 	LLViewerInventoryItem* item = (LLViewerInventoryItem*)getItem();
-	bool is_complete = (item && item->isComplete()) ? true : false;
+	bool is_complete = (item && item->isFinished()) ? true : false;
 	if (mPreviewGesture || !is_complete)
 	{
 		
@@ -864,7 +863,7 @@ void LLPreviewGesture::initDefaultGesture()
 	item = addStep( STEP_ANIMATION );
 	LLGestureStepAnimation* anim = (LLGestureStepAnimation*)item->getUserdata();
 	anim->mAnimAssetID = ANIM_AGENT_HELLO;
-	anim->mAnimName = "Wave";
+	anim->mAnimName = LLTrans::getString("Wave");
 	updateLabel(item);
 
 	item = addStep( STEP_WAIT );
@@ -874,7 +873,7 @@ void LLPreviewGesture::initDefaultGesture()
 
 	item = addStep( STEP_CHAT );
 	LLGestureStepChat* chat_step = (LLGestureStepChat*)item->getUserdata();
-	chat_step->mChatText = "Hello, avatar!";
+	chat_step->mChatText =  LLTrans::getString("HelloAvatar");
 	updateLabel(item);
 
 	// Start with item list selected
@@ -888,7 +887,13 @@ void LLPreviewGesture::initDefaultGesture()
 void LLPreviewGesture::loadAsset()
 {
 	const LLInventoryItem* item = getItem();
-	if (!item) return;
+	if (!item) 
+	{
+		// Don't set asset status here; we may not have set the item id yet
+		// (e.g. when this gets called initially)
+		//mAssetStatus = PREVIEW_ASSET_ERROR;
+		return;
+	}
 
 	LLUUID asset_id = item->getAssetUUID();
 	if (asset_id.isNull())
@@ -897,6 +902,7 @@ void LLPreviewGesture::loadAsset()
 		// Blank gesture will be fine.
 		initDefaultGesture();
 		refresh();
+		mAssetStatus = PREVIEW_ASSET_LOADED;
 		return;
 	}
 
@@ -952,6 +958,7 @@ void LLPreviewGesture::onLoadComplete(LLVFS *vfs,
 
 				self->mDirty = FALSE;
 				self->refresh();
+				self->refreshFromItem(self->getItem()); // to update description and title
 			}
 			else
 			{
@@ -1078,7 +1085,7 @@ void LLPreviewGesture::loadUIFromGesture(LLMultiGesture* gesture)
 
 		// Create an enabled item with this step
 		LLSD row;
-		row["columns"][0]["value"] = new_step->getLabel();
+		row["columns"][0]["value"] = getLabel( new_step->getLabel());
 		row["columns"][0]["font"] = "SANSSERIF_SMALL";
 		LLScrollListItem* item = mStepList->addElement(row);
 		item->setUserdata(new_step);
@@ -1394,7 +1401,7 @@ void LLPreviewGesture::updateLabel(LLScrollListItem* item)
 
 	LLScrollListCell* cell = item->getColumn(0);
 	LLScrollListText* text_cell = (LLScrollListText*)cell;
-	std::string label = step->getLabel();
+	std::string label = getLabel( step->getLabel());
 	text_cell->setText(label);
 }
 
@@ -1656,7 +1663,7 @@ LLScrollListItem* LLPreviewGesture::addStep( const EStepType step_type )
 
 	// Create an enabled item with this step
 	LLSD row;
-	row["columns"][0]["value"] = step->getLabel();
+	row["columns"][0]["value"] = getLabel(step->getLabel());
 	row["columns"][0]["font"] = "SANSSERIF_SMALL";
 	LLScrollListItem* step_item = mStepList->addElement(row);
 	step_item->setUserdata(step);
@@ -1670,6 +1677,63 @@ LLScrollListItem* LLPreviewGesture::addStep( const EStepType step_type )
 	return step_item;
 }
 
+// static
+std::string LLPreviewGesture::getLabel(std::vector<std::string> labels)
+{
+	std::vector<std::string> v_labels = labels ;
+	std::string result("");
+	
+	if( v_labels.size() != 2)
+	{
+		return result;
+	}
+	
+	if(v_labels[0]=="Chat")
+	{
+		result=LLTrans::getString("Chat Message");
+	}
+    else if(v_labels[0]=="Sound")	
+	{
+		result=LLTrans::getString("Sound");
+	}
+	else if(v_labels[0]=="Wait")
+	{
+		result=LLTrans::getString("Wait");
+	}
+	else if(v_labels[0]=="AnimFlagStop")
+	{
+		result=LLTrans::getString("AnimFlagStop");
+	}
+	else if(v_labels[0]=="AnimFlagStart")
+	{
+		result=LLTrans::getString("AnimFlagStart");
+	}
+
+	// lets localize action value
+	std::string action = v_labels[1];
+	if ("None" == action)
+	{
+		action = LLTrans::getString("GestureActionNone");
+	}
+	else if ("until animations are done" == action)
+	{
+		//action = LLFloaterReg::getInstance("preview_gesture")->getChild<LLCheckBoxCtrl>("wait_anim_check")->getLabel();
+		//Worst. Thing. Ever. We are in a static function. Find any existing gesture preview and grab the label from its 'wait_anim_check' element.
+		for(preview_map_t::iterator it = LLPreview::sInstances.begin(); it != LLPreview::sInstances.end();++it)
+		{
+			LLPreviewGesture* pPreview = dynamic_cast<LLPreviewGesture*>(it->second);
+			if(pPreview)
+			{
+				pPreview->getChild<LLCheckBoxCtrl>("wait_anim_check")->getLabel();
+				break;
+			}
+		}
+		
+	}
+	result.append(action);
+	return result;
+	
+}
 // static
 void LLPreviewGesture::onClickUp(void* data)
 {

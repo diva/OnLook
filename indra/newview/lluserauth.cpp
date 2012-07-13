@@ -44,6 +44,7 @@
 #include "llviewercontrol.h"
 #include "llxmlrpctransaction.h"
 #include "llsdutil.h"
+#include "stringize.h"
 
 // NOTE: MUST include these after otherincludes since queue gets redefined!?!!
 #include <curl/curl.h>
@@ -86,7 +87,6 @@ void LLUserAuth::reset()
 	delete mTransaction;
 	mTransaction = NULL;
 	mResponses.clear();
-	mOptions.clear();
 	mResult.clear();
 }
 
@@ -319,51 +319,6 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 	return mAuthResponse;
 }
 
-static void parseOptionInto(
-	const std::string& id, XMLRPC_VALUE option, LLUserAuth::options_t& options)
-{
-	std::string key;
-	std::string val;
-	XMLRPC_VALUE_TYPE_EASY type;
-	XMLRPC_VALUE row = XMLRPC_VectorRewind(option);
-	while(row)
-	{
-		XMLRPC_VALUE opt  = XMLRPC_VectorRewind(row);
-		LLUserAuth::response_t responses;
-		while(opt)
-		{
-			key.assign(XMLRPC_GetValueID(opt));
-			//llinfos << "option key: " << key << llendl;
-			type = XMLRPC_GetValueTypeEasy(opt);
-			if(xmlrpc_type_string == type)
-			{
-				val.assign(XMLRPC_GetValueString(opt));
-				//llinfos << "string val: " << val << llendl;
-			}
-			else if(xmlrpc_type_int == type)
-			{
-				val = llformat("%d", XMLRPC_GetValueInt(opt));
-				//llinfos << "int val: " << val << llendl;
-			}
-			else if(xmlrpc_type_double == type)
-			{
-				val = llformat("%g", XMLRPC_GetValueDouble(opt));
-				//llinfos << "double val: " << val << llendl;
-			}
-			else
-			{	// Can't understand the type
-				val = "???";
-				//llinfos << "unknown value type: " << type << llendl;
-			}
-
-			responses.insert(LLUserAuth::response_t::value_type(key, val));
-			opt = XMLRPC_VectorNext(row);
-		}
-		options.push_back(responses);
-		row = XMLRPC_VectorNext(option);
-	}
-}
-
 LLUserAuth::UserAuthcode LLUserAuth::parseResponse()
 {
 	// The job of this function is to parse sCurlDownloadArea and
@@ -376,78 +331,90 @@ LLUserAuth::UserAuthcode LLUserAuth::parseResponse()
 
 	// clear out any old parsing
 	mResponses.clear();
-	mOptions.clear();
 
 	// Now, parse everything
-	std::string key;
-	std::string val;
-	XMLRPC_VALUE param = NULL;
-	XMLRPC_VALUE current = NULL;
-	XMLRPC_VALUE_TYPE_EASY type;
-	param = XMLRPC_RequestGetData(response);
-	if(!param) goto exit;
-	current = XMLRPC_VectorRewind(param);
-	while(current)
+    XMLRPC_VALUE param = XMLRPC_RequestGetData(response);
+    if (! param)
 	{
-		key.assign(XMLRPC_GetValueID(current));
-		lldebugs << "key: " << key << llendl;
-		type = XMLRPC_GetValueTypeEasy(current);
-		if(xmlrpc_type_string == type)
-		{
-			val.assign(XMLRPC_GetValueString(current));
-			lldebugs << "val: " << val << llendl;
-			mResponses.insert(response_t::value_type(key, val));
-		}
-		else if(xmlrpc_type_int == type)
-		{
-			val = llformat( "%d", XMLRPC_GetValueInt(current));
-			lldebugs << "val: " << val << llendl;
-			mResponses.insert(response_t::value_type(key, val));
-		}
-		else if(xmlrpc_type_array == type)
-		{
-			options_t options;
-			parseOptionInto(key, current, options);
-			mOptions.insert(all_options_t::value_type(key, options));
-		}
-		else
-		{
-			// whoops - bad response
-			llwarns << "Unhandled xmlrpc type, key, value: " << type << " "
-					<< key << " " << val << "." << llendl;
-			rv = E_UNHANDLED_ERROR;
-			break;
-		}
-		current = XMLRPC_VectorNext(param);
-		rv = E_OK;
+		lldebugs << "Response contains no data" << LL_ENDL;
+		return rv;
 	}
 
- exit:
+	// Now, parse everything
+	mResponses = parseValues(rv, "", param);
 	return rv;
 }
 
-const std::string& LLUserAuth::getResponse(const std::string& key) const
+LLSD LLUserAuth::parseValues(UserAuthcode &auth_code, const std::string& key_pfx, XMLRPC_VALUE param)
 {
-	response_t::const_iterator it = mResponses.find(key);
-	if(it != mResponses.end())
+	auth_code = E_OK;
+	LLSD responses;
+	for(XMLRPC_VALUE current = XMLRPC_VectorRewind(param); current;
+		current = XMLRPC_VectorNext(param))
 	{
-		return((*it).second);
-	}
-	return LLStringUtil::null;
+		std::string key(XMLRPC_GetValueID(current));
+		lldebugs << "key: " << key_pfx << key << llendl;
+		XMLRPC_VALUE_TYPE_EASY type = XMLRPC_GetValueTypeEasy(current);
+		if(xmlrpc_type_string == type)
+		{
+			LLSD::String val(XMLRPC_GetValueString(current));
+			lldebugs << "val: " << val << llendl;
+			responses.insert(key,val);
+		}
+		else if(xmlrpc_type_int == type)
+		{
+			LLSD::Integer val(XMLRPC_GetValueInt(current));
+			lldebugs << "val: " << val << llendl;
+			responses.insert(key,val);
+		}
+		else if (xmlrpc_type_double == type)
+        {
+			LLSD::Real val(XMLRPC_GetValueDouble(current));
+            lldebugs << "val: " << val << llendl;
+			responses.insert(key,val);
+		}
+		else if(xmlrpc_type_array == type)
+		{
+			// We expect this to be an array of submaps. Walk the array,
+			// recursively parsing each submap and collecting them.
+			LLSD array;
+			int i = 0;          // for descriptive purposes
+			for (XMLRPC_VALUE row = XMLRPC_VectorRewind(current); row;
+				row = XMLRPC_VectorNext(current), ++i)
+			{
+				// Recursive call. For the lower-level key_pfx, if 'key'
+				// is "foo", pass "foo[0]:", then "foo[1]:", etc. In the
+				// nested call, a subkey "bar" will then be logged as
+				// "foo[0]:bar", and so forth.
+				// Parse the scalar subkey/value pairs from this array
+				// entry into a temp submap. Collect such submaps in 'array'.
+				std::string key_prefix = key_pfx;
+				array.append(parseValues(auth_code,
+									STRINGIZE(key_pfx << key << '[' << i << "]:"),
+									row));
+			}
+			// Having collected an 'array' of 'submap's, insert that whole
+			// 'array' as the value of this 'key'.
+			responses.insert(key, array);
+		}
+		else if (xmlrpc_type_struct == type)
+    	{
+    		LLSD submap = parseValues(auth_code,
+            						STRINGIZE(key_pfx << key << ':'),
+            						current);
+            responses.insert(key, submap);
+        }
+        else
+        {
+        	// whoops - unrecognized type
+            llwarns << "Unhandled xmlrpc type " << type << " for key "
+                                        << key_pfx << key << LL_ENDL;
+            responses.insert(key, STRINGIZE("<bad XMLRPC type " << type << '>'));
+            auth_code = E_UNHANDLED_ERROR;
+        }
+    }
+    return responses;
 }
-
-BOOL LLUserAuth::getOptions(const std::string& key, options_t& options) const
-{
-	all_options_t::const_iterator it = mOptions.find(key);
-	if(it != mOptions.end())
-	{
-		// found the option set, copy them onto the container.
-		std::back_insert_iterator<options_t> ii(options);
-		std::copy((*it).second.begin(), (*it).second.end(), ii);
-		return TRUE;
-	}
-	return FALSE;
-}
-
+		
 
 

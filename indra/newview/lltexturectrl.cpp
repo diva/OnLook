@@ -292,7 +292,7 @@ LLFloaterTexturePicker::LLFloaterTexturePicker(
 		mInventoryPanel->setFilterTypes(filter_types);
 		//mInventoryPanel->setFilterPermMask(getFilterPermMask());  //Commented out due to no-copy texture loss.
 		mInventoryPanel->setFilterPermMask(immediate_filter_perm_mask);
-		mInventoryPanel->setSelectCallback(onSelectionChange, this);
+		mInventoryPanel->setSelectCallback(boost::bind(&LLFloaterTexturePicker::onSelectionChange, _1, _2, (void*)this));
 		mInventoryPanel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 		mInventoryPanel->setAllowMultiSelect(FALSE);
 
@@ -650,7 +650,7 @@ void LLFloaterTexturePicker::draw()
 		{
 			if( mTexturep->getComponents() == 4 )
 			{
-				gl_rect_2d_checkerboard( getScreenRect(), interior );
+				gl_rect_2d_checkerboard( calcScreenRect(), interior );
 			}
 
 			gl_draw_scaled_image( interior.mLeft, interior.mBottom, interior.getWidth(), interior.getHeight(), mTexturep );
@@ -1339,7 +1339,7 @@ void LLTextureCtrl::closeFloater()
 
 BOOL LLTextureCtrl::handleHover(S32 x, S32 y, MASK mask)
 {
-	getWindow()->setCursor(UI_CURSOR_HAND);
+	getWindow()->setCursor(mBorder->parentPointInView(x,y) ? UI_CURSOR_HAND : UI_CURSOR_ARROW);
 	return TRUE;
 }
 
@@ -1350,15 +1350,17 @@ BOOL LLTextureCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 	if(!mEnable) return FALSE;
 
 	BOOL handled = LLUICtrl::handleMouseDown( x, y , mask );
-	if( handled )
+
+	if (!handled && mBorder->parentPointInView(x, y))
 	{
 		showPicker(FALSE);
-
 		//grab textures first...
 		LLInventoryModelBackgroundFetch::instance().start(gInventory.findCategoryUUIDForType(LLFolderType::FT_TEXTURE));
 		//...then start full inventory fetch.
 		LLInventoryModelBackgroundFetch::instance().start();
+		handled = TRUE;
 	}
+
 	return handled;
 }
 
@@ -1528,7 +1530,7 @@ void LLTextureCtrl::draw()
 	{
 		if( mTexturep->getComponents() == 4 )
 		{
-			gl_rect_2d_checkerboard( getScreenRect(), interior );
+			gl_rect_2d_checkerboard( calcScreenRect(), interior );
 		}
 		
 		gl_draw_scaled_image( interior.mLeft, interior.mBottom, interior.getWidth(), interior.getHeight(), mTexturep);

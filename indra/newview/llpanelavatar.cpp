@@ -85,6 +85,7 @@
 #include "lluictrlfactory.h"
 #include "llviewermenu.h"
 #include "llavatarnamecache.h"
+#include "lldroptarget.h"
 
 
 #include <iosfwd>
@@ -104,68 +105,6 @@ BOOL LLPanelAvatar::sAllowFirstLife = FALSE;
 extern void callback_invite_to_group(LLUUID group_id, void *user_data);
 extern void handle_lure(const LLUUID& invitee);
 extern void handle_pay_by_id(const LLUUID& payee);
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Class LLDropTarget
-//
-// This handy class is a simple way to drop something on another
-// view. It handles drop events, always setting itself to the size of
-// its parent.
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-class LLDropTarget : public LLView
-{
-public:
-	LLDropTarget(const std::string& name, const LLRect& rect, const LLUUID& agent_id);
-	~LLDropTarget();
-
-	void doDrop(EDragAndDropType cargo_type, void* cargo_data);
-
-	//
-	// LLView functionality
-	virtual BOOL handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-								   EDragAndDropType cargo_type,
-								   void* cargo_data,
-								   EAcceptance* accept,
-								   std::string& tooltip_msg);
-	void setAgentID(const LLUUID &agent_id)		{ mAgentID = agent_id; }
-protected:
-	LLUUID mAgentID;
-};
-
-
-LLDropTarget::LLDropTarget(const std::string& name, const LLRect& rect,
-						   const LLUUID& agent_id) :
-	LLView(name, rect, NOT_MOUSE_OPAQUE, FOLLOWS_ALL),
-	mAgentID(agent_id)
-{
-}
-
-LLDropTarget::~LLDropTarget()
-{
-}
-
-void LLDropTarget::doDrop(EDragAndDropType cargo_type, void* cargo_data)
-{
-	llinfos << "LLDropTarget::doDrop()" << llendl;
-}
-
-BOOL LLDropTarget::handleDragAndDrop(S32 x, S32 y, MASK mask, BOOL drop,
-									 EDragAndDropType cargo_type,
-									 void* cargo_data,
-									 EAcceptance* accept,
-									 std::string& tooltip_msg)
-{
-	if(getParent())
-	{
-		LLToolDragAndDrop::handleGiveDragAndDrop(mAgentID, LLUUID::null, drop,
-												 cargo_type, cargo_data, accept);
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
 
 
 //-----------------------------------------------------------------------------
@@ -587,7 +526,7 @@ void LLPanelAvatarSecondLife::onClickPartnerInfo(void *data)
 	if (self->mPartnerID.notNull())
 	{
 		LLFloaterAvatarInfo::showFromProfile(self->mPartnerID,
-											 self->getScreenRect());
+											 self->calcScreenRect());
 	}
 }
 
@@ -713,19 +652,19 @@ void LLPanelAvatarWeb::processProperties(void* data, EAvatarProcessorType type)
 
 BOOL LLPanelAvatarClassified::postBuild(void)
 {
-	childSetAction("New...",onClickNew,NULL);
-	childSetAction("Delete...",onClickDelete,NULL);
+	childSetAction("New...",onClickNew,this);
+	childSetAction("Delete...",onClickDelete,this);
 	return TRUE;
 }
 
 BOOL LLPanelAvatarPicks::postBuild(void)
 {
-	childSetAction("New...",onClickNew,NULL);
-	childSetAction("Delete...",onClickDelete,NULL);
+	childSetAction("New...",onClickNew,this);
+	childSetAction("Delete...",onClickDelete,this);
 	
 	//For pick import and export - RK
-	childSetAction("Import...",onClickImport,NULL);
-	childSetAction("Export...",onClickExport,NULL);
+	childSetAction("Import...",onClickImport,this);
+	childSetAction("Export...",onClickExport,this);
 	return TRUE;
 }
 
@@ -1599,7 +1538,7 @@ LLPanelAvatar::~LLPanelAvatar()
 
 BOOL LLPanelAvatar::canClose()
 {
-	return mPanelClassified && mPanelClassified->canClose();
+	return !mPanelClassified || mPanelClassified->canClose();
 }
 
 void LLPanelAvatar::setAvatar(LLViewerObject *avatarp)
@@ -1645,6 +1584,7 @@ void LLPanelAvatar::setOnlineStatus(EOnlineStatus online_status)
 		online_status = ONLINE_STATUS_YES;
 	}
 	
+	if(mPanelSecondLife)
 	mPanelSecondLife->childSetVisible("online_yes", online_status == ONLINE_STATUS_YES);
 
 	// Since setOnlineStatus gets called after setAvatarID
@@ -1711,9 +1651,9 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 		(*it)->setAvatarID(avatar_id);
 	}
 
-	mPanelSecondLife->enableControls(own_avatar && mAllowEdit);
-	mPanelWeb->enableControls(own_avatar && mAllowEdit);
-	mPanelAdvanced->enableControls(own_avatar && mAllowEdit);
+	if (mPanelSecondLife) mPanelSecondLife->enableControls(own_avatar && mAllowEdit);
+	if (mPanelWeb) mPanelWeb->enableControls(own_avatar && mAllowEdit);
+	if (mPanelAdvanced) mPanelAdvanced->enableControls(own_avatar && mAllowEdit);
 	// Teens don't have this.
 	if (mPanelFirstLife) mPanelFirstLife->enableControls(own_avatar && mAllowEdit);
 
@@ -1772,16 +1712,16 @@ void LLPanelAvatar::setAvatarID(const LLUUID &avatar_id, const std::string &name
 	{
 		// While we're waiting for data off the network, clear out the
 		// old data.
-		mPanelSecondLife->clearControls();
+		if(mPanelSecondLife) mPanelSecondLife->clearControls();
 
-		mPanelPicks->deletePickPanels();
-		mPanelPicks->setDataRequested(false);
+		if(mPanelPicks) mPanelPicks->deletePickPanels();
+		if(mPanelPicks) mPanelPicks->setDataRequested(false);
 
-		mPanelClassified->deleteClassifiedPanels();
-		mPanelClassified->setDataRequested(false);
+		if(mPanelClassified) mPanelClassified->deleteClassifiedPanels();
+		if(mPanelClassified) mPanelClassified->setDataRequested(false);
 
-		mPanelNotes->clearControls();
-		mPanelNotes->setDataRequested(false);
+		if(mPanelNotes) mPanelNotes->clearControls();
+		if(mPanelNotes) mPanelNotes->setDataRequested(false);
 		mHaveNotes = false;
 		mLastNotes.clear();
 

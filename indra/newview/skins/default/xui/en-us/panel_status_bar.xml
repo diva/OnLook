@@ -81,6 +81,11 @@
 	     image_unselected="status_no_voice.tga" label="" label_selected=""
 	     left="545" mouse_opaque="true" name="status_no_voice" scale_image="false"
 	     tool_tip="Voice not available here" visible="false" width="24" />
+  <button bottom="-17" enabled="true" follows="right|bottom" font="SansSerif"
+     halign="center" height="16" image_selected="status_SeeAVsOff.tga"
+     image_unselected="status_SeeAVsOff.tga" label="" label_selected=""
+     left="600" mouse_opaque="true" name="status_SeeAV" scale_image="false"
+     tool_tip="Parcel has Avatar privacy" visible="false" width="24" />
 	<button bottom="-17" enabled="true" follows="right|bottom" font="SansSerif"
 	     halign="center" height="16" image_selected="status_buy_land_pressed.tga"
 	     image_unselected="status_buy_land.tga" label="" label_selected=""

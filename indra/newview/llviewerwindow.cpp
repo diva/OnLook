@@ -177,7 +177,8 @@
 #include "llviewerregion.h"
 #include "llviewershadermgr.h"
 #include "llviewerstats.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
+#include "llvopartgroup.h"
 #include "llvovolume.h"
 #include "llworld.h"
 #include "llworldmapview.h"
@@ -1183,7 +1184,8 @@ void LLViewerWindow::handleFocusLost(LLWindow *window)
 BOOL LLViewerWindow::handleTranslatedKeyDown(KEY key,  MASK mask, BOOL repeated)
 {
 	// Let the voice chat code check for its PTT key.  Note that this never affects event processing.
-	gVoiceClient->keyDown(key, mask);
+	if(gVoiceClient)
+		gVoiceClient->keyDown(key, mask);
 	
 	if (gAwayTimer.getElapsedTimeF32() > MIN_AFK_TIME)
 	{
@@ -1951,7 +1953,7 @@ void LLViewerWindow::initWorldUI()
 		}
 		gHUDView = new LLHUDView(hud_rect);
 		// put behind everything else in the UI
-		mRootView->addChildAtEnd(gHUDView);
+		mRootView->addChildInBack(gHUDView);
 	}
 }
 
@@ -2057,6 +2059,12 @@ void LLViewerWindow::shutdownGL()
 	gSky.cleanup();
 	stop_glerror();
 
+	llinfos << "Cleaning up pipeline" << llendl;
+	gPipeline.cleanup();
+	stop_glerror();
+
+	//MUST clean up pipeline before cleaning up wearables
+	llinfos << "Cleaning up wearables" << llendl;
 	LLWearableList::instance().cleanup() ;
 
 	gTextureList.shutdown();
@@ -2066,10 +2074,6 @@ void LLViewerWindow::shutdownGL()
 	stop_glerror();
 
 	LLWorldMapView::cleanupTextures();
-
-	llinfos << "Cleaning up pipeline" << llendl;
-	gPipeline.cleanup();
-	stop_glerror();
 
 	LLViewerTextureManager::cleanup() ;
 	LLImageGL::cleanupClass() ;
@@ -2799,7 +2803,7 @@ void LLViewerWindow::moveCursorToCenter()
 
 // Update UI based on stored mouse position from mouse-move
 // event processing.
-BOOL LLViewerWindow::handlePerFrameHover()
+void LLViewerWindow::updateUI()
 {
 	static LLFastTimer::DeclareTimer ftm("Update UI");
 	LLFastTimer t(ftm);
@@ -2825,51 +2829,13 @@ BOOL LLViewerWindow::handlePerFrameHover()
 											  &gDebugRaycastStart,
 											  &gDebugRaycastEnd);
 	}
-	//RN: fix for asynchronous notification of mouse leaving window not working
-	LLCoordWindow mouse_pos;
-	mWindow->getCursorPosition(&mouse_pos);
-	if (mouse_pos.mX < 0 || 
-		mouse_pos.mY < 0 ||
-		mouse_pos.mX > mWindowRectRaw.getWidth() ||
-		mouse_pos.mY > mWindowRectRaw.getHeight())
-	{
-		mMouseInWindow = FALSE;
-	}
-	else
-	{
-		mMouseInWindow = TRUE;
-	}
 
+	updateMouseDelta();
 
-	S32 dx = lltrunc((F32) (mCurrentMousePoint.mX - mLastMousePoint.mX) * LLUI::sGLScaleFactor.mV[VX]);
-	S32 dy = lltrunc((F32) (mCurrentMousePoint.mY - mLastMousePoint.mY) * LLUI::sGLScaleFactor.mV[VY]);
-
-	LLVector2 mouse_vel; 
-
-	static const  LLCachedControl<bool> mouse_smooth("MouseSmooth",false);
-	if (mouse_smooth)
-	{
-		static F32 fdx = 0.f;
-		static F32 fdy = 0.f;
-
-		F32 amount = 16.f;
-		fdx = fdx + ((F32) dx - fdx) * llmin(gFrameIntervalSeconds*amount,1.f);
-		fdy = fdy + ((F32) dy - fdy) * llmin(gFrameIntervalSeconds*amount,1.f);
-
-		mCurrentMouseDelta.set(llround(fdx), llround(fdy));
-		mouse_vel.setVec(fdx,fdy);
-	}
-	else
-	{
-		mCurrentMouseDelta.set(dx, dy);
-		mouse_vel.setVec((F32) dx, (F32) dy);
-	}
-    
-	mMouseVelocityStat.addValue(mouse_vel.magVec());
 
 	if (gNoRender)
 	{
-		return TRUE;
+		return;
 	}
 
 	// clean up current focus
@@ -3245,7 +3211,7 @@ BOOL LLViewerWindow::handlePerFrameHover()
 	previous_x = x;
 	previous_y = y;
 	
-	return handled;
+	return;
 }
 
 
@@ -3255,6 +3221,50 @@ void LLViewerWindow::hoverPickCallback(const LLPickInfo& pick_info)
 	gViewerWindow->mHoverPick = pick_info;
 }
 	
+
+void LLViewerWindow::updateMouseDelta()
+{
+	S32 dx = lltrunc((F32) (mCurrentMousePoint.mX - mLastMousePoint.mX) * LLUI::sGLScaleFactor.mV[VX]);
+	S32 dy = lltrunc((F32) (mCurrentMousePoint.mY - mLastMousePoint.mY) * LLUI::sGLScaleFactor.mV[VY]);
+
+	//RN: fix for asynchronous notification of mouse leaving window not working
+	LLCoordWindow mouse_pos;
+	mWindow->getCursorPosition(&mouse_pos);
+	if (mouse_pos.mX < 0 || 
+		mouse_pos.mY < 0 ||
+		mouse_pos.mX > mWindowRectRaw.getWidth() ||
+		mouse_pos.mY > mWindowRectRaw.getHeight())
+	{
+		mMouseInWindow = FALSE;
+	}
+	else
+	{
+		mMouseInWindow = TRUE;
+	}
+
+	LLVector2 mouse_vel; 
+
+	static const  LLCachedControl<bool> mouse_smooth("MouseSmooth",false);
+	if (mouse_smooth)
+	{
+		static F32 fdx = 0.f;
+		static F32 fdy = 0.f;
+
+		F32 amount = 16.f;
+		fdx = fdx + ((F32) dx - fdx) * llmin(gFrameIntervalSeconds*amount,1.f);
+		fdy = fdy + ((F32) dy - fdy) * llmin(gFrameIntervalSeconds*amount,1.f);
+
+		mCurrentMouseDelta.set(llround(fdx), llround(fdy));
+		mouse_vel.setVec(fdx,fdy);
+	}
+	else
+	{
+		mCurrentMouseDelta.set(dx, dy);
+		mouse_vel.setVec((F32) dx, (F32) dy);
+	}
+    
+	mMouseVelocityStat.addValue(mouse_vel.magVec());
+}
 
 void LLViewerWindow::saveLastMouse(const LLCoordGL &point)
 {
@@ -4448,64 +4458,71 @@ BOOL LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
 		{
 			gDisplaySwapBuffers = FALSE;
 			gDepthDirty = TRUE;
-			{
-				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
-				display(do_rebuild, scale_factor, subfield, TRUE, is_tiling);
-				// Required for showing the GUI in snapshots?  See DEV-16350 for details. JC
-				render_ui(scale_factor, subfield, is_tiling);
-			}
 
 			S32 subimage_x_offset = llclamp(buffer_x_offset - (subimage_x * window_width), 0, window_width);
 			// handle fractional rows
 			U32 read_width = llmax(0, (window_width - subimage_x_offset) -
 									llmax(0, (window_width * (subimage_x + 1)) - (buffer_x_offset + raw->getWidth())));
 
-			for(U32 out_y = 0; out_y < read_height ; out_y++)
+			// Skip rendering and sampling altogether if either width or height is degenerated to 0 (common in cropping cases)
+			if (read_width && read_height)
 			{
-				S32 output_buffer_offset = ( 
-							(out_y * (raw->getWidth())) // ...plus iterated y...
-							+ (window_width * subimage_x) // ...plus subimage start in x...
-							+ (raw->getWidth() * window_height * subimage_y) // ...plus subimage start in y...
-							- output_buffer_offset_x // ...minus buffer padding x...
-							- (output_buffer_offset_y * (raw->getWidth()))  // ...minus buffer padding y...
-						) * raw->getComponents();
+				const U32 subfield = subimage_x+(subimage_y*llceil(scale_factor));
+				display(do_rebuild, scale_factor, subfield, TRUE, is_tiling);
 				
-				// Ping the wathdog thread every 100 lines to keep us alive (arbitrary number, feel free to change)
-				if (out_y % 100 == 0)
+				if (!LLPipeline::sRenderDeferred)
 				{
-					LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
+					// Required for showing the GUI in snapshots and performing bloom composite overlay
+					// Call even if show_ui is FALSE
+					render_ui(scale_factor, subfield);
 				}
 				
-				if (type == SNAPSHOT_TYPE_COLOR)
+				for (U32 out_y = 0; out_y < read_height ; out_y++)
 				{
-					glReadPixels(
-						subimage_x_offset, 
-						out_y + subimage_y_offset, 
-						read_width, 1,
-						GL_RGB, GL_UNSIGNED_BYTE,
-						raw->getData() + output_buffer_offset
-					);
-				}
-				else // SNAPSHOT_TYPE_DEPTH
-				{
-					LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(read_width, 1, sizeof(GL_FLOAT)); // need to store floating point values
-					glReadPixels(
-						subimage_x_offset, out_y + subimage_y_offset,
-						read_width, 1,
-						GL_DEPTH_COMPONENT, GL_FLOAT,
-						depth_line_buffer->getData()// current output pixel is beginning of buffer...
-					);
-
-					for (S32 i = 0; i < (S32)read_width; i++)
+					S32 output_buffer_offset = ( 
+												(out_y * (raw->getWidth())) // ...plus iterated y...
+												+ (window_width * subimage_x) // ...plus subimage start in x...
+												+ (raw->getWidth() * window_height * subimage_y) // ...plus subimage start in y...
+												- output_buffer_offset_x // ...minus buffer padding x...
+												- (output_buffer_offset_y * (raw->getWidth()))  // ...minus buffer padding y...
+												) * raw->getComponents();
+				
+					// Ping the watchdog thread every 100 lines to keep us alive (arbitrary number, feel free to change)
+					if (out_y % 100 == 0)
 					{
-						F32 depth_float = *(F32*)(depth_line_buffer->getData() + (i * sizeof(F32)));
-					
-						F32 linear_depth_float = 1.f / (depth_conversion_factor_1 - (depth_float * depth_conversion_factor_2));
-						U8 depth_byte = F32_to_U8(linear_depth_float, LLViewerCamera::getInstance()->getNear(), LLViewerCamera::getInstance()->getFar());
-						//write converted scanline out to result image
-						for(S32 j = 0; j < raw->getComponents(); j++)
+						LLAppViewer::instance()->pingMainloopTimeout("LLViewerWindow::rawSnapshot");
+					}
+				
+					if (type == SNAPSHOT_TYPE_COLOR)
+					{
+						glReadPixels(
+									 subimage_x_offset, out_y + subimage_y_offset,
+									 read_width, 1,
+									 GL_RGB, GL_UNSIGNED_BYTE,
+									 raw->getData() + output_buffer_offset
+									 );
+					}
+					else // SNAPSHOT_TYPE_DEPTH
+					{
+						LLPointer<LLImageRaw> depth_line_buffer = new LLImageRaw(read_width, 1, sizeof(GL_FLOAT)); // need to store floating point values
+						glReadPixels(
+									 subimage_x_offset, out_y + subimage_y_offset,
+									 read_width, 1,
+									 GL_DEPTH_COMPONENT, GL_FLOAT,
+									 depth_line_buffer->getData()// current output pixel is beginning of buffer...
+									 );
+
+						for (S32 i = 0; i < (S32)read_width; i++)
 						{
-							*(raw->getData() + output_buffer_offset + (i * raw->getComponents()) + j) = depth_byte;
+							F32 depth_float = *(F32*)(depth_line_buffer->getData() + (i * sizeof(F32)));
+					
+							F32 linear_depth_float = 1.f / (depth_conversion_factor_1 - (depth_float * depth_conversion_factor_2));
+							U8 depth_byte = F32_to_U8(linear_depth_float, LLViewerCamera::getInstance()->getNear(), LLViewerCamera::getInstance()->getFar());
+							// write converted scanline out to result image
+							for (S32 j = 0; j < raw->getComponents(); j++)
+							{
+								*(raw->getData() + output_buffer_offset + (i * raw->getComponents()) + j) = depth_byte;
+							}
 						}
 					}
 				}
@@ -4808,6 +4825,8 @@ void LLViewerWindow::stopGL(BOOL save_state)
 		LLVOAvatar::destroyGL();
 		stop_glerror();
 
+		LLVOPartGroup::destroyGL();
+
 		LLViewerDynamicTexture::destroyGL();
 		stop_glerror();
 
@@ -4860,11 +4879,12 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 		gBumpImageList.restoreGL();
 		LLViewerDynamicTexture::restoreGL();
 		LLVOAvatar::restoreGL();
+		LLVOPartGroup::restoreGL();
 		
 		gResizeScreenTexture = TRUE;
 		gWindowResized = TRUE;
 
-		if (gFloaterCustomize && gFloaterCustomize->getVisible())
+		if (isAgentAvatarValid() && !gAgentAvatarp->isUsingBakedTextures())
 		{
 			LLVisualParamHint::requestHintUpdates();
 		}
@@ -4887,6 +4907,8 @@ void LLViewerWindow::restoreGL(const std::string& progress_message)
 
 void LLViewerWindow::initFonts(F32 zoom_factor)
 {
+	if(gGLManager.mIsDisabled)
+		return;
 	LLFontGL::destroyAllGL();
 	// Initialize with possibly different zoom factor
 	LLFontGL::initClass( gSavedSettings.getF32("FontScreenDPI"),
@@ -5499,8 +5521,10 @@ void LLPickInfo::getSurfaceInfo()
 			if (objectp->mDrawable.notNull() && mObjectFace > -1)
 			{
 				LLFace* facep = objectp->mDrawable->getFace(mObjectFace);
-
-				mUVCoords = facep->surfaceToTexture(mSTCoords, mIntersection, mNormal);
+				if (facep)
+				{
+					mUVCoords = facep->surfaceToTexture(mSTCoords, mIntersection, mNormal);
+				}
 			}
 
 			// and XY coords:

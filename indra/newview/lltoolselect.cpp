@@ -49,7 +49,7 @@
 #include "llviewerobjectlist.h" 
 #include "llviewerregion.h" 
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llworld.h"
 
 // [RLVa:KB]

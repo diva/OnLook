@@ -52,7 +52,7 @@ public:
 	void add(LLEventInfo &event_info);	// Add a new notification for an event
 	void add(U32 eventId);
 
-	void load(const LLUserAuth::options_t& event_options);	// In the format that it comes in from LLUserAuth
+	void load(const LLSD& event_options);	// In the format that it comes in from login
 	void remove(U32 event_id);
 
 	BOOL hasNotification(const U32 event_id);
@@ -73,7 +73,7 @@ public:
 	LLEventNotification();
 	virtual ~LLEventNotification();
 
-	BOOL load(const LLUserAuth::response_t &en);		// In the format it comes in from LLUserAuth
+	BOOL load(const LLSD& en);		// In the format it comes in from LLUserAuth
 	BOOL load(const LLEventInfo &event_info);		// From existing event_info on the viewer.
 	//void setEventID(const U32 event_id);
 	//void setEventName(std::string &event_name);

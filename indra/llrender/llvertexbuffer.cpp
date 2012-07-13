@@ -101,7 +101,7 @@ U32 LLVertexBuffer::sSetCount = 0;
 S32 LLVertexBuffer::sCount = 0;
 S32 LLVertexBuffer::sGLCount = 0;
 S32 LLVertexBuffer::sMappedCount = 0;
-bool LLVertexBuffer::sDisableVBOMapping = false;
+bool LLVertexBuffer::sDisableVBOMapping = true;	//Temporary workaround for vbo mapping being straight up broken
 bool LLVertexBuffer::sEnableVBOs = true;
 U32 LLVertexBuffer::sGLRenderBuffer = 0;
 U32 LLVertexBuffer::sGLRenderArray = 0;
@@ -115,60 +115,6 @@ bool LLVertexBuffer::sMapped = false;
 bool LLVertexBuffer::sUseStreamDraw = true;
 bool LLVertexBuffer::sUseVAO = false;
 bool LLVertexBuffer::sPreferStreamDraw = false;
-
-const U32 FENCE_WAIT_TIME_NANOSECONDS = 10000;  //1 ms
-
-class LLGLSyncFence : public LLGLFence
-{
-public:
-#ifdef GL_ARB_sync
-	GLsync mSync;
-#endif
-	
-	LLGLSyncFence()
-	{
-#ifdef GL_ARB_sync
-		mSync = 0;
-#endif
-	}
-
-	virtual ~LLGLSyncFence()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			glDeleteSync(mSync);
-		}
-#endif
-	}
-
-	void placeFence()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			glDeleteSync(mSync);
-		}
-		mSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-#endif
-	}
-
-	void wait()
-	{
-#ifdef GL_ARB_sync
-		if (mSync)
-		{
-			while (glClientWaitSync(mSync, 0, FENCE_WAIT_TIME_NANOSECONDS) == GL_TIMEOUT_EXPIRED)
-			{ //track the number of times we've waited here
-				static S32 waits = 0;
-				waits++;
-			}
-		}
-#endif
-	}
-
-
-};
 
 
 volatile U8* LLVBOPool::allocate(U32& name, U32 size)
@@ -792,7 +738,7 @@ void LLVertexBuffer::drawArrays(U32 mode, U32 first, U32 count) const
 void LLVertexBuffer::initClass(bool use_vbo, bool no_vbo_mapping)
 {
 	sEnableVBOs = use_vbo && gGLManager.mHasVertexBufferObject;
-	sDisableVBOMapping = sEnableVBOs && no_vbo_mapping;
+	sDisableVBOMapping = sEnableVBOs;// && no_vbo_mapping; //Temporary workaround for vbo mapping being straight up broken
 
 	if (!sPrivatePoolp)
 	{ 
@@ -1208,20 +1154,15 @@ void LLVertexBuffer::updateNumVerts(S32 nverts)
 
 	llassert(nverts >= 0);
 
-	if (nverts >= 65535)
+	if (nverts > 65536)
 	{
-		// <FS:ND> FIRE-5077; Just print an info if there are more than 0xFFFF, for now just so there is a message in the logs where in older version #vertices would have been capped.
-
-		// llwarns << "Vertex buffer overflow!" << llendl;
-		// nverts = 65535;
-		llinfos << "More vertices than 65535 (#" << nverts << ")" <<llendl;
-
-		// </FS:ND>
+		llwarns << "Vertex buffer overflow!" << llendl;
+		nverts = 65536;
 	}
 
-	S32 needed_size = calcOffsets(mTypeMask, mOffsets, nverts);
+	U32 needed_size = (U32)calcOffsets(mTypeMask, mOffsets, nverts);
 
-	if (needed_size > mSize || needed_size <= mSize/2)
+	if (needed_size > (U32)mSize || needed_size <= (U32)mSize/2)
 	{
 		createGLBuffer(needed_size);
 	}
@@ -1237,9 +1178,9 @@ void LLVertexBuffer::updateNumIndices(S32 nindices)
 
 	llassert(nindices >= 0);
 
-	S32 needed_size = sizeof(U16) * nindices;
+	U32 needed_size = sizeof(U16) * (U32)nindices;
 
-	if (needed_size > mIndicesSize || needed_size <= mIndicesSize/2)
+	if (needed_size > (U32)mIndicesSize || needed_size <= (U32)mIndicesSize/2)
 	{
 		createGLIndices(needed_size);
 	}
@@ -1255,21 +1196,11 @@ void LLVertexBuffer::allocateBuffer(S32 nverts, S32 nindices, bool create)
 	
 	stop_glerror();
 
-	// <FS:ND> FIRE-5077; Just print an info if there are more than 0xFFFF, for now just so there is a message in the logs where in older version #vertices would have been capped.
-
-	// if (nverts < 0 || nindices < 0 ||
-	// 	nverts > 65536)
-	// {
-	// 	llerrs << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
-	// }
-
-	if( nverts < 0 || nindices < 0 )
-		llerrs << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
-
-	if( nverts > 0xFFFF )
-		llinfos << "More vertices than 65535 (#" << nverts << ")" <<llendl;
-	
-	// </FS:ND>
+	if (nverts < 0 || nindices < 0 ||
+		nverts > 65536)
+	{
+		llwarns << "Bad vertex buffer allocation: " << nverts << " : " << nindices << llendl;
+	}
 
 	updateNumVerts(nverts);
 	updateNumIndices(nindices);
@@ -1387,13 +1318,13 @@ void LLVertexBuffer::setupVertexArray()
 				//glVertexattribIPointer requires GLSL 1.30 or later
 				if (gGLManager.mGLSLVersionMajor > 1 || gGLManager.mGLSLVersionMinor >= 30)
 				{
-					glVertexAttribIPointer(i, attrib_size[i], attrib_type[i], sTypeSize[i], (void*) mOffsets[i]); 
+					glVertexAttribIPointer(i, attrib_size[i], attrib_type[i], sTypeSize[i], reinterpret_cast<void*>(mOffsets[i]));
 				}
 #endif
 			}
 			else
 			{
-				glVertexAttribPointerARB(i, attrib_size[i], attrib_type[i], attrib_normalized[i], sTypeSize[i], (void*) mOffsets[i]); 
+				glVertexAttribPointerARB(i, attrib_size[i], attrib_type[i], attrib_normalized[i], sTypeSize[i], reinterpret_cast<void*>(mOffsets[i]));
 			}
 		}
 		else
@@ -2303,10 +2234,10 @@ void LLVertexBuffer::setupVertexBuffer(U32 data_mask)
 	stop_glerror();
 	volatile U8* base = useVBOs() ? (U8*) mAlignedOffset : mMappedData;
 
-	/*if ((data_mask & mTypeMask) != data_mask)
+	if (gDebugGL && ((data_mask & mTypeMask) != data_mask))
 	{
 		llerrs << "LLVertexBuffer::setupVertexBuffer missing required components for supplied data mask." << llendl;
-	}*/
+	}
 
 	if (LLGLSLShader::sNoFixedFunction)
 	{

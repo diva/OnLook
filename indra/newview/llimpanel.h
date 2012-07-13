@@ -231,8 +231,8 @@ public:
 						   void *cargo_data, EAcceptance *accept,
 						   std::string& tooltip_msg);
 
-	static void		onInputEditorFocusReceived( LLFocusableElement* caller, void* userdata );
-	static void		onInputEditorFocusLost(LLFocusableElement* caller, void* userdata);
+	void			onInputEditorFocusReceived();
+	void			onInputEditorFocusLost();
 	static void		onInputEditorKeystroke(LLLineEditor* caller, void* userdata);
 	static void		onCommitChat(LLUICtrl* caller, void* userdata);
 	static void		onTabClick( void* userdata );
@@ -381,6 +381,10 @@ private:
 
 	// Timer to detect when user has stopped typing.
 	LLFrameTimer mLastKeystrokeTimer;
+
+	boost::signals2::connection mFocusLostSignal;
+
+
 
 	void disableWhileSessionStarting();
 

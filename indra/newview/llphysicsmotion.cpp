@@ -510,8 +510,7 @@ BOOL LLPhysicsMotionController::onUpdate(F32 time, U8* joint_mask)
 				}
 				mCharacter->updateVisualParams();
 			}
-			if(physics_unsupported) //Only use emerald physics if avatarphysiscs is really off, or the client doesn't seem to support new physics.
-				((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Fall back to emerald physics	
+			((LLVOAvatar*)mCharacter)->idleUpdateBoobEffect(); //Emerald physics will fix params it altered if wearable physics are disabled.
 			return TRUE;
 		}
         
@@ -756,7 +755,7 @@ BOOL LLPhysicsMotion::onUpdate(F32 time)
 		const F32 area_for_max_settings = 0.0;
 		const F32 area_for_min_settings = 1400.0;
 		const F32 area_for_this_setting = area_for_max_settings + (area_for_min_settings-area_for_max_settings)*(1.0-lod_factor);
-		const F32 pixel_area = (F32) sqrt(mCharacter->getPixelArea());
+	        const F32 pixel_area = sqrtf(mCharacter->getPixelArea());
         
 		const BOOL is_self = (dynamic_cast<LLVOAvatarSelf *>(mCharacter) != NULL);
 		if ((pixel_area > area_for_this_setting) || is_self)

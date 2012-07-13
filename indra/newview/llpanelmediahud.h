@@ -36,7 +36,8 @@
 #include "llpanel.h"
 #include "llviewermedia.h"
 
-class LLCoordWindow;
+#include "llcoord.h"
+
 class LLViewerMediaImpl;
 
 class LLPanelMediaHUD : public LLPanel

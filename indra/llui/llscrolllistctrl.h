@@ -671,6 +671,7 @@ private:
 	BOOL			mCommitOnSelectionChange;
 	BOOL			mSelectionChanged;
 	BOOL			mNeedsScroll;
+	BOOL			mMouseWheelOpaque;
 	BOOL			mCanSelect;
 	BOOL			mDisplayColumnHeaders;
 	BOOL			mColumnsDirty;

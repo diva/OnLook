@@ -38,6 +38,19 @@
 #include "llsdtraits.h"
 #include "llstring.h"
 
+#if LL_WINDOWS
+#include <float.h>
+namespace
+{
+	int fpclassify(double x)
+	{
+		return _fpclass(x);
+	}
+}
+#else
+using std::fpclassify;
+#endif
+
 namespace tut
 {
 	class SDCleanupCheck
@@ -224,19 +237,16 @@ namespace tut
 		}
 		else
 		{
-// TODO: Fix on windows....
-#ifndef LL_WINDOWS
-# if !defined(fpclassify) && __GNUC__ >= 3
-#   define FPCLASSIFY_NAMESPACE std::
-# else
-#   define FPCLASSIFY_NAMESPACE
-# endif
-			int left  = FPCLASSIFY_NAMESPACE fpclassify(v.asReal());
-			int right = FPCLASSIFY_NAMESPACE fpclassify(eReal);
+			int left  = fpclassify(v.asReal());
+			int right = fpclassify(eReal);
 
 			ensure_equals(s+" to real", 	left, 			right);
-			ensure_equals(s+" to string",	v.asString(),	eString);
-#endif
+			// ensure_equals(s+" to string", v.asString(), eString);
+			// I've commented this check out, since there doesn't
+			// seem to be uniform string representation for NaN on
+			// all platforms. For example, on my Ubuntu 8.10 laptop
+			// with libc 2.11.1, sqrt(-1.0) will return '-nan', not
+			// 'nan'.
 		}
 	}
 	
@@ -775,4 +785,3 @@ namespace tut
 		test serializations
 	*/
 }
-

@@ -105,7 +105,7 @@ public:
 // [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
 			if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWNOTE))
 			{
-				RlvNotifications::notifyBlockedViewNote();
+				RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_NOTECARD);
 				return;
 			}
 // [/RLVa:KB]
@@ -1427,7 +1427,7 @@ void LLViewerTextEditor::openEmbeddedTexture( LLInventoryItem* item, llwchar wc 
 // [RLVa:KB] - Checked: 2009-11-11 (RLVa-1.1.0a) | Modified: RLVa-1.1.0a
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_VIEWTEXTURE))
 	{
-		RlvNotifications::notifyBlockedViewTexture();
+		RlvUtil::notifyBlockedViewXXX(LLAssetType::AT_TEXTURE);
 		return;
 	}
 // [/RLVa:KB]
@@ -1565,9 +1565,11 @@ bool LLViewerTextEditor::importStream(std::istream& str)
 
 void LLViewerTextEditor::copyInventory(const LLInventoryItem* item, U32 callback_id)
 {
-	copy_inventory_from_notecard(mObjectID,
+	copy_inventory_from_notecard(LLUUID::null,  // Don't specify a destination -- let the sim do that
+								 mObjectID,
 								 mNotecardInventoryID,
-								 item, callback_id);
+								 item,
+								 callback_id);
 }
 
 bool LLViewerTextEditor::hasEmbeddedInventory()

@@ -33,20 +33,26 @@
 #ifndef LL_LLVIEWERMESSAGE_H
 #define LL_LLVIEWERMESSAGE_H
 
+#include "llassettype.h"
 #include "llinstantmessage.h"
+#include "llpointer.h"
 #include "lltransactiontypes.h"
 #include "lluuid.h"
-#include "llchat.h"
+#include "message.h"
 #include "stdenums.h"
+#include "llnotifications.h"
+#include "llchat.h"
 
 //
 // Forward declarations
 //
 class LLColor4;
-class LLViewerObject;
 class LLInventoryObject;
 class LLInventoryItem;
+class LLMeanCollisionData;
 class LLMessageSystem;
+class LLVFS;
+class LLViewerObject;
 class LLViewerRegion;
 
 //
@@ -200,6 +206,15 @@ void invalid_message_callback(LLMessageSystem*, void*, EMessageException);
 
 void process_initiate_download(LLMessageSystem* msg, void**);
 void start_new_inventory_observer();
+void open_inventory_offer(const uuid_vec_t& items, const std::string& from_name);
+
+// Returns true if item is not in certain "quiet" folder which don't need UI
+// notification (e.g. trash, cof, lost-and-found) and agent is not AFK, false otherwise.
+// Returns false if item is not found.
+bool highlight_offered_object(const LLUUID& obj_id);
+
+void set_dad_inventory_item(LLInventoryItem* inv_item, const LLUUID& into_folder_uuid);
+void set_dad_inbox_object(const LLUUID& object_id);
 
 struct LLOfferInfo
 {

@@ -39,7 +39,7 @@ class LLUICtrl;
 class LLView;
 class LLParcelSelection;
 class LLObjectSelection;
-
+class LLSelectNode;
 
 void pre_init_menus();
 void init_menus();
@@ -63,6 +63,8 @@ void handle_duplicate(void*);
 void handle_duplicate_in_place(void*);
 BOOL enable_not_have_card(void *userdata);
 void process_grant_godlike_powers(LLMessageSystem* msg, void**);
+
+void init_meshes_and_morphs_menu();
 
 BOOL enable_cut(void*);
 BOOL enable_copy(void*);
@@ -95,8 +97,17 @@ void exchange_callingcard(const LLUUID& dest_id);
 
 void handle_gestures(void*);
 void handle_sit_down(void*);
-bool toggle_build_mode();
 void handle_object_build(void*);
+
+void handle_buy();
+// Can anyone take a free copy of the object?
+// *TODO: Move to separate file
+bool anyone_copy_selection(LLSelectNode* nodep);
+
+// Is this selected object for sale?
+// *TODO: Move to separate file
+bool for_sale_selection(LLSelectNode* nodep);
+
 void handle_save_snapshot(void *);
 void handle_toggle_flycam();
 void handle_fake_away_status(void*);
@@ -104,6 +115,7 @@ void handle_fake_away_status(void*);
 bool handle_sit_or_stand();
 bool handle_give_money_dialog();
 bool handle_object_open();
+bool enable_buy_object();
 bool handle_go_to();
 
 // Export to XML or Collada
@@ -158,6 +170,7 @@ extern LLPieMenu	*gPieLandSimple;
 extern LLMenuGL* gAttachSubMenu;
 extern LLMenuGL* gDetachSubMenu;
 extern LLMenuGL* gTakeOffClothes;
+extern LLMenuGL* gMeshesAndMorphsMenu;
 extern LLPieMenu* gAttachScreenPieMenu;
 extern LLPieMenu* gDetachScreenPieMenu;
 extern LLPieMenu* gAttachPieMenu;

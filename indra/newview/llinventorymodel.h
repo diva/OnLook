@@ -2,31 +2,25 @@
  * @file llinventorymodel.h
  * @brief LLInventoryModel class header file
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -36,6 +30,7 @@
 #include "llassettype.h"
 #include "llfoldertype.h"
 #include "lldarray.h"
+#include "llframetimer.h"
 #include "llhttpclient.h"
 #include "lluuid.h"
 #include "llpermissionsflags.h"
@@ -72,7 +67,10 @@ class LLInventoryCollectFunctor;
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 class LLInventoryModel
 {
+	LOG_CLASS(LLInventoryModel);
 public:
+	friend class LLInventoryModelFetchDescendentsResponder;
+
 	enum EHasChildren
 	{
 		CHILDREN_NO,
@@ -90,8 +88,6 @@ public:
 		fetchInventoryResponder(const LLSD& request_sd) : mRequestSD(request_sd) {};
 		void result(const LLSD& content);			
 		void error(U32 status, const std::string& reason);
-	public:
-		typedef std::vector<LLViewerInventoryCategory*> folder_ref_t;
 	protected:
 		LLSD mRequestSD;
 	};
@@ -168,6 +164,10 @@ private:
 	//--------------------------------------------------------------------
 	// Login
 	//--------------------------------------------------------------------
+public:
+	static BOOL getIsFirstTimeInViewer2();
+private:
+	static BOOL sFirstTimeInViewer2;
 	const static S32 sCurrentInvCacheVersion; // expected inventory cache version
 
 /**                    Initialization/Setup
@@ -247,6 +247,9 @@ public:
 	
 	// Get whatever special folder this object is a child of, if any.
 	const LLViewerInventoryCategory *getFirstNondefaultParent(const LLUUID& obj_id) const;
+	
+	// Get first descendant of the child object under the specified parent
+	const LLViewerInventoryCategory *getFirstDescendantOf(const LLUUID& master_parent_id, const LLUUID& obj_id) const;
 
 	// Get the object by id. Returns NULL if not found.
 	//   NOTE: Use the pointer returned for read operations - do
@@ -313,6 +316,16 @@ public:
 	// observer notification, or server update is performed.
 	void moveObject(const LLUUID& object_id, const LLUUID& cat_id);
 
+	// Migrated from llinventoryfunctions
+	void changeItemParent(LLViewerInventoryItem* item,
+						  const LLUUID& new_parent_id,
+						  BOOL restamp);
+
+	// Migrated from llinventoryfunctions
+	void changeCategoryParent(LLViewerInventoryCategory* cat,
+							  const LLUUID& new_parent_id,
+							  BOOL restamp);
+
 	//--------------------------------------------------------------------
 	// Delete
 	//--------------------------------------------------------------------
@@ -322,8 +335,13 @@ public:
 	// consistent internal state. No cache accounting, observer
 	// notification, or server update is performed.
 	void deleteObject(const LLUUID& id);
+	/// move Item item_id to Trash
 	void removeItem(const LLUUID& item_id);
-	
+	/// move Category category_id to Trash
+	void removeCategory(const LLUUID& category_id);
+	/// removeItem() or removeCategory(), whichever is appropriate
+	void removeObject(const LLUUID& object_id);
+
 	// Delete a particular inventory object by ID, and delete it from
 	// the server. Also updates linked items.
 	void purgeObject(const LLUUID& id);
@@ -335,28 +353,33 @@ public:
 	// cache accounting in a fairly efficient manner. This method does
 	// not notify observers (though maybe it should...)
 	void purgeDescendentsOf(const LLUUID& id);
-
-	// This method optimally removes the referenced categories and
-	// items from the current agent's inventory in the database. It
-	// performs all of the during deletion. The local representation
-	// is not removed.
-	void deleteFromServer(LLDynamicArray<LLUUID>& category_ids,
-						  LLDynamicArray<LLUUID>& item_ids);
-
-	//
-	// Misc Methods 
-	//
-
-
-	// This method to prepares a set of mock inventory which provides
-	// minimal functionality before the actual arrival of inventory.
-	//void mock(const LLUUID& root_id);
-
+protected:
+	void updateLinkedObjectsFromPurge(const LLUUID& baseobj_id);
 	
+	//--------------------------------------------------------------------
+	// Reorder
+	//--------------------------------------------------------------------
+public:
+	// Changes items order by insertion of the item identified by src_item_id
+	// before (or after) the item identified by dest_item_id. Both items must exist in items array.
+	// Sorting is stored after method is finished. Only src_item_id is moved before (or after) dest_item_id.
+	// The parameter "insert_before" controls on which side of dest_item_id src_item_id gets rensinserted.
+	static void updateItemsOrder(LLInventoryModel::item_array_t& items, 
+								 const LLUUID& src_item_id, 
+								 const LLUUID& dest_item_id,
+								 bool insert_before = true);
+	// Gets an iterator on an item vector knowing only the item UUID.
+	// Returns end() of the vector if not found.
+	static LLInventoryModel::item_array_t::iterator findItemIterByUUID(LLInventoryModel::item_array_t& items, const LLUUID& id);
 
-	// call this method to request the inventory.
-	//void requestFromServer(const LLUUID& agent_id);
+	// Saves current order of the passed items using inventory item sort field.
+	// Resets 'items' sort fields and saves them on server.
+	// Is used to save order for Favorites folder.
+	//void saveItemsOrder(const LLInventoryModel::item_array_t& items);
 
+	// Rearranges Landmarks inside Favorites folder.
+	// Moves source landmark before target one.
+	void rearrangeFavoriteLandmarks(const LLUUID& source_item_id, const LLUUID& target_item_id);
 
 	//--------------------------------------------------------------------
 	// Creation

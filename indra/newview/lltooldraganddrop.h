@@ -78,7 +78,7 @@ public:
 				   const LLUUID& source_id = LLUUID::null,
 				   const LLUUID& object_id = LLUUID::null);
 	void beginMultiDrag(const std::vector<EDragAndDropType> types,
-						const std::vector<LLUUID>& cargo_ids,
+						const uuid_vec_t& cargo_ids,
 						ESource source,
 						const LLUUID& source_id = LLUUID::null);
 	void endDrag();
@@ -86,6 +86,9 @@ public:
 	const LLUUID& getSourceID() const { return mSourceID; }
 	const LLUUID& getObjectID() const { return mObjectID; }
 	EAcceptance getLastAccept() { return mLastAccept; }
+	
+	uuid_vec_t::size_type getCargoIDsCount() const { return mCargoIDs.size(); }
+	static S32 getOperationId() { return sOperationId; }
 
 protected:
 	enum EDropTarget
@@ -109,6 +112,7 @@ protected:
 	void dragOrDrop3D(S32 x, S32 y, MASK mask, BOOL drop,
 					  EAcceptance* acceptance);
 	static void pickCallback(const LLPickInfo& pick_info);
+	void pick(const LLPickInfo& pick_info);
 
 protected:
 
@@ -117,10 +121,12 @@ protected:
 	
 	std::vector<EDragAndDropType> mCargoTypes;
 	//void*			mCargoData;
-	std::vector<LLUUID> mCargoIDs;
+	uuid_vec_t mCargoIDs;
 	ESource mSource;
 	LLUUID mSourceID;
 	LLUUID mObjectID;
+
+	static S32		sOperationId;
 
 	LLVector3d		mLastCameraPos;
 	LLVector3d		mLastHitPos;
@@ -130,10 +136,6 @@ protected:
 	BOOL			mDrop;
 	S32				mCurItemIndex;
 	std::string		mToolTipMsg;
-
-	// array of pointers to functions that implement the logic to
-	// dragging and dropping into the simulator.
-	static dragOrDrop3dImpl sDragAndDrop3d[DAD_COUNT][DT_COUNT];
 
 protected:
 	// 3d drop functions. these call down into the static functions
@@ -147,6 +149,8 @@ protected:
 	EAcceptance dad3dRezScript(LLViewerObject* obj, S32 face,
 							   MASK mask, BOOL drop);
 	EAcceptance dad3dTextureObject(LLViewerObject* obj, S32 face,
+								   MASK mask, BOOL drop);
+	EAcceptance dad3dMeshObject(LLViewerObject* obj, S32 face,
 								   MASK mask, BOOL drop);
 //	EAcceptance dad3dTextureSelf(LLViewerObject* obj, S32 face,
 //								 MASK mask, BOOL drop);
@@ -179,6 +183,11 @@ protected:
 	EAcceptance dad3dActivateGesture(LLViewerObject *obj, S32 face,
 								 MASK mask, BOOL drop);
 
+	// helper called by methods above to handle "application" of an item
+	// to an object (texture applied to face, mesh applied to shape, etc.)
+	EAcceptance dad3dApplyToObject(LLViewerObject* obj, S32 face, MASK mask, BOOL drop, EDragAndDropType cargo_type);
+		
+	
 	// set the LLToolDragAndDrop's cursor based on the given acceptance
 	ECursorType acceptanceToCursor( EAcceptance acceptance );
 
@@ -212,7 +221,6 @@ public:
 	// helper functions
 	static BOOL isInventoryDropAcceptable(LLViewerObject* obj, LLInventoryItem* item) { return (ACCEPT_YES_COPY_SINGLE <= willObjectAcceptInventory(obj, item)); }
 
-
 	BOOL dadUpdateInventory(LLViewerObject* obj, BOOL drop);
 	BOOL dadUpdateInventoryCategory(LLViewerObject* obj, BOOL drop);
 
@@ -230,6 +238,11 @@ public:
 									LLInventoryItem* item,
 									ESource source,
 									const LLUUID& src_id);
+	static void dropMesh(LLViewerObject* hit_obj,
+						 LLInventoryItem* item,
+						 ESource source,
+						 const LLUUID& src_id);
+	
 	//static void	dropTextureOneFaceAvatar(LLVOAvatar* avatar,S32 hit_face,
 	//									 LLInventoryItem* item)
 
@@ -242,6 +255,25 @@ public:
 									  EDragAndDropType cargo_type,
 									  void* cargo_data,
 									  EAcceptance* accept);
+
+	// Classes used for determining 3d drag and drop types.
+private:
+	struct DragAndDropEntry : public LLDictionaryEntry
+	{
+		DragAndDropEntry(dragOrDrop3dImpl f_none,
+						 dragOrDrop3dImpl f_self,
+						 dragOrDrop3dImpl f_avatar,
+						 dragOrDrop3dImpl f_object,
+						 dragOrDrop3dImpl f_land);
+		dragOrDrop3dImpl mFunctions[DT_COUNT];
+	};	
+	class LLDragAndDropDictionary : public LLSingleton<LLDragAndDropDictionary>,
+									public LLDictionary<EDragAndDropType, DragAndDropEntry>
+	{
+	public:
+		LLDragAndDropDictionary();
+		dragOrDrop3dImpl get(EDragAndDropType dad_type, EDropTarget drop_target);
+	};
 };
 
 // utility functions

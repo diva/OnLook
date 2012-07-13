@@ -146,7 +146,7 @@ void LLPreviewSound::playAmbient( void* userdata )
 
 	if(item && gAudiop)
 	{
-		int gain = 0.01f;
+		F32 gain = 0.01f;
 		for(int i = 0; i < 2; i++)
 		{
 			gMessageSystem->newMessageFast(_PREHASH_SoundTrigger);

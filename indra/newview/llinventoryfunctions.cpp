@@ -41,6 +41,7 @@
 #include "message.h"
 
 // newview includes
+#include "llappearancemgr.h"
 #include "llappviewer.h"
 //#include "llfirstuse.h"
 #include "llfloaterinventory.h"
@@ -52,9 +53,12 @@
 #include "llinventorybridge.h"
 #include "llinventoryclipboard.h"
 #include "llinventorymodel.h"
+#include "llinventorypanel.h"
 #include "lllineeditor.h"
+#include "llmarketplacenotifications.h"
 #include "llmenugl.h"
 #include "llnotificationsutil.h"
+#include "llpanelmaininventory.h"
 #include "llpreviewanim.h"
 #include "llpreviewgesture.h"
 #include "llpreviewnotecard.h"
@@ -75,12 +79,12 @@
 #include "llvoavatarself.h"
 #include "llwearablelist.h"
 
+#include <boost/foreach.hpp>
+
 // [RLVa:KB] - Checked: 2011-05-22 (RLVa-1.3.1a)
 #include "rlvhandler.h"
 #include "rlvlocks.h"
 // [/RLVa:KB]
-
-#include "cofmgr.h"
 
 BOOL LLInventoryState::sWearNewClothing = FALSE;
 LLUUID LLInventoryState::sWearNewClothingTransactionID;
@@ -105,97 +109,6 @@ void append_path(const LLUUID& id, std::string& path)
 	}
 	path.append(temp);
 }
-
-void change_item_parent(LLInventoryModel* model,
-						LLViewerInventoryItem* item,
-						const LLUUID& new_parent_id,
-						BOOL restamp)
-{
-	// <edit>
-	bool send_parent_update = gInventory.isObjectDescendentOf(item->getUUID(), gInventory.getRootFolderID());
-	// </edit>
-	if(item->getParentUUID() != new_parent_id)
-	{
-		LLInventoryModel::update_list_t update;
-		LLInventoryModel::LLCategoryUpdate old_folder(item->getParentUUID(),-1);
-		update.push_back(old_folder);
-		LLInventoryModel::LLCategoryUpdate new_folder(new_parent_id, 1);
-		update.push_back(new_folder);
-		gInventory.accountForUpdate(update);
-
-		LLPointer<LLViewerInventoryItem> new_item = new LLViewerInventoryItem(item);
-		new_item->setParent(new_parent_id);
-		// <edit>
-		if(send_parent_update)
-		// </edit>
-		new_item->updateParentOnServer(restamp);
-		model->updateItem(new_item);
-		model->notifyObservers();
-	}
-}
-
-void change_category_parent(LLInventoryModel* model,
-	LLViewerInventoryCategory* cat,
-	const LLUUID& new_parent_id,
-	BOOL restamp)
-{
-	if (!model || !cat)
-	{
-		return;
-	}
-
-	// Can't move a folder into a child of itself.
-	if (model->isObjectDescendentOf(new_parent_id, cat->getUUID()))
-	{
-		return;
-	}
-
-	LLInventoryModel::update_list_t update;
-	LLInventoryModel::LLCategoryUpdate old_folder(cat->getParentUUID(), -1);
-	update.push_back(old_folder);
-	LLInventoryModel::LLCategoryUpdate new_folder(new_parent_id, 1);
-	update.push_back(new_folder);
-	model->accountForUpdate(update);
-
-	LLPointer<LLViewerInventoryCategory> new_cat = new LLViewerInventoryCategory(cat);
-	new_cat->setParent(new_parent_id);
-	new_cat->updateParentOnServer(restamp);
-	model->updateCategory(new_cat);
-	model->notifyObservers();
-}
-
-/*void remove_category(LLInventoryModel* model, const LLUUID& cat_id)
-{
-	if (!model || !get_is_category_removable(model, cat_id))
-	{
-		return;
-	}
-
-	// Look for any gestures and deactivate them
-	LLInventoryModel::cat_array_t	descendent_categories;
-	LLInventoryModel::item_array_t	descendent_items;
-	gInventory.collectDescendents(cat_id, descendent_categories, descendent_items, FALSE);
-
-	for (LLInventoryModel::item_array_t::const_iterator iter = descendent_items.begin();
-		 iter != descendent_items.end();
-		 ++iter)
-	{
-		const LLViewerInventoryItem* item = (*iter);
-		const LLUUID& item_id = item->getUUID();
-		if (item->getType() == LLAssetType::AT_GESTURE
-			&& LLGestureMgr::instance().isGestureActive(item_id))
-		{
-			LLGestureMgr::instance().deactivateGesture(item_id);
-		}
-	}
-
-	LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
-	if (cat)
-	{
-		const LLUUID trash_id = model->findCategoryUUIDForType(LLFolderType::FT_TRASH);
-		change_category_parent(model, cat, trash_id, TRUE);
-	}
-}*/
 
 void rename_category(LLInventoryModel* model, const LLUUID& cat_id, const std::string& new_name)
 {
@@ -237,7 +150,7 @@ BOOL get_is_parent_to_worn_item(const LLUUID& id)
 	LLInventoryModel::cat_array_t cats;
 	LLInventoryModel::item_array_t items;
 	LLInventoryCollectAllItems collect_all;
-	gInventory.collectDescendentsIf(LLCOFMgr::instance().getCOF(), cats, items, LLInventoryModel::EXCLUDE_TRASH, collect_all);
+	gInventory.collectDescendentsIf(LLAppearanceMgr::instance().getCOF(), cats, items, LLInventoryModel::EXCLUDE_TRASH, collect_all);
 
 	for (LLInventoryModel::item_array_t::const_iterator it = items.begin(); it != items.end(); ++it)
 	{
@@ -313,13 +226,13 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 	if (!item)
 		return FALSE;
 
-	if (LLCOFMgr::instance().isLinkInCOF(item->getLinkedUUID()))
+	if (LLAppearanceMgr::isLinkInCOF(item->getLinkedUUID()))
 	{
 		// an item having links in COF (i.e. a worn item)
 		return FALSE;
 	}
 
-	if (gInventory.isObjectDescendentOf(id, LLCOFMgr::instance().getCOF()))
+	if (gInventory.isObjectDescendentOf(id, LLAppearanceMgr::instance().getCOF()))
 	{
 		// a non-link object in COF (should not normally happen)
 		return FALSE;
@@ -363,18 +276,21 @@ BOOL get_can_item_be_worn(const LLUUID& id)
 				// Not being worn yet.
 				return TRUE;
 			}
-		break;
-		
-	default:
-		break;
+			break;
+		default:
+			break;
 	}
-
 	return FALSE;
 }
 
 BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 {
 	if (!model)
+	{
+		return FALSE;
+	}
+
+	if(id == gInventory.getRootFolderID())
 	{
 		return FALSE;
 	}
@@ -387,7 +303,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 
 	// Disable delete from COF folder; have users explicitly choose "detach/take off",
 	// unless the item is not worn but in the COF (i.e. is bugged).
-	if (LLCOFMgr::instance().getIsProtectedCOFItem(id))
+	if (LLAppearanceMgr::instance().getIsProtectedCOFItem(id))
 	{
 		if (get_is_item_worn(id))
 		{
@@ -415,7 +331,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 	return TRUE;
 }
 
-/*BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
+BOOL get_is_category_removable(const LLInventoryModel* model, const LLUUID& id)
 {
 	// NOTE: This function doesn't check the folder's children.
 	// See LLFolderBridge::isItemRemovable for a function that does
@@ -465,7 +381,7 @@ BOOL get_is_item_removable(const LLInventoryModel* model, const LLUUID& id)
 	}
 
 	return TRUE;
-}*/
+}
 
 BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
 {
@@ -491,6 +407,196 @@ BOOL get_is_category_renameable(const LLInventoryModel* model, const LLUUID& id)
 	return FALSE;
 }
 
+
+void show_item_profile(const LLUUID& item_uuid)
+{
+	LLUUID linked_uuid = gInventory.getLinkedItemID(item_uuid);
+	if(!LLFloaterProperties::show(linked_uuid, LLUUID::null))
+	{
+		S32 left, top;
+		gFloaterView->getNewFloaterPosition(&left, &top);
+		LLRect rect = gSavedSettings.getRect("PropertiesRect");
+		rect.translate( left - rect.mLeft, top - rect.mTop );
+		LLFloaterProperties* floater;
+		floater = new LLFloaterProperties("item properties",
+										rect,
+										"Inventory Item Properties",
+										linked_uuid,
+										LLUUID::null);
+		// keep onscreen
+		gFloaterView->adjustToFitScreen(floater, FALSE);
+	}
+}
+
+void open_outbox()
+{
+	//LLFloaterReg::showInstance("outbox");
+}
+
+LLUUID create_folder_in_outbox_for_item(LLInventoryItem* item, const LLUUID& destFolderId, S32 operation_id)
+{
+	llassert(item);
+	llassert(destFolderId.notNull());
+
+	LLUUID created_folder_id = gInventory.createNewCategory(destFolderId, LLFolderType::FT_NONE, item->getName());
+	gInventory.notifyObservers();
+
+	LLNotificationsUtil::add("OutboxFolderCreated");
+
+	return created_folder_id;
+}
+
+void move_to_outbox_cb_action(const LLSD& payload)
+{
+	LLViewerInventoryItem * viitem = gInventory.getItem(payload["item_id"].asUUID());
+	LLUUID dest_folder_id = payload["dest_folder_id"].asUUID();
+
+	if (viitem)
+	{	
+		// when moving item directly into outbox create folder with that name
+		if (dest_folder_id == gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false))
+		{
+			S32 operation_id = payload["operation_id"].asInteger();
+			dest_folder_id = create_folder_in_outbox_for_item(viitem, dest_folder_id, operation_id);
+		}
+
+		LLUUID parent = viitem->getParentUUID();
+
+		gInventory.changeItemParent(
+			viitem,
+			dest_folder_id,
+			false);
+
+		LLUUID top_level_folder = payload["top_level_folder"].asUUID();
+
+		if (top_level_folder != LLUUID::null)
+		{
+			LLViewerInventoryCategory* category;
+
+			while (parent.notNull())
+			{
+				LLInventoryModel::cat_array_t* cat_array;
+				LLInventoryModel::item_array_t* item_array;
+				gInventory.getDirectDescendentsOf(parent,cat_array,item_array);
+
+				LLUUID next_parent;
+
+				category = gInventory.getCategory(parent);
+
+				if (!category) break;
+
+				next_parent = category->getParentUUID();
+
+				if (cat_array->empty() && item_array->empty())
+				{
+					gInventory.removeCategory(parent);
+				}
+
+				if (parent == top_level_folder)
+				{
+					break;
+				}
+
+				parent = next_parent;
+			}
+		}
+
+		open_outbox();
+	}
+}
+
+void copy_item_to_outbox(LLInventoryItem* inv_item, LLUUID dest_folder, const LLUUID& top_level_folder, S32 operation_id)
+{
+	// Collapse links directly to items/folders
+	LLViewerInventoryItem * viewer_inv_item = (LLViewerInventoryItem *) inv_item;
+	LLViewerInventoryCategory * linked_category = viewer_inv_item->getLinkedCategory();
+	if (linked_category != NULL)
+	{
+		copy_folder_to_outbox(linked_category, dest_folder, top_level_folder, operation_id);
+	}
+	else
+	{
+		LLViewerInventoryItem * linked_item = viewer_inv_item->getLinkedItem();
+		if (linked_item != NULL)
+		{
+			inv_item = (LLInventoryItem *) linked_item;
+		}
+		
+		// Check for copy permissions
+		if (inv_item->getPermissions().allowOperationBy(PERM_COPY, gAgent.getID(), gAgent.getGroupID()))
+		{
+			// when moving item directly into outbox create folder with that name
+			if (dest_folder == gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false))
+			{
+				dest_folder = create_folder_in_outbox_for_item(inv_item, dest_folder, operation_id);
+			}
+			
+			copy_inventory_item(gAgent.getID(),
+								inv_item->getPermissions().getOwner(),
+								inv_item->getUUID(),
+								dest_folder,
+								inv_item->getName(),
+								LLPointer<LLInventoryCallback>(NULL));
+
+			open_outbox();
+		}
+		else
+		{
+			LLSD payload;
+			payload["item_id"] = inv_item->getUUID();
+			payload["dest_folder_id"] = dest_folder;
+			payload["top_level_folder"] = top_level_folder;
+			payload["operation_id"] = operation_id;
+			
+			LLMarketplaceInventoryNotifications::addNoCopyNotification(payload, move_to_outbox_cb_action);
+		}
+	}
+}
+
+void move_item_within_outbox(LLInventoryItem* inv_item, LLUUID dest_folder, S32 operation_id)
+{
+	// when moving item directly into outbox create folder with that name
+	if (dest_folder == gInventory.findCategoryUUIDForType(LLFolderType::FT_OUTBOX, false))
+	{
+		dest_folder = create_folder_in_outbox_for_item(inv_item, dest_folder, operation_id);
+	}
+	
+	LLViewerInventoryItem * viewer_inv_item = (LLViewerInventoryItem *) inv_item;
+
+	gInventory.changeItemParent(
+					   viewer_inv_item,
+					   dest_folder,
+					   false);
+}
+
+void copy_folder_to_outbox(LLInventoryCategory* inv_cat, const LLUUID& dest_folder, const LLUUID& top_level_folder, S32 operation_id)
+{
+	LLUUID new_folder_id = gInventory.createNewCategory(dest_folder, LLFolderType::FT_NONE, inv_cat->getName());
+	gInventory.notifyObservers();
+
+	LLInventoryModel::cat_array_t* cat_array;
+	LLInventoryModel::item_array_t* item_array;
+	gInventory.getDirectDescendentsOf(inv_cat->getUUID(),cat_array,item_array);
+
+	// copy the vector because otherwise the iterator won't be happy if we delete from it
+	LLInventoryModel::item_array_t item_array_copy = *item_array;
+
+	for (LLInventoryModel::item_array_t::iterator iter = item_array_copy.begin(); iter != item_array_copy.end(); iter++)
+	{
+		LLInventoryItem* item = *iter;
+		copy_item_to_outbox(item, new_folder_id, top_level_folder, operation_id);
+	}
+
+	LLInventoryModel::cat_array_t cat_array_copy = *cat_array;
+
+	for (LLInventoryModel::cat_array_t::iterator iter = cat_array_copy.begin(); iter != cat_array_copy.end(); iter++)
+	{
+		LLViewerInventoryCategory* category = *iter;
+		copy_folder_to_outbox(category, new_folder_id, top_level_folder, operation_id);
+	}
+
+	open_outbox();
+}
 
 ///----------------------------------------------------------------------------
 /// LLInventoryCollectFunctor implementations
@@ -641,6 +747,33 @@ bool LLNameCategoryCollector::operator()(
 	return false;
 }
 
+bool LLFindCOFValidItems::operator()(LLInventoryCategory* cat,
+									 LLInventoryItem* item)
+{
+	// Valid COF items are:
+	// - links to wearables (body parts or clothing)
+	// - links to attachments
+	// - links to gestures
+	// - links to ensemble folders
+	LLViewerInventoryItem *linked_item = ((LLViewerInventoryItem*)item)->getLinkedItem();
+	if (linked_item)
+	{
+		LLAssetType::EType type = linked_item->getType();
+		return (type == LLAssetType::AT_CLOTHING ||
+				type == LLAssetType::AT_BODYPART ||
+				type == LLAssetType::AT_GESTURE ||
+				type == LLAssetType::AT_OBJECT);
+	}
+	else
+	{
+		LLViewerInventoryCategory *linked_category = ((LLViewerInventoryItem*)item)->getLinkedCategory();
+		// BAP remove AT_NONE support after ensembles are fully working?
+		return (linked_category &&
+				((linked_category->getPreferredType() == LLFolderType::FT_NONE) ||
+				 (LLFolderType::lookupIsEnsembleType(linked_category->getPreferredType()))));
+	}
+}
+
 bool LLFindWearables::operator()(LLInventoryCategory* cat,
 								 LLInventoryItem* item)
 {
@@ -686,6 +819,40 @@ bool LLFindWearablesEx::operator()(LLInventoryCategory* cat, LLInventoryItem* it
 	return (bool) get_is_item_worn(item->getUUID()) == mIsWorn;
 }
 
+bool LLFindWearablesOfType::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
+{
+	if (!item) return false;
+	if (item->getType() != LLAssetType::AT_CLOTHING &&
+		item->getType() != LLAssetType::AT_BODYPART)
+	{
+		return false;
+	}
+
+	LLViewerInventoryItem *vitem = dynamic_cast<LLViewerInventoryItem*>(item);
+	if (!vitem || vitem->getWearableType() != mWearableType) return false;
+
+	return true;
+}
+
+void LLFindWearablesOfType::setType(LLWearableType::EType type)
+{
+	mWearableType = type;
+}
+
+bool LLFindNonRemovableObjects::operator()(LLInventoryCategory* cat, LLInventoryItem* item)
+{
+	if (item)
+	{
+		return !get_is_item_removable(&gInventory, item->getUUID());
+	}
+	if (cat)
+	{
+		return !get_is_category_removable(&gInventory, cat->getUUID());
+	}
+
+	llwarns << "Not a category and not an item?" << llendl;
+	return false;
+}
 
 ///----------------------------------------------------------------------------
 /// LLAssetIDMatches 
@@ -717,20 +884,24 @@ void LLSaveFolderState::setApply(BOOL apply)
 
 void LLSaveFolderState::doFolder(LLFolderViewFolder* folder)
 {
+	LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
+	if(!bridge) return;
+	
 	if(mApply)
 	{
 		// we're applying the open state
-		LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
-		if(!bridge) return;
 		LLUUID id(bridge->getUUID());
 		if(mOpenFolders.find(id) != mOpenFolders.end())
 		{
-			folder->setOpen(TRUE);
+			if (!folder->isOpen())
+			{
+				folder->setOpen(TRUE);
+			}
 		}
 		else
 		{
 			// keep selected filter in its current state, this is less jarring to user
-			if (!folder->isSelected())
+			if (!folder->isSelected() && folder->isOpen())
 			{
 				folder->setOpen(FALSE);
 			}
@@ -741,8 +912,6 @@ void LLSaveFolderState::doFolder(LLFolderViewFolder* folder)
 		// we're recording state at this point
 		if(folder->isOpen())
 		{
-			LLInvFVBridge* bridge = (LLInvFVBridge*)folder->getListener();
-			if(!bridge) return;
 			mOpenFolders.insert(bridge->getUUID());
 		}
 	}

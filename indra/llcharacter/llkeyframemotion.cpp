@@ -480,7 +480,7 @@ LLPointer<LLJointState>& LLKeyframeMotion::getJointState(U32 index)
 }
 
 //-----------------------------------------------------------------------------
-// getJoin()
+// getJoint()
 //-----------------------------------------------------------------------------
 LLJoint* LLKeyframeMotion::getJoint(U32 index)
 {

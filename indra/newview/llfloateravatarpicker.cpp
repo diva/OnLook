@@ -140,26 +140,18 @@ BOOL LLFloaterAvatarPicker::postBuild()
 	inventory_panel->setFollowsAll();
 	inventory_panel->setShowFolderState(LLInventoryFilter::SHOW_NON_EMPTY_FOLDERS);
 	inventory_panel->openDefaultFolderForType(LLAssetType::AT_CALLINGCARD);
-	inventory_panel->setSelectCallback(LLFloaterAvatarPicker::onCallingCardSelectionChange, this);
+	inventory_panel->setSelectCallback(boost::bind(&LLFloaterAvatarPicker::onCallingCardSelectionChange, _1, _2, (void*)this));
 
-	childSetTabChangeCallback("ResidentChooserTabs", "SearchPanel",			onTabChanged, this);
-	childSetTabChangeCallback("ResidentChooserTabs", "CallingCardsPanel",	onTabChanged, this);
-	childSetTabChangeCallback("ResidentChooserTabs", "NearMePanel",			onTabChanged, this);
-	childSetTabChangeCallback("ResidentChooserTabs", "KeyPanel",			onTabChanged, this);
+	getChild<LLTabContainer>("ResidentChooserTabs")->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onTabChanged,this));
+
 	setAllowMultiple(FALSE);
 
 	return TRUE;
 }
 
-void LLFloaterAvatarPicker::onTabChanged(void* userdata, bool from_click)
+void LLFloaterAvatarPicker::onTabChanged()
 {
-	LLFloaterAvatarPicker* self = (LLFloaterAvatarPicker*)userdata;
-	if (!self)
-	{
-		return;
-	}
-	
-	self->childSetEnabled("Select", self->visibleItemsSelected());
+	childSetEnabled("Select", visibleItemsSelected());
 }
 
 // Destroys the object

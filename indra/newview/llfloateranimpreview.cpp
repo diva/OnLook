@@ -267,12 +267,13 @@ BOOL LLFloaterAnimPreview::postBuild()
 	{
 		mPlayButton = new LLButton(std::string("play_btn"), LLRect(0,0,0,0));
 	}
-	mPlayButton->setClickedCallback(onBtnPlay);
-	mPlayButton->setCallbackUserData(this);
+	mPlayButton->setClickedCallback(boost::bind(&LLFloaterAnimPreview::onBtnPlay,this));
 
 	mPlayButton->setImages(std::string("button_anim_play.tga"),
 						   std::string("button_anim_play_selected.tga"));
-	mPlayButton->setDisabledImages(LLStringUtil::null,LLStringUtil::null);
+
+	mPlayButton->setImageDisabled(NULL);
+	mPlayButton->setImageDisabledSelected(NULL);
 
 	mPlayButton->setScaleImage(TRUE);
 
@@ -281,12 +282,13 @@ BOOL LLFloaterAnimPreview::postBuild()
 	{
 		mStopButton = new LLButton(std::string("stop_btn"), LLRect(0,0,0,0));
 	}
-	mStopButton->setClickedCallback(onBtnStop);
-	mStopButton->setCallbackUserData(this);
+	mStopButton->setClickedCallback(boost::bind(&LLFloaterAnimPreview::onBtnStop, this));
 
 	mStopButton->setImages(std::string("button_anim_stop.tga"),
 						   std::string("button_anim_stop_selected.tga"));
-	mStopButton->setDisabledImages(LLStringUtil::null,LLStringUtil::null);
+
+	mStopButton->setImageDisabled(NULL);
+	mStopButton->setImageDisabledSelected(NULL);
 
 	mStopButton->setScaleImage(TRUE);
 

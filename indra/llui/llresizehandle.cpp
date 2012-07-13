@@ -46,7 +46,7 @@ const S32 RESIZE_BORDER_WIDTH = 3;
 
 LLResizeHandle::LLResizeHandle( const std::string& name, const LLRect& rect, S32 min_width, S32 min_height, ECorner corner )
 	:
-	LLView( name, rect, TRUE ),
+	LLView( name, rect, FALSE ),
 	mDragLastScreenX( 0 ),
 	mDragLastScreenY( 0 ),
 	mLastMouseScreenX( 0 ),
@@ -205,7 +205,8 @@ BOOL LLResizeHandle::handleHover(S32 x, S32 y, MASK mask)
 			LLView* snap_view = NULL;
 			LLView* test_view = NULL;
 
-			static LLCachedControl<S32> snap_margin (*LLUI::sConfigGroup,"SnapMargin", 0);
+			//static LLCachedControl<S32> snap_margin (*LLUI::sConfigGroup,"SnapMargin", 0);
+			S32 snap_margin = LLUI::sConfigGroup->getS32("SnapMargin");
 			// now do snapping
 			switch(mCorner)
 			{

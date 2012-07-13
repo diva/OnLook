@@ -396,8 +396,8 @@
 
     <attachment_point
        id="39"
-       group="9"
-       pie_slice="1"
+       group="6"
+       pie_slice="0"
        name="Neck"
        joint="mNeck"
        position="0 0 0"
@@ -406,8 +406,8 @@
   	
     <attachment_point
        id="40"
-       group="9"
-       pie_slice="2"
+       group="6"
+       pie_slice="4"
        name="Root"
        joint="mRoot"
        position="0 0 0"
@@ -6387,8 +6387,6 @@
       <layer
        name="facialhair"
        global_color="hair_color">
-         <morph_mask
-          morph_name="Displace_Hair_Facial" />
 
          <texture
           tga_file="head_hair.tga"
@@ -7293,12 +7291,6 @@
        name="upper_clothes">
          <texture
           local_texture="upper_shirt" />
-
-         <morph_mask
-          morph_name="Displace_Loose_Upperbody" />
-
-         <morph_mask
-          morph_name="Shirtsleeve_flair" />
 
          <param
           id="803"
@@ -8359,18 +8351,6 @@
        name="lower_pants">
          <texture
           local_texture="lower_pants" />
-
-         <morph_mask
-          morph_name="Displace_Loose_Lowerbody" />
-
-         <morph_mask
-          morph_name="Leg_Pantflair" />
-
-         <morph_mask
-          morph_name="Low_Crotch" />
-
-         <morph_mask
-          morph_name="Leg_Longcuffs" />
 
          <param
           id="806"
@@ -11863,6 +11843,37 @@
      value_max="1">
 	 <param_driver />
     </param>
-	</driver_parameters>
+  </driver_parameters>
+
+  <morph_masks>
+    <mask
+     morph_name="Displace_Hair_Facial"
+     body_region="head"
+     layer="facialhair" />
+    <mask
+     morph_name="Displace_Loose_Upperbody"
+     body_region="upper_body"
+     layer="upper_clothes" />
+    <mask
+     morph_name="Shirtsleeve_flair"
+     body_region="upper_body"
+     layer="upper_clothes" />
+    <mask
+     morph_name="Displace_Loose_Lowerbody"
+     body_region="lower_body"
+     layer="lower_pants" />
+    <mask
+     morph_name="Leg_Pantflair"
+     body_region="lower_body"
+     layer="lower_pants" />
+    <mask
+     morph_name="Low_Crotch"
+     body_region="lower_body"
+     layer="lower_pants" />
+    <mask
+     morph_name="Leg_Longcuffs"
+     body_region="lower_body"
+     layer="lower_pants" />
+  </morph_masks>
 </linden_avatar>
 

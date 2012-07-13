@@ -69,7 +69,7 @@ SubCaption 0 $(LicenseSubTitleSetup)	; override "license agreement" text
 
 BrandingText "Prepare to Implode!"						; bottom of window text
 Icon          %%SOURCE%%\installers\windows\install_icon_singularity.ico
-UninstallIcon %%SOURCE%%\installers\windows\install_icon_singularity.ico
+UninstallIcon %%SOURCE%%\installers\windows\uninstall_icon_singularity.ico
 WindowIcon off							; show our icon in left corner
 BGGradient 9090b0 000000 notext
 CRCCheck on								; make sure CRC is OK

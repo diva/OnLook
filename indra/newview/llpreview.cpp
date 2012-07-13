@@ -458,8 +458,10 @@ void LLPreview::onBtnCopyToInv(void* userdata)
 		// Copy to inventory
 		if (self->mNotecardInventoryID.notNull())
 		{
-			copy_inventory_from_notecard(self->mObjectID,
-				self->mNotecardInventoryID, item);
+			copy_inventory_from_notecard(LLUUID::null,
+										 self->mObjectID,
+										 self->mNotecardInventoryID,
+										 item);
 		}
 		else
 		{
@@ -575,7 +577,7 @@ void LLMultiPreview::handleReshape(const LLRect& new_rect, bool by_user)
 }
 
 
-void LLMultiPreview::tabOpen(LLFloater* opened_floater, bool from_click)
+void LLMultiPreview::tabOpen(LLFloater* opened_floater)
 {
 	LLPreview* opened_preview = (LLPreview*)opened_floater;
 	if (opened_preview && opened_preview->getAssetStatus() == LLPreview::PREVIEW_ASSET_UNLOADED)

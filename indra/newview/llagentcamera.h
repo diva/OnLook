@@ -32,9 +32,8 @@
 #include "llhudeffectpointat.h" 	// ELookAtType
 
 class LLPickInfo;
-class LLVOAvatar;
+class LLVOAvatarSelf;
 class LLControlVariable;
-
 
 //--------------------------------------------------------------------
 // Types
@@ -45,6 +44,19 @@ enum ECameraMode
 	CAMERA_MODE_MOUSELOOK,
 	CAMERA_MODE_CUSTOMIZE_AVATAR,
 	CAMERA_MODE_FOLLOW
+};
+
+/** Camera Presets for CAMERA_MODE_THIRD_PERSON */
+enum ECameraPreset 
+{
+	/** Default preset, what the Third Person Mode actually was */
+	CAMERA_PRESET_REAR_VIEW,
+	
+	/** "Looking at the Avatar from the front" */
+	CAMERA_PRESET_FRONT_VIEW, 
+
+	/** "Above and to the left, over the shoulder, pulled back a little on the zoom" */
+	CAMERA_PRESET_GROUP_VIEW
 };
 
 //------------------------------------------------------------------------
@@ -63,7 +75,7 @@ public:
 	virtual 		~LLAgentCamera();
 	void			init();
 	void			cleanup();
-	void		    setAvatarObject(LLVOAvatar* avatar);
+	void		    setAvatarObject(LLVOAvatarSelf* avatar);
 	bool			isInitialized() { return mInitialized; }
 private:
 	bool			mInitialized;
@@ -76,7 +88,7 @@ public:
 	void			changeCameraToDefault();
 	void			changeCameraToMouselook(BOOL animate = TRUE);
 	void			changeCameraToThirdPerson(BOOL animate = TRUE);
-	void			changeCameraToCustomizeAvatar(BOOL avatar_animate = TRUE, BOOL camera_animate = TRUE);			// trigger transition animation
+	void			changeCameraToCustomizeAvatar();			// trigger transition animation
 	F32				calcCustomizeAvatarUIOffset( const LLVector3d& camera_pos_global );
 	// Ventrella
 	void			changeCameraToFollow(BOOL animate = TRUE);
@@ -95,9 +107,28 @@ private:
 	ECameraMode		mCameraMode;					// Target mode after transition animation is done
 	ECameraMode		mLastCameraMode;
 	F32				mUIOffset;
+
+	//--------------------------------------------------------------------
+	// Preset
+	//--------------------------------------------------------------------
+public:
+	void switchCameraPreset(ECameraPreset preset);
+private:
 	/** Determines default camera offset depending on the current camera preset */
 	LLVector3 getCameraOffsetInitial();
 
+	/** Camera preset in Third Person Mode */
+	ECameraPreset mCameraPreset; 
+
+	/** Initial camera offsets */
+	std::map<ECameraPreset, LLPointer<LLControlVariable> > mCameraOffsetInitial;
+
+	/** Initial focus offsets */
+	std::map<ECameraPreset, LLPointer<LLControlVariable> > mFocusOffsetInitial;
+
+	//--------------------------------------------------------------------
+	// Position
+	//--------------------------------------------------------------------
 public:
 	LLVector3d		getCameraPositionGlobal() const;
 	const LLVector3 &getCameraPositionAgent() const;
@@ -186,7 +217,6 @@ public:
 private:
 	LLVector3d		mCameraFocusOffset;				// Offset from focus point in build mode
 	LLVector3d		mCameraFocusOffsetTarget;		// Target towards which we are lerping the camera's focus offset
-	LLVector3		mCameraOffsetDefault;
 	BOOL			mFocusOnAvatar;					
 	LLVector3d		mFocusGlobal;
 	LLVector3d		mFocusTargetGlobal;

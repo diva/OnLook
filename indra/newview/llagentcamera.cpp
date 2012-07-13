@@ -51,6 +51,9 @@
 #include "llfloatertools.h"		//For gFloaterTools
 #include "floaterao.h"			//For LLFloaterAO
 #include "llfloatercustomize.h" //For gFloaterCustomize
+// [RLVa:KB] - Checked: 2010-05-10 (RLVa-1.2.0g)
+#include "rlvhandler.h"
+// [/RLVa:KB]
 
 using namespace LLVOAvatarDefines;
 
@@ -125,7 +128,7 @@ LLAgentCamera::LLAgentCamera() :
 	mCameraMode( CAMERA_MODE_THIRD_PERSON ),
 	mLastCameraMode( CAMERA_MODE_THIRD_PERSON ),
 
-	//mCameraPreset(CAMERA_PRESET_REAR_VIEW),
+	mCameraPreset(CAMERA_PRESET_REAR_VIEW),
 
 	mCameraAnimating( FALSE ),
 	mAnimationCameraStartGlobal(),
@@ -138,7 +141,6 @@ LLAgentCamera::LLAgentCamera() :
 	mCameraFocusOffset(),
 	mCameraFOVDefault(DEFAULT_FIELD_OF_VIEW),
 
-	mCameraOffsetDefault(),
 	mCameraCollidePlane(),
 
 	mCurrentCameraDistance(2.f),		// meters, set in init()
@@ -209,8 +211,7 @@ void LLAgentCamera::init()
 
 	mCameraFocusOffsetTarget = LLVector4(gSavedSettings.getVector3("CameraOffsetBuild"));
 	
-	mCameraOffsetDefault = gSavedSettings.getVector3("CameraOffsetDefault");//Legacy
-	/*mCameraPreset = (ECameraPreset) gSavedSettings.getU32("CameraPreset");
+	mCameraPreset = (ECameraPreset) gSavedSettings.getU32("CameraPreset");
 
 	mCameraOffsetInitial[CAMERA_PRESET_REAR_VIEW] = gSavedSettings.getControl("CameraOffsetRearView");
 	mCameraOffsetInitial[CAMERA_PRESET_FRONT_VIEW] = gSavedSettings.getControl("CameraOffsetFrontView");
@@ -218,7 +219,7 @@ void LLAgentCamera::init()
 
 	mFocusOffsetInitial[CAMERA_PRESET_REAR_VIEW] = gSavedSettings.getControl("FocusOffsetRearView");
 	mFocusOffsetInitial[CAMERA_PRESET_FRONT_VIEW] = gSavedSettings.getControl("FocusOffsetFrontView");
-	mFocusOffsetInitial[CAMERA_PRESET_GROUP_VIEW] = gSavedSettings.getControl("FocusOffsetGroupView");*/
+	mFocusOffsetInitial[CAMERA_PRESET_GROUP_VIEW] = gSavedSettings.getControl("FocusOffsetGroupView");
 
 	mCameraCollidePlane.clearVec();
 	mCurrentCameraDistance = getCameraOffsetInitial().magVec() * gSavedSettings.getF32("CameraOffsetScale");
@@ -249,7 +250,7 @@ void LLAgentCamera::cleanup()
 	setFocusObject(NULL);
 }
 
-void LLAgentCamera::setAvatarObject(LLVOAvatar* avatar)
+void LLAgentCamera::setAvatarObject(LLVOAvatarSelf* avatar)
 {
 	if (!mLookAt)
 	{
@@ -1678,14 +1679,13 @@ LLVector3d LLAgentCamera::calcThirdPersonFocusOffset()
 {
 	// ...offset from avatar
 	LLVector3d focus_offset;
-	focus_offset.setVec(gSavedSettings.getVector3("FocusOffsetDefault"));
 	LLQuaternion agent_rot = gAgent.getFrameAgent().getQuaternion();
 	if (isAgentAvatarValid() && gAgentAvatarp->getParent())
 	{
 		agent_rot *= ((LLViewerObject*)(gAgentAvatarp->getParent()))->getRenderRotation();
 	}
 
-	//focus_offset = convert_from_llsd<LLVector3d>(mFocusOffsetInitial[mCameraPreset]->get(), TYPE_VEC3D, "");
+	focus_offset = convert_from_llsd<LLVector3d>(mFocusOffsetInitial[mCameraPreset]->get(), TYPE_VEC3D, "");
 	return focus_offset * agent_rot;
 }
 
@@ -2020,8 +2020,7 @@ LLVector3d LLAgentCamera::calcCameraPositionTargetGlobal(BOOL *hit_limit)
 
 LLVector3 LLAgentCamera::getCameraOffsetInitial()
 {
-	//return convert_from_llsd<LLVector3>(mCameraOffsetInitial[mCameraPreset]->get(), TYPE_VEC3, "");
-	return mCameraOffsetDefault;
+	return convert_from_llsd<LLVector3>(mCameraOffsetInitial[mCameraPreset]->get(), TYPE_VEC3, "");
 }
 
 
@@ -2119,7 +2118,8 @@ void LLAgentCamera::resetCamera()
 //-----------------------------------------------------------------------------
 void LLAgentCamera::changeCameraToMouselook(BOOL animate)
 {
-	if (!gSavedSettings.getBOOL("EnableMouselook") || LLViewerJoystick::getInstance()->getOverrideCamera())
+	if (!gSavedSettings.getBOOL("EnableMouselook")
+		|| LLViewerJoystick::getInstance()->getOverrideCamera())
 	{
 		return;
 	}
@@ -2348,7 +2348,7 @@ void LLAgentCamera::changeCameraToThirdPerson(BOOL animate)
 //-----------------------------------------------------------------------------
 // changeCameraToCustomizeAvatar()
 //-----------------------------------------------------------------------------
-void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL camera_animate)
+void LLAgentCamera::changeCameraToCustomizeAvatar()
 {
 	if (LLViewerJoystick::getInstance()->getOverrideCamera())
 	{
@@ -2370,13 +2370,10 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 	gSavedSettings.setBOOL("ThirdPersonBtnState", FALSE);
 	gSavedSettings.setBOOL("BuildBtnState", FALSE);
 
-	if (camera_animate)
-	{
-		// <edit>
-		if(gSavedSettings.getBOOL("AppearanceCameraMovement"))
-		// </edit>
-		startCameraAnimation();
-	}
+	// <edit>
+	if(gSavedSettings.getBOOL("AppearanceCameraMovement"))
+	// </edit>
+	startCameraAnimation();
 
 	if (mCameraMode != CAMERA_MODE_CUSTOMIZE_AVATAR)
 	{
@@ -2392,53 +2389,42 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 		gFocusMgr.setKeyboardFocus( NULL );
 		gFocusMgr.setMouseCapture( NULL );
 
-		LLVOAvatar::onCustomizeStart();
+		LLVOAvatarSelf::onCustomizeStart();
 
 		if (isAgentAvatarValid())
 		{
-			if(avatar_animate)
+			// Remove any pitch or rotation from the avatar
+			LLVector3 at = gAgent.getAtAxis();
+			at.mV[VZ] = 0.f;
+			at.normalize();
+			gAgent.resetAxes(at);
+
+			gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
+			gAgent.setCustomAnim(TRUE);
+			gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
+			LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
+
+			if (turn_motion)
 			{
-				// Remove any pitch or rotation from the avatar
-				LLVector3 at = gAgent.getAtAxis();
-				at.mV[VZ] = 0.f;
-				at.normalize();
-				gAgent.resetAxes(at);
-
-				gAgent.sendAnimationRequest(ANIM_AGENT_CUSTOMIZE, ANIM_REQUEST_START);
-				gAgent.setCustomAnim(TRUE);
-				gAgentAvatarp->startMotion(ANIM_AGENT_CUSTOMIZE);
-				LLMotion* turn_motion = gAgentAvatarp->findMotion(ANIM_AGENT_CUSTOMIZE);
-
-				if (turn_motion)
-				{
-					// delay camera animation long enough to play through turn animation
-					setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
-				}
-				else
-				{
-					setAnimationDuration(gSavedSettings.getF32("ZoomTime"));
-				}
-				//gAgentAvatarp->invalidateAll();
-				//gAgentAvatarp->updateMeshTextures();
+				// delay camera animation long enough to play through turn animation
+				setAnimationDuration(turn_motion->getDuration() + CUSTOMIZE_AVATAR_CAMERA_ANIM_SLOP);
 			}
-			
-			gAgentCamera.setFocusGlobal(LLVector3d::zero);
+
+			gAgentAvatarp->invalidateAll();
+			gAgentAvatarp->updateMeshTextures();
 		}
 	}
-	else
-	{
-		mCameraAnimating = FALSE;
-		gAgent.endAnimationUpdateUI();
-	}
-	
 	// <edit>
 	if(!gSavedSettings.getBOOL("AppearanceCameraMovement"))
 	{
 		//hmm
 		mCameraAnimating = FALSE;
 		gAgent.endAnimationUpdateUI();
+		return;
 	}
-	/*LLVector3 agent_at = gAgent.getAtAxis();
+	// </edit>
+	
+	LLVector3 agent_at = gAgent.getAtAxis();
 	agent_at.mV[VZ] = 0.f;
 	agent_at.normalize();
 
@@ -2453,11 +2439,13 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 	camera_offset *= CUSTOMIZE_AVATAR_CAMERA_DEFAULT_DIST;
 	LLVector3d focus_target_global = gAgent.getPosGlobalFromAgent(focus_target);
 	setAnimationDuration(gSavedSettings.getF32("ZoomTime"));
-	setCameraPosAndFocusGlobal(focus_target_global + camera_offset, focus_target_global, gAgent.getID());*/
+	setCameraPosAndFocusGlobal(focus_target_global + camera_offset, focus_target_global, gAgent.getID());
+	
+
 }
 
 
-/*void LLAgentCamera::switchCameraPreset(ECameraPreset preset)
+void LLAgentCamera::switchCameraPreset(ECameraPreset preset)
 {
 	//zoom is supposed to be reset for the front and group views
 	mCameraZoomFraction = 1.f;
@@ -2468,7 +2456,7 @@ void LLAgentCamera::changeCameraToCustomizeAvatar(BOOL avatar_animate, BOOL came
 	mCameraPreset = preset;
 
 	gSavedSettings.setU32("CameraPreset", mCameraPreset);
-}*/
+}
 
 
 //
@@ -2908,7 +2896,7 @@ void LLAgentCamera::lookAtObject(const LLUUID &object_id, bool self)
 BOOL LLAgentCamera::setPointAt(EPointAtType target_type, LLViewerObject *object, LLVector3 position)
 {
 	// disallow pointing at attachments and avatars
-	if (object && (object->isAttachment() || object->isAvatar()) || gSavedSettings.getBOOL("DisablePointAtAndBeam"))
+	if ((object && (object->isAttachment() || object->isAvatar())) || gSavedSettings.getBOOL("DisablePointAtAndBeam"))
 	{
 		return FALSE;
 	}

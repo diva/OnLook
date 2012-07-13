@@ -2,31 +2,25 @@
  * @file llclassifiedinfo.cpp
  * @brief LLClassifiedInfo class definition
  *
- * $LicenseInfo:firstyear=2005&license=viewergpl$
- * 
- * Copyright (c) 2005-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -38,35 +32,19 @@
 LLClassifiedInfo::cat_map LLClassifiedInfo::sCategories;
 
 // static
-void LLClassifiedInfo::loadCategories(LLUserAuth::options_t classified_options)
+void LLClassifiedInfo::loadCategories(const LLSD& options)
 {
-	LLUserAuth::options_t::iterator resp_it;
-	for (resp_it = classified_options.begin(); 
-		 resp_it != classified_options.end(); 
-		 ++resp_it)
+	for(LLSD::array_const_iterator resp_it = options.beginArray(),
+		end = options.endArray(); resp_it != end; ++resp_it)
 	{
-		const LLUserAuth::response_t& response = *resp_it;
-
-		LLUserAuth::response_t::const_iterator option_it;
-
-		S32 cat_id = 0;
-		option_it = response.find("category_id");
-		if (option_it != response.end())
+		LLSD name = (*resp_it)["category_name"];
+		if(name.isDefined())
 		{
-			cat_id = atoi(option_it->second.c_str());
+			LLSD id = (*resp_it)["category_id"];
+			if(id.isDefined())
+			{
+				LLClassifiedInfo::sCategories[id.asInteger()] = name.asString();
+			}
 		}
-		else
-		{
-			continue;
-		}
-
-		// Add the category id/name pair
-		option_it = response.find("category_name");
-		if (option_it != response.end())
-		{
-			LLClassifiedInfo::sCategories[cat_id] = option_it->second;
-		}
-
 	}
-
 }

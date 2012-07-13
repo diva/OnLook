@@ -1,4 +1,4 @@
-/** 
+/**
  * @file llfloaterdaycycle.cpp
  * @brief LLFloaterDayCycle class definition
  *
@@ -40,6 +40,7 @@
 #include "llsliderctrl.h"
 #include "llmultislider.h"
 #include "llmultisliderctrl.h"
+#include "llnotificationsutil.h"
 #include "llspinctrl.h"
 #include "llcheckboxctrl.h"
 #include "lluictrlfactory.h"
@@ -53,6 +54,7 @@
 #include "llviewercontrol.h"
 #include "llviewerwindow.h"
 
+#include "lldaycyclemanager.h"
 #include "llwlparamset.h"
 #include "llwlparammanager.h"
 #include "llpostprocess.h"
@@ -88,6 +90,26 @@ LLFloaterDayCycle::LLFloaterDayCycle() : LLFloater(std::string("Day Cycle Floate
 	LLMultiSliderCtrl* sldr = getChild<LLMultiSliderCtrl>("WLTimeSlider");
 
 	sldr->addSlider();
+
+	// add the combo boxes
+	LLComboBox* comboBox = getChild<LLComboBox>("DayCyclePresetsCombo");
+
+	if(comboBox != NULL) {
+
+		LLDayCycleManager::preset_name_list_t day_presets;
+		LLDayCycleManager::getInstance()->getPresetNames(day_presets);
+		LLDayCycleManager::preset_name_list_t::const_iterator it;
+		for(it = day_presets.begin(); it != day_presets.end(); ++it)
+		{
+			comboBox->add(*it);
+		}
+
+		// entry for when we're in estate time
+		comboBox->add(LLStringUtil::null);
+
+		// set defaults on combo boxes
+		//comboBox->selectByValue(LLSD("Default"));
+	}
 
 	// load it up
 	initCallbacks();
@@ -128,8 +150,15 @@ void LLFloaterDayCycle::initCallbacks(void)
 	childSetAction("WLAnimSky", onRunAnimSky, NULL);
 	childSetAction("WLStopAnimSky", onStopAnimSky, NULL);
 
-	childSetAction("WLLoadDayCycle", onLoadDayCycle, NULL);
-	childSetAction("WLSaveDayCycle", onSaveDayCycle, NULL);
+	LLComboBox* comboBox = getChild<LLComboBox>("DayCyclePresetsCombo");
+
+	//childSetAction("WLLoadPreset", onLoadPreset, comboBox);
+	childSetAction("DayCycleNewPreset", onNewPreset, comboBox);
+	childSetAction("DayCycleSavePreset", onSavePreset, comboBox);
+	childSetAction("DayCycleDeletePreset", onDeletePreset, comboBox);
+
+	comboBox->setCommitCallback(onChangePresetName);
+
 
 	childSetAction("WLAddKey", onAddKey, NULL);
 	childSetAction("WLDeleteKey", onDeleteKey, NULL);
@@ -269,10 +298,217 @@ void LLFloaterDayCycle::onClose(bool app_quitting)
 	}
 }
 
+void LLFloaterDayCycle::onNewPreset(void* userData)
+{
+	LLNotificationsUtil::add("NewDaycyclePreset", LLSD(), LLSD(), newPromptCallback);
+}
+
+void LLFloaterDayCycle::onSavePreset(void* userData)
+{
+	// get the name
+	LLComboBox* comboBox = sDayCycle->getChild<LLComboBox>(
+							   "DayCyclePresetsCombo");
+
+	std::string name = comboBox->getSelectedItemLabel();
+
+	// don't save the empty name
+	if(name == "")
+	{
+		return;
+	}
+
+	// check to see if it's a default and shouldn't be overwritten
+
+	if(LLDayCycleManager::getInstance()->isSystemPreset(name))
+	{
+		LLNotificationsUtil::add("WLNoEditDefault");
+		return;
+	}
+
+	LLWLParamManager::getInstance()->mCurParams.mName = name;
+
+	LLNotificationsUtil::add("WLSavePresetAlert", LLSD(), LLSD(), saveAlertCallback);
+}
+
+
+bool LLFloaterDayCycle::saveAlertCallback(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+	// if they choose save, do it.  Otherwise, don't do anything
+	if(option == 0)
+	{
+		LLComboBox* combo_box = sDayCycle->getChild<LLComboBox>("DayCyclePresetsCombo");
+		// comment this back in to save to file
+		LLWLParamManager::getInstance()->mDay.saveDayCycle(combo_box->getSelectedValue().asString());
+	}
+	return false;
+}
+
+void LLFloaterDayCycle::onDeletePreset(void* userData)
+{
+	LLComboBox* combo_box = sDayCycle->getChild<LLComboBox>(
+								"DayCyclePresetsCombo");
+
+	if(combo_box->getSelectedValue().asString() == "")
+	{
+		return;
+	}
+
+	LLSD args;
+	args["SKY"] = combo_box->getSelectedValue().asString();
+	LLNotificationsUtil::add("WLDeletePresetAlert", args, LLSD(),
+							 boost::bind(&LLFloaterDayCycle::deleteAlertCallback, sDayCycle, _1, _2));
+}
+
+bool LLFloaterDayCycle::deleteAlertCallback(const LLSD& notification, const LLSD& response)
+{
+	S32 option = LLNotification::getSelectedOption(notification, response);
+
+	// if they choose delete, do it.  Otherwise, don't do anything
+	if(option == 0)
+	{
+		LLComboBox* combo_box = getChild<LLComboBox>(
+									"DayCyclePresetsCombo");
+		LLFloaterDayCycle* day_cycle = NULL;
+		LLComboBox* key_combo = NULL;
+		LLMultiSliderCtrl* mult_sldr = NULL;
+
+		if(LLFloaterDayCycle::isOpen())
+		{
+			day_cycle = LLFloaterDayCycle::instance();
+			key_combo = day_cycle->getChild<LLComboBox>(
+							"WLKeyPresets");
+			mult_sldr = day_cycle->getChild<LLMultiSliderCtrl>("WLDayCycleKeys");
+		}
+
+		std::string name(combo_box->getSelectedValue().asString());
+
+		// check to see if it's a default and shouldn't be deleted
+
+		if(LLDayCycleManager::getInstance()->isSystemPreset(name))
+		{
+			LLNotificationsUtil::add("WLNoEditDefault");
+			return false;
+		}
+
+		LLDayCycleManager::getInstance()->deletePreset(name);
+
+		// remove and choose another
+		S32 new_index = combo_box->getCurrentIndex();
+
+		combo_box->remove(name);
+		if(key_combo != NULL)
+		{
+			key_combo->remove(name);
+
+			// remove from slider, as well
+			day_cycle->deletePreset(name);
+		}
+
+		// pick the previously selected index after delete
+		if(new_index > 0)
+		{
+			new_index--;
+		}
+
+		if(combo_box->getItemCount() > 0)
+		{
+			combo_box->setCurrentByIndex(new_index);
+		}
+	}
+	return false;
+}
+
+bool LLFloaterDayCycle::newPromptCallback(const LLSD& notification, const LLSD& response)
+{
+	std::string text = response["message"].asString();
+	S32 option = LLNotification::getSelectedOption(notification, response);
+
+	if(text == "")
+	{
+		return false;
+	}
+
+	if(option == 0) {
+		LLComboBox* comboBox = sDayCycle->getChild<LLComboBox>("DayCyclePresetsCombo");
+
+		LLFloaterDayCycle* sDayCycle = NULL;
+		LLComboBox* keyCombo = NULL;
+		if(LLFloaterDayCycle::isOpen())
+		{
+			sDayCycle = LLFloaterDayCycle::instance();
+			keyCombo = sDayCycle->getChild<LLComboBox>("WLKeyPresets");
+		}
+
+
+		// add the current parameters to the list
+		// see if it's there first
+		// if not there, add a new one
+		if(LLDayCycleManager::getInstance()->findPreset(text).empty())
+		{
+			//AscentDayCycleManager::instance()->addParamSet(text,
+			//	AscentDayCycleManager::instance()->mCurParams);
+
+			LLDayCycleManager::getInstance()->savePreset(text,
+						LLWLParamManager::getInstance()->mDay.asLLSD());
+
+			comboBox->add(text);
+			comboBox->sortByName();
+
+			// add a blank to the bottom
+			comboBox->selectFirstItem();
+			if(comboBox->getSimple() == "")
+			{
+				comboBox->remove(0);
+			}
+			comboBox->add(LLStringUtil::null);
+
+			comboBox->setSelectedByValue(text, true);
+			if(LLFloaterDayCycle::isOpen())
+			{
+				keyCombo->add(text);
+				keyCombo->sortByName();
+			}
+		}
+		else // otherwise, send a message to the user
+		{
+			LLNotificationsUtil::add("ExistsSkyPresetAlert");
+		}
+	}
+	return false;
+}
+
+
+void LLFloaterDayCycle::onChangePresetName(LLUICtrl* ctrl, void * userData)
+{
+	LLComboBox * combo_box = static_cast<LLComboBox*>(ctrl);
+
+	if(combo_box->getSimple() == "")
+	{
+		return;
+	}
+
+	LLEnvManagerNew::getInstance()->useDayCycle(combo_box->getSelectedValue().asString(), LLEnvKey::SCOPE_LOCAL);
+
+	gSavedSettings.setString("AscentActiveDayCycle", combo_box->getSelectedValue().asString());
+	// sync it all up
+	syncSliderTrack();
+	syncMenu();
+
+	// set the param manager's track to the new one
+	LLMultiSliderCtrl* tSldr;
+	tSldr = sDayCycle->getChild<LLMultiSliderCtrl>("WLTimeSlider");
+	LLWLParamManager::getInstance()->resetAnimator(tSldr->getCurSliderValue() / sHoursPerDay, false);
+
+	// and draw it
+	LLWLParamManager::getInstance()->mAnimator.update(LLWLParamManager::getInstance()->mCurParams);
+}
+
+
 void LLFloaterDayCycle::onRunAnimSky(void* userData)
 {
 	// if no keys, do nothing
-	if(sSliderToKey.size() == 0) 
+	if(sSliderToKey.size() == 0)
 	{
 		return;
 	}
@@ -314,32 +550,6 @@ void LLFloaterDayCycle::onUseLindenTime(void* userData)
 	LLWLParamManager::getInstance()->mAnimator.activate(LLWLAnimator::TIME_LINDEN);
 	LLEnvManagerNew::instance().setUseDayCycle(LLEnvManagerNew::instance().getDayCycleName());
 }
-
-void LLFloaterDayCycle::onLoadDayCycle(void* userData)
-{
-	LLWLParamManager::getInstance()->mDay.loadDayCycleFromFile("Default.xml");
-	
-	// sync it all up
-	syncSliderTrack();
-	syncMenu();
-
-	// set the param manager's track to the new one
-	LLMultiSliderCtrl* tSldr;
-	tSldr = sDayCycle->getChild<LLMultiSliderCtrl>( 
-		"WLTimeSlider");
-	LLWLParamManager::getInstance()->resetAnimator(
-		tSldr->getCurSliderValue() / sHoursPerDay, false);
-
-	// and draw it
-	LLWLParamManager::getInstance()->mAnimator.update(
-		LLWLParamManager::getInstance()->mCurParams);
-}
-
-void LLFloaterDayCycle::onSaveDayCycle(void* userData)
-{
-	LLWLParamManager::getInstance()->mDay.saveDayCycle("Default.xml");
-}
-
 
 void LLFloaterDayCycle::onTimeSliderMoved(LLUICtrl* ctrl, void* userData)
 {

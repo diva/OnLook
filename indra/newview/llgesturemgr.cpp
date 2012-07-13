@@ -2,31 +2,25 @@
  * @file llgesturemgr.cpp
  * @brief Manager for playing gestures on the viewer
  *
- * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
- * Copyright (c) 2004-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2004&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -37,11 +31,12 @@
 // system
 #include <functional>
 #include <algorithm>
-#include <boost/tokenizer.hpp>
 
 // library
+#include "llaudioengine.h"
 #include "lldatapacker.h"
 #include "llinventory.h"
+#include "llkeyframemotion.h"
 #include "llmultigesture.h"
 #include "llnotificationsutil.h"
 #include "llstl.h"
@@ -53,10 +48,11 @@
 #include "llagent.h"
 #include "llchatbar.h"
 #include "lldelayedgestureerror.h"
-#include "llinventoryobserver.h"
+#include "llinventorymodel.h"
 #include "llviewermessage.h"
 #include "llvoavatarself.h"
 #include "llviewerstats.h"
+#include "llappearancemgr.h"
 
 #include "chatbar_as_cmdline.h"
 
@@ -78,7 +74,9 @@ LLGestureMgr::LLGestureMgr()
 	mPlaying(),
 	mActive(),
 	mLoadingCount(0)
-{ }
+{
+	gInventory.addObserver(this);
+}
 
 
 // We own the data for gestures, so clean them up.
@@ -92,12 +90,48 @@ LLGestureMgr::~LLGestureMgr()
 		delete gesture;
 		gesture = NULL;
 	}
+	gInventory.removeObserver(this);
 }
 
 
 void LLGestureMgr::init()
 {
 	// TODO
+}
+
+void LLGestureMgr::changed(U32 mask) 
+{ 
+	LLInventoryFetchItemsObserver::changed(mask);
+
+	if (mask & LLInventoryObserver::GESTURE)
+	{
+		// If there was a gesture label changed, update all the names in the 
+		// active gestures and then notify observers
+		if (mask & LLInventoryObserver::LABEL)
+		{
+			for(item_map_t::iterator it = mActive.begin(); it != mActive.end(); ++it)
+			{
+				if(it->second)
+				{
+					LLViewerInventoryItem* item = gInventory.getItem(it->first);
+					if(item)
+					{
+						it->second->mName = item->getName();
+					}
+				}
+			}
+			notifyObservers();
+		}
+		// If there was a gesture added or removed notify observers
+		// STRUCTURE denotes that the inventory item has been moved
+		// In the case of deleting gesture, it is moved to the trash
+		else if(mask & LLInventoryObserver::ADD ||
+				mask & LLInventoryObserver::REMOVE ||
+				mask & LLInventoryObserver::STRUCTURE)
+		{
+			notifyObservers();
+		}
+	}
 }
 
 
@@ -307,6 +341,8 @@ void LLGestureMgr::deactivateGesture(const LLUUID& item_id)
 
 	gAgent.sendReliableMessage();
 
+	LLAppearanceMgr::instance().removeCOFItemLinks(base_item_id, false);
+
 	notifyObservers();
 }
 
@@ -495,6 +531,66 @@ void LLGestureMgr::playGesture(LLMultiGesture* gesture)
 	// Add to list of playing
 	gesture->mPlaying = TRUE;
 	mPlaying.push_back(gesture);
+
+	// Load all needed assets to minimize the delays
+	// when gesture is playing.
+	for (std::vector<LLGestureStep*>::iterator steps_it = gesture->mSteps.begin();
+		 steps_it != gesture->mSteps.end();
+		 ++steps_it)
+	{
+		LLGestureStep* step = *steps_it;
+		switch(step->getType())
+		{
+		case STEP_ANIMATION:
+			{
+				LLGestureStepAnimation* anim_step = (LLGestureStepAnimation*)step;
+				const LLUUID& anim_id = anim_step->mAnimAssetID;
+
+				// Don't request the animation if this step stops it or if it is already in Static VFS
+				if (!(anim_id.isNull()
+					  || anim_step->mFlags & ANIM_FLAG_STOP
+					  || gAssetStorage->hasLocalAsset(anim_id, LLAssetType::AT_ANIMATION)))
+				{
+					mLoadingAssets.insert(anim_id);
+
+					LLUUID* id = new LLUUID(gAgentID);
+					gAssetStorage->getAssetData(anim_id,
+									LLAssetType::AT_ANIMATION,
+									onAssetLoadComplete,
+									(void *)id,
+									TRUE);
+				}
+				break;
+			}
+		case STEP_SOUND:
+			{
+				LLGestureStepSound* sound_step = (LLGestureStepSound*)step;
+				const LLUUID& sound_id = sound_step->mSoundAssetID;
+				if (!(sound_id.isNull()
+					  || gAssetStorage->hasLocalAsset(sound_id, LLAssetType::AT_SOUND)))
+				{
+					mLoadingAssets.insert(sound_id);
+
+					gAssetStorage->getAssetData(sound_id,
+									LLAssetType::AT_SOUND,
+									onAssetLoadComplete,
+									NULL,
+									TRUE);
+				}
+				break;
+			}
+		case STEP_CHAT:
+		case STEP_WAIT:
+		case STEP_EOF:
+			{
+				break;
+			}
+		default:
+			{
+				llwarns << "Unknown gesture step type: " << step->getType() << llendl;
+			}
+		}
+	}
 
 	// And get it going
 	stepGesture(gesture);
@@ -711,8 +807,7 @@ void LLGestureMgr::stepGesture(LLMultiGesture* gesture)
 	{
 		return;
 	}
-	LLVOAvatar* avatar = gAgentAvatarp;
-	if (!avatar) return;
+	if (!isAgentAvatarValid() || hasLoadingAssets(gesture)) return;
 
 	// Of the ones that started playing, have any stopped?
 
@@ -723,8 +818,8 @@ void LLGestureMgr::stepGesture(LLMultiGesture* gesture)
 	{
 		// look in signaled animations (simulator's view of what is
 		// currently playing.
-		LLVOAvatar::AnimIterator play_it = avatar->mSignaledAnimations.find(*gest_it);
-		if (play_it != avatar->mSignaledAnimations.end())
+		LLVOAvatar::AnimIterator play_it = gAgentAvatarp->mSignaledAnimations.find(*gest_it);
+		if (play_it != gAgentAvatarp->mSignaledAnimations.end())
 		{
 			++gest_it;
 		}
@@ -742,8 +837,8 @@ void LLGestureMgr::stepGesture(LLMultiGesture* gesture)
 		 gest_it != gesture->mRequestedAnimIDs.end();
 		 )
 	{
-	 LLVOAvatar::AnimIterator play_it = avatar->mSignaledAnimations.find(*gest_it);
-		if (play_it != avatar->mSignaledAnimations.end())
+	 LLVOAvatar::AnimIterator play_it = gAgentAvatarp->mSignaledAnimations.find(*gest_it);
+		if (play_it != gAgentAvatarp->mSignaledAnimations.end())
 		{
 			// Hooray, this animation has started playing!
 			// Copy into playing.
@@ -998,10 +1093,22 @@ void LLGestureMgr::onLoadComplete(LLVFS *vfs,
 				}
 			}
 
+			LLViewerInventoryItem* item = gInventory.getItem(item_id);
+			if(item)
+			{
+				gesture->mName = item->getName();
+			}
+			else
+			{
+				// Watch this item and set gesture name when item exists in inventory
+				self.setFetchID(item_id);
+				self.startFetch();
+			}
 			self.mActive[item_id] = gesture;
 
 			// Everything has been successful.  Add to the active list.
 			gInventory.addChangedMask(LLInventoryObserver::LABEL, item_id);
+
 			if (inform_server)
 			{
 				// Inform the database of this change
@@ -1018,6 +1125,13 @@ void LLGestureMgr::onLoadComplete(LLVFS *vfs,
 				msg->addU32("GestureFlags", 0x0);
 
 				gAgent.sendReliableMessage();
+			}
+			callback_map_t::iterator i_cb = self.mCallbackMap.find(item_id);
+			
+			if(i_cb != self.mCallbackMap.end())
+			{
+				i_cb->second(gesture);
+				self.mCallbackMap.erase(i_cb);
 			}
 
 			self.notifyObservers();
@@ -1055,7 +1169,98 @@ void LLGestureMgr::onLoadComplete(LLVFS *vfs,
 	}
 }
 
+// static
+void LLGestureMgr::onAssetLoadComplete(LLVFS *vfs,
+									   const LLUUID& asset_uuid,
+									   LLAssetType::EType type,
+									   void* user_data, S32 status, LLExtStat ext_status)
+{
+	LLGestureMgr& self = LLGestureMgr::instance();
 
+	// Complete the asset loading process depending on the type and
+	// remove the asset id from pending downloads list.
+	switch(type)
+	{
+	case LLAssetType::AT_ANIMATION:
+		{
+			LLKeyframeMotion::onLoadComplete(vfs, asset_uuid, type, user_data, status, ext_status);
+
+			self.mLoadingAssets.erase(asset_uuid);
+
+			break;
+		}
+	case LLAssetType::AT_SOUND:
+		{
+			LLAudioEngine::assetCallback(vfs, asset_uuid, type, user_data, status, ext_status);
+
+			self.mLoadingAssets.erase(asset_uuid);
+
+			break;
+		}
+	default:
+		{
+			llwarns << "Unexpected asset type: " << type << llendl;
+
+			// We don't want to return from this callback without
+			// an animation or sound callback being fired
+			// and *user_data handled to avoid memory leaks.
+			llassert(type == LLAssetType::AT_ANIMATION || type == LLAssetType::AT_SOUND);
+		}
+	}
+}
+
+// static
+bool LLGestureMgr::hasLoadingAssets(LLMultiGesture* gesture)
+{
+	LLGestureMgr& self = LLGestureMgr::instance();
+
+	for (std::vector<LLGestureStep*>::iterator steps_it = gesture->mSteps.begin();
+		 steps_it != gesture->mSteps.end();
+		 ++steps_it)
+	{
+		LLGestureStep* step = *steps_it;
+		switch(step->getType())
+		{
+		case STEP_ANIMATION:
+			{
+				LLGestureStepAnimation* anim_step = (LLGestureStepAnimation*)step;
+				const LLUUID& anim_id = anim_step->mAnimAssetID;
+
+				if (!(anim_id.isNull()
+					  || anim_step->mFlags & ANIM_FLAG_STOP
+					  || self.mLoadingAssets.find(anim_id) == self.mLoadingAssets.end()))
+				{
+					return true;
+				}
+				break;
+			}
+		case STEP_SOUND:
+			{
+				LLGestureStepSound* sound_step = (LLGestureStepSound*)step;
+				const LLUUID& sound_id = sound_step->mSoundAssetID;
+
+				if (!(sound_id.isNull()
+					  || self.mLoadingAssets.find(sound_id) == self.mLoadingAssets.end()))
+				{
+					return true;
+				}
+				break;
+			}
+		case STEP_CHAT:
+		case STEP_WAIT:
+		case STEP_EOF:
+			{
+				break;
+			}
+		default:
+			{
+				llwarns << "Unknown gesture step type: " << step->getType() << llendl;
+			}
+		}
+	}
+
+	return false;
+}
 
 void LLGestureMgr::stopGesture(LLMultiGesture* gesture)
 {
@@ -1178,6 +1383,27 @@ void LLGestureMgr::getItemIDs(uuid_vec_t* ids)
 	for (it = mActive.begin(); it != mActive.end(); ++it)
 	{
 		ids->push_back(it->first);
+	}
+}
+
+void LLGestureMgr::done()
+{
+	bool notify = false;
+	for(item_map_t::iterator it = mActive.begin(); it != mActive.end(); ++it)
+	{
+		if(it->second && it->second->mName.empty())
+		{
+			LLViewerInventoryItem* item = gInventory.getItem(it->first);
+			if(item)
+			{
+				it->second->mName = item->getName();
+				notify = true;
+			}
+		}
+	}
+	if(notify)
+	{
+		notifyObservers();
 	}
 }
 

@@ -2,31 +2,25 @@
  * @file llviewerinventory.cpp
  * @brief Implementation of the viewer side inventory objects.
  *
- * $LicenseInfo:firstyear=2002&license=viewergpl$
- * 
- * Copyright (c) 2002-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -34,29 +28,39 @@
 #include "llviewerinventory.h"
 
 #include "llnotificationsutil.h"
+#include "llsdserialize.h"
 #include "message.h"
-#include "indra_constants.h"
 
 #include "llagent.h"
 #include "llagentcamera.h"
-#include "llfloaterinventory.h"
+#include "llagentwearables.h"
+#include "llviewerfoldertype.h"
+#include "llfolderview.h"
 #include "llviewercontrol.h"
 #include "llconsole.h"
+#include "llinventorydefines.h"
+#include "llinventoryfunctions.h"
 #include "llinventorymodel.h"
-#include "llnotify.h"
-#include "llimview.h"
+#include "llinventorymodelbackgroundfetch.h"
 #include "llgesturemgr.h"
 
 #include "llinventorybridge.h"
-#include "llinventorydefines.h"
-#include "llinventorymodelbackgroundfetch.h"
 #include "llinventorypanel.h"
+#include "llfloaterinventory.h"
 
+#include "lllandmark.h"
+#include "llviewerassettype.h"
 #include "llviewerregion.h"
 #include "llviewerobjectlist.h"
 #include "llpreviewgesture.h"
 #include "llviewerwindow.h"
+#include "lltrans.h"
+#include "llappearancemgr.h"
+#include "llcommandhandler.h"
+#include "llviewermessage.h"
+#include "llavatarnamecache.h"
 
+#include "llfloatercustomize.h"
 // <edit>
 #include "llappviewer.h" // System Folders
 // </edit>
@@ -199,6 +203,13 @@ void LLViewerInventoryItem::updateServer(BOOL is_new) const
 	 	LLNotificationsUtil::add("IncompleteInventoryItem");
 		return;
 	}
+	if(gAgent.getID() != mPermissions.getOwner())
+	{
+		// *FIX: deal with this better.
+		llwarns << "LLViewerInventoryItem::updateServer() - for unowned item"
+				<< llendl;
+		return;
+	}
 	LLInventoryModel::LLCategoryUpdate up(mParentUUID, is_new ? 1 : 0);
 	gInventory.accountForUpdate(up);
 
@@ -276,8 +287,7 @@ BOOL LLViewerInventoryItem::unpackMessage(LLSD item)
 }
 
 // virtual
-BOOL LLViewerInventoryItem::unpackMessage(
-	LLMessageSystem* msg, const char* block, S32 block_num)
+BOOL LLViewerInventoryItem::unpackMessage(LLMessageSystem* msg, const char* block, S32 block_num)
 {
 	BOOL rv = LLInventoryItem::unpackMessage(msg, block, block_num);
 	mIsComplete = TRUE;
@@ -634,6 +644,78 @@ bool LLViewerInventoryCategory::exportFileLocal(LLFILE* fp) const
 	return true;
 }
 
+void LLViewerInventoryCategory::determineFolderType()
+{
+	/* Do NOT uncomment this code.  This is for future 2.1 support of ensembles.
+	llassert(FALSE);
+	LLFolderType::EType original_type = getPreferredType();
+	if (LLFolderType::lookupIsProtectedType(original_type))
+		return;
+
+	U64 folder_valid = 0;
+	U64 folder_invalid = 0;
+	LLInventoryModel::cat_array_t category_array;
+	LLInventoryModel::item_array_t item_array;
+	gInventory.collectDescendents(getUUID(),category_array,item_array,FALSE);
+
+	// For ensembles
+	if (category_array.empty())
+	{
+		for (LLInventoryModel::item_array_t::iterator item_iter = item_array.begin();
+			 item_iter != item_array.end();
+			 item_iter++)
+		{
+			const LLViewerInventoryItem *item = (*item_iter);
+			if (item->getIsLinkType())
+				return;
+			if (item->isWearableType())
+			{
+				const LLWearableType::EType wearable_type = item->getWearableType();
+				const std::string& wearable_name = LLWearableType::getTypeName(wearable_type);
+				U64 valid_folder_types = LLViewerFolderType::lookupValidFolderTypes(wearable_name);
+				folder_valid |= valid_folder_types;
+				folder_invalid |= ~valid_folder_types;
+			}
+		}
+		for (U8 i = LLFolderType::FT_ENSEMBLE_START; i <= LLFolderType::FT_ENSEMBLE_END; i++)
+		{
+			if ((folder_valid & (1LL << i)) &&
+				!(folder_invalid & (1LL << i)))
+			{
+				changeType((LLFolderType::EType)i);
+				return;
+			}
+		}
+	}
+	if (LLFolderType::lookupIsEnsembleType(original_type))
+	{
+		changeType(LLFolderType::FT_NONE);
+	}
+	llassert(FALSE);
+	*/
+}
+
+void LLViewerInventoryCategory::changeType(LLFolderType::EType new_folder_type)
+{
+	const LLUUID &folder_id = getUUID();
+	const LLUUID &parent_id = getParentUUID();
+	const std::string &name = getName();
+		
+	LLMessageSystem* msg = gMessageSystem;
+	msg->newMessageFast(_PREHASH_UpdateInventoryFolder);
+	msg->nextBlockFast(_PREHASH_AgentData);
+	msg->addUUIDFast(_PREHASH_AgentID, gAgent.getID());
+	msg->addUUIDFast(_PREHASH_SessionID, gAgent.getSessionID());
+	msg->nextBlockFast(_PREHASH_FolderData);
+	msg->addUUIDFast(_PREHASH_FolderID, folder_id);
+	msg->addUUIDFast(_PREHASH_ParentID, parent_id);
+	msg->addS8Fast(_PREHASH_Type, new_folder_type);
+	msg->addStringFast(_PREHASH_Name, name);
+	gAgent.sendReliableMessage();
+
+	setPreferredType(new_folder_type);
+	gInventory.addChangedMask(LLInventoryObserver::LABEL, folder_id);
+}
 ///----------------------------------------------------------------------------
 /// Local function definitions
 ///----------------------------------------------------------------------------
@@ -660,6 +742,21 @@ LLInventoryCallbackManager::~LLInventoryCallbackManager()
 	}
 	sInstance = NULL;
 }
+
+//static 
+void LLInventoryCallbackManager::destroyClass()
+{
+	if (sInstance)
+	{
+		for (callback_map_t::iterator it = sInstance->mMap.begin(), end_it = sInstance->mMap.end(); it != end_it; ++it)
+		{
+			// drop LLPointer reference to callback
+			it->second = NULL;
+		}
+		sInstance->mMap.clear();
+	}
+}
+
 
 U32 LLInventoryCallbackManager::registerCB(LLPointer<LLInventoryCallback> cb)
 {
@@ -697,14 +794,37 @@ void WearOnAvatarCallback::fire(const LLUUID& inv_item)
 	LLViewerInventoryItem *item = gInventory.getItem(inv_item);
 	if (item)
 	{
-		wear_inventory_item_on_avatar(item);
+		LLAppearanceMgr::instance().wearItemOnAvatar(inv_item, true, mReplace);
 	}
 }
 
-RezAttachmentCallback::RezAttachmentCallback(LLViewerJointAttachment *attachmentp, bool replace)
+void ModifiedCOFCallback::fire(const LLUUID& inv_item)
 {
-	mAttach = attachmentp;
-	mReplace = replace;
+	LLAppearanceMgr::instance().updateAppearanceFromCOF();
+
+	// Start editing the item if previously requested.
+	gAgentWearables.editWearableIfRequested(inv_item);
+
+	// TODO: camera mode may not be changed if a debug setting is tweaked
+	if( gAgentCamera.cameraCustomizeAvatar() )
+	{
+		// If we're in appearance editing mode, the current tab may need to be refreshed
+		/*LLSidepanelAppearance *panel = dynamic_cast<LLSidepanelAppearance*>(LLFloaterSidePanelContainer::getPanel("appearance"));
+		if (panel)
+		{
+			panel->showDefaultSubpart();
+		}*/
+		gFloaterCustomize->switchToDefaultSubpart();
+	}
+}
+
+//RezAttachmentCallback::RezAttachmentCallback(LLViewerJointAttachment *attachmentp)
+// [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
+RezAttachmentCallback::RezAttachmentCallback(LLViewerJointAttachment *attachmentp, bool replace)
+	: mAttach(attachmentp), mReplace(replace)
+// [/SL:KB]
+{
+//	mAttach = attachmentp;
 }
 RezAttachmentCallback::~RezAttachmentCallback()
 {
@@ -718,7 +838,10 @@ void RezAttachmentCallback::fire(const LLUUID& inv_item)
 	LLViewerInventoryItem *item = gInventory.getItem(inv_item);
 	if (item)
 	{
+//		rez_attachment(item, mAttach);
+// [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
 		rez_attachment(item, mAttach, mReplace);
+// [/SL:KB]
 	}
 }
 
@@ -755,6 +878,13 @@ void CreateGestureCallback::fire(const LLUUID& inv_item)
 	}
 }
 
+void AddFavoriteLandmarkCallback::fire(const LLUUID& inv_item_id)
+{
+	if (mTargetLandmarkId.isNull()) return;
+
+	//gInventory.rearrangeFavoriteLandmarks(inv_item_id, mTargetLandmarkId);	// MULTI-WEARABLES TODO
+}
+
 LLInventoryCallbackManager gInventoryCallbacks;
 
 void create_inventory_item(const LLUUID& agent_id, const LLUUID& session_id,
@@ -782,6 +912,16 @@ void create_inventory_item(const LLUUID& agent_id, const LLUUID& session_id,
 	msg->addStringFast(_PREHASH_Description, desc);
 	
 	gAgent.sendReliableMessage();
+}
+
+void create_inventory_callingcard(const LLUUID& avatar_id, const LLUUID& parent /*= LLUUID::null*/, LLPointer<LLInventoryCallback> cb/*=NULL*/)
+{
+	std::string item_desc = avatar_id.asString();
+	std::string item_name;
+	gCacheName->getFullName(avatar_id, item_name);
+	create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
+						  parent, LLTransactionID::tnull, item_name, item_desc, LLAssetType::AT_CALLINGCARD,
+						  LLInventoryType::IT_CALLINGCARD, NOT_WEARABLE, PERM_MOVE | PERM_TRANSFER, cb);
 }
 
 void copy_inventory_item(
@@ -893,25 +1033,19 @@ void move_inventory_item(
 	gAgent.sendReliableMessage();
 }
 
-class LLCopyInventoryFromNotecardResponder : public LLHTTPClient::Responder
+const LLUUID get_folder_by_itemtype(const LLInventoryItem *src)
 {
-public:
-	//If we get back a normal response, handle it here
-	virtual void result(const LLSD& content)
+	LLUUID retval = LLUUID::null;
+	
+	if (src)
 	{
-		// What do we do here?
-		llinfos << "CopyInventoryFromNotecard request successful." << llendl;
+		retval = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(src->getType()));
 	}
+	
+	return retval;
+}
 
-	//If we get back an error (not found, etc...), handle it here
-	virtual void error(U32 status, const std::string& reason)
-	{
-		llinfos << "LLCopyInventoryFromNotecardResponder::error "
-			<< status << ": " << reason << llendl;
-	}
-};
-
-void copy_inventory_from_notecard(/* V3: const LLUUID& destination_id, */
+void copy_inventory_from_notecard(const LLUUID& destination_id,
 								  const LLUUID& object_id,
 								  const LLUUID& notecard_inv_id,
 								  const LLInventoryItem *src,
@@ -961,8 +1095,7 @@ void copy_inventory_from_notecard(/* V3: const LLUUID& destination_id, */
     body["notecard-id"] = notecard_inv_id;
     body["object-id"] = object_id;
     body["item-id"] = src->getUUID();
-	body["folder-id"] = gInventory.findCategoryUUIDForType(LLFolderType::assetTypeToFolderType(src->getType()));
-	// V3: body["folder-id"] = destination_id;
+	body["folder-id"] = destination_id;
     body["callback-id"] = (LLSD::Integer)callback_id;
 
     request["message"] = "CopyInventoryFromNotecard";
@@ -971,6 +1104,108 @@ void copy_inventory_from_notecard(/* V3: const LLUUID& destination_id, */
     viewer_region->getCapAPI().post(request);
 }
 
+void create_new_item(const std::string& name,
+				   const LLUUID& parent_id,
+				   LLAssetType::EType asset_type,
+				   LLInventoryType::EType inv_type,
+				   U32 next_owner_perm)
+{
+	std::string desc;
+	LLViewerAssetType::generateDescriptionFor(asset_type, desc);
+	next_owner_perm = (next_owner_perm) ? next_owner_perm : PERM_MOVE | PERM_TRANSFER;
+
+	
+	if (inv_type == LLInventoryType::IT_GESTURE)
+	{
+		LLPointer<LLInventoryCallback> cb = new CreateGestureCallback();
+		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
+							  parent_id, LLTransactionID::tnull, name, desc, asset_type, inv_type,
+							  NOT_WEARABLE, next_owner_perm, cb);
+	}
+	else
+	{
+		LLPointer<LLInventoryCallback> cb = NULL;
+		create_inventory_item(gAgent.getID(), gAgent.getSessionID(),
+							  parent_id, LLTransactionID::tnull, name, desc, asset_type, inv_type,
+							  NOT_WEARABLE, next_owner_perm, cb);
+	}
+	
+}	
+
+const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not)
+const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
+const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)
+
+// ! REFACTOR ! Really need to refactor this so that it's not a bunch of if-then statements...
+/*void menu_create_inventory_item(LLFolderView* root, LLFolderBridge *bridge, const LLSD& userdata, const LLUUID& default_parent_uuid)
+{
+	std::string type_name = userdata.asString();
+	
+	if (("category" == type_name) || ("current" == type_name) || ("outfit" == type_name) || ("my_otfts" == type_name))
+	{
+		LLFolderType::EType preferred_type = LLFolderType::lookup(type_name);
+
+		LLUUID parent_id;
+		if (bridge)
+		{
+			parent_id = bridge->getUUID();
+		}
+		else if (default_parent_uuid.notNull())
+		{
+			parent_id = default_parent_uuid;
+		}
+		else
+		{
+			parent_id = gInventory.getRootFolderID();
+		}
+
+		LLUUID category = gInventory.createNewCategory(parent_id, preferred_type, LLStringUtil::null);
+		gInventory.notifyObservers();
+		root->setSelectionByID(category, TRUE);
+	}
+	else if ("lsl" == type_name)
+	{
+		const LLUUID parent_id = bridge ? bridge->getUUID() : gInventory.findCategoryUUIDForType(LLFolderType::FT_LSL_TEXT);
+		create_new_item(NEW_LSL_NAME,
+					  parent_id,
+					  LLAssetType::AT_LSL_TEXT,
+					  LLInventoryType::IT_LSL,
+					  PERM_MOVE | PERM_TRANSFER);
+	}
+	else if ("notecard" == type_name)
+	{
+		const LLUUID parent_id = bridge ? bridge->getUUID() : gInventory.findCategoryUUIDForType(LLFolderType::FT_NOTECARD);
+		create_new_item(NEW_NOTECARD_NAME,
+					  parent_id,
+					  LLAssetType::AT_NOTECARD,
+					  LLInventoryType::IT_NOTECARD,
+					  PERM_ALL);
+	}
+	else if ("gesture" == type_name)
+	{
+		const LLUUID parent_id = bridge ? bridge->getUUID() : gInventory.findCategoryUUIDForType(LLFolderType::FT_GESTURE);
+		create_new_item(NEW_GESTURE_NAME,
+					  parent_id,
+					  LLAssetType::AT_GESTURE,
+					  LLInventoryType::IT_GESTURE,
+					  PERM_ALL);
+	}
+	else
+	{
+		// Use for all clothing and body parts.  Adding new wearable types requires updating LLWearableDictionary.
+		LLWearableType::EType wearable_type = LLWearableType::typeNameToType(type_name);
+		if (wearable_type >= LLWearableType::WT_SHAPE && wearable_type < LLWearableType::WT_COUNT)
+		{
+			const LLUUID parent_id = bridge ? bridge->getUUID() : LLUUID::null;
+			LLAgentWearables::createWearable(wearable_type, false, parent_id);
+		}
+		else
+		{
+			llwarns << "Can't create unrecognized type " << type_name << llendl;
+		}
+	}
+	root->setNeedsAutoRename(TRUE);	
+}*/
 
 LLAssetType::EType LLViewerInventoryItem::getType() const
 {
@@ -995,6 +1230,23 @@ const LLUUID& LLViewerInventoryItem::getAssetUUID() const
 	return LLInventoryItem::getAssetUUID();
 }
 
+const LLUUID& LLViewerInventoryItem::getProtectedAssetUUID() const
+{
+	if (const LLViewerInventoryItem *linked_item = getLinkedItem())
+	{
+		return linked_item->getProtectedAssetUUID();
+	}
+
+	// check for conditions under which we may return a visible UUID to the user
+	bool item_is_fullperm = getIsFullPerm();
+	bool agent_is_godlike = gAgent.isGodlikeWithoutAdminMenuFakery();
+	if (item_is_fullperm || agent_is_godlike)
+	{
+		return LLInventoryItem::getAssetUUID();
+	}
+
+	return LLUUID::null;
+}
 
 const bool LLViewerInventoryItem::getIsFullPerm() const
 {
@@ -1011,6 +1263,7 @@ const bool LLViewerInventoryItem::getIsFullPerm() const
 						   gAgent.getID(),
 						   gAgent.getGroupID()) );
 }
+
 const std::string& LLViewerInventoryItem::getName() const
 {
 	if (const LLViewerInventoryItem *linked_item = getLinkedItem())
@@ -1024,6 +1277,327 @@ const std::string& LLViewerInventoryItem::getName() const
 
 	return  LLInventoryItem::getName();
 }
+
+#if 0
+/**
+ * Class to store sorting order of favorites landmarks in a local file. EXT-3985.
+ * It replaced previously implemented solution to store sort index in landmark's name as a "<N>@" prefix.
+ * Data are stored in user home directory.
+ */
+class LLFavoritesOrderStorage : public LLSingleton<LLFavoritesOrderStorage>
+	, public LLDestroyClass<LLFavoritesOrderStorage>
+{
+public:
+	/**
+	 * Sets sort index for specified with LLUUID favorite landmark
+	 */
+	void setSortIndex(const LLUUID& inv_item_id, S32 sort_index);
+
+	/**
+	 * Gets sort index for specified with LLUUID favorite landmark
+	 */
+	S32 getSortIndex(const LLUUID& inv_item_id);
+	void removeSortIndex(const LLUUID& inv_item_id);
+
+	void getSLURL(const LLUUID& asset_id);
+
+	/**
+	 * Implementation of LLDestroyClass. Calls cleanup() instance method.
+	 *
+	 * It is important this callback is called before gInventory is cleaned.
+	 * For now it is called from LLAppViewer::cleanup() -> LLAppViewer::disconnectViewer(),
+	 * Inventory is cleaned later from LLAppViewer::cleanup() after LLAppViewer::disconnectViewer() is called.
+	 * @see cleanup()
+	 */
+	static void destroyClass();
+
+	const static S32 NO_INDEX;
+private:
+	friend class LLSingleton<LLFavoritesOrderStorage>;
+	LLFavoritesOrderStorage() : mIsDirty(false) { load(); }
+	~LLFavoritesOrderStorage() { save(); }
+
+	/**
+	 * Removes sort indexes for items which are not in Favorites bar for now.
+	 */
+	void cleanup();
+
+	const static std::string SORTING_DATA_FILE_NAME;
+
+	void load();
+	void save();
+
+	void saveFavoritesSLURLs();
+
+	// Remove record of current user's favorites from file on disk.
+	void removeFavoritesRecordOfUser();
+
+	void onLandmarkLoaded(const LLUUID& asset_id, LLLandmark* landmark);
+	void storeFavoriteSLURL(const LLUUID& asset_id, std::string& slurl);
+
+	typedef std::map<LLUUID, S32> sort_index_map_t;
+	sort_index_map_t mSortIndexes;
+
+	typedef std::map<LLUUID, std::string> slurls_map_t;
+	slurls_map_t mSLURLs;
+
+	bool mIsDirty;
+
+	struct IsNotInFavorites
+	{
+		IsNotInFavorites(const LLInventoryModel::item_array_t& items)
+			: mFavoriteItems(items)
+		{
+
+		}
+
+		/**
+		 * Returns true if specified item is not found among inventory items
+		 */
+		bool operator()(const sort_index_map_t::value_type& id_index_pair) const
+		{
+			LLPointer<LLViewerInventoryItem> item = gInventory.getItem(id_index_pair.first);
+			if (item.isNull()) return true;
+
+			LLInventoryModel::item_array_t::const_iterator found_it =
+				std::find(mFavoriteItems.begin(), mFavoriteItems.end(), item);
+
+			return found_it == mFavoriteItems.end();
+		}
+	private:
+		LLInventoryModel::item_array_t mFavoriteItems;
+	};
+
+};
+
+const std::string LLFavoritesOrderStorage::SORTING_DATA_FILE_NAME = "landmarks_sorting.xml";
+const S32 LLFavoritesOrderStorage::NO_INDEX = -1;
+
+void LLFavoritesOrderStorage::setSortIndex(const LLUUID& inv_item_id, S32 sort_index)
+{
+	mSortIndexes[inv_item_id] = sort_index;
+	mIsDirty = true;
+}
+
+S32 LLFavoritesOrderStorage::getSortIndex(const LLUUID& inv_item_id)
+{
+	sort_index_map_t::const_iterator it = mSortIndexes.find(inv_item_id);
+	if (it != mSortIndexes.end())
+	{
+		return it->second;
+	}
+	return NO_INDEX;
+}
+
+void LLFavoritesOrderStorage::removeSortIndex(const LLUUID& inv_item_id)
+{
+	mSortIndexes.erase(inv_item_id);
+	mIsDirty = true;
+}
+
+void LLFavoritesOrderStorage::getSLURL(const LLUUID& asset_id)
+{
+	slurls_map_t::iterator slurl_iter = mSLURLs.find(asset_id);
+	if (slurl_iter != mSLURLs.end()) return; // SLURL for current landmark is already cached
+
+	LLLandmark* lm = gLandmarkList.getAsset(asset_id,
+			boost::bind(&LLFavoritesOrderStorage::onLandmarkLoaded, this, asset_id, _1));
+	if (lm)
+	{
+		onLandmarkLoaded(asset_id, lm);
+	}
+}
+
+// static
+void LLFavoritesOrderStorage::destroyClass()
+{
+	LLFavoritesOrderStorage::instance().cleanup();
+	if (gSavedPerAccountSettings.getBOOL("ShowFavoritesOnLogin"))
+	{
+		LLFavoritesOrderStorage::instance().saveFavoritesSLURLs();
+	}
+	else
+	{
+		LLFavoritesOrderStorage::instance().removeFavoritesRecordOfUser();
+	}
+}
+
+void LLFavoritesOrderStorage::load()
+{
+	// load per-resident sorting information
+	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, SORTING_DATA_FILE_NAME);
+
+	LLSD settings_llsd;
+	llifstream file;
+	file.open(filename);
+	if (file.is_open())
+	{
+		LLSDSerialize::fromXML(settings_llsd, file);
+	}
+
+	for (LLSD::map_const_iterator iter = settings_llsd.beginMap();
+		iter != settings_llsd.endMap(); ++iter)
+	{
+		mSortIndexes.insert(std::make_pair(LLUUID(iter->first), (S32)iter->second.asInteger()));
+	}
+}
+
+void LLFavoritesOrderStorage::saveFavoritesSLURLs()
+{
+	// Do not change the file if we are not logged in yet.
+	if (!LLLoginInstance::getInstance()->authSuccess()) return;
+	
+	std::string user_dir = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "");
+	if (user_dir.empty()) return;
+
+	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "stored_favorites.xml");
+	llifstream in_file;
+	in_file.open(filename);
+	LLSD fav_llsd;
+	if (in_file.is_open())
+	{
+		LLSDSerialize::fromXML(fav_llsd, in_file);
+	}
+
+	const LLUUID fav_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_FAVORITE);
+	LLInventoryModel::cat_array_t cats;
+	LLInventoryModel::item_array_t items;
+	gInventory.collectDescendents(fav_id, cats, items, LLInventoryModel::EXCLUDE_TRASH);
+
+	LLSD user_llsd;
+	for (LLInventoryModel::item_array_t::iterator it = items.begin(); it != items.end(); it++)
+	{
+		LLSD value;
+		value["name"] = (*it)->getName();
+		value["asset_id"] = (*it)->getAssetUUID();
+
+		slurls_map_t::iterator slurl_iter = mSLURLs.find(value["asset_id"]);
+		if (slurl_iter != mSLURLs.end())
+		{
+			value["slurl"] = slurl_iter->second;
+			user_llsd[(*it)->getSortField()] = value;
+		}
+	}
+
+	LLAvatarName av_name;
+	LLAvatarNameCache::get( gAgentID, &av_name );
+	fav_llsd[av_name.getLegacyName()] = user_llsd;
+
+	llofstream file;
+	file.open(filename);
+	LLSDSerialize::toPrettyXML(fav_llsd, file);
+}
+
+void LLFavoritesOrderStorage::removeFavoritesRecordOfUser()
+{
+	std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "stored_favorites.xml");
+	LLSD fav_llsd;
+	llifstream file;
+	file.open(filename);
+	if (!file.is_open()) return;
+	LLSDSerialize::fromXML(fav_llsd, file);
+
+	LLAvatarName av_name;
+	LLAvatarNameCache::get( gAgentID, &av_name );
+	if (fav_llsd.has(av_name.getLegacyName()))
+	{
+		fav_llsd.erase(av_name.getLegacyName());
+	}
+
+	llofstream out_file;
+	out_file.open(filename);
+	LLSDSerialize::toPrettyXML(fav_llsd, out_file);
+
+}
+
+void LLFavoritesOrderStorage::onLandmarkLoaded(const LLUUID& asset_id, LLLandmark* landmark)
+{
+	if (!landmark) return;
+
+	LLVector3d pos_global;
+	if (!landmark->getGlobalPos(pos_global))
+	{
+		// If global position was unknown on first getGlobalPos() call
+		// it should be set for the subsequent calls.
+		landmark->getGlobalPos(pos_global);
+	}
+
+	if (!pos_global.isExactlyZero())
+	{
+		LLLandmarkActions::getSLURLfromPosGlobal(pos_global,
+				boost::bind(&LLFavoritesOrderStorage::storeFavoriteSLURL, this, asset_id, _1));
+	}
+}
+
+void LLFavoritesOrderStorage::storeFavoriteSLURL(const LLUUID& asset_id, std::string& slurl)
+{
+	mSLURLs[asset_id] = slurl;
+}
+
+void LLFavoritesOrderStorage::save()
+{
+	// nothing to save if clean
+	if (!mIsDirty) return;
+
+	// If we quit from the login screen we will not have an SL account
+	// name.  Don't try to save, otherwise we'll dump a file in
+	// C:\Program Files\SecondLife\ or similar. JC
+	std::string user_dir = gDirUtilp->getLindenUserDir();
+	if (!user_dir.empty())
+	{
+		std::string filename = gDirUtilp->getExpandedFilename(LL_PATH_PER_SL_ACCOUNT, SORTING_DATA_FILE_NAME);
+		LLSD settings_llsd;
+
+		for(sort_index_map_t::const_iterator iter = mSortIndexes.begin(); iter != mSortIndexes.end(); ++iter)
+		{
+			settings_llsd[iter->first.asString()] = iter->second;
+		}
+
+		llofstream file;
+		file.open(filename);
+		LLSDSerialize::toPrettyXML(settings_llsd, file);
+	}
+}
+
+void LLFavoritesOrderStorage::cleanup()
+{
+	// nothing to clean
+	if (!mIsDirty) return;
+
+	const LLUUID fav_id = gInventory.findCategoryUUIDForType(LLFolderType::FT_FAVORITE);
+	LLInventoryModel::cat_array_t cats;
+	LLInventoryModel::item_array_t items;
+	gInventory.collectDescendents(fav_id, cats, items, LLInventoryModel::EXCLUDE_TRASH);
+
+	IsNotInFavorites is_not_in_fav(items);
+
+	sort_index_map_t  aTempMap;
+	//copy unremoved values from mSortIndexes to aTempMap
+	std::remove_copy_if(mSortIndexes.begin(), mSortIndexes.end(), 
+		inserter(aTempMap, aTempMap.begin()),
+		is_not_in_fav);
+
+	//Swap the contents of mSortIndexes and aTempMap
+	mSortIndexes.swap(aTempMap);
+}
+
+
+S32 LLViewerInventoryItem::getSortField() const
+{
+	return LLFavoritesOrderStorage::instance().getSortIndex(mUUID);
+}
+
+void LLViewerInventoryItem::setSortField(S32 sortField)
+{
+	LLFavoritesOrderStorage::instance().setSortIndex(mUUID, sortField);
+	getSLURL();
+}
+
+void LLViewerInventoryItem::getSLURL()
+{
+	LLFavoritesOrderStorage::instance().getSLURL(mAssetUUID);
+}
+#endif
 
 const LLPermissions& LLViewerInventoryItem::getPermissions() const
 {
@@ -1188,4 +1762,76 @@ void LLViewerInventoryItem::onCallingCardNameLookup(const LLUUID& id, const std:
 	rename(name);
 	gInventory.addChangedMask(LLInventoryObserver::LABEL, getUUID());
 	gInventory.notifyObservers();
+}
+
+class LLRegenerateLinkCollector : public LLInventoryCollectFunctor
+{
+public:
+	LLRegenerateLinkCollector(const LLViewerInventoryItem *target_item) : mTargetItem(target_item) {}
+	virtual ~LLRegenerateLinkCollector() {}
+	virtual bool operator()(LLInventoryCategory* cat,
+							LLInventoryItem* item)
+	{
+		if (item)
+		{
+			if ((item->getName() == mTargetItem->getName()) &&
+				(item->getInventoryType() == mTargetItem->getInventoryType()) &&
+				(!item->getIsLinkType()))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+protected:
+	const LLViewerInventoryItem* mTargetItem;
+};
+
+LLUUID find_possible_item_for_regeneration(const LLViewerInventoryItem *target_item)
+{
+	LLViewerInventoryCategory::cat_array_t cats;
+	LLViewerInventoryItem::item_array_t items;
+
+	LLRegenerateLinkCollector candidate_matches(target_item);
+	gInventory.collectDescendentsIf(gInventory.getRootFolderID(),
+									cats,
+									items,
+									LLInventoryModel::EXCLUDE_TRASH,
+									candidate_matches);
+	for (LLViewerInventoryItem::item_array_t::const_iterator item_iter = items.begin();
+		 item_iter != items.end();
+		 ++item_iter)
+	{
+	    const LLViewerInventoryItem *item = (*item_iter);
+		if (true) return item->getUUID();
+	}
+	return LLUUID::null;
+}
+
+// This currently dosen't work, because the sim does not allow us 
+// to change an item's assetID.
+BOOL LLViewerInventoryItem::regenerateLink()
+{
+	const LLUUID target_item_id = find_possible_item_for_regeneration(this);
+	if (target_item_id.isNull())
+		return FALSE;
+	LLViewerInventoryCategory::cat_array_t cats;
+	LLViewerInventoryItem::item_array_t items;
+	LLAssetIDMatches asset_id_matches(getAssetUUID());
+	gInventory.collectDescendentsIf(gInventory.getRootFolderID(),
+									cats,
+									items,
+									LLInventoryModel::EXCLUDE_TRASH,
+									asset_id_matches);
+	for (LLViewerInventoryItem::item_array_t::iterator item_iter = items.begin();
+		 item_iter != items.end();
+		 item_iter++)
+	{
+	    LLViewerInventoryItem *item = (*item_iter);
+		item->setAssetUUID(target_item_id);
+		item->updateServer(FALSE);
+		gInventory.addChangedMask(LLInventoryObserver::REBUILD, item->getUUID());
+	}
+	gInventory.notifyObservers();
+	return TRUE;
 }

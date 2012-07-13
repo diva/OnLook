@@ -62,7 +62,8 @@
 #include "llviewerjoint.h"
 #include "llviewerobject.h"
 #include "llviewerwindow.h"
-#include "llvoavatar.h"
+#include "llviewershadermgr.h"
+#include "llvoavatarself.h"
 #include "llworld.h"
 #include "llui.h"
 #include "pipeline.h"
@@ -1597,7 +1598,11 @@ void LLManipTranslate::renderSnapGuides()
 					LLGLDepthTest gls_depth(GL_TRUE, GL_FALSE, GL_GREATER);
 					LLGLEnable stipple(GL_LINE_STIPPLE);
 					gGL.flush();
-					glLineStipple(1, 0x3333);
+
+					if (!LLGLSLShader::sNoFixedFunction)
+					{
+						glLineStipple(1, 0x3333);
+					}
 		
 					switch (mManipPart)
 					{
@@ -1662,17 +1667,28 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 											 LLQuaternion grid_rotation, 
 											 LLColor4 inner_color)
 {
-	if (!gSavedSettings.getBOOL("GridCrossSections"))
+	if (!gSavedSettings.getBOOL("GridCrossSections") || !LLGLSLShader::sNoFixedFunction)
 	{
 		return;
 	}
+	
+	
+	LLGLSLShader* shader = LLGLSLShader::sCurBoundShaderPtr;
+
 	
 	U32 types[] = { LLRenderPass::PASS_SIMPLE, LLRenderPass::PASS_ALPHA, LLRenderPass::PASS_FULLBRIGHT, LLRenderPass::PASS_SHINY };
 	U32 num_types = LL_ARRAY_SIZE(types);
 
 	GLuint stencil_mask = 0xFFFFFFFF;
 	//stencil in volumes
+
 	gGL.flush();
+
+	if (shader)
+	{
+		gClipProgram.bind();
+	}
+		
 	{
 		glStencilMask(stencil_mask);
 		glClearStencil(1);
@@ -1683,6 +1699,7 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		glStencilFunc(GL_ALWAYS, 0, stencil_mask);
 		gGL.setColorMask(false, false);
 		gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+
 		gGL.diffuseColor4f(1,1,1,1);
 
 		//setup clip plane
@@ -1692,21 +1709,27 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 			normal = -normal;
 		}
 		F32 d = -(selection_center * normal);
-		F64 plane[] = { normal.mV[0], normal.mV[1], normal.mV[2], d };
-		LLGLEnable clip(GL_CLIP_PLANE0);
-		glClipPlane(GL_CLIP_PLANE0, plane);
+		glh::vec4f plane(normal.mV[0], normal.mV[1], normal.mV[2], d );
 
+		gGL.getModelviewMatrix().inverse().mult_vec_matrix(plane);
+
+		gClipProgram.uniform4fv("clip_plane", 1, plane.v);
+		
 		BOOL particles = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
+#if ENABLE_CLASSIC_CLOUDS
 		BOOL clouds = gPipeline.hasRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
+#endif
 		
 		if (particles)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
 		}
+#if ENABLE_CLASSIC_CLOUDS
 		if (clouds)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
+#endif
 		
 		//stencil in volumes
 		glStencilOp(GL_INCR, GL_INCR, GL_INCR);
@@ -1727,10 +1750,12 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_PARTICLES);
 		}
+#if ENABLE_CLASSIC_CLOUDS
 		if (clouds)
 		{
 			LLPipeline::toggleRenderType(LLPipeline::RENDER_TYPE_CLASSIC_CLOUDS);
 		}
+#endif
 
 		gGL.setColorMask(true, false);
 	}
@@ -1745,6 +1770,11 @@ void LLManipTranslate::highlightIntersection(LLVector3 normal,
 	
 	F32 sz = mGridSizeMeters;
 	F32 tiles = sz;
+
+	if (shader)
+	{
+		shader->bind();
+	}
 
 	//draw volume/plane intersections
 	{

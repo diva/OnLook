@@ -171,14 +171,12 @@ void LLToolCamera::pickCallback(const LLPickInfo& pick_info)
 		BOOL good_customize_avatar_hit = FALSE;
 		if( hit_obj )
 		{
-			LLVOAvatar* avatar = gAgentAvatarp;
-			if( hit_obj == avatar) 
+			if (isAgentAvatarValid() && (hit_obj == gAgentAvatarp))
 			{
 				// It's you
 				good_customize_avatar_hit = TRUE;
 			}
-			else
-			if( hit_obj->isAttachment() && hit_obj->permYouOwner() )
+			else if (hit_obj->isAttachment() && hit_obj->permYouOwner())
 			{
 				// It's an attachment that you're wearing
 				good_customize_avatar_hit = TRUE;
@@ -361,7 +359,7 @@ BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 			// Orbit tool
 			if (hasMouseCapture())
 			{
-				const F32 RADIANS_PER_PIXEL = 360.f * DEG_TO_RAD / gViewerWindow->getWindowWidth();
+				const F32 RADIANS_PER_PIXEL = 360.f * DEG_TO_RAD / gViewerWindow->getWorldViewWidthScaled();
 
 				if (dx != 0)
 				{
@@ -389,7 +387,7 @@ BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 				F32 dist = (F32) camera_to_focus.normVec();
 
 				// Fudge factor for pan
-				F32 meters_per_pixel = 3.f * dist / gViewerWindow->getWindowWidth();
+				F32 meters_per_pixel = 3.f * dist / gViewerWindow->getWorldViewWidthScaled();
 
 				if (dx != 0)
 				{
@@ -411,7 +409,7 @@ BOOL LLToolCamera::handleHover(S32 x, S32 y, MASK mask)
 			if (hasMouseCapture())
 			{
 
-				const F32 RADIANS_PER_PIXEL = 360.f * DEG_TO_RAD / gViewerWindow->getWindowWidth();
+				const F32 RADIANS_PER_PIXEL = 360.f * DEG_TO_RAD / gViewerWindow->getWorldViewWidthScaled();
 
 				if (dx != 0)
 				{

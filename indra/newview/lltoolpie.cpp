@@ -66,7 +66,7 @@
 #include "llwindow.h"
 #include "llviewermedia.h"
 #include "llviewermediafocus.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llworld.h"
 #include "llui.h"
 #include "llweb.h"
@@ -75,7 +75,7 @@
 #include "rlvhandler.h"
 // [/RLVa:KB]
 
-extern void handle_buy(void*);
+extern void handle_buy();
 
 extern BOOL gDebugClicks;
 
@@ -206,7 +206,7 @@ BOOL LLToolPie::pickAndShowMenu(BOOL always_show)
 			// touch behavior down below...
 			break;
 		case CLICK_ACTION_SIT:
-			if ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting()) 
+			if ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting()) 
 				&& (!gSavedSettings.getBOOL("DisableClickSit"))) // agent not already sitting
 			{
 				handle_sit_or_stand();
@@ -561,7 +561,7 @@ ECursorType cursor_from_object(LLViewerObject* object)
 	case CLICK_ACTION_SIT:
 //		if ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting())) // not already sitting?
 // [RLVa:KB] - Checked: 2009-12-22 (RLVa-1.1.0k) | Added: RLVa-1.1.0j
-		if ( ((gAgentAvatarp != NULL) && (!gAgentAvatarp->isSitting())) && // not already sitting?
+		if ( ((isAgentAvatarValid()) && (!gAgentAvatarp->isSitting())) && // not already sitting?
 			 ((!rlv_handler_t::isEnabled()) || (gRlvHandler.canSit(object, gViewerWindow->getHoverPick().mObjectOffset))) )
 // [/RLVa:KB]
 		{
@@ -627,7 +627,7 @@ void LLToolPie::selectionPropertiesReceived()
 			switch (click_action)
 			{
 			case CLICK_ACTION_BUY:
-				handle_buy(NULL);
+				handle_buy();
 				break;
 			case CLICK_ACTION_PAY:
 				handle_give_money_dialog();
@@ -675,7 +675,7 @@ BOOL LLToolPie::handleHover(S32 x, S32 y, MASK mask)
 	const LLPickInfo& pick = gViewerWindow->getHoverPick();
 	object = pick.getObject();
 	if ( (object) && (rlv_handler_t::isEnabled()) && 
-		( ((gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH))) && (!gRlvHandler.canTouch(object, pick.mObjectOffset)) || 
+		( (((gRlvHandler.hasBehaviour(RLV_BHVR_FARTOUCH))) && (!gRlvHandler.canTouch(object, pick.mObjectOffset))) || 
 		  ((gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT)) && (!object->isHUDAttachment())) ) )
 	{
 		gViewerWindow->getWindow()->setCursor(UI_CURSOR_ARROW);
@@ -779,38 +779,26 @@ BOOL LLToolPie::handleDoubleClick(S32 x, S32 y, MASK mask)
 		llinfos << "LLToolPie handleDoubleClick (becoming mouseDown)" << llendl;
 	}
 
-	if (gSavedSettings.getBOOL("DoubleClickAutoPilot") || gSavedSettings.getBOOL("DoubleClickTeleport"))
+	if (gSavedSettings.getBOOL("DoubleClickAutoPilot"))
 	{
-		if (mPick.mPickType == LLPickInfo::PICK_LAND
-			&& !mPick.mPosGlobal.isExactlyZero())
+		if ((mPick.mPickType == LLPickInfo::PICK_LAND && !mPick.mPosGlobal.isExactlyZero()) ||
+			(mPick.mObjectID.notNull()  && !mPick.mPosGlobal.isExactlyZero()))
 		{
 			handle_go_to();
 			return TRUE;
 		}
-		else if (mPick.mObjectID.notNull()
-				 && !mPick.mPosGlobal.isExactlyZero())
-		{
-			// Hit an object
-			// Do not go to attachments...
-			if (mPick.getObject() && !mPick.getObject()->isHUDAttachment())
-			{
-				// HACK: Call the last hit position the point we hit on the object
-				//gLastHitPosGlobal += gLastHitObjectOffset;
-				handle_go_to();
-				return TRUE;
-			}
-		}
-	} else
-	/* code added to support double click teleports */
-	if (gSavedSettings.getBOOL("DoubleClickTeleport"))
+	}
+	else if (gSavedSettings.getBOOL("DoubleClickTeleport"))
 	{
 		LLViewerObject* objp = mPick.getObject();
 		LLViewerObject* parentp = objp ? objp->getRootEdit() : NULL;
+
 		bool is_in_world = mPick.mObjectID.notNull() && objp && !objp->isHUDAttachment();
 		bool is_land = mPick.mPickType == LLPickInfo::PICK_LAND;
 		bool pos_non_zero = !mPick.mPosGlobal.isExactlyZero();
 		bool has_touch_handler = (objp && objp->flagHandleTouch()) || (parentp && parentp->flagHandleTouch());
 		bool has_click_action = final_click_action(objp);
+
 		if (pos_non_zero && (is_land || (is_in_world && !has_touch_handler && !has_click_action)))
 		{
 			LLVector3d pos = mPick.mPosGlobal;
@@ -821,30 +809,6 @@ BOOL LLToolPie::handleDoubleClick(S32 x, S32 y, MASK mask)
 	}
 
 	return FALSE;
-
-	/* JC - don't do go-there, because then double-clicking on physical
-	objects gets you into trouble.
-
-	// If double-click on object or land, go there.
-	LLViewerObject *object = gViewerWindow->getLastPick().getObject();
-	if (object)
-	{
-		if (object->isAvatar())
-		{
-			LLFloaterAvatarInfo::showFromAvatar(object->getID());
-		}
-		else
-		{
-			handle_go_to(NULL);
-		}
-	}
-	else if (!gLastHitPosGlobal.isExactlyZero())
-	{
-		handle_go_to(NULL);
-	}
-
-	return TRUE;
-	*/
 }
 
 

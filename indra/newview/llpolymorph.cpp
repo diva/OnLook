@@ -2,31 +2,25 @@
  * @file llpolymorph.cpp
  * @brief Implementation of LLPolyMesh class
  *
- * $LicenseInfo:firstyear=2001&license=viewergpl$
- * 
- * Copyright (c) 2001-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2001&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -37,6 +31,7 @@
 
 #include "llpolymorph.h"
 #include "llvoavatar.h"
+#include "llwearable.h"
 #include "llxmltree.h"
 #include "llendianswizzle.h"
 
@@ -451,10 +446,10 @@ BOOL LLPolyMorphData::setMorphFromMesh(LLPolyMesh *morph)
 		}
 
 		// If we have a vertex mask, just remove it.  It will be recreated.
-		if (param->undoMask(TRUE))
+		/*if (param->undoMask(TRUE))
 		{
 			continue;
-		}
+		}*/
 
 		LLVector4 *mesh_coords           = mesh->getWritableCoords();
 		LLVector4 *mesh_normals          = mesh->getWritableNormals();
@@ -633,6 +628,13 @@ BOOL LLPolyMorphTarget::setInfo(LLPolyMorphTargetInfo* info)
 		return FALSE;  // Continue, ignoring this tag
 	}
 	return TRUE;
+}
+
+/*virtual*/ LLViewerVisualParam* LLPolyMorphTarget::cloneParam(LLWearable* wearable) const
+{
+	LLPolyMorphTarget *new_param = new LLPolyMorphTarget(mMesh);
+	*new_param = *this;
+	return new_param;
 }
 
 #if 0 // obsolete
@@ -881,32 +883,10 @@ void	LLPolyMorphTarget::applyMask(U8 *maskTextureData, S32 width, S32 height, S3
 	else
 	{
 		// remove effect of previous mask
-		undoMask(FALSE);
-	}
+		F32 *maskWeights = (mVertMask) ? mVertMask->getMorphMaskWeights() : NULL;
 
-	mLastWeight = 0.f;
-
-	mVertMask->generateMask(maskTextureData, width, height, num_components, invert, clothing_weights);
-
-	apply(mLastSex);
-}
-
-//-----------------------------------------------------------------------------
-// undoMask()
-//-----------------------------------------------------------------------------
-BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
-{
-	if (!mVertMask)
+		if (maskWeights)
 		{
-	    return FALSE;
-	}
-
-	// remove effect of previous mask
-
-	LLVector4 *clothing_weights = getInfo()->mIsClothingMorph ? mMesh->getWritableClothingWeights() : NULL;
-
-	F32 *mask_weights = mVertMask->getMorphMaskWeights();
-
 			LLVector4 *coords = mMesh->getWritableCoords();
 			LLVector3 *scaled_normals = mMesh->getScaledNormals();
 			LLVector3 *scaled_binormals = mMesh->getScaledBinormals();
@@ -914,13 +894,7 @@ BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
 
 			for(U32 vert = 0; vert < mMorphData->mNumIndices; vert++)
 			{
-				F32 mask_weight = 1.f;
-				if (mask_weights)
-				{
-					mask_weight = mask_weights[vert];
-				}
-
-				F32 lastMaskWeight = mLastWeight * mask_weights[vert];
+				F32 lastMaskWeight = mLastWeight * maskWeights[vert];
 				S32 out_vert = mMorphData->mVertexIndices[vert];
 
 				// remove effect of existing masked morph
@@ -938,18 +912,15 @@ BOOL	LLPolyMorphTarget::undoMask(BOOL delete_mask)
 					clothing_weight->mV[VZ] -= clothing_offset.mV[VZ];
 				}
 			}
+		}
+	}
 
 	// set last weight to 0, since we've removed the effect of this morph
 	mLastWeight = 0.f;
 
-	if (delete_mask)
-	{
-		delete mVertMask;
-		mVertMask = NULL;
-		addPendingMorphMask();
-	}
+	mVertMask->generateMask(maskTextureData, width, height, num_components, invert, clothing_weights);
 
-	return TRUE;
+	apply(mLastSex);
 }
 
 

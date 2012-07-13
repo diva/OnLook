@@ -89,6 +89,8 @@ public:
 	const LLInventoryPanel* getActivePanel() const { return mActivePanel; }
 
 	const std::string& getFilterText() const { return mFilterText; }
+
+	void setSelectCallback(const LLFolderView::signal_t::slot_type& cb);
 	static void onSearchEdit(const std::string& search_string, void* user_data );
 	//
 	// Misc functions
@@ -97,14 +99,15 @@ public:
 	void startSearch();
 
 	void toggleFindOptions();
-	static void onSelectionChange(const std::deque<LLFolderViewItem*> &items, BOOL user_action, void* data);
+	void onSelectionChange(LLInventoryPanel *panel, const std::deque<LLFolderViewItem*>& items, BOOL user_action);
+
 	static BOOL filtersVisible(void* user_data);
 	static void onClearSearch(void* user_data);
 	static void onFoldersByName(void *user_data);
 	static BOOL checkFoldersByName(void *user_data);
 	
 	
-	static void onFilterSelected(void* userdata, bool from_click);
+	void onFilterSelected();
 	
 	const std::string getFilterSubString();
 	void setFilterSubString(const std::string& string);
@@ -121,7 +124,7 @@ public:
 	void updateSortControls();
 
 	void resetFilters();
-
+	void updateItemcountText();
 
 // [RLVa:KB] - Checked: 2009-07-10 (RLVa-1.0.0g)
 	static void closeAll() 
@@ -163,9 +166,10 @@ protected:
 	LLTabContainer*				mFilterTabs;
 	LLHandle<LLFloater>			mFinderHandle;
 	LLInventoryPanel*			mActivePanel;
+	bool						mResortActivePanel;
 	LLSaveFolderState*			mSavedFolderState;
-
 	std::string					mFilterText;
+	//std::string					mFilterSubString;
 
 
 	// This container is used to hold all active inventory views. This

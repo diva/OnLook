@@ -224,10 +224,11 @@
 	     mouse_opaque="true" name="Replace Outfit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="replaceoutfit" />
 	</menu_item_call>
-  <menu_item_call bottom_delta="-18" height="18" label="Take Off Items" left="0"
-	     mouse_opaque="true" name="Take Off Items" width="128">
+  <menu_item_call bottom_delta="-18" height="18" label="Remove From Outfit" left="0"
+	     mouse_opaque="true" name="Remove From Outfit" width="128">
     <on_click filter="" function="Inventory.DoToSelected" userdata="removefromoutfit" />
   </menu_item_call>
+  <menu_item_separator name="Outfit Separator"></menu_item_separator>
   <menu_item_separator name="Calling Card Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Start Conference Chat" left="0"
 	     mouse_opaque="true" name="Conference Chat Folder" width="128">
@@ -274,15 +275,23 @@
 	     name="Deactivate" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
 	</menu_item_call>
-	<menu_item_separator name="Attach Separator" />
+	<menu_item_separator name="Wearable And Object Separator" />
 	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
-	     name="Object Wear" width="128">
+	     name="Wearable And Object Wear" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="attach" />
 	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Add to Worn" left="0" mouse_opaque="true"
-	     name="Object Add" width="128">
+	     name="Wearable Add" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="wear_add" />
 	</menu_item_call>
+  <menu_item_call bottom_delta="-18" height="18" label="&#9650; Move Forward" left="0" mouse_opaque="true"
+	     name="Wearable Move Forward" width="128">
+    <on_click filter="" function="Inventory.DoToSelected" userdata="move_forward" />
+  </menu_item_call>
+  <menu_item_call bottom_delta="-18" height="18" label="&#9660; Move Back" left="0" mouse_opaque="true"
+	     name="Wearable Move Back" width="128">
+    <on_click filter="" function="Inventory.DoToSelected" userdata="move_back" />
+  </menu_item_call>
 	<menu bottom_delta="-18" height="18" label="Attach To" left="0" mouse_opaque="true"
 	     name="Attach To" opaque="true" tear_off="false" width="128" />
 	<menu bottom_delta="-18" height="18" label="Attach To HUD" left="0"
@@ -296,14 +305,17 @@
 	     name="Wearable Edit" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="edit" />
 	</menu_item_call>
-	<menu_item_call bottom_delta="-18" height="18" label="Wear" left="0" mouse_opaque="true"
-	     name="Wearable Wear" width="128">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="wear" />
-	</menu_item_call>
 	<menu_item_call bottom_delta="-18" height="18" label="Take Off" left="0" mouse_opaque="true"
 	     name="Take Off" width="128">
 		<on_click filter="" function="Inventory.DoToSelected" userdata="take_off" />
 	</menu_item_call>
+	<menu_item_separator name="Marketplace Separator" />
+	<menu_item_call bottom_delta="-18" height="18" label="Copy to Merchant Outbox" left="0" mouse_opaque="true"
+	     name="Merchant Copy" width="128"/>
+		<on_click filter="" function="Inventory.DoToSelected" userdata="copy_to_outbox" />
+	<menu_item_call bottom_delta="-18" height="18" label="Send to Marketplace" left="0" mouse_opaque="true"
+	     name="Marketplace Send" width="128"/>
+		<on_click filter="" function="Inventory.DoToSelected" userdata="send_to_marketplace" />
 	<menu_item_call bottom_delta="-18" height="18" label="--no options--" left="0"
 	     mouse_opaque="true" name="--no options--" width="128" />
 	<!--menu_item_separator name="Wearable Separator" -->

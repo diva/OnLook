@@ -35,12 +35,13 @@
 #include <utility> // for std::pair<>
 
 #include "llinventorypanel.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llinventorybridge.h"
 
 #include "message.h"
 
 #include "llagent.h"
+#include "llagentwearables.h"
 #include "llcallingcard.h"
 #include "llcheckboxctrl.h"		// for radio buttons
 #include "llfoldervieweventlistener.h"
@@ -105,7 +106,7 @@ const std::string NEW_LSL_NAME = "New Script"; // *TODO:Translate? (probably not
 const std::string NEW_NOTECARD_NAME = "New Note"; // *TODO:Translate? (probably not)
 const std::string NEW_GESTURE_NAME = "New Gesture"; // *TODO:Translate? (probably not)
 
-typedef LLMemberListener<LLPanelInventory> object_inventory_listener_t;
+typedef LLMemberListener<LLPanelObjectInventory> object_inventory_listener_t;
 typedef LLMemberListener<LLInventoryView> inventory_listener_t;
 typedef LLMemberListener<LLInventoryPanel> inventory_panel_listener_t;
 
@@ -128,8 +129,7 @@ bool doToSelected(LLFolderView* folder, std::string action)
 		LLInventoryClipboard::instance().reset();
 	}
 
-	std::set<LLUUID> selected_items;
-	folder->getSelectionList(selected_items);
+	std::set<LLUUID> selected_items = folder->getSelectionList();
 
 	LLMultiPreview* multi_previewp = NULL;
 	LLMultiProperties* multi_propertiesp = NULL;
@@ -165,14 +165,8 @@ bool doToSelected(LLFolderView* folder, std::string action)
 		LLInvFVBridge* bridge = (LLInvFVBridge*)folder_item->getListener();
 		if(!bridge) continue;
 
-		bridge->performAction(folder, model, action);
+		bridge->performAction(model, action);
 	}
-
-
-
-
-
-
 
 	LLFloater::setFloaterHost(NULL);
 	if (multi_previewp)
@@ -192,7 +186,7 @@ class LLDoToSelectedPanel : public object_inventory_listener_t
 	bool handleEvent(LLPointer<LLEvent> event, const LLSD& userdata)
 	{
 		std::string action = userdata.asString();
-		LLPanelInventory *panel = mPtr;
+		LLPanelObjectInventory *panel = mPtr;
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
@@ -237,7 +231,7 @@ class LLNewWindow : public inventory_listener_t
 		LLInventoryView* iv = new LLInventoryView(std::string("Inventory"),
 												rect,
 												mPtr->getActivePanel()->getModel());
-		iv->getActivePanel()->setFilterTypes(mPtr->getActivePanel()->getFilterTypes());
+		iv->getActivePanel()->setFilterTypes(mPtr->getActivePanel()->getFilterObjectTypes());
 		iv->getActivePanel()->setFilterSubString(mPtr->getActivePanel()->getFilterSubString());
 		iv->open();		/*Flawfinder: ignore*/
 
@@ -391,12 +385,7 @@ void do_create(LLInventoryModel *model, LLInventoryPanel *ptr, std::string type,
 	else
 	{
 		LLWearableType::EType wear_type = LLWearableType::typeNameToType(type);
-		if(wear_type != LLWearableType::WT_NONE)
-		{
-				LLFolderType::EType folder_type = LLFolderType::assetTypeToFolderType(LLWearableType::getAssetType(wear_type));
-				LLUUID parent_id = self ? self->getUUID() : gInventory.findCategoryUUIDForType(folder_type);
-				LLFolderBridge::createWearable(parent_id, wear_type);
-		}
+		LLAgentWearables::createWearable(wear_type, false, self ? self->getUUID() : LLUUID::null);
 	}
 	ptr->getRootFolder()->setNeedsAutoRename(TRUE);	
 }
@@ -547,8 +536,7 @@ class LLBeginIMSession : public inventory_panel_listener_t
 		LLInventoryPanel *panel = mPtr;
 		LLInventoryModel* model = panel->getModel();
 		if(!model) return true;
-		std::set<LLUUID> selected_items;
-		panel->getRootFolder()->getSelectionList(selected_items);
+		std::set<LLUUID> selected_items = panel->getRootFolder()->getSelectionList();
 
 		std::string name;
 		static int session_num = 1;
@@ -653,8 +641,7 @@ class LLAttachObject : public inventory_panel_listener_t
 		LLFolderView* folder = panel->getRootFolder();
 		if(!folder) return true;
 
-		std::set<LLUUID> selected_items;
-		folder->getSelectionList(selected_items);
+		std::set<LLUUID> selected_items = folder->getSelectionList();
 		LLUUID id = *selected_items.begin();
 
 		std::string joint_name = userdata.asString();
@@ -679,9 +666,9 @@ class LLAttachObject : public inventory_panel_listener_t
 
 		if(item && gInventory.isObjectDescendentOf(id, gInventory.getRootFolderID()))
 		{
-			rez_attachment(item, attachmentp);
+			rez_attachment(item, attachmentp);	// don't replace if called from an "Attach To..." menu
 		}
-		else if(item && item->isComplete())
+		else if(item && item->isFinished())
 		{
 			// must be in library. copy it to our inventory and put it on.
 			LLPointer<LLInventoryCallback> cb = new RezAttachmentCallback(attachmentp);
@@ -709,7 +696,7 @@ class LL : public listener_t
 };
 */
 
-void init_object_inventory_panel_actions(LLPanelInventory *panel)
+void init_object_inventory_panel_actions(LLPanelObjectInventory *panel)
 {
 	(new LLDoToSelectedPanel())->registerListener(panel, "Inventory.DoToSelected");
 }

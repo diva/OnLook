@@ -51,7 +51,7 @@
 #include "llpanelcontents.h"
 #include "llpanelface.h"
 #include "llpanelland.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 #include "llpanelobject.h"
 #include "llpanelvolume.h"
 #include "llpanelpermissions.h"
@@ -102,7 +102,6 @@ const std::string PANEL_NAMES[LLFloaterTools::PANEL_COUNT] =
 };
 
 // Local prototypes
-void commit_select_tool(LLUICtrl *ctrl, void *data);
 void commit_select_component(LLUICtrl *ctrl, void *data);
 void click_show_more(void*);
 void click_popup_info(void*);
@@ -123,6 +122,7 @@ void commit_radio_orbit(LLUICtrl *, void*);
 void commit_radio_pan(LLUICtrl *, void*);
 void commit_grid_mode(LLUICtrl *, void*);
 void commit_slider_zoom(LLUICtrl *, void*);
+void commit_select_tool(LLUICtrl *ctrl, void *data);
 
 
 //static
@@ -168,7 +168,7 @@ void*	LLFloaterTools::createPanelContents(void* data)
 void*	LLFloaterTools::createPanelContentsInventory(void* data)
 {
 	LLFloaterTools* floater = (LLFloaterTools*)data;
-	floater->mPanelContents->mPanelInventory = new LLPanelInventory(std::string("ContentsInventory"), LLRect());
+	floater->mPanelContents->mPanelInventory = new LLPanelObjectInventory(std::string("ContentsInventory"), LLRect());
 	return floater->mPanelContents->mPanelInventory;
 }
 
@@ -180,8 +180,41 @@ void*	LLFloaterTools::createPanelLandInfo(void* data)
 	return floater->mPanelLandInfo;
 }
 
+static	const std::string	toolNames[]={
+	"ToolCube",
+	"ToolPrism",
+	"ToolPyramid",
+	"ToolTetrahedron",
+	"ToolCylinder",
+	"ToolHemiCylinder",
+	"ToolCone",
+	"ToolHemiCone",
+	"ToolSphere",
+	"ToolHemiSphere",
+	"ToolTorus",
+	"ToolTube",
+	"ToolRing",
+	"ToolTree",
+	"ToolGrass"};
+LLPCode toolData[]={
+	LL_PCODE_CUBE,
+	LL_PCODE_PRISM,
+	LL_PCODE_PYRAMID,
+	LL_PCODE_TETRAHEDRON,
+	LL_PCODE_CYLINDER,
+	LL_PCODE_CYLINDER_HEMI,
+	LL_PCODE_CONE,
+	LL_PCODE_CONE_HEMI,
+	LL_PCODE_SPHERE,
+	LL_PCODE_SPHERE_HEMI,
+	LL_PCODE_TORUS,
+	LLViewerObject::LL_VO_SQUARE_TORUS,
+	LLViewerObject::LL_VO_TRIANGLE_TORUS,
+	LL_PCODE_LEGACY_TREE,
+	LL_PCODE_LEGACY_GRASS};
+
 BOOL	LLFloaterTools::postBuild()
-{
+{	
 	
 	// Hide until tool selected
 	setVisible(FALSE);
@@ -221,15 +254,15 @@ BOOL	LLFloaterTools::postBuild()
 	mRadioSpin = getChild<LLCheckBoxCtrl>("radio spin");
 	childSetCommitCallback("radio spin",click_popup_grab_spin,NULL);
 	mRadioPosition = getChild<LLCheckBoxCtrl>("radio position");
-	childSetCommitCallback("radio position",commit_select_tool,LLToolCompTranslate::getInstance());
+	childSetCommitCallback("radio position",commit_select_tool,NULL);
 	mRadioRotate = getChild<LLCheckBoxCtrl>("radio rotate");
-	childSetCommitCallback("radio rotate",commit_select_tool,LLToolCompRotate::getInstance());
+	childSetCommitCallback("radio rotate",commit_select_tool,NULL);
 	mRadioStretch = getChild<LLCheckBoxCtrl>("radio stretch");
-	childSetCommitCallback("radio stretch",commit_select_tool,LLToolCompScale::getInstance());
+	childSetCommitCallback("radio stretch",commit_select_tool,NULL);
 	mRadioSelectFace = getChild<LLCheckBoxCtrl>("radio select face");
-	childSetCommitCallback("radio select face",commit_select_tool,LLToolFace::getInstance());
+	childSetCommitCallback("radio select face",commit_select_tool,NULL);
 	mRadioAlign = getChild<LLCheckBoxCtrl>("radio align");
-	childSetCommitCallback("radio align",commit_select_tool,QToolAlign::getInstance());
+	childSetCommitCallback("radio align",commit_select_tool,NULL);
 	mCheckSelectIndividual = getChild<LLCheckBoxCtrl>("checkbox edit linked parts");
 	childSetValue("checkbox edit linked parts",(BOOL)gSavedSettings.getBOOL("EditLinkedParts"));
 	childSetCommitCallback("checkbox edit linked parts",commit_select_component,this);
@@ -250,44 +283,12 @@ BOOL	LLFloaterTools::postBuild()
 	// Create Buttons
 	//
 
-	static	const std::string	toolNames[]={
-			"ToolCube",
-			"ToolPrism",
-			"ToolPyramid",
-			"ToolTetrahedron",
-			"ToolCylinder",
-			"ToolHemiCylinder",
-			"ToolCone",
-			"ToolHemiCone",
-			"ToolSphere",
-			"ToolHemiSphere",
-			"ToolTorus",
-			"ToolTube",
-			"ToolRing",
-			"ToolTree",
-			"ToolGrass"};
-	void*	toolData[]={
-			&LLToolPlacerPanel::sCube,
-			&LLToolPlacerPanel::sPrism,
-			&LLToolPlacerPanel::sPyramid,
-			&LLToolPlacerPanel::sTetrahedron,
-			&LLToolPlacerPanel::sCylinder,
-			&LLToolPlacerPanel::sCylinderHemi,
-			&LLToolPlacerPanel::sCone,
-			&LLToolPlacerPanel::sConeHemi,
-			&LLToolPlacerPanel::sSphere,
-			&LLToolPlacerPanel::sSphereHemi,
-			&LLToolPlacerPanel::sTorus,
-			&LLToolPlacerPanel::sSquareTorus,
-			&LLToolPlacerPanel::sTriangleTorus,
-			&LLToolPlacerPanel::sTree,
-			&LLToolPlacerPanel::sGrass};
 	for(size_t t=0; t<LL_ARRAY_SIZE(toolNames); ++t)
 	{
 		LLButton *found = getChild<LLButton>(toolNames[t]);
 		if(found)
 		{
-			found->setClickedCallback(setObjectType,toolData[t]);
+			found->setClickedCallback(boost::bind(&LLFloaterTools::setObjectType, toolData[t]));
 			mButtons.push_back( found );
 		}
 		else
@@ -306,7 +307,7 @@ BOOL	LLFloaterTools::postBuild()
 	mCheckCopyRotates = getChild<LLCheckBoxCtrl>("checkbox copy rotates");
 	childSetValue("checkbox copy rotates",(BOOL)gSavedSettings.getBOOL("CreateToolCopyRotates"));
 	mRadioSelectLand = getChild<LLCheckBoxCtrl>("radio select land");
-	childSetCommitCallback("radio select land",commit_select_tool, LLToolSelectLand::getInstance());
+	childSetCommitCallback("radio select land",commit_select_tool, NULL);
 	mRadioDozerFlatten = getChild<LLCheckBoxCtrl>("radio flatten");
 	childSetCommitCallback("radio flatten",click_popup_dozer_mode,  (void*)0);
 	mRadioDozerRaise = getChild<LLCheckBoxCtrl>("radio raise");
@@ -737,15 +738,13 @@ void LLFloaterTools::updatePopup(LLCoordGL center, MASK mask)
 	else
 	{
 		// Highlight the correct placer button
-		for( std::vector<LLButton*>::size_type i = 0; i < mButtons.size(); i++ )
+		for( S32 t = 0; t < (S32)mButtons.size(); t++ )
 		{
 			LLPCode pcode = LLToolPlacer::getObjectType();
-			void *userdata = mButtons[i]->getCallbackUserData();
-			LLPCode *cur = (LLPCode*) userdata;
-
-			BOOL state = (pcode == *cur);
-			mButtons[i]->setToggleState( state );
-			mButtons[i]->setVisible( create_visible );
+			LLPCode button_pcode = toolData[t];
+			BOOL state = (pcode == button_pcode);
+			mButtons[t]->setToggleState( state );
+			mButtons[t]->setVisible( create_visible );
 		}
 	}
 
@@ -998,7 +997,33 @@ void click_apply_to_selection(void* user)
 void commit_select_tool(LLUICtrl *ctrl, void *data)
 {
 	S32 show_owners = gSavedSettings.getBOOL("ShowParcelOwners");
-	gFloaterTools->setEditTool(data);
+
+	LLCheckBoxCtrl* group = (LLCheckBoxCtrl*)ctrl;
+	std::string selected = group->getName();
+	if (selected == "radio position")
+	{
+		LLFloaterTools::setEditTool( LLToolCompTranslate::getInstance() );
+	}
+	else if (selected == "radio rotate")
+	{
+		LLFloaterTools::setEditTool( LLToolCompRotate::getInstance() );
+	}
+	else if (selected == "radio stretch")
+	{
+		LLFloaterTools::setEditTool( LLToolCompScale::getInstance() );
+	}
+	else if (selected == "radio select face")
+	{
+		LLFloaterTools::setEditTool( LLToolFace::getInstance() );
+	}
+	else if (selected == "radio align")
+	{
+		LLFloaterTools::setEditTool( QToolAlign::getInstance() );
+	}
+	else if (selected == "radio select land")
+	{
+		LLFloaterTools::setEditTool( LLToolSelectLand::getInstance());
+	}
 	gSavedSettings.setBOOL("ShowParcelOwners", show_owners);
 }
 
@@ -1034,9 +1059,8 @@ void commit_grid_mode(LLUICtrl *ctrl, void *data)
 } 
 
 // static 
-void LLFloaterTools::setObjectType( void* data )
+void LLFloaterTools::setObjectType( LLPCode pcode )
 {
-	LLPCode pcode = *(LLPCode*) data;
 	LLToolPlacer::setObjectType( pcode );
 	gSavedSettings.setBOOL("CreateToolCopySelection", FALSE);
 	gFocusMgr.setMouseCapture(NULL);
@@ -1053,7 +1077,8 @@ void LLFloaterTools::onClickGridOptions(void* data)
 
 void LLFloaterTools::setEditTool(void* tool_pointer)
 {
-	select_tool(tool_pointer);
+	LLTool *tool = (LLTool *)tool_pointer;
+	LLToolMgr::getInstance()->getCurrentToolset()->selectTool( tool );
 }
 
 void LLFloaterTools::onFocusReceived()
@@ -1067,11 +1092,11 @@ void LLFloaterTools::onSelectTreesGrass(LLUICtrl*, void*)
 {
 	const std::string &selected = gFloaterTools->mComboTreesGrass->getValue();
 	LLPCode pcode = LLToolPlacer::getObjectType();
-	if (pcode == LLToolPlacerPanel::sTree) 
+	if (pcode == LL_PCODE_LEGACY_TREE) 
 	{
 		gSavedSettings.setString("LastTree", selected);
 	} 
-	else if (pcode == LLToolPlacerPanel::sGrass) 
+	else if (pcode == LL_PCODE_LEGACY_GRASS) 
 	{
 		gSavedSettings.setString("LastGrass", selected);
 	}  
@@ -1085,7 +1110,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 		LLPCode pcode = LLToolPlacer::getObjectType();
 		std::map<std::string, S32>::iterator it, end;
 		std::string selected;
-		if (pcode == LLToolPlacerPanel::sTree) 
+		if (pcode == LL_PCODE_LEGACY_TREE) 
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolTree");
@@ -1095,7 +1120,7 @@ void LLFloaterTools::updateTreeGrassCombo(bool visible)
 			it = LLVOTree::sSpeciesNames.begin();
 			end = LLVOTree::sSpeciesNames.end();
 		} 
-		else if (pcode == LLToolPlacerPanel::sGrass) 
+		else if (pcode == LL_PCODE_LEGACY_GRASS) 
 		{
 			tree_grass_label->setVisible(visible);
 			LLButton* button = getChild<LLButton>("ToolGrass");

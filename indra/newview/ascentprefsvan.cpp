@@ -98,13 +98,11 @@ void LLPrefsAscentVan::onCommitClientTag(LLUICtrl* ctrl, void* userdata)
             gSavedSettings.setString("AscentReportClientUUID",  client_uuid);
             gSavedSettings.setU32("AscentReportClientIndex",  client_index);
 
-            LLVOAvatar* avatar = gAgentAvatarp;
-
-            if (avatar)
+            if (gAgentAvatarp)
             {
                 // Slam pending upload count to "unstick" things
                 bool slam_for_debug = true;
-                avatar->forceBakeAllTextures(slam_for_debug);
+                gAgentAvatarp->forceBakeAllTextures(slam_for_debug);
             }
         }
     }
@@ -133,25 +131,16 @@ void LLPrefsAscentVan::onCommitTextModified(LLUICtrl* ctrl, void* userdata)
 //static
 void LLPrefsAscentVan::onManualClientUpdate(void* data)
 {
-    LLChat chat;
-    chat.mSourceType = CHAT_SOURCE_SYSTEM;
-    chat.mText = llformat("Definitions already up-to-date.");
-    if (LLVOAvatar::updateClientTags())
-    {
-        chat.mText = llformat("Client definitions updated.");
-        LLVOAvatar::loadClientTags();
-        for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
-        iter != LLCharacter::sInstances.end(); ++iter)
-        {
-            LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
-            if(avatarp)
-            {
-                LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
-                avatarp->mClientTag = "";
-            }
-        }
-    }
-    LLFloaterChat::addChat(chat);
+	LLChat chat("Definitions already up-to-date.");
+	chat.mSourceType = CHAT_SOURCE_SYSTEM;
+	if(SHClientTagMgr::instance().fetchDefinitions())
+	{
+		if(SHClientTagMgr::instance().parseDefinitions())
+			chat.mText="Client definitons updated.";
+		else
+			chat.mText="Failed to parse updated definitions.";
+	}
+	LLFloaterChat::addChat(chat);
 }
 
 //static
@@ -161,32 +150,8 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
 
 //	llinfos << "Control named " << ctrl->getControlName() << llendl;
 
-    if (ctrl->getName() == "show_friend_tag_check")
+    if (ctrl->getName() == "use_status_check")
     {
-        for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
-        iter != LLCharacter::sInstances.end(); ++iter)
-        {
-            LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
-            if(avatarp)
-            {
-                LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
-                avatarp->mClientTag = "";
-            }
-        }
-    }
-    else if (ctrl->getName() == "use_status_check")
-    {
-        for (std::vector<LLCharacter*>::iterator iter = LLCharacter::sInstances.begin();
-        iter != LLCharacter::sInstances.end(); ++iter)
-        {
-            LLVOAvatar* avatarp = (LLVOAvatar*) *iter;
-            if(avatarp)
-            {
-                LLVector3 root_pos_last = avatarp->mRoot.getWorldPosition();
-                avatarp->mClientTag = "";
-            }
-        }
-
         BOOL showCustomColors = gSavedSettings.getBOOL("AscentUseStatusColors");
         self->childSetEnabled("friends_color_textbox", showCustomColors);
         self->childSetEnabled("friend_color_swatch", showCustomColors);
@@ -201,12 +166,6 @@ void LLPrefsAscentVan::onCommitCheckBox(LLUICtrl* ctrl, void* user_data)
         self->childSetEnabled("custom_tag_label_box", showCustomOptions);
         self->childSetEnabled("custom_tag_color_text", showCustomOptions);
         self->childSetEnabled("custom_tag_color_swatch", showCustomOptions);
-    }
-
-    if (!gAgent.getID().isNull())
-    {
-        gAgent.sendAgentSetAppearance();
-        gAgent.resetClientTag();
     }
 }
 

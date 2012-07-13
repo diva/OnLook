@@ -36,7 +36,12 @@
 #include "llinventory.h"
 #include "llframetimer.h"
 #include "llwearable.h"
+#include "llui.h" //for LLDestroyClass
 
+#include <boost/signals2.hpp>	// boost::signals2::trackable
+
+class LLFolderView;
+class LLFolderBridge;
 class LLViewerInventoryCategory;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,7 +51,7 @@ class LLViewerInventoryCategory;
 // their inventory.
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-class LLViewerInventoryItem : public LLInventoryItem
+class LLViewerInventoryItem : public LLInventoryItem, public boost::signals2::trackable
 {
 public:
 	typedef LLDynamicArray<LLPointer<LLViewerInventoryItem> > item_array_t;
@@ -57,6 +62,7 @@ protected:
 public:
 	virtual LLAssetType::EType getType() const;
 	virtual const LLUUID& getAssetUUID() const;
+	virtual const LLUUID& getProtectedAssetUUID() const; // returns LLUUID::null if current agent does not have permission to expose this asset's UUID to the user
 	virtual const std::string& getName() const;
 	virtual const LLPermissions& getPermissions() const;
 	virtual const bool getIsFullPerm() const; // 'fullperm' in the popular sense: modify-ok & copy-ok & transfer-ok, no special god rules applied
@@ -153,7 +159,11 @@ public:
 
 	// callback
 	void onCallingCardNameLookup(const LLUUID& id, const std::string& name, bool is_group);
-protected:
+
+	// If this is a broken link, try to fix it and any other identical link.
+	BOOL regenerateLink();
+
+public:
 	BOOL mIsComplete;
 	LLTransactionID mTransactionID;
 };
@@ -212,6 +222,11 @@ public:
 	// other than cacheing.
 	bool exportFileLocal(LLFILE* fp) const;
 	bool importFileLocal(LLFILE* fp);
+	void determineFolderType();
+	void changeType(LLFolderType::EType new_folder_type);
+
+private:
+	friend class LLInventoryModel;
 
 protected:
 	LLUUID mOwnerID;
@@ -228,15 +243,28 @@ public:
 
 class WearOnAvatarCallback : public LLInventoryCallback
 {
+public:
+	WearOnAvatarCallback(bool do_replace = false) : mReplace(do_replace) {}
+	
 	void fire(const LLUUID& inv_item);
+
+protected:
+	bool mReplace;
 };
 
+class ModifiedCOFCallback : public LLInventoryCallback
+{
+	void fire(const LLUUID& inv_item);
+};
 class LLViewerJointAttachment;
 
 class RezAttachmentCallback : public LLInventoryCallback
 {
 public:
+//	RezAttachmentCallback(LLViewerJointAttachment *attachmentp);
+// [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
 	RezAttachmentCallback(LLViewerJointAttachment *attachmentp, bool replace = false);
+// [/SL:KB]
 	void fire(const LLUUID& inv_item);
 
 protected:
@@ -244,7 +272,9 @@ protected:
 
 private:
 	LLViewerJointAttachment* mAttach;
+// [SL:KB] - Patch: Appearance-DnDWear | Checked: 2010-09-28 (Catznip-3.0.0a) | Added: Catznip-2.2.0a
 	bool mReplace;
+// [/SL:KB]
 };
 
 class ActivateGestureCallback : public LLInventoryCallback
@@ -259,11 +289,24 @@ public:
 	void fire(const LLUUID& inv_item);
 };
 
+class AddFavoriteLandmarkCallback : public LLInventoryCallback
+{
+public:
+	AddFavoriteLandmarkCallback() : mTargetLandmarkId(LLUUID::null) {}
+	void setTargetLandmarkId(const LLUUID& target_uuid) { mTargetLandmarkId = target_uuid; }
+
+private:
+	void fire(const LLUUID& inv_item);
+
+	LLUUID mTargetLandmarkId;
+};
+
 // misc functions
 //void inventory_reliable_callback(void**, S32 status);
 
-class LLInventoryCallbackManager
+class LLInventoryCallbackManager : public LLDestroyClass<LLInventoryCallbackManager>
 {
+	friend class LLDestroyClass<LLInventoryCallbackManager>;
 public:
 	LLInventoryCallbackManager();
 	~LLInventoryCallbackManager();
@@ -275,6 +318,8 @@ private:
 	callback_map_t mMap;
 	U32 mLastCallback;
 	static LLInventoryCallbackManager *sInstance;
+	static void destroyClass();
+
 public:
 	static bool is_instantiated() { return sInstance != NULL; }
 };
@@ -290,6 +335,8 @@ void create_inventory_item(const LLUUID& agent_id, const LLUUID& session_id,
 						   LLInventoryType::EType inv_type, LLWearableType::EType wtype,
 						   U32 next_owner_perm,
 						   LLPointer<LLInventoryCallback> cb);
+
+void create_inventory_callingcard(const LLUUID& avatar_id, const LLUUID& parent = LLUUID::null, LLPointer<LLInventoryCallback> cb=NULL);
 
 /**
  * @brief Securely create a new inventory item by copying from another.
@@ -319,10 +366,18 @@ void move_inventory_item(
 	const std::string& new_name,
 	LLPointer<LLInventoryCallback> cb);
 
-void copy_inventory_from_notecard(const LLUUID& object_id,
+const LLUUID get_folder_by_itemtype(const LLInventoryItem *src);
+
+void copy_inventory_from_notecard(const LLUUID& destination_id,
+								  const LLUUID& object_id,
 								  const LLUUID& notecard_inv_id,
 								  const LLInventoryItem *src,
 								  U32 callback_id = 0);
 
+
+void menu_create_inventory_item(LLFolderView* root,
+								LLFolderBridge* bridge,
+								const LLSD& userdata,
+								const LLUUID& default_parent_uuid = LLUUID::null);
 
 #endif // LL_LLVIEWERINVENTORY_H

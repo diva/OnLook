@@ -87,7 +87,7 @@
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
 #include "llviewerstats.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llvovolume.h"
 #include "pipeline.h"
 #include "llviewershadermgr.h"
@@ -618,16 +618,6 @@ bool LLSelectMgr::linkObjects()
 
 bool LLSelectMgr::unlinkObjects()
 {
-// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
-	if ( (rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand()) )
-	{
-		// Allow only if the avie isn't sitting on any of the selected objects
-		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
-		RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
-		if ( (hSel.notNull()) && (hSel->getFirstRootNode(&f, TRUE)) )
-			return true;
-	}
-// [/RLVa:KB]
 	LLSelectMgr::getInstance()->sendDelink();
 	return true;
 }
@@ -662,6 +652,16 @@ bool LLSelectMgr::enableLinkObjects()
 			new_value = LLSelectMgr::getInstance()->getSelection()->applyToRootObjects(&func, firstonly);
 		}
 	}
+// [RLVa:KB] - Checked: 2011-03-19 (RLVa-1.3.0f) | Modified: RLVa-0.2.0g
+	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand())) )
+	{
+		// Allow only if the avie isn't sitting on any of the selected objects
+		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+		RlvSelectIsSittingOn f(gAgentAvatarp);
+		if (hSel->getFirstRootNode(&f, TRUE) != NULL)
+			new_value = false;
+	}
+// [/RLVa:KB]
 	return new_value;
 }
 
@@ -672,14 +672,15 @@ bool LLSelectMgr::enableUnlinkObjects()
 	bool new_value = LLSelectMgr::getInstance()->selectGetAllRootsValid() &&
 		first_editable_object &&
 		!first_editable_object->isAttachment();
-// [RLVa:KB] - Checked: 2010-04-01 (RLVa-1.1.3b) | Modified: RLVa-0.2.0g | OK
-		if ( (new_value) && (!gRlvHandler.canStand()) )
-		{
-			// Allow only if the avie isn't sitting on any of the selected objects
-			LLObjectSelectionHandle handleSel = LLSelectMgr::getInstance()->getSelection();
-			RlvSelectIsSittingOn f(gAgentAvatarp->getRoot());
-			new_value = handleSel->getFirstRootNode(&f, TRUE) == NULL;
-		}
+// [RLVa:KB] - Checked: 2011-03-19 (RLVa-1.3.0f) | Modified: RLVa-0.2.0g
+	if ( (new_value) && ((rlv_handler_t::isEnabled()) && (!gRlvHandler.canStand())) )
+	{
+		// Allow only if the avie isn't sitting on any of the selected objects
+		LLObjectSelectionHandle hSel = LLSelectMgr::getInstance()->getSelection();
+		RlvSelectIsSittingOn f(gAgentAvatarp);
+		if (hSel->getFirstRootNode(&f, TRUE) != NULL)
+			new_value = false;
+	}
 // [/RLVa:KB]
 	return new_value;
 }
@@ -2943,6 +2944,15 @@ BOOL LLSelectMgr::selectGetPermissions(LLPermissions& result_perm)
 
 void LLSelectMgr::selectDelete()
 {
+// [RLVa:KB] - Checked: 2010-03-23 (RLVa-1.2.0e) | Added: RLVa-1.2.0a
+	if ( (rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn()) )
+	{
+		make_ui_sound("UISndInvalidOp");
+		if (!gFloaterTools->getVisible())
+			deselectAll();
+		return;
+	}
+// [/RLVa:KB]
 	S32 deleteable_count = 0;
 
 	BOOL locked_but_deleteable_object = FALSE;
@@ -3258,7 +3268,10 @@ struct LLDuplicateData
 
 void LLSelectMgr::selectDuplicate(const LLVector3& offset, BOOL select_copy)
 {
-	if (mSelectedObjects->isAttachment())
+//	if (mSelectedObjects->isAttachment())
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Added: RLVa-1.2.0a
+	if ( (mSelectedObjects->isAttachment()) || ((rlv_handler_t::isEnabled()) && (!rlvCanDeleteOrReturn())) )
+// [/RLVa:KB]
 	{
 		//RN: do not duplicate attachments
 		make_ui_sound("UISndInvalidOp");
@@ -3714,11 +3727,6 @@ void LLSelectMgr::convertTransient()
 
 void LLSelectMgr::deselectAllIfTooFar()
 {
-	if (mSelectedObjects->isEmpty() || mSelectedObjects->mSelectType == SELECT_TYPE_HUD)
-	{
-		return;
-	}
-
 // [RLVa:KB] - Checked: 2010-11-29 (RLVa-1.3.0c) | Modified: RLVa-1.3.0c
 	if ( (!mSelectedObjects->isEmpty()) && ((gRlvHandler.hasBehaviour(RLV_BHVR_EDIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_EDITOBJ))) )
 	{
@@ -3733,6 +3741,14 @@ void LLSelectMgr::deselectAllIfTooFar()
  		if (mSelectedObjects->getFirstRootNode(&f, TRUE))
  			deselectAll();
  	}
+// [/RLVa:KB]
+
+	if (mSelectedObjects->isEmpty() || mSelectedObjects->mSelectType == SELECT_TYPE_HUD)
+	{
+		return;
+	}
+
+// [RLVa:KB] - Checked: 2010-05-03 (RLVa-1.2.0g) | Modified: RLVa-1.1.0l
 #ifdef RLV_EXTENSION_CMD_INTERACT
 	// [Fall-back code] Don't allow an active selection (except for HUD attachments - see above) when @interact=n restricted
 	if (gRlvHandler.hasBehaviour(RLV_BHVR_INTERACT))
@@ -5635,7 +5651,7 @@ void LLSelectNode::renderOneWireframe(const LLColor4& color)
 
 	if (shader)
 	{
-		gHighlightProgram.bind();
+		gDebugProgram.bind();
 	}
 
 	gGL.matrixMode(LLRender::MM_MODELVIEW);
@@ -6167,7 +6183,10 @@ BOOL LLSelectMgr::canDoDelete() const
 			can_delete = true;
 		}
 	}
-	
+// [RLVa:KB] - Checked: 2010-03-23 (RLVa-1.2.0e) | Added: RLVa-1.2.0a
+	can_delete &= (!rlv_handler_t::isEnabled()) || (rlvCanDeleteOrReturn());
+// [/RLVa:KB]
+
 	return can_delete;
 }
 
@@ -6199,7 +6218,12 @@ void LLSelectMgr::deselect()
 //-----------------------------------------------------------------------------
 BOOL LLSelectMgr::canDuplicate() const
 {
-	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstCopyableObject() != NULL; // HACK: casting away constness - MG
+//	return const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstCopyableObject() != NULL; // HACK: casting away constness - MG
+// [RLVa:KB] - Checked: 2010-03-24 (RLVa-1.2.0e) | Added: RLVa-1.2.0a
+	return 
+		(const_cast<LLSelectMgr*>(this)->mSelectedObjects->getFirstCopyableObject() != NULL) &&
+		( (!rlv_handler_t::isEnabled()) || (rlvCanDeleteOrReturn()) );
+// [/RLVa:KB]
 }
 //-----------------------------------------------------------------------------
 // duplicate()

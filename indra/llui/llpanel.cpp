@@ -79,7 +79,6 @@ void LLPanel::init()
 	mBorder = NULL;
 	mDefaultBtn = NULL;
 	setIsChrome(FALSE); //is this a decorator to a live window or a form?
-	mLastTabGroup = 0;
 
 	mPanelHandle.bind(this);
 	setTabStop(FALSE);
@@ -267,20 +266,6 @@ void LLPanel::setDefaultBtn(const std::string& id)
 	{
 		setDefaultBtn(NULL);
 	}
-}
-
-void LLPanel::addCtrl( LLUICtrl* ctrl, S32 tab_group)
-{
-	mLastTabGroup = tab_group;
-
-	LLView::addCtrl(ctrl, tab_group);
-}
-
-void LLPanel::addCtrlAtEnd( LLUICtrl* ctrl, S32 tab_group)
-{
-	mLastTabGroup = tab_group;
-
-	LLView::addCtrlAtEnd(ctrl, tab_group);
 }
 
 BOOL LLPanel::handleKeyHere( KEY key, MASK mask )
@@ -491,7 +476,18 @@ LLView* LLPanel::fromXML(LLXMLNodePtr node, LLView* parent, LLUICtrlFactory *fac
 	}
 	else
 	{
-		panelp->initPanelXML(node, parent, factory);
+		if(!factory->builtPanel(panelp))
+			panelp->initPanelXML(node, parent, factory);
+		else
+		{
+			LLRect new_rect = panelp->getRect();
+			// override rectangle with embedding parameters as provided
+			panelp->createRect(node, new_rect, parent);
+			panelp->setOrigin(new_rect.mLeft, new_rect.mBottom);
+			panelp->setShape(new_rect);
+			// optionally override follows flags from including nodes
+			panelp->parseFollowsFlags(node);
+		}
 	}
 
 	return panelp;
@@ -760,16 +756,6 @@ BOOL LLPanel::childHasFocus(const std::string& id)
 	}
 }
 
-
-void LLPanel::childSetFocusChangedCallback(const std::string& id, void (*cb)(LLFocusableElement*, void*), void* user_data)
-{
-	LLUICtrl* child = getChild<LLUICtrl>(id, true);
-	if (child)
-	{
-		child->setFocusChangedCallback(cb, user_data);
-	}
-}
-
 void LLPanel::childSetCommitCallback(const std::string& id, void (*cb)(LLUICtrl*, void*), void *userdata )
 {
 	LLUICtrl* child = getChild<LLUICtrl>(id, true);
@@ -943,24 +929,6 @@ LLPanel *LLPanel::childGetVisibleTab(const std::string& id) const
 		return child->getCurrentPanel();
 	}
 	return NULL;
-}
-
-void LLPanel::childSetTabChangeCallback(const std::string& id, const std::string& tabname, void (*on_tab_clicked)(void*, bool), void *userdata, void (*on_precommit)(void*,bool))
-{
-	LLTabContainer* child = getChild<LLTabContainer>(id);
-	if (child)
-	{
-		LLPanel *panel = child->getPanelByName(tabname);
-		if (panel)
-		{
-			child->setTabChangeCallback(panel, on_tab_clicked);
-			child->setTabUserData(panel, userdata);
-			if (on_precommit)
-			{
-				child->setTabPrecommitChangeCallback(panel, on_precommit);
-			}
-		}
-	}
 }
 
 void LLPanel::childSetKeystrokeCallback(const std::string& id, void (*keystroke_callback)(LLLineEditor* caller, void* user_data), void *user_data)
@@ -1199,9 +1167,13 @@ void LLLayoutStack::draw()
 	}
 }
 
-void LLLayoutStack::removeCtrl(LLUICtrl* ctrl)
+void LLLayoutStack::removeChild(LLView* ctrl)
 {
-	LLEmbeddedPanel* embedded_panelp = findEmbeddedPanel((LLPanel*)ctrl);
+	LLView::removeChild(ctrl);
+	LLPanel* panel = dynamic_cast<LLPanel*>(ctrl);
+	if(!panel)
+		return;
+	LLEmbeddedPanel* embedded_panelp = findEmbeddedPanel(panel);
 
 	if (embedded_panelp)
 	{
@@ -1210,10 +1182,8 @@ void LLLayoutStack::removeCtrl(LLUICtrl* ctrl)
 	}
 
 	// need to update resizebars
-
+	
 	calcMinExtents();
-
-	LLView::removeCtrl(ctrl);
 }
 
 LLXMLNodePtr LLLayoutStack::getXML(bool save_children) const

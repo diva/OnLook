@@ -34,19 +34,12 @@
 
 #include "llassetuploadresponders.h"
 
-// library includes
-#include "lleconomy.h"
-#include "llfocusmgr.h"
-#include "llnotifications.h"
-#include "llscrolllistctrl.h"
-#include "llsdserialize.h"
-
 // viewer includes
 #include "llagent.h"
 #include "llcompilequeue.h"
 #include "llfloaterbuycurrency.h"
-#include "llnotify.h"
-#include "llinventorymodel.h"
+#include "llinventorydefines.h"
+#include "llinventoryobserver.h"
 #include "llinventorypanel.h"
 #include "llpanelmaininventory.h"
 #include "llpermissionsflags.h"
@@ -63,6 +56,18 @@
 #include "llviewermenufile.h"
 #include "llviewerwindow.h"
 #include "lltexlayer.h"
+#include "lltrans.h"
+
+// library includes
+#include "lldir.h"
+#include "lleconomy.h"
+#include "llfocusmgr.h"
+#include "llnotificationsutil.h"
+#include "llscrolllistctrl.h"
+#include "llsdserialize.h"
+#include "llsdutil.h"
+#include "llvfs.h"
+
 #include "statemachine/aifilepicker.h"
 
 // When uploading multiple files, don't display any of them when uploading more than this number.
@@ -70,14 +75,15 @@ static const S32 FILE_COUNT_DISPLAY_THRESHOLD = 5;
 
 void dialog_refresh_all();
 
-void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
-											 LLInventoryType::EType inventory_type,
-											 const std::string inventory_type_string,
-											 const LLUUID& item_folder_id,
-											 const std::string& item_name,
-											 const std::string& item_description,
-											 const LLSD& server_response,
-											 S32 upload_price)
+void on_new_single_inventory_upload_complete(
+	LLAssetType::EType asset_type,
+	LLInventoryType::EType inventory_type,
+	const std::string inventory_type_string,
+	const LLUUID& item_folder_id,
+	const std::string& item_name,
+	const std::string& item_description,
+	const LLSD& server_response,
+	S32 upload_price)
 {
 	if (upload_price > 0)
 	{
@@ -87,7 +93,7 @@ void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 
 		LLSD args;
 		args["AMOUNT"] = llformat("%d", upload_price);
-		LLNotifications::instance().add("UploadPayment", args);
+		LLNotificationsUtil::add("UploadPayment", args);
 	}
 
 	if (item_folder_id.notNull())
@@ -115,9 +121,18 @@ void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 		}
 
 		LLPermissions new_perms;
-		new_perms.init(gAgent.getID(), gAgent.getID(), LLUUID::null, LLUUID::null);
-		new_perms.initMasks(PERM_ALL, PERM_ALL, everyone_perms, group_perms,
-							next_owner_perms);
+		new_perms.init(
+			gAgent.getID(),
+			gAgent.getID(),
+			LLUUID::null,
+			LLUUID::null);
+
+		new_perms.initMasks(
+			PERM_ALL,
+			PERM_ALL,
+			everyone_perms,
+			group_perms,
+			next_owner_perms);
 
 		U32 inventory_item_flags = 0;
 		if (server_response.has("inventory_flags"))
@@ -147,17 +162,18 @@ void on_new_single_inventory_upload_complete(LLAssetType::EType asset_type,
 
 		// Show the preview panel for textures and sounds to let
 		// user know that the image (or snapshot) arrived intact.
-		LLInventoryView* view = LLInventoryView::getActiveInventory();
-		if (view)
+		LLInventoryPanel* panel = LLInventoryPanel::getActiveInventoryPanel();
+		if ( panel )
 		{
 			LLFocusableElement* focus = gFocusMgr.getKeyboardFocus();
 
-			view->getPanel()->setSelection(server_response["new_inventory_item"].asUUID(),
-										   TAKE_FOCUS_NO);
+			panel->setSelection(
+				server_response["new_inventory_item"].asUUID(),
+				TAKE_FOCUS_NO);
 			if ((LLAssetType::AT_TEXTURE == asset_type || LLAssetType::AT_SOUND == asset_type)
 				/* FIXME: && LLFilePicker::instance().getFileCount() <= FILE_COUNT_DISPLAY_THRESHOLD */)
 			{
-				view->getPanel()->openSelected();
+				panel->openSelected();
 			}
 
 			// restore keyboard focus
@@ -190,7 +206,8 @@ LLAssetUploadResponder::LLAssetUploadResponder(const LLSD &post_data,
 	}
 }
 
-LLAssetUploadResponder::LLAssetUploadResponder(const LLSD &post_data,
+LLAssetUploadResponder::LLAssetUploadResponder(
+	const LLSD &post_data,
 											   const std::string& file_name, 
 											   LLAssetType::EType asset_type)
 :	LLHTTPClient::Responder(),
@@ -221,14 +238,14 @@ void LLAssetUploadResponder::error(U32 statusNum, const std::string& reason)
 			args["FILE"] = (mFileName.empty() ? mVFileID.asString() : mFileName);
 			args["REASON"] = "Error in upload request.  Please visit "
 				"http://secondlife.com/support for help fixing this problem.";
-			LLNotifications::instance().add("CannotUploadReason", args);
+			LLNotificationsUtil::add("CannotUploadReason", args);
 			break;
 		case 500:
 		default:
 			args["FILE"] = (mFileName.empty() ? mVFileID.asString() : mFileName);
 			args["REASON"] = "The server is experiencing unexpected "
 				"difficulties.";
-			LLNotifications::instance().add("CannotUploadReason", args);
+			LLNotificationsUtil::add("CannotUploadReason", args);
 			break;
 	}
 	LLUploadDialog::modalUploadFinished();
@@ -291,7 +308,7 @@ void LLAssetUploadResponder::uploadFailure(const LLSD& content)
 		LLSD args;
 		args["FILE"] = (mFileName.empty() ? mVFileID.asString() : mFileName);
 		args["REASON"] = content["message"].asString();
-		LLNotifications::instance().add("CannotUploadReason", args);
+		LLNotificationsUtil::add("CannotUploadReason", args);
 	}
 }
 
@@ -299,17 +316,19 @@ void LLAssetUploadResponder::uploadComplete(const LLSD& content)
 {
 }
 
-LLNewAgentInventoryResponder::LLNewAgentInventoryResponder(const LLSD& post_data,
-														   const LLUUID& vfile_id,
-														   LLAssetType::EType asset_type)
-:	LLAssetUploadResponder(post_data, vfile_id, asset_type)
+LLNewAgentInventoryResponder::LLNewAgentInventoryResponder(
+	const LLSD& post_data,
+	const LLUUID& vfile_id,
+	LLAssetType::EType asset_type)
+	: LLAssetUploadResponder(post_data, vfile_id, asset_type)
 {
 }
 
-LLNewAgentInventoryResponder::LLNewAgentInventoryResponder(const LLSD& post_data,
-														   const std::string& file_name,
-														   LLAssetType::EType asset_type)
-:	LLAssetUploadResponder(post_data, file_name, asset_type)
+LLNewAgentInventoryResponder::LLNewAgentInventoryResponder(
+	const LLSD& post_data,
+	const std::string& file_name,
+	LLAssetType::EType asset_type)
+	: LLAssetUploadResponder(post_data, file_name, asset_type)
 {
 }
 
@@ -347,17 +366,21 @@ void LLNewAgentInventoryResponder::uploadComplete(const LLSD& content)
 		asset_type == LLAssetType::AT_ANIMATION ||
 		asset_type == LLAssetType::AT_MESH)
 	{
-		expected_upload_cost = LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
+		expected_upload_cost = 
+			LLGlobalEconomy::Singleton::getInstance()->getPriceUpload();
 	}
 
 	llinfos << "Adding " << content["new_inventory_item"].asUUID() << " "
 			<< content["new_asset"].asUUID() << " to inventory." << llendl;
-	on_new_single_inventory_upload_complete(asset_type, inventory_type,
-											mPostData["asset_type"].asString(),
-											mPostData["folder_id"].asUUID(),
-											mPostData["name"],
-											mPostData["description"],
-											content, expected_upload_cost);
+	on_new_single_inventory_upload_complete(
+		asset_type,
+		inventory_type,
+		mPostData["asset_type"].asString(),
+		mPostData["folder_id"].asUUID(),
+		mPostData["name"],
+		mPostData["description"],
+		content,
+		expected_upload_cost);
 
 	// continue uploading for bulk uploads
 	
@@ -378,42 +401,54 @@ void LLNewAgentInventoryResponder::uploadComplete(const LLSD& content)
 		// and use them for each next file to be uploaded. Note the requested
 		// perms are not the same as the granted ones found in the given
 		// "content" structure but can still be found in mPostData. -MG
-		U32 everyone_perms = mPostData.has("everyone_mask") ?
-								mPostData.get("everyone_mask").asInteger() :
-								PERM_NONE;
+		U32 everyone_perms =
+			mPostData.has("everyone_mask") ?
+			mPostData.get("everyone_mask").asInteger() :
+			PERM_NONE;
 
-		U32 group_perms = mPostData.has("group_mask") ?
-								mPostData.get("group_mask").asInteger() :
-								PERM_NONE;
+		U32 group_perms =
+			mPostData.has("group_mask") ?
+			mPostData.get("group_mask").asInteger() :
+			PERM_NONE;
 
-		U32 next_owner_perms = mPostData.has("next_owner_mask") ?
-								mPostData.get("next_owner_mask").asInteger() :
-								PERM_NONE;
+		U32 next_owner_perms =
+			mPostData.has("next_owner_mask") ?
+			mPostData.get("next_owner_mask").asInteger() :
+			PERM_NONE;
 
 		std::string display_name = LLStringUtil::null;
 		LLAssetStorage::LLStoreAssetCallback callback = NULL;
 		void *userdata = NULL;
-		upload_new_resource(next_file, asset_name, asset_name, 0,
-							LLFolderType::FT_NONE, LLInventoryType::IT_NONE,
-							next_owner_perms, group_perms, everyone_perms,
-							display_name, callback, expected_upload_cost,
-							userdata);
+
+		upload_new_resource(
+			next_file,
+			asset_name,
+			asset_name,
+			0,
+			LLFolderType::FT_NONE,
+			LLInventoryType::IT_NONE,
+			next_owner_perms,
+			group_perms,
+			everyone_perms,
+			display_name,
+			callback,
+			expected_upload_cost,
+			userdata);
 	}
 }
 
 LLSendTexLayerResponder::LLSendTexLayerResponder(const LLSD& post_data,
 												 const LLUUID& vfile_id,
 												 LLAssetType::EType asset_type,
-												 LLBakedUploadData * baked_upload_data)
-:	LLAssetUploadResponder(post_data, vfile_id, asset_type),
+												 LLBakedUploadData * baked_upload_data) : 
+	LLAssetUploadResponder(post_data, vfile_id, asset_type),
 	mBakedUploadData(baked_upload_data)
 {
 }
 
 LLSendTexLayerResponder::~LLSendTexLayerResponder()
 {
-	// mBakedUploadData is normally deleted by calls to
-	// LLTexLayerSetBuffer::onTextureUploadComplete() below
+	// mBakedUploadData is normally deleted by calls to LLTexLayerSetBuffer::onTextureUploadComplete() below
 	if (mBakedUploadData)
 	{	// ...but delete it in the case where uploadComplete() is never called
 		delete mBakedUploadData;
@@ -430,19 +465,16 @@ void LLSendTexLayerResponder::uploadComplete(const LLSD& content)
 	std::string result = content["state"];
 	LLUUID new_id = content["new_asset"];
 
-	llinfos << "LLSendTexLayerResponder::result from capabilities: " << result << llendl;
-	if (result == "complete" && mBakedUploadData != NULL)
+	llinfos << "result: " << result << " new_id: " << new_id << llendl;
+	if (result == "complete"
+		&& mBakedUploadData != NULL)
 	{	// Invoke 
-		LLTexLayerSetBuffer::onTextureUploadComplete(new_id,
-													 (void*)mBakedUploadData,
-													 0, LL_EXSTAT_NONE);
+		LLTexLayerSetBuffer::onTextureUploadComplete(new_id, (void*) mBakedUploadData, 0, LL_EXSTAT_NONE);
 		mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
 	}
 	else
 	{	// Invoke the original callback with an error result
-		LLTexLayerSetBuffer::onTextureUploadComplete(new_id,
-													 (void*)mBakedUploadData,
-													 -1, LL_EXSTAT_NONE);
+		LLTexLayerSetBuffer::onTextureUploadComplete(new_id, (void*) mBakedUploadData, -1, LL_EXSTAT_NONE);
 		mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
 	}
 }
@@ -452,23 +484,23 @@ void LLSendTexLayerResponder::error(U32 statusNum, const std::string& reason)
 	llinfos << "status: " << statusNum << " reason: " << reason << llendl;
 	
 	// Invoke the original callback with an error result
-	LLTexLayerSetBuffer::onTextureUploadComplete(LLUUID(),
-												 (void*)mBakedUploadData,
-												 -1, LL_EXSTAT_NONE);
+	LLTexLayerSetBuffer::onTextureUploadComplete(LLUUID(), (void*) mBakedUploadData, -1, LL_EXSTAT_NONE);
 	mBakedUploadData = NULL;	// deleted in onTextureUploadComplete()
 }
 
-LLUpdateAgentInventoryResponder::LLUpdateAgentInventoryResponder(const LLSD& post_data,
-																 const LLUUID& vfile_id,
-																 LLAssetType::EType asset_type)
-: LLAssetUploadResponder(post_data, vfile_id, asset_type)
+LLUpdateAgentInventoryResponder::LLUpdateAgentInventoryResponder(
+	const LLSD& post_data,
+	const LLUUID& vfile_id,
+	LLAssetType::EType asset_type)
+	: LLAssetUploadResponder(post_data, vfile_id, asset_type)
 {
 }
 
-LLUpdateAgentInventoryResponder::LLUpdateAgentInventoryResponder(const LLSD& post_data,
-																 const std::string& file_name,
-																 LLAssetType::EType asset_type)
-: LLAssetUploadResponder(post_data, file_name, asset_type)
+LLUpdateAgentInventoryResponder::LLUpdateAgentInventoryResponder(
+	const LLSD& post_data,
+	const std::string& file_name,
+	LLAssetType::EType asset_type)
+	: LLAssetUploadResponder(post_data, file_name, asset_type)
 {
 }
 
@@ -501,8 +533,7 @@ void LLUpdateAgentInventoryResponder::uploadComplete(const LLSD& content)
 		case LLInventoryType::IT_NOTECARD:
 		{
 			// Update the UI with the new asset.
-			LLPreviewNotecard* nc;
-			nc = (LLPreviewNotecard*)LLPreview::find(new_item->getUUID());
+			LLPreviewNotecard* nc = (LLPreviewNotecard*)LLPreview::find(new_item->getUUID());
 			if (nc)
 			{
 				// *HACK: we have to delete the asset in the VFS so
@@ -511,10 +542,9 @@ void LLUpdateAgentInventoryResponder::uploadComplete(const LLSD& content)
 				// the uploader, so this can be optimized away in some
 				// cases. A better design is to have a new uuid if the
 				// script actually changed the asset.
-				if (nc->hasEmbeddedInventory())
+				if(nc->hasEmbeddedInventory())
 				{
-					gVFS->removeFile(content["new_asset"].asUUID(),
-									 LLAssetType::AT_NOTECARD);
+					gVFS->removeFile(content["new_asset"].asUUID(), LLAssetType::AT_NOTECARD);
 				}
 				nc->refreshFromInventory();
 			}
@@ -538,15 +568,16 @@ void LLUpdateAgentInventoryResponder::uploadComplete(const LLSD& content)
 			}
 			break;
 		}
+
 		case LLInventoryType::IT_GESTURE:
 		{
 			// If this gesture is active, then we need to update the in-memory
-			// active map with the new pointer.
-			if (LLGestureMgr::getInstance()->isGestureActive(item_id))
-			{
-				LLUUID asset_id = new_item->getAssetUUID();
-				LLGestureMgr::getInstance()->replaceGesture(item_id, asset_id);
-				gInventory.notifyObservers();
+		  // active map with the new pointer.				
+		  if (LLGestureMgr::instance().isGestureActive(item_id))
+		  {
+			  LLUUID asset_id = new_item->getAssetUUID();
+			  LLGestureMgr::instance().replaceGesture(item_id, asset_id);
+			  gInventory.notifyObservers();
 			}
 
 			//gesture will have a new asset_id
@@ -639,9 +670,7 @@ void LLUpdateTaskInventoryResponder::uploadComplete(const LLSD& content)
 					// Bytecode save completed
 					if (content["compiled"])
 					{
-						preview->callbackLSLCompileSucceeded(task_id,
-															 item_id,
-															 mPostData["is_script_running"]);
+						preview->callbackLSLCompileSucceeded(task_id, item_id, mPostData["is_script_running"]);
 					}
 					else
 					{
@@ -662,27 +691,30 @@ void LLUpdateTaskInventoryResponder::uploadComplete(const LLSD& content)
 class LLNewAgentInventoryVariablePriceResponder::Impl
 {
 public:
-	Impl(const LLUUID& vfile_id,
-		 LLAssetType::EType asset_type,
-		 const LLSD& inventory_data)
-	:	mVFileID(vfile_id),
+	Impl(
+		const LLUUID& vfile_id,
+		LLAssetType::EType asset_type,
+		const LLSD& inventory_data) :
+		mVFileID(vfile_id),
 		mAssetType(asset_type),
 		mInventoryData(inventory_data),
 		mFileName("")
 	{
 		if (!gVFS->getExists(vfile_id, asset_type))
 		{
-			llwarns << "LLAssetUploadResponder called with nonexistant "
-					<< "vfile_id " << vfile_id << llendl;
+			llwarns
+				<< "LLAssetUploadResponder called with nonexistant "
+				<< "vfile_id " << vfile_id << llendl;
 			mVFileID.setNull();
 			mAssetType = LLAssetType::AT_NONE;
 		}
 	}
 
-	Impl(const std::string& file_name,
-		 LLAssetType::EType asset_type,
-		 const LLSD& inventory_data)
-	:	mFileName(file_name),
+	Impl(
+		const std::string& file_name,
+		LLAssetType::EType asset_type,
+		const LLSD& inventory_data) :
+		mFileName(file_name),
 		mAssetType(asset_type),
 		mInventoryData(inventory_data)
 	{
@@ -741,7 +773,8 @@ public:
 		args["FILE"] = getFilenameOrIDString();
 		args["REASON"] = reason;
 
-		LLNotifications::instance().add("CannotUploadReason", args);
+
+		LLNotificationsUtil::add("CannotUploadReason", args);
 		LLUploadDialog::modalUploadFinished();
 	}
 
@@ -776,45 +809,55 @@ public:
 		else if (_MISSING_REQUIRED_PARAMETER == error_identifier)
 		{
 			// Missing parameters
-			if (error.has(_MISSING_PARAMETER))
+			if (error.has(_MISSING_PARAMETER) )
 			{
-				std::string message = "Upload request was missing required parameter '[P]'";
-				LLStringUtil::replaceString(message, "[P]",
-											error[_MISSING_PARAMETER].asString());
+				std::string message = 
+					"Upload request was missing required parameter '[P]'";
+				LLStringUtil::replaceString(
+					message,
+					"[P]",
+					error[_MISSING_PARAMETER].asString());
 
 				displayCannotUploadReason(message);
 			}
 			else
 			{
-				std::string message = "Upload request was missing a required parameter";
+				std::string message = 
+					"Upload request was missing a required parameter";
 				displayCannotUploadReason(message);					
 			}
 		}
-		else if (_INVALID_REQUEST_BODY == error_identifier)
+		else if ( _INVALID_REQUEST_BODY == error_identifier )
 		{
 			// Invalid request body, check to see if 
 			// a particular parameter was invalid
-			if (error.has(_INVALID_PARAMETER))
+			if ( error.has(_INVALID_PARAMETER) )
 			{
 				std::string message = "Upload parameter '[P]' is invalid.";
-				LLStringUtil::replaceString(message, "[P]",
-											error[_INVALID_PARAMETER].asString());
+				LLStringUtil::replaceString(
+					message,
+					"[P]",
+					error[_INVALID_PARAMETER].asString());
 
 				// See if the server also responds with what resource
 				// is missing.
-				if (error.has(_MISSING_RESOURCE))
+				if ( error.has(_MISSING_RESOURCE) )
 				{
 					message += "\nMissing resource '[R]'.";
 
-					LLStringUtil::replaceString(message, "[R]",
-												error[_MISSING_RESOURCE].asString());
+					LLStringUtil::replaceString(
+						message,
+						"[R]",
+						error[_MISSING_RESOURCE].asString());
 				}
-				else if (error.has(_INVALID_RESOURCE))
+				else if ( error.has(_INVALID_RESOURCE) )
 				{
 					message += "\nInvalid resource '[R]'.";
 
-					LLStringUtil::replaceString(message, "[R]",
-												error[_INVALID_RESOURCE].asString());
+					LLStringUtil::replaceString(
+						message,
+						"[R]",
+						error[_INVALID_RESOURCE].asString());
 				}
 
 				displayCannotUploadReason(message);
@@ -837,7 +880,8 @@ public:
 
 	void onTransportError()
 	{
-		displayCannotUploadReason("The server is experiencing unexpected difficulties.");
+		displayCannotUploadReason(
+				"The server is experiencing unexpected difficulties.");
 	}
 
 	void onTransportError(const LLSD& error)
@@ -852,46 +896,71 @@ public:
 		// TODO*: Pull the user visible strings from an xml file
 		// to be localized
 
-		if (_SERVER_ERROR_AFTER_CHARGE == error_identifier)
+		if ( _SERVER_ERROR_AFTER_CHARGE == error_identifier )
 		{
-			displayCannotUploadReason("The server is experiencing unexpected difficulties.  You may have been charged for the upload.");
+			displayCannotUploadReason(
+				"The server is experiencing unexpected difficulties.  You may have been charged for the upload.");
 		}
 		else
 		{
-			displayCannotUploadReason("The server is experiencing unexpected difficulties.");
+			displayCannotUploadReason(
+				"The server is experiencing unexpected difficulties.");
 		}
 	}
 
-	bool uploadConfirmationCallback(const LLSD& notification,
-									const LLSD& response,
-									boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder> responder)
+	bool uploadConfirmationCallback(
+		const LLSD& notification,
+		const LLSD& response,
+		boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder> responder)
 	{
-		S32 option = LLNotification::getSelectedOption(notification, response);
-		std::string confirmation_url = notification["payload"]["confirmation_url"].asString();
+		S32 option;
+		std::string confirmation_url;
+
+		option = LLNotificationsUtil::getSelectedOption(
+			notification,
+			response);
+
+		confirmation_url =
+			notification["payload"]["confirmation_url"].asString();
 
 		// Yay!  We are confirming or cancelling our upload
-		if (option == 0)
+		switch(option)
 		{
-			confirmUpload(confirmation_url, responder);
+		case 0:
+		    {
+				confirmUpload(confirmation_url, responder);
+			}
+			break;
+		case 1:
+		default:
+			break;
 		}
 
 		return false;
 	}
 
-	void confirmUpload(const std::string& confirmation_url,
-					   boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder> responder)
+	void confirmUpload(
+		const std::string& confirmation_url,
+		boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder> responder)
 	{
-		if (getFilename().empty())
+		if ( getFilename().empty() )
 		{
 			// we have no filename, use virtual file ID instead
-			LLHTTPClient::postFile(confirmation_url, getVFileID(),
-								   getAssetType(), responder);
+			LLHTTPClient::postFile(
+				confirmation_url,
+				getVFileID(),
+				getAssetType(),
+				responder);
 		}
 		else
 		{
-			LLHTTPClient::postFile(confirmation_url, getFilename(), responder);
+			LLHTTPClient::postFile(
+				confirmation_url,
+				getFilename(),
+				responder);
 		}
 	}
+
 
 private:
 	std::string mFileName;
@@ -904,18 +973,26 @@ private:
 ///////////////////////////////////////////////
 // LLNewAgentInventoryVariablePriceResponder //
 ///////////////////////////////////////////////
-LLNewAgentInventoryVariablePriceResponder::LLNewAgentInventoryVariablePriceResponder(const LLUUID& vfile_id,
-																					 LLAssetType::EType asset_type,
-																					 const LLSD& inventory_info)
+LLNewAgentInventoryVariablePriceResponder::LLNewAgentInventoryVariablePriceResponder(
+	const LLUUID& vfile_id,
+	LLAssetType::EType asset_type,
+	const LLSD& inventory_info)
 {
-	mImpl = new Impl(vfile_id, asset_type, inventory_info);
+	mImpl = new Impl(
+		vfile_id,
+		asset_type,
+		inventory_info);
 }
 
-LLNewAgentInventoryVariablePriceResponder::LLNewAgentInventoryVariablePriceResponder(const std::string& file_name,
-																					 LLAssetType::EType asset_type,
-																					 const LLSD& inventory_info)
+LLNewAgentInventoryVariablePriceResponder::LLNewAgentInventoryVariablePriceResponder(
+	const std::string& file_name,
+	LLAssetType::EType asset_type,
+	const LLSD& inventory_info)
 {
-	mImpl = new Impl(file_name, asset_type, inventory_info);
+	mImpl = new Impl(
+		file_name,
+		asset_type,
+		inventory_info);
 }
 
 LLNewAgentInventoryVariablePriceResponder::~LLNewAgentInventoryVariablePriceResponder()
@@ -923,16 +1000,19 @@ LLNewAgentInventoryVariablePriceResponder::~LLNewAgentInventoryVariablePriceResp
 	delete mImpl;
 }
 
-void LLNewAgentInventoryVariablePriceResponder::errorWithContent(U32 statusNum,
-																 const std::string& reason,
-																 const LLSD& content)
+void LLNewAgentInventoryVariablePriceResponder::errorWithContent(
+	U32 statusNum,
+	const std::string& reason,
+	const LLSD& content)
 {
-	LL_DEBUGS("Upload") << "LLNewAgentInventoryVariablePrice::error "
-						<< statusNum << " reason: " << reason << LL_ENDL;
+	lldebugs 
+		<< "LLNewAgentInventoryVariablePrice::error " << statusNum 
+		<< " reason: " << reason << llendl;
 
-	if (content.has("error"))
+	if ( content.has("error") )
 	{
 		static const std::string _ERROR = "error";
+
 		mImpl->onTransportError(content[_ERROR]);
 	}
 	else
@@ -972,27 +1052,32 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 		{
 			// rename the file in the VFS to the actual asset id
 			// llinfos << "Changing uploaded asset UUID to " << content["new_asset"].asUUID() << llendl;
-			gVFS->renameFile(mImpl->getVFileID(), asset_type,
-							 content["new_asset"].asUUID(), asset_type);
+			gVFS->renameFile(
+				mImpl->getVFileID(),
+				asset_type,
+				content["new_asset"].asUUID(),
+				asset_type);
 		}
 
- 		on_new_single_inventory_upload_complete(asset_type,
- 												mImpl->getInventoryType(),
-												mImpl->getInventoryTypeString(),
-												mImpl->getFolderID(),
-												mImpl->getItemName(),
-												mImpl->getItemDescription(),
-												content,
-												content[_UPLOAD_PRICE].asInteger());
+ 		on_new_single_inventory_upload_complete(
+ 			asset_type,
+ 			mImpl->getInventoryType(),
+			mImpl->getInventoryTypeString(),
+			mImpl->getFolderID(),
+			mImpl->getItemName(),
+			mImpl->getItemDescription(),
+			content,
+			content[_UPLOAD_PRICE].asInteger());
 
 		// TODO* Add bulk (serial) uploading or add
 		// a super class of this that does so
 	}
-	else if (_CONFIRM_UPLOAD == state)
+	else if ( _CONFIRM_UPLOAD == state )
 	{
-		showConfirmationDialog(content[_UPLOAD_PRICE].asInteger(),
-							   content[_RESOURCE_COST].asInteger(),
-							   content[_RSVP].asString());
+		showConfirmationDialog(
+			content[_UPLOAD_PRICE].asInteger(),
+			content[_RESOURCE_COST].asInteger(),
+			content[_RSVP].asString());
 	}
 	else
 	{
@@ -1000,14 +1085,16 @@ void LLNewAgentInventoryVariablePriceResponder::result(const LLSD& content)
 	}
 }
 
-void LLNewAgentInventoryVariablePriceResponder::onApplicationLevelError(const LLSD& error)
+void LLNewAgentInventoryVariablePriceResponder::onApplicationLevelError(
+	const LLSD& error)
 {
 	mImpl->onApplicationLevelError(error);
 }
 
-void LLNewAgentInventoryVariablePriceResponder::showConfirmationDialog(S32 upload_price,
-																	   S32 resource_cost,
-																	   const std::string& confirmation_url)
+void LLNewAgentInventoryVariablePriceResponder::showConfirmationDialog(
+	S32 upload_price,
+	S32 resource_cost,
+	const std::string& confirmation_url)
 {
 	if (0 == upload_price)
 	{
@@ -1027,8 +1114,9 @@ void LLNewAgentInventoryVariablePriceResponder::showConfirmationDialog(S32 uploa
 		// when using plain ol' 'this', that this object
 		// would be deleted before the callback is triggered
 		// and cause sadness.
-		mImpl->confirmUpload(confirmation_url,
-							boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder>(this));
+		mImpl->confirmUpload(
+			confirmation_url,
+			boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder>(this));
 	}
 	else
 	{
@@ -1052,10 +1140,15 @@ void LLNewAgentInventoryVariablePriceResponder::showConfirmationDialog(S32 uploa
 		// when using plain ol' 'this', that this object
 		// would be deleted before the callback is triggered
 		// and cause sadness.
-		LLNotifications::instance().add("UploadCostConfirmation",
-										substitutions, payload,
-										boost::bind(&LLNewAgentInventoryVariablePriceResponder::Impl::uploadConfirmationCallback,
-										mImpl, _1, _2,
-										boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder>(this)));
+		LLNotificationsUtil::add(
+			"UploadCostConfirmation",
+			substitutions,
+			payload,
+			boost::bind(
+				&LLNewAgentInventoryVariablePriceResponder::Impl::uploadConfirmationCallback,
+				mImpl,
+				_1,
+				_2,
+				boost::intrusive_ptr<LLNewAgentInventoryVariablePriceResponder>(this)));
 	}
 }

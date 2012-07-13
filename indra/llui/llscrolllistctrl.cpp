@@ -117,7 +117,11 @@ LLScrollListIcon::LLScrollListIcon(LLUIImagePtr icon, S32 width)
 
 LLScrollListIcon::LLScrollListIcon(const LLSD& value, S32 width)
 	: LLScrollListCell(width),
-	mColor(LLColor4::white)
+	  // <edit>
+	  mCallback(NULL),
+	  mUserData(NULL),
+	  // </edit>
+	  mColor(LLColor4::white)
 {
 	setValue(value);
 }
@@ -637,6 +641,7 @@ LLScrollListCtrl::LLScrollListCtrl(const std::string& name, const LLRect& rect,
  :	LLUICtrl(name, rect, TRUE, commit_callback, callback_user_data),
 	mLineHeight(0),
 	mScrollLines(0),
+	mMouseWheelOpaque(true),
 	mPageLines(0),
 	mHeadingHeight(20),
 	mMaxSelectable(0),
@@ -745,11 +750,6 @@ S32 LLScrollListCtrl::getSearchColumn()
 LLScrollListCtrl::~LLScrollListCtrl()
 {
 	std::for_each(mItemList.begin(), mItemList.end(), DeletePointer());
-
-	if( gEditMenuHandler == this )
-	{
-		gEditMenuHandler = NULL;
-	}
 }
 
 
@@ -1951,6 +1951,12 @@ BOOL LLScrollListCtrl::handleScrollWheel(S32 x, S32 y, S32 clicks)
 	BOOL handled = FALSE;
 	// Pretend the mouse is over the scrollbar
 	handled = mScrollbar->handleScrollWheel( 0, 0, clicks );
+
+	if (mMouseWheelOpaque)
+	{
+		return TRUE;
+	}
+
 	return handled;
 }
 
@@ -2129,6 +2135,8 @@ BOOL LLScrollListCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
 		mSelectionChanged = FALSE;
 
 		handleClick(x, y, mask);
+
+		setFocus(TRUE);
 	}
 
 	return TRUE;
@@ -2364,7 +2372,7 @@ BOOL LLScrollListCtrl::handleKeyHere(KEY key,MASK mask )
 	if (mCanSelect) 
 	{
 		// Ignore capslock
-		mask = mask;
+		//mask = mask; //Why was this here?
 
 		if (mask == MASK_NONE)
 		{
@@ -2843,6 +2851,8 @@ LLXMLNodePtr LLScrollListCtrl::getXML(bool save_children) const
 	node->createChild("draw_stripes", TRUE)->setBoolValue(mDrawStripes);
 
 	node->createChild("column_padding", TRUE)->setIntValue(mColumnPadding);
+	
+	node->createChild("mouse_wheel_opaque", TRUE)->setBoolValue(mMouseWheelOpaque);
 
 	addColorXML(node, mBgWriteableColor, "bg_writeable_color", "ScrollBgWriteableColor");
 	addColorXML(node, mBgReadOnlyColor, "bg_read_only_color", "ScrollBgReadOnlyColor");
@@ -2970,6 +2980,9 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 
 	BOOL sort_ascending = TRUE;
 	node->getAttributeBOOL("sort_ascending", sort_ascending);
+	
+	BOOL mouse_wheel_opaque = TRUE;
+	node->getAttributeBOOL("mouse_wheel_opaque", mouse_wheel_opaque);
 
 	LLUICtrlCallback callback = NULL;
 
@@ -2994,6 +3007,8 @@ LLView* LLScrollListCtrl::fromXML(LLXMLNodePtr node, LLView *parent, LLUICtrlFac
 	scroll_list->initFromXML(node, parent);
 
 	scroll_list->setSearchColumn(search_column);
+	
+	scroll_list->mMouseWheelOpaque = mouse_wheel_opaque;
 
 	LLSD columns;
 	S32 index = 0;
@@ -3684,9 +3699,9 @@ LLColumnHeader::LLColumnHeader(const std::string& label, const LLRect &rect, LLS
 	mButton->setTabStop(FALSE);
 	// require at least two frames between mouse down and mouse up event to capture intentional "hold" not just bad framerate
 	mButton->setHeldDownDelay(LLUI::sConfigGroup->getF32("ColumnHeaderDropDownDelay"), 2);
-	mButton->setHeldDownCallback(onHeldDown);
-	mButton->setClickedCallback(onClick);
-	mButton->setMouseDownCallback(onMouseDown);
+	mButton->setHeldDownCallback(boost::bind(&LLColumnHeader::onHeldDown, this));
+	mButton->setClickedCallback(boost::bind(&LLColumnHeader::onClick, this));
+	mButton->setMouseDownCallback(boost::bind(&LLColumnHeader::onMouseDown, this));
 
 	mButton->setCallbackUserData(this);
 	mButton->setToolTip(label);
@@ -3848,8 +3863,8 @@ void LLColumnHeader::setImage(const std::string &image_name)
 {
 	if (mButton)
 	{
-		mButton->setImageSelected(image_name);
-		mButton->setImageUnselected(image_name);
+		mButton->setImageSelected(LLUI::getUIImage(image_name));
+		mButton->setImageUnselected(LLUI::getUIImage(image_name));
 	}
 }
 
@@ -3885,6 +3900,8 @@ void LLColumnHeader::onClick(void* user_data)
 
 	// propagate new sort order to sort order list
 	headerp->mList->selectNthItem(column->mParentCtrl->getSortAscending() ? 0 : 1);
+
+	headerp->mList->setFocus(TRUE);
 }
 
 //static

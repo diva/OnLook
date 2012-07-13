@@ -124,9 +124,14 @@ BOOL PreventSetUnhandledExceptionFilter()
 
 	newJump[ 0 ] = 0xE9;  // JMP absolute
 	memcpy( &newJump[ 1 ], &dwRelativeAddr, sizeof( pNewFunc ) );
-	SIZE_T bytesWritten;
-	BOOL bRet = WriteProcessMemory( GetCurrentProcess(), pOrgEntry, newJump, sizeof( pNewFunc ) + 1, &bytesWritten );
-	return bRet;
+	//SIZE_T bytesWritten;
+	//BOOL bRet = WriteProcessMemory( GetCurrentProcess(), pOrgEntry, newJump, sizeof( pNewFunc ) + 1, &bytesWritten );
+	DWORD oldProtect;
+	BOOL bRet = VirtualProtect(pOrgEntry, sizeof(pNewFunc) + 1, PAGE_READWRITE, &oldProtect);
+	if (!bRet) return FALSE;
+	memcpy(pOrgEntry, newJump, sizeof(pNewFunc) + 1);
+	VirtualProtect(pOrgEntry, sizeof(pNewFunc) + 1, oldProtect, &oldProtect);
+	return TRUE;
 #else
 	return FALSE;
 #endif
@@ -186,7 +191,7 @@ int main(int argc, char **argv)
 #ifdef CWDEBUG
 	Debug( libcw_do.margin().assign("SLPlugin ", 9) );
 	Debug(debug::init());
-	// Uncomment this to automatically open a terminal with gdb. Requires SNOW-173.
+	// Uncomment this to automatically open a terminal with gdb.
 	//Debug(attach_gdb());
 #endif
 

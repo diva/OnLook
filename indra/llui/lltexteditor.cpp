@@ -356,12 +356,12 @@ LLTextEditor::LLTextEditor(
 	{
 			menu = new LLMenuGL(LLStringUtil::null);
 	}*/
-	menu->append(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
-	menu->append(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
-	menu->append(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
-	menu->append(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
-	menu->append(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
-	menu->appendSeparator("Spelsep");
+	menu->addChild(new LLMenuItemCallGL("Cut", context_cut, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Copy", context_copy, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Paste", context_paste, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Delete", context_delete, NULL, this));
+	menu->addChild(new LLMenuItemCallGL("Select All", context_selectall, NULL, this));
+	menu->addSeparator();
 	menu->setCanTearOff(FALSE);
 	menu->setVisible(FALSE);
 	mPopupMenuHandle = menu->getHandle();
@@ -372,18 +372,12 @@ LLTextEditor::~LLTextEditor()
 {
 	gFocusMgr.releaseFocusIfNeeded( this ); // calls onCommit()
 
-	// Route menu back to the default
-	if( gEditMenuHandler == this )
-	{
-		gEditMenuHandler = NULL;
-	}
-
 	// Scrollbar is deleted by LLView
 	mHoverSegment = NULL;
 	std::for_each(mSegments.begin(), mSegments.end(), DeletePointer());
 
 	std::for_each(mUndoStack.begin(), mUndoStack.end(), DeletePointer());
-	LLView::deleteViewByHandle(mPopupMenuHandle);
+	//LLView::deleteViewByHandle(mPopupMenuHandle);
 }
 void LLTextEditor::context_cut(void* data)
 {
@@ -1283,7 +1277,8 @@ BOOL LLTextEditor::handleToolTip(S32 x, S32 y, std::string& msg, LLRect* sticky_
 BOOL LLTextEditor::handleScrollWheel(S32 x, S32 y, S32 clicks)
 {
 	// Pretend the mouse is over the scrollbar
-	return mScrollbar->handleScrollWheel( 0, 0, clicks );
+	mScrollbar->handleScrollWheel( 0, 0, clicks );
+	return TRUE;
 }
 
 BOOL LLTextEditor::handleMouseDown(S32 x, S32 y, MASK mask)
@@ -1389,7 +1384,7 @@ BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 			SpellMenuBind * tempBind = suggestionMenuItems[i];
 			if(tempBind)
 			{
-				menu->remove(tempBind->menuItem);
+				menu->removeChild(tempBind->menuItem);
 				tempBind->menuItem->die();
 				//delete tempBind->menuItem;
 				//tempBind->menuItem = NULL;
@@ -1425,7 +1420,7 @@ BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 							tempStruct->word, spell_correct, NULL, tempStruct);
 						tempStruct->menuItem = suggMenuItem;
 						suggestionMenuItems.push_back(tempStruct);
-						menu->append(suggMenuItem);
+						menu->addChild(suggMenuItem);
 					}
 					SpellMenuBind * tempStruct = new SpellMenuBind;
 					tempStruct->origin = this;
@@ -1437,7 +1432,7 @@ BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 						"Add Word", spell_add, NULL, tempStruct);
 					tempStruct->menuItem = suggMenuItem;
 					suggestionMenuItems.push_back(tempStruct);
-					menu->append(suggMenuItem);
+					menu->addChild(suggMenuItem);
 				}
 			}
 
@@ -1456,7 +1451,7 @@ BOOL LLTextEditor::handleRightMouseDown( S32 x, S32 y, MASK mask )
 				tempStruct->word, spell_show, NULL, tempStruct);
 			tempStruct->menuItem = suggMenuItem;
 			suggestionMenuItems.push_back(tempStruct);
-			menu->append(suggMenuItem);
+			menu->addChild(suggMenuItem);
 		}
 		mLastContextMenuX = x;
 		mLastContextMenuY = y;
@@ -3246,7 +3241,7 @@ void LLTextEditor::drawCursor()
 				}
 
 				// Make sure the IME is in the right place
-				LLRect screen_pos = getScreenRect();
+				LLRect screen_pos = calcScreenRect();
 				LLCoordGL ime_pos( screen_pos.mLeft + llfloor(cursor_left), screen_pos.mBottom + llfloor(cursor_top) );
 
 				ime_pos.mX = (S32) (ime_pos.mX * LLUI::sGLScaleFactor.mV[VX]);

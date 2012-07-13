@@ -34,7 +34,6 @@ set(llmessage_SOURCE_FILES
     lldispatcher.cpp
     llfiltersd2xmlrpc.cpp
     llhost.cpp
-    llhttpassetstorage.cpp
     llhttpclient.cpp
     llhttpclientadapter.cpp
     llhttpnode.cpp
@@ -125,7 +124,6 @@ set(llmessage_HEADER_FILES
     llfiltersd2xmlrpc.h
     llfollowcamparams.h
     llhost.h
-    llhttpassetstorage.h
     llhttpclient.h
     llhttpclientinterface.h
     llhttpclientadapter.h

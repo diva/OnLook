@@ -126,9 +126,9 @@ void LLPanelSkins::refresh()
 							"textures"+gDirUtilp->getDirDelimiter()+
 							imagename);
 						b->setImages(imageprev,imageprev);
-						b->setHoverImages(imageprev,imageprev);
-						b->setScaleImage(TRUE);
-
+						b->setImageHoverSelected(LLUI::getUIImage(imageprev));
+						b->setImageHoverUnselected(LLUI::getUIImage(imageprev));
+	
 						//<button scale_image="true" image_selected="skin_thumbnail_default.png"
 						//image_unselected="skin_thumbnail_default.png" 
 						//	image_hover_selected="skin_thumbnail_default.png" 

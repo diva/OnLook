@@ -65,8 +65,7 @@ LLToolContainer::~LLToolContainer()
 
 
 LLToolView::LLToolView(const std::string& name, const LLRect& rect)
-:	LLView(name, rect, MOUSE_OPAQUE),
-	mButtonCount(0)
+:	mButtonCount(0), LLView(name, rect, true)
 {
 }
 

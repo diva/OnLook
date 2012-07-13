@@ -117,6 +117,12 @@ public:
 	LLColor4	mColor;
 };
 
+struct PotentialReturnableObject
+{
+	LLBBox			box;
+	LLViewerRegion* pRegion;
+};
+
 //============================================================================
 
 class LLViewerObject : public LLPrimitive, public LLRefCount, public LLGLUpdate
@@ -233,12 +239,16 @@ public:
 	virtual BOOL isMesh() const						{ return FALSE; }
 
 	// This method returns true if the object is over land owned by
-	// the agent.
-	BOOL isOverAgentOwnedLand() const;
+	// the agent, one of its groups, or it encroaches and 
+	// anti-encroachment is enabled
+	bool isReturnable();
 
-	// True if over land owned by group of which the agent is
-	// either officer or member.
-	BOOL isOverGroupOwnedLand() const;
+	void buildReturnablesForChildrenVO( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion );
+	void constructAndAddReturnable( std::vector<PotentialReturnableObject>& returnables, LLViewerObject* pChild, LLViewerRegion* pTargetRegion );
+
+	// This method returns true if the object crosses
+	// any parcel bounds in the region.
+	bool crossesParcelBounds();
 
 	/*
 	// This method will scan through this object, and then query the
@@ -256,7 +266,10 @@ public:
 	S32 numChildren() const { return mChildList.size(); }
 	void addThisAndAllChildren(std::vector<LLViewerObject*>& objects);
 	void addThisAndNonJointChildren(std::vector<LLViewerObject*>& objects);
-	BOOL isChild(LLViewerObject *childp) const;
+//	BOOL isChild(LLViewerObject *childp) const;
+// [RLVa:KB] - Checked: 2011-05-28 (RLVa-1.4.0a) | Added: RLVa-1.4.0a
+	BOOL isChild(const LLViewerObject *childp) const;
+// [/RLVa:KB]
 	BOOL isSeat() const;
 	
 
@@ -431,11 +444,14 @@ public:
 	// manager until we have better iterators.
 	void updateInventory(LLViewerInventoryItem* item, U8 key, bool is_new);
 	void updateInventoryLocal(LLInventoryItem* item, U8 key); // Update without messaging.
+	void updateTextureInventory(LLViewerInventoryItem* item, U8 key, bool is_new);
 	LLInventoryObject* getInventoryObject(const LLUUID& item_id);
 	void getInventoryContents(LLInventoryObject::object_list_t& objects);
 	LLInventoryObject* getInventoryRoot();
 	LLViewerInventoryItem* getInventoryItemByAsset(const LLUUID& asset_id);
 	S16 getInventorySerial() const { return mInventorySerialNum; }
+
+	bool isTextureInInventory(LLViewerInventoryItem* item);
 
 	// These functions does viewer-side only object inventory modifications
 	void updateViewerInventoryAsset(
@@ -685,6 +701,10 @@ protected:
 	F32				mAppAngle;	// Apparent visual arc in degrees
 	F32				mPixelArea; // Apparent area in pixels
 
+	// IDs of of all items in the object's content which are added to the object's content,
+	// but not updated on the server yet. After item was updated, its ID will be removed from this list.
+	std::list<LLUUID> mPendingInventoryItemsIDs;
+
 	// This is the object's inventory from the viewer's perspective.
 	LLInventoryObject::object_list_t* mInventory;
 	class LLInventoryCallbackInfo
@@ -759,7 +779,6 @@ private:
 	//--------------------------------------------------------------------
 public:
 // <edit>
-	S32 getAttachmentPoint();
 	std::string getAttachmentPointName();
 // </edit>
 	const LLUUID &getAttachmentItemID() const;
@@ -774,8 +793,6 @@ private:
 	EObjectUpdateType	mLastUpdateType;
 	BOOL	mLastUpdateCached;
 };
-
-typedef std::vector<LLViewerObject*> llvo_vec_t;
 
 ///////////////////
 //

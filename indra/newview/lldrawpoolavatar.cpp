@@ -121,8 +121,6 @@ LLDrawPool *LLDrawPoolAvatar::instancePool()
 	return new LLDrawPoolAvatar();
 }
 
-BOOL gRenderAvatar = TRUE;
-
 S32 LLDrawPoolAvatar::getVertexShaderLevel() const
 {
 	return (S32) LLViewerShaderMgr::instance()->getVertexShaderLevel(LLViewerShaderMgr::SHADER_AVATAR);
@@ -267,7 +265,9 @@ void LLDrawPoolAvatar::beginPostDeferredAlpha()
 	sRenderingSkinned = TRUE;
 
 	gPipeline.bindDeferredShader(*sVertexProgram);
-	
+
+	sVertexProgram->setMinimumAlpha(0.2f);
+
 	sDiffuseChannel = sVertexProgram->enableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
 }
 
@@ -1056,13 +1056,6 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 		return;
 	}
 
-	
-
-	if (!gRenderAvatar)
-	{
-		return;
-	}
-
 	if (mDrawFace.empty() && !single_avatar)
 	{
 		return;
@@ -1445,7 +1438,7 @@ void LLDrawPoolAvatar::updateRiggedFaceVertexBuffer(LLVOAvatar* avatar, LLFace* 
 
 void LLDrawPoolAvatar::renderRigged(LLVOAvatar* avatar, U32 type, bool glow)
 {
-	if (avatar->isSelf() && !gAgent.needsRenderAvatar() || !gMeshRepo.meshRezEnabled())
+	if ((avatar->isSelf() && !gAgent.needsRenderAvatar()) || !gMeshRepo.meshRezEnabled())
 	{
 		return;
 	}

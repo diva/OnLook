@@ -75,14 +75,15 @@ public:
 	:	mText(text),
 		mFromName(),
 		mFromID(),
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-		mRlvLocFiltered(FALSE),
-		mRlvNamesFiltered(FALSE),
-// [/RLVa:KB]
+
 		mSourceType(CHAT_SOURCE_AGENT),
 		mChatType(CHAT_TYPE_NORMAL),
 		mAudible(CHAT_AUDIBLE_FULLY),
 		mMuted(FALSE),
+// [RLVa:KB] - Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.0.0a
+		mRlvLocFiltered(FALSE),
+		mRlvNamesFiltered(FALSE),
+// [/RLVa:KB]
 		mTime(0.0),
 		mPosAgent(),
 		mURL()
@@ -104,14 +105,14 @@ public:
 	std::string		mText;		// UTF-8 line of text
 	std::string		mFromName;	// agent or object name
 	LLUUID			mFromID;	// agent id or object id
-// [RLVa:KB] - Checked: 2009-07-04 (RLVa-1.0.0a)
-	BOOL			mRlvLocFiltered;
-	BOOL			mRlvNamesFiltered;
-// [/RLVa:KB]
 	EChatSourceType	mSourceType;
 	EChatType		mChatType;
 	EChatAudible	mAudible;
 	BOOL			mMuted;		// pass muted chat to maintain list of chatters
+// [RLVa:KB] - Checked: 2010-04-22 (RLVa-1.2.0f) | Modified: RLVa-1.0.0a
+	BOOL			mRlvLocFiltered;
+	BOOL			mRlvNamesFiltered;
+// [/RLVa:KB]
 	F64				mTime;		// viewer only, seconds from viewer start
 	LLVector3		mPosAgent;
 	std::string		mURL;

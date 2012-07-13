@@ -60,7 +60,7 @@
 #include "llviewerstats.h"
 #include "llviewerwindow.h"
 #include "llframetimer.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llresmgr.h"
 #include "llworld.h"
 #include "llstatgraph.h"
@@ -446,6 +446,16 @@ void LLStatusBar::refresh()
 		childGetRect( "status_no_voice", buttonRect );
 		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
 		childSetRect( "status_no_voice", r );
+		x += buttonRect.getWidth();
+	}
+
+	bool no_see_avs = parcel && !parcel->getSeeAVs();
+	childSetVisible("status_SeeAV", no_see_avs);
+	if (no_see_avs)
+	{
+		childGetRect( "status_SeeAV", buttonRect );
+		r.setOriginAndSize( x, y, buttonRect.getWidth(), buttonRect.getHeight());
+		childSetRect( "status_SeeAV", r );
 		x += buttonRect.getWidth();
 	}
 

@@ -160,6 +160,11 @@ public:
 	void handleLoginComplete();
 
     LLAllocator & getAllocator() { return mAlloc; }
+	// On LoginCompleted callback
+	typedef boost::signals2::signal<void (void)> login_completed_signal_t;
+	login_completed_signal_t mOnLoginCompleted;
+	boost::signals2::connection setOnLoginCompletedCallback( const login_completed_signal_t::slot_type& cb ) { return mOnLoginCompleted.connect(cb); } 
+
 	void addOnIdleCallback(const boost::function<void()>& cb); // add a callback to fire (once) when idle
 
 	void purgeCache(); // Clear the local cache. 

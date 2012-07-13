@@ -224,20 +224,17 @@ LLFloaterColorPicker::
 postBuild()
 {
 	mCancelBtn = getChild<LLButton>( "cancel_btn" );
-    mCancelBtn->setClickedCallback ( onClickCancel );
-    mCancelBtn->setCallbackUserData ( this );
+    mCancelBtn->setClickedCallback ( boost::bind(&LLFloaterColorPicker::onClickCancel,this) );
 
 	mSelectBtn = getChild<LLButton>( "select_btn");
-    mSelectBtn->setClickedCallback ( onClickSelect );
-    mSelectBtn->setCallbackUserData ( this );
+    mSelectBtn->setClickedCallback ( boost::bind(&LLFloaterColorPicker::onClickSelect,this) );
 	mSelectBtn->setFocus ( TRUE );
 
 	mPipetteBtn = getChild<LLButton>("color_pipette" );
 
 	mPipetteBtn->setImages(std::string("eye_button_inactive.tga"), std::string("eye_button_active.tga"));
 
-	mPipetteBtn->setClickedCallback( onClickPipette );
-	mPipetteBtn->setCallbackUserData ( this );
+	mPipetteBtn->setClickedCallback( boost::bind(&LLFloaterColorPicker::onClickPipette,this) );
 
 	mApplyImmediateCheck = getChild<LLCheckBoxCtrl>("apply_immediate");
 	mApplyImmediateCheck->set(gSavedSettings.getBOOL("ApplyColorImmediately"));
@@ -644,6 +641,12 @@ void LLFloaterColorPicker::draw()
 			startX + mLumMarkerSize, startY - mLumMarkerSize,
 				startX + mLumMarkerSize, startY + mLumMarkerSize,
 					LLColor4 ( 0.0f, 0.0f, 0.0f, 1.0f ), TRUE );
+
+	// draw a white marker inside the black marker to be visible with dark or bright ui.
+	gl_triangle_2d ( startX+2, startY,
+		startX + mLumMarkerSize - 1, startY - mLumMarkerSize + 2,
+			startX + mLumMarkerSize - 1, startY + mLumMarkerSize - 2,
+				LLColor4 ( 1.0f, 1.0f, 1.0f, 1.0f ), TRUE );
 
 	// draw luminance slider outline
 	gl_rect_2d ( mLumRegionLeft,

@@ -5,27 +5,25 @@ project(llaudio)
 include(00-Common)
 include(Audio)
 include(LLAudio)
-if(FMODEX)
-	include(FMODEX)
-	if(FMODEX)
-		set(FMOD OFF)
-	endif(FMODEX)
-endif(FMODEX)
-if(NOT FMODEX)
-	include(FMOD)
-endif(NOT FMODEX)
+if (FMODEX)
+  include(FMODEX)
+  set(FMOD OFF)
+endif (FMODEX)
+if (NOT FMODEX)
+  include(FMOD)
+endif (NOT FMODEX)
 include(OPENAL)
 include(LLCommon)
 include(LLMath)
 include(LLMessage)
 include(LLVFS)
 
-if(FMODEX)
-	include_directories(${FMODEX_INCLUDE_DIR})
+if (FMODEX)
+  include_directories(${FMODEX_INCLUDE_DIR})
 endif(FMODEX)
 if(FMOD)
-	include_directories(${FMOD_INCLUDE_DIR})
-endif(FMOD)
+  include_directories(${FMOD_INCLUDE_DIR})
+endif (FMOD)
 
 include_directories(
     ${LLAUDIO_INCLUDE_DIRS}
@@ -37,7 +35,7 @@ include_directories(
     ${VORBISENC_INCLUDE_DIRS}
     ${VORBISFILE_INCLUDE_DIRS}
     ${VORBIS_INCLUDE_DIRS}
-    ${OPENAL_LIB_INCLUDE_DIRS}
+    ${OPENAL_INCLUDE_DIRS}
     ${FREEAULT_LIB_INCLUDE_DIRS}
     )
 

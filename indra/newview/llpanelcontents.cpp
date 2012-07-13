@@ -68,9 +68,10 @@
 #include "lltool.h"
 #include "lltoolmgr.h"
 #include "lltoolcomp.h"
-#include "llpanelinventory.h"
+#include "llpanelobjectinventory.h"
 // [RLVa:KB] - Checked: 2010-03-31 (RLVa-1.2.0c)
 #include "rlvhandler.h"
+#include "rlvlocks.h"
 // [/RLVa:KB]
 
 //
@@ -119,7 +120,7 @@ void LLPanelContents::getState(LLViewerObject *objectp )
 	LLSelectMgr::getInstance()->selectGetGroup(group_id);  // sets group_id as a side effect SL-23488
 
 	// BUG? Check for all objects being editable?
-	BOOL editable = gAgent.isGodlike()
+	bool editable = gAgent.isGodlike()
 					|| (objectp->permModify()
 					       && ( objectp->permYouOwner() || ( !group_id.isNull() && gAgent.isInGroup(group_id) )));  // solves SL-23488
 	BOOL all_volume = LLSelectMgr::getInstance()->selectionAllPCode( LL_PCODE_VOLUME );
@@ -137,8 +138,8 @@ void LLPanelContents::getState(LLViewerObject *objectp )
 			// Only check the first (non-)root object because nothing else would result in enabling the button (see below)
 			LLViewerObject* pObj = LLSelectMgr::getInstance()->getSelection()->getFirstRootObject(TRUE);
 
-			LLVOAvatar* pAvatar = gAgentAvatarp;
-			editable = (pObj) && (pAvatar) && ((!pAvatar->isSitting()) || (pAvatar->getRoot() != pObj->getRootEdit()));
+			editable = 
+				(pObj) && (isAgentAvatarValid()) && ((!gAgentAvatarp->isSitting()) || (gAgentAvatarp->getRoot() != pObj->getRootEdit()));
 		}
 	}
 // [/RLVa:KB]
@@ -186,8 +187,7 @@ void LLPanelContents::onClickNewScript(void *userdata)
 			}
 			else if ( (gRlvHandler.hasBehaviour(RLV_BHVR_UNSIT)) || (gRlvHandler.hasBehaviour(RLV_BHVR_SITTP)) )
 			{
-				LLVOAvatar* pAvatar = gAgentAvatarp;
-				if ( (pAvatar) && (pAvatar->isSitting()) && (pAvatar->getRoot() == object->getRootEdit()) )
+				if ( (isAgentAvatarValid()) && (gAgentAvatarp->isSitting()) && (gAgentAvatarp->getRoot() == object->getRootEdit()) )
 					return;				// .. or in a linkset the avie is sitting on under @unsit=n/@sittp=n
 			}
 		}

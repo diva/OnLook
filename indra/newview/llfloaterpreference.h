@@ -78,7 +78,7 @@ public:
 
 	void setPersonalInfo(const std::string& visibility, bool im_via_email, const std::string&  email);
 
-	static void onTabChanged(void* user_data, bool from_click);
+	static void onTabChanged(LLUICtrl* ctrl);
 	
 	// refresh all the graphics preferences menus
 	void refreshEnabledGraphics();

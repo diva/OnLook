@@ -915,7 +915,7 @@ namespace tut
 		
 		pipe_and_pump_fitness()
 		{
-			LLFrameTimer::updateFrameTime();			
+			LLFrameTimer::updateFrameTime();
 			apr_pool_create(&mPool, NULL);
 			mPump = new LLPumpIO(mPool);
 			mSocket = LLSocket::create(

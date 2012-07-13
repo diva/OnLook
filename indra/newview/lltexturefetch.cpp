@@ -2,31 +2,25 @@
  * @file lltexturefetch.cpp
  * @brief Object which fetches textures from the cache and/or network
  *
- * $LicenseInfo:firstyear=2000&license=viewergpl$
- * 
- * Copyright (c) 2000-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2000&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -57,6 +51,7 @@
 #include "llviewerregion.h"
 #include "llviewerstats.h"
 #include "llworld.h"
+#include "llstartup.h"
 
 //////////////////////////////////////////////////////////////////////////////
 class LLTextureFetchWorker : public LLWorkerClass
@@ -936,6 +931,8 @@ void LLTextureFetchWorker::startWork(S32 param)
 // Called from LLWorkerThread::processRequest()
 bool LLTextureFetchWorker::doWork(S32 param)
 {
+	static const F32 FETCHING_TIMEOUT = 120.f;//seconds
+
 	LLMutexLock lock(&mWorkMutex);
 
 	if ((mFetcher->isQuitting() || getFlags(LLWorkerClass::WCF_DELETE_REQUESTED)))
@@ -1285,6 +1282,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 						return true ; //abort.
 					}
 				}
+				resetFormattedData();
+				cur_size = 0;
 			}
 			mRequestedSize = mDesiredSize;
 			mRequestedDiscard = mDesiredDiscard;
@@ -1295,6 +1294,8 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			bool res = false;
 			if (!mUrl.empty())
 			{
+				mRequestedTimer.reset();
+
 				mLoaded = FALSE;
 				mGetStatus = 0;
 				mGetReason.clear();
@@ -1316,7 +1317,6 @@ bool LLTextureFetchWorker::doWork(S32 param)
 															 LLImageBase::TYPE_AVATAR_BAKE == mType);
 #endif
 
-				if(cur_size > 0) offset--;
 				// Will call callbackHttpGet when curl request completes
 				std::vector<std::string> headers;
 				headers.push_back("Accept: image/x-j2c");
@@ -1461,14 +1461,11 @@ bool LLTextureFetchWorker::doWork(S32 param)
 			}
 			
 			U8* buffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), mBufferSize);
-			if (cur_size > 0) {
+			if (cur_size > 0)
+			{
 				memcpy(buffer, mFormattedImage->getData(), cur_size);
-				mBufferSize--;
-				if(mRequestedSize == 1) mRequestedDiscard = 0;
-				else memcpy(buffer + cur_size, mBuffer+1, mRequestedSize-1); // append
 			}
-			else memcpy(buffer + cur_size, mBuffer, mRequestedSize); // append
-
+			memcpy(buffer + cur_size, mBuffer, mRequestedSize); // append
 			// NOTE: setData releases current data and owns new data (buffer)
 			mFormattedImage->setData(buffer, mBufferSize);
 			// delete temp data
@@ -1486,6 +1483,13 @@ bool LLTextureFetchWorker::doWork(S32 param)
 		}
 		else
 		{
+			if(FETCHING_TIMEOUT < mRequestedTimer.getElapsedTimeF32())
+			{
+				//timeout, abort.
+				mState = DONE;
+				return true;
+			}
+
 			setPriority(LLWorkerThread::PRIORITY_LOW | mWorkPriority);
 			return false;
 		}
@@ -1824,11 +1828,7 @@ S32 LLTextureFetchWorker::callbackHttpGet(const LLChannelDescriptors& channels,
 			mBuffer = (U8*)ALLOCATE_MEM(LLImageBase::getPrivatePool(), data_size);
 			buffer->readAfter(channels.in(), NULL, mBuffer, data_size);
 			mBufferSize += data_size;
-			if(mFormattedImage.notNull() && mFormattedImage->getDataSize() > 0 && data_size == 1)
-			{
-				mHaveAllData = TRUE;
-			}
-			else if (data_size < mRequestedSize && mRequestedDiscard == 0)
+			if (data_size < mRequestedSize && mRequestedDiscard == 0)
 			{
 				mHaveAllData = TRUE;
 			}
@@ -2367,6 +2367,7 @@ void LLTextureFetch::commonUpdate()
 	}
 }
 
+
 // MAIN THREAD
 //virtual
 S32 LLTextureFetch::update(F32 max_time_ms)
@@ -2382,14 +2383,20 @@ S32 LLTextureFetch::update(F32 max_time_ms)
 
 		mNetworkQueueMutex.unlock() ;
 	}
-	
+
 	S32 res = LLWorkerThread::update(max_time_ms);
 	
 	if (!mDebugPause)
 	{
-		sendRequestListToSimulators();
+		// this is the startup state when send_complete_agent_movement() message is sent.
+		// Before this, the RequestImages message sent by sendRequestListToSimulators 
+		// won't work so don't bother trying
+		if (LLStartUp::getStartupState() > STATE_AGENT_SEND)
+		{
+			sendRequestListToSimulators();
+		}
 	}
-	
+
 	if (!mThreaded)
 	{
 		commonUpdate();

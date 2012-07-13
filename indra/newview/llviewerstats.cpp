@@ -55,7 +55,7 @@
 #include "lldebugview.h"
 #include "llfasttimerview.h"
 #include "llviewerregion.h"
-#include "llvoavatar.h"
+#include "llvoavatarself.h"
 #include "llviewerwindow.h"		// *TODO: remove, only used for width/height
 #include "llworld.h"
 #include "llfeaturemanager.h"
@@ -89,7 +89,7 @@ const StatAttributes STAT_INFO[LLViewerStats::ST_COUNT] =
 	// ST_VERSION
 	StatAttributes("Version", TRUE, FALSE),
 	// ST_AVATAR_EDIT_SECONDS
-	StatAttributes("Seconds in Edit Appearence", FALSE, TRUE),
+	StatAttributes("Seconds in Edit Appearance", FALSE, TRUE),
 	// ST_TOOLBOX_SECONDS
 	StatAttributes("Seconds using Toolbox", FALSE, TRUE),
 	// ST_CHAT_COUNT
@@ -527,10 +527,10 @@ void output_statistics(void*)
 
 	llinfos << "--------------------------------" << llendl;
 	llinfos << "Avatar Memory (partly overlaps with above stats):" << llendl;
-	gTexStaticImageList.dumpByteCount();
-	LLVOAvatar::dumpScratchTextureByteCount();
+	LLTexLayerStaticImageList::getInstance()->dumpByteCount();
+	LLVOAvatarSelf::dumpScratchTextureByteCount();
 	LLTexLayerSetBuffer::dumpTotalByteCount();
-	LLVOAvatar::dumpTotalLocalTextureByteCount();
+	LLVOAvatarSelf::dumpTotalLocalTextureByteCount();
 	LLTexLayerParamAlpha::dumpCacheByteCount();
 	LLVOAvatar::dumpBakedStatus();
 

@@ -282,7 +282,8 @@ public:
 
 	void			updateObjectUnderCursor();
 
-	BOOL			handlePerFrameHover();							// Once per frame, update UI based on mouse position
+	void			updateUI();							// Once per frame, update UI based on mouse position
+	void				updateMouseDelta();		
 
 	BOOL			handleKey(KEY key, MASK mask);
 	void			handleScrollWheel	(S32 clicks);

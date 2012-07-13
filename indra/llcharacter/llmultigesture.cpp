@@ -2,31 +2,25 @@
  * @file llmultigesture.cpp
  * @brief Gestures that are asset-based and can have multiple steps.
  *
- * $LicenseInfo:firstyear=2004&license=viewergpl$
- * 
- * Copyright (c) 2004-2009, Linden Research, Inc.
- * 
+ * $LicenseInfo:firstyear=2004&license=viewerlgpl$
  * Second Life Viewer Source Code
- * The source code in this file ("Source Code") is provided by Linden Lab
- * to you under the terms of the GNU General Public License, version 2.0
- * ("GPL"), unless you have obtained a separate licensing agreement
- * ("Other License"), formally executed by you and Linden Lab.  Terms of
- * the GPL can be found in doc/GPL-license.txt in this distribution, or
- * online at http://secondlifegrid.net/programs/open_source/licensing/gplv2
+ * Copyright (C) 2010, Linden Research, Inc.
  * 
- * There are special exceptions to the terms and conditions of the GPL as
- * it is applied to this Source Code. View the full text of the exception
- * in the file doc/FLOSS-exception.txt in this software distribution, or
- * online at
- * http://secondlifegrid.net/programs/open_source/licensing/flossexception
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
  * 
- * By copying, modifying or distributing this software, you acknowledge
- * that you have read and understood your obligations described above,
- * and agree to abide by those obligations.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  * 
- * ALL LINDEN LAB SOURCE CODE IS PROVIDED "AS IS." LINDEN LAB MAKES NO
- * WARRANTIES, EXPRESS, IMPLIED OR OTHERWISE, REGARDING ITS ACCURACY,
- * COMPLETENESS OR PERFORMANCE.
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * 
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
  * $/LicenseInfo$
  */
 
@@ -50,6 +44,7 @@ const S32 GESTURE_VERSION = 2;
 LLMultiGesture::LLMultiGesture()
 :	mKey(),
 	mMask(),
+	mName(),
 	mTrigger(),
 	mReplaceText(),
 	mSteps(),
@@ -292,20 +287,27 @@ BOOL LLGestureStepAnimation::deserialize(LLDataPacker& dp)
 	dp.unpackU32(mFlags, "flags");
 	return TRUE;
 }
-
-std::string LLGestureStepAnimation::getLabel() const
+// *NOTE: result is translated in LLPreviewGesture::getLabel()
+std::vector<std::string> LLGestureStepAnimation::getLabel() const 
 {
-	std::string label;
+	std::vector<std::string> strings;
+	
+//	std::string label;
 	if (mFlags & ANIM_FLAG_STOP)
 	{
-		label = "Stop Animation: ";
+		strings.push_back( "AnimFlagStop");
+
+//		label = "Stop Animation: ";
 	}
 	else
 	{
-		label = "Start Animation: ";
+		strings.push_back( "AnimFlagStart");
+
+//		label = "Start Animation: "; 
 	}
-	label += mAnimName;
-	return label;
+	strings.push_back( mAnimName);
+//	label += mAnimName;
+	return strings;
 }
 
 void LLGestureStepAnimation::dump()
@@ -359,12 +361,15 @@ BOOL LLGestureStepSound::deserialize(LLDataPacker& dp)
 	dp.unpackU32(mFlags, "flags");
 	return TRUE;
 }
-
-std::string LLGestureStepSound::getLabel() const
+// *NOTE: result is translated in LLPreviewGesture::getLabel()
+std::vector<std::string> LLGestureStepSound::getLabel() const
 {
-	std::string label("Sound: ");
-	label += mSoundName;
-	return label;
+	std::vector<std::string> strings;
+	strings.push_back( "Sound");
+	strings.push_back( mSoundName);	
+//	std::string label("Sound: ");
+//	label += mSoundName;
+	return strings;
 }
 
 void LLGestureStepSound::dump()
@@ -414,12 +419,13 @@ BOOL LLGestureStepChat::deserialize(LLDataPacker& dp)
 	dp.unpackU32(mFlags, "flags");
 	return TRUE;
 }
-
-std::string LLGestureStepChat::getLabel() const
+// *NOTE: result is translated in LLPreviewGesture::getLabel()
+std::vector<std::string> LLGestureStepChat::getLabel() const
 {
-	std::string label("Chat: ");
-	label += mChatText;
-	return label;
+	std::vector<std::string> strings;
+	strings.push_back("Chat");
+	strings.push_back(mChatText);
+	return strings;
 }
 
 void LLGestureStepChat::dump()
@@ -467,22 +473,31 @@ BOOL LLGestureStepWait::deserialize(LLDataPacker& dp)
 	dp.unpackU32(mFlags, "flags");
 	return TRUE;
 }
-
-std::string LLGestureStepWait::getLabel() const
+// *NOTE: result is translated in LLPreviewGesture::getLabel()
+std::vector<std::string> LLGestureStepWait::getLabel() const
 {
-	std::string label("--- Wait: ");
+	std::vector<std::string> strings;
+	strings.push_back( "Wait" );
+	
+//	std::string label("--- Wait: ");
 	if (mFlags & WAIT_FLAG_TIME)
 	{
 		char buffer[64];		/* Flawfinder: ignore */
 		snprintf(buffer, sizeof(buffer), "%.1f seconds", (double)mWaitSeconds);	/* Flawfinder: ignore */
-		label += buffer;
+		strings.push_back(buffer);
+//		label += buffer;
 	}
 	else if (mFlags & WAIT_FLAG_ALL_ANIM)
 	{
-		label += "until animations are done";
+		strings.push_back("until animations are done");
+	//	label += "until animations are done";
+	}
+	else
+	{
+		strings.push_back("");
 	}
 
-	return label;
+	return strings;
 }
 
 

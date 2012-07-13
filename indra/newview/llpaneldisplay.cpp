@@ -265,8 +265,12 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlNonImpostors = getChild<LLSliderCtrl>("AvatarMaxVisible");
 
 	//----------------------------------------------------------------------------
-	// radio set for lighting detail
-	mRadioLightingDetail2 = getChild<LLRadioGroup>("LightingDetailRadio");
+	// Checkbox for lighting detail
+	mCtrlLightingDetail2 = getChild<LLCheckBoxCtrl>("LightingDetailRadio");
+
+	//----------------------------------------------------------------------------
+	// Checkbox for ambient occlusion
+	mCtrlAmbientOcc = getChild<LLCheckBoxCtrl>("UseSSAO");
 
 	//----------------------------------------------------------------------------
 	// radio set for terrain detail mode
@@ -465,6 +469,7 @@ void LLPanelDisplay::refreshEnabledState()
 	mCtrlAutoDetectAspect->setVisible(isFullScreen);
 	mFullScreenInfo->setVisible(!isFullScreen);
 	mWindowSizeLabel->setVisible(!isFullScreen);
+	mCtrlWindowSize->setVisible(!isFullScreen);
 
 	// disable graphics settings and exit if it's not set to custom
 	if(!gSavedSettings.getBOOL("RenderCustomSettings"))
@@ -515,7 +520,8 @@ void LLPanelDisplay::refreshEnabledState()
 
 	mCtrlDeferred->setEnabled(can_defer);
 	mCtrlShadowDetail->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
-	mCtrlDeferredDoF->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred")); 
+	mCtrlAmbientOcc->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
+	mCtrlDeferredDoF->setEnabled(can_defer && gSavedSettings.getBOOL("RenderDeferred"));
 
 	// Disable max non-impostors slider if avatar impostors are off
 	mCtrlNonImpostors->setEnabled(gSavedSettings.getBOOL("RenderUseImpostors"));
@@ -578,6 +584,8 @@ void LLPanelDisplay::disableUnavailableSettings()
 
 		mCtrlDeferred->setEnabled(FALSE);
 		mCtrlDeferred->setValue(FALSE);
+		mCtrlAmbientOcc->setEnabled(FALSE);
+		mCtrlAmbientOcc->setValue(FALSE);
 		mCtrlDeferredDoF->setEnabled(FALSE);
 		mCtrlDeferredDoF->setValue(FALSE);
 		mCtrlShadowDetail->setEnabled(FALSE);
@@ -625,6 +633,8 @@ void LLPanelDisplay::disableUnavailableSettings()
 	{
 		mCtrlDeferred->setEnabled(FALSE);
 		mCtrlDeferred->setValue(FALSE);
+		mCtrlAmbientOcc->setEnabled(FALSE);
+		mCtrlAmbientOcc->setValue(FALSE);
 		mCtrlDeferredDoF->setEnabled(FALSE);
 		mCtrlDeferredDoF->setValue(FALSE);
 		mCtrlShadowDetail->setEnabled(FALSE);
@@ -663,7 +673,8 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	llassert(mCtrlAvatarImpostors != NULL);
 	llassert(mCtrlNonImpostors != NULL);
 	llassert(mCtrlAvatarCloth != NULL);
-	llassert(mRadioLightingDetail2 != NULL);
+	llassert(mCtrlLightingDetail2 != NULL);
+	llassert(mCtrlAmbientOcc != NULL);
 
 	llassert(mRadioTerrainDetail != NULL);
 	llassert(mCtrlReflectionDetail != NULL);
@@ -712,7 +723,8 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mCtrlAvatarImpostors->setVisible(!isHidden);
 	mCtrlNonImpostors->setVisible(!isHidden);
 	mCtrlAvatarCloth->setVisible(!isHidden);
-	mRadioLightingDetail2->setVisible(!isHidden);
+	mCtrlLightingDetail2->setVisible(!isHidden);
+	mCtrlAmbientOcc->setVisible(!isHidden);
 
 	mRadioTerrainDetail->setVisible(!isHidden);
 	mCtrlReflectionDetail->setVisible(!isHidden);

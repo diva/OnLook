@@ -65,12 +65,15 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 													objectp->getType(),
 													LLInventoryType::IT_CATEGORY,
 													panelp,
+													panelp->getRootFolder(),
 													objectp->getUUID());
 
 			if (new_listener)
 			{
 				LLFolderViewFolder* folderp = new LLFolderViewFolder(new_listener->getDisplayName(),
 													new_listener->getIcon(),
+													new_listener->getIcon(),
+													NULL,
 													panelp->getRootFolder(),
 													new_listener);
 				
@@ -86,12 +89,15 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 				item->getActualType(),
 				item->getInventoryType(),
 				panelp,
+				panelp->getRootFolder(),
 				item->getUUID(),
 				item->getFlags());
 			if (new_listener)
 			{
 				itemp = new LLFolderViewItem(new_listener->getDisplayName(),
 												new_listener->getIcon(),
+												NULL,
+												NULL,
 												new_listener->getCreationDate(),
 												panelp->getRootFolder(),
 												new_listener);
@@ -102,7 +108,7 @@ void LLBuildNewViewsScheduler::buildNewViews(LLInventoryPanel* panelp, LLInvento
 
 		if (itemp)
 		{
-			itemp->mDelayedDelete = TRUE;
+			//itemp->mDelayedDelete = TRUE;
 			if (parent_folder)
 			{
 				itemp->addToFolder(parent_folder, panelp->getRootFolder());

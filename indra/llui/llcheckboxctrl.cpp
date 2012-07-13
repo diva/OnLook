@@ -113,37 +113,27 @@ LLCheckBoxCtrl::LLCheckBoxCtrl(const std::string& name, const LLRect& rect,
 		LLCHECKBOXCTRL_VPAD,
 		LLCHECKBOXCTRL_BTN_SIZE + LLCHECKBOXCTRL_SPACING + text_width + LLCHECKBOXCTRL_HPAD,
 		llmax( text_height, LLCHECKBOXCTRL_BTN_SIZE ) + LLCHECKBOXCTRL_VPAD);
-	std::string active_true_id, active_false_id;
-	std::string inactive_true_id, inactive_false_id;
-	if (mRadioStyle)
-	{
-		active_true_id = "UIImgRadioActiveSelectedUUID";
-		active_false_id = "UIImgRadioActiveUUID";
-		inactive_true_id = "UIImgRadioInactiveSelectedUUID";
-		inactive_false_id = "UIImgRadioInactiveUUID";
-		mButton = new LLButton(std::string("Radio control button"), btn_rect,
-							   active_false_id, active_true_id, control_which,
-							   &LLCheckBoxCtrl::onButtonPress, this, LLFontGL::getFontSansSerif() ); 
-		mButton->setDisabledImages( inactive_false_id, inactive_true_id );
-		mButton->setHoverGlowStrength(0.35f);
-	}
-	else
-	{
-		active_false_id = "UIImgCheckboxActiveUUID";
-		active_true_id = "UIImgCheckboxActiveSelectedUUID";
-		inactive_true_id = "UIImgCheckboxInactiveSelectedUUID";
-		inactive_false_id = "UIImgCheckboxInactiveUUID";
-		mButton = new LLButton(std::string("Checkbox control button"), btn_rect,
-							   active_false_id, active_true_id, control_which,
-							   &LLCheckBoxCtrl::onButtonPress, this, LLFontGL::getFontSansSerif() ); 
-		mButton->setDisabledImages( inactive_false_id, inactive_true_id );
-		mButton->setHoverGlowStrength(0.35f);
-	}
+
+	std::string active_true_id		= mRadioStyle ? "UIImgRadioActiveSelectedUUID" : "UIImgCheckboxActiveSelectedUUID";
+	std::string active_false_id		= mRadioStyle ? "UIImgRadioActiveUUID" : "UIImgCheckboxActiveUUID";
+	std::string inactive_true_id	= mRadioStyle ? "UIImgRadioInactiveSelectedUUID" : "UIImgCheckboxInactiveSelectedUUID";
+	std::string inactive_false_id	= mRadioStyle ? "UIImgRadioInactiveUUID" : "UIImgCheckboxInactiveUUID";
+	std::string button_name			= mRadioStyle ? "Radio control button" : "Checkbox control button";
+
+	mButton = new LLButton(	button_name, btn_rect,
+							active_false_id, active_true_id, control_which,
+							&LLCheckBoxCtrl::onButtonPress, this, LLFontGL::getFontSansSerif() ); 
+
+	mButton->setImageDisabledSelected(LLUI::getUIImage(inactive_true_id));
+	mButton->setImageDisabled(LLUI::getUIImage(inactive_false_id));
+	mButton->setHoverGlowStrength(0.35f);
+
 	mButton->setIsToggle(TRUE);
 	mButton->setToggleState( initial_value );
 	mButton->setFollowsLeft();
 	mButton->setFollowsBottom();
 	mButton->setCommitOnReturn(FALSE);
+	mButton->setScaleImage(FALSE);
 	addChild(mButton);
 }
 
@@ -156,22 +146,8 @@ LLCheckBoxCtrl::~LLCheckBoxCtrl()
 // static
 void LLCheckBoxCtrl::onButtonPress( void *userdata )
 {
-	LLCheckBoxCtrl* self = (LLCheckBoxCtrl*) userdata;
-
-	if (self->mRadioStyle)
-	{
-		self->setValue(TRUE);
-	}
-
-	self->setControlValue(self->getValue());
-	// HACK: because buttons don't normally commit
+	LLCheckBoxCtrl* self = (LLCheckBoxCtrl*)userdata;
 	self->onCommit();
-
-	if (self->mKeyboardFocusOnClick)
-	{
-		self->setFocus( TRUE );
-		self->onFocusReceived();
-	}
 }
 
 void LLCheckBoxCtrl::onCommit()
@@ -179,6 +155,7 @@ void LLCheckBoxCtrl::onCommit()
 	if( getEnabled() )
 	{
 		setTentative(FALSE);
+		setControlValue(getValue());
 		LLUICtrl::onCommit();
 	}
 }
@@ -186,7 +163,15 @@ void LLCheckBoxCtrl::onCommit()
 void LLCheckBoxCtrl::setEnabled(BOOL b)
 {
 	LLView::setEnabled(b);
-	mButton->setEnabled(b);
+
+	if (b)
+	{
+		mLabel->setColor( mTextEnabledColor.get() );
+	}
+	else
+	{
+		mLabel->setColor( mTextDisabledColor.get() );
+	}
 }
 
 void LLCheckBoxCtrl::clear()
@@ -219,21 +204,6 @@ void LLCheckBoxCtrl::reshape(S32 width, S32 height, BOOL called_from_parent)
 	LLUICtrl::reshape(width, height, called_from_parent);
 }
 
-void LLCheckBoxCtrl::draw()
-{
-	if (getEnabled())
-	{
-		mLabel->setColor( mTextEnabledColor );
-	}
-	else
-	{
-		mLabel->setColor( mTextDisabledColor );
-	}
-
-	// Draw children
-	LLUICtrl::draw();
-}
-
 //virtual
 void LLCheckBoxCtrl::setValue(const LLSD& value )
 {
@@ -244,6 +214,18 @@ void LLCheckBoxCtrl::setValue(const LLSD& value )
 LLSD LLCheckBoxCtrl::getValue() const
 {
 	return mButton->getValue();
+}
+
+//virtual
+void LLCheckBoxCtrl::setTentative(BOOL b)
+{
+	mButton->setTentative(b);
+}
+
+//virtual
+BOOL LLCheckBoxCtrl::getTentative() const
+{
+	return mButton->getTentative();
 }
 
 void LLCheckBoxCtrl::setLabel( const LLStringExplicit& label )
@@ -282,7 +264,7 @@ BOOL	 LLCheckBoxCtrl::isDirty() const
 {
 	if ( mButton )
 	{
-		return (mSetValue != mButton->getToggleState());
+		return mButton->isDirty();
 	}
 	return FALSE;		// Shouldn't get here
 }
@@ -293,9 +275,10 @@ void	LLCheckBoxCtrl::resetDirty()
 {
 	if ( mButton )
 	{
-		mSetValue = mButton->getToggleState();
+		mButton->resetDirty();
 	}
 }
+
 
 
 // virtual

@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 #include "llwearabletype.h"
+#include "llinventoryfunctions.h"
 #include "lltrans.h"
 
 struct WearableEntry : public LLDictionaryEntry
@@ -39,6 +40,7 @@ struct WearableEntry : public LLDictionaryEntry
 		LLDictionaryEntry(name),
 		mAssetType(assetType),
 		mDefaultNewName(default_new_name),
+		//*TODO:Translate
 		mLabel(/*LLTrans::getString*/(name)),
 		mIconName(iconName),
 		mDisableCameraSwitch(disable_camera_switch),
@@ -59,6 +61,12 @@ class LLWearableDictionary : public LLSingleton<LLWearableDictionary>,
 {
 public:
 	LLWearableDictionary();
+
+// [RLVa:KB] - Checked: 2010-03-03 (RLVa-1.2.0a) | Added: RLVa-1.2.0a
+protected:
+	// The default implementation asserts on 'notFound()' and returns -1 which isn't a valid EWearableType
+	virtual LLWearableType::EType notFound() const { return LLWearableType::WT_INVALID; }
+// [/RLVa:KB]
 };
 
 LLWearableDictionary::LLWearableDictionary()
@@ -150,9 +158,9 @@ BOOL LLWearableType::getDisableCameraSwitch(LLWearableType::EType type)
 // static 
 BOOL LLWearableType::getAllowMultiwear(LLWearableType::EType type)
 {
-	return false; //Disabled
-	/*const LLWearableDictionary *dict = LLWearableDictionary::getInstance();
+	const LLWearableDictionary *dict = LLWearableDictionary::getInstance();
 	const WearableEntry *entry = dict->lookup(type);
 	if (!entry) return FALSE;
-	return entry->mAllowMultiwear;*/
+	return entry->mAllowMultiwear;
 }
+

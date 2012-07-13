@@ -70,7 +70,7 @@ def quote(opts):
 class PlatformSetup(object):
     generator = None
     build_types = {}
-    for t in ('Debug', 'Release', 'ReleaseSSE2', 'RelWithDebInfo'):
+    for t in ('Debug', 'Release', 'RelWithDebInfo'):
         build_types[t.lower()] = t
 
     build_type = build_types['relwithdebinfo']
@@ -764,7 +764,7 @@ Options:
        --unattended     build unattended, do not invoke any tools requiring
                         a human response
        --universal      build a universal binary on Mac OS X (unsupported)
-  -t | --type=NAME      build type ("Debug", "Release", "ReleaseSSE2", or "RelWithDebInfo")
+  -t | --type=NAME      build type ("Debug", "Release", or "RelWithDebInfo")
   -m32 | -m64           build architecture (32-bit or 64-bit)
   -N | --no-distcc      disable use of distcc
   -G | --generator=NAME generator name

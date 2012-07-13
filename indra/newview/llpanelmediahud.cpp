@@ -129,20 +129,20 @@ BOOL LLPanelMediaHUD::postBuild()
 
 	LLButton* scroll_up_btn = getChild<LLButton>("scrollup");
 	scroll_up_btn->setClickedCallback(onScrollUp, this);
-	scroll_up_btn->setHeldDownCallback(onScrollUpHeld);
-	scroll_up_btn->setMouseUpCallback(onScrollStop);
+	scroll_up_btn->setHeldDownCallback(onScrollUpHeld, this);
+	scroll_up_btn->setMouseUpCallback(onScrollStop, this);
 	LLButton* scroll_left_btn = getChild<LLButton>("scrollleft");
 	scroll_left_btn->setClickedCallback(onScrollLeft, this);
-	scroll_left_btn->setHeldDownCallback(onScrollLeftHeld);
-	scroll_left_btn->setMouseUpCallback(onScrollStop);
+	scroll_left_btn->setHeldDownCallback(onScrollLeftHeld, this);
+	scroll_left_btn->setMouseUpCallback(onScrollStop, this);
 	LLButton* scroll_right_btn = getChild<LLButton>("scrollright");
 	scroll_right_btn->setClickedCallback(onScrollRight, this);
-	scroll_right_btn->setHeldDownCallback(onScrollLeftHeld);
-	scroll_right_btn->setMouseUpCallback(onScrollStop);
+	scroll_right_btn->setHeldDownCallback(onScrollLeftHeld, this);
+	scroll_right_btn->setMouseUpCallback(onScrollStop, this);
 	LLButton* scroll_down_btn = getChild<LLButton>("scrolldown");
 	scroll_down_btn->setClickedCallback(onScrollDown, this);
-	scroll_down_btn->setHeldDownCallback(onScrollDownHeld);
-	scroll_down_btn->setMouseUpCallback(onScrollStop);
+	scroll_down_btn->setHeldDownCallback(onScrollDownHeld, this);
+	scroll_down_btn->setMouseUpCallback(onScrollStop, this);
 
 	mMouseInactiveTime = gSavedSettings.getF32("MediaControlTimeout");
 	mControlFadeTime = gSavedSettings.getF32("MediaControlFadeTime");
