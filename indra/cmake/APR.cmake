@@ -33,8 +33,8 @@ else (STANDALONE)
       optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libapr-1.0.dylib
       )
     set(APRUTIL_LIBRARIES 
-      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.0.dylib
-      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.0.dylib
+      debug ${ARCH_PREBUILT_DIRS_DEBUG}/libaprutil-1.dylib
+      optimized ${ARCH_PREBUILT_DIRS_RELEASE}/libaprutil-1.dylib
       )
     set(APRICONV_LIBRARIES iconv)
   else (WINDOWS)
