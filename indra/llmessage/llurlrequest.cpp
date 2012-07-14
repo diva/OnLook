@@ -471,6 +471,9 @@ void LLURLRequest::initialize()
 		return ;
 	}
 
+#ifndef CURLTHREADING_BRANCH
+	mDetail->mCurlRequest->setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+#endif
 	mDetail->mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
 	mDetail->mCurlRequest->setWriteCallback(&downCallback, (void*)this);
 	mDetail->mCurlRequest->setReadCallback(&upCallback, (void*)this);

@@ -501,6 +501,9 @@ void LLCurl::Easy::prepRequest(const std::string& url,
 	if (post) setoptString(CURLOPT_ENCODING, "");
 
 	//setopt(CURLOPT_VERBOSE, 1); // useful for debugging
+#ifndef CURLTHREADING_BRANCH
+	setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+#endif
 	setopt(CURLOPT_NOSIGNAL, 1);
 
 	// Set the CURL options for either Socks or HTTP proxy
