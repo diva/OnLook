@@ -214,6 +214,8 @@
           <string>F32</string>
           <key>Value</key>
           <real>0.5</real>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>BuildPrefs_Ysize</key>
         <map>
@@ -225,6 +227,8 @@
           <string>F32</string>
           <key>Value</key>
           <real>0.5</real>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>BuildPrefs_Zsize</key>
         <map>
@@ -236,6 +240,8 @@
           <string>F32</string>
           <key>Value</key>
           <real>0.5</real>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Phantom</key>
         <map>
@@ -247,6 +253,8 @@
           <string>Boolean</string>
           <key>Value</key>
           <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Temporary</key>
         <map>
@@ -258,6 +266,8 @@
           <string>Boolean</string>
           <key>Value</key>
           <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Physical</key>
         <map>
@@ -269,6 +279,8 @@
           <string>Boolean</string>
           <key>Value</key>
           <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_EmbedItem</key>
         <map>
@@ -280,6 +292,8 @@
           <string>Boolean</string>
           <key>Value</key>
           <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>BuildPrefs_Material</key>
         <map>
@@ -291,6 +305,8 @@
           <string>String</string>
           <key>Value</key>
           <string>Wood</string>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Color</key>
         <map>
@@ -307,6 +323,8 @@
             <real>1.0</real>
             <real>1.0</real>
           </array>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Texture</key>
         <map>
@@ -318,6 +336,8 @@
           <string>String</string>
           <key>Value</key>
           <string>89556747-24cb-43ed-920b-47caed15465f</string>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Alpha</key>
         <map>
@@ -329,6 +349,8 @@
           <string>F32</string>
           <key>Value</key>
           <real>0.0</real>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Glow</key>
         <map>
@@ -340,6 +362,8 @@
           <string>F32</string>
           <key>Value</key>
           <real>0.0</real>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_FullBright</key>
         <map>
@@ -351,6 +375,8 @@
           <string>Boolean</string>
           <key>Value</key>
           <integer>0</integer>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
         <key>EmeraldBuildPrefs_Shiny</key>
         <map>
@@ -362,6 +388,21 @@
           <string>String</string>
           <key>Value</key>
           <string>None</string>
+          <key>IsCOA</key>
+          <integer>1</integer>
+        </map>
+        <key>LiruEnableBuildPrefs</key>
+        <map>
+          <key>Comment</key>
+          <string>When false, disables all defaults set in the building preferences panel, without resetting them.</string>
+          <key>Persist</key>
+          <integer>1</integer>
+          <key>Type</key>
+          <string>Boolean</string>
+          <key>Value</key>
+          <string>1</string>
+          <key>IsCOA</key>
+          <integer>1</integer>
         </map>
 	</map>
 </llsd>

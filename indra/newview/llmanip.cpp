@@ -355,11 +355,17 @@ LLVector3 LLManip::getPivotPoint()
 {
 	static LLCachedControl<bool> actual_root("AscentBuildPrefs_ActualRoot");
 	static LLCachedControl<bool> pivot_as_percent("AscentBuildPrefs_PivotIsPercent");
-	static LLCachedControl<F32> pivot_x("AscentBuildPrefs_PivotX");
-	static LLCachedControl<F32> pivot_y("AscentBuildPrefs_PivotY");
-	static LLCachedControl<F32> pivot_z("AscentBuildPrefs_PivotZ");
-	LLVector3 offset(pivot_x,pivot_y,pivot_z);
-
+	LLVector3 offset(50,50,50);
+	//Are we are using the defaults?
+	if(gSavedSettings.getBOOL("LiruEnableBuildPrefs"))
+	{
+		static LLCachedControl<F32> pivot_x("AscentBuildPrefs_PivotX");
+		static LLCachedControl<F32> pivot_y("AscentBuildPrefs_PivotY");
+		static LLCachedControl<F32> pivot_z("AscentBuildPrefs_PivotZ");
+		offset = LLVector3(pivot_x,pivot_y,pivot_z);
+	}
+	else
+		pivot_as_percent = true;
 	if (mObjectSelection->getFirstRootObject(TRUE) && (mObjectSelection->getObjectCount() == 1 || actual_root) && mObjectSelection->getSelectType() != SELECT_TYPE_HUD)
 	{
 		if(pivot_as_percent)
