@@ -240,6 +240,9 @@ void LLXMLRPCTransaction::Impl::init(XMLRPC_REQUEST request, bool useGzip)
 	LLProxy::getInstance()->applyProxySettings(mCurlRequest);
 
 //	mCurlRequest->setopt(CURLOPT_VERBOSE, 1); // usefull for debugging
+#ifndef CURLTHREADING_BRANCH
+	mCurlRequest->setopt(CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
+#endif
 	mCurlRequest->setopt(CURLOPT_NOSIGNAL, 1);
 	mCurlRequest->setWriteCallback(&curlDownloadCallback, (void*)this);
     	BOOL vefifySSLCert = !gSavedSettings.getBOOL("NoVerifySSLCert");
