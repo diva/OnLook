@@ -683,7 +683,8 @@ void LLFloaterChat::onClickToggleActiveSpeakers(void* userdata)
 void LLFloaterChat::onClickChatHistoryOpen(void* userdata)
 {
 	char command[256];
-	sprintf(command, "\"%s\\%s\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), "chat.txt");
+
+	sprintf(command, "\"%s%s%s\"", gDirUtilp->getPerAccountChatLogsDir().c_str(), gDirUtilp->getDirDelimiter().c_str(), "chat.txt");
 	gViewerWindow->getWindow()->ShellEx(command);
 
 	llinfos << command << llendl;
