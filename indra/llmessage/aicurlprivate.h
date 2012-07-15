@@ -337,7 +337,8 @@ class ThreadSafeCurlEasyRequest : public AIThreadSafeSimple<CurlEasyRequest> {
 	virtual ~ThreadSafeCurlEasyRequest()
 	    { Dout(dc::curl, "Destructing ThreadSafeCurlEasyRequest with this = " << (void*)this); }
 
-	/*virtual*/ bool isBuffered(void) const { return false; }
+	// Returns true if this is a base class of ThreadSafeBufferedCurlEasyRequest.
+	virtual bool isBuffered(void) const { return false; }
 
   private:
 	LLAtomicU32 mReferenceCount;
