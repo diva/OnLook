@@ -693,6 +693,7 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 	}
 
 	mSampleBuffer.release();
+	mScreen.release();
 
 	if (LLPipeline::sRenderDeferred)
 	{
@@ -906,6 +907,8 @@ void LLPipeline::releaseScreenBuffers()
 	{
 		mShadow[i].release();
 	}
+
+	mSampleBuffer.release();
 }
 
 
