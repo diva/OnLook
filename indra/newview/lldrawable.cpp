@@ -802,6 +802,7 @@ void LLDrawable::updateTexture()
 			}
 		}*/
 				
+		getVOVolume()->mFaceMappingChanged = TRUE;
 		gPipeline.markRebuild(this, LLDrawable::REBUILD_MATERIAL, TRUE);
 	}
 }
