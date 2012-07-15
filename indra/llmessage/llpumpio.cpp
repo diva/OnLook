@@ -198,19 +198,25 @@ LLPumpIO::~LLPumpIO()
 	}
 }
 
-bool LLPumpIO::addChain(const chain_t& chain, F32 timeout, bool has_curl_request)
+bool LLPumpIO::addChain(chain_t const& chain, F32 timeout)
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
-	if(chain.empty()) return false;
 
-#if LL_THREADS_APR
-	LLScopedLock lock(mChainsMutex);
-#endif
+	chain_t::const_iterator it = chain.begin();
+	chain_t::const_iterator const end = chain.end();
+	if (it == end) return false;
+
 	LLChainInfo info;
-	info.mHasCurlRequest = has_curl_request;
+	for(; it != end; ++it)
+	{
+		if ((*it)->hasExpiration())
+		{
+			info.mHasExpiration = true;
+			break;
+		}
+	}
 	info.setTimeoutSeconds(timeout);
 	info.mData = LLIOPipe::buffer_ptr_t(new LLBufferArray);
-	info.mData->setThreaded(has_curl_request);
 	LLLinkInfo link;
 #if LL_DEBUG_PIPE_TYPE_IN_PUMP
 	lldebugs << "LLPumpIO::addChain() " << chain[0] << " '"
@@ -218,14 +224,16 @@ bool LLPumpIO::addChain(const chain_t& chain, F32 timeout, bool has_curl_request
 #else
 	lldebugs << "LLPumpIO::addChain() " << chain[0] <<llendl;
 #endif
-	chain_t::const_iterator it = chain.begin();
-	chain_t::const_iterator end = chain.end();
+	it = chain.begin();
 	for(; it != end; ++it)
 	{
 		link.mPipe = (*it);
 		link.mChannels = info.mData->nextChannel();
 		info.mChainLinks.push_back(link);
 	}
+#if LL_THREADS_APR
+	LLScopedLock lock(mChainsMutex);
+#endif
 	mPendingChains.push_back(info);
 	return true;
 }
@@ -1086,14 +1094,14 @@ void LLPumpIO::processChain(LLChainInfo& chain)
 
 bool LLPumpIO::isChainExpired(LLChainInfo& chain)
 {
-	if(!chain.mHasCurlRequest)
+	if(!chain.mHasExpiration)
 	{
 		return false ;
 	}
 
 	for(links_t::iterator iter = chain.mChainLinks.begin(); iter != chain.mChainLinks.end(); ++iter)
 	{
-		if(!(*iter).mPipe->isValid())
+		if(!(*iter).mPipe->hasNotExpired())
 		{
 			return true ;
 		}
@@ -1168,7 +1176,7 @@ LLPumpIO::LLChainInfo::LLChainInfo() :
 	mInit(false),
 	mLock(0),
 	mEOS(false),
-	mHasCurlRequest(false),
+	mHasExpiration(false),
 	mDescriptorsPool(new LLAPRPool(LLThread::tldata().mRootPool))
 {
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);

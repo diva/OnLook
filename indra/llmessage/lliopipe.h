@@ -231,7 +231,16 @@ public:
 	 */
 	virtual ~LLIOPipe();
 
-	virtual bool isValid() ;
+	/**
+	 * @brief External expiration facility.
+	 *
+	 * If hasExpiration() returns true, then we need to check hasNotExpired()
+	 * to see if the LLIOPipe is still valid. In the legacy LL code the
+	 * latter was called isValid() and was overloaded for two purposes:
+	 * either expiration or failure to initialize.
+	 */
+	virtual bool hasExpiration(void) const;
+	virtual bool hasNotExpired(void) const;
 
 protected:
 	/**

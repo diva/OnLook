@@ -260,11 +260,22 @@ void LLURLRequest::allowCookies()
 }
 
 //virtual 
-bool LLURLRequest::isValid() 
+bool LLURLRequest::hasExpiration(void) const
 {
-	//FIXME - wtf is with this isValid?
-	//return mDetail->mCurlRequest->isValid(); 
-	return true;
+	// Currently, this ALWAYS returns false -- because only AICurlEasyRequestStateMachine uses buffered
+	// AICurlEasyRequest objects, and LLURLRequest uses (unbuffered) AICurlEasyRequest directly, which
+	// have no expiration facility.
+	return mDetail->mCurlEasyRequest.isBuffered();
+}
+
+//virtual 
+bool LLURLRequest::hasNotExpired(void) const
+{
+	if (!mDetail->mCurlEasyRequest.isBuffered())
+	  return true;
+	AICurlEasyRequest_wat buffered_easy_request_w(*mDetail->mCurlEasyRequest);
+	AICurlResponderBuffer_wat buffer_w(*mDetail->mCurlEasyRequest);
+	return buffer_w->isValid();
 }
 
 // virtual
@@ -274,7 +285,7 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 {
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
 	
-	if(!isValid())
+	if(!hasNotExpired())
 	{
 		return STATUS_EXPIRED ;
 	}

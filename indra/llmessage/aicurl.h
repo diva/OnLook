@@ -274,6 +274,9 @@ class AICurlEasyRequest {
 	// Queue a command to remove this request from the multi session (or cancel a queued command to add it).
 	void removeRequest(void);
 
+	// Returns true when this AICurlEasyRequest wraps a AICurlPrivate::ThreadSafeBufferedCurlEasyRequest.
+	bool isBuffered(void) const { return mCurlEasyRequest->isBuffered(); }
+
   private:
 	// The actual pointer to the ThreadSafeCurlEasyRequest instance.
 	AICurlPrivate::CurlEasyRequestPtr mCurlEasyRequest;

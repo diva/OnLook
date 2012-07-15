@@ -318,6 +318,10 @@ class CurlResponderBuffer : protected AICurlEasyHandleEvents {
   public:
 	// Return pointer to the ThreadSafe (wrapped) version of this object.
 	ThreadSafeBufferedCurlEasyRequest* get_lockobj(void);
+
+	// Return true when prepRequest was already called and the object has not been
+	// invalidated as a result of calling timed_out().
+	bool isValid(void) const { return mResponder; }
 };
 
 // This class wraps CurlEasyRequest for thread-safety and adds a reference counter so we can
@@ -332,6 +336,8 @@ class ThreadSafeCurlEasyRequest : public AIThreadSafeSimple<CurlEasyRequest> {
 		  Dout(dc::curl, "Creating ThreadSafeCurlEasyRequest with this = " << (void*)this); }
 	virtual ~ThreadSafeCurlEasyRequest()
 	    { Dout(dc::curl, "Destructing ThreadSafeCurlEasyRequest with this = " << (void*)this); }
+
+	/*virtual*/ bool isBuffered(void) const { return false; }
 
   private:
 	LLAtomicU32 mReferenceCount;
@@ -351,6 +357,8 @@ class ThreadSafeBufferedCurlEasyRequest : public ThreadSafeCurlEasyRequest, publ
   public:
 	// Throws AICurlNoEasyHandle.
 	ThreadSafeBufferedCurlEasyRequest(void) { new (AIThreadSafeSimple<CurlResponderBuffer>::ptr()) CurlResponderBuffer; }
+
+	/*virtual*/ bool isBuffered(void) const { return true; }
 };
 
 // The curl easy request type wrapped in a reference counting pointer.
