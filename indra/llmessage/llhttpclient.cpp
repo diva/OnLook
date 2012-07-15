@@ -441,9 +441,6 @@ static LLSD blocking_request(
 	LLProxy::getInstance()->applyProxySettings(curlp);
 	
 	// * Set curl handle options
-#ifndef CURLTHREADING_BRANCH
-	curl_easy_setopt(curlp, CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
-#endif
 	curl_easy_setopt(curlp, CURLOPT_NOSIGNAL, 1);	// don't use SIGALRM for timeouts
 	curl_easy_setopt(curlp, CURLOPT_TIMEOUT, timeout);	// seconds, see warning at top of function.
 	curl_easy_setopt(curlp, CURLOPT_WRITEFUNCTION, LLHTTPBuffer::curl_write);
