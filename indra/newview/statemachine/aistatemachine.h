@@ -350,6 +350,9 @@ class AIStateMachine {
 	//! Return true if the derived class is running (also when we are idle).
 	bool running(void) const { return mState == bs_run; }
 
+	//! Return true if it's safe to call abort.
+	bool abortable(void) const { return (mState == bs_run && (!mIdle || is_main_thread())) || mState == bs_initialize; }
+
 	//! Return true if the derived class is running but idle.
 	bool waiting(void) const { return mState == bs_run && mIdle; }
 

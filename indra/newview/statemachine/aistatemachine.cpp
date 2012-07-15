@@ -603,7 +603,7 @@ void AIStateMachine::flush(void)
   for (active_statemachines_type::iterator iter = active_statemachines.begin(); iter != active_statemachines.end(); ++iter)
   {
 	AIStateMachine& statemachine(iter->statemachine());
-	if (statemachine.running())
+	if (statemachine.abortable())
 	  statemachine.abort();
   }
   for (int batch = 0;; ++batch)
