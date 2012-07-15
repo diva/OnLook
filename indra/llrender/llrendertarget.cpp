@@ -793,6 +793,7 @@ bool LLMultisampleBuffer::addColorAttachment(U32 color_fmt)
 	}
 
 	mTex.push_back(tex);
+	mInternalFormat.push_back(color_fmt);
 	return true;
 }
 
