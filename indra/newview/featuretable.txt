@@ -152,7 +152,7 @@ RenderObjectBump			1	1
 RenderLocalLights			1	1
 RenderReflectionDetail		1	2
 RenderTerrainDetail			1	1
-RenderTerrainScale			1	6.0
+RenderTerrainScale			1	7.0
 RenderTerrainLODFactor		1	2.0
 RenderTransparentWater		1	1
 RenderTreeLODFactor			1	0.5

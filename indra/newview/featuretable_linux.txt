@@ -147,8 +147,8 @@ RenderLocalLights			1	1
 RenderMaxPartCount			1	4096
 RenderObjectBump			1	1
 RenderReflectionDetail		1	2
-RenderTerrainScale			1	6.0
 RenderTerrainDetail			1	1
+RenderTerrainScale			1	7.0
 RenderTerrainLODFactor		1	2.0
 RenderTransparentWater		1	1
 RenderTreeLODFactor			1	0.5
@@ -160,7 +160,7 @@ WLSkyDetail					1	48
 RenderDeferred				1	0
 RenderDeferredSSAO			1	0
 RenderShadowDetail			1	0
-RenderFastAlpha				1	0
+RenderFSAASamples			1	0
 RenderUseFBO				1	0
 
 
