@@ -14,7 +14,7 @@ else (STANDALONE)
       debug json_vc${MSVC_SUFFIX}d
       optimized json_vc${MSVC_SUFFIX})
   elseif (DARWIN)
-    set(JSONCPP_LIBRARIES json_mac-universal-gcc_libmt)
+    set(JSONCPP_LIBRARIES json_linux-gcc-4.0.1_libmt)
   elseif (LINUX)
     set(JSONCPP_LIBRARIES jsoncpp)
   endif (WINDOWS)

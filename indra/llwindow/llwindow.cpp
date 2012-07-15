@@ -113,6 +113,7 @@ LLWindow::LLWindow(LLWindowCallbacks* callbacks, BOOL fullscreen, U32 flags)
 	  mSupportedResolutions(NULL),
 	  mNumSupportedResolutions(0),
 	  mCurrentCursor(UI_CURSOR_ARROW),
+	  mNextCursor(UI_CURSOR_ARROW),
 	  mCursorHidden(FALSE),
 	  mBusyCount(0),
 	  mIsMouseClipping(FALSE),
@@ -125,7 +126,6 @@ LLWindow::LLWindow(LLWindowCallbacks* callbacks, BOOL fullscreen, U32 flags)
 
 LLWindow::~LLWindow()
 {
-
 }
 
 //virtual
@@ -139,6 +139,7 @@ BOOL LLWindow::canDelete()
 {
 	return TRUE;
 }
+
 // virtual
 void LLWindow::incBusyCount()
 {

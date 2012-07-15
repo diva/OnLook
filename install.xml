@@ -87,9 +87,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>a2794fbeeb03f530a6b7a0879c544f32</string>
+            <string>3cae5f0fd8f3dd80a59b450562f781bc</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-darwin-20120618.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-darwin-20120715.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
@@ -127,9 +127,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>e4c0aa075086ec2f6b62c9498b381d63</string>
+            <string>90b8ec87cab3debaf8da5436dc8f3819</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.1-darwin-20110217.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.1-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
@@ -652,9 +652,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>ebad9348d0cbf1d768de727c1d6e1822</string>
+            <string>6505f9e93ac0f7595df8dd566f49c298</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-darwin-20110228.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-8c-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
@@ -944,9 +944,9 @@
           <key>darwin</key>
           <map>
             <key>md5sum</key>
-            <string>095e8a20cd0c74e2121ca81fdf389d25</string>
+            <string>1acdf58efa7a728fd390a710c659ec65</string>
             <key>url</key>
-            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-darwin-20120207.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-darwin-20120712.tar.bz2</uri>
           </map>
           <key>linux</key>
           <map>
