@@ -325,9 +325,6 @@ int HippoRestRequest::getBlocking(const std::string &url, std::string *result)
 	char curlErrorBuffer[CURL_ERROR_SIZE];
 	CURL* curlp = curl_easy_init();
 
-#ifndef CURLTHREADING_BRANCH
-	curl_easy_setopt(curlp, CURLOPT_SSLVERSION, (long)CURL_SSLVERSION_TLSv1);
-#endif
 	curl_easy_setopt(curlp, CURLOPT_NOSIGNAL, 1);	// don't use SIGALRM for timeouts
 	curl_easy_setopt(curlp, CURLOPT_TIMEOUT, 5);	// seconds
         curl_easy_setopt(curlp, CURLOPT_CAINFO, gDirUtilp->getCAFile().c_str());
