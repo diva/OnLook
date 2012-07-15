@@ -2874,6 +2874,23 @@ void LLViewerObject::processTaskInvFile(void** user_data, S32 error_code, LLExtS
 	   (object = gObjectList.findObject(ft->mTaskID)))
 	{
 		object->loadTaskInvFile(ft->mFilename);
+
+		LLInventoryObject::object_list_t::iterator it = object->mInventory->begin();
+		LLInventoryObject::object_list_t::iterator end = object->mInventory->end();
+		std::list<LLUUID>& pending_lst = object->mPendingInventoryItemsIDs;
+
+		for (; it != end && pending_lst.size(); ++it)
+		{
+			LLViewerInventoryItem* item = dynamic_cast<LLViewerInventoryItem*>(it->get());
+			if(item && item->getType() != LLAssetType::AT_CATEGORY)
+			{
+				std::list<LLUUID>::iterator id_it = std::find(pending_lst.begin(), pending_lst.begin(), item->getAssetUUID());
+				if (id_it != pending_lst.end())
+				{
+					pending_lst.erase(id_it);
+				}
+			}
+		}
 	}
 	else
 	{
@@ -4894,9 +4911,11 @@ void LLViewerObject::deleteParticleSource()
 // virtual
 void LLViewerObject::updateDrawable(BOOL force_damped)
 {
-	if (mDrawable.notNull() && 
-		!mDrawable->isState(LLDrawable::ON_MOVE_LIST) &&
-		isChanged(MOVED))
+	if (!isChanged(MOVED))
+	{ //most common case, having an empty if case here makes for better branch prediction
+	}
+	else if (mDrawable.notNull() && 
+		!mDrawable->isState(LLDrawable::ON_MOVE_LIST))
 	{
 		BOOL damped_motion = 
 			!isChanged(SHIFTED) &&										// not shifted between regions this frame and...

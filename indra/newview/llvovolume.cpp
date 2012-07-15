@@ -1435,7 +1435,7 @@ BOOL LLVOVolume::updateGeometry(LLDrawable *drawable)
 		return TRUE; // No update to complete
 	}
 
-	if (mVolumeChanged || mFaceMappingChanged || mDrawable->isState(LLDrawable::REBUILD_MATERIAL))
+	if (mVolumeChanged || mFaceMappingChanged)
 	{
 		dirtySpatialGroup(drawable->isState(LLDrawable::IN_REBUILD_Q1));
 
