@@ -1,230 +1,97 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <menu name="Popup">
-	  <menu_item_call name="Task Buy" label="Comprar" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="task_buy" />
-	  </menu_item_call>
-	  <menu_item_call name="Task Open" label="Abrir" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="task_open" />
-	  </menu_item_call>
-	  <menu_item_call name="Task Play" label="Reproducir" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="task_play" />
-	  </menu_item_call>
-	  <menu_item_call name="Task Properties" label="Propiedades" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="task_properties" />
-	  </menu_item_call>
-	  <menu_item_call name="Task Rename" label="Renombrar" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="rename" />
-	  </menu_item_call>
-	  <menu_item_call name="Task Remove" label="Borrar" >
-			 <on_click filter="" function="Inventory.DoToSelected" userdata="delete" />
-	  </menu_item_call>
-	  <menu_item_call name="Empty Trash" label="Vaciar Papelera" >
-			 <on_click filter="" function="Inventory.EmptyTrash" userdata="rename" />
-	  </menu_item_call>
-	  <menu_item_call name="Empty Lost And Found" label="Vaciar Perdidos y Encontrados" >
-			 <on_click filter="" function="Inventory.EmptyLostAndFound" userdata="rename" />
-	  </menu_item_call>
-	  <menu_item_call name="New Folder" label="Carpeta nueva" >
-			 <on_click filter="" function="Inventory.DoCreate" userdata="category" />
-	  </menu_item_call>
-	  <menu_item_call name="New Script" label="Script nuevo" >
-			 <on_click filter="" function="Inventory.DoCreate" userdata="lsl" />
-	  </menu_item_call>
-	  <menu_item_call  name="New Note" label="Nota nueva" >
-			 <on_click filter="" function="Inventory.DoCreate" userdata="notecard" />
-	  </menu_item_call>
-	  <menu_item_call name="New Gesture" label="Gesto nuevo" >
-			 <on_click filter="" function="Inventory.DoCreate" userdata="gesture" />
-	  </menu_item_call>
+	  <menu_item_call name="Task Buy" label="Comprar" ></menu_item_call>
+	  <menu_item_call name="Task Open" label="Abrir" ></menu_item_call>
+	  <menu_item_call name="Task Play" label="Reproducir" ></menu_item_call>
+	  <menu_item_call name="Task Properties" label="Propiedades" ></menu_item_call>
+	  <menu_item_call name="Task Rename" label="Renombrar" ></menu_item_call>
+	  <menu_item_call name="Task Remove" label="Borrar" ></menu_item_call>
+	  <menu_item_call name="Empty Trash" label="Vaciar Papelera" ></menu_item_call>
+	  <menu_item_call name="Empty Lost And Found" label="Vaciar Perdidos y Encontrados" ></menu_item_call>
+	  <menu_item_call name="New Folder" label="Carpeta nueva" ></menu_item_call>
+	  <menu_item_call name="New Script" label="Script nuevo" ></menu_item_call>
+	  <menu_item_call  name="New Note" label="Nota nueva" ></menu_item_call>
+	  <menu_item_call name="New Gesture" label="Gesto nuevo" ></menu_item_call>
 	  <menu name="New Clothes" label="Nuevas Ropas">
-		<menu_item_call name="New Shirt" label=" Camisa nueva" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="shirt" />
-		</menu_item_call>
-		<menu_item_call name="New Pants" label="Pantalones nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="pants" />
-		</menu_item_call>
-		<menu_item_call name="New Shoes" label="Zapatos nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="shoes" />
-		</menu_item_call>
-		<menu_item_call name="New Socks" label=" Calzetines nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="socks" />
-		</menu_item_call>
-		<menu_item_call name="New Jacket" label="Chaqueta nueva" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="jacket" />
-		</menu_item_call>
-		<menu_item_call name="New Skirt" label="Falda nueva" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="skirt" />
-		</menu_item_call>
-		<menu_item_call name="New Gloves" label="Guantes nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="gloves" />
-		</menu_item_call>
-		<menu_item_call name="New Undershirt" label="Camiseta nueva" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="undershirt" />
-		</menu_item_call>
-		<menu_item_call name="New Underpants" label="Calzoncillos nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="underpants" />
-		</menu_item_call>
-		<menu_item_call name="New Tattoo" label="Tatuaje nuevo" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="tattoo" />
-		</menu_item_call>
-		<menu_item_call name="New Alpha" label="Alfa nueva" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="alpha" />
-		</menu_item_call>
-    <menu_item_call name="New Physics" label="Física nueva" >
-      <on_click filter="" function="Inventory.DoCreate" userdata="physics" />
-    </menu_item_call>
-	</menu>
-	<menu name="New Body Parts">
-		<menu_item_call name="New Shape" label="Shape nuevo" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="shape" />
-		</menu_item_call>
-		<menu_item_call name="New Skin" label="Skin nuevo" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="skin" />
-		</menu_item_call>
-		<menu_item_call name="New Hair" label="Pelo nuevo" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="hair" />
-		</menu_item_call>
-		<menu_item_call name="New Eyes" label="Ojos nuevos" >
-			<on_click filter="" function="Inventory.DoCreate" userdata="eyes" />
-		</menu_item_call>
-	</menu>
-	<menu_item_call name="Landmark Open" label="Teleport" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
-	</menu_item_call>
-	<menu_item_call name="Animation Open" label="Abrir" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
-	</menu_item_call>
-	<menu_item_call name="Sound Open" label="Abrir" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
-	</menu_item_call>
-	<menu_item_call name="Find Original" label="Encontrar original" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="goto" />
-	</menu_item_call>
-	<menu_item_call name="Purge Item" label="Limpiar objeto" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="purge" />
-	</menu_item_call>
-	<menu_item_call name="Restore Item" label="Restaurar objeto" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="restore" />
-	</menu_item_call>
-	<menu name="Open With...">
-		<menu_item_call name="Hex Open" label="Editor Hexa" >
-			<on_click filter="" function="Inventory.DoToSelected" userdata="open hex" />
-		</menu_item_call>
-		<menu_item_call name="Open Text" label="Editor de Texto" >
-			<on_click filter="" function="Inventory.DoToSelected" userdata="open text" />
-		</menu_item_call>
-		<menu_item_call name="Rez" label="Rezear Objeto" >
-			<on_click filter="" function="Inventory.DoToSelected" userdata="rez" />
-		</menu_item_call>
-	</menu>
-	<menu_item_call name="Open" label="Abrir" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
-	</menu_item_call>
-	<menu_item_call name="Properties" label="Propiedades">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="properties" />
-	</menu_item_call>
-	<menu_item_call name="Rename" label="Renombrar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="rename" />
-	</menu_item_call>
-	<menu_item_call name="Copy Asset UUID" label="Copiar Asset UUID" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="copy_uuid" />
-	</menu_item_call>
-	<menu_item_call name="Reupload..." label="Resubir..." >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="reupload" />
-	</menu_item_call>
-	<menu_item_call name="Acquire Asset ID" label="Adquirir Asset ID" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="acquire_asset_id" />
-	</menu_item_call>
-	<menu_item_separator name="Copy Separator" />
-	<menu_item_call name="Copy" label="Copiar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="copy" />
-	</menu_item_call>
-	<menu_item_call name="Paste" label="Pegar">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="paste" />
-	</menu_item_call>
-	<menu_item_call name="Paste As Link" label="Pegar como Link" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="paste_link" />
-	</menu_item_call>
-	<menu_item_call name="Restore to Last Position" label="Restaurar en el mundo" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="restoreToWorld" />
-	</menu_item_call>
-	<menu_item_separator name="Paste Separator" />
-	<menu_item_call name="Remove Link" label="Borrar Link" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="delete" />
-	</menu_item_call>
-	<menu_item_call name="Delete" label="Borrar">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="delete" />
-	</menu_item_call>
-	<menu_item_separator name="Folder Wearables Separator" />
-  <menu_item_call name="Wear Items" label="Vestirse objetos" >
-    <on_click filter="" function="Inventory.DoToSelected" userdata="wearitems" />
-  </menu_item_call>
-  <menu_item_call name="Add To Outfit" label="Añadirse objetos" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="addtooutfit" />
-	</menu_item_call>
-	<menu_item_call name="Replace Outfit" label="Reemplazar ropa" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="replaceoutfit" />
-	</menu_item_call>
-  <menu_item_call name="Take Off Items" label="Quitarse objetos" >
-    <on_click filter="" function="Inventory.DoToSelected" userdata="removefromoutfit" />
-  </menu_item_call>
-  <menu_item_separator name="Calling Card Separator" />
-	<menu_item_call name="Conference Chat Folder" label="Comenzar conversacion de grupo" >
-		<on_click filter="" function="Inventory.BeginIMSession" userdata="everyone" />
-	</menu_item_call>
-	<menu_item_separator name="Sound Separator" />
-	<menu_item_call name="Sound Play" label="Reproducir" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="open" />
-	</menu_item_call>
-	<menu_item_separator name="Landmark Separator" />
-	<menu_item_call name="Teleport To Landmark" label="Sobre el hito" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="about" />
-	</menu_item_call>
-	<menu_item_separator name="Animation Separator" />
-	<menu_item_call name="Animation Play" label="Reproducir en el mundo">
-		<on_click filter="" function="Inventory.DoToSelected" userdata="playworld" />
-	</menu_item_call>
-	<menu_item_call name="Animation Audition" label="Reproducir en la zona" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="playlocal" />
-	</menu_item_call>
-	<menu_item_separator name="Send Instant Message Separator" />
-	<menu_item_call name="Send Instant Message" label="Enviar IM" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="begin_im" />
-	</menu_item_call>
-	<menu_item_call name="Offer Teleport..." label="Ofrecer Teleport..." >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="lure" />
-	</menu_item_call>
-	<menu_item_call name="Conference Chat" label="Comenzar conversacion de grupo" >
-		<on_click filter="" function="Inventory.BeginIMSession" userdata="selected" />
-	</menu_item_call>
-	<menu_item_separator name="Gesture Separator" />
-	<menu_item_call name="Activate" label="Activar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="activate" />
-	</menu_item_call>
-	<menu_item_call name="Deactivate" label="Desactivar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="deactivate" />
-	</menu_item_call>
-	<menu_item_separator name="Attach Separator" />
-	<menu_item_call name="Object Wear" label="Vestirse" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="attach" />
-	</menu_item_call>
-	<menu_item_call name="Object Add" label="Agregar Objeto" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="wear_add" />
-	</menu_item_call>
-	<menu name="Attach To" label="Anexar a" />
-	<menu name="Attach To HUD" label="Anexar como HUD"  />
-	<menu_item_call name="Detach From Yourself" label="Desvestirse" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="detach" />
-	</menu_item_call>
-	<menu_item_call name="Wearable Edit" label="Editar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="edit" />
-	</menu_item_call>
-	<menu_item_call name="Wearable Wear"  label="Vestirse" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="wear" />
-	</menu_item_call>
-	<menu_item_call name="Take Off" label="Dejar" >
-		<on_click filter="" function="Inventory.DoToSelected" userdata="take_off" />
-	</menu_item_call>
-	<menu_item_call name="--no options--" label="--sin opciones--"  />
-	<--menu_item_separator name="Wearable Separator" /-->
+			 <menu_item_call name="New Shirt" label="Camisa nueva" ></menu_item_call>
+			 <menu_item_call name="New Pants" label="Pantalones nuevos" ></menu_item_call>
+			 <menu_item_call name="New Shoes" label="Zapatos nuevos" ></menu_item_call>
+			 <menu_item_call name="New Socks" label="Calcetines nuevos" ></menu_item_call>
+			 <menu_item_call name="New Jacket" label="Chaqueta nueva" ></menu_item_call>
+			 <menu_item_call name="New Skirt" label="Falda nueva" ></menu_item_call>
+			 <menu_item_call name="New Gloves" label="Guantes nuevos" ></menu_item_call>
+			 <menu_item_call name="New Undershirt" label="Camiseta nueva" ></menu_item_call>
+			 <menu_item_call name="New Underpants" label="Ropa Interior nueva" ></menu_item_call>
+			 <menu_item_call name="New Tattoo" label="Tatuaje nuevo" ></menu_item_call>
+			 <menu_item_call name="New Alpha" label="Alfa nueva" ></menu_item_call>
+			 <menu_item_call name="New Physics" label="Física nueva" ></menu_item_call>
+	  </menu>
+	  <menu name="New Body Parts" label="Partes de Cuerpo Nuevas" >
+			 <menu_item_call name="New Shape" label="Forma nueva" ></menu_item_call>
+			 <menu_item_call name="New Skin" label="Piel nueva" ></menu_item_call>
+			 <menu_item_call name="New Hair" label="Pelo nuevo" ></menu_item_call>
+			 <menu_item_call name="New Eyes" label="Ojos nuevos" ></menu_item_call>
+	  </menu>
+	  <menu_item_call name="Landmark Open" label="Teleport" ></menu_item_call>
+	  <menu_item_call name="Animation Open" label="Abrir" ></menu_item_call>
+	  <menu_item_call name="Sound Open" label="Abrir"></menu_item_call>
+	  <menu_item_call name="Find Original" label="Encontrar original" ></menu_item_call>
+	  <menu_item_call name="Purge Item" label="Limpiar objeto" ></menu_item_call>
+	  <menu_item_call name="Restore Item" label="Restaurar objeto" ></menu_item_call>
+	  <menu name="Open With..." label="Abrir con...">
+			 <menu_item_call name="Hex Open" label="Editor Hexa" ></menu_item_call>
+			 <menu_item_call name="Open Text" label="Editor de Texto" ></menu_item_call>
+			 <menu_item_call name="Rez" label="Rezear Objeto" ></menu_item_call>
+	  </menu>
+	  <menu_item_call name="Open" label="Abrir" ></menu_item_call>
+	  <menu_item_call name="Properties" label="Propiedades"></menu_item_call>
+	  <menu_item_call name="Rename" label="Renombrar" ></menu_item_call>
+	  <menu_item_call name="Copy Asset UUID" label="Copiar Asset UUID" ></menu_item_call>
+	  <menu_item_call name="Reupload..." label="Resubir..." ></menu_item_call>
+	  <menu_item_call name="Acquire Asset ID" label="Adquirir Asset ID" ></menu_item_call>
+	  <menu_item_separator name="Copy Separator" />
+	  <menu_item_call name="Copy" label="Copiar" ></menu_item_call>
+	  <menu_item_call name="Paste" label="Pegar"></menu_item_call>
+	  <menu_item_call name="Paste As Link" label="Pegar como Link" ></menu_item_call>
+	  <menu_item_call name="Restore to Last Position" label="Restaurar en el mundo" ></menu_item_call>
+	  <menu_item_separator name="Paste Separator" />
+	  <menu_item_call name="Remove Link" label="Borrar Link" ></menu_item_call>
+	  <menu_item_call name="Delete" label="Borrar"></menu_item_call>
+	  <menu_item_separator name="Folder Wearables Separator" />
+	  <menu_item_call name="Wear Items" label="Vestirse objetos" ></menu_item_call>
+	  <menu_item_call name="Add To Outfit" label="Añadir al vestuario" ></menu_item_call>
+	  <menu_item_call name="Replace Outfit" label="Reemplazar Vestuario" ></menu_item_call>
+	  <menu_item_call label="Quitar del Vestuario" name="Remove From Outfit"></menu_item_call>
+	  <menu_item_separator name="Outfit Separator"></menu_item_separator>
+	  <menu_item_separator name="Calling Card Separator" />
+	  <menu_item_call name="Conference Chat Folder" label="Iniciar Conferencia Grupal" ></menu_item_call>
+	  <menu_item_separator name="Sound Separator" />
+	  <menu_item_call name="Sound Play" label="Reproducir" ></menu_item_call>
+	  <menu_item_separator name="Landmark Separator" />
+	  <menu_item_call name="Teleport To Landmark" label="Sobre el hito" ></menu_item_call>
+	  <menu_item_separator name="Animation Separator" />
+	  <menu_item_call name="Animation Play" label="Reproducir en el mundo"></menu_item_call>
+	  <menu_item_call name="Animation Audition" label="Reproducir localmente" ></menu_item_call>
+	  <menu_item_separator name="Send Instant Message Separator" />
+	  <menu_item_call name="Send Instant Message" label="Enviar MI" ></menu_item_call>
+	  <menu_item_call name="Offer Teleport..." label="Ofrecer Teleport..." ></menu_item_call>
+	  <menu_item_call name="Conference Chat" label="Iniciar Conferencia Grupal" ></menu_item_call>
+	  <menu_item_separator name="Gesture Separator" />
+	  <menu_item_call name="Activate" label="Activar" ></menu_item_call>
+	  <menu_item_call name="Deactivate" label="Desactivar" ></menu_item_call>
+	  <menu_item_separator name="Wearable And Object Separator" />
+	  <menu_item_call name="Wearable And Object Wear" label="Vestirse Objeto" ></menu_item_call>
+	  <menu_item_call label="Añadir al Vestuario" name="Wearable Add"></menu_item_call>
+	  <menu_item_call label="&#9650; >Hacia Adelante" name="Wearable Move Forward"></menu_item_call>
+	  <menu_item_call label="&#9660; Hacia Atrás" name="Wearable Move Back"></menu_item_call>
+	  <menu label="Anexar a " name="Attach To"/>
+	  <menu label="Anexar al HUD" name="Attach To HUD"/>
+	  <menu_item_call label="Quitarse" name="Detach From Yourself"></menu_item_call>
+	  <menu_item_call label="Editar" name="Wearable Edit"></menu_item_call>
+	  <menu_item_call label="Quitarse" name="Take Off"></menu_item_call>
+	  <menu_item_separator name="Marketplace Separator" />
+	  <menu_item_call label="Copiar al Merchant Outbox" name="Merchant Copy"/>
+	  <menu_item_call label="Enviar a Marketplace" name="Marketplace Send"/>
+	  <menu_item_call label="--sin opciones--" name="--no options--" />
+	  <!--menu_item_separator name="Wearable Separator" -->	
 </menu>

@@ -12,83 +12,39 @@
 		     longdescription="Cambiar nombres de roles, títulos, descripciones y si los integrantes de lo roles son visibles. Esto se hace al pié de la pestaña Miembros y Roles &gt; subpestaña Roles luego de seleccionar un rol." name="role properties" value="6" />
 			 <action description="Designar miembros para el rol de Asignador" longdescription="Designar miembros para un rol en la sección Roles asignados de la pestaña Miembros y Roles &gt; subpestaña Miembros. Un miembro con este poder sólo puede asignar a otros el rol que él posee." name="role assign member limited" value="7" />
 			 <action description="Designar miembros para cualquier Rol" longdescription="Designar miembros para cualquier rol en la sección Roles asignados de la pestaña Miembros y Roles &gt; subpestaña Miembros. *AVISO* Todos los miembros con esta capacidad podrán asignarse a sí mismos (y a otros miembros) roles con mayores poderes de los que actualmente tienen. Potencialmente, podrían elevarse hasta poderes cercanos a los del propietario. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." name="role assign member" value="8" />
-			 <action description="Quitar miembros de los roles"
-		     longdescription="Quitar miembros de roles en la sección Capacidades asignadas de Miembros y Roles &gt; subpestaña Roles. No se pueden quitar a los Propietarios."
-		     name="role remove member" value="9" />
-		<action description="Assign and Remove Abilities in Roles"
-		     longdescription="Assign and Remove Abilities in Roles in the Allowed Abilities section of the Members &amp; Roles tab &gt; Roles sub-tab. *WARNING* Any Member in a Role with this Ability can assign themselves--and any other non-Owner Member--all Abilities, potentially elevating themselves to near-Owner power. Be sure you know what you&apos;re doing before assigning this Ability."
-		     name="role change actions" value="10" />
-	</action_set>
-	<action_set
-	     description="These Abilities include powers to modify this group&apos;s identity, such as changing public visibility, charter, and insignia."
-	     name="Group Identity">
-		<action
-		     description="Change Charter, Insignia, and &apos;Show in search&apos;"
-		     longdescription="Change Charter, Insignia, and &apos;Show in search&apos;. This is done in the General tab."
-		     name="group change identity" value="11" />
-	</action_set>
-	<action_set
-	     description="These Abilities include powers to deed, modify, and sell land in this group&apos;s land holdings. To get to the About Land window, right-click the ground and select &apos;About Land...&apos;, or click the parcel info in the menu bar."
-	     name="Parcel Management">
-		<action description="Deed land and buy land for group"
-		     longdescription="Deed land and buy land for group. This is done in About Land &gt; General tab."
-		     name="land deed" value="12" />
-		<action description="Abandon land to Governor Linden"
-		     longdescription="Abandon land to Governor Linden. *WARNING* Any Member in a Role with this Ability can abandon group-owned land in About Land &gt; General tab, reverting it to Linden ownership without a sale! Be sure you know what you&apos;re doing before assigning this Ability."
-		     name="land release" value="13" />
-		<action description="Set land for sale info"
-		     longdescription="Set land for sale info. *WARNING* Any Member in a Role with this Ability can sell group-owned land in About Land &gt; General tab as they wish! Be sure you know what you&apos;re doing before assigning this Ability."
-		     name="land set sale info" value="14" />
-		<action description="Subdivide and join parcels"
-		     longdescription="Subdivide and join parcels. This is done by right-clicking the ground, &apos;Edit Terrain&apos;, and dragging your mouse on the land to make a selection. To subdivide, select what you want to split and click &apos;Subdivide...&apos;. To join, select two or more contiguous parcels and click &apos;Join...&apos;. "
-		     name="land divide join" value="15" />
-	</action_set>
-	<action_set
-	     description="These Abilities include powers to change the parcel name and publish settings, Find directory visibility, and landing point &amp; TP routing options."
-	     name="Parcel Identity">
-		<action description="Toggle &apos;Show in Find Places&apos; and set category"
-		     longdescription="Toggle &apos;Show in Find Places&apos; and setting a parcel&apos;s category in About Land &gt; Options tab."
-		     name="land find places" value="17" />
-		<action
-		     description="Change parcel name, description, and &apos;Show in search&apos; settings"
-		     longdescription="Change parcel name, description, and &apos;Show in search&apos; settings. This is done in About Land &gt; Options tab."
-		     name="land change identity" value="18" />
-		<action description="Set landing point and set teleport routing"
-		     longdescription="On a group-owned parcel, Members in a Role with this Ability can set a landing point to specify where incoming teleports arrive, and also set teleport routing for further control. This is done in About Land &gt; Options tab."
-		     name="land set landing point" value="19" />
-	</action_set>
-	<action_set
-	     description="These Abilities include powers which affect parcel options, such as &apos;Create Objects&apos;, &apos;Edit Terrain&apos;, and music &amp; media settings."
-	     name="Parcel Settings">
-		<action description="Change music &amp; media settings"
-		     longdescription="Change streaming music and movie settings in About Land &gt; Media tab."
-		     name="land change media" value="20" />
-		<action description="Toggle &apos;Edit Terrain&apos;"
-		     longdescription="Toggle &apos;Edit Terrain&apos;. *WARNING* About Land &gt; Options tab &gt; Edit Terrain allows anyone to terraform your land&apos;s shape, and place and move Linden plants. Be sure you know what you&apos;re doing before assigning this Ability. Editing terrain is toggled in About Land &gt; Options tab."
-		     name="land edit" value="21" />
-		<action description="Toggle various About Land &gt; Options settings"
-		     longdescription="Toggle &apos;Safe (no damage)&apos;, &apos;Fly&apos;, and allow other Residents to: &apos;Create Objects&apos;, &apos;Edit Terrain&apos;, &apos;Create Landmarks&apos;, and &apos;Run Scripts&apos; on group-owned land in About Land &gt; Options tab."
-		     name="land options" value="22" />
-	</action_set>
-	<action_set
-	     description="These Abilities include powers which allow Members to bypass restrictions on group-owned parcels."
-	     name="Parcel Powers">
-		<action description="Always allow &apos;Edit Terrain&apos;"
-		     longdescription="Members in a Role with this Ability can edit terrain on a group-owned parcel, even if it&apos;s turned off in About Land &gt; Options tab."
-		     name="land allow edit land" value="23" />
-		<action description="Always allow &apos;Fly&apos;"
-		     longdescription="Members in a Role with this Ability can fly on a group-owned parcel, even if it&apos;s turned off in About Land &gt; Options tab."
-		     name="land allow fly" value="24" />
-		<action description="Always allow &apos;Create Objects&apos;"
-		     longdescription="Members in a Role with this Ability can create objects on a group-owned parcel, even if it&apos;s turned off in About Land &gt; Options tab."
-		     name="land allow create" value="25" />
-		<action description="Always allow &apos;Create Landmark&apos;"
-		     longdescription="Members in a Role with this Ability can landmark a group-owned parcel, even if it&apos;s turned off in About Land &gt; Options tab."
-		     name="land allow landmark" value="26" />
-		<action description="Allow &apos;Set Home to Here&apos; on group land"
-		     longdescription="Members in a Role with this Ability can use World menu &gt; Set Home to Here on a parcel deeded to this group."
-		     name="land allow set home" value="28" />
-		<action description="Allow &apos;Event Hosting&apos; on group land"
+			 <action description="Quitar miembros de los roles" longdescription="Quitar miembros de roles en la sección Capacidades asignadas de Miembros y Roles &gt; subpestaña Roles. No se pueden quitar a los Propietarios." name="role remove member" value="9" />
+		<action description="Añadir o quitar capacidades a los roles" longdescription="Añadir o quitar capacidades a los roles en la sección Capacidades asignadas de Miembros y Roles &gt; subpestaña Roles. *AVISO* Todos los miembros con esta capacidad podrán asignarse a sí mismos -y a otros miembros- roles con mayores poderes de los que actualmente tienen. Potencialmente, podrían elevarse hasta poderes cercanos a los del propietario. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." name="role change actions" value="10" /> 
+	  </action_set>
+	  <action_set description="Estas capacidades incluyen poderes para modificar la identidad del grupo, como su visibilidad pública, su carta o su emblema." name="Group Identity">
+			 <action
+		     description="Cambiar la carta, emblema y &apos;Mostrar en la búsqueda&apos;" longdescription="Cambiar la carta, emblema y &apos;Mostrar en la búsqueda&apos;, y qué miembros serán visibles en la información del grupo de la pestaña General." name="group change identity" value="11" />
+	  </action_set>
+	  <action_set description="Estas capacidades incluyen poderes para transferir, modificar y vender terrenos del grupo. Ve al menú Mundo &gt; Acerca del terreno, o pulsa con el botón derecho en el terreno y selecciona &apos;Acerca del terreno...&apos;, o pulsa en la información de la parcela en la barra superior del menú." name="Parcel Management">
+			 <action description="Transferir  y comprar terreno para el grupo" longdescription="Transferir y comprar terreno para el grupo. Se hace en Acerca del terreno &gt; pestaña General." name="land deed" value="12" />
+			 <action description="Abandonar terreno a favor de Governor Linden"
+		     longdescription="Abandonar al terreno a favor de Governor Linden. *AVISO* Todos los miembros del Rol con esta capacidad pueden abandonar terreno perteneciente al grupo en Acerca del terreno &gt; pestaña General, devolviendo la posesión a Linden ¡gratuitamente! Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." name="land release" value="13" />
+			 <action description="Vender terreno"
+		     longdescription="Vender terreno. *AVISO* Todos los miembros del ROl con esta capacidad pueden vender terreno perteneciente al grupo -¡en la forma en que quieran!- en Acerca del terreno &gt; pestaña General. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad." name="land set sale info" value="14" />
+			 <action description="Dividir y unir parcelas" longdescription="Dividir y unir parcelas. Se hace pulsando con el botón derecho en el terreno, &apos;Modificar el terreno&apos;, y dibujando en el terreno con el ratón lo que se quiere seleccionar. Para dividir, selecciona la parte que quieres separar y pulsa &apos;Subdividir...&apos;. Para unir, selecciona dos o más parcelas contiguas y pulsa &apos;Unir...&apos;." name="land divide join" value="15" />
+	  </action_set>
+	  <action_set description="Estas capacidades incluyen poder cambiar el nombre de la parcela y su configuración pública, también si se muestra en la Búsqueda y las opciones del punto de llegada y el de teleporte." name="Parcel Identity">
+			 <action description="Activar/Desactivar &apos;Mostrar en Búsqueda&apos; y el definir la Categoría" longdescription="Activar/Desactivar el &apos;Mostrar en Búsqueda&apos; y en que Categoría se mostrará en Acerca del terreno &gt; pestaña Opciones." name="land find places" value="17" />
+			 <action description="Cambiar el nombre de la parcela, la descripción, y la configuración de &apos;Mostrar en Búsqueda&apos;" longdescription="Cambiar el nombre y descripción de la parcela, y la configuración de &apos;Mostrar en Búsqueda&apos;. Se hace en Acerca del terreno &gt; pestaña Opciones." name="land change identity" value="18" />
+			 <action description="Definir los puntos de llegada y teleporte" longdescription="En una parcela perteneciente al grupo, los miembros con un rol que tenga esta capacidad pueden definir el Punto de Llegada o el de Teleporte para un mejor control. Se hace en Acerca del terreno &gt; pestaña Opciones." name="land set landing point" value="19" />
+	  </action_set>
+	  <action_set description="Estas capacidades incluyen poderes que afectan a las opciones de la parcela, como &apos;Crear objetos&apos;, &apos;Editar el terreno&apos; y las configuraciones de la música y los media." name="Parcel Settings">
+			 <action description="Cambiar música y configuraciones de los media"
+		     longdescription="Cambiar la música en streaming y las configuraciones de vídeo en Acerca del terreno &gt; pestaña Media." name="land change media" value="20" />
+			 <action description="Activar/desactivar &apos;Editar el terreno&apos;" longdescription="Activar/desactivar &apos;Editar el terreno&apos;. *AVISO* Acerca del terreno &gt; pestaña Opciones &gt; Editar el terreno, permite a cualquiera alterar la forma de tu terreno y sustituir y mover plantas Linden. Asegúrate de lo que estás haciendo antes de otorgar esta capacidad. La edición del terreno se activada/desactiva en Acerca del terreno &gt; pestaña Opciones." name="land edit" value="21" />
+			 <action description="Activar/desactivar varios ítems de Acerca del terreno &gt; Opciones" longdescription="Activar/desactivar en un terreno del grupo los ítems de Acerca del terreno &gt; pestaña Opciones: &apos;Seguro (sin daño)&apos;, &apos;Volar&apos;, y permitir a otros residentes: &apos;Crear objetos&apos;, &apos;Editar el terreno&apos;, &apos;Crear hitos&apos;, y &apos;Ejecutar scripts&apos;." name="land options" value="22" />
+	  </action_set>
+	  <action_set description="Estas capacidades incluyen poderes que permiten a los miembros rebasar las restricciones de parcelas pertenecientes al grupo." name="Parcel Powers">
+			 <action description="Permitir siempre &apos;Editar el terreno&apos;" longdescription="Los Miembros del rol con esta capacidad pueden editar el terreno de una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." name="land allow edit land" value="23" />
+			 <action description="Permitir siempre &apos;Volar&apos;" longdescription="Los Miembros del rol con esta capacidad pueden volar sobre una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." name="land allow fly" value="24" />
+			 <action description="Permitir siempre &apos;Crear objetos&apos;" longdescription="Los Miembros del rol con esta capacidad pueden crear objetos en una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." name="land allow create" value="25" />
+			 <action description="Permitir siempre &apos;Crear hitos&apos;" longdescription="Los Miembros del rol con esta capacidad pueden crear un hito en una parcela perteneciente al grupo aunque eso esté desactivado en Acerca del terreno &gt; pestaña Opciones." name="land allow landmark" value="26" />
+			 <action description="Permitir &apos;Fijar Base&apos; en el terreno del grupo"  longdescription="Los Miembros del rol con esta capacidad pueden usar el menú Mundo &gt; Fijar mi Base aquí en una parcela transferida al grupo." name="land allow set home" value="28" />
+			 <action description="Allow &apos;Event Hosting&apos; on group land"
 		     longdescription="Members in a Role with this Ability can select group owned parcels as venus when hosting an event."
 		     name="land allow host event" value="41" />			 
 	</action_set>
