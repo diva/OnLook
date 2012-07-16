@@ -787,6 +787,18 @@
         <real>1</real>
       </array>
     </map>
+	<key>5886ec80-cf56-11e1-9b23-0800200c9a66</key>
+    <map>
+      <key>name</key>
+      <string>Voodoo</string>
+      <key>color</key>
+      <array>
+        <real>0.70588235294118</real>
+        <real>0.7843137254902</real>
+        <real>0.7843137254902</real>
+        <real>1</real>
+      </array>
+    </map>
     <key>734bae36-a197-b087-ee2d-a098d58fed55</key>
     <map>
       <key>name</key>
