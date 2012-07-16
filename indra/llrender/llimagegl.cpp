@@ -330,7 +330,6 @@ S32 LLImageGL::updateBoundTexMem(const S32 mem, const S32 ncomponents, S32 categ
 //static 
 void LLImageGL::destroyGL(BOOL save_state)
 {
-	deleteDeadTextures(); //Dump unimportant textures.
 	for (S32 stage = 0; stage < gGLManager.mNumTextureUnits; stage++)
 	{
 		gGL.getTexUnit(stage)->unbind(LLTexUnit::TT_TEXTURE);
@@ -364,7 +363,6 @@ void LLImageGL::destroyGL(BOOL save_state)
 	}
 	llinfos << "Storing " << stored_count << " images..." << llendl;
 	sAllowReadBackRaw = false ;
-	deleteDeadTextures();//Now, actually call glDeleteTextures for everything.
 }
 
 //static 
@@ -1528,7 +1526,7 @@ void LLImageGL::deleteDeadTextures()
 {
 	bool reset = false;
 
-	for(U32 i=0;i<LLTexUnit::TT_NONE;++i)
+	/*for(U32 i=0;i<LLTexUnit::TT_NONE;++i)
 	{
 		for(dead_texturelist_t::iterator it=sDeadTextureList[i].begin();it!=sDeadTextureList[i].end();++it)
 		{
@@ -1554,7 +1552,7 @@ void LLImageGL::deleteDeadTextures()
 				stop_glerror();
 			}
 		}
-	}
+	}*/
 
 	if (reset)
 	{
