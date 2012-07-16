@@ -76,6 +76,13 @@
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-20110309.tar.bz2</uri>
           </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>2d40e76689d6e8c034490c1cbe9a4961</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/SDL-1.2.14-linux-x86_64-20120604.tar.bz2</uri>
+          </map>
         </map>
       </map>
       <key>apr_suite</key>
@@ -101,9 +108,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>1a7e1186855d48d8316ce86803095f70</string>
+            <string>66326975f779213886dbaaf021fa3412</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/apr_suite-1.2.8-linux64-20080909a.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/apr_suite-1.4.5-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -141,9 +148,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>f7cbf2b6e74de4556148663b93ead4d3</string>
+            <string>e2bf7c556ce3525cb6ad20f2d4d80cf4</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/ares-1.3.0-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ares-1.7.5-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -177,6 +184,13 @@
             <string>6e71c78873593aea2ec5c68dcfde0167</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.45.0-linux-20110604.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>a7c23f5395f79033dbb09b201f16a4ce</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/boost-1.48.0-linux-x86_64-20120514.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -247,9 +261,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>8a28849f4b9d99601dbc8db9d6a2f9ba</string>
+            <string>f6d0f7a6151c1b5a2633679126fbefb0</string>
             <key>url</key>
-            <uri>https://github.com/downloads/Shyotl/SingularityViewer/curl-7.16.4a-linux64-20090303.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/curl-7.24.0-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -276,6 +290,13 @@
             <string>3262d0a90b93c81e6fb650beb88cbdbb</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/db-5.1.25-linux-20110309.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>894f6a09e581bcf4a2c36f8f66379704</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/db-5.1.25-Linux-x86_64-20110807.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -318,9 +339,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>09be41e3145e1a960e50f2f9ce0a5e7d</string>
+            <string>3751294773dff647b3493764dc6539dc</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/dbusglib-linux64-20101007.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/dbus_glib-0.76-linux64-20110310.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -340,9 +361,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>e829a52ba67e02b011cf2e372914d32f</string>
+            <string>d826535e096d707ef1a2783ce66ad2f9</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/elfio-1.0.3-linux64-20091129.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/elfio-1.0.3-linux64-20091129.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -373,9 +394,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>278c61871419b9a4d50a4f88b7922403</string>
+            <string>58d7d0a12984cd57822c709d51ee18f7</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/expat-1.95.8-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/expat-2.0.1-linux-x86_64-20120530.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -398,6 +419,13 @@
             <string>2f88d7924fb9fcc93e44139f0fe4880a</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/fontconfig-2.8.0-linux-20110311.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>1736c637f7ae184fa94b3eb2c0e5f5da</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/fontconfig-2.8.0-linux-x86_64-20120531.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -447,9 +475,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>1b4624ab06a7ba30e29d1994424db41e</string>
+            <string>9513c22a343369043536514bc87e5801</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/freetype-2.3.11-linux64-20091230.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/freetype-2.3.11-linux-x86_64-20120616.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -471,6 +499,13 @@
         <key>packages</key>
         <map>
           <key>linux</key>
+          <map>
+            <key>md5sum</key>
+            <string>b94a97e60b37afee73f5525cd07ba959</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glext-82-win32-linux.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
           <map>
             <key>md5sum</key>
             <string>b94a97e60b37afee73f5525cd07ba959</string>
@@ -504,9 +539,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>58c11add6b275c163950364df5b2964a</string>
+            <string>36575a2975f9ef70281a3062867bd2f8</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/glib-2.20.5-linux64-20100515.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/glib-2.25.17-linux-x86_64-20120422.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -574,9 +609,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>7e6fc4e185e8444a07b58ba7c0df255a</string>
+            <string>37541c812162f009f50e3749220fb782</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/gstreamer-0.10.24-linux64-20091230.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gstreamer-0.10.28-linux-x86_64-20120608.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -596,6 +631,13 @@
             <string>e0eec19274dba0b58f5a1679d71f4204</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk-etc-linux-20101106.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>1b69a92d684a1b8208aa1d227d8d1bdf</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/gtk_etc-0.0.1-linux-x86_64-20120609.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -626,9 +668,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>5388725d012c3bfabcc420be53442018</string>
+            <string>889d6abceda50f12d0f22c1310844c4b</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/hunspell-1.2-linux64-20100902.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libhunspell-1.3.2-linux-x86_64-20120708.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -666,9 +708,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>0e7facf7d48531d20c0cd6a3c3f04021</string>
+            <string>7f2e1c0ea2f589c4888ec7f5a214af88</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/jpeglib-6b-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/jpeglib-7-linux-x86_64-20120531b.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -746,9 +788,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>5ee1e62bde38520c7f134c4afb9ac9b1</string>
+            <string>ec833cfbfce8a818158e289a6c21ad72</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libpng-1.2.35-linux64-20090304.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libpng-1.5.10-linux-x86_64-20120420.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -776,6 +818,13 @@
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/libuuid-1.6.2-linux-20110315.tar.bz2</uri>
           </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>dc25f523bd0505bbd03fb2b277299b13</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/uuid-1.6.2-linux-x86_64-20120601.tar.bz2</uri>
+          </map>
         </map>
       </map>
       <key>libxml</key>
@@ -794,9 +843,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>921d7f980519101afb74623e29e9d175</string>
+            <string>9bf2223e26eb4d659fe8e9283bfe73a2</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/libxml-2.6.24-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libxml2-2.7.8-linux-x86_64-20120420.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -819,6 +868,13 @@
             <string>307fdcc100ba95cfb12f35aab4fd0d08</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-4.7.1-linux-20120228.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>c6f662eaa9aeaf03f73779393640f386</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/llqtwebkit-linux-x86_64-20120716.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -882,9 +938,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>d1986d287655f159be50d661c125ba19</string>
+            <string>d2a9640c34a9a2848ba9fc63146bdce4</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/ndofdev-linux64-0.3.1-20100817.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/libndofdev-0.3.1-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -922,9 +978,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>83c72b57a95e8c42560fb67955169f19</string>
+            <string>50d232fcf120f85bf259d1b93aa767a7</string>
             <key>url</key>
-            <uri>http://imprudenceviewer.org/download/libs/ogg-vorbis-linux64-20091202.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/ogg_vorbis-1.2.2-1.3.2-linux-x86_64-20120604.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -958,9 +1014,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>00b23f28a2457d9dabbaff0b29ee7323</string>
+            <string>e4d434731ad8280e85f5177da8d8ed3a</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openSSL-0.9.8g-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openssl-1.0.0g-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -991,9 +1047,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>5ad0a3ab623356c1ad61394ba238f99f</string>
+            <string>843758dffdb98db9523a65fab6e136e3</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/openal-soft-1.6.372-linux64-20081219.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/openal-1.14-1.1.0-linux-x86_64-20120605.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -1046,6 +1102,13 @@
             <string>6c7325be47ddce71a3fbbd24621f86e1</string>
             <key>url</key>
             <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux-pulse-headers-0.9.14_1.tar.bz2</uri>
+          </map>
+          <key>linux64</key>
+          <map>
+            <key>md5sum</key>
+            <string>736693c3f82458baee10e3eb37bc87df</string>
+            <key>url</key>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/linux64-pulse-headers-0.9.14.tar.bz2</uri>
           </map>
         </map>
       </map>
@@ -1133,9 +1196,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>dc67b896c56116df8e18f2d1bbd07031</string>
+            <string>1caff2e120fac6e73cc0c60d6635d527</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/xmlrpc-epi-0.51-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/xmlrpc_epi-0.54.1-linux-x86_64-20120531.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
@@ -1173,9 +1236,9 @@
           <key>linux64</key>
           <map>
             <key>md5sum</key>
-            <string>4bddfb2c6dd7b1470a3ed675ac14bd9a</string>
+            <string>367cb642f1471f85f1094827ac960dbe</string>
             <key>url</key>
-            <uri>http://s3.amazonaws.com/viewer-source-downloads/install_pkgs/zlib-1.2.3-linux64-20080909.tar.bz2</uri>
+            <uri>https://github.com/downloads/LightDrake/Public-Libraries/zlib-1.2.6-linux-x86_64-20120419.tar.bz2</uri>
           </map>
           <key>windows</key>
           <map>
