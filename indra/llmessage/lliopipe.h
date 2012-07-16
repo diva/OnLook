@@ -149,7 +149,7 @@ public:
 		// The connection was lost.
 		STATUS_LOST_CONNECTION = -5,
 
-		// The totoal process time has exceeded the timeout.
+		// The total process time has exceeded the timeout.
 		STATUS_EXPIRED = -6,
 
 		// Keep track of the count of codes here.

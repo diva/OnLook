@@ -207,14 +207,6 @@ bool LLPumpIO::addChain(chain_t const& chain, F32 timeout)
 	if (it == end) return false;
 
 	LLChainInfo info;
-	for(; it != end; ++it)
-	{
-		if ((*it)->hasExpiration())
-		{
-			info.mHasExpiration = true;
-			break;
-		}
-	}
 	info.setTimeoutSeconds(timeout);
 	info.mData = LLIOPipe::buffer_ptr_t(new LLBufferArray);
 	LLLinkInfo link;
@@ -224,13 +216,14 @@ bool LLPumpIO::addChain(chain_t const& chain, F32 timeout)
 #else
 	lldebugs << "LLPumpIO::addChain() " << chain[0] <<llendl;
 #endif
-	it = chain.begin();
 	for(; it != end; ++it)
 	{
+		info.mHasExpiration = info.mHasExpiration || (*it)->hasExpiration();
 		link.mPipe = (*it);
 		link.mChannels = info.mData->nextChannel();
 		info.mChainLinks.push_back(link);
 	}
+
 #if LL_THREADS_APR
 	LLScopedLock lock(mChainsMutex);
 #endif
@@ -250,11 +243,10 @@ bool LLPumpIO::addChain(
 	// description, we need to have that description matched to a
 	// particular buffer.
 	if(!data) return false;
-	if(links.empty()) return false;
+	links_t::const_iterator link = links.begin();
+	links_t::const_iterator const end = links.end();
+	if (link == end) return false;
 
-#if LL_THREADS_APR
-	LLScopedLock lock(mChainsMutex);
-#endif
 #if LL_DEBUG_PIPE_TYPE_IN_PUMP
 	lldebugs << "LLPumpIO::addChain() " << links[0].mPipe << " '"
 		<< typeid(*(links[0].mPipe)).name() << "'" << llendl;
@@ -266,6 +258,17 @@ bool LLPumpIO::addChain(
 	info.mChainLinks = links;
 	info.mData = data;
 	info.mContext = context;
+	for (; link != end; ++link)
+	{
+		if (link->mPipe->hasExpiration())
+		{
+			info.mHasExpiration = true;
+			break;
+		}
+	}
+#if LL_THREADS_APR
+	LLScopedLock lock(mChainsMutex);
+#endif
 	mPendingChains.push_back(info);
 	return true;
 }
@@ -1114,6 +1117,8 @@ bool LLPumpIO::handleChainError(
 	LLChainInfo& chain,
 	LLIOPipe::EStatus error)
 {
+	DoutEntering(dc::notice, "LLPumpIO::handleChainError(" << (void*)&chain << ", " << LLIOPipe::lookupStatusString(error) << ")");
+
 	LLMemType m1(LLMemType::MTYPE_IO_PUMP);
 	links_t::reverse_iterator rit;
 	if(chain.mHead == chain.mChainLinks.end())

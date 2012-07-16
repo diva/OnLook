@@ -554,7 +554,7 @@ void CurlEasyHandle::handle_easy_error(CURLcode code)
 }
 
 // Throws AICurlNoEasyHandle.
-CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL)
+CurlEasyHandle::CurlEasyHandle(void) : mActiveMultiHandle(NULL), mErrorBuffer(NULL), mQueuedForRemoval(false)
 #ifdef SHOW_ASSERT
 	, mRemovedPerCommand(true)
 #endif
@@ -815,7 +815,7 @@ void CurlEasyRequest::revokeCallbacks(void)
   mWriteCallback = &noWriteCallback;
   mReadCallback = &noReadCallback;
   mSSLCtxCallback = &noSSLCtxCallback;
-  if (active() && !LLApp::isExiting())
+  if (active() && !no_warning())
   {
 	llwarns << "Revoking callbacks on a still active CurlEasyRequest object!" << llendl;
   }

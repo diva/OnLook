@@ -283,10 +283,24 @@ LLIOPipe::EStatus LLURLRequest::handleError(
 	LLIOPipe::EStatus status,
 	LLPumpIO* pump)
 {
+	DoutEntering(dc::curl, "LLURLRequest::handleError(" << LLIOPipe::lookupStatusString(status) << ", " << (void*)pump << ")");
 	LLMemType m1(LLMemType::MTYPE_IO_URL_REQUEST);
-	
-	if(!hasNotExpired())
+
+	if (LL_LIKELY(!mDetail->mCurlEasyRequest.isBuffered()))	// Currently always true.
 	{
+		// The last reference will be deleted when the pump that this chain belongs to
+		// is removed from the running chains vector, upon returning from this function.
+		// This keeps the CurlEasyRequest object alive until the curl thread cleanly removed it.
+		Dout(dc::curl, "Calling mDetail->mCurlEasyRequest.removeRequest()");
+		mDetail->mCurlEasyRequest.removeRequest();
+	}
+	else if (!hasNotExpired())
+	{
+		// The buffered version has it's own time out handling, and that already expired,
+		// so we can ignore the expiration of this timer (currently never happens).
+		// I left it here because it's what LL did (in the form if (!isValid() ...),
+		// and it would be relevant if this characteristic of mDetail->mCurlEasyRequest
+		// would change. --Aleric
 		return STATUS_EXPIRED ;
 	}
 

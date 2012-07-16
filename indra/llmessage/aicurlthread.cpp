@@ -617,6 +617,7 @@ void AICurlThread::cleanup_wakeup_fds(void)
 void AICurlThread::wakeup_thread(void)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
+  llassert(is_main_thread());
 
 #ifdef WINDOWS
 #error Missing implementation
@@ -1084,6 +1085,9 @@ void stopCurlThread(void)
 	  ms_sleep(10);
 	}
 	Dout(dc::curl, "Curl thread" << (curlThreadIsRunning() ? " not" : "") << " stopped after " << ((100 - count) * 10) << "ms.");
+	// Clear the command queue, for a cleaner cleanup.
+	command_queue_wat command_queue_w(command_queue);
+	command_queue_w->clear();
   }
 }
 
@@ -1136,6 +1140,7 @@ void AICurlEasyRequest::addRequest(void)
 #endif
 	// Add a command to add the new request to the multi session to the command queue.
 	command_queue_w->push_back(Command(*this, cmd_add));
+	AICurlEasyRequest_wat(*get())->add_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();
@@ -1188,6 +1193,8 @@ void AICurlEasyRequest::removeRequest(void)
 #endif
 	// Add a command to remove this request from the multi session to the command queue.
 	command_queue_w->push_back(Command(*this, cmd_remove));
+	// Suppress warning that would otherwise happen if the callbacks are revoked before the curl thread removed the request.
+	AICurlEasyRequest_wat(*get())->remove_queued();
   }
   // Something was added to the queue, wake up the thread to get it.
   wakeUpCurlThread();

@@ -98,10 +98,17 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// Pause and unpause a connection.
 	CURLcode pause(int bitmask);
 
+	// Called when a request is queued for removal. In that case a race between the actual removal
+	// and revoking of the callbacks is harmless (and happens for the raw non-statemachine version).
+	void remove_queued(void) { mQueuedForRemoval = true; }
+	// In case it's added after being removed.
+	void add_queued(void) { mQueuedForRemoval = false; }
+
   private:
 	CURL* mEasyHandle;
 	CURLM* mActiveMultiHandle;
 	char* mErrorBuffer;
+	bool mQueuedForRemoval;			// Set if the easy handle is (probably) added to the multi handle, but is queued for removal.
 #ifdef SHOW_ASSERT
   public:
 	bool mRemovedPerCommand;		// Set if mActiveMultiHandle was reset as per command from the main thread.
@@ -120,6 +127,11 @@ class CurlEasyHandle : public boost::noncopyable, protected AICurlEasyHandleEven
 	// If there was an error code as result, then this returns a human readable error string.
 	// Only valid when setErrorBuffer was called and the curl_easy function returned an error.
 	std::string getErrorString(void) const { return mErrorBuffer ? mErrorBuffer : "(null)"; }
+
+	// Returns true when it is expected that the parent will revoke callbacks before the curl
+	// easy handle is removed from the multi handle; that usually happens when an external
+	// error demands termination of the request (ie, an expiration).
+	bool no_warning(void) const { return mQueuedForRemoval || LLApp::isExiting(); }
 
 	// Used for debugging purposes.
 	bool operator==(CURL* easy_handle) const { return mEasyHandle == easy_handle; }
