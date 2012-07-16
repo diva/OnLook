@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<menu_bar bottom="-18" drop_shadow="false" enabled="true" follows="left|top|right"
+     height="18" left="0" mouse_opaque="true" name="Login Menu" opaque="true"
+     tear_off="false" width="802">
+	<menu name="File" label="Archivo" >
+		<menu_item_call name="Quit" label="Salir" >
+			<on_click function="File.Quit" userdata="" />
+		</menu_item_call>
+	</menu>
+	<menu name="Edit" label="Editar" >
+		<menu_item_call name="Preferences..." label="Preferencias..." >
+			<on_click function="ShowFloater" userdata="preferences" />
+		</menu_item_call>
+	</menu>
+	<menu name="Help" label="Ayuda" >
+		<menu_item_call name="Second Life Help" label="Ayuda de Second Life">
+			<on_click function="ShowFloater" userdata="help f1" />
+		</menu_item_call>
+		<menu_item_call name="About Second Life..." label="Acerca de Singularity..." >
+			<on_click function="ShowFloater" userdata="about" />
+		</menu_item_call>
+	</menu>
+</menu_bar>

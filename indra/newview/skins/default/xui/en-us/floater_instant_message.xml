@@ -19,7 +19,7 @@
 	<button bottom="-37" follows="top" height="20" image_overlay="icn_voice-call-end.tga" image_overlay_alignment="left" label="End" name="end_call_btn" visible="false" width="80"/>
 	<panel border="false" bottom="-34" follows="left|top" height="20" left_delta="50" name="speaker_controls" width="100">
 		<volume_slider bottom="0" follows="bottom" height="15" increment="0.05" initial_val="0.5" max_val="1.0" min_val="0.0" name="speaker_volume" width="56"/>
-		<button bottom="0" height="20" image_selected="icn_speaker-muted_dark.tga" image_unselected="icn_speaker_dark.tga" label="" left_delta="56" name="mute_btn" tool_tip="Mute voice" width="25"/>
+		<button bottom="0" height="20" image_selected="icn_speaker-muted_dark.tga" image_unselected="icn_speaker_dark.tga" scale_image="false" label="" left_delta="56" name="mute_btn" tool_tip="Mute voice" width="25"/>
 	</panel>
 	<text_editor bottom="28" bg_readonly_color="ChatHistoryBgColor" bg_writeable_color="ChatHistoryBgColor"	enabled="false" follows="left|top|right|bottom" height="228" left="5" max_length="2147483647" name="im_history" text_color="ChatHistoryTextColor" track_bottom="true" text_readonly_color="ChatHistoryTextColor" width="488" word_wrap="true"/>
 	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="5" follows="left|right" font="SansSerif" height="20" label="Click here to instant message" max_length="2147483647" name="chat_editor" select_all_on_focus_received="false" select_on_focus="false" tab_group="1" width="423" spell_check="true"/>

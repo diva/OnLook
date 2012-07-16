@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater title="Consola de Notificaciones" name="notification">
+	  <text_editor name="payload" >
+			 Cargando...
+	  </text_editor>
+	  <combo_box label="Respuesta" name="response" >
+	  </combo_box>
+</floater>

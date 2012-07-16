@@ -25,7 +25,7 @@
 		width="300"/>
 	<spinner bottom_delta="-24" control_name="RenderFogRatio" decimal_digits="1" height="16" increment="0.1" initial_val="4" label="Fog Distance Ratio:" label_width="138" left="10" max_val="10" min_val="0.5" name="fog" width="202"/>
 	<text bottom_delta="-50" height="40" left="10" name="note">
-		Note: the Gamma and Fog Distance Ratio settings are	unavailable
+		Note: the Gamma and Fog Distance Ratio settings are unavailable
         (since useless) when the Atmospheric Shaders are enabled.
 	</text>
 	<button bottom="10" height="20" label="OK" label_selected="OK" left="-110" name="OK" scale_image="true" width="90"/>

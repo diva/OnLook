@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater can_close="true" can_drag_on_left="false" can_minimize="false"
+     can_resize="false" height="550" min_height="140" min_width="300"
+     name="Image Preview" title="" width="550">
+	<text left ="20" bottom_delta="-25" follows="top|left" height="15" name="preview_label" font="SansSerifLarge">
+		Preview image as:
+	</text>
+	<combo_box bottom_delta="-8" follows="left|top" height="24" label="Clothing Type"
+	     left="145" name="clothing_type_combo" width="160">
+		<combo_item name="Image">
+			Image
+		</combo_item>
+		<combo_item name="Hair">
+			Hair
+		</combo_item>
+		<combo_item name="FemaleHead">
+			Female Head
+		</combo_item>
+		<combo_item name="FemaleUpperBody">
+			Female Upper Body
+		</combo_item>
+		<combo_item name="FemaleLowerBody">
+			Female Lower Body
+		</combo_item>
+		<combo_item name="MaleHead">
+			Male Head
+		</combo_item>
+		<combo_item name="MaleUpperBody">
+			Male Upper Body
+		</combo_item>
+		<combo_item name="MaleLowerBody">
+			Male Lower Body
+		</combo_item>
+		<combo_item name="Skirt">
+			Skirt
+		</combo_item>
+		<combo_item name="SculptedPrim">
+			Sculpted Prim
+		</combo_item>
+	</combo_box>
+</floater>

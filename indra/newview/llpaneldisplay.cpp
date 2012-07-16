@@ -251,6 +251,10 @@ BOOL LLPanelDisplay::postBuild()
 	mCtrlShadowDetail->setCallbackUserData(this);
 
 	//----------------------------------------------------------------------------
+	// Terrain Scale
+	mCtrlTerrainScale = getChild<LLComboBox>("TerrainScaleCombo");
+
+	//----------------------------------------------------------------------------
 	// Enable Avatar Shaders
 	mCtrlAvatarVP = getChild<LLCheckBoxCtrl>("AvatarVertexProgram");
 	mCtrlAvatarVP->setCommitCallback(&LLPanelDisplay::onVertexShaderEnable);
@@ -350,6 +354,7 @@ BOOL LLPanelDisplay::postBuild()
 	mLightingText = getChild<LLTextBox>("LightingDetailText");
 	mMeshDetailText = getChild<LLTextBox>("MeshDetailText");
 	mShadowDetailText = getChild<LLTextBox>("ShadowDetailText");
+	mTerrainScaleText = getChild<LLTextBox>("TerrainScaleText");
 
 	refresh();
 
@@ -417,10 +422,10 @@ void LLPanelDisplay::refresh()
 	mDeferred = gSavedSettings.getBOOL("RenderDeferred");
 	mDeferredDoF = gSavedSettings.getBOOL("RenderDepthOfField");
 
-	// reflection radio
+	// combo boxes
 	mReflectionDetail = gSavedSettings.getS32("RenderReflectionDetail");
-
 	mShadowDetail = gSavedSettings.getS32("RenderShadowDetail");
+	mTerrainScale = gSavedSettings.getF32("RenderTerrainScale");
 
 	// avatar settings
 	mAvatarImpostors = gSavedSettings.getBOOL("RenderUseImpostors");
@@ -606,6 +611,13 @@ void LLPanelDisplay::disableUnavailableSettings()
 		mCtrlReflectionDetail->setValue(FALSE);
 	}
 
+	// disabled terrain scale
+	if(!LLFeatureManager::getInstance()->isFeatureAvailable("RenderTerrainScale"))
+	{
+		mCtrlTerrainScale->setEnabled(false);
+		mCtrlTerrainScale->setValue(false);
+	}
+
 	// disabled av
 	if(!LLFeatureManager::getInstance()->isFeatureAvailable("RenderAvatarVP"))
 	{
@@ -678,10 +690,12 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 
 	llassert(mRadioTerrainDetail != NULL);
 	llassert(mCtrlReflectionDetail != NULL);
+	llassert(mCtrlTerrainScale != NULL);
 
 	llassert(mMeshDetailText != NULL);
 	llassert(mShaderText != NULL);
 	llassert(mReflectionText != NULL);
+	llassert(mTerrainScaleText != NULL);
 	llassert(mAvatarText != NULL);
 	llassert(mLightingText != NULL);
 	llassert(mTerrainText != NULL);
@@ -728,6 +742,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 
 	mRadioTerrainDetail->setVisible(!isHidden);
 	mCtrlReflectionDetail->setVisible(!isHidden);
+	mCtrlTerrainScale->setVisible(!isHidden);
 
 	mCtrlDeferred->setVisible(!isHidden);
 	mCtrlDeferredDoF->setVisible(!isHidden);
@@ -742,6 +757,7 @@ void LLPanelDisplay::setHiddenGraphicsState(bool isHidden)
 	mDrawDistanceMeterText1->setVisible(!isHidden);
 	mDrawDistanceMeterText2->setVisible(!isHidden);
 	mShadowDetailText->setVisible(!isHidden);
+	mTerrainScaleText->setVisible(!isHidden);
 
 	// hide one meter text if we're making things visible
 	if(!isHidden)
@@ -771,6 +787,7 @@ void LLPanelDisplay::cancel()
 
 	gSavedSettings.setS32("RenderReflectionDetail", mReflectionDetail);
 	gSavedSettings.setS32("RenderShadowDetail", mShadowDetail);
+	gSavedSettings.setF32("RenderTerrainScale", mTerrainScale);
 
 	gSavedSettings.setBOOL("RenderUseImpostors", mAvatarImpostors);
 	gSavedSettings.setS32("RenderAvatarMaxVisible", mNonImpostors);
