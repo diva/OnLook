@@ -6,13 +6,13 @@
 				Profil du groupe
 			</text>
 			<text name="txt">
-				Les groupes sont un moyen divertissant de collaborer avec vos amis.
+				Les groupes sont un moyen divertissant de collaborer avec vos ami(e)s.
 			</text>
 			<text name="txt2">
-				Les groupes vous permettent d&apos;avoir un titre, un logo et de voter.
+				Les groupes vous permettent d&apos;avoir un titre, un logo et voter.
 			</text>
 			<text name="txt3">
-				Tout le monde peut créer un groupe. Chaque résident peut appartenir jusqu&apos;à 15 groupes.
+				Tout le monde peut créer un groupe. Chaque résident peut appartenir jusqu&apos;à 42 groupes.
 			</text>
 			<text name="txt4">
 				Pour rester actif, un groupe doit avoir au moins 3 membres.
@@ -31,7 +31,7 @@
 			</text>
 			<check_box label="Afficher dans la liste du groupe" name="sho"/>
 			<check_box label="Afficher les membres dans la liste du groupe" name="sho_mem"/>
-			<check_box label="Publier sur le web." name="allow_publish" tool_tip="Publiez votre profil sur le web."/>
+			<check_box label="Publier sur le web." name="allow_publish" tool_tip="Publie votre profil sur le web."/>
 			<button label="?" label_selected="?" name="publish_help_btn"/>
 			<check_box label="Mature" name="mature" tool_tip="Les informations de votre profil sont considérées comme « mature »."/>
 		</panel>
@@ -43,7 +43,7 @@
 				Les groupes peuvent avoir des officiers et des membres avec des titres particuliers.
 			</text>
 			<text name="txt3">
-				Ces titres apparaissent devant leur nom dans le Monde, les chats et les IM.
+				Ces titres apparaissent devant le nom dans le Monde.
 			</text>
 			<text name="lbl">
 				Titre de l&apos;officier :
@@ -52,7 +52,7 @@
 				Titre du membre :
 			</text>
 			<text name="lbl3">
-				Pour créer le logo du groupe, faites glisser une texture depuis votre inventaire.
+				Pour créer le logo du groupe, faire glisser une texture depuis l&apos;inventaire.
 			</text>
 			<texture_picker name="insig" tool_tip="Cliquez pour sélectionner une image"/>
 		</panel>
@@ -64,7 +64,7 @@
 				Officiers et membres du groupe actuel.
 			</text>
 			<text name="txt3">
-				Cliquez sur le nom d&apos;un membre pour voir son profil.
+				Cliquer sur le nom d&apos;un membre pour voir son profil.
 			</text>
 			<text name="lbl">
 				Officiers :
@@ -78,10 +78,10 @@
 			<tab_container name="tab">
 				<panel label="Élection" name="recall">
 					<text name="txt">
-						Élections
+						Elections
 					</text>
 					<text name="instructions">
-						Pour commencer une nouvelle élection, cliquez sur Lancer l&apos;élection.  
+						Pour commencer une nouvelle élection, cliquer sur Lancer l&apos;élection.  
 Les candidats incluent tous les membres qui ne sont pas officiers.
 					</text>
 					<text name="lbl">
@@ -182,7 +182,7 @@ Les candidats incluent tous les membres qui ne sont pas officiers.
 						Historique des votes
 					</text>
 					<text name="instructions">
-						Vous pouvez afficher les anciens résultats en sélectionnant le vote et
+						Afficher les anciens résultats en sélectionnant le vote et
 					</text>
 					<text name="instructions2">
 						en cliquant sur Afficher l&apos;objet.
@@ -211,12 +211,12 @@ Les candidats incluent tous les membres qui ne sont pas officiers.
 			<text name="lbl">
 				Officiers :
 			</text>
-			<button label="Ajouter un officier..." label_selected="Ajouter un officier..." name="add_officer_btn"/>
+			<button label="Ajouter un officier" label_selected="Ajouter un officier" name="add_officer_btn"/>
 			<button label="Supprimer la sélection" label_selected="Supprimer la sélection" name="remove_officer_btn"/>
 			<text name="lbl2">
 				Membres :
 			</text>
-			<button label="Ajouter un membre..." label_selected="Ajouter un membre..." name="add_member_btn"/>
+			<button label="Ajouter un membre" label_selected="Ajouter un membre" name="add_member_btn"/>
 			<button label="Supprimer la sélection" label_selected="Supprimer la sélection" name="remove_member_btn"/>
 			<text name="lbl3">
 				Frais d&apos;inscription :
@@ -225,12 +225,12 @@ Les candidats incluent tous les membres qui ne sont pas officiers.
 		</panel>
 		<panel label="Terrain" name="land">
 			<text name="txt">
-				Terrain du groupe
+				Terrain du groupe :
 			</text>
 			<text name="lbl">
 				Total des contributions :
 			</text>
-			<button label="Carte..." label_selected="Carte..." name="map_btn"/>
+			<button label="Carte" label_selected="Carte" name="map_btn"/>
 			<text name="lbl2">
 				Superficie déjà utilisée :
 			</text>

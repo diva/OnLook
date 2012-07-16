@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel label="Terreno y L$" name="land_money_tab" >
+<panel label="Terreno y [CURRENCY]" name="land_money_tab" >
 	  <string name="help_text">
 			 Se listan las parcelas propiedad del grupo, detallando las contribuciones. Aparece una advertencia si el Terreno total en uso es menor que o igual a la Contribución total. Las pestañas &apos;Planificación&apos;, &apos;Detalles&apos; y &apos;Ventas&apos; aportan información sobre las finanzas del grupo	  
 	  </string>
@@ -15,68 +15,68 @@
 	  </string>
 	  <text name="group_land_heading">
 			 Terreno propiedad del grupo
-	  </text>
-	  <scroll_list name="group_parcel_list">
-			 <column label="Parcela" name="name"/>
-			 <column label="Región" name="location"/>
-			 <column label="Tipo" name="type"/>
-			 <column label="Superficie" name="area"/>
-			 <column label="" name="hidden"/>
-	  </scroll_list>
-	  <button label="Mostrar en el Mapa" label_selected="Mostrar en el Mapa" name="map_button"/>
-	  <text name="total_contributed_land_label">
-			 Contribución Total:
-	  </text>
-	  <text name="total_contributed_land_value">
-			 [AREA] m²
-	  </text>
-	  <text name="total_land_in_use_label">
-			 Terreno total en uso:
-	  </text>
-	  <text name="total_land_in_use_value" >
-			 [AREA] m²
-	  </text>
-	  <text name="land_available_label">
-			 Terreno disponible:
-	  </text>
-	  <text name="land_available_value">
-			 [AREA] m²
-	  </text>
-	  <text name="your_contribution_label">
-			 Tu Contribución:
-	  </text>
-	  <string name="land_contrib_error">
-			 No se ha podido defininir tu contribución de terreno.
-	  </string>
-	  <text name="your_contribution_max_value">
-			 m² ([AMOUNT] máx)
-	  </text>
-	  <text name="group_over_limit_text">
-			 Los miembros del grupo deben contribuir con más créditos de terreno
+	</text>
+	<scroll_list name="group_parcel_list">
+		<column label="Parcela" name="name"/>
+		<column label="Región" name="location"/>
+		<column label="Tipo" name="type"/>
+		<column label="Superficie" name="area"/>
+		<column label="" name="hidden"/>
+	</scroll_list>
+	<button label="Mostrar en el Mapa" label_selected="Mostrar en el Mapa" name="map_button"/>
+	<text name="total_contributed_land_label">
+		Contribución Total:
+	</text>
+	<text name="total_contributed_land_value">
+		[AREA] m²
+	</text>
+	<text name="total_land_in_use_label">
+		Terreno total en uso:
+	</text>
+	<text name="total_land_in_use_value">
+		[AREA] m²
+	</text>
+	<text name="land_available_label">
+		Terreno disponible:
+	</text>
+	<text name="land_available_value">
+		[AREA] m²
+	</text>
+	<text name="your_contribution_label">
+		Tu Contribución:
+	</text>
+	<string name="land_contrib_error">
+		No se ha podido defininir tu contribución de terreno.
+	</string>
+	<text name="your_contribution_max_value">
+		m² ([AMOUNT] máx)
+	</text>
+	<text name="group_over_limit_text">
+		Los miembros del grupo deben contribuir con más créditos de terreno
 para mantener el terreno en uso.	  
-	  </text>
-	  <text name="group_money_heading">
-			 [CURRENCY] del Grupo
-	  </text>
-	  <tab_container name="group_money_tab_container">
-			 <panel label="Planificación" name="group_money_planning_tab">
-					<text_editor name="group_money_planning_text">
-						  Calculando...
-					</text_editor>
-					</panel>
-			 <panel label="Detalles" name="group_money_details_tab">
-					<text_editor name="group_money_details_text">
-						  Calculando...
-					</text_editor>
-					<button label="&lt; Antes" label_selected="&lt; Antes" name="earlier_details_button" tool_tip="Retroceder en el Tiempo" />
-					<button label="Después &gt;" label_selected="Después &gt;" name="later_details_button" tool_tip="Avanzar en el Tiempo" />
-			 </panel>
-			 <panel label="Ventas" name="group_money_sales_tab">
-					<text_editor name="group_money_sales_text">
-						  Calculando...
-					</text_editor>
-					<button label="&lt; Antes" label_selected="&lt; Antes" name="earlier_sales_button" tool_tip="Retroceder en el Tiempo" />
-					<button label="Después &gt;" label_selected="Después &gt;" name="later_sales_button" tool_tip="Avanzar en el Tiempo" />
-			 </panel>
-	  </tab_container>
+	</text>
+	<text name="group_money_heading">
+		[CURRENCY] del Grupo
+	</text>
+	<tab_container name="group_money_tab_container">
+		<panel label="Planificación" name="group_money_planning_tab">
+			<text_editor name="group_money_planning_text">
+				Calculando...
+			</text_editor>
+		</panel>
+		<panel label="Detalles" name="group_money_details_tab">
+			<text_editor name="group_money_details_text">
+				Calculando...
+			</text_editor>
+			<button label="&lt; Antes" label_selected="&lt; Antes" name="earlier_details_button" tool_tip="Retroceder en el Tiempo" />
+			<button label="Después &gt;" label_selected="Después &gt;" name="later_details_button" tool_tip="Avanzar en el Tiempo" />
+		</panel>
+		<panel label="Ventas" name="group_money_sales_tab">
+			<text_editor name="group_money_sales_text">
+				Calculando...
+			</text_editor>
+			<button label="&lt; Antes" label_selected="&lt; Antes" name="earlier_sales_button" tool_tip="Retroceder en el Tiempo" />
+			<button label="Después &gt;" label_selected="Después &gt;" name="later_sales_button" tool_tip="Avanzar en el Tiempo" />
+		</panel>
+	</tab_container>
 </panel>

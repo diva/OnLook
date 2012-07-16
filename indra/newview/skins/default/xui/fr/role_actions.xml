@@ -4,14 +4,14 @@
 	     description="Ces pouvoirs permettent d&apos;ajouter et de supprimer des membres du groupe et permettent aux nouveaux membres de rejoindre le groupe sans recevoir d&apos;invitation."
 	     name="Membership">
 		<action description="Inviter des membres dans ce groupe"
-		     longdescription="Invitez des membres à rejoindre ce groupe en utilisant le bouton Inviter un nouveau membre à partir de l&apos;onglet Membres et rôles &gt; Membres."
+		     longdescription="Invitez des membres à rejoindre ce groupe en utilisant le bouton &#x22;Inviter un nouveau membre&#x22; à partir de l&apos;onglet Membres et rôles &gt; Membres."
 		     name="member invite" value="1" />
 		<action description="Expulser des membres du groupe"
-		     longdescription="Expulsez des membres de ce groupe en utilisant le bouton Expulser un membre à partir de l&apos;onglet Membres et rôles &gt; Membres. Un propriétaire ne peut pas être expulsé. Un membre peut être expulsé d&apos;un groupe uniquement s&apos;il a le rôle Tous (Everyone). Si vous n&apos;êtes pas propriétaire, vous devez d&apos;abord retirer les rôles d&apos;un membre avant de pouvoir l&apos;expulser."
+		     longdescription="Expulsez des membres de ce groupe en utilisant le bouton &#x22;Expulser un membre&#x22; à partir de l&apos;onglet Membres et rôles &gt; Membres. Un propriétaire ne peut pas être expulsé. Un membre peut être expulsé d&apos;un groupe uniquement s&apos;il a le rôle Tous (Everyone). Si vous n&apos;êtes pas propriétaire, vous devez d&apos;abord retirer les rôles d&apos;un membre avant de pouvoir l&apos;expulser."
 		     name="member eject" value="2" />
 		<action
 		     description="Gérer l&apos;inscription et les frais d&apos;inscription"
-		     longdescription="Choisissez l&apos;inscription libre pour permettre aux nouveaux membres de rejoindre le groupe sans invitation et modifiez les frais d&apos;inscription à l&apos;onglet Général."
+		     longdescription="Choississez l&apos;inscription libre permettant aux nouveaux membres de rejoindre le groupe sans invitation. Modifiez les frais d&apos;inscription à l&apos;onglet Général."
 		     name="member options" value="3" />
 	</action_set>
 	<action_set
@@ -23,7 +23,7 @@
 		<action description="Supprimer des rôles"
 		     longdescription="Supprimez des rôles à l&apos;onglet Membres et rôles &gt; Rôles."
 		     name="role delete" value="5" />
-		<action description="Modifier les noms, les titres et les descriptions des rôles"
+		<action description="Modifier les noms, les titres et les descriptions des rôles".
 		     longdescription="Modifiez les noms, titres et descriptions des rôles à l&apos;onglet Membres et rôles &gt; Rôles."
 		     name="role properties" value="6" />
 		<action description="Attribuer des rôles limités"
@@ -36,7 +36,7 @@
 		     longdescription="Destituez des membres de leurs rôles à partir du menu Rôles attribués à l&apos;onglet Membres et rôles &gt; Membres. Les propriétaires ne peuvent pas être destitués."
 		     name="role remove member" value="9" />
 		<action description="Modifier les pouvoirs d&apos;un rôle"
-		     longdescription="Attribuez et retirez les pouvoirs d&apos;un rôle à partir du menu Pouvoirs attribués à l&apos;onglet Membres et rôles &gt; Rôles &gt; Pouvoirs attribués. Attention : ce pouvoir peut donner des rôles très importants, proches de ceux d&apos;un propriétaire. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer."
+		     longdescription="Attribuez et retire les pouvoirs d&apos;un rôle à partir du menu Pouvoirs attribués à l&apos;onglet Membres et rôles &gt; Rôles &gt; Pouvoirs attribués. Attention : ce pouvoir peut donner des rôles très importants, proches de ceux d&apos;un propriétaire. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer."
 		     name="role change actions" value="10" />
 	</action_set>
 	<action_set
@@ -44,14 +44,14 @@
 	     name="Group Identity">
 		<action
 		     description="Modifier le profil public du groupe"
-		     longdescription="Modifiez la charte, le logo, l&apos;affichage dans la recherche et la liste des membres visibles à l&apos;onglet Général."
+		     longdescription="Modifiez la charte, le logo, l&apos;affichage dans la recherche et la liste des membres visibles dans l&apos;onglet Général."
 		     name="group change identity" value="11" />
 	</action_set>
 	<action_set
 	     description="Ces pouvoirs permettent de transférer, modifier et vendre du terrain appartenant au groupe. Pour accéder au menu À propos du terrain, cliquez sur le nom de la parcelle en haut de l&apos;écran ou cliquez-droit sur le sol."
 	     name="Parcel Management">
 		<action description="Transférer et acheter des parcelles pour le groupe"
-		     longdescription="Transférez et achetez des parcelles pour le groupe à partir du menu À propos du terrain &gt; Général."
+		     longdescription="Transférez et achetez des parcelles pour le groupe à partir du menu A propos du terrain &gt; Général."
 		     name="land deed" value="12" />
 		<action description="Abandonner le terrain"
 		     longdescription="Abandonnez des parcelles du groupe à Linden Lab. Attention : ce pouvoir autorise l&apos;abandon d&apos;un terrain appartenant au groupe. Ce terrain sera alors définitivement perdu. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer."
@@ -60,7 +60,7 @@
 		     longdescription="Vendez des parcelles du groupe. Attention : ce pouvoir autorise la vente d&apos;un terrain appartenant au groupe. Ce terrain sera alors définitivement perdu. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer."
 		     name="land set sale info" value="14" />
 		<action description="Diviser et fusionner des parcelles"
-		     longdescription="Divisez et fusionnez des parcelles. Pour cela, cliquez-droit sur le sol, sélectionnez Modifier le terrain, et faites glisser votre souris sur l&apos;endroit que vous souhaitez modifier. Pour diviser le terrain, sélectionnez un endroit puis cliquez sur Diviser... Pour fusionner des parcelles, sélectionnez au moins deux parcelles adjacentes et cliquez sur Fusionner."
+		     longdescription="Divisez et fusionnez des parcelles. Pour cela, cliquez-droit sur le sol, sélectionnez Modifier le terrain, et faites glisser votre souris sur l&apos;endroit que vous souhaitez modifier. Pour diviser le terrain, sélectionnez un endroit puis cliquez sur Diviser. Pour fusionner des parcelles, sélectionnez au moins deux parcelles adjacentes et cliquez sur Fusionner."
 		     name="land divide join" value="15" />
 	</action_set>
 	<action_set
@@ -76,21 +76,21 @@
 		     name="land change identity" value="18" />
 		<action
 		     description="Définir le lieu d&apos;arrivée et le routage des téléportations"
-		     longdescription="Définissez le lieu d&apos;arrivée des téléportations et le routage à partir du menu À propos du terrain &gt; Options."
+		     longdescription="Définissez le lieu d&apos;arrivée des téléportations et le routage à partir du menu A propos du terrain &gt; Options."
 		     name="land set landing point" value="19" />
 	</action_set>
 	<action_set
 	     description="Ces pouvoirs permettent de définir les options de la parcelle concernant la musique, les médias, la création d&apos;objets et le relief."
 	     name="Parcel Settings">
 		<action description="Modifier la musique et les médias"
-		     longdescription="Changez la musique et les médias à partir du menu À propos du terrain &gt; Médias."
+		     longdescription="Changez la musique et les médias à partir du menu A propos du terrain &gt; Médias."
 		     name="land change media" value="20" />
 		<action description="Changer l&apos;option Modifier le terrain"
-		     longdescription="Changez l&apos;option Modifier le terrain à partir du menu À propos du terrain &gt; Options. Attention : ce pouvoir permet de terraformer votre terrain et de placer ou déplacer des plantes Linden. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer. "
+		     longdescription="Changez l&apos;option Modifier le terrain à partir du menu A propos du terrain &gt; Options. Attention : ce pouvoir permet de terraformer votre terrain et de placer ou déplacer des plantes Linden. Assurez-vous de bien comprendre ce pouvoir avant de l&apos;attribuer. "
 		     name="land edit" value="21" />
 		<action
 		     description="Changer diverses options du terrain"
-		     longdescription="Changez diverses options de la parcelle à partir du menu À propos du terrain &gt; Options. Vous pouvez permettre aux autres résidents de voler, créer des objets, modifier le terrain, lancer des scripts, créer des repères etc."
+		     longdescription="Changez diverses options de la parcelle à partir du menu A propos du terrain &gt; Options. Vous pouvez permettre aux autres résidents de voler, créer des objets, modifier le terrain, lancer des scripts, créer des repères etc."
 		     name="land options" value="22" />
 	</action_set>
 	<action_set
@@ -100,7 +100,7 @@
 		     longdescription="Vous pouvez modifier le relief d&apos;une parcelle du groupe, même si l&apos;option est désactivée à partir du menu À propos du terrain &gt; Options."
 		     name="land allow edit land" value="23" />
 		<action description="Toujours autoriser à voler"
-		     longdescription="Vous pouvez voler sur une parcelle du groupe, même si l&apos;option est désactivée à partir du menu À propos du terrain &gt; Options."
+		     longdescription="Vous pouvez voler sur une parcelle du groupe, même si l&apos;option est désactivée à partir du menu A propos du terrain &gt; Options."
 		     name="land allow fly" value="24" />
 		<action description="Toujours autoriser à créer des objets"
 		     longdescription="Vous pouvez créer des objets sur une parcelle du groupe, même si l&apos;option est désactivée à partir du menu À propos du terrain &gt; Options."
@@ -116,13 +116,13 @@
 	     description="Ces pouvoirs permettent d&apos;autoriser ou d&apos;interdire l&apos;accès à des parcelles du groupe et de geler ou d&apos;expulser des résidents."
 	     name="Parcel Access">
 		<action description="Gérer la liste d&apos;accès à la parcelle"
-		     longdescription="Gérez la liste des résidents autorisés sur la parcelle à partir du menu À propos du terrain &gt; Accès."
+		     longdescription="Gérez la liste des résidents autorisés sur la parcelle à partir du menu A propos du terrain &gt; Accès."
 		     name="land manage allowed" value="29" />
 		<action description="Gérer la liste noire de cette parcelle"
-		     longdescription="Gérez la liste des résidents interdits sur la parcelle à partir du menu À propos du terrain &gt; Interdire."
+		     longdescription="Gérez la liste des résidents interdits sur la parcelle à partir du menu A propos du terrain &gt; Interdire."
 		     name="land manage banned" value="30" />
 		<action description="Vendre des pass"
-		     longdescription="Choisissez le prix et la durée des pass pour accéder à la parcelle à partir du menu À propos du terrain &gt; Accès."
+		     longdescription="Choisissez le prix et la durée des pass pour accéder à la parcelle à partir du menu A propos du terrain &gt; Accès."
 		     name="land manage passes" value="31" />
 		<action description="Expulser et geler des résidents"
 		     longdescription="Vous pouvez expulser ou geler un résident indésirable en cliquant-droit sur lui, menu radial &gt; Plus."
@@ -132,10 +132,10 @@
 	     description="Ces pouvoirs permettent de renvoyer des objets du groupe et de placer ou déplacer des plantes Linden pour aménager le paysage. Utilisez ce pouvoir avec précaution car les objets renvoyés le sont définitivement."
 	     name="Parcel Content">
 		<action description="Renvoyer les objets transférés au groupe"
-		     longdescription="Vous pouvez renvoyer des objets appartenant au groupe à partir du menu À propos du terrain &gt; Objets."
+		     longdescription="Vous pouvez renvoyer des objets appartenant au groupe à partir du menu A propos du terrain &gt; Objets."
 		     name="land return group owned" value="48" />
 		<action description="Renvoyer les objets attribués au groupe"
-		     longdescription="Renvoyez les objets attribués au groupe et sur des parcelles du groupe à partir du menu À propos du terrain &gt; Objets."
+		     longdescription="Renvoyez les objets attribués au groupe et sur des parcelles du groupe à partir du menu A propos du terrain &gt; Objets."
 		     name="land return group set" value="33" />
 		<action description="Renvoyer des objets n&apos;appartenant pas au groupe"
 		     longdescription="Renvoyez les objets n&apos;appartenant pas au groupe et sur des parcelles du groupe à partir du menu À propos du terrain &gt; Objets."

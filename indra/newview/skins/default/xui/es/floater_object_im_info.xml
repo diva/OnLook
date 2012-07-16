@@ -1,20 +1,16 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="object im info" title="Información del Objeto" >
-	  <text name="LabelItemNameTitle">
-			 Objeto:
-	  </text>
-	  <text name="ObjectName"/>
-	  <text name="LabelSlurlTitle">
-			Ubicación:
-	  </text>
-	  <text name="Slurl"/>
-	  <!-- A new viewer talking to an old sim will not have a slurl available and will show this. -->
-	  <text name="Unknown_Slurl">
-			 (Información de la ubicación no disponible)
-	  </text>
-	  <text name="LabelOwnerNameTitle">
-			 Propietario:
-	  </text>
-	  <text name="OwnerName"/>
-	  <button label="Ignorar al Propietario" label_selected="Ignorar al Propietario" name="Mute"/>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="object im info" title="Información del Objeto">
+	<text name="LabelItemNameTitle">
+		Objeto:
+	</text>
+	<text name="LabelSlurlTitle">
+		Ubicación:
+	</text>
+	<text name="Unknown_Slurl">
+		(Información de la ubicación no disponible)
+	</text>
+	<text name="LabelOwnerNameTitle">
+		Propietario:
+	</text>
+	<button label="Ignorar al Propietario" label_selected="Ignorar al Propietario" name="Mute"/>
 </floater>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="Water Floater" title="Éditeur d&apos;eau avancé">
+<floater name="Water Floater" title="Éditeur d'eau avancé">
 	<text name="KeyFramePresetsText">
-		Préréglages eau :
+		Préréglages eau:
 	</text>
 	<button label="Nouveau" label_selected="Nouveau" name="WaterNewPreset" />
 	<button label="Enregistrer" label_selected="Enregistrer" name="WaterSavePreset" width="75" left_delta="75"/>
@@ -10,10 +10,10 @@
 		<panel label="Paramètres" name="Settings">
 			<text name="BHText">
 				Couleur du brouillard
-dans l&apos;eau
+dans l'eau
 			</text>
 			<button label="?" name="WaterFogColorHelp" />
-			<color_swatch name="WaterFogColor" left="75" tool_tip="Cliquer pour ouvrir le sélecteur de couleurs" />
+			<color_swatch name="WaterFogColor" left="75" tool_tip="Cliquez pour ouvrir le sélecteur de couleurs" />
 			<text name="WaterFogDensText">
 				Densité du brouillard
 			</text>

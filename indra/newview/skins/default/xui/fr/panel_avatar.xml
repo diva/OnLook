@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="Panel Avatar" width="470">
 	<tab_container name="tab" width="459">
 		<panel label="2ème vie" name="2nd Life" width="458">
@@ -35,22 +35,22 @@
 				Âge non vérifié
 			</string>
 			<text name="Name:">
-				Nom :
+				Nom:
 			</text>
 			<text name="online_yes" width="151">
 				Actuellement connecté(e)
 			</text>
 			<text name="label">
-				Né(e) le :
+				Né(e) le:
 			</text>
 			<line_editor name="born" width="161" />
 			<text name="label2">
-				Compte :
+				Compte:
 			</text>
 			<view_border name="acct_border" width="161" />
 			<text name="acct" width="161" />
 			<text name="partner_label" tool_tip="Partenaire sur Second Life. Pour en savoir plus, allez sur www.secondlife.com/partner">
-				Partenaire :
+				Partenaire:
 			</text>
 			<button label="i" label_selected="i" left_delta="62" name="partner_info" tool_tip="Cliquez pour ouvrir le profil du partenaire"/>
 			<button label="?" label_selected="?" left_delta="24" name="partner_help"/>
@@ -58,15 +58,15 @@
 				[NAME]
 			</line_editor>
 			<text name="Photo:">
-				Photo :
+				Photo:
 			</text>
 			<texture_picker label="" name="img" tool_tip="Cliquez pour sélectionner une image"/>
 			<text name="Groups:">
-				Groupes :
+				Groupes:
 			</text>
 			<scroll_list name="groups" width="361" />
 			<text name="About:">
-				À propos :
+				À propos:
 			</text>
 			<text name="(500 chars)">
 				(500 car.)
@@ -81,20 +81,20 @@ objets :
 			<text name="Give inventory" tool_tip="Mettez les objets de l&apos;inventaire ici pour les donner à cette personne." width="361">
 				Faire glisser les objets à transférer ici.
 			</text>
-			<check_box label="Afficher dans la recherche" name="allow_publish" tool_tip="Publiez des infos suplémentaires telles qu&apos;une description et une image dans la Recherche."/>
+			<check_box label="Afficher dans la recherche" name="allow_publish" tool_tip="Publiez des infos suplémentaires telles qu'une description et une image dans la Recherche."/>
 			<button label="?" label_selected="?" left_delta="160" name="?"/>
 			<button label="Localiser" label_selected="Localiser" name="Find on Map"/>
-			<button label="Proposer téléportation" label_selected="Proposer téléportation..." name="Offer Teleport..." left_delta="117" width="150"/>
-			<button label="Devenir amis" label_selected="Devenir amis..." name="Add Friend..." left_delta="167"/>
+			<button label="Proposer téléportation" label_selected="Proposer téléportation" name="Offer Teleport..." left_delta="117" width="150"/>
+			<button label="Devenir amis" label_selected="Devenir amis" name="Add Friend..." left_delta="167"/>
 			<button label="Payer" label_selected="Payer" name="Pay..."/>
-                        <button bottom_delta="0" font="SansSerif" halign="center" label="IM" label_selected="IM" left_delta="80" name="Instant Message..." tool_tip="Instant Message (IM)" width="70"/>
-			<button bottom_delta="0" font="SansSerif" halign="center" label="Mute/Ignorer" label_selected="Mute" left_delta="85" name="Mute" tool_tip="ATTENTION VOUS ALLEZ MUTE LA PERSONNE" width="110"/>
-			<button bottom_delta="0" font="SansSerif" halign="center" label="Invit. Groupe" label_selected="Invit. Groupe" left_delta="120" name="GroupInvite_Button" width="130"/>
+			<button label="IM" label_selected="IM" left_delta="80" name="Instant Message..." tool_tip="Message instantané (IM)" width="70"/>
+			<button label="Mute/Ignorer" label_selected="Mute" left_delta="85" name="Mute" tool_tip="ATTENTION VOUS ALLEZ MUTER LA PERSONNE" width="110"/>
+			<button label="Invit. Groupe" label_selected="Invit. Groupe" left_delta="120" name="GroupInvite_Button" width="130"/>
 
 		</panel>
 		<panel label="Web" name="WebProfile" width="458">
 		  <line_editor name="url_edit" width="440" />
-			<flyout_button label="Charger" label_selected="Charger" name="load" tool_tip="Charger cette page du profil avec le navigateur web incorporé.">
+			<flyout_button label="Charger" label_selected="Charger" name="load" tool_tip="Charge cette page du profil avec le navigateur web incorporé.">
 				<flyout_button_item name="open_item">
 					Dans un navigateur externe
 				</flyout_button_item>
@@ -103,7 +103,7 @@ objets :
 				</flyout_button_item>
 			</flyout_button>
 			<button label="?" label_selected="?" name="web_profile_help"/>
-			<check_box label="Charger directement la page web" name="auto_load" tool_tip="Charger automatiquement toutes les pages web des profils sans demander au préalable."/>
+			<check_box label="Charger directement la page web" name="auto_load" tool_tip="Charge automatiquement toutes les pages web des profils sans demander au préalable."/>
 			<web_browser name="profile_html" width="440" />
 		</panel>
 		<panel label="Intérêts" name="Interests" width="458">
@@ -124,22 +124,22 @@ objets :
 			</text>
 			<check_box label="Textures" name="schk0"/>
 			<check_box label="Architecture" left_delta="160" name="schk1"/>
-			<check_box label="Organisation d&apos;événements" name="schk2"/>
-			<check_box label="Modéle" left_delta="-160" name="schk3"/>
+			<check_box label="Organisation d'événements" name="schk2"/>
+			<check_box label="Modèle" left_delta="-160" name="schk3"/>
 			<check_box label="Scripter" name="schk4"/>
-			<check_box label="Customisation d'avatars" left_delta="160" name="schk5"/>
-			<line_editor name="skills_edit" width="360" />
+			<check_box label="Customiser des avatars" left_delta="160" name="schk5"/>
+			<line_editor name="skills_edit" width="360"/>
 			<text left="2" name="Languages:">
 				Langues :
 			</text>
-			<line_editor name="languages_edit" width="360" />
+			<line_editor name="languages_edit" width="360"/>
 		</panel>
 		<panel label="Favoris" name="Picks" width="458">
 			<text left="10" name="Tell everyone about your favorite places in Second Life." width="412">
 				Faites connaître aux autres résidents vos endroits favoris dans Second Life.
 			</text>
-			<button label="Créer..." label_selected="Créer..." name="New..."/>
-			<button label="Supprimer..." label_selected="Supprimer..." name="Delete..." width="85"/>
+			<button label="Créer" label_selected="Créer" name="New..."/>
+			<button label="Supprimer" label_selected="Supprimer" name="Delete..." width="85"/>
 			<tab_container name="picks tab" width="452" />
 			<text name="loading_text">
 				Chargement...
@@ -149,8 +149,8 @@ objets :
 			<text name="Place an ad in Second Life&apos;s classified listings.">
 				Passez une petite annonce sur Second Life.
 			</text>
-			<button label="Créer..." label_selected="Créer..." name="New..."/>
-			<button label="Supprimer..." label_selected="Supprimer..." name="Delete..." width="85"/>
+			<button label="Créer" label_selected="Créer" name="New..."/>
+			<button label="Supprimer" label_selected="Supprimer" name="Delete..." width="85"/>
 			<tab_container name="classified tab" width="452" />
 			<text name="loading_text">
 				Chargement...
@@ -158,11 +158,11 @@ objets :
 		</panel>
 		<panel label="1ère vie" name="1st Life" width="458">
 			<text name="Photo:">
-				Photo :
+				Photo:
 			</text>
-			<texture_picker label="" name="img" tool_tip="Cliquez pour sélectionner une photo"/>
+			<texture_picker label="" name="img" tool_tip="Cliquer pour sélectionner une photo"/>
 			<text name="Info:">
-				Infos :
+				Infos:
 			</text>
 			<text name="(250 chars)">
 				(250 car.)
@@ -185,7 +185,7 @@ vous avez écrit.
 			     bottom_delta="-26" drop_shadow_visible="true" follows="left|top"
 			     font="SansSerifSmall" h_pad="0" halign="right" height="16" left="10"
 			     mouse_opaque="true" name="key_label" v_pad="0" width="95">
-				Clef-Key:
+				Clef-Key :
 			</text>
 			<name_editor bevel_style="in" bg_readonly_color="0, 0, 0, 0" border_style="line"
 			     border_thickness="1" bottom_delta="1" enabled="false" follows="left|top"
@@ -198,31 +198,31 @@ vous avez écrit.
 	<button label="OK" label_selected="OK" name="OK"/>
 	<button label="Annuler" label_selected="Annuler" name="Cancel"/>
 	<button label="Éjecter" label_selected="Éjecter" name="Kick"/>
-	<button label="Geler" label_selected="Geler" name="Freeze" tool_tip="Empêcher ce résident de bouger et de chatter."/>
-	<button label="Dégeler" label_selected="Dégeler" name="Unfreeze" tool_tip="Dégeler le résident"/>
-	<button label="Admin" label_selected="Admin" name="csr_btn" tool_tip="Contacter le Service Clientèle pour ce résident"/>
+	<button label="Geler" label_selected="Geler" name="Freeze" tool_tip="Empêche le résident de bouger et de chatter."/>
+	<button label="Dégeler" label_selected="Dégeler" name="Unfreeze" tool_tip="Dégèle le résident"/>
+	<button label="Admin" label_selected="Admin" name="csr_btn" tool_tip="Permet de contacter le Service Clientèle pour ce résident"/>
 	<string name="ShowOnMapNonFriend">
 		Voir sur la carte.
 Ceci n&apos;est pas possible car vous
-n&apos;êtes pas ami avec cette personne.
+n&apos;êtes pas ami(e) avec cette personne.
 	</string>
 	<string name="ShowOnMapFriendOffline">
 		Voir sur la carte.
-    Ceci n&apos;est pas possible car le résident
+    Ceci n'est pas possible car le résident
     en question n&apos;est pas connecté.
 	</string>
 	<string name="ShowOnMapFriendOnline">
 		Voir sur la carte.
 	</string>
 	<string name="TeleportGod">
-		Téléporter le résident là où vous êtes de force.
+		Téléporter le résident là où vous êtes, de force.
 	</string>
 	<string name="TeleportPrelude">
-		Proposer au résident d&apos;être téléporté là où vous êtes.
-Ceci n&apos;est pas possible tant que vous êtes sur l&apos;île d&apos;orientation.
+		Proposer au résident d'être téléporté là où vous êtes.
+Ceci n'est pas possible tant que vous êtes sur l'île d'orientation.
 	</string>
 	<string name="TeleportNormal">
-		Offrir au résident d&apos;être téléporté là où vous êtes.
+		Offrir au résident d'être téléporté là où vous êtes.
 	</string>
 	<string name="Loading">
 		Chargement...

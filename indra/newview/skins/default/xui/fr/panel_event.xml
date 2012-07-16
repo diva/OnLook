@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel name="Event" title="Événement">
+<panel name="Event" title="Evénement">
 	<text name="event_name_label">
 		Nom :
 	</text>
@@ -57,7 +57,7 @@
 	<button label="Téléporter" name="teleport_btn"/>
 	<button label="Voir sur la carte" name="map_btn"/>
 	<button label="Prévenir" name="notify_btn"/>
-	<button label="Créer un événement..." name="create_event_btn"/>
+	<button label="Créer un événement" name="create_event_btn"/>
 	<string name="none">
 		aucun
 	</string>

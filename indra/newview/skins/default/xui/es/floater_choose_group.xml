@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="groups" title="Grupos">
-	  <text name="groupdesc">
-			 Elegir un Grupo:
-	  </text>
-	  <scroll_list name="group list">
-			 <column name="name"/>
-	  </scroll_list>
-	  <button label="OK" label_selected="OK" name="OK"/>
-	  <button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
-	  <string name="none">
-			 ninguno
-	  </string>
+	<text name="groupdesc">
+		Elegir un Grupo:
+	</text>
+	<button label="OK" label_selected="OK" name="OK"/>
+	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<string name="none">
+		ninguno
+	</string>
 </floater>

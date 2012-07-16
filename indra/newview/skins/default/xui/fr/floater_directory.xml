@@ -1,19 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="directory" title="Rechercher dans Second Life">
 	<tab_container name="Directory Tabs">
 		<panel label="Tout" name="find_all_panel">
 			<string name="searching_text">
-				Recherche en cours...
+				Recherche en cours
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<text name="find" width="63">
-				Trouver :
+				Trouver
 			</text>
 			<line_editor label="Rechercher" name="search_editor" tool_tip="Rechercher dans Second Life"/>
-			<button label="." name="back_btn" width="20"/>
-			<button label="." left="316" name="forward_btn" width="20"/>
 			<button label="Rechercher" name="search_btn"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
@@ -37,7 +35,7 @@
 			</combo_box>
 			<check_box label="Contenu PG" name="incpg"/>
 			<check_box label="Contenu Mature" name="incmature"/>
-			<check_box label="Contenu Adult" name="incadult"/>
+			<check_box label="Contenu Adulte" name="incadult"/>
 			<button label="?" label_selected="?" name="?"/>
 			<string name="loading_text">
 				Chargement en cours...
@@ -57,15 +55,15 @@
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<text name="find" width="63">
-				Trouver :
+				Trouver
 			</text>
 			<line_editor name="name"/>
 			<check_box label="Contenu PG" name="incpg"/>
 			<check_box label="Contenu Mature" name="incmature"/>
-			<check_box label="Contenu Adult" name="incadult"/>
+			<check_box label="Contenu Adulte" name="incadult"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Toutes catégories
@@ -100,11 +98,9 @@
 			</combo_box>
 			<button label="Parcourir" label_selected="Parcourir" name="Browse"/>
 			<button label="Rechercher" label_selected="Rechercher" name="Search" width="85"/>
-			<button label="Passer une annonce…" label_selected="Passer une annonce…" name="Place an Ad..."/>
+			<button label="Passer une annonce" label_selected="Passer une annonce" name="Place an Ad..."/>
 			<button label="Supprimer" label_selected="Supprimer" name="Delete"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nom" name="name"/>
 				<column label="Prix" name="price"/>
 			</scroll_list>
@@ -116,10 +112,10 @@
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<text name="text2">
-				Trouver :
+				Trouver
 			</text>
 			<line_editor name="event_search_text"/>
 			<radio_group name="date_mode">
@@ -130,14 +126,14 @@
 					Date
 				</radio_item>
 			</radio_group>
-			<button label="&lt;&lt;" label_selected="&lt;&lt;" name="&lt;&lt;" tool_tip="Revenir en arrière d&apos;un jour"/>
+			<button label="&lt;&lt;" label_selected="&lt;&lt;" name="&lt;&lt;" tool_tip="Revenir en arrière d'un jour"/>
 			<text name="date_text">
 				6/6
 			</text>
-			<button label="&gt;&gt;" label_selected="&gt;&gt;" name="&gt;&gt;" tool_tip="Avancer d&apos;un jour"/>
-			<button bottom="-62" label="Aujourd&apos;hui" label_selected="Aujourd&apos;hui" left_delta="-72" name="Today" tool_tip="Afficher les événements qui ont lieu aujourd&apos;hui" width="95"/>
+			<button label="&gt;&gt;" label_selected="&gt;&gt;" name="&gt;&gt;" tool_tip="Avancer d'un jour"/>
+			<button label="Aujourd'hui" label_selected="Aujourd'hui" name="Today" tool_tip="Affiche les événements qui ont lieu aujourd'hui" bottom="-62" left_delta="-72" width="95"/>
 			<text name="text">
-				Catégorie :
+				Catégorie:
 			</text>
 			<combo_box name="category combo" width="175">
 				<combo_item name="All">
@@ -171,7 +167,7 @@
 					Arts et Culture
 				</combo_item>
 				<combo_item name="Charity/SupportGroups">
-					Groupes d&apos;entraide/Caritatif
+					Groupes d'entraide/Caritatif
 				</combo_item>
 				<combo_item name="Miscellaneous">
 					Divers
@@ -179,15 +175,12 @@
 			</combo_box>
 			<check_box label="Contenu PG" name="incpg"/>
 			<check_box label="Contenu Mature" name="incmature"/>
-			<check_box label="Contenu Adult" name="incadult"/>
+			<check_box label="Contenu Adulte" name="incadult"/>
 			<button label="Rechercher" label_selected="Rechercher" name="Search" tool_tip="Rechercher"/>
 			<button label="Supprimer" label_selected="Supprimer" name="Delete"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nom" name="name"/>
 				<column label="Heure (Californie)" name="date" width="115"/>
-				<column label="" name="event_id"/>
 				<column label="Heure" name="time"/>
 			</scroll_list>
 			<button label="Suivante &gt;" label_selected="Suivante &gt;" name="Next &gt;"/>
@@ -198,10 +191,10 @@
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
-			<button label="Précédente" name="back_btn" width="82"/>
-			<button label="Suivante" left_delta="87" name="forward_btn" width="82"/>
+			<button label="" name="back_btn" width="60"/>
+			<button label="" left_delta="87" name="forward_btn" width="60"/>
 			<string name="loading_text">
 				Chargement en cours...
 			</string>
@@ -220,19 +213,19 @@
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<string name="land_help_text">
-				Vous pouvez acheter un terrain directement en dollars Linden (L$) ou aux enchères (en L$ ou US$).
-Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;endroit dans la barre de titre.
+				Vous pouvez acheter un terrain directement en dollars ([CURRENCY]) ou aux enchères (en [CURRENCY] ou [REALCURRENCY]).
+Pour acheter directement, visitez le terrain et cliquez sur le nom de l'endroit dans la barre de titre.
 			</string>
 			<text name="find">
-				Trouver :
+				Trouver
 			</text>
 			<check_box label="Contenu PG" name="incpg" left="450"/>
 			<check_box label="Contenu Mature" name="incmature" left="450"/>
-			<check_box label="Contenu Adult" name="incadult" left="450"/>
-			<combo_box left="298" name="type" width="145">
+			<check_box label="Contenu Adulte" name="incadult" left="450"/>
+			<combo_box name="type" left="298" width="145">
 				<combo_item name="AllTypes">
 					Tous types
 				</combo_item>
@@ -247,24 +240,22 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				</combo_item>
 			</combo_box>
 			<check_box label="Prix &#8804; " name="pricecheck"/>
-			<text left="186" name="pricecheck_symbol">
-				L$
+			<text name="pricecheck_symbol" left="186">
+				[CURRENCY]
 			</text>
 			<check_box label="Surface &#8805; " name="areacheck" width="90"/>
-			<text left="186" name="areacheck_symbol">
+			<text name="areacheck_symbol" left="186">
 				m²
 			</text>
-			<line_editor left="130" name="priceedit"/>
-			<line_editor left="130" name="areaedit"/>
+			<line_editor name="priceedit" left="130"/>
+			<line_editor name="areaedit" left="130"/>
 			<button label="Rechercher" label_selected="Rechercher" name="Search" width="85"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nom" name="name"/>
 				<column label="Type" name="landtype"/>
-				<column label="Prix en L$" name="price" width="75"/>
+				<column label="Prix en [CURRENCY]" name="price" width="75"/>
 				<column label="Surface" name="area" width="65"/>
-				<column label="L$/m²" name="per_meter"/>
+				<column label="[CURRENCY]/m²" name="per_meter"/>
 			</scroll_list>
 			<button label="Suivante &gt;" label_selected="Suivante &gt;" name="Next &gt;"/>
 			<button label="&lt; Préc" label_selected="&lt; Préc" name="&lt; Prev"/>
@@ -274,15 +265,15 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<text name="find">
-				Trouver :
+				Trouver
 			</text>
 			<line_editor name="name"/>
 			<check_box label="Contenu PG" name="incpg"/>
 			<check_box label="Contenu Mature" name="incmature"/>
-			<check_box label="Contenu Adult" name="incadult"/>
+			<check_box label="Contenu Adulte" name="incadult"/>
 			<combo_box name="Category">
 				<combo_item name="AnyCategory">
 					Toutes catégories
@@ -320,7 +311,13 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				<combo_item name="Other">
 					Autre
 				</combo_item>
+				<combo_item name="Rental">
+					Rental
+				</combo_item>
 			</combo_box>
+			<!-- This is used only during the AO transition and can be deleted once the AO transition is
+				  complete. It is identical to the combo box above except that it has the Adult category. 
+				  You might also want to set it back to default visible and enabled. -->
 			<combo_box name="Category_Adult">
 				<combo_item name="AnyCategory">
 					Toutes catégories
@@ -329,7 +326,7 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 					Appartenant aux Lindens
 				</combo_item>
 				<combo_item name="Adult">
-					Adult
+					Adulte
 				</combo_item>
 				<combo_item name="Arts&amp;Culture">
 					Art et Culture
@@ -361,11 +358,12 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				<combo_item name="Other">
 					Autre
 				</combo_item>
+				<combo_item name="Rental">
+					Rental
+				</combo_item>
 			</combo_box>
 			<button label="Rechercher" label_selected="Rechercher" name="Search"/>
 			<scroll_list name="results">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nom" name="name"/>
 				<column label="Trafic" name="dwell"/>
 			</scroll_list>
@@ -377,16 +375,14 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
 			<text name="find">
-				Trouver :
+				Trouver
 			</text>
 			<line_editor name="name"/>
 			<button label="Rechercher" label_selected="Rechercher" name="Search"/>
 			<scroll_list name="results" width="286">
-				<column label="" name="icon"/>
-				<column label="" name="type"/>
 				<column label="Nom" name="name" width="234"/>
 			</scroll_list>
 			<button right="290" label="Suivante &gt;" label_selected="Suivante &gt;" name="Next &gt;"/>
@@ -397,31 +393,24 @@ Pour acheter directement, visitez le terrain et cliquez sur le nom de l&apos;end
 				Recherche en cours...
 			</string>
 			<string name="not_found_text">
-				Aucun résultat.
+				Aucun résultat
 			</string>
+			<button label="Next &gt;" label_selected="Next &gt;" name="Next &gt;"/>
+			<button label="&lt; Prev" label_selected="&lt; Prev" name="&lt; Prev"/>
 			<text name="find">
-				Trouver :
+				Trouver
 			</text>
-			<line_editor label="Rechercher" name="search_editor" tool_tip="Rechercher dans Second Life"/>
-			<button label="Précédente" name="back_btn" width="82"/>
-			<button label="Suivante" left="316" name="forward_btn" width="77"/>
-			<button label="Rechercher" name="search_btn"/>
-			<check_box label="Contenu PG" name="incpg"/>
-			<check_box label="Contenu Mature" name="incmature"/>
-			<check_box label="Contenu Adult" name="incadult"/>
-			<string name="loading_text">
-				Chargement en cours...
-			</string>
-			<string name="done_text">
-				Fini
-			</string>
-			<string name="redirect_404_url">
-				http://secondlife.com/app/search/notfound.html
-			</string>
-			<string name="default_search_page">
-				http://secondlife.com/app/search/index_groups.php?
-			</string>
+			<line_editor name="name"/>
+			<button label="Rechercher" label_selected="Recherche" name="Search"/>
+			<check_box label="PG" name="incpg"/>
+			<check_box label="Mature" name="incmature"/>
+			<check_box label="Adulte" name="incadult"/>
+			<scroll_list name="results">
+				<column label="Nom" name="name"/>
+				<column label="Membres" name="members"/>
+			</scroll_list>
+			<text name="result_text"/>
 		</panel>
 	</tab_container>
-	<panel left="310" name="Panel Avatar" width="470" />
+	<panel left="310" name="Panel Avatar" width="470"/>
 </floater>

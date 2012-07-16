@@ -1,99 +1,99 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="modal container" title="" >
-	  <button label="Guardar" label_selected="Guardar" name="Save"/>
-	  <button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
-	  <check_box label="Forma" name="checkbox_shape"/>
-	  <check_box label="Piel" name="checkbox_skin"/>
-	  <check_box label="Pelo" name="checkbox_hair"/>
-	  <check_box label="Ojos" name="checkbox_eyes"/>
-	  <text name="Options:">
-			 Opciones:
-	  </text>
-	  <!--<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall"
-			 height="16" initial_value="false" label="Rename Clothing To Folder Name"
-			 left="13" mouse_opaque="true" name="rename" radio_style="false" width="210" />-->
-	  <check_box name="checkbox_use_outfits" label="Usar Carpetas de Vestuario del  Viewer 2" />
-	  <check_box name="checkbox_use_links" label="Usar enlaces para item no copiables, no modificables o de punto multiple" />
-	  <check_box label="Camisa" name="checkbox_shirt"/>
-	  <check_box label="Pantalones" name="checkbox_pants"/>
-	  <check_box label="Zapatos" name="checkbox_shoes"/>
-	  <check_box label="Medias" name="checkbox_socks"/>
-	  <check_box label="Chaqueta" name="checkbox_jacket"/>
-	  <check_box label="Guantes" name="checkbox_gloves"/>
-	  <check_box label="Camiseta" name="checkbox_undershirt"/>
-	  <check_box label="Ropa Interior" name="checkbox_underpants"/>
-	  <check_box label="Flada" name="checkbox_skirt"/>
-	  <check_box label="Tatuaje" name="checkbox_tattoo"/>
-	  <check_box label="Alfa" name="checkbox_alpha"/>
-	  <check_box label="Física" name="checkbox_physics"/>
-	  <check_box label="Pecho" name="checkbox_Chest"/>
-	  <check_box label="Cráneo" name="checkbox_Skull"/>
-	  <check_box label="Hombro Izquierdo" name="checkbox_Left Shoulder"/>
-	  <check_box label="Hombro Derecho" name="checkbox_Right Shoulder"/>
-	  <check_box label="Mano Izquierda" name="checkbox_Left Hand"/>
-	  <check_box label="Mano Derecha" name="checkbox_Right Hand"/>
-	  <check_box label="Pié Izquierdo" name="checkbox_Left Foot"/>
-	  <check_box label="Pié Derecho" name="checkbox_Right Foot"/>
-	  <check_box label="Columna" name="checkbox_Spine"/>
-	  <check_box label="Pelvis" name="checkbox_Pelvis"/>
-	  <check_box label="Boca" name="checkbox_Mouth"/>
-	  <check_box label="Mentón" name="checkbox_Chin"/>
-	  <check_box label="Oreja Izquierda" name="checkbox_Left Ear"/>
-	  <check_box label="Oreja Derecha" name="checkbox_Right Ear"/>
-	  <check_box label="Globo Ocular Izquierdo" name="checkbox_Left Eyeball"/>
-	  <check_box label="Globo Ocular Derecho" name="checkbox_Right Eyeball"/>
-	  <check_box label="Nariz" name="checkbox_Nose"/>
-	  <check_box label="Brazo Derecho" name="checkbox_R Upper Arm"/>
-	  <check_box label="Antebrazo Derecho" name="checkbox_R Forearm"/>
-	  <check_box label="Brazo Izquierdo" name="checkbox_L Upper Arm"/>
-	  <check_box label="Antebrazo Izquierdo" name="checkbox_L Forearm"/>
-	  <check_box label="Cadera Derecha" name="checkbox_Right Hip"/>
-	  <check_box label="Muslo Derecho" name="checkbox_R Upper Leg"/>
-	  <check_box label="Pierna Derecha" name="checkbox_R Lower Leg"/>
-	  <check_box label="Cadera Izquierda" name="checkbox_Left Hip"/>
-	  <check_box label="Muslo Izquierdo" name="checkbox_L Upper Leg"/>
-	  <check_box label="Pierna Izquierda" name="checkbox_L Lower Leg"/>
-	  <check_box label="Estómago" name="checkbox_Stomach"/>
-	  <check_box label="Pectoral Izquierdo" name="checkbox_Left Pec"/>
-	  <check_box label="Pectoral Derecho" name="checkbox_Right Pec"/>
-	  <check_box label="Cuello" name="checkbox_Neck"/>
-	  <check_box label="Root" left="413" name="checkbox_Root"/>
-	  <check_box label="Centro 2" name="checkbox_Center 2"/>
-	  <check_box label="Superior Derecha" name="checkbox_Top Right"/>
-	  <check_box label="Arriba" name="checkbox_Top"/>
-	  <check_box label="Superior Izquierda" name="checkbox_Top Left"/>
-	  <check_box label="CentrO" name="checkbox_Center"/>
-	  <check_box label="Inferior Izquierdo" name="checkbox_Bottom Left"/>
-	  <check_box label="Abajo" name="checkbox_Bottom"/>
-	  <check_box label="Inferior Derecha" name="checkbox_Bottom Right"/>
-	  <text name="Make New Outfit">
-			 Hacer Nuevo Vestuario
-	  </text>
-	  <text name="Outfits are folders that contain clothing and body parts. Drag an outfit folder onto your avatar to put it on.   &quot;Make New Outfit&quot; makes a new folder and saves copies of the items you are now wearing into it.">
-			 Los Vestuarios son carpetas que contienen ropas y partes de cuerpo.
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="modal container">
+	<button label="Guardar" label_selected="Guardar" name="Save"/>
+	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<check_box label="Forma" name="checkbox_shape"/>
+	<check_box label="Piel" name="checkbox_skin"/>
+	<check_box label="Pelo" name="checkbox_hair"/>
+	<check_box label="Ojos" name="checkbox_eyes"/>
+	<text name="Options:">
+		Opciones:
+	</text>
+	<!--<check_box bottom_delta="-20" enabled="true" follows="left|top" font="SansSerifSmall"
+		height="16" initial_value="false" label="Rename Clothing To Folder Name"
+		left="13" mouse_opaque="true" name="rename" radio_style="false" width="210" />-->
+	<check_box name="checkbox_use_outfits" label="Usar Carpetas de Vestuario del  Viewer 2" />
+	<check_box name="checkbox_use_links" label="Usar enlaces para item no copiables, no modificables o de punto multiple" />
+	<check_box label="Camisa" name="checkbox_shirt"/>
+	<check_box label="Pantalones" name="checkbox_pants"/>
+	<check_box label="Zapatos" name="checkbox_shoes"/>
+	<check_box label="Medias" name="checkbox_socks"/>
+	<check_box label="Chaqueta" name="checkbox_jacket"/>
+	<check_box label="Guantes" name="checkbox_gloves"/>
+	<check_box label="Camiseta" name="checkbox_undershirt"/>
+	<check_box label="Ropa Interior" name="checkbox_underpants"/>
+	<check_box label="Flada" name="checkbox_skirt"/>
+	<check_box label="Tatuaje" name="checkbox_tattoo"/>
+	<check_box label="Alfa" name="checkbox_alpha"/>
+	<check_box label="Física" name="checkbox_physics"/>
+	<check_box label="Pecho" name="checkbox_Chest"/>
+	<check_box label="Cráneo" name="checkbox_Skull"/>
+	<check_box label="Hombro Izquierdo" name="checkbox_Left Shoulder"/>
+	<check_box label="Hombro Derecho" name="checkbox_Right Shoulder"/>
+	<check_box label="Mano Izquierda" name="checkbox_Left Hand"/>
+	<check_box label="Mano Derecha" name="checkbox_Right Hand"/>
+	<check_box label="Pié Izquierdo" name="checkbox_Left Foot"/>
+	<check_box label="Pié Derecho" name="checkbox_Right Foot"/>
+	<check_box label="Columna" name="checkbox_Spine"/>
+	<check_box label="Pelvis" name="checkbox_Pelvis"/>
+	<check_box label="Boca" name="checkbox_Mouth"/>
+	<check_box label="Mentón" name="checkbox_Chin"/>
+	<check_box label="Oreja Izquierda" name="checkbox_Left Ear"/>
+	<check_box label="Oreja Derecha" name="checkbox_Right Ear"/>
+	<check_box label="Globo Ocular Izquierdo" name="checkbox_Left Eyeball"/>
+	<check_box label="Globo Ocular Derecho" name="checkbox_Right Eyeball"/>
+	<check_box label="Nariz" name="checkbox_Nose"/>
+	<check_box label="Brazo Derecho" name="checkbox_R Upper Arm"/>
+	<check_box label="Antebrazo Derecho" name="checkbox_R Forearm"/>
+	<check_box label="Brazo Izquierdo" name="checkbox_L Upper Arm"/>
+	<check_box label="Antebrazo Izquierdo" name="checkbox_L Forearm"/>
+	<check_box label="Cadera Derecha" name="checkbox_Right Hip"/>
+	<check_box label="Muslo Derecho" name="checkbox_R Upper Leg"/>
+	<check_box label="Pierna Derecha" name="checkbox_R Lower Leg"/>
+	<check_box label="Cadera Izquierda" name="checkbox_Left Hip"/>
+	<check_box label="Muslo Izquierdo" name="checkbox_L Upper Leg"/>
+	<check_box label="Pierna Izquierda" name="checkbox_L Lower Leg"/>
+	<check_box label="Estómago" name="checkbox_Stomach"/>
+	<check_box label="Pectoral Izquierdo" name="checkbox_Left Pec"/>
+	<check_box label="Pectoral Derecho" name="checkbox_Right Pec"/>
+	<check_box label="Cuello" name="checkbox_Neck"/>
+	<check_box label="Root" left="413" name="checkbox_Root"/>
+	<check_box label="Centro 2" name="checkbox_Center 2"/>
+	<check_box label="Superior Derecha" name="checkbox_Top Right"/>
+	<check_box label="Arriba" name="checkbox_Top"/>
+	<check_box label="Superior Izquierda" name="checkbox_Top Left"/>
+	<check_box label="CentrO" name="checkbox_Center"/>
+	<check_box label="Inferior Izquierdo" name="checkbox_Bottom Left"/>
+	<check_box label="Abajo" name="checkbox_Bottom"/>
+	<check_box label="Inferior Derecha" name="checkbox_Bottom Right"/>
+	<text name="Make New Outfit">
+		Hacer Nuevo Vestuario
+	</text>
+	<text name="Outfits are folders that contain clothing and body parts. Drag an outfit folder onto your avatar to put it on.   &quot;Make New Outfit&quot; makes a new folder and saves copies of the items you are now wearing into it.">
+		Los Vestuarios son carpetas que contienen ropas y partes de cuerpo.
 Arrastra una carpeta de Vestuario a tu avatar para verstirtelo.			 
 
 &quot;Hacer Nuevo Vestuario&quot; crea una carpeta nueva y guarda en ella
 los items que actualmente tienes vestidos.
-	  </text>
-	  <text name="Folder name:">
-			 Nombre de Carpeta:
-	  </text>
-	  <text name="Items to include in outfit:">
-			 Items a incluir en el vestuario:
-	  </text>
-	  <button label="Marcar Todo" name="Check All"/>
-	  <button label="Desmarcar Todo" name="Uncheck All"/>
-	  <text name="Body Parts:">
-			 Partes del Cuerpo:
-	  </text>
-	  <text name="Clothes:">
-			 Ropas:
-	  </text>
-	  <text name="Attachments:">
-			 Accesorios:
-	  </text>
-	  <line_editor name="name ed">
-			 Nuevo Vestuario
-	  </line_editor>
+	</text>
+	<text name="Folder name:">
+		Nombre de Carpeta:
+	</text>
+	<text name="Items to include in outfit:">
+		Items a incluir en el vestuario:
+	</text>
+	<button label="Marcar Todo" name="Check All"/>
+	<button label="Desmarcar Todo" name="Uncheck All"/>
+	<text name="Body Parts:">
+		Partes del Cuerpo:
+	</text>
+	<text name="Clothes:">
+		Ropas:
+	</text>
+	<text name="Attachments:">
+		Accesorios:
+	</text>
+	<line_editor name="name ed">
+		Nuevo Vestuario
+	</line_editor>
 </floater>

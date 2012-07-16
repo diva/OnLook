@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="WindLight floater" title="Éditeur de ciel avancé" width="706">
 	<text name="KeyFramePresetsText">
-		Préréglages ciel :
+		Préréglages ciel:
 	</text>
 	<button label="Nouveau" label_selected="Nouveau" name="WLNewPreset" />
 	<button label="Enregistrer" label_selected="Enregistrer" name="WLSavePreset" width="75" left_delta="75"/>
@@ -11,7 +11,7 @@
 	<tab_container name="WindLight Tabs" width="706">
 		<panel label="Atmosphère" name="Atmosphere">
 			<text name="BHText">
-				Bleu de l&apos;horizon
+				Bleu de l'horizon
 			</text>
 			<button label="?" name="WLBlueHorizonHelp" />
 			<text name="BHText2">

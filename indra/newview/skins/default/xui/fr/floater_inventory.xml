@@ -1,30 +1,36 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Inventory" title="Inventaire">
-	<search_editor label="Saisissez votre recherche ici" name="inventory search editor"/>
-<text name="group_titles_textbox" halign="right" font="SansSerifSmall" follows="left|top"
-		height="16" left="30" bottom_delta="2" right="93">Filtre rapide:</text>
+	<search_editor label="Saisir votre recherche ici" name="inventory search editor"/>
+  <button left="6" bottom_delta="-26" height="22" width="22" follows="left|top" halign="center"
+    label="" image_overlay="inv_collapse_all.tga" name="collapse_btn" mouse_opaque="true" font="SansSerif"
+    tool_tip="Collapse All" />
+   <button left="28" bottom_delta="0" height="22" width="22" follows="left|top" halign="center"
+    label="" image_overlay="inv_expand_all.tga" name="Inventory.ExpandAll" mouse_opaque="true" font="SansSerif"
+    tool_tip="Expand All"/>
+ <text name="group_titles_textbox" halign="right" font="SansSerifSmall" follows="left|top"
+		height="16" left="43" bottom_delta="2" right="108">Filtre rapide</text>
 	<!-- Inventory Type Filter Labels -->
 	<string name="filter_type_all">TOUT</string>
 	<string name="filter_type_animation">Animations</string>
 	<string name="filter_type_callingcard">Cartes de Visite</string>
 	<string name="filter_type_wearable">Habits / Body Parts</string>
 	<string name="filter_type_gesture">Gestures</string>
-	<string name="filter_type_landmark">Reperes / Landmarks</string>
+	<string name="filter_type_landmark">Rep&#xE8;res / Landmarks</string>
 	<string name="filter_type_notecard">Notecards</string>
 	<string name="filter_type_object">Objets</string>
 	<string name="filter_type_script">Scripts</string>
 	<string name="filter_type_sound">Sons</string>
 	<string name="filter_type_texture">Textures</string>
 	<string name="filter_type_snapshot">Photos</string>
-	<string name="filter_type_custom">Custom...</string>
-	<combo_box name="Quick Filter" label="Filtre Rapide" follows="left|top|right" height="20" left="95" right="-6" bottom_delta="0">
+	<string name="filter_type_custom">Personnalis&#xE9;</string>
+	<combo_box name="Quick Filter" label="Filtre Rapide" follows="left|top|right" height="20" left="110" right="-6" bottom_delta="0">
 		<combo_item name="filter_type_all">TOUT</combo_item>
 		<separator />
 		<combo_item name="filter_type_animation">Animations</combo_item>
 		<combo_item name="filter_type_callingcard">Cartes de Visite</combo_item>
 		<combo_item name="filter_type_wearable">Habits / Body Parts</combo_item>
 		<combo_item name="filter_type_gesture">Gestures</combo_item>
-		<combo_item name="filter_type_landmark">Reperes / Landmarks</combo_item>
+		<combo_item name="filter_type_landmark">Rep&#xE8;res / Landmarks</combo_item>
 		<combo_item name="filter_type_notecard">Notecards</combo_item>
 		<combo_item name="filter_type_object">Objets</combo_item>
 		<combo_item name="filter_type_script">Scripts</combo_item>
@@ -32,7 +38,7 @@
 		<combo_item name="filter_type_texture">Textures</combo_item>
 		<combo_item name="filter_type_snapshot">Photos</combo_item>
 		<separator />
-		<combo_item name="filter_type_custom">Custom...</combo_item>
+		<combo_item name="filter_type_custom">Personnalis&#xE9;</combo_item>
 	</combo_box>
 	<tab_container name="inventory filter tabs">
 		<inventory_panel label="Tous les objets" name="All Items"/>

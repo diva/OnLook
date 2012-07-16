@@ -21,7 +21,7 @@ pendant 14 jours et chaque groupe a une limite quotidienne de 200 notices.
 		<column label="Date" name="date"/>
 	</scroll_list>
 	<text name="notice_list_none_found">
-		Aucun résultat.
+		Aucun résultat
 	</text>
 	<button label="Créer une notice" label_selected="Créer une notice" name="create_new_notice"/>
 	<button label="Rafraîchir" label_selected="Rafraîchir la liste" name="refresh_notices"/>
@@ -47,11 +47,11 @@ dossiers.
 		<text name="lbl5" width="68">
 			Pièce-jointe :
 		</text>
-		<line_editor name="create_inventory_name" width="190" left_delta="74"/>
-		<button label="Supprimer pièce-jointe" label_selected="Supprimer pièce-jointe" left="274" name="remove_attachment" width="140"/>
-		<button label="Envoyer la notice" label_selected="Envoyer la notice" left="274" name="send_notice" width="140"/>
-		<panel name="drop_target2" tool_tip="Pour joindre un objet de l&apos;inventaire à la notice, faites-le glisser dans la boîte de message. Pour envoyer l&apos;objet avec la notice, vous devez avoir la permission de le copier et de le transférer."/>
-		<panel name="drop_target" tool_tip="Pour joindre un objet de l&apos;inventaire à la notice, faites-le glisser dans la boîte de message. Pour envoyer l&apos;objet avec la notice, vous devez avoir la permission de le copier et de le transférer."/>
+		<line_editor name="create_inventory_name" width="185" left_delta="74"/>
+		<button label="Supprimer pièce-jointe" label_selected="Supprimer pièce-jointe" left="274" name="remove_attachment" width="145"/>
+		<button label="Envoyer la notice" label_selected="Envoyer la notice" left="274" name="send_notice" width="145"/>
+		<panel name="drop_target2" tool_tip="Pour joindre un objet de l&apos;inventaire à la notice, le faire glisser dans la boîte de message. Pour envoyer l&apos;objet avec la notice, vous devez avoir la permission de le copier et de le transférer."/>
+		<panel name="drop_target" tool_tip="Pour joindre un objet de l&apos;inventaire à la notice, le faire glisser dans la boîte de message. Pour envoyer l&apos;objet avec la notice, vous devez avoir la permission de le copier et de le transférer."/>
 	</panel>
 	<panel label="Voir ancienne notice" name="panel_view_past_notice">
 		<text name="lbl">

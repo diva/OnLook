@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="avatar_texture_debug" title="Textures de l&apos;avatar">
-	<text name="label">
-		Textures fixées
-	</text>
-	<text name="composite_label">
-		Textures composées
-	</text>
+<floater name="avatar_texture_debug" title="Textures de l'avatar">
 	<button label="Vider ces ID dans la console" label_selected="Vider" name="Dump" left="-185" width="175"/>
 	<texture_picker label="Cheveux" name="hair-baked"/>
 	<texture_picker label="Cheveux" name="hair"/>

@@ -1,50 +1,49 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater label="(desconocido)" name="im_floater" title="(desconocido)">
-	  <string name="ringing">
-			 Joining Voice Chat...
-	  </string>
-	  <string name="connected">
-			 Connected, click End Call to hang up
-	  </string>
-	  <string name="hang_up">
-			 Left Voice Chat
-	  </string>
-	  <string name="voice_icon">
-			 icn_voice-groupfocus.tga
-	  </string>
-	  <string name="title_string">
-			 Instant Message with [NAME]
-	  </string>
-	  <string name="typing_start_string">
-			 [NAME] is typing...
-	  </string>
-	  <string name="session_start_string">
-			 Starting session with [NAME], please wait.
-	  </string>
-	  <string name="default_text_label">
-			 Click here to instant message.
-	  </string>
-	  <string name="moderated_chat_label">
-			 (Moderated: Voices off by default)
-	  </string>
-	  <string name="muted_text_label">
-			 Your text chat has been disabled by a Group Moderator.
-	  </string>
-	  <layout_stack name="panels">
-			 <layout_panel name="im_contents_panel" >
-					<button label="Group Info" name="group_info_btn"/>
-					<button label="Join Call" name="start_call_btn"/>
-					<button label="End Call" name="end_call_btn"/>
-					<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Click here to toggle a list of active participants in this IM session."/>
-					<text_editor name="im_history"/>
-					<line_editor name="chat_editor"/>
-					<button label="Enviar" name="send_btn"/>
-			 </layout_panel>
-			 <layout_panel name="active_speakers_panel"/>
-	  </layout_stack>
-	  <string name="live_help_dialog">
-			 *** Bienvenido a la Petición de Ayuda *** 
+	<string name="ringing">
+		Joining Voice Chat...
+	</string>
+	<string name="connected">
+		Connected, click End Call to hang up
+	</string>
+	<string name="hang_up">
+		Left Voice Chat
+	</string>
+	<string name="voice_icon">
+		icn_voice-groupfocus.tga
+	</string>
+	<string name="title_string">
+		Instant Message with [NAME]
+	</string>
+	<string name="typing_start_string">
+		[NAME] is typing...
+	</string>
+	<string name="session_start_string">
+		Starting session with [NAME], please wait.
+	</string>
+	<string name="default_text_label">
+		Click here to instant message.
+	</string>
+	<string name="moderated_chat_label">
+		(Moderated: Voices off by default)
+	</string>
+	<string name="muted_text_label">
+		Your text chat has been disabled by a Group Moderator.
+	</string>
+	<layout_stack name="panels">
+		<layout_panel name="im_contents_panel">
+			<button label="Group Info" name="group_info_btn"/>
+			<button label="Join Call" name="start_call_btn"/>
+			<button label="End Call" name="end_call_btn"/>
+			<button label="Historial" name="history_btn"/>
+			<button label="&lt; &lt;" label_selected="&gt; &gt;" name="toggle_active_speakers_btn" tool_tip="Click here to toggle a list of active participants in this IM session."/>
+			<button label="Enviar" name="send_btn"/>
+		</layout_panel>
+	</layout_stack>
+	<string name="live_help_dialog">
+		*** Bienvenido a la Petición de Ayuda *** 
 Por favor, en primer lugar revisa nuestras páginas de ayuda de SL pulsando F1, o accede a la Base de Conocimientos http://secondlife.com/knowledgebase/ 
 Si no encuentras allí la respuesta que buscas, por favor, empieza el proceso escribiendo tu pregunta, y espera unos momentos a que responda algunos de los ayudantes disponibles.
--=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-	  
+-=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-
+	</string>
 </floater>

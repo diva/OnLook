@@ -1,56 +1,44 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="floaterbulkperms" title="Modificación masiva de Permisos del Contenido" >
-	  <text name="applyto">
-			 Tipos de Contenido
-	  </text>
-	  <icon name="icon_animation"/>
-	  <check_box label="Animación" name="check_animation"/>
-	  <icon name="icon_bodypart"/>
-	  <check_box label="Partes del Cuerpo" name="check_bodypart"/>
-	  <icon name="icon_clothing"/>
-	  <check_box label="Ropas" name="check_clothing"/>
-	  <icon name="icon_gesture"/>
-	  <check_box label="Gestos" name="check_gesture"/>
-	  <icon name="icon_landmark"/>
-	  <check_box label="Hitos" name="check_landmark"/>
-	  <icon name="icon_notecard"/>
-	  <check_box label="Notas" name="check_notecard"/>
-	  <icon name="icon_object"/>
-	  <check_box label="Objetos" name="check_object"/>
-	  <icon name="icon_script"/>
-	  <check_box label="Scripts" name="check_script"/>
-	  <icon name="icon_sound"/>
-	  <check_box label="Sonidos" name="check_sound"/>
-	  <icon name="icon_texture"/>
-	  <check_box label="Texturas" name="check_texture"/>
-	  <button label="Marcar Todo" label_selected="Todo" name="check_all" width="110"/>
-	  <button label="Desmarcar Todo" label_selected="Ninguno" name="check_none" width="110"/>
-	  <text name="newperms">
-			 Nuevos Permisos
-	  </text>
-	  <check_box label="Compartir con el Grupo" name="share_with_group"/>
-	  <check_box label="Permitir a Cualquiera que lo copie" name="everyone_copy"/>
-	  <text name="NextOwnerLabel">
-			 El próximo propietario puede:
-	  </text>
-	  <check_box label="Modificarlo" name="next_owner_modify"/>
-	  <check_box label="Copiarlo" name="next_owner_copy"/>
-	  <check_box label="Revenderlo/Darlo" name="next_owner_transfer"/>
-	  <scroll_list name="queue output" />
-	  <button label="Ayuda" name="help"/>
-	  <button label="Aplicar" name="apply"/>
-	  <button label="Cerrar" name="close"/>
-	  <string name="nothing_to_modify_text">
-			 Lo seleccionado tiene contenido no editable..
-	  </string>
-	  <string name="status_text">
-			 Configurando permisos de [NAME]
-	  </string>
-	  <string name="start_text">
-			 Iniciando el cambio de permisos solicitado...
-	  </string>
-	  <string name="done_text">
-			 Finalizando el cambio de permisos solicitado.
-	  </string>
-
+<floater name="floaterbulkperms" title="Modificación masiva de Permisos del Contenido">
+	<text name="applyto">
+		Tipos de Contenido
+	</text>
+	<check_box label="Animación" name="check_animation"/>
+	<check_box label="Partes del Cuerpo" name="check_bodypart"/>
+	<check_box label="Ropas" name="check_clothing"/>
+	<check_box label="Gestos" name="check_gesture"/>
+	<check_box label="Hitos" name="check_landmark"/>
+	<check_box label="Notas" name="check_notecard"/>
+	<check_box label="Objetos" name="check_object"/>
+	<check_box label="Scripts" name="check_script"/>
+	<check_box label="Sonidos" name="check_sound"/>
+	<check_box label="Texturas" name="check_texture"/>
+	<button label="Marcar Todo" label_selected="Todo" name="check_all" width="110"/>
+	<button label="Desmarcar Todo" label_selected="Ninguno" name="check_none" width="110"/>
+	<text name="newperms">
+		Nuevos Permisos
+	</text>
+	<check_box label="Compartir con el Grupo" name="share_with_group"/>
+	<check_box label="Permitir a Cualquiera que lo copie" name="everyone_copy"/>
+	<text name="NextOwnerLabel">
+		El próximo propietario puede:
+	</text>
+	<check_box label="Modificarlo" name="next_owner_modify"/>
+	<check_box label="Copiarlo" name="next_owner_copy"/>
+	<check_box label="Revenderlo/Darlo" name="next_owner_transfer"/>
+	<button label="Ayuda" name="help"/>
+	<button label="Aplicar" name="apply"/>
+	<button label="Cerrar" name="close"/>
+	<string name="nothing_to_modify_text">
+		Lo seleccionado tiene contenido no editable..
+	</string>
+	<string name="status_text">
+		Configurando permisos de [NAME]
+	</string>
+	<string name="start_text">
+		Iniciando el cambio de permisos solicitado...
+	</string>
+	<string name="done_text">
+		Finalizando el cambio de permisos solicitado.
+	</string>
 </floater>

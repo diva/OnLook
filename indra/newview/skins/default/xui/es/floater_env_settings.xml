@@ -1,29 +1,25 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="Environment Editor Floater" title="Editor de Entorno">
-	  <text name="EnvTimeText">
-			 Duración del Día:
-	  </text>
-	  <text name="EnvTimeText2">
-			 12:00 PM
-	  </text>
-	  <icon name="EnvDayCycle"/>
-	  <slider label="" name="EnvTimeSlider"/>
-	  <text name="EnvCloudText">
-			 Nubosidad
-	  </text>
-	  <slider label="" name="EnvCloudSlider"/>
-	  <text name="EnvWaterColorText">
-			 Color del
+	<text name="EnvTimeText">
+		Duración del Día:
+	</text>
+	<text name="EnvTimeText2">
+		12:00 PM
+	</text>
+	<text name="EnvCloudText">
+		Nubosidad
+	</text>
+	<text name="EnvWaterColorText">
+		Color del
 Agua
-	  </text>
-	  <color_swatch label="" name="EnvWaterColor" tool_tip="Pulsa para abrir el Selector de Color" />
-	  <text name="EnvWaterFogText">
-			 Claridad del 
+	</text>
+	<color_swatch name="EnvWaterColor" tool_tip="Pulsa para abrir el Selector de Color" />
+	<text name="EnvWaterFogText">
+		Claridad del 
 Agua
-	  </text>
-	  <slider label="" name="EnvWaterFogSlider"/>
-	  <button label="Usar Horario del Estado" name="EnvUseEstateTimeButton"/>
-	  <button label="Cielo Avanzado" name="EnvAdvancedSkyButton"/>
-	  <button label="Agua Avanzada" name="EnvAdvancedWaterButton"/>
-	  <button label="?" name="EnvSettingsHelpButton"/>
+	</text>
+	<button label="Usar Horario del Estado" name="EnvUseEstateTimeButton"/>
+	<button label="Cielo Avanzado" name="EnvAdvancedSkyButton"/>
+	<button label="Agua Avanzada" name="EnvAdvancedWaterButton"/>
+	<button label="?" name="EnvSettingsHelpButton"/>
 </floater>
