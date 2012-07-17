@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="floater_lagmeter" title="Mesure du lag">
+<floater name="floater_lagmeter" title="Mesure du Lag">
 	<button name="client_lagmeter" tool_tip="Statut du lag client"/>
 	<text name="client">
-		Client :
+		Client:
 	</text>
 	<text name="client_text">
 		Normal
 	</text>
 	<button name="network_lagmeter" tool_tip="Statut du lag réseau"/>
 	<text name="network">
-		Réseau :
+		Réseau:
 	</text>
 	<text name="network_text">
 		Normal
 	</text>
 	<button name="server_lagmeter" tool_tip="Statut du lag serveur"/>
 	<text name="server">
-		Serveur :
+		Serveur:
 	</text>
 	<text name="server_text">
 		Normal
@@ -57,16 +57,16 @@
 		Normal
 	</string>
 	<string name="client_draw_distance_cause_msg">
-		Cause possible : la limite d&apos;affichage est trop élevée
+		Cause possible: la limite d'affichage est trop élevée
 	</string>
 	<string name="client_texture_loading_cause_msg">
-		Cause possible : images en cours de chargement
+		Cause possible: images en cours de chargement
 	</string>
 	<string name="client_texture_memory_cause_msg">
-		Cause possible : trop d&apos;images en mémoire
+		Cause possible: trop d'images en mémoire
 	</string>
 	<string name="client_complex_objects_cause_msg">
-		Cause possible : trop d&apos;objets complexes dans la scène
+		Cause possible: trop d'objets complexes dans la scène
 	</string>
 	<string name="network_text_msg">
 		Réseau
@@ -78,10 +78,10 @@
 		5
 	</string>
 	<string name="network_packet_loss_critical_msg">
-		La connexion perd plus de [NETWORK_PACKET_LOSS_CRITICAL] % de paquets
+		La connexion perd plus de [NETWORK_PACKET_LOSS_CRITICAL]% de paquets
 	</string>
 	<string name="network_packet_loss_warning_msg">
-		La connexion perd entre [NETWORK_PACKET_LOSS_WARNING] % et [NETWORK_PACKET_LOSS_CRITICAL] % de paquets
+		La connexion perd entre [NETWORK_PACKET_LOSS_WARNING]% et [NETWORK_PACKET_LOSS_CRITICAL]% de paquets
 	</string>
 	<string name="network_performance_normal_msg">
 		Normal
@@ -126,22 +126,22 @@
 		Normal
 	</string>
 	<string name="server_physics_cause_msg">
-		Cause possible : trop d&apos;objets physiques
+		Cause possible: trop d'objets physiques
 	</string>
 	<string name="server_scripts_cause_msg">
-		Cause possible : trop d&apos;objets scriptés
+		Cause possible: trop d'objets scriptés
 	</string>
 	<string name="server_net_cause_msg">
-		Cause possible : trop de trafic réseau
+		Cause possible: trop de trafic réseau
 	</string>
 	<string name="server_agent_cause_msg">
-		Cause possible : trop de personnes en mouvement dans la région
+		Cause possible: trop de personnes en mouvement dans la région
 	</string>
 	<string name="server_images_cause_msg">
-		Cause possible : trop de calculs d&apos;images
+		Cause possible: trop de calculs d'images
 	</string>
 	<string name="server_generic_cause_msg">
-		Cause possible : charge simulateur trop lourde
+		Cause possible: charge simulateur trop lourde
 	</string>
 	<string name="smaller_label">
 		&gt;&gt;

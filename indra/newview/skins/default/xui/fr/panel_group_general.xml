@@ -1,76 +1,117 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Général" name="general_tab">
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel border="true" bottom="0" follows="all" height="466" label="General" left="1"
+     mouse_opaque="true" name="general_tab" select="true" width="418">
 	<string name="help_text">
-		L&apos;onglet Général contient les infos générales et les préférences du groupe ainsi que la liste des propriétaires et des membres visibles.
+		L'onglet G&#xE9;n&#xE9;ral contient les infos g&#xE9;n&#xE9;rales et les pr&#xE9;f&#xE9;rences du groupe ainsi que la liste des propri&#xE9;taires et des membres visibles.
 	</string>
 	<string name="group_info_unchanged">
-		Le profil du groupe a changé.
+		Le profil du groupe a chang&#xE9;.
 	</string>
 	<button label="?" label_selected="?" name="help_button"/>
-	<line_editor label="Saisissez le nom du groupe ici" name="group_name_editor"/>
+	<line_editor label="Saisir le nom du groupe ici" name="group_name_editor"/>
 	<text name="group_name">
-		Saisissez le nom du groupe ici
+		Saisissez le nom du groupe ici:
 	</text>
-	<text name="prepend_founded_by">
-		Fondé par
+	<text font="SansSerifSmall" name="prepend_founded_by">
+		Fond&#xE9; par
 	</text>
-	<text left_delta="54" name="founder_name">
+	<text bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-6" drop_shadow_visible="true" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="16" left_delta="63"
+	     mouse_opaque="true" name="founder_name" v_pad="0" width="200">
 		(en attente)
 	</text>
-	<text name="group_charter_label">
+	<text font="SansSerifSmall" name="group_key_text" follows="left|top" left="7" bottom="-50">
+		Clef:
+	</text>
+      <name_editor bevel_style="in" border_style="line"
+			     border_thickness="1" bottom="-55" enabled="false" follows="left|top"
+			     font="SansSerifSmall" height="16" is_unicode="false" left_delta="65"
+			     max_length="254" mouse_opaque="false" name="group_key"
+			     width="256" />
+	<text bottom_delta="-20" font="SansSerifSmall" halign="left" height="16"
+	     name="group_charter_label" right="410" width="265">
 		Charte du groupe
 	</text>
-	<texture_picker label="Logo du groupe" name="insignia" tool_tip="Cliquez pour sélectionner une image"/>
-	<text_editor name="charter">
-		Indiquez ici la charte de votre groupe
+	<texture_picker bottom_delta="-129" follows="left|top" height="144"
+	      label="Logo du groupe" left="7"
+	     mouse_opaque="true" name="insignia" tool_tip="Cliquez pour changer le Logo"
+	     width="128" />
+	<text_editor bg_visible="false" border_drop_shadow_visible="false" border_visible="false"
+	     bottom_delta="-14" drop_shadow_visible="false" follows="left|top"
+	     font="SansSerifSmall" h_pad="0" halign="left" height="144"
+	     hide_scrollbar="true" max_length="511" mouse_opaque="true" name="charter"
+	     right="410" v_pad="0"
+	     width="265" word_wrap="true" spell_check="true">
+		Indiquez ici la charte de votre groupe :
 	</text_editor>
-	<button label="Rejoindre (0L$)" label_selected="Rejoindre (0L$)" name="join_button"/>
-	<button label="Affichage détaillé" label_selected="Affichage détaillé" name="info_button"/>
-	<text name="text_owners_and_visible_members">
-		Propriétaires et membres visibles
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="22" label="Join ([CURRENCY]0)" label_selected="Join ([CURRENCY]0)" left="7"
+	     mouse_opaque="true" name="join_button" width="128" />
+	<button bottom_delta="0" follows="left|top" font="SansSerif" halign="center"
+	     height="22" label="Detailed View" label_selected="Detailed View"
+	     left_delta="0" mouse_opaque="true" name="info_button" width="128" />
+	<text bottom_delta="-16" font="SansSerif" name="text_owners_and_visible_members">
+		Propri&#xE9;taires et membres visibles
 	</text>
-	<text name="text_owners_are_shown_in_bold">
-		(Les propriétaires apparaissent en gras)
+	<text bottom_delta="-16" font="SansSerifSmall" left_delta="0"
+	     name="text_owners_are_shown_in_bold">
+		(Les propri&#xE9;taires apparaissent en gras)
 	</text>
-	<name_list name="visible_members">
-		<column label="Nom du membre" name="name" relwidth="0.40"/>
-		<column label="Titre" name="title" relwidth="0.25"/>
-		<column label="Dernière connexion" name="online" relwidth="0.35"/>
+	<name_list allow_calling_card_drop="false" background_visible="true" bottom_delta="-88"
+	     column_padding="0" draw_border="true" draw_heading="true"
+	     follows="left|top" heading_font="SansSerifSmall" heading_height="14"
+	     height="80" left="7" mouse_opaque="true" multi_select="false"
+	     name="visible_members" width="404">
+		<column label="Nom" name="name" relwidth="0.45" />
+		<column label="Titre" name="title" relwidth="0.30" />
+		<column label="Derni&#xE8;re Co" name="online" relwidth="0.25" />
 	</name_list>
-	<text name="text_group_preferences">
-		Préférences
+	<text bottom_delta="-10" font="SansSerif" name="text_group_preferences">
+		Pr&#xE9;f&#xE9;rences
 	</text>
-	<panel name="preferences_container">
-		<check_box label="Afficher dans la recherche" name="show_in_group_list" tool_tip="Afficher ce groupe dans les résultats de recherche."/>
-		<check_box label="Inscription libre" name="open_enrollement" tool_tip="Indique si une invitation est nécessaire pour devenir membre de ce groupe."/>
-		<check_box label="Frais d&apos;inscription : L$" name="check_enrollment_fee" tool_tip="Indique s&apos;il y a des frais d&apos;inscription pour devenir membre."/>
-		<spinner name="spin_enrollment_fee" tool_tip="Si la case Frais d&apos;inscription est cochée, cela signifie qu&apos;il faut payer des frais pour devenir membre."/>
-		<combo_box name="group_mature_check" tool_tip="Indique si les informations sur votre groupe sont classées Mature." width="195">
+	<panel bottom_delta="-94" name="preferences_container" width="404">
+		<check_box bottom="-17" label="Afficher dans la recherche" left="4" name="show_in_group_list" radio_style="false"
+		     tool_tip="Affiche ce groupe dans les r&#xE9;sultats de recherche." width="95" />
+		<check_box bottom_delta="-16" label="Inscription libre" left="4" name="open_enrollement" tool_tip="Indique si une invitation est n&#xE9;cessaire pour devenir membre."
+		     width="95"/>
+		<check_box bottom_delta="-16" follows="left|top" label="Frais d'inscription:[CURRENCY]" left_delta="16"
+		     name="check_enrollment_fee" tool_tip="Indique s'il y a des frais d'inscription."
+		     width="95"/>
+		<spinner bottom_delta="2" label_width="10" name="spin_enrollment_fee" right_delta="170"
+		     tool_tip="Si la case Frais d'inscription est coch&#xE9;e, cela signifie qu'il faut payer des frais pour devenir membre."
+		     width="65"/>
+		<text bottom_delta="-12" left="4" font="SansSerifSmall" name="content_rating">
+				Type de Public
+		</text>
+		<combo_box bottom_delta="-25" left="6"
+			name="group_mature_check" tool_tip="Indique si les informations sur votre groupe sont class&#xE9;es Mature."
+			width="130">
 			<combo_item name="select_mature">
-				- Type de public -
+				- Select Mature -
 			</combo_item>
 			<combo_item name="mature">
-				Contenu Mature
+				Mature
 			</combo_item>
 			<combo_item name="pg">
-				Contenu PG
+				PG
 			</combo_item>
 		</combo_box>
-		<panel name="title_container">
-			<text name="active_title_label">
-				Mon titre actuel
-			</text>
-			<combo_box name="active_title" tool_tip="Définit le titre qui apparaît près du nom de votre avatar lorsque ce groupe est actif."/>
-		</panel>
-		<check_box label="Recevoir les notices" name="receive_notices" tool_tip="Cochez si vous souhaitez recevoir les notices envoyées au groupe. Décochez si ce groupe vous envoie des spams."/>
-		<check_box label="Afficher dans mon profil" name="list_groups_in_profile" tool_tip="Indique si vous voulez que ce groupe apparaisse dans votre profil"/>
+
+		<check_box bottom="-17" left="225" label="Recevoir les notices" name="receive_notices" tool_tip="Cochez pour recevoir les notices envoy&#xE9;es au groupe. D&#xE9;cochez si ce groupe envoie des spams." width="95"/>
+		<check_box label="Recevoir le chat" name="receive_chat" tool_tip="Cochez si vous d&#xE9;sirez recevoir les IM/Chat du groupe."/>
+		<check_box label="Afficher dans mon profil" name="list_groups_in_profile" tool_tip="Affiche ou cache le groupe dans son profil"/>
+		<text bottom_delta="-10" name="active_title_label">
+			Mon Titre Actif
+		</text>
+		<combo_box name="active_title"/>
 	</panel>
 	<string name="incomplete_member_data_str">
-		Extraction des données du résident en cours
+		Extraction des donn&#xE9;es du r&#xE9;sident en cours...
 	</string>
 	<string name="confirm_group_create_str">
-		La création de ce groupe coûte 100 L$. 
-Êtes-vous vraiment certain de vouloir dépenser 100 L$ pour créer ce groupe ?
-Sachez que si personne ne rejoint ce groupe sous 48h, il sera démantelé et ne pourra plus être utilisé.
+		La cr&#xE9;ation de ce groupe co�te [GROUPCREATEFEE]. 
+Etes-vous sûr(e) des chez sûr mais vraimeeeeent SUR de vouloir d&#xE9;penser [GROUPCREATEFEE] pour cr&#xE9;er ce groupe?
+Sachez que si personne ne rejoint ce groupe sous 48h, il sera d&#xE9;mantel&#xE9; et ne pourra plus �tre utilis&#xE9;.
 	</string>
 </panel>

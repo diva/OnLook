@@ -2,7 +2,7 @@
 <floater name="Day Cycle Floater" title="Editeur du cycle du jour">
 	<tab_container name="Day Cycle Tabs">
 		<panel label="Cycle du jour" name="Day Cycle">
-			<button label="?" name="WLDayCycleHelp" />
+			<button label="?" name="WLDayCycleHelp"/>
 			<text name="WL12am">
 				Minuit
 			</text>
@@ -57,41 +57,42 @@
 			<text name="WL12amHash2">
 				|
 			</text>
-			<button label="Ajouter clé" label_selected="Ajouter clé" name="WLAddKey" width="89" bottom="-45" />
-			<button label="Supprimer clé" label_selected="Supprimer clé" name="WLDeleteKey" width="89" bottom="-70" />
+			<button label="Ajouter clé" label_selected="Ajouter clé" name="WLAddKey" width="89" bottom="-45"/>
+			<button label="Supprimer clé" label_selected="Supprimer clé" name="WLDeleteKey" width="89" bottom="-70"/>
 			<text name="WLCurKeyFrameText">
-				Réglages des images-clés :
+				Réglages des images-clés:
 			</text>
 			<text name="WLCurKeyTimeText">
-				Heure de la clé :
+				Heure de la clé:
 			</text>
-			<spinner label="Heure" name="WLCurKeyHour" />
-			<spinner label="Min" name="WLCurKeyMin" />
+			<spinner label="Heure" name="WLCurKeyHour"/>
+			<spinner label="Min" name="WLCurKeyMin"/>
 			<text name="WLCurKeyTimeText2">
-				Préréglages clés :
+				Préréglages clés:
 			</text>
-			<combo_box label="Préréglage" name="WLKeyPresets" />
+			<combo_box label="Préréglage" name="WLKeyPresets"/>
 			<text name="DayCycleText">
-				Snap :
+				Snap:
 			</text>
-			<combo_box label="5 min" name="WLSnapOptions" />
+			<combo_box label="5 min" name="WLSnapOptions"/>
 			<text name="DayCycleText2">
-				Durée du cycle :
+				Durée du cycle:
 			</text>
-			<spinner label="Heure" name="WLLengthOfDayHour" />
-			<spinner label="Min" name="WLLengthOfDayMin" />
+			<spinner label="Heure" name="WLLengthOfDayHour"/>
+			<spinner label="Min" name="WLLengthOfDayMin"/>
 			<spinner label="S" name="WLLengthOfDaySec" label_width="10" width="50" left_delta="75"/>
 			<text name="DayCycleText3">
-				Prévisualiser :
+				Prévisualiser:
 			</text>
-			<button label="Jouer" label_selected="Jouer" name="WLAnimSky" />
-			<button label="Stop !" label_selected="Stop" name="WLStopAnimSky" />
-			<button label="Utiliser heure domaine" label_selected="Aller heure domaine"
-			     name="WLUseLindenTime" />
-			<button label="Enregistrer jour test" label_selected="Enregistrer jour test"
-			     name="WLSaveDayCycle" />
-			<button label="Charger jour test" label_selected="Charger jour test"
-			     name="WLLoadDayCycle" />
+			<button label="Jouer" label_selected="Jouer" name="WLAnimSky"/>			<button label="Stop!" label_selected="Stop" name="WLStopAnimSky"/>			<button label="Utiliser heure domaine" label_selected="Utiliser heure domaine" name="WLUseLindenTime"/>			<text name="KeyFramePresets">
+				Prédéfinis:
+			</text>
+			<button label="Nouveau" label_selected="Nouveau" name="DayCycleNewPreset"/>
+			<button label="Sauver" label_selected="Sauver" name="DayCycleSavePreset"/>
+			<button label="Barrer" label_selected="Barrer" name="DayCycleDeletePreset"/>
 		</panel>
 	</tab_container>
+	<string name="DaycycleDefaultNames">
+		Default:Happy%20Bivouac
+	</string>
 </floater>

@@ -1,32 +1,30 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<panel border="true" bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
-	<text bottom_delta="-20" follows="left|top" left_delta="12" name="voice_unavailable">Le chat vocal n&apos;est pas disponible</text>
-	<check_box bottom_delta="0" follows="top" height="16" initial_value="false" label="Activer la voix" left="8" name="enable_voice_check"/>
-	<radio_group bottom_delta="-46" draw_border="false" follows="top" height="40" left_delta="20" name="ear_location" width="364">
-		<radio_item bottom="-19" height="16" left="3" name="0">Écouter depuis la position de la caméra.</radio_item>
-		<radio_item bottom="-35" height="16" name="1">Écouter depuis la position de l&apos;avatar.</radio_item>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel bottom="-409" height="408" label="Voice Chat" left="102" name="chat" width="517">
+	<text bottom_delta="-20" left_delta="12" name="voice_unavailable">Le chat vocal n'est pas disponible</text>
+	<check_box bottom_delta="0" label="Activer la voix" left="8" name="enable_voice_check"/>
+	<radio_group bottom_delta="-46" height="40" left_delta="20" name="ear_location" width="364">
+		<radio_item bottom="-19" left="3" name="0">Ecouter depuis la position de la caméra</radio_item>
+		<radio_item bottom="-35" name="1">Ecouter depuis la position de l'avatar</radio_item>
 	</radio_group>
-	<text bottom_delta="-20" follows="top" height="16" name="push_to_talk_heading">Appuyer pour parler</text>
-	<text bottom_delta="-77" follows="top" height="65" left_delta="20" name="voice_chat_description">
-Ce mode vous permet de contrôler l&apos;ouverture du micro en mode bascule,
-cliquez sur la touche de contrôle ou le bouton Parler pour ouvrir et fermer le micro. 
-Si vous n&apos;êtes pas en mode bascule, le micro n&apos;est ouvert 
-que si vous cliquez et maintenez enfoncés la touche de contrôle ou le bouton Parler.
+	<text bottom_delta="-20" name="push_to_talk_heading">Appuyer pour parler</text>
+	<text bottom_delta="-77" height="65" left_delta="20" name="voice_chat_description">
+Ce mode vous permet de contrôler l'ouverture du micro en mode bascule.
+Cliquez sur la touche de contrôle ou le bouton &#x22;Parler&#x22; pour ouvrir et fermer le micro. 
+Si vous n'êtes pas en mode bascule, le micro n'est ouvert que si vous cliquez et
+maintenez enfoncés la touche de contrôle ou appuyez sur le bouton &#x22;Parler&#x22;.
 	</text>
-	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Utiliser Appuyer pour Parler en mode bascule" name="push_to_talk_toggle_check"/>
-	<text bottom_delta="-20" follows="top" height="16" left_delta="4" name="push_to_talk_label">Touche de contrôle :</text>
-	<line_editor bottom_delta="-20" follows="top" height="19" name="modifier_combo" width="280"/>
-	<button bottom_delta="-25" follows="top" height="20" label="Choisir la touche" name="set_voice_hotkey_button" width="115"/>
-	<button bottom_delta="0" follows="top" height="20" label="Molette de la souris" left_delta="120" name="set_voice_middlemouse_button" width="160"/>
-	<text bottom_delta="-25" follows="top" height="16" left="28" name="lip_sync_heading" width="445">Animation lèvres-parole</text>
-	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="Activer l&apos;animation des lèvres" left_delta="20" name="enable_lip_sync_check"/>
-	<text bottom_delta="-25" follows="top" height="16" left="28" name="privacy_heading">Options de confidentialité</text>
-	<check_box bottom_delta="-20" follows="top" height="16" initial_value="false" label="N&apos;accepter que les appels de mes amis" left_delta="20" name="voice_call_friends_only_check"/>
-	<check_box bottom_delta="-18" follows="top" height="16" initial_value="false" label="Fermer le micro à la fin d&apos;un appel privé" name="auto_disengage_mic_check"/>
-	<button bottom_delta="-40" follows="top" height="20" label="Paramètres du matériel" left="28" mouse_opaque="true" name="device_settings_btn" width="155"/>
-	<text bottom_delta="-36" follows="top" height="35" left_delta="6" name="device_settings_text">Remarque : si vous cliquez sur Paramètres du matériel, 
-vous serez temporairement déconnecté du Chat vocal. 
+	<check_box bottom_delta="-20" label="Utiliser &#x22;Appuyer pour Parler&#x22; en mode bascule" name="push_to_talk_toggle_check"/>
+	<text bottom_delta="-20" left_delta="4" name="push_to_talk_label">Touche de contrôle:</text>
+	<line_editor bottom_delta="-20" name="modifier_combo" width="280"/>
+	<button bottom_delta="-25" label="Choisir la touche" name="set_voice_hotkey_button" width="115"/>
+	<button bottom_delta="0" label="Molette de la souris" left_delta="120" name="set_voice_middlemouse_button" width="160"/>
+	<text bottom_delta="-25" left="28" name="lip_sync_heading" width="445">Animation en mode &#x22;voice&#x22;</text>
+	<check_box bottom_delta="-20" label="Activer l'animation des lèvres" left_delta="20" name="enable_lip_sync_check"/>
+	<text bottom_delta="-25" left="28" name="privacy_heading">Options de confidentialité</text>
+	<check_box bottom_delta="-20" label="N'accepter que les appels des amis" left_delta="20" name="voice_call_friends_only_check"/>
+	<check_box bottom_delta="-18" label="Fermer le micro à la fin d'un appel privé" name="auto_disengage_mic_check"/>
+	<button bottom_delta="-40" height="20" label="Paramètres du matériel" left="28" mouse_opaque="true" name="device_settings_btn" width="155"/>
+	<text bottom_delta="-36" height="35" left_delta="6" name="device_settings_text">Remarque : Si vous cliquez sur Paramètres du matériel,
+vous serez temporairement déconnecté(e) du Chat vocal.
 Tous les changements que vous faites seront immédiatement appliqués.</text>
 </panel>
-
-

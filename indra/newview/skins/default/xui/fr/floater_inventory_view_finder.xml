@@ -4,7 +4,7 @@
 	<check_box label="Cartes de visite" name="check_calling_card"/>
 	<check_box label="Habits / Body Parts" name="check_clothing"/>
 	<check_box label="Gestures" name="check_gesture"/>
-	<check_box label="Reperes / Landmarks" name="check_landmark"/>
+	<check_box label="Rep&#xE8;res / Landmarks" name="check_landmark"/>
 	<check_box label="Notecards" name="check_notecard"/>
 	<check_box label="Objets" name="check_object"/>
 	<check_box label="Scripts" name="check_script"/>
@@ -15,8 +15,8 @@
 	<button label="Aucun" label_selected="Aucun" name="None" width="70" bottom_delta="0" left="83"/>
 	<check_box label="Toujours montrer &#10;les dossiers" name="check_show_empty" bottom_delta="-20"/>
 	<check_box label="Depuis la déconnexion" name="check_since_logoff" bottom_delta="-36"/>
-	<text length="1" name="- OR -" type="string">
-		Ou il y a...
+	<text name="- OR -">
+		Ou il y a:
 	</text>
 	<spinner label="Heures" name="spin_hours_ago"/>
 	<spinner label="Jours" name="spin_days_ago"/>

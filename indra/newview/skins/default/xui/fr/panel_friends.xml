@@ -1,27 +1,29 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="friends">
 	<string name="Multiple">
-		Amis multiples...
+		Ami(e)s multiples
 	</string>
-	<scroll_list name="friend_list" tool_tip="Pour sélectionner plusieurs amis, cliquez en maintenant la touche Maj ou Ctrl appuyée">
+	<scroll_list name="friend_list" tool_tip="Pour sélectionner plusieurs ami(e)s, cliquez en maintenant la touche Maj ou Ctrl appuyée.">
 		<column name="icon_online_status" tool_tip="Statut en ligne"/>
 		<column label="Nom" name="friend_name" tool_tip="Nom"/>
-		<column name="icon_visible_online" tool_tip="Votre ami voit si vous êtes connecté(e)"/>
-		<column name="icon_visible_map" tool_tip="Votre ami peut vous situer sur la carte"/>
-		<column name="icon_edit_mine" tool_tip="Votre ami peut modifier, supprimer ou prendre vos objets"/>
-		<column name="icon_edit_theirs" tool_tip="Vous pouvez modifier les objets de cet ami"/>
+		<column name="icon_visible_online" tool_tip="Votre ami(e) voit si vous êtes connecté(e)."/>
+		<column name="icon_visible_map" tool_tip="Votre ami(e) peut vous situer sur la carte."/>
+		<column name="icon_edit_mine" tool_tip="Votre ami(e) peut modifier, supprimer ou prendre vos objets."/>
+		<column image="ff_visible_online_button.tga" name="icon_visible_online_theirs" tool_tip="Vous pouvez voir si votre ami(e) est connecté(e)." width="20"/>
+   		<column image="ff_visible_map_button.tga" name="icon_visible_map_theirs" tool_tip="Vous pouvez localiser votre ami(e) sur la carte." width="20"/>
+		<column name="icon_edit_theirs" tool_tip="Vous pouvez modifier les objets de cet(te) ami(e)"/>
 	</scroll_list>
 	<!--text bottom_delta="-40" follows="left|top" font="SansSerifSmall" height="16" left_delta="0" 
 		name="friends" width="130">
 		Rechercher un(e) ami(e) :
 	</text-->
 	<search_editor bottom_delta="-40" enabled="true" follows="left|top" font="SansSerif"
-		height="18" left_delta="0" name="buddy_search_lineedit" label="Rechercher une(e) ami(e)"
-		tool_tip="Rechercher une(e) ami(e) dans la liste de noms" width="160" />
-	<button label="IM/Appel" name="im_btn" tool_tip="Envoyez un IM à ce résident"/>
-	<button label="Profil" name="profile_btn" tool_tip="Consultez le profil de ce résident (photos, groupes et autres infos)"/>
-	<button label="Téléporter" name="offer_teleport_btn" tool_tip="Proposez à cet ami d&apos;être téléporté là où vous êtes"/>
-	<button label="Payer" name="pay_btn" tool_tip="Donnez des L$ à cet ami"/>
-	<button label="Supprimer" name="remove_btn" tool_tip="Supprimez ce résident de votre liste d&apos;amis"/>
-	<button label="Ajouter" name="add_btn" tool_tip="Demandez à un résident de devenir votre ami"/>
+		height="18" left_delta="0" name="buddy_search_lineedit" label="Rechercher un(e) ami(e)"
+		tool_tip="Recherchez un(e) ami(e) dans la liste de noms." width="160" />
+	<button label="IM/Appel" name="im_btn" tool_tip="Envoyez un IM à ce résident."/>
+	<button label="Profil" name="profile_btn" tool_tip="Consultez le profil de ce résident (photos, groupes et autres infos)."/>
+	<button label="Téléporter" name="offer_teleport_btn" tool_tip="Proposez à cet ami(e) d'être téléporté(e) là où vous êtes."/>
+	<button label="Payer" name="pay_btn" tool_tip="Donnez des [CURRENCY] à cet(te) ami(e)."/>
+	<button label="Supprimer" name="remove_btn" tool_tip="Supprimez ce résident de votre liste d'amis."/>
+	<button label="Ajouter" name="add_btn" tool_tip="Demandez à un résident de devenir votre ami(e)."/>
 </panel>

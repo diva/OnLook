@@ -2,8 +2,8 @@
 <floater name="mute floater" title="Résidents et objets ignorés(mute)" short_title="Liste des ignorés(mute)">
 	<scroll_list name="mutes" tool_tip="Liste des résidents ignorés(mute)actuellement" />
 	<button label="Ignorer le résident(mute)" label_selected="Ignorer le résident(mute)"
-	     name="Mute resident..."
-	     tool_tip="Choisissez le résident que vous souhaitez ignorer (mute)" />
+	     name="Mute resident"
+	     tool_tip="Choisir le résident à ignorer (mute)" />
 	<button label="Ignorer(mute) les objets par nom"
 	     label_selected="Ignorer(mute) les objets par nom"
 	     name="Mute object by name..." />

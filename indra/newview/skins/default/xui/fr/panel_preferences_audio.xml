@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Audio et vidéo" name="Media panel">
 	<text length="1" name="muting_text" type="string">
 		Volume :
 	</text>
 	<panel name="Volume Panel" width="249"/>
 	<check_box label="Couper le son" name="disable audio"/>
-	<text bottom="-189" name="streaming_prefs_text" width="150">
+	<text bottom="-187" name="streaming_prefs_text" width="150">
 		Médias et Audio :&#10;&#10;&#10;&#10;&#10;&#10;&#10;( Filtre de Sécurité des Médias )
 	</text>
 	<text name="audio_prefs_text">
@@ -18,6 +18,8 @@
 	<check_box bottom_delta="-32" height="32" label="Jouer le média disponible &#10;
 (Gourmand en bande passante)" name="streaming_video"/>
 	<check_box bottom_delta="-32" label="Lire automatiquement le média" name="auto_streaming_video"/>
+	<check_box bottom_delta="-20" control_name="MediaEnableFilter" follows="top" height="16" initial_value="true" label="Demande la permission d'activer le média" name="streaming_video2"/>
+
 	<slider label="Effet Doppler" label_width="115" name="Doppler Effect"/>
 	<slider label="Facteur d&apos;éloignement" label_width="115" name="Distance Factor"/>
 	<slider label="Facteur d&apos;atténuation" label_width="115" name="Rolloff Factor"/>

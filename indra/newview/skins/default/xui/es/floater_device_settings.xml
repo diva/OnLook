@@ -1,4 +1,2 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="floater_device_settings" title="Configuración Dispositivos de Voz">
-	  <panel name="device_settings" />
-</floater>
+<floater name="floater_device_settings" title="Configuración Dispositivos de Voz"/>

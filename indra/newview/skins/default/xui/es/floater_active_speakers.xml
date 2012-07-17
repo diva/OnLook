@@ -1,14 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <floater name="active_speakers" title="Participantes Activos">
-	  <panel name="active_speakers_panel">
-			 <scroll_list name="speakers_list">
-					<column name="icon_speaking_status"/>
-					<column label="Nombre" name="speaker_name" />
-					<column label="" name="speaking_status"/>
-			 </scroll_list>
-			 <panel name="volume_container">
-					<volume_slider name="speaker_volume" />
-					<button label="" name="mute_btn" tool_tip="Ignorar la voz de este residente"/>
-			 </panel>
-	  </panel>
+	<panel name="active_speakers_panel">
+		<scroll_list name="speakers_list">
+			<column label="Nombre" name="speaker_name"/>
+		</scroll_list>
+		<panel name="volume_container">
+			<button name="mute_btn" tool_tip="Ignorar la voz de este residente"/>
+		</panel>
+	</panel>
 </floater>

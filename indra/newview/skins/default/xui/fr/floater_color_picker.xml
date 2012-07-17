@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<floater name="ColorPicker" title="Choix de texture et de couleur">
+<floater name="ColorPicker" title="Choix de couleur">
 	<text name="r_val_text">
-		Rouge :
+		Rouge:
 	</text>
 	<text name="g_val_text">
-		Vert :
+		Vert:
 	</text>
 	<text name="b_val_text">
-		Bleu :
+		Bleu:
 	</text>
 	<text name="h_val_text">
-		Teinte :
+		Teinte:
 	</text>
 	<text name="s_val_text">
-		Sat :
+		Sat:
 	</text>
 	<text name="l_val_text">
-		Lum :
+		Lum:
 	</text>
-	<check_box label="Application auto" left="4" name="apply_immediate" width="108"/>
-	<button label="" label_selected="" left_delta="138" name="color_pipette"/>
+	<check_box label="Application auto" name="apply_immediate" left="4" width="108"/>
+	<button label="" label_selected="" name="color_pipette" left_delta="134"/>
 	<button label="Annuler" label_selected="Annuler" name="cancel_btn"/>
 	<button label="Sélectionner" label_selected="Sélectionner" name="select_btn"/>
-	<text left="8" name="Current color:">
-		Couleur actuelle :
+	<text name="Hex Value:">
+		Hex:
 	</text>
-	<text left="8" name="(Drag below to save.)" width="114">
-		(Faire glisser dessous
-pour enregistrer.)
+	<text name="Current color:" left="8">
+		Couleur actuelle:
+	</text>
+	<text name="(Drag below to save.)">
+
 	</text>
 </floater>

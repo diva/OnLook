@@ -1,54 +1,55 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater label="(desconocido)" name="im_floater" title="(desconocido)">
-	  <string name="answering">
-			 Conectando...
-	  </string>
-	  <string name="ringing">
-			 Llamando...
-	  </string>
-	  <string name="connected">
-			 Conectado, pulsa Colgar para terminar
-	  </string>
-	  <string name="hang_up">
-			 Llamada terminada
-	  </string>
-	  <string name="voice_icon">icn_voice-pvtfocus.tga</string>
-	  <string name="title_string">
-			 Mensaje Instantáneo con [NAME]
-	  </string>
-	  <string name="typing_start_string">
-			 [NAME] está escribiendo...
-	  </string>
-	  <string name="session_start_string">
-			 Iniciando sesión con [NAME], espera por favor.
-	  </string>
-	  <string name="default_text_label">
-			 Pulsa aquí para enviar un Mensaje Instantáneo.
-	  </string>
-	  <string name="unavailable_text_label">
-			 El chat de texto no está disponible para esta llamada.
-	  </string>
-	  <string name="inventory_item_offered">
-			 Ofrecido un Item de Inventario
-	  </string>
-	  <button label="Perfil" name="profile_callee_btn"/>
-	  <button label="Teleportar" name="profile_tele_btn"/>
-	  <button label="Historial" name="history_btn"/>
-	  <check_box name="rp_mode">
-			 Modo RP
-	  </check_box>
-	  <button label="Llamar" name="start_call_btn"/>
-	  <button label="Colgar" name="end_call_btn"/>
-	  <panel name="speaker_controls">
-			 <volume_slider name="speaker_volume"/>
-			 <button label="" name="mute_btn" tool_tip="Silenciar la Voz" width="25"/>
-	  </panel>
-	  <text_editor name="im_history" />
-	  <line_editor label="Pulsa aquí para iniciar un Mensaje Instantáneo" name="chat_editor"/>
-	  <button label="Enviar" name="send_btn"/>
-	  <string name="live_help_dialog">
-			 *** Bienvenido a la Petición de Ayuda *** 
+	<string name="answering">
+		Conectando...
+	</string>
+	<string name="ringing">
+		Llamando...
+	</string>
+	<string name="connected">
+		Conectado, pulsa Colgar para terminar
+	</string>
+	<string name="hang_up">
+		Llamada terminada
+	</string>
+	<string name="voice_icon">
+		icn_voice-pvtfocus.tga
+	</string>
+	<string name="title_string">
+		Mensaje Instantáneo con [NAME]
+	</string>
+	<string name="typing_start_string">
+		[NAME] está escribiendo...
+	</string>
+	<string name="session_start_string">
+		Iniciando sesión con [NAME], espera por favor...
+	</string>
+	<string name="default_text_label">
+		Pulsa aquí para enviar un Mensaje Instantáneo.
+	</string>
+	<string name="unavailable_text_label">
+		El chat de texto no está disponible para esta llamada.
+	</string>
+	<string name="inventory_item_offered">
+		Ofrecido un Item de Inventario
+	</string>
+	<button label="Perfil" name="profile_callee_btn"/>
+	<button label="Teleportar" name="profile_tele_btn"/>
+	<button label="Historial" name="history_btn"/>
+	<check_box name="rp_mode">
+		Modo RP
+	</check_box>
+	<button label="Llamar" name="start_call_btn"/>
+	<button label="Colgar" name="end_call_btn"/>
+	<panel name="speaker_controls">
+		<button label="" name="mute_btn" tool_tip="Silenciar la Voz" width="25"/>
+	</panel>
+	<line_editor label="Pulsa aquí para iniciar un Mensaje Instantáneo" name="chat_editor"/>
+	<button label="Enviar" name="send_btn"/>
+	<string name="live_help_dialog">
+		*** Bienvenido a la Petición de Ayuda *** 
 Por favor, en primer lugar revisa nuestras páginas de ayuda de SL pulsando F1, o accede a la Base de Conocimientos http://secondlife.com/knowledgebase/ 
 Si no encuentras allí la respuesta que buscas, por favor, empiecza el proceso escribiendo tu pregunta, y espera unos momentos a que responda algún ayudante que esté disponible.
--=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-	  
+-=-=- El tiempo de respuesta puede variar, especialmente durante las horas punta -=-=-
+	</string>
 </floater>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="active_speakers_panel">
 	<string name="moderator_label">
 		(Modérateur)
@@ -7,10 +7,10 @@
 		<layout_panel name="moderation_mode_panel">
 			<combo_box name="moderation_mode">
 				<combo_item name="OpenVoice">
-					Voix activées par défaut
+					Voix activée par défaut
 				</combo_item>
 				<combo_item name="ModeratedVoice">
-					Voix désactivées par défaut
+					Voix désactivée par défaut
 				</combo_item>
 			</combo_box>
 		</layout_panel>
@@ -28,13 +28,13 @@
 		</layout_panel>
 		<layout_panel name="moderator_controls">
 			<text name="moderator_controls_label">
-				Commandes de modération :
+				Modération :
 			</text>
 			<check_box name="moderator_allow_voice">
-				Autoriser les chats vocaux
+				Autoriser le chat vocal
 			</check_box>
 			<check_box name="moderator_allow_text">
-				Autoriser les chats écrits
+				Autoriser le chat écrit
 			</check_box>
 		</layout_panel>
 	</layout_stack>
