@@ -533,6 +533,8 @@ class AICurlThread : public LLThread
 {
   public:
 	static AICurlThread* sInstance;
+	LLMutex mWakeUpMutex;
+	bool mWakeUpFlag;			// Protected by mWakeUpMutex.
 
   public:
 	// MAIN-THREAD
@@ -548,6 +550,7 @@ class AICurlThread : public LLThread
   protected:
 	virtual void run(void);
 	void wakeup(AICurlMultiHandle_wat const& multi_handle_w);
+	void process_commands(AICurlMultiHandle_wat const& multi_handle_w);
 
   private:
 	// MAIN-THREAD
@@ -566,7 +569,9 @@ class AICurlThread : public LLThread
 AICurlThread* AICurlThread::sInstance = NULL;
 
 // MAIN-THREAD
-AICurlThread::AICurlThread(void) : LLThread("AICurlThread"), mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD), mZeroTimeOut(0), mRunning(true)
+AICurlThread::AICurlThread(void) : LLThread("AICurlThread"),
+    mWakeUpFd_in(CURL_SOCKET_BAD), mWakeUpFd(CURL_SOCKET_BAD),
+	mZeroTimeOut(0), mRunning(true), mWakeUpFlag(false)
 {
   create_wakeup_fds();
   sInstance = this;
@@ -618,6 +623,14 @@ void AICurlThread::wakeup_thread(void)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup_thread");
   llassert(is_main_thread());
+
+  // Try if curl thread is still awake and if so, pass the new commands directly.
+  if (mWakeUpMutex.tryLock())
+  {
+	mWakeUpFlag = true;
+	mWakeUpMutex.unlock();
+	return;
+  }
 
 #ifdef WINDOWS
 #error Missing implementation
@@ -679,6 +692,13 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	return;
   }
 #endif
+  process_commands(multi_handle_w);
+}
+
+void AICurlThread::process_commands(AICurlMultiHandle_wat const& multi_handle_w)
+{
+  DoutEntering(dc::curl, "AICurlThread::process_commands(void)");
+
   // If we get here then the main thread called wakeup_thread() recently.
   for(;;)
   {
@@ -686,7 +706,12 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 	{
 	  command_queue_wat command_queue_w(command_queue);
 	  if (command_queue_w->empty())
+	  {
+		mWakeUpMutex.lock();
+		mWakeUpFlag = false;
+		mWakeUpMutex.unlock();
 		break;
+	  }
 	  // Move the next command from the queue into command_being_processed.
 	  *command_being_processed_wat(command_being_processed) = command_queue_w->front();
 	  command_queue_w->pop_front();
@@ -745,12 +770,33 @@ void AICurlThread::run(void)
 	  int nfds = 64;
 #endif
 	  int ready = 0;
+	  // Process every command in command_queue before entering select().
+	  for(;;)
+	  {
+		mWakeUpMutex.lock();
+		if (mWakeUpFlag)
+		{
+		  mWakeUpMutex.unlock();
+		  process_commands(multi_handle_w);
+		  continue;
+		}
+		break;
+	  }
+	  // wakeup_thread() is also called after setting mRunning to false.
+	  if (!mRunning)
+	  {
+		mWakeUpMutex.unlock();
+		break;
+	  }
+	  // If we get here then mWakeUpFlag has been false since we grabbed the lock.
+	  // We're now entering select(), during which the main thread will write to the pipe/socket
+	  // to wake us up, because it can't get the lock.
 	  struct timeval timeout;
 	  long timeout_ms = multi_handle_w->getTimeOut();
 	  // If no timeout is set, sleep 1 second.
-	  if (timeout_ms < 0)
+	  if (LL_UNLIKELY(timeout_ms < 0))
 		timeout_ms = 1000;
-	  if (timeout_ms == 0)
+	  if (LL_UNLIKELY(timeout_ms == 0))
 	  {
 		if (mZeroTimeOut >= 10000)
 		{
@@ -764,7 +810,7 @@ void AICurlThread::run(void)
 	  }
 	  else
 	  {
-		if (mZeroTimeOut >= 10000)
+		if (LL_UNLIKELY(mZeroTimeOut >= 10000))
 		  llinfos << "Timeout of select() call by curl thread reset (to " << timeout_ms << " ms)." << llendl;
 		mZeroTimeOut = 0;
 	  }
@@ -788,6 +834,7 @@ void AICurlThread::run(void)
 	  }
 #endif
 	  ready = select(nfds, read_fd_set, write_fd_set, NULL, &timeout);
+	  mWakeUpMutex.unlock();
 #ifdef CWDEBUG
 	  static int last_ready = -2;
 	  static int last_errno = 0;
