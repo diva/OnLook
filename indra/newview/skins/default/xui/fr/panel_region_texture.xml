@@ -7,7 +7,7 @@
 		(inconnue)
 	</text>
 	<text name="base_texture_text">
-		Textures de base (fichiers 128x128, 24 bit .tga)
+		Textures de base (fichiers 128x128, 24 bits .tga)
 	</text>
 	<text name="height_text_lbl">
 		1 (faible)
@@ -22,7 +22,7 @@
 		4 (élevé)
 	</text>
 	<text name="detail_texture_text">
-		Textures du terrain (fichiers.tga 512 x 512, 24 bit requis)
+		Textures du terrain (fichiers.tga 512 x 512, 24 bits requis)
 	</text>
 	<text name="height_text_lbl5">
 		Limites d&apos;élévation de texture

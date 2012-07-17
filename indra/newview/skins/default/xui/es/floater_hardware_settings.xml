@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="Hardware Settings Floater" title="Opciones del Dispositivo">
-	  <text name="Filtering:">
-			 Filtrado:
-	  </text>
-	  <check_box label="Filtrado Anisotrópico (más lento si se activa)" name="ani"/>
-	  <text name="Antialiasing:">
-			 Antialiasing:
-	  </text>
-	  <combo_box label="Antialiasing" name="fsaa">
-			 <combo_item name="FSAADisabled" value="0">
-					Desactivado
-			 </combo_item>
-			 <combo_item name="2x" value="2">
-					2x
-			 </combo_item>
-			 <combo_item name="4x" value="4">
-					4x
-			 </combo_item>
-			 <combo_item name="8x" value="8">
-					8x
-			 </combo_item>
-			 <combo_item name="16x" value="16">
-					16x
-			 </combo_item>
-	  </combo_box>
-	  <spinner label="Gama:" name="gamma"/>
-	  <text name="(brightness, lower is brighter)">
-			 (brillo; menor es más brillante, 0=predeterminado)
-	  </text>
-	  <text name="Enable VBO:">
-			 Activar VBO:
-	  </text>
-	  <check_box label="Activar OpenGL Vertex Buffer Objects" name="vbo" tool_tip="En hardware moderno, habilitar esta opción mejora el rendimiento. Pero en hardware antiguo, el habilitarlo hace que, frecuentemente, se obtenga una implementación pobre de VBO, lo que puede provocarle caídas."/>
-	  <check_box label="Activar Streamed VBOs" left="157" name="vbo_stream" tool_tip="Desactivar esta opción puede mejorar el rendimiento cuando se habilita VBO. Desactivarlo produce una mejora visible en diversas GPUs de AMD."/>
-	  <text name="Enable FBO:">
-			 Activar Framebuffer Objects:
-	  </text>
-	  <check_box label="Activar OpenGL Frame Buffer Objects" name="fbo" tool_tip="Habilitar esta opción en hardware moderno puede proporcionar una mejora en el rendimiento. Sin embargo, si se habilita en combinacoón con el antialiasing en GPUs de AMD pueden causar problemas de mezcla de texturas. Este ajuste es necesario para renderizado diferido.."/>
-	  <slider label="Memoria para Texturas (MB):" name="GrapicsCardTextureMemory" tool_tip="Cantidad de memoria asignada a las texturas. Por defecto es la memoria de la tarjeta de vídeo. Reducir esta cantidad puede mejorar el rendimiento, pero también puede hacer que las texturas se vean borrosas."/>
-	  <spinner label="Intensidad de la Niebla:" name="fog"/>
-	  <text name="note">
-			 Nota: Las configuraciones de Gama e Intensidad de la Niebla no están
+	<text name="Filtering:">
+		Filtrado:
+	</text>
+	<check_box label="Filtrado Anisotrópico (más lento si se activa)" name="ani"/>
+	<text name="Antialiasing:">
+		Antialiasing:
+	</text>
+	<combo_box label="Antialiasing" name="fsaa">
+		<combo_item name="FSAADisabled" value="0">
+			Desactivado
+		</combo_item>
+		<combo_item name="2x" value="2">
+			2x
+		</combo_item>
+		<combo_item name="4x" value="4">
+			4x
+		</combo_item>
+		<combo_item name="8x" value="8">
+			8x
+		</combo_item>
+		<combo_item name="16x" value="16">
+			16x
+		</combo_item>
+	</combo_box>
+	<spinner label="Gama:" name="gamma"/>
+	<text name="(brightness, lower is brighter)">
+		(brillo; menor es más brillante, 0=predeterminado)
+	</text>
+	<text name="Enable VBO:">
+		Activar VBO:
+	</text>
+	<check_box label="Activar OpenGL Vertex Buffer Objects" name="vbo" tool_tip="En hardware moderno, habilitar esta opción mejora el rendimiento. Pero en hardware antiguo, el habilitarlo hace que, frecuentemente, se obtenga una implementación pobre de VBO, lo que puede provocarle caídas."/>
+	<check_box label="Activar Streamed VBOs" left="157" name="vbo_stream" tool_tip="Desactivar esta opción puede mejorar el rendimiento cuando se habilita VBO. Desactivarlo produce una mejora visible en diversas GPUs de AMD."/>
+	<text name="Enable FBO:">
+		Activar Framebuffer Objects:
+	</text>
+	<check_box label="Activar OpenGL Frame Buffer Objects" name="fbo" tool_tip="Habilitar esta opción en hardware moderno puede proporcionar una mejora en el rendimiento. Sin embargo, si se habilita en combinacoón con el antialiasing en GPUs de AMD pueden causar problemas de mezcla de texturas. Este ajuste es necesario para renderizado diferido.."/>
+	<slider label="Memoria para Texturas (MB):" name="GrapicsCardTextureMemory" tool_tip="Cantidad de memoria asignada a las texturas. Por defecto es la memoria de la tarjeta de vídeo. Reducir esta cantidad puede mejorar el rendimiento, pero también puede hacer que las texturas se vean borrosas."/>
+	<spinner label="Intensidad de la Niebla:" name="fog"/>
+	<text name="note">
+		Nota: Las configuraciones de Gama e Intensidad de la Niebla no están
 disponibles cuando se activan las Sombras de la Atmósfera.
-	  </text>
-	  <button label="OK" label_selected="OK"name="OK"/>
+	</text>
+	<button label="OK" label_selected="OK" name="OK"/>
 </floater>

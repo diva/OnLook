@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel top="20" left="10" height="400" width="512" border="true" label="Vanity" name="ascvan">
+  <tab_container label="Singularity Vanity" bottom="0" height="440" width="497" name="Ascent Vanity" tab_min_width="90">
+    <panel border="true" left="1" bottom="-190" height="180" width="500" label="Principal" name="General">
+      <check_box bottom_delta="-25" control_name="AscentStoreSettingsPerAccount" follows="top" height="16" initial_value="true" label="Lorsque c'est possible, sauver le setting personnalisé par compte." left="10" tool_tip="Sauve le settings customis&#xE9; pour chaque alt." name="use_account_settings_check"/>
+      <check_box bottom_delta="-20" control_name="AscentDisableTeleportScreens" follows="top" height="16" initial_value="true" label="Masquer la barre de 'TP in progress'" tool_tip="Ceci permet de continuer des lire vos IMs durant le TP." name="disable_tp_screen_check"/>
+      <check_box bottom_delta="-20" control_name="OptionPlayTpSound" follows="top" height="16" initial_value="true" label="Jouer le son du TP pendant la transition inter sims" tool_tip="jouer le 'wooooooosssssssssh'." name="tp_sound_check"/>
+      <check_box bottom_delta="-20" control_name="AscentDisableLogoutScreens" follows="top" height="16" initial_value="true" label="Masquer l'&#xE9;cran du Login/Logout" tool_tip="" name="disable_logout_screen_check"/>
+      <check_box bottom_delta="-20" control_name="SGDisableChatAnimation" follows="top" height="16" initial_value="false" label="D&#xE9;sactiver les animations pour le chat local: dire, chuchoter, crier" tool_tip="" name="disable_chat_animation"/>
+    </panel>
+    <panel border="true" left="1" bottom="-190" height="180" width="500" label="Tags/Couleurs" name="TagsColors">
+      <!-- Client tag options -->
+      <check_box bottom_delta="-25" control_name="AscentUseTag" follows="top" height="16" initial_value="true" label="Activer les Fonctions des TAGs." left="10" tool_tip="CERTAINES FONCTIONS NE SONT PLUS ACTIVABLES SUITE AUX NOUVELLES MESURES DU LINDEN LAB." name="show_my_tag_check"/>
+      <combo_box follows="top" bottom_delta="-24" height="18" left_delta="24" max_chars="32" tool_tip="Fonction d&#xE9;sactiv&#xE9;e par Linden Lab" name="tag_spoofing_combobox" width="130">
+        <combo_item name="Singularity" value="f25263b7-6167-4f34-a4ef-af65213b2e39">Singularity</combo_item>
+      </combo_box>
+      <check_box bottom_delta="-23" control_name="AscentShowSelfTag" follows="top" height="16" initial_value="true" label="Fonction d&#xE9;sactiv&#xE9;e par Linden Lab" left_delta="-24" tool_tip="Le viewer utilis&#xE9; par les avatars ne peut plus &#xEA;tre visible depuis que Linden lab l&#x27;a d&#xE9;sactiv&#xE9;" name="show_self_tag_check"/>
+      <check_box bottom_delta="-20" control_name="AscentShowSelfTagColor" follows="top" height="16" initial_value="true" label="Afficher sa propre couleur custom " tool_tip="Vous seul la voyez." name="show_self_tag_color_check"/>
+      <check_box bottom_delta="-20" control_name="AscentShowFriendsTag" follows="top" height="16" initial_value="true" label="Afficher le tag (Friend)" tool_tip="Rajoute (friends) dans le tag quand vous voyez un(e) ami(e)." name="show_friend_tag_check"/>
+      <!-- End of Left Side -->
+      <check_box bottom_delta="87" control_name="AscentUseCustomTag" follows="top" height="16" initial_value="true" label="Choisir une couleur custom (Mode Local uniquement)" left_delta="205" tool_tip="Vous seul(e) la voyez." name="customize_own_tag_check"/>
+      <text bottom_delta="-17" left_delta="25" follows="top" height="10" name="custom_tag_label_text">Label :</text>
+      <line_editor bottom_delta="-6" follows="top" font="SansSerif" height="18" left_delta="35" name="custom_tag_label_box" tool_tip="" width="100"/>
+      <text bottom_delta="6" left_delta="110" follows="top" height="10" name="custom_tag_color_text">Couleur :</text>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-22"        can_apply_immediately="false" color="1 1 1 1" follows="top" height="34" left_delta="35" name="custom_tag_color_swatch" control_name="AscentCustomTagColor" tool_tip="" width="30" />
+      <check_box bottom_delta="-8" control_name="AscentShowOthersTag" follows="top" height="16" initial_value="true" label="Fonction d&#xE9;sactiv&#xE9;e par Linden Lab" left_delta="-205" tool_tip="Le viewer utilis&#xE9; par les avatars ne peut plus &#xEA;tre visible depuis que Linden lab l&#x27;a d&#xE9;sactiv&#xE9;" name="show_other_tag_check"/>
+      <check_box bottom_delta="-20" control_name="AscentShowOthersTagColor" follows="top" height="16" initial_value="true" label="Afficher la couleur pour les autres avatars" left_delta="0" tool_tip="" name="show_client_tag_color_check"/>
+      <check_box bottom_delta="-20" control_name="AscentShowIdleTime" follows="top" height="16" initial_value="true" label="Afficher la dur&#xE9;e du 'IDLE'" tool_tip="Affiche le temps pendant lequel l'avatar est immobile." name="show_idle_time_check"/>
+      <check_box bottom_delta="-20" control_name="AscentUpdateTagsOnLoad" follows="top" height="16" initial_value="true" label="Chercher automatiquement les Mises &#xE0; Jour des Tags" left_delta="-205" tool_tip="" name="update_tags_check"/>
+      <button bottom_delta="0" control_name="ManualUpdate" name="update_clientdefs" follows="top" label="MAJ Manuelle" height="18" left_delta="340" width="110"/>
+      <!-- End of Client Tag settings -->
+      <text bottom_delta="-25" follows="top" height="10" left="20" name="effects_color_textbox">Couleurs de mes effets :</text>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-34" can_apply_immediately="true" color="1 1 1 1" control_name="EffectColor" follows="top" height="47" label="Effets" left_delta="138" name="effect_color_swatch" width="44"/>
+      <check_box bottom_delta="-20" control_name="AscentUseStatusColors" follows="top" height="16" initial_value="true" label="Activer les couleurs pour: Amis, Linden, etc..." left="10" tool_tip="" name="use_status_check"/>
+      <text bottom_delta="-20" follows="top" height="10" left_delta="10" name="friends_color_textbox">Choix des couleurs :
+(Radar, Tag, Minimap)</text>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="-34" can_apply_immediately="true" color="1 1 1 1" control_name="AscentFriendColor" follows="top" height="47" label="Amis" left_delta="138" name="friend_color_swatch" width="44" tool_tip=""/>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="0" can_apply_immediately="true" color="1 1 1 1" control_name="AscentEstateOwnerColor" follows="top" height="47" label="Estate" left_delta="54" name="estate_owner_color_swatch" width="44" tool_tip=""/>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="0" can_apply_immediately="true" color="0.6 0.6 1 1" control_name="AscentLindenColor" follows="top" height="47" label="Lindens" left_delta="54" name="linden_color_swatch" width="44" tool_tip=""/>
+      <color_swatch border_color="0.45098 0.517647 0.607843 1" bottom_delta="0" can_apply_immediately="true" color="0.8 1 1 1" control_name="AscentMutedColor" follows="top" height="47" label="Mut&#xE9;" left_delta="54" name="muted_color_swatch" width="44" tool_tip=""/>
+    </panel>
+    <panel border="true" left="1" bottom="-190" height="180" width="500" label="Body Dyn. (Bouger les n&#xE9;n&#xE9;s)" name="Body Dynamics">
+      <check_box bottom_delta="-25" follows="top" height="16" label="Activer les &#x22;physics&#x22; des n&#xE9;n&#xE9;s voire du popotin des avatars ^^" left="10" name="EmBreastsToggle" control_name="EmeraldBreastPhysicsToggle" tool_tip=""/>
+      <slider bottom_delta="-20" left="10" name="EmeraldBoobMass" control_name="EmeraldBoobMass" decimal_digits="0" follows="top" height="18" increment="1" label="Masse :" label_width="100" max_val="100" min_val="1" can_edit_text="true" width="250"/>
+      <slider bottom_delta="-20" left_delta="0" name="EmeraldBoobHardness" control_name="EmeraldBoobHardness" decimal_digits="0" follows="top" height="18" increment="1" label="Rebond :" label_width="100" max_val="100" min_val="1" can_edit_text="true" width="250"/>
+      <slider bottom_delta="-20" name="EmeraldBoobVelMax" control_name="EmeraldBoobVelMax" decimal_digits="0" follows="top" height="18" increment="1" label="V&#xE9;locit&#xE9; max :" label_width="100" max_val="100" min_val="1" can_edit_text="true" width="250"/>
+      <slider bottom_delta="-20" name="EmeraldBoobFriction" control_name="EmeraldBoobFriction" decimal_digits="0" follows="top" height="18" increment="1" label="Friction :" label_width="100" max_val="100" min_val="1" can_edit_text="true" width="250"/>
+      <slider bottom_delta="-20" name="EmeraldBoobVelMin" control_name="EmeraldBoobVelMin" decimal_digits="0" follows="top" height="18" increment="1" label="V&#xE9;locit&#xE9; min :" label_width="100" max_val="100" min_val="1" can_edit_text="true" width="250"/>
+      <text bottom_delta="-20" height="15" left="10" name="av_mod_textbox" follows="top">Modifier l'offset de l'avatar</text>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="X Modif." label_width="65" left_delta="5" max_val="0.15" min_val="-0.15" name="X Modifier" width="128" control_name="AscentAvatarXModifier" tool_tip=""/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.05" label="Y Modif." label_width="65" max_val="0.20" min_val="-0.20" name="Y Modifier" width="128" control_name="AscentAvatarYModifier" tool_tip=""/>
+      <spinner bottom_delta="-20" decimal_digits="5" follows="top" height="16" increment="0.1" label="Z Modif." label_width="65" max_val="5.0" min_val="-5.0" name="Z Modifier" width="128" control_name="AscentAvatarZModifier" tool_tip=""/>
+    </panel>
+  </tab_container>
+</panel>

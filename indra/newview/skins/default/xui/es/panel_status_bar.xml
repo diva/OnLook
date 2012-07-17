@@ -1,42 +1,38 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="status">
 	  <text name="ParcelNameText" tool_tip="Nombre de la parcela en la que estás. Pulsa aquí para ver Acerca del Terreno.">
-			 El nombre de la parcela va aquí
+		El nombre de la parcela va aquí
 	  </text>
-	  <text name="BalanceText" tool_tip="Saldo de tu cuenta">
+	<text name="BalanceText" tool_tip="Saldo de tu cuenta">
 			 Cargando...
-	  </text>
-	  <button name="buycurrency" tool_tip="Comprar dinero"/>
-	  <text type="string" name="TimeText" tool_tip="Hora actual (Del Pacífico)">
-			 24:00
-	  </text>
-	  <string name="StatBarDaysOfWeek">
+	</text>
+	<button name="buycurrency" tool_tip="Comprar dinero"/>
+	<text type="string" name="TimeText" tool_tip="Hora actual (Del Pacífico)">
+		24:00
+	</text>
+	<string name="StatBarDaysOfWeek">
 			 Domingo:Lunes:Martes:Miércoles:Viernes:Sábado
-	  </string>
-	  <string name="StatBarMonthsOfYear">
+	</string>
+	<string name="StatBarMonthsOfYear">
 			 Enero:Febrero:Marzo:Abril:Mayo:Junio:Julio:Agosto:Setiembre:Octubre:Noviembre:Diciembre
-	  </string>
-	  <button label="" label_selected="" name="scriptout" tool_tip="Aviso de Errores de Scripts" />
-	  <button label="" label_selected="" name="health" tool_tip="Salud"/>
-	  <text type="string" name="HealthText" tool_tip="Salud">
-			 100%
-	  </text>
-	  <button label="" label_selected="" name="no_fly" tool_tip="Prohibido volar"/>
-	  <button label="" label_selected="" name="no_build" tool_tip="Prohibido Construir/Rezear"/>
-	  <button label="" label_selected="" name="no_scripts" tool_tip="Prohibido ejecutar Scripts" />
-	  <button label="" label_selected="" name="restrictpush" tool_tip="Sin Empujones" />
-	  <button label="" label_selected="" name="status_no_voice" tool_tip="Chat de Voz No Disponible"/>
-	  <button label="" label_selected="" name="buyland" tool_tip="Comprar esta parcela" />
-
-	  <!-- Totally unsexy button hack to get a sexy bevel for sexy search bevel -brent -->
-	  <button label="" name="menubar_search_bevel_bg"/>
-	  <line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
-	  <button label="" label_selected="" name="search_btn" tool_tip="Buscar en Second Life"/>
-	  <text type="string" name="stat_btn"/>
-	  <string name="packet_loss_tooltip">
-			 Paquetes Perdidos
-	  </string>
-	  <string name="bandwidth_tooltip">
-			 Ancho de Banda
-	  </string>
+	</string>
+	<button name="scriptout" tool_tip="Aviso de Errores de Scripts" />
+	<button name="health" tool_tip="Salud"/>
+	<text name="HealthText" tool_tip="Salud">
+		100%
+	</text>
+	<button name="no_fly" tool_tip="Prohibido volar"/>
+	<button name="no_build" tool_tip="Prohibido Construir/Rezear"/>
+	<button name="no_scripts" tool_tip="Prohibido ejecutar Scripts" />
+	<button name="restrictpush" tool_tip="Sin Empujones" />
+	<button name="status_no_voice" tool_tip="Chat de Voz No Disponible"/>
+	<button name="buyland" tool_tip="Comprar esta parcela" />
+	<line_editor label="Buscar" name="search_editor" tool_tip="Buscar en Second Life"/>
+	<button name="search_btn" tool_tip="Buscar en Second Life"/>
+	<string name="packet_loss_tooltip">
+		Paquetes Perdidos
+	</string>
+	<string name="bandwidth_tooltip">
+		Ancho de Banda
+	</string>
 </panel>

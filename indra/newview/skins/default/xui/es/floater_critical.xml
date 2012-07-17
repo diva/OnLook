@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="modal container" title="">
-	  <button label="Continuar" label_selected="Continuar" name="Continue"/>
-	  <button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
-	  <!-- No title text here because our "critical message" is usually the
-			 community standards. JC -->
-	  <text name="tos_heading">
-			 Por favor, lee cuidadosamente el siguiente mensaje.
-	  </text>
-	  <text_editor name="tos_text">
-			 TOS_TEXT
-	  </text_editor>
+	<button label="Continuar" label_selected="Continuar" name="Continue"/>
+	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<text name="tos_heading">
+		Por favor, lee cuidadosamente el siguiente mensaje.
+	</text>
+	<text_editor name="tos_text">
+		TOS_TEXT
+	</text_editor>
 </floater>

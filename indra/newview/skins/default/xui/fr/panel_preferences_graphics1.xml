@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Graphiques" name="Display panel">
 	<button label="?" name="GraphicsPreferencesHelpButton"/>
 	<text_editor bottom="-56" height="40" left="25" name="FullScreenInfo" width="460">
-		Décochez cette option pour passer en mode plein écran.
+		D&#xE9;cocher cette option pour passer en mode plein &#xE9;cran.
 	</text_editor>
 	<text name="WindowSizeLabel">
-		Taille de la fenêtre :
+		Taille de la fen&#xEA;tre :
 	</text>
 	<combo_box name="windowsize combo">
 		<combo_item name="640x480">
@@ -25,7 +25,7 @@
 		</combo_item>
 	</combo_box>
 	<text name="DisplayResLabel" width="165">
-		Résolution de l&apos;affichage :
+		R&#xE9;solution de l&apos;affichage :
 	</text>
 	<text name="AspectRatioLabel1" tool_tip="largeur/hauteur">
 		Rapport hauteur/largeur :
@@ -38,17 +38,17 @@
 			5:4 (1280 x 1024 LCD)
 		</combo_item>
 		<combo_item name="8:5(Widescreen)">
-			8:5 (écran large)
+			8:5 (&#xE9;cran large)
 		</combo_item>
 		<combo_item length="1" name="16:9(Widescreen)" type="string">
-			16:9 (plein écran)
+			16:9 (plein &#xE9;cran)
 		</combo_item>
 	</combo_box>
 	<text length="1" name="text" type="string">
-		Résolution d&apos;affichage :
+		R&#xE9;solution d&apos;affichage :
 	</text>
 	<text length="1" name="Fullscreen Aspect Ratio:" type="string">
-		Format de plein écran :
+		Format de plein &#xE9;cran :
 	</text>
 	<text length="1" name="(width / height)" type="string">
 		(largeur / hauteur)
@@ -62,13 +62,13 @@
 	<text length="1" name="text2" type="string">
 		Options d&apos;affichage :
 	</text>
-	<check_box label="Lancer Singularity dans une fenêtre" name="windowed mode"/>
-	<check_box label="Auto-détection du ratio" left="350" name="aspect_auto_detect"/>
-	<check_box label="Utiliser échelle de résolution indépendante" name="ui_auto_scale"/>
+	<check_box label="Lancer Singularity dans une fen&#xEA;tre (et non pas, PAR la fen&#xEA;tre)" name="windowed mode"/>
+	<check_box label="Auto-d&#xE9;tection du ratio" left="350" name="aspect_auto_detect"/>
+	<check_box label="Utiliser &#xE9;chelle de r&#xE9;solution ind&#xE9;pendante" name="ui_auto_scale"/>
 	<check_box label="Montrer l&apos;avatar en vue subjective" name="avfp"/>
 	<spinner label="Distance d&apos;affichage :" name="draw_distance"/>
 	<text name="HigherText">
-		Qualité et
+		Qualit&#xE9; et
 	</text>
 	<text name="QualityText">
 		Performance :
@@ -83,27 +83,28 @@
 		Moyen
 	</text>
 	<text name="ShadersPrefText3">
-		Élevé
+		Elev&#xE9;
 	</text>
 	<text name="ShadersPrefText4">
 		Ultra
 	</text>
 	<text bottom="-86" left="325" name="HigherText2">
-		Plus élevée
+		Plus &#xE9;lev&#xE9;e
 	</text>
 	<text name="QualityText2" visible="false"/>
 	<check_box label="Personnaliser" left="395" name="CustomSettings"/>
 	<text name="ShadersText">
 		Effets :
 	</text>
-	<check_box label="Placage de relief et brillance" name="BumpShiny"/>
-	<check_box label="Effets de base" name="BasicShaders" tool_tip="Désactiver cette option peut empêcher certains drivers de cartes graphiques de planter."/>
-	<check_box label="Effets atmosphériques" name="WindLightUseAtmosShaders"/>
+	<check_box label="Pla&#xE7;age de relief et brillance" name="BumpShiny"/>
+	<check_box label="Effets de base" name="BasicShaders" tool_tip="D&#xE9;sactiver cette option peut emp&#xEA;cher certains drivers de cartes graphiques de planter."/>
+	<check_box label="Effets atmosph&#xE9;riques" name="WindLightUseAtmosShaders"/>
 	<check_box bottom_delta="-17" control_name="RenderDeferred" enabled="true"
 	     follows="left|top" font="SansSerifSmall" height="16"
-	     initial_value="true" label="Délissage" left_delta="0"
+	     initial_value="true" label="D&#xE9;lissage" left_delta="0"
 	     mouse_opaque="true" name="RenderDeferred" radio_style="false"
 	     width="256" />
+<check_box bottom_delta="-17" control_name="RenderDepthOfField"	initial_value="true" label="Profondeur de champ" left_delta="0" name="RenderDepthOfField"/>
 <check_box bottom_delta="-17" control_name="RenderDeferredGI" enabled="true"
       follows="left|top" font="SansSerifSmall" height="16"
       initial_value="true" label="Illumination globale (Experimental)" left_delta="0"
@@ -114,7 +115,7 @@
 	     font="SansSerifSmall" h_pad="0" halign="left" height="12"
 	     left="15" mouse_opaque="true" name="ReflectionDetailText" v_pad="0"
 	     width="128">
-		Reflets:
+		Reflets :
 	</text>
 	<combo_box bottom_delta="-20" control_name="RenderReflectionDetail" enabled = "true" follows="left|top" label="Reflection Detail"
 		 left_delta="-2" mouse_opaque="true" name="ReflectionDetailCombo" width="160" height="16">
@@ -139,7 +140,7 @@
       font="SansSerifSmall" h_pad="0" halign="left" height="12"
       left="15" mouse_opaque="true" name="ShadowDetailText" v_pad="0"
       width="128">
-    Ombres atténuées:
+    Ombres att&#xE9;nu&#xE9;es :
   </text>
   <combo_box bottom_delta="-20" control_name="RenderShadowDetail" enabled = "true" follows="left|top" label="Shadow Detail"
    left_delta="-2" mouse_opaque="true" name="ShadowDetailCombo" width="160" height="16">
@@ -156,8 +157,8 @@
       <text name="AvatarRenderingText">
 		Rendu de l&apos;avatar :
 	</text>
-	<check_box label="Avatars éloignés en 2D" name="AvatarImpostors"/>
-	<check_box label="Accélération du rendu" name="AvatarVertexProgram"/>
+	<check_box label="Avatars &#xE9;loign&#xE9;s en 2D" name="AvatarImpostors"/>
+	<check_box label="Acc&#xE9;l&#xE9;ration du rendu" name="AvatarVertexProgram"/>
 	<check_box label="Mouvement des habits" name="AvatarCloth"/>
 	<text name="DrawDistanceMeterText1">
 		m
@@ -167,9 +168,9 @@
 	</text>
 	<slider label="Limite d&apos;affichage :" name="DrawDistance"/>
 	<slider label="Nombre de particules max. :" label_width="143" name="MaxParticleCount"/>
-	<slider label="Qualité post-traitement :" name="RenderPostProcess"/>
+	<slider label="Qualit&#xE9; post-traitement :" label_width="125" name="RenderPostProcess"/>
 	<text name="MeshDetailText">
-		Détails des rendus :
+		D&#xE9;tails des rendus :
 	</text>
 	<slider label="  Objets :" name="ObjectMeshDetail"/>
 	<slider label="  Flexiprims :" name="FlexibleMeshDetail"/>
@@ -206,7 +207,7 @@
 			Soleil et lune uniquement
 		</radio_item>
 		<radio_item name="LocalLights">
-			Lumières de proximité
+			Lumi&#xE8;res de proximit&#xE9;
 		</radio_item>
 	</radio_group>
 	<text left="380" name="TerrainDetailText">
@@ -217,11 +218,11 @@
 			Faible
 		</radio_item>
 		<radio_item name="2">
-			Élevé
+			Elev&#xE9;
 		</radio_item>
 	</radio_group>
-	<button label="Paramètres recommandés" name="Defaults"/>
-	<button label="Configuration du matériel" label_selected="Configuration du matériel" name="GraphicsHardwareButton"/>
+	<button label="Param&#xE8;tres recommand&#xE9;s" name="Defaults"/>
+	<button label="Configuration du matériel" label_selected="Configuration du mat&#xE9;riel" name="GraphicsHardwareButton"/>
 	<text name="resolution_format">
 		[RES_X] x [RES_Y]
 	</text>

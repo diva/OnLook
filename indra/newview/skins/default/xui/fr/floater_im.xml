@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <multi_floater name="im_floater" title="Message instantané">
-	<text name="only_user_message">
-		Vous êtes le seul participant à cette session. ce qui est idiot
-	</text>
-      <string name="offline_message">[NAME] is offline.</string>
+	<string name="only_user_message">
+		Vous êtes le (la) seul(e) participant à cette session, zut alors!
+	</string>
+	<string name="offline_message">
+		[NAME] is offline
+	</string>
 	<string name="invite_message">
 		Pour accepter ce chat vocal/vous connecter, cliquez sur le bouton [BUTTON NAME].
 	</string>
@@ -14,28 +16,28 @@
 		Erreur lors de la requête, veuillez réessayer ultérieurement.
 	</string>
 	<string name="insufficient_perms_error">
-		Vous n&apos;avez pas les droits requis tant pis pour vous.
+		Vous n'avez pas les droits requis.
 	</string>
 	<string name="session_does_not_exist_error">
 		La session a expiré
 	</string>
 	<string name="no_ability_error">
-		Vous n&apos;avez pas ce pouvoir.
+		Vous n'avez pas ce pouvoir.
 	</string>
 	<string name="not_a_mod_error">
-		Vous n&apos;êtes pas modérateur de session.
+		Vous n'êtes pas modérateur(trice) de cette session.
 	</string>
 	<string name="muted_error">
 		Un modérateur de groupe a désactivé votre chat écrit.
 	</string>
 	<string name="add_session_event">
-		Impossible d&apos;ajouter des participants à la session de chat avec [RECIPIENT].
+		Impossible d'ajouter des participants à la session de chat avec [RECIPIENT].
 	</string>
 	<string name="message_session_event">
-		Impossible d&apos;envoyer votre message à la session de chat avec [RECIPIENT].
+		Impossible d'envoyer votre message à la session de chat avec [RECIPIENT].
 	</string>
 	<string name="removed_from_group">
-		Vous avez été supprimé du groupe.
+		Vous avez été supprimé(e) du groupe.
 	</string>
 	<string name="close_on_no_ability">
 		Vous ne pouvez plus participer à la session de chat.

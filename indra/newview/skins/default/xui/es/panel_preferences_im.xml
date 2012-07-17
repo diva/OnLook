@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Comunicación" name="im">
-	  <text name="text_box">
-			 Mi Estado en Línea:
-	  </text>
-	  <check_box label="Sólo mis amigos y mis grupos pueden ver cuando estoy en línea" name="online_visibility"/>
-	  <text name="text_box2">
-			 Opciones de MI:
-	  </text>
-	  <string name="log_in_to_change">
-			 Iniciar sesión para cambiar
-	  </string>
-	  <check_box label="Enviar MI al Email ([EMAIL])" name="send_im_to_email"/>
-	  <check_box label="Incluir MI en la consola de Chat" name="include_im_in_chat_console"/>
-	  <check_box label="Mostrar horario en los IMI" name="show_timestamps_check"/>
-	  <check_box label="Mostrar notificaciones cuando los amigos inician/terminan sesión" name="friends_online_notify_checkbox"/>
-	  <text name="text_box3">
-			 Respuesta en Modo Ocupado:
-	  </text>
-	  <text name="text_box4">
-			 Opciones de Registro:
-	  </text>
-	  <check_box label="Guardar Registro de MI en mi computador" name="log_instant_messages" />
-	  <check_box label="Mostrar horario en el registro de MI" name="log_instant_messages_timestamp"/>
-	  <check_box label="Mostrar final de la última conversación en MI" name="log_show_history"/>
-	  <check_box label="Guardar Registro del chat local en mi computador" name="log_chat"/>
-	  <check_box label="Mostrar horario en el registro del chat local" name="log_chat_timestamp"/>
-	  <check_box label="Mostrar MI recibidos en el registro de chat local" name="log_chat_IM"/>
-	  <check_box label="Incluir fecha con horario" name="log_date_timestamp"/>
-	  <check_box label="Agregar fecha al nombre de archivo de registro" name="logfile_name_datestamp"/>
-	  <button label="Cambiar Ruta" label_selected="Cambiar Ruta" name="log_path_button"/>
+	<text name="text_box">
+		Mi Estado en Línea:
+	</text>
+	<check_box label="Sólo mis amigos y mis grupos pueden ver cuando estoy en línea" name="online_visibility"/>
+	<text name="text_box2">
+		Opciones de MI:
+	</text>
+	<string name="log_in_to_change">
+		Iniciar sesión para cambiar
+	</string>
+	<check_box label="Enviar MI al Email ([EMAIL])" name="send_im_to_email"/>
+	<check_box label="Incluir MI en la consola de Chat" name="include_im_in_chat_console"/>
+	<check_box label="Mostrar horario en los IMI" name="show_timestamps_check"/>
+	<check_box label="Mostrar notificaciones cuando los amigos inician/terminan sesión" name="friends_online_notify_checkbox"/>
+	<text name="text_box3">
+		Respuesta en Modo Ocupado:
+	</text>
+	<text name="text_box4">
+		Opciones de Registro:
+	</text>
+	<check_box label="Guardar Registro de MI en mi computador" name="log_instant_messages" />
+	<check_box label="Mostrar horario en el registro de MI" name="log_instant_messages_timestamp"/>
+	<check_box label="Mostrar final de la última conversación en MI" name="log_show_history"/>
+	<check_box label="Guardar Registro del chat local en mi computador" name="log_chat"/>
+	<check_box label="Mostrar horario en el registro del chat local" name="log_chat_timestamp"/>
+	<check_box label="Mostrar MI recibidos en el registro de chat local" name="log_chat_IM"/>
+	<check_box label="Incluir fecha con horario" name="log_date_timestamp"/>
+	<check_box label="Agregar fecha al nombre de archivo de registro" name="logfile_name_datestamp"/>
+	<button label="Cambiar Ruta" label_selected="Cambiar Ruta" name="log_path_button"/>
 </panel>

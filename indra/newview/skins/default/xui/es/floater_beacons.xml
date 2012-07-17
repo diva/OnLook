@@ -1,17 +1,16 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater name="beacons" title="Balizas" control_name="ShowBeaconsFloater">
-	  <panel name="beacons_panel">
-			 <check_box name="always_on" label="Mantener balizas activas al cerrar" control_name="keepbeacons" />
-			 <check_box name="touch_only" label="Solo Objetos con script de toque" control_name="scripttouchbeacon" />
-			 <check_box name="scripted" label="Objetos con Scripts" control_name="scriptsbeacon" />
-			 <check_box name="physical" label="Objetos Materiales" control_name="physicalbeacon" />
-			 <check_box name="sounds" label="Fuentes de Sonidos" control_name="soundsbeacon" />
-			 <check_box name="particles" label="Fuentes de Partículas" control_name="particlesbeacon" />
-			 <check_box name="highlights" label="Activar los Realzados" control_name="renderhighlights" />
-			 <check_box name="beacons" label="Activar Balizas" control_name="renderbeacons" />
-			 <text type="string" name="beacon_width_label">
-					Ancho de la Baliza:
-			 </text>
-			 <slider name="beacon_width" control_name="DebugBeaconLineWidth"/>    
-	  </panel>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="beacons" title="Balizas">
+	<panel name="beacons_panel">
+		<check_box name="always_on" label="Mantener balizas activas al cerrar"/>
+		<check_box name="touch_only" label="Solo Objetos con script de toque"/>
+		<check_box name="scripted" label="Objetos con Scripts"/>
+		<check_box name="physical" label="Objetos Materiales"/>
+		<check_box name="sounds" label="Fuentes de Sonidos"/>
+		<check_box name="particles" label="Fuentes de Partículas"/>
+		<check_box name="highlights" label="Activar los Realzados"/>
+		<check_box name="beacons" label="Activar Balizas"/>
+		<text name="beacon_width_label">
+			Ancho de la Baliza:
+		</text>
+	</panel>
 </floater>

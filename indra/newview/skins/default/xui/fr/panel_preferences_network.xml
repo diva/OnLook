@@ -1,23 +1,44 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Réseau" name="network">
-	<text length="1" name="text_box" type="string">
-		Bande passante maximale :
+	<text name="text_box">
+		Bande passante maximale:
 	</text>
-	<text length="1" name="text_box2" type="string">
+	<text name="text_box2">
 		kbps (kilobits par seconde)
 	</text>
-	<text name="cache_size_label_l" width="210">
-		Taille de la mémoire cache :
+	<text name="cache_size_label_l">
+		Taille de la mémoire cache:
 	</text>
-	<text length="1" name="text_box5" type="string">
+	<text name="text_box5">
 		Mo
 	</text>
 	<button label="Vider la mémoire cache" label_selected="Vider le cache" name="clear_cache" width="150"/>
 	<text name="cache_location_label">
-		Emplacement du cache :
+		Emplacement du cache:
 	</text>
 	<button label="Modifier" label_selected="Modifier" name="set_cache"/>
 	<button label="Réinitialiser" label_selected="Réinitialiser" name="reset_cache"/>
 	<check_box label="Port de connexion personnalisé" name="connection_port_enabled"/>
-	<spinner label="Numéro de port :" label_width="95" name="connection_port" width="170"/>
+	<spinner label="Numéro de port:" label_width="95" name="connection_port" width="170"/>
+
+
+	<text bottom_delta="-24" height="10" left="12" name="socks5_auth_label">Proxy Http:</text>
+	<radio_group bottom_delta="-8" height="20" left="12" name="socks5_http_proxy_type" width="380" >
+		<radio_item left="100" name="None" width="50">aucun</radio_item>
+		<radio_item left="170" name="Socks" width="50">Socks</radio_item>
+		<radio_item left="250" name="Web" width="50">Web</radio_item>
+	</radio_group>
+	<check_box bottom_delta="-24" height="16" label="Activer SOCKS 5 Proxy" left="6" name="socks5_proxy_enabled" width="256"/>
+	<text bottom_delta="-26" height="10" left="12" name="socks5_host_label">H&#xF4;te Socks 5:</text>
+	<line_editor bottom_delta="-6" left="90" name="socks5_proxy_host" tool_tip="" width="311"/>
+	<spinner bottom_delta="-30" height="16" label="Numéro de port:" label_width="80" name="socks5_proxy_port" width="140"/>
+	<text bottom_delta="-20" height="10" left="12" name="socks5_auth_label2">Authentification:</text>
+	<radio_group bottom_delta="-6" name="socks5_auth" width="420">
+		<radio_item left_delta="80" name="None" tool_tip="">aucune</radio_item>
+		<radio_item left_delta="50" name="UserPass" tool_tip="">Nom/Mot de passe</radio_item>
+	</radio_group>
+	<text bottom_delta="-22" height="10" left="12" name="socks5_username_label">Nom:</text>
+	<line_editor bottom_delta="-8" left="90" name="socks5_proxy_username" width="311"/>
+	<text bottom_delta="-20" left="12" name="socks5_password_label">Mot de Passe:</text>
+	<line_editor bottom_delta="-8" left="90" name="socks5_proxy_password" width="311"/>
 </panel>

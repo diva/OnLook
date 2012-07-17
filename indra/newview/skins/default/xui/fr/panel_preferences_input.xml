@@ -1,35 +1,31 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <panel label="Contrôle caméra" name="Input panel">
-	<text length="1" name=" Mouselook Options:" type="string">
-		Vue subjective :
+	<text name=" Mouselook Options:">
+		Vue subjective:
 	</text>
-	<text length="1" name=" Mouse Sensitivity:" type="string">
-		Sensibilité de la souris :
+	<text name=" Mouse Sensitivity:">
+		Sensibilité de la souris:
 	</text>
 	<check_box label="Inverser la souris" name="invert_mouse"/>
-	<text length="1" name=" Auto Fly Options:" type="string">
-		Vol automatique :
+	<text name=" Auto Fly Options:">
+		Vol automatique:
 	</text>
-	<check_box label="Voler/atterrir en appuyant sur la flèche du haut/bas" name="automatic_fly"/>
-	<text length="1" name=" Camera Options:" type="string">
-		Options de la caméra :
+	<check_box label="Voler/atterrir en appuyant sur les fl&#xEA;ches haut/bas" name="automatic_fly"/>
+	<text name=" Camera Options:">
+		Options de la caméra:
 	</text>
 	<text name="camera_fov_label">
-		Angle de vision :
+		Angle de vision:
 	</text>
 	<text name="Camera Follow Distance:">
-		Distance :
+		Distance:
 	</text>
-	<check_box label="Ajustement automatique en mode Édition" name="edit_camera_movement" tool_tip="Positionner automatiquement la caméra lors de l&apos;entrée ou de la sortie du mode Édition"/>
-	<check_box label="Ajustement automatique en mode Édition d&apos;apparence" name="appearance_camera_movement" tool_tip="Positionner automatiquement la caméra en mode Édition"/>
-	<check_box bottom_delta="-18" enabled="true"
-	     follows="left|top" font="SansSerifSmall" height="16" initial_value="false"
-	     label="Lever l&apos;avatar au reset de la caméra" left="148" mouse_opaque="true"
-	     name="unsit_on_camera_reset" radio_style="false"
-	     tool_tip="Leve automatiquement l&apos;avatar quand vous pressez ESC ainsi la caméra permute en mode troisième personne" width="242" />
-        <text name="text2">
-		Affichage de l&apos;avatar :
+	<check_box label="Ajustement automatique en mode Edition" name="edit_camera_movement" tool_tip="Positionne automatiquement la caméra lors de l'entrée ou de la sortie du mode Edition."/>
+	<check_box label="Ajustement automatique en mode Edition d'apparence" name="appearance_camera_movement" tool_tip="Positionne automatiquement la caméra en mode Apparence de l'avatar."/>
+	<check_box bottom_delta="-18" label="Lever l&apos;avatar au reset de la caméra" left="148" name="unsit_on_camera_reset" tool_tip="L&#xE8;ve automatiquement l'avatar quand vous pressez ESC, ainsi la caméra permute en mode troisième personne" width="242"/>
+	<text name="text2">
+		Affichage de l'avatar:
 	</text>
-	<check_box label="Montrer l&apos;avatar en vue subjective" name="first_person_avatar_visible"/>
+	<check_box label="Montrer l'avatar en vue subjective" name="first_person_avatar_visible"/>
 	<button label="Configuration du joystick" name="joystick_setup_button" width="175"/>
 </panel>

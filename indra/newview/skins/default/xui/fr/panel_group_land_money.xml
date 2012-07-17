@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="Terrain et L$" name="land_money_tab">
+<panel label="Terrain et [CURRENCY]" name="land_money_tab">
 	<string name="help_text">
 		Les parcelles appartenant au groupe sont indiquées avec le détails des contributions. Un avertissement apparaît si la surface utilisée par le groupe est supérieure ou égale au total des contributions. Les onglets Planification, Détails et Ventes correspondent aux finances du groupe.
 	</string>
 	<button label="?" name="help_button"/>
 	<string name="cant_view_group_land_text">
-		Vous n&apos;avez pas la permission de voir quel terrain possède ce groupe.
+		Vous n'avez pas la permission de voir quel terrain possède ce groupe.
 	</string>
 	<string name="cant_view_group_accounting_text">
-		Vous n&apos;avez pas la permission d&apos;accéder aux informations
+		Vous n'avez pas la permission d'accéder aux informations
 financières de ce groupe.
 	</string>
 	<string name="loading_txt">
-		Chargement...
+		Chargement
 	</string>
 	<text name="group_land_heading">
 		Terrain du groupe
@@ -26,25 +26,25 @@ financières de ce groupe.
 	</scroll_list>
 	<button label="Voir sur la carte" label_selected="Voir sur la carte" name="map_button"/>
 	<text name="total_contributed_land_label">
-		Total des contributions :
+		Total des contributions:
 	</text>
 	<text name="total_contributed_land_value">
 		[AREA] m²
 	</text>
 	<text name="total_land_in_use_label">
-		Superficie déjà utilisée :
+		Superficie déjà utilisée:
 	</text>
 	<text name="total_land_in_use_value">
 		[AREA] m²
 	</text>
 	<text name="land_available_label">
-		Superficie disponible :
+		Superficie disponible:
 	</text>
 	<text name="land_available_value">
 		[AREA] m²
 	</text>
 	<text name="your_contribution_label">
-		Votre contribution :
+		Votre contribution:
 	</text>
 	<string name="land_contrib_error">
 		Impossible de définir votre don de terre.
@@ -62,19 +62,19 @@ charge le terrain utilisé.
 	<tab_container name="group_money_tab_container">
 		<panel label="Planification" name="group_money_planning_tab">
 			<text_editor name="group_money_planning_text">
-				Calcul en cours...
+				Calcul en cours
 			</text_editor>
 		</panel>
 		<panel label="Détails" name="group_money_details_tab">
 			<text_editor name="group_money_details_text">
-				Calcul en cours...
+				Calcul en cours
 			</text_editor>
 			<button label="&lt; Plus tôt" label_selected="&lt; Plus tôt" name="earlier_details_button" tool_tip="Reculer dans le temps"/>
 			<button label="Plus tard &gt;" label_selected="Plus tard &gt;" name="later_details_button" tool_tip="Avancer dans le temps"/>
 		</panel>
 		<panel label="Ventes" name="group_money_sales_tab">
 			<text_editor name="group_money_sales_text">
-				Calcul en cours...
+				Calcul en cours
 			</text_editor>
 			<button label="&lt; Plus tôt" label_selected="&lt; Plus tôt" name="earlier_sales_button" tool_tip="Reculer dans le temps"/>
 			<button label="Plus tard &gt;" label_selected="Plus tard &gt;" name="later_sales_button" tool_tip="Avancer dans le temps"/>

@@ -632,12 +632,6 @@ void LLPipeline::allocateScreenBuffer(U32 resX, U32 resY)
 	static const LLCachedControl<U32> RenderFSAASamples("RenderFSAASamples",0);
 	U32 samples = RenderFSAASamples.get() - RenderFSAASamples.get() % 2;	//Must be multipe of 2.
 
-	//Don't multisample if not using FXAA, or if fbos are disabled, or if multisampled fbos are not supported.
-	if(!LLPipeline::sRenderDeferred && (!LLRenderTarget::sUseFBO || !gGLManager.mHasFramebufferMultisample))
-	{
-		samples = 0;
-	}
-
 	//try to allocate screen buffers at requested resolution and samples
 	// - on failure, shrink number of samples and try again
 	// - if not multisampled, shrink resolution and try again (favor X resolution over Y)
@@ -693,6 +687,7 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 	}
 
 	mSampleBuffer.release();
+	mScreen.release();
 
 	if (LLPipeline::sRenderDeferred)
 	{
@@ -790,7 +785,6 @@ bool LLPipeline::allocateScreenBuffer(U32 resX, U32 resY, U32 samples)
 		if (!mScreen.allocate(resX, resY, GL_RGBA, TRUE, TRUE, LLTexUnit::TT_RECT_TEXTURE, FALSE)) return false;
 		if(samples > 1)
 		{
-			
 			if(mSampleBuffer.allocate(resX,resY,GL_RGBA,TRUE,TRUE,LLTexUnit::TT_RECT_TEXTURE,FALSE,samples))
 				mScreen.setSampleBuffer(&mSampleBuffer);
 			else
@@ -906,6 +900,8 @@ void LLPipeline::releaseScreenBuffers()
 	{
 		mShadow[i].release();
 	}
+
+	mSampleBuffer.release();
 }
 
 

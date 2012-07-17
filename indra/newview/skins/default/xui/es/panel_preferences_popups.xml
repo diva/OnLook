@@ -1,19 +1,19 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel label="Vent. Emergentes" name="popups" title="Ventanas Emergentes">
-	  <text name="dont_show_label">
-			 No Mostrar las siguientes Ventanas Emergentes:
-	  </text>
-	  <button label="Activar esta Ventana Emergente" name="enable_popup" width="210"/>
-	  <button label="Activar todas las Ventanas Emergentes..." name="reset_dialogs_btn" tool_tip="Activa todas las ventanas emergentes y las notificaciones de primera vez." left="230" width="250"/>
-	  <text name="show_label" >
-			 Mostrar las siguientes Ventanas Emergentes:
-	  </text>
-	  <button label="Desactivar Avisos de Primera Vez..." name="skip_frst_btn" tool_tip="Desactiva todos los avisos de primera vez." width="215"/>
-	  <button label="Desactivar todas las Ventanas Emergentes..." name="skip_dialogs_btn" tool_tip="Desactiva todas las ventanas emergentes y las notificaciones de primera vez." left="235" width="255"/>
-	  <text name="text_box2">
-			 Ofertas de Notas, texturas e Hitos:
-	  </text>
-	  <check_box label="Aceptar Automáticamente" name="accept_new_inventory"/>
-	  <check_box label="Ver Automáticamente despues de aceptar" name="show_new_inventory"/>
-	  <check_box label="Mostrar automáticamente nuevos objetos aceptados en el inventario" name="show_in_inventory"/>
+	<text name="dont_show_label">
+		No Mostrar las siguientes Ventanas Emergentes:
+	</text>
+	<button label="Activar esta Ventana Emergente" name="enable_popup" width="210"/>
+	<button label="Activar todas las Ventanas Emergentes..." name="reset_dialogs_btn" tool_tip="Activa todas las ventanas emergentes y las notificaciones de primera vez." left="230" width="250"/>
+	<text name="show_label" >
+		Mostrar las siguientes Ventanas Emergentes:
+	</text>
+	<button label="Desactivar Avisos de Primera Vez..." name="skip_frst_btn" tool_tip="Desactiva todos los avisos de primera vez." width="215"/>
+	<button label="Desactivar todas las Ventanas Emergentes..." name="skip_dialogs_btn" tool_tip="Desactiva todas las ventanas emergentes y las notificaciones de primera vez." left="235" width="255"/>
+	<text name="text_box2">
+		Ofertas de Notas, texturas e Hitos:
+	</text>
+	<check_box label="Aceptar Automáticamente" name="accept_new_inventory"/>
+	<check_box label="Ver Automáticamente despues de aceptar" name="show_new_inventory"/>
+	<check_box label="Mostrar automáticamente nuevos objetos aceptados en el inventario" name="show_in_inventory"/>
 </panel>

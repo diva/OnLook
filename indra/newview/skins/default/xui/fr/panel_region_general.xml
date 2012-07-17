@@ -30,9 +30,9 @@
 	<button label="?" name="land_resell_help"/>
 	<check_box label="Autoriser la fusion/division" name="allow_parcel_changes_check"/>
 	<button label="?" name="parcel_changes_help"/>
-	<check_box label="Ne pas afficher dans la recherche" name="block_parcel_search_check" tool_tip="Afficher cette région et ses parcelles dans les résultats de recherche"/>
+	<check_box label="Ne pas afficher dans la recherche" name="block_parcel_search_check" tool_tip="Affiche cette région et ses parcelles dans les résultats de recherche"/>
 	<button label="?" name="parcel_search_help"/>
-	<spinner label="Nombre maximum d&apos;avatars" label_width="127" name="agent_limit_spin" width="190"/>
+	<spinner label="Nombre max d&apos;avatars" label_width="127" name="agent_limit_spin" width="190"/>
 	<button label="?" name="agent_limit_help"/>
 	<spinner label="Bonus objet" label_width="127" name="object_bonus_spin" width="190"/>
 	<button label="?" name="object_bonus_help"/>
@@ -41,7 +41,7 @@
 	</text>
 	<combo_box label="Mature" name="access_combo">
 		<combo_item name="Adult">
-			Adult
+			Adulte
 		</combo_item>
 		<combo_item name="Mature">
 			Mature
@@ -52,8 +52,8 @@
 	</combo_box>
 	<button label="?" name="access_help"/>
 	<button label="Appliquer" name="apply_btn"/>
-	<button label="Téléporter un résident chez lui..." name="kick_btn"/>
-	<button label="Téléporter tous les résidents chez eux..." name="kick_all_btn"/>
-	<button label="Envoyer un message à la région..." name="im_btn"/>
-	<button label="Gérer le Téléhub..." name="manage_telehub_btn"/>
+	<button label="Téléporter un résident chez lui" name="kick_btn"/>
+	<button label="Téléporter tous les résidents chez eux" name="kick_all_btn"/>
+	<button label="Envoyer un message à la région" name="im_btn"/>
+	<button label="Gérer le Téléhub" name="manage_telehub_btn"/>
 </panel>

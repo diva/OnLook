@@ -435,11 +435,7 @@ LLGLManager::LLGLManager() :
 	mHasPointParameters(FALSE),
 	mHasDrawBuffers(FALSE),
 	mHasTextureRectangle(FALSE),
-	mHasTextureMultisample(FALSE),
 	mHasTransformFeedback(FALSE),
-	mMaxSampleMaskWords(0),
-	mMaxColorTextureSamples(0),
-	mMaxDepthTextureSamples(0),
 	mMaxIntegerSamples(0),
 
 	mHasAnisotropic(FALSE),
@@ -732,12 +728,10 @@ bool LLGLManager::initGL()
 	
 	stop_glerror();
 
-	if (mHasTextureMultisample)
+	if (mHasFramebufferMultisample)
 	{
-		glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &mMaxColorTextureSamples);
-		glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, &mMaxDepthTextureSamples);
 		glGetIntegerv(GL_MAX_INTEGER_SAMPLES, &mMaxIntegerSamples);
-		glGetIntegerv(GL_MAX_SAMPLE_MASK_WORDS, &mMaxSampleMaskWords);
+		glGetIntegerv(GL_MAX_SAMPLES, &mMaxSamples);
 	}
 
 	stop_glerror();
@@ -749,22 +743,10 @@ bool LLGLManager::initGL()
 	}
 #endif
 	stop_glerror();
-	mHasTextureMultisample = FALSE;
-#if LL_WINDOWS
-	if (mIsATI)
-	{ //using multisample textures on ATI results in black screen for some reason
-		mHasTextureMultisample = FALSE;
-	}
-#endif
 
 	if (mIsIntel && mGLVersion <= 3.f)
 	{ //never try to use framebuffer objects on older intel drivers (crashy)
 		mHasFramebufferObject = FALSE;
-	}
-
-	if (mHasFramebufferObject)
-	{
-		glGetIntegerv(GL_MAX_SAMPLES, &mMaxSamples);
 	}
 
 	stop_glerror();
@@ -845,14 +827,6 @@ std::string LLGLManager::getRawGLString()
 	std::string gl_string;
 	gl_string = ll_safe_string((char*)glGetString(GL_VENDOR)) + " " + ll_safe_string((char*)glGetString(GL_RENDERER));
 	return gl_string;
-}
-
-U32 LLGLManager::getNumFBOFSAASamples(U32 samples)
-{
-	samples = llmin(samples, (U32) mMaxColorTextureSamples);
-	samples = llmin(samples, (U32) mMaxDepthTextureSamples);
-	samples = llmin(samples, (U32) 4);
-	return samples;
 }
 
 void LLGLManager::shutdownGL()
@@ -960,7 +934,6 @@ void LLGLManager::initExtensions()
 	mHasDrawBuffers = ExtensionExists("GL_ARB_draw_buffers", gGLHExts.mSysExts);
 	mHasBlendFuncSeparate = ExtensionExists("GL_EXT_blend_func_separate", gGLHExts.mSysExts);
 	mHasTextureRectangle = ExtensionExists("GL_ARB_texture_rectangle", gGLHExts.mSysExts);
-	mHasTextureMultisample = ExtensionExists("GL_ARB_texture_multisample", gGLHExts.mSysExts);
 	mHasDebugOutput = ExtensionExists("GL_ARB_debug_output", gGLHExts.mSysExts);
 	mHasTransformFeedback = mGLVersion >= 4.f ? TRUE : FALSE;
 #if !LL_DARWIN
@@ -1197,13 +1170,6 @@ void LLGLManager::initExtensions()
 	if (mHasBlendFuncSeparate)
 	{
 		glBlendFuncSeparateEXT = (PFNGLBLENDFUNCSEPARATEEXTPROC) GLH_EXT_GET_PROC_ADDRESS("glBlendFuncSeparateEXT");
-	}
-	if (mHasTextureMultisample)
-	{
-		glTexImage2DMultisample = (PFNGLTEXIMAGE2DMULTISAMPLEPROC) GLH_EXT_GET_PROC_ADDRESS("glTexImage2DMultisample");
-		glTexImage3DMultisample = (PFNGLTEXIMAGE3DMULTISAMPLEPROC) GLH_EXT_GET_PROC_ADDRESS("glTexImage3DMultisample");
-		glGetMultisamplefv = (PFNGLGETMULTISAMPLEFVPROC) GLH_EXT_GET_PROC_ADDRESS("glGetMultisamplefv");
-		glSampleMaski = (PFNGLSAMPLEMASKIPROC) GLH_EXT_GET_PROC_ADDRESS("glSampleMaski");
 	}
 	if (mHasTransformFeedback)
 	{

@@ -20,12 +20,12 @@
 	<combo_box label="" name="classified_category_combo"/>
 	<button label="Mise à jour" name="classified_update_btn" width="80"/>
 	<string name="ad_placed_paid">
-		Annonce passée le : [DATE]. Prix : [AMT] L$.
+		Annonce passée le : [DATE]. Prix : [AMT][CURRENCY].
 	</string>
 	<string name="update_txt">
 		Mise à jour
 	</string>
 	<string name="publish_txt">
-		Publier...
+		Publier
 	</string>
 </panel>

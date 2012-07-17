@@ -1,50 +1,46 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <floater name="avatarpicker" title="Elegir a un Residente">
-	  <tab_container name="ResidentChooserTabs" >
-			 <panel name="SearchPanel" label="Buscar" >
-					<text name="InstructSearchResidentName" >
-						  Escribe parte del nombre del residente:
-					</text>
-					<line_editor name="Edit" />
-					<button label="Buscar" label_selected="Buscar" name="Find"/>
-					<scroll_list name="SearchResults"/>
-			 </panel>
-			 <panel name="CallingCardsPanel" label="Tarjeta de Llamada" >
-					<text name="InstructSelectCallingCard">
-						  Elige una Tarjeta de Llamada:
-					</text>
-					<inventory_panel name="InventoryPanel" />
-			 </panel>
-			 <panel name="NearMePanel" label="Cercanos" >
-					<text name="InstructSelectResident">
-						  Seleccionar un residente cercano:
-					</text>
-					<button label="Actualizar Lista" label_selected="Actualizar Lista" name="Refresh"/>
-					<slider name="near_me_range" label="Alcance" />
-					<text name="meters">
-						  Metros
-					</text>
-					<scroll_list name="NearMe"  />
-			 </panel>
-			 <panel name="KeyPanel" label="Por UUID" >
-					<text name="InstructSelectResident">
-						  UUID del Avatar o Grupo:
-					</text>
-					<line_editor name="EditUUID"/>
-			 </panel>
-	  </tab_container>
-	  <button label="Elegir" label_selected="Elegir" name="Select"/>
-	  <button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
-	  <string name="not_found">
-			 No se ha encontrado a &apos;[TEXT]&apos;
-	  </string>
-	  <string name="no_one_near">
-			 Nadie Cercano
-	  </string>
-	  <string name="no_results">
-			 Sin resultados
-	  </string>
-	  <string name="searching">
-			 Buscando...
-	  </string>
+	<tab_container name="ResidentChooserTabs">
+		<panel name="SearchPanel" label="Buscar">
+			<text name="InstructSearchResidentName">
+				Escribe parte del nombre del residente:
+			</text>
+			<button label="Buscar" label_selected="Buscar" name="Find"/>
+		</panel>
+		<panel name="CallingCardsPanel" label="Tarjeta de Llamada">
+			<text name="InstructSelectCallingCard">
+				Elige una Tarjeta de Llamada:
+			</text>
+		</panel>
+		<panel name="NearMePanel" label="Cercanos">
+			<text name="InstructSelectResident">
+				Seleccionar un residente cercano:
+			</text>
+			<button label="Actualizar Lista" label_selected="Actualizar Lista" name="Refresh"/>
+			<slider name="near_me_range" label="Alcance"/>
+			<text name="meters">
+				Metros
+			</text>
+			<scroll_list name="NearMe"/>
+		</panel>
+		<panel name="KeyPanel" label="Por UUID" >
+			<text name="InstructSelectResident">
+				UUID del Avatar o Grupo:
+			</text>
+		</panel>
+	</tab_container>
+	<button label="Elegir" label_selected="Elegir" name="Select"/>
+	<button label="Cancelar" label_selected="Cancelar" name="Cancel"/>
+	<string name="not_found">
+		No se ha encontrado a '[TEXT]'
+	</string>
+	<string name="no_one_near">
+		Nadie Cercano
+	</string>
+	<string name="no_results">
+		Sin resultados
+	</string>
+	<string name="searching">
+		Buscando...
+	</string>
 </floater>
