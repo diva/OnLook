@@ -80,8 +80,14 @@ AIThreadSafeSimpleDC<U64> AIStateMachine::sMaxCount;
 
 void AIStateMachine::updateSettings(void)
 {
-  Dout(dc::statemachine, "Initializing AIStateMachine::sMaxCount");
-  *AIAccess<U64>(sMaxCount) = calc_clock_frequency() * gSavedSettings.getU32("StateMachineMaxTime") / 1000;
+  static const LLCachedControl<U32> StateMachineMaxTime("StateMachineMaxTime", 20);
+  static U32 last_StateMachineMaxTime = 0;
+  if (last_StateMachineMaxTime != StateMachineMaxTime)
+  {
+    Dout(dc::statemachine, "Initializing AIStateMachine::sMaxCount");
+    *AIAccess<U64>(sMaxCount) = calc_clock_frequency() * StateMachineMaxTime / 1000;
+	last_StateMachineMaxTime = StateMachineMaxTime;
+  }
 }
 
 //----------------------------------------------------------------------------
