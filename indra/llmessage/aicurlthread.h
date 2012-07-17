@@ -105,7 +105,7 @@ class PollSet
 	std::vector<curl_socket_t> mCopiedFileDescriptors;	// Filedescriptors copied by refresh to mFdSet.
 	std::vector<curl_socket_t>::iterator mIter;			// Index into mCopiedFileDescriptors for next(); loop variable.
 #else
-	int mIter;											// Index into fd_set::fd_array.
+	unsigned int mIter;				// Index into fd_set::fd_array.
 #endif
 };
 

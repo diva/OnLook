@@ -32,9 +32,11 @@
 #include "aicurlthread.h"
 #include "lltimer.h"		// ms_sleep
 #include <sys/types.h>
+#if !LL_WINDOWS
 #include <sys/select.h>
 #include <unistd.h>
 #include <fcntl.h>
+#endif
 #include <deque>
 
 #undef AICurlPrivate
@@ -132,7 +134,7 @@ namespace curlthread {
 //
 // mMaxFdSet is the largest filedescriptor in mFdSet or -1 if it is empty.
 
-static size_t const MAXSIZE = std::max(1024, FD_SETSIZE);
+static size_t const MAXSIZE = llmax(1024, FD_SETSIZE);
 
 // Create an empty PollSet.
 PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
@@ -147,10 +149,10 @@ PollSet::PollSet(void) : mFileDescriptors(new curl_socket_t [MAXSIZE]),
 // Add filedescriptor s to the PollSet.
 void PollSet::add(curl_socket_t s)
 {
-  llassert_always(mNrFds < MAXSIZE);
+  llassert_always(mNrFds < (int)MAXSIZE);
   mFileDescriptors[mNrFds++] = s;
 #if !LL_WINDOWS
-  mMaxFd = std::max(mMaxFd, s);
+  mMaxFd = llmax(mMaxFd, s);
 #endif
 }
 
@@ -195,7 +197,7 @@ void PollSet::remove(curl_socket_t s)
 	curl_socket_t next = mFileDescriptors[--i];	// next = 'd'
 	mFileDescriptors[i] = cur;					// Overwrite 'd' with 'e'.
 #if !LL_WINDOWS
-	max = std::max(max, cur);					// max is the maximum value in 'i' or higher.
+	max = llmax(max, cur);					// max is the maximum value in 'i' or higher.
 #endif
 	cur = next;									// cur = 'd'
 	//                        i  NrFds = 5
@@ -214,7 +216,7 @@ void PollSet::remove(curl_socket_t s)
   //                i          NrFds = 5
   //                v           v
   // index: 0   1   2   3   4
-  //        a   b   c   d   e					// max = std::max('d', 'e')
+  //        a   b   c   d   e					// max = llmax('d', 'e')
 
   // If mNext pointed to an element before s, it should be left alone. Otherwise, if mNext pointed
   // to s it must now point to 'd', or if it pointed beyond 's' it must be decremented by 1.
@@ -228,7 +230,7 @@ void PollSet::remove(curl_socket_t s)
 	while (i > 0)
 	{
 	  curl_socket_t next = mFileDescriptors[--i];
-	  max = std::max(max, next);
+	  max = llmax(max, next);
 	}
 	mMaxFd = max;
 	llassert(mMaxFd < s);
@@ -256,7 +258,7 @@ void PollSet::remove(curl_socket_t s)
 	  mFileDescriptors[i] = cur;
 	  cur = next;
 	}
-	if (mIter > i)
+	if (mIter > (unsigned int)i)
 	  --mIter;
 	llassert(mIter <= mFdSet.fd_count);
   }
@@ -278,7 +280,7 @@ inline bool PollSet::is_set(curl_socket_t fd) const
 
 inline void PollSet::clr(curl_socket_t fd)
 {
-  return FD_CLR(fd, &mFdSet);
+  FD_CLR(fd, &mFdSet);
 }
 
 // This function fills mFdSet with at most FD_SETSIZE - 1 filedescriptors,
@@ -312,7 +314,7 @@ refresh_t PollSet::refresh(void)
 	// Calculate mMaxFdSet.
 	// Run over FD_SETSIZE - 1 elements, starting at mNext, wrapping to 0 when we reach the end.
 	int max = -1, i = mNext, count = 0;
-	while (++count < FD_SETSIZE) { max = std::max(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
+	while (++count < FD_SETSIZE) { max = llmax(max, mFileDescriptors[i]); if (++i == mNrFds) i = 0; }
 	mMaxFdSet = max;
 #endif
   }
@@ -587,9 +589,9 @@ AICurlThread::~AICurlThread()
 // MAIN-THREAD
 void AICurlThread::create_wakeup_fds(void)
 {
-#ifdef WINDOWS
-// Probably need to use sockets here, cause Windows select doesn't work for a pipe.
-#error Missing implementation
+#if LL_WINDOWS
+  // Probably need to use sockets here, cause Windows select doesn't work for a pipe.
+  #error Missing implementation
 #else
   int pipefd[2];
   if (pipe(pipefd))
@@ -612,10 +614,14 @@ void AICurlThread::create_wakeup_fds(void)
 // MAIN-THREAD
 void AICurlThread::cleanup_wakeup_fds(void)
 {
+#if LL_WINDOWS
+  #error Missing implementation
+#else
   if (mWakeUpFd_in != CURL_SOCKET_BAD)
 	close(mWakeUpFd_in);
   if (mWakeUpFd != CURL_SOCKET_BAD)
 	close(mWakeUpFd);
+#endif
 }
 
 // MAIN-THREAD
@@ -632,8 +638,8 @@ void AICurlThread::wakeup_thread(void)
 	return;
   }
 
-#ifdef WINDOWS
-#error Missing implementation
+#ifdef LL_WINDOWS
+  #error Missing implementation
 #else
   // If write() is interrupted by a signal before it writes any data, it shall return -1 with errno set to [EINTR].
   // If write() is interrupted by a signal after it successfully writes some data, it shall return the number of bytes written.
@@ -662,8 +668,8 @@ void AICurlThread::wakeup(AICurlMultiHandle_wat const& multi_handle_w)
 {
   DoutEntering(dc::curl, "AICurlThread::wakeup");
 
-#ifdef WINDOWS
-#error Missing implementation
+#ifdef LL_WINDOWS
+  #error Missing implementation
 #else
   // If a read() is interrupted by a signal before it reads any data, it shall return -1 with errno set to [EINTR].
   // If a read() is interrupted by a signal after it has successfully read some data, it shall return the number of bytes read.
@@ -758,9 +764,9 @@ void AICurlThread::run(void)
 	  fd_set* write_fd_set = ((wres & empty)) ? NULL : multi_handle_w->mWritePollSet.access();
 	  // Calculate nfds (ignored on windows).
 #if !LL_WINDOWS
-	  curl_socket_t const max_rfd = std::max(multi_handle_w->mReadPollSet.get_max_fd(), mWakeUpFd);
+	  curl_socket_t const max_rfd = llmax(multi_handle_w->mReadPollSet.get_max_fd(), mWakeUpFd);
 	  curl_socket_t const max_wfd = multi_handle_w->mWritePollSet.get_max_fd();
-	  int nfds = std::max(max_rfd, max_wfd) + 1;
+	  int nfds = llmax(max_rfd, max_wfd) + 1;
 	  llassert(0 <= nfds && nfds <= FD_SETSIZE);
 	  llassert((max_rfd == -1) == (read_fd_set == NULL) &&
 			   (max_wfd == -1) == (write_fd_set == NULL));	// Needed on Windows.

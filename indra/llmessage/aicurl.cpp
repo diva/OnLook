@@ -123,6 +123,13 @@ void ssl_locking_function(int mode, int n, char const* file, int line)
   }
 }
 
+#if LL_WINDOWS
+static unsigned long __cdecl apr_os_thread_current_wrapper()
+{
+	return (unsigned long)apr_os_thread_current();
+}
+#endif
+	
 #if HAVE_CRYPTO_THREADID
 // OpenSSL uniq id function.
 void ssl_id_function(CRYPTO_THREADID* thread_id)
@@ -217,7 +224,11 @@ void ssl_init(void)
 #if HAVE_CRYPTO_THREADID
   CRYPTO_THREADID_set_callback(&ssl_id_function);
 #else
+#if LL_WINDOWS
+  CRYPTO_set_id_callback(&apr_os_thread_current_wrapper);
+#else
   CRYPTO_set_id_callback(&apr_os_thread_current);
+#endif
 #endif
   // Dynamic locks callbacks.
   old_ssl_dyn_create_function = CRYPTO_get_dynlock_create_callback();
@@ -286,7 +297,7 @@ void initCurl(void (*flush_hook)())
 	  llwarns << "libcurl's age is 0; no ares support." << llendl;
 	}
 	llassert_always((version_info->features & CURL_VERSION_SSL));	// SSL support, added in libcurl 7.10.
-	if (!(version_info->features & CURL_VERSION_ASYNCHDNS));		// Asynchronous name lookups (added in libcurl 7.10.7).
+	if (!(version_info->features & CURL_VERSION_ASYNCHDNS))			// Asynchronous name lookups (added in libcurl 7.10.7).
 	{
 	  llwarns << "libcurl was not compiled with support for asynchronous name lookups!" << llendl;
 	}
@@ -1313,8 +1324,8 @@ CurlMultiHandle::~CurlMultiHandle()
 {
   curl_multi_cleanup(mMultiHandle);
   Stats::multi_calls++;
-  int total = --sTotalMultiHandles;
-  Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << total << " remaining.");
+  --sTotalMultiHandles;
+  Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << sTotalMultiHandles << " remaining.");
 }
 
 } // namespace AICurlPrivate
