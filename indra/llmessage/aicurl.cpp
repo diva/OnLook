@@ -1324,8 +1324,12 @@ CurlMultiHandle::~CurlMultiHandle()
 {
   curl_multi_cleanup(mMultiHandle);
   Stats::multi_calls++;
+#ifdef CWDEBUG
+  int total = --sTotalMultiHandles;
+  Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << total << " remaining.");
+#else
   --sTotalMultiHandles;
-  Dout(dc::curl, "Called CurlMultiHandle::~CurlMultiHandle() [" << (void*)this << "], " << sTotalMultiHandles << " remaining.");
+#endif
 }
 
 } // namespace AICurlPrivate

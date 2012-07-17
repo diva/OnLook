@@ -248,8 +248,8 @@ void PollSet::remove(curl_socket_t s)
   // mFdSet.fd_array instead of mFileDescriptors and mIter instead of mNext.
   if (FD_ISSET(s, &mFdSet))
   {
-	int i = --mFdSet.fd_count;
-	llassert(i >= 0);
+	llassert(mFdSet.fd_count > 0);
+	unsigned int i = --mFdSet.fd_count;
 	curl_socket_t cur = mFdSet.fd_array[i];
 	while (cur != s)
 	{
@@ -258,7 +258,7 @@ void PollSet::remove(curl_socket_t s)
 	  mFileDescriptors[i] = cur;
 	  cur = next;
 	}
-	if (mIter > (unsigned int)i)
+	if (mIter > i)
 	  --mIter;
 	llassert(mIter <= mFdSet.fd_count);
   }
