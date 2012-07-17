@@ -1613,6 +1613,7 @@ void LLMeshUploadThread::doWholeModelUpload()
 		LLSD body = full_model_data["asset_resources"];
 		dump_llsd_to_file(body,make_dump_name("whole_model_body_",dump_num));
 		LLCurlRequest::headers_t headers;
+		// This might throw AICurlNoEasyHandle.
 		mCurlRequest->post(mWholeModelUploadURL, headers, body,
 						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle), mMeshUploadTimeOut);
 		do
@@ -1646,6 +1647,7 @@ void LLMeshUploadThread::requestWholeModelFee()
 
 	mPendingUploads++;
 	LLCurlRequest::headers_t headers;
+	// This might throw AICurlNoEasyHandle.
 	mCurlRequest->post(mWholeModelFeeCapability, headers, model_data,
 					   new LLWholeModelFeeResponder(this,model_data, mFeeObserverHandle), mMeshUploadTimeOut);
 
