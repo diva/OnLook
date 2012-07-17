@@ -59,8 +59,15 @@
 ##   you're building your own viewer, bear in mind that the executable
 ##   in the bin directory will be stripped: you should replace it with
 ##   an unstripped binary before you run.
-#export LL_WRAPPER='gdb --args'
-#export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
+if [ -n "$ASCENDED_DEVELOPER" ]; then
+	if [ "$ASCENDED_DEVELOPER" = "1" ]; then
+		export LL_WRAPPER='gdb --args'
+	elif [ "$ASCENDED_DEVELOPER" = "2" ]; then
+		export LL_WRAPPER='valgrind --smc-check=all --error-limit=no --log-file=secondlife.vg --leak-check=full --suppressions=/usr/lib/valgrind/glibc-2.5.supp --suppressions=secondlife-i686.supp'
+	elif [ "$ASCENDED_DEVELOPER" = "3" ]; then
+		export LL_WRAPPER='strace -f -ff -o singularity.strace'
+	fi
+fi
 
 ## - This allows one to set an arbitrary value for LD_PRELOAD.
 ##   It won't work if LL_TCMALLOC is set because that uses it's
