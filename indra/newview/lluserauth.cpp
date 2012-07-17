@@ -270,7 +270,7 @@ LLUserAuth::UserAuthcode LLUserAuth::authResponse()
 		return mAuthResponse;
 	}
 	
-	bool done = mTransaction->process();
+	bool done = mTransaction->is_finished();
 
 	if (!done) {
 		if (LLXMLRPCTransaction::StatusDownloading == mTransaction->status(0))

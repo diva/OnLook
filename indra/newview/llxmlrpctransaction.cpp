@@ -518,7 +518,7 @@ LLXMLRPCTransaction::~LLXMLRPCTransaction()
 	delete &impl;
 }
 
-bool LLXMLRPCTransaction::process()
+bool LLXMLRPCTransaction::is_finished(void) const
 {
 	return impl.is_finished();
 }

@@ -1617,7 +1617,9 @@ void LLMeshUploadThread::doWholeModelUpload()
 						   new LLWholeModelUploadResponder(this, full_model_data, mUploadObserverHandle), mMeshUploadTimeOut);
 		do
 		{
-			mCurlRequest->process();
+			mCurlRequest->process();								// FIXME: This function does not exist anymore. The post() gets CPU time from AICurlEasyRequestStateMachine.
+																	// Therefore, if we do not want to continue here unless this upload is done... no wait, that would
+																	// be blocking and we don't want blocking...
 			//sleep for 10ms to prevent eating a whole core
 			apr_sleep(10000);
 		} while (mCurlRequest->getQueued() > 0);
