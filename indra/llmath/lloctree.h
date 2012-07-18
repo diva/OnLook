@@ -37,7 +37,6 @@
 #include "v3math.h"
 #include "llvector4a.h"
 #include <vector>
-#include <set>
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define OCT_ERRS LL_ERRS("OctreeErrors")
@@ -93,7 +92,8 @@ public:
 	typedef LLPointer<T>*										element_iter;
 	typedef const LLPointer<T>*									const_element_iter;
 	typedef typename std::vector<LLTreeListener<T>*>::iterator	tree_listener_iter;
-	typedef typename std::vector<LLOctreeNode<T>* >				child_list;
+	typedef LLOctreeNode<T>**									child_list;
+	typedef LLOctreeNode<T>**									child_iter;
 	typedef LLTreeNode<T>		BaseType;
 	typedef LLOctreeNode<T>		oct_node;
 	typedef LLOctreeListener<T>	oct_listener;
@@ -242,7 +242,7 @@ public:
 	}
 
 	void accept(oct_traveler* visitor)				{ visitor->visit(this); }
-	virtual bool isLeaf() const						{ return mChild.empty(); }
+	virtual bool isLeaf() const						{ return mChildCount == 0; }
 	
 	U32 getElementCount() const						{ return mElementCount; }
 	bool isEmpty() const							{ return mElementCount == 0; }
@@ -527,8 +527,8 @@ public:
 
 	void clearChildren()
 	{
-		mChild.clear();
 		mChildCount = 0;
+
 		U32* foo = (U32*) mChildMap;
 		foo[0] = foo[1] = 0xFFFFFFFF;
 	}
@@ -590,7 +590,7 @@ public:
 
 		mChildMap[child->getOctant()] = mChildCount;
 
-		mChild.push_back(child);
+		mChild[mChildCount] = child;
 		++mChildCount;
 		child->setParent(this);
 
@@ -619,8 +619,11 @@ public:
 			mChild[index]->destroy();
 			delete mChild[index];
 		}
-		mChild.erase(mChild.begin() + index);
+
 		--mChildCount;
+
+		mChild[index] = mChild[mChildCount];
+		
 
 		//rebuild child map
 		U32* foo = (U32*) mChildMap;
@@ -677,7 +680,7 @@ protected:
 	oct_node* mParent;
 	U8 mOctant;
 
-	child_list mChild;
+	LLOctreeNode<T>* mChild[8];
 	U8 mChildMap[8];
 	U32 mChildCount;
 
