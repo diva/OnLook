@@ -1101,6 +1101,8 @@ CurlResponderBuffer::CurlResponderBuffer()
   curl_easy_request_w->send_events_to(this);
 }
 
+#define llmaybeerrs lllog(LLApp::isExiting() ? LLError::LEVEL_WARN : LLError::LEVEL_ERROR, NULL, NULL, false)
+
 // The callbacks need to be revoked when the CurlResponderBuffer is destructed (because that is what the callbacks use).
 // The AIThreadSafeSimple<CurlResponderBuffer> is destructed first (right to left), so when we get here then the
 // ThreadSafeCurlEasyRequest base class of ThreadSafeBufferedCurlEasyRequest is still intact and we can create
@@ -1117,9 +1119,18 @@ CurlResponderBuffer::~CurlResponderBuffer()
 	// never called, which means that the removed_from_multi_handle event never happened.
 	// This is definitely an internal error as it can only happen when libcurl is too slow,
 	// in which case AICurlEasyRequestStateMachine::mTimer times out, but that already
-	// calls CurlResponderBuffer::timed_out(). So, this really should never happen.
-	llerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
-	timed_out();
+	// calls CurlResponderBuffer::timed_out().
+	llmaybeerrs << "Calling ~CurlResponderBuffer() with active responder!" << llendl;
+	if (LLApp::isExiting())
+	{
+	  // It might happen if some CurlResponderBuffer escaped clean up somehow :/
+	  mResponder = NULL;
+	}
+	else
+	{
+	  // User chose to continue.
+	  timed_out();
+	}
   }
 }
 
