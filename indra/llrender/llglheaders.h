@@ -278,7 +278,7 @@ extern PFNGLGENERATEMIPMAPEXTPROC glGenerateMipmapEXT;
 # include "GL/glh_extensions.h"
 # undef __APPLE__
 
-#elif LL_LINUX 
+#elif LL_LINUX
 //----------------------------------------------------------------------------
 // Linux, MESA headers, but not necessarily assuming MESA runtime.
 // quotes so we get libraries/.../GL/ version
@@ -783,6 +783,7 @@ extern PFNGLDEBUGMESSAGECONTROLARBPROC glDebugMessageControlARB;
 extern PFNGLDEBUGMESSAGEINSERTARBPROC glDebugMessageInsertARB;
 extern PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARB;
 extern PFNGLGETDEBUGMESSAGELOGARBPROC glGetDebugMessageLogARB;
+
 #elif LL_DARWIN
 //----------------------------------------------------------------------------
 // LL_DARWIN
@@ -825,6 +826,7 @@ extern void glGenerateMipmapEXT(GLenum target) AVAILABLE_MAC_OS_X_VERSION_10_4_A
 #define glGenerateMipmap glGenerateMipmapEXT
 #define GL_MAX_SAMPLES	0x8D57
 #endif
+
 // GL_ARB_draw_buffers
 extern void glDrawBuffersARB(GLsizei n, const GLenum* bufs) AVAILABLE_MAC_OS_X_VERSION_10_4_AND_LATER;
 
@@ -997,7 +999,7 @@ extern void glGetBufferPointervARB (GLenum, GLenum, GLvoid* *);
 }
 #endif
 
-#include <AGL/gl.h>
+#include <OpenGL/gl.h>
 
 #endif // LL_MESA / LL_WINDOWS / LL_DARWIN
 
@@ -1029,4 +1031,5 @@ extern void glGetBufferPointervARB (GLenum, GLenum, GLvoid* *);
 #define GL_TEXTURE_FREE_MEMORY_ATI                 0x87FC
 #define GL_RENDERBUFFER_FREE_MEMORY_ATI            0x87FD
 #endif
+
 #endif // LL_LLGLHEADERS_H
