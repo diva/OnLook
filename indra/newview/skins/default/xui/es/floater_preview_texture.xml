@@ -1,88 +1,53 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<floater bottom="-331" can_close="true" can_drag_on_left="false" can_minimize="true" can_resize="true" enabled="true" height="324" left="300" min_height="150" min_width="300" mouse_opaque="true" name="preview_texture" width="335">
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" bottom="-40"
-		drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall" h_pad="0" halign="left" height="15"
-		left="13" mouse_opaque="true" name="desc txt" v_pad="0" width="80">
-			Description:
+<floater name="preview_texture">
+	<text name="desc txt">
+			Descripción:
 	</text>
-	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom="-43" enabled="false"
-		follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="17" left="93" 
-		max_length="127" mouse_opaque="true" name="desc" select_all_on_focus_received="false" select_on_focus="false" 
-		width="229" spell_check="true" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall" h_pad="0" 
-		halign="left" height="16" left="13" mouse_opaque="true" name="uuid txt" v_pad="0" width="80">
+	<text name="uuid txt">
 			UUID:
 	</text>
-	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0" enabled="false" 
-		follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="16" left="93" 
-		max_length="127" mouse_opaque="true" name="uuid" select_all_on_focus_received="false" select_on_focus="false" 
-		width="229" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall" h_pad="0" 
-		halign="left" height="16" left="13" mouse_opaque="true" name="uploader txt" v_pad="0" width="80">
-			Uploaded by:
+	<text name="uploader txt">
+			Subida por:
 	</text>
-	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0" enabled="false" 
-		follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="16" left="93" 
-		right="-80" max_length="127" mouse_opaque="true" name="uploader" select_all_on_focus_received="false" 
-		select_on_focus="false" width="420" />
-	<button bottom_delta="-1" enabled="true" follows="right|top" font="SansSerifSmall" halign="center" height="18" 
-		label="Profile" right="320" mouse_opaque="true" name="openprofile" scale_image="true" width="60" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom_delta="-20" drop_shadow_visible="true" enabled="true" follows="left|top" font="SansSerifSmall" 
-		h_pad="0" halign="left" height="16" left="13" mouse_opaque="true" name="uploadtime txt" v_pad="0" width="80">
-			Uploaded on:
+	<button label="Perfil" name="openprofile"/>
+	<text name="uploadtime txt">
+			Subida el:
 	</text>
-	<line_editor bevel_style="in" border_style="line" border_thickness="1" bottom_delta="0" enabled="false" 
-		follows="left|top|right" font="SansSerifSmall" handle_edit_keys_directly="false" height="16" left="93" 
-		right="-80" max_length="127" mouse_opaque="true" name="uploadtime" select_all_on_focus_received="false" 
-		select_on_focus="false" width="420" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom_delta="-1" drop_shadow_visible="true" enabled="true" follows="right|top" font="SansSerifSmall" 
-		h_pad="50" halign="left" height="16" right="345" mouse_opaque="true" name="alphanote" v_pad="0" width="80">
-			Loading...
+	<text name="alphanote">
+			Cargando...
 	</text>
-	<button bottom="8" enabled="true" follows="left|bottom" font="SansSerif" halign="center" height="20" 
-		label="Keep" label_selected="Keep" left="9" mouse_opaque="true" name="Keep" scale_image="true" width="100" />
-	<button bottom="8" enabled="true" follows="left|bottom" font="SansSerif" halign="center" height="20" 
-		label="Discard" label_selected="Discard" left="114" mouse_opaque="true" name="Discard" scale_image="true" width="100" />
-	<button bottom="8" enabled="true" follows="left|bottom" font="SansSerif" halign="center" height="20" 
-		label="Copy To Inventory" left="9" mouse_opaque="true" name="Copy To Inventory" scale_image="true" width="170" />
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom="35" drop_shadow_visible="true" enabled="true" follows="left|bottom" font="SansSerifSmall" h_pad="0" 
-		halign="left" height="14" left="13" mouse_opaque="true" name="dimensions" v_pad="0" width="135">
-			Dimensions: [WIDTH] x [HEIGHT]
+	<button label="Mantener" label_selected="Mantener" name="Keep"/>
+	<button label="Descartar" label_selected="Descartar" name="Discard"/>
+	<button label="Copiar al Inventario" name="Copy To Inventory"/>
+	<text name="dimensions">
+			Tamaño: [WIDTH] x [HEIGHT]
 	</text>
-	<text type="string" length="1" bg_visible="false" border_drop_shadow_visible="false" border_visible="false" 
-		bottom="35" drop_shadow_visible="true" enabled="true" follows="right|bottom" font="SansSerifSmall" h_pad="0" 
-		halign="right" height="14" left="86" mouse_opaque="true" name="aspect_ratio" v_pad="0" width="110">
-			Preview Aspect Ratio
+	<text name="aspect_ratio">
+			Aspecto Vista Previa
 	</text>
-	<combo_box allow_text_entry="true" bottom="32" follows="right|bottom" height="20" left="202" max_chars="20" 
-		mouse_opaque="true" enabled="true" width="108" name="combo_aspect_ratio" tool_tip="Preview at a fixed aspect ratio">
-		<combo_item name="Unconstrained" value="Unconstrained">
-			Unconstrained
+	<combo_box name="combo_aspect_ratio" tool_tip="Vista Previa en aspecto fijo">
+		<combo_item name="Unconstrained">
+			Sin restricciones
 		</combo_item>
-		<combo_item name="1:1" value="1:1" tool_tip="Group Insignia or 1st Life Profile">
+		<combo_item name="1:1" tool_tip="Insignia de Grupo o Imagen del Perfil en 1ra. Vida">
 			1:1
 		</combo_item>
-		<combo_item name="4:3" value="4:3" tool_tip="2nd Life Profile">
+		<combo_item name="4:3" tool_tip="Imagen del Perfil en 2da. Vida">
 			4:3
 		</combo_item>
-		<combo_item name="10:7" value="10:7" tool_tip="Classifieds and search listings, landmarks">
+		<combo_item name="10:7" tool_tip="Clasificados y listados de la búsqueda, hitos">
 			10:7
 		</combo_item>
-		<combo_item name="3:2" value="3:2" tool_tip="About land">
+		<combo_item name="3:2" tool_tip="Acerca del Terreno">
 			3:2
 		</combo_item>
-		<combo_item name="16:10" value="16:10">
+		<combo_item name="16:10">
 			16:10
 		</combo_item>
-		<combo_item name="16:9" value="16:9" tool_tip="Profile Picks">
+		<combo_item name="16:9" tool_tip="Imagen Destacados del Perfil">
 			16:9
 		</combo_item>
-		<combo_item name="2:1" value="2:1">
+		<combo_item name="2:1">
 			2:1
 		</combo_item>
 	</combo_box>
